@@ -44,6 +44,7 @@
 .row {
   display: flex;
   justify-content: center;
+  gap: 8px;
 }
 
 a {
@@ -58,6 +59,27 @@ a:hover {
 
 h1 {
   text-align: center;
+}
+
+.card {
+  width: min(720px, calc(100vw - 48px));
+  margin: 24px auto 0;
+  padding: 16px 18px;
+  text-align: left;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.7);
+}
+
+.mono {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.9em;
+  word-break: break-all;
+}
+
+.list {
+  margin: 8px 0 0;
+  padding-left: 18px;
 }
 
 .error {
@@ -104,6 +126,11 @@ button {
   :root {
     color: #f6f6f6;
     background-color: #2f2f2f;
+  }
+
+  .card {
+    border-color: rgba(255, 255, 255, 0.12);
+    background: rgba(0, 0, 0, 0.28);
   }
 
   .error {
