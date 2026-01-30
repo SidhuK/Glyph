@@ -164,7 +164,7 @@ We’ll implement explicit migrations for:
 - `index`
   - incremental indexing
   - backlinks extraction
-  - search engine adapter (start simple but keep an interface)
+  - SQLite FTS5 search engine adapter (keep an interface for future swaps)
 - `links`
   - URL normalization/validation
   - OpenGraph/HTML parsing
@@ -338,7 +338,7 @@ We want high quality here without over-committing to one engine.
 
 ### 6.1 Index outputs we need
 - `noteMetaById`: id → { title, tags, updated, path }
-- `noteTextById`: id → full text (maybe not stored fully if using SQLite)
+- `noteTextById`: derived full text (stored in FTS5; avoid keeping all content in memory)
 - `outgoingLinksById`: id → [noteId]
 - `backlinksById`: id → [noteId]
 
@@ -350,9 +350,10 @@ Define a trait/interface:
 - `persist()` / `load()`
 
 ### 6.3 Engine choice
-Step-by-step plan will start with:
-- **Phase A:** in-memory + persisted JSON (fast to implement)
-- **Phase B:** migrate to SQLite + FTS5 in `cache/` if performance/quality needs it
+We’ll implement **SQLite + FTS5 from the start**:
+- Store the derived index at `cache/index.sqlite` (safe to delete; rebuildable).
+- Use explicit schema migrations for changes.
+- Keep the search layer behind a small adapter interface so we can swap engines later if needed.
 
 Even though we’re not “stopping at MVP”, this keeps early steps shippable while preserving an upgrade path.
 
@@ -596,7 +597,7 @@ Each phase ends with a runnable app state; no “MVP freeze”, just continuous 
 - Implement index builder:
   - parse notes for links
   - build backlinks map
-  - create search index adapter (start simple but pluggable)
+  - create SQLite FTS5 search index adapter (schema + migrations in `cache/index.sqlite`)
 - Add file watcher; incremental updates on external edits.
 - Build search UI + backlinks panel.
 
@@ -664,4 +665,4 @@ Each phase ends with a runnable app state; no “MVP freeze”, just continuous 
 2. **Wikilinks format:** do we keep `[[Title]]` purely as a convenience (resolved via index), or do we standardize on an ID-backed link like `[Title](tether://note/<id>)` for true stability?
 3. **Preview image storage:** `cache/` (rebuildable) vs `assets/` (portable/offline). Default in this plan is `cache/`.
 4. **Network hardening:** should we block localhost/private IP ranges by default for previews/AI endpoints, with an override for advanced users?
-5. **Search engine target:** do we intend to move to SQLite FTS5 fairly early (for ranking/snippets), or stay with simpler indexing unless needed?
+5. **Search engine target:** use SQLite FTS5 from day one (`cache/index.sqlite`), and treat it as derived/rebuildable.
