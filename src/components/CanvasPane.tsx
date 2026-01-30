@@ -188,7 +188,8 @@ export default function CanvasPane({
 					n.type === "link" &&
 					typeof (n.data as Record<string, unknown> | null)?.image_src !==
 						"string" &&
-					typeof (n.data as Record<string, unknown> | null)?.preview === "object",
+					typeof (n.data as Record<string, unknown> | null)?.preview ===
+						"object",
 			);
 			if (!candidates.length) return;
 
@@ -355,7 +356,9 @@ export default function CanvasPane({
 					const preview = await invoke("link_preview", { url });
 					const imageSrc =
 						vaultPath && preview.image_cache_rel_path
-							? convertFileSrc(await join(vaultPath, preview.image_cache_rel_path))
+							? convertFileSrc(
+									await join(vaultPath, preview.image_cache_rel_path),
+								)
 							: null;
 					setNodes((prev) =>
 						prev.map((n) =>
@@ -377,7 +380,10 @@ export default function CanvasPane({
 					setNodes((prev) =>
 						prev.map((n) =>
 							n.id === nodeId
-								? { ...n, data: { ...(n.data ?? {}), status: "Preview failed" } }
+								? {
+										...n,
+										data: { ...(n.data ?? {}), status: "Preview failed" },
+									}
 								: n,
 						),
 					);
@@ -420,7 +426,8 @@ export default function CanvasPane({
 	const onRefreshSelectedLink = useCallback(() => {
 		if (!selectedLinkNode) return;
 		const url =
-			typeof (selectedLinkNode.data as Record<string, unknown>)?.url === "string"
+			typeof (selectedLinkNode.data as Record<string, unknown>)?.url ===
+			"string"
 				? ((selectedLinkNode.data as Record<string, unknown>).url as string)
 				: "";
 		if (!url) return;
@@ -437,7 +444,9 @@ export default function CanvasPane({
 				const preview = await invoke("link_preview", { url, force: true });
 				const imageSrc =
 					vaultPath && preview.image_cache_rel_path
-						? convertFileSrc(await join(vaultPath, preview.image_cache_rel_path))
+						? convertFileSrc(
+								await join(vaultPath, preview.image_cache_rel_path),
+							)
 						: null;
 				setNodes((prev) =>
 					prev.map((n) =>

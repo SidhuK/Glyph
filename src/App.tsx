@@ -499,6 +499,19 @@ function App() {
 		return res.markdown;
 	}, [activeNoteId, refreshNotes]);
 
+	const onCanvasSelectionChange = useCallback(
+		(selected: import("./components/CanvasPane").CanvasNode[]) => {
+			setSelectedCanvasNodes(
+				selected.map((n) => ({
+					id: n.id,
+					type: n.type ?? null,
+					data: (n.data ?? null) as Record<string, unknown> | null,
+				})),
+			);
+		},
+		[],
+	);
+
 	const onCreateCanvas = useCallback(async () => {
 		try {
 			const created = await invoke("canvas_create", { title: "Canvas" });
@@ -632,15 +645,7 @@ function App() {
 							activeNoteId={activeNoteId}
 							activeNoteTitle={activeNoteTitle}
 							vaultPath={vaultPath}
-							onSelectionChange={(selected) => {
-								setSelectedCanvasNodes(
-									selected.map((n) => ({
-										id: n.id,
-										type: n.type ?? null,
-										data: (n.data ?? null) as Record<string, unknown> | null,
-									})),
-								);
-							}}
+							onSelectionChange={onCanvasSelectionChange}
 						/>
 					</Suspense>
 					<NoteEditor

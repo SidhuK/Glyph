@@ -1,6 +1,11 @@
 import { listen } from "@tauri-apps/api/event";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { invoke, type AiMessage, type AiProfile, TauriInvokeError } from "../lib/tauri";
+import {
+	invoke,
+	type AiMessage,
+	type AiProfile,
+	TauriInvokeError,
+} from "../lib/tauri";
 
 export interface SelectedCanvasNode {
 	id: string;
@@ -116,7 +121,9 @@ export function AIPane({
 		if (!profileDraft) return;
 		setSettingsError("");
 		try {
-			const saved = await invoke("ai_profile_upsert", { profile: profileDraft });
+			const saved = await invoke("ai_profile_upsert", {
+				profile: profileDraft,
+			});
 			setProfiles((prev) => prev.map((p) => (p.id === saved.id ? saved : p)));
 			setActiveProfileId(saved.id);
 		} catch (e) {
@@ -177,7 +184,8 @@ export function AIPane({
 				if (n.type === "link") {
 					const url = typeof data.url === "string" ? data.url : "";
 					const preview =
-						(data.preview as Record<string, unknown> | null | undefined) ?? null;
+						(data.preview as Record<string, unknown> | null | undefined) ??
+						null;
 					const title =
 						preview && typeof preview.title === "string" ? preview.title : "";
 					const desc =
@@ -206,7 +214,9 @@ export function AIPane({
 		const joined = parts.join("\n\n---\n\n").trim();
 		if (!joined) return "";
 		const limit = clampInt(charBudget, 200, 200_000);
-		return joined.length > limit ? `${joined.slice(0, limit)}\n\n…(truncated)` : joined;
+		return joined.length > limit
+			? `${joined.slice(0, limit)}\n\n…(truncated)`
+			: joined;
 	}, [
 		activeNoteId,
 		activeNoteMarkdown,
@@ -349,7 +359,11 @@ export function AIPane({
 			setActionError("No assistant message to apply.");
 			return;
 		}
-		if (!window.confirm("Replace the active note with the last assistant message?"))
+		if (
+			!window.confirm(
+				"Replace the active note with the last assistant message?",
+			)
+		)
 			return;
 		setActionError("");
 		try {
@@ -482,9 +496,7 @@ export function AIPane({
 							value={profileDraft.base_url ?? ""}
 							onChange={(e) =>
 								setProfileDraft((p) =>
-									p
-										? { ...p, base_url: e.target.value || null }
-										: p,
+									p ? { ...p, base_url: e.target.value || null } : p,
 								)
 							}
 						/>
@@ -566,7 +578,9 @@ export function AIPane({
 					<button
 						type="button"
 						onClick={onApplyLastAssistantToActiveNote}
-						disabled={streaming || !activeNoteId || !lastAssistantMessage.trim()}
+						disabled={
+							streaming || !activeNoteId || !lastAssistantMessage.trim()
+						}
 					>
 						Apply last assistant
 					</button>
@@ -613,10 +627,18 @@ export function AIPane({
 					onChange={(e) => setInput(e.target.value)}
 				/>
 				<div className="aiChatActions">
-					<button type="button" onClick={onSend} disabled={streaming || !input.trim()}>
+					<button
+						type="button"
+						onClick={onSend}
+						disabled={streaming || !input.trim()}
+					>
 						Send
 					</button>
-					<button type="button" onClick={onCancel} disabled={!streaming || !jobId}>
+					<button
+						type="button"
+						onClick={onCancel}
+						disabled={!streaming || !jobId}
+					>
 						Cancel
 					</button>
 					<button

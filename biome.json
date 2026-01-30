@@ -1,17 +1,17 @@
 {
-  "files": {
-    "ignore": ["dist", "src-tauri/target"]
-  },
-  "formatter": {
-    "enabled": true
-  },
-  "organizeImports": {
-    "enabled": true
-  },
-  "linter": {
-    "enabled": true,
-    "rules": {
-      "recommended": true
-    }
-  }
+	"files": {
+		"ignore": ["dist", "src-tauri/target"]
+	},
+	"formatter": {
+		"enabled": true
+	},
+	"organizeImports": {
+		"enabled": true
+	},
+	"linter": {
+		"enabled": true,
+		"rules": {
+			"recommended": true
+		}
+	}
 }

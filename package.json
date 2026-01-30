@@ -1,44 +1,41 @@
 {
-  "name": "app",
-  "private": true,
-  "version": "0.1.0",
-  "type": "module",
-  "packageManager": "pnpm@10.28.2",
-  "pnpm": {
-    "onlyBuiltDependencies": [
-      "@biomejs/biome",
-      "esbuild"
-    ]
-  },
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "format": "biome format --write .",
-    "lint": "biome lint .",
-    "check": "biome check .",
-    "preview": "vite preview",
-    "tauri": "tauri"
-  },
-  "dependencies": {
-    "@codemirror/lang-markdown": "^6.5.0",
-    "@codemirror/state": "^6.5.4",
-    "@codemirror/view": "^6.39.11",
-    "@tauri-apps/api": "^2",
-    "@tauri-apps/plugin-dialog": "^2",
-    "@tauri-apps/plugin-opener": "^2",
-    "@tauri-apps/plugin-store": "^2",
-    "@uiw/react-codemirror": "^4.25.4",
-    "@xyflow/react": "^12.10.0",
-    "react": "^19.1.0",
-    "react-dom": "^19.1.0"
-  },
-  "devDependencies": {
-    "@biomejs/biome": "^1.9.4",
-    "@tauri-apps/cli": "^2",
-    "@types/react": "^19.1.8",
-    "@types/react-dom": "^19.1.6",
-    "@vitejs/plugin-react": "^4.6.0",
-    "typescript": "~5.8.3",
-    "vite": "^7.0.4"
-  }
+	"name": "app",
+	"private": true,
+	"version": "0.1.0",
+	"type": "module",
+	"packageManager": "pnpm@10.28.2",
+	"pnpm": {
+		"onlyBuiltDependencies": ["@biomejs/biome", "esbuild"]
+	},
+	"scripts": {
+		"dev": "vite",
+		"build": "tsc && vite build",
+		"format": "biome format --write .",
+		"lint": "biome lint .",
+		"check": "biome check .",
+		"preview": "vite preview",
+		"tauri": "tauri"
+	},
+	"dependencies": {
+		"@codemirror/lang-markdown": "^6.5.0",
+		"@codemirror/state": "^6.5.4",
+		"@codemirror/view": "^6.39.11",
+		"@tauri-apps/api": "^2",
+		"@tauri-apps/plugin-dialog": "^2",
+		"@tauri-apps/plugin-opener": "^2",
+		"@tauri-apps/plugin-store": "^2",
+		"@uiw/react-codemirror": "^4.25.4",
+		"@xyflow/react": "^12.10.0",
+		"react": "^19.1.0",
+		"react-dom": "^19.1.0"
+	},
+	"devDependencies": {
+		"@biomejs/biome": "^1.9.4",
+		"@tauri-apps/cli": "^2",
+		"@types/react": "^19.1.8",
+		"@types/react-dom": "^19.1.6",
+		"@vitejs/plugin-react": "^4.6.0",
+		"typescript": "~5.8.3",
+		"vite": "^7.0.4"
+	}
 }

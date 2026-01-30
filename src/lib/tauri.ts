@@ -142,7 +142,9 @@ interface TauriCommands {
 	ai_secret_set: CommandDef<{ profile_id: string; api_key: string }, void>;
 	ai_secret_clear: CommandDef<{ profile_id: string }, void>;
 	ai_chat_start: CommandDef<
-		{ request: { profile_id: string; messages: AiMessage[]; context?: string } },
+		{
+			request: { profile_id: string; messages: AiMessage[]; context?: string };
+		},
 		AiChatStartResult
 	>;
 	ai_chat_cancel: CommandDef<{ job_id: string }, void>;
