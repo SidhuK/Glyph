@@ -150,11 +150,60 @@ fn canonicalize_dir(path: &Path) -> Result<PathBuf, String> {
 
 fn create_or_open_impl(root: &Path) -> Result<VaultInfo, String> {
     ensure_vault_dirs(root)?;
+    let _ = cleanup_tmp_files(root);
     let schema_version = write_vault_json_if_missing(root)?;
     Ok(VaultInfo {
         root: root.to_string_lossy().to_string(),
         schema_version,
     })
+}
+
+fn cleanup_tmp_files(root: &Path) -> Result<(), String> {
+    fn should_delete(file_name: &str) -> bool {
+        // Our atomic writer uses dotfiles containing ".tmp.".
+        (file_name.starts_with('.') && file_name.contains(".tmp."))
+            || file_name.ends_with(".tmp")
+            || file_name.contains(".import.tmp.")
+    }
+
+    fn recurse(dir: &Path) -> Result<(), String> {
+        let entries = std::fs::read_dir(dir).map_err(|e| e.to_string())?;
+        for entry in entries {
+            let entry = match entry {
+                Ok(e) => e,
+                Err(_) => continue,
+            };
+            let path = entry.path();
+            let meta = match entry.metadata() {
+                Ok(m) => m,
+                Err(_) => continue,
+            };
+            if meta.is_dir() {
+                let _ = recurse(&path);
+                continue;
+            }
+            if !meta.is_file() {
+                continue;
+            }
+            let name = match path.file_name().and_then(|s| s.to_str()) {
+                Some(s) => s,
+                None => continue,
+            };
+            if !should_delete(name) {
+                continue;
+            }
+            let _ = std::fs::remove_file(&path);
+        }
+        Ok(())
+    }
+
+    for rel in ["notes", "canvases", "cache", "assets"] {
+        let dir = root.join(rel);
+        if dir.is_dir() {
+            let _ = recurse(&dir);
+        }
+    }
+    Ok(())
 }
 
 #[tauri::command]

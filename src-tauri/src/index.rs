@@ -6,7 +6,8 @@ use std::{
     ffi::OsStr,
     path::{Path, PathBuf},
 };
-use tauri::State;
+use tauri::{AppHandle, State};
+use tauri_plugin_notification::NotificationExt;
 
 #[derive(Serialize)]
 pub struct SearchResult {
@@ -388,11 +389,18 @@ pub fn rebuild(vault_root: &Path) -> Result<IndexRebuildResult, String> {
 }
 
 #[tauri::command]
-pub async fn index_rebuild(state: State<'_, VaultState>) -> Result<IndexRebuildResult, String> {
+pub async fn index_rebuild(app: AppHandle, state: State<'_, VaultState>) -> Result<IndexRebuildResult, String> {
     let root = state.current_root()?;
-    tauri::async_runtime::spawn_blocking(move || rebuild(&root))
+    let res = tauri::async_runtime::spawn_blocking(move || rebuild(&root))
         .await
-        .map_err(|e| e.to_string())?
+        .map_err(|e| e.to_string())??;
+    let _ = app
+        .notification()
+        .builder()
+        .title("Tether")
+        .body(format!("Index rebuilt ({})", res.indexed))
+        .show();
+    Ok(res)
 }
 
 #[tauri::command]

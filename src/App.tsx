@@ -11,8 +11,11 @@ import {
 import "./App.css";
 import { listen } from "@tauri-apps/api/event";
 import { AIPane, type SelectedCanvasNode } from "./components/AIPane";
+import type {
+	CanvasExternalCommand,
+	CanvasNode,
+} from "./components/CanvasPane";
 import { CanvasesPane } from "./components/CanvasesPane";
-import type { CanvasExternalCommand, CanvasNode } from "./components/CanvasPane";
 import {
 	FolderOpen,
 	FolderPlus,
@@ -63,9 +66,8 @@ function App() {
 	const [selectedCanvasNodes, setSelectedCanvasNodes] = useState<
 		SelectedCanvasNode[]
 	>([]);
-	const [canvasCommand, setCanvasCommand] = useState<CanvasExternalCommand | null>(
-		null,
-	);
+	const [canvasCommand, setCanvasCommand] =
+		useState<CanvasExternalCommand | null>(null);
 	const [backlinks, setBacklinks] = useState<BacklinkItem[]>([]);
 	const [backlinksError, setBacklinksError] = useState("");
 	const [showAiPanel, setShowAiPanel] = useState(false);
@@ -497,18 +499,15 @@ function App() {
 		return res.markdown;
 	}, [activeNoteId, refreshNotes]);
 
-	const onCanvasSelectionChange = useCallback(
-		(selected: CanvasNode[]) => {
-			setSelectedCanvasNodes(
-				selected.map((n) => ({
-					id: n.id,
-					type: n.type ?? null,
-					data: (n.data ?? null) as Record<string, unknown> | null,
-				})),
-			);
-		},
-		[],
-	);
+	const onCanvasSelectionChange = useCallback((selected: CanvasNode[]) => {
+		setSelectedCanvasNodes(
+			selected.map((n) => ({
+				id: n.id,
+				type: n.type ?? null,
+				data: (n.data ?? null) as Record<string, unknown> | null,
+			})),
+		);
+	}, []);
 
 	const addCanvasNoteNode = useCallback((noteId: string, title: string) => {
 		setCanvasCommand({
@@ -741,17 +740,17 @@ function App() {
 								</button>
 							</div>
 							<div className="floatingPanelBody">
-									<AIPane
-										activeNoteId={activeNoteId}
-										activeNoteTitle={activeNoteTitle}
-										activeNoteMarkdown={activeDoc?.markdown ?? null}
-										selectedCanvasNodes={selectedCanvasNodes}
-										canvasDoc={activeCanvasDoc}
-										onApplyToActiveNote={onForceSaveMarkdown}
-										onCreateNoteFromMarkdown={createNoteFromMarkdown}
-										onAddCanvasNoteNode={addCanvasNoteNode}
-										onAddCanvasTextNode={addCanvasTextNode}
-									/>
+								<AIPane
+									activeNoteId={activeNoteId}
+									activeNoteTitle={activeNoteTitle}
+									activeNoteMarkdown={activeDoc?.markdown ?? null}
+									selectedCanvasNodes={selectedCanvasNodes}
+									canvasDoc={activeCanvasDoc}
+									onApplyToActiveNote={onForceSaveMarkdown}
+									onCreateNoteFromMarkdown={createNoteFromMarkdown}
+									onAddCanvasNoteNode={addCanvasNoteNode}
+									onAddCanvasTextNode={addCanvasTextNode}
+								/>
 							</div>
 						</div>
 					)}

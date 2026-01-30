@@ -1,5 +1,6 @@
 import { listen } from "@tauri-apps/api/event";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { unifiedDiff } from "../lib/diff";
 import {
 	type AiHeader,
 	type AiMessage,
@@ -10,7 +11,6 @@ import {
 	TauriInvokeError,
 	invoke,
 } from "../lib/tauri";
-import { unifiedDiff } from "../lib/diff";
 
 type ChatMessage = AiMessage & { id: string };
 
@@ -727,7 +727,9 @@ export function AIPane({
 			return;
 		}
 		if (!includeActiveNote) {
-			setActionError("Enable Active note in the payload spec, then build + approve.");
+			setActionError(
+				"Enable Active note in the payload spec, then build + approve.",
+			);
 			return;
 		}
 		if (!payloadApproved || !payloadManifest) {
@@ -771,7 +773,12 @@ export function AIPane({
 		const jobId = lastCompletedJobId ?? "unknown";
 		setStagedRewrite({ jobId, proposedMarkdown: lastAssistantMessage });
 		setActionError("");
-	}, [activeNoteId, activeNoteMarkdown, lastAssistantMessage, lastCompletedJobId]);
+	}, [
+		activeNoteId,
+		activeNoteMarkdown,
+		lastAssistantMessage,
+		lastCompletedJobId,
+	]);
 
 	const stagedRewriteDiff = useMemo(() => {
 		if (!stagedRewrite || !activeNoteMarkdown) return "";
@@ -1203,10 +1210,18 @@ export function AIPane({
 				{stagedRewrite ? (
 					<div>
 						<div className="aiRow">
-							<button type="button" onClick={applyStagedRewrite} disabled={streaming}>
+							<button
+								type="button"
+								onClick={applyStagedRewrite}
+								disabled={streaming}
+							>
 								Apply staged rewrite
 							</button>
-							<button type="button" onClick={rejectStagedRewrite} disabled={streaming}>
+							<button
+								type="button"
+								onClick={rejectStagedRewrite}
+								disabled={streaming}
+							>
 								Reject
 							</button>
 							<div className="aiMeta">Job: {stagedRewrite.jobId}</div>

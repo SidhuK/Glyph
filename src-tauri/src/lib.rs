@@ -57,6 +57,7 @@ pub fn run() {
         .manage(ai::AiState::default())
         .manage(vault::VaultState::default())
         .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_store::Builder::default().build())
         .invoke_handler(tauri::generate_handler![

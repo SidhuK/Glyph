@@ -8,6 +8,7 @@ use std::{
 	time::Duration,
 };
 use tauri::{AppHandle, Emitter, Manager, State};
+use tauri_plugin_notification::NotificationExt;
 use tokio_util::sync::CancellationToken;
 use url::Url;
 
@@ -765,12 +766,16 @@ pub async fn ai_audit_mark(
 	job_id: String,
 	outcome: String,
 ) -> Result<(), String> {
+	let _ = uuid::Uuid::parse_str(&job_id)
+		.map_err(|_| "invalid job_id".to_string())?;
 	let root = vault_state.current_root()?;
 	let path = audit_log_path(&root, &job_id)?;
 	let bytes = std::fs::read(&path).map_err(|e| e.to_string())?;
 	let mut v: serde_json::Value = serde_json::from_slice(&bytes).map_err(|e| e.to_string())?;
 	if let Some(obj) = v.as_object_mut() {
-		obj.insert("outcome".to_string(), serde_json::Value::String(outcome));
+		let out = outcome.trim();
+		let out = if out.len() > 200 { &out[..200] } else { out };
+		obj.insert("outcome".to_string(), serde_json::Value::String(out.to_string()));
 	}
 	let out = serde_json::to_vec_pretty(&v).map_err(|e| e.to_string())?;
 	io_atomic::write_atomic(&path, &out).map_err(|e| e.to_string())
@@ -929,6 +934,14 @@ pub async fn ai_chat_start(
 				if let Some(root) = vault_root {
 					write_audit_log(&root, &job_id_for_task, &profile, &request, &full, cancelled);
 				}
+				if !cancelled {
+					let _ = app_for_task
+						.notification()
+						.builder()
+						.title("Tether")
+						.body("AI response ready")
+						.show();
+				}
 				ai_state_for_task.finish(&job_id_for_task);
 			}
 			Err(message) => {
@@ -939,6 +952,12 @@ pub async fn ai_chat_start(
 						message,
 					},
 				);
+				let _ = app_for_task
+					.notification()
+					.builder()
+					.title("Tether")
+					.body("AI request failed")
+					.show();
 				ai_state_for_task.finish(&job_id_for_task);
 			}
 		}

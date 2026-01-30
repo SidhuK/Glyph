@@ -17,7 +17,7 @@ function myersDiff(a: string[], b: string[], maxD: number): DiffOp[] | null {
 		for (let k = -d; k <= d; k += 2) {
 			const x =
 				k === -d || (k !== d && (v.get(k - 1) ?? 0) < (v.get(k + 1) ?? 0))
-					? v.get(k + 1) ?? 0
+					? (v.get(k + 1) ?? 0)
 					: (v.get(k - 1) ?? 0) + 1;
 			let y = x - k;
 			let x2 = x;
@@ -32,7 +32,8 @@ function myersDiff(a: string[], b: string[], maxD: number): DiffOp[] | null {
 				let xBack = n;
 				let yBack = m;
 				for (let dBack = trace.length - 1; dBack >= 0; dBack--) {
-					const vBack = trace[dBack]!;
+					const vBack = trace[dBack];
+					if (!vBack) continue;
 					const kBack = xBack - yBack;
 					const kPrev =
 						kBack === -dBack ||
@@ -42,22 +43,28 @@ function myersDiff(a: string[], b: string[], maxD: number): DiffOp[] | null {
 							: kBack - 1;
 					const xPrev =
 						kPrev === kBack + 1
-							? vBack.get(kPrev) ?? 0
+							? (vBack.get(kPrev) ?? 0)
 							: (vBack.get(kPrev) ?? 0) + 1;
 					const yPrev = xPrev - kPrev;
 
 					while (xBack > xPrev && yBack > yPrev) {
-						ops.push({ type: "equal", line: a[xBack - 1]! });
+						const line = a[xBack - 1];
+						if (line == null) break;
+						ops.push({ type: "equal", line });
 						xBack--;
 						yBack--;
 					}
 
 					if (dBack === 0) break;
 					if (xBack === xPrev) {
-						ops.push({ type: "insert", line: b[yBack - 1]! });
+						const line = b[yBack - 1];
+						if (line == null) break;
+						ops.push({ type: "insert", line });
 						yBack--;
 					} else {
-						ops.push({ type: "delete", line: a[xBack - 1]! });
+						const line = a[xBack - 1];
+						if (line == null) break;
+						ops.push({ type: "delete", line });
 						xBack--;
 					}
 				}
@@ -91,17 +98,18 @@ export function unifiedDiff(
 	while (i < ops.length) {
 		// find next change
 		let j = i;
-		while (j < ops.length && ops[j]!.type === "equal") j++;
+		while (j < ops.length && ops[j]?.type === "equal") j++;
 		if (j >= ops.length) break;
 
 		const hunkStart = Math.max(i, j - context);
 		let hunkEnd = j;
-		while (hunkEnd < ops.length && ops[hunkEnd]!.type !== "equal") hunkEnd++;
+		while (hunkEnd < ops.length && ops[hunkEnd]?.type !== "equal") hunkEnd++;
 		hunkEnd = Math.min(ops.length, hunkEnd + context);
 
 		if (hunkStart > 0) lines.push("…");
 		for (let k = hunkStart; k < hunkEnd; k++) {
-			const op = ops[k]!;
+			const op = ops[k];
+			if (!op) continue;
 			if (op.type === "equal") lines.push(`  ${op.line}`);
 			if (op.type === "delete") {
 				lines.push(`- ${op.line}`);
@@ -119,4 +127,3 @@ export function unifiedDiff(
 	if (!changes) return "No changes.";
 	return lines.join("\n");
 }
-
