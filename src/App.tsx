@@ -19,6 +19,8 @@ import { CanvasesPane } from "./components/CanvasesPane";
 import {
 	FolderOpen,
 	FolderPlus,
+	PanelLeftClose,
+	PanelLeftOpen,
 	PanelRightClose,
 	PanelRightOpen,
 	Search,
@@ -79,6 +81,7 @@ function App() {
 	const [showAiPanel, setShowAiPanel] = useState(false);
 	const [showNoteEditor, setShowNoteEditor] = useState(false);
 	const [showSearch, setShowSearch] = useState(false);
+	const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 	const noteLoadSeq = useRef(0);
 	const activeNoteIdRef = useRef<string | null>(null);
 	const notesRef = useRef<NoteMeta[]>([]);
@@ -562,102 +565,121 @@ function App() {
 	return (
 		<div className="appShell">
 			{/* Left Sidebar - Project Navigation */}
-			<aside className="sidebar">
+			<aside className={`sidebar ${sidebarCollapsed ? "sidebarCollapsed" : ""}`}>
 				<div className="sidebarHeader" data-tauri-drag-region>
-					<div className="sidebarBrand">
-						<span className="brandIcon">◈</span>
-						<span className="brandName">Tether</span>
-					</div>
-					<div className="sidebarActions">
-						<MotionIconButton
-							type="button"
-							onClick={() => setShowSearch(!showSearch)}
-							title="Search"
-							active={showSearch}
-						>
-							<Search size={16} />
-						</MotionIconButton>
-						<MotionIconButton
-							type="button"
-							onClick={onCreateVault}
-							title="Create vault"
-						>
-							<FolderPlus size={16} />
-						</MotionIconButton>
-						<MotionIconButton
-							type="button"
-							onClick={onOpenVault}
-							title="Open vault"
-						>
-							<FolderOpen size={16} />
-						</MotionIconButton>
-					</div>
+					{!sidebarCollapsed && (
+						<>
+							<div className="sidebarBrand">
+								<span className="brandIcon">◈</span>
+								<span className="brandName">Tether</span>
+							</div>
+							<div className="sidebarActions">
+								<MotionIconButton
+									type="button"
+									onClick={() => setShowSearch(!showSearch)}
+									title="Search"
+									active={showSearch}
+								>
+									<Search size={16} />
+								</MotionIconButton>
+								<MotionIconButton
+									type="button"
+									onClick={onCreateVault}
+									title="Create vault"
+								>
+									<FolderPlus size={16} />
+								</MotionIconButton>
+								<MotionIconButton
+									type="button"
+									onClick={onOpenVault}
+									title="Open vault"
+								>
+									<FolderOpen size={16} />
+								</MotionIconButton>
+							</div>
+						</>
+					)}
+					<MotionIconButton
+						type="button"
+						onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+						title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+					>
+						{sidebarCollapsed ? (
+							<PanelLeftOpen size={16} />
+						) : (
+							<PanelLeftClose size={16} />
+						)}
+					</MotionIconButton>
 				</div>
 
-				{/* Search Panel (collapsible) */}
-				{showSearch && (
-					<div className="sidebarSection">
-						<SearchPane
-							query={searchQuery}
-							results={searchResults}
-							isSearching={isSearching}
-							error={searchError}
-							onChangeQuery={setSearchQuery}
-							onSelectNote={(id) => {
-								setActiveNoteId(id);
-								setShowNoteEditor(true);
-							}}
-						/>
-					</div>
-				)}
+				{!sidebarCollapsed && (
+					<>
+						{/* Search Panel (collapsible) */}
+						{showSearch && (
+							<div className="sidebarSection">
+								<SearchPane
+									query={searchQuery}
+									results={searchResults}
+									isSearching={isSearching}
+									error={searchError}
+									onChangeQuery={setSearchQuery}
+									onSelectNote={(id) => {
+										setActiveNoteId(id);
+										setShowNoteEditor(true);
+									}}
+								/>
+							</div>
+						)}
 
-				{/* Vault Info */}
-				{vaultPath && (
-					<div className="sidebarSection vaultInfo">
-						<div className="vaultPath mono">{vaultPath.split("/").pop()}</div>
-						<div className="vaultMeta">
-							{vaultSchemaVersion ? `v${vaultSchemaVersion}` : ""}
+						{/* Vault Info */}
+						{vaultPath && (
+							<div className="sidebarSection vaultInfo">
+								<div className="vaultPath mono">{vaultPath.split("/").pop()}</div>
+								<div className="vaultMeta">
+									{vaultSchemaVersion ? `v${vaultSchemaVersion}` : ""}
+								</div>
+							</div>
+						)}
+
+						{/* Recent vaults - collapsed by default */}
+						{recentVaults.length > 0 && (
+							<details className="sidebarSection recentVaults">
+								<summary className="recentVaultsSummary">Recent vaults</summary>
+								<ul className="recentVaultsList">
+									{recentVaults.slice(0, 5).map((p) => (
+										<li key={p} className="recentVaultsItem mono">
+											{p.split("/").pop()}
+										</li>
+									))}
+								</ul>
+							</details>
+						)}
+
+						{/* Canvases List */}
+						<div className="sidebarSection sidebarSectionGrow">
+							<CanvasesPane
+								canvases={canvases}
+								activeCanvasId={activeCanvasId}
+								onSelectCanvas={setActiveCanvasId}
+								onCreateCanvas={onCreateCanvas}
+							/>
 						</div>
-					</div>
+
+						{/* Notes List */}
+						<div className="sidebarSection sidebarSectionGrow">
+							<NotesPane
+								notes={notes}
+								activeNoteId={activeNoteId}
+								onSelectNote={(id) => {
+									setActiveNoteId(id);
+									setShowNoteEditor(true);
+								}}
+								onCreateNote={onCreateNote}
+								onDeleteNote={onDeleteNote}
+							/>
+						</div>
+					</>
 				)}
-
-				{/* Recent vaults - collapsed by default */}
-				{recentVaults.length > 0 && (
-					<details className="sidebarSection recentVaults">
-						<summary className="recentVaultsSummary">Recent vaults</summary>
-						<ul className="recentVaultsList">
-							{recentVaults.slice(0, 5).map((p) => (
-								<li key={p} className="recentVaultsItem mono">
-									{p.split("/").pop()}
-								</li>
-							))}
-						</ul>
-					</details>
-				)}
-
-				{/* Canvases List */}
-				<div className="sidebarSection sidebarSectionGrow">
-					<CanvasesPane
-						canvases={canvases}
-						activeCanvasId={activeCanvasId}
-						onSelectCanvas={setActiveCanvasId}
-						onCreateCanvas={onCreateCanvas}
-					/>
-				</div>
-
-				{/* Notes List */}
-				<div className="sidebarSection sidebarSectionGrow">
-					<NotesPane
-						notes={notes}
-						activeNoteId={activeNoteId}
-						onSelectNote={(id) => {
-							setActiveNoteId(id);
-							setShowNoteEditor(true);
-						}}
-						onCreateNote={onCreateNote}
-						onDeleteNote={onDeleteNote}
-					/>
-				</div>
 			</aside>
 
 			{/* Main Canvas Area */}

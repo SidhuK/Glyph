@@ -32,6 +32,8 @@ export {
 	MessageSquare,
 	PanelRightOpen,
 	PanelRightClose,
+	PanelLeftOpen,
+	PanelLeftClose,
 	Bot,
 	Send,
 	Maximize2,

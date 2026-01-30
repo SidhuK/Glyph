@@ -225,6 +225,18 @@ textarea {
 	border-right: 1px solid var(--border-light);
 	overflow: hidden;
 	flex-shrink: 0;
+	transition: width var(--transition-base), min-width var(--transition-base);
+}
+
+.sidebar.sidebarCollapsed {
+	width: 78px;
+	min-width: 78px;
+}
+
+.sidebar.sidebarCollapsed .sidebarHeader {
+	justify-content: center;
+	padding-left: 0;
+	padding-right: 0;
 }
 
 .sidebarHeader {
@@ -237,21 +249,6 @@ textarea {
 	border-bottom: 1px solid var(--border-light);
 	flex-shrink: 0;
 	-webkit-app-region: drag;
-	position: relative;
-}
-
-/* Pill background for traffic lights */
-.sidebarHeader::before {
-	content: "";
-	position: absolute;
-	left: 6px;
-	top: 50%;
-	transform: translateY(-50%);
-	width: 60px;
-	height: 26px;
-	background: var(--bg-hover);
-	border-radius: var(--radius-full);
-	pointer-events: none;
 }
 
 .sidebarBrand {
