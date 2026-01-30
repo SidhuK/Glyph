@@ -25,6 +25,12 @@ import {
 	Sparkles,
 	X,
 } from "./components/Icons";
+import {
+	AnimatePresence,
+	MotionEditorPanel,
+	MotionFloatingPanel,
+	MotionIconButton,
+} from "./components/MotionUI";
 import { NoteEditor } from "./components/NoteEditor";
 import { NotesPane } from "./components/NotesPane";
 import { SearchPane } from "./components/SearchPane";
@@ -563,30 +569,28 @@ function App() {
 						<span className="brandName">Tether</span>
 					</div>
 					<div className="sidebarActions">
-						<button
+						<MotionIconButton
 							type="button"
-							className="iconBtn"
 							onClick={() => setShowSearch(!showSearch)}
 							title="Search"
+							active={showSearch}
 						>
 							<Search size={16} />
-						</button>
-						<button
+						</MotionIconButton>
+						<MotionIconButton
 							type="button"
-							className="iconBtn"
 							onClick={onCreateVault}
 							title="Create vault"
 						>
 							<FolderPlus size={16} />
-						</button>
-						<button
+						</MotionIconButton>
+						<MotionIconButton
 							type="button"
-							className="iconBtn"
 							onClick={onOpenVault}
 							title="Open vault"
 						>
 							<FolderOpen size={16} />
-						</button>
+						</MotionIconButton>
 					</div>
 				</div>
 
@@ -666,9 +670,9 @@ function App() {
 						</span>
 					</div>
 					<div className="mainToolbarRight">
-						<button
+						<MotionIconButton
 							type="button"
-							className={showNoteEditor ? "iconBtn active" : "iconBtn"}
+							active={showNoteEditor}
 							onClick={() => setShowNoteEditor(!showNoteEditor)}
 							title="Toggle note editor"
 						>
@@ -677,15 +681,15 @@ function App() {
 							) : (
 								<PanelRightOpen size={16} />
 							)}
-						</button>
-						<button
+						</MotionIconButton>
+						<MotionIconButton
 							type="button"
-							className={showAiPanel ? "iconBtn active" : "iconBtn"}
+							active={showAiPanel}
 							onClick={() => setShowAiPanel(!showAiPanel)}
 							title="Toggle AI assistant"
 						>
 							<Sparkles size={16} />
-						</button>
+						</MotionIconButton>
 					</div>
 				</div>
 
@@ -723,59 +727,61 @@ function App() {
 					</Suspense>
 
 					{/* Floating AI Panel */}
-					{showAiPanel && (
-						<div className="floatingPanel aiPanel">
-							<div className="floatingPanelHeader">
-								<div className="floatingPanelTitle">
-									<Sparkles size={14} />
-									AI Assistant
-								</div>
-								<button
-									type="button"
-									className="iconBtn sm"
-									onClick={() => setShowAiPanel(false)}
-									title="Close"
-								>
-									<X size={14} />
-								</button>
+					<MotionFloatingPanel
+						isOpen={showAiPanel}
+						className="floatingPanel aiPanel"
+					>
+						<div className="floatingPanelHeader">
+							<div className="floatingPanelTitle">
+								<Sparkles size={14} />
+								AI Assistant
 							</div>
-							<div className="floatingPanelBody">
-								<AIPane
-									activeNoteId={activeNoteId}
-									activeNoteTitle={activeNoteTitle}
-									activeNoteMarkdown={activeDoc?.markdown ?? null}
-									selectedCanvasNodes={selectedCanvasNodes}
-									canvasDoc={activeCanvasDoc}
-									onApplyToActiveNote={onForceSaveMarkdown}
-									onCreateNoteFromMarkdown={createNoteFromMarkdown}
-									onAddCanvasNoteNode={addCanvasNoteNode}
-									onAddCanvasTextNode={addCanvasTextNode}
-								/>
-							</div>
+							<MotionIconButton
+								type="button"
+								size="sm"
+								onClick={() => setShowAiPanel(false)}
+								title="Close"
+							>
+								<X size={14} />
+							</MotionIconButton>
 						</div>
-					)}
+						<div className="floatingPanelBody">
+							<AIPane
+								activeNoteId={activeNoteId}
+								activeNoteTitle={activeNoteTitle}
+								activeNoteMarkdown={activeDoc?.markdown ?? null}
+								selectedCanvasNodes={selectedCanvasNodes}
+								canvasDoc={activeCanvasDoc}
+								onApplyToActiveNote={onForceSaveMarkdown}
+								onCreateNoteFromMarkdown={createNoteFromMarkdown}
+								onAddCanvasNoteNode={addCanvasNoteNode}
+								onAddCanvasTextNode={addCanvasTextNode}
+							/>
+						</div>
+					</MotionFloatingPanel>
 				</div>
 			</main>
 
 			{/* Right Panel - Note Editor */}
-			{showNoteEditor && (
-				<aside className="editorPanel">
-					<NoteEditor
-						doc={activeDoc}
-						backlinks={backlinks}
-						backlinksError={backlinksError}
-						onOpenBacklink={(id) => setActiveNoteId(id)}
-						onChangeMarkdown={onChangeMarkdown}
-						onSave={onSaveMarkdown}
-						onForceSave={onForceSaveMarkdown}
-						onReloadFromDisk={onReloadNoteFromDisk}
-						onAttachFile={onAttachFile}
-						onClose={() => setShowNoteEditor(false)}
-					/>
-				</aside>
-			)}
+			<MotionEditorPanel isOpen={showNoteEditor} className="editorPanel">
+				<NoteEditor
+					doc={activeDoc}
+					backlinks={backlinks}
+					backlinksError={backlinksError}
+					onOpenBacklink={(id) => setActiveNoteId(id)}
+					onChangeMarkdown={onChangeMarkdown}
+					onSave={onSaveMarkdown}
+					onForceSave={onForceSaveMarkdown}
+					onReloadFromDisk={onReloadNoteFromDisk}
+					onAttachFile={onAttachFile}
+					onClose={() => setShowNoteEditor(false)}
+				/>
+			</MotionEditorPanel>
 
-			{error ? <div className="appError">{error}</div> : null}
+			{/* Error Toast */}
+			<AnimatePresence>
+				{error && <div className="appError">{error}</div>}
+			</AnimatePresence>
 		</div>
 	);
 }
