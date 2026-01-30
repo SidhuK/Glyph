@@ -12,7 +12,15 @@ import "./App.css";
 import { listen } from "@tauri-apps/api/event";
 import { AIPane, type SelectedCanvasNode } from "./components/AIPane";
 import { CanvasesPane } from "./components/CanvasesPane";
-import { FolderOpen, FolderPlus, Zap } from "./components/Icons";
+import {
+	FolderOpen,
+	FolderPlus,
+	PanelRightClose,
+	PanelRightOpen,
+	Search,
+	Sparkles,
+	X,
+} from "./components/Icons";
 import { NoteEditor } from "./components/NoteEditor";
 import { NotesPane } from "./components/NotesPane";
 import { SearchPane } from "./components/SearchPane";
@@ -33,7 +41,6 @@ const CanvasPane = lazy(() => import("./components/CanvasPane"));
 
 function App() {
 	const [info, setInfo] = useState<AppInfo | null>(null);
-	const [ping, setPing] = useState<string>("");
 	const [error, setError] = useState<string>("");
 	const [vaultPath, setVaultPath] = useState<string | null>(null);
 	const [vaultSchemaVersion, setVaultSchemaVersion] = useState<number | null>(
@@ -57,6 +64,9 @@ function App() {
 	>([]);
 	const [backlinks, setBacklinks] = useState<BacklinkItem[]>([]);
 	const [backlinksError, setBacklinksError] = useState("");
+	const [showAiPanel, setShowAiPanel] = useState(false);
+	const [showNoteEditor, setShowNoteEditor] = useState(false);
+	const [showSearch, setShowSearch] = useState(false);
 	const noteLoadSeq = useRef(0);
 	const activeNoteIdRef = useRef<string | null>(null);
 	const notesRef = useRef<NoteMeta[]>([]);
@@ -64,10 +74,8 @@ function App() {
 	const lastSavedNoteIdRef = useRef<string | null>(null);
 	const lastSavedAtMsRef = useRef<number>(0);
 
-	const versionLabel = useMemo(() => {
-		if (!info) return "";
-		return `${info.name} • v${info.version}`;
-	}, [info]);
+	// Keep info in sync but don't use it directly in render
+	void info;
 
 	const activeNoteTitle = useMemo(() => {
 		if (!activeNoteId) return null;
@@ -128,22 +136,6 @@ function App() {
 		return () => {
 			cancelled = true;
 		};
-	}, []);
-
-	const onPing = useCallback(async () => {
-		setError("");
-		setPing("");
-		try {
-			setPing(await invoke("ping"));
-		} catch (err) {
-			const message =
-				err instanceof TauriInvokeError
-					? err.message
-					: err instanceof Error
-						? err.message
-						: String(err);
-			setError(message);
-		}
 	}, []);
 
 	const pickDirectory = useCallback(async (): Promise<string | null> => {
@@ -546,92 +538,84 @@ function App() {
 
 	return (
 		<div className="appShell">
-			<header className="appHeader">
-				<div className="appHeaderLeft">
-					<div className="appTitle">Tether</div>
-					<div className="appSub">{versionLabel}</div>
-				</div>
-				<div className="appHeaderRight">
-					<button
-						type="button"
-						className="iconBtn"
-						onClick={onPing}
-						title="Test connection"
-					>
-						<Zap size={16} />
-					</button>
-					<button
-						type="button"
-						className="iconBtn"
-						onClick={onCreateVault}
-						title="Create vault"
-					>
-						<FolderPlus size={16} />
-					</button>
-					<button
-						type="button"
-						className="iconBtn"
-						onClick={onOpenVault}
-						title="Open vault"
-					>
-						<FolderOpen size={16} />
-					</button>
-				</div>
-			</header>
-
-			<div className="appBody">
-				<div className="appSidebar">
-					<div className="vaultBlock">
-						<div className="vaultLabel">Vault</div>
-						<div className="vaultPath mono">
-							{vaultPath ?? "No vault selected"}
-						</div>
-						<div className="vaultMeta">
-							{vaultSchemaVersion
-								? `Schema v${vaultSchemaVersion}`
-								: "Not initialized"}
-						</div>
-						{ping ? <div className="vaultMeta">Ping: {ping}</div> : null}
-						{recentVaults.length ? (
-							<details className="vaultRecent">
-								<summary>Recent</summary>
-								<ul className="vaultRecentList">
-									{recentVaults.map((p) => (
-										<li key={p} className="mono">
-											{p}
-										</li>
-									))}
-								</ul>
-							</details>
-						) : null}
+			{/* Left Sidebar - Project Navigation */}
+			<aside className="sidebar">
+				<div className="sidebarHeader">
+					<div className="sidebarBrand">
+						<span className="brandIcon">◈</span>
+						<span className="brandName">Tether</span>
 					</div>
+					<div className="sidebarActions">
+						<button
+							type="button"
+							className="iconBtn"
+							onClick={() => setShowSearch(!showSearch)}
+							title="Search"
+						>
+							<Search size={16} />
+						</button>
+						<button
+							type="button"
+							className="iconBtn"
+							onClick={onCreateVault}
+							title="Create vault"
+						>
+							<FolderPlus size={16} />
+						</button>
+						<button
+							type="button"
+							className="iconBtn"
+							onClick={onOpenVault}
+							title="Open vault"
+						>
+							<FolderOpen size={16} />
+						</button>
+					</div>
+				</div>
 
-					<SearchPane
-						query={searchQuery}
-						results={searchResults}
-						isSearching={isSearching}
-						error={searchError}
-						onChangeQuery={setSearchQuery}
-						onSelectNote={(id) => setActiveNoteId(id)}
-					/>
+				{/* Search Panel (collapsible) */}
+				{showSearch && (
+					<div className="sidebarSection">
+						<SearchPane
+							query={searchQuery}
+							results={searchResults}
+							isSearching={isSearching}
+							error={searchError}
+							onChangeQuery={setSearchQuery}
+							onSelectNote={(id) => {
+								setActiveNoteId(id);
+								setShowNoteEditor(true);
+							}}
+						/>
+					</div>
+				)}
 
-					<AIPane
-						activeNoteId={activeNoteId}
-						activeNoteTitle={activeNoteTitle}
-						activeNoteMarkdown={activeDoc?.markdown ?? null}
-						selectedCanvasNodes={selectedCanvasNodes}
-						onApplyToActiveNote={onForceSaveMarkdown}
-						onCreateNoteFromMarkdown={createNoteFromMarkdown}
-					/>
+				{/* Vault Info */}
+				{vaultPath && (
+					<div className="sidebarSection vaultInfo">
+						<div className="vaultPath mono">{vaultPath.split("/").pop()}</div>
+						<div className="vaultMeta">
+							{vaultSchemaVersion ? `v${vaultSchemaVersion}` : ""}
+						</div>
+					</div>
+				)}
 
-					<NotesPane
-						notes={notes}
-						activeNoteId={activeNoteId}
-						onSelectNote={setActiveNoteId}
-						onCreateNote={onCreateNote}
-						onDeleteNote={onDeleteNote}
-					/>
+				{/* Recent vaults - collapsed by default */}
+				{recentVaults.length > 0 && (
+					<details className="sidebarSection recentVaults">
+						<summary className="recentVaultsSummary">Recent vaults</summary>
+						<ul className="recentVaultsList">
+							{recentVaults.slice(0, 5).map((p) => (
+								<li key={p} className="recentVaultsItem mono">
+									{p.split("/").pop()}
+								</li>
+							))}
+						</ul>
+					</details>
+				)}
 
+				{/* Canvases List */}
+				<div className="sidebarSection sidebarSectionGrow">
 					<CanvasesPane
 						canvases={canvases}
 						activeCanvasId={activeCanvasId}
@@ -640,7 +624,56 @@ function App() {
 					/>
 				</div>
 
-				<div className="appMain">
+				{/* Notes List */}
+				<div className="sidebarSection sidebarSectionGrow">
+					<NotesPane
+						notes={notes}
+						activeNoteId={activeNoteId}
+						onSelectNote={(id) => {
+							setActiveNoteId(id);
+							setShowNoteEditor(true);
+						}}
+						onCreateNote={onCreateNote}
+						onDeleteNote={onDeleteNote}
+					/>
+				</div>
+			</aside>
+
+			{/* Main Canvas Area */}
+			<main className="mainArea">
+				{/* Canvas Toolbar */}
+				<div className="mainToolbar">
+					<div className="mainToolbarLeft">
+						<span className="canvasTitle">
+							{activeCanvasDoc?.title || "No canvas selected"}
+						</span>
+					</div>
+					<div className="mainToolbarRight">
+						<button
+							type="button"
+							className={showNoteEditor ? "iconBtn active" : "iconBtn"}
+							onClick={() => setShowNoteEditor(!showNoteEditor)}
+							title="Toggle note editor"
+						>
+							{showNoteEditor ? (
+								<PanelRightClose size={16} />
+							) : (
+								<PanelRightOpen size={16} />
+							)}
+						</button>
+						<button
+							type="button"
+							className={showAiPanel ? "iconBtn active" : "iconBtn"}
+							onClick={() => setShowAiPanel(!showAiPanel)}
+							title="Toggle AI assistant"
+						>
+							<Sparkles size={16} />
+						</button>
+					</div>
+				</div>
+
+				{/* Canvas Content */}
+				<div className="canvasWrapper">
 					<Suspense
 						fallback={<div className="canvasEmpty">Loading canvas…</div>}
 					>
@@ -657,13 +690,52 @@ function App() {
 									: null
 							}
 							onSave={onSaveCanvas}
-							onOpenNote={(id) => setActiveNoteId(id)}
+							onOpenNote={(id) => {
+								setActiveNoteId(id);
+								setShowNoteEditor(true);
+							}}
 							activeNoteId={activeNoteId}
 							activeNoteTitle={activeNoteTitle}
 							vaultPath={vaultPath}
 							onSelectionChange={onCanvasSelectionChange}
 						/>
 					</Suspense>
+
+					{/* Floating AI Panel */}
+					{showAiPanel && (
+						<div className="floatingPanel aiPanel">
+							<div className="floatingPanelHeader">
+								<div className="floatingPanelTitle">
+									<Sparkles size={14} />
+									AI Assistant
+								</div>
+								<button
+									type="button"
+									className="iconBtn sm"
+									onClick={() => setShowAiPanel(false)}
+									title="Close"
+								>
+									<X size={14} />
+								</button>
+							</div>
+							<div className="floatingPanelBody">
+								<AIPane
+									activeNoteId={activeNoteId}
+									activeNoteTitle={activeNoteTitle}
+									activeNoteMarkdown={activeDoc?.markdown ?? null}
+									selectedCanvasNodes={selectedCanvasNodes}
+									onApplyToActiveNote={onForceSaveMarkdown}
+									onCreateNoteFromMarkdown={createNoteFromMarkdown}
+								/>
+							</div>
+						</div>
+					)}
+				</div>
+			</main>
+
+			{/* Right Panel - Note Editor */}
+			{showNoteEditor && (
+				<aside className="editorPanel">
 					<NoteEditor
 						doc={activeDoc}
 						backlinks={backlinks}
@@ -674,9 +746,10 @@ function App() {
 						onForceSave={onForceSaveMarkdown}
 						onReloadFromDisk={onReloadNoteFromDisk}
 						onAttachFile={onAttachFile}
+						onClose={() => setShowNoteEditor(false)}
 					/>
-				</div>
-			</div>
+				</aside>
+			)}
 
 			{error ? <div className="appError">{error}</div> : null}
 		</div>

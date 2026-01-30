@@ -3,7 +3,7 @@ import type { EditorView } from "@codemirror/view";
 import CodeMirror from "@uiw/react-codemirror";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { BacklinkItem, NoteDoc } from "../lib/tauri";
-import { Paperclip, RotateCcw, Save } from "./Icons";
+import { Paperclip, RotateCcw, Save, X } from "./Icons";
 
 type SaveState = "idle" | "dirty" | "saving" | "saved" | "error";
 
@@ -17,6 +17,7 @@ interface NoteEditorProps {
 	onForceSave: (markdown: string) => Promise<void>;
 	onReloadFromDisk: () => Promise<void>;
 	onAttachFile: () => Promise<string | null>;
+	onClose?: () => void;
 }
 
 export const NoteEditor = memo(function NoteEditor({
@@ -29,6 +30,7 @@ export const NoteEditor = memo(function NoteEditor({
 	onForceSave,
 	onReloadFromDisk,
 	onAttachFile,
+	onClose,
 }: NoteEditorProps) {
 	const viewRef = useRef<EditorView | null>(null);
 	const [saveState, setSaveState] = useState<SaveState>("idle");
@@ -155,6 +157,7 @@ export const NoteEditor = memo(function NoteEditor({
 			<div className="editorHeader">
 				<div className="editorTitle">{doc.meta.title || "Untitled"}</div>
 				<div className="editorActions">
+					<div className="editorStatus">{statusLabel}</div>
 					<button
 						type="button"
 						className="iconBtn"
@@ -183,7 +186,16 @@ export const NoteEditor = memo(function NoteEditor({
 							</button>
 						</>
 					) : null}
-					<div className="editorStatus">{statusLabel}</div>
+					{onClose && (
+						<button
+							type="button"
+							className="iconBtn"
+							onClick={onClose}
+							title="Close editor"
+						>
+							<X size={16} />
+						</button>
+					)}
 				</div>
 			</div>
 
