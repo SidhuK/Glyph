@@ -1,7 +1,7 @@
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import CodeMirror from "@uiw/react-codemirror";
 import { markdown } from "@codemirror/lang-markdown";
 import type { EditorView } from "@codemirror/view";
+import CodeMirror from "@uiw/react-codemirror";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { BacklinkItem, NoteDoc } from "../lib/tauri";
 
 type SaveState = "idle" | "dirty" | "saving" | "saved" | "error";
@@ -36,6 +36,7 @@ export const NoteEditor = memo(function NoteEditor({
 
 	const extensions = useMemo(() => [markdown()], []);
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: Reset editor state when switching notes (by id).
 	useEffect(() => {
 		setError("");
 		setSaveState("idle");

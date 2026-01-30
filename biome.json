@@ -1,6 +1,6 @@
 {
 	"files": {
-		"ignore": ["dist", "src-tauri/target"]
+		"ignore": ["dist", "src-tauri/gen", "src-tauri/target"]
 	},
 	"formatter": {
 		"enabled": true

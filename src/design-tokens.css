@@ -1,0 +1,276 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   TETHER DESIGN SYSTEM
+   A minimal, professional design language inspired by Notion & Obsidian
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   PRIMITIVE TOKENS
+   Raw values - never use directly in components
+   ───────────────────────────────────────────────────────────────────────────── */
+:root {
+	/* Neutral scale - warm grays for a softer feel */
+	--color-neutral-0: #ffffff;
+	--color-neutral-25: #fcfcfc;
+	--color-neutral-50: #fafafa;
+	--color-neutral-100: #f5f5f4;
+	--color-neutral-150: #ebebea;
+	--color-neutral-200: #e5e4e2;
+	--color-neutral-300: #d4d3d0;
+	--color-neutral-400: #a3a29e;
+	--color-neutral-500: #787774;
+	--color-neutral-600: #5c5b58;
+	--color-neutral-700: #454441;
+	--color-neutral-800: #2e2d2b;
+	--color-neutral-900: #1f1e1c;
+	--color-neutral-950: #141413;
+
+	/* Accent - subtle, understated blue */
+	--color-accent-50: #f0f7ff;
+	--color-accent-100: #e0efff;
+	--color-accent-200: #c2dfff;
+	--color-accent-300: #94c8ff;
+	--color-accent-400: #5eadff;
+	--color-accent-500: #2f8af7;
+	--color-accent-600: #1a6fd9;
+	--color-accent-700: #1558b0;
+	--color-accent-800: #164890;
+	--color-accent-900: #183d76;
+
+	/* Semantic colors */
+	--color-success-500: #22c55e;
+	--color-success-600: #16a34a;
+	--color-warning-500: #f59e0b;
+	--color-warning-600: #d97706;
+	--color-error-500: #ef4444;
+	--color-error-600: #dc2626;
+
+	/* Typography scale - Inter variable font with optical sizing */
+	--font-sans: "Inter", "Inter var", -apple-system, BlinkMacSystemFont,
+		"Segoe UI", system-ui, sans-serif;
+	--font-mono: "SF Mono", "Fira Code", "JetBrains Mono", ui-monospace,
+		SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+
+	/* Inter font features for refined typography */
+	--font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+
+	/* Type scale - harmonic 1.25 ratio */
+	--text-xs: 0.75rem; /* 12px */
+	--text-sm: 0.8125rem; /* 13px */
+	--text-base: 0.875rem; /* 14px */
+	--text-md: 1rem; /* 16px */
+	--text-lg: 1.125rem; /* 18px */
+	--text-xl: 1.25rem; /* 20px */
+	--text-2xl: 1.5rem; /* 24px */
+
+	/* Line heights */
+	--leading-tight: 1.25;
+	--leading-snug: 1.375;
+	--leading-normal: 1.5;
+	--leading-relaxed: 1.625;
+
+	/* Font weights */
+	--font-normal: 400;
+	--font-medium: 500;
+	--font-semibold: 600;
+
+	/* Spacing scale - 4px base */
+	--space-0: 0;
+	--space-0-5: 0.125rem; /* 2px */
+	--space-1: 0.25rem; /* 4px */
+	--space-1-5: 0.375rem; /* 6px */
+	--space-2: 0.5rem; /* 8px */
+	--space-2-5: 0.625rem; /* 10px */
+	--space-3: 0.75rem; /* 12px */
+	--space-4: 1rem; /* 16px */
+	--space-5: 1.25rem; /* 20px */
+	--space-6: 1.5rem; /* 24px */
+	--space-8: 2rem; /* 32px */
+	--space-10: 2.5rem; /* 40px */
+	--space-12: 3rem; /* 48px */
+
+	/* Border radius */
+	--radius-sm: 4px;
+	--radius-md: 6px;
+	--radius-lg: 8px;
+	--radius-xl: 12px;
+
+	/* Shadows - soft and minimal */
+	--shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
+	--shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
+	--shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -1px
+		rgba(0, 0, 0, 0.04);
+	--shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.06), 0 4px 6px -2px
+		rgba(0, 0, 0, 0.03);
+	--shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+
+	/* Transitions */
+	--transition-fast: 100ms ease;
+	--transition-base: 150ms ease;
+	--transition-slow: 200ms ease;
+
+	/* Z-index scale */
+	--z-base: 0;
+	--z-dropdown: 100;
+	--z-sticky: 200;
+	--z-overlay: 300;
+	--z-modal: 400;
+	--z-popover: 500;
+	--z-tooltip: 600;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   SEMANTIC TOKENS - LIGHT THEME
+   Contextual meaning - use these in components
+   ───────────────────────────────────────────────────────────────────────────── */
+:root {
+	/* Surfaces */
+	--surface-primary: var(--color-neutral-50);
+	--surface-secondary: var(--color-neutral-0);
+	--surface-tertiary: var(--color-neutral-100);
+	--surface-elevated: var(--color-neutral-0);
+	--surface-overlay: rgba(255, 255, 255, 0.95);
+	--surface-sunken: var(--color-neutral-100);
+
+	/* Text */
+	--text-primary: var(--color-neutral-900);
+	--text-secondary: var(--color-neutral-600);
+	--text-tertiary: var(--color-neutral-500);
+	--text-placeholder: var(--color-neutral-400);
+	--text-disabled: var(--color-neutral-400);
+	--text-inverse: var(--color-neutral-0);
+	--text-accent: var(--color-accent-600);
+	--text-error: var(--color-error-600);
+
+	/* Borders */
+	--border-subtle: var(--color-neutral-150);
+	--border-default: var(--color-neutral-200);
+	--border-strong: var(--color-neutral-300);
+	--border-focus: var(--color-accent-500);
+	--border-error: var(--color-error-500);
+
+	/* Interactive states */
+	--interactive-default: var(--color-accent-600);
+	--interactive-hover: var(--color-accent-700);
+	--interactive-active: var(--color-accent-800);
+	--interactive-muted: var(--color-accent-50);
+	--interactive-muted-hover: var(--color-accent-100);
+
+	/* Selection */
+	--selection-bg: var(--color-accent-100);
+	--selection-bg-muted: rgba(47, 138, 247, 0.08);
+
+	/* Feedback */
+	--feedback-success: var(--color-success-600);
+	--feedback-warning: var(--color-warning-600);
+	--feedback-error: var(--color-error-600);
+	--feedback-error-bg: rgba(239, 68, 68, 0.08);
+
+	/* Scrollbar */
+	--scrollbar-track: transparent;
+	--scrollbar-thumb: var(--color-neutral-300);
+	--scrollbar-thumb-hover: var(--color-neutral-400);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   SEMANTIC TOKENS - DARK THEME
+   ───────────────────────────────────────────────────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+	:root {
+		/* Surfaces */
+		--surface-primary: var(--color-neutral-950);
+		--surface-secondary: var(--color-neutral-900);
+		--surface-tertiary: var(--color-neutral-800);
+		--surface-elevated: var(--color-neutral-800);
+		--surface-overlay: rgba(20, 20, 19, 0.95);
+		--surface-sunken: var(--color-neutral-950);
+
+		/* Text */
+		--text-primary: var(--color-neutral-100);
+		--text-secondary: var(--color-neutral-400);
+		--text-tertiary: var(--color-neutral-500);
+		--text-placeholder: var(--color-neutral-600);
+		--text-disabled: var(--color-neutral-600);
+		--text-inverse: var(--color-neutral-900);
+		--text-accent: var(--color-accent-400);
+		--text-error: var(--color-error-500);
+
+		/* Borders */
+		--border-subtle: var(--color-neutral-800);
+		--border-default: var(--color-neutral-700);
+		--border-strong: var(--color-neutral-600);
+		--border-focus: var(--color-accent-500);
+		--border-error: var(--color-error-500);
+
+		/* Interactive states */
+		--interactive-default: var(--color-accent-500);
+		--interactive-hover: var(--color-accent-400);
+		--interactive-active: var(--color-accent-300);
+		--interactive-muted: rgba(47, 138, 247, 0.12);
+		--interactive-muted-hover: rgba(47, 138, 247, 0.18);
+
+		/* Selection */
+		--selection-bg: rgba(47, 138, 247, 0.25);
+		--selection-bg-muted: rgba(47, 138, 247, 0.12);
+
+		/* Feedback */
+		--feedback-error-bg: rgba(239, 68, 68, 0.12);
+
+		/* Shadows - more subtle in dark mode */
+		--shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
+		--shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.25), 0 1px 2px rgba(0, 0, 0, 0.15);
+		--shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px
+			rgba(0, 0, 0, 0.2);
+		--shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.35), 0 4px 6px -2px
+			rgba(0, 0, 0, 0.25);
+
+		/* Scrollbar */
+		--scrollbar-thumb: var(--color-neutral-700);
+		--scrollbar-thumb-hover: var(--color-neutral-600);
+	}
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   COMPONENT TOKENS
+   Specific component values
+   ───────────────────────────────────────────────────────────────────────────── */
+:root {
+	/* Sidebar */
+	--sidebar-width: 260px;
+	--sidebar-min-width: 200px;
+	--sidebar-bg: var(--surface-secondary);
+	--sidebar-border: var(--border-subtle);
+
+	/* Header */
+	--header-height: 42px;
+	--header-bg: var(--surface-overlay);
+	--header-border: var(--border-subtle);
+
+	/* Buttons */
+	--button-height-sm: 26px;
+	--button-height-md: 30px;
+	--button-height-lg: 36px;
+	--button-radius: var(--radius-md);
+	--button-font-size: var(--text-sm);
+	--button-font-weight: var(--font-medium);
+
+	/* Inputs */
+	--input-height: 30px;
+	--input-radius: var(--radius-md);
+	--input-border: var(--border-default);
+	--input-bg: var(--surface-secondary);
+
+	/* Lists */
+	--list-item-height: 28px;
+	--list-item-padding-x: var(--space-3);
+	--list-item-radius: var(--radius-md);
+
+	/* Panes */
+	--pane-header-height: 36px;
+	--pane-padding: var(--space-3);
+
+	/* Canvas nodes */
+	--node-radius: var(--radius-lg);
+	--node-border: var(--border-default);
+	--node-bg: var(--surface-elevated);
+	--node-shadow: var(--shadow-sm);
+}

@@ -10,8 +10,8 @@ import {
 } from "react";
 import "./App.css";
 import { listen } from "@tauri-apps/api/event";
-import { CanvasesPane } from "./components/CanvasesPane";
 import { AIPane, type SelectedCanvasNode } from "./components/AIPane";
+import { CanvasesPane } from "./components/CanvasesPane";
 import { NoteEditor } from "./components/NoteEditor";
 import { NotesPane } from "./components/NotesPane";
 import { SearchPane } from "./components/SearchPane";

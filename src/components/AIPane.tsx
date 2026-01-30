@@ -1,11 +1,13 @@
 import { listen } from "@tauri-apps/api/event";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
-	invoke,
 	type AiMessage,
 	type AiProfile,
 	TauriInvokeError,
+	invoke,
 } from "../lib/tauri";
+
+type ChatMessage = AiMessage & { id: string };
 
 export interface SelectedCanvasNode {
 	id: string;
@@ -51,7 +53,7 @@ export function AIPane({
 	const [includeSelectedNodes, setIncludeSelectedNodes] = useState(true);
 	const [charBudget, setCharBudget] = useState(8000);
 
-	const [chatMessages, setChatMessages] = useState<AiMessage[]>([]);
+	const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
 	const [input, setInput] = useState("");
 	const [jobId, setJobId] = useState<string | null>(null);
 	const [streaming, setStreaming] = useState(false);
@@ -292,19 +294,29 @@ export function AIPane({
 			if (!userText.trim()) return;
 			setChatError("");
 			setActionError("");
-			const nextUser: AiMessage = { role: "user", content: userText.trim() };
+			const nextUser: ChatMessage = {
+				id: crypto.randomUUID(),
+				role: "user",
+				content: userText.trim(),
+			};
 			streamingTextRef.current = "";
 			setChatMessages((prev) => [
 				...prev,
 				nextUser,
-				{ role: "assistant", content: "" },
+				{ id: crypto.randomUUID(), role: "assistant", content: "" },
 			]);
 			setStreaming(true);
 			try {
+				const messagesForRequest: AiMessage[] = [...chatMessages, nextUser].map(
+					(m) => ({
+						role: m.role,
+						content: m.content,
+					}),
+				);
 				const res = await invoke("ai_chat_start", {
 					request: {
 						profile_id: activeProfileId,
-						messages: [...chatMessages, nextUser],
+						messages: messagesForRequest,
 						context: (contextOverride ?? contextPreview) || undefined,
 					},
 				});
@@ -607,12 +619,8 @@ export function AIPane({
 
 			<div className="aiChat">
 				<div className="aiChatMessages">
-					{chatMessages.map((m, idx) => (
-						<div
-							// eslint-disable-next-line react/no-array-index-key
-							key={idx}
-							className={`aiChatMsg aiChatMsg-${m.role}`}
-						>
+					{chatMessages.map((m) => (
+						<div key={m.id} className={`aiChatMsg aiChatMsg-${m.role}`}>
 							<div className="aiChatRole">{m.role}</div>
 							<div className="aiChatContent mono">{m.content}</div>
 						</div>

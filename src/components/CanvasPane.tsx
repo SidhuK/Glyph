@@ -1,25 +1,25 @@
 import "@xyflow/react/dist/style.css";
 
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { join } from "@tauri-apps/api/path";
 import {
-	ReactFlow,
 	Background,
+	type Connection,
 	Controls,
+	type Edge,
 	Handle,
 	MiniMap,
+	type Node,
+	type NodeMouseHandler,
 	NodeResizer,
+	Position,
+	ReactFlow,
+	type ReactFlowInstance,
 	addEdge,
 	useEdgesState,
 	useNodesState,
-	type ReactFlowInstance,
-	type Connection,
-	type Edge,
-	type Node,
-	type NodeMouseHandler,
-	Position,
 } from "@xyflow/react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { invoke } from "../lib/tauri";
 
 export type CanvasNode = Node<Record<string, unknown>>;
@@ -159,6 +159,7 @@ export default function CanvasPane({
 		doc?.edges ?? [],
 	);
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: Only reset local state when switching canvases (by id), not on every doc update.
 	useEffect(() => {
 		setSaveError("");
 		if (!doc) {
@@ -175,7 +176,6 @@ export default function CanvasPane({
 			nodes: doc.nodes ?? [],
 			edges: doc.edges ?? [],
 		});
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [doc?.id]);
 
 	useEffect(() => {
@@ -566,11 +566,11 @@ export default function CanvasPane({
 					? a.position.x - b.position.x
 					: a.position.y - b.position.y,
 			);
-			const min = axis === "x" ? sorted[0]!.position.x : sorted[0]!.position.y;
-			const max =
-				axis === "x"
-					? sorted[sorted.length - 1]!.position.x
-					: sorted[sorted.length - 1]!.position.y;
+			const first = sorted[0];
+			const last = sorted[sorted.length - 1];
+			if (!first || !last) return;
+			const min = axis === "x" ? first.position.x : first.position.y;
+			const max = axis === "x" ? last.position.x : last.position.y;
 			const step = (max - min) / (sorted.length - 1);
 
 			const positions = new Map<string, number>();
@@ -643,7 +643,8 @@ export default function CanvasPane({
 		const past = pastRef.current;
 		if (!past.length) return;
 		applyingHistoryRef.current = true;
-		const previous = past.pop()!;
+		const previous = past.pop();
+		if (!previous) return;
 		futureRef.current.push(structuredClone({ nodes, edges }));
 		setNodes(previous.nodes);
 		setEdges(previous.edges);
@@ -658,7 +659,8 @@ export default function CanvasPane({
 		const future = futureRef.current;
 		if (!future.length) return;
 		applyingHistoryRef.current = true;
-		const next = future.pop()!;
+		const next = future.pop();
+		if (!next) return;
 		pastRef.current.push(structuredClone({ nodes, edges }));
 		setNodes(next.nodes);
 		setEdges(next.edges);

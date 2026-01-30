@@ -164,9 +164,10 @@ function errorMessage(raw: unknown): string {
 	if (raw instanceof Error) return raw.message;
 	if (typeof raw === "string") return raw;
 	if (raw && typeof raw === "object") {
-		const maybeMessage = (raw as Record<string, unknown>)["message"];
+		const obj = raw as { message?: unknown; error?: unknown };
+		const maybeMessage = obj.message;
 		if (typeof maybeMessage === "string") return maybeMessage;
-		const maybeError = (raw as Record<string, unknown>)["error"];
+		const maybeError = obj.error;
 		if (typeof maybeError === "string") return maybeError;
 	}
 	return "Unknown error";
