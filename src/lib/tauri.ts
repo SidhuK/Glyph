@@ -1,4 +1,5 @@
 import { invoke as tauriInvoke } from "@tauri-apps/api/core";
+import type { Edge, Node } from "@xyflow/react";
 
 export interface AppInfo {
   name: string;
@@ -28,6 +29,24 @@ export interface AttachmentResult {
   markdown: string;
 }
 
+export interface CanvasMeta {
+  id: string;
+  title: string;
+  updated: string;
+}
+
+export type CanvasNode = Node<Record<string, unknown>, string>;
+export type CanvasEdge = Edge<Record<string, unknown>>;
+
+export interface CanvasDoc {
+  version: number;
+  id: string;
+  title: string;
+  updated: string;
+  nodes: CanvasNode[];
+  edges: CanvasEdge[];
+}
+
 type CommandDef<Args, Result> = { args: Args; result: Result };
 
 interface TauriCommands {
@@ -43,6 +62,11 @@ interface TauriCommands {
   note_write: CommandDef<{ id: string; markdown: string }, void>;
   note_delete: CommandDef<{ id: string }, void>;
   note_attach_file: CommandDef<{ note_id: string; source_path: string }, AttachmentResult>;
+
+  canvas_list: CommandDef<void, CanvasMeta[]>;
+  canvas_create: CommandDef<{ title: string }, CanvasMeta>;
+  canvas_read: CommandDef<{ id: string }, CanvasDoc>;
+  canvas_write: CommandDef<{ doc: Omit<CanvasDoc, "updated"> }, CanvasDoc>;
 }
 
 export class TauriInvokeError extends Error {

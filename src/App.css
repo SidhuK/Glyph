@@ -102,6 +102,13 @@ button {
   display: flex;
 }
 
+.appMain {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+}
+
 .appSidebar {
   width: 360px;
   min-width: 280px;
@@ -213,7 +220,9 @@ button {
 }
 
 .editorPane {
-  flex: 1;
+  width: 440px;
+  max-width: 50%;
+  flex: 0 0 auto;
   min-width: 0;
   min-height: 0;
   display: flex;
@@ -247,6 +256,144 @@ button {
 .editorBody {
   flex: 1;
   min-height: 0;
+}
+
+/* Canvases */
+.canvasesPane {
+  height: 240px;
+  min-height: 180px;
+  display: flex;
+  flex-direction: column;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.canvasesPaneHeader {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 12px;
+}
+
+.canvasesPaneTitle {
+  margin: 0;
+  font-size: 14px;
+}
+
+.canvasesList {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  overflow: auto;
+  min-height: 0;
+}
+
+.canvasesListItem {
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.canvasesListItem.active {
+  background: rgba(57, 108, 216, 0.10);
+}
+
+.canvasesListButton {
+  width: 100%;
+  text-align: left;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  border: none;
+  padding: 10px 12px;
+}
+
+.canvasesListTitle {
+  font-weight: 600;
+  margin-bottom: 2px;
+}
+
+.canvasesListMeta {
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.canvasPane {
+  flex: 1;
+  min-width: 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  border-right: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.canvasToolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.canvasToolbarLeft {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+
+.canvasTitle {
+  font-weight: 700;
+}
+
+.canvasStatus {
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.canvasToolbarRight {
+  display: flex;
+  gap: 8px;
+}
+
+.canvasBody {
+  flex: 1;
+  min-height: 0;
+}
+
+.canvasEmpty {
+  padding: 16px;
+  opacity: 0.75;
+}
+
+.canvasError {
+  padding: 10px 12px;
+  color: #b00020;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(176, 0, 32, 0.06);
+}
+
+/* ReactFlow nodes */
+.rfNode {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  background: rgba(255, 255, 255, 0.9);
+  max-width: 240px;
+}
+
+.rfNodeTitle {
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.rfNodeSub {
+  font-size: 12px;
+  opacity: 0.75;
+}
+
+.rfNodeBody {
+  font-size: 12px;
+  opacity: 0.85;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 .editorEmpty {
@@ -305,6 +452,24 @@ button {
 
   .notesListItem.active {
     background: rgba(36, 200, 219, 0.12);
+  }
+
+  .canvasesListItem.active {
+    background: rgba(36, 200, 219, 0.12);
+  }
+
+  .canvasPane {
+    border-right-color: rgba(255, 255, 255, 0.12);
+  }
+
+  .canvasToolbar {
+    border-bottom-color: rgba(255, 255, 255, 0.12);
+    background: rgba(0, 0, 0, 0.28);
+  }
+
+  .rfNode {
+    border-color: rgba(255, 255, 255, 0.14);
+    background: rgba(0, 0, 0, 0.28);
   }
 
   .editorError,

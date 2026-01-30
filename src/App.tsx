@@ -1,10 +1,21 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { open } from "@tauri-apps/plugin-dialog";
 import "./App.css";
-import { type AppInfo, type NoteDoc, type NoteMeta, TauriInvokeError, invoke } from "./lib/tauri";
+import {
+  type AppInfo,
+  type CanvasDoc,
+  type CanvasMeta,
+  type NoteDoc,
+  type NoteMeta,
+  TauriInvokeError,
+  invoke,
+} from "./lib/tauri";
 import { loadSettings, setCurrentVaultPath } from "./lib/settings";
 import { NotesPane } from "./components/NotesPane";
 import { NoteEditor } from "./components/NoteEditor";
+import { CanvasesPane } from "./components/CanvasesPane";
+
+const CanvasPane = lazy(() => import("./components/CanvasPane"));
 
 function App() {
   const [info, setInfo] = useState<AppInfo | null>(null);
@@ -16,14 +27,24 @@ function App() {
   const [notes, setNotes] = useState<NoteMeta[]>([]);
   const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
   const [activeDoc, setActiveDoc] = useState<NoteDoc | null>(null);
+  const [canvases, setCanvases] = useState<CanvasMeta[]>([]);
+  const [activeCanvasId, setActiveCanvasId] = useState<string | null>(null);
+  const [activeCanvasDoc, setActiveCanvasDoc] = useState<CanvasDoc | null>(null);
   const noteLoadSeq = useRef(0);
   const activeNoteIdRef = useRef<string | null>(null);
   const notesRef = useRef<NoteMeta[]>([]);
+  const canvasLoadSeq = useRef(0);
 
   const versionLabel = useMemo(() => {
     if (!info) return "";
     return `${info.name} • v${info.version}`;
   }, [info]);
+
+  const activeNoteTitle = useMemo(() => {
+    if (!activeNoteId) return null;
+    const meta = notes.find((n) => n.id === activeNoteId);
+    return meta?.title ?? null;
+  }, [activeNoteId, notes]);
 
   useEffect(() => {
     let cancelled = false;
@@ -104,11 +125,21 @@ function App() {
       setNotes([]);
       setActiveNoteId(null);
       setActiveDoc(null);
-      const list = await invoke("notes_list");
-      setNotes(list);
-      if (list[0]?.id) {
-        setActiveNoteId(list[0].id);
+      setCanvases([]);
+      setActiveCanvasId(null);
+      setActiveCanvasDoc(null);
+
+      const [notesList, canvasesList] = await Promise.all([invoke("notes_list"), invoke("canvas_list")]);
+      setNotes(notesList);
+      if (notesList[0]?.id) setActiveNoteId(notesList[0].id);
+
+      let nextCanvases = canvasesList;
+      if (!nextCanvases.length) {
+        const created = await invoke("canvas_create", { title: "Main" });
+        nextCanvases = [created];
       }
+      setCanvases(nextCanvases);
+      if (nextCanvases[0]?.id) setActiveCanvasId(nextCanvases[0].id);
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       setError(message);
@@ -160,6 +191,24 @@ function App() {
   }, [vaultPath]);
 
   useEffect(() => {
+    if (!vaultPath) return;
+    let cancelled = false;
+    (async () => {
+      try {
+        const list = await invoke("canvas_list");
+        if (cancelled) return;
+        setCanvases(list);
+        if (!activeCanvasId && list[0]?.id) setActiveCanvasId(list[0].id);
+      } catch (e) {
+        if (!cancelled) setError(e instanceof Error ? e.message : String(e));
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [activeCanvasId, vaultPath]);
+
+  useEffect(() => {
     if (!activeNoteId) {
       setActiveDoc(null);
       return;
@@ -177,6 +226,25 @@ function App() {
       }
     })();
   }, [activeNoteId]);
+
+  useEffect(() => {
+    if (!activeCanvasId) {
+      setActiveCanvasDoc(null);
+      return;
+    }
+    const seq = ++canvasLoadSeq.current;
+    setActiveCanvasDoc(null);
+    (async () => {
+      try {
+        const doc = await invoke("canvas_read", { id: activeCanvasId });
+        if (seq !== canvasLoadSeq.current) return;
+        setActiveCanvasDoc(doc);
+      } catch (e) {
+        if (seq !== canvasLoadSeq.current) return;
+        setError(e instanceof Error ? e.message : String(e));
+      }
+    })();
+  }, [activeCanvasId]);
 
   const onCreateNote = useCallback(async () => {
     try {
@@ -236,6 +304,27 @@ function App() {
     return res.markdown;
   }, [activeNoteId, refreshNotes]);
 
+  const onCreateCanvas = useCallback(async () => {
+    try {
+      const created = await invoke("canvas_create", { title: "Canvas" });
+      setCanvases((prev) => [created, ...prev]);
+      setActiveCanvasId(created.id);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : String(e));
+    }
+  }, []);
+
+  const onSaveCanvas = useCallback(
+    async (doc: { version: number; id: string; title: string; nodes: CanvasDoc["nodes"]; edges: CanvasDoc["edges"] }) => {
+      const saved = await invoke("canvas_write", { doc });
+      setActiveCanvasDoc(saved);
+      setCanvases((prev) =>
+        prev.map((c) => (c.id === saved.id ? { ...c, title: saved.title, updated: saved.updated } : c)),
+      );
+    },
+    [],
+  );
+
   return (
     <div className="appShell">
       <header className="appHeader">
@@ -284,9 +373,37 @@ function App() {
             onCreateNote={onCreateNote}
             onDeleteNote={onDeleteNote}
           />
+
+          <CanvasesPane
+            canvases={canvases}
+            activeCanvasId={activeCanvasId}
+            onSelectCanvas={setActiveCanvasId}
+            onCreateCanvas={onCreateCanvas}
+          />
         </div>
 
-        <NoteEditor doc={activeDoc} onChangeMarkdown={onChangeMarkdown} onSave={onSaveMarkdown} onAttachFile={onAttachFile} />
+        <div className="appMain">
+          <Suspense fallback={<div className="canvasEmpty">Loading canvas…</div>}>
+            <CanvasPane
+              doc={
+                activeCanvasDoc
+                  ? {
+                      version: activeCanvasDoc.version,
+                      id: activeCanvasDoc.id,
+                      title: activeCanvasDoc.title,
+                      nodes: activeCanvasDoc.nodes,
+                      edges: activeCanvasDoc.edges,
+                    }
+                  : null
+              }
+              onSave={onSaveCanvas}
+              onOpenNote={(id) => setActiveNoteId(id)}
+              activeNoteId={activeNoteId}
+              activeNoteTitle={activeNoteTitle}
+            />
+          </Suspense>
+          <NoteEditor doc={activeDoc} onChangeMarkdown={onChangeMarkdown} onSave={onSaveMarkdown} onAttachFile={onAttachFile} />
+        </div>
       </div>
 
       {error ? <div className="appError">{error}</div> : null}
