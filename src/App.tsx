@@ -12,6 +12,7 @@ import "./App.css";
 import { listen } from "@tauri-apps/api/event";
 import { AIPane, type SelectedCanvasNode } from "./components/AIPane";
 import { CanvasesPane } from "./components/CanvasesPane";
+import type { CanvasExternalCommand, CanvasNode } from "./components/CanvasPane";
 import {
 	FolderOpen,
 	FolderPlus,
@@ -62,6 +63,9 @@ function App() {
 	const [selectedCanvasNodes, setSelectedCanvasNodes] = useState<
 		SelectedCanvasNode[]
 	>([]);
+	const [canvasCommand, setCanvasCommand] = useState<CanvasExternalCommand | null>(
+		null,
+	);
 	const [backlinks, setBacklinks] = useState<BacklinkItem[]>([]);
 	const [backlinksError, setBacklinksError] = useState("");
 	const [showAiPanel, setShowAiPanel] = useState(false);
@@ -391,12 +395,13 @@ function App() {
 	}, []);
 
 	const createNoteFromMarkdown = useCallback(
-		async (title: string, markdown: string) => {
-			if (!vaultPath) return;
+		async (title: string, markdown: string): Promise<NoteMeta | null> => {
+			if (!vaultPath) return null;
 			const meta = await invoke("note_create", { title: title || "Untitled" });
 			await invoke("note_write", { id: meta.id, markdown, base_etag: null });
 			await refreshNotes();
 			setActiveNoteId(meta.id);
+			return meta;
 		},
 		[refreshNotes, vaultPath],
 	);
@@ -493,7 +498,7 @@ function App() {
 	}, [activeNoteId, refreshNotes]);
 
 	const onCanvasSelectionChange = useCallback(
-		(selected: import("./components/CanvasPane").CanvasNode[]) => {
+		(selected: CanvasNode[]) => {
 			setSelectedCanvasNodes(
 				selected.map((n) => ({
 					id: n.id,
@@ -504,6 +509,19 @@ function App() {
 		},
 		[],
 	);
+
+	const addCanvasNoteNode = useCallback((noteId: string, title: string) => {
+		setCanvasCommand({
+			id: crypto.randomUUID(),
+			kind: "add_note_node",
+			noteId,
+			title,
+		});
+	}, []);
+
+	const addCanvasTextNode = useCallback((text: string) => {
+		setCanvasCommand({ id: crypto.randomUUID(), kind: "add_text_node", text });
+	}, []);
 
 	const onCreateCanvas = useCallback(async () => {
 		try {
@@ -698,6 +716,10 @@ function App() {
 							activeNoteTitle={activeNoteTitle}
 							vaultPath={vaultPath}
 							onSelectionChange={onCanvasSelectionChange}
+							externalCommand={canvasCommand}
+							onExternalCommandHandled={(id) => {
+								setCanvasCommand((prev) => (prev?.id === id ? null : prev));
+							}}
 						/>
 					</Suspense>
 
@@ -719,14 +741,17 @@ function App() {
 								</button>
 							</div>
 							<div className="floatingPanelBody">
-								<AIPane
-									activeNoteId={activeNoteId}
-									activeNoteTitle={activeNoteTitle}
-									activeNoteMarkdown={activeDoc?.markdown ?? null}
-									selectedCanvasNodes={selectedCanvasNodes}
-									onApplyToActiveNote={onForceSaveMarkdown}
-									onCreateNoteFromMarkdown={createNoteFromMarkdown}
-								/>
+									<AIPane
+										activeNoteId={activeNoteId}
+										activeNoteTitle={activeNoteTitle}
+										activeNoteMarkdown={activeDoc?.markdown ?? null}
+										selectedCanvasNodes={selectedCanvasNodes}
+										canvasDoc={activeCanvasDoc}
+										onApplyToActiveNote={onForceSaveMarkdown}
+										onCreateNoteFromMarkdown={createNoteFromMarkdown}
+										onAddCanvasNoteNode={addCanvasNoteNode}
+										onAddCanvasTextNode={addCanvasTextNode}
+									/>
 							</div>
 						</div>
 					)}

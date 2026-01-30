@@ -3,6 +3,7 @@ mod canvas;
 mod ai;
 mod index;
 mod links;
+mod net;
 mod paths;
 mod notes;
 mod vault;
@@ -69,6 +70,8 @@ pub fn run() {
             ai::ai_profile_delete,
             ai::ai_secret_set,
             ai::ai_secret_clear,
+            ai::ai_secret_status,
+            ai::ai_audit_mark,
             ai::ai_chat_start,
             ai::ai_chat_cancel,
             canvas::canvas_list,

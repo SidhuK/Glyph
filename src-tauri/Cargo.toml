@@ -33,6 +33,10 @@ sha2 = "0.10"
 hex = "0.4"
 notify = "6"
 regex = "1"
-reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls", "json"] }
+reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls", "json", "stream"] }
 rusqlite = { version = "0.31", features = ["bundled"] }
 url = "2"
+futures-util = "0.3"
+tokio-util = "0.7"
+keyring = "2"
+tokio = { version = "1", features = ["macros", "rt", "time"] }

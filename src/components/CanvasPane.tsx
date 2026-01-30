@@ -57,7 +57,19 @@ interface CanvasPaneProps {
 	activeNoteTitle: string | null;
 	vaultPath: string | null;
 	onSelectionChange?: (selected: CanvasNode[]) => void;
+	externalCommand?: CanvasExternalCommand | null;
+	onExternalCommandHandled?: (id: string) => void;
 }
+
+export type CanvasExternalCommand =
+	| {
+			id: string;
+			kind: "add_note_node";
+			noteId: string;
+			title: string;
+	  }
+	| { id: string; kind: "add_text_node"; text: string }
+	| { id: string; kind: "add_link_node"; url: string };
 
 const NoteNode = memo(function NoteNode({
 	data,
@@ -144,6 +156,8 @@ export default function CanvasPane({
 	activeNoteTitle,
 	vaultPath,
 	onSelectionChange,
+	externalCommand,
+	onExternalCommandHandled,
 }: CanvasPaneProps) {
 	const wrapperRef = useRef<HTMLDivElement | null>(null);
 	const flowRef = useRef<ReactFlowInstance<CanvasNode, CanvasEdge> | null>(
@@ -408,6 +422,53 @@ export default function CanvasPane({
 		},
 		[flowCenter, setNodes, vaultPath],
 	);
+
+	useEffect(() => {
+		if (!doc) return;
+		if (!externalCommand) return;
+		if (externalCommand.kind === "add_note_node") {
+			const pos = flowCenter();
+			setNodes((prev) => [
+				...prev,
+				{
+					id: crypto.randomUUID(),
+					type: "note",
+					position: pos,
+					data: {
+						noteId: externalCommand.noteId,
+						title: externalCommand.title || "Note",
+					},
+				},
+			]);
+			onExternalCommandHandled?.(externalCommand.id);
+			return;
+		}
+		if (externalCommand.kind === "add_text_node") {
+			const pos = flowCenter();
+			setNodes((prev) => [
+				...prev,
+				{
+					id: crypto.randomUUID(),
+					type: "text",
+					position: pos,
+					data: { text: externalCommand.text },
+				},
+			]);
+			onExternalCommandHandled?.(externalCommand.id);
+			return;
+		}
+		if (externalCommand.kind === "add_link_node") {
+			createLinkNode(externalCommand.url, flowCenter());
+			onExternalCommandHandled?.(externalCommand.id);
+		}
+	}, [
+		createLinkNode,
+		doc,
+		externalCommand,
+		flowCenter,
+		onExternalCommandHandled,
+		setNodes,
+	]);
 
 	const onAddLink = useCallback(() => {
 		const url = window.prompt("Link URL:", "https://");

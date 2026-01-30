@@ -647,6 +647,107 @@ textarea {
 	width: 100%;
 }
 
+.aiRow {
+	display: flex;
+	gap: var(--space-2);
+	align-items: center;
+	flex-wrap: wrap;
+}
+
+.aiLabel {
+	min-width: 74px;
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
+}
+
+.aiToggle {
+	display: inline-flex;
+	gap: var(--space-1);
+	align-items: center;
+	font-size: var(--text-xs);
+	color: var(--text-secondary);
+}
+
+.aiContextPreview {
+	width: 100%;
+	min-height: 120px;
+	margin-top: var(--space-2);
+	padding: var(--space-2);
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-md);
+	background: var(--bg-primary);
+	color: var(--text-primary);
+	resize: vertical;
+}
+
+.aiManifest {
+	margin: var(--space-2) 0 0;
+	padding-left: 18px;
+	max-height: 160px;
+	overflow-y: auto;
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
+}
+
+.aiDiff {
+	margin-top: var(--space-2);
+	padding: var(--space-2);
+	max-height: 220px;
+	overflow: auto;
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-md);
+	background: var(--bg-primary);
+	color: var(--text-primary);
+	font-size: var(--text-xs);
+	line-height: var(--leading-relaxed);
+	white-space: pre;
+}
+
+.aiChatMessages {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-2);
+}
+
+.aiChatMsg {
+	padding: var(--space-2);
+	border-radius: var(--radius-lg);
+	background: var(--bg-tertiary);
+}
+
+.aiChatMsg-user {
+	background: var(--selection-bg-muted);
+}
+
+.aiChatRole {
+	font-size: var(--text-2xs);
+	font-weight: var(--font-semibold);
+	color: var(--text-tertiary);
+	margin-bottom: 2px;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+.aiChatContent {
+	font-size: var(--text-sm);
+	line-height: var(--leading-relaxed);
+	color: var(--text-primary);
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.aiChatActions {
+	display: flex;
+	gap: var(--space-1);
+}
+
+.aiActions {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-2);
+	margin-bottom: var(--space-2);
+}
+
 .aiContext {
 	padding: var(--space-2);
 	margin-bottom: var(--space-2);

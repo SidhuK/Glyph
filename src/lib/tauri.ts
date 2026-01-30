@@ -83,7 +83,18 @@ export interface LinkPreview {
 	ok: boolean;
 }
 
-export type AiProviderKind = "openai" | "openai_compat";
+export type AiProviderKind =
+	| "openai"
+	| "openai_compat"
+	| "openrouter"
+	| "anthropic"
+	| "gemini"
+	| "ollama";
+
+export interface AiHeader {
+	key: string;
+	value: string;
+}
 
 export interface AiProfile {
 	id: string;
@@ -91,6 +102,8 @@ export interface AiProfile {
 	provider: AiProviderKind;
 	model: string;
 	base_url: string | null;
+	headers: AiHeader[];
+	allow_private_hosts: boolean;
 }
 
 export interface AiMessage {
@@ -141,9 +154,17 @@ interface TauriCommands {
 	ai_profile_delete: CommandDef<{ id: string }, void>;
 	ai_secret_set: CommandDef<{ profile_id: string; api_key: string }, void>;
 	ai_secret_clear: CommandDef<{ profile_id: string }, void>;
+	ai_secret_status: CommandDef<{ profile_id: string }, boolean>;
+	ai_audit_mark: CommandDef<{ job_id: string; outcome: string }, void>;
 	ai_chat_start: CommandDef<
 		{
-			request: { profile_id: string; messages: AiMessage[]; context?: string };
+			request: {
+				profile_id: string;
+				messages: AiMessage[];
+				context?: string;
+				context_manifest?: unknown;
+				audit?: boolean;
+			};
 		},
 		AiChatStartResult
 	>;
