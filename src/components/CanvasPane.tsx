@@ -778,87 +778,109 @@ export default function CanvasPane({
 					)}
 				</div>
 				<div className="canvasToolbarRight">
-					<button type="button" onClick={onAddText}>
-						Add text
+					<button type="button" onClick={onAddText} title="Add text block">
+						+ Text
 					</button>
-					<button type="button" onClick={onAddLink}>
-						Add link
+					<button type="button" onClick={onAddLink} title="Add link">
+						+ Link
+					</button>
+					<button
+						type="button"
+						onClick={onAddNote}
+						disabled={!activeNoteId}
+						title="Add current note to canvas"
+					>
+						+ Note
 					</button>
 					<button
 						type="button"
 						onClick={onRefreshSelectedLink}
 						disabled={!selectedLinkNode}
+						title="Refresh selected link preview"
 					>
-						Refresh link
+						↻ Refresh
 					</button>
-					<button type="button" onClick={onAddNote} disabled={!activeNoteId}>
-						Add note
-					</button>
+					<span className="toolbarDivider" />
 					<button
 						type="button"
 						onClick={onFrameSelection}
 						disabled={!selectedNodes.length}
+						title="Group selection in a frame"
 					>
-						Frame selection
+						Frame
 					</button>
-					<button type="button" onClick={onToggleSnap}>
-						{snapToGrid ? "Snap: on" : "Snap: off"}
+					<button
+						type="button"
+						onClick={onToggleSnap}
+						title="Toggle snap to grid"
+					>
+						{snapToGrid ? "⊞ Snap" : "⊟ Snap"}
 					</button>
+					<span className="toolbarDivider" />
 					<button
 						type="button"
 						onClick={() => applyAlign("left")}
 						disabled={selectedNodes.length < 2}
+						title="Align left"
 					>
-						Align left
-					</button>
-					<button
-						type="button"
-						onClick={() => applyAlign("right")}
-						disabled={selectedNodes.length < 2}
-					>
-						Align right
-					</button>
-					<button
-						type="button"
-						onClick={() => applyAlign("top")}
-						disabled={selectedNodes.length < 2}
-					>
-						Align top
-					</button>
-					<button
-						type="button"
-						onClick={() => applyAlign("bottom")}
-						disabled={selectedNodes.length < 2}
-					>
-						Align bottom
+						⇤
 					</button>
 					<button
 						type="button"
 						onClick={() => applyAlign("centerX")}
 						disabled={selectedNodes.length < 2}
+						title="Align center"
 					>
-						Align center
+						⇹
+					</button>
+					<button
+						type="button"
+						onClick={() => applyAlign("right")}
+						disabled={selectedNodes.length < 2}
+						title="Align right"
+					>
+						⇥
+					</button>
+					<button
+						type="button"
+						onClick={() => applyAlign("top")}
+						disabled={selectedNodes.length < 2}
+						title="Align top"
+					>
+						⤒
 					</button>
 					<button
 						type="button"
 						onClick={() => applyAlign("centerY")}
 						disabled={selectedNodes.length < 2}
+						title="Align middle"
 					>
-						Align middle
+						⇿
 					</button>
+					<button
+						type="button"
+						onClick={() => applyAlign("bottom")}
+						disabled={selectedNodes.length < 2}
+						title="Align bottom"
+					>
+						⤓
+					</button>
+					<span className="toolbarDivider" />
 					<button
 						type="button"
 						onClick={() => applyDistribute("x")}
 						disabled={selectedNodes.length < 3}
+						title="Distribute horizontally"
 					>
-						Distribute X
+						⋯
 					</button>
 					<button
 						type="button"
 						onClick={() => applyDistribute("y")}
 						disabled={selectedNodes.length < 3}
+						title="Distribute vertically"
 					>
-						Distribute Y
+						⋮
 					</button>
 				</div>
 			</div>

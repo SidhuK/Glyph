@@ -20,8 +20,8 @@ export const NotesPane = memo(function NotesPane({
 		<aside className="notesPane">
 			<div className="notesPaneHeader">
 				<h2 className="notesPaneTitle">Notes</h2>
-				<button type="button" onClick={onCreateNote}>
-					New
+				<button type="button" className="sm" onClick={onCreateNote}>
+					+ New
 				</button>
 			</div>
 			<ul className="notesList">

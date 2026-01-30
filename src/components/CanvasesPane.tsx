@@ -18,8 +18,8 @@ export const CanvasesPane = memo(function CanvasesPane({
 		<aside className="canvasesPane">
 			<div className="canvasesPaneHeader">
 				<h2 className="canvasesPaneTitle">Canvases</h2>
-				<button type="button" onClick={onCreateCanvas}>
-					New
+				<button type="button" className="sm" onClick={onCreateCanvas}>
+					+ New
 				</button>
 			</div>
 			<ul className="canvasesList">

@@ -154,16 +154,31 @@ export const NoteEditor = memo(function NoteEditor({
 			<div className="editorHeader">
 				<div className="editorTitle">{doc.meta.title || "Untitled"}</div>
 				<div className="editorActions">
-					<button type="button" onClick={attach}>
-						Attach file
+					<button
+						type="button"
+						className="sm"
+						onClick={attach}
+						title="Attach a file to this note"
+					>
+						+ Attach
 					</button>
 					{isConflict ? (
 						<>
-							<button type="button" onClick={reloadFromDisk}>
-								Reload
+							<button
+								type="button"
+								className="sm"
+								onClick={reloadFromDisk}
+								title="Reload note from disk"
+							>
+								↻ Reload
 							</button>
-							<button type="button" onClick={overwriteDisk}>
-								Overwrite
+							<button
+								type="button"
+								className="sm"
+								onClick={overwriteDisk}
+								title="Overwrite disk with current content"
+							>
+								⇧ Overwrite
 							</button>
 						</>
 					) : null}

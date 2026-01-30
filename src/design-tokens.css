@@ -1,70 +1,68 @@
 /* ═══════════════════════════════════════════════════════════════════════════
    TETHER DESIGN SYSTEM
-   A minimal, professional design language inspired by Notion & Obsidian
+   Inspired by Notion & Obsidian - minimal, professional, content-focused
    ═══════════════════════════════════════════════════════════════════════════ */
 
 /* ─────────────────────────────────────────────────────────────────────────────
    PRIMITIVE TOKENS
-   Raw values - never use directly in components
    ───────────────────────────────────────────────────────────────────────────── */
 :root {
-	/* Neutral scale - warm grays for a softer feel */
-	--color-neutral-0: #ffffff;
-	--color-neutral-25: #fcfcfc;
-	--color-neutral-50: #fafafa;
-	--color-neutral-100: #f5f5f4;
-	--color-neutral-150: #ebebea;
-	--color-neutral-200: #e5e4e2;
-	--color-neutral-300: #d4d3d0;
-	--color-neutral-400: #a3a29e;
-	--color-neutral-500: #787774;
-	--color-neutral-600: #5c5b58;
-	--color-neutral-700: #454441;
-	--color-neutral-800: #2e2d2b;
-	--color-neutral-900: #1f1e1c;
-	--color-neutral-950: #141413;
+	/* Notion-inspired warm neutrals */
+	--color-white: #ffffff;
+	--color-gray-25: #fbfbfa;
+	--color-gray-50: #f7f6f3;
+	--color-gray-100: #f1f1ef;
+	--color-gray-150: #e9e9e7;
+	--color-gray-200: #e3e2e0;
+	--color-gray-300: #d3d2cf;
+	--color-gray-400: #9b9a97;
+	--color-gray-500: #787774;
+	--color-gray-600: #5f5e5b;
+	--color-gray-700: #454441;
+	--color-gray-800: #37352f;
+	--color-gray-900: #1f1f1f;
+	--color-gray-950: #191919;
 
-	/* Accent - subtle, understated blue */
-	--color-accent-50: #f0f7ff;
-	--color-accent-100: #e0efff;
-	--color-accent-200: #c2dfff;
-	--color-accent-300: #94c8ff;
-	--color-accent-400: #5eadff;
-	--color-accent-500: #2f8af7;
-	--color-accent-600: #1a6fd9;
-	--color-accent-700: #1558b0;
-	--color-accent-800: #164890;
-	--color-accent-900: #183d76;
+	/* Accent - Notion's signature blue */
+	--color-blue-50: #e8f4fc;
+	--color-blue-100: #d3ebfa;
+	--color-blue-200: #a8d8f5;
+	--color-blue-300: #6ab9eb;
+	--color-blue-400: #3b9bdc;
+	--color-blue-500: #2383c6;
+	--color-blue-600: #1a6ba4;
+	--color-blue-700: #155580;
 
 	/* Semantic colors */
-	--color-success-500: #22c55e;
-	--color-success-600: #16a34a;
-	--color-warning-500: #f59e0b;
-	--color-warning-600: #d97706;
-	--color-error-500: #ef4444;
-	--color-error-600: #dc2626;
+	--color-red-100: #fce8e8;
+	--color-red-500: #e03e3e;
+	--color-red-600: #c73838;
+	--color-green-100: #e6f6e9;
+	--color-green-500: #0f7b0f;
+	--color-yellow-100: #fbf3db;
+	--color-yellow-500: #dfab01;
+	--color-purple-100: #f3e8fd;
+	--color-purple-500: #9a6dd7;
 
-	/* Typography scale - Inter variable font with optical sizing */
-	--font-sans: "Inter", "Inter var", -apple-system, BlinkMacSystemFont,
-		"Segoe UI", system-ui, sans-serif;
-	--font-mono: "SF Mono", "Fira Code", "JetBrains Mono", ui-monospace,
-		SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+	/* Typography - Notion uses system fonts with Inter fallback */
+	--font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans",
+		Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji";
+	--font-serif: Lyon-Text, Georgia, ui-serif, serif;
+	--font-mono: iawriter-mono, Nitti, Menlo, Courier, monospace;
 
-	/* Inter font features for refined typography */
-	--font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-
-	/* Type scale - harmonic 1.25 ratio */
-	--text-xs: 0.75rem; /* 12px */
-	--text-sm: 0.8125rem; /* 13px */
-	--text-base: 0.875rem; /* 14px */
-	--text-md: 1rem; /* 16px */
-	--text-lg: 1.125rem; /* 18px */
-	--text-xl: 1.25rem; /* 20px */
-	--text-2xl: 1.5rem; /* 24px */
+	/* Type scale */
+	--text-xs: 11px;
+	--text-sm: 12px;
+	--text-base: 14px;
+	--text-md: 16px;
+	--text-lg: 18px;
+	--text-xl: 20px;
+	--text-2xl: 24px;
+	--text-3xl: 30px;
 
 	/* Line heights */
-	--leading-tight: 1.25;
-	--leading-snug: 1.375;
+	--leading-tight: 1.2;
+	--leading-snug: 1.35;
 	--leading-normal: 1.5;
 	--leading-relaxed: 1.625;
 
@@ -72,205 +70,171 @@
 	--font-normal: 400;
 	--font-medium: 500;
 	--font-semibold: 600;
+	--font-bold: 700;
 
-	/* Spacing scale - 4px base */
+	/* Spacing - 4px base grid (Notion uses 8px, but 4px gives more flexibility) */
 	--space-0: 0;
-	--space-0-5: 0.125rem; /* 2px */
-	--space-1: 0.25rem; /* 4px */
-	--space-1-5: 0.375rem; /* 6px */
-	--space-2: 0.5rem; /* 8px */
-	--space-2-5: 0.625rem; /* 10px */
-	--space-3: 0.75rem; /* 12px */
-	--space-4: 1rem; /* 16px */
-	--space-5: 1.25rem; /* 20px */
-	--space-6: 1.5rem; /* 24px */
-	--space-8: 2rem; /* 32px */
-	--space-10: 2.5rem; /* 40px */
-	--space-12: 3rem; /* 48px */
+	--space-1: 4px;
+	--space-2: 8px;
+	--space-3: 12px;
+	--space-4: 16px;
+	--space-5: 20px;
+	--space-6: 24px;
+	--space-8: 32px;
+	--space-10: 40px;
+	--space-12: 48px;
 
-	/* Border radius */
-	--radius-sm: 4px;
-	--radius-md: 6px;
-	--radius-lg: 8px;
-	--radius-xl: 12px;
+	/* Border radius - Notion uses 3-4px for subtle, 8px for cards */
+	--radius-sm: 3px;
+	--radius-md: 4px;
+	--radius-lg: 6px;
+	--radius-xl: 8px;
 
-	/* Shadows - soft and minimal */
-	--shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.04);
-	--shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.06), 0 1px 2px rgba(0, 0, 0, 0.04);
-	--shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -1px
-		rgba(0, 0, 0, 0.04);
-	--shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.06), 0 4px 6px -2px
-		rgba(0, 0, 0, 0.03);
-	--shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+	/* Shadows - very subtle like Notion */
+	--shadow-sm: rgba(15, 15, 15, 0.03) 0px 0px 0px 1px, rgba(15, 15, 15, 0.04)
+		0px 3px 6px;
+	--shadow-md:
+		rgba(15, 15, 15, 0.04) 0px 0px 0px 1px, rgba(15, 15, 15, 0.08) 0px 3px 6px, rgba(
+			15,
+			15,
+			15,
+			0.06
+		) 0px 9px 24px;
+	--shadow-lg:
+		rgba(15, 15, 15, 0.04) 0px 0px 0px 1px, rgba(15, 15, 15, 0.1) 0px 5px 10px, rgba(
+			15,
+			15,
+			15,
+			0.08
+		) 0px 15px 40px;
 
 	/* Transitions */
-	--transition-fast: 100ms ease;
-	--transition-base: 150ms ease;
-	--transition-slow: 200ms ease;
-
-	/* Z-index scale */
-	--z-base: 0;
-	--z-dropdown: 100;
-	--z-sticky: 200;
-	--z-overlay: 300;
-	--z-modal: 400;
-	--z-popover: 500;
-	--z-tooltip: 600;
+	--transition-fast: 80ms ease-out;
+	--transition-base: 120ms ease-out;
+	--transition-slow: 200ms ease-out;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
    SEMANTIC TOKENS - LIGHT THEME
-   Contextual meaning - use these in components
    ───────────────────────────────────────────────────────────────────────────── */
 :root {
 	/* Surfaces */
-	--surface-primary: var(--color-neutral-50);
-	--surface-secondary: var(--color-neutral-0);
-	--surface-tertiary: var(--color-neutral-100);
-	--surface-elevated: var(--color-neutral-0);
-	--surface-overlay: rgba(255, 255, 255, 0.95);
-	--surface-sunken: var(--color-neutral-100);
+	--bg-primary: var(--color-white);
+	--bg-secondary: var(--color-gray-50);
+	--bg-tertiary: var(--color-gray-100);
+	--bg-hover: rgba(55, 53, 47, 0.08);
+	--bg-active: rgba(55, 53, 47, 0.16);
+	--bg-sidebar: var(--color-gray-50);
+	--bg-canvas: var(--color-gray-100);
 
 	/* Text */
-	--text-primary: var(--color-neutral-900);
-	--text-secondary: var(--color-neutral-600);
-	--text-tertiary: var(--color-neutral-500);
-	--text-placeholder: var(--color-neutral-400);
-	--text-disabled: var(--color-neutral-400);
-	--text-inverse: var(--color-neutral-0);
-	--text-accent: var(--color-accent-600);
-	--text-error: var(--color-error-600);
+	--text-primary: var(--color-gray-800);
+	--text-secondary: rgba(55, 53, 47, 0.65);
+	--text-tertiary: rgba(55, 53, 47, 0.45);
+	--text-placeholder: rgba(55, 53, 47, 0.35);
+	--text-inverse: var(--color-white);
+	--text-accent: var(--color-blue-600);
+	--text-error: var(--color-red-600);
 
 	/* Borders */
-	--border-subtle: var(--color-neutral-150);
-	--border-default: var(--color-neutral-200);
-	--border-strong: var(--color-neutral-300);
-	--border-focus: var(--color-accent-500);
-	--border-error: var(--color-error-500);
+	--border-light: rgba(55, 53, 47, 0.09);
+	--border-default: rgba(55, 53, 47, 0.16);
+	--border-strong: rgba(55, 53, 47, 0.24);
+	--border-focus: var(--color-blue-500);
 
-	/* Interactive states */
-	--interactive-default: var(--color-accent-600);
-	--interactive-hover: var(--color-accent-700);
-	--interactive-active: var(--color-accent-800);
-	--interactive-muted: var(--color-accent-50);
-	--interactive-muted-hover: var(--color-accent-100);
+	/* Interactive */
+	--interactive-hover: rgba(55, 53, 47, 0.08);
+	--interactive-active: rgba(55, 53, 47, 0.16);
+	--interactive-accent: var(--color-blue-500);
+	--interactive-accent-hover: var(--color-blue-600);
 
 	/* Selection */
-	--selection-bg: var(--color-accent-100);
-	--selection-bg-muted: rgba(47, 138, 247, 0.08);
+	--selection-bg: var(--color-blue-100);
+	--selection-bg-muted: rgba(35, 131, 226, 0.14);
 
 	/* Feedback */
-	--feedback-success: var(--color-success-600);
-	--feedback-warning: var(--color-warning-600);
-	--feedback-error: var(--color-error-600);
-	--feedback-error-bg: rgba(239, 68, 68, 0.08);
+	--feedback-error-bg: var(--color-red-100);
+	--feedback-success-bg: var(--color-green-100);
 
 	/* Scrollbar */
 	--scrollbar-track: transparent;
-	--scrollbar-thumb: var(--color-neutral-300);
-	--scrollbar-thumb-hover: var(--color-neutral-400);
+	--scrollbar-thumb: rgba(55, 53, 47, 0.16);
+	--scrollbar-thumb-hover: rgba(55, 53, 47, 0.28);
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   SEMANTIC TOKENS - DARK THEME
+   SEMANTIC TOKENS - DARK THEME (Obsidian-inspired)
    ───────────────────────────────────────────────────────────────────────────── */
 @media (prefers-color-scheme: dark) {
 	:root {
-		/* Surfaces */
-		--surface-primary: var(--color-neutral-950);
-		--surface-secondary: var(--color-neutral-900);
-		--surface-tertiary: var(--color-neutral-800);
-		--surface-elevated: var(--color-neutral-800);
-		--surface-overlay: rgba(20, 20, 19, 0.95);
-		--surface-sunken: var(--color-neutral-950);
+		/* Surfaces - Obsidian-like dark with warm undertones */
+		--bg-primary: #1e1e1e;
+		--bg-secondary: #252525;
+		--bg-tertiary: #2d2d2d;
+		--bg-hover: rgba(255, 255, 255, 0.055);
+		--bg-active: rgba(255, 255, 255, 0.1);
+		--bg-sidebar: #202020;
+		--bg-canvas: #1a1a1a;
 
 		/* Text */
-		--text-primary: var(--color-neutral-100);
-		--text-secondary: var(--color-neutral-400);
-		--text-tertiary: var(--color-neutral-500);
-		--text-placeholder: var(--color-neutral-600);
-		--text-disabled: var(--color-neutral-600);
-		--text-inverse: var(--color-neutral-900);
-		--text-accent: var(--color-accent-400);
-		--text-error: var(--color-error-500);
+		--text-primary: rgba(255, 255, 255, 0.9);
+		--text-secondary: rgba(255, 255, 255, 0.6);
+		--text-tertiary: rgba(255, 255, 255, 0.4);
+		--text-placeholder: rgba(255, 255, 255, 0.3);
+		--text-inverse: var(--color-gray-900);
+		--text-accent: var(--color-blue-400);
+		--text-error: var(--color-red-500);
 
 		/* Borders */
-		--border-subtle: var(--color-neutral-800);
-		--border-default: var(--color-neutral-700);
-		--border-strong: var(--color-neutral-600);
-		--border-focus: var(--color-accent-500);
-		--border-error: var(--color-error-500);
+		--border-light: rgba(255, 255, 255, 0.06);
+		--border-default: rgba(255, 255, 255, 0.1);
+		--border-strong: rgba(255, 255, 255, 0.16);
+		--border-focus: var(--color-blue-400);
 
-		/* Interactive states */
-		--interactive-default: var(--color-accent-500);
-		--interactive-hover: var(--color-accent-400);
-		--interactive-active: var(--color-accent-300);
-		--interactive-muted: rgba(47, 138, 247, 0.12);
-		--interactive-muted-hover: rgba(47, 138, 247, 0.18);
+		/* Interactive */
+		--interactive-hover: rgba(255, 255, 255, 0.055);
+		--interactive-active: rgba(255, 255, 255, 0.1);
+		--interactive-accent: var(--color-blue-400);
+		--interactive-accent-hover: var(--color-blue-300);
 
 		/* Selection */
-		--selection-bg: rgba(47, 138, 247, 0.25);
-		--selection-bg-muted: rgba(47, 138, 247, 0.12);
+		--selection-bg: rgba(35, 131, 226, 0.3);
+		--selection-bg-muted: rgba(35, 131, 226, 0.15);
 
 		/* Feedback */
-		--feedback-error-bg: rgba(239, 68, 68, 0.12);
-
-		/* Shadows - more subtle in dark mode */
-		--shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
-		--shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.25), 0 1px 2px rgba(0, 0, 0, 0.15);
-		--shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.3), 0 2px 4px -1px
-			rgba(0, 0, 0, 0.2);
-		--shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.35), 0 4px 6px -2px
-			rgba(0, 0, 0, 0.25);
+		--feedback-error-bg: rgba(224, 62, 62, 0.15);
+		--feedback-success-bg: rgba(15, 123, 15, 0.15);
 
 		/* Scrollbar */
-		--scrollbar-thumb: var(--color-neutral-700);
-		--scrollbar-thumb-hover: var(--color-neutral-600);
+		--scrollbar-thumb: rgba(255, 255, 255, 0.14);
+		--scrollbar-thumb-hover: rgba(255, 255, 255, 0.22);
+
+		/* Shadows - more subtle in dark mode */
+		--shadow-sm: rgba(0, 0, 0, 0.2) 0px 0px 0px 1px;
+		--shadow-md: rgba(0, 0, 0, 0.25) 0px 0px 0px 1px, rgba(0, 0, 0, 0.3) 0px 4px
+			12px;
+		--shadow-lg: rgba(0, 0, 0, 0.3) 0px 0px 0px 1px, rgba(0, 0, 0, 0.4) 0px 8px
+			24px;
 	}
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
    COMPONENT TOKENS
-   Specific component values
    ───────────────────────────────────────────────────────────────────────────── */
 :root {
-	/* Sidebar */
-	--sidebar-width: 260px;
-	--sidebar-min-width: 200px;
-	--sidebar-bg: var(--surface-secondary);
-	--sidebar-border: var(--border-subtle);
+	/* Layout - Notion's sidebar is 224px */
+	--sidebar-width: 240px;
+	--sidebar-collapsed-width: 0px;
+	--header-height: 44px;
+	--toolbar-height: 42px;
 
-	/* Header */
-	--header-height: 42px;
-	--header-bg: var(--surface-overlay);
-	--header-border: var(--border-subtle);
+	/* Interactive elements - Notion uses 28-32px heights */
+	--button-height: 28px;
+	--button-height-sm: 24px;
+	--input-height: 28px;
+	--list-item-height: 30px;
 
-	/* Buttons */
-	--button-height-sm: 26px;
-	--button-height-md: 30px;
-	--button-height-lg: 36px;
-	--button-radius: var(--radius-md);
-	--button-font-size: var(--text-sm);
-	--button-font-weight: var(--font-medium);
-
-	/* Inputs */
-	--input-height: 30px;
-	--input-radius: var(--radius-md);
-	--input-border: var(--border-default);
-	--input-bg: var(--surface-secondary);
-
-	/* Lists */
-	--list-item-height: 28px;
-	--list-item-padding-x: var(--space-3);
-	--list-item-radius: var(--radius-md);
-
-	/* Panes */
-	--pane-header-height: 36px;
-	--pane-padding: var(--space-3);
-
-	/* Canvas nodes */
-	--node-radius: var(--radius-lg);
-	--node-border: var(--border-default);
-	--node-bg: var(--surface-elevated);
-	--node-shadow: var(--shadow-sm);
+	/* Pane dimensions */
+	--editor-width: 360px;
+	--editor-min-width: 280px;
 }
