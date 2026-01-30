@@ -78,7 +78,28 @@ export interface LinkPreview {
 	title: string;
 	description: string;
 	image_url: string | null;
+	image_cache_rel_path: string | null;
 	fetched_at_ms: number;
+	ok: boolean;
+}
+
+export type AiProviderKind = "openai" | "openai_compat";
+
+export interface AiProfile {
+	id: string;
+	name: string;
+	provider: AiProviderKind;
+	model: string;
+	base_url: string | null;
+}
+
+export interface AiMessage {
+	role: string;
+	content: string;
+}
+
+export interface AiChatStartResult {
+	job_id: string;
 }
 
 type CommandDef<Args, Result> = { args: Args; result: Result };
@@ -111,7 +132,20 @@ interface TauriCommands {
 	index_rebuild: CommandDef<void, IndexRebuildResult>;
 	search: CommandDef<{ query: string }, SearchResult[]>;
 	backlinks: CommandDef<{ note_id: string }, BacklinkItem[]>;
-	link_preview: CommandDef<{ url: string }, LinkPreview>;
+	link_preview: CommandDef<{ url: string; force?: boolean }, LinkPreview>;
+
+	ai_profiles_list: CommandDef<void, AiProfile[]>;
+	ai_active_profile_get: CommandDef<void, string | null>;
+	ai_active_profile_set: CommandDef<{ id: string | null }, void>;
+	ai_profile_upsert: CommandDef<{ profile: AiProfile }, AiProfile>;
+	ai_profile_delete: CommandDef<{ id: string }, void>;
+	ai_secret_set: CommandDef<{ profile_id: string; api_key: string }, void>;
+	ai_secret_clear: CommandDef<{ profile_id: string }, void>;
+	ai_chat_start: CommandDef<
+		{ request: { profile_id: string; messages: AiMessage[]; context?: string } },
+		AiChatStartResult
+	>;
+	ai_chat_cancel: CommandDef<{ job_id: string }, void>;
 }
 
 export class TauriInvokeError extends Error {

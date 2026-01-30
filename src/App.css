@@ -225,6 +225,133 @@ button {
 	color: #b00020;
 }
 
+/* AI */
+.aiPane {
+	border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+	padding: 10px 12px;
+}
+
+.aiHeader {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	margin-bottom: 8px;
+}
+
+.aiTitle {
+	font-size: 12px;
+	font-weight: 700;
+	letter-spacing: 0.2px;
+	opacity: 0.8;
+}
+
+.aiMeta {
+	font-size: 12px;
+	opacity: 0.7;
+}
+
+.aiRow {
+	display: flex;
+	gap: 8px;
+	align-items: center;
+	margin-bottom: 8px;
+}
+
+.aiLabel {
+	width: 70px;
+	font-size: 12px;
+	opacity: 0.75;
+}
+
+.aiSettings input,
+.aiSettings select,
+.aiPane select,
+.aiPane textarea {
+	flex: 1;
+	box-shadow: none;
+	border: 1px solid rgba(0, 0, 0, 0.12);
+	border-radius: 8px;
+	padding: 0.55em 0.7em;
+	font-size: 12px;
+	background: rgba(255, 255, 255, 0.9);
+}
+
+.aiToggle {
+	display: flex;
+	gap: 6px;
+	align-items: center;
+	font-size: 12px;
+	opacity: 0.85;
+}
+
+.aiContext summary {
+	font-size: 12px;
+	font-weight: 700;
+	letter-spacing: 0.2px;
+	opacity: 0.8;
+	cursor: pointer;
+}
+
+.aiContextPreview {
+	width: 100%;
+	min-height: 120px;
+	margin-top: 8px;
+	resize: vertical;
+}
+
+.aiChatMessages {
+	max-height: 180px;
+	overflow: auto;
+	border-top: 1px solid rgba(0, 0, 0, 0.06);
+	border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+	padding: 8px 0;
+}
+
+.aiChatMsg {
+	padding: 6px 0;
+}
+
+.aiChatRole {
+	font-size: 11px;
+	font-weight: 700;
+	opacity: 0.75;
+	margin-bottom: 2px;
+}
+
+.aiChatContent {
+	font-size: 12px;
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.aiChatInput {
+	width: 100%;
+	min-height: 60px;
+	margin-top: 8px;
+	resize: vertical;
+	box-shadow: none;
+	border: 1px solid rgba(0, 0, 0, 0.12);
+	border-radius: 8px;
+	padding: 0.55em 0.7em;
+	font-size: 12px;
+}
+
+.aiChatActions {
+	display: flex;
+	gap: 8px;
+	margin-top: 8px;
+}
+
+.aiError {
+	padding: 8px 10px;
+	margin-top: 8px;
+	color: #b00020;
+	background: rgba(176, 0, 32, 0.06);
+	border: 1px solid rgba(176, 0, 32, 0.15);
+	border-radius: 10px;
+	font-size: 12px;
+}
+
 .notesPane {
 	flex: 1;
 	min-height: 0;
@@ -540,6 +667,15 @@ button {
 	word-break: break-word;
 }
 
+.rfNodeLinkImage {
+	width: 100%;
+	max-height: 120px;
+	object-fit: cover;
+	border-radius: 10px;
+	margin-bottom: 8px;
+	background: rgba(0, 0, 0, 0.06);
+}
+
 .rfNodeFrame {
 	border-style: dashed;
 	background: rgba(255, 255, 255, 0.55);
@@ -592,6 +728,16 @@ button {
 	.appSidebar {
 		border-right-color: rgba(255, 255, 255, 0.12);
 		background: rgba(0, 0, 0, 0.18);
+	}
+
+	.aiSettings input,
+	.aiSettings select,
+	.aiPane select,
+	.aiPane textarea,
+	.aiChatInput {
+		color: #ffffff;
+		background: rgba(0, 0, 0, 0.28);
+		border-color: rgba(255, 255, 255, 0.12);
 	}
 
 	.vaultBlock,

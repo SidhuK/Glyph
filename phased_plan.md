@@ -25,7 +25,7 @@ This is a coding-first, phased plan that keeps the app runnable at the end of ev
 - [x] Step 4 — Notes system end-to-end (CRUD + editor + attachments)
 - [x] Step 5 — Canvas core (xyflow) + persistence
 - [x] Step 6 — Canvas “power tools” (groups, snap, align, undo/redo)
-- [ ] Step 7 — Indexing + search + backlinks + external edit handling
+- [x] Step 7 — Indexing + search + backlinks + external edit handling
 - [ ] Step 8 — Link previews (OpenGraph) + caching + YouTube metadata
 - [ ] Step 9 — AI foundations (providers, profiles, secrets, streaming, cancellation)
 - [ ] Step 10 — AI context selection + payload preview + token budgeting

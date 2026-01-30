@@ -1,5 +1,6 @@
 mod io_atomic;
 mod canvas;
+mod ai;
 mod index;
 mod links;
 mod paths;
@@ -52,6 +53,7 @@ pub fn run() {
     init_tracing();
 
     tauri::Builder::default()
+        .manage(ai::AiState::default())
         .manage(vault::VaultState::default())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
@@ -60,6 +62,15 @@ pub fn run() {
             greet,
             ping,
             app_info,
+            ai::ai_profiles_list,
+            ai::ai_active_profile_get,
+            ai::ai_active_profile_set,
+            ai::ai_profile_upsert,
+            ai::ai_profile_delete,
+            ai::ai_secret_set,
+            ai::ai_secret_clear,
+            ai::ai_chat_start,
+            ai::ai_chat_cancel,
             canvas::canvas_list,
             canvas::canvas_create,
             canvas::canvas_read,

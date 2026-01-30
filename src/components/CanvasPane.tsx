@@ -1,6 +1,8 @@
 import "@xyflow/react/dist/style.css";
 
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { convertFileSrc } from "@tauri-apps/api/core";
+import { join } from "@tauri-apps/api/path";
 import {
 	ReactFlow,
 	Background,
@@ -37,6 +39,8 @@ interface CanvasPaneProps {
 	onOpenNote: (noteId: string) => void;
 	activeNoteId: string | null;
 	activeNoteTitle: string | null;
+	vaultPath: string | null;
+	onSelectionChange?: (selected: CanvasNode[]) => void;
 }
 
 const NoteNode = memo(function NoteNode({
@@ -85,10 +89,14 @@ const LinkNode = memo(function LinkNode({
 	const hostname =
 		preview && typeof preview.hostname === "string" ? preview.hostname : "";
 	const status = typeof data.status === "string" ? data.status : "";
+	const imageSrc = typeof data.image_src === "string" ? data.image_src : "";
 	return (
 		<div className="rfNode rfNodeLink">
 			<Handle type="target" position={Position.Left} />
 			<Handle type="source" position={Position.Right} />
+			{imageSrc ? (
+				<img className="rfNodeLinkImage" alt="" src={imageSrc} />
+			) : null}
 			<div className="rfNodeTitle">{title || hostname || "Link"}</div>
 			{description ? (
 				<div className="rfNodeBody">{description}</div>
@@ -118,6 +126,8 @@ export default function CanvasPane({
 	onOpenNote,
 	activeNoteId,
 	activeNoteTitle,
+	vaultPath,
+	onSelectionChange,
 }: CanvasPaneProps) {
 	const wrapperRef = useRef<HTMLDivElement | null>(null);
 	const flowRef = useRef<ReactFlowInstance<CanvasNode, CanvasEdge> | null>(
@@ -167,6 +177,52 @@ export default function CanvasPane({
 		});
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [doc?.id]);
+
+	useEffect(() => {
+		if (!vaultPath) return;
+		if (!doc) return;
+		let cancelled = false;
+		(async () => {
+			const candidates = (doc.nodes ?? []).filter(
+				(n) =>
+					n.type === "link" &&
+					typeof (n.data as Record<string, unknown> | null)?.image_src !==
+						"string" &&
+					typeof (n.data as Record<string, unknown> | null)?.preview === "object",
+			);
+			if (!candidates.length) return;
+
+			const computed = await Promise.all(
+				candidates.map(async (n) => {
+					const preview = (n.data as Record<string, unknown>).preview as
+						| Record<string, unknown>
+						| null
+						| undefined;
+					const rel =
+						preview && typeof preview.image_cache_rel_path === "string"
+							? preview.image_cache_rel_path
+							: null;
+					if (!rel) return { id: n.id, src: null as string | null };
+					const abs = await join(vaultPath, rel);
+					return { id: n.id, src: convertFileSrc(abs) };
+				}),
+			);
+			if (cancelled) return;
+			setNodes((prev) =>
+				prev.map((n) => {
+					const found = computed.find((c) => c.id === n.id);
+					if (!found?.src) return n;
+					return {
+						...n,
+						data: { ...(n.data ?? {}), image_src: found.src },
+					};
+				}),
+			);
+		})();
+		return () => {
+			cancelled = true;
+		};
+	}, [doc, vaultPath, setNodes]);
 
 	const nodeTypes = useMemo(
 		() => ({
@@ -278,51 +334,64 @@ export default function CanvasPane({
 		});
 	}, [flowCenter, setNodes]);
 
+	const createLinkNode = useCallback(
+		(url: string, position?: { x: number; y: number }) => {
+			if (!url) return;
+			const nodeId = crypto.randomUUID();
+			setNodes((prev) => {
+				const pos = position ?? flowCenter();
+				return [
+					...prev,
+					{
+						id: nodeId,
+						type: "link",
+						position: pos,
+						data: { url, status: "Loading preview…" },
+					},
+				];
+			});
+			(async () => {
+				try {
+					const preview = await invoke("link_preview", { url });
+					const imageSrc =
+						vaultPath && preview.image_cache_rel_path
+							? convertFileSrc(await join(vaultPath, preview.image_cache_rel_path))
+							: null;
+					setNodes((prev) =>
+						prev.map((n) =>
+							n.id === nodeId
+								? {
+										...n,
+										data: {
+											...(n.data ?? {}),
+											url: preview.url,
+											preview,
+											image_src: imageSrc ?? undefined,
+											status: preview.ok ? "" : "Preview unavailable",
+										},
+									}
+								: n,
+						),
+					);
+				} catch {
+					setNodes((prev) =>
+						prev.map((n) =>
+							n.id === nodeId
+								? { ...n, data: { ...(n.data ?? {}), status: "Preview failed" } }
+								: n,
+						),
+					);
+				}
+			})();
+		},
+		[flowCenter, setNodes, vaultPath],
+	);
+
 	const onAddLink = useCallback(() => {
 		const url = window.prompt("Link URL:", "https://");
 		if (!url) return;
-		const nodeId = crypto.randomUUID();
-		setNodes((prev) => {
-			const pos = flowCenter();
-			return [
-				...prev,
-				{
-					id: nodeId,
-					type: "link",
-					position: pos,
-					data: { url, status: "Loading preview…" },
-				},
-			];
-		});
-		(async () => {
-			try {
-				const preview = await invoke("link_preview", { url });
-				setNodes((prev) =>
-					prev.map((n) =>
-						n.id === nodeId
-							? {
-									...n,
-									data: {
-										...(n.data ?? {}),
-										url: preview.url,
-										preview,
-										status: "",
-									},
-								}
-							: n,
-					),
-				);
-			} catch {
-				setNodes((prev) =>
-					prev.map((n) =>
-						n.id === nodeId
-							? { ...n, data: { ...(n.data ?? {}), status: "Preview failed" } }
-							: n,
-					),
-				);
-			}
-		})();
-	}, [flowCenter, setNodes]);
+		createLinkNode(url);
+	}, [createLinkNode]);
 
 	const onAddNote = useCallback(() => {
 		if (!activeNoteId) return;
@@ -341,6 +410,90 @@ export default function CanvasPane({
 	}, [activeNoteId, activeNoteTitle, flowCenter, setNodes]);
 
 	const selectedNodes = useMemo(() => nodes.filter((n) => n.selected), [nodes]);
+	const selectedLinkNode = useMemo(() => {
+		if (selectedNodes.length !== 1) return null;
+		const n = selectedNodes[0];
+		if (!n || n.type !== "link") return null;
+		return n;
+	}, [selectedNodes]);
+
+	const onRefreshSelectedLink = useCallback(() => {
+		if (!selectedLinkNode) return;
+		const url =
+			typeof (selectedLinkNode.data as Record<string, unknown>)?.url === "string"
+				? ((selectedLinkNode.data as Record<string, unknown>).url as string)
+				: "";
+		if (!url) return;
+		const nodeId = selectedLinkNode.id;
+		setNodes((prev) =>
+			prev.map((n) =>
+				n.id === nodeId
+					? { ...n, data: { ...(n.data ?? {}), status: "Refreshing…" } }
+					: n,
+			),
+		);
+		(async () => {
+			try {
+				const preview = await invoke("link_preview", { url, force: true });
+				const imageSrc =
+					vaultPath && preview.image_cache_rel_path
+						? convertFileSrc(await join(vaultPath, preview.image_cache_rel_path))
+						: null;
+				setNodes((prev) =>
+					prev.map((n) =>
+						n.id === nodeId
+							? {
+									...n,
+									data: {
+										...(n.data ?? {}),
+										url: preview.url,
+										preview,
+										image_src: imageSrc ?? undefined,
+										status: preview.ok ? "" : "Preview unavailable",
+									},
+								}
+							: n,
+					),
+				);
+			} catch {
+				setNodes((prev) =>
+					prev.map((n) =>
+						n.id === nodeId
+							? { ...n, data: { ...(n.data ?? {}), status: "Refresh failed" } }
+							: n,
+					),
+				);
+			}
+		})();
+	}, [selectedLinkNode, setNodes, vaultPath]);
+
+	useEffect(() => {
+		onSelectionChange?.(selectedNodes);
+	}, [onSelectionChange, selectedNodes]);
+
+	useEffect(() => {
+		const el = wrapperRef.current;
+		if (!el) return;
+		const onPaste = (e: ClipboardEvent) => {
+			const active = e.target as HTMLElement | null;
+			if (active?.tagName === "INPUT" || active?.tagName === "TEXTAREA") return;
+			const text = e.clipboardData?.getData("text/plain")?.trim();
+			if (!text) return;
+			let parsed: URL | null = null;
+			try {
+				parsed = new URL(text);
+			} catch {
+				parsed = null;
+			}
+			if (!parsed) return;
+			if (parsed.protocol !== "http:" && parsed.protocol !== "https:") return;
+			createLinkNode(text, flowCenter());
+		};
+		el.addEventListener("paste", onPaste);
+		return () => {
+			el.removeEventListener("paste", onPaste);
+		};
+	}, [createLinkNode, flowCenter]);
 
 	const onToggleSnap = useCallback(() => setSnapToGrid((v) => !v), []);
 
@@ -619,6 +772,13 @@ export default function CanvasPane({
 					</button>
 					<button type="button" onClick={onAddLink}>
 						Add link
+					</button>
+					<button
+						type="button"
+						onClick={onRefreshSelectedLink}
+						disabled={!selectedLinkNode}
+					>
+						Refresh link
 					</button>
 					<button type="button" onClick={onAddNote} disabled={!activeNoteId}>
 						Add note

@@ -1,3 +1,4 @@
+import { open } from "@tauri-apps/plugin-dialog";
 import {
 	Suspense,
 	lazy,
@@ -7,25 +8,25 @@ import {
 	useRef,
 	useState,
 } from "react";
-import { open } from "@tauri-apps/plugin-dialog";
 import "./App.css";
+import { listen } from "@tauri-apps/api/event";
+import { CanvasesPane } from "./components/CanvasesPane";
+import { AIPane, type SelectedCanvasNode } from "./components/AIPane";
+import { NoteEditor } from "./components/NoteEditor";
+import { NotesPane } from "./components/NotesPane";
+import { SearchPane } from "./components/SearchPane";
+import { loadSettings, setCurrentVaultPath } from "./lib/settings";
 import {
 	type AppInfo,
+	type BacklinkItem,
 	type CanvasDoc,
 	type CanvasMeta,
-	type BacklinkItem,
 	type NoteDoc,
 	type NoteMeta,
 	type SearchResult,
 	TauriInvokeError,
 	invoke,
 } from "./lib/tauri";
-import { loadSettings, setCurrentVaultPath } from "./lib/settings";
-import { NotesPane } from "./components/NotesPane";
-import { NoteEditor } from "./components/NoteEditor";
-import { CanvasesPane } from "./components/CanvasesPane";
-import { SearchPane } from "./components/SearchPane";
-import { listen } from "@tauri-apps/api/event";
 
 const CanvasPane = lazy(() => import("./components/CanvasPane"));
 
@@ -50,6 +51,9 @@ function App() {
 	const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
 	const [isSearching, setIsSearching] = useState(false);
 	const [searchError, setSearchError] = useState("");
+	const [selectedCanvasNodes, setSelectedCanvasNodes] = useState<
+		SelectedCanvasNode[]
+	>([]);
 	const [backlinks, setBacklinks] = useState<BacklinkItem[]>([]);
 	const [backlinksError, setBacklinksError] = useState("");
 	const noteLoadSeq = useRef(0);
@@ -393,6 +397,17 @@ function App() {
 		}
 	}, []);
 
+	const createNoteFromMarkdown = useCallback(
+		async (title: string, markdown: string) => {
+			if (!vaultPath) return;
+			const meta = await invoke("note_create", { title: title || "Untitled" });
+			await invoke("note_write", { id: meta.id, markdown, base_etag: null });
+			await refreshNotes();
+			setActiveNoteId(meta.id);
+		},
+		[refreshNotes, vaultPath],
+	);
+
 	const onDeleteNote = useCallback(async (id: string) => {
 		if (!window.confirm("Delete this note?")) return;
 		try {
@@ -571,6 +586,15 @@ function App() {
 						onSelectNote={(id) => setActiveNoteId(id)}
 					/>
 
+					<AIPane
+						activeNoteId={activeNoteId}
+						activeNoteTitle={activeNoteTitle}
+						activeNoteMarkdown={activeDoc?.markdown ?? null}
+						selectedCanvasNodes={selectedCanvasNodes}
+						onApplyToActiveNote={onForceSaveMarkdown}
+						onCreateNoteFromMarkdown={createNoteFromMarkdown}
+					/>
+
 					<NotesPane
 						notes={notes}
 						activeNoteId={activeNoteId}
@@ -607,6 +631,16 @@ function App() {
 							onOpenNote={(id) => setActiveNoteId(id)}
 							activeNoteId={activeNoteId}
 							activeNoteTitle={activeNoteTitle}
+							vaultPath={vaultPath}
+							onSelectionChange={(selected) => {
+								setSelectedCanvasNodes(
+									selected.map((n) => ({
+										id: n.id,
+										type: n.type ?? null,
+										data: (n.data ?? null) as Record<string, unknown> | null,
+									})),
+								);
+							}}
 						/>
 					</Suspense>
 					<NoteEditor
