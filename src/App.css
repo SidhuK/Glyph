@@ -1,490 +1,634 @@
 :root {
-  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 400;
+	font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
+	font-size: 16px;
+	line-height: 24px;
+	font-weight: 400;
 
-  color: #0f0f0f;
-  background-color: #f6f6f6;
+	color: #0f0f0f;
+	background-color: #f6f6f6;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
+	font-synthesis: none;
+	text-rendering: optimizeLegibility;
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	-webkit-text-size-adjust: 100%;
 }
 
 html,
 body,
 #root {
-  height: 100%;
-  margin: 0;
+	height: 100%;
+	margin: 0;
 }
 
 .mono {
-  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
-  font-size: 0.9em;
-  word-break: break-all;
+	font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+		"Liberation Mono", "Courier New", monospace;
+	font-size: 0.9em;
+	word-break: break-all;
 }
 
 input,
 button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  color: #0f0f0f;
-  background-color: #ffffff;
-  transition: border-color 0.25s;
-  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
+	border-radius: 8px;
+	border: 1px solid transparent;
+	padding: 0.6em 1.2em;
+	font-size: 1em;
+	font-weight: 500;
+	font-family: inherit;
+	color: #0f0f0f;
+	background-color: #ffffff;
+	transition: border-color 0.25s;
+	box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
 }
 
 button {
-  cursor: pointer;
+	cursor: pointer;
 }
 
 button:hover {
-  border-color: #396cd8;
+	border-color: #396cd8;
 }
 button:active {
-  border-color: #396cd8;
-  background-color: #e8e8e8;
+	border-color: #396cd8;
+	background-color: #e8e8e8;
 }
 
 input,
 button {
-  outline: none;
+	outline: none;
 }
 
 /* App shell */
 .appShell {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
 }
 
 .appHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 12px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-  background: rgba(255, 255, 255, 0.7);
-  backdrop-filter: blur(12px);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 10px 12px;
+	border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+	background: rgba(255, 255, 255, 0.7);
+	backdrop-filter: blur(12px);
 }
 
 .appHeaderLeft {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
 }
 
 .appTitle {
-  font-weight: 700;
-  letter-spacing: 0.2px;
+	font-weight: 700;
+	letter-spacing: 0.2px;
 }
 
 .appSub {
-  font-size: 12px;
-  opacity: 0.7;
+	font-size: 12px;
+	opacity: 0.7;
 }
 
 .appHeaderRight {
-  display: flex;
-  gap: 8px;
+	display: flex;
+	gap: 8px;
 }
 
 .appBody {
-  flex: 1;
-  min-height: 0;
-  display: flex;
+	flex: 1;
+	min-height: 0;
+	display: flex;
 }
 
 .appMain {
-  flex: 1;
-  min-width: 0;
-  min-height: 0;
-  display: flex;
+	flex: 1;
+	min-width: 0;
+	min-height: 0;
+	display: flex;
 }
 
 .appSidebar {
-  width: 360px;
-  min-width: 280px;
-  display: flex;
-  flex-direction: column;
-  min-height: 0;
-  border-right: 1px solid rgba(0, 0, 0, 0.08);
-  background: rgba(255, 255, 255, 0.45);
+	width: 360px;
+	min-width: 280px;
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	border-right: 1px solid rgba(0, 0, 0, 0.08);
+	background: rgba(255, 255, 255, 0.45);
 }
 
 .vaultBlock {
-  padding: 12px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+	padding: 12px;
+	border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .vaultLabel {
-  font-size: 12px;
-  opacity: 0.7;
-  margin-bottom: 6px;
+	font-size: 12px;
+	opacity: 0.7;
+	margin-bottom: 6px;
 }
 
 .vaultPath {
-  margin-bottom: 6px;
+	margin-bottom: 6px;
 }
 
 .vaultMeta {
-  font-size: 12px;
-  opacity: 0.75;
+	font-size: 12px;
+	opacity: 0.75;
 }
 
 .vaultRecent {
-  margin-top: 10px;
+	margin-top: 10px;
 }
 
 .vaultRecentList {
-  margin: 8px 0 0;
-  padding-left: 18px;
+	margin: 8px 0 0;
+	padding-left: 18px;
+}
+
+/* Search */
+.searchPane {
+	border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+	padding: 10px 12px;
+}
+
+.searchHeader {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	margin-bottom: 8px;
+}
+
+.searchTitle {
+	font-size: 12px;
+	font-weight: 700;
+	letter-spacing: 0.2px;
+	opacity: 0.8;
+}
+
+.searchStatus {
+	font-size: 12px;
+	opacity: 0.7;
+}
+
+.searchInput {
+	width: 100%;
+	box-shadow: none;
+	border: 1px solid rgba(0, 0, 0, 0.12);
+}
+
+.searchResults {
+	margin: 10px 0 0;
+	padding: 0;
+	list-style: none;
+	max-height: 220px;
+	overflow: auto;
+	border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.searchResult {
+	border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.searchResultButton {
+	width: 100%;
+	text-align: left;
+	border-radius: 0;
+	box-shadow: none;
+	background: transparent;
+	border: none;
+	padding: 10px 0;
+}
+
+.searchResultTitle {
+	font-weight: 700;
+	margin-bottom: 4px;
+}
+
+.searchResultSnippet {
+	font-size: 12px;
+	opacity: 0.85;
+}
+
+.searchEmpty {
+	padding: 10px 0;
+	font-size: 12px;
+	opacity: 0.7;
+}
+
+.searchError {
+	margin-top: 8px;
+	font-size: 12px;
+	color: #b00020;
 }
 
 .notesPane {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
 }
 
 .notesPaneHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 12px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 10px 12px;
 }
 
 .notesPaneTitle {
-  margin: 0;
-  font-size: 14px;
+	margin: 0;
+	font-size: 14px;
 }
 
 .notesList {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  overflow: auto;
-  min-height: 0;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	overflow: auto;
+	min-height: 0;
 }
 
 .notesListItem {
-  display: flex;
-  align-items: stretch;
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
+	display: flex;
+	align-items: stretch;
+	border-top: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .notesListItem.active {
-  background: rgba(57, 108, 216, 0.10);
+	background: rgba(57, 108, 216, 0.1);
 }
 
 .notesListButton {
-  flex: 1;
-  text-align: left;
-  border-radius: 0;
-  box-shadow: none;
-  background: transparent;
-  border: none;
-  padding: 10px 12px;
+	flex: 1;
+	text-align: left;
+	border-radius: 0;
+	box-shadow: none;
+	background: transparent;
+	border: none;
+	padding: 10px 12px;
 }
 
 .notesListTitle {
-  font-weight: 600;
-  margin-bottom: 2px;
+	font-weight: 600;
+	margin-bottom: 2px;
 }
 
 .notesListMeta {
-  font-size: 12px;
-  opacity: 0.75;
+	font-size: 12px;
+	opacity: 0.75;
 }
 
 .notesListDelete {
-  border-radius: 0;
-  box-shadow: none;
-  background: transparent;
-  border: none;
-  padding: 0 12px;
-  font-size: 18px;
-  opacity: 0.6;
+	border-radius: 0;
+	box-shadow: none;
+	background: transparent;
+	border: none;
+	padding: 0 12px;
+	font-size: 18px;
+	opacity: 0.6;
 }
 
 .notesListDelete:hover {
-  opacity: 1;
+	opacity: 1;
 }
 
 .editorPane {
-  width: 440px;
-  max-width: 50%;
-  flex: 0 0 auto;
-  min-width: 0;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
+	width: 440px;
+	max-width: 50%;
+	flex: 0 0 auto;
+	min-width: 0;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
 }
 
 .editorHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 12px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-  background: rgba(255, 255, 255, 0.6);
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 10px 12px;
+	border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+	background: rgba(255, 255, 255, 0.6);
 }
 
 .editorTitle {
-  font-weight: 700;
+	font-weight: 700;
 }
 
 .editorActions {
-  display: flex;
-  align-items: center;
-  gap: 10px;
+	display: flex;
+	align-items: center;
+	gap: 10px;
 }
 
 .editorStatus {
-  font-size: 12px;
-  opacity: 0.75;
+	font-size: 12px;
+	opacity: 0.75;
 }
 
 .editorBody {
-  flex: 1;
-  min-height: 0;
+	flex: 1;
+	min-height: 0;
+}
+
+.backlinksPane {
+	padding: 10px 12px;
+	border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+	background: rgba(255, 255, 255, 0.45);
+}
+
+.backlinksHeader {
+	display: flex;
+	justify-content: space-between;
+	align-items: baseline;
+	margin-bottom: 8px;
+}
+
+.backlinksTitle {
+	font-size: 12px;
+	font-weight: 700;
+	opacity: 0.8;
+}
+
+.backlinksMeta {
+	font-size: 12px;
+	opacity: 0.7;
+}
+
+.backlinksError {
+	font-size: 12px;
+	color: #b00020;
+	margin-bottom: 6px;
+}
+
+.backlinksList {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	max-height: 180px;
+	overflow: auto;
+}
+
+.backlinksItem {
+	border-top: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.backlinksButton {
+	width: 100%;
+	text-align: left;
+	border-radius: 0;
+	box-shadow: none;
+	background: transparent;
+	border: none;
+	padding: 8px 0;
+}
+
+.backlinksItemTitle {
+	font-weight: 600;
+	margin-bottom: 2px;
+}
+
+.backlinksItemMeta {
+	font-size: 12px;
+	opacity: 0.75;
+}
+
+.backlinksEmpty {
+	font-size: 12px;
+	opacity: 0.7;
 }
 
 /* Canvases */
 .canvasesPane {
-  height: 240px;
-  min-height: 180px;
-  display: flex;
-  flex-direction: column;
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
+	height: 240px;
+	min-height: 180px;
+	display: flex;
+	flex-direction: column;
+	border-top: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .canvasesPaneHeader {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 10px 12px;
+	display: flex;
+	justify-content: space-between;
+	align-items: center;
+	padding: 10px 12px;
 }
 
 .canvasesPaneTitle {
-  margin: 0;
-  font-size: 14px;
+	margin: 0;
+	font-size: 14px;
 }
 
 .canvasesList {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  overflow: auto;
-  min-height: 0;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	overflow: auto;
+	min-height: 0;
 }
 
 .canvasesListItem {
-  border-top: 1px solid rgba(0, 0, 0, 0.06);
+	border-top: 1px solid rgba(0, 0, 0, 0.06);
 }
 
 .canvasesListItem.active {
-  background: rgba(57, 108, 216, 0.10);
+	background: rgba(57, 108, 216, 0.1);
 }
 
 .canvasesListButton {
-  width: 100%;
-  text-align: left;
-  border-radius: 0;
-  box-shadow: none;
-  background: transparent;
-  border: none;
-  padding: 10px 12px;
+	width: 100%;
+	text-align: left;
+	border-radius: 0;
+	box-shadow: none;
+	background: transparent;
+	border: none;
+	padding: 10px 12px;
 }
 
 .canvasesListTitle {
-  font-weight: 600;
-  margin-bottom: 2px;
+	font-weight: 600;
+	margin-bottom: 2px;
 }
 
 .canvasesListMeta {
-  font-size: 12px;
-  opacity: 0.75;
+	font-size: 12px;
+	opacity: 0.75;
 }
 
 .canvasPane {
-  flex: 1;
-  min-width: 0;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  border-right: 1px solid rgba(0, 0, 0, 0.08);
+	flex: 1;
+	min-width: 0;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+	border-right: 1px solid rgba(0, 0, 0, 0.08);
 }
 
 .canvasToolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 12px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-  background: rgba(255, 255, 255, 0.6);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 10px 12px;
+	border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+	background: rgba(255, 255, 255, 0.6);
 }
 
 .canvasToolbarLeft {
-  display: flex;
-  align-items: baseline;
-  gap: 10px;
+	display: flex;
+	align-items: baseline;
+	gap: 10px;
 }
 
 .canvasTitle {
-  font-weight: 700;
+	font-weight: 700;
 }
 
 .canvasStatus {
-  font-size: 12px;
-  opacity: 0.75;
+	font-size: 12px;
+	opacity: 0.75;
 }
 
 .canvasToolbarRight {
-  display: flex;
-  gap: 8px;
+	display: flex;
+	gap: 8px;
 }
 
 .canvasBody {
-  flex: 1;
-  min-height: 0;
+	flex: 1;
+	min-height: 0;
 }
 
 .canvasEmpty {
-  padding: 16px;
-  opacity: 0.75;
+	padding: 16px;
+	opacity: 0.75;
 }
 
 .canvasError {
-  padding: 10px 12px;
-  color: #b00020;
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
-  background: rgba(176, 0, 32, 0.06);
+	padding: 10px 12px;
+	color: #b00020;
+	border-top: 1px solid rgba(0, 0, 0, 0.08);
+	background: rgba(176, 0, 32, 0.06);
 }
 
 /* ReactFlow nodes */
 .rfNode {
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid rgba(0, 0, 0, 0.12);
-  background: rgba(255, 255, 255, 0.9);
-  max-width: 240px;
+	padding: 10px 12px;
+	border-radius: 12px;
+	border: 1px solid rgba(0, 0, 0, 0.12);
+	background: rgba(255, 255, 255, 0.9);
+	max-width: 240px;
 }
 
 .rfNodeTitle {
-  font-weight: 700;
-  margin-bottom: 4px;
+	font-weight: 700;
+	margin-bottom: 4px;
 }
 
 .rfNodeSub {
-  font-size: 12px;
-  opacity: 0.75;
+	font-size: 12px;
+	opacity: 0.75;
 }
 
 .rfNodeBody {
-  font-size: 12px;
-  opacity: 0.85;
-  white-space: pre-wrap;
-  word-break: break-word;
+	font-size: 12px;
+	opacity: 0.85;
+	white-space: pre-wrap;
+	word-break: break-word;
 }
 
 .rfNodeFrame {
-  border-style: dashed;
-  background: rgba(255, 255, 255, 0.55);
+	border-style: dashed;
+	background: rgba(255, 255, 255, 0.55);
 }
 
 .editorEmpty {
-  padding: 24px;
-  opacity: 0.7;
+	padding: 24px;
+	opacity: 0.7;
 }
 
 .editorError {
-  padding: 10px 12px;
-  color: #b00020;
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
-  background: rgba(176, 0, 32, 0.06);
+	padding: 10px 12px;
+	color: #b00020;
+	border-top: 1px solid rgba(0, 0, 0, 0.08);
+	background: rgba(176, 0, 32, 0.06);
 }
 
 .appError {
-  padding: 10px 12px;
-  color: #b00020;
-  border-top: 1px solid rgba(0, 0, 0, 0.08);
-  background: rgba(176, 0, 32, 0.06);
+	padding: 10px 12px;
+	color: #b00020;
+	border-top: 1px solid rgba(0, 0, 0, 0.08);
+	background: rgba(176, 0, 32, 0.06);
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    color: #f6f6f6;
-    background-color: #2f2f2f;
-  }
+	:root {
+		color: #f6f6f6;
+		background-color: #2f2f2f;
+	}
 
-  a:hover {
-    color: #24c8db;
-  }
+	a:hover {
+		color: #24c8db;
+	}
 
-  input,
-  button {
-    color: #ffffff;
-    background-color: #0f0f0f98;
-  }
-  button:active {
-    background-color: #0f0f0f69;
-  }
+	input,
+	button {
+		color: #ffffff;
+		background-color: #0f0f0f98;
+	}
+	button:active {
+		background-color: #0f0f0f69;
+	}
 
-  .appHeader,
-  .editorHeader {
-    border-bottom-color: rgba(255, 255, 255, 0.12);
-    background: rgba(0, 0, 0, 0.28);
-  }
+	.appHeader,
+	.editorHeader {
+		border-bottom-color: rgba(255, 255, 255, 0.12);
+		background: rgba(0, 0, 0, 0.28);
+	}
 
-  .appSidebar {
-    border-right-color: rgba(255, 255, 255, 0.12);
-    background: rgba(0, 0, 0, 0.18);
-  }
+	.appSidebar {
+		border-right-color: rgba(255, 255, 255, 0.12);
+		background: rgba(0, 0, 0, 0.18);
+	}
 
-  .vaultBlock,
-  .notesListItem {
-    border-color: rgba(255, 255, 255, 0.10);
-  }
+	.vaultBlock,
+	.notesListItem {
+		border-color: rgba(255, 255, 255, 0.1);
+	}
 
-  .notesListItem.active {
-    background: rgba(36, 200, 219, 0.12);
-  }
+	.notesListItem.active {
+		background: rgba(36, 200, 219, 0.12);
+	}
 
-  .canvasesListItem.active {
-    background: rgba(36, 200, 219, 0.12);
-  }
+	.canvasesListItem.active {
+		background: rgba(36, 200, 219, 0.12);
+	}
 
-  .canvasPane {
-    border-right-color: rgba(255, 255, 255, 0.12);
-  }
+	.canvasPane {
+		border-right-color: rgba(255, 255, 255, 0.12);
+	}
 
-  .canvasToolbar {
-    border-bottom-color: rgba(255, 255, 255, 0.12);
-    background: rgba(0, 0, 0, 0.28);
-  }
+	.canvasToolbar {
+		border-bottom-color: rgba(255, 255, 255, 0.12);
+		background: rgba(0, 0, 0, 0.28);
+	}
 
-  .rfNode {
-    border-color: rgba(255, 255, 255, 0.14);
-    background: rgba(0, 0, 0, 0.28);
-  }
+	.rfNode {
+		border-color: rgba(255, 255, 255, 0.14);
+		background: rgba(0, 0, 0, 0.28);
+	}
 
-  .rfNodeFrame {
-    background: rgba(0, 0, 0, 0.18);
-  }
+	.rfNodeFrame {
+		background: rgba(0, 0, 0, 0.18);
+	}
 
-  .editorError,
-  .appError {
-    color: #ff6b6b;
-    background: rgba(255, 107, 107, 0.10);
-    border-top-color: rgba(255, 255, 255, 0.12);
-  }
+	.editorError,
+	.appError {
+		color: #ff6b6b;
+		background: rgba(255, 107, 107, 0.1);
+		border-top-color: rgba(255, 255, 255, 0.12);
+	}
 }

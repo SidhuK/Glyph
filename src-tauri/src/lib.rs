@@ -1,5 +1,7 @@
 mod io_atomic;
 mod canvas;
+mod index;
+mod links;
 mod paths;
 mod notes;
 mod vault;
@@ -62,6 +64,10 @@ pub fn run() {
             canvas::canvas_create,
             canvas::canvas_read,
             canvas::canvas_write,
+            index::index_rebuild,
+            index::search,
+            index::backlinks,
+            links::link_preview,
             notes::notes_list,
             notes::note_create,
             notes::note_read,

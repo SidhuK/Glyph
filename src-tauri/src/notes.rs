@@ -1,4 +1,4 @@
-use crate::{io_atomic, paths, vault::VaultState};
+use crate::{index, io_atomic, paths, vault::VaultState};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::{
@@ -22,6 +22,15 @@ pub struct NoteMeta {
 pub struct NoteDoc {
     pub meta: NoteMeta,
     pub markdown: String,
+    pub etag: String,
+    pub mtime_ms: u64,
+}
+
+#[derive(Serialize)]
+pub struct NoteWriteResult {
+    pub meta: NoteMeta,
+    pub etag: String,
+    pub mtime_ms: u64,
 }
 
 #[derive(Serialize)]
@@ -138,6 +147,21 @@ fn read_to_string(path: &Path) -> Result<String, String> {
     std::fs::read_to_string(path).map_err(|e| e.to_string())
 }
 
+fn file_mtime_ms(path: &Path) -> u64 {
+    std::fs::metadata(path)
+        .and_then(|m| m.modified())
+        .ok()
+        .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
+        .map(|d| d.as_millis() as u64)
+        .unwrap_or(0)
+}
+
+fn etag_for(markdown: &str) -> String {
+    let mut hasher = Sha256::new();
+    hasher.update(markdown.as_bytes());
+    hex::encode(hasher.finalize())
+}
+
 fn extract_meta(note_id: &str, markdown: &str) -> Result<NoteMeta, String> {
     let (yaml, _body) = split_frontmatter(markdown);
     let fm = parse_frontmatter(yaml)?;
@@ -206,6 +230,7 @@ pub async fn note_create(state: State<'_, VaultState>, title: String) -> Result<
         let yaml = render_frontmatter_yaml(&fm)?;
         let markdown = format!("---\n{yaml}---\n\n");
         io_atomic::write_atomic(&path, markdown.as_bytes()).map_err(|e| e.to_string())?;
+        let _ = index::index_note(&root, &id, &markdown);
 
         Ok(NoteMeta {
             id,
@@ -225,7 +250,12 @@ pub async fn note_read(state: State<'_, VaultState>, id: String) -> Result<NoteD
         let path = note_abs_path(&root, &id)?;
         let markdown = read_to_string(&path)?;
         let meta = extract_meta(&id, &markdown)?;
-        Ok(NoteDoc { meta, markdown })
+        Ok(NoteDoc {
+            meta,
+            etag: etag_for(&markdown),
+            mtime_ms: file_mtime_ms(&path),
+            markdown,
+        })
     })
     .await
     .map_err(|e| e.to_string())?
@@ -239,10 +269,23 @@ fn read_existing_created(path: &Path) -> Option<String> {
 }
 
 #[tauri::command]
-pub async fn note_write(state: State<'_, VaultState>, id: String, markdown: String) -> Result<(), String> {
+pub async fn note_write(
+    state: State<'_, VaultState>,
+    id: String,
+    markdown: String,
+    base_etag: Option<String>,
+) -> Result<NoteWriteResult, String> {
     let root = state.current_root()?;
-    tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
+    tauri::async_runtime::spawn_blocking(move || -> Result<NoteWriteResult, String> {
         let path = note_abs_path(&root, &id)?;
+        if let Some(base) = base_etag {
+            let current = std::fs::read_to_string(&path).map_err(|e| e.to_string())?;
+            let current_etag = etag_for(&current);
+            if current_etag != base {
+                return Err("conflict: note changed on disk".to_string());
+            }
+        }
+
         let preserve_created = read_existing_created(&path);
         let (yaml, body) = split_frontmatter(&markdown);
         let fm = parse_frontmatter(yaml)?;
@@ -250,7 +293,14 @@ pub async fn note_write(state: State<'_, VaultState>, id: String, markdown: Stri
         let yaml = render_frontmatter_yaml(&fm)?;
         let normalized = format!("---\n{yaml}---\n\n{}", body.trim_start_matches('\n'));
         io_atomic::write_atomic(&path, normalized.as_bytes()).map_err(|e| e.to_string())?;
-        Ok(())
+        let _ = index::index_note(&root, &id, &normalized);
+        let saved = read_to_string(&path)?;
+        let meta = extract_meta(&id, &saved)?;
+        Ok(NoteWriteResult {
+            meta,
+            etag: etag_for(&saved),
+            mtime_ms: file_mtime_ms(&path),
+        })
     })
     .await
     .map_err(|e| e.to_string())?
@@ -262,6 +312,7 @@ pub async fn note_delete(state: State<'_, VaultState>, id: String) -> Result<(),
     tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
         let path = note_abs_path(&root, &id)?;
         std::fs::remove_file(&path).map_err(|e| e.to_string())?;
+        let _ = index::remove_note(&root, &id);
         Ok(())
     })
     .await

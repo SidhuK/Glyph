@@ -1,15 +1,26 @@
-use crate::{io_atomic, paths};
+use crate::{index, io_atomic, paths};
 use serde::Serialize;
 use std::{
     path::{Path, PathBuf},
     sync::Mutex,
     time::{SystemTime, UNIX_EPOCH},
 };
+use notify::Watcher;
+use tauri::Emitter;
 use tauri::State;
 
-#[derive(Default)]
 pub struct VaultState {
     current: Mutex<Option<PathBuf>>,
+    notes_watcher: Mutex<Option<notify::RecommendedWatcher>>,
+}
+
+impl Default for VaultState {
+    fn default() -> Self {
+        Self {
+            current: Mutex::new(None),
+            notes_watcher: Mutex::new(None),
+        }
+    }
 }
 
 impl VaultState {
@@ -18,6 +29,68 @@ impl VaultState {
         guard
             .clone()
             .ok_or_else(|| "no vault open (select or create a vault first)".to_string())
+    }
+
+    fn set_notes_watcher(&self, app: tauri::AppHandle, root: PathBuf) -> Result<(), String> {
+        let mut guard = self
+            .notes_watcher
+            .lock()
+            .map_err(|_| "vault watcher state poisoned".to_string())?;
+        *guard = None;
+
+        let notes_dir = paths::join_under(&root, Path::new("notes"))?;
+        let app2 = app.clone();
+        let root2 = root.clone();
+
+        #[derive(Serialize, Clone)]
+        struct ExternalNoteChange {
+            id: String,
+        }
+
+        let mut watcher = notify::recommended_watcher(move |res: notify::Result<notify::Event>| {
+            let event = match res {
+                Ok(e) => e,
+                Err(_) => return,
+            };
+
+            let is_remove = matches!(event.kind, notify::EventKind::Remove(_));
+            let is_create = matches!(event.kind, notify::EventKind::Create(_));
+            let is_modify = matches!(event.kind, notify::EventKind::Modify(_));
+            if !(is_remove || is_create || is_modify) {
+                return;
+            }
+
+            for path in event.paths {
+                if path.extension() != Some(std::ffi::OsStr::new("md")) {
+                    continue;
+                }
+                let file_stem = match path.file_stem().and_then(|s| s.to_str()) {
+                    Some(s) => s,
+                    None => continue,
+                };
+                if uuid::Uuid::parse_str(file_stem).is_err() {
+                    continue;
+                }
+
+                if is_remove {
+                    let _ = index::remove_note(&root2, file_stem);
+                } else if let Ok(markdown) = std::fs::read_to_string(&path) {
+                    let _ = index::index_note(&root2, file_stem, &markdown);
+                }
+
+                let _ = app2.emit("notes:external_changed", ExternalNoteChange {
+                    id: file_stem.to_string(),
+                });
+            }
+        })
+        .map_err(|e| e.to_string())?;
+
+        watcher
+            .watch(&notes_dir, notify::RecursiveMode::Recursive)
+            .map_err(|e: notify::Error| e.to_string())?;
+
+        *guard = Some(watcher);
+        Ok(())
     }
 }
 
@@ -85,7 +158,7 @@ fn create_or_open_impl(root: &Path) -> Result<VaultInfo, String> {
 }
 
 #[tauri::command]
-pub async fn vault_create(state: State<'_, VaultState>, path: String) -> Result<VaultInfo, String> {
+pub async fn vault_create(app: tauri::AppHandle, state: State<'_, VaultState>, path: String) -> Result<VaultInfo, String> {
     let root = PathBuf::from(path);
     let info = tauri::async_runtime::spawn_blocking(move || -> Result<VaultInfo, String> {
         std::fs::create_dir_all(&root).map_err(|e| e.to_string())?;
@@ -97,11 +170,13 @@ pub async fn vault_create(state: State<'_, VaultState>, path: String) -> Result<
 
     let mut guard = state.current.lock().map_err(|_| "vault state poisoned".to_string())?;
     *guard = Some(PathBuf::from(&info.root));
+    drop(guard);
+    let _ = state.set_notes_watcher(app, PathBuf::from(&info.root));
     Ok(info)
 }
 
 #[tauri::command]
-pub async fn vault_open(state: State<'_, VaultState>, path: String) -> Result<VaultInfo, String> {
+pub async fn vault_open(app: tauri::AppHandle, state: State<'_, VaultState>, path: String) -> Result<VaultInfo, String> {
     let root = PathBuf::from(path);
     let info = tauri::async_runtime::spawn_blocking(move || -> Result<VaultInfo, String> {
         let root = canonicalize_dir(&root)?;
@@ -112,6 +187,8 @@ pub async fn vault_open(state: State<'_, VaultState>, path: String) -> Result<Va
 
     let mut guard = state.current.lock().map_err(|_| "vault state poisoned".to_string())?;
     *guard = Some(PathBuf::from(&info.root));
+    drop(guard);
+    let _ = state.set_notes_watcher(app, PathBuf::from(&info.root));
     Ok(info)
 }
 

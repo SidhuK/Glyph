@@ -1,6 +1,6 @@
-# CLAUDE.md
+# Agents.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Codex and Other AI Code agents when working with code in this repository.
 
 ## Commands
 
@@ -83,3 +83,7 @@ The app uses a vault-based architecture where a vault is a directory containing:
 - React functional components with hooks
 - Lazy-load heavy components (e.g., `CanvasPane`)
 - Rust: use serde for serialization, tracing for logs, atomic file writes
+
+## Skills
+
+Use Rust skill for checking Rust code, Tauri skill for checking Tauri code, React skill for checking React and TypeScript code as well as the Vercel skills for checking TypeScript code.
