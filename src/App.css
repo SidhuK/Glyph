@@ -32,23 +32,28 @@ body {
 	-moz-osx-font-smoothing: grayscale;
 }
 
-/* Scrollbars */
+/* Scrollbars - rounded and subtle */
 ::-webkit-scrollbar {
-	width: 8px;
-	height: 8px;
+	width: 10px;
+	height: 10px;
 }
 
 ::-webkit-scrollbar-track {
 	background: transparent;
+	border-radius: var(--radius-full);
 }
 
 ::-webkit-scrollbar-thumb {
 	background: var(--scrollbar-thumb);
-	border-radius: 4px;
+	border-radius: var(--radius-full);
+	border: 2px solid transparent;
+	background-clip: padding-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
 	background: var(--scrollbar-thumb-hover);
+	border: 2px solid transparent;
+	background-clip: padding-box;
 }
 
 ::selection {
@@ -61,15 +66,15 @@ body {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   BUTTONS
+   BUTTONS - Modern rounded aesthetic
    ───────────────────────────────────────────────────────────────────────────── */
 button {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	gap: var(--space-1);
+	gap: var(--space-2);
 	height: var(--button-height);
-	padding: 0 var(--space-2);
+	padding: 0 var(--space-3);
 	font-family: inherit;
 	font-size: var(--text-sm);
 	font-weight: var(--font-medium);
@@ -77,9 +82,9 @@ button {
 	color: var(--text-secondary);
 	background: transparent;
 	border: none;
-	border-radius: var(--radius-md);
+	border-radius: var(--radius-lg);
 	cursor: pointer;
-	transition: all var(--transition-fast);
+	transition: all var(--transition-base);
 	white-space: nowrap;
 	user-select: none;
 }
@@ -87,34 +92,59 @@ button {
 button:hover {
 	background: var(--bg-hover);
 	color: var(--text-primary);
+	transform: translateY(-1px);
 }
 
 button:active {
 	background: var(--bg-active);
+	transform: translateY(0);
 }
 
 button:disabled {
 	color: var(--text-tertiary);
 	cursor: not-allowed;
-	opacity: 0.4;
+	opacity: 0.5;
+	transform: none;
 }
 
 button:disabled:hover {
 	background: transparent;
+	transform: none;
 }
 
 button:focus-visible {
 	outline: 2px solid var(--border-focus);
-	outline-offset: 1px;
+	outline-offset: 2px;
 }
 
-/* Icon buttons */
+/* Primary button variant */
+button.primary {
+	background: var(--interactive-accent);
+	color: var(--text-inverse);
+	border-radius: var(--radius-full);
+}
+
+button.primary:hover {
+	background: var(--interactive-accent-hover);
+	color: var(--text-inverse);
+}
+
+/* Ghost button variant */
+button.ghost {
+	background: transparent;
+}
+
+button.ghost:hover {
+	background: var(--bg-hover);
+}
+
+/* Icon buttons - pill shaped */
 button.iconBtn {
 	width: var(--button-height);
 	height: var(--button-height);
 	padding: 0;
 	color: var(--text-tertiary);
-	border-radius: var(--radius-md);
+	border-radius: var(--radius-lg);
 }
 
 button.iconBtn:hover {
@@ -128,25 +158,25 @@ button.iconBtn.active {
 }
 
 button.iconBtn.sm {
-	width: 24px;
-	height: 24px;
+	width: var(--button-height-sm);
+	height: var(--button-height-sm);
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   INPUTS
+   INPUTS - Modern rounded style
    ───────────────────────────────────────────────────────────────────────────── */
 input,
 textarea,
 select {
 	height: var(--input-height);
-	padding: var(--space-1) var(--space-2);
+	padding: var(--space-2) var(--space-3);
 	font-family: inherit;
 	font-size: var(--text-sm);
 	color: var(--text-primary);
 	background: var(--bg-primary);
 	border: 1px solid var(--border-default);
-	border-radius: var(--radius-md);
-	transition: all var(--transition-fast);
+	border-radius: var(--radius-lg);
+	transition: all var(--transition-base);
 }
 
 input:hover,
@@ -175,33 +205,40 @@ textarea {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   APP SHELL - Main Layout
+   APP SHELL - Main Layout with floating panels
    ───────────────────────────────────────────────────────────────────────────── */
 .appShell {
 	display: flex;
 	height: 100%;
+	padding: var(--float-inset);
+	gap: var(--float-gap);
 	background: var(--bg-canvas);
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   LEFT SIDEBAR - Navigation
+   LEFT SIDEBAR - Floating Navigation Panel
    ───────────────────────────────────────────────────────────────────────────── */
 .sidebar {
 	display: flex;
 	flex-direction: column;
-	width: 240px;
-	min-width: 200px;
-	background: var(--bg-sidebar);
-	border-right: 1px solid var(--border-light);
+	width: var(--sidebar-width);
+	min-width: 220px;
+	background: var(--glass-bg);
+	backdrop-filter: blur(var(--glass-blur));
+	-webkit-backdrop-filter: blur(var(--glass-blur));
+	border: 1px solid var(--glass-border);
+	border-radius: var(--radius-2xl);
+	box-shadow: var(--shadow-float);
 	overflow: hidden;
+	flex-shrink: 0;
 }
 
 .sidebarHeader {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	height: 48px;
-	padding: 0 var(--space-2) 0 var(--space-3);
+	height: var(--header-height);
+	padding: 0 var(--space-3) 0 var(--space-4);
 	border-bottom: 1px solid var(--border-light);
 	flex-shrink: 0;
 }
@@ -232,6 +269,7 @@ textarea {
 
 .sidebarSection {
 	border-bottom: 1px solid var(--border-light);
+	padding: var(--space-1) 0;
 }
 
 .sidebarSectionGrow {
@@ -289,7 +327,7 @@ textarea {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   MAIN CANVAS AREA
+   MAIN CANVAS AREA - Floating center panel
    ───────────────────────────────────────────────────────────────────────────── */
 .mainArea {
 	flex: 1;
@@ -297,15 +335,22 @@ textarea {
 	flex-direction: column;
 	min-width: 0;
 	min-height: 0;
+	background: var(--glass-bg);
+	backdrop-filter: blur(var(--glass-blur));
+	-webkit-backdrop-filter: blur(var(--glass-blur));
+	border: 1px solid var(--glass-border);
+	border-radius: var(--radius-2xl);
+	box-shadow: var(--shadow-float);
+	overflow: hidden;
 }
 
 .mainToolbar {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	height: 44px;
-	padding: 0 var(--space-3);
-	background: var(--bg-primary);
+	height: var(--header-height);
+	padding: 0 var(--space-4);
+	background: transparent;
 	border-bottom: 1px solid var(--border-light);
 	flex-shrink: 0;
 }
@@ -336,14 +381,16 @@ textarea {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   FLOATING AI PANEL
+   FLOATING AI PANEL - Glass morphism style
    ───────────────────────────────────────────────────────────────────────────── */
 .floatingPanel {
 	position: absolute;
-	background: var(--bg-primary);
-	border: 1px solid var(--border-default);
-	border-radius: var(--radius-xl);
-	box-shadow: var(--shadow-lg);
+	background: var(--glass-bg);
+	backdrop-filter: blur(var(--glass-blur));
+	-webkit-backdrop-filter: blur(var(--glass-blur));
+	border: 1px solid var(--glass-border);
+	border-radius: var(--radius-2xl);
+	box-shadow: var(--shadow-xl);
 	overflow: hidden;
 	z-index: 100;
 }
@@ -384,16 +431,21 @@ textarea {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   RIGHT PANEL - Note Editor
+   RIGHT PANEL - Floating Note Editor
    ───────────────────────────────────────────────────────────────────────────── */
 .editorPanel {
-	width: 400px;
-	min-width: 320px;
-	background: var(--bg-primary);
-	border-left: 1px solid var(--border-light);
+	width: var(--editor-width);
+	min-width: var(--editor-min-width);
+	background: var(--glass-bg);
+	backdrop-filter: blur(var(--glass-blur));
+	-webkit-backdrop-filter: blur(var(--glass-blur));
+	border: 1px solid var(--glass-border);
+	border-radius: var(--radius-2xl);
+	box-shadow: var(--shadow-float);
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
+	flex-shrink: 0;
 }
 
 .editorPane {
@@ -407,8 +459,8 @@ textarea {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	height: 44px;
-	padding: 0 var(--space-2) 0 var(--space-3);
+	height: var(--header-height);
+	padding: 0 var(--space-3) 0 var(--space-4);
 	border-bottom: 1px solid var(--border-light);
 	flex-shrink: 0;
 }
@@ -479,9 +531,11 @@ textarea {
    BACKLINKS
    ───────────────────────────────────────────────────────────────────────────── */
 .backlinksPane {
-	padding: var(--space-3);
+	padding: var(--space-4);
 	border-bottom: 1px solid var(--border-light);
 	background: var(--bg-secondary);
+	border-radius: var(--radius-lg);
+	margin: var(--space-2);
 }
 
 .backlinksHeader {
@@ -510,7 +564,8 @@ textarea {
 }
 
 .backlinksItem {
-	border-radius: var(--radius-md);
+	border-radius: var(--radius-lg);
+	transition: all var(--transition-fast);
 }
 
 .backlinksItem:hover {
@@ -548,7 +603,7 @@ textarea {
    SEARCH PANE
    ───────────────────────────────────────────────────────────────────────────── */
 .searchPane {
-	padding: var(--space-3);
+	padding: var(--space-4);
 }
 
 .searchHeader {
@@ -584,7 +639,8 @@ textarea {
 }
 
 .searchResult {
-	border-radius: var(--radius-md);
+	border-radius: var(--radius-lg);
+	transition: all var(--transition-fast);
 }
 
 .searchResultButton {
@@ -620,7 +676,7 @@ textarea {
    AI PANE (inside floating panel)
    ───────────────────────────────────────────────────────────────────────────── */
 .aiPane {
-	padding: var(--space-3);
+	padding: var(--space-4);
 }
 
 .aiHeader {
@@ -671,10 +727,10 @@ textarea {
 .aiContextPreview {
 	width: 100%;
 	min-height: 120px;
-	margin-top: var(--space-2);
-	padding: var(--space-2);
+	margin-top: var(--space-3);
+	padding: var(--space-3);
 	border: 1px solid var(--border-light);
-	border-radius: var(--radius-md);
+	border-radius: var(--radius-lg);
 	background: var(--bg-primary);
 	color: var(--text-primary);
 	resize: vertical;
@@ -834,8 +890,8 @@ textarea {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	height: 36px;
-	padding: 0 var(--space-2) 0 var(--space-3);
+	height: 40px;
+	padding: 0 var(--space-2) 0 var(--space-4);
 	flex-shrink: 0;
 }
 
@@ -852,7 +908,7 @@ textarea {
 
 .notesList {
 	flex: 1;
-	padding: 0 var(--space-1);
+	padding: 0 var(--space-2);
 	list-style: none;
 	overflow-y: auto;
 }
@@ -860,8 +916,9 @@ textarea {
 .notesListItem {
 	display: flex;
 	align-items: center;
-	border-radius: var(--radius-md);
-	margin-bottom: 1px;
+	border-radius: var(--radius-lg);
+	margin-bottom: 2px;
+	transition: all var(--transition-fast);
 }
 
 .notesListItem:hover {
@@ -936,8 +993,8 @@ textarea {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	height: 36px;
-	padding: 0 var(--space-2) 0 var(--space-3);
+	height: 40px;
+	padding: 0 var(--space-2) 0 var(--space-4);
 	flex-shrink: 0;
 }
 
@@ -954,14 +1011,15 @@ textarea {
 
 .canvasesList {
 	flex: 1;
-	padding: 0 var(--space-1);
+	padding: 0 var(--space-2);
 	list-style: none;
 	overflow-y: auto;
 }
 
 .canvasesListItem {
-	border-radius: var(--radius-md);
-	margin-bottom: 1px;
+	border-radius: var(--radius-lg);
+	margin-bottom: 2px;
+	transition: all var(--transition-fast);
 }
 
 .canvasesListItem:hover {
@@ -1017,9 +1075,9 @@ textarea {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	height: 40px;
-	padding: 0 var(--space-3);
-	background: var(--bg-primary);
+	height: var(--toolbar-height);
+	padding: 0 var(--space-4);
+	background: transparent;
 	border-bottom: 1px solid var(--border-light);
 }
 
@@ -1069,22 +1127,23 @@ textarea {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   REACTFLOW NODES
+   REACTFLOW NODES - Modern card design
    ───────────────────────────────────────────────────────────────────────────── */
 .rfNode {
-	padding: var(--space-3);
+	padding: var(--space-4);
 	border-radius: var(--radius-xl);
-	border: 1px solid var(--border-default);
+	border: 1px solid var(--border-light);
 	background: var(--bg-primary);
-	box-shadow: var(--shadow-sm);
-	max-width: 240px;
-	min-width: 140px;
+	box-shadow: var(--shadow-md);
+	max-width: 260px;
+	min-width: 160px;
 	transition: all var(--transition-base);
 }
 
 .rfNode:hover {
 	border-color: var(--border-strong);
-	box-shadow: var(--shadow-md);
+	box-shadow: var(--shadow-lg);
+	transform: translateY(-2px);
 }
 
 .rfNodeTitle {
@@ -1110,19 +1169,21 @@ textarea {
 
 .rfNodeLinkImage {
 	width: 100%;
-	max-height: 100px;
+	max-height: 120px;
 	object-fit: cover;
 	border-radius: var(--radius-lg);
-	margin-bottom: var(--space-2);
+	margin-bottom: var(--space-3);
 	background: var(--bg-tertiary);
 }
 
 .rfNodeFrame {
 	border-style: dashed;
+	border-color: var(--border-default);
 	background: rgba(255, 255, 255, 0.5);
 	box-shadow: none;
-	min-width: 200px;
-	min-height: 140px;
+	min-width: 220px;
+	min-height: 160px;
+	border-radius: var(--radius-2xl);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -1133,15 +1194,18 @@ textarea {
 
 /* ReactFlow handles */
 .react-flow__handle {
-	width: 8px;
-	height: 8px;
-	background: var(--bg-tertiary);
+	width: 10px;
+	height: 10px;
+	background: var(--bg-primary);
 	border: 2px solid var(--border-default);
+	border-radius: var(--radius-full);
+	transition: all var(--transition-fast);
 }
 
 .react-flow__handle:hover {
 	background: var(--interactive-accent);
 	border-color: var(--interactive-accent);
+	transform: scale(1.2);
 }
 
 /* ReactFlow edges */
@@ -1157,18 +1221,22 @@ textarea {
 
 /* ReactFlow controls */
 .react-flow__controls {
-	box-shadow: var(--shadow-md);
-	border-radius: var(--radius-lg);
+	box-shadow: var(--shadow-lg);
+	border-radius: var(--radius-xl);
 	border: 1px solid var(--border-light);
 	overflow: hidden;
+	background: var(--glass-bg);
+	backdrop-filter: blur(var(--glass-blur));
+	-webkit-backdrop-filter: blur(var(--glass-blur));
 }
 
 .react-flow__controls-button {
-	background: var(--bg-primary);
+	background: transparent;
 	border: none;
 	border-bottom: 1px solid var(--border-light);
-	width: 28px;
-	height: 28px;
+	width: 32px;
+	height: 32px;
+	transition: all var(--transition-fast);
 }
 
 .react-flow__controls-button:hover {
@@ -1183,10 +1251,12 @@ textarea {
 
 /* ReactFlow minimap */
 .react-flow__minimap {
-	background: var(--bg-primary);
-	border-radius: var(--radius-lg);
+	background: var(--glass-bg);
+	backdrop-filter: blur(var(--glass-blur));
+	-webkit-backdrop-filter: blur(var(--glass-blur));
+	border-radius: var(--radius-xl);
 	border: 1px solid var(--border-light);
-	box-shadow: var(--shadow-sm);
+	box-shadow: var(--shadow-md);
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -1194,15 +1264,17 @@ textarea {
    ───────────────────────────────────────────────────────────────────────────── */
 .appError {
 	position: fixed;
-	bottom: var(--space-4);
+	bottom: var(--space-6);
 	left: 50%;
 	transform: translateX(-50%);
-	padding: var(--space-2) var(--space-4);
+	padding: var(--space-3) var(--space-5);
 	font-size: var(--text-sm);
 	color: var(--text-error);
-	background: var(--bg-primary);
+	background: var(--glass-bg);
+	backdrop-filter: blur(var(--glass-blur));
+	-webkit-backdrop-filter: blur(var(--glass-blur));
 	border: 1px solid var(--feedback-error-bg);
-	border-radius: var(--radius-lg);
-	box-shadow: var(--shadow-lg);
+	border-radius: var(--radius-full);
+	box-shadow: var(--shadow-xl);
 	z-index: 1000;
 }

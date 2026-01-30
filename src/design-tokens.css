@@ -82,34 +82,37 @@
 	--space-10: 40px;
 	--space-12: 48px;
 
-	/* Border radius - Notion uses 3-4px for subtle, 8px for cards */
-	--radius-sm: 3px;
-	--radius-md: 4px;
-	--radius-lg: 6px;
-	--radius-xl: 8px;
+	/* Border radius - Modern rounded aesthetic */
+	--radius-sm: 4px;
+	--radius-md: 6px;
+	--radius-lg: 10px;
+	--radius-xl: 14px;
+	--radius-2xl: 18px;
+	--radius-full: 9999px;
 
-	/* Shadows - very subtle like Notion */
-	--shadow-sm: rgba(15, 15, 15, 0.03) 0px 0px 0px 1px, rgba(15, 15, 15, 0.04)
-		0px 3px 6px;
-	--shadow-md:
-		rgba(15, 15, 15, 0.04) 0px 0px 0px 1px, rgba(15, 15, 15, 0.08) 0px 3px 6px, rgba(
-			15,
-			15,
-			15,
-			0.06
-		) 0px 9px 24px;
-	--shadow-lg:
-		rgba(15, 15, 15, 0.04) 0px 0px 0px 1px, rgba(15, 15, 15, 0.1) 0px 5px 10px, rgba(
-			15,
-			15,
-			15,
-			0.08
-		) 0px 15px 40px;
+	/* Shadows - Layered for depth */
+	--shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.06);
+	--shadow-md: 0 2px 4px rgba(0, 0, 0, 0.04), 0 4px 8px rgba(0, 0, 0, 0.06),
+		0 8px 16px rgba(0, 0, 0, 0.04);
+	--shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.04), 0 8px 16px rgba(0, 0, 0, 0.06),
+		0 16px 32px rgba(0, 0, 0, 0.08);
+	--shadow-xl: 0 8px 16px rgba(0, 0, 0, 0.06), 0 16px 32px rgba(0, 0, 0, 0.08),
+		0 32px 64px rgba(0, 0, 0, 0.1);
+
+	/* Floating panel shadows */
+	--shadow-float: 0 0 0 1px rgba(0, 0, 0, 0.04), 0 4px 8px rgba(0, 0, 0, 0.04),
+		0 12px 24px rgba(0, 0, 0, 0.06), 0 24px 48px rgba(0, 0, 0, 0.08);
 
 	/* Transitions */
-	--transition-fast: 80ms ease-out;
-	--transition-base: 120ms ease-out;
-	--transition-slow: 200ms ease-out;
+	--transition-fast: 100ms cubic-bezier(0.4, 0, 0.2, 1);
+	--transition-base: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+	--transition-slow: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+	--transition-spring: 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+	/* Glass morphism */
+	--glass-bg: rgba(255, 255, 255, 0.8);
+	--glass-border: rgba(255, 255, 255, 0.5);
+	--glass-blur: 20px;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -166,18 +169,18 @@
 @media (prefers-color-scheme: dark) {
 	:root {
 		/* Surfaces - Obsidian-like dark with warm undertones */
-		--bg-primary: #1e1e1e;
-		--bg-secondary: #252525;
-		--bg-tertiary: #2d2d2d;
-		--bg-hover: rgba(255, 255, 255, 0.055);
-		--bg-active: rgba(255, 255, 255, 0.1);
-		--bg-sidebar: #202020;
-		--bg-canvas: #1a1a1a;
+		--bg-primary: #1a1a1a;
+		--bg-secondary: #222222;
+		--bg-tertiary: #2a2a2a;
+		--bg-hover: rgba(255, 255, 255, 0.06);
+		--bg-active: rgba(255, 255, 255, 0.12);
+		--bg-sidebar: #1e1e1e;
+		--bg-canvas: #141414;
 
 		/* Text */
-		--text-primary: rgba(255, 255, 255, 0.9);
-		--text-secondary: rgba(255, 255, 255, 0.6);
-		--text-tertiary: rgba(255, 255, 255, 0.4);
+		--text-primary: rgba(255, 255, 255, 0.92);
+		--text-secondary: rgba(255, 255, 255, 0.65);
+		--text-tertiary: rgba(255, 255, 255, 0.45);
 		--text-placeholder: rgba(255, 255, 255, 0.3);
 		--text-inverse: var(--color-gray-900);
 		--text-accent: var(--color-blue-400);
@@ -186,33 +189,38 @@
 		/* Borders */
 		--border-light: rgba(255, 255, 255, 0.06);
 		--border-default: rgba(255, 255, 255, 0.1);
-		--border-strong: rgba(255, 255, 255, 0.16);
+		--border-strong: rgba(255, 255, 255, 0.18);
 		--border-focus: var(--color-blue-400);
 
 		/* Interactive */
-		--interactive-hover: rgba(255, 255, 255, 0.055);
-		--interactive-active: rgba(255, 255, 255, 0.1);
+		--interactive-hover: rgba(255, 255, 255, 0.06);
+		--interactive-active: rgba(255, 255, 255, 0.12);
 		--interactive-accent: var(--color-blue-400);
 		--interactive-accent-hover: var(--color-blue-300);
 
 		/* Selection */
-		--selection-bg: rgba(35, 131, 226, 0.3);
-		--selection-bg-muted: rgba(35, 131, 226, 0.15);
+		--selection-bg: rgba(35, 131, 226, 0.35);
+		--selection-bg-muted: rgba(35, 131, 226, 0.18);
 
 		/* Feedback */
-		--feedback-error-bg: rgba(224, 62, 62, 0.15);
-		--feedback-success-bg: rgba(15, 123, 15, 0.15);
+		--feedback-error-bg: rgba(224, 62, 62, 0.18);
+		--feedback-success-bg: rgba(15, 123, 15, 0.18);
 
 		/* Scrollbar */
-		--scrollbar-thumb: rgba(255, 255, 255, 0.14);
-		--scrollbar-thumb-hover: rgba(255, 255, 255, 0.22);
+		--scrollbar-thumb: rgba(255, 255, 255, 0.16);
+		--scrollbar-thumb-hover: rgba(255, 255, 255, 0.24);
 
-		/* Shadows - more subtle in dark mode */
-		--shadow-sm: rgba(0, 0, 0, 0.2) 0px 0px 0px 1px;
-		--shadow-md: rgba(0, 0, 0, 0.25) 0px 0px 0px 1px, rgba(0, 0, 0, 0.3) 0px 4px
-			12px;
-		--shadow-lg: rgba(0, 0, 0, 0.3) 0px 0px 0px 1px, rgba(0, 0, 0, 0.4) 0px 8px
-			24px;
+		/* Shadows - softer in dark mode */
+		--shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+		--shadow-md: 0 2px 4px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15);
+		--shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 0, 0, 0.2);
+		--shadow-xl: 0 8px 16px rgba(0, 0, 0, 0.25), 0 24px 48px rgba(0, 0, 0, 0.3);
+		--shadow-float: 0 0 0 1px rgba(255, 255, 255, 0.06),
+			0 4px 12px rgba(0, 0, 0, 0.3), 0 16px 32px rgba(0, 0, 0, 0.25);
+
+		/* Glass morphism - dark mode */
+		--glass-bg: rgba(30, 30, 30, 0.85);
+		--glass-border: rgba(255, 255, 255, 0.08);
 	}
 }
 
@@ -221,18 +229,22 @@
    ───────────────────────────────────────────────────────────────────────────── */
 :root {
 	/* Layout - Notion's sidebar is 224px */
-	--sidebar-width: 240px;
+	--sidebar-width: 260px;
 	--sidebar-collapsed-width: 0px;
-	--header-height: 44px;
-	--toolbar-height: 42px;
+	--header-height: 48px;
+	--toolbar-height: 44px;
 
-	/* Interactive elements - Notion uses 28-32px heights */
-	--button-height: 28px;
-	--button-height-sm: 24px;
-	--input-height: 28px;
-	--list-item-height: 30px;
+	/* Interactive elements - slightly larger for better touch targets */
+	--button-height: 32px;
+	--button-height-sm: 26px;
+	--input-height: 32px;
+	--list-item-height: 34px;
 
 	/* Pane dimensions */
-	--editor-width: 360px;
-	--editor-min-width: 280px;
+	--editor-width: 380px;
+	--editor-min-width: 300px;
+
+	/* Floating panel spacing */
+	--float-gap: 12px;
+	--float-inset: 10px;
 }
