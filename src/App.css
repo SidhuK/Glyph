@@ -60,6 +60,11 @@ h1 {
   text-align: center;
 }
 
+.error {
+  margin-top: 16px;
+  color: #b00020;
+}
+
 input,
 button {
   border-radius: 8px;
@@ -99,6 +104,10 @@ button {
   :root {
     color: #f6f6f6;
     background-color: #2f2f2f;
+  }
+
+  .error {
+    color: #ff6b6b;
   }
 
   a:hover {
