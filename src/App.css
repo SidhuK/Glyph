@@ -396,6 +396,11 @@ button {
   word-break: break-word;
 }
 
+.rfNodeFrame {
+  border-style: dashed;
+  background: rgba(255, 255, 255, 0.55);
+}
+
 .editorEmpty {
   padding: 24px;
   opacity: 0.7;
@@ -470,6 +475,10 @@ button {
   .rfNode {
     border-color: rgba(255, 255, 255, 0.14);
     background: rgba(0, 0, 0, 0.28);
+  }
+
+  .rfNodeFrame {
+    background: rgba(0, 0, 0, 0.18);
   }
 
   .editorError,

@@ -35,7 +35,7 @@ export interface CanvasMeta {
   updated: string;
 }
 
-export type CanvasNode = Node<Record<string, unknown>, string>;
+export type CanvasNode = Node<Record<string, unknown>>;
 export type CanvasEdge = Edge<Record<string, unknown>>;
 
 export interface CanvasDoc {
