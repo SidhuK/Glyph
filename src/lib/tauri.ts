@@ -6,12 +6,20 @@ export interface AppInfo {
   identifier: string;
 }
 
+export interface VaultInfo {
+  root: string;
+  schema_version: number;
+}
+
 type CommandDef<Args, Result> = { args: Args; result: Result };
 
 interface TauriCommands {
   greet: CommandDef<{ name: string }, string>;
   ping: CommandDef<void, string>;
   app_info: CommandDef<void, AppInfo>;
+  vault_create: CommandDef<{ path: string }, VaultInfo>;
+  vault_open: CommandDef<{ path: string }, VaultInfo>;
+  vault_get_current: CommandDef<void, string | null>;
 }
 
 export class TauriInvokeError extends Error {
@@ -50,4 +58,3 @@ export async function invoke<K extends keyof TauriCommands>(
     throw new TauriInvokeError(errorMessage(raw), raw);
   }
 }
-

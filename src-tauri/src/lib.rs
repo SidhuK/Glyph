@@ -1,3 +1,7 @@
+mod io_atomic;
+mod paths;
+mod vault;
+
 use serde::Serialize;
 
 fn init_tracing() {
@@ -44,10 +48,18 @@ pub fn run() {
     init_tracing();
 
     tauri::Builder::default()
+        .manage(vault::VaultState::default())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_store::Builder::default().build())
-        .invoke_handler(tauri::generate_handler![greet, ping, app_info])
+        .invoke_handler(tauri::generate_handler![
+            greet,
+            ping,
+            app_info,
+            vault::vault_create,
+            vault::vault_open,
+            vault::vault_get_current
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

@@ -9,6 +9,7 @@ function App() {
   const [ping, setPing] = useState<string>("");
   const [error, setError] = useState<string>("");
   const [vaultPath, setVaultPath] = useState<string | null>(null);
+  const [vaultSchemaVersion, setVaultSchemaVersion] = useState<number | null>(null);
   const [recentVaults, setRecentVaults] = useState<string[]>([]);
 
   const versionLabel = useMemo(() => {
@@ -41,6 +42,15 @@ function App() {
         if (cancelled) return;
         setVaultPath(settings.currentVaultPath);
         setRecentVaults(settings.recentVaultPaths);
+
+        if (settings.currentVaultPath) {
+          try {
+            const opened = await invoke("vault_open", { path: settings.currentVaultPath });
+            if (!cancelled) setVaultSchemaVersion(opened.schema_version);
+          } catch {
+            if (!cancelled) setVaultSchemaVersion(null);
+          }
+        }
       } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
         if (!cancelled) setError(message);
@@ -62,30 +72,43 @@ function App() {
     }
   }, []);
 
-  const onPickVault = useCallback(async () => {
+  const pickDirectory = useCallback(async (): Promise<string | null> => {
+    const selection = await open({
+      title: "Select a vault folder",
+      directory: true,
+      multiple: false,
+    });
+    if (!selection) return null;
+    if (Array.isArray(selection)) return selection[0] ?? null;
+    return selection;
+  }, []);
+
+  const applyVaultSelection = useCallback(async (path: string, mode: "open" | "create") => {
     setError("");
     try {
-      const selection = await open({
-        title: "Select a vault folder",
-        directory: true,
-        multiple: false,
-      });
-      if (!selection) return;
-      if (Array.isArray(selection)) {
-        if (!selection[0]) return;
-        await setCurrentVaultPath(selection[0]);
-        setVaultPath(selection[0]);
-        setRecentVaults((prev) => [selection[0], ...prev.filter((p) => p !== selection[0])].slice(0, 20));
-      } else {
-        await setCurrentVaultPath(selection);
-        setVaultPath(selection);
-        setRecentVaults((prev) => [selection, ...prev.filter((p) => p !== selection)].slice(0, 20));
-      }
+      const info =
+        mode === "create" ? await invoke("vault_create", { path }) : await invoke("vault_open", { path });
+      await setCurrentVaultPath(info.root);
+      setVaultPath(info.root);
+      setVaultSchemaVersion(info.schema_version);
+      setRecentVaults((prev) => [info.root, ...prev.filter((p) => p !== info.root)].slice(0, 20));
     } catch (err) {
       const message = err instanceof Error ? err.message : String(err);
       setError(message);
     }
   }, []);
+
+  const onCreateVault = useCallback(async () => {
+    const path = await pickDirectory();
+    if (!path) return;
+    await applyVaultSelection(path, "create");
+  }, [applyVaultSelection, pickDirectory]);
+
+  const onOpenVault = useCallback(async () => {
+    const path = await pickDirectory();
+    if (!path) return;
+    await applyVaultSelection(path, "open");
+  }, [applyVaultSelection, pickDirectory]);
 
   return (
     <main className="container">
@@ -96,8 +119,11 @@ function App() {
         <button type="button" onClick={onPing}>
           Ping backend
         </button>
-        <button type="button" onClick={onPickVault}>
-          Pick vault folder
+        <button type="button" onClick={onCreateVault}>
+          Create vault
+        </button>
+        <button type="button" onClick={onOpenVault}>
+          Open vault
         </button>
       </div>
 
@@ -105,6 +131,7 @@ function App() {
       <div className="card">
         <h2>Vault</h2>
         <p className="mono">{vaultPath ?? "No vault selected"}</p>
+        <p>{vaultSchemaVersion ? `Schema v${vaultSchemaVersion}` : "Not initialized"}</p>
         {recentVaults.length ? (
           <>
             <h3>Recent</h3>
