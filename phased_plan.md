@@ -22,7 +22,7 @@ This is a coding-first, phased plan that keeps the app runnable at the end of ev
 - [x] Step 1 — Scaffold the app workspace
 - [x] Step 2 — Tauri permissions + plugin foundation
 - [x] Step 3 — Vault create/open + safe IO primitives
-- [ ] Step 4 — Notes system end-to-end (CRUD + editor + attachments)
+- [x] Step 4 — Notes system end-to-end (CRUD + editor + attachments)
 - [ ] Step 5 — Canvas core (xyflow) + persistence
 - [ ] Step 6 — Canvas “power tools” (groups, snap, align, undo/redo)
 - [ ] Step 7 — Indexing + search + backlinks + external edit handling

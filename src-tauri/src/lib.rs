@@ -1,4 +1,5 @@
 mod io_atomic;
+mod canvas;
 mod paths;
 mod notes;
 mod vault;
@@ -57,6 +58,10 @@ pub fn run() {
             greet,
             ping,
             app_info,
+            canvas::canvas_list,
+            canvas::canvas_create,
+            canvas::canvas_read,
+            canvas::canvas_write,
             notes::notes_list,
             notes::note_create,
             notes::note_read,

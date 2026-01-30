@@ -49,35 +49,35 @@ fn now_rfc3339() -> String {
 }
 
 fn split_frontmatter(markdown: &str) -> (Option<&str>, &str) {
-    let mut lines = markdown.lines();
-    if lines.next() != Some("---") {
+    if let Some(rest) = markdown.strip_prefix("---\n") {
+        if let Some(idx) = rest.find("\n---\n") {
+            let fm = &rest[..idx];
+            let body = &rest[idx + "\n---\n".len()..];
+            return (Some(fm), body);
+        }
+        if let Some(idx) = rest.find("\n---\r\n") {
+            let fm = &rest[..idx];
+            let body = &rest[idx + "\n---\r\n".len()..];
+            return (Some(fm), body);
+        }
         return (None, markdown);
     }
 
-    let mut end_byte = 0usize;
-    let mut found_end = false;
-    for (idx, line) in markdown.lines().enumerate() {
-        if idx == 0 {
-            end_byte += line.len() + 1;
-            continue;
+    if let Some(rest) = markdown.strip_prefix("---\r\n") {
+        if let Some(idx) = rest.find("\r\n---\r\n") {
+            let fm = &rest[..idx];
+            let body = &rest[idx + "\r\n---\r\n".len()..];
+            return (Some(fm), body);
         }
-        if line == "---" {
-            found_end = true;
-            break;
+        if let Some(idx) = rest.find("\r\n---\n") {
+            let fm = &rest[..idx];
+            let body = &rest[idx + "\r\n---\n".len()..];
+            return (Some(fm), body);
         }
-        end_byte += line.len() + 1;
-    }
-    if !found_end {
         return (None, markdown);
     }
 
-    // end_byte currently points to start of end marker line
-    let fm = &markdown["---\n".len()..end_byte];
-    // skip end marker line + trailing newline if present
-    let rest = &markdown[end_byte..];
-    let rest = rest.strip_prefix("---").unwrap_or(rest);
-    let rest = rest.strip_prefix('\n').unwrap_or(rest);
-    (Some(fm), rest)
+    (None, markdown)
 }
 
 fn render_frontmatter_yaml(fm: &Frontmatter) -> Result<String, String> {
@@ -356,4 +356,3 @@ pub async fn note_attach_file(
     .await
     .map_err(|e| e.to_string())?
 }
-
