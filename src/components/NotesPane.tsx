@@ -1,6 +1,6 @@
 import { memo } from "react";
-import { FileText, Plus, Trash2 } from "./Icons";
 import type { NoteMeta } from "../lib/tauri";
+import { FileText, Plus, Trash2 } from "./Icons";
 
 interface NotesPaneProps {
 	notes: NoteMeta[];

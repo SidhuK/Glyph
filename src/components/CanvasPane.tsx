@@ -20,14 +20,15 @@ import {
 	useNodesState,
 } from "@xyflow/react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { invoke } from "../lib/tauri";
 import {
 	AlignCenter,
+	AlignCenterVertical,
 	AlignEndVertical,
 	AlignHorizontalSpaceAround,
 	AlignLeft,
 	AlignRight,
 	AlignStartVertical,
-	AlignCenterVertical,
 	AlignVerticalSpaceAround,
 	Frame,
 	Grid3X3,
@@ -36,7 +37,6 @@ import {
 	StickyNote,
 	Type,
 } from "./Icons";
-import { invoke } from "../lib/tauri";
 
 export type CanvasNode = Node<Record<string, unknown>>;
 export type CanvasEdge = Edge<Record<string, unknown>>;

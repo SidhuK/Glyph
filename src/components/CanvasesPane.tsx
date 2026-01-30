@@ -1,6 +1,6 @@
 import { memo } from "react";
-import { Layout, Plus } from "./Icons";
 import type { CanvasMeta } from "../lib/tauri";
+import { Layout, Plus } from "./Icons";
 
 interface CanvasesPaneProps {
 	canvases: CanvasMeta[];

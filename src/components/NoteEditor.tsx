@@ -2,8 +2,8 @@ import { markdown } from "@codemirror/lang-markdown";
 import type { EditorView } from "@codemirror/view";
 import CodeMirror from "@uiw/react-codemirror";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Paperclip, RotateCcw, Save } from "./Icons";
 import type { BacklinkItem, NoteDoc } from "../lib/tauri";
+import { Paperclip, RotateCcw, Save } from "./Icons";
 
 type SaveState = "idle" | "dirty" | "saving" | "saved" | "error";
 
