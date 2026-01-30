@@ -26,11 +26,11 @@ This is a coding-first, phased plan that keeps the app runnable at the end of ev
 - [x] Step 5 — Canvas core (xyflow) + persistence
 - [x] Step 6 — Canvas “power tools” (groups, snap, align, undo/redo)
 - [x] Step 7 — Indexing + search + backlinks + external edit handling
-- [ ] Step 8 — Link previews (OpenGraph) + caching + YouTube metadata
-- [ ] Step 9 — AI foundations (providers, profiles, secrets, streaming, cancellation)
-- [ ] Step 10 — AI context selection + payload preview + token budgeting
-- [ ] Step 11 — AI actions: note rewrite diff/apply + generate notes/cards + audit log
-- [ ] Step 12 — macOS polish + hardening + release readiness
+- [x] Step 8 — Link previews (OpenGraph) + caching + YouTube metadata
+- [x] Step 9 — AI foundations (providers, profiles, secrets, streaming, cancellation)
+- [x] Step 10 — AI context selection + payload preview + token budgeting
+- [x] Step 11 — AI actions: note rewrite diff/apply + generate notes/cards + audit log
+- [x] Step 12 — macOS polish + hardening + release readiness
 
 ---
 
