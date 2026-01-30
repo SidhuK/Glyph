@@ -87,7 +87,8 @@
 	--radius-md: 6px;
 	--radius-lg: 10px;
 	--radius-xl: 14px;
-	--radius-2xl: 18px;
+	--radius-2xl: 22px;
+	--radius-3xl: 28px;
 	--radius-full: 9999px;
 
 	/* Shadows - Layered for depth */
@@ -246,5 +247,5 @@
 
 	/* Floating panel spacing */
 	--float-gap: 12px;
-	--float-inset: 10px;
+	--float-inset: 6px;
 }

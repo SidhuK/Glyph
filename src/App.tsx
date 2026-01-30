@@ -563,7 +563,7 @@ function App() {
 		<div className="appShell">
 			{/* Left Sidebar - Project Navigation */}
 			<aside className="sidebar">
-				<div className="sidebarHeader">
+				<div className="sidebarHeader" data-tauri-drag-region>
 					<div className="sidebarBrand">
 						<span className="brandIcon">◈</span>
 						<span className="brandName">Tether</span>
@@ -663,7 +663,7 @@ function App() {
 			{/* Main Canvas Area */}
 			<main className="mainArea">
 				{/* Canvas Toolbar */}
-				<div className="mainToolbar">
+				<div className="mainToolbar" data-tauri-drag-region>
 					<div className="mainToolbarLeft">
 						<span className="canvasTitle">
 							{activeCanvasDoc?.title || "No canvas selected"}

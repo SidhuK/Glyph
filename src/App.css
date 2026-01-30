@@ -227,7 +227,7 @@ textarea {
 	backdrop-filter: blur(var(--glass-blur));
 	-webkit-backdrop-filter: blur(var(--glass-blur));
 	border: 1px solid var(--glass-border);
-	border-radius: var(--radius-2xl);
+	border-radius: var(--radius-3xl);
 	box-shadow: var(--shadow-float);
 	overflow: hidden;
 	flex-shrink: 0;
@@ -239,8 +239,10 @@ textarea {
 	justify-content: space-between;
 	height: var(--header-height);
 	padding: 0 var(--space-3) 0 var(--space-4);
+	padding-left: 78px; /* Space for macOS traffic lights */
 	border-bottom: 1px solid var(--border-light);
 	flex-shrink: 0;
+	-webkit-app-region: drag;
 }
 
 .sidebarBrand {
@@ -339,7 +341,7 @@ textarea {
 	backdrop-filter: blur(var(--glass-blur));
 	-webkit-backdrop-filter: blur(var(--glass-blur));
 	border: 1px solid var(--glass-border);
-	border-radius: var(--radius-2xl);
+	border-radius: var(--radius-3xl);
 	box-shadow: var(--shadow-float);
 	overflow: hidden;
 }
@@ -353,6 +355,15 @@ textarea {
 	background: transparent;
 	border-bottom: 1px solid var(--border-light);
 	flex-shrink: 0;
+	-webkit-app-region: drag;
+}
+
+/* Ensure interactive elements inside drag regions are clickable */
+.sidebarHeader button,
+.sidebarHeader input,
+.mainToolbar button,
+.mainToolbar input {
+	-webkit-app-region: no-drag;
 }
 
 .mainToolbarLeft {
@@ -389,7 +400,7 @@ textarea {
 	backdrop-filter: blur(var(--glass-blur));
 	-webkit-backdrop-filter: blur(var(--glass-blur));
 	border: 1px solid var(--glass-border);
-	border-radius: var(--radius-2xl);
+	border-radius: var(--radius-3xl);
 	box-shadow: var(--shadow-xl);
 	overflow: hidden;
 	z-index: 100;
@@ -440,7 +451,7 @@ textarea {
 	backdrop-filter: blur(var(--glass-blur));
 	-webkit-backdrop-filter: blur(var(--glass-blur));
 	border: 1px solid var(--glass-border);
-	border-radius: var(--radius-2xl);
+	border-radius: var(--radius-3xl);
 	box-shadow: var(--shadow-float);
 	display: flex;
 	flex-direction: column;
