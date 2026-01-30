@@ -120,6 +120,29 @@ button.sm {
 	font-size: var(--text-xs);
 }
 
+/* Icon-only buttons */
+button.iconBtn {
+	width: var(--button-height);
+	height: var(--button-height);
+	padding: 0;
+	color: var(--text-tertiary);
+}
+
+button.iconBtn:hover {
+	color: var(--text-primary);
+	background: var(--bg-hover);
+}
+
+button.iconBtn.active {
+	color: var(--interactive-accent);
+	background: var(--selection-bg-muted);
+}
+
+button.iconBtn:disabled {
+	color: var(--text-tertiary);
+	opacity: 0.4;
+}
+
 /* Accent button */
 button.accent {
 	background: var(--interactive-accent);
@@ -546,6 +569,9 @@ textarea {
 }
 
 .notesPaneTitle {
+	display: flex;
+	align-items: center;
+	gap: var(--space-1);
 	font-size: var(--text-xs);
 	font-weight: var(--font-semibold);
 	color: var(--text-tertiary);
@@ -653,6 +679,9 @@ textarea {
 }
 
 .canvasesPaneTitle {
+	display: flex;
+	align-items: center;
+	gap: var(--space-1);
 	font-size: var(--text-xs);
 	font-weight: var(--font-semibold);
 	color: var(--text-tertiary);

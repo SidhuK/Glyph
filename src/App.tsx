@@ -12,6 +12,7 @@ import "./App.css";
 import { listen } from "@tauri-apps/api/event";
 import { AIPane, type SelectedCanvasNode } from "./components/AIPane";
 import { CanvasesPane } from "./components/CanvasesPane";
+import { FolderOpen, FolderPlus, Zap } from "./components/Icons";
 import { NoteEditor } from "./components/NoteEditor";
 import { NotesPane } from "./components/NotesPane";
 import { SearchPane } from "./components/SearchPane";
@@ -551,14 +552,29 @@ function App() {
 					<div className="appSub">{versionLabel}</div>
 				</div>
 				<div className="appHeaderRight">
-					<button type="button" onClick={onPing}>
-						Ping
+					<button
+						type="button"
+						className="iconBtn"
+						onClick={onPing}
+						title="Test connection"
+					>
+						<Zap size={16} />
 					</button>
-					<button type="button" onClick={onCreateVault}>
-						Create vault
+					<button
+						type="button"
+						className="iconBtn"
+						onClick={onCreateVault}
+						title="Create vault"
+					>
+						<FolderPlus size={16} />
 					</button>
-					<button type="button" onClick={onOpenVault}>
-						Open vault
+					<button
+						type="button"
+						className="iconBtn"
+						onClick={onOpenVault}
+						title="Open vault"
+					>
+						<FolderOpen size={16} />
 					</button>
 				</div>
 			</header>

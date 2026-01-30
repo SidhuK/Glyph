@@ -5,7 +5,10 @@
 	"type": "module",
 	"packageManager": "pnpm@10.28.2",
 	"pnpm": {
-		"onlyBuiltDependencies": ["@biomejs/biome", "esbuild"]
+		"onlyBuiltDependencies": [
+			"@biomejs/biome",
+			"esbuild"
+		]
 	},
 	"scripts": {
 		"dev": "vite",
@@ -26,6 +29,7 @@
 		"@tauri-apps/plugin-store": "^2",
 		"@uiw/react-codemirror": "^4.25.4",
 		"@xyflow/react": "^12.10.0",
+		"lucide-react": "^0.563.0",
 		"react": "^19.1.0",
 		"react-dom": "^19.1.0"
 	},

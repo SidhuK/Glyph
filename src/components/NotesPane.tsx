@@ -1,4 +1,5 @@
 import { memo } from "react";
+import { FileText, Plus, Trash2 } from "./Icons";
 import type { NoteMeta } from "../lib/tauri";
 
 interface NotesPaneProps {
@@ -19,9 +20,17 @@ export const NotesPane = memo(function NotesPane({
 	return (
 		<aside className="notesPane">
 			<div className="notesPaneHeader">
-				<h2 className="notesPaneTitle">Notes</h2>
-				<button type="button" className="sm" onClick={onCreateNote}>
-					+ New
+				<h2 className="notesPaneTitle">
+					<FileText size={14} />
+					Notes
+				</h2>
+				<button
+					type="button"
+					className="iconBtn"
+					onClick={onCreateNote}
+					title="New note"
+				>
+					<Plus size={16} />
 				</button>
 			</div>
 			<ul className="notesList">
@@ -47,7 +56,7 @@ export const NotesPane = memo(function NotesPane({
 								aria-label={`Delete ${n.title}`}
 								title="Delete note"
 							>
-								×
+								<Trash2 size={14} />
 							</button>
 						</li>
 					);

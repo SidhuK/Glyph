@@ -1,4 +1,5 @@
 import { memo } from "react";
+import { Layout, Plus } from "./Icons";
 import type { CanvasMeta } from "../lib/tauri";
 
 interface CanvasesPaneProps {
@@ -17,9 +18,17 @@ export const CanvasesPane = memo(function CanvasesPane({
 	return (
 		<aside className="canvasesPane">
 			<div className="canvasesPaneHeader">
-				<h2 className="canvasesPaneTitle">Canvases</h2>
-				<button type="button" className="sm" onClick={onCreateCanvas}>
-					+ New
+				<h2 className="canvasesPaneTitle">
+					<Layout size={14} />
+					Canvases
+				</h2>
+				<button
+					type="button"
+					className="iconBtn"
+					onClick={onCreateCanvas}
+					title="New canvas"
+				>
+					<Plus size={16} />
 				</button>
 			</div>
 			<ul className="canvasesList">

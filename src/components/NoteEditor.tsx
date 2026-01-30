@@ -2,6 +2,7 @@ import { markdown } from "@codemirror/lang-markdown";
 import type { EditorView } from "@codemirror/view";
 import CodeMirror from "@uiw/react-codemirror";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Paperclip, RotateCcw, Save } from "./Icons";
 import type { BacklinkItem, NoteDoc } from "../lib/tauri";
 
 type SaveState = "idle" | "dirty" | "saving" | "saved" | "error";
@@ -156,29 +157,29 @@ export const NoteEditor = memo(function NoteEditor({
 				<div className="editorActions">
 					<button
 						type="button"
-						className="sm"
+						className="iconBtn"
 						onClick={attach}
 						title="Attach a file to this note"
 					>
-						+ Attach
+						<Paperclip size={16} />
 					</button>
 					{isConflict ? (
 						<>
 							<button
 								type="button"
-								className="sm"
+								className="iconBtn"
 								onClick={reloadFromDisk}
 								title="Reload note from disk"
 							>
-								↻ Reload
+								<RotateCcw size={16} />
 							</button>
 							<button
 								type="button"
-								className="sm"
+								className="iconBtn"
 								onClick={overwriteDisk}
 								title="Overwrite disk with current content"
 							>
-								⇧ Overwrite
+								<Save size={16} />
 							</button>
 						</>
 					) : null}

@@ -20,6 +20,22 @@ import {
 	useNodesState,
 } from "@xyflow/react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+	AlignCenter,
+	AlignEndVertical,
+	AlignHorizontalSpaceAround,
+	AlignLeft,
+	AlignRight,
+	AlignStartVertical,
+	AlignCenterVertical,
+	AlignVerticalSpaceAround,
+	Frame,
+	Grid3X3,
+	Link,
+	RefreshCw,
+	StickyNote,
+	Type,
+} from "./Icons";
 import { invoke } from "../lib/tauri";
 
 export type CanvasNode = Node<Record<string, unknown>>;
@@ -778,109 +794,131 @@ export default function CanvasPane({
 					)}
 				</div>
 				<div className="canvasToolbarRight">
-					<button type="button" onClick={onAddText} title="Add text block">
-						+ Text
-					</button>
-					<button type="button" onClick={onAddLink} title="Add link">
-						+ Link
+					<button
+						type="button"
+						className="iconBtn"
+						onClick={onAddText}
+						title="Add text block"
+					>
+						<Type size={16} />
 					</button>
 					<button
 						type="button"
+						className="iconBtn"
+						onClick={onAddLink}
+						title="Add link"
+					>
+						<Link size={16} />
+					</button>
+					<button
+						type="button"
+						className="iconBtn"
 						onClick={onAddNote}
 						disabled={!activeNoteId}
 						title="Add current note to canvas"
 					>
-						+ Note
+						<StickyNote size={16} />
 					</button>
 					<button
 						type="button"
+						className="iconBtn"
 						onClick={onRefreshSelectedLink}
 						disabled={!selectedLinkNode}
 						title="Refresh selected link preview"
 					>
-						↻ Refresh
+						<RefreshCw size={16} />
 					</button>
 					<span className="toolbarDivider" />
 					<button
 						type="button"
+						className="iconBtn"
 						onClick={onFrameSelection}
 						disabled={!selectedNodes.length}
 						title="Group selection in a frame"
 					>
-						Frame
+						<Frame size={16} />
 					</button>
 					<button
 						type="button"
+						className={snapToGrid ? "iconBtn active" : "iconBtn"}
 						onClick={onToggleSnap}
 						title="Toggle snap to grid"
 					>
-						{snapToGrid ? "⊞ Snap" : "⊟ Snap"}
+						<Grid3X3 size={16} />
 					</button>
 					<span className="toolbarDivider" />
 					<button
 						type="button"
+						className="iconBtn"
 						onClick={() => applyAlign("left")}
 						disabled={selectedNodes.length < 2}
 						title="Align left"
 					>
-						⇤
+						<AlignLeft size={16} />
 					</button>
 					<button
 						type="button"
+						className="iconBtn"
 						onClick={() => applyAlign("centerX")}
 						disabled={selectedNodes.length < 2}
 						title="Align center"
 					>
-						⇹
+						<AlignCenter size={16} />
 					</button>
 					<button
 						type="button"
+						className="iconBtn"
 						onClick={() => applyAlign("right")}
 						disabled={selectedNodes.length < 2}
 						title="Align right"
 					>
-						⇥
+						<AlignRight size={16} />
 					</button>
 					<button
 						type="button"
+						className="iconBtn"
 						onClick={() => applyAlign("top")}
 						disabled={selectedNodes.length < 2}
 						title="Align top"
 					>
-						⤒
+						<AlignStartVertical size={16} />
 					</button>
 					<button
 						type="button"
+						className="iconBtn"
 						onClick={() => applyAlign("centerY")}
 						disabled={selectedNodes.length < 2}
 						title="Align middle"
 					>
-						⇿
+						<AlignCenterVertical size={16} />
 					</button>
 					<button
 						type="button"
+						className="iconBtn"
 						onClick={() => applyAlign("bottom")}
 						disabled={selectedNodes.length < 2}
 						title="Align bottom"
 					>
-						⤓
+						<AlignEndVertical size={16} />
 					</button>
 					<span className="toolbarDivider" />
 					<button
 						type="button"
+						className="iconBtn"
 						onClick={() => applyDistribute("x")}
 						disabled={selectedNodes.length < 3}
 						title="Distribute horizontally"
 					>
-						⋯
+						<AlignHorizontalSpaceAround size={16} />
 					</button>
 					<button
 						type="button"
+						className="iconBtn"
 						onClick={() => applyDistribute("y")}
 						disabled={selectedNodes.length < 3}
 						title="Distribute vertically"
 					>
-						⋮
+						<AlignVerticalSpaceAround size={16} />
 					</button>
 				</div>
 			</div>
