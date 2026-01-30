@@ -210,8 +210,6 @@ textarea {
 .appShell {
 	display: flex;
 	height: 100%;
-	padding: var(--float-inset);
-	gap: var(--float-gap);
 	background: var(--bg-canvas);
 }
 
@@ -223,12 +221,8 @@ textarea {
 	flex-direction: column;
 	width: var(--sidebar-width);
 	min-width: 220px;
-	background: var(--glass-bg);
-	backdrop-filter: blur(var(--glass-blur));
-	-webkit-backdrop-filter: blur(var(--glass-blur));
-	border: 1px solid var(--glass-border);
-	border-radius: var(--radius-3xl);
-	box-shadow: var(--shadow-float);
+	background: var(--bg-sidebar);
+	border-right: 1px solid var(--border-light);
 	overflow: hidden;
 	flex-shrink: 0;
 }
@@ -243,6 +237,21 @@ textarea {
 	border-bottom: 1px solid var(--border-light);
 	flex-shrink: 0;
 	-webkit-app-region: drag;
+	position: relative;
+}
+
+/* Pill background for traffic lights */
+.sidebarHeader::before {
+	content: "";
+	position: absolute;
+	left: 6px;
+	top: 50%;
+	transform: translateY(-50%);
+	width: 60px;
+	height: 26px;
+	background: var(--bg-hover);
+	border-radius: var(--radius-full);
+	pointer-events: none;
 }
 
 .sidebarBrand {
@@ -337,12 +346,7 @@ textarea {
 	flex-direction: column;
 	min-width: 0;
 	min-height: 0;
-	background: var(--glass-bg);
-	backdrop-filter: blur(var(--glass-blur));
-	-webkit-backdrop-filter: blur(var(--glass-blur));
-	border: 1px solid var(--glass-border);
-	border-radius: var(--radius-3xl);
-	box-shadow: var(--shadow-float);
+	background: var(--bg-primary);
 	overflow: hidden;
 }
 
@@ -447,12 +451,8 @@ textarea {
 .editorPanel {
 	width: var(--editor-width);
 	min-width: var(--editor-min-width);
-	background: var(--glass-bg);
-	backdrop-filter: blur(var(--glass-blur));
-	-webkit-backdrop-filter: blur(var(--glass-blur));
-	border: 1px solid var(--glass-border);
-	border-radius: var(--radius-3xl);
-	box-shadow: var(--shadow-float);
+	background: var(--bg-primary);
+	border-left: 1px solid var(--border-light);
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
