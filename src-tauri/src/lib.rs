@@ -1,5 +1,6 @@
 mod io_atomic;
 mod paths;
+mod notes;
 mod vault;
 
 use serde::Serialize;
@@ -56,6 +57,12 @@ pub fn run() {
             greet,
             ping,
             app_info,
+            notes::notes_list,
+            notes::note_create,
+            notes::note_read,
+            notes::note_write,
+            notes::note_delete,
+            notes::note_attach_file,
             vault::vault_create,
             vault::vault_open,
             vault::vault_get_current

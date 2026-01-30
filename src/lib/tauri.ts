@@ -11,6 +11,23 @@ export interface VaultInfo {
   schema_version: number;
 }
 
+export interface NoteMeta {
+  id: string;
+  title: string;
+  created: string;
+  updated: string;
+}
+
+export interface NoteDoc {
+  meta: NoteMeta;
+  markdown: string;
+}
+
+export interface AttachmentResult {
+  asset_rel_path: string;
+  markdown: string;
+}
+
 type CommandDef<Args, Result> = { args: Args; result: Result };
 
 interface TauriCommands {
@@ -20,6 +37,12 @@ interface TauriCommands {
   vault_create: CommandDef<{ path: string }, VaultInfo>;
   vault_open: CommandDef<{ path: string }, VaultInfo>;
   vault_get_current: CommandDef<void, string | null>;
+  notes_list: CommandDef<void, NoteMeta[]>;
+  note_create: CommandDef<{ title: string }, NoteMeta>;
+  note_read: CommandDef<{ id: string }, NoteDoc>;
+  note_write: CommandDef<{ id: string; markdown: string }, void>;
+  note_delete: CommandDef<{ id: string }, void>;
+  note_attach_file: CommandDef<{ note_id: string; source_path: string }, AttachmentResult>;
 }
 
 export class TauriInvokeError extends Error {
