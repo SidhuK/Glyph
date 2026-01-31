@@ -1,4 +1,4 @@
-use crate::{io_atomic, net, paths, vault::VaultState};
+use crate::{io_atomic, net, tether_paths, vault::VaultState};
 use futures_util::StreamExt;
 use serde::{Deserialize, Serialize};
 use std::{
@@ -613,7 +613,9 @@ async fn stream_gemini(
 }
 
 fn audit_log_path(vault_root: &Path, job_id: &str) -> Result<PathBuf, String> {
-	let dir = paths::join_under(vault_root, Path::new("cache/ai"))?;
+	let base = tether_paths::ensure_tether_cache_dir(vault_root)?;
+	let dir = base.join("ai");
+	std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
 	Ok(dir.join(format!("{job_id}.json")))
 }
 

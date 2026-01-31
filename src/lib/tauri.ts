@@ -12,6 +12,25 @@ export interface VaultInfo {
 	schema_version: number;
 }
 
+export interface FsEntry {
+	name: string;
+	rel_path: string;
+	kind: "dir" | "file";
+	is_markdown: boolean;
+}
+
+export interface TextFileDoc {
+	rel_path: string;
+	text: string;
+	etag: string;
+	mtime_ms: number;
+}
+
+export interface TextFileWriteResult {
+	etag: string;
+	mtime_ms: number;
+}
+
 export interface NoteMeta {
 	id: string;
 	title: string;
@@ -124,6 +143,13 @@ interface TauriCommands {
 	vault_create: CommandDef<{ path: string }, VaultInfo>;
 	vault_open: CommandDef<{ path: string }, VaultInfo>;
 	vault_get_current: CommandDef<void, string | null>;
+	vault_list_dir: CommandDef<{ dir?: string | null }, FsEntry[]>;
+	vault_read_text: CommandDef<{ path: string }, TextFileDoc>;
+	vault_write_text: CommandDef<
+		{ path: string; text: string; base_mtime_ms?: number | null },
+		TextFileWriteResult
+	>;
+	vault_relativize_path: CommandDef<{ abs_path: string }, string>;
 	notes_list: CommandDef<void, NoteMeta[]>;
 	note_create: CommandDef<{ title: string }, NoteMeta>;
 	note_read: CommandDef<{ id: string }, NoteDoc>;

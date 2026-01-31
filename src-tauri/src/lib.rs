@@ -6,6 +6,8 @@ mod links;
 mod net;
 mod paths;
 mod notes;
+mod vault_fs;
+mod tether_paths;
 mod vault;
 
 use serde::Serialize;
@@ -83,6 +85,10 @@ pub fn run() {
             index::search,
             index::backlinks,
             links::link_preview,
+            vault_fs::vault_list_dir,
+            vault_fs::vault_read_text,
+            vault_fs::vault_write_text,
+            vault_fs::vault_relativize_path,
             notes::notes_list,
             notes::note_create,
             notes::note_read,

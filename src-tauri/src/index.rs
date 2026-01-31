@@ -1,4 +1,4 @@
-use crate::{paths, vault::VaultState};
+use crate::{paths, tether_paths, vault::VaultState};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::{
@@ -30,7 +30,7 @@ pub struct BacklinkItem {
 }
 
 fn db_path(vault_root: &Path) -> Result<PathBuf, String> {
-    paths::join_under(vault_root, Path::new("cache/index.sqlite"))
+    tether_paths::tether_db_path(vault_root)
 }
 
 fn now_sqlite_compatible_iso8601() -> String {

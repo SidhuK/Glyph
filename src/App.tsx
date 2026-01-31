@@ -1,4 +1,4 @@
-import { open } from "@tauri-apps/plugin-dialog";
+import { open, save } from "@tauri-apps/plugin-dialog";
 import {
 	Suspense,
 	lazy,
@@ -16,6 +16,7 @@ import type {
 	CanvasNode,
 } from "./components/CanvasPane";
 import { CanvasesPane } from "./components/CanvasesPane";
+import { FileTreePane } from "./components/FileTreePane";
 import {
 	FolderOpen,
 	FolderPlus,
@@ -29,21 +30,18 @@ import {
 } from "./components/Icons";
 import {
 	AnimatePresence,
-	MotionEditorPanel,
 	MotionFloatingPanel,
 	MotionIconButton,
 } from "./components/MotionUI";
-import { NoteEditor } from "./components/NoteEditor";
-import { NotesPane } from "./components/NotesPane";
+import { MarkdownFileEditor } from "./components/MarkdownFileEditor";
 import { SearchPane } from "./components/SearchPane";
 import { loadSettings, setCurrentVaultPath } from "./lib/settings";
 import {
 	type AppInfo,
-	type BacklinkItem,
 	type CanvasDoc,
 	type CanvasMeta,
-	type NoteDoc,
-	type NoteMeta,
+	type FsEntry,
+	type TextFileDoc,
 	type SearchResult,
 	TauriInvokeError,
 	invoke,
@@ -59,9 +57,17 @@ function App() {
 		null,
 	);
 	const [recentVaults, setRecentVaults] = useState<string[]>([]);
-	const [notes, setNotes] = useState<NoteMeta[]>([]);
-	const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
-	const [activeDoc, setActiveDoc] = useState<NoteDoc | null>(null);
+	const [rootEntries, setRootEntries] = useState<FsEntry[]>([]);
+	const [childrenByDir, setChildrenByDir] = useState<
+		Record<string, FsEntry[] | undefined>
+	>({});
+	const [expandedDirs, setExpandedDirs] = useState<Set<string>>(
+		() => new Set(),
+	);
+	const [activeFilePath, setActiveFilePath] = useState<string | null>(null);
+	const [activeFileDoc, setActiveFileDoc] = useState<TextFileDoc | null>(null);
+	const [editorValue, setEditorValue] = useState<string>("");
+	const [isEditorDirty, setIsEditorDirty] = useState(false);
 	const [canvases, setCanvases] = useState<CanvasMeta[]>([]);
 	const [activeCanvasId, setActiveCanvasId] = useState<string | null>(null);
 	const [activeCanvasDoc, setActiveCanvasDoc] = useState<CanvasDoc | null>(
@@ -76,27 +82,20 @@ function App() {
 	>([]);
 	const [canvasCommand, setCanvasCommand] =
 		useState<CanvasExternalCommand | null>(null);
-	const [backlinks, setBacklinks] = useState<BacklinkItem[]>([]);
-	const [backlinksError, setBacklinksError] = useState("");
 	const [showAiPanel, setShowAiPanel] = useState(false);
-	const [showNoteEditor, setShowNoteEditor] = useState(false);
 	const [showSearch, setShowSearch] = useState(false);
 	const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-	const noteLoadSeq = useRef(0);
-	const activeNoteIdRef = useRef<string | null>(null);
-	const notesRef = useRef<NoteMeta[]>([]);
+	const fileLoadSeq = useRef(0);
 	const canvasLoadSeq = useRef(0);
-	const lastSavedNoteIdRef = useRef<string | null>(null);
-	const lastSavedAtMsRef = useRef<number>(0);
 
 	// Keep info in sync but don't use it directly in render
 	void info;
 
-	const activeNoteTitle = useMemo(() => {
-		if (!activeNoteId) return null;
-		const meta = notes.find((n) => n.id === activeNoteId);
-		return meta?.title ?? null;
-	}, [activeNoteId, notes]);
+	const activeFileTitle = useMemo(() => {
+		if (!activeFilePath) return null;
+		const name = activeFilePath.split("/").pop();
+		return name || activeFilePath;
+	}, [activeFilePath]);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -134,6 +133,12 @@ function App() {
 							path: settings.currentVaultPath,
 						});
 						if (!cancelled) setVaultSchemaVersion(opened.schema_version);
+						try {
+							const entries = await invoke("vault_list_dir", {});
+							if (!cancelled) setRootEntries(entries);
+						} catch {
+							// ignore
+						}
 						try {
 							await invoke("index_rebuild");
 						} catch {
@@ -179,11 +184,14 @@ function App() {
 					[info.root, ...prev.filter((p) => p !== info.root)].slice(0, 20),
 				);
 
-				setNotes([]);
-				setActiveNoteId(null);
-				setActiveDoc(null);
-				setBacklinks([]);
-				setBacklinksError("");
+				setRootEntries([]);
+				setChildrenByDir({});
+				setExpandedDirs(new Set());
+				setActiveFilePath(null);
+				setActiveFileDoc(null);
+				setEditorValue("");
+				setIsEditorDirty(false);
+
 				setCanvases([]);
 				setActiveCanvasId(null);
 				setActiveCanvasDoc(null);
@@ -191,20 +199,13 @@ function App() {
 				setSearchResults([]);
 				setSearchError("");
 
-				const [notesList, canvasesList] = await Promise.all([
-					invoke("notes_list"),
+				const [entries, canvasesList] = await Promise.all([
+					invoke("vault_list_dir", {}),
 					invoke("canvas_list"),
 				]);
-				setNotes(notesList);
-				if (notesList[0]?.id) setActiveNoteId(notesList[0].id);
-
-				let nextCanvases = canvasesList;
-				if (!nextCanvases.length) {
-					const created = await invoke("canvas_create", { title: "Main" });
-					nextCanvases = [created];
-				}
-				setCanvases(nextCanvases);
-				if (nextCanvases[0]?.id) setActiveCanvasId(nextCanvases[0].id);
+				setRootEntries(entries);
+				setCanvases(canvasesList);
+				if (canvasesList[0]?.id) setActiveCanvasId(canvasesList[0].id);
 
 				try {
 					await invoke("index_rebuild");

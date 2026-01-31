@@ -1,9 +1,8 @@
-use crate::{index, io_atomic, paths};
+use crate::{index, paths, tether_paths};
 use serde::Serialize;
 use std::{
     path::{Path, PathBuf},
     sync::Mutex,
-    time::{SystemTime, UNIX_EPOCH},
 };
 use notify::Watcher;
 use tauri::Emitter;
@@ -100,44 +99,12 @@ pub struct VaultInfo {
     pub schema_version: u32,
 }
 
-#[derive(Serialize)]
-struct VaultJson {
-    schema_version: u32,
-    created_at_ms: u128,
-}
-
 const VAULT_SCHEMA_VERSION: u32 = 1;
 
-fn now_ms() -> u128 {
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap_or_default()
-        .as_millis()
-}
-
-fn ensure_vault_dirs(root: &Path) -> Result<(), String> {
-    std::fs::create_dir_all(root.join("notes")).map_err(|e| e.to_string())?;
-    std::fs::create_dir_all(root.join("canvases")).map_err(|e| e.to_string())?;
-    std::fs::create_dir_all(root.join("assets")).map_err(|e| e.to_string())?;
-    std::fs::create_dir_all(root.join("cache")).map_err(|e| e.to_string())?;
+fn ensure_tether_dirs(root: &Path) -> Result<(), String> {
+    let _ = tether_paths::ensure_tether_dir(root)?;
+    let _ = tether_paths::ensure_tether_cache_dir(root)?;
     Ok(())
-}
-
-fn write_vault_json_if_missing(root: &Path) -> Result<u32, String> {
-    let path = paths::join_under(root, Path::new("vault.json"))?;
-    if path.exists() {
-        // Keep it simple for now: Step 3 just needs the harness in place.
-        // We'll implement schema parsing + migrations when we add more fields.
-        return Ok(VAULT_SCHEMA_VERSION);
-    }
-
-    let payload = VaultJson {
-        schema_version: VAULT_SCHEMA_VERSION,
-        created_at_ms: now_ms(),
-    };
-    let bytes = serde_json::to_vec_pretty(&payload).map_err(|e| e.to_string())?;
-    io_atomic::write_atomic(&path, &bytes).map_err(|e| e.to_string())?;
-    Ok(VAULT_SCHEMA_VERSION)
 }
 
 fn canonicalize_dir(path: &Path) -> Result<PathBuf, String> {
@@ -149,12 +116,11 @@ fn canonicalize_dir(path: &Path) -> Result<PathBuf, String> {
 }
 
 fn create_or_open_impl(root: &Path) -> Result<VaultInfo, String> {
-    ensure_vault_dirs(root)?;
+    ensure_tether_dirs(root)?;
     let _ = cleanup_tmp_files(root);
-    let schema_version = write_vault_json_if_missing(root)?;
     Ok(VaultInfo {
         root: root.to_string_lossy().to_string(),
-        schema_version,
+        schema_version: VAULT_SCHEMA_VERSION,
     })
 }
 
@@ -197,8 +163,7 @@ fn cleanup_tmp_files(root: &Path) -> Result<(), String> {
         Ok(())
     }
 
-    for rel in ["notes", "canvases", "cache", "assets"] {
-        let dir = root.join(rel);
+    if let Ok(dir) = tether_paths::tether_dir(root) {
         if dir.is_dir() {
             let _ = recurse(&dir);
         }

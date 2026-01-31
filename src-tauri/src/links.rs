@@ -1,4 +1,4 @@
-use crate::{io_atomic, net, paths, vault::VaultState};
+use crate::{io_atomic, net, paths, tether_paths, vault::VaultState};
 use regex::Regex;
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
@@ -44,7 +44,8 @@ fn sha256_hex(s: &str) -> String {
 }
 
 fn cache_dir(vault_root: &Path) -> Result<PathBuf, String> {
-    paths::join_under(vault_root, Path::new("cache/link-previews"))
+    let base = tether_paths::ensure_tether_cache_dir(vault_root)?;
+    Ok(base.join("link-previews"))
 }
 
 fn cache_path(vault_root: &Path, normalized_url: &str) -> Result<PathBuf, String> {
@@ -62,7 +63,8 @@ fn image_rel_path(image_url: &Url) -> PathBuf {
             }
         }
     }
-    PathBuf::from("cache/link-previews").join(format!("{}{}", sha256_hex(image_url.as_str()), ext))
+    PathBuf::from(".tether/cache/link-previews")
+        .join(format!("{}{}", sha256_hex(image_url.as_str()), ext))
 }
 
 fn normalize_url(raw: &str) -> Result<Url, String> {
