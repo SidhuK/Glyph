@@ -17,22 +17,22 @@ import type {
 import { CanvasesPane } from "./components/CanvasesPane";
 import { FileTreePane } from "./components/FileTreePane";
 import {
+	FileText,
 	FolderOpen,
 	FolderPlus,
 	Layout,
 	PanelLeftClose,
 	PanelLeftOpen,
 	Search,
-	FileText,
 	Sparkles,
 	X,
 } from "./components/Icons";
+import { MarkdownFileEditor } from "./components/MarkdownFileEditor";
 import {
 	AnimatePresence,
 	MotionFloatingPanel,
 	MotionIconButton,
 } from "./components/MotionUI";
-import { MarkdownFileEditor } from "./components/MarkdownFileEditor";
 import { SearchPane } from "./components/SearchPane";
 import { loadSettings, setCurrentVaultPath } from "./lib/settings";
 import {
@@ -41,9 +41,9 @@ import {
 	type CanvasMeta,
 	type FsEntry,
 	type NoteMeta,
-	type TextFileDoc,
 	type SearchResult,
 	TauriInvokeError,
+	type TextFileDoc,
 	invoke,
 } from "./lib/tauri";
 
@@ -397,17 +397,20 @@ function App() {
 	const createFileFromMarkdown = useCallback(
 		async (title: string, markdown: string): Promise<NoteMeta | null> => {
 			if (!vaultPath) return null;
-			const defaultName = `${(title || "Untitled")
-				.replace(/[\\/:*?"<>|]/g, "")
-				.trim()
-				.slice(0, 80) || "Untitled"}.md`;
+			const defaultName = `${
+				(title || "Untitled")
+					.replace(/[\\/:*?"<>|]/g, "")
+					.trim()
+					.slice(0, 80) || "Untitled"
+			}.md`;
 			const selection = await save({
 				title: "Create Markdown file",
 				defaultPath: `${vaultPath}/${defaultName}`,
 				filters: [{ name: "Markdown", extensions: ["md"] }],
 			});
-			const absPath =
-				Array.isArray(selection) ? (selection[0] ?? null) : selection;
+			const absPath = Array.isArray(selection)
+				? (selection[0] ?? null)
+				: selection;
 			if (!absPath) return null;
 			const rel = await invoke("vault_relativize_path", { abs_path: absPath });
 			await invoke("vault_write_text", {
@@ -437,7 +440,9 @@ function App() {
 			defaultPath: `${vaultPath}/Untitled.md`,
 			filters: [{ name: "Markdown", extensions: ["md"] }],
 		});
-		const absPath = Array.isArray(selection) ? (selection[0] ?? null) : selection;
+		const absPath = Array.isArray(selection)
+			? (selection[0] ?? null)
+			: selection;
 		if (!absPath) return;
 		const rel = await invoke("vault_relativize_path", { abs_path: absPath });
 		await invoke("vault_write_text", {
@@ -514,7 +519,9 @@ function App() {
 	return (
 		<div className="appShell">
 			{/* Left Sidebar - Project Navigation */}
-			<aside className={`sidebar ${sidebarCollapsed ? "sidebarCollapsed" : ""}`}>
+			<aside
+				className={`sidebar ${sidebarCollapsed ? "sidebarCollapsed" : ""}`}
+			>
 				<div className="sidebarHeader" data-tauri-drag-region>
 					{!sidebarCollapsed && (
 						<>
@@ -582,7 +589,9 @@ function App() {
 						{/* Vault Info */}
 						{vaultPath && (
 							<div className="sidebarSection vaultInfo">
-								<div className="vaultPath mono">{vaultPath.split("/").pop()}</div>
+								<div className="vaultPath mono">
+									{vaultPath.split("/").pop()}
+								</div>
 								<div className="vaultMeta">
 									{vaultSchemaVersion ? `v${vaultSchemaVersion}` : ""}
 								</div>

@@ -173,9 +173,19 @@ pub async fn vault_relativize_path(
     let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<String, String> {
         let root = root.canonicalize().map_err(|e| e.to_string())?;
-        let abs = PathBuf::from(abs_path)
-            .canonicalize()
-            .map_err(|e| e.to_string())?;
+        let abs_input = PathBuf::from(abs_path);
+        let abs = if abs_input.exists() {
+            abs_input.canonicalize().map_err(|e| e.to_string())?
+        } else {
+            let parent = abs_input
+                .parent()
+                .ok_or_else(|| "path has no parent directory".to_string())?;
+            let file_name = abs_input
+                .file_name()
+                .ok_or_else(|| "path has no file name".to_string())?;
+            let parent = parent.canonicalize().map_err(|e| e.to_string())?;
+            parent.join(file_name)
+        };
         let rel = abs
             .strip_prefix(&root)
             .map_err(|_| "path is not inside the current vault".to_string())?;

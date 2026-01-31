@@ -32,6 +32,7 @@ export const MarkdownFileEditor = memo(function MarkdownFileEditor({
 
 	const extensions = useMemo(() => [markdown()], []);
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: Reset local editor UI state when switching files (by path).
 	useEffect(() => {
 		setError("");
 		setSaveState("idle");
@@ -150,4 +151,3 @@ export const MarkdownFileEditor = memo(function MarkdownFileEditor({
 		</section>
 	);
 });
-

@@ -73,7 +73,11 @@ export const FileTreePane = memo(function FileTreePane({
 								onClick={() => onOpenFile(e.rel_path)}
 								disabled={disabled}
 								style={{ paddingLeft }}
-								title={disabled ? "Only Markdown files are supported (for now)." : e.rel_path}
+								title={
+									disabled
+										? "Only Markdown files are supported (for now)."
+										: e.rel_path
+								}
 							>
 								<span className="fileTreeIcon">
 									<FileText size={14} />
