@@ -1,4 +1,4 @@
-use crate::{paths, tether_paths, vault::VaultState};
+use crate::{tether_paths, vault::VaultState};
 use serde::{Deserialize, Serialize};
 use sha2::{Digest, Sha256};
 use std::{
@@ -100,23 +100,106 @@ fn parse_frontmatter_title_created_updated(markdown: &str) -> (String, String, S
     }
 }
 
-fn note_id_from_path(path: &Path) -> Option<String> {
-    if path.extension() != Some(OsStr::new("md")) {
-        return None;
-    }
-    let stem = path.file_stem()?.to_str()?;
-    if uuid::Uuid::parse_str(stem).is_err() {
-        return None;
-    }
-    Some(stem.to_string())
+fn should_skip_entry(name: &OsStr) -> bool {
+    name.to_string_lossy().starts_with('.')
 }
 
-fn parse_outgoing_links(markdown: &str) -> (HashSet<String>, HashSet<String>) {
-    // Returns (to_ids, to_titles_unresolved)
-    let mut ids = HashSet::new();
+fn path_to_slash_string(rel: &Path) -> String {
+    rel.components()
+        .filter_map(|c| c.as_os_str().to_str())
+        .filter(|s| !s.is_empty())
+        .collect::<Vec<_>>()
+        .join("/")
+}
+
+fn collect_markdown_files(vault_root: &Path) -> Result<Vec<(String, PathBuf)>, String> {
+    let mut out: Vec<(String, PathBuf)> = Vec::new();
+    let mut stack: Vec<PathBuf> = vec![vault_root.to_path_buf()];
+
+    while let Some(dir) = stack.pop() {
+        let entries = match std::fs::read_dir(&dir) {
+            Ok(e) => e,
+            Err(_) => continue,
+        };
+        for entry in entries {
+            let entry = match entry {
+                Ok(e) => e,
+                Err(_) => continue,
+            };
+            let name = entry.file_name();
+            if should_skip_entry(&name) {
+                continue;
+            }
+            let path = entry.path();
+            let meta = match entry.metadata() {
+                Ok(m) => m,
+                Err(_) => continue,
+            };
+            if meta.is_dir() {
+                stack.push(path);
+                continue;
+            }
+            if !meta.is_file() {
+                continue;
+            }
+            if path.extension() != Some(OsStr::new("md")) {
+                continue;
+            }
+            let rel = match path.strip_prefix(vault_root) {
+                Ok(r) => r,
+                Err(_) => continue,
+            };
+            let rel_s = path_to_slash_string(rel);
+            if rel_s.is_empty() {
+                continue;
+            }
+            out.push((rel_s, path));
+        }
+    }
+
+    out.sort_by(|a, b| a.0.to_lowercase().cmp(&b.0.to_lowercase()));
+    Ok(out)
+}
+
+fn normalize_rel_path(raw: &str) -> Option<String> {
+    let raw = raw.replace('\\', "/");
+    let raw = raw.trim().trim_matches('/');
+    if raw.is_empty() {
+        return None;
+    }
+    let mut out: Vec<String> = Vec::new();
+    for part in raw.split('/') {
+        let part = part.trim();
+        if part.is_empty() || part == "." {
+            continue;
+        }
+        if part == ".." {
+            if out.pop().is_none() {
+                return None;
+            }
+            continue;
+        }
+        if part.starts_with('.') {
+            return None;
+        }
+        out.push(part.to_string());
+    }
+    if out.is_empty() {
+        None
+    } else {
+        Some(out.join("/"))
+    }
+}
+
+fn parse_outgoing_links(from_rel_path: &str, markdown: &str) -> (HashSet<String>, HashSet<String>) {
+    // Returns (to_paths, to_titles_unresolved)
+    let mut paths = HashSet::new();
     let mut titles = HashSet::new();
 
-    // Wikilinks: [[...]]
+    let from_dir = Path::new(from_rel_path).parent().unwrap_or_else(|| Path::new(""));
+    let from_dir = from_dir.to_string_lossy().replace('\\', "/");
+
+    // Wikilinks: [[...]] (support alias `|` and headings `#`)
     let mut i = 0;
     let bytes = markdown.as_bytes();
     while i + 4 <= bytes.len() {
@@ -124,10 +207,21 @@ fn parse_outgoing_links(markdown: &str) -> (HashSet<String>, HashSet<String>) {
             if let Some(end) = markdown[i + 2..].find("]]") {
                 let inner = &markdown[i + 2..i + 2 + end];
                 let inner = inner.trim();
-                if uuid::Uuid::parse_str(inner).is_ok() {
-                    ids.insert(inner.to_string());
-                } else if !inner.is_empty() {
-                    titles.insert(inner.to_string());
+                let inner = inner.split('|').next().unwrap_or(inner).trim();
+                let inner = inner.split('#').next().unwrap_or(inner).trim();
+                if !inner.is_empty() {
+                    if inner.contains('/') || inner.ends_with(".md") {
+                        let p = if inner.ends_with(".md") {
+                            inner.to_string()
+                        } else {
+                            format!("{inner}.md")
+                        };
+                        if let Some(p) = normalize_rel_path(&p) {
+                            paths.insert(p);
+                        }
+                    } else {
+                        titles.insert(inner.to_string());
+                    }
                 }
                 i = i + 2 + end + 2;
                 continue;
@@ -142,20 +236,43 @@ fn parse_outgoing_links(markdown: &str) -> (HashSet<String>, HashSet<String>) {
         let open = j + start + 2;
         if let Some(close_rel) = markdown[open..].find(')') {
             let close = open + close_rel;
-            let target = markdown[open..close].trim();
-            if let Some(id) = target.strip_suffix(".md").and_then(|s| s.rsplit('/').next()) {
-                let id = id.trim();
-                if uuid::Uuid::parse_str(id).is_ok() {
-                    ids.insert(id.to_string());
-                }
+            let mut target = markdown[open..close].trim().trim_matches('<').trim_matches('>');
+            if let Some(hash) = target.find('#') {
+                target = &target[..hash];
             }
+            if let Some(q) = target.find('?') {
+                target = &target[..q];
+            }
+            if target.starts_with("http://")
+                || target.starts_with("https://")
+                || target.starts_with("mailto:")
+            {
+                j = close + 1;
+                continue;
+            }
+            if !target.ends_with(".md") {
+                j = close + 1;
+                continue;
+            }
+
+            let raw_rel = if target.starts_with('/') {
+                target.trim_start_matches('/').to_string()
+            } else if from_dir.is_empty() {
+                target.to_string()
+            } else {
+                format!("{from_dir}/{target}")
+            };
+            if let Some(p) = normalize_rel_path(&raw_rel) {
+                paths.insert(p);
+            }
+
             j = close + 1;
             continue;
         }
         break;
     }
 
-    (ids, titles)
+    (paths, titles)
 }
 
 fn ensure_schema(conn: &rusqlite::Connection) -> Result<(), String> {
@@ -164,6 +281,13 @@ fn ensure_schema(conn: &rusqlite::Connection) -> Result<(), String> {
 CREATE TABLE IF NOT EXISTS meta (
   key TEXT PRIMARY KEY,
   value TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS canvases (
+  id TEXT PRIMARY KEY,
+  title TEXT NOT NULL,
+  updated TEXT NOT NULL,
+  doc_json TEXT NOT NULL
 );
 
 CREATE TABLE IF NOT EXISTS notes (
@@ -202,15 +326,15 @@ CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(
             |row| row.get(0),
         )
         .ok();
-    if schema_version.as_deref() != Some("1") {
-        conn.execute("INSERT OR REPLACE INTO meta(key, value) VALUES('schema_version', '1')", [])
+    if schema_version.as_deref() != Some("2") {
+        conn.execute("INSERT OR REPLACE INTO meta(key, value) VALUES('schema_version', '2')", [])
             .map_err(|e| e.to_string())?;
     }
 
     Ok(())
 }
 
-fn open_db(vault_root: &Path) -> Result<rusqlite::Connection, String> {
+pub(crate) fn open_db(vault_root: &Path) -> Result<rusqlite::Connection, String> {
     let path = db_path(vault_root)?;
     if let Some(parent) = path.parent() {
         std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
@@ -249,10 +373,20 @@ fn index_note_with_conn(
     note_id: &str,
     markdown: &str,
 ) -> Result<(), String> {
-    let (title, created, updated) = parse_frontmatter_title_created_updated(markdown);
+    let (mut title, created, updated) = parse_frontmatter_title_created_updated(markdown);
+    if title == "Untitled" {
+        if let Some(stem) = Path::new(note_id)
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .map(|s| s.trim())
+            .filter(|s| !s.is_empty())
+        {
+            title = stem.to_string();
+        }
+    }
     let title_for_fts = title.clone();
     let etag = sha256_hex(markdown.as_bytes());
-    let rel_path = format!("notes/{note_id}.md");
+    let rel_path = note_id.to_string();
 
     conn.execute(
         "INSERT OR REPLACE INTO notes(id, title, created, updated, path, etag) VALUES(?, ?, ?, ?, ?, ?)",
@@ -272,7 +406,7 @@ fn index_note_with_conn(
     conn.execute("DELETE FROM links WHERE from_id = ?", [note_id])
         .map_err(|e| e.to_string())?;
 
-    let (to_ids, to_titles) = parse_outgoing_links(markdown);
+    let (to_ids, to_titles) = parse_outgoing_links(note_id, markdown);
     let mut inserted = HashSet::<(Option<String>, Option<String>, &'static str)>::new();
 
     for to_id in to_ids {
@@ -310,65 +444,60 @@ pub fn remove_note(vault_root: &Path, note_id: &str) -> Result<(), String> {
 }
 
 pub fn rebuild(vault_root: &Path) -> Result<IndexRebuildResult, String> {
-    let path = db_path(vault_root)?;
-    if path.exists() {
-        let _ = std::fs::remove_file(&path);
-    }
-
     let mut conn = open_db(vault_root)?;
     let tx = conn.transaction().map_err(|e| e.to_string())?;
 
-    let notes_dir = paths::join_under(vault_root, Path::new("notes"))?;
-    if !notes_dir.exists() {
-        return Ok(IndexRebuildResult { indexed: 0 });
-    }
+    // Rebuild is derived; do not delete the DB file (it also stores non-derived data like canvases).
+    tx.execute("DELETE FROM notes", []).map_err(|e| e.to_string())?;
+    tx.execute("DELETE FROM notes_fts", []).map_err(|e| e.to_string())?;
+    tx.execute("DELETE FROM links", []).map_err(|e| e.to_string())?;
 
-    let mut notes: Vec<(String, PathBuf)> = Vec::new();
-    for entry in std::fs::read_dir(&notes_dir).map_err(|e| e.to_string())? {
-        let entry = entry.map_err(|e| e.to_string())?;
-        let path = entry.path();
-        if let Some(id) = note_id_from_path(&path) {
-            notes.push((id, path));
-        }
-    }
+    let notes = collect_markdown_files(vault_root)?;
 
     // 1) Upsert note rows + FTS. (title resolution for wikilinks works better after notes exist)
-    for (id, path) in &notes {
+    for (rel, path) in &notes {
         let markdown = std::fs::read_to_string(path).map_err(|e| e.to_string())?;
-        let (title, created, updated) = parse_frontmatter_title_created_updated(&markdown);
+        let (mut title, created, updated) = parse_frontmatter_title_created_updated(&markdown);
+        if title == "Untitled" {
+            if let Some(stem) = Path::new(rel)
+                .file_stem()
+                .and_then(|s| s.to_str())
+                .map(|s| s.trim())
+                .filter(|s| !s.is_empty())
+            {
+                title = stem.to_string();
+            }
+        }
         let etag = sha256_hex(markdown.as_bytes());
-        let rel_path = format!("notes/{id}.md");
 
         tx.execute(
             "INSERT OR REPLACE INTO notes(id, title, created, updated, path, etag) VALUES(?, ?, ?, ?, ?, ?)",
-            rusqlite::params![id, title, created, updated, rel_path, etag],
+            rusqlite::params![rel, title, created, updated, rel, etag],
         )
         .map_err(|e| e.to_string())?;
 
-        tx.execute("DELETE FROM notes_fts WHERE id = ?", [id])
+        tx.execute("DELETE FROM notes_fts WHERE id = ?", [rel])
             .map_err(|e| e.to_string())?;
         let (_yaml, body) = split_frontmatter(&markdown);
-        let title = parse_frontmatter_title_created_updated(&markdown).0;
         tx.execute(
             "INSERT INTO notes_fts(id, title, body) VALUES(?, ?, ?)",
-            rusqlite::params![id, title, body],
+            rusqlite::params![rel, title, body],
         )
         .map_err(|e| e.to_string())?;
     }
 
     // 2) Build links after all notes are present.
-    tx.execute("DELETE FROM links", []).map_err(|e| e.to_string())?;
-    for (id, path) in &notes {
+    for (rel, path) in &notes {
         let markdown = std::fs::read_to_string(path).map_err(|e| e.to_string())?;
-        let (to_ids, to_titles) = parse_outgoing_links(&markdown);
+        let (to_ids, to_titles) = parse_outgoing_links(rel, &markdown);
 
         let mut inserted = HashSet::<(Option<String>, Option<String>, &'static str)>::new();
         for to_id in to_ids {
-            inserted.insert((Some(to_id), None, "note"));
+            inserted.insert((Some(to_id), None, "file"));
         }
         for to_title in to_titles {
             if let Some(to_id) = resolve_title_to_id(&tx, &to_title)? {
-                inserted.insert((Some(to_id), None, "note"));
+                inserted.insert((Some(to_id), None, "file"));
             } else {
                 inserted.insert((None, Some(to_title), "wikilink"));
             }
@@ -376,16 +505,14 @@ pub fn rebuild(vault_root: &Path) -> Result<IndexRebuildResult, String> {
         for (to_id, to_title, kind) in inserted {
             tx.execute(
                 "INSERT OR IGNORE INTO links(from_id, to_id, to_title, kind) VALUES(?, ?, ?, ?)",
-                rusqlite::params![id, to_id, to_title, kind],
+                rusqlite::params![rel, to_id, to_title, kind],
             )
             .map_err(|e| e.to_string())?;
         }
     }
 
     tx.commit().map_err(|e| e.to_string())?;
-    Ok(IndexRebuildResult {
-        indexed: notes.len(),
-    })
+    Ok(IndexRebuildResult { indexed: notes.len() })
 }
 
 #[tauri::command]
@@ -442,17 +569,24 @@ pub async fn backlinks(state: State<'_, VaultState>, note_id: String) -> Result<
     let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<BacklinkItem>, String> {
         let conn = open_db(&root)?;
+        let stem = Path::new(&note_id)
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .unwrap_or("")
+            .to_string();
         let mut stmt = conn
             .prepare(
                 "SELECT n.id, n.title, n.updated
                  FROM links l
                  JOIN notes n ON n.id = l.from_id
-                 WHERE l.to_id = ?
+                 WHERE l.to_id = ? OR (l.to_title IS NOT NULL AND l.to_title = ?)
                  ORDER BY n.updated DESC
                  LIMIT 100",
             )
             .map_err(|e| e.to_string())?;
-        let mut rows = stmt.query([note_id]).map_err(|e| e.to_string())?;
+        let mut rows = stmt
+            .query(rusqlite::params![note_id, stem])
+            .map_err(|e| e.to_string())?;
         let mut out = Vec::new();
         while let Some(row) = rows.next().map_err(|e| e.to_string())? {
             out.push(BacklinkItem {

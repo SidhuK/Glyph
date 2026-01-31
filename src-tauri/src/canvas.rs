@@ -1,9 +1,5 @@
-use crate::{io_atomic, paths, vault::VaultState};
+use crate::{index, vault::VaultState};
 use serde::{Deserialize, Serialize};
-use std::{
-    ffi::OsStr,
-    path::{Path, PathBuf},
-};
 use tauri::State;
 use time::format_description::well_known::Rfc3339;
 
@@ -34,35 +30,36 @@ fn now_rfc3339() -> String {
         .unwrap_or_else(|_| "1970-01-01T00:00:00Z".to_string())
 }
 
-fn canvases_dir(root: &Path) -> Result<PathBuf, String> {
-    paths::join_under(root, Path::new("canvases"))
-}
-
-fn canvas_rel_path(id: &str) -> Result<PathBuf, String> {
+fn validate_id(id: &str) -> Result<(), String> {
     let _ = uuid::Uuid::parse_str(id).map_err(|_| "invalid canvas id".to_string())?;
-    Ok(PathBuf::from("canvases").join(format!("{id}.json")))
+    Ok(())
 }
 
-fn canvas_abs_path(root: &Path, id: &str) -> Result<PathBuf, String> {
-    let rel = canvas_rel_path(id)?;
-    paths::join_under(root, &rel)
-}
-
-fn read_doc(path: &Path) -> Result<CanvasDoc, String> {
-    let bytes = std::fs::read(path).map_err(|e| e.to_string())?;
-    let doc: CanvasDoc = serde_json::from_slice(&bytes).map_err(|e| e.to_string())?;
+fn read_doc(conn: &rusqlite::Connection, id: &str) -> Result<CanvasDoc, String> {
+    validate_id(id)?;
+    let doc_json: String = conn
+        .query_row(
+            "SELECT doc_json FROM canvases WHERE id = ? LIMIT 1",
+            [id],
+            |row| row.get(0),
+        )
+        .map_err(|e| e.to_string())?;
+    let doc: CanvasDoc = serde_json::from_str(&doc_json).map_err(|e| e.to_string())?;
     Ok(doc)
 }
 
-fn write_doc(root: &Path, mut doc: CanvasDoc) -> Result<CanvasDoc, String> {
+fn upsert_doc(conn: &rusqlite::Connection, mut doc: CanvasDoc) -> Result<CanvasDoc, String> {
+    validate_id(&doc.id)?;
     if doc.version != CANVAS_VERSION {
         return Err("unsupported canvas version".to_string());
     }
-
     doc.updated = now_rfc3339();
-    let path = canvas_abs_path(root, &doc.id)?;
-    let bytes = serde_json::to_vec_pretty(&doc).map_err(|e| e.to_string())?;
-    io_atomic::write_atomic(&path, &bytes).map_err(|e| e.to_string())?;
+    let doc_json = serde_json::to_string(&doc).map_err(|e| e.to_string())?;
+    conn.execute(
+        "INSERT OR REPLACE INTO canvases(id, title, updated, doc_json) VALUES(?, ?, ?, ?)",
+        rusqlite::params![doc.id, doc.title, doc.updated, doc_json],
+    )
+    .map_err(|e| e.to_string())?;
     Ok(doc)
 }
 
@@ -70,34 +67,21 @@ fn write_doc(root: &Path, mut doc: CanvasDoc) -> Result<CanvasDoc, String> {
 pub async fn canvas_list(state: State<'_, VaultState>) -> Result<Vec<CanvasMeta>, String> {
     let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<CanvasMeta>, String> {
-        let dir = canvases_dir(&root)?;
-        if !dir.exists() {
-            return Ok(Vec::new());
-        }
-
+        let conn = index::open_db(&root)?;
+        let mut stmt = conn
+            .prepare(
+                "SELECT id, title, updated FROM canvases ORDER BY updated DESC LIMIT 200",
+            )
+            .map_err(|e| e.to_string())?;
+        let mut rows = stmt.query([]).map_err(|e| e.to_string())?;
         let mut out: Vec<CanvasMeta> = Vec::new();
-        for entry in std::fs::read_dir(&dir).map_err(|e| e.to_string())? {
-            let entry = entry.map_err(|e| e.to_string())?;
-            let path = entry.path();
-            if path.extension() != Some(OsStr::new("json")) {
-                continue;
-            }
-            let file_stem = match path.file_stem().and_then(|s| s.to_str()) {
-                Some(s) => s,
-                None => continue,
-            };
-            if uuid::Uuid::parse_str(file_stem).is_err() {
-                continue;
-            }
-            let doc = read_doc(&path)?;
+        while let Some(row) = rows.next().map_err(|e| e.to_string())? {
             out.push(CanvasMeta {
-                id: doc.id,
-                title: doc.title,
-                updated: doc.updated,
+                id: row.get(0).map_err(|e| e.to_string())?,
+                title: row.get(1).map_err(|e| e.to_string())?,
+                updated: row.get(2).map_err(|e| e.to_string())?,
             });
         }
-
-        out.sort_by(|a, b| b.updated.cmp(&a.updated));
         Ok(out)
     })
     .await
@@ -108,6 +92,7 @@ pub async fn canvas_list(state: State<'_, VaultState>) -> Result<Vec<CanvasMeta>
 pub async fn canvas_create(state: State<'_, VaultState>, title: String) -> Result<CanvasMeta, String> {
     let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<CanvasMeta, String> {
+        let conn = index::open_db(&root)?;
         let id = uuid::Uuid::new_v4().to_string();
         let doc = CanvasDoc {
             version: CANVAS_VERSION,
@@ -121,7 +106,7 @@ pub async fn canvas_create(state: State<'_, VaultState>, title: String) -> Resul
             nodes: Vec::new(),
             edges: Vec::new(),
         };
-        let doc = write_doc(&root, doc)?;
+        let doc = upsert_doc(&conn, doc)?;
         Ok(CanvasMeta {
             id: doc.id,
             title: doc.title,
@@ -136,8 +121,8 @@ pub async fn canvas_create(state: State<'_, VaultState>, title: String) -> Resul
 pub async fn canvas_read(state: State<'_, VaultState>, id: String) -> Result<CanvasDoc, String> {
     let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<CanvasDoc, String> {
-        let path = canvas_abs_path(&root, &id)?;
-        read_doc(&path)
+        let conn = index::open_db(&root)?;
+        read_doc(&conn, &id)
     })
     .await
     .map_err(|e| e.to_string())?
@@ -158,6 +143,7 @@ pub struct CanvasWritePayload {
 pub async fn canvas_write(state: State<'_, VaultState>, doc: CanvasWritePayload) -> Result<CanvasDoc, String> {
     let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<CanvasDoc, String> {
+        let conn = index::open_db(&root)?;
         let doc = CanvasDoc {
             version: doc.version,
             id: doc.id,
@@ -166,9 +152,8 @@ pub async fn canvas_write(state: State<'_, VaultState>, doc: CanvasWritePayload)
             nodes: doc.nodes,
             edges: doc.edges,
         };
-        write_doc(&root, doc)
+        upsert_doc(&conn, doc)
     })
     .await
     .map_err(|e| e.to_string())?
 }
-

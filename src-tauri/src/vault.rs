@@ -1,4 +1,4 @@
-use crate::{index, paths, tether_paths};
+use crate::{index, tether_paths};
 use serde::Serialize;
 use std::{
     path::{Path, PathBuf},
@@ -37,7 +37,6 @@ impl VaultState {
             .map_err(|_| "vault watcher state poisoned".to_string())?;
         *guard = None;
 
-        let notes_dir = paths::join_under(&root, Path::new("notes"))?;
         let app2 = app.clone();
         let root2 = root.clone();
 
@@ -63,29 +62,38 @@ impl VaultState {
                 if path.extension() != Some(std::ffi::OsStr::new("md")) {
                     continue;
                 }
-                let file_stem = match path.file_stem().and_then(|s| s.to_str()) {
-                    Some(s) => s,
-                    None => continue,
+                let rel = match path.strip_prefix(&root2) {
+                    Ok(r) => r,
+                    Err(_) => continue,
                 };
-                if uuid::Uuid::parse_str(file_stem).is_err() {
+                let rel_s = rel
+                    .components()
+                    .filter_map(|c| c.as_os_str().to_str())
+                    .collect::<Vec<_>>()
+                    .join("/");
+                if rel_s.is_empty() {
+                    continue;
+                }
+                if rel_s.split('/').any(|p| p.starts_with('.')) {
                     continue;
                 }
 
                 if is_remove {
-                    let _ = index::remove_note(&root2, file_stem);
+                    let _ = index::remove_note(&root2, &rel_s);
                 } else if let Ok(markdown) = std::fs::read_to_string(&path) {
-                    let _ = index::index_note(&root2, file_stem, &markdown);
+                    let _ = index::index_note(&root2, &rel_s, &markdown);
                 }
 
-                let _ = app2.emit("notes:external_changed", ExternalNoteChange {
-                    id: file_stem.to_string(),
-                });
+                let _ = app2.emit(
+                    "notes:external_changed",
+                    ExternalNoteChange { id: rel_s },
+                );
             }
         })
         .map_err(|e| e.to_string())?;
 
         watcher
-            .watch(&notes_dir, notify::RecursiveMode::Recursive)
+            .watch(&root, notify::RecursiveMode::Recursive)
             .map_err(|e: notify::Error| e.to_string())?;
 
         *guard = Some(watcher);

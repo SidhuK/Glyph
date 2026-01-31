@@ -9,7 +9,6 @@ import {
 	useState,
 } from "react";
 import "./App.css";
-import { listen } from "@tauri-apps/api/event";
 import { AIPane, type SelectedCanvasNode } from "./components/AIPane";
 import type {
 	CanvasExternalCommand,
@@ -20,11 +19,11 @@ import { FileTreePane } from "./components/FileTreePane";
 import {
 	FolderOpen,
 	FolderPlus,
+	Layout,
 	PanelLeftClose,
 	PanelLeftOpen,
-	PanelRightClose,
-	PanelRightOpen,
 	Search,
+	FileText,
 	Sparkles,
 	X,
 } from "./components/Icons";
@@ -41,6 +40,7 @@ import {
 	type CanvasDoc,
 	type CanvasMeta,
 	type FsEntry,
+	type NoteMeta,
 	type TextFileDoc,
 	type SearchResult,
 	TauriInvokeError,
@@ -85,6 +85,7 @@ function App() {
 	const [showAiPanel, setShowAiPanel] = useState(false);
 	const [showSearch, setShowSearch] = useState(false);
 	const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+	const [mainView, setMainView] = useState<"files" | "canvas">("files");
 	const fileLoadSeq = useRef(0);
 	const canvasLoadSeq = useRef(0);
 
@@ -206,6 +207,7 @@ function App() {
 				setRootEntries(entries);
 				setCanvases(canvasesList);
 				if (canvasesList[0]?.id) setActiveCanvasId(canvasesList[0].id);
+				setMainView("files");
 
 				try {
 					await invoke("index_rebuild");
@@ -232,38 +234,99 @@ function App() {
 		await applyVaultSelection(path, "open");
 	}, [applyVaultSelection, pickDirectory]);
 
-	const refreshNotes = useCallback(async () => {
-		if (!vaultPath) return;
-		const list = await invoke("notes_list");
-		setNotes(list);
-	}, [vaultPath]);
+	const loadDir = useCallback(async (dirPath: string) => {
+		const entries = await invoke(
+			"vault_list_dir",
+			dirPath ? { dir: dirPath } : {},
+		);
+		setChildrenByDir((prev) => ({ ...prev, [dirPath]: entries }));
+	}, []);
+
+	const toggleDir = useCallback(
+		(dirPath: string) => {
+			setExpandedDirs((prev) => {
+				const next = new Set(prev);
+				if (next.has(dirPath)) {
+					next.delete(dirPath);
+				} else {
+					next.add(dirPath);
+					void loadDir(dirPath);
+				}
+				return next;
+			});
+		},
+		[loadDir],
+	);
+
+	const saveActiveFile = useCallback(async () => {
+		if (!activeFilePath) return;
+		const baseMtime = activeFileDoc?.mtime_ms ?? null;
+		const res = await invoke("vault_write_text", {
+			path: activeFilePath,
+			text: editorValue,
+			base_mtime_ms: baseMtime,
+		});
+		setActiveFileDoc((prev) =>
+			prev ? { ...prev, etag: res.etag, mtime_ms: res.mtime_ms } : prev,
+		);
+		setIsEditorDirty(false);
+	}, [activeFileDoc?.mtime_ms, activeFilePath, editorValue]);
+
+	const openFile = useCallback(
+		async (relPath: string) => {
+			if (relPath === activeFilePath) return;
+			if (isEditorDirty) {
+				const shouldSave = window.confirm(
+					"Save changes before opening another file?",
+				);
+				if (shouldSave) {
+					try {
+						await saveActiveFile();
+					} catch (e) {
+						setError(e instanceof Error ? e.message : String(e));
+						return;
+					}
+				} else {
+					const discard = window.confirm("Discard unsaved changes?");
+					if (!discard) return;
+				}
+			}
+			setActiveFilePath(relPath);
+			setMainView("files");
+		},
+		[activeFilePath, isEditorDirty, saveActiveFile],
+	);
 
 	useEffect(() => {
-		activeNoteIdRef.current = activeNoteId;
-	}, [activeNoteId]);
-
-	useEffect(() => {
-		notesRef.current = notes;
-	}, [notes]);
-
-	useEffect(() => {
-		if (!vaultPath) return;
-		let cancelled = false;
+		if (!activeFilePath) {
+			setActiveFileDoc(null);
+			setEditorValue("");
+			setIsEditorDirty(false);
+			return;
+		}
+		const seq = ++fileLoadSeq.current;
+		setActiveFileDoc(null);
 		(async () => {
 			try {
-				const list = await invoke("notes_list");
-				if (cancelled) return;
-				setNotes(list);
-				if (!activeNoteIdRef.current && list[0]?.id)
-					setActiveNoteId(list[0].id);
+				const doc = await invoke("vault_read_text", { path: activeFilePath });
+				if (seq !== fileLoadSeq.current) return;
+				setActiveFileDoc(doc);
+				setEditorValue(doc.text);
+				setIsEditorDirty(false);
 			} catch (e) {
-				if (!cancelled) setError(e instanceof Error ? e.message : String(e));
+				if (seq !== fileLoadSeq.current) return;
+				setError(e instanceof Error ? e.message : String(e));
 			}
 		})();
-		return () => {
-			cancelled = true;
-		};
-	}, [vaultPath]);
+	}, [activeFilePath]);
+
+	const reloadActiveFileFromDisk = useCallback(async () => {
+		if (!activeFilePath) return;
+		const doc = await invoke("vault_read_text", { path: activeFilePath });
+		setActiveFileDoc(doc);
+		setEditorValue(doc.text);
+		setIsEditorDirty(false);
+	}, [activeFilePath]);
 
 	useEffect(() => {
 		if (!vaultPath) return;
@@ -282,44 +345,6 @@ function App() {
 			cancelled = true;
 		};
 	}, [activeCanvasId, vaultPath]);
-
-	useEffect(() => {
-		if (!activeNoteId) {
-			setActiveDoc(null);
-			setBacklinks([]);
-			return;
-		}
-		const seq = ++noteLoadSeq.current;
-		setActiveDoc(null);
-		(async () => {
-			try {
-				const doc = await invoke("note_read", { id: activeNoteId });
-				if (seq !== noteLoadSeq.current) return;
-				setActiveDoc(doc);
-			} catch (e) {
-				if (seq !== noteLoadSeq.current) return;
-				setError(e instanceof Error ? e.message : String(e));
-			}
-		})();
-	}, [activeNoteId]);
-
-	useEffect(() => {
-		if (!vaultPath || !activeNoteId) return;
-		let cancelled = false;
-		setBacklinksError("");
-		(async () => {
-			try {
-				const list = await invoke("backlinks", { note_id: activeNoteId });
-				if (!cancelled) setBacklinks(list);
-			} catch (e) {
-				if (!cancelled)
-					setBacklinksError(e instanceof Error ? e.message : String(e));
-			}
-		})();
-		return () => {
-			cancelled = true;
-		};
-	}, [activeNoteId, vaultPath]);
 
 	useEffect(() => {
 		if (!vaultPath) return;
@@ -351,33 +376,6 @@ function App() {
 	}, [searchQuery, vaultPath]);
 
 	useEffect(() => {
-		let unlisten: (() => void) | null = null;
-		(async () => {
-			try {
-				unlisten = await listen<{ id: string }>(
-					"notes:external_changed",
-					(evt) => {
-						if (evt.payload.id !== activeNoteIdRef.current) return;
-						if (
-							lastSavedNoteIdRef.current === evt.payload.id &&
-							Date.now() - lastSavedAtMsRef.current < 1500
-						)
-							return;
-						setError(
-							"Note changed on disk (external edit detected). Save may conflict.",
-						);
-					},
-				);
-			} catch {
-				// ignore
-			}
-		})();
-		return () => {
-			unlisten?.();
-		};
-	}, []);
-
-	useEffect(() => {
 		if (!activeCanvasId) {
 			setActiveCanvasDoc(null);
 			return;
@@ -396,118 +394,67 @@ function App() {
 		})();
 	}, [activeCanvasId]);
 
-	const onCreateNote = useCallback(async () => {
-		try {
-			const meta = await invoke("note_create", { title: "Untitled" });
-			setNotes((prev) => [meta, ...prev]);
-			setActiveNoteId(meta.id);
-		} catch (e) {
-			setError(e instanceof Error ? e.message : String(e));
-		}
-	}, []);
-
-	const createNoteFromMarkdown = useCallback(
+	const createFileFromMarkdown = useCallback(
 		async (title: string, markdown: string): Promise<NoteMeta | null> => {
 			if (!vaultPath) return null;
-			const meta = await invoke("note_create", { title: title || "Untitled" });
-			await invoke("note_write", { id: meta.id, markdown, base_etag: null });
-			await refreshNotes();
-			setActiveNoteId(meta.id);
-			return meta;
-		},
-		[refreshNotes, vaultPath],
-	);
-
-	const onDeleteNote = useCallback(async (id: string) => {
-		if (!window.confirm("Delete this note?")) return;
-		try {
-			await invoke("note_delete", { id });
-			const nextNotes = notesRef.current.filter((n) => n.id !== id);
-			setNotes(nextNotes);
-			if (activeNoteIdRef.current === id) {
-				setActiveNoteId(nextNotes[0]?.id ?? null);
-				setActiveDoc(null);
-			}
-		} catch (e) {
-			setError(e instanceof Error ? e.message : String(e));
-		}
-	}, []);
-
-	const onChangeMarkdown = useCallback((markdown: string) => {
-		setActiveDoc((prev) => (prev ? { ...prev, markdown } : prev));
-	}, []);
-
-	const onSaveMarkdown = useCallback(
-		async (markdown: string) => {
-			if (!activeNoteId) return;
-			const baseEtag = activeDoc?.etag ?? null;
-			const res = await invoke("note_write", {
-				id: activeNoteId,
-				markdown,
-				base_etag: baseEtag,
+			const defaultName = `${(title || "Untitled")
+				.replace(/[\\/:*?"<>|]/g, "")
+				.trim()
+				.slice(0, 80) || "Untitled"}.md`;
+			const selection = await save({
+				title: "Create Markdown file",
+				defaultPath: `${vaultPath}/${defaultName}`,
+				filters: [{ name: "Markdown", extensions: ["md"] }],
 			});
-			setNotes((prev) =>
-				prev.map((n) => (n.id === activeNoteId ? { ...n, ...res.meta } : n)),
-			);
-			setActiveDoc((prev) =>
-				prev
-					? { ...prev, etag: res.etag, mtime_ms: res.mtime_ms, meta: res.meta }
-					: prev,
-			);
-			lastSavedNoteIdRef.current = activeNoteId;
-			lastSavedAtMsRef.current = Date.now();
-		},
-		[activeDoc?.etag, activeNoteId],
-	);
-
-	const onForceSaveMarkdown = useCallback(
-		async (markdown: string) => {
-			if (!activeNoteId) return;
-			const res = await invoke("note_write", {
-				id: activeNoteId,
-				markdown,
-				base_etag: null,
+			const absPath =
+				Array.isArray(selection) ? (selection[0] ?? null) : selection;
+			if (!absPath) return null;
+			const rel = await invoke("vault_relativize_path", { abs_path: absPath });
+			await invoke("vault_write_text", {
+				path: rel,
+				text: markdown,
+				base_mtime_ms: null,
 			});
-			setNotes((prev) =>
-				prev.map((n) => (n.id === activeNoteId ? { ...n, ...res.meta } : n)),
-			);
-			setActiveDoc((prev) =>
-				prev
-					? { ...prev, etag: res.etag, mtime_ms: res.mtime_ms, meta: res.meta }
-					: prev,
-			);
-			lastSavedNoteIdRef.current = activeNoteId;
-			lastSavedAtMsRef.current = Date.now();
+			const entries = await invoke("vault_list_dir", {});
+			setRootEntries(entries);
+			setActiveFilePath(rel);
+			setMainView("files");
+			const now = new Date().toISOString();
+			return {
+				id: rel,
+				title: title || rel.split("/").pop() || "Untitled",
+				created: now,
+				updated: now,
+			};
 		},
-		[activeNoteId],
+		[vaultPath],
 	);
 
-	const onReloadNoteFromDisk = useCallback(async () => {
-		if (!activeNoteId) return;
-		const doc = await invoke("note_read", { id: activeNoteId });
-		setActiveDoc(doc);
-		setNotes((prev) =>
-			prev.map((n) => (n.id === activeNoteId ? { ...n, ...doc.meta } : n)),
-		);
-	}, [activeNoteId]);
-
-	const onAttachFile = useCallback(async (): Promise<string | null> => {
-		if (!activeNoteId) return null;
-		const selection = await open({
-			title: "Attach a file",
-			directory: false,
-			multiple: false,
+	const onNewFile = useCallback(async () => {
+		if (!vaultPath) return;
+		const selection = await save({
+			title: "Create new Markdown file",
+			defaultPath: `${vaultPath}/Untitled.md`,
+			filters: [{ name: "Markdown", extensions: ["md"] }],
 		});
-		const path = Array.isArray(selection) ? (selection[0] ?? null) : selection;
-		if (!path) return null;
-
-		const res = await invoke("note_attach_file", {
-			note_id: activeNoteId,
-			source_path: path,
+		const absPath = Array.isArray(selection) ? (selection[0] ?? null) : selection;
+		if (!absPath) return;
+		const rel = await invoke("vault_relativize_path", { abs_path: absPath });
+		await invoke("vault_write_text", {
+			path: rel,
+			text: "# Untitled\n",
+			base_mtime_ms: null,
 		});
-		await refreshNotes();
-		return res.markdown;
-	}, [activeNoteId, refreshNotes]);
+		const entries = await invoke("vault_list_dir", {});
+		setRootEntries(entries);
+		setActiveFilePath(rel);
+		setMainView("files");
+	}, [vaultPath]);
+
+	const onChangeEditorValue = useCallback((next: string) => {
+		setEditorValue(next);
+		setIsEditorDirty(true);
+	}, []);
 
 	const onCanvasSelectionChange = useCallback((selected: CanvasNode[]) => {
 		setSelectedCanvasNodes(
@@ -537,6 +484,7 @@ function App() {
 			const created = await invoke("canvas_create", { title: "Canvas" });
 			setCanvases((prev) => [created, ...prev]);
 			setActiveCanvasId(created.id);
+			setMainView("canvas");
 		} catch (e) {
 			setError(e instanceof Error ? e.message : String(e));
 		}
@@ -625,8 +573,7 @@ function App() {
 									error={searchError}
 									onChangeQuery={setSearchQuery}
 									onSelectNote={(id) => {
-										setActiveNoteId(id);
-										setShowNoteEditor(true);
+										void openFile(id);
 									}}
 								/>
 							</div>
@@ -661,22 +608,24 @@ function App() {
 							<CanvasesPane
 								canvases={canvases}
 								activeCanvasId={activeCanvasId}
-								onSelectCanvas={setActiveCanvasId}
+								onSelectCanvas={(id) => {
+									setActiveCanvasId(id);
+									setMainView("canvas");
+								}}
 								onCreateCanvas={onCreateCanvas}
 							/>
 						</div>
 
-						{/* Notes List */}
+						{/* File Tree */}
 						<div className="sidebarSection sidebarSectionGrow">
-							<NotesPane
-								notes={notes}
-								activeNoteId={activeNoteId}
-								onSelectNote={(id) => {
-									setActiveNoteId(id);
-									setShowNoteEditor(true);
-								}}
-								onCreateNote={onCreateNote}
-								onDeleteNote={onDeleteNote}
+							<FileTreePane
+								rootEntries={rootEntries}
+								childrenByDir={childrenByDir}
+								expandedDirs={expandedDirs}
+								activeFilePath={activeFilePath}
+								onToggleDir={toggleDir}
+								onOpenFile={(p) => void openFile(p)}
+								onNewFile={onNewFile}
 							/>
 						</div>
 					</>
@@ -685,24 +634,28 @@ function App() {
 
 			{/* Main Canvas Area */}
 			<main className="mainArea">
-				{/* Canvas Toolbar */}
+				{/* Main Toolbar */}
 				<div className="mainToolbar" data-tauri-drag-region>
 					<div className="mainToolbarLeft">
 						<span className="canvasTitle">
-							{activeCanvasDoc?.title || "No canvas selected"}
+							{mainView === "canvas"
+								? activeCanvasDoc?.title || "Canvas"
+								: activeFileTitle || "No file selected"}
 						</span>
 					</div>
 					<div className="mainToolbarRight">
 						<MotionIconButton
 							type="button"
-							active={showNoteEditor}
-							onClick={() => setShowNoteEditor(!showNoteEditor)}
-							title="Toggle note editor"
+							active={mainView === "canvas"}
+							onClick={() =>
+								setMainView((v) => (v === "canvas" ? "files" : "canvas"))
+							}
+							title={mainView === "canvas" ? "Show file editor" : "Show canvas"}
 						>
-							{showNoteEditor ? (
-								<PanelRightClose size={16} />
+							{mainView === "canvas" ? (
+								<FileText size={16} />
 							) : (
-								<PanelRightOpen size={16} />
+								<Layout size={16} />
 							)}
 						</MotionIconButton>
 						<MotionIconButton
@@ -716,38 +669,46 @@ function App() {
 					</div>
 				</div>
 
-				{/* Canvas Content */}
+				{/* Main Content */}
 				<div className="canvasWrapper">
-					<Suspense
-						fallback={<div className="canvasEmpty">Loading canvas…</div>}
-					>
-						<CanvasPane
-							doc={
-								activeCanvasDoc
-									? {
-											version: activeCanvasDoc.version,
-											id: activeCanvasDoc.id,
-											title: activeCanvasDoc.title,
-											nodes: activeCanvasDoc.nodes,
-											edges: activeCanvasDoc.edges,
-										}
-									: null
-							}
-							onSave={onSaveCanvas}
-							onOpenNote={(id) => {
-								setActiveNoteId(id);
-								setShowNoteEditor(true);
-							}}
-							activeNoteId={activeNoteId}
-							activeNoteTitle={activeNoteTitle}
-							vaultPath={vaultPath}
-							onSelectionChange={onCanvasSelectionChange}
-							externalCommand={canvasCommand}
-							onExternalCommandHandled={(id) => {
-								setCanvasCommand((prev) => (prev?.id === id ? null : prev));
-							}}
+					{mainView === "canvas" ? (
+						<Suspense
+							fallback={<div className="canvasEmpty">Loading canvas…</div>}
+						>
+							<CanvasPane
+								doc={
+									activeCanvasDoc
+										? {
+												version: activeCanvasDoc.version,
+												id: activeCanvasDoc.id,
+												title: activeCanvasDoc.title,
+												nodes: activeCanvasDoc.nodes,
+												edges: activeCanvasDoc.edges,
+											}
+										: null
+								}
+								onSave={onSaveCanvas}
+								onOpenNote={(p) => void openFile(p)}
+								activeNoteId={null}
+								activeNoteTitle={null}
+								vaultPath={vaultPath}
+								onSelectionChange={onCanvasSelectionChange}
+								externalCommand={canvasCommand}
+								onExternalCommandHandled={(id) => {
+									setCanvasCommand((prev) => (prev?.id === id ? null : prev));
+								}}
+							/>
+						</Suspense>
+					) : (
+						<MarkdownFileEditor
+							doc={activeFileDoc}
+							value={editorValue}
+							isDirty={isEditorDirty}
+							onChange={onChangeEditorValue}
+							onSave={saveActiveFile}
+							onReloadFromDisk={reloadActiveFileFromDisk}
 						/>
-					</Suspense>
+					)}
 
 					{/* Floating AI Panel */}
 					<MotionFloatingPanel
@@ -770,13 +731,16 @@ function App() {
 						</div>
 						<div className="floatingPanelBody">
 							<AIPane
-								activeNoteId={activeNoteId}
-								activeNoteTitle={activeNoteTitle}
-								activeNoteMarkdown={activeDoc?.markdown ?? null}
+								activeNoteId={activeFilePath}
+								activeNoteTitle={activeFileTitle}
+								activeNoteMarkdown={activeFileDoc ? editorValue : null}
 								selectedCanvasNodes={selectedCanvasNodes}
 								canvasDoc={activeCanvasDoc}
-								onApplyToActiveNote={onForceSaveMarkdown}
-								onCreateNoteFromMarkdown={createNoteFromMarkdown}
+								onApplyToActiveNote={async (markdown) => {
+									setEditorValue(markdown);
+									setIsEditorDirty(true);
+								}}
+								onCreateNoteFromMarkdown={createFileFromMarkdown}
 								onAddCanvasNoteNode={addCanvasNoteNode}
 								onAddCanvasTextNode={addCanvasTextNode}
 							/>
@@ -784,22 +748,6 @@ function App() {
 					</MotionFloatingPanel>
 				</div>
 			</main>
-
-			{/* Right Panel - Note Editor */}
-			<MotionEditorPanel isOpen={showNoteEditor} className="editorPanel">
-				<NoteEditor
-					doc={activeDoc}
-					backlinks={backlinks}
-					backlinksError={backlinksError}
-					onOpenBacklink={(id) => setActiveNoteId(id)}
-					onChangeMarkdown={onChangeMarkdown}
-					onSave={onSaveMarkdown}
-					onForceSave={onForceSaveMarkdown}
-					onReloadFromDisk={onReloadNoteFromDisk}
-					onAttachFile={onAttachFile}
-					onClose={() => setShowNoteEditor(false)}
-				/>
-			</MotionEditorPanel>
 
 			{/* Error Toast */}
 			<AnimatePresence>
