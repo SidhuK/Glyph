@@ -870,7 +870,7 @@ export default function CanvasPane({
 	if (!doc) {
 		return (
 			<div className="canvasEmpty">
-				Open/create a vault and select a canvas.
+				Select a folder, tag, or search to populate the canvas.
 			</div>
 		);
 	}

@@ -1,6 +1,8 @@
+import { AnimatePresence, motion } from "motion/react";
 import { memo } from "react";
 import type { FsEntry } from "../lib/tauri";
-import { ChevronDown, ChevronRight, FileText, Plus } from "./Icons";
+import { ChevronDown, FileText, Plus } from "./Icons";
+import { MotionIconButton } from "./MotionUI";
 
 interface FileTreePaneProps {
 	rootEntries: FsEntry[];
@@ -19,6 +21,8 @@ function basename(relPath: string): string {
 	return parts[parts.length - 1] ?? relPath;
 }
 
+const springTransition = { type: "spring", stiffness: 400, damping: 25 } as const;
+
 export const FileTreePane = memo(function FileTreePane({
 	rootEntries,
 	childrenByDir,
@@ -31,8 +35,16 @@ export const FileTreePane = memo(function FileTreePane({
 }: FileTreePaneProps) {
 	const renderEntries = (entries: FsEntry[], parentDepth: number) => {
 		return (
-			<ul className="fileTreeList">
-				{entries.map((e) => {
+			<motion.ul
+				className="fileTreeList"
+				initial="hidden"
+				animate="visible"
+				variants={{
+					visible: { transition: { staggerChildren: 0.03 } },
+					hidden: {},
+				}}
+			>
+				{entries.map((e, index) => {
 					const isDir = e.kind === "dir";
 					const isExpanded = isDir && expandedDirs.has(e.rel_path);
 					const depth = parentDepth + 1;
@@ -41,8 +53,16 @@ export const FileTreePane = memo(function FileTreePane({
 					if (isDir) {
 						const children = childrenByDir[e.rel_path];
 						return (
-							<li key={e.rel_path} className="fileTreeItem">
-								<button
+							<motion.li
+								key={e.rel_path}
+								className="fileTreeItem"
+								variants={{
+									hidden: { opacity: 0, x: -8 },
+									visible: { opacity: 1, x: 0 },
+								}}
+								transition={{ ...springTransition, delay: index * 0.02 }}
+							>
+								<motion.button
 									type="button"
 									className="fileTreeRow"
 									onClick={() => {
@@ -50,29 +70,49 @@ export const FileTreePane = memo(function FileTreePane({
 										onToggleDir(e.rel_path);
 									}}
 									style={{ paddingLeft }}
+									whileHover={{ x: 2, backgroundColor: "var(--bg-hover)" }}
+									whileTap={{ scale: 0.98 }}
+									transition={springTransition}
 								>
-									<span className="fileTreeChevron">
-										{isExpanded ? (
-											<ChevronDown size={14} />
-										) : (
-											<ChevronRight size={14} />
-										)}
-									</span>
+									<motion.span
+										className="fileTreeChevron"
+										animate={{ rotate: isExpanded ? 0 : -90 }}
+										transition={springTransition}
+									>
+										<ChevronDown size={14} />
+									</motion.span>
 									<span className="fileTreeName">{e.name}</span>
-								</button>
-								{isExpanded && children ? renderEntries(children, depth) : null}
-							</li>
+								</motion.button>
+								<AnimatePresence>
+									{isExpanded && children && (
+										<motion.div
+											initial={{ height: 0, opacity: 0 }}
+											animate={{ height: "auto", opacity: 1 }}
+											exit={{ height: 0, opacity: 0 }}
+											transition={springTransition}
+											style={{ overflow: "hidden" }}
+										>
+											{renderEntries(children, depth)}
+										</motion.div>
+									)}
+								</AnimatePresence>
+							</motion.li>
 						);
 					}
 
 					const isActive = e.rel_path === activeFilePath;
 					const disabled = !e.is_markdown;
 					return (
-						<li
+						<motion.li
 							key={e.rel_path}
 							className={isActive ? "fileTreeItem active" : "fileTreeItem"}
+							variants={{
+								hidden: { opacity: 0, x: -8 },
+								visible: { opacity: 1, x: 0 },
+							}}
+							transition={{ ...springTransition, delay: index * 0.02 }}
 						>
-							<button
+							<motion.button
 								type="button"
 								className="fileTreeRow"
 								onClick={() => onOpenFile(e.rel_path)}
@@ -83,40 +123,65 @@ export const FileTreePane = memo(function FileTreePane({
 										? "Only Markdown files are supported (for now)."
 										: e.rel_path
 								}
+								whileHover={
+									disabled ? {} : { x: 2, backgroundColor: "var(--bg-hover)" }
+								}
+								whileTap={disabled ? {} : { scale: 0.98 }}
+								animate={
+									isActive
+										? { backgroundColor: "var(--selection-bg-muted)" }
+										: {}
+								}
+								transition={springTransition}
 							>
-								<span className="fileTreeIcon">
+								<motion.span
+									className="fileTreeIcon"
+									animate={isActive ? { scale: 1.1 } : { scale: 1 }}
+									transition={springTransition}
+								>
 									<FileText size={14} />
-								</span>
+								</motion.span>
 								<span className="fileTreeName">{basename(e.rel_path)}</span>
-							</button>
-						</li>
+							</motion.button>
+						</motion.li>
 					);
 				})}
-			</ul>
+			</motion.ul>
 		);
 	};
 
 	return (
-		<aside className="fileTreePane">
+		<motion.aside
+			className="fileTreePane"
+			initial={{ opacity: 0, y: 10 }}
+			animate={{ opacity: 1, y: 0 }}
+			transition={springTransition}
+		>
 			<div className="fileTreeHeader">
 				<h2 className="fileTreeTitle">
 					<FileText size={14} />
 					Files
 				</h2>
-				<button
+				<MotionIconButton
 					type="button"
-					className="iconBtn"
 					onClick={onNewFile}
 					title="New Markdown file"
 				>
 					<Plus size={16} />
-				</button>
+				</MotionIconButton>
 			</div>
 			{rootEntries.length ? (
 				<div className="fileTreeScroll">{renderEntries(rootEntries, -1)}</div>
 			) : (
-				<div className="fileTreeEmpty">No files found.</div>
+				<motion.div
+					className="fileTreeEmpty"
+					initial={{ opacity: 0 }}
+					animate={{ opacity: 1 }}
+					transition={{ delay: 0.2 }}
+				>
+					No files found.
+				</motion.div>
 			)}
-		</aside>
+		</motion.aside>
 	);
 });

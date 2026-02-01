@@ -210,25 +210,105 @@ export async function buildFolderViewDoc(
 	const prevById = new Map(prevNodes.map((n) => [n.id, n] as const));
 	const nextNodes: CanvasNode[] = [];
 
-	for (let i = 0; i < sortedFiles.length; i++) {
-		const relPath = sortedFiles[i] as string;
-		const existingNode = prevById.get(relPath);
-		if (existingNode) {
-			nextNodes.push(existingNode);
-			continue;
-		}
-		nextNodes.push({
-			id: relPath,
-			type: "note",
-			position: defaultPositionForIndex(i),
-			data: { noteId: relPath, title: titleForFile(relPath) },
-		});
-	}
+	if (!prev) {
+		type Group = { key: string; title: string; files: string[] };
+		const prefix = v.selector
+			? `${v.selector.replace(/\\/g, "/").replace(/\/+$/g, "")}/`
+			: "";
+		const groups = new Map<string, Group>();
 
-	// Preserve non-note nodes (text/link/frame/etc.)
-	for (const n of prevNodes) {
-		if (n.type === "note") continue;
-		nextNodes.push(n);
+		for (const relPath of sortedFiles) {
+			const after =
+				prefix && relPath.startsWith(prefix)
+					? relPath.slice(prefix.length)
+					: relPath;
+			const parts = after.split("/").filter(Boolean);
+			const key = parts.length > 1 ? (parts[0] ?? "") : "__root__";
+			const title = key === "__root__" ? "Root" : key;
+			const g = groups.get(key) ?? { key, title, files: [] };
+			g.files.push(relPath);
+			groups.set(key, g);
+		}
+
+		const orderedGroups = [...groups.values()].sort((a, b) =>
+			a.title.toLowerCase().localeCompare(b.title.toLowerCase()),
+		);
+
+		const groupCols = 2;
+		const frameSpacingX = 60;
+		const frameSpacingY = 60;
+		const framePadX = 40;
+		const framePadY = 56;
+		const noteCellW = 260;
+		const noteCellH = 150;
+
+		const frames: CanvasNode[] = [];
+		const notes: CanvasNode[] = [];
+
+		for (let gi = 0; gi < orderedGroups.length; gi++) {
+			const g = orderedGroups[gi];
+			if (!g) continue;
+			const n = g.files.length;
+			const innerCols = Math.max(1, Math.min(4, Math.ceil(Math.sqrt(n))));
+			const innerRows = Math.max(1, Math.ceil(n / innerCols));
+
+			const width = framePadX * 2 + innerCols * noteCellW;
+			const height = framePadY * 2 + innerRows * noteCellH;
+
+			const gx = gi % groupCols;
+			const gy = Math.floor(gi / groupCols);
+			const frameX = gx * (width + frameSpacingX);
+			const frameY = gy * (height + frameSpacingY);
+
+			const frameId = `folder:${v.selector ? `${v.selector}/${g.key}` : g.key}`;
+			frames.push({
+				id: frameId,
+				type: "frame",
+				position: { x: frameX, y: frameY },
+				data: { title: g.title },
+				style: { width, height },
+			} as CanvasNode);
+
+			for (let i = 0; i < g.files.length; i++) {
+				const relPath = g.files[i] as string;
+				const col = i % innerCols;
+				const row = Math.floor(i / innerCols);
+				notes.push({
+					id: relPath,
+					type: "note",
+					parentNode: frameId,
+					extent: "parent",
+					position: {
+						x: framePadX + col * noteCellW,
+						y: framePadY + row * noteCellH,
+					},
+					data: { noteId: relPath, title: titleForFile(relPath) },
+				} as CanvasNode);
+			}
+		}
+
+		nextNodes.push(...frames, ...notes);
+	} else {
+		for (let i = 0; i < sortedFiles.length; i++) {
+			const relPath = sortedFiles[i] as string;
+			const existingNode = prevById.get(relPath);
+			if (existingNode) {
+				nextNodes.push(existingNode);
+				continue;
+			}
+			nextNodes.push({
+				id: relPath,
+				type: "note",
+				position: defaultPositionForIndex(i),
+				data: { noteId: relPath, title: titleForFile(relPath) },
+			});
+		}
+
+		// Preserve non-note nodes (text/link/frame/etc.)
+		for (const n of prevNodes) {
+			if (n.type === "note") continue;
+			nextNodes.push(n);
+		}
 	}
 
 	const nextIds = new Set(nextNodes.map((n) => n.id));
