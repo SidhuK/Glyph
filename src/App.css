@@ -1394,124 +1394,142 @@ button.segBtn.active {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   REACTFLOW NODES - Organic scattered-desk aesthetic
+   REACTFLOW NODES - Sticky Note Aesthetic
    ───────────────────────────────────────────────────────────────────────────── */
 .rfNode {
-	padding: var(--space-4);
-	border-radius: 12px 16px 14px 18px; /* Slightly irregular corners */
-	border: 1px solid var(--border-light);
-	background: linear-gradient(
-		135deg,
-		var(--bg-primary) 0%,
-		color-mix(in srgb, var(--bg-primary) 97%, var(--bg-tertiary)) 100%
-	);
+	padding: var(--space-4) var(--space-4) var(--space-5);
+	border-radius: 2px 2px 3px 3px;
+	border: none;
 	box-shadow:
-		0 2px 8px rgba(0, 0, 0, 0.06),
-		0 8px 24px rgba(0, 0, 0, 0.08),
-		inset 0 1px 0 rgba(255, 255, 255, 0.5);
-	max-width: 280px;
-	min-width: 140px;
+		0 4px 6px rgba(0, 0, 0, 0.07),
+		0 10px 20px rgba(0, 0, 0, 0.1),
+		0 1px 3px rgba(0, 0, 0, 0.08);
+	min-width: 120px;
+	max-width: 320px;
 	transition: all var(--transition-base);
 	position: relative;
 }
 
-/* Subtle paper texture overlay */
+/* Paper texture */
 .rfNode::before {
 	content: "";
 	position: absolute;
 	inset: 0;
 	border-radius: inherit;
-	background: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-	opacity: 0.015;
+	background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+	opacity: 0.03;
 	pointer-events: none;
+	mix-blend-mode: multiply;
 }
 
-.rfNode:hover {
-	border-color: var(--border-strong);
-	box-shadow:
-		0 4px 12px rgba(0, 0, 0, 0.08),
-		0 16px 48px rgba(0, 0, 0, 0.12),
-		inset 0 1px 0 rgba(255, 255, 255, 0.6);
-}
-
-/* Note nodes - warm sticky note feel */
-.rfNodeNote {
-	background: linear-gradient(
-		145deg,
-		#fffef5 0%,
-		#fdfbf0 50%,
-		#fcf9e8 100%
-	);
-	border-color: #e8e4d4;
-	border-radius: 4px 16px 4px 16px;
-}
-
-.rfNodeNote::after {
+/* Folded corner effect */
+.rfNode::after {
 	content: "";
 	position: absolute;
-	top: -2px;
-	left: 50%;
-	transform: translateX(-50%);
-	width: 40px;
-	height: 8px;
-	background: linear-gradient(180deg, #ffd54f 0%, #ffca28 100%);
-	border-radius: 0 0 4px 4px;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-@media (prefers-color-scheme: dark) {
-	.rfNodeNote {
-		background: linear-gradient(
-			145deg,
-			#2d2a1f 0%,
-			#252218 50%,
-			#1f1c14 100%
-		);
-		border-color: #3d3825;
-	}
-	.rfNodeNote::after {
-		background: linear-gradient(180deg, #b8860b 0%, #8b6914 100%);
-	}
-}
-
-/* Text nodes - handwritten note feel */
-.rfNodeText {
+	bottom: 0;
+	right: 0;
+	width: 20px;
+	height: 20px;
 	background: linear-gradient(
-		160deg,
-		#f8f9ff 0%,
-		#f0f4ff 100%
+		135deg,
+		transparent 50%,
+		rgba(0, 0, 0, 0.05) 50%,
+		rgba(0, 0, 0, 0.1) 100%
 	);
-	border-color: #d4daf0;
-	border-radius: 8px 12px 16px 6px;
-	border-left: 3px solid #6b7fdb;
+	border-radius: 0 0 3px 0;
 }
 
-@media (prefers-color-scheme: dark) {
-	.rfNodeText {
-		background: linear-gradient(
-			160deg,
-			#1a1d2e 0%,
-			#151829 100%
-		);
-		border-color: #2a3050;
-		border-left-color: #4a5eb8;
-	}
+/* ─── Note Nodes (Sticky Notes) ─── */
+.rfNodeNote {
+	min-width: 120px;
+	max-width: 260px;
+	min-height: 80px;
+	padding: var(--space-3) var(--space-3) var(--space-4);
+	display: flex;
+	flex-direction: column;
+	justify-content: flex-start;
 }
 
-/* Link nodes - card/bookmark feel */
+/* Tape strip at top */
+.rfNodeNote .react-flow__handle {
+	z-index: 10;
+}
+
+.rfNodeNoteTitle {
+	font-size: 14px;
+	font-weight: 600;
+	color: rgba(0, 0, 0, 0.8);
+	line-height: 1.35;
+	word-break: break-word;
+	margin: 0;
+	/* Handwriting-like styling */
+	font-family: var(--font-sans);
+	letter-spacing: -0.01em;
+}
+
+.rfNodeNoteContent {
+	font-size: 12px;
+	color: rgba(0, 0, 0, 0.55);
+	line-height: 1.45;
+	white-space: pre-wrap;
+	word-break: break-word;
+	font-family: var(--font-sans);
+	margin-top: var(--space-2);
+	max-height: 120px;
+	overflow: hidden;
+	/* Fade out at bottom */
+	-webkit-mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+	mask-image: linear-gradient(to bottom, black 70%, transparent 100%);
+}
+
+/* ─── Text Nodes (Quick Notes) ─── */
+.rfNodeText {
+	min-width: 80px;
+	max-width: 200px;
+	min-height: 60px;
+	padding: var(--space-2) var(--space-3);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.rfNodeTextContent {
+	font-size: 13px;
+	color: rgba(0, 0, 0, 0.75);
+	line-height: 1.45;
+	white-space: pre-wrap;
+	word-break: break-word;
+	text-align: center;
+	/* Handwritten feel */
+	font-family: var(--font-sans);
+}
+
+/* ─── Link Nodes (Cards) ─── */
 .rfNodeLink {
 	background: linear-gradient(
 		135deg,
 		var(--bg-primary) 0%,
 		color-mix(in srgb, var(--bg-primary) 95%, #e3f2fd) 100%
 	);
-	border-color: #c5dff8;
-	border-radius: 16px;
+	border: 1px solid #c5dff8;
+	border-radius: 12px;
 	overflow: hidden;
+	min-width: 200px;
+	max-width: 300px;
+	padding: 0;
 }
 
-.rfNodeLink::before {
-	display: none; /* No texture for link cards */
+.rfNodeLink::before,
+.rfNodeLink::after {
+	display: none;
+}
+
+.rfNodeLink .rfNodeTitle {
+	padding: var(--space-3) var(--space-4) 0;
+}
+
+.rfNodeLink .rfNodeBody {
+	padding: var(--space-1) var(--space-4) var(--space-3);
 }
 
 @media (prefers-color-scheme: dark) {
@@ -1531,13 +1549,11 @@ button.segBtn.active {
 	color: var(--text-primary);
 	line-height: var(--leading-snug);
 	margin-bottom: var(--space-1);
-	letter-spacing: -0.01em;
 }
 
 .rfNodeSub {
 	font-size: var(--text-xs);
 	color: var(--text-tertiary);
-	opacity: 0.8;
 }
 
 .rfNodeBody {
@@ -1549,33 +1565,38 @@ button.segBtn.active {
 }
 
 .rfNodeLinkImage {
-	width: calc(100% + var(--space-4) * 2);
-	margin: calc(var(--space-4) * -1) calc(var(--space-4) * -1) var(--space-3);
-	max-height: 140px;
+	width: 100%;
+	max-height: 160px;
 	object-fit: cover;
-	border-radius: 0;
 	background: var(--bg-tertiary);
 }
 
+/* ─── Frame Nodes ─── */
 .rfNodeFrame {
 	border: 2px dashed var(--border-default);
-	border-color: color-mix(in srgb, var(--interactive-accent) 30%, var(--border-default));
+	border-color: color-mix(in srgb, var(--interactive-accent) 40%, var(--border-default));
 	background: linear-gradient(
 		135deg,
-		rgba(99, 102, 241, 0.02) 0%,
-		rgba(168, 85, 247, 0.02) 100%
+		rgba(99, 102, 241, 0.03) 0%,
+		rgba(168, 85, 247, 0.03) 100%
 	);
 	box-shadow: none;
-	min-width: 240px;
-	min-height: 180px;
-	border-radius: 20px;
+	min-width: 260px;
+	min-height: 200px;
+	border-radius: 16px;
+	padding: var(--space-3);
+}
+
+.rfNodeFrame::before,
+.rfNodeFrame::after {
+	display: none;
 }
 
 .rfNodeFrame .rfNodeTitle {
 	color: var(--text-tertiary);
 	font-size: var(--text-xs);
 	text-transform: uppercase;
-	letter-spacing: 0.05em;
+	letter-spacing: 0.08em;
 	font-weight: var(--font-medium);
 }
 
@@ -1583,8 +1604,8 @@ button.segBtn.active {
 	.rfNodeFrame {
 		background: linear-gradient(
 			135deg,
-			rgba(99, 102, 241, 0.03) 0%,
-			rgba(168, 85, 247, 0.03) 100%
+			rgba(99, 102, 241, 0.05) 0%,
+			rgba(168, 85, 247, 0.05) 100%
 		);
 	}
 }

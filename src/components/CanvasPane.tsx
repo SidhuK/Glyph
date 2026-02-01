@@ -75,14 +75,32 @@ export type CanvasExternalCommand =
 
 const nodeSpring = { type: "spring", stiffness: 400, damping: 25 } as const;
 
-// Generate a stable pseudo-random rotation based on node id
-function getNodeRotation(id: string): number {
+// Sticky note color palette
+const STICKY_COLORS = [
+	{ bg: "linear-gradient(145deg, #fff9c4 0%, #fff59d 50%, #ffee58 100%)", border: "#f9a825", tape: "#ffd54f" }, // Yellow
+	{ bg: "linear-gradient(145deg, #f8bbd9 0%, #f48fb1 50%, #f06292 100%)", border: "#c2185b", tape: "#f48fb1" }, // Pink
+	{ bg: "linear-gradient(145deg, #b3e5fc 0%, #81d4fa 50%, #4fc3f7 100%)", border: "#0288d1", tape: "#4fc3f7" }, // Blue
+	{ bg: "linear-gradient(145deg, #c8e6c9 0%, #a5d6a7 50%, #81c784 100%)", border: "#388e3c", tape: "#81c784" }, // Green
+	{ bg: "linear-gradient(145deg, #ffe0b2 0%, #ffcc80 50%, #ffb74d 100%)", border: "#f57c00", tape: "#ffb74d" }, // Orange
+	{ bg: "linear-gradient(145deg, #e1bee7 0%, #ce93d8 50%, #ba68c8 100%)", border: "#7b1fa2", tape: "#ce93d8" }, // Purple
+] as const;
+
+// Generate stable pseudo-random values based on node id
+function getNodeHash(id: string): number {
 	let hash = 0;
 	for (let i = 0; i < id.length; i++) {
 		hash = (hash << 5) - hash + id.charCodeAt(i);
 		hash |= 0;
 	}
-	return ((hash % 7) - 3) * 0.5; // Range: -1.5 to 1.5 degrees
+	return Math.abs(hash);
+}
+
+function getNodeRotation(id: string): number {
+	return ((getNodeHash(id) % 9) - 4) * 0.8; // Range: -3.2 to 3.2 degrees
+}
+
+function getStickyColor(id: string) {
+	return STICKY_COLORS[getNodeHash(id) % STICKY_COLORS.length];
 }
 
 const NoteNode = memo(function NoteNode({
@@ -91,29 +109,144 @@ const NoteNode = memo(function NoteNode({
 }: { data: Record<string, unknown>; id: string }) {
 	const title = typeof data.title === "string" ? data.title : "Note";
 	const noteId = typeof data.noteId === "string" ? data.noteId : "";
+	const content = typeof data.content === "string" ? data.content : "";
 	const rotation = getNodeRotation(id);
+	const color = getStickyColor(id);
+
+	// Truncate content for display
+	const displayContent = content.length > 300 ? `${content.slice(0, 300)}…` : content;
+	const hasContent = content.length > 0;
 
 	return (
 		<motion.div
 			className="rfNode rfNodeNote"
 			title={noteId}
-			initial={{ opacity: 0, scale: 0.8, rotate: rotation - 5 }}
+			style={{
+				background: color.bg,
+				borderColor: color.border,
+				"--tape-color": color.tape,
+			} as React.CSSProperties}
+			initial={{ opacity: 0, scale: 0.8, rotate: rotation - 8 }}
 			animate={{ opacity: 1, scale: 1, rotate: rotation }}
 			whileHover={{
-				scale: 1.03,
+				scale: 1.02,
 				rotate: 0,
 				boxShadow:
-					"0 12px 40px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.1)",
-				y: -4,
+					"0 20px 60px rgba(0,0,0,0.2), 0 8px 20px rgba(0,0,0,0.15)",
+				y: -6,
 			}}
 			transition={nodeSpring}
 		>
 			<Handle type="target" position={Position.Left} />
 			<Handle type="source" position={Position.Right} />
 			<motion.div
-				className="rfNodeTitle"
+				className="rfNodeNoteTitle"
 				initial={{ opacity: 0, y: -5 }}
 				animate={{ opacity: 1, y: 0 }}
+				transition={{ ...nodeSpring, delay: 0.05 }}
+			>
+				{title}
+			</motion.div>
+			{hasContent && (
+				<motion.div
+					className="rfNodeNoteContent"
+					initial={{ opacity: 0 }}
+					animate={{ opacity: 1 }}
+					transition={{ ...nodeSpring, delay: 0.1 }}
+				>
+					{displayContent}
+				</motion.div>
+			)}
+		</motion.div>
+	);
+});
+
+const TextNode = memo(function TextNode({
+	data,
+	id,
+}: { data: Record<string, unknown>; id: string }) {
+	const text = typeof data.text === "string" ? data.text : "";
+	const rotation = getNodeRotation(id) * 1.3; // More rotation for handwritten feel
+	const color = getStickyColor(id + "text"); // Different color offset
+
+	return (
+		<motion.div
+			className="rfNode rfNodeText"
+			style={{
+				background: color.bg,
+				borderColor: color.border,
+				"--tape-color": color.tape,
+			} as React.CSSProperties}
+			initial={{ opacity: 0, scale: 0.85, rotate: rotation - 6 }}
+			animate={{ opacity: 1, scale: 1, rotate: rotation }}
+			whileHover={{
+				scale: 1.02,
+				rotate: 0,
+				boxShadow:
+					"0 20px 60px rgba(0,0,0,0.2), 0 8px 20px rgba(0,0,0,0.15)",
+				y: -6,
+			}}
+			transition={nodeSpring}
+		>
+			<Handle type="target" position={Position.Left} />
+			<Handle type="source" position={Position.Right} />
+			<motion.div
+				className="rfNodeTextContent"
+				initial={{ opacity: 0, y: 5 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ ...nodeSpring, delay: 0.05 }}
+			>
+				{text}
+			</motion.div>
+		</motion.div>
+	);
+});
+
+const FileNode = memo(function FileNode({
+	data,
+	id,
+}: { data: Record<string, unknown>; id: string }) {
+	const title =
+		typeof data.title === "string"
+			? data.title
+			: typeof data.path === "string"
+				? (data.path.split("/").pop() ?? data.path)
+				: "File";
+	const path = typeof data.path === "string" ? data.path : "";
+	const imageSrc = typeof data.image_src === "string" ? data.image_src : "";
+	const rotation = getNodeRotation(id) * 0.8;
+
+	return (
+		<motion.div
+			className="rfNode rfNodeFile"
+			title={path}
+			initial={{ opacity: 0, scale: 0.88, y: 10, rotate: rotation - 3 }}
+			animate={{ opacity: 1, scale: 1, y: 0, rotate: rotation }}
+			whileHover={{
+				scale: 1.02,
+				rotate: 0,
+				boxShadow:
+					"0 16px 48px rgba(0,0,0,0.14), 0 4px 12px rgba(0,0,0,0.08)",
+				y: -4,
+			}}
+			transition={nodeSpring}
+		>
+			<Handle type="target" position={Position.Left} />
+			<Handle type="source" position={Position.Right} />
+			{imageSrc ? (
+				<motion.img
+					className="rfNodeFileThumb"
+					alt=""
+					src={imageSrc}
+					initial={{ opacity: 0, scale: 0.95 }}
+					animate={{ opacity: 1, scale: 1 }}
+					transition={{ ...nodeSpring, delay: 0.08 }}
+				/>
+			) : null}
+			<motion.div
+				className="rfNodeTitle"
+				initial={{ opacity: 0 }}
+				animate={{ opacity: 1 }}
 				transition={{ ...nodeSpring, delay: 0.05 }}
 			>
 				{title}
@@ -124,50 +257,7 @@ const NoteNode = memo(function NoteNode({
 				animate={{ opacity: 1 }}
 				transition={{ ...nodeSpring, delay: 0.1 }}
 			>
-				{noteId ? `${noteId.slice(0, 8)}…` : ""}
-			</motion.div>
-		</motion.div>
-	);
-});
-
-const TextNode = memo(function TextNode({
-	data,
-	id,
-}: { data: Record<string, unknown>; id: string }) {
-	const text = typeof data.text === "string" ? data.text : "";
-	const rotation = getNodeRotation(id) * 1.2; // Slightly more rotation for text
-
-	return (
-		<motion.div
-			className="rfNode rfNodeText"
-			initial={{ opacity: 0, scale: 0.85, rotate: rotation - 4 }}
-			animate={{ opacity: 1, scale: 1, rotate: rotation }}
-			whileHover={{
-				scale: 1.03,
-				rotate: 0,
-				boxShadow:
-					"0 12px 40px rgba(107, 127, 219, 0.15), 0 4px 12px rgba(0,0,0,0.08)",
-				y: -4,
-			}}
-			transition={nodeSpring}
-		>
-			<Handle type="target" position={Position.Left} />
-			<Handle type="source" position={Position.Right} />
-			<motion.div
-				className="rfNodeTitle"
-				initial={{ opacity: 0 }}
-				animate={{ opacity: 1 }}
-				transition={{ ...nodeSpring, delay: 0.05 }}
-			>
-				Text
-			</motion.div>
-			<motion.div
-				className="rfNodeBody"
-				initial={{ opacity: 0, y: 5 }}
-				animate={{ opacity: 1, y: 0 }}
-				transition={{ ...nodeSpring, delay: 0.1 }}
-			>
-				{text}
+				{path ? `${path.slice(0, 14)}…` : ""}
 			</motion.div>
 		</motion.div>
 	);
@@ -385,7 +475,7 @@ export default function CanvasPane({
 		if (!doc) return;
 		let cancelled = false;
 		(async () => {
-			const candidates = (doc.nodes ?? []).filter(
+			const linkCandidates = (doc.nodes ?? []).filter(
 				(n) =>
 					n.type === "link" &&
 					typeof (n.data as Record<string, unknown> | null)?.image_src !==
@@ -393,10 +483,19 @@ export default function CanvasPane({
 					typeof (n.data as Record<string, unknown> | null)?.preview ===
 						"object",
 			);
-			if (!candidates.length) return;
+			const fileCandidates = (doc.nodes ?? []).filter((n) => {
+				if (n.type !== "file") return false;
+				const d = (n.data as Record<string, unknown> | null) ?? null;
+				if (!d) return false;
+				if (typeof d.image_src === "string") return false;
+				const p = typeof d.path === "string" ? d.path : "";
+				const ext = p.split(".").pop()?.toLowerCase() ?? "";
+				return ["png", "jpg", "jpeg", "gif", "webp", "svg"].includes(ext);
+			});
+			if (!linkCandidates.length && !fileCandidates.length) return;
 
-			const computed = await Promise.all(
-				candidates.map(async (n) => {
+			const computedLinks = await Promise.all(
+				linkCandidates.map(async (n) => {
 					const preview = (n.data as Record<string, unknown>).preview as
 						| Record<string, unknown>
 						| null
@@ -410,14 +509,28 @@ export default function CanvasPane({
 					return { id: n.id, src: convertFileSrc(abs) };
 				}),
 			);
+
+			const computedFiles = await Promise.all(
+				fileCandidates.map(async (n) => {
+					const p =
+						typeof (n.data as Record<string, unknown> | null)?.path === "string"
+							? ((n.data as Record<string, unknown>).path as string)
+							: "";
+					if (!p) return { id: n.id, src: null as string | null };
+					const abs = await join(vaultPath, p);
+					return { id: n.id, src: convertFileSrc(abs) };
+				}),
+			);
 			if (cancelled) return;
 			setNodes((prev) =>
 				prev.map((n) => {
-					const found = computed.find((c) => c.id === n.id);
-					if (!found?.src) return n;
+					const foundLink = computedLinks.find((c) => c.id === n.id);
+					const foundFile = computedFiles.find((c) => c.id === n.id);
+					const src = foundLink?.src ?? foundFile?.src ?? null;
+					if (!src) return n;
 					return {
 						...n,
-						data: { ...(n.data ?? {}), image_src: found.src },
+						data: { ...(n.data ?? {}), image_src: src },
 					};
 				}),
 			);
@@ -431,6 +544,7 @@ export default function CanvasPane({
 		() => ({
 			note: NoteNode,
 			text: TextNode,
+			file: FileNode,
 			link: LinkNode,
 			frame: FrameNode,
 		}),
@@ -974,6 +1088,11 @@ export default function CanvasPane({
 			if (node.type === "note") {
 				const noteId = (node.data as Record<string, unknown>)?.noteId;
 				if (typeof noteId === "string") onOpenNote(noteId);
+				return;
+			}
+			if (node.type === "file") {
+				const path = (node.data as Record<string, unknown>)?.path;
+				if (typeof path === "string") onOpenNote(path);
 				return;
 			}
 			if (node.type === "text") {

@@ -190,16 +190,23 @@ export async function buildFolderViewDoc(
 	const v = viewId({ kind: "folder", dir });
 	const recursive = options.recursive ?? true;
 	const limit = options.limit ?? 500;
-	const files = await invoke("vault_list_markdown_files", {
+	const allFiles = await invoke("vault_list_files", {
 		dir: v.selector || null,
 		recursive,
-		limit,
+		limit: Math.max(limit, 2_000),
 	});
 
-	const fileSet = new Set<string>(
-		(files as FsEntry[]).filter((f) => f.is_markdown).map((f) => f.rel_path),
+	const mdPaths = new Set<string>(
+		(allFiles as FsEntry[]).filter((f) => f.is_markdown).map((f) => f.rel_path),
 	);
-	const sortedFiles = [...fileSet].sort((a, b) =>
+	const otherPaths = new Set<string>(
+		(allFiles as FsEntry[]).filter((f) => !f.is_markdown).map((f) => f.rel_path),
+	);
+
+	const sortedFiles = [...mdPaths].sort((a, b) =>
+		a.toLowerCase().localeCompare(b.toLowerCase()),
+	);
+	const sortedOtherFiles = [...otherPaths].sort((a, b) =>
 		a.toLowerCase().localeCompare(b.toLowerCase()),
 	);
 
@@ -217,7 +224,7 @@ export async function buildFolderViewDoc(
 			: "";
 		const groups = new Map<string, Group>();
 
-		for (const relPath of sortedFiles) {
+		for (const relPath of [...sortedFiles, ...sortedOtherFiles]) {
 			const after =
 				prefix && relPath.startsWith(prefix)
 					? relPath.slice(prefix.length)
@@ -271,36 +278,43 @@ export async function buildFolderViewDoc(
 
 			for (let i = 0; i < g.files.length; i++) {
 				const relPath = g.files[i] as string;
+				const isMarkdown = mdPaths.has(relPath);
 				const col = i % innerCols;
 				const row = Math.floor(i / innerCols);
 				notes.push({
 					id: relPath,
-					type: "note",
+					type: isMarkdown ? "note" : "file",
 					parentNode: frameId,
 					extent: "parent",
 					position: {
 						x: framePadX + col * noteCellW,
 						y: framePadY + row * noteCellH,
 					},
-					data: { noteId: relPath, title: titleForFile(relPath) },
+					data: isMarkdown
+						? { noteId: relPath, title: titleForFile(relPath) }
+						: { path: relPath, title: basename(relPath) },
 				} as CanvasNode);
 			}
 		}
 
 		nextNodes.push(...frames, ...notes);
 	} else {
-		for (let i = 0; i < sortedFiles.length; i++) {
-			const relPath = sortedFiles[i] as string;
+		const merged = [...sortedFiles, ...sortedOtherFiles];
+		for (let i = 0; i < merged.length; i++) {
+			const relPath = merged[i] as string;
 			const existingNode = prevById.get(relPath);
 			if (existingNode) {
 				nextNodes.push(existingNode);
 				continue;
 			}
+			const isMarkdown = mdPaths.has(relPath);
 			nextNodes.push({
 				id: relPath,
-				type: "note",
+				type: isMarkdown ? "note" : "file",
 				position: defaultPositionForIndex(i),
-				data: { noteId: relPath, title: titleForFile(relPath) },
+				data: isMarkdown
+					? { noteId: relPath, title: titleForFile(relPath) }
+					: { path: relPath, title: basename(relPath) },
 			});
 		}
 
