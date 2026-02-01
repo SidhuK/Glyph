@@ -21,7 +21,12 @@ export const TagsPane = memo(function TagsPane({
 		<section className="tagsPane">
 			<div className="tagsHeader">
 				<div className="tagsTitle">Tags</div>
-				<button type="button" className="iconBtn" onClick={onRefresh} title="Refresh tags">
+				<button
+					type="button"
+					className="iconBtn"
+					onClick={onRefresh}
+					title="Refresh tags"
+				>
 					↻
 				</button>
 			</div>
@@ -47,4 +52,3 @@ export const TagsPane = memo(function TagsPane({
 		</section>
 	);
 });
-

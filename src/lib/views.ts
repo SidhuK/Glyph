@@ -275,7 +275,9 @@ export async function buildSearchViewDoc(
 	const prevNodes = prev?.nodes ?? [];
 	const prevEdges = prev?.edges ?? [];
 	const prevById = new Map(prevNodes.map((n) => [n.id, n] as const));
-	const titleById = new Map((results ?? []).map((r) => [r.id, r.title] as const));
+	const titleById = new Map(
+		(results ?? []).map((r) => [r.id, r.title] as const),
+	);
 
 	const nextNodes: CanvasNode[] = [];
 	for (let i = 0; i < ids.length; i++) {
@@ -289,7 +291,10 @@ export async function buildSearchViewDoc(
 			id: relPath,
 			type: "note",
 			position: defaultPositionForIndex(i),
-			data: { noteId: relPath, title: titleById.get(relPath) || titleForFile(relPath) },
+			data: {
+				noteId: relPath,
+				title: titleById.get(relPath) || titleForFile(relPath),
+			},
 		});
 	}
 
@@ -316,8 +321,10 @@ export async function buildSearchViewDoc(
 
 	const changed =
 		!prev ||
-		JSON.stringify(sanitizeNodes(prevNodes)) !== JSON.stringify(sanitizeNodes(nextNodes)) ||
-		JSON.stringify(sanitizeEdges(prevEdges)) !== JSON.stringify(sanitizeEdges(nextEdges));
+		JSON.stringify(sanitizeNodes(prevNodes)) !==
+			JSON.stringify(sanitizeNodes(nextNodes)) ||
+		JSON.stringify(sanitizeEdges(prevEdges)) !==
+			JSON.stringify(sanitizeEdges(nextEdges));
 
 	return { doc, changed };
 }
@@ -332,13 +339,18 @@ export async function buildTagViewDoc(
 	const limit = options.limit ?? 500;
 	const results = await invoke("tag_notes", { tag: v.selector, limit });
 
-	const ids = (results ?? []).map((r) => r.id).filter(Boolean).slice(0, limit);
+	const ids = (results ?? [])
+		.map((r) => r.id)
+		.filter(Boolean)
+		.slice(0, limit);
 
 	const prev = existing;
 	const prevNodes = prev?.nodes ?? [];
 	const prevEdges = prev?.edges ?? [];
 	const prevById = new Map(prevNodes.map((n) => [n.id, n] as const));
-	const titleById = new Map((results ?? []).map((r) => [r.id, r.title] as const));
+	const titleById = new Map(
+		(results ?? []).map((r) => [r.id, r.title] as const),
+	);
 
 	const nextNodes: CanvasNode[] = [];
 	for (let i = 0; i < ids.length; i++) {
@@ -352,7 +364,10 @@ export async function buildTagViewDoc(
 			id: relPath,
 			type: "note",
 			position: defaultPositionForIndex(i),
-			data: { noteId: relPath, title: titleById.get(relPath) || titleForFile(relPath) },
+			data: {
+				noteId: relPath,
+				title: titleById.get(relPath) || titleForFile(relPath),
+			},
 		});
 	}
 
@@ -379,8 +394,10 @@ export async function buildTagViewDoc(
 
 	const changed =
 		!prev ||
-		JSON.stringify(sanitizeNodes(prevNodes)) !== JSON.stringify(sanitizeNodes(nextNodes)) ||
-		JSON.stringify(sanitizeEdges(prevEdges)) !== JSON.stringify(sanitizeEdges(nextEdges));
+		JSON.stringify(sanitizeNodes(prevNodes)) !==
+			JSON.stringify(sanitizeNodes(nextNodes)) ||
+		JSON.stringify(sanitizeEdges(prevEdges)) !==
+			JSON.stringify(sanitizeEdges(nextEdges));
 
 	return { doc, changed };
 }

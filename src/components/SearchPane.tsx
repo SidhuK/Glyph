@@ -61,7 +61,11 @@ export const SearchPane = memo(function SearchPane({
 						className="iconBtn"
 						onClick={() => onOpenAsCanvas(query)}
 						disabled={!query.trim()}
-						title={query.trim() ? "Open results as canvas" : "Type a query to open a canvas"}
+						title={
+							query.trim()
+								? "Open results as canvas"
+								: "Type a query to open a canvas"
+						}
 					>
 						▦
 					</button>

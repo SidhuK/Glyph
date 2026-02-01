@@ -699,7 +699,9 @@ function App() {
 						</div>
 
 						<div className="sidebarSection">
-							{tagsError ? <div className="searchError">{tagsError}</div> : null}
+							{tagsError ? (
+								<div className="searchError">{tagsError}</div>
+							) : null}
 							<TagsPane
 								tags={tags}
 								onSelectTag={(t) => void loadAndBuildTagView(t)}
