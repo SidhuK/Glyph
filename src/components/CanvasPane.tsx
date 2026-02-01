@@ -97,6 +97,13 @@ function getNodeHash(id: string): number {
 	return Math.abs(hash);
 }
 
+// Generate random variations for aesthetic appeal
+function getRandomVariation(id: string, min: number, max: number): number {
+	const hash = getNodeHash(id);
+	const range = max - min;
+	return min + (hash % range);
+}
+
 function getNodeRotation(id: string): number {
 	return ((getNodeHash(id) % 9) - 4) * 0.8; // Range: -3.2 to 3.2 degrees
 }
@@ -108,33 +115,84 @@ function getStickyColor(id: string) {
 const NoteNode = memo(function NoteNode({
 	data,
 	id,
-}: { data: Record<string, unknown>; id: string }) {
+}: {
+	data: Record<string, unknown>;
+	id: string;
+}) {
 	const title = typeof data.title === "string" ? data.title : "Note";
 	const noteId = typeof data.noteId === "string" ? data.noteId : "";
 	const content = typeof data.content === "string" ? data.content : "";
 	const rotation = getNodeRotation(id);
 	const color = getStickyColor(id);
 
-	// Show full content - size will adapt
+	// Analyze content for better sizing
 	const hasContent = content.length > 0;
+	const lines = content.split("\n").filter((line) => line.trim().length > 0);
+	const lineCount = lines.length;
+	const avgLineLength = lines.length > 0 ? content.length / lines.length : 0;
 
-	// Determine size class based on content
-	const sizeClass = !hasContent
+	// Base size class determination
+	const baseSizeClass = !hasContent
 		? "rfNodeNote--small"
-		: content.length < 100
-			? "rfNodeNote--small"
-			: content.length < 300
-				? "rfNodeNote--medium"
-				: "rfNodeNote--large";
+		: lineCount === 1 && content.length < 30
+			? "rfNodeNote--xs" // Very short single line
+			: lineCount === 1 && content.length < 80
+				? "rfNodeNote--small" // Short single line
+				: lineCount <= 2 && content.length < 150
+					? "rfNodeNote--medium" // Few lines
+					: lineCount <= 4 && avgLineLength < 40
+						? "rfNodeNote--tall" // Many short lines
+						: lineCount <= 3 && avgLineLength > 60
+							? "rfNodeNote--wide" // Few long lines
+							: lineCount <= 6 && content.length < 400
+								? "rfNodeNote--large" // Moderate content
+								: content.length < 600
+									? "rfNodeNote--xl" // Long content
+									: "rfNodeNote--xl"; // Very long content
+
+	// Apply random variations for aesthetic appeal
+	const randomWidth = getRandomVariation(id, -15, 15); // ±15px variation
+	const randomHeight = getRandomVariation(id, -10, 20); // -10 to +20px variation
+
+	// Generate dynamic style with random variations
+	const dynamicStyle = {
+		background: color.bg,
+		borderColor: color.border,
+		width:
+			randomWidth !== 0
+				? `calc(var(--base-width, 200px) + ${randomWidth}px)`
+				: undefined,
+		minHeight:
+			randomHeight !== 0
+				? `calc(var(--base-height, 140px) + ${randomHeight}px)`
+				: undefined,
+		"--base-width": undefined as string | undefined,
+		"--base-height": undefined as string | undefined,
+	};
+
+	// Set base dimensions from CSS class
+	const baseDimensions = {
+		"rfNodeNote--xs": { width: "100px", minHeight: "80px" },
+		"rfNodeNote--small": { width: "140px", minHeight: "100px" },
+		"rfNodeNote--medium": { width: "200px", minHeight: "140px" },
+		"rfNodeNote--large": { width: "280px", minHeight: "200px" },
+		"rfNodeNote--xl": { width: "360px", minHeight: "260px" },
+		"rfNodeNote--tall": { width: "160px", minHeight: "240px" },
+		"rfNodeNote--wide": { width: "320px", minHeight: "160px" },
+		"rfNodeNote--square": { width: "180px", minHeight: "180px" },
+	};
+
+	const dimensions =
+		baseDimensions[baseSizeClass as keyof typeof baseDimensions] ||
+		baseDimensions["rfNodeNote--small"];
+	dynamicStyle["--base-width"] = dimensions.width;
+	dynamicStyle["--base-height"] = dimensions.minHeight;
 
 	return (
 		<motion.div
-			className={`rfNode rfNodeNote ${sizeClass}`}
+			className={`rfNode rfNodeNote ${baseSizeClass}`}
 			title={noteId}
-			style={{
-				background: color.bg,
-				borderColor: color.border,
-			}}
+			style={dynamicStyle}
 			initial={{ opacity: 0, scale: 0.8, rotate: rotation - 8 }}
 			animate={{ opacity: 1, scale: 1, rotate: rotation }}
 			whileHover={{
@@ -172,7 +230,10 @@ const NoteNode = memo(function NoteNode({
 const TextNode = memo(function TextNode({
 	data,
 	id,
-}: { data: Record<string, unknown>; id: string }) {
+}: {
+	data: Record<string, unknown>;
+	id: string;
+}) {
 	const text = typeof data.text === "string" ? data.text : "";
 	const rotation = getNodeRotation(id) * 1.3;
 	const color = getStickyColor(`${id}text`);
@@ -219,7 +280,10 @@ const TextNode = memo(function TextNode({
 const FileNode = memo(function FileNode({
 	data,
 	id,
-}: { data: Record<string, unknown>; id: string }) {
+}: {
+	data: Record<string, unknown>;
+	id: string;
+}) {
 	const title =
 		typeof data.title === "string"
 			? data.title
@@ -279,7 +343,10 @@ const FileNode = memo(function FileNode({
 const LinkNode = memo(function LinkNode({
 	data,
 	id,
-}: { data: Record<string, unknown>; id: string }) {
+}: {
+	data: Record<string, unknown>;
+	id: string;
+}) {
 	const url = typeof data.url === "string" ? data.url : "";
 	const preview =
 		(data.preview as Record<string, unknown> | null | undefined) ?? null;
@@ -365,7 +432,10 @@ const LinkNode = memo(function LinkNode({
 const FrameNode = memo(function FrameNode({
 	data,
 	id,
-}: { data: Record<string, unknown>; id: string }) {
+}: {
+	data: Record<string, unknown>;
+	id: string;
+}) {
 	const title = typeof data.title === "string" ? data.title : "Frame";
 	const rotation = getNodeRotation(id) * 0.3; // Very subtle for frames
 
