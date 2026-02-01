@@ -583,6 +583,12 @@ button.segBtn.active {
 	/* Notion-ish centered page with generous side padding */
 	padding: var(--space-6) 0 var(--space-6);
 	background: color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary));
+	display: flex;
+	flex-direction: column;
+}
+
+.editorBody .tiptapHost > .tiptap {
+	flex: 1;
 }
 
 .editorBody .tiptapContent {
@@ -603,7 +609,7 @@ button.segBtn.active {
 	max-width: 780px;
 	margin: 0 auto;
 	padding: var(--space-6) var(--space-6) var(--space-6);
-	overflow: auto;
+	overflow: visible;
 	line-height: var(--leading-relaxed);
 	outline: none;
 	caret-color: var(--text-primary);
@@ -714,6 +720,7 @@ button.segBtn.active {
 
 .mdRawEditor {
 	width: 100%;
+	height: 100%;
 	flex: 1;
 	min-height: 0;
 	border: none;
@@ -742,7 +749,7 @@ button.segBtn.active {
 .editorBody {
 	flex: 1;
 	min-height: 0;
-	overflow: hidden;
+	overflow: visible;
 	display: flex;
 	flex-direction: column;
 }
@@ -757,6 +764,7 @@ button.segBtn.active {
 .editorBody .cm-scroller {
 	padding: var(--space-4);
 	line-height: var(--leading-relaxed);
+	overflow: auto;
 }
 
 .editorBody .cm-gutters {

@@ -1,11 +1,15 @@
-import { markdown } from "@codemirror/lang-markdown";
-import type { EditorView } from "@codemirror/view";
-import CodeMirror from "@uiw/react-codemirror";
+import Link from "@tiptap/extension-link";
+import TaskItem from "@tiptap/extension-task-item";
+import TaskList from "@tiptap/extension-task-list";
+import { Markdown } from "@tiptap/markdown";
+import { EditorContent, useEditor } from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { BacklinkItem, NoteDoc } from "../lib/tauri";
 import { Paperclip, RotateCcw, Save, X } from "./Icons";
 
 type SaveState = "idle" | "dirty" | "saving" | "saved" | "error";
+type EditorMode = "preview" | "edit" | "raw";
 
 interface NoteEditorProps {
 	doc: NoteDoc | null;
@@ -32,22 +36,94 @@ export const NoteEditor = memo(function NoteEditor({
 	onAttachFile,
 	onClose,
 }: NoteEditorProps) {
-	const viewRef = useRef<EditorView | null>(null);
 	const [saveState, setSaveState] = useState<SaveState>("idle");
 	const [error, setError] = useState<string>("");
+	const [mode, setMode] = useState<EditorMode>("edit");
+	const [rawValue, setRawValue] = useState("");
 	const saveTimerRef = useRef<number | null>(null);
+	const applyingContentRef = useRef(false);
+	const modeRef = useRef<EditorMode>("edit");
+	const prevModeRef = useRef<EditorMode>("edit");
+	const onChangeMarkdownRef = useRef(onChangeMarkdown);
 
-	const extensions = useMemo(() => [markdown()], []);
+	useEffect(() => {
+		prevModeRef.current = modeRef.current;
+		modeRef.current = mode;
+	}, [mode]);
+
+	useEffect(() => {
+		onChangeMarkdownRef.current = onChangeMarkdown;
+	}, [onChangeMarkdown]);
+
+	const extensions = useMemo(
+		() => [
+			StarterKit,
+			Link.configure({ openOnClick: false }),
+			TaskList,
+			TaskItem.configure({ nested: true }),
+			Markdown,
+		],
+		[],
+	);
+
+	const editor = useEditor({
+		extensions,
+		content: "",
+		editorProps: {
+			attributes: {
+				class: "tiptapContent",
+				spellcheck: "false",
+			},
+		},
+		onUpdate: ({ editor }) => {
+			if (applyingContentRef.current) return;
+			if (modeRef.current !== "edit") return;
+			const md = editor.getMarkdown();
+			onChangeMarkdownRef.current(md);
+			scheduleSave(md);
+		},
+	});
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: Reset editor state when switching notes (by id).
 	useEffect(() => {
 		setError("");
 		setSaveState("idle");
+		setMode("edit");
 		if (saveTimerRef.current) {
 			window.clearTimeout(saveTimerRef.current);
 			saveTimerRef.current = null;
 		}
 	}, [doc?.meta.id]);
+
+	useEffect(() => {
+		if (!editor) return;
+		if (!doc) return;
+		applyingContentRef.current = true;
+		try {
+			editor.commands.setContent(doc.markdown, { contentType: "markdown" });
+			setRawValue(doc.markdown);
+		} finally {
+			applyingContentRef.current = false;
+		}
+	}, [doc, editor]);
+
+	useEffect(() => {
+		if (!editor) return;
+		editor.setEditable(mode === "edit");
+	}, [editor, mode]);
+
+	useEffect(() => {
+		if (!editor) return;
+		if (!doc) return;
+		if (mode === "raw") return;
+		if (prevModeRef.current !== "raw") return;
+		applyingContentRef.current = true;
+		try {
+			editor.commands.setContent(rawValue, { contentType: "markdown" });
+		} finally {
+			applyingContentRef.current = false;
+		}
+	}, [doc, editor, mode, rawValue]);
 
 	const scheduleSave = useCallback(
 		(next: string) => {
@@ -66,6 +142,15 @@ export const NoteEditor = memo(function NoteEditor({
 			}, 500);
 		},
 		[onSave],
+	);
+
+	const handleRawChange = useCallback(
+		(next: string) => {
+			setRawValue(next);
+			onChangeMarkdownRef.current(next);
+			scheduleSave(next);
+		},
+		[scheduleSave],
 	);
 
 	const isConflict = useMemo(
@@ -101,32 +186,18 @@ export const NoteEditor = memo(function NoteEditor({
 		}
 	}, [doc, onForceSave]);
 
-	const onChange = useCallback(
-		(next: string) => {
-			onChangeMarkdown(next);
-			scheduleSave(next);
-		},
-		[onChangeMarkdown, scheduleSave],
-	);
-
 	const attach = useCallback(async () => {
 		try {
 			const snippet = await onAttachFile();
 			if (!snippet) return;
-			const view = viewRef.current;
-			if (!view) return;
+			if (!editor) return;
 
 			const insertion = `\n${snippet}\n`;
-			const from = view.state.selection.main.from;
-			view.dispatch({
-				changes: { from, to: from, insert: insertion },
-				selection: { anchor: from + insertion.length },
-				scrollIntoView: true,
-			});
+			editor.chain().focus().insertContent(insertion).run();
 		} catch (e) {
 			setError(e instanceof Error ? e.message : String(e));
 		}
-	}, [onAttachFile]);
+	}, [onAttachFile, editor]);
 
 	const statusLabel = useMemo(() => {
 		if (!doc) return "";
@@ -157,6 +228,32 @@ export const NoteEditor = memo(function NoteEditor({
 			<div className="editorHeader">
 				<div className="editorTitle">{doc.meta.title || "Untitled"}</div>
 				<div className="editorActions">
+					<div className="editorMode">
+						<button
+							type="button"
+							className={mode === "preview" ? "segBtn active" : "segBtn"}
+							onClick={() => setMode("preview")}
+							title="Preview"
+						>
+							Preview
+						</button>
+						<button
+							type="button"
+							className={mode === "edit" ? "segBtn active" : "segBtn"}
+							onClick={() => setMode("edit")}
+							title="Rich editor"
+						>
+							Edit
+						</button>
+						<button
+							type="button"
+							className={mode === "raw" ? "segBtn active" : "segBtn"}
+							onClick={() => setMode("raw")}
+							title="Raw Markdown"
+						>
+							Raw
+						</button>
+					</div>
 					<div className="editorStatus">{statusLabel}</div>
 					<button
 						type="button"
@@ -234,19 +331,16 @@ export const NoteEditor = memo(function NoteEditor({
 			)}
 
 			<div className="editorBody">
-				<CodeMirror
-					value={doc.markdown}
-					height="100%"
-					basicSetup={{
-						lineNumbers: true,
-						foldGutter: true,
-					}}
-					extensions={extensions}
-					onChange={onChange}
-					onCreateEditor={(view) => {
-						viewRef.current = view;
-					}}
-				/>
+				{mode === "raw" ? (
+					<textarea
+						className="mdRawEditor"
+						value={rawValue}
+						onChange={(e) => handleRawChange(e.target.value)}
+						spellCheck={false}
+					/>
+				) : (
+					<EditorContent editor={editor} className="tiptapHost" />
+				)}
 			</div>
 			{error ? <div className="editorError">{error}</div> : null}
 		</section>
