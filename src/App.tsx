@@ -32,6 +32,7 @@ import {
 	MotionFloatingPanel,
 	MotionIconButton,
 } from "./components/MotionUI";
+import { FilePreviewPane } from "./components/FilePreviewPane";
 import { SearchPane } from "./components/SearchPane";
 import { TagsPane } from "./components/TagsPane";
 import { loadSettings, setCurrentVaultPath } from "./lib/settings";
@@ -422,6 +423,24 @@ function App() {
 			setIsEditorDirty(false);
 			return;
 		}
+		const ext = activeFilePath.split(".").pop()?.toLowerCase() ?? "";
+		const isText =
+			ext === "md" ||
+			ext === "txt" ||
+			ext === "json" ||
+			ext === "yaml" ||
+			ext === "yml" ||
+			ext === "html" ||
+			ext === "css" ||
+			ext === "ts" ||
+			ext === "tsx" ||
+			ext === "js";
+		if (!isText) {
+			setActiveFileDoc(null);
+			setEditorValue("");
+			setIsEditorDirty(false);
+			return;
+		}
 		const seq = ++fileLoadSeq.current;
 		setActiveFileDoc(null);
 		(async () => {
@@ -770,14 +789,20 @@ function App() {
 							/>
 						</Suspense>
 					) : (
-						<MarkdownFileEditor
-							doc={activeFileDoc}
-							value={editorValue}
-							isDirty={isEditorDirty}
-							onChange={onChangeEditorValue}
-							onSave={saveActiveFile}
-							onReloadFromDisk={reloadActiveFileFromDisk}
-						/>
+						<>
+							{activeFileDoc ? (
+								<MarkdownFileEditor
+									doc={activeFileDoc}
+									value={editorValue}
+									isDirty={isEditorDirty}
+									onChange={onChangeEditorValue}
+									onSave={saveActiveFile}
+									onReloadFromDisk={reloadActiveFileFromDisk}
+								/>
+							) : (
+								<FilePreviewPane vaultPath={vaultPath} relPath={activeFilePath} />
+							)}
+						</>
 					)}
 
 					{/* Floating AI Panel */}

@@ -101,7 +101,18 @@ export const FileTreePane = memo(function FileTreePane({
 					}
 
 					const isActive = e.rel_path === activeFilePath;
-					const disabled = !e.is_markdown;
+					const ext = e.rel_path.split(".").pop()?.toLowerCase() ?? "";
+					const isImage = ["png", "jpg", "jpeg", "gif", "webp", "svg"].includes(
+						ext,
+					);
+					const isPdf = ext === "pdf";
+					const kindLabel = e.is_markdown
+						? "markdown"
+						: isImage
+							? "image"
+							: isPdf
+								? "pdf"
+								: "file";
 					return (
 						<motion.li
 							key={e.rel_path}
@@ -116,17 +127,10 @@ export const FileTreePane = memo(function FileTreePane({
 								type="button"
 								className="fileTreeRow"
 								onClick={() => onOpenFile(e.rel_path)}
-								disabled={disabled}
 								style={{ paddingLeft }}
-								title={
-									disabled
-										? "Only Markdown files are supported (for now)."
-										: e.rel_path
-								}
-								whileHover={
-									disabled ? {} : { x: 2, backgroundColor: "var(--bg-hover)" }
-								}
-								whileTap={disabled ? {} : { scale: 0.98 }}
+								title={`${e.rel_path} (${kindLabel})`}
+								whileHover={{ x: 2, backgroundColor: "var(--bg-hover)" }}
+								whileTap={{ scale: 0.98 }}
 								animate={
 									isActive
 										? { backgroundColor: "var(--selection-bg-muted)" }

@@ -75,14 +75,16 @@ export type CanvasExternalCommand =
 
 const nodeSpring = { type: "spring", stiffness: 400, damping: 25 } as const;
 
-// Sticky note color palette
+// Sticky note solid color palette
 const STICKY_COLORS = [
-	{ bg: "linear-gradient(145deg, #fff9c4 0%, #fff59d 50%, #ffee58 100%)", border: "#f9a825", tape: "#ffd54f" }, // Yellow
-	{ bg: "linear-gradient(145deg, #f8bbd9 0%, #f48fb1 50%, #f06292 100%)", border: "#c2185b", tape: "#f48fb1" }, // Pink
-	{ bg: "linear-gradient(145deg, #b3e5fc 0%, #81d4fa 50%, #4fc3f7 100%)", border: "#0288d1", tape: "#4fc3f7" }, // Blue
-	{ bg: "linear-gradient(145deg, #c8e6c9 0%, #a5d6a7 50%, #81c784 100%)", border: "#388e3c", tape: "#81c784" }, // Green
-	{ bg: "linear-gradient(145deg, #ffe0b2 0%, #ffcc80 50%, #ffb74d 100%)", border: "#f57c00", tape: "#ffb74d" }, // Orange
-	{ bg: "linear-gradient(145deg, #e1bee7 0%, #ce93d8 50%, #ba68c8 100%)", border: "#7b1fa2", tape: "#ce93d8" }, // Purple
+	{ bg: "#fff176", border: "#fbc02d" }, // Yellow
+	{ bg: "#f48fb1", border: "#e91e63" }, // Pink
+	{ bg: "#81d4fa", border: "#03a9f4" }, // Blue
+	{ bg: "#a5d6a7", border: "#4caf50" }, // Green
+	{ bg: "#ffcc80", border: "#ff9800" }, // Orange
+	{ bg: "#ce93d8", border: "#9c27b0" }, // Purple
+	{ bg: "#80cbc4", border: "#009688" }, // Teal
+	{ bg: "#ef9a9a", border: "#f44336" }, // Red
 ] as const;
 
 // Generate stable pseudo-random values based on node id
@@ -113,26 +115,33 @@ const NoteNode = memo(function NoteNode({
 	const rotation = getNodeRotation(id);
 	const color = getStickyColor(id);
 
-	// Truncate content for display
-	const displayContent = content.length > 300 ? `${content.slice(0, 300)}…` : content;
+	// Show full content - size will adapt
 	const hasContent = content.length > 0;
+
+	// Determine size class based on content
+	const sizeClass = !hasContent
+		? "rfNodeNote--small"
+		: content.length < 100
+			? "rfNodeNote--small"
+			: content.length < 300
+				? "rfNodeNote--medium"
+				: "rfNodeNote--large";
 
 	return (
 		<motion.div
-			className="rfNode rfNodeNote"
+			className={`rfNode rfNodeNote ${sizeClass}`}
 			title={noteId}
 			style={{
 				background: color.bg,
 				borderColor: color.border,
-				"--tape-color": color.tape,
-			} as React.CSSProperties}
+			}}
 			initial={{ opacity: 0, scale: 0.8, rotate: rotation - 8 }}
 			animate={{ opacity: 1, scale: 1, rotate: rotation }}
 			whileHover={{
 				scale: 1.02,
 				rotate: 0,
 				boxShadow:
-					"0 20px 60px rgba(0,0,0,0.2), 0 8px 20px rgba(0,0,0,0.15)",
+					"0 20px 60px rgba(0,0,0,0.25), 0 8px 20px rgba(0,0,0,0.15)",
 				y: -6,
 			}}
 			transition={nodeSpring}
@@ -154,7 +163,7 @@ const NoteNode = memo(function NoteNode({
 					animate={{ opacity: 1 }}
 					transition={{ ...nodeSpring, delay: 0.1 }}
 				>
-					{displayContent}
+					{content}
 				</motion.div>
 			)}
 		</motion.div>
@@ -166,24 +175,31 @@ const TextNode = memo(function TextNode({
 	id,
 }: { data: Record<string, unknown>; id: string }) {
 	const text = typeof data.text === "string" ? data.text : "";
-	const rotation = getNodeRotation(id) * 1.3; // More rotation for handwritten feel
-	const color = getStickyColor(id + "text"); // Different color offset
+	const rotation = getNodeRotation(id) * 1.3;
+	const color = getStickyColor(id + "text");
+
+	// Size based on text length
+	const sizeClass =
+		text.length < 50
+			? "rfNodeText--small"
+			: text.length < 150
+				? "rfNodeText--medium"
+				: "rfNodeText--large";
 
 	return (
 		<motion.div
-			className="rfNode rfNodeText"
+			className={`rfNode rfNodeText ${sizeClass}`}
 			style={{
 				background: color.bg,
 				borderColor: color.border,
-				"--tape-color": color.tape,
-			} as React.CSSProperties}
+			}}
 			initial={{ opacity: 0, scale: 0.85, rotate: rotation - 6 }}
 			animate={{ opacity: 1, scale: 1, rotate: rotation }}
 			whileHover={{
 				scale: 1.02,
 				rotate: 0,
 				boxShadow:
-					"0 20px 60px rgba(0,0,0,0.2), 0 8px 20px rgba(0,0,0,0.15)",
+					"0 20px 60px rgba(0,0,0,0.25), 0 8px 20px rgba(0,0,0,0.15)",
 				y: -6,
 			}}
 			transition={nodeSpring}
