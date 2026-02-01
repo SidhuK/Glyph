@@ -579,8 +579,7 @@ button.segBtn.active {
 .editorBody .tiptapHost {
 	flex: 1;
 	min-height: 0;
-	overflow: auto;
-	/* Notion-ish centered page with generous side padding */
+	overflow: hidden;
 	padding: var(--space-6) 0 var(--space-6);
 	background: color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary));
 	display: flex;
