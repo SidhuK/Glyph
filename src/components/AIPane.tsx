@@ -5,12 +5,12 @@ import {
 	type AiHeader,
 	type AiMessage,
 	type AiProfile,
-	type CanvasDoc,
 	type LinkPreview,
 	type NoteMeta,
 	TauriInvokeError,
 	invoke,
 } from "../lib/tauri";
+import type { CanvasDocLike } from "./CanvasPane";
 
 type ChatMessage = AiMessage & { id: string };
 
@@ -49,7 +49,7 @@ interface AIPaneProps {
 	activeNoteTitle: string | null;
 	activeNoteMarkdown: string | null;
 	selectedCanvasNodes: SelectedCanvasNode[];
-	canvasDoc: CanvasDoc | null;
+	canvasDoc: CanvasDocLike | null;
 	onApplyToActiveNote: (markdown: string) => Promise<void>;
 	onCreateNoteFromMarkdown: (
 		title: string,
@@ -72,6 +72,12 @@ function clampInt(n: number, min: number, max: number): number {
 
 function estimateTokens(chars: number): number {
 	return Math.ceil(chars / 4);
+}
+
+function isUuid(id: string): boolean {
+	return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+		id,
+	);
 }
 
 function truncateWithNotice(
@@ -421,8 +427,16 @@ export function AIPane({
 			const getNote = async (noteId: string) => {
 				const cached = noteCacheRef.current.get(noteId);
 				if (cached) return cached;
-				const doc = await invoke("note_read", { id: noteId });
-				const next = { title: doc.meta.title, markdown: doc.markdown };
+				const next = isUuid(noteId)
+					? await (async () => {
+							const doc = await invoke("note_read", { id: noteId });
+							return { title: doc.meta.title, markdown: doc.markdown };
+						})()
+					: await (async () => {
+							const doc = await invoke("vault_read_text", { path: noteId });
+							const title = noteId.split("/").pop() || noteId;
+							return { title, markdown: doc.text };
+						})();
 				noteCacheRef.current.set(noteId, next);
 				return next;
 			};

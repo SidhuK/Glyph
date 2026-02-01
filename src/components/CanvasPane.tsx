@@ -166,6 +166,7 @@ export default function CanvasPane({
 	const saveTimerRef = useRef<number | null>(null);
 	const historyTimerRef = useRef<number | null>(null);
 	const applyingHistoryRef = useRef(false);
+	const lastSavedKeyRef = useRef<string>("");
 	const pastRef = useRef<Array<{ nodes: CanvasNode[]; edges: CanvasEdge[] }>>(
 		[],
 	);
@@ -195,6 +196,7 @@ export default function CanvasPane({
 		if (!doc) {
 			setNodes([]);
 			setEdges([]);
+			lastSavedKeyRef.current = "";
 			return;
 		}
 		setNodes(doc.nodes ?? []);
@@ -202,11 +204,15 @@ export default function CanvasPane({
 		pastRef.current = [];
 		futureRef.current = [];
 		lastHistoryRef.current = "";
+		lastSavedKeyRef.current = snapshotString(
+			doc.nodes ?? [],
+			doc.edges ?? [],
+		);
 		lastStateRef.current = structuredClone({
 			nodes: doc.nodes ?? [],
 			edges: doc.edges ?? [],
 		});
-	}, [doc?.id]);
+	}, [doc?.id, setEdges, setNodes, snapshotString]);
 
 	useEffect(() => {
 		if (!vaultPath) return;
@@ -266,7 +272,28 @@ export default function CanvasPane({
 	);
 
 	const snapshotString = useCallback(
-		(n: CanvasNode[], e: CanvasEdge[]) => JSON.stringify({ n, e }),
+		(n: CanvasNode[], e: CanvasEdge[]) =>
+			JSON.stringify({
+				n: n.map((node) => ({
+					id: node.id,
+					type: node.type ?? null,
+					position: node.position,
+					data: node.data ?? null,
+					parentNode: (node as unknown as { parentNode?: string | null })
+						.parentNode,
+					extent: (node as unknown as { extent?: unknown }).extent ?? null,
+					style: (node as unknown as { style?: unknown }).style ?? null,
+				})),
+				e: e.map((edge) => ({
+					id: edge.id,
+					source: edge.source,
+					target: edge.target,
+					type: edge.type ?? null,
+					label: (edge as unknown as { label?: unknown }).label ?? null,
+					data: edge.data ?? null,
+					style: (edge as unknown as { style?: unknown }).style ?? null,
+				})),
+			}),
 		[],
 	);
 
@@ -295,6 +322,8 @@ export default function CanvasPane({
 	const scheduleSave = useCallback(
 		(nextNodes: CanvasNode[], nextEdges: CanvasEdge[]) => {
 			if (!doc) return;
+			const nextKey = snapshotString(nextNodes, nextEdges);
+			if (!nextKey || nextKey === lastSavedKeyRef.current) return;
 			if (saveTimerRef.current) window.clearTimeout(saveTimerRef.current);
 			saveTimerRef.current = window.setTimeout(async () => {
 				setIsSaving(true);
@@ -307,6 +336,7 @@ export default function CanvasPane({
 						nodes: nextNodes,
 						edges: nextEdges,
 					});
+					lastSavedKeyRef.current = nextKey;
 				} catch (e) {
 					setSaveError(e instanceof Error ? e.message : String(e));
 				} finally {
@@ -314,7 +344,7 @@ export default function CanvasPane({
 				}
 			}, 400);
 		},
-		[doc, onSave],
+		[doc, onSave, snapshotString],
 	);
 
 	useEffect(() => {
@@ -428,18 +458,22 @@ export default function CanvasPane({
 		if (!externalCommand) return;
 		if (externalCommand.kind === "add_note_node") {
 			const pos = flowCenter();
-			setNodes((prev) => [
-				...prev,
-				{
-					id: crypto.randomUUID(),
-					type: "note",
-					position: pos,
-					data: {
-						noteId: externalCommand.noteId,
-						title: externalCommand.title || "Note",
+			setNodes((prev) => {
+				const stableId = externalCommand.noteId;
+				if (prev.some((n) => n.id === stableId)) return prev;
+				return [
+					...prev,
+					{
+						id: stableId,
+						type: "note",
+						position: pos,
+						data: {
+							noteId: externalCommand.noteId,
+							title: externalCommand.title || "Note",
+						},
 					},
-				},
-			]);
+				];
+			});
 			onExternalCommandHandled?.(externalCommand.id);
 			return;
 		}
@@ -479,11 +513,12 @@ export default function CanvasPane({
 	const onAddNote = useCallback(() => {
 		if (!activeNoteId) return;
 		setNodes((prev) => {
+			if (prev.some((n) => n.id === activeNoteId)) return prev;
 			const pos = flowCenter();
 			return [
 				...prev,
 				{
-					id: crypto.randomUUID(),
+					id: activeNoteId,
 					type: "note",
 					position: pos,
 					data: { noteId: activeNoteId, title: activeNoteTitle ?? "Note" },

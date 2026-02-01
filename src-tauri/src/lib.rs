@@ -7,6 +7,7 @@ mod net;
 mod paths;
 mod notes;
 mod vault_fs;
+mod tether_fs;
 mod tether_paths;
 mod vault;
 
@@ -86,9 +87,12 @@ pub fn run() {
             index::backlinks,
             links::link_preview,
             vault_fs::vault_list_dir,
+            vault_fs::vault_list_markdown_files,
             vault_fs::vault_read_text,
             vault_fs::vault_write_text,
             vault_fs::vault_relativize_path,
+            tether_fs::tether_read_text,
+            tether_fs::tether_write_text,
             notes::notes_list,
             notes::note_create,
             notes::note_read,

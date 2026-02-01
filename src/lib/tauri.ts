@@ -144,12 +144,18 @@ interface TauriCommands {
 	vault_open: CommandDef<{ path: string }, VaultInfo>;
 	vault_get_current: CommandDef<void, string | null>;
 	vault_list_dir: CommandDef<{ dir?: string | null }, FsEntry[]>;
+	vault_list_markdown_files: CommandDef<
+		{ dir?: string | null; recursive?: boolean | null; limit?: number | null },
+		FsEntry[]
+	>;
 	vault_read_text: CommandDef<{ path: string }, TextFileDoc>;
 	vault_write_text: CommandDef<
 		{ path: string; text: string; base_mtime_ms?: number | null },
 		TextFileWriteResult
 	>;
 	vault_relativize_path: CommandDef<{ abs_path: string }, string>;
+	tether_read_text: CommandDef<{ path: string }, string>;
+	tether_write_text: CommandDef<{ path: string; text: string }, void>;
 	notes_list: CommandDef<void, NoteMeta[]>;
 	note_create: CommandDef<{ title: string }, NoteMeta>;
 	note_read: CommandDef<{ id: string }, NoteDoc>;
