@@ -166,6 +166,107 @@ pub async fn vault_list_markdown_files(
 }
 
 #[tauri::command]
+pub async fn vault_list_files(
+    state: State<'_, VaultState>,
+    dir: Option<String>,
+    recursive: Option<bool>,
+    limit: Option<u32>,
+) -> Result<Vec<FsEntry>, String> {
+    let root = state.current_root()?;
+    let dir = dir.unwrap_or_default();
+    let recursive = recursive.unwrap_or(true);
+    let limit = limit.unwrap_or(10_000).min(200_000) as usize;
+
+    tauri::async_runtime::spawn_blocking(move || -> Result<Vec<FsEntry>, String> {
+        let start_rel = if dir.trim().is_empty() {
+            PathBuf::new()
+        } else {
+            PathBuf::from(&dir)
+        };
+        deny_hidden_rel_path(&start_rel)?;
+        let start_abs = paths::join_under(&root, &start_rel)?;
+        if !start_abs.exists() {
+            return Ok(Vec::new());
+        }
+
+        let mut out: Vec<FsEntry> = Vec::new();
+        if !recursive {
+            for entry in std::fs::read_dir(&start_abs).map_err(|e| e.to_string())? {
+                let entry = entry.map_err(|e| e.to_string())?;
+                let name = entry.file_name().to_string_lossy().to_string();
+                if should_hide(&name) {
+                    continue;
+                }
+                let path = entry.path();
+                if !path.is_file() {
+                    continue;
+                }
+                let rel_path = start_rel.join(&name);
+                let is_markdown = rel_path.extension() == Some(OsStr::new("md"));
+                out.push(FsEntry {
+                    name,
+                    rel_path: rel_path.to_string_lossy().to_string(),
+                    kind: "file".to_string(),
+                    is_markdown,
+                });
+                if out.len() >= limit {
+                    break;
+                }
+            }
+        } else {
+            let mut stack: Vec<PathBuf> = vec![start_rel];
+            while let Some(rel_dir) = stack.pop() {
+                let abs_dir = paths::join_under(&root, &rel_dir)?;
+                let entries = match std::fs::read_dir(&abs_dir) {
+                    Ok(e) => e,
+                    Err(_) => continue,
+                };
+                for entry in entries {
+                    let entry = match entry {
+                        Ok(e) => e,
+                        Err(_) => continue,
+                    };
+                    let name = entry.file_name().to_string_lossy().to_string();
+                    if should_hide(&name) {
+                        continue;
+                    }
+                    let meta = match entry.metadata() {
+                        Ok(m) => m,
+                        Err(_) => continue,
+                    };
+                    let child_rel = rel_dir.join(&name);
+                    if meta.is_dir() {
+                        stack.push(child_rel);
+                        continue;
+                    }
+                    if !meta.is_file() {
+                        continue;
+                    }
+                    let is_markdown = Path::new(&name).extension() == Some(OsStr::new("md"));
+                    out.push(FsEntry {
+                        name,
+                        rel_path: child_rel.to_string_lossy().to_string(),
+                        kind: "file".to_string(),
+                        is_markdown,
+                    });
+                    if out.len() >= limit {
+                        break;
+                    }
+                }
+                if out.len() >= limit {
+                    break;
+                }
+            }
+        }
+
+        out.sort_by(|a, b| a.rel_path.to_lowercase().cmp(&b.rel_path.to_lowercase()));
+        Ok(out)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
 pub async fn vault_list_dir(
     state: State<'_, VaultState>,
     dir: Option<String>,

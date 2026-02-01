@@ -90,6 +90,7 @@ pub fn run() {
             links::link_preview,
             vault_fs::vault_list_dir,
             vault_fs::vault_list_markdown_files,
+            vault_fs::vault_list_files,
             vault_fs::vault_read_text,
             vault_fs::vault_write_text,
             vault_fs::vault_relativize_path,

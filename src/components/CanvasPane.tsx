@@ -75,21 +75,36 @@ export type CanvasExternalCommand =
 
 const nodeSpring = { type: "spring", stiffness: 400, damping: 25 } as const;
 
+// Generate a stable pseudo-random rotation based on node id
+function getNodeRotation(id: string): number {
+	let hash = 0;
+	for (let i = 0; i < id.length; i++) {
+		hash = (hash << 5) - hash + id.charCodeAt(i);
+		hash |= 0;
+	}
+	return ((hash % 7) - 3) * 0.5; // Range: -1.5 to 1.5 degrees
+}
+
 const NoteNode = memo(function NoteNode({
 	data,
-}: { data: Record<string, unknown> }) {
+	id,
+}: { data: Record<string, unknown>; id: string }) {
 	const title = typeof data.title === "string" ? data.title : "Note";
 	const noteId = typeof data.noteId === "string" ? data.noteId : "";
+	const rotation = getNodeRotation(id);
+
 	return (
 		<motion.div
 			className="rfNode rfNodeNote"
 			title={noteId}
-			initial={{ opacity: 0, scale: 0.8 }}
-			animate={{ opacity: 1, scale: 1 }}
+			initial={{ opacity: 0, scale: 0.8, rotate: rotation - 5 }}
+			animate={{ opacity: 1, scale: 1, rotate: rotation }}
 			whileHover={{
-				scale: 1.02,
-				boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
-				y: -2,
+				scale: 1.03,
+				rotate: 0,
+				boxShadow:
+					"0 12px 40px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.1)",
+				y: -4,
 			}}
 			transition={nodeSpring}
 		>
@@ -117,17 +132,22 @@ const NoteNode = memo(function NoteNode({
 
 const TextNode = memo(function TextNode({
 	data,
-}: { data: Record<string, unknown> }) {
+	id,
+}: { data: Record<string, unknown>; id: string }) {
 	const text = typeof data.text === "string" ? data.text : "";
+	const rotation = getNodeRotation(id) * 1.2; // Slightly more rotation for text
+
 	return (
 		<motion.div
 			className="rfNode rfNodeText"
-			initial={{ opacity: 0, scale: 0.8, rotate: -2 }}
-			animate={{ opacity: 1, scale: 1, rotate: 0 }}
+			initial={{ opacity: 0, scale: 0.85, rotate: rotation - 4 }}
+			animate={{ opacity: 1, scale: 1, rotate: rotation }}
 			whileHover={{
-				scale: 1.02,
-				boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
-				y: -2,
+				scale: 1.03,
+				rotate: 0,
+				boxShadow:
+					"0 12px 40px rgba(107, 127, 219, 0.15), 0 4px 12px rgba(0,0,0,0.08)",
+				y: -4,
 			}}
 			transition={nodeSpring}
 		>
@@ -155,7 +175,8 @@ const TextNode = memo(function TextNode({
 
 const LinkNode = memo(function LinkNode({
 	data,
-}: { data: Record<string, unknown> }) {
+	id,
+}: { data: Record<string, unknown>; id: string }) {
 	const url = typeof data.url === "string" ? data.url : "";
 	const preview =
 		(data.preview as Record<string, unknown> | null | undefined) ?? null;
@@ -169,15 +190,19 @@ const LinkNode = memo(function LinkNode({
 		preview && typeof preview.hostname === "string" ? preview.hostname : "";
 	const status = typeof data.status === "string" ? data.status : "";
 	const imageSrc = typeof data.image_src === "string" ? data.image_src : "";
+	const rotation = getNodeRotation(id) * 0.6; // Subtle rotation for links
+
 	return (
 		<motion.div
 			className="rfNode rfNodeLink"
-			initial={{ opacity: 0, scale: 0.85, y: 10 }}
-			animate={{ opacity: 1, scale: 1, y: 0 }}
+			initial={{ opacity: 0, scale: 0.9, y: 15, rotate: rotation - 2 }}
+			animate={{ opacity: 1, scale: 1, y: 0, rotate: rotation }}
 			whileHover={{
 				scale: 1.02,
-				boxShadow: "0 12px 40px rgba(0,0,0,0.15)",
-				y: -3,
+				rotate: 0,
+				boxShadow:
+					"0 16px 48px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.08)",
+				y: -5,
 			}}
 			transition={nodeSpring}
 		>
@@ -237,23 +262,27 @@ const LinkNode = memo(function LinkNode({
 
 const FrameNode = memo(function FrameNode({
 	data,
-}: { data: Record<string, unknown> }) {
+	id,
+}: { data: Record<string, unknown>; id: string }) {
 	const title = typeof data.title === "string" ? data.title : "Frame";
+	const rotation = getNodeRotation(id) * 0.3; // Very subtle for frames
+
 	return (
 		<motion.div
 			className="rfNode rfNodeFrame"
-			initial={{ opacity: 0, scale: 0.9 }}
-			animate={{ opacity: 1, scale: 1 }}
+			initial={{ opacity: 0, scale: 0.95, rotate: rotation }}
+			animate={{ opacity: 1, scale: 1, rotate: rotation }}
 			whileHover={{
-				borderColor: "var(--border-strong)",
+				borderColor: "var(--interactive-accent)",
+				boxShadow: "0 0 0 2px rgba(99, 102, 241, 0.1)",
 			}}
 			transition={nodeSpring}
 		>
-			<NodeResizer minWidth={220} minHeight={160} />
+			<NodeResizer minWidth={240} minHeight={180} />
 			<motion.div
 				className="rfNodeTitle"
-				initial={{ opacity: 0 }}
-				animate={{ opacity: 1 }}
+				initial={{ opacity: 0, y: -5 }}
+				animate={{ opacity: 1, y: 0 }}
 				transition={{ ...nodeSpring, delay: 0.1 }}
 			>
 				{title}

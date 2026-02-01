@@ -1394,23 +1394,135 @@ button.segBtn.active {
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
-   REACTFLOW NODES - Modern card design
+   REACTFLOW NODES - Organic scattered-desk aesthetic
    ───────────────────────────────────────────────────────────────────────────── */
 .rfNode {
 	padding: var(--space-4);
-	border-radius: var(--radius-xl);
+	border-radius: 12px 16px 14px 18px; /* Slightly irregular corners */
 	border: 1px solid var(--border-light);
-	background: var(--bg-primary);
-	box-shadow: var(--shadow-md);
-	max-width: 260px;
-	min-width: 160px;
+	background: linear-gradient(
+		135deg,
+		var(--bg-primary) 0%,
+		color-mix(in srgb, var(--bg-primary) 97%, var(--bg-tertiary)) 100%
+	);
+	box-shadow:
+		0 2px 8px rgba(0, 0, 0, 0.06),
+		0 8px 24px rgba(0, 0, 0, 0.08),
+		inset 0 1px 0 rgba(255, 255, 255, 0.5);
+	max-width: 280px;
+	min-width: 140px;
 	transition: all var(--transition-base);
+	position: relative;
+}
+
+/* Subtle paper texture overlay */
+.rfNode::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	background: url("data:image/svg+xml,%3Csvg viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+	opacity: 0.015;
+	pointer-events: none;
 }
 
 .rfNode:hover {
 	border-color: var(--border-strong);
-	box-shadow: var(--shadow-lg);
-	transform: translateY(-2px);
+	box-shadow:
+		0 4px 12px rgba(0, 0, 0, 0.08),
+		0 16px 48px rgba(0, 0, 0, 0.12),
+		inset 0 1px 0 rgba(255, 255, 255, 0.6);
+}
+
+/* Note nodes - warm sticky note feel */
+.rfNodeNote {
+	background: linear-gradient(
+		145deg,
+		#fffef5 0%,
+		#fdfbf0 50%,
+		#fcf9e8 100%
+	);
+	border-color: #e8e4d4;
+	border-radius: 4px 16px 4px 16px;
+}
+
+.rfNodeNote::after {
+	content: "";
+	position: absolute;
+	top: -2px;
+	left: 50%;
+	transform: translateX(-50%);
+	width: 40px;
+	height: 8px;
+	background: linear-gradient(180deg, #ffd54f 0%, #ffca28 100%);
+	border-radius: 0 0 4px 4px;
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+@media (prefers-color-scheme: dark) {
+	.rfNodeNote {
+		background: linear-gradient(
+			145deg,
+			#2d2a1f 0%,
+			#252218 50%,
+			#1f1c14 100%
+		);
+		border-color: #3d3825;
+	}
+	.rfNodeNote::after {
+		background: linear-gradient(180deg, #b8860b 0%, #8b6914 100%);
+	}
+}
+
+/* Text nodes - handwritten note feel */
+.rfNodeText {
+	background: linear-gradient(
+		160deg,
+		#f8f9ff 0%,
+		#f0f4ff 100%
+	);
+	border-color: #d4daf0;
+	border-radius: 8px 12px 16px 6px;
+	border-left: 3px solid #6b7fdb;
+}
+
+@media (prefers-color-scheme: dark) {
+	.rfNodeText {
+		background: linear-gradient(
+			160deg,
+			#1a1d2e 0%,
+			#151829 100%
+		);
+		border-color: #2a3050;
+		border-left-color: #4a5eb8;
+	}
+}
+
+/* Link nodes - card/bookmark feel */
+.rfNodeLink {
+	background: linear-gradient(
+		135deg,
+		var(--bg-primary) 0%,
+		color-mix(in srgb, var(--bg-primary) 95%, #e3f2fd) 100%
+	);
+	border-color: #c5dff8;
+	border-radius: 16px;
+	overflow: hidden;
+}
+
+.rfNodeLink::before {
+	display: none; /* No texture for link cards */
+}
+
+@media (prefers-color-scheme: dark) {
+	.rfNodeLink {
+		background: linear-gradient(
+			135deg,
+			#1a1a2e 0%,
+			#1a2035 100%
+		);
+		border-color: #2a3555;
+	}
 }
 
 .rfNodeTitle {
@@ -1419,43 +1531,61 @@ button.segBtn.active {
 	color: var(--text-primary);
 	line-height: var(--leading-snug);
 	margin-bottom: var(--space-1);
+	letter-spacing: -0.01em;
 }
 
 .rfNodeSub {
 	font-size: var(--text-xs);
 	color: var(--text-tertiary);
+	opacity: 0.8;
 }
 
 .rfNodeBody {
 	font-size: var(--text-sm);
 	color: var(--text-secondary);
-	line-height: var(--leading-normal);
+	line-height: var(--leading-relaxed);
 	white-space: pre-wrap;
 	word-break: break-word;
 }
 
 .rfNodeLinkImage {
-	width: 100%;
-	max-height: 120px;
+	width: calc(100% + var(--space-4) * 2);
+	margin: calc(var(--space-4) * -1) calc(var(--space-4) * -1) var(--space-3);
+	max-height: 140px;
 	object-fit: cover;
-	border-radius: var(--radius-lg);
-	margin-bottom: var(--space-3);
+	border-radius: 0;
 	background: var(--bg-tertiary);
 }
 
 .rfNodeFrame {
-	border-style: dashed;
-	border-color: var(--border-default);
-	background: rgba(255, 255, 255, 0.5);
+	border: 2px dashed var(--border-default);
+	border-color: color-mix(in srgb, var(--interactive-accent) 30%, var(--border-default));
+	background: linear-gradient(
+		135deg,
+		rgba(99, 102, 241, 0.02) 0%,
+		rgba(168, 85, 247, 0.02) 100%
+	);
 	box-shadow: none;
-	min-width: 220px;
-	min-height: 160px;
-	border-radius: var(--radius-2xl);
+	min-width: 240px;
+	min-height: 180px;
+	border-radius: 20px;
+}
+
+.rfNodeFrame .rfNodeTitle {
+	color: var(--text-tertiary);
+	font-size: var(--text-xs);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
+	font-weight: var(--font-medium);
 }
 
 @media (prefers-color-scheme: dark) {
 	.rfNodeFrame {
-		background: rgba(255, 255, 255, 0.03);
+		background: linear-gradient(
+			135deg,
+			rgba(99, 102, 241, 0.03) 0%,
+			rgba(168, 85, 247, 0.03) 100%
+		);
 	}
 }
 
