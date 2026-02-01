@@ -14,7 +14,11 @@ interface SearchPaneProps {
 	onOpenAsCanvas?: (query: string) => void;
 }
 
-const springTransition = { type: "spring", stiffness: 400, damping: 25 } as const;
+const springTransition = {
+	type: "spring",
+	stiffness: 400,
+	damping: 25,
+} as const;
 
 export const SearchPane = memo(function SearchPane({
 	query,
@@ -88,7 +92,11 @@ export const SearchPane = memo(function SearchPane({
 						>
 							<motion.span
 								animate={{ rotate: 360 }}
-								transition={{ duration: 1, repeat: Number.POSITIVE_INFINITY, ease: "linear" }}
+								transition={{
+									duration: 1,
+									repeat: Number.POSITIVE_INFINITY,
+									ease: "linear",
+								}}
 								style={{ display: "inline-block" }}
 							>
 								⟳

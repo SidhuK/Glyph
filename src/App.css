@@ -473,6 +473,62 @@ textarea {
 	flex-shrink: 0;
 }
 
+.editorRibbon {
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+	padding: 0 var(--space-3);
+	height: 44px;
+	border-bottom: 1px solid var(--border-light);
+	background: color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary));
+	flex-shrink: 0;
+}
+
+.ribbonGroup {
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
+	padding: 2px;
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-lg);
+	background: var(--bg-primary);
+}
+
+.ribbonDivider {
+	width: 1px;
+	height: 22px;
+	background: var(--border-light);
+}
+
+button.ribbonBtn {
+	width: 32px;
+	height: 32px;
+	padding: 0;
+	border-radius: var(--radius-md);
+	color: var(--text-secondary);
+}
+
+button.ribbonBtn:hover {
+	transform: none;
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}
+
+button.ribbonBtn.active {
+	background: var(--selection-bg-muted);
+	color: var(--interactive-accent);
+}
+
+.ribbonWarning {
+	margin-left: auto;
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
+	padding-left: var(--space-2);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
 .editorTitle {
 	font-size: var(--text-base);
 	font-weight: var(--font-semibold);
@@ -520,27 +576,71 @@ button.segBtn.active {
 	border: 1px solid var(--border-light);
 }
 
-.editorBody .tiptap {
-	height: 100%;
+.editorBody .tiptapHost {
+	flex: 1;
+	min-height: 0;
 	overflow: auto;
-	padding: var(--space-4);
+	/* Notion-ish centered page with generous side padding */
+	padding: var(--space-6) 0 var(--space-6);
+	background: color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary));
+}
+
+.editorBody .tiptapContent {
+	min-height: 100%;
+	max-width: 780px;
+	margin: 0 auto;
+	padding: 0 var(--space-6) var(--space-6);
+	font-size: 16px;
+	letter-spacing: -0.005em;
 	line-height: var(--leading-relaxed);
 	outline: none;
 	caret-color: var(--text-primary);
 }
 
+/* Back-compat if the host ends up being the ProseMirror element */
+.editorBody .tiptap {
+	min-height: 100%;
+	max-width: 780px;
+	margin: 0 auto;
+	padding: var(--space-6) var(--space-6) var(--space-6);
+	overflow: auto;
+	line-height: var(--leading-relaxed);
+	outline: none;
+	caret-color: var(--text-primary);
+}
+
+.editorBody .tiptapContent > *:first-child,
 .editorBody .tiptap > *:first-child {
 	margin-top: 0;
 }
 
+.editorBody .tiptapContent > *:last-child,
 .editorBody .tiptap > *:last-child {
 	margin-bottom: 0;
 }
 
+.editorBody .tiptapContent p,
 .editorBody .tiptap p {
 	margin: 0 0 var(--space-3) 0;
 }
 
+.editorBody .tiptapContent ul,
+.editorBody .tiptapContent ol,
+.editorBody .tiptap ul,
+.editorBody .tiptap ol {
+	padding-left: 1.4em;
+	margin: 0 0 var(--space-3) 0;
+}
+
+.editorBody .tiptapContent li,
+.editorBody .tiptap li {
+	margin: 0.25em 0;
+}
+
+.editorBody .tiptapContent h1,
+.editorBody .tiptapContent h2,
+.editorBody .tiptapContent h3,
+.editorBody .tiptapContent h4,
 .editorBody .tiptap h1,
 .editorBody .tiptap h2,
 .editorBody .tiptap h3,
@@ -549,6 +649,41 @@ button.segBtn.active {
 	letter-spacing: -0.01em;
 }
 
+.editorBody .tiptapContent h1,
+.editorBody .tiptap h1 {
+	font-size: 2rem;
+	line-height: 1.2;
+}
+
+.editorBody .tiptapContent h2,
+.editorBody .tiptap h2 {
+	font-size: 1.6rem;
+	line-height: 1.25;
+}
+
+.editorBody .tiptapContent h3,
+.editorBody .tiptap h3 {
+	font-size: 1.25rem;
+	line-height: 1.3;
+}
+
+.editorBody .tiptapContent blockquote,
+.editorBody .tiptap blockquote {
+	margin: 0 0 var(--space-4) 0;
+	padding: var(--space-3) var(--space-4);
+	border-left: 3px solid color-mix(in srgb, var(--interactive-accent) 60%, #bbb);
+	background: var(--bg-secondary);
+	border-radius: var(--radius-lg);
+}
+
+.editorBody .tiptapContent hr,
+.editorBody .tiptap hr {
+	border: none;
+	border-top: 1px solid var(--border-light);
+	margin: var(--space-5) 0;
+}
+
+.editorBody .tiptapContent code,
 .editorBody .tiptap code {
 	font-family: var(--font-mono);
 	font-size: 0.9em;
@@ -557,6 +692,7 @@ button.segBtn.active {
 	border-radius: var(--radius-sm);
 }
 
+.editorBody .tiptapContent pre,
 .editorBody .tiptap pre {
 	font-family: var(--font-mono);
 	background: var(--bg-secondary);
@@ -565,18 +701,21 @@ button.segBtn.active {
 	overflow: auto;
 }
 
+.editorBody .tiptapContent a,
 .editorBody .tiptap a {
 	color: var(--interactive-accent);
 	text-decoration: none;
 }
 
+.editorBody .tiptapContent a:hover,
 .editorBody .tiptap a:hover {
 	text-decoration: underline;
 }
 
 .mdRawEditor {
 	width: 100%;
-	height: 100%;
+	flex: 1;
+	min-height: 0;
 	border: none;
 	border-radius: 0;
 	padding: var(--space-4);
@@ -604,10 +743,13 @@ button.segBtn.active {
 	flex: 1;
 	min-height: 0;
 	overflow: hidden;
+	display: flex;
+	flex-direction: column;
 }
 
 .editorBody .cm-editor {
-	height: 100%;
+	flex: 1;
+	min-height: 0;
 	font-family: var(--font-sans);
 	font-size: var(--text-base);
 }
@@ -1450,9 +1592,7 @@ button.segBtn.active {
 	padding: var(--space-3);
 	border-radius: 2px;
 	border: none;
-	box-shadow:
-		2px 4px 8px rgba(0, 0, 0, 0.15),
-		0 1px 3px rgba(0, 0, 0, 0.1);
+	box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1);
 	transition: all var(--transition-base);
 	position: relative;
 }
@@ -1598,11 +1738,7 @@ button.segBtn.active {
 
 @media (prefers-color-scheme: dark) {
 	.rfNodeLink {
-		background: linear-gradient(
-			135deg,
-			#1a1a2e 0%,
-			#1a2035 100%
-		);
+		background: linear-gradient(135deg, #1a1a2e 0%, #1a2035 100%);
 		border-color: #2a3555;
 	}
 }
@@ -1635,10 +1771,38 @@ button.segBtn.active {
 	background: var(--bg-tertiary);
 }
 
+/* ─── File Nodes (Attachments) ─── */
+.rfNodeFile {
+	background: linear-gradient(
+		135deg,
+		var(--bg-primary) 0%,
+		color-mix(in srgb, var(--bg-primary) 92%, #f7f0ff) 100%
+	);
+	border: 1px solid color-mix(in srgb, var(--border-default) 70%, #c7b3ff);
+	border-radius: 12px;
+	overflow: hidden;
+	min-width: 180px;
+	max-width: 280px;
+	padding: var(--space-3) var(--space-3) var(--space-4);
+}
+
+.rfNodeFileThumb {
+	width: 100%;
+	height: 120px;
+	object-fit: cover;
+	border-radius: 10px;
+	margin-bottom: var(--space-2);
+	background: var(--bg-tertiary);
+}
+
 /* ─── Frame Nodes ─── */
 .rfNodeFrame {
 	border: 2px dashed var(--border-default);
-	border-color: color-mix(in srgb, var(--interactive-accent) 40%, var(--border-default));
+	border-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 40%,
+		var(--border-default)
+	);
 	background: linear-gradient(
 		135deg,
 		rgba(99, 102, 241, 0.03) 0%,
@@ -1688,6 +1852,54 @@ button.segBtn.active {
 	background: var(--interactive-accent);
 	border-color: var(--interactive-accent);
 	transform: scale(1.2);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   FILE PREVIEW
+   ───────────────────────────────────────────────────────────────────────────── */
+.filePreviewCentered {
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: var(--space-6);
+}
+
+.filePreviewImage {
+	max-width: min(900px, 100%);
+	max-height: 100%;
+	border-radius: var(--radius-xl);
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.filePreviewFrame {
+	width: 100%;
+	flex: 1;
+	min-height: 0;
+	border: none;
+	background: var(--bg-primary);
+}
+
+.filePreviewVideo {
+	max-width: min(900px, 100%);
+	max-height: 100%;
+	border-radius: var(--radius-xl);
+	background: black;
+}
+
+.filePreviewMeta {
+	padding: var(--space-6);
+	color: var(--text-secondary);
+}
+
+.filePreviewLabel {
+	margin-bottom: var(--space-2);
+	color: var(--text-tertiary);
+}
+
+.filePreviewHint {
+	font-size: var(--text-sm);
 }
 
 /* ReactFlow edges */

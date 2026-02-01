@@ -15,6 +15,7 @@ import type {
 	CanvasExternalCommand,
 	CanvasNode,
 } from "./components/CanvasPane";
+import { FilePreviewPane } from "./components/FilePreviewPane";
 import { FileTreePane } from "./components/FileTreePane";
 import {
 	FileText,
@@ -32,7 +33,6 @@ import {
 	MotionFloatingPanel,
 	MotionIconButton,
 } from "./components/MotionUI";
-import { FilePreviewPane } from "./components/FilePreviewPane";
 import { SearchPane } from "./components/SearchPane";
 import { TagsPane } from "./components/TagsPane";
 import { loadSettings, setCurrentVaultPath } from "./lib/settings";
@@ -800,7 +800,10 @@ function App() {
 									onReloadFromDisk={reloadActiveFileFromDisk}
 								/>
 							) : (
-								<FilePreviewPane vaultPath={vaultPath} relPath={activeFilePath} />
+								<FilePreviewPane
+									vaultPath={vaultPath}
+									relPath={activeFilePath}
+								/>
 							)}
 						</>
 					)}

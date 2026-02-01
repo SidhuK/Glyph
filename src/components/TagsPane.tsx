@@ -9,7 +9,11 @@ interface TagsPaneProps {
 	onRefresh: () => void;
 }
 
-const springTransition = { type: "spring", stiffness: 400, damping: 25 } as const;
+const springTransition = {
+	type: "spring",
+	stiffness: 400,
+	damping: 25,
+} as const;
 
 export const TagsPane = memo(function TagsPane({
 	tags,

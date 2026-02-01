@@ -171,15 +171,67 @@ export async function saveViewDoc(path: string, doc: ViewDoc): Promise<void> {
 }
 
 function defaultPositionForIndex(i: number): { x: number; y: number } {
-	const cols = 6;
+	const cols = 5;
 	const col = i % cols;
 	const row = Math.floor(i / cols);
-	return { x: col * 320, y: row * 200 };
+	return { x: col * 340, y: row * 300 };
 }
 
 function titleForFile(relPath: string): string {
 	const name = basename(relPath);
 	return name.toLowerCase().endsWith(".md") ? name.slice(0, -3) : name;
+}
+
+async function fetchNoteContent(
+	relPath: string,
+): Promise<{ title: string; content: string }> {
+	try {
+		const doc = await invoke("vault_read_text", { path: relPath });
+		const text = doc.text || "";
+		// Extract title from frontmatter or first heading
+		let title = titleForFile(relPath);
+		// Check for YAML frontmatter title
+		const fmMatch = text.match(
+			/^---\n[\s\S]*?title:\s*["']?([^\n"']+)["']?[\s\S]*?\n---/,
+		);
+		if (fmMatch?.[1]) {
+			title = fmMatch[1].trim();
+		} else {
+			// Check for first # heading
+			const headingMatch = text.match(/^#\s+(.+)$/m);
+			if (headingMatch?.[1]) {
+				title = headingMatch[1].trim();
+			}
+		}
+		// Strip frontmatter from content for display
+		let content = text;
+		if (text.startsWith("---\n")) {
+			const endIdx = text.indexOf("\n---\n", 4);
+			if (endIdx !== -1) {
+				content = text.slice(endIdx + 5).trim();
+			}
+		}
+		// Limit to first 20 lines for performance
+		const lines = content.split("\n");
+		if (lines.length > 20) {
+			content = `${lines.slice(0, 20).join("\n")}\n…`;
+		}
+		return { title, content };
+	} catch {
+		return { title: titleForFile(relPath), content: "" };
+	}
+}
+
+async function fetchNoteContents(
+	noteIds: string[],
+): Promise<Map<string, { title: string; content: string }>> {
+	const results = await Promise.all(
+		noteIds.map(async (id) => {
+			const data = await fetchNoteContent(id);
+			return [id, data] as const;
+		}),
+	);
+	return new Map(results);
 }
 
 export async function buildFolderViewDoc(
@@ -200,7 +252,9 @@ export async function buildFolderViewDoc(
 		(allFiles as FsEntry[]).filter((f) => f.is_markdown).map((f) => f.rel_path),
 	);
 	const otherPaths = new Set<string>(
-		(allFiles as FsEntry[]).filter((f) => !f.is_markdown).map((f) => f.rel_path),
+		(allFiles as FsEntry[])
+			.filter((f) => !f.is_markdown)
+			.map((f) => f.rel_path),
 	);
 
 	const sortedFiles = [...mdPaths].sort((a, b) =>
@@ -209,6 +263,9 @@ export async function buildFolderViewDoc(
 	const sortedOtherFiles = [...otherPaths].sort((a, b) =>
 		a.toLowerCase().localeCompare(b.toLowerCase()),
 	);
+
+	// Fetch content for all markdown files
+	const noteContents = await fetchNoteContents(sortedFiles);
 
 	const prev = existing;
 	const prevNodes = prev?.nodes ?? [];
@@ -242,12 +299,12 @@ export async function buildFolderViewDoc(
 		);
 
 		const groupCols = 2;
-		const frameSpacingX = 60;
-		const frameSpacingY = 60;
-		const framePadX = 40;
-		const framePadY = 56;
-		const noteCellW = 260;
-		const noteCellH = 150;
+		const frameSpacingX = 80;
+		const frameSpacingY = 80;
+		const framePadX = 50;
+		const framePadY = 60;
+		const noteCellW = 320;
+		const noteCellH = 280;
 
 		const frames: CanvasNode[] = [];
 		const notes: CanvasNode[] = [];
@@ -281,6 +338,7 @@ export async function buildFolderViewDoc(
 				const isMarkdown = mdPaths.has(relPath);
 				const col = i % innerCols;
 				const row = Math.floor(i / innerCols);
+				const noteData = isMarkdown ? noteContents.get(relPath) : null;
 				notes.push({
 					id: relPath,
 					type: isMarkdown ? "note" : "file",
@@ -291,7 +349,11 @@ export async function buildFolderViewDoc(
 						y: framePadY + row * noteCellH,
 					},
 					data: isMarkdown
-						? { noteId: relPath, title: titleForFile(relPath) }
+						? {
+								noteId: relPath,
+								title: noteData?.title || titleForFile(relPath),
+								content: noteData?.content || "",
+							}
 						: { path: relPath, title: basename(relPath) },
 				} as CanvasNode);
 			}
@@ -304,16 +366,37 @@ export async function buildFolderViewDoc(
 			const relPath = merged[i] as string;
 			const existingNode = prevById.get(relPath);
 			if (existingNode) {
-				nextNodes.push(existingNode);
+				// Update content for existing note nodes
+				if (existingNode.type === "note") {
+					const noteData = noteContents.get(relPath);
+					nextNodes.push({
+						...existingNode,
+						data: {
+							...existingNode.data,
+							title:
+								noteData?.title ||
+								(existingNode.data as { title?: string }).title ||
+								titleForFile(relPath),
+							content: noteData?.content || "",
+						},
+					});
+				} else {
+					nextNodes.push(existingNode);
+				}
 				continue;
 			}
 			const isMarkdown = mdPaths.has(relPath);
+			const noteData = isMarkdown ? noteContents.get(relPath) : null;
 			nextNodes.push({
 				id: relPath,
 				type: isMarkdown ? "note" : "file",
 				position: defaultPositionForIndex(i),
 				data: isMarkdown
-					? { noteId: relPath, title: titleForFile(relPath) }
+					? {
+							noteId: relPath,
+							title: noteData?.title || titleForFile(relPath),
+							content: noteData?.content || "",
+						}
 					: { path: relPath, title: basename(relPath) },
 			});
 		}
@@ -365,6 +448,9 @@ export async function buildSearchViewDoc(
 		.filter(Boolean)
 		.slice(0, limit);
 
+	// Fetch content for all notes
+	const noteContents = await fetchNoteContents(ids);
+
 	const prev = existing;
 	const prevNodes = prev?.nodes ?? [];
 	const prevEdges = prev?.edges ?? [];
@@ -377,8 +463,24 @@ export async function buildSearchViewDoc(
 	for (let i = 0; i < ids.length; i++) {
 		const relPath = ids[i] as string;
 		const existingNode = prevById.get(relPath);
+		const noteData = noteContents.get(relPath);
 		if (existingNode) {
-			nextNodes.push(existingNode);
+			// Update content for existing note nodes
+			if (existingNode.type === "note") {
+				nextNodes.push({
+					...existingNode,
+					data: {
+						...existingNode.data,
+						title:
+							noteData?.title ||
+							(existingNode.data as { title?: string }).title ||
+							titleForFile(relPath),
+						content: noteData?.content || "",
+					},
+				});
+			} else {
+				nextNodes.push(existingNode);
+			}
 			continue;
 		}
 		nextNodes.push({
@@ -387,7 +489,9 @@ export async function buildSearchViewDoc(
 			position: defaultPositionForIndex(i),
 			data: {
 				noteId: relPath,
-				title: titleById.get(relPath) || titleForFile(relPath),
+				title:
+					noteData?.title || titleById.get(relPath) || titleForFile(relPath),
+				content: noteData?.content || "",
 			},
 		});
 	}
@@ -438,6 +542,9 @@ export async function buildTagViewDoc(
 		.filter(Boolean)
 		.slice(0, limit);
 
+	// Fetch content for all notes
+	const noteContents = await fetchNoteContents(ids);
+
 	const prev = existing;
 	const prevNodes = prev?.nodes ?? [];
 	const prevEdges = prev?.edges ?? [];
@@ -450,8 +557,24 @@ export async function buildTagViewDoc(
 	for (let i = 0; i < ids.length; i++) {
 		const relPath = ids[i] as string;
 		const existingNode = prevById.get(relPath);
+		const noteData = noteContents.get(relPath);
 		if (existingNode) {
-			nextNodes.push(existingNode);
+			// Update content for existing note nodes
+			if (existingNode.type === "note") {
+				nextNodes.push({
+					...existingNode,
+					data: {
+						...existingNode.data,
+						title:
+							noteData?.title ||
+							(existingNode.data as { title?: string }).title ||
+							titleForFile(relPath),
+						content: noteData?.content || "",
+					},
+				});
+			} else {
+				nextNodes.push(existingNode);
+			}
 			continue;
 		}
 		nextNodes.push({
@@ -460,7 +583,9 @@ export async function buildTagViewDoc(
 			position: defaultPositionForIndex(i),
 			data: {
 				noteId: relPath,
-				title: titleById.get(relPath) || titleForFile(relPath),
+				title:
+					noteData?.title || titleById.get(relPath) || titleForFile(relPath),
+				content: noteData?.content || "",
 			},
 		});
 	}

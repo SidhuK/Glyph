@@ -4,7 +4,14 @@ import { openPath, openUrl } from "@tauri-apps/plugin-opener";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { Maximize2 } from "./Icons";
 
-type PreviewKind = "image" | "pdf" | "audio" | "video" | "text" | "url" | "other";
+type PreviewKind =
+	| "image"
+	| "pdf"
+	| "audio"
+	| "video"
+	| "text"
+	| "url"
+	| "other";
 
 function extOf(relPath: string): string {
 	const name = relPath.split("/").pop() ?? relPath;
@@ -15,12 +22,14 @@ function extOf(relPath: string): string {
 
 function guessKind(relPath: string): PreviewKind {
 	const ext = extOf(relPath);
-	if (["png", "jpg", "jpeg", "gif", "webp", "svg"].includes(ext)) return "image";
+	if (["png", "jpg", "jpeg", "gif", "webp", "svg"].includes(ext))
+		return "image";
 	if (ext === "pdf") return "pdf";
 	if (["mp3", "wav", "m4a", "ogg"].includes(ext)) return "audio";
 	if (["mp4", "mov", "webm", "mkv"].includes(ext)) return "video";
 	if (["txt", "md", "json", "yaml", "yml"].includes(ext)) return "text";
-	if (relPath.startsWith("http://") || relPath.startsWith("https://")) return "url";
+	if (relPath.startsWith("http://") || relPath.startsWith("https://"))
+		return "url";
 	return "other";
 }
 
@@ -33,7 +42,10 @@ export const FilePreviewPane = memo(function FilePreviewPane({
 	vaultPath,
 	relPath,
 }: FilePreviewPaneProps) {
-	const kind = useMemo(() => (relPath ? guessKind(relPath) : "other"), [relPath]);
+	const kind = useMemo(
+		() => (relPath ? guessKind(relPath) : "other"),
+		[relPath],
+	);
 	const [src, setSrc] = useState<string>("");
 	const [absPath, setAbsPath] = useState<string>("");
 
@@ -104,12 +116,14 @@ export const FilePreviewPane = memo(function FilePreviewPane({
 
 				{kind === "audio" && src ? (
 					<div className="filePreviewCentered">
+						{/* biome-ignore lint/a11y/useMediaCaption: Local file preview; captions are not available for arbitrary vault media files. */}
 						<audio controls src={src} />
 					</div>
 				) : null}
 
 				{kind === "video" && src ? (
 					<div className="filePreviewCentered">
+						{/* biome-ignore lint/a11y/useMediaCaption: Local file preview; captions are not available for arbitrary vault media files. */}
 						<video controls className="filePreviewVideo" src={src} />
 					</div>
 				) : null}

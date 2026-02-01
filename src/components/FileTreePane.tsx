@@ -21,7 +21,11 @@ function basename(relPath: string): string {
 	return parts[parts.length - 1] ?? relPath;
 }
 
-const springTransition = { type: "spring", stiffness: 400, damping: 25 } as const;
+const springTransition = {
+	type: "spring",
+	stiffness: 400,
+	damping: 25,
+} as const;
 
 export const FileTreePane = memo(function FileTreePane({
 	rootEntries,

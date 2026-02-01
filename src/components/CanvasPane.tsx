@@ -140,8 +140,7 @@ const NoteNode = memo(function NoteNode({
 			whileHover={{
 				scale: 1.02,
 				rotate: 0,
-				boxShadow:
-					"0 20px 60px rgba(0,0,0,0.25), 0 8px 20px rgba(0,0,0,0.15)",
+				boxShadow: "0 20px 60px rgba(0,0,0,0.25), 0 8px 20px rgba(0,0,0,0.15)",
 				y: -6,
 			}}
 			transition={nodeSpring}
@@ -176,7 +175,7 @@ const TextNode = memo(function TextNode({
 }: { data: Record<string, unknown>; id: string }) {
 	const text = typeof data.text === "string" ? data.text : "";
 	const rotation = getNodeRotation(id) * 1.3;
-	const color = getStickyColor(id + "text");
+	const color = getStickyColor(`${id}text`);
 
 	// Size based on text length
 	const sizeClass =
@@ -198,8 +197,7 @@ const TextNode = memo(function TextNode({
 			whileHover={{
 				scale: 1.02,
 				rotate: 0,
-				boxShadow:
-					"0 20px 60px rgba(0,0,0,0.25), 0 8px 20px rgba(0,0,0,0.15)",
+				boxShadow: "0 20px 60px rgba(0,0,0,0.25), 0 8px 20px rgba(0,0,0,0.15)",
 				y: -6,
 			}}
 			transition={nodeSpring}
@@ -241,8 +239,7 @@ const FileNode = memo(function FileNode({
 			whileHover={{
 				scale: 1.02,
 				rotate: 0,
-				boxShadow:
-					"0 16px 48px rgba(0,0,0,0.14), 0 4px 12px rgba(0,0,0,0.08)",
+				boxShadow: "0 16px 48px rgba(0,0,0,0.14), 0 4px 12px rgba(0,0,0,0.08)",
 				y: -4,
 			}}
 			transition={nodeSpring}
@@ -306,8 +303,7 @@ const LinkNode = memo(function LinkNode({
 			whileHover={{
 				scale: 1.02,
 				rotate: 0,
-				boxShadow:
-					"0 16px 48px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.08)",
+				boxShadow: "0 16px 48px rgba(0,0,0,0.15), 0 4px 12px rgba(0,0,0,0.08)",
 				y: -5,
 			}}
 			transition={nodeSpring}
@@ -483,6 +479,10 @@ export default function CanvasPane({
 		lastStateRef.current = structuredClone({
 			nodes: doc.nodes ?? [],
 			edges: doc.edges ?? [],
+		});
+		// Center view on nodes after loading
+		requestAnimationFrame(() => {
+			flowRef.current?.fitView({ padding: 0.1, duration: 300 });
 		});
 	}, [doc?.id, setEdges, setNodes, snapshotString]);
 
@@ -1233,11 +1233,7 @@ export default function CanvasPane({
 					>
 						<Type size={16} />
 					</MotionIconButton>
-					<MotionIconButton
-						type="button"
-						onClick={onAddLink}
-						title="Add link"
-					>
+					<MotionIconButton type="button" onClick={onAddLink} title="Add link">
 						<Link size={16} />
 					</MotionIconButton>
 					<MotionIconButton
@@ -1342,7 +1338,7 @@ export default function CanvasPane({
 				</motion.div>
 			</motion.div>
 
-				<motion.div
+			<motion.div
 				className="canvasBody"
 				ref={wrapperRef}
 				initial={{ opacity: 0 }}
