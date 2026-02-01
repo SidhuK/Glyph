@@ -11,16 +11,15 @@ import {
 import "./App.css";
 import { AIPane, type SelectedCanvasNode } from "./components/AIPane";
 import type {
+	CanvasEdge,
 	CanvasExternalCommand,
 	CanvasNode,
 } from "./components/CanvasPane";
-import { CanvasesPane } from "./components/CanvasesPane";
 import { FileTreePane } from "./components/FileTreePane";
 import {
 	FileText,
 	FolderOpen,
 	FolderPlus,
-	Layout,
 	PanelLeftClose,
 	PanelLeftOpen,
 	Search,
@@ -34,18 +33,28 @@ import {
 	MotionIconButton,
 } from "./components/MotionUI";
 import { SearchPane } from "./components/SearchPane";
+import { TagsPane } from "./components/TagsPane";
 import { loadSettings, setCurrentVaultPath } from "./lib/settings";
 import {
 	type AppInfo,
-	type CanvasDoc,
-	type CanvasMeta,
 	type FsEntry,
 	type NoteMeta,
 	type SearchResult,
+	type TagCount,
 	TauriInvokeError,
 	type TextFileDoc,
 	invoke,
 } from "./lib/tauri";
+import {
+	type ViewDoc,
+	type ViewRef,
+	asCanvasDocLike,
+	buildFolderViewDoc,
+	buildSearchViewDoc,
+	buildTagViewDoc,
+	loadViewDoc,
+	saveViewDoc,
+} from "./lib/views";
 
 const CanvasPane = lazy(() => import("./components/CanvasPane"));
 
@@ -68,15 +77,14 @@ function App() {
 	const [activeFileDoc, setActiveFileDoc] = useState<TextFileDoc | null>(null);
 	const [editorValue, setEditorValue] = useState<string>("");
 	const [isEditorDirty, setIsEditorDirty] = useState(false);
-	const [canvases, setCanvases] = useState<CanvasMeta[]>([]);
-	const [activeCanvasId, setActiveCanvasId] = useState<string | null>(null);
-	const [activeCanvasDoc, setActiveCanvasDoc] = useState<CanvasDoc | null>(
-		null,
-	);
+	const [activeViewPath, setActiveViewPath] = useState<string | null>(null);
+	const [activeViewDoc, setActiveViewDoc] = useState<ViewDoc | null>(null);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
 	const [isSearching, setIsSearching] = useState(false);
 	const [searchError, setSearchError] = useState("");
+	const [tags, setTags] = useState<TagCount[]>([]);
+	const [tagsError, setTagsError] = useState("");
 	const [selectedCanvasNodes, setSelectedCanvasNodes] = useState<
 		SelectedCanvasNode[]
 	>([]);
@@ -87,7 +95,16 @@ function App() {
 	const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 	const [mainView, setMainView] = useState<"files" | "canvas">("files");
 	const fileLoadSeq = useRef(0);
-	const canvasLoadSeq = useRef(0);
+	const activeViewDocRef = useRef<ViewDoc | null>(null);
+	const activeViewPathRef = useRef<string | null>(null);
+
+	useEffect(() => {
+		activeViewDocRef.current = activeViewDoc;
+	}, [activeViewDoc]);
+
+	useEffect(() => {
+		activeViewPathRef.current = activeViewPath;
+	}, [activeViewPath]);
 
 	// Keep info in sync but don't use it directly in render
 	void info;
@@ -145,6 +162,32 @@ function App() {
 						} catch {
 							// ignore
 						}
+						try {
+							const list = await invoke("tags_list", { limit: 250 });
+							if (!cancelled) setTags(list);
+						} catch {
+							// ignore
+						}
+						try {
+							// Default to the root folder view canvas when opening a vault from settings.
+							const view: ViewRef = { kind: "folder", dir: "" };
+							const loaded = await loadViewDoc(view);
+							const built = await buildFolderViewDoc(
+								"",
+								{ recursive: true, limit: 500 },
+								loaded.doc,
+							);
+							if (!loaded.doc || built.changed) {
+								await saveViewDoc(loaded.path, built.doc);
+							}
+							if (!cancelled) {
+								setActiveViewPath(loaded.path);
+								setActiveViewDoc(built.doc);
+								setMainView("canvas");
+							}
+						} catch {
+							// ignore
+						}
 					} catch {
 						if (!cancelled) setVaultSchemaVersion(null);
 					}
@@ -170,6 +213,81 @@ function App() {
 		return selection;
 	}, []);
 
+	const refreshTags = useCallback(async () => {
+		try {
+			setTagsError("");
+			const list = await invoke("tags_list", { limit: 250 });
+			setTags(list);
+		} catch (e) {
+			setTags([]);
+			setTagsError(e instanceof Error ? e.message : String(e));
+		}
+	}, []);
+
+	const loadAndBuildFolderView = useCallback(async (dir: string) => {
+		setError("");
+		try {
+			const view: ViewRef = { kind: "folder", dir };
+			setMainView("canvas");
+
+			const loaded = await loadViewDoc(view);
+			const built = await buildFolderViewDoc(
+				dir,
+				{ recursive: true, limit: 500 },
+				loaded.doc,
+			);
+
+			if (!loaded.doc || built.changed) {
+				await saveViewDoc(loaded.path, built.doc);
+			}
+
+			setActiveViewPath(loaded.path);
+			setActiveViewDoc(built.doc);
+		} catch (e) {
+			setError(e instanceof Error ? e.message : String(e));
+		}
+	}, []);
+
+	const loadAndBuildSearchView = useCallback(async (query: string) => {
+		setError("");
+		try {
+			const q = query.trim();
+			if (!q) return;
+			const view: ViewRef = { kind: "search", query: q };
+			setMainView("canvas");
+
+			const loaded = await loadViewDoc(view);
+			const built = await buildSearchViewDoc(q, { limit: 200 }, loaded.doc);
+			if (!loaded.doc || built.changed) {
+				await saveViewDoc(loaded.path, built.doc);
+			}
+			setActiveViewPath(loaded.path);
+			setActiveViewDoc(built.doc);
+		} catch (e) {
+			setError(e instanceof Error ? e.message : String(e));
+		}
+	}, []);
+
+	const loadAndBuildTagView = useCallback(async (tag: string) => {
+		setError("");
+		try {
+			const t = tag.trim();
+			if (!t) return;
+			const view: ViewRef = { kind: "tag", tag: t };
+			setMainView("canvas");
+
+			const loaded = await loadViewDoc(view);
+			const built = await buildTagViewDoc(t, { limit: 500 }, loaded.doc);
+			if (!loaded.doc || built.changed) {
+				await saveViewDoc(loaded.path, built.doc);
+			}
+			setActiveViewPath(loaded.path);
+			setActiveViewDoc(built.doc);
+		} catch (e) {
+			setError(e instanceof Error ? e.message : String(e));
+		}
+	}, []);
+
 	const applyVaultSelection = useCallback(
 		async (path: string, mode: "open" | "create") => {
 			setError("");
@@ -193,33 +311,33 @@ function App() {
 				setEditorValue("");
 				setIsEditorDirty(false);
 
-				setCanvases([]);
-				setActiveCanvasId(null);
-				setActiveCanvasDoc(null);
+				setActiveViewPath(null);
+				setActiveViewDoc(null);
 				setSearchQuery("");
 				setSearchResults([]);
 				setSearchError("");
+				setTags([]);
+				setTagsError("");
 
-				const [entries, canvasesList] = await Promise.all([
-					invoke("vault_list_dir", {}),
-					invoke("canvas_list"),
-				]);
+				const entries = await invoke("vault_list_dir", {});
 				setRootEntries(entries);
-				setCanvases(canvasesList);
-				if (canvasesList[0]?.id) setActiveCanvasId(canvasesList[0].id);
-				setMainView("files");
+				setMainView("canvas");
+				await loadAndBuildFolderView("");
 
-				try {
-					await invoke("index_rebuild");
-				} catch {
-					// Index is derived; search UI can still function as "empty" until rebuilt.
-				}
+				void (async () => {
+					try {
+						await invoke("index_rebuild");
+					} catch {
+						// Index is derived; search UI can still function as "empty" until rebuilt.
+					}
+					await refreshTags();
+				})();
 			} catch (err) {
 				const message = err instanceof Error ? err.message : String(err);
 				setError(message);
 			}
 		},
-		[],
+		[loadAndBuildFolderView, refreshTags],
 	);
 
 	const onCreateVault = useCallback(async () => {
@@ -331,24 +449,6 @@ function App() {
 	useEffect(() => {
 		if (!vaultPath) return;
 		let cancelled = false;
-		(async () => {
-			try {
-				const list = await invoke("canvas_list");
-				if (cancelled) return;
-				setCanvases(list);
-				if (!activeCanvasId && list[0]?.id) setActiveCanvasId(list[0].id);
-			} catch (e) {
-				if (!cancelled) setError(e instanceof Error ? e.message : String(e));
-			}
-		})();
-		return () => {
-			cancelled = true;
-		};
-	}, [activeCanvasId, vaultPath]);
-
-	useEffect(() => {
-		if (!vaultPath) return;
-		let cancelled = false;
 		if (!searchQuery.trim()) {
 			setSearchResults([]);
 			setSearchError("");
@@ -374,25 +474,6 @@ function App() {
 			window.clearTimeout(t);
 		};
 	}, [searchQuery, vaultPath]);
-
-	useEffect(() => {
-		if (!activeCanvasId) {
-			setActiveCanvasDoc(null);
-			return;
-		}
-		const seq = ++canvasLoadSeq.current;
-		setActiveCanvasDoc(null);
-		(async () => {
-			try {
-				const doc = await invoke("canvas_read", { id: activeCanvasId });
-				if (seq !== canvasLoadSeq.current) return;
-				setActiveCanvasDoc(doc);
-			} catch (e) {
-				if (seq !== canvasLoadSeq.current) return;
-				setError(e instanceof Error ? e.message : String(e));
-			}
-		})();
-	}, [activeCanvasId]);
 
 	const createFileFromMarkdown = useCallback(
 		async (title: string, markdown: string): Promise<NoteMeta | null> => {
@@ -484,34 +565,24 @@ function App() {
 		setCanvasCommand({ id: crypto.randomUUID(), kind: "add_text_node", text });
 	}, []);
 
-	const onCreateCanvas = useCallback(async () => {
-		try {
-			const created = await invoke("canvas_create", { title: "Canvas" });
-			setCanvases((prev) => [created, ...prev]);
-			setActiveCanvasId(created.id);
-			setMainView("canvas");
-		} catch (e) {
-			setError(e instanceof Error ? e.message : String(e));
-		}
-	}, []);
-
-	const onSaveCanvas = useCallback(
-		async (doc: {
+	const onSaveView = useCallback(
+		async (payload: {
 			version: number;
 			id: string;
 			title: string;
-			nodes: CanvasDoc["nodes"];
-			edges: CanvasDoc["edges"];
+			nodes: CanvasNode[];
+			edges: CanvasEdge[];
 		}) => {
-			const saved = await invoke("canvas_write", { doc });
-			setActiveCanvasDoc(saved);
-			setCanvases((prev) =>
-				prev.map((c) =>
-					c.id === saved.id
-						? { ...c, title: saved.title, updated: saved.updated }
-						: c,
-				),
-			);
+			const path = activeViewPathRef.current;
+			const prev = activeViewDocRef.current;
+			if (!path || !prev) return;
+			const next: ViewDoc = {
+				...prev,
+				nodes: payload.nodes,
+				edges: payload.edges,
+			};
+			await saveViewDoc(path, next);
+			setActiveViewDoc(next);
 		},
 		[],
 	);
@@ -579,6 +650,7 @@ function App() {
 									isSearching={isSearching}
 									error={searchError}
 									onChangeQuery={setSearchQuery}
+									onOpenAsCanvas={(q) => void loadAndBuildSearchView(q)}
 									onSelectNote={(id) => {
 										void openFile(id);
 									}}
@@ -612,19 +684,6 @@ function App() {
 							</details>
 						)}
 
-						{/* Canvases List */}
-						<div className="sidebarSection sidebarSectionGrow">
-							<CanvasesPane
-								canvases={canvases}
-								activeCanvasId={activeCanvasId}
-								onSelectCanvas={(id) => {
-									setActiveCanvasId(id);
-									setMainView("canvas");
-								}}
-								onCreateCanvas={onCreateCanvas}
-							/>
-						</div>
-
 						{/* File Tree */}
 						<div className="sidebarSection sidebarSectionGrow">
 							<FileTreePane
@@ -633,8 +692,18 @@ function App() {
 								expandedDirs={expandedDirs}
 								activeFilePath={activeFilePath}
 								onToggleDir={toggleDir}
+								onSelectDir={(p) => void loadAndBuildFolderView(p)}
 								onOpenFile={(p) => void openFile(p)}
 								onNewFile={onNewFile}
+							/>
+						</div>
+
+						<div className="sidebarSection">
+							{tagsError ? <div className="searchError">{tagsError}</div> : null}
+							<TagsPane
+								tags={tags}
+								onSelectTag={(t) => void loadAndBuildTagView(t)}
+								onRefresh={() => void refreshTags()}
 							/>
 						</div>
 					</>
@@ -648,7 +717,7 @@ function App() {
 					<div className="mainToolbarLeft">
 						<span className="canvasTitle">
 							{mainView === "canvas"
-								? activeCanvasDoc?.title || "Canvas"
+								? activeViewDoc?.title || "Canvas"
 								: activeFileTitle || "No file selected"}
 						</span>
 					</div>
@@ -664,7 +733,7 @@ function App() {
 							{mainView === "canvas" ? (
 								<FileText size={16} />
 							) : (
-								<Layout size={16} />
+								<span className="brandIcon">◈</span>
 							)}
 						</MotionIconButton>
 						<MotionIconButton
@@ -685,21 +754,11 @@ function App() {
 							fallback={<div className="canvasEmpty">Loading canvas…</div>}
 						>
 							<CanvasPane
-								doc={
-									activeCanvasDoc
-										? {
-												version: activeCanvasDoc.version,
-												id: activeCanvasDoc.id,
-												title: activeCanvasDoc.title,
-												nodes: activeCanvasDoc.nodes,
-												edges: activeCanvasDoc.edges,
-											}
-										: null
-								}
-								onSave={onSaveCanvas}
+								doc={activeViewDoc ? asCanvasDocLike(activeViewDoc) : null}
+								onSave={onSaveView}
 								onOpenNote={(p) => void openFile(p)}
-								activeNoteId={null}
-								activeNoteTitle={null}
+								activeNoteId={activeFilePath}
+								activeNoteTitle={activeFileTitle}
 								vaultPath={vaultPath}
 								onSelectionChange={onCanvasSelectionChange}
 								externalCommand={canvasCommand}
@@ -744,7 +803,9 @@ function App() {
 								activeNoteTitle={activeFileTitle}
 								activeNoteMarkdown={activeFileDoc ? editorValue : null}
 								selectedCanvasNodes={selectedCanvasNodes}
-								canvasDoc={activeCanvasDoc}
+								canvasDoc={
+									activeViewDoc ? asCanvasDocLike(activeViewDoc) : null
+								}
 								onApplyToActiveNote={async (markdown) => {
 									setEditorValue(markdown);
 									setIsEditorDirty(true);

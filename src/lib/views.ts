@@ -30,12 +30,20 @@ function basename(relPath: string): string {
 	return parts[parts.length - 1] ?? relPath;
 }
 
-function viewId(view: ViewRef): { id: string; kind: ViewKind; selector: string; title: string } {
+function viewId(view: ViewRef): {
+	id: string;
+	kind: ViewKind;
+	selector: string;
+	title: string;
+} {
 	switch (view.kind) {
 		case "global":
 			return { id: "global", kind: "global", selector: "", title: "Vault" };
 		case "folder": {
-			const dir = view.dir.trim().replace(/\\/g, "/").replace(/^\/+|\/+$/g, "");
+			const dir = view.dir
+				.trim()
+				.replace(/\\/g, "/")
+				.replace(/^\/+|\/+$/g, "");
 			const title = dir ? basename(dir) : "Vault";
 			return { id: `folder:${dir}`, kind: "folder", selector: dir, title };
 		}
@@ -47,14 +55,21 @@ function viewId(view: ViewRef): { id: string; kind: ViewKind; selector: string; 
 				title: view.tag.startsWith("#") ? view.tag : `#${view.tag}`,
 			};
 		case "search":
-			return { id: `search:${view.query}`, kind: "search", selector: view.query, title: "Search" };
+			return {
+				id: `search:${view.query}`,
+				kind: "search",
+				selector: view.query,
+				title: "Search",
+			};
 	}
 }
 
 async function sha256Hex(input: string): Promise<string> {
 	const bytes = new TextEncoder().encode(input);
 	const digest = await crypto.subtle.digest("SHA-256", bytes);
-	return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("");
+	return [...new Uint8Array(digest)]
+		.map((b) => b.toString(16).padStart(2, "0"))
+		.join("");
 }
 
 export async function viewDocPath(view: ViewRef): Promise<string> {
@@ -88,10 +103,13 @@ export function sanitizeNodes(nodes: CanvasNode[]): CanvasNode[] {
 			position: n.position,
 			data: n.data ?? {},
 		};
-		const parentNode = (n as unknown as { parentNode?: string | null }).parentNode;
-		if (parentNode) (base as unknown as { parentNode: string }).parentNode = parentNode;
+		const parentNode = (n as unknown as { parentNode?: string | null })
+			.parentNode;
+		if (parentNode)
+			(base as unknown as { parentNode: string }).parentNode = parentNode;
 		const extent = (n as unknown as { extent?: unknown }).extent;
-		if (extent != null) (base as unknown as { extent: unknown }).extent = extent;
+		if (extent != null)
+			(base as unknown as { extent: unknown }).extent = extent;
 		const style = (n as unknown as { style?: unknown }).style;
 		if (style != null) (base as unknown as { style: unknown }).style = style;
 		return base;
@@ -120,14 +138,17 @@ function tryParseViewDoc(raw: string): ViewDoc | null {
 		const parsed = JSON.parse(raw) as ViewDoc;
 		if (!parsed || typeof parsed !== "object") return null;
 		if (parsed.schema_version !== 1) return null;
-		if (!Array.isArray(parsed.nodes) || !Array.isArray(parsed.edges)) return null;
+		if (!Array.isArray(parsed.nodes) || !Array.isArray(parsed.edges))
+			return null;
 		return parsed;
 	} catch {
 		return null;
 	}
 }
 
-export async function loadViewDoc(view: ViewRef): Promise<{ doc: ViewDoc | null; path: string }> {
+export async function loadViewDoc(
+	view: ViewRef,
+): Promise<{ doc: ViewDoc | null; path: string }> {
 	const path = await viewDocPath(view);
 	try {
 		const raw = await invoke("tether_read_text", { path });
@@ -143,7 +164,10 @@ export async function saveViewDoc(path: string, doc: ViewDoc): Promise<void> {
 		nodes: sanitizeNodes(doc.nodes),
 		edges: sanitizeEdges(doc.edges),
 	};
-	await invoke("tether_write_text", { path, text: JSON.stringify(stable, null, 2) });
+	await invoke("tether_write_text", {
+		path,
+		text: JSON.stringify(stable, null, 2),
+	});
 }
 
 function defaultPositionForIndex(i: number): { x: number; y: number } {
@@ -225,9 +249,138 @@ export async function buildFolderViewDoc(
 
 	const changed =
 		!prev ||
+		JSON.stringify(sanitizeNodes(prevNodes)) !==
+			JSON.stringify(sanitizeNodes(nextNodes)) ||
+		JSON.stringify(sanitizeEdges(prevEdges)) !==
+			JSON.stringify(sanitizeEdges(nextEdges));
+
+	return { doc, changed };
+}
+
+export async function buildSearchViewDoc(
+	query: string,
+	options: ViewOptions,
+	existing: ViewDoc | null,
+): Promise<{ doc: ViewDoc; changed: boolean }> {
+	const v = viewId({ kind: "search", query });
+	const limit = options.limit ?? 200;
+	const results = await invoke("search", { query: v.selector });
+
+	const ids = (results ?? [])
+		.map((r) => r.id)
+		.filter(Boolean)
+		.slice(0, limit);
+
+	const prev = existing;
+	const prevNodes = prev?.nodes ?? [];
+	const prevEdges = prev?.edges ?? [];
+	const prevById = new Map(prevNodes.map((n) => [n.id, n] as const));
+	const titleById = new Map((results ?? []).map((r) => [r.id, r.title] as const));
+
+	const nextNodes: CanvasNode[] = [];
+	for (let i = 0; i < ids.length; i++) {
+		const relPath = ids[i] as string;
+		const existingNode = prevById.get(relPath);
+		if (existingNode) {
+			nextNodes.push(existingNode);
+			continue;
+		}
+		nextNodes.push({
+			id: relPath,
+			type: "note",
+			position: defaultPositionForIndex(i),
+			data: { noteId: relPath, title: titleById.get(relPath) || titleForFile(relPath) },
+		});
+	}
+
+	for (const n of prevNodes) {
+		if (n.type === "note") continue;
+		nextNodes.push(n);
+	}
+
+	const nextIds = new Set(nextNodes.map((n) => n.id));
+	const nextEdges = prevEdges.filter(
+		(e) => nextIds.has(e.source) && nextIds.has(e.target),
+	);
+
+	const doc: ViewDoc = {
+		schema_version: 1,
+		view_id: v.id,
+		kind: "search",
+		selector: v.selector,
+		title: `Search: ${v.selector}`.trim(),
+		options: { limit },
+		nodes: nextNodes,
+		edges: nextEdges,
+	};
+
+	const changed =
+		!prev ||
 		JSON.stringify(sanitizeNodes(prevNodes)) !== JSON.stringify(sanitizeNodes(nextNodes)) ||
 		JSON.stringify(sanitizeEdges(prevEdges)) !== JSON.stringify(sanitizeEdges(nextEdges));
 
 	return { doc, changed };
 }
 
+export async function buildTagViewDoc(
+	tag: string,
+	options: ViewOptions,
+	existing: ViewDoc | null,
+): Promise<{ doc: ViewDoc; changed: boolean }> {
+	const norm = tag.startsWith("#") ? tag : `#${tag}`;
+	const v = viewId({ kind: "tag", tag: norm });
+	const limit = options.limit ?? 500;
+	const results = await invoke("tag_notes", { tag: v.selector, limit });
+
+	const ids = (results ?? []).map((r) => r.id).filter(Boolean).slice(0, limit);
+
+	const prev = existing;
+	const prevNodes = prev?.nodes ?? [];
+	const prevEdges = prev?.edges ?? [];
+	const prevById = new Map(prevNodes.map((n) => [n.id, n] as const));
+	const titleById = new Map((results ?? []).map((r) => [r.id, r.title] as const));
+
+	const nextNodes: CanvasNode[] = [];
+	for (let i = 0; i < ids.length; i++) {
+		const relPath = ids[i] as string;
+		const existingNode = prevById.get(relPath);
+		if (existingNode) {
+			nextNodes.push(existingNode);
+			continue;
+		}
+		nextNodes.push({
+			id: relPath,
+			type: "note",
+			position: defaultPositionForIndex(i),
+			data: { noteId: relPath, title: titleById.get(relPath) || titleForFile(relPath) },
+		});
+	}
+
+	for (const n of prevNodes) {
+		if (n.type === "note") continue;
+		nextNodes.push(n);
+	}
+
+	const nextIds = new Set(nextNodes.map((n) => n.id));
+	const nextEdges = prevEdges.filter(
+		(e) => nextIds.has(e.source) && nextIds.has(e.target),
+	);
+
+	const doc: ViewDoc = {
+		schema_version: 1,
+		view_id: v.id,
+		kind: "tag",
+		selector: v.selector,
+		title: v.title,
+		options: { limit },
+		nodes: nextNodes,
+		edges: nextEdges,
+	};
+
+	const changed =
+		!prev ||
+		JSON.stringify(sanitizeNodes(prevNodes)) !== JSON.stringify(sanitizeNodes(nextNodes)) ||
+		JSON.stringify(sanitizeEdges(prevEdges)) !== JSON.stringify(sanitizeEdges(nextEdges));
+
+	return { doc, changed };
+}

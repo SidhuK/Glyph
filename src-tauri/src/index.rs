@@ -29,6 +29,12 @@ pub struct BacklinkItem {
     pub updated: String,
 }
 
+#[derive(Serialize)]
+pub struct TagCount {
+    pub tag: String,
+    pub count: u32,
+}
+
 fn db_path(vault_root: &Path) -> Result<PathBuf, String> {
     tether_paths::tether_db_path(vault_root)
 }
@@ -98,6 +104,142 @@ fn parse_frontmatter_title_created_updated(markdown: &str) -> (String, String, S
         ),
         Err(_) => ("Untitled".to_string(), now.clone(), now),
     }
+}
+
+fn normalize_tag(raw: &str) -> Option<String> {
+    let t = raw.trim();
+    if t.is_empty() {
+        return None;
+    }
+    let t = t.strip_prefix('#').unwrap_or(t).trim();
+    if t.is_empty() {
+        return None;
+    }
+    // Obsidian allows nested tags with `/`. Keep `/`, `_`, `-`.
+    // Normalize to lowercase to avoid duplicates.
+    let t = t.to_lowercase();
+    if t.chars()
+        .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-' || c == '/')
+    {
+        Some(t)
+    } else {
+        None
+    }
+}
+
+fn parse_frontmatter_tags(markdown: &str) -> Vec<String> {
+    let (yaml, _body) = split_frontmatter(markdown);
+    if yaml.is_empty() {
+        return Vec::new();
+    }
+    let v: serde_yaml::Value = match serde_yaml::from_str(yaml) {
+        Ok(v) => v,
+        Err(_) => return Vec::new(),
+    };
+    let tags_val = match v.get("tags") {
+        Some(t) => t,
+        None => return Vec::new(),
+    };
+    let mut out = Vec::new();
+    match tags_val {
+        serde_yaml::Value::Sequence(items) => {
+            for it in items {
+                if let serde_yaml::Value::String(s) = it {
+                    if let Some(t) = normalize_tag(s) {
+                        out.push(t);
+                    }
+                }
+            }
+        }
+        serde_yaml::Value::String(s) => {
+            // Support "a, b" or "a b" in frontmatter.
+            let parts = if s.contains(',') {
+                s.split(',').map(|p| p.trim()).collect::<Vec<_>>()
+            } else {
+                s.split_whitespace().collect::<Vec<_>>()
+            };
+            for p in parts {
+                if let Some(t) = normalize_tag(p) {
+                    out.push(t);
+                }
+            }
+        }
+        _ => {}
+    }
+    out.sort();
+    out.dedup();
+    out
+}
+
+fn parse_inline_tags(markdown: &str) -> Vec<String> {
+    // Best-effort parser: find `#tag` outside fenced code blocks and inline code.
+    // We deliberately keep it conservative to avoid false positives.
+    let mut out: Vec<String> = Vec::new();
+    let mut in_fence = false;
+    for line in markdown.lines() {
+        let trimmed = line.trim_start();
+        if trimmed.starts_with("```") {
+            in_fence = !in_fence;
+            continue;
+        }
+        if in_fence {
+            continue;
+        }
+        // Strip inline code spans by removing backticked segments.
+        let mut cleaned = String::new();
+        let mut in_code = false;
+        for ch in line.chars() {
+            if ch == '`' {
+                in_code = !in_code;
+                continue;
+            }
+            if !in_code {
+                cleaned.push(ch);
+            }
+        }
+
+        let bytes = cleaned.as_bytes();
+        let mut i = 0;
+        while i < bytes.len() {
+            if bytes[i] == b'#' {
+                let prev = if i == 0 { b' ' } else { bytes[i - 1] };
+                let prev_ok = !(prev as char).is_ascii_alphanumeric() && prev != b'/' && prev != b'_';
+                if !prev_ok {
+                    i += 1;
+                    continue;
+                }
+                let mut j = i + 1;
+                while j < bytes.len() {
+                    let c = bytes[j] as char;
+                    if c.is_ascii_alphanumeric() || c == '_' || c == '-' || c == '/' {
+                        j += 1;
+                        continue;
+                    }
+                    break;
+                }
+                if j > i + 1 {
+                    let candidate = &cleaned[i + 1..j];
+                    if let Some(t) = normalize_tag(candidate) {
+                        out.push(t);
+                    }
+                }
+                i = j;
+                continue;
+            }
+            i += 1;
+        }
+    }
+    out.sort();
+    out.dedup();
+    out
+}
+
+fn parse_all_tags(markdown: &str) -> Vec<String> {
+    let mut out = parse_frontmatter_tags(markdown);
+    out.extend(parse_inline_tags(markdown));
+    out.sort();
+    out.dedup();
+    out
 }
 
 fn should_skip_entry(name: &OsStr) -> bool {
@@ -309,6 +451,14 @@ CREATE TABLE IF NOT EXISTS links (
 
 CREATE INDEX IF NOT EXISTS links_to_id_idx ON links(to_id);
 
+CREATE TABLE IF NOT EXISTS tags (
+  note_id TEXT NOT NULL,
+  tag TEXT NOT NULL,
+  PRIMARY KEY (note_id, tag)
+);
+
+CREATE INDEX IF NOT EXISTS tags_tag_idx ON tags(tag);
+
 CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(
   id UNINDEXED,
   title,
@@ -327,6 +477,7 @@ CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(
         )
         .ok();
     if schema_version.as_deref() != Some("2") {
+        // Preserve existing DBs; tags table is additive and created with IF NOT EXISTS.
         conn.execute("INSERT OR REPLACE INTO meta(key, value) VALUES('schema_version', '2')", [])
             .map_err(|e| e.to_string())?;
     }
@@ -406,6 +557,17 @@ fn index_note_with_conn(
     conn.execute("DELETE FROM links WHERE from_id = ?", [note_id])
         .map_err(|e| e.to_string())?;
 
+    conn.execute("DELETE FROM tags WHERE note_id = ?", [note_id])
+        .map_err(|e| e.to_string())?;
+
+    for tag in parse_all_tags(markdown) {
+        conn.execute(
+            "INSERT OR IGNORE INTO tags(note_id, tag) VALUES(?, ?)",
+            rusqlite::params![note_id, tag],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+
     let (to_ids, to_titles) = parse_outgoing_links(note_id, markdown);
     let mut inserted = HashSet::<(Option<String>, Option<String>, &'static str)>::new();
 
@@ -451,6 +613,7 @@ pub fn rebuild(vault_root: &Path) -> Result<IndexRebuildResult, String> {
     tx.execute("DELETE FROM notes", []).map_err(|e| e.to_string())?;
     tx.execute("DELETE FROM notes_fts", []).map_err(|e| e.to_string())?;
     tx.execute("DELETE FROM links", []).map_err(|e| e.to_string())?;
+    tx.execute("DELETE FROM tags", []).map_err(|e| e.to_string())?;
 
     let notes = collect_markdown_files(vault_root)?;
 
@@ -484,6 +647,14 @@ pub fn rebuild(vault_root: &Path) -> Result<IndexRebuildResult, String> {
             rusqlite::params![rel, title, body],
         )
         .map_err(|e| e.to_string())?;
+
+        for tag in parse_all_tags(&markdown) {
+            tx.execute(
+                "INSERT OR IGNORE INTO tags(note_id, tag) VALUES(?, ?)",
+                rusqlite::params![rel, tag],
+            )
+            .map_err(|e| e.to_string())?;
+        }
     }
 
     // 2) Build links after all notes are present.
@@ -549,6 +720,68 @@ pub async fn search(state: State<'_, VaultState>, query: String) -> Result<Vec<S
             )
             .map_err(|e| e.to_string())?;
         let mut rows = stmt.query([q]).map_err(|e| e.to_string())?;
+        let mut out = Vec::new();
+        while let Some(row) = rows.next().map_err(|e| e.to_string())? {
+            out.push(SearchResult {
+                id: row.get(0).map_err(|e| e.to_string())?,
+                title: row.get(1).map_err(|e| e.to_string())?,
+                snippet: row.get(2).map_err(|e| e.to_string())?,
+                score: row.get(3).map_err(|e| e.to_string())?,
+            });
+        }
+        Ok(out)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+pub async fn tags_list(state: State<'_, VaultState>, limit: Option<u32>) -> Result<Vec<TagCount>, String> {
+    let root = state.current_root()?;
+    let limit = limit.unwrap_or(200).min(2000) as i64;
+    tauri::async_runtime::spawn_blocking(move || -> Result<Vec<TagCount>, String> {
+        let conn = open_db(&root)?;
+        let mut stmt = conn
+            .prepare(
+                "SELECT tag, COUNT(*) AS c
+                 FROM tags
+                 GROUP BY tag
+                 ORDER BY c DESC, tag ASC
+                 LIMIT ?",
+            )
+            .map_err(|e| e.to_string())?;
+        let mut rows = stmt.query([limit]).map_err(|e| e.to_string())?;
+        let mut out = Vec::new();
+        while let Some(row) = rows.next().map_err(|e| e.to_string())? {
+            out.push(TagCount {
+                tag: row.get(0).map_err(|e| e.to_string())?,
+                count: row.get::<_, i64>(1).map_err(|e| e.to_string())? as u32,
+            });
+        }
+        Ok(out)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+pub async fn tag_notes(state: State<'_, VaultState>, tag: String, limit: Option<u32>) -> Result<Vec<SearchResult>, String> {
+    let root = state.current_root()?;
+    let limit = limit.unwrap_or(500).min(10_000) as i64;
+    tauri::async_runtime::spawn_blocking(move || -> Result<Vec<SearchResult>, String> {
+        let t = normalize_tag(&tag).ok_or_else(|| "invalid tag".to_string())?;
+        let conn = open_db(&root)?;
+        let mut stmt = conn
+            .prepare(
+                "SELECT n.id, n.title, '' AS snippet, 0.0 AS score
+                 FROM tags t
+                 JOIN notes n ON n.id = t.note_id
+                 WHERE t.tag = ?
+                 ORDER BY n.updated DESC
+                 LIMIT ?",
+            )
+            .map_err(|e| e.to_string())?;
+        let mut rows = stmt.query(rusqlite::params![t, limit]).map_err(|e| e.to_string())?;
         let mut out = Vec::new();
         while let Some(row) = rows.next().map_err(|e| e.to_string())? {
             out.push(SearchResult {

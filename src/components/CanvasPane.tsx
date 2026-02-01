@@ -190,6 +190,32 @@ export default function CanvasPane({
 		doc?.edges ?? [],
 	);
 
+	const snapshotString = useCallback(
+		(n: CanvasNode[], e: CanvasEdge[]) =>
+			JSON.stringify({
+				n: n.map((node) => ({
+					id: node.id,
+					type: node.type ?? null,
+					position: node.position,
+					data: node.data ?? null,
+					parentNode: (node as unknown as { parentNode?: string | null })
+						.parentNode,
+					extent: (node as unknown as { extent?: unknown }).extent ?? null,
+					style: (node as unknown as { style?: unknown }).style ?? null,
+				})),
+				e: e.map((edge) => ({
+					id: edge.id,
+					source: edge.source,
+					target: edge.target,
+					type: edge.type ?? null,
+					label: (edge as unknown as { label?: unknown }).label ?? null,
+					data: edge.data ?? null,
+					style: (edge as unknown as { style?: unknown }).style ?? null,
+				})),
+			}),
+		[],
+	);
+
 	// biome-ignore lint/correctness/useExhaustiveDependencies: Only reset local state when switching canvases (by id), not on every doc update.
 	useEffect(() => {
 		setSaveError("");
@@ -204,10 +230,7 @@ export default function CanvasPane({
 		pastRef.current = [];
 		futureRef.current = [];
 		lastHistoryRef.current = "";
-		lastSavedKeyRef.current = snapshotString(
-			doc.nodes ?? [],
-			doc.edges ?? [],
-		);
+		lastSavedKeyRef.current = snapshotString(doc.nodes ?? [], doc.edges ?? []);
 		lastStateRef.current = structuredClone({
 			nodes: doc.nodes ?? [],
 			edges: doc.edges ?? [],
@@ -268,32 +291,6 @@ export default function CanvasPane({
 			link: LinkNode,
 			frame: FrameNode,
 		}),
-		[],
-	);
-
-	const snapshotString = useCallback(
-		(n: CanvasNode[], e: CanvasEdge[]) =>
-			JSON.stringify({
-				n: n.map((node) => ({
-					id: node.id,
-					type: node.type ?? null,
-					position: node.position,
-					data: node.data ?? null,
-					parentNode: (node as unknown as { parentNode?: string | null })
-						.parentNode,
-					extent: (node as unknown as { extent?: unknown }).extent ?? null,
-					style: (node as unknown as { style?: unknown }).style ?? null,
-				})),
-				e: e.map((edge) => ({
-					id: edge.id,
-					source: edge.source,
-					target: edge.target,
-					type: edge.type ?? null,
-					label: (edge as unknown as { label?: unknown }).label ?? null,
-					data: edge.data ?? null,
-					style: (edge as unknown as { style?: unknown }).style ?? null,
-				})),
-			}),
 		[],
 	);
 

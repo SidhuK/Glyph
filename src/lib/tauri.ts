@@ -87,6 +87,11 @@ export interface BacklinkItem {
 	updated: string;
 }
 
+export interface TagCount {
+	tag: string;
+	count: number;
+}
+
 export interface IndexRebuildResult {
 	indexed: number;
 }
@@ -176,6 +181,8 @@ interface TauriCommands {
 
 	index_rebuild: CommandDef<void, IndexRebuildResult>;
 	search: CommandDef<{ query: string }, SearchResult[]>;
+	tags_list: CommandDef<{ limit?: number | null }, TagCount[]>;
+	tag_notes: CommandDef<{ tag: string; limit?: number | null }, SearchResult[]>;
 	backlinks: CommandDef<{ note_id: string }, BacklinkItem[]>;
 	link_preview: CommandDef<{ url: string; force?: boolean }, LinkPreview>;
 

@@ -1,4 +1,4 @@
-use crate::{io_atomic, paths, vault::VaultState};
+use crate::{index, io_atomic, paths, vault::VaultState};
 use serde::Serialize;
 use sha2::{Digest, Sha256};
 use std::{
@@ -261,8 +261,15 @@ pub async fn vault_write_text(
         if let Some(parent) = abs.parent() {
             std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
         }
+        let rel_s = rel.to_string_lossy().to_string();
+        let should_index = rel.extension() == Some(OsStr::new("md"));
+        let text_for_index = if should_index { Some(text.clone()) } else { None };
         let bytes = text.into_bytes();
         io_atomic::write_atomic(&abs, &bytes).map_err(|e| e.to_string())?;
+        if let Some(markdown) = text_for_index {
+            // Indexing is derived; saving the file should not fail if indexing fails.
+            let _ = index::index_note(&root, &rel_s, &markdown);
+        }
         Ok(TextFileWriteResult {
             etag: etag_for(&bytes),
             mtime_ms: file_mtime_ms(&abs),

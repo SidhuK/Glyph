@@ -9,6 +9,7 @@ interface SearchPaneProps {
 	error: string;
 	onChangeQuery: (next: string) => void;
 	onSelectNote: (id: string) => void;
+	onOpenAsCanvas?: (query: string) => void;
 }
 
 export const SearchPane = memo(function SearchPane({
@@ -18,6 +19,7 @@ export const SearchPane = memo(function SearchPane({
 	error,
 	onChangeQuery,
 	onSelectNote,
+	onOpenAsCanvas,
 }: SearchPaneProps) {
 	const onChange = useCallback(
 		(e: ChangeEvent<HTMLInputElement>) => onChangeQuery(e.target.value),
@@ -53,6 +55,17 @@ export const SearchPane = memo(function SearchPane({
 		<section className="searchPane">
 			<div className="searchHeader">
 				<div className="searchTitle">Search</div>
+				{onOpenAsCanvas ? (
+					<button
+						type="button"
+						className="iconBtn"
+						onClick={() => onOpenAsCanvas(query)}
+						disabled={!query.trim()}
+						title={query.trim() ? "Open results as canvas" : "Type a query to open a canvas"}
+					>
+						▦
+					</button>
+				) : null}
 				{isSearching ? <div className="searchStatus">Searching…</div> : null}
 			</div>
 			<div className="searchBody">

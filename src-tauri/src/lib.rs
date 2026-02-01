@@ -84,6 +84,8 @@ pub fn run() {
             canvas::canvas_write,
             index::index_rebuild,
             index::search,
+            index::tags_list,
+            index::tag_notes,
             index::backlinks,
             links::link_preview,
             vault_fs::vault_list_dir,

@@ -489,6 +489,111 @@ textarea {
 	gap: var(--space-1);
 }
 
+.editorMode {
+	display: inline-flex;
+	align-items: center;
+	gap: 0;
+	padding: 2px;
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-full);
+	background: var(--bg-secondary);
+	margin-right: var(--space-2);
+}
+
+button.segBtn {
+	height: var(--button-height-sm);
+	padding: 0 var(--space-3);
+	border-radius: var(--radius-full);
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
+}
+
+button.segBtn:hover {
+	transform: none;
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}
+
+button.segBtn.active {
+	background: var(--bg-primary);
+	color: var(--text-primary);
+	border: 1px solid var(--border-light);
+}
+
+.editorBody .tiptap {
+	height: 100%;
+	overflow: auto;
+	padding: var(--space-4);
+	line-height: var(--leading-relaxed);
+	outline: none;
+	caret-color: var(--text-primary);
+}
+
+.editorBody .tiptap > *:first-child {
+	margin-top: 0;
+}
+
+.editorBody .tiptap > *:last-child {
+	margin-bottom: 0;
+}
+
+.editorBody .tiptap p {
+	margin: 0 0 var(--space-3) 0;
+}
+
+.editorBody .tiptap h1,
+.editorBody .tiptap h2,
+.editorBody .tiptap h3,
+.editorBody .tiptap h4 {
+	margin: var(--space-5) 0 var(--space-2) 0;
+	letter-spacing: -0.01em;
+}
+
+.editorBody .tiptap code {
+	font-family: var(--font-mono);
+	font-size: 0.9em;
+	background: var(--bg-secondary);
+	padding: 0 0.25em;
+	border-radius: var(--radius-sm);
+}
+
+.editorBody .tiptap pre {
+	font-family: var(--font-mono);
+	background: var(--bg-secondary);
+	padding: var(--space-3);
+	border-radius: var(--radius-lg);
+	overflow: auto;
+}
+
+.editorBody .tiptap a {
+	color: var(--interactive-accent);
+	text-decoration: none;
+}
+
+.editorBody .tiptap a:hover {
+	text-decoration: underline;
+}
+
+.mdRawEditor {
+	width: 100%;
+	height: 100%;
+	border: none;
+	border-radius: 0;
+	padding: var(--space-4);
+	background: transparent;
+	color: var(--text-primary);
+	font-family: var(--font-mono);
+	font-size: var(--text-sm);
+	line-height: var(--leading-relaxed);
+	resize: none;
+	overflow: auto;
+}
+
+.mdRawEditor:focus {
+	outline: none;
+	box-shadow: none;
+}
+
 .editorStatus {
 	font-size: var(--text-xs);
 	color: var(--text-tertiary);
@@ -533,6 +638,64 @@ textarea {
 	font-size: var(--text-xs);
 	color: var(--text-error);
 	background: var(--feedback-error-bg);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   TAGS
+   ───────────────────────────────────────────────────────────────────────────── */
+.tagsPane {
+	border-top: 1px solid var(--border-light);
+	padding: var(--space-2);
+}
+
+.tagsHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: var(--space-2) var(--space-2);
+}
+
+.tagsTitle {
+	font-size: var(--text-xs);
+	font-weight: var(--font-semibold);
+	color: var(--text-tertiary);
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+}
+
+.tagsList {
+	list-style: none;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	padding: 0 var(--space-1) var(--space-2) var(--space-1);
+	max-height: 220px;
+	overflow: auto;
+}
+
+.tagsButton {
+	width: 100%;
+	justify-content: space-between;
+	padding: 0 var(--space-2);
+	height: 28px;
+	border-radius: var(--radius-md);
+}
+
+.tagsName {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.tagsCount {
+	color: var(--text-tertiary);
+	font-size: var(--text-xs);
+}
+
+.tagsEmpty {
+	padding: var(--space-2) var(--space-3) var(--space-3);
+	color: var(--text-tertiary);
+	font-size: var(--text-xs);
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────

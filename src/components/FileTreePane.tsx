@@ -8,6 +8,7 @@ interface FileTreePaneProps {
 	expandedDirs: Set<string>;
 	activeFilePath: string | null;
 	onToggleDir: (dirPath: string) => void;
+	onSelectDir: (dirPath: string) => void;
 	onOpenFile: (filePath: string) => void;
 	onNewFile: () => void;
 }
@@ -24,6 +25,7 @@ export const FileTreePane = memo(function FileTreePane({
 	expandedDirs,
 	activeFilePath,
 	onToggleDir,
+	onSelectDir,
 	onOpenFile,
 	onNewFile,
 }: FileTreePaneProps) {
@@ -43,7 +45,10 @@ export const FileTreePane = memo(function FileTreePane({
 								<button
 									type="button"
 									className="fileTreeRow"
-									onClick={() => onToggleDir(e.rel_path)}
+									onClick={() => {
+										onSelectDir(e.rel_path);
+										onToggleDir(e.rel_path);
+									}}
 									style={{ paddingLeft }}
 								>
 									<span className="fileTreeChevron">
