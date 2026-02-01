@@ -19,6 +19,7 @@ import {
 	useEdgesState,
 	useNodesState,
 } from "@xyflow/react";
+import { AnimatePresence, motion } from "motion/react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { invoke } from "../lib/tauri";
 import {
@@ -37,6 +38,7 @@ import {
 	StickyNote,
 	Type,
 } from "./Icons";
+import { MotionIconButton } from "./MotionUI";
 
 export type CanvasNode = Node<Record<string, unknown>>;
 export type CanvasEdge = Edge<Record<string, unknown>>;
@@ -71,20 +73,45 @@ export type CanvasExternalCommand =
 	| { id: string; kind: "add_text_node"; text: string }
 	| { id: string; kind: "add_link_node"; url: string };
 
+const nodeSpring = { type: "spring", stiffness: 400, damping: 25 } as const;
+
 const NoteNode = memo(function NoteNode({
 	data,
 }: { data: Record<string, unknown> }) {
 	const title = typeof data.title === "string" ? data.title : "Note";
 	const noteId = typeof data.noteId === "string" ? data.noteId : "";
 	return (
-		<div className="rfNode rfNodeNote" title={noteId}>
+		<motion.div
+			className="rfNode rfNodeNote"
+			title={noteId}
+			initial={{ opacity: 0, scale: 0.8 }}
+			animate={{ opacity: 1, scale: 1 }}
+			whileHover={{
+				scale: 1.02,
+				boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+				y: -2,
+			}}
+			transition={nodeSpring}
+		>
 			<Handle type="target" position={Position.Left} />
 			<Handle type="source" position={Position.Right} />
-			<div className="rfNodeTitle">{title}</div>
-			<div className="rfNodeSub mono">
+			<motion.div
+				className="rfNodeTitle"
+				initial={{ opacity: 0, y: -5 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ ...nodeSpring, delay: 0.05 }}
+			>
+				{title}
+			</motion.div>
+			<motion.div
+				className="rfNodeSub mono"
+				initial={{ opacity: 0 }}
+				animate={{ opacity: 1 }}
+				transition={{ ...nodeSpring, delay: 0.1 }}
+			>
 				{noteId ? `${noteId.slice(0, 8)}…` : ""}
-			</div>
-		</div>
+			</motion.div>
+		</motion.div>
 	);
 });
 
@@ -93,12 +120,36 @@ const TextNode = memo(function TextNode({
 }: { data: Record<string, unknown> }) {
 	const text = typeof data.text === "string" ? data.text : "";
 	return (
-		<div className="rfNode rfNodeText">
+		<motion.div
+			className="rfNode rfNodeText"
+			initial={{ opacity: 0, scale: 0.8, rotate: -2 }}
+			animate={{ opacity: 1, scale: 1, rotate: 0 }}
+			whileHover={{
+				scale: 1.02,
+				boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+				y: -2,
+			}}
+			transition={nodeSpring}
+		>
 			<Handle type="target" position={Position.Left} />
 			<Handle type="source" position={Position.Right} />
-			<div className="rfNodeTitle">Text</div>
-			<div className="rfNodeBody">{text}</div>
-		</div>
+			<motion.div
+				className="rfNodeTitle"
+				initial={{ opacity: 0 }}
+				animate={{ opacity: 1 }}
+				transition={{ ...nodeSpring, delay: 0.05 }}
+			>
+				Text
+			</motion.div>
+			<motion.div
+				className="rfNodeBody"
+				initial={{ opacity: 0, y: 5 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ ...nodeSpring, delay: 0.1 }}
+			>
+				{text}
+			</motion.div>
+		</motion.div>
 	);
 });
 
@@ -119,20 +170,68 @@ const LinkNode = memo(function LinkNode({
 	const status = typeof data.status === "string" ? data.status : "";
 	const imageSrc = typeof data.image_src === "string" ? data.image_src : "";
 	return (
-		<div className="rfNode rfNodeLink">
+		<motion.div
+			className="rfNode rfNodeLink"
+			initial={{ opacity: 0, scale: 0.85, y: 10 }}
+			animate={{ opacity: 1, scale: 1, y: 0 }}
+			whileHover={{
+				scale: 1.02,
+				boxShadow: "0 12px 40px rgba(0,0,0,0.15)",
+				y: -3,
+			}}
+			transition={nodeSpring}
+		>
 			<Handle type="target" position={Position.Left} />
 			<Handle type="source" position={Position.Right} />
 			{imageSrc ? (
-				<img className="rfNodeLinkImage" alt="" src={imageSrc} />
+				<motion.img
+					className="rfNodeLinkImage"
+					alt=""
+					src={imageSrc}
+					initial={{ opacity: 0, scale: 0.95 }}
+					animate={{ opacity: 1, scale: 1 }}
+					transition={{ ...nodeSpring, delay: 0.1 }}
+					whileHover={{ scale: 1.03 }}
+				/>
 			) : null}
-			<div className="rfNodeTitle">{title || hostname || "Link"}</div>
+			<motion.div
+				className="rfNodeTitle"
+				initial={{ opacity: 0, x: -5 }}
+				animate={{ opacity: 1, x: 0 }}
+				transition={{ ...nodeSpring, delay: 0.05 }}
+			>
+				{title || hostname || "Link"}
+			</motion.div>
 			{description ? (
-				<div className="rfNodeBody">{description}</div>
+				<motion.div
+					className="rfNodeBody"
+					initial={{ opacity: 0 }}
+					animate={{ opacity: 1 }}
+					transition={{ ...nodeSpring, delay: 0.1 }}
+				>
+					{description}
+				</motion.div>
 			) : (
-				<div className="rfNodeBody mono">{url}</div>
+				<motion.div
+					className="rfNodeBody mono"
+					initial={{ opacity: 0 }}
+					animate={{ opacity: 1 }}
+					transition={{ ...nodeSpring, delay: 0.1 }}
+				>
+					{url}
+				</motion.div>
 			)}
-			{status ? <div className="rfNodeSub">{status}</div> : null}
-		</div>
+			{status ? (
+				<motion.div
+					className="rfNodeSub"
+					initial={{ opacity: 0 }}
+					animate={{ opacity: 0.7 }}
+					transition={{ ...nodeSpring, delay: 0.15 }}
+				>
+					{status}
+				</motion.div>
+			) : null}
+		</motion.div>
 	);
 });
 
@@ -141,10 +240,25 @@ const FrameNode = memo(function FrameNode({
 }: { data: Record<string, unknown> }) {
 	const title = typeof data.title === "string" ? data.title : "Frame";
 	return (
-		<div className="rfNode rfNodeFrame">
+		<motion.div
+			className="rfNode rfNodeFrame"
+			initial={{ opacity: 0, scale: 0.9 }}
+			animate={{ opacity: 1, scale: 1 }}
+			whileHover={{
+				borderColor: "var(--border-strong)",
+			}}
+			transition={nodeSpring}
+		>
 			<NodeResizer minWidth={220} minHeight={160} />
-			<div className="rfNodeTitle">{title}</div>
-		</div>
+			<motion.div
+				className="rfNodeTitle"
+				initial={{ opacity: 0 }}
+				animate={{ opacity: 1 }}
+				transition={{ ...nodeSpring, delay: 0.1 }}
+			>
+				{title}
+			</motion.div>
+		</motion.div>
 	);
 });
 
@@ -869,154 +983,208 @@ export default function CanvasPane({
 
 	if (!doc) {
 		return (
-			<div className="canvasEmpty">
+			<motion.div
+				className="canvasEmpty"
+				initial={{ opacity: 0, scale: 0.95 }}
+				animate={{ opacity: 1, scale: 1 }}
+				transition={nodeSpring}
+			>
 				Select a folder, tag, or search to populate the canvas.
-			</div>
+			</motion.div>
 		);
 	}
 
 	return (
-		<div className="canvasPane">
-			<div className="canvasToolbar">
+		<motion.div
+			className="canvasPane"
+			initial={{ opacity: 0 }}
+			animate={{ opacity: 1 }}
+			transition={nodeSpring}
+		>
+			<motion.div
+				className="canvasToolbar"
+				initial={{ opacity: 0, y: -10 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={{ ...nodeSpring, delay: 0.05 }}
+			>
 				<div className="canvasToolbarLeft">
-					<div className="canvasTitle">{doc.title}</div>
-					{isSaving ? (
-						<div className="canvasStatus">Saving…</div>
-					) : (
-						<div className="canvasStatus">Saved</div>
-					)}
+					<motion.div
+						className="canvasTitle"
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						transition={{ ...nodeSpring, delay: 0.1 }}
+					>
+						{doc.title}
+					</motion.div>
+					<AnimatePresence mode="wait">
+						{isSaving ? (
+							<motion.div
+								key="saving"
+								className="canvasStatus"
+								initial={{ opacity: 0, scale: 0.9 }}
+								animate={{ opacity: 1, scale: 1 }}
+								exit={{ opacity: 0, scale: 0.9 }}
+								transition={nodeSpring}
+							>
+								<motion.span
+									animate={{ rotate: 360 }}
+									transition={{
+										duration: 1,
+										repeat: Number.POSITIVE_INFINITY,
+										ease: "linear",
+									}}
+									style={{ display: "inline-block" }}
+								>
+									⟳
+								</motion.span>{" "}
+								Saving…
+							</motion.div>
+						) : (
+							<motion.div
+								key="saved"
+								className="canvasStatus"
+								initial={{ opacity: 0, scale: 0.9 }}
+								animate={{ opacity: 1, scale: 1 }}
+								exit={{ opacity: 0, scale: 0.9 }}
+								transition={nodeSpring}
+							>
+								✓ Saved
+							</motion.div>
+						)}
+					</AnimatePresence>
 				</div>
-				<div className="canvasToolbarRight">
-					<button
+				<motion.div
+					className="canvasToolbarRight"
+					initial="hidden"
+					animate="visible"
+					variants={{
+						visible: { transition: { staggerChildren: 0.02 } },
+						hidden: {},
+					}}
+				>
+					<MotionIconButton
 						type="button"
-						className="iconBtn"
 						onClick={onAddText}
 						title="Add text block"
 					>
 						<Type size={16} />
-					</button>
-					<button
+					</MotionIconButton>
+					<MotionIconButton
 						type="button"
-						className="iconBtn"
 						onClick={onAddLink}
 						title="Add link"
 					>
 						<Link size={16} />
-					</button>
-					<button
+					</MotionIconButton>
+					<MotionIconButton
 						type="button"
-						className="iconBtn"
 						onClick={onAddNote}
 						disabled={!activeNoteId}
 						title="Add current note to canvas"
 					>
 						<StickyNote size={16} />
-					</button>
-					<button
+					</MotionIconButton>
+					<MotionIconButton
 						type="button"
-						className="iconBtn"
 						onClick={onRefreshSelectedLink}
 						disabled={!selectedLinkNode}
 						title="Refresh selected link preview"
 					>
 						<RefreshCw size={16} />
-					</button>
+					</MotionIconButton>
 					<span className="toolbarDivider" />
-					<button
+					<MotionIconButton
 						type="button"
-						className="iconBtn"
 						onClick={onFrameSelection}
 						disabled={!selectedNodes.length}
 						title="Group selection in a frame"
 					>
 						<Frame size={16} />
-					</button>
-					<button
+					</MotionIconButton>
+					<MotionIconButton
 						type="button"
-						className={snapToGrid ? "iconBtn active" : "iconBtn"}
+						active={snapToGrid}
 						onClick={onToggleSnap}
 						title="Toggle snap to grid"
 					>
 						<Grid3X3 size={16} />
-					</button>
+					</MotionIconButton>
 					<span className="toolbarDivider" />
-					<button
+					<MotionIconButton
 						type="button"
-						className="iconBtn"
 						onClick={() => applyAlign("left")}
 						disabled={selectedNodes.length < 2}
 						title="Align left"
 					>
 						<AlignLeft size={16} />
-					</button>
-					<button
+					</MotionIconButton>
+					<MotionIconButton
 						type="button"
-						className="iconBtn"
 						onClick={() => applyAlign("centerX")}
 						disabled={selectedNodes.length < 2}
 						title="Align center"
 					>
 						<AlignCenter size={16} />
-					</button>
-					<button
+					</MotionIconButton>
+					<MotionIconButton
 						type="button"
-						className="iconBtn"
 						onClick={() => applyAlign("right")}
 						disabled={selectedNodes.length < 2}
 						title="Align right"
 					>
 						<AlignRight size={16} />
-					</button>
-					<button
+					</MotionIconButton>
+					<MotionIconButton
 						type="button"
-						className="iconBtn"
 						onClick={() => applyAlign("top")}
 						disabled={selectedNodes.length < 2}
 						title="Align top"
 					>
 						<AlignStartVertical size={16} />
-					</button>
-					<button
+					</MotionIconButton>
+					<MotionIconButton
 						type="button"
-						className="iconBtn"
 						onClick={() => applyAlign("centerY")}
 						disabled={selectedNodes.length < 2}
 						title="Align middle"
 					>
 						<AlignCenterVertical size={16} />
-					</button>
-					<button
+					</MotionIconButton>
+					<MotionIconButton
 						type="button"
-						className="iconBtn"
 						onClick={() => applyAlign("bottom")}
 						disabled={selectedNodes.length < 2}
 						title="Align bottom"
 					>
 						<AlignEndVertical size={16} />
-					</button>
+					</MotionIconButton>
 					<span className="toolbarDivider" />
-					<button
+					<MotionIconButton
 						type="button"
-						className="iconBtn"
 						onClick={() => applyDistribute("x")}
 						disabled={selectedNodes.length < 3}
 						title="Distribute horizontally"
 					>
 						<AlignHorizontalSpaceAround size={16} />
-					</button>
-					<button
+					</MotionIconButton>
+					<MotionIconButton
 						type="button"
-						className="iconBtn"
 						onClick={() => applyDistribute("y")}
 						disabled={selectedNodes.length < 3}
 						title="Distribute vertically"
 					>
 						<AlignVerticalSpaceAround size={16} />
-					</button>
-				</div>
-			</div>
+					</MotionIconButton>
+				</motion.div>
+			</motion.div>
 
-			<div className="canvasBody" ref={wrapperRef}>
+				<motion.div
+				className="canvasBody"
+				ref={wrapperRef}
+				initial={{ opacity: 0 }}
+				animate={{ opacity: 1 }}
+				transition={{ ...nodeSpring, delay: 0.1 }}
+			>
 				<ReactFlow
 					nodes={nodes}
 					edges={edges}
@@ -1036,9 +1204,21 @@ export default function CanvasPane({
 					<MiniMap />
 					<Controls />
 				</ReactFlow>
-			</div>
+			</motion.div>
 
-			{saveError ? <div className="canvasError">{saveError}</div> : null}
-		</div>
+			<AnimatePresence>
+				{saveError && (
+					<motion.div
+						className="canvasError"
+						initial={{ opacity: 0, y: 10 }}
+						animate={{ opacity: 1, y: 0 }}
+						exit={{ opacity: 0, y: 10 }}
+						transition={nodeSpring}
+					>
+						{saveError}
+					</motion.div>
+				)}
+			</AnimatePresence>
+		</motion.div>
 	);
 }
