@@ -232,3 +232,12 @@ export const TriangleAlert = (props: any) => (
 export const CircleHelp = (props: any) => (
   <HugeiconsIcon icon={Icons.Help} {...props} />
 );
+export const Eye = (props: any) => (
+  <HugeiconsIcon icon={Icons.Eye} {...props} />
+);
+export const Edit = (props: any) => (
+  <HugeiconsIcon icon={Icons.Edit} {...props} />
+);
+export const Code2 = (props: any) => (
+  <HugeiconsIcon icon={Icons.Code} {...props} />
+);
