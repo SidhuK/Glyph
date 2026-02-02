@@ -241,3 +241,9 @@ export const Edit = (props: any) => (
 export const Code2 = (props: any) => (
   <HugeiconsIcon icon={Icons.Code} {...props} />
 );
+export const Files = (props: any) => (
+  <HugeiconsIcon icon={Icons.Document} {...props} />
+);
+export const Tags = (props: any) => (
+  <HugeiconsIcon icon={Icons.Hash} {...props} />
+);

@@ -296,6 +296,52 @@ textarea {
   flex-direction: column;
 }
 
+.sidebarSectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-2) var(--space-3);
+  border-bottom: 1px solid var(--border-light);
+  flex-shrink: 0;
+}
+
+.sidebarSectionToggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0;
+  padding: 2px;
+  border: 1px solid var(--border-light);
+  border-radius: var(--radius-full);
+  background: var(--bg-secondary);
+}
+
+.sidebarSectionToggle button {
+  height: var(--button-height-sm);
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
+.sidebarSectionToggle button:hover {
+  transform: none;
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+.sidebarSectionToggle button.active {
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  border: 1px solid var(--border-light);
+}
+
+.sidebarSectionContent {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
 .vaultInfo {
   padding: var(--space-2) var(--space-3);
   display: flex;
