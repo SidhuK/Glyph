@@ -766,12 +766,13 @@ button.segBtn.active {
 
 .editorBody .tiptapContent a,
 .editorBody .tiptap a {
-	color: var(--interactive-accent);
+	color: var(--link-color);
 	text-decoration: none;
 }
 
 .editorBody .tiptapContent a:hover,
 .editorBody .tiptap a:hover {
+	color: var(--link-color-hover);
 	text-decoration: underline;
 }
 
@@ -1942,9 +1943,9 @@ button.segBtn.active {
 	background: linear-gradient(
 		135deg,
 		var(--bg-primary) 0%,
-		color-mix(in srgb, var(--bg-primary) 95%, #e3f2fd) 100%
+		color-mix(in srgb, var(--bg-primary) 92%, var(--bg-tertiary)) 100%
 	);
-	border: 1px solid #c5dff8;
+	border: 1px solid var(--border-light);
 	border-radius: 12px;
 	overflow: hidden;
 	min-width: 200px;
@@ -2005,9 +2006,9 @@ button.segBtn.active {
 	background: linear-gradient(
 		135deg,
 		var(--bg-primary) 0%,
-		color-mix(in srgb, var(--bg-primary) 92%, #f7f0ff) 100%
+		color-mix(in srgb, var(--bg-primary) 92%, var(--bg-tertiary)) 100%
 	);
-	border: 1px solid color-mix(in srgb, var(--border-default) 70%, #c7b3ff);
+	border: 1px solid var(--border-light);
 	border-radius: 12px;
 	overflow: hidden;
 	min-width: 180px;
@@ -2027,44 +2028,17 @@ button.segBtn.active {
 /* ─── Frame Nodes ─── */
 .rfNodeFrame {
 	border: 2px dashed var(--border-default);
-	border-color: color-mix(
-		in srgb,
-		var(--interactive-accent) 40%,
-		var(--border-default)
-	);
+	border-color: var(--border-default);
 	background: linear-gradient(
 		135deg,
-		rgba(99, 102, 241, 0.03) 0%,
-		rgba(168, 85, 247, 0.03) 100%
+		color-mix(in srgb, var(--bg-primary) 95%, var(--bg-tertiary)) 0%,
+		var(--bg-primary) 100%
 	);
 	box-shadow: none;
 	min-width: 260px;
 	min-height: 200px;
 	border-radius: 16px;
 	padding: var(--space-3);
-}
-
-.rfNodeFrame::before,
-.rfNodeFrame::after {
-	display: none;
-}
-
-.rfNodeFrame .rfNodeTitle {
-	color: var(--text-tertiary);
-	font-size: var(--text-xs);
-	text-transform: uppercase;
-	letter-spacing: 0.08em;
-	font-weight: var(--font-medium);
-}
-
-@media (prefers-color-scheme: dark) {
-	.rfNodeFrame {
-		background: linear-gradient(
-			135deg,
-			rgba(99, 102, 241, 0.05) 0%,
-			rgba(168, 85, 247, 0.05) 100%
-		);
-	}
 }
 
 /* ReactFlow handles */
