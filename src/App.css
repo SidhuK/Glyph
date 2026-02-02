@@ -853,8 +853,14 @@ button.segBtn.active {
    TAGS
    ───────────────────────────────────────────────────────────────────────────── */
 .tagsPane {
-  border-top: 1px solid var(--border-light);
+  display: flex;
+  flex-direction: column;
+  height: 100%;
   padding: var(--space-2);
+}
+
+.sidebarSectionContent .tagsPane {
+  border-top: none;
 }
 
 .tagsHeader {
@@ -880,6 +886,11 @@ button.segBtn.active {
   padding: 0 var(--space-1) var(--space-2) var(--space-1);
   max-height: 220px;
   overflow: auto;
+  flex: 1;
+}
+
+.sidebarSectionContent .tagsList {
+  max-height: none;
 }
 
 .tagsButton {
