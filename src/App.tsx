@@ -65,7 +65,6 @@ function App() {
 	const [vaultSchemaVersion, setVaultSchemaVersion] = useState<number | null>(
 		null,
 	);
-	const [recentVaults, setRecentVaults] = useState<string[]>([]);
 	const [rootEntries, setRootEntries] = useState<FsEntry[]>([]);
 	const [childrenByDir, setChildrenByDir] = useState<
 		Record<string, FsEntry[] | undefined>
@@ -146,7 +145,6 @@ function App() {
 				const settings = await loadSettings();
 				if (cancelled) return;
 				setVaultPath(settings.currentVaultPath);
-				setRecentVaults(settings.recentVaultPaths);
 
 				if (settings.currentVaultPath) {
 					try {
@@ -310,9 +308,6 @@ function App() {
 				await setCurrentVaultPath(info.root);
 				setVaultPath(info.root);
 				setVaultSchemaVersion(info.schema_version);
-				setRecentVaults((prev) =>
-					[info.root, ...prev.filter((p) => p !== info.root)].slice(0, 20),
-				);
 
 				setRootEntries([]);
 				setChildrenByDir({});
@@ -702,20 +697,6 @@ function App() {
 									{vaultSchemaVersion ? `v${vaultSchemaVersion}` : ""}
 								</div>
 							</div>
-						)}
-
-						{/* Recent vaults - collapsed by default */}
-						{recentVaults.length > 0 && (
-							<details className="sidebarSection recentVaults">
-								<summary className="recentVaultsSummary">Recent vaults</summary>
-								<ul className="recentVaultsList">
-									{recentVaults.slice(0, 5).map((p) => (
-										<li key={p} className="recentVaultsItem mono">
-											{p.split("/").pop()}
-										</li>
-									))}
-								</ul>
-							</details>
 						)}
 
 						{/* File Tree / Tags Toggle */}

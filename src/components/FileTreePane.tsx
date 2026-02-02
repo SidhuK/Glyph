@@ -287,10 +287,6 @@ export const FileTreePane = memo(function FileTreePane({
 			transition={springTransition}
 		>
 			<div className="fileTreeHeader">
-				<h2 className="fileTreeTitle">
-					<FileText size={14} />
-					Files
-				</h2>
 				<MotionIconButton
 					type="button"
 					onClick={onNewFile}
