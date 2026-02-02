@@ -150,12 +150,14 @@ function App() {
 
         if (settings.currentVaultPath) {
           try {
+            let rootEntriesLocal: FsEntry[] = [];
             const opened = await invoke("vault_open", {
               path: settings.currentVaultPath,
             });
             if (!cancelled) setVaultSchemaVersion(opened.schema_version);
             try {
               const entries = await invoke("vault_list_dir", {});
+              rootEntriesLocal = entries;
               if (!cancelled) setRootEntries(entries);
             } catch {
               // ignore
@@ -173,11 +175,17 @@ function App() {
             }
             try {
               // Default to the root folder view canvas when opening a vault from settings.
-              const view: ViewRef = { kind: "folder", dir: "" };
+              const onlyDir =
+                rootEntriesLocal.filter((e) => e.kind === "dir").length === 1 &&
+                rootEntriesLocal.filter((e) => e.kind === "file").length === 0
+                  ? (rootEntriesLocal.find((e) => e.kind === "dir")?.rel_path ??
+                      "")
+                  : "";
+              const view: ViewRef = { kind: "folder", dir: onlyDir };
               const loaded = await loadViewDoc(view);
               const built = await buildFolderViewDoc(
-                "",
-                { recursive: true, limit: 500 },
+                onlyDir,
+                { recursive: false, limit: 500 },
                 loaded.doc,
               );
               if (!loaded.doc || built.changed) {
@@ -236,7 +244,7 @@ function App() {
       const loaded = await loadViewDoc(view);
       const built = await buildFolderViewDoc(
         dir,
-        { recursive: true, limit: 500 },
+        { recursive: false, limit: 500 },
         loaded.doc,
       );
 
@@ -325,7 +333,12 @@ function App() {
         const entries = await invoke("vault_list_dir", {});
         setRootEntries(entries);
         setMainView("canvas");
-        await loadAndBuildFolderView("");
+        const onlyDir =
+          entries.filter((e) => e.kind === "dir").length === 1 &&
+          entries.filter((e) => e.kind === "file").length === 0
+            ? (entries.find((e) => e.kind === "dir")?.rel_path ?? "")
+            : "";
+        await loadAndBuildFolderView(onlyDir);
 
         void (async () => {
           try {
@@ -825,6 +838,7 @@ function App() {
                 doc={activeViewDoc ? asCanvasDocLike(activeViewDoc) : null}
                 onSave={onSaveView}
                 onOpenNote={(p) => void openFile(p)}
+                onOpenFolder={(dir) => void loadAndBuildFolderView(dir)}
                 activeNoteId={activeFilePath}
                 activeNoteTitle={activeFileTitle}
                 vaultPath={vaultPath}

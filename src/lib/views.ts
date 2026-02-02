@@ -1,4 +1,4 @@
-import type { CanvasEdge, CanvasNode, FsEntry } from "./tauri";
+import type { CanvasEdge, CanvasNode, DirChildSummary, FsEntry } from "./tauri";
 import { invoke } from "./tauri";
 
 export type ViewKind = "global" | "folder" | "tag" | "search";
@@ -260,172 +260,157 @@ export async function buildFolderViewDoc(
 	existing: ViewDoc | null,
 ): Promise<{ doc: ViewDoc; changed: boolean }> {
 	const v = viewId({ kind: "folder", dir });
-	const recursive = options.recursive ?? true;
+	// Folder views are non-recursive by default: root files only + subfolder tiles.
+	const recursive = options.recursive ?? false;
 	const limit = options.limit ?? 500;
-	const allFiles = await invoke("vault_list_files", {
+
+	const entries = await invoke("vault_list_dir", {
 		dir: v.selector || null,
-		recursive,
-		limit: Math.max(limit, 2_000),
 	});
 
-	const mdPaths = new Set<string>(
-		(allFiles as FsEntry[]).filter((f) => f.is_markdown).map((f) => f.rel_path),
-	);
-	const otherPaths = new Set<string>(
-		(allFiles as FsEntry[])
-			.filter((f) => !f.is_markdown)
-			.map((f) => f.rel_path),
+	const childDirs = (entries as FsEntry[])
+		.filter((e) => e.kind === "dir")
+		.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
+	const rootFiles = (entries as FsEntry[])
+		.filter((e) => e.kind === "file")
+		.sort((a, b) =>
+			a.rel_path.toLowerCase().localeCompare(b.rel_path.toLowerCase()),
+		)
+		.slice(0, limit);
+
+	const summaries = await invoke("vault_dir_children_summary", {
+		dir: v.selector || null,
+		preview_limit: 5,
+	});
+	const summaryByDir = new Map(
+		(summaries as DirChildSummary[]).map((s) => [s.dir_rel_path, s] as const),
 	);
 
-	const sortedFiles = [...mdPaths].sort((a, b) =>
-		a.toLowerCase().localeCompare(b.toLowerCase()),
-	);
-	const sortedOtherFiles = [...otherPaths].sort((a, b) =>
-		a.toLowerCase().localeCompare(b.toLowerCase()),
-	);
-
-	// Fetch content for all markdown files
-	const noteContents = await fetchNoteContents(sortedFiles);
+	const mdRoot = rootFiles.filter((f) => f.is_markdown).map((f) => f.rel_path);
+	const noteContents = await fetchNoteContents(mdRoot);
 
 	const prev = existing;
 	const prevNodes = prev?.nodes ?? [];
 	const prevEdges = prev?.edges ?? [];
 
-	const prevById = new Map(prevNodes.map((n) => [n.id, n] as const));
+	// Legacy folder views auto-generated a `frame` per folder group (id starts with "folder:").
+	// When we transition away from frames, flatten any children to absolute positions.
+	const legacyFrames = new Map<string, CanvasNode>();
+	for (const n of prevNodes) {
+		if (n.type === "frame" && typeof n.id === "string" && n.id.startsWith("folder:"))
+			legacyFrames.set(n.id, n);
+	}
+
+	const normalizedPrevNodes: CanvasNode[] = prevNodes.map((n) => {
+		const parentNode =
+			(n as unknown as { parentNode?: unknown }).parentNode ?? null;
+		if (typeof parentNode !== "string") return n;
+		const frame = legacyFrames.get(parentNode);
+		if (!frame) return n;
+		const fp = frame.position ?? { x: 0, y: 0 };
+		const cp = n.position ?? { x: 0, y: 0 };
+		const next: CanvasNode = {
+			...n,
+			position: { x: fp.x + cp.x, y: fp.y + cp.y },
+		};
+		// Remove parenting metadata that will otherwise orphan the node.
+		delete (next as unknown as { parentNode?: string }).parentNode;
+		delete (next as unknown as { extent?: unknown }).extent;
+		return next;
+	});
+
+	const prevById = new Map(normalizedPrevNodes.map((n) => [n.id, n] as const));
 	const nextNodes: CanvasNode[] = [];
 
-	if (!prev) {
-		type Group = { key: string; title: string; files: string[] };
-		const prefix = v.selector
-			? `${v.selector.replace(/\\/g, "/").replace(/\/+$/g, "")}/`
-			: "";
-		const groups = new Map<string, Group>();
+	const TILE_COLS = 4;
+	const TILE_W = 240;
+	const TILE_H = 140;
+	const TILE_GAP_X = 40;
+	const TILE_GAP_Y = 40;
+	const tilePos = (i: number) => {
+		const col = i % TILE_COLS;
+		const row = Math.floor(i / TILE_COLS);
+		return { x: col * (TILE_W + TILE_GAP_X), y: row * (TILE_H + TILE_GAP_Y) };
+	};
+	const tileRows = Math.ceil(childDirs.length / TILE_COLS);
+	const fileOffsetY = tileRows > 0 ? tileRows * (TILE_H + TILE_GAP_Y) + 80 : 0;
 
-		for (const relPath of [...sortedFiles, ...sortedOtherFiles]) {
-			const after =
-				prefix && relPath.startsWith(prefix)
-					? relPath.slice(prefix.length)
-					: relPath;
-			const parts = after.split("/").filter(Boolean);
-			const key = parts.length > 1 ? (parts[0] ?? "") : "__root__";
-			const title = key === "__root__" ? "Root" : key;
-			const g = groups.get(key) ?? { key, title, files: [] };
-			g.files.push(relPath);
-			groups.set(key, g);
-		}
-
-		const orderedGroups = [...groups.values()].sort((a, b) =>
-			a.title.toLowerCase().localeCompare(b.title.toLowerCase()),
-		);
-
-		const groupCols = 2;
-		const frameSpacingX = 80;
-		const frameSpacingY = 80;
-		const framePadX = 50;
-		const framePadY = 60;
-		const noteCellW = 320;
-		const noteCellH = 280;
-
-		const frames: CanvasNode[] = [];
-		const notes: CanvasNode[] = [];
-
-		for (let gi = 0; gi < orderedGroups.length; gi++) {
-			const g = orderedGroups[gi];
-			if (!g) continue;
-			const n = g.files.length;
-			const innerCols = Math.max(1, Math.min(4, Math.ceil(Math.sqrt(n))));
-			const innerRows = Math.max(1, Math.ceil(n / innerCols));
-
-			const width = framePadX * 2 + innerCols * noteCellW;
-			const height = framePadY * 2 + innerRows * noteCellH;
-
-			const gx = gi % groupCols;
-			const gy = Math.floor(gi / groupCols);
-			const frameX = gx * (width + frameSpacingX);
-			const frameY = gy * (height + frameSpacingY);
-
-			const frameId = `folder:${v.selector ? `${v.selector}/${g.key}` : g.key}`;
-			frames.push({
-				id: frameId,
-				type: "frame",
-				position: { x: frameX, y: frameY },
-				data: { title: g.title },
-				style: { width, height },
-			} as CanvasNode);
-
-			for (let i = 0; i < g.files.length; i++) {
-				const relPath = g.files[i] as string;
-				const isMarkdown = mdPaths.has(relPath);
-				const col = i % innerCols;
-				const row = Math.floor(i / innerCols);
-				const noteData = isMarkdown ? noteContents.get(relPath) : null;
-				notes.push({
-					id: relPath,
-					type: isMarkdown ? "note" : "file",
-					parentNode: frameId,
-					extent: "parent",
-					position: {
-						x: framePadX + col * noteCellW,
-						y: framePadY + row * noteCellH,
-					},
-					data: isMarkdown
-						? {
-								noteId: relPath,
-								title: noteData?.title || titleForFile(relPath),
-								content: noteData?.content || "",
-							}
-						: { path: relPath, title: basename(relPath) },
-				} as CanvasNode);
-			}
-		}
-
-		nextNodes.push(...frames, ...notes);
-	} else {
-		const merged = [...sortedFiles, ...sortedOtherFiles];
-		for (let i = 0; i < merged.length; i++) {
-			const relPath = merged[i] as string;
-			const existingNode = prevById.get(relPath);
-			if (existingNode) {
-				// Update content for existing note nodes
-				if (existingNode.type === "note") {
-					const noteData = noteContents.get(relPath);
-					nextNodes.push({
-						...existingNode,
-						data: {
-							...existingNode.data,
-							title:
-								noteData?.title ||
-								(existingNode.data as { title?: string }).title ||
-								titleForFile(relPath),
-							content: noteData?.content || "",
-						},
-					});
-				} else {
-					nextNodes.push(existingNode);
-				}
-				continue;
-			}
-			const isMarkdown = mdPaths.has(relPath);
-			const noteData = isMarkdown ? noteContents.get(relPath) : null;
+	// Folder tiles (immediate subfolders only)
+	for (let i = 0; i < childDirs.length; i++) {
+		const d = childDirs[i];
+		if (!d) continue;
+		const id = `dir:${d.rel_path}`;
+		const ex = prevById.get(id);
+		const s = summaryByDir.get(d.rel_path) ?? null;
+		const data = {
+			dir: d.rel_path,
+			name: d.name,
+			total_files: s?.total_files_recursive ?? 0,
+			total_markdown: s?.total_markdown_recursive ?? 0,
+			recent_markdown: s?.recent_markdown ?? [],
+			truncated: s?.truncated ?? false,
+		};
+		if (ex) {
+			nextNodes.push({ ...ex, type: "folder", data });
+		} else {
 			nextNodes.push({
-				id: relPath,
-				type: isMarkdown ? "note" : "file",
-				position: defaultPositionForIndex(i),
-				data: isMarkdown
-					? {
-							noteId: relPath,
-							title: noteData?.title || titleForFile(relPath),
-							content: noteData?.content || "",
-						}
-					: { path: relPath, title: basename(relPath) },
+				id,
+				type: "folder",
+				position: tilePos(i),
+				data,
 			});
 		}
+	}
 
-		// Preserve non-note nodes (text/link/frame/etc.)
-		for (const n of prevNodes) {
-			if (n.type === "note") continue;
-			nextNodes.push(n);
+	// Root files only (notes + non-markdown files)
+	for (let i = 0; i < rootFiles.length; i++) {
+		const f = rootFiles[i];
+		if (!f) continue;
+		const relPath = f.rel_path;
+		const existingNode = prevById.get(relPath);
+		if (existingNode) {
+			if (existingNode.type === "note") {
+				const noteData = noteContents.get(relPath);
+				nextNodes.push({
+					...existingNode,
+					data: {
+						...existingNode.data,
+						title:
+							noteData?.title ||
+							(existingNode.data as { title?: string }).title ||
+							titleForFile(relPath),
+						content: noteData?.content || "",
+					},
+				});
+			} else {
+				nextNodes.push(existingNode);
+			}
+			continue;
 		}
+
+		const isMarkdown = Boolean(f.is_markdown);
+		const noteData = isMarkdown ? noteContents.get(relPath) : null;
+		const p = defaultPositionForIndex(i);
+		nextNodes.push({
+			id: relPath,
+			type: isMarkdown ? "note" : "file",
+			position: { x: p.x, y: p.y + fileOffsetY },
+			data: isMarkdown
+				? {
+						noteId: relPath,
+						title: noteData?.title || titleForFile(relPath),
+						content: noteData?.content || "",
+					}
+				: { path: relPath, title: basename(relPath) },
+		});
+	}
+
+	// Preserve non-derived nodes (text/link/user frames/etc.)
+	for (const n of normalizedPrevNodes) {
+		if (n.type === "note" || n.type === "file" || n.type === "folder") continue;
+		if (n.type === "frame" && typeof n.id === "string" && n.id.startsWith("folder:"))
+			continue;
+		nextNodes.push(n);
 	}
 
 	const nextIds = new Set(nextNodes.map((n) => n.id));

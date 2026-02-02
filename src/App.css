@@ -1829,6 +1829,79 @@ button.segBtn.active {
   flex: 1;
 }
 
+/* ─── Folder Tiles (Immediate Subfolders) ─── */
+.rfNodeFolder {
+  width: 240px;
+  min-height: 140px;
+  border-radius: 16px;
+  border: 1px solid var(--border-light);
+  background: var(--bg-primary);
+  padding: var(--space-4);
+}
+
+.rfNodeFolder::before,
+.rfNodeFolder::after {
+  display: none;
+}
+
+.rfNodeFolderHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin-bottom: var(--space-2);
+}
+
+.rfNodeFolderIcon {
+  color: var(--text-accent);
+  display: inline-flex;
+}
+
+.rfNodeFolderName {
+  font-size: var(--text-sm);
+  font-weight: var(--font-semibold);
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.rfNodeFolderMeta {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
+.rfNodeFolderPreview {
+  display: none;
+  margin-top: var(--space-3);
+  gap: 6px;
+  flex-direction: column;
+}
+
+.rfNodeFolder:hover .rfNodeFolderPreview {
+  display: flex;
+}
+
+.rfNodeFolderPreviewRow {
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: transparent;
+  color: var(--text-secondary);
+  padding: 2px 0;
+  font-size: var(--text-xs);
+  cursor: pointer;
+}
+
+.rfNodeFolderPreviewRow:hover {
+  color: var(--text-accent);
+  text-decoration: underline;
+}
+
+.rfNodeFolderPreviewEmpty {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
 /* ─── Text Nodes (Quick Notes) ─── */
 .rfNodeText {
   display: flex;

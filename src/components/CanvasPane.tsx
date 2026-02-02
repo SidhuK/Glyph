@@ -20,7 +20,16 @@ import {
   useNodesState,
 } from "@xyflow/react";
 
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  createContext,
+  memo,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { invoke } from "../lib/tauri";
 import {
   AlignCenter,
@@ -31,6 +40,7 @@ import {
   AlignRight,
   AlignStartVertical,
   AlignVerticalSpaceAround,
+  FolderOpen,
   Frame,
   Grid3X3,
   Link,
@@ -54,6 +64,7 @@ interface CanvasPaneProps {
   doc: CanvasDocLike | null;
   onSave: (doc: CanvasDocLike) => Promise<void>;
   onOpenNote: (noteId: string) => void;
+  onOpenFolder: (dir: string) => void;
   activeNoteId: string | null;
   activeNoteTitle: string | null;
   vaultPath: string | null;
@@ -109,6 +120,19 @@ function getNodeRotation(id: string): number {
 
 function getStickyColor(id: string) {
   return STICKY_COLORS[getNodeHash(id) % STICKY_COLORS.length];
+}
+
+type CanvasActions = {
+  openNote: (relPath: string) => void;
+  openFolder: (dir: string) => void;
+};
+
+const CanvasActionsContext = createContext<CanvasActions | null>(null);
+
+function useCanvasActions(): CanvasActions {
+  const ctx = useContext(CanvasActionsContext);
+  if (!ctx) throw new Error("CanvasActionsContext missing");
+  return ctx;
 }
 
 const NoteNode = memo(function NoteNode({
@@ -336,10 +360,68 @@ const FrameNode = memo(function FrameNode({
   );
 });
 
+const FolderNode = memo(function FolderNode({
+  data,
+}: {
+  data: Record<string, unknown>;
+}) {
+  const { openNote } = useCanvasActions();
+  const name = typeof data.name === "string" ? data.name : "Folder";
+  const totalFiles =
+    typeof data.total_files === "number" ? data.total_files : 0;
+  const totalMarkdown =
+    typeof data.total_markdown === "number" ? data.total_markdown : 0;
+  const recent = Array.isArray(data.recent_markdown)
+    ? (data.recent_markdown as Array<Record<string, unknown>>)
+    : [];
+
+  return (
+    <div className="rfNode rfNodeFolder">
+      <div className="rfNodeFolderHeader">
+        <span className="rfNodeFolderIcon">
+          <FolderOpen size={18} />
+        </span>
+        <div className="rfNodeFolderName" title={name}>
+          {name}
+        </div>
+      </div>
+      <div className="rfNodeFolderMeta">
+        {totalMarkdown} md • {totalFiles} files
+      </div>
+      <div className="rfNodeFolderPreview">
+        {recent.length ? (
+          recent.slice(0, 5).map((r) => {
+            const relPath = typeof r.rel_path === "string" ? r.rel_path : "";
+            const rowName = typeof r.name === "string" ? r.name : relPath;
+            if (!relPath) return null;
+            return (
+              <button
+                key={relPath}
+                type="button"
+                className="rfNodeFolderPreviewRow nodrag nopan"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  openNote(relPath);
+                }}
+                title={relPath}
+              >
+                {rowName}
+              </button>
+            );
+          })
+        ) : (
+          <div className="rfNodeFolderPreviewEmpty">No recent notes</div>
+        )}
+      </div>
+    </div>
+  );
+});
+
 export default function CanvasPane({
   doc,
   onSave,
   onOpenNote,
+  onOpenFolder,
   activeNoteId,
   activeNoteTitle,
   vaultPath,
@@ -523,6 +605,7 @@ export default function CanvasPane({
       file: FileNode,
       link: LinkNode,
       frame: FrameNode,
+      folder: FolderNode,
     }),
     [],
   );
@@ -1071,6 +1154,11 @@ export default function CanvasPane({
         if (typeof path === "string") onOpenNote(path);
         return;
       }
+      if (node.type === "folder") {
+        const dir = (node.data as Record<string, unknown>)?.dir;
+        if (typeof dir === "string") onOpenFolder(dir);
+        return;
+      }
       if (node.type === "text") {
         const current =
           typeof (node.data as Record<string, unknown>)?.text === "string"
@@ -1102,7 +1190,7 @@ export default function CanvasPane({
         );
       }
     },
-    [onOpenNote, setNodes],
+    [onOpenFolder, onOpenNote, setNodes],
   );
 
   if (!doc) {
@@ -1117,15 +1205,18 @@ export default function CanvasPane({
   const showLoading = isBulkLoad && nodes.length > BULK_LOAD_THRESHOLD;
 
   return (
-    <div className="canvasPane">
-      <div className="canvasToolbar">
-        <div className="canvasToolbarLeft">
-          <div className="canvasTitle">{doc.title}</div>
-          <div className="canvasStatus">
-            {isSaving ? "⟳ Saving…" : "✓ Saved"}
+    <CanvasActionsContext.Provider
+      value={{ openNote: onOpenNote, openFolder: onOpenFolder }}
+    >
+      <div className="canvasPane">
+        <div className="canvasToolbar">
+          <div className="canvasToolbarLeft">
+            <div className="canvasTitle">{doc.title}</div>
+            <div className="canvasStatus">
+              {isSaving ? "⟳ Saving…" : "✓ Saved"}
+            </div>
           </div>
-        </div>
-        <div className="canvasToolbarRight">
+          <div className="canvasToolbarRight">
           <button
             type="button"
             className="iconBtn"
@@ -1252,10 +1343,10 @@ export default function CanvasPane({
           >
             <AlignVerticalSpaceAround size={16} />
           </button>
+          </div>
         </div>
-      </div>
 
-      <div className="canvasBody" ref={wrapperRef}>
+        <div className="canvasBody" ref={wrapperRef}>
         {showLoading && (
           <div className="canvasLoading">
             <span className="canvasLoadingSpinner">◈</span>
@@ -1281,9 +1372,10 @@ export default function CanvasPane({
           <MiniMap />
           <Controls />
         </ReactFlow>
-      </div>
+        </div>
 
-      {saveError && <div className="canvasError">{saveError}</div>}
-    </div>
+        {saveError && <div className="canvasError">{saveError}</div>}
+      </div>
+    </CanvasActionsContext.Provider>
   );
 }

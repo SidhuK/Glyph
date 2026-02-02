@@ -19,6 +19,21 @@ export interface FsEntry {
 	is_markdown: boolean;
 }
 
+export interface RecentMarkdown {
+	rel_path: string;
+	name: string;
+	mtime_ms: number;
+}
+
+export interface DirChildSummary {
+	dir_rel_path: string;
+	name: string;
+	total_files_recursive: number;
+	total_markdown_recursive: number;
+	recent_markdown: RecentMarkdown[];
+	truncated: boolean;
+}
+
 export interface TextFileDoc {
 	rel_path: string;
 	text: string;
@@ -164,6 +179,10 @@ interface TauriCommands {
 	vault_list_files: CommandDef<
 		{ dir?: string | null; recursive?: boolean | null; limit?: number | null },
 		FsEntry[]
+	>;
+	vault_dir_children_summary: CommandDef<
+		{ dir?: string | null; preview_limit?: number | null },
+		DirChildSummary[]
 	>;
 	vault_read_text: CommandDef<{ path: string }, TextFileDoc>;
 	vault_read_texts_batch: CommandDef<{ paths: string[] }, TextFileDocBatch[]>;
