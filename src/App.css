@@ -209,9 +209,14 @@ textarea {
    APP SHELL - Main Layout with floating panels
    ───────────────────────────────────────────────────────────────────────────── */
 .appShell {
+  --app-frame: var(--space-2);
+  --app-radius: calc(var(--radius-3xl) + var(--space-2));
   display: flex;
   height: 100%;
-  background: var(--bg-canvas);
+  width: 100%;
+  background: var(--bg-sidebar);
+  border-radius: var(--app-radius);
+  overflow: hidden;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -223,7 +228,7 @@ textarea {
   width: var(--sidebar-width);
   min-width: 220px;
   background: var(--bg-sidebar);
-  border-right: 1px solid var(--border-light);
+  border-right: none;
   overflow: hidden;
   flex-shrink: 0;
   transition:
@@ -348,6 +353,10 @@ textarea {
   min-height: 0;
   background: var(--bg-primary);
   overflow: hidden;
+  margin: var(--app-frame) var(--app-frame) var(--app-frame) 0;
+  border: 1px solid var(--border-light);
+  border-left: none;
+  border-radius: var(--app-radius);
 }
 
 .mainToolbar {
