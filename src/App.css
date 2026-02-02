@@ -1347,7 +1347,7 @@ button.segBtn.active {
 
 .fileTreeScroll {
 	flex: 1;
-	padding: var(--space-2) 0;
+	padding: var(--space-2) var(--space-2);
 	overflow-y: auto;
 }
 
@@ -1388,7 +1388,7 @@ button.segBtn.active {
 	align-items: center;
 	gap: var(--space-1);
 	min-height: 28px;
-	padding: 2px var(--space-3) 2px var(--space-2);
+	padding: 2px var(--space-2);
 	text-align: left;
 	border-radius: var(--radius-md);
 	margin: 0;
