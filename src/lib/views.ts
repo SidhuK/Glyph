@@ -297,7 +297,11 @@ export async function buildFolderViewDoc(
 	// When we transition away from frames, flatten any children to absolute positions.
 	const legacyFrames = new Map<string, CanvasNode>();
 	for (const n of prevNodes) {
-		if (n.type === "frame" && typeof n.id === "string" && n.id.startsWith("folder:"))
+		if (
+			n.type === "frame" &&
+			typeof n.id === "string" &&
+			n.id.startsWith("folder:")
+		)
 			legacyFrames.set(n.id, n);
 	}
 
@@ -314,8 +318,8 @@ export async function buildFolderViewDoc(
 			position: { x: fp.x + cp.x, y: fp.y + cp.y },
 		};
 		// Remove parenting metadata that will otherwise orphan the node.
-		delete (next as unknown as { parentNode?: string }).parentNode;
-		delete (next as unknown as { extent?: unknown }).extent;
+		(next as unknown as { parentNode?: string }).parentNode = undefined;
+		(next as unknown as { extent?: unknown }).extent = undefined;
 		return next;
 	});
 
@@ -408,7 +412,11 @@ export async function buildFolderViewDoc(
 	// Preserve non-derived nodes (text/link/user frames/etc.)
 	for (const n of normalizedPrevNodes) {
 		if (n.type === "note" || n.type === "file" || n.type === "folder") continue;
-		if (n.type === "frame" && typeof n.id === "string" && n.id.startsWith("folder:"))
+		if (
+			n.type === "frame" &&
+			typeof n.id === "string" &&
+			n.id.startsWith("folder:")
+		)
 			continue;
 		nextNodes.push(n);
 	}

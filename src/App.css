@@ -11,156 +11,156 @@
 *,
 *::before,
 *::after {
-  box-sizing: border-box;
-  margin: 0;
-  padding: 0;
+	box-sizing: border-box;
+	margin: 0;
+	padding: 0;
 }
 
 html,
 body,
 #root {
-  height: 100%;
+	height: 100%;
 }
 
 body {
-  font-family: var(--font-sans);
-  font-size: var(--text-base);
-  line-height: var(--leading-normal);
-  color: var(--text-primary);
-  background: var(--bg-primary);
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  overflow: hidden;
+	font-family: var(--font-sans);
+	font-size: var(--text-base);
+	line-height: var(--leading-normal);
+	color: var(--text-primary);
+	background: var(--bg-primary);
+	-webkit-font-smoothing: antialiased;
+	-moz-osx-font-smoothing: grayscale;
+	overflow: hidden;
 }
 
 /* Scrollbars - rounded and subtle */
 ::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+	width: 10px;
+	height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: transparent;
-  border-radius: var(--radius-full);
+	background: transparent;
+	border-radius: var(--radius-full);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: var(--scrollbar-thumb);
-  border-radius: var(--radius-full);
-  border: 2px solid transparent;
-  background-clip: padding-box;
+	background: var(--scrollbar-thumb);
+	border-radius: var(--radius-full);
+	border: 2px solid transparent;
+	background-clip: padding-box;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: var(--scrollbar-thumb-hover);
-  border: 2px solid transparent;
-  background-clip: padding-box;
+	background: var(--scrollbar-thumb-hover);
+	border: 2px solid transparent;
+	background-clip: padding-box;
 }
 
 ::selection {
-  background: var(--selection-bg);
+	background: var(--selection-bg);
 }
 
 .mono {
-  font-family: var(--font-mono);
-  font-size: 0.85em;
+	font-family: var(--font-mono);
+	font-size: 0.85em;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
    BUTTONS - Modern rounded aesthetic
    ───────────────────────────────────────────────────────────────────────────── */
 button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-2);
-  height: var(--button-height);
-  padding: 0 var(--space-3);
-  font-family: inherit;
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-  line-height: 1;
-  color: var(--text-secondary);
-  background: transparent;
-  border: none;
-  border-radius: var(--radius-lg);
-  cursor: pointer;
-  transition: all var(--transition-base);
-  white-space: nowrap;
-  user-select: none;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--space-2);
+	height: var(--button-height);
+	padding: 0 var(--space-3);
+	font-family: inherit;
+	font-size: var(--text-sm);
+	font-weight: var(--font-medium);
+	line-height: 1;
+	color: var(--text-secondary);
+	background: transparent;
+	border: none;
+	border-radius: var(--radius-lg);
+	cursor: pointer;
+	transition: all var(--transition-base);
+	white-space: nowrap;
+	user-select: none;
 }
 
 button:hover {
-  background: var(--bg-hover);
-  color: var(--text-primary);
-  transform: translateY(-1px);
+	background: var(--bg-hover);
+	color: var(--text-primary);
+	transform: translateY(-1px);
 }
 
 button:active {
-  background: var(--bg-active);
-  transform: translateY(0);
+	background: var(--bg-active);
+	transform: translateY(0);
 }
 
 button:disabled {
-  color: var(--text-tertiary);
-  cursor: not-allowed;
-  opacity: 0.5;
-  transform: none;
+	color: var(--text-tertiary);
+	cursor: not-allowed;
+	opacity: 0.5;
+	transform: none;
 }
 
 button:disabled:hover {
-  background: transparent;
-  transform: none;
+	background: transparent;
+	transform: none;
 }
 
 button:focus-visible {
-  outline: 2px solid var(--border-focus);
-  outline-offset: 2px;
+	outline: 2px solid var(--border-focus);
+	outline-offset: 2px;
 }
 
 /* Primary button variant */
 button.primary {
-  background: var(--interactive-accent);
-  color: var(--text-inverse);
-  border-radius: var(--radius-full);
+	background: var(--interactive-accent);
+	color: var(--text-inverse);
+	border-radius: var(--radius-full);
 }
 
 button.primary:hover {
-  background: var(--interactive-accent-hover);
-  color: var(--text-inverse);
+	background: var(--interactive-accent-hover);
+	color: var(--text-inverse);
 }
 
 /* Ghost button variant */
 button.ghost {
-  background: transparent;
+	background: transparent;
 }
 
 button.ghost:hover {
-  background: var(--bg-hover);
+	background: var(--bg-hover);
 }
 
 /* Icon buttons - pill shaped */
 button.iconBtn {
-  width: var(--button-height);
-  height: var(--button-height);
-  padding: 0;
-  color: var(--text-tertiary);
-  border-radius: var(--radius-lg);
+	width: var(--button-height);
+	height: var(--button-height);
+	padding: 0;
+	color: var(--text-tertiary);
+	border-radius: var(--radius-lg);
 }
 
 button.iconBtn:hover {
-  color: var(--text-primary);
-  background: var(--bg-hover);
+	color: var(--text-primary);
+	background: var(--bg-hover);
 }
 
 button.iconBtn.active {
-  color: var(--interactive-accent);
-  background: var(--selection-bg-muted);
+	color: var(--interactive-accent);
+	background: var(--selection-bg-muted);
 }
 
 button.iconBtn.sm {
-  width: var(--button-height-sm);
-  height: var(--button-height-sm);
+	width: var(--button-height-sm);
+	height: var(--button-height-sm);
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -169,252 +169,250 @@ button.iconBtn.sm {
 input,
 textarea,
 select {
-  height: var(--input-height);
-  padding: var(--space-2) var(--space-3);
-  font-family: inherit;
-  font-size: var(--text-sm);
-  color: var(--text-primary);
-  background: var(--bg-primary);
-  border: 1px solid var(--border-default);
-  border-radius: var(--radius-lg);
-  transition: all var(--transition-base);
+	height: var(--input-height);
+	padding: var(--space-2) var(--space-3);
+	font-family: inherit;
+	font-size: var(--text-sm);
+	color: var(--text-primary);
+	background: var(--bg-primary);
+	border: 1px solid var(--border-default);
+	border-radius: var(--radius-lg);
+	transition: all var(--transition-base);
 }
 
 input:hover,
 textarea:hover {
-  border-color: var(--border-strong);
+	border-color: var(--border-strong);
 }
 
 input:focus,
 textarea:focus {
-  outline: none;
-  border-color: var(--border-focus);
-  box-shadow: 0 0 0 3px var(--selection-bg-muted);
+	outline: none;
+	border-color: var(--border-focus);
+	box-shadow: 0 0 0 3px var(--selection-bg-muted);
 }
 
 input::placeholder,
 textarea::placeholder {
-  color: var(--text-placeholder);
+	color: var(--text-placeholder);
 }
 
 textarea {
-  height: auto;
-  min-height: 60px;
-  padding: var(--space-2);
-  resize: vertical;
-  line-height: var(--leading-normal);
+	height: auto;
+	min-height: 60px;
+	padding: var(--space-2);
+	resize: vertical;
+	line-height: var(--leading-normal);
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
    APP SHELL - Main Layout with floating panels
    ───────────────────────────────────────────────────────────────────────────── */
 .appShell {
-  --app-frame: var(--space-2);
-  --app-radius: var(--radius-xl);
-  display: flex;
-  height: 100%;
-  width: 100%;
-  background: var(--bg-sidebar);
-  border-radius: var(--app-radius);
-  overflow: hidden;
+	--app-frame: var(--space-2);
+	--app-radius: var(--radius-xl);
+	display: flex;
+	height: 100%;
+	width: 100%;
+	background: var(--bg-sidebar);
+	border-radius: var(--app-radius);
+	overflow: hidden;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
    LEFT SIDEBAR - Floating Navigation Panel
    ───────────────────────────────────────────────────────────────────────────── */
 .sidebar {
-  display: flex;
-  flex-direction: column;
-  width: var(--sidebar-width);
-  min-width: 220px;
-  background: var(--bg-sidebar);
-  border-right: none;
-  overflow: hidden;
-  flex-shrink: 0;
-  transition:
-    width var(--transition-base),
-    min-width var(--transition-base);
+	display: flex;
+	flex-direction: column;
+	width: var(--sidebar-width);
+	min-width: 220px;
+	background: var(--bg-sidebar);
+	border-right: none;
+	overflow: hidden;
+	flex-shrink: 0;
+	transition: width var(--transition-base), min-width var(--transition-base);
 }
 
 .sidebar.sidebarCollapsed {
-  width: 78px;
-  min-width: 78px;
+	width: 78px;
+	min-width: 78px;
 }
 
 .sidebar.sidebarCollapsed .sidebarHeader {
-  justify-content: center;
-  padding-left: 0;
-  padding-right: 0;
+	justify-content: center;
+	padding-left: 0;
+	padding-right: 0;
 }
 
 .sidebarHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: var(--header-height);
-  padding: 0 var(--space-3) 0 var(--space-4);
-  padding-left: 78px; /* Space for macOS traffic lights */
-  border-bottom: 1px solid var(--border-light);
-  flex-shrink: 0;
-  -webkit-app-region: drag;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	height: var(--header-height);
+	padding: 0 var(--space-3) 0 var(--space-4);
+	padding-left: 78px; /* Space for macOS traffic lights */
+	border-bottom: 1px solid var(--border-light);
+	flex-shrink: 0;
+	-webkit-app-region: drag;
 }
 
 .sidebarBrand {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
 }
 
 .brandIcon {
-  font-size: var(--text-lg);
-  color: var(--interactive-accent);
+	font-size: var(--text-lg);
+	color: var(--interactive-accent);
 }
 
 .brandName {
-  font-size: var(--text-base);
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-  letter-spacing: -0.02em;
+	font-size: var(--text-base);
+	font-weight: var(--font-semibold);
+	color: var(--text-primary);
+	letter-spacing: -0.02em;
 }
 
 .sidebarActions {
-  display: flex;
-  align-items: center;
-  gap: 2px;
+	display: flex;
+	align-items: center;
+	gap: 2px;
 }
 
 .sidebarSection {
-  border-bottom: 1px solid var(--border-light);
-  padding: var(--space-1) 0;
+	border-bottom: 1px solid var(--border-light);
+	padding: var(--space-1) 0;
 }
 
 .sidebarSectionGrow {
-  flex: 1;
-  min-height: 120px;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+	flex: 1;
+	min-height: 120px;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
 }
 
 .sidebarSectionHeader {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-2) var(--space-3);
-  border-bottom: 1px solid var(--border-light);
-  flex-shrink: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: var(--space-2) var(--space-3);
+	border-bottom: 1px solid var(--border-light);
+	flex-shrink: 0;
 }
 
 .sidebarSectionToggle {
-  display: inline-flex;
-  align-items: center;
-  gap: 0;
-  padding: 2px;
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-full);
-  background: var(--bg-secondary);
+	display: inline-flex;
+	align-items: center;
+	gap: 0;
+	padding: 2px;
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-full);
+	background: var(--bg-secondary);
 }
 
 .sidebarSectionToggle button {
-  height: var(--button-height-sm);
-  padding: 0 var(--space-2);
-  border-radius: var(--radius-full);
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
+	height: var(--button-height-sm);
+	padding: 0 var(--space-2);
+	border-radius: var(--radius-full);
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
 }
 
 .sidebarSectionToggle button:hover {
-  transform: none;
-  background: var(--bg-hover);
-  color: var(--text-primary);
+	transform: none;
+	background: var(--bg-hover);
+	color: var(--text-primary);
 }
 
 .sidebarSectionToggle button.active {
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-light);
+	background: var(--bg-primary);
+	color: var(--text-primary);
+	border: 1px solid var(--border-light);
 }
 
 .sidebarSectionContent {
-  flex: 1;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+	flex: 1;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
 }
 
 .vaultInfo {
-  padding: var(--space-2) var(--space-3);
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
+	padding: var(--space-2) var(--space-3);
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
 }
 
 .vaultPath {
-  font-size: var(--text-xs);
-  color: var(--text-secondary);
-  font-weight: var(--font-medium);
+	font-size: var(--text-xs);
+	color: var(--text-secondary);
+	font-weight: var(--font-medium);
 }
 
 .vaultMeta {
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
 }
 
 /* Recent vaults */
 .recentVaults {
-  padding: var(--space-2) var(--space-3);
+	padding: var(--space-2) var(--space-3);
 }
 
 .recentVaultsSummary {
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
-  cursor: pointer;
-  user-select: none;
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
+	cursor: pointer;
+	user-select: none;
 }
 
 .recentVaultsSummary:hover {
-  color: var(--text-secondary);
+	color: var(--text-secondary);
 }
 
 .recentVaultsList {
-  margin: var(--space-1) 0 0;
-  padding: 0;
-  list-style: none;
+	margin: var(--space-1) 0 0;
+	padding: 0;
+	list-style: none;
 }
 
 .recentVaultsItem {
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
-  padding: var(--space-1) 0;
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
+	padding: var(--space-1) 0;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
    MAIN CANVAS AREA - Floating center panel
    ───────────────────────────────────────────────────────────────────────────── */
 .mainArea {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-  min-height: 0;
-  background: var(--bg-primary);
-  overflow: hidden;
-  margin: var(--app-frame) var(--app-frame) var(--app-frame) 0;
-  border: 1px solid var(--border-light);
-  border-left: none;
-  border-radius: var(--app-radius);
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	min-height: 0;
+	background: var(--bg-primary);
+	overflow: hidden;
+	margin: var(--app-frame) var(--app-frame) var(--app-frame) 0;
+	border: 1px solid var(--border-light);
+	border-left: none;
+	border-radius: var(--app-radius);
 }
 
 .mainToolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: var(--header-height);
-  padding: 0 var(--space-4);
-  background: transparent;
-  border-bottom: 1px solid var(--border-light);
-  flex-shrink: 0;
-  -webkit-app-region: drag;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	height: var(--header-height);
+	padding: 0 var(--space-4);
+	background: transparent;
+	border-bottom: 1px solid var(--border-light);
+	flex-shrink: 0;
+	-webkit-app-region: drag;
 }
 
 /* Ensure interactive elements inside drag regions are clickable */
@@ -422,284 +420,284 @@ textarea {
 .sidebarHeader input,
 .mainToolbar button,
 .mainToolbar input {
-  -webkit-app-region: no-drag;
+	-webkit-app-region: no-drag;
 }
 
 .mainToolbarLeft {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
+	display: flex;
+	align-items: center;
+	gap: var(--space-3);
 }
 
 .mainToolbarRight {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
+	display: flex;
+	align-items: center;
+	gap: var(--space-1);
 }
 
 .canvasTitle {
-  font-size: var(--text-base);
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
+	font-size: var(--text-base);
+	font-weight: var(--font-semibold);
+	color: var(--text-primary);
 }
 
 .canvasWrapper {
-  flex: 1;
-  position: relative;
-  min-height: 0;
-  overflow: hidden;
-  display: flex;
+	flex: 1;
+	position: relative;
+	min-height: 0;
+	overflow: hidden;
+	display: flex;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
    FLOATING AI PANEL - Glass morphism style
    ───────────────────────────────────────────────────────────────────────────── */
 .floatingPanel {
-  position: absolute;
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  border: 1px solid var(--glass-border);
-  border-radius: var(--radius-3xl);
-  box-shadow: var(--shadow-xl);
-  overflow: hidden;
-  z-index: 100;
+	position: absolute;
+	background: var(--glass-bg);
+	backdrop-filter: blur(var(--glass-blur));
+	-webkit-backdrop-filter: blur(var(--glass-blur));
+	border: 1px solid var(--glass-border);
+	border-radius: var(--radius-3xl);
+	box-shadow: var(--shadow-xl);
+	overflow: hidden;
+	z-index: 100;
 }
 
 .aiPanel {
-  bottom: var(--space-4);
-  right: var(--space-4);
-  width: 360px;
-  max-height: 480px;
-  display: flex;
-  flex-direction: column;
+	bottom: var(--space-4);
+	right: var(--space-4);
+	width: 360px;
+	max-height: 480px;
+	display: flex;
+	flex-direction: column;
 }
 
 .floatingPanelHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 40px;
-  padding: 0 var(--space-2) 0 var(--space-3);
-  background: var(--bg-secondary);
-  border-bottom: 1px solid var(--border-light);
-  flex-shrink: 0;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	height: 40px;
+	padding: 0 var(--space-2) 0 var(--space-3);
+	background: var(--bg-secondary);
+	border-bottom: 1px solid var(--border-light);
+	flex-shrink: 0;
 }
 
 .floatingPanelTitle {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+	font-size: var(--text-sm);
+	font-weight: var(--font-semibold);
+	color: var(--text-primary);
 }
 
 .floatingPanelBody {
-  flex: 1;
-  overflow-y: auto;
-  min-height: 0;
+	flex: 1;
+	overflow-y: auto;
+	min-height: 0;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
    RIGHT PANEL - Floating Note Editor
    ───────────────────────────────────────────────────────────────────────────── */
 .editorPanel {
-  width: var(--editor-width);
-  min-width: var(--editor-min-width);
-  background: var(--bg-primary);
-  border-left: 1px solid var(--border-light);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  flex-shrink: 0;
+	width: var(--editor-width);
+	min-width: var(--editor-min-width);
+	background: var(--bg-primary);
+	border-left: 1px solid var(--border-light);
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	flex-shrink: 0;
 }
 
 .editorPane {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
 }
 
 .editorHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: var(--header-height);
-  padding: 0 var(--space-3) 0 var(--space-4);
-  border-bottom: 1px solid var(--border-light);
-  flex-shrink: 0;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	height: var(--header-height);
+	padding: 0 var(--space-3) 0 var(--space-4);
+	border-bottom: 1px solid var(--border-light);
+	flex-shrink: 0;
 }
 
 .editorRibbon {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  padding: 0 var(--space-3);
-  height: 44px;
-  border-bottom: 1px solid var(--border-light);
-  background: color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary));
-  flex-shrink: 0;
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+	padding: 0 var(--space-3);
+	height: 44px;
+	border-bottom: 1px solid var(--border-light);
+	background: color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary));
+	flex-shrink: 0;
 }
 
 .ribbonGroup {
-  display: inline-flex;
-  align-items: center;
-  gap: 2px;
-  padding: 2px;
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-lg);
-  background: var(--bg-primary);
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
+	padding: 2px;
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-lg);
+	background: var(--bg-primary);
 }
 
 .ribbonDivider {
-  width: 1px;
-  height: 22px;
-  background: var(--border-light);
+	width: 1px;
+	height: 22px;
+	background: var(--border-light);
 }
 
 button.ribbonBtn {
-  width: 32px;
-  height: 32px;
-  padding: 0;
-  border-radius: var(--radius-md);
-  color: var(--text-secondary);
+	width: 32px;
+	height: 32px;
+	padding: 0;
+	border-radius: var(--radius-md);
+	color: var(--text-secondary);
 }
 
 button.ribbonBtn:hover {
-  transform: none;
-  background: var(--bg-hover);
-  color: var(--text-primary);
+	transform: none;
+	background: var(--bg-hover);
+	color: var(--text-primary);
 }
 
 button.ribbonBtn.active {
-  background: var(--selection-bg-muted);
-  color: var(--interactive-accent);
+	background: var(--selection-bg-muted);
+	color: var(--interactive-accent);
 }
 
 .ribbonWarning {
-  margin-left: auto;
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
-  padding-left: var(--space-2);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+	margin-left: auto;
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
+	padding-left: var(--space-2);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .editorTitle {
-  font-size: var(--text-base);
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  flex: 1;
+	font-size: var(--text-base);
+	font-weight: var(--font-semibold);
+	color: var(--text-primary);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	flex: 1;
 }
 
 .editorActions {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
+	display: flex;
+	align-items: center;
+	gap: var(--space-1);
 }
 
 .editorMode {
-  display: inline-flex;
-  align-items: center;
-  gap: 0;
-  padding: 2px;
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-full);
-  background: var(--bg-secondary);
-  margin-right: var(--space-2);
+	display: inline-flex;
+	align-items: center;
+	gap: 0;
+	padding: 2px;
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-full);
+	background: var(--bg-secondary);
+	margin-right: var(--space-2);
 }
 
 button.segBtn {
-  height: var(--button-height-sm);
-  padding: 0 var(--space-3);
-  border-radius: var(--radius-full);
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
+	height: var(--button-height-sm);
+	padding: 0 var(--space-3);
+	border-radius: var(--radius-full);
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
 }
 
 button.segBtn:hover {
-  transform: none;
-  background: var(--bg-hover);
-  color: var(--text-primary);
+	transform: none;
+	background: var(--bg-hover);
+	color: var(--text-primary);
 }
 
 button.segBtn.active {
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  border: 1px solid var(--border-light);
+	background: var(--bg-primary);
+	color: var(--text-primary);
+	border: 1px solid var(--border-light);
 }
 
 .editorBody .tiptapHost {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  overflow-x: hidden;
-  padding: var(--space-6) 0 var(--space-6);
-  background: color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary));
-  display: flex;
-  flex-direction: column;
+	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
+	overflow-x: hidden;
+	padding: var(--space-6) 0 var(--space-6);
+	background: color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary));
+	display: flex;
+	flex-direction: column;
 }
 
 .editorBody .tiptapHost > .tiptap {
-  flex: 1;
+	flex: 1;
 }
 
 .editorBody .tiptapContent {
-  min-height: 100%;
-  max-width: 780px;
-  margin: 0 auto;
-  padding: 0 var(--space-6) var(--space-6);
-  font-size: 16px;
-  letter-spacing: -0.005em;
-  line-height: var(--leading-relaxed);
-  outline: none;
-  caret-color: var(--text-primary);
+	min-height: 100%;
+	max-width: 780px;
+	margin: 0 auto;
+	padding: 0 var(--space-6) var(--space-6);
+	font-size: 16px;
+	letter-spacing: -0.005em;
+	line-height: var(--leading-relaxed);
+	outline: none;
+	caret-color: var(--text-primary);
 }
 
 /* Back-compat if the host ends up being the ProseMirror element */
 .editorBody .tiptap {
-  min-height: 100%;
-  max-width: 780px;
-  margin: 0 auto;
-  padding: var(--space-6) var(--space-6) var(--space-6);
-  overflow: visible;
-  line-height: var(--leading-relaxed);
-  outline: none;
-  caret-color: var(--text-primary);
+	min-height: 100%;
+	max-width: 780px;
+	margin: 0 auto;
+	padding: var(--space-6) var(--space-6) var(--space-6);
+	overflow: visible;
+	line-height: var(--leading-relaxed);
+	outline: none;
+	caret-color: var(--text-primary);
 }
 
 .editorBody .tiptapContent > *:first-child,
 .editorBody .tiptap > *:first-child {
-  margin-top: 0;
+	margin-top: 0;
 }
 
 .editorBody .tiptapContent > *:last-child,
 .editorBody .tiptap > *:last-child {
-  margin-bottom: 0;
+	margin-bottom: 0;
 }
 
 .editorBody .tiptapContent p,
 .editorBody .tiptap p {
-  margin: 0 0 var(--space-3) 0;
+	margin: 0 0 var(--space-3) 0;
 }
 
 .editorBody .tiptapContent ul,
 .editorBody .tiptapContent ol,
 .editorBody .tiptap ul,
 .editorBody .tiptap ol {
-  padding-left: 1.4em;
-  margin: 0 0 var(--space-3) 0;
+	padding-left: 1.4em;
+	margin: 0 0 var(--space-3) 0;
 }
 
 .editorBody .tiptapContent li,
 .editorBody .tiptap li {
-  margin: 0.25em 0;
+	margin: 0.25em 0;
 }
 
 .editorBody .tiptapContent h1,
@@ -710,1496 +708,1488 @@ button.segBtn.active {
 .editorBody .tiptap h2,
 .editorBody .tiptap h3,
 .editorBody .tiptap h4 {
-  margin: var(--space-5) 0 var(--space-2) 0;
-  letter-spacing: -0.01em;
+	margin: var(--space-5) 0 var(--space-2) 0;
+	letter-spacing: -0.01em;
 }
 
 .editorBody .tiptapContent h1,
 .editorBody .tiptap h1 {
-  font-size: 2rem;
-  line-height: 1.2;
+	font-size: 2rem;
+	line-height: 1.2;
 }
 
 .editorBody .tiptapContent h2,
 .editorBody .tiptap h2 {
-  font-size: 1.6rem;
-  line-height: 1.25;
+	font-size: 1.6rem;
+	line-height: 1.25;
 }
 
 .editorBody .tiptapContent h3,
 .editorBody .tiptap h3 {
-  font-size: 1.25rem;
-  line-height: 1.3;
+	font-size: 1.25rem;
+	line-height: 1.3;
 }
 
 .editorBody .tiptapContent blockquote,
 .editorBody .tiptap blockquote {
-  margin: 0 0 var(--space-4) 0;
-  padding: var(--space-3) var(--space-4);
-  border-left: 3px solid color-mix(in srgb, var(--interactive-accent) 60%, #bbb);
-  background: var(--bg-secondary);
-  border-radius: var(--radius-lg);
+	margin: 0 0 var(--space-4) 0;
+	padding: var(--space-3) var(--space-4);
+	border-left: 3px solid color-mix(in srgb, var(--interactive-accent) 60%, #bbb);
+	background: var(--bg-secondary);
+	border-radius: var(--radius-lg);
 }
 
 .editorBody .tiptapContent hr,
 .editorBody .tiptap hr {
-  border: none;
-  border-top: 1px solid var(--border-light);
-  margin: var(--space-5) 0;
+	border: none;
+	border-top: 1px solid var(--border-light);
+	margin: var(--space-5) 0;
 }
 
 .editorBody .tiptapContent code,
 .editorBody .tiptap code {
-  font-family: var(--font-mono);
-  font-size: 0.9em;
-  background: var(--bg-secondary);
-  padding: 0 0.25em;
-  border-radius: var(--radius-sm);
+	font-family: var(--font-mono);
+	font-size: 0.9em;
+	background: var(--bg-secondary);
+	padding: 0 0.25em;
+	border-radius: var(--radius-sm);
 }
 
 .editorBody .tiptapContent pre,
 .editorBody .tiptap pre {
-  font-family: var(--font-mono);
-  background: var(--bg-secondary);
-  padding: var(--space-3);
-  border-radius: var(--radius-lg);
-  overflow: auto;
+	font-family: var(--font-mono);
+	background: var(--bg-secondary);
+	padding: var(--space-3);
+	border-radius: var(--radius-lg);
+	overflow: auto;
 }
 
 .editorBody .tiptapContent a,
 .editorBody .tiptap a {
-  color: var(--interactive-accent);
-  text-decoration: none;
+	color: var(--interactive-accent);
+	text-decoration: none;
 }
 
 .editorBody .tiptapContent a:hover,
 .editorBody .tiptap a:hover {
-  text-decoration: underline;
+	text-decoration: underline;
 }
 
 .mdRawEditor {
-  width: 100%;
-  height: 100%;
-  flex: 1;
-  min-height: 0;
-  border: none;
-  border-radius: 0;
-  padding: var(--space-4);
-  background: transparent;
-  color: var(--text-primary);
-  font-family: var(--font-mono);
-  font-size: var(--text-sm);
-  line-height: var(--leading-relaxed);
-  resize: none;
-  overflow: auto;
+	width: 100%;
+	height: 100%;
+	flex: 1;
+	min-height: 0;
+	border: none;
+	border-radius: 0;
+	padding: var(--space-4);
+	background: transparent;
+	color: var(--text-primary);
+	font-family: var(--font-mono);
+	font-size: var(--text-sm);
+	line-height: var(--leading-relaxed);
+	resize: none;
+	overflow: auto;
 }
 
 .mdRawEditor:focus {
-  outline: none;
-  box-shadow: none;
+	outline: none;
+	box-shadow: none;
 }
 
 .editorStatus {
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
-  margin-right: var(--space-2);
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
+	margin-right: var(--space-2);
 }
 
 .editorBody {
-  flex: 1;
-  min-height: 0;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
+	flex: 1;
+	min-height: 0;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
 }
 
 .editorBody .cm-editor {
-  flex: 1;
-  min-height: 0;
-  font-family: var(--font-sans);
-  font-size: var(--text-base);
+	flex: 1;
+	min-height: 0;
+	font-family: var(--font-sans);
+	font-size: var(--text-base);
 }
 
 .editorBody .cm-scroller {
-  padding: var(--space-4);
-  line-height: var(--leading-relaxed);
-  overflow: auto;
+	padding: var(--space-4);
+	line-height: var(--leading-relaxed);
+	overflow: auto;
 }
 
 .editorBody .cm-gutters {
-  background: var(--bg-primary);
-  border-right: 1px solid var(--border-light);
-  color: var(--text-tertiary);
-  font-size: var(--text-xs);
+	background: var(--bg-primary);
+	border-right: 1px solid var(--border-light);
+	color: var(--text-tertiary);
+	font-size: var(--text-xs);
 }
 
 .editorEmpty {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: var(--text-tertiary);
-  font-size: var(--text-sm);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
+	color: var(--text-tertiary);
+	font-size: var(--text-sm);
 }
 
 .editorError {
-  padding: var(--space-2) var(--space-3);
-  font-size: var(--text-xs);
-  color: var(--text-error);
-  background: var(--feedback-error-bg);
+	padding: var(--space-2) var(--space-3);
+	font-size: var(--text-xs);
+	color: var(--text-error);
+	background: var(--feedback-error-bg);
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
    TAGS
    ───────────────────────────────────────────────────────────────────────────── */
 .tagsPane {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  padding: var(--space-2);
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	padding: var(--space-2);
 }
 
 .sidebarSectionContent .tagsPane {
-  border-top: none;
+	border-top: none;
 }
 
 .tagsHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: var(--space-2) var(--space-2);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: var(--space-2) var(--space-2);
 }
 
 .tagsTitle {
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
-  color: var(--text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+	font-size: var(--text-xs);
+	font-weight: var(--font-semibold);
+	color: var(--text-tertiary);
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
 }
 
 .tagsList {
-  list-style: none;
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-  padding: 0 var(--space-1) var(--space-2) var(--space-1);
-  max-height: 220px;
-  overflow: auto;
-  flex: 1;
+	list-style: none;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	padding: 0 var(--space-1) var(--space-2) var(--space-1);
+	max-height: 220px;
+	overflow: auto;
+	flex: 1;
 }
 
 .sidebarSectionContent .tagsList {
-  max-height: none;
+	max-height: none;
 }
 
 .tagsButton {
-  width: 100%;
-  justify-content: space-between;
-  padding: 0 var(--space-2);
-  height: 28px;
-  border-radius: var(--radius-md);
+	width: 100%;
+	justify-content: space-between;
+	padding: 0 var(--space-2);
+	height: 28px;
+	border-radius: var(--radius-md);
 }
 
 .tagsName {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .tagsCount {
-  color: var(--text-tertiary);
-  font-size: var(--text-xs);
+	color: var(--text-tertiary);
+	font-size: var(--text-xs);
 }
 
 .tagsEmpty {
-  padding: var(--space-2) var(--space-3) var(--space-3);
-  color: var(--text-tertiary);
-  font-size: var(--text-xs);
+	padding: var(--space-2) var(--space-3) var(--space-3);
+	color: var(--text-tertiary);
+	font-size: var(--text-xs);
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
    BACKLINKS
    ───────────────────────────────────────────────────────────────────────────── */
 .backlinksPane {
-  padding: var(--space-4);
-  border-bottom: 1px solid var(--border-light);
-  background: var(--bg-secondary);
-  border-radius: var(--radius-lg);
-  margin: var(--space-2);
+	padding: var(--space-4);
+	border-bottom: 1px solid var(--border-light);
+	background: var(--bg-secondary);
+	border-radius: var(--radius-lg);
+	margin: var(--space-2);
 }
 
 .backlinksHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: var(--space-2);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: var(--space-2);
 }
 
 .backlinksTitle {
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
-  color: var(--text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+	font-size: var(--text-xs);
+	font-weight: var(--font-semibold);
+	color: var(--text-tertiary);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
 }
 
 .backlinksMeta {
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
 }
 
 .backlinksList {
-  padding: 0;
-  list-style: none;
+	padding: 0;
+	list-style: none;
 }
 
 .backlinksItem {
-  border-radius: var(--radius-lg);
-  transition: all var(--transition-fast);
+	border-radius: var(--radius-lg);
+	transition: all var(--transition-fast);
 }
 
 .backlinksItem:hover {
-  background: var(--bg-hover);
+	background: var(--bg-hover);
 }
 
 .backlinksButton {
-  width: 100%;
-  height: auto;
-  padding: var(--space-1) var(--space-2);
-  text-align: left;
-  justify-content: flex-start;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0;
+	width: 100%;
+	height: auto;
+	padding: var(--space-1) var(--space-2);
+	text-align: left;
+	justify-content: flex-start;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0;
 }
 
 .backlinksItemTitle {
-  font-size: var(--text-sm);
-  color: var(--text-primary);
+	font-size: var(--text-sm);
+	color: var(--text-primary);
 }
 
 .backlinksItemMeta {
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
 }
 
 .backlinksEmpty,
 .backlinksError {
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
    SEARCH PANE
    ───────────────────────────────────────────────────────────────────────────── */
 .searchPane {
-  padding: var(--space-4);
+	padding: var(--space-4);
 }
 
 .searchHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: var(--space-2);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-bottom: var(--space-2);
 }
 
 .searchTitle {
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
-  color: var(--text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+	font-size: var(--text-xs);
+	font-weight: var(--font-semibold);
+	color: var(--text-tertiary);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
 }
 
 .searchStatus {
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
 }
 
 .searchInput {
-  width: 100%;
+	width: 100%;
 }
 
 .searchResults {
-  margin-top: var(--space-2);
-  padding: 0;
-  list-style: none;
-  max-height: 200px;
-  overflow-y: auto;
+	margin-top: var(--space-2);
+	padding: 0;
+	list-style: none;
+	max-height: 200px;
+	overflow-y: auto;
 }
 
 .searchResult {
-  border-radius: var(--radius-lg);
-  transition: all var(--transition-fast);
+	border-radius: var(--radius-lg);
+	transition: all var(--transition-fast);
 }
 
 .searchResultButton {
-  width: 100%;
-  height: auto;
-  padding: var(--space-2);
-  text-align: left;
-  justify-content: flex-start;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 2px;
+	width: 100%;
+	height: auto;
+	padding: var(--space-2);
+	text-align: left;
+	justify-content: flex-start;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 2px;
 }
 
 .searchResultTitle {
-  font-size: var(--text-sm);
-  font-weight: var(--font-medium);
-  color: var(--text-primary);
+	font-size: var(--text-sm);
+	font-weight: var(--font-medium);
+	color: var(--text-primary);
 }
 
 .searchResultSnippet {
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
 }
 
 .searchEmpty,
 .searchError {
-  padding: var(--space-2);
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
+	padding: var(--space-2);
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
    AI PANE (inside floating panel)
    ───────────────────────────────────────────────────────────────────────────── */
 .aiPane {
-  padding: var(--space-4);
+	padding: var(--space-4);
 }
 
 .aiHeader {
-  display: none; /* Header is in the floating panel now */
+	display: none; /* Header is in the floating panel now */
 }
 
 .aiSettings {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  margin-bottom: var(--space-3);
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-2);
+	margin-bottom: var(--space-3);
 }
 
 .aiSettings label {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-1);
-  font-size: var(--text-xs);
-  color: var(--text-secondary);
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-1);
+	font-size: var(--text-xs);
+	color: var(--text-secondary);
 }
 
 .aiSettings input,
 .aiSettings select {
-  width: 100%;
+	width: 100%;
 }
 
 .aiRow {
-  display: flex;
-  gap: var(--space-2);
-  align-items: center;
-  flex-wrap: wrap;
+	display: flex;
+	gap: var(--space-2);
+	align-items: center;
+	flex-wrap: wrap;
 }
 
 .aiLabel {
-  min-width: 74px;
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
+	min-width: 74px;
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
 }
 
 .aiToggle {
-  display: inline-flex;
-  gap: var(--space-1);
-  align-items: center;
-  font-size: var(--text-xs);
-  color: var(--text-secondary);
+	display: inline-flex;
+	gap: var(--space-1);
+	align-items: center;
+	font-size: var(--text-xs);
+	color: var(--text-secondary);
 }
 
 .aiContextPreview {
-  width: 100%;
-  min-height: 120px;
-  margin-top: var(--space-3);
-  padding: var(--space-3);
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-lg);
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  resize: vertical;
+	width: 100%;
+	min-height: 120px;
+	margin-top: var(--space-3);
+	padding: var(--space-3);
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-lg);
+	background: var(--bg-primary);
+	color: var(--text-primary);
+	resize: vertical;
 }
 
 .aiManifest {
-  margin: var(--space-2) 0 0;
-  padding-left: 18px;
-  max-height: 160px;
-  overflow-y: auto;
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
+	margin: var(--space-2) 0 0;
+	padding-left: 18px;
+	max-height: 160px;
+	overflow-y: auto;
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
 }
 
 .aiDiff {
-  margin-top: var(--space-2);
-  padding: var(--space-2);
-  max-height: 220px;
-  overflow: auto;
-  border: 1px solid var(--border-light);
-  border-radius: var(--radius-md);
-  background: var(--bg-primary);
-  color: var(--text-primary);
-  font-size: var(--text-xs);
-  line-height: var(--leading-relaxed);
-  white-space: pre;
+	margin-top: var(--space-2);
+	padding: var(--space-2);
+	max-height: 220px;
+	overflow: auto;
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-md);
+	background: var(--bg-primary);
+	color: var(--text-primary);
+	font-size: var(--text-xs);
+	line-height: var(--leading-relaxed);
+	white-space: pre;
 }
 
 .aiChatMessages {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-2);
 }
 
 .aiChatMsg {
-  padding: var(--space-2);
-  border-radius: var(--radius-lg);
-  background: var(--bg-tertiary);
+	padding: var(--space-2);
+	border-radius: var(--radius-lg);
+	background: var(--bg-tertiary);
 }
 
 .aiChatMsg-user {
-  background: var(--selection-bg-muted);
+	background: var(--selection-bg-muted);
 }
 
 .aiChatRole {
-  font-size: var(--text-2xs);
-  font-weight: var(--font-semibold);
-  color: var(--text-tertiary);
-  margin-bottom: 2px;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
+	font-size: var(--text-2xs);
+	font-weight: var(--font-semibold);
+	color: var(--text-tertiary);
+	margin-bottom: 2px;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
 }
 
 .aiChatContent {
-  font-size: var(--text-sm);
-  line-height: var(--leading-relaxed);
-  color: var(--text-primary);
-  white-space: pre-wrap;
-  word-break: break-word;
+	font-size: var(--text-sm);
+	line-height: var(--leading-relaxed);
+	color: var(--text-primary);
+	white-space: pre-wrap;
+	word-break: break-word;
 }
 
 .aiChatActions {
-  display: flex;
-  gap: var(--space-1);
+	display: flex;
+	gap: var(--space-1);
 }
 
 .aiActions {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  margin-bottom: var(--space-2);
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-2);
+	margin-bottom: var(--space-2);
 }
 
 .aiContext {
-  padding: var(--space-2);
-  margin-bottom: var(--space-2);
-  font-size: var(--text-xs);
-  color: var(--text-secondary);
-  background: var(--bg-tertiary);
-  border-radius: var(--radius-md);
+	padding: var(--space-2);
+	margin-bottom: var(--space-2);
+	font-size: var(--text-xs);
+	color: var(--text-secondary);
+	background: var(--bg-tertiary);
+	border-radius: var(--radius-md);
 }
 
 .aiPromptForm {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  margin-bottom: var(--space-2);
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-2);
+	margin-bottom: var(--space-2);
 }
 
 .aiPromptForm textarea {
-  width: 100%;
-  min-height: 48px;
+	width: 100%;
+	min-height: 48px;
 }
 
 .aiPromptActions {
-  display: flex;
-  gap: var(--space-1);
+	display: flex;
+	gap: var(--space-1);
 }
 
 .aiChat {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  max-height: 200px;
-  overflow-y: auto;
-  margin-bottom: var(--space-2);
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-2);
+	max-height: 200px;
+	overflow-y: auto;
+	margin-bottom: var(--space-2);
 }
 
 .aiChatMessage {
-  padding: var(--space-2);
-  border-radius: var(--radius-lg);
-  font-size: var(--text-sm);
-  line-height: var(--leading-relaxed);
+	padding: var(--space-2);
+	border-radius: var(--radius-lg);
+	font-size: var(--text-sm);
+	line-height: var(--leading-relaxed);
 }
 
 .aiChatUser {
-  background: var(--selection-bg-muted);
+	background: var(--selection-bg-muted);
 }
 
 .aiChatAssistant {
-  background: var(--bg-tertiary);
+	background: var(--bg-tertiary);
 }
 
 .aiChatInputWrapper {
-  display: flex;
-  gap: var(--space-1);
+	display: flex;
+	gap: var(--space-1);
 }
 
 .aiChatInput {
-  flex: 1;
+	flex: 1;
 }
 
 .aiApplyActions {
-  display: flex;
-  gap: var(--space-1);
+	display: flex;
+	gap: var(--space-1);
 }
 
 .aiError {
-  padding: var(--space-2);
-  font-size: var(--text-xs);
-  color: var(--text-error);
-  background: var(--feedback-error-bg);
-  border-radius: var(--radius-md);
+	padding: var(--space-2);
+	font-size: var(--text-xs);
+	color: var(--text-error);
+	background: var(--feedback-error-bg);
+	border-radius: var(--radius-md);
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
    NOTES PANE
    ───────────────────────────────────────────────────────────────────────────── */
 .notesPane {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
 }
 
 .notesPaneHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 40px;
-  padding: 0 var(--space-2) 0 var(--space-4);
-  flex-shrink: 0;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	height: 40px;
+	padding: 0 var(--space-2) 0 var(--space-4);
+	flex-shrink: 0;
 }
 
 .notesPaneTitle {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
-  color: var(--text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+	display: flex;
+	align-items: center;
+	gap: var(--space-1);
+	font-size: var(--text-xs);
+	font-weight: var(--font-semibold);
+	color: var(--text-tertiary);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
 }
 
 .notesList {
-  flex: 1;
-  padding: 0 var(--space-2);
-  list-style: none;
-  overflow-y: auto;
+	flex: 1;
+	padding: 0 var(--space-2);
+	list-style: none;
+	overflow-y: auto;
 }
 
 .notesListItem {
-  display: flex;
-  align-items: center;
-  border-radius: var(--radius-lg);
-  margin-bottom: 2px;
-  transition: all var(--transition-fast);
+	display: flex;
+	align-items: center;
+	border-radius: var(--radius-lg);
+	margin-bottom: 2px;
+	transition: all var(--transition-fast);
 }
 
 .notesListItem:hover {
-  background: var(--bg-hover);
+	background: var(--bg-hover);
 }
 
 .notesListItem.active {
-  background: var(--selection-bg-muted);
+	background: var(--selection-bg-muted);
 }
 
 .notesListButton {
-  flex: 1;
-  height: auto;
-  min-height: 32px;
-  padding: var(--space-1) var(--space-2);
-  text-align: left;
-  justify-content: flex-start;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0;
+	flex: 1;
+	height: auto;
+	min-height: 32px;
+	padding: var(--space-1) var(--space-2);
+	text-align: left;
+	justify-content: flex-start;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0;
 }
 
 .notesListItem:hover .notesListButton {
-  background: transparent;
+	background: transparent;
 }
 
 .notesListTitle {
-  font-size: var(--text-sm);
-  color: var(--text-primary);
-  line-height: var(--leading-snug);
+	font-size: var(--text-sm);
+	color: var(--text-primary);
+	line-height: var(--leading-snug);
 }
 
 .notesListItem.active .notesListTitle {
-  font-weight: var(--font-medium);
+	font-weight: var(--font-medium);
 }
 
 .notesListMeta {
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
 }
 
 .notesListDelete {
-  width: 24px;
-  height: 24px;
-  padding: 0;
-  margin-right: var(--space-1);
-  color: var(--text-tertiary);
-  opacity: 0;
-  flex-shrink: 0;
+	width: 24px;
+	height: 24px;
+	padding: 0;
+	margin-right: var(--space-1);
+	color: var(--text-tertiary);
+	opacity: 0;
+	flex-shrink: 0;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
    FILE TREE PANE
    ───────────────────────────────────────────────────────────────────────────── */
 .fileTreePane {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  background: var(--bg-sidebar);
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	background: var(--bg-sidebar);
 }
 
 .fileTreeHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 36px;
-  padding: 0 var(--space-2) 0 var(--space-3);
-  flex-shrink: 0;
-  border-bottom: 1px solid var(--border-light);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	height: 36px;
+	padding: 0 var(--space-2) 0 var(--space-3);
+	flex-shrink: 0;
+	border-bottom: 1px solid var(--border-light);
 }
 
 .fileTreeTitle {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+	font-size: 11px;
+	font-weight: 600;
+	color: var(--text-tertiary);
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
 }
 
 .fileTreeTitle svg {
-  opacity: 0.6;
+	opacity: 0.6;
 }
 
 .fileTreeScroll {
-  flex: 1;
-  padding: var(--space-2) 0;
-  overflow-y: auto;
+	flex: 1;
+	padding: var(--space-2) 0;
+	overflow-y: auto;
 }
 
 .fileTreeList {
-  list-style: none;
-  padding: 0;
-  margin: 0;
+	list-style: none;
+	padding: 0;
+	margin: 0;
 }
 
 .fileTreeItem {
-  margin: 0;
-  transition: background var(--transition-fast);
+	margin: 0;
+	transition: background var(--transition-fast);
 }
 
 .fileTreeItem:hover > .fileTreeRow {
-  background: var(--bg-hover);
+	background: var(--bg-hover);
 }
 
 .fileTreeItem.active > .fileTreeRow {
-  background: var(--selection-bg-muted);
-  color: var(--interactive-accent);
+	background: var(--selection-bg-muted);
+	color: var(--interactive-accent);
 }
 
 .fileTreeItem.active > .fileTreeRow .fileTreeName {
-  font-weight: 500;
-  color: var(--interactive-accent);
+	font-weight: 500;
+	color: var(--interactive-accent);
 }
 
 .fileTreeItem.active > .fileTreeRow .fileTreeIcon {
-  color: var(--interactive-accent);
+	color: var(--interactive-accent);
 }
 
 .fileTreeRow {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  min-height: 28px;
-  padding: 2px var(--space-3) 2px var(--space-2);
-  text-align: left;
-  border-radius: 0;
-  margin: 0;
-  border-left: 2px solid transparent;
-  transition: all var(--transition-fast);
+	width: 100%;
+	display: flex;
+	align-items: center;
+	gap: var(--space-1);
+	min-height: 28px;
+	padding: 2px var(--space-3) 2px var(--space-2);
+	text-align: left;
+	border-radius: 0;
+	margin: 0;
+	border-left: 2px solid transparent;
+	transition: all var(--transition-fast);
 }
 
 .fileTreeRow:hover {
-  background: transparent;
+	background: transparent;
 }
 
 .fileTreeItem.active > .fileTreeRow {
-  border-left-color: var(--interactive-accent);
+	border-left-color: var(--interactive-accent);
 }
 
 .fileTreeRow:disabled {
-  opacity: 0.4;
-  cursor: not-allowed;
+	opacity: 0.4;
+	cursor: not-allowed;
 }
 
 .fileTreeChevron {
-  display: inline-flex;
-  width: 14px;
-  height: 14px;
-  justify-content: center;
-  align-items: center;
-  color: var(--text-tertiary);
-  flex-shrink: 0;
-  border-radius: var(--radius-sm);
-  transition: background var(--transition-fast);
+	display: inline-flex;
+	width: 14px;
+	height: 14px;
+	justify-content: center;
+	align-items: center;
+	color: var(--text-tertiary);
+	flex-shrink: 0;
+	border-radius: var(--radius-sm);
+	transition: background var(--transition-fast);
 }
 
 .fileTreeChevron:hover {
-  background: var(--bg-active);
+	background: var(--bg-active);
 }
 
 .fileTreeIcon {
-  display: inline-flex;
-  width: 16px;
-  justify-content: center;
-  color: var(--text-tertiary);
-  flex-shrink: 0;
-  opacity: 0.7;
+	display: inline-flex;
+	width: 16px;
+	justify-content: center;
+	color: var(--text-tertiary);
+	flex-shrink: 0;
+	opacity: 0.7;
 }
 
 .fileTreeName {
-  font-size: 13px;
-  color: var(--text-primary);
-  line-height: 1.3;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  flex: 1;
+	font-size: 13px;
+	color: var(--text-primary);
+	line-height: 1.3;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	flex: 1;
 }
 
 /* Directory names slightly bolder */
 .fileTreeItem .fileTreeChevron + .fileTreeName {
-  font-weight: 500;
+	font-weight: 500;
 }
 
 .fileTreeEmpty {
-  padding: var(--space-4) var(--space-3);
-  color: var(--text-tertiary);
-  font-size: var(--text-sm);
-  text-align: center;
-  font-style: italic;
+	padding: var(--space-4) var(--space-3);
+	color: var(--text-tertiary);
+	font-size: var(--text-sm);
+	text-align: center;
+	font-style: italic;
 }
 
 .notesListItem:hover .notesListDelete {
-  opacity: 1;
+	opacity: 1;
 }
 
 .notesListDelete:hover {
-  color: var(--text-error);
-  background: var(--feedback-error-bg);
+	color: var(--text-error);
+	background: var(--feedback-error-bg);
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
    CANVASES PANE
    ───────────────────────────────────────────────────────────────────────────── */
 .canvasesPane {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
 }
 
 .canvasesPaneHeader {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: 40px;
-  padding: 0 var(--space-2) 0 var(--space-4);
-  flex-shrink: 0;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	height: 40px;
+	padding: 0 var(--space-2) 0 var(--space-4);
+	flex-shrink: 0;
 }
 
 .canvasesPaneTitle {
-  display: flex;
-  align-items: center;
-  gap: var(--space-1);
-  font-size: var(--text-xs);
-  font-weight: var(--font-semibold);
-  color: var(--text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
+	display: flex;
+	align-items: center;
+	gap: var(--space-1);
+	font-size: var(--text-xs);
+	font-weight: var(--font-semibold);
+	color: var(--text-tertiary);
+	text-transform: uppercase;
+	letter-spacing: 0.05em;
 }
 
 .canvasesList {
-  flex: 1;
-  padding: 0 var(--space-2);
-  list-style: none;
-  overflow-y: auto;
+	flex: 1;
+	padding: 0 var(--space-2);
+	list-style: none;
+	overflow-y: auto;
 }
 
 .canvasesListItem {
-  border-radius: var(--radius-lg);
-  margin-bottom: 2px;
-  transition: all var(--transition-fast);
+	border-radius: var(--radius-lg);
+	margin-bottom: 2px;
+	transition: all var(--transition-fast);
 }
 
 .canvasesListItem:hover {
-  background: var(--bg-hover);
+	background: var(--bg-hover);
 }
 
 .canvasesListItem.active {
-  background: var(--selection-bg-muted);
+	background: var(--selection-bg-muted);
 }
 
 .canvasesListButton {
-  width: 100%;
-  height: auto;
-  min-height: 32px;
-  padding: var(--space-1) var(--space-2);
-  text-align: left;
-  justify-content: flex-start;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: 0;
+	width: 100%;
+	height: auto;
+	min-height: 32px;
+	padding: var(--space-1) var(--space-2);
+	text-align: left;
+	justify-content: flex-start;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 0;
 }
 
 .canvasesListItem:hover .canvasesListButton {
-  background: transparent;
+	background: transparent;
 }
 
 .canvasesListTitle {
-  font-size: var(--text-sm);
-  color: var(--text-primary);
-  line-height: var(--leading-snug);
+	font-size: var(--text-sm);
+	color: var(--text-primary);
+	line-height: var(--leading-snug);
 }
 
 .canvasesListItem.active .canvasesListTitle {
-  font-weight: var(--font-medium);
+	font-weight: var(--font-medium);
 }
 
 .canvasesListMeta {
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
    CANVAS PANE (ReactFlow container)
    ───────────────────────────────────────────────────────────────────────────── */
 .canvasPane {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
+	width: 100%;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
 }
 
 .canvasToolbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  height: var(--toolbar-height);
-  padding: 0 var(--space-4);
-  background: transparent;
-  border-bottom: 1px solid var(--border-light);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	height: var(--toolbar-height);
+	padding: 0 var(--space-4);
+	background: transparent;
+	border-bottom: 1px solid var(--border-light);
 }
 
 .canvasToolbarLeft {
-  display: flex;
-  align-items: center;
-  gap: var(--space-3);
+	display: flex;
+	align-items: center;
+	gap: var(--space-3);
 }
 
 .canvasToolbarRight {
-  display: flex;
-  align-items: center;
-  gap: 2px;
+	display: flex;
+	align-items: center;
+	gap: 2px;
 }
 
 .canvasStatus {
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
 }
 
 .toolbarDivider {
-  width: 1px;
-  height: 16px;
-  background: var(--border-default);
-  margin: 0 var(--space-1);
+	width: 1px;
+	height: 16px;
+	background: var(--border-default);
+	margin: 0 var(--space-1);
 }
 
 .canvasBody {
-  flex: 1;
-  min-height: 0;
-  position: relative;
+	flex: 1;
+	min-height: 0;
+	position: relative;
 }
 
 .canvasLoading {
-  position: absolute;
-  inset: 0;
-  z-index: 10;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: var(--space-3);
-  background: var(--bg-primary);
-  color: var(--text-secondary);
-  font-size: var(--text-sm);
+	position: absolute;
+	inset: 0;
+	z-index: 10;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: var(--space-3);
+	background: var(--bg-primary);
+	color: var(--text-secondary);
+	font-size: var(--text-sm);
 }
 
 .canvasLoadingSpinner {
-  font-size: 2rem;
-  animation: canvasSpin 1s linear infinite;
+	font-size: 2rem;
+	animation: canvasSpin 1s linear infinite;
 }
 
 @keyframes canvasSpin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+	from {
+		transform: rotate(0deg);
+	}
+	to {
+		transform: rotate(360deg);
+	}
 }
 
 .canvasEmpty {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%;
-  color: var(--text-tertiary);
-  font-size: var(--text-sm);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 100%;
+	color: var(--text-tertiary);
+	font-size: var(--text-sm);
 }
 
 .canvasError {
-  padding: var(--space-2) var(--space-3);
-  font-size: var(--text-xs);
-  color: var(--text-error);
-  background: var(--feedback-error-bg);
+	padding: var(--space-2) var(--space-3);
+	font-size: var(--text-xs);
+	color: var(--text-error);
+	background: var(--feedback-error-bg);
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
    REACTFLOW NODES - Solid Sticky Note Aesthetic
    ───────────────────────────────────────────────────────────────────────────── */
 .rfNode {
-  padding: var(--space-3);
-  border-radius: 2px;
-  border: none;
-  box-shadow:
-    2px 4px 8px rgba(0, 0, 0, 0.15),
-    0 1px 3px rgba(0, 0, 0, 0.1);
-  transition:
-    transform 0.15s ease,
-    box-shadow 0.15s ease;
-  position: relative;
-  will-change: transform;
+	padding: var(--space-3);
+	border-radius: 2px;
+	border: none;
+	box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1);
+	transition: transform 0.15s ease, box-shadow 0.15s ease;
+	position: relative;
+	will-change: transform;
 }
 
 .rfNode:hover {
-  transform: scale(1.02) rotate(0deg) translateY(-4px);
-  box-shadow:
-    0 16px 48px rgba(0, 0, 0, 0.18),
-    0 4px 12px rgba(0, 0, 0, 0.1);
+	transform: scale(1.02) rotate(0deg) translateY(-4px);
+	box-shadow: 0 16px 48px rgba(0, 0, 0, 0.18), 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 /* Subtle paper texture */
 .rfNode::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: inherit;
-  background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
-  opacity: 0.04;
-  pointer-events: none;
-  mix-blend-mode: multiply;
+	content: "";
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	background: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E");
+	opacity: 0.04;
+	pointer-events: none;
+	mix-blend-mode: multiply;
 }
 
 /* Folded corner */
 .rfNode::after {
-  content: "";
-  position: absolute;
-  bottom: 0;
-  right: 0;
-  width: 0;
-  height: 0;
-  border-style: solid;
-  border-width: 0 0 16px 16px;
-  border-color: transparent transparent rgba(0, 0, 0, 0.08) transparent;
+	content: "";
+	position: absolute;
+	bottom: 0;
+	right: 0;
+	width: 0;
+	height: 0;
+	border-style: solid;
+	border-width: 0 0 16px 16px;
+	border-color: transparent transparent rgba(0, 0, 0, 0.08) transparent;
 }
 
 /* ─── Note Nodes (Sticky Notes) ─── */
 .rfNodeNote {
-  display: flex;
-  flex-direction: column;
-  gap: var(--space-2);
-  /* Allow dynamic sizing via CSS variables */
-  width: var(--base-width, 200px);
-  min-height: var(--base-height, 140px);
-  /* More rounded edges for organic look */
-  border-radius: 12px;
-  border: 1px solid;
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-2);
+	/* Allow dynamic sizing via CSS variables */
+	width: var(--base-width, 200px);
+	min-height: var(--base-height, 140px);
+	/* More rounded edges for organic look */
+	border-radius: 12px;
+	border: 1px solid;
 }
 
 /* Size variants - base dimensions (can be overridden by inline styles) */
 .rfNodeNote--xs {
-  --base-width: 100px;
-  --base-height: 80px;
-  padding: var(--space-2);
+	--base-width: 100px;
+	--base-height: 80px;
+	padding: var(--space-2);
 }
 
 .rfNodeNote--small {
-  --base-width: 140px;
-  --base-height: 100px;
-  padding: var(--space-3);
+	--base-width: 140px;
+	--base-height: 100px;
+	padding: var(--space-3);
 }
 
 .rfNodeNote--medium {
-  --base-width: 200px;
-  --base-height: 140px;
-  padding: var(--space-3) var(--space-4);
+	--base-width: 200px;
+	--base-height: 140px;
+	padding: var(--space-3) var(--space-4);
 }
 
 .rfNodeNote--large {
-  --base-width: 280px;
-  --base-height: 200px;
-  padding: var(--space-4);
+	--base-width: 280px;
+	--base-height: 200px;
+	padding: var(--space-4);
 }
 
 .rfNodeNote--xl {
-  --base-width: 360px;
-  --base-height: 260px;
-  padding: var(--space-5);
+	--base-width: 360px;
+	--base-height: 260px;
+	padding: var(--space-5);
 }
 
 /* Special aspect ratio variants */
 .rfNodeNote--tall {
-  --base-width: 160px;
-  --base-height: 240px;
-  padding: var(--space-3) var(--space-4);
+	--base-width: 160px;
+	--base-height: 240px;
+	padding: var(--space-3) var(--space-4);
 }
 
 .rfNodeNote--wide {
-  --base-width: 320px;
-  --base-height: 160px;
-  padding: var(--space-3) var(--space-4);
+	--base-width: 320px;
+	--base-height: 160px;
+	padding: var(--space-3) var(--space-4);
 }
 
 .rfNodeNote--square {
-  --base-width: 180px;
-  --base-height: 180px;
-  padding: var(--space-3);
+	--base-width: 180px;
+	--base-height: 180px;
+	padding: var(--space-3);
 }
 
 .rfNodeNote .react-flow__handle {
-  z-index: 10;
+	z-index: 10;
 }
 
 .rfNodeNoteTitle {
-  font-size: 13px;
-  font-weight: 700;
-  color: rgba(0, 0, 0, 0.85);
-  line-height: 1.3;
-  word-break: break-word;
-  margin: 0;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
+	font-size: 13px;
+	font-weight: 700;
+	color: rgba(0, 0, 0, 0.85);
+	line-height: 1.3;
+	word-break: break-word;
+	margin: 0;
+	text-transform: uppercase;
+	letter-spacing: 0.02em;
 }
 
 .rfNodeNoteContent {
-  font-size: 12px;
-  color: rgba(0, 0, 0, 0.7);
-  line-height: 1.5;
-  white-space: pre-wrap;
-  word-break: break-word;
-  font-family: var(--font-sans);
-  flex: 1;
+	font-size: 12px;
+	color: rgba(0, 0, 0, 0.7);
+	line-height: 1.5;
+	white-space: pre-wrap;
+	word-break: break-word;
+	font-family: var(--font-sans);
+	flex: 1;
 }
 
 /* ─── Folder Tiles (Immediate Subfolders) ─── */
 .rfNodeFolder {
-  width: 240px;
-  min-height: 140px;
-  border-radius: 16px;
-  border: 1px solid var(--border-light);
-  background: var(--bg-primary);
-  padding: var(--space-4);
+	width: 240px;
+	min-height: 140px;
+	border-radius: 16px;
+	border: 1px solid var(--border-light);
+	background: var(--bg-primary);
+	padding: var(--space-4);
 }
 
 .rfNodeFolder::before,
 .rfNodeFolder::after {
-  display: none;
+	display: none;
 }
 
 .rfNodeFolderHeader {
-  display: flex;
-  align-items: center;
-  gap: var(--space-2);
-  margin-bottom: var(--space-2);
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+	margin-bottom: var(--space-2);
 }
 
 .rfNodeFolderIcon {
-  color: var(--text-accent);
-  display: inline-flex;
+	color: var(--text-accent);
+	display: inline-flex;
 }
 
 .rfNodeFolderName {
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+	font-size: var(--text-sm);
+	font-weight: var(--font-semibold);
+	color: var(--text-primary);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .rfNodeFolderMeta {
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
 }
 
 .rfNodeFolderPreview {
-  display: none;
-  margin-top: var(--space-3);
-  gap: 6px;
-  flex-direction: column;
+	display: none;
+	margin-top: var(--space-3);
+	gap: 6px;
+	flex-direction: column;
 }
 
 .rfNodeFolder:hover .rfNodeFolderPreview {
-  display: flex;
+	display: flex;
 }
 
 .rfNodeFolderPreviewRow {
-  width: 100%;
-  text-align: left;
-  border: none;
-  background: transparent;
-  color: var(--text-secondary);
-  padding: 2px 0;
-  font-size: var(--text-xs);
-  cursor: pointer;
+	width: 100%;
+	text-align: left;
+	border: none;
+	background: transparent;
+	color: var(--text-secondary);
+	padding: 2px 0;
+	font-size: var(--text-xs);
+	cursor: pointer;
 }
 
 .rfNodeFolderPreviewRow:hover {
-  color: var(--text-accent);
-  text-decoration: underline;
+	color: var(--text-accent);
+	text-decoration: underline;
 }
 
 .rfNodeFolderPreviewEmpty {
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
 }
 
 /* ─── Text Nodes (Quick Notes) ─── */
 .rfNodeText {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
 }
 
 .rfNodeText--small {
-  width: 100px;
-  min-height: 80px;
-  padding: var(--space-2);
+	width: 100px;
+	min-height: 80px;
+	padding: var(--space-2);
 }
 
 .rfNodeText--medium {
-  width: 160px;
-  min-height: 100px;
-  padding: var(--space-3);
+	width: 160px;
+	min-height: 100px;
+	padding: var(--space-3);
 }
 
 .rfNodeText--large {
-  width: 220px;
-  min-height: 140px;
-  padding: var(--space-3) var(--space-4);
+	width: 220px;
+	min-height: 140px;
+	padding: var(--space-3) var(--space-4);
 }
 
 .rfNodeTextContent {
-  font-size: 14px;
-  color: rgba(0, 0, 0, 0.8);
-  line-height: 1.4;
-  white-space: pre-wrap;
-  word-break: break-word;
-  font-family: var(--font-sans);
+	font-size: 14px;
+	color: rgba(0, 0, 0, 0.8);
+	line-height: 1.4;
+	white-space: pre-wrap;
+	word-break: break-word;
+	font-family: var(--font-sans);
 }
 
 /* ─── Link Nodes (Cards) ─── */
 .rfNodeLink {
-  background: linear-gradient(
-    135deg,
-    var(--bg-primary) 0%,
-    color-mix(in srgb, var(--bg-primary) 95%, #e3f2fd) 100%
-  );
-  border: 1px solid #c5dff8;
-  border-radius: 12px;
-  overflow: hidden;
-  min-width: 200px;
-  max-width: 300px;
-  padding: 0;
+	background: linear-gradient(
+		135deg,
+		var(--bg-primary) 0%,
+		color-mix(in srgb, var(--bg-primary) 95%, #e3f2fd) 100%
+	);
+	border: 1px solid #c5dff8;
+	border-radius: 12px;
+	overflow: hidden;
+	min-width: 200px;
+	max-width: 300px;
+	padding: 0;
 }
 
 .rfNodeLink::before,
 .rfNodeLink::after {
-  display: none;
+	display: none;
 }
 
 .rfNodeLink .rfNodeTitle {
-  padding: var(--space-3) var(--space-4) 0;
+	padding: var(--space-3) var(--space-4) 0;
 }
 
 .rfNodeLink .rfNodeBody {
-  padding: var(--space-1) var(--space-4) var(--space-3);
+	padding: var(--space-1) var(--space-4) var(--space-3);
 }
 
 @media (prefers-color-scheme: dark) {
-  .rfNodeLink {
-    background: linear-gradient(135deg, #1a1a2e 0%, #1a2035 100%);
-    border-color: #2a3555;
-  }
+	.rfNodeLink {
+		background: linear-gradient(135deg, #1a1a2e 0%, #1a2035 100%);
+		border-color: #2a3555;
+	}
 }
 
 .rfNodeTitle {
-  font-size: var(--text-sm);
-  font-weight: var(--font-semibold);
-  color: var(--text-primary);
-  line-height: var(--leading-snug);
-  margin-bottom: var(--space-1);
+	font-size: var(--text-sm);
+	font-weight: var(--font-semibold);
+	color: var(--text-primary);
+	line-height: var(--leading-snug);
+	margin-bottom: var(--space-1);
 }
 
 .rfNodeSub {
-  font-size: var(--text-xs);
-  color: var(--text-tertiary);
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
 }
 
 .rfNodeBody {
-  font-size: var(--text-sm);
-  color: var(--text-secondary);
-  line-height: var(--leading-relaxed);
-  white-space: pre-wrap;
-  word-break: break-word;
+	font-size: var(--text-sm);
+	color: var(--text-secondary);
+	line-height: var(--leading-relaxed);
+	white-space: pre-wrap;
+	word-break: break-word;
 }
 
 .rfNodeLinkImage {
-  width: 100%;
-  max-height: 160px;
-  object-fit: cover;
-  background: var(--bg-tertiary);
+	width: 100%;
+	max-height: 160px;
+	object-fit: cover;
+	background: var(--bg-tertiary);
 }
 
 /* ─── File Nodes (Attachments) ─── */
 .rfNodeFile {
-  background: linear-gradient(
-    135deg,
-    var(--bg-primary) 0%,
-    color-mix(in srgb, var(--bg-primary) 92%, #f7f0ff) 100%
-  );
-  border: 1px solid color-mix(in srgb, var(--border-default) 70%, #c7b3ff);
-  border-radius: 12px;
-  overflow: hidden;
-  min-width: 180px;
-  max-width: 280px;
-  padding: var(--space-3) var(--space-3) var(--space-4);
+	background: linear-gradient(
+		135deg,
+		var(--bg-primary) 0%,
+		color-mix(in srgb, var(--bg-primary) 92%, #f7f0ff) 100%
+	);
+	border: 1px solid color-mix(in srgb, var(--border-default) 70%, #c7b3ff);
+	border-radius: 12px;
+	overflow: hidden;
+	min-width: 180px;
+	max-width: 280px;
+	padding: var(--space-3) var(--space-3) var(--space-4);
 }
 
 .rfNodeFileThumb {
-  width: 100%;
-  height: 120px;
-  object-fit: cover;
-  border-radius: 10px;
-  margin-bottom: var(--space-2);
-  background: var(--bg-tertiary);
+	width: 100%;
+	height: 120px;
+	object-fit: cover;
+	border-radius: 10px;
+	margin-bottom: var(--space-2);
+	background: var(--bg-tertiary);
 }
 
 /* ─── Frame Nodes ─── */
 .rfNodeFrame {
-  border: 2px dashed var(--border-default);
-  border-color: color-mix(
-    in srgb,
-    var(--interactive-accent) 40%,
-    var(--border-default)
-  );
-  background: linear-gradient(
-    135deg,
-    rgba(99, 102, 241, 0.03) 0%,
-    rgba(168, 85, 247, 0.03) 100%
-  );
-  box-shadow: none;
-  min-width: 260px;
-  min-height: 200px;
-  border-radius: 16px;
-  padding: var(--space-3);
+	border: 2px dashed var(--border-default);
+	border-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 40%,
+		var(--border-default)
+	);
+	background: linear-gradient(
+		135deg,
+		rgba(99, 102, 241, 0.03) 0%,
+		rgba(168, 85, 247, 0.03) 100%
+	);
+	box-shadow: none;
+	min-width: 260px;
+	min-height: 200px;
+	border-radius: 16px;
+	padding: var(--space-3);
 }
 
 .rfNodeFrame::before,
 .rfNodeFrame::after {
-  display: none;
+	display: none;
 }
 
 .rfNodeFrame .rfNodeTitle {
-  color: var(--text-tertiary);
-  font-size: var(--text-xs);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  font-weight: var(--font-medium);
+	color: var(--text-tertiary);
+	font-size: var(--text-xs);
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	font-weight: var(--font-medium);
 }
 
 @media (prefers-color-scheme: dark) {
-  .rfNodeFrame {
-    background: linear-gradient(
-      135deg,
-      rgba(99, 102, 241, 0.05) 0%,
-      rgba(168, 85, 247, 0.05) 100%
-    );
-  }
+	.rfNodeFrame {
+		background: linear-gradient(
+			135deg,
+			rgba(99, 102, 241, 0.05) 0%,
+			rgba(168, 85, 247, 0.05) 100%
+		);
+	}
 }
 
 /* ReactFlow handles */
 .react-flow__handle {
-  width: 10px;
-  height: 10px;
-  background: var(--bg-primary);
-  border: 2px solid var(--border-default);
-  border-radius: var(--radius-full);
-  transition: all var(--transition-fast);
+	width: 10px;
+	height: 10px;
+	background: var(--bg-primary);
+	border: 2px solid var(--border-default);
+	border-radius: var(--radius-full);
+	transition: all var(--transition-fast);
 }
 
 .react-flow__handle:hover {
-  background: var(--interactive-accent);
-  border-color: var(--interactive-accent);
-  transform: scale(1.2);
+	background: var(--interactive-accent);
+	border-color: var(--interactive-accent);
+	transform: scale(1.2);
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
    FILE PREVIEW
    ───────────────────────────────────────────────────────────────────────────── */
 .filePreviewCentered {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: var(--space-6);
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: var(--space-6);
 }
 
 .filePreviewImage {
-  max-width: min(900px, 100%);
-  max-height: 100%;
-  border-radius: var(--radius-xl);
-  box-shadow:
-    0 8px 24px rgba(0, 0, 0, 0.12),
-    0 2px 8px rgba(0, 0, 0, 0.08);
+	max-width: min(900px, 100%);
+	max-height: 100%;
+	border-radius: var(--radius-xl);
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 .filePreviewFrame {
-  width: 100%;
-  flex: 1;
-  min-height: 0;
-  border: none;
-  background: var(--bg-primary);
+	width: 100%;
+	flex: 1;
+	min-height: 0;
+	border: none;
+	background: var(--bg-primary);
 }
 
 .filePreviewVideo {
-  max-width: min(900px, 100%);
-  max-height: 100%;
-  border-radius: var(--radius-xl);
-  background: black;
+	max-width: min(900px, 100%);
+	max-height: 100%;
+	border-radius: var(--radius-xl);
+	background: black;
 }
 
 .filePreviewMeta {
-  padding: var(--space-6);
-  color: var(--text-secondary);
+	padding: var(--space-6);
+	color: var(--text-secondary);
 }
 
 .filePreviewLabel {
-  margin-bottom: var(--space-2);
-  color: var(--text-tertiary);
+	margin-bottom: var(--space-2);
+	color: var(--text-tertiary);
 }
 
 .filePreviewHint {
-  font-size: var(--text-sm);
+	font-size: var(--text-sm);
 }
 
 /* ReactFlow edges */
 .react-flow__edge-path {
-  stroke: var(--border-default);
-  stroke-width: 1.5;
+	stroke: var(--border-default);
+	stroke-width: 1.5;
 }
 
 .react-flow__edge.selected .react-flow__edge-path {
-  stroke: var(--interactive-accent);
-  stroke-width: 2;
+	stroke: var(--interactive-accent);
+	stroke-width: 2;
 }
 
 /* ReactFlow controls */
 .react-flow__controls {
-  box-shadow: var(--shadow-lg);
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--border-light);
-  overflow: hidden;
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
+	box-shadow: var(--shadow-lg);
+	border-radius: var(--radius-xl);
+	border: 1px solid var(--border-light);
+	overflow: hidden;
+	background: var(--glass-bg);
+	backdrop-filter: blur(var(--glass-blur));
+	-webkit-backdrop-filter: blur(var(--glass-blur));
 }
 
 .react-flow__controls-button {
-  background: transparent;
-  border: none;
-  border-bottom: 1px solid var(--border-light);
-  width: 32px;
-  height: 32px;
-  transition: all var(--transition-fast);
+	background: transparent;
+	border: none;
+	border-bottom: 1px solid var(--border-light);
+	width: 32px;
+	height: 32px;
+	transition: all var(--transition-fast);
 }
 
 .react-flow__controls-button:hover {
-  background: var(--bg-hover);
+	background: var(--bg-hover);
 }
 
 .react-flow__controls-button svg {
-  fill: var(--text-secondary);
-  max-width: 14px;
-  max-height: 14px;
+	fill: var(--text-secondary);
+	max-width: 14px;
+	max-height: 14px;
 }
 
 /* ReactFlow minimap */
 .react-flow__minimap {
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  border-radius: var(--radius-xl);
-  border: 1px solid var(--border-light);
-  box-shadow: var(--shadow-md);
+	background: var(--glass-bg);
+	backdrop-filter: blur(var(--glass-blur));
+	-webkit-backdrop-filter: blur(var(--glass-blur));
+	border-radius: var(--radius-xl);
+	border: 1px solid var(--border-light);
+	box-shadow: var(--shadow-md);
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
    ERROR STATES
    ───────────────────────────────────────────────────────────────────────────── */
 .appError {
-  position: fixed;
-  bottom: var(--space-6);
-  left: 50%;
-  transform: translateX(-50%);
-  padding: var(--space-3) var(--space-5);
-  font-size: var(--text-sm);
-  color: var(--text-error);
-  background: var(--glass-bg);
-  backdrop-filter: blur(var(--glass-blur));
-  -webkit-backdrop-filter: blur(var(--glass-blur));
-  border: 1px solid var(--feedback-error-bg);
-  border-radius: var(--radius-full);
-  box-shadow: var(--shadow-xl);
-  z-index: 1000;
+	position: fixed;
+	bottom: var(--space-6);
+	left: 50%;
+	transform: translateX(-50%);
+	padding: var(--space-3) var(--space-5);
+	font-size: var(--text-sm);
+	color: var(--text-error);
+	background: var(--glass-bg);
+	backdrop-filter: blur(var(--glass-blur));
+	-webkit-backdrop-filter: blur(var(--glass-blur));
+	border: 1px solid var(--feedback-error-bg);
+	border-radius: var(--radius-full);
+	box-shadow: var(--shadow-xl);
+	z-index: 1000;
 }
