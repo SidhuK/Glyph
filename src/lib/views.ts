@@ -356,8 +356,10 @@ export async function buildFolderViewDoc(
 			recent_markdown: s?.recent_markdown ?? [],
 			truncated: s?.truncated ?? false,
 		};
+		// Force folder tiles into a single horizontal row (don't preserve prior positions).
+		// These tiles act like "index cards" for navigation, so deterministic layout > manual placement.
 		if (ex) {
-			nextNodes.push({ ...ex, type: "folder", data });
+			nextNodes.push({ ...ex, type: "folder", position: tilePos(i), data });
 		} else {
 			nextNodes.push({
 				id,

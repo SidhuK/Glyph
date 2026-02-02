@@ -20,6 +20,7 @@ import {
 	useNodesState,
 } from "@xyflow/react";
 
+import { motion } from "motion/react";
 import {
 	createContext,
 	memo,
@@ -413,9 +414,11 @@ const FolderPreviewNode = memo(function FolderPreviewNode({
 	const moreCount = typeof data.more_count === "number" ? data.more_count : 0;
 	const dir = typeof data.dir === "string" ? data.dir : "";
 	const isMore = moreCount > 0;
+	const previewIndex =
+		typeof data.preview_index === "number" ? data.preview_index : 0;
 
 	return (
-		<div
+		<motion.div
 			className="rfNode rfNodeFolderPreviewNode nodrag nopan"
 			onMouseEnter={() => {
 				if (folderId) showFolderPreview(folderId);
@@ -424,6 +427,15 @@ const FolderPreviewNode = memo(function FolderPreviewNode({
 				if (folderId) scheduleHideFolderPreview(folderId);
 			}}
 			title={isMore ? "" : relPath}
+			initial={{ opacity: 0, y: -10, scale: 0.96 }}
+			animate={{ opacity: 1, y: 0, scale: 1 }}
+			transition={{
+				type: "spring",
+				stiffness: 520,
+				damping: 32,
+				delay: previewIndex * 0.035,
+			}}
+			whileHover={{ scale: 1.02 }}
 		>
 			<Handle type="target" position={Position.Top} />
 			<div className="rfNodeFolderPreviewTitle">
@@ -443,7 +455,7 @@ const FolderPreviewNode = memo(function FolderPreviewNode({
 			>
 				Open
 			</button>
-		</div>
+		</motion.div>
 	);
 });
 
@@ -577,31 +589,40 @@ export default function CanvasPane({
 			const folderW = 240;
 			const folderH = 180;
 			const previewW = 260;
-			const previewH = 64;
-			const gapY = 14;
 
-			const startX = folderNode.position.x + (folderW - previewW) / 2;
-			const startY = folderNode.position.y + folderH + 60;
+			// "Mind map" layout: previews fan out on a shallow arc beneath the folder tile.
+			const centerX = folderNode.position.x + folderW / 2;
+			const baseY = folderNode.position.y + folderH + 60;
+			const radiusX = 320;
+			const radiusY = 220;
 
 			const previewNodes: CanvasNode[] = [];
 			const previewEdges: CanvasEdge[] = [];
 
-			for (let i = 0; i < Math.min(5, recent.length); i++) {
+			const previewCount = Math.min(5, recent.length);
+			const spreadDeg = previewCount <= 1 ? 0 : 56;
+			for (let i = 0; i < previewCount; i++) {
 				const r = recent[i];
 				if (!r) continue;
 				const relPath = typeof r.rel_path === "string" ? r.rel_path : "";
 				const name = typeof r.name === "string" ? r.name : "";
 				if (!relPath) continue;
 				const previewId = `preview:${folderNodeId}:${relPath}`;
+				const t = previewCount <= 1 ? 0 : i / Math.max(1, previewCount - 1);
+				const deg = (t - 0.5) * spreadDeg;
+				const rad = (deg * Math.PI) / 180;
+				const x = centerX + Math.sin(rad) * radiusX - previewW / 2;
+				const y = baseY + (1 - Math.cos(rad)) * radiusY + i * 10; // prevent perfect overlap on dense arcs
 				previewNodes.push({
 					id: previewId,
 					type: "folder_preview",
-					position: { x: startX, y: startY + i * (previewH + gapY) },
+					position: { x, y },
 					data: {
 						__ephemeral: true,
 						folder_id: folderNodeId,
 						rel_path: relPath,
 						name: name || relPath.split("/").pop() || relPath,
+						preview_index: i,
 					},
 					draggable: false,
 					selectable: false,
@@ -612,23 +633,29 @@ export default function CanvasPane({
 					target: previewId,
 					type: "smoothstep",
 					data: { __ephemeral: true },
+					animated: true,
 					selectable: false,
 				} as CanvasEdge);
 			}
 
-			const more = totalMarkdown - Math.min(5, recent.length);
+			const more = totalMarkdown - previewCount;
 			if (more > 0) {
-				const i = Math.min(5, recent.length);
+				const i = previewCount;
 				const previewId = `preview:${folderNodeId}:more`;
+				const deg = spreadDeg / 2 + 14;
+				const rad = (deg * Math.PI) / 180;
+				const x = centerX + Math.sin(rad) * radiusX - previewW / 2;
+				const y = baseY + (1 - Math.cos(rad)) * radiusY + i * 10;
 				previewNodes.push({
 					id: previewId,
 					type: "folder_preview",
-					position: { x: startX, y: startY + i * (previewH + gapY) },
+					position: { x, y },
 					data: {
 						__ephemeral: true,
 						folder_id: folderNodeId,
 						dir,
 						more_count: more,
+						preview_index: i,
 					},
 					draggable: false,
 					selectable: false,
@@ -639,6 +666,7 @@ export default function CanvasPane({
 					target: previewId,
 					type: "smoothstep",
 					data: { __ephemeral: true },
+					animated: true,
 					selectable: false,
 				} as CanvasEdge);
 			}
