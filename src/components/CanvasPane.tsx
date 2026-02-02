@@ -593,8 +593,11 @@ export default function CanvasPane({
 			// "Mind map" layout: previews fan out on a shallow arc beneath the folder tile.
 			const centerX = folderNode.position.x + folderW / 2;
 			const baseY = folderNode.position.y + folderH + 60;
-			const radiusX = 320;
-			const radiusY = 220;
+			// Keep the fan narrow so cards never collide with each other.
+			const radiusX = 110;
+			const arcY = 42;
+			const previewH = 64;
+			const gapY = 14;
 
 			const previewNodes: CanvasNode[] = [];
 			const previewEdges: CanvasEdge[] = [];
@@ -612,7 +615,8 @@ export default function CanvasPane({
 				const deg = (t - 0.5) * spreadDeg;
 				const rad = (deg * Math.PI) / 180;
 				const x = centerX + Math.sin(rad) * radiusX - previewW / 2;
-				const y = baseY + (1 - Math.cos(rad)) * radiusY + i * 10; // prevent perfect overlap on dense arcs
+				// Primary stacking is vertical; arc only adds a subtle curve.
+				const y = baseY + i * (previewH + gapY) + (1 - Math.cos(rad)) * arcY;
 				previewNodes.push({
 					id: previewId,
 					type: "folder_preview",
@@ -645,7 +649,7 @@ export default function CanvasPane({
 				const deg = spreadDeg / 2 + 14;
 				const rad = (deg * Math.PI) / 180;
 				const x = centerX + Math.sin(rad) * radiusX - previewW / 2;
-				const y = baseY + (1 - Math.cos(rad)) * radiusY + i * 10;
+				const y = baseY + i * (previewH + gapY) + (1 - Math.cos(rad)) * arcY;
 				previewNodes.push({
 					id: previewId,
 					type: "folder_preview",
