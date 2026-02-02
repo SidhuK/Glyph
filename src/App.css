@@ -1364,20 +1364,22 @@ button.segBtn.active {
 
 .fileTreeItem:hover > .fileTreeRow {
 	background: var(--bg-hover);
+	border-radius: var(--radius-md);
 }
 
 .fileTreeItem.active > .fileTreeRow {
 	background: var(--selection-bg-muted);
-	color: var(--interactive-accent);
+	color: var(--text-primary);
+	border-radius: var(--radius-md);
 }
 
 .fileTreeItem.active > .fileTreeRow .fileTreeName {
 	font-weight: 500;
-	color: var(--interactive-accent);
+	color: var(--text-primary);
 }
 
 .fileTreeItem.active > .fileTreeRow .fileTreeIcon {
-	color: var(--interactive-accent);
+	color: var(--text-primary);
 }
 
 .fileTreeRow {
@@ -1388,18 +1390,14 @@ button.segBtn.active {
 	min-height: 28px;
 	padding: 2px var(--space-3) 2px var(--space-2);
 	text-align: left;
-	border-radius: 0;
+	border-radius: var(--radius-md);
 	margin: 0;
-	border-left: 2px solid transparent;
+	border-left: none;
 	transition: all var(--transition-fast);
 }
 
 .fileTreeRow:hover {
 	background: transparent;
-}
-
-.fileTreeItem.active > .fileTreeRow {
-	border-left-color: var(--interactive-accent);
 }
 
 .fileTreeRow:disabled {
