@@ -7,245 +7,250 @@
    PRIMITIVE TOKENS
    ───────────────────────────────────────────────────────────────────────────── */
 :root {
-	/* Notion-inspired warm neutrals */
-	--color-white: #ffffff;
-	--color-gray-25: #fbfbfa;
-	--color-gray-50: #f7f6f3;
-	--color-gray-100: #f1f1ef;
-	--color-gray-150: #e9e9e7;
-	--color-gray-200: #e3e2e0;
-	--color-gray-300: #d3d2cf;
-	--color-gray-400: #9b9a97;
-	--color-gray-500: #787774;
-	--color-gray-600: #5f5e5b;
-	--color-gray-700: #454441;
-	--color-gray-800: #37352f;
-	--color-gray-900: #1f1f1f;
-	--color-gray-950: #191919;
+  /* Notion-inspired warm neutrals */
+  --color-white: #ffffff;
+  --color-gray-25: #fbfbfa;
+  --color-gray-50: #f7f6f3;
+  --color-gray-100: #f1f1ef;
+  --color-gray-150: #e9e9e7;
+  --color-gray-200: #e3e2e0;
+  --color-gray-300: #d3d2cf;
+  --color-gray-400: #9b9a97;
+  --color-gray-500: #787774;
+  --color-gray-600: #5f5e5b;
+  --color-gray-700: #454441;
+  --color-gray-800: #37352f;
+  --color-gray-900: #1f1f1f;
+  --color-gray-950: #191919;
 
-	/* Accent - Notion's signature blue */
-	--color-blue-50: #e8f4fc;
-	--color-blue-100: #d3ebfa;
-	--color-blue-200: #a8d8f5;
-	--color-blue-300: #6ab9eb;
-	--color-blue-400: #3b9bdc;
-	--color-blue-500: #2383c6;
-	--color-blue-600: #1a6ba4;
-	--color-blue-700: #155580;
+  /* Accent - Notion's signature blue */
+  --color-blue-50: #e8f4fc;
+  --color-blue-100: #d3ebfa;
+  --color-blue-200: #a8d8f5;
+  --color-blue-300: #6ab9eb;
+  --color-blue-400: #3b9bdc;
+  --color-blue-500: #2383c6;
+  --color-blue-600: #1a6ba4;
+  --color-blue-700: #155580;
 
-	/* Semantic colors */
-	--color-red-100: #fce8e8;
-	--color-red-500: #e03e3e;
-	--color-red-600: #c73838;
-	--color-green-100: #e6f6e9;
-	--color-green-500: #0f7b0f;
-	--color-yellow-100: #fbf3db;
-	--color-yellow-500: #dfab01;
-	--color-purple-100: #f3e8fd;
-	--color-purple-500: #9a6dd7;
+  /* Semantic colors */
+  --color-red-100: #fce8e8;
+  --color-red-500: #e03e3e;
+  --color-red-600: #c73838;
+  --color-green-100: #e6f6e9;
+  --color-green-500: #0f7b0f;
+  --color-yellow-100: #fbf3db;
+  --color-yellow-500: #dfab01;
+  --color-purple-100: #f3e8fd;
+  --color-purple-500: #9a6dd7;
 
-	/* Typography - Satoshi: modern geometric sans with character */
-	--font-sans: "Satoshi", -apple-system, BlinkMacSystemFont, sans-serif;
-	--font-mono: "JetBrains Mono", ui-monospace, monospace;
+  /* Typography - Inter: clean system UI font */
+  --font-sans: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, monospace;
 
-	/* Type scale */
-	--text-xs: 11px;
-	--text-sm: 12px;
-	--text-base: 14px;
-	--text-md: 16px;
-	--text-lg: 18px;
-	--text-xl: 20px;
-	--text-2xl: 24px;
-	--text-3xl: 30px;
+  /* Type scale */
+  --text-xs: 11px;
+  --text-sm: 12px;
+  --text-base: 14px;
+  --text-md: 16px;
+  --text-lg: 18px;
+  --text-xl: 20px;
+  --text-2xl: 24px;
+  --text-3xl: 30px;
 
-	/* Line heights */
-	--leading-tight: 1.2;
-	--leading-snug: 1.35;
-	--leading-normal: 1.5;
-	--leading-relaxed: 1.625;
+  /* Line heights */
+  --leading-tight: 1.2;
+  --leading-snug: 1.35;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.625;
 
-	/* Font weights */
-	--font-normal: 400;
-	--font-medium: 500;
-	--font-semibold: 600;
-	--font-bold: 700;
+  /* Font weights */
+  --font-normal: 400;
+  --font-medium: 500;
+  --font-semibold: 600;
+  --font-bold: 700;
 
-	/* Spacing - 4px base grid (Notion uses 8px, but 4px gives more flexibility) */
-	--space-0: 0;
-	--space-1: 4px;
-	--space-2: 8px;
-	--space-3: 12px;
-	--space-4: 16px;
-	--space-5: 20px;
-	--space-6: 24px;
-	--space-8: 32px;
-	--space-10: 40px;
-	--space-12: 48px;
+  /* Spacing - 4px base grid (Notion uses 8px, but 4px gives more flexibility) */
+  --space-0: 0;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
 
-	/* Border radius - Modern rounded aesthetic */
-	--radius-sm: 4px;
-	--radius-md: 6px;
-	--radius-lg: 10px;
-	--radius-xl: 14px;
-	--radius-2xl: 22px;
-	--radius-3xl: 28px;
-	--radius-full: 9999px;
+  /* Border radius - Modern rounded aesthetic */
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 10px;
+  --radius-xl: 14px;
+  --radius-2xl: 22px;
+  --radius-3xl: 28px;
+  --radius-full: 9999px;
 
-	/* Shadows - Layered for depth */
-	--shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.06);
-	--shadow-md: 0 2px 4px rgba(0, 0, 0, 0.04), 0 4px 8px rgba(0, 0, 0, 0.06), 0
-		8px 16px rgba(0, 0, 0, 0.04);
-	--shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.04), 0 8px 16px rgba(0, 0, 0, 0.06), 0
-		16px 32px rgba(0, 0, 0, 0.08);
-	--shadow-xl: 0 8px 16px rgba(0, 0, 0, 0.06), 0 16px 32px rgba(0, 0, 0, 0.08),
-		0 32px 64px rgba(0, 0, 0, 0.1);
+  /* Shadows - Layered for depth */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.06);
+  --shadow-md:
+    0 2px 4px rgba(0, 0, 0, 0.04), 0 4px 8px rgba(0, 0, 0, 0.06),
+    0 8px 16px rgba(0, 0, 0, 0.04);
+  --shadow-lg:
+    0 4px 8px rgba(0, 0, 0, 0.04), 0 8px 16px rgba(0, 0, 0, 0.06),
+    0 16px 32px rgba(0, 0, 0, 0.08);
+  --shadow-xl:
+    0 8px 16px rgba(0, 0, 0, 0.06), 0 16px 32px rgba(0, 0, 0, 0.08),
+    0 32px 64px rgba(0, 0, 0, 0.1);
 
-	/* Floating panel shadows */
-	--shadow-float: 0 0 0 1px rgba(0, 0, 0, 0.04), 0 4px 8px rgba(0, 0, 0, 0.04),
-		0 12px 24px rgba(0, 0, 0, 0.06), 0 24px 48px rgba(0, 0, 0, 0.08);
+  /* Floating panel shadows */
+  --shadow-float:
+    0 0 0 1px rgba(0, 0, 0, 0.04), 0 4px 8px rgba(0, 0, 0, 0.04),
+    0 12px 24px rgba(0, 0, 0, 0.06), 0 24px 48px rgba(0, 0, 0, 0.08);
 
-	/* Transitions */
-	--transition-fast: 100ms cubic-bezier(0.4, 0, 0.2, 1);
-	--transition-base: 150ms cubic-bezier(0.4, 0, 0.2, 1);
-	--transition-slow: 250ms cubic-bezier(0.4, 0, 0.2, 1);
-	--transition-spring: 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  /* Transitions */
+  --transition-fast: 100ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-base: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-slow: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-spring: 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
 
-	/* Glass morphism */
-	--glass-bg: rgba(255, 255, 255, 0.8);
-	--glass-border: rgba(255, 255, 255, 0.5);
-	--glass-blur: 20px;
+  /* Glass morphism */
+  --glass-bg: rgba(255, 255, 255, 0.8);
+  --glass-border: rgba(255, 255, 255, 0.5);
+  --glass-blur: 20px;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
    SEMANTIC TOKENS - LIGHT THEME
    ───────────────────────────────────────────────────────────────────────────── */
 :root {
-	/* Surfaces */
-	--bg-primary: var(--color-white);
-	--bg-secondary: var(--color-gray-50);
-	--bg-tertiary: var(--color-gray-100);
-	--bg-hover: rgba(55, 53, 47, 0.08);
-	--bg-active: rgba(55, 53, 47, 0.16);
-	--bg-sidebar: var(--color-gray-50);
-	--bg-canvas: var(--color-gray-100);
+  /* Surfaces */
+  --bg-primary: var(--color-white);
+  --bg-secondary: var(--color-gray-50);
+  --bg-tertiary: var(--color-gray-100);
+  --bg-hover: rgba(55, 53, 47, 0.08);
+  --bg-active: rgba(55, 53, 47, 0.16);
+  --bg-sidebar: var(--color-gray-50);
+  --bg-canvas: var(--color-gray-100);
 
-	/* Text */
-	--text-primary: var(--color-gray-800);
-	--text-secondary: rgba(55, 53, 47, 0.65);
-	--text-tertiary: rgba(55, 53, 47, 0.45);
-	--text-placeholder: rgba(55, 53, 47, 0.35);
-	--text-inverse: var(--color-white);
-	--text-accent: var(--color-blue-600);
-	--text-error: var(--color-red-600);
+  /* Text */
+  --text-primary: var(--color-gray-800);
+  --text-secondary: rgba(55, 53, 47, 0.65);
+  --text-tertiary: rgba(55, 53, 47, 0.45);
+  --text-placeholder: rgba(55, 53, 47, 0.35);
+  --text-inverse: var(--color-white);
+  --text-accent: var(--color-blue-600);
+  --text-error: var(--color-red-600);
 
-	/* Borders */
-	--border-light: rgba(55, 53, 47, 0.09);
-	--border-default: rgba(55, 53, 47, 0.16);
-	--border-strong: rgba(55, 53, 47, 0.24);
-	--border-focus: var(--color-blue-500);
+  /* Borders */
+  --border-light: rgba(55, 53, 47, 0.09);
+  --border-default: rgba(55, 53, 47, 0.16);
+  --border-strong: rgba(55, 53, 47, 0.24);
+  --border-focus: var(--color-blue-500);
 
-	/* Interactive */
-	--interactive-hover: rgba(55, 53, 47, 0.08);
-	--interactive-active: rgba(55, 53, 47, 0.16);
-	--interactive-accent: var(--color-blue-500);
-	--interactive-accent-hover: var(--color-blue-600);
+  /* Interactive */
+  --interactive-hover: rgba(55, 53, 47, 0.08);
+  --interactive-active: rgba(55, 53, 47, 0.16);
+  --interactive-accent: var(--color-blue-500);
+  --interactive-accent-hover: var(--color-blue-600);
 
-	/* Selection */
-	--selection-bg: var(--color-blue-100);
-	--selection-bg-muted: rgba(35, 131, 226, 0.14);
+  /* Selection */
+  --selection-bg: var(--color-blue-100);
+  --selection-bg-muted: rgba(35, 131, 226, 0.14);
 
-	/* Feedback */
-	--feedback-error-bg: var(--color-red-100);
-	--feedback-success-bg: var(--color-green-100);
+  /* Feedback */
+  --feedback-error-bg: var(--color-red-100);
+  --feedback-success-bg: var(--color-green-100);
 
-	/* Scrollbar */
-	--scrollbar-track: transparent;
-	--scrollbar-thumb: rgba(55, 53, 47, 0.16);
-	--scrollbar-thumb-hover: rgba(55, 53, 47, 0.28);
+  /* Scrollbar */
+  --scrollbar-track: transparent;
+  --scrollbar-thumb: rgba(55, 53, 47, 0.16);
+  --scrollbar-thumb-hover: rgba(55, 53, 47, 0.28);
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
    SEMANTIC TOKENS - DARK THEME (Obsidian-inspired)
    ───────────────────────────────────────────────────────────────────────────── */
 @media (prefers-color-scheme: dark) {
-	:root {
-		/* Surfaces - Obsidian-like dark with warm undertones */
-		--bg-primary: #1a1a1a;
-		--bg-secondary: #222222;
-		--bg-tertiary: #2a2a2a;
-		--bg-hover: rgba(255, 255, 255, 0.06);
-		--bg-active: rgba(255, 255, 255, 0.12);
-		--bg-sidebar: #1e1e1e;
-		--bg-canvas: #141414;
+  :root {
+    /* Surfaces - Obsidian-like dark with warm undertones */
+    --bg-primary: #1a1a1a;
+    --bg-secondary: #222222;
+    --bg-tertiary: #2a2a2a;
+    --bg-hover: rgba(255, 255, 255, 0.06);
+    --bg-active: rgba(255, 255, 255, 0.12);
+    --bg-sidebar: #1e1e1e;
+    --bg-canvas: #141414;
 
-		/* Text */
-		--text-primary: rgba(255, 255, 255, 0.92);
-		--text-secondary: rgba(255, 255, 255, 0.65);
-		--text-tertiary: rgba(255, 255, 255, 0.45);
-		--text-placeholder: rgba(255, 255, 255, 0.3);
-		--text-inverse: var(--color-gray-900);
-		--text-accent: var(--color-blue-400);
-		--text-error: var(--color-red-500);
+    /* Text */
+    --text-primary: rgba(255, 255, 255, 0.92);
+    --text-secondary: rgba(255, 255, 255, 0.65);
+    --text-tertiary: rgba(255, 255, 255, 0.45);
+    --text-placeholder: rgba(255, 255, 255, 0.3);
+    --text-inverse: var(--color-gray-900);
+    --text-accent: var(--color-blue-400);
+    --text-error: var(--color-red-500);
 
-		/* Borders */
-		--border-light: rgba(255, 255, 255, 0.06);
-		--border-default: rgba(255, 255, 255, 0.1);
-		--border-strong: rgba(255, 255, 255, 0.18);
-		--border-focus: var(--color-blue-400);
+    /* Borders */
+    --border-light: rgba(255, 255, 255, 0.06);
+    --border-default: rgba(255, 255, 255, 0.1);
+    --border-strong: rgba(255, 255, 255, 0.18);
+    --border-focus: var(--color-blue-400);
 
-		/* Interactive */
-		--interactive-hover: rgba(255, 255, 255, 0.06);
-		--interactive-active: rgba(255, 255, 255, 0.12);
-		--interactive-accent: var(--color-blue-400);
-		--interactive-accent-hover: var(--color-blue-300);
+    /* Interactive */
+    --interactive-hover: rgba(255, 255, 255, 0.06);
+    --interactive-active: rgba(255, 255, 255, 0.12);
+    --interactive-accent: var(--color-blue-400);
+    --interactive-accent-hover: var(--color-blue-300);
 
-		/* Selection */
-		--selection-bg: rgba(35, 131, 226, 0.35);
-		--selection-bg-muted: rgba(35, 131, 226, 0.18);
+    /* Selection */
+    --selection-bg: rgba(35, 131, 226, 0.35);
+    --selection-bg-muted: rgba(35, 131, 226, 0.18);
 
-		/* Feedback */
-		--feedback-error-bg: rgba(224, 62, 62, 0.18);
-		--feedback-success-bg: rgba(15, 123, 15, 0.18);
+    /* Feedback */
+    --feedback-error-bg: rgba(224, 62, 62, 0.18);
+    --feedback-success-bg: rgba(15, 123, 15, 0.18);
 
-		/* Scrollbar */
-		--scrollbar-thumb: rgba(255, 255, 255, 0.16);
-		--scrollbar-thumb-hover: rgba(255, 255, 255, 0.24);
+    /* Scrollbar */
+    --scrollbar-thumb: rgba(255, 255, 255, 0.16);
+    --scrollbar-thumb-hover: rgba(255, 255, 255, 0.24);
 
-		/* Shadows - softer in dark mode */
-		--shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
-		--shadow-md: 0 2px 4px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15);
-		--shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 0, 0, 0.2);
-		--shadow-xl: 0 8px 16px rgba(0, 0, 0, 0.25), 0 24px 48px rgba(0, 0, 0, 0.3);
-		--shadow-float: 0 0 0 1px rgba(255, 255, 255, 0.06), 0 4px 12px
-			rgba(0, 0, 0, 0.3), 0 16px 32px rgba(0, 0, 0, 0.25);
+    /* Shadows - softer in dark mode */
+    --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+    --shadow-md: 0 2px 4px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15);
+    --shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 0, 0, 0.2);
+    --shadow-xl: 0 8px 16px rgba(0, 0, 0, 0.25), 0 24px 48px rgba(0, 0, 0, 0.3);
+    --shadow-float:
+      0 0 0 1px rgba(255, 255, 255, 0.06), 0 4px 12px rgba(0, 0, 0, 0.3),
+      0 16px 32px rgba(0, 0, 0, 0.25);
 
-		/* Glass morphism - dark mode */
-		--glass-bg: rgba(30, 30, 30, 0.85);
-		--glass-border: rgba(255, 255, 255, 0.08);
-	}
+    /* Glass morphism - dark mode */
+    --glass-bg: rgba(30, 30, 30, 0.85);
+    --glass-border: rgba(255, 255, 255, 0.08);
+  }
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
    COMPONENT TOKENS
    ───────────────────────────────────────────────────────────────────────────── */
 :root {
-	/* Layout - Notion's sidebar is 224px */
-	--sidebar-width: 260px;
-	--sidebar-collapsed-width: 0px;
-	--header-height: 48px;
-	--toolbar-height: 44px;
+  /* Layout - Notion's sidebar is 224px */
+  --sidebar-width: 260px;
+  --sidebar-collapsed-width: 0px;
+  --header-height: 48px;
+  --toolbar-height: 44px;
 
-	/* Interactive elements - slightly larger for better touch targets */
-	--button-height: 32px;
-	--button-height-sm: 26px;
-	--input-height: 32px;
-	--list-item-height: 34px;
+  /* Interactive elements - slightly larger for better touch targets */
+  --button-height: 32px;
+  --button-height-sm: 26px;
+  --input-height: 32px;
+  --list-item-height: 34px;
 
-	/* Pane dimensions */
-	--editor-width: 380px;
-	--editor-min-width: 300px;
+  /* Pane dimensions */
+  --editor-width: 380px;
+  --editor-min-width: 300px;
 
-	/* Floating panel spacing */
-	--float-gap: 12px;
-	--float-inset: 6px;
+  /* Floating panel spacing */
+  --float-gap: 12px;
+  --float-inset: 6px;
 }
