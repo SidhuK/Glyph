@@ -182,56 +182,76 @@ function titleForFile(relPath: string): string {
 	return name.toLowerCase().endsWith(".md") ? name.slice(0, -3) : name;
 }
 
-async function fetchNoteContent(
+function parseNoteContent(
 	relPath: string,
-): Promise<{ title: string; content: string }> {
-	try {
-		const doc = await invoke("vault_read_text", { path: relPath });
-		const text = doc.text || "";
-		// Extract title from frontmatter or first heading
-		let title = titleForFile(relPath);
-		// Check for YAML frontmatter title
-		const fmMatch = text.match(
-			/^---\n[\s\S]*?title:\s*["']?([^\n"']+)["']?[\s\S]*?\n---/,
-		);
-		if (fmMatch?.[1]) {
-			title = fmMatch[1].trim();
-		} else {
-			// Check for first # heading
-			const headingMatch = text.match(/^#\s+(.+)$/m);
-			if (headingMatch?.[1]) {
-				title = headingMatch[1].trim();
-			}
+	text: string,
+): { title: string; content: string } {
+	// Extract title from frontmatter or first heading
+	let title = titleForFile(relPath);
+	// Check for YAML frontmatter title
+	const fmMatch = text.match(
+		/^---\n[\s\S]*?title:\s*["']?([^\n"']+)["']?[\s\S]*?\n---/,
+	);
+	if (fmMatch?.[1]) {
+		title = fmMatch[1].trim();
+	} else {
+		// Check for first # heading
+		const headingMatch = text.match(/^#\s+(.+)$/m);
+		if (headingMatch?.[1]) {
+			title = headingMatch[1].trim();
 		}
-		// Strip frontmatter from content for display
-		let content = text;
-		if (text.startsWith("---\n")) {
-			const endIdx = text.indexOf("\n---\n", 4);
-			if (endIdx !== -1) {
-				content = text.slice(endIdx + 5).trim();
-			}
-		}
-		// Limit to first 20 lines for performance
-		const lines = content.split("\n");
-		if (lines.length > 20) {
-			content = `${lines.slice(0, 20).join("\n")}\n…`;
-		}
-		return { title, content };
-	} catch {
-		return { title: titleForFile(relPath), content: "" };
 	}
+	// Strip frontmatter from content for display
+	let content = text;
+	if (text.startsWith("---\n")) {
+		const endIdx = text.indexOf("\n---\n", 4);
+		if (endIdx !== -1) {
+			content = text.slice(endIdx + 5).trim();
+		}
+	}
+	// Limit to first 20 lines for performance
+	const lines = content.split("\n");
+	if (lines.length > 20) {
+		content = `${lines.slice(0, 20).join("\n")}\n…`;
+	}
+	return { title, content };
 }
 
 async function fetchNoteContents(
 	noteIds: string[],
 ): Promise<Map<string, { title: string; content: string }>> {
-	const results = await Promise.all(
-		noteIds.map(async (id) => {
-			const data = await fetchNoteContent(id);
-			return [id, data] as const;
-		}),
-	);
-	return new Map(results);
+	if (noteIds.length === 0) {
+		return new Map();
+	}
+
+	try {
+		// Use batch command to fetch all notes in a single IPC call
+		const batchResults = await invoke("vault_read_texts_batch", {
+			paths: noteIds,
+		});
+		const resultMap = new Map<string, { title: string; content: string }>();
+
+		for (const doc of batchResults) {
+			if (doc.text != null) {
+				resultMap.set(doc.rel_path, parseNoteContent(doc.rel_path, doc.text));
+			} else {
+				// File had an error (e.g., not found), use fallback
+				resultMap.set(doc.rel_path, {
+					title: titleForFile(doc.rel_path),
+					content: "",
+				});
+			}
+		}
+
+		return resultMap;
+	} catch {
+		// Fallback: return empty content for all notes
+		const resultMap = new Map<string, { title: string; content: string }>();
+		for (const id of noteIds) {
+			resultMap.set(id, { title: titleForFile(id), content: "" });
+		}
+		return resultMap;
+	}
 }
 
 export async function buildFolderViewDoc(

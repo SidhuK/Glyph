@@ -92,6 +92,7 @@ pub fn run() {
             vault_fs::vault_list_markdown_files,
             vault_fs::vault_list_files,
             vault_fs::vault_read_text,
+            vault_fs::vault_read_texts_batch,
             vault_fs::vault_write_text,
             vault_fs::vault_relativize_path,
             tether_fs::tether_read_text,

@@ -31,6 +31,14 @@ export interface TextFileWriteResult {
 	mtime_ms: number;
 }
 
+export interface TextFileDocBatch {
+	rel_path: string;
+	text: string | null;
+	etag: string | null;
+	mtime_ms: number;
+	error: string | null;
+}
+
 export interface NoteMeta {
 	id: string;
 	title: string;
@@ -158,6 +166,7 @@ interface TauriCommands {
 		FsEntry[]
 	>;
 	vault_read_text: CommandDef<{ path: string }, TextFileDoc>;
+	vault_read_texts_batch: CommandDef<{ paths: string[] }, TextFileDocBatch[]>;
 	vault_write_text: CommandDef<
 		{ path: string; text: string; base_mtime_ms?: number | null },
 		TextFileWriteResult

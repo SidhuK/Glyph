@@ -341,6 +341,57 @@ pub async fn vault_read_text(
     .map_err(|e| e.to_string())?
 }
 
+#[derive(Serialize)]
+pub struct TextFileDocBatch {
+    pub rel_path: String,
+    pub text: Option<String>,
+    pub etag: Option<String>,
+    pub mtime_ms: u64,
+    pub error: Option<String>,
+}
+
+#[tauri::command]
+pub async fn vault_read_texts_batch(
+    state: State<'_, VaultState>,
+    paths: Vec<String>,
+) -> Result<Vec<TextFileDocBatch>, String> {
+    let root = state.current_root()?;
+    tauri::async_runtime::spawn_blocking(move || -> Result<Vec<TextFileDocBatch>, String> {
+        let mut results = Vec::with_capacity(paths.len());
+        for path in paths {
+            let rel = PathBuf::from(&path);
+            let result = (|| -> Result<TextFileDocBatch, String> {
+                deny_hidden_rel_path(&rel)?;
+                let abs = paths::join_under(&root, &rel)?;
+                let bytes = std::fs::read(&abs).map_err(|e| e.to_string())?;
+                let etag = etag_for(&bytes);
+                let text = String::from_utf8(bytes)
+                    .map_err(|_| "file is not valid UTF-8".to_string())?;
+                Ok(TextFileDocBatch {
+                    rel_path: rel.to_string_lossy().to_string(),
+                    text: Some(text),
+                    etag: Some(etag),
+                    mtime_ms: file_mtime_ms(&abs),
+                    error: None,
+                })
+            })();
+            match result {
+                Ok(doc) => results.push(doc),
+                Err(e) => results.push(TextFileDocBatch {
+                    rel_path: path,
+                    text: None,
+                    etag: None,
+                    mtime_ms: 0,
+                    error: Some(e),
+                }),
+            }
+        }
+        Ok(results)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
 #[tauri::command]
 pub async fn vault_write_text(
     state: State<'_, VaultState>,
