@@ -125,6 +125,8 @@ function getStickyColor(id: string) {
 type CanvasActions = {
 	openNote: (relPath: string) => void;
 	openFolder: (dir: string) => void;
+	showFolderPreview: (folderNodeId: string) => void;
+	scheduleHideFolderPreview: (folderNodeId: string) => void;
 };
 
 const CanvasActionsContext = createContext<CanvasActions | null>(null);
@@ -362,57 +364,85 @@ const FrameNode = memo(function FrameNode({
 
 const FolderNode = memo(function FolderNode({
 	data,
+	id,
 }: {
 	data: Record<string, unknown>;
+	id: string;
 }) {
-	const { openNote } = useCanvasActions();
+	const { showFolderPreview, scheduleHideFolderPreview } = useCanvasActions();
 	const name = typeof data.name === "string" ? data.name : "Folder";
 	const totalFiles =
 		typeof data.total_files === "number" ? data.total_files : 0;
 	const totalMarkdown =
 		typeof data.total_markdown === "number" ? data.total_markdown : 0;
-	const recent = Array.isArray(data.recent_markdown)
-		? (data.recent_markdown as Array<Record<string, unknown>>)
-		: [];
 
 	return (
-		<div className="rfNode rfNodeFolder">
-			<div className="rfNodeFolderHeader">
-				<span className="rfNodeFolderIcon">
-					<FolderOpen size={18} />
-				</span>
-				<div className="rfNodeFolderName" title={name}>
-					{name}
-				</div>
+		<div
+			className="rfNode rfNodeFolder"
+			onMouseEnter={() => showFolderPreview(id)}
+			onMouseLeave={() => scheduleHideFolderPreview(id)}
+		>
+			<div className="rfNodeFolderIconLarge">
+				<FolderOpen size={44} />
 			</div>
-			<div className="rfNodeFolderMeta">
+			<div className="rfNodeFolderNameLarge" title={name}>
+				{name}
+			</div>
+			<div className="rfNodeFolderMetaLarge">
 				{totalMarkdown} md • {totalFiles} files
 			</div>
-			<div className="rfNodeFolderPreview">
-				{recent.length ? (
-					recent.slice(0, 5).map((r) => {
-						const relPath = typeof r.rel_path === "string" ? r.rel_path : "";
-						const rowName = typeof r.name === "string" ? r.name : relPath;
-						if (!relPath) return null;
-						return (
-							<button
-								key={relPath}
-								type="button"
-								className="rfNodeFolderPreviewRow nodrag nopan"
-								onClick={(e) => {
-									e.stopPropagation();
-									openNote(relPath);
-								}}
-								title={relPath}
-							>
-								{rowName}
-							</button>
-						);
-					})
-				) : (
-					<div className="rfNodeFolderPreviewEmpty">No recent notes</div>
-				)}
+		</div>
+	);
+});
+
+const FolderPreviewNode = memo(function FolderPreviewNode({
+	data,
+}: {
+	data: Record<string, unknown>;
+}) {
+	const { openNote, openFolder, showFolderPreview, scheduleHideFolderPreview } =
+		useCanvasActions();
+	const folderId = typeof data.folder_id === "string" ? data.folder_id : "";
+	const relPath = typeof data.rel_path === "string" ? data.rel_path : "";
+	const name =
+		typeof data.name === "string"
+			? data.name
+			: relPath
+				? (relPath.split("/").pop() ?? relPath)
+				: "File";
+	const moreCount = typeof data.more_count === "number" ? data.more_count : 0;
+	const dir = typeof data.dir === "string" ? data.dir : "";
+	const isMore = moreCount > 0;
+
+	return (
+		<div
+			className="rfNode rfNodeFolderPreviewNode nodrag nopan"
+			onMouseEnter={() => {
+				if (folderId) showFolderPreview(folderId);
+			}}
+			onMouseLeave={() => {
+				if (folderId) scheduleHideFolderPreview(folderId);
+			}}
+			title={isMore ? "" : relPath}
+		>
+			<Handle type="target" position={Position.Top} />
+			<div className="rfNodeFolderPreviewTitle">
+				{isMore ? `+${moreCount} more` : name}
 			</div>
+			<button
+				type="button"
+				className="rfNodeFolderPreviewAction nodrag nopan"
+				onClick={(e) => {
+					e.stopPropagation();
+					if (isMore) {
+						if (dir) openFolder(dir);
+					} else {
+						if (relPath) openNote(relPath);
+					}
+				}}
+			>
+				Open
+			</button>
 		</div>
 	);
 });
@@ -464,6 +494,173 @@ export default function CanvasPane({
 	);
 	const [edges, setEdges, onEdgesChange] = useEdgesState<CanvasEdge>(
 		doc?.edges ?? [],
+	);
+
+	const nodesRef = useRef<CanvasNode[]>([]);
+	const edgesRef = useRef<CanvasEdge[]>([]);
+	useEffect(() => {
+		nodesRef.current = nodes;
+		edgesRef.current = edges;
+	}, [edges, nodes]);
+
+	const stripEphemeral = useCallback(
+		(
+			n: CanvasNode[],
+			e: CanvasEdge[],
+		): {
+			nodes: CanvasNode[];
+			edges: CanvasEdge[];
+		} => {
+			const filteredNodes = n.filter((node) => {
+				const d = (node.data as Record<string, unknown> | null) ?? null;
+				return !(d && d.__ephemeral === true);
+			});
+			const keepIds = new Set(filteredNodes.map((x) => x.id));
+			const filteredEdges = e.filter((edge) => {
+				const d = (edge.data as Record<string, unknown> | null) ?? null;
+				if (d && d.__ephemeral === true) return false;
+				return keepIds.has(edge.source) && keepIds.has(edge.target);
+			});
+			return { nodes: filteredNodes, edges: filteredEdges };
+		},
+		[],
+	);
+
+	const previewHideTimerRef = useRef<number | null>(null);
+	const activePreviewFolderRef = useRef<string | null>(null);
+
+	const clearPreviewHideTimer = useCallback(() => {
+		if (previewHideTimerRef.current != null) {
+			window.clearTimeout(previewHideTimerRef.current);
+			previewHideTimerRef.current = null;
+		}
+	}, []);
+
+	const removeAllFolderPreviews = useCallback(() => {
+		setNodes((prev) => {
+			const next = prev.filter((n) => {
+				const d = (n.data as Record<string, unknown> | null) ?? null;
+				return !(d && d.__ephemeral === true);
+			});
+			return next;
+		});
+		setEdges((prev) => {
+			const next = prev.filter((e) => {
+				const d = (e.data as Record<string, unknown> | null) ?? null;
+				return !(d && d.__ephemeral === true);
+			});
+			return next;
+		});
+	}, [setEdges, setNodes]);
+
+	const showFolderPreview = useCallback(
+		(folderNodeId: string) => {
+			clearPreviewHideTimer();
+			if (!folderNodeId) return;
+			if (activePreviewFolderRef.current === folderNodeId) return;
+			activePreviewFolderRef.current = folderNodeId;
+
+			const baseNodes = nodesRef.current;
+			const folderNode = baseNodes.find((n) => n.id === folderNodeId);
+			if (!folderNode) return;
+			const d = (folderNode.data as Record<string, unknown> | null) ?? {};
+			const dir = typeof d.dir === "string" ? d.dir : "";
+			const recent = Array.isArray(d.recent_markdown)
+				? (d.recent_markdown as Array<Record<string, unknown>>)
+				: [];
+			const totalMarkdown =
+				typeof d.total_markdown === "number" ? d.total_markdown : 0;
+
+			// Reset existing previews before adding the next set.
+			removeAllFolderPreviews();
+
+			const folderW = 240;
+			const folderH = 180;
+			const previewW = 260;
+			const previewH = 64;
+			const gapY = 14;
+
+			const startX = folderNode.position.x + (folderW - previewW) / 2;
+			const startY = folderNode.position.y + folderH + 60;
+
+			const previewNodes: CanvasNode[] = [];
+			const previewEdges: CanvasEdge[] = [];
+
+			for (let i = 0; i < Math.min(5, recent.length); i++) {
+				const r = recent[i];
+				if (!r) continue;
+				const relPath = typeof r.rel_path === "string" ? r.rel_path : "";
+				const name = typeof r.name === "string" ? r.name : "";
+				if (!relPath) continue;
+				const previewId = `preview:${folderNodeId}:${relPath}`;
+				previewNodes.push({
+					id: previewId,
+					type: "folder_preview",
+					position: { x: startX, y: startY + i * (previewH + gapY) },
+					data: {
+						__ephemeral: true,
+						folder_id: folderNodeId,
+						rel_path: relPath,
+						name: name || relPath.split("/").pop() || relPath,
+					},
+					draggable: false,
+					selectable: false,
+				} as CanvasNode);
+				previewEdges.push({
+					id: `preview_edge:${folderNodeId}:${i}`,
+					source: folderNodeId,
+					target: previewId,
+					type: "smoothstep",
+					data: { __ephemeral: true },
+					selectable: false,
+				} as CanvasEdge);
+			}
+
+			const more = totalMarkdown - Math.min(5, recent.length);
+			if (more > 0) {
+				const i = Math.min(5, recent.length);
+				const previewId = `preview:${folderNodeId}:more`;
+				previewNodes.push({
+					id: previewId,
+					type: "folder_preview",
+					position: { x: startX, y: startY + i * (previewH + gapY) },
+					data: {
+						__ephemeral: true,
+						folder_id: folderNodeId,
+						dir,
+						more_count: more,
+					},
+					draggable: false,
+					selectable: false,
+				} as CanvasNode);
+				previewEdges.push({
+					id: `preview_edge:${folderNodeId}:more`,
+					source: folderNodeId,
+					target: previewId,
+					type: "smoothstep",
+					data: { __ephemeral: true },
+					selectable: false,
+				} as CanvasEdge);
+			}
+
+			if (previewNodes.length) {
+				setNodes((prev) => [...prev, ...previewNodes]);
+				setEdges((prev) => [...prev, ...previewEdges]);
+			}
+		},
+		[clearPreviewHideTimer, removeAllFolderPreviews, setEdges, setNodes],
+	);
+
+	const scheduleHideFolderPreview = useCallback(
+		(folderNodeId: string) => {
+			clearPreviewHideTimer();
+			previewHideTimerRef.current = window.setTimeout(() => {
+				if (activePreviewFolderRef.current !== folderNodeId) return;
+				activePreviewFolderRef.current = null;
+				removeAllFolderPreviews();
+			}, 180);
+		},
+		[clearPreviewHideTimer, removeAllFolderPreviews],
 	);
 
 	const snapshotString = useCallback(
@@ -606,6 +803,7 @@ export default function CanvasPane({
 			link: LinkNode,
 			frame: FrameNode,
 			folder: FolderNode,
+			folder_preview: FolderPreviewNode,
 		}),
 		[],
 	);
@@ -614,10 +812,14 @@ export default function CanvasPane({
 		(n: CanvasNode[], e: CanvasEdge[]) => {
 			if (applyingHistoryRef.current) return;
 			if (!doc) return;
-			const nextKey = snapshotString(n, e);
+			const stable = stripEphemeral(n, e);
+			const nextKey = snapshotString(stable.nodes, stable.edges);
 			if (!lastHistoryRef.current) {
 				lastHistoryRef.current = nextKey;
-				lastStateRef.current = structuredClone({ nodes: n, edges: e });
+				lastStateRef.current = structuredClone({
+					nodes: stable.nodes,
+					edges: stable.edges,
+				});
 				return;
 			}
 			if (nextKey === lastHistoryRef.current) return;
@@ -627,15 +829,19 @@ export default function CanvasPane({
 			if (pastRef.current.length > 80) pastRef.current.shift();
 			futureRef.current = [];
 			lastHistoryRef.current = nextKey;
-			lastStateRef.current = structuredClone({ nodes: n, edges: e });
+			lastStateRef.current = structuredClone({
+				nodes: stable.nodes,
+				edges: stable.edges,
+			});
 		},
-		[doc, snapshotString],
+		[doc, snapshotString, stripEphemeral],
 	);
 
 	const scheduleSave = useCallback(
 		(nextNodes: CanvasNode[], nextEdges: CanvasEdge[]) => {
 			if (!doc) return;
-			const nextKey = snapshotString(nextNodes, nextEdges);
+			const stable = stripEphemeral(nextNodes, nextEdges);
+			const nextKey = snapshotString(stable.nodes, stable.edges);
 			if (!nextKey || nextKey === lastSavedKeyRef.current) return;
 			if (saveTimerRef.current) window.clearTimeout(saveTimerRef.current);
 			saveTimerRef.current = window.setTimeout(async () => {
@@ -646,8 +852,8 @@ export default function CanvasPane({
 						version: doc.version,
 						id: doc.id,
 						title: doc.title,
-						nodes: nextNodes,
-						edges: nextEdges,
+						nodes: stable.nodes,
+						edges: stable.edges,
 					});
 					lastSavedKeyRef.current = nextKey;
 				} catch (e) {
@@ -657,7 +863,7 @@ export default function CanvasPane({
 				}
 			}, 400);
 		},
-		[doc, onSave, snapshotString],
+		[doc, onSave, snapshotString, stripEphemeral],
 	);
 
 	useEffect(() => {
@@ -1159,6 +1365,19 @@ export default function CanvasPane({
 				if (typeof dir === "string") onOpenFolder(dir);
 				return;
 			}
+			if (node.type === "folder_preview") {
+				const d = (node.data as Record<string, unknown> | null) ?? null;
+				const relPath = d && typeof d.rel_path === "string" ? d.rel_path : "";
+				const moreCount =
+					d && typeof d.more_count === "number" ? d.more_count : 0;
+				const dir = d && typeof d.dir === "string" ? d.dir : "";
+				if (moreCount > 0) {
+					if (dir) onOpenFolder(dir);
+					return;
+				}
+				if (relPath) onOpenNote(relPath);
+				return;
+			}
 			if (node.type === "text") {
 				const current =
 					typeof (node.data as Record<string, unknown>)?.text === "string"
@@ -1206,7 +1425,12 @@ export default function CanvasPane({
 
 	return (
 		<CanvasActionsContext.Provider
-			value={{ openNote: onOpenNote, openFolder: onOpenFolder }}
+			value={{
+				openNote: onOpenNote,
+				openFolder: onOpenFolder,
+				showFolderPreview,
+				scheduleHideFolderPreview,
+			}}
 		>
 			<div className="canvasPane">
 				<div className="canvasToolbar">

@@ -326,18 +326,20 @@ export async function buildFolderViewDoc(
 	const prevById = new Map(normalizedPrevNodes.map((n) => [n.id, n] as const));
 	const nextNodes: CanvasNode[] = [];
 
-	const TILE_COLS = 4;
+	// Folder tiles: one horizontal row near the top of the canvas.
 	const TILE_W = 240;
-	const TILE_H = 140;
+	const TILE_H = 180;
 	const TILE_GAP_X = 40;
-	const TILE_GAP_Y = 40;
-	const tilePos = (i: number) => {
-		const col = i % TILE_COLS;
-		const row = Math.floor(i / TILE_COLS);
-		return { x: col * (TILE_W + TILE_GAP_X), y: row * (TILE_H + TILE_GAP_Y) };
-	};
-	const tileRows = Math.ceil(childDirs.length / TILE_COLS);
-	const fileOffsetY = tileRows > 0 ? tileRows * (TILE_H + TILE_GAP_Y) + 80 : 0;
+	const FOLDER_ROW_Y = 60;
+	const FOLDER_ROW_X_PAD = 80;
+	const tilePos = (i: number) => ({
+		x: FOLDER_ROW_X_PAD + i * (TILE_W + TILE_GAP_X),
+		y: FOLDER_ROW_Y,
+	});
+
+	// Leave space below folder tiles for the hover "recent file" nodes to expand down.
+	// This prevents the previews from overlapping the root file notes.
+	const fileOffsetY = childDirs.length ? FOLDER_ROW_Y + TILE_H + 560 : 0;
 
 	// Folder tiles (immediate subfolders only)
 	for (let i = 0; i < childDirs.length; i++) {
