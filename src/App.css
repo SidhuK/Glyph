@@ -210,7 +210,7 @@ textarea {
    ───────────────────────────────────────────────────────────────────────────── */
 .appShell {
   --app-frame: var(--space-2);
-  --app-radius: calc(var(--radius-3xl) + var(--space-2));
+  --app-radius: var(--radius-xl);
   display: flex;
   height: 100%;
   width: 100%;
@@ -1611,8 +1611,12 @@ button.segBtn.active {
 }
 
 @keyframes canvasSpin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 .canvasEmpty {
@@ -1641,7 +1645,9 @@ button.segBtn.active {
   box-shadow:
     2px 4px 8px rgba(0, 0, 0, 0.15),
     0 1px 3px rgba(0, 0, 0, 0.1);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition:
+    transform 0.15s ease,
+    box-shadow 0.15s ease;
   position: relative;
   will-change: transform;
 }
