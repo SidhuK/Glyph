@@ -30,6 +30,7 @@ body {
   background: var(--bg-primary);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
 }
 
 /* Scrollbars - rounded and subtle */
@@ -392,6 +393,7 @@ textarea {
   position: relative;
   min-height: 0;
   overflow: hidden;
+  display: flex;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -581,7 +583,8 @@ button.segBtn.active {
 .editorBody .tiptapHost {
   flex: 1;
   min-height: 0;
-  overflow: hidden;
+  overflow-y: auto;
+  overflow-x: hidden;
   padding: var(--space-6) 0 var(--space-6);
   background: color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary));
   display: flex;
@@ -750,7 +753,7 @@ button.segBtn.active {
 .editorBody {
   flex: 1;
   min-height: 0;
-  overflow: visible;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
