@@ -2,7 +2,6 @@ import { AnimatePresence, motion } from "motion/react";
 import { memo } from "react";
 import type { FsEntry } from "../lib/tauri";
 import {
-  ChevronDown,
   FileText,
   Plus,
   File,
@@ -64,11 +63,6 @@ const rowVariants = {
   tap: { scale: 0.98 },
 };
 
-const chevronVariants = {
-  idle: { rotate: -90 },
-  expanded: { rotate: 0 },
-};
-
 export const FileTreePane = memo(function FileTreePane({
   rootEntries,
   childrenByDir,
@@ -122,14 +116,6 @@ export const FileTreePane = memo(function FileTreePane({
                   animate={isExpanded ? "active" : "idle"}
                   transition={springTransition}
                 >
-                  <motion.span
-                    className="fileTreeChevron"
-                    variants={chevronVariants}
-                    animate={isExpanded ? "expanded" : "idle"}
-                    transition={springTransition}
-                  >
-                    <ChevronDown size={14} />
-                  </motion.span>
                   <motion.span
                     className="fileTreeIcon"
                     style={{
