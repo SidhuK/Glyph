@@ -439,7 +439,7 @@ textarea {
 	border: 1px solid transparent;
 	background: transparent;
 	padding: 2px 6px;
-	border-radius: var(--radius-full);
+	border-radius: var(--radius-md);
 	color: var(--text-secondary);
 	font-size: var(--text-xs);
 	cursor: pointer;
@@ -538,7 +538,7 @@ textarea {
 	font-size: var(--text-xs);
 	color: var(--text-tertiary);
 	padding: 6px 10px;
-	border-radius: var(--radius-full);
+	border-radius: var(--radius-md);
 	border: 1px dashed var(--border-light);
 	background: color-mix(in srgb, var(--bg-secondary) 65%, transparent);
 }
@@ -549,15 +549,15 @@ textarea {
 	display: inline-flex;
 	align-items: center;
 	gap: 8px;
-	padding: 4px 8px;
-	border-radius: var(--radius-full);
+	padding: 3px 7px;
+	border-radius: var(--radius-md);
 	border: 1px solid var(--border-light);
 	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
 	box-shadow: none;
 	cursor: pointer;
 	text-align: left;
 	min-width: 0;
-	max-width: 240px;
+	max-width: 220px;
 }
 
 .folderCard:hover,
@@ -588,7 +588,6 @@ textarea {
 	white-space: nowrap;
 }
 
-.folderCardMetaChip,
 .recentFileCardMetaChip {
 	flex-shrink: 0;
 	font-size: 11px;
@@ -596,7 +595,7 @@ textarea {
 	border: 1px solid var(--border-light);
 	background: color-mix(in srgb, var(--bg-secondary) 72%, transparent);
 	padding: 2px 6px;
-	border-radius: var(--radius-full);
+	border-radius: var(--radius-md);
 }
 
 .recentFileCardIcon {
@@ -1634,6 +1633,20 @@ button.segBtn.active {
 	overflow: hidden;
 	text-overflow: ellipsis;
 	flex: 1;
+}
+
+.fileTreeCounts {
+	flex-shrink: 0;
+	font-size: 11px;
+	color: var(--text-tertiary);
+	border: 1px solid var(--border-light);
+	background: color-mix(in srgb, var(--bg-secondary) 72%, transparent);
+	padding: 1px 6px;
+	border-radius: var(--radius-full);
+	white-space: nowrap;
+	max-width: 160px;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 /* Directory names slightly bolder */

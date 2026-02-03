@@ -1,7 +1,26 @@
 import { AnimatePresence, motion } from "motion/react";
-import { memo, useMemo } from "react";
+import type { ReactElement } from "react";
+import { memo } from "react";
 import type { DirChildSummary, FsEntry, RecentEntry } from "../lib/tauri";
-import { File, FileText, FolderOpen, RefreshCw } from "./Icons";
+import {
+	Archive,
+	Cpu,
+	Database,
+	File,
+	FileCode,
+	FileJson,
+	FileSpreadsheet,
+	FileText,
+	Film,
+	FolderOpen,
+	Globe,
+	Hash,
+	Image,
+	Music,
+	Palette,
+	RefreshCw,
+} from "./Icons";
+import type { IconProps } from "./Icons";
 
 const spring = {
 	type: "spring",
@@ -43,6 +62,45 @@ function formatRelativeCompact(mtimeMs: number): string {
 	return "";
 }
 
+function iconForRecent(
+	relPath: string,
+	isMarkdown: boolean,
+): { Icon: (p: IconProps) => ReactElement; color: string } {
+	const ext = relPath.split(".").pop()?.toLowerCase() ?? "";
+	if (isMarkdown) return { Icon: FileText, color: "var(--text-accent)" };
+	if (["png", "jpg", "jpeg", "gif", "webp", "svg", "ico"].includes(ext))
+		return { Icon: Image, color: "var(--color-green-500)" };
+	if (["mp4", "avi", "mov", "webm", "mkv"].includes(ext))
+		return { Icon: Film, color: "var(--color-purple-500)" };
+	if (["mp3", "wav", "ogg", "flac", "m4a"].includes(ext))
+		return { Icon: Music, color: "var(--color-yellow-500)" };
+	if (["zip", "tar", "gz", "rar", "7z"].includes(ext))
+		return { Icon: Archive, color: "var(--color-yellow-500)" };
+	if (["js", "jsx", "ts", "tsx", "vue", "svelte"].includes(ext))
+		return { Icon: FileCode, color: "var(--color-yellow-500)" };
+	if (["json"].includes(ext))
+		return { Icon: FileJson, color: "var(--text-tertiary)" };
+	if (["csv", "xlsx", "xls"].includes(ext))
+		return { Icon: FileSpreadsheet, color: "var(--color-green-500)" };
+	if (["html", "htm", "css", "scss", "less"].includes(ext))
+		return { Icon: Globe, color: "var(--color-yellow-500)" };
+	if (["sql", "db", "sqlite"].includes(ext))
+		return { Icon: Database, color: "var(--text-accent)" };
+	if (["exe", "bin", "app", "deb", "rpm"].includes(ext))
+		return { Icon: Cpu, color: "var(--color-purple-500)" };
+	if (["psd", "ai", "sketch", "fig"].includes(ext))
+		return { Icon: Palette, color: "var(--color-purple-500)" };
+	if (["lock", "key", "pem", "crt", "p12"].includes(ext))
+		return { Icon: Hash, color: "var(--text-error)" };
+	if (["txt", "log", "readme"].includes(ext))
+		return { Icon: FileText, color: "var(--text-secondary)" };
+	if (["pdf"].includes(ext))
+		return { Icon: FileText, color: "var(--text-error)" };
+	if (["doc", "docx", "rtf"].includes(ext))
+		return { Icon: FileText, color: "var(--color-blue-500)" };
+	return { Icon: File, color: "var(--text-tertiary)" };
+}
+
 export interface FolderShelfProps {
 	subfolders: FsEntry[];
 	summaries: DirChildSummary[];
@@ -62,9 +120,7 @@ export const FolderShelf = memo(function FolderShelf({
 	onOpenNonMarkdown,
 	onFocusNode,
 }: FolderShelfProps) {
-	const summaryByDir = useMemo(() => {
-		return new Map(summaries.map((s) => [s.dir_rel_path, s] as const));
-	}, [summaries]);
+	void summaries;
 
 	return (
 		<motion.section
@@ -77,7 +133,7 @@ export const FolderShelf = memo(function FolderShelf({
 				<div className="folderShelfGroup">
 					<div className="folderShelfGroupHead" aria-label="Subfolders">
 						<span className="folderShelfGroupIcon" aria-hidden>
-							<FolderOpen size={14} />
+							<FolderOpen size={12} />
 						</span>
 						<span className="folderShelfGroupTitle">Folders</span>
 					</div>
@@ -85,8 +141,6 @@ export const FolderShelf = memo(function FolderShelf({
 						<AnimatePresence initial={false}>
 							{subfolders.length ? (
 								subfolders.map((f) => {
-									const s = summaryByDir.get(f.rel_path) ?? null;
-									const meta = s ? `${s.total_markdown_recursive} md` : "";
 									return (
 										<li key={f.rel_path} className="folderShelfItem">
 											<motion.button
@@ -96,19 +150,14 @@ export const FolderShelf = memo(function FolderShelf({
 												whileHover={{ y: -1 }}
 												whileTap={{ scale: 0.98 }}
 												transition={spring}
-												title={`${f.rel_path}${meta ? `\n${meta}` : ""}`}
+												title={f.rel_path}
 											>
 												<span className="folderCardIcon" aria-hidden>
-													<FolderOpen size={16} />
+													<FolderOpen size={14} />
 												</span>
 												<span className="folderCardText">
 													<span className="folderCardName">{f.name}</span>
 												</span>
-												{meta ? (
-													<span className="folderCardMetaChip" aria-hidden>
-														{meta}
-													</span>
-												) : null}
 											</motion.button>
 										</li>
 									);
@@ -134,7 +183,7 @@ export const FolderShelf = memo(function FolderShelf({
 				<div className="folderShelfGroup">
 					<div className="folderShelfGroupHead" aria-label="Recent files">
 						<span className="folderShelfGroupIcon" aria-hidden>
-							<RefreshCw size={14} />
+							<RefreshCw size={12} />
 						</span>
 						<span className="folderShelfGroupTitle">Recent</span>
 					</div>
@@ -144,10 +193,10 @@ export const FolderShelf = memo(function FolderShelf({
 								recents.map((r) => {
 									const mtime = formatMtime(r.mtime_ms);
 									const rel = formatRelativeCompact(r.mtime_ms);
-									const Icon = r.is_markdown ? FileText : File;
-									const iconColor = r.is_markdown
-										? "var(--text-accent)"
-										: "var(--text-tertiary)";
+									const { Icon, color } = iconForRecent(
+										r.rel_path,
+										r.is_markdown,
+									);
 									return (
 										<li key={r.rel_path} className="folderShelfItem">
 											<motion.button
@@ -168,10 +217,10 @@ export const FolderShelf = memo(function FolderShelf({
 											>
 												<span
 													className="recentFileCardIcon"
-													style={{ color: iconColor }}
+													style={{ color }}
 													aria-hidden
 												>
-													<Icon size={16} />
+													<Icon size={14} />
 												</span>
 												<span className="recentFileCardText">
 													<span className="recentFileCardName">{r.name}</span>

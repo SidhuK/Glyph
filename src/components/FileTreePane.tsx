@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "motion/react";
 import { memo } from "react";
-import type { FsEntry } from "../lib/tauri";
+import type { DirChildSummary, FsEntry } from "../lib/tauri";
 import {
 	Archive,
 	Cpu,
@@ -25,6 +25,7 @@ import { MotionIconButton } from "./MotionUI";
 interface FileTreePaneProps {
 	rootEntries: FsEntry[];
 	childrenByDir: Record<string, FsEntry[] | undefined>;
+	summariesByParentDir: Record<string, DirChildSummary[] | undefined>;
 	expandedDirs: Set<string>;
 	activeFilePath: string | null;
 	onToggleDir: (dirPath: string) => void;
@@ -72,6 +73,7 @@ const rowVariants = {
 export const FileTreePane = memo(function FileTreePane({
 	rootEntries,
 	childrenByDir,
+	summariesByParentDir,
 	expandedDirs,
 	activeFilePath,
 	onToggleDir,
@@ -79,7 +81,16 @@ export const FileTreePane = memo(function FileTreePane({
 	onOpenFile,
 	onNewFile,
 }: FileTreePaneProps) {
-	const renderEntries = (entries: FsEntry[], parentDepth: number) => {
+	const renderEntries = (
+		entries: FsEntry[],
+		parentDepth: number,
+		parentDirPath: string,
+	) => {
+		const summaryMap = new Map(
+			(summariesByParentDir[parentDirPath] ?? []).map(
+				(s) => [s.dir_rel_path, s] as const,
+			),
+		);
 		return (
 			<motion.ul
 				className="fileTreeList"
@@ -98,6 +109,13 @@ export const FileTreePane = memo(function FileTreePane({
 
 					if (isDir) {
 						const children = childrenByDir[e.rel_path];
+						const summary = summaryMap.get(e.rel_path) ?? null;
+						const totalMd = summary?.total_markdown_recursive ?? 0;
+						const totalFiles = summary?.total_files_recursive ?? 0;
+						const countsLabel =
+							summary && (totalMd > 0 || totalFiles > 0)
+								? `${totalMd} md • ${totalFiles} files`
+								: "";
 						return (
 							<motion.li
 								key={e.rel_path}
@@ -139,6 +157,11 @@ export const FileTreePane = memo(function FileTreePane({
 										)}
 									</motion.span>
 									<span className="fileTreeName">{e.name}</span>
+									{countsLabel ? (
+										<span className="fileTreeCounts" title={countsLabel}>
+											{countsLabel}
+										</span>
+									) : null}
 								</motion.button>
 								<AnimatePresence>
 									{isExpanded && children && (
@@ -149,7 +172,7 @@ export const FileTreePane = memo(function FileTreePane({
 											transition={springTransition}
 											style={{ overflow: "hidden" }}
 										>
-											{renderEntries(children, depth)}
+											{renderEntries(children, depth, e.rel_path)}
 										</motion.div>
 									)}
 								</AnimatePresence>
@@ -296,7 +319,9 @@ export const FileTreePane = memo(function FileTreePane({
 				</MotionIconButton>
 			</div>
 			{rootEntries.length ? (
-				<div className="fileTreeScroll">{renderEntries(rootEntries, -1)}</div>
+				<div className="fileTreeScroll">
+					{renderEntries(rootEntries, -1, "")}
+				</div>
 			) : (
 				<motion.div
 					className="fileTreeEmpty"

@@ -1,8 +1,10 @@
 import { join } from "@tauri-apps/api/path";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { open, save } from "@tauri-apps/plugin-dialog";
 import { openPath, openUrl } from "@tauri-apps/plugin-opener";
 import { AnimatePresence, motion } from "motion/react";
 import {
+	type MouseEvent,
 	Suspense,
 	lazy,
 	useCallback,
@@ -69,6 +71,27 @@ function isMarkdownPath(relPath: string): boolean {
 	return relPath.toLowerCase().endsWith(".md");
 }
 
+const WINDOW_DRAG_INTERACTIVE_SELECTOR =
+	"button, a, input, textarea, select, [role='button'], [contenteditable='true'], [data-window-drag-ignore]";
+
+function onWindowDragMouseDown(event: MouseEvent<HTMLElement>): void {
+	if (event.button !== 0) return;
+	if (event.defaultPrevented) return;
+
+	const target = event.target;
+	if (target instanceof Element) {
+		const interactiveAncestor = target.closest(
+			WINDOW_DRAG_INTERACTIVE_SELECTOR,
+		);
+		if (interactiveAncestor) return;
+	}
+
+	event.preventDefault();
+	void getCurrentWindow()
+		.startDragging()
+		.catch(() => {});
+}
+
 function App() {
 	const [info, setInfo] = useState<AppInfo | null>(null);
 	const [error, setError] = useState<string>("");
@@ -79,6 +102,9 @@ function App() {
 	const [rootEntries, setRootEntries] = useState<FsEntry[]>([]);
 	const [childrenByDir, setChildrenByDir] = useState<
 		Record<string, FsEntry[] | undefined>
+	>({});
+	const [dirSummariesByParent, setDirSummariesByParent] = useState<
+		Record<string, DirChildSummary[] | undefined>
 	>({});
 	const [expandedDirs, setExpandedDirs] = useState<Set<string>>(
 		() => new Set(),
@@ -180,6 +206,7 @@ function App() {
 				setFolderShelfSubfolders([]);
 				setFolderShelfSummaries([]);
 				setFolderShelfRecents([]);
+				setDirSummariesByParent({});
 				setVaultPath(settings.currentVaultPath);
 
 				if (settings.currentVaultPath) {
@@ -193,6 +220,19 @@ function App() {
 							const entries = await invoke("vault_list_dir", {});
 							rootEntriesLocal = entries;
 							if (!cancelled) setRootEntries(entries);
+						} catch {
+							// ignore
+						}
+						try {
+							const summaries = await invoke("vault_dir_children_summary", {
+								dir: null,
+								preview_limit: 1,
+							});
+							if (!cancelled)
+								setDirSummariesByParent((prev) => ({
+									...prev,
+									"": summaries,
+								}));
 						} catch {
 							// ignore
 						}
@@ -343,6 +383,7 @@ function App() {
 
 				setRootEntries([]);
 				setChildrenByDir({});
+				setDirSummariesByParent({});
 				setExpandedDirs(new Set());
 				setActiveFilePath(null);
 
@@ -361,6 +402,15 @@ function App() {
 
 				const entries = await invoke("vault_list_dir", {});
 				setRootEntries(entries);
+				try {
+					const summaries = await invoke("vault_dir_children_summary", {
+						dir: null,
+						preview_limit: 1,
+					});
+					setDirSummariesByParent((prev) => ({ ...prev, "": summaries }));
+				} catch {
+					// ignore
+				}
 				const onlyDir =
 					entries.filter((e) => e.kind === "dir").length === 1 &&
 					entries.filter((e) => e.kind === "file").length === 0
@@ -479,11 +529,15 @@ function App() {
 	}, [applyVaultSelection, pickDirectory]);
 
 	const loadDir = useCallback(async (dirPath: string) => {
-		const entries = await invoke(
-			"vault_list_dir",
-			dirPath ? { dir: dirPath } : {},
-		);
+		const [entries, summaries] = await Promise.all([
+			invoke("vault_list_dir", dirPath ? { dir: dirPath } : {}),
+			invoke("vault_dir_children_summary", {
+				dir: dirPath || null,
+				preview_limit: 1,
+			}),
+		]);
 		setChildrenByDir((prev) => ({ ...prev, [dirPath]: entries }));
+		setDirSummariesByParent((prev) => ({ ...prev, [dirPath]: summaries }));
 	}, []);
 
 	const toggleDir = useCallback(
@@ -655,7 +709,11 @@ function App() {
 			<aside
 				className={`sidebar ${sidebarCollapsed ? "sidebarCollapsed" : ""}`}
 			>
-				<div className="sidebarHeader" data-tauri-drag-region>
+				<div
+					className="sidebarHeader"
+					data-tauri-drag-region
+					onMouseDown={onWindowDragMouseDown}
+				>
 					{!sidebarCollapsed && (
 						<>
 							<div className="sidebarBrand">
@@ -778,6 +836,7 @@ function App() {
 											onSelectDir={(p) => void loadAndBuildFolderView(p)}
 											onOpenFile={(p) => void openFile(p)}
 											onNewFile={onNewFile}
+											summariesByParentDir={dirSummariesByParent}
 										/>
 									</motion.div>
 								) : (
@@ -808,7 +867,11 @@ function App() {
 			{/* Main Canvas Area */}
 			<main className="mainArea">
 				{/* Main Toolbar */}
-				<div className="mainToolbar" data-tauri-drag-region>
+				<div
+					className="mainToolbar"
+					data-tauri-drag-region
+					onMouseDown={onWindowDragMouseDown}
+				>
 					<div className="mainToolbarLeft">
 						{activeViewDoc?.kind === "folder" ? (
 							<FolderBreadcrumb
