@@ -222,15 +222,13 @@ textarea {
 	overflow: hidden;
 }
 
+/* Native macOS vibrancy is applied via window-vibrancy crate in Rust.
+   This pseudo-element is kept as a fallback for non-macOS platforms. */
 .appShell::before {
 	content: "";
 	position: absolute;
 	inset: 0;
 	background: var(--chrome-bg);
-	backdrop-filter: blur(var(--chrome-blur)) saturate(1.2);
-	-webkit-backdrop-filter: blur(var(--chrome-blur)) saturate(1.2);
-	transform: translateZ(0);
-	will-change: backdrop-filter;
 	z-index: 0;
 	pointer-events: none;
 }

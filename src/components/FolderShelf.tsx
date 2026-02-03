@@ -137,8 +137,8 @@ export const FolderShelf = memo(function FolderShelf({
 	return (
 		<motion.section
 			className="folderShelf"
-			initial={{ opacity: 0, y: -6 }}
-			animate={{ opacity: 1, y: 0 }}
+			initial={{ y: -6 }}
+			animate={{ y: 0 }}
 			transition={spring}
 		>
 			<div className="folderShelfBar">
@@ -175,16 +175,9 @@ export const FolderShelf = memo(function FolderShelf({
 									);
 								})
 							) : (
-								<motion.li
-									key="empty"
-									className="folderShelfEmpty"
-									initial={{ opacity: 0 }}
-									animate={{ opacity: 1 }}
-									exit={{ opacity: 0 }}
-									transition={{ duration: 0.15 }}
-								>
+								<li key="empty" className="folderShelfEmpty">
 									No subfolders.
-								</motion.li>
+								</li>
 							)}
 						</AnimatePresence>
 					</ul>
@@ -247,16 +240,9 @@ export const FolderShelf = memo(function FolderShelf({
 									);
 								})
 							) : (
-								<motion.li
-									key="empty"
-									className="folderShelfEmpty"
-									initial={{ opacity: 0 }}
-									animate={{ opacity: 1 }}
-									exit={{ opacity: 0 }}
-									transition={{ duration: 0.15 }}
-								>
+								<li key="empty" className="folderShelfEmpty">
 									No recent files.
-								</motion.li>
+								</li>
 							)}
 						</AnimatePresence>
 					</ul>

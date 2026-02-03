@@ -28,8 +28,8 @@ export const TagsPane = memo(function TagsPane({
 	return (
 		<motion.section
 			className="tagsPane"
-			initial={{ opacity: 0, y: 10 }}
-			animate={{ opacity: 1, y: 0 }}
+			initial={{ y: 10 }}
+			animate={{ y: 0 }}
 			transition={springTransition}
 		>
 			<div className="tagsHeader">
@@ -61,8 +61,8 @@ export const TagsPane = memo(function TagsPane({
 							key={t.tag}
 							className="tagsItem"
 							variants={{
-								hidden: { opacity: 0, scale: 0.9 },
-								visible: { opacity: 1, scale: 1 },
+								hidden: { scale: 0.9 },
+								visible: { scale: 1 },
 							}}
 							transition={{ ...springTransition, delay: index * 0.015 }}
 						>
@@ -80,26 +80,13 @@ export const TagsPane = memo(function TagsPane({
 								transition={springTransition}
 							>
 								<span className="tagsName">#{t.tag}</span>
-								<motion.span
-									className="tagsCount mono"
-									initial={{ opacity: 0.5 }}
-									whileHover={{ opacity: 1 }}
-								>
-									{t.count}
-								</motion.span>
+								<span className="tagsCount mono">{t.count}</span>
 							</motion.button>
 						</motion.li>
 					))}
 				</motion.ul>
 			) : (
-				<motion.div
-					className="tagsEmpty"
-					initial={{ opacity: 0 }}
-					animate={{ opacity: 1 }}
-					transition={{ delay: 0.2 }}
-				>
-					No tags found.
-				</motion.div>
+				<div className="tagsEmpty">No tags found.</div>
 			)}
 		</motion.section>
 	);

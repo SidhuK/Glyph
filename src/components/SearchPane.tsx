@@ -61,8 +61,8 @@ export const SearchPane = memo(function SearchPane({
 	return (
 		<motion.section
 			className="searchPane"
-			initial={{ opacity: 0, y: -10 }}
-			animate={{ opacity: 1, y: 0 }}
+			initial={{ y: -10 }}
+			animate={{ y: 0 }}
 			transition={springTransition}
 		>
 			<div className="searchHeader">
@@ -85,9 +85,9 @@ export const SearchPane = memo(function SearchPane({
 					{isSearching && (
 						<motion.div
 							className="searchStatus"
-							initial={{ opacity: 0, scale: 0.9 }}
-							animate={{ opacity: 1, scale: 1 }}
-							exit={{ opacity: 0, scale: 0.9 }}
+							initial={{ scale: 0.9 }}
+							animate={{ scale: 1 }}
+							exit={{ scale: 0.9 }}
 							transition={springTransition}
 						>
 							<motion.span
@@ -121,9 +121,9 @@ export const SearchPane = memo(function SearchPane({
 				{error && (
 					<motion.div
 						className="searchError"
-						initial={{ opacity: 0, height: 0 }}
-						animate={{ opacity: 1, height: "auto" }}
-						exit={{ opacity: 0, height: 0 }}
+						initial={{ height: 0 }}
+						animate={{ height: "auto" }}
+						exit={{ height: 0 }}
 						transition={springTransition}
 					>
 						{error}
@@ -135,29 +135,22 @@ export const SearchPane = memo(function SearchPane({
 				{showResults && (
 					<motion.ul
 						className="searchResults"
-						initial={{ opacity: 0, y: 5 }}
-						animate={{ opacity: 1, y: 0 }}
-						exit={{ opacity: 0, y: 5 }}
+						initial={{ y: 5 }}
+						animate={{ y: 0 }}
+						exit={{ y: 5 }}
 						transition={springTransition}
 					>
 						{!results.length && !isSearching ? (
-							<motion.li
-								className="searchEmpty"
-								initial={{ opacity: 0 }}
-								animate={{ opacity: 1 }}
-								transition={{ delay: 0.1 }}
-							>
-								No results
-							</motion.li>
+							<li className="searchEmpty">No results</li>
 						) : null}
 						<AnimatePresence>
 							{results.map((r, index) => (
 								<motion.li
 									key={r.id}
 									className="searchResult"
-									initial={{ opacity: 0, x: -10 }}
-									animate={{ opacity: 1, x: 0 }}
-									exit={{ opacity: 0, x: -10 }}
+									initial={{ x: -10 }}
+									animate={{ x: 0 }}
+									exit={{ x: -10 }}
 									transition={{ ...springTransition, delay: index * 0.03 }}
 								>
 									<motion.button

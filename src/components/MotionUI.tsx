@@ -102,9 +102,9 @@ export function MotionListItem({
 	return (
 		<motion.li
 			className={className}
-			initial={{ opacity: 0, x: -10 }}
-			animate={{ opacity: 1, x: 0 }}
-			exit={{ opacity: 0, x: -10 }}
+			initial={{ x: -10 }}
+			animate={{ x: 0 }}
+			exit={{ x: -10 }}
 			transition={{
 				...springPresets.gentle,
 				delay: index * 0.03, // Stagger effect
@@ -137,24 +137,24 @@ export function MotionPanel({
 }: MotionPanelProps) {
 	const directionVariants = {
 		left: {
-			initial: { x: -20, opacity: 0 },
-			animate: { x: 0, opacity: 1 },
-			exit: { x: -20, opacity: 0 },
+			initial: { x: -20 },
+			animate: { x: 0 },
+			exit: { x: -20 },
 		},
 		right: {
-			initial: { x: 20, opacity: 0 },
-			animate: { x: 0, opacity: 1 },
-			exit: { x: 20, opacity: 0 },
+			initial: { x: 20 },
+			animate: { x: 0 },
+			exit: { x: 20 },
 		},
 		up: {
-			initial: { y: -20, opacity: 0 },
-			animate: { y: 0, opacity: 1 },
-			exit: { y: -20, opacity: 0 },
+			initial: { y: -20 },
+			animate: { y: 0 },
+			exit: { y: -20 },
 		},
 		down: {
-			initial: { y: 20, opacity: 0 },
-			animate: { y: 0, opacity: 1 },
-			exit: { y: 20, opacity: 0 },
+			initial: { y: 20 },
+			animate: { y: 0 },
+			exit: { y: 20 },
 		},
 	};
 
@@ -190,9 +190,9 @@ export function MotionFloatingPanel({
 			{isOpen && (
 				<motion.div
 					className={className}
-					initial={{ opacity: 0, scale: 0.95, y: 10 }}
-					animate={{ opacity: 1, scale: 1, y: 0 }}
-					exit={{ opacity: 0, scale: 0.95, y: 10 }}
+					initial={{ scale: 0.95, y: 10 }}
+					animate={{ scale: 1, y: 0 }}
+					exit={{ scale: 0.95, y: 10 }}
 					transition={springPresets.bouncy}
 				>
 					{children}
@@ -220,10 +220,9 @@ export function MotionSidebar({
 	return (
 		<motion.aside
 			className={className}
-			initial={{ x: -20, opacity: 0 }}
+			initial={{ x: -20 }}
 			animate={{
 				x: 0,
-				opacity: 1,
 				width: isCollapsed ? 0 : undefined,
 			}}
 			transition={springPresets.gentle}
@@ -253,9 +252,9 @@ export function MotionEditorPanel({
 			{isOpen && (
 				<motion.aside
 					className={className}
-					initial={{ x: 30, opacity: 0 }}
-					animate={{ x: 0, opacity: 1 }}
-					exit={{ x: 30, opacity: 0 }}
+					initial={{ x: 30 }}
+					animate={{ x: 0 }}
+					exit={{ x: 30 }}
 					transition={springPresets.gentle}
 				>
 					{children}

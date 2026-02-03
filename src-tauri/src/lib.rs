@@ -12,6 +12,10 @@ mod tether_paths;
 mod vault;
 
 use serde::Serialize;
+use tauri::Manager;
+
+#[cfg(target_os = "macos")]
+use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
 
 fn init_tracing() {
     let filter = tracing_subscriber::EnvFilter::try_from_default_env()
@@ -57,6 +61,15 @@ pub fn run() {
     init_tracing();
 
     tauri::Builder::default()
+        .setup(|app| {
+            #[cfg(target_os = "macos")]
+            {
+                let window = app.get_webview_window("main").unwrap();
+                apply_vibrancy(&window, NSVisualEffectMaterial::Sidebar, None, None)
+                    .expect("Failed to apply vibrancy");
+            }
+            Ok(())
+        })
         .manage(ai::AiState::default())
         .manage(vault::VaultState::default())
         .plugin(tauri_plugin_dialog::init())

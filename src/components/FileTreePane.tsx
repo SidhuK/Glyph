@@ -124,8 +124,8 @@ export const FileTreePane = memo(function FileTreePane({
 								key={e.rel_path}
 								className="fileTreeItem"
 								variants={{
-									hidden: { opacity: 0, x: -8 },
-									visible: { opacity: 1, x: 0 },
+									hidden: { x: -8 },
+									visible: { x: 0 },
 								}}
 								transition={{ ...springTransition, delay: index * 0.02 }}
 							>
@@ -172,9 +172,9 @@ export const FileTreePane = memo(function FileTreePane({
 								<AnimatePresence>
 									{isExpanded && children && (
 										<motion.div
-											initial={{ height: 0, opacity: 0 }}
-											animate={{ height: "auto", opacity: 1 }}
-											exit={{ height: 0, opacity: 0 }}
+											initial={{ height: 0 }}
+											animate={{ height: "auto" }}
+											exit={{ height: 0 }}
 											transition={springTransition}
 											style={{ overflow: "hidden" }}
 										>
@@ -290,8 +290,8 @@ export const FileTreePane = memo(function FileTreePane({
 							key={e.rel_path}
 							className={isActive ? "fileTreeItem active" : "fileTreeItem"}
 							variants={{
-								hidden: { opacity: 0, x: -8 },
-								visible: { opacity: 1, x: 0 },
+								hidden: { x: -8 },
+								visible: { x: 0 },
 							}}
 							transition={{ ...springTransition, delay: index * 0.02 }}
 						>
@@ -329,8 +329,8 @@ export const FileTreePane = memo(function FileTreePane({
 	return (
 		<motion.aside
 			className="fileTreePane"
-			initial={{ opacity: 0, y: 10 }}
-			animate={{ opacity: 1, y: 0 }}
+			initial={{ y: 10 }}
+			animate={{ y: 0 }}
 			transition={springTransition}
 		>
 			<div className="fileTreeHeader">

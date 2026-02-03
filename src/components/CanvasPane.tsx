@@ -645,8 +645,8 @@ const FolderPreviewNode = memo(function FolderPreviewNode({
 					if (relPath) openNote(relPath);
 				}
 			}}
-			initial={{ opacity: 0, y: -10, scale: 0.96 }}
-			animate={{ opacity: 1, y: 0, scale: 1 }}
+			initial={{ y: -10, scale: 0.96 }}
+			animate={{ y: 0, scale: 1 }}
 			transition={{
 				type: "spring",
 				stiffness: 520,

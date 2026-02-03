@@ -116,10 +116,10 @@
 	--glass-blur: 20px;
 
 	/* Window chrome (macOS-like translucent surfaces) */
-	--chrome-bg: rgba(255, 255, 255, 0.72);
-	--chrome-bg-strong: rgba(255, 255, 255, 0.78);
+	--chrome-bg: rgba(255, 255, 255, 0.27);
+	--chrome-bg-strong: rgba(255, 255, 255, 0.33);
 	--chrome-sidebar-bg: var(--chrome-bg);
-	--chrome-border: rgba(255, 255, 255, 0.35);
+	--chrome-border: rgba(255, 255, 255, 0.15);
 	--chrome-blur: 22px;
 }
 
@@ -236,12 +236,12 @@
 			rgba(0, 0, 0, 0.3), 0 16px 32px rgba(0, 0, 0, 0.25);
 
 		/* Glass morphism - dark mode */
-		--glass-bg: rgba(47, 52, 56, 0.82);
-		--glass-border: rgba(255, 255, 255, 0.08);
-		--chrome-bg: rgba(55, 60, 63, 0.7);
-		--chrome-bg-strong: rgba(55, 60, 63, 0.76);
+		--glass-bg: rgba(47, 52, 56, 0.37);
+		--glass-border: rgba(255, 255, 255, 0.06);
+		--chrome-bg: rgba(55, 60, 63, 0.25);
+		--chrome-bg-strong: rgba(55, 60, 63, 0.31);
 		--chrome-sidebar-bg: var(--chrome-bg);
-		--chrome-border: rgba(255, 255, 255, 0.1);
+		--chrome-border: rgba(255, 255, 255, 0.06);
 		--chrome-blur: 22px;
 	}
 }

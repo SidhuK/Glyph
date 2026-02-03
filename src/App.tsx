@@ -833,9 +833,9 @@ function App() {
 								{sidebarViewMode === "files" ? (
 									<motion.div
 										key="files"
-										initial={{ opacity: 0, x: -20 }}
-										animate={{ opacity: 1, x: 0 }}
-										exit={{ opacity: 0, x: -20 }}
+										initial={{ x: -20 }}
+										animate={{ x: 0 }}
+										exit={{ x: -20 }}
 										transition={{ duration: 0.2 }}
 										className="sidebarSectionContent"
 									>
@@ -854,9 +854,9 @@ function App() {
 								) : (
 									<motion.div
 										key="tags"
-										initial={{ opacity: 0, x: 20 }}
-										animate={{ opacity: 1, x: 0 }}
-										exit={{ opacity: 0, x: 20 }}
+										initial={{ x: 20 }}
+										animate={{ x: 0 }}
+										exit={{ x: 20 }}
 										transition={{ duration: 0.2 }}
 										className="sidebarSectionContent"
 									>
