@@ -130,7 +130,10 @@ export const ChevronDown = (props: IconProps) => (
 );
 
 export const FolderOpen = (props: IconProps) => (
-	<HugeiconsIcon icon={Icons.FolderOpen} {...props} />
+	<HugeiconsIcon icon={Icons.Archive04Icon} {...props} />
+);
+export const FolderClosed = (props: IconProps) => (
+	<HugeiconsIcon icon={Icons.FolderLibraryIcon} {...props} />
 );
 export const FolderPlus = (props: IconProps) => (
 	<HugeiconsIcon icon={Icons.FolderPlus} {...props} />

@@ -11,8 +11,8 @@ import {
 	FileSpreadsheet,
 	FileText,
 	Film,
+	FolderClosed,
 	FolderOpen,
-	FolderPlus,
 	Globe,
 	Hash,
 	Image,
@@ -150,7 +150,7 @@ export const FileTreePane = memo(function FileTreePane({
 										{isExpanded ? (
 											<FolderOpen size={14} />
 										) : (
-											<FolderPlus size={14} />
+											<FolderClosed size={14} />
 										)}
 									</motion.span>
 									<span className="fileTreeName">{e.name}</span>

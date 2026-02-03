@@ -12,7 +12,7 @@ import {
 	FileSpreadsheet,
 	FileText,
 	Film,
-	FolderOpen,
+	FolderClosed,
 	Globe,
 	Hash,
 	Image,
@@ -133,7 +133,7 @@ export const FolderShelf = memo(function FolderShelf({
 				<div className="folderShelfGroup">
 					<div className="folderShelfGroupHead" aria-label="Subfolders">
 						<span className="folderShelfGroupIcon" aria-hidden>
-							<FolderOpen size={12} />
+							<FolderClosed size={12} />
 						</span>
 						<span className="folderShelfGroupTitle">Folders</span>
 					</div>
@@ -153,7 +153,7 @@ export const FolderShelf = memo(function FolderShelf({
 												title={f.rel_path}
 											>
 												<span className="folderCardIcon" aria-hidden>
-													<FolderOpen size={14} />
+													<FolderClosed size={14} />
 												</span>
 												<span className="folderCardText">
 													<span className="folderCardName">{f.name}</span>

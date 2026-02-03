@@ -10,6 +10,7 @@
 		"frontendDist": "../dist"
 	},
 	"app": {
+		"macOSPrivateApi": true,
 		"windows": [
 			{
 				"title": "Tether",
@@ -17,7 +18,8 @@
 				"height": 600,
 				"decorations": true,
 				"titleBarStyle": "Overlay",
-				"hiddenTitle": true
+				"hiddenTitle": true,
+				"transparent": true
 			}
 		],
 		"security": {
