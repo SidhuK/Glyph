@@ -242,6 +242,18 @@ textarea {
 	overflow: hidden;
 	flex-shrink: 0;
 	transition: width var(--transition-base), min-width var(--transition-base);
+	position: relative;
+}
+
+.sidebarDragLayer {
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+}
+
+.sidebar > *:not(.sidebarDragLayer) {
+	position: relative;
+	z-index: 1;
 }
 
 .sidebar.sidebarCollapsed {

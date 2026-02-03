@@ -716,6 +716,13 @@ function App() {
 			<aside
 				className={`sidebar ${sidebarCollapsed ? "sidebarCollapsed" : ""}`}
 			>
+				{/* Drag layer only catches clicks on truly empty sidebar space */}
+				<div
+					aria-hidden="true"
+					className="sidebarDragLayer"
+					data-tauri-drag-region
+					onMouseDown={onWindowDragMouseDown}
+				/>
 				<div
 					className="sidebarHeader"
 					data-tauri-drag-region
