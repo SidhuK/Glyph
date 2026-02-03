@@ -719,7 +719,6 @@ textarea {
 
 .rightSidebarResizer[aria-hidden="false"] {
 	opacity: 0.35;
-	margin: var(--app-frame) 0;
 }
 
 .rightSidebarResizer::before {
@@ -746,6 +745,10 @@ textarea {
 	overflow: hidden;
 	display: flex;
 	flex-direction: column;
+	/* Let the window chrome (.appShell) show through so translucency matches left sidebar. */
+	background: transparent;
+	backdrop-filter: none;
+	-webkit-backdrop-filter: none;
 	transition: width var(--transition-base);
 }
 
@@ -754,14 +757,7 @@ textarea {
 }
 
 .aiSidebar.open {
-	margin: var(--app-frame) var(--app-frame) var(--app-frame) 0;
-	border-radius: var(--app-radius);
-	border-top-right-radius: calc(var(--app-radius) - var(--app-frame));
-	border-bottom-right-radius: calc(var(--app-radius) - var(--app-frame));
-	background: var(--bg-primary);
-	/* Match main panel shadow language */
-	box-shadow: 0 0 0 1px var(--border-light), 2px 4px 8px rgba(0, 0, 0, 0.1), 0
-		1px 3px rgba(0, 0, 0, 0.08);
+	/* Right sidebar matches left sidebar chrome (transparent, no rounding). */
 }
 
 .aiSidebarHeader {
