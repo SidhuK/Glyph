@@ -390,7 +390,9 @@ const NoteNode = memo(function NoteNode({
 					) : null}
 
 					{session.phase === "loading" ? (
-						<div className="rfNodeNoteEditorLoading nodrag nopan">Loading…</div>
+						<div className="rfNodeNoteEditorLoading nodrag nopan nowheel">
+							Loading…
+						</div>
 					) : (
 						<CanvasNoteInlineEditor
 							markdown={session.markdown}

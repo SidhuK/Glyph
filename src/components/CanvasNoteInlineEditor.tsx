@@ -21,9 +21,9 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 }: CanvasNoteInlineEditorProps) {
 	return (
 		<div className="rfNodeNoteEditor nodrag nopan">
-			<div className="rfNodeNoteEditorBody nodrag nopan">
+			<div className="rfNodeNoteEditorBody nodrag nopan nowheel">
 				<textarea
-					className="rfNodeNoteEditorRaw mono nodrag nopan"
+					className="rfNodeNoteEditorRaw mono nodrag nopan nowheel"
 					value={markdown}
 					onChange={(e) => onChange(e.target.value)}
 					spellCheck={false}
