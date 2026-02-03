@@ -2084,14 +2084,6 @@ export default function CanvasPane({
 		[onOpenFolder, onOpenNote],
 	);
 
-	if (!doc) {
-		return (
-			<div className="canvasEmpty">
-				Select a folder, tag, or search to populate the canvas.
-			</div>
-		);
-	}
-
 	// Show loading overlay while bulk loading
 	const showLoading = isBulkLoad && nodes.length > BULK_LOAD_THRESHOLD;
 
@@ -2132,6 +2124,14 @@ export default function CanvasPane({
 			updateInlineMarkdown,
 		],
 	);
+
+	if (!doc) {
+		return (
+			<div className="canvasEmpty">
+				Select a folder, tag, or search to populate the canvas.
+			</div>
+		);
+	}
 
 	return (
 		<CanvasActionsContext.Provider
