@@ -384,6 +384,32 @@ textarea {
 	flex-direction: column;
 }
 
+.sidebarFooter {
+	margin-top: auto;
+	padding: var(--space-2) var(--space-3);
+	border-top: 1px solid var(--border-light);
+}
+
+.sidebarFooterBtn {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--space-2);
+	border-radius: var(--radius-lg);
+	padding: 10px 12px;
+	background: transparent;
+	border: 1px solid transparent;
+	color: var(--text-secondary);
+	font-size: var(--text-sm);
+}
+
+.sidebarFooterBtn:hover {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+	transform: none;
+}
+
 .vaultInfo {
 	padding: var(--space-2) var(--space-3);
 	display: flex;
@@ -694,7 +720,8 @@ textarea {
 }
 
 .rightSidebarResizer[aria-hidden="false"] {
-	opacity: 1;
+	opacity: 0.35;
+	margin: var(--app-frame) 0;
 }
 
 .rightSidebarResizer::before {
@@ -708,6 +735,10 @@ textarea {
 	background: var(--border-light);
 }
 
+.rightSidebarResizer:hover {
+	opacity: 1;
+}
+
 /* ─────────────────────────────────────────────────────────────────────────────
    RIGHT AI SIDEBAR - Modern chat + context
    ───────────────────────────────────────────────────────────────────────────── */
@@ -717,11 +748,6 @@ textarea {
 	overflow: hidden;
 	display: flex;
 	flex-direction: column;
-	border-left: 1px solid var(--border-light);
-	/* Match left sidebar chrome: let appShell background show through */
-	background: transparent;
-	backdrop-filter: none;
-	-webkit-backdrop-filter: none;
 	transition: width var(--transition-base);
 }
 
@@ -729,12 +755,23 @@ textarea {
 	border-left-color: transparent;
 }
 
+.aiSidebar.open {
+	margin: var(--app-frame) var(--app-frame) var(--app-frame) 0;
+	border-radius: var(--app-radius);
+	border-top-right-radius: calc(var(--app-radius) - var(--app-frame));
+	border-bottom-right-radius: calc(var(--app-radius) - var(--app-frame));
+	background: var(--bg-primary);
+	/* Match main panel shadow language */
+	box-shadow: 0 0 0 1px var(--border-light), 2px 4px 8px rgba(0, 0, 0, 0.1), 0
+		1px 3px rgba(0, 0, 0, 0.08);
+}
+
 .aiSidebarHeader {
 	display: flex;
-	align-items: center;
+	align-items: flex-start;
 	justify-content: space-between;
-	height: 44px;
-	padding: 0 var(--space-3);
+	height: calc(var(--header-height) - 4px);
+	padding: var(--space-1) var(--space-3) 0 var(--space-3);
 	border-bottom: 1px solid var(--border-light);
 	background: transparent;
 	flex-shrink: 0;
@@ -770,7 +807,7 @@ textarea {
 	font-size: 11px;
 	border-radius: 999px;
 	padding: 3px 8px;
-	border: 1px solid var(--border-light);
+	border: 1px solid color-mix(in srgb, var(--border-light) 70%, transparent);
 	color: var(--text-tertiary);
 	background: color-mix(in srgb, var(--bg-primary) 80%, transparent);
 }
@@ -787,7 +824,7 @@ textarea {
 	display: flex;
 	gap: 6px;
 	padding: 10px var(--space-3);
-	border-bottom: 1px solid var(--border-light);
+	border-bottom: none;
 	flex-shrink: 0;
 }
 
@@ -871,9 +908,9 @@ textarea {
 	max-width: 92%;
 	padding: 10px 12px;
 	border-radius: 14px;
-	border: 1px solid var(--border-light);
-	background: color-mix(in srgb, var(--bg-primary) 86%, transparent);
-	box-shadow: var(--shadow-sm);
+	border: 1px solid color-mix(in srgb, var(--border-light) 55%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
+	box-shadow: none;
 }
 
 .aiChatMsg-user {
@@ -896,7 +933,7 @@ textarea {
 .aiChatComposer {
 	flex-shrink: 0;
 	padding: var(--space-3);
-	border-top: 1px solid var(--border-light);
+	border-top: none;
 	background: transparent;
 }
 

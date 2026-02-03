@@ -30,6 +30,7 @@ import {
 	PanelLeftClose,
 	PanelLeftOpen,
 	Search,
+	Settings,
 	Sparkles,
 	Tags,
 } from "./components/Icons";
@@ -62,6 +63,7 @@ import {
 	loadViewDoc,
 	saveViewDoc,
 } from "./lib/views";
+import { openSettingsWindow } from "./lib/windows";
 
 const CanvasPane = lazy(() => import("./components/CanvasPane"));
 
@@ -718,6 +720,14 @@ function App() {
 							>
 								<FolderOpen size={14} />
 							</MotionIconButton>
+							<MotionIconButton
+								type="button"
+								size="sm"
+								onClick={() => void openSettingsWindow("general")}
+								title="Settings"
+							>
+								<Settings size={14} />
+							</MotionIconButton>
 						</div>
 					)}
 					<MotionIconButton
@@ -834,6 +844,17 @@ function App() {
 									</motion.div>
 								)}
 							</AnimatePresence>
+						</div>
+
+						<div className="sidebarFooter">
+							<button
+								type="button"
+								className="sidebarFooterBtn"
+								onClick={() => void openSettingsWindow("general")}
+							>
+								<Settings size={16} />
+								<span>Settings</span>
+							</button>
 						</div>
 					</>
 				)}
