@@ -67,6 +67,10 @@ pub fn run() {
                 let window = app.get_webview_window("main").unwrap();
                 apply_vibrancy(&window, NSVisualEffectMaterial::Sidebar, None, None)
                     .expect("Failed to apply vibrancy");
+
+                if let Some(settings) = app.get_webview_window("settings") {
+                    let _ = apply_vibrancy(&settings, NSVisualEffectMaterial::Sidebar, None, None);
+                }
             }
             Ok(())
         })

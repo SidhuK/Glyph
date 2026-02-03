@@ -5,7 +5,10 @@
 	"windows": ["main"],
 	"permissions": [
 		"core:default",
+		"core:window:allow-create",
 		"core:window:allow-start-dragging",
+		"core:window:allow-set-focus",
+		"core:window:allow-show",
 		"dialog:default",
 		"notification:default",
 		"opener:default",

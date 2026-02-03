@@ -13,6 +13,7 @@
 		"macOSPrivateApi": true,
 		"windows": [
 			{
+				"label": "main",
 				"title": "Tether",
 				"width": 800,
 				"height": 600,
@@ -20,6 +21,18 @@
 				"titleBarStyle": "Overlay",
 				"hiddenTitle": true,
 				"transparent": true
+			},
+			{
+				"label": "settings",
+				"title": "Settings",
+				"width": 760,
+				"height": 640,
+				"decorations": true,
+				"titleBarStyle": "Overlay",
+				"hiddenTitle": true,
+				"transparent": true,
+				"visible": false,
+				"url": "#/settings?tab=general"
 			}
 		],
 		"security": {

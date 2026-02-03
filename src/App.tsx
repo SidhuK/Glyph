@@ -14,7 +14,7 @@ import {
 	useState,
 } from "react";
 import "./App.css";
-import { AIPane, type SelectedCanvasNode } from "./components/AIPane";
+import type { SelectedCanvasNode } from "./components/AIPane";
 import type {
 	CanvasEdge,
 	CanvasExternalCommand,
@@ -32,17 +32,20 @@ import {
 	Search,
 	Sparkles,
 	Tags,
-	X,
 } from "./components/Icons";
-import { MotionFloatingPanel, MotionIconButton } from "./components/MotionUI";
+import { MotionIconButton } from "./components/MotionUI";
 import { SearchPane } from "./components/SearchPane";
 import { TagsPane } from "./components/TagsPane";
-import { loadSettings, setCurrentVaultPath } from "./lib/settings";
+import { AISidebar } from "./components/ai/AISidebar";
+import {
+	loadSettings,
+	setAiSidebarWidth as persistAiSidebarWidth,
+	setCurrentVaultPath,
+} from "./lib/settings";
 import {
 	type AppInfo,
 	type DirChildSummary,
 	type FsEntry,
-	type NoteMeta,
 	type RecentEntry,
 	type SearchResult,
 	type TagCount,
@@ -123,7 +126,13 @@ function App() {
 	>([]);
 	const [canvasCommand, setCanvasCommand] =
 		useState<CanvasExternalCommand | null>(null);
-	const [showAiPanel, setShowAiPanel] = useState(false);
+	const [aiSidebarOpen, setAiSidebarOpen] = useState(false);
+	const [aiSidebarWidth, setAiSidebarWidth] = useState(420);
+	const aiSidebarWidthRef = useRef(420);
+	const aiSidebarResizingRef = useRef(false);
+	const aiSidebarResizeStartRef = useRef<{ x: number; width: number } | null>(
+		null,
+	);
 	const [showSearch, setShowSearch] = useState(false);
 	const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 	const [sidebarViewMode, setSidebarViewMode] = useState<"files" | "tags">(
@@ -152,6 +161,10 @@ function App() {
 
 	const activeViewDocRef = useRef<ViewDoc | null>(null);
 	const activeViewPathRef = useRef<string | null>(null);
+
+	useEffect(() => {
+		aiSidebarWidthRef.current = aiSidebarWidth;
+	}, [aiSidebarWidth]);
 
 	useEffect(() => {
 		activeViewDocRef.current = activeViewDoc;
@@ -203,6 +216,7 @@ function App() {
 				const settings = await loadSettings();
 				if (cancelled) return;
 				folderShelfCacheRef.current.clear();
+				setAiSidebarWidth(settings.ui.aiSidebarWidth ?? 420);
 				setFolderShelfSubfolders([]);
 				setFolderShelfSummaries([]);
 				setFolderShelfRecents([]);
@@ -598,44 +612,6 @@ function App() {
 		};
 	}, [searchQuery, vaultPath]);
 
-	const createFileFromMarkdown = useCallback(
-		async (title: string, markdown: string): Promise<NoteMeta | null> => {
-			if (!vaultPath) return null;
-			const defaultName = `${
-				(title || "Untitled")
-					.replace(/[\\/:*?"<>|]/g, "")
-					.trim()
-					.slice(0, 80) || "Untitled"
-			}.md`;
-			const selection = await save({
-				title: "Create Markdown file",
-				defaultPath: `${vaultPath}/${defaultName}`,
-				filters: [{ name: "Markdown", extensions: ["md"] }],
-			});
-			const absPath = Array.isArray(selection)
-				? (selection[0] ?? null)
-				: selection;
-			if (!absPath) return null;
-			const rel = await invoke("vault_relativize_path", { abs_path: absPath });
-			await invoke("vault_write_text", {
-				path: rel,
-				text: markdown,
-				base_mtime_ms: null,
-			});
-			const entries = await invoke("vault_list_dir", {});
-			setRootEntries(entries);
-			await openMarkdownFileInCanvas(rel);
-			const now = new Date().toISOString();
-			return {
-				id: rel,
-				title: title || rel.split("/").pop() || "Untitled",
-				created: now,
-				updated: now,
-			};
-		},
-		[openMarkdownFileInCanvas, vaultPath],
-	);
-
 	const onNewFile = useCallback(async () => {
 		if (!vaultPath) return;
 		const selection = await save({
@@ -668,19 +644,6 @@ function App() {
 		);
 	}, []);
 
-	const addCanvasNoteNode = useCallback((noteId: string, title: string) => {
-		setCanvasCommand({
-			id: crypto.randomUUID(),
-			kind: "add_note_node",
-			noteId,
-			title,
-		});
-	}, []);
-
-	const addCanvasTextNode = useCallback((text: string) => {
-		setCanvasCommand({ id: crypto.randomUUID(), kind: "add_text_node", text });
-	}, []);
-
 	const onSaveView = useCallback(
 		async (payload: {
 			version: number;
@@ -704,7 +667,7 @@ function App() {
 	);
 
 	return (
-		<div className="appShell">
+		<div className={`appShell ${aiSidebarOpen ? "aiSidebarOpen" : ""}`}>
 			{/* Fallback draggable strip for macOS overlay titlebar (stays behind toolbars) */}
 			<div
 				aria-hidden="true"
@@ -899,8 +862,8 @@ function App() {
 					<div className="mainToolbarRight">
 						<MotionIconButton
 							type="button"
-							active={showAiPanel}
-							onClick={() => setShowAiPanel(!showAiPanel)}
+							active={aiSidebarOpen}
+							onClick={() => setAiSidebarOpen(!aiSidebarOpen)}
 							title="Toggle AI assistant"
 						>
 							<Sparkles size={16} />
@@ -931,70 +894,79 @@ function App() {
 
 				{/* Main Content */}
 				<div className="canvasWrapper">
-					<Suspense
-						fallback={<div className="canvasEmpty">Loading canvas…</div>}
-					>
-						<CanvasPane
-							doc={activeViewDoc ? asCanvasDocLike(activeViewDoc) : null}
-							onSave={onSaveView}
-							onOpenNote={(p) => void openFile(p)}
-							onOpenFolder={(dir) => void loadAndBuildFolderView(dir)}
-							activeNoteId={activeNoteId}
-							activeNoteTitle={activeNoteTitle}
-							vaultPath={vaultPath}
-							onSelectionChange={onCanvasSelectionChange}
-							externalCommand={canvasCommand}
-							onExternalCommandHandled={(id) => {
-								setCanvasCommand((prev) => (prev?.id === id ? null : prev));
-							}}
-						/>
-					</Suspense>
-
-					{/* Floating AI Panel */}
-					<MotionFloatingPanel
-						isOpen={showAiPanel}
-						className="floatingPanel aiPanel"
-					>
-						<div className="floatingPanelHeader">
-							<div className="floatingPanelTitle">
-								<Sparkles size={14} />
-								AI Assistant
-							</div>
-							<MotionIconButton
-								type="button"
-								size="sm"
-								onClick={() => setShowAiPanel(false)}
-								title="Close"
-							>
-								<X size={14} />
-							</MotionIconButton>
-						</div>
-						<div className="floatingPanelBody">
-							<AIPane
+					<div className="canvasPaneHost">
+						<Suspense
+							fallback={<div className="canvasEmpty">Loading canvas…</div>}
+						>
+							<CanvasPane
+								doc={activeViewDoc ? asCanvasDocLike(activeViewDoc) : null}
+								onSave={onSaveView}
+								onOpenNote={(p) => void openFile(p)}
+								onOpenFolder={(dir) => void loadAndBuildFolderView(dir)}
 								activeNoteId={activeNoteId}
 								activeNoteTitle={activeNoteTitle}
-								activeNoteMarkdown={null}
-								selectedCanvasNodes={selectedCanvasNodes}
-								canvasDoc={
-									activeViewDoc ? asCanvasDocLike(activeViewDoc) : null
-								}
-								onApplyToActiveNote={async (markdown) => {
-									if (!activeNoteId) return;
-									setCanvasCommand({
-										id: crypto.randomUUID(),
-										kind: "apply_note_markdown",
-										noteId: activeNoteId,
-										markdown,
-									});
+								vaultPath={vaultPath}
+								onSelectionChange={onCanvasSelectionChange}
+								externalCommand={canvasCommand}
+								onExternalCommandHandled={(id) => {
+									setCanvasCommand((prev) => (prev?.id === id ? null : prev));
 								}}
-								onCreateNoteFromMarkdown={createFileFromMarkdown}
-								onAddCanvasNoteNode={addCanvasNoteNode}
-								onAddCanvasTextNode={addCanvasTextNode}
 							/>
-						</div>
-					</MotionFloatingPanel>
+						</Suspense>
+					</div>
 				</div>
 			</main>
+
+			<div
+				className="rightSidebarResizer"
+				aria-hidden={!aiSidebarOpen}
+				data-window-drag-ignore
+				onMouseDown={(e) => {
+					if (!aiSidebarOpen) return;
+					if (e.button !== 0) return;
+					e.preventDefault();
+					aiSidebarResizingRef.current = true;
+					aiSidebarResizeStartRef.current = {
+						x: e.clientX,
+						width: aiSidebarWidth,
+					};
+
+					const onMove = (evt: globalThis.MouseEvent) => {
+						const start = aiSidebarResizeStartRef.current;
+						if (!aiSidebarResizingRef.current || !start) return;
+						const delta = start.x - evt.clientX;
+						const next = Math.max(340, Math.min(520, start.width + delta));
+						setAiSidebarWidth(next);
+					};
+
+					const onUp = () => {
+						if (!aiSidebarResizingRef.current) return;
+						aiSidebarResizingRef.current = false;
+						aiSidebarResizeStartRef.current = null;
+						window.removeEventListener("mousemove", onMove);
+						window.removeEventListener("mouseup", onUp);
+						void persistAiSidebarWidth(aiSidebarWidthRef.current);
+					};
+
+					window.addEventListener("mousemove", onMove);
+					window.addEventListener("mouseup", onUp, { once: true });
+				}}
+			/>
+
+			<AISidebar
+				isOpen={aiSidebarOpen}
+				width={aiSidebarWidth}
+				onClose={() => setAiSidebarOpen(false)}
+				onOpenSettings={() => {
+					// wired in a later step
+					setAiSidebarOpen(true);
+				}}
+				activeNoteId={activeNoteId}
+				activeNoteTitle={activeNoteTitle}
+				activeNoteMarkdown={null}
+				selectedCanvasNodes={selectedCanvasNodes}
+				canvasDoc={activeViewDoc ? asCanvasDocLike(activeViewDoc) : null}
+			/>
 
 			{/* Error Toast */}
 			<AnimatePresence>
