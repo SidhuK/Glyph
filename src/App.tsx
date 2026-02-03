@@ -19,6 +19,7 @@ import type {
 	CanvasNode,
 } from "./components/CanvasPane";
 import { FileTreePane } from "./components/FileTreePane";
+import { FolderShelf } from "./components/FolderShelf";
 import {
 	Files,
 	FolderOpen,
@@ -36,8 +37,10 @@ import { TagsPane } from "./components/TagsPane";
 import { loadSettings, setCurrentVaultPath } from "./lib/settings";
 import {
 	type AppInfo,
+	type DirChildSummary,
 	type FsEntry,
 	type NoteMeta,
+	type RecentEntry,
 	type SearchResult,
 	type TagCount,
 	TauriInvokeError,
@@ -99,6 +102,27 @@ function App() {
 	const [sidebarViewMode, setSidebarViewMode] = useState<"files" | "tags">(
 		"files",
 	);
+
+	const [folderShelfSubfolders, setFolderShelfSubfolders] = useState<FsEntry[]>(
+		[],
+	);
+	const [folderShelfSummaries, setFolderShelfSummaries] = useState<
+		DirChildSummary[]
+	>([]);
+	const [folderShelfRecents, setFolderShelfRecents] = useState<RecentEntry[]>(
+		[],
+	);
+	const folderShelfCacheRef = useRef(
+		new Map<
+			string,
+			{
+				subfolders: FsEntry[];
+				summaries: DirChildSummary[];
+				recents: RecentEntry[];
+			}
+		>(),
+	);
+
 	const activeViewDocRef = useRef<ViewDoc | null>(null);
 	const activeViewPathRef = useRef<string | null>(null);
 
@@ -151,6 +175,10 @@ function App() {
 			try {
 				const settings = await loadSettings();
 				if (cancelled) return;
+				folderShelfCacheRef.current.clear();
+				setFolderShelfSubfolders([]);
+				setFolderShelfSummaries([]);
+				setFolderShelfRecents([]);
 				setVaultPath(settings.currentVaultPath);
 
 				if (settings.currentVaultPath) {
@@ -325,6 +353,11 @@ function App() {
 				setTags([]);
 				setTagsError("");
 
+				folderShelfCacheRef.current.clear();
+				setFolderShelfSubfolders([]);
+				setFolderShelfSummaries([]);
+				setFolderShelfRecents([]);
+
 				const entries = await invoke("vault_list_dir", {});
 				setRootEntries(entries);
 				const onlyDir =
@@ -382,6 +415,55 @@ function App() {
 		},
 		[vaultPath],
 	);
+
+	useEffect(() => {
+		if (!vaultPath) return;
+		if (!activeViewDoc) return;
+		if (activeViewDoc.kind !== "folder") return;
+
+		const dir = activeViewDoc.selector || "";
+		const cached = folderShelfCacheRef.current.get(dir);
+		if (cached) {
+			setFolderShelfSubfolders(cached.subfolders);
+			setFolderShelfSummaries(cached.summaries);
+			setFolderShelfRecents(cached.recents);
+		} else {
+			setFolderShelfSubfolders([]);
+			setFolderShelfSummaries([]);
+			setFolderShelfRecents([]);
+		}
+
+		let cancelled = false;
+		(async () => {
+			try {
+				const [entries, summaries, recents] = await Promise.all([
+					invoke("vault_list_dir", { dir: dir || null }),
+					invoke("vault_dir_children_summary", {
+						dir: dir || null,
+						preview_limit: 1,
+					}),
+					invoke("vault_dir_recent_entries", { dir: dir || null, limit: 5 }),
+				]);
+				if (cancelled) return;
+				const subfolders = entries
+					.filter((e) => e.kind === "dir")
+					.sort((a, b) =>
+						a.name.toLowerCase().localeCompare(b.name.toLowerCase()),
+					);
+				const next = { subfolders, summaries, recents };
+				folderShelfCacheRef.current.set(dir, next);
+				setFolderShelfSubfolders(next.subfolders);
+				setFolderShelfSummaries(next.summaries);
+				setFolderShelfRecents(next.recents);
+			} catch {
+				// ignore: shelf is convenience UI
+			}
+		})();
+
+		return () => {
+			cancelled = true;
+		};
+	}, [activeViewDoc, vaultPath]);
 
 	const onCreateVault = useCallback(async () => {
 		const path = await pickDirectory();
@@ -742,6 +824,28 @@ function App() {
 						</MotionIconButton>
 					</div>
 				</div>
+
+				{activeViewDoc?.kind === "folder" ? (
+					<FolderShelf
+						dir={activeViewDoc.selector || ""}
+						subfolders={folderShelfSubfolders}
+						summaries={folderShelfSummaries}
+						recents={folderShelfRecents}
+						onOpenFolder={(d) => void loadAndBuildFolderView(d)}
+						onOpenMarkdown={(p) => void openMarkdownFileInCanvas(p)}
+						onOpenNonMarkdown={(p) => {
+							setActiveFilePath(p);
+							void openNonMarkdownExternally(p);
+						}}
+						onFocusNode={(nodeId) => {
+							setCanvasCommand({
+								id: crypto.randomUUID(),
+								kind: "focus_node",
+								nodeId,
+							});
+						}}
+					/>
+				) : null}
 
 				{/* Main Content */}
 				<div className="canvasWrapper">

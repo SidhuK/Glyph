@@ -93,6 +93,11 @@ export type CanvasExternalCommand =
 	  }
 	| {
 			id: string;
+			kind: "focus_node";
+			nodeId: string;
+	  }
+	| {
+			id: string;
 			kind: "open_note_editor";
 			noteId: string;
 			title?: string;
@@ -1633,6 +1638,31 @@ export default function CanvasPane({
 					},
 				];
 			});
+			onExternalCommandHandled?.(externalCommand.id);
+			return;
+		}
+		if (externalCommand.kind === "focus_node") {
+			const nodeId = externalCommand.nodeId;
+			if (!nodeId) return;
+			setNodes((prev) => {
+				if (!prev.some((n) => n.id === nodeId)) return prev;
+				return prev.map((n) => ({ ...n, selected: n.id === nodeId }));
+			});
+
+			requestAnimationFrame(() => {
+				const node = nodesRef.current.find((n) => n.id === nodeId);
+				if (!node) return;
+				const p = node.position ?? { x: 0, y: 0 };
+				const flow = flowRef.current as unknown as {
+					setCenter?: (
+						x: number,
+						y: number,
+						opts?: { zoom?: number; duration?: number },
+					) => void;
+				} | null;
+				flow?.setCenter?.(p.x + 260, p.y + 220, { zoom: 1, duration: 280 });
+			});
+
 			onExternalCommandHandled?.(externalCommand.id);
 			return;
 		}

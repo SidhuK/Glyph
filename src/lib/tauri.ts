@@ -25,6 +25,13 @@ export interface RecentMarkdown {
 	mtime_ms: number;
 }
 
+export interface RecentEntry {
+	rel_path: string;
+	name: string;
+	is_markdown: boolean;
+	mtime_ms: number;
+}
+
 export interface DirChildSummary {
 	dir_rel_path: string;
 	name: string;
@@ -183,6 +190,10 @@ interface TauriCommands {
 	vault_dir_children_summary: CommandDef<
 		{ dir?: string | null; preview_limit?: number | null },
 		DirChildSummary[]
+	>;
+	vault_dir_recent_entries: CommandDef<
+		{ dir?: string | null; limit?: number | null },
+		RecentEntry[]
 	>;
 	vault_read_text: CommandDef<{ path: string }, TextFileDoc>;
 	vault_read_texts_batch: CommandDef<{ paths: string[] }, TextFileDocBatch[]>;

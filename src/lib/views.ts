@@ -1,5 +1,5 @@
 import { parseNotePreview, titleForFile } from "./notePreview";
-import type { CanvasEdge, CanvasNode, DirChildSummary, FsEntry } from "./tauri";
+import type { CanvasEdge, CanvasNode, FsEntry } from "./tauri";
 import { invoke } from "./tauri";
 
 export type ViewKind = "global" | "folder" | "tag" | "search";
@@ -221,7 +221,7 @@ export async function buildFolderViewDoc(
 	existing: ViewDoc | null,
 ): Promise<{ doc: ViewDoc; changed: boolean }> {
 	const v = viewId({ kind: "folder", dir });
-	// Folder views are non-recursive by default: root files only + subfolder tiles.
+	// Folder views are non-recursive by default: show root files only; hierarchy is handled in the UI.
 	const recursive = options.recursive ?? false;
 	const limit = options.limit ?? 500;
 
@@ -229,22 +229,35 @@ export async function buildFolderViewDoc(
 		dir: v.selector || null,
 	});
 
-	const childDirs = (entries as FsEntry[])
-		.filter((e) => e.kind === "dir")
-		.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
-	const rootFiles = (entries as FsEntry[])
-		.filter((e) => e.kind === "file")
+	const recent = await invoke("vault_dir_recent_entries", {
+		dir: v.selector || null,
+		limit: 5,
+	});
+	const recentIds = new Set(recent.map((r) => r.rel_path));
+
+	const fileByRel = new Map(
+		(entries as FsEntry[])
+			.filter((e) => e.kind === "file")
+			.map((e) => [e.rel_path, e] as const),
+	);
+
+	const alpha: FsEntry[] = [...fileByRel.values()]
 		.sort((a, b) =>
 			a.rel_path.toLowerCase().localeCompare(b.rel_path.toLowerCase()),
 		)
 		.slice(0, limit);
+	const included = new Set(alpha.map((e) => e.rel_path));
 
-	const summaries = await invoke("vault_dir_children_summary", {
-		dir: v.selector || null,
-		preview_limit: 5,
-	});
-	const summaryByDir = new Map(
-		(summaries as DirChildSummary[]).map((s) => [s.dir_rel_path, s] as const),
+	for (const rel of recentIds) {
+		const e = fileByRel.get(rel);
+		if (!e) continue;
+		if (included.has(rel)) continue;
+		alpha.push(e);
+		included.add(rel);
+	}
+
+	const rootFiles = alpha.sort((a, b) =>
+		a.rel_path.toLowerCase().localeCompare(b.rel_path.toLowerCase()),
 	);
 
 	const mdRoot = rootFiles.filter((f) => f.is_markdown).map((f) => f.rel_path);
@@ -287,50 +300,6 @@ export async function buildFolderViewDoc(
 	const prevById = new Map(normalizedPrevNodes.map((n) => [n.id, n] as const));
 	const nextNodes: CanvasNode[] = [];
 
-	// Folder tiles: one horizontal row near the top of the canvas.
-	const TILE_W = 240;
-	const TILE_H = 180;
-	const TILE_GAP_X = 40;
-	const FOLDER_ROW_Y = 60;
-	const FOLDER_ROW_X_PAD = 80;
-	const tilePos = (i: number) => ({
-		x: FOLDER_ROW_X_PAD + i * (TILE_W + TILE_GAP_X),
-		y: FOLDER_ROW_Y,
-	});
-
-	// Leave space below folder tiles for the hover "recent file" nodes to expand down.
-	// This prevents the previews from overlapping the root file notes.
-	const fileOffsetY = childDirs.length ? FOLDER_ROW_Y + TILE_H + 560 : 0;
-
-	// Folder tiles (immediate subfolders only)
-	for (let i = 0; i < childDirs.length; i++) {
-		const d = childDirs[i];
-		if (!d) continue;
-		const id = `dir:${d.rel_path}`;
-		const ex = prevById.get(id);
-		const s = summaryByDir.get(d.rel_path) ?? null;
-		const data = {
-			dir: d.rel_path,
-			name: d.name,
-			total_files: s?.total_files_recursive ?? 0,
-			total_markdown: s?.total_markdown_recursive ?? 0,
-			recent_markdown: s?.recent_markdown ?? [],
-			truncated: s?.truncated ?? false,
-		};
-		// Force folder tiles into a single horizontal row (don't preserve prior positions).
-		// These tiles act like "index cards" for navigation, so deterministic layout > manual placement.
-		if (ex) {
-			nextNodes.push({ ...ex, type: "folder", position: tilePos(i), data });
-		} else {
-			nextNodes.push({
-				id,
-				type: "folder",
-				position: tilePos(i),
-				data,
-			});
-		}
-	}
-
 	// Root files only (notes + non-markdown files)
 	for (let i = 0; i < rootFiles.length; i++) {
 		const f = rootFiles[i];
@@ -363,7 +332,7 @@ export async function buildFolderViewDoc(
 		nextNodes.push({
 			id: relPath,
 			type: isMarkdown ? "note" : "file",
-			position: { x: p.x, y: p.y + fileOffsetY },
+			position: { x: p.x, y: p.y },
 			data: isMarkdown
 				? {
 						noteId: relPath,
@@ -376,7 +345,13 @@ export async function buildFolderViewDoc(
 
 	// Preserve non-derived nodes (text/link/user frames/etc.)
 	for (const n of normalizedPrevNodes) {
-		if (n.type === "note" || n.type === "file" || n.type === "folder") continue;
+		if (
+			n.type === "note" ||
+			n.type === "file" ||
+			n.type === "folder" ||
+			n.type === "folder_preview"
+		)
+			continue;
 		if (
 			n.type === "frame" &&
 			typeof n.id === "string" &&

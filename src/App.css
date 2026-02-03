@@ -407,6 +407,159 @@ textarea {
 	gap: var(--space-1);
 }
 
+.folderShelf {
+	flex-shrink: 0;
+	padding: var(--space-2) var(--space-4);
+	border-bottom: 1px solid var(--border-light);
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--bg-secondary) 92%, transparent),
+		color-mix(in srgb, var(--bg-primary) 92%, transparent)
+	);
+	-webkit-app-region: no-drag;
+}
+
+.folderShelfBreadcrumb {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 6px;
+	margin-bottom: var(--space-2);
+	color: var(--text-tertiary);
+	font-size: var(--text-xs);
+}
+
+.folderShelfCrumb {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.crumbBtn {
+	border: 1px solid transparent;
+	background: transparent;
+	padding: 4px 8px;
+	border-radius: var(--radius-full);
+	color: var(--text-secondary);
+	font-size: var(--text-xs);
+	cursor: pointer;
+}
+
+.crumbBtn:hover {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}
+
+.crumbBtn.active {
+	border-color: var(--border-light);
+	background: var(--bg-primary);
+	color: var(--text-primary);
+}
+
+.crumbSep {
+	opacity: 0.6;
+}
+
+.folderShelfRow {
+	display: flex;
+	align-items: center;
+	gap: var(--space-3);
+	padding: 6px 0;
+}
+
+.folderShelfLabel {
+	width: 92px;
+	flex-shrink: 0;
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
+}
+
+.folderShelfStrip {
+	flex: 1;
+	display: flex;
+	gap: var(--space-2);
+	overflow-x: auto;
+	overflow-y: hidden;
+	padding-bottom: 2px;
+	scrollbar-width: thin;
+	overscroll-behavior-x: contain;
+	list-style: none;
+	margin: 0;
+	padding-left: 0;
+}
+
+.folderShelfItem {
+	margin: 0;
+	padding: 0;
+}
+
+.folderShelfEmpty {
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
+	padding: 6px 10px;
+	border-radius: var(--radius-lg);
+	border: 1px dashed var(--border-light);
+	background: color-mix(in srgb, var(--bg-secondary) 65%, transparent);
+}
+
+.folderCard,
+.recentFileCard {
+	flex: 0 0 auto;
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	padding: 8px 10px;
+	border-radius: 12px;
+	border: 1px solid var(--border-light);
+	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
+	box-shadow: var(--shadow-sm);
+	cursor: pointer;
+	text-align: left;
+	min-width: 210px;
+}
+
+.folderCard:hover,
+.recentFileCard:hover {
+	border-color: var(--border-default);
+	background: color-mix(in srgb, var(--bg-primary) 96%, transparent);
+}
+
+.folderCardIcon {
+	color: var(--text-accent);
+	display: inline-flex;
+}
+
+.folderCardText,
+.recentFileCardText {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	gap: 2px;
+}
+
+.folderCardName,
+.recentFileCardName {
+	font-size: var(--text-sm);
+	font-weight: var(--font-medium);
+	color: var(--text-primary);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.folderCardMeta,
+.recentFileCardMeta {
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.recentFileCardIcon {
+	display: inline-flex;
+}
+
 .canvasTitle {
 	font-size: var(--text-base);
 	font-weight: var(--font-semibold);

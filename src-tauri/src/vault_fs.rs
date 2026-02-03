@@ -48,6 +48,14 @@ pub struct DirChildSummary {
     pub truncated: bool,
 }
 
+#[derive(Serialize, Clone)]
+pub struct RecentEntry {
+    pub rel_path: String,
+    pub name: String,
+    pub is_markdown: bool,
+    pub mtime_ms: u64,
+}
+
 fn etag_for(bytes: &[u8]) -> String {
     let mut hasher = Sha256::new();
     hasher.update(bytes);
@@ -434,6 +442,89 @@ pub async fn vault_dir_children_summary(
         }
 
         out.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+        Ok(out)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+pub async fn vault_dir_recent_entries(
+    state: State<'_, VaultState>,
+    dir: Option<String>,
+    limit: Option<u32>,
+) -> Result<Vec<RecentEntry>, String> {
+    // Safety caps to avoid pathological vaults blocking the UI thread too long.
+    const MAX_LIMIT: usize = 50;
+
+    let root = state.current_root()?;
+    let dir = dir.unwrap_or_default();
+    let limit = limit.unwrap_or(5).max(1).min(MAX_LIMIT as u32) as usize;
+
+    tauri::async_runtime::spawn_blocking(move || -> Result<Vec<RecentEntry>, String> {
+        let start_rel = if dir.trim().is_empty() {
+            PathBuf::new()
+        } else {
+            PathBuf::from(&dir)
+        };
+        deny_hidden_rel_path(&start_rel)?;
+        let start_abs = paths::join_under(&root, &start_rel)?;
+        if !start_abs.exists() {
+            return Ok(Vec::new());
+        }
+
+        // Min-heap by mtime: keep only the top-N newest entries.
+        let mut heap: BinaryHeap<Reverse<(u64, String, String, bool)>> = BinaryHeap::new();
+
+        for entry in std::fs::read_dir(&start_abs).map_err(|e| e.to_string())? {
+            let entry = match entry {
+                Ok(e) => e,
+                Err(_) => continue,
+            };
+            let name = entry.file_name().to_string_lossy().to_string();
+            if should_hide(&name) {
+                continue;
+            }
+            let meta = match entry.metadata() {
+                Ok(m) => m,
+                Err(_) => continue,
+            };
+            if !meta.is_file() {
+                continue;
+            }
+
+            let child_rel = start_rel.join(&name);
+            deny_hidden_rel_path(&child_rel)?;
+            let mtime_ms = meta
+                .modified()
+                .ok()
+                .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
+                .map(|d| d.as_millis() as u64)
+                .unwrap_or(0);
+            let is_markdown = child_rel.extension() == Some(OsStr::new("md"));
+
+            heap.push(Reverse((
+                mtime_ms,
+                child_rel.to_string_lossy().to_string(),
+                name,
+                is_markdown,
+            )));
+            if heap.len() > limit {
+                heap.pop();
+            }
+        }
+
+        let mut out: Vec<RecentEntry> = heap
+            .into_iter()
+            .map(|Reverse((mtime_ms, rel_path, name, is_markdown))| RecentEntry {
+                rel_path,
+                name,
+                is_markdown,
+                mtime_ms,
+            })
+            .collect();
+
+        out.sort_by(|a, b| b.mtime_ms.cmp(&a.mtime_ms));
         Ok(out)
     })
     .await
