@@ -24,6 +24,25 @@ function formatMtime(mtimeMs: number): string {
 	}
 }
 
+function formatRelativeCompact(mtimeMs: number): string {
+	if (!Number.isFinite(mtimeMs) || mtimeMs <= 0) return "";
+	const deltaMs = Date.now() - mtimeMs;
+	if (!Number.isFinite(deltaMs)) return "";
+	const abs = Math.abs(deltaMs);
+
+	const minute = 60_000;
+	const hour = 60 * minute;
+	const day = 24 * hour;
+	const week = 7 * day;
+
+	const fmt = (n: number, unit: string) => `${n}${unit}`;
+	if (abs < minute) return "now";
+	if (abs < hour) return fmt(Math.round(abs / minute), "m");
+	if (abs < day) return fmt(Math.round(abs / hour), "h");
+	if (abs < week) return fmt(Math.round(abs / day), "d");
+	return "";
+}
+
 export interface FolderShelfProps {
 	subfolders: FsEntry[];
 	summaries: DirChildSummary[];
@@ -67,9 +86,7 @@ export const FolderShelf = memo(function FolderShelf({
 							{subfolders.length ? (
 								subfolders.map((f) => {
 									const s = summaryByDir.get(f.rel_path) ?? null;
-									const meta = s
-										? `${s.total_markdown_recursive} md • ${s.total_files_recursive} files`
-										: "";
+									const meta = s ? `${s.total_markdown_recursive} md` : "";
 									return (
 										<li key={f.rel_path} className="folderShelfItem">
 											<motion.button
@@ -87,6 +104,11 @@ export const FolderShelf = memo(function FolderShelf({
 												<span className="folderCardText">
 													<span className="folderCardName">{f.name}</span>
 												</span>
+												{meta ? (
+													<span className="folderCardMetaChip" aria-hidden>
+														{meta}
+													</span>
+												) : null}
 											</motion.button>
 										</li>
 									);
@@ -121,6 +143,7 @@ export const FolderShelf = memo(function FolderShelf({
 							{recents.length ? (
 								recents.map((r) => {
 									const mtime = formatMtime(r.mtime_ms);
+									const rel = formatRelativeCompact(r.mtime_ms);
 									const Icon = r.is_markdown ? FileText : File;
 									const iconColor = r.is_markdown
 										? "var(--text-accent)"
@@ -153,6 +176,11 @@ export const FolderShelf = memo(function FolderShelf({
 												<span className="recentFileCardText">
 													<span className="recentFileCardName">{r.name}</span>
 												</span>
+												{rel ? (
+													<span className="recentFileCardMetaChip" aria-hidden>
+														{rel}
+													</span>
+												) : null}
 											</motion.button>
 										</li>
 									);
