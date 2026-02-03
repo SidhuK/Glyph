@@ -273,6 +273,7 @@ const NoteNode = memo(function NoteNode({
 
 	const statusLabel = (() => {
 		if (!isEditing || !session) return "";
+		if (session.phase === "loading") return "Loading…";
 		if (session.phase === "saving") return "Saving…";
 		if (session.phase === "conflict") return "Conflict";
 		if (session.phase === "error") return "Save failed";
@@ -370,14 +371,18 @@ const NoteNode = memo(function NoteNode({
 						</div>
 					) : null}
 
-					<CanvasNoteInlineEditor
-						markdown={session.markdown}
-						mode={session.mode}
-						roundTripSafe={session.roundTripSafe}
-						onRoundTripSafeChange={setRoundTripSafe}
-						onModeChange={setEditorMode}
-						onChange={updateMarkdown}
-					/>
+					{session.phase === "loading" ? (
+						<div className="rfNodeNoteEditorLoading nodrag nopan">Loading…</div>
+					) : (
+						<CanvasNoteInlineEditor
+							markdown={session.markdown}
+							mode={session.mode}
+							roundTripSafe={session.roundTripSafe}
+							onRoundTripSafeChange={setRoundTripSafe}
+							onModeChange={setEditorMode}
+							onChange={updateMarkdown}
+						/>
+					)}
 				</div>
 			) : (
 				<>
@@ -916,6 +921,7 @@ export default function CanvasPane({
 		(nextMarkdown: string) => {
 			const s = noteEditSessionRef.current;
 			if (!s) return;
+			if (s.phase === "loading") return;
 			setNoteEditSession((prev) => {
 				if (!prev || prev.noteId !== s.noteId) return prev;
 				return {
