@@ -729,36 +729,30 @@ function App() {
 					onMouseDown={onWindowDragMouseDown}
 				>
 					{!sidebarCollapsed && (
-						<>
-							<div className="sidebarBrand">
-								<span className="brandIcon">◈</span>
-								<span className="brandName">Tether</span>
-							</div>
-							<div className="sidebarActions">
-								<MotionIconButton
-									type="button"
-									onClick={() => setShowSearch(!showSearch)}
-									title="Search"
-									active={showSearch}
-								>
-									<Search size={16} />
-								</MotionIconButton>
-								<MotionIconButton
-									type="button"
-									onClick={onCreateVault}
-									title="Create vault"
-								>
-									<FolderPlus size={16} />
-								</MotionIconButton>
-								<MotionIconButton
-									type="button"
-									onClick={onOpenVault}
-									title="Open vault"
-								>
-									<FolderOpen size={16} />
-								</MotionIconButton>
-							</div>
-						</>
+						<div className="sidebarActions">
+							<MotionIconButton
+								type="button"
+								onClick={() => setShowSearch(!showSearch)}
+								title="Search"
+								active={showSearch}
+							>
+								<Search size={16} />
+							</MotionIconButton>
+							<MotionIconButton
+								type="button"
+								onClick={onCreateVault}
+								title="Create vault"
+							>
+								<FolderPlus size={16} />
+							</MotionIconButton>
+							<MotionIconButton
+								type="button"
+								onClick={onOpenVault}
+								title="Open vault"
+							>
+								<FolderOpen size={16} />
+							</MotionIconButton>
+						</div>
 					)}
 					<MotionIconButton
 						type="button"

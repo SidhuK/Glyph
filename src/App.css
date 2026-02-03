@@ -209,7 +209,7 @@ textarea {
    APP SHELL - Main Layout with floating panels
    ───────────────────────────────────────────────────────────────────────────── */
 .appShell {
-	--app-frame: var(--space-2);
+	--app-frame: var(--space-1);
 	--app-radius: var(--radius-xl);
 	display: flex;
 	position: relative;
