@@ -19,6 +19,7 @@ import type {
 	CanvasNode,
 } from "./components/CanvasPane";
 import { FileTreePane } from "./components/FileTreePane";
+import { FolderBreadcrumb } from "./components/FolderBreadcrumb";
 import { FolderShelf } from "./components/FolderShelf";
 import {
 	Files,
@@ -809,9 +810,16 @@ function App() {
 				{/* Main Toolbar */}
 				<div className="mainToolbar" data-tauri-drag-region>
 					<div className="mainToolbarLeft">
-						<span className="canvasTitle">
-							{activeViewDoc?.title || "Canvas"}
-						</span>
+						{activeViewDoc?.kind === "folder" ? (
+							<FolderBreadcrumb
+								dir={activeViewDoc.selector || ""}
+								onOpenFolder={(d) => void loadAndBuildFolderView(d)}
+							/>
+						) : (
+							<span className="canvasTitle">
+								{activeViewDoc?.title || "Canvas"}
+							</span>
+						)}
 					</div>
 					<div className="mainToolbarRight">
 						<MotionIconButton
@@ -827,7 +835,6 @@ function App() {
 
 				{activeViewDoc?.kind === "folder" ? (
 					<FolderShelf
-						dir={activeViewDoc.selector || ""}
 						subfolders={folderShelfSubfolders}
 						summaries={folderShelfSummaries}
 						recents={folderShelfRecents}

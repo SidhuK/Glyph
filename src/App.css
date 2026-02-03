@@ -407,35 +407,35 @@ textarea {
 	gap: var(--space-1);
 }
 
-.folderShelf {
-	flex-shrink: 0;
-	padding: var(--space-2) var(--space-4);
-	border-bottom: 1px solid var(--border-light);
-	background: linear-gradient(
-		180deg,
-		color-mix(in srgb, var(--bg-secondary) 92%, transparent),
-		color-mix(in srgb, var(--bg-primary) 92%, transparent)
-	);
-	-webkit-app-region: no-drag;
-}
-
-.folderShelfBreadcrumb {
-	display: flex;
+.folderBreadcrumb {
+	display: inline-flex;
 	align-items: center;
-	flex-wrap: wrap;
-	gap: 6px;
-	margin-bottom: var(--space-2);
-	color: var(--text-tertiary);
-	font-size: var(--text-xs);
+	gap: 10px;
+	min-width: 0;
 }
 
-.folderShelfCrumb {
+.folderBreadcrumbIcon {
+	color: var(--text-accent);
+	display: inline-flex;
+	flex-shrink: 0;
+}
+
+.folderBreadcrumbTrail {
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
+	min-width: 0;
+	flex-wrap: wrap;
 }
 
-.crumbBtn {
+.folderCrumb {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	min-width: 0;
+}
+
+.folderCrumbBtn {
 	border: 1px solid transparent;
 	background: transparent;
 	padding: 4px 8px;
@@ -443,35 +443,76 @@ textarea {
 	color: var(--text-secondary);
 	font-size: var(--text-xs);
 	cursor: pointer;
+	white-space: nowrap;
+	max-width: 240px;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
-.crumbBtn:hover {
+.folderCrumbBtn:hover {
 	background: var(--bg-hover);
 	color: var(--text-primary);
 }
 
-.crumbBtn.active {
+.folderCrumbBtn.isCurrent {
 	border-color: var(--border-light);
-	background: var(--bg-primary);
+	background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
 	color: var(--text-primary);
 }
 
-.crumbSep {
-	opacity: 0.6;
+.folderCrumbSep {
+	color: var(--text-tertiary);
+	display: inline-flex;
+	opacity: 0.7;
 }
 
-.folderShelfRow {
+.folderShelf {
+	flex-shrink: 0;
+	padding: 8px var(--space-4);
+	border-bottom: 1px solid var(--border-light);
+	background: color-mix(in srgb, var(--bg-secondary) 50%, transparent);
+	-webkit-app-region: no-drag;
+}
+
+.folderShelfBar {
 	display: flex;
 	align-items: center;
-	gap: var(--space-3);
-	padding: 6px 0;
+	gap: var(--space-4);
 }
 
-.folderShelfLabel {
-	width: 92px;
+.folderShelfGroup {
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+	min-width: 0;
+	flex: 1;
+}
+
+.folderShelfGroupHead {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
 	flex-shrink: 0;
-	font-size: var(--text-xs);
 	color: var(--text-tertiary);
+	font-size: var(--text-xs);
+}
+
+.folderShelfGroupIcon {
+	display: inline-flex;
+	color: var(--text-tertiary);
+}
+
+.folderShelfGroupTitle {
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
+	font-size: 11px;
+}
+
+.folderShelfDivider {
+	width: 1px;
+	align-self: stretch;
+	background: var(--border-light);
+	opacity: 0.9;
 }
 
 .folderShelfStrip {
@@ -480,7 +521,7 @@ textarea {
 	gap: var(--space-2);
 	overflow-x: auto;
 	overflow-y: hidden;
-	padding-bottom: 2px;
+	padding: 2px 0;
 	scrollbar-width: thin;
 	overscroll-behavior-x: contain;
 	list-style: none;
@@ -497,7 +538,7 @@ textarea {
 	font-size: var(--text-xs);
 	color: var(--text-tertiary);
 	padding: 6px 10px;
-	border-radius: var(--radius-lg);
+	border-radius: var(--radius-full);
 	border: 1px dashed var(--border-light);
 	background: color-mix(in srgb, var(--bg-secondary) 65%, transparent);
 }
@@ -508,14 +549,14 @@ textarea {
 	display: inline-flex;
 	align-items: center;
 	gap: 10px;
-	padding: 8px 10px;
-	border-radius: 12px;
+	padding: 6px 10px;
+	border-radius: var(--radius-full);
 	border: 1px solid var(--border-light);
 	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
-	box-shadow: var(--shadow-sm);
+	box-shadow: none;
 	cursor: pointer;
 	text-align: left;
-	min-width: 210px;
+	min-width: 160px;
 }
 
 .folderCard:hover,
@@ -534,23 +575,13 @@ textarea {
 	display: flex;
 	flex-direction: column;
 	min-width: 0;
-	gap: 2px;
 }
 
 .folderCardName,
 .recentFileCardName {
-	font-size: var(--text-sm);
+	font-size: var(--text-xs);
 	font-weight: var(--font-medium);
 	color: var(--text-primary);
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-
-.folderCardMeta,
-.recentFileCardMeta {
-	font-size: var(--text-xs);
-	color: var(--text-tertiary);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
