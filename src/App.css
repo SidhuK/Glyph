@@ -210,7 +210,7 @@ textarea {
    ───────────────────────────────────────────────────────────────────────────── */
 .appShell {
 	--app-frame: var(--space-1);
-	--app-radius: var(--radius-xl);
+	--app-radius: calc(var(--radius-xl) + 3px);
 	isolation: isolate;
 	display: flex;
 	position: relative;
@@ -417,6 +417,9 @@ textarea {
 	border-radius: var(--app-radius);
 	border-top-left-radius: calc(var(--app-radius) - var(--app-frame));
 	border-bottom-left-radius: calc(var(--app-radius) - var(--app-frame));
+	/* Shadow style matches sticky notes (two-layer), but softer. */
+	box-shadow: 0 0 0 1px var(--border-light), 2px 4px 8px rgba(0, 0, 0, 0.1), 0
+		1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .mainToolbar {
