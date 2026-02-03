@@ -178,41 +178,75 @@ function defaultPositionForIndex(i: number): { x: number; y: number } {
 	return { x: col * 340, y: row * 300 };
 }
 
-async function fetchNoteContents(
+export class NeedsIndexRebuildError extends Error {
+	missingCount: number;
+
+	constructor(message: string, missingCount: number) {
+		super(message);
+		this.name = "NeedsIndexRebuildError";
+		this.missingCount = missingCount;
+	}
+}
+
+async function fetchNotePreviewsAllAtOnce(
 	noteIds: string[],
 ): Promise<Map<string, { title: string; content: string }>> {
-	if (noteIds.length === 0) {
-		return new Map();
+	const MAX_DISK_FILL = 50;
+
+	if (noteIds.length === 0) return new Map();
+
+	const resultMap = new Map<string, { title: string; content: string }>();
+	let previews: Array<{ id: string; title: string; preview: string }> = [];
+	try {
+		previews = await invoke("index_note_previews_batch", { ids: noteIds });
+	} catch {
+		previews = [];
 	}
 
-	try {
-		// Use batch command to fetch all notes in a single IPC call
-		const batchResults = await invoke("vault_read_texts_batch", {
-			paths: noteIds,
-		});
-		const resultMap = new Map<string, { title: string; content: string }>();
+	for (const p of previews) {
+		const id = typeof p.id === "string" ? p.id : "";
+		if (!id) continue;
+		const title =
+			typeof p.title === "string" && p.title ? p.title : titleForFile(id);
+		const content = typeof p.preview === "string" ? p.preview : "";
+		resultMap.set(id, { title, content });
+	}
 
+	const missing: string[] = [];
+	for (const id of noteIds) {
+		if (!resultMap.has(id)) missing.push(id);
+	}
+	if (!missing.length) return resultMap;
+
+	if (missing.length > MAX_DISK_FILL) {
+		throw new NeedsIndexRebuildError(
+			`index missing too many previews (${missing.length})`,
+			missing.length,
+		);
+	}
+
+	// Fill small gaps from disk (new/unindexed files) without waiting for a full rebuild.
+	try {
+		const batchResults = await invoke("vault_read_texts_batch", {
+			paths: missing,
+		});
 		for (const doc of batchResults) {
+			const rel = doc.rel_path;
+			if (!rel) continue;
 			if (doc.text != null) {
-				resultMap.set(doc.rel_path, parseNotePreview(doc.rel_path, doc.text));
+				resultMap.set(rel, parseNotePreview(rel, doc.text));
 			} else {
-				// File had an error (e.g., not found), use fallback
-				resultMap.set(doc.rel_path, {
-					title: titleForFile(doc.rel_path),
-					content: "",
-				});
+				resultMap.set(rel, { title: titleForFile(rel), content: "" });
 			}
 		}
-
-		return resultMap;
 	} catch {
-		// Fallback: return empty content for all notes
-		const resultMap = new Map<string, { title: string; content: string }>();
-		for (const id of noteIds) {
-			resultMap.set(id, { title: titleForFile(id), content: "" });
+		for (const id of missing) {
+			if (!resultMap.has(id))
+				resultMap.set(id, { title: titleForFile(id), content: "" });
 		}
-		return resultMap;
 	}
+
+	return resultMap;
 }
 
 export async function buildFolderViewDoc(
@@ -261,7 +295,7 @@ export async function buildFolderViewDoc(
 	);
 
 	const mdRoot = rootFiles.filter((f) => f.is_markdown).map((f) => f.rel_path);
-	const noteContents = await fetchNoteContents(mdRoot);
+	const noteContents = await fetchNotePreviewsAllAtOnce(mdRoot);
 
 	const prev = existing;
 	const prevNodes = prev?.nodes ?? [];
@@ -401,8 +435,8 @@ export async function buildSearchViewDoc(
 		.filter(Boolean)
 		.slice(0, limit);
 
-	// Fetch content for all notes
-	const noteContents = await fetchNoteContents(ids);
+	// Fetch content for all notes (prefer index; fill small gaps from disk)
+	const noteContents = await fetchNotePreviewsAllAtOnce(ids);
 
 	const prev = existing;
 	const prevNodes = prev?.nodes ?? [];
@@ -495,8 +529,8 @@ export async function buildTagViewDoc(
 		.filter(Boolean)
 		.slice(0, limit);
 
-	// Fetch content for all notes
-	const noteContents = await fetchNoteContents(ids);
+	// Fetch content for all notes (prefer index; fill small gaps from disk)
+	const noteContents = await fetchNotePreviewsAllAtOnce(ids);
 
 	const prev = existing;
 	const prevNodes = prev?.nodes ?? [];

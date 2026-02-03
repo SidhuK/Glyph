@@ -126,6 +126,12 @@ export interface IndexRebuildResult {
 	indexed: number;
 }
 
+export interface IndexNotePreview {
+	id: string;
+	title: string;
+	preview: string;
+}
+
 export interface LinkPreview {
 	url: string;
 	hostname: string;
@@ -223,6 +229,7 @@ interface TauriCommands {
 	canvas_write: CommandDef<{ doc: Omit<CanvasDoc, "updated"> }, CanvasDoc>;
 
 	index_rebuild: CommandDef<void, IndexRebuildResult>;
+	index_note_previews_batch: CommandDef<{ ids: string[] }, IndexNotePreview[]>;
 	search: CommandDef<{ query: string }, SearchResult[]>;
 	tags_list: CommandDef<{ limit?: number | null }, TagCount[]>;
 	tag_notes: CommandDef<{ tag: string; limit?: number | null }, SearchResult[]>;

@@ -18,6 +18,13 @@ pub struct SearchResult {
 }
 
 #[derive(Serialize)]
+pub struct IndexNotePreview {
+    pub id: String,
+    pub title: String,
+    pub preview: String,
+}
+
+#[derive(Serialize)]
 pub struct IndexRebuildResult {
     pub indexed: usize,
 }
@@ -438,7 +445,8 @@ CREATE TABLE IF NOT EXISTS notes (
   created TEXT NOT NULL,
   updated TEXT NOT NULL,
   path TEXT NOT NULL,
-  etag TEXT NOT NULL
+  etag TEXT NOT NULL,
+  preview TEXT NOT NULL DEFAULT ''
 );
 
 CREATE TABLE IF NOT EXISTS links (
@@ -469,6 +477,33 @@ CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(
     )
     .map_err(|e| e.to_string())?;
 
+    // Additive migration for existing DBs created before `preview` existed.
+    // SQLite doesn't support IF NOT EXISTS for adding columns, so introspect first.
+    let mut has_preview = false;
+    let mut stmt = conn
+        .prepare("PRAGMA table_info(notes)")
+        .map_err(|e| e.to_string())?;
+    let mut rows = stmt.query([]).map_err(|e| e.to_string())?;
+    while let Some(row) = rows.next().map_err(|e| e.to_string())? {
+        let name: String = row.get(1).map_err(|e| e.to_string())?;
+        if name == "preview" {
+            has_preview = true;
+            break;
+        }
+    }
+    if !has_preview {
+        // If two callers race, treat "duplicate column name" as non-fatal.
+        match conn.execute("ALTER TABLE notes ADD COLUMN preview TEXT NOT NULL DEFAULT ''", []) {
+            Ok(_) => {}
+            Err(e) => {
+                let msg = e.to_string().to_lowercase();
+                if !msg.contains("duplicate column") {
+                    return Err(e.to_string());
+                }
+            }
+        }
+    }
+
     let schema_version: Option<String> = conn
         .query_row(
             "SELECT value FROM meta WHERE key = 'schema_version' LIMIT 1",
@@ -483,6 +518,48 @@ CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(
     }
 
     Ok(())
+}
+
+fn preview_from_markdown(note_id: &str, markdown: &str) -> String {
+    let (_yaml, body) = split_frontmatter(markdown);
+    let body = body.trim();
+    if body.is_empty() {
+        return String::new();
+    }
+
+    // Limit to first 20 lines for UI performance (mirrors frontend behavior).
+    let mut out = String::new();
+    let mut count = 0usize;
+    let mut has_more = false;
+    for line in body.lines() {
+        if count >= 20 {
+            has_more = true;
+            break;
+        }
+        if count > 0 {
+            out.push('\n');
+        }
+        out.push_str(line);
+        count += 1;
+    }
+    if has_more {
+        out.push('\n');
+        out.push('…');
+    }
+
+    // If we somehow ended up with frontmatter-only content, keep it empty.
+    // (Also avoids returning massive whitespace.)
+    if out.trim().is_empty() {
+        let stem = Path::new(note_id)
+            .file_stem()
+            .and_then(|s| s.to_str())
+            .unwrap_or("");
+        if !stem.is_empty() {
+            return String::new();
+        }
+    }
+
+    out
 }
 
 pub(crate) fn open_db(vault_root: &Path) -> Result<rusqlite::Connection, String> {
@@ -537,11 +614,12 @@ fn index_note_with_conn(
     }
     let title_for_fts = title.clone();
     let etag = sha256_hex(markdown.as_bytes());
+    let preview = preview_from_markdown(note_id, markdown);
     let rel_path = note_id.to_string();
 
     conn.execute(
-        "INSERT OR REPLACE INTO notes(id, title, created, updated, path, etag) VALUES(?, ?, ?, ?, ?, ?)",
-        rusqlite::params![note_id, title, created, updated, rel_path, etag],
+        "INSERT OR REPLACE INTO notes(id, title, created, updated, path, etag, preview) VALUES(?, ?, ?, ?, ?, ?, ?)",
+        rusqlite::params![note_id, title, created, updated, rel_path, etag, preview],
     )
     .map_err(|e| e.to_string())?;
 
@@ -632,10 +710,11 @@ pub fn rebuild(vault_root: &Path) -> Result<IndexRebuildResult, String> {
             }
         }
         let etag = sha256_hex(markdown.as_bytes());
+        let preview = preview_from_markdown(rel, &markdown);
 
         tx.execute(
-            "INSERT OR REPLACE INTO notes(id, title, created, updated, path, etag) VALUES(?, ?, ?, ?, ?, ?)",
-            rusqlite::params![rel, title, created, updated, rel, etag],
+            "INSERT OR REPLACE INTO notes(id, title, created, updated, path, etag, preview) VALUES(?, ?, ?, ?, ?, ?, ?)",
+            rusqlite::params![rel, title, created, updated, rel, etag, preview],
         )
         .map_err(|e| e.to_string())?;
 
@@ -699,6 +778,67 @@ pub async fn index_rebuild(app: AppHandle, state: State<'_, VaultState>) -> Resu
         .body(format!("Index rebuilt ({})", res.indexed))
         .show();
     Ok(res)
+}
+
+#[tauri::command]
+pub async fn index_note_previews_batch(
+    state: State<'_, VaultState>,
+    ids: Vec<String>,
+) -> Result<Vec<IndexNotePreview>, String> {
+    // Defensive caps to avoid pathological IPC calls.
+    const MAX_IDS: usize = 20_000;
+    const CHUNK: usize = 400;
+
+    let root = state.current_root()?;
+    tauri::async_runtime::spawn_blocking(move || -> Result<Vec<IndexNotePreview>, String> {
+        if ids.is_empty() {
+            return Ok(Vec::new());
+        }
+        if ids.len() > MAX_IDS {
+            return Err("too many ids".to_string());
+        }
+
+        // Keep first occurrence order, drop duplicates.
+        let mut seen = std::collections::HashSet::<String>::new();
+        let mut uniq: Vec<String> = Vec::with_capacity(ids.len());
+        for id in ids {
+            if id.trim().is_empty() {
+                continue;
+            }
+            if seen.insert(id.clone()) {
+                uniq.push(id);
+            }
+        }
+
+        let conn = open_db(&root)?;
+        let mut out: Vec<IndexNotePreview> = Vec::new();
+
+        for chunk in uniq.chunks(CHUNK) {
+            // Build `IN (?, ?, ...)` safely.
+            let placeholders = std::iter::repeat("?")
+                .take(chunk.len())
+                .collect::<Vec<_>>()
+                .join(", ");
+            let sql = format!(
+                "SELECT id, title, preview FROM notes WHERE id IN ({placeholders})"
+            );
+
+            let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;
+            let params = rusqlite::params_from_iter(chunk.iter());
+            let mut rows = stmt.query(params).map_err(|e| e.to_string())?;
+            while let Some(row) = rows.next().map_err(|e| e.to_string())? {
+                out.push(IndexNotePreview {
+                    id: row.get(0).map_err(|e| e.to_string())?,
+                    title: row.get(1).map_err(|e| e.to_string())?,
+                    preview: row.get(2).map_err(|e| e.to_string())?,
+                });
+            }
+        }
+
+        Ok(out)
+    })
+    .await
+    .map_err(|e| e.to_string())?
 }
 
 #[tauri::command]

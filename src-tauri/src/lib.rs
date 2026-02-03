@@ -108,6 +108,7 @@ pub fn run() {
             canvas::canvas_read,
             canvas::canvas_write,
             index::index_rebuild,
+            index::index_note_previews_batch,
             index::search,
             index::tags_list,
             index::tag_notes,

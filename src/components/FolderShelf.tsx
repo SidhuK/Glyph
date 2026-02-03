@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import type { ReactElement } from "react";
 import { memo } from "react";
-import type { DirChildSummary, FsEntry, RecentEntry } from "../lib/tauri";
+import type { FsEntry, RecentEntry } from "../lib/tauri";
 import {
 	Archive,
 	Cpu,
@@ -115,7 +115,6 @@ function iconForRecent(
 
 export interface FolderShelfProps {
 	subfolders: FsEntry[];
-	summaries: DirChildSummary[];
 	recents: RecentEntry[];
 	onOpenFolder: (dir: string) => void;
 	onOpenMarkdown: (relPath: string) => void;
@@ -125,15 +124,12 @@ export interface FolderShelfProps {
 
 export const FolderShelf = memo(function FolderShelf({
 	subfolders,
-	summaries,
 	recents,
 	onOpenFolder,
 	onOpenMarkdown,
 	onOpenNonMarkdown,
 	onFocusNode,
 }: FolderShelfProps) {
-	void summaries;
-
 	return (
 		<motion.section
 			className="folderShelf"

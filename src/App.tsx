@@ -54,6 +54,7 @@ import {
 	invoke,
 } from "./lib/tauri";
 import {
+	NeedsIndexRebuildError,
 	type ViewDoc,
 	type ViewRef,
 	asCanvasDocLike,
@@ -111,6 +112,7 @@ function App() {
 	const [dirSummariesByParent, setDirSummariesByParent] = useState<
 		Record<string, DirChildSummary[] | undefined>
 	>({});
+	const dirSummariesInFlightRef = useRef(new Set<string>());
 	const [expandedDirs, setExpandedDirs] = useState<Set<string>>(
 		() => new Set(),
 	);
@@ -144,9 +146,6 @@ function App() {
 	const [folderShelfSubfolders, setFolderShelfSubfolders] = useState<FsEntry[]>(
 		[],
 	);
-	const [folderShelfSummaries, setFolderShelfSummaries] = useState<
-		DirChildSummary[]
-	>([]);
 	const [folderShelfRecents, setFolderShelfRecents] = useState<RecentEntry[]>(
 		[],
 	);
@@ -155,11 +154,15 @@ function App() {
 			string,
 			{
 				subfolders: FsEntry[];
-				summaries: DirChildSummary[];
 				recents: RecentEntry[];
 			}
 		>(),
 	);
+
+	const [canvasLoadingMessage, setCanvasLoadingMessage] = useState<string>("");
+	const [isIndexing, setIsIndexing] = useState(false);
+	const indexRebuildPromiseRef = useRef<Promise<void> | null>(null);
+	const vaultSessionRef = useRef(0);
 
 	const activeViewDocRef = useRef<ViewDoc | null>(null);
 	const activeViewPathRef = useRef<string | null>(null);
@@ -175,6 +178,14 @@ function App() {
 	useEffect(() => {
 		activeViewPathRef.current = activeViewPath;
 	}, [activeViewPath]);
+
+	useEffect(() => {
+		void vaultPath;
+		vaultSessionRef.current += 1;
+		indexRebuildPromiseRef.current = null;
+		setCanvasLoadingMessage("");
+		setIsIndexing(false);
+	}, [vaultPath]);
 
 	// Keep info in sync but don't use it directly in render
 	void info;
@@ -220,7 +231,6 @@ function App() {
 				folderShelfCacheRef.current.clear();
 				setAiSidebarWidth(settings.ui.aiSidebarWidth ?? 420);
 				setFolderShelfSubfolders([]);
-				setFolderShelfSummaries([]);
 				setFolderShelfRecents([]);
 				setDirSummariesByParent({});
 				setVaultPath(settings.currentVaultPath);
@@ -240,20 +250,27 @@ function App() {
 							// ignore
 						}
 						try {
-							const summaries = await invoke("vault_dir_children_summary", {
-								dir: null,
-								preview_limit: 1,
-							});
-							if (!cancelled)
-								setDirSummariesByParent((prev) => ({
-									...prev,
-									"": summaries,
-								}));
+							void (async () => {
+								try {
+									const summaries = await invoke("vault_dir_children_summary", {
+										dir: null,
+										preview_limit: 1,
+									});
+									if (!cancelled)
+										setDirSummariesByParent((prev) => ({
+											...prev,
+											"": summaries,
+										}));
+								} catch {
+									// ignore
+								}
+							})();
 						} catch {
 							// ignore
 						}
 						try {
-							await invoke("index_rebuild");
+							// Kick indexing in the background; the UI can still render cached views.
+							void startIndexRebuild();
 						} catch {
 							// ignore
 						}
@@ -271,20 +288,7 @@ function App() {
 									? (rootEntriesLocal.find((e) => e.kind === "dir")?.rel_path ??
 										"")
 									: "";
-							const view: ViewRef = { kind: "folder", dir: onlyDir };
-							const loaded = await loadViewDoc(view);
-							const built = await buildFolderViewDoc(
-								onlyDir,
-								{ recursive: false, limit: 500 },
-								loaded.doc,
-							);
-							if (!loaded.doc || built.changed) {
-								await saveViewDoc(loaded.path, built.doc);
-							}
-							if (!cancelled) {
-								setActiveViewPath(loaded.path);
-								setActiveViewDoc(built.doc);
-							}
+							if (!cancelled) await loadAndBuildFolderView(onlyDir);
 						} catch {
 							// ignore
 						}
@@ -324,66 +328,206 @@ function App() {
 		}
 	}, []);
 
-	const loadAndBuildFolderView = useCallback(async (dir: string) => {
-		setError("");
-		try {
-			const view: ViewRef = { kind: "folder", dir };
+	const startIndexRebuild = useCallback(async (): Promise<void> => {
+		if (indexRebuildPromiseRef.current) return indexRebuildPromiseRef.current;
 
-			const loaded = await loadViewDoc(view);
-			const built = await buildFolderViewDoc(
-				dir,
-				{ recursive: false, limit: 500 },
-				loaded.doc,
-			);
-
-			if (!loaded.doc || built.changed) {
-				await saveViewDoc(loaded.path, built.doc);
+		const session = vaultSessionRef.current;
+		setIsIndexing(true);
+		const p = (async () => {
+			try {
+				await invoke("index_rebuild");
+			} catch {
+				// Index is derived; navigation can proceed without it.
+			} finally {
+				indexRebuildPromiseRef.current = null;
+				if (vaultSessionRef.current === session) setIsIndexing(false);
 			}
+		})();
+		indexRebuildPromiseRef.current = p;
 
-			setActiveViewPath(loaded.path);
-			setActiveViewDoc(built.doc);
-		} catch (e) {
-			setError(e instanceof Error ? e.message : String(e));
-		}
-	}, []);
+		void p.then(() => {
+			if (vaultSessionRef.current === session) void refreshTags();
+		});
 
-	const loadAndBuildSearchView = useCallback(async (query: string) => {
-		setError("");
-		try {
-			const q = query.trim();
-			if (!q) return;
-			const view: ViewRef = { kind: "search", query: q };
+		return p;
+	}, [refreshTags]);
 
-			const loaded = await loadViewDoc(view);
-			const built = await buildSearchViewDoc(q, { limit: 200 }, loaded.doc);
-			if (!loaded.doc || built.changed) {
-				await saveViewDoc(loaded.path, built.doc);
+	const loadAndBuildFolderView = useCallback(
+		async (dir: string) => {
+			setError("");
+			setCanvasLoadingMessage("");
+			try {
+				const view: ViewRef = { kind: "folder", dir };
+
+				const loaded = await loadViewDoc(view);
+				if (loaded.doc) {
+					setActiveViewPath(loaded.path);
+					setActiveViewDoc(loaded.doc);
+				}
+
+				let existingDoc = loaded.doc;
+				const buildAndSet = async () => {
+					const built = await buildFolderViewDoc(
+						dir,
+						{ recursive: false, limit: 500 },
+						existingDoc,
+					);
+					if (!existingDoc || built.changed) {
+						await saveViewDoc(loaded.path, built.doc);
+					}
+					existingDoc = built.doc;
+					setActiveViewPath(loaded.path);
+					setActiveViewDoc(built.doc);
+				};
+
+				try {
+					await buildAndSet();
+				} catch (e) {
+					if (e instanceof NeedsIndexRebuildError) {
+						if (loaded.doc) {
+							void (async () => {
+								await startIndexRebuild();
+								try {
+									await buildAndSet();
+								} catch {
+									// ignore
+								}
+							})();
+							return;
+						}
+						setCanvasLoadingMessage("Indexing vault…");
+						await startIndexRebuild();
+						setCanvasLoadingMessage("");
+						await buildAndSet();
+						return;
+					}
+					throw e;
+				}
+			} catch (e) {
+				setCanvasLoadingMessage("");
+				setError(e instanceof Error ? e.message : String(e));
 			}
-			setActiveViewPath(loaded.path);
-			setActiveViewDoc(built.doc);
-		} catch (e) {
-			setError(e instanceof Error ? e.message : String(e));
-		}
-	}, []);
+		},
+		[startIndexRebuild],
+	);
 
-	const loadAndBuildTagView = useCallback(async (tag: string) => {
-		setError("");
-		try {
-			const t = tag.trim();
-			if (!t) return;
-			const view: ViewRef = { kind: "tag", tag: t };
+	const loadAndBuildSearchView = useCallback(
+		async (query: string) => {
+			setError("");
+			setCanvasLoadingMessage("");
+			try {
+				const q = query.trim();
+				if (!q) return;
+				const view: ViewRef = { kind: "search", query: q };
 
-			const loaded = await loadViewDoc(view);
-			const built = await buildTagViewDoc(t, { limit: 500 }, loaded.doc);
-			if (!loaded.doc || built.changed) {
-				await saveViewDoc(loaded.path, built.doc);
+				const loaded = await loadViewDoc(view);
+				if (loaded.doc) {
+					setActiveViewPath(loaded.path);
+					setActiveViewDoc(loaded.doc);
+				}
+
+				let existingDoc = loaded.doc;
+				const buildAndSet = async () => {
+					const built = await buildSearchViewDoc(
+						q,
+						{ limit: 200 },
+						existingDoc,
+					);
+					if (!existingDoc || built.changed) {
+						await saveViewDoc(loaded.path, built.doc);
+					}
+					existingDoc = built.doc;
+					setActiveViewPath(loaded.path);
+					setActiveViewDoc(built.doc);
+				};
+
+				try {
+					await buildAndSet();
+				} catch (e) {
+					if (e instanceof NeedsIndexRebuildError) {
+						if (loaded.doc) {
+							void (async () => {
+								await startIndexRebuild();
+								try {
+									await buildAndSet();
+								} catch {
+									// ignore
+								}
+							})();
+							return;
+						}
+						setCanvasLoadingMessage("Indexing vault…");
+						await startIndexRebuild();
+						setCanvasLoadingMessage("");
+						await buildAndSet();
+						return;
+					}
+					throw e;
+				}
+			} catch (e) {
+				setCanvasLoadingMessage("");
+				setError(e instanceof Error ? e.message : String(e));
 			}
-			setActiveViewPath(loaded.path);
-			setActiveViewDoc(built.doc);
-		} catch (e) {
-			setError(e instanceof Error ? e.message : String(e));
-		}
-	}, []);
+		},
+		[startIndexRebuild],
+	);
+
+	const loadAndBuildTagView = useCallback(
+		async (tag: string) => {
+			setError("");
+			setCanvasLoadingMessage("");
+			try {
+				const t = tag.trim();
+				if (!t) return;
+				const view: ViewRef = { kind: "tag", tag: t };
+
+				const loaded = await loadViewDoc(view);
+				if (loaded.doc) {
+					setActiveViewPath(loaded.path);
+					setActiveViewDoc(loaded.doc);
+				}
+
+				let existingDoc = loaded.doc;
+				const buildAndSet = async () => {
+					const built = await buildTagViewDoc(t, { limit: 500 }, existingDoc);
+					if (!existingDoc || built.changed) {
+						await saveViewDoc(loaded.path, built.doc);
+					}
+					existingDoc = built.doc;
+					setActiveViewPath(loaded.path);
+					setActiveViewDoc(built.doc);
+				};
+
+				try {
+					await buildAndSet();
+				} catch (e) {
+					if (e instanceof NeedsIndexRebuildError) {
+						if (loaded.doc) {
+							void (async () => {
+								await startIndexRebuild();
+								try {
+									await buildAndSet();
+								} catch {
+									// ignore
+								}
+							})();
+							return;
+						}
+						setCanvasLoadingMessage("Indexing vault…");
+						await startIndexRebuild();
+						setCanvasLoadingMessage("");
+						await buildAndSet();
+						return;
+					}
+					throw e;
+				}
+			} catch (e) {
+				setCanvasLoadingMessage("");
+				setError(e instanceof Error ? e.message : String(e));
+			}
+		},
+		[startIndexRebuild],
+	);
 
 	const applyVaultSelection = useCallback(
 		async (path: string, mode: "open" | "create") => {
@@ -413,17 +557,22 @@ function App() {
 
 				folderShelfCacheRef.current.clear();
 				setFolderShelfSubfolders([]);
-				setFolderShelfSummaries([]);
 				setFolderShelfRecents([]);
 
 				const entries = await invoke("vault_list_dir", {});
 				setRootEntries(entries);
 				try {
-					const summaries = await invoke("vault_dir_children_summary", {
-						dir: null,
-						preview_limit: 1,
-					});
-					setDirSummariesByParent((prev) => ({ ...prev, "": summaries }));
+					void (async () => {
+						try {
+							const summaries = await invoke("vault_dir_children_summary", {
+								dir: null,
+								preview_limit: 1,
+							});
+							setDirSummariesByParent((prev) => ({ ...prev, "": summaries }));
+						} catch {
+							// ignore
+						}
+					})();
 				} catch {
 					// ignore
 				}
@@ -434,20 +583,14 @@ function App() {
 						: "";
 				await loadAndBuildFolderView(onlyDir);
 
-				void (async () => {
-					try {
-						await invoke("index_rebuild");
-					} catch {
-						// Index is derived; search UI can still function as "empty" until rebuilt.
-					}
-					await refreshTags();
-				})();
+				void startIndexRebuild();
+				void refreshTags();
 			} catch (err) {
 				const message = err instanceof Error ? err.message : String(err);
 				setError(message);
 			}
 		},
-		[loadAndBuildFolderView, refreshTags],
+		[loadAndBuildFolderView, refreshTags, startIndexRebuild],
 	);
 
 	const openMarkdownFileInCanvas = useCallback(
@@ -492,23 +635,17 @@ function App() {
 		const cached = folderShelfCacheRef.current.get(dir);
 		if (cached) {
 			setFolderShelfSubfolders(cached.subfolders);
-			setFolderShelfSummaries(cached.summaries);
 			setFolderShelfRecents(cached.recents);
 		} else {
 			setFolderShelfSubfolders([]);
-			setFolderShelfSummaries([]);
 			setFolderShelfRecents([]);
 		}
 
 		let cancelled = false;
 		(async () => {
 			try {
-				const [entries, summaries, recents] = await Promise.all([
+				const [entries, recents] = await Promise.all([
 					invoke("vault_list_dir", { dir: dir || null }),
-					invoke("vault_dir_children_summary", {
-						dir: dir || null,
-						preview_limit: 1,
-					}),
 					invoke("vault_dir_recent_entries", { dir: dir || null, limit: 5 }),
 				]);
 				if (cancelled) return;
@@ -517,10 +654,9 @@ function App() {
 					.sort((a, b) =>
 						a.name.toLowerCase().localeCompare(b.name.toLowerCase()),
 					);
-				const next = { subfolders, summaries, recents };
+				const next = { subfolders, recents };
 				folderShelfCacheRef.current.set(dir, next);
 				setFolderShelfSubfolders(next.subfolders);
-				setFolderShelfSummaries(next.summaries);
 				setFolderShelfRecents(next.recents);
 			} catch {
 				// ignore: shelf is convenience UI
@@ -545,15 +681,28 @@ function App() {
 	}, [applyVaultSelection, pickDirectory]);
 
 	const loadDir = useCallback(async (dirPath: string) => {
-		const [entries, summaries] = await Promise.all([
-			invoke("vault_list_dir", dirPath ? { dir: dirPath } : {}),
-			invoke("vault_dir_children_summary", {
-				dir: dirPath || null,
-				preview_limit: 1,
-			}),
-		]);
+		const entries = await invoke(
+			"vault_list_dir",
+			dirPath ? { dir: dirPath } : {},
+		);
 		setChildrenByDir((prev) => ({ ...prev, [dirPath]: entries }));
-		setDirSummariesByParent((prev) => ({ ...prev, [dirPath]: summaries }));
+
+		if (dirSummariesInFlightRef.current.has(dirPath)) return;
+		dirSummariesInFlightRef.current.add(dirPath);
+
+		void (async () => {
+			try {
+				const summaries = await invoke("vault_dir_children_summary", {
+					dir: dirPath || null,
+					preview_limit: 1,
+				});
+				setDirSummariesByParent((prev) => ({ ...prev, [dirPath]: summaries }));
+			} catch {
+				// ignore: counts are convenience UI
+			} finally {
+				dirSummariesInFlightRef.current.delete(dirPath);
+			}
+		})();
 	}, []);
 
 	const toggleDir = useCallback(
@@ -771,6 +920,7 @@ function App() {
 								</div>
 								<div className="vaultMeta">
 									{vaultSchemaVersion ? `v${vaultSchemaVersion}` : ""}
+									{isIndexing ? " • indexing" : ""}
 								</div>
 							</div>
 						)}
@@ -895,7 +1045,6 @@ function App() {
 				{activeViewDoc?.kind === "folder" ? (
 					<FolderShelf
 						subfolders={folderShelfSubfolders}
-						summaries={folderShelfSummaries}
 						recents={folderShelfRecents}
 						onOpenFolder={(d) => void loadAndBuildFolderView(d)}
 						onOpenMarkdown={(p) => void openMarkdownFileInCanvas(p)}
@@ -919,20 +1068,24 @@ function App() {
 						<Suspense
 							fallback={<div className="canvasEmpty">Loading canvas…</div>}
 						>
-							<CanvasPane
-								doc={activeViewDoc ? asCanvasDocLike(activeViewDoc) : null}
-								onSave={onSaveView}
-								onOpenNote={(p) => void openFile(p)}
-								onOpenFolder={(dir) => void loadAndBuildFolderView(dir)}
-								activeNoteId={activeNoteId}
-								activeNoteTitle={activeNoteTitle}
-								vaultPath={vaultPath}
-								onSelectionChange={onCanvasSelectionChange}
-								externalCommand={canvasCommand}
-								onExternalCommandHandled={(id) => {
-									setCanvasCommand((prev) => (prev?.id === id ? null : prev));
-								}}
-							/>
+							{canvasLoadingMessage ? (
+								<div className="canvasEmpty">{canvasLoadingMessage}</div>
+							) : (
+								<CanvasPane
+									doc={activeViewDoc ? asCanvasDocLike(activeViewDoc) : null}
+									onSave={onSaveView}
+									onOpenNote={(p) => void openFile(p)}
+									onOpenFolder={(dir) => void loadAndBuildFolderView(dir)}
+									activeNoteId={activeNoteId}
+									activeNoteTitle={activeNoteTitle}
+									vaultPath={vaultPath}
+									onSelectionChange={onCanvasSelectionChange}
+									externalCommand={canvasCommand}
+									onExternalCommandHandled={(id) => {
+										setCanvasCommand((prev) => (prev?.id === id ? null : prev));
+									}}
+								/>
+							)}
 						</Suspense>
 					</div>
 				</div>
