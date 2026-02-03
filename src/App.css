@@ -1639,14 +1639,9 @@ button.segBtn.active {
 	flex-shrink: 0;
 	font-size: 11px;
 	color: var(--text-tertiary);
-	border: 1px solid var(--border-light);
-	background: color-mix(in srgb, var(--bg-secondary) 72%, transparent);
-	padding: 1px 6px;
-	border-radius: var(--radius-full);
+	padding-left: 10px;
+	padding-right: 2px;
 	white-space: nowrap;
-	max-width: 160px;
-	overflow: hidden;
-	text-overflow: ellipsis;
 }
 
 /* Directory names slightly bolder */

@@ -110,12 +110,9 @@ export const FileTreePane = memo(function FileTreePane({
 					if (isDir) {
 						const children = childrenByDir[e.rel_path];
 						const summary = summaryMap.get(e.rel_path) ?? null;
-						const totalMd = summary?.total_markdown_recursive ?? 0;
 						const totalFiles = summary?.total_files_recursive ?? 0;
 						const countsLabel =
-							summary && (totalMd > 0 || totalFiles > 0)
-								? `${totalMd} md • ${totalFiles} files`
-								: "";
+							summary && totalFiles > 0 ? String(totalFiles) : "";
 						return (
 							<motion.li
 								key={e.rel_path}
@@ -158,7 +155,10 @@ export const FileTreePane = memo(function FileTreePane({
 									</motion.span>
 									<span className="fileTreeName">{e.name}</span>
 									{countsLabel ? (
-										<span className="fileTreeCounts" title={countsLabel}>
+										<span
+											className="fileTreeCounts"
+											title={`${countsLabel} files`}
+										>
 											{countsLabel}
 										</span>
 									) : null}
