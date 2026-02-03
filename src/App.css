@@ -211,16 +211,33 @@ textarea {
 .appShell {
 	--app-frame: var(--space-1);
 	--app-radius: var(--radius-xl);
+	isolation: isolate;
 	display: flex;
 	position: relative;
 	height: 100%;
 	width: 100%;
-	background: var(--chrome-bg);
-	backdrop-filter: blur(var(--chrome-blur)) saturate(1.2);
-	-webkit-backdrop-filter: blur(var(--chrome-blur)) saturate(1.2);
+	background: transparent;
 	border: 1px solid var(--chrome-border);
 	border-radius: var(--app-radius);
 	overflow: hidden;
+}
+
+.appShell::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: var(--chrome-bg);
+	backdrop-filter: blur(var(--chrome-blur)) saturate(1.2);
+	-webkit-backdrop-filter: blur(var(--chrome-blur)) saturate(1.2);
+	transform: translateZ(0);
+	will-change: backdrop-filter;
+	z-index: 0;
+	pointer-events: none;
+}
+
+.appShell > * {
+	position: relative;
+	z-index: 1;
 }
 
 .windowDragStrip {
@@ -244,7 +261,6 @@ textarea {
 	background: transparent;
 	backdrop-filter: none;
 	-webkit-backdrop-filter: none;
-	border-right: 1px solid var(--chrome-border);
 	overflow: hidden;
 	flex-shrink: 0;
 	transition: width var(--transition-base), min-width var(--transition-base);
@@ -400,11 +416,9 @@ textarea {
 	background: var(--bg-primary);
 	overflow: hidden;
 	margin: var(--app-frame) var(--app-frame) var(--app-frame) 0;
-	border: 1px solid var(--border-light);
-	border-left: none;
 	border-radius: var(--app-radius);
-	border-top-left-radius: 0;
-	border-bottom-left-radius: 0;
+	border-top-left-radius: calc(var(--app-radius) - var(--app-frame));
+	border-bottom-left-radius: calc(var(--app-radius) - var(--app-frame));
 }
 
 .mainToolbar {
