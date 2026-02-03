@@ -12,7 +12,7 @@ mod tether_paths;
 mod vault;
 
 use serde::Serialize;
-use tauri::Manager;
+use tauri::{Manager, WindowEvent};
 
 #[cfg(target_os = "macos")]
 use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
@@ -73,6 +73,14 @@ pub fn run() {
                 }
             }
             Ok(())
+        })
+        .on_window_event(|window, event| {
+            if window.label() == "settings" {
+                if let WindowEvent::CloseRequested { api, .. } = event {
+                    api.prevent_close();
+                    let _ = window.hide();
+                }
+            }
         })
         .manage(ai::AiState::default())
         .manage(vault::VaultState::default())
