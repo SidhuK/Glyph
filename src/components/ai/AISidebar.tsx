@@ -137,20 +137,22 @@ export function AISidebar({
 			) : null}
 
 			<div className="aiSidebarTabs" data-window-drag-ignore>
-				<button
-					type="button"
-					className={tab === "chat" ? "active" : ""}
-					onClick={() => setTab("chat")}
-				>
-					Chat
-				</button>
-				<button
-					type="button"
-					className={tab === "context" ? "active" : ""}
-					onClick={() => setTab("context")}
-				>
-					Context
-				</button>
+				<div className="sidebarSectionToggle">
+					<button
+						type="button"
+						className={tab === "chat" ? "segBtn active" : "segBtn"}
+						onClick={() => setTab("chat")}
+					>
+						Chat
+					</button>
+					<button
+						type="button"
+						className={tab === "context" ? "segBtn active" : "segBtn"}
+						onClick={() => setTab("context")}
+					>
+						Context
+					</button>
+				</div>
 			</div>
 
 			<div className="aiSidebarBody" data-window-drag-ignore>

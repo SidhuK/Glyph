@@ -6,20 +6,25 @@ export type SettingsTab = "general" | "vault" | "ai";
 export async function openSettingsWindow(tab: SettingsTab = "general") {
 	const existing = await WebviewWindow.getByLabel("settings");
 	if (existing) {
+		let shown = false;
 		try {
 			await existing.show();
 			await existing.setFocus();
+			shown = true;
 		} catch {
-			// ignore
+			// If the handle is stale (e.g., window was closed/destroyed), fall through
+			// and recreate it.
 		}
-		try {
-			await getCurrentWebview().emitTo("settings", "settings:navigate", {
-				tab,
-			});
-		} catch {
-			// ignore
+		if (shown) {
+			try {
+				await getCurrentWebview().emitTo("settings", "settings:navigate", {
+					tab,
+				});
+			} catch {
+				// ignore
+			}
+			return;
 		}
-		return;
 	}
 
 	const url = `#/settings?tab=${encodeURIComponent(tab)}`;
