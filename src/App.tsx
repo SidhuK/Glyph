@@ -705,6 +705,13 @@ function App() {
 
 	return (
 		<div className="appShell">
+			{/* Fallback draggable strip for macOS overlay titlebar (stays behind toolbars) */}
+			<div
+				aria-hidden="true"
+				className="windowDragStrip"
+				data-tauri-drag-region
+				onMouseDown={onWindowDragMouseDown}
+			/>
 			{/* Left Sidebar - Project Navigation */}
 			<aside
 				className={`sidebar ${sidebarCollapsed ? "sidebarCollapsed" : ""}`}

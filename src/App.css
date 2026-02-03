@@ -212,11 +212,21 @@ textarea {
 	--app-frame: var(--space-2);
 	--app-radius: var(--radius-xl);
 	display: flex;
+	position: relative;
 	height: 100%;
 	width: 100%;
 	background: var(--bg-sidebar);
 	border-radius: var(--app-radius);
 	overflow: hidden;
+}
+
+.windowDragStrip {
+	position: absolute;
+	top: 0;
+	left: 78px; /* Space for macOS traffic lights */
+	right: 0;
+	height: 14px;
+	z-index: 1;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
@@ -254,6 +264,8 @@ textarea {
 	padding-left: 78px; /* Space for macOS traffic lights */
 	border-bottom: 1px solid var(--border-light);
 	flex-shrink: 0;
+	position: relative;
+	z-index: 2;
 	-webkit-app-region: drag;
 }
 
@@ -384,6 +396,8 @@ textarea {
 	background: transparent;
 	border-bottom: 1px solid var(--border-light);
 	flex-shrink: 0;
+	position: relative;
+	z-index: 2;
 	-webkit-app-region: drag;
 }
 
