@@ -41,4 +41,30 @@ export function parseNotePreview(
 	return { title, content };
 }
 
+export function splitYamlFrontmatter(markdown: string): {
+	frontmatter: string | null;
+	body: string;
+} {
+	const text = markdown ?? "";
+	if (!text.startsWith("---\n")) return { frontmatter: null, body: text };
+	const endIdx = text.indexOf("\n---\n", 4);
+	if (endIdx === -1) return { frontmatter: null, body: text };
+	const frontmatter = text.slice(0, endIdx + 5);
+	const body = text.slice(endIdx + 5);
+	return { frontmatter, body };
+}
+
+export function joinYamlFrontmatter(
+	frontmatter: string | null,
+	body: string,
+): string {
+	const fm = frontmatter?.trimEnd() ?? "";
+	const b = body ?? "";
+	if (!fm) return b;
+	if (!fm.startsWith("---")) return `${fm}\n${b}`;
+	// Ensure exactly one blank line between frontmatter and body (unless body is empty).
+	const normalizedBody = b.length ? b.replace(/^\n+/, "\n") : "";
+	return `${fm}\n${normalizedBody}`;
+}
+
 export { titleForFile };

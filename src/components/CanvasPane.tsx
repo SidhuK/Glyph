@@ -32,7 +32,7 @@ import {
 	useRef,
 	useState,
 } from "react";
-import { parseNotePreview } from "../lib/notePreview";
+import { parseNotePreview, splitYamlFrontmatter } from "../lib/notePreview";
 import { invoke } from "../lib/tauri";
 import {
 	type CanvasInlineEditorMode,
@@ -156,6 +156,8 @@ type CanvasNoteEditSession = {
 	noteId: string;
 	phase: NoteEditPhase;
 	markdown: string;
+	bodyMarkdown: string;
+	frontmatter: string | null;
 	baseMtimeMs: number | null;
 	dirty: boolean;
 	lastSavedMarkdown: string;
@@ -168,6 +170,7 @@ type CanvasNoteEditActions = {
 	session: CanvasNoteEditSession | null;
 	openFull: (noteId: string) => void;
 	closeEditor: () => void;
+	saveNow: () => void;
 	reloadFromDisk: () => void;
 	overwriteDisk: () => void;
 	setEditorMode: (mode: CanvasInlineEditorMode) => void;
@@ -195,10 +198,9 @@ const NoteNode = memo(function NoteNode({
 		session,
 		openFull,
 		closeEditor,
+		saveNow,
 		reloadFromDisk,
 		overwriteDisk,
-		setEditorMode,
-		setRoundTripSafe,
 		updateMarkdown,
 	} = useCanvasNoteEdit();
 	const isEditing = session?.noteId === noteId;
@@ -317,6 +319,22 @@ const NoteNode = memo(function NoteNode({
 							<button
 								type="button"
 								className="iconBtn sm"
+								title={session.dirty ? "Save" : "Saved"}
+								disabled={
+									!session.dirty ||
+									session.phase === "loading" ||
+									session.phase === "saving"
+								}
+								onClick={(e) => {
+									e.stopPropagation();
+									saveNow();
+								}}
+							>
+								<Save size={14} />
+							</button>
+							<button
+								type="button"
+								className="iconBtn sm"
 								title="Open in full editor"
 								onClick={(e) => {
 									e.stopPropagation();
@@ -378,8 +396,7 @@ const NoteNode = memo(function NoteNode({
 							markdown={session.markdown}
 							mode={session.mode}
 							roundTripSafe={session.roundTripSafe}
-							onRoundTripSafeChange={setRoundTripSafe}
-							onModeChange={setEditorMode}
+							onModeChange={() => {}}
 							onChange={updateMarkdown}
 						/>
 					)}
@@ -702,7 +719,6 @@ export default function CanvasPane({
 		edgesRef.current = edges;
 	}, [edges, nodes]);
 
-	const noteSaveTimerRef = useRef<number | null>(null);
 	const noteEditLoadSeqRef = useRef(0);
 	const noteEditSessionRef = useRef<CanvasNoteEditSession | null>(null);
 	const [noteEditSession, setNoteEditSession] =
@@ -711,17 +727,21 @@ export default function CanvasPane({
 		noteEditSessionRef.current = noteEditSession;
 	}, [noteEditSession]);
 
-	const clearNoteSaveTimer = useCallback(() => {
-		if (noteSaveTimerRef.current != null) {
-			window.clearTimeout(noteSaveTimerRef.current);
-			noteSaveTimerRef.current = null;
-		}
-	}, []);
-
 	const saveInlineNote = useCallback(
 		async (markdown: string, opts?: { forceOverwrite?: boolean }) => {
 			const s = noteEditSessionRef.current;
 			if (!s) return;
+			if (!opts?.forceOverwrite && s.baseMtimeMs == null) {
+				setNoteEditSession((prev) => {
+					if (!prev || prev.noteId !== s.noteId) return prev;
+					return {
+						...prev,
+						phase: "error",
+						errorMessage: "Note not loaded yet; refusing to save.",
+					};
+				});
+				return;
+			}
 			setNoteEditSession((prev) => {
 				if (!prev || prev.noteId !== s.noteId) return prev;
 				return { ...prev, phase: "saving", errorMessage: "" };
@@ -751,6 +771,7 @@ export default function CanvasPane({
 				);
 				setNoteEditSession((prev) => {
 					if (!prev || prev.noteId !== s.noteId) return prev;
+					const { frontmatter, body } = splitYamlFrontmatter(markdown);
 					return {
 						...prev,
 						phase: "ready",
@@ -758,6 +779,8 @@ export default function CanvasPane({
 						errorMessage: "",
 						baseMtimeMs: res.mtime_ms,
 						lastSavedMarkdown: markdown,
+						frontmatter,
+						bodyMarkdown: body,
 					};
 				});
 			} catch (e) {
@@ -777,27 +800,63 @@ export default function CanvasPane({
 		[setNodes],
 	);
 
+	const confirmDirtyBeforeProceed = useCallback(
+		async (purpose: "close" | "switch" | "open_full") => {
+			const s = noteEditSessionRef.current;
+			if (!s || !s.dirty) return { ok: true as const };
+
+			const wantSave = window.confirm(
+				purpose === "close"
+					? "Save changes to this note before closing?"
+					: purpose === "switch"
+						? "Save changes to this note before switching?"
+						: "Save changes to this note before opening it in the full editor?",
+			);
+
+			if (wantSave) {
+				await saveInlineNote(s.markdown);
+				const after = noteEditSessionRef.current;
+				if (
+					after &&
+					after.noteId === s.noteId &&
+					(after.phase === "error" || after.phase === "conflict")
+				)
+					return { ok: false as const };
+				return { ok: true as const };
+			}
+
+			const discard = window.confirm("Discard unsaved changes?");
+			if (!discard) return { ok: false as const };
+
+			setNoteEditSession((prev) => {
+				if (!prev || prev.noteId !== s.noteId) return prev;
+				const parts = splitYamlFrontmatter(prev.lastSavedMarkdown);
+				return {
+					...prev,
+					dirty: false,
+					errorMessage: "",
+					phase: prev.phase === "loading" ? "loading" : "ready",
+					markdown: prev.lastSavedMarkdown,
+					bodyMarkdown: parts.body,
+					frontmatter: parts.frontmatter,
+				};
+			});
+			return { ok: true as const };
+		},
+		[saveInlineNote],
+	);
+
 	const closeInlineEditor = useCallback(async () => {
 		const s = noteEditSessionRef.current;
 		if (!s) return;
-		clearNoteSaveTimer();
-		if (s.dirty) {
-			await saveInlineNote(s.markdown);
-			const after = noteEditSessionRef.current;
-			if (
-				after &&
-				after.noteId === s.noteId &&
-				(after.phase === "error" || after.phase === "conflict")
-			)
-				return;
-		}
+		const res = await confirmDirtyBeforeProceed("close");
+		if (!res.ok) return;
 		setNoteEditSession(null);
-	}, [clearNoteSaveTimer, saveInlineNote]);
+	}, [confirmDirtyBeforeProceed]);
 
 	const reloadInlineFromDisk = useCallback(async () => {
 		const s = noteEditSessionRef.current;
 		if (!s) return;
-		clearNoteSaveTimer();
 		setNoteEditSession((prev) => {
 			if (!prev || prev.noteId !== s.noteId) return prev;
 			return { ...prev, phase: "loading", errorMessage: "" };
@@ -805,6 +864,7 @@ export default function CanvasPane({
 		try {
 			const doc = await invoke("vault_read_text", { path: s.noteId });
 			const preview = parseNotePreview(s.noteId, doc.text);
+			const { frontmatter, body } = splitYamlFrontmatter(doc.text);
 			setNodes((prev) =>
 				prev.map((n) =>
 					n.id === s.nodeId
@@ -826,11 +886,13 @@ export default function CanvasPane({
 					...prev,
 					phase: "ready",
 					markdown: doc.text,
+					bodyMarkdown: body,
+					frontmatter,
 					baseMtimeMs: doc.mtime_ms,
 					dirty: false,
 					lastSavedMarkdown: doc.text,
 					roundTripSafe: null,
-					mode: "rich",
+					mode: "raw",
 					errorMessage: "",
 				};
 			});
@@ -841,14 +903,13 @@ export default function CanvasPane({
 				return { ...prev, phase: "error", errorMessage: message };
 			});
 		}
-	}, [clearNoteSaveTimer, setNodes]);
+	}, [setNodes]);
 
 	const overwriteInlineToDisk = useCallback(async () => {
 		const s = noteEditSessionRef.current;
 		if (!s) return;
-		clearNoteSaveTimer();
 		await saveInlineNote(s.markdown, { forceOverwrite: true });
-	}, [clearNoteSaveTimer, saveInlineNote]);
+	}, [saveInlineNote]);
 
 	const beginInlineEdit = useCallback(
 		async (node: CanvasNode) => {
@@ -865,44 +926,42 @@ export default function CanvasPane({
 			if (current?.noteId === noteId) return;
 
 			if (current?.dirty) {
-				await saveInlineNote(current.markdown);
-				const after = noteEditSessionRef.current;
-				if (
-					after &&
-					(after.phase === "error" || after.phase === "conflict") &&
-					after.dirty
-				)
-					return;
+				const ok = await confirmDirtyBeforeProceed("switch");
+				if (!ok.ok) return;
 			}
 
-			clearNoteSaveTimer();
 			const seq = ++noteEditLoadSeqRef.current;
 			setNoteEditSession({
 				nodeId: node.id,
 				noteId,
 				phase: "loading",
 				markdown: "",
+				bodyMarkdown: "",
+				frontmatter: null,
 				baseMtimeMs: null,
 				dirty: false,
 				lastSavedMarkdown: "",
 				roundTripSafe: null,
-				mode: "rich",
+				mode: "raw",
 				errorMessage: "",
 			});
 			try {
 				const doc = await invoke("vault_read_text", { path: noteId });
 				if (seq !== noteEditLoadSeqRef.current) return;
+				const { frontmatter, body } = splitYamlFrontmatter(doc.text);
 				setNoteEditSession((prev) => {
 					if (!prev || prev.noteId !== noteId) return prev;
 					return {
 						...prev,
 						phase: "ready",
 						markdown: doc.text,
+						bodyMarkdown: body,
+						frontmatter,
 						baseMtimeMs: doc.mtime_ms,
 						dirty: false,
 						lastSavedMarkdown: doc.text,
 						roundTripSafe: null,
-						mode: "rich",
+						mode: "raw",
 						errorMessage: "",
 					};
 				});
@@ -914,44 +973,41 @@ export default function CanvasPane({
 				});
 			}
 		},
-		[clearNoteSaveTimer, saveInlineNote],
+		[confirmDirtyBeforeProceed],
 	);
 
-	const updateInlineMarkdown = useCallback(
-		(nextMarkdown: string) => {
-			const s = noteEditSessionRef.current;
-			if (!s) return;
-			if (s.phase === "loading") return;
-			setNoteEditSession((prev) => {
-				if (!prev || prev.noteId !== s.noteId) return prev;
-				return {
-					...prev,
-					markdown: nextMarkdown,
-					dirty: true,
-					errorMessage:
-						prev.phase === "error" || prev.phase === "conflict"
-							? prev.errorMessage
-							: "",
-					phase:
-						prev.phase === "error" || prev.phase === "conflict"
-							? prev.phase
-							: "ready",
-				};
-			});
-			clearNoteSaveTimer();
-			noteSaveTimerRef.current = window.setTimeout(() => {
-				void saveInlineNote(nextMarkdown);
-			}, 500);
-		},
-		[clearNoteSaveTimer, saveInlineNote],
-	);
+	const updateInlineMarkdown = useCallback((nextMarkdown: string) => {
+		const s = noteEditSessionRef.current;
+		if (!s) return;
+		if (s.phase === "loading") return;
+		const nextFull = nextMarkdown;
+		const nextParts = splitYamlFrontmatter(nextMarkdown);
+		setNoteEditSession((prev) => {
+			if (!prev || prev.noteId !== s.noteId) return prev;
+			return {
+				...prev,
+				markdown: nextFull,
+				bodyMarkdown: nextParts.body,
+				frontmatter: nextParts.frontmatter,
+				dirty: true,
+				errorMessage:
+					prev.phase === "error" || prev.phase === "conflict"
+						? prev.errorMessage
+						: "",
+				phase:
+					prev.phase === "error" || prev.phase === "conflict"
+						? prev.phase
+						: "ready",
+			};
+		});
+	}, []);
 
 	const setInlineEditorMode = useCallback((mode: CanvasInlineEditorMode) => {
 		const s = noteEditSessionRef.current;
 		if (!s) return;
 		setNoteEditSession((prev) => {
 			if (!prev || prev.noteId !== s.noteId) return prev;
-			return { ...prev, mode };
+			return { ...prev, mode: mode === "raw" ? "raw" : "raw" };
 		});
 	}, []);
 
@@ -969,13 +1025,21 @@ export default function CanvasPane({
 		(noteId: string) => {
 			void (async () => {
 				const s = noteEditSessionRef.current;
-				if (s && s.noteId === noteId && s.dirty)
-					await saveInlineNote(s.markdown);
+				if (s && s.noteId === noteId && s.dirty) {
+					const ok = await confirmDirtyBeforeProceed("open_full");
+					if (!ok.ok) return;
+				}
 				onOpenNote(noteId);
 			})();
 		},
-		[onOpenNote, saveInlineNote],
+		[confirmDirtyBeforeProceed, onOpenNote],
 	);
+
+	const saveInlineNow = useCallback(() => {
+		const s = noteEditSessionRef.current;
+		if (!s) return;
+		void saveInlineNote(s.markdown);
+	}, [saveInlineNote]);
 
 	const stripEphemeral = useCallback(
 		(
@@ -1978,6 +2042,7 @@ export default function CanvasPane({
 			closeEditor: () => {
 				void closeInlineEditor();
 			},
+			saveNow: saveInlineNow,
 			reloadFromDisk: () => {
 				void reloadInlineFromDisk();
 			},
@@ -1992,6 +2057,7 @@ export default function CanvasPane({
 			closeInlineEditor,
 			noteEditSession,
 			openFullForNote,
+			saveInlineNow,
 			overwriteInlineToDisk,
 			reloadInlineFromDisk,
 			setInlineEditorMode,
