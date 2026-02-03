@@ -269,10 +269,10 @@ textarea {
 
 .sidebarHeader {
 	display: flex;
-	align-items: center;
+	align-items: flex-start;
 	justify-content: space-between;
-	height: var(--header-height);
-	padding: 0 var(--space-3) 0 var(--space-4);
+	height: calc(var(--header-height) - 4px);
+	padding: var(--space-1) var(--space-3) 0 var(--space-4);
 	padding-left: 78px; /* Space for macOS traffic lights */
 	border-bottom: 1px solid var(--border-light);
 	flex-shrink: 0;
@@ -302,7 +302,7 @@ textarea {
 .sidebarActions {
 	display: flex;
 	align-items: center;
-	gap: 2px;
+	gap: 6px;
 }
 
 .sidebarSection {

@@ -732,37 +732,41 @@ function App() {
 						<div className="sidebarActions">
 							<MotionIconButton
 								type="button"
+								size="sm"
 								onClick={() => setShowSearch(!showSearch)}
 								title="Search"
 								active={showSearch}
 							>
-								<Search size={16} />
+								<Search size={14} />
 							</MotionIconButton>
 							<MotionIconButton
 								type="button"
+								size="sm"
 								onClick={onCreateVault}
 								title="Create vault"
 							>
-								<FolderPlus size={16} />
+								<FolderPlus size={14} />
 							</MotionIconButton>
 							<MotionIconButton
 								type="button"
+								size="sm"
 								onClick={onOpenVault}
 								title="Open vault"
 							>
-								<FolderOpen size={16} />
+								<FolderOpen size={14} />
 							</MotionIconButton>
 						</div>
 					)}
 					<MotionIconButton
 						type="button"
+						size="sm"
 						onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
 						title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
 					>
 						{sidebarCollapsed ? (
-							<PanelLeftOpen size={16} />
+							<PanelLeftOpen size={14} />
 						) : (
-							<PanelLeftClose size={16} />
+							<PanelLeftClose size={14} />
 						)}
 					</MotionIconButton>
 				</div>
