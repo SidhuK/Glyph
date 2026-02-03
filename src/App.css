@@ -1785,6 +1785,140 @@ button.segBtn.active {
 	overflow: hidden;
 }
 
+/* ─── Note Nodes: Header + Inline Editor ─── */
+.rfNodeNoteHeader {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: var(--space-2);
+}
+
+.rfNodeNoteOpenBtn {
+	opacity: 0;
+	pointer-events: none;
+}
+
+.react-flow__node.selected .rfNodeNoteOpenBtn,
+.rfNodeNote:hover .rfNodeNoteOpenBtn {
+	opacity: 1;
+	pointer-events: auto;
+}
+
+.rfNodeNote.rfNodeNoteEditing {
+	max-width: 640px;
+	max-height: 640px;
+}
+
+.rfNode.rfNodeNoteEditing:hover {
+	transform: none !important;
+	box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.rfNodeNoteEditingInner {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-2);
+	height: 100%;
+}
+
+.rfNodeNoteEditorHeader {
+	display: grid;
+	grid-template-columns: 1fr auto auto;
+	align-items: center;
+	gap: var(--space-2);
+}
+
+.rfNodeNoteEditorTitle {
+	font-size: 14px;
+	font-weight: 700;
+	color: rgba(0, 0, 0, 0.85);
+	line-height: 1.3;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.rfNodeNoteEditorStatus {
+	font-size: 11px;
+	color: rgba(0, 0, 0, 0.6);
+	white-space: nowrap;
+}
+
+.rfNodeNoteEditorActions {
+	display: inline-flex;
+	gap: 6px;
+}
+
+.rfNodeNoteEditorError {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--space-2);
+	padding: 6px 8px;
+	border-radius: 10px;
+	background: rgba(0, 0, 0, 0.08);
+}
+
+.rfNodeNoteEditorErrorText {
+	font-size: 11px;
+	color: rgba(0, 0, 0, 0.75);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.rfNodeNoteEditorErrorActions {
+	display: inline-flex;
+	gap: 6px;
+}
+
+.rfNodeNoteEditor {
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+	border-radius: 10px;
+	overflow: hidden;
+	border: 1px solid rgba(0, 0, 0, 0.12);
+	background: rgba(255, 255, 255, 0.55);
+}
+
+.rfNodeNoteEditorRibbon {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 6px 8px;
+	background: rgba(255, 255, 255, 0.55);
+	border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.rfNodeNoteEditorBody {
+	flex: 1;
+	min-height: 0;
+	overflow: auto;
+}
+
+.rfNodeNoteEditorRaw {
+	width: 100%;
+	height: 100%;
+	border: 0;
+	background: transparent;
+	resize: none;
+	padding: 10px 12px;
+	font-size: 12px;
+	line-height: 1.5;
+	color: rgba(0, 0, 0, 0.85);
+	outline: none;
+}
+
+.tiptapContentInline {
+	min-height: 100%;
+	padding: 10px 12px;
+	font-size: 13px;
+	line-height: 1.5;
+	color: rgba(0, 0, 0, 0.85);
+}
+
 /* ─── Folder Tiles (Immediate Subfolders) ─── */
 .rfNodeFolder {
 	width: 240px;

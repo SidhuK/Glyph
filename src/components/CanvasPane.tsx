@@ -11,6 +11,7 @@ import {
 	MiniMap,
 	type Node,
 	type NodeMouseHandler,
+	type NodeProps,
 	NodeResizer,
 	Position,
 	ReactFlow,
@@ -31,7 +32,12 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { parseNotePreview } from "../lib/notePreview";
 import { invoke } from "../lib/tauri";
+import {
+	type CanvasInlineEditorMode,
+	CanvasNoteInlineEditor,
+} from "./CanvasNoteInlineEditor";
 import {
 	AlignCenter,
 	AlignCenterVertical,
@@ -41,13 +47,18 @@ import {
 	AlignRight,
 	AlignStartVertical,
 	AlignVerticalSpaceAround,
+	Edit,
+	FileText,
 	FolderOpen,
 	Frame,
 	Grid3X3,
 	Link,
 	RefreshCw,
+	RotateCcw,
+	Save,
 	StickyNote,
 	Type,
+	X,
 } from "./Icons";
 
 export type CanvasNode = Node<Record<string, unknown>>;
@@ -138,17 +149,60 @@ function useCanvasActions(): CanvasActions {
 	return ctx;
 }
 
+type NoteEditPhase = "loading" | "ready" | "saving" | "error" | "conflict";
+
+type CanvasNoteEditSession = {
+	nodeId: string;
+	noteId: string;
+	phase: NoteEditPhase;
+	markdown: string;
+	baseMtimeMs: number | null;
+	dirty: boolean;
+	lastSavedMarkdown: string;
+	roundTripSafe: boolean | null;
+	mode: CanvasInlineEditorMode;
+	errorMessage: string;
+};
+
+type CanvasNoteEditActions = {
+	session: CanvasNoteEditSession | null;
+	openFull: (noteId: string) => void;
+	closeEditor: () => void;
+	reloadFromDisk: () => void;
+	overwriteDisk: () => void;
+	setEditorMode: (mode: CanvasInlineEditorMode) => void;
+	setRoundTripSafe: (safe: boolean) => void;
+	updateMarkdown: (nextMarkdown: string) => void;
+};
+
+const CanvasNoteEditContext = createContext<CanvasNoteEditActions | null>(null);
+
+function useCanvasNoteEdit(): CanvasNoteEditActions {
+	const ctx = useContext(CanvasNoteEditContext);
+	if (!ctx) throw new Error("CanvasNoteEditContext missing");
+	return ctx;
+}
+
 const NoteNode = memo(function NoteNode({
 	data,
 	id,
-}: {
-	data: Record<string, unknown>;
-	id: string;
-}) {
+	selected,
+}: NodeProps<CanvasNode>) {
 	const title = typeof data.title === "string" ? data.title : "Note";
-	const noteId = typeof data.noteId === "string" ? data.noteId : "";
+	const noteId = typeof data.noteId === "string" ? data.noteId : id;
 	const content = typeof data.content === "string" ? data.content : "";
-	const rotation = getNodeRotation(id);
+	const {
+		session,
+		openFull,
+		closeEditor,
+		reloadFromDisk,
+		overwriteDisk,
+		setEditorMode,
+		setRoundTripSafe,
+		updateMarkdown,
+	} = useCanvasNoteEdit();
+	const isEditing = session?.noteId === noteId;
+	const rotation = isEditing ? 0 : getNodeRotation(id);
 	const color = getStickyColor(id);
 
 	// Analyze content for better sizing
@@ -158,27 +212,29 @@ const NoteNode = memo(function NoteNode({
 	const avgLineLength = lines.length > 0 ? content.length / lines.length : 0;
 
 	// Base size class determination
-	const baseSizeClass = !hasContent
-		? "rfNodeNote--small"
-		: lineCount === 1 && content.length < 30
-			? "rfNodeNote--xs" // Very short single line
-			: lineCount === 1 && content.length < 80
-				? "rfNodeNote--small" // Short single line
-				: lineCount <= 2 && content.length < 150
-					? "rfNodeNote--medium" // Few lines
-					: lineCount <= 4 && avgLineLength < 40
-						? "rfNodeNote--tall" // Many short lines
-						: lineCount <= 3 && avgLineLength > 60
-							? "rfNodeNote--wide" // Few long lines
-							: lineCount <= 6 && content.length < 400
-								? "rfNodeNote--large" // Moderate content
-								: content.length < 600
-									? "rfNodeNote--xl" // Long content
-									: "rfNodeNote--xl"; // Very long content
+	const baseSizeClass = isEditing
+		? "rfNodeNote--editor"
+		: !hasContent
+			? "rfNodeNote--small"
+			: lineCount === 1 && content.length < 30
+				? "rfNodeNote--xs" // Very short single line
+				: lineCount === 1 && content.length < 80
+					? "rfNodeNote--small" // Short single line
+					: lineCount <= 2 && content.length < 150
+						? "rfNodeNote--medium" // Few lines
+						: lineCount <= 4 && avgLineLength < 40
+							? "rfNodeNote--tall" // Many short lines
+							: lineCount <= 3 && avgLineLength > 60
+								? "rfNodeNote--wide" // Few long lines
+								: lineCount <= 6 && content.length < 400
+									? "rfNodeNote--large" // Moderate content
+									: content.length < 600
+										? "rfNodeNote--xl" // Long content
+										: "rfNodeNote--xl"; // Very long content
 
 	// Apply random variations for aesthetic appeal
-	const randomWidth = getRandomVariation(id, -15, 15); // ±15px variation
-	const randomHeight = getRandomVariation(id, -10, 20); // -10 to +20px variation
+	const randomWidth = isEditing ? 0 : getRandomVariation(id, -15, 15); // ±15px variation
+	const randomHeight = isEditing ? 0 : getRandomVariation(id, -10, 20); // -10 to +20px variation
 
 	// Generate dynamic style with random variations
 	const dynamicStyle = {
@@ -203,6 +259,7 @@ const NoteNode = memo(function NoteNode({
 		"rfNodeNote--medium": { width: "200px", minHeight: "140px" },
 		"rfNodeNote--large": { width: "280px", minHeight: "200px" },
 		"rfNodeNote--xl": { width: "360px", minHeight: "260px" },
+		"rfNodeNote--editor": { width: "520px", minHeight: "320px" },
 		"rfNodeNote--tall": { width: "160px", minHeight: "240px" },
 		"rfNodeNote--wide": { width: "320px", minHeight: "160px" },
 		"rfNodeNote--square": { width: "180px", minHeight: "180px" },
@@ -214,16 +271,133 @@ const NoteNode = memo(function NoteNode({
 	dynamicStyle["--base-width"] = dimensions.width;
 	dynamicStyle["--base-height"] = dimensions.minHeight;
 
+	const statusLabel = (() => {
+		if (!isEditing || !session) return "";
+		if (session.phase === "saving") return "Saving…";
+		if (session.phase === "conflict") return "Conflict";
+		if (session.phase === "error") return "Save failed";
+		if (session.dirty) return "Unsaved changes…";
+		return "Saved";
+	})();
+
 	return (
 		<div
-			className={`rfNode rfNodeNote ${baseSizeClass}`}
+			className={[
+				"rfNode",
+				"rfNodeNote",
+				baseSizeClass,
+				isEditing ? "rfNodeNoteEditing" : "",
+				selected ? "rfNodeNoteSelected" : "",
+			]
+				.filter(Boolean)
+				.join(" ")}
 			title={noteId}
-			style={{ ...dynamicStyle, transform: `rotate(${rotation}deg)` }}
+			style={{
+				...dynamicStyle,
+				transform: isEditing ? undefined : `rotate(${rotation}deg)`,
+			}}
 		>
 			<Handle type="target" position={Position.Left} />
 			<Handle type="source" position={Position.Right} />
-			<div className="rfNodeNoteTitle">{title}</div>
-			{hasContent && <div className="rfNodeNoteContent">{content}</div>}
+
+			{isEditing && session ? (
+				<div className="rfNodeNoteEditingInner nodrag nopan">
+					<div className="rfNodeNoteEditorHeader nodrag nopan">
+						<div className="rfNodeNoteEditorTitle" title={title}>
+							{title}
+						</div>
+						<div
+							className="rfNodeNoteEditorStatus"
+							title={session.errorMessage}
+						>
+							{statusLabel}
+						</div>
+						<div className="rfNodeNoteEditorActions nodrag nopan">
+							<button
+								type="button"
+								className="iconBtn sm"
+								title="Open in full editor"
+								onClick={(e) => {
+									e.stopPropagation();
+									openFull(noteId);
+								}}
+							>
+								<FileText size={14} />
+							</button>
+							<button
+								type="button"
+								className="iconBtn sm"
+								title="Done"
+								onClick={(e) => {
+									e.stopPropagation();
+									closeEditor();
+								}}
+							>
+								<X size={14} />
+							</button>
+						</div>
+					</div>
+
+					{session.errorMessage ? (
+						<div className="rfNodeNoteEditorError nodrag nopan">
+							<div className="rfNodeNoteEditorErrorText">
+								{session.errorMessage}
+							</div>
+							<div className="rfNodeNoteEditorErrorActions">
+								<button
+									type="button"
+									className="iconBtn sm"
+									title="Reload from disk"
+									onClick={(e) => {
+										e.stopPropagation();
+										reloadFromDisk();
+									}}
+								>
+									<RotateCcw size={14} />
+								</button>
+								<button
+									type="button"
+									className="iconBtn sm"
+									title="Overwrite on-disk file"
+									onClick={(e) => {
+										e.stopPropagation();
+										overwriteDisk();
+									}}
+								>
+									<Save size={14} />
+								</button>
+							</div>
+						</div>
+					) : null}
+
+					<CanvasNoteInlineEditor
+						markdown={session.markdown}
+						mode={session.mode}
+						roundTripSafe={session.roundTripSafe}
+						onRoundTripSafeChange={setRoundTripSafe}
+						onModeChange={setEditorMode}
+						onChange={updateMarkdown}
+					/>
+				</div>
+			) : (
+				<>
+					<div className="rfNodeNoteHeader">
+						<div className="rfNodeNoteTitle">{title}</div>
+						<button
+							type="button"
+							className="iconBtn sm rfNodeNoteOpenBtn nodrag nopan"
+							title="Open in full editor"
+							onClick={(e) => {
+								e.stopPropagation();
+								openFull(noteId);
+							}}
+						>
+							<Edit size={14} />
+						</button>
+					</div>
+					{hasContent && <div className="rfNodeNoteContent">{content}</div>}
+				</>
+			)}
 		</div>
 	);
 });
@@ -522,6 +696,280 @@ export default function CanvasPane({
 		nodesRef.current = nodes;
 		edgesRef.current = edges;
 	}, [edges, nodes]);
+
+	const noteSaveTimerRef = useRef<number | null>(null);
+	const noteEditLoadSeqRef = useRef(0);
+	const noteEditSessionRef = useRef<CanvasNoteEditSession | null>(null);
+	const [noteEditSession, setNoteEditSession] =
+		useState<CanvasNoteEditSession | null>(null);
+	useEffect(() => {
+		noteEditSessionRef.current = noteEditSession;
+	}, [noteEditSession]);
+
+	const clearNoteSaveTimer = useCallback(() => {
+		if (noteSaveTimerRef.current != null) {
+			window.clearTimeout(noteSaveTimerRef.current);
+			noteSaveTimerRef.current = null;
+		}
+	}, []);
+
+	const saveInlineNote = useCallback(
+		async (markdown: string, opts?: { forceOverwrite?: boolean }) => {
+			const s = noteEditSessionRef.current;
+			if (!s) return;
+			setNoteEditSession((prev) => {
+				if (!prev || prev.noteId !== s.noteId) return prev;
+				return { ...prev, phase: "saving", errorMessage: "" };
+			});
+
+			try {
+				const res = await invoke("vault_write_text", {
+					path: s.noteId,
+					text: markdown,
+					base_mtime_ms: opts?.forceOverwrite ? null : s.baseMtimeMs,
+				});
+				const preview = parseNotePreview(s.noteId, markdown);
+				setNodes((prev) =>
+					prev.map((n) =>
+						n.id === s.nodeId
+							? {
+									...n,
+									data: {
+										...(n.data ?? {}),
+										noteId: s.noteId,
+										title: preview.title,
+										content: preview.content,
+									},
+								}
+							: n,
+					),
+				);
+				setNoteEditSession((prev) => {
+					if (!prev || prev.noteId !== s.noteId) return prev;
+					return {
+						...prev,
+						phase: "ready",
+						dirty: false,
+						errorMessage: "",
+						baseMtimeMs: res.mtime_ms,
+						lastSavedMarkdown: markdown,
+					};
+				});
+			} catch (e) {
+				const message = e instanceof Error ? e.message : String(e);
+				const isConflict = message.toLowerCase().includes("conflict:");
+				setNoteEditSession((prev) => {
+					if (!prev || prev.noteId !== s.noteId) return prev;
+					return {
+						...prev,
+						phase: isConflict ? "conflict" : "error",
+						errorMessage: message,
+						dirty: true,
+					};
+				});
+			}
+		},
+		[setNodes],
+	);
+
+	const closeInlineEditor = useCallback(async () => {
+		const s = noteEditSessionRef.current;
+		if (!s) return;
+		clearNoteSaveTimer();
+		if (s.dirty) {
+			await saveInlineNote(s.markdown);
+			const after = noteEditSessionRef.current;
+			if (
+				after &&
+				after.noteId === s.noteId &&
+				(after.phase === "error" || after.phase === "conflict")
+			)
+				return;
+		}
+		setNoteEditSession(null);
+	}, [clearNoteSaveTimer, saveInlineNote]);
+
+	const reloadInlineFromDisk = useCallback(async () => {
+		const s = noteEditSessionRef.current;
+		if (!s) return;
+		clearNoteSaveTimer();
+		setNoteEditSession((prev) => {
+			if (!prev || prev.noteId !== s.noteId) return prev;
+			return { ...prev, phase: "loading", errorMessage: "" };
+		});
+		try {
+			const doc = await invoke("vault_read_text", { path: s.noteId });
+			const preview = parseNotePreview(s.noteId, doc.text);
+			setNodes((prev) =>
+				prev.map((n) =>
+					n.id === s.nodeId
+						? {
+								...n,
+								data: {
+									...(n.data ?? {}),
+									noteId: s.noteId,
+									title: preview.title,
+									content: preview.content,
+								},
+							}
+						: n,
+				),
+			);
+			setNoteEditSession((prev) => {
+				if (!prev || prev.noteId !== s.noteId) return prev;
+				return {
+					...prev,
+					phase: "ready",
+					markdown: doc.text,
+					baseMtimeMs: doc.mtime_ms,
+					dirty: false,
+					lastSavedMarkdown: doc.text,
+					roundTripSafe: null,
+					mode: "rich",
+					errorMessage: "",
+				};
+			});
+		} catch (e) {
+			const message = e instanceof Error ? e.message : String(e);
+			setNoteEditSession((prev) => {
+				if (!prev || prev.noteId !== s.noteId) return prev;
+				return { ...prev, phase: "error", errorMessage: message };
+			});
+		}
+	}, [clearNoteSaveTimer, setNodes]);
+
+	const overwriteInlineToDisk = useCallback(async () => {
+		const s = noteEditSessionRef.current;
+		if (!s) return;
+		clearNoteSaveTimer();
+		await saveInlineNote(s.markdown, { forceOverwrite: true });
+	}, [clearNoteSaveTimer, saveInlineNote]);
+
+	const beginInlineEdit = useCallback(
+		async (node: CanvasNode) => {
+			const d = (node.data as Record<string, unknown> | null) ?? null;
+			const noteId =
+				d && typeof d.noteId === "string"
+					? d.noteId
+					: typeof node.id === "string"
+						? node.id
+						: "";
+			if (!noteId) return;
+
+			const current = noteEditSessionRef.current;
+			if (current?.noteId === noteId) return;
+
+			if (current?.dirty) {
+				await saveInlineNote(current.markdown);
+				const after = noteEditSessionRef.current;
+				if (
+					after &&
+					(after.phase === "error" || after.phase === "conflict") &&
+					after.dirty
+				)
+					return;
+			}
+
+			clearNoteSaveTimer();
+			const seq = ++noteEditLoadSeqRef.current;
+			setNoteEditSession({
+				nodeId: node.id,
+				noteId,
+				phase: "loading",
+				markdown: "",
+				baseMtimeMs: null,
+				dirty: false,
+				lastSavedMarkdown: "",
+				roundTripSafe: null,
+				mode: "rich",
+				errorMessage: "",
+			});
+			try {
+				const doc = await invoke("vault_read_text", { path: noteId });
+				if (seq !== noteEditLoadSeqRef.current) return;
+				setNoteEditSession((prev) => {
+					if (!prev || prev.noteId !== noteId) return prev;
+					return {
+						...prev,
+						phase: "ready",
+						markdown: doc.text,
+						baseMtimeMs: doc.mtime_ms,
+						dirty: false,
+						lastSavedMarkdown: doc.text,
+						roundTripSafe: null,
+						mode: "rich",
+						errorMessage: "",
+					};
+				});
+			} catch (e) {
+				const message = e instanceof Error ? e.message : String(e);
+				setNoteEditSession((prev) => {
+					if (!prev || prev.noteId !== noteId) return prev;
+					return { ...prev, phase: "error", errorMessage: message };
+				});
+			}
+		},
+		[clearNoteSaveTimer, saveInlineNote],
+	);
+
+	const updateInlineMarkdown = useCallback(
+		(nextMarkdown: string) => {
+			const s = noteEditSessionRef.current;
+			if (!s) return;
+			setNoteEditSession((prev) => {
+				if (!prev || prev.noteId !== s.noteId) return prev;
+				return {
+					...prev,
+					markdown: nextMarkdown,
+					dirty: true,
+					errorMessage:
+						prev.phase === "error" || prev.phase === "conflict"
+							? prev.errorMessage
+							: "",
+					phase:
+						prev.phase === "error" || prev.phase === "conflict"
+							? prev.phase
+							: "ready",
+				};
+			});
+			clearNoteSaveTimer();
+			noteSaveTimerRef.current = window.setTimeout(() => {
+				void saveInlineNote(nextMarkdown);
+			}, 500);
+		},
+		[clearNoteSaveTimer, saveInlineNote],
+	);
+
+	const setInlineEditorMode = useCallback((mode: CanvasInlineEditorMode) => {
+		const s = noteEditSessionRef.current;
+		if (!s) return;
+		setNoteEditSession((prev) => {
+			if (!prev || prev.noteId !== s.noteId) return prev;
+			return { ...prev, mode };
+		});
+	}, []);
+
+	const setInlineRoundTripSafe = useCallback((safe: boolean) => {
+		const s = noteEditSessionRef.current;
+		if (!s) return;
+		setNoteEditSession((prev) => {
+			if (!prev || prev.noteId !== s.noteId) return prev;
+			if (prev.roundTripSafe === safe) return prev;
+			return { ...prev, roundTripSafe: safe };
+		});
+	}, []);
+
+	const openFullForNote = useCallback(
+		(noteId: string) => {
+			void (async () => {
+				const s = noteEditSessionRef.current;
+				if (s && s.noteId === noteId && s.dirty)
+					await saveInlineNote(s.markdown);
+				onOpenNote(noteId);
+			})();
+		},
+		[onOpenNote, saveInlineNote],
+	);
 
 	const stripEphemeral = useCallback(
 		(
@@ -1185,7 +1633,7 @@ export default function CanvasPane({
 		if (!el) return;
 		const onPaste = (e: ClipboardEvent) => {
 			const active = e.target as HTMLElement | null;
-			if (active?.tagName === "INPUT" || active?.tagName === "TEXTAREA") return;
+			if (active?.closest("input, textarea, [contenteditable='true']")) return;
 			const text = e.clipboardData?.getData("text/plain")?.trim();
 			if (!text) return;
 			let parsed: URL | null = null;
@@ -1396,7 +1844,20 @@ export default function CanvasPane({
 	}, [deleteSelection, redo, undo]);
 
 	useEffect(() => {
+		const isTypingTarget = (target: EventTarget | null): boolean => {
+			const el = target instanceof HTMLElement ? target : null;
+			if (!el) return false;
+			return Boolean(el.closest("input, textarea, [contenteditable='true']"));
+		};
+
 		const onKeyDown = (e: KeyboardEvent) => {
+			if (e.key === "Escape" && noteEditSessionRef.current) {
+				e.preventDefault();
+				void closeInlineEditor();
+				return;
+			}
+			if (isTypingTarget(e.target)) return;
+
 			const isMod = e.metaKey || e.ctrlKey;
 			if (isMod && e.key.toLowerCase() === "z") {
 				e.preventDefault();
@@ -1405,23 +1866,17 @@ export default function CanvasPane({
 				return;
 			}
 			if (e.key === "Delete" || e.key === "Backspace") {
-				if (
-					(e.target as HTMLElement | null)?.tagName === "INPUT" ||
-					(e.target as HTMLElement | null)?.tagName === "TEXTAREA"
-				)
-					return;
 				keyHandlersRef.current.deleteSelection();
 			}
 		};
 		window.addEventListener("keydown", onKeyDown);
 		return () => window.removeEventListener("keydown", onKeyDown);
-	}, []);
+	}, [closeInlineEditor]);
 
 	const onNodeDoubleClick: NodeMouseHandler = useCallback(
 		(_evt, node) => {
 			if (node.type === "note") {
-				const noteId = (node.data as Record<string, unknown>)?.noteId;
-				if (typeof noteId === "string") onOpenNote(noteId);
+				void beginInlineEdit(node as CanvasNode);
 				return;
 			}
 			if (node.type === "file") {
@@ -1478,7 +1933,7 @@ export default function CanvasPane({
 				);
 			}
 		},
-		[onOpenFolder, onOpenNote, setNodes],
+		[beginInlineEdit, onOpenFolder, onOpenNote, setNodes],
 	);
 
 	const onNodeClick: NodeMouseHandler = useCallback(
@@ -1510,6 +1965,35 @@ export default function CanvasPane({
 	// Show loading overlay while bulk loading
 	const showLoading = isBulkLoad && nodes.length > BULK_LOAD_THRESHOLD;
 
+	const noteEditActions = useMemo<CanvasNoteEditActions>(
+		() => ({
+			session: noteEditSession,
+			openFull: openFullForNote,
+			closeEditor: () => {
+				void closeInlineEditor();
+			},
+			reloadFromDisk: () => {
+				void reloadInlineFromDisk();
+			},
+			overwriteDisk: () => {
+				void overwriteInlineToDisk();
+			},
+			setEditorMode: setInlineEditorMode,
+			setRoundTripSafe: setInlineRoundTripSafe,
+			updateMarkdown: updateInlineMarkdown,
+		}),
+		[
+			closeInlineEditor,
+			noteEditSession,
+			openFullForNote,
+			overwriteInlineToDisk,
+			reloadInlineFromDisk,
+			setInlineEditorMode,
+			setInlineRoundTripSafe,
+			updateInlineMarkdown,
+		],
+	);
+
 	return (
 		<CanvasActionsContext.Provider
 			value={{
@@ -1519,175 +2003,177 @@ export default function CanvasPane({
 				releaseFolderPreview,
 			}}
 		>
-			<div className="canvasPane">
-				<div className="canvasToolbar">
-					<div className="canvasToolbarLeft">
-						<div className="canvasTitle">{doc.title}</div>
-						<div className="canvasStatus">
-							{isSaving ? "⟳ Saving…" : "✓ Saved"}
+			<CanvasNoteEditContext.Provider value={noteEditActions}>
+				<div className="canvasPane">
+					<div className="canvasToolbar">
+						<div className="canvasToolbarLeft">
+							<div className="canvasTitle">{doc.title}</div>
+							<div className="canvasStatus">
+								{isSaving ? "⟳ Saving…" : "✓ Saved"}
+							</div>
+						</div>
+						<div className="canvasToolbarRight">
+							<button
+								type="button"
+								className="iconBtn"
+								onClick={onAddText}
+								title="Add text block"
+							>
+								<Type size={16} />
+							</button>
+							<button
+								type="button"
+								className="iconBtn"
+								onClick={onAddLink}
+								title="Add link"
+							>
+								<Link size={16} />
+							</button>
+							<button
+								type="button"
+								className="iconBtn"
+								onClick={onAddNote}
+								disabled={!activeNoteId}
+								title="Add current note to canvas"
+							>
+								<StickyNote size={16} />
+							</button>
+							<button
+								type="button"
+								className="iconBtn"
+								onClick={onRefreshSelectedLink}
+								disabled={!selectedLinkNode}
+								title="Refresh selected link preview"
+							>
+								<RefreshCw size={16} />
+							</button>
+							<span className="toolbarDivider" />
+							<button
+								type="button"
+								className="iconBtn"
+								onClick={onFrameSelection}
+								disabled={!selectedNodes.length}
+								title="Group selection in a frame"
+							>
+								<Frame size={16} />
+							</button>
+							<button
+								type="button"
+								className={`iconBtn ${snapToGrid ? "active" : ""}`}
+								onClick={onToggleSnap}
+								title="Toggle snap to grid"
+							>
+								<Grid3X3 size={16} />
+							</button>
+							<span className="toolbarDivider" />
+							<button
+								type="button"
+								className="iconBtn"
+								onClick={() => applyAlign("left")}
+								disabled={selectedNodes.length < 2}
+								title="Align left"
+							>
+								<AlignLeft size={16} />
+							</button>
+							<button
+								type="button"
+								className="iconBtn"
+								onClick={() => applyAlign("centerX")}
+								disabled={selectedNodes.length < 2}
+								title="Align center"
+							>
+								<AlignCenter size={16} />
+							</button>
+							<button
+								type="button"
+								className="iconBtn"
+								onClick={() => applyAlign("right")}
+								disabled={selectedNodes.length < 2}
+								title="Align right"
+							>
+								<AlignRight size={16} />
+							</button>
+							<button
+								type="button"
+								className="iconBtn"
+								onClick={() => applyAlign("top")}
+								disabled={selectedNodes.length < 2}
+								title="Align top"
+							>
+								<AlignStartVertical size={16} />
+							</button>
+							<button
+								type="button"
+								className="iconBtn"
+								onClick={() => applyAlign("centerY")}
+								disabled={selectedNodes.length < 2}
+								title="Align middle"
+							>
+								<AlignCenterVertical size={16} />
+							</button>
+							<button
+								type="button"
+								className="iconBtn"
+								onClick={() => applyAlign("bottom")}
+								disabled={selectedNodes.length < 2}
+								title="Align bottom"
+							>
+								<AlignEndVertical size={16} />
+							</button>
+							<span className="toolbarDivider" />
+							<button
+								type="button"
+								className="iconBtn"
+								onClick={() => applyDistribute("x")}
+								disabled={selectedNodes.length < 3}
+								title="Distribute horizontally"
+							>
+								<AlignHorizontalSpaceAround size={16} />
+							</button>
+							<button
+								type="button"
+								className="iconBtn"
+								onClick={() => applyDistribute("y")}
+								disabled={selectedNodes.length < 3}
+								title="Distribute vertically"
+							>
+								<AlignVerticalSpaceAround size={16} />
+							</button>
 						</div>
 					</div>
-					<div className="canvasToolbarRight">
-						<button
-							type="button"
-							className="iconBtn"
-							onClick={onAddText}
-							title="Add text block"
+
+					<div className="canvasBody" ref={wrapperRef}>
+						{showLoading && (
+							<div className="canvasLoading">
+								<span className="canvasLoadingSpinner">◈</span>
+								Loading canvas…
+							</div>
+						)}
+						<ReactFlow
+							nodes={nodes}
+							edges={edges}
+							onNodesChange={onNodesChange}
+							onEdgesChange={onEdgesChange}
+							onConnect={onConnect}
+							onNodeClick={onNodeClick}
+							onNodeDoubleClick={onNodeDoubleClick}
+							nodeTypes={nodeTypes}
+							snapToGrid={snapToGrid}
+							snapGrid={[16, 16]}
+							onInit={(instance) => {
+								flowRef.current = instance;
+								instance.fitView();
+							}}
 						>
-							<Type size={16} />
-						</button>
-						<button
-							type="button"
-							className="iconBtn"
-							onClick={onAddLink}
-							title="Add link"
-						>
-							<Link size={16} />
-						</button>
-						<button
-							type="button"
-							className="iconBtn"
-							onClick={onAddNote}
-							disabled={!activeNoteId}
-							title="Add current note to canvas"
-						>
-							<StickyNote size={16} />
-						</button>
-						<button
-							type="button"
-							className="iconBtn"
-							onClick={onRefreshSelectedLink}
-							disabled={!selectedLinkNode}
-							title="Refresh selected link preview"
-						>
-							<RefreshCw size={16} />
-						</button>
-						<span className="toolbarDivider" />
-						<button
-							type="button"
-							className="iconBtn"
-							onClick={onFrameSelection}
-							disabled={!selectedNodes.length}
-							title="Group selection in a frame"
-						>
-							<Frame size={16} />
-						</button>
-						<button
-							type="button"
-							className={`iconBtn ${snapToGrid ? "active" : ""}`}
-							onClick={onToggleSnap}
-							title="Toggle snap to grid"
-						>
-							<Grid3X3 size={16} />
-						</button>
-						<span className="toolbarDivider" />
-						<button
-							type="button"
-							className="iconBtn"
-							onClick={() => applyAlign("left")}
-							disabled={selectedNodes.length < 2}
-							title="Align left"
-						>
-							<AlignLeft size={16} />
-						</button>
-						<button
-							type="button"
-							className="iconBtn"
-							onClick={() => applyAlign("centerX")}
-							disabled={selectedNodes.length < 2}
-							title="Align center"
-						>
-							<AlignCenter size={16} />
-						</button>
-						<button
-							type="button"
-							className="iconBtn"
-							onClick={() => applyAlign("right")}
-							disabled={selectedNodes.length < 2}
-							title="Align right"
-						>
-							<AlignRight size={16} />
-						</button>
-						<button
-							type="button"
-							className="iconBtn"
-							onClick={() => applyAlign("top")}
-							disabled={selectedNodes.length < 2}
-							title="Align top"
-						>
-							<AlignStartVertical size={16} />
-						</button>
-						<button
-							type="button"
-							className="iconBtn"
-							onClick={() => applyAlign("centerY")}
-							disabled={selectedNodes.length < 2}
-							title="Align middle"
-						>
-							<AlignCenterVertical size={16} />
-						</button>
-						<button
-							type="button"
-							className="iconBtn"
-							onClick={() => applyAlign("bottom")}
-							disabled={selectedNodes.length < 2}
-							title="Align bottom"
-						>
-							<AlignEndVertical size={16} />
-						</button>
-						<span className="toolbarDivider" />
-						<button
-							type="button"
-							className="iconBtn"
-							onClick={() => applyDistribute("x")}
-							disabled={selectedNodes.length < 3}
-							title="Distribute horizontally"
-						>
-							<AlignHorizontalSpaceAround size={16} />
-						</button>
-						<button
-							type="button"
-							className="iconBtn"
-							onClick={() => applyDistribute("y")}
-							disabled={selectedNodes.length < 3}
-							title="Distribute vertically"
-						>
-							<AlignVerticalSpaceAround size={16} />
-						</button>
+							<Background />
+							<MiniMap />
+							<Controls />
+						</ReactFlow>
 					</div>
-				</div>
 
-				<div className="canvasBody" ref={wrapperRef}>
-					{showLoading && (
-						<div className="canvasLoading">
-							<span className="canvasLoadingSpinner">◈</span>
-							Loading canvas…
-						</div>
-					)}
-					<ReactFlow
-						nodes={nodes}
-						edges={edges}
-						onNodesChange={onNodesChange}
-						onEdgesChange={onEdgesChange}
-						onConnect={onConnect}
-						onNodeClick={onNodeClick}
-						onNodeDoubleClick={onNodeDoubleClick}
-						nodeTypes={nodeTypes}
-						snapToGrid={snapToGrid}
-						snapGrid={[16, 16]}
-						onInit={(instance) => {
-							flowRef.current = instance;
-							instance.fitView();
-						}}
-					>
-						<Background />
-						<MiniMap />
-						<Controls />
-					</ReactFlow>
+					{saveError && <div className="canvasError">{saveError}</div>}
 				</div>
-
-				{saveError && <div className="canvasError">{saveError}</div>}
-			</div>
+			</CanvasNoteEditContext.Provider>
 		</CanvasActionsContext.Provider>
 	);
 }
