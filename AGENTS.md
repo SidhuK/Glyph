@@ -152,6 +152,9 @@ Legacy / planned layout (may exist in docs or older vaults):
 
 - Canvases are stored in `.tether/tether.sqlite` as JSON documents (`canvases.doc_json`) and are versioned (`CANVAS_VERSION`).
 - Search and backlinks are derived from note content and live in SQLite (FTS5). Rebuild flows should not delete the DB because it also stores non-derived data (e.g., canvases).
+- Indexing behavior:
+  - On vault open, the app kicks an `index_rebuild` in the background (non-blocking) to warm search/tags/backlinks and note preview cache.
+  - Writes to `.md` via `vault_write_text` are indexed immediately; external `.md` changes are watched and incrementally indexed/removed.
 
 ## Skills
 
