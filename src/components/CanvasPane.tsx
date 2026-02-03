@@ -800,32 +800,18 @@ export default function CanvasPane({
 		[setNodes],
 	);
 
-	const confirmDirtyBeforeProceed = useCallback(
+	const confirmDiscardBeforeProceed = useCallback(
 		async (purpose: "close" | "switch" | "open_full") => {
 			const s = noteEditSessionRef.current;
 			if (!s || !s.dirty) return { ok: true as const };
 
-			const wantSave = window.confirm(
+			const message =
 				purpose === "close"
-					? "Save changes to this note before closing?"
+					? "Discard unsaved changes and close the editor?"
 					: purpose === "switch"
-						? "Save changes to this note before switching?"
-						: "Save changes to this note before opening it in the full editor?",
-			);
-
-			if (wantSave) {
-				await saveInlineNote(s.markdown);
-				const after = noteEditSessionRef.current;
-				if (
-					after &&
-					after.noteId === s.noteId &&
-					(after.phase === "error" || after.phase === "conflict")
-				)
-					return { ok: false as const };
-				return { ok: true as const };
-			}
-
-			const discard = window.confirm("Discard unsaved changes?");
+						? "Discard unsaved changes and switch notes?"
+						: "Discard unsaved changes and open in the full editor?";
+			const discard = window.confirm(message);
 			if (!discard) return { ok: false as const };
 
 			setNoteEditSession((prev) => {
@@ -843,16 +829,16 @@ export default function CanvasPane({
 			});
 			return { ok: true as const };
 		},
-		[saveInlineNote],
+		[],
 	);
 
 	const closeInlineEditor = useCallback(async () => {
 		const s = noteEditSessionRef.current;
 		if (!s) return;
-		const res = await confirmDirtyBeforeProceed("close");
+		const res = await confirmDiscardBeforeProceed("close");
 		if (!res.ok) return;
 		setNoteEditSession(null);
-	}, [confirmDirtyBeforeProceed]);
+	}, [confirmDiscardBeforeProceed]);
 
 	const reloadInlineFromDisk = useCallback(async () => {
 		const s = noteEditSessionRef.current;
@@ -926,7 +912,7 @@ export default function CanvasPane({
 			if (current?.noteId === noteId) return;
 
 			if (current?.dirty) {
-				const ok = await confirmDirtyBeforeProceed("switch");
+				const ok = await confirmDiscardBeforeProceed("switch");
 				if (!ok.ok) return;
 			}
 
@@ -973,7 +959,7 @@ export default function CanvasPane({
 				});
 			}
 		},
-		[confirmDirtyBeforeProceed],
+		[confirmDiscardBeforeProceed],
 	);
 
 	const updateInlineMarkdown = useCallback((nextMarkdown: string) => {
@@ -1026,13 +1012,13 @@ export default function CanvasPane({
 			void (async () => {
 				const s = noteEditSessionRef.current;
 				if (s && s.noteId === noteId && s.dirty) {
-					const ok = await confirmDirtyBeforeProceed("open_full");
+					const ok = await confirmDiscardBeforeProceed("open_full");
 					if (!ok.ok) return;
 				}
 				onOpenNote(noteId);
 			})();
 		},
-		[confirmDirtyBeforeProceed, onOpenNote],
+		[confirmDiscardBeforeProceed, onOpenNote],
 	);
 
 	const saveInlineNow = useCallback(() => {
