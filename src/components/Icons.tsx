@@ -189,7 +189,7 @@ export const FileImage = (props: IconProps) => (
 	<HugeiconsIcon icon={Icons.FileImage} {...props} />
 );
 export const FileJson = (props: IconProps) => (
-	<HugeiconsIcon icon={Icons.Files} {...props} />
+	<HugeiconsIcon icon={Icons.DocumentCodeIcon} {...props} />
 );
 export const FileVideo = (props: IconProps) => (
 	<HugeiconsIcon icon={Icons.File} {...props} />
@@ -201,10 +201,31 @@ export const FileArchive = (props: IconProps) => (
 	<HugeiconsIcon icon={Icons.Archive} {...props} />
 );
 export const FileSpreadsheet = (props: IconProps) => (
-	<HugeiconsIcon icon={Icons.File} {...props} />
+	<HugeiconsIcon icon={Icons.Xls01Icon} {...props} />
 );
 export const FileBox = (props: IconProps) => (
 	<HugeiconsIcon icon={Icons.FileX} {...props} />
+);
+export const FilePdf = (props: IconProps) => (
+	<HugeiconsIcon icon={Icons.Pdf01Icon} {...props} />
+);
+export const FileDoc = (props: IconProps) => (
+	<HugeiconsIcon icon={Icons.Doc01Icon} {...props} />
+);
+export const FileTxt = (props: IconProps) => (
+	<HugeiconsIcon icon={Icons.Txt01Icon} {...props} />
+);
+export const FileHtml = (props: IconProps) => (
+	<HugeiconsIcon icon={Icons.HtmlFile01Icon} {...props} />
+);
+export const FileCss = (props: IconProps) => (
+	<HugeiconsIcon icon={Icons.CssFile01Icon} {...props} />
+);
+export const FileXml = (props: IconProps) => (
+	<HugeiconsIcon icon={Icons.Xml01Icon} {...props} />
+);
+export const FilePpt = (props: IconProps) => (
+	<HugeiconsIcon icon={Icons.Ppt01Icon} {...props} />
 );
 
 export const Image = (props: IconProps) => (

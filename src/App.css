@@ -241,8 +241,8 @@ textarea {
 	width: var(--sidebar-width);
 	min-width: 220px;
 	background: var(--chrome-sidebar-bg);
-	backdrop-filter: blur(calc(var(--chrome-blur) + 4px)) saturate(1.3);
-	-webkit-backdrop-filter: blur(calc(var(--chrome-blur) + 4px)) saturate(1.3);
+	backdrop-filter: blur(var(--chrome-blur)) saturate(1.2);
+	-webkit-backdrop-filter: blur(var(--chrome-blur)) saturate(1.2);
 	border-right: 1px solid var(--chrome-border);
 	overflow: hidden;
 	flex-shrink: 0;
@@ -402,6 +402,8 @@ textarea {
 	border: 1px solid var(--border-light);
 	border-left: none;
 	border-radius: var(--app-radius);
+	border-top-left-radius: 0;
+	border-bottom-left-radius: 0;
 }
 
 .mainToolbar {

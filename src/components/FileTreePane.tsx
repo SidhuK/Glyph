@@ -7,13 +7,19 @@ import {
 	Database,
 	File,
 	FileCode,
+	FileCss,
+	FileDoc,
+	FileHtml,
 	FileJson,
+	FilePdf,
+	FilePpt,
 	FileSpreadsheet,
 	FileText,
+	FileTxt,
+	FileXml,
 	Film,
 	FolderClosed,
 	FolderOpen,
-	Globe,
 	Hash,
 	Image,
 	Music,
@@ -224,10 +230,22 @@ export const FileTreePane = memo(function FileTreePane({
 						IconComponent = FileSpreadsheet;
 						iconColor = "var(--color-green-500)";
 						kindLabel = "spreadsheet";
-					} else if (["html", "htm", "css", "scss", "less"].includes(ext)) {
-						IconComponent = Globe;
+					} else if (["ppt", "pptx", "key"].includes(ext)) {
+						IconComponent = FilePpt;
+						iconColor = "var(--color-purple-500)";
+						kindLabel = "presentation";
+					} else if (["html", "htm"].includes(ext)) {
+						IconComponent = FileHtml;
 						iconColor = "var(--color-yellow-500)";
-						kindLabel = "web";
+						kindLabel = "html";
+					} else if (["css", "scss", "less"].includes(ext)) {
+						IconComponent = FileCss;
+						iconColor = "var(--color-yellow-500)";
+						kindLabel = "styles";
+					} else if (["xml"].includes(ext)) {
+						IconComponent = FileXml;
+						iconColor = "var(--text-tertiary)";
+						kindLabel = "xml";
 					} else if (["sql", "db", "sqlite"].includes(ext)) {
 						IconComponent = Database;
 						iconColor = "var(--text-accent)";
@@ -248,16 +266,22 @@ export const FileTreePane = memo(function FileTreePane({
 						IconComponent = FileText;
 						iconColor = "var(--text-accent)";
 						kindLabel = "markdown";
+					} else if (
+						["json", "yaml", "yml", "toml", "ini", "env"].includes(ext)
+					) {
+						IconComponent = FileJson;
+						iconColor = "var(--text-tertiary)";
+						kindLabel = "config";
 					} else if (["txt", "log", "readme"].includes(ext)) {
-						IconComponent = FileText;
+						IconComponent = FileTxt;
 						iconColor = "var(--text-secondary)";
 						kindLabel = "text";
 					} else if (["pdf"].includes(ext)) {
-						IconComponent = FileText;
+						IconComponent = FilePdf;
 						iconColor = "var(--text-error)";
 						kindLabel = "pdf";
 					} else if (["doc", "docx", "rtf"].includes(ext)) {
-						IconComponent = FileText;
+						IconComponent = FileDoc;
 						iconColor = "var(--color-blue-500)";
 						kindLabel = "document";
 					}

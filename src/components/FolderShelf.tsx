@@ -8,12 +8,18 @@ import {
 	Database,
 	File,
 	FileCode,
+	FileCss,
+	FileDoc,
+	FileHtml,
 	FileJson,
+	FilePdf,
+	FilePpt,
 	FileSpreadsheet,
 	FileText,
+	FileTxt,
+	FileXml,
 	Film,
 	FolderClosed,
-	Globe,
 	Hash,
 	Image,
 	Music,
@@ -78,12 +84,18 @@ function iconForRecent(
 		return { Icon: Archive, color: "var(--color-yellow-500)" };
 	if (["js", "jsx", "ts", "tsx", "vue", "svelte"].includes(ext))
 		return { Icon: FileCode, color: "var(--color-yellow-500)" };
-	if (["json"].includes(ext))
+	if (["json", "yaml", "yml", "toml", "ini", "env"].includes(ext))
 		return { Icon: FileJson, color: "var(--text-tertiary)" };
 	if (["csv", "xlsx", "xls"].includes(ext))
 		return { Icon: FileSpreadsheet, color: "var(--color-green-500)" };
-	if (["html", "htm", "css", "scss", "less"].includes(ext))
-		return { Icon: Globe, color: "var(--color-yellow-500)" };
+	if (["ppt", "pptx", "key"].includes(ext))
+		return { Icon: FilePpt, color: "var(--color-purple-500)" };
+	if (["html", "htm"].includes(ext))
+		return { Icon: FileHtml, color: "var(--color-yellow-500)" };
+	if (["css", "scss", "less"].includes(ext))
+		return { Icon: FileCss, color: "var(--color-yellow-500)" };
+	if (["xml"].includes(ext))
+		return { Icon: FileXml, color: "var(--text-tertiary)" };
 	if (["sql", "db", "sqlite"].includes(ext))
 		return { Icon: Database, color: "var(--text-accent)" };
 	if (["exe", "bin", "app", "deb", "rpm"].includes(ext))
@@ -92,12 +104,12 @@ function iconForRecent(
 		return { Icon: Palette, color: "var(--color-purple-500)" };
 	if (["lock", "key", "pem", "crt", "p12"].includes(ext))
 		return { Icon: Hash, color: "var(--text-error)" };
-	if (["txt", "log", "readme"].includes(ext))
-		return { Icon: FileText, color: "var(--text-secondary)" };
 	if (["pdf"].includes(ext))
-		return { Icon: FileText, color: "var(--text-error)" };
+		return { Icon: FilePdf, color: "var(--text-error)" };
 	if (["doc", "docx", "rtf"].includes(ext))
-		return { Icon: FileText, color: "var(--color-blue-500)" };
+		return { Icon: FileDoc, color: "var(--color-blue-500)" };
+	if (["txt", "log", "readme"].includes(ext))
+		return { Icon: FileTxt, color: "var(--text-secondary)" };
 	return { Icon: File, color: "var(--text-tertiary)" };
 }
 
