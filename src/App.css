@@ -1933,6 +1933,21 @@ button.segBtn.active {
 	overscroll-behavior: contain;
 }
 
+.rfNodeNoteEditorRaw .cm-editor {
+	height: 100%;
+	background: transparent;
+}
+
+.rfNodeNoteEditorRaw .cm-scroller {
+	font-family: var(--font-mono);
+	font-size: 12px;
+	line-height: 1.5;
+}
+
+.rfNodeNoteEditorRaw .cm-content {
+	padding: 0;
+}
+
 .tiptapContentInline {
 	min-height: 100%;
 	padding: 10px 12px;
