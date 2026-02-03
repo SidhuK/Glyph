@@ -1,4 +1,6 @@
+import { join } from "@tauri-apps/api/path";
 import { open, save } from "@tauri-apps/plugin-dialog";
+import { openPath, openUrl } from "@tauri-apps/plugin-opener";
 import { AnimatePresence, motion } from "motion/react";
 import {
 	Suspense,
@@ -16,10 +18,8 @@ import type {
 	CanvasExternalCommand,
 	CanvasNode,
 } from "./components/CanvasPane";
-import { FilePreviewPane } from "./components/FilePreviewPane";
 import { FileTreePane } from "./components/FileTreePane";
 import {
-	FileText,
 	Files,
 	FolderOpen,
 	FolderPlus,
@@ -30,7 +30,6 @@ import {
 	Tags,
 	X,
 } from "./components/Icons";
-import { MarkdownFileEditor } from "./components/MarkdownFileEditor";
 import { MotionFloatingPanel, MotionIconButton } from "./components/MotionUI";
 import { SearchPane } from "./components/SearchPane";
 import { TagsPane } from "./components/TagsPane";
@@ -42,7 +41,6 @@ import {
 	type SearchResult,
 	type TagCount,
 	TauriInvokeError,
-	type TextFileDoc,
 	invoke,
 } from "./lib/tauri";
 import {
@@ -57,6 +55,15 @@ import {
 } from "./lib/views";
 
 const CanvasPane = lazy(() => import("./components/CanvasPane"));
+
+function parentDir(relPath: string): string {
+	const idx = relPath.lastIndexOf("/");
+	return idx === -1 ? "" : relPath.slice(0, idx);
+}
+
+function isMarkdownPath(relPath: string): boolean {
+	return relPath.toLowerCase().endsWith(".md");
+}
 
 function App() {
 	const [info, setInfo] = useState<AppInfo | null>(null);
@@ -73,9 +80,6 @@ function App() {
 		() => new Set(),
 	);
 	const [activeFilePath, setActiveFilePath] = useState<string | null>(null);
-	const [activeFileDoc, setActiveFileDoc] = useState<TextFileDoc | null>(null);
-	const [editorValue, setEditorValue] = useState<string>("");
-	const [isEditorDirty, setIsEditorDirty] = useState(false);
 	const [activeViewPath, setActiveViewPath] = useState<string | null>(null);
 	const [activeViewDoc, setActiveViewDoc] = useState<ViewDoc | null>(null);
 	const [searchQuery, setSearchQuery] = useState("");
@@ -95,8 +99,6 @@ function App() {
 	const [sidebarViewMode, setSidebarViewMode] = useState<"files" | "tags">(
 		"files",
 	);
-	const [mainView, setMainView] = useState<"files" | "canvas">("files");
-	const fileLoadSeq = useRef(0);
 	const activeViewDocRef = useRef<ViewDoc | null>(null);
 	const activeViewPathRef = useRef<string | null>(null);
 
@@ -111,11 +113,16 @@ function App() {
 	// Keep info in sync but don't use it directly in render
 	void info;
 
-	const activeFileTitle = useMemo(() => {
+	const activeNoteId = useMemo(() => {
 		if (!activeFilePath) return null;
-		const name = activeFilePath.split("/").pop();
-		return name || activeFilePath;
+		return isMarkdownPath(activeFilePath) ? activeFilePath : null;
 	}, [activeFilePath]);
+
+	const activeNoteTitle = useMemo(() => {
+		if (!activeNoteId) return null;
+		const name = activeNoteId.split("/").pop();
+		return name || activeNoteId;
+	}, [activeNoteId]);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -192,7 +199,6 @@ function App() {
 							if (!cancelled) {
 								setActiveViewPath(loaded.path);
 								setActiveViewDoc(built.doc);
-								setMainView("canvas");
 							}
 						} catch {
 							// ignore
@@ -237,7 +243,6 @@ function App() {
 		setError("");
 		try {
 			const view: ViewRef = { kind: "folder", dir };
-			setMainView("canvas");
 
 			const loaded = await loadViewDoc(view);
 			const built = await buildFolderViewDoc(
@@ -263,7 +268,6 @@ function App() {
 			const q = query.trim();
 			if (!q) return;
 			const view: ViewRef = { kind: "search", query: q };
-			setMainView("canvas");
 
 			const loaded = await loadViewDoc(view);
 			const built = await buildSearchViewDoc(q, { limit: 200 }, loaded.doc);
@@ -283,7 +287,6 @@ function App() {
 			const t = tag.trim();
 			if (!t) return;
 			const view: ViewRef = { kind: "tag", tag: t };
-			setMainView("canvas");
 
 			const loaded = await loadViewDoc(view);
 			const built = await buildTagViewDoc(t, { limit: 500 }, loaded.doc);
@@ -313,9 +316,6 @@ function App() {
 				setChildrenByDir({});
 				setExpandedDirs(new Set());
 				setActiveFilePath(null);
-				setActiveFileDoc(null);
-				setEditorValue("");
-				setIsEditorDirty(false);
 
 				setActiveViewPath(null);
 				setActiveViewDoc(null);
@@ -327,7 +327,6 @@ function App() {
 
 				const entries = await invoke("vault_list_dir", {});
 				setRootEntries(entries);
-				setMainView("canvas");
 				const onlyDir =
 					entries.filter((e) => e.kind === "dir").length === 1 &&
 					entries.filter((e) => e.kind === "file").length === 0
@@ -349,6 +348,39 @@ function App() {
 			}
 		},
 		[loadAndBuildFolderView, refreshTags],
+	);
+
+	const openMarkdownFileInCanvas = useCallback(
+		async (relPath: string) => {
+			setError("");
+			try {
+				const dir = parentDir(relPath);
+				await loadAndBuildFolderView(dir);
+				setActiveFilePath(relPath);
+				setCanvasCommand({
+					id: crypto.randomUUID(),
+					kind: "open_note_editor",
+					noteId: relPath,
+					title: relPath.split("/").pop() || relPath,
+				});
+			} catch (e) {
+				setError(e instanceof Error ? e.message : String(e));
+			}
+		},
+		[loadAndBuildFolderView],
+	);
+
+	const openNonMarkdownExternally = useCallback(
+		async (relPath: string) => {
+			if (!vaultPath) return;
+			if (relPath.startsWith("http://") || relPath.startsWith("https://")) {
+				await openUrl(relPath);
+				return;
+			}
+			const abs = await join(vaultPath, relPath);
+			await openPath(abs);
+		},
+		[vaultPath],
 	);
 
 	const onCreateVault = useCallback(async () => {
@@ -387,93 +419,18 @@ function App() {
 		[loadDir],
 	);
 
-	const saveActiveFile = useCallback(async () => {
-		if (!activeFilePath) return;
-		const baseMtime = activeFileDoc?.mtime_ms ?? null;
-		const res = await invoke("vault_write_text", {
-			path: activeFilePath,
-			text: editorValue,
-			base_mtime_ms: baseMtime,
-		});
-		setActiveFileDoc((prev) =>
-			prev ? { ...prev, etag: res.etag, mtime_ms: res.mtime_ms } : prev,
-		);
-		setIsEditorDirty(false);
-	}, [activeFileDoc?.mtime_ms, activeFilePath, editorValue]);
-
 	const openFile = useCallback(
 		async (relPath: string) => {
-			if (relPath === activeFilePath) return;
-			if (isEditorDirty) {
-				const shouldSave = window.confirm(
-					"Save changes before opening another file?",
-				);
-				if (shouldSave) {
-					try {
-						await saveActiveFile();
-					} catch (e) {
-						setError(e instanceof Error ? e.message : String(e));
-						return;
-					}
-				} else {
-					const discard = window.confirm("Discard unsaved changes?");
-					if (!discard) return;
-				}
+			if (!relPath) return;
+			if (isMarkdownPath(relPath)) {
+				await openMarkdownFileInCanvas(relPath);
+				return;
 			}
 			setActiveFilePath(relPath);
-			setMainView("files");
+			await openNonMarkdownExternally(relPath);
 		},
-		[activeFilePath, isEditorDirty, saveActiveFile],
+		[openMarkdownFileInCanvas, openNonMarkdownExternally],
 	);
-
-	useEffect(() => {
-		if (!activeFilePath) {
-			setActiveFileDoc(null);
-			setEditorValue("");
-			setIsEditorDirty(false);
-			return;
-		}
-		const ext = activeFilePath.split(".").pop()?.toLowerCase() ?? "";
-		const isText =
-			ext === "md" ||
-			ext === "txt" ||
-			ext === "json" ||
-			ext === "yaml" ||
-			ext === "yml" ||
-			ext === "html" ||
-			ext === "css" ||
-			ext === "ts" ||
-			ext === "tsx" ||
-			ext === "js";
-		if (!isText) {
-			setActiveFileDoc(null);
-			setEditorValue("");
-			setIsEditorDirty(false);
-			return;
-		}
-		const seq = ++fileLoadSeq.current;
-		setActiveFileDoc(null);
-		(async () => {
-			try {
-				const doc = await invoke("vault_read_text", { path: activeFilePath });
-				if (seq !== fileLoadSeq.current) return;
-				setActiveFileDoc(doc);
-				setEditorValue(doc.text);
-				setIsEditorDirty(false);
-			} catch (e) {
-				if (seq !== fileLoadSeq.current) return;
-				setError(e instanceof Error ? e.message : String(e));
-			}
-		})();
-	}, [activeFilePath]);
-
-	const reloadActiveFileFromDisk = useCallback(async () => {
-		if (!activeFilePath) return;
-		const doc = await invoke("vault_read_text", { path: activeFilePath });
-		setActiveFileDoc(doc);
-		setEditorValue(doc.text);
-		setIsEditorDirty(false);
-	}, [activeFilePath]);
 
 	useEffect(() => {
 		if (!vaultPath) return;
@@ -530,8 +487,7 @@ function App() {
 			});
 			const entries = await invoke("vault_list_dir", {});
 			setRootEntries(entries);
-			setActiveFilePath(rel);
-			setMainView("files");
+			await openMarkdownFileInCanvas(rel);
 			const now = new Date().toISOString();
 			return {
 				id: rel,
@@ -540,7 +496,7 @@ function App() {
 				updated: now,
 			};
 		},
-		[vaultPath],
+		[openMarkdownFileInCanvas, vaultPath],
 	);
 
 	const onNewFile = useCallback(async () => {
@@ -562,14 +518,8 @@ function App() {
 		});
 		const entries = await invoke("vault_list_dir", {});
 		setRootEntries(entries);
-		setActiveFilePath(rel);
-		setMainView("files");
-	}, [vaultPath]);
-
-	const onChangeEditorValue = useCallback((next: string) => {
-		setEditorValue(next);
-		setIsEditorDirty(true);
-	}, []);
+		await openMarkdownFileInCanvas(rel);
+	}, [openMarkdownFileInCanvas, vaultPath]);
 
 	const onCanvasSelectionChange = useCallback((selected: CanvasNode[]) => {
 		setSelectedCanvasNodes(
@@ -681,7 +631,7 @@ function App() {
 									onChangeQuery={setSearchQuery}
 									onOpenAsCanvas={(q) => void loadAndBuildSearchView(q)}
 									onSelectNote={(id) => {
-										void openFile(id);
+										void openMarkdownFileInCanvas(id);
 									}}
 								/>
 							</div>
@@ -778,26 +728,10 @@ function App() {
 				<div className="mainToolbar" data-tauri-drag-region>
 					<div className="mainToolbarLeft">
 						<span className="canvasTitle">
-							{mainView === "canvas"
-								? activeViewDoc?.title || "Canvas"
-								: activeFileTitle || "No file selected"}
+							{activeViewDoc?.title || "Canvas"}
 						</span>
 					</div>
 					<div className="mainToolbarRight">
-						<MotionIconButton
-							type="button"
-							active={mainView === "canvas"}
-							onClick={() =>
-								setMainView((v) => (v === "canvas" ? "files" : "canvas"))
-							}
-							title={mainView === "canvas" ? "Show file editor" : "Show canvas"}
-						>
-							{mainView === "canvas" ? (
-								<FileText size={16} />
-							) : (
-								<span className="brandIcon">◈</span>
-							)}
-						</MotionIconButton>
 						<MotionIconButton
 							type="button"
 							active={showAiPanel}
@@ -811,44 +745,24 @@ function App() {
 
 				{/* Main Content */}
 				<div className="canvasWrapper">
-					{mainView === "canvas" ? (
-						<Suspense
-							fallback={<div className="canvasEmpty">Loading canvas…</div>}
-						>
-							<CanvasPane
-								doc={activeViewDoc ? asCanvasDocLike(activeViewDoc) : null}
-								onSave={onSaveView}
-								onOpenNote={(p) => void openFile(p)}
-								onOpenFolder={(dir) => void loadAndBuildFolderView(dir)}
-								activeNoteId={activeFilePath}
-								activeNoteTitle={activeFileTitle}
-								vaultPath={vaultPath}
-								onSelectionChange={onCanvasSelectionChange}
-								externalCommand={canvasCommand}
-								onExternalCommandHandled={(id) => {
-									setCanvasCommand((prev) => (prev?.id === id ? null : prev));
-								}}
-							/>
-						</Suspense>
-					) : (
-						<>
-							{activeFileDoc ? (
-								<MarkdownFileEditor
-									doc={activeFileDoc}
-									value={editorValue}
-									isDirty={isEditorDirty}
-									onChange={onChangeEditorValue}
-									onSave={saveActiveFile}
-									onReloadFromDisk={reloadActiveFileFromDisk}
-								/>
-							) : (
-								<FilePreviewPane
-									vaultPath={vaultPath}
-									relPath={activeFilePath}
-								/>
-							)}
-						</>
-					)}
+					<Suspense
+						fallback={<div className="canvasEmpty">Loading canvas…</div>}
+					>
+						<CanvasPane
+							doc={activeViewDoc ? asCanvasDocLike(activeViewDoc) : null}
+							onSave={onSaveView}
+							onOpenNote={(p) => void openFile(p)}
+							onOpenFolder={(dir) => void loadAndBuildFolderView(dir)}
+							activeNoteId={activeNoteId}
+							activeNoteTitle={activeNoteTitle}
+							vaultPath={vaultPath}
+							onSelectionChange={onCanvasSelectionChange}
+							externalCommand={canvasCommand}
+							onExternalCommandHandled={(id) => {
+								setCanvasCommand((prev) => (prev?.id === id ? null : prev));
+							}}
+						/>
+					</Suspense>
 
 					{/* Floating AI Panel */}
 					<MotionFloatingPanel
@@ -871,16 +785,21 @@ function App() {
 						</div>
 						<div className="floatingPanelBody">
 							<AIPane
-								activeNoteId={activeFilePath}
-								activeNoteTitle={activeFileTitle}
-								activeNoteMarkdown={activeFileDoc ? editorValue : null}
+								activeNoteId={activeNoteId}
+								activeNoteTitle={activeNoteTitle}
+								activeNoteMarkdown={null}
 								selectedCanvasNodes={selectedCanvasNodes}
 								canvasDoc={
 									activeViewDoc ? asCanvasDocLike(activeViewDoc) : null
 								}
 								onApplyToActiveNote={async (markdown) => {
-									setEditorValue(markdown);
-									setIsEditorDirty(true);
+									if (!activeNoteId) return;
+									setCanvasCommand({
+										id: crypto.randomUUID(),
+										kind: "apply_note_markdown",
+										noteId: activeNoteId,
+										markdown,
+									});
 								}}
 								onCreateNoteFromMarkdown={createFileFromMarkdown}
 								onAddCanvasNoteNode={addCanvasNoteNode}

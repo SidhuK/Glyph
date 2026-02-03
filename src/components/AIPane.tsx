@@ -47,7 +47,7 @@ export interface SelectedCanvasNode {
 interface AIPaneProps {
 	activeNoteId: string | null;
 	activeNoteTitle: string | null;
-	activeNoteMarkdown: string | null;
+	activeNoteMarkdown?: string | null;
 	selectedCanvasNodes: SelectedCanvasNode[];
 	canvasDoc: CanvasDocLike | null;
 	onApplyToActiveNote: (markdown: string) => Promise<void>;
@@ -187,9 +187,7 @@ export function AIPane({
 
 	const payloadInvalidationKey = useMemo(() => {
 		const selectedIds = selectedCanvasNodes.map((n) => n.id).join(",");
-		const noteKey = activeNoteId
-			? `${activeNoteId}:${(activeNoteMarkdown ?? "").length}`
-			: "";
+		const noteKey = activeNoteId ? `${activeNoteId}` : "";
 		const canvasKey = canvasDoc?.id ?? "";
 		return JSON.stringify({
 			selectedIds,
@@ -197,13 +195,7 @@ export function AIPane({
 			canvasKey,
 			contextSpec,
 		});
-	}, [
-		activeNoteId,
-		activeNoteMarkdown,
-		canvasDoc?.id,
-		contextSpec,
-		selectedCanvasNodes,
-	]);
+	}, [activeNoteId, canvasDoc?.id, contextSpec, selectedCanvasNodes]);
 
 	useEffect(() => {
 		// Reference the invalidation key so the effect intentionally runs when context changes.
@@ -218,11 +210,9 @@ export function AIPane({
 	}, [jobId]);
 
 	const activeNoteIdRef = useRef<string | null>(null);
-	const activeNoteMarkdownRef = useRef<string | null>(null);
 	useEffect(() => {
 		activeNoteIdRef.current = activeNoteId;
-		activeNoteMarkdownRef.current = activeNoteMarkdown;
-	}, [activeNoteId, activeNoteMarkdown]);
+	}, [activeNoteId]);
 
 	const activeProfile = useMemo(() => {
 		if (!activeProfileId) return null;
@@ -365,6 +355,76 @@ export function AIPane({
 	);
 	const linkPreviewCacheRef = useRef<Map<string, LinkPreview>>(new Map());
 
+	const getNote = useCallback(async (noteId: string) => {
+		const cached = noteCacheRef.current.get(noteId);
+		if (cached) return cached;
+		const next = isUuid(noteId)
+			? await (async () => {
+					const doc = await invoke("note_read", { id: noteId });
+					return { title: doc.meta.title, markdown: doc.markdown };
+				})()
+			: await (async () => {
+					const doc = await invoke("vault_read_text", { path: noteId });
+					const title = noteId.split("/").pop() || noteId;
+					return { title, markdown: doc.text };
+				})();
+		noteCacheRef.current.set(noteId, next);
+		return next;
+	}, []);
+
+	const getLinkPreview = useCallback(
+		async (url: string): Promise<LinkPreview | null> => {
+			const cached = linkPreviewCacheRef.current.get(url);
+			if (cached) return cached;
+			try {
+				const preview = await invoke("link_preview", { url });
+				linkPreviewCacheRef.current.set(url, preview);
+				return preview;
+			} catch {
+				return null;
+			}
+		},
+		[],
+	);
+
+	const [activeNoteDisk, setActiveNoteDisk] = useState<{
+		id: string;
+		title: string;
+		markdown: string;
+	} | null>(null);
+
+	useEffect(() => {
+		let cancelled = false;
+		if (!activeNoteId) {
+			setActiveNoteDisk(null);
+			return;
+		}
+		(async () => {
+			try {
+				const fromProps =
+					typeof activeNoteMarkdown === "string" && activeNoteMarkdown.length
+						? {
+								id: activeNoteId,
+								title: activeNoteTitle || activeNoteId,
+								markdown: activeNoteMarkdown,
+							}
+						: null;
+				const note = fromProps ?? (await getNote(activeNoteId));
+				if (cancelled) return;
+				setActiveNoteDisk({
+					id: activeNoteId,
+					title: note.title || activeNoteTitle || activeNoteId,
+					markdown: note.markdown,
+				});
+			} catch {
+				if (!cancelled) setActiveNoteDisk(null);
+			}
+		})();
+		return () => {
+			cancelled = true;
+		};
+	}, [activeNoteId, activeNoteMarkdown, activeNoteTitle, getNote]);
+
 	const buildPayload = useCallback(async () => {
 		setPayloadError("");
 		setPayloadApproved(false);
@@ -424,40 +484,16 @@ export function AIPane({
 				return `${headingBlock}${excerpt}`.trim();
 			};
 
-			const getNote = async (noteId: string) => {
-				const cached = noteCacheRef.current.get(noteId);
-				if (cached) return cached;
-				const next = isUuid(noteId)
-					? await (async () => {
-							const doc = await invoke("note_read", { id: noteId });
-							return { title: doc.meta.title, markdown: doc.markdown };
-						})()
-					: await (async () => {
-							const doc = await invoke("vault_read_text", { path: noteId });
-							const title = noteId.split("/").pop() || noteId;
-							return { title, markdown: doc.text };
-						})();
-				noteCacheRef.current.set(noteId, next);
-				return next;
-			};
-
-			const getLinkPreview = async (
-				url: string,
-			): Promise<LinkPreview | null> => {
-				const cached = linkPreviewCacheRef.current.get(url);
-				if (cached) return cached;
-				try {
-					const preview = await invoke("link_preview", { url });
-					linkPreviewCacheRef.current.set(url, preview);
-					return preview;
-				} catch {
-					return null;
-				}
-			};
-
 			if (contextSpec.includeActiveNote && activeNoteId) {
-				const title = activeNoteTitle ?? "";
-				const md = activeNoteMarkdown ?? "";
+				const note =
+					typeof activeNoteMarkdown === "string" && activeNoteMarkdown.length
+						? {
+								title: activeNoteTitle || activeNoteId,
+								markdown: activeNoteMarkdown,
+							}
+						: await getNote(activeNoteId);
+				const title = note.title ?? activeNoteTitle ?? "";
+				const md = note.markdown ?? "";
 				const header =
 					`# Active Note\nid: ${activeNoteId}\ntitle: ${title}`.trim();
 				const content =
@@ -594,6 +630,8 @@ export function AIPane({
 		activeNoteTitle,
 		canvasDoc,
 		contextSpec,
+		getLinkPreview,
+		getNote,
 		selectedCanvasNodes,
 	]);
 
@@ -736,7 +774,7 @@ export function AIPane({
 	}, [activeProfileId, input, startRequest]);
 
 	const onRewriteActiveNote = useCallback(async () => {
-		if (!activeNoteId || !activeNoteMarkdown) {
+		if (!activeNoteId) {
 			setActionError("No active note to rewrite.");
 			return;
 		}
@@ -764,7 +802,6 @@ export function AIPane({
 		await startRequest(userText);
 	}, [
 		activeNoteId,
-		activeNoteMarkdown,
 		includeActiveNote,
 		payloadApproved,
 		payloadManifest,
@@ -776,10 +813,6 @@ export function AIPane({
 			setActionError("No active note selected.");
 			return;
 		}
-		if (!activeNoteMarkdown) {
-			setActionError("No active note loaded.");
-			return;
-		}
 		if (!lastAssistantMessage.trim()) {
 			setActionError("No assistant message to stage.");
 			return;
@@ -787,20 +820,19 @@ export function AIPane({
 		const jobId = lastCompletedJobId ?? "unknown";
 		setStagedRewrite({ jobId, proposedMarkdown: lastAssistantMessage });
 		setActionError("");
-	}, [
-		activeNoteId,
-		activeNoteMarkdown,
-		lastAssistantMessage,
-		lastCompletedJobId,
-	]);
+	}, [activeNoteId, lastAssistantMessage, lastCompletedJobId]);
 
 	const stagedRewriteDiff = useMemo(() => {
-		if (!stagedRewrite || !activeNoteMarkdown) return "";
-		return unifiedDiff(activeNoteMarkdown, stagedRewrite.proposedMarkdown, {
-			contextLines: 3,
-			maxDiffLines: 5000,
-		});
-	}, [activeNoteMarkdown, stagedRewrite]);
+		if (!stagedRewrite || !activeNoteDisk?.markdown) return "";
+		return unifiedDiff(
+			activeNoteDisk.markdown,
+			stagedRewrite.proposedMarkdown,
+			{
+				contextLines: 3,
+				maxDiffLines: 5000,
+			},
+		);
+	}, [activeNoteDisk?.markdown, stagedRewrite]);
 
 	const applyStagedRewrite = useCallback(async () => {
 		if (!activeNoteId) {
@@ -1192,7 +1224,7 @@ export function AIPane({
 					<button
 						type="button"
 						onClick={onRewriteActiveNote}
-						disabled={streaming || !activeNoteId || !activeNoteMarkdown}
+						disabled={streaming || !activeNoteId}
 					>
 						Rewrite active note
 					</button>
