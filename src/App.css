@@ -3460,28 +3460,46 @@ button.segBtn.active {
 	margin-left: 0;
 }
 
-.tiptapContentInline li[data-type="taskItem"] {
-	display: grid;
-	grid-template-columns: 18px 1fr;
-	align-items: start;
-	column-gap: 8px;
+.tiptapContentInline ul[data-type="taskList"] > li,
+.tiptapContentInline li[data-checked] {
+	display: flex !important;
+	align-items: flex-start;
+	gap: 8px;
+	list-style: none !important;
+	margin: 0 0 var(--space-2);
 }
 
-.tiptapContentInline li[data-type="taskItem"] > label {
+.tiptapContentInline ul[data-type="taskList"] > li::marker,
+.tiptapContentInline li[data-checked]::marker {
+	content: "";
+}
+
+.tiptapContentInline ul[data-type="taskList"] > li > label,
+.tiptapContentInline li[data-checked] > label {
 	margin: 2px 0 0;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
+	flex: 0 0 auto;
+	width: auto;
 }
 
-.tiptapContentInline li[data-type="taskItem"] > label input[type="checkbox"] {
+.tiptapContentInline ul[data-type="taskList"] > li > label input[type="checkbox"],
+.tiptapContentInline li[data-checked] > label input[type="checkbox"] {
 	width: 14px;
 	height: 14px;
 	accent-color: var(--interactive-accent);
 }
 
-.tiptapContentInline li[data-type="taskItem"] > div {
+.tiptapContentInline ul[data-type="taskList"] > li > div,
+.tiptapContentInline li[data-checked] > div {
 	min-width: 0;
+	display: block;
+}
+
+.tiptapContentInline ul[data-type="taskList"] > li > div > p,
+.tiptapContentInline li[data-checked] > div > p {
+	margin: 0;
 	display: inline;
 }
 

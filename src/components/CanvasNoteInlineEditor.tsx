@@ -326,7 +326,8 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 				return false;
 			},
 		},
-		onUpdate: ({ editor: instance }) => {
+		onTransaction: ({ editor: instance, transaction }) => {
+			if (!transaction.docChanged) return;
 			if (suppressUpdateRef.current) {
 				suppressUpdateRef.current = false;
 				return;
@@ -335,7 +336,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 				ignoreNextUpdateRef.current = false;
 				return;
 			}
-			if (mode !== "rich") return;
+			if (mode !== "rich" || !instance.isEditable) return;
 			const nextBody = instance.getMarkdown();
 			const nextMarkdown = mergeFrontmatter(
 				frontmatterRef.current,
