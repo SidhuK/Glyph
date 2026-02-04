@@ -465,12 +465,15 @@ export function AiSettingsPane() {
 							<div className="settingsCardTitle">Defaults</div>
 							<div className="settingsCardHint">Generation settings.</div>
 						</div>
-						<div className="settingsPill">Tune</div>
+						<div className="settingsBadgeWarn">Under construction</div>
 					</div>
 
 					<div className="settingsField">
 						<div>
-							<div className="settingsLabel">Temperature</div>
+							<div className="settingsLabelRow">
+								<div className="settingsLabel">Temperature</div>
+								<span className="settingsBadgeWarn">Under construction</span>
+							</div>
 							<div className="settingsHelp">Creativity level.</div>
 						</div>
 						<div className="settingsRange">
@@ -490,7 +493,10 @@ export function AiSettingsPane() {
 
 					<div className="settingsField">
 						<div>
-							<div className="settingsLabel">Top P</div>
+							<div className="settingsLabelRow">
+								<div className="settingsLabel">Top P</div>
+								<span className="settingsBadgeWarn">Under construction</span>
+							</div>
 							<div className="settingsHelp">Sampling nucleus.</div>
 						</div>
 						<div className="settingsRange">
@@ -508,7 +514,10 @@ export function AiSettingsPane() {
 
 					<div className="settingsField">
 						<div>
-							<div className="settingsLabel">Max tokens</div>
+							<div className="settingsLabelRow">
+								<div className="settingsLabel">Max tokens</div>
+								<span className="settingsBadgeWarn">Under construction</span>
+							</div>
 							<div className="settingsHelp">Upper response length.</div>
 						</div>
 						<select
@@ -524,7 +533,10 @@ export function AiSettingsPane() {
 
 					<div className="settingsField">
 						<div>
-							<div className="settingsLabel">Streaming</div>
+							<div className="settingsLabelRow">
+								<div className="settingsLabel">Streaming</div>
+								<span className="settingsBadgeWarn">Under construction</span>
+							</div>
 							<div className="settingsHelp">Show responses live.</div>
 						</div>
 						<label className="settingsToggle">
@@ -544,12 +556,15 @@ export function AiSettingsPane() {
 							<div className="settingsCardTitle">Context</div>
 							<div className="settingsCardHint">What the model sees.</div>
 						</div>
-						<div className="settingsPill">Context</div>
+						<div className="settingsBadgeWarn">Under construction</div>
 					</div>
 
 					<div className="settingsField">
 						<div>
-							<div className="settingsLabel">Auto context</div>
+							<div className="settingsLabelRow">
+								<div className="settingsLabel">Auto context</div>
+								<span className="settingsBadgeWarn">Under construction</span>
+							</div>
 							<div className="settingsHelp">Include related notes.</div>
 						</div>
 						<label className="settingsToggle">
@@ -564,7 +579,10 @@ export function AiSettingsPane() {
 
 					<div className="settingsField">
 						<div>
-							<div className="settingsLabel">Citations</div>
+							<div className="settingsLabelRow">
+								<div className="settingsLabel">Citations</div>
+								<span className="settingsBadgeWarn">Under construction</span>
+							</div>
 							<div className="settingsHelp">Show source badges.</div>
 						</div>
 						<label className="settingsToggle">
@@ -584,12 +602,15 @@ export function AiSettingsPane() {
 							<div className="settingsCardTitle">Privacy</div>
 							<div className="settingsCardHint">Control data sharing.</div>
 						</div>
-						<div className="settingsPill">Privacy</div>
+						<div className="settingsBadgeWarn">Under construction</div>
 					</div>
 
 					<div className="settingsField">
 						<div>
-							<div className="settingsLabel">Allow web tools</div>
+							<div className="settingsLabelRow">
+								<div className="settingsLabel">Allow web tools</div>
+								<span className="settingsBadgeWarn">Under construction</span>
+							</div>
 							<div className="settingsHelp">Enable tool access.</div>
 						</div>
 						<label className="settingsToggle">
@@ -604,7 +625,10 @@ export function AiSettingsPane() {
 
 					<div className="settingsField">
 						<div>
-							<div className="settingsLabel">Redact secrets</div>
+							<div className="settingsLabelRow">
+								<div className="settingsLabel">Redact secrets</div>
+								<span className="settingsBadgeWarn">Under construction</span>
+							</div>
 							<div className="settingsHelp">Mask API keys.</div>
 						</div>
 						<label className="settingsToggle">
@@ -619,7 +643,10 @@ export function AiSettingsPane() {
 
 					<div className="settingsField">
 						<div>
-							<div className="settingsLabel">Store chats</div>
+							<div className="settingsLabelRow">
+								<div className="settingsLabel">Store chats</div>
+								<span className="settingsBadgeWarn">Under construction</span>
+							</div>
 							<div className="settingsHelp">Keep AI history.</div>
 						</div>
 						<label className="settingsToggle">
@@ -639,12 +666,15 @@ export function AiSettingsPane() {
 							<div className="settingsCardTitle">UX</div>
 							<div className="settingsCardHint">Response style.</div>
 						</div>
-						<div className="settingsPill">UX</div>
+						<div className="settingsBadgeWarn">Under construction</div>
 					</div>
 
 					<div className="settingsField">
 						<div>
-							<div className="settingsLabel">Tone</div>
+							<div className="settingsLabelRow">
+								<div className="settingsLabel">Tone</div>
+								<span className="settingsBadgeWarn">Under construction</span>
+							</div>
 							<div className="settingsHelp">Communication style.</div>
 						</div>
 						<select value={tone} onChange={(e) => setTone(e.target.value)}>
@@ -656,7 +686,10 @@ export function AiSettingsPane() {
 
 					<div className="settingsField">
 						<div>
-							<div className="settingsLabel">Auto titles</div>
+							<div className="settingsLabelRow">
+								<div className="settingsLabel">Auto titles</div>
+								<span className="settingsBadgeWarn">Under construction</span>
+							</div>
 							<div className="settingsHelp">Title AI outputs.</div>
 						</div>
 						<label className="settingsToggle">
@@ -671,7 +704,10 @@ export function AiSettingsPane() {
 
 					<div className="settingsField">
 						<div>
-							<div className="settingsLabel">Tool policy</div>
+							<div className="settingsLabelRow">
+								<div className="settingsLabel">Tool policy</div>
+								<span className="settingsBadgeWarn">Under construction</span>
+							</div>
 							<div className="settingsHelp">When tools can run.</div>
 						</div>
 						<select

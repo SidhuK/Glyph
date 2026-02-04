@@ -69,12 +69,15 @@ export function VaultSettingsPane() {
 								Search, backlinks, and previews.
 							</div>
 						</div>
-						<div className="settingsPill">Index</div>
+						<div className="settingsBadgeWarn">Under construction</div>
 					</div>
 
 					<div className="settingsField">
 						<div>
-							<div className="settingsLabel">Mode</div>
+							<div className="settingsLabelRow">
+								<div className="settingsLabel">Mode</div>
+								<span className="settingsBadgeWarn">Under construction</span>
+							</div>
 							<div className="settingsHelp">
 								Choose when indexing runs.
 							</div>
@@ -91,7 +94,10 @@ export function VaultSettingsPane() {
 
 					<div className="settingsField">
 						<div>
-							<div className="settingsLabel">Watch changes</div>
+							<div className="settingsLabelRow">
+								<div className="settingsLabel">Watch changes</div>
+								<span className="settingsBadgeWarn">Under construction</span>
+							</div>
 							<div className="settingsHelp">Detect external edits.</div>
 						</div>
 						<label className="settingsToggle">
@@ -106,7 +112,10 @@ export function VaultSettingsPane() {
 
 					<div className="settingsField">
 						<div>
-							<div className="settingsLabel">Auto-compact</div>
+							<div className="settingsLabelRow">
+								<div className="settingsLabel">Auto-compact</div>
+								<span className="settingsBadgeWarn">Under construction</span>
+							</div>
 							<div className="settingsHelp">Keep SQLite lean.</div>
 						</div>
 						<label className="settingsToggle">
@@ -126,12 +135,15 @@ export function VaultSettingsPane() {
 							<div className="settingsCardTitle">Attachments</div>
 							<div className="settingsCardHint">Asset storage rules.</div>
 						</div>
-						<div className="settingsPill">Assets</div>
+						<div className="settingsBadgeWarn">Under construction</div>
 					</div>
 
 					<div className="settingsField">
 						<div>
-							<div className="settingsLabel">Deduplicate</div>
+							<div className="settingsLabelRow">
+								<div className="settingsLabel">Deduplicate</div>
+								<span className="settingsBadgeWarn">Under construction</span>
+							</div>
 							<div className="settingsHelp">Reuse identical files.</div>
 						</div>
 						<label className="settingsToggle">
@@ -151,12 +163,15 @@ export function VaultSettingsPane() {
 							<div className="settingsCardTitle">Backups</div>
 							<div className="settingsCardHint">Vault snapshots.</div>
 						</div>
-						<div className="settingsPill">Safety</div>
+						<div className="settingsBadgeWarn">Under construction</div>
 					</div>
 
 					<div className="settingsField">
 						<div>
-							<div className="settingsLabel">Frequency</div>
+							<div className="settingsLabelRow">
+								<div className="settingsLabel">Frequency</div>
+								<span className="settingsBadgeWarn">Under construction</span>
+							</div>
 							<div className="settingsHelp">How often to snapshot.</div>
 						</div>
 						<select
@@ -171,7 +186,10 @@ export function VaultSettingsPane() {
 
 					<div className="settingsField">
 						<div>
-							<div className="settingsLabel">Trash retention</div>
+							<div className="settingsLabelRow">
+								<div className="settingsLabel">Trash retention</div>
+								<span className="settingsBadgeWarn">Under construction</span>
+							</div>
 							<div className="settingsHelp">Days to keep deleted notes.</div>
 						</div>
 						<select

@@ -1205,6 +1205,27 @@ textarea {
 	color: var(--text-tertiary);
 }
 
+.settingsBadgeWarn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 4px 10px;
+	border-radius: var(--radius-full);
+	background: color-mix(in srgb, #6e1f1f 70%, transparent);
+	border: 1px solid color-mix(in srgb, #b43a3a 55%, transparent);
+	font-size: 10px;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: #f5d6d6;
+	white-space: nowrap;
+}
+
+.settingsLabelRow {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
 .settingsGrid {
 	display: grid;
 	grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
