@@ -269,11 +269,13 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	);
 	const frontmatterRef = useRef(frontmatter);
 	const lastAppliedBodyRef = useRef(body);
+	const lastEmittedMarkdownRef = useRef(markdown);
 	const suppressUpdateRef = useRef(false);
 
 	useEffect(() => {
 		frontmatterRef.current = frontmatter;
-	}, [frontmatter]);
+		lastEmittedMarkdownRef.current = markdown;
+	}, [frontmatter, markdown]);
 
 	const editor = useEditor({
 		extensions: [
@@ -334,6 +336,8 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 				frontmatterRef.current,
 				nextBody,
 			);
+			if (nextMarkdown === lastEmittedMarkdownRef.current) return;
+			lastEmittedMarkdownRef.current = nextMarkdown;
 			onChange(nextMarkdown);
 		},
 	});
@@ -353,15 +357,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 
 	return (
 		<div className="rfNodeNoteEditor nodrag nopan">
-			<div className="rfNodeNoteEditorRibbon nodrag nopan nowheel">
-				<button
-					type="button"
-					className={mode === "rich" ? "segBtn active" : "segBtn"}
-					onClick={() => onModeChange("rich")}
-					title="Rich Text"
-				>
-					Rich
-				</button>
+			<div className="rfNodeNoteEditorHeaderBar nodrag nopan nowheel">
 				<button
 					type="button"
 					className={mode === "preview" ? "segBtn active" : "segBtn"}
@@ -370,9 +366,40 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 				>
 					Preview
 				</button>
+				<button
+					type="button"
+					className={mode === "rich" ? "segBtn active" : "segBtn"}
+					onClick={() => onModeChange("rich")}
+					title="Rich Text"
+				>
+					Rich
+				</button>
+				<div style={{ flex: 1 }} />
+			</div>
+			<div className="rfNodeNoteEditorBody nodrag nopan nowheel">
+				{frontmatter ? (
+					<div className="frontmatterPreview mono">
+						<div className="frontmatterLabel">Frontmatter</div>
+						<pre>{frontmatter.trimEnd()}</pre>
+					</div>
+				) : null}
+				<div
+					className={[
+						"tiptapHostInline",
+						mode === "preview" ? "is-preview" : "",
+						"nodrag",
+						"nopan",
+						"nowheel",
+					]
+						.filter(Boolean)
+						.join(" ")}
+				>
+					<EditorContent editor={editor} />
+				</div>
+			</div>
+			<div className="rfNodeNoteEditorRibbon rfNodeNoteEditorRibbonBottom nodrag nopan nowheel">
 				{mode === "rich" && editor ? (
 					<>
-						<span className="ribbonDivider" />
 						<div className="ribbonGroup">
 							<button
 								type="button"
@@ -513,27 +540,6 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 					</>
 				) : null}
 				<div style={{ flex: 1 }} />
-			</div>
-			<div className="rfNodeNoteEditorBody nodrag nopan nowheel">
-				{frontmatter ? (
-					<div className="frontmatterPreview mono">
-						<div className="frontmatterLabel">Frontmatter</div>
-						<pre>{frontmatter.trimEnd()}</pre>
-					</div>
-				) : null}
-				<div
-					className={[
-						"tiptapHostInline",
-						mode === "preview" ? "is-preview" : "",
-						"nodrag",
-						"nopan",
-						"nowheel",
-					]
-						.filter(Boolean)
-						.join(" ")}
-				>
-					<EditorContent editor={editor} />
-				</div>
 			</div>
 		</div>
 	);

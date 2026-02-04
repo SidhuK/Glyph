@@ -3216,6 +3216,26 @@ button.segBtn.active {
 	padding: 6px 8px;
 	background: var(--bg-secondary);
 	border-bottom: 1px solid var(--border-light);
+	flex-shrink: 0;
+	overflow-x: auto;
+	overflow-y: hidden;
+	white-space: nowrap;
+	scrollbar-width: thin;
+}
+
+.rfNodeNoteEditorHeaderBar {
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+	padding: 6px 8px;
+	background: var(--bg-secondary);
+	border-bottom: 1px solid var(--border-light);
+	flex-shrink: 0;
+}
+
+.rfNodeNoteEditorRibbonBottom {
+	border-bottom: none;
+	border-top: 1px solid var(--border-light);
 }
 
 .rfNodeNoteEditorRibbon .ribbonGroup {
@@ -3226,12 +3246,14 @@ button.segBtn.active {
 	border: 1px solid var(--border-light);
 	border-radius: var(--radius-lg);
 	background: var(--bg-primary);
+	flex: 0 0 auto;
 }
 
 .rfNodeNoteEditorRibbon .ribbonDivider {
 	width: 1px;
 	height: 20px;
 	background: var(--border-light);
+	flex: 0 0 auto;
 }
 
 .rfNodeNoteEditorRibbon .ribbonBtn {
@@ -3240,6 +3262,7 @@ button.segBtn.active {
 	padding: 0;
 	border-radius: var(--radius-md);
 	color: var(--text-secondary);
+	flex: 0 0 auto;
 }
 
 .rfNodeNoteEditorRibbon .ribbonBtn:hover {
@@ -3438,19 +3461,27 @@ button.segBtn.active {
 }
 
 .tiptapContentInline li[data-type="taskItem"] {
-	display: flex;
-	align-items: flex-start;
-	gap: 8px;
+	display: grid;
+	grid-template-columns: 18px 1fr;
+	align-items: start;
+	column-gap: 8px;
 }
 
 .tiptapContentInline li[data-type="taskItem"] > label {
-	margin-top: 2px;
+	margin: 2px 0 0;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
 }
 
 .tiptapContentInline li[data-type="taskItem"] > label input[type="checkbox"] {
 	width: 14px;
 	height: 14px;
 	accent-color: var(--interactive-accent);
+}
+
+.tiptapContentInline li[data-type="taskItem"] > div {
+	min-width: 0;
 }
 
 .slashCommandMenu {
