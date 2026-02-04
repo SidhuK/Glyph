@@ -2391,6 +2391,8 @@ export default function CanvasPane({
 							nodeTypes={nodeTypes}
 							snapToGrid={snapToGrid}
 							snapGrid={[GRID_SIZE, GRID_SIZE]}
+							minZoom={0.02}
+							maxZoom={8}
 							style={flowThemeVars}
 							onInit={(instance) => {
 								flowRef.current = instance;

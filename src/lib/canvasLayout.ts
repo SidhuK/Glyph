@@ -126,11 +126,20 @@ export function computeGridPositions(
 
 	const sizes = nodes.map((n) => estimateNodeSize(n));
 	const paddingUnits = Math.max(1, Math.round(gap / gridSize));
-	const sizeUnits = sizes.map((s) => ({
-		w: Math.max(1, Math.ceil(s.w / gridSize)),
-		h: Math.max(1, Math.ceil(s.h / gridSize)),
-	}));
-	const totalArea = sizeUnits.reduce((sum, s) => sum + s.w * s.h, 0);
+	const sizeUnits = sizes.map((s) => {
+		const w = Math.max(1, Math.ceil(s.w / gridSize));
+		const h = Math.max(1, Math.ceil(s.h / gridSize));
+		return { w, h, area: w * h };
+	});
+
+	const indices = nodes.map((_, i) => i);
+	indices.sort((a, b) => {
+		const areaDiff = sizeUnits[b].area - sizeUnits[a].area;
+		if (areaDiff !== 0) return areaDiff;
+		return nodes[a].id.localeCompare(nodes[b].id);
+	});
+
+	const totalArea = sizeUnits.reduce((sum, s) => sum + s.area, 0);
 	const maxWidthUnits = Math.max(...sizeUnits.map((s) => s.w));
 	const preferredColumns =
 		options?.columns ??
@@ -138,40 +147,74 @@ export function computeGridPositions(
 	const avgWidthUnits =
 		sizeUnits.reduce((sum, s) => sum + s.w, 0) / sizeUnits.length;
 	const widthFromColumns = Math.ceil(avgWidthUnits * preferredColumns);
-	const widthUnits = Math.max(
+	const baseWidth = Math.max(
 		maxWidthUnits,
 		widthFromColumns,
 		Math.ceil(Math.sqrt(totalArea)),
 	);
 
-	const skyline = new Array(widthUnits).fill(0);
-	for (let i = 0; i < count; i++) {
-		const rect = sizeUnits[i];
-		const paddedW = rect.w + paddingUnits;
-		const paddedH = rect.h + paddingUnits;
-		let bestX = 0;
-		let bestY = Number.POSITIVE_INFINITY;
-		let bestHeight = Number.POSITIVE_INFINITY;
-		const maxX = Math.max(0, widthUnits - paddedW);
-		for (let x = 0; x <= maxX; x++) {
-			let y = 0;
+	const targetWidthUnits = Math.max(maxWidthUnits, widthFromColumns);
+	const tryWidths = Math.max(6, preferredColumns * 3);
+	const minWidth = Math.max(
+		maxWidthUnits,
+		Math.floor(targetWidthUnits - tryWidths / 2),
+	);
+	const maxWidth = Math.max(
+		minWidth,
+		Math.ceil(targetWidthUnits + tryWidths),
+	);
+	let bestPositions: Array<{ x: number; y: number }> | null = null;
+	let bestScore = Number.POSITIVE_INFINITY;
+
+	for (let widthUnits = minWidth; widthUnits <= maxWidth; widthUnits++) {
+		const skyline = new Array(widthUnits).fill(0);
+		const placed: Array<{ x: number; y: number }> = new Array(count);
+		for (const idx of indices) {
+			const rect = sizeUnits[idx];
+			const paddedW = rect.w + paddingUnits;
+			const paddedH = rect.h + paddingUnits;
+			let bestX = 0;
+			let bestY = Number.POSITIVE_INFINITY;
+			let bestHeight = Number.POSITIVE_INFINITY;
+			const maxX = Math.max(0, widthUnits - paddedW);
+			for (let x = 0; x <= maxX; x++) {
+				let y = 0;
+				for (let j = 0; j < paddedW; j++) {
+					const h = skyline[x + j] ?? 0;
+					if (h > y) y = h;
+				}
+				const heightAfter = y + paddedH;
+				if (
+					heightAfter < bestHeight ||
+					(heightAfter === bestHeight && y < bestY)
+				) {
+					bestHeight = heightAfter;
+					bestY = y;
+					bestX = x;
+				}
+			}
 			for (let j = 0; j < paddedW; j++) {
-				const h = skyline[x + j] ?? 0;
-				if (h > y) y = h;
+				skyline[bestX + j] = bestY + paddedH;
 			}
-			const heightAfter = y + paddedH;
-			if (heightAfter < bestHeight || (heightAfter === bestHeight && y < bestY)) {
-				bestHeight = heightAfter;
-				bestY = y;
-				bestX = x;
-			}
+			placed[idx] = { x: bestX, y: bestY };
 		}
-		for (let j = 0; j < paddedW; j++) {
-			skyline[bestX + j] = bestY + paddedH;
+
+		const maxHeight = Math.max(...skyline);
+		const widthPenalty = Math.abs(widthUnits - targetWidthUnits);
+		const score = maxHeight * widthUnits + widthPenalty * maxHeight * 2;
+		if (score < bestScore) {
+			bestScore = score;
+			bestPositions = placed;
 		}
-		const x = startX + bestX * gridSize;
-		const y = startY + bestY * gridSize;
-		result.set(nodes[i].id, snapPoint({ x, y }, gridSize));
+	}
+
+	if (bestPositions) {
+		for (let i = 0; i < count; i++) {
+			const pos = bestPositions[i] ?? { x: 0, y: 0 };
+			const x = startX + pos.x * gridSize;
+			const y = startY + pos.y * gridSize;
+			result.set(nodes[i].id, snapPoint({ x, y }, gridSize));
+		}
 	}
 
 	return result;
