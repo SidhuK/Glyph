@@ -270,6 +270,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	const frontmatterRef = useRef(frontmatter);
 	const lastAppliedBodyRef = useRef(body);
 	const lastEmittedMarkdownRef = useRef(markdown);
+	const ignoreNextUpdateRef = useRef(false);
 	const suppressUpdateRef = useRef(false);
 
 	useEffect(() => {
@@ -330,6 +331,10 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 				suppressUpdateRef.current = false;
 				return;
 			}
+			if (ignoreNextUpdateRef.current) {
+				ignoreNextUpdateRef.current = false;
+				return;
+			}
 			if (mode !== "rich") return;
 			const nextBody = instance.getMarkdown();
 			const nextMarkdown = mergeFrontmatter(
@@ -345,6 +350,9 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	useEffect(() => {
 		if (!editor) return;
 		editor.setEditable(mode === "rich");
+		if (mode === "rich") {
+			ignoreNextUpdateRef.current = true;
+		}
 	}, [editor, mode]);
 
 	useEffect(() => {

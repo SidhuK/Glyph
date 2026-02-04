@@ -3482,6 +3482,12 @@ button.segBtn.active {
 
 .tiptapContentInline li[data-type="taskItem"] > div {
 	min-width: 0;
+	display: inline;
+}
+
+.tiptapContentInline li[data-type="taskItem"] p {
+	margin: 0;
+	display: inline;
 }
 
 .slashCommandMenu {
