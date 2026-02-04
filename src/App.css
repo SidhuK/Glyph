@@ -2998,43 +2998,53 @@ button.segBtn.active {
 	outline: none;
 }
 
+/* Hide the "React Flow" attribution badge */
+.react-flow__attribution,
+.xy-flow__attribution {
+	display: none !important;
+}
+
+/* Solid canvas background (no dots/grid). */
+.canvasBody .react-flow {
+	background: var(--bg-canvas);
+}
+
 /* ReactFlow controls */
 .react-flow__controls {
 	box-shadow: var(--shadow-lg);
 	border-radius: var(--radius-xl);
-	border: 1px solid var(--border-light);
+	border: 1px solid var(--border-default);
 	overflow: hidden;
-	background: var(--glass-bg);
-	backdrop-filter: blur(var(--glass-blur));
-	-webkit-backdrop-filter: blur(var(--glass-blur));
+	background: var(--bg-secondary);
 }
 
 .react-flow__controls-button {
 	background: transparent;
 	border: none;
-	border-bottom: 1px solid var(--border-light);
+	border-bottom: 1px solid var(--border-default);
 	width: 32px;
 	height: 32px;
 	transition: all var(--transition-fast);
+	color: var(--text-secondary);
 }
 
 .react-flow__controls-button:hover {
 	background: var(--bg-hover);
+	color: var(--text-primary);
 }
 
 .react-flow__controls-button svg {
-	fill: var(--text-secondary);
+	fill: currentColor;
+	stroke: currentColor;
 	max-width: 14px;
 	max-height: 14px;
 }
 
 /* ReactFlow minimap */
 .react-flow__minimap {
-	background: var(--glass-bg);
-	backdrop-filter: blur(var(--glass-blur));
-	-webkit-backdrop-filter: blur(var(--glass-blur));
+	background: var(--bg-secondary);
 	border-radius: var(--radius-xl);
-	border: 1px solid var(--border-light);
+	border: 1px solid var(--border-default);
 	box-shadow: var(--shadow-md);
 }
 

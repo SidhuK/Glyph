@@ -3,7 +3,6 @@ import "@xyflow/react/dist/style.css";
 import { convertFileSrc } from "@tauri-apps/api/core";
 import { join } from "@tauri-apps/api/path";
 import {
-	Background,
 	type Connection,
 	Controls,
 	type Edge,
@@ -2117,6 +2116,30 @@ export default function CanvasPane({
 	// Show loading overlay while bulk loading
 	const showLoading = isBulkLoad && nodes.length > BULK_LOAD_THRESHOLD;
 
+	const flowThemeVars = useMemo(
+		() =>
+			({
+				// Keep ReactFlow chrome aligned with our design tokens (works for both light/dark).
+				["--xy-background-color" as never]: "var(--bg-canvas)",
+
+				["--xy-controls-button-background-color" as never]: "var(--bg-secondary)",
+				["--xy-controls-button-background-color-hover" as never]: "var(--bg-hover)",
+				["--xy-controls-button-color" as never]: "var(--text-secondary)",
+				["--xy-controls-button-color-hover" as never]: "var(--text-primary)",
+				["--xy-controls-button-border-color" as never]: "var(--border-default)",
+				["--xy-controls-box-shadow" as never]: "var(--shadow-lg)",
+
+				["--xy-minimap-background-color" as never]: "var(--bg-secondary)",
+				["--xy-minimap-mask-background-color" as never]: "var(--selection-bg)",
+				["--xy-minimap-mask-stroke-color" as never]: "var(--border-default)",
+				["--xy-minimap-mask-stroke-width" as never]: "1",
+				["--xy-minimap-node-background-color" as never]: "var(--bg-tertiary)",
+				["--xy-minimap-node-stroke-color" as never]: "var(--border-default)",
+				["--xy-minimap-node-stroke-width" as never]: "1",
+			}) as React.CSSProperties,
+		[],
+	);
+
 	const openInlineEditorForNodeId = useCallback(
 		(nodeId: string) => {
 			const node = nodesRef.current.find((n) => n.id === nodeId);
@@ -2329,12 +2352,12 @@ export default function CanvasPane({
 							nodeTypes={nodeTypes}
 							snapToGrid={snapToGrid}
 							snapGrid={[16, 16]}
+							style={flowThemeVars}
 							onInit={(instance) => {
 								flowRef.current = instance;
 								instance.fitView();
 							}}
 						>
-							<Background />
 							<MiniMap />
 							<Controls />
 						</ReactFlow>
