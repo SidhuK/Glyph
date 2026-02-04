@@ -288,6 +288,18 @@ export async function buildFolderViewDoc(
 			.filter((e) => e.kind === "file")
 			.map((e) => [e.rel_path, e] as const),
 	);
+	if (recursive) {
+		const recursiveNotes = await invoke("vault_list_markdown_files", {
+			dir: v.selector || null,
+			recursive: true,
+			limit,
+		});
+		for (const e of recursiveNotes as FsEntry[]) {
+			if (!e?.rel_path) continue;
+			if (fileByRel.has(e.rel_path)) continue;
+			fileByRel.set(e.rel_path, e);
+		}
+	}
 
 	const alpha: FsEntry[] = [...fileByRel.values()]
 		.sort((a, b) =>

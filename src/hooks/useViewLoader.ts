@@ -56,7 +56,7 @@ export function useViewLoader(deps: UseViewLoaderDeps): UseViewLoaderResult {
 				const buildAndSet = async () => {
 					const built = await buildFolderViewDoc(
 						dir,
-						{ recursive: false, limit: 500 },
+						{ recursive: true, limit: 500 },
 						existingDoc,
 					);
 					if (!existingDoc || built.changed) {
