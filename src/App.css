@@ -2955,6 +2955,13 @@ button.segBtn.active {
 	pointer-events: none;
 }
 
+@media (prefers-color-scheme: dark) {
+	.rfNodeNote {
+		background: var(--bg-tertiary);
+		border-color: var(--border-default);
+	}
+}
+
 .react-flow__node.selected .rfNodeNoteOpenBtn,
 .rfNodeNote:hover .rfNodeNoteOpenBtn {
 	opacity: 1;
