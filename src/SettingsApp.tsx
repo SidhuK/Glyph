@@ -1,8 +1,9 @@
 import { listen } from "@tauri-apps/api/event";
+import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 import "./App.css";
-import { Settings as SettingsIcon, Sparkles } from "./components/Icons";
-import { MotionIconButton } from "./components/MotionUI";
+import { FolderOpen, Settings as SettingsIcon, Sparkles } from "./components/Icons";
+import { MotionIconButton, MotionInput } from "./components/MotionUI";
 import { AiSettingsPane } from "./components/settings/AiSettingsPane";
 import { GeneralSettingsPane } from "./components/settings/GeneralSettingsPane";
 import { VaultSettingsPane } from "./components/settings/VaultSettingsPane";
@@ -56,8 +57,35 @@ export default function SettingsApp() {
 		return "General";
 	}, [tab]);
 
+	const tabs: Array<{
+		id: SettingsTab;
+		label: string;
+		description: string;
+		icon: typeof SettingsIcon;
+	}> = [
+		{
+			id: "general",
+			label: "General",
+			description: "Appearance, typography, accessibility",
+			icon: SettingsIcon,
+		},
+		{
+			id: "vault",
+			label: "Vault",
+			description: "Storage, indexing, backups",
+			icon: FolderOpen,
+		},
+		{
+			id: "ai",
+			label: "AI",
+			description: "Providers, defaults, safety",
+			icon: Sparkles,
+		},
+	];
+
 	return (
 		<div className="settingsShell">
+			<div className="settingsBackdrop" aria-hidden="true" />
 			<div className="settingsHeader" data-tauri-drag-region>
 				<div className="settingsHeaderLeft">
 					<div className="settingsHeaderTitle">
@@ -67,6 +95,12 @@ export default function SettingsApp() {
 					<div className="settingsHeaderSubtitle">{title}</div>
 				</div>
 				<div className="settingsHeaderRight">
+					<div className="settingsSearch" data-window-drag-ignore>
+						<MotionInput
+							className="settingsSearchInput"
+							placeholder="Search settings"
+						/>
+					</div>
 					<MotionIconButton
 						type="button"
 						size="sm"
@@ -81,33 +115,77 @@ export default function SettingsApp() {
 
 			<div className="settingsBody">
 				<nav className="settingsNav" data-window-drag-ignore>
-					<button
-						type="button"
-						className={tab === "general" ? "active" : ""}
-						onClick={() => setSettingsHash("general")}
-					>
-						General
-					</button>
-					<button
-						type="button"
-						className={tab === "vault" ? "active" : ""}
-						onClick={() => setSettingsHash("vault")}
-					>
-						Vault
-					</button>
-					<button
-						type="button"
-						className={tab === "ai" ? "active" : ""}
-						onClick={() => setSettingsHash("ai")}
-					>
-						AI
-					</button>
+					{tabs.map((item) => {
+						const Icon = item.icon;
+						const isActive = tab === item.id;
+						return (
+							<motion.button
+								key={item.id}
+								type="button"
+								className={`settingsNavButton ${isActive ? "active" : ""}`}
+								onClick={() => setSettingsHash(item.id)}
+								whileHover={{ x: 4 }}
+								whileTap={{ scale: 0.98 }}
+								transition={{ type: "spring", stiffness: 320, damping: 24 }}
+							>
+								<span className="settingsNavIcon">
+									<Icon size={16} />
+								</span>
+								<span className="settingsNavText">
+									<span>{item.label}</span>
+									<span className="settingsNavHint">{item.description}</span>
+								</span>
+								{isActive ? (
+									<motion.span
+										className="settingsNavActive"
+										layoutId="settingsNavActive"
+										transition={{ type: "spring", stiffness: 360, damping: 28 }}
+									/>
+								) : null}
+							</motion.button>
+						);
+					})}
 				</nav>
 
 				<main className="settingsMain" data-window-drag-ignore>
-					{tab === "general" ? <GeneralSettingsPane /> : null}
-					{tab === "vault" ? <VaultSettingsPane /> : null}
-					{tab === "ai" ? <AiSettingsPane /> : null}
+					<AnimatePresence mode="wait">
+						{tab === "general" ? (
+							<motion.div
+								key="general"
+								className="settingsPaneMotion"
+								initial={{ opacity: 0, y: 10 }}
+								animate={{ opacity: 1, y: 0 }}
+								exit={{ opacity: 0, y: -8 }}
+								transition={{ duration: 0.2 }}
+							>
+								<GeneralSettingsPane />
+							</motion.div>
+						) : null}
+						{tab === "vault" ? (
+							<motion.div
+								key="vault"
+								className="settingsPaneMotion"
+								initial={{ opacity: 0, y: 10 }}
+								animate={{ opacity: 1, y: 0 }}
+								exit={{ opacity: 0, y: -8 }}
+								transition={{ duration: 0.2 }}
+							>
+								<VaultSettingsPane />
+							</motion.div>
+						) : null}
+						{tab === "ai" ? (
+							<motion.div
+								key="ai"
+								className="settingsPaneMotion"
+								initial={{ opacity: 0, y: 10 }}
+								animate={{ opacity: 1, y: 0 }}
+								exit={{ opacity: 0, y: -8 }}
+								transition={{ duration: 0.2 }}
+							>
+								<AiSettingsPane />
+							</motion.div>
+						) : null}
+					</AnimatePresence>
 				</main>
 			</div>
 		</div>
