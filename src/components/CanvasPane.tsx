@@ -155,6 +155,18 @@ function getStickyColor(id: string) {
 	return STICKY_COLORS[getNodeHash(id) % STICKY_COLORS.length];
 }
 
+function formatNoteMtime(mtimeMs: number | null): string {
+	if (!mtimeMs) return "";
+	const date = new Date(mtimeMs);
+	const now = new Date();
+	const sameYear = date.getFullYear() === now.getFullYear();
+	return new Intl.DateTimeFormat(undefined, {
+		month: "short",
+		day: "numeric",
+		year: sameYear ? undefined : "numeric",
+	}).format(date);
+}
+
 type CanvasActions = {
 	openNote: (relPath: string) => void;
 	openFolder: (dir: string) => void;
@@ -211,6 +223,7 @@ const NoteNode = memo(function NoteNode({
 	const title = typeof data.title === "string" ? data.title : "Note";
 	const noteId = typeof data.noteId === "string" ? data.noteId : id;
 	const content = typeof data.content === "string" ? data.content : "";
+	const mtimeMs = typeof data.mtimeMs === "number" ? data.mtimeMs : null;
 	const {
 		session,
 		openEditor,
@@ -223,7 +236,7 @@ const NoteNode = memo(function NoteNode({
 	} = useCanvasNoteEdit();
 	const isEditing = session?.noteId === noteId;
 	const rotation = isEditing ? 0 : getNodeRotation(id);
-	const color = getStickyColor(id);
+	const updatedLabel = formatNoteMtime(mtimeMs);
 
 	// Analyze content for better sizing
 	const hasContent = content.length > 0;
@@ -258,8 +271,6 @@ const NoteNode = memo(function NoteNode({
 
 	// Generate dynamic style with random variations
 	const dynamicStyle = {
-		background: color.bg,
-		borderColor: color.border,
 		width:
 			randomWidth !== 0
 				? `calc(var(--base-width, 200px) + ${randomWidth}px)`
@@ -424,17 +435,22 @@ const NoteNode = memo(function NoteNode({
 				<>
 					<div className="rfNodeNoteHeader">
 						<div className="rfNodeNoteTitle">{title}</div>
-						<button
-							type="button"
-							className="iconBtn sm rfNodeNoteOpenBtn nodrag nopan"
-							title="Edit"
-							onClick={(e) => {
-								e.stopPropagation();
-								openEditor(id);
-							}}
-						>
-							<Edit size={14} />
-						</button>
+						<div className="rfNodeNoteMeta">
+							{updatedLabel ? (
+								<div className="rfNodeNoteTimestamp">{updatedLabel}</div>
+							) : null}
+							<button
+								type="button"
+								className="iconBtn sm rfNodeNoteOpenBtn nodrag nopan"
+								title="Edit"
+								onClick={(e) => {
+									e.stopPropagation();
+									openEditor(id);
+								}}
+							>
+								<Edit size={14} />
+							</button>
+						</div>
 					</div>
 					{hasContent && <div className="rfNodeNoteContent">{content}</div>}
 				</>
@@ -740,6 +756,7 @@ export default function CanvasPane({
 
 	const noteEditLoadSeqRef = useRef(0);
 	const noteEditSessionRef = useRef<CanvasNoteEditSession | null>(null);
+	const notePreviewLoadRef = useRef(new Set<string>());
 	const pendingApplyMarkdownRef = useRef<{
 		noteId: string;
 		markdown: string;
@@ -794,6 +811,49 @@ export default function CanvasPane({
 		});
 	}, [setNodes]);
 
+	useEffect(() => {
+		if (!nodes.length) return;
+		const loading = notePreviewLoadRef.current;
+		nodes.forEach((node) => {
+			if (node.type !== "note") return;
+			const data = (node.data as Record<string, unknown> | null) ?? null;
+			const noteId =
+				typeof data?.noteId === "string"
+					? data.noteId
+					: typeof node.id === "string"
+						? node.id
+						: "";
+			if (!noteId) return;
+			if (noteEditSessionRef.current?.noteId === noteId) return;
+			if (loading.has(noteId)) return;
+			loading.add(noteId);
+			void (async () => {
+				try {
+					const doc = await invoke("vault_read_text", { path: noteId });
+					const preview = parseNotePreview(noteId, doc.text);
+					setNodes((prev) =>
+						prev.map((n) =>
+							n.id === node.id
+								? {
+										...n,
+										data: {
+											...(n.data ?? {}),
+											noteId,
+											title: preview.title,
+											content: preview.content,
+											mtimeMs: doc.mtime_ms,
+										},
+									}
+								: n,
+						),
+					);
+				} catch {
+					loading.delete(noteId);
+				}
+			})();
+		});
+	}, [nodes, setNodes]);
+
 	const saveInlineNote = useCallback(
 		async (markdown: string, opts?: { forceOverwrite?: boolean }) => {
 			const s = noteEditSessionRef.current;
@@ -831,6 +891,7 @@ export default function CanvasPane({
 										noteId: s.noteId,
 										title: preview.title,
 										content: preview.content,
+										mtimeMs: res.mtime_ms,
 									},
 								}
 							: n,
@@ -986,6 +1047,23 @@ export default function CanvasPane({
 			try {
 				const doc = await invoke("vault_read_text", { path: noteId });
 				if (seq !== noteEditLoadSeqRef.current) return;
+				const preview = parseNotePreview(noteId, doc.text);
+				setNodes((prev) =>
+					prev.map((n) =>
+						n.id === node.id
+							? {
+									...n,
+									data: {
+										...(n.data ?? {}),
+										noteId,
+										title: preview.title,
+										content: preview.content,
+										mtimeMs: doc.mtime_ms,
+									},
+								}
+							: n,
+					),
+				);
 				setNoteEditSession((prev) => {
 					if (!prev || prev.noteId !== noteId) return prev;
 					return {
