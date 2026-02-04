@@ -1,5 +1,10 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { type LinkPreview, TauriInvokeError, invoke } from "../../lib/tauri";
+import {
+	type FsEntry,
+	type LinkPreview,
+	TauriInvokeError,
+	invoke,
+} from "../../lib/tauri";
 import type { CanvasDocLike } from "../CanvasPane";
 
 export type SelectedCanvasNode = {
@@ -8,7 +13,12 @@ export type SelectedCanvasNode = {
 	data: Record<string, unknown> | null;
 };
 
+type ContextScope = "folder" | "vault" | "manual";
+
 type ContextSpec = {
+	scope: ContextScope;
+	scopeFolder: string;
+	manualFiles: string[];
 	neighborDepth: 0 | 1 | 2;
 	includeNoteContents: boolean;
 	includeLinkPreviewText: boolean;
@@ -32,6 +42,12 @@ export type ContextManifest = {
 	estTokens: number;
 };
 
+type ContextFileEntry = {
+	path: string;
+	name: string;
+	isMarkdown: boolean;
+};
+
 function errMessage(err: unknown): string {
 	if (err instanceof TauriInvokeError) return err.message;
 	if (err instanceof Error) return err.message;
@@ -46,6 +62,11 @@ function clampInt(n: number, min: number, max: number): number {
 function estimateTokens(chars: number): number {
 	return Math.ceil(chars / 4);
 }
+
+const FILE_LIST_LIMIT = 20_000;
+const MAX_CONTEXT_FILES = 120;
+const DEFAULT_AUTO_SELECT = 8;
+const MAX_VISIBLE_FILES = 200;
 
 function isUuid(id: string): boolean {
 	return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
@@ -68,15 +89,28 @@ export function useAiContext({
 	activeNoteId,
 	activeNoteTitle,
 	activeNoteMarkdown,
+	activeFolderPath,
 	selectedCanvasNodes,
 	canvasDoc,
 }: {
 	activeNoteId: string | null;
 	activeNoteTitle: string | null;
 	activeNoteMarkdown?: string | null;
+	activeFolderPath: string | null;
 	selectedCanvasNodes: SelectedCanvasNode[];
 	canvasDoc: CanvasDocLike | null;
 }) {
+	const [scope, setScope] = useState<ContextScope>("folder");
+	const [scopeFolder, setScopeFolder] = useState("");
+	const [followActiveFolder, setFollowActiveFolder] = useState(true);
+	const [manualFiles, setManualFiles] = useState<string[]>([]);
+	const [contextSearch, setContextSearch] = useState("");
+	const [candidateFiles, setCandidateFiles] = useState<ContextFileEntry[]>([]);
+	const [candidateTotal, setCandidateTotal] = useState(0);
+	const [candidateError, setCandidateError] = useState("");
+	const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
+	const [selectionTouched, setSelectionTouched] = useState(false);
+
 	const [includeActiveNote, setIncludeActiveNote] = useState(true);
 	const [includeSelectedNodes, setIncludeSelectedNodes] = useState(true);
 	const [includeNoteContents, setIncludeNoteContents] = useState(true);
@@ -89,11 +123,13 @@ export function useAiContext({
 	const [payloadManifest, setPayloadManifest] =
 		useState<ContextManifest | null>(null);
 	const [payloadError, setPayloadError] = useState("");
+	const [payloadBuilding, setPayloadBuilding] = useState(false);
 
 	const noteCacheRef = useRef<Map<string, { title: string; markdown: string }>>(
 		new Map(),
 	);
 	const linkPreviewCacheRef = useRef<Map<string, LinkPreview>>(new Map());
+	const fileListCacheRef = useRef<Map<string, ContextFileEntry[]>>(new Map());
 
 	const getNote = useCallback(async (noteId: string) => {
 		const cached = noteCacheRef.current.get(noteId);
@@ -124,8 +160,125 @@ export function useAiContext({
 		}
 	}, []);
 
+	const toFileEntry = useCallback((entry: FsEntry): ContextFileEntry => {
+		return {
+			path: entry.rel_path,
+			name: entry.name,
+			isMarkdown: entry.is_markdown,
+		};
+	}, []);
+
+	useEffect(() => {
+		if (scope !== "folder") return;
+		if (!followActiveFolder) return;
+		setScopeFolder(activeFolderPath ?? "");
+		setSelectionTouched(false);
+	}, [activeFolderPath, followActiveFolder, scope]);
+
+	const listScopeDir = useMemo(() => {
+		if (scope === "folder") return scopeFolder || "";
+		return "";
+	}, [scope, scopeFolder]);
+
+	useEffect(() => {
+		if (scope === "manual" && !listScopeDir) {
+			// Manual scope still uses vault-wide list for selection.
+		}
+		let cancelled = false;
+		const key = `${scope}:${listScopeDir}`;
+		const cached = fileListCacheRef.current.get(key);
+		if (cached) {
+			setCandidateFiles(cached);
+			setCandidateTotal(cached.length);
+			setCandidateError("");
+			return;
+		}
+		setCandidateError("");
+		setCandidateFiles([]);
+		setCandidateTotal(0);
+		void (async () => {
+			try {
+				const entries = await invoke("vault_list_files", {
+					dir: listScopeDir || null,
+					recursive: true,
+					limit: FILE_LIST_LIMIT,
+				});
+				if (cancelled) return;
+				const files = entries
+					.filter((e) => e.kind === "file")
+					.map((e) => toFileEntry(e));
+				fileListCacheRef.current.set(key, files);
+				setCandidateFiles(files);
+				setCandidateTotal(files.length);
+			} catch (e) {
+				if (cancelled) return;
+				setCandidateError(errMessage(e));
+			}
+		})();
+		return () => {
+			cancelled = true;
+		};
+	}, [listScopeDir, scope, toFileEntry]);
+
+	const filteredFiles = useMemo(() => {
+		const q = contextSearch.trim().toLowerCase();
+		if (!q) return candidateFiles;
+		return candidateFiles.filter((f) => {
+			const name = f.name.toLowerCase();
+			const path = f.path.toLowerCase();
+			return name.includes(q) || path.includes(q);
+		});
+	}, [candidateFiles, contextSearch]);
+
+	const visibleFiles = useMemo(
+		() => filteredFiles.slice(0, MAX_VISIBLE_FILES),
+		[filteredFiles],
+	);
+
+	useEffect(() => {
+		setSelectionTouched(false);
+		if (scope === "manual") {
+			setSelectedFiles(manualFiles);
+		}
+	}, [manualFiles, scope]);
+
+	useEffect(() => {
+		if (scope === "manual") {
+			setSelectedFiles(manualFiles);
+			return;
+		}
+		if (selectionTouched) return;
+		setSelectedFiles(candidateFiles.slice(0, DEFAULT_AUTO_SELECT).map((f) => f.path));
+	}, [candidateFiles, manualFiles, scope, selectionTouched]);
+
+	const toggleSelectedFile = useCallback(
+		(path: string) => {
+			if (!path.trim()) return;
+			setSelectionTouched(true);
+			setSelectedFiles((prev) => {
+				if (prev.includes(path)) {
+					const next = prev.filter((p) => p !== path);
+					if (scope === "manual") setManualFiles(next);
+					return next;
+				}
+				const next = [...prev, path];
+				if (scope === "manual") setManualFiles(next);
+				return next;
+			});
+		},
+		[scope],
+	);
+
+	const removeManualFile = useCallback((path: string) => {
+		if (!path.trim()) return;
+		setManualFiles((prev) => prev.filter((p) => p !== path));
+	}, []);
+
 	const contextSpec = useMemo<ContextSpec>(
 		() => ({
+			scope,
+			scopeFolder: scopeFolder || "",
+			manualFiles,
 			neighborDepth,
 			includeNoteContents,
 			includeLinkPreviewText,
@@ -140,6 +293,9 @@ export function useAiContext({
 			includeNoteContents,
 			includeSelectedNodes,
 			neighborDepth,
+			manualFiles,
+			scope,
+			scopeFolder,
 		],
 	);
 
@@ -147,13 +303,26 @@ export function useAiContext({
 		const selectedIds = selectedCanvasNodes.map((n) => n.id).join(",");
 		const noteKey = activeNoteId ? `${activeNoteId}` : "";
 		const canvasKey = canvasDoc?.id ?? "";
+		const fileKey =
+			scope === "manual"
+				? manualFiles.join(",")
+				: selectedFiles.join(",");
 		return JSON.stringify({
 			selectedIds,
 			noteKey,
 			canvasKey,
+			fileKey,
 			contextSpec,
 		});
-	}, [activeNoteId, canvasDoc?.id, contextSpec, selectedCanvasNodes]);
+	}, [
+		activeNoteId,
+		canvasDoc?.id,
+		contextSpec,
+		manualFiles,
+		scope,
+		selectedCanvasNodes,
+		selectedFiles,
+	]);
 
 	useEffect(() => {
 		void payloadInvalidationKey;
@@ -164,6 +333,7 @@ export function useAiContext({
 	const buildPayload = useCallback(async () => {
 		setPayloadError("");
 		setPayloadApproved(false);
+		setPayloadBuilding(true);
 
 		try {
 			const items: ContextManifestItem[] = [];
@@ -345,6 +515,33 @@ export function useAiContext({
 				}
 			}
 
+			const filePaths =
+				contextSpec.scope === "manual" ? manualFiles : selectedFiles;
+			const uniquePaths = Array.from(
+				new Set(filePaths.map((p) => p.trim()).filter(Boolean)),
+			).slice(0, MAX_CONTEXT_FILES);
+			if (uniquePaths.length) {
+				const docs = await invoke("vault_read_texts_batch", {
+					paths: uniquePaths,
+				});
+				for (const doc of docs) {
+					if (!remaining) break;
+					if (doc.text && !doc.error) {
+						const header = `# File: ${doc.rel_path}`.trim();
+						const body = doc.text.trim();
+						const content = body ? `${header}\n\n${body}` : header;
+						pushItem("file", doc.rel_path, content);
+						continue;
+					}
+					const error = doc.error ?? "Unable to read file";
+					pushItem(
+						"file_error",
+						doc.rel_path,
+						`# File Error: ${doc.rel_path}\n${error}`,
+					);
+				}
+			}
+
 			const payload = parts.join("\n\n---\n\n").trim();
 			const totalChars = payload.length;
 			const manifest: ContextManifest = {
@@ -355,8 +552,12 @@ export function useAiContext({
 			};
 			setPayloadPreview(payload);
 			setPayloadManifest(manifest);
+			return { payload, manifest };
 		} catch (e) {
 			setPayloadError(errMessage(e));
+			return { payload: "", manifest: null };
+		} finally {
+			setPayloadBuilding(false);
 		}
 	}, [
 		activeNoteId,
@@ -366,10 +567,46 @@ export function useAiContext({
 		contextSpec,
 		getLinkPreview,
 		getNote,
+		manualFiles,
 		selectedCanvasNodes,
+		selectedFiles,
 	]);
 
+	const ensurePayload = useCallback(async () => {
+		if (payloadManifest && payloadApproved)
+			return { payload: payloadPreview, manifest: payloadManifest };
+		const result = await buildPayload();
+		setPayloadApproved(true);
+		return result;
+	}, [buildPayload, payloadApproved, payloadManifest, payloadPreview]);
+
+	useEffect(() => {
+		const handle = window.setTimeout(() => {
+			void ensurePayload();
+		}, 350);
+		return () => window.clearTimeout(handle);
+	}, [ensurePayload, payloadInvalidationKey]);
+
 	return {
+		scope,
+		setScope,
+		scopeFolder,
+		setScopeFolder,
+		followActiveFolder,
+		setFollowActiveFolder,
+		manualFiles,
+		setManualFiles,
+		contextSearch,
+		setContextSearch,
+		candidateFiles,
+		candidateTotal,
+		candidateError,
+		filteredFiles,
+		visibleFiles,
+		selectedFiles,
+		setSelectedFiles,
+		toggleSelectedFile,
+		removeManualFile,
 		contextSpec,
 		includeActiveNote,
 		setIncludeActiveNote,
@@ -388,6 +625,8 @@ export function useAiContext({
 		payloadApproved,
 		setPayloadApproved,
 		payloadError,
+		payloadBuilding,
 		buildPayload,
+		ensurePayload,
 	};
 }
