@@ -121,42 +121,56 @@ export function computeGridPositions(
 
 	const gridSize = options?.gridSize ?? GRID_SIZE;
 	const gap = options?.gap ?? GRID_GAP;
-	const columns =
-		options?.columns ??
-		Math.max(2, Math.min(6, Math.ceil(Math.sqrt(count))));
 	const startX = options?.startX ?? 0;
 	const startY = options?.startY ?? 0;
 
 	const sizes = nodes.map((n) => estimateNodeSize(n));
+	const paddingUnits = Math.max(1, Math.round(gap / gridSize));
+	const sizeUnits = sizes.map((s) => ({
+		w: Math.max(1, Math.ceil(s.w / gridSize)),
+		h: Math.max(1, Math.ceil(s.h / gridSize)),
+	}));
+	const totalArea = sizeUnits.reduce((sum, s) => sum + s.w * s.h, 0);
+	const maxWidthUnits = Math.max(...sizeUnits.map((s) => s.w));
+	const preferredColumns =
+		options?.columns ??
+		Math.max(2, Math.min(8, Math.ceil(Math.sqrt(count))));
+	const avgWidthUnits =
+		sizeUnits.reduce((sum, s) => sum + s.w, 0) / sizeUnits.length;
+	const widthFromColumns = Math.ceil(avgWidthUnits * preferredColumns);
+	const widthUnits = Math.max(
+		maxWidthUnits,
+		widthFromColumns,
+		Math.ceil(Math.sqrt(totalArea)),
+	);
 
-	const columnWidths: number[] = new Array(columns).fill(0);
-	const rowHeights: number[] = [];
+	const skyline = new Array(widthUnits).fill(0);
 	for (let i = 0; i < count; i++) {
-		const row = Math.floor(i / columns);
-		const col = i % columns;
-		const size = sizes[i] ?? { w: 0, h: 0 };
-		columnWidths[col] = Math.max(columnWidths[col] ?? 0, size.w);
-		rowHeights[row] = Math.max(rowHeights[row] ?? 0, size.h);
-	}
-
-	const colOffsets: number[] = [];
-	const rowOffsets: number[] = [];
-	let accX = 0;
-	for (let c = 0; c < columnWidths.length; c++) {
-		colOffsets[c] = accX;
-		accX += columnWidths[c] + gap;
-	}
-	let accY = 0;
-	for (let r = 0; r < rowHeights.length; r++) {
-		rowOffsets[r] = accY;
-		accY += rowHeights[r] + gap;
-	}
-
-	for (let i = 0; i < count; i++) {
-		const row = Math.floor(i / columns);
-		const col = i % columns;
-		const x = startX + (colOffsets[col] ?? 0);
-		const y = startY + (rowOffsets[row] ?? 0);
+		const rect = sizeUnits[i];
+		const paddedW = rect.w + paddingUnits;
+		const paddedH = rect.h + paddingUnits;
+		let bestX = 0;
+		let bestY = Number.POSITIVE_INFINITY;
+		let bestHeight = Number.POSITIVE_INFINITY;
+		const maxX = Math.max(0, widthUnits - paddedW);
+		for (let x = 0; x <= maxX; x++) {
+			let y = 0;
+			for (let j = 0; j < paddedW; j++) {
+				const h = skyline[x + j] ?? 0;
+				if (h > y) y = h;
+			}
+			const heightAfter = y + paddedH;
+			if (heightAfter < bestHeight || (heightAfter === bestHeight && y < bestY)) {
+				bestHeight = heightAfter;
+				bestY = y;
+				bestX = x;
+			}
+		}
+		for (let j = 0; j < paddedW; j++) {
+			skyline[bestX + j] = bestY + paddedH;
+		}
+		const x = startX + bestX * gridSize;
+		const y = startY + bestY * gridSize;
 		result.set(nodes[i].id, snapPoint({ x, y }, gridSize));
 	}
 
