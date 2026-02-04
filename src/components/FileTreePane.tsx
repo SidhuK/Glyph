@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from "motion/react";
+import type { CSSProperties } from "react";
 import { memo } from "react";
 import type { DirChildSummary, FsEntry } from "../lib/tauri";
 import {
@@ -92,6 +93,12 @@ export const FileTreePane = memo(function FileTreePane({
 		parentDepth: number,
 		parentDirPath: string,
 	) => {
+		const listDepth = parentDepth + 1;
+		const listStyle = {
+			"--tree-depth": listDepth,
+			"--tree-line-x": `${listDepth * 10 + 6}px`,
+			"--tree-line-opacity": listDepth === 0 ? 0 : 0.85,
+		} as CSSProperties;
 		const summaryMap = new Map(
 			(summariesByParentDir[parentDirPath] ?? []).map(
 				(s) => [s.dir_rel_path, s] as const,
@@ -100,6 +107,7 @@ export const FileTreePane = memo(function FileTreePane({
 		return (
 			<motion.ul
 				className="fileTreeList"
+				style={listStyle}
 				initial="hidden"
 				animate="visible"
 				variants={{
@@ -112,6 +120,12 @@ export const FileTreePane = memo(function FileTreePane({
 					const isExpanded = isDir && expandedDirs.has(e.rel_path);
 					const depth = parentDepth + 1;
 					const paddingLeft = 10 + depth * 10;
+					const rowStyle = {
+						paddingLeft,
+						"--tree-line-x": `${depth * 10 + 6}px`,
+						"--row-indent": `${paddingLeft}px`,
+						"--row-line-opacity": depth === 0 ? 0 : 0.85,
+					} as CSSProperties;
 
 					if (isDir) {
 						const children = childrenByDir[e.rel_path];
@@ -136,7 +150,7 @@ export const FileTreePane = memo(function FileTreePane({
 										onSelectDir(e.rel_path);
 										onToggleDir(e.rel_path);
 									}}
-									style={{ paddingLeft }}
+									style={rowStyle}
 									variants={rowVariants}
 									whileHover="hover"
 									whileTap="tap"
@@ -299,7 +313,7 @@ export const FileTreePane = memo(function FileTreePane({
 								type="button"
 								className="fileTreeRow"
 								onClick={() => onOpenFile(e.rel_path)}
-								style={{ paddingLeft }}
+								style={rowStyle}
 								title={`${e.rel_path} (${kindLabel})`}
 								variants={rowVariants}
 								whileHover="hover"

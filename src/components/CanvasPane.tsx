@@ -50,6 +50,7 @@ import {
 	FolderOpen,
 	Frame,
 	Grid3X3,
+	Layout,
 	Link,
 	RefreshCw,
 	RotateCcw,
@@ -58,6 +59,11 @@ import {
 	Type,
 	X,
 } from "./Icons";
+import {
+	GRID_SIZE,
+	computeGridPositions,
+	snapPoint,
+} from "../lib/canvasLayout";
 
 export type CanvasNode = Node<Record<string, unknown>>;
 export type CanvasEdge = Edge<Record<string, unknown>>;
@@ -141,8 +147,8 @@ function getRandomVariation(id: string, min: number, max: number): number {
 	return min + (hash % range);
 }
 
-function getNodeRotation(id: string): number {
-	return ((getNodeHash(id) % 9) - 4) * 0.8; // Range: -3.2 to 3.2 degrees
+function getNodeRotation(_id: string): number {
+	return 0;
 }
 
 function getStickyColor(id: string) {
@@ -710,7 +716,7 @@ export default function CanvasPane({
 
 	const [isSaving, setIsSaving] = useState(false);
 	const [saveError, setSaveError] = useState<string>("");
-	const [snapToGrid, setSnapToGrid] = useState(false);
+	const [snapToGrid, setSnapToGrid] = useState(true);
 
 	// Track if we're in bulk load mode (skip animations for performance)
 	const initialNodeCount = doc?.nodes?.length ?? 0;
@@ -1478,10 +1484,11 @@ export default function CanvasPane({
 		const el = wrapperRef.current;
 		if (!flow || !el) return { x: 0, y: 0 };
 		const rect = el.getBoundingClientRect();
-		return flow.screenToFlowPosition({
+		const pos = flow.screenToFlowPosition({
 			x: rect.left + rect.width / 2,
 			y: rect.top + rect.height / 2,
 		});
+		return snapPoint(pos, GRID_SIZE);
 	}, []);
 
 	const onAddText = useCallback(() => {
@@ -1506,7 +1513,7 @@ export default function CanvasPane({
 			if (!url) return;
 			const nodeId = crypto.randomUUID();
 			setNodes((prev) => {
-				const pos = position ?? flowCenter();
+				const pos = snapPoint(position ?? flowCenter(), GRID_SIZE);
 				return [
 					...prev,
 					{
@@ -1776,6 +1783,28 @@ export default function CanvasPane({
 			}
 		})();
 	}, [selectedLinkNode, setNodes, vaultPath]);
+
+	const onReflowGrid = useCallback(() => {
+		setNodes((prev) => {
+			const layoutCandidates = prev.filter((n) =>
+				["frame", "folder_preview"].includes(n.type ?? "") ? false : true,
+			);
+			if (!layoutCandidates.length) return prev;
+			const positions = computeGridPositions(
+				layoutCandidates.map((n) => ({
+					id: n.id,
+					type: n.type ?? "",
+					data: n.data ?? {},
+				})),
+				{ startX: 0, startY: 0, gridSize: GRID_SIZE },
+			);
+			return prev.map((node) => {
+				const pos = positions.get(node.id);
+				if (!pos) return node;
+				return { ...node, position: pos };
+			});
+		});
+	}, [setNodes]);
 
 	useEffect(() => {
 		onSelectionChange?.(selectedNodes);
@@ -2259,6 +2288,14 @@ export default function CanvasPane({
 							>
 								<Grid3X3 size={16} />
 							</button>
+							<button
+								type="button"
+								className="iconBtn"
+								onClick={onReflowGrid}
+								title="Reflow to grid"
+							>
+								<Layout size={16} />
+							</button>
 							<span className="toolbarDivider" />
 							<button
 								type="button"
@@ -2353,7 +2390,7 @@ export default function CanvasPane({
 							onNodeDoubleClick={onNodeDoubleClick}
 							nodeTypes={nodeTypes}
 							snapToGrid={snapToGrid}
-							snapGrid={[16, 16]}
+							snapGrid={[GRID_SIZE, GRID_SIZE]}
 							style={flowThemeVars}
 							onInit={(instance) => {
 								flowRef.current = instance;

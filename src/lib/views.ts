@@ -1,3 +1,9 @@
+import {
+	GRID_GAP,
+	computeGridPositions,
+	estimateNodeSize,
+	snapPoint,
+} from "./canvasLayout";
 import { parseNotePreview, titleForFile } from "./notePreview";
 import type { CanvasEdge, CanvasNode, FsEntry } from "./tauri";
 import { invoke } from "./tauri";
@@ -171,11 +177,19 @@ export async function saveViewDoc(path: string, doc: ViewDoc): Promise<void> {
 	});
 }
 
-function defaultPositionForIndex(i: number): { x: number; y: number } {
-	const cols = 5;
-	const col = i % cols;
-	const row = Math.floor(i / cols);
-	return { x: col * 340, y: row * 300 };
+function maxBottomForNodes(nodes: CanvasNode[]): number {
+	let maxBottom = 0;
+	for (const node of nodes) {
+		if (!node?.position) continue;
+		const size = estimateNodeSize({
+			id: node.id,
+			type: node.type ?? "",
+			data: node.data ?? {},
+		});
+		const bottom = node.position.y + size.h;
+		if (bottom > maxBottom) maxBottom = bottom;
+	}
+	return maxBottom;
 }
 
 export class NeedsIndexRebuildError extends Error {
@@ -333,6 +347,7 @@ export async function buildFolderViewDoc(
 
 	const prevById = new Map(normalizedPrevNodes.map((n) => [n.id, n] as const));
 	const nextNodes: CanvasNode[] = [];
+	const newNodes: CanvasNode[] = [];
 
 	// Root files only (notes + non-markdown files)
 	for (let i = 0; i < rootFiles.length; i++) {
@@ -345,6 +360,7 @@ export async function buildFolderViewDoc(
 				const noteData = noteContents.get(relPath);
 				nextNodes.push({
 					...existingNode,
+					position: snapPoint(existingNode.position ?? { x: 0, y: 0 }),
 					data: {
 						...existingNode.data,
 						title:
@@ -355,18 +371,20 @@ export async function buildFolderViewDoc(
 					},
 				});
 			} else {
-				nextNodes.push(existingNode);
+				nextNodes.push({
+					...existingNode,
+					position: snapPoint(existingNode.position ?? { x: 0, y: 0 }),
+				});
 			}
 			continue;
 		}
 
 		const isMarkdown = Boolean(f.is_markdown);
 		const noteData = isMarkdown ? noteContents.get(relPath) : null;
-		const p = defaultPositionForIndex(i);
-		nextNodes.push({
+		const node: CanvasNode = {
 			id: relPath,
 			type: isMarkdown ? "note" : "file",
-			position: { x: p.x, y: p.y },
+			position: { x: 0, y: 0 },
 			data: isMarkdown
 				? {
 						noteId: relPath,
@@ -374,7 +392,9 @@ export async function buildFolderViewDoc(
 						content: noteData?.content || "",
 					}
 				: { path: relPath, title: basename(relPath) },
-		});
+		};
+		nextNodes.push(node);
+		newNodes.push(node);
 	}
 
 	// Preserve non-derived nodes (text/link/user frames/etc.)
@@ -392,7 +412,30 @@ export async function buildFolderViewDoc(
 			n.id.startsWith("folder:")
 		)
 			continue;
-		nextNodes.push(n);
+		nextNodes.push({
+			...n,
+			position: snapPoint(n.position ?? { x: 0, y: 0 }),
+		});
+	}
+
+	if (newNodes.length > 0) {
+		const shouldLayoutAll = !prev || prevNodes.length === 0;
+		const baseNodes = shouldLayoutAll ? nextNodes : newNodes;
+		const startY = shouldLayoutAll
+			? 0
+			: maxBottomForNodes(nextNodes) + GRID_GAP * 2;
+		const positions = computeGridPositions(
+			baseNodes.map((n) => ({
+				id: n.id,
+				type: n.type ?? "",
+				data: n.data ?? {},
+			})),
+			{ startX: 0, startY },
+		);
+		for (const node of baseNodes) {
+			const pos = positions.get(node.id);
+			if (pos) node.position = pos;
+		}
 	}
 
 	const nextIds = new Set(nextNodes.map((n) => n.id));
@@ -447,6 +490,7 @@ export async function buildSearchViewDoc(
 	);
 
 	const nextNodes: CanvasNode[] = [];
+	const newNodes: CanvasNode[] = [];
 	for (let i = 0; i < ids.length; i++) {
 		const relPath = ids[i] as string;
 		const existingNode = prevById.get(relPath);
@@ -456,6 +500,7 @@ export async function buildSearchViewDoc(
 			if (existingNode.type === "note") {
 				nextNodes.push({
 					...existingNode,
+					position: snapPoint(existingNode.position ?? { x: 0, y: 0 }),
 					data: {
 						...existingNode.data,
 						title:
@@ -466,26 +511,54 @@ export async function buildSearchViewDoc(
 					},
 				});
 			} else {
-				nextNodes.push(existingNode);
+				nextNodes.push({
+					...existingNode,
+					position: snapPoint(existingNode.position ?? { x: 0, y: 0 }),
+				});
 			}
 			continue;
 		}
-		nextNodes.push({
+		const node: CanvasNode = {
 			id: relPath,
 			type: "note",
-			position: defaultPositionForIndex(i),
+			position: { x: 0, y: 0 },
 			data: {
 				noteId: relPath,
 				title:
 					noteData?.title || titleById.get(relPath) || titleForFile(relPath),
 				content: noteData?.content || "",
 			},
-		});
+		};
+		nextNodes.push(node);
+		newNodes.push(node);
 	}
 
 	for (const n of prevNodes) {
 		if (n.type === "note") continue;
-		nextNodes.push(n);
+		nextNodes.push({
+			...n,
+			position: snapPoint(n.position ?? { x: 0, y: 0 }),
+		});
+	}
+
+	if (newNodes.length > 0) {
+		const shouldLayoutAll = !prev || prevNodes.length === 0;
+		const baseNodes = shouldLayoutAll ? nextNodes : newNodes;
+		const startY = shouldLayoutAll
+			? 0
+			: maxBottomForNodes(nextNodes) + GRID_GAP * 2;
+		const positions = computeGridPositions(
+			baseNodes.map((n) => ({
+				id: n.id,
+				type: n.type ?? "",
+				data: n.data ?? {},
+			})),
+			{ startX: 0, startY },
+		);
+		for (const node of baseNodes) {
+			const pos = positions.get(node.id);
+			if (pos) node.position = pos;
+		}
 	}
 
 	const nextIds = new Set(nextNodes.map((n) => n.id));
@@ -541,6 +614,7 @@ export async function buildTagViewDoc(
 	);
 
 	const nextNodes: CanvasNode[] = [];
+	const newNodes: CanvasNode[] = [];
 	for (let i = 0; i < ids.length; i++) {
 		const relPath = ids[i] as string;
 		const existingNode = prevById.get(relPath);
@@ -550,6 +624,7 @@ export async function buildTagViewDoc(
 			if (existingNode.type === "note") {
 				nextNodes.push({
 					...existingNode,
+					position: snapPoint(existingNode.position ?? { x: 0, y: 0 }),
 					data: {
 						...existingNode.data,
 						title:
@@ -560,26 +635,54 @@ export async function buildTagViewDoc(
 					},
 				});
 			} else {
-				nextNodes.push(existingNode);
+				nextNodes.push({
+					...existingNode,
+					position: snapPoint(existingNode.position ?? { x: 0, y: 0 }),
+				});
 			}
 			continue;
 		}
-		nextNodes.push({
+		const node: CanvasNode = {
 			id: relPath,
 			type: "note",
-			position: defaultPositionForIndex(i),
+			position: { x: 0, y: 0 },
 			data: {
 				noteId: relPath,
 				title:
 					noteData?.title || titleById.get(relPath) || titleForFile(relPath),
 				content: noteData?.content || "",
 			},
-		});
+		};
+		nextNodes.push(node);
+		newNodes.push(node);
 	}
 
 	for (const n of prevNodes) {
 		if (n.type === "note") continue;
-		nextNodes.push(n);
+		nextNodes.push({
+			...n,
+			position: snapPoint(n.position ?? { x: 0, y: 0 }),
+		});
+	}
+
+	if (newNodes.length > 0) {
+		const shouldLayoutAll = !prev || prevNodes.length === 0;
+		const baseNodes = shouldLayoutAll ? nextNodes : newNodes;
+		const startY = shouldLayoutAll
+			? 0
+			: maxBottomForNodes(nextNodes) + GRID_GAP * 2;
+		const positions = computeGridPositions(
+			baseNodes.map((n) => ({
+				id: n.id,
+				type: n.type ?? "",
+				data: n.data ?? {},
+			})),
+			{ startX: 0, startY },
+		);
+		for (const node of baseNodes) {
+			const pos = positions.get(node.id);
+			if (pos) node.position = pos;
+		}
 	}
 
 	const nextIds = new Set(nextNodes.map((n) => n.id));
