@@ -10,8 +10,11 @@ import {
 	useNodesState,
 } from "@xyflow/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { GRID_SIZE, computeGridPositions, snapPoint } from "../../lib/canvasLayout";
-import { parseNotePreview } from "../../lib/notePreview";
+import {
+	GRID_SIZE,
+	computeGridPositions,
+	snapPoint,
+} from "../../lib/canvasLayout";
 import { invoke } from "../../lib/tauri";
 import { CanvasNoteOverlayEditor } from "./CanvasNoteOverlayEditor";
 import { CanvasToolbar } from "./CanvasToolbar";
@@ -65,7 +68,9 @@ function CanvasPane({
 	const [edges, setEdges, onEdgesChange] = useEdgesState<CanvasEdge>([]);
 	const [isSaving, setIsSaving] = useState(false);
 	const [snapToGrid, setSnapToGrid] = useState(true);
-	const [selectedNodeIds, setSelectedNodeIds] = useState<Set<string>>(new Set());
+	const [selectedNodeIds, setSelectedNodeIds] = useState<Set<string>>(
+		new Set(),
+	);
 
 	const docIdRef = useRef<string | null>(null);
 	const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
@@ -80,13 +85,8 @@ function CanvasPane({
 		[],
 	);
 
-	const { pushHistory, undo, redo, resetHistory, applyingHistoryRef } = useCanvasHistory(
-		nodes,
-		edges,
-		setNodes,
-		setEdges,
-		stripEphemeral,
-	);
+	const { pushHistory, undo, redo, resetHistory, applyingHistoryRef } =
+		useCanvasHistory(nodes, edges, setNodes, setEdges, stripEphemeral);
 
 	const {
 		noteEditSession,
@@ -160,7 +160,7 @@ function CanvasPane({
 			h: 140,
 		}));
 		let x = 100;
-		let y = 100;
+		const y = 100;
 		for (const b of existingBounds) {
 			if (b.x + b.w > x) x = b.x + b.w + 40;
 		}
@@ -205,7 +205,7 @@ function CanvasPane({
 									status: preview.ok ? "" : "Failed to load preview",
 									image_src: preview.image_cache_rel_path
 										? `asset://${vaultPath}/.tether/cache/${preview.image_cache_rel_path}`
-										: preview.image_url ?? "",
+										: (preview.image_url ?? ""),
 								},
 							}
 						: n,
@@ -214,7 +214,9 @@ function CanvasPane({
 		} catch {
 			setNodes((prev) =>
 				prev.map((n) =>
-					n.id === nodeId ? { ...n, data: { ...n.data, status: "Failed to load" } } : n,
+					n.id === nodeId
+						? { ...n, data: { ...n.data, status: "Failed to load" } }
+						: n,
 				),
 			);
 		}
@@ -223,7 +225,9 @@ function CanvasPane({
 	const handleAddCurrentNote = useCallback(() => {
 		if (!activeNoteId) return;
 		const existing = nodes.find(
-			(n) => n.type === "note" && (n.data as Record<string, unknown>)?.noteId === activeNoteId,
+			(n) =>
+				n.type === "note" &&
+				(n.data as Record<string, unknown>)?.noteId === activeNoteId,
 		);
 		if (existing) return;
 		const pos = findDropPosition();
@@ -231,7 +235,11 @@ function CanvasPane({
 			id: crypto.randomUUID(),
 			type: "note",
 			position: pos,
-			data: { noteId: activeNoteId, title: activeNoteTitle ?? "Note", content: "" },
+			data: {
+				noteId: activeNoteId,
+				title: activeNoteTitle ?? "Note",
+				content: "",
+			},
 		};
 		setNodes((prev) => [...prev, node]);
 	}, [activeNoteId, activeNoteTitle, nodes, findDropPosition, setNodes]);
@@ -245,7 +253,9 @@ function CanvasPane({
 			if (typeof url !== "string") continue;
 			setNodes((prev) =>
 				prev.map((n) =>
-					n.id === node.id ? { ...n, data: { ...n.data, status: "Refreshing…" } } : n,
+					n.id === node.id
+						? { ...n, data: { ...n.data, status: "Refreshing…" } }
+						: n,
 				),
 			);
 			try {
@@ -261,7 +271,7 @@ function CanvasPane({
 										status: preview.ok ? "" : "Failed",
 										image_src: preview.image_cache_rel_path
 											? `asset://${vaultPath}/.tether/cache/${preview.image_cache_rel_path}`
-											: preview.image_url ?? "",
+											: (preview.image_url ?? ""),
 									},
 								}
 							: n,
@@ -270,7 +280,9 @@ function CanvasPane({
 			} catch {
 				setNodes((prev) =>
 					prev.map((n) =>
-						n.id === node.id ? { ...n, data: { ...n.data, status: "Failed" } } : n,
+						n.id === node.id
+							? { ...n, data: { ...n.data, status: "Failed" } }
+							: n,
 					),
 				);
 			}
@@ -328,11 +340,13 @@ function CanvasPane({
 					break;
 				case "centerX":
 					target =
-						selected.reduce((sum, n) => sum + n.position.x, 0) / selected.length;
+						selected.reduce((sum, n) => sum + n.position.x, 0) /
+						selected.length;
 					break;
 				case "centerY":
 					target =
-						selected.reduce((sum, n) => sum + n.position.y, 0) / selected.length;
+						selected.reduce((sum, n) => sum + n.position.y, 0) /
+						selected.length;
 					break;
 			}
 			setNodes((prev) =>
@@ -356,7 +370,9 @@ function CanvasPane({
 			const selected = nodes.filter((n) => selectedNodeIds.has(n.id));
 			if (selected.length < 3) return;
 			const sorted = [...selected].sort((a, b) =>
-				axis === "x" ? a.position.x - b.position.x : a.position.y - b.position.y,
+				axis === "x"
+					? a.position.x - b.position.x
+					: a.position.y - b.position.y,
 			);
 			const first = sorted[0].position[axis];
 			const last = sorted[sorted.length - 1].position[axis];
@@ -367,7 +383,8 @@ function CanvasPane({
 				prev.map((n) => {
 					if (!positionMap.has(n.id)) return n;
 					const pos = { ...n.position };
-					pos[axis] = positionMap.get(n.id)!;
+					const newValue = positionMap.get(n.id);
+					if (newValue !== undefined) pos[axis] = newValue;
 					return { ...n, position: snapToGrid ? snapPoint(pos) : pos };
 				}),
 			);
@@ -390,7 +407,8 @@ function CanvasPane({
 					prev.filter(
 						(n) =>
 							n.type !== "folderPreview" ||
-							(n.data as Record<string, unknown>)?.parentFolderNodeId !== folderNodeId,
+							(n.data as Record<string, unknown>)?.parentFolderNodeId !==
+								folderNodeId,
 					),
 				);
 			} else {
@@ -522,7 +540,7 @@ function CanvasPane({
 												status: preview.ok ? "" : "Failed",
 												image_src: preview.image_cache_rel_path
 													? `asset://${vaultPath}/.tether/cache/${preview.image_cache_rel_path}`
-													: preview.image_url ?? "",
+													: (preview.image_url ?? ""),
 											},
 										}
 									: n,
@@ -562,7 +580,12 @@ function CanvasPane({
 			holdFolderPreview: handleFolderPreviewHold,
 			releaseFolderPreview: handleFolderPreviewRelease,
 		}),
-		[onOpenNote, onOpenFolder, handleFolderPreviewHold, handleFolderPreviewRelease],
+		[
+			onOpenNote,
+			onOpenFolder,
+			handleFolderPreviewHold,
+			handleFolderPreviewRelease,
+		],
 	);
 
 	const noteEditActions: CanvasNoteEditActions = useMemo(
@@ -616,7 +639,14 @@ function CanvasPane({
 				setActiveTabId(remaining.length ? remaining[0].tabId : null);
 			}
 		},
-		[noteTabs, noteEditSession, closeInlineEditor, setNoteTabs, activeTabId, setActiveTabId],
+		[
+			noteTabs,
+			noteEditSession,
+			closeInlineEditor,
+			setNoteTabs,
+			activeTabId,
+			setActiveTabId,
+		],
 	);
 
 	const handleSelectTab = useCallback(
@@ -636,15 +666,16 @@ function CanvasPane({
 	);
 
 	const hasSelectedLink = useMemo(
-		() =>
-			nodes.some((n) => selectedNodeIds.has(n.id) && n.type === "link"),
+		() => nodes.some((n) => selectedNodeIds.has(n.id) && n.type === "link"),
 		[nodes, selectedNodeIds],
 	);
 
 	if (!doc) {
 		return (
 			<div className="canvasPaneEmpty">
-				<div className="canvasPaneEmptyText">Select a canvas to get started</div>
+				<div className="canvasPaneEmptyText">
+					Select a canvas to get started
+				</div>
 			</div>
 		);
 	}

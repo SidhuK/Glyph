@@ -69,9 +69,10 @@ export function useAiContext({
 	}, [activeFolderPath]);
 	const hasActiveFolder = activeFolderPath !== null;
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: reset on folder change
 	useEffect(() => {
 		setRemovedActiveFolder(false);
-	}, [normalizedActive]);
+	}, [activeFolderPath]);
 
 	const attachedFolders = useMemo(() => {
 		const seen = new Set<string>();
@@ -97,7 +98,7 @@ export function useAiContext({
 			list.push({ path, label: path });
 		}
 		return list;
-	}, [normalizedActive, pinnedFolders, removedActiveFolder]);
+	}, [hasActiveFolder, normalizedActive, pinnedFolders, removedActiveFolder]);
 
 	const addFolder = useCallback(
 		(path: string) => {

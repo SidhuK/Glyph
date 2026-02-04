@@ -9,7 +9,11 @@ export function getNodeHash(id: string): number {
 	return Math.abs(hash);
 }
 
-export function getRandomVariation(id: string, min: number, max: number): number {
+export function getRandomVariation(
+	id: string,
+	min: number,
+	max: number,
+): number {
 	const hash = getNodeHash(id);
 	const range = max - min;
 	return min + (hash % range);

@@ -29,11 +29,21 @@ export type CanvasExternalCommand =
 	| { id: string; kind: "add_note_node"; noteId: string; title: string }
 	| { id: string; kind: "focus_node"; nodeId: string }
 	| { id: string; kind: "open_note_editor"; noteId: string; title?: string }
-	| { id: string; kind: "apply_note_markdown"; noteId: string; markdown: string }
+	| {
+			id: string;
+			kind: "apply_note_markdown";
+			noteId: string;
+			markdown: string;
+	  }
 	| { id: string; kind: "add_text_node"; text: string }
 	| { id: string; kind: "add_link_node"; url: string };
 
-export type NoteEditPhase = "loading" | "ready" | "saving" | "error" | "conflict";
+export type NoteEditPhase =
+	| "loading"
+	| "ready"
+	| "saving"
+	| "error"
+	| "conflict";
 
 export type CanvasNoteEditSession = {
 	nodeId: string;

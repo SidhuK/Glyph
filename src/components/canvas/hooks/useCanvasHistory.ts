@@ -27,7 +27,8 @@ export function useCanvasHistory(
 					type: node.type ?? null,
 					position: node.position,
 					data: node.data ?? null,
-					parentNode: (node as unknown as { parentNode?: string | null }).parentNode,
+					parentNode: (node as unknown as { parentNode?: string | null })
+						.parentNode,
 					extent: (node as unknown as { extent?: unknown }).extent ?? null,
 					style: (node as unknown as { style?: unknown }).style ?? null,
 				})),

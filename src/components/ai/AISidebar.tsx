@@ -1,6 +1,6 @@
 import { type UIMessage, useChat } from "@ai-sdk/react";
-import { useEffect, useMemo, useState } from "react";
 import { motion } from "motion/react";
+import { useEffect, useMemo, useState } from "react";
 import { TauriChatTransport } from "../../lib/ai/tauriChatTransport";
 import { openSettingsWindow } from "../../lib/windows";
 import { Settings as SettingsIcon, Sparkles, X } from "../Icons";

@@ -70,7 +70,7 @@ Current layout (as implemented today):
   - `.tether/cache/` - Temporary/cached data
 
 Notes about the model:
-- Notes are files; canvases are currently stored in SQLite (see `src-tauri/src/canvas.rs` and `src-tauri/src/index.rs`).
+- Notes are files; canvases are currently stored in SQLite (see `src-tauri/src/canvas.rs` and `src-tauri/src/index/`).
 - The backend watches for external `.md` changes and emits `notes:external_changed` so the UI can refresh.
 - Vault paths must be treated as untrusted input: always use safe join helpers (see `src-tauri/src/paths.rs`).
 
@@ -103,22 +103,90 @@ Legacy / planned layout (may exist in docs or older vaults):
 
 ## Backend Files (`src-tauri/src/`)
 
-| File           | Purpose                                                                                                                                                                                    |
-| -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `main.rs`      | Tauri app entry point, calls `app_lib::run()`                                                                                                                                              |
-| `lib.rs`       | Tauri builder setup: registers plugins (dialog, opener, store, notification), manages `VaultState`, registers all IPC commands                                                            |
-| `vault.rs`     | Vault lifecycle: `vault_create`, `vault_open`, `vault_get_current`; ensures `.tether/` dirs; holds current vault path in `VaultState` (Mutex-guarded); watches for external note changes   |
-| `vault_fs.rs`  | Higher-level vault filesystem helpers (vault-aware IO utilities)                                                                                                                          |
-| `notes.rs`     | Note CRUD: `notes_list`, `note_create`, `note_read`, `note_write`, `note_delete`, `note_attach_file`; YAML frontmatter; atomic writes; content-addressed assets (SHA256)                  |
-| `canvas.rs`    | Canvas CRUD: `canvas_list`, `canvas_create`, `canvas_read`, `canvas_write`; stores canvas docs as JSON in SQLite with `version`                                                            |
-| `index.rs`     | Local SQLite index/search (FTS), backlinks, link & tag extraction, and schema management (also stores canvases)                                                                            |
-| `links.rs`     | Link-graph helpers and commands (wiki-link style parsing, backlink building)                                                                                                              |
-| `ai.rs`        | AI-related backend commands and helpers (kept behind explicit UI actions)                                                                                                                  |
-| `net.rs`       | Network helpers (use sparingly; keep vault data local by default)                                                                                                                         |
-| `io_atomic.rs` | Atomic file writes: writes to temp file, syncs, renames to destination, syncs parent directory (crash-safe)                                                                                |
-| `paths.rs`     | Path safety: `join_under()` prevents path traversal attacks by rejecting `..` components                                                                                                   |
-| `tether_paths.rs` | Canonical `.tether/` locations (`.tether/tether.sqlite`, cache dir, etc.)                                                                                                              |
-| `tether_fs.rs` | Filesystem helpers that operate inside `.tether/` safely                                                                                                                                   |
+### Root Files
+
+| File              | Purpose                                                                                                         |
+| ----------------- | --------------------------------------------------------------------------------------------------------------- |
+| `main.rs`         | Tauri app entry point, calls `app_lib::run()`                                                                   |
+| `lib.rs`          | Tauri builder setup: registers plugins, manages state, builds menus, registers all IPC commands                |
+| `canvas.rs`       | Canvas CRUD: `canvas_list`, `canvas_create`, `canvas_read`, `canvas_write`; stores canvas docs in SQLite        |
+| `io_atomic.rs`    | Atomic file writes: writes to temp file, syncs, renames to destination, syncs parent directory (crash-safe)    |
+| `net.rs`          | Network helpers (URL host validation, SSRF protection)                                                          |
+| `paths.rs`        | Path safety: `join_under()` prevents path traversal attacks by rejecting `..` components                       |
+| `tether_paths.rs` | Canonical `.tether/` locations (`.tether/tether.sqlite`, cache dir, etc.)                                       |
+| `tether_fs.rs`    | Filesystem helpers that operate inside `.tether/` safely                                                        |
+
+### `ai/` - AI Chat & Profile Management
+
+| File           | Purpose                                                                                 |
+| -------------- | --------------------------------------------------------------------------------------- |
+| `mod.rs`       | Module exports: `AiState` and commands submodule                                        |
+| `types.rs`     | Type definitions: `AiProfile`, `AiProviderKind`, `AiMessage`, events, request/response  |
+| `state.rs`     | `AiState` struct with job cancellation token management                                 |
+| `keychain.rs`  | Secure API key storage via system keychain                                              |
+| `store.rs`     | AI profile persistence (JSON file), default profiles, legacy secret migration           |
+| `helpers.rs`   | Utilities: URL parsing, HTTP client, message/system prompt splitting                    |
+| `streaming.rs` | SSE streaming for OpenAI, Anthropic, and Gemini APIs                                    |
+| `audit.rs`     | Audit log writing for AI requests/responses                                             |
+| `commands.rs`  | Tauri commands: profile CRUD, secret management, chat start/cancel                      |
+
+### `index/` - SQLite Index & Search
+
+| File            | Purpose                                                                    |
+| --------------- | -------------------------------------------------------------------------- |
+| `mod.rs`        | Module exports: `open_db`, `index_note`, `remove_note`, commands submodule |
+| `types.rs`      | Type definitions: `SearchResult`, `IndexNotePreview`, `BacklinkItem`, etc. |
+| `db.rs`         | Database connection, path resolution, title-to-ID resolution               |
+| `schema.rs`     | SQLite schema creation (notes, links, tags, FTS5, canvases)                |
+| `helpers.rs`    | Utilities: SHA256 hashing, ISO8601 timestamps, path normalization          |
+| `frontmatter.rs`| YAML frontmatter parsing, title/created/updated extraction, preview gen   |
+| `tags.rs`       | Tag normalization, frontmatter tag parsing, inline tag parsing             |
+| `links.rs`      | Wikilink and markdown link parsing, outgoing link extraction               |
+| `indexer.rs`    | Note indexing, removal, full rebuild with link resolution                  |
+| `commands.rs`   | Tauri commands: `index_rebuild`, `search`, `tags_list`, `backlinks`, etc.  |
+
+### `links/` - Link Preview & Caching
+
+| File          | Purpose                                                              |
+| ------------- | -------------------------------------------------------------------- |
+| `mod.rs`      | Module exports: commands submodule                                   |
+| `types.rs`    | Type definitions: `LinkPreview`                                      |
+| `helpers.rs`  | Utilities: URL normalization, cache paths, HTTP client               |
+| `cache.rs`    | Link preview cache read/write                                        |
+| `fetch.rs`    | HTML fetching, meta tag extraction, YouTube oEmbed, image download   |
+| `commands.rs` | Tauri command: `link_preview` with caching and TTL                   |
+
+### `notes/` - Note CRUD & Attachments
+
+| File             | Purpose                                                                 |
+| ---------------- | ----------------------------------------------------------------------- |
+| `mod.rs`         | Module exports: commands and attachments submodules                     |
+| `types.rs`       | Type definitions: `NoteMeta`, `NoteDoc`, `NoteWriteResult`, etc.        |
+| `frontmatter.rs` | YAML frontmatter parsing, normalization, rendering                      |
+| `helpers.rs`     | Utilities: path resolution, etag generation, metadata extraction        |
+| `commands.rs`    | Tauri commands: `notes_list`, `note_create`, `note_read`, `note_write`  |
+| `attachments.rs` | Tauri command: `note_attach_file` with content-addressed asset storage  |
+
+### `vault/` - Vault Lifecycle & File Watching
+
+| File          | Purpose                                                                  |
+| ------------- | ------------------------------------------------------------------------ |
+| `mod.rs`      | Module exports: `VaultState` and commands submodule                      |
+| `state.rs`    | `VaultState` struct: current vault path, file watcher storage            |
+| `helpers.rs`  | Vault creation/opening, temp file cleanup, directory canonicalization    |
+| `watcher.rs`  | File watcher setup for external `.md` changes, incremental indexing      |
+| `commands.rs` | Tauri commands: `vault_create`, `vault_open`, `vault_get_current`, etc.  |
+
+### `vault_fs/` - Vault Filesystem Operations
+
+| File           | Purpose                                                                   |
+| -------------- | ------------------------------------------------------------------------- |
+| `mod.rs`       | Module exports: list, read_write, summary submodules                      |
+| `types.rs`     | Type definitions: `FsEntry`, `TextFileDoc`, `DirChildSummary`, etc.       |
+| `helpers.rs`   | Utilities: etag generation, mtime, hidden path detection                  |
+| `list.rs`      | Tauri commands: `vault_list_dir`, `vault_list_files`, `vault_list_markdown_files` |
+| `read_write.rs`| Tauri commands: `vault_read_text`, `vault_write_text`, `vault_relativize_path`    |
+| `summary.rs`   | Tauri commands: `vault_dir_children_summary`, `vault_dir_recent_entries`  |
 
 ## Code Style
 

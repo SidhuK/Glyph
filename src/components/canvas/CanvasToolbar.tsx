@@ -31,7 +31,9 @@ interface CanvasToolbarProps {
 	onFrameSelection: () => void;
 	onToggleSnap: () => void;
 	onReflowGrid: () => void;
-	onAlign: (mode: "left" | "right" | "top" | "bottom" | "centerX" | "centerY") => void;
+	onAlign: (
+		mode: "left" | "right" | "top" | "bottom" | "centerX" | "centerY",
+	) => void;
 	onDistribute: (axis: "x" | "y") => void;
 }
 
@@ -56,15 +58,23 @@ export const CanvasToolbar = memo(function CanvasToolbar({
 		<div className="canvasToolbar">
 			<div className="canvasToolbarLeft">
 				<div className="canvasTitle">{title}</div>
-				<div className="canvasStatus">
-					{isSaving ? "⟳ Saving…" : "✓ Saved"}
-				</div>
+				<div className="canvasStatus">{isSaving ? "⟳ Saving…" : "✓ Saved"}</div>
 			</div>
 			<div className="canvasToolbarRight">
-				<button type="button" className="iconBtn" onClick={onAddText} title="Add text block">
+				<button
+					type="button"
+					className="iconBtn"
+					onClick={onAddText}
+					title="Add text block"
+				>
 					<Type size={16} />
 				</button>
-				<button type="button" className="iconBtn" onClick={onAddLink} title="Add link">
+				<button
+					type="button"
+					className="iconBtn"
+					onClick={onAddLink}
+					title="Add link"
+				>
 					<Link size={16} />
 				</button>
 				<button
@@ -103,7 +113,12 @@ export const CanvasToolbar = memo(function CanvasToolbar({
 				>
 					<Grid3X3 size={16} />
 				</button>
-				<button type="button" className="iconBtn" onClick={onReflowGrid} title="Reflow to grid">
+				<button
+					type="button"
+					className="iconBtn"
+					onClick={onReflowGrid}
+					title="Reflow to grid"
+				>
 					<Layout size={16} />
 				</button>
 				<span className="toolbarDivider" />

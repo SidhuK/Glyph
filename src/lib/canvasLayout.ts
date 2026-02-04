@@ -140,18 +140,12 @@ export function computeGridPositions(
 		return nodes[a].id.localeCompare(nodes[b].id);
 	});
 
-	const totalArea = sizeUnits.reduce((sum, s) => sum + s.area, 0);
 	const maxWidthUnits = Math.max(...sizeUnits.map((s) => s.w));
 	const preferredColumns =
 		options?.columns ?? Math.max(2, Math.min(8, Math.ceil(Math.sqrt(count))));
 	const avgWidthUnits =
 		sizeUnits.reduce((sum, s) => sum + s.w, 0) / sizeUnits.length;
 	const widthFromColumns = Math.ceil(avgWidthUnits * preferredColumns);
-	const baseWidth = Math.max(
-		maxWidthUnits,
-		widthFromColumns,
-		Math.ceil(Math.sqrt(totalArea)),
-	);
 
 	const targetWidthUnits = Math.max(maxWidthUnits, widthFromColumns);
 	const tryWidths = Math.max(6, preferredColumns * 3);

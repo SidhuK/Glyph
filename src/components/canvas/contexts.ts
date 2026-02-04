@@ -9,7 +9,8 @@ export function useCanvasActions(): CanvasActions {
 	return ctx;
 }
 
-export const CanvasNoteEditContext = createContext<CanvasNoteEditActions | null>(null);
+export const CanvasNoteEditContext =
+	createContext<CanvasNoteEditActions | null>(null);
 
 export function useCanvasNoteEdit(): CanvasNoteEditActions {
 	const ctx = useContext(CanvasNoteEditContext);
