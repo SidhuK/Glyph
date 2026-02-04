@@ -4,6 +4,8 @@ import { Markdown } from "@tiptap/markdown";
 import { EditorContent, useEditor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Suggestion, { type SuggestionProps } from "@tiptap/suggestion";
+import { Plugin, PluginKey } from "@tiptap/pm/state";
+import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import Link from "@tiptap/extension-link";
 import { Table, TableCell, TableHeader, TableRow } from "@tiptap/extension-table";
 import TaskItem from "@tiptap/extension-task-item";
@@ -245,6 +247,44 @@ const SlashCommand = Extension.create({
 	},
 });
 
+const CalloutDecorations = Extension.create({
+	name: "callout-decorations",
+	addProseMirrorPlugins() {
+		const key = new PluginKey("callout-decorations");
+		return [
+			new Plugin({
+				key,
+				props: {
+					decorations(state) {
+						const decorations: Decoration[] = [];
+						state.doc.descendants((node, pos) => {
+							if (node.type.name !== "blockquote") return;
+							const first = node.firstChild;
+							const text = first?.textContent?.trim() ?? "";
+							if (!text.startsWith("[!")) return;
+							const match = text.match(/^\[!([A-Za-z]+)\]\s*(.*)$/);
+							if (!match) return;
+							const rawType = match[1]?.toLowerCase() ?? "note";
+							const titleText = match[2]?.trim();
+							const title =
+								titleText ||
+								`${rawType.slice(0, 1).toUpperCase()}${rawType.slice(1)}`;
+							decorations.push(
+								Decoration.node(pos, pos + node.nodeSize, {
+									class: `callout callout-${rawType}`,
+									"data-callout": rawType,
+									"data-callout-title": title,
+								}),
+							);
+						});
+						return DecorationSet.create(state.doc, decorations);
+					},
+				},
+			}),
+		];
+	},
+});
+
 function mergeFrontmatter(
 	frontmatter: string | null,
 	body: string,
@@ -301,8 +341,12 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 					gfm: true,
 					breaks: false,
 				},
+				html: false,
+				transformHtml: (html: string) =>
+					html.replace(/&nbsp;/g, " ").replace(/\u00a0/g, " "),
 			}),
 			SlashCommand,
+			CalloutDecorations,
 		],
 		content: body,
 		contentType: "markdown",
@@ -347,6 +391,17 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 			onChange(nextMarkdown);
 		},
 	});
+
+	const canEdit = mode === "rich" && Boolean(editor?.isEditable);
+	const focusChain = () =>
+		editor?.chain().focus(undefined, { scrollIntoView: false });
+
+	const insertCallout = (type: string) => {
+		if (!editor) return;
+		const label = type.toLowerCase();
+		const snippet = `\n> [!${label}]\n> `;
+		focusChain()?.insertContent(snippet).run();
+	};
 
 	useEffect(() => {
 		if (!editor) return;
@@ -407,7 +462,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 				</div>
 			</div>
 			<div className="rfNodeNoteEditorRibbon rfNodeNoteEditorRibbonBottom nodrag nopan nowheel">
-				{mode === "rich" && editor ? (
+				{editor ? (
 					<>
 						<div className="ribbonGroup">
 							<button
@@ -416,7 +471,8 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 									editor.isActive("bold") ? "active" : ""
 								}`}
 								title="Bold"
-								onClick={() => editor.chain().focus().toggleBold().run()}
+								disabled={!canEdit}
+								onClick={() => canEdit && focusChain()?.toggleBold().run()}
 							>
 								<Bold size={14} />
 							</button>
@@ -426,7 +482,8 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 									editor.isActive("italic") ? "active" : ""
 								}`}
 								title="Italic"
-								onClick={() => editor.chain().focus().toggleItalic().run()}
+								disabled={!canEdit}
+								onClick={() => canEdit && focusChain()?.toggleItalic().run()}
 							>
 								<Italic size={14} />
 							</button>
@@ -436,7 +493,10 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 									editor.isActive("underline") ? "active" : ""
 								}`}
 								title="Underline"
-								onClick={() => editor.chain().focus().toggleUnderline().run()}
+								disabled={!canEdit}
+								onClick={() =>
+									canEdit && focusChain()?.toggleUnderline().run()
+								}
 							>
 								<span className="ribbonText">U</span>
 							</button>
@@ -446,7 +506,10 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 									editor.isActive("strike") ? "active" : ""
 								}`}
 								title="Strikethrough"
-								onClick={() => editor.chain().focus().toggleStrike().run()}
+								disabled={!canEdit}
+								onClick={() =>
+									canEdit && focusChain()?.toggleStrike().run()
+								}
 							>
 								<Strikethrough size={14} />
 							</button>
@@ -460,8 +523,9 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 								}`}
 								title="Heading 1"
 								onClick={() =>
-									editor.chain().focus().toggleHeading({ level: 1 }).run()
+									canEdit && focusChain()?.toggleHeading({ level: 1 }).run()
 								}
+								disabled={!canEdit}
 							>
 								<Heading1 size={14} />
 							</button>
@@ -472,8 +536,9 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 								}`}
 								title="Heading 2"
 								onClick={() =>
-									editor.chain().focus().toggleHeading({ level: 2 }).run()
+									canEdit && focusChain()?.toggleHeading({ level: 2 }).run()
 								}
+								disabled={!canEdit}
 							>
 								<Heading2 size={14} />
 							</button>
@@ -484,8 +549,9 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 								}`}
 								title="Heading 3"
 								onClick={() =>
-									editor.chain().focus().toggleHeading({ level: 3 }).run()
+									canEdit && focusChain()?.toggleHeading({ level: 3 }).run()
 								}
+								disabled={!canEdit}
 							>
 								<Heading3 size={14} />
 							</button>
@@ -498,7 +564,10 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 									editor.isActive("bulletList") ? "active" : ""
 								}`}
 								title="Bullet list"
-								onClick={() => editor.chain().focus().toggleBulletList().run()}
+								disabled={!canEdit}
+								onClick={() =>
+									canEdit && focusChain()?.toggleBulletList().run()
+								}
 							>
 								<List size={14} />
 							</button>
@@ -508,7 +577,10 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 									editor.isActive("orderedList") ? "active" : ""
 								}`}
 								title="Numbered list"
-								onClick={() => editor.chain().focus().toggleOrderedList().run()}
+								disabled={!canEdit}
+								onClick={() =>
+									canEdit && focusChain()?.toggleOrderedList().run()
+								}
 							>
 								<ListOrdered size={14} />
 							</button>
@@ -518,7 +590,10 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 									editor.isActive("taskList") ? "active" : ""
 								}`}
 								title="Task list"
-								onClick={() => editor.chain().focus().toggleTaskList().run()}
+								disabled={!canEdit}
+								onClick={() =>
+									canEdit && focusChain()?.toggleTaskList().run()
+								}
 							>
 								<ListChecks size={14} />
 							</button>
@@ -531,7 +606,10 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 									editor.isActive("blockquote") ? "active" : ""
 								}`}
 								title="Quote"
-								onClick={() => editor.chain().focus().toggleBlockquote().run()}
+								disabled={!canEdit}
+								onClick={() =>
+									canEdit && focusChain()?.toggleBlockquote().run()
+								}
 							>
 								<Quote size={14} />
 							</button>
@@ -541,9 +619,60 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 									editor.isActive("codeBlock") ? "active" : ""
 								}`}
 								title="Code block"
-								onClick={() => editor.chain().focus().toggleCodeBlock().run()}
+								disabled={!canEdit}
+								onClick={() =>
+									canEdit && focusChain()?.toggleCodeBlock().run()
+								}
 							>
 								<Code size={14} />
+							</button>
+						</div>
+						<span className="ribbonDivider" />
+						<div className="ribbonGroup">
+							<button
+								type="button"
+								className="ribbonBtn"
+								title="Callout: Note"
+								disabled={!canEdit}
+								onClick={() => canEdit && insertCallout("note")}
+							>
+								Note
+							</button>
+							<button
+								type="button"
+								className="ribbonBtn"
+								title="Callout: Info"
+								disabled={!canEdit}
+								onClick={() => canEdit && insertCallout("info")}
+							>
+								Info
+							</button>
+							<button
+								type="button"
+								className="ribbonBtn"
+								title="Callout: Tip"
+								disabled={!canEdit}
+								onClick={() => canEdit && insertCallout("tip")}
+							>
+								Tip
+							</button>
+							<button
+								type="button"
+								className="ribbonBtn"
+								title="Callout: Warning"
+								disabled={!canEdit}
+								onClick={() => canEdit && insertCallout("warning")}
+							>
+								Warn
+							</button>
+							<button
+								type="button"
+								className="ribbonBtn"
+								title="Callout: Error"
+								disabled={!canEdit}
+								onClick={() => canEdit && insertCallout("error")}
+							>
+								Error
 							</button>
 						</div>
 					</>

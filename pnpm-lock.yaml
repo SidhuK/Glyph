@@ -59,6 +59,9 @@ importers:
       '@tiptap/markdown':
         specifier: ^3.4.1
         version: 3.19.0(@tiptap/core@3.19.0(@tiptap/pm@3.19.0))(@tiptap/pm@3.19.0)
+      '@tiptap/pm':
+        specifier: ^3.4.1
+        version: 3.19.0
       '@tiptap/react':
         specifier: ^3.4.1
         version: 3.19.0(@floating-ui/dom@1.7.5)(@tiptap/core@3.19.0(@tiptap/pm@3.19.0))(@tiptap/pm@3.19.0)(@types/react-dom@19.2.3(@types/react@19.2.10))(@types/react@19.2.10)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
