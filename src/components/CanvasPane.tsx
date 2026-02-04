@@ -2122,8 +2122,10 @@ export default function CanvasPane({
 				// Keep ReactFlow chrome aligned with our design tokens (works for both light/dark).
 				["--xy-background-color" as never]: "var(--bg-canvas)",
 
-				["--xy-controls-button-background-color" as never]: "var(--bg-secondary)",
-				["--xy-controls-button-background-color-hover" as never]: "var(--bg-hover)",
+				["--xy-controls-button-background-color" as never]:
+					"var(--bg-secondary)",
+				["--xy-controls-button-background-color-hover" as never]:
+					"var(--bg-hover)",
 				["--xy-controls-button-color" as never]: "var(--text-secondary)",
 				["--xy-controls-button-color-hover" as never]: "var(--text-primary)",
 				["--xy-controls-button-border-color" as never]: "var(--border-default)",
