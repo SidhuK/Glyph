@@ -12,7 +12,8 @@ mod tether_paths;
 mod vault;
 
 use serde::Serialize;
-use tauri::{Manager, WindowEvent};
+use tauri::{Emitter, Manager, WindowEvent};
+use tauri::menu::{Menu, MenuItem, PredefinedMenuItem, Submenu, HELP_SUBMENU_ID, WINDOW_SUBMENU_ID};
 
 #[cfg(target_os = "macos")]
 use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
@@ -61,6 +62,120 @@ pub fn run() {
     init_tracing();
 
     tauri::Builder::default()
+        .menu(|app| {
+            #[cfg(target_os = "macos")]
+            let app_menu = Submenu::with_items(
+                app,
+                app.package_info().name.clone(),
+                true,
+                &[
+                    &PredefinedMenuItem::about(app, None, None)?,
+                    &PredefinedMenuItem::separator(app)?,
+                    &PredefinedMenuItem::services(app, None)?,
+                    &PredefinedMenuItem::separator(app)?,
+                    &PredefinedMenuItem::hide(app, None)?,
+                    &PredefinedMenuItem::hide_others(app, None)?,
+                    &PredefinedMenuItem::separator(app)?,
+                    &PredefinedMenuItem::quit(app, None)?,
+                ],
+            )?;
+
+            let open_vault = MenuItem::with_id(
+                app,
+                "file.open_vault",
+                "Open Vault…",
+                true,
+                Some("CmdOrCtrl+O"),
+            )?;
+            let create_vault = MenuItem::with_id(
+                app,
+                "file.create_vault",
+                "Create Vault…",
+                true,
+                Some("CmdOrCtrl+Shift+N"),
+            )?;
+            let close_vault =
+                MenuItem::with_id(app, "file.close_vault", "Close Vault", true, None::<&str>)?;
+
+            let file_menu = Submenu::with_items(
+                app,
+                "File",
+                true,
+                &[
+                    &open_vault,
+                    &create_vault,
+                    &close_vault,
+                    &PredefinedMenuItem::separator(app)?,
+                    &PredefinedMenuItem::close_window(app, None)?,
+                    #[cfg(not(target_os = "macos"))]
+                    &PredefinedMenuItem::quit(app, None)?,
+                ],
+            )?;
+
+            let edit_menu = Submenu::with_items(
+                app,
+                "Edit",
+                true,
+                &[
+                    &PredefinedMenuItem::undo(app, None)?,
+                    &PredefinedMenuItem::redo(app, None)?,
+                    &PredefinedMenuItem::separator(app)?,
+                    &PredefinedMenuItem::cut(app, None)?,
+                    &PredefinedMenuItem::copy(app, None)?,
+                    &PredefinedMenuItem::paste(app, None)?,
+                    &PredefinedMenuItem::select_all(app, None)?,
+                ],
+            )?;
+
+            let window_menu = Submenu::with_id_and_items(
+                app,
+                WINDOW_SUBMENU_ID,
+                "Window",
+                true,
+                &[
+                    &PredefinedMenuItem::minimize(app, None)?,
+                    &PredefinedMenuItem::maximize(app, None)?,
+                    #[cfg(target_os = "macos")]
+                    &PredefinedMenuItem::separator(app)?,
+                    &PredefinedMenuItem::close_window(app, None)?,
+                ],
+            )?;
+
+            let help_menu = Submenu::with_id_and_items(
+                app,
+                HELP_SUBMENU_ID,
+                "Help",
+                true,
+                &[
+                    #[cfg(not(target_os = "macos"))]
+                    &PredefinedMenuItem::about(app, None, None)?,
+                ],
+            )?;
+
+            Menu::with_items(
+                app,
+                &[
+                    #[cfg(target_os = "macos")]
+                    &app_menu,
+                    &file_menu,
+                    &edit_menu,
+                    &window_menu,
+                    &help_menu,
+                ],
+            )
+        })
+        .on_menu_event(|app, event| match event.id().as_ref() {
+            "file.open_vault" => {
+                let _ = app.emit("menu:open_vault", ());
+            }
+            "file.create_vault" => {
+                let _ = app.emit("menu:create_vault", ());
+            }
+            "file.close_vault" => {
+                let _ = app.emit("menu:close_vault", ());
+            }
+            _ => {}
+        })
         .setup(|app| {
             #[cfg(target_os = "macos")]
             {
@@ -133,7 +248,8 @@ pub fn run() {
             notes::note_attach_file,
             vault::vault_create,
             vault::vault_open,
-            vault::vault_get_current
+            vault::vault_get_current,
+            vault::vault_close
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

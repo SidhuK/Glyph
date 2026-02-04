@@ -1,5 +1,6 @@
 import { join } from "@tauri-apps/api/path";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { listen } from "@tauri-apps/api/event";
 import { open, save } from "@tauri-apps/plugin-dialog";
 import { openPath, openUrl } from "@tauri-apps/plugin-opener";
 import { AnimatePresence, motion } from "motion/react";
@@ -39,6 +40,7 @@ import { SearchPane } from "./components/SearchPane";
 import { TagsPane } from "./components/TagsPane";
 import { AISidebar } from "./components/ai/AISidebar";
 import {
+	clearCurrentVaultPath,
 	loadSettings,
 	setAiSidebarWidth as persistAiSidebarWidth,
 	setCurrentVaultPath,
@@ -105,6 +107,7 @@ function App() {
 	const [vaultSchemaVersion, setVaultSchemaVersion] = useState<number | null>(
 		null,
 	);
+	const [recentVaults, setRecentVaults] = useState<string[]>([]);
 	const [rootEntries, setRootEntries] = useState<FsEntry[]>([]);
 	const [childrenByDir, setChildrenByDir] = useState<
 		Record<string, FsEntry[] | undefined>
@@ -187,9 +190,6 @@ function App() {
 		setIsIndexing(false);
 	}, [vaultPath]);
 
-	// Keep info in sync but don't use it directly in render
-	void info;
-
 	const activeNoteId = useMemo(() => {
 		if (!activeFilePath) return null;
 		return isMarkdownPath(activeFilePath) ? activeFilePath : null;
@@ -233,6 +233,7 @@ function App() {
 				setFolderShelfSubfolders([]);
 				setFolderShelfRecents([]);
 				setDirSummariesByParent({});
+				setRecentVaults(settings.recentVaults);
 				setVaultPath(settings.currentVaultPath);
 
 				if (settings.currentVaultPath) {
@@ -293,7 +294,10 @@ function App() {
 							// ignore
 						}
 					} catch {
-						if (!cancelled) setVaultSchemaVersion(null);
+						if (!cancelled) {
+							setVaultSchemaVersion(null);
+							setVaultPath(null);
+						}
 					}
 				}
 			} catch (err) {
@@ -529,6 +533,27 @@ function App() {
 		[startIndexRebuild],
 	);
 
+	const resetVaultUiState = useCallback(() => {
+		setRootEntries([]);
+		setChildrenByDir({});
+		setDirSummariesByParent({});
+		setExpandedDirs(new Set());
+		setActiveFilePath(null);
+
+		setActiveViewPath(null);
+		setActiveViewDoc(null);
+		setShowSearch(false);
+		setSearchQuery("");
+		setSearchResults([]);
+		setSearchError("");
+		setTags([]);
+		setTagsError("");
+
+		folderShelfCacheRef.current.clear();
+		setFolderShelfSubfolders([]);
+		setFolderShelfRecents([]);
+	}, []);
+
 	const applyVaultSelection = useCallback(
 		async (path: string, mode: "open" | "create") => {
 			setError("");
@@ -538,26 +563,14 @@ function App() {
 						? await invoke("vault_create", { path })
 						: await invoke("vault_open", { path });
 				await setCurrentVaultPath(info.root);
+				setRecentVaults((prev) => {
+					const next = [info.root, ...prev.filter((p) => p !== info.root)];
+					return next.slice(0, 20);
+				});
 				setVaultPath(info.root);
 				setVaultSchemaVersion(info.schema_version);
 
-				setRootEntries([]);
-				setChildrenByDir({});
-				setDirSummariesByParent({});
-				setExpandedDirs(new Set());
-				setActiveFilePath(null);
-
-				setActiveViewPath(null);
-				setActiveViewDoc(null);
-				setSearchQuery("");
-				setSearchResults([]);
-				setSearchError("");
-				setTags([]);
-				setTagsError("");
-
-				folderShelfCacheRef.current.clear();
-				setFolderShelfSubfolders([]);
-				setFolderShelfRecents([]);
+				resetVaultUiState();
 
 				const entries = await invoke("vault_list_dir", {});
 				setRootEntries(entries);
@@ -590,7 +603,7 @@ function App() {
 				setError(message);
 			}
 		},
-		[loadAndBuildFolderView, refreshTags, startIndexRebuild],
+		[loadAndBuildFolderView, refreshTags, resetVaultUiState, startIndexRebuild],
 	);
 
 	const openMarkdownFileInCanvas = useCallback(
@@ -679,6 +692,45 @@ function App() {
 		if (!path) return;
 		await applyVaultSelection(path, "open");
 	}, [applyVaultSelection, pickDirectory]);
+
+	const closeVault = useCallback(async () => {
+		setError("");
+		try {
+			await invoke("vault_close");
+			await clearCurrentVaultPath();
+			setVaultPath(null);
+			setVaultSchemaVersion(null);
+			setAiSidebarOpen(false);
+			resetVaultUiState();
+		} catch (err) {
+			const message = err instanceof Error ? err.message : String(err);
+			setError(message);
+		}
+	}, [resetVaultUiState]);
+
+	useEffect(() => {
+		let unlistenOpen: (() => void) | null = null;
+		let unlistenCreate: (() => void) | null = null;
+		let unlistenClose: (() => void) | null = null;
+
+		void (async () => {
+			unlistenOpen = await listen("menu:open_vault", () => {
+				void onOpenVault();
+			});
+			unlistenCreate = await listen("menu:create_vault", () => {
+				void onCreateVault();
+			});
+			unlistenClose = await listen("menu:close_vault", () => {
+				void closeVault();
+			});
+		})();
+
+		return () => {
+			unlistenOpen?.();
+			unlistenCreate?.();
+			unlistenClose?.();
+		};
+	}, [closeVault, onCreateVault, onOpenVault]);
 
 	const loadDir = useCallback(async (dirPath: string) => {
 		const entries = await invoke(
@@ -844,15 +896,17 @@ function App() {
 				>
 					{!sidebarCollapsed && (
 						<div className="sidebarActions">
-							<MotionIconButton
-								type="button"
-								size="sm"
-								onClick={() => setShowSearch(!showSearch)}
-								title="Search"
-								active={showSearch}
-							>
-								<Search size={14} />
-							</MotionIconButton>
+							{vaultPath && (
+								<MotionIconButton
+									type="button"
+									size="sm"
+									onClick={() => setShowSearch(!showSearch)}
+									title="Search"
+									active={showSearch}
+								>
+									<Search size={14} />
+								</MotionIconButton>
+							)}
 							<MotionIconButton
 								type="button"
 								size="sm"
@@ -895,106 +949,119 @@ function App() {
 
 				{!sidebarCollapsed && (
 					<>
-						{/* Search Panel (collapsible) */}
-						{showSearch && (
-							<div className="sidebarSection">
-								<SearchPane
-									query={searchQuery}
-									results={searchResults}
-									isSearching={isSearching}
-									error={searchError}
-									onChangeQuery={setSearchQuery}
-									onOpenAsCanvas={(q) => void loadAndBuildSearchView(q)}
-									onSelectNote={(id) => {
-										void openMarkdownFileInCanvas(id);
-									}}
-								/>
-							</div>
-						)}
-
-						{/* Vault Info */}
-						{vaultPath && (
-							<div className="sidebarSection vaultInfo">
-								<div className="vaultPath mono">
-									{vaultPath.split("/").pop()}
-								</div>
-								<div className="vaultMeta">
-									{vaultSchemaVersion ? `v${vaultSchemaVersion}` : ""}
-									{isIndexing ? " • indexing" : ""}
-								</div>
-							</div>
-						)}
-
-						{/* File Tree / Tags Toggle */}
-						<div className="sidebarSection sidebarSectionGrow">
-							<div className="sidebarSectionHeader">
-								<div className="sidebarSectionToggle">
-									<button
-										type="button"
-										className={
-											sidebarViewMode === "files" ? "segBtn active" : "segBtn"
-										}
-										onClick={() => setSidebarViewMode("files")}
-										title="Files"
-									>
-										<Files size={14} />
-									</button>
-									<button
-										type="button"
-										className={
-											sidebarViewMode === "tags" ? "segBtn active" : "segBtn"
-										}
-										onClick={() => setSidebarViewMode("tags")}
-										title="Tags"
-									>
-										<Tags size={14} />
-									</button>
-								</div>
-							</div>
-
-							<AnimatePresence mode="wait">
-								{sidebarViewMode === "files" ? (
-									<motion.div
-										key="files"
-										initial={{ x: -20 }}
-										animate={{ x: 0 }}
-										exit={{ x: -20 }}
-										transition={{ duration: 0.2 }}
-										className="sidebarSectionContent"
-									>
-										<FileTreePane
-											rootEntries={rootEntries}
-											childrenByDir={childrenByDir}
-											expandedDirs={expandedDirs}
-											activeFilePath={activeFilePath}
-											onToggleDir={toggleDir}
-											onSelectDir={(p) => void loadAndBuildFolderView(p)}
-											onOpenFile={(p) => void openFile(p)}
-											onNewFile={onNewFile}
-											summariesByParentDir={dirSummariesByParent}
+						{vaultPath ? (
+							<>
+								{/* Search Panel (collapsible) */}
+								{showSearch && (
+									<div className="sidebarSection">
+										<SearchPane
+											query={searchQuery}
+											results={searchResults}
+											isSearching={isSearching}
+											error={searchError}
+											onChangeQuery={setSearchQuery}
+											onOpenAsCanvas={(q) => void loadAndBuildSearchView(q)}
+											onSelectNote={(id) => {
+												void openMarkdownFileInCanvas(id);
+											}}
 										/>
-									</motion.div>
-								) : (
-									<motion.div
-										key="tags"
-										initial={{ x: 20 }}
-										animate={{ x: 0 }}
-										exit={{ x: 20 }}
-										transition={{ duration: 0.2 }}
-										className="sidebarSectionContent"
-									>
-										{tagsError ? (
-											<div className="searchError">{tagsError}</div>
-										) : null}
-										<TagsPane
-											tags={tags}
-											onSelectTag={(t) => void loadAndBuildTagView(t)}
-											onRefresh={() => void refreshTags()}
-										/>
-									</motion.div>
+									</div>
 								)}
-							</AnimatePresence>
-						</div>
+
+								{/* Vault Info */}
+								<div className="sidebarSection vaultInfo">
+									<div className="vaultPath mono">
+										{vaultPath.split("/").pop()}
+									</div>
+									<div className="vaultMeta">
+										{vaultSchemaVersion ? `v${vaultSchemaVersion}` : ""}
+										{isIndexing ? " • indexing" : ""}
+									</div>
+								</div>
+
+								{/* File Tree / Tags Toggle */}
+								<div className="sidebarSection sidebarSectionGrow">
+									<div className="sidebarSectionHeader">
+										<div className="sidebarSectionToggle">
+											<button
+												type="button"
+												className={
+													sidebarViewMode === "files"
+														? "segBtn active"
+														: "segBtn"
+												}
+												onClick={() => setSidebarViewMode("files")}
+												title="Files"
+											>
+												<Files size={14} />
+											</button>
+											<button
+												type="button"
+												className={
+													sidebarViewMode === "tags"
+														? "segBtn active"
+														: "segBtn"
+												}
+												onClick={() => setSidebarViewMode("tags")}
+												title="Tags"
+											>
+												<Tags size={14} />
+											</button>
+										</div>
+									</div>
+
+									<AnimatePresence mode="wait">
+										{sidebarViewMode === "files" ? (
+											<motion.div
+												key="files"
+												initial={{ x: -20 }}
+												animate={{ x: 0 }}
+												exit={{ x: -20 }}
+												transition={{ duration: 0.2 }}
+												className="sidebarSectionContent"
+											>
+												<FileTreePane
+													rootEntries={rootEntries}
+													childrenByDir={childrenByDir}
+													expandedDirs={expandedDirs}
+													activeFilePath={activeFilePath}
+													onToggleDir={toggleDir}
+													onSelectDir={(p) => void loadAndBuildFolderView(p)}
+													onOpenFile={(p) => void openFile(p)}
+													onNewFile={onNewFile}
+													summariesByParentDir={dirSummariesByParent}
+												/>
+											</motion.div>
+										) : (
+											<motion.div
+												key="tags"
+												initial={{ x: 20 }}
+												animate={{ x: 0 }}
+												exit={{ x: 20 }}
+												transition={{ duration: 0.2 }}
+												className="sidebarSectionContent"
+											>
+												{tagsError ? (
+													<div className="searchError">{tagsError}</div>
+												) : null}
+												<TagsPane
+													tags={tags}
+													onSelectTag={(t) => void loadAndBuildTagView(t)}
+													onRefresh={() => void refreshTags()}
+												/>
+											</motion.div>
+										)}
+									</AnimatePresence>
+								</div>
+							</>
+						) : (
+							<div className="sidebarSection sidebarEmpty">
+								<div className="sidebarEmptyTitle">No vault open</div>
+								<div className="sidebarEmptyHint">
+									Open or create a vault to get started.
+								</div>
+							</div>
+						)}
 
 						<div className="sidebarFooter">
 							<button
@@ -1011,136 +1078,198 @@ function App() {
 			</aside>
 
 			{/* Main Canvas Area */}
-			<main className="mainArea">
-				{/* Main Toolbar */}
-				<div
-					className="mainToolbar"
-					data-tauri-drag-region
-					onMouseDown={onWindowDragMouseDown}
-				>
-					<div className="mainToolbarLeft">
+			<main className={`mainArea ${vaultPath ? "" : "mainAreaWelcome"}`}>
+				{vaultPath ? (
+					<>
+						{/* Main Toolbar */}
+						<div
+							className="mainToolbar"
+							data-tauri-drag-region
+							onMouseDown={onWindowDragMouseDown}
+						>
+							<div className="mainToolbarLeft">
+								{activeViewDoc?.kind === "folder" ? (
+									<FolderBreadcrumb
+										dir={activeViewDoc.selector || ""}
+										onOpenFolder={(d) => void loadAndBuildFolderView(d)}
+									/>
+								) : (
+									<span className="canvasTitle">
+										{activeViewDoc?.title || "Canvas"}
+									</span>
+								)}
+							</div>
+							<div className="mainToolbarRight">
+								<MotionIconButton
+									type="button"
+									active={aiSidebarOpen}
+									onClick={() => setAiSidebarOpen(!aiSidebarOpen)}
+									title="Toggle AI assistant"
+								>
+									<Sparkles size={16} />
+								</MotionIconButton>
+							</div>
+						</div>
+
 						{activeViewDoc?.kind === "folder" ? (
-							<FolderBreadcrumb
-								dir={activeViewDoc.selector || ""}
+							<FolderShelf
+								subfolders={folderShelfSubfolders}
+								recents={folderShelfRecents}
 								onOpenFolder={(d) => void loadAndBuildFolderView(d)}
+								onOpenMarkdown={(p) => void openMarkdownFileInCanvas(p)}
+								onOpenNonMarkdown={(p) => {
+									setActiveFilePath(p);
+									void openNonMarkdownExternally(p);
+								}}
+								onFocusNode={(nodeId) => {
+									setCanvasCommand({
+										id: crypto.randomUUID(),
+										kind: "focus_node",
+										nodeId,
+									});
+								}}
 							/>
-						) : (
-							<span className="canvasTitle">
-								{activeViewDoc?.title || "Canvas"}
-							</span>
-						)}
-					</div>
-					<div className="mainToolbarRight">
-						<MotionIconButton
-							type="button"
-							active={aiSidebarOpen}
-							onClick={() => setAiSidebarOpen(!aiSidebarOpen)}
-							title="Toggle AI assistant"
-						>
-							<Sparkles size={16} />
-						</MotionIconButton>
-					</div>
-				</div>
+						) : null}
 
-				{activeViewDoc?.kind === "folder" ? (
-					<FolderShelf
-						subfolders={folderShelfSubfolders}
-						recents={folderShelfRecents}
-						onOpenFolder={(d) => void loadAndBuildFolderView(d)}
-						onOpenMarkdown={(p) => void openMarkdownFileInCanvas(p)}
-						onOpenNonMarkdown={(p) => {
-							setActiveFilePath(p);
-							void openNonMarkdownExternally(p);
-						}}
-						onFocusNode={(nodeId) => {
-							setCanvasCommand({
-								id: crypto.randomUUID(),
-								kind: "focus_node",
-								nodeId,
-							});
-						}}
-					/>
-				) : null}
-
-				{/* Main Content */}
-				<div className="canvasWrapper">
-					<div className="canvasPaneHost">
-						<Suspense
-							fallback={<div className="canvasEmpty">Loading canvas…</div>}
+						{/* Main Content */}
+						<div className="canvasWrapper">
+							<div className="canvasPaneHost">
+								<Suspense
+									fallback={<div className="canvasEmpty">Loading canvas…</div>}
+								>
+									{canvasLoadingMessage ? (
+										<div className="canvasEmpty">{canvasLoadingMessage}</div>
+									) : (
+										<CanvasPane
+											doc={activeViewDoc ? asCanvasDocLike(activeViewDoc) : null}
+											onSave={onSaveView}
+											onOpenNote={(p) => void openFile(p)}
+											onOpenFolder={(dir) => void loadAndBuildFolderView(dir)}
+											activeNoteId={activeNoteId}
+											activeNoteTitle={activeNoteTitle}
+											vaultPath={vaultPath}
+											onSelectionChange={onCanvasSelectionChange}
+											externalCommand={canvasCommand}
+											onExternalCommandHandled={(id) => {
+												setCanvasCommand((prev) =>
+													prev?.id === id ? null : prev,
+												);
+											}}
+										/>
+									)}
+								</Suspense>
+							</div>
+						</div>
+					</>
+				) : (
+					<>
+						<div
+							className="mainToolbar"
+							data-tauri-drag-region
+							onMouseDown={onWindowDragMouseDown}
 						>
-							{canvasLoadingMessage ? (
-								<div className="canvasEmpty">{canvasLoadingMessage}</div>
-							) : (
-								<CanvasPane
-									doc={activeViewDoc ? asCanvasDocLike(activeViewDoc) : null}
-									onSave={onSaveView}
-									onOpenNote={(p) => void openFile(p)}
-									onOpenFolder={(dir) => void loadAndBuildFolderView(dir)}
-									activeNoteId={activeNoteId}
-									activeNoteTitle={activeNoteTitle}
-									vaultPath={vaultPath}
-									onSelectionChange={onCanvasSelectionChange}
-									externalCommand={canvasCommand}
-									onExternalCommandHandled={(id) => {
-										setCanvasCommand((prev) => (prev?.id === id ? null : prev));
-									}}
-								/>
-							)}
-						</Suspense>
-					</div>
-				</div>
+							<div className="mainToolbarLeft">
+								<span className="canvasTitle">Welcome</span>
+							</div>
+						</div>
+						<div className="welcomeScreen">
+							<div className="welcomeHero">
+								<div className="welcomeTitle">
+									{info?.name ?? "Tether"}
+								</div>
+								<div className="welcomeSubtitle">
+									Open or create a vault to start building your workspace.
+								</div>
+							</div>
+							<div className="welcomeActions">
+								<button type="button" className="primary" onClick={onOpenVault}>
+									Open Vault
+								</button>
+								<button type="button" className="ghost" onClick={onCreateVault}>
+									Create Vault
+								</button>
+							</div>
+							<div className="welcomeRecents">
+								<div className="welcomeSectionTitle">Recent vaults</div>
+								{recentVaults.length ? (
+									<div className="welcomeRecentList">
+										{recentVaults.map((p) => (
+											<button
+												key={p}
+												type="button"
+												className="welcomeRecentItem"
+												onClick={() => void applyVaultSelection(p, "open")}
+											>
+												<span className="welcomeRecentName">
+													{p.split("/").pop() ?? p}
+												</span>
+												<span className="welcomeRecentPath mono">{p}</span>
+											</button>
+										))}
+									</div>
+								) : (
+									<div className="welcomeEmpty">No recent vaults yet.</div>
+								)}
+							</div>
+						</div>
+					</>
+				)}
 			</main>
 
-			<div
-				className="rightSidebarResizer"
-				aria-hidden={!aiSidebarOpen}
-				data-window-drag-ignore
-				onMouseDown={(e) => {
-					if (!aiSidebarOpen) return;
-					if (e.button !== 0) return;
-					e.preventDefault();
-					aiSidebarResizingRef.current = true;
-					aiSidebarResizeStartRef.current = {
-						x: e.clientX,
-						width: aiSidebarWidth,
-					};
+			{vaultPath && (
+				<>
+					<div
+						className="rightSidebarResizer"
+						aria-hidden={!aiSidebarOpen}
+						data-window-drag-ignore
+						onMouseDown={(e) => {
+							if (!aiSidebarOpen) return;
+							if (e.button !== 0) return;
+							e.preventDefault();
+							aiSidebarResizingRef.current = true;
+							aiSidebarResizeStartRef.current = {
+								x: e.clientX,
+								width: aiSidebarWidth,
+							};
 
-					const onMove = (evt: globalThis.MouseEvent) => {
-						const start = aiSidebarResizeStartRef.current;
-						if (!aiSidebarResizingRef.current || !start) return;
-						const delta = start.x - evt.clientX;
-						const next = Math.max(340, Math.min(520, start.width + delta));
-						setAiSidebarWidth(next);
-					};
+							const onMove = (evt: globalThis.MouseEvent) => {
+								const start = aiSidebarResizeStartRef.current;
+								if (!aiSidebarResizingRef.current || !start) return;
+								const delta = start.x - evt.clientX;
+								const next = Math.max(340, Math.min(520, start.width + delta));
+								setAiSidebarWidth(next);
+							};
 
-					const onUp = () => {
-						if (!aiSidebarResizingRef.current) return;
-						aiSidebarResizingRef.current = false;
-						aiSidebarResizeStartRef.current = null;
-						window.removeEventListener("mousemove", onMove);
-						window.removeEventListener("mouseup", onUp);
-						void persistAiSidebarWidth(aiSidebarWidthRef.current);
-					};
+							const onUp = () => {
+								if (!aiSidebarResizingRef.current) return;
+								aiSidebarResizingRef.current = false;
+								aiSidebarResizeStartRef.current = null;
+								window.removeEventListener("mousemove", onMove);
+								window.removeEventListener("mouseup", onUp);
+								void persistAiSidebarWidth(aiSidebarWidthRef.current);
+							};
 
-					window.addEventListener("mousemove", onMove);
-					window.addEventListener("mouseup", onUp, { once: true });
-				}}
-			/>
+							window.addEventListener("mousemove", onMove);
+							window.addEventListener("mouseup", onUp, { once: true });
+						}}
+					/>
 
-			<AISidebar
-				isOpen={aiSidebarOpen}
-				width={aiSidebarWidth}
-				onClose={() => setAiSidebarOpen(false)}
-				onOpenSettings={() => {
-					// wired in a later step
-					setAiSidebarOpen(true);
-				}}
-				activeNoteId={activeNoteId}
-				activeNoteTitle={activeNoteTitle}
-				activeNoteMarkdown={null}
-				selectedCanvasNodes={selectedCanvasNodes}
-				canvasDoc={activeViewDoc ? asCanvasDocLike(activeViewDoc) : null}
-			/>
+					<AISidebar
+						isOpen={aiSidebarOpen}
+						width={aiSidebarWidth}
+						onClose={() => setAiSidebarOpen(false)}
+						onOpenSettings={() => {
+							// wired in a later step
+							setAiSidebarOpen(true);
+						}}
+						activeNoteId={activeNoteId}
+						activeNoteTitle={activeNoteTitle}
+						activeNoteMarkdown={null}
+						selectedCanvasNodes={selectedCanvasNodes}
+						canvasDoc={activeViewDoc ? asCanvasDocLike(activeViewDoc) : null}
+					/>
+				</>
+			)}
 
 			{/* Error Toast */}
 			<AnimatePresence>

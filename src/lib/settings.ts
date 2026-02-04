@@ -55,6 +55,12 @@ export async function setCurrentVaultPath(path: string): Promise<void> {
 	await store.save();
 }
 
+export async function clearCurrentVaultPath(): Promise<void> {
+	await ensureLoaded();
+	await store.set(KEYS.currentVaultPath, null);
+	await store.save();
+}
+
 export async function clearRecentVaults(): Promise<void> {
 	await ensureLoaded();
 	await store.set(KEYS.recentVaults, []);
