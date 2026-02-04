@@ -2399,7 +2399,7 @@ export default function CanvasPane({
 								instance.fitView();
 							}}
 						>
-							<MiniMap />
+							<MiniMap pannable zoomable />
 							<Controls />
 						</ReactFlow>
 					</div>
