@@ -6,11 +6,9 @@ import StarterKit from "@tiptap/starter-kit";
 import Suggestion, { type SuggestionProps } from "@tiptap/suggestion";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
-import Link from "@tiptap/extension-link";
 import { Table, TableCell, TableHeader, TableRow } from "@tiptap/extension-table";
 import TaskItem from "@tiptap/extension-task-item";
 import TaskList from "@tiptap/extension-task-list";
-import Underline from "@tiptap/extension-underline";
 import { memo, useEffect, useMemo, useRef } from "react";
 import {
 	Bold,
@@ -18,12 +16,14 @@ import {
 	Heading1,
 	Heading2,
 	Heading3,
+	Eye,
 	Italic,
 	List,
 	ListChecks,
 	ListOrdered,
 	Quote,
 	Strikethrough,
+	Edit,
 } from "./Icons";
 import {
 	splitYamlFrontmatter,
@@ -323,12 +323,12 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 			StarterKit.configure({
 				bulletList: { keepMarks: true, keepAttributes: false },
 				orderedList: { keepMarks: true, keepAttributes: false },
-			}),
-			Underline,
-			Link.configure({
-				openOnClick: false,
-				autolink: true,
-				defaultProtocol: "https",
+				link: {
+					openOnClick: false,
+					autolink: true,
+					defaultProtocol: "https",
+				},
+				underline: {},
 			}),
 			TaskList,
 			TaskItem.configure({ nested: true }),
@@ -448,13 +448,14 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	return (
 		<div className="rfNodeNoteEditor nodrag nopan">
 			<div className="rfNodeNoteEditorHeaderBar nodrag nopan nowheel">
+				<div className="rfNodeNoteEditorHeaderSpacer" />
 				<button
 					type="button"
 					className={mode === "preview" ? "segBtn active" : "segBtn"}
 					onClick={() => onModeChange("preview")}
 					title="Preview"
 				>
-					Preview
+					<Eye size={14} />
 				</button>
 				<button
 					type="button"
@@ -462,9 +463,8 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 					onClick={() => onModeChange("rich")}
 					title="Rich Text"
 				>
-					Rich
+					<Edit size={14} />
 				</button>
-				<div style={{ flex: 1 }} />
 			</div>
 			<div className="rfNodeNoteEditorBody nodrag nopan nowheel">
 				{frontmatter ? (
@@ -487,11 +487,11 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 					<EditorContent editor={editor} />
 				</div>
 			</div>
-			<div
-				className="rfNodeNoteEditorRibbon rfNodeNoteEditorRibbonBottom nodrag nopan nowheel"
-				onMouseDown={preventRibbonContainerMouseDown}
-			>
-				{editor ? (
+			{editor && mode === "rich" ? (
+				<div
+					className="rfNodeNoteEditorRibbon rfNodeNoteEditorRibbonBottom nodrag nopan nowheel"
+					onMouseDown={preventRibbonContainerMouseDown}
+				>
 					<>
 						<div className="ribbonGroup">
 							<button
@@ -753,9 +753,8 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 							</button>
 						</div>
 					</>
-				) : null}
-				<div style={{ flex: 1 }} />
-			</div>
+				</div>
+			) : null}
 		</div>
 	);
 });
