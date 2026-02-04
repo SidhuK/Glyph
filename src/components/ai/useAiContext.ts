@@ -1,31 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import {
-	type FsEntry,
-	type LinkPreview,
-	TauriInvokeError,
-	invoke,
-} from "../../lib/tauri";
-import type { CanvasDocLike } from "../CanvasPane";
-
-export type SelectedCanvasNode = {
-	id: string;
-	type: string | null;
-	data: Record<string, unknown> | null;
-};
-
-type ContextScope = "folder" | "vault" | "manual";
-
-type ContextSpec = {
-	scope: ContextScope;
-	scopeFolder: string;
-	manualFiles: string[];
-	neighborDepth: 0 | 1 | 2;
-	includeNoteContents: boolean;
-	includeLinkPreviewText: boolean;
-	includeActiveNote: boolean;
-	includeSelectedNodes: boolean;
-	charBudget: number;
-};
+import { type FsEntry, TauriInvokeError, invoke } from "../../lib/tauri";
 
 type ContextManifestItem = {
 	kind: string;
@@ -36,16 +10,14 @@ type ContextManifestItem = {
 };
 
 export type ContextManifest = {
-	spec: ContextSpec;
 	items: ContextManifestItem[];
 	totalChars: number;
 	estTokens: number;
 };
 
-type ContextFileEntry = {
+type FolderEntry = {
 	path: string;
-	name: string;
-	isMarkdown: boolean;
+	label: string;
 };
 
 function errMessage(err: unknown): string {
@@ -54,298 +26,194 @@ function errMessage(err: unknown): string {
 	return String(err);
 }
 
-function clampInt(n: number, min: number, max: number): number {
-	if (!Number.isFinite(n)) return min;
-	return Math.max(min, Math.min(max, Math.floor(n)));
-}
-
 function estimateTokens(chars: number): number {
 	return Math.ceil(chars / 4);
 }
 
+function normalizeRelPath(path: string): string {
+	return path.trim().replace(/\\/g, "/").replace(/^\/+|\/+$/g, "");
+}
+
 const FILE_LIST_LIMIT = 20_000;
-const MAX_CONTEXT_FILES = 120;
-const DEFAULT_AUTO_SELECT = 8;
-const MAX_VISIBLE_FILES = 200;
-
-function isUuid(id: string): boolean {
-	return /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
-		id,
-	);
-}
-
-function truncateWithNotice(
-	text: string,
-	maxChars: number,
-): { text: string; truncated: boolean } {
-	if (maxChars <= 0) return { text: "", truncated: true };
-	if (text.length <= maxChars) return { text, truncated: false };
-	const suffix = "\n…(truncated)";
-	const keep = Math.max(0, maxChars - suffix.length);
-	return { text: `${text.slice(0, keep)}${suffix}`, truncated: true };
-}
+const READ_CHUNK_SIZE = 24;
+const DEFAULT_CHAR_BUDGET = 12_000;
+const MAX_VISIBLE_FOLDERS = 120;
 
 export function useAiContext({
-	activeNoteId,
-	activeNoteTitle,
-	activeNoteMarkdown,
 	activeFolderPath,
-	selectedCanvasNodes,
-	canvasDoc,
 }: {
-	activeNoteId: string | null;
-	activeNoteTitle: string | null;
-	activeNoteMarkdown?: string | null;
 	activeFolderPath: string | null;
-	selectedCanvasNodes: SelectedCanvasNode[];
-	canvasDoc: CanvasDocLike | null;
 }) {
-	const [scope, setScope] = useState<ContextScope>("folder");
-	const [scopeFolder, setScopeFolder] = useState("");
-	const [followActiveFolder, setFollowActiveFolder] = useState(true);
-	const [manualFiles, setManualFiles] = useState<string[]>([]);
+	const [pinnedFolders, setPinnedFolders] = useState<string[]>([]);
+	const [removedActiveFolder, setRemovedActiveFolder] = useState(false);
 	const [contextSearch, setContextSearch] = useState("");
-	const [candidateFiles, setCandidateFiles] = useState<ContextFileEntry[]>([]);
-	const [candidateTotal, setCandidateTotal] = useState(0);
-	const [candidateError, setCandidateError] = useState("");
-	const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
-	const [selectionTouched, setSelectionTouched] = useState(false);
-
-	const [includeActiveNote, setIncludeActiveNote] = useState(true);
-	const [includeSelectedNodes, setIncludeSelectedNodes] = useState(true);
-	const [includeNoteContents, setIncludeNoteContents] = useState(true);
-	const [includeLinkPreviewText, setIncludeLinkPreviewText] = useState(true);
-	const [neighborDepth, setNeighborDepth] = useState<0 | 1 | 2>(0);
-	const [charBudget, setCharBudget] = useState(8000);
-
+	const [folderIndex, setFolderIndex] = useState<FolderEntry[]>([]);
+	const [folderIndexError, setFolderIndexError] = useState("");
 	const [payloadPreview, setPayloadPreview] = useState("");
-	const [payloadApproved, setPayloadApproved] = useState(false);
 	const [payloadManifest, setPayloadManifest] =
 		useState<ContextManifest | null>(null);
 	const [payloadError, setPayloadError] = useState("");
 	const [payloadBuilding, setPayloadBuilding] = useState(false);
+	const [charBudget, setCharBudget] = useState(DEFAULT_CHAR_BUDGET);
 
-	const noteCacheRef = useRef<Map<string, { title: string; markdown: string }>>(
-		new Map(),
-	);
-	const linkPreviewCacheRef = useRef<Map<string, LinkPreview>>(new Map());
-	const fileListCacheRef = useRef<Map<string, ContextFileEntry[]>>(new Map());
+	const folderFilesCacheRef = useRef<Map<string, string[]>>(new Map());
+	const fileTextCacheRef = useRef<Map<string, string>>(new Map());
 
-	const getNote = useCallback(async (noteId: string) => {
-		const cached = noteCacheRef.current.get(noteId);
-		if (cached) return cached;
-		const next = isUuid(noteId)
-			? await (async () => {
-					const doc = await invoke("note_read", { id: noteId });
-					return { title: doc.meta.title, markdown: doc.markdown };
-				})()
-			: await (async () => {
-					const doc = await invoke("vault_read_text", { path: noteId });
-					const title = noteId.split("/").pop() || noteId;
-					return { title, markdown: doc.text };
-				})();
-		noteCacheRef.current.set(noteId, next);
+	const normalizedActive = useMemo(() => {
+		const next =
+			activeFolderPath != null ? normalizeRelPath(activeFolderPath) : "";
 		return next;
-	}, []);
-
-	const getLinkPreview = useCallback(async (url: string) => {
-		const cached = linkPreviewCacheRef.current.get(url);
-		if (cached) return cached;
-		try {
-			const preview = await invoke("link_preview", { url });
-			linkPreviewCacheRef.current.set(url, preview);
-			return preview;
-		} catch {
-			return null;
-		}
-	}, []);
-
-	const toFileEntry = useCallback((entry: FsEntry): ContextFileEntry => {
-		return {
-			path: entry.rel_path,
-			name: entry.name,
-			isMarkdown: entry.is_markdown,
-		};
-	}, []);
+	}, [activeFolderPath]);
+	const hasActiveFolder = activeFolderPath !== null;
 
 	useEffect(() => {
-		if (scope !== "folder") return;
-		if (!followActiveFolder) return;
-		setScopeFolder(activeFolderPath ?? "");
-		setSelectionTouched(false);
-	}, [activeFolderPath, followActiveFolder, scope]);
+		setRemovedActiveFolder(false);
+	}, [normalizedActive]);
 
-	const listScopeDir = useMemo(() => {
-		if (scope === "folder") return scopeFolder || "";
-		return "";
-	}, [scope, scopeFolder]);
+	const attachedFolders = useMemo(() => {
+		const seen = new Set<string>();
+		const list: FolderEntry[] = [];
+		if (hasActiveFolder && !removedActiveFolder) {
+			seen.add(normalizedActive);
+			list.push({
+				path: normalizedActive,
+				label: normalizedActive || "Vault",
+			});
+		}
+		for (const raw of pinnedFolders) {
+			const path = normalizeRelPath(raw);
+			if (!path && !normalizedActive) {
+				if (!seen.has(path)) {
+					seen.add(path);
+					list.push({ path: "", label: "Vault" });
+				}
+				continue;
+			}
+			if (!path || seen.has(path)) continue;
+			seen.add(path);
+			list.push({ path, label: path });
+		}
+		return list;
+	}, [normalizedActive, pinnedFolders, removedActiveFolder]);
+
+	const addFolder = useCallback(
+		(path: string) => {
+			const normalized = normalizeRelPath(path);
+			if (path == null) return;
+			if (normalized === normalizedActive) {
+				setRemovedActiveFolder(false);
+				return;
+			}
+			setPinnedFolders((prev) => {
+				if (prev.includes(normalized)) return prev;
+				return [...prev, normalized];
+			});
+		},
+		[normalizedActive],
+	);
+
+	const removeFolder = useCallback(
+		(path: string) => {
+			const normalized = normalizeRelPath(path);
+			if (normalized === normalizedActive) {
+				setRemovedActiveFolder(true);
+				return;
+			}
+			setPinnedFolders((prev) => prev.filter((p) => p !== normalized));
+		},
+		[normalizedActive],
+	);
 
 	useEffect(() => {
-		if (scope === "manual" && !listScopeDir) {
-			// Manual scope still uses vault-wide list for selection.
-		}
 		let cancelled = false;
-		const key = `${scope}:${listScopeDir}`;
-		const cached = fileListCacheRef.current.get(key);
-		if (cached) {
-			setCandidateFiles(cached);
-			setCandidateTotal(cached.length);
-			setCandidateError("");
-			return;
-		}
-		setCandidateError("");
-		setCandidateFiles([]);
-		setCandidateTotal(0);
+		setFolderIndexError("");
 		void (async () => {
 			try {
 				const entries = await invoke("vault_list_files", {
-					dir: listScopeDir || null,
+					dir: null,
 					recursive: true,
 					limit: FILE_LIST_LIMIT,
 				});
 				if (cancelled) return;
-				const files = entries
-					.filter((e) => e.kind === "file")
-					.map((e) => toFileEntry(e));
-				fileListCacheRef.current.set(key, files);
-				setCandidateFiles(files);
-				setCandidateTotal(files.length);
+				const dirs = new Set<string>();
+				dirs.add("");
+				for (const entry of entries) {
+					const rel = normalizeRelPath(entry.rel_path);
+					if (!rel) continue;
+					const parts = rel.split("/");
+					parts.pop();
+					let accum = "";
+					for (const part of parts) {
+						accum = accum ? `${accum}/${part}` : part;
+						dirs.add(accum);
+					}
+				}
+				const next = Array.from(dirs)
+					.sort((a, b) => a.localeCompare(b))
+					.map((path) => ({
+						path,
+						label: path || "Vault",
+					}));
+				setFolderIndex(next);
 			} catch (e) {
 				if (cancelled) return;
-				setCandidateError(errMessage(e));
+				setFolderIndexError(errMessage(e));
 			}
 		})();
 		return () => {
 			cancelled = true;
 		};
-	}, [listScopeDir, scope, toFileEntry]);
-
-	const filteredFiles = useMemo(() => {
-		const q = contextSearch.trim().toLowerCase();
-		if (!q) return candidateFiles;
-		return candidateFiles.filter((f) => {
-			const name = f.name.toLowerCase();
-			const path = f.path.toLowerCase();
-			return name.includes(q) || path.includes(q);
-		});
-	}, [candidateFiles, contextSearch]);
-
-	const visibleFiles = useMemo(
-		() => filteredFiles.slice(0, MAX_VISIBLE_FILES),
-		[filteredFiles],
-	);
-
-	useEffect(() => {
-		setSelectionTouched(false);
-		if (scope === "manual") {
-			setSelectedFiles(manualFiles);
-		}
-	}, [manualFiles, scope]);
-
-	useEffect(() => {
-		if (scope === "manual") {
-			setSelectedFiles(manualFiles);
-			return;
-		}
-		if (selectionTouched) return;
-		setSelectedFiles(candidateFiles.slice(0, DEFAULT_AUTO_SELECT).map((f) => f.path));
-	}, [candidateFiles, manualFiles, scope, selectionTouched]);
-
-	const toggleSelectedFile = useCallback(
-		(path: string) => {
-			if (!path.trim()) return;
-			setSelectionTouched(true);
-			setSelectedFiles((prev) => {
-				if (prev.includes(path)) {
-					const next = prev.filter((p) => p !== path);
-					if (scope === "manual") setManualFiles(next);
-					return next;
-				}
-				const next = [...prev, path];
-				if (scope === "manual") setManualFiles(next);
-				return next;
-			});
-		},
-		[scope],
-	);
-
-	const removeManualFile = useCallback((path: string) => {
-		if (!path.trim()) return;
-		setManualFiles((prev) => prev.filter((p) => p !== path));
 	}, []);
 
-	const contextSpec = useMemo<ContextSpec>(
-		() => ({
-			scope,
-			scopeFolder: scopeFolder || "",
-			manualFiles,
-			neighborDepth,
-			includeNoteContents,
-			includeLinkPreviewText,
-			includeActiveNote,
-			includeSelectedNodes,
-			charBudget: clampInt(charBudget, 200, 200_000),
-		}),
-		[
-			charBudget,
-			includeActiveNote,
-			includeLinkPreviewText,
-			includeNoteContents,
-			includeSelectedNodes,
-			neighborDepth,
-			manualFiles,
-			scope,
-			scopeFolder,
-		],
+	const filteredFolders = useMemo(() => {
+		const q = contextSearch.trim().toLowerCase();
+		if (!q) return folderIndex;
+		return folderIndex.filter((f) =>
+			f.label.toLowerCase().includes(q),
+		);
+	}, [contextSearch, folderIndex]);
+
+	const visibleFolders = useMemo(
+		() => filteredFolders.slice(0, MAX_VISIBLE_FOLDERS),
+		[filteredFolders],
 	);
 
-	const payloadInvalidationKey = useMemo(() => {
-		const selectedIds = selectedCanvasNodes.map((n) => n.id).join(",");
-		const noteKey = activeNoteId ? `${activeNoteId}` : "";
-		const canvasKey = canvasDoc?.id ?? "";
-		const fileKey =
-			scope === "manual"
-				? manualFiles.join(",")
-				: selectedFiles.join(",");
-		return JSON.stringify({
-			selectedIds,
-			noteKey,
-			canvasKey,
-			fileKey,
-			contextSpec,
+	const readFolderFiles = useCallback(async (folderPath: string) => {
+		const key = folderPath || "";
+		const cached = folderFilesCacheRef.current.get(key);
+		if (cached) return cached;
+		const entries = await invoke("vault_list_files", {
+			dir: folderPath || null,
+			recursive: true,
+			limit: FILE_LIST_LIMIT,
 		});
-	}, [
-		activeNoteId,
-		canvasDoc?.id,
-		contextSpec,
-		manualFiles,
-		scope,
-		selectedCanvasNodes,
-		selectedFiles,
-	]);
-
-	useEffect(() => {
-		void payloadInvalidationKey;
-		setPayloadApproved(false);
-		setPayloadError("");
-	}, [payloadInvalidationKey]);
+		const files = entries
+			.filter((e: FsEntry) => e.kind === "file")
+			.map((e: FsEntry) => e.rel_path);
+		folderFilesCacheRef.current.set(key, files);
+		return files;
+	}, []);
 
 	const buildPayload = useCallback(async () => {
 		setPayloadError("");
-		setPayloadApproved(false);
 		setPayloadBuilding(true);
 
 		try {
 			const items: ContextManifestItem[] = [];
 			const parts: string[] = [];
-			let remaining = contextSpec.charBudget;
+			let remaining = Math.max(200, Math.floor(charBudget));
 
 			const pushItem = (kind: string, label: string, text: string) => {
 				if (!text.trim()) return;
-				const { text: clipped, truncated } = truncateWithNotice(
-					text.trim(),
-					remaining,
-				);
+				if (!remaining) return;
+				const suffix = "\n…(truncated)";
+				let clipped = text.trim();
+				let truncated = false;
+				if (clipped.length > remaining) {
+					const keep = Math.max(0, remaining - suffix.length);
+					clipped = `${clipped.slice(0, keep)}${suffix}`;
+					truncated = true;
+				}
 				if (!clipped.trim()) return;
 				parts.push(clipped);
 				const chars = clipped.length;
@@ -359,193 +227,35 @@ export function useAiContext({
 				remaining = Math.max(0, remaining - chars);
 			};
 
-			const splitFrontmatter = (md: string): string => {
-				if (md.startsWith("---\n")) {
-					const idx = md.indexOf("\n---\n", 4);
-					if (idx !== -1) return md.slice(idx + "\n---\n".length);
-				}
-				if (md.startsWith("---\r\n")) {
-					const idx = md.indexOf("\r\n---\r\n", 5);
-					if (idx !== -1) return md.slice(idx + "\r\n---\r\n".length);
-				}
-				return md;
-			};
-
-			const noteExcerpt = (md: string, budget: number): string => {
-				const body = splitFrontmatter(md).trim();
-				if (!body) return "";
-				const lines = body.split("\n");
-				const headings: string[] = [];
-				for (const line of lines) {
-					if (line.startsWith("#")) headings.push(line.trim());
-					if (headings.length >= 16) break;
-				}
-				const headingBlock = headings.length
-					? `Headings:\n${headings.map((h) => `- ${h}`).join("\n")}\n\n`
-					: "";
-				const remainderBudget = Math.max(0, budget - headingBlock.length);
-				const excerpt = body.slice(0, remainderBudget);
-				return `${headingBlock}${excerpt}`.trim();
-			};
-
-			if (contextSpec.includeActiveNote && activeNoteId) {
-				const note =
-					typeof activeNoteMarkdown === "string" && activeNoteMarkdown.length
-						? {
-								title: activeNoteTitle || activeNoteId,
-								markdown: activeNoteMarkdown,
-							}
-						: await getNote(activeNoteId);
-				const title = note.title ?? activeNoteTitle ?? "";
-				const md = note.markdown ?? "";
-				const header =
-					`# Active Note\nid: ${activeNoteId}\ntitle: ${title}`.trim();
-				const content =
-					contextSpec.includeNoteContents && md
-						? `\n\n${noteExcerpt(md, remaining)}`
-						: "";
-				pushItem("active_note", title || activeNoteId, `${header}${content}`);
-			}
-
-			if (contextSpec.includeSelectedNodes && selectedCanvasNodes.length) {
-				const selectedIds = selectedCanvasNodes.map((n) => n.id);
-				const nodesById = new Map(
-					(canvasDoc?.nodes ?? []).map((n) => [n.id, n] as const),
-				);
-				const edges = canvasDoc?.edges ?? [];
-				const adj = new Map<string, Set<string>>();
-				const addAdj = (a: string, b: string) => {
-					if (!a || !b) return;
-					const set = adj.get(a) ?? new Set<string>();
-					set.add(b);
-					adj.set(a, set);
-				};
-				for (const e of edges) {
-					addAdj(e.source, e.target);
-					addAdj(e.target, e.source);
-				}
-
-				const included = new Set<string>(selectedIds);
-				let frontier = selectedIds.slice();
-				const ordered = selectedIds.slice();
-				for (let depth = 0; depth < contextSpec.neighborDepth; depth++) {
-					const next: string[] = [];
-					for (const id of frontier) {
-						const neighbors = adj.get(id);
-						if (!neighbors) continue;
-						for (const nb of neighbors) {
-							if (included.has(nb)) continue;
-							included.add(nb);
-							next.push(nb);
-						}
-					}
-					ordered.push(...next);
-					frontier = next;
-				}
-
-				for (const nodeId of ordered) {
+			for (const folder of attachedFolders) {
+				if (!remaining) break;
+				pushItem("folder", folder.label, `# Folder: ${folder.label}`);
+				if (!remaining) break;
+				const paths = await readFolderFiles(folder.path);
+				for (let i = 0; i < paths.length; i += READ_CHUNK_SIZE) {
 					if (!remaining) break;
-					const fromDoc = nodesById.get(nodeId);
-					const fallback =
-						selectedCanvasNodes.find((n) => n.id === nodeId) ?? null;
-					const type = fromDoc?.type ?? fallback?.type ?? "unknown";
-					const data =
-						(fromDoc?.data as Record<string, unknown> | null | undefined) ??
-						fallback?.data ??
-						{};
-
-					if (type === "note") {
-						const noteId =
-							typeof data.noteId === "string"
-								? data.noteId
-								: typeof data.note_id === "string"
-									? data.note_id
-									: "";
-						const cachedTitle =
-							typeof data.title === "string" ? data.title : "Note";
-						const note = noteId ? await getNote(noteId) : null;
-						const title = note?.title ?? cachedTitle;
-						const header =
-							`# Canvas Note Node\nnodeId: ${nodeId}\nnoteId: ${noteId}\ntitle: ${title}`.trim();
-						const content =
-							contextSpec.includeNoteContents && note?.markdown
-								? `\n\n${noteExcerpt(note.markdown, remaining)}`
-								: "";
-						pushItem("canvas_note", title, `${header}${content}`);
-						continue;
+					const chunk = paths.slice(i, i + READ_CHUNK_SIZE);
+					const docs = await invoke("vault_read_texts_batch", {
+						paths: chunk,
+					});
+					for (const doc of docs) {
+						if (!remaining) break;
+						if (!doc.text || doc.error) continue;
+						const cached = fileTextCacheRef.current.get(doc.rel_path);
+						const text = cached ?? doc.text;
+						fileTextCacheRef.current.set(doc.rel_path, text);
+						pushItem(
+							"file",
+							doc.rel_path,
+							`# File: ${doc.rel_path}\n\n${text}`,
+						);
 					}
-
-					if (type === "link") {
-						const url = typeof data.url === "string" ? data.url : "";
-						const preview =
-							(data.preview as LinkPreview | null | undefined) ??
-							(url ? await getLinkPreview(url) : null);
-						const title = preview?.title ? preview.title : url || "Link";
-						const header =
-							`# Canvas Link Node\nnodeId: ${nodeId}\nurl: ${url}\ntitle: ${title}`.trim();
-						const desc =
-							contextSpec.includeLinkPreviewText && preview?.description
-								? `\n\ndescription: ${preview.description}`
-								: "";
-						pushItem("canvas_link", title, `${header}${desc}`);
-						continue;
-					}
-
-					if (type === "text") {
-						const text = typeof data.text === "string" ? data.text : "";
-						const header = `# Canvas Text Node\nnodeId: ${nodeId}`.trim();
-						const content = text ? `\n\n${text}` : "";
-						pushItem("canvas_text", "Text node", `${header}${content}`);
-						continue;
-					}
-
-					if (type === "frame") {
-						const title = typeof data.title === "string" ? data.title : "Frame";
-						const header =
-							`# Canvas Frame\nnodeId: ${nodeId}\ntitle: ${title}`.trim();
-						pushItem("canvas_frame", title, header);
-						continue;
-					}
-
-					pushItem(
-						"canvas_node",
-						`${type}`,
-						`# Canvas Node\nnodeId: ${nodeId}\ntype: ${type}`,
-					);
-				}
-			}
-
-			const filePaths =
-				contextSpec.scope === "manual" ? manualFiles : selectedFiles;
-			const uniquePaths = Array.from(
-				new Set(filePaths.map((p) => p.trim()).filter(Boolean)),
-			).slice(0, MAX_CONTEXT_FILES);
-			if (uniquePaths.length) {
-				const docs = await invoke("vault_read_texts_batch", {
-					paths: uniquePaths,
-				});
-				for (const doc of docs) {
-					if (!remaining) break;
-					if (doc.text && !doc.error) {
-						const header = `# File: ${doc.rel_path}`.trim();
-						const body = doc.text.trim();
-						const content = body ? `${header}\n\n${body}` : header;
-						pushItem("file", doc.rel_path, content);
-						continue;
-					}
-					const error = doc.error ?? "Unable to read file";
-					pushItem(
-						"file_error",
-						doc.rel_path,
-						`# File Error: ${doc.rel_path}\n${error}`,
-					);
 				}
 			}
 
 			const payload = parts.join("\n\n---\n\n").trim();
 			const totalChars = payload.length;
 			const manifest: ContextManifest = {
-				spec: contextSpec,
 				items,
 				totalChars,
 				estTokens: estimateTokens(totalChars),
@@ -559,74 +269,31 @@ export function useAiContext({
 		} finally {
 			setPayloadBuilding(false);
 		}
-	}, [
-		activeNoteId,
-		activeNoteMarkdown,
-		activeNoteTitle,
-		canvasDoc,
-		contextSpec,
-		getLinkPreview,
-		getNote,
-		manualFiles,
-		selectedCanvasNodes,
-		selectedFiles,
-	]);
+	}, [attachedFolders, charBudget, readFolderFiles]);
 
 	const ensurePayload = useCallback(async () => {
-		if (payloadManifest && payloadApproved)
+		if (payloadManifest && payloadPreview) {
 			return { payload: payloadPreview, manifest: payloadManifest };
-		const result = await buildPayload();
-		setPayloadApproved(true);
-		return result;
-	}, [buildPayload, payloadApproved, payloadManifest, payloadPreview]);
-
-	useEffect(() => {
-		const handle = window.setTimeout(() => {
-			void ensurePayload();
-		}, 350);
-		return () => window.clearTimeout(handle);
-	}, [ensurePayload, payloadInvalidationKey]);
+		}
+		return buildPayload();
+	}, [buildPayload, payloadManifest, payloadPreview]);
 
 	return {
-		scope,
-		setScope,
-		scopeFolder,
-		setScopeFolder,
-		followActiveFolder,
-		setFollowActiveFolder,
-		manualFiles,
-		setManualFiles,
+		attachedFolders,
+		addFolder,
+		removeFolder,
 		contextSearch,
 		setContextSearch,
-		candidateFiles,
-		candidateTotal,
-		candidateError,
-		filteredFiles,
-		visibleFiles,
-		selectedFiles,
-		setSelectedFiles,
-		toggleSelectedFile,
-		removeManualFile,
-		contextSpec,
-		includeActiveNote,
-		setIncludeActiveNote,
-		includeSelectedNodes,
-		setIncludeSelectedNodes,
-		includeNoteContents,
-		setIncludeNoteContents,
-		includeLinkPreviewText,
-		setIncludeLinkPreviewText,
-		neighborDepth,
-		setNeighborDepth,
-		charBudget,
-		setCharBudget,
+		folderIndexError,
+		filteredFolders,
+		visibleFolders,
 		payloadPreview,
 		payloadManifest,
-		payloadApproved,
-		setPayloadApproved,
 		payloadError,
 		payloadBuilding,
 		buildPayload,
 		ensurePayload,
+		charBudget,
+		setCharBudget,
 	};
 }

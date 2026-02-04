@@ -971,60 +971,6 @@ textarea {
 	gap: var(--space-2);
 }
 
-.aiChatContextRibbon {
-	display: flex;
-	align-items: center;
-	gap: var(--space-2);
-	padding: var(--space-2) var(--space-3) 0;
-}
-
-.aiContextPill {
-	display: inline-flex;
-	align-items: center;
-	gap: var(--space-2);
-	border-radius: 999px;
-	padding: 6px 12px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 65%, transparent);
-	background: linear-gradient(
-		135deg,
-		color-mix(in srgb, var(--bg-secondary) 85%, transparent),
-		color-mix(in srgb, var(--selection-bg-muted) 35%, transparent)
-	);
-	color: var(--text-primary);
-	font-size: var(--text-xs);
-	font-weight: var(--font-semibold);
-}
-
-.aiContextPillMeta {
-	font-weight: var(--font-regular);
-	color: var(--text-tertiary);
-}
-
-.aiChatContextMeta {
-	font-size: var(--text-xs);
-	color: var(--text-tertiary);
-}
-
-.aiChatContextStatus {
-	margin-left: auto;
-	padding: 4px 10px;
-	border-radius: 999px;
-	font-size: 11px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 65%, transparent);
-	background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
-	color: var(--text-tertiary);
-}
-
-.aiChatContextStatus.ready {
-	color: color-mix(in srgb, var(--interactive-accent) 60%, var(--text-primary));
-	border-color: color-mix(in srgb, var(--interactive-accent) 30%, transparent);
-}
-
-.aiChatContextStatus.building {
-	color: var(--text-primary);
-	border-color: color-mix(in srgb, var(--selection-bg-muted) 45%, transparent);
-}
-
 .aiChatEmpty {
 	padding: 10px;
 	border: 1px dashed var(--border-light);
@@ -1101,6 +1047,93 @@ textarea {
 	justify-content: flex-end;
 	gap: var(--space-2);
 	margin-top: 8px;
+}
+
+.aiChatFolderBar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--space-2);
+	padding: 0 var(--space-3) var(--space-2);
+}
+
+.aiChatFolderRow {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	flex: 1;
+}
+
+.aiFolderChip {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 4px 8px;
+	border-radius: 999px;
+	font-size: 11px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 70%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 75%, transparent);
+	color: var(--text-primary);
+}
+
+.aiChatFolderEmpty {
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
+}
+
+.aiAddFolderBtn {
+	border-radius: 999px;
+	padding: 6px 12px;
+	font-size: var(--text-xs);
+	background: color-mix(in srgb, var(--selection-bg-muted) 65%, transparent);
+}
+
+.aiAddFolderPanel {
+	margin: 0 var(--space-3) var(--space-2);
+	padding: var(--space-3);
+	border-radius: var(--radius-xl);
+	border: 1px solid color-mix(in srgb, var(--border-light) 70%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 85%, transparent);
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-2);
+}
+
+.aiAddFolderSearch {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.aiAddFolderMeta {
+	font-size: 11px;
+	color: var(--text-tertiary);
+}
+
+.aiAddFolderList {
+	max-height: 200px;
+	overflow: auto;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.aiAddFolderItem {
+	text-align: left;
+	padding: 8px 10px;
+	border-radius: 12px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
+	color: var(--text-primary);
+}
+
+.aiAddFolderName {
+	font-size: var(--text-xs);
+}
+
+.aiAddFolderActions {
+	display: flex;
+	justify-content: flex-end;
 }
 
 .aiContextPane {

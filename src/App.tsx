@@ -1262,16 +1262,11 @@ function App() {
 							// wired in a later step
 							setAiSidebarOpen(true);
 						}}
-						activeNoteId={activeNoteId}
-						activeNoteTitle={activeNoteTitle}
-						activeNoteMarkdown={null}
 						activeFolderPath={
 							activeViewDoc?.kind === "folder"
 								? activeViewDoc.selector || ""
 								: null
 						}
-						selectedCanvasNodes={selectedCanvasNodes}
-						canvasDoc={activeViewDoc ? asCanvasDocLike(activeViewDoc) : null}
 					/>
 				</>
 			)}
