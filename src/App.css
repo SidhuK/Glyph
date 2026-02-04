@@ -3441,13 +3441,12 @@ button.segBtn.active {
 }
 
 .tiptapHostInline {
-	flex: 1;
 	min-height: 0;
-	overflow: auto;
+	overflow: visible;
 }
 
 .tiptapHostInline .tiptapContentInline {
-	min-height: 100%;
+	min-height: 0;
 	outline: none;
 }
 
@@ -3468,6 +3467,24 @@ button.segBtn.active {
 .frontmatterPreview pre {
 	margin: 0;
 	white-space: pre-wrap;
+}
+
+.frontmatterEditor {
+	width: 100%;
+	border: none;
+	background: transparent;
+	color: var(--text-secondary);
+	font-size: 12px;
+	line-height: 1.5;
+	padding: 0;
+	resize: none;
+	overflow: hidden;
+	font-family: var(--font-mono);
+}
+
+.frontmatterEditor:focus {
+	outline: none;
+	box-shadow: none;
 }
 
 .frontmatterLabel {

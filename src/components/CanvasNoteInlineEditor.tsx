@@ -9,7 +9,14 @@ import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import { Table, TableCell, TableHeader, TableRow } from "@tiptap/extension-table";
 import TaskItem from "@tiptap/extension-task-item";
 import TaskList from "@tiptap/extension-task-list";
-import { memo, useEffect, useMemo, useRef } from "react";
+import {
+	memo,
+	useEffect,
+	useLayoutEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import {
 	Bold,
 	Code,
@@ -26,6 +33,7 @@ import {
 	Edit,
 } from "./Icons";
 import {
+	joinYamlFrontmatter,
 	splitYamlFrontmatter,
 } from "../lib/notePreview";
 
@@ -285,16 +293,8 @@ const CalloutDecorations = Extension.create({
 	},
 });
 
-function mergeFrontmatter(
-	frontmatter: string | null,
-	body: string,
-): string {
-	if (!frontmatter) return body;
-	if (!body) return frontmatter;
-	if (frontmatter.endsWith("\n") || body.startsWith("\n")) {
-		return `${frontmatter}${body}`;
-	}
-	return `${frontmatter}\n${body}`;
+function normalizeBody(markdown: string): string {
+	return markdown.replace(/\u00a0/g, " ").replace(/&nbsp;/g, " ");
 }
 
 export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
@@ -307,9 +307,12 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		() => splitYamlFrontmatter(markdown),
 		[markdown],
 	);
+	const [frontmatterDraft, setFrontmatterDraft] = useState(frontmatter ?? "");
 	const frontmatterRef = useRef(frontmatter);
+	const frontmatterTextAreaRef = useRef<HTMLTextAreaElement | null>(null);
 	const lastAppliedBodyRef = useRef(body);
 	const lastEmittedMarkdownRef = useRef(markdown);
+	const lastFrontmatterRef = useRef(frontmatter);
 	const ignoreNextUpdateRef = useRef(false);
 	const suppressUpdateRef = useRef(false);
 
@@ -317,6 +320,20 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		frontmatterRef.current = frontmatter;
 		lastEmittedMarkdownRef.current = markdown;
 	}, [frontmatter, markdown]);
+
+	useEffect(() => {
+		if (frontmatter === lastFrontmatterRef.current) return;
+		lastFrontmatterRef.current = frontmatter;
+		setFrontmatterDraft(frontmatter ?? "");
+	}, [frontmatter]);
+
+	useLayoutEffect(() => {
+		if (mode !== "rich") return;
+		const el = frontmatterTextAreaRef.current;
+		if (!el) return;
+		el.style.height = "0px";
+		el.style.height = `${el.scrollHeight}px`;
+	}, [frontmatterDraft, mode]);
 
 	const editor = useEditor({
 		extensions: [
@@ -382,12 +399,10 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 			}
 			if (mode !== "rich" || !instance.isEditable) return;
 			const nextBody = instance
-				.getMarkdown()
-				.replace(/\u00a0/g, " ")
-				.replace(/&nbsp;/g, " ");
-			const nextMarkdown = mergeFrontmatter(
+				.getMarkdown();
+			const nextMarkdown = joinYamlFrontmatter(
 				frontmatterRef.current,
-				nextBody,
+				normalizeBody(nextBody),
 			);
 			if (nextMarkdown === lastEmittedMarkdownRef.current) return;
 			lastEmittedMarkdownRef.current = nextMarkdown;
@@ -411,7 +426,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	const runCommand = (fn: () => void) => {
 		if (!editor) return;
 		const host = editor.view.dom.closest(
-			".tiptapHostInline",
+			".rfNodeNoteEditorBody",
 		) as HTMLElement | null;
 		const scrollTop = host?.scrollTop ?? 0;
 		fn();
@@ -445,6 +460,25 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		lastAppliedBodyRef.current = body;
 	}, [body, editor]);
 
+	const handleFrontmatterChange = (
+		event: React.ChangeEvent<HTMLTextAreaElement>,
+	) => {
+		const next = event.target.value;
+		setFrontmatterDraft(next);
+		const normalizedFrontmatter = next.trim().length ? next : null;
+		frontmatterRef.current = normalizedFrontmatter;
+		const currentBody = normalizeBody(
+			editor?.getMarkdown() ?? lastAppliedBodyRef.current ?? "",
+		);
+		const nextMarkdown = joinYamlFrontmatter(
+			normalizedFrontmatter,
+			currentBody,
+		);
+		if (nextMarkdown === lastEmittedMarkdownRef.current) return;
+		lastEmittedMarkdownRef.current = nextMarkdown;
+		onChange(nextMarkdown);
+	};
+
 	return (
 		<div className="rfNodeNoteEditor nodrag nopan">
 			<div className="rfNodeNoteEditorHeaderBar nodrag nopan nowheel">
@@ -467,7 +501,19 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 				</button>
 			</div>
 			<div className="rfNodeNoteEditorBody nodrag nopan nowheel">
-				{frontmatter ? (
+				{mode === "rich" ? (
+					<div className="frontmatterPreview mono">
+						<div className="frontmatterLabel">Frontmatter</div>
+						<textarea
+							ref={frontmatterTextAreaRef}
+							className="frontmatterEditor"
+							value={frontmatterDraft}
+							onChange={handleFrontmatterChange}
+							placeholder="---\ntitle: Untitled\n---"
+							spellCheck={false}
+						/>
+					</div>
+				) : frontmatter ? (
 					<div className="frontmatterPreview mono">
 						<div className="frontmatterLabel">Frontmatter</div>
 						<pre>{frontmatter.trimEnd()}</pre>
