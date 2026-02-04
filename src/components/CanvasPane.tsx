@@ -612,7 +612,7 @@ const CanvasNoteOverlayEditor = memo(function CanvasNoteOverlayEditor({
 		typeof (sessionNode?.data as Record<string, unknown> | null)?.title ===
 		"string"
 			? ((sessionNode?.data as Record<string, unknown>).title as string)
-			: session?.noteId ?? "Untitled";
+			: (session?.noteId ?? "Untitled");
 
 	const statusLabel = (() => {
 		if (!session) return "";
@@ -724,22 +724,22 @@ const CanvasNoteOverlayEditor = memo(function CanvasNoteOverlayEditor({
 								>
 									<RotateCcw size={14} />
 								</button>
-							<button
-								type="button"
-								className="iconBtn sm"
-								title="Close tab"
-								onClick={() => {
-									if (activeTabId) {
-										onCloseTab(activeTabId);
-									} else {
-										closeEditor();
-									}
-								}}
-							>
-								<X size={14} />
-							</button>
+								<button
+									type="button"
+									className="iconBtn sm"
+									title="Close tab"
+									onClick={() => {
+										if (activeTabId) {
+											onCloseTab(activeTabId);
+										} else {
+											closeEditor();
+										}
+									}}
+								>
+									<X size={14} />
+								</button>
+							</div>
 						</div>
-					</div>
 
 						{session?.errorMessage ? (
 							<div className="canvasNoteEditorError">
@@ -875,9 +875,7 @@ export default function CanvasPane({
 
 	const updateTabTitle = useCallback((noteId: string, title: string) => {
 		setNoteTabs((prev) =>
-			prev.map((tab) =>
-				tab.noteId === noteId ? { ...tab, title } : tab,
-			),
+			prev.map((tab) => (tab.noteId === noteId ? { ...tab, title } : tab)),
 		);
 	}, []);
 
@@ -910,10 +908,7 @@ export default function CanvasPane({
 
 	const createNewTab = useCallback(() => {
 		const tabId = crypto.randomUUID();
-		setNoteTabs((prev) => [
-			...prev,
-			{ tabId, noteId: null, title: "New tab" },
-		]);
+		setNoteTabs((prev) => [...prev, { tabId, noteId: null, title: "New tab" }]);
 		setActiveTabId(tabId);
 	}, []);
 
@@ -1165,12 +1160,12 @@ export default function CanvasPane({
 			return { ...prev, phase: "loading", errorMessage: "" };
 		});
 		try {
-				const doc = await invoke("vault_read_text", { path: s.noteId });
-				const preview = parseNotePreview(s.noteId, doc.text);
-				updateTabTitle(s.noteId, preview.title);
-				setNodes((prev) =>
-					prev.map((n) =>
-						n.id === s.nodeId
+			const doc = await invoke("vault_read_text", { path: s.noteId });
+			const preview = parseNotePreview(s.noteId, doc.text);
+			updateTabTitle(s.noteId, preview.title);
+			setNodes((prev) =>
+				prev.map((n) =>
+					n.id === s.nodeId
 						? {
 								...n,
 								data: {
@@ -2491,8 +2486,7 @@ export default function CanvasPane({
 			const data = (node.data as Record<string, unknown> | null) ?? null;
 			const noteId =
 				typeof data?.noteId === "string" ? data.noteId : (node.id as string);
-			const title =
-				typeof data?.title === "string" ? data.title : "Note";
+			const title = typeof data?.title === "string" ? data.title : "Note";
 			void (async () => {
 				const ok = await beginInlineEdit(node);
 				if (!ok) return;

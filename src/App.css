@@ -1037,9 +1037,9 @@ textarea {
 		color-mix(in srgb, var(--bg-tertiary) 80%, transparent)
 	);
 	border: 1px solid color-mix(in srgb, var(--border-light) 70%, transparent);
-	box-shadow:
-		0 8px 24px color-mix(in srgb, var(--shadow-color) 35%, transparent),
-		inset 0 1px 0 color-mix(in srgb, #fff 12%, transparent);
+	box-shadow: 0 8px 24px
+		color-mix(in srgb, var(--shadow-color) 35%, transparent), inset 0 1px 0
+		color-mix(in srgb, #fff 12%, transparent);
 }
 
 .aiChatComposerActions {
@@ -1358,7 +1358,8 @@ textarea {
 
 .aiContextScopeBar button.active {
 	background: color-mix(in srgb, var(--selection-bg-muted) 70%, transparent);
-	border: 1px solid color-mix(in srgb, var(--interactive-accent) 45%, transparent);
+	border: 1px solid
+		color-mix(in srgb, var(--interactive-accent) 45%, transparent);
 	color: var(--text-primary);
 }
 
@@ -1765,7 +1766,8 @@ textarea {
 	width: 16px;
 	border-radius: 50%;
 	background: var(--interactive-accent);
-	box-shadow: 0 0 0 3px color-mix(in srgb, var(--interactive-accent) 20%, transparent);
+	box-shadow: 0 0 0 3px
+		color-mix(in srgb, var(--interactive-accent) 20%, transparent);
 	border: 2px solid var(--bg-primary);
 }
 
@@ -1892,7 +1894,8 @@ textarea {
 
 .settingsSwatch.active {
 	border-color: color-mix(in srgb, var(--interactive-accent) 40%, transparent);
-	box-shadow: 0 0 0 2px color-mix(in srgb, var(--interactive-accent) 15%, transparent);
+	box-shadow: 0 0 0 2px
+		color-mix(in srgb, var(--interactive-accent) 15%, transparent);
 }
 
 .settingsSwatch[data-swatch="graphite"] span {
@@ -3118,8 +3121,7 @@ button.segBtn.active {
 	inset: 0;
 	width: 100%;
 	height: 100%;
-	transition: filter var(--transition-fast),
-		transform var(--transition-fast),
+	transition: filter var(--transition-fast), transform var(--transition-fast),
 		opacity var(--transition-fast);
 	will-change: filter, transform, opacity;
 }
@@ -3935,7 +3937,10 @@ button.segBtn.active {
 	--callout-accent: #f97066;
 }
 
-.tiptapHostInline.is-preview .tiptapContentInline blockquote.callout > p:first-child {
+.tiptapHostInline.is-preview
+	.tiptapContentInline
+	blockquote.callout
+	> p:first-child {
 	display: none;
 }
 
@@ -4032,7 +4037,11 @@ button.segBtn.active {
 	width: auto;
 }
 
-.tiptapContentInline ul[data-type="taskList"] > li > label input[type="checkbox"],
+.tiptapContentInline
+	ul[data-type="taskList"]
+	> li
+	> label
+	input[type="checkbox"],
 .tiptapContentInline li[data-checked] > label input[type="checkbox"] {
 	width: 14px;
 	height: 14px;

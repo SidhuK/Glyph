@@ -126,7 +126,9 @@ export function GeneralSettingsPane() {
 								<div className="settingsLabel">Density</div>
 								<span className="settingsBadgeWarn">Under construction</span>
 							</div>
-							<div className="settingsHelp">Spacing for lists and controls.</div>
+							<div className="settingsHelp">
+								Spacing for lists and controls.
+							</div>
 						</div>
 						<div className="settingsSegmented">
 							<button

@@ -1,0 +1,72 @@
+import type { Edge, Node } from "@xyflow/react";
+import type { CanvasInlineEditorMode } from "../editor";
+
+export type CanvasNode = Node<Record<string, unknown>>;
+export type CanvasEdge = Edge<Record<string, unknown>>;
+
+export interface CanvasDocLike {
+	version: number;
+	id: string;
+	title: string;
+	nodes: CanvasNode[];
+	edges: CanvasEdge[];
+}
+
+export interface CanvasPaneProps {
+	doc: CanvasDocLike | null;
+	onSave: (doc: CanvasDocLike) => Promise<void>;
+	onOpenNote: (noteId: string) => void;
+	onOpenFolder: (dir: string) => void;
+	activeNoteId: string | null;
+	activeNoteTitle: string | null;
+	vaultPath: string | null;
+	onSelectionChange?: (selected: CanvasNode[]) => void;
+	externalCommand?: CanvasExternalCommand | null;
+	onExternalCommandHandled?: (id: string) => void;
+}
+
+export type CanvasExternalCommand =
+	| { id: string; kind: "add_note_node"; noteId: string; title: string }
+	| { id: string; kind: "focus_node"; nodeId: string }
+	| { id: string; kind: "open_note_editor"; noteId: string; title?: string }
+	| { id: string; kind: "apply_note_markdown"; noteId: string; markdown: string }
+	| { id: string; kind: "add_text_node"; text: string }
+	| { id: string; kind: "add_link_node"; url: string };
+
+export type NoteEditPhase = "loading" | "ready" | "saving" | "error" | "conflict";
+
+export type CanvasNoteEditSession = {
+	nodeId: string;
+	noteId: string;
+	phase: NoteEditPhase;
+	markdown: string;
+	baseMtimeMs: number | null;
+	dirty: boolean;
+	lastSavedMarkdown: string;
+	mode: CanvasInlineEditorMode;
+	errorMessage: string;
+};
+
+export type CanvasNoteEditActions = {
+	session: CanvasNoteEditSession | null;
+	openEditor: (nodeId: string) => void;
+	closeEditor: () => void;
+	saveNow: () => void;
+	reloadFromDisk: () => void;
+	overwriteDisk: () => void;
+	setEditorMode: (mode: CanvasInlineEditorMode) => void;
+	updateMarkdown: (nextMarkdown: string) => void;
+};
+
+export type CanvasActions = {
+	openNote: (relPath: string) => void;
+	openFolder: (dir: string) => void;
+	holdFolderPreview: (folderNodeId: string) => void;
+	releaseFolderPreview: (folderNodeId: string) => void;
+};
+
+export type NoteTab = {
+	tabId: string;
+	noteId: string | null;
+	title: string;
+};

@@ -1,0 +1,20 @@
+import type { Editor } from "@tiptap/core";
+
+export type CanvasInlineEditorMode = "rich" | "preview";
+
+export interface CanvasNoteInlineEditorProps {
+	markdown: string;
+	mode: CanvasInlineEditorMode;
+	onModeChange: (mode: CanvasInlineEditorMode) => void;
+	onChange: (nextMarkdown: string) => void;
+}
+
+export interface SlashCommandItem {
+	title: string;
+	description: string;
+	keywords: string[];
+	command: (ctx: {
+		editor: Editor;
+		range: { from: number; to: number };
+	}) => void;
+}

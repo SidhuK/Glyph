@@ -78,9 +78,7 @@ export function VaultSettingsPane() {
 								<div className="settingsLabel">Mode</div>
 								<span className="settingsBadgeWarn">Under construction</span>
 							</div>
-							<div className="settingsHelp">
-								Choose when indexing runs.
-							</div>
+							<div className="settingsHelp">Choose when indexing runs.</div>
 						</div>
 						<select
 							value={indexingMode}

@@ -67,7 +67,7 @@ export function AISidebar({
 	const setContextSearch = context.setContextSearch;
 	const trigger = parseAddTrigger(input);
 	const showAddPanel = addPanelOpen || Boolean(trigger);
-	const panelQuery = addPanelOpen ? addPanelQuery : trigger?.query ?? "";
+	const panelQuery = addPanelOpen ? addPanelQuery : (trigger?.query ?? "");
 
 	useEffect(() => {
 		setContextSearch(panelQuery);
@@ -207,9 +207,7 @@ export function AISidebar({
 							<div
 								key={m.id}
 								className={`aiChatMsg ${
-									m.role === "user"
-										? "aiChatMsg-user"
-										: "aiChatMsg-assistant"
+									m.role === "user" ? "aiChatMsg-user" : "aiChatMsg-assistant"
 								}`}
 							>
 								<div className="aiChatContent">{text}</div>
@@ -247,9 +245,7 @@ export function AISidebar({
 								</motion.button>
 							))
 						) : (
-							<div className="aiChatFolderEmpty">
-								No folder attached yet.
-							</div>
+							<div className="aiChatFolderEmpty">No folder attached yet.</div>
 						)}
 					</div>
 					<button
@@ -281,9 +277,7 @@ export function AISidebar({
 							</div>
 						</div>
 						{context.folderIndexError ? (
-							<div className="aiSidebarError">
-								{context.folderIndexError}
-							</div>
+							<div className="aiSidebarError">{context.folderIndexError}</div>
 						) : null}
 						<div className="aiAddFolderList">
 							{context.visibleFolders.length ? (
@@ -304,10 +298,7 @@ export function AISidebar({
 							)}
 						</div>
 						<div className="aiAddFolderActions">
-							<button
-								type="button"
-								onClick={() => setAddPanelOpen(false)}
-							>
+							<button type="button" onClick={() => setAddPanelOpen(false)}>
 								Close
 							</button>
 						</div>

@@ -31,7 +31,10 @@ function estimateTokens(chars: number): number {
 }
 
 function normalizeRelPath(path: string): string {
-	return path.trim().replace(/\\/g, "/").replace(/^\/+|\/+$/g, "");
+	return path
+		.trim()
+		.replace(/\\/g, "/")
+		.replace(/^\/+|\/+$/g, "");
 }
 
 const FILE_LIST_LIMIT = 20_000;
@@ -168,9 +171,7 @@ export function useAiContext({
 	const filteredFolders = useMemo(() => {
 		const q = contextSearch.trim().toLowerCase();
 		if (!q) return folderIndex;
-		return folderIndex.filter((f) =>
-			f.label.toLowerCase().includes(q),
-		);
+		return folderIndex.filter((f) => f.label.toLowerCase().includes(q));
 	}, [contextSearch, folderIndex]);
 
 	const visibleFolders = useMemo(

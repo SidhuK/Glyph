@@ -143,8 +143,7 @@ export function computeGridPositions(
 	const totalArea = sizeUnits.reduce((sum, s) => sum + s.area, 0);
 	const maxWidthUnits = Math.max(...sizeUnits.map((s) => s.w));
 	const preferredColumns =
-		options?.columns ??
-		Math.max(2, Math.min(8, Math.ceil(Math.sqrt(count))));
+		options?.columns ?? Math.max(2, Math.min(8, Math.ceil(Math.sqrt(count))));
 	const avgWidthUnits =
 		sizeUnits.reduce((sum, s) => sum + s.w, 0) / sizeUnits.length;
 	const widthFromColumns = Math.ceil(avgWidthUnits * preferredColumns);
@@ -160,10 +159,7 @@ export function computeGridPositions(
 		maxWidthUnits,
 		Math.floor(targetWidthUnits - tryWidths / 2),
 	);
-	const maxWidth = Math.max(
-		minWidth,
-		Math.ceil(targetWidthUnits + tryWidths),
-	);
+	const maxWidth = Math.max(minWidth, Math.ceil(targetWidthUnits + tryWidths));
 	let bestPositions: Array<{ x: number; y: number }> | null = null;
 	let bestScore = Number.POSITIVE_INFINITY;
 

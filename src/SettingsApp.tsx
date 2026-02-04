@@ -2,7 +2,11 @@ import { listen } from "@tauri-apps/api/event";
 import { AnimatePresence, motion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 import "./App.css";
-import { FolderOpen, Settings as SettingsIcon, Sparkles } from "./components/Icons";
+import {
+	FolderOpen,
+	Settings as SettingsIcon,
+	Sparkles,
+} from "./components/Icons";
 import { MotionIconButton, MotionInput } from "./components/MotionUI";
 import { AiSettingsPane } from "./components/settings/AiSettingsPane";
 import { GeneralSettingsPane } from "./components/settings/GeneralSettingsPane";
