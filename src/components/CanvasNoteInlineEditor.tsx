@@ -381,7 +381,10 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 				return;
 			}
 			if (mode !== "rich" || !instance.isEditable) return;
-			const nextBody = instance.getMarkdown();
+			const nextBody = instance
+				.getMarkdown()
+				.replace(/\u00a0/g, " ")
+				.replace(/&nbsp;/g, " ");
 			const nextMarkdown = mergeFrontmatter(
 				frontmatterRef.current,
 				nextBody,
@@ -395,6 +398,29 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	const canEdit = mode === "rich" && Boolean(editor?.isEditable);
 	const focusChain = () =>
 		editor?.chain().focus(undefined, { scrollIntoView: false });
+	const preventRibbonMouseDown = (
+		event: React.MouseEvent<HTMLButtonElement>,
+	) => {
+		event.preventDefault();
+	};
+	const preventRibbonContainerMouseDown = (
+		event: React.MouseEvent<HTMLDivElement>,
+	) => {
+		event.preventDefault();
+	};
+	const runCommand = (fn: () => void) => {
+		if (!editor) return;
+		const host = editor.view.dom.closest(
+			".tiptapHostInline",
+		) as HTMLElement | null;
+		const scrollTop = host?.scrollTop ?? 0;
+		fn();
+		if (host) {
+			requestAnimationFrame(() => {
+				host.scrollTop = scrollTop;
+			});
+		}
+	};
 
 	const insertCallout = (type: string) => {
 		if (!editor) return;
@@ -461,7 +487,10 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 					<EditorContent editor={editor} />
 				</div>
 			</div>
-			<div className="rfNodeNoteEditorRibbon rfNodeNoteEditorRibbonBottom nodrag nopan nowheel">
+			<div
+				className="rfNodeNoteEditorRibbon rfNodeNoteEditorRibbonBottom nodrag nopan nowheel"
+				onMouseDown={preventRibbonContainerMouseDown}
+			>
 				{editor ? (
 					<>
 						<div className="ribbonGroup">
@@ -472,7 +501,11 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 								}`}
 								title="Bold"
 								disabled={!canEdit}
-								onClick={() => canEdit && focusChain()?.toggleBold().run()}
+								onMouseDown={preventRibbonMouseDown}
+								onClick={() =>
+									canEdit &&
+									runCommand(() => focusChain()?.toggleBold().run())
+								}
 							>
 								<Bold size={14} />
 							</button>
@@ -483,7 +516,11 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 								}`}
 								title="Italic"
 								disabled={!canEdit}
-								onClick={() => canEdit && focusChain()?.toggleItalic().run()}
+								onMouseDown={preventRibbonMouseDown}
+								onClick={() =>
+									canEdit &&
+									runCommand(() => focusChain()?.toggleItalic().run())
+								}
 							>
 								<Italic size={14} />
 							</button>
@@ -494,8 +531,10 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 								}`}
 								title="Underline"
 								disabled={!canEdit}
+								onMouseDown={preventRibbonMouseDown}
 								onClick={() =>
-									canEdit && focusChain()?.toggleUnderline().run()
+									canEdit &&
+									runCommand(() => focusChain()?.toggleUnderline().run())
 								}
 							>
 								<span className="ribbonText">U</span>
@@ -507,8 +546,9 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 								}`}
 								title="Strikethrough"
 								disabled={!canEdit}
+								onMouseDown={preventRibbonMouseDown}
 								onClick={() =>
-									canEdit && focusChain()?.toggleStrike().run()
+									canEdit && runCommand(() => focusChain()?.toggleStrike().run())
 								}
 							>
 								<Strikethrough size={14} />
@@ -523,9 +563,13 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 								}`}
 								title="Heading 1"
 								onClick={() =>
-									canEdit && focusChain()?.toggleHeading({ level: 1 }).run()
+									canEdit &&
+									runCommand(() =>
+										focusChain()?.toggleHeading({ level: 1 }).run(),
+									)
 								}
 								disabled={!canEdit}
+								onMouseDown={preventRibbonMouseDown}
 							>
 								<Heading1 size={14} />
 							</button>
@@ -536,9 +580,13 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 								}`}
 								title="Heading 2"
 								onClick={() =>
-									canEdit && focusChain()?.toggleHeading({ level: 2 }).run()
+									canEdit &&
+									runCommand(() =>
+										focusChain()?.toggleHeading({ level: 2 }).run(),
+									)
 								}
 								disabled={!canEdit}
+								onMouseDown={preventRibbonMouseDown}
 							>
 								<Heading2 size={14} />
 							</button>
@@ -549,9 +597,13 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 								}`}
 								title="Heading 3"
 								onClick={() =>
-									canEdit && focusChain()?.toggleHeading({ level: 3 }).run()
+									canEdit &&
+									runCommand(() =>
+										focusChain()?.toggleHeading({ level: 3 }).run(),
+									)
 								}
 								disabled={!canEdit}
+								onMouseDown={preventRibbonMouseDown}
 							>
 								<Heading3 size={14} />
 							</button>
@@ -565,8 +617,10 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 								}`}
 								title="Bullet list"
 								disabled={!canEdit}
+								onMouseDown={preventRibbonMouseDown}
 								onClick={() =>
-									canEdit && focusChain()?.toggleBulletList().run()
+									canEdit &&
+									runCommand(() => focusChain()?.toggleBulletList().run())
 								}
 							>
 								<List size={14} />
@@ -578,8 +632,10 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 								}`}
 								title="Numbered list"
 								disabled={!canEdit}
+								onMouseDown={preventRibbonMouseDown}
 								onClick={() =>
-									canEdit && focusChain()?.toggleOrderedList().run()
+									canEdit &&
+									runCommand(() => focusChain()?.toggleOrderedList().run())
 								}
 							>
 								<ListOrdered size={14} />
@@ -591,8 +647,10 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 								}`}
 								title="Task list"
 								disabled={!canEdit}
+								onMouseDown={preventRibbonMouseDown}
 								onClick={() =>
-									canEdit && focusChain()?.toggleTaskList().run()
+									canEdit &&
+									runCommand(() => focusChain()?.toggleTaskList().run())
 								}
 							>
 								<ListChecks size={14} />
@@ -607,8 +665,10 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 								}`}
 								title="Quote"
 								disabled={!canEdit}
+								onMouseDown={preventRibbonMouseDown}
 								onClick={() =>
-									canEdit && focusChain()?.toggleBlockquote().run()
+									canEdit &&
+									runCommand(() => focusChain()?.toggleBlockquote().run())
 								}
 							>
 								<Quote size={14} />
@@ -620,8 +680,10 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 								}`}
 								title="Code block"
 								disabled={!canEdit}
+								onMouseDown={preventRibbonMouseDown}
 								onClick={() =>
-									canEdit && focusChain()?.toggleCodeBlock().run()
+									canEdit &&
+									runCommand(() => focusChain()?.toggleCodeBlock().run())
 								}
 							>
 								<Code size={14} />
@@ -634,7 +696,10 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 								className="ribbonBtn"
 								title="Callout: Note"
 								disabled={!canEdit}
-								onClick={() => canEdit && insertCallout("note")}
+								onMouseDown={preventRibbonMouseDown}
+								onClick={() =>
+									canEdit && runCommand(() => insertCallout("note"))
+								}
 							>
 								Note
 							</button>
@@ -643,7 +708,10 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 								className="ribbonBtn"
 								title="Callout: Info"
 								disabled={!canEdit}
-								onClick={() => canEdit && insertCallout("info")}
+								onMouseDown={preventRibbonMouseDown}
+								onClick={() =>
+									canEdit && runCommand(() => insertCallout("info"))
+								}
 							>
 								Info
 							</button>
@@ -652,7 +720,10 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 								className="ribbonBtn"
 								title="Callout: Tip"
 								disabled={!canEdit}
-								onClick={() => canEdit && insertCallout("tip")}
+								onMouseDown={preventRibbonMouseDown}
+								onClick={() =>
+									canEdit && runCommand(() => insertCallout("tip"))
+								}
 							>
 								Tip
 							</button>
@@ -661,7 +732,10 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 								className="ribbonBtn"
 								title="Callout: Warning"
 								disabled={!canEdit}
-								onClick={() => canEdit && insertCallout("warning")}
+								onMouseDown={preventRibbonMouseDown}
+								onClick={() =>
+									canEdit && runCommand(() => insertCallout("warning"))
+								}
 							>
 								Warn
 							</button>
@@ -670,7 +744,10 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 								className="ribbonBtn"
 								title="Callout: Error"
 								disabled={!canEdit}
-								onClick={() => canEdit && insertCallout("error")}
+								onMouseDown={preventRibbonMouseDown}
+								onClick={() =>
+									canEdit && runCommand(() => insertCallout("error"))
+								}
 							>
 								Error
 							</button>
