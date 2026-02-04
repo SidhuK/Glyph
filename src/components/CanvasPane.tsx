@@ -207,6 +207,12 @@ type CanvasNoteEditActions = {
 	updateMarkdown: (nextMarkdown: string) => void;
 };
 
+type NoteTab = {
+	tabId: string;
+	noteId: string | null;
+	title: string;
+};
+
 const CanvasNoteEditContext = createContext<CanvasNoteEditActions | null>(null);
 
 function useCanvasNoteEdit(): CanvasNoteEditActions {
@@ -575,8 +581,18 @@ const FolderPreviewNode = memo(function FolderPreviewNode({
 
 const CanvasNoteOverlayEditor = memo(function CanvasNoteOverlayEditor({
 	nodes,
+	tabs,
+	activeTabId,
+	onSelectTab,
+	onCloseTab,
+	onNewTab,
 }: {
 	nodes: CanvasNode[];
+	tabs: NoteTab[];
+	activeTabId: string | null;
+	onSelectTab: (tabId: string) => void;
+	onCloseTab: (tabId: string) => void;
+	onNewTab: () => void;
 }) {
 	const {
 		session,
@@ -600,17 +616,19 @@ const CanvasNoteOverlayEditor = memo(function CanvasNoteOverlayEditor({
 
 	const statusLabel = (() => {
 		if (!session) return "";
-		if (session.phase === "loading") return "Loading…";
-		if (session.phase === "saving") return "Saving…";
+		if (session?.phase === "loading") return "Loading…";
+		if (session?.phase === "saving") return "Saving…";
 		if (session.phase === "conflict") return "Conflict";
 		if (session.phase === "error") return "Save failed";
 		if (session.dirty) return "Unsaved changes…";
 		return "Saved";
 	})();
 
+	const showOverlay = Boolean(session || tabs.length);
+
 	return (
 		<AnimatePresence>
-			{session ? (
+			{showOverlay ? (
 				<motion.div
 					className="canvasNoteEditorOverlay"
 					initial={{ opacity: 0 }}
@@ -633,13 +651,54 @@ const CanvasNoteOverlayEditor = memo(function CanvasNoteOverlayEditor({
 						exit={{ x: 24, opacity: 0, scale: 0.98 }}
 						transition={{ type: "spring", stiffness: 420, damping: 32 }}
 					>
+						<div className="canvasNoteEditorTabs">
+							<div className="canvasNoteEditorTabsScroll">
+								{tabs.map((tab) => (
+									<div
+										key={tab.tabId}
+										className={[
+											"canvasNoteEditorTab",
+											tab.tabId === activeTabId ? "active" : "",
+										]
+											.filter(Boolean)
+											.join(" ")}
+									>
+										<button
+											type="button"
+											className="canvasNoteEditorTabButton"
+											onClick={() => onSelectTab(tab.tabId)}
+											title={tab.title}
+										>
+											{tab.title}
+										</button>
+										<button
+											type="button"
+											className="canvasNoteEditorTabClose"
+											title="Close tab"
+											onClick={() => onCloseTab(tab.tabId)}
+										>
+											×
+										</button>
+									</div>
+								))}
+							</div>
+							<button
+								type="button"
+								className="canvasNoteEditorTabAdd"
+								title="New tab"
+								onClick={() => onNewTab()}
+							>
+								+
+							</button>
+						</div>
+
 						<div className="canvasNoteEditorHeader">
 							<div className="canvasNoteEditorTitle" title={title}>
 								{title}
 							</div>
 							<div
 								className="canvasNoteEditorStatus"
-								title={session.errorMessage}
+								title={session?.errorMessage ?? ""}
 							>
 								{statusLabel}
 							</div>
@@ -647,11 +706,11 @@ const CanvasNoteOverlayEditor = memo(function CanvasNoteOverlayEditor({
 								<button
 									type="button"
 									className="iconBtn sm"
-									title={session.dirty ? "Save" : "Saved"}
+									title={session?.dirty ? "Save" : "Saved"}
 									disabled={
-										!session.dirty ||
-										session.phase === "loading" ||
-										session.phase === "saving"
+										!session?.dirty ||
+										session?.phase === "loading" ||
+										session?.phase === "saving"
 									}
 									onClick={() => saveNow()}
 								>
@@ -665,18 +724,24 @@ const CanvasNoteOverlayEditor = memo(function CanvasNoteOverlayEditor({
 								>
 									<RotateCcw size={14} />
 								</button>
-								<button
-									type="button"
-									className="iconBtn sm"
-									title="Done"
-									onClick={() => closeEditor()}
-								>
-									<X size={14} />
-								</button>
-							</div>
+							<button
+								type="button"
+								className="iconBtn sm"
+								title="Close tab"
+								onClick={() => {
+									if (activeTabId) {
+										onCloseTab(activeTabId);
+									} else {
+										closeEditor();
+									}
+								}}
+							>
+								<X size={14} />
+							</button>
 						</div>
+					</div>
 
-						{session.errorMessage ? (
+						{session?.errorMessage ? (
 							<div className="canvasNoteEditorError">
 								<div className="canvasNoteEditorErrorText">
 									{session.errorMessage}
@@ -703,15 +768,21 @@ const CanvasNoteOverlayEditor = memo(function CanvasNoteOverlayEditor({
 						) : null}
 
 						<div className="canvasNoteEditorBody">
-							{session.phase === "loading" ? (
-								<div className="canvasNoteEditorLoading">Loading…</div>
+							{session ? (
+								session?.phase === "loading" ? (
+									<div className="canvasNoteEditorLoading">Loading…</div>
+								) : (
+									<CanvasNoteInlineEditor
+										markdown={session.markdown}
+										mode={session.mode}
+										onModeChange={setEditorMode}
+										onChange={updateMarkdown}
+									/>
+								)
 							) : (
-								<CanvasNoteInlineEditor
-									markdown={session.markdown}
-									mode={session.mode}
-									onModeChange={setEditorMode}
-									onChange={updateMarkdown}
-								/>
+								<div className="canvasNoteEditorEmpty">
+									Open a Markdown note to start editing.
+								</div>
 							)}
 						</div>
 					</motion.div>
@@ -786,9 +857,65 @@ export default function CanvasPane({
 	} | null>(null);
 	const [noteEditSession, setNoteEditSession] =
 		useState<CanvasNoteEditSession | null>(null);
+	const [noteTabs, setNoteTabs] = useState<NoteTab[]>([]);
+	const [activeTabId, setActiveTabId] = useState<string | null>(null);
+	const noteTabsRef = useRef<NoteTab[]>([]);
+	const activeTabIdRef = useRef<string | null>(null);
+	const openNoteForEditingRef =
+		useRef<(noteId: string, title?: string) => Promise<boolean> | null>(null);
+	useEffect(() => {
+		noteTabsRef.current = noteTabs;
+	}, [noteTabs]);
+	useEffect(() => {
+		activeTabIdRef.current = activeTabId;
+	}, [activeTabId]);
 	useEffect(() => {
 		noteEditSessionRef.current = noteEditSession;
 	}, [noteEditSession]);
+
+	const updateTabTitle = useCallback((noteId: string, title: string) => {
+		setNoteTabs((prev) =>
+			prev.map((tab) =>
+				tab.noteId === noteId ? { ...tab, title } : tab,
+			),
+		);
+	}, []);
+
+	const ensureTabForNote = useCallback((noteId: string, title: string) => {
+		setNoteTabs((prev) => {
+			const existing = prev.find((tab) => tab.noteId === noteId);
+			if (existing) {
+				setActiveTabId(existing.tabId);
+				return prev;
+			}
+			if (!prev.length) {
+				const tabId = crypto.randomUUID();
+				setActiveTabId(tabId);
+				return [{ tabId, noteId, title }];
+			}
+			const activeId = activeTabIdRef.current;
+			const activeIndex = prev.findIndex((t) => t.tabId === activeId);
+			if (activeIndex === -1) {
+				const tabId = crypto.randomUUID();
+				setActiveTabId(tabId);
+				return [...prev, { tabId, noteId, title }];
+			}
+			const active = prev[activeIndex];
+			const next = [...prev];
+			next[activeIndex] = { ...active, noteId, title };
+			setActiveTabId(next[activeIndex].tabId);
+			return next;
+		});
+	}, []);
+
+	const createNewTab = useCallback(() => {
+		const tabId = crypto.randomUUID();
+		setNoteTabs((prev) => [
+			...prev,
+			{ tabId, noteId: null, title: "New tab" },
+		]);
+		setActiveTabId(tabId);
+	}, []);
 
 	useEffect(() => {
 		const pending = pendingApplyMarkdownRef.current;
@@ -801,6 +928,7 @@ export default function CanvasPane({
 		pendingApplyMarkdownRef.current = null;
 
 		const preview = parseNotePreview(pending.noteId, pending.markdown);
+		updateTabTitle(pending.noteId, preview.title);
 		setNodes((prev) =>
 			prev.map((n) =>
 				n.id === s.nodeId
@@ -854,6 +982,7 @@ export default function CanvasPane({
 				try {
 					const doc = await invoke("vault_read_text", { path: noteId });
 					const preview = parseNotePreview(noteId, doc.text);
+					updateTabTitle(noteId, preview.title);
 					setNodes((prev) =>
 						prev.map((n) =>
 							n.id === node.id
@@ -904,6 +1033,7 @@ export default function CanvasPane({
 					base_mtime_ms: opts?.forceOverwrite ? null : s.baseMtimeMs,
 				});
 				const preview = parseNotePreview(s.noteId, markdown);
+				updateTabTitle(s.noteId, preview.title);
 				setNodes((prev) =>
 					prev.map((n) =>
 						n.id === s.nodeId
@@ -975,6 +1105,50 @@ export default function CanvasPane({
 		[],
 	);
 
+	const closeTabById = useCallback(
+		async (tabId: string) => {
+			const tab = noteTabsRef.current.find((t) => t.tabId === tabId);
+			if (!tab) return;
+			const isActive = tabId === activeTabIdRef.current;
+			if (isActive && noteEditSessionRef.current?.dirty) {
+				const res = await confirmDiscardBeforeProceed("close");
+				if (!res.ok) return;
+			}
+			if (isActive) {
+				setNoteEditSession(null);
+			}
+			setNoteTabs((prev) => prev.filter((t) => t.tabId !== tabId));
+			if (isActive) {
+				const remaining = noteTabsRef.current.filter((t) => t.tabId !== tabId);
+				const nextActive = remaining[remaining.length - 1]?.tabId ?? null;
+				setActiveTabId(nextActive);
+				const nextTab = remaining.find((t) => t.tabId === nextActive);
+				if (nextTab?.noteId) {
+					void openNoteForEditingRef.current?.(nextTab.noteId, nextTab.title);
+				}
+			}
+		},
+		[confirmDiscardBeforeProceed],
+	);
+
+	const selectTabById = useCallback(
+		async (tabId: string) => {
+			if (tabId === activeTabIdRef.current) return;
+			if (noteEditSessionRef.current?.dirty) {
+				const res = await confirmDiscardBeforeProceed("switch");
+				if (!res.ok) return;
+			}
+			setActiveTabId(tabId);
+			const tab = noteTabsRef.current.find((t) => t.tabId === tabId);
+			if (!tab?.noteId) {
+				setNoteEditSession(null);
+				return;
+			}
+			void openNoteForEditingRef.current?.(tab.noteId, tab.title);
+		},
+		[confirmDiscardBeforeProceed],
+	);
+
 	const closeInlineEditor = useCallback(async () => {
 		const s = noteEditSessionRef.current;
 		if (!s) return;
@@ -991,11 +1165,12 @@ export default function CanvasPane({
 			return { ...prev, phase: "loading", errorMessage: "" };
 		});
 		try {
-			const doc = await invoke("vault_read_text", { path: s.noteId });
-			const preview = parseNotePreview(s.noteId, doc.text);
-			setNodes((prev) =>
-				prev.map((n) =>
-					n.id === s.nodeId
+				const doc = await invoke("vault_read_text", { path: s.noteId });
+				const preview = parseNotePreview(s.noteId, doc.text);
+				updateTabTitle(s.noteId, preview.title);
+				setNodes((prev) =>
+					prev.map((n) =>
+						n.id === s.nodeId
 						? {
 								...n,
 								data: {
@@ -1037,7 +1212,7 @@ export default function CanvasPane({
 	}, [saveInlineNote]);
 
 	const beginInlineEdit = useCallback(
-		async (node: CanvasNode) => {
+		async (node: CanvasNode): Promise<boolean> => {
 			const d = (node.data as Record<string, unknown> | null) ?? null;
 			const noteId =
 				d && typeof d.noteId === "string"
@@ -1045,14 +1220,14 @@ export default function CanvasPane({
 					: typeof node.id === "string"
 						? node.id
 						: "";
-			if (!noteId) return;
+			if (!noteId) return false;
 
 			const current = noteEditSessionRef.current;
-			if (current?.noteId === noteId) return;
+			if (current?.noteId === noteId) return true;
 
 			if (current?.dirty) {
 				const ok = await confirmDiscardBeforeProceed("switch");
-				if (!ok.ok) return;
+				if (!ok.ok) return false;
 			}
 
 			const seq = ++noteEditLoadSeqRef.current;
@@ -1069,8 +1244,9 @@ export default function CanvasPane({
 			});
 			try {
 				const doc = await invoke("vault_read_text", { path: noteId });
-				if (seq !== noteEditLoadSeqRef.current) return;
+				if (seq !== noteEditLoadSeqRef.current) return false;
 				const preview = parseNotePreview(noteId, doc.text);
+				updateTabTitle(noteId, preview.title);
 				setNodes((prev) =>
 					prev.map((n) =>
 						n.id === node.id
@@ -1100,15 +1276,17 @@ export default function CanvasPane({
 						errorMessage: "",
 					};
 				});
+				return true;
 			} catch (e) {
 				const message = e instanceof Error ? e.message : String(e);
 				setNoteEditSession((prev) => {
 					if (!prev || prev.noteId !== noteId) return prev;
 					return { ...prev, phase: "error", errorMessage: message };
 				});
+				return false;
 			}
 		},
-		[confirmDiscardBeforeProceed],
+		[confirmDiscardBeforeProceed, updateTabTitle],
 	);
 
 	const updateInlineMarkdown = useCallback((nextMarkdown: string) => {
@@ -1141,6 +1319,71 @@ export default function CanvasPane({
 			return { ...prev, mode };
 		});
 	}, []);
+
+	const openNoteForEditing = useCallback(
+		(noteId: string, title?: string) => {
+			const computeFlowCenter = () => {
+				const flow = flowRef.current;
+				const el = wrapperRef.current;
+				if (!flow || !el) return { x: 0, y: 0 };
+				const rect = el.getBoundingClientRect();
+				const pos = flow.screenToFlowPosition({
+					x: rect.left + rect.width / 2,
+					y: rect.top + rect.height / 2,
+				});
+				return snapPoint(pos, GRID_SIZE);
+			};
+			setNodes((prev) => {
+				const pos = computeFlowCenter();
+				const has = prev.some((n) => n.id === noteId);
+				const next = prev.map((n) => ({
+					...n,
+					selected: n.id === noteId,
+				}));
+				if (has) return next;
+				return [
+					...next,
+					{
+						id: noteId,
+						type: "note",
+						position: pos,
+						data: {
+							noteId,
+							title: title || "Note",
+							content: "",
+						},
+					},
+				];
+			});
+
+			return new Promise<boolean>((resolve) => {
+				requestAnimationFrame(() => {
+					const node = nodesRef.current.find((n) => n.id === noteId);
+					if (!node) {
+						resolve(false);
+						return;
+					}
+					const p = node.position ?? { x: 0, y: 0 };
+					const flow = flowRef.current as unknown as {
+						setCenter?: (
+							x: number,
+							y: number,
+							opts?: { zoom?: number; duration?: number },
+						) => void;
+					} | null;
+					flow?.setCenter?.(p.x + 260, p.y + 220, { zoom: 1, duration: 300 });
+					void (async () => {
+						const ok = await beginInlineEdit(node);
+						resolve(ok);
+					})();
+				});
+			});
+		},
+		[beginInlineEdit, setNodes],
+	);
+	useEffect(() => {
+		openNoteForEditingRef.current = openNoteForEditing;
+	}, [openNoteForEditing]);
 
 	const saveInlineNow = useCallback(() => {
 		const s = noteEditSessionRef.current;
@@ -1682,47 +1925,15 @@ export default function CanvasPane({
 					markdown: externalCommand.markdown,
 				};
 			}
-			setNodes((prev) => {
-				const pos = flowCenter();
-				const has = prev.some((n) => n.id === noteId);
-				const next = prev.map((n) => ({
-					...n,
-					selected: n.id === noteId,
-				}));
-				if (has) return next;
-				return [
-					...next,
-					{
-						id: noteId,
-						type: "note",
-						position: pos,
-						data: {
-							noteId,
-							title:
-								externalCommand.kind === "open_note_editor"
-									? externalCommand.title || "Note"
-									: "Note",
-							content: "",
-						},
-					},
-				];
-			});
-
-			// Defer focusing + opening until after the node is present in state.
-			requestAnimationFrame(() => {
-				const node = nodesRef.current.find((n) => n.id === noteId);
-				if (!node) return;
-				const p = node.position ?? { x: 0, y: 0 };
-				const flow = flowRef.current as unknown as {
-					setCenter?: (
-						x: number,
-						y: number,
-						opts?: { zoom?: number; duration?: number },
-					) => void;
-				} | null;
-				flow?.setCenter?.(p.x + 260, p.y + 220, { zoom: 1, duration: 300 });
-				void beginInlineEdit(node);
-			});
+			const title =
+				externalCommand.kind === "open_note_editor"
+					? externalCommand.title || "Note"
+					: "Note";
+			void (async () => {
+				const ok = await openNoteForEditing(noteId, title);
+				if (!ok) return;
+				ensureTabForNote(noteId, title);
+			})();
 
 			onExternalCommandHandled?.(externalCommand.id);
 			return;
@@ -1792,11 +2003,12 @@ export default function CanvasPane({
 			onExternalCommandHandled?.(externalCommand.id);
 		}
 	}, [
-		beginInlineEdit,
 		createLinkNode,
 		doc,
+		ensureTabForNote,
 		externalCommand,
 		flowCenter,
+		openNoteForEditing,
 		onExternalCommandHandled,
 		setNodes,
 	]);
@@ -2165,7 +2377,7 @@ export default function CanvasPane({
 	const onNodeDoubleClick: NodeMouseHandler = useCallback(
 		(_evt, node) => {
 			if (node.type === "note") {
-				void beginInlineEdit(node as CanvasNode);
+				openInlineEditorForNodeId(node.id);
 				return;
 			}
 			if (node.type === "file") {
@@ -2276,9 +2488,18 @@ export default function CanvasPane({
 		(nodeId: string) => {
 			const node = nodesRef.current.find((n) => n.id === nodeId);
 			if (!node) return;
-			void beginInlineEdit(node);
+			const data = (node.data as Record<string, unknown> | null) ?? null;
+			const noteId =
+				typeof data?.noteId === "string" ? data.noteId : (node.id as string);
+			const title =
+				typeof data?.title === "string" ? data.title : "Note";
+			void (async () => {
+				const ok = await beginInlineEdit(node);
+				if (!ok) return;
+				ensureTabForNote(noteId, title);
+			})();
 		},
-		[beginInlineEdit],
+		[beginInlineEdit, ensureTabForNote],
 	);
 
 	const noteEditActions = useMemo<CanvasNoteEditActions>(
@@ -2512,7 +2733,14 @@ export default function CanvasPane({
 								<Controls />
 							</ReactFlow>
 						</div>
-						<CanvasNoteOverlayEditor nodes={nodes} />
+						<CanvasNoteOverlayEditor
+							nodes={nodes}
+							tabs={noteTabs}
+							activeTabId={activeTabId}
+							onSelectTab={selectTabById}
+							onCloseTab={(id) => void closeTabById(id)}
+							onNewTab={() => createNewTab()}
+						/>
 					</div>
 
 					{saveError && <div className="canvasError">{saveError}</div>}
