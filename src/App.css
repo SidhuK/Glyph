@@ -2736,6 +2736,165 @@ button.segBtn.active {
 	position: relative;
 }
 
+.canvasNoteEditorBlurTarget {
+	position: absolute;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	transition: filter var(--transition-fast),
+		transform var(--transition-fast),
+		opacity var(--transition-fast);
+	will-change: filter, transform, opacity;
+}
+
+.canvasNoteEditorBlurTarget.is-blurred {
+	filter: blur(2px);
+	opacity: 0.9;
+	transform: scale(0.996);
+	pointer-events: none;
+}
+
+.canvasNoteEditorOverlay {
+	position: absolute;
+	inset: 0;
+	z-index: 20;
+	display: flex;
+	align-items: stretch;
+	justify-content: flex-end;
+	padding: var(--space-4);
+	pointer-events: none;
+}
+
+.canvasNoteEditorScrim {
+	position: absolute;
+	inset: 0;
+	background: color-mix(in srgb, var(--bg-canvas) 28%, transparent);
+	pointer-events: auto;
+}
+
+.canvasNoteEditorPanel {
+	position: relative;
+	margin-left: auto;
+	width: clamp(360px, 34vw, 520px);
+	max-height: calc(100% - var(--space-2));
+	background: var(--bg-primary);
+	border: 1px solid var(--border-default);
+	border-radius: var(--radius-xl);
+	box-shadow: var(--shadow-float);
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	pointer-events: auto;
+}
+
+.canvasNoteEditorHeader {
+	display: grid;
+	grid-template-columns: 1fr auto auto;
+	align-items: center;
+	gap: var(--space-2);
+	height: 44px;
+	padding: 0 var(--space-3) 0 var(--space-4);
+	border-bottom: 1px solid var(--border-light);
+	background: color-mix(in srgb, var(--bg-primary) 88%, var(--bg-secondary));
+}
+
+.canvasNoteEditorTitle {
+	font-size: var(--text-sm);
+	font-weight: var(--font-semibold);
+	color: var(--text-primary);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.canvasNoteEditorStatus {
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
+	white-space: nowrap;
+}
+
+.canvasNoteEditorActions {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.canvasNoteEditorError {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--space-2);
+	padding: var(--space-2) var(--space-3);
+	border-bottom: 1px solid var(--border-light);
+	background: var(--feedback-error-bg);
+	color: var(--text-primary);
+}
+
+.canvasNoteEditorErrorText {
+	font-size: var(--text-xs);
+	color: var(--text-primary);
+	flex: 1;
+}
+
+.canvasNoteEditorErrorActions {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.canvasNoteEditorBody {
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	padding: var(--space-2);
+	background: color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary));
+}
+
+.canvasNoteEditorLoading {
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
+	border-radius: var(--radius-lg);
+	border: 1px dashed var(--border-light);
+	background: var(--bg-secondary);
+}
+
+.canvasNoteEditorPanel .rfNodeNoteEditor {
+	border: 1px solid var(--border-light);
+	background: var(--bg-primary);
+}
+
+.canvasNoteEditorPanel .rfNodeNoteEditorRibbon {
+	background: color-mix(in srgb, var(--bg-primary) 90%, var(--bg-secondary));
+	border-bottom: 1px solid var(--border-light);
+}
+
+.canvasNoteEditorPanel .rfNodeNoteEditorBody {
+	overflow: auto;
+}
+
+.canvasNoteEditorPanel .rfNodeNoteEditorRaw {
+	font-size: 13px;
+	color: var(--text-primary);
+	background: transparent;
+}
+
+.canvasNoteEditorPanel .rfNodeNoteEditorRaw .cm-scroller {
+	font-size: 13px;
+	color: var(--text-primary);
+}
+
+.canvasNoteEditorPanel .tiptapContentInline {
+	color: var(--text-primary);
+	background: transparent;
+}
+
 .canvasLoading {
 	position: absolute;
 	inset: 0;

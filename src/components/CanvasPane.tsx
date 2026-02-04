@@ -20,7 +20,7 @@ import {
 	useNodesState,
 } from "@xyflow/react";
 
-import { motion } from "motion/react";
+import { AnimatePresence, motion } from "motion/react";
 import {
 	createContext,
 	memo,
@@ -224,18 +224,8 @@ const NoteNode = memo(function NoteNode({
 	const noteId = typeof data.noteId === "string" ? data.noteId : id;
 	const content = typeof data.content === "string" ? data.content : "";
 	const mtimeMs = typeof data.mtimeMs === "number" ? data.mtimeMs : null;
-	const {
-		session,
-		openEditor,
-		closeEditor,
-		saveNow,
-		reloadFromDisk,
-		overwriteDisk,
-		setEditorMode,
-		updateMarkdown,
-	} = useCanvasNoteEdit();
-	const isEditing = session?.noteId === noteId;
-	const rotation = isEditing ? 0 : getNodeRotation(id);
+	const { openEditor } = useCanvasNoteEdit();
+	const rotation = getNodeRotation(id);
 	const updatedLabel = formatNoteMtime(mtimeMs);
 
 	// Analyze content for better sizing
@@ -245,29 +235,27 @@ const NoteNode = memo(function NoteNode({
 	const avgLineLength = lines.length > 0 ? content.length / lines.length : 0;
 
 	// Base size class determination
-	const baseSizeClass = isEditing
-		? "rfNodeNote--editor"
-		: !hasContent
-			? "rfNodeNote--small"
-			: lineCount === 1 && content.length < 30
-				? "rfNodeNote--xs" // Very short single line
-				: lineCount === 1 && content.length < 80
-					? "rfNodeNote--small" // Short single line
-					: lineCount <= 2 && content.length < 150
-						? "rfNodeNote--medium" // Few lines
-						: lineCount <= 4 && avgLineLength < 40
-							? "rfNodeNote--tall" // Many short lines
-							: lineCount <= 3 && avgLineLength > 60
-								? "rfNodeNote--wide" // Few long lines
-								: lineCount <= 6 && content.length < 400
-									? "rfNodeNote--large" // Moderate content
-									: content.length < 600
-										? "rfNodeNote--xl" // Long content
-										: "rfNodeNote--xl"; // Very long content
+	const baseSizeClass = !hasContent
+		? "rfNodeNote--small"
+		: lineCount === 1 && content.length < 30
+			? "rfNodeNote--xs" // Very short single line
+			: lineCount === 1 && content.length < 80
+				? "rfNodeNote--small" // Short single line
+				: lineCount <= 2 && content.length < 150
+					? "rfNodeNote--medium" // Few lines
+					: lineCount <= 4 && avgLineLength < 40
+						? "rfNodeNote--tall" // Many short lines
+						: lineCount <= 3 && avgLineLength > 60
+							? "rfNodeNote--wide" // Few long lines
+							: lineCount <= 6 && content.length < 400
+								? "rfNodeNote--large" // Moderate content
+								: content.length < 600
+									? "rfNodeNote--xl" // Long content
+									: "rfNodeNote--xl"; // Very long content
 
 	// Apply random variations for aesthetic appeal
-	const randomWidth = isEditing ? 0 : getRandomVariation(id, -15, 15); // ±15px variation
-	const randomHeight = isEditing ? 0 : getRandomVariation(id, -10, 20); // -10 to +20px variation
+	const randomWidth = getRandomVariation(id, -15, 15); // ±15px variation
+	const randomHeight = getRandomVariation(id, -10, 20); // -10 to +20px variation
 
 	// Generate dynamic style with random variations
 	const dynamicStyle = {
@@ -302,23 +290,12 @@ const NoteNode = memo(function NoteNode({
 	dynamicStyle["--base-width"] = dimensions.width;
 	dynamicStyle["--base-height"] = dimensions.minHeight;
 
-	const statusLabel = (() => {
-		if (!isEditing || !session) return "";
-		if (session.phase === "loading") return "Loading…";
-		if (session.phase === "saving") return "Saving…";
-		if (session.phase === "conflict") return "Conflict";
-		if (session.phase === "error") return "Save failed";
-		if (session.dirty) return "Unsaved changes…";
-		return "Saved";
-	})();
-
 	return (
 		<div
 			className={[
 				"rfNode",
 				"rfNodeNote",
 				baseSizeClass,
-				isEditing ? "rfNodeNoteEditing" : "",
 				selected ? "rfNodeNoteSelected" : "",
 			]
 				.filter(Boolean)
@@ -326,135 +303,33 @@ const NoteNode = memo(function NoteNode({
 			title={noteId}
 			style={{
 				...dynamicStyle,
-				transform: isEditing ? undefined : `rotate(${rotation}deg)`,
+				transform: `rotate(${rotation}deg)`,
 			}}
 		>
 			<Handle type="target" position={Position.Left} />
 			<Handle type="source" position={Position.Right} />
-
-			{isEditing && session ? (
-				<div className="rfNodeNoteEditingInner nodrag nopan">
-					<div className="rfNodeNoteEditorHeader nodrag nopan">
-						<div className="rfNodeNoteEditorTitle" title={title}>
-							{title}
-						</div>
-						<div
-							className="rfNodeNoteEditorStatus"
-							title={session.errorMessage}
+			<>
+				<div className="rfNodeNoteHeader">
+					<div className="rfNodeNoteTitle">{title}</div>
+					<div className="rfNodeNoteMeta">
+						{updatedLabel ? (
+							<div className="rfNodeNoteTimestamp">{updatedLabel}</div>
+						) : null}
+						<button
+							type="button"
+							className="iconBtn sm rfNodeNoteOpenBtn nodrag nopan"
+							title="Edit"
+							onClick={(e) => {
+								e.stopPropagation();
+								openEditor(id);
+							}}
 						>
-							{statusLabel}
-						</div>
-						<div className="rfNodeNoteEditorActions nodrag nopan">
-							<button
-								type="button"
-								className="iconBtn sm"
-								title={session.dirty ? "Save" : "Saved"}
-								disabled={
-									!session.dirty ||
-									session.phase === "loading" ||
-									session.phase === "saving"
-								}
-								onClick={(e) => {
-									e.stopPropagation();
-									saveNow();
-								}}
-							>
-								<Save size={14} />
-							</button>
-							<button
-								type="button"
-								className="iconBtn sm"
-								title="Reload from disk"
-								onClick={(e) => {
-									e.stopPropagation();
-									reloadFromDisk();
-								}}
-							>
-								<RotateCcw size={14} />
-							</button>
-							<button
-								type="button"
-								className="iconBtn sm"
-								title="Done"
-								onClick={(e) => {
-									e.stopPropagation();
-									closeEditor();
-								}}
-							>
-								<X size={14} />
-							</button>
-						</div>
+							<Edit size={14} />
+						</button>
 					</div>
-
-					{session.errorMessage ? (
-						<div className="rfNodeNoteEditorError nodrag nopan">
-							<div className="rfNodeNoteEditorErrorText">
-								{session.errorMessage}
-							</div>
-							<div className="rfNodeNoteEditorErrorActions">
-								<button
-									type="button"
-									className="iconBtn sm"
-									title="Reload from disk"
-									onClick={(e) => {
-										e.stopPropagation();
-										reloadFromDisk();
-									}}
-								>
-									<RotateCcw size={14} />
-								</button>
-								<button
-									type="button"
-									className="iconBtn sm"
-									title="Overwrite on-disk file"
-									onClick={(e) => {
-										e.stopPropagation();
-										overwriteDisk();
-									}}
-								>
-									<Save size={14} />
-								</button>
-							</div>
-						</div>
-					) : null}
-
-					{session.phase === "loading" ? (
-						<div className="rfNodeNoteEditorLoading nodrag nopan nowheel">
-							Loading…
-						</div>
-					) : (
-						<CanvasNoteInlineEditor
-							markdown={session.markdown}
-							mode={session.mode}
-							onModeChange={setEditorMode}
-							onChange={updateMarkdown}
-						/>
-					)}
 				</div>
-			) : (
-				<>
-					<div className="rfNodeNoteHeader">
-						<div className="rfNodeNoteTitle">{title}</div>
-						<div className="rfNodeNoteMeta">
-							{updatedLabel ? (
-								<div className="rfNodeNoteTimestamp">{updatedLabel}</div>
-							) : null}
-							<button
-								type="button"
-								className="iconBtn sm rfNodeNoteOpenBtn nodrag nopan"
-								title="Edit"
-								onClick={(e) => {
-									e.stopPropagation();
-									openEditor(id);
-								}}
-							>
-								<Edit size={14} />
-							</button>
-						</div>
-					</div>
-					{hasContent && <div className="rfNodeNoteContent">{content}</div>}
-				</>
-			)}
+				{hasContent && <div className="rfNodeNoteContent">{content}</div>}
+			</>
 		</div>
 	);
 });
@@ -695,6 +570,154 @@ const FolderPreviewNode = memo(function FolderPreviewNode({
 				Open
 			</button>
 		</motion.div>
+	);
+});
+
+const CanvasNoteOverlayEditor = memo(function CanvasNoteOverlayEditor({
+	nodes,
+}: {
+	nodes: CanvasNode[];
+}) {
+	const {
+		session,
+		closeEditor,
+		saveNow,
+		reloadFromDisk,
+		overwriteDisk,
+		setEditorMode,
+		updateMarkdown,
+	} = useCanvasNoteEdit();
+
+	const sessionNode = useMemo(
+		() => nodes.find((node) => node.id === session?.nodeId),
+		[nodes, session?.nodeId],
+	);
+	const title =
+		typeof (sessionNode?.data as Record<string, unknown> | null)?.title ===
+		"string"
+			? ((sessionNode?.data as Record<string, unknown>).title as string)
+			: session?.noteId ?? "Untitled";
+
+	const statusLabel = (() => {
+		if (!session) return "";
+		if (session.phase === "loading") return "Loading…";
+		if (session.phase === "saving") return "Saving…";
+		if (session.phase === "conflict") return "Conflict";
+		if (session.phase === "error") return "Save failed";
+		if (session.dirty) return "Unsaved changes…";
+		return "Saved";
+	})();
+
+	return (
+		<AnimatePresence>
+			{session ? (
+				<motion.div
+					className="canvasNoteEditorOverlay"
+					initial={{ opacity: 0 }}
+					animate={{ opacity: 1 }}
+					exit={{ opacity: 0 }}
+					transition={{ duration: 0.18 }}
+				>
+					<motion.div
+						className="canvasNoteEditorScrim"
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						exit={{ opacity: 0 }}
+						transition={{ duration: 0.18 }}
+						onClick={() => closeEditor()}
+					/>
+					<motion.div
+						className="canvasNoteEditorPanel"
+						initial={{ x: 24, opacity: 0, scale: 0.98 }}
+						animate={{ x: 0, opacity: 1, scale: 1 }}
+						exit={{ x: 24, opacity: 0, scale: 0.98 }}
+						transition={{ type: "spring", stiffness: 420, damping: 32 }}
+					>
+						<div className="canvasNoteEditorHeader">
+							<div className="canvasNoteEditorTitle" title={title}>
+								{title}
+							</div>
+							<div
+								className="canvasNoteEditorStatus"
+								title={session.errorMessage}
+							>
+								{statusLabel}
+							</div>
+							<div className="canvasNoteEditorActions">
+								<button
+									type="button"
+									className="iconBtn sm"
+									title={session.dirty ? "Save" : "Saved"}
+									disabled={
+										!session.dirty ||
+										session.phase === "loading" ||
+										session.phase === "saving"
+									}
+									onClick={() => saveNow()}
+								>
+									<Save size={14} />
+								</button>
+								<button
+									type="button"
+									className="iconBtn sm"
+									title="Reload from disk"
+									onClick={() => reloadFromDisk()}
+								>
+									<RotateCcw size={14} />
+								</button>
+								<button
+									type="button"
+									className="iconBtn sm"
+									title="Done"
+									onClick={() => closeEditor()}
+								>
+									<X size={14} />
+								</button>
+							</div>
+						</div>
+
+						{session.errorMessage ? (
+							<div className="canvasNoteEditorError">
+								<div className="canvasNoteEditorErrorText">
+									{session.errorMessage}
+								</div>
+								<div className="canvasNoteEditorErrorActions">
+									<button
+										type="button"
+										className="iconBtn sm"
+										title="Reload from disk"
+										onClick={() => reloadFromDisk()}
+									>
+										<RotateCcw size={14} />
+									</button>
+									<button
+										type="button"
+										className="iconBtn sm"
+										title="Overwrite on-disk file"
+										onClick={() => overwriteDisk()}
+									>
+										<Save size={14} />
+									</button>
+								</div>
+							</div>
+						) : null}
+
+						<div className="canvasNoteEditorBody">
+							{session.phase === "loading" ? (
+								<div className="canvasNoteEditorLoading">Loading…</div>
+							) : (
+								<CanvasNoteInlineEditor
+									markdown={session.markdown}
+									mode={session.mode}
+									onModeChange={setEditorMode}
+									onChange={updateMarkdown}
+								/>
+							)}
+						</div>
+					</motion.div>
+				</motion.div>
+			) : null}
+		</AnimatePresence>
 	);
 });
 
@@ -2452,34 +2475,44 @@ export default function CanvasPane({
 					</div>
 
 					<div className="canvasBody" ref={wrapperRef}>
-						{showLoading && (
-							<div className="canvasLoading">
-								<span className="canvasLoadingSpinner">◈</span>
-								Loading canvas…
-							</div>
-						)}
-						<ReactFlow
-							nodes={nodes}
-							edges={edges}
-							onNodesChange={onNodesChange}
-							onEdgesChange={onEdgesChange}
-							onConnect={onConnect}
-							onNodeClick={onNodeClick}
-							onNodeDoubleClick={onNodeDoubleClick}
-							nodeTypes={nodeTypes}
-							snapToGrid={snapToGrid}
-							snapGrid={[GRID_SIZE, GRID_SIZE]}
-							minZoom={0.02}
-							maxZoom={8}
-							style={flowThemeVars}
-							onInit={(instance) => {
-								flowRef.current = instance;
-								instance.fitView();
-							}}
+						<div
+							className={[
+								"canvasNoteEditorBlurTarget",
+								noteEditSession ? "is-blurred" : "",
+							]
+								.filter(Boolean)
+								.join(" ")}
 						>
-							<MiniMap pannable zoomable />
-							<Controls />
-						</ReactFlow>
+							{showLoading && (
+								<div className="canvasLoading">
+									<span className="canvasLoadingSpinner">◈</span>
+									Loading canvas…
+								</div>
+							)}
+							<ReactFlow
+								nodes={nodes}
+								edges={edges}
+								onNodesChange={onNodesChange}
+								onEdgesChange={onEdgesChange}
+								onConnect={onConnect}
+								onNodeClick={onNodeClick}
+								onNodeDoubleClick={onNodeDoubleClick}
+								nodeTypes={nodeTypes}
+								snapToGrid={snapToGrid}
+								snapGrid={[GRID_SIZE, GRID_SIZE]}
+								minZoom={0.02}
+								maxZoom={8}
+								style={flowThemeVars}
+								onInit={(instance) => {
+									flowRef.current = instance;
+									instance.fitView();
+								}}
+							>
+								<MiniMap pannable zoomable />
+								<Controls />
+							</ReactFlow>
+						</div>
+						<CanvasNoteOverlayEditor nodes={nodes} />
 					</div>
 
 					{saveError && <div className="canvasError">{saveError}</div>}
