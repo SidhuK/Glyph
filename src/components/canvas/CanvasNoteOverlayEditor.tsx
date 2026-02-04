@@ -1,7 +1,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import { memo, useMemo } from "react";
-import { CanvasNoteInlineEditor } from "../CanvasNoteInlineEditor";
 import { RotateCcw, Save, X } from "../Icons";
+import { CanvasNoteInlineEditor } from "../editor";
 import { useCanvasNoteEdit } from "./contexts";
 import type { CanvasNode, NoteTab } from "./types";
 
@@ -44,8 +44,8 @@ export const CanvasNoteOverlayEditor = memo(function CanvasNoteOverlayEditor({
 
 	const statusLabel = (() => {
 		if (!session) return "";
-		if (session?.phase === "loading") return "Loading…";
-		if (session?.phase === "saving") return "Saving…";
+		if (session.phase === "loading") return "Loading…";
+		if (session.phase === "saving") return "Saving…";
 		if (session.phase === "conflict") return "Conflict";
 		if (session.phase === "error") return "Save failed";
 		if (session.dirty) return "Unsaved changes…";
@@ -197,7 +197,7 @@ export const CanvasNoteOverlayEditor = memo(function CanvasNoteOverlayEditor({
 
 						<div className="canvasNoteEditorBody">
 							{session ? (
-								session?.phase === "loading" ? (
+								session.phase === "loading" ? (
 									<div className="canvasNoteEditorLoading">Loading…</div>
 								) : (
 									<CanvasNoteInlineEditor

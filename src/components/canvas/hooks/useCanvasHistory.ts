@@ -1,37 +1,23 @@
-import { useCallback, useEffect, useRef } from "react";
-import type { CanvasDocLike, CanvasEdge, CanvasNode } from "../types";
+import { useCallback, useRef } from "react";
+import type { CanvasEdge, CanvasNode } from "../types";
 
 interface HistoryState {
 	nodes: CanvasNode[];
 	edges: CanvasEdge[];
 }
 
-interface UseCanvasHistoryProps {
-	doc: CanvasDocLike | null;
-	nodes: CanvasNode[];
-	edges: CanvasEdge[];
-	setNodes: React.Dispatch<React.SetStateAction<CanvasNode[]>>;
-	setEdges: React.Dispatch<React.SetStateAction<CanvasEdge[]>>;
-	stripEphemeral: (
-		n: CanvasNode[],
-		e: CanvasEdge[],
-	) => { nodes: CanvasNode[]; edges: CanvasEdge[] };
-}
-
-export function useCanvasHistory({
-	doc,
-	nodes,
-	edges,
-	setNodes,
-	setEdges,
-	stripEphemeral,
-}: UseCanvasHistoryProps) {
+export function useCanvasHistory(
+	nodes: CanvasNode[],
+	edges: CanvasEdge[],
+	setNodes: React.Dispatch<React.SetStateAction<CanvasNode[]>>,
+	setEdges: React.Dispatch<React.SetStateAction<CanvasEdge[]>>,
+	stripEphemeral: (n: CanvasNode[], e: CanvasEdge[]) => HistoryState,
+) {
 	const pastRef = useRef<HistoryState[]>([]);
 	const futureRef = useRef<HistoryState[]>([]);
 	const lastHistoryRef = useRef<string>("");
 	const lastStateRef = useRef<HistoryState | null>(null);
 	const applyingHistoryRef = useRef(false);
-	const historyTimerRef = useRef<number | null>(null);
 
 	const snapshotString = useCallback(
 		(n: CanvasNode[], e: CanvasEdge[]) =>
@@ -41,8 +27,7 @@ export function useCanvasHistory({
 					type: node.type ?? null,
 					position: node.position,
 					data: node.data ?? null,
-					parentNode: (node as unknown as { parentNode?: string | null })
-						.parentNode,
+					parentNode: (node as unknown as { parentNode?: string | null }).parentNode,
 					extent: (node as unknown as { extent?: unknown }).extent ?? null,
 					style: (node as unknown as { style?: unknown }).style ?? null,
 				})),
@@ -62,15 +47,11 @@ export function useCanvasHistory({
 	const pushHistory = useCallback(
 		(n: CanvasNode[], e: CanvasEdge[]) => {
 			if (applyingHistoryRef.current) return;
-			if (!doc) return;
 			const stable = stripEphemeral(n, e);
 			const nextKey = snapshotString(stable.nodes, stable.edges);
 			if (!lastHistoryRef.current) {
 				lastHistoryRef.current = nextKey;
-				lastStateRef.current = structuredClone({
-					nodes: stable.nodes,
-					edges: stable.edges,
-				});
+				lastStateRef.current = structuredClone(stable);
 				return;
 			}
 			if (nextKey === lastHistoryRef.current) return;
@@ -80,21 +61,10 @@ export function useCanvasHistory({
 			if (pastRef.current.length > 80) pastRef.current.shift();
 			futureRef.current = [];
 			lastHistoryRef.current = nextKey;
-			lastStateRef.current = structuredClone({
-				nodes: stable.nodes,
-				edges: stable.edges,
-			});
+			lastStateRef.current = structuredClone(stable);
 		},
-		[doc, snapshotString, stripEphemeral],
+		[snapshotString, stripEphemeral],
 	);
-
-	useEffect(() => {
-		if (!doc) return;
-		if (historyTimerRef.current) window.clearTimeout(historyTimerRef.current);
-		historyTimerRef.current = window.setTimeout(() => {
-			pushHistory(nodes, edges);
-		}, 200);
-	}, [doc, edges, nodes, pushHistory]);
 
 	const undo = useCallback(() => {
 		const past = pastRef.current;
@@ -129,21 +99,17 @@ export function useCanvasHistory({
 	}, [edges, nodes, setEdges, setNodes, snapshotString]);
 
 	const resetHistory = useCallback(
-		(initialNodes: CanvasNode[], initialEdges: CanvasEdge[]) => {
+		(n: CanvasNode[], e: CanvasEdge[]) => {
 			pastRef.current = [];
 			futureRef.current = [];
-			lastHistoryRef.current = "";
-			const initialKey = snapshotString(initialNodes, initialEdges);
-			lastHistoryRef.current = initialKey;
-			lastStateRef.current = structuredClone({
-				nodes: initialNodes,
-				edges: initialEdges,
-			});
+			lastHistoryRef.current = snapshotString(n, e);
+			lastStateRef.current = structuredClone({ nodes: n, edges: e });
 		},
 		[snapshotString],
 	);
 
 	return {
+		pushHistory,
 		undo,
 		redo,
 		resetHistory,

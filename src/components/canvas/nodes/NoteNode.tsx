@@ -1,21 +1,15 @@
 import { Handle, type NodeProps, Position } from "@xyflow/react";
 import { memo } from "react";
 import { Edit } from "../../Icons";
+import { NODE_BASE_DIMENSIONS } from "../constants";
 import { useCanvasNoteEdit } from "../contexts";
 import type { CanvasNode } from "../types";
-import { formatNoteMtime, getNodeRotation, getRandomVariation } from "../utils";
-
-const baseDimensions = {
-	"rfNodeNote--xs": { width: "100px", minHeight: "80px" },
-	"rfNodeNote--small": { width: "140px", minHeight: "100px" },
-	"rfNodeNote--medium": { width: "200px", minHeight: "140px" },
-	"rfNodeNote--large": { width: "280px", minHeight: "200px" },
-	"rfNodeNote--xl": { width: "360px", minHeight: "260px" },
-	"rfNodeNote--editor": { width: "520px", minHeight: "320px" },
-	"rfNodeNote--tall": { width: "160px", minHeight: "240px" },
-	"rfNodeNote--wide": { width: "320px", minHeight: "160px" },
-	"rfNodeNote--square": { width: "180px", minHeight: "180px" },
-};
+import {
+	computeNoteSizeClass,
+	formatNoteMtime,
+	getNodeRotation,
+	getRandomVariation,
+} from "../utils";
 
 export const NoteNode = memo(function NoteNode({
 	data,
@@ -29,34 +23,17 @@ export const NoteNode = memo(function NoteNode({
 	const { openEditor } = useCanvasNoteEdit();
 	const rotation = getNodeRotation(id);
 	const updatedLabel = formatNoteMtime(mtimeMs);
-
 	const hasContent = content.length > 0;
-	const lines = content.split("\n").filter((line) => line.trim().length > 0);
-	const lineCount = lines.length;
-	const avgLineLength = lines.length > 0 ? content.length / lines.length : 0;
 
-	const baseSizeClass = !hasContent
-		? "rfNodeNote--small"
-		: lineCount === 1 && content.length < 30
-			? "rfNodeNote--xs"
-			: lineCount === 1 && content.length < 80
-				? "rfNodeNote--small"
-				: lineCount <= 2 && content.length < 150
-					? "rfNodeNote--medium"
-					: lineCount <= 4 && avgLineLength < 40
-						? "rfNodeNote--tall"
-						: lineCount <= 3 && avgLineLength > 60
-							? "rfNodeNote--wide"
-							: lineCount <= 6 && content.length < 400
-								? "rfNodeNote--large"
-								: content.length < 600
-									? "rfNodeNote--xl"
-									: "rfNodeNote--xl";
-
+	const baseSizeClass = computeNoteSizeClass(content);
 	const randomWidth = getRandomVariation(id, -15, 15);
 	const randomHeight = getRandomVariation(id, -10, 20);
 
-	const dynamicStyle: Record<string, string | undefined> = {
+	const dimensions =
+		NODE_BASE_DIMENSIONS[baseSizeClass as keyof typeof NODE_BASE_DIMENSIONS] ||
+		NODE_BASE_DIMENSIONS["rfNodeNote--small"];
+
+	const dynamicStyle = {
 		width:
 			randomWidth !== 0
 				? `calc(var(--base-width, 200px) + ${randomWidth}px)`
@@ -65,15 +42,10 @@ export const NoteNode = memo(function NoteNode({
 			randomHeight !== 0
 				? `calc(var(--base-height, 140px) + ${randomHeight}px)`
 				: undefined,
-		"--base-width": undefined,
-		"--base-height": undefined,
-	};
-
-	const dimensions =
-		baseDimensions[baseSizeClass as keyof typeof baseDimensions] ||
-		baseDimensions["rfNodeNote--small"];
-	dynamicStyle["--base-width"] = dimensions.width;
-	dynamicStyle["--base-height"] = dimensions.minHeight;
+		"--base-width": dimensions.width,
+		"--base-height": dimensions.minHeight,
+		transform: `rotate(${rotation}deg)`,
+	} as React.CSSProperties;
 
 	return (
 		<div
@@ -86,35 +58,30 @@ export const NoteNode = memo(function NoteNode({
 				.filter(Boolean)
 				.join(" ")}
 			title={noteId}
-			style={{
-				...dynamicStyle,
-				transform: `rotate(${rotation}deg)`,
-			}}
+			style={dynamicStyle}
 		>
 			<Handle type="target" position={Position.Left} />
 			<Handle type="source" position={Position.Right} />
-			<>
-				<div className="rfNodeNoteHeader">
-					<div className="rfNodeNoteTitle">{title}</div>
-					<div className="rfNodeNoteMeta">
-						{updatedLabel ? (
-							<div className="rfNodeNoteTimestamp">{updatedLabel}</div>
-						) : null}
-						<button
-							type="button"
-							className="iconBtn sm rfNodeNoteOpenBtn nodrag nopan"
-							title="Edit"
-							onClick={(e) => {
-								e.stopPropagation();
-								openEditor(id);
-							}}
-						>
-							<Edit size={14} />
-						</button>
-					</div>
+			<div className="rfNodeNoteHeader">
+				<div className="rfNodeNoteTitle">{title}</div>
+				<div className="rfNodeNoteMeta">
+					{updatedLabel ? (
+						<div className="rfNodeNoteTimestamp">{updatedLabel}</div>
+					) : null}
+					<button
+						type="button"
+						className="iconBtn sm rfNodeNoteOpenBtn nodrag nopan"
+						title="Edit"
+						onClick={(e) => {
+							e.stopPropagation();
+							openEditor(id);
+						}}
+					>
+						<Edit size={14} />
+					</button>
 				</div>
-				{hasContent && <div className="rfNodeNoteContent">{content}</div>}
-			</>
+			</div>
+			{hasContent && <div className="rfNodeNoteContent">{content}</div>}
 		</div>
 	);
 });

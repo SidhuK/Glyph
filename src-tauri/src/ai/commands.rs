@@ -1,4 +1,3 @@
-use std::path::PathBuf;
 use tauri::{AppHandle, Emitter, Manager, State};
 use tauri_plugin_notification::NotificationExt;
 

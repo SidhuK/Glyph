@@ -1,0 +1,157 @@
+use std::{ffi::OsStr, path::Path};
+use tauri::State;
+
+use crate::{index, io_atomic, paths, vault::VaultState};
+
+use super::frontmatter::{
+    normalize_frontmatter, now_rfc3339, parse_frontmatter, render_frontmatter_yaml,
+    split_frontmatter, Frontmatter,
+};
+use super::helpers::{
+    etag_for, extract_meta, file_mtime_ms, note_abs_path, note_rel_path, notes_dir, read_to_string,
+};
+use super::types::{NoteDoc, NoteMeta, NoteWriteResult};
+
+#[tauri::command]
+pub async fn notes_list(state: State<'_, VaultState>) -> Result<Vec<NoteMeta>, String> {
+    let root = state.current_root()?;
+    tauri::async_runtime::spawn_blocking(move || -> Result<Vec<NoteMeta>, String> {
+        let dir = notes_dir(&root)?;
+        if !dir.exists() {
+            return Ok(Vec::new());
+        }
+
+        let mut out: Vec<NoteMeta> = Vec::new();
+        for entry in std::fs::read_dir(&dir).map_err(|e| e.to_string())? {
+            let entry = entry.map_err(|e| e.to_string())?;
+            let path = entry.path();
+            if path.extension() != Some(OsStr::new("md")) {
+                continue;
+            }
+            let file_stem = match path.file_stem().and_then(|s| s.to_str()) {
+                Some(s) => s,
+                None => continue,
+            };
+            if uuid::Uuid::parse_str(file_stem).is_err() {
+                continue;
+            }
+            let markdown = read_to_string(&path)?;
+            out.push(extract_meta(file_stem, &markdown)?);
+        }
+
+        out.sort_by(|a, b| b.updated.cmp(&a.updated));
+        Ok(out)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+pub async fn note_create(state: State<'_, VaultState>, title: String) -> Result<NoteMeta, String> {
+    let root = state.current_root()?;
+    tauri::async_runtime::spawn_blocking(move || -> Result<NoteMeta, String> {
+        let id = uuid::Uuid::new_v4().to_string();
+        let rel = note_rel_path(&id)?;
+        let path = paths::join_under(&root, &rel)?;
+
+        let now = now_rfc3339();
+        let fm = Frontmatter {
+            id: Some(id.clone()),
+            title: Some(title.clone()),
+            created: Some(now.clone()),
+            updated: Some(now.clone()),
+            tags: Some(Vec::new()),
+            extra: Default::default(),
+        };
+
+        let yaml = render_frontmatter_yaml(&fm)?;
+        let markdown = format!("---\n{yaml}---\n\n");
+        io_atomic::write_atomic(&path, markdown.as_bytes()).map_err(|e| e.to_string())?;
+        let _ = index::index_note(&root, &id, &markdown);
+
+        Ok(NoteMeta {
+            id,
+            title,
+            created: now.clone(),
+            updated: now,
+        })
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+pub async fn note_read(state: State<'_, VaultState>, id: String) -> Result<NoteDoc, String> {
+    let root = state.current_root()?;
+    tauri::async_runtime::spawn_blocking(move || -> Result<NoteDoc, String> {
+        let path = note_abs_path(&root, &id)?;
+        let markdown = read_to_string(&path)?;
+        let meta = extract_meta(&id, &markdown)?;
+        Ok(NoteDoc {
+            meta,
+            etag: etag_for(&markdown),
+            mtime_ms: file_mtime_ms(&path),
+            markdown,
+        })
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+fn read_existing_created(path: &Path) -> Option<String> {
+    let markdown = std::fs::read_to_string(path).ok()?;
+    let (yaml, _body) = split_frontmatter(&markdown);
+    let fm = parse_frontmatter(yaml).ok()?;
+    fm.created
+}
+
+#[tauri::command]
+pub async fn note_write(
+    state: State<'_, VaultState>,
+    id: String,
+    markdown: String,
+    base_etag: Option<String>,
+) -> Result<NoteWriteResult, String> {
+    let root = state.current_root()?;
+    tauri::async_runtime::spawn_blocking(move || -> Result<NoteWriteResult, String> {
+        let path = note_abs_path(&root, &id)?;
+        if let Some(base) = base_etag {
+            let current = std::fs::read_to_string(&path).map_err(|e| e.to_string())?;
+            let current_etag = etag_for(&current);
+            if current_etag != base {
+                return Err("conflict: note changed on disk".to_string());
+            }
+        }
+
+        let preserve_created = read_existing_created(&path);
+        let (yaml, body) = split_frontmatter(&markdown);
+        let fm = parse_frontmatter(yaml)?;
+        let fm = normalize_frontmatter(fm, &id, None, preserve_created.as_deref());
+        let yaml = render_frontmatter_yaml(&fm)?;
+        let normalized = format!("---\n{yaml}---\n\n{}", body.trim_start_matches('\n'));
+        io_atomic::write_atomic(&path, normalized.as_bytes()).map_err(|e| e.to_string())?;
+        let _ = index::index_note(&root, &id, &normalized);
+        let saved = read_to_string(&path)?;
+        let meta = extract_meta(&id, &saved)?;
+        Ok(NoteWriteResult {
+            meta,
+            etag: etag_for(&saved),
+            mtime_ms: file_mtime_ms(&path),
+        })
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+pub async fn note_delete(state: State<'_, VaultState>, id: String) -> Result<(), String> {
+    let root = state.current_root()?;
+    tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
+        let path = note_abs_path(&root, &id)?;
+        std::fs::remove_file(&path).map_err(|e| e.to_string())?;
+        let _ = index::remove_note(&root, &id);
+        Ok(())
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}

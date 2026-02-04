@@ -1,42 +1,26 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { parseNotePreview } from "../../../lib/notePreview";
 import { invoke } from "../../../lib/tauri";
-import type { CanvasInlineEditorMode } from "../../CanvasNoteInlineEditor";
+import type { CanvasInlineEditorMode } from "../../editor";
 import type { CanvasNode, CanvasNoteEditSession, NoteTab } from "../types";
 
-interface UseNoteEditSessionProps {
-	setNodes: React.Dispatch<React.SetStateAction<CanvasNode[]>>;
-	nodesRef: React.RefObject<CanvasNode[]>;
-}
-
-export function useNoteEditSession({
-	setNodes,
-	nodesRef,
-}: UseNoteEditSessionProps) {
+export function useNoteEditSession(
+	setNodes: React.Dispatch<React.SetStateAction<CanvasNode[]>>,
+) {
 	const noteEditLoadSeqRef = useRef(0);
 	const noteEditSessionRef = useRef<CanvasNoteEditSession | null>(null);
-	const notePreviewLoadRef = useRef(new Set<string>());
-	const pendingApplyMarkdownRef = useRef<{
-		noteId: string;
-		markdown: string;
-	} | null>(null);
-
-	const [noteEditSession, setNoteEditSession] =
-		useState<CanvasNoteEditSession | null>(null);
+	const [noteEditSession, setNoteEditSession] = useState<CanvasNoteEditSession | null>(null);
 	const [noteTabs, setNoteTabs] = useState<NoteTab[]>([]);
 	const [activeTabId, setActiveTabId] = useState<string | null>(null);
-
 	const noteTabsRef = useRef<NoteTab[]>([]);
 	const activeTabIdRef = useRef<string | null>(null);
 
 	useEffect(() => {
 		noteTabsRef.current = noteTabs;
 	}, [noteTabs]);
-
 	useEffect(() => {
 		activeTabIdRef.current = activeTabId;
 	}, [activeTabId]);
-
 	useEffect(() => {
 		noteEditSessionRef.current = noteEditSession;
 	}, [noteEditSession]);
@@ -87,11 +71,7 @@ export function useNoteEditSession({
 			if (!opts?.forceOverwrite && s.baseMtimeMs == null) {
 				setNoteEditSession((prev) => {
 					if (!prev || prev.noteId !== s.noteId) return prev;
-					return {
-						...prev,
-						phase: "error",
-						errorMessage: "Note not loaded yet; refusing to save.",
-					};
+					return { ...prev, phase: "error", errorMessage: "Note not loaded yet; refusing to save." };
 				});
 				return;
 			}
@@ -140,116 +120,33 @@ export function useNoteEditSession({
 				const isConflict = message.toLowerCase().includes("conflict:");
 				setNoteEditSession((prev) => {
 					if (!prev || prev.noteId !== s.noteId) return prev;
-					return {
-						...prev,
-						phase: isConflict ? "conflict" : "error",
-						errorMessage: message,
-						dirty: true,
-					};
+					return { ...prev, phase: isConflict ? "conflict" : "error", errorMessage: message, dirty: true };
 				});
 			}
 		},
 		[setNodes, updateTabTitle],
 	);
 
-	const confirmDiscardBeforeProceed = useCallback(
-		async (purpose: "close" | "switch") => {
-			const s = noteEditSessionRef.current;
-			if (!s || !s.dirty) return { ok: true as const };
-
-			const message =
-				purpose === "close"
-					? "Discard unsaved changes and close the editor?"
-					: "Discard unsaved changes and switch notes?";
-			const discard = window.confirm(message);
-			if (!discard) return { ok: false as const };
-
-			setNoteEditSession((prev) => {
-				if (!prev || prev.noteId !== s.noteId) return prev;
-				return {
-					...prev,
-					dirty: false,
-					errorMessage: "",
-					phase: prev.phase === "loading" ? "loading" : "ready",
-					markdown: prev.lastSavedMarkdown,
-				};
-			});
-			return { ok: true as const };
-		},
-		[],
-	);
-
-	const closeInlineEditor = useCallback(async () => {
+	const confirmDiscardBeforeProceed = useCallback(async (purpose: "close" | "switch") => {
 		const s = noteEditSessionRef.current;
-		if (!s) return;
-		const res = await confirmDiscardBeforeProceed("close");
-		if (!res.ok) return;
-		setNoteEditSession(null);
-	}, [confirmDiscardBeforeProceed]);
-
-	const reloadInlineFromDisk = useCallback(async () => {
-		const s = noteEditSessionRef.current;
-		if (!s) return;
+		if (!s || !s.dirty) return { ok: true as const };
+		const message =
+			purpose === "close"
+				? "Discard unsaved changes and close the editor?"
+				: "Discard unsaved changes and switch notes?";
+		const discard = window.confirm(message);
+		if (!discard) return { ok: false as const };
 		setNoteEditSession((prev) => {
 			if (!prev || prev.noteId !== s.noteId) return prev;
-			return { ...prev, phase: "loading", errorMessage: "" };
+			return { ...prev, dirty: false, errorMessage: "", phase: prev.phase === "loading" ? "loading" : "ready", markdown: prev.lastSavedMarkdown };
 		});
-		try {
-			const doc = await invoke("vault_read_text", { path: s.noteId });
-			const preview = parseNotePreview(s.noteId, doc.text);
-			updateTabTitle(s.noteId, preview.title);
-			setNodes((prev) =>
-				prev.map((n) =>
-					n.id === s.nodeId
-						? {
-								...n,
-								data: {
-									...(n.data ?? {}),
-									noteId: s.noteId,
-									title: preview.title,
-									content: preview.content,
-								},
-							}
-						: n,
-				),
-			);
-			setNoteEditSession((prev) => {
-				if (!prev || prev.noteId !== s.noteId) return prev;
-				return {
-					...prev,
-					phase: "ready",
-					markdown: doc.text,
-					baseMtimeMs: doc.mtime_ms,
-					dirty: false,
-					lastSavedMarkdown: doc.text,
-					mode: prev.mode,
-					errorMessage: "",
-				};
-			});
-		} catch (e) {
-			const message = e instanceof Error ? e.message : String(e);
-			setNoteEditSession((prev) => {
-				if (!prev || prev.noteId !== s.noteId) return prev;
-				return { ...prev, phase: "error", errorMessage: message };
-			});
-		}
-	}, [setNodes, updateTabTitle]);
-
-	const overwriteInlineToDisk = useCallback(async () => {
-		const s = noteEditSessionRef.current;
-		if (!s) return;
-		await saveInlineNote(s.markdown, { forceOverwrite: true });
-	}, [saveInlineNote]);
+		return { ok: true as const };
+	}, []);
 
 	const beginInlineEdit = useCallback(
 		async (node: CanvasNode): Promise<boolean> => {
 			const d = (node.data as Record<string, unknown> | null) ?? null;
-			const noteId =
-				d && typeof d.noteId === "string"
-					? d.noteId
-					: typeof node.id === "string"
-						? node.id
-						: "";
+			const noteId = d && typeof d.noteId === "string" ? d.noteId : typeof node.id === "string" ? node.id : "";
 			if (!noteId) return false;
 
 			const current = noteEditSessionRef.current;
@@ -282,29 +179,14 @@ export function useNoteEditSession({
 						n.id === node.id
 							? {
 									...n,
-									data: {
-										...(n.data ?? {}),
-										noteId,
-										title: preview.title,
-										content: preview.content,
-										mtimeMs: doc.mtime_ms,
-									},
+									data: { ...(n.data ?? {}), noteId, title: preview.title, content: preview.content, mtimeMs: doc.mtime_ms },
 								}
 							: n,
 					),
 				);
 				setNoteEditSession((prev) => {
 					if (!prev || prev.noteId !== noteId) return prev;
-					return {
-						...prev,
-						phase: "ready",
-						markdown: doc.text,
-						baseMtimeMs: doc.mtime_ms,
-						dirty: false,
-						lastSavedMarkdown: doc.text,
-						mode: "rich",
-						errorMessage: "",
-					};
+					return { ...prev, phase: "ready", markdown: doc.text, baseMtimeMs: doc.mtime_ms, dirty: false, lastSavedMarkdown: doc.text, mode: "rich", errorMessage: "" };
 				});
 				return true;
 			} catch (e) {
@@ -321,22 +203,15 @@ export function useNoteEditSession({
 
 	const updateInlineMarkdown = useCallback((nextMarkdown: string) => {
 		const s = noteEditSessionRef.current;
-		if (!s) return;
-		if (s.phase === "loading") return;
+		if (!s || s.phase === "loading") return;
 		setNoteEditSession((prev) => {
 			if (!prev || prev.noteId !== s.noteId) return prev;
 			return {
 				...prev,
 				markdown: nextMarkdown,
 				dirty: true,
-				errorMessage:
-					prev.phase === "error" || prev.phase === "conflict"
-						? prev.errorMessage
-						: "",
-				phase:
-					prev.phase === "error" || prev.phase === "conflict"
-						? prev.phase
-						: "ready",
+				errorMessage: prev.phase === "error" || prev.phase === "conflict" ? prev.errorMessage : "",
+				phase: prev.phase === "error" || prev.phase === "conflict" ? prev.phase : "ready",
 			};
 		});
 	}, []);
@@ -350,75 +225,74 @@ export function useNoteEditSession({
 		});
 	}, []);
 
+	const closeInlineEditor = useCallback(async () => {
+		const s = noteEditSessionRef.current;
+		if (!s) return;
+		const res = await confirmDiscardBeforeProceed("close");
+		if (!res.ok) return;
+		setNoteEditSession(null);
+	}, [confirmDiscardBeforeProceed]);
+
+	const reloadInlineFromDisk = useCallback(async () => {
+		const s = noteEditSessionRef.current;
+		if (!s) return;
+		setNoteEditSession((prev) => {
+			if (!prev || prev.noteId !== s.noteId) return prev;
+			return { ...prev, phase: "loading", errorMessage: "" };
+		});
+		try {
+			const doc = await invoke("vault_read_text", { path: s.noteId });
+			const preview = parseNotePreview(s.noteId, doc.text);
+			updateTabTitle(s.noteId, preview.title);
+			setNodes((prev) =>
+				prev.map((n) =>
+					n.id === s.nodeId
+						? { ...n, data: { ...(n.data ?? {}), noteId: s.noteId, title: preview.title, content: preview.content } }
+						: n,
+				),
+			);
+			setNoteEditSession((prev) => {
+				if (!prev || prev.noteId !== s.noteId) return prev;
+				return { ...prev, phase: "ready", markdown: doc.text, baseMtimeMs: doc.mtime_ms, dirty: false, lastSavedMarkdown: doc.text, errorMessage: "" };
+			});
+		} catch (e) {
+			const message = e instanceof Error ? e.message : String(e);
+			setNoteEditSession((prev) => {
+				if (!prev || prev.noteId !== s.noteId) return prev;
+				return { ...prev, phase: "error", errorMessage: message };
+			});
+		}
+	}, [setNodes, updateTabTitle]);
+
+	const overwriteInlineToDisk = useCallback(async () => {
+		const s = noteEditSessionRef.current;
+		if (!s) return;
+		await saveInlineNote(s.markdown, { forceOverwrite: true });
+	}, [saveInlineNote]);
+
 	const saveInlineNow = useCallback(() => {
 		const s = noteEditSessionRef.current;
 		if (!s) return;
 		void saveInlineNote(s.markdown);
 	}, [saveInlineNote]);
 
-	const closeTabById = useCallback(
-		async (tabId: string) => {
-			const tab = noteTabsRef.current.find((t) => t.tabId === tabId);
-			if (!tab) return;
-			const isActive = tabId === activeTabIdRef.current;
-			if (isActive && noteEditSessionRef.current?.dirty) {
-				const res = await confirmDiscardBeforeProceed("close");
-				if (!res.ok) return;
-			}
-			if (isActive) {
-				setNoteEditSession(null);
-			}
-			setNoteTabs((prev) => prev.filter((t) => t.tabId !== tabId));
-			if (isActive) {
-				const remaining = noteTabsRef.current.filter((t) => t.tabId !== tabId);
-				const nextActive = remaining[remaining.length - 1]?.tabId ?? null;
-				setActiveTabId(nextActive);
-			}
-		},
-		[confirmDiscardBeforeProceed],
-	);
-
-	const selectTabById = useCallback(
-		async (tabId: string) => {
-			if (tabId === activeTabIdRef.current) return;
-			if (noteEditSessionRef.current?.dirty) {
-				const res = await confirmDiscardBeforeProceed("switch");
-				if (!res.ok) return;
-			}
-			setActiveTabId(tabId);
-			const tab = noteTabsRef.current.find((t) => t.tabId === tabId);
-			if (!tab?.noteId) {
-				setNoteEditSession(null);
-				return;
-			}
-		},
-		[confirmDiscardBeforeProceed],
-	);
-
 	return {
 		noteEditSession,
-		setNoteEditSession,
-		noteEditSessionRef,
-		notePreviewLoadRef,
-		pendingApplyMarkdownRef,
 		noteTabs,
-		setNoteTabs,
 		activeTabId,
 		setActiveTabId,
-		activeTabIdRef,
-		noteTabsRef,
-		updateTabTitle,
+		setNoteTabs,
 		ensureTabForNote,
 		createNewTab,
-		saveInlineNote,
-		closeInlineEditor,
-		reloadInlineFromDisk,
-		overwriteInlineToDisk,
 		beginInlineEdit,
 		updateInlineMarkdown,
 		setInlineEditorMode,
+		closeInlineEditor,
+		reloadInlineFromDisk,
+		overwriteInlineToDisk,
 		saveInlineNow,
-		closeTabById,
-		selectTabById,
+		confirmDiscardBeforeProceed,
+		noteEditSessionRef,
+		updateTabTitle,
 	};
 }

@@ -1,19 +1,19 @@
-mod io_atomic;
-mod canvas;
 mod ai;
+mod canvas;
 mod index;
+mod io_atomic;
 mod links;
 mod net;
-mod paths;
 mod notes;
-mod vault_fs;
+mod paths;
 mod tether_fs;
 mod tether_paths;
 mod vault;
+mod vault_fs;
 
 use serde::Serialize;
-use tauri::{Emitter, Manager, WindowEvent};
 use tauri::menu::{Menu, MenuItem, PredefinedMenuItem, Submenu, HELP_SUBMENU_ID, WINDOW_SUBMENU_ID};
+use tauri::{Emitter, Manager, WindowEvent};
 
 #[cfg(target_os = "macos")]
 use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
@@ -35,7 +35,6 @@ struct AppInfo {
     identifier: String,
 }
 
-// Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
 #[tauri::command]
 fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
@@ -207,49 +206,49 @@ pub fn run() {
             greet,
             ping,
             app_info,
-            ai::ai_profiles_list,
-            ai::ai_active_profile_get,
-            ai::ai_active_profile_set,
-            ai::ai_profile_upsert,
-            ai::ai_profile_delete,
-            ai::ai_secret_set,
-            ai::ai_secret_clear,
-            ai::ai_secret_status,
-            ai::ai_audit_mark,
-            ai::ai_chat_start,
-            ai::ai_chat_cancel,
+            ai::commands::ai_profiles_list,
+            ai::commands::ai_active_profile_get,
+            ai::commands::ai_active_profile_set,
+            ai::commands::ai_profile_upsert,
+            ai::commands::ai_profile_delete,
+            ai::commands::ai_secret_set,
+            ai::commands::ai_secret_clear,
+            ai::commands::ai_secret_status,
+            ai::commands::ai_audit_mark,
+            ai::commands::ai_chat_start,
+            ai::commands::ai_chat_cancel,
             canvas::canvas_list,
             canvas::canvas_create,
             canvas::canvas_read,
             canvas::canvas_write,
-            index::index_rebuild,
-            index::index_note_previews_batch,
-            index::search,
-            index::tags_list,
-            index::tag_notes,
-            index::backlinks,
-            links::link_preview,
-            vault_fs::vault_list_dir,
-            vault_fs::vault_list_markdown_files,
-            vault_fs::vault_list_files,
-            vault_fs::vault_dir_children_summary,
-            vault_fs::vault_dir_recent_entries,
-            vault_fs::vault_read_text,
-            vault_fs::vault_read_texts_batch,
-            vault_fs::vault_write_text,
-            vault_fs::vault_relativize_path,
+            index::commands::index_rebuild,
+            index::commands::index_note_previews_batch,
+            index::commands::search,
+            index::commands::tags_list,
+            index::commands::tag_notes,
+            index::commands::backlinks,
+            links::commands::link_preview,
+            vault_fs::list::vault_list_dir,
+            vault_fs::list::vault_list_markdown_files,
+            vault_fs::list::vault_list_files,
+            vault_fs::summary::vault_dir_children_summary,
+            vault_fs::summary::vault_dir_recent_entries,
+            vault_fs::read_write::vault_read_text,
+            vault_fs::read_write::vault_read_texts_batch,
+            vault_fs::read_write::vault_write_text,
+            vault_fs::read_write::vault_relativize_path,
             tether_fs::tether_read_text,
             tether_fs::tether_write_text,
-            notes::notes_list,
-            notes::note_create,
-            notes::note_read,
-            notes::note_write,
-            notes::note_delete,
-            notes::note_attach_file,
-            vault::vault_create,
-            vault::vault_open,
-            vault::vault_get_current,
-            vault::vault_close
+            notes::commands::notes_list,
+            notes::commands::note_create,
+            notes::commands::note_read,
+            notes::commands::note_write,
+            notes::commands::note_delete,
+            notes::attachments::note_attach_file,
+            vault::commands::vault_create,
+            vault::commands::vault_open,
+            vault::commands::vault_get_current,
+            vault::commands::vault_close
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

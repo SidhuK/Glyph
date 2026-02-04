@@ -1,84 +1,14 @@
-use crate::{io_atomic, net, paths, tether_paths, vault::VaultState};
 use regex::Regex;
-use serde::{Deserialize, Serialize};
-use sha2::{Digest, Sha256};
-use std::{
-    fs,
-    io::Read,
-    path::{Path, PathBuf},
-    time::{Duration, SystemTime, UNIX_EPOCH},
-};
-use tauri::State;
+use serde::Deserialize;
+use std::{fs, io::Read, path::Path};
 use url::Url;
 
-#[derive(Serialize, Deserialize, Clone)]
-pub struct LinkPreview {
-  pub url: String,
-  pub hostname: String,
-  pub title: String,
-  pub description: String,
-  pub image_url: Option<String>,
-  #[serde(default)]
-  pub image_cache_rel_path: Option<String>,
-  pub fetched_at_ms: u64,
-  #[serde(default)]
-  pub ok: bool,
-}
+use crate::{io_atomic, net, paths};
 
-const MAX_HTML_BYTES: u64 = 1024 * 512;
-const MAX_IMAGE_BYTES: u64 = 1024 * 1024 * 2;
-const TTL_OK_MS: u64 = 1000 * 60 * 60 * 24; // 24h
-const TTL_ERR_MS: u64 = 1000 * 60 * 10; // 10m
+use super::helpers::{image_rel_path, now_ms, MAX_HTML_BYTES, MAX_IMAGE_BYTES};
+use super::types::LinkPreview;
 
-fn now_ms() -> u64 {
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap_or_default()
-        .as_millis() as u64
-}
-
-fn sha256_hex(s: &str) -> String {
-    let mut h = Sha256::new();
-    h.update(s.as_bytes());
-    hex::encode(h.finalize())
-}
-
-fn cache_dir(vault_root: &Path) -> Result<PathBuf, String> {
-    let base = tether_paths::ensure_tether_cache_dir(vault_root)?;
-    Ok(base.join("link-previews"))
-}
-
-fn cache_path(vault_root: &Path, normalized_url: &str) -> Result<PathBuf, String> {
-    let dir = cache_dir(vault_root)?;
-    Ok(dir.join(format!("{}.json", sha256_hex(normalized_url))))
-}
-
-fn image_rel_path(image_url: &Url) -> PathBuf {
-    let mut ext = ".img";
-    if let Some(seg) = image_url.path().rsplit('/').next() {
-        if let Some(dot) = seg.rfind('.') {
-            let cand = &seg[dot..];
-            if matches!(cand.to_ascii_lowercase().as_str(), ".png" | ".jpg" | ".jpeg" | ".webp" | ".gif") {
-                ext = cand;
-            }
-        }
-    }
-    PathBuf::from(".tether/cache/link-previews")
-        .join(format!("{}{}", sha256_hex(image_url.as_str()), ext))
-}
-
-fn normalize_url(raw: &str) -> Result<Url, String> {
-    let url = Url::parse(raw).map_err(|_| "invalid url".to_string())?;
-    match url.scheme() {
-        "http" | "https" => {}
-        _ => return Err("only http(s) urls are allowed".to_string()),
-    }
-    net::validate_url_host(&url, false)?;
-    Ok(url)
-}
-
-fn extract_meta(html: &str, key: &str) -> Option<String> {
-    // Handles both property/name and both attribute orders in common cases.
+pub fn extract_meta(html: &str, key: &str) -> Option<String> {
     let key_re = regex::escape(key);
     let patterns = [
         format!(r#"(?is)<meta[^>]+property=["']{key_re}["'][^>]+content=["']([^"']+)["']"#),
@@ -101,7 +31,7 @@ fn extract_meta(html: &str, key: &str) -> Option<String> {
     None
 }
 
-fn extract_title(html: &str) -> Option<String> {
+pub fn extract_title(html: &str) -> Option<String> {
     if let Some(v) = extract_meta(html, "og:title") {
         return Some(v);
     }
@@ -115,32 +45,15 @@ fn extract_title(html: &str) -> Option<String> {
     }
 }
 
-fn extract_description(html: &str) -> Option<String> {
+pub fn extract_description(html: &str) -> Option<String> {
     extract_meta(html, "og:description").or_else(|| extract_meta(html, "description"))
 }
 
-fn extract_image(html: &str) -> Option<String> {
+pub fn extract_image(html: &str) -> Option<String> {
     extract_meta(html, "og:image")
 }
 
-fn read_cache(path: &Path) -> Option<LinkPreview> {
-    let bytes = fs::read(path).ok()?;
-    serde_json::from_slice(&bytes).ok()
-}
-
-fn write_cache(path: &Path, preview: &LinkPreview) -> Result<(), String> {
-    let bytes = serde_json::to_vec_pretty(preview).map_err(|e| e.to_string())?;
-    io_atomic::write_atomic(path, &bytes).map_err(|e| e.to_string())
-}
-
-fn http_client() -> Result<reqwest::blocking::Client, String> {
-    reqwest::blocking::Client::builder()
-        .timeout(Duration::from_secs(8))
-        .build()
-        .map_err(|e| e.to_string())
-}
-
-fn fetch_html(client: &reqwest::blocking::Client, url: &Url) -> Result<String, String> {
+pub fn fetch_html(client: &reqwest::blocking::Client, url: &Url) -> Result<String, String> {
     let resp = client
         .get(url.clone())
         .header("User-Agent", "Tether/0.1 (link preview)")
@@ -171,7 +84,7 @@ fn is_youtube(url: &Url) -> bool {
         || host == "m.youtube.com"
 }
 
-fn fetch_youtube_oembed(
+pub fn fetch_youtube_oembed(
     client: &reqwest::blocking::Client,
     normalized: &Url,
 ) -> Result<Option<(String, Option<String>)>, String> {
@@ -201,20 +114,7 @@ fn fetch_youtube_oembed(
     Ok(Some((title, parsed.thumbnail_url)))
 }
 
-fn resolve_image_url(page: &Url, raw: &str) -> Option<Url> {
-    let trimmed = raw.trim();
-    if trimmed.is_empty() {
-        return None;
-    }
-    let parsed = Url::parse(trimmed).or_else(|_| page.join(trimmed)).ok()?;
-    match parsed.scheme() {
-        "http" | "https" => {}
-        _ => return None,
-    }
-    Some(parsed)
-}
-
-fn download_image(
+pub fn download_image(
     client: &reqwest::blocking::Client,
     vault_root: &Path,
     image_url: &Url,
@@ -249,12 +149,13 @@ fn download_image(
     Ok(Some(rel.to_string_lossy().to_string()))
 }
 
-fn build_preview(
+pub fn build_preview(
     vault_root: &Path,
     client: &reqwest::blocking::Client,
     normalized: &Url,
     html: Option<&str>,
     err: Option<&str>,
+    resolve_image_url_fn: fn(&Url, &str) -> Option<Url>,
 ) -> LinkPreview {
     let hostname = normalized.host_str().unwrap_or("").to_string();
     let mut ok = html.is_some() && err.is_none();
@@ -276,11 +177,13 @@ fn build_preview(
 
     let (image_url, image_cache_rel_path) = match image_url
         .as_deref()
-        .and_then(|raw| resolve_image_url(normalized, raw))
+        .and_then(|raw| resolve_image_url_fn(normalized, raw))
     {
         None => (image_url, None),
         Some(resolved) => {
-            let rel = download_image(client, vault_root, &resolved).ok().flatten();
+            let rel = download_image(client, vault_root, &resolved)
+                .ok()
+                .flatten();
             (Some(resolved.as_str().to_string()), rel)
         }
     };
@@ -295,48 +198,4 @@ fn build_preview(
         fetched_at_ms: now_ms(),
         ok,
     }
-}
-
-#[tauri::command]
-pub async fn link_preview(
-    state: State<'_, VaultState>,
-    url: String,
-    force: Option<bool>,
-) -> Result<LinkPreview, String> {
-    let root = state.current_root()?;
-    let force = force.unwrap_or(false);
-    tauri::async_runtime::spawn_blocking(move || -> Result<LinkPreview, String> {
-        let client = http_client()?;
-        let normalized = normalize_url(&url)?;
-        let normalized_str = normalized.as_str().to_string();
-
-        let path = cache_path(&root, &normalized_str)?;
-        if !force {
-            if let Some(cached) = read_cache(&path) {
-                let age = now_ms().saturating_sub(cached.fetched_at_ms);
-                let ttl = if cached.ok { TTL_OK_MS } else { TTL_ERR_MS };
-                if age <= ttl {
-                    return Ok(cached);
-                }
-            }
-        }
-
-        let dir = cache_dir(&root)?;
-        fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
-
-        match fetch_html(&client, &normalized) {
-            Ok(html) => {
-                let preview = build_preview(&root, &client, &normalized, Some(&html), None);
-                let _ = write_cache(&path, &preview);
-                Ok(preview)
-            }
-            Err(e) => {
-                let preview = build_preview(&root, &client, &normalized, None, Some(&e));
-                let _ = write_cache(&path, &preview);
-                Ok(preview)
-            }
-        }
-    })
-    .await
-    .map_err(|e| e.to_string())?
 }

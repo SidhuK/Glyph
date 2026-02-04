@@ -1,7 +1,7 @@
 use crate::io_atomic;
 use serde::{Deserialize, Serialize};
 use std::{collections::HashMap, path::Path, path::PathBuf};
-use tauri::AppHandle;
+use tauri::{AppHandle, Manager};
 
 use super::keychain::keychain_set;
 use super::types::{AiProfile, AiProviderKind};
