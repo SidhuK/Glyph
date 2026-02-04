@@ -79,27 +79,196 @@ Legacy / planned layout (may exist in docs or older vaults):
 
 ## Frontend Files (`src/`)
 
-| File       | Purpose                                                                                              |
-| ---------- | ---------------------------------------------------------------------------------------------------- |
-| `main.tsx` | React app entry point, renders `<App />`                                                             |
-| `App.tsx`  | Root component: vault selection, note/canvas state management, layout shell with sidebar + main area |
-| `App.css`  | Global styles for the app shell, sidebar, and components                                             |
+| File            | Purpose                                                        |
+| --------------- | -------------------------------------------------------------- |
+| `main.tsx`      | React app entry point, renders `<App />`                       |
+| `App.tsx`       | Thin orchestrator composing hooks and AppShell                 |
+| `App.css`       | Global styles for the app shell, sidebar, and components       |
+| `SettingsApp.tsx` | Settings window entry point                                  |
+
+### Hooks (`src/hooks/`)
+
+| File                  | Purpose                                                    |
+| --------------------- | ---------------------------------------------------------- |
+| `useAppBootstrap.ts`  | App-level state: vault, recent vaults, indexing, settings  |
+| `useViewLoader.ts`    | View document loading and building (folder/tag/search)     |
+| `useFileTree.ts`      | File tree state and directory operations                   |
+| `useSearch.ts`        | Search query and results management                        |
+| `useAISidebar.ts`     | AI sidebar open/width state with persistence               |
+| `useFolderShelf.ts`   | Folder shelf subfolder/recent data                         |
+| `useMenuListeners.ts` | Tauri menu event listeners                                 |
+
+### Utils (`src/utils/`)
+
+| File        | Purpose                                    |
+| ----------- | ------------------------------------------ |
+| `path.ts`   | Path utilities (parentDir, isMarkdownPath) |
+| `window.ts` | Window drag handling utilities             |
 
 ### Components (`src/components/`)
 
-| File               | Purpose                                                                                                                                                  |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `CanvasPane.tsx`   | ReactFlow-based canvas editor with custom node types (note, text, link, frame), undo/redo history, auto-save, alignment/distribution tools, snap-to-grid |
-| `NoteEditor.tsx`   | CodeMirror markdown editor with auto-save (500ms debounce), file attachment support, save state indicator                                                |
-| `NotesPane.tsx`    | Sidebar list of notes with selection, create, and delete actions                                                                                         |
-| `CanvasesPane.tsx` | Sidebar list of canvases with selection and create actions                                                                                               |
+Root-level files are thin re-exports for backwards compatibility. Actual implementations live in subfolders.
+
+| File                       | Purpose                                         |
+| -------------------------- | ----------------------------------------------- |
+| `CanvasPane.tsx`           | Re-exports from `canvas/`                       |
+| `CanvasNoteInlineEditor.tsx` | Re-exports from `editor/`                     |
+| `AIPane.tsx`               | Re-exports from `ai/`                           |
+| `FileTreePane.tsx`         | File tree sidebar pane                          |
+| `FolderBreadcrumb.tsx`     | Breadcrumb navigation for folders               |
+| `FolderShelf.tsx`          | Folder shelf with subfolders and recents        |
+| `Icons.tsx`                | Re-exports from `Icons/`                        |
+| `MotionUI.tsx`             | Motion-animated UI components                   |
+| `NotesPane.tsx`            | Sidebar list of notes                           |
+| `CanvasesPane.tsx`         | Sidebar list of canvases                        |
+| `SearchPane.tsx`           | Search results pane                             |
+| `TagsPane.tsx`             | Tags list pane                                  |
+
+### `components/app/` - App Shell Components
+
+| File                 | Purpose                                      |
+| -------------------- | -------------------------------------------- |
+| `AppShell.tsx`       | Main layout shell composing sidebar + main   |
+| `Sidebar.tsx`        | Sidebar wrapper with collapse toggle         |
+| `SidebarHeader.tsx`  | Sidebar header with vault actions            |
+| `SidebarContent.tsx` | Sidebar content (file tree or tags)          |
+| `MainContent.tsx`    | Main content area with canvas                |
+| `MainToolbar.tsx`    | Main toolbar with breadcrumb and AI toggle   |
+| `WelcomeScreen.tsx`  | Welcome screen when no vault is open         |
+
+### `components/canvas/` - Canvas Editor
+
+| File                         | Purpose                                        |
+| ---------------------------- | ---------------------------------------------- |
+| `index.ts`                   | Module exports                                 |
+| `types.ts`                   | CanvasNode, CanvasEdge, CanvasDocLike, etc.    |
+| `constants.ts`               | BULK_LOAD_THRESHOLD, STICKY_COLORS, dimensions |
+| `utils.ts`                   | Node hash, color, rotation, size utilities     |
+| `contexts.ts`                | CanvasActionsContext, CanvasNoteEditContext    |
+| `CanvasPane.tsx`             | Main canvas component with ReactFlow           |
+| `CanvasToolbar.tsx`          | Toolbar with alignment/snap/add tools          |
+| `CanvasNoteOverlayEditor.tsx`| Note editing overlay with tabs                 |
+| `nodes/NoteNode.tsx`         | Note node component                            |
+| `nodes/TextNode.tsx`         | Text/sticky node component                     |
+| `nodes/FileNode.tsx`         | File node component                            |
+| `nodes/LinkNode.tsx`         | Link preview node component                    |
+| `nodes/FrameNode.tsx`        | Frame/group node component                     |
+| `nodes/FolderNode.tsx`       | Folder node component                          |
+| `nodes/FolderPreviewNode.tsx`| Folder preview popup node                      |
+| `hooks/useCanvasHistory.ts`  | Undo/redo history management                   |
+| `hooks/useNoteEditSession.ts`| Inline note editing session                    |
+
+### `components/editor/` - Note Inline Editor
+
+| File                         | Purpose                                   |
+| ---------------------------- | ----------------------------------------- |
+| `index.ts`                   | Module exports                            |
+| `types.ts`                   | CanvasInlineEditorMode, SlashCommandItem  |
+| `slashCommands.ts`           | Slash command definitions and extension   |
+| `extensions/index.ts`        | TipTap extensions configuration           |
+| `hooks/useNoteEditor.ts`     | TipTap editor setup hook                  |
+| `CanvasNoteInlineEditor.tsx` | Main editor component                     |
+| `EditorRibbon.tsx`           | Formatting toolbar/ribbon                 |
+
+### `components/ai/` - AI Chat & Context
+
+| File                       | Purpose                                    |
+| -------------------------- | ------------------------------------------ |
+| `index.ts`                 | Module exports                             |
+| `types.ts`                 | ChatMessage, ContextSpec, ContextManifest  |
+| `utils.ts`                 | Error handling, token estimation utilities |
+| `payloadBuilder.ts`        | Context payload building logic             |
+| `useAiContext.ts`          | Context folder attachment management       |
+| `useAiProfiles.ts`         | AI profile loading and management          |
+| `AISidebar.tsx`            | AI sidebar container with chat             |
+| `AIPane.tsx`               | Main AI pane component                     |
+| `ProfileSettings.tsx`      | Profile configuration UI                   |
+| `ContextPayload.tsx`       | Context payload configuration UI           |
+| `ChatActions.tsx`          | Action buttons (rewrite, create note)      |
+| `ChatMessages.tsx`         | Chat message list                          |
+| `ChatInput.tsx`            | Chat input with send/cancel                |
+| `hooks/useAIProfiles.ts`   | Profile CRUD hook                          |
+| `hooks/useAIContext.ts`    | Context state hook                         |
+| `hooks/useAIChat.ts`       | Chat streaming hook                        |
+| `hooks/useAIActions.ts`    | Action handlers hook                       |
+
+### `components/ui/` - Shared UI Components
+
+| File                 | Purpose                                |
+| -------------------- | -------------------------------------- |
+| `index.ts`           | Module exports                         |
+| `animations.ts`      | Shared animation variants              |
+| `MotionButton.tsx`   | Motion-animated button variants        |
+| `MotionPanel.tsx`    | Motion-animated panel/container        |
+| `MotionWrappers.tsx` | Motion wrapper components              |
+
+### `components/Icons/` - Icon Components
+
+| File                  | Purpose                        |
+| --------------------- | ------------------------------ |
+| `index.ts`            | Re-exports all icons           |
+| `NavigationIcons.tsx` | Navigation-related icons       |
+| `EditorIcons.tsx`     | Editor formatting icons        |
+| `ActionIcons.tsx`     | Action/button icons            |
+| `FileIcons.tsx`       | File type icons                |
+
+### `components/filetree/` - File Tree
+
+| File               | Purpose                            |
+| ------------------ | ---------------------------------- |
+| `index.ts`         | Module exports                     |
+| `FileTreePane.tsx` | Main file tree container           |
+| `FileTreeItem.tsx` | Individual tree item component     |
+| `fileTypeUtils.ts` | File type detection utilities      |
+
+### `components/shelf/` - Folder Shelf
+
+| File              | Purpose                          |
+| ----------------- | -------------------------------- |
+| `index.ts`        | Module exports                   |
+| `FolderShelf.tsx` | Main shelf component             |
+| `ShelfItem.tsx`   | Individual shelf item            |
+| `shelfUtils.ts`   | Shelf utility functions          |
+
+### `components/settings/` - Settings Panes
+
+| File                    | Purpose                          |
+| ----------------------- | -------------------------------- |
+| `GeneralSettingsPane.tsx` | General app settings           |
+| `AiSettingsPane.tsx`    | AI profile and key settings      |
+| `VaultSettingsPane.tsx` | Vault-specific settings          |
 
 ### Lib (`src/lib/`)
 
-| File          | Purpose                                                                                                                                                        |
-| ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `tauri.ts`    | Typed IPC wrapper: defines `TauriCommands` interface mapping command names to arg/result types, exports typed `invoke()` function and `TauriInvokeError` class |
-| `settings.ts` | App settings persistence via `@tauri-apps/plugin-store`: current vault path, recent vaults list (max 20)                                                       |
+| File             | Purpose                                                                 |
+| ---------------- | ----------------------------------------------------------------------- |
+| `tauri.ts`       | Typed IPC wrapper with `TauriCommands` interface                        |
+| `settings.ts`    | App settings persistence via `@tauri-apps/plugin-store`                 |
+| `canvasLayout.ts`| Grid layout computation for canvas nodes                                |
+| `notePreview.ts` | Note preview parsing (title, content extraction)                        |
+| `diff.ts`        | Unified diff generation for text comparison                             |
+| `windows.ts`     | Window management (open settings window)                                |
+| `views.ts`       | Re-exports from `views/`                                                |
+
+### `lib/views/` - View Document System
+
+| File                      | Purpose                                    |
+| ------------------------- | ------------------------------------------ |
+| `index.ts`                | Module exports                             |
+| `types.ts`                | ViewKind, ViewRef, ViewDoc interfaces      |
+| `utils.ts`                | basename, viewId, sha256Hex, viewDocPath   |
+| `sanitize.ts`             | sanitizeNodes, sanitizeEdges, asCanvasDocLike |
+| `persistence.ts`          | loadViewDoc, saveViewDoc                   |
+| `builders/common.ts`      | Shared builder utilities                   |
+| `builders/folderView.ts`  | buildFolderViewDoc                         |
+| `builders/searchView.ts`  | buildSearchViewDoc                         |
+| `builders/tagView.ts`     | buildTagViewDoc                            |
+
+### `lib/ai/` - AI Transport
+
+| File                    | Purpose                              |
+| ----------------------- | ------------------------------------ |
+| `tauriChatTransport.ts` | Tauri-based AI SDK chat transport    |
 
 ## Backend Files (`src-tauri/src/`)
 
