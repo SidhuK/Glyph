@@ -126,9 +126,10 @@ export function computeGridPositions(
 
 	const sizes = nodes.map((n) => estimateNodeSize(n));
 	const paddingUnits = Math.max(1, Math.round(gap / gridSize));
+	const safetyPx = Math.max(12, Math.round(gridSize * 0.5));
 	const sizeUnits = sizes.map((s) => {
-		const w = Math.max(1, Math.ceil(s.w / gridSize));
-		const h = Math.max(1, Math.ceil(s.h / gridSize));
+		const w = Math.max(1, Math.ceil((s.w + safetyPx) / gridSize));
+		const h = Math.max(1, Math.ceil((s.h + safetyPx) / gridSize));
 		return { w, h, area: w * h };
 	});
 
