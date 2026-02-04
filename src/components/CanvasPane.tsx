@@ -1064,7 +1064,7 @@ export default function CanvasPane({
 				baseMtimeMs: null,
 				dirty: false,
 				lastSavedMarkdown: "",
-				mode: "raw",
+				mode: "rich",
 				errorMessage: "",
 			});
 			try {
@@ -1096,7 +1096,7 @@ export default function CanvasPane({
 						baseMtimeMs: doc.mtime_ms,
 						dirty: false,
 						lastSavedMarkdown: doc.text,
-						mode: "raw",
+						mode: "rich",
 						errorMessage: "",
 					};
 				});

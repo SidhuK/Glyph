@@ -3205,8 +3205,8 @@ button.segBtn.active {
 	flex-direction: column;
 	border-radius: 10px;
 	overflow: hidden;
-	border: 1px solid rgba(0, 0, 0, 0.12);
-	background: rgba(255, 255, 255, 0.55);
+	border: 1px solid var(--border-light);
+	background: var(--bg-primary);
 }
 
 .rfNodeNoteEditorRibbon {
@@ -3214,8 +3214,47 @@ button.segBtn.active {
 	align-items: center;
 	gap: 6px;
 	padding: 6px 8px;
-	background: rgba(255, 255, 255, 0.55);
-	border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+	background: var(--bg-secondary);
+	border-bottom: 1px solid var(--border-light);
+}
+
+.rfNodeNoteEditorRibbon .ribbonGroup {
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
+	padding: 2px;
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-lg);
+	background: var(--bg-primary);
+}
+
+.rfNodeNoteEditorRibbon .ribbonDivider {
+	width: 1px;
+	height: 20px;
+	background: var(--border-light);
+}
+
+.rfNodeNoteEditorRibbon .ribbonBtn {
+	width: 28px;
+	height: 28px;
+	padding: 0;
+	border-radius: var(--radius-md);
+	color: var(--text-secondary);
+}
+
+.rfNodeNoteEditorRibbon .ribbonBtn:hover {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}
+
+.rfNodeNoteEditorRibbon .ribbonBtn.active {
+	background: var(--selection-bg-muted);
+	color: var(--interactive-accent);
+}
+
+.rfNodeNoteEditorRibbon .ribbonText {
+	font-size: 12px;
+	font-weight: 700;
 }
 
 .rfNodeNoteEditorBody {
@@ -3234,11 +3273,11 @@ button.segBtn.active {
 	align-items: center;
 	justify-content: center;
 	font-size: 12px;
-	color: rgba(0, 0, 0, 0.65);
+	color: var(--text-tertiary);
 	padding: 12px;
 	border-radius: 10px;
-	border: 1px dashed rgba(0, 0, 0, 0.18);
-	background: rgba(255, 255, 255, 0.35);
+	border: 1px dashed var(--border-light);
+	background: var(--bg-secondary);
 }
 
 .rfNodeNoteEditorRaw {
@@ -3251,7 +3290,7 @@ button.segBtn.active {
 	padding: 10px 12px;
 	font-size: 12px;
 	line-height: 1.5;
-	color: rgba(0, 0, 0, 0.85);
+	color: var(--text-primary);
 	outline: none;
 	overscroll-behavior: contain;
 }
@@ -3276,7 +3315,183 @@ button.segBtn.active {
 	padding: 10px 12px;
 	font-size: 13px;
 	line-height: 1.5;
-	color: rgba(0, 0, 0, 0.85);
+	color: var(--text-primary);
+}
+
+.tiptapHostInline {
+	flex: 1;
+	min-height: 0;
+	overflow: auto;
+}
+
+.tiptapHostInline .tiptapContentInline {
+	min-height: 100%;
+	outline: none;
+}
+
+.tiptapHostInline.is-preview .tiptapContentInline {
+	cursor: default;
+}
+
+.frontmatterPreview {
+	border: 1px dashed var(--border-light);
+	border-radius: var(--radius-lg);
+	padding: var(--space-2) var(--space-3);
+	background: var(--bg-secondary);
+	color: var(--text-secondary);
+	font-size: 12px;
+	margin-bottom: var(--space-2);
+}
+
+.frontmatterPreview pre {
+	margin: 0;
+	white-space: pre-wrap;
+}
+
+.frontmatterLabel {
+	font-size: 10px;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	color: var(--text-tertiary);
+	margin-bottom: 6px;
+}
+
+.tiptapContentInline a {
+	color: var(--interactive-accent);
+	text-decoration: underline;
+}
+
+.tiptapContentInline p {
+	margin: 0 0 var(--space-3);
+}
+
+.tiptapContentInline p:last-child {
+	margin-bottom: 0;
+}
+
+.tiptapContentInline h1,
+.tiptapContentInline h2,
+.tiptapContentInline h3 {
+	margin: var(--space-4) 0 var(--space-2);
+}
+
+.tiptapContentInline blockquote {
+	margin: var(--space-3) 0;
+	padding: var(--space-2) var(--space-3);
+	border-left: 3px solid var(--border-default);
+	background: var(--bg-secondary);
+	color: var(--text-secondary);
+}
+
+.tiptapContentInline code {
+	background: var(--bg-secondary);
+	padding: 2px 4px;
+	border-radius: 4px;
+}
+
+.tiptapContentInline pre {
+	background: var(--bg-secondary);
+	padding: var(--space-3);
+	border-radius: var(--radius-lg);
+	overflow: auto;
+}
+
+.tiptapContentInline hr {
+	border: none;
+	border-top: 1px solid var(--border-light);
+	margin: var(--space-4) 0;
+}
+
+.tiptapContentInline ul,
+.tiptapContentInline ol {
+	margin: 0 0 var(--space-3);
+	padding-left: var(--space-5);
+}
+
+.tiptapContentInline li + li {
+	margin-top: 4px;
+}
+
+.tiptapContentInline table {
+	width: 100%;
+	border-collapse: collapse;
+	margin: 8px 0;
+	font-size: 12px;
+}
+
+.tiptapContentInline th,
+.tiptapContentInline td {
+	border: 1px solid var(--border-light);
+	padding: 6px 8px;
+	vertical-align: top;
+}
+
+.tiptapContentInline th {
+	background: var(--bg-secondary);
+	font-weight: var(--font-semibold);
+}
+
+.tiptapContentInline ul[data-type="taskList"] {
+	list-style: none;
+	padding-left: 0;
+	margin-left: 0;
+}
+
+.tiptapContentInline li[data-type="taskItem"] {
+	display: flex;
+	align-items: flex-start;
+	gap: 8px;
+}
+
+.tiptapContentInline li[data-type="taskItem"] > label {
+	margin-top: 2px;
+}
+
+.tiptapContentInline li[data-type="taskItem"] > label input[type="checkbox"] {
+	width: 14px;
+	height: 14px;
+	accent-color: var(--interactive-accent);
+}
+
+.slashCommandMenu {
+	position: absolute;
+	min-width: 220px;
+	max-width: 280px;
+	background: var(--bg-primary);
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-lg);
+	box-shadow: var(--shadow-lg);
+	padding: 6px;
+	z-index: 2000;
+}
+
+.slashCommandItem {
+	width: 100%;
+	text-align: left;
+	padding: 6px 8px;
+	border-radius: var(--radius-md);
+	border: none;
+	background: transparent;
+	color: var(--text-primary);
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	cursor: pointer;
+}
+
+.slashCommandItem:hover,
+.slashCommandItem.active {
+	background: var(--bg-hover);
+}
+
+.slashCommandTitle {
+	font-size: var(--text-sm);
+	font-weight: var(--font-medium);
+}
+
+.slashCommandDesc {
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
 }
 
 /* ─── Folder Tiles (Immediate Subfolders) ─── */
