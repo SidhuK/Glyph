@@ -13,11 +13,13 @@ export function useCanvasHistory(
 	setEdges: React.Dispatch<React.SetStateAction<CanvasEdge[]>>,
 	stripEphemeral: (n: CanvasNode[], e: CanvasEdge[]) => HistoryState,
 ) {
+	const HISTORY_MIN_INTERVAL_MS = 120;
 	const pastRef = useRef<HistoryState[]>([]);
 	const futureRef = useRef<HistoryState[]>([]);
 	const lastHistoryRef = useRef<string>("");
 	const lastStateRef = useRef<HistoryState | null>(null);
 	const applyingHistoryRef = useRef(false);
+	const lastPushAtRef = useRef(0);
 
 	const snapshotString = useCallback(
 		(n: CanvasNode[], e: CanvasEdge[]) =>
@@ -48,11 +50,14 @@ export function useCanvasHistory(
 	const pushHistory = useCallback(
 		(n: CanvasNode[], e: CanvasEdge[]) => {
 			if (applyingHistoryRef.current) return;
+			const now = Date.now();
+			if (now - lastPushAtRef.current < HISTORY_MIN_INTERVAL_MS) return;
 			const stable = stripEphemeral(n, e);
 			const nextKey = snapshotString(stable.nodes, stable.edges);
 			if (!lastHistoryRef.current) {
 				lastHistoryRef.current = nextKey;
 				lastStateRef.current = structuredClone(stable);
+				lastPushAtRef.current = now;
 				return;
 			}
 			if (nextKey === lastHistoryRef.current) return;
@@ -63,6 +68,7 @@ export function useCanvasHistory(
 			futureRef.current = [];
 			lastHistoryRef.current = nextKey;
 			lastStateRef.current = structuredClone(stable);
+			lastPushAtRef.current = now;
 		},
 		[snapshotString, stripEphemeral],
 	);

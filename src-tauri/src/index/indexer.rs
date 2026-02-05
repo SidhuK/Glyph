@@ -168,10 +168,14 @@ pub fn rebuild(vault_root: &Path) -> Result<IndexRebuildResult, String> {
     tx.execute("DELETE FROM tags", [])
         .map_err(|e| e.to_string())?;
 
-    let notes = collect_markdown_files(vault_root)?;
+    let note_paths = collect_markdown_files(vault_root)?;
+    let mut notes: Vec<(String, String)> = Vec::with_capacity(note_paths.len());
+    for (rel, path) in note_paths {
+        let markdown = std::fs::read_to_string(&path).map_err(|e| e.to_string())?;
+        notes.push((rel, markdown));
+    }
 
-    for (rel, path) in &notes {
-        let markdown = std::fs::read_to_string(path).map_err(|e| e.to_string())?;
+    for (rel, markdown) in &notes {
         let (mut title, created, updated) = parse_frontmatter_title_created_updated(&markdown);
         if title == "Untitled" {
             if let Some(stem) = Path::new(rel)
@@ -210,8 +214,7 @@ pub fn rebuild(vault_root: &Path) -> Result<IndexRebuildResult, String> {
         }
     }
 
-    for (rel, path) in &notes {
-        let markdown = std::fs::read_to_string(path).map_err(|e| e.to_string())?;
+    for (rel, markdown) in &notes {
         let (to_ids, to_titles) = parse_outgoing_links(rel, &markdown);
 
         let mut inserted = HashSet::<(Option<String>, Option<String>, &'static str)>::new();

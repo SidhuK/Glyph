@@ -105,6 +105,12 @@ fn read_existing_created(path: &Path) -> Option<String> {
     fm.created
 }
 
+fn created_from_markdown(markdown: &str) -> Option<String> {
+    let (yaml, _body) = split_frontmatter(markdown);
+    let fm = parse_frontmatter(yaml).ok()?;
+    fm.created
+}
+
 #[tauri::command]
 pub async fn note_write(
     state: State<'_, VaultState>,
@@ -115,15 +121,16 @@ pub async fn note_write(
     let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<NoteWriteResult, String> {
         let path = note_abs_path(&root, &id)?;
+        let current = std::fs::read_to_string(&path).map_err(|e| e.to_string())?;
         if let Some(base) = base_etag {
-            let current = std::fs::read_to_string(&path).map_err(|e| e.to_string())?;
             let current_etag = etag_for(&current);
             if current_etag != base {
                 return Err("conflict: note changed on disk".to_string());
             }
         }
 
-        let preserve_created = read_existing_created(&path);
+        let preserve_created = created_from_markdown(&current)
+            .or_else(|| read_existing_created(&path));
         let (yaml, body) = split_frontmatter(&markdown);
         let fm = parse_frontmatter(yaml)?;
         let fm = normalize_frontmatter(fm, &id, None, preserve_created.as_deref());
@@ -131,11 +138,10 @@ pub async fn note_write(
         let normalized = format!("---\n{yaml}---\n\n{}", body.trim_start_matches('\n'));
         io_atomic::write_atomic(&path, normalized.as_bytes()).map_err(|e| e.to_string())?;
         let _ = index::index_note(&root, &id, &normalized);
-        let saved = read_to_string(&path)?;
-        let meta = extract_meta(&id, &saved)?;
+        let meta = extract_meta(&id, &normalized)?;
         Ok(NoteWriteResult {
             meta,
-            etag: etag_for(&saved),
+            etag: etag_for(&normalized),
             mtime_ms: file_mtime_ms(&path),
         })
     })

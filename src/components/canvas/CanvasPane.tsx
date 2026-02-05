@@ -71,6 +71,9 @@ function CanvasPane({
 	const latestDocRef = useRef(doc);
 	const lastSavedSnapshotRef = useRef("");
 	const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const pendingSaveRef = useRef<{ nodes: CanvasNode[]; edges: CanvasEdge[] } | null>(
+		null,
+	);
 	const initializedRef = useRef(false);
 	const folderPreviewHoldsRef = useRef<Map<string, number>>(new Map());
 
@@ -130,11 +133,16 @@ function CanvasPane({
 
 	const scheduleSave = useCallback(
 		(n: CanvasNode[], e: CanvasEdge[]) => {
-			if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+			pendingSaveRef.current = { nodes: n, edges: e };
+			if (saveTimeoutRef.current) return;
 			saveTimeoutRef.current = setTimeout(async () => {
+				saveTimeoutRef.current = null;
 				const latestDoc = latestDocRef.current;
 				if (!latestDoc) return;
-				const stable = stripEphemeral(n, e);
+				const pending = pendingSaveRef.current;
+				if (!pending) return;
+				pendingSaveRef.current = null;
+				const stable = stripEphemeral(pending.nodes, pending.edges);
 				const snapshot = snapshotPersistedShape(stable.nodes, stable.edges);
 				if (snapshot === lastSavedSnapshotRef.current) return;
 				setIsSaving(true);

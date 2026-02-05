@@ -7,7 +7,7 @@ import { invoke } from "../lib/tauri";
 import { isMarkdownPath, parentDir } from "../utils/path";
 
 export interface UseFileTreeResult {
-	loadDir: (dirPath: string) => Promise<void>;
+	loadDir: (dirPath: string, force?: boolean) => Promise<void>;
 	toggleDir: (dirPath: string) => void;
 	openFile: (relPath: string) => Promise<void>;
 	openMarkdownFileInCanvas: (relPath: string) => Promise<void>;
@@ -47,14 +47,17 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 	} = deps;
 
 	const dirSummariesInFlightRef = useRef(new Set<string>());
+	const loadedDirsRef = useRef(new Set<string>());
 
 	const loadDir = useCallback(
-		async (dirPath: string) => {
+		async (dirPath: string, force = false) => {
+			if (!force && loadedDirsRef.current.has(dirPath)) return;
 			const entries = await invoke(
 				"vault_list_dir",
 				dirPath ? { dir: dirPath } : {},
 			);
 			setChildrenByDir((prev) => ({ ...prev, [dirPath]: entries }));
+			loadedDirsRef.current.add(dirPath);
 
 			if (dirSummariesInFlightRef.current.has(dirPath)) return;
 			dirSummariesInFlightRef.current.add(dirPath);

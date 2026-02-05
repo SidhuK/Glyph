@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { SearchResult } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
 
@@ -18,6 +18,7 @@ export function useSearch(vaultPath: string | null): UseSearchResult {
 	const [isSearching, setIsSearching] = useState(false);
 	const [searchError, setSearchError] = useState("");
 	const [showSearch, setShowSearch] = useState(false);
+	const requestIdRef = useRef(0);
 
 	useEffect(() => {
 		if (!vaultPath) return;
@@ -29,16 +30,19 @@ export function useSearch(vaultPath: string | null): UseSearchResult {
 		}
 		setIsSearching(true);
 		setSearchError("");
+		const requestId = ++requestIdRef.current;
 		const t = window.setTimeout(() => {
 			(async () => {
 				try {
 					const res = await invoke("search", { query: searchQuery });
-					if (!cancelled) setSearchResults(res);
+					if (!cancelled && requestId === requestIdRef.current)
+						setSearchResults(res);
 				} catch (e) {
-					if (!cancelled)
+					if (!cancelled && requestId === requestIdRef.current)
 						setSearchError(e instanceof Error ? e.message : String(e));
 				} finally {
-					if (!cancelled) setIsSearching(false);
+					if (!cancelled && requestId === requestIdRef.current)
+						setIsSearching(false);
 				}
 			})();
 		}, 180);
