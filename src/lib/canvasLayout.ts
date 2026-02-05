@@ -18,11 +18,36 @@ export function snapPoint(
 	return { x: snapToGrid(point.x, grid), y: snapToGrid(point.y, grid) };
 }
 
+function estimateTextLines(text: string, charsPerLine: number): number {
+	if (!text) return 0;
+	const lines = text.split("\n");
+	let count = 0;
+	for (const line of lines) {
+		const len = line.trim().length;
+		count += Math.max(1, Math.ceil(len / charsPerLine));
+	}
+	return count;
+}
+
 function estimateNoteDimensions(
-	_id: string,
-	_content: string,
+	title: string,
+	content: string,
 ): { w: number; h: number } {
-	return { w: 230, h: 150 };
+	const width = 230;
+	const minHeight = 150;
+	const maxHeight = 260;
+	const lineHeight = 16;
+	const basePadding = 56;
+
+	const titleLines = Math.max(1, estimateTextLines(title, 24));
+	const contentLines = Math.min(10, estimateTextLines(content, 32));
+	const totalLines = titleLines + contentLines;
+	const height = Math.min(
+		maxHeight,
+		Math.max(minHeight, basePadding + totalLines * lineHeight),
+	);
+
+	return { w: width, h: height };
 }
 
 export function estimateNodeSize(node: LayoutNode): { w: number; h: number } {
@@ -30,7 +55,8 @@ export function estimateNodeSize(node: LayoutNode): { w: number; h: number } {
 	if (type === "note") {
 		const content =
 			typeof node.data?.content === "string" ? node.data?.content : "";
-		return estimateNoteDimensions(node.id, content);
+		const title = typeof node.data?.title === "string" ? node.data?.title : "";
+		return estimateNoteDimensions(title, content);
 	}
 	if (type === "file") return { w: 220, h: 200 };
 	if (type === "folder") return { w: 260, h: 190 };
@@ -48,6 +74,10 @@ export function computeGridPositions(
 		columns?: number;
 		gridSize?: number;
 		gap?: number;
+		paddingX?: number;
+		paddingY?: number;
+		safetyPxX?: number;
+		safetyPxY?: number;
 	},
 ): Map<string, { x: number; y: number }> {
 	const count = nodes.length;
@@ -58,13 +88,17 @@ export function computeGridPositions(
 	const gap = options?.gap ?? GRID_GAP;
 	const startX = options?.startX ?? 0;
 	const startY = options?.startY ?? 0;
+	const paddingX = options?.paddingX ?? gap;
+	const paddingY = options?.paddingY ?? gap;
+	const safetyPxX = options?.safetyPxX ?? Math.max(12, Math.round(gridSize * 0.5));
+	const safetyPxY = options?.safetyPxY ?? Math.max(12, Math.round(gridSize * 0.5));
 
 	const sizes = nodes.map((n) => estimateNodeSize(n));
-	const paddingUnits = Math.max(1, Math.round(gap / gridSize));
-	const safetyPx = Math.max(12, Math.round(gridSize * 0.5));
+	const paddingUnitsX = Math.max(1, Math.round(paddingX / gridSize));
+	const paddingUnitsY = Math.max(1, Math.round(paddingY / gridSize));
 	const sizeUnits = sizes.map((s) => {
-		const w = Math.max(1, Math.ceil((s.w + safetyPx) / gridSize));
-		const h = Math.max(1, Math.ceil((s.h + safetyPx) / gridSize));
+		const w = Math.max(1, Math.ceil((s.w + safetyPxX) / gridSize));
+		const h = Math.max(1, Math.ceil((s.h + safetyPxY) / gridSize));
 		return { w, h, area: w * h };
 	});
 
@@ -97,8 +131,8 @@ export function computeGridPositions(
 		const placed: Array<{ x: number; y: number }> = new Array(count);
 		for (const idx of indices) {
 			const rect = sizeUnits[idx];
-			const paddedW = rect.w + paddingUnits;
-			const paddedH = rect.h + paddingUnits;
+			const paddedW = rect.w + paddingUnitsX;
+			const paddedH = rect.h + paddingUnitsY;
 			let bestX = 0;
 			let bestY = Number.POSITIVE_INFINITY;
 			let bestHeight = Number.POSITIVE_INFINITY;

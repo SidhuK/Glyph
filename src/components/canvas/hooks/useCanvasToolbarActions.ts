@@ -1,5 +1,10 @@
 import { useCallback } from "react";
-import { computeGridPositions, snapPoint } from "../../../lib/canvasLayout";
+import {
+	GRID_GAP,
+	GRID_SIZE,
+	computeGridPositions,
+	snapPoint,
+} from "../../../lib/canvasLayout";
 import { invoke } from "../../../lib/tauri";
 import type { CanvasNode } from "../types";
 
@@ -188,7 +193,14 @@ export function useCanvasToolbarActions({
 	}, [nodes, selectedNodeIds, setNodes]);
 
 	const handleReflowGrid = useCallback(() => {
-		const positions = computeGridPositions(nodes);
+		const tightGapX = Math.max(GRID_SIZE, GRID_GAP - GRID_SIZE * 2);
+		const tightGapY = GRID_SIZE * 2;
+		const positions = computeGridPositions(nodes, {
+			paddingX: tightGapX,
+			paddingY: tightGapY,
+			safetyPxX: Math.max(8, Math.round(GRID_SIZE * 0.35)),
+			safetyPxY: Math.max(0, Math.round(GRID_SIZE * 0.1)),
+		});
 		setNodes((prev) =>
 			prev.map((n) => {
 				const pos = positions.get(n.id);
