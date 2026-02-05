@@ -118,11 +118,11 @@ export function AISidebar({
 	return (
 		<motion.aside
 			className={`aiSidebar ${isOpen ? "open" : ""}`}
-			animate={{ width: isOpen ? width : 0 }}
+			animate={{ width: isOpen ? width : 0, opacity: isOpen ? 1 : 0 }}
 			transition={
 				isResizing
 					? { type: "tween", duration: 0 }
-					: { type: "spring", stiffness: 300, damping: 25 }
+					: { type: "spring", stiffness: 180, damping: 22, mass: 0.8 }
 			}
 			aria-hidden={!isOpen}
 		>
