@@ -39,3 +39,25 @@
 	height: 14px;
 	z-index: 1;
 }
+
+.sidebarTopToggle {
+	position: absolute;
+	top: calc(
+		var(--app-frame) +
+		(var(--header-height) - var(--button-height-sm)) /
+		2
+	);
+	left: calc(var(--sidebar-width) + 8px);
+	z-index: 3;
+	transition: left var(--transition-base);
+}
+
+.appShell.appShellSidebarCollapsed .sidebarTopToggle {
+	left: 86px;
+}
+
+.appShell.appShellSidebarCollapsed .mainArea {
+	margin-left: var(--app-frame);
+	border-top-left-radius: var(--app-radius);
+	border-bottom-left-radius: var(--app-radius);
+}

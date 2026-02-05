@@ -52,6 +52,13 @@
 	display: flex;
 	align-items: center;
 	gap: var(--space-3);
+	margin-left: 34px;
+	min-width: 0;
+	transition: margin-left var(--transition-base);
+}
+
+.appShell.appShellSidebarCollapsed .mainToolbarLeft {
+	margin-left: 110px;
 }
 
 .mainToolbarRight {

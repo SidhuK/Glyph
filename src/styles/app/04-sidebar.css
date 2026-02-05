@@ -28,14 +28,9 @@
 }
 
 .sidebar.sidebarCollapsed {
-	width: 78px;
-	min-width: 78px;
-}
-
-.sidebar.sidebarCollapsed .sidebarHeader {
-	justify-content: center;
-	padding-left: 0;
-	padding-right: 0;
+	width: 0;
+	min-width: 0;
+	border: 0;
 }
 
 .sidebarHeader {

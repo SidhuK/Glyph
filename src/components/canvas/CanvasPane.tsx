@@ -68,6 +68,8 @@ function CanvasPane({
 	);
 
 	const docIdRef = useRef<string | null>(null);
+	const latestDocRef = useRef(doc);
+	const lastSavedSnapshotRef = useRef("");
 	const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const initializedRef = useRef(false);
 	const folderPreviewHoldsRef = useRef<Map<string, number>>(new Map());
@@ -77,6 +79,32 @@ function CanvasPane({
 			nodes: n.filter((node) => node.type !== "folderPreview"),
 			edges: e,
 		}),
+		[],
+	);
+
+	const snapshotPersistedShape = useCallback(
+		(n: CanvasNode[], e: CanvasEdge[]) =>
+			JSON.stringify({
+				n: n.map((node) => ({
+					id: node.id,
+					type: node.type ?? null,
+					position: node.position,
+					data: node.data ?? {},
+					parentNode: (node as unknown as { parentNode?: string | null })
+						.parentNode,
+					extent: (node as unknown as { extent?: unknown }).extent ?? null,
+					style: (node as unknown as { style?: unknown }).style ?? null,
+				})),
+				e: e.map((edge) => ({
+					id: edge.id,
+					source: edge.source,
+					target: edge.target,
+					type: edge.type ?? null,
+					label: (edge as unknown as { label?: unknown }).label ?? null,
+					data: edge.data ?? {},
+					style: (edge as unknown as { style?: unknown }).style ?? null,
+				})),
+			}),
 		[],
 	);
 
@@ -100,19 +128,34 @@ function CanvasPane({
 		saveInlineNow,
 	} = useNoteEditSession(setNodes);
 
-	const scheduleSave = useCallback(() => {
-		if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-		saveTimeoutRef.current = setTimeout(async () => {
-			if (!doc) return;
-			const stable = stripEphemeral(nodes, edges);
-			setIsSaving(true);
-			try {
-				await onSave({ ...doc, nodes: stable.nodes, edges: stable.edges });
-			} finally {
-				setIsSaving(false);
-			}
-		}, 800);
-	}, [doc, nodes, edges, onSave, stripEphemeral]);
+	const scheduleSave = useCallback(
+		(n: CanvasNode[], e: CanvasEdge[]) => {
+			if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+			saveTimeoutRef.current = setTimeout(async () => {
+				const latestDoc = latestDocRef.current;
+				if (!latestDoc) return;
+				const stable = stripEphemeral(n, e);
+				const snapshot = snapshotPersistedShape(stable.nodes, stable.edges);
+				if (snapshot === lastSavedSnapshotRef.current) return;
+				setIsSaving(true);
+				try {
+					await onSave({
+						...latestDoc,
+						nodes: stable.nodes,
+						edges: stable.edges,
+					});
+					lastSavedSnapshotRef.current = snapshot;
+				} finally {
+					setIsSaving(false);
+				}
+			}, 800);
+		},
+		[onSave, snapshotPersistedShape, stripEphemeral],
+	);
+
+	useEffect(() => {
+		latestDocRef.current = doc;
+	}, [doc]);
 
 	useEffect(() => {
 		if (!doc) return;
@@ -121,14 +164,25 @@ function CanvasPane({
 		initializedRef.current = true;
 		setNodes(doc.nodes);
 		setEdges(doc.edges);
+		lastSavedSnapshotRef.current = snapshotPersistedShape(
+			doc.nodes.filter((node) => node.type !== "folderPreview"),
+			doc.edges,
+		);
 		resetHistory(doc.nodes, doc.edges);
-	}, [doc, setNodes, setEdges, resetHistory]);
+	}, [doc, resetHistory, setEdges, setNodes, snapshotPersistedShape]);
 
 	useEffect(() => {
 		if (!initializedRef.current || applyingHistoryRef.current) return;
 		pushHistory(nodes, edges);
-		scheduleSave();
+		scheduleSave(nodes, edges);
 	}, [nodes, edges, pushHistory, scheduleSave, applyingHistoryRef]);
+
+	useEffect(
+		() => () => {
+			if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
+		},
+		[],
+	);
 
 	useEffect(() => {
 		const handler = (e: KeyboardEvent) => {

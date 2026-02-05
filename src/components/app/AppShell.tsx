@@ -10,6 +10,8 @@ import type { FsEntry } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 import { onWindowDragMouseDown } from "../../utils/window";
 import type { CanvasExternalCommand } from "../CanvasPane";
+import { PanelLeftClose, PanelLeftOpen } from "../Icons";
+import { MotionIconButton } from "../MotionUI";
 import { AISidebar } from "../ai/AISidebar";
 import { MainContent } from "./MainContent";
 import { Sidebar } from "./Sidebar";
@@ -193,20 +195,37 @@ export function AppShell({
 	);
 
 	return (
-		<div className={`appShell ${aiSidebarOpen ? "aiSidebarOpen" : ""}`}>
+		<div
+			className={`appShell ${aiSidebarOpen ? "aiSidebarOpen" : ""} ${
+				sidebarCollapsed ? "appShellSidebarCollapsed" : ""
+			}`}
+		>
 			<div
 				aria-hidden="true"
 				className="windowDragStrip"
 				data-tauri-drag-region
 				onMouseDown={onWindowDragMouseDown}
 			/>
+			<div className="sidebarTopToggle">
+				<MotionIconButton
+					type="button"
+					size="sm"
+					onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
+					title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+				>
+					{sidebarCollapsed ? (
+						<PanelLeftOpen size={14} />
+					) : (
+						<PanelLeftClose size={14} />
+					)}
+				</MotionIconButton>
+			</div>
 
 			<Sidebar
 				vaultPath={vaultPath}
 				vaultSchemaVersion={vaultSchemaVersion}
 				isIndexing={isIndexing}
 				sidebarCollapsed={sidebarCollapsed}
-				setSidebarCollapsed={setSidebarCollapsed}
 				sidebarViewMode={sidebarViewMode}
 				setSidebarViewMode={setSidebarViewMode}
 				showSearch={showSearch}

@@ -12,7 +12,6 @@ interface SidebarProps {
 	vaultSchemaVersion: number | null;
 	isIndexing: boolean;
 	sidebarCollapsed: boolean;
-	setSidebarCollapsed: (collapsed: boolean) => void;
 	sidebarViewMode: "files" | "tags";
 	setSidebarViewMode: (mode: "files" | "tags") => void;
 	showSearch: boolean;
@@ -46,7 +45,6 @@ export function Sidebar({
 	vaultSchemaVersion,
 	isIndexing,
 	sidebarCollapsed,
-	setSidebarCollapsed,
 	sidebarViewMode,
 	setSidebarViewMode,
 	showSearch,
@@ -76,15 +74,15 @@ export function Sidebar({
 }: SidebarProps) {
 	return (
 		<aside className={`sidebar ${sidebarCollapsed ? "sidebarCollapsed" : ""}`}>
-			<SidebarHeader
-				vaultPath={vaultPath}
-				sidebarCollapsed={sidebarCollapsed}
-				setSidebarCollapsed={setSidebarCollapsed}
-				showSearch={showSearch}
-				setShowSearch={setShowSearch}
-				onOpenVault={onOpenVault}
-				onCreateVault={onCreateVault}
-			/>
+			{!sidebarCollapsed && (
+				<SidebarHeader
+					vaultPath={vaultPath}
+					showSearch={showSearch}
+					setShowSearch={setShowSearch}
+					onOpenVault={onOpenVault}
+					onCreateVault={onCreateVault}
+				/>
+			)}
 
 			{!sidebarCollapsed && (
 				<SidebarContent
