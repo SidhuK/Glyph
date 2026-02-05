@@ -38,7 +38,6 @@ const rowVariants = {
 interface FileTreeDirItemProps {
 	entry: FsEntry;
 	depth: number;
-	index: number;
 	isExpanded: boolean;
 	summary: DirChildSummary | null;
 	children?: ReactNode;
@@ -49,7 +48,6 @@ interface FileTreeDirItemProps {
 export const FileTreeDirItem = memo(function FileTreeDirItem({
 	entry,
 	depth,
-	index,
 	isExpanded,
 	summary,
 	children,
@@ -71,10 +69,10 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 		<motion.li
 			className="fileTreeItem"
 			variants={{
-				hidden: { x: -8 },
-				visible: { x: 0 },
+				hidden: { opacity: 0, x: -8 },
+				visible: { opacity: 1, x: 0 },
 			}}
-			transition={{ ...springTransition, delay: index * 0.02 }}
+			transition={{ duration: 0.15 }}
 		>
 			<motion.button
 				type="button"
@@ -110,9 +108,9 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 			<AnimatePresence>
 				{isExpanded && children && (
 					<motion.div
-						initial={{ height: 0 }}
-						animate={{ height: "auto" }}
-						exit={{ height: 0 }}
+						initial={{ height: 0, opacity: 0 }}
+						animate={{ height: "auto", opacity: 1 }}
+						exit={{ height: 0, opacity: 0 }}
 						transition={springTransition}
 						style={{ overflow: "hidden" }}
 					>
@@ -127,7 +125,6 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 interface FileTreeFileItemProps {
 	entry: FsEntry;
 	depth: number;
-	index: number;
 	isActive: boolean;
 	onOpenFile: (filePath: string) => void;
 }
@@ -135,7 +132,6 @@ interface FileTreeFileItemProps {
 export const FileTreeFileItem = memo(function FileTreeFileItem({
 	entry,
 	depth,
-	index,
 	isActive,
 	onOpenFile,
 }: FileTreeFileItemProps) {
@@ -156,10 +152,10 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 		<motion.li
 			className={isActive ? "fileTreeItem active" : "fileTreeItem"}
 			variants={{
-				hidden: { x: -8 },
-				visible: { x: 0 },
+				hidden: { opacity: 0, x: -8 },
+				visible: { opacity: 1, x: 0 },
 			}}
-			transition={{ ...springTransition, delay: index * 0.02 }}
+			transition={{ duration: 0.15 }}
 		>
 			<motion.button
 				type="button"

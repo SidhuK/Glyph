@@ -1,4 +1,5 @@
 import { Handle, type NodeProps, Position } from "@xyflow/react";
+import { motion } from "motion/react";
 import { memo } from "react";
 import { NODE_BASE_DIMENSIONS } from "../constants";
 import type { CanvasNode } from "../types";
@@ -28,7 +29,7 @@ export const NoteNode = memo(function NoteNode({
 	} as React.CSSProperties;
 
 	return (
-		<div
+		<motion.div
 			className={[
 				"rfNode",
 				"rfNodeNote",
@@ -37,8 +38,18 @@ export const NoteNode = memo(function NoteNode({
 			]
 				.filter(Boolean)
 				.join(" ")}
+			layoutId={`note-node-${id}`}
 			title={noteId}
 			style={dynamicStyle}
+			initial={{ opacity: 0, scale: 0.95 }}
+			animate={{
+				opacity: 1,
+				scale: 1,
+				boxShadow: selected
+					? "0 0 0 2px var(--accent), 0 4px 12px rgba(0,0,0,0.15)"
+					: "0 2px 8px rgba(0,0,0,0.1)",
+			}}
+			transition={{ type: "spring", stiffness: 300, damping: 25 }}
 		>
 			<Handle type="target" position={Position.Left} />
 			<Handle type="source" position={Position.Right} />
@@ -46,6 +57,6 @@ export const NoteNode = memo(function NoteNode({
 				<div className="rfNodeNoteTitle">{title}</div>
 			</div>
 			{hasContent && <div className="rfNodeNoteContent">{content}</div>}
-		</div>
+		</motion.div>
 	);
 });

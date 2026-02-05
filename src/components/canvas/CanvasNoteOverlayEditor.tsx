@@ -5,6 +5,18 @@ import { CanvasNoteInlineEditor } from "../editor";
 import { useCanvasNoteEdit } from "./contexts";
 import type { CanvasNode, NoteTab } from "./types";
 
+const springTransition = {
+	type: "spring" as const,
+	stiffness: 300,
+	damping: 25,
+};
+
+const scrimTransition = {
+	type: "spring" as const,
+	stiffness: 200,
+	damping: 30,
+};
+
 interface CanvasNoteOverlayEditorProps {
 	nodes: CanvasNode[];
 	tabs: NoteTab[];
@@ -54,30 +66,33 @@ export const CanvasNoteOverlayEditor = memo(function CanvasNoteOverlayEditor({
 
 	const showOverlay = Boolean(session || tabs.length);
 
+	const layoutId = session?.nodeId ? `note-node-${session.nodeId}` : undefined;
+
 	return (
-		<AnimatePresence>
+		<AnimatePresence mode="wait">
 			{showOverlay ? (
 				<motion.div
 					className="canvasNoteEditorOverlay"
 					initial={{ opacity: 0 }}
 					animate={{ opacity: 1 }}
 					exit={{ opacity: 0 }}
-					transition={{ duration: 0.18 }}
+					transition={springTransition}
 				>
 					<motion.div
 						className="canvasNoteEditorScrim"
-						initial={{ opacity: 0 }}
-						animate={{ opacity: 1 }}
-						exit={{ opacity: 0 }}
-						transition={{ duration: 0.18 }}
+						initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
+						animate={{ opacity: 1, backdropFilter: "blur(8px)" }}
+						exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
+						transition={scrimTransition}
 						onClick={() => closeEditor()}
 					/>
 					<motion.div
 						className="canvasNoteEditorPanel"
-						initial={{ x: 24, opacity: 0, scale: 0.98 }}
+						layoutId={layoutId}
+						initial={{ x: 32, opacity: 0, scale: 0.92 }}
 						animate={{ x: 0, opacity: 1, scale: 1 }}
-						exit={{ x: 24, opacity: 0, scale: 0.98 }}
-						transition={{ type: "spring", stiffness: 420, damping: 32 }}
+						exit={{ x: 24, opacity: 0, scale: 0.96 }}
+						transition={springTransition}
 					>
 						<div className="canvasNoteEditorTabs">
 							<div className="canvasNoteEditorTabsScroll">
@@ -107,6 +122,17 @@ export const CanvasNoteOverlayEditor = memo(function CanvasNoteOverlayEditor({
 										>
 											×
 										</button>
+										{tab.tabId === activeTabId && (
+											<motion.div
+												className="canvasNoteEditorTabUnderline"
+												layoutId="canvas-editor-tab-underline"
+												transition={{
+													type: "spring",
+													stiffness: 500,
+													damping: 30,
+												}}
+											/>
+										)}
 									</div>
 								))}
 							</div>

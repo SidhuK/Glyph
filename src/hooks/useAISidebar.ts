@@ -12,12 +12,14 @@ export interface UseAISidebarResult {
 	aiSidebarWidthRef: React.RefObject<number>;
 	aiSidebarResizingRef: React.RefObject<boolean>;
 	aiSidebarResizeStartRef: React.RefObject<{ x: number; width: number } | null>;
+	isResizing: boolean;
 	handleResizeMouseDown: (e: React.MouseEvent) => void;
 }
 
 export function useAISidebar(): UseAISidebarResult {
 	const [aiSidebarOpen, setAiSidebarOpen] = useState(false);
 	const [aiSidebarWidth, setAiSidebarWidth] = useState(420);
+	const [isResizing, setIsResizing] = useState(false);
 
 	const aiSidebarWidthRef = useRef(420);
 	const aiSidebarResizingRef = useRef(false);
@@ -51,6 +53,7 @@ export function useAISidebar(): UseAISidebarResult {
 			if (e.button !== 0) return;
 			e.preventDefault();
 			aiSidebarResizingRef.current = true;
+			setIsResizing(true);
 			aiSidebarResizeStartRef.current = {
 				x: e.clientX,
 				width: aiSidebarWidth,
@@ -67,6 +70,7 @@ export function useAISidebar(): UseAISidebarResult {
 			const onUp = () => {
 				if (!aiSidebarResizingRef.current) return;
 				aiSidebarResizingRef.current = false;
+				setIsResizing(false);
 				aiSidebarResizeStartRef.current = null;
 				window.removeEventListener("mousemove", onMove);
 				window.removeEventListener("mouseup", onUp);
@@ -87,6 +91,7 @@ export function useAISidebar(): UseAISidebarResult {
 		aiSidebarWidthRef,
 		aiSidebarResizingRef,
 		aiSidebarResizeStartRef,
+		isResizing,
 		handleResizeMouseDown,
 	};
 }

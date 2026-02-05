@@ -1,4 +1,5 @@
 import type { Editor } from "@tiptap/core";
+import { motion } from "motion/react";
 import type { ReactNode } from "react";
 import { memo } from "react";
 import {
@@ -14,6 +15,7 @@ import {
 	Quote,
 	Strikethrough,
 } from "../Icons";
+import { springPresets } from "../ui/animations";
 
 interface EditorRibbonProps {
 	editor: Editor;
@@ -145,7 +147,7 @@ export const EditorRibbon = memo(function EditorRibbon({
 
 	const renderButtons = (buttons: RibbonButtonConfig[]) =>
 		buttons.map((btn) => (
-			<button
+			<motion.button
 				key={btn.title}
 				type="button"
 				className={`ribbonBtn ${btn.isActive?.() ? "active" : ""}`}
@@ -153,9 +155,11 @@ export const EditorRibbon = memo(function EditorRibbon({
 				disabled={!canEdit}
 				onMouseDown={preventMouseDown}
 				onClick={() => canEdit && btn.onClick()}
+				whileTap={{ scale: 0.92 }}
+				transition={springPresets.snappy}
 			>
 				{btn.icon}
-			</button>
+			</motion.button>
 		));
 
 	return (
@@ -173,7 +177,7 @@ export const EditorRibbon = memo(function EditorRibbon({
 			<span className="ribbonDivider" />
 			<div className="ribbonGroup">
 				{calloutButtons.map((type) => (
-					<button
+					<motion.button
 						key={type}
 						type="button"
 						className="ribbonBtn"
@@ -181,9 +185,11 @@ export const EditorRibbon = memo(function EditorRibbon({
 						disabled={!canEdit}
 						onMouseDown={preventMouseDown}
 						onClick={() => canEdit && insertCallout(type)}
+						whileTap={{ scale: 0.92 }}
+						transition={springPresets.snappy}
 					>
 						{type}
-					</button>
+					</motion.button>
 				))}
 			</div>
 		</div>

@@ -103,6 +103,7 @@ export function AppShell({
 		aiSidebarOpen,
 		setAiSidebarOpen,
 		aiSidebarWidth,
+		isResizing: aiSidebarResizing,
 		handleResizeMouseDown,
 	} = useAISidebar();
 
@@ -348,6 +349,7 @@ export function AppShell({
 					<AISidebar
 						isOpen={aiSidebarOpen}
 						width={aiSidebarWidth}
+						isResizing={aiSidebarResizing}
 						onClose={() => setAiSidebarOpen(false)}
 						onOpenSettings={() => {
 							setAiSidebarOpen(true);

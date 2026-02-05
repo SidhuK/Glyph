@@ -1,3 +1,4 @@
+import { AnimatePresence, motion } from "motion/react";
 import type {
 	DirChildSummary,
 	FsEntry,
@@ -75,48 +76,59 @@ export function Sidebar({
 	onOpenCommandPalette,
 }: SidebarProps) {
 	return (
-		<aside className={`sidebar ${sidebarCollapsed ? "sidebarCollapsed" : ""}`}>
-			{!sidebarCollapsed && (
-				<SidebarHeader
-					vaultPath={vaultPath}
-					showSearch={showSearch}
-					setShowSearch={setShowSearch}
-					onOpenVault={onOpenVault}
-					onCreateVault={onCreateVault}
-					onOpenCommandPalette={onOpenCommandPalette}
-				/>
-			)}
-
-			{!sidebarCollapsed && (
-				<SidebarContent
-					vaultPath={vaultPath}
-					vaultSchemaVersion={vaultSchemaVersion}
-					isIndexing={isIndexing}
-					showSearch={showSearch}
-					sidebarViewMode={sidebarViewMode}
-					setSidebarViewMode={setSidebarViewMode}
-					searchQuery={searchQuery}
-					searchResults={searchResults}
-					isSearching={isSearching}
-					searchError={searchError}
-					onChangeSearchQuery={onChangeSearchQuery}
-					onOpenSearchAsCanvas={onOpenSearchAsCanvas}
-					onSelectSearchNote={onSelectSearchNote}
-					rootEntries={rootEntries}
-					childrenByDir={childrenByDir}
-					expandedDirs={expandedDirs}
-					activeFilePath={activeFilePath}
-					summariesByParentDir={summariesByParentDir}
-					onToggleDir={onToggleDir}
-					onSelectDir={onSelectDir}
-					onOpenFile={onOpenFile}
-					onNewFile={onNewFile}
-					tags={tags}
-					tagsError={tagsError}
-					onSelectTag={onSelectTag}
-					onRefreshTags={onRefreshTags}
-				/>
-			)}
-		</aside>
+		<motion.aside
+			className={`sidebar ${sidebarCollapsed ? "sidebarCollapsed" : ""}`}
+			layout
+			transition={{ type: "spring", stiffness: 400, damping: 30 }}
+		>
+			<AnimatePresence>
+				{!sidebarCollapsed && (
+					<motion.div
+						key="sidebar-content"
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						exit={{ opacity: 0 }}
+						transition={{ duration: 0.15 }}
+					>
+						<SidebarHeader
+							vaultPath={vaultPath}
+							showSearch={showSearch}
+							setShowSearch={setShowSearch}
+							onOpenVault={onOpenVault}
+							onCreateVault={onCreateVault}
+							onOpenCommandPalette={onOpenCommandPalette}
+						/>
+						<SidebarContent
+							vaultPath={vaultPath}
+							vaultSchemaVersion={vaultSchemaVersion}
+							isIndexing={isIndexing}
+							showSearch={showSearch}
+							sidebarViewMode={sidebarViewMode}
+							setSidebarViewMode={setSidebarViewMode}
+							searchQuery={searchQuery}
+							searchResults={searchResults}
+							isSearching={isSearching}
+							searchError={searchError}
+							onChangeSearchQuery={onChangeSearchQuery}
+							onOpenSearchAsCanvas={onOpenSearchAsCanvas}
+							onSelectSearchNote={onSelectSearchNote}
+							rootEntries={rootEntries}
+							childrenByDir={childrenByDir}
+							expandedDirs={expandedDirs}
+							activeFilePath={activeFilePath}
+							summariesByParentDir={summariesByParentDir}
+							onToggleDir={onToggleDir}
+							onSelectDir={onSelectDir}
+							onOpenFile={onOpenFile}
+							onNewFile={onNewFile}
+							tags={tags}
+							tagsError={tagsError}
+							onSelectTag={onSelectTag}
+							onRefreshTags={onRefreshTags}
+						/>
+					</motion.div>
+				)}
+			</AnimatePresence>
+		</motion.aside>
 	);
 }

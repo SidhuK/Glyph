@@ -104,6 +104,7 @@
 }
 
 .sidebarSectionToggle button {
+	position: relative;
 	height: var(--button-height-sm);
 	padding: 0 var(--space-2);
 	border-radius: var(--radius-full);

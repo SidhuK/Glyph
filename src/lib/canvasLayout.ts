@@ -90,8 +90,10 @@ export function computeGridPositions(
 	const startY = options?.startY ?? 0;
 	const paddingX = options?.paddingX ?? gap;
 	const paddingY = options?.paddingY ?? gap;
-	const safetyPxX = options?.safetyPxX ?? Math.max(12, Math.round(gridSize * 0.5));
-	const safetyPxY = options?.safetyPxY ?? Math.max(12, Math.round(gridSize * 0.5));
+	const safetyPxX =
+		options?.safetyPxX ?? Math.max(12, Math.round(gridSize * 0.5));
+	const safetyPxY =
+		options?.safetyPxY ?? Math.max(12, Math.round(gridSize * 0.5));
 
 	const sizes = nodes.map((n) => estimateNodeSize(n));
 	const paddingUnitsX = Math.max(1, Math.round(paddingX / gridSize));

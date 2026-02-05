@@ -46,12 +46,14 @@ function parseAddTrigger(input: string): AddTrigger | null {
 export function AISidebar({
 	isOpen,
 	width,
+	isResizing,
 	onClose,
 	onOpenSettings,
 	activeFolderPath,
 }: {
 	isOpen: boolean;
 	width: number;
+	isResizing: boolean;
 	onClose: () => void;
 	onOpenSettings: () => void;
 	activeFolderPath: string | null;
@@ -114,9 +116,14 @@ export function AISidebar({
 	};
 
 	return (
-		<aside
+		<motion.aside
 			className={`aiSidebar ${isOpen ? "open" : ""}`}
-			style={{ width: isOpen ? width : 0 }}
+			animate={{ width: isOpen ? width : 0 }}
+			transition={
+				isResizing
+					? { type: "tween", duration: 0 }
+					: { type: "spring", stiffness: 300, damping: 25 }
+			}
 			aria-hidden={!isOpen}
 		>
 			<div className="aiSidebarHeader" data-window-drag-ignore>
@@ -333,6 +340,6 @@ export function AISidebar({
 					</div>
 				</div>
 			</div>
-		</aside>
+		</motion.aside>
 	);
 }

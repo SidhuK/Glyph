@@ -64,7 +64,7 @@ export const FileTreePane = memo(function FileTreePane({
 					hidden: {},
 				}}
 			>
-				{entries.map((e, index) => {
+				{entries.map((e) => {
 					const isDir = e.kind === "dir";
 					const depth = parentDepth + 1;
 
@@ -78,7 +78,6 @@ export const FileTreePane = memo(function FileTreePane({
 								key={e.rel_path}
 								entry={e}
 								depth={depth}
-								index={index}
 								isExpanded={isExpanded}
 								summary={summary}
 								onToggleDir={onToggleDir}
@@ -94,7 +93,6 @@ export const FileTreePane = memo(function FileTreePane({
 							key={e.rel_path}
 							entry={e}
 							depth={depth}
-							index={index}
 							isActive={e.rel_path === activeFilePath}
 							onOpenFile={onOpenFile}
 						/>
