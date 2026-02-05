@@ -88,7 +88,7 @@ Legacy / planned layout (may exist in docs or older vaults):
 | ----------------- | -------------------------------------------------------- |
 | `main.tsx`        | React app entry point, renders `<App />`                 |
 | `App.tsx`         | Thin orchestrator composing hooks and AppShell           |
-| `App.css`         | Global styles for the app shell, sidebar, and components |
+| `App.css`         | CSS import entrypoint for modular app styles in `styles/app/` |
 | `SettingsApp.tsx` | Settings window entry point                              |
 
 ### Hooks (`src/hooks/`)
@@ -119,11 +119,11 @@ Root-level files are thin re-exports for backwards compatibility. Actual impleme
 | `CanvasPane.tsx`             | Re-exports from `canvas/`                |
 | `CanvasNoteInlineEditor.tsx` | Re-exports from `editor/`                |
 | `AIPane.tsx`                 | Re-exports from `ai/`                    |
-| `FileTreePane.tsx`           | File tree sidebar pane                   |
+| `FileTreePane.tsx`           | Re-exports from `filetree/`              |
 | `FolderBreadcrumb.tsx`       | Breadcrumb navigation for folders        |
 | `FolderShelf.tsx`            | Folder shelf with subfolders and recents |
 | `Icons.tsx`                  | Re-exports from `Icons/`                 |
-| `MotionUI.tsx`               | Motion-animated UI components            |
+| `MotionUI.tsx`               | Re-exports from `ui/`                    |
 | `NotesPane.tsx`              | Sidebar list of notes                    |
 | `CanvasesPane.tsx`           | Sidebar list of canvases                 |
 | `SearchPane.tsx`             | Search results pane                      |
@@ -161,7 +161,11 @@ Root-level files are thin re-exports for backwards compatibility. Actual impleme
 | `nodes/FolderNode.tsx`        | Folder node component                          |
 | `nodes/FolderPreviewNode.tsx` | Folder preview popup node                      |
 | `hooks/useCanvasHistory.ts`   | Undo/redo history management                   |
+| `hooks/useCanvasTabs.ts`      | Note tab selection/close handlers              |
+| `hooks/useCanvasToolbarActions.ts` | Toolbar action handlers (add/reflow/align) |
+| `hooks/useExternalCanvasCommands.ts` | External canvas command dispatcher        |
 | `hooks/useNoteEditSession.ts` | Inline note editing session                    |
+| `hooks/noteEditHelpers.ts`    | Shared note-edit node update helpers           |
 
 ### `components/editor/` - Note Inline Editor
 
@@ -243,6 +247,21 @@ Root-level files are thin re-exports for backwards compatibility. Actual impleme
 | `AiSettingsPane.tsx`      | AI profile and key settings |
 | `VaultSettingsPane.tsx`   | Vault-specific settings     |
 
+### `components/settings/general/` - General Settings Subcomponents
+
+| File                                 | Purpose                                  |
+| ------------------------------------ | ---------------------------------------- |
+| `GeneralSettingsSections.tsx`        | General settings section composition     |
+| `GeneralSettingsAppearanceSection.tsx` | Appearance section UI                  |
+
+### `components/settings/ai/` - AI Settings Subcomponents
+
+| File                    | Purpose                                      |
+| ----------------------- | -------------------------------------------- |
+| `AiProfileSections.tsx` | Profile and API key settings sections         |
+| `AiBehaviorSections.tsx` | Defaults/context/privacy/UX settings sections |
+| `utils.ts`              | AI settings parsing/error helpers             |
+
 ### Lib (`src/lib/`)
 
 | File              | Purpose                                                 |
@@ -268,6 +287,43 @@ Root-level files are thin re-exports for backwards compatibility. Actual impleme
 | `builders/folderView.ts` | buildFolderViewDoc                            |
 | `builders/searchView.ts` | buildSearchViewDoc                            |
 | `builders/tagView.ts`    | buildTagViewDoc                               |
+
+### `styles/app/` - Modular Global Styles
+
+| File | Purpose |
+| ---- | ------- |
+| `00-header-base.css` | App stylesheet header and base reset |
+| `01-controls.css` | Shared control and button styles |
+| `02-surfaces.css` | Shared surface and panel styles |
+| `03-app-shell.css` | App shell layout chrome |
+| `04-sidebar.css` | Sidebar layout and interactions |
+| `05-main-area.css` | Main area, toolbar, and center layout |
+| `06-main-resizer.css` | Right sidebar resize handle |
+| `07-ai-sidebar-core.css` | AI sidebar core layout styles |
+| `08-ai-sidebar-context.css` | AI context and folder-picker styles |
+| `09-settings-shell.css` | Settings window shell and navigation |
+| `10-settings-controls.css` | Settings form control styles |
+| `11-settings-misc.css` | Settings auxiliary styles |
+| `12-editor-shell.css` | Editor pane and TipTap shell styles |
+| `13-backlinks.css` | Backlinks panel styles |
+| `14-ai-pane.css` | AI pane container styles |
+| `15-chat-actions.css` | AI chat action styles |
+| `16-ai-legacy.css` | Legacy AI pane compatibility styles |
+| `17-filetree-head.css` | File tree container/header styles |
+| `18-filetree-body.css` | File tree rows, nesting, and states |
+| `19-canvas-shell.css` | Canvas shell and wrapper styles |
+| `20-canvas-ui.css` | Canvas toolbar and interaction styles |
+| `21-canvas-node-overlays.css` | Canvas overlay/editor shell styles |
+| `22-node-note-base.css` | Note node base styles |
+| `23-node-note-editor-a.css` | Note node editor styles (part A) |
+| `24-node-note-editor-b.css` | Note node editor styles (part B) |
+| `25-node-folder-tiles.css` | Folder tile node styles |
+| `26-node-text.css` | Text node styles |
+| `27-node-link.css` | Link preview node styles |
+| `28-node-file.css` | File node styles |
+| `29-node-frame.css` | Frame/group node styles |
+| `30-file-preview.css` | File preview panel styles |
+| `31-responsive.css` | Responsive breakpoints/overrides |
 
 ### `lib/ai/` - AI Transport
 

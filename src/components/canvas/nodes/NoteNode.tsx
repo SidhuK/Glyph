@@ -2,9 +2,7 @@ import { Handle, type NodeProps, Position } from "@xyflow/react";
 import { memo } from "react";
 import { NODE_BASE_DIMENSIONS } from "../constants";
 import type { CanvasNode } from "../types";
-import {
-	getNodeRotation,
-} from "../utils";
+import { getNodeRotation } from "../utils";
 
 export const NoteNode = memo(function NoteNode({
 	data,

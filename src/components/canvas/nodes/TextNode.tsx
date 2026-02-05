@@ -1,5 +1,5 @@
 import { Handle, Position } from "@xyflow/react";
-import { memo, type CSSProperties } from "react";
+import { type CSSProperties, memo } from "react";
 import { getNodeRotation, getStickyColor } from "../utils";
 
 interface TextNodeProps {
