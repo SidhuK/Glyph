@@ -1,0 +1,368 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   MAIN CANVAS AREA - Floating center panel
+   ───────────────────────────────────────────────────────────────────────────── */
+.mainArea {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+	min-height: 0;
+	background: var(--bg-primary);
+	overflow: hidden;
+	margin: var(--app-frame) var(--app-frame) var(--app-frame) 0;
+	border-radius: var(--app-radius);
+	border-top-left-radius: calc(var(--app-radius) - var(--app-frame));
+	border-bottom-left-radius: calc(var(--app-radius) - var(--app-frame));
+	/* Shadow style matches sticky notes (two-layer), but softer. */
+	box-shadow: 0 0 0 1px var(--border-light), 2px 4px 8px rgba(0, 0, 0, 0.1), 0
+		1px 3px rgba(0, 0, 0, 0.08);
+}
+
+.mainAreaWelcome {
+	background: var(--bg-primary);
+}
+
+.appShell.aiSidebarOpen .mainArea {
+	margin-right: 0;
+}
+
+.mainToolbar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	height: var(--header-height);
+	padding: 0 var(--space-4);
+	background: transparent;
+	border-bottom: 1px solid var(--border-light);
+	flex-shrink: 0;
+	position: relative;
+	z-index: 2;
+	-webkit-app-region: drag;
+}
+
+/* Ensure interactive elements inside drag regions are clickable */
+.sidebarHeader button,
+.sidebarHeader input,
+.mainToolbar button,
+.mainToolbar input {
+	-webkit-app-region: no-drag;
+}
+
+.mainToolbarLeft {
+	display: flex;
+	align-items: center;
+	gap: var(--space-3);
+}
+
+.mainToolbarRight {
+	display: flex;
+	align-items: center;
+	gap: var(--space-1);
+}
+
+.welcomeScreen {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-4);
+	padding: var(--space-6);
+	overflow: auto;
+}
+
+.welcomeHero {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-1);
+}
+
+.welcomeTitle {
+	font-size: var(--text-3xl);
+	font-weight: var(--font-semibold);
+	color: var(--text-primary);
+	letter-spacing: -0.02em;
+}
+
+.welcomeSubtitle {
+	font-size: var(--text-md);
+	color: var(--text-secondary);
+	max-width: 520px;
+}
+
+.welcomeActions {
+	display: flex;
+	gap: var(--space-2);
+	flex-wrap: wrap;
+}
+
+.welcomeRecents {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-2);
+	padding-top: var(--space-3);
+	border-top: 1px solid var(--border-light);
+}
+
+.welcomeSectionTitle {
+	font-size: var(--text-xs);
+	text-transform: uppercase;
+	letter-spacing: 0.12em;
+	color: var(--text-tertiary);
+}
+
+.welcomeRecentList {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-2);
+}
+
+.welcomeRecentItem {
+	width: 100%;
+	height: auto;
+	min-height: var(--button-height);
+	align-items: flex-start;
+	justify-content: center;
+	flex-direction: column;
+	gap: 4px;
+	padding: var(--space-3);
+	border-radius: var(--radius-lg);
+	border: 1px solid var(--border-light);
+	background: var(--bg-secondary);
+	color: var(--text-primary);
+	text-align: left;
+}
+
+.welcomeRecentItem:hover {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+	transform: none;
+}
+
+.welcomeRecentName {
+	font-size: var(--text-sm);
+	font-weight: var(--font-semibold);
+}
+
+.welcomeRecentPath {
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
+}
+
+.welcomeEmpty {
+	font-size: var(--text-sm);
+	color: var(--text-tertiary);
+}
+
+.folderBreadcrumb {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	min-width: 0;
+}
+
+.folderBreadcrumbIcon {
+	color: var(--text-accent);
+	display: inline-flex;
+	flex-shrink: 0;
+}
+
+.folderBreadcrumbTrail {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	min-width: 0;
+	flex-wrap: wrap;
+}
+
+.folderCrumb {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	min-width: 0;
+}
+
+.folderCrumbBtn {
+	border: 1px solid transparent;
+	background: transparent;
+	padding: 2px 6px;
+	border-radius: var(--radius-md);
+	color: var(--text-secondary);
+	font-size: var(--text-xs);
+	cursor: pointer;
+	white-space: nowrap;
+	max-width: 220px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.folderCrumbBtn:hover {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}
+
+.folderCrumbBtn.isCurrent {
+	border-color: var(--border-light);
+	background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
+	color: var(--text-primary);
+}
+
+.folderCrumbSep {
+	color: var(--text-tertiary);
+	display: inline-flex;
+	opacity: 0.7;
+}
+
+.folderShelf {
+	flex-shrink: 0;
+	padding: 6px var(--space-4);
+	border-bottom: 1px solid var(--border-light);
+	background: color-mix(in srgb, var(--bg-secondary) 50%, transparent);
+	-webkit-app-region: no-drag;
+}
+
+.folderShelfBar {
+	display: flex;
+	align-items: center;
+	gap: var(--space-3);
+}
+
+.folderShelfGroup {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-width: 0;
+	flex: 1;
+}
+
+.folderShelfGroupHead {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	flex-shrink: 0;
+	color: var(--text-tertiary);
+	font-size: var(--text-xs);
+}
+
+.folderShelfGroupIcon {
+	display: inline-flex;
+	color: var(--text-tertiary);
+}
+
+.folderShelfGroupTitle {
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
+	font-size: 11px;
+}
+
+.folderShelfDivider {
+	width: 1px;
+	align-self: stretch;
+	background: var(--border-light);
+	opacity: 0.9;
+}
+
+.folderShelfStrip {
+	flex: 1;
+	display: flex;
+	gap: 8px;
+	overflow-x: auto;
+	overflow-y: hidden;
+	padding: 2px 0;
+	scrollbar-width: thin;
+	overscroll-behavior-x: contain;
+	list-style: none;
+	margin: 0;
+	padding-left: 0;
+}
+
+.folderShelfItem {
+	margin: 0;
+	padding: 0;
+}
+
+.folderShelfEmpty {
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
+	padding: 6px 10px;
+	border-radius: var(--radius-md);
+	border: 1px dashed var(--border-light);
+	background: color-mix(in srgb, var(--bg-secondary) 65%, transparent);
+}
+
+.folderCard,
+.recentFileCard {
+	flex: 0 0 auto;
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 3px 7px;
+	border-radius: var(--radius-md);
+	border: 1px solid var(--border-light);
+	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
+	box-shadow: none;
+	cursor: pointer;
+	text-align: left;
+	min-width: 0;
+	max-width: 220px;
+}
+
+.folderCard:hover,
+.recentFileCard:hover {
+	border-color: var(--border-default);
+	background: color-mix(in srgb, var(--bg-primary) 96%, transparent);
+}
+
+.folderCardIcon {
+	color: var(--text-accent);
+	display: inline-flex;
+}
+
+.folderCardText,
+.recentFileCardText {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.folderCardName,
+.recentFileCardName {
+	font-size: var(--text-xs);
+	font-weight: var(--font-medium);
+	color: var(--text-primary);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.recentFileCardMetaChip {
+	flex-shrink: 0;
+	font-size: 11px;
+	color: var(--text-tertiary);
+	border: 1px solid var(--border-light);
+	background: color-mix(in srgb, var(--bg-secondary) 72%, transparent);
+	padding: 2px 6px;
+	border-radius: var(--radius-md);
+}
+
+.recentFileCardIcon {
+	display: inline-flex;
+}
+
+.canvasTitle {
+	font-size: var(--text-base);
+	font-weight: var(--font-semibold);
+	color: var(--text-primary);
+}
+
+.canvasWrapper {
+	flex: 1;
+	position: relative;
+	min-height: 0;
+	overflow: hidden;
+	display: flex;
+}
+
+.canvasPaneHost {
+	flex: 1;
+	min-width: 0;
+	min-height: 0;
+}

@@ -1,0 +1,122 @@
+/* ─── Note Nodes (Sticky Notes) ─── */
+.rfNodeNote {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-2);
+	/* Allow dynamic sizing via CSS variables */
+	width: var(--base-width, 200px);
+	min-height: var(--base-height, 140px);
+	min-width: 140px;
+	max-width: 420px;
+	max-height: 420px;
+	/* Softer, glassy card look */
+	border-radius: 16px;
+	border: 1px solid color-mix(in srgb, var(--border-default) 55%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 78%, transparent);
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.18), inset 0 1px 0
+		rgba(255, 255, 255, 0.06);
+	backdrop-filter: blur(12px);
+	overflow: hidden;
+}
+
+/* Remove paper texture + folded corner for glass style */
+.rfNodeNote::before,
+.rfNodeNote::after {
+	display: none;
+}
+
+/* Size variants - base dimensions (can be overridden by inline styles) */
+.rfNodeNote--xs {
+	--base-width: 100px;
+	--base-height: 80px;
+	padding: var(--space-3);
+}
+
+.rfNodeNote--small {
+	--base-width: 140px;
+	--base-height: 100px;
+	padding: var(--space-4);
+}
+
+.rfNodeNote--medium {
+	--base-width: 230px;
+	--base-height: 150px;
+	padding: var(--space-4) var(--space-5);
+}
+
+.rfNodeNote--large {
+	--base-width: 280px;
+	--base-height: 200px;
+	padding: var(--space-5);
+}
+
+.rfNodeNote--xl {
+	--base-width: 360px;
+	--base-height: 260px;
+	padding: var(--space-6);
+}
+
+/* Special aspect ratio variants */
+.rfNodeNote--tall {
+	--base-width: 160px;
+	--base-height: 240px;
+	padding: var(--space-4) var(--space-5);
+}
+
+.rfNodeNote--wide {
+	--base-width: 320px;
+	--base-height: 160px;
+	padding: var(--space-4) var(--space-5);
+}
+
+.rfNodeNote--square {
+	--base-width: 180px;
+	--base-height: 180px;
+	padding: var(--space-4);
+}
+
+.rfNodeNote .react-flow__handle {
+	z-index: 10;
+}
+
+.rfNodeNoteTitle {
+	font-size: 16px;
+	font-weight: 700;
+	color: color-mix(in srgb, var(--text-primary) 96%, white);
+	line-height: 1.15;
+	letter-spacing: -0.01em;
+	word-break: break-word;
+	margin: 0;
+	text-transform: none;
+	letter-spacing: 0;
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 2;
+	overflow: hidden;
+	flex: 1;
+}
+
+.rfNodeNoteContent {
+	font-size: 12px;
+	color: color-mix(in srgb, var(--text-secondary) 70%, transparent);
+	line-height: 1.5;
+	white-space: pre-line;
+	word-break: break-word;
+	font-family: var(--font-sans);
+	flex: 1;
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
+	-webkit-line-clamp: 10;
+	overflow: hidden;
+	position: relative;
+	-webkit-mask-image: linear-gradient(
+		to bottom,
+		rgba(0, 0, 0, 1) 65%,
+		rgba(0, 0, 0, 0) 100%
+	);
+	mask-image: linear-gradient(
+		to bottom,
+		rgba(0, 0, 0, 1) 65%,
+		rgba(0, 0, 0, 0) 100%
+	);
+}

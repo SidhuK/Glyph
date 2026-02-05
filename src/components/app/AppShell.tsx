@@ -1,5 +1,5 @@
 import { AnimatePresence } from "motion/react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useAISidebar } from "../../hooks/useAISidebar";
 import { useFileTree } from "../../hooks/useFileTree";
 import { useFolderShelf } from "../../hooks/useFolderShelf";
@@ -84,6 +84,7 @@ export function AppShell({
 }: AppShellProps) {
 	const [canvasCommand, setCanvasCommand] =
 		useState<CanvasExternalCommand | null>(null);
+	const initialViewLoadVaultRef = useRef<string | null>(null);
 	const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 	const [sidebarViewMode, setSidebarViewMode] = useState<"files" | "tags">(
 		"files",
@@ -116,6 +117,21 @@ export function AppShell({
 		loadAndBuildSearchView,
 		loadAndBuildTagView,
 	} = useViewLoader({ setError, startIndexRebuild });
+
+	useEffect(() => {
+		if (!vaultPath) {
+			initialViewLoadVaultRef.current = null;
+			return;
+		}
+		if (activeViewDoc) return;
+		if (initialViewLoadVaultRef.current === vaultPath) return;
+		initialViewLoadVaultRef.current = vaultPath;
+		void loadAndBuildFolderView("").finally(() => {
+			if (initialViewLoadVaultRef.current === vaultPath) {
+				initialViewLoadVaultRef.current = null;
+			}
+		});
+	}, [vaultPath, activeViewDoc, loadAndBuildFolderView]);
 
 	const { folderShelfSubfolders, folderShelfRecents } = useFolderShelf(
 		vaultPath,

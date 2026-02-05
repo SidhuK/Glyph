@@ -1,0 +1,60 @@
+/* ─── Text Nodes (Quick Notes) ─── */
+.rfNodeText {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	text-align: center;
+	border-radius: 14px;
+	border: 1px solid
+		color-mix(
+			in srgb,
+			var(--sticky-accent, var(--border-default)) 55%,
+			transparent
+		);
+	background: color-mix(in srgb, var(--bg-primary) 78%, transparent);
+	box-shadow: 0 6px 18px rgba(0, 0, 0, 0.16), inset 0 1px 0
+		rgba(255, 255, 255, 0.06);
+	backdrop-filter: blur(10px);
+}
+
+.rfNodeText::before,
+.rfNodeText::after {
+	display: none;
+}
+
+.rfNodeText--small {
+	width: 100px;
+	min-height: 80px;
+	padding: var(--space-3);
+}
+
+.rfNodeText--medium {
+	width: 190px;
+	min-height: 110px;
+	padding: var(--space-4);
+}
+
+.rfNodeText--large {
+	width: 220px;
+	min-height: 140px;
+	padding: var(--space-4) var(--space-5);
+}
+
+.rfNodeTextContent {
+	font-size: 14px;
+	color: color-mix(in srgb, var(--text-primary) 85%, transparent);
+	line-height: 1.4;
+	white-space: pre-wrap;
+	word-break: break-word;
+	font-family: var(--font-sans);
+	-webkit-mask-image: linear-gradient(
+		to bottom,
+		rgba(0, 0, 0, 1) 65%,
+		rgba(0, 0, 0, 0) 100%
+	);
+	mask-image: linear-gradient(
+		to bottom,
+		rgba(0, 0, 0, 1) 65%,
+		rgba(0, 0, 0, 0) 100%
+	);
+}

@@ -3,6 +3,7 @@ import { parseNotePreview } from "../../../lib/notePreview";
 import { invoke } from "../../../lib/tauri";
 import type { CanvasInlineEditorMode } from "../../editor";
 import type { CanvasNode, CanvasNoteEditSession, NoteTab } from "../types";
+import { withUpdatedNoteNodeData } from "./noteEditHelpers";
 
 export function useNoteEditSession(
 	setNodes: React.Dispatch<React.SetStateAction<CanvasNode[]>>,
@@ -94,19 +95,12 @@ export function useNoteEditSession(
 				const preview = parseNotePreview(s.noteId, markdown);
 				updateTabTitle(s.noteId, preview.title);
 				setNodes((prev) =>
-					prev.map((n) =>
-						n.id === s.nodeId
-							? {
-									...n,
-									data: {
-										...(n.data ?? {}),
-										noteId: s.noteId,
-										title: preview.title,
-										content: preview.content,
-										mtimeMs: res.mtime_ms,
-									},
-								}
-							: n,
+					withUpdatedNoteNodeData(
+						prev,
+						s.nodeId,
+						s.noteId,
+						preview,
+						res.mtime_ms,
 					),
 				);
 				setNoteEditSession((prev) => {
@@ -199,20 +193,7 @@ export function useNoteEditSession(
 				const preview = parseNotePreview(noteId, doc.text);
 				updateTabTitle(noteId, preview.title);
 				setNodes((prev) =>
-					prev.map((n) =>
-						n.id === node.id
-							? {
-									...n,
-									data: {
-										...(n.data ?? {}),
-										noteId,
-										title: preview.title,
-										content: preview.content,
-										mtimeMs: doc.mtime_ms,
-									},
-								}
-							: n,
-					),
+					withUpdatedNoteNodeData(prev, node.id, noteId, preview, doc.mtime_ms),
 				);
 				setNoteEditSession((prev) => {
 					if (!prev || prev.noteId !== noteId) return prev;
@@ -290,19 +271,7 @@ export function useNoteEditSession(
 			const preview = parseNotePreview(s.noteId, doc.text);
 			updateTabTitle(s.noteId, preview.title);
 			setNodes((prev) =>
-				prev.map((n) =>
-					n.id === s.nodeId
-						? {
-								...n,
-								data: {
-									...(n.data ?? {}),
-									noteId: s.noteId,
-									title: preview.title,
-									content: preview.content,
-								},
-							}
-						: n,
-				),
+				withUpdatedNoteNodeData(prev, s.nodeId, s.noteId, preview),
 			);
 			setNoteEditSession((prev) => {
 				if (!prev || prev.noteId !== s.noteId) return prev;

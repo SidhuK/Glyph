@@ -1,0 +1,199 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   LEFT SIDEBAR - Floating Navigation Panel
+   ───────────────────────────────────────────────────────────────────────────── */
+.sidebar {
+	display: flex;
+	flex-direction: column;
+	width: var(--sidebar-width);
+	min-width: 220px;
+	/* Let the window chrome (.appShell) show through so translucency matches. */
+	background: transparent;
+	backdrop-filter: none;
+	-webkit-backdrop-filter: none;
+	overflow: hidden;
+	flex-shrink: 0;
+	transition: width var(--transition-base), min-width var(--transition-base);
+	position: relative;
+}
+
+.sidebarDragLayer {
+	position: absolute;
+	inset: 0;
+	z-index: 0;
+}
+
+.sidebar > *:not(.sidebarDragLayer) {
+	position: relative;
+	z-index: 1;
+}
+
+.sidebar.sidebarCollapsed {
+	width: 78px;
+	min-width: 78px;
+}
+
+.sidebar.sidebarCollapsed .sidebarHeader {
+	justify-content: center;
+	padding-left: 0;
+	padding-right: 0;
+}
+
+.sidebarHeader {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	height: calc(var(--header-height) - 4px);
+	padding: var(--space-1) var(--space-3) 0 var(--space-4);
+	padding-left: 78px; /* Space for macOS traffic lights */
+	border-bottom: 1px solid var(--border-light);
+	flex-shrink: 0;
+	position: relative;
+	z-index: 2;
+	-webkit-app-region: drag;
+}
+
+.sidebarBrand {
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+}
+
+.brandIcon {
+	font-size: var(--text-lg);
+	color: var(--interactive-accent);
+}
+
+.brandName {
+	font-size: var(--text-base);
+	font-weight: var(--font-semibold);
+	color: var(--text-primary);
+	letter-spacing: -0.02em;
+}
+
+.sidebarActions {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.sidebarSection {
+	border-bottom: 1px solid var(--border-light);
+	padding: var(--space-1) 0;
+}
+
+.sidebarSectionGrow {
+	flex: 1;
+	min-height: 120px;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+}
+
+.sidebarSectionHeader {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: var(--space-2) var(--space-3);
+	border-bottom: 1px solid var(--border-light);
+	flex-shrink: 0;
+}
+
+.sidebarSectionToggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 0;
+	padding: 2px;
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-full);
+	background: var(--bg-secondary);
+}
+
+.sidebarSectionToggle button {
+	height: var(--button-height-sm);
+	padding: 0 var(--space-2);
+	border-radius: var(--radius-full);
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
+}
+
+.sidebarSectionToggle button:hover {
+	transform: none;
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}
+
+.sidebarSectionToggle button.active {
+	background: var(--bg-primary);
+	color: var(--text-primary);
+	border: 1px solid var(--border-light);
+}
+
+.sidebarSectionContent {
+	flex: 1;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+}
+
+.sidebarFooter {
+	margin-top: auto;
+	padding: var(--space-2) var(--space-3);
+	border-top: 1px solid var(--border-light);
+}
+
+.sidebarFooterBtn {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--space-2);
+	border-radius: var(--radius-lg);
+	padding: 10px 12px;
+	background: transparent;
+	border: 1px solid transparent;
+	color: var(--text-secondary);
+	font-size: var(--text-sm);
+}
+
+.sidebarFooterBtn:hover {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+	transform: none;
+}
+
+.vaultInfo {
+	padding: var(--space-2) var(--space-3);
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+}
+
+.vaultPath {
+	font-size: var(--text-xs);
+	color: var(--text-secondary);
+	font-weight: var(--font-medium);
+}
+
+.vaultMeta {
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
+}
+
+.sidebarEmpty {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	padding: var(--space-3);
+	color: var(--text-secondary);
+}
+
+.sidebarEmptyTitle {
+	font-size: var(--text-sm);
+	color: var(--text-primary);
+	font-weight: var(--font-semibold);
+}
+
+.sidebarEmptyHint {
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
+}

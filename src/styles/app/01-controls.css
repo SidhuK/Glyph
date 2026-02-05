@@ -1,0 +1,96 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   BUTTONS - Modern rounded aesthetic
+   ───────────────────────────────────────────────────────────────────────────── */
+button {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--space-2);
+	height: var(--button-height);
+	padding: 0 var(--space-3);
+	font-family: inherit;
+	font-size: var(--text-sm);
+	font-weight: var(--font-medium);
+	line-height: 1;
+	color: var(--text-secondary);
+	background: transparent;
+	border: none;
+	border-radius: var(--radius-lg);
+	cursor: pointer;
+	transition: all var(--transition-base);
+	white-space: nowrap;
+	user-select: none;
+}
+
+button:hover {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+	transform: translateY(-1px);
+}
+
+button:active {
+	background: var(--bg-active);
+	transform: translateY(0);
+}
+
+button:disabled {
+	color: var(--text-tertiary);
+	cursor: not-allowed;
+	opacity: 0.5;
+	transform: none;
+}
+
+button:disabled:hover {
+	background: transparent;
+	transform: none;
+}
+
+button:focus-visible {
+	outline: 2px solid var(--border-focus);
+	outline-offset: 2px;
+}
+
+/* Primary button variant */
+button.primary {
+	background: var(--interactive-accent);
+	color: var(--text-inverse);
+	border-radius: var(--radius-full);
+}
+
+button.primary:hover {
+	background: var(--interactive-accent-hover);
+	color: var(--text-inverse);
+}
+
+/* Ghost button variant */
+button.ghost {
+	background: transparent;
+}
+
+button.ghost:hover {
+	background: var(--bg-hover);
+}
+
+/* Icon buttons - pill shaped */
+button.iconBtn {
+	width: var(--button-height);
+	height: var(--button-height);
+	padding: 0;
+	color: var(--text-tertiary);
+	border-radius: var(--radius-lg);
+}
+
+button.iconBtn:hover {
+	color: var(--text-primary);
+	background: var(--bg-hover);
+}
+
+button.iconBtn.active {
+	color: var(--interactive-accent);
+	background: var(--selection-bg-muted);
+}
+
+button.iconBtn.sm {
+	width: var(--button-height-sm);
+	height: var(--button-height-sm);
+}

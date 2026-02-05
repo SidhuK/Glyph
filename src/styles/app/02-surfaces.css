@@ -1,0 +1,41 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   INPUTS - Modern rounded style
+   ───────────────────────────────────────────────────────────────────────────── */
+input,
+textarea,
+select {
+	height: var(--input-height);
+	padding: var(--space-2) var(--space-3);
+	font-family: inherit;
+	font-size: var(--text-sm);
+	color: var(--text-primary);
+	background: var(--bg-primary);
+	border: 1px solid var(--border-default);
+	border-radius: var(--radius-lg);
+	transition: all var(--transition-base);
+}
+
+input:hover,
+textarea:hover {
+	border-color: var(--border-strong);
+}
+
+input:focus,
+textarea:focus {
+	outline: none;
+	border-color: var(--border-focus);
+	box-shadow: 0 0 0 3px var(--selection-bg-muted);
+}
+
+input::placeholder,
+textarea::placeholder {
+	color: var(--text-placeholder);
+}
+
+textarea {
+	height: auto;
+	min-height: 60px;
+	padding: var(--space-2);
+	resize: vertical;
+	line-height: var(--leading-normal);
+}

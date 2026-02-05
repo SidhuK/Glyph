@@ -1,0 +1,31 @@
+/* ─── Frame Nodes ─── */
+.rfNodeFrame {
+	border: 2px dashed var(--border-default);
+	border-color: var(--border-default);
+	background: linear-gradient(
+		135deg,
+		color-mix(in srgb, var(--bg-primary) 95%, var(--bg-tertiary)) 0%,
+		var(--bg-primary) 100%
+	);
+	box-shadow: none;
+	min-width: 260px;
+	min-height: 200px;
+	border-radius: 16px;
+	padding: var(--space-3);
+}
+
+/* ReactFlow handles */
+.react-flow__handle {
+	width: 10px;
+	height: 10px;
+	background: var(--bg-primary);
+	border: 2px solid var(--border-default);
+	border-radius: var(--radius-full);
+	transition: all var(--transition-fast);
+}
+
+.react-flow__handle:hover {
+	background: var(--interactive-accent);
+	border-color: var(--interactive-accent);
+	transform: scale(1.2);
+}

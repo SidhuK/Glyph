@@ -1,0 +1,162 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   FILE TREE PANE
+   ───────────────────────────────────────────────────────────────────────────── */
+.fileTreePane {
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	background: transparent;
+}
+
+.fileTreeHeader {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	height: 36px;
+	padding: 0 var(--space-2) 0 var(--space-3);
+	flex-shrink: 0;
+	border-bottom: 1px solid var(--border-light);
+}
+
+.fileTreeScroll {
+	flex: 1;
+	padding: var(--space-2) var(--space-2);
+	overflow-y: auto;
+}
+
+.fileTreeList {
+	list-style: none;
+	padding: 0;
+	margin: 0;
+	position: relative;
+}
+
+.fileTreeList::before {
+	content: "";
+	position: absolute;
+	left: var(--tree-line-x, 6px);
+	top: 4px;
+	bottom: 4px;
+	width: 1px;
+	background: var(--border-light);
+	opacity: var(--tree-line-opacity, 0.35);
+	pointer-events: none;
+}
+
+.fileTreeItem {
+	margin: 0;
+	transition: background var(--transition-fast);
+}
+
+.fileTreeItem:hover > .fileTreeRow {
+	background: var(--bg-hover);
+	border-radius: var(--radius-md);
+}
+
+.fileTreeItem.active > .fileTreeRow {
+	background: var(--selection-bg-muted);
+	color: var(--text-primary);
+	border-radius: var(--radius-md);
+}
+
+.fileTreeItem.active > .fileTreeRow .fileTreeName {
+	font-weight: 500;
+	color: var(--text-primary);
+}
+
+.fileTreeItem.active > .fileTreeRow .fileTreeIcon {
+	color: var(--text-primary);
+}
+
+.fileTreeRow {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	gap: var(--space-1);
+	min-height: 28px;
+	padding: 2px var(--space-2);
+	text-align: left;
+	border-radius: var(--radius-md);
+	margin: 0;
+	border-left: none;
+	transition: all var(--transition-fast);
+	position: relative;
+}
+
+/* horizontal connectors removed; keep only vertical hierarchy lines */
+
+.fileTreeRow:hover {
+	background: transparent;
+}
+
+.fileTreeRow:disabled {
+	opacity: 0.4;
+	cursor: not-allowed;
+}
+
+.fileTreeChevron {
+	display: inline-flex;
+	width: 14px;
+	height: 14px;
+	justify-content: center;
+	align-items: center;
+	color: var(--text-tertiary);
+	flex-shrink: 0;
+	border-radius: var(--radius-sm);
+	transition: background var(--transition-fast);
+}
+
+.fileTreeChevron:hover {
+	background: var(--bg-active);
+}
+
+.fileTreeIcon {
+	display: inline-flex;
+	width: 16px;
+	justify-content: center;
+	color: var(--text-tertiary);
+	flex-shrink: 0;
+	opacity: 0.7;
+}
+
+.fileTreeName {
+	font-size: 13px;
+	color: var(--text-primary);
+	line-height: 1.3;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	flex: 1;
+}
+
+.fileTreeCounts {
+	flex-shrink: 0;
+	font-size: 11px;
+	color: var(--text-tertiary);
+	padding-left: 10px;
+	padding-right: 2px;
+	white-space: nowrap;
+}
+
+/* Directory names slightly bolder */
+.fileTreeItem .fileTreeChevron + .fileTreeName {
+	font-weight: 500;
+}
+
+.fileTreeEmpty {
+	padding: var(--space-4) var(--space-3);
+	color: var(--text-tertiary);
+	font-size: var(--text-sm);
+	text-align: center;
+	font-style: italic;
+}
+
+.notesListItem:hover .notesListDelete {
+	opacity: 1;
+}
+
+.notesListDelete:hover {
+	color: var(--text-error);
+	background: var(--feedback-error-bg);
+}

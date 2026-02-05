@@ -1,0 +1,114 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   FILE PREVIEW
+   ───────────────────────────────────────────────────────────────────────────── */
+.filePreviewCentered {
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: var(--space-6);
+}
+
+.filePreviewImage {
+	max-width: min(900px, 100%);
+	max-height: 100%;
+	border-radius: var(--radius-xl);
+	box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12), 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.filePreviewFrame {
+	width: 100%;
+	flex: 1;
+	min-height: 0;
+	border: none;
+	background: var(--bg-primary);
+}
+
+.filePreviewVideo {
+	max-width: min(900px, 100%);
+	max-height: 100%;
+	border-radius: var(--radius-xl);
+	background: black;
+}
+
+.filePreviewMeta {
+	padding: var(--space-6);
+	color: var(--text-secondary);
+}
+
+.filePreviewLabel {
+	margin-bottom: var(--space-2);
+	color: var(--text-tertiary);
+}
+
+.filePreviewHint {
+	font-size: var(--text-sm);
+}
+
+/* ReactFlow edges */
+.react-flow__edge-path {
+	stroke: var(--border-default);
+	stroke-width: 1.5;
+}
+
+.react-flow__edge.selected .react-flow__edge-path {
+	stroke: var(--interactive-accent);
+	stroke-width: 2;
+}
+
+/* Remove default focus outlines on ReactFlow nodes (we style selection via shadows instead). */
+.react-flow__node:focus,
+.react-flow__node:focus-visible {
+	outline: none;
+}
+
+/* Hide the "React Flow" attribution badge */
+.react-flow__attribution,
+.xy-flow__attribution {
+	display: none !important;
+}
+
+/* Solid canvas background (no dots/grid). */
+.canvasBody .react-flow {
+	background: var(--bg-canvas);
+}
+
+/* ReactFlow controls */
+.react-flow__controls {
+	box-shadow: var(--shadow-lg);
+	border-radius: var(--radius-xl);
+	border: 1px solid var(--border-default);
+	overflow: hidden;
+	background: var(--bg-secondary);
+}
+
+.react-flow__controls-button {
+	background: transparent;
+	border: none;
+	border-bottom: 1px solid var(--border-default);
+	width: 32px;
+	height: 32px;
+	transition: all var(--transition-fast);
+	color: var(--text-secondary);
+}
+
+.react-flow__controls-button:hover {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}
+
+.react-flow__controls-button svg {
+	fill: currentColor;
+	stroke: currentColor;
+	max-width: 14px;
+	max-height: 14px;
+}
+
+/* ReactFlow minimap */
+.react-flow__minimap {
+	background: var(--bg-secondary);
+	border-radius: var(--radius-xl);
+	border: 1px solid var(--border-default);
+	box-shadow: var(--shadow-md);
+}

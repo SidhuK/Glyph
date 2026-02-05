@@ -1,0 +1,279 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   SETTINGS WINDOW
+   ───────────────────────────────────────────────────────────────────────────── */
+.settingsShell {
+	position: relative;
+	height: 100%;
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	background: radial-gradient(
+			circle at 10% 20%,
+			color-mix(in srgb, var(--bg-tertiary) 80%, transparent),
+			transparent 55%
+		),
+		radial-gradient(
+			circle at 90% 0%,
+			color-mix(in srgb, var(--bg-secondary) 70%, transparent),
+			transparent 50%
+		),
+		linear-gradient(
+			135deg,
+			color-mix(in srgb, var(--bg-primary) 70%, transparent),
+			color-mix(in srgb, var(--bg-secondary) 90%, transparent)
+		);
+	overflow: hidden;
+}
+
+.settingsBackdrop {
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(
+		140deg,
+		color-mix(in srgb, var(--bg-secondary) 92%, transparent),
+		transparent 55%
+	);
+	opacity: 0.7;
+	pointer-events: none;
+}
+
+.settingsHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	height: var(--header-height);
+	padding: 0 var(--space-4);
+	border-bottom: 1px solid var(--border-light);
+	background: color-mix(in srgb, var(--bg-primary) 70%, transparent);
+	backdrop-filter: blur(16px);
+	z-index: 2;
+	-webkit-app-region: drag;
+}
+
+.settingsHeaderLeft {
+	display: flex;
+	align-items: center;
+	gap: var(--space-3);
+	min-width: 0;
+}
+
+.settingsHeaderTitle {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-2);
+	font-weight: var(--font-semibold);
+	color: var(--text-primary);
+}
+
+.settingsHeaderSubtitle {
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
+	white-space: nowrap;
+}
+
+.settingsHeaderRight {
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+	-webkit-app-region: no-drag;
+}
+
+.settingsSearch {
+	-webkit-app-region: no-drag;
+}
+
+.settingsSearchInput {
+	height: 30px;
+	min-width: 180px;
+	border-radius: var(--radius-full);
+	padding-left: var(--space-4);
+	background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
+	border: 1px solid color-mix(in srgb, var(--border-light) 70%, transparent);
+}
+
+.settingsBody {
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	gap: var(--space-4);
+	padding: var(--space-4);
+	position: relative;
+	z-index: 1;
+}
+
+.settingsNav {
+	width: 240px;
+	min-width: 240px;
+	padding: var(--space-2);
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-2xl);
+	background: color-mix(in srgb, var(--bg-primary) 75%, transparent);
+	backdrop-filter: blur(18px);
+	box-shadow: var(--shadow-sm);
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.settingsNavButton {
+	position: relative;
+	z-index: 0;
+	display: grid;
+	grid-template-columns: 28px 1fr;
+	align-items: center;
+	gap: var(--space-2);
+	padding: var(--space-2) var(--space-3);
+	min-height: 54px;
+	border-radius: var(--radius-xl);
+	background: transparent;
+	border: 1px solid transparent;
+	color: var(--text-secondary);
+	overflow: hidden;
+}
+
+.settingsNavButton.active {
+	color: var(--text-primary);
+}
+
+.settingsNavButton:hover {
+	background: color-mix(in srgb, var(--bg-secondary) 60%, transparent);
+	transform: none;
+}
+
+.settingsNavIcon {
+	height: 32px;
+	width: 32px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: var(--radius-lg);
+	background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
+	border: 1px solid var(--border-light);
+}
+
+.settingsNavText {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	text-align: left;
+}
+
+.settingsNavHint {
+	font-size: 10px;
+	color: var(--text-tertiary);
+}
+
+.settingsNavActive {
+	position: absolute;
+	inset: 4px;
+	border-radius: var(--radius-xl);
+	border: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 78%, transparent);
+	z-index: -1;
+}
+
+.settingsMain {
+	flex: 1;
+	min-width: 0;
+	min-height: 0;
+	overflow: auto;
+	padding: var(--space-1);
+}
+
+.settingsPaneMotion {
+	min-height: 100%;
+}
+
+.settingsPane h2 {
+	margin: 0 0 var(--space-3);
+	font-size: var(--text-lg);
+	color: var(--text-primary);
+}
+
+.settingsHero {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: var(--space-4);
+	margin-bottom: var(--space-4);
+}
+
+.settingsHint {
+	font-size: var(--text-sm);
+	color: var(--text-secondary);
+	max-width: 420px;
+}
+
+.settingsBadge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 6px 12px;
+	border-radius: var(--radius-full);
+	background: color-mix(in srgb, var(--bg-secondary) 75%, transparent);
+	border: 1px solid var(--border-light);
+	font-size: 10px;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--text-tertiary);
+}
+
+.settingsBadgeWarn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 4px 10px;
+	border-radius: var(--radius-full);
+	background: color-mix(in srgb, #6e1f1f 70%, transparent);
+	border: 1px solid color-mix(in srgb, #b43a3a 55%, transparent);
+	font-size: 10px;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: #f5d6d6;
+	white-space: nowrap;
+}
+
+.settingsLabelRow {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.settingsGrid {
+	display: grid;
+	grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+	gap: var(--space-4);
+}
+
+.settingsCard {
+	background: color-mix(in srgb, var(--bg-primary) 85%, transparent);
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-2xl);
+	padding: var(--space-4);
+	box-shadow: var(--shadow-sm);
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-3);
+}
+
+.settingsSpan {
+	grid-column: 1 / -1;
+}
+
+.settingsCardHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--space-2);
+}
+
+.settingsCardTitle {
+	font-size: var(--text-sm);
+	font-weight: var(--font-semibold);
+	color: var(--text-primary);
+}
+
+.settingsCardHint {
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
+}

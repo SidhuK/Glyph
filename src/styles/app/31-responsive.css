@@ -1,0 +1,19 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   ERROR STATES
+   ───────────────────────────────────────────────────────────────────────────── */
+.appError {
+	position: fixed;
+	bottom: var(--space-6);
+	left: 50%;
+	transform: translateX(-50%);
+	padding: var(--space-3) var(--space-5);
+	font-size: var(--text-sm);
+	color: var(--text-error);
+	background: var(--glass-bg);
+	backdrop-filter: blur(var(--glass-blur));
+	-webkit-backdrop-filter: blur(var(--glass-blur));
+	border: 1px solid var(--feedback-error-bg);
+	border-radius: var(--radius-full);
+	box-shadow: var(--shadow-xl);
+	z-index: 1000;
+}

@@ -1,0 +1,41 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   APP SHELL - Main Layout with floating panels
+   ───────────────────────────────────────────────────────────────────────────── */
+.appShell {
+	--app-frame: var(--space-1);
+	--app-radius: calc(var(--radius-xl) + 3px);
+	isolation: isolate;
+	display: flex;
+	position: relative;
+	height: 100%;
+	width: 100%;
+	background: transparent;
+	border: 1px solid var(--chrome-border);
+	border-radius: var(--app-radius);
+	overflow: hidden;
+}
+
+/* Native macOS vibrancy is applied via window-vibrancy crate in Rust.
+   This pseudo-element is kept as a fallback for non-macOS platforms. */
+.appShell::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: var(--chrome-bg);
+	z-index: 0;
+	pointer-events: none;
+}
+
+.appShell > * {
+	position: relative;
+	z-index: 1;
+}
+
+.windowDragStrip {
+	position: absolute;
+	top: 0;
+	left: 78px; /* Space for macOS traffic lights */
+	right: 0;
+	height: 14px;
+	z-index: 1;
+}
