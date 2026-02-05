@@ -38,6 +38,7 @@ interface SidebarProps {
 	onRefreshTags: () => void;
 	onOpenVault: () => void;
 	onCreateVault: () => void;
+	onOpenCommandPalette: () => void;
 }
 
 export function Sidebar({
@@ -71,6 +72,7 @@ export function Sidebar({
 	onRefreshTags,
 	onOpenVault,
 	onCreateVault,
+	onOpenCommandPalette,
 }: SidebarProps) {
 	return (
 		<aside className={`sidebar ${sidebarCollapsed ? "sidebarCollapsed" : ""}`}>
@@ -81,6 +83,7 @@ export function Sidebar({
 					setShowSearch={setShowSearch}
 					onOpenVault={onOpenVault}
 					onCreateVault={onCreateVault}
+					onOpenCommandPalette={onOpenCommandPalette}
 				/>
 			)}
 

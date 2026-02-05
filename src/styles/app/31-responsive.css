@@ -17,3 +17,22 @@
 	box-shadow: var(--shadow-xl);
 	z-index: 1000;
 }
+
+@media (max-width: 900px) {
+	.welcomeScreen {
+		padding: var(--space-4);
+	}
+
+	.welcomeSurface {
+		width: 100%;
+	}
+
+	.welcomeActions {
+		display: grid;
+		grid-template-columns: 1fr;
+	}
+
+	.welcomeRecentPath {
+		word-break: break-all;
+	}
+}

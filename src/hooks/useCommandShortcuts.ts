@@ -1,6 +1,6 @@
 import { useEffect } from "react";
-import { isShortcutMatch, type Shortcut } from "../lib/shortcuts";
 import type { Command } from "../components/app/CommandPalette";
+import { type Shortcut, isShortcutMatch } from "../lib/shortcuts";
 
 interface UseCommandShortcutsProps {
 	commands: Command[];
@@ -43,5 +43,11 @@ export function useCommandShortcuts({
 
 		window.addEventListener("keydown", handler);
 		return () => window.removeEventListener("keydown", handler);
-	}, [commands, onClosePalette, onOpenPalette, openPaletteShortcuts, paletteOpen]);
+	}, [
+		commands,
+		onClosePalette,
+		onOpenPalette,
+		openPaletteShortcuts,
+		paletteOpen,
+	]);
 }

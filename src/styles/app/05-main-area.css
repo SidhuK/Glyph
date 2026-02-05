@@ -74,6 +74,7 @@
 	gap: var(--space-5);
 	padding: var(--space-6);
 	overflow: auto;
+	position: relative;
 	background:
 		radial-gradient(
 			1200px 460px at 90% -20%,
@@ -88,10 +89,56 @@
 		var(--bg-primary);
 }
 
+.welcomeAmbient {
+	pointer-events: none;
+	position: absolute;
+	inset: 0;
+	overflow: hidden;
+}
+
+.welcomeOrb {
+	position: absolute;
+	border-radius: 999px;
+	filter: blur(2px);
+	opacity: 0.75;
+}
+
+.welcomeOrbA {
+	width: 420px;
+	height: 420px;
+	right: -120px;
+	top: -90px;
+	background: color-mix(in srgb, var(--accent-color) 24%, transparent);
+}
+
+.welcomeOrbB {
+	width: 340px;
+	height: 340px;
+	left: -90px;
+	bottom: -120px;
+	background: color-mix(in srgb, var(--bg-tertiary) 78%, transparent);
+}
+
+.welcomeSurface {
+	position: relative;
+	z-index: 1;
+	width: min(820px, 100%);
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-5);
+}
+
 .welcomeHero {
 	display: flex;
 	flex-direction: column;
 	gap: var(--space-2);
+}
+
+.welcomeEyebrow {
+	font-size: 11px;
+	letter-spacing: 0.13em;
+	text-transform: uppercase;
+	color: var(--text-tertiary);
 }
 
 .welcomeTitle {
@@ -116,6 +163,8 @@
 	border: 1px solid var(--border-light);
 	background: color-mix(in srgb, var(--bg-secondary) 82%, transparent);
 	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
+	backdrop-filter: blur(6px);
+	-webkit-backdrop-filter: blur(6px);
 }
 
 .welcomeActions {
@@ -128,8 +177,10 @@
 	display: flex;
 	flex-direction: column;
 	gap: var(--space-2);
-	padding-top: var(--space-3);
-	border-top: 1px solid var(--border-light);
+	padding: var(--space-4);
+	border-radius: var(--radius-xl);
+	border: 1px solid var(--border-light);
+	background: color-mix(in srgb, var(--bg-secondary) 74%, transparent);
 }
 
 .welcomeSectionTitle {
@@ -190,10 +241,6 @@
 .welcomeLastVault {
 	font-size: var(--text-xs);
 	color: var(--text-tertiary);
-}
-
-.welcomeActionsMobile {
-	display: none;
 }
 
 .folderBreadcrumb {

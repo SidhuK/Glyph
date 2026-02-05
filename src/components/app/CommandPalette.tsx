@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { formatShortcut, type Shortcut } from "../../lib/shortcuts";
+import { type Shortcut, formatShortcut } from "../../lib/shortcuts";
 
 export interface Command {
 	id: string;
@@ -15,7 +15,11 @@ interface CommandPaletteProps {
 	onClose: () => void;
 }
 
-export function CommandPalette({ open, commands, onClose }: CommandPaletteProps) {
+export function CommandPalette({
+	open,
+	commands,
+	onClose,
+}: CommandPaletteProps) {
 	const [query, setQuery] = useState("");
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	const inputRef = useRef<HTMLInputElement | null>(null);
@@ -42,7 +46,9 @@ export function CommandPalette({ open, commands, onClose }: CommandPaletteProps)
 	}, [open]);
 
 	useEffect(() => {
-		setSelectedIndex((curr) => Math.min(curr, Math.max(filtered.length - 1, 0)));
+		setSelectedIndex((curr) =>
+			Math.min(curr, Math.max(filtered.length - 1, 0)),
+		);
 	}, [filtered.length]);
 
 	if (!open) return null;
@@ -55,7 +61,13 @@ export function CommandPalette({ open, commands, onClose }: CommandPaletteProps)
 	};
 
 	return (
-		<div className="commandPaletteBackdrop" onClick={onClose}>
+		<div
+			className="commandPaletteBackdrop"
+			onClick={onClose}
+			onKeyDown={(e) => {
+				if (e.key === "Escape") onClose();
+			}}
+		>
 			<div
 				className="commandPalette"
 				onClick={(e) => e.stopPropagation()}

@@ -1,17 +1,20 @@
 import { AnimatePresence } from "motion/react";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAISidebar } from "../../hooks/useAISidebar";
+import { useCommandShortcuts } from "../../hooks/useCommandShortcuts";
 import { useFileTree } from "../../hooks/useFileTree";
 import { useFolderShelf } from "../../hooks/useFolderShelf";
 import { useMenuListeners } from "../../hooks/useMenuListeners";
 import { useSearch } from "../../hooks/useSearch";
 import { useViewLoader } from "../../hooks/useViewLoader";
+import type { Shortcut } from "../../lib/shortcuts";
 import type { FsEntry } from "../../lib/tauri";
 import { onWindowDragMouseDown } from "../../utils/window";
 import type { CanvasExternalCommand } from "../CanvasPane";
 import { PanelLeftClose, PanelLeftOpen } from "../Icons";
 import { MotionIconButton } from "../MotionUI";
 import { AISidebar } from "../ai/AISidebar";
+import { type Command, CommandPalette } from "./CommandPalette";
 import { MainContent } from "./MainContent";
 import { Sidebar } from "./Sidebar";
 
@@ -94,6 +97,7 @@ export function AppShell({
 	const [sidebarViewMode, setSidebarViewMode] = useState<"files" | "tags">(
 		"files",
 	);
+	const [paletteOpen, setPaletteOpen] = useState(false);
 
 	const {
 		aiSidebarOpen,
@@ -166,6 +170,84 @@ export function AppShell({
 
 	useMenuListeners({ onOpenVault, onCreateVault, closeVault });
 
+	const openPaletteShortcuts = useMemo<Shortcut[]>(
+		() => [
+			{ meta: true, key: "k" },
+			{ meta: true, shift: true, key: "p" },
+		],
+		[],
+	);
+	const commands = useMemo<Command[]>(
+		() => [
+			{
+				id: "open-vault",
+				label: "Open vault",
+				shortcut: { meta: true, key: "o" },
+				action: onOpenVault,
+			},
+			{
+				id: "search",
+				label: "Search",
+				shortcut: { meta: true, key: "f" },
+				enabled: Boolean(vaultPath),
+				action: () => {
+					setShowSearch(true);
+					window.requestAnimationFrame(() => {
+						const input =
+							document.querySelector<HTMLInputElement>(".searchInput");
+						input?.focus();
+						input?.select();
+					});
+				},
+			},
+			{
+				id: "toggle-ai",
+				label: "Toggle AI",
+				shortcut: { meta: true, shift: true, key: "a" },
+				enabled: Boolean(vaultPath),
+				action: () => setAiSidebarOpen(!aiSidebarOpen),
+			},
+			{
+				id: "new-note",
+				label: "New note",
+				shortcut: { meta: true, key: "n" },
+				enabled: Boolean(vaultPath),
+				action: () => void fileTree.onNewFile(),
+			},
+			{
+				id: "new-canvas",
+				label: "New canvas",
+				shortcut: { meta: true, shift: true, key: "n" },
+				enabled: Boolean(vaultPath),
+				action: async () => {
+					await loadAndBuildFolderView("");
+					setCanvasCommand({
+						id: crypto.randomUUID(),
+						kind: "add_text_node",
+						text: "",
+					});
+				},
+			},
+		],
+		[
+			aiSidebarOpen,
+			fileTree,
+			loadAndBuildFolderView,
+			onOpenVault,
+			setAiSidebarOpen,
+			setShowSearch,
+			vaultPath,
+		],
+	);
+
+	useCommandShortcuts({
+		commands,
+		paletteOpen,
+		onOpenPalette: () => setPaletteOpen(true),
+		onClosePalette: () => setPaletteOpen(false),
+		openPaletteShortcuts,
+	});
+
 	return (
 		<div
 			className={`appShell ${aiSidebarOpen ? "aiSidebarOpen" : ""} ${
@@ -224,6 +306,7 @@ export function AppShell({
 				onRefreshTags={() => void refreshTags()}
 				onOpenVault={onOpenVault}
 				onCreateVault={onCreateVault}
+				onOpenCommandPalette={() => setPaletteOpen(true)}
 			/>
 
 			<MainContent
@@ -281,6 +364,11 @@ export function AppShell({
 			<AnimatePresence>
 				{error && <div className="appError">{error}</div>}
 			</AnimatePresence>
+			<CommandPalette
+				open={paletteOpen}
+				commands={commands}
+				onClose={() => setPaletteOpen(false)}
+			/>
 		</div>
 	);
 }

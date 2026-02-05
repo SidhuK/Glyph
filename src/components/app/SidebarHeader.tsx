@@ -9,6 +9,7 @@ interface SidebarHeaderProps {
 	setShowSearch: (show: boolean) => void;
 	onOpenVault: () => void;
 	onCreateVault: () => void;
+	onOpenCommandPalette: () => void;
 }
 
 export function SidebarHeader({
@@ -17,6 +18,7 @@ export function SidebarHeader({
 	setShowSearch,
 	onOpenVault,
 	onCreateVault,
+	onOpenCommandPalette,
 }: SidebarHeaderProps) {
 	return (
 		<>
@@ -66,6 +68,14 @@ export function SidebarHeader({
 						title="Settings"
 					>
 						<Settings size={14} />
+					</MotionIconButton>
+					<MotionIconButton
+						type="button"
+						size="sm"
+						onClick={onOpenCommandPalette}
+						title="Command palette"
+					>
+						<span className="commandPaletteTrigger">⌘K</span>
 					</MotionIconButton>
 				</div>
 			</div>

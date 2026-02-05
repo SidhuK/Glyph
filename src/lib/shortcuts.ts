@@ -6,7 +6,10 @@ export interface Shortcut {
 	ctrl?: boolean;
 }
 
-export function isShortcutMatch(event: KeyboardEvent, shortcut: Shortcut): boolean {
+export function isShortcutMatch(
+	event: KeyboardEvent,
+	shortcut: Shortcut,
+): boolean {
 	if (event.metaKey !== Boolean(shortcut.meta)) return false;
 	if (event.shiftKey !== Boolean(shortcut.shift)) return false;
 	if (event.altKey !== Boolean(shortcut.alt)) return false;
@@ -20,7 +23,9 @@ export function formatShortcut(shortcut: Shortcut): string {
 	if (shortcut.shift) parts.push("⇧");
 	if (shortcut.alt) parts.push("⌥");
 	if (shortcut.ctrl) parts.push("⌃");
-	parts.push(shortcut.key.length === 1 ? shortcut.key.toUpperCase() : shortcut.key);
+	parts.push(
+		shortcut.key.length === 1 ? shortcut.key.toUpperCase() : shortcut.key,
+	);
 	return parts.join("");
 }
 
