@@ -7,7 +7,6 @@ import { useMenuListeners } from "../../hooks/useMenuListeners";
 import { useSearch } from "../../hooks/useSearch";
 import { useViewLoader } from "../../hooks/useViewLoader";
 import type { FsEntry } from "../../lib/tauri";
-import { invoke } from "../../lib/tauri";
 import { onWindowDragMouseDown } from "../../utils/window";
 import type { CanvasExternalCommand } from "../CanvasPane";
 import { PanelLeftClose, PanelLeftOpen } from "../Icons";
@@ -18,6 +17,7 @@ import { Sidebar } from "./Sidebar";
 
 interface AppShellProps {
 	vaultPath: string | null;
+	lastVaultPath: string | null;
 	vaultSchemaVersion: number | null;
 	recentVaults: string[];
 	isIndexing: boolean;
@@ -46,17 +46,19 @@ interface AppShellProps {
 	activeNoteId: string | null;
 	activeNoteTitle: string | null;
 	onOpenVault: () => void;
+	onOpenVaultAtPath: (path: string) => Promise<void>;
+	onContinueLastVault: () => Promise<void>;
 	onCreateVault: () => void;
 	closeVault: () => Promise<void>;
 	startIndexRebuild: () => Promise<void>;
 	tags: import("../../lib/tauri").TagCount[];
 	tagsError: string;
 	refreshTags: () => Promise<void>;
-	resetVaultUiState: () => void;
 }
 
 export function AppShell({
 	vaultPath,
+	lastVaultPath,
 	vaultSchemaVersion,
 	recentVaults,
 	isIndexing,
@@ -76,13 +78,14 @@ export function AppShell({
 	activeNoteId,
 	activeNoteTitle,
 	onOpenVault,
+	onOpenVaultAtPath,
+	onContinueLastVault,
 	onCreateVault,
 	closeVault,
 	startIndexRebuild,
 	tags,
 	tagsError,
 	refreshTags,
-	resetVaultUiState,
 }: AppShellProps) {
 	const [canvasCommand, setCanvasCommand] =
 		useState<CanvasExternalCommand | null>(null);
@@ -163,37 +166,6 @@ export function AppShell({
 
 	useMenuListeners({ onOpenVault, onCreateVault, closeVault });
 
-	const handleSelectRecentVault = useCallback(
-		(path: string) => {
-			void (async () => {
-				resetVaultUiState();
-				try {
-					await invoke("vault_open", { path });
-					const entries = await invoke("vault_list_dir", {});
-					setRootEntries(entries);
-					const onlyDir =
-						entries.filter((e) => e.kind === "dir").length === 1 &&
-						entries.filter((e) => e.kind === "file").length === 0
-							? (entries.find((e) => e.kind === "dir")?.rel_path ?? "")
-							: "";
-					await loadAndBuildFolderView(onlyDir);
-					void startIndexRebuild();
-					void refreshTags();
-				} catch (e) {
-					setError(e instanceof Error ? e.message : String(e));
-				}
-			})();
-		},
-		[
-			loadAndBuildFolderView,
-			refreshTags,
-			resetVaultUiState,
-			setError,
-			setRootEntries,
-			startIndexRebuild,
-		],
-	);
-
 	return (
 		<div
 			className={`appShell ${aiSidebarOpen ? "aiSidebarOpen" : ""} ${
@@ -257,6 +229,7 @@ export function AppShell({
 			<MainContent
 				vaultPath={vaultPath}
 				appName={appName}
+				lastVaultPath={lastVaultPath}
 				recentVaults={recentVaults}
 				activeViewDoc={activeViewDoc}
 				activeViewDocRef={activeViewDocRef}
@@ -275,8 +248,9 @@ export function AppShell({
 				loadAndBuildFolderView={loadAndBuildFolderView}
 				fileTree={fileTree}
 				onOpenVault={onOpenVault}
+				onOpenVaultAtPath={onOpenVaultAtPath}
+				onContinueLastVault={onContinueLastVault}
 				onCreateVault={onCreateVault}
-				handleSelectRecentVault={handleSelectRecentVault}
 			/>
 
 			{vaultPath && (

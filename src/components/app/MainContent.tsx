@@ -15,6 +15,7 @@ const CanvasPane = lazy(() => import("../CanvasPane"));
 interface MainContentProps {
 	vaultPath: string | null;
 	appName: string | null;
+	lastVaultPath: string | null;
 	recentVaults: string[];
 	activeViewDoc: ViewDoc | null;
 	activeViewDocRef: React.RefObject<ViewDoc | null>;
@@ -39,13 +40,15 @@ interface MainContentProps {
 		openNonMarkdownExternally: (relPath: string) => Promise<void>;
 	};
 	onOpenVault: () => void;
+	onOpenVaultAtPath: (path: string) => Promise<void>;
+	onContinueLastVault: () => Promise<void>;
 	onCreateVault: () => void;
-	handleSelectRecentVault: (path: string) => void;
 }
 
 export function MainContent({
 	vaultPath,
 	appName,
+	lastVaultPath,
 	recentVaults,
 	activeViewDoc,
 	activeViewDocRef,
@@ -64,8 +67,9 @@ export function MainContent({
 	loadAndBuildFolderView,
 	fileTree,
 	onOpenVault,
+	onOpenVaultAtPath,
+	onContinueLastVault,
 	onCreateVault,
-	handleSelectRecentVault,
 }: MainContentProps) {
 	const onCanvasSelectionChange = useCallback((_selected: CanvasNode[]) => {
 		// Selection tracking available for future AI features
@@ -98,10 +102,12 @@ export function MainContent({
 			<main className="mainArea mainAreaWelcome">
 				<WelcomeScreen
 					appName={appName}
+					lastVaultPath={lastVaultPath}
 					recentVaults={recentVaults}
 					onOpenVault={onOpenVault}
 					onCreateVault={onCreateVault}
-					onSelectRecentVault={handleSelectRecentVault}
+					onContinueLastVault={onContinueLastVault}
+					onSelectRecentVault={onOpenVaultAtPath}
 				/>
 			</main>
 		);

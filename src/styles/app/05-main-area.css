@@ -71,15 +71,27 @@
 	flex: 1;
 	display: flex;
 	flex-direction: column;
-	gap: var(--space-4);
+	gap: var(--space-5);
 	padding: var(--space-6);
 	overflow: auto;
+	background:
+		radial-gradient(
+			1200px 460px at 90% -20%,
+			color-mix(in srgb, var(--accent-color) 14%, transparent),
+			transparent 70%
+		),
+		radial-gradient(
+			900px 320px at -15% 110%,
+			color-mix(in srgb, var(--bg-tertiary) 85%, transparent),
+			transparent 70%
+		),
+		var(--bg-primary);
 }
 
 .welcomeHero {
 	display: flex;
 	flex-direction: column;
-	gap: var(--space-1);
+	gap: var(--space-2);
 }
 
 .welcomeTitle {
@@ -92,7 +104,18 @@
 .welcomeSubtitle {
 	font-size: var(--text-md);
 	color: var(--text-secondary);
-	max-width: 520px;
+	max-width: 560px;
+}
+
+.welcomeLaunchPanel {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-2);
+	padding: var(--space-4);
+	border-radius: var(--radius-xl);
+	border: 1px solid var(--border-light);
+	background: color-mix(in srgb, var(--bg-secondary) 82%, transparent);
+	box-shadow: 0 10px 30px rgba(0, 0, 0, 0.07);
 }
 
 .welcomeActions {
@@ -133,15 +156,20 @@
 	padding: var(--space-3);
 	border-radius: var(--radius-lg);
 	border: 1px solid var(--border-light);
-	background: var(--bg-secondary);
+	background: color-mix(in srgb, var(--bg-secondary) 90%, transparent);
 	color: var(--text-primary);
 	text-align: left;
+	transition:
+		background var(--transition-fast),
+		border-color var(--transition-fast),
+		transform var(--transition-fast);
 }
 
 .welcomeRecentItem:hover {
-	background: var(--bg-hover);
+	background: color-mix(in srgb, var(--bg-hover) 82%, var(--bg-secondary));
+	border-color: color-mix(in srgb, var(--accent-color) 35%, var(--border-light));
 	color: var(--text-primary);
-	transform: none;
+	transform: translateY(-1px);
 }
 
 .welcomeRecentName {
@@ -157,6 +185,15 @@
 .welcomeEmpty {
 	font-size: var(--text-sm);
 	color: var(--text-tertiary);
+}
+
+.welcomeLastVault {
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
+}
+
+.welcomeActionsMobile {
+	display: none;
 }
 
 .folderBreadcrumb {

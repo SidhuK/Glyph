@@ -8,6 +8,7 @@ export interface AppState {
 	error: string;
 	setError: (error: string) => void;
 	vaultPath: string | null;
+	lastVaultPath: string | null;
 	vaultSchemaVersion: number | null;
 	recentVaults: string[];
 	rootEntries: FsEntry[];
@@ -33,6 +34,8 @@ export interface AppState {
 	startIndexRebuild: () => Promise<void>;
 	resetVaultUiState: () => void;
 	onOpenVault: () => Promise<void>;
+	onOpenVaultAtPath: (path: string) => Promise<void>;
+	onContinueLastVault: () => Promise<void>;
 	onCreateVault: () => Promise<void>;
 	closeVault: () => Promise<void>;
 }
@@ -41,6 +44,7 @@ export function useAppBootstrap(): AppState {
 	const [info, setInfo] = useState<AppInfo | null>(null);
 	const [error, setError] = useState<string>("");
 	const [vaultPath, setVaultPath] = useState<string | null>(null);
+	const [lastVaultPath, setLastVaultPath] = useState<string | null>(null);
 	const [vaultSchemaVersion, setVaultSchemaVersion] = useState<number | null>(
 		null,
 	);
@@ -88,23 +92,7 @@ export function useAppBootstrap(): AppState {
 				const settings = await loadSettings();
 				if (cancelled) return;
 				setRecentVaults(settings.recentVaults);
-
-				if (settings.currentVaultPath) {
-					setVaultPath(settings.currentVaultPath);
-					try {
-						const opened = await invoke("vault_open", {
-							path: settings.currentVaultPath,
-						});
-						if (!cancelled) setVaultSchemaVersion(opened.schema_version);
-						const entries = await invoke("vault_list_dir", {});
-						if (!cancelled) setRootEntries(entries);
-					} catch {
-						if (!cancelled) {
-							setVaultSchemaVersion(null);
-							setVaultPath(null);
-						}
-					}
-				}
+				setLastVaultPath(settings.currentVaultPath);
 			} catch (err) {
 				const message = err instanceof Error ? err.message : String(err);
 				if (!cancelled) setError(message);
@@ -164,6 +152,7 @@ export function useAppBootstrap(): AppState {
 					];
 					return next.slice(0, 20);
 				});
+				setLastVaultPath(vaultInfo.root);
 				setVaultPath(vaultInfo.root);
 				setVaultSchemaVersion(vaultInfo.schema_version);
 				resetVaultUiState();
@@ -205,6 +194,18 @@ export function useAppBootstrap(): AppState {
 		if (path) await applyVaultSelection(path, "open");
 	}, [applyVaultSelection]);
 
+	const onOpenVaultAtPath = useCallback(
+		async (path: string) => {
+			await applyVaultSelection(path, "open");
+		},
+		[applyVaultSelection],
+	);
+
+	const onContinueLastVault = useCallback(async () => {
+		if (!lastVaultPath) return;
+		await onOpenVaultAtPath(lastVaultPath);
+	}, [lastVaultPath, onOpenVaultAtPath]);
+
 	const onCreateVault = useCallback(async () => {
 		const { open } = await import("@tauri-apps/plugin-dialog");
 		const selection = await open({
@@ -229,6 +230,7 @@ export function useAppBootstrap(): AppState {
 		error,
 		setError,
 		vaultPath,
+		lastVaultPath,
 		vaultSchemaVersion,
 		recentVaults,
 		rootEntries,
@@ -250,6 +252,8 @@ export function useAppBootstrap(): AppState {
 		startIndexRebuild,
 		resetVaultUiState,
 		onOpenVault,
+		onOpenVaultAtPath,
+		onContinueLastVault,
 		onCreateVault,
 		closeVault,
 	};

@@ -8,6 +8,7 @@ function App() {
 	return (
 		<AppShell
 			vaultPath={state.vaultPath}
+			lastVaultPath={state.lastVaultPath}
 			vaultSchemaVersion={state.vaultSchemaVersion}
 			recentVaults={state.recentVaults}
 			isIndexing={state.isIndexing}
@@ -27,13 +28,14 @@ function App() {
 			activeNoteId={state.activeNoteId}
 			activeNoteTitle={state.activeNoteTitle}
 			onOpenVault={state.onOpenVault}
+			onOpenVaultAtPath={state.onOpenVaultAtPath}
+			onContinueLastVault={state.onContinueLastVault}
 			onCreateVault={state.onCreateVault}
 			closeVault={state.closeVault}
 			startIndexRebuild={state.startIndexRebuild}
 			tags={state.tags}
 			tagsError={state.tagsError}
 			refreshTags={state.refreshTags}
-			resetVaultUiState={state.resetVaultUiState}
 		/>
 	);
 }
