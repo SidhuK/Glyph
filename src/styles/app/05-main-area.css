@@ -75,8 +75,7 @@
 	padding: var(--space-6);
 	overflow: auto;
 	position: relative;
-	background:
-		radial-gradient(
+	background: radial-gradient(
 			1200px 460px at 90% -20%,
 			color-mix(in srgb, var(--accent-color) 14%, transparent),
 			transparent 70%
@@ -85,8 +84,7 @@
 			900px 320px at -15% 110%,
 			color-mix(in srgb, var(--bg-tertiary) 85%, transparent),
 			transparent 70%
-		),
-		var(--bg-primary);
+		), var(--bg-primary);
 }
 
 .welcomeAmbient {
@@ -210,10 +208,8 @@
 	background: color-mix(in srgb, var(--bg-secondary) 90%, transparent);
 	color: var(--text-primary);
 	text-align: left;
-	transition:
-		background var(--transition-fast),
-		border-color var(--transition-fast),
-		transform var(--transition-fast);
+	transition: background var(--transition-fast), border-color
+		var(--transition-fast), transform var(--transition-fast);
 }
 
 .welcomeRecentItem:hover {

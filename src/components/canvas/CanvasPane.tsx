@@ -71,9 +71,10 @@ function CanvasPane({
 	const latestDocRef = useRef(doc);
 	const lastSavedSnapshotRef = useRef("");
 	const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-	const pendingSaveRef = useRef<{ nodes: CanvasNode[]; edges: CanvasEdge[] } | null>(
-		null,
-	);
+	const pendingSaveRef = useRef<{
+		nodes: CanvasNode[];
+		edges: CanvasEdge[];
+	} | null>(null);
 	const initializedRef = useRef(false);
 	const folderPreviewHoldsRef = useRef<Map<string, number>>(new Map());
 

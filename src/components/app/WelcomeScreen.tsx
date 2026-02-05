@@ -23,7 +23,9 @@ export function WelcomeScreen({
 	const reduceMotion = useReducedMotion();
 	const smoothEase = [0.22, 1, 0.36, 1] as const;
 	const lastVaultName = lastVaultPath?.split("/").pop() ?? null;
-	const launchRecents = recentVaults.filter((p) => p !== lastVaultPath).slice(0, 6);
+	const launchRecents = recentVaults
+		.filter((p) => p !== lastVaultPath)
+		.slice(0, 6);
 	const containerVariants = {
 		hidden: { opacity: 0 },
 		show: {
@@ -35,7 +37,11 @@ export function WelcomeScreen({
 	};
 	const itemVariants = {
 		hidden: { opacity: 0, y: reduceMotion ? 0 : 8 },
-		show: { opacity: 1, y: 0, transition: { duration: 0.28, ease: smoothEase } },
+		show: {
+			opacity: 1,
+			y: 0,
+			transition: { duration: 0.28, ease: smoothEase },
+		},
 	};
 
 	return (
@@ -53,7 +59,11 @@ export function WelcomeScreen({
 				<div className="welcomeAmbient" aria-hidden="true">
 					<motion.div
 						className="welcomeOrb welcomeOrbA"
-						animate={reduceMotion ? { opacity: 0.7 } : { x: [0, 14, 0], y: [0, -10, 0] }}
+						animate={
+							reduceMotion
+								? { opacity: 0.7 }
+								: { x: [0, 14, 0], y: [0, -10, 0] }
+						}
 						transition={{
 							duration: 12,
 							repeat: Number.POSITIVE_INFINITY,
@@ -62,7 +72,11 @@ export function WelcomeScreen({
 					/>
 					<motion.div
 						className="welcomeOrb welcomeOrbB"
-						animate={reduceMotion ? { opacity: 0.7 } : { x: [0, -16, 0], y: [0, 12, 0] }}
+						animate={
+							reduceMotion
+								? { opacity: 0.7 }
+								: { x: [0, -16, 0], y: [0, 12, 0] }
+						}
 						transition={{
 							duration: 14,
 							repeat: Number.POSITIVE_INFINITY,
@@ -92,7 +106,9 @@ export function WelcomeScreen({
 								onClick={() => void onContinueLastVault()}
 								disabled={!lastVaultPath}
 							>
-								{lastVaultName ? `Continue ${lastVaultName}` : "Continue last vault"}
+								{lastVaultName
+									? `Continue ${lastVaultName}`
+									: "Continue last vault"}
 							</button>
 							<button type="button" className="ghost" onClick={onOpenVault}>
 								Open another vault
@@ -104,7 +120,9 @@ export function WelcomeScreen({
 						{lastVaultPath ? (
 							<div className="welcomeLastVault mono">{lastVaultPath}</div>
 						) : (
-							<div className="welcomeEmpty">No previous vault found on this device.</div>
+							<div className="welcomeEmpty">
+								No previous vault found on this device.
+							</div>
 						)}
 					</motion.div>
 					<motion.div className="welcomeRecents" variants={itemVariants}>
@@ -118,7 +136,9 @@ export function WelcomeScreen({
 										className="welcomeRecentItem"
 										onClick={() => void onSelectRecentVault(p)}
 									>
-										<span className="welcomeRecentName">{p.split("/").pop() ?? p}</span>
+										<span className="welcomeRecentName">
+											{p.split("/").pop() ?? p}
+										</span>
 										<span className="welcomeRecentPath mono">{p}</span>
 									</button>
 								))}
