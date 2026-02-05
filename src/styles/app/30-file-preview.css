@@ -70,35 +70,57 @@
 }
 
 /* Solid canvas background (no dots/grid). */
-.canvasBody .react-flow {
+.canvasBody .react-flow,
+.canvasBody .xy-flow,
+.canvasFlowWrapper .react-flow,
+.canvasFlowWrapper .xy-flow {
 	background: var(--bg-canvas);
+	--xy-minimap-background-color: var(--bg-secondary) !important;
+	--xy-minimap-mask-background-color: color-mix(
+		in srgb,
+		var(--bg-canvas) 68%,
+		transparent
+	) !important;
+	--xy-minimap-mask-stroke-color: var(--border-default) !important;
+	--xy-minimap-node-background-color: var(--bg-hover) !important;
+	--xy-minimap-node-stroke-color: var(--border-default) !important;
+	--xy-controls-button-background-color: var(--bg-secondary) !important;
+	--xy-controls-button-background-color-hover: var(--bg-hover) !important;
+	--xy-controls-button-color: var(--text-secondary) !important;
+	--xy-controls-button-color-hover: var(--text-primary) !important;
+	--xy-controls-button-border-color: var(--border-default) !important;
+	--xy-controls-box-shadow: var(--shadow-lg) !important;
 }
 
 /* ReactFlow controls */
-.react-flow__controls {
+.canvasFlowWrapper .react-flow__controls,
+.canvasFlowWrapper .xy-flow__controls {
 	box-shadow: var(--shadow-lg);
 	border-radius: var(--radius-xl);
 	border: 1px solid var(--border-default);
 	overflow: hidden;
-	background: var(--bg-secondary);
+	background: var(--bg-secondary) !important;
 }
 
-.react-flow__controls-button {
+.canvasFlowWrapper .react-flow__controls-button,
+.canvasFlowWrapper .xy-flow__controls-button {
 	background: transparent;
 	border: none;
 	border-bottom: 1px solid var(--border-default);
 	width: 32px;
 	height: 32px;
 	transition: all var(--transition-fast);
-	color: var(--text-secondary);
+	color: var(--text-secondary) !important;
 }
 
-.react-flow__controls-button:hover {
-	background: var(--bg-hover);
-	color: var(--text-primary);
+.canvasFlowWrapper .react-flow__controls-button:hover,
+.canvasFlowWrapper .xy-flow__controls-button:hover {
+	background: var(--bg-hover) !important;
+	color: var(--text-primary) !important;
 }
 
-.react-flow__controls-button svg {
+.canvasFlowWrapper .react-flow__controls-button svg,
+.canvasFlowWrapper .xy-flow__controls-button svg {
 	fill: currentColor;
 	stroke: currentColor;
 	max-width: 14px;
@@ -106,7 +128,8 @@
 }
 
 /* ReactFlow minimap */
-.react-flow__minimap {
+.canvasFlowWrapper .react-flow__minimap,
+.canvasFlowWrapper .xy-flow__minimap {
 	background: var(--bg-secondary);
 	border-radius: var(--radius-xl);
 	border: 1px solid var(--border-default);
