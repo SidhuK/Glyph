@@ -33,6 +33,8 @@ interface SidebarProps {
 	onSelectDir: (dirPath: string) => void;
 	onOpenFile: (relPath: string) => void;
 	onNewFile: () => void;
+	onNewFileInDir: (dirPath: string) => void;
+	onNewFolderInDir: (dirPath: string) => void;
 	tags: TagCount[];
 	tagsError: string;
 	onSelectTag: (tag: string) => void;
@@ -67,6 +69,8 @@ export function Sidebar({
 	onSelectDir,
 	onOpenFile,
 	onNewFile,
+	onNewFileInDir,
+	onNewFolderInDir,
 	tags,
 	tagsError,
 	onSelectTag,
@@ -121,6 +125,8 @@ export function Sidebar({
 							onSelectDir={onSelectDir}
 							onOpenFile={onOpenFile}
 							onNewFile={onNewFile}
+							onNewFileInDir={onNewFileInDir}
+							onNewFolderInDir={onNewFolderInDir}
 							tags={tags}
 							tagsError={tagsError}
 							onSelectTag={onSelectTag}

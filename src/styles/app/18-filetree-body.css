@@ -47,6 +47,7 @@
 .fileTreeItem {
 	margin: 0;
 	transition: background var(--transition-fast);
+	position: relative;
 }
 
 .fileTreeItem:hover > .fileTreeRow {
@@ -75,13 +76,51 @@
 	align-items: center;
 	gap: var(--space-1);
 	min-height: 28px;
-	padding: 2px var(--space-2);
+	padding: 2px 56px 2px var(--space-2);
 	text-align: left;
 	border-radius: var(--radius-md);
 	margin: 0;
 	border-left: none;
 	transition: all var(--transition-fast);
 	position: relative;
+}
+
+.fileTreeRowActions {
+	position: absolute;
+	top: 14px;
+	right: 8px;
+	transform: translateY(-50%);
+	display: inline-flex;
+	gap: 4px;
+	opacity: 0;
+	pointer-events: none;
+	z-index: 2;
+	transition: opacity var(--transition-fast);
+}
+
+.fileTreeItem:hover > .fileTreeRowActions,
+.fileTreeItem:focus-within > .fileTreeRowActions {
+	opacity: 1;
+	pointer-events: auto;
+}
+
+.fileTreeActionBtn {
+	width: 18px;
+	height: 18px;
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-sm);
+	background: var(--bg-panel);
+	color: var(--text-tertiary);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+}
+
+.fileTreeActionBtn:hover {
+	color: var(--text-primary);
+	border-color: var(--border);
+	background: var(--bg-hover);
 }
 
 /* horizontal connectors removed; keep only vertical hierarchy lines */

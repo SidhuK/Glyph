@@ -1,8 +1,8 @@
 import { AnimatePresence, motion } from "motion/react";
-import type { CSSProperties, ReactNode } from "react";
+import type { CSSProperties, MouseEvent, ReactNode } from "react";
 import { memo } from "react";
 import type { DirChildSummary, FsEntry } from "../../lib/tauri";
-import { FolderClosed, FolderOpen } from "../Icons";
+import { FolderClosed, FolderOpen, FolderPlus, Plus } from "../Icons";
 import { basename, getFileTypeInfo } from "./fileTypeUtils";
 
 const springTransition = {
@@ -43,6 +43,8 @@ interface FileTreeDirItemProps {
 	children?: ReactNode;
 	onToggleDir: (dirPath: string) => void;
 	onSelectDir: (dirPath: string) => void;
+	onNewFileInDir: (dirPath: string) => void;
+	onNewFolderInDir: (dirPath: string) => void;
 }
 
 export const FileTreeDirItem = memo(function FileTreeDirItem({
@@ -53,6 +55,8 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 	children,
 	onToggleDir,
 	onSelectDir,
+	onNewFileInDir,
+	onNewFolderInDir,
 }: FileTreeDirItemProps) {
 	const paddingLeft = 10 + depth * 10;
 	const rowStyle = {
@@ -105,6 +109,11 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 					</span>
 				) : null}
 			</motion.button>
+			<RowCreateActions
+				dirPath={entry.rel_path}
+				onNewFileInDir={onNewFileInDir}
+				onNewFolderInDir={onNewFolderInDir}
+			/>
 			<AnimatePresence>
 				{isExpanded && children && (
 					<motion.div
@@ -127,6 +136,9 @@ interface FileTreeFileItemProps {
 	depth: number;
 	isActive: boolean;
 	onOpenFile: (filePath: string) => void;
+	onNewFileInDir: (dirPath: string) => void;
+	onNewFolderInDir: (dirPath: string) => void;
+	parentDirPath: string;
 }
 
 export const FileTreeFileItem = memo(function FileTreeFileItem({
@@ -134,6 +146,9 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 	depth,
 	isActive,
 	onOpenFile,
+	onNewFileInDir,
+	onNewFolderInDir,
+	parentDirPath,
 }: FileTreeFileItemProps) {
 	const paddingLeft = 10 + depth * 10;
 	const rowStyle = {
@@ -181,6 +196,58 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 				</motion.span>
 				<span className="fileTreeName">{basename(entry.rel_path)}</span>
 			</motion.button>
+			<RowCreateActions
+				dirPath={parentDirPath}
+				onNewFileInDir={onNewFileInDir}
+				onNewFolderInDir={onNewFolderInDir}
+			/>
 		</motion.li>
 	);
 });
+
+interface RowCreateActionsProps {
+	dirPath: string;
+	onNewFileInDir: (dirPath: string) => void;
+	onNewFolderInDir: (dirPath: string) => void;
+}
+
+function RowCreateActions({
+	dirPath,
+	onNewFileInDir,
+	onNewFolderInDir,
+}: RowCreateActionsProps) {
+	const locationLabel = dirPath || "vault root";
+	const stopRowEvents = (event: MouseEvent<HTMLButtonElement>) => {
+		event.preventDefault();
+		event.stopPropagation();
+	};
+
+	return (
+		<div className="fileTreeRowActions">
+			<button
+				type="button"
+				className="fileTreeActionBtn"
+				title={`New Markdown file in ${locationLabel}`}
+				onMouseDown={stopRowEvents}
+				onClick={(event) => {
+					stopRowEvents(event);
+					onNewFileInDir(dirPath);
+				}}
+			>
+				<Plus size={12} />
+			</button>
+			<button
+				type="button"
+				className="fileTreeActionBtn"
+				title={`New folder in ${locationLabel}`}
+				onMouseDown={stopRowEvents}
+				onClick={(event) => {
+					stopRowEvents(event);
+					onNewFolderInDir(dirPath);
+				}}
+			>
+				<FolderPlus size={12} />
+			</button>
+		</div>
+	);
+}

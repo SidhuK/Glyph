@@ -34,6 +34,8 @@ interface SidebarContentProps {
 	onSelectDir: (dirPath: string) => void;
 	onOpenFile: (relPath: string) => void;
 	onNewFile: () => void;
+	onNewFileInDir: (dirPath: string) => void;
+	onNewFolderInDir: (dirPath: string) => void;
 	tags: TagCount[];
 	tagsError: string;
 	onSelectTag: (tag: string) => void;
@@ -63,6 +65,8 @@ export function SidebarContent({
 	onSelectDir,
 	onOpenFile,
 	onNewFile,
+	onNewFileInDir,
+	onNewFolderInDir,
 	tags,
 	tagsError,
 	onSelectTag,
@@ -151,6 +155,8 @@ export function SidebarContent({
 								onSelectDir={onSelectDir}
 								onOpenFile={onOpenFile}
 								onNewFile={onNewFile}
+								onNewFileInDir={onNewFileInDir}
+								onNewFolderInDir={onNewFolderInDir}
 								summariesByParentDir={summariesByParentDir}
 							/>
 						</motion.div>

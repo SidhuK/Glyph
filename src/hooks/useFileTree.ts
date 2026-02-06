@@ -13,6 +13,8 @@ export interface UseFileTreeResult {
 	openMarkdownFileInCanvas: (relPath: string) => Promise<void>;
 	openNonMarkdownExternally: (relPath: string) => Promise<void>;
 	onNewFile: () => Promise<void>;
+	onNewFileInDir: (dirPath: string) => Promise<void>;
+	onNewFolderInDir: (dirPath: string) => Promise<void>;
 }
 
 export interface UseFileTreeDeps {
@@ -56,7 +58,11 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 				"vault_list_dir",
 				dirPath ? { dir: dirPath } : {},
 			);
-			setChildrenByDir((prev) => ({ ...prev, [dirPath]: entries }));
+			if (dirPath) {
+				setChildrenByDir((prev) => ({ ...prev, [dirPath]: entries }));
+			} else {
+				setRootEntries(entries);
+			}
 			loadedDirsRef.current.add(dirPath);
 
 			if (dirSummariesInFlightRef.current.has(dirPath)) return;
@@ -79,7 +85,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 				}
 			})();
 		},
-		[setChildrenByDir, setDirSummariesByParent],
+		[setChildrenByDir, setDirSummariesByParent, setRootEntries],
 	);
 
 	const toggleDir = useCallback(
@@ -144,27 +150,107 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		[openMarkdownFileInCanvas, openNonMarkdownExternally, setActiveFilePath],
 	);
 
+	const refreshAfterCreate = useCallback(
+		async (targetDir: string) => {
+			await loadDir(targetDir, true);
+			const parent = parentDir(targetDir);
+			if (parent !== targetDir) {
+				await loadDir(parent, true);
+			}
+		},
+		[loadDir],
+	);
+
+	const onNewFileInDir = useCallback(
+		async (dirPath: string) => {
+			if (!vaultPath) return;
+			setError("");
+			try {
+				const defaultPath = dirPath
+					? await join(vaultPath, dirPath, "Untitled.md")
+					: await join(vaultPath, "Untitled.md");
+				const selection = await save({
+					title: "Create new Markdown file",
+					defaultPath,
+					filters: [{ name: "Markdown", extensions: ["md"] }],
+				});
+				const absPath = Array.isArray(selection)
+					? (selection[0] ?? null)
+					: selection;
+				if (!absPath) return;
+				const rel = await invoke("vault_relativize_path", {
+					absPath,
+				});
+				const markdownRel = isMarkdownPath(rel) ? rel : `${rel}.md`;
+				if (dirPath && !markdownRel.startsWith(`${dirPath}/`)) {
+					setError(`Choose a file path inside "${dirPath}"`);
+					return;
+				}
+				await invoke("vault_write_text", {
+					path: markdownRel,
+					text: "# Untitled\n",
+					base_mtime_ms: null,
+				});
+				if (dirPath) {
+					setExpandedDirs((prev) => {
+						if (prev.has(dirPath)) return prev;
+						const next = new Set(prev);
+						next.add(dirPath);
+						return next;
+					});
+				}
+				await refreshAfterCreate(dirPath);
+				await openMarkdownFileInCanvas(markdownRel);
+			} catch (e) {
+				setError(e instanceof Error ? e.message : String(e));
+			}
+		},
+		[
+			openMarkdownFileInCanvas,
+			refreshAfterCreate,
+			setError,
+			setExpandedDirs,
+			vaultPath,
+		],
+	);
+
 	const onNewFile = useCallback(async () => {
-		if (!vaultPath) return;
-		const selection = await save({
-			title: "Create new Markdown file",
-			defaultPath: `${vaultPath}/Untitled.md`,
-			filters: [{ name: "Markdown", extensions: ["md"] }],
-		});
-		const absPath = Array.isArray(selection)
-			? (selection[0] ?? null)
-			: selection;
-		if (!absPath) return;
-		const rel = await invoke("vault_relativize_path", { abs_path: absPath });
-		await invoke("vault_write_text", {
-			path: rel,
-			text: "# Untitled\n",
-			base_mtime_ms: null,
-		});
-		const entries = await invoke("vault_list_dir", {});
-		setRootEntries(entries);
-		await openMarkdownFileInCanvas(rel);
-	}, [openMarkdownFileInCanvas, setRootEntries, vaultPath]);
+		await onNewFileInDir("");
+	}, [onNewFileInDir]);
+
+	const onNewFolderInDir = useCallback(
+		async (dirPath: string) => {
+			if (!vaultPath) return;
+			try {
+				const raw = window.prompt("New folder name:", "New Folder");
+				if (raw === null) return;
+				const name = raw.trim();
+				if (!name) return;
+				if (
+					name === "." ||
+					name === ".." ||
+					name.includes("/") ||
+					name.includes("\\")
+				) {
+					setError("Folder name cannot contain path separators");
+					return;
+				}
+				setError("");
+				const path = dirPath ? `${dirPath}/${name}` : name;
+				await invoke("vault_create_dir", { path });
+				setExpandedDirs((prev) => {
+					const next = new Set(prev);
+					if (dirPath) next.add(dirPath);
+					next.add(path);
+					return next;
+				});
+				await refreshAfterCreate(dirPath);
+			} catch (e) {
+				setError(e instanceof Error ? e.message : String(e));
+			}
+		},
+		[refreshAfterCreate, setError, setExpandedDirs, vaultPath],
+	);
 
 	return {
 		loadDir,
@@ -173,5 +259,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		openMarkdownFileInCanvas,
 		openNonMarkdownExternally,
 		onNewFile,
+		onNewFileInDir,
+		onNewFolderInDir,
 	};
 }

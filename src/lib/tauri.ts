@@ -208,7 +208,8 @@ interface TauriCommands {
 		{ path: string; text: string; base_mtime_ms?: number | null },
 		TextFileWriteResult
 	>;
-	vault_relativize_path: CommandDef<{ abs_path: string }, string>;
+	vault_create_dir: CommandDef<{ path: string }, void>;
+	vault_relativize_path: CommandDef<{ absPath: string }, string>;
 	tether_read_text: CommandDef<{ path: string }, string>;
 	tether_write_text: CommandDef<{ path: string; text: string }, void>;
 	notes_list: CommandDef<void, NoteMeta[]>;

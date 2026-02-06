@@ -115,6 +115,22 @@ pub async fn vault_write_text(
 }
 
 #[tauri::command]
+pub async fn vault_create_dir(
+    state: State<'_, VaultState>,
+    path: String,
+) -> Result<(), String> {
+    let root = state.current_root()?;
+    tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
+        let rel = PathBuf::from(&path);
+        deny_hidden_rel_path(&rel)?;
+        let abs = paths::join_under(&root, &rel)?;
+        std::fs::create_dir_all(abs).map_err(|e| e.to_string())
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
 pub async fn vault_relativize_path(
     state: State<'_, VaultState>,
     abs_path: String,

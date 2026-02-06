@@ -2,6 +2,7 @@ import { motion } from "motion/react";
 import type { CSSProperties } from "react";
 import { memo } from "react";
 import type { DirChildSummary, FsEntry } from "../../lib/tauri";
+import { parentDir } from "../../utils/path";
 import { Plus } from "../Icons";
 import { MotionIconButton } from "../MotionUI";
 import { FileTreeDirItem, FileTreeFileItem } from "./FileTreeItem";
@@ -16,6 +17,8 @@ interface FileTreePaneProps {
 	onSelectDir: (dirPath: string) => void;
 	onOpenFile: (filePath: string) => void;
 	onNewFile: () => void;
+	onNewFileInDir: (dirPath: string) => void;
+	onNewFolderInDir: (dirPath: string) => void;
 }
 
 const springTransition = {
@@ -34,6 +37,8 @@ export const FileTreePane = memo(function FileTreePane({
 	onSelectDir,
 	onOpenFile,
 	onNewFile,
+	onNewFileInDir,
+	onNewFolderInDir,
 }: FileTreePaneProps) {
 	const renderEntries = (
 		entries: FsEntry[],
@@ -82,6 +87,8 @@ export const FileTreePane = memo(function FileTreePane({
 								summary={summary}
 								onToggleDir={onToggleDir}
 								onSelectDir={onSelectDir}
+								onNewFileInDir={onNewFileInDir}
+								onNewFolderInDir={onNewFolderInDir}
 							>
 								{children && renderEntries(children, depth, e.rel_path)}
 							</FileTreeDirItem>
@@ -95,6 +102,9 @@ export const FileTreePane = memo(function FileTreePane({
 							depth={depth}
 							isActive={e.rel_path === activeFilePath}
 							onOpenFile={onOpenFile}
+							onNewFileInDir={onNewFileInDir}
+							onNewFolderInDir={onNewFolderInDir}
+							parentDirPath={parentDir(e.rel_path)}
 						/>
 					);
 				})}
