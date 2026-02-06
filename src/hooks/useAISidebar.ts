@@ -26,6 +26,8 @@ export function useAISidebar(): UseAISidebarResult {
 	const aiSidebarResizeStartRef = useRef<{ x: number; width: number } | null>(
 		null,
 	);
+	const pendingWidthRef = useRef<number | null>(null);
+	const resizeRafRef = useRef<number | null>(null);
 
 	useEffect(() => {
 		aiSidebarWidthRef.current = aiSidebarWidth;
@@ -47,6 +49,15 @@ export function useAISidebar(): UseAISidebarResult {
 		};
 	}, []);
 
+	useEffect(() => {
+		return () => {
+			if (resizeRafRef.current != null) {
+				window.cancelAnimationFrame(resizeRafRef.current);
+				resizeRafRef.current = null;
+			}
+		};
+	}, []);
+
 	const handleResizeMouseDown = useCallback(
 		(e: React.MouseEvent) => {
 			if (!aiSidebarOpen) return;
@@ -56,7 +67,18 @@ export function useAISidebar(): UseAISidebarResult {
 			setIsResizing(true);
 			aiSidebarResizeStartRef.current = {
 				x: e.clientX,
-				width: aiSidebarWidth,
+				width: aiSidebarWidthRef.current,
+			};
+
+			const flushPendingWidth = () => {
+				if (resizeRafRef.current != null) {
+					window.cancelAnimationFrame(resizeRafRef.current);
+					resizeRafRef.current = null;
+				}
+				const pending = pendingWidthRef.current;
+				pendingWidthRef.current = null;
+				if (pending == null) return;
+				setAiSidebarWidth((prev) => (prev === pending ? prev : pending));
 			};
 
 			const onMove = (evt: globalThis.MouseEvent) => {
@@ -64,7 +86,16 @@ export function useAISidebar(): UseAISidebarResult {
 				if (!aiSidebarResizingRef.current || !start) return;
 				const delta = start.x - evt.clientX;
 				const next = Math.max(340, Math.min(520, start.width + delta));
-				setAiSidebarWidth(next);
+				aiSidebarWidthRef.current = next;
+				pendingWidthRef.current = next;
+				if (resizeRafRef.current != null) return;
+				resizeRafRef.current = window.requestAnimationFrame(() => {
+					resizeRafRef.current = null;
+					const pending = pendingWidthRef.current;
+					pendingWidthRef.current = null;
+					if (pending == null) return;
+					setAiSidebarWidth((prev) => (prev === pending ? prev : pending));
+				});
 			};
 
 			const onUp = () => {
@@ -72,6 +103,7 @@ export function useAISidebar(): UseAISidebarResult {
 				aiSidebarResizingRef.current = false;
 				setIsResizing(false);
 				aiSidebarResizeStartRef.current = null;
+				flushPendingWidth();
 				window.removeEventListener("mousemove", onMove);
 				window.removeEventListener("mouseup", onUp);
 				void persistAiSidebarWidth(aiSidebarWidthRef.current);
@@ -80,7 +112,7 @@ export function useAISidebar(): UseAISidebarResult {
 			window.addEventListener("mousemove", onMove);
 			window.addEventListener("mouseup", onUp, { once: true });
 		},
-		[aiSidebarOpen, aiSidebarWidth],
+		[aiSidebarOpen],
 	);
 
 	return {

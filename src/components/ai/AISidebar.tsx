@@ -115,7 +115,13 @@ export function AISidebar({
 	return (
 		<motion.aside
 			className={`aiSidebar ${isOpen ? "open" : ""}`}
-			animate={{ width: isOpen ? width : 0, opacity: isOpen ? 1 : 0 }}
+			style={{
+				width,
+				marginRight: isOpen ? 0 : -width,
+				pointerEvents: isOpen ? "auto" : "none",
+			}}
+			animate={{ x: isOpen ? 0 : width, opacity: isOpen ? 1 : 0 }}
+			initial={false}
 			transition={
 				isResizing
 					? { type: "tween", duration: 0 }
