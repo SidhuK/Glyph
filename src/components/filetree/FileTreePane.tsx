@@ -69,6 +69,7 @@ export const FileTreePane = memo(function FileTreePane({
 		parentDepth: number,
 		parentDirPath: string,
 	) => {
+		if (entries.length === 0) return null;
 		const listDepth = parentDepth + 1;
 		const listStyle = {
 			"--tree-depth": listDepth,
@@ -93,9 +94,13 @@ export const FileTreePane = memo(function FileTreePane({
 					hidden: {},
 				}}
 			>
-				{entries.map((e) => {
+				{entries.map((e, index) => {
+					if (!e.name.trim() && !e.rel_path.trim()) return null;
 					const isDir = e.kind === "dir";
 					const depth = parentDepth + 1;
+					const rowKey = `${e.kind}:${e.rel_path.trim() || "__empty"}:${
+						e.name.trim() || "__noname"
+					}:${index}`;
 
 					if (isDir) {
 						const isExpanded = expandedDirs.has(e.rel_path);
@@ -104,7 +109,7 @@ export const FileTreePane = memo(function FileTreePane({
 
 						return (
 							<FileTreeDirItem
-								key={e.rel_path}
+								key={rowKey}
 								entry={e}
 								depth={depth}
 								isExpanded={isExpanded}
@@ -124,7 +129,7 @@ export const FileTreePane = memo(function FileTreePane({
 
 					return (
 						<FileTreeFileItem
-							key={e.rel_path}
+							key={rowKey}
 							entry={e}
 							depth={depth}
 							isActive={e.rel_path === activeFilePath}

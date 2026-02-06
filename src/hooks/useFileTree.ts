@@ -224,6 +224,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 					absPath,
 				});
 				const markdownRel = isMarkdownPath(rel) ? rel : `${rel}.md`;
+				const fileName = markdownRel.split("/").pop()?.trim() || "Untitled.md";
 				if (dirPath && !markdownRel.startsWith(`${dirPath}/`)) {
 					setError(`Choose a file path inside "${dirPath}"`);
 					return;
@@ -234,7 +235,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 					base_mtime_ms: null,
 				});
 				insertEntryOptimistic(parentDir(markdownRel), {
-					name: markdownRel.split("/").pop() || markdownRel,
+					name: fileName,
 					rel_path: markdownRel,
 					kind: "file",
 					is_markdown: true,
@@ -298,7 +299,6 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 				setExpandedDirs((prev) => {
 					const next = new Set(prev);
 					if (dirPath) next.add(dirPath);
-					next.add(path);
 					return next;
 				});
 				void refreshAfterCreate(dirPath);
@@ -320,7 +320,8 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 	const onRenameDir = useCallback(
 		async (dirPath: string, nextName: string) => {
 			const name = nextName.trim();
-			if (!name || name === "." || name === "..") return null;
+			if (!name) return dirPath;
+			if (name === "." || name === "..") return null;
 			if (name.includes("/") || name.includes("\\")) {
 				setError("Folder name cannot contain path separators");
 				return null;

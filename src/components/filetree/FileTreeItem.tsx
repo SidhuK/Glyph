@@ -75,12 +75,13 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 	const inputRef = useRef<HTMLInputElement | null>(null);
 	const renameSubmittedRef = useRef(false);
 	const [draftName, setDraftName] = useState(entry.name);
+	const displayDirName = entry.name.trim() || "New Folder";
 	const totalFiles = summary?.total_files_recursive ?? 0;
 	const countsLabel = summary && totalFiles > 0 ? String(totalFiles) : "";
 
 	useEffect(() => {
 		if (!isRenaming) return;
-		setDraftName(entry.name);
+		setDraftName(entry.name.trim() || "New Folder");
 		renameSubmittedRef.current = false;
 		window.requestAnimationFrame(() => {
 			inputRef.current?.focus();
@@ -131,6 +132,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 							ref={inputRef}
 							className="fileTreeRenameInput"
 							value={draftName}
+							placeholder="New Folder"
 							onChange={(event) => setDraftName(event.target.value)}
 							onMouseDown={stopInputEvent}
 							onClick={stopInputEvent}
@@ -182,7 +184,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 								<FolderClosed size={14} />
 							)}
 						</motion.span>
-						<span className="fileTreeName">{entry.name}</span>
+						<span className="fileTreeName">{displayDirName}</span>
 					</motion.button>
 				)}
 				{!isRenaming ? (
@@ -199,7 +201,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 				) : null}
 			</div>
 			<AnimatePresence>
-				{isExpanded && children && (
+				{isExpanded && children ? (
 					<motion.div
 						initial={{ height: 0, opacity: 0 }}
 						animate={{ height: "auto", opacity: 1 }}
@@ -209,7 +211,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 					>
 						{children}
 					</motion.div>
-				)}
+				) : null}
 			</AnimatePresence>
 		</motion.li>
 	);
@@ -246,6 +248,8 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 		entry.rel_path,
 		entry.is_markdown,
 	);
+	const displayFileName =
+		entry.name.trim() || basename(entry.rel_path).trim() || "Untitled.md";
 
 	return (
 		<motion.li
@@ -279,7 +283,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 					>
 						<Icon size={14} />
 					</motion.span>
-					<span className="fileTreeName">{basename(entry.rel_path)}</span>
+					<span className="fileTreeName">{displayFileName}</span>
 				</motion.button>
 				<RowCreateActions
 					dirPath={parentDirPath}
