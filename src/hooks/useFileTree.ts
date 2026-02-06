@@ -27,13 +27,30 @@ export interface UseFileTreeDeps {
 		React.SetStateAction<Record<string, DirChildSummary[] | undefined>>
 	>;
 	setExpandedDirs: React.Dispatch<React.SetStateAction<Set<string>>>;
-	setRootEntries: (entries: FsEntry[]) => void;
+	setRootEntries: React.Dispatch<React.SetStateAction<FsEntry[]>>;
 	setActiveFilePath: (path: string | null) => void;
 	setCanvasCommand: (
 		cmd: { id: string; kind: string; noteId?: string; title?: string } | null,
 	) => void;
 	setError: (error: string) => void;
 	loadAndBuildFolderView: (dir: string) => Promise<void>;
+}
+
+function compareEntries(a: FsEntry, b: FsEntry): number {
+	if (a.kind === "dir" && b.kind === "file") return -1;
+	if (a.kind === "file" && b.kind === "dir") return 1;
+	return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
+}
+
+function withInsertedEntry(entries: FsEntry[], entry: FsEntry): FsEntry[] {
+	if (entries.some((e) => e.rel_path === entry.rel_path)) return entries;
+	return [...entries, entry].sort(compareEntries);
+}
+
+function rewritePrefix(path: string, from: string, to: string): string {
+	if (path === from) return to;
+	if (path.startsWith(`${from}/`)) return `${to}${path.slice(from.length)}`;
+	return path;
 }
 
 export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
@@ -169,6 +186,23 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		[loadDir],
 	);
 
+	const insertEntryOptimistic = useCallback(
+		(parentDirPath: string, entry: FsEntry) => {
+			if (parentDirPath) {
+				setChildrenByDir((prev) => {
+					const current = prev[parentDirPath] ?? [];
+					return {
+						...prev,
+						[parentDirPath]: withInsertedEntry(current, entry),
+					};
+				});
+				return;
+			}
+			setRootEntries((prev) => withInsertedEntry(prev, entry));
+		},
+		[setChildrenByDir, setRootEntries],
+	);
+
 	const onNewFileInDir = useCallback(
 		async (dirPath: string) => {
 			if (!vaultPath) return;
@@ -199,6 +233,12 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 					text: "# Untitled\n",
 					base_mtime_ms: null,
 				});
+				insertEntryOptimistic(parentDir(markdownRel), {
+					name: markdownRel.split("/").pop() || markdownRel,
+					rel_path: markdownRel,
+					kind: "file",
+					is_markdown: true,
+				});
 				if (dirPath) {
 					setExpandedDirs((prev) => {
 						if (prev.has(dirPath)) return prev;
@@ -207,7 +247,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 						return next;
 					});
 				}
-				await refreshAfterCreate(dirPath);
+				void refreshAfterCreate(dirPath);
 				await openMarkdownFileInCanvas(markdownRel);
 			} catch (e) {
 				setError(e instanceof Error ? e.message : String(e));
@@ -215,6 +255,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		},
 		[
 			openMarkdownFileInCanvas,
+			insertEntryOptimistic,
 			refreshAfterCreate,
 			setError,
 			setExpandedDirs,
@@ -248,20 +289,32 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 				setError("");
 				const path = dirPath ? `${dirPath}/${name}` : name;
 				await invoke("vault_create_dir", { path });
+				insertEntryOptimistic(dirPath, {
+					name,
+					rel_path: path,
+					kind: "dir",
+					is_markdown: false,
+				});
 				setExpandedDirs((prev) => {
 					const next = new Set(prev);
 					if (dirPath) next.add(dirPath);
 					next.add(path);
 					return next;
 				});
-				await refreshAfterCreate(dirPath);
+				void refreshAfterCreate(dirPath);
 				return path;
 			} catch (e) {
 				setError(e instanceof Error ? e.message : String(e));
 			}
 			return null;
 		},
-		[refreshAfterCreate, setError, setExpandedDirs, vaultPath],
+		[
+			insertEntryOptimistic,
+			refreshAfterCreate,
+			setError,
+			setExpandedDirs,
+			vaultPath,
+		],
 	);
 
 	const onRenameDir = useCallback(
@@ -278,36 +331,55 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 			setError("");
 			try {
 				await invoke("vault_rename_path", {
-					from_path: dirPath,
-					to_path: nextPath,
+					fromPath: dirPath,
+					toPath: nextPath,
 				});
 				setExpandedDirs((prev) => {
 					const next = new Set<string>();
 					for (const expanded of prev) {
-						if (expanded === dirPath || expanded.startsWith(`${dirPath}/`)) {
-							next.add(`${nextPath}${expanded.slice(dirPath.length)}`);
-						} else {
-							next.add(expanded);
-						}
+						next.add(rewritePrefix(expanded, dirPath, nextPath));
 					}
 					return next;
 				});
+				if (parent) {
+					setChildrenByDir((prev) => {
+						const parentEntries = prev[parent] ?? [];
+						return {
+							...prev,
+							[parent]: parentEntries
+								.map((entry) =>
+									entry.rel_path === dirPath
+										? { ...entry, name, rel_path: nextPath }
+										: entry,
+								)
+								.sort(compareEntries),
+						};
+					});
+				} else {
+					setRootEntries((prev) =>
+						prev
+							.map((entry) =>
+								entry.rel_path === dirPath
+									? { ...entry, name, rel_path: nextPath }
+									: entry,
+							)
+							.sort(compareEntries),
+					);
+				}
 				setChildrenByDir((prev) => {
 					const next: Record<string, FsEntry[] | undefined> = {};
 					for (const [key, value] of Object.entries(prev)) {
-						if (key === dirPath || key.startsWith(`${dirPath}/`)) {
-							next[`${nextPath}${key.slice(dirPath.length)}`] = value;
-						} else {
-							next[key] = value;
-						}
+						const rewrittenKey = rewritePrefix(key, dirPath, nextPath);
+						next[rewrittenKey] = value?.map((entry) => ({
+							...entry,
+							rel_path: rewritePrefix(entry.rel_path, dirPath, nextPath),
+						}));
 					}
 					return next;
 				});
 				loadedDirsRef.current = new Set(
 					[...loadedDirsRef.current].map((loaded) =>
-						loaded === dirPath || loaded.startsWith(`${dirPath}/`)
-							? `${nextPath}${loaded.slice(dirPath.length)}`
-							: loaded,
+						rewritePrefix(loaded, dirPath, nextPath),
 					),
 				);
 				await refreshAfterCreate(parent);
@@ -318,7 +390,14 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 				return null;
 			}
 		},
-		[loadDir, refreshAfterCreate, setChildrenByDir, setError, setExpandedDirs],
+		[
+			loadDir,
+			refreshAfterCreate,
+			setChildrenByDir,
+			setError,
+			setExpandedDirs,
+			setRootEntries,
+		],
 	);
 
 	return {

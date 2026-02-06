@@ -91,6 +91,7 @@ export function Sidebar({
 				{!sidebarCollapsed && (
 					<motion.div
 						key="sidebar-content"
+						className="sidebarContentRoot"
 						initial={{ opacity: 0 }}
 						animate={{ opacity: 1 }}
 						exit={{ opacity: 0 }}

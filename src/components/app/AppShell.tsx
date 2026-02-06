@@ -28,7 +28,7 @@ interface AppShellProps {
 	error: string;
 	setError: (error: string) => void;
 	rootEntries: FsEntry[];
-	setRootEntries: (entries: FsEntry[]) => void;
+	setRootEntries: React.Dispatch<React.SetStateAction<FsEntry[]>>;
 	childrenByDir: Record<string, FsEntry[] | undefined>;
 	setChildrenByDir: React.Dispatch<
 		React.SetStateAction<Record<string, FsEntry[] | undefined>>

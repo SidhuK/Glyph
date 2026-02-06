@@ -33,6 +33,14 @@
 	border: 0;
 }
 
+.sidebarContentRoot {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	min-height: 0;
+	overflow: hidden;
+}
+
 .sidebarHeader {
 	display: flex;
 	align-items: flex-start;
@@ -78,7 +86,7 @@
 
 .sidebarSectionGrow {
 	flex: 1;
-	min-height: 120px;
+	min-height: 0;
 	overflow: hidden;
 	display: flex;
 	flex-direction: column;
@@ -126,6 +134,7 @@
 
 .sidebarSectionContent {
 	flex: 1;
+	min-height: 0;
 	overflow: hidden;
 	display: flex;
 	flex-direction: column;
