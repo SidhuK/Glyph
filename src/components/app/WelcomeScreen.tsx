@@ -92,7 +92,7 @@ export function WelcomeScreen({
 				>
 					<motion.div className="welcomeHero" variants={itemVariants}>
 						<div className="welcomeEyebrow">Workspace launcher</div>
-						<div className="welcomeTitle">{appName ?? "Tether"}</div>
+						<div className="welcomeTitle">{appName ?? "Lattice"}</div>
 						<div className="welcomeSubtitle">
 							Pick up where you left off or start a new vault in seconds.
 						</div>

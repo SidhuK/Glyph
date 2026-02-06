@@ -239,8 +239,8 @@ interface TauriCommands {
 	vault_rename_path: CommandDef<{ fromPath: string; toPath: string }, void>;
 	vault_resolve_abs_path: CommandDef<{ path: string }, string>;
 	vault_relativize_path: CommandDef<{ absPath: string }, string>;
-	tether_read_text: CommandDef<{ path: string }, string>;
-	tether_write_text: CommandDef<{ path: string; text: string }, void>;
+	lattice_read_text: CommandDef<{ path: string }, string>;
+	lattice_write_text: CommandDef<{ path: string; text: string }, void>;
 	notes_list: CommandDef<void, NoteMeta[]>;
 	note_create: CommandDef<{ title: string }, NoteMeta>;
 	note_read: CommandDef<{ id: string }, NoteDoc>;

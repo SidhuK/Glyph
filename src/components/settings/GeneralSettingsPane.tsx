@@ -55,7 +55,7 @@ export function GeneralSettingsPane() {
 				<div>
 					<h2>General</h2>
 					<p className="settingsHint">
-						Tune the interface, typography, and everyday behavior of Tether.
+						Tune the interface, typography, and everyday behavior of Lattice.
 					</p>
 				</div>
 				<div className="settingsBadge">Local</div>

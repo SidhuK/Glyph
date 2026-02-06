@@ -1,8 +1,8 @@
 {
 	"$schema": "https://schema.tauri.app/config/2",
-	"productName": "Tether",
+	"productName": "Lattice",
 	"version": "0.1.0",
-	"identifier": "com.karatsidhu.tether",
+	"identifier": "com.karatsidhu.lattice",
 	"build": {
 		"beforeDevCommand": "corepack pnpm dev",
 		"devUrl": "http://localhost:1420",
@@ -14,7 +14,7 @@
 		"windows": [
 			{
 				"label": "main",
-				"title": "Tether",
+				"title": "Lattice",
 				"width": 800,
 				"height": 600,
 				"decorations": true,

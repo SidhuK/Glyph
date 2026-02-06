@@ -35,7 +35,7 @@ cd src-tauri && cargo clippy  # Lint Rust (if clippy installed)
 
 ## Architecture
 
-**Tether** is a desktop note-taking app with a node-based canvas editor.
+**Lattice** is a desktop note-taking app with a node-based canvas editor.
 
 - **Frontend**: React 19 + TypeScript + Vite in `src/`
 - **Backend**: Tauri 2 + Rust in `src-tauri/`
@@ -44,7 +44,7 @@ cd src-tauri && cargo clippy  # Lint Rust (if clippy installed)
 - **Persistence**:
   - `@tauri-apps/plugin-store` for app settings
   - Filesystem for notes + attachments
-  - Local SQLite (`.tether/tether.sqlite`) for index/search, links/tags, and canvases
+  - Local SQLite (`.lattice/lattice.sqlite`) for index/search, links/tags, and canvases
 
 ### IPC Layer
 
@@ -62,15 +62,15 @@ Rules:
 
 ### Vault System
 
-The app uses a vault-based architecture where a vault is a user-selected directory containing user-visible data plus a hidden `.tether/` directory for app-managed state.
+The app uses a vault-based architecture where a vault is a user-selected directory containing user-visible data plus a hidden `.lattice/` directory for app-managed state.
 
 Current layout (as implemented today):
 
 - `notes/` - Markdown files with YAML frontmatter (UUID filenames)
 - `assets/` - Attached files (content-addressed by SHA256 hash, preserving extension)
-- `.tether/` - App-managed state (SQLite DB, cache)
-  - `.tether/tether.sqlite` - Index/search (FTS), links, tags, and canvases
-  - `.tether/cache/` - Temporary/cached data
+- `.lattice/` - App-managed state (SQLite DB, cache)
+  - `.lattice/lattice.sqlite` - Index/search (FTS), links, tags, and canvases
+  - `.lattice/cache/` - Temporary/cached data
 
 Notes about the model:
 
@@ -343,8 +343,8 @@ Root-level files are thin re-exports for backwards compatibility. Actual impleme
 | `io_atomic.rs`    | Atomic file writes: writes to temp file, syncs, renames to destination, syncs parent directory (crash-safe) |
 | `net.rs`          | Network helpers (URL host validation, SSRF protection)                                                      |
 | `paths.rs`        | Path safety: `join_under()` prevents path traversal attacks by rejecting `..` components                    |
-| `tether_paths.rs` | Canonical `.tether/` locations (`.tether/tether.sqlite`, cache dir, etc.)                                   |
-| `tether_fs.rs`    | Filesystem helpers that operate inside `.tether/` safely                                                    |
+| `lattice_paths.rs` | Canonical `.lattice/` locations (`.lattice/lattice.sqlite`, cache dir, etc.)                                   |
+| `lattice_fs.rs`    | Filesystem helpers that operate inside `.lattice/` safely                                                    |
 
 ### `ai/` - AI Chat & Profile Management
 
@@ -448,7 +448,7 @@ Root-level files are thin re-exports for backwards compatibility. Actual impleme
 
 ### Canvases & Indexing
 
-- Canvases are stored in `.tether/tether.sqlite` as JSON documents (`canvases.doc_json`) and are versioned (`CANVAS_VERSION`).
+- Canvases are stored in `.lattice/lattice.sqlite` as JSON documents (`canvases.doc_json`) and are versioned (`CANVAS_VERSION`).
 - Search and backlinks are derived from note content and live in SQLite (FTS5). Rebuild flows should not delete the DB because it also stores non-derived data (e.g., canvases).
 - Indexing behavior:
   - On vault open, the app kicks an `index_rebuild` in the background (non-blocking) to warm search/tags/backlinks and note preview cache.

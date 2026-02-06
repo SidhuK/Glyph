@@ -1,4 +1,4 @@
-use crate::{io_atomic, paths, tether_paths, vault::VaultState};
+use crate::{io_atomic, paths, lattice_paths, vault::VaultState};
 use std::path::{Path, PathBuf};
 use tauri::State;
 
@@ -26,17 +26,17 @@ fn normalize_rel_path(raw: &str) -> Result<PathBuf, String> {
     }
 }
 
-fn tether_abs_path(vault_root: &Path, rel_inside_tether: &Path) -> Result<PathBuf, String> {
-    let tether_dir = tether_paths::ensure_tether_dir(vault_root)?;
-    paths::join_under(&tether_dir, rel_inside_tether)
+fn lattice_abs_path(vault_root: &Path, rel_inside_lattice: &Path) -> Result<PathBuf, String> {
+    let lattice_dir = lattice_paths::ensure_lattice_dir(vault_root)?;
+    paths::join_under(&lattice_dir, rel_inside_lattice)
 }
 
 #[tauri::command]
-pub async fn tether_read_text(state: State<'_, VaultState>, path: String) -> Result<String, String> {
+pub async fn lattice_read_text(state: State<'_, VaultState>, path: String) -> Result<String, String> {
     let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<String, String> {
         let rel = normalize_rel_path(&path)?;
-        let abs = tether_abs_path(&root, &rel)?;
+        let abs = lattice_abs_path(&root, &rel)?;
         let bytes = std::fs::read(&abs).map_err(|e| e.to_string())?;
         String::from_utf8(bytes).map_err(|_| "file is not valid UTF-8".to_string())
     })
@@ -45,7 +45,7 @@ pub async fn tether_read_text(state: State<'_, VaultState>, path: String) -> Res
 }
 
 #[tauri::command]
-pub async fn tether_write_text(
+pub async fn lattice_write_text(
     state: State<'_, VaultState>,
     path: String,
     text: String,
@@ -53,7 +53,7 @@ pub async fn tether_write_text(
     let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
         let rel = normalize_rel_path(&path)?;
-        let abs = tether_abs_path(&root, &rel)?;
+        let abs = lattice_abs_path(&root, &rel)?;
         if let Some(parent) = abs.parent() {
             std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
         }

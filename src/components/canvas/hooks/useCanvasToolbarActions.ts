@@ -32,7 +32,7 @@ function previewImageSrc(
 	preview: { image_cache_rel_path?: string | null; image_url?: string | null },
 ): string {
 	if (preview.image_cache_rel_path && vaultPath) {
-		return `asset://${vaultPath}/.tether/cache/${preview.image_cache_rel_path}`;
+		return `asset://${vaultPath}/.lattice/cache/${preview.image_cache_rel_path}`;
 	}
 	return preview.image_url ?? "";
 }

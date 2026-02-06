@@ -6,8 +6,8 @@ mod links;
 mod net;
 mod notes;
 mod paths;
-mod tether_fs;
-mod tether_paths;
+mod lattice_fs;
+mod lattice_paths;
 mod vault;
 mod vault_fs;
 
@@ -242,8 +242,8 @@ pub fn run() {
             vault_fs::read_write::vault_rename_path,
             vault_fs::read_write::vault_resolve_abs_path,
             vault_fs::read_write::vault_relativize_path,
-            tether_fs::tether_read_text,
-            tether_fs::tether_write_text,
+            lattice_fs::lattice_read_text,
+            lattice_fs::lattice_write_text,
             notes::commands::notes_list,
             notes::commands::note_create,
             notes::commands::note_read,

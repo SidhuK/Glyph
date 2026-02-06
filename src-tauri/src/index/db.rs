@@ -1,10 +1,10 @@
-use crate::tether_paths;
+use crate::lattice_paths;
 use std::path::{Path, PathBuf};
 
 use super::schema::ensure_schema;
 
 pub fn db_path(vault_root: &Path) -> Result<PathBuf, String> {
-    tether_paths::tether_db_path(vault_root)
+    lattice_paths::lattice_db_path(vault_root)
 }
 
 pub fn open_db(vault_root: &Path) -> Result<rusqlite::Connection, String> {

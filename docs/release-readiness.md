@@ -1,4 +1,4 @@
-# Tether Release Readiness (macOS)
+# Lattice Release Readiness (macOS)
 
 ## Build
 

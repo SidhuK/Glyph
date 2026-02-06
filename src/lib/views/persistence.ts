@@ -21,7 +21,7 @@ export async function loadViewDoc(
 ): Promise<{ doc: ViewDoc | null; path: string }> {
 	const path = await viewDocPath(view);
 	try {
-		const raw = await invoke("tether_read_text", { path });
+		const raw = await invoke("lattice_read_text", { path });
 		return { doc: tryParseViewDoc(raw), path };
 	} catch {
 		return { doc: null, path };
@@ -34,7 +34,7 @@ export async function saveViewDoc(path: string, doc: ViewDoc): Promise<void> {
 		nodes: sanitizeNodes(doc.nodes),
 		edges: sanitizeEdges(doc.edges),
 	};
-	await invoke("tether_write_text", {
+	await invoke("lattice_write_text", {
 		path,
 		text: JSON.stringify(stable, null, 2),
 	});

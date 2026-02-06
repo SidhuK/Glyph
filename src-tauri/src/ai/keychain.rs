@@ -1,4 +1,4 @@
-const KEYCHAIN_SERVICE: &str = "Tether AI";
+const KEYCHAIN_SERVICE: &str = "Lattice AI";
 
 pub fn keychain_entry(profile_id: &str) -> Result<keyring::Entry, String> {
     keyring::Entry::new(KEYCHAIN_SERVICE, profile_id).map_err(|e| e.to_string())

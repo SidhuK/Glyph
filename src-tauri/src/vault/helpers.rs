@@ -1,7 +1,7 @@
 use serde::Serialize;
 use std::path::{Path, PathBuf};
 
-use crate::tether_paths;
+use crate::lattice_paths;
 
 #[derive(Serialize)]
 pub struct VaultInfo {
@@ -11,9 +11,9 @@ pub struct VaultInfo {
 
 pub const VAULT_SCHEMA_VERSION: u32 = 1;
 
-pub fn ensure_tether_dirs(root: &Path) -> Result<(), String> {
-    let _ = tether_paths::ensure_tether_dir(root)?;
-    let _ = tether_paths::ensure_tether_cache_dir(root)?;
+pub fn ensure_lattice_dirs(root: &Path) -> Result<(), String> {
+    let _ = lattice_paths::ensure_lattice_dir(root)?;
+    let _ = lattice_paths::ensure_lattice_cache_dir(root)?;
     Ok(())
 }
 
@@ -26,7 +26,7 @@ pub fn canonicalize_dir(path: &Path) -> Result<PathBuf, String> {
 }
 
 pub fn create_or_open_impl(root: &Path) -> Result<VaultInfo, String> {
-    ensure_tether_dirs(root)?;
+    ensure_lattice_dirs(root)?;
     let _ = cleanup_tmp_files(root);
     Ok(VaultInfo {
         root: root.to_string_lossy().to_string(),
@@ -72,7 +72,7 @@ fn cleanup_tmp_files(root: &Path) -> Result<(), String> {
         Ok(())
     }
 
-    if let Ok(dir) = tether_paths::tether_dir(root) {
+    if let Ok(dir) = lattice_paths::lattice_dir(root) {
         if dir.is_dir() {
             let _ = recurse(&dir);
         }

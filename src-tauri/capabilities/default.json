@@ -11,6 +11,15 @@
 		"core:window:allow-show",
 		"dialog:default",
 		"notification:default",
+		{
+			"identifier": "opener:allow-open-path",
+			"allow": [
+				{ "path": "$HOME/**" },
+				{ "path": "$DOWNLOAD/**" },
+				{ "path": "$DOCUMENT/**" },
+				{ "path": "$DESKTOP/**" }
+			]
+		},
 		"opener:default",
 		"store:default"
 	]
