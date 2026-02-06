@@ -168,15 +168,21 @@ function CanvasPane({
 
 	useEffect(() => {
 		if (!doc) return;
-		if (docIdRef.current === doc.id && initializedRef.current) return;
+		const incomingSnapshot = snapshotPersistedShape(
+			doc.nodes.filter((node) => node.type !== "folderPreview"),
+			doc.edges,
+		);
+		if (
+			docIdRef.current === doc.id &&
+			initializedRef.current &&
+			incomingSnapshot === lastSavedSnapshotRef.current
+		)
+			return;
 		docIdRef.current = doc.id;
 		initializedRef.current = true;
 		setNodes(doc.nodes);
 		setEdges(doc.edges);
-		lastSavedSnapshotRef.current = snapshotPersistedShape(
-			doc.nodes.filter((node) => node.type !== "folderPreview"),
-			doc.edges,
-		);
+		lastSavedSnapshotRef.current = incomingSnapshot;
 		resetHistory(doc.nodes, doc.edges);
 	}, [doc, resetHistory, setEdges, setNodes, snapshotPersistedShape]);
 

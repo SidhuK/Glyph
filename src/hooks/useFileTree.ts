@@ -52,6 +52,12 @@ function entryNameFromRelPath(relPath: string): string {
 	return parts[parts.length - 1] ?? "";
 }
 
+function fileTitleFromRelPath(relPath: string): string {
+	const name = entryNameFromRelPath(relPath);
+	if (!name) return "Untitled";
+	return name.toLowerCase().endsWith(".md") ? name.slice(0, -3) : name;
+}
+
 function normalizeEntry(entry: FsEntry): FsEntry | null {
 	const relPath = normalizeRelPath(entry.rel_path);
 	if (!relPath) return null;
@@ -110,7 +116,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 				id: crypto.randomUUID(),
 				kind: "open_note_editor",
 				noteId: relPath,
-				title: relPath.split("/").pop() || relPath,
+				title: fileTitleFromRelPath(relPath),
 			});
 		},
 		[setCanvasCommand],
@@ -270,13 +276,14 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 				});
 				const markdownRel = isMarkdownPath(rel) ? rel : `${rel}.md`;
 				const fileName = markdownRel.split("/").pop()?.trim() || "Untitled.md";
+				const fileTitle = fileTitleFromRelPath(markdownRel);
 				if (dirPath && !markdownRel.startsWith(`${dirPath}/`)) {
 					setError(`Choose a file path inside "${dirPath}"`);
 					return;
 				}
 				await invoke("vault_write_text", {
 					path: markdownRel,
-					text: "# Untitled\n",
+					text: `# ${fileTitle}\n`,
 					base_mtime_ms: null,
 				});
 				insertEntryOptimistic(parentDir(markdownRel), {

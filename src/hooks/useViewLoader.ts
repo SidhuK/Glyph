@@ -36,15 +36,20 @@ export function useViewLoader(deps: UseViewLoaderDeps): UseViewLoaderResult {
 
 	const activeViewDocRef = useRef<ViewDoc | null>(null);
 	const activeViewPathRef = useRef<string | null>(null);
+	const loadRequestVersionRef = useRef(0);
 
 	const loadAndBuildFolderView = useCallback(
 		async (dir: string) => {
+			const requestVersion = loadRequestVersionRef.current + 1;
+			loadRequestVersionRef.current = requestVersion;
+			const isStale = () => loadRequestVersionRef.current !== requestVersion;
 			setError("");
 			setCanvasLoadingMessage("");
 			try {
 				const view: ViewRef = { kind: "folder", dir };
 
 				const loaded = await loadViewDoc(view);
+				if (isStale()) return;
 				if (loaded.doc) {
 					setActiveViewPath(loaded.path);
 					setActiveViewDoc(loaded.doc);
@@ -59,9 +64,11 @@ export function useViewLoader(deps: UseViewLoaderDeps): UseViewLoaderResult {
 						{ recursive: true, limit: 500 },
 						existingDoc,
 					);
+					if (isStale()) return;
 					if (!existingDoc || built.changed) {
 						await saveViewDoc(loaded.path, built.doc);
 					}
+					if (isStale()) return;
 					existingDoc = built.doc;
 					setActiveViewPath(loaded.path);
 					setActiveViewDoc(built.doc);
@@ -76,6 +83,7 @@ export function useViewLoader(deps: UseViewLoaderDeps): UseViewLoaderResult {
 						if (loaded.doc) {
 							void (async () => {
 								await startIndexRebuild();
+								if (isStale()) return;
 								try {
 									await buildAndSet();
 								} catch {
@@ -86,6 +94,7 @@ export function useViewLoader(deps: UseViewLoaderDeps): UseViewLoaderResult {
 						}
 						setCanvasLoadingMessage("Indexing vault…");
 						await startIndexRebuild();
+						if (isStale()) return;
 						setCanvasLoadingMessage("");
 						await buildAndSet();
 						return;
@@ -93,6 +102,7 @@ export function useViewLoader(deps: UseViewLoaderDeps): UseViewLoaderResult {
 					throw e;
 				}
 			} catch (e) {
+				if (isStale()) return;
 				setCanvasLoadingMessage("");
 				setError(e instanceof Error ? e.message : String(e));
 			}
@@ -102,6 +112,9 @@ export function useViewLoader(deps: UseViewLoaderDeps): UseViewLoaderResult {
 
 	const loadAndBuildSearchView = useCallback(
 		async (query: string) => {
+			const requestVersion = loadRequestVersionRef.current + 1;
+			loadRequestVersionRef.current = requestVersion;
+			const isStale = () => loadRequestVersionRef.current !== requestVersion;
 			setError("");
 			setCanvasLoadingMessage("");
 			try {
@@ -110,6 +123,7 @@ export function useViewLoader(deps: UseViewLoaderDeps): UseViewLoaderResult {
 				const view: ViewRef = { kind: "search", query: q };
 
 				const loaded = await loadViewDoc(view);
+				if (isStale()) return;
 				if (loaded.doc) {
 					setActiveViewPath(loaded.path);
 					setActiveViewDoc(loaded.doc);
@@ -124,9 +138,11 @@ export function useViewLoader(deps: UseViewLoaderDeps): UseViewLoaderResult {
 						{ limit: 200 },
 						existingDoc,
 					);
+					if (isStale()) return;
 					if (!existingDoc || built.changed) {
 						await saveViewDoc(loaded.path, built.doc);
 					}
+					if (isStale()) return;
 					existingDoc = built.doc;
 					setActiveViewPath(loaded.path);
 					setActiveViewDoc(built.doc);
@@ -141,6 +157,7 @@ export function useViewLoader(deps: UseViewLoaderDeps): UseViewLoaderResult {
 						if (loaded.doc) {
 							void (async () => {
 								await startIndexRebuild();
+								if (isStale()) return;
 								try {
 									await buildAndSet();
 								} catch {
@@ -151,6 +168,7 @@ export function useViewLoader(deps: UseViewLoaderDeps): UseViewLoaderResult {
 						}
 						setCanvasLoadingMessage("Indexing vault…");
 						await startIndexRebuild();
+						if (isStale()) return;
 						setCanvasLoadingMessage("");
 						await buildAndSet();
 						return;
@@ -158,6 +176,7 @@ export function useViewLoader(deps: UseViewLoaderDeps): UseViewLoaderResult {
 					throw e;
 				}
 			} catch (e) {
+				if (isStale()) return;
 				setCanvasLoadingMessage("");
 				setError(e instanceof Error ? e.message : String(e));
 			}
@@ -167,6 +186,9 @@ export function useViewLoader(deps: UseViewLoaderDeps): UseViewLoaderResult {
 
 	const loadAndBuildTagView = useCallback(
 		async (tag: string) => {
+			const requestVersion = loadRequestVersionRef.current + 1;
+			loadRequestVersionRef.current = requestVersion;
+			const isStale = () => loadRequestVersionRef.current !== requestVersion;
 			setError("");
 			setCanvasLoadingMessage("");
 			try {
@@ -175,6 +197,7 @@ export function useViewLoader(deps: UseViewLoaderDeps): UseViewLoaderResult {
 				const view: ViewRef = { kind: "tag", tag: t };
 
 				const loaded = await loadViewDoc(view);
+				if (isStale()) return;
 				if (loaded.doc) {
 					setActiveViewPath(loaded.path);
 					setActiveViewDoc(loaded.doc);
@@ -185,9 +208,11 @@ export function useViewLoader(deps: UseViewLoaderDeps): UseViewLoaderResult {
 				let existingDoc = loaded.doc;
 				const buildAndSet = async () => {
 					const built = await buildTagViewDoc(t, { limit: 500 }, existingDoc);
+					if (isStale()) return;
 					if (!existingDoc || built.changed) {
 						await saveViewDoc(loaded.path, built.doc);
 					}
+					if (isStale()) return;
 					existingDoc = built.doc;
 					setActiveViewPath(loaded.path);
 					setActiveViewDoc(built.doc);
@@ -202,6 +227,7 @@ export function useViewLoader(deps: UseViewLoaderDeps): UseViewLoaderResult {
 						if (loaded.doc) {
 							void (async () => {
 								await startIndexRebuild();
+								if (isStale()) return;
 								try {
 									await buildAndSet();
 								} catch {
@@ -212,6 +238,7 @@ export function useViewLoader(deps: UseViewLoaderDeps): UseViewLoaderResult {
 						}
 						setCanvasLoadingMessage("Indexing vault…");
 						await startIndexRebuild();
+						if (isStale()) return;
 						setCanvasLoadingMessage("");
 						await buildAndSet();
 						return;
@@ -219,6 +246,7 @@ export function useViewLoader(deps: UseViewLoaderDeps): UseViewLoaderResult {
 					throw e;
 				}
 			} catch (e) {
+				if (isStale()) return;
 				setCanvasLoadingMessage("");
 				setError(e instanceof Error ? e.message : String(e));
 			}
