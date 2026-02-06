@@ -34,6 +34,7 @@ export interface UseFileTreeDeps {
 	) => void;
 	setError: (error: string) => void;
 	loadAndBuildFolderView: (dir: string) => Promise<void>;
+	getActiveFolderDir: () => string | null;
 }
 
 function compareEntries(a: FsEntry, b: FsEntry): number {
@@ -105,6 +106,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		setCanvasCommand,
 		setError,
 		loadAndBuildFolderView,
+		getActiveFolderDir,
 	} = deps;
 
 	const dirSummariesInFlightRef = useRef(new Set<string>());
@@ -234,6 +236,16 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		[loadDir],
 	);
 
+	const refreshActiveFolderViewAfterCreate = useCallback(
+		async (createdInDir: string) => {
+			const activeDir = getActiveFolderDir();
+			if (activeDir === null) return;
+			if (activeDir !== createdInDir) return;
+			await loadAndBuildFolderView(activeDir);
+		},
+		[getActiveFolderDir, loadAndBuildFolderView],
+	);
+
 	const insertEntryOptimistic = useCallback(
 		(parentDirPath: string, entry: FsEntry) => {
 			const normalizedEntry = normalizeEntry(entry);
@@ -300,7 +312,9 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 						return next;
 					});
 				}
-				void refreshAfterCreate(dirPath);
+				const createdInDir = parentDir(markdownRel);
+				await refreshAfterCreate(createdInDir);
+				await refreshActiveFolderViewAfterCreate(createdInDir);
 			} catch (e) {
 				setError(e instanceof Error ? e.message : String(e));
 			}
@@ -308,6 +322,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		[
 			insertEntryOptimistic,
 			refreshAfterCreate,
+			refreshActiveFolderViewAfterCreate,
 			setError,
 			setExpandedDirs,
 			vaultPath,
@@ -351,7 +366,8 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 					if (dirPath) next.add(dirPath);
 					return next;
 				});
-				void refreshAfterCreate(dirPath);
+				await refreshAfterCreate(dirPath);
+				await refreshActiveFolderViewAfterCreate(dirPath);
 				return path;
 			} catch (e) {
 				setError(e instanceof Error ? e.message : String(e));
@@ -361,6 +377,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		[
 			insertEntryOptimistic,
 			refreshAfterCreate,
+			refreshActiveFolderViewAfterCreate,
 			setError,
 			setExpandedDirs,
 			vaultPath,

@@ -157,6 +157,12 @@ export function AppShell({
 		[],
 	);
 
+	const getActiveFolderDir = useCallback(() => {
+		const current = activeViewDocRef.current;
+		if (!current || current.kind !== "folder") return null;
+		return current.selector || "";
+	}, [activeViewDocRef]);
+
 	const fileTree = useFileTree({
 		vaultPath,
 		setChildrenByDir,
@@ -167,6 +173,7 @@ export function AppShell({
 		setCanvasCommand: setCanvasCommandTyped,
 		setError,
 		loadAndBuildFolderView,
+		getActiveFolderDir,
 	});
 
 	useMenuListeners({ onOpenVault, onCreateVault, closeVault });
