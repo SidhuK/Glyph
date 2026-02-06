@@ -1,12 +1,14 @@
 import { Suspense, lazy, useCallback } from "react";
 import type { FsEntry, RecentEntry } from "../../lib/tauri";
 import { type ViewDoc, asCanvasDocLike, saveViewDoc } from "../../lib/views";
+import { isInAppPreviewable } from "../../utils/filePreview";
 import type {
 	CanvasEdge,
 	CanvasExternalCommand,
 	CanvasNode,
 } from "../CanvasPane";
 import { FolderShelf } from "../FolderShelf";
+import { FilePreviewPane } from "../preview/FilePreviewPane";
 import { MainToolbar } from "./MainToolbar";
 import { WelcomeScreen } from "./WelcomeScreen";
 
@@ -31,7 +33,8 @@ interface MainContentProps {
 	>;
 	folderShelfSubfolders: FsEntry[];
 	folderShelfRecents: RecentEntry[];
-	setActiveFilePath: (path: string | null) => void;
+	activePreviewPath: string | null;
+	setActivePreviewPath: (path: string | null) => void;
 	setActiveViewDoc: (doc: ViewDoc | null) => void;
 	loadAndBuildFolderView: (dir: string) => Promise<void>;
 	fileTree: {
@@ -62,7 +65,8 @@ export function MainContent({
 	setCanvasCommand,
 	folderShelfSubfolders,
 	folderShelfRecents,
-	setActiveFilePath,
+	activePreviewPath,
+	setActivePreviewPath,
 	setActiveViewDoc,
 	loadAndBuildFolderView,
 	fileTree,
@@ -128,10 +132,7 @@ export function MainContent({
 					recents={folderShelfRecents}
 					onOpenFolder={(d) => void loadAndBuildFolderView(d)}
 					onOpenMarkdown={(p) => void fileTree.openMarkdownFileInCanvas(p)}
-					onOpenNonMarkdown={(p) => {
-						setActiveFilePath(p);
-						void fileTree.openNonMarkdownExternally(p);
-					}}
+					onOpenNonMarkdown={(p) => void fileTree.openFile(p)}
 					onFocusNode={(nodeId) => {
 						setCanvasCommand({
 							id: crypto.randomUUID(),
@@ -147,7 +148,15 @@ export function MainContent({
 					<Suspense
 						fallback={<div className="canvasEmpty">Loading canvas…</div>}
 					>
-						{canvasLoadingMessage ? (
+						{activePreviewPath && isInAppPreviewable(activePreviewPath) ? (
+							<FilePreviewPane
+								relPath={activePreviewPath}
+								onClose={() => setActivePreviewPath(null)}
+								onOpenExternally={(path) =>
+									fileTree.openNonMarkdownExternally(path)
+								}
+							/>
+						) : canvasLoadingMessage ? (
 							<div className="canvasEmpty">{canvasLoadingMessage}</div>
 						) : (
 							<CanvasPane

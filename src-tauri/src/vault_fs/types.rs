@@ -55,3 +55,24 @@ pub struct TextFileDocBatch {
     pub mtime_ms: u64,
     pub error: Option<String>,
 }
+
+#[derive(Serialize)]
+pub struct TextFilePreviewDoc {
+    pub rel_path: String,
+    pub text: String,
+    pub mtime_ms: u64,
+    pub truncated: bool,
+    pub bytes_read: u64,
+    pub total_bytes: u64,
+}
+
+#[derive(Serialize)]
+pub struct BinaryFilePreviewDoc {
+    pub rel_path: String,
+    pub mime: String,
+    pub data_url: String,
+    pub truncated: bool,
+    pub bytes_read: u64,
+    pub total_bytes: u64,
+    pub mtime_ms: u64,
+}

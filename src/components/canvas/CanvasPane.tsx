@@ -322,9 +322,12 @@ function CanvasPane({
 			} else if (node.type === "folder") {
 				const dir = (node.data as Record<string, unknown>)?.dir;
 				if (typeof dir === "string") onOpenFolder(dir);
+			} else if (node.type === "file") {
+				const path = (node.data as Record<string, unknown>)?.path;
+				if (typeof path === "string" && path) onOpenNote(path);
 			}
 		},
-		[beginInlineEdit, ensureTabForNote, onOpenFolder],
+		[beginInlineEdit, ensureTabForNote, onOpenFolder, onOpenNote],
 	);
 
 	const canvasActions: CanvasActions = useMemo(

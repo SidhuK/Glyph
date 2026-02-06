@@ -61,6 +61,25 @@ export interface TextFileDocBatch {
 	error: string | null;
 }
 
+export interface TextFilePreviewDoc {
+	rel_path: string;
+	text: string;
+	mtime_ms: number;
+	truncated: boolean;
+	bytes_read: number;
+	total_bytes: number;
+}
+
+export interface BinaryFilePreviewDoc {
+	rel_path: string;
+	mime: string;
+	data_url: string;
+	truncated: boolean;
+	bytes_read: number;
+	total_bytes: number;
+	mtime_ms: number;
+}
+
 export interface NoteMeta {
 	id: string;
 	title: string;
@@ -204,12 +223,21 @@ interface TauriCommands {
 	>;
 	vault_read_text: CommandDef<{ path: string }, TextFileDoc>;
 	vault_read_texts_batch: CommandDef<{ paths: string[] }, TextFileDocBatch[]>;
+	vault_read_text_preview: CommandDef<
+		{ path: string; max_bytes?: number | null },
+		TextFilePreviewDoc
+	>;
+	vault_read_binary_preview: CommandDef<
+		{ path: string; max_bytes?: number | null },
+		BinaryFilePreviewDoc
+	>;
 	vault_write_text: CommandDef<
 		{ path: string; text: string; base_mtime_ms?: number | null },
 		TextFileWriteResult
 	>;
 	vault_create_dir: CommandDef<{ path: string }, void>;
 	vault_rename_path: CommandDef<{ fromPath: string; toPath: string }, void>;
+	vault_resolve_abs_path: CommandDef<{ path: string }, string>;
 	vault_relativize_path: CommandDef<{ absPath: string }, string>;
 	tether_read_text: CommandDef<{ path: string }, string>;
 	tether_write_text: CommandDef<{ path: string; text: string }, void>;

@@ -3,6 +3,7 @@ import { openPath, openUrl } from "@tauri-apps/plugin-opener";
 import { useCallback, useRef } from "react";
 import type { DirChildSummary, FsEntry } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
+import { isInAppPreviewable } from "../utils/filePreview";
 import { isMarkdownPath, parentDir } from "../utils/path";
 import {
 	compareEntries,
@@ -37,6 +38,7 @@ export interface UseFileTreeDeps {
 	setExpandedDirs: React.Dispatch<React.SetStateAction<Set<string>>>;
 	setRootEntries: React.Dispatch<React.SetStateAction<FsEntry[]>>;
 	setActiveFilePath: (path: string | null) => void;
+	setActivePreviewPath: (path: string | null) => void;
 	setCanvasCommand: (
 		cmd: { id: string; kind: string; noteId?: string; title?: string } | null,
 	) => void;
@@ -53,6 +55,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		setExpandedDirs,
 		setRootEntries,
 		setActiveFilePath,
+		setActivePreviewPath,
 		setCanvasCommand,
 		setError,
 		loadAndBuildFolderView,
@@ -136,6 +139,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 	const openMarkdownFileInCanvas = useCallback(
 		async (relPath: string) => {
 			setError("");
+			setActivePreviewPath(null);
 			setActiveFilePath(relPath);
 			issueOpenNoteCommand(relPath);
 			try {
@@ -146,7 +150,13 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 				setError(e instanceof Error ? e.message : String(e));
 			}
 		},
-		[issueOpenNoteCommand, loadAndBuildFolderView, setActiveFilePath, setError],
+		[
+			issueOpenNoteCommand,
+			loadAndBuildFolderView,
+			setActiveFilePath,
+			setActivePreviewPath,
+			setError,
+		],
 	);
 
 	const openNonMarkdownExternally = useCallback(
@@ -156,7 +166,9 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 				await openUrl(relPath);
 				return;
 			}
-			const abs = await join(vaultPath, relPath);
+			const abs = await invoke("vault_resolve_abs_path", {
+				path: relPath,
+			}).catch(async () => join(vaultPath, relPath));
 			await openPath(abs);
 		},
 		[vaultPath],
@@ -170,9 +182,19 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 				return;
 			}
 			setActiveFilePath(relPath);
+			if (isInAppPreviewable(relPath)) {
+				setActivePreviewPath(relPath);
+				return;
+			}
+			setActivePreviewPath(null);
 			await openNonMarkdownExternally(relPath);
 		},
-		[openMarkdownFileInCanvas, openNonMarkdownExternally, setActiveFilePath],
+		[
+			openMarkdownFileInCanvas,
+			openNonMarkdownExternally,
+			setActiveFilePath,
+			setActivePreviewPath,
+		],
 	);
 
 	const refreshAfterCreate = useCallback(

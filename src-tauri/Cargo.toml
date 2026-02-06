@@ -32,6 +32,7 @@ uuid = { version = "1", features = ["v4"] }
 time = { version = "0.3", features = ["formatting"] }
 sha2 = "0.10"
 hex = "0.4"
+base64 = "0.22"
 notify = "6"
 regex = "1"
 reqwest = { version = "0.12", default-features = false, features = ["blocking", "rustls-tls", "json", "stream"] }

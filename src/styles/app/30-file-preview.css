@@ -46,6 +46,60 @@
 	font-size: var(--text-sm);
 }
 
+.filePreviewPane {
+	display: flex;
+	flex-direction: column;
+	height: 100%;
+	min-height: 0;
+}
+
+.filePreviewHeader {
+	height: 56px;
+	padding: 0 var(--space-4);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	border-bottom: 1px solid var(--border-light);
+	gap: var(--space-3);
+}
+
+.filePreviewHeaderMeta {
+	min-width: 0;
+}
+
+.filePreviewName {
+	color: var(--text-primary);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	font-size: var(--text-sm);
+}
+
+.filePreviewActions {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-1);
+}
+
+.filePreviewTextWrap {
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+}
+
+.filePreviewText {
+	flex: 1;
+	min-height: 0;
+	margin: 0;
+	padding: var(--space-4);
+	overflow: auto;
+	font-size: 12px;
+	line-height: 1.5;
+	color: var(--text-primary);
+	background: var(--bg-primary);
+}
+
 /* ReactFlow edges */
 .react-flow__edge-path {
 	stroke: var(--border-default);

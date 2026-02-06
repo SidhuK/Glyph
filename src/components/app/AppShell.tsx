@@ -98,6 +98,9 @@ export function AppShell({
 		"files",
 	);
 	const [paletteOpen, setPaletteOpen] = useState(false);
+	const [activePreviewPath, setActivePreviewPath] = useState<string | null>(
+		null,
+	);
 
 	const {
 		aiSidebarOpen,
@@ -170,11 +173,41 @@ export function AppShell({
 		setExpandedDirs,
 		setRootEntries,
 		setActiveFilePath,
+		setActivePreviewPath,
 		setCanvasCommand: setCanvasCommandTyped,
 		setError,
 		loadAndBuildFolderView,
 		getActiveFolderDir,
 	});
+
+	const openFolderView = useCallback(
+		async (dir: string) => {
+			setActivePreviewPath(null);
+			await loadAndBuildFolderView(dir);
+		},
+		[loadAndBuildFolderView],
+	);
+
+	const openSearchView = useCallback(
+		async (query: string) => {
+			setActivePreviewPath(null);
+			await loadAndBuildSearchView(query);
+		},
+		[loadAndBuildSearchView],
+	);
+
+	const openTagView = useCallback(
+		async (tag: string) => {
+			setActivePreviewPath(null);
+			await loadAndBuildTagView(tag);
+		},
+		[loadAndBuildTagView],
+	);
+
+	useEffect(() => {
+		if (vaultPath) return;
+		setActivePreviewPath(null);
+	}, [vaultPath]);
 
 	useMenuListeners({ onOpenVault, onCreateVault, closeVault });
 
@@ -228,7 +261,7 @@ export function AppShell({
 				shortcut: { meta: true, shift: true, key: "n" },
 				enabled: Boolean(vaultPath),
 				action: async () => {
-					await loadAndBuildFolderView("");
+					await openFolderView("");
 					setCanvasCommand({
 						id: crypto.randomUUID(),
 						kind: "add_text_node",
@@ -240,7 +273,7 @@ export function AppShell({
 		[
 			aiSidebarOpen,
 			fileTree,
-			loadAndBuildFolderView,
+			openFolderView,
 			onOpenVault,
 			setAiSidebarOpen,
 			setShowSearch,
@@ -297,7 +330,7 @@ export function AppShell({
 				isSearching={isSearching}
 				searchError={searchError}
 				onChangeSearchQuery={setSearchQuery}
-				onOpenSearchAsCanvas={(q) => void loadAndBuildSearchView(q)}
+				onOpenSearchAsCanvas={(q) => void openSearchView(q)}
 				onSelectSearchNote={(id) => void fileTree.openMarkdownFileInCanvas(id)}
 				rootEntries={rootEntries}
 				childrenByDir={childrenByDir}
@@ -305,7 +338,7 @@ export function AppShell({
 				activeFilePath={activeFilePath}
 				summariesByParentDir={dirSummariesByParent}
 				onToggleDir={fileTree.toggleDir}
-				onSelectDir={(p) => void loadAndBuildFolderView(p)}
+				onSelectDir={(p) => void openFolderView(p)}
 				onOpenFile={(p) => void fileTree.openFile(p)}
 				onNewFile={fileTree.onNewFile}
 				onNewFileInDir={(p) => void fileTree.onNewFileInDir(p)}
@@ -313,7 +346,7 @@ export function AppShell({
 				onRenameDir={(p, name) => fileTree.onRenameDir(p, name)}
 				tags={tags}
 				tagsError={tagsError}
-				onSelectTag={(t) => void loadAndBuildTagView(t)}
+				onSelectTag={(t) => void openTagView(t)}
 				onRefreshTags={() => void refreshTags()}
 				onOpenVault={onOpenVault}
 				onCreateVault={onCreateVault}
@@ -337,9 +370,10 @@ export function AppShell({
 				setCanvasCommand={setCanvasCommand}
 				folderShelfSubfolders={folderShelfSubfolders}
 				folderShelfRecents={folderShelfRecents}
-				setActiveFilePath={setActiveFilePath}
+				activePreviewPath={activePreviewPath}
+				setActivePreviewPath={setActivePreviewPath}
 				setActiveViewDoc={setActiveViewDoc}
-				loadAndBuildFolderView={loadAndBuildFolderView}
+				loadAndBuildFolderView={openFolderView}
 				fileTree={fileTree}
 				onOpenVault={onOpenVault}
 				onOpenVaultAtPath={onOpenVaultAtPath}
