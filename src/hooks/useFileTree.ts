@@ -1,10 +1,18 @@
 import { join } from "@tauri-apps/api/path";
-import { save } from "@tauri-apps/plugin-dialog";
 import { openPath, openUrl } from "@tauri-apps/plugin-opener";
 import { useCallback, useRef } from "react";
 import type { DirChildSummary, FsEntry } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
 import { isMarkdownPath, parentDir } from "../utils/path";
+import {
+	compareEntries,
+	fileTitleFromRelPath,
+	normalizeEntries,
+	normalizeEntry,
+	rewritePrefix,
+	shouldRefreshActiveFolderView,
+	withInsertedEntry,
+} from "./fileTreeHelpers";
 
 export interface UseFileTreeResult {
 	loadDir: (dirPath: string, force?: boolean) => Promise<void>;
@@ -35,64 +43,6 @@ export interface UseFileTreeDeps {
 	setError: (error: string) => void;
 	loadAndBuildFolderView: (dir: string) => Promise<void>;
 	getActiveFolderDir: () => string | null;
-}
-
-function compareEntries(a: FsEntry, b: FsEntry): number {
-	if (a.kind === "dir" && b.kind === "file") return -1;
-	if (a.kind === "file" && b.kind === "dir") return 1;
-	return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
-}
-
-function normalizeRelPath(relPath: string): string {
-	const normalized = relPath.replace(/\\/g, "/").trim();
-	return normalized.replace(/^\/+/, "").replace(/\/+$/, "");
-}
-
-function entryNameFromRelPath(relPath: string): string {
-	const parts = relPath.split("/").filter(Boolean);
-	return parts[parts.length - 1] ?? "";
-}
-
-function fileTitleFromRelPath(relPath: string): string {
-	const name = entryNameFromRelPath(relPath);
-	if (!name) return "Untitled";
-	return name.toLowerCase().endsWith(".md") ? name.slice(0, -3) : name;
-}
-
-function normalizeEntry(entry: FsEntry): FsEntry | null {
-	const relPath = normalizeRelPath(entry.rel_path);
-	if (!relPath) return null;
-	const relName = entryNameFromRelPath(relPath);
-	const name =
-		entry.name.replace(/\u200b/g, "").trim() ||
-		relName ||
-		(entry.kind === "dir" ? "New Folder" : "Untitled.md");
-	return {
-		...entry,
-		name,
-		rel_path: relPath,
-	};
-}
-
-function normalizeEntries(entries: FsEntry[]): FsEntry[] {
-	const byPath = new Map<string, FsEntry>();
-	for (const entry of entries) {
-		const normalized = normalizeEntry(entry);
-		if (!normalized) continue;
-		byPath.set(normalized.rel_path, normalized);
-	}
-	return [...byPath.values()].sort(compareEntries);
-}
-
-function withInsertedEntry(entries: FsEntry[], entry: FsEntry): FsEntry[] {
-	if (entries.some((e) => e.rel_path === entry.rel_path)) return entries;
-	return [...entries, entry].sort(compareEntries);
-}
-
-function rewritePrefix(path: string, from: string, to: string): string {
-	if (path === from) return to;
-	if (path.startsWith(`${from}/`)) return `${to}${path.slice(from.length)}`;
-	return path;
 }
 
 export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
@@ -240,7 +190,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		async (createdInDir: string) => {
 			const activeDir = getActiveFolderDir();
 			if (activeDir === null) return;
-			if (activeDir !== createdInDir) return;
+			if (!shouldRefreshActiveFolderView(activeDir, createdInDir)) return;
 			await loadAndBuildFolderView(activeDir);
 		},
 		[getActiveFolderDir, loadAndBuildFolderView],
@@ -271,6 +221,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 			if (!vaultPath) return;
 			setError("");
 			try {
+				const { save } = await import("@tauri-apps/plugin-dialog");
 				const defaultPath = dirPath
 					? await join(vaultPath, dirPath, "Untitled.md")
 					: await join(vaultPath, "Untitled.md");
