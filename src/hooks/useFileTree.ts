@@ -301,13 +301,11 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 					});
 				}
 				void refreshAfterCreate(dirPath);
-				await openMarkdownFileInCanvas(markdownRel);
 			} catch (e) {
 				setError(e instanceof Error ? e.message : String(e));
 			}
 		},
 		[
-			openMarkdownFileInCanvas,
 			insertEntryOptimistic,
 			refreshAfterCreate,
 			setError,
