@@ -62,11 +62,11 @@ export function useAIChat(options: UseAIChatOptions): UseAIChatResult {
 	}, [chatMessages]);
 
 	useEffect(() => {
-		let unlistenChunk: (() => void) | null = null;
-		let unlistenDone: (() => void) | null = null;
-		let unlistenError: (() => void) | null = null;
-		(async () => {
-			unlistenChunk = await listen<{ job_id: string; delta: string }>(
+		let cancelled = false;
+		const cleanups: Array<() => void> = [];
+
+		void (async () => {
+			const u1 = await listen<{ job_id: string; delta: string }>(
 				"ai:chunk",
 				(evt) => {
 					if (evt.payload.job_id !== jobIdRef.current) return;
@@ -82,7 +82,13 @@ export function useAIChat(options: UseAIChatOptions): UseAIChatResult {
 					});
 				},
 			);
-			unlistenDone = await listen<{ job_id: string; cancelled: boolean }>(
+			if (cancelled) {
+				u1();
+				return;
+			}
+			cleanups.push(u1);
+
+			const u2 = await listen<{ job_id: string; cancelled: boolean }>(
 				"ai:done",
 				(evt) => {
 					if (evt.payload.job_id !== jobIdRef.current) return;
@@ -92,7 +98,13 @@ export function useAIChat(options: UseAIChatOptions): UseAIChatResult {
 					pendingActionRef.current = "chat";
 				},
 			);
-			unlistenError = await listen<{ job_id: string; message: string }>(
+			if (cancelled) {
+				u2();
+				return;
+			}
+			cleanups.push(u2);
+
+			const u3 = await listen<{ job_id: string; message: string }>(
 				"ai:error",
 				(evt) => {
 					if (evt.payload.job_id !== jobIdRef.current) return;
@@ -102,11 +114,16 @@ export function useAIChat(options: UseAIChatOptions): UseAIChatResult {
 					pendingActionRef.current = "chat";
 				},
 			);
+			if (cancelled) {
+				u3();
+				return;
+			}
+			cleanups.push(u3);
 		})();
+
 		return () => {
-			unlistenChunk?.();
-			unlistenDone?.();
-			unlistenError?.();
+			cancelled = true;
+			for (const fn of cleanups) fn();
 		};
 	}, []);
 

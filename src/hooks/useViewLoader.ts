@@ -38,6 +38,11 @@ export function useViewLoader(deps: UseViewLoaderDeps): UseViewLoaderResult {
 	const activeViewPathRef = useRef<string | null>(null);
 	const loadRequestVersionRef = useRef(0);
 
+	const setActiveViewDocAndRef = useCallback((doc: ViewDoc | null) => {
+		setActiveViewDoc(doc);
+		activeViewDocRef.current = doc;
+	}, []);
+
 	const loadAndBuildFolderView = useCallback(
 		async (dir: string) => {
 			const requestVersion = loadRequestVersionRef.current + 1;
@@ -260,7 +265,7 @@ export function useViewLoader(deps: UseViewLoaderDeps): UseViewLoaderResult {
 		canvasLoadingMessage,
 		activeViewDocRef,
 		activeViewPathRef,
-		setActiveViewDoc,
+		setActiveViewDoc: setActiveViewDocAndRef,
 		loadAndBuildFolderView,
 		loadAndBuildSearchView,
 		loadAndBuildTagView,

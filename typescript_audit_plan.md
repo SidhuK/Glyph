@@ -14,7 +14,7 @@ Fixing these three will eliminate most individual issues. Below is every finding
 
 ## Phase 0 — Critical Bug Fixes (< 1 hour)
 
-### 0.1 `useViewLoader` ref/state divergence bug — `src/hooks/useViewLoader.ts` L263 — **CRITICAL**
+### 0.1 `useViewLoader` ref/state divergence bug — `src/hooks/useViewLoader.ts` L263 — **CRITICAL** — [x]
 
 The returned `setActiveViewDoc` does NOT update `activeViewDocRef.current`. Consumers like `getActiveFolderDir()` in AppShell read the ref and get stale data after MainContent saves.
 
@@ -29,7 +29,7 @@ const setActiveViewDocAndRef = useCallback((doc: ViewDoc | null) => {
 
 Return `setActiveViewDocAndRef` instead of raw `setActiveViewDoc`.
 
-### 0.2 Async listener leak in `useMenuListeners` — `src/hooks/useMenuListeners.ts` L15-L37 — **HIGH**
+### 0.2 Async listener leak in `useMenuListeners` — `src/hooks/useMenuListeners.ts` L15-L37 — **HIGH** — [x]
 
 If unmounted before `await listen(...)` resolves, `unlisten` stays `null` and the listener leaks.
 
@@ -49,15 +49,15 @@ useEffect(() => {
 }, [deps]);
 ```
 
-### 0.3 Same leak in `SettingsApp` — `src/SettingsApp.tsx` L42-L56 — **HIGH**
+### 0.3 Same leak in `SettingsApp` — `src/SettingsApp.tsx` L42-L56 — **HIGH** — [x]
 
 Identical async listener race. Same fix pattern.
 
-### 0.4 Same leak in `useAIChat` — `src/components/ai/hooks/useAIChat.ts` L64-L111 — **HIGH**
+### 0.4 Same leak in `useAIChat` — `src/components/ai/hooks/useAIChat.ts` L64-L111 — **HIGH** — [x]
 
 Three `await listen(...)` calls without `cancelled` guards.
 
-### 0.5 `TauriChatTransport` missing stream `cancel()` — `src/lib/ai/tauriChatTransport.ts` L56-L148 — **HIGH**
+### 0.5 `TauriChatTransport` missing stream `cancel()` — `src/lib/ai/tauriChatTransport.ts` L56-L148 — **HIGH** — [x]
 
 If consumer cancels the `ReadableStream`, listeners remain attached.
 
@@ -73,17 +73,33 @@ return new ReadableStream<UIMessageChunk>({
 });
 ```
 
-### 0.6 Stale closure toggle in `AppShell` — `src/components/app/AppShell.tsx` L249 — **MEDIUM**
+### 0.6 Stale closure toggle in `AppShell` — `src/components/app/AppShell.tsx` L249 — **MEDIUM** — [x]
 
 `setAiSidebarOpen(!aiSidebarOpen)` captures stale `aiSidebarOpen`.
 
 **Fix:** `setAiSidebarOpen(v => !v)`.
 
-### 0.7 Pending save timer not cleared on doc swap in `CanvasPane` — `src/components/canvas/CanvasPane.tsx` L169-L187 — **MEDIUM**
+### 0.7 Pending save timer not cleared on doc swap in `CanvasPane` — `src/components/canvas/CanvasPane.tsx` L169-L187 — **MEDIUM** — [x]
 
 If doc changes while a save is queued, the wrong shape could be saved.
 
 **Fix:** Clear `saveTimeoutRef.current` in the doc-change effect before `setNodes/setEdges`.
+
+Everything passes. Here's a summary of all Phase 0 fixes applied:
+
+```
+Completed All Steps
+
+Step	File	Fix
+0.1	useViewLoader.ts	Wrapped setActiveViewDoc in setActiveViewDocAndRef that syncs the ref
+0.2	useMenuListeners.ts	Added cancelled guard with per-listener check after each await listen()
+0.3	SettingsApp.tsx	Same cancelled guard pattern for the single settings:navigate listener
+0.4	useAIChat.ts	Same pattern for all 3 AI event listeners (ai:chunk, ai:done, ai:error)
+0.5	tauriChatTransport.ts	Added cancel() handler on ReadableStream to invoke cleanup and cancel the AI job
+0.6	AppShell.tsx + useAISidebar.ts	Switched to functional updater (v) => !v, widened type to React.Dispatch<SetStateAction<boolean>>, removed aiSidebarOpen from deps
+0.7	CanvasPane.tsx	Clear both saveTimeoutRef and pendingSaveRef before applying new doc state
+
+```
 
 ---
 
@@ -134,17 +150,17 @@ export function isFileNode(n: CanvasNode): n is Node<FileNodeData, "file"> {
 
 **Files to update after this change (delete unsafe casts):**
 
-| File | Lines with unsafe casts | Fix |
-|------|------------------------|-----|
-| `src/components/canvas/CanvasPane.tsx` | L97-110, L282-284, L297, L311-328, L352-361 | Use type guards |
-| `src/components/canvas/hooks/useCanvasToolbarActions.ts` | L110, L134 | Use `isNoteNode(n)`, `isLinkNode(n)` |
-| `src/components/canvas/hooks/useExternalCanvasCommands.ts` | L39, L64 | Use type guards |
-| `src/components/canvas/hooks/useNoteEditSession.ts` | L161 | Use `isNoteNode(node)` |
-| `src/components/canvas/hooks/useCanvasHistory.ts` | L32-35, L42-44 | Access fields directly after re-type |
-| `src/lib/views/sanitize.ts` | L12-20, L34-38 | Destructure typed fields |
-| `src/lib/views/builders/folderView.ts` | L84-86 | Direct typed access |
-| `src/lib/views/builders/searchView.ts` | L49-50 | Direct typed access |
-| `src/lib/views/builders/tagView.ts` | L50-51 | Direct typed access |
+| File                                                       | Lines with unsafe casts                     | Fix                                  |
+| ---------------------------------------------------------- | ------------------------------------------- | ------------------------------------ |
+| `src/components/canvas/CanvasPane.tsx`                     | L97-110, L282-284, L297, L311-328, L352-361 | Use type guards                      |
+| `src/components/canvas/hooks/useCanvasToolbarActions.ts`   | L110, L134                                  | Use `isNoteNode(n)`, `isLinkNode(n)` |
+| `src/components/canvas/hooks/useExternalCanvasCommands.ts` | L39, L64                                    | Use type guards                      |
+| `src/components/canvas/hooks/useNoteEditSession.ts`        | L161                                        | Use `isNoteNode(node)`               |
+| `src/components/canvas/hooks/useCanvasHistory.ts`          | L32-35, L42-44                              | Access fields directly after re-type |
+| `src/lib/views/sanitize.ts`                                | L12-20, L34-38                              | Destructure typed fields             |
+| `src/lib/views/builders/folderView.ts`                     | L84-86                                      | Direct typed access                  |
+| `src/lib/views/builders/searchView.ts`                     | L49-50                                      | Direct typed access                  |
+| `src/lib/views/builders/tagView.ts`                        | L50-51                                      | Direct typed access                  |
 
 ### 1.2 Fix `invoke` type safety — `src/lib/tauri.ts` L320-L333 — **HIGH**
 
@@ -299,12 +315,12 @@ Currently `App → AppShell → Sidebar/MainContent` drills 40+ props. `AppShell
 
 **Fix:** Create 4 lean contexts:
 
-| Context | Data | Consumed by |
-|---------|------|-------------|
-| `VaultContext` | vaultPath, schemaVersion, recentVaults, isIndexing, open/close/create actions | Sidebar, WelcomeScreen, MainContent |
-| `FileTreeContext` | rootEntries, childrenByDir, expandedDirs, summaries, tree actions | FileTreePane, SidebarContent |
-| `ViewContext` | activeViewDoc, activeViewPath, loading message, loaders, setActiveViewDoc | MainContent, MainToolbar, FolderShelf |
-| `UIContext` | sidebarCollapsed, paletteOpen, aiSidebar state, search state | Sidebar, AppShell chrome |
+| Context           | Data                                                                          | Consumed by                           |
+| ----------------- | ----------------------------------------------------------------------------- | ------------------------------------- |
+| `VaultContext`    | vaultPath, schemaVersion, recentVaults, isIndexing, open/close/create actions | Sidebar, WelcomeScreen, MainContent   |
+| `FileTreeContext` | rootEntries, childrenByDir, expandedDirs, summaries, tree actions             | FileTreePane, SidebarContent          |
+| `ViewContext`     | activeViewDoc, activeViewPath, loading message, loaders, setActiveViewDoc     | MainContent, MainToolbar, FolderShelf |
+| `UIContext`       | sidebarCollapsed, paletteOpen, aiSidebar state, search state                  | Sidebar, AppShell chrome              |
 
 Implementation:
 
@@ -356,10 +372,7 @@ export function useVault() {
 **Fix:**
 
 ```ts
-const nodeById = useMemo(
-  () => new Map(nodes.map((n) => [n.id, n])),
-  [nodes],
-);
+const nodeById = useMemo(() => new Map(nodes.map((n) => [n.id, n])), [nodes]);
 ```
 
 ### 4.3 `findDropPosition` scans all nodes — `src/components/canvas/CanvasPane.tsx` L219-L232 — **MEDIUM**
@@ -442,9 +455,7 @@ Replace 15+ instances of `e instanceof Error ? e.message : String(e)`.
 Create `src/utils/cn.ts`:
 
 ```ts
-export function cn(
-  ...parts: (string | false | null | undefined)[]
-): string {
+export function cn(...parts: (string | false | null | undefined)[]): string {
   return parts.filter(Boolean).join(" ");
 }
 ```
@@ -459,9 +470,7 @@ Replace string concatenation in `SettingsApp.tsx` L129, `AppShell.tsx` L294-L297
 const t = e.target;
 if (
   t instanceof HTMLElement &&
-  (t.tagName === "INPUT" ||
-    t.tagName === "TEXTAREA" ||
-    t.isContentEditable)
+  (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)
 )
   return;
 ```
@@ -544,11 +553,11 @@ If component unmounts while dragging, `mousemove`/`mouseup` remain on window.
 
 ### 6.1 Existing test coverage
 
-| File | Test exists? | Notes |
-|------|-------------|-------|
-| `src/hooks/fileTreeHelpers.ts` | Yes: `src/hooks/fileTreeHelpers.test.ts` | Maintain |
-| `src/utils/filePreview.ts` | Yes: `src/utils/filePreview.test.ts` | Maintain |
-| All other files | No tests | Add incrementally |
+| File                           | Test exists?                             | Notes             |
+| ------------------------------ | ---------------------------------------- | ----------------- |
+| `src/hooks/fileTreeHelpers.ts` | Yes: `src/hooks/fileTreeHelpers.test.ts` | Maintain          |
+| `src/utils/filePreview.ts`     | Yes: `src/utils/filePreview.test.ts`     | Maintain          |
+| All other files                | No tests                                 | Add incrementally |
 
 ### 6.2 Recommended test additions (priority order)
 
@@ -563,15 +572,15 @@ If component unmounts while dragging, `mousemove`/`mouseup` remain on window.
 
 ## Implementation Priority Summary
 
-| Phase | Effort | Impact | Files touched |
-|-------|--------|--------|---------------|
-| **0: Bug fixes** | < 1h | Critical | 6 files |
-| **1: Type safety** | 1-3h | Critical | 12 files |
-| **2: De-duplication** | 1-2d | High | 6 files |
-| **3: Prop drilling** | 1-2d | High | 10+ files |
-| **4: Performance** | 1d | Medium | 8 files |
-| **5: Patterns** | 1d | Medium-High | 15 files |
-| **6: Testing** | ½d | Medium | New files |
+| Phase                 | Effort | Impact      | Files touched |
+| --------------------- | ------ | ----------- | ------------- |
+| **0: Bug fixes**      | < 1h   | Critical    | 6 files       |
+| **1: Type safety**    | 1-3h   | Critical    | 12 files      |
+| **2: De-duplication** | 1-2d   | High        | 6 files       |
+| **3: Prop drilling**  | 1-2d   | High        | 10+ files     |
+| **4: Performance**    | 1d     | Medium      | 8 files       |
+| **5: Patterns**       | 1d     | Medium-High | 15 files      |
+| **6: Testing**        | ½d     | Medium      | New files     |
 
 Phases 0 and 1 give the highest ROI and should be done first. Phase 2 and 3 can be tackled in parallel by different branches since they affect different file sets.
 

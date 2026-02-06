@@ -178,6 +178,11 @@ function CanvasPane({
 			incomingSnapshot === lastSavedSnapshotRef.current
 		)
 			return;
+		if (saveTimeoutRef.current) {
+			clearTimeout(saveTimeoutRef.current);
+			saveTimeoutRef.current = null;
+		}
+		pendingSaveRef.current = null;
 		docIdRef.current = doc.id;
 		initializedRef.current = true;
 		setNodes(doc.nodes);

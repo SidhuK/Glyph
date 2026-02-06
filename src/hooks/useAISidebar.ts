@@ -6,7 +6,7 @@ import {
 
 export interface UseAISidebarResult {
 	aiSidebarOpen: boolean;
-	setAiSidebarOpen: (open: boolean) => void;
+	setAiSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
 	aiSidebarWidth: number;
 	setAiSidebarWidth: (width: number) => void;
 	aiSidebarWidthRef: React.RefObject<number>;

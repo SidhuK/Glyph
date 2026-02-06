@@ -13,26 +13,41 @@ export function useMenuListeners({
 	closeVault,
 }: UseMenuListenersProps): void {
 	useEffect(() => {
-		let unlistenOpen: (() => void) | null = null;
-		let unlistenCreate: (() => void) | null = null;
-		let unlistenClose: (() => void) | null = null;
+		let cancelled = false;
+		const cleanups: Array<() => void> = [];
 
 		void (async () => {
-			unlistenOpen = await listen("menu:open_vault", () => {
+			const u1 = await listen("menu:open_vault", () => {
 				void onOpenVault();
 			});
-			unlistenCreate = await listen("menu:create_vault", () => {
+			if (cancelled) {
+				u1();
+				return;
+			}
+			cleanups.push(u1);
+
+			const u2 = await listen("menu:create_vault", () => {
 				void onCreateVault();
 			});
-			unlistenClose = await listen("menu:close_vault", () => {
+			if (cancelled) {
+				u2();
+				return;
+			}
+			cleanups.push(u2);
+
+			const u3 = await listen("menu:close_vault", () => {
 				void closeVault();
 			});
+			if (cancelled) {
+				u3();
+				return;
+			}
+			cleanups.push(u3);
 		})();
 
 		return () => {
-			unlistenOpen?.();
-			unlistenCreate?.();
-			unlistenClose?.();
+			cancelled = true;
+			for (const fn of cleanups) fn();
 		};
 	}, [closeVault, onCreateVault, onOpenVault]);
 }

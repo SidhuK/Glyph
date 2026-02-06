@@ -40,17 +40,24 @@ export default function SettingsApp() {
 	}, []);
 
 	useEffect(() => {
+		let cancelled = false;
 		let unlisten: (() => void) | null = null;
-		(async () => {
-			unlisten = await listen<{ tab: SettingsTab }>(
+		void (async () => {
+			const u = await listen<{ tab: SettingsTab }>(
 				"settings:navigate",
 				(evt) => {
 					if (!evt.payload?.tab) return;
 					setSettingsHash(evt.payload.tab);
 				},
 			);
+			if (cancelled) {
+				u();
+				return;
+			}
+			unlisten = u;
 		})();
 		return () => {
+			cancelled = true;
 			unlisten?.();
 		};
 	}, []);

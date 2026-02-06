@@ -246,7 +246,7 @@ export function AppShell({
 				label: "Toggle AI",
 				shortcut: { meta: true, shift: true, key: "a" },
 				enabled: Boolean(vaultPath),
-				action: () => setAiSidebarOpen(!aiSidebarOpen),
+				action: () => setAiSidebarOpen((v) => !v),
 			},
 			{
 				id: "new-note",
@@ -271,7 +271,6 @@ export function AppShell({
 			},
 		],
 		[
-			aiSidebarOpen,
 			fileTree,
 			openFolderView,
 			onOpenVault,

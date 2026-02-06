@@ -53,6 +53,8 @@ export class TauriChatTransport implements ChatTransport<UIMessage> {
 		const jobId = res.job_id;
 		const textPartId = crypto.randomUUID();
 
+		const cleanupRef: { fn: (() => void) | null } = { fn: null };
+
 		return new ReadableStream<UIMessageChunk>({
 			start: async (controller) => {
 				let startedText = false;
@@ -65,6 +67,7 @@ export class TauriChatTransport implements ChatTransport<UIMessage> {
 					for (const fn of cleanupFns) fn();
 					cleanupFns.length = 0;
 				};
+				cleanupRef.fn = cleanup;
 
 				const maybeStartText = () => {
 					if (startedText) return;
@@ -144,6 +147,10 @@ export class TauriChatTransport implements ChatTransport<UIMessage> {
 					},
 				);
 				cleanupFns.push(unlistenError);
+			},
+			cancel: async () => {
+				void invoke("ai_chat_cancel", { job_id: jobId }).catch(() => {});
+				cleanupRef.fn?.();
 			},
 		});
 	}
