@@ -131,6 +131,35 @@ pub async fn vault_create_dir(
 }
 
 #[tauri::command]
+pub async fn vault_rename_path(
+    state: State<'_, VaultState>,
+    from_path: String,
+    to_path: String,
+) -> Result<(), String> {
+    let root = state.current_root()?;
+    tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
+        let from_rel = PathBuf::from(&from_path);
+        let to_rel = PathBuf::from(&to_path);
+        deny_hidden_rel_path(&from_rel)?;
+        deny_hidden_rel_path(&to_rel)?;
+        let from_abs = paths::join_under(&root, &from_rel)?;
+        let to_abs = paths::join_under(&root, &to_rel)?;
+        if !from_abs.exists() {
+            return Err("source path does not exist".to_string());
+        }
+        if to_abs.exists() {
+            return Err("destination path already exists".to_string());
+        }
+        if let Some(parent) = to_abs.parent() {
+            std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+        }
+        std::fs::rename(from_abs, to_abs).map_err(|e| e.to_string())
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
 pub async fn vault_relativize_path(
     state: State<'_, VaultState>,
     abs_path: String,

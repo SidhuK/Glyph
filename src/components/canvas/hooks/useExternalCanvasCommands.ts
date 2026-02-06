@@ -58,14 +58,29 @@ export function useExternalCanvasCommands({
 				break;
 			}
 			case "open_note_editor": {
-				const node = nodes.find(
+				const existingNode = nodes.find(
 					(n) =>
 						n.type === "note" &&
 						(n.data as Record<string, unknown>)?.noteId === cmd.noteId,
 				);
-				if (node) {
+				if (existingNode) {
 					ensureTabForNote(cmd.noteId, cmd.title ?? "Untitled");
-					void beginInlineEdit(node);
+					void beginInlineEdit(existingNode);
+				} else {
+					const pos = findDropPosition();
+					const createdNode: CanvasNode = {
+						id: cmd.noteId,
+						type: "note",
+						position: pos,
+						data: {
+							noteId: cmd.noteId,
+							title: cmd.title ?? "Untitled",
+							content: "",
+						},
+					};
+					setNodes((prev) => [...prev, createdNode]);
+					ensureTabForNote(cmd.noteId, cmd.title ?? "Untitled");
+					void beginInlineEdit(createdNode);
 				}
 				markHandled();
 				break;

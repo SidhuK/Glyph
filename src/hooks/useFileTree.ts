@@ -14,7 +14,8 @@ export interface UseFileTreeResult {
 	openNonMarkdownExternally: (relPath: string) => Promise<void>;
 	onNewFile: () => Promise<void>;
 	onNewFileInDir: (dirPath: string) => Promise<void>;
-	onNewFolderInDir: (dirPath: string) => Promise<void>;
+	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
+	onRenameDir: (dirPath: string, nextName: string) => Promise<string | null>;
 }
 
 export interface UseFileTreeDeps {
@@ -50,6 +51,17 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 
 	const dirSummariesInFlightRef = useRef(new Set<string>());
 	const loadedDirsRef = useRef(new Set<string>());
+	const issueOpenNoteCommand = useCallback(
+		(relPath: string) => {
+			setCanvasCommand({
+				id: crypto.randomUUID(),
+				kind: "open_note_editor",
+				noteId: relPath,
+				title: relPath.split("/").pop() || relPath,
+			});
+		},
+		[setCanvasCommand],
+	);
 
 	const loadDir = useCallback(
 		async (dirPath: string, force = false) => {
@@ -107,21 +119,17 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 	const openMarkdownFileInCanvas = useCallback(
 		async (relPath: string) => {
 			setError("");
+			setActiveFilePath(relPath);
+			issueOpenNoteCommand(relPath);
 			try {
 				const dir = parentDir(relPath);
 				await loadAndBuildFolderView(dir);
-				setActiveFilePath(relPath);
-				setCanvasCommand({
-					id: crypto.randomUUID(),
-					kind: "open_note_editor",
-					noteId: relPath,
-					title: relPath.split("/").pop() || relPath,
-				});
+				issueOpenNoteCommand(relPath);
 			} catch (e) {
 				setError(e instanceof Error ? e.message : String(e));
 			}
 		},
-		[loadAndBuildFolderView, setActiveFilePath, setCanvasCommand, setError],
+		[issueOpenNoteCommand, loadAndBuildFolderView, setActiveFilePath, setError],
 	);
 
 	const openNonMarkdownExternally = useCallback(
@@ -220,20 +228,22 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 
 	const onNewFolderInDir = useCallback(
 		async (dirPath: string) => {
-			if (!vaultPath) return;
+			if (!vaultPath) return null;
 			try {
-				const raw = window.prompt("New folder name:", "New Folder");
-				if (raw === null) return;
-				const name = raw.trim();
-				if (!name) return;
-				if (
-					name === "." ||
-					name === ".." ||
-					name.includes("/") ||
-					name.includes("\\")
-				) {
-					setError("Folder name cannot contain path separators");
-					return;
+				const siblings = await invoke(
+					"vault_list_dir",
+					dirPath ? { dir: dirPath } : {},
+				);
+				const siblingNames = new Set(
+					siblings
+						.filter((entry) => entry.kind === "dir")
+						.map((entry) => entry.name.toLowerCase()),
+				);
+				let name = "New Folder";
+				if (siblingNames.has(name.toLowerCase())) {
+					let n = 2;
+					while (siblingNames.has(`new folder ${n}`)) n += 1;
+					name = `New Folder ${n}`;
 				}
 				setError("");
 				const path = dirPath ? `${dirPath}/${name}` : name;
@@ -245,11 +255,70 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 					return next;
 				});
 				await refreshAfterCreate(dirPath);
+				return path;
 			} catch (e) {
 				setError(e instanceof Error ? e.message : String(e));
 			}
+			return null;
 		},
 		[refreshAfterCreate, setError, setExpandedDirs, vaultPath],
+	);
+
+	const onRenameDir = useCallback(
+		async (dirPath: string, nextName: string) => {
+			const name = nextName.trim();
+			if (!name || name === "." || name === "..") return null;
+			if (name.includes("/") || name.includes("\\")) {
+				setError("Folder name cannot contain path separators");
+				return null;
+			}
+			const parent = parentDir(dirPath);
+			const nextPath = parent ? `${parent}/${name}` : name;
+			if (nextPath === dirPath) return nextPath;
+			setError("");
+			try {
+				await invoke("vault_rename_path", {
+					from_path: dirPath,
+					to_path: nextPath,
+				});
+				setExpandedDirs((prev) => {
+					const next = new Set<string>();
+					for (const expanded of prev) {
+						if (expanded === dirPath || expanded.startsWith(`${dirPath}/`)) {
+							next.add(`${nextPath}${expanded.slice(dirPath.length)}`);
+						} else {
+							next.add(expanded);
+						}
+					}
+					return next;
+				});
+				setChildrenByDir((prev) => {
+					const next: Record<string, FsEntry[] | undefined> = {};
+					for (const [key, value] of Object.entries(prev)) {
+						if (key === dirPath || key.startsWith(`${dirPath}/`)) {
+							next[`${nextPath}${key.slice(dirPath.length)}`] = value;
+						} else {
+							next[key] = value;
+						}
+					}
+					return next;
+				});
+				loadedDirsRef.current = new Set(
+					[...loadedDirsRef.current].map((loaded) =>
+						loaded === dirPath || loaded.startsWith(`${dirPath}/`)
+							? `${nextPath}${loaded.slice(dirPath.length)}`
+							: loaded,
+					),
+				);
+				await refreshAfterCreate(parent);
+				await loadDir(nextPath, true);
+				return nextPath;
+			} catch (e) {
+				setError(e instanceof Error ? e.message : String(e));
+				return null;
+			}
+		},
+		[loadDir, refreshAfterCreate, setChildrenByDir, setError, setExpandedDirs],
 	);
 
 	return {
@@ -261,5 +330,6 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		onNewFile,
 		onNewFileInDir,
 		onNewFolderInDir,
+		onRenameDir,
 	};
 }

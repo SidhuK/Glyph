@@ -237,6 +237,7 @@ pub fn run() {
             vault_fs::read_write::vault_read_texts_batch,
             vault_fs::read_write::vault_write_text,
             vault_fs::read_write::vault_create_dir,
+            vault_fs::read_write::vault_rename_path,
             vault_fs::read_write::vault_relativize_path,
             tether_fs::tether_read_text,
             tether_fs::tether_write_text,

@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import type { CSSProperties } from "react";
-import { memo } from "react";
+import { memo, useCallback, useState } from "react";
 import type { DirChildSummary, FsEntry } from "../../lib/tauri";
 import { parentDir } from "../../utils/path";
 import { Plus } from "../Icons";
@@ -18,7 +18,8 @@ interface FileTreePaneProps {
 	onOpenFile: (filePath: string) => void;
 	onNewFile: () => void;
 	onNewFileInDir: (dirPath: string) => void;
-	onNewFolderInDir: (dirPath: string) => void;
+	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
+	onRenameDir: (dirPath: string, nextName: string) => Promise<string | null>;
 }
 
 const springTransition = {
@@ -39,7 +40,30 @@ export const FileTreePane = memo(function FileTreePane({
 	onNewFile,
 	onNewFileInDir,
 	onNewFolderInDir,
+	onRenameDir,
 }: FileTreePaneProps) {
+	const [renamingDirPath, setRenamingDirPath] = useState<string | null>(null);
+
+	const handleCreateFolder = useCallback(
+		async (dirPath: string) => {
+			const created = await onNewFolderInDir(dirPath);
+			if (created) {
+				setRenamingDirPath(created);
+			}
+		},
+		[onNewFolderInDir],
+	);
+
+	const handleCommitRename = useCallback(
+		async (dirPath: string, nextName: string) => {
+			const renamed = await onRenameDir(dirPath, nextName);
+			if (renamed) {
+				setRenamingDirPath(null);
+			}
+		},
+		[onRenameDir],
+	);
+
 	const renderEntries = (
 		entries: FsEntry[],
 		parentDepth: number,
@@ -84,11 +108,14 @@ export const FileTreePane = memo(function FileTreePane({
 								entry={e}
 								depth={depth}
 								isExpanded={isExpanded}
+								isRenaming={renamingDirPath === e.rel_path}
 								summary={summary}
 								onToggleDir={onToggleDir}
 								onSelectDir={onSelectDir}
 								onNewFileInDir={onNewFileInDir}
-								onNewFolderInDir={onNewFolderInDir}
+								onNewFolderInDir={handleCreateFolder}
+								onCommitRename={handleCommitRename}
+								onCancelRename={() => setRenamingDirPath(null)}
 							>
 								{children && renderEntries(children, depth, e.rel_path)}
 							</FileTreeDirItem>
@@ -103,7 +130,7 @@ export const FileTreePane = memo(function FileTreePane({
 							isActive={e.rel_path === activeFilePath}
 							onOpenFile={onOpenFile}
 							onNewFileInDir={onNewFileInDir}
-							onNewFolderInDir={onNewFolderInDir}
+							onNewFolderInDir={handleCreateFolder}
 							parentDirPath={parentDir(e.rel_path)}
 						/>
 					);

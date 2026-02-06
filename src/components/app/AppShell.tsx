@@ -302,7 +302,8 @@ export function AppShell({
 				onOpenFile={(p) => void fileTree.openFile(p)}
 				onNewFile={fileTree.onNewFile}
 				onNewFileInDir={(p) => void fileTree.onNewFileInDir(p)}
-				onNewFolderInDir={(p) => void fileTree.onNewFolderInDir(p)}
+				onNewFolderInDir={(p) => fileTree.onNewFolderInDir(p)}
+				onRenameDir={(p, name) => fileTree.onRenameDir(p, name)}
 				tags={tags}
 				tagsError={tagsError}
 				onSelectTag={(t) => void loadAndBuildTagView(t)}

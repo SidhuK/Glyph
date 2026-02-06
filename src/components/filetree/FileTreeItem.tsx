@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "motion/react";
 import type { CSSProperties, MouseEvent, ReactNode } from "react";
-import { memo } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import type { DirChildSummary, FsEntry } from "../../lib/tauri";
 import { FolderClosed, FolderOpen, FolderPlus, Plus } from "../Icons";
 import { basename, getFileTypeInfo } from "./fileTypeUtils";
@@ -39,22 +39,28 @@ interface FileTreeDirItemProps {
 	entry: FsEntry;
 	depth: number;
 	isExpanded: boolean;
+	isRenaming: boolean;
 	summary: DirChildSummary | null;
 	children?: ReactNode;
 	onToggleDir: (dirPath: string) => void;
 	onSelectDir: (dirPath: string) => void;
-	onNewFileInDir: (dirPath: string) => void;
-	onNewFolderInDir: (dirPath: string) => void;
+	onCommitRename: (dirPath: string, nextName: string) => Promise<void> | void;
+	onCancelRename: () => void;
+	onNewFileInDir: (dirPath: string) => unknown;
+	onNewFolderInDir: (dirPath: string) => unknown;
 }
 
 export const FileTreeDirItem = memo(function FileTreeDirItem({
 	entry,
 	depth,
 	isExpanded,
+	isRenaming,
 	summary,
 	children,
 	onToggleDir,
 	onSelectDir,
+	onCommitRename,
+	onCancelRename,
 	onNewFileInDir,
 	onNewFolderInDir,
 }: FileTreeDirItemProps) {
@@ -66,8 +72,32 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 		"--row-line-opacity": depth === 0 ? 0 : 0.85,
 	} as CSSProperties;
 
+	const inputRef = useRef<HTMLInputElement | null>(null);
+	const renameSubmittedRef = useRef(false);
+	const [draftName, setDraftName] = useState(entry.name);
 	const totalFiles = summary?.total_files_recursive ?? 0;
 	const countsLabel = summary && totalFiles > 0 ? String(totalFiles) : "";
+
+	useEffect(() => {
+		if (!isRenaming) return;
+		setDraftName(entry.name);
+		renameSubmittedRef.current = false;
+		window.requestAnimationFrame(() => {
+			inputRef.current?.focus();
+			inputRef.current?.select();
+		});
+	}, [entry.name, isRenaming]);
+
+	const stopInputEvent = (event: MouseEvent<HTMLElement>) => {
+		event.preventDefault();
+		event.stopPropagation();
+	};
+
+	const commitRename = async () => {
+		if (renameSubmittedRef.current) return;
+		renameSubmittedRef.current = true;
+		await onCommitRename(entry.rel_path, draftName);
+	};
 
 	return (
 		<motion.li
@@ -78,42 +108,96 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 			}}
 			transition={{ duration: 0.15 }}
 		>
-			<motion.button
-				type="button"
-				className="fileTreeRow"
-				onClick={() => {
-					onSelectDir(entry.rel_path);
-					onToggleDir(entry.rel_path);
-				}}
-				style={rowStyle}
-				variants={rowVariants}
-				whileHover="hover"
-				whileTap="tap"
-				animate={isExpanded ? "active" : "idle"}
-				transition={springTransition}
-			>
-				<motion.span
-					className="fileTreeIcon"
-					style={{
-						color: isExpanded ? "var(--text-accent)" : "var(--text-tertiary)",
-					}}
-					animate={{ scale: isExpanded ? 1.1 : 1 }}
-					transition={springTransition}
-				>
-					{isExpanded ? <FolderOpen size={14} /> : <FolderClosed size={14} />}
-				</motion.span>
-				<span className="fileTreeName">{entry.name}</span>
+			<div className="fileTreeRowShell">
+				{isRenaming ? (
+					<div className="fileTreeRow fileTreeRowEditing" style={rowStyle}>
+						<motion.span
+							className="fileTreeIcon"
+							style={{
+								color: isExpanded
+									? "var(--text-accent)"
+									: "var(--text-tertiary)",
+							}}
+							animate={{ scale: isExpanded ? 1.1 : 1 }}
+							transition={springTransition}
+						>
+							{isExpanded ? (
+								<FolderOpen size={14} />
+							) : (
+								<FolderClosed size={14} />
+							)}
+						</motion.span>
+						<input
+							ref={inputRef}
+							className="fileTreeRenameInput"
+							value={draftName}
+							onChange={(event) => setDraftName(event.target.value)}
+							onMouseDown={stopInputEvent}
+							onClick={stopInputEvent}
+							onBlur={() => {
+								void commitRename();
+							}}
+							onKeyDown={(event) => {
+								if (event.key === "Enter") {
+									event.preventDefault();
+									void commitRename();
+									return;
+								}
+								if (event.key === "Escape") {
+									event.preventDefault();
+									renameSubmittedRef.current = true;
+									onCancelRename();
+								}
+							}}
+						/>
+					</div>
+				) : (
+					<motion.button
+						type="button"
+						className="fileTreeRow"
+						onClick={() => {
+							onSelectDir(entry.rel_path);
+							onToggleDir(entry.rel_path);
+						}}
+						style={rowStyle}
+						variants={rowVariants}
+						whileHover="hover"
+						whileTap="tap"
+						animate={isExpanded ? "active" : "idle"}
+						transition={springTransition}
+					>
+						<motion.span
+							className="fileTreeIcon"
+							style={{
+								color: isExpanded
+									? "var(--text-accent)"
+									: "var(--text-tertiary)",
+							}}
+							animate={{ scale: isExpanded ? 1.1 : 1 }}
+							transition={springTransition}
+						>
+							{isExpanded ? (
+								<FolderOpen size={14} />
+							) : (
+								<FolderClosed size={14} />
+							)}
+						</motion.span>
+						<span className="fileTreeName">{entry.name}</span>
+					</motion.button>
+				)}
+				{!isRenaming ? (
+					<RowCreateActions
+						dirPath={entry.rel_path}
+						onNewFileInDir={onNewFileInDir}
+						onNewFolderInDir={onNewFolderInDir}
+					/>
+				) : null}
 				{countsLabel ? (
 					<span className="fileTreeCounts" title={`${countsLabel} files`}>
 						{countsLabel}
 					</span>
 				) : null}
-			</motion.button>
-			<RowCreateActions
-				dirPath={entry.rel_path}
-				onNewFileInDir={onNewFileInDir}
-				onNewFolderInDir={onNewFolderInDir}
-			/>
+			</div>
 			<AnimatePresence>
 				{isExpanded && children && (
 					<motion.div
@@ -136,8 +220,8 @@ interface FileTreeFileItemProps {
 	depth: number;
 	isActive: boolean;
 	onOpenFile: (filePath: string) => void;
-	onNewFileInDir: (dirPath: string) => void;
-	onNewFolderInDir: (dirPath: string) => void;
+	onNewFileInDir: (dirPath: string) => unknown;
+	onNewFolderInDir: (dirPath: string) => unknown;
 	parentDirPath: string;
 }
 
@@ -172,43 +256,45 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 			}}
 			transition={{ duration: 0.15 }}
 		>
-			<motion.button
-				type="button"
-				className="fileTreeRow"
-				onClick={() => onOpenFile(entry.rel_path)}
-				style={rowStyle}
-				title={`${entry.rel_path} (${label})`}
-				variants={rowVariants}
-				whileHover="hover"
-				whileTap="tap"
-				animate={isActive ? "active" : "idle"}
-				transition={springTransition}
-			>
-				<motion.span
-					className="fileTreeIcon"
-					variants={iconVariants}
-					animate={isActive ? "active" : "idle"}
+			<div className="fileTreeRowShell">
+				<motion.button
+					type="button"
+					className="fileTreeRow"
+					onClick={() => onOpenFile(entry.rel_path)}
+					style={rowStyle}
+					title={`${entry.rel_path} (${label})`}
+					variants={rowVariants}
 					whileHover="hover"
 					whileTap="tap"
-					style={{ color }}
+					animate={isActive ? "active" : "idle"}
+					transition={springTransition}
 				>
-					<Icon size={14} />
-				</motion.span>
-				<span className="fileTreeName">{basename(entry.rel_path)}</span>
-			</motion.button>
-			<RowCreateActions
-				dirPath={parentDirPath}
-				onNewFileInDir={onNewFileInDir}
-				onNewFolderInDir={onNewFolderInDir}
-			/>
+					<motion.span
+						className="fileTreeIcon"
+						variants={iconVariants}
+						animate={isActive ? "active" : "idle"}
+						whileHover="hover"
+						whileTap="tap"
+						style={{ color }}
+					>
+						<Icon size={14} />
+					</motion.span>
+					<span className="fileTreeName">{basename(entry.rel_path)}</span>
+				</motion.button>
+				<RowCreateActions
+					dirPath={parentDirPath}
+					onNewFileInDir={onNewFileInDir}
+					onNewFolderInDir={onNewFolderInDir}
+				/>
+			</div>
 		</motion.li>
 	);
 });
 
 interface RowCreateActionsProps {
 	dirPath: string;
-	onNewFileInDir: (dirPath: string) => void;
-	onNewFolderInDir: (dirPath: string) => void;
+	onNewFileInDir: (dirPath: string) => unknown;
+	onNewFolderInDir: (dirPath: string) => unknown;
 }
 
 function RowCreateActions({
@@ -231,7 +317,7 @@ function RowCreateActions({
 				onMouseDown={stopRowEvents}
 				onClick={(event) => {
 					stopRowEvents(event);
-					onNewFileInDir(dirPath);
+					void onNewFileInDir(dirPath);
 				}}
 			>
 				<Plus size={12} />
@@ -243,7 +329,7 @@ function RowCreateActions({
 				onMouseDown={stopRowEvents}
 				onClick={(event) => {
 					stopRowEvents(event);
-					onNewFolderInDir(dirPath);
+					void onNewFolderInDir(dirPath);
 				}}
 			>
 				<FolderPlus size={12} />
