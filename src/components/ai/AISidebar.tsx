@@ -17,7 +17,6 @@ function messageText(message: UIMessage): string {
 
 type AddTrigger = {
 	start: number;
-	end: number;
 	query: string;
 };
 
@@ -27,7 +26,6 @@ function parseAddTrigger(input: string): AddTrigger | null {
 		const idx = input.lastIndexOf("/add");
 		return {
 			start: idx,
-			end: input.length,
 			query: (addMatch[1] ?? "").trim(),
 		};
 	}
@@ -36,7 +34,6 @@ function parseAddTrigger(input: string): AddTrigger | null {
 		const idx = input.lastIndexOf("@");
 		return {
 			start: idx,
-			end: input.length,
 			query: (atMatch[1] ?? "").trim(),
 		};
 	}
@@ -82,7 +79,7 @@ export function AISidebar({
 
 	const handleSend = async () => {
 		if (!canSend) return;
-		const text = input.trim();
+		const text = context.resolveMentionsFromInput(input);
 		if (!text) return;
 		setInput("");
 		const built = await context.ensurePayload();
@@ -103,8 +100,8 @@ export function AISidebar({
 		);
 	};
 
-	const handleAddFolder = (path: string) => {
-		context.addFolder(path);
+	const handleAddContext = (kind: "folder" | "file", path: string) => {
+		context.addContext(kind, path);
 		if (trigger) {
 			setInput((prev) => {
 				const before = prev.slice(0, trigger.start).trimEnd();
@@ -203,7 +200,7 @@ export function AISidebar({
 								Hi, how can I help you today?
 							</div>
 							<div className="aiChatEmptyMeta">
-								Type @ or /add to attach more folders.
+								Type @ or /add to attach folders and files.
 							</div>
 						</div>
 					) : null}
@@ -237,22 +234,26 @@ export function AISidebar({
 				<div className="aiChatFolderBar">
 					<div className="aiChatFolderRow">
 						{context.attachedFolders.length ? (
-							context.attachedFolders.map((folder) => (
+							context.attachedFolders.map((item) => (
 								<motion.button
-									key={folder.path || "vault"}
+									key={`${item.kind}:${item.path || "vault"}`}
 									type="button"
 									className="aiFolderChip"
 									whileHover={{ y: -1 }}
 									whileTap={{ scale: 0.98 }}
-									onClick={() => context.removeFolder(folder.path)}
-									title="Remove folder"
+									onClick={() => context.removeContext(item.kind, item.path)}
+									title={`Remove ${item.kind}`}
 								>
-									<span className="mono">{folder.label}</span>
+									<span className="mono">
+										{item.kind === "folder" ? "Folder" : "File"}: {item.label}
+									</span>
 									<span aria-hidden>×</span>
 								</motion.button>
 							))
 						) : (
-							<div className="aiChatFolderEmpty">No folder attached yet.</div>
+							<div className="aiChatFolderEmpty">
+								No folders or files attached yet.
+							</div>
 						)}
 					</div>
 					<button
@@ -272,7 +273,7 @@ export function AISidebar({
 						<div className="aiAddFolderSearch">
 							<input
 								type="search"
-								placeholder="Search folders..."
+								placeholder="Search folders or files..."
 								value={panelQuery}
 								onChange={(e) => {
 									if (!addPanelOpen) setAddPanelOpen(true);
@@ -287,21 +288,25 @@ export function AISidebar({
 							<div className="aiSidebarError">{context.folderIndexError}</div>
 						) : null}
 						<div className="aiAddFolderList">
-							{context.visibleFolders.length ? (
-								context.visibleFolders.map((folder) => (
+							{context.visibleSuggestions.length ? (
+								context.visibleSuggestions.map((item) => (
 									<motion.button
-										key={folder.path || "vault"}
+										key={`${item.kind}:${item.path || "vault"}`}
 										type="button"
 										className="aiAddFolderItem"
 										whileHover={{ x: 4 }}
 										whileTap={{ scale: 0.98 }}
-										onClick={() => handleAddFolder(folder.path)}
+										onClick={() => handleAddContext(item.kind, item.path)}
 									>
-										<span className="aiAddFolderName">{folder.label}</span>
+										<span className="aiAddFolderName">
+											{item.kind === "folder" ? "Folder" : "File"}: {item.label}
+										</span>
 									</motion.button>
 								))
 							) : (
-								<div className="aiChatFolderEmpty">No folders found.</div>
+								<div className="aiChatFolderEmpty">
+									No folders or files found.
+								</div>
 							)}
 						</div>
 						<div className="aiAddFolderActions">

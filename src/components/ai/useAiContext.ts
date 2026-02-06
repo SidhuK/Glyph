@@ -20,6 +20,14 @@ type FolderEntry = {
 	label: string;
 };
 
+type ContextEntryKind = "folder" | "file";
+
+type ContextEntry = {
+	kind: ContextEntryKind;
+	path: string;
+	label: string;
+};
+
 function errMessage(err: unknown): string {
 	if (err instanceof TauriInvokeError) return err.message;
 	if (err instanceof Error) return err.message;
@@ -41,16 +49,30 @@ const FILE_LIST_LIMIT = 20_000;
 const READ_CHUNK_SIZE = 24;
 const DEFAULT_CHAR_BUDGET = 12_000;
 const MAX_VISIBLE_FOLDERS = 120;
+const MENTION_RE = /(^|\s)@([^\s@]+)/g;
+
+function folderLabel(path: string): string {
+	return path || "Vault";
+}
+
+function fileLabel(path: string): string {
+	return path;
+}
+
+function contextKey(kind: ContextEntryKind, path: string): string {
+	return `${kind}:${path}`;
+}
 
 export function useAiContext({
 	activeFolderPath,
 }: {
 	activeFolderPath: string | null;
 }) {
-	const [pinnedFolders, setPinnedFolders] = useState<string[]>([]);
+	const [attachedContext, setAttachedContext] = useState<ContextEntry[]>([]);
 	const [removedActiveFolder, setRemovedActiveFolder] = useState(false);
 	const [contextSearch, setContextSearch] = useState("");
 	const [folderIndex, setFolderIndex] = useState<FolderEntry[]>([]);
+	const [fileIndex, setFileIndex] = useState<FolderEntry[]>([]);
 	const [folderIndexError, setFolderIndexError] = useState("");
 	const [payloadPreview, setPayloadPreview] = useState("");
 	const [payloadManifest, setPayloadManifest] =
@@ -76,54 +98,55 @@ export function useAiContext({
 
 	const attachedFolders = useMemo(() => {
 		const seen = new Set<string>();
-		const list: FolderEntry[] = [];
+		const list: ContextEntry[] = [];
 		if (hasActiveFolder && !removedActiveFolder) {
-			seen.add(normalizedActive);
+			const key = contextKey("folder", normalizedActive);
+			seen.add(key);
 			list.push({
+				kind: "folder",
 				path: normalizedActive,
-				label: normalizedActive || "Vault",
+				label: folderLabel(normalizedActive),
 			});
 		}
-		for (const raw of pinnedFolders) {
-			const path = normalizeRelPath(raw);
-			if (!path && !normalizedActive) {
-				if (!seen.has(path)) {
-					seen.add(path);
-					list.push({ path: "", label: "Vault" });
-				}
-				continue;
-			}
-			if (!path || seen.has(path)) continue;
-			seen.add(path);
-			list.push({ path, label: path });
+		for (const entry of attachedContext) {
+			const key = contextKey(entry.kind, entry.path);
+			if (seen.has(key)) continue;
+			if (entry.kind === "folder" && !entry.path && !normalizedActive) continue;
+			seen.add(key);
+			list.push(entry);
 		}
 		return list;
-	}, [hasActiveFolder, normalizedActive, pinnedFolders, removedActiveFolder]);
+	}, [attachedContext, hasActiveFolder, normalizedActive, removedActiveFolder]);
 
-	const addFolder = useCallback(
-		(path: string) => {
-			const normalized = normalizeRelPath(path);
-			if (path == null) return;
-			if (normalized === normalizedActive) {
+	const addContext = useCallback(
+		(kind: ContextEntryKind, rawPath: string) => {
+			const path = normalizeRelPath(rawPath);
+			if (kind === "file" && !path) return;
+			if (kind === "folder" && path === normalizedActive) {
 				setRemovedActiveFolder(false);
 				return;
 			}
-			setPinnedFolders((prev) => {
-				if (prev.includes(normalized)) return prev;
-				return [...prev, normalized];
+			const label = kind === "folder" ? folderLabel(path) : fileLabel(path);
+			setAttachedContext((prev) => {
+				const key = contextKey(kind, path);
+				if (prev.some((it) => contextKey(it.kind, it.path) === key))
+					return prev;
+				return [...prev, { kind, path, label }];
 			});
 		},
 		[normalizedActive],
 	);
 
-	const removeFolder = useCallback(
-		(path: string) => {
-			const normalized = normalizeRelPath(path);
-			if (normalized === normalizedActive) {
+	const removeContext = useCallback(
+		(kind: ContextEntryKind, rawPath: string) => {
+			const path = normalizeRelPath(rawPath);
+			if (kind === "folder" && path === normalizedActive) {
 				setRemovedActiveFolder(true);
 				return;
 			}
-			setPinnedFolders((prev) => prev.filter((p) => p !== normalized));
+			setAttachedContext((prev) =>
+				prev.filter((it) => !(it.kind === kind && it.path === path)),
+			);
 		},
 		[normalizedActive],
 	);
@@ -158,7 +181,14 @@ export function useAiContext({
 						path,
 						label: path || "Vault",
 					}));
+				const files = entries
+					.filter((entry: FsEntry) => entry.kind === "file")
+					.map((entry: FsEntry) => ({
+						path: normalizeRelPath(entry.rel_path),
+						label: fileLabel(normalizeRelPath(entry.rel_path)),
+					}));
 				setFolderIndex(next);
+				setFileIndex(files.sort((a, b) => a.path.localeCompare(b.path)));
 			} catch (e) {
 				if (cancelled) return;
 				setFolderIndexError(errMessage(e));
@@ -169,15 +199,46 @@ export function useAiContext({
 		};
 	}, []);
 
-	const filteredFolders = useMemo(() => {
+	const visibleSuggestions = useMemo(() => {
 		const q = contextSearch.trim().toLowerCase();
-		if (!q) return folderIndex;
-		return folderIndex.filter((f) => f.label.toLowerCase().includes(q));
-	}, [contextSearch, folderIndex]);
+		const folders = q
+			? folderIndex.filter((f) => f.label.toLowerCase().includes(q))
+			: folderIndex;
+		const files = q
+			? fileIndex.filter((f) => f.label.toLowerCase().includes(q))
+			: fileIndex;
+		return [
+			...folders.map((f) => ({ kind: "folder" as const, ...f })),
+			...files.map((f) => ({ kind: "file" as const, ...f })),
+		].slice(0, MAX_VISIBLE_FOLDERS);
+	}, [contextSearch, fileIndex, folderIndex]);
 
-	const visibleFolders = useMemo(
-		() => filteredFolders.slice(0, MAX_VISIBLE_FOLDERS),
-		[filteredFolders],
+	const resolveMentionsFromInput = useCallback(
+		(input: string): string => {
+			const folderSet = new Set(folderIndex.map((entry) => entry.path));
+			const fileSet = new Set(fileIndex.map((entry) => entry.path));
+			let mutated = false;
+			const cleaned = input.replace(
+				MENTION_RE,
+				(full, ws: string, token: string) => {
+					const path = normalizeRelPath(token);
+					if (fileSet.has(path)) {
+						addContext("file", path);
+						mutated = true;
+						return ws;
+					}
+					if (folderSet.has(path)) {
+						addContext("folder", path);
+						mutated = true;
+						return ws;
+					}
+					return full;
+				},
+			);
+			if (!mutated) return input.trim();
+			return cleaned.replace(/\s{2,}/g, " ").trim();
+		},
+		[addContext, fileIndex, folderIndex],
 	);
 
 	const readFolderFiles = useCallback(async (folderPath: string) => {
@@ -229,29 +290,44 @@ export function useAiContext({
 				remaining = Math.max(0, remaining - chars);
 			};
 
-			for (const folder of attachedFolders) {
+			const seenFilePaths = new Set<string>();
+			for (const item of attachedFolders) {
 				if (!remaining) break;
-				pushItem("folder", folder.label, `# Folder: ${folder.label}`);
-				if (!remaining) break;
-				const paths = await readFolderFiles(folder.path);
-				for (let i = 0; i < paths.length; i += READ_CHUNK_SIZE) {
+				if (item.kind === "folder") {
+					pushItem("folder", item.label, `# Folder: ${item.label}`);
 					if (!remaining) break;
-					const chunk = paths.slice(i, i + READ_CHUNK_SIZE);
-					const docs = await invoke("vault_read_texts_batch", {
-						paths: chunk,
-					});
-					for (const doc of docs) {
+					const paths = await readFolderFiles(item.path);
+					for (let i = 0; i < paths.length; i += READ_CHUNK_SIZE) {
 						if (!remaining) break;
-						if (!doc.text || doc.error) continue;
-						const cached = fileTextCacheRef.current.get(doc.rel_path);
-						const text = cached ?? doc.text;
-						fileTextCacheRef.current.set(doc.rel_path, text);
-						pushItem(
-							"file",
-							doc.rel_path,
-							`# File: ${doc.rel_path}\n\n${text}`,
-						);
+						const chunk = paths.slice(i, i + READ_CHUNK_SIZE);
+						const docs = await invoke("vault_read_texts_batch", {
+							paths: chunk,
+						});
+						for (const doc of docs) {
+							if (!remaining) break;
+							if (!doc.text || doc.error || seenFilePaths.has(doc.rel_path))
+								continue;
+							seenFilePaths.add(doc.rel_path);
+							const cached = fileTextCacheRef.current.get(doc.rel_path);
+							const text = cached ?? doc.text;
+							fileTextCacheRef.current.set(doc.rel_path, text);
+							pushItem(
+								"file",
+								doc.rel_path,
+								`# File: ${doc.rel_path}\n\n${text}`,
+							);
+						}
 					}
+					continue;
+				}
+				if (seenFilePaths.has(item.path)) continue;
+				try {
+					const doc = await invoke("vault_read_text", { path: item.path });
+					seenFilePaths.add(item.path);
+					fileTextCacheRef.current.set(item.path, doc.text);
+					pushItem("file", item.path, `# File: ${item.path}\n\n${doc.text}`);
+				} catch {
+					// ignore unreadable attachments
 				}
 			}
 
@@ -274,21 +350,18 @@ export function useAiContext({
 	}, [attachedFolders, charBudget, readFolderFiles]);
 
 	const ensurePayload = useCallback(async () => {
-		if (payloadManifest && payloadPreview) {
-			return { payload: payloadPreview, manifest: payloadManifest };
-		}
 		return buildPayload();
-	}, [buildPayload, payloadManifest, payloadPreview]);
+	}, [buildPayload]);
 
 	return {
 		attachedFolders,
-		addFolder,
-		removeFolder,
+		addContext,
+		removeContext,
+		resolveMentionsFromInput,
 		contextSearch,
 		setContextSearch,
 		folderIndexError,
-		filteredFolders,
-		visibleFolders,
+		visibleSuggestions,
 		payloadPreview,
 		payloadManifest,
 		payloadError,
