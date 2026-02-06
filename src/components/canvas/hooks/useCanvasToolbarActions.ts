@@ -6,7 +6,7 @@ import {
 	snapPoint,
 } from "../../../lib/canvasLayout";
 import { invoke } from "../../../lib/tauri";
-import type { CanvasNode } from "../types";
+import { type CanvasNode, isLinkNode, isNoteNode } from "../types";
 
 export type AlignMode =
 	| "left"
@@ -106,8 +106,7 @@ export function useCanvasToolbarActions({
 		if (!activeNoteId) return;
 		const existing = nodes.find(
 			(n) =>
-				n.type === "note" &&
-				(n.data as Record<string, unknown>)?.noteId === activeNoteId,
+				n.type === "note" && isNoteNode(n) && n.data.noteId === activeNoteId,
 		);
 		if (existing) return;
 		const pos = findDropPosition();
@@ -131,7 +130,7 @@ export function useCanvasToolbarActions({
 			(n) => selectedNodeIds.has(n.id) && n.type === "link",
 		);
 		for (const node of selectedLinks) {
-			const url = (node.data as Record<string, unknown>)?.url;
+			const url = isLinkNode(node) ? node.data.url : undefined;
 			if (typeof url !== "string") continue;
 			setNodes((prev) =>
 				prev.map((n) =>

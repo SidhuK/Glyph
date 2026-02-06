@@ -1,4 +1,5 @@
 import { useCallback } from "react";
+import { isNoteNode } from "../types";
 import type { CanvasNode, CanvasNoteEditSession, NoteTab } from "../types";
 
 interface UseCanvasTabsProps {
@@ -51,8 +52,7 @@ export function useCanvasTabs({
 			if (tab?.noteId) {
 				const node = nodes.find(
 					(n) =>
-						n.type === "note" &&
-						(n.data as Record<string, unknown>)?.noteId === tab.noteId,
+						n.type === "note" && isNoteNode(n) && n.data.noteId === tab.noteId,
 				);
 				if (node) void beginInlineEdit(node);
 			}

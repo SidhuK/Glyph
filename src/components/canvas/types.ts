@@ -1,8 +1,34 @@
-import type { Edge, Node } from "@xyflow/react";
 import type { CanvasInlineEditorMode } from "../editor";
 
-export type CanvasNode = Node<Record<string, unknown>>;
-export type CanvasEdge = Edge<Record<string, unknown>>;
+export type {
+	CanvasNode,
+	CanvasEdge,
+	CanvasNodeData,
+	NoteNodeData,
+	TextNodeData,
+	FileNodeData,
+	LinkNodeData,
+	FrameNodeData,
+	FolderNodeData,
+	FolderPreviewNodeData,
+	NoteCanvasNode,
+	TextCanvasNode,
+	FileCanvasNode,
+	LinkCanvasNode,
+	FrameCanvasNode,
+	FolderCanvasNode,
+	FolderPreviewCanvasNode,
+} from "../../lib/canvasFlowTypes";
+export {
+	isNoteNode,
+	isTextNode,
+	isFileNode,
+	isLinkNode,
+	isFrameNode,
+	isFolderNode,
+	isFolderPreviewNode,
+} from "../../lib/canvasFlowTypes";
+import type { CanvasEdge, CanvasNode } from "../../lib/canvasFlowTypes";
 
 export interface CanvasDocLike {
 	version: number;

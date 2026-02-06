@@ -9,7 +9,10 @@ type TauriChatBody = {
 	audit?: boolean;
 };
 
-type TauriAiMessage = { role: string; content: string };
+type TauriAiMessage = {
+	role: "system" | "user" | "assistant";
+	content: string;
+};
 
 function uiMessageToTauriMessage(message: UIMessage): TauriAiMessage | null {
 	const content = message.parts

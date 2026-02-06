@@ -81,7 +81,9 @@ export async function buildFolderViewDoc(
 						...existingNode.data,
 						title:
 							noteData?.title ||
-							(existingNode.data as { title?: string }).title ||
+							(typeof existingNode.data.title === "string"
+								? existingNode.data.title
+								: undefined) ||
 							titleForFile(relPath),
 						content: noteData?.content || "",
 					},
@@ -118,7 +120,7 @@ export async function buildFolderViewDoc(
 			n.type === "note" ||
 			n.type === "file" ||
 			n.type === "folder" ||
-			n.type === "folder_preview"
+			n.type === "folderPreview"
 		)
 			continue;
 		if (

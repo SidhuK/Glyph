@@ -2,6 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { parseNotePreview } from "../../../lib/notePreview";
 import { invoke } from "../../../lib/tauri";
 import type { CanvasInlineEditorMode } from "../../editor";
+import { isNoteNode } from "../types";
 import type { CanvasNode, CanvasNoteEditSession, NoteTab } from "../types";
 import { withUpdatedNoteNodeData } from "./noteEditHelpers";
 
@@ -158,13 +159,7 @@ export function useNoteEditSession(
 
 	const beginInlineEdit = useCallback(
 		async (node: CanvasNode): Promise<boolean> => {
-			const d = (node.data as Record<string, unknown> | null) ?? null;
-			const noteId =
-				d && typeof d.noteId === "string"
-					? d.noteId
-					: typeof node.id === "string"
-						? node.id
-						: "";
+			const noteId = isNoteNode(node) ? node.data.noteId : node.id;
 			if (!noteId) return false;
 
 			const current = noteEditSessionRef.current;

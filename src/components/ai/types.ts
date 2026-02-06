@@ -1,4 +1,4 @@
-import type { AiMessage, NoteMeta } from "../../lib/tauri";
+import type { AiMessage, CanvasNodeData, NoteMeta } from "../../lib/tauri";
 import type { CanvasDocLike } from "../CanvasPane";
 
 export type ChatMessage = AiMessage & { id: string };
@@ -30,7 +30,7 @@ export type ContextManifest = {
 export interface SelectedCanvasNode {
 	id: string;
 	type: string | null;
-	data: Record<string, unknown> | null;
+	data: CanvasNodeData | null;
 }
 
 export interface AIPaneProps {

@@ -1,5 +1,9 @@
 import { useEffect } from "react";
-import type { CanvasExternalCommand, CanvasNode } from "../types";
+import {
+	type CanvasExternalCommand,
+	type CanvasNode,
+	isNoteNode,
+} from "../types";
 
 interface UseExternalCanvasCommandsProps {
 	externalCommand?: CanvasExternalCommand | null;
@@ -35,8 +39,7 @@ export function useExternalCanvasCommands({
 			case "add_note_node": {
 				const existing = nodes.find(
 					(n) =>
-						n.type === "note" &&
-						(n.data as Record<string, unknown>)?.noteId === cmd.noteId,
+						n.type === "note" && isNoteNode(n) && n.data.noteId === cmd.noteId,
 				);
 				if (!existing) {
 					const pos = findDropPosition();
@@ -60,8 +63,7 @@ export function useExternalCanvasCommands({
 			case "open_note_editor": {
 				const existingNode = nodes.find(
 					(n) =>
-						n.type === "note" &&
-						(n.data as Record<string, unknown>)?.noteId === cmd.noteId,
+						n.type === "note" && isNoteNode(n) && n.data.noteId === cmd.noteId,
 				);
 				if (existingNode) {
 					ensureTabForNote(cmd.noteId, cmd.title ?? "Untitled");

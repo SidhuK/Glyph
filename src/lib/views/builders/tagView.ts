@@ -47,7 +47,9 @@ export async function buildTagViewDoc(
 						...existingNode.data,
 						title:
 							noteData?.title ||
-							(existingNode.data as { title?: string }).title ||
+							(typeof existingNode.data.title === "string"
+								? existingNode.data.title
+								: undefined) ||
 							titleForFile(relPath),
 						content: noteData?.content || "",
 					},

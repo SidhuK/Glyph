@@ -152,10 +152,7 @@ export async function buildContextPayload(
 			const fromDoc = nodesById.get(nodeId);
 			const fallback = selectedCanvasNodes.find((n) => n.id === nodeId) ?? null;
 			const type = fromDoc?.type ?? fallback?.type ?? "unknown";
-			const data =
-				(fromDoc?.data as Record<string, unknown> | null | undefined) ??
-				fallback?.data ??
-				{};
+			const data = fromDoc?.data ?? fallback?.data ?? {};
 
 			if (type === "note") {
 				const noteId =

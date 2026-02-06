@@ -17,8 +17,7 @@ export function normalizeLegacyFrameChildren(
 	}
 
 	return nodes.map((n) => {
-		const parentNode =
-			(n as unknown as { parentNode?: unknown }).parentNode ?? null;
+		const parentNode = n.parentNode ?? null;
 		if (typeof parentNode !== "string") return n;
 		const frame = legacyFrames.get(parentNode);
 		if (!frame) return n;
@@ -28,8 +27,8 @@ export function normalizeLegacyFrameChildren(
 			...n,
 			position: { x: fp.x + cp.x, y: fp.y + cp.y },
 		};
-		(next as unknown as { parentNode?: string }).parentNode = undefined;
-		(next as unknown as { extent?: unknown }).extent = undefined;
+		next.parentNode = undefined;
+		next.extent = undefined;
 		return next;
 	});
 }

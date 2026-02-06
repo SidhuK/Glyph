@@ -3,6 +3,7 @@ import { memo, useMemo } from "react";
 import { RotateCcw, Save, X } from "../Icons";
 import { CanvasNoteInlineEditor } from "../editor";
 import { useCanvasNoteEdit } from "./contexts";
+import { isNoteNode } from "./types";
 import type { CanvasNode, NoteTab } from "./types";
 
 const springTransition = {
@@ -49,9 +50,8 @@ export const CanvasNoteOverlayEditor = memo(function CanvasNoteOverlayEditor({
 		[nodes, session?.nodeId],
 	);
 	const title =
-		typeof (sessionNode?.data as Record<string, unknown> | null)?.title ===
-		"string"
-			? ((sessionNode?.data as Record<string, unknown>).title as string)
+		sessionNode && isNoteNode(sessionNode)
+			? sessionNode.data.title
 			: (session?.noteId ?? "Untitled");
 
 	const statusLabel = (() => {

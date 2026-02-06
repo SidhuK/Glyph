@@ -1,5 +1,34 @@
 import { invoke as tauriInvoke } from "@tauri-apps/api/core";
-import type { Edge, Node } from "@xyflow/react";
+import type { CanvasEdge, CanvasNode } from "./canvasFlowTypes";
+
+export type {
+	CanvasEdge,
+	CanvasNode,
+	CanvasNodeData,
+	FileCanvasNode,
+	FileNodeData,
+	FolderCanvasNode,
+	FolderNodeData,
+	FolderPreviewCanvasNode,
+	FolderPreviewNodeData,
+	FrameCanvasNode,
+	FrameNodeData,
+	LinkCanvasNode,
+	LinkNodeData,
+	NoteCanvasNode,
+	NoteNodeData,
+	TextCanvasNode,
+	TextNodeData,
+} from "./canvasFlowTypes";
+export {
+	isFileNode,
+	isFolderNode,
+	isFolderPreviewNode,
+	isFrameNode,
+	isLinkNode,
+	isNoteNode,
+	isTextNode,
+} from "./canvasFlowTypes";
 
 export interface AppInfo {
 	name: string;
@@ -111,9 +140,6 @@ export interface CanvasMeta {
 	updated: string;
 }
 
-export type CanvasNode = Node<Record<string, unknown>>;
-export type CanvasEdge = Edge<Record<string, unknown>>;
-
 export interface CanvasDoc {
 	version: number;
 	id: string;
@@ -186,7 +212,7 @@ export interface AiProfile {
 }
 
 export interface AiMessage {
-	role: string;
+	role: "system" | "user" | "assistant";
 	content: string;
 }
 
@@ -322,11 +348,11 @@ export async function invoke<K extends keyof TauriCommands>(
 	...args: ArgsTuple<K>
 ): Promise<TauriCommands[K]["result"]> {
 	try {
-		const payload = (args[0] ?? {}) as Record<string, unknown>;
-		return (await tauriInvoke(
-			command as string,
-			payload,
-		)) as TauriCommands[K]["result"];
+		const payload: Record<string, unknown> =
+			args.length > 0 && args[0] != null
+				? (args[0] as Record<string, unknown>)
+				: {};
+		return (await tauriInvoke(command, payload)) as TauriCommands[K]["result"];
 	} catch (raw) {
 		throw new TauriInvokeError(errorMessage(raw), raw);
 	}

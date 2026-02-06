@@ -28,6 +28,12 @@ import {
 	NoteNode,
 	TextNode,
 } from "./nodes";
+import {
+	isFileNode,
+	isFolderNode,
+	isFolderPreviewNode,
+	isNoteNode,
+} from "./types";
 import type {
 	CanvasActions,
 	CanvasEdge,
@@ -94,19 +100,18 @@ function CanvasPane({
 					type: node.type ?? null,
 					position: node.position,
 					data: node.data ?? {},
-					parentNode: (node as unknown as { parentNode?: string | null })
-						.parentNode,
-					extent: (node as unknown as { extent?: unknown }).extent ?? null,
-					style: (node as unknown as { style?: unknown }).style ?? null,
+					parentNode: node.parentNode,
+					extent: node.extent ?? null,
+					style: node.style ?? null,
 				})),
 				e: e.map((edge) => ({
 					id: edge.id,
 					source: edge.source,
 					target: edge.target,
 					type: edge.type ?? null,
-					label: (edge as unknown as { label?: unknown }).label ?? null,
+					label: edge.label ?? null,
 					data: edge.data ?? {},
-					style: (edge as unknown as { style?: unknown }).style ?? null,
+					style: edge.style ?? null,
 				})),
 			}),
 		[],
@@ -283,9 +288,8 @@ function CanvasPane({
 				setNodes((prev) =>
 					prev.filter(
 						(n) =>
-							n.type !== "folderPreview" ||
-							(n.data as Record<string, unknown>)?.parentFolderNodeId !==
-								folderNodeId,
+							!isFolderPreviewNode(n) ||
+							n.data.parentFolderNodeId !== folderNodeId,
 					),
 				);
 			} else {
@@ -313,23 +317,15 @@ function CanvasPane({
 
 	const handleNodeDoubleClick: NodeMouseHandler<CanvasNode> = useCallback(
 		(_event, node) => {
-			if (node.type === "note") {
-				const noteId =
-					typeof (node.data as Record<string, unknown>)?.noteId === "string"
-						? ((node.data as Record<string, unknown>).noteId as string)
-						: node.id;
-				const title =
-					typeof (node.data as Record<string, unknown>)?.title === "string"
-						? ((node.data as Record<string, unknown>).title as string)
-						: "Untitled";
+			if (isNoteNode(node)) {
+				const noteId = node.data.noteId ?? node.id;
+				const title = node.data.title ?? "Untitled";
 				ensureTabForNote(noteId, title);
 				void beginInlineEdit(node);
-			} else if (node.type === "folder") {
-				const dir = (node.data as Record<string, unknown>)?.dir;
-				if (typeof dir === "string") onOpenFolder(dir);
-			} else if (node.type === "file") {
-				const path = (node.data as Record<string, unknown>)?.path;
-				if (typeof path === "string" && path) onOpenNote(path);
+			} else if (isFolderNode(node)) {
+				if (typeof node.data.dir === "string") onOpenFolder(node.data.dir);
+			} else if (isFileNode(node)) {
+				if (node.data.path) onOpenNote(node.data.path);
 			}
 		},
 		[beginInlineEdit, ensureTabForNote, onOpenFolder, onOpenNote],
@@ -355,15 +351,9 @@ function CanvasPane({
 			session: noteEditSession,
 			openEditor: (nodeId: string) => {
 				const node = nodes.find((n) => n.id === nodeId);
-				if (node?.type === "note") {
-					const noteId =
-						typeof (node.data as Record<string, unknown>)?.noteId === "string"
-							? ((node.data as Record<string, unknown>).noteId as string)
-							: node.id;
-					const title =
-						typeof (node.data as Record<string, unknown>)?.title === "string"
-							? ((node.data as Record<string, unknown>).title as string)
-							: "Untitled";
+				if (node && isNoteNode(node)) {
+					const noteId = node.data.noteId ?? node.id;
+					const title = node.data.title ?? "Untitled";
 					ensureTabForNote(noteId, title);
 					void beginInlineEdit(node);
 				}

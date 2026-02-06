@@ -105,6 +105,20 @@ Step	File	Fix
 
 ## Phase 1 — Type Safety Foundation (1–3 hours)
 
+### Phase 1 Implementation Steps
+
+- [x] **Step 1.1a** — Create `src/lib/canvasFlowTypes.ts` with typed node data interfaces, discriminated union `CanvasNode`, layout props, and type guards
+- [x] **Step 1.1b** — Update `src/lib/tauri.ts` to re-export `CanvasNode`/`CanvasEdge` from `canvasFlowTypes.ts`
+- [x] **Step 1.1c** — Update `src/components/canvas/types.ts` to re-export from `canvasFlowTypes.ts`
+- [x] **Step 1.1d** — Remove `parentNode`/`extent`/`style` unsafe casts in `sanitize.ts`, `useCanvasHistory.ts`, `CanvasPane.tsx` snapshot, and `common.ts`
+- [x] **Step 1.1e** — Remove `node.data as Record<string, unknown>` casts in `CanvasPane.tsx`, `useCanvasToolbarActions.ts`, `useExternalCanvasCommands.ts`, `useNoteEditSession.ts`, `useCanvasTabs.ts`, `CanvasNoteOverlayEditor.tsx`
+- [x] **Step 1.1f** — Update node component props (`LinkNode.tsx`, `payloadBuilder.ts`, `noteEditHelpers.ts`) to use typed data
+- [x] **Step 1.2** — Fix `invoke` type safety in `src/lib/tauri.ts`
+- [x] **Step 1.3** — Type `AiMessage.role` as union in `src/lib/tauri.ts`
+- [x] **Step 1.4** — Strengthen `SelectedCanvasNode.data` type in `src/components/ai/types.ts`
+- [x] **Step 1.5** — Fix `node_type` mismatch `folder_preview` vs `folderPreview` in `src/lib/views/builders/folderView.ts`
+- [x] **Step 1.6** — Run `pnpm build` and `cargo check` to verify all changes compile
+
 ### 1.1 Define typed Canvas node/edge data unions — `src/lib/tauri.ts` L114-L116, `src/components/canvas/types.ts` L4-L6 — **CRITICAL**
 
 Currently `CanvasNode = Node<Record<string, unknown>>` forces `as Record<string, unknown>` in **24+ locations** across CanvasPane, useCanvasToolbarActions, useExternalCanvasCommands, useNoteEditSession, sanitize.ts, and all three view builders.
@@ -191,6 +205,22 @@ Currently `Record<string, unknown> | null`. Use `CanvasNodeData | null` after Ph
 ### 1.5 Fix `node_type` mismatch: `folder_preview` vs `folderPreview` — `src/lib/views/builders/folderView.ts` L121 — **HIGH**
 
 Canvas registers `folderPreview` in nodeTypes but the view builder checks for `folder_preview`. Standardize on `folderPreview`.
+
+**Phase 1 is complete.** Here's a summary of what was done:
+
+**Files created:**
+
+- [src/lib/canvasFlowTypes.ts](file:///Users/karatsidhu/Code/Tether/src/lib/canvasFlowTypes.ts) — Canonical typed node data interfaces (`NoteNodeData`, `TextNodeData`, etc.), per-node-type aliases (`NoteCanvasNode`, etc.), the `CanvasNode`/`CanvasEdge` types with legacy prop support, and type guard functions
+
+**Files modified (15 total):**
+
+- **Type definitions:** [tauri.ts](file:///Users/karatsidhu/Code/Tether/src/lib/tauri.ts), [canvas/types.ts](file:///Users/karatsidhu/Code/Tether/src/components/canvas/types.ts), [ai/types.ts](file:///Users/karatsidhu/Code/Tether/src/components/ai/types.ts)
+- **Cast removals (parentNode/extent/style):** [sanitize.ts](file:///Users/karatsidhu/Code/Tether/src/lib/views/sanitize.ts), [useCanvasHistory.ts](file:///Users/karatsidhu/Code/Tether/src/components/canvas/hooks/useCanvasHistory.ts), [CanvasPane.tsx](file:///Users/karatsidhu/Code/Tether/src/components/canvas/CanvasPane.tsx), [common.ts](file:///Users/karatsidhu/Code/Tether/src/lib/views/builders/common.ts)
+- **Cast removals (data access):** [useCanvasToolbarActions.ts](file:///Users/karatsidhu/Code/Tether/src/components/canvas/hooks/useCanvasToolbarActions.ts), [useExternalCanvasCommands.ts](file:///Users/karatsidhu/Code/Tether/src/components/canvas/hooks/useExternalCanvasCommands.ts), [useNoteEditSession.ts](file:///Users/karatsidhu/Code/Tether/src/components/canvas/hooks/useNoteEditSession.ts), [useCanvasTabs.ts](file:///Users/karatsidhu/Code/Tether/src/components/canvas/hooks/useCanvasTabs.ts), [CanvasNoteOverlayEditor.tsx](file:///Users/karatsidhu/Code/Tether/src/components/canvas/CanvasNoteOverlayEditor.tsx)
+- **Typed props/data:** [LinkNode.tsx](file:///Users/karatsidhu/Code/Tether/src/components/canvas/nodes/LinkNode.tsx), [payloadBuilder.ts](file:///Users/karatsidhu/Code/Tether/src/components/ai/payloadBuilder.ts), view builders ([folderView.ts](file:///Users/karatsidhu/Code/Tether/src/lib/views/builders/folderView.ts), [searchView.ts](file:///Users/karatsidhu/Code/Tether/src/lib/views/builders/searchView.ts), [tagView.ts](file:///Users/karatsidhu/Code/Tether/src/lib/views/builders/tagView.ts))
+- **AiMessage role + transport:** [tauriChatTransport.ts](file:///Users/karatsidhu/Code/Tether/src/lib/ai/tauriChatTransport.ts)
+
+**Results:** Unsafe casts reduced from **50+ to 1** (the unavoidable IPC boundary cast). `pnpm build`, `pnpm check`, and `cargo check` all pass.
 
 ---
 
