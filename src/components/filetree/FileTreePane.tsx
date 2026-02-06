@@ -84,23 +84,12 @@ export const FileTreePane = memo(function FileTreePane({
 		);
 
 		return (
-			<motion.ul
-				className="fileTreeList"
-				style={listStyle}
-				initial="hidden"
-				animate="visible"
-				variants={{
-					visible: { transition: { staggerChildren: 0.03 } },
-					hidden: {},
-				}}
-			>
+			<ul className="fileTreeList" style={listStyle}>
 				{entries.map((e, index) => {
-					if (!e.name.trim() && !e.rel_path.trim()) return null;
 					const isDir = e.kind === "dir";
 					const depth = parentDepth + 1;
-					const rowKey = `${e.kind}:${e.rel_path.trim() || "__empty"}:${
-						e.name.trim() || "__noname"
-					}:${index}`;
+					const rowKey =
+						e.rel_path.trim() || `${e.kind}:${e.name.trim() || `row-${index}`}`;
 
 					if (isDir) {
 						const isExpanded = expandedDirs.has(e.rel_path);
@@ -140,7 +129,7 @@ export const FileTreePane = memo(function FileTreePane({
 						/>
 					);
 				})}
-			</motion.ul>
+			</ul>
 		);
 	};
 

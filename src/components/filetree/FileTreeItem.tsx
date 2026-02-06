@@ -101,14 +101,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 	};
 
 	return (
-		<motion.li
-			className="fileTreeItem"
-			variants={{
-				hidden: { opacity: 0, x: -8 },
-				visible: { opacity: 1, x: 0 },
-			}}
-			transition={{ duration: 0.15 }}
-		>
+		<li className="fileTreeItem">
 			<div className="fileTreeRowShell">
 				{isRenaming ? (
 					<div className="fileTreeRow fileTreeRowEditing" style={rowStyle}>
@@ -213,7 +206,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 					</motion.div>
 				) : null}
 			</AnimatePresence>
-		</motion.li>
+		</li>
 	);
 });
 
@@ -252,14 +245,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 		entry.name.trim() || basename(entry.rel_path).trim() || "Untitled.md";
 
 	return (
-		<motion.li
-			className={isActive ? "fileTreeItem active" : "fileTreeItem"}
-			variants={{
-				hidden: { opacity: 0, x: -8 },
-				visible: { opacity: 1, x: 0 },
-			}}
-			transition={{ duration: 0.15 }}
-		>
+		<li className={isActive ? "fileTreeItem active" : "fileTreeItem"}>
 			<div className="fileTreeRowShell">
 				<motion.button
 					type="button"
@@ -291,7 +277,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 					onNewFolderInDir={onNewFolderInDir}
 				/>
 			</div>
-		</motion.li>
+		</li>
 	);
 });
 
