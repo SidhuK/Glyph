@@ -3,6 +3,8 @@ import type { FsEntry, RecentEntry } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
 import type { ViewDoc } from "../lib/views";
 
+const MAX_FOLDER_SHELF_CACHE_SIZE = 30;
+
 export interface UseFolderShelfResult {
 	folderShelfSubfolders: FsEntry[];
 	folderShelfRecents: RecentEntry[];
@@ -22,6 +24,13 @@ export function useFolderShelf(
 	const folderShelfCacheRef = useRef(
 		new Map<string, { subfolders: FsEntry[]; recents: RecentEntry[] }>(),
 	);
+	const previousVaultPathRef = useRef<string | null>(vaultPath);
+
+	useEffect(() => {
+		if (previousVaultPathRef.current === vaultPath) return;
+		previousVaultPathRef.current = vaultPath;
+		folderShelfCacheRef.current.clear();
+	}, [vaultPath]);
 
 	useEffect(() => {
 		if (!vaultPath) return;
@@ -53,6 +62,10 @@ export function useFolderShelf(
 					);
 				const next = { subfolders, recents };
 				folderShelfCacheRef.current.set(dir, next);
+				if (folderShelfCacheRef.current.size > MAX_FOLDER_SHELF_CACHE_SIZE) {
+					const oldestKey = folderShelfCacheRef.current.keys().next().value;
+					if (oldestKey != null) folderShelfCacheRef.current.delete(oldestKey);
+				}
 				setFolderShelfSubfolders(next.subfolders);
 				setFolderShelfRecents(next.recents);
 			} catch {

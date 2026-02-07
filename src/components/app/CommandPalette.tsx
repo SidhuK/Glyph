@@ -23,6 +23,7 @@ export function CommandPalette({
 	const [query, setQuery] = useState("");
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	const inputRef = useRef<HTMLInputElement | null>(null);
+	const panelRef = useRef<HTMLDialogElement | null>(null);
 	const previousFocusRef = useRef<Element | null>(null);
 
 	const filtered = useMemo(() => {
@@ -38,7 +39,10 @@ export function CommandPalette({
 		previousFocusRef.current = document.activeElement;
 		setQuery("");
 		setSelectedIndex(0);
-		window.requestAnimationFrame(() => inputRef.current?.focus());
+		window.requestAnimationFrame(() => {
+			panelRef.current?.focus();
+			window.requestAnimationFrame(() => inputRef.current?.focus());
+		});
 		return () => {
 			const prev = previousFocusRef.current;
 			if (prev instanceof HTMLElement) prev.focus();
@@ -68,8 +72,12 @@ export function CommandPalette({
 				if (e.key === "Escape") onClose();
 			}}
 		>
-			<div
+			<dialog
+				ref={panelRef}
+				open
 				className="commandPalette"
+				aria-label="Command palette"
+				tabIndex={-1}
 				onClick={(e) => e.stopPropagation()}
 				onKeyDown={(e) => {
 					if (e.key === "Escape") {
@@ -127,7 +135,7 @@ export function CommandPalette({
 						<li className="commandPaletteEmpty">No commands</li>
 					) : null}
 				</ul>
-			</div>
+			</dialog>
 		</div>
 	);
 }

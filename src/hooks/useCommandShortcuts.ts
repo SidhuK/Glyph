@@ -19,6 +19,16 @@ export function useCommandShortcuts({
 }: UseCommandShortcutsProps) {
 	useEffect(() => {
 		const handler = (e: KeyboardEvent) => {
+			const t = e.target;
+			if (
+				t instanceof HTMLElement &&
+				(t.tagName === "INPUT" ||
+					t.tagName === "TEXTAREA" ||
+					t.isContentEditable)
+			) {
+				return;
+			}
+
 			if (openPaletteShortcuts.some((s) => isShortcutMatch(e, s))) {
 				e.preventDefault();
 				onOpenPalette();

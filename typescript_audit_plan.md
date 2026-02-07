@@ -677,176 +677,166 @@ export function useVault() {
 
 ## Phase 5 — Pattern & Architecture Improvements (1 day)
 
-### 5.1 Centralize Tauri event listening — across 5+ files — **HIGH**
+### Phase 5 Implementation Steps
 
-Create `src/lib/tauriEvents.ts`:
+- [x] **Step 5.0 — Discovery + sequencing**
+  - Confirm current hotspots and prioritize by risk: `tauri` events, error handling, runtime parsing safety, keyboard UX, accessibility.
+  - Sequence for minimal regressions: foundation utilities first, then consumers.
 
-```ts
-type TauriEventMap = {
-  "menu:open_vault": void;
-  "menu:create_vault": void;
-  "menu:close_vault": void;
-  "ai:chunk": { job_id: string; delta: string };
-  "ai:done": { job_id: string; cancelled: boolean };
-  "ai:error": { job_id: string; message: string };
-  "settings:navigate": { tab: SettingsTab };
-  "notes:external_changed": { rel_path: string };
-};
+- [x] **Step 5.1 — Add typed Tauri event utility (`src/lib/tauriEvents.ts`)**
+  - Introduce `TauriEventMap` + `useTauriEvent<K extends keyof TauriEventMap>()`.
+  - Use strict payload typing with generics; no `any`.
+  - Include cancellation-safe async listener pattern.
 
-export function useTauriEvent<K extends keyof TauriEventMap>(
-  event: K,
-  handler: (payload: TauriEventMap[K]) => void,
-): void {
-  useEffect(() => {
-    let cancelled = false;
-    let unlisten: (() => void) | null = null;
-    void (async () => {
-      const u = await listen(event, (e) => handler(e.payload));
-      if (cancelled) {
-        u();
-        return;
-      }
-      unlisten = u;
-    })();
-    return () => {
-      cancelled = true;
-      unlisten?.();
-    };
-  }, [event, handler]);
-}
-```
+- [x] **Step 5.2 — Migrate event consumers to `useTauriEvent`**
+  - Target files: `src/hooks/useMenuListeners.ts`, `src/SettingsApp.tsx`, `src/components/ai/hooks/useAIChat.ts`, and any remaining `listen(...)` call sites.
+  - Keep behavior identical while removing duplicated setup/cleanup boilerplate.
 
-### 5.2 Centralize error handling — across all hooks — **MEDIUM**
+- [x] **Step 5.3 — Add shared error extraction utility (`src/lib/errorUtils.ts`)**
+  - Implement `extractErrorMessage(e: unknown): string`.
+  - Keep output stable for UX text while reducing repeated inline error logic.
 
-Create `src/lib/errorUtils.ts`:
+- [x] **Step 5.4 — Replace inline error extraction at call sites**
+  - Replace `e instanceof Error ? e.message : String(e)` in hooks/components.
+  - Keep the change mechanical and focused (no behavior changes beyond consistency).
 
-```ts
-export function extractErrorMessage(e: unknown): string {
-  if (e instanceof TauriInvokeError) return e.message;
-  if (e instanceof Error) return e.message;
-  return String(e);
-}
-```
+- [x] **Step 5.5 — Add `cn` utility (`src/utils/cn.ts`)**
+  - Add `cn(...parts)` helper for class string composition.
+  - Keep utility tiny and framework-agnostic.
 
-Replace 15+ instances of `e instanceof Error ? e.message : String(e)`.
+- [x] **Step 5.6 — Normalize className composition in high-churn UI files**
+  - Start with: `src/components/app/AppShell.tsx`, `src/SettingsApp.tsx`, `src/components/app/SidebarContent.tsx`, `src/components/ui/MotionButton.tsx`, `src/components/ai/AISidebar.tsx`.
+  - Replace fragile template concatenation where it improves readability/maintainability.
 
-### 5.3 Add className utility — across all components — **LOW**
+- [x] **Step 5.7 — Guard command shortcuts inside editable elements**
+  - File: `src/hooks/useCommandShortcuts.ts`.
+  - Add early-return when event target is input/textarea/contentEditable.
 
-Create `src/utils/cn.ts`:
+- [x] **Step 5.8 — Replace search focus `querySelector` with explicit ref channel**
+  - Files: `src/components/app/AppShell.tsx`, `src/components/SearchPane.tsx` (or forwarding wrapper path in use).
+  - Introduce typed focus API via ref or callback ref; remove DOM query by selector.
 
-```ts
-export function cn(...parts: (string | false | null | undefined)[]): string {
-  return parts.filter(Boolean).join(" ");
-}
-```
+- [x] **Step 5.9 — Add runtime `ViewDoc` validation before use**
+  - File: `src/lib/views/persistence.ts`.
+  - Add robust `isViewDoc()` type guard and parse flow for `unknown`.
+  - Reject malformed payloads safely with clear error handling path.
 
-Replace string concatenation in `SettingsApp.tsx` L129, `AppShell.tsx` L294-L297, `SidebarContent.tsx` L121-L122, etc.
+- [x] **Step 5.10 — Normalize line endings in note preview parsing**
+  - File: `src/lib/notePreview.ts`.
+  - Normalize `\r\n` to `\n` before parsing to keep behavior cross-platform stable.
 
-### 5.4 Fix `useCommandShortcuts` firing in inputs — `src/hooks/useCommandShortcuts.ts` L21 — **MEDIUM**
+- [x] **Step 5.11 — Harden theme value parsing in settings**
+  - File: `src/lib/settings.ts`.
+  - Validate stored theme against `ThemeMode` union before accepting persisted value.
 
-**Fix:** Add early return:
+- [x] **Step 5.12 — Safe root element bootstrap**
+  - File: `src/main.tsx`.
+  - Replace `as HTMLElement` cast with explicit null guard and clear error.
 
-```ts
-const t = e.target;
-if (
-  t instanceof HTMLElement &&
-  (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.isContentEditable)
-)
-  return;
-```
+- [x] **Step 5.13 — Reset file tree caches on vault switch**
+  - File: `src/hooks/useFileTree.ts`.
+  - Clear `loadedDirsRef`, request version refs, and in-flight summary refs when `vaultPath` changes.
 
-### 5.5 Replace `querySelector` for search focus — `src/components/app/AppShell.tsx` L237-L241 — **MEDIUM**
+- [x] **Step 5.14 — Cap folder shelf cache growth**
+  - File: `src/hooks/useFolderShelf.ts`.
+  - Limit cache size and/or clear on vault switch to avoid unbounded growth.
 
-**Fix:** Pass a ref to `SearchPane` or expose `focusSearch()` via a callback ref.
+- [x] **Step 5.15 — Guard `getRandomVariation` edge case**
+  - File: `src/components/canvas/utils.ts`.
+  - Return `min` when `range <= 0` to avoid divide-by-zero/invalid random span.
 
-### 5.6 Add runtime validation for `ViewDoc` parsing — `src/lib/views/persistence.ts` L6-L17 — **HIGH**
+- [x] **Step 5.16 — Improve Command Palette accessibility**
+  - File: `src/components/app/CommandPalette.tsx`.
+  - Add dialog semantics (`role`, `aria-modal`, label), focus target, and initial focus behavior.
 
-`JSON.parse(raw) as ViewDoc` is unsafe. The existing checks are minimal.
+- [x] **Step 5.17 — Verify + document**
+  - Run: `pnpm check`, `pnpm build`, `cd src-tauri && cargo check`.
+  - Update this plan section with a concise completion summary + touched files.
 
-**Fix:** Add a proper `isViewDoc()` type guard checking all required fields:
+### Phase 5 completion summary
 
-```ts
-function isViewDoc(x: unknown): x is ViewDoc {
-  if (!x || typeof x !== "object") return false;
-  const d = x as Record<string, unknown>;
-  return (
-    d.schema_version === 1 &&
-    typeof d.view_id === "string" &&
-    (d.kind === "global" ||
-      d.kind === "folder" ||
-      d.kind === "tag" ||
-      d.kind === "search") &&
-    typeof d.selector === "string" &&
-    typeof d.title === "string" &&
-    typeof d.options === "object" &&
-    Array.isArray(d.nodes) &&
-    Array.isArray(d.edges)
-  );
-}
-```
-
-### 5.7 Normalize `\r\n` in `notePreview.ts` — `src/lib/notePreview.ts` L16-L18 — **LOW**
-
-**Fix:** `text = text.replace(/\r\n/g, "\n")` at the top of `parseNotePreview`.
-
-### 5.8 Guard `settings.ts` theme validation — `src/lib/settings.ts` L35 — **LOW**
-
-Validate the stored value is actually a valid `ThemeMode` before accepting it.
-
-### 5.9 Safe root element in `main.tsx` — `src/main.tsx` L21 — **MEDIUM**
-
-**Fix:** Null check instead of `as HTMLElement`:
-
-```ts
-const rootEl = document.getElementById("root");
-if (!rootEl) throw new Error("Missing #root element");
-ReactDOM.createRoot(rootEl).render(...);
-```
-
-### 5.10 Clear `useFileTree` ref caches on vault change — `src/hooks/useFileTree.ts` L65-L67 — **MEDIUM**
-
-`loadedDirsRef`, `loadRequestVersionRef`, `dirSummariesInFlightRef` persist across vault switches.
-
-**Fix:** Add `useEffect(() => { clear all refs }, [vaultPath])`.
-
-### 5.11 Cap `useFolderShelf` cache growth — `src/hooks/useFolderShelf.ts` L22-L25 — **LOW**
-
-**Fix:** Limit to last 30 entries or clear on vault change.
-
-### 5.12 Guard `getRandomVariation` div-by-zero — `src/components/canvas/utils.ts` L18-L20 — **LOW**
-
-**Fix:** `if (range <= 0) return min;`
-
-### 5.13 Accessibility for `CommandPalette` — `src/components/app/CommandPalette.tsx` L63-L132 — **MEDIUM**
-
-**Fix:** Add `role="dialog"`, `aria-modal="true"`, `aria-label="Command palette"`. Set `tabIndex={-1}` on the container and auto-focus it.
-
-### 5.14 `useAISidebar` resize leak on mid-resize unmount — `src/hooks/useAISidebar.ts` L101-L114 — **HIGH**
-
-If component unmounts while dragging, `mousemove`/`mouseup` remain on window.
-
-**Fix:** Store handler refs and clean up in an effect cleanup, or switch to pointer capture.
+- Files added:
+  - `src/lib/tauriEvents.ts`
+  - `src/lib/errorUtils.ts`
+  - `src/utils/cn.ts`
+- Files updated:
+  - `src/hooks/useMenuListeners.ts`
+  - `src/SettingsApp.tsx`
+  - `src/components/ai/hooks/useAIChat.ts`
+  - `src/lib/ai/tauriChatTransport.ts`
+  - `src/hooks/useSearch.ts`
+  - `src/hooks/useViewLoader.ts`
+  - `src/hooks/useFileTree.ts`
+  - `src/contexts/FileTreeContext.tsx`
+  - `src/components/preview/FilePreviewPane.tsx`
+  - `src/components/canvas/hooks/useNoteEditSession.ts`
+  - `src/components/settings/VaultSettingsPane.tsx`
+  - `src/components/settings/GeneralSettingsPane.tsx`
+  - `src/components/app/AppShell.tsx`
+  - `src/components/app/SidebarContent.tsx`
+  - `src/components/ui/MotionButton.tsx`
+  - `src/components/ai/AISidebar.tsx`
+  - `src/hooks/useCommandShortcuts.ts`
+  - `src/contexts/UIContext.tsx`
+  - `src/components/SearchPane.tsx`
+  - `src/lib/views/persistence.ts`
+  - `src/lib/notePreview.ts`
+  - `src/lib/settings.ts`
+  - `src/main.tsx`
+  - `src/hooks/useFolderShelf.ts`
+  - `src/components/canvas/utils.ts`
+  - `src/components/app/CommandPalette.tsx`
+- Key outcomes:
+  - Centralized typed Tauri event handling and removed direct listener duplication.
+  - Centralized error-to-message extraction and removed inline `instanceof Error` fallbacks.
+  - Introduced `cn()` and normalized class composition in the targeted high-churn UI files.
+  - Replaced search input `querySelector` focus with typed ref channel through context.
+  - Hardened runtime parsing for `ViewDoc`, theme value validation, and root bootstrap safety.
+  - Added cache lifecycle guards for vault changes and bounded folder shelf cache growth.
+  - Added command shortcut input guards and command palette accessibility semantics.
+- Verification:
+  - `pnpm check` ✅
+  - `pnpm build` ✅
+  - `cd src-tauri && cargo check` ✅ (existing warning: unused `lattice_assets_dir` in `src-tauri/src/lattice_paths.rs`)
 
 ---
 
 ## Phase 6 — Testing & Validation (½ day)
 
-### 6.1 Existing test coverage
+### Phase 6 Implementation Steps
 
-| File                           | Test exists?                             | Notes             |
-| ------------------------------ | ---------------------------------------- | ----------------- |
-| `src/hooks/fileTreeHelpers.ts` | Yes: `src/hooks/fileTreeHelpers.test.ts` | Maintain          |
-| `src/utils/filePreview.ts`     | Yes: `src/utils/filePreview.test.ts`     | Maintain          |
-| All other files                | No tests                                 | Add incrementally |
+- [x] **Step 6.0 — Discovery + baseline test map**
+  - Current tests confirmed: `src/hooks/fileTreeHelpers.test.ts`, `src/utils/filePreview.test.ts`.
+  - Remaining key modules still need direct unit coverage.
 
-### 6.2 Recommended test additions (priority order)
+- [ ] **Step 6.1 — Add tests for note preview parsing**
+  - Target: `src/lib/notePreview.ts` via `src/lib/notePreview.test.ts`.
+  - Cover frontmatter parsing, CRLF normalization, title/content extraction fallbacks.
 
-1. `notePreview.ts` — pure functions, easy to test frontmatter parsing edge cases
-2. `views/utils.ts` — `viewId`, `sha256Hex`, `viewDocPath`
-3. `canvasLayout.ts` — `snapToGrid`, `estimateNodeSize`, `computeGridPositions`
-4. `diff.ts` — `unifiedDiff` with edge cases
-5. `tauri.ts` — `errorMessage` function
-6. `shortcuts.ts` — `isShortcutMatch`, `formatShortcut`
+- [ ] **Step 6.2 — Add tests for view utility determinism**
+  - Target: `src/lib/views/utils.ts` via `src/lib/views/utils.test.ts`.
+  - Cover `viewId`, `sha256Hex`, `viewDocPath` stability and edge cases.
+
+- [ ] **Step 6.3 — Add tests for layout helpers**
+  - Target: `src/lib/canvasLayout.ts` via `src/lib/canvasLayout.test.ts`.
+  - Cover `snapToGrid`, `estimateNodeSize`, and bounded `computeGridPositions` behavior.
+
+- [ ] **Step 6.4 — Add tests for diff + shortcuts utilities**
+  - Targets:
+    - `src/lib/diff.ts` via `src/lib/diff.test.ts`
+    - `src/lib/shortcuts.ts` via `src/lib/shortcuts.test.ts`
+  - Cover edge cases and formatting/matching correctness.
+
+- [ ] **Step 6.5 — Add tests for shared error extraction helper**
+  - Target: `src/lib/errorUtils.ts` via `src/lib/errorUtils.test.ts`.
+  - Cover `Error`, `unknown`, and custom invoke error shapes.
+
+- [ ] **Step 6.6 — Run full validation and stabilize**
+  - Run: `pnpm check`, `pnpm build`, and project test command(s) used in repo.
+  - Ensure tests are deterministic and don’t rely on network/clock randomness.
+
+- [ ] **Step 6.7 — Document final test coverage deltas**
+  - Update this section with added test files and coverage rationale.
 
 ---
 

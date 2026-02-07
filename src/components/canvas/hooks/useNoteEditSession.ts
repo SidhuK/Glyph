@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { extractErrorMessage } from "../../../lib/errorUtils";
 import { parseNotePreview } from "../../../lib/notePreview";
 import { invoke } from "../../../lib/tauri";
 import type { CanvasInlineEditorMode } from "../../editor";
@@ -116,7 +117,7 @@ export function useNoteEditSession(
 					};
 				});
 			} catch (e) {
-				const message = e instanceof Error ? e.message : String(e);
+				const message = extractErrorMessage(e);
 				const isConflict = message.toLowerCase().includes("conflict:");
 				setNoteEditSession((prev) => {
 					if (!prev || prev.noteId !== s.noteId) return prev;
@@ -205,7 +206,7 @@ export function useNoteEditSession(
 				});
 				return true;
 			} catch (e) {
-				const message = e instanceof Error ? e.message : String(e);
+				const message = extractErrorMessage(e);
 				setNoteEditSession((prev) => {
 					if (!prev || prev.noteId !== noteId) return prev;
 					return { ...prev, phase: "error", errorMessage: message };
@@ -281,7 +282,7 @@ export function useNoteEditSession(
 				};
 			});
 		} catch (e) {
-			const message = e instanceof Error ? e.message : String(e);
+			const message = extractErrorMessage(e);
 			setNoteEditSession((prev) => {
 				if (!prev || prev.noteId !== s.noteId) return prev;
 				return { ...prev, phase: "error", errorMessage: message };

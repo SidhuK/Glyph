@@ -12,6 +12,7 @@ interface SearchPaneProps {
 	onChangeQuery: (next: string) => void;
 	onSelectNote: (id: string) => void;
 	onOpenAsCanvas?: (query: string) => void;
+	onSearchInputRef?: (el: HTMLInputElement | null) => void;
 }
 
 const springTransition = {
@@ -28,6 +29,7 @@ export const SearchPane = memo(function SearchPane({
 	onChangeQuery,
 	onSelectNote,
 	onOpenAsCanvas,
+	onSearchInputRef,
 }: SearchPaneProps) {
 	const onChange = useCallback(
 		(e: ChangeEvent<HTMLInputElement>) => onChangeQuery(e.target.value),
@@ -107,6 +109,7 @@ export const SearchPane = memo(function SearchPane({
 			</div>
 			<div className="searchBody">
 				<MotionInput
+					ref={onSearchInputRef}
 					value={query}
 					onChange={onChange}
 					placeholder="Search notes…"

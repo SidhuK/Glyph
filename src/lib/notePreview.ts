@@ -10,27 +10,28 @@ export function parseNotePreview(
 	relPath: string,
 	text: string,
 ): { title: string; content: string } {
+	const normalizedText = text.replace(/\r\n/g, "\n");
 	// Extract title from frontmatter or first heading
 	let title = titleForFile(relPath);
 	// Check for YAML frontmatter title
-	const fmMatch = text.match(
+	const fmMatch = normalizedText.match(
 		/^---\n[\s\S]*?title:\s*["']?([^\n"']+)["']?[\s\S]*?\n---/,
 	);
 	if (fmMatch?.[1]) {
 		title = fmMatch[1].trim();
 	} else {
 		// Check for first # heading
-		const headingMatch = text.match(/^#\s+(.+)$/m);
+		const headingMatch = normalizedText.match(/^#\s+(.+)$/m);
 		if (headingMatch?.[1]) {
 			title = headingMatch[1].trim();
 		}
 	}
 	// Strip frontmatter from content for display
-	let content = text;
-	if (text.startsWith("---\n")) {
-		const endIdx = text.indexOf("\n---\n", 4);
+	let content = normalizedText;
+	if (normalizedText.startsWith("---\n")) {
+		const endIdx = normalizedText.indexOf("\n---\n", 4);
 		if (endIdx !== -1) {
-			content = text.slice(endIdx + 5).trim();
+			content = normalizedText.slice(endIdx + 5).trim();
 		}
 	}
 	// Limit to first 20 lines for performance

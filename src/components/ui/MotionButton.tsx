@@ -4,6 +4,7 @@
 
 import { type HTMLMotionProps, motion } from "motion/react";
 import { forwardRef } from "react";
+import { cn } from "../../utils/cn";
 import { springPresets } from "./animations";
 
 type MotionButtonProps = HTMLMotionProps<"button"> & {
@@ -24,7 +25,7 @@ export const MotionButton = forwardRef<HTMLButtonElement, MotionButtonProps>(
 		return (
 			<motion.button
 				ref={ref}
-				className={`${baseClass} ${variantClass} ${className}`.trim()}
+				className={cn(baseClass, variantClass, className)}
 				whileHover={{ scale: 1.05, y: -1 }}
 				whileTap={{ scale: 0.95 }}
 				transition={springPresets.bouncy}
@@ -49,7 +50,7 @@ export const MotionIconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
 		return (
 			<motion.button
 				ref={ref}
-				className={`${sizeClass} ${activeClass} ${className}`.trim()}
+				className={cn(sizeClass, activeClass, className)}
 				whileHover={{
 					scale: 1.1,
 					rotate: active ? 0 : 5,

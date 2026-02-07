@@ -8,6 +8,13 @@ async function ensureLoaded(): Promise<void> {
 }
 
 export type ThemeMode = "system" | "light" | "dark";
+const THEME_MODES = new Set<ThemeMode>(["system", "light", "dark"]);
+
+function asThemeMode(value: unknown): ThemeMode {
+	return typeof value === "string" && THEME_MODES.has(value as ThemeMode)
+		? (value as ThemeMode)
+		: "system";
+}
 
 export interface AppSettings {
 	currentVaultPath: string | null;
@@ -33,7 +40,8 @@ export async function loadSettings(): Promise<AppSettings> {
 		(await store.get<string[] | null>(KEYS.recentVaults)) ?? [];
 	const aiSidebarWidth =
 		(await store.get<number | null>(KEYS.aiSidebarWidth)) ?? null;
-	const theme = (await store.get<ThemeMode | null>(KEYS.theme)) ?? "system";
+	const rawTheme = await store.get<unknown>(KEYS.theme);
+	const theme = asThemeMode(rawTheme);
 	return {
 		currentVaultPath,
 		recentVaults: Array.isArray(recentVaults) ? recentVaults : [],

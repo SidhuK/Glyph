@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { extractErrorMessage } from "../../lib/errorUtils";
 import { clearRecentVaults, loadSettings } from "../../lib/settings";
 
 export function VaultSettingsPane() {
@@ -19,7 +20,7 @@ export function VaultSettingsPane() {
 			setCurrentVaultPath(s.currentVaultPath);
 			setRecentVaults(s.recentVaults);
 		} catch (e) {
-			setError(e instanceof Error ? e.message : String(e));
+			setError(extractErrorMessage(e));
 		}
 	}, []);
 

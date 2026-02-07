@@ -1,6 +1,5 @@
-import { listen } from "@tauri-apps/api/event";
 import { AnimatePresence, motion } from "motion/react";
-import { useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import "./App.css";
 import {
 	FolderOpen,
@@ -11,7 +10,9 @@ import { MotionIconButton, MotionInput } from "./components/MotionUI";
 import { AiSettingsPane } from "./components/settings/AiSettingsPane";
 import { GeneralSettingsPane } from "./components/settings/GeneralSettingsPane";
 import { VaultSettingsPane } from "./components/settings/VaultSettingsPane";
+import { useTauriEvent } from "./lib/tauriEvents";
 import type { SettingsTab } from "./lib/windows";
+import { cn } from "./utils/cn";
 
 function parseTabFromHash(hash: string): SettingsTab {
 	const raw = hash.startsWith("#/settings")
@@ -39,28 +40,14 @@ export default function SettingsApp() {
 		return () => window.removeEventListener("hashchange", onHashChange);
 	}, []);
 
-	useEffect(() => {
-		let cancelled = false;
-		let unlisten: (() => void) | null = null;
-		void (async () => {
-			const u = await listen<{ tab: SettingsTab }>(
-				"settings:navigate",
-				(evt) => {
-					if (!evt.payload?.tab) return;
-					setSettingsHash(evt.payload.tab);
-				},
-			);
-			if (cancelled) {
-				u();
-				return;
-			}
-			unlisten = u;
-		})();
-		return () => {
-			cancelled = true;
-			unlisten?.();
-		};
-	}, []);
+	const handleSettingsNavigate = useCallback(
+		(payload: { tab: SettingsTab }) => {
+			if (!payload.tab) return;
+			setSettingsHash(payload.tab);
+		},
+		[],
+	);
+	useTauriEvent("settings:navigate", handleSettingsNavigate);
 
 	const title = useMemo(() => {
 		if (tab === "ai") return "AI";
@@ -133,7 +120,7 @@ export default function SettingsApp() {
 							<motion.button
 								key={item.id}
 								type="button"
-								className={`settingsNavButton ${isActive ? "active" : ""}`}
+								className={cn("settingsNavButton", isActive && "active")}
 								onClick={() => setSettingsHash(item.id)}
 								whileHover={{ x: 4 }}
 								whileTap={{ scale: 0.98 }}

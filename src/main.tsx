@@ -18,7 +18,10 @@ function Root() {
 	return isSettingsRoute(hash) ? <SettingsApp /> : <App />;
 }
 
-ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
+const rootEl = document.getElementById("root");
+if (!rootEl) throw new Error("Missing #root element");
+
+ReactDOM.createRoot(rootEl).render(
 	<React.StrictMode>
 		<Root />
 	</React.StrictMode>,

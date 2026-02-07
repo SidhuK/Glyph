@@ -3,14 +3,36 @@ import { sanitizeEdges, sanitizeNodes } from "./sanitize";
 import type { ViewDoc, ViewRef } from "./types";
 import { viewDocPath } from "./utils";
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+	return Boolean(value) && typeof value === "object";
+}
+
+function isViewKind(value: unknown): value is ViewDoc["kind"] {
+	return (
+		value === "global" ||
+		value === "folder" ||
+		value === "tag" ||
+		value === "search"
+	);
+}
+
+function isViewDoc(value: unknown): value is ViewDoc {
+	if (!isRecord(value)) return false;
+	if (value.schema_version !== 1) return false;
+	if (typeof value.view_id !== "string") return false;
+	if (!isViewKind(value.kind)) return false;
+	if (typeof value.selector !== "string") return false;
+	if (typeof value.title !== "string") return false;
+	if (!isRecord(value.options)) return false;
+	if (!Array.isArray(value.nodes)) return false;
+	if (!Array.isArray(value.edges)) return false;
+	return true;
+}
+
 function tryParseViewDoc(raw: string): ViewDoc | null {
 	try {
-		const parsed = JSON.parse(raw) as ViewDoc;
-		if (!parsed || typeof parsed !== "object") return null;
-		if (parsed.schema_version !== 1) return null;
-		if (!Array.isArray(parsed.nodes) || !Array.isArray(parsed.edges))
-			return null;
-		return parsed;
+		const parsed: unknown = JSON.parse(raw);
+		return isViewDoc(parsed) ? parsed : null;
 	} catch {
 		return null;
 	}

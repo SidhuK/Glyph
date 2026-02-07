@@ -1,6 +1,6 @@
-import { listen } from "@tauri-apps/api/event";
 import type { ChatTransport, UIMessage, UIMessageChunk } from "ai";
 import { invoke } from "../tauri";
+import { listenTauriEvent } from "../tauriEvents";
 
 type TauriChatBody = {
 	profile_id: string;
@@ -104,25 +104,19 @@ export class TauriChatTransport implements ChatTransport<UIMessage> {
 					);
 				}
 
-				const unlistenChunk = await listen<{ job_id: string; delta: string }>(
-					"ai:chunk",
-					(evt) => {
-						if (evt.payload.job_id !== jobId) return;
-						maybeStartText();
-						controller.enqueue({
-							type: "text-delta",
-							id: textPartId,
-							delta: evt.payload.delta,
-						});
-					},
-				);
+				const unlistenChunk = await listenTauriEvent("ai:chunk", (payload) => {
+					if (payload.job_id !== jobId) return;
+					maybeStartText();
+					controller.enqueue({
+						type: "text-delta",
+						id: textPartId,
+						delta: payload.delta,
+					});
+				});
 				cleanupFns.push(unlistenChunk);
 
-				const unlistenDone = await listen<{
-					job_id: string;
-					cancelled: boolean;
-				}>("ai:done", (evt) => {
-					if (evt.payload.job_id !== jobId) return;
+				const unlistenDone = await listenTauriEvent("ai:done", (payload) => {
+					if (payload.job_id !== jobId) return;
 					try {
 						finishText();
 						controller.close();
@@ -133,22 +127,19 @@ export class TauriChatTransport implements ChatTransport<UIMessage> {
 				});
 				cleanupFns.push(unlistenDone);
 
-				const unlistenError = await listen<{ job_id: string; message: string }>(
-					"ai:error",
-					(evt) => {
-						if (evt.payload.job_id !== jobId) return;
-						try {
-							controller.enqueue({
-								type: "error",
-								errorText: evt.payload.message,
-							});
-							controller.close();
-						} catch {
-							// ignore
-						}
-						cleanup();
-					},
-				);
+				const unlistenError = await listenTauriEvent("ai:error", (payload) => {
+					if (payload.job_id !== jobId) return;
+					try {
+						controller.enqueue({
+							type: "error",
+							errorText: payload.message,
+						});
+						controller.close();
+					} catch {
+						// ignore
+					}
+					cleanup();
+				});
 				cleanupFns.push(unlistenError);
 			},
 			cancel: async () => {

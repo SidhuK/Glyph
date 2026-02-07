@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useFileTreeContext, useUIContext, useVault } from "../../contexts";
 import { openSettingsWindow } from "../../lib/windows";
+import { cn } from "../../utils/cn";
 import { FileTreePane } from "../FileTreePane";
 import { Files, Settings, Tags } from "../Icons";
 import { SearchPane } from "../SearchPane";
@@ -50,6 +51,7 @@ export function SidebarContent({
 		isSearching,
 		searchError,
 		setSearchQuery,
+		setSearchInputElement,
 		sidebarViewMode,
 		setSidebarViewMode,
 	} = useUIContext();
@@ -78,6 +80,7 @@ export function SidebarContent({
 						isSearching={isSearching}
 						error={searchError}
 						onChangeQuery={setSearchQuery}
+						onSearchInputRef={setSearchInputElement}
 						onOpenAsCanvas={onOpenSearchAsCanvas}
 						onSelectNote={onSelectSearchNote}
 					/>
@@ -97,9 +100,7 @@ export function SidebarContent({
 					<div className="sidebarSectionToggle">
 						<button
 							type="button"
-							className={
-								sidebarViewMode === "files" ? "segBtn active" : "segBtn"
-							}
+							className={cn("segBtn", sidebarViewMode === "files" && "active")}
 							onClick={() => setSidebarViewMode("files")}
 							title="Files"
 						>
@@ -107,9 +108,7 @@ export function SidebarContent({
 						</button>
 						<button
 							type="button"
-							className={
-								sidebarViewMode === "tags" ? "segBtn active" : "segBtn"
-							}
+							className={cn("segBtn", sidebarViewMode === "tags" && "active")}
 							onClick={() => setSidebarViewMode("tags")}
 							title="Tags"
 						>

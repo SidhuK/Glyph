@@ -11,6 +11,7 @@ import { useFileTree } from "../../hooks/useFileTree";
 import { useFolderShelf } from "../../hooks/useFolderShelf";
 import { useMenuListeners } from "../../hooks/useMenuListeners";
 import type { Shortcut } from "../../lib/shortcuts";
+import { cn } from "../../utils/cn";
 import { onWindowDragMouseDown } from "../../utils/window";
 import type { CanvasExternalCommand } from "../CanvasPane";
 import { PanelLeftClose, PanelLeftOpen } from "../Icons";
@@ -59,6 +60,7 @@ export function AppShell() {
 		handleAiResizePointerUp,
 		handleAiResizePointerCancel,
 		setShowSearch,
+		focusSearchInput,
 		setActivePreviewPath,
 	} = useUIContext();
 
@@ -161,10 +163,7 @@ export function AppShell() {
 				action: () => {
 					setShowSearch(true);
 					window.requestAnimationFrame(() => {
-						const input =
-							document.querySelector<HTMLInputElement>(".searchInput");
-						input?.focus();
-						input?.select();
+						focusSearchInput();
 					});
 				},
 			},
@@ -202,6 +201,7 @@ export function AppShell() {
 			openFolderView,
 			onOpenVault,
 			setAiSidebarOpen,
+			focusSearchInput,
 			setShowSearch,
 			vaultPath,
 		],
@@ -220,9 +220,11 @@ export function AppShell() {
 	// ---------------------------------------------------------------------------
 	return (
 		<div
-			className={`appShell ${aiSidebarOpen ? "aiSidebarOpen" : ""} ${
-				sidebarCollapsed ? "appShellSidebarCollapsed" : ""
-			}`}
+			className={cn(
+				"appShell",
+				aiSidebarOpen && "aiSidebarOpen",
+				sidebarCollapsed && "appShellSidebarCollapsed",
+			)}
 		>
 			<div
 				aria-hidden="true"

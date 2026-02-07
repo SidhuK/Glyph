@@ -1,6 +1,6 @@
-import { listen } from "@tauri-apps/api/event";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { type AiMessage, invoke } from "../../../lib/tauri";
+import { useTauriEvent } from "../../../lib/tauriEvents";
 import type { ChatMessage, ContextManifest } from "../types";
 import { errMessage } from "../utils";
 
@@ -61,71 +61,45 @@ export function useAIChat(options: UseAIChatOptions): UseAIChatResult {
 		return "";
 	}, [chatMessages]);
 
-	useEffect(() => {
-		let cancelled = false;
-		const cleanups: Array<() => void> = [];
-
-		void (async () => {
-			const u1 = await listen<{ job_id: string; delta: string }>(
-				"ai:chunk",
-				(evt) => {
-					if (evt.payload.job_id !== jobIdRef.current) return;
-					streamingTextRef.current += evt.payload.delta;
-					setChatMessages((prev) => {
-						const next = prev.slice();
-						for (let i = next.length - 1; i >= 0; i--) {
-							if (next[i]?.role !== "assistant") continue;
-							next[i] = { ...next[i], content: streamingTextRef.current };
-							break;
-						}
-						return next;
-					});
-				},
-			);
-			if (cancelled) {
-				u1();
-				return;
+	const onChunk = useCallback((payload: { job_id: string; delta: string }) => {
+		if (payload.job_id !== jobIdRef.current) return;
+		streamingTextRef.current += payload.delta;
+		setChatMessages((prev) => {
+			const next = prev.slice();
+			for (let i = next.length - 1; i >= 0; i--) {
+				if (next[i]?.role !== "assistant") continue;
+				next[i] = { ...next[i], content: streamingTextRef.current };
+				break;
 			}
-			cleanups.push(u1);
-
-			const u2 = await listen<{ job_id: string; cancelled: boolean }>(
-				"ai:done",
-				(evt) => {
-					if (evt.payload.job_id !== jobIdRef.current) return;
-					setStreaming(false);
-					setJobId(null);
-					setLastCompletedJobId(evt.payload.job_id);
-					pendingActionRef.current = "chat";
-				},
-			);
-			if (cancelled) {
-				u2();
-				return;
-			}
-			cleanups.push(u2);
-
-			const u3 = await listen<{ job_id: string; message: string }>(
-				"ai:error",
-				(evt) => {
-					if (evt.payload.job_id !== jobIdRef.current) return;
-					setStreaming(false);
-					setJobId(null);
-					setChatError(evt.payload.message);
-					pendingActionRef.current = "chat";
-				},
-			);
-			if (cancelled) {
-				u3();
-				return;
-			}
-			cleanups.push(u3);
-		})();
-
-		return () => {
-			cancelled = true;
-			for (const fn of cleanups) fn();
-		};
+			return next;
+		});
 	}, []);
+
+	const onDone = useCallback(
+		(payload: { job_id: string; cancelled: boolean }) => {
+			if (payload.job_id !== jobIdRef.current) return;
+			setStreaming(false);
+			setJobId(null);
+			setLastCompletedJobId(payload.job_id);
+			pendingActionRef.current = "chat";
+		},
+		[],
+	);
+
+	const onError = useCallback(
+		(payload: { job_id: string; message: string }) => {
+			if (payload.job_id !== jobIdRef.current) return;
+			setStreaming(false);
+			setJobId(null);
+			setChatError(payload.message);
+			pendingActionRef.current = "chat";
+		},
+		[],
+	);
+
+	useTauriEvent("ai:chunk", onChunk);
+	useTauriEvent("ai:done", onDone);
+	useTauriEvent("ai:error", onError);
 
 	const startRequest = useCallback(
 		async (userText: string) => {

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { extractErrorMessage } from "../../lib/errorUtils";
 import {
 	type ThemeMode,
 	loadSettings,
@@ -41,7 +42,7 @@ export function GeneralSettingsPane() {
 					);
 				}
 			} catch (e) {
-				if (!cancelled) setError(e instanceof Error ? e.message : String(e));
+				if (!cancelled) setError(extractErrorMessage(e));
 			}
 		})();
 		return () => {

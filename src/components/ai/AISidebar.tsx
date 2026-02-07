@@ -3,6 +3,7 @@ import { motion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 import { TauriChatTransport } from "../../lib/ai/tauriChatTransport";
 import { openSettingsWindow } from "../../lib/windows";
+import { cn } from "../../utils/cn";
 import { Settings as SettingsIcon, Sparkles, X } from "../Icons";
 import { MotionIconButton } from "../MotionUI";
 import { useAiContext } from "./useAiContext";
@@ -114,7 +115,7 @@ export function AISidebar({
 
 	return (
 		<motion.aside
-			className={`aiSidebar ${isOpen ? "open" : ""}`}
+			className={cn("aiSidebar", isOpen && "open")}
 			style={{
 				width,
 				marginRight: isOpen ? 0 : -width,
@@ -154,9 +155,10 @@ export function AISidebar({
 					)}
 
 					<div
-						className={`aiSidebarKeyPill ${
-							profiles.secretConfigured ? "ok" : "warn"
-						}`}
+						className={cn(
+							"aiSidebarKeyPill",
+							profiles.secretConfigured ? "ok" : "warn",
+						)}
 						title={
 							profiles.secretConfigured == null
 								? "Key status unknown"
@@ -216,9 +218,10 @@ export function AISidebar({
 						return (
 							<div
 								key={m.id}
-								className={`aiChatMsg ${
-									m.role === "user" ? "aiChatMsg-user" : "aiChatMsg-assistant"
-								}`}
+								className={cn(
+									"aiChatMsg",
+									m.role === "user" ? "aiChatMsg-user" : "aiChatMsg-assistant",
+								)}
 							>
 								<div className="aiChatContent">{text}</div>
 							</div>

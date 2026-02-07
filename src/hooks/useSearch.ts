@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { extractErrorMessage } from "../lib/errorUtils";
 import type { SearchResult } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
 
@@ -39,7 +40,7 @@ export function useSearch(vaultPath: string | null): UseSearchResult {
 						setSearchResults(res);
 				} catch (e) {
 					if (!cancelled && requestId === requestIdRef.current)
-						setSearchError(e instanceof Error ? e.message : String(e));
+						setSearchError(extractErrorMessage(e));
 				} finally {
 					if (!cancelled && requestId === requestIdRef.current)
 						setIsSearching(false);

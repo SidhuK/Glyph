@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { extractErrorMessage } from "../../lib/errorUtils";
 import { type TextFilePreviewDoc, invoke } from "../../lib/tauri";
 import { getInAppPreviewKind } from "../../utils/filePreview";
 
@@ -53,7 +54,7 @@ export function FilePreviewPane({
 			}
 			throw new Error("Unsupported preview type");
 		} catch (e) {
-			setError(e instanceof Error ? e.message : String(e));
+			setError(extractErrorMessage(e));
 		} finally {
 			setLoading(false);
 		}
@@ -87,7 +88,7 @@ export function FilePreviewPane({
 						onClick={() => {
 							setError("");
 							void onOpenExternally(relPath).catch((e) => {
-								setError(e instanceof Error ? e.message : String(e));
+								setError(extractErrorMessage(e));
 							});
 						}}
 					>

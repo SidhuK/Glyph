@@ -1,6 +1,7 @@
 import { join } from "@tauri-apps/api/path";
 import { openPath, openUrl } from "@tauri-apps/plugin-opener";
-import { useCallback, useRef } from "react";
+import { useCallback, useEffect, useRef } from "react";
+import { extractErrorMessage } from "../lib/errorUtils";
 import type { DirChildSummary, FsEntry } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
 import { isInAppPreviewable } from "../utils/filePreview";
@@ -65,6 +66,16 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 	const dirSummariesInFlightRef = useRef(new Set<string>());
 	const loadedDirsRef = useRef(new Set<string>());
 	const loadRequestVersionRef = useRef(new Map<string, number>());
+	const previousVaultPathRef = useRef<string | null>(vaultPath);
+
+	useEffect(() => {
+		if (previousVaultPathRef.current === vaultPath) return;
+		previousVaultPathRef.current = vaultPath;
+		loadedDirsRef.current.clear();
+		loadRequestVersionRef.current.clear();
+		dirSummariesInFlightRef.current.clear();
+	}, [vaultPath]);
+
 	const issueOpenNoteCommand = useCallback(
 		(relPath: string) => {
 			setCanvasCommand({
@@ -147,7 +158,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 				await loadAndBuildFolderView(dir);
 				issueOpenNoteCommand(relPath);
 			} catch (e) {
-				setError(e instanceof Error ? e.message : String(e));
+				setError(extractErrorMessage(e));
 			}
 		},
 		[
@@ -289,7 +300,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 				await refreshAfterCreate(createdInDir);
 				await refreshActiveFolderViewAfterCreate(createdInDir);
 			} catch (e) {
-				setError(e instanceof Error ? e.message : String(e));
+				setError(extractErrorMessage(e));
 			}
 		},
 		[
@@ -343,7 +354,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 				await refreshActiveFolderViewAfterCreate(dirPath);
 				return path;
 			} catch (e) {
-				setError(e instanceof Error ? e.message : String(e));
+				setError(extractErrorMessage(e));
 			}
 			return null;
 		},
@@ -427,7 +438,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 				await loadDir(nextPath, true);
 				return nextPath;
 			} catch (e) {
-				setError(e instanceof Error ? e.message : String(e));
+				setError(extractErrorMessage(e));
 				return null;
 			}
 		},

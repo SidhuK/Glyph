@@ -4,6 +4,7 @@ import {
 	useCallback,
 	useContext,
 	useMemo,
+	useRef,
 	useState,
 } from "react";
 import { useAISidebar } from "../hooks/useAISidebar";
@@ -33,6 +34,8 @@ export interface UIContextValue {
 	searchError: string;
 	showSearch: boolean;
 	setShowSearch: (show: boolean) => void;
+	focusSearchInput: () => void;
+	setSearchInputElement: (el: HTMLInputElement | null) => void;
 	activePreviewPath: string | null;
 	setActivePreviewPath: (path: string | null) => void;
 }
@@ -50,6 +53,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 	const [activePreviewPath, setActivePreviewPath] = useState<string | null>(
 		null,
 	);
+	const searchInputElRef = useRef<HTMLInputElement | null>(null);
 
 	const {
 		aiSidebarOpen,
@@ -80,6 +84,17 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		[vaultPath],
 	);
 
+	const setSearchInputElement = useCallback((el: HTMLInputElement | null) => {
+		searchInputElRef.current = el;
+	}, []);
+
+	const focusSearchInput = useCallback(() => {
+		const el = searchInputElRef.current;
+		if (!el) return;
+		el.focus();
+		el.select();
+	}, []);
+
 	const value: UIContextValue = useMemo(
 		() => ({
 			sidebarCollapsed,
@@ -103,6 +118,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			searchError,
 			showSearch,
 			setShowSearch,
+			focusSearchInput,
+			setSearchInputElement,
 			activePreviewPath,
 			setActivePreviewPath: handleSetActivePreviewPath,
 		}),
@@ -125,6 +142,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			searchError,
 			showSearch,
 			setShowSearch,
+			focusSearchInput,
+			setSearchInputElement,
 			activePreviewPath,
 			handleSetActivePreviewPath,
 		],

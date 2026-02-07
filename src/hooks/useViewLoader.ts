@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from "react";
+import { extractErrorMessage } from "../lib/errorUtils";
 import {
 	NeedsIndexRebuildError,
 	type ViewDoc,
@@ -106,7 +107,7 @@ export function useViewLoader(deps: UseViewLoaderDeps): UseViewLoaderResult {
 			} catch (e) {
 				if (isStale()) return;
 				setCanvasLoadingMessage("");
-				setError(e instanceof Error ? e.message : String(e));
+				setError(extractErrorMessage(e));
 			}
 		},
 		[setError, startIndexRebuild, setActiveViewDocAndRef],

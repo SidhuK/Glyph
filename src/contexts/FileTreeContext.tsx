@@ -7,6 +7,7 @@ import {
 	useMemo,
 	useState,
 } from "react";
+import { extractErrorMessage } from "../lib/errorUtils";
 import type { DirChildSummary, FsEntry, TagCount } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
 import { useVault } from "./VaultContext";
@@ -58,7 +59,7 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 			setTags(await invoke("tags_list", { limit: 250 }));
 		} catch (e) {
 			setTags([]);
-			setTagsError(e instanceof Error ? e.message : String(e));
+			setTagsError(extractErrorMessage(e));
 		}
 	}, []);
 

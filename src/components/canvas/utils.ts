@@ -43,6 +43,7 @@ export function getRandomVariation(
 ): number {
 	const hash = getNodeHash(id);
 	const range = max - min;
+	if (range <= 0) return min;
 	return min + (hash % range);
 }
 
