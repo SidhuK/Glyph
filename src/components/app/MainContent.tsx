@@ -1,4 +1,10 @@
 import { Suspense, lazy, useCallback } from "react";
+import {
+	useFileTreeContext,
+	useUIContext,
+	useVault,
+	useViewContext,
+} from "../../contexts";
 import type { FsEntry, RecentEntry } from "../../lib/tauri";
 import { type ViewDoc, asCanvasDocLike, saveViewDoc } from "../../lib/views";
 import { isInAppPreviewable } from "../../utils/filePreview";
@@ -15,66 +21,57 @@ import { WelcomeScreen } from "./WelcomeScreen";
 const CanvasPane = lazy(() => import("../CanvasPane"));
 
 interface MainContentProps {
-	vaultPath: string | null;
-	appName: string | null;
-	lastVaultPath: string | null;
-	recentVaults: string[];
-	activeViewDoc: ViewDoc | null;
-	activeViewDocRef: React.RefObject<ViewDoc | null>;
-	activeViewPathRef: React.RefObject<string | null>;
-	canvasLoadingMessage: string;
-	aiSidebarOpen: boolean;
-	setAiSidebarOpen: (open: boolean) => void;
-	activeNoteId: string | null;
-	activeNoteTitle: string | null;
 	canvasCommand: CanvasExternalCommand | null;
 	setCanvasCommand: React.Dispatch<
 		React.SetStateAction<CanvasExternalCommand | null>
 	>;
 	folderShelfSubfolders: FsEntry[];
 	folderShelfRecents: RecentEntry[];
-	activePreviewPath: string | null;
-	setActivePreviewPath: (path: string | null) => void;
-	setActiveViewDoc: (doc: ViewDoc | null) => void;
 	loadAndBuildFolderView: (dir: string) => Promise<void>;
 	fileTree: {
 		openFile: (relPath: string) => Promise<void>;
 		openMarkdownFileInCanvas: (relPath: string) => Promise<void>;
 		openNonMarkdownExternally: (relPath: string) => Promise<void>;
 	};
-	onOpenVault: () => void;
-	onOpenVaultAtPath: (path: string) => Promise<void>;
-	onContinueLastVault: () => Promise<void>;
-	onCreateVault: () => void;
 }
 
 export function MainContent({
-	vaultPath,
-	appName,
-	lastVaultPath,
-	recentVaults,
-	activeViewDoc,
-	activeViewDocRef,
-	activeViewPathRef,
-	canvasLoadingMessage,
-	aiSidebarOpen,
-	setAiSidebarOpen,
-	activeNoteId,
-	activeNoteTitle,
 	canvasCommand,
 	setCanvasCommand,
 	folderShelfSubfolders,
 	folderShelfRecents,
-	activePreviewPath,
-	setActivePreviewPath,
-	setActiveViewDoc,
 	loadAndBuildFolderView,
 	fileTree,
-	onOpenVault,
-	onOpenVaultAtPath,
-	onContinueLastVault,
-	onCreateVault,
 }: MainContentProps) {
+	// Contexts
+	const {
+		info,
+		vaultPath,
+		lastVaultPath,
+		recentVaults,
+		onOpenVault,
+		onOpenVaultAtPath,
+		onContinueLastVault,
+		onCreateVault,
+	} = useVault();
+
+	const { activeNoteId, activeNoteTitle } = useFileTreeContext();
+
+	const {
+		activeViewDoc,
+		activeViewDocRef,
+		activeViewPathRef,
+		canvasLoadingMessage,
+		setActiveViewDoc,
+	} = useViewContext();
+
+	const {
+		aiSidebarOpen,
+		setAiSidebarOpen,
+		activePreviewPath,
+		setActivePreviewPath,
+	} = useUIContext();
+
 	const onCanvasSelectionChange = useCallback((_selected: CanvasNode[]) => {
 		// Selection tracking available for future AI features
 	}, []);
@@ -105,7 +102,7 @@ export function MainContent({
 		return (
 			<main className="mainArea mainAreaWelcome">
 				<WelcomeScreen
-					appName={appName}
+					appName={info?.name ?? null}
 					lastVaultPath={lastVaultPath}
 					recentVaults={recentVaults}
 					onOpenVault={onOpenVault}
@@ -122,7 +119,7 @@ export function MainContent({
 			<MainToolbar
 				activeViewDoc={activeViewDoc}
 				aiSidebarOpen={aiSidebarOpen}
-				onToggleAISidebar={() => setAiSidebarOpen(!aiSidebarOpen)}
+				onToggleAISidebar={() => setAiSidebarOpen((v) => !v)}
 				onOpenFolder={(d) => void loadAndBuildFolderView(d)}
 			/>
 

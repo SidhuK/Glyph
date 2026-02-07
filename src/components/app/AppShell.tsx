@@ -1,14 +1,16 @@
 import { AnimatePresence } from "motion/react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useAISidebar } from "../../hooks/useAISidebar";
+import { useCallback, useMemo, useState } from "react";
+import {
+	useFileTreeContext,
+	useUIContext,
+	useVault,
+	useViewContext,
+} from "../../contexts";
 import { useCommandShortcuts } from "../../hooks/useCommandShortcuts";
 import { useFileTree } from "../../hooks/useFileTree";
 import { useFolderShelf } from "../../hooks/useFolderShelf";
 import { useMenuListeners } from "../../hooks/useMenuListeners";
-import { useSearch } from "../../hooks/useSearch";
-import { useViewLoader } from "../../hooks/useViewLoader";
 import type { Shortcut } from "../../lib/shortcuts";
-import type { FsEntry } from "../../lib/tauri";
 import { onWindowDragMouseDown } from "../../utils/window";
 import type { CanvasExternalCommand } from "../CanvasPane";
 import { PanelLeftClose, PanelLeftOpen } from "../Icons";
@@ -18,140 +20,61 @@ import { type Command, CommandPalette } from "./CommandPalette";
 import { MainContent } from "./MainContent";
 import { Sidebar } from "./Sidebar";
 
-interface AppShellProps {
-	vaultPath: string | null;
-	lastVaultPath: string | null;
-	vaultSchemaVersion: number | null;
-	recentVaults: string[];
-	isIndexing: boolean;
-	appName: string | null;
-	error: string;
-	setError: (error: string) => void;
-	rootEntries: FsEntry[];
-	setRootEntries: React.Dispatch<React.SetStateAction<FsEntry[]>>;
-	childrenByDir: Record<string, FsEntry[] | undefined>;
-	setChildrenByDir: React.Dispatch<
-		React.SetStateAction<Record<string, FsEntry[] | undefined>>
-	>;
-	dirSummariesByParent: Record<
-		string,
-		import("../../lib/tauri").DirChildSummary[] | undefined
-	>;
-	setDirSummariesByParent: React.Dispatch<
-		React.SetStateAction<
-			Record<string, import("../../lib/tauri").DirChildSummary[] | undefined>
-		>
-	>;
-	expandedDirs: Set<string>;
-	setExpandedDirs: React.Dispatch<React.SetStateAction<Set<string>>>;
-	activeFilePath: string | null;
-	setActiveFilePath: (path: string | null) => void;
-	activeNoteId: string | null;
-	activeNoteTitle: string | null;
-	onOpenVault: () => void;
-	onOpenVaultAtPath: (path: string) => Promise<void>;
-	onContinueLastVault: () => Promise<void>;
-	onCreateVault: () => void;
-	closeVault: () => Promise<void>;
-	startIndexRebuild: () => Promise<void>;
-	tags: import("../../lib/tauri").TagCount[];
-	tagsError: string;
-	refreshTags: () => Promise<void>;
-}
+export function AppShell() {
+	// ---------------------------------------------------------------------------
+	// Contexts
+	// ---------------------------------------------------------------------------
+	const vault = useVault();
+	const { vaultPath, error, setError, onOpenVault, onCreateVault, closeVault } =
+		vault;
 
-export function AppShell({
-	vaultPath,
-	lastVaultPath,
-	vaultSchemaVersion,
-	recentVaults,
-	isIndexing,
-	appName,
-	error,
-	setError,
-	rootEntries,
-	setRootEntries,
-	childrenByDir,
-	setChildrenByDir,
-	dirSummariesByParent,
-	setDirSummariesByParent,
-	expandedDirs,
-	setExpandedDirs,
-	activeFilePath,
-	setActiveFilePath,
-	activeNoteId,
-	activeNoteTitle,
-	onOpenVault,
-	onOpenVaultAtPath,
-	onContinueLastVault,
-	onCreateVault,
-	closeVault,
-	startIndexRebuild,
-	tags,
-	tagsError,
-	refreshTags,
-}: AppShellProps) {
-	const [canvasCommand, setCanvasCommand] =
-		useState<CanvasExternalCommand | null>(null);
-	const initialViewLoadVaultRef = useRef<string | null>(null);
-	const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
-	const [sidebarViewMode, setSidebarViewMode] = useState<"files" | "tags">(
-		"files",
-	);
-	const [paletteOpen, setPaletteOpen] = useState(false);
-	const [activePreviewPath, setActivePreviewPath] = useState<string | null>(
-		null,
-	);
-
+	const fileTreeCtx = useFileTreeContext();
 	const {
-		aiSidebarOpen,
-		setAiSidebarOpen,
-		aiSidebarWidth,
-		isResizing: aiSidebarResizing,
-		handleResizeMouseDown,
-	} = useAISidebar();
-
-	const {
-		searchQuery,
-		setSearchQuery,
-		searchResults,
-		isSearching,
-		searchError,
-		showSearch,
-		setShowSearch,
-	} = useSearch(vaultPath);
+		setRootEntries,
+		setChildrenByDir,
+		setDirSummariesByParent,
+		setExpandedDirs,
+		setActiveFilePath,
+	} = fileTreeCtx;
 
 	const {
 		activeViewDoc,
-		canvasLoadingMessage,
 		activeViewDocRef,
-		activeViewPathRef,
-		setActiveViewDoc,
 		loadAndBuildFolderView,
 		loadAndBuildSearchView,
 		loadAndBuildTagView,
-	} = useViewLoader({ setError, startIndexRebuild });
+	} = useViewContext();
 
-	useEffect(() => {
-		if (!vaultPath) {
-			initialViewLoadVaultRef.current = null;
-			return;
-		}
-		if (activeViewDoc) return;
-		if (initialViewLoadVaultRef.current === vaultPath) return;
-		initialViewLoadVaultRef.current = vaultPath;
-		void loadAndBuildFolderView("").finally(() => {
-			if (initialViewLoadVaultRef.current === vaultPath) {
-				initialViewLoadVaultRef.current = null;
-			}
-		});
-	}, [vaultPath, activeViewDoc, loadAndBuildFolderView]);
+	const {
+		sidebarCollapsed,
+		setSidebarCollapsed,
+		paletteOpen,
+		setPaletteOpen,
+		aiSidebarOpen,
+		setAiSidebarOpen,
+		aiSidebarWidth,
+		aiSidebarResizing,
+		handleAiResizeMouseDown,
+		setShowSearch,
+		setActivePreviewPath,
+	} = useUIContext();
 
-	const { folderShelfSubfolders, folderShelfRecents } = useFolderShelf(
-		vaultPath,
-		activeViewDoc,
-	);
+	// ---------------------------------------------------------------------------
+	// Local state
+	// ---------------------------------------------------------------------------
+	const [canvasCommand, setCanvasCommand] =
+		useState<CanvasExternalCommand | null>(null);
 
-	const setCanvasCommandTyped = useCallback(
+	// ---------------------------------------------------------------------------
+	// Derived callbacks
+	// ---------------------------------------------------------------------------
+	const getActiveFolderDir = useCallback(() => {
+		const current = activeViewDocRef.current;
+		if (!current || current.kind !== "folder") return null;
+		return current.selector || "";
+	}, [activeViewDocRef]);
+
+	const setCanvasCommandForFileTree = useCallback(
 		(
 			cmd: { id: string; kind: string; noteId?: string; title?: string } | null,
 		) => {
@@ -159,12 +82,6 @@ export function AppShell({
 		},
 		[],
 	);
-
-	const getActiveFolderDir = useCallback(() => {
-		const current = activeViewDocRef.current;
-		if (!current || current.kind !== "folder") return null;
-		return current.selector || "";
-	}, [activeViewDocRef]);
 
 	const fileTree = useFileTree({
 		vaultPath,
@@ -174,18 +91,23 @@ export function AppShell({
 		setRootEntries,
 		setActiveFilePath,
 		setActivePreviewPath,
-		setCanvasCommand: setCanvasCommandTyped,
+		setCanvasCommand: setCanvasCommandForFileTree,
 		setError,
 		loadAndBuildFolderView,
 		getActiveFolderDir,
 	});
+
+	const { folderShelfSubfolders, folderShelfRecents } = useFolderShelf(
+		vaultPath,
+		activeViewDoc,
+	);
 
 	const openFolderView = useCallback(
 		async (dir: string) => {
 			setActivePreviewPath(null);
 			await loadAndBuildFolderView(dir);
 		},
-		[loadAndBuildFolderView],
+		[loadAndBuildFolderView, setActivePreviewPath],
 	);
 
 	const openSearchView = useCallback(
@@ -193,7 +115,7 @@ export function AppShell({
 			setActivePreviewPath(null);
 			await loadAndBuildSearchView(query);
 		},
-		[loadAndBuildSearchView],
+		[loadAndBuildSearchView, setActivePreviewPath],
 	);
 
 	const openTagView = useCallback(
@@ -201,16 +123,17 @@ export function AppShell({
 			setActivePreviewPath(null);
 			await loadAndBuildTagView(tag);
 		},
-		[loadAndBuildTagView],
+		[loadAndBuildTagView, setActivePreviewPath],
 	);
 
-	useEffect(() => {
-		if (vaultPath) return;
-		setActivePreviewPath(null);
-	}, [vaultPath]);
-
+	// ---------------------------------------------------------------------------
+	// Menu listeners
+	// ---------------------------------------------------------------------------
 	useMenuListeners({ onOpenVault, onCreateVault, closeVault });
 
+	// ---------------------------------------------------------------------------
+	// Commands
+	// ---------------------------------------------------------------------------
 	const openPaletteShortcuts = useMemo<Shortcut[]>(
 		() => [
 			{ meta: true, key: "k" },
@@ -218,6 +141,7 @@ export function AppShell({
 		],
 		[],
 	);
+
 	const commands = useMemo<Command[]>(
 		() => [
 			{
@@ -288,6 +212,9 @@ export function AppShell({
 		openPaletteShortcuts,
 	});
 
+	// ---------------------------------------------------------------------------
+	// Render
+	// ---------------------------------------------------------------------------
 	return (
 		<div
 			className={`appShell ${aiSidebarOpen ? "aiSidebarOpen" : ""} ${
@@ -316,68 +243,26 @@ export function AppShell({
 			</div>
 
 			<Sidebar
-				vaultPath={vaultPath}
-				vaultSchemaVersion={vaultSchemaVersion}
-				isIndexing={isIndexing}
-				sidebarCollapsed={sidebarCollapsed}
-				sidebarViewMode={sidebarViewMode}
-				setSidebarViewMode={setSidebarViewMode}
-				showSearch={showSearch}
-				setShowSearch={setShowSearch}
-				searchQuery={searchQuery}
-				searchResults={searchResults}
-				isSearching={isSearching}
-				searchError={searchError}
-				onChangeSearchQuery={setSearchQuery}
+				onSelectDir={(p) => void openFolderView(p)}
 				onOpenSearchAsCanvas={(q) => void openSearchView(q)}
 				onSelectSearchNote={(id) => void fileTree.openMarkdownFileInCanvas(id)}
-				rootEntries={rootEntries}
-				childrenByDir={childrenByDir}
-				expandedDirs={expandedDirs}
-				activeFilePath={activeFilePath}
-				summariesByParentDir={dirSummariesByParent}
-				onToggleDir={fileTree.toggleDir}
-				onSelectDir={(p) => void openFolderView(p)}
 				onOpenFile={(p) => void fileTree.openFile(p)}
 				onNewFile={fileTree.onNewFile}
 				onNewFileInDir={(p) => void fileTree.onNewFileInDir(p)}
 				onNewFolderInDir={(p) => fileTree.onNewFolderInDir(p)}
 				onRenameDir={(p, name) => fileTree.onRenameDir(p, name)}
-				tags={tags}
-				tagsError={tagsError}
+				onToggleDir={fileTree.toggleDir}
 				onSelectTag={(t) => void openTagView(t)}
-				onRefreshTags={() => void refreshTags()}
-				onOpenVault={onOpenVault}
-				onCreateVault={onCreateVault}
 				onOpenCommandPalette={() => setPaletteOpen(true)}
 			/>
 
 			<MainContent
-				vaultPath={vaultPath}
-				appName={appName}
-				lastVaultPath={lastVaultPath}
-				recentVaults={recentVaults}
-				activeViewDoc={activeViewDoc}
-				activeViewDocRef={activeViewDocRef}
-				activeViewPathRef={activeViewPathRef}
-				canvasLoadingMessage={canvasLoadingMessage}
-				aiSidebarOpen={aiSidebarOpen}
-				setAiSidebarOpen={setAiSidebarOpen}
-				activeNoteId={activeNoteId}
-				activeNoteTitle={activeNoteTitle}
 				canvasCommand={canvasCommand}
 				setCanvasCommand={setCanvasCommand}
 				folderShelfSubfolders={folderShelfSubfolders}
 				folderShelfRecents={folderShelfRecents}
-				activePreviewPath={activePreviewPath}
-				setActivePreviewPath={setActivePreviewPath}
-				setActiveViewDoc={setActiveViewDoc}
 				loadAndBuildFolderView={openFolderView}
 				fileTree={fileTree}
-				onOpenVault={onOpenVault}
-				onOpenVaultAtPath={onOpenVaultAtPath}
-				onContinueLastVault={onContinueLastVault}
-				onCreateVault={onCreateVault}
 			/>
 
 			{vaultPath && (
@@ -386,7 +271,7 @@ export function AppShell({
 						className="rightSidebarResizer"
 						aria-hidden={!aiSidebarOpen}
 						data-window-drag-ignore
-						onMouseDown={handleResizeMouseDown}
+						onMouseDown={handleAiResizeMouseDown}
 					/>
 
 					<AISidebar

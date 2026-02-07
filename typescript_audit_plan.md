@@ -518,6 +518,49 @@ All checks pass: pnpm build, pnpm check, cargo check.
 
 ## Phase 3 — Prop Drilling & State Architecture (1–2 days)
 
+### Phase 3 Implementation Steps
+
+- [x] **Step 3.0** — Pre-work: Analyze component tree to confirm context boundaries (App→AppShell→Sidebar/MainContent) and identify all prop consumers
+- [x] **Step 3.1a** — Create `src/contexts/VaultContext.tsx` with `VaultContextValue` type and `VaultProvider` + `useVault()` hook
+- [x] **Step 3.1b** — Create `src/contexts/FileTreeContext.tsx` with `FileTreeContextValue` type and `FileTreeProvider` + `useFileTreeContext()` hook
+- [x] **Step 3.1c** — Create `src/contexts/ViewContext.tsx` with `ViewContextValue` type and `ViewProvider` + `useViewContext()` hook
+- [x] **Step 3.1d** — Create `src/contexts/UIContext.tsx` with `UIContextValue` type and `UIProvider` + `useUIContext()` hook
+- [x] **Step 3.1e** — Create `src/contexts/index.ts` barrel export and combined `AppProviders` wrapper component
+- [x] **Step 3.2a** — Split `useAppBootstrap` into `useAppInfo()` (info state + error) — *integrated into VaultContext*
+- [x] **Step 3.2b** — Split `useAppBootstrap` into `useVaultLifecycle()` (vaultPath, schema, recent, open/close/create actions) — *integrated into VaultContext*
+- [x] **Step 3.2c** — Split `useAppBootstrap` into `useFileTreeState()` (rootEntries, childrenByDir, expandedDirs, summaries) — *integrated into FileTreeContext*
+- [x] **Step 3.2d** — Split `useAppBootstrap` into `useTagsState()` (tags, tagsError, refreshTags, startIndexRebuild) — *integrated into FileTreeContext*
+- [x] **Step 3.2e** — Update `useAppBootstrap` to compose the split hooks and maintain backward compatibility — *replaced by contexts*
+- [x] **Step 3.3** — Refactor `App.tsx` to use `AppProviders` wrapper instead of prop drilling
+- [x] **Step 3.4** — Refactor `AppShell.tsx` to consume contexts instead of receiving props (reduce from 60-line props to near-zero)
+- [x] **Step 3.5** — Refactor `Sidebar.tsx` to consume contexts (VaultContext, FileTreeContext, UIContext)
+- [x] **Step 3.6** — Refactor `MainContent.tsx` to consume contexts (VaultContext, ViewContext, UIContext)
+- [x] **Step 3.7** — Remove `setCanvasCommandTyped` adapter in AppShell by properly typing `setCanvasCommand` throughout — *kept minimal adapter for type safety*
+- [x] **Step 3.8** — Run `pnpm build`, `pnpm check`, and `cargo check` to verify all changes compile
+
+**Phase 3 is complete.** Summary of changes:
+
+**Files created (5):**
+- `src/contexts/VaultContext.tsx` — Vault state, lifecycle actions, indexing
+- `src/contexts/FileTreeContext.tsx` — File tree state, tags, active file
+- `src/contexts/ViewContext.tsx` — View doc state, loaders
+- `src/contexts/UIContext.tsx` — Sidebar, AI sidebar, search, preview state
+- `src/contexts/index.tsx` — Barrel exports + `AppProviders` wrapper
+
+**Files refactored (5):**
+- `src/App.tsx` — Reduced from 43 lines to 13 lines (no prop drilling)
+- `src/components/app/AppShell.tsx` — Props reduced from 40+ to 0 (uses contexts)
+- `src/components/app/Sidebar.tsx` — Props reduced from 35 to 11 action callbacks
+- `src/components/app/SidebarContent.tsx` — Props reduced from 30 to 10 action callbacks
+- `src/components/app/MainContent.tsx` — Props reduced from 27 to 6 (only canvas-specific)
+
+**Legacy file (can be deleted):**
+- `src/hooks/useAppBootstrap.ts` — No longer imported, replaced by contexts
+
+**Results:** `pnpm build`, `pnpm check`, and `cargo check` all pass.
+
+---
+
 ### 3.1 Replace massive prop drilling with contexts — `src/App.tsx`, `src/components/app/AppShell.tsx` — **HIGH**
 
 Currently `App → AppShell → Sidebar/MainContent` drills 40+ props. `AppShellProps` alone is 60 lines.

@@ -1,10 +1,5 @@
 import { AnimatePresence, motion } from "motion/react";
-import type {
-	DirChildSummary,
-	FsEntry,
-	SearchResult,
-	TagCount,
-} from "../../lib/tauri";
+import { useFileTreeContext, useUIContext, useVault } from "../../contexts";
 import { openSettingsWindow } from "../../lib/windows";
 import { FileTreePane } from "../FileTreePane";
 import { Files, Settings, Tags } from "../Icons";
@@ -12,24 +7,6 @@ import { SearchPane } from "../SearchPane";
 import { TagsPane } from "../TagsPane";
 
 interface SidebarContentProps {
-	vaultPath: string | null;
-	vaultSchemaVersion: number | null;
-	isIndexing: boolean;
-	showSearch: boolean;
-	sidebarViewMode: "files" | "tags";
-	setSidebarViewMode: (mode: "files" | "tags") => void;
-	searchQuery: string;
-	searchResults: SearchResult[];
-	isSearching: boolean;
-	searchError: string;
-	onChangeSearchQuery: (query: string) => void;
-	onOpenSearchAsCanvas: (query: string) => void;
-	onSelectSearchNote: (id: string) => void;
-	rootEntries: FsEntry[];
-	childrenByDir: Record<string, FsEntry[] | undefined>;
-	expandedDirs: Set<string>;
-	activeFilePath: string | null;
-	summariesByParentDir: Record<string, DirChildSummary[] | undefined>;
 	onToggleDir: (dirPath: string) => void;
 	onSelectDir: (dirPath: string) => void;
 	onOpenFile: (relPath: string) => void;
@@ -37,31 +14,12 @@ interface SidebarContentProps {
 	onNewFileInDir: (dirPath: string) => void;
 	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
 	onRenameDir: (dirPath: string, nextName: string) => Promise<string | null>;
-	tags: TagCount[];
-	tagsError: string;
+	onOpenSearchAsCanvas: (query: string) => void;
+	onSelectSearchNote: (id: string) => void;
 	onSelectTag: (tag: string) => void;
-	onRefreshTags: () => void;
 }
 
 export function SidebarContent({
-	vaultPath,
-	vaultSchemaVersion,
-	isIndexing,
-	showSearch,
-	sidebarViewMode,
-	setSidebarViewMode,
-	searchQuery,
-	searchResults,
-	isSearching,
-	searchError,
-	onChangeSearchQuery,
-	onOpenSearchAsCanvas,
-	onSelectSearchNote,
-	rootEntries,
-	childrenByDir,
-	expandedDirs,
-	activeFilePath,
-	summariesByParentDir,
 	onToggleDir,
 	onSelectDir,
 	onOpenFile,
@@ -69,11 +27,33 @@ export function SidebarContent({
 	onNewFileInDir,
 	onNewFolderInDir,
 	onRenameDir,
-	tags,
-	tagsError,
+	onOpenSearchAsCanvas,
+	onSelectSearchNote,
 	onSelectTag,
-	onRefreshTags,
 }: SidebarContentProps) {
+	// Contexts
+	const { vaultPath, vaultSchemaVersion, isIndexing } = useVault();
+	const {
+		rootEntries,
+		childrenByDir,
+		expandedDirs,
+		activeFilePath,
+		dirSummariesByParent,
+		tags,
+		tagsError,
+		refreshTags,
+	} = useFileTreeContext();
+	const {
+		showSearch,
+		searchQuery,
+		searchResults,
+		isSearching,
+		searchError,
+		setSearchQuery,
+		sidebarViewMode,
+		setSidebarViewMode,
+	} = useUIContext();
+
 	if (!vaultPath) {
 		return (
 			<>
@@ -97,7 +77,7 @@ export function SidebarContent({
 						results={searchResults}
 						isSearching={isSearching}
 						error={searchError}
-						onChangeQuery={onChangeSearchQuery}
+						onChangeQuery={setSearchQuery}
 						onOpenAsCanvas={onOpenSearchAsCanvas}
 						onSelectNote={onSelectSearchNote}
 					/>
@@ -160,7 +140,7 @@ export function SidebarContent({
 								onNewFileInDir={onNewFileInDir}
 								onNewFolderInDir={onNewFolderInDir}
 								onRenameDir={onRenameDir}
-								summariesByParentDir={summariesByParentDir}
+								summariesByParentDir={dirSummariesByParent}
 							/>
 						</motion.div>
 					) : (
@@ -178,7 +158,7 @@ export function SidebarContent({
 							<TagsPane
 								tags={tags}
 								onSelectTag={onSelectTag}
-								onRefresh={onRefreshTags}
+								onRefresh={() => void refreshTags()}
 							/>
 						</motion.div>
 					)}

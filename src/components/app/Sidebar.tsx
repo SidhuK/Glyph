@@ -1,34 +1,9 @@
 import { AnimatePresence, motion } from "motion/react";
-import type {
-	DirChildSummary,
-	FsEntry,
-	SearchResult,
-	TagCount,
-} from "../../lib/tauri";
+import { useUIContext, useVault } from "../../contexts";
 import { SidebarContent } from "./SidebarContent";
 import { SidebarHeader } from "./SidebarHeader";
 
 interface SidebarProps {
-	vaultPath: string | null;
-	vaultSchemaVersion: number | null;
-	isIndexing: boolean;
-	sidebarCollapsed: boolean;
-	sidebarViewMode: "files" | "tags";
-	setSidebarViewMode: (mode: "files" | "tags") => void;
-	showSearch: boolean;
-	setShowSearch: (show: boolean) => void;
-	searchQuery: string;
-	searchResults: SearchResult[];
-	isSearching: boolean;
-	searchError: string;
-	onChangeSearchQuery: (query: string) => void;
-	onOpenSearchAsCanvas: (query: string) => void;
-	onSelectSearchNote: (id: string) => void;
-	rootEntries: FsEntry[];
-	childrenByDir: Record<string, FsEntry[] | undefined>;
-	expandedDirs: Set<string>;
-	activeFilePath: string | null;
-	summariesByParentDir: Record<string, DirChildSummary[] | undefined>;
 	onToggleDir: (dirPath: string) => void;
 	onSelectDir: (dirPath: string) => void;
 	onOpenFile: (relPath: string) => void;
@@ -36,36 +11,13 @@ interface SidebarProps {
 	onNewFileInDir: (dirPath: string) => void;
 	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
 	onRenameDir: (dirPath: string, nextName: string) => Promise<string | null>;
-	tags: TagCount[];
-	tagsError: string;
+	onOpenSearchAsCanvas: (query: string) => void;
+	onSelectSearchNote: (id: string) => void;
 	onSelectTag: (tag: string) => void;
-	onRefreshTags: () => void;
-	onOpenVault: () => void;
-	onCreateVault: () => void;
 	onOpenCommandPalette: () => void;
 }
 
 export function Sidebar({
-	vaultPath,
-	vaultSchemaVersion,
-	isIndexing,
-	sidebarCollapsed,
-	sidebarViewMode,
-	setSidebarViewMode,
-	showSearch,
-	setShowSearch,
-	searchQuery,
-	searchResults,
-	isSearching,
-	searchError,
-	onChangeSearchQuery,
-	onOpenSearchAsCanvas,
-	onSelectSearchNote,
-	rootEntries,
-	childrenByDir,
-	expandedDirs,
-	activeFilePath,
-	summariesByParentDir,
 	onToggleDir,
 	onSelectDir,
 	onOpenFile,
@@ -73,14 +25,16 @@ export function Sidebar({
 	onNewFileInDir,
 	onNewFolderInDir,
 	onRenameDir,
-	tags,
-	tagsError,
+	onOpenSearchAsCanvas,
+	onSelectSearchNote,
 	onSelectTag,
-	onRefreshTags,
-	onOpenVault,
-	onCreateVault,
 	onOpenCommandPalette,
 }: SidebarProps) {
+	// Contexts
+	const { vaultPath, onOpenVault, onCreateVault } = useVault();
+	const { sidebarCollapsed } = useUIContext();
+	const { showSearch, setShowSearch } = useUIContext();
+
 	return (
 		<motion.aside
 			className={`sidebar ${sidebarCollapsed ? "sidebarCollapsed" : ""}`}
@@ -106,24 +60,6 @@ export function Sidebar({
 							onOpenCommandPalette={onOpenCommandPalette}
 						/>
 						<SidebarContent
-							vaultPath={vaultPath}
-							vaultSchemaVersion={vaultSchemaVersion}
-							isIndexing={isIndexing}
-							showSearch={showSearch}
-							sidebarViewMode={sidebarViewMode}
-							setSidebarViewMode={setSidebarViewMode}
-							searchQuery={searchQuery}
-							searchResults={searchResults}
-							isSearching={isSearching}
-							searchError={searchError}
-							onChangeSearchQuery={onChangeSearchQuery}
-							onOpenSearchAsCanvas={onOpenSearchAsCanvas}
-							onSelectSearchNote={onSelectSearchNote}
-							rootEntries={rootEntries}
-							childrenByDir={childrenByDir}
-							expandedDirs={expandedDirs}
-							activeFilePath={activeFilePath}
-							summariesByParentDir={summariesByParentDir}
 							onToggleDir={onToggleDir}
 							onSelectDir={onSelectDir}
 							onOpenFile={onOpenFile}
@@ -131,10 +67,9 @@ export function Sidebar({
 							onNewFileInDir={onNewFileInDir}
 							onNewFolderInDir={onNewFolderInDir}
 							onRenameDir={onRenameDir}
-							tags={tags}
-							tagsError={tagsError}
+							onOpenSearchAsCanvas={onOpenSearchAsCanvas}
+							onSelectSearchNote={onSelectSearchNote}
 							onSelectTag={onSelectTag}
-							onRefreshTags={onRefreshTags}
 						/>
 					</motion.div>
 				)}
