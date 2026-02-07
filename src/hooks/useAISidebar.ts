@@ -9,11 +9,11 @@ export interface UseAISidebarResult {
 	setAiSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
 	aiSidebarWidth: number;
 	setAiSidebarWidth: (width: number) => void;
-	aiSidebarWidthRef: React.RefObject<number>;
-	aiSidebarResizingRef: React.RefObject<boolean>;
-	aiSidebarResizeStartRef: React.RefObject<{ x: number; width: number } | null>;
 	isResizing: boolean;
-	handleResizeMouseDown: (e: React.MouseEvent) => void;
+	handleResizePointerDown: (e: React.PointerEvent<HTMLDivElement>) => void;
+	handleResizePointerMove: (e: React.PointerEvent<HTMLDivElement>) => void;
+	handleResizePointerUp: (e: React.PointerEvent<HTMLDivElement>) => void;
+	handleResizePointerCancel: (e: React.PointerEvent<HTMLDivElement>) => void;
 }
 
 export function useAISidebar(): UseAISidebarResult {
@@ -26,6 +26,7 @@ export function useAISidebar(): UseAISidebarResult {
 	const aiSidebarResizeStartRef = useRef<{ x: number; width: number } | null>(
 		null,
 	);
+	const activePointerIdRef = useRef<number | null>(null);
 	const pendingWidthRef = useRef<number | null>(null);
 	const resizeRafRef = useRef<number | null>(null);
 
@@ -55,64 +56,91 @@ export function useAISidebar(): UseAISidebarResult {
 				window.cancelAnimationFrame(resizeRafRef.current);
 				resizeRafRef.current = null;
 			}
+			aiSidebarResizingRef.current = false;
+			aiSidebarResizeStartRef.current = null;
+			activePointerIdRef.current = null;
 		};
 	}, []);
 
-	const handleResizeMouseDown = useCallback(
-		(e: React.MouseEvent) => {
+	const flushPendingWidth = useCallback(() => {
+		if (resizeRafRef.current != null) {
+			window.cancelAnimationFrame(resizeRafRef.current);
+			resizeRafRef.current = null;
+		}
+		const pending = pendingWidthRef.current;
+		pendingWidthRef.current = null;
+		if (pending == null) return;
+		setAiSidebarWidth((prev) => (prev === pending ? prev : pending));
+	}, []);
+
+	const finishResize = useCallback(() => {
+		if (!aiSidebarResizingRef.current) return;
+		aiSidebarResizingRef.current = false;
+		setIsResizing(false);
+		aiSidebarResizeStartRef.current = null;
+		activePointerIdRef.current = null;
+		flushPendingWidth();
+		void persistAiSidebarWidth(aiSidebarWidthRef.current);
+	}, [flushPendingWidth]);
+
+	const handleResizePointerDown = useCallback(
+		(e: React.PointerEvent<HTMLDivElement>) => {
 			if (!aiSidebarOpen) return;
 			if (e.button !== 0) return;
 			e.preventDefault();
+			activePointerIdRef.current = e.pointerId;
+			e.currentTarget.setPointerCapture(e.pointerId);
 			aiSidebarResizingRef.current = true;
 			setIsResizing(true);
 			aiSidebarResizeStartRef.current = {
 				x: e.clientX,
 				width: aiSidebarWidthRef.current,
 			};
+		},
+		[aiSidebarOpen],
+	);
 
-			const flushPendingWidth = () => {
-				if (resizeRafRef.current != null) {
-					window.cancelAnimationFrame(resizeRafRef.current);
-					resizeRafRef.current = null;
-				}
+	const handleResizePointerMove = useCallback(
+		(e: React.PointerEvent<HTMLDivElement>) => {
+			if (activePointerIdRef.current !== e.pointerId) return;
+			const start = aiSidebarResizeStartRef.current;
+			if (!aiSidebarResizingRef.current || !start) return;
+			const delta = start.x - e.clientX;
+			const next = Math.max(340, Math.min(520, start.width + delta));
+			aiSidebarWidthRef.current = next;
+			pendingWidthRef.current = next;
+			if (resizeRafRef.current != null) return;
+			resizeRafRef.current = window.requestAnimationFrame(() => {
+				resizeRafRef.current = null;
 				const pending = pendingWidthRef.current;
 				pendingWidthRef.current = null;
 				if (pending == null) return;
 				setAiSidebarWidth((prev) => (prev === pending ? prev : pending));
-			};
-
-			const onMove = (evt: globalThis.MouseEvent) => {
-				const start = aiSidebarResizeStartRef.current;
-				if (!aiSidebarResizingRef.current || !start) return;
-				const delta = start.x - evt.clientX;
-				const next = Math.max(340, Math.min(520, start.width + delta));
-				aiSidebarWidthRef.current = next;
-				pendingWidthRef.current = next;
-				if (resizeRafRef.current != null) return;
-				resizeRafRef.current = window.requestAnimationFrame(() => {
-					resizeRafRef.current = null;
-					const pending = pendingWidthRef.current;
-					pendingWidthRef.current = null;
-					if (pending == null) return;
-					setAiSidebarWidth((prev) => (prev === pending ? prev : pending));
-				});
-			};
-
-			const onUp = () => {
-				if (!aiSidebarResizingRef.current) return;
-				aiSidebarResizingRef.current = false;
-				setIsResizing(false);
-				aiSidebarResizeStartRef.current = null;
-				flushPendingWidth();
-				window.removeEventListener("mousemove", onMove);
-				window.removeEventListener("mouseup", onUp);
-				void persistAiSidebarWidth(aiSidebarWidthRef.current);
-			};
-
-			window.addEventListener("mousemove", onMove);
-			window.addEventListener("mouseup", onUp, { once: true });
+			});
 		},
-		[aiSidebarOpen],
+		[],
+	);
+
+	const handleResizePointerUp = useCallback(
+		(e: React.PointerEvent<HTMLDivElement>) => {
+			if (activePointerIdRef.current !== e.pointerId) return;
+			if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+				e.currentTarget.releasePointerCapture(e.pointerId);
+			}
+			finishResize();
+		},
+		[finishResize],
+	);
+
+	const handleResizePointerCancel = useCallback(
+		(e: React.PointerEvent<HTMLDivElement>) => {
+			if (activePointerIdRef.current !== e.pointerId) return;
+			if (e.currentTarget.hasPointerCapture(e.pointerId)) {
+				e.currentTarget.releasePointerCapture(e.pointerId);
+			}
+			finishResize();
+		},
+		[finishResize],
 	);
 
 	return {
@@ -120,10 +148,10 @@ export function useAISidebar(): UseAISidebarResult {
 		setAiSidebarOpen,
 		aiSidebarWidth,
 		setAiSidebarWidth,
-		aiSidebarWidthRef,
-		aiSidebarResizingRef,
-		aiSidebarResizeStartRef,
 		isResizing,
-		handleResizeMouseDown,
+		handleResizePointerDown,
+		handleResizePointerMove,
+		handleResizePointerUp,
+		handleResizePointerCancel,
 	};
 }

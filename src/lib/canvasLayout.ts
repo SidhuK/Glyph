@@ -80,6 +80,9 @@ export function computeGridPositions(
 		safetyPxY?: number;
 	},
 ): Map<string, { x: number; y: number }> {
+	const MAX_WIDTH_ATTEMPTS = 30;
+	const NON_IMPROVING_WIDTH_LIMIT = 5;
+
 	const count = nodes.length;
 	const result = new Map<string, { x: number; y: number }>();
 	if (count === 0) return result;
@@ -125,10 +128,12 @@ export function computeGridPositions(
 		Math.floor(targetWidthUnits - tryWidths / 2),
 	);
 	const maxWidth = Math.max(minWidth, Math.ceil(targetWidthUnits + tryWidths));
+	const cappedMaxWidth = Math.min(maxWidth, minWidth + MAX_WIDTH_ATTEMPTS - 1);
 	let bestPositions: Array<{ x: number; y: number }> | null = null;
 	let bestScore = Number.POSITIVE_INFINITY;
+	let nonImprovingWidths = 0;
 
-	for (let widthUnits = minWidth; widthUnits <= maxWidth; widthUnits++) {
+	for (let widthUnits = minWidth; widthUnits <= cappedMaxWidth; widthUnits++) {
 		const skyline = new Array(widthUnits).fill(0);
 		const placed: Array<{ x: number; y: number }> = new Array(count);
 		for (const idx of indices) {
@@ -167,6 +172,10 @@ export function computeGridPositions(
 		if (score < bestScore) {
 			bestScore = score;
 			bestPositions = placed;
+			nonImprovingWidths = 0;
+		} else {
+			nonImprovingWidths += 1;
+			if (nonImprovingWidths >= NON_IMPROVING_WIDTH_LIMIT) break;
 		}
 	}
 

@@ -1,9 +1,10 @@
 import { LazyStore } from "@tauri-apps/plugin-store";
 
 const store = new LazyStore("settings.json");
+const initPromise = store.init();
 
 async function ensureLoaded(): Promise<void> {
-	await store.init();
+	await initPromise;
 }
 
 export type ThemeMode = "system" | "light" | "dark";

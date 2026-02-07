@@ -22,7 +22,10 @@ export interface UIContextValue {
 	setAiSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
 	aiSidebarWidth: number;
 	aiSidebarResizing: boolean;
-	handleAiResizeMouseDown: (e: React.MouseEvent) => void;
+	handleAiResizePointerDown: (e: React.PointerEvent<HTMLDivElement>) => void;
+	handleAiResizePointerMove: (e: React.PointerEvent<HTMLDivElement>) => void;
+	handleAiResizePointerUp: (e: React.PointerEvent<HTMLDivElement>) => void;
+	handleAiResizePointerCancel: (e: React.PointerEvent<HTMLDivElement>) => void;
 	searchQuery: string;
 	setSearchQuery: (query: string) => void;
 	searchResults: SearchResult[];
@@ -53,7 +56,10 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		setAiSidebarOpen,
 		aiSidebarWidth,
 		isResizing: aiSidebarResizing,
-		handleResizeMouseDown: handleAiResizeMouseDown,
+		handleResizePointerDown: handleAiResizePointerDown,
+		handleResizePointerMove: handleAiResizePointerMove,
+		handleResizePointerUp: handleAiResizePointerUp,
+		handleResizePointerCancel: handleAiResizePointerCancel,
 	} = useAISidebar();
 
 	const {
@@ -86,7 +92,10 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			setAiSidebarOpen,
 			aiSidebarWidth,
 			aiSidebarResizing,
-			handleAiResizeMouseDown,
+			handleAiResizePointerDown,
+			handleAiResizePointerMove,
+			handleAiResizePointerUp,
+			handleAiResizePointerCancel,
 			searchQuery,
 			setSearchQuery,
 			searchResults,
@@ -105,7 +114,10 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			setAiSidebarOpen,
 			aiSidebarWidth,
 			aiSidebarResizing,
-			handleAiResizeMouseDown,
+			handleAiResizePointerDown,
+			handleAiResizePointerMove,
+			handleAiResizePointerUp,
+			handleAiResizePointerCancel,
 			searchQuery,
 			setSearchQuery,
 			searchResults,

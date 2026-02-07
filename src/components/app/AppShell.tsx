@@ -54,7 +54,10 @@ export function AppShell() {
 		setAiSidebarOpen,
 		aiSidebarWidth,
 		aiSidebarResizing,
-		handleAiResizeMouseDown,
+		handleAiResizePointerDown,
+		handleAiResizePointerMove,
+		handleAiResizePointerUp,
+		handleAiResizePointerCancel,
 		setShowSearch,
 		setActivePreviewPath,
 	} = useUIContext();
@@ -271,7 +274,10 @@ export function AppShell() {
 						className="rightSidebarResizer"
 						aria-hidden={!aiSidebarOpen}
 						data-window-drag-ignore
-						onMouseDown={handleAiResizeMouseDown}
+						onPointerDown={handleAiResizePointerDown}
+						onPointerMove={handleAiResizePointerMove}
+						onPointerUp={handleAiResizePointerUp}
+						onPointerCancel={handleAiResizePointerCancel}
 					/>
 
 					<AISidebar

@@ -127,11 +127,13 @@ export function hasViewDocChanged(
 	nextNodes: CanvasNode[],
 	nextEdges: CanvasEdge[],
 ): boolean {
-	return (
-		!prev ||
-		JSON.stringify(sanitizeNodes(prevNodes)) !==
-			JSON.stringify(sanitizeNodes(nextNodes)) ||
-		JSON.stringify(sanitizeEdges(prevEdges)) !==
-			JSON.stringify(sanitizeEdges(nextEdges))
-	);
+	if (!prev) return true;
+
+	const prevNodesSignature = JSON.stringify(sanitizeNodes(prevNodes));
+	const nextNodesSignature = JSON.stringify(sanitizeNodes(nextNodes));
+	if (prevNodesSignature !== nextNodesSignature) return true;
+
+	const prevEdgesSignature = JSON.stringify(sanitizeEdges(prevEdges));
+	const nextEdgesSignature = JSON.stringify(sanitizeEdges(nextEdges));
+	return prevEdgesSignature !== nextEdgesSignature;
 }

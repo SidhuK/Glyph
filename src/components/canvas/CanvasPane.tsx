@@ -113,6 +113,21 @@ function CanvasPane({
 		saveInlineNow,
 	} = useNoteEditSession(setNodes);
 
+	const nodeById = useMemo(() => {
+		const byId = new Map<string, CanvasNode>();
+		for (const node of nodes) byId.set(node.id, node);
+		return byId;
+	}, [nodes]);
+
+	const maxRightEdge = useMemo(() => {
+		let max = 60;
+		for (const node of nodes) {
+			const right = node.position.x + 200;
+			if (right > max) max = right;
+		}
+		return max;
+	}, [nodes]);
+
 	const scheduleSave = useCallback(
 		(n: CanvasNode[], e: CanvasEdge[]) => {
 			pendingSaveRef.current = { nodes: n, edges: e };
@@ -203,19 +218,10 @@ function CanvasPane({
 	}, [undo, redo]);
 
 	const findDropPosition = useCallback((): { x: number; y: number } => {
-		const existingBounds = nodes.map((n) => ({
-			x: n.position.x,
-			y: n.position.y,
-			w: 200,
-			h: 140,
-		}));
-		let x = 100;
+		const x = maxRightEdge + 40;
 		const y = 100;
-		for (const b of existingBounds) {
-			if (b.x + b.w > x) x = b.x + b.w + 40;
-		}
 		return snapToGrid ? snapPoint({ x, y }) : { x, y };
-	}, [nodes, snapToGrid]);
+	}, [maxRightEdge, snapToGrid]);
 
 	const {
 		handleAddTextNode,
@@ -326,7 +332,7 @@ function CanvasPane({
 		() => ({
 			session: noteEditSession,
 			openEditor: (nodeId: string) => {
-				const node = nodes.find((n) => n.id === nodeId);
+				const node = nodeById.get(nodeId);
 				if (node && isNoteNode(node)) {
 					const noteId = node.data.noteId ?? node.id;
 					const title = node.data.title ?? "Untitled";
@@ -343,7 +349,7 @@ function CanvasPane({
 		}),
 		[
 			noteEditSession,
-			nodes,
+			nodeById,
 			ensureTabForNote,
 			beginInlineEdit,
 			closeInlineEditor,

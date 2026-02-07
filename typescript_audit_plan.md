@@ -611,39 +611,67 @@ export function useVault() {
 
 ## Phase 4 — Performance Improvements (1 day)
 
-### 4.1 Replace JSON.stringify change detection — view builders + CanvasPane — **MEDIUM**
+### Phase 4 Implementation Steps
 
-`JSON.stringify` on arrays of 500 nodes is O(n) with high constant factor.
+- [x] **Step 4.0 — Baseline + guardrails (before edits)**
+  - Files: `src/lib/views/builders/common.ts`, `src/components/canvas/CanvasPane.tsx`, `src/lib/canvasLayout.ts`, `src/lib/settings.ts`, `src/hooks/useAISidebar.ts`
+  - Capture current behavior and add quick manual perf checks (large folder/search/tag view load, canvas with many nodes, AI sidebar drag).
+  - Keep scope to local refactors only (no API/IPC contract changes).
 
-**Fix:** Use structural hash comparison or incremental dirty tracking. Minimal approach: compute hashes once per sanitize call and compare.
+- [x] **Step 4.1 — Replace repeated `JSON.stringify` diffing in view change detection**
+  - File: `src/lib/views/builders/common.ts`
+  - Replace `hasViewDocChanged()` internals with one-pass structural signatures (or cached hash keys) so sanitize+serialize work is done once per side, not repeatedly.
+  - Pattern target: typed helper functions with deterministic signatures, no `any`, no behavior change.
+  - Acceptance: identical changed/unchanged outcomes for existing view builders.
 
-### 4.2 Memoize node lookup in `CanvasPane` — `src/components/canvas/CanvasPane.tsx` L351-L365 — **MEDIUM**
+- [x] **Step 4.2 — Memoize canvas node lookup map**
+  - File: `src/components/canvas/CanvasPane.tsx`
+  - Add `nodeById` memo (`Map<string, CanvasNode>`) and replace hot-path `nodes.find(...)` in `noteEditActions.openEditor`.
+  - Pattern target: `useMemo` + O(1) lookups, keep current `isNoteNode` narrowing and tab behavior unchanged.
+  - Acceptance: open-editor behavior unchanged, fewer linear scans per action.
 
-`noteEditActions.openEditor` uses `nodes.find(...)` per call.
+- [x] **Step 4.3 — Stop rescanning all nodes inside `findDropPosition`**
+  - File: `src/components/canvas/CanvasPane.tsx`
+  - Add memoized `maxRightEdge` derived from `nodes` and use it in `findDropPosition`.
+  - Pattern target: derive once, consume many; keep grid snapping behavior identical.
+  - Acceptance: newly added nodes still appear at the expected right-side insertion point.
 
-**Fix:**
+- [x] **Step 4.4 — Bound `computeGridPositions` width search**
+  - File: `src/lib/canvasLayout.ts`
+  - Cap width search window to ~30 attempts and add early-stop after N non-improving widths (e.g., 5).
+  - Pattern target: named constants + deterministic loop exit conditions.
+  - Acceptance: layout remains stable/usable while reducing worst-case brute-force iterations.
 
-```ts
-const nodeById = useMemo(() => new Map(nodes.map((n) => [n.id, n])), [nodes]);
-```
+- [x] **Step 4.5 — Remove redundant store init calls**
+  - File: `src/lib/settings.ts`
+  - Replace `ensureLoaded()` repeated `store.init()` calls with memoized init promise (`const initPromise = store.init()`).
+  - Pattern target: idempotent async initialization; retain existing read/write semantics.
+  - Acceptance: settings read/write behavior unchanged.
 
-### 4.3 `findDropPosition` scans all nodes — `src/components/canvas/CanvasPane.tsx` L219-L232 — **MEDIUM**
+- [x] **Step 4.6 — Migrate AI sidebar resizing to Pointer Events**
+  - File: `src/hooks/useAISidebar.ts`
+  - Replace window `mousemove`/`mouseup` listeners with pointer capture flow on the resizer (`pointerdown`/`pointermove`/`pointerup` + release capture).
+  - Pattern target: leak-safe cleanup, unmount-safe, strict typed event handlers.
+  - Acceptance: resize UX remains smooth; no dangling global listeners on interrupted drag/unmount.
 
-**Fix:** Maintain `maxRightEdge` in a memo derived from nodes.
+- [x] **Step 4.7 — Verify + document**
+  - Run: `pnpm check`, `pnpm build`, `cd src-tauri && cargo check`
+  - Add a short “Phase 4 complete” summary (files touched + measurable wins + any tradeoffs).
 
-### 4.4 `canvasLayout.ts` brute-force width scan — `src/lib/canvasLayout.ts` L131-L171 — **MEDIUM**
+### Phase 4 completion summary
 
-**Fix:** Cap `(maxWidth - minWidth)` to ~30 iterations. Add early-stop when score hasn't improved for 5 consecutive widths.
-
-### 4.5 `settings.ts` redundant `ensureLoaded()` — `src/lib/settings.ts` L5-L7 — **LOW**
-
-**Fix:** Memoize: `const initPromise = store.init();`
-
-### 4.6 Use Pointer Events for resize — `src/hooks/useAISidebar.ts` L61-L116 — **MEDIUM**
-
-Window mouse listeners can leak on unmount mid-resize.
-
-**Fix:** Use `setPointerCapture` on the resizer element, listen on `pointermove`/`pointerup` on the element itself. Clean cleanup guaranteed.
+- Files touched: `src/lib/views/builders/common.ts`, `src/components/canvas/CanvasPane.tsx`, `src/lib/canvasLayout.ts`, `src/lib/settings.ts`, `src/hooks/useAISidebar.ts`, `src/contexts/UIContext.tsx`, `src/components/app/AppShell.tsx`
+- Performance-focused changes shipped:
+  - `hasViewDocChanged()` now computes sanitized signatures once per side before compare.
+  - Canvas note editor uses memoized `nodeById` map instead of per-action `nodes.find(...)`.
+  - `findDropPosition()` now uses memoized `maxRightEdge` instead of rescanning nodes.
+  - `computeGridPositions()` now uses bounded width search + early-stop on non-improving widths.
+  - Settings store init is memoized with a shared init promise.
+  - AI sidebar resize flow now uses pointer capture (`onPointer*`) and removes global window mouse listeners.
+- Verification:
+  - `pnpm check` ✅
+  - `pnpm build` ✅
+  - `cd src-tauri && cargo check` ✅ (existing warning in `src-tauri/src/lattice_paths.rs` for unused function `lattice_assets_dir`)
 
 ---
 
