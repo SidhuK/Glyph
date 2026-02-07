@@ -809,34 +809,56 @@ export function useVault() {
   - Current tests confirmed: `src/hooks/fileTreeHelpers.test.ts`, `src/utils/filePreview.test.ts`.
   - Remaining key modules still need direct unit coverage.
 
-- [ ] **Step 6.1 — Add tests for note preview parsing**
+- [x] **Step 6.1 — Add tests for note preview parsing**
   - Target: `src/lib/notePreview.ts` via `src/lib/notePreview.test.ts`.
   - Cover frontmatter parsing, CRLF normalization, title/content extraction fallbacks.
 
-- [ ] **Step 6.2 — Add tests for view utility determinism**
+- [x] **Step 6.2 — Add tests for view utility determinism**
   - Target: `src/lib/views/utils.ts` via `src/lib/views/utils.test.ts`.
   - Cover `viewId`, `sha256Hex`, `viewDocPath` stability and edge cases.
 
-- [ ] **Step 6.3 — Add tests for layout helpers**
+- [x] **Step 6.3 — Add tests for layout helpers**
   - Target: `src/lib/canvasLayout.ts` via `src/lib/canvasLayout.test.ts`.
   - Cover `snapToGrid`, `estimateNodeSize`, and bounded `computeGridPositions` behavior.
 
-- [ ] **Step 6.4 — Add tests for diff + shortcuts utilities**
+- [x] **Step 6.4 — Add tests for diff + shortcuts utilities**
   - Targets:
     - `src/lib/diff.ts` via `src/lib/diff.test.ts`
     - `src/lib/shortcuts.ts` via `src/lib/shortcuts.test.ts`
   - Cover edge cases and formatting/matching correctness.
 
-- [ ] **Step 6.5 — Add tests for shared error extraction helper**
+- [x] **Step 6.5 — Add tests for shared error extraction helper**
   - Target: `src/lib/errorUtils.ts` via `src/lib/errorUtils.test.ts`.
   - Cover `Error`, `unknown`, and custom invoke error shapes.
 
-- [ ] **Step 6.6 — Run full validation and stabilize**
+- [x] **Step 6.6 — Run full validation and stabilize**
   - Run: `pnpm check`, `pnpm build`, and project test command(s) used in repo.
   - Ensure tests are deterministic and don’t rely on network/clock randomness.
 
-- [ ] **Step 6.7 — Document final test coverage deltas**
+- [x] **Step 6.7 — Document final test coverage deltas**
   - Update this section with added test files and coverage rationale.
+
+### Phase 6 completion summary
+
+- Added test files:
+  - `src/lib/notePreview.test.ts`
+  - `src/lib/views/utils.test.ts`
+  - `src/lib/canvasLayout.test.ts`
+  - `src/lib/diff.test.ts`
+  - `src/lib/shortcuts.test.ts`
+  - `src/lib/errorUtils.test.ts`
+- Coverage additions by module:
+  - `notePreview`: frontmatter title parsing, heading fallback, CRLF normalization, truncation behavior, frontmatter split/join.
+  - `views/utils`: stable `viewId` mapping, deterministic `sha256Hex`, stable `viewDocPath`, basename extraction.
+  - `canvasLayout`: grid snapping, node size estimation by type, deterministic/snapped placement for grid positions.
+  - `diff`: unchanged text handling, insertion signaling, CRLF normalization, truncation guard behavior.
+  - `shortcuts`: modifier matching, case-insensitive key matching, shortcut formatting order.
+  - `errorUtils`: `TauriInvokeError`, native `Error`, and unknown fallback handling.
+- Validation run:
+  - `pnpm test` ✅ (8 files, 33 tests passed)
+  - `pnpm check` ✅
+  - `pnpm build` ✅
+  - `cd src-tauri && cargo check` ✅ (existing unrelated warning: unused `lattice_assets_dir`)
 
 ---
 
