@@ -1,7 +1,9 @@
 import { estimateNodeSize } from "../../canvasLayout";
 import { parseNotePreview, titleForFile } from "../../notePreview";
-import type { CanvasNode } from "../../tauri";
+import type { CanvasEdge, CanvasNode } from "../../tauri";
 import { invoke } from "../../tauri";
+import { sanitizeEdges, sanitizeNodes } from "../sanitize";
+import type { ViewDoc } from "../types";
 
 export function normalizeLegacyFrameChildren(
 	nodes: CanvasNode[],
@@ -116,4 +118,20 @@ export async function fetchNotePreviewsAllAtOnce(
 	}
 
 	return resultMap;
+}
+
+export function hasViewDocChanged(
+	prev: ViewDoc | null,
+	prevNodes: CanvasNode[],
+	prevEdges: CanvasEdge[],
+	nextNodes: CanvasNode[],
+	nextEdges: CanvasEdge[],
+): boolean {
+	return (
+		!prev ||
+		JSON.stringify(sanitizeNodes(prevNodes)) !==
+			JSON.stringify(sanitizeNodes(nextNodes)) ||
+		JSON.stringify(sanitizeEdges(prevEdges)) !==
+			JSON.stringify(sanitizeEdges(nextEdges))
+	);
 }

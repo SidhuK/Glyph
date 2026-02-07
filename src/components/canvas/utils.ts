@@ -1,4 +1,31 @@
 import { STICKY_COLORS } from "./constants";
+import type { CanvasEdge, CanvasNode } from "./types";
+
+export function snapshotPersistedShape(
+	n: CanvasNode[],
+	e: CanvasEdge[],
+): string {
+	return JSON.stringify({
+		n: n.map((node) => ({
+			id: node.id,
+			type: node.type ?? null,
+			position: node.position,
+			data: node.data ?? null,
+			parentNode: node.parentNode,
+			extent: node.extent ?? null,
+			style: node.style ?? null,
+		})),
+		e: e.map((edge) => ({
+			id: edge.id,
+			source: edge.source,
+			target: edge.target,
+			type: edge.type ?? null,
+			label: edge.label ?? null,
+			data: edge.data ?? null,
+			style: edge.style ?? null,
+		})),
+	});
+}
 
 export function getNodeHash(id: string): number {
 	let hash = 0;

@@ -27,6 +27,8 @@ export interface UseViewLoaderDeps {
 	startIndexRebuild: () => Promise<void>;
 }
 
+type ViewBuildResult = { doc: ViewDoc; changed: boolean };
+
 export function useViewLoader(deps: UseViewLoaderDeps): UseViewLoaderResult {
 	const { setError, startIndexRebuild } = deps;
 
@@ -43,32 +45,28 @@ export function useViewLoader(deps: UseViewLoaderDeps): UseViewLoaderResult {
 		activeViewDocRef.current = doc;
 	}, []);
 
-	const loadAndBuildFolderView = useCallback(
-		async (dir: string) => {
+	const loadAndBuildView = useCallback(
+		async (
+			view: ViewRef,
+			buildFn: (existing: ViewDoc | null) => Promise<ViewBuildResult>,
+		) => {
 			const requestVersion = loadRequestVersionRef.current + 1;
 			loadRequestVersionRef.current = requestVersion;
 			const isStale = () => loadRequestVersionRef.current !== requestVersion;
 			setError("");
 			setCanvasLoadingMessage("");
 			try {
-				const view: ViewRef = { kind: "folder", dir };
-
 				const loaded = await loadViewDoc(view);
 				if (isStale()) return;
 				if (loaded.doc) {
 					setActiveViewPath(loaded.path);
-					setActiveViewDoc(loaded.doc);
-					activeViewDocRef.current = loaded.doc;
+					setActiveViewDocAndRef(loaded.doc);
 					activeViewPathRef.current = loaded.path;
 				}
 
 				let existingDoc = loaded.doc;
 				const buildAndSet = async () => {
-					const built = await buildFolderViewDoc(
-						dir,
-						{ recursive: true, limit: 500 },
-						existingDoc,
-					);
+					const built = await buildFn(existingDoc);
 					if (isStale()) return;
 					if (!existingDoc || built.changed) {
 						await saveViewDoc(loaded.path, built.doc);
@@ -76,8 +74,7 @@ export function useViewLoader(deps: UseViewLoaderDeps): UseViewLoaderResult {
 					if (isStale()) return;
 					existingDoc = built.doc;
 					setActiveViewPath(loaded.path);
-					setActiveViewDoc(built.doc);
-					activeViewDocRef.current = built.doc;
+					setActiveViewDocAndRef(built.doc);
 					activeViewPathRef.current = loaded.path;
 				};
 
@@ -112,151 +109,37 @@ export function useViewLoader(deps: UseViewLoaderDeps): UseViewLoaderResult {
 				setError(e instanceof Error ? e.message : String(e));
 			}
 		},
-		[setError, startIndexRebuild],
+		[setError, startIndexRebuild, setActiveViewDocAndRef],
+	);
+
+	const loadAndBuildFolderView = useCallback(
+		(dir: string) =>
+			loadAndBuildView({ kind: "folder", dir }, (existing) =>
+				buildFolderViewDoc(dir, { recursive: true, limit: 500 }, existing),
+			),
+		[loadAndBuildView],
 	);
 
 	const loadAndBuildSearchView = useCallback(
 		async (query: string) => {
-			const requestVersion = loadRequestVersionRef.current + 1;
-			loadRequestVersionRef.current = requestVersion;
-			const isStale = () => loadRequestVersionRef.current !== requestVersion;
-			setError("");
-			setCanvasLoadingMessage("");
-			try {
-				const q = query.trim();
-				if (!q) return;
-				const view: ViewRef = { kind: "search", query: q };
-
-				const loaded = await loadViewDoc(view);
-				if (isStale()) return;
-				if (loaded.doc) {
-					setActiveViewPath(loaded.path);
-					setActiveViewDoc(loaded.doc);
-					activeViewDocRef.current = loaded.doc;
-					activeViewPathRef.current = loaded.path;
-				}
-
-				let existingDoc = loaded.doc;
-				const buildAndSet = async () => {
-					const built = await buildSearchViewDoc(
-						q,
-						{ limit: 200 },
-						existingDoc,
-					);
-					if (isStale()) return;
-					if (!existingDoc || built.changed) {
-						await saveViewDoc(loaded.path, built.doc);
-					}
-					if (isStale()) return;
-					existingDoc = built.doc;
-					setActiveViewPath(loaded.path);
-					setActiveViewDoc(built.doc);
-					activeViewDocRef.current = built.doc;
-					activeViewPathRef.current = loaded.path;
-				};
-
-				try {
-					await buildAndSet();
-				} catch (e) {
-					if (e instanceof NeedsIndexRebuildError) {
-						if (loaded.doc) {
-							void (async () => {
-								await startIndexRebuild();
-								if (isStale()) return;
-								try {
-									await buildAndSet();
-								} catch {
-									// ignore
-								}
-							})();
-							return;
-						}
-						setCanvasLoadingMessage("Indexing vault…");
-						await startIndexRebuild();
-						if (isStale()) return;
-						setCanvasLoadingMessage("");
-						await buildAndSet();
-						return;
-					}
-					throw e;
-				}
-			} catch (e) {
-				if (isStale()) return;
-				setCanvasLoadingMessage("");
-				setError(e instanceof Error ? e.message : String(e));
-			}
+			const q = query.trim();
+			if (!q) return;
+			return loadAndBuildView({ kind: "search", query: q }, (existing) =>
+				buildSearchViewDoc(q, { limit: 200 }, existing),
+			);
 		},
-		[setError, startIndexRebuild],
+		[loadAndBuildView],
 	);
 
 	const loadAndBuildTagView = useCallback(
 		async (tag: string) => {
-			const requestVersion = loadRequestVersionRef.current + 1;
-			loadRequestVersionRef.current = requestVersion;
-			const isStale = () => loadRequestVersionRef.current !== requestVersion;
-			setError("");
-			setCanvasLoadingMessage("");
-			try {
-				const t = tag.trim();
-				if (!t) return;
-				const view: ViewRef = { kind: "tag", tag: t };
-
-				const loaded = await loadViewDoc(view);
-				if (isStale()) return;
-				if (loaded.doc) {
-					setActiveViewPath(loaded.path);
-					setActiveViewDoc(loaded.doc);
-					activeViewDocRef.current = loaded.doc;
-					activeViewPathRef.current = loaded.path;
-				}
-
-				let existingDoc = loaded.doc;
-				const buildAndSet = async () => {
-					const built = await buildTagViewDoc(t, { limit: 500 }, existingDoc);
-					if (isStale()) return;
-					if (!existingDoc || built.changed) {
-						await saveViewDoc(loaded.path, built.doc);
-					}
-					if (isStale()) return;
-					existingDoc = built.doc;
-					setActiveViewPath(loaded.path);
-					setActiveViewDoc(built.doc);
-					activeViewDocRef.current = built.doc;
-					activeViewPathRef.current = loaded.path;
-				};
-
-				try {
-					await buildAndSet();
-				} catch (e) {
-					if (e instanceof NeedsIndexRebuildError) {
-						if (loaded.doc) {
-							void (async () => {
-								await startIndexRebuild();
-								if (isStale()) return;
-								try {
-									await buildAndSet();
-								} catch {
-									// ignore
-								}
-							})();
-							return;
-						}
-						setCanvasLoadingMessage("Indexing vault…");
-						await startIndexRebuild();
-						if (isStale()) return;
-						setCanvasLoadingMessage("");
-						await buildAndSet();
-						return;
-					}
-					throw e;
-				}
-			} catch (e) {
-				if (isStale()) return;
-				setCanvasLoadingMessage("");
-				setError(e instanceof Error ? e.message : String(e));
-			}
+			const t = tag.trim();
+			if (!t) return;
+			return loadAndBuildView({ kind: "tag", tag: t }, (existing) =>
+				buildTagViewDoc(t, { limit: 500 }, existing),
+			);
 		},
-		[setError, startIndexRebuild],
+		[loadAndBuildView],
 	);
 
 	return {

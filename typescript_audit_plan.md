@@ -226,87 +226,229 @@ Canvas registers `folderPreview` in nodeTypes but the view builder checks for `f
 
 ## Phase 2 — De-duplication (1–2 days)
 
-### 2.1 Unify view builders — `src/lib/views/builders/folderView.ts`, `searchView.ts`, `tagView.ts` — **HIGH**
+### Phase 2 Implementation Steps
 
-~80% of the code is identical: load existing → map IDs → fetch previews → merge with prev nodes → layout new nodes → filter edges → detect changes.
+- [x] **Step 2.0** — Pre-work: extract `hasViewDocChanged()` into `src/lib/views/builders/common.ts`
+- [x] **Step 2.1** — Create `src/lib/views/builders/buildListViewDoc.ts` with `BuildListViewDocParams` type and `buildListViewDoc()` pipeline
+- [x] **Step 2.2** — Rewrite `folderView.ts` as thin wrapper calling `buildListViewDoc()`
+- [x] **Step 2.3** — Rewrite `searchView.ts` as thin wrapper calling `buildListViewDoc()`
+- [x] **Step 2.4** — Rewrite `tagView.ts` as thin wrapper calling `buildListViewDoc()`
+- [x] **Step 2.5** — Update `src/lib/views/index.ts` exports (add `buildListViewDoc`, keep existing builder exports)
+- [x] **Step 2.6** — De-duplicate `useViewLoader.ts`: extract internal `loadAndBuildView()` helper, rewrite three loaders as thin wrappers (also fix `setActiveViewDoc` → `setActiveViewDocAndRef` inconsistency)
+- [x] **Step 2.7** — Deduplicate `snapshotPersistedShape` in `CanvasPane.tsx` + `useCanvasHistory.ts` → extract to `src/components/canvas/utils.ts`
+- [x] **Step 2.8** — Run `pnpm build`, `pnpm check`, and `cargo check` to verify all changes compile
 
-**Fix:** Extract `buildListViewDoc(params)`:
+---
+
+### 2.0 Pre-work: extract `hasViewDocChanged` — **MEDIUM**
+
+All three builders duplicate the exact same change detection:
 
 ```ts
-interface ViewBuildParams {
-  view: ViewRef;
-  limit: number;
-  fetchIds: () => Promise<{
-    ids: string[];
-    titleById?: Map<string, string>;
-  }>;
-  shouldPreserveNonNoteNode?: (n: CanvasNode) => boolean;
+const changed =
+  !prev ||
+  JSON.stringify(sanitizeNodes(prevNodes)) !==
+    JSON.stringify(sanitizeNodes(nextNodes)) ||
+  JSON.stringify(sanitizeEdges(prevEdges)) !==
+    JSON.stringify(sanitizeEdges(nextEdges));
+```
+
+**Fix:** Add to `src/lib/views/builders/common.ts`:
+
+```ts
+export function hasViewDocChanged(
+  prev: ViewDoc | null,
+  prevNodes: CanvasNode[],
+  prevEdges: CanvasEdge[],
+  nextNodes: CanvasNode[],
+  nextEdges: CanvasEdge[],
+): boolean {
+  return (
+    !prev ||
+    JSON.stringify(sanitizeNodes(prevNodes)) !==
+      JSON.stringify(sanitizeNodes(nextNodes)) ||
+    JSON.stringify(sanitizeEdges(prevEdges)) !==
+      JSON.stringify(sanitizeEdges(nextEdges))
+  );
+}
+```
+
+This lets `buildListViewDoc` call it once rather than duplicating the pattern.
+
+---
+
+### 2.1 Create `buildListViewDoc.ts` — `src/lib/views/builders/buildListViewDoc.ts` — **HIGH**
+
+Create the shared pipeline. Strategy callbacks push all view-specific behavior into the callers.
+
+**Type definition (params):**
+
+```ts
+import type { CanvasNode, CanvasEdge } from "../../tauri";
+import type { ViewDoc, ViewKind, ViewOptions } from "../types";
+
+export interface BuildPrimaryResult {
+  node: CanvasNode;
+  isNew: boolean;
+}
+
+export interface BuildListViewDocParams {
+  kind: ViewKind;
+  viewId: string;
+  selector: string;
+  title: string;
+  options: ViewOptions;
   existing: ViewDoc | null;
-}
 
-async function buildListViewDoc(
-  params: ViewBuildParams,
-): Promise<{ doc: ViewDoc; changed: boolean }> {
-  // shared: fetch IDs → fetch previews → merge nodes → layout → detect changes
-}
-```
+  /** Ordered list of primary node IDs (note rel_paths, file rel_paths, etc.) */
+  primaryIds: string[];
 
-Then each builder becomes a thin wrapper:
+  /** Optional prev-node normalization (e.g., legacy frame child migration). */
+  normalizePrevNodes?: (nodes: CanvasNode[]) => CanvasNode[];
 
-```ts
-export async function buildSearchViewDoc(
-  query: string,
-  options: ViewOptions,
-  existing: ViewDoc | null,
-) {
-  const v = viewId({ kind: "search", query });
-  return buildListViewDoc({
-    view: { kind: "search", query },
-    limit: options.limit ?? 200,
-    fetchIds: async () => {
-      const results = await invoke("search", { query: v.selector });
-      return {
-        ids: results.map((r) => r.id).filter(Boolean),
-        titleById: new Map(results.map((r) => [r.id, r.title])),
-      };
-    },
-    existing,
-  });
+  /** Build or merge a single primary node. Called once per primaryId. */
+  buildPrimaryNode: (args: {
+    id: string;
+    prevNode: CanvasNode | undefined;
+  }) => BuildPrimaryResult;
+
+  /** Should a non-primary prev node be preserved in the output? */
+  shouldPreservePrevNode: (node: CanvasNode) => boolean;
 }
 ```
 
-### 2.2 Unify `useViewLoader` methods — `src/hooks/useViewLoader.ts` — **HIGH**
+**Pipeline (8 stages):**
 
-Three nearly identical `loadAndBuild*View` methods (~80 lines each).
+1. Extract `prevNodes` / `prevEdges` from `existing`
+2. Normalize prev nodes (if `normalizePrevNodes` provided)
+3. Build `prevById` map, iterate `primaryIds` → call `buildPrimaryNode()` → collect `nextNodes` + `newNodes`
+4. Preserve non-primary prev nodes via `shouldPreservePrevNode()`
+5. Layout new nodes (`computeGridPositions`) — identical logic across all three builders
+6. Filter edges to only those connecting nodes in `nextNodes`
+7. Construct `ViewDoc`
+8. Detect changes via `hasViewDocChanged()`
 
-**Fix:** Extract generic `loadAndBuild(view: ViewRef, buildFn)`:
+Target: **< 100 lines** for the function body.
+
+---
+
+### 2.2 Rewrite `folderView.ts` as thin wrapper — **HIGH**
+
+Keep folder-specific logic:
+
+- `vault_list_dir` + `vault_dir_recent_entries` IPC calls
+- `recentIds` inclusion logic
+- Markdown vs non-markdown node type decision
+- `normalizeLegacyFrameChildren` passed as `normalizePrevNodes`
+- Folder-specific `shouldPreservePrevNode`: exclude `note`, `file`, `folder`, `folderPreview`, and legacy `frame` nodes with `folder:` prefix
+
+The wrapper calls `buildListViewDoc()` with these strategy callbacks. Target: **~80 lines** (down from 182).
+
+---
+
+### 2.3 Rewrite `searchView.ts` as thin wrapper — **HIGH**
+
+Keep search-specific logic:
+
+- `search` IPC call
+- `titleById` map from search results
+- All nodes are `type: "note"` (no file nodes)
+- `shouldPreservePrevNode`: preserve everything except `note` type
+
+Target: **~50 lines** (down from 131).
+
+---
+
+### 2.4 Rewrite `tagView.ts` as thin wrapper — **HIGH**
+
+Keep tag-specific logic:
+
+- `#` prefix normalization
+- `tag_notes` IPC call
+- `titleById` map from results
+- Identical strategies to search
+
+Target: **~55 lines** (down from 132).
+
+---
+
+### 2.5 Update `src/lib/views/index.ts` exports — **LOW**
+
+Add export for `buildListViewDoc` and `BuildListViewDocParams` type. Keep all existing builder exports unchanged for backwards compatibility.
+
+---
+
+### 2.6 De-duplicate `useViewLoader.ts` — **HIGH**
+
+The three `loadAndBuild*View` methods are ~80 lines each and ~95% identical. The only differences are:
+
+1. `ViewRef` construction (`{kind:"folder",dir}` vs `{kind:"search",query:q}` vs `{kind:"tag",tag:t}`)
+2. Input validation (search/tag trim + empty guard)
+3. Builder function call (`buildFolderViewDoc(dir, opts, existing)` etc.)
+
+**Fix:** Extract internal `loadAndBuildView` helper:
 
 ```ts
-const loadAndBuild = useCallback(
+type ViewBuildResult = { doc: ViewDoc; changed: boolean };
+
+const loadAndBuildView = useCallback(
   async (
     view: ViewRef,
-    builder: (
-      existing: ViewDoc | null,
-    ) => Promise<{ doc: ViewDoc; changed: boolean }>,
+    buildFn: (existing: ViewDoc | null) => Promise<ViewBuildResult>,
   ) => {
-    // shared: increment version, isStale guard, load existing,
-    // build, save if changed, handle NeedsIndexRebuildError
+    // shared: version tracking, isStale guard, loadViewDoc,
+    // buildAndSet with save-if-changed, NeedsIndexRebuildError retry,
+    // error handling
+    // Uses setActiveViewDocAndRef everywhere (fixing the inconsistency
+    // where raw setActiveViewDoc was used without syncing the ref)
   },
-  [setError, startIndexRebuild],
-);
-
-const loadAndBuildFolderView = useCallback(
-  (dir: string) =>
-    loadAndBuild({ kind: "folder", dir }, (existing) =>
-      buildFolderViewDoc(dir, { recursive: true, limit: 500 }, existing),
-    ),
-  [loadAndBuild],
+  [setError, startIndexRebuild, setActiveViewDocAndRef],
 );
 ```
 
-### 2.3 Deduplicate `snapshotPersistedShape` — `src/components/canvas/CanvasPane.tsx` L89-L113, `src/components/canvas/hooks/useCanvasHistory.ts` L24-L48 — **MEDIUM**
+Then each public method becomes a thin wrapper:
 
-Same JSON.stringify snapshot logic duplicated across two files.
+```ts
+const loadAndBuildFolderView = useCallback(
+  (dir: string) =>
+    loadAndBuildView({ kind: "folder", dir }, (existing) =>
+      buildFolderViewDoc(dir, { recursive: true, limit: 500 }, existing),
+    ),
+  [loadAndBuildView],
+);
+
+const loadAndBuildSearchView = useCallback(
+  (query: string) => {
+    const q = query.trim();
+    if (!q) return;
+    return loadAndBuildView({ kind: "search", query: q }, (existing) =>
+      buildSearchViewDoc(q, { limit: 200 }, existing),
+    );
+  },
+  [loadAndBuildView],
+);
+
+const loadAndBuildTagView = useCallback(
+  (tag: string) => {
+    const t = tag.trim();
+    if (!t) return;
+    return loadAndBuildView({ kind: "tag", tag: t }, (existing) =>
+      buildTagViewDoc(t, { limit: 500 }, existing),
+    );
+  },
+  [loadAndBuildView],
+);
+```
+
+**Bonus fix:** Replace all internal `setActiveViewDoc(x); activeViewDocRef.current = x;` pairs with the unified `setActiveViewDocAndRef(x)` from Phase 0.1.
+
+Target: **~100 lines** (down from 273).
+
+---
+
+### 2.7 Deduplicate `snapshotPersistedShape` — **MEDIUM**
+
+`src/components/canvas/CanvasPane.tsx` and `src/components/canvas/hooks/useCanvasHistory.ts` both contain near-identical snapshot serialization logic.
 
 **Fix:** Extract to `src/components/canvas/utils.ts`:
 
@@ -315,25 +457,62 @@ export function snapshotPersistedShape(
   nodes: CanvasNode[],
   edges: CanvasEdge[],
 ): string {
-  // ...
+  const sanitizedNodes = nodes.map((n) => ({
+    id: n.id,
+    type: n.type,
+    position: n.position,
+    data: n.data ?? {},
+    ...(n.parentNode ? { parentNode: n.parentNode } : {}),
+    ...(n.style ? { style: n.style } : {}),
+  }));
+  const sanitizedEdges = edges.map((e) => ({
+    id: e.id,
+    source: e.source,
+    target: e.target,
+    type: e.type,
+    data: e.data ?? {},
+    ...(e.label ? { label: e.label } : {}),
+    ...(e.style ? { style: e.style } : {}),
+  }));
+  return JSON.stringify({ nodes: sanitizedNodes, edges: sanitizedEdges });
 }
 ```
 
-### 2.4 Deduplicate change detection in view builders — `src/lib/views/builders/folderView.ts` L172-L177 (same in search + tag) — **MEDIUM**
+Update both `CanvasPane.tsx` and `useCanvasHistory.ts` to import and use it.
 
-Three copies of `JSON.stringify(sanitizeNodes(prev)) !== JSON.stringify(sanitizeNodes(next))`.
+---
 
-**Fix:** Extract to `src/lib/views/utils.ts`:
+### 2.8 Verification — **REQUIRED**
 
-```ts
-export function hasViewDocChanged(
-  prevDoc: ViewDoc | null,
-  nextNodes: CanvasNode[],
-  nextEdges: CanvasEdge[],
-): boolean {
-  // ...
-}
+Run:
+
+```bash
+pnpm build        # TypeScript check + Vite build
+pnpm check        # Biome lint + format
+cargo check       # Rust backend (should be unaffected, but verify)
 ```
+
+All must pass before Phase 2 is considered complete.
+
+Phase 2 is complete. Here's a summary:
+
+Files created (2):
+
+buildListViewDoc.ts — Generic pipeline with strategy callbacks (BuildListViewDocParams + buildListViewDoc())
+Files rewritten (4):
+
+folderView.ts — 120 lines (down from 182), thin wrapper with folder-specific fetch + strategies
+searchView.ts — 79 lines (down from 131)
+tagView.ts — 81 lines (down from 132)
+useViewLoader.ts — 144 lines (down from 273), single loadAndBuildView helper + fixed setActiveViewDocAndRef inconsistency
+Files modified (4):
+
+common.ts — Added hasViewDocChanged()
+utils.ts — Added snapshotPersistedShape()
+CanvasPane.tsx — Removed inline snapshot, imports from utils
+useCanvasHistory.ts — Removed inline snapshotString, imports from utils
+index.ts — Added new exports
+All checks pass: pnpm build, pnpm check, cargo check.
 
 ---
 

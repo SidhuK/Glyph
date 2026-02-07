@@ -41,6 +41,7 @@ import type {
 	CanvasNoteEditActions,
 	CanvasPaneProps,
 } from "./types";
+import { snapshotPersistedShape } from "./utils";
 import "@xyflow/react/dist/style.css";
 
 const nodeTypes = {
@@ -92,31 +93,6 @@ function CanvasPane({
 		[],
 	);
 
-	const snapshotPersistedShape = useCallback(
-		(n: CanvasNode[], e: CanvasEdge[]) =>
-			JSON.stringify({
-				n: n.map((node) => ({
-					id: node.id,
-					type: node.type ?? null,
-					position: node.position,
-					data: node.data ?? {},
-					parentNode: node.parentNode,
-					extent: node.extent ?? null,
-					style: node.style ?? null,
-				})),
-				e: e.map((edge) => ({
-					id: edge.id,
-					source: edge.source,
-					target: edge.target,
-					type: edge.type ?? null,
-					label: edge.label ?? null,
-					data: edge.data ?? {},
-					style: edge.style ?? null,
-				})),
-			}),
-		[],
-	);
-
 	const { pushHistory, undo, redo, resetHistory, applyingHistoryRef } =
 		useCanvasHistory(nodes, edges, setNodes, setEdges, stripEphemeral);
 
@@ -164,7 +140,7 @@ function CanvasPane({
 				}
 			}, 800);
 		},
-		[onSave, snapshotPersistedShape, stripEphemeral],
+		[onSave, stripEphemeral],
 	);
 
 	useEffect(() => {
@@ -194,7 +170,7 @@ function CanvasPane({
 		setEdges(doc.edges);
 		lastSavedSnapshotRef.current = incomingSnapshot;
 		resetHistory(doc.nodes, doc.edges);
-	}, [doc, resetHistory, setEdges, setNodes, snapshotPersistedShape]);
+	}, [doc, resetHistory, setEdges, setNodes]);
 
 	useEffect(() => {
 		if (!initializedRef.current || applyingHistoryRef.current) return;

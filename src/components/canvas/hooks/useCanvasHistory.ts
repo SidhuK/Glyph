@@ -1,5 +1,6 @@
 import { useCallback, useRef } from "react";
 import type { CanvasEdge, CanvasNode } from "../types";
+import { snapshotPersistedShape } from "../utils";
 
 interface HistoryState {
 	nodes: CanvasNode[];
@@ -21,38 +22,13 @@ export function useCanvasHistory(
 	const applyingHistoryRef = useRef(false);
 	const lastPushAtRef = useRef(0);
 
-	const snapshotString = useCallback(
-		(n: CanvasNode[], e: CanvasEdge[]) =>
-			JSON.stringify({
-				n: n.map((node) => ({
-					id: node.id,
-					type: node.type ?? null,
-					position: node.position,
-					data: node.data ?? null,
-					parentNode: node.parentNode,
-					extent: node.extent ?? null,
-					style: node.style ?? null,
-				})),
-				e: e.map((edge) => ({
-					id: edge.id,
-					source: edge.source,
-					target: edge.target,
-					type: edge.type ?? null,
-					label: edge.label ?? null,
-					data: edge.data ?? null,
-					style: edge.style ?? null,
-				})),
-			}),
-		[],
-	);
-
 	const pushHistory = useCallback(
 		(n: CanvasNode[], e: CanvasEdge[]) => {
 			if (applyingHistoryRef.current) return;
 			const now = Date.now();
 			if (now - lastPushAtRef.current < HISTORY_MIN_INTERVAL_MS) return;
 			const stable = stripEphemeral(n, e);
-			const nextKey = snapshotString(stable.nodes, stable.edges);
+			const nextKey = snapshotPersistedShape(stable.nodes, stable.edges);
 			if (!lastHistoryRef.current) {
 				lastHistoryRef.current = nextKey;
 				lastStateRef.current = structuredClone(stable);
@@ -69,7 +45,7 @@ export function useCanvasHistory(
 			lastStateRef.current = structuredClone(stable);
 			lastPushAtRef.current = now;
 		},
-		[snapshotString, stripEphemeral],
+		[stripEphemeral],
 	);
 
 	const undo = useCallback(() => {
@@ -82,11 +58,14 @@ export function useCanvasHistory(
 		setNodes(previous.nodes);
 		setEdges(previous.edges);
 		window.setTimeout(() => {
-			lastHistoryRef.current = snapshotString(previous.nodes, previous.edges);
+			lastHistoryRef.current = snapshotPersistedShape(
+				previous.nodes,
+				previous.edges,
+			);
 			lastStateRef.current = structuredClone(previous);
 			applyingHistoryRef.current = false;
 		}, 0);
-	}, [edges, nodes, setEdges, setNodes, snapshotString]);
+	}, [edges, nodes, setEdges, setNodes]);
 
 	const redo = useCallback(() => {
 		const future = futureRef.current;
@@ -98,28 +77,24 @@ export function useCanvasHistory(
 		setNodes(next.nodes);
 		setEdges(next.edges);
 		window.setTimeout(() => {
-			lastHistoryRef.current = snapshotString(next.nodes, next.edges);
+			lastHistoryRef.current = snapshotPersistedShape(next.nodes, next.edges);
 			lastStateRef.current = structuredClone(next);
 			applyingHistoryRef.current = false;
 		}, 0);
-	}, [edges, nodes, setEdges, setNodes, snapshotString]);
+	}, [edges, nodes, setEdges, setNodes]);
 
-	const resetHistory = useCallback(
-		(n: CanvasNode[], e: CanvasEdge[]) => {
-			pastRef.current = [];
-			futureRef.current = [];
-			lastHistoryRef.current = snapshotString(n, e);
-			lastStateRef.current = structuredClone({ nodes: n, edges: e });
-		},
-		[snapshotString],
-	);
+	const resetHistory = useCallback((n: CanvasNode[], e: CanvasEdge[]) => {
+		pastRef.current = [];
+		futureRef.current = [];
+		lastHistoryRef.current = snapshotPersistedShape(n, e);
+		lastStateRef.current = structuredClone({ nodes: n, edges: e });
+	}, []);
 
 	return {
 		pushHistory,
 		undo,
 		redo,
 		resetHistory,
-		snapshotString,
 		applyingHistoryRef,
 	};
 }
