@@ -1,9 +1,11 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useFileTreeContext, useUIContext, useVault } from "../../contexts";
+import type { CanvasLibraryMeta } from "../../lib/canvases";
 import { openSettingsWindow } from "../../lib/windows";
 import { cn } from "../../utils/cn";
+import { CanvasesPane } from "../CanvasesPane";
 import { FileTreePane } from "../FileTreePane";
-import { Files, Settings, Tags } from "../Icons";
+import { Files, Layout, Settings, Tags } from "../Icons";
 import { SearchPane } from "../SearchPane";
 import { TagsPane } from "../TagsPane";
 
@@ -18,6 +20,13 @@ interface SidebarContentProps {
 	onOpenSearchAsCanvas: (query: string) => void;
 	onSelectSearchNote: (id: string) => void;
 	onSelectTag: (tag: string) => void;
+	canvases: CanvasLibraryMeta[];
+	activeCanvasId: string | null;
+	onSelectCanvas: (id: string) => void;
+	onCreateCanvas: () => void;
+	onAddNotesToCanvas: (paths: string[]) => Promise<void>;
+	onCreateNoteInCanvas: () => void;
+	onRenameCanvas: (id: string, title: string) => Promise<void>;
 }
 
 export function SidebarContent({
@@ -31,6 +40,13 @@ export function SidebarContent({
 	onOpenSearchAsCanvas,
 	onSelectSearchNote,
 	onSelectTag,
+	canvases,
+	activeCanvasId,
+	onSelectCanvas,
+	onCreateCanvas,
+	onAddNotesToCanvas,
+	onCreateNoteInCanvas,
+	onRenameCanvas,
 }: SidebarContentProps) {
 	// Contexts
 	const { vaultPath, vaultSchemaVersion, isIndexing } = useVault();
@@ -114,6 +130,17 @@ export function SidebarContent({
 						>
 							<Tags size={14} />
 						</button>
+						<button
+							type="button"
+							className={cn(
+								"segBtn",
+								sidebarViewMode === "canvases" && "active",
+							)}
+							onClick={() => setSidebarViewMode("canvases")}
+							title="Canvases"
+						>
+							<Layout size={14} />
+						</button>
 					</div>
 				</div>
 
@@ -142,7 +169,7 @@ export function SidebarContent({
 								summariesByParentDir={dirSummariesByParent}
 							/>
 						</motion.div>
-					) : (
+					) : sidebarViewMode === "tags" ? (
 						<motion.div
 							key="tags"
 							initial={{ x: 20 }}
@@ -158,6 +185,26 @@ export function SidebarContent({
 								tags={tags}
 								onSelectTag={onSelectTag}
 								onRefresh={() => void refreshTags()}
+							/>
+						</motion.div>
+					) : (
+						<motion.div
+							key="canvases"
+							initial={{ x: 20 }}
+							animate={{ x: 0 }}
+							exit={{ x: 20 }}
+							transition={{ duration: 0.2 }}
+							className="sidebarSectionContent"
+							data-window-drag-ignore
+						>
+							<CanvasesPane
+								canvases={canvases}
+								activeCanvasId={activeCanvasId}
+								onSelectCanvas={onSelectCanvas}
+								onCreateCanvas={onCreateCanvas}
+								onAddNotesToCanvas={onAddNotesToCanvas}
+								onCreateNoteInCanvas={onCreateNoteInCanvas}
+								onRenameCanvas={onRenameCanvas}
 							/>
 						</motion.div>
 					)}

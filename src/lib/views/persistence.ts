@@ -12,7 +12,8 @@ function isViewKind(value: unknown): value is ViewDoc["kind"] {
 		value === "global" ||
 		value === "folder" ||
 		value === "tag" ||
-		value === "search"
+		value === "search" ||
+		value === "canvas"
 	);
 }
 

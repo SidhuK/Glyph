@@ -36,6 +36,13 @@ export function viewId(view: ViewRef): {
 				selector: view.query,
 				title: "Search",
 			};
+		case "canvas":
+			return {
+				id: `canvas:${view.id}`,
+				kind: "canvas",
+				selector: view.id,
+				title: "Canvas",
+			};
 	}
 }
 
@@ -50,6 +57,7 @@ export async function sha256Hex(input: string): Promise<string> {
 export async function viewDocPath(view: ViewRef): Promise<string> {
 	const v = viewId(view);
 	if (v.kind === "global") return "views/global.json";
+	if (v.kind === "canvas") return `Canvases/${v.selector}.json`;
 	const hash = await sha256Hex(v.id);
 	return `views/${v.kind}/${hash}.json`;
 }

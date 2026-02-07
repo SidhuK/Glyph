@@ -1,17 +1,21 @@
 import { AnimatePresence } from "motion/react";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
 	useFileTreeContext,
 	useUIContext,
 	useVault,
 	useViewContext,
 } from "../../contexts";
+import { useCanvasLibrary } from "../../hooks/useCanvasLibrary";
 import { useCommandShortcuts } from "../../hooks/useCommandShortcuts";
 import { useFileTree } from "../../hooks/useFileTree";
 import { useFolderShelf } from "../../hooks/useFolderShelf";
 import { useMenuListeners } from "../../hooks/useMenuListeners";
+import { parseNotePreview } from "../../lib/notePreview";
 import type { Shortcut } from "../../lib/shortcuts";
+import { invoke } from "../../lib/tauri";
 import { cn } from "../../utils/cn";
+import { isMarkdownPath } from "../../utils/path";
 import { onWindowDragMouseDown } from "../../utils/window";
 import type { CanvasExternalCommand } from "../CanvasPane";
 import { PanelLeftClose, PanelLeftOpen } from "../Icons";
@@ -20,6 +24,25 @@ import { AISidebar } from "../ai/AISidebar";
 import { type Command, CommandPalette } from "./CommandPalette";
 import { MainContent } from "./MainContent";
 import { Sidebar } from "./Sidebar";
+
+function basename(path: string): string {
+	const parts = path.split("/").filter(Boolean);
+	return parts[parts.length - 1] ?? path;
+}
+
+function fileTitleFromPath(path: string): string {
+	return basename(path).replace(/\.md$/i, "").trim() || "Untitled";
+}
+
+function aiNoteFileName(): string {
+	const now = new Date();
+	const pad = (n: number) => n.toString().padStart(2, "0");
+	return `AI Note ${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(
+		now.getDate(),
+	)} ${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(
+		now.getSeconds(),
+	)}.md`;
+}
 
 export function AppShell() {
 	// ---------------------------------------------------------------------------
@@ -44,6 +67,8 @@ export function AppShell() {
 		loadAndBuildFolderView,
 		loadAndBuildSearchView,
 		loadAndBuildTagView,
+		loadCanvasView,
+		setActiveViewDoc,
 	} = useViewContext();
 
 	const {
@@ -69,6 +94,12 @@ export function AppShell() {
 	// ---------------------------------------------------------------------------
 	const [canvasCommand, setCanvasCommand] =
 		useState<CanvasExternalCommand | null>(null);
+	const [selectedCanvasId, setSelectedCanvasId] = useState<string | null>(null);
+
+	useEffect(() => {
+		if (activeViewDoc?.kind !== "canvas") return;
+		setSelectedCanvasId(activeViewDoc.selector);
+	}, [activeViewDoc]);
 
 	// ---------------------------------------------------------------------------
 	// Derived callbacks
@@ -106,6 +137,7 @@ export function AppShell() {
 		vaultPath,
 		activeViewDoc,
 	);
+	const canvasLibrary = useCanvasLibrary();
 
 	const openFolderView = useCallback(
 		async (dir: string) => {
@@ -129,6 +161,204 @@ export function AppShell() {
 			await loadAndBuildTagView(tag);
 		},
 		[loadAndBuildTagView, setActivePreviewPath],
+	);
+
+	const openCanvas = useCallback(
+		async (id: string) => {
+			setSelectedCanvasId(id);
+			setActivePreviewPath(null);
+			await loadCanvasView(id);
+		},
+		[loadCanvasView, setActivePreviewPath],
+	);
+
+	const createCanvasAndOpen = useCallback(async () => {
+		const created = await canvasLibrary.createCanvas("Canvas", "manual");
+		await openCanvas(created.meta.id);
+	}, [canvasLibrary, openCanvas]);
+
+	const renameCanvasAndUpdate = useCallback(
+		async (id: string, title: string) => {
+			const nextTitle = title.trim();
+			if (!nextTitle) return;
+			await canvasLibrary.renameCanvas(id, nextTitle);
+			if (activeViewDoc?.kind === "canvas" && activeViewDoc.selector === id) {
+				setActiveViewDoc({ ...activeViewDoc, title: nextTitle });
+			}
+		},
+		[activeViewDoc, canvasLibrary, setActiveViewDoc],
+	);
+
+	const dispatchCanvasCommand = useCallback(
+		async (command: CanvasExternalCommand) => {
+			await new Promise<void>((resolve) => {
+				window.requestAnimationFrame(() => resolve());
+			});
+			setCanvasCommand(command);
+		},
+		[],
+	);
+
+	const ensureCanvasTarget = useCallback(
+		async (source: "manual" | "ai") => {
+			if (activeViewDoc?.kind === "canvas") return activeViewDoc.selector;
+			if (selectedCanvasId) {
+				await openCanvas(selectedCanvasId);
+				return selectedCanvasId;
+			}
+			const created = await canvasLibrary.createCanvas(
+				source === "ai" ? "AI Canvas" : "Canvas",
+				source,
+			);
+			setSelectedCanvasId(created.meta.id);
+			await openCanvas(created.meta.id);
+			return created.meta.id;
+		},
+		[activeViewDoc, canvasLibrary, openCanvas, selectedCanvasId],
+	);
+
+	const addBatchToCanvas = useCallback(
+		async (
+			source: "manual" | "ai",
+			nodes: Extract<
+				CanvasExternalCommand,
+				{ kind: "add_nodes_batch" }
+			>["nodes"],
+		) => {
+			if (!nodes.length) return;
+			await ensureCanvasTarget(source);
+			await dispatchCanvasCommand({
+				id: crypto.randomUUID(),
+				kind: "add_nodes_batch",
+				nodes,
+			});
+		},
+		[dispatchCanvasCommand, ensureCanvasTarget],
+	);
+
+	const ensureCanvasForAI = useCallback(async () => {
+		return ensureCanvasTarget("ai");
+	}, [ensureCanvasTarget]);
+
+	const addNotesToCanvas = useCallback(
+		async (paths: string[]) => {
+			const notePaths = paths.filter((path) => isMarkdownPath(path));
+			if (!notePaths.length) return;
+			const docs = await invoke("vault_read_texts_batch", { paths: notePaths });
+			const byPath = new Map(docs.map((doc) => [doc.rel_path, doc] as const));
+			await addBatchToCanvas(
+				"manual",
+				notePaths.map((path) => {
+					const markdown = byPath.get(path)?.text ?? "";
+					const preview = markdown
+						? parseNotePreview(path, markdown)
+						: { title: fileTitleFromPath(path), content: "" };
+					return {
+						kind: "note" as const,
+						noteId: path,
+						title: preview.title,
+						content: preview.content,
+					};
+				}),
+			);
+		},
+		[addBatchToCanvas],
+	);
+
+	const createNewCanvasNote = useCallback(async () => {
+		if (!vaultPath) return;
+		const titleInput = window.prompt("New note title:", "Untitled Note");
+		if (titleInput == null) return;
+		const title = titleInput.trim() || "Untitled Note";
+		const activeDir =
+			activeViewDoc?.kind === "folder" ? activeViewDoc.selector || "" : "";
+		const safeBase =
+			title.replace(/[\\/:*?\"<>|]+/g, " ").trim() || "Untitled Note";
+		let notePath = activeDir ? `${activeDir}/${safeBase}.md` : `${safeBase}.md`;
+		let suffix = 2;
+		while (true) {
+			try {
+				await invoke("vault_read_text", { path: notePath });
+				notePath = activeDir
+					? `${activeDir}/${safeBase} ${suffix.toString()}.md`
+					: `${safeBase} ${suffix.toString()}.md`;
+				suffix += 1;
+			} catch {
+				break;
+			}
+		}
+		const body = `# ${title}\n\n`;
+		await invoke("vault_write_text", {
+			path: notePath,
+			text: body,
+			base_mtime_ms: null,
+		});
+		const preview = parseNotePreview(notePath, body);
+		await addBatchToCanvas("manual", [
+			{
+				kind: "note",
+				noteId: notePath,
+				title: preview.title,
+				content: preview.content,
+			},
+		]);
+	}, [activeViewDoc, addBatchToCanvas, vaultPath]);
+
+	const addAttachmentsToCanvas = useCallback(
+		async (paths: string[]) => {
+			await addBatchToCanvas(
+				"ai",
+				paths.map((path) => ({
+					kind: "file",
+					path,
+					title: basename(path),
+				})),
+			);
+		},
+		[addBatchToCanvas],
+	);
+
+	const createNoteFromAI = useCallback(
+		async (markdown: string) => {
+			const text = markdown.trim();
+			if (!text) return;
+			await ensureCanvasForAI();
+			const dir =
+				activeViewDoc?.kind === "folder" ? activeViewDoc.selector : "";
+			const baseName = aiNoteFileName();
+			let filePath = dir ? `${dir}/${baseName}` : baseName;
+			let suffix = 2;
+			while (true) {
+				try {
+					await invoke("vault_read_text", { path: filePath });
+					const nextName = baseName.replace(
+						/\.md$/i,
+						` ${suffix.toString()}.md`,
+					);
+					filePath = dir ? `${dir}/${nextName}` : nextName;
+					suffix += 1;
+				} catch {
+					break;
+				}
+			}
+			const title = fileTitleFromPath(filePath);
+			const body = text.startsWith("# ") ? text : `# ${title}\n\n${text}`;
+			await invoke("vault_write_text", {
+				path: filePath,
+				text: body,
+				base_mtime_ms: null,
+			});
+			const preview = parseNotePreview(filePath, body);
+			await addBatchToCanvas("ai", [
+				{
+					kind: "note",
+					noteId: filePath,
+					title: preview.title,
+					content: preview.content,
+				},
+			]);
+		},
+		[activeViewDoc, addBatchToCanvas, ensureCanvasForAI],
 	);
 
 	// ---------------------------------------------------------------------------
@@ -186,19 +416,12 @@ export function AppShell() {
 				label: "New canvas",
 				shortcut: { meta: true, shift: true, key: "n" },
 				enabled: Boolean(vaultPath),
-				action: async () => {
-					await openFolderView("");
-					setCanvasCommand({
-						id: crypto.randomUUID(),
-						kind: "add_text_node",
-						text: "",
-					});
-				},
+				action: async () => createCanvasAndOpen(),
 			},
 		],
 		[
 			fileTree,
-			openFolderView,
+			createCanvasAndOpen,
 			onOpenVault,
 			setAiSidebarOpen,
 			focusSearchInput,
@@ -258,6 +481,13 @@ export function AppShell() {
 				onRenameDir={(p, name) => fileTree.onRenameDir(p, name)}
 				onToggleDir={fileTree.toggleDir}
 				onSelectTag={(t) => void openTagView(t)}
+				canvases={canvasLibrary.canvases}
+				activeCanvasId={selectedCanvasId}
+				onSelectCanvas={(id) => void openCanvas(id)}
+				onCreateCanvas={() => void createCanvasAndOpen()}
+				onAddNotesToCanvas={addNotesToCanvas}
+				onCreateNoteInCanvas={() => void createNewCanvasNote()}
+				onRenameCanvas={renameCanvasAndUpdate}
 				onOpenCommandPalette={() => setPaletteOpen(true)}
 			/>
 
@@ -295,6 +525,18 @@ export function AppShell() {
 								? activeViewDoc.selector || ""
 								: null
 						}
+						activeCanvasId={
+							activeViewDoc?.kind === "canvas" ? activeViewDoc.selector : null
+						}
+						onNewAICanvas={async () => {
+							const created = await canvasLibrary.createCanvas(
+								"AI Canvas",
+								"ai",
+							);
+							await openCanvas(created.meta.id);
+						}}
+						onAddAttachmentsToCanvas={addAttachmentsToCanvas}
+						onCreateNoteFromLastAssistant={createNoteFromAI}
 					/>
 				</>
 			)}

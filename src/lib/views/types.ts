@@ -1,12 +1,13 @@
 import type { CanvasEdge, CanvasNode } from "../tauri";
 
-export type ViewKind = "global" | "folder" | "tag" | "search";
+export type ViewKind = "global" | "folder" | "tag" | "search" | "canvas";
 
 export type ViewRef =
 	| { kind: "global" }
 	| { kind: "folder"; dir: string }
 	| { kind: "tag"; tag: string }
-	| { kind: "search"; query: string };
+	| { kind: "search"; query: string }
+	| { kind: "canvas"; id: string };
 
 export interface ViewOptions {
 	recursive?: boolean;

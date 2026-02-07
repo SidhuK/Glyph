@@ -44,6 +44,8 @@ pub struct AiChatRequest {
     #[serde(default)]
     pub context_manifest: Option<serde_json::Value>,
     #[serde(default)]
+    pub canvas_id: Option<String>,
+    #[serde(default)]
     pub audit: bool,
 }
 

@@ -353,6 +353,26 @@ export function useAiContext({
 		return buildPayload();
 	}, [buildPayload]);
 
+	const resolveAttachedPathsForCanvas = useCallback(async () => {
+		const out: string[] = [];
+		const seen = new Set<string>();
+		for (const item of attachedFolders) {
+			if (item.kind === "file") {
+				if (!item.path || seen.has(item.path)) continue;
+				seen.add(item.path);
+				out.push(item.path);
+				continue;
+			}
+			const paths = await readFolderFiles(item.path);
+			for (const path of paths) {
+				if (!path || seen.has(path)) continue;
+				seen.add(path);
+				out.push(path);
+			}
+		}
+		return out;
+	}, [attachedFolders, readFolderFiles]);
+
 	return {
 		attachedFolders,
 		addContext,
@@ -368,6 +388,7 @@ export function useAiContext({
 		payloadBuilding,
 		buildPayload,
 		ensurePayload,
+		resolveAttachedPathsForCanvas,
 		charBudget,
 		setCharBudget,
 	};

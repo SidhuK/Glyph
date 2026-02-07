@@ -309,6 +309,7 @@ interface TauriCommands {
 				messages: AiMessage[];
 				context?: string;
 				context_manifest?: unknown;
+				canvas_id?: string;
 				audit?: boolean;
 			};
 		},

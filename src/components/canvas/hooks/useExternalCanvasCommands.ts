@@ -49,7 +49,11 @@ export function useExternalCanvasCommands({
 							id: crypto.randomUUID(),
 							type: "note",
 							position: pos,
-							data: { noteId: cmd.noteId, title: cmd.title, content: "" },
+							data: {
+								noteId: cmd.noteId,
+								title: cmd.title,
+								content: cmd.content ?? "",
+							},
 						},
 					]);
 				}
@@ -110,6 +114,73 @@ export function useExternalCanvasCommands({
 			}
 			case "add_link_node": {
 				void handleAddLinkNode(cmd.url).finally(markHandled);
+				break;
+			}
+			case "add_nodes_batch": {
+				const existingNoteIds = new Set(
+					nodes
+						.filter((n) => n.type === "note" && isNoteNode(n))
+						.map((n) => n.data.noteId),
+				);
+				const existingFilePaths = new Set(
+					nodes
+						.filter((n) => n.type === "file")
+						.map((n) => (typeof n.data.path === "string" ? n.data.path : ""))
+						.filter(Boolean),
+				);
+				const start = findDropPosition();
+				const created: CanvasNode[] = [];
+				const linkUrls: string[] = [];
+
+				for (const [index, item] of cmd.nodes.entries()) {
+					const offset = {
+						x: start.x + (index % 5) * 40,
+						y: start.y + index * 26,
+					};
+					if (item.kind === "note") {
+						if (!item.noteId || existingNoteIds.has(item.noteId)) continue;
+						existingNoteIds.add(item.noteId);
+						created.push({
+							id: crypto.randomUUID(),
+							type: "note",
+							position: offset,
+							data: {
+								noteId: item.noteId,
+								title: item.title,
+								content: item.content ?? "",
+							},
+						});
+						continue;
+					}
+					if (item.kind === "file") {
+						if (!item.path || existingFilePaths.has(item.path)) continue;
+						existingFilePaths.add(item.path);
+						created.push({
+							id: crypto.randomUUID(),
+							type: "file",
+							position: offset,
+							data: { path: item.path, title: item.title },
+						});
+						continue;
+					}
+					if (item.kind === "text") {
+						created.push({
+							id: crypto.randomUUID(),
+							type: "text",
+							position: offset,
+							data: { text: item.text },
+						});
+						continue;
+					}
+					linkUrls.push(item.url);
+				}
+
+				if (created.length) {
+					setNodes((prev) => [...prev, ...created]);
+				}
+				void Promise.all(linkUrls.map((url) => handleAddLinkNode(url))).finally(
+					markHandled,
+				);
 				break;
 			}
 		}

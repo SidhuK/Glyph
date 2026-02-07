@@ -6,6 +6,7 @@ type TauriChatBody = {
 	profile_id: string;
 	context?: string;
 	context_manifest?: unknown;
+	canvas_id?: string;
 	audit?: boolean;
 };
 
@@ -49,6 +50,7 @@ export class TauriChatTransport implements ChatTransport<UIMessage> {
 				messages: requestMessages,
 				context: requestBody.context || undefined,
 				context_manifest: requestBody.context_manifest ?? undefined,
+				canvas_id: requestBody.canvas_id || undefined,
 				audit: requestBody.audit ?? true,
 			},
 		});

@@ -5,6 +5,7 @@ import {
 	useVault,
 	useViewContext,
 } from "../../contexts";
+import { touchCanvas } from "../../lib/canvases";
 import type { FsEntry, RecentEntry } from "../../lib/tauri";
 import { type ViewDoc, asCanvasDocLike, saveViewDoc } from "../../lib/views";
 import { isInAppPreviewable } from "../../utils/filePreview";
@@ -93,6 +94,9 @@ export function MainContent({
 				edges: payload.edges,
 			};
 			await saveViewDoc(path, next);
+			if (next.kind === "canvas") {
+				await touchCanvas(next.selector, next.title);
+			}
 			setActiveViewDoc(next);
 		},
 		[activeViewDocRef, activeViewPathRef, setActiveViewDoc],

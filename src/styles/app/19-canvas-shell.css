@@ -6,6 +6,14 @@
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
+	position: relative;
+	z-index: 1;
+	pointer-events: auto;
+	-webkit-app-region: no-drag;
+}
+
+.canvasesPane * {
+	-webkit-app-region: no-drag;
 }
 
 .canvasesPaneHeader {
@@ -15,6 +23,33 @@
 	height: 40px;
 	padding: 0 var(--space-2) 0 var(--space-4);
 	flex-shrink: 0;
+}
+
+.canvasesActions {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 6px;
+	padding: 0 var(--space-2) var(--space-2);
+}
+
+.canvasesActions .segBtn {
+	width: 100%;
+	justify-content: center;
+}
+
+.canvasesSearchWrap {
+	padding: 0 var(--space-2) var(--space-2);
+}
+
+.canvasesSearch {
+	width: 100%;
+	height: 30px;
+	border-radius: var(--radius-lg);
+	border: 1px solid var(--border-light);
+	background: var(--bg-secondary);
+	color: var(--text-primary);
+	font-size: var(--text-sm);
+	padding: 0 var(--space-2);
 }
 
 .canvasesPaneTitle {
@@ -47,10 +82,12 @@
 
 .canvasesListItem.active {
 	background: var(--selection-bg-muted);
+	outline: 1px solid
+		color-mix(in srgb, var(--interactive-accent) 32%, transparent);
 }
 
 .canvasesListButton {
-	width: 100%;
+	flex: 1;
 	height: auto;
 	min-height: 32px;
 	padding: var(--space-1) var(--space-2);
@@ -71,6 +108,36 @@
 	line-height: var(--leading-snug);
 }
 
+.canvasesListRow {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	width: 100%;
+}
+
+.canvasesRenameBtn {
+	opacity: 0;
+	pointer-events: none;
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
+	padding: 2px 6px;
+	border-radius: var(--radius-sm);
+	border: 1px solid transparent;
+	background: transparent;
+}
+
+.canvasesListItem:hover .canvasesRenameBtn,
+.canvasesListItem.active .canvasesRenameBtn {
+	opacity: 1;
+	pointer-events: auto;
+}
+
+.canvasesRenameBtn:hover {
+	color: var(--text-primary);
+	background: var(--bg-hover);
+	border-color: var(--border-light);
+}
+
 .canvasesListItem.active .canvasesListTitle {
 	font-weight: var(--font-medium);
 }
@@ -78,4 +145,89 @@
 .canvasesListMeta {
 	font-size: var(--text-xs);
 	color: var(--text-tertiary);
+}
+
+.canvasesListEmpty {
+	padding: var(--space-2);
+	font-size: var(--text-sm);
+	color: var(--text-tertiary);
+}
+
+.canvasPickerPanel {
+	margin: 0 var(--space-2) var(--space-2);
+	padding: var(--space-2);
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-lg);
+	background: var(--bg-secondary);
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.canvasPickerHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--space-2);
+}
+
+.canvasPickerTitle {
+	font-size: var(--text-sm);
+	font-weight: var(--font-semibold);
+	color: var(--text-primary);
+}
+
+.canvasPickerMeta {
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
+}
+
+.canvasPickerSearch {
+	width: 100%;
+	height: 30px;
+	border-radius: var(--radius-lg);
+	border: 1px solid var(--border-light);
+	background: var(--bg-primary);
+	color: var(--text-primary);
+	font-size: var(--text-sm);
+	padding: 0 var(--space-2);
+}
+
+.canvasPickerList {
+	max-height: 180px;
+	overflow: auto;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.canvasPickerItem {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 8px;
+	border-radius: var(--radius-md);
+	border: 1px solid transparent;
+	background: transparent;
+	color: var(--text-primary);
+	text-align: left;
+}
+
+.canvasPickerItem:hover {
+	background: var(--bg-hover);
+	border-color: var(--border-light);
+}
+
+.canvasPickerEmpty {
+	padding: 8px;
+	font-size: var(--text-sm);
+	color: var(--text-tertiary);
+}
+
+.canvasPickerActions {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 6px;
 }

@@ -52,7 +52,13 @@ export interface CanvasPaneProps {
 }
 
 export type CanvasExternalCommand =
-	| { id: string; kind: "add_note_node"; noteId: string; title: string }
+	| {
+			id: string;
+			kind: "add_note_node";
+			noteId: string;
+			title: string;
+			content?: string;
+	  }
 	| { id: string; kind: "focus_node"; nodeId: string }
 	| { id: string; kind: "open_note_editor"; noteId: string; title?: string }
 	| {
@@ -62,7 +68,17 @@ export type CanvasExternalCommand =
 			markdown: string;
 	  }
 	| { id: string; kind: "add_text_node"; text: string }
-	| { id: string; kind: "add_link_node"; url: string };
+	| { id: string; kind: "add_link_node"; url: string }
+	| {
+			id: string;
+			kind: "add_nodes_batch";
+			nodes: Array<
+				| { kind: "file"; path: string; title: string }
+				| { kind: "note"; noteId: string; title: string; content?: string }
+				| { kind: "text"; text: string }
+				| { kind: "link"; url: string }
+			>;
+	  };
 
 export type NoteEditPhase =
 	| "loading"

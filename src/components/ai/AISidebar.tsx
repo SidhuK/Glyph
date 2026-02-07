@@ -48,6 +48,10 @@ export function AISidebar({
 	onClose,
 	onOpenSettings,
 	activeFolderPath,
+	activeCanvasId,
+	onNewAICanvas,
+	onAddAttachmentsToCanvas,
+	onCreateNoteFromLastAssistant,
 }: {
 	isOpen: boolean;
 	width: number;
@@ -55,6 +59,10 @@ export function AISidebar({
 	onClose: () => void;
 	onOpenSettings: () => void;
 	activeFolderPath: string | null;
+	activeCanvasId: string | null;
+	onNewAICanvas: () => Promise<void>;
+	onAddAttachmentsToCanvas: (paths: string[]) => Promise<void>;
+	onCreateNoteFromLastAssistant: (markdown: string) => Promise<void>;
 }) {
 	const transport = useMemo(() => new TauriChatTransport(), []);
 	const chat = useChat({ transport, experimental_throttle: 32 });
@@ -77,6 +85,9 @@ export function AISidebar({
 		chat.status !== "streaming" &&
 		Boolean(input.trim()) &&
 		Boolean(profiles.activeProfileId);
+	const lastAssistantText = [...chat.messages]
+		.reverse()
+		.find((message) => message.role === "assistant");
 
 	const handleSend = async () => {
 		if (!canSend) return;
@@ -95,6 +106,7 @@ export function AISidebar({
 					profile_id: profiles.activeProfileId,
 					context: built.payload || undefined,
 					context_manifest: built.manifest ?? undefined,
+					canvas_id: activeCanvasId ?? undefined,
 					audit: true,
 				},
 			},
@@ -327,6 +339,33 @@ export function AISidebar({
 				) : null}
 
 				<div className="aiChatComposer">
+					<div className="aiChatComposerActions" style={{ marginBottom: 8 }}>
+						<button type="button" onClick={() => void onNewAICanvas()}>
+							New AI Canvas
+						</button>
+						<button
+							type="button"
+							onClick={() =>
+								void context
+									.resolveAttachedPathsForCanvas()
+									.then((paths) => onAddAttachmentsToCanvas(paths))
+							}
+							disabled={context.attachedFolders.length === 0}
+						>
+							Add Attachments to Canvas
+						</button>
+						<button
+							type="button"
+							onClick={() =>
+								void onCreateNoteFromLastAssistant(
+									lastAssistantText ? messageText(lastAssistantText) : "",
+								)
+							}
+							disabled={!lastAssistantText}
+						>
+							Create Note from Last Reply
+						</button>
+					</div>
 					<textarea
 						className="aiChatInput"
 						value={input}
