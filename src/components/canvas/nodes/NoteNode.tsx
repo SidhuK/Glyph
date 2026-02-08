@@ -12,10 +12,12 @@ export const NoteNode = memo(function NoteNode({
 }: NodeProps<CanvasNode>) {
 	const isFanNode = typeof data.fan_parent_folder_id === "string";
 	const fanIndex = typeof data.fan_index === "number" ? data.fan_index : 0;
+	const fanRotation =
+		typeof data.fan_rotation === "number" ? data.fan_rotation : 0;
 	const title = typeof data.title === "string" ? data.title : "Note";
 	const noteId = typeof data.noteId === "string" ? data.noteId : id;
 	const content = typeof data.content === "string" ? data.content : "";
-	const rotation = isFanNode ? 0 : getNodeRotation(id);
+	const rotation = isFanNode ? fanRotation : getNodeRotation(id);
 	const hasContent = content.length > 0;
 
 	const baseSizeClass = "rfNodeNote--medium";

@@ -16,6 +16,8 @@ export const FileNode = memo(function FileNode({
 }: FileNodeProps) {
 	const isFanNode = typeof data.fan_parent_folder_id === "string";
 	const fanIndex = typeof data.fan_index === "number" ? data.fan_index : 0;
+	const fanRotation =
+		typeof data.fan_rotation === "number" ? data.fan_rotation : 0;
 	const title =
 		typeof data.title === "string"
 			? data.title
@@ -24,7 +26,7 @@ export const FileNode = memo(function FileNode({
 				: "File";
 	const path = typeof data.path === "string" ? data.path : "";
 	const imageSrc = typeof data.image_src === "string" ? data.image_src : "";
-	const rotation = isFanNode ? 0 : getNodeRotation(id) * 0.8;
+	const rotation = isFanNode ? fanRotation : getNodeRotation(id) * 0.8;
 	const motionInitial = isFanNode
 		? { opacity: 0, scale: 0.97, y: -12 }
 		: { opacity: 0, scale: 0.95 };

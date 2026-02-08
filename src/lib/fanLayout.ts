@@ -1,18 +1,13 @@
 import type { CanvasNode } from "./canvasFlowTypes";
 import { GRID_SIZE, estimateNodeSize } from "./canvasLayout";
-import type { FsEntry } from "./tauri";
 
-export const FAN_GRID_CELL_WIDTH = GRID_SIZE * 9 + 8;
-export const FAN_GRID_CELL_HEIGHT = GRID_SIZE * 8 + 12;
-export const FAN_GRID_EXCLUSION_MARGIN = GRID_SIZE / 2;
-export const FAN_SLOT_MARGIN = 8;
 export const FAN_REFLOW_Y_PADDING = GRID_SIZE * 4;
 export const FAN_REFLOW_SCAN_STEP = GRID_SIZE * 2;
 export const FAN_COLLISION_MARGIN = 60;
 export const FAN_MOVE_TRANSITION =
 	"transform 320ms cubic-bezier(0.22, 1, 0.36, 1)";
 export const FAN_MOVE_TRANSITION_MS = 320;
-export const FAN_MAX_ENTRIES = 100;
+export const FAN_MAX_ENTRIES = 5;
 
 export type RectBox = {
 	left: number;
@@ -25,6 +20,24 @@ export type FolderFanState = {
 	fanNodeIds: Set<string>;
 	displacedByNodeId: Map<string, { x: number; y: number }>;
 };
+
+export type FanLayoutItem = {
+	x: number;
+	y: number;
+	rotation: number;
+	zIndex: number;
+};
+
+function seededRandom(seed: string): () => number {
+	let h = 0;
+	for (let i = 0; i < seed.length; i++) {
+		h = (Math.imul(31, h) + seed.charCodeAt(i)) | 0;
+	}
+	return () => {
+		h = (Math.imul(h, 1103515245) + 12345) | 0;
+		return ((h >>> 16) & 0x7fff) / 0x7fff;
+	};
+}
 
 export function sanitizeFolderDataForSave(
 	data: Record<string, unknown>,
@@ -64,82 +77,53 @@ export function nodeRectAtPosition(
 	};
 }
 
+const SCATTER_SLOTS: Array<{
+	dx: number;
+	dy: number;
+	rot: number;
+}> = [
+	{ dx: 1.15, dy: 0.05, rot: 2.5 },
+	{ dx: 1.05, dy: -0.85, rot: -1.8 },
+	{ dx: 2.2, dy: -0.35, rot: 3.2 },
+	{ dx: 0.15, dy: -0.95, rot: -2.2 },
+	{ dx: 2.1, dy: 0.55, rot: -1.5 },
+];
+
+const JITTER_X = 12;
+const JITTER_Y = 10;
+const JITTER_ROT = 1.5;
+
 export function computeFanGridLayout(
 	folderNode: CanvasNode,
-	files: FsEntry[],
-): Array<{ x: number; y: number }> {
-	if (!files.length) return [];
+	fileCount: number,
+): FanLayoutItem[] {
+	if (!fileCount) return [];
+
 	const folderSize = estimateNodeSize({
 		id: folderNode.id,
 		type: folderNode.type ?? "folder",
 		data: folderNode.data ?? {},
 	});
-	const folderRect: RectBox = {
-		left: folderNode.position.x,
-		top: folderNode.position.y,
-		right: folderNode.position.x + folderSize.w,
-		bottom: folderNode.position.y + folderSize.h,
-	};
-	const centerX = folderRect.left + folderSize.w / 2;
-	const centerY = folderRect.top + folderSize.h / 2;
 
-	const candidates: Array<{ cx: number; cy: number; ring: number }> = [];
-	const needed = files.length;
-	const maxRing = Math.max(4, Math.ceil(Math.sqrt(needed)) + 6);
+	const folderX = folderNode.position.x;
+	const folderY = folderNode.position.y;
+	const fw = folderSize.w;
+	const fh = folderSize.h;
+	const n = Math.min(fileCount, SCATTER_SLOTS.length);
 
-	for (let ring = 0; ring <= maxRing && candidates.length < needed; ring += 1) {
-		for (let gx = -ring; gx <= ring; gx += 1) {
-			for (let gy = -ring; gy <= ring; gy += 1) {
-				if (Math.max(Math.abs(gx), Math.abs(gy)) !== ring) continue;
-				const cx = centerX + gx * FAN_GRID_CELL_WIDTH;
-				const cy = centerY + gy * FAN_GRID_CELL_HEIGHT;
-				candidates.push({ cx, cy, ring });
-			}
-		}
-	}
+	const rng = seededRandom(folderNode.id);
 
-	candidates.sort((a, b) => {
-		if (a.ring !== b.ring) return a.ring - b.ring;
-		const ay = Math.abs(a.cy - centerY);
-		const by = Math.abs(b.cy - centerY);
-		if (ay !== by) return ay - by;
-		return Math.abs(a.cx - centerX) - Math.abs(b.cx - centerX);
-	});
+	return Array.from({ length: n }, (_, i) => {
+		const slot = SCATTER_SLOTS[i];
+		const jx = (rng() - 0.5) * 2 * JITTER_X;
+		const jy = (rng() - 0.5) * 2 * JITTER_Y;
+		const jr = (rng() - 0.5) * 2 * JITTER_ROT;
 
-	const usedIndices = new Set<number>();
-	const placedRects: RectBox[] = [];
+		const x = folderX + slot.dx * fw + jx;
+		const y = folderY + slot.dy * fh + jy;
+		const rotation = Number.parseFloat((slot.rot + jr).toFixed(2));
 
-	return files.map((file, index) => {
-		const width = file.is_markdown ? 230 : 220;
-		const height = file.is_markdown ? 160 : 200;
-		let chosen = {
-			x: centerX + (index + 1) * FAN_GRID_CELL_WIDTH,
-			y: centerY,
-		};
-
-		for (const [candidateIndex, candidate] of candidates.entries()) {
-			if (usedIndices.has(candidateIndex)) continue;
-			const nextRect: RectBox = {
-				left: candidate.cx - width / 2,
-				top: candidate.cy - height / 2,
-				right: candidate.cx + width / 2,
-				bottom: candidate.cy + height / 2,
-			};
-			if (intersectsRect(nextRect, folderRect, FAN_GRID_EXCLUSION_MARGIN))
-				continue;
-			if (
-				placedRects.some((placed) =>
-					intersectsRect(nextRect, placed, FAN_SLOT_MARGIN),
-				)
-			)
-				continue;
-			usedIndices.add(candidateIndex);
-			placedRects.push(nextRect);
-			chosen = { x: candidate.cx, y: candidate.cy };
-			break;
-		}
-
-		return { x: chosen.x - width / 2, y: chosen.y - height / 2 };
+		return { x, y, rotation, zIndex: 1000 + i };
 	});
 }
 

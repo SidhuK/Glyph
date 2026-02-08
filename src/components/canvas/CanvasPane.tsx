@@ -28,7 +28,7 @@ import {
 	sanitizeFolderDataForSave,
 } from "../../lib/fanLayout";
 import { titleForFile } from "../../lib/notePreview";
-import type { FsEntry, IndexNotePreview } from "../../lib/tauri";
+import type { IndexNotePreview, RecentEntry } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 import { CanvasNoteOverlayEditor } from "./CanvasNoteOverlayEditor";
 import { CanvasToolbar } from "./CanvasToolbar";
@@ -358,17 +358,11 @@ function CanvasPane({
 	);
 
 	const loadFolderFanEntries = useCallback(async (dir: string) => {
-		const entries = await invoke("vault_list_files", {
+		const entries = await invoke("vault_dir_recent_entries", {
 			dir: dir || null,
-			recursive: false,
 			limit: FAN_MAX_ENTRIES,
 		});
-		const files = (entries as FsEntry[])
-			.filter((entry) => entry.kind === "file")
-			.sort((a, b) => {
-				if (a.is_markdown !== b.is_markdown) return a.is_markdown ? -1 : 1;
-				return a.rel_path.toLowerCase().localeCompare(b.rel_path.toLowerCase());
-			});
+		const files = entries as RecentEntry[];
 		const markdownIds = files
 			.filter((entry) => entry.is_markdown)
 			.map((entry) => entry.rel_path);
@@ -421,12 +415,9 @@ function CanvasPane({
 								? { width: 230, height: 160 }
 								: { width: 220, height: 200 },
 						);
-						const basePositions = computeFanGridLayout(
+						const fanLayout = computeFanGridLayout(
 							currentFolderNode,
-							files,
-						);
-						const fanPositions = basePositions.map((position) =>
-							snapToGrid ? snapPoint(position) : position,
+							files.length,
 						);
 
 						let minX = Number.POSITIVE_INFINITY;
@@ -435,7 +426,8 @@ function CanvasPane({
 						let maxY = Number.NEGATIVE_INFINITY;
 
 						for (const [index, file] of files.entries()) {
-							const position = fanPositions[index];
+							const layout = fanLayout[index];
+							const position = { x: layout.x, y: layout.y };
 							const { width, height } = layoutItems[index];
 							const id = folderFanNodeId(folderNodeId, file.rel_path);
 							fanNodeIds.add(id);
@@ -444,6 +436,7 @@ function CanvasPane({
 								fan_parent_folder_id: folderNodeId,
 								fan_rel_path: file.rel_path,
 								fan_index: index,
+								fan_rotation: layout.rotation,
 							};
 							const fanNodeTransition = `${FAN_MOVE_TRANSITION} ${Math.min(
 								0.18,
@@ -454,6 +447,7 @@ function CanvasPane({
 									id,
 									type: "note",
 									position,
+									zIndex: layout.zIndex,
 									style: { transition: fanNodeTransition },
 									data: {
 										noteId: file.rel_path,
@@ -468,6 +462,7 @@ function CanvasPane({
 									id,
 									type: "file",
 									position,
+									zIndex: layout.zIndex,
 									style: { transition: fanNodeTransition },
 									data: {
 										path: file.rel_path,
