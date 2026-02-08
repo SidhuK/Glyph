@@ -11,7 +11,6 @@ interface UseExternalCanvasCommandsProps {
 	nodes: CanvasNode[];
 	findDropPosition: () => { x: number; y: number };
 	setNodes: React.Dispatch<React.SetStateAction<CanvasNode[]>>;
-	ensureTabForNote: (noteId: string, title: string) => void;
 	beginInlineEdit: (node: CanvasNode) => Promise<boolean>;
 	noteEditSessionNoteId: string | null;
 	updateInlineMarkdown: (nextMarkdown: string) => void;
@@ -24,7 +23,6 @@ export function useExternalCanvasCommands({
 	nodes,
 	findDropPosition,
 	setNodes,
-	ensureTabForNote,
 	beginInlineEdit,
 	noteEditSessionNoteId,
 	updateInlineMarkdown,
@@ -70,7 +68,6 @@ export function useExternalCanvasCommands({
 						n.type === "note" && isNoteNode(n) && n.data.noteId === cmd.noteId,
 				);
 				if (existingNode) {
-					ensureTabForNote(cmd.noteId, cmd.title ?? "Untitled");
 					void beginInlineEdit(existingNode);
 				} else {
 					const pos = findDropPosition();
@@ -85,7 +82,6 @@ export function useExternalCanvasCommands({
 						},
 					};
 					setNodes((prev) => [...prev, createdNode]);
-					ensureTabForNote(cmd.noteId, cmd.title ?? "Untitled");
 					void beginInlineEdit(createdNode);
 				}
 				markHandled();
@@ -190,7 +186,6 @@ export function useExternalCanvasCommands({
 		nodes,
 		findDropPosition,
 		setNodes,
-		ensureTabForNote,
 		beginInlineEdit,
 		noteEditSessionNoteId,
 		updateInlineMarkdown,

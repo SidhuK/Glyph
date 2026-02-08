@@ -67,142 +67,81 @@
 	position: relative;
 }
 
-.canvasNoteEditorBlurTarget {
-	position: absolute;
-	inset: 0;
-	width: 100%;
-	height: 100%;
-	transition: filter var(--transition-fast), transform var(--transition-fast),
-		opacity var(--transition-fast);
-	will-change: filter, transform, opacity;
-}
-
-.canvasNoteEditorBlurTarget.is-blurred {
-	filter: blur(2px);
-	opacity: 0.9;
-	transform: scale(0.996);
-	pointer-events: none;
-}
-
-.canvasNoteEditorOverlay {
-	position: absolute;
-	inset: 0;
-	z-index: 20;
-	display: flex;
-	align-items: stretch;
-	justify-content: flex-end;
-	padding: var(--space-4);
-	pointer-events: none;
-}
-
-.canvasNoteEditorScrim {
-	position: absolute;
-	inset: 0;
-	background: color-mix(in srgb, var(--bg-canvas) 28%, transparent);
-	pointer-events: auto;
-}
-
-.canvasNoteEditorPanel {
-	position: relative;
-	margin-left: auto;
-	width: clamp(360px, 34vw, 520px);
-	max-height: calc(100% - var(--space-2));
-	background: var(--bg-primary);
-	border: 1px solid var(--border-default);
-	border-radius: var(--radius-xl);
-	box-shadow: var(--shadow-float);
+.canvasViewportSwap {
+	flex: 1;
+	min-height: 0;
 	display: flex;
 	flex-direction: column;
-	overflow: hidden;
-	pointer-events: auto;
 }
 
-.canvasNoteEditorTabs {
-	display: flex;
-	align-items: center;
-	gap: var(--space-2);
-	padding: 6px 8px;
-	border-bottom: 1px solid var(--border-light);
-	background: var(--bg-secondary);
-}
-
-.canvasNoteEditorTabsScroll {
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	overflow-x: auto;
-	white-space: nowrap;
+.canvasNotePage {
 	flex: 1;
-	scrollbar-width: thin;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary)) 0%,
+		var(--bg-canvas) 100%
+	);
 }
 
-.canvasNoteEditorTab {
-	position: relative;
+.canvasNotePageHeader {
+	height: 56px;
+	padding: 0 var(--space-4);
+	border-bottom: 1px solid var(--border-light);
+	background: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary));
+	display: grid;
+	grid-template-columns: auto 1fr auto;
+	align-items: center;
+	gap: var(--space-3);
+}
+
+.canvasNotePageBackBtn {
+	height: 36px;
+	margin-left: 46px;
+	padding: 0 12px;
+	border-radius: var(--radius-lg);
+	border: 1px solid var(--border-default);
+	background: var(--bg-secondary);
+	color: var(--text-secondary);
 	display: inline-flex;
 	align-items: center;
-	gap: 6px;
-	padding: 2px 6px;
-	border-radius: var(--radius-full);
-	background: transparent;
-	border: 1px solid transparent;
-	color: var(--text-secondary);
-}
-
-.canvasNoteEditorTabUnderline {
-	position: absolute;
-	bottom: -4px;
-	left: 4px;
-	right: 4px;
-	height: 2px;
-	background: var(--interactive-accent);
-	border-radius: 1px;
-}
-
-.canvasNoteEditorTab.active {
-	background: var(--bg-primary);
-	border-color: var(--border-light);
-	color: var(--text-primary);
-	box-shadow: var(--shadow-sm);
-}
-
-.canvasNoteEditorTabButton {
-	border: none;
-	background: transparent;
-	color: inherit;
+	gap: 8px;
 	font-size: var(--text-xs);
-	max-width: 160px;
+	font-weight: var(--font-medium);
+	transition: background var(--transition-fast), color var(--transition-fast),
+		border-color var(--transition-fast);
+}
+
+.canvasNotePageBackBtn:hover {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}
+
+.appShell.appShellSidebarCollapsed .canvasNotePageBackBtn {
+	margin-left: 126px;
+}
+
+.canvasNotePageBackGlyph {
+	font-size: 14px;
+	line-height: 1;
+}
+
+.canvasNotePageTitleWrap {
+	min-width: 0;
+	display: inline-flex;
+	align-items: baseline;
+	gap: var(--space-2);
+}
+
+.canvasNotePageTitle {
+	font-size: 15px;
+	font-weight: var(--font-semibold);
+	color: var(--text-primary);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-}
-
-.canvasNoteEditorTabClose {
-	border: none;
-	background: transparent;
-	color: inherit;
-	font-size: 14px;
-	line-height: 1;
-	opacity: 0.6;
-}
-
-.canvasNoteEditorTabClose:hover {
-	opacity: 1;
-}
-
-.canvasNoteEditorTabAdd {
-	border: 1px solid var(--border-light);
-	background: var(--bg-primary);
-	color: var(--text-secondary);
-	border-radius: var(--radius-full);
-	width: 24px;
-	height: 24px;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.canvasNoteEditorTabAdd:hover {
-	color: var(--text-primary);
 }
 
 .canvasNoteEditorHeader {
@@ -235,6 +174,22 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
+}
+
+.canvasNotePageBody {
+	flex: 1;
+	min-height: 0;
+	overflow: hidden;
+	padding: 0 clamp(16px, 2.2vw, 28px);
+}
+
+.canvasNotePageSurface {
+	width: min(1040px, 100%);
+	height: 100%;
+	margin: 0 auto;
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
 }
 
 .canvasNoteEditorError {
@@ -293,34 +248,66 @@
 	background: var(--bg-secondary);
 }
 
-.canvasNoteEditorPanel .rfNodeNoteEditor {
-	border: 1px solid var(--border-light);
+.canvasNotePageSurface .rfNodeNoteEditor {
+	border: none;
 	background: var(--bg-primary);
+	border-radius: 16px;
+	box-shadow: none;
+	flex: 1;
+	min-height: 0;
 }
 
-.canvasNoteEditorPanel .rfNodeNoteEditorRibbon {
+.canvasNotePageSurface .rfNodeNoteEditorRibbon {
 	background: color-mix(in srgb, var(--bg-primary) 90%, var(--bg-secondary));
 	border-bottom: 1px solid var(--border-light);
 }
 
-.canvasNoteEditorPanel .rfNodeNoteEditorBody {
+.canvasNotePageSurface .rfNodeNoteEditorBody {
 	overflow: auto;
+	min-height: 0;
 }
 
-.canvasNoteEditorPanel .rfNodeNoteEditorRaw {
+.canvasNotePageSurface .rfNodeNoteEditorRibbonBottom {
+	position: sticky;
+	bottom: 14px;
+	z-index: 8;
+	align-self: center;
+	width: fit-content;
+	max-width: calc(100% - 24px);
+	border-top: none;
+	border: 1px solid color-mix(in srgb, var(--border-default) 78%, transparent);
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--bg-secondary) 90%, var(--bg-primary));
+	box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+	backdrop-filter: blur(6px);
+	-webkit-backdrop-filter: blur(6px);
+	padding: 5px 8px;
+}
+
+.canvasNotePageSurface .rfNodeNoteEditorRibbonBottom .ribbonGroup {
+	border-radius: 999px;
+}
+
+.canvasNotePageSurface .rfNodeNoteEditorRaw {
 	font-size: 13px;
 	color: var(--text-primary);
 	background: transparent;
 }
 
-.canvasNoteEditorPanel .rfNodeNoteEditorRaw .cm-scroller {
+.canvasNotePageSurface .rfNodeNoteEditorRaw .cm-scroller {
 	font-size: 13px;
 	color: var(--text-primary);
 }
 
-.canvasNoteEditorPanel .tiptapContentInline {
+.canvasNotePageSurface .tiptapContentInline {
 	color: var(--text-primary);
 	background: transparent;
+	font-size: 14px;
+	line-height: 1.72;
+}
+
+.canvasNotePageSurface .tiptapHostInline {
+	padding: clamp(18px, 2.3vw, 30px) clamp(22px, 3vw, 48px);
 }
 
 .canvasLoading {

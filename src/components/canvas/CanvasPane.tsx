@@ -9,6 +9,7 @@ import {
 	useEdgesState,
 	useNodesState,
 } from "@xyflow/react";
+import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { GRID_SIZE, estimateNodeSize, snapPoint } from "../../lib/canvasLayout";
 import {
@@ -34,7 +35,6 @@ import { CanvasNoteOverlayEditor } from "./CanvasNoteOverlayEditor";
 import { CanvasToolbar } from "./CanvasToolbar";
 import { CanvasActionsContext, CanvasNoteEditContext } from "./contexts";
 import { useCanvasHistory } from "./hooks/useCanvasHistory";
-import { useCanvasTabs } from "./hooks/useCanvasTabs";
 import { useCanvasToolbarActions } from "./hooks/useCanvasToolbarActions";
 import { useExternalCanvasCommands } from "./hooks/useExternalCanvasCommands";
 import { useNoteEditSession } from "./hooks/useNoteEditSession";
@@ -147,12 +147,6 @@ function CanvasPane({
 
 	const {
 		noteEditSession,
-		noteTabs,
-		activeTabId,
-		setActiveTabId,
-		setNoteTabs,
-		ensureTabForNote,
-		createNewTab,
 		beginInlineEdit,
 		updateInlineMarkdown,
 		setInlineEditorMode,
@@ -161,6 +155,7 @@ function CanvasPane({
 		overwriteInlineToDisk,
 		saveInlineNow,
 	} = useNoteEditSession(setNodes);
+	const isNoteEditorOpen = Boolean(noteEditSession);
 
 	const nodeById = useMemo(() => {
 		const byId = new Map<string, CanvasNode>();
@@ -242,6 +237,7 @@ function CanvasPane({
 	}, [nodes]);
 
 	useEffect(() => {
+		if (isNoteEditorOpen) return;
 		const wrapper = flowWrapperRef.current;
 		if (!wrapper) return;
 		const update = () => {
@@ -254,7 +250,7 @@ function CanvasPane({
 		const observer = new ResizeObserver(update);
 		observer.observe(wrapper);
 		return () => observer.disconnect();
-	}, []);
+	}, [isNoteEditorOpen]);
 
 	useEffect(() => {
 		if (!doc) return;
@@ -346,7 +342,6 @@ function CanvasPane({
 		nodes,
 		findDropPosition,
 		setNodes,
-		ensureTabForNote,
 		beginInlineEdit,
 		noteEditSessionNoteId: noteEditSession?.noteId ?? null,
 		updateInlineMarkdown,
@@ -685,15 +680,12 @@ function CanvasPane({
 	const handleNodeDoubleClick: NodeMouseHandler<CanvasNode> = useCallback(
 		(_event, node) => {
 			if (isNoteNode(node)) {
-				const noteId = node.data.noteId ?? node.id;
-				const title = node.data.title ?? "Untitled";
-				ensureTabForNote(noteId, title);
 				void beginInlineEdit(node);
 			} else if (isFileNode(node)) {
 				if (node.data.path) onOpenNote(node.data.path);
 			}
 		},
-		[beginInlineEdit, ensureTabForNote, onOpenNote],
+		[beginInlineEdit, onOpenNote],
 	);
 
 	const canvasActions: CanvasActions = useMemo(
@@ -719,9 +711,6 @@ function CanvasPane({
 			openEditor: (nodeId: string) => {
 				const node = nodeById.get(nodeId);
 				if (node && isNoteNode(node)) {
-					const noteId = node.data.noteId ?? node.id;
-					const title = node.data.title ?? "Untitled";
-					ensureTabForNote(noteId, title);
 					void beginInlineEdit(node);
 				}
 			},
@@ -735,7 +724,6 @@ function CanvasPane({
 		[
 			noteEditSession,
 			nodeById,
-			ensureTabForNote,
 			beginInlineEdit,
 			closeInlineEditor,
 			saveInlineNow,
@@ -745,17 +733,6 @@ function CanvasPane({
 			updateInlineMarkdown,
 		],
 	);
-
-	const { handleCloseTab, handleSelectTab } = useCanvasTabs({
-		noteTabs,
-		activeTabId,
-		noteEditSession,
-		nodes,
-		setNoteTabs,
-		setActiveTabId,
-		closeInlineEditor,
-		beginInlineEdit,
-	});
 
 	const hasSelectedLink = useMemo(
 		() => nodes.some((n) => selectedNodeIds.has(n.id) && n.type === "link"),
@@ -776,57 +753,76 @@ function CanvasPane({
 		<CanvasActionsContext.Provider value={canvasActions}>
 			<CanvasNoteEditContext.Provider value={noteEditActions}>
 				<div className="canvasPane">
-					<div className="canvasFlowWrapper" ref={flowWrapperRef}>
-						<ReactFlow
-							nodes={nodes}
-							edges={edges}
-							style={{ width: flowSurfaceWidth, height: flowSurfaceHeight }}
-							onNodesChange={onNodesChange}
-							onEdgesChange={onEdgesChange}
-							onConnect={handleConnect}
-							onSelectionChange={handleSelectionChange}
-							onNodeDoubleClick={handleNodeDoubleClick}
-							nodeTypes={nodeTypes}
-							snapToGrid={snapToGrid}
-							snapGrid={[GRID_SIZE, GRID_SIZE]}
-							defaultViewport={{
-								x: FLOW_DEFAULT_VIEWPORT_X,
-								y: FLOW_DEFAULT_VIEWPORT_Y,
-								zoom: 1,
-							}}
-							preventScrolling={false}
-							zoomOnScroll={false}
-							minZoom={0.1}
-							maxZoom={2}
-							proOptions={{ hideAttribution: true }}
-						>
-							<Controls />
-							<MiniMap zoomable pannable />
-						</ReactFlow>
-						<CanvasToolbar
-							snapToGrid={snapToGrid}
-							hasActiveNote={Boolean(activeNoteId)}
-							selectedCount={selectedNodeIds.size}
-							hasSelectedLink={hasSelectedLink}
-							onAddText={handleAddTextNode}
-							onAddLink={handleAddLinkNode}
-							onAddNote={handleAddCurrentNote}
-							onRefreshLink={handleRefreshLink}
-							onFrameSelection={handleFrameSelection}
-							onToggleSnap={() => setSnapToGrid((v) => !v)}
-							onReflowGrid={handleReflowGrid}
-							onAlign={handleAlign}
-							onDistribute={handleDistribute}
-						/>
-					</div>
-					<CanvasNoteOverlayEditor
-						nodes={nodes}
-						tabs={noteTabs}
-						activeTabId={activeTabId}
-						onSelectTab={handleSelectTab}
-						onCloseTab={handleCloseTab}
-						onNewTab={createNewTab}
-					/>
+					<AnimatePresence mode="wait" initial={false}>
+						{isNoteEditorOpen ? (
+							<motion.div
+								key="note-editor"
+								className="canvasViewportSwap"
+								initial={{ opacity: 0, y: 12, scale: 0.992 }}
+								animate={{ opacity: 1, y: 0, scale: 1 }}
+								exit={{ opacity: 0, y: -8, scale: 0.996 }}
+								transition={{ type: "spring", stiffness: 260, damping: 28 }}
+							>
+								<CanvasNoteOverlayEditor nodes={nodes} />
+							</motion.div>
+						) : (
+							<motion.div
+								key="canvas-flow"
+								className="canvasViewportSwap"
+								initial={{ opacity: 0, y: -10, scale: 0.996 }}
+								animate={{ opacity: 1, y: 0, scale: 1 }}
+								exit={{ opacity: 0, y: 8, scale: 0.992 }}
+								transition={{ type: "spring", stiffness: 260, damping: 28 }}
+							>
+								<div className="canvasFlowWrapper" ref={flowWrapperRef}>
+									<ReactFlow
+										nodes={nodes}
+										edges={edges}
+										style={{
+											width: flowSurfaceWidth,
+											height: flowSurfaceHeight,
+										}}
+										onNodesChange={onNodesChange}
+										onEdgesChange={onEdgesChange}
+										onConnect={handleConnect}
+										onSelectionChange={handleSelectionChange}
+										onNodeDoubleClick={handleNodeDoubleClick}
+										nodeTypes={nodeTypes}
+										snapToGrid={snapToGrid}
+										snapGrid={[GRID_SIZE, GRID_SIZE]}
+										defaultViewport={{
+											x: FLOW_DEFAULT_VIEWPORT_X,
+											y: FLOW_DEFAULT_VIEWPORT_Y,
+											zoom: 1,
+										}}
+										preventScrolling={false}
+										zoomOnScroll={false}
+										minZoom={0.1}
+										maxZoom={2}
+										proOptions={{ hideAttribution: true }}
+									>
+										<Controls />
+										<MiniMap zoomable pannable />
+									</ReactFlow>
+									<CanvasToolbar
+										snapToGrid={snapToGrid}
+										hasActiveNote={Boolean(activeNoteId)}
+										selectedCount={selectedNodeIds.size}
+										hasSelectedLink={hasSelectedLink}
+										onAddText={handleAddTextNode}
+										onAddLink={handleAddLinkNode}
+										onAddNote={handleAddCurrentNote}
+										onRefreshLink={handleRefreshLink}
+										onFrameSelection={handleFrameSelection}
+										onToggleSnap={() => setSnapToGrid((v) => !v)}
+										onReflowGrid={handleReflowGrid}
+										onAlign={handleAlign}
+										onDistribute={handleDistribute}
+									/>
+								</div>
+							</motion.div>
+						)}
+					</AnimatePresence>
 				</div>
 			</CanvasNoteEditContext.Provider>
 		</CanvasActionsContext.Provider>
