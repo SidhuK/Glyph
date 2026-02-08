@@ -445,6 +445,7 @@
 	position: relative;
 	min-height: 0;
 	overflow: hidden;
+	background: var(--bg-canvas);
 	display: flex;
 }
 

@@ -10,14 +10,14 @@ import {
 	useNodesState,
 } from "@xyflow/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { GRID_SIZE, snapPoint } from "../../lib/canvasLayout";
+import { GRID_SIZE, estimateNodeSize, snapPoint } from "../../lib/canvasLayout";
 import {
 	FAN_COLLISION_MARGIN,
 	FAN_MAX_ENTRIES,
 	FAN_MOVE_TRANSITION,
 	FAN_MOVE_TRANSITION_MS,
 	FAN_REFLOW_SCAN_STEP,
-	FAN_REFLOW_Y_PADDING,
+	FAN_REFLOW_X_PADDING,
 	type FolderFanState,
 	type RectBox,
 	computeFanGridLayout,
@@ -73,6 +73,11 @@ const nodeTypes = {
 	folderPreview: FolderPreviewNode,
 };
 
+const FLOW_SURFACE_SIDE_PADDING = 260;
+const FLOW_SURFACE_BOTTOM_PADDING = 220;
+const FLOW_DEFAULT_VIEWPORT_X = 0;
+const FLOW_DEFAULT_VIEWPORT_Y = 0;
+
 function CanvasPane({
 	doc,
 	onSave,
@@ -107,6 +112,11 @@ function CanvasPane({
 	const folderFanStateRef = useRef<Map<string, FolderFanState>>(new Map());
 	const folderFanLoadingRef = useRef<Set<string>>(new Set());
 	const fanTransitionCleanupRef = useRef<number | null>(null);
+	const flowWrapperRef = useRef<HTMLDivElement | null>(null);
+	const [flowViewportSize, setFlowViewportSize] = useState({
+		width: 0,
+		height: 0,
+	});
 
 	const stripEphemeral = useCallback(
 		(
@@ -158,14 +168,40 @@ function CanvasPane({
 		return byId;
 	}, [nodes]);
 
-	const maxRightEdge = useMemo(() => {
-		let max = 60;
+	const canvasBounds = useMemo(() => {
+		let maxRight = 80;
+		let maxBottom = 80;
 		for (const node of nodes) {
-			const right = node.position.x + 200;
-			if (right > max) max = right;
+			const size = estimateNodeSize({
+				id: node.id,
+				type: node.type ?? "",
+				data: node.data ?? {},
+			});
+			const right = node.position.x + size.w;
+			const bottom = node.position.y + size.h;
+			if (right > maxRight) maxRight = right;
+			if (bottom > maxBottom) maxBottom = bottom;
 		}
-		return max;
+		return { maxRight, maxBottom };
 	}, [nodes]);
+
+	const flowSurfaceWidth = useMemo(
+		() =>
+			Math.max(
+				flowViewportSize.width,
+				canvasBounds.maxRight + FLOW_SURFACE_SIDE_PADDING,
+			),
+		[canvasBounds.maxRight, flowViewportSize.width],
+	);
+
+	const flowSurfaceHeight = useMemo(
+		() =>
+			Math.max(
+				flowViewportSize.height,
+				canvasBounds.maxBottom + FLOW_SURFACE_BOTTOM_PADDING,
+			),
+		[canvasBounds.maxBottom, flowViewportSize.height],
+	);
 
 	const scheduleSave = useCallback(
 		(n: CanvasNode[], e: CanvasEdge[]) => {
@@ -204,6 +240,21 @@ function CanvasPane({
 	useEffect(() => {
 		nodesRef.current = nodes;
 	}, [nodes]);
+
+	useEffect(() => {
+		const wrapper = flowWrapperRef.current;
+		if (!wrapper) return;
+		const update = () => {
+			setFlowViewportSize({
+				width: wrapper.clientWidth,
+				height: wrapper.clientHeight,
+			});
+		};
+		update();
+		const observer = new ResizeObserver(update);
+		observer.observe(wrapper);
+		return () => observer.disconnect();
+	}, []);
 
 	useEffect(() => {
 		if (!doc) return;
@@ -264,10 +315,10 @@ function CanvasPane({
 	}, [undo, redo]);
 
 	const findDropPosition = useCallback((): { x: number; y: number } => {
-		const x = maxRightEdge + 40;
+		const x = canvasBounds.maxRight + 40;
 		const y = 100;
 		return snapToGrid ? snapPoint({ x, y }) : { x, y };
-	}, [maxRightEdge, snapToGrid]);
+	}, [canvasBounds.maxRight, snapToGrid]);
 
 	const {
 		handleAddTextNode,
@@ -483,8 +534,8 @@ function CanvasPane({
 							right: maxX,
 							bottom: maxY,
 						};
-						const reflowDeltaY =
-							maxY - minY + FAN_REFLOW_Y_PADDING + FAN_COLLISION_MARGIN;
+						const reflowDeltaX =
+							maxX - minX + FAN_REFLOW_X_PADDING + FAN_COLLISION_MARGIN;
 						const displacedByNodeId = new Map<
 							string,
 							{ x: number; y: number }
@@ -525,15 +576,15 @@ function CanvasPane({
 							.filter(({ rect }) =>
 								intersectsRect(rect, fanBounds, FAN_COLLISION_MARGIN),
 							)
-							.sort((a, b) => a.node.position.y - b.node.position.y);
+							.sort((a, b) => a.node.position.x - b.node.position.x);
 
 						const movedNodeById = new Map<string, CanvasNode>();
 
 						for (const { node } of reflowCandidates) {
 							displacedByNodeId.set(node.id, { ...node.position });
 							let nextPosition = {
-								x: node.position.x,
-								y: node.position.y + reflowDeltaY,
+								x: node.position.x + reflowDeltaX,
+								y: node.position.y,
 							};
 							if (snapToGrid) nextPosition = snapPoint(nextPosition);
 
@@ -553,12 +604,12 @@ function CanvasPane({
 							) {
 								nextPosition = snapToGrid
 									? snapPoint({
-											x: nextPosition.x,
-											y: nextPosition.y + FAN_REFLOW_SCAN_STEP,
+											x: nextPosition.x + FAN_REFLOW_SCAN_STEP,
+											y: nextPosition.y,
 										})
 									: {
-											x: nextPosition.x,
-											y: nextPosition.y + FAN_REFLOW_SCAN_STEP,
+											x: nextPosition.x + FAN_REFLOW_SCAN_STEP,
+											y: nextPosition.y,
 										};
 								nextRect = nodeRectAtPosition(node, nextPosition);
 								guard += 1;
@@ -725,10 +776,11 @@ function CanvasPane({
 		<CanvasActionsContext.Provider value={canvasActions}>
 			<CanvasNoteEditContext.Provider value={noteEditActions}>
 				<div className="canvasPane">
-					<div className="canvasFlowWrapper">
+					<div className="canvasFlowWrapper" ref={flowWrapperRef}>
 						<ReactFlow
 							nodes={nodes}
 							edges={edges}
+							style={{ width: flowSurfaceWidth, height: flowSurfaceHeight }}
 							onNodesChange={onNodesChange}
 							onEdgesChange={onEdgesChange}
 							onConnect={handleConnect}
@@ -737,8 +789,13 @@ function CanvasPane({
 							nodeTypes={nodeTypes}
 							snapToGrid={snapToGrid}
 							snapGrid={[GRID_SIZE, GRID_SIZE]}
-							fitView
-							fitViewOptions={{ padding: 0.2 }}
+							defaultViewport={{
+								x: FLOW_DEFAULT_VIEWPORT_X,
+								y: FLOW_DEFAULT_VIEWPORT_Y,
+								zoom: 1,
+							}}
+							preventScrolling={false}
+							zoomOnScroll={false}
 							minZoom={0.1}
 							maxZoom={2}
 							proOptions={{ hideAttribution: true }}

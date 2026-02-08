@@ -2,6 +2,7 @@ import type { CanvasNode } from "./canvasFlowTypes";
 import { GRID_SIZE, estimateNodeSize } from "./canvasLayout";
 
 export const FAN_REFLOW_Y_PADDING = GRID_SIZE * 4;
+export const FAN_REFLOW_X_PADDING = GRID_SIZE * 4;
 export const FAN_REFLOW_SCAN_STEP = GRID_SIZE * 2;
 export const FAN_COLLISION_MARGIN = 60;
 export const FAN_MOVE_TRANSITION =
@@ -82,16 +83,16 @@ const SCATTER_SLOTS: Array<{
 	dy: number;
 	rot: number;
 }> = [
-	{ dx: 1.15, dy: 0.05, rot: 2.5 },
-	{ dx: 1.05, dy: -0.85, rot: -1.8 },
-	{ dx: 2.2, dy: -0.35, rot: 3.2 },
-	{ dx: 0.15, dy: -0.95, rot: -2.2 },
-	{ dx: 2.1, dy: 0.55, rot: -1.5 },
+	{ dx: 1.02, dy: 0.04, rot: 1.8 },
+	{ dx: 1.85, dy: -0.16, rot: -1.2 },
+	{ dx: 2.68, dy: 0.12, rot: 1.1 },
+	{ dx: 3.48, dy: -0.08, rot: -0.9 },
+	{ dx: 4.26, dy: 0.18, rot: 0.8 },
 ];
 
 const JITTER_X = 12;
-const JITTER_Y = 10;
-const JITTER_ROT = 1.5;
+const JITTER_Y = 6;
+const JITTER_ROT = 1.1;
 
 export function computeFanGridLayout(
 	folderNode: CanvasNode,

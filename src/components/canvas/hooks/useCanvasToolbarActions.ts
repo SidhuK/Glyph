@@ -2,6 +2,7 @@ import { useCallback } from "react";
 import {
 	GRID_GAP,
 	GRID_SIZE,
+	columnsForMaxRows,
 	computeGridPositions,
 	snapPoint,
 } from "../../../lib/canvasLayout";
@@ -194,7 +195,9 @@ export function useCanvasToolbarActions({
 	const handleReflowGrid = useCallback(() => {
 		const tightGapX = Math.max(GRID_SIZE, GRID_GAP - GRID_SIZE * 2);
 		const tightGapY = GRID_SIZE * 2;
+		const columns = columnsForMaxRows(nodes.length);
 		const positions = computeGridPositions(nodes, {
+			columns,
 			paddingX: tightGapX,
 			paddingY: tightGapY,
 			safetyPxX: Math.max(8, Math.round(GRID_SIZE * 0.35)),

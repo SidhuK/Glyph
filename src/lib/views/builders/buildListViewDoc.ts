@@ -1,7 +1,13 @@
-import { GRID_GAP, computeGridPositions, snapPoint } from "../../canvasLayout";
+import {
+	GRID_GAP,
+	columnsForMaxRows,
+	computeGridPositions,
+	estimateNodeSize,
+	snapPoint,
+} from "../../canvasLayout";
 import type { CanvasNode } from "../../tauri";
 import type { ViewDoc, ViewKind, ViewOptions } from "../types";
-import { hasViewDocChanged, maxBottomForNodes } from "./common";
+import { hasViewDocChanged } from "./common";
 
 export interface BuildPrimaryResult {
 	node: CanvasNode;
@@ -22,6 +28,20 @@ export interface BuildListViewDocParams {
 		prevNode: CanvasNode | undefined;
 	}) => BuildPrimaryResult;
 	shouldPreservePrevNode: (node: CanvasNode) => boolean;
+}
+
+function maxRightForNodes(nodes: CanvasNode[]): number {
+	let maxRight = 0;
+	for (const node of nodes) {
+		const size = estimateNodeSize({
+			id: node.id,
+			type: node.type ?? "",
+			data: node.data ?? {},
+		});
+		const right = (node.position?.x ?? 0) + size.w;
+		if (right > maxRight) maxRight = right;
+	}
+	return maxRight;
 }
 
 export function buildListViewDoc(params: BuildListViewDocParams): {
@@ -62,16 +82,17 @@ export function buildListViewDoc(params: BuildListViewDocParams): {
 	if (newNodes.length > 0) {
 		const shouldLayoutAll = !prev || prevNodesRaw.length === 0;
 		const baseNodes = shouldLayoutAll ? nextNodes : newNodes;
-		const startY = shouldLayoutAll
+		const startX = shouldLayoutAll
 			? 0
-			: maxBottomForNodes(nextNodes) + GRID_GAP * 2;
+			: maxRightForNodes(nextNodes) + GRID_GAP * 2;
+		const columns = columnsForMaxRows(baseNodes.length);
 		const positions = computeGridPositions(
 			baseNodes.map((n) => ({
 				id: n.id,
 				type: n.type ?? "",
 				data: n.data ?? {},
 			})),
-			{ startX: 0, startY },
+			{ startX, startY: 0, columns },
 		);
 		for (const node of baseNodes) {
 			const pos = positions.get(node.id);

@@ -2,6 +2,7 @@ import { FOLDER_NODE_HEIGHT, FOLDER_NODE_WIDTH } from "./canvasConstants";
 
 export const GRID_SIZE = 24;
 export const GRID_GAP = GRID_SIZE * 4;
+export const MAX_CANVAS_AUTO_ROWS = 3;
 
 export type LayoutNode = {
 	id: string;
@@ -66,6 +67,15 @@ export function estimateNodeSize(node: LayoutNode): { w: number; h: number } {
 	if (type === "text") return { w: 190, h: 110 };
 	if (type === "frame") return { w: 300, h: 220 };
 	return { w: 220, h: 160 };
+}
+
+export function columnsForMaxRows(
+	nodeCount: number,
+	maxRows = MAX_CANVAS_AUTO_ROWS,
+): number {
+	if (nodeCount <= 0) return 1;
+	const safeRows = Math.max(1, maxRows);
+	return Math.max(1, Math.ceil(nodeCount / safeRows));
 }
 
 export function computeGridPositions(
