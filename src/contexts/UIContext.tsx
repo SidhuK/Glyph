@@ -45,7 +45,7 @@ const UIContext = createContext<UIContextValue | null>(null);
 export function UIProvider({ children }: { children: ReactNode }) {
 	const { vaultPath } = useVault();
 
-	const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+	const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
 	const [sidebarViewMode, setSidebarViewMode] = useState<
 		"files" | "tags" | "canvases"
 	>("files");

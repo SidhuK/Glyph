@@ -27,9 +27,19 @@
 		width: 100%;
 	}
 
+	.welcomeContentGrid {
+		grid-template-columns: 1fr;
+	}
+
 	.welcomeActions {
 		display: grid;
 		grid-template-columns: 1fr;
+	}
+
+	.welcomeOnboardingList {
+		display: flex;
+		flex-direction: column;
+		padding-top: 0;
 	}
 
 	.welcomeRecentPath {
