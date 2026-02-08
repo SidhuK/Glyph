@@ -14,6 +14,8 @@ export const FileNode = memo(function FileNode({
 	id,
 	selected,
 }: FileNodeProps) {
+	const isFanNode = typeof data.fan_parent_folder_id === "string";
+	const fanIndex = typeof data.fan_index === "number" ? data.fan_index : 0;
 	const title =
 		typeof data.title === "string"
 			? data.title
@@ -22,22 +24,43 @@ export const FileNode = memo(function FileNode({
 				: "File";
 	const path = typeof data.path === "string" ? data.path : "";
 	const imageSrc = typeof data.image_src === "string" ? data.image_src : "";
-	const rotation = getNodeRotation(id) * 0.8;
+	const rotation = isFanNode ? 0 : getNodeRotation(id) * 0.8;
+	const motionInitial = isFanNode
+		? { opacity: 0, scale: 0.97, y: -12 }
+		: { opacity: 0, scale: 0.95 };
+	const motionAnimate = isFanNode
+		? {
+				opacity: 1,
+				scale: 1,
+				y: 0,
+				boxShadow: selected
+					? "0 0 0 2px var(--accent), 0 8px 16px rgba(0,0,0,0.12)"
+					: "0 2px 8px rgba(0,0,0,0.1)",
+			}
+		: {
+				opacity: 1,
+				scale: 1,
+				boxShadow: selected
+					? "0 0 0 2px var(--accent), 0 4px 12px rgba(0,0,0,0.15)"
+					: "0 2px 8px rgba(0,0,0,0.1)",
+			};
+	const motionTransition = isFanNode
+		? ({
+				type: "spring",
+				stiffness: 340,
+				damping: 30,
+				delay: Math.min(0.18, fanIndex * 0.022),
+			} as const)
+		: ({ duration: 0.15 } as const);
 
 	return (
 		<motion.div
 			className="rfNode rfNodeFile"
 			title={path}
 			style={{ transform: `rotate(${rotation}deg)` }}
-			initial={{ opacity: 0, scale: 0.95 }}
-			animate={{
-				opacity: 1,
-				scale: 1,
-				boxShadow: selected
-					? "0 0 0 2px var(--accent), 0 4px 12px rgba(0,0,0,0.15)"
-					: "0 2px 8px rgba(0,0,0,0.1)",
-			}}
-			transition={{ duration: 0.15 }}
+			initial={motionInitial}
+			animate={motionAnimate}
+			transition={motionTransition}
 		>
 			<Handle type="target" position={Position.Left} />
 			<Handle type="source" position={Position.Right} />

@@ -10,10 +10,12 @@ export const NoteNode = memo(function NoteNode({
 	id,
 	selected,
 }: NodeProps<CanvasNode>) {
+	const isFanNode = typeof data.fan_parent_folder_id === "string";
+	const fanIndex = typeof data.fan_index === "number" ? data.fan_index : 0;
 	const title = typeof data.title === "string" ? data.title : "Note";
 	const noteId = typeof data.noteId === "string" ? data.noteId : id;
 	const content = typeof data.content === "string" ? data.content : "";
-	const rotation = getNodeRotation(id);
+	const rotation = isFanNode ? 0 : getNodeRotation(id);
 	const hasContent = content.length > 0;
 
 	const baseSizeClass = "rfNodeNote--medium";
@@ -41,15 +43,39 @@ export const NoteNode = memo(function NoteNode({
 			layoutId={`note-node-${id}`}
 			title={noteId}
 			style={dynamicStyle}
-			initial={{ opacity: 0, scale: 0.95 }}
-			animate={{
-				opacity: 1,
-				scale: 1,
-				boxShadow: selected
-					? "0 0 0 2px var(--accent), 0 4px 12px rgba(0,0,0,0.15)"
-					: "0 2px 8px rgba(0,0,0,0.1)",
-			}}
-			transition={{ type: "spring", stiffness: 300, damping: 25 }}
+			initial={
+				isFanNode
+					? { opacity: 0, scale: 0.97, y: -10 }
+					: { opacity: 0, scale: 0.95 }
+			}
+			animate={
+				isFanNode
+					? {
+							opacity: 1,
+							scale: 1,
+							y: 0,
+							boxShadow: selected
+								? "0 0 0 2px var(--accent), 0 8px 16px rgba(0,0,0,0.12)"
+								: "0 2px 8px rgba(0,0,0,0.1)",
+						}
+					: {
+							opacity: 1,
+							scale: 1,
+							boxShadow: selected
+								? "0 0 0 2px var(--accent), 0 4px 12px rgba(0,0,0,0.15)"
+								: "0 2px 8px rgba(0,0,0,0.1)",
+						}
+			}
+			transition={
+				isFanNode
+					? {
+							type: "spring",
+							stiffness: 340,
+							damping: 30,
+							delay: Math.min(0.18, fanIndex * 0.022),
+						}
+					: { type: "spring", stiffness: 300, damping: 25 }
+			}
 		>
 			<Handle type="target" position={Position.Left} />
 			<Handle type="source" position={Position.Right} />

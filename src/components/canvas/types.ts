@@ -113,6 +113,7 @@ export type CanvasNoteEditActions = {
 export type CanvasActions = {
 	openNote: (relPath: string) => void;
 	openFolder: (dir: string) => void;
+	toggleFolderFan: (folderNodeId: string) => void;
 	holdFolderPreview: (folderNodeId: string) => void;
 	releaseFolderPreview: (folderNodeId: string) => void;
 };

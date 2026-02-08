@@ -1,5 +1,5 @@
 import { titleForFile } from "../../notePreview";
-import type { FsEntry } from "../../tauri";
+import type { DirChildSummary, FsEntry } from "../../tauri";
 import { invoke } from "../../tauri";
 import type { ViewDoc, ViewOptions } from "../types";
 import { basename, viewId } from "../utils";
@@ -20,6 +20,10 @@ export async function buildFolderViewDoc(
 
 	const entries = await invoke("vault_list_dir", {
 		dir: v.selector || null,
+	});
+	const childSummaries = await invoke("vault_dir_children_summary", {
+		dir: v.selector || null,
+		preview_limit: 8,
 	});
 
 	const recent = await invoke("vault_dir_recent_entries", {
@@ -52,10 +56,24 @@ export async function buildFolderViewDoc(
 	const rootFiles = alpha.sort((a, b) =>
 		a.rel_path.toLowerCase().localeCompare(b.rel_path.toLowerCase()),
 	);
+	const subfolders = (childSummaries as DirChildSummary[]).sort((a, b) =>
+		a.dir_rel_path.toLowerCase().localeCompare(b.dir_rel_path.toLowerCase()),
+	);
+	const folderNodeIdForDir = (dirRelPath: string) => `folder:${dirRelPath}`;
+	const folderByNodeId = new Map(
+		subfolders.map((folder) => [
+			folderNodeIdForDir(folder.dir_rel_path),
+			folder,
+		]),
+	);
 
 	const mdRoot = rootFiles.filter((f) => f.is_markdown).map((f) => f.rel_path);
 	const noteContents = await fetchNotePreviewsAllAtOnce(mdRoot);
 	const fileSet = new Map(rootFiles.map((f) => [f.rel_path, f] as const));
+	const primaryIds = [
+		...subfolders.map((folder) => folderNodeIdForDir(folder.dir_rel_path)),
+		...rootFiles.map((file) => file.rel_path),
+	];
 
 	return buildListViewDoc({
 		kind: "folder",
@@ -64,9 +82,32 @@ export async function buildFolderViewDoc(
 		title: v.title,
 		options: { recursive, limit },
 		existing,
-		primaryIds: rootFiles.map((f) => f.rel_path),
+		primaryIds,
 		normalizePrevNodes: normalizeLegacyFrameChildren,
 		buildPrimaryNode({ id, prevNode }) {
+			const folderSummary = folderByNodeId.get(id);
+			if (folderSummary) {
+				return {
+					node: {
+						id,
+						type: "folder",
+						position: prevNode?.position ?? { x: 0, y: 0 },
+						data: {
+							dir: folderSummary.dir_rel_path,
+							name: folderSummary.name,
+							total_files: folderSummary.total_files_recursive,
+							total_markdown: folderSummary.total_markdown_recursive,
+							recent_markdown: folderSummary.recent_markdown,
+							preview_truncated:
+								folderSummary.total_markdown_recursive >
+									folderSummary.recent_markdown.length ||
+								folderSummary.truncated,
+						},
+					},
+					isNew: !prevNode,
+				};
+			}
+
 			const f = fileSet.get(id);
 			const isMarkdown = Boolean(f?.is_markdown);
 			const noteData = isMarkdown ? noteContents.get(id) : null;

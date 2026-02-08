@@ -1,3 +1,5 @@
+import { FOLDER_NODE_HEIGHT, FOLDER_NODE_WIDTH } from "./canvasConstants";
+
 export const GRID_SIZE = 24;
 export const GRID_GAP = GRID_SIZE * 4;
 
@@ -59,7 +61,7 @@ export function estimateNodeSize(node: LayoutNode): { w: number; h: number } {
 		return estimateNoteDimensions(title, content);
 	}
 	if (type === "file") return { w: 220, h: 200 };
-	if (type === "folder") return { w: 260, h: 190 };
+	if (type === "folder") return { w: FOLDER_NODE_WIDTH, h: FOLDER_NODE_HEIGHT };
 	if (type === "link") return { w: 260, h: 200 };
 	if (type === "text") return { w: 190, h: 110 };
 	if (type === "frame") return { w: 300, h: 220 };

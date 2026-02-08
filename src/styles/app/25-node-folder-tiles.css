@@ -1,17 +1,29 @@
-/* ─── Folder Tiles (Immediate Subfolders) ─── */
+/* ─────────────────────────────────────────────────────────────────────────────
+   FOLDER NODES — manila folder style
+   ───────────────────────────────────────────────────────────────────────────── */
+:root {
+	--folder-node-width: 208px;
+	--folder-node-height: 260px;
+	--folder-tab-width: 20px;
+	--folder-tab-height: 80px;
+}
+
+/* ── outer wrapper ────────────────────────────────────────────────────────── */
 .rfNodeFolder {
-	width: 240px;
-	min-height: 180px;
-	border-radius: 16px;
-	border: 1px solid var(--border-light);
-	background: var(--bg-primary);
-	padding: var(--space-4);
+	width: var(--folder-node-width);
+	min-height: var(--folder-node-height);
+	appearance: none;
+	text-align: left;
+	border: none;
+	background: transparent;
+	color: var(--text-primary);
+	padding: 0;
 	display: flex;
 	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	text-align: center;
-	gap: var(--space-2);
+	justify-content: flex-end;
+	position: relative;
+	cursor: pointer;
+	margin-right: var(--folder-tab-width);
 }
 
 .rfNodeFolder::before,
@@ -19,62 +31,181 @@
 	display: none;
 }
 
-.rfNodeFolderIconLarge {
-	color: var(--text-accent);
-	display: inline-flex;
+/* ── tab sticking out from the right ───────────────────────────────────────── */
+.rfNodeFolderTab {
+	position: absolute;
+	bottom: 20px;
+	right: calc(-1 * var(--folder-tab-width) + 1px);
+	width: var(--folder-tab-width);
+	height: var(--folder-tab-height);
+	border-radius: 0 8px 8px 0;
+	border: 1px solid var(--border-default);
+	border-left: none;
+	background: color-mix(in srgb, var(--bg-tertiary) 80%, var(--bg-secondary));
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35);
+	pointer-events: none;
+	z-index: -1;
+}
+
+/* ── back panel (peeks out behind front on the right) ─────────────────────── */
+.rfNodeFolderBack {
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	right: -6px;
+	width: 20px;
+	border-radius: 0 6px 6px 0;
+	background: color-mix(in srgb, var(--bg-tertiary) 70%, var(--bg-secondary));
+	border: 1px solid var(--border-default);
+	border-left: none;
+	pointer-events: none;
+	z-index: 0;
+}
+
+/* ── papers sticking out from the right side ──────────────────────────────── */
+.rfNodeFolderPapers {
+	position: absolute;
+	inset: 0;
+	z-index: 1;
+	pointer-events: none;
+	overflow: visible;
+}
+
+.rfNodeFolderPaper {
+	position: absolute;
+	width: 60%;
+	height: 14px;
+	border-radius: 2px;
+	background: color-mix(in srgb, var(--bg-primary) 97%, var(--bg-secondary));
+	border: 1px solid var(--border-light);
+	box-shadow: 0 0.5px 1px rgba(0, 0, 0, 0.04);
+}
+
+/* ── front body panel ─────────────────────────────────────────────────────── */
+.rfNodeFolderBody {
+	position: absolute;
+	inset: 0;
+	border-radius: 12px;
+	border: 1px solid var(--border-default);
+	background: color-mix(in srgb, var(--bg-secondary) 92%, var(--bg-primary));
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4), 0 10px 24px
+		rgba(78, 51, 16, 0.18);
+	z-index: 2;
+}
+
+/* ── name label at the bottom ─────────────────────────────────────────────── */
+.rfNodeFolderNameWrap {
+	position: relative;
+	z-index: 3;
+	min-width: 0;
+	padding: 10px 14px 14px;
+	border-top: 1px solid var(--border-light);
+	margin-top: auto;
 }
 
 .rfNodeFolderNameLarge {
-	font-size: 16px;
-	font-weight: var(--font-bold);
-	color: var(--text-primary);
+	font-size: 14px;
+	font-weight: 500;
+	letter-spacing: 0.005em;
+	color: var(--text-secondary);
+	text-shadow: 0 1px 0 color-mix(in srgb, var(--bg-primary) 80%, transparent);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	max-width: 100%;
+	transition: color var(--transition-base);
 }
 
-.rfNodeFolderMetaLarge {
-	font-size: var(--text-xs);
-	color: var(--text-tertiary);
+/* ── hover state ──────────────────────────────────────────────────────────── */
+.rfNodeFolder:hover .rfNodeFolderBody {
+	background: color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary));
+	border-color: var(--border-strong);
 }
 
-.rfNodeFolderPreviewNode {
-	width: 260px;
-	min-height: 64px;
-	border-radius: 14px;
+.rfNodeFolder:hover .rfNodeFolderTab {
+	border-color: var(--border-strong);
+}
+
+.rfNodeFolder:hover .rfNodeFolderBack {
+	border-color: var(--border-strong);
+}
+
+.rfNodeFolder:hover .rfNodeFolderNameLarge {
+	color: var(--text-primary);
+}
+
+/* ── expanded / open state ────────────────────────────────────────────────── */
+.rfNodeFolderOpen .rfNodeFolderBody {
+	border-color: var(--border-focus);
+}
+
+.rfNodeFolderOpen .rfNodeFolderTab {
+	border-color: var(--border-focus);
+	background: color-mix(in srgb, var(--bg-primary) 92%, var(--bg-tertiary));
+}
+
+.rfNodeFolderOpen .rfNodeFolderBack {
+	border-color: var(--border-focus);
+}
+
+.rfNodeFolderOpen .rfNodeFolderNameLarge {
+	color: var(--text-primary);
+}
+
+/* ── main click area (display: contents so layout flows through) ──────────── */
+.rfNodeFolderMain {
+	appearance: none;
+	background: none;
+	border: none;
+	color: inherit;
+	font: inherit;
+	text-align: inherit;
+	cursor: pointer;
+	padding: 0;
+	margin: 0;
+	display: contents;
+}
+
+.rfNodeFolderMain:focus-visible ~ .rfNodeFolderBody {
+	outline: 2px solid var(--accent);
+	outline-offset: -2px;
+}
+
+/* ── fan expand / collapse button ─────────────────────────────────────────── */
+.rfNodeFolderFanBtn {
+	position: absolute;
+	bottom: 42px;
+	right: 10px;
+	z-index: 4;
+	width: 24px;
+	height: 24px;
+	border-radius: 6px;
 	border: 1px solid var(--border-light);
-	background: var(--glass-bg);
-	backdrop-filter: blur(var(--glass-blur));
-	-webkit-backdrop-filter: blur(var(--glass-blur));
-	box-shadow: var(--shadow-md);
+	background: color-mix(in srgb, var(--bg-primary) 85%, var(--bg-secondary));
+	color: var(--text-secondary);
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
-	gap: var(--space-3);
-	padding: var(--space-3) var(--space-4);
-}
-
-.rfNodeFolderPreviewTitle {
-	font-size: var(--text-sm);
-	color: var(--text-primary);
-	font-weight: var(--font-medium);
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-}
-
-.rfNodeFolderPreviewAction {
-	border: 1px solid var(--border-light);
-	background: var(--bg-primary);
-	color: var(--text-secondary);
-	border-radius: var(--radius-full);
-	padding: 6px 10px;
-	font-size: var(--text-xs);
+	justify-content: center;
 	cursor: pointer;
+	opacity: 0;
+	transition: opacity var(--transition-base), background var(--transition-base);
 }
 
-.rfNodeFolderPreviewAction:hover {
+.rfNodeFolder:hover .rfNodeFolderFanBtn,
+.rfNodeFolderFanBtn:focus-visible {
+	opacity: 1;
+}
+
+.rfNodeFolderOpen .rfNodeFolderFanBtn {
+	opacity: 1;
+}
+
+.rfNodeFolderFanBtn:hover {
+	background: var(--bg-tertiary);
 	color: var(--text-primary);
-	border-color: var(--border-default);
+}
+
+.rfNodeFolderFanBtn:focus-visible {
+	outline: 2px solid var(--accent);
+	outline-offset: -2px;
 }

@@ -19,8 +19,6 @@ import {
 import { MotionIconButton } from "../MotionUI";
 
 interface CanvasToolbarProps {
-	title: string;
-	isSaving: boolean;
 	snapToGrid: boolean;
 	hasActiveNote: boolean;
 	selectedCount: number;
@@ -39,8 +37,6 @@ interface CanvasToolbarProps {
 }
 
 export const CanvasToolbar = memo(function CanvasToolbar({
-	title,
-	isSaving,
 	snapToGrid,
 	hasActiveNote,
 	selectedCount,
@@ -57,128 +53,122 @@ export const CanvasToolbar = memo(function CanvasToolbar({
 }: CanvasToolbarProps) {
 	return (
 		<div className="canvasToolbar">
-			<div className="canvasToolbarLeft">
-				<div className="canvasTitle">{title}</div>
-				<div className="canvasStatus">{isSaving ? "⟳ Saving…" : "✓ Saved"}</div>
-			</div>
-			<div className="canvasToolbarRight">
-				<MotionIconButton
-					type="button"
-					onClick={onAddText}
-					title="Add text block"
-				>
-					<Type size={16} />
-				</MotionIconButton>
-				<MotionIconButton type="button" onClick={onAddLink} title="Add link">
-					<Link size={16} />
-				</MotionIconButton>
-				<MotionIconButton
-					type="button"
-					onClick={onAddNote}
-					disabled={!hasActiveNote}
-					title="Add current note to canvas"
-				>
-					<StickyNote size={16} />
-				</MotionIconButton>
-				<MotionIconButton
-					type="button"
-					onClick={onRefreshLink}
-					disabled={!hasSelectedLink}
-					title="Refresh selected link preview"
-				>
-					<RefreshCw size={16} />
-				</MotionIconButton>
-				<span className="toolbarDivider" />
-				<MotionIconButton
-					type="button"
-					onClick={onFrameSelection}
-					disabled={!selectedCount}
-					title="Group selection in a frame"
-				>
-					<Frame size={16} />
-				</MotionIconButton>
-				<MotionIconButton
-					type="button"
-					active={snapToGrid}
-					onClick={onToggleSnap}
-					title="Toggle snap to grid"
-				>
-					<Grid3X3 size={16} />
-				</MotionIconButton>
-				<MotionIconButton
-					type="button"
-					onClick={onReflowGrid}
-					title="Reflow to grid"
-				>
-					<Layout size={16} />
-				</MotionIconButton>
-				<span className="toolbarDivider" />
-				<MotionIconButton
-					type="button"
-					onClick={() => onAlign("left")}
-					disabled={selectedCount < 2}
-					title="Align left"
-				>
-					<AlignLeft size={16} />
-				</MotionIconButton>
-				<MotionIconButton
-					type="button"
-					onClick={() => onAlign("centerX")}
-					disabled={selectedCount < 2}
-					title="Align center"
-				>
-					<AlignCenter size={16} />
-				</MotionIconButton>
-				<MotionIconButton
-					type="button"
-					onClick={() => onAlign("right")}
-					disabled={selectedCount < 2}
-					title="Align right"
-				>
-					<AlignRight size={16} />
-				</MotionIconButton>
-				<MotionIconButton
-					type="button"
-					onClick={() => onAlign("top")}
-					disabled={selectedCount < 2}
-					title="Align top"
-				>
-					<AlignStartVertical size={16} />
-				</MotionIconButton>
-				<MotionIconButton
-					type="button"
-					onClick={() => onAlign("centerY")}
-					disabled={selectedCount < 2}
-					title="Align middle"
-				>
-					<AlignCenterVertical size={16} />
-				</MotionIconButton>
-				<MotionIconButton
-					type="button"
-					onClick={() => onAlign("bottom")}
-					disabled={selectedCount < 2}
-					title="Align bottom"
-				>
-					<AlignEndVertical size={16} />
-				</MotionIconButton>
-				<span className="toolbarDivider" />
-				<MotionIconButton
-					type="button"
-					onClick={() => onDistribute("x")}
-					disabled={selectedCount < 3}
-					title="Distribute horizontally"
-				>
-					<AlignHorizontalSpaceAround size={16} />
-				</MotionIconButton>
-				<MotionIconButton
-					type="button"
-					onClick={() => onDistribute("y")}
-					disabled={selectedCount < 3}
-					title="Distribute vertically"
-				>
-					<AlignVerticalSpaceAround size={16} />
-				</MotionIconButton>
-			</div>
+			<MotionIconButton
+				type="button"
+				onClick={onAddText}
+				title="Add text block"
+			>
+				<Type size={16} />
+			</MotionIconButton>
+			<MotionIconButton type="button" onClick={onAddLink} title="Add link">
+				<Link size={16} />
+			</MotionIconButton>
+			<MotionIconButton
+				type="button"
+				onClick={onAddNote}
+				disabled={!hasActiveNote}
+				title="Add current note to canvas"
+			>
+				<StickyNote size={16} />
+			</MotionIconButton>
+			<MotionIconButton
+				type="button"
+				onClick={onRefreshLink}
+				disabled={!hasSelectedLink}
+				title="Refresh selected link preview"
+			>
+				<RefreshCw size={16} />
+			</MotionIconButton>
+			<span className="toolbarDivider" />
+			<MotionIconButton
+				type="button"
+				onClick={onFrameSelection}
+				disabled={!selectedCount}
+				title="Group selection in a frame"
+			>
+				<Frame size={16} />
+			</MotionIconButton>
+			<MotionIconButton
+				type="button"
+				active={snapToGrid}
+				onClick={onToggleSnap}
+				title="Toggle snap to grid"
+			>
+				<Grid3X3 size={16} />
+			</MotionIconButton>
+			<MotionIconButton
+				type="button"
+				onClick={onReflowGrid}
+				title="Reflow to grid"
+			>
+				<Layout size={16} />
+			</MotionIconButton>
+			<span className="toolbarDivider" />
+			<MotionIconButton
+				type="button"
+				onClick={() => onAlign("left")}
+				disabled={selectedCount < 2}
+				title="Align left"
+			>
+				<AlignLeft size={16} />
+			</MotionIconButton>
+			<MotionIconButton
+				type="button"
+				onClick={() => onAlign("centerX")}
+				disabled={selectedCount < 2}
+				title="Align center"
+			>
+				<AlignCenter size={16} />
+			</MotionIconButton>
+			<MotionIconButton
+				type="button"
+				onClick={() => onAlign("right")}
+				disabled={selectedCount < 2}
+				title="Align right"
+			>
+				<AlignRight size={16} />
+			</MotionIconButton>
+			<MotionIconButton
+				type="button"
+				onClick={() => onAlign("top")}
+				disabled={selectedCount < 2}
+				title="Align top"
+			>
+				<AlignStartVertical size={16} />
+			</MotionIconButton>
+			<MotionIconButton
+				type="button"
+				onClick={() => onAlign("centerY")}
+				disabled={selectedCount < 2}
+				title="Align middle"
+			>
+				<AlignCenterVertical size={16} />
+			</MotionIconButton>
+			<MotionIconButton
+				type="button"
+				onClick={() => onAlign("bottom")}
+				disabled={selectedCount < 2}
+				title="Align bottom"
+			>
+				<AlignEndVertical size={16} />
+			</MotionIconButton>
+			<span className="toolbarDivider" />
+			<MotionIconButton
+				type="button"
+				onClick={() => onDistribute("x")}
+				disabled={selectedCount < 3}
+				title="Distribute horizontally"
+			>
+				<AlignHorizontalSpaceAround size={16} />
+			</MotionIconButton>
+			<MotionIconButton
+				type="button"
+				onClick={() => onDistribute("y")}
+				disabled={selectedCount < 3}
+				title="Distribute vertically"
+			>
+				<AlignVerticalSpaceAround size={16} />
+			</MotionIconButton>
 		</div>
 	);
 });

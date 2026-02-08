@@ -6,17 +6,15 @@ import {
 	useViewContext,
 } from "../../contexts";
 import { touchCanvas } from "../../lib/canvases";
-import type { FsEntry, RecentEntry } from "../../lib/tauri";
-import { type ViewDoc, asCanvasDocLike, saveViewDoc } from "../../lib/views";
+import type { ViewDoc } from "../../lib/views";
+import { asCanvasDocLike, saveViewDoc } from "../../lib/views";
 import { isInAppPreviewable } from "../../utils/filePreview";
 import type {
 	CanvasEdge,
 	CanvasExternalCommand,
 	CanvasNode,
 } from "../CanvasPane";
-import { FolderShelf } from "../FolderShelf";
 import { FilePreviewPane } from "../preview/FilePreviewPane";
-import { MainToolbar } from "./MainToolbar";
 import { WelcomeScreen } from "./WelcomeScreen";
 
 const CanvasPane = lazy(() => import("../CanvasPane"));
@@ -26,8 +24,6 @@ interface MainContentProps {
 	setCanvasCommand: React.Dispatch<
 		React.SetStateAction<CanvasExternalCommand | null>
 	>;
-	folderShelfSubfolders: FsEntry[];
-	folderShelfRecents: RecentEntry[];
 	loadAndBuildFolderView: (dir: string) => Promise<void>;
 	fileTree: {
 		openFile: (relPath: string) => Promise<void>;
@@ -39,12 +35,9 @@ interface MainContentProps {
 export function MainContent({
 	canvasCommand,
 	setCanvasCommand,
-	folderShelfSubfolders,
-	folderShelfRecents,
 	loadAndBuildFolderView,
 	fileTree,
 }: MainContentProps) {
-	// Contexts
 	const {
 		info,
 		vaultPath,
@@ -66,16 +59,12 @@ export function MainContent({
 		setActiveViewDoc,
 	} = useViewContext();
 
-	const {
-		aiSidebarOpen,
-		setAiSidebarOpen,
-		activePreviewPath,
-		setActivePreviewPath,
-	} = useUIContext();
+	const { activePreviewPath, setActivePreviewPath } = useUIContext();
 
-	const onCanvasSelectionChange = useCallback((_selected: CanvasNode[]) => {
-		// Selection tracking available for future AI features
-	}, []);
+	const onCanvasSelectionChange = useCallback(
+		(_selected: CanvasNode[]) => {},
+		[],
+	);
 
 	const onSaveView = useCallback(
 		async (payload: {
@@ -120,30 +109,6 @@ export function MainContent({
 
 	return (
 		<main className="mainArea">
-			<MainToolbar
-				activeViewDoc={activeViewDoc}
-				aiSidebarOpen={aiSidebarOpen}
-				onToggleAISidebar={() => setAiSidebarOpen((v) => !v)}
-				onOpenFolder={(d) => void loadAndBuildFolderView(d)}
-			/>
-
-			{activeViewDoc?.kind === "folder" ? (
-				<FolderShelf
-					subfolders={folderShelfSubfolders}
-					recents={folderShelfRecents}
-					onOpenFolder={(d) => void loadAndBuildFolderView(d)}
-					onOpenMarkdown={(p) => void fileTree.openMarkdownFileInCanvas(p)}
-					onOpenNonMarkdown={(p) => void fileTree.openFile(p)}
-					onFocusNode={(nodeId) => {
-						setCanvasCommand({
-							id: crypto.randomUUID(),
-							kind: "focus_node",
-							nodeId,
-						});
-					}}
-				/>
-			) : null}
-
 			<div className="canvasWrapper">
 				<div className="canvasPaneHost">
 					<Suspense

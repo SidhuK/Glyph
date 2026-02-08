@@ -9,7 +9,7 @@ import {
 import { useCanvasLibrary } from "../../hooks/useCanvasLibrary";
 import { useCommandShortcuts } from "../../hooks/useCommandShortcuts";
 import { useFileTree } from "../../hooks/useFileTree";
-import { useFolderShelf } from "../../hooks/useFolderShelf";
+
 import { useMenuListeners } from "../../hooks/useMenuListeners";
 import { parseNotePreview } from "../../lib/notePreview";
 import type { Shortcut } from "../../lib/shortcuts";
@@ -133,10 +133,6 @@ export function AppShell() {
 		getActiveFolderDir,
 	});
 
-	const { folderShelfSubfolders, folderShelfRecents } = useFolderShelf(
-		vaultPath,
-		activeViewDoc,
-	);
 	const canvasLibrary = useCanvasLibrary();
 
 	const openFolderView = useCallback(
@@ -494,8 +490,6 @@ export function AppShell() {
 			<MainContent
 				canvasCommand={canvasCommand}
 				setCanvasCommand={setCanvasCommand}
-				folderShelfSubfolders={folderShelfSubfolders}
-				folderShelfRecents={folderShelfRecents}
 				loadAndBuildFolderView={openFolderView}
 				fileTree={fileTree}
 			/>
