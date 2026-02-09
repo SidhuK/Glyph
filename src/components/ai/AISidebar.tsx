@@ -6,6 +6,7 @@ import { openSettingsWindow } from "../../lib/windows";
 import { cn } from "../../utils/cn";
 import { Settings as SettingsIcon, Sparkles, X } from "../Icons";
 import { MotionIconButton } from "../MotionUI";
+import styles from "./ChatUI.module.css";
 import { useAiContext } from "./useAiContext";
 import { useAiProfiles } from "./useAiProfiles";
 
@@ -213,13 +214,13 @@ export function AISidebar({
 			) : null}
 
 			<div className="aiSidebarBody" data-window-drag-ignore>
-				<div className="aiChatThread">
+				<div className={styles.chatThread}>
 					{chat.messages.length === 0 ? (
-						<div className="aiChatEmpty">
-							<div className="aiChatEmptyTitle">
+						<div className={styles.chatEmpty}>
+							<div className={styles.chatEmptyTitle}>
 								Hi, how can I help you today?
 							</div>
-							<div className="aiChatEmptyMeta">
+							<div className={styles.chatEmptyMeta}>
 								Type @ or /add to attach folders and files.
 							</div>
 						</div>
@@ -230,36 +231,46 @@ export function AISidebar({
 						return (
 							<div
 								key={m.id}
-								className={cn(
-									"aiChatMsg",
-									m.role === "user" ? "aiChatMsg-user" : "aiChatMsg-assistant",
-								)}
+								className={`${styles.message} ${
+									m.role === "user"
+										? styles.messageUser
+										: styles.messageAssistant
+								}`}
 							>
-								<div className="aiChatContent">{text}</div>
+								<div className={styles.messageContent}>{text}</div>
 							</div>
 						);
 					})}
+					{chat.status === "streaming" && (
+						<div className={styles.typingIndicator}>
+							<div className={styles.typingDot} />
+							<div className={styles.typingDot} />
+							<div className={styles.typingDot} />
+						</div>
+					)}
 				</div>
 
 				{chat.error ? (
-					<div className="aiSidebarError">
-						<div className="aiSidebarErrorRow">
-							<span>{chat.error.message}</span>
-							<button type="button" onClick={() => chat.clearError()}>
-								Dismiss
-							</button>
-						</div>
+					<div className={styles.error}>
+						<span>{chat.error.message}</span>
+						<button
+							type="button"
+							className={styles.errorDismiss}
+							onClick={() => chat.clearError()}
+						>
+							Dismiss
+						</button>
 					</div>
 				) : null}
 
-				<div className="aiChatFolderBar">
-					<div className="aiChatFolderRow">
+				<div className={styles.contextBar}>
+					<div className={styles.contextRow}>
 						{context.attachedFolders.length ? (
 							context.attachedFolders.map((item) => (
 								<motion.button
 									key={`${item.kind}:${item.path || "vault"}`}
 									type="button"
-									className="aiFolderChip"
+									className={styles.contextChip}
 									whileHover={{ y: -1 }}
 									whileTap={{ scale: 0.98 }}
 									onClick={() => context.removeContext(item.kind, item.path)}
@@ -272,14 +283,14 @@ export function AISidebar({
 								</motion.button>
 							))
 						) : (
-							<div className="aiChatFolderEmpty">
+							<div className={styles.contextEmpty}>
 								No folders or files attached yet.
 							</div>
 						)}
 					</div>
 					<button
 						type="button"
-						className="aiAddFolderBtn"
+						className={styles.addContextBtn}
 						onClick={() => {
 							setAddPanelOpen(true);
 							setAddPanelQuery("");
@@ -290,61 +301,69 @@ export function AISidebar({
 				</div>
 
 				{showAddPanel ? (
-					<div className="aiAddFolderPanel">
-						<div className="aiAddFolderSearch">
-							<input
-								type="search"
-								placeholder="Search folders or files..."
-								value={panelQuery}
-								onChange={(e) => {
-									if (!addPanelOpen) setAddPanelOpen(true);
-									setAddPanelQuery(e.target.value);
-								}}
-							/>
-							<div className="aiAddFolderMeta">
-								Type @ or /add in the input to add faster.
-							</div>
+					<div className={styles.addPanel}>
+						<input
+							type="search"
+							className={styles.addPanelSearch}
+							placeholder="Search folders or files..."
+							value={panelQuery}
+							onChange={(e) => {
+								if (!addPanelOpen) setAddPanelOpen(true);
+								setAddPanelQuery(e.target.value);
+							}}
+						/>
+						<div className={styles.addPanelMeta}>
+							Type @ or /add in the input to add faster.
 						</div>
 						{context.folderIndexError ? (
-							<div className="aiSidebarError">{context.folderIndexError}</div>
+							<div className={styles.error}>{context.folderIndexError}</div>
 						) : null}
-						<div className="aiAddFolderList">
+						<div className={styles.addPanelList}>
 							{context.visibleSuggestions.length ? (
 								context.visibleSuggestions.map((item) => (
 									<motion.button
 										key={`${item.kind}:${item.path || "vault"}`}
 										type="button"
-										className="aiAddFolderItem"
+										className={styles.addPanelItem}
 										whileHover={{ x: 4 }}
 										whileTap={{ scale: 0.98 }}
 										onClick={() => handleAddContext(item.kind, item.path)}
 									>
-										<span className="aiAddFolderName">
+										<span className={styles.addPanelName}>
 											{item.kind === "folder" ? "Folder" : "File"}: {item.label}
 										</span>
 									</motion.button>
 								))
 							) : (
-								<div className="aiChatFolderEmpty">
+								<div className={styles.addPanelEmpty}>
 									No folders or files found.
 								</div>
 							)}
 						</div>
-						<div className="aiAddFolderActions">
-							<button type="button" onClick={() => setAddPanelOpen(false)}>
+						<div className={styles.addPanelActions}>
+							<button
+								type="button"
+								className={styles.button}
+								onClick={() => setAddPanelOpen(false)}
+							>
 								Close
 							</button>
 						</div>
 					</div>
 				) : null}
 
-				<div className="aiChatComposer">
-					<div className="aiChatComposerActions" style={{ marginBottom: 8 }}>
-						<button type="button" onClick={() => void onNewAICanvas()}>
+				<div className={styles.inputWrapper}>
+					<div className={styles.composerActions}>
+						<button
+							type="button"
+							className={styles.composerActionBtn}
+							onClick={() => void onNewAICanvas()}
+						>
 							New AI Canvas
 						</button>
 						<button
 							type="button"
+							className={styles.composerActionBtn}
 							onClick={() =>
 								void context
 									.resolveAttachedPathsForCanvas()
@@ -356,6 +375,7 @@ export function AISidebar({
 						</button>
 						<button
 							type="button"
+							className={styles.composerActionBtn}
 							onClick={() =>
 								void onCreateNoteFromLastAssistant(
 									lastAssistantText ? messageText(lastAssistantText) : "",
@@ -367,7 +387,7 @@ export function AISidebar({
 						</button>
 					</div>
 					<textarea
-						className="aiChatInput"
+						className={styles.input}
 						value={input}
 						placeholder="Ask your agent…"
 						disabled={chat.status === "streaming"}
@@ -380,16 +400,28 @@ export function AISidebar({
 						}}
 						rows={2}
 					/>
-					<div className="aiChatComposerActions">
-						{chat.status === "streaming" ? (
-							<button type="button" onClick={() => chat.stop()}>
-								Stop
-							</button>
-						) : (
-							<button type="button" disabled={!canSend} onClick={handleSend}>
-								Send
-							</button>
-						)}
+					<div className={styles.actionsBar}>
+						<div className={styles.actionsLeft} />
+						<div className={styles.actionsRight}>
+							{chat.status === "streaming" ? (
+								<button
+									type="button"
+									className={`${styles.button} ${styles.buttonDanger}`}
+									onClick={() => chat.stop()}
+								>
+									Stop
+								</button>
+							) : (
+								<button
+									type="button"
+									className={`${styles.button} ${styles.buttonPrimary}`}
+									disabled={!canSend}
+									onClick={handleSend}
+								>
+									Send
+								</button>
+							)}
+						</div>
 					</div>
 				</div>
 			</div>
