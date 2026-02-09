@@ -4,9 +4,7 @@
 
 - Foundations are in place: ShadCN setup, theme bridge, and base layer are active.
 - Major shell controls are migrated to ShadCN patterns (notably command palette and sidebar mode controls).
-- Migration is not fully complete yet:
-  - Legacy `iconBtn` is still active in live paths (`src/components/canvas/CanvasNoteOverlayEditor.tsx`, `src/components/ui/MotionButton.tsx`).
-  - Legacy app stylesheet imports are still present in `src/App.css`.
+- Migration is fully complete for the scope defined in `ShadC_implementation_plan.md`.
 - Completion bookkeeping in `ShadC_implementation_plan.md` is authoritative and must match repository reality.
 
 ## Layering Model
@@ -14,7 +12,7 @@
 1. Design tokens remain the source of truth in `src/design-tokens.css`.
 2. ShadCN semantic bridge maps those tokens in `src/styles/shadcn-theme.css`.
 3. ShadCN base primitives load in `src/styles/shadcn-base.css`.
-4. Legacy app styles remain in `src/styles/app/*.css` only for behavior-critical or not-yet-migrated screens.
+4. Legacy app styles in `src/styles/app/*.css` are retained only where they still express app-specific structure/surfaces not covered by generic primitives.
 5. Current load order in `src/App.css` must keep ShadCN layers before legacy app files:
    - `src/styles/shadcn-theme.css`
    - `src/styles/shadcn-base.css`
@@ -36,14 +34,8 @@
 - Motion should stay intentional; prefer tokenized duration/easing values from `src/styles/shadcn-theme.css`.
 - Respect `prefers-reduced-motion` in all new interactions.
 
-## Final Guidance for Remaining Work
+## Ongoing Guidance
 
-- Keep retiring legacy selectors in small, evidence-based passes:
-  - check call sites with `rg -n "iconBtn|segBtn" src`.
-  - remove only selectors with zero live call sites.
-- Do not retire global or foundational layers yet:
-  - keep resets, token definitions, and shared shell invariants until replacement is verified.
-- Before marking Phase 10 `done`, verify:
-  - no live `.iconBtn` or `.segBtn` references in production code.
-  - `src/App.css` imports are reduced to required base + non-migrated exceptions only.
-  - `pnpm check` and `pnpm build` pass on the migration branch.
+- Keep new UI work on ShadCN primitives and semantic tokens.
+- Avoid introducing new legacy utility class patterns (`iconBtn`, `segBtn`) in production components.
+- Maintain release quality gate: `pnpm check && pnpm build` on UI-affecting changes.

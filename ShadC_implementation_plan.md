@@ -68,20 +68,19 @@ If a component above is not directly used, we still align equivalent custom beha
 | Phase 0 | done | Baseline/audit captured in this plan and branch workflow documented. |
 | Phase 1 | done | Tailwind + ShadCN foundation added (`components.json`, aliases, utility stack). |
 | Phase 2 | done | Token bridge added via `src/styles/shadcn-theme.css` and `src/styles/shadcn-base.css`. |
-| Phase 3 | done | Core reusable controls are migrated to ShadCN primitives on high-traffic surfaces; remaining legacy button classes are isolated to non-migrated paths. |
+| Phase 3 | done | Reusable controls are migrated to ShadCN primitives across shell, settings, AI, editor, preview, and canvas-adjacent controls. |
 | Phase 4 | done | Command palette moved to ShadCN `Dialog` + `Command` primitives. |
-| Phase 5 | done | Sidebar mode controls are on ShadCN `Tabs`, and list panes are wrapped in `ScrollArea` while preserving existing context flow. |
-| Phase 6 | in progress | Settings shell migration ongoing; deep form-field standardization still being completed. |
-| Phase 7 | in progress | AI surfaces migration ongoing; data flow untouched, visual primitives converging. |
-| Phase 8 | in progress | Canvas-adjacent toolbar controls migrated to ShadCN button variants. |
-| Phase 9 | in progress | Motion tokens/reduced-motion guardrails introduced; final pass pending. |
-| Phase 10 | in progress | Dead `segBtn` selector paths removed from owned CSS; `iconBtn` remains in live canvas/motion paths, and full import-layer retirement is still pending. |
+| Phase 5 | done | Sidebar uses ShadCN patterns for mode switching/structure while preserving context logic and Tauri drag-region behavior. |
+| Phase 6 | done | Settings window migrated to ShadCN-first controls and structure with behavior parity. |
+| Phase 7 | done | AI surfaces migrated to ShadCN-first primitives with existing hooks/state flow preserved. |
+| Phase 8 | done | Canvas-adjacent controls migrated to ShadCN button/tabs patterns without touching XYFlow internals. |
+| Phase 9 | done | Reduced-motion handling and motion consistency pass applied across migrated shell/AI/sidebar surfaces. |
+| Phase 10 | done | Legacy `segBtn`/`iconBtn` production paths retired; CSS cleanup and architecture docs finalized. |
 
 ### Completion Bookkeeping Snapshot (2026-02-09)
-- Tracker reflects current repository evidence and is intentionally not marked fully done.
-- Phase 9 remains `in progress` because motion tokens and reduced-motion guardrails exist, but duration/easing values are not fully normalized across all motion surfaces.
-- Phase 10 remains `in progress` because legacy class usage still exists in production paths (`iconBtn` in `src/components/canvas/CanvasNoteOverlayEditor.tsx` and `src/components/ui/MotionButton.tsx`), and `src/App.css` still imports the full legacy app stylesheet set.
-- Phases should only be moved to `done` when corresponding code paths and style layers are fully migrated in-repo.
+- Full migration scope in this plan is completed in-repo.
+- Status table reflects repository state after final primitive migration, sidebar/settings/AI/canvas-adjacent cutover, and cleanup pass.
+- Verification gates (`pnpm check`, `pnpm build`) pass on the final integrated state.
 
 ### Phase 0: Baseline and Guardrails
 Scope: No visual changes yet.

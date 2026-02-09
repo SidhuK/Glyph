@@ -12,11 +12,11 @@ import {
 	Settings as SettingsIcon,
 	Sparkles,
 } from "./components/Icons";
-import { Button } from "./components/ui/shadcn/button";
-import { Input } from "./components/ui/shadcn/input";
 import { AiSettingsPane } from "./components/settings/AiSettingsPane";
 import { GeneralSettingsPane } from "./components/settings/GeneralSettingsPane";
 import { VaultSettingsPane } from "./components/settings/VaultSettingsPane";
+import { Button } from "./components/ui/shadcn/button";
+import { Input } from "./components/ui/shadcn/input";
 import { useTauriEvent } from "./lib/tauriEvents";
 import type { SettingsTab } from "./lib/windows";
 import { cn } from "./utils/cn";

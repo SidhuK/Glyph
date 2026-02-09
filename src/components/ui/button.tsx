@@ -28,7 +28,9 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 				ref={ref}
 				type={type}
 				className={cn(
-					variant === "icon" ? "inline-flex size-9 items-center justify-center rounded-md" : "",
+					variant === "icon"
+						? "inline-flex size-9 items-center justify-center rounded-md"
+						: "",
 					variant === "primary" ? "primary" : "",
 					variant === "ghost" ? "ghost" : "",
 					variant === "icon" && size === "sm" ? "size-8" : "",
