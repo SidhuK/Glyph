@@ -1,7 +1,7 @@
 import { openSettingsWindow } from "../../lib/windows";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { FolderOpen, FolderPlus, Search, Settings } from "../Icons";
-import { MotionIconButton } from "../MotionUI";
+import { Button } from "../MotionUI";
 
 interface SidebarHeaderProps {
 	vaultPath: string | null;
@@ -35,42 +35,47 @@ export function SidebarHeader({
 			>
 				<div className="sidebarActions">
 					{vaultPath && (
-						<MotionIconButton
+						<Button
 							type="button"
+							variant="icon"
 							size="sm"
 							onClick={() => setShowSearch(!showSearch)}
 							title="Search"
 							active={showSearch}
 						>
 							<Search size={14} />
-						</MotionIconButton>
+						</Button>
 					)}
-					<MotionIconButton
+					<Button
 						type="button"
+						variant="icon"
 						size="sm"
 						onClick={onCreateVault}
 						title="Create vault"
 					>
 						<FolderPlus size={14} />
-					</MotionIconButton>
-					<MotionIconButton
+					</Button>
+					<Button
 						type="button"
+						variant="icon"
 						size="sm"
 						onClick={onOpenVault}
 						title="Open vault"
 					>
 						<FolderOpen size={14} />
-					</MotionIconButton>
-					<MotionIconButton
+					</Button>
+					<Button
 						type="button"
+						variant="icon"
 						size="sm"
 						onClick={() => void openSettingsWindow("general")}
 						title="Settings"
 					>
 						<Settings size={14} />
-					</MotionIconButton>
-					<MotionIconButton
+					</Button>
+					<Button
 						type="button"
+						variant="icon"
 						size="sm"
 						onClick={onOpenCommandPalette}
 						title="Command palette"
@@ -79,7 +84,7 @@ export function SidebarHeader({
 							<kbd>⌘</kbd>
 							<kbd>K</kbd>
 						</span>
-					</MotionIconButton>
+					</Button>
 				</div>
 			</div>
 		</>

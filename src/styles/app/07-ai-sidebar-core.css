@@ -49,7 +49,7 @@
 }
 
 .aiSidebarProfileSelect {
-	height: 30px;
+	min-height: 44px;
 	border-radius: var(--radius-lg);
 	font-size: var(--text-xs);
 }
@@ -66,6 +66,10 @@
 	border: 1px solid color-mix(in srgb, var(--border-light) 70%, transparent);
 	color: var(--text-tertiary);
 	background: color-mix(in srgb, var(--bg-primary) 80%, transparent);
+}
+
+.aiSidebarBadge {
+	min-height: 28px;
 }
 
 .aiSidebarKeyPill.ok {
@@ -99,6 +103,17 @@
 	background: color-mix(in srgb, #ff3b30 8%, transparent);
 	color: var(--text-primary);
 	font-size: var(--text-xs);
+}
+
+.aiSidebarAlert {
+	border-left: 3px solid
+		color-mix(in srgb, var(--color-red-500) 50%, transparent);
+}
+
+.aiSidebarProfileSelect:focus-visible,
+.aiSidebarKeyPill:focus-visible {
+	outline: 2px solid color-mix(in srgb, var(--color-blue-500) 35%, transparent);
+	outline-offset: 2px;
 }
 
 .aiSidebarErrorRow {

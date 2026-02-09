@@ -17,6 +17,10 @@
 	scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
 }
 
+.scrollArea {
+	scrollbar-gutter: stable;
+}
+
 .chatThread::-webkit-scrollbar {
 	width: 6px;
 }
@@ -192,6 +196,10 @@
 		var(--transition-base);
 }
 
+.textarea {
+	min-height: 44px;
+}
+
 .input::placeholder {
 	color: var(--text-placeholder);
 }
@@ -201,6 +209,11 @@
 	border-color: color-mix(in srgb, var(--color-blue-400) 50%, transparent);
 	box-shadow: 0 0 0 2px
 		color-mix(in srgb, var(--color-blue-100) 30%, transparent);
+}
+
+.input:focus-visible {
+	outline: 2px solid color-mix(in srgb, var(--color-blue-500) 35%, transparent);
+	outline-offset: 2px;
 }
 
 .input:disabled {
@@ -252,6 +265,10 @@
 	transition: all var(--transition-base);
 }
 
+.buttonMinTouch {
+	min-height: 44px;
+}
+
 .button:hover:not(:disabled) {
 	background: var(--bg-hover);
 	color: var(--text-primary);
@@ -265,6 +282,17 @@
 .button:disabled {
 	opacity: 0.4;
 	cursor: not-allowed;
+}
+
+.button:focus-visible,
+.addPanelItem:focus-visible,
+.addContextBtn:focus-visible,
+.composerActionBtn:focus-visible,
+.contextChip:focus-visible,
+.addPanelSearch:focus-visible,
+.errorDismiss:focus-visible {
+	outline: 2px solid color-mix(in srgb, var(--color-blue-500) 35%, transparent);
+	outline-offset: 2px;
 }
 
 /* Primary button (Send) */
@@ -326,6 +354,11 @@
 	gap: var(--space-2);
 }
 
+.alert {
+	border-left: 3px solid
+		color-mix(in srgb, var(--color-red-500) 50%, transparent);
+}
+
 .errorDismiss {
 	flex-shrink: 0;
 	opacity: 0.6;
@@ -371,6 +404,10 @@
 	color: var(--text-secondary);
 	cursor: pointer;
 	transition: all var(--transition-base);
+}
+
+.badge {
+	border-radius: var(--radius-full);
 }
 
 .contextChip:hover {

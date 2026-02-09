@@ -1,6 +1,6 @@
 import { onWindowDragMouseDown } from "../../utils/window";
 import { Sparkles } from "../Icons";
-import { MotionIconButton } from "../MotionUI";
+import { Button } from "../MotionUI";
 
 interface MainToolbarProps {
 	aiSidebarOpen: boolean;
@@ -19,14 +19,15 @@ export function MainToolbar({
 		>
 			<div className="mainToolbarLeft" />
 			<div className="mainToolbarRight">
-				<MotionIconButton
+				<Button
 					type="button"
+					variant="icon"
 					active={aiSidebarOpen}
 					onClick={onToggleAISidebar}
 					title="Toggle AI assistant"
 				>
 					<Sparkles size={16} />
-				</MotionIconButton>
+				</Button>
 			</div>
 		</div>
 	);

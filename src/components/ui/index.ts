@@ -1,4 +1,13 @@
 export { springPresets, directionVariants } from "./animations";
+export { Button } from "./button";
+export {
+	Command,
+	CommandEmpty,
+	CommandInput,
+	CommandItem,
+	CommandList,
+} from "./command";
+export { Dialog, DialogContent } from "./dialog";
 export { MotionButton, MotionIconButton, MotionInput } from "./MotionButton";
 export {
 	MotionListItem,

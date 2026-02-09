@@ -68,6 +68,7 @@ export function ToolIndicator({
 	const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 	const hasPayload = execution.payload !== undefined;
 	const hasError = execution.error !== undefined;
+	const detailsId = `tool-indicator-${execution.id}`;
 
 	return (
 		<motion.div
@@ -80,13 +81,15 @@ export function ToolIndicator({
 		>
 			<button
 				type="button"
-				className={styles.toolHeader}
+				className={`${styles.toolHeader} ${styles.accordionTrigger}`}
 				onClick={() => setIsExpanded(!isExpanded)}
 				aria-expanded={isExpanded}
+				aria-controls={detailsId}
 				disabled={!hasPayload && !hasError}
 			>
 				<StatusIcon phase={execution.phase} />
 				<span className={styles.toolName}>{getToolName(execution.tool)}</span>
+				<span className={styles.toolPhaseBadge}>{execution.phase}</span>
 				{(hasPayload || hasError) && (
 					<motion.span
 						className={styles.chevron}
@@ -101,14 +104,17 @@ export function ToolIndicator({
 			<AnimatePresence initial={false}>
 				{isExpanded && (hasPayload || hasError) && (
 					<motion.div
-						className={styles.toolPayload}
+						id={detailsId}
+						className={`${styles.toolPayload} ${styles.accordionContent}`}
 						initial={{ height: 0, opacity: 0 }}
 						animate={{ height: "auto", opacity: 1 }}
 						exit={{ height: 0, opacity: 0 }}
 						transition={springPresets.snappy}
 					>
 						{hasError ? (
-							<pre className={styles.errorText}>{execution.error}</pre>
+							<pre className={`${styles.errorText} ${styles.alert}`}>
+								{execution.error}
+							</pre>
 						) : (
 							<pre>{formatPayload(execution.payload)}</pre>
 						)}

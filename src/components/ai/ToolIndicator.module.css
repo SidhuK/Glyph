@@ -8,6 +8,9 @@
 	flex-direction: column;
 	gap: var(--space-2);
 	margin-top: var(--space-2);
+	border: 0;
+	margin-inline: 0;
+	padding: 0;
 }
 
 /* Single tool indicator */
@@ -36,6 +39,10 @@
 	color: inherit;
 }
 
+.accordionTrigger {
+	min-height: 44px;
+}
+
 .toolHeader:disabled {
 	cursor: default;
 }
@@ -60,6 +67,21 @@
 	flex: 1;
 }
 
+.toolPhaseBadge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 20px;
+	padding: 0 8px;
+	border-radius: var(--radius-full);
+	font-size: 10px;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	background: color-mix(in srgb, var(--bg-tertiary) 75%, transparent);
+	border: 1px solid color-mix(in srgb, var(--border-light) 65%, transparent);
+	color: var(--text-tertiary);
+}
+
 /* Expand/collapse chevron */
 .chevron {
 	font-size: 10px;
@@ -71,6 +93,10 @@
 .toolPayload {
 	padding: 0 var(--space-3) var(--space-2);
 	overflow: hidden;
+}
+
+.accordionContent {
+	border-top: 1px solid color-mix(in srgb, var(--border-light) 55%, transparent);
 }
 
 .toolPayload pre {
@@ -89,6 +115,11 @@
 
 .errorText {
 	color: var(--text-error) !important;
+}
+
+.alert {
+	border-left: 3px solid
+		color-mix(in srgb, var(--color-red-500) 45%, transparent);
 }
 
 /* Hidden count indicator */
@@ -184,4 +215,9 @@
 
 .toolIndicator[data-compact="true"] .toolName {
 	font-size: 10px;
+}
+
+.toolHeader:focus-visible {
+	outline: 2px solid color-mix(in srgb, var(--color-blue-500) 35%, transparent);
+	outline-offset: -2px;
 }

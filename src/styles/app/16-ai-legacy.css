@@ -36,10 +36,25 @@
 	flex-wrap: wrap;
 }
 
+.aiFormRow {
+	padding: var(--space-2) 0;
+}
+
 .aiLabel {
 	min-width: 74px;
 	font-size: var(--text-xs);
 	color: var(--text-tertiary);
+}
+
+.aiSelect,
+.aiButton {
+	min-height: 44px;
+}
+
+.aiSelect:focus-visible,
+.aiButton:focus-visible {
+	outline: 2px solid color-mix(in srgb, var(--color-blue-500) 35%, transparent);
+	outline-offset: 2px;
 }
 
 .aiToggle {
@@ -200,4 +215,8 @@
 	color: var(--text-error);
 	background: var(--feedback-error-bg);
 	border-radius: var(--radius-md);
+}
+
+.aiAlert {
+	border: 1px solid color-mix(in srgb, var(--color-red-500) 28%, transparent);
 }

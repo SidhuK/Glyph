@@ -36,6 +36,18 @@
 	min-width: 160px;
 	max-width: 280px;
 	width: 100%;
+	min-height: 44px;
+}
+
+.settingsField input:focus-visible,
+.settingsField select:focus-visible,
+.settingsField textarea:focus-visible,
+.settingsField button:focus-visible,
+.settingsSegmented button:focus-visible,
+.settingsSwatch:focus-visible {
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 40%, transparent);
+	outline-offset: 2px;
 }
 
 .settingsHelp {
@@ -141,8 +153,10 @@
 
 .settingsToggle {
 	position: relative;
-	width: 46px;
-	height: 26px;
+	width: 52px;
+	height: 32px;
+	min-width: 44px;
+	min-height: 44px;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -170,8 +184,8 @@
 .settingsToggle span::after {
 	content: "";
 	position: absolute;
-	height: 20px;
-	width: 20px;
+	height: 24px;
+	width: 24px;
 	left: 3px;
 	border-radius: 50%;
 	background: var(--bg-primary);
@@ -200,7 +214,7 @@
 }
 
 .settingsSegmented button {
-	height: 28px;
+	min-height: 36px;
 	padding: 0 12px;
 	border-radius: var(--radius-full);
 	font-size: var(--text-xs);
@@ -227,6 +241,7 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 8px;
+	min-height: 44px;
 	padding: 6px 10px;
 	border-radius: var(--radius-full);
 	border: 1px solid var(--border-light);

@@ -156,6 +156,7 @@ export function AISidebar({
 							value={profiles.activeProfileId ?? ""}
 							onChange={(e) => void profiles.setActive(e.target.value || null)}
 							title="AI profile"
+							aria-label="AI profile"
 						>
 							{profiles.profiles.map((p) => (
 								<option key={p.id} value={p.id}>
@@ -169,7 +170,7 @@ export function AISidebar({
 
 					<div
 						className={cn(
-							"aiSidebarKeyPill",
+							"aiSidebarKeyPill aiSidebarBadge",
 							profiles.secretConfigured ? "ok" : "warn",
 						)}
 						title={
@@ -210,11 +211,17 @@ export function AISidebar({
 			</div>
 
 			{profiles.error ? (
-				<div className="aiSidebarError">{profiles.error}</div>
+				<div className="aiSidebarError aiSidebarAlert" role="alert">
+					{profiles.error}
+				</div>
 			) : null}
 
 			<div className="aiSidebarBody" data-window-drag-ignore>
-				<div className={styles.chatThread}>
+				<div
+					className={`${styles.chatThread} ${styles.scrollArea}`}
+					role="log"
+					aria-live="polite"
+				>
 					{chat.messages.length === 0 ? (
 						<div className={styles.chatEmpty}>
 							<div className={styles.chatEmptyTitle}>
@@ -251,7 +258,7 @@ export function AISidebar({
 				</div>
 
 				{chat.error ? (
-					<div className={styles.error}>
+					<div className={`${styles.error} ${styles.alert}`} role="alert">
 						<span>{chat.error.message}</span>
 						<button
 							type="button"
@@ -270,7 +277,7 @@ export function AISidebar({
 								<motion.button
 									key={`${item.kind}:${item.path || "vault"}`}
 									type="button"
-									className={styles.contextChip}
+									className={`${styles.contextChip} ${styles.badge}`}
 									whileHover={{ y: -1 }}
 									whileTap={{ scale: 0.98 }}
 									onClick={() => context.removeContext(item.kind, item.path)}
@@ -290,7 +297,7 @@ export function AISidebar({
 					</div>
 					<button
 						type="button"
-						className={styles.addContextBtn}
+						className={`${styles.addContextBtn} ${styles.buttonMinTouch}`}
 						onClick={() => {
 							setAddPanelOpen(true);
 							setAddPanelQuery("");
@@ -301,7 +308,7 @@ export function AISidebar({
 				</div>
 
 				{showAddPanel ? (
-					<div className={styles.addPanel}>
+					<div className={`${styles.addPanel} ${styles.accordionContent}`}>
 						<input
 							type="search"
 							className={styles.addPanelSearch}
@@ -316,7 +323,9 @@ export function AISidebar({
 							Type @ or /add in the input to add faster.
 						</div>
 						{context.folderIndexError ? (
-							<div className={styles.error}>{context.folderIndexError}</div>
+							<div className={`${styles.error} ${styles.alert}`} role="alert">
+								{context.folderIndexError}
+							</div>
 						) : null}
 						<div className={styles.addPanelList}>
 							{context.visibleSuggestions.length ? (
@@ -343,7 +352,7 @@ export function AISidebar({
 						<div className={styles.addPanelActions}>
 							<button
 								type="button"
-								className={styles.button}
+								className={`${styles.button} ${styles.buttonMinTouch}`}
 								onClick={() => setAddPanelOpen(false)}
 							>
 								Close
@@ -387,9 +396,10 @@ export function AISidebar({
 						</button>
 					</div>
 					<textarea
-						className={styles.input}
+						className={`${styles.input} ${styles.textarea}`}
 						value={input}
 						placeholder="Ask your agent…"
+						aria-label="AI sidebar chat input"
 						disabled={chat.status === "streaming"}
 						onChange={(e) => setInput(e.target.value)}
 						onKeyDown={(e) => {
@@ -406,7 +416,7 @@ export function AISidebar({
 							{chat.status === "streaming" ? (
 								<button
 									type="button"
-									className={`${styles.button} ${styles.buttonDanger}`}
+									className={`${styles.button} ${styles.buttonDanger} ${styles.buttonMinTouch}`}
 									onClick={() => chat.stop()}
 								>
 									Stop
@@ -414,7 +424,7 @@ export function AISidebar({
 							) : (
 								<button
 									type="button"
-									className={`${styles.button} ${styles.buttonPrimary}`}
+									className={`${styles.button} ${styles.buttonPrimary} ${styles.buttonMinTouch}`}
 									disabled={!canSend}
 									onClick={handleSend}
 								>

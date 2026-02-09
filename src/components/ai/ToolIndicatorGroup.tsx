@@ -27,7 +27,7 @@ export function ToolIndicatorGroup({
 	const hiddenCount = executions.length - maxVisible;
 
 	return (
-		<motion.div
+		<motion.fieldset
 			className={styles.toolGroup}
 			initial={{ opacity: 0 }}
 			animate={{ opacity: 1 }}
@@ -38,8 +38,10 @@ export function ToolIndicatorGroup({
 				<ToolIndicator key={execution.id} execution={execution} />
 			))}
 			{hiddenCount > 0 && (
-				<div className={styles.hiddenCount}>+{hiddenCount} more</div>
+				<div className={`${styles.hiddenCount} ${styles.toolPhaseBadge}`}>
+					+{hiddenCount} more
+				</div>
 			)}
-		</motion.div>
+		</motion.fieldset>
 	);
 }

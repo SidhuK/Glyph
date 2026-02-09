@@ -22,18 +22,24 @@ interface ChatMessagesProps {
 export function ChatMessages({ messages, toolExecutions }: ChatMessagesProps) {
 	return (
 		<motion.div
-			className={styles.chatThread}
+			className={`${styles.chatThread} ${styles.scrollArea}`}
+			role="log"
+			aria-live="polite"
+			aria-relevant="additions text"
 			variants={containerVariants}
 			initial="hidden"
 			animate="show"
 		>
 			<AnimatePresence mode="popLayout">
-				{messages.map((m, index) => (
+				{messages.map((m) => (
 					<motion.div
 						key={m.id}
 						className={`${styles.message} ${
 							m.role === "user" ? styles.messageUser : styles.messageAssistant
 						}`}
+						aria-label={
+							m.role === "user" ? "User message" : "Assistant message"
+						}
 						variants={itemVariants}
 						exit="exit"
 					>

@@ -90,12 +90,13 @@ export function AIPane({
 			</div>
 
 			{profiles.profiles.length ? (
-				<div className="aiRow">
+				<div className="aiRow aiFormRow">
 					<label className="aiLabel" htmlFor="aiProfile">
 						Profile
 					</label>
 					<select
 						id="aiProfile"
+						className="aiSelect"
 						value={profiles.activeProfileId ?? ""}
 						onChange={(e) =>
 							profiles.setActiveProfileId(e.target.value || null)
@@ -109,8 +110,12 @@ export function AIPane({
 					</select>
 				</div>
 			) : (
-				<div className="aiRow">
-					<button type="button" onClick={profiles.createDefaultProfile}>
+				<div className="aiRow aiFormRow">
+					<button
+						type="button"
+						className="aiButton"
+						onClick={profiles.createDefaultProfile}
+					>
 						Create profile
 					</button>
 				</div>
@@ -132,7 +137,9 @@ export function AIPane({
 			) : null}
 
 			{profiles.settingsError ? (
-				<div className="aiError">{profiles.settingsError}</div>
+				<div className="aiError aiAlert" role="alert">
+					{profiles.settingsError}
+				</div>
 			) : null}
 
 			<ContextPayload

@@ -1,10 +1,18 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 import {
 	type Shortcut,
 	formatShortcut,
 	formatShortcutParts,
 } from "../../lib/shortcuts";
+import {
+	CommandEmpty,
+	CommandInput,
+	CommandItem,
+	CommandList,
+	Command as CommandRoot,
+	Dialog,
+	DialogContent,
+} from "../MotionUI";
 
 export interface Command {
 	id: string;
@@ -60,8 +68,6 @@ export function CommandPalette({
 		);
 	}, [filtered.length]);
 
-	if (!open) return null;
-
 	const runCommand = (index: number) => {
 		const cmd = filtered[index];
 		if (!cmd) return;
@@ -69,24 +75,13 @@ export function CommandPalette({
 		void cmd.action();
 	};
 
-	return createPortal(
-		<div
-			className="commandPaletteBackdrop"
-			onClick={onClose}
-			onKeyDown={(e) => {
-				if (e.key !== "Escape" && e.key !== "Enter" && e.key !== " ") return;
-				e.preventDefault();
-				e.stopPropagation();
-				onClose();
-			}}
-		>
-			<dialog
+	return (
+		<Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
+			<DialogContent
 				ref={panelRef}
-				open
 				className="commandPalette"
 				aria-label="Command palette"
 				tabIndex={-1}
-				onClick={(e) => e.stopPropagation()}
 				onKeyDown={(e) => {
 					e.stopPropagation();
 					if (e.key === "Escape") {
@@ -112,47 +107,42 @@ export function CommandPalette({
 					}
 				}}
 			>
-				<input
-					ref={inputRef}
-					type="text"
-					className="commandPaletteInput"
-					placeholder="Type a command"
-					value={query}
-					onChange={(e) => setQuery(e.target.value)}
-				/>
-				<ul className="commandPaletteList">
-					{filtered.map((cmd, index) => (
-						<li key={cmd.id}>
-							<button
-								type="button"
-								className={
-									index === selectedIndex
-										? "commandPaletteItem selected"
-										: "commandPaletteItem"
-								}
-								onMouseEnter={() => setSelectedIndex(index)}
-								onClick={() => runCommand(index)}
-							>
-								<span>{cmd.label}</span>
-								{cmd.shortcut ? (
-									<span
-										className="commandPaletteShortcut"
-										aria-label={formatShortcut(cmd.shortcut)}
-									>
-										{formatShortcutParts(cmd.shortcut).map((part) => (
-											<kbd key={part}>{part}</kbd>
-										))}
-									</span>
-								) : null}
-							</button>
-						</li>
-					))}
-					{filtered.length === 0 ? (
-						<li className="commandPaletteEmpty">No commands</li>
-					) : null}
-				</ul>
-			</dialog>
-		</div>,
-		document.body,
+				<CommandRoot>
+					<CommandInput
+						ref={inputRef}
+						type="text"
+						placeholder="Type a command"
+						value={query}
+						onChange={(e) => setQuery(e.target.value)}
+					/>
+					<CommandList aria-label="Command results">
+						{filtered.map((cmd, index) => (
+							<li key={cmd.id}>
+								<CommandItem
+									selected={index === selectedIndex}
+									onMouseEnter={() => setSelectedIndex(index)}
+									onClick={() => runCommand(index)}
+								>
+									<span>{cmd.label}</span>
+									{cmd.shortcut ? (
+										<span
+											className="commandPaletteShortcut"
+											aria-label={formatShortcut(cmd.shortcut)}
+										>
+											{formatShortcutParts(cmd.shortcut).map((part) => (
+												<kbd key={part}>{part}</kbd>
+											))}
+										</span>
+									) : null}
+								</CommandItem>
+							</li>
+						))}
+						{filtered.length === 0 ? (
+							<CommandEmpty>No commands</CommandEmpty>
+						) : null}
+					</CommandList>
+				</CommandRoot>
+			</DialogContent>
+		</Dialog>
 	);
 }

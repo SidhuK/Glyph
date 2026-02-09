@@ -1,5 +1,11 @@
 import { AnimatePresence, motion } from "motion/react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+	type KeyboardEvent,
+	useCallback,
+	useEffect,
+	useMemo,
+	useState,
+} from "react";
 import "./App.css";
 import {
 	FolderOpen,
@@ -55,31 +61,68 @@ export default function SettingsApp() {
 		return "General";
 	}, [tab]);
 
-	const tabs: Array<{
-		id: SettingsTab;
-		label: string;
-		description: string;
-		icon: typeof SettingsIcon;
-	}> = [
-		{
-			id: "general",
-			label: "General",
-			description: "Appearance, typography, accessibility",
-			icon: SettingsIcon,
+	const tabs = useMemo(
+		() =>
+			[
+				{
+					id: "general",
+					label: "General",
+					description: "Appearance, typography, accessibility",
+					icon: SettingsIcon,
+				},
+				{
+					id: "vault",
+					label: "Vault",
+					description: "Storage, indexing, backups",
+					icon: FolderOpen,
+				},
+				{
+					id: "ai",
+					label: "AI",
+					description: "Providers, defaults, safety",
+					icon: Sparkles,
+				},
+			] as Array<{
+				id: SettingsTab;
+				label: string;
+				description: string;
+				icon: typeof SettingsIcon;
+			}>,
+		[],
+	);
+
+	const activeTabIndex = tabs.findIndex((item) => item.id === tab);
+
+	const handleTabKeyDown = useCallback(
+		(event: KeyboardEvent<HTMLButtonElement>) => {
+			if (
+				![
+					"ArrowLeft",
+					"ArrowRight",
+					"ArrowUp",
+					"ArrowDown",
+					"Home",
+					"End",
+				].includes(event.key)
+			) {
+				return;
+			}
+			event.preventDefault();
+			if (event.key === "Home") {
+				setSettingsHash(tabs[0].id);
+				return;
+			}
+			if (event.key === "End") {
+				setSettingsHash(tabs[tabs.length - 1].id);
+				return;
+			}
+			const delta =
+				event.key === "ArrowLeft" || event.key === "ArrowUp" ? -1 : 1;
+			const next = (activeTabIndex + delta + tabs.length) % tabs.length;
+			setSettingsHash(tabs[next].id);
 		},
-		{
-			id: "vault",
-			label: "Vault",
-			description: "Storage, indexing, backups",
-			icon: FolderOpen,
-		},
-		{
-			id: "ai",
-			label: "AI",
-			description: "Providers, defaults, safety",
-			icon: Sparkles,
-		},
-	];
+		[activeTabIndex, tabs],
+	);
 
 	return (
 		<div className="settingsShell">
@@ -112,16 +155,27 @@ export default function SettingsApp() {
 			</div>
 
 			<div className="settingsBody">
-				<nav className="settingsNav" data-window-drag-ignore>
+				<nav
+					className="settingsNav"
+					data-window-drag-ignore
+					role="tablist"
+					aria-label="Settings sections"
+				>
 					{tabs.map((item) => {
 						const Icon = item.icon;
 						const isActive = tab === item.id;
 						return (
 							<motion.button
 								key={item.id}
+								id={`settings-tab-${item.id}`}
 								type="button"
 								className={cn("settingsNavButton", isActive && "active")}
 								onClick={() => setSettingsHash(item.id)}
+								onKeyDown={handleTabKeyDown}
+								role="tab"
+								aria-selected={isActive}
+								aria-controls={`settings-panel-${item.id}`}
+								tabIndex={isActive ? 0 : -1}
 								whileHover={{ x: 4 }}
 								whileTap={{ scale: 0.98 }}
 								transition={{ type: "spring", stiffness: 320, damping: 24 }}
@@ -151,6 +205,9 @@ export default function SettingsApp() {
 							<motion.div
 								key="general"
 								className="settingsPaneMotion"
+								id="settings-panel-general"
+								role="tabpanel"
+								aria-labelledby="settings-tab-general"
 								initial={{ opacity: 0, y: 10 }}
 								animate={{ opacity: 1, y: 0 }}
 								exit={{ opacity: 0, y: -8 }}
@@ -163,6 +220,9 @@ export default function SettingsApp() {
 							<motion.div
 								key="vault"
 								className="settingsPaneMotion"
+								id="settings-panel-vault"
+								role="tabpanel"
+								aria-labelledby="settings-tab-vault"
 								initial={{ opacity: 0, y: 10 }}
 								animate={{ opacity: 1, y: 0 }}
 								exit={{ opacity: 0, y: -8 }}
@@ -175,6 +235,9 @@ export default function SettingsApp() {
 							<motion.div
 								key="ai"
 								className="settingsPaneMotion"
+								id="settings-panel-ai"
+								role="tabpanel"
+								aria-labelledby="settings-tab-ai"
 								initial={{ opacity: 0, y: 10 }}
 								animate={{ opacity: 1, y: 0 }}
 								exit={{ opacity: 0, y: -8 }}
