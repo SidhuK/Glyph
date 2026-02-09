@@ -16,6 +16,8 @@ export interface UIContextValue {
 	setSidebarCollapsed: (collapsed: boolean) => void;
 	sidebarViewMode: "files" | "tags" | "canvases";
 	setSidebarViewMode: (mode: "files" | "tags" | "canvases") => void;
+	sidebarWidth: number;
+	setSidebarWidth: (width: number) => void;
 	paletteOpen: boolean;
 	setPaletteOpen: (open: boolean) => void;
 	aiPanelOpen: boolean;
@@ -42,6 +44,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 	const [sidebarViewMode, setSidebarViewMode] = useState<
 		"files" | "tags" | "canvases"
 	>("files");
+	const [sidebarWidth, setSidebarWidth] = useState(260); // Default to CSS variable default
 	const [paletteOpen, setPaletteOpen] = useState(false);
 	const [activePreviewPath, setActivePreviewPath] = useState<string | null>(
 		null,
@@ -85,6 +88,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			setSidebarCollapsed,
 			sidebarViewMode,
 			setSidebarViewMode,
+			sidebarWidth,
+			setSidebarWidth,
 			paletteOpen,
 			setPaletteOpen,
 			aiPanelOpen,
@@ -104,6 +109,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		[
 			sidebarCollapsed,
 			sidebarViewMode,
+			sidebarWidth,
 			paletteOpen,
 			aiPanelOpen,
 			searchQuery,

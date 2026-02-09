@@ -146,6 +146,7 @@ export function SidebarContent({
 							className="sidebarSectionContent"
 						>
 							<FileTreePane
+								vaultName={vaultPath.split("/").pop()}
 								rootEntries={rootEntries}
 								childrenByDir={childrenByDir}
 								expandedDirs={expandedDirs}

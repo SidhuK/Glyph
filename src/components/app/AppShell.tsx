@@ -1,5 +1,5 @@
 import { AnimatePresence } from "motion/react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
 	useFileTreeContext,
 	useUIContext,
@@ -89,6 +89,67 @@ export function AppShell() {
 	const [canvasCommand, setCanvasCommand] =
 		useState<CanvasExternalCommand | null>(null);
 	const [selectedCanvasId, setSelectedCanvasId] = useState<string | null>(null);
+	const resizeRef = useRef<HTMLDivElement>(null);
+	const dragStartXRef = useRef(0);
+	const dragStartWidthRef = useRef(0);
+	const isDraggingRef = useRef(false);
+
+	const { sidebarWidth, setSidebarWidth } = useUIContext();
+
+	const handleResizeStart = useCallback(
+		(e: React.PointerEvent) => {
+			if (sidebarCollapsed) return;
+			isDraggingRef.current = true;
+			dragStartXRef.current = e.clientX;
+			dragStartWidthRef.current = sidebarWidth;
+			if (resizeRef.current) {
+				resizeRef.current.setPointerCapture(e.pointerId);
+			}
+		},
+		[sidebarCollapsed, sidebarWidth],
+	);
+
+	const handleResizeMove = useCallback(
+		(e: React.PointerEvent) => {
+			if (!isDraggingRef.current) return;
+			const delta = e.clientX - dragStartXRef.current;
+			const newWidth = Math.max(
+				220,
+				Math.min(600, dragStartWidthRef.current + delta),
+			);
+			setSidebarWidth(newWidth);
+		},
+		[setSidebarWidth],
+	);
+
+	const handleResizeEnd = useCallback(() => {
+		isDraggingRef.current = false;
+	}, []);
+
+	useEffect(() => {
+		const handleGlobalMove = (e: PointerEvent) => {
+			if (!isDraggingRef.current) return;
+			const delta = e.clientX - dragStartXRef.current;
+			const newWidth = Math.max(
+				220,
+				Math.min(600, dragStartWidthRef.current + delta),
+			);
+			setSidebarWidth(newWidth);
+		};
+
+		const handleGlobalEnd = () => {
+			isDraggingRef.current = false;
+		};
+
+		if (isDraggingRef.current) {
+			window.addEventListener("pointermove", handleGlobalMove);
+			window.addEventListener("pointerup", handleGlobalEnd);
+			return () => {
+				window.removeEventListener("pointermove", handleGlobalMove);
+				window.removeEventListener("pointerup", handleGlobalEnd);
+			};
+		}
+	}, [setSidebarWidth]);
 
 	useEffect(() => {
 		if (activeViewDoc?.kind !== "canvas") return;
@@ -480,6 +541,16 @@ export function AppShell() {
 				onCreateNoteInCanvas={() => void createNewCanvasNote()}
 				onRenameCanvas={renameCanvasAndUpdate}
 				onOpenCommandPalette={() => setPaletteOpen(true)}
+			/>
+
+			<div
+				ref={resizeRef}
+				className="sidebarResizeHandle"
+				onPointerDown={handleResizeStart}
+				onPointerMove={handleResizeMove}
+				onPointerUp={handleResizeEnd}
+				data-window-drag-ignore
+				style={{ cursor: sidebarCollapsed ? "default" : "col-resize" }}
 			/>
 
 			<MainContent

@@ -210,3 +210,28 @@
 	font-size: var(--text-xs);
 	color: var(--text-tertiary);
 }
+/* ─────────────────────────────────────────────────────────────────────────────
+   SIDEBAR RESIZE HANDLE
+   ───────────────────────────────────────────────────────────────────────────── */
+.sidebarResizeHandle {
+	position: relative;
+	width: 4px;
+	cursor: col-resize;
+	user-select: none;
+	-webkit-user-select: none;
+	background: transparent;
+	transition: background-color 150ms ease-out;
+
+	/* Expanded hit area for easier dragging */
+	margin-left: -2px;
+	margin-right: -2px;
+	width: 8px;
+}
+
+.sidebarResizeHandle:hover {
+	background: var(--interactive-accent, rgba(59, 130, 246, 0.2));
+}
+
+.sidebarResizeHandle:active {
+	background: var(--interactive-accent, rgba(59, 130, 246, 0.3));
+}

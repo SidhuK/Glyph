@@ -48,7 +48,7 @@ export function Sidebar({
 }: SidebarProps) {
 	// Contexts
 	const { vaultPath, onOpenVault, onCreateVault } = useVault();
-	const { sidebarCollapsed } = useUIContext();
+	const { sidebarCollapsed, sidebarWidth } = useUIContext();
 	const { showSearch, setShowSearch } = useUIContext();
 	const shouldReduceMotion = useReducedMotion();
 	const sidebarState = sidebarCollapsed ? "collapsed" : "expanded";
@@ -60,6 +60,7 @@ export function Sidebar({
 			data-state={sidebarState}
 			data-collapsible={sidebarCollapsed ? "offcanvas" : ""}
 			className={cn("sidebar", sidebarCollapsed && "sidebarCollapsed")}
+			style={{ width: sidebarCollapsed ? 0 : sidebarWidth }}
 			layout
 			transition={
 				shouldReduceMotion
