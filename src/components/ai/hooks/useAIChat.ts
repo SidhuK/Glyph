@@ -1,7 +1,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { type AiMessage, invoke } from "../../../lib/tauri";
 import { useTauriEvent } from "../../../lib/tauriEvents";
-import type { ChatMessage, ContextManifest } from "../types";
+import type {
+	AiToolEventPayload,
+	ChatMessage,
+	ContextManifest,
+	ToolExecution,
+} from "../types";
 import { errMessage } from "../utils";
 
 export interface UseAIChatOptions {
@@ -24,6 +29,7 @@ export interface UseAIChatResult {
 	lastAssistantMessage: string;
 	streamingTextRef: React.MutableRefObject<string>;
 	pendingActionRef: React.MutableRefObject<"chat" | "rewrite_active_note">;
+	toolExecutions: ToolExecution[];
 	startRequest: (userText: string) => Promise<void>;
 	onSend: () => Promise<void>;
 	onCancel: () => Promise<void>;
@@ -42,6 +48,7 @@ export function useAIChat(options: UseAIChatOptions): UseAIChatResult {
 	);
 	const [streaming, setStreaming] = useState(false);
 	const [chatError, setChatError] = useState("");
+	const [toolExecutions, setToolExecutions] = useState<ToolExecution[]>([]);
 
 	const streamingTextRef = useRef("");
 	const jobIdRef = useRef<string | null>(null);
@@ -101,6 +108,55 @@ export function useAIChat(options: UseAIChatOptions): UseAIChatResult {
 	useTauriEvent("ai:done", onDone);
 	useTauriEvent("ai:error", onError);
 
+	// Process tool events to update tool executions state
+	const processToolEvent = useCallback(
+		(event: AiToolEventPayload): ToolExecution[] => {
+			const { phase, call_id, tool, payload, error } = event;
+
+			if (phase === "call") {
+				// Add new execution
+				return [
+					...toolExecutions,
+					{
+						id: call_id || crypto.randomUUID(),
+						tool,
+						phase,
+						timestamp: Date.now(),
+					},
+				];
+			}
+			if (phase === "result" || phase === "error") {
+				// Update existing execution
+				return toolExecutions.map((exec) =>
+					exec.id === call_id
+						? { ...exec, phase, payload, error, timestamp: Date.now() }
+						: exec,
+				);
+			}
+			return toolExecutions;
+		},
+		[toolExecutions],
+	);
+
+	const onToolEvent = useCallback(
+		(payload: {
+			job_id: string;
+			tool: string;
+			phase: string;
+			call_id?: string;
+			payload?: unknown;
+			error?: string;
+		}) => {
+			if (payload.job_id !== jobIdRef.current) return;
+			// Cast to AiToolEventPayload since we trust the backend
+			const event = payload as AiToolEventPayload;
+			setToolExecutions(processToolEvent(event));
+		},
+		[processToolEvent],
+	);
+
+	useTauriEvent("ai:tool", onToolEvent);
+
 	const startRequest = useCallback(
 		async (userText: string) => {
 			if (!activeProfileId) {
@@ -117,6 +173,8 @@ export function useAIChat(options: UseAIChatOptions): UseAIChatResult {
 				return;
 			}
 			setChatError("");
+			// Clear tool executions for new request
+			setToolExecutions([]);
 			const nextUser: ChatMessage = {
 				id: crypto.randomUUID(),
 				role: "user",
@@ -197,6 +255,7 @@ export function useAIChat(options: UseAIChatOptions): UseAIChatResult {
 		lastAssistantMessage,
 		streamingTextRef,
 		pendingActionRef,
+		toolExecutions,
 		startRequest,
 		onSend,
 		onCancel,

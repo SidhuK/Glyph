@@ -174,7 +174,10 @@ export function AIPane({
 			/>
 
 			<div className="aiChat">
-				<ChatMessages messages={chat.chatMessages} />
+				<ChatMessages
+					messages={chat.chatMessages}
+					toolExecutions={chat.toolExecutions}
+				/>
 				<ChatInput
 					input={chat.input}
 					setInput={chat.setInput}

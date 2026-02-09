@@ -1,6 +1,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import styles from "./ChatUI.module.css";
-import type { ChatMessage } from "./types";
+import { ToolIndicatorGroup } from "./ToolIndicatorGroup";
+import type { ChatMessage, ToolExecution } from "./types";
 
 const containerVariants = {
 	hidden: {},
@@ -15,9 +16,10 @@ const itemVariants = {
 
 interface ChatMessagesProps {
 	messages: ChatMessage[];
+	toolExecutions: ToolExecution[];
 }
 
-export function ChatMessages({ messages }: ChatMessagesProps) {
+export function ChatMessages({ messages, toolExecutions }: ChatMessagesProps) {
 	return (
 		<motion.div
 			className={styles.chatThread}
@@ -26,7 +28,7 @@ export function ChatMessages({ messages }: ChatMessagesProps) {
 			animate="show"
 		>
 			<AnimatePresence mode="popLayout">
-				{messages.map((m) => (
+				{messages.map((m, index) => (
 					<motion.div
 						key={m.id}
 						className={`${styles.message} ${
@@ -35,6 +37,10 @@ export function ChatMessages({ messages }: ChatMessagesProps) {
 						variants={itemVariants}
 						exit="exit"
 					>
+						{/* Show tool indicators before assistant messages when tools are active */}
+						{m.role === "assistant" && toolExecutions.length > 0 && (
+							<ToolIndicatorGroup executions={toolExecutions} />
+						)}
 						<div className={styles.messageContent}>{m.content}</div>
 					</motion.div>
 				))}
