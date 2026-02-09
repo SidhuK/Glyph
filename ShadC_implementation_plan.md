@@ -61,6 +61,28 @@ If a component above is not directly used, we still align equivalent custom beha
 
 ## Internal Workstream Plan (Single-Cutover Release)
 
+### Migration Status Tracker
+
+| Phase | Status | Notes |
+|---|---|---|
+| Phase 0 | done | Baseline/audit captured in this plan and branch workflow documented. |
+| Phase 1 | done | Tailwind + ShadCN foundation added (`components.json`, aliases, utility stack). |
+| Phase 2 | done | Token bridge added via `src/styles/shadcn-theme.css` and `src/styles/shadcn-base.css`. |
+| Phase 3 | done | Core reusable controls are migrated to ShadCN primitives on high-traffic surfaces; remaining legacy button classes are isolated to non-migrated paths. |
+| Phase 4 | done | Command palette moved to ShadCN `Dialog` + `Command` primitives. |
+| Phase 5 | done | Sidebar mode controls are on ShadCN `Tabs`, and list panes are wrapped in `ScrollArea` while preserving existing context flow. |
+| Phase 6 | in progress | Settings shell migration ongoing; deep form-field standardization still being completed. |
+| Phase 7 | in progress | AI surfaces migration ongoing; data flow untouched, visual primitives converging. |
+| Phase 8 | in progress | Canvas-adjacent toolbar controls migrated to ShadCN button variants. |
+| Phase 9 | in progress | Motion tokens/reduced-motion guardrails introduced; final pass pending. |
+| Phase 10 | in progress | Dead `segBtn` selector paths removed from owned CSS; `iconBtn` remains in live canvas/motion paths, and full import-layer retirement is still pending. |
+
+### Completion Bookkeeping Snapshot (2026-02-09)
+- Tracker reflects current repository evidence and is intentionally not marked fully done.
+- Phase 9 remains `in progress` because motion tokens and reduced-motion guardrails exist, but duration/easing values are not fully normalized across all motion surfaces.
+- Phase 10 remains `in progress` because legacy class usage still exists in production paths (`iconBtn` in `src/components/canvas/CanvasNoteOverlayEditor.tsx` and `src/components/ui/MotionButton.tsx`), and `src/App.css` still imports the full legacy app stylesheet set.
+- Phases should only be moved to `done` when corresponding code paths and style layers are fully migrated in-repo.
+
 ### Phase 0: Baseline and Guardrails
 Scope: No visual changes yet.
 

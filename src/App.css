@@ -1,4 +1,6 @@
 @import "./design-tokens.css";
+@import "./styles/shadcn-theme.css";
+@import "./styles/shadcn-base.css";
 @import "./styles/app/00-header-base.css";
 @import "./styles/app/01-controls.css";
 @import "./styles/app/02-surfaces.css";

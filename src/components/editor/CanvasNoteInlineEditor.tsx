@@ -2,6 +2,7 @@ import { EditorContent } from "@tiptap/react";
 import { memo, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { joinYamlFrontmatter } from "../../lib/notePreview";
 import { Edit, Eye } from "../Icons";
+import { Tabs, TabsList, TabsTrigger } from "../ui/shadcn/tabs";
 import { EditorRibbon } from "./EditorRibbon";
 import { useNoteEditor } from "./hooks/useNoteEditor";
 import type { CanvasNoteInlineEditorProps } from "./types";
@@ -68,22 +69,19 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		<div className="rfNodeNoteEditor nodrag nopan">
 			<div className="rfNodeNoteEditorHeaderBar nodrag nopan nowheel">
 				<div className="rfNodeNoteEditorHeaderSpacer" />
-				<button
-					type="button"
-					className={mode === "preview" ? "segBtn active" : "segBtn"}
-					onClick={() => onModeChange("preview")}
-					title="Preview"
+				<Tabs
+					value={mode}
+					onValueChange={(value) => onModeChange(value as "preview" | "rich")}
 				>
-					<Eye size={14} />
-				</button>
-				<button
-					type="button"
-					className={mode === "rich" ? "segBtn active" : "segBtn"}
-					onClick={() => onModeChange("rich")}
-					title="Rich Text"
-				>
-					<Edit size={14} />
-				</button>
+					<TabsList>
+						<TabsTrigger value="preview" title="Preview">
+							<Eye size={14} />
+						</TabsTrigger>
+						<TabsTrigger value="rich" title="Rich Text">
+							<Edit size={14} />
+						</TabsTrigger>
+					</TabsList>
+				</Tabs>
 			</div>
 			<div className="rfNodeNoteEditorBody nodrag nopan nowheel">
 				{mode === "rich" ? (

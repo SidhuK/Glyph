@@ -2,12 +2,13 @@ import { AnimatePresence, motion } from "motion/react";
 import { useFileTreeContext, useUIContext, useVault } from "../../contexts";
 import type { CanvasLibraryMeta } from "../../lib/canvases";
 import { openSettingsWindow } from "../../lib/windows";
-import { cn } from "../../utils/cn";
 import { CanvasesPane } from "../CanvasesPane";
 import { FileTreePane } from "../FileTreePane";
 import { Files, Layout, Settings, Tags } from "../Icons";
 import { SearchPane } from "../SearchPane";
 import { TagsPane } from "../TagsPane";
+import { ScrollArea } from "../ui/shadcn/scroll-area";
+import { Tabs, TabsList, TabsTrigger } from "../ui/shadcn/tabs";
 
 interface SidebarContentProps {
 	onToggleDir: (dirPath: string) => void;
@@ -113,35 +114,25 @@ export function SidebarContent({
 
 			<div className="sidebarSection sidebarSectionGrow">
 				<div className="sidebarSectionHeader">
-					<div className="sidebarSectionToggle">
-						<button
-							type="button"
-							className={cn("segBtn", sidebarViewMode === "files" && "active")}
-							onClick={() => setSidebarViewMode("files")}
-							title="Files"
-						>
-							<Files size={14} />
-						</button>
-						<button
-							type="button"
-							className={cn("segBtn", sidebarViewMode === "tags" && "active")}
-							onClick={() => setSidebarViewMode("tags")}
-							title="Tags"
-						>
-							<Tags size={14} />
-						</button>
-						<button
-							type="button"
-							className={cn(
-								"segBtn",
-								sidebarViewMode === "canvases" && "active",
-							)}
-							onClick={() => setSidebarViewMode("canvases")}
-							title="Canvases"
-						>
-							<Layout size={14} />
-						</button>
-					</div>
+					<Tabs
+						value={sidebarViewMode}
+						onValueChange={(value) =>
+							setSidebarViewMode(value as "files" | "tags" | "canvases")
+						}
+						className="sidebarSectionToggle"
+					>
+						<TabsList className="w-full">
+							<TabsTrigger value="files" title="Files">
+								<Files size={14} />
+							</TabsTrigger>
+							<TabsTrigger value="tags" title="Tags">
+								<Tags size={14} />
+							</TabsTrigger>
+							<TabsTrigger value="canvases" title="Canvases">
+								<Layout size={14} />
+							</TabsTrigger>
+						</TabsList>
+					</Tabs>
 				</div>
 
 				<AnimatePresence mode="wait">
@@ -178,14 +169,16 @@ export function SidebarContent({
 							transition={{ duration: 0.2 }}
 							className="sidebarSectionContent"
 						>
-							{tagsError ? (
-								<div className="searchError">{tagsError}</div>
-							) : null}
-							<TagsPane
-								tags={tags}
-								onSelectTag={onSelectTag}
-								onRefresh={() => void refreshTags()}
-							/>
+							<ScrollArea className="h-full">
+								{tagsError ? (
+									<div className="searchError">{tagsError}</div>
+								) : null}
+								<TagsPane
+									tags={tags}
+									onSelectTag={onSelectTag}
+									onRefresh={() => void refreshTags()}
+								/>
+							</ScrollArea>
 						</motion.div>
 					) : (
 						<motion.div
@@ -197,15 +190,17 @@ export function SidebarContent({
 							className="sidebarSectionContent"
 							data-window-drag-ignore
 						>
-							<CanvasesPane
-								canvases={canvases}
-								activeCanvasId={activeCanvasId}
-								onSelectCanvas={onSelectCanvas}
-								onCreateCanvas={onCreateCanvas}
-								onAddNotesToCanvas={onAddNotesToCanvas}
-								onCreateNoteInCanvas={onCreateNoteInCanvas}
-								onRenameCanvas={onRenameCanvas}
-							/>
+							<ScrollArea className="h-full">
+								<CanvasesPane
+									canvases={canvases}
+									activeCanvasId={activeCanvasId}
+									onSelectCanvas={onSelectCanvas}
+									onCreateCanvas={onCreateCanvas}
+									onAddNotesToCanvas={onAddNotesToCanvas}
+									onCreateNoteInCanvas={onCreateNoteInCanvas}
+									onRenameCanvas={onRenameCanvas}
+								/>
+							</ScrollArea>
 						</motion.div>
 					)}
 				</AnimatePresence>

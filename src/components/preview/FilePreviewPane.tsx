@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { type TextFilePreviewDoc, invoke } from "../../lib/tauri";
 import { getInAppPreviewKind } from "../../utils/filePreview";
+import { Button } from "../ui/shadcn/button";
 
 interface FilePreviewPaneProps {
 	relPath: string;
@@ -74,17 +75,19 @@ export function FilePreviewPane({
 					</div>
 				</div>
 				<div className="filePreviewActions">
-					<button
+					<Button
 						type="button"
-						className="segBtn"
+						variant="outline"
+						size="sm"
 						onClick={() => void loadPreview()}
 						disabled={loading}
 					>
 						Refresh
-					</button>
-					<button
+					</Button>
+					<Button
 						type="button"
-						className="segBtn"
+						variant="outline"
+						size="sm"
 						onClick={() => {
 							setError("");
 							void onOpenExternally(relPath).catch((e) => {
@@ -93,10 +96,10 @@ export function FilePreviewPane({
 						}}
 					>
 						Open Externally
-					</button>
-					<button type="button" className="segBtn" onClick={onClose}>
+					</Button>
+					<Button type="button" variant="outline" size="sm" onClick={onClose}>
 						Back to Canvas
-					</button>
+					</Button>
 				</div>
 			</header>
 

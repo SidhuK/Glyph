@@ -28,10 +28,10 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
 				ref={ref}
 				type={type}
 				className={cn(
-					variant === "icon" ? "iconBtn" : "",
+					variant === "icon" ? "inline-flex size-9 items-center justify-center rounded-md" : "",
 					variant === "primary" ? "primary" : "",
 					variant === "ghost" ? "ghost" : "",
-					variant === "icon" && size === "sm" ? "sm" : "",
+					variant === "icon" && size === "sm" ? "size-8" : "",
 					active ? "active" : "",
 					className,
 				)}

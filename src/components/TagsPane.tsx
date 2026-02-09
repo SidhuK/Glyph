@@ -1,7 +1,7 @@
 import { motion } from "motion/react";
 import { memo, useCallback } from "react";
 import type { TagCount } from "../lib/tauri";
-import { MotionIconButton } from "./MotionUI";
+import { Button } from "./ui/shadcn/button";
 
 interface TagsPaneProps {
 	tags: TagCount[];
@@ -33,8 +33,10 @@ export const TagsPane = memo(function TagsPane({
 			transition={springTransition}
 		>
 			<div className="tagsHeader">
-				<MotionIconButton
+				<Button
 					type="button"
+					variant="ghost"
+					size="icon-sm"
 					onClick={onRefresh}
 					title="Refresh tags"
 				>
@@ -44,7 +46,7 @@ export const TagsPane = memo(function TagsPane({
 					>
 						↻
 					</motion.span>
-				</MotionIconButton>
+				</Button>
 			</div>
 			{tags.length ? (
 				<motion.ul

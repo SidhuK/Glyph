@@ -1,5 +1,5 @@
 import { type UIMessage, useChat } from "@ai-sdk/react";
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { TauriChatTransport } from "../../lib/ai/tauriChatTransport";
 import { useTauriEvent } from "../../lib/tauriEvents";
@@ -15,7 +15,7 @@ import {
 	Sparkles,
 	X,
 } from "../Icons";
-import { MotionIconButton } from "../MotionUI";
+import { Button } from "../ui/shadcn/button";
 import { useAiContext } from "./useAiContext";
 import { useAiHistory } from "./useAiHistory";
 import { useAiProfiles } from "./useAiProfiles";
@@ -98,6 +98,7 @@ export function AIPanel({
 	const [lastToolEvent, setLastToolEvent] = useState<ToolStatusEvent | null>(
 		null,
 	);
+	const shouldReduceMotion = useReducedMotion();
 	const activeToolJobIdRef = useRef<string | null>(null);
 
 	useEffect(() => {
@@ -268,7 +269,11 @@ export function AIPanel({
 			initial={{ opacity: 0, scale: 0.92, y: 12 }}
 			animate={{ opacity: 1, scale: 1, y: 0 }}
 			exit={{ opacity: 0, scale: 0.92, y: 12 }}
-			transition={{ type: "spring", stiffness: 260, damping: 24 }}
+			transition={
+				shouldReduceMotion
+					? { type: "tween", duration: 0 }
+					: { type: "spring", stiffness: 260, damping: 24 }
+			}
 			data-window-drag-ignore
 		>
 			<div
@@ -282,24 +287,28 @@ export function AIPanel({
 					<span>AI</span>
 				</div>
 				<div className="aiPanelHeaderRight">
-					<MotionIconButton
+					<Button
 						type="button"
-						size="sm"
+						variant="ghost"
+						size="icon-sm"
+						aria-label="Settings"
 						onClick={() => void openSettingsWindow("ai")}
 						title="Settings"
 						onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
 					>
 						<SettingsIcon size={13} />
-					</MotionIconButton>
-					<MotionIconButton
+					</Button>
+					<Button
 						type="button"
-						size="sm"
+						variant="ghost"
+						size="icon-sm"
+						aria-label="Close"
 						onClick={onClose}
 						title="Close"
 						onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
 					>
 						<Minus size={13} />
-					</MotionIconButton>
+					</Button>
 				</div>
 			</div>
 
@@ -482,9 +491,11 @@ export function AIPanel({
 					/>
 					<div className="aiComposerBar">
 						<div className="aiComposerTools">
-							<MotionIconButton
+							<Button
 								type="button"
-								size="sm"
+								variant="ghost"
+								size="icon-sm"
+								aria-label="Attach file or folder"
 								title="Attach file or folder"
 								onClick={() => {
 									setAddPanelOpen(true);
@@ -492,18 +503,22 @@ export function AIPanel({
 								}}
 							>
 								<Paperclip size={14} />
-							</MotionIconButton>
-							<MotionIconButton
+							</Button>
+							<Button
 								type="button"
-								size="sm"
+								variant="ghost"
+								size="icon-sm"
+								aria-label="New AI canvas"
 								title="New AI canvas"
 								onClick={() => void onNewAICanvas()}
 							>
 								<Layout size={14} />
-							</MotionIconButton>
-							<MotionIconButton
+							</Button>
+							<Button
 								type="button"
-								size="sm"
+								variant="ghost"
+								size="icon-sm"
+								aria-label="Add attachments to canvas"
 								title="Add attachments to canvas"
 								onClick={() =>
 									void context
@@ -513,10 +528,12 @@ export function AIPanel({
 								disabled={context.attachedFolders.length === 0}
 							>
 								<FileText size={14} />
-							</MotionIconButton>
-							<MotionIconButton
+							</Button>
+							<Button
 								type="button"
-								size="sm"
+								variant="ghost"
+								size="icon-sm"
+								aria-label="Create note from last reply"
 								title="Create note from last reply"
 								onClick={() =>
 									void onCreateNoteFromLastAssistant(
@@ -526,7 +543,7 @@ export function AIPanel({
 								disabled={!lastAssistantText}
 							>
 								<Sparkles size={14} />
-							</MotionIconButton>
+							</Button>
 						</div>
 						{chat.status === "streaming" ? (
 							<button
@@ -537,16 +554,18 @@ export function AIPanel({
 								Stop
 							</button>
 						) : (
-							<MotionIconButton
+							<Button
 								type="button"
-								size="sm"
+								variant="ghost"
+								size="icon-sm"
 								className="aiComposerSend"
 								disabled={!canSend}
 								onClick={handleSend}
+								aria-label="Send"
 								title="Send"
 							>
 								<Send size={14} />
-							</MotionIconButton>
+							</Button>
 						)}
 					</div>
 				</div>

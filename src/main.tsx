@@ -1,7 +1,9 @@
+import { ThemeProvider } from "next-themes";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import SettingsApp from "./SettingsApp";
+import { Toaster } from "./components/ui/shadcn/sonner";
 
 function isSettingsRoute(hash: string): boolean {
 	return hash.startsWith("#/settings");
@@ -23,6 +25,9 @@ if (!rootEl) throw new Error("Missing #root element");
 
 ReactDOM.createRoot(rootEl).render(
 	<React.StrictMode>
-		<Root />
+		<ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+			<Root />
+			<Toaster />
+		</ThemeProvider>
 	</React.StrictMode>,
 );

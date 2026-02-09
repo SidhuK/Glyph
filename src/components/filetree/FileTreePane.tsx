@@ -3,8 +3,8 @@ import type { CSSProperties } from "react";
 import { memo, useCallback, useState } from "react";
 import type { DirChildSummary, FsEntry } from "../../lib/tauri";
 import { parentDir } from "../../utils/path";
-import { Plus } from "../Icons";
-import { MotionIconButton } from "../MotionUI";
+import { FolderPlus, Plus } from "../Icons";
+import { Button } from "../ui/shadcn/button";
 import { FileTreeDirItem, FileTreeFileItem } from "./FileTreeItem";
 
 interface FileTreePaneProps {
@@ -141,13 +141,24 @@ export const FileTreePane = memo(function FileTreePane({
 			transition={springTransition}
 		>
 			<div className="fileTreeHeader">
-				<MotionIconButton
+				<Button
 					type="button"
+					variant="ghost"
+					size="icon-sm"
 					onClick={onNewFile}
 					title="New Markdown file"
 				>
 					<Plus size={16} />
-				</MotionIconButton>
+				</Button>
+				<Button
+					type="button"
+					variant="ghost"
+					size="icon-sm"
+					onClick={() => void handleCreateFolder("")}
+					title="New folder"
+				>
+					<FolderPlus size={16} />
+				</Button>
 			</div>
 			{rootEntries.length ? (
 				<div className="fileTreeScroll">

@@ -2,6 +2,7 @@ import { motion } from "motion/react";
 import { memo, useMemo } from "react";
 import { RotateCcw, Save } from "../Icons";
 import { CanvasNoteInlineEditor } from "../editor";
+import { Button } from "../ui/shadcn/button";
 import { useCanvasNoteEdit } from "./contexts";
 import { isNoteNode } from "./types";
 import type { CanvasNode } from "./types";
@@ -77,9 +78,10 @@ export const CanvasNoteOverlayEditor = memo(function CanvasNoteOverlayEditor({
 					</div>
 				</div>
 				<div className="canvasNoteEditorActions">
-					<button
+					<Button
 						type="button"
-						className="iconBtn sm"
+						variant="ghost"
+						size="icon-xs"
 						title={session?.dirty ? "Save" : "Saved"}
 						disabled={
 							!session?.dirty ||
@@ -89,15 +91,16 @@ export const CanvasNoteOverlayEditor = memo(function CanvasNoteOverlayEditor({
 						onClick={() => saveNow()}
 					>
 						<Save size={14} />
-					</button>
-					<button
+					</Button>
+					<Button
 						type="button"
-						className="iconBtn sm"
+						variant="ghost"
+						size="icon-xs"
 						title="Reload from disk"
 						onClick={() => reloadFromDisk()}
 					>
 						<RotateCcw size={14} />
-					</button>
+					</Button>
 				</div>
 			</div>
 
@@ -107,22 +110,24 @@ export const CanvasNoteOverlayEditor = memo(function CanvasNoteOverlayEditor({
 						{session.errorMessage}
 					</div>
 					<div className="canvasNoteEditorErrorActions">
-						<button
+						<Button
 							type="button"
-							className="iconBtn sm"
+							variant="ghost"
+							size="icon-xs"
 							title="Reload from disk"
 							onClick={() => reloadFromDisk()}
 						>
 							<RotateCcw size={14} />
-						</button>
-						<button
+						</Button>
+						<Button
 							type="button"
-							className="iconBtn sm"
+							variant="ghost"
+							size="icon-xs"
 							title="Overwrite on-disk file"
 							onClick={() => overwriteDisk()}
 						>
 							<Save size={14} />
-						</button>
+						</Button>
 					</div>
 				</div>
 			) : null}

@@ -1,0 +1,56 @@
+:root {
+	--background: 0 0% 100%;
+	--foreground: 40 5% 22%;
+	--card: 0 0% 100%;
+	--card-foreground: 40 5% 22%;
+	--popover: 0 0% 100%;
+	--popover-foreground: 40 5% 22%;
+	--primary: 40 5% 22%;
+	--primary-foreground: 0 0% 100%;
+	--secondary: 35 12% 96%;
+	--secondary-foreground: 40 5% 22%;
+	--muted: 35 12% 96%;
+	--muted-foreground: 40 5% 42%;
+	--accent: 35 12% 96%;
+	--accent-foreground: 40 5% 22%;
+	--destructive: 0 72% 56%;
+	--destructive-foreground: 0 0% 100%;
+	--border: 40 7% 82%;
+	--input: 40 7% 82%;
+	--ring: 40 5% 22%;
+	--radius: var(--radius-md);
+	--motion-duration-fast: 120ms;
+	--motion-duration-base: 180ms;
+	--motion-duration-slow: 260ms;
+	--motion-ease-standard: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.dark {
+	--background: 210 8% 20%;
+	--foreground: 0 0% 92%;
+	--card: 208 7% 23%;
+	--card-foreground: 0 0% 92%;
+	--popover: 208 7% 23%;
+	--popover-foreground: 0 0% 92%;
+	--primary: 0 0% 92%;
+	--primary-foreground: 210 8% 20%;
+	--secondary: 210 7% 25%;
+	--secondary-foreground: 0 0% 92%;
+	--muted: 210 7% 25%;
+	--muted-foreground: 0 0% 68%;
+	--accent: 210 7% 25%;
+	--accent-foreground: 0 0% 92%;
+	--destructive: 0 68% 55%;
+	--destructive-foreground: 0 0% 96%;
+	--border: 0 0% 36%;
+	--input: 0 0% 36%;
+	--ring: 0 0% 92%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	:root {
+		--motion-duration-fast: 1ms;
+		--motion-duration-base: 1ms;
+		--motion-duration-slow: 1ms;
+	}
+}

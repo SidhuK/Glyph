@@ -32,11 +32,6 @@
 	padding: 0 var(--space-2) var(--space-2);
 }
 
-.canvasesActions .segBtn {
-	width: 100%;
-	justify-content: center;
-}
-
 .canvasesSearchWrap {
 	padding: 0 var(--space-2) var(--space-2);
 }

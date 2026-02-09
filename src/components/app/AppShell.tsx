@@ -19,8 +19,8 @@ import { isMarkdownPath } from "../../utils/path";
 import { onWindowDragMouseDown } from "../../utils/window";
 import type { CanvasExternalCommand } from "../CanvasPane";
 import { PanelLeftClose, PanelLeftOpen } from "../Icons";
-import { MotionIconButton } from "../MotionUI";
 import { AIFloatingHost } from "../ai/AIFloatingHost";
+import { Button } from "../ui/shadcn/button";
 import { type Command, CommandPalette } from "./CommandPalette";
 import { MainContent } from "./MainContent";
 import { Sidebar } from "./Sidebar";
@@ -442,9 +442,14 @@ export function AppShell() {
 				onMouseDown={onWindowDragMouseDown}
 			/>
 			<div className="sidebarTopToggle">
-				<MotionIconButton
+				<Button
+					data-sidebar="trigger"
 					type="button"
-					size="sm"
+					variant="ghost"
+					size="icon-sm"
+					aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+					aria-pressed={!sidebarCollapsed}
+					data-window-drag-ignore
 					onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
 					title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
 				>
@@ -453,7 +458,7 @@ export function AppShell() {
 					) : (
 						<PanelLeftClose size={14} />
 					)}
-				</MotionIconButton>
+				</Button>
 			</div>
 
 			<Sidebar

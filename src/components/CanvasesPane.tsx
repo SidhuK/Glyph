@@ -2,6 +2,8 @@ import { memo, useEffect, useMemo, useState } from "react";
 import type { CanvasLibraryMeta } from "../lib/canvases";
 import { type FsEntry, invoke } from "../lib/tauri";
 import { Layout, Plus } from "./Icons";
+import { Button } from "./ui/shadcn/button";
+import { Input } from "./ui/shadcn/input";
 
 interface CanvasesPaneProps {
 	canvases: CanvasLibraryMeta[];
@@ -105,36 +107,39 @@ export const CanvasesPane = memo(function CanvasesPane({
 					<Layout size={14} />
 					Canvases
 				</h2>
-				<button
+				<Button
 					type="button"
-					className="iconBtn"
+					variant="ghost"
+					size="icon-sm"
 					onClick={onCreateCanvas}
 					title="New canvas"
 					data-window-drag-ignore
 				>
 					<Plus size={16} />
-				</button>
+				</Button>
 			</div>
 			<div className="canvasesActions">
-				<button
+				<Button
 					type="button"
-					className="segBtn"
+					variant="outline"
+					size="sm"
 					onClick={openPicker}
 					data-window-drag-ignore
 				>
 					Add
-				</button>
-				<button
+				</Button>
+				<Button
 					type="button"
-					className="segBtn"
+					variant="outline"
+					size="sm"
 					onClick={onCreateNoteInCanvas}
 					data-window-drag-ignore
 				>
 					New Note
-				</button>
+				</Button>
 			</div>
 			<div className="canvasesSearchWrap">
-				<input
+				<Input
 					type="search"
 					className="canvasesSearch"
 					placeholder="Search canvases..."
@@ -151,7 +156,7 @@ export const CanvasesPane = memo(function CanvasesPane({
 							{selectedPaths.length} selected
 						</div>
 					</div>
-					<input
+					<Input
 						type="search"
 						className="canvasPickerSearch"
 						placeholder="Search markdown notes..."
@@ -183,23 +188,24 @@ export const CanvasesPane = memo(function CanvasesPane({
 						)}
 					</div>
 					<div className="canvasPickerActions">
-						<button
+						<Button
 							type="button"
-							className="segBtn"
+							variant="outline"
+							size="sm"
 							onClick={() => setPickerOpen(false)}
 							data-window-drag-ignore
 						>
 							Cancel
-						</button>
-						<button
+						</Button>
+						<Button
 							type="button"
-							className="segBtn active"
+							size="sm"
 							onClick={() => void submitPicker()}
 							disabled={!selectedPaths.length || pickerBusy}
 							data-window-drag-ignore
 						>
 							{pickerBusy ? "Adding..." : "Add Selected"}
-						</button>
+						</Button>
 					</div>
 				</div>
 			) : null}

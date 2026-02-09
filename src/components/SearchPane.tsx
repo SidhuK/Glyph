@@ -2,7 +2,8 @@ import { AnimatePresence, motion } from "motion/react";
 import { Fragment, memo, useCallback } from "react";
 import type { ChangeEvent, ReactNode } from "react";
 import type { SearchResult } from "../lib/tauri";
-import { MotionIconButton, MotionInput } from "./MotionUI";
+import { Button } from "./ui/shadcn/button";
+import { Input } from "./ui/shadcn/input";
 
 interface SearchPaneProps {
 	query: string;
@@ -70,8 +71,10 @@ export const SearchPane = memo(function SearchPane({
 			<div className="searchHeader">
 				<div className="searchTitle">Search</div>
 				{onOpenAsCanvas ? (
-					<MotionIconButton
+					<Button
 						type="button"
+						variant="ghost"
+						size="icon-sm"
 						onClick={() => onOpenAsCanvas(query)}
 						disabled={!query.trim()}
 						title={
@@ -81,7 +84,7 @@ export const SearchPane = memo(function SearchPane({
 						}
 					>
 						▦
-					</MotionIconButton>
+					</Button>
 				) : null}
 				<AnimatePresence>
 					{isSearching && (
@@ -108,7 +111,7 @@ export const SearchPane = memo(function SearchPane({
 				</AnimatePresence>
 			</div>
 			<div className="searchBody">
-				<MotionInput
+				<Input
 					ref={onSearchInputRef}
 					value={query}
 					onChange={onChange}

@@ -1,7 +1,8 @@
 import { openSettingsWindow } from "../../lib/windows";
+import { cn } from "../../utils/cn";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { FolderOpen, FolderPlus, Search, Settings } from "../Icons";
-import { Button } from "../MotionUI";
+import { Button } from "../ui/shadcn/button";
 
 interface SidebarHeaderProps {
 	vaultPath: string | null;
@@ -37,19 +38,19 @@ export function SidebarHeader({
 					{vaultPath && (
 						<Button
 							type="button"
-							variant="icon"
-							size="sm"
+							variant="ghost"
+							size="icon-sm"
 							onClick={() => setShowSearch(!showSearch)}
 							title="Search"
-							active={showSearch}
+							className={cn(showSearch && "bg-accent text-accent-foreground")}
 						>
 							<Search size={14} />
 						</Button>
 					)}
 					<Button
 						type="button"
-						variant="icon"
-						size="sm"
+						variant="ghost"
+						size="icon-sm"
 						onClick={onCreateVault}
 						title="Create vault"
 					>
@@ -57,8 +58,8 @@ export function SidebarHeader({
 					</Button>
 					<Button
 						type="button"
-						variant="icon"
-						size="sm"
+						variant="ghost"
+						size="icon-sm"
 						onClick={onOpenVault}
 						title="Open vault"
 					>
@@ -66,8 +67,8 @@ export function SidebarHeader({
 					</Button>
 					<Button
 						type="button"
-						variant="icon"
-						size="sm"
+						variant="ghost"
+						size="icon-sm"
 						onClick={() => void openSettingsWindow("general")}
 						title="Settings"
 					>
@@ -75,8 +76,8 @@ export function SidebarHeader({
 					</Button>
 					<Button
 						type="button"
-						variant="icon"
-						size="sm"
+						variant="ghost"
+						size="icon-sm"
 						onClick={onOpenCommandPalette}
 						title="Command palette"
 					>

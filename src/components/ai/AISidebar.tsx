@@ -1,11 +1,11 @@
 import { type UIMessage, useChat } from "@ai-sdk/react";
-import { motion } from "motion/react";
+import { motion, useReducedMotion } from "motion/react";
 import { useEffect, useMemo, useState } from "react";
 import { TauriChatTransport } from "../../lib/ai/tauriChatTransport";
 import { openSettingsWindow } from "../../lib/windows";
 import { cn } from "../../utils/cn";
 import { Settings as SettingsIcon, Sparkles, X } from "../Icons";
-import { MotionIconButton } from "../MotionUI";
+import { Button } from "../ui/shadcn/button";
 import styles from "./ChatUI.module.css";
 import { useAiContext } from "./useAiContext";
 import { useAiProfiles } from "./useAiProfiles";
@@ -73,6 +73,7 @@ export function AISidebar({
 
 	const profiles = useAiProfiles();
 	const context = useAiContext({ activeFolderPath });
+	const shouldReduceMotion = useReducedMotion();
 	const setContextSearch = context.setContextSearch;
 	const trigger = parseAddTrigger(input);
 	const showAddPanel = addPanelOpen || Boolean(trigger);
@@ -137,7 +138,7 @@ export function AISidebar({
 			animate={{ x: isOpen ? 0 : width, opacity: isOpen ? 1 : 0 }}
 			initial={false}
 			transition={
-				isResizing
+				isResizing || shouldReduceMotion
 					? { type: "tween", duration: 0 }
 					: { type: "spring", stiffness: 180, damping: 22, mass: 0.8 }
 			}
@@ -188,9 +189,11 @@ export function AISidebar({
 								: "No key"}
 					</div>
 
-					<MotionIconButton
+					<Button
 						type="button"
-						size="sm"
+						variant="ghost"
+						size="icon-sm"
+						aria-label="Settings"
 						onClick={() => {
 							onOpenSettings();
 							void openSettingsWindow("ai");
@@ -198,15 +201,17 @@ export function AISidebar({
 						title="Settings"
 					>
 						<SettingsIcon size={14} />
-					</MotionIconButton>
-					<MotionIconButton
+					</Button>
+					<Button
 						type="button"
-						size="sm"
+						variant="ghost"
+						size="icon-sm"
+						aria-label="Close"
 						onClick={onClose}
 						title="Close"
 					>
 						<X size={14} />
-					</MotionIconButton>
+					</Button>
 				</div>
 			</div>
 
@@ -278,8 +283,8 @@ export function AISidebar({
 									key={`${item.kind}:${item.path || "vault"}`}
 									type="button"
 									className={`${styles.contextChip} ${styles.badge}`}
-									whileHover={{ y: -1 }}
-									whileTap={{ scale: 0.98 }}
+									whileHover={shouldReduceMotion ? undefined : { y: -1 }}
+									whileTap={shouldReduceMotion ? undefined : { scale: 0.98 }}
 									onClick={() => context.removeContext(item.kind, item.path)}
 									title={`Remove ${item.kind}`}
 								>
@@ -334,8 +339,8 @@ export function AISidebar({
 										key={`${item.kind}:${item.path || "vault"}`}
 										type="button"
 										className={styles.addPanelItem}
-										whileHover={{ x: 4 }}
-										whileTap={{ scale: 0.98 }}
+										whileHover={shouldReduceMotion ? undefined : { x: 4 }}
+										whileTap={shouldReduceMotion ? undefined : { scale: 0.98 }}
 										onClick={() => handleAddContext(item.kind, item.path)}
 									>
 										<span className={styles.addPanelName}>

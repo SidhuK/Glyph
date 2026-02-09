@@ -18,7 +18,11 @@ export const MotionButton = forwardRef<HTMLButtonElement, MotionButtonProps>(
 		ref,
 	) => {
 		const baseClass =
-			size === "sm" ? "iconBtn sm" : variant === "icon" ? "iconBtn" : "";
+			size === "sm"
+				? "inline-flex size-8 items-center justify-center rounded-md"
+				: variant === "icon"
+					? "inline-flex size-9 items-center justify-center rounded-md"
+					: "";
 		const variantClass =
 			variant === "primary" ? "primary" : variant === "ghost" ? "ghost" : "";
 
@@ -44,8 +48,11 @@ type IconButtonProps = HTMLMotionProps<"button"> & {
 
 export const MotionIconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
 	({ className = "", active = false, size = "default", ...props }, ref) => {
-		const sizeClass = size === "sm" ? "iconBtn sm" : "iconBtn";
-		const activeClass = active ? "active" : "";
+		const sizeClass =
+			size === "sm"
+				? "inline-flex size-8 items-center justify-center rounded-md"
+				: "inline-flex size-9 items-center justify-center rounded-md";
+		const activeClass = active ? "bg-accent text-accent-foreground" : "";
 
 		return (
 			<motion.button

@@ -1,6 +1,7 @@
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useUIContext, useVault } from "../../contexts";
 import type { CanvasLibraryMeta } from "../../lib/canvases";
+import { cn } from "../../utils/cn";
 import { SidebarContent } from "./SidebarContent";
 import { SidebarHeader } from "./SidebarHeader";
 
@@ -49,22 +50,35 @@ export function Sidebar({
 	const { vaultPath, onOpenVault, onCreateVault } = useVault();
 	const { sidebarCollapsed } = useUIContext();
 	const { showSearch, setShowSearch } = useUIContext();
+	const shouldReduceMotion = useReducedMotion();
+	const sidebarState = sidebarCollapsed ? "collapsed" : "expanded";
 
 	return (
 		<motion.aside
-			className={`sidebar ${sidebarCollapsed ? "sidebarCollapsed" : ""}`}
+			data-slot="sidebar"
+			data-sidebar="sidebar"
+			data-state={sidebarState}
+			data-collapsible={sidebarCollapsed ? "offcanvas" : ""}
+			className={cn("sidebar", sidebarCollapsed && "sidebarCollapsed")}
 			layout
-			transition={{ type: "spring", stiffness: 400, damping: 30 }}
+			transition={
+				shouldReduceMotion
+					? { type: "tween", duration: 0 }
+					: { type: "spring", stiffness: 400, damping: 30 }
+			}
 		>
 			<AnimatePresence>
 				{!sidebarCollapsed && (
 					<motion.div
 						key="sidebar-content"
+						data-slot="sidebar-inner"
 						className="sidebarContentRoot"
-						initial={{ opacity: 0 }}
+						initial={shouldReduceMotion ? false : { opacity: 0 }}
 						animate={{ opacity: 1 }}
-						exit={{ opacity: 0 }}
-						transition={{ duration: 0.15 }}
+						exit={shouldReduceMotion ? {} : { opacity: 0 }}
+						transition={
+							shouldReduceMotion ? { duration: 0 } : { duration: 0.15 }
+						}
 					>
 						<SidebarHeader
 							vaultPath={vaultPath}

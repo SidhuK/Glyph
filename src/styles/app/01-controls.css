@@ -70,27 +70,3 @@ button.ghost {
 button.ghost:hover {
 	background: var(--bg-hover);
 }
-
-/* Icon buttons - pill shaped */
-button.iconBtn {
-	width: var(--button-height);
-	height: var(--button-height);
-	padding: 0;
-	color: var(--text-tertiary);
-	border-radius: var(--radius-lg);
-}
-
-button.iconBtn:hover {
-	color: var(--text-primary);
-	background: var(--bg-hover);
-}
-
-button.iconBtn.active {
-	color: var(--interactive-accent);
-	background: var(--selection-bg-muted);
-}
-
-button.iconBtn.sm {
-	width: var(--button-height-sm);
-	height: var(--button-height-sm);
-}

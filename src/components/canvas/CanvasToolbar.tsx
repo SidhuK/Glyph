@@ -1,4 +1,5 @@
 import { memo } from "react";
+import { cn } from "../../utils/cn";
 import {
 	AlignCenter,
 	AlignCenterVertical,
@@ -16,7 +17,7 @@ import {
 	StickyNote,
 	Type,
 } from "../Icons";
-import { Button } from "../MotionUI";
+import { Button } from "../ui/shadcn/button";
 
 interface CanvasToolbarProps {
 	snapToGrid: boolean;
@@ -54,18 +55,26 @@ export const CanvasToolbar = memo(function CanvasToolbar({
 	return (
 		<div className="canvasToolbar">
 			<Button
-				variant="icon"
+				variant="ghost"
+				size="icon"
 				type="button"
 				onClick={onAddText}
 				title="Add text block"
 			>
 				<Type size={16} />
 			</Button>
-			<Button variant="icon" type="button" onClick={onAddLink} title="Add link">
+			<Button
+				variant="ghost"
+				size="icon"
+				type="button"
+				onClick={onAddLink}
+				title="Add link"
+			>
 				<Link size={16} />
 			</Button>
 			<Button
-				variant="icon"
+				variant="ghost"
+				size="icon"
 				type="button"
 				onClick={onAddNote}
 				disabled={!hasActiveNote}
@@ -74,7 +83,8 @@ export const CanvasToolbar = memo(function CanvasToolbar({
 				<StickyNote size={16} />
 			</Button>
 			<Button
-				variant="icon"
+				variant="ghost"
+				size="icon"
 				type="button"
 				onClick={onRefreshLink}
 				disabled={!hasSelectedLink}
@@ -84,7 +94,8 @@ export const CanvasToolbar = memo(function CanvasToolbar({
 			</Button>
 			<span className="toolbarDivider" />
 			<Button
-				variant="icon"
+				variant="ghost"
+				size="icon"
 				type="button"
 				onClick={onFrameSelection}
 				disabled={!selectedCount}
@@ -93,16 +104,18 @@ export const CanvasToolbar = memo(function CanvasToolbar({
 				<Frame size={16} />
 			</Button>
 			<Button
-				variant="icon"
+				variant="ghost"
+				size="icon"
 				type="button"
-				active={snapToGrid}
+				className={cn(snapToGrid && "bg-accent text-accent-foreground")}
 				onClick={onToggleSnap}
 				title="Toggle snap to grid"
 			>
 				<Grid3X3 size={16} />
 			</Button>
 			<Button
-				variant="icon"
+				variant="ghost"
+				size="icon"
 				type="button"
 				onClick={onReflowGrid}
 				title="Reflow to grid"
@@ -111,7 +124,8 @@ export const CanvasToolbar = memo(function CanvasToolbar({
 			</Button>
 			<span className="toolbarDivider" />
 			<Button
-				variant="icon"
+				variant="ghost"
+				size="icon"
 				type="button"
 				onClick={() => onAlign("left")}
 				disabled={selectedCount < 2}
@@ -120,7 +134,8 @@ export const CanvasToolbar = memo(function CanvasToolbar({
 				<AlignLeft size={16} />
 			</Button>
 			<Button
-				variant="icon"
+				variant="ghost"
+				size="icon"
 				type="button"
 				onClick={() => onAlign("centerX")}
 				disabled={selectedCount < 2}
@@ -129,7 +144,8 @@ export const CanvasToolbar = memo(function CanvasToolbar({
 				<AlignCenter size={16} />
 			</Button>
 			<Button
-				variant="icon"
+				variant="ghost"
+				size="icon"
 				type="button"
 				onClick={() => onAlign("right")}
 				disabled={selectedCount < 2}
@@ -138,7 +154,8 @@ export const CanvasToolbar = memo(function CanvasToolbar({
 				<AlignRight size={16} />
 			</Button>
 			<Button
-				variant="icon"
+				variant="ghost"
+				size="icon"
 				type="button"
 				onClick={() => onAlign("top")}
 				disabled={selectedCount < 2}
@@ -147,7 +164,8 @@ export const CanvasToolbar = memo(function CanvasToolbar({
 				<AlignStartVertical size={16} />
 			</Button>
 			<Button
-				variant="icon"
+				variant="ghost"
+				size="icon"
 				type="button"
 				onClick={() => onAlign("centerY")}
 				disabled={selectedCount < 2}
@@ -156,7 +174,8 @@ export const CanvasToolbar = memo(function CanvasToolbar({
 				<AlignCenterVertical size={16} />
 			</Button>
 			<Button
-				variant="icon"
+				variant="ghost"
+				size="icon"
 				type="button"
 				onClick={() => onAlign("bottom")}
 				disabled={selectedCount < 2}
@@ -166,7 +185,8 @@ export const CanvasToolbar = memo(function CanvasToolbar({
 			</Button>
 			<span className="toolbarDivider" />
 			<Button
-				variant="icon"
+				variant="ghost"
+				size="icon"
 				type="button"
 				onClick={() => onDistribute("x")}
 				disabled={selectedCount < 3}
@@ -175,7 +195,8 @@ export const CanvasToolbar = memo(function CanvasToolbar({
 				<AlignHorizontalSpaceAround size={16} />
 			</Button>
 			<Button
-				variant="icon"
+				variant="ghost"
+				size="icon"
 				type="button"
 				onClick={() => onDistribute("y")}
 				disabled={selectedCount < 3}

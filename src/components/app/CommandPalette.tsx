@@ -6,13 +6,14 @@ import {
 } from "../../lib/shortcuts";
 import {
 	CommandEmpty,
+	CommandGroup,
 	CommandInput,
 	CommandItem,
 	CommandList,
 	Command as CommandRoot,
-	Dialog,
-	DialogContent,
-} from "../MotionUI";
+	CommandShortcut,
+} from "../ui/shadcn/command";
+import { Dialog, DialogContent, DialogTitle } from "../ui/shadcn/dialog";
 
 export interface Command {
 	id: string;
@@ -36,7 +37,6 @@ export function CommandPalette({
 	const [query, setQuery] = useState("");
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	const inputRef = useRef<HTMLInputElement | null>(null);
-	const panelRef = useRef<HTMLDialogElement | null>(null);
 	const previousFocusRef = useRef<Element | null>(null);
 
 	const filtered = useMemo(() => {
@@ -53,8 +53,7 @@ export function CommandPalette({
 		setQuery("");
 		setSelectedIndex(0);
 		window.requestAnimationFrame(() => {
-			panelRef.current?.focus();
-			window.requestAnimationFrame(() => inputRef.current?.focus());
+			inputRef.current?.focus();
 		});
 		return () => {
 			const prev = previousFocusRef.current;
@@ -78,17 +77,8 @@ export function CommandPalette({
 	return (
 		<Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
 			<DialogContent
-				ref={panelRef}
-				className="commandPalette"
-				aria-label="Command palette"
-				tabIndex={-1}
+				className="commandPalette p-0"
 				onKeyDown={(e) => {
-					e.stopPropagation();
-					if (e.key === "Escape") {
-						e.preventDefault();
-						onClose();
-						return;
-					}
 					if (e.key === "ArrowDown") {
 						e.preventDefault();
 						setSelectedIndex((curr) =>
@@ -107,36 +97,35 @@ export function CommandPalette({
 					}
 				}}
 			>
+				<DialogTitle className="sr-only">Command Palette</DialogTitle>
 				<CommandRoot>
 					<CommandInput
 						ref={inputRef}
-						type="text"
 						placeholder="Type a command"
 						value={query}
-						onChange={(e) => setQuery(e.target.value)}
+						onValueChange={setQuery}
 					/>
 					<CommandList aria-label="Command results">
-						{filtered.map((cmd, index) => (
-							<li key={cmd.id}>
+						<CommandGroup>
+							{filtered.map((cmd, index) => (
 								<CommandItem
-									selected={index === selectedIndex}
+									key={cmd.id}
+									value={cmd.label}
+									data-selected={index === selectedIndex}
 									onMouseEnter={() => setSelectedIndex(index)}
-									onClick={() => runCommand(index)}
+									onSelect={() => runCommand(index)}
 								>
 									<span>{cmd.label}</span>
 									{cmd.shortcut ? (
-										<span
-											className="commandPaletteShortcut"
-											aria-label={formatShortcut(cmd.shortcut)}
-										>
+										<CommandShortcut aria-label={formatShortcut(cmd.shortcut)}>
 											{formatShortcutParts(cmd.shortcut).map((part) => (
 												<kbd key={part}>{part}</kbd>
 											))}
-										</span>
+										</CommandShortcut>
 									) : null}
 								</CommandItem>
-							</li>
-						))}
+							))}
+						</CommandGroup>
 						{filtered.length === 0 ? (
 							<CommandEmpty>No commands</CommandEmpty>
 						) : null}

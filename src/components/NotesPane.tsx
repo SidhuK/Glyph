@@ -1,6 +1,7 @@
 import { memo } from "react";
 import type { NoteMeta } from "../lib/tauri";
 import { FileText, Plus, Trash2 } from "./Icons";
+import { Button } from "./ui/shadcn/button";
 
 interface NotesPaneProps {
 	notes: NoteMeta[];
@@ -24,14 +25,15 @@ export const NotesPane = memo(function NotesPane({
 					<FileText size={14} />
 					Notes
 				</h2>
-				<button
+				<Button
 					type="button"
-					className="iconBtn"
+					variant="ghost"
+					size="icon-sm"
 					onClick={onCreateNote}
 					title="New note"
 				>
 					<Plus size={16} />
-				</button>
+				</Button>
 			</div>
 			<ul className="notesList">
 				{notes.map((n) => {

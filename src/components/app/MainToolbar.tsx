@@ -1,6 +1,7 @@
+import { cn } from "../../utils/cn";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { Sparkles } from "../Icons";
-import { Button } from "../MotionUI";
+import { Button } from "../ui/shadcn/button";
 
 interface MainToolbarProps {
 	aiSidebarOpen: boolean;
@@ -21,8 +22,9 @@ export function MainToolbar({
 			<div className="mainToolbarRight">
 				<Button
 					type="button"
-					variant="icon"
-					active={aiSidebarOpen}
+					variant="ghost"
+					size="icon"
+					className={cn(aiSidebarOpen && "bg-accent text-accent-foreground")}
 					onClick={onToggleAISidebar}
 					title="Toggle AI assistant"
 				>

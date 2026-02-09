@@ -12,7 +12,8 @@ import {
 	Settings as SettingsIcon,
 	Sparkles,
 } from "./components/Icons";
-import { MotionIconButton, MotionInput } from "./components/MotionUI";
+import { Button } from "./components/ui/shadcn/button";
+import { Input } from "./components/ui/shadcn/input";
 import { AiSettingsPane } from "./components/settings/AiSettingsPane";
 import { GeneralSettingsPane } from "./components/settings/GeneralSettingsPane";
 import { VaultSettingsPane } from "./components/settings/VaultSettingsPane";
@@ -137,20 +138,21 @@ export default function SettingsApp() {
 				</div>
 				<div className="settingsHeaderRight">
 					<div className="settingsSearch" data-window-drag-ignore>
-						<MotionInput
+						<Input
 							className="settingsSearchInput"
 							placeholder="Search settings"
 						/>
 					</div>
-					<MotionIconButton
+					<Button
 						type="button"
-						size="sm"
+						variant="ghost"
+						size="icon-sm"
 						onClick={() => setSettingsHash("ai")}
 						title="AI settings"
-						active={tab === "ai"}
+						className={cn(tab === "ai" && "bg-accent text-accent-foreground")}
 					>
 						<Sparkles size={14} />
-					</MotionIconButton>
+					</Button>
 				</div>
 			</div>
 
