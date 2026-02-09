@@ -1,0 +1,187 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   AI Tool Indicator Styles
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* Container for multiple tools */
+.toolGroup {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-2);
+	margin-top: var(--space-2);
+}
+
+/* Single tool indicator */
+.toolIndicator {
+	border-radius: var(--radius-lg);
+	border: 1px solid var(--border-light);
+	background: color-mix(in srgb, var(--bg-secondary) 80%, transparent);
+	overflow: hidden;
+	transition: border-color var(--transition-base), background
+		var(--transition-base);
+}
+
+/* Tool header row */
+.toolHeader {
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+	padding: var(--space-2) var(--space-3);
+	cursor: pointer;
+	user-select: none;
+	width: 100%;
+	background: transparent;
+	border: none;
+	text-align: left;
+	font: inherit;
+	color: inherit;
+}
+
+.toolHeader:disabled {
+	cursor: default;
+}
+
+/* Status icon */
+.statusIcon {
+	width: 16px;
+	height: 16px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	font-size: 12px;
+}
+
+/* Tool name */
+.toolName {
+	font-size: var(--text-xs);
+	font-weight: var(--font-medium);
+	color: var(--text-secondary);
+	font-family: var(--font-mono);
+	flex: 1;
+}
+
+/* Expand/collapse chevron */
+.chevron {
+	font-size: 10px;
+	color: var(--text-tertiary);
+	transition: transform var(--transition-base);
+}
+
+/* Expandable result section */
+.toolPayload {
+	padding: 0 var(--space-3) var(--space-2);
+	overflow: hidden;
+}
+
+.toolPayload pre {
+	font-size: var(--text-xs);
+	font-family: var(--font-mono);
+	color: var(--text-tertiary);
+	background: var(--bg-tertiary);
+	padding: var(--space-2);
+	border-radius: var(--radius-md);
+	margin: 0;
+	max-height: 200px;
+	overflow: auto;
+	white-space: pre-wrap;
+	word-break: break-word;
+}
+
+.errorText {
+	color: var(--text-error) !important;
+}
+
+/* Hidden count indicator */
+.hiddenCount {
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
+	text-align: center;
+	padding: var(--space-1);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Phase-specific styles
+   ───────────────────────────────────────────────────────────────────────────── */
+
+/* Call (running) state */
+.phase--call {
+	border-color: color-mix(
+		in srgb,
+		var(--color-blue-500) 30%,
+		var(--border-light)
+	);
+	background: color-mix(in srgb, var(--color-blue-50) 50%, transparent);
+}
+
+.phase--call .statusIcon {
+	color: var(--color-blue-500);
+}
+
+/* Result (success) state */
+.phase--result {
+	border-color: color-mix(
+		in srgb,
+		var(--color-green-500) 20%,
+		var(--border-light)
+	);
+	background: color-mix(in srgb, var(--color-green-100) 40%, transparent);
+}
+
+.phase--result .statusIcon {
+	color: var(--color-green-500);
+}
+
+/* Error state */
+.phase--error {
+	border-color: color-mix(
+		in srgb,
+		var(--color-red-500) 30%,
+		var(--border-light)
+	);
+	background: color-mix(in srgb, var(--color-red-100) 50%, transparent);
+}
+
+.phase--error .statusIcon {
+	color: var(--color-red-500);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Dark mode adjustments
+   ───────────────────────────────────────────────────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+	.phase--call {
+		background: color-mix(in srgb, var(--color-blue-500) 12%, transparent);
+	}
+
+	.phase--result {
+		background: color-mix(in srgb, var(--color-green-500) 12%, transparent);
+	}
+
+	.phase--error {
+		background: color-mix(in srgb, var(--color-red-500) 12%, transparent);
+	}
+}
+
+/* Also support data-theme attribute for explicit theme control */
+[data-theme="dark"] .phase--call {
+	background: color-mix(in srgb, var(--color-blue-500) 12%, transparent);
+}
+
+[data-theme="dark"] .phase--result {
+	background: color-mix(in srgb, var(--color-green-500) 12%, transparent);
+}
+
+[data-theme="dark"] .phase--error {
+	background: color-mix(in srgb, var(--color-red-500) 12%, transparent);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   Compact mode
+   ───────────────────────────────────────────────────────────────────────────── */
+.toolIndicator[data-compact="true"] .toolHeader {
+	padding: var(--space-1) var(--space-2);
+}
+
+.toolIndicator[data-compact="true"] .toolName {
+	font-size: 10px;
+}

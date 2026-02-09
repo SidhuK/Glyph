@@ -1,0 +1,553 @@
+/* ═══════════════════════════════════════════════════════════════════════════
+   CHAT UI MODULE - Polished chat components using design tokens
+   ═══════════════════════════════════════════════════════════════════════════ */
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   CHAT THREAD / MESSAGES CONTAINER
+   ───────────────────────────────────────────────────────────────────────────── */
+.chatThread {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+.chatThread::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chatThread::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chatThread::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: var(--radius-full);
+}
+
+.chatThread::-webkit-scrollbar-thumb:hover {
+  background: var(--scrollbar-thumb-hover);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   EMPTY STATE
+   ───────────────────────────────────────────────────────────────────────────── */
+.chatEmpty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-8) var(--space-4);
+  text-align: center;
+  border: 1px dashed var(--border-light);
+  border-radius: var(--radius-xl);
+  background: color-mix(in srgb, var(--bg-secondary) 50%, transparent);
+  margin: auto;
+  max-width: 280px;
+}
+
+.chatEmptyTitle {
+  font-size: var(--text-sm);
+  color: var(--text-primary);
+  font-weight: var(--font-semibold);
+  line-height: var(--leading-snug);
+}
+
+.chatEmptyMeta {
+  margin-top: var(--space-1);
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  line-height: var(--leading-normal);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   MESSAGE BUBBLES
+   ───────────────────────────────────────────────────────────────────────────── */
+.message {
+  max-width: 88%;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-lg);
+  font-size: var(--text-sm);
+  line-height: var(--leading-relaxed);
+  transition:
+    background var(--transition-base),
+    border-color var(--transition-base),
+    box-shadow var(--transition-base);
+}
+
+/* User message - right aligned with subtle accent */
+.messageUser {
+  align-self: flex-end;
+  background: color-mix(in srgb, var(--color-blue-50) 60%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-blue-100) 50%, transparent);
+  color: var(--text-primary);
+}
+
+/* Assistant message - left aligned, neutral */
+.messageAssistant {
+  align-self: flex-start;
+  background: color-mix(in srgb, var(--bg-secondary) 85%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
+  color: var(--text-primary);
+}
+
+/* Message content */
+.messageContent {
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Message timestamp */
+.messageTimestamp {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  margin-top: var(--space-1);
+  text-align: right;
+  opacity: 0;
+  transition: opacity var(--transition-base);
+}
+
+.message:hover .messageTimestamp {
+  opacity: 1;
+}
+
+.messageUser .messageTimestamp {
+  text-align: right;
+}
+
+.messageAssistant .messageTimestamp {
+  text-align: left;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   TYPING INDICATOR
+   ───────────────────────────────────────────────────────────────────────────── */
+.typingIndicator {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--bg-secondary) 85%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
+  align-self: flex-start;
+}
+
+.typingDot {
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--text-tertiary);
+  animation: typingPulse 1.4s ease-in-out infinite;
+}
+
+.typingDot:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.typingDot:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes typingPulse {
+  0%,
+  60%,
+  100% {
+    opacity: 0.3;
+    transform: scale(0.8);
+  }
+  30% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   CHAT INPUT
+   ───────────────────────────────────────────────────────────────────────────── */
+.inputWrapper {
+  flex-shrink: 0;
+  padding: var(--space-3);
+  border-top: 1px solid color-mix(in srgb, var(--border-light) 40%, transparent);
+  background: transparent;
+}
+
+.input {
+  width: 100%;
+  resize: none;
+  min-height: 44px;
+  max-height: 120px;
+  border-radius: var(--radius-lg);
+  padding: var(--space-2) var(--space-3);
+  font-size: var(--text-sm);
+  font-family: var(--font-sans);
+  line-height: var(--leading-relaxed);
+  background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border-light) 55%, transparent);
+  color: var(--text-primary);
+  transition:
+    border-color var(--transition-base),
+    box-shadow var(--transition-base);
+}
+
+.input::placeholder {
+  color: var(--text-placeholder);
+}
+
+.input:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--color-blue-400) 50%, transparent);
+  box-shadow: 0 0 0 2px
+    color-mix(in srgb, var(--color-blue-100) 30%, transparent);
+}
+
+.input:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   INPUT ACTIONS BAR
+   ───────────────────────────────────────────────────────────────────────────── */
+.actionsBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--space-2);
+  gap: var(--space-2);
+}
+
+.actionsLeft {
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+.actionsRight {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   BUTTONS
+   ───────────────────────────────────────────────────────────────────────────── */
+.button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-1);
+  height: var(--button-height-sm);
+  padding: 0 var(--space-3);
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+  font-weight: var(--font-medium);
+  font-family: var(--font-sans);
+  border: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
+  background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.button:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+  border-color: var(--border-default);
+}
+
+.button:active:not(:disabled) {
+  background: var(--bg-active);
+}
+
+.button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Primary button (Send) */
+.buttonPrimary {
+  background: color-mix(in srgb, var(--color-blue-500) 90%, transparent);
+  border-color: color-mix(in srgb, var(--color-blue-600) 60%, transparent);
+  color: var(--color-white);
+}
+
+.buttonPrimary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-blue-600) 90%, transparent);
+  border-color: color-mix(in srgb, var(--color-blue-700) 60%, transparent);
+  color: var(--color-white);
+}
+
+.buttonPrimary:disabled {
+  background: color-mix(in srgb, var(--color-gray-300) 80%, transparent);
+  border-color: transparent;
+  color: var(--text-tertiary);
+}
+
+/* Danger/Stop button */
+.buttonDanger {
+  border-color: color-mix(in srgb, var(--color-red-500) 40%, transparent);
+  color: var(--color-red-500);
+}
+
+.buttonDanger:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-red-100) 50%, transparent);
+  border-color: color-mix(in srgb, var(--color-red-500) 60%, transparent);
+  color: var(--color-red-600);
+}
+
+/* Ghost button */
+.buttonGhost {
+  background: transparent;
+  border-color: transparent;
+}
+
+.buttonGhost:hover:not(:disabled) {
+  background: var(--bg-hover);
+  border-color: transparent;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   ERROR DISPLAY
+   ───────────────────────────────────────────────────────────────────────────── */
+.error {
+  margin: var(--space-2) var(--space-3);
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-lg);
+  background: color-mix(in srgb, var(--color-red-100) 50%, transparent);
+  border: 1px solid color-mix(in srgb, var(--color-red-500) 30%, transparent);
+  color: var(--color-red-600);
+  font-size: var(--text-xs);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.errorDismiss {
+  flex-shrink: 0;
+  opacity: 0.6;
+  cursor: pointer;
+  transition: opacity var(--transition-base);
+  background: transparent;
+  border: none;
+  color: inherit;
+  font-size: var(--text-xs);
+}
+
+.errorDismiss:hover {
+  opacity: 1;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   CONTEXT CHIPS (Folder/File attachments)
+   ───────────────────────────────────────────────────────────────────────────── */
+.contextBar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  padding: 0 var(--space-3) var(--space-2);
+}
+
+.contextRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  flex: 1;
+}
+
+.contextChip {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-full);
+  font-size: var(--text-xs);
+  border: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
+  background: color-mix(in srgb, var(--bg-secondary) 60%, transparent);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.contextChip:hover {
+  border-color: color-mix(in srgb, var(--color-red-500) 40%, transparent);
+  color: var(--text-primary);
+}
+
+.contextEmpty {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
+.addContextBtn {
+  border-radius: var(--radius-full);
+  padding: var(--space-1) var(--space-3);
+  font-size: var(--text-xs);
+  background: color-mix(in srgb, var(--selection-bg-muted) 65%, transparent);
+  border: 1px solid color-mix(in srgb, var(--border-light) 50%, transparent);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.addContextBtn:hover {
+  background: var(--bg-hover);
+  color: var(--text-primary);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   ADD CONTEXT PANEL
+   ───────────────────────────────────────────────────────────────────────────── */
+.addPanel {
+  margin: 0 var(--space-3) var(--space-2);
+  padding: var(--space-3);
+  border-radius: var(--radius-lg);
+  border: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
+  background: color-mix(in srgb, var(--bg-secondary) 80%, transparent);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.addPanelSearch {
+  width: 100%;
+  height: var(--input-height);
+  border-radius: var(--radius-md);
+  padding: 0 var(--space-2);
+  font-size: var(--text-xs);
+  border: 1px solid color-mix(in srgb, var(--border-light) 50%, transparent);
+  background: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+.addPanelSearch:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--color-blue-400) 50%, transparent);
+}
+
+.addPanelMeta {
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+}
+
+.addPanelList {
+  max-height: 160px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  scrollbar-width: thin;
+}
+
+.addPanelItem {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2);
+  border-radius: var(--radius-md);
+  font-size: var(--text-xs);
+  color: var(--text-primary);
+  text-align: left;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: background var(--transition-base);
+}
+
+.addPanelItem:hover {
+  background: var(--bg-hover);
+}
+
+.addPanelEmpty {
+  padding: var(--space-2);
+  font-size: var(--text-xs);
+  color: var(--text-tertiary);
+  text-align: center;
+}
+
+.addPanelActions {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--space-2);
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   COMPOSER ACTIONS (Secondary actions above input)
+   ───────────────────────────────────────────────────────────────────────────── */
+.composerActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1);
+  margin-bottom: var(--space-2);
+}
+
+.composerActionBtn {
+  font-size: var(--text-xs);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-md);
+  background: transparent;
+  border: 1px solid color-mix(in srgb, var(--border-light) 50%, transparent);
+  color: var(--text-tertiary);
+  cursor: pointer;
+  transition: all var(--transition-base);
+}
+
+.composerActionBtn:hover:not(:disabled) {
+  background: var(--bg-hover);
+  color: var(--text-secondary);
+  border-color: var(--border-default);
+}
+
+.composerActionBtn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* ─────────────────────────────────────────────────────────────────────────────
+   DARK MODE ADJUSTMENTS
+   ───────────────────────────────────────────────────────────────────────────── */
+@media (prefers-color-scheme: dark) {
+  .messageUser {
+    background: color-mix(in srgb, var(--color-blue-900) 30%, transparent);
+    border-color: color-mix(in srgb, var(--color-blue-700) 30%, transparent);
+  }
+
+  .buttonPrimary {
+    background: color-mix(in srgb, var(--color-blue-600) 80%, transparent);
+  }
+
+  .buttonPrimary:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--color-blue-500) 80%, transparent);
+  }
+
+  .error {
+    background: color-mix(in srgb, var(--color-red-500) 15%, transparent);
+    color: var(--color-red-400);
+  }
+}
+
+/* Also support data-theme attribute for manual theme switching */
+[data-theme="dark"] .messageUser {
+  background: color-mix(in srgb, var(--color-blue-900) 30%, transparent);
+  border-color: color-mix(in srgb, var(--color-blue-700) 30%, transparent);
+}
+
+[data-theme="dark"] .buttonPrimary {
+  background: color-mix(in srgb, var(--color-blue-600) 80%, transparent);
+}
+
+[data-theme="dark"] .buttonPrimary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--color-blue-500) 80%, transparent);
+}
+
+[data-theme="dark"] .error {
+  background: color-mix(in srgb, var(--color-red-500) 15%, transparent);
+  color: var(--color-red-400);
+}

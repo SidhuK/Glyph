@@ -58,3 +58,44 @@ export interface ActiveNoteDisk {
 	title: string;
 	markdown: string;
 }
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Tool Calling Types
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Tool event payload from backend
+ * Matches Rust AiToolEvent structure
+ */
+export interface AiToolEventPayload {
+	job_id: string;
+	tool: "search_vault" | "list_files" | "read_file";
+	phase: "call" | "result" | "error";
+	call_id?: string;
+	payload?: unknown;
+	error?: string;
+}
+
+/**
+ * Tool execution phase for UI state
+ */
+export type ToolPhase = "call" | "result" | "error";
+
+/**
+ * UI representation of a tool execution
+ * Tracks the lifecycle of a single tool call
+ */
+export interface ToolExecution {
+	/** Unique ID for React keys - uses call_id or generated fallback */
+	id: string;
+	/** Tool name: search_vault, list_files, read_file */
+	tool: string;
+	/** Current phase in UI state machine */
+	phase: ToolPhase;
+	/** Arguments passed to the tool or result payload */
+	payload?: unknown;
+	/** Error message on failure */
+	error?: string;
+	/** Timestamp when tool was called */
+	timestamp: number;
+}
