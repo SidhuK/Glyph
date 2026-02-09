@@ -75,7 +75,10 @@ export function SidebarHeader({
 						onClick={onOpenCommandPalette}
 						title="Command palette"
 					>
-						<span className="commandPaletteTrigger">⌘K</span>
+						<span className="commandPaletteTrigger" aria-label="Command K">
+							<kbd>⌘</kbd>
+							<kbd>K</kbd>
+						</span>
 					</MotionIconButton>
 				</div>
 			</div>

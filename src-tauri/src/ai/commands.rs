@@ -3,17 +3,15 @@ use tauri_plugin_notification::NotificationExt;
 
 use crate::{io_atomic, vault::VaultState};
 
+use super::agent;
 use super::audit::{audit_log_path, write_audit_log};
 use super::helpers::{http_client, parse_base_url, split_system_and_messages};
-use super::keychain::{keychain_clear, keychain_get, keychain_set};
+use super::history;
+use super::local_secrets;
 use super::state::AiState;
-use super::store::{
-    ensure_default_profiles, migrate_legacy_secrets, read_store, store_path, write_store,
-};
-use super::streaming::{stream_anthropic, stream_gemini, stream_openai_like};
+use super::store::{ensure_default_profiles, read_store, store_path, write_store};
 use super::types::{
     AiChatRequest, AiChatStartResult, AiDoneEvent, AiErrorEvent, AiMessage, AiProfile,
-    AiProviderKind,
 };
 
 #[tauri::command]
@@ -21,7 +19,6 @@ pub async fn ai_profiles_list(app: AppHandle) -> Result<Vec<AiProfile>, String> 
     let path = store_path(&app)?;
     let mut store = read_store(&path);
     ensure_default_profiles(&mut store);
-    migrate_legacy_secrets(&mut store);
     let _ = write_store(&path, &store);
     Ok(store.profiles)
 }
@@ -31,7 +28,6 @@ pub async fn ai_active_profile_get(app: AppHandle) -> Result<Option<String>, Str
     let path = store_path(&app)?;
     let mut store = read_store(&path);
     ensure_default_profiles(&mut store);
-    migrate_legacy_secrets(&mut store);
     let _ = write_store(&path, &store);
     Ok(store
         .active_profile_id
@@ -60,9 +56,6 @@ pub async fn ai_profile_upsert(app: AppHandle, profile: AiProfile) -> Result<AiP
     if next.name.trim().is_empty() {
         next.name = "AI Profile".to_string();
     }
-    if next.model.trim().is_empty() {
-        next.model = "gpt-4o-mini".to_string();
-    }
 
     let _ = parse_base_url(&next)?;
 
@@ -85,36 +78,59 @@ pub async fn ai_profile_upsert(app: AppHandle, profile: AiProfile) -> Result<AiP
 }
 
 #[tauri::command]
-pub async fn ai_profile_delete(app: AppHandle, id: String) -> Result<(), String> {
+pub async fn ai_profile_delete(
+    app: AppHandle,
+    vault_state: State<'_, VaultState>,
+    id: String,
+) -> Result<(), String> {
     let path = store_path(&app)?;
     let mut store = read_store(&path);
     store.profiles.retain(|p| p.id != id);
-    let _ = keychain_clear(&id);
+    if let Ok(root) = vault_state.current_root() {
+        let _ = local_secrets::secret_clear(&root, &id);
+    }
     if store.active_profile_id.as_deref() == Some(&id) {
         store.active_profile_id = store.profiles.first().map(|p| p.id.clone());
     }
     write_store(&path, &store)
 }
 
-#[tauri::command]
-pub async fn ai_secret_set(profile_id: String, api_key: String) -> Result<(), String> {
-    if api_key.trim().is_empty() {
-        return Err("empty secret".to_string());
-    }
-    keychain_set(&profile_id, api_key.trim())
+#[tauri::command(rename_all = "snake_case")]
+pub async fn ai_secret_set(
+    vault_state: State<'_, VaultState>,
+    profile_id: String,
+    api_key: String,
+) -> Result<(), String> {
+    let root = vault_state
+        .current_root()
+        .map_err(|_| "Open a vault to store API keys locally".to_string())?;
+    local_secrets::secret_set(&root, &profile_id, api_key.trim())
 }
 
-#[tauri::command]
-pub async fn ai_secret_clear(profile_id: String) -> Result<(), String> {
-    keychain_clear(&profile_id)
+#[tauri::command(rename_all = "snake_case")]
+pub async fn ai_secret_clear(
+    vault_state: State<'_, VaultState>,
+    profile_id: String,
+) -> Result<(), String> {
+    let root = vault_state
+        .current_root()
+        .map_err(|_| "Open a vault to manage API keys".to_string())?;
+    local_secrets::secret_clear(&root, &profile_id)
 }
 
-#[tauri::command]
-pub async fn ai_secret_status(profile_id: String) -> Result<bool, String> {
-    Ok(keychain_get(&profile_id)?.is_some())
+#[tauri::command(rename_all = "snake_case")]
+pub async fn ai_secret_status(
+    vault_state: State<'_, VaultState>,
+    profile_id: String,
+) -> Result<bool, String> {
+    let root = match vault_state.current_root() {
+        Ok(root) => root,
+        Err(_) => return Ok(false),
+    };
+    local_secrets::secret_status(&root, &profile_id)
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn ai_audit_mark(
     vault_state: State<'_, VaultState>,
     job_id: String,
@@ -156,7 +172,7 @@ pub async fn ai_chat_start(
     let store_path = store_path(&app)?;
     let mut store = read_store(&store_path);
     ensure_default_profiles(&mut store);
-    migrate_legacy_secrets(&mut store);
+    let vault_root = vault_state.current_root().ok();
     let _ = write_store(&store_path, &store);
 
     let profile = store
@@ -165,8 +181,10 @@ pub async fn ai_chat_start(
         .find(|p| p.id == request.profile_id)
         .cloned()
         .ok_or_else(|| "unknown profile".to_string())?;
+    if profile.model.trim().is_empty() {
+        return Err("Model not set for this profile".to_string());
+    }
 
-    let vault_root = vault_state.current_root().ok();
     let app_for_task = app.clone();
     let job_id_for_task = job_id.clone();
 
@@ -187,95 +205,23 @@ pub async fn ai_chat_start(
             }
         };
 
-        let api_key = keychain_get(&profile.id).ok().flatten();
+        let api_key = vault_root
+            .as_deref()
+            .and_then(|root| local_secrets::secret_get(root, &profile.id).ok().flatten());
         let (system, messages) =
             split_system_and_messages(request.messages.clone(), request.context.clone());
 
-        let result: Result<(String, bool), String> = (|| async {
-            match profile.provider {
-                AiProviderKind::Openai
-                | AiProviderKind::OpenaiCompat
-                | AiProviderKind::Openrouter
-                | AiProviderKind::Ollama => {
-                    if matches!(profile.provider, AiProviderKind::Openai)
-                        && api_key.as_deref().unwrap_or("").trim().is_empty()
-                    {
-                        return Err("API key not set for this profile".to_string());
-                    }
-                    if matches!(profile.provider, AiProviderKind::Openrouter)
-                        && api_key.as_deref().unwrap_or("").trim().is_empty()
-                    {
-                        return Err("API key not set for this profile".to_string());
-                    }
-
-                    let base = parse_base_url(&profile)?;
-                    let url = base.join("chat/completions").map_err(|e| e.to_string())?;
-
-                    let mut openai_messages = messages.clone();
-                    if !system.is_empty() {
-                        openai_messages.insert(
-                            0,
-                            AiMessage {
-                                role: "system".to_string(),
-                                content: system.clone(),
-                            },
-                        );
-                    }
-
-                    let body = serde_json::json!({
-                        "model": profile.model,
-                        "messages": openai_messages.into_iter().map(|m| serde_json::json!({"role": m.role, "content": m.content})).collect::<Vec<_>>(),
-                        "temperature": 0.2,
-                        "stream": true
-                    });
-
-                    stream_openai_like(
-                        &client,
-                        &cancel,
-                        &app_for_task,
-                        &job_id_for_task,
-                        &profile,
-                        api_key.as_deref(),
-                        body,
-                        url,
-                    )
-                    .await
-                }
-                AiProviderKind::Anthropic => {
-                    let base = parse_base_url(&profile)?;
-                    let url = base.join("v1/messages").map_err(|e| e.to_string())?;
-                    let key = api_key.unwrap_or_default();
-                    stream_anthropic(
-                        &client,
-                        &cancel,
-                        &app_for_task,
-                        &job_id_for_task,
-                        &profile,
-                        &key,
-                        &system,
-                        &messages,
-                        url,
-                    )
-                    .await
-                }
-                AiProviderKind::Gemini => {
-                    let base = parse_base_url(&profile)?;
-                    let key = api_key.unwrap_or_default();
-                    stream_gemini(
-                        &client,
-                        &cancel,
-                        &app_for_task,
-                        &job_id_for_task,
-                        &profile,
-                        &key,
-                        &system,
-                        &messages,
-                        base,
-                    )
-                    .await
-                }
-            }
-        })()
+        let result = agent::run_agent_loop(
+            &client,
+            &cancel,
+            &app_for_task,
+            &job_id_for_task,
+            &profile,
+            api_key.as_deref(),
+            &system,
+            &messages,
+            vault_root.as_deref(),
+        )
         .await;
 
         match result {
@@ -322,8 +268,24 @@ pub async fn ai_chat_start(
     Ok(AiChatStartResult { job_id })
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn ai_chat_cancel(ai_state: State<'_, AiState>, job_id: String) -> Result<(), String> {
     ai_state.cancel(&job_id);
     Ok(())
+}
+
+#[tauri::command(rename_all = "snake_case")]
+pub async fn ai_chat_history_list(
+    vault_state: State<'_, VaultState>,
+    limit: Option<u32>,
+) -> Result<Vec<history::AiChatHistorySummary>, String> {
+    history::ai_chat_history_list(vault_state, limit).await
+}
+
+#[tauri::command(rename_all = "snake_case")]
+pub async fn ai_chat_history_get(
+    vault_state: State<'_, VaultState>,
+    job_id: String,
+) -> Result<Vec<AiMessage>, String> {
+    history::ai_chat_history_get(vault_state, job_id).await
 }

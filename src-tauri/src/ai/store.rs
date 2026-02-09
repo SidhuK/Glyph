@@ -1,9 +1,8 @@
 use crate::io_atomic;
 use serde::{Deserialize, Serialize};
-use std::{collections::HashMap, path::Path, path::PathBuf};
+use std::{path::Path, path::PathBuf};
 use tauri::{AppHandle, Manager};
 
-use super::keychain::keychain_set;
 use super::types::{AiProfile, AiProviderKind};
 
 #[derive(Default, Serialize, Deserialize)]
@@ -12,8 +11,6 @@ pub struct AiStore {
     pub profiles: Vec<AiProfile>,
     #[serde(default)]
     pub active_profile_id: Option<String>,
-    #[serde(default, rename = "secrets")]
-    pub legacy_secrets: HashMap<String, String>,
 }
 
 pub fn store_path(app: &AppHandle) -> Result<PathBuf, String> {
@@ -51,41 +48,28 @@ pub fn ensure_default_profiles(store: &mut AiStore) {
         });
     };
 
-    add("OpenAI", AiProviderKind::Openai, "gpt-4o-mini", None, false);
+    add("OpenAI", AiProviderKind::Openai, "", None, false);
     add(
         "OpenAI-compatible",
         AiProviderKind::OpenaiCompat,
-        "gpt-4o-mini",
+        "",
         None,
         false,
     );
     add(
         "OpenRouter",
         AiProviderKind::Openrouter,
-        "openai/gpt-4o-mini",
+        "",
         None,
         false,
     );
     add(
         "Anthropic",
         AiProviderKind::Anthropic,
-        "claude-3-5-sonnet-latest",
+        "",
         None,
         false,
     );
-    add("Gemini", AiProviderKind::Gemini, "gemini-1.5-flash", None, false);
-    add("Ollama", AiProviderKind::Ollama, "llama3.1", None, true);
-}
-
-pub fn migrate_legacy_secrets(store: &mut AiStore) {
-    if store.legacy_secrets.is_empty() {
-        return;
-    }
-    let mut remaining = HashMap::<String, String>::new();
-    for (profile_id, secret) in store.legacy_secrets.clone() {
-        if keychain_set(&profile_id, &secret).is_err() {
-            remaining.insert(profile_id, secret);
-        }
-    }
-    store.legacy_secrets = remaining;
+    add("Gemini", AiProviderKind::Gemini, "", None, false);
+    add("Ollama", AiProviderKind::Ollama, "", None, true);
 }

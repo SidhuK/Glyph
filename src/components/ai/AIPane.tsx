@@ -107,9 +107,6 @@ export function AIPane({
 							</option>
 						))}
 					</select>
-					<button type="button" onClick={profiles.deleteProfile}>
-						Delete
-					</button>
 				</div>
 			) : (
 				<div className="aiRow">

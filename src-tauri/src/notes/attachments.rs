@@ -59,7 +59,7 @@ fn copy_into_assets_atomic(assets_dir: &Path, source: &Path) -> Result<(String, 
     Ok((file_name, dest_path))
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn note_attach_file(
     state: State<'_, VaultState>,
     note_id: String,

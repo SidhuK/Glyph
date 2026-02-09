@@ -1,4 +1,5 @@
 import type { AiProfile } from "../../../lib/tauri";
+import { AiModelCombobox } from "./AiModelCombobox";
 
 interface AiProfileSectionsProps {
 	profiles: AiProfile[];
@@ -7,9 +8,9 @@ interface AiProfileSectionsProps {
 	headersText: string;
 	secretConfigured: boolean | null;
 	apiKeyDraft: string;
+	keySaved: boolean;
 	onActiveProfileChange: (id: string | null) => Promise<void>;
 	onCreateProfile: () => void;
-	onDeleteProfile: () => void;
 	onProfileDraftChange: (updater: (prev: AiProfile) => AiProfile) => void;
 	onHeadersTextChange: (text: string) => void;
 	onSaveProfile: () => void;
@@ -25,9 +26,9 @@ export function AiProfileSections({
 	headersText,
 	secretConfigured,
 	apiKeyDraft,
+	keySaved,
 	onActiveProfileChange,
 	onCreateProfile,
-	onDeleteProfile,
 	onProfileDraftChange,
 	onHeadersTextChange,
 	onSaveProfile,
@@ -54,24 +55,19 @@ export function AiProfileSections({
 							</label>
 							<div className="settingsHelp">Used for AI requests.</div>
 						</div>
-						<div className="settingsInline">
-							<select
-								id="aiProfileSel"
-								value={activeProfileId ?? ""}
-								onChange={(e) =>
-									void onActiveProfileChange(e.target.value || null)
-								}
-							>
-								{profiles.map((p) => (
-									<option key={p.id} value={p.id}>
-										{p.name}
-									</option>
-								))}
-							</select>
-							<button type="button" onClick={onDeleteProfile}>
-								Delete
-							</button>
-						</div>
+						<select
+							id="aiProfileSel"
+							value={activeProfileId ?? ""}
+							onChange={(e) =>
+								void onActiveProfileChange(e.target.value || null)
+							}
+						>
+							{profiles.map((p) => (
+								<option key={p.id} value={p.id}>
+									{p.name}
+								</option>
+							))}
+						</select>
 					</div>
 				) : (
 					<div className="settingsRow">
@@ -164,13 +160,14 @@ export function AiProfileSections({
 							<label className="settingsLabel" htmlFor="aiModel">
 								Model
 							</label>
-							<div className="settingsHelp">Model identifier.</div>
+							<div className="settingsHelp">Select a model.</div>
 						</div>
-						<input
-							id="aiModel"
+						<AiModelCombobox
+							profileId={profileDraft.id}
 							value={profileDraft.model}
-							onChange={(e) =>
-								onProfileDraftChange((p) => ({ ...p, model: e.target.value }))
+							secretConfigured={secretConfigured}
+							onChange={(next) =>
+								onProfileDraftChange((p) => ({ ...p, model: next }))
 							}
 						/>
 					</div>
@@ -223,53 +220,54 @@ export function AiProfileSections({
 				<div className="settingsCardHeader">
 					<div>
 						<div className="settingsCardTitle">API Key</div>
-						<div className="settingsCardHint">Stored locally.</div>
-					</div>
-					<div className="settingsPill">Secret</div>
-				</div>
-
-				<div className="settingsField">
-					<div>
-						<div className="settingsLabel">Status</div>
-						<div className="settingsHelp">
-							{secretConfigured == null
-								? "Unknown"
-								: secretConfigured
-									? "Configured"
-									: "Not set"}
+						<div className="settingsCardHint">
+							Stored in <code>.lattice/Lattice/ai_secrets.json</code>.
 						</div>
 					</div>
-					<div className="settingsValue">
+					<div
+						className={`settingsPill ${secretConfigured ? "settingsPillOk" : ""}`}
+					>
 						{secretConfigured == null
-							? "(unknown)"
+							? "Unknown"
 							: secretConfigured
-								? "Configured"
-								: "Not set"}
+								? "Active"
+								: "Missing"}
 					</div>
 				</div>
 
 				<div className="settingsField">
 					<div>
 						<label className="settingsLabel" htmlFor="aiApiKeyInput">
-							Set key
+							{secretConfigured ? "Update key" : "Set key"}
 						</label>
-						<div className="settingsHelp">Paste to update.</div>
+						<div className="settingsHelp">
+							{secretConfigured
+								? "Key is configured in the current vault. Paste to replace."
+								: "Paste your API key to store it in the current vault."}
+						</div>
 					</div>
 					<div className="settingsInline">
 						<input
 							id="aiApiKeyInput"
+							type="password"
 							placeholder="paste key…"
 							value={apiKeyDraft}
 							onChange={(e) => onApiKeyDraftChange(e.target.value)}
 						/>
 						<button type="button" onClick={onSetApiKey}>
-							Set
+							Save
 						</button>
-						<button type="button" onClick={onClearApiKey}>
-							Clear
-						</button>
+						{secretConfigured ? (
+							<button type="button" onClick={onClearApiKey}>
+								Clear
+							</button>
+						) : null}
 					</div>
 				</div>
+
+				{keySaved ? (
+					<div className="settingsKeySaved">API key saved successfully</div>
+				) : null}
 			</section>
 		</>
 	);

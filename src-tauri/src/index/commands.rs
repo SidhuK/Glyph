@@ -193,7 +193,7 @@ pub async fn tag_notes(
     .map_err(|e| e.to_string())?
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn backlinks(
     state: State<'_, VaultState>,
     note_id: String,

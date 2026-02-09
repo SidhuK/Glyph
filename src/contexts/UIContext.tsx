@@ -7,7 +7,6 @@ import {
 	useRef,
 	useState,
 } from "react";
-import { useAISidebar } from "../hooks/useAISidebar";
 import { useSearch } from "../hooks/useSearch";
 import type { SearchResult } from "../lib/tauri";
 import { useVault } from "./VaultContext";
@@ -19,14 +18,8 @@ export interface UIContextValue {
 	setSidebarViewMode: (mode: "files" | "tags" | "canvases") => void;
 	paletteOpen: boolean;
 	setPaletteOpen: (open: boolean) => void;
-	aiSidebarOpen: boolean;
-	setAiSidebarOpen: React.Dispatch<React.SetStateAction<boolean>>;
-	aiSidebarWidth: number;
-	aiSidebarResizing: boolean;
-	handleAiResizePointerDown: (e: React.PointerEvent<HTMLDivElement>) => void;
-	handleAiResizePointerMove: (e: React.PointerEvent<HTMLDivElement>) => void;
-	handleAiResizePointerUp: (e: React.PointerEvent<HTMLDivElement>) => void;
-	handleAiResizePointerCancel: (e: React.PointerEvent<HTMLDivElement>) => void;
+	aiPanelOpen: boolean;
+	setAiPanelOpen: React.Dispatch<React.SetStateAction<boolean>>;
 	searchQuery: string;
 	setSearchQuery: (query: string) => void;
 	searchResults: SearchResult[];
@@ -55,16 +48,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 	);
 	const searchInputElRef = useRef<HTMLInputElement | null>(null);
 
-	const {
-		aiSidebarOpen,
-		setAiSidebarOpen,
-		aiSidebarWidth,
-		isResizing: aiSidebarResizing,
-		handleResizePointerDown: handleAiResizePointerDown,
-		handleResizePointerMove: handleAiResizePointerMove,
-		handleResizePointerUp: handleAiResizePointerUp,
-		handleResizePointerCancel: handleAiResizePointerCancel,
-	} = useAISidebar();
+	const [aiPanelOpen, setAiPanelOpen] = useState(false);
 
 	const {
 		searchQuery,
@@ -103,14 +87,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			setSidebarViewMode,
 			paletteOpen,
 			setPaletteOpen,
-			aiSidebarOpen,
-			setAiSidebarOpen,
-			aiSidebarWidth,
-			aiSidebarResizing,
-			handleAiResizePointerDown,
-			handleAiResizePointerMove,
-			handleAiResizePointerUp,
-			handleAiResizePointerCancel,
+			aiPanelOpen,
+			setAiPanelOpen,
 			searchQuery,
 			setSearchQuery,
 			searchResults,
@@ -127,14 +105,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			sidebarCollapsed,
 			sidebarViewMode,
 			paletteOpen,
-			aiSidebarOpen,
-			setAiSidebarOpen,
-			aiSidebarWidth,
-			aiSidebarResizing,
-			handleAiResizePointerDown,
-			handleAiResizePointerMove,
-			handleAiResizePointerUp,
-			handleAiResizePointerCancel,
+			aiPanelOpen,
 			searchQuery,
 			setSearchQuery,
 			searchResults,

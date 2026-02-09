@@ -14,6 +14,7 @@ export function AiSettingsPane() {
 		null,
 	);
 	const [error, setError] = useState("");
+	const [keySaved, setKeySaved] = useState(false);
 	const [temperature, setTemperature] = useState(0.4);
 	const [topP, setTopP] = useState(0.9);
 	const [maxTokens, setMaxTokens] = useState(2048);
@@ -91,7 +92,7 @@ export function AiSettingsPane() {
 					id: "",
 					name: "AI Profile",
 					provider: "openai",
-					model: "gpt-4o-mini",
+					model: "",
 					base_url: null,
 					headers: [],
 					allow_private_hosts: false,
@@ -119,20 +120,6 @@ export function AiSettingsPane() {
 		}
 	}, [headersText, profileDraft]);
 
-	const deleteProfile = useCallback(async () => {
-		if (!activeProfileId) return;
-		if (!window.confirm("Delete this AI profile?")) return;
-		setError("");
-		try {
-			await invoke("ai_profile_delete", { id: activeProfileId });
-			setProfiles((prev) => prev.filter((p) => p.id !== activeProfileId));
-			setActiveProfileId(null);
-			setProfileDraft(null);
-		} catch (e) {
-			setError(errMessage(e));
-		}
-	}, [activeProfileId]);
-
 	const setApiKey = useCallback(async () => {
 		if (!activeProfileId || !apiKeyDraft.trim()) return;
 		setError("");
@@ -143,6 +130,8 @@ export function AiSettingsPane() {
 			});
 			setApiKeyDraft("");
 			setSecretConfigured(true);
+			setKeySaved(true);
+			setTimeout(() => setKeySaved(false), 3000);
 		} catch (e) {
 			setError(errMessage(e));
 		}
@@ -193,9 +182,9 @@ export function AiSettingsPane() {
 					headersText={headersText}
 					secretConfigured={secretConfigured}
 					apiKeyDraft={apiKeyDraft}
+					keySaved={keySaved}
 					onActiveProfileChange={onActiveProfileChange}
 					onCreateProfile={() => void createDefaultProfile()}
-					onDeleteProfile={() => void deleteProfile()}
 					onProfileDraftChange={onProfileDraftChange}
 					onHeadersTextChange={setHeadersText}
 					onSaveProfile={() => void saveProfile()}

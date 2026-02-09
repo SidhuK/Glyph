@@ -36,6 +36,14 @@ pub struct AiMessage {
     pub content: String,
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct AiModel {
+    pub id: String,
+    pub name: String,
+    pub context_length: Option<u32>,
+    pub description: Option<String>,
+}
+
 #[derive(Deserialize, Clone)]
 pub struct AiChatRequest {
     pub profile_id: String,
@@ -70,4 +78,24 @@ pub struct AiDoneEvent {
 pub struct AiErrorEvent {
     pub job_id: String,
     pub message: String,
+}
+
+#[derive(Serialize, Clone)]
+pub struct AiToolEvent {
+    pub job_id: String,
+    pub tool: String,
+    pub phase: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub call_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub payload: Option<serde_json::Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub error: Option<String>,
+}
+
+#[derive(Clone, Debug)]
+pub struct AgentToolCall {
+    pub call_id: Option<String>,
+    pub name: String,
+    pub args: serde_json::Value,
 }

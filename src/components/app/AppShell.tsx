@@ -20,7 +20,7 @@ import { onWindowDragMouseDown } from "../../utils/window";
 import type { CanvasExternalCommand } from "../CanvasPane";
 import { PanelLeftClose, PanelLeftOpen } from "../Icons";
 import { MotionIconButton } from "../MotionUI";
-import { AISidebar } from "../ai/AISidebar";
+import { AIFloatingHost } from "../ai/AIFloatingHost";
 import { type Command, CommandPalette } from "./CommandPalette";
 import { MainContent } from "./MainContent";
 import { Sidebar } from "./Sidebar";
@@ -76,14 +76,8 @@ export function AppShell() {
 		setSidebarCollapsed,
 		paletteOpen,
 		setPaletteOpen,
-		aiSidebarOpen,
-		setAiSidebarOpen,
-		aiSidebarWidth,
-		aiSidebarResizing,
-		handleAiResizePointerDown,
-		handleAiResizePointerMove,
-		handleAiResizePointerUp,
-		handleAiResizePointerCancel,
+		aiPanelOpen,
+		setAiPanelOpen,
 		setShowSearch,
 		focusSearchInput,
 		setActivePreviewPath,
@@ -398,7 +392,7 @@ export function AppShell() {
 				label: "Toggle AI",
 				shortcut: { meta: true, shift: true, key: "a" },
 				enabled: Boolean(vaultPath),
-				action: () => setAiSidebarOpen((v) => !v),
+				action: () => setAiPanelOpen((v) => !v),
 			},
 			{
 				id: "new-note",
@@ -419,7 +413,7 @@ export function AppShell() {
 			fileTree,
 			createCanvasAndOpen,
 			onOpenVault,
-			setAiSidebarOpen,
+			setAiPanelOpen,
 			focusSearchInput,
 			setShowSearch,
 			vaultPath,
@@ -439,11 +433,7 @@ export function AppShell() {
 	// ---------------------------------------------------------------------------
 	return (
 		<div
-			className={cn(
-				"appShell",
-				aiSidebarOpen && "aiSidebarOpen",
-				sidebarCollapsed && "appShellSidebarCollapsed",
-			)}
+			className={cn("appShell", sidebarCollapsed && "appShellSidebarCollapsed")}
 		>
 			<div
 				aria-hidden="true"
@@ -492,48 +482,32 @@ export function AppShell() {
 				setCanvasCommand={setCanvasCommand}
 				loadAndBuildFolderView={openFolderView}
 				fileTree={fileTree}
+				aiOverlay={
+					vaultPath ? (
+						<AIFloatingHost
+							isOpen={aiPanelOpen}
+							onToggle={() => setAiPanelOpen((v) => !v)}
+							activeFolderPath={
+								activeViewDoc?.kind === "folder"
+									? activeViewDoc.selector || ""
+									: null
+							}
+							activeCanvasId={
+								activeViewDoc?.kind === "canvas" ? activeViewDoc.selector : null
+							}
+							onNewAICanvas={async () => {
+								const created = await canvasLibrary.createCanvas(
+									"AI Canvas",
+									"ai",
+								);
+								await openCanvas(created.meta.id);
+							}}
+							onAddAttachmentsToCanvas={addAttachmentsToCanvas}
+							onCreateNoteFromLastAssistant={createNoteFromAI}
+						/>
+					) : undefined
+				}
 			/>
-
-			{vaultPath && (
-				<>
-					<div
-						className="rightSidebarResizer"
-						aria-hidden={!aiSidebarOpen}
-						data-window-drag-ignore
-						onPointerDown={handleAiResizePointerDown}
-						onPointerMove={handleAiResizePointerMove}
-						onPointerUp={handleAiResizePointerUp}
-						onPointerCancel={handleAiResizePointerCancel}
-					/>
-
-					<AISidebar
-						isOpen={aiSidebarOpen}
-						width={aiSidebarWidth}
-						isResizing={aiSidebarResizing}
-						onClose={() => setAiSidebarOpen(false)}
-						onOpenSettings={() => {
-							setAiSidebarOpen(true);
-						}}
-						activeFolderPath={
-							activeViewDoc?.kind === "folder"
-								? activeViewDoc.selector || ""
-								: null
-						}
-						activeCanvasId={
-							activeViewDoc?.kind === "canvas" ? activeViewDoc.selector : null
-						}
-						onNewAICanvas={async () => {
-							const created = await canvasLibrary.createCanvas(
-								"AI Canvas",
-								"ai",
-							);
-							await openCanvas(created.meta.id);
-						}}
-						onAddAttachmentsToCanvas={addAttachmentsToCanvas}
-						onCreateNoteFromLastAssistant={createNoteFromAI}
-					/>
-				</>
-			)}
 
 			<AnimatePresence>
 				{error && <div className="appError">{error}</div>}

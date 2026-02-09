@@ -18,6 +18,10 @@ export function isShortcutMatch(
 }
 
 export function formatShortcut(shortcut: Shortcut): string {
+	return formatShortcutParts(shortcut).join("");
+}
+
+export function formatShortcutParts(shortcut: Shortcut): string[] {
 	const parts: string[] = [];
 	if (shortcut.meta) parts.push("⌘");
 	if (shortcut.shift) parts.push("⇧");
@@ -26,7 +30,7 @@ export function formatShortcut(shortcut: Shortcut): string {
 	parts.push(
 		shortcut.key.length === 1 ? shortcut.key.toUpperCase() : shortcut.key,
 	);
-	return parts.join("");
+	return parts;
 }
 
 function normalizeKey(key: string): string {

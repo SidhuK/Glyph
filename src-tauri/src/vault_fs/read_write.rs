@@ -90,7 +90,7 @@ pub async fn vault_read_texts_batch(
     .map_err(|e| e.to_string())?
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn vault_read_text_preview(
     state: State<'_, VaultState>,
     path: String,
@@ -155,7 +155,7 @@ pub async fn vault_resolve_abs_path(
     .map_err(|e| e.to_string())?
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn vault_read_binary_preview(
     state: State<'_, VaultState>,
     path: String,
@@ -214,7 +214,7 @@ pub async fn vault_read_binary_preview(
     .map_err(|e| e.to_string())?
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn vault_write_text(
     state: State<'_, VaultState>,
     path: String,
@@ -272,7 +272,7 @@ pub async fn vault_create_dir(
     .map_err(|e| e.to_string())?
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn vault_rename_path(
     state: State<'_, VaultState>,
     from_path: String,
@@ -301,7 +301,7 @@ pub async fn vault_rename_path(
     .map_err(|e| e.to_string())?
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn vault_relativize_path(
     state: State<'_, VaultState>,
     abs_path: String,

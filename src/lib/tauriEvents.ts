@@ -9,6 +9,14 @@ export type TauriEventMap = {
 	"ai:chunk": { job_id: string; delta: string };
 	"ai:done": { job_id: string; cancelled: boolean };
 	"ai:error": { job_id: string; message: string };
+	"ai:tool": {
+		job_id: string;
+		tool: string;
+		phase: string;
+		call_id?: string;
+		payload?: unknown;
+		error?: string;
+	};
 	"settings:navigate": { tab: SettingsTab };
 	"notes:external_changed": { rel_path: string };
 };

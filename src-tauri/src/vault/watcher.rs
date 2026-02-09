@@ -12,6 +12,13 @@ struct ExternalNoteChange {
     id: String,
 }
 
+fn is_markdown_path(path: &std::path::Path) -> bool {
+    path.extension()
+        .and_then(|ext| ext.to_str())
+        .map(|ext| ext.eq_ignore_ascii_case("md") || ext.eq_ignore_ascii_case("markdown"))
+        .unwrap_or(false)
+}
+
 pub fn set_notes_watcher(
     state: &VaultState,
     app: tauri::AppHandle,
@@ -40,7 +47,7 @@ pub fn set_notes_watcher(
         }
 
         for path in event.paths {
-            if path.extension() != Some(std::ffi::OsStr::new("md")) {
+            if !is_markdown_path(&path) {
                 continue;
             }
             let rel = match path.strip_prefix(&root2) {

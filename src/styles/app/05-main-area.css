@@ -22,10 +22,6 @@
 	background: var(--bg-primary);
 }
 
-.appShell.aiSidebarOpen .mainArea {
-	margin-right: 0;
-}
-
 .mainToolbar {
 	display: flex;
 	align-items: center;

@@ -6,7 +6,7 @@ use crate::{paths, vault::VaultState};
 use super::helpers::{deny_hidden_rel_path, file_mtime_ms, should_hide};
 use super::types::{DirChildSummary, RecentEntry, RecentMarkdown};
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn vault_dir_children_summary(
     state: State<'_, VaultState>,
     dir: Option<String>,

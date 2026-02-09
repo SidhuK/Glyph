@@ -1,10 +1,17 @@
-use std::{ffi::OsStr, path::{Path, PathBuf}};
+use std::path::{Path, PathBuf};
 use tauri::State;
 
 use crate::{paths, vault::VaultState};
 
 use super::helpers::{deny_hidden_rel_path, should_hide};
 use super::types::FsEntry;
+
+fn is_markdown_path(path: &Path) -> bool {
+    path.extension()
+        .and_then(|ext| ext.to_str())
+        .map(|ext| ext.eq_ignore_ascii_case("md") || ext.eq_ignore_ascii_case("markdown"))
+        .unwrap_or(false)
+}
 
 #[tauri::command]
 pub async fn vault_list_markdown_files(
@@ -42,7 +49,7 @@ pub async fn vault_list_markdown_files(
                 if !path.is_file() {
                     continue;
                 }
-                if path.extension() != Some(OsStr::new("md")) {
+                if !is_markdown_path(&path) {
                     continue;
                 }
                 let rel_path = start_rel.join(&name);
@@ -85,7 +92,7 @@ pub async fn vault_list_markdown_files(
                     if !meta.is_file() {
                         continue;
                     }
-                    if Path::new(&name).extension() != Some(OsStr::new("md")) {
+                    if !is_markdown_path(Path::new(&name)) {
                         continue;
                     }
                     out.push(FsEntry {
@@ -148,7 +155,7 @@ pub async fn vault_list_files(
                     continue;
                 }
                 let rel_path = start_rel.join(&name);
-                let is_markdown = rel_path.extension() == Some(OsStr::new("md"));
+                let is_markdown = is_markdown_path(&rel_path);
                 out.push(FsEntry {
                     name,
                     rel_path: rel_path.to_string_lossy().to_string(),
@@ -188,7 +195,7 @@ pub async fn vault_list_files(
                     if !meta.is_file() {
                         continue;
                     }
-                    let is_markdown = Path::new(&name).extension() == Some(OsStr::new("md"));
+                    let is_markdown = is_markdown_path(Path::new(&name));
                     out.push(FsEntry {
                         name,
                         rel_path: child_rel.to_string_lossy().to_string(),
@@ -244,7 +251,7 @@ pub async fn vault_list_dir(
                 continue;
             };
             let rel_path = rel.join(&name);
-            let is_markdown = rel_path.extension() == Some(OsStr::new("md"));
+            let is_markdown = is_markdown_path(&rel_path);
             entries.push(FsEntry {
                 name,
                 rel_path: rel_path.to_string_lossy().to_string(),

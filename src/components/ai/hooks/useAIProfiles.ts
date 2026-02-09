@@ -99,7 +99,7 @@ export function useAIProfiles(): UseAIProfilesResult {
 					id: "",
 					name: "AI Profile",
 					provider: "openai",
-					model: "gpt-4o-mini",
+					model: "",
 					base_url: null,
 					headers: [],
 					allow_private_hosts: false,

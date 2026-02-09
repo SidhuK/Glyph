@@ -14,6 +14,7 @@ pub const VAULT_SCHEMA_VERSION: u32 = 1;
 pub fn ensure_lattice_dirs(root: &Path) -> Result<(), String> {
     let _ = lattice_paths::ensure_lattice_dir(root)?;
     let _ = lattice_paths::ensure_lattice_cache_dir(root)?;
+    let _ = lattice_paths::ensure_lattice_app_dir(root)?;
     Ok(())
 }
 

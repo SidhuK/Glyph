@@ -30,6 +30,7 @@ interface MainContentProps {
 		openMarkdownFileInCanvas: (relPath: string) => Promise<void>;
 		openNonMarkdownExternally: (relPath: string) => Promise<void>;
 	};
+	aiOverlay?: React.ReactNode;
 }
 
 export function MainContent({
@@ -37,6 +38,7 @@ export function MainContent({
 	setCanvasCommand,
 	loadAndBuildFolderView,
 	fileTree,
+	aiOverlay,
 }: MainContentProps) {
 	const {
 		info,
@@ -142,6 +144,7 @@ export function MainContent({
 						)}
 					</Suspense>
 				</div>
+				{aiOverlay}
 			</div>
 		</main>
 	);

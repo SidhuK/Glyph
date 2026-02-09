@@ -220,6 +220,23 @@ export interface AiChatStartResult {
 	job_id: string;
 }
 
+export interface AiModel {
+	id: string;
+	name: string;
+	context_length: number | null;
+	description: string | null;
+}
+
+export interface AiChatHistorySummary {
+	job_id: string;
+	created_at_ms: number;
+	cancelled: boolean;
+	profile_name: string;
+	model: string;
+	message_count: number;
+	preview: string;
+}
+
 type CommandDef<Args, Result> = { args: Args; result: Result };
 
 interface TauriCommands {
@@ -316,6 +333,12 @@ interface TauriCommands {
 		AiChatStartResult
 	>;
 	ai_chat_cancel: CommandDef<{ job_id: string }, void>;
+	ai_models_list: CommandDef<{ profile_id: string }, AiModel[]>;
+	ai_chat_history_list: CommandDef<
+		{ limit?: number | null },
+		AiChatHistorySummary[]
+	>;
+	ai_chat_history_get: CommandDef<{ job_id: string }, AiMessage[]>;
 }
 
 export class TauriInvokeError extends Error {

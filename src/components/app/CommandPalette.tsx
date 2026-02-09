@@ -1,5 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { type Shortcut, formatShortcut } from "../../lib/shortcuts";
+import { createPortal } from "react-dom";
+import {
+	type Shortcut,
+	formatShortcut,
+	formatShortcutParts,
+} from "../../lib/shortcuts";
 
 export interface Command {
 	id: string;
@@ -64,12 +69,15 @@ export function CommandPalette({
 		void cmd.action();
 	};
 
-	return (
+	return createPortal(
 		<div
 			className="commandPaletteBackdrop"
 			onClick={onClose}
 			onKeyDown={(e) => {
-				if (e.key === "Escape") onClose();
+				if (e.key !== "Escape" && e.key !== "Enter" && e.key !== " ") return;
+				e.preventDefault();
+				e.stopPropagation();
+				onClose();
 			}}
 		>
 			<dialog
@@ -80,6 +88,7 @@ export function CommandPalette({
 				tabIndex={-1}
 				onClick={(e) => e.stopPropagation()}
 				onKeyDown={(e) => {
+					e.stopPropagation();
 					if (e.key === "Escape") {
 						e.preventDefault();
 						onClose();
@@ -126,7 +135,14 @@ export function CommandPalette({
 							>
 								<span>{cmd.label}</span>
 								{cmd.shortcut ? (
-									<kbd>{formatShortcut(cmd.shortcut)}</kbd>
+									<span
+										className="commandPaletteShortcut"
+										aria-label={formatShortcut(cmd.shortcut)}
+									>
+										{formatShortcutParts(cmd.shortcut).map((part) => (
+											<kbd key={part}>{part}</kbd>
+										))}
+									</span>
 								) : null}
 							</button>
 						</li>
@@ -136,6 +152,7 @@ export function CommandPalette({
 					) : null}
 				</ul>
 			</dialog>
-		</div>
+		</div>,
+		document.body,
 	);
 }

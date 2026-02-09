@@ -1,6 +1,5 @@
 use std::{
     collections::HashSet,
-    ffi::OsStr,
     path::{Path, PathBuf},
 };
 
@@ -10,6 +9,24 @@ use super::helpers::{path_to_slash_string, sha256_hex, should_skip_entry};
 use super::links::parse_outgoing_links;
 use super::tags::parse_all_tags;
 use super::types::IndexRebuildResult;
+
+fn is_markdown_path(path: &Path) -> bool {
+    path.extension()
+        .and_then(|ext| ext.to_str())
+        .map(|ext| ext.eq_ignore_ascii_case("md") || ext.eq_ignore_ascii_case("markdown"))
+        .unwrap_or(false)
+}
+
+fn fts_body_with_frontmatter(markdown: &str) -> String {
+    let (yaml, body) = split_frontmatter(markdown);
+    if yaml.is_empty() {
+        body.to_string()
+    } else if body.is_empty() {
+        yaml.to_string()
+    } else {
+        format!("{yaml}\n{body}")
+    }
+}
 
 fn collect_markdown_files(vault_root: &Path) -> Result<Vec<(String, PathBuf)>, String> {
     let mut out: Vec<(String, PathBuf)> = Vec::new();
@@ -41,7 +58,7 @@ fn collect_markdown_files(vault_root: &Path) -> Result<Vec<(String, PathBuf)>, S
             if !meta.is_file() {
                 continue;
             }
-            if path.extension() != Some(OsStr::new("md")) {
+            if !is_markdown_path(&path) {
                 continue;
             }
             let rel = match path.strip_prefix(vault_root) {
@@ -94,7 +111,7 @@ fn index_note_with_conn(
 
     conn.execute("DELETE FROM notes_fts WHERE id = ?", [note_id])
         .map_err(|e| e.to_string())?;
-    let (_yaml, body) = split_frontmatter(markdown);
+    let body = fts_body_with_frontmatter(markdown);
     conn.execute(
         "INSERT INTO notes_fts(id, title, body) VALUES(?, ?, ?)",
         rusqlite::params![note_id, title_for_fts, body],
@@ -198,7 +215,7 @@ pub fn rebuild(vault_root: &Path) -> Result<IndexRebuildResult, String> {
 
         tx.execute("DELETE FROM notes_fts WHERE id = ?", [rel])
             .map_err(|e| e.to_string())?;
-        let (_yaml, body) = split_frontmatter(&markdown);
+        let body = fts_body_with_frontmatter(markdown);
         tx.execute(
             "INSERT INTO notes_fts(id, title, body) VALUES(?, ?, ?)",
             rusqlite::params![rel, title, body],

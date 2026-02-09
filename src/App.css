@@ -5,8 +5,7 @@
 @import "./styles/app/03-app-shell.css";
 @import "./styles/app/04-sidebar.css";
 @import "./styles/app/05-main-area.css";
-@import "./styles/app/06-main-resizer.css";
-@import "./styles/app/07-ai-sidebar-core.css";
+@import "./styles/app/07-ai-panel.css";
 @import "./styles/app/08-ai-sidebar-context.css";
 @import "./styles/app/09-settings-shell.css";
 @import "./styles/app/10-settings-controls.css";
@@ -32,3 +31,4 @@
 @import "./styles/app/30-file-preview.css";
 @import "./styles/app/31-responsive.css";
 @import "./styles/app/32-command-palette.css";
+@import "./styles/app/33-model-combobox.css";

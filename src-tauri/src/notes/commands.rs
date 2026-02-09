@@ -111,7 +111,7 @@ fn created_from_markdown(markdown: &str) -> Option<String> {
     fm.created
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn note_write(
     state: State<'_, VaultState>,
     id: String,

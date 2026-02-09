@@ -1,5 +1,9 @@
 import { describe, expect, it } from "vitest";
-import { formatShortcut, isShortcutMatch } from "./shortcuts";
+import {
+	formatShortcut,
+	formatShortcutParts,
+	isShortcutMatch,
+} from "./shortcuts";
 
 function keyEvent(
 	key: string,
@@ -39,5 +43,16 @@ describe("shortcuts", () => {
 			}),
 		).toBe("⌘⇧⌥⌃K");
 		expect(formatShortcut({ key: "Enter" })).toBe("Enter");
+	});
+
+	it("formats shortcut parts for keycap rendering", () => {
+		expect(
+			formatShortcutParts({
+				key: "k",
+				meta: true,
+				shift: true,
+			}),
+		).toEqual(["⌘", "⇧", "K"]);
+		expect(formatShortcutParts({ key: "Enter" })).toEqual(["Enter"]);
 	});
 });
