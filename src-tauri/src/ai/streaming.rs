@@ -1,5 +1,7 @@
 use futures_util::StreamExt;
+use reqwest::header::RETRY_AFTER;
 use tauri::{AppHandle, Emitter};
+use tokio::time::{sleep, Duration};
 use tokio_util::sync::CancellationToken;
 use url::Url;
 
@@ -36,13 +38,40 @@ fn emit_chunk(app: &AppHandle, job_id: &str, delta: String, emit_chunks: bool) {
 }
 
 async fn send_checked(req: reqwest::RequestBuilder) -> Result<reqwest::Response, String> {
-    let resp = req.send().await.map_err(|e| e.to_string())?;
-    if resp.status().is_success() {
-        return Ok(resp);
+    let max_retries = 2usize;
+    let mut attempt = 0usize;
+    let req = req;
+    loop {
+        let Some(next_req) = req.try_clone() else {
+            return Err("request cannot be retried safely".to_string());
+        };
+        let resp = next_req.send().await.map_err(|e| e.to_string())?;
+        if resp.status().is_success() {
+            return Ok(resp);
+        }
+        let status = resp.status();
+        if status.as_u16() == 429 && attempt < max_retries {
+            let retry_after_secs = resp
+                .headers()
+                .get(RETRY_AFTER)
+                .and_then(|v| v.to_str().ok())
+                .and_then(|s| s.trim().parse::<u64>().ok())
+                .unwrap_or(0);
+            let backoff_ms = if retry_after_secs > 0 {
+                retry_after_secs.saturating_mul(1_000)
+            } else {
+                match attempt {
+                    0 => 350,
+                    _ => 900,
+                }
+            };
+            attempt += 1;
+            sleep(Duration::from_millis(backoff_ms)).await;
+            continue;
+        }
+        let msg = resp.text().await.unwrap_or_default();
+        return Err(format!("http {status}: {msg}"));
     }
-    let status = resp.status();
-    let msg = resp.text().await.unwrap_or_default();
-    Err(format!("http {status}: {msg}"))
 }
 
 async fn stream_sse<F>(

@@ -1,4 +1,5 @@
 use std::path::Path;
+use std::collections::HashMap;
 
 use serde_json::{json, Value};
 use tauri::{AppHandle, Emitter};
@@ -13,10 +14,82 @@ use super::types::{
     AiToolEvent,
 };
 
-const MAX_AGENT_STEPS: usize = 6;
 const MAX_TOOL_RESULT_CHARS: usize = 120_000;
 const FAKE_CHUNK_CHARS: usize = 48;
 const FAKE_CHUNK_DELAY_MS: u64 = 14;
+const MAX_FINGERPRINT_CHARS: usize = 4_096;
+
+struct ToolBudgetPolicy {
+    max_agent_steps: usize,
+    max_tool_calls: usize,
+    max_duplicate_calls: usize,
+}
+
+fn tool_budget_policy(provider: &AiProviderKind) -> ToolBudgetPolicy {
+    match provider {
+        AiProviderKind::Anthropic | AiProviderKind::Gemini => ToolBudgetPolicy {
+            max_agent_steps: 5,
+            max_tool_calls: 4,
+            max_duplicate_calls: 2,
+        },
+        AiProviderKind::Openai
+        | AiProviderKind::OpenaiCompat
+        | AiProviderKind::Openrouter
+        | AiProviderKind::Ollama => ToolBudgetPolicy {
+            max_agent_steps: 6,
+            max_tool_calls: 6,
+            max_duplicate_calls: 2,
+        },
+    }
+}
+
+fn tool_call_fingerprint(name: &str, args: &Value) -> String {
+    let mut key = format!("{name}:");
+    let args_text = serde_json::to_string(args).unwrap_or_else(|_| "null".to_string());
+    if args_text.len() <= MAX_FINGERPRINT_CHARS {
+        key.push_str(&args_text);
+        return key;
+    }
+    key.push_str(&args_text[..MAX_FINGERPRINT_CHARS]);
+    key
+}
+
+async fn fallback_final_answer(
+    client: &reqwest::Client,
+    cancel: &CancellationToken,
+    app: &AppHandle,
+    job_id: &str,
+    profile: &AiProfile,
+    api_key: Option<&str>,
+    base_system: &str,
+    messages: &[AiMessage],
+) -> Result<(String, bool), String> {
+    let no_tool_system = format!(
+        "{base_system}\n\nTOOLING DISABLED: Do not emit function_calls. Return a concise best-effort final answer using only available conversation/tool outputs."
+    );
+    let (raw, cancelled) = call_provider_once(
+        client,
+        cancel,
+        app,
+        job_id,
+        profile,
+        api_key,
+        &no_tool_system,
+        messages,
+    )
+    .await?;
+    if cancelled {
+        return Ok((String::new(), true));
+    }
+    let text = match parse_output(&raw) {
+        AgentOutput::Final(t) | AgentOutput::Plain(t) => t,
+        AgentOutput::ToolCall(_) => {
+            "Tool budget reached. I can continue with a best-effort answer, but please narrow scope if you need more retrieval.".to_string()
+        }
+    };
+    emit_fake_chunks(cancel, app, job_id, &text).await;
+    Ok((text, false))
+}
 
 enum AgentOutput {
     ToolCall(AgentToolCall),
@@ -39,7 +112,10 @@ pub async fn run_agent_loop(
     let mut convo = messages.to_vec();
     let mut total_tool_chars = 0usize;
     let mut tool_events: Vec<AiStoredToolEvent> = Vec::new();
-    for _ in 0..MAX_AGENT_STEPS {
+    let policy = tool_budget_policy(&profile.provider);
+    let mut tool_calls_used = 0usize;
+    let mut fingerprint_counts: HashMap<String, usize> = HashMap::new();
+    for _ in 0..policy.max_agent_steps {
         let (raw, cancelled) = call_provider_once(
             client, cancel, app, job_id, profile, api_key, &system, &convo,
         )
@@ -49,6 +125,49 @@ pub async fn run_agent_loop(
         }
         match parse_output(&raw) {
             AgentOutput::ToolCall(call) => {
+                if tool_calls_used >= policy.max_tool_calls {
+                    return fallback_final_answer(
+                        client,
+                        cancel,
+                        app,
+                        job_id,
+                        profile,
+                        api_key,
+                        &system,
+                        &convo,
+                    )
+                    .await
+                    .map(|(text, cancelled)| (text, cancelled, tool_events));
+                }
+                tool_calls_used += 1;
+                let fingerprint = tool_call_fingerprint(&call.name, &call.args);
+                let seen = fingerprint_counts.entry(fingerprint).or_insert(0);
+                *seen += 1;
+                if *seen > policy.max_duplicate_calls {
+                    let text = "Repeated tool-call pattern detected. Disabling further tools for this turn.";
+                    let error_event = emit_tool(
+                        app,
+                        job_id,
+                        &call.name,
+                        "error",
+                        call.call_id.clone(),
+                        None,
+                        Some(text.to_string()),
+                    );
+                    tool_events.push(error_event);
+                    return fallback_final_answer(
+                        client,
+                        cancel,
+                        app,
+                        job_id,
+                        profile,
+                        api_key,
+                        &system,
+                        &convo,
+                    )
+                    .await
+                    .map(|(text, cancelled)| (text, cancelled, tool_events));
+                }
                 let call_event = emit_tool(
                     app,
                     job_id,
@@ -119,9 +238,18 @@ pub async fn run_agent_loop(
             }
         }
     }
-    let text = "Agent tool-call cap reached. Please ask a narrower follow-up.";
-    emit_fake_chunks(cancel, app, job_id, text).await;
-    Ok((text.to_string(), false, tool_events))
+    fallback_final_answer(
+        client,
+        cancel,
+        app,
+        job_id,
+        profile,
+        api_key,
+        &system,
+        &convo,
+    )
+    .await
+    .map(|(text, cancelled)| (text, cancelled, tool_events))
 }
 
 async fn call_provider_once(
