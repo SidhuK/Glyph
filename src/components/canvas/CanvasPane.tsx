@@ -799,11 +799,20 @@ function CanvasPane({
 														? "Expand controls"
 														: "Collapse controls"
 												}
+												className="canvasControlToggle"
 											>
 												<span className="canvasControlEllipsis">...</span>
 											</ControlButton>
-											{!controlsCollapsed ? (
-												<>
+											<AnimatePresence initial={false}>
+												{!controlsCollapsed ? (
+													<motion.div
+														key="canvas-controls-extras"
+														className="canvasControlsExtras"
+														initial={{ width: 0, opacity: 0 }}
+														animate={{ width: "auto", opacity: 1 }}
+														exit={{ width: 0, opacity: 0 }}
+														transition={{ type: "spring", stiffness: 360, damping: 30 }}
+													>
 													<ControlButton
 														onClick={() => setSnapToGrid((v) => !v)}
 														title="Toggle snap to grid"
@@ -827,8 +836,9 @@ function CanvasPane({
 													>
 														<Globe size={14} />
 													</ControlButton>
-												</>
-											) : null}
+													</motion.div>
+												) : null}
+											</AnimatePresence>
 										</Controls>
 												{showMiniMap ? (
 													<MiniMap zoomable pannable position="top-right" />
