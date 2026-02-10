@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { type AiModel, invoke } from "../../../lib/tauri";
 
 interface AiModelComboboxProps {
@@ -17,12 +17,13 @@ export function AiModelCombobox({
 	const [models, setModels] = useState<AiModel[] | null>(null);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState("");
+	const lastSecretConfiguredRef = useRef<boolean | null>(secretConfigured);
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: reset cache when profile or key changes
+	// biome-ignore lint/correctness/useExhaustiveDependencies: reset cache when profile changes
 	useEffect(() => {
 		setModels(null);
 		setError("");
-	}, [profileId, secretConfigured]);
+	}, [profileId]);
 
 	const fetchModels = useCallback(async () => {
 		if (models || loading) return;
@@ -43,6 +44,16 @@ export function AiModelCombobox({
 	useEffect(() => {
 		void fetchModels();
 	}, [fetchModels]);
+
+	useEffect(() => {
+		if (secretConfigured === true && lastSecretConfiguredRef.current !== true) {
+			setModels(null);
+			setError("");
+			setLoading(false);
+			void fetchModels();
+		}
+		lastSecretConfiguredRef.current = secretConfigured;
+	}, [secretConfigured, fetchModels]);
 
 	const handleRetry = useCallback(() => {
 		setModels(null);
