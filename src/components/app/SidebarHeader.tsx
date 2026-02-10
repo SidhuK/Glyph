@@ -1,24 +1,15 @@
 import { openSettingsWindow } from "../../lib/windows";
-import { cn } from "../../utils/cn";
 import { onWindowDragMouseDown } from "../../utils/window";
-import { Command, FolderOpen, FolderPlus, Search, Settings } from "../Icons";
+import { Command, FolderOpen, Settings } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 
 interface SidebarHeaderProps {
-	vaultPath: string | null;
-	showSearch: boolean;
-	setShowSearch: (show: boolean) => void;
 	onOpenVault: () => void;
-	onCreateVault: () => void;
 	onOpenCommandPalette: () => void;
 }
 
 export function SidebarHeader({
-	vaultPath,
-	showSearch,
-	setShowSearch,
 	onOpenVault,
-	onCreateVault,
 	onOpenCommandPalette,
 }: SidebarHeaderProps) {
 	return (
@@ -35,27 +26,6 @@ export function SidebarHeader({
 				onMouseDown={onWindowDragMouseDown}
 			>
 				<div className="sidebarActions">
-					{vaultPath && (
-						<Button
-							type="button"
-							variant="ghost"
-							size="icon-sm"
-							onClick={() => setShowSearch(!showSearch)}
-							title="Search"
-							className={cn(showSearch && "bg-accent text-accent-foreground")}
-						>
-							<Search size={14} />
-						</Button>
-					)}
-					<Button
-						type="button"
-						variant="ghost"
-						size="icon-sm"
-						onClick={onCreateVault}
-						title="Create vault"
-					>
-						<FolderPlus size={14} />
-					</Button>
 					<Button
 						type="button"
 						variant="ghost"

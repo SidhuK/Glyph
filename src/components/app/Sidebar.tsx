@@ -13,8 +13,6 @@ interface SidebarProps {
 	onNewFileInDir: (dirPath: string) => void;
 	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
 	onRenameDir: (dirPath: string, nextName: string) => Promise<string | null>;
-	onOpenSearchAsCanvas: (query: string) => void;
-	onSelectSearchNote: (id: string) => void;
 	onSelectTag: (tag: string) => void;
 	canvases: CanvasLibraryMeta[];
 	activeCanvasId: string | null;
@@ -34,8 +32,6 @@ export function Sidebar({
 	onNewFileInDir,
 	onNewFolderInDir,
 	onRenameDir,
-	onOpenSearchAsCanvas,
-	onSelectSearchNote,
 	onSelectTag,
 	canvases,
 	activeCanvasId,
@@ -47,9 +43,8 @@ export function Sidebar({
 	onOpenCommandPalette,
 }: SidebarProps) {
 	// Contexts
-	const { vaultPath, onOpenVault, onCreateVault } = useVault();
+	const { onOpenVault } = useVault();
 	const { sidebarCollapsed, sidebarWidth } = useUIContext();
-	const { showSearch, setShowSearch } = useUIContext();
 	const shouldReduceMotion = useReducedMotion();
 	const sidebarState = sidebarCollapsed ? "collapsed" : "expanded";
 
@@ -82,11 +77,7 @@ export function Sidebar({
 						}
 					>
 						<SidebarHeader
-							vaultPath={vaultPath}
-							showSearch={showSearch}
-							setShowSearch={setShowSearch}
 							onOpenVault={onOpenVault}
-							onCreateVault={onCreateVault}
 							onOpenCommandPalette={onOpenCommandPalette}
 						/>
 						<SidebarContent
@@ -97,8 +88,6 @@ export function Sidebar({
 							onNewFileInDir={onNewFileInDir}
 							onNewFolderInDir={onNewFolderInDir}
 							onRenameDir={onRenameDir}
-							onOpenSearchAsCanvas={onOpenSearchAsCanvas}
-							onSelectSearchNote={onSelectSearchNote}
 							onSelectTag={onSelectTag}
 							canvases={canvases}
 							activeCanvasId={activeCanvasId}

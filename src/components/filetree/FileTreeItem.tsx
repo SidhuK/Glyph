@@ -35,6 +35,33 @@ const rowVariants = {
 	tap: { scale: 0.98 },
 };
 
+function truncateMiddle(text: string, maxChars: number): string {
+	if (text.length <= maxChars) return text;
+	if (maxChars <= 4) return `${text.slice(0, maxChars)}...`;
+	const keep = maxChars - 3;
+	const head = Math.ceil(keep / 2);
+	const tail = Math.floor(keep / 2);
+	return `${text.slice(0, head)}...${text.slice(-tail)}`;
+}
+
+function truncateTreeLabel(name: string, isFile: boolean): string {
+	const trimmed = name.trim();
+	if (!trimmed) return isFile ? "Untitled.md" : "New Folder";
+	if (!isFile) return truncateMiddle(trimmed, 22);
+	const dotIndex = trimmed.lastIndexOf(".");
+	if (dotIndex > 0 && dotIndex < trimmed.length - 1) {
+		const ext = trimmed.slice(dotIndex);
+		const base = trimmed.slice(0, dotIndex);
+		const maxChars = 24;
+		if (trimmed.length <= maxChars) return trimmed;
+		const availableBase = maxChars - ext.length - 3;
+		if (availableBase >= 4) {
+			return `${base.slice(0, availableBase)}...${ext}`;
+		}
+	}
+	return truncateMiddle(trimmed, 24);
+}
+
 interface FileTreeDirItemProps {
 	entry: FsEntry;
 	depth: number;
@@ -75,7 +102,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 	const inputRef = useRef<HTMLInputElement | null>(null);
 	const renameSubmittedRef = useRef(false);
 	const [draftName, setDraftName] = useState(entry.name);
-	const displayDirName = entry.name.trim() || "New Folder";
+	const displayDirName = truncateTreeLabel(entry.name, false);
 	const totalFiles = summary?.total_files_recursive ?? 0;
 	const countsLabel = summary && totalFiles > 0 ? String(totalFiles) : "";
 
@@ -160,6 +187,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 						whileTap="tap"
 						animate={isExpanded ? "active" : "idle"}
 						transition={springTransition}
+						title={entry.rel_path || entry.name || "Folder"}
 					>
 						<motion.span
 							className="fileTreeIcon"
@@ -241,8 +269,10 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 		entry.rel_path,
 		entry.is_markdown,
 	);
-	const displayFileName =
-		entry.name.trim() || basename(entry.rel_path).trim() || "Untitled.md";
+	const displayFileName = truncateTreeLabel(
+		entry.name.trim() || basename(entry.rel_path).trim() || "Untitled.md",
+		true,
+	);
 
 	return (
 		<li className={isActive ? "fileTreeItem active" : "fileTreeItem"}>

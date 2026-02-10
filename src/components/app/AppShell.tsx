@@ -65,7 +65,6 @@ export function AppShell() {
 		activeViewDoc,
 		activeViewDocRef,
 		loadAndBuildFolderView,
-		loadAndBuildSearchView,
 		loadAndBuildTagView,
 		loadCanvasView,
 		setActiveViewDoc,
@@ -197,14 +196,6 @@ export function AppShell() {
 			await loadAndBuildFolderView(dir);
 		},
 		[loadAndBuildFolderView, setActivePreviewPath],
-	);
-
-	const openSearchView = useCallback(
-		async (query: string) => {
-			setActivePreviewPath(null);
-			await loadAndBuildSearchView(query);
-		},
-		[loadAndBuildSearchView, setActivePreviewPath],
 	);
 
 	const openTagView = useCallback(
@@ -518,8 +509,6 @@ export function AppShell() {
 
 			<Sidebar
 				onSelectDir={(p) => void openFolderView(p)}
-				onOpenSearchAsCanvas={(q) => void openSearchView(q)}
-				onSelectSearchNote={(id) => void fileTree.openMarkdownFileInCanvas(id)}
 				onOpenFile={(p) => void fileTree.openFile(p)}
 				onNewFile={fileTree.onNewFile}
 				onNewFileInDir={(p) => void fileTree.onNewFileInDir(p)}

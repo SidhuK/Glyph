@@ -106,9 +106,9 @@
 	align-items: center;
 	gap: 0;
 	padding: 2px;
-	border: 1px solid var(--border-light);
+	border: 1px solid transparent;
 	border-radius: var(--radius-full);
-	background: var(--bg-secondary);
+	background: transparent;
 }
 
 .sidebarSectionToggle button {

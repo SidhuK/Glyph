@@ -1,11 +1,9 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useFileTreeContext, useUIContext, useVault } from "../../contexts";
 import type { CanvasLibraryMeta } from "../../lib/canvases";
-import { openSettingsWindow } from "../../lib/windows";
 import { CanvasesPane } from "../CanvasesPane";
 import { FileTreePane } from "../FileTreePane";
-import { Files, Layout, Settings, Tags } from "../Icons";
-import { SearchPane } from "../SearchPane";
+import { Files, Layout, Tags } from "../Icons";
 import { TagsPane } from "../TagsPane";
 import { ScrollArea } from "../ui/shadcn/scroll-area";
 import { Tabs, TabsList, TabsTrigger } from "../ui/shadcn/tabs";
@@ -18,8 +16,6 @@ interface SidebarContentProps {
 	onNewFileInDir: (dirPath: string) => void;
 	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
 	onRenameDir: (dirPath: string, nextName: string) => Promise<string | null>;
-	onOpenSearchAsCanvas: (query: string) => void;
-	onSelectSearchNote: (id: string) => void;
 	onSelectTag: (tag: string) => void;
 	canvases: CanvasLibraryMeta[];
 	activeCanvasId: string | null;
@@ -38,8 +34,6 @@ export function SidebarContent({
 	onNewFileInDir,
 	onNewFolderInDir,
 	onRenameDir,
-	onOpenSearchAsCanvas,
-	onSelectSearchNote,
 	onSelectTag,
 	canvases,
 	activeCanvasId,
@@ -50,7 +44,7 @@ export function SidebarContent({
 	onRenameCanvas,
 }: SidebarContentProps) {
 	// Contexts
-	const { vaultPath, vaultSchemaVersion, isIndexing } = useVault();
+	const { vaultPath } = useVault();
 	const {
 		rootEntries,
 		childrenByDir,
@@ -61,17 +55,7 @@ export function SidebarContent({
 		tagsError,
 		refreshTags,
 	} = useFileTreeContext();
-	const {
-		showSearch,
-		searchQuery,
-		searchResults,
-		isSearching,
-		searchError,
-		setSearchQuery,
-		setSearchInputElement,
-		sidebarViewMode,
-		setSidebarViewMode,
-	} = useUIContext();
+	const { sidebarViewMode, setSidebarViewMode } = useUIContext();
 
 	if (!vaultPath) {
 		return (
@@ -82,36 +66,12 @@ export function SidebarContent({
 						Open or create a vault to get started.
 					</div>
 				</div>
-				<SidebarFooter />
 			</>
 		);
 	}
 
 	return (
 		<>
-			{showSearch && (
-				<div className="sidebarSection">
-					<SearchPane
-						query={searchQuery}
-						results={searchResults}
-						isSearching={isSearching}
-						error={searchError}
-						onChangeQuery={setSearchQuery}
-						onSearchInputRef={setSearchInputElement}
-						onOpenAsCanvas={onOpenSearchAsCanvas}
-						onSelectNote={onSelectSearchNote}
-					/>
-				</div>
-			)}
-
-			<div className="sidebarSection vaultInfo">
-				<div className="vaultPath mono">{vaultPath.split("/").pop()}</div>
-				<div className="vaultMeta">
-					{vaultSchemaVersion ? `v${vaultSchemaVersion}` : ""}
-					{isIndexing ? " • indexing" : ""}
-				</div>
-			</div>
-
 			<div className="sidebarSection sidebarSectionGrow">
 				<div className="sidebarSectionHeader">
 					<Tabs
@@ -121,7 +81,7 @@ export function SidebarContent({
 						}
 						className="sidebarSectionToggle"
 					>
-						<TabsList className="w-full">
+						<TabsList className="w-full rounded-full bg-transparent">
 							<TabsTrigger value="files" title="Files">
 								<Files size={14} />
 							</TabsTrigger>
@@ -206,23 +166,6 @@ export function SidebarContent({
 					)}
 				</AnimatePresence>
 			</div>
-
-			<SidebarFooter />
 		</>
-	);
-}
-
-function SidebarFooter() {
-	return (
-		<div className="sidebarFooter">
-			<button
-				type="button"
-				className="sidebarFooterBtn"
-				onClick={() => void openSettingsWindow("general")}
-			>
-				<Settings size={16} />
-				<span>Settings</span>
-			</button>
-		</div>
 	);
 }
