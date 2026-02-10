@@ -31,6 +31,7 @@ import {
 } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { AIToolTimeline, type ToolTimelineEvent } from "./AIToolTimeline";
+import { ModelSelector } from "./ModelSelector";
 import { useAiContext } from "./useAiContext";
 import { useAiHistory } from "./useAiHistory";
 import { useAiProfiles } from "./useAiProfiles";
@@ -835,28 +836,35 @@ export function AIPanel({
 								<Sparkles size={14} />
 							</Button>
 						</div>
-						{chat.status === "streaming" ? (
-							<button
-								type="button"
-								className="aiComposerStop"
-								onClick={() => chat.stop()}
-							>
-								Stop
-							</button>
-						) : (
-							<Button
-								type="button"
-								variant="ghost"
-								size="icon-sm"
-								className="aiComposerSend"
-								disabled={!canSend}
-								onClick={handleSend}
-								aria-label="Send"
-								title="Send"
-							>
-								<Send size={14} />
-							</Button>
-						)}
+						<div className="aiComposerRight">
+							<ModelSelector
+								profileId={profiles.activeProfileId}
+								value={profiles.activeProfile?.model ?? ""}
+								onChange={(modelId) => void profiles.setModel(modelId)}
+							/>
+							{chat.status === "streaming" ? (
+								<button
+									type="button"
+									className="aiComposerStop"
+									onClick={() => chat.stop()}
+								>
+									Stop
+								</button>
+							) : (
+								<Button
+									type="button"
+									variant="ghost"
+									size="icon-sm"
+									className="aiComposerSend"
+									disabled={!canSend}
+									onClick={handleSend}
+									aria-label="Send"
+									title="Send"
+								>
+									<Send size={14} />
+								</Button>
+							)}
+						</div>
 					</div>
 				</div>
 			</div>

@@ -225,6 +225,13 @@ export interface AiModel {
 	name: string;
 	context_length: number | null;
 	description: string | null;
+	input_modalities: string[] | null;
+	output_modalities: string[] | null;
+	tokenizer: string | null;
+	prompt_pricing: string | null;
+	completion_pricing: string | null;
+	supported_parameters: string[] | null;
+	max_completion_tokens: number | null;
 }
 
 export interface AiChatHistorySummary {

@@ -657,6 +657,12 @@
 	opacity: 0.3;
 }
 
+.aiComposerRight {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
 .aiComposerSend {
 	color: var(--interactive-accent) !important;
 }

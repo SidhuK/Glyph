@@ -76,11 +76,30 @@ export function useAiProfiles() {
 		}
 	}, []);
 
+	const setModel = useCallback(
+		async (modelId: string) => {
+			const profile = profiles.find((p) => p.id === activeProfileId);
+			if (!profile) return;
+			const updated = { ...profile, model: modelId };
+			setError("");
+			try {
+				const saved = await invoke("ai_profile_upsert", {
+					profile: updated,
+				});
+				setProfiles((prev) => prev.map((p) => (p.id === saved.id ? saved : p)));
+			} catch (e) {
+				setError(errMessage(e));
+			}
+		},
+		[activeProfileId, profiles],
+	);
+
 	return {
 		profiles,
 		activeProfileId,
 		activeProfile,
 		setActive,
+		setModel,
 		secretConfigured,
 		error,
 	};

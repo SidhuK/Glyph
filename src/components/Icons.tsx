@@ -275,6 +275,9 @@ export const TriangleAlert = (props: IconProps) => (
 export const CircleHelp = (props: IconProps) => (
 	<HugeiconsIcon icon={Icons.Help} {...props} />
 );
+export const InformationCircle = (props: IconProps) => (
+	<HugeiconsIcon icon={Icons.InformationCircleIcon} {...props} />
+);
 export const Eye = (props: IconProps) => (
 	<HugeiconsIcon icon={Icons.Eye} {...props} />
 );

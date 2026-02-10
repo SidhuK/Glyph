@@ -42,6 +42,13 @@ pub struct AiModel {
     pub name: String,
     pub context_length: Option<u32>,
     pub description: Option<String>,
+    pub input_modalities: Option<Vec<String>>,
+    pub output_modalities: Option<Vec<String>>,
+    pub tokenizer: Option<String>,
+    pub prompt_pricing: Option<String>,
+    pub completion_pricing: Option<String>,
+    pub supported_parameters: Option<Vec<String>>,
+    pub max_completion_tokens: Option<u32>,
 }
 
 #[derive(Deserialize, Clone)]

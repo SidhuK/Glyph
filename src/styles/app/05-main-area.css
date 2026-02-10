@@ -63,6 +63,13 @@
 	gap: var(--space-1);
 }
 
+.appShell.appShellSidebarCollapsed .sidebarResizeHandle {
+	width: 0;
+	margin-left: 0;
+	margin-right: 0;
+	pointer-events: none;
+}
+
 .welcomeScreen {
 	flex: 1;
 	display: flex;
@@ -370,6 +377,7 @@
 
 .welcomeGetStarted:hover {
 	background: var(--interactive-accent-hover);
+	color: var(--text-inverse);
 }
 
 /* Vault step (unused, kept for reference) */
@@ -458,6 +466,7 @@
 
 .welcomeNextBtn:hover {
 	background: var(--interactive-accent-hover);
+	color: var(--text-inverse);
 }
 
 /* Ready step */

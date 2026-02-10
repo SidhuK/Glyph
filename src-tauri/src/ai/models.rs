@@ -46,6 +46,13 @@ async fn list_openai_like(
             id: m.id,
             context_length: None,
             description: None,
+            input_modalities: None,
+            output_modalities: None,
+            tokenizer: None,
+            prompt_pricing: None,
+            completion_pricing: None,
+            supported_parameters: None,
+            max_completion_tokens: None,
         })
         .collect();
     models.sort_by(|a, b| a.id.cmp(&b.id));
@@ -69,6 +76,30 @@ where
 }
 
 #[derive(serde::Deserialize)]
+struct OpenRouterArchitecture {
+    #[serde(default)]
+    input_modalities: Option<Vec<String>>,
+    #[serde(default)]
+    output_modalities: Option<Vec<String>>,
+    #[serde(default)]
+    tokenizer: Option<String>,
+}
+
+#[derive(serde::Deserialize)]
+struct OpenRouterPricing {
+    #[serde(default)]
+    prompt: Option<String>,
+    #[serde(default)]
+    completion: Option<String>,
+}
+
+#[derive(serde::Deserialize)]
+struct OpenRouterTopProvider {
+    #[serde(default)]
+    max_completion_tokens: Option<u32>,
+}
+
+#[derive(serde::Deserialize)]
 struct OpenRouterModel {
     id: String,
     #[serde(default)]
@@ -77,6 +108,14 @@ struct OpenRouterModel {
     context_length: Option<u32>,
     #[serde(default)]
     description: Option<String>,
+    #[serde(default)]
+    architecture: Option<OpenRouterArchitecture>,
+    #[serde(default)]
+    pricing: Option<OpenRouterPricing>,
+    #[serde(default)]
+    top_provider: Option<OpenRouterTopProvider>,
+    #[serde(default)]
+    supported_parameters: Option<Vec<String>>,
 }
 
 async fn list_openrouter(
@@ -101,11 +140,22 @@ async fn list_openrouter(
     let mut models: Vec<AiModel> = parsed
         .data
         .into_iter()
-        .map(|m| AiModel {
-            name: m.name.unwrap_or_else(|| m.id.clone()),
-            id: m.id,
-            context_length: m.context_length,
-            description: m.description,
+        .map(|m| {
+            let arch = m.architecture.as_ref();
+            let pricing = m.pricing.as_ref();
+            AiModel {
+                name: m.name.unwrap_or_else(|| m.id.clone()),
+                id: m.id,
+                context_length: m.context_length,
+                description: m.description,
+                input_modalities: arch.and_then(|a| a.input_modalities.clone()),
+                output_modalities: arch.and_then(|a| a.output_modalities.clone()),
+                tokenizer: arch.and_then(|a| a.tokenizer.clone()),
+                prompt_pricing: pricing.and_then(|p| p.prompt.clone()),
+                completion_pricing: pricing.and_then(|p| p.completion.clone()),
+                supported_parameters: m.supported_parameters,
+                max_completion_tokens: m.top_provider.and_then(|t| t.max_completion_tokens),
+            }
         })
         .collect();
     models.sort_by(|a, b| a.name.cmp(&b.name));
@@ -154,6 +204,13 @@ async fn list_anthropic(
             id: m.id,
             context_length: None,
             description: None,
+            input_modalities: None,
+            output_modalities: None,
+            tokenizer: None,
+            prompt_pricing: None,
+            completion_pricing: None,
+            supported_parameters: None,
+            max_completion_tokens: None,
         })
         .collect();
     models.sort_by(|a, b| a.name.cmp(&b.name));
@@ -205,6 +262,13 @@ async fn list_gemini(
                 id,
                 context_length: m.input_token_limit,
                 description: m.description,
+                input_modalities: None,
+                output_modalities: None,
+                tokenizer: None,
+                prompt_pricing: None,
+                completion_pricing: None,
+                supported_parameters: None,
+                max_completion_tokens: None,
             }
         })
         .collect();
