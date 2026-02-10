@@ -15,19 +15,79 @@
 	box-shadow: var(--shadow-float);
 }
 
+/* ── Tab row ── */
+
+.commandPaletteTabs {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 10px var(--space-4) 8px;
+}
+
+.commandPaletteTabGroup {
+	display: inline-flex;
+	align-items: center;
+	padding: 2px;
+	border-radius: var(--radius-full);
+	background: var(--bg-secondary);
+}
+
+.commandPaletteTab {
+	position: relative;
+	height: 22px;
+	padding: 0 10px;
+	border: 0;
+	border-radius: var(--radius-full);
+	font-size: var(--text-xs);
+	font-weight: var(--font-medium);
+	line-height: 1;
+	cursor: pointer;
+	background: transparent;
+	color: var(--text-tertiary);
+	transition: color var(--transition-fast);
+	z-index: 0;
+}
+
+.commandPaletteTab[data-active="true"] {
+	color: var(--text-primary);
+}
+
+.commandPaletteTab[data-active="false"]:hover {
+	color: var(--text-secondary);
+}
+
+.commandPaletteTab:disabled {
+	opacity: 0.35;
+	pointer-events: none;
+}
+
+.commandPaletteTabPill {
+	position: absolute;
+	inset: 0;
+	border-radius: var(--radius-full);
+	background: var(--bg-tertiary);
+	z-index: -1;
+}
+
+.commandPaletteTabLabel {
+	position: relative;
+	z-index: 1;
+}
+
 /* ── Search input row ── */
 
 .commandPaletteInputWrapper {
 	display: flex;
 	align-items: center;
-	gap: 10px;
-	height: 48px;
-	padding: 0 16px;
-	border-bottom: 1px solid var(--border-light);
+	gap: 8px;
+	height: 36px;
+	padding: 0 var(--space-4);
 }
 
 .commandPaletteSearchIcon {
 	flex-shrink: 0;
+	display: flex;
+	align-items: center;
 	color: var(--text-tertiary);
 }
 
@@ -37,7 +97,7 @@
 	border: 0;
 	outline: 0;
 	font: inherit;
-	font-size: var(--text-base);
+	font-size: var(--text-sm);
 	color: var(--text-primary);
 	background: transparent;
 }
@@ -49,23 +109,11 @@
 /* ── Results list ── */
 
 .commandPaletteList {
-	list-style: none;
-	margin: 0;
-	padding: 6px;
-	max-height: calc(min(60vh, 440px) - 48px);
+	padding: 4px 6px 6px;
+	max-height: calc(60vh - 120px);
 	overflow-x: hidden;
 	overflow-y: auto;
-	scroll-padding: 6px;
-}
-
-.commandPaletteGroup {
-	overflow: hidden;
-}
-
-.commandPaletteSeparator {
-	height: 1px;
-	margin: 4px 8px;
-	background: var(--border-light);
+	scroll-padding: 4px;
 }
 
 /* ── Individual item ── */
@@ -76,7 +124,7 @@
 	align-items: center;
 	justify-content: space-between;
 	gap: 12px;
-	height: 36px;
+	min-height: 34px;
 	padding: 0 10px;
 	border: 0;
 	border-radius: var(--radius-md);
@@ -94,9 +142,43 @@
 	background: var(--interactive-hover);
 }
 
-.commandPaletteItem[data-disabled="true"] {
-	opacity: 0.4;
-	pointer-events: none;
+/* ── Search result layout ── */
+
+.commandPaletteResultItem {
+	flex-direction: column;
+	align-items: flex-start;
+	justify-content: center;
+	gap: 2px;
+	padding: 6px 10px;
+}
+
+.commandPaletteResultContent {
+	min-width: 0;
+	width: 100%;
+}
+
+.commandPaletteResultTitle {
+	font-size: var(--text-sm);
+	font-weight: var(--font-medium);
+	color: var(--text-primary);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.commandPaletteResultSnippet {
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.commandPaletteResultSnippet mark {
+	background: transparent;
+	color: var(--text-primary);
+	font-weight: var(--font-medium);
+	text-decoration: none;
 }
 
 /* ── Keyboard shortcut badges ── */
@@ -128,7 +210,7 @@
 /* ── Empty state ── */
 
 .commandPaletteEmpty {
-	padding: 24px 16px;
+	padding: 20px 16px;
 	text-align: center;
 	font-size: var(--text-sm);
 	color: var(--text-tertiary);

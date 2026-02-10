@@ -78,14 +78,15 @@ export function AppShell() {
 		setPaletteOpen,
 		aiPanelOpen,
 		setAiPanelOpen,
-		setShowSearch,
-		focusSearchInput,
 		setActivePreviewPath,
 	} = useUIContext();
 
 	// ---------------------------------------------------------------------------
 	// Local state
 	// ---------------------------------------------------------------------------
+	const [paletteInitialTab, setPaletteInitialTab] = useState<
+		"commands" | "search"
+	>("commands");
 	const [canvasCommand, setCanvasCommand] =
 		useState<CanvasExternalCommand | null>(null);
 	const [selectedCanvasId, setSelectedCanvasId] = useState<string | null>(null);
@@ -428,6 +429,11 @@ export function AppShell() {
 		[],
 	);
 
+	const openSearchShortcuts = useMemo<Shortcut[]>(
+		() => [{ meta: true, key: "f" }],
+		[],
+	);
+
 	const commands = useMemo<Command[]>(
 		() => [
 			{
@@ -435,18 +441,6 @@ export function AppShell() {
 				label: "Open vault",
 				shortcut: { meta: true, key: "o" },
 				action: onOpenVault,
-			},
-			{
-				id: "search",
-				label: "Search",
-				shortcut: { meta: true, key: "f" },
-				enabled: Boolean(vaultPath),
-				action: () => {
-					setShowSearch(true);
-					window.requestAnimationFrame(() => {
-						focusSearchInput();
-					});
-				},
 			},
 			{
 				id: "toggle-ai",
@@ -470,23 +464,23 @@ export function AppShell() {
 				action: async () => createCanvasAndOpen(),
 			},
 		],
-		[
-			fileTree,
-			createCanvasAndOpen,
-			onOpenVault,
-			setAiPanelOpen,
-			focusSearchInput,
-			setShowSearch,
-			vaultPath,
-		],
+		[fileTree, createCanvasAndOpen, onOpenVault, setAiPanelOpen, vaultPath],
 	);
 
 	useCommandShortcuts({
 		commands,
 		paletteOpen,
-		onOpenPalette: () => setPaletteOpen(true),
+		onOpenPalette: () => {
+			setPaletteInitialTab("commands");
+			setPaletteOpen(true);
+		},
+		onOpenPaletteSearch: () => {
+			setPaletteInitialTab("search");
+			setPaletteOpen(true);
+		},
 		onClosePalette: () => setPaletteOpen(false),
 		openPaletteShortcuts,
+		openSearchShortcuts,
 	});
 
 	// ---------------------------------------------------------------------------
@@ -540,7 +534,10 @@ export function AppShell() {
 				onAddNotesToCanvas={addNotesToCanvas}
 				onCreateNoteInCanvas={() => void createNewCanvasNote()}
 				onRenameCanvas={renameCanvasAndUpdate}
-				onOpenCommandPalette={() => setPaletteOpen(true)}
+				onOpenCommandPalette={() => {
+					setPaletteInitialTab("commands");
+					setPaletteOpen(true);
+				}}
 			/>
 
 			<div
@@ -590,8 +587,11 @@ export function AppShell() {
 			</AnimatePresence>
 			<CommandPalette
 				open={paletteOpen}
+				initialTab={paletteInitialTab}
 				commands={commands}
 				onClose={() => setPaletteOpen(false)}
+				vaultPath={vaultPath}
+				onSelectSearchNote={(id) => void fileTree.openMarkdownFileInCanvas(id)}
 			/>
 		</div>
 	);
