@@ -39,8 +39,7 @@ export function useNoteEditor({
 
 	useEffect(() => {
 		frontmatterRef.current = frontmatter;
-		lastEmittedMarkdownRef.current = markdown;
-	}, [frontmatter, markdown]);
+	}, [frontmatter]);
 
 	const editor = useEditor({
 		extensions: createEditorExtensions(),
@@ -97,6 +96,7 @@ export function useNoteEditor({
 			}
 			if (mode !== "rich" || !instance.isEditable) return;
 			const nextBody = postprocessMarkdownFromEditor(instance.getMarkdown());
+			lastAppliedBodyRef.current = preprocessMarkdownForEditor(nextBody);
 			const nextMarkdown = joinYamlFrontmatter(
 				frontmatterRef.current,
 				normalizeBody(nextBody),
@@ -117,11 +117,13 @@ export function useNoteEditor({
 
 	useEffect(() => {
 		if (!editor) return;
+		if (markdown === lastEmittedMarkdownRef.current) return;
 		if (editorBody === lastAppliedBodyRef.current) return;
 		suppressUpdateRef.current = true;
 		editor.commands.setContent(editorBody, { contentType: "markdown" });
 		lastAppliedBodyRef.current = editorBody;
-	}, [editor, editorBody]);
+		lastEmittedMarkdownRef.current = markdown;
+	}, [editor, editorBody, markdown]);
 
 	return {
 		editor,
