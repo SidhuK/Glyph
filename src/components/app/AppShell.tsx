@@ -13,13 +13,17 @@ import { useFileTree } from "../../hooks/useFileTree";
 import { useMenuListeners } from "../../hooks/useMenuListeners";
 import { parseNotePreview } from "../../lib/notePreview";
 import type { Shortcut } from "../../lib/shortcuts";
-import { invoke } from "../../lib/tauri";
+import { type FsEntry, invoke } from "../../lib/tauri";
 import { cn } from "../../utils/cn";
 import { isMarkdownPath } from "../../utils/path";
 import { onWindowDragMouseDown } from "../../utils/window";
 import type { CanvasExternalCommand } from "../CanvasPane";
 import { PanelLeftClose, PanelLeftOpen } from "../Icons";
 import { AIFloatingHost } from "../ai/AIFloatingHost";
+import {
+	WIKI_LINK_CLICK_EVENT,
+	type WikiLinkClickDetail,
+} from "../editor/markdown/wikiLinkEvents";
 import { Button } from "../ui/shadcn/button";
 import { type Command, CommandPalette } from "./CommandPalette";
 import { MainContent } from "./MainContent";
@@ -32,6 +36,35 @@ function basename(path: string): string {
 
 function fileTitleFromPath(path: string): string {
 	return basename(path).replace(/\.md$/i, "").trim() || "Untitled";
+}
+
+function normalizeWikiLinkTarget(target: string): string {
+	return target.trim().replace(/\\/g, "/").replace(/^\.\//, "");
+}
+
+function resolveWikiLinkPath(
+	target: string,
+	entries: FsEntry[],
+): string | null {
+	const normalized = normalizeWikiLinkTarget(target).replace(/\.md$/i, "");
+	if (!normalized) return null;
+	const lowered = normalized.toLowerCase();
+
+	const exactPath = entries.find(
+		(entry) => entry.rel_path.replace(/\.md$/i, "").toLowerCase() === lowered,
+	);
+	if (exactPath) return exactPath.rel_path;
+
+	const exactTitle = entries.find((entry) => {
+		const title = fileTitleFromPath(entry.rel_path).toLowerCase();
+		return title === lowered;
+	});
+	if (exactTitle) return exactTitle.rel_path;
+
+	const suffixPath = entries.find((entry) =>
+		entry.rel_path.replace(/\.md$/i, "").toLowerCase().endsWith(`/${lowered}`),
+	);
+	return suffixPath?.rel_path ?? null;
 }
 
 function aiNoteFileName(): string {
@@ -187,6 +220,49 @@ export function AppShell() {
 		loadAndBuildFolderView,
 		getActiveFolderDir,
 	});
+
+	useEffect(() => {
+		let cachedEntries: FsEntry[] = [];
+		let loadedAt = 0;
+		const ensureEntries = async () => {
+			const now = Date.now();
+			if (!cachedEntries.length || now - loadedAt > 30_000) {
+				cachedEntries = await invoke("vault_list_markdown_files", {
+					recursive: true,
+					limit: 4000,
+				});
+				loadedAt = now;
+			}
+			return cachedEntries;
+		};
+
+		const onWikiLinkClick = (event: Event) => {
+			const detail = (event as CustomEvent<WikiLinkClickDetail>).detail;
+			if (!detail?.target) return;
+			const targetWithoutAnchor =
+				detail.target.split("#", 1)[0] ?? detail.target;
+			void (async () => {
+				try {
+					const entries = await ensureEntries();
+					const resolved = resolveWikiLinkPath(targetWithoutAnchor, entries);
+					if (!resolved) {
+						setError(`Could not resolve wikilink: ${detail.target}`);
+						return;
+					}
+					await fileTree.openFile(resolved);
+				} catch (e) {
+					setError(
+						`Failed to open wikilink: ${e instanceof Error ? e.message : String(e)}`,
+					);
+				}
+			})();
+		};
+
+		window.addEventListener(WIKI_LINK_CLICK_EVENT, onWikiLinkClick);
+		return () => {
+			window.removeEventListener(WIKI_LINK_CLICK_EVENT, onWikiLinkClick);
+		};
+	}, [fileTree, setError]);
 
 	const canvasLibrary = useCanvasLibrary();
 

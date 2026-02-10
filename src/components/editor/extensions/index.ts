@@ -12,6 +12,7 @@ import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import StarterKit from "@tiptap/starter-kit";
 import { SlashCommand } from "../slashCommands";
+import { WikiLink } from "./wikiLink";
 
 const CalloutDecorations = Extension.create({
 	name: "callout-decorations",
@@ -53,12 +54,13 @@ const CalloutDecorations = Extension.create({
 
 interface CreateEditorExtensionsOptions {
 	enableSlashCommand?: boolean;
+	enableWikiLinks?: boolean;
 }
 
 export function createEditorExtensions(
 	options?: CreateEditorExtensionsOptions,
 ) {
-	const { enableSlashCommand = true } = options ?? {};
+	const { enableSlashCommand = true, enableWikiLinks = true } = options ?? {};
 	return [
 		StarterKit.configure({
 			bulletList: { keepMarks: true, keepAttributes: false },
@@ -82,6 +84,7 @@ export function createEditorExtensions(
 				breaks: false,
 			},
 		}),
+		...(enableWikiLinks ? [WikiLink] : []),
 		...(enableSlashCommand ? [SlashCommand] : []),
 		CalloutDecorations,
 	];

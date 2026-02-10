@@ -9,50 +9,48 @@ import {
 	useState,
 } from "react";
 import { createPortal } from "react-dom";
+import anthropicLogoUrl from "../../assets/provider-logos/claude-ai.svg?url";
+import geminiLogoUrl from "../../assets/provider-logos/google-gemini.svg?url";
+import ollamaLogoUrl from "../../assets/provider-logos/ollama.svg?url";
+import openrouterLogoUrl from "../../assets/provider-logos/open-router.svg?url";
+import openaiLogoUrl from "../../assets/provider-logos/openai-light.svg?url";
 import {
 	type AiModel,
-	type AiProviderKind,
 	type AiProfile,
+	type AiProviderKind,
 	type ProviderSupportEntry,
 	invoke,
 } from "../../lib/tauri";
 import { ChevronDown, InformationCircle } from "../Icons";
-import openaiLogoUrl from "../../assets/provider-logos/openai-light.svg?url";
-import openrouterLogoUrl from "../../assets/provider-logos/open-router.svg?url";
-import anthropicLogoUrl from "../../assets/provider-logos/claude-ai.svg?url";
-import geminiLogoUrl from "../../assets/provider-logos/google-gemini.svg?url";
-import ollamaLogoUrl from "../../assets/provider-logos/ollama.svg?url";
 import styles from "./ModelSelector.module.css";
 
-const providerLogoMap: Record<
-	AiProviderKind,
-	{ src: string; label: string }
-> = {
-	openai: {
-		src: openaiLogoUrl,
-		label: "OpenAI",
-	},
-	openai_compat: {
-		src: openaiLogoUrl,
-		label: "OpenAI (compat)",
-	},
-	openrouter: {
-		src: openrouterLogoUrl,
-		label: "OpenRouter",
-	},
-	anthropic: {
-		src: anthropicLogoUrl,
-		label: "Anthropic",
-	},
-	gemini: {
-		src: geminiLogoUrl,
-		label: "Google Gemini",
-	},
-	ollama: {
-		src: ollamaLogoUrl,
-		label: "Ollama",
-	},
-};
+const providerLogoMap: Record<AiProviderKind, { src: string; label: string }> =
+	{
+		openai: {
+			src: openaiLogoUrl,
+			label: "OpenAI",
+		},
+		openai_compat: {
+			src: openaiLogoUrl,
+			label: "OpenAI (compat)",
+		},
+		openrouter: {
+			src: openrouterLogoUrl,
+			label: "OpenRouter",
+		},
+		anthropic: {
+			src: anthropicLogoUrl,
+			label: "Anthropic",
+		},
+		gemini: {
+			src: geminiLogoUrl,
+			label: "Google Gemini",
+		},
+		ollama: {
+			src: ollamaLogoUrl,
+			label: "Ollama",
+		},
+	};
 
 const ProviderLogo = ({
 	provider,
@@ -176,11 +174,11 @@ export function ModelSelector({
 		bottom: number;
 		right: number;
 	} | null>(null);
-	const [providerSupportMap, setProviderSupportMap] = useState<
-		Record<string, ProviderSupportEntry> | null
-	>(null);
+	const [providerSupportMap, setProviderSupportMap] = useState<Record<
+		string,
+		ProviderSupportEntry
+	> | null>(null);
 	const [secretProfileIds, setSecretProfileIds] = useState<string[]>([]);
-	const profileIdsKey = useMemo(() => profiles.map((p) => p.id).join("|"), [profiles]);
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: reset cache when profile changes
 	useEffect(() => {
@@ -292,39 +290,39 @@ export function ModelSelector({
 		return () => {
 			cancelled = true;
 		};
-	}, [open, profileIdsKey]);
+	}, [open]);
 
 	useEffect(() => {
 		if (!open) return;
 		void fetchModels();
-	}, [open, profileId, fetchModels]);
-
-	useEffect(() => {
-		setDetailModelId(null);
-	}, [profileId]);
+	}, [open, fetchModels]);
 
 	useEffect(() => {
 		if (!open) return;
 		setModelQuery("");
-	}, [open, profileId]);
+	}, [open]);
 
 	const selectedModel = models?.find((m) => m.id === value);
 	const displayLabel = selectedModel?.name ?? value ?? "Model";
 	const detailModel = detailModelId
-		? models?.find((m) => m.id === detailModelId) ?? null
+		? (models?.find((m) => m.id === detailModelId) ?? null)
 		: null;
 	const truncateLabel = (name: string) => {
 		if (name.length <= 30) return name;
 		return `${name.slice(0, 27)}…`;
 	};
 
-	const secretProfileSet = useMemo(() => new Set(secretProfileIds), [secretProfileIds]);
+	const secretProfileSet = useMemo(
+		() => new Set(secretProfileIds),
+		[secretProfileIds],
+	);
 	const configuredProfiles = useMemo(() => {
 		return profiles
 			.filter((profile) => secretProfileSet.has(profile.id))
 			.map((profile) => {
 				const resolvedProvider =
-					resolveLogoProvider(profile.provider, profile.model) ?? profile.provider;
+					resolveLogoProvider(profile.provider, profile.model) ??
+					profile.provider;
 				return {
 					id: profile.id,
 					name: profile.name || resolvedProvider,
@@ -373,9 +371,9 @@ export function ModelSelector({
 			: undefined;
 
 	const providerTitle = logoProvider
-		? providerLogoMap[logoProvider]?.label ?? logoProvider
+		? (providerLogoMap[logoProvider]?.label ?? logoProvider)
 		: provider
-			? providerLogoMap[provider]?.label ?? provider
+			? (providerLogoMap[provider]?.label ?? provider)
 			: "Model provider";
 
 	return (
@@ -512,12 +510,14 @@ export function ModelSelector({
 											setDetailModelId((prev) => (prev === m.id ? null : m.id));
 										};
 										const handleInfoClick = (
-											event: ReactMouseEvent<HTMLSpanElement>,
+											event: ReactMouseEvent<HTMLButtonElement>,
 										) => {
 											event.stopPropagation();
 											handleInfoToggle();
 										};
-										const handleInfoKeyDown = (event: KeyboardEvent<HTMLSpanElement>) => {
+										const handleInfoKeyDown = (
+											event: KeyboardEvent<HTMLButtonElement>,
+										) => {
 											if (event.key === " " || event.key === "Enter") {
 												event.preventDefault();
 												event.stopPropagation();
@@ -544,9 +544,8 @@ export function ModelSelector({
 													{truncateLabel(m.name)}
 												</span>
 												{detailAvailable && (
-													<span
-														role="button"
-														tabIndex={0}
+													<button
+														type="button"
 														onClick={handleInfoClick}
 														onKeyDown={handleInfoKeyDown}
 														className={`${styles.infoInline} ${
@@ -554,9 +553,10 @@ export function ModelSelector({
 														}`}
 														title="Model info"
 														aria-pressed={infoActive}
+														aria-label="Model info"
 													>
 														<InformationCircle size={14} />
-													</span>
+													</button>
 												)}
 											</button>
 										);

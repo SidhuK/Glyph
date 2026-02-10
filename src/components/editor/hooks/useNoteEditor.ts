@@ -6,6 +6,11 @@ import {
 	splitYamlFrontmatter,
 } from "../../../lib/notePreview";
 import { createEditorExtensions } from "../extensions";
+import { dispatchWikiLinkClick } from "../markdown/wikiLinkEvents";
+import {
+	postprocessMarkdownFromEditor,
+	preprocessMarkdownForEditor,
+} from "../markdown/wikiLinkMarkdownBridge";
 import type { CanvasInlineEditorMode } from "../types";
 
 function normalizeBody(markdown: string): string {
@@ -24,9 +29,10 @@ export function useNoteEditor({
 	onChange,
 }: UseNoteEditorOptions) {
 	const { frontmatter, body } = splitYamlFrontmatter(markdown);
+	const editorBody = preprocessMarkdownForEditor(body);
 
 	const frontmatterRef = useRef(frontmatter);
-	const lastAppliedBodyRef = useRef(body);
+	const lastAppliedBodyRef = useRef(editorBody);
 	const lastEmittedMarkdownRef = useRef(markdown);
 	const ignoreNextUpdateRef = useRef(false);
 	const suppressUpdateRef = useRef(false);
@@ -38,7 +44,7 @@ export function useNoteEditor({
 
 	const editor = useEditor({
 		extensions: createEditorExtensions(),
-		content: body,
+		content: editorBody,
 		contentType: "markdown",
 		editorProps: {
 			attributes: {
@@ -47,6 +53,25 @@ export function useNoteEditor({
 			},
 			handleClick: (_view, _pos, event) => {
 				const target = event.target as HTMLElement | null;
+				const wikiLink = target?.closest(
+					'[data-wikilink="true"]',
+				) as HTMLElement | null;
+				if (wikiLink) {
+					event.preventDefault();
+					dispatchWikiLinkClick({
+						raw: wikiLink.textContent ?? "",
+						target: wikiLink.getAttribute("data-target") ?? "",
+						alias: wikiLink.getAttribute("data-alias") || null,
+						anchorKind:
+							(wikiLink.getAttribute("data-anchor-kind") as
+								| "none"
+								| "heading"
+								| "block") ?? "none",
+						anchor: wikiLink.getAttribute("data-anchor") || null,
+						unresolved: wikiLink.getAttribute("data-unresolved") === "true",
+					});
+					return true;
+				}
 				const link = target?.closest("a") as HTMLAnchorElement | null;
 				const href = link?.getAttribute("href") ?? "";
 				if (
@@ -71,7 +96,7 @@ export function useNoteEditor({
 				return;
 			}
 			if (mode !== "rich" || !instance.isEditable) return;
-			const nextBody = instance.getMarkdown();
+			const nextBody = postprocessMarkdownFromEditor(instance.getMarkdown());
 			const nextMarkdown = joinYamlFrontmatter(
 				frontmatterRef.current,
 				normalizeBody(nextBody),
@@ -92,11 +117,11 @@ export function useNoteEditor({
 
 	useEffect(() => {
 		if (!editor) return;
-		if (body === lastAppliedBodyRef.current) return;
+		if (editorBody === lastAppliedBodyRef.current) return;
 		suppressUpdateRef.current = true;
-		editor.commands.setContent(body, { contentType: "markdown" });
-		lastAppliedBodyRef.current = body;
-	}, [body, editor]);
+		editor.commands.setContent(editorBody, { contentType: "markdown" });
+		lastAppliedBodyRef.current = editorBody;
+	}, [editor, editorBody]);
 
 	return {
 		editor,

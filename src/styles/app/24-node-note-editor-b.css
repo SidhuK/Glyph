@@ -29,6 +29,21 @@
 	text-decoration: underline;
 }
 
+.tiptapContentInline .wikiLink {
+	color: var(--interactive-accent);
+	text-decoration: none;
+	background: color-mix(in srgb, var(--interactive-accent) 14%, transparent);
+	border: 1px solid
+		color-mix(in srgb, var(--interactive-accent) 28%, transparent);
+	border-radius: 6px;
+	padding: 0 4px;
+}
+
+.tiptapContentInline .wikiLink[data-unresolved="true"] {
+	color: var(--text-tertiary);
+	border-style: dashed;
+}
+
 .tiptapContentInline p {
 	margin: 0 0 var(--space-3);
 }
@@ -252,6 +267,49 @@
 }
 
 .slashCommandDesc {
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
+}
+
+.wikiLinkSuggestionMenu {
+	position: fixed;
+	min-width: 240px;
+	max-width: 320px;
+	max-height: 280px;
+	overflow: auto;
+	background: var(--bg-primary);
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-lg);
+	box-shadow: var(--shadow-lg);
+	padding: 6px;
+	z-index: 2100;
+}
+
+.wikiLinkSuggestionItem {
+	width: 100%;
+	text-align: left;
+	padding: 6px 8px;
+	border-radius: var(--radius-md);
+	border: none;
+	background: transparent;
+	color: var(--text-primary);
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	cursor: pointer;
+}
+
+.wikiLinkSuggestionItem:hover,
+.wikiLinkSuggestionItem.active {
+	background: var(--bg-hover);
+}
+
+.wikiLinkSuggestionTitle {
+	font-size: var(--text-sm);
+	font-weight: var(--font-medium);
+}
+
+.wikiLinkSuggestionPath {
 	font-size: var(--text-xs);
 	color: var(--text-tertiary);
 }

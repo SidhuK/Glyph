@@ -16,6 +16,7 @@ import { useTauriEvent } from "../../lib/tauriEvents";
 import { openSettingsWindow } from "../../lib/windows";
 import { cn } from "../../utils/cn";
 import {
+	AiLattice,
 	FileText,
 	Files,
 	Layout,
@@ -26,7 +27,6 @@ import {
 	Save,
 	Send,
 	Settings as SettingsIcon,
-	AiLattice,
 	X,
 } from "../Icons";
 import { Button } from "../ui/shadcn/button";

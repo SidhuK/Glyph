@@ -266,7 +266,8 @@
 	background: transparent;
 	border: 1px solid transparent;
 	cursor: pointer;
-	transition: background var(--transition-base), border-color var(--transition-base);
+	transition: background var(--transition-base), border-color
+		var(--transition-base);
 }
 
 .modelItem:hover {
