@@ -214,6 +214,7 @@ pub fn run() {
             ai::commands::ai_secret_set,
             ai::commands::ai_secret_clear,
             ai::commands::ai_secret_status,
+            ai::commands::ai_secret_list,
             ai::commands::ai_audit_mark,
             ai::commands::ai_chat_start,
             ai::commands::ai_chat_cancel,
