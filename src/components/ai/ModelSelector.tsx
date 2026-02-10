@@ -1,6 +1,6 @@
 import {
 	type KeyboardEvent,
-	type MouseEvent,
+	type MouseEvent as ReactMouseEvent,
 	useCallback,
 	useEffect,
 	useLayoutEffect,
@@ -169,6 +169,7 @@ export function ModelSelector({
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState("");
 	const [detailModelId, setDetailModelId] = useState<string | null>(null);
+	const [modelQuery, setModelQuery] = useState("");
 	const triggerRef = useRef<HTMLButtonElement>(null);
 	const dropdownRef = useRef<HTMLDivElement>(null);
 	const [dropdownPos, setDropdownPos] = useState<{
@@ -258,7 +259,7 @@ export function ModelSelector({
 
 	useEffect(() => {
 		if (!open) return;
-		const handleClick = (e: MouseEvent) => {
+		const handleClick = (e: globalThis.MouseEvent) => {
 			const target = e.target as Node;
 			if (
 				triggerRef.current?.contains(target) ||
@@ -302,6 +303,11 @@ export function ModelSelector({
 		setDetailModelId(null);
 	}, [profileId]);
 
+	useEffect(() => {
+		if (!open) return;
+		setModelQuery("");
+	}, [open, profileId]);
+
 	const selectedModel = models?.find((m) => m.id === value);
 	const displayLabel = selectedModel?.name ?? value ?? "Model";
 	const detailModel = detailModelId
@@ -330,6 +336,16 @@ export function ModelSelector({
 	}, [profiles, secretProfileSet]);
 
 	const showProfileSwitcher = configuredProfiles.length > 1;
+	const filteredModels = useMemo(() => {
+		const list = models ?? [];
+		const q = modelQuery.trim().toLowerCase();
+		if (!q) return list;
+		return list.filter((m) => {
+			const id = m.id.toLowerCase();
+			const name = m.name.toLowerCase();
+			return id.includes(q) || name.includes(q);
+		});
+	}, [models, modelQuery]);
 
 	const handleProfileSelect = useCallback(
 		(id: string) => {
@@ -468,16 +484,36 @@ export function ModelSelector({
 										No models available
 									</div>
 								)}
+								{!loading && !error && (models?.length ?? 0) > 0 && (
+									<input
+										type="search"
+										className={styles.modelSearch}
+										placeholder="Search models..."
+										value={modelQuery}
+										onChange={(e) => setModelQuery(e.target.value)}
+									/>
+								)}
+								{!loading &&
+									!error &&
+									models &&
+									models.length > 0 &&
+									filteredModels.length === 0 && (
+										<div className={styles.dropdownEmpty}>
+											No models match your search
+										</div>
+									)}
 
 								{!loading &&
 									!error &&
-									models?.map((m) => {
+									filteredModels.map((m) => {
 										const detailAvailable = hasDetailData(m);
 										const infoActive = detailModel?.id === m.id;
 										const handleInfoToggle = () => {
 											setDetailModelId((prev) => (prev === m.id ? null : m.id));
 										};
-										const handleInfoClick = (event: MouseEvent<HTMLSpanElement>) => {
+										const handleInfoClick = (
+											event: ReactMouseEvent<HTMLSpanElement>,
+										) => {
 											event.stopPropagation();
 											handleInfoToggle();
 										};
