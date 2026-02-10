@@ -295,7 +295,7 @@ interface TauriCommands {
 	vault_create_dir: CommandDef<{ path: string }, void>;
 	vault_rename_path: CommandDef<{ fromPath: string; toPath: string }, void>;
 	vault_resolve_abs_path: CommandDef<{ path: string }, string>;
-	vault_relativize_path: CommandDef<{ absPath: string }, string>;
+	vault_relativize_path: CommandDef<{ abs_path: string }, string>;
 	lattice_read_text: CommandDef<{ path: string }, string>;
 	lattice_write_text: CommandDef<{ path: string; text: string }, void>;
 	notes_list: CommandDef<void, NoteMeta[]>;
@@ -319,6 +319,7 @@ interface TauriCommands {
 	index_rebuild: CommandDef<void, IndexRebuildResult>;
 	index_note_previews_batch: CommandDef<{ ids: string[] }, IndexNotePreview[]>;
 	search: CommandDef<{ query: string }, SearchResult[]>;
+	recent_notes: CommandDef<{ limit?: number | null }, SearchResult[]>;
 	tags_list: CommandDef<{ limit?: number | null }, TagCount[]>;
 	tag_notes: CommandDef<{ tag: string; limit?: number | null }, SearchResult[]>;
 	backlinks: CommandDef<{ note_id: string }, BacklinkItem[]>;

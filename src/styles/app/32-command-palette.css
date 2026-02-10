@@ -207,6 +207,16 @@
 	border-radius: var(--radius-sm);
 }
 
+/* ── Group labels ── */
+
+.commandPaletteGroupLabel {
+	padding: 6px 10px 4px;
+	font-size: var(--text-xs);
+	font-weight: var(--font-medium);
+	color: var(--text-tertiary);
+	user-select: none;
+}
+
 /* ── Empty state ── */
 
 .commandPaletteEmpty {

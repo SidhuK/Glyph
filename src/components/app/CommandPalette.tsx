@@ -79,6 +79,7 @@ export function CommandPalette({
 	const [query, setQuery] = useState("");
 	const [selectedIndex, setSelectedIndex] = useState(0);
 	const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
+	const [recentNotes, setRecentNotes] = useState<SearchResult[]>([]);
 	const [isSearching, setIsSearching] = useState(false);
 	const inputRef = useRef<HTMLInputElement | null>(null);
 	const previousFocusRef = useRef<Element | null>(null);
@@ -94,8 +95,28 @@ export function CommandPalette({
 		return matches.filter((cmd) => cmd.enabled !== false);
 	}, [commands, query, activeTab]);
 
+	const { titleMatches, contentMatches } = useMemo(() => {
+		if (activeTab !== "search" || !query.trim())
+			return { titleMatches: [], contentMatches: [] };
+		const q = query.trim().toLowerCase();
+		const title: SearchResult[] = [];
+		const content: SearchResult[] = [];
+		for (const r of searchResults) {
+			if (r.title.toLowerCase().includes(q)) {
+				title.push(r);
+			} else {
+				content.push(r);
+			}
+		}
+		return { titleMatches: title, contentMatches: content };
+	}, [searchResults, query, activeTab]);
+
 	const itemCount =
-		activeTab === "commands" ? filtered.length : searchResults.length;
+		activeTab === "commands"
+			? filtered.length
+			: query.trim()
+				? titleMatches.length + contentMatches.length
+				: recentNotes.length;
 
 	useEffect(() => {
 		if (!open) return;
@@ -104,6 +125,7 @@ export function CommandPalette({
 		setQuery("");
 		setSelectedIndex(0);
 		setSearchResults([]);
+		setRecentNotes([]);
 		setIsSearching(false);
 		window.requestAnimationFrame(() => {
 			inputRef.current?.focus();
@@ -113,6 +135,13 @@ export function CommandPalette({
 			if (prev instanceof HTMLElement) prev.focus();
 		};
 	}, [open, initialTab]);
+
+	useEffect(() => {
+		if (!open || !vaultPath) return;
+		invoke("recent_notes", { limit: 8 })
+			.then(setRecentNotes)
+			.catch(() => setRecentNotes([]));
+	}, [open, vaultPath]);
 
 	const switchTab = useCallback((tab: Tab) => {
 		setActiveTab(tab);
@@ -176,12 +205,25 @@ export function CommandPalette({
 
 	const selectSearchResult = useCallback(
 		(index: number) => {
-			const result = searchResults[index];
+			let result: SearchResult | undefined;
+			if (query.trim()) {
+				const combined = [...titleMatches, ...contentMatches];
+				result = combined[index];
+			} else {
+				result = recentNotes[index];
+			}
 			if (!result) return;
 			onClose();
 			onSelectSearchNote(result.id);
 		},
-		[searchResults, onClose, onSelectSearchNote],
+		[
+			titleMatches,
+			contentMatches,
+			recentNotes,
+			query,
+			onClose,
+			onSelectSearchNote,
+		],
 	);
 
 	const handleSelect = useCallback(
@@ -334,37 +376,103 @@ export function CommandPalette({
 
 						{activeTab === "search" && (
 							<>
-								{searchResults.map((r, index) => (
-									<div
-										key={r.id}
-										className="commandPaletteItem commandPaletteResultItem"
-										data-selected={index === selectedIndex}
-										onMouseEnter={() => setSelectedIndex(index)}
-										onMouseDown={(e) => {
-											e.preventDefault();
-											selectSearchResult(index);
-										}}
-									>
-										<div className="commandPaletteResultContent">
-											<div className="commandPaletteResultTitle">
-												{r.title || "Untitled"}
-											</div>
-											<div className="commandPaletteResultSnippet">
-												{renderSnippet(r.snippet)}
-											</div>
-										</div>
-									</div>
-								))}
-								{query.trim() && searchResults.length === 0 && !isSearching && (
-									<div className="commandPaletteEmpty">No results</div>
-								)}
 								{!query.trim() && (
-									<div className="commandPaletteEmpty">
-										Type to search your notes…
-									</div>
+									<>
+										{recentNotes.length > 0 && (
+											<>
+												<div className="commandPaletteGroupLabel">Recent</div>
+												{recentNotes.map((r, index) => (
+													<div
+														key={r.id}
+														className="commandPaletteItem"
+														data-selected={index === selectedIndex}
+														onMouseEnter={() => setSelectedIndex(index)}
+														onMouseDown={(e) => {
+															e.preventDefault();
+															selectSearchResult(index);
+														}}
+													>
+														<span>{r.title || "Untitled"}</span>
+													</div>
+												))}
+											</>
+										)}
+										{recentNotes.length === 0 && (
+											<div className="commandPaletteEmpty">
+												Type to search your notes…
+											</div>
+										)}
+									</>
 								)}
-								{isSearching && searchResults.length === 0 && (
-									<div className="commandPaletteEmpty">Searching…</div>
+
+								{query.trim() && (
+									<>
+										{titleMatches.length > 0 && (
+											<>
+												<div className="commandPaletteGroupLabel">Notes</div>
+												{titleMatches.map((r, index) => (
+													<div
+														key={r.id}
+														className="commandPaletteItem commandPaletteResultItem"
+														data-selected={index === selectedIndex}
+														onMouseEnter={() => setSelectedIndex(index)}
+														onMouseDown={(e) => {
+															e.preventDefault();
+															selectSearchResult(index);
+														}}
+													>
+														<div className="commandPaletteResultContent">
+															<div className="commandPaletteResultTitle">
+																{r.title || "Untitled"}
+															</div>
+															<div className="commandPaletteResultSnippet">
+																{renderSnippet(r.snippet)}
+															</div>
+														</div>
+													</div>
+												))}
+											</>
+										)}
+										{contentMatches.length > 0 && (
+											<>
+												<div className="commandPaletteGroupLabel">Content</div>
+												{contentMatches.map((r, index) => {
+													const globalIndex = titleMatches.length + index;
+													return (
+														<div
+															key={r.id}
+															className="commandPaletteItem commandPaletteResultItem"
+															data-selected={globalIndex === selectedIndex}
+															onMouseEnter={() => setSelectedIndex(globalIndex)}
+															onMouseDown={(e) => {
+																e.preventDefault();
+																selectSearchResult(globalIndex);
+															}}
+														>
+															<div className="commandPaletteResultContent">
+																<div className="commandPaletteResultTitle">
+																	{r.title || "Untitled"}
+																</div>
+																<div className="commandPaletteResultSnippet">
+																	{renderSnippet(r.snippet)}
+																</div>
+															</div>
+														</div>
+													);
+												})}
+											</>
+										)}
+										{titleMatches.length === 0 &&
+											contentMatches.length === 0 &&
+											!isSearching && (
+												<div className="commandPaletteEmpty">No results</div>
+											)}
+										{isSearching &&
+											titleMatches.length === 0 &&
+											contentMatches.length === 0 && (
+												<div className="commandPaletteEmpty">Searching…</div>
+											)}
+									</>
 								)}
 							</>
 						)}

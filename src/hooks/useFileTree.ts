@@ -268,7 +268,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 					: selection;
 				if (!absPath) return;
 				const rel = await invoke("vault_relativize_path", {
-					absPath,
+					abs_path: absPath,
 				});
 				const markdownRel = isMarkdownPath(rel) ? rel : `${rel}.md`;
 				const fileName = markdownRel.split("/").pop()?.trim() || "Untitled.md";

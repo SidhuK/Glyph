@@ -11,15 +11,19 @@ import {
 	useState,
 } from "react";
 import { TauriChatTransport } from "../../lib/ai/tauriChatTransport";
+import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { openSettingsWindow } from "../../lib/windows";
 import { cn } from "../../utils/cn";
 import {
 	FileText,
+	Files,
 	Layout,
 	Minus,
 	Paperclip,
 	Plus,
+	RefreshCw,
+	Save,
 	Send,
 	Settings as SettingsIcon,
 	Sparkles,
@@ -117,6 +121,20 @@ export function AIPanel({
 		null,
 	);
 	const [toolTimeline, setToolTimeline] = useState<ToolTimelineEvent[]>([]);
+	const [assistantActionError, setAssistantActionError] = useState("");
+	const composerInputRef = useRef<HTMLTextAreaElement | null>(null);
+	const scheduleComposerInputResize = useCallback(() => {
+		window.requestAnimationFrame(() => {
+			const el = composerInputRef.current;
+			if (!el) return;
+			const minHeight = 40;
+			const maxHeight = 180;
+			el.style.height = "0px";
+			const next = Math.max(minHeight, Math.min(el.scrollHeight, maxHeight));
+			el.style.height = `${next.toString()}px`;
+			el.style.overflowY = el.scrollHeight > maxHeight ? "auto" : "hidden";
+		});
+	}, []);
 	const shouldReduceMotion = useReducedMotion();
 	const activeToolJobIdRef = useRef<string | null>(null);
 
@@ -214,9 +232,11 @@ export function AIPanel({
 		setToolTimeline([]);
 		activeToolJobIdRef.current = null;
 		setInput("");
+		scheduleComposerInputResize();
 		const built = await context.ensurePayload();
 		if (context.payloadError) {
 			setInput(text);
+			scheduleComposerInputResize();
 			return;
 		}
 		void chat.sendMessage(
@@ -232,6 +252,104 @@ export function AIPanel({
 			},
 		);
 	};
+
+	const sendWithCurrentContext = useCallback(
+		async (text: string) => {
+			const trimmed = text.trim();
+			if (!trimmed || !profiles.activeProfileId) return false;
+			setToolTimeline([]);
+			activeToolJobIdRef.current = null;
+			const built = await context.ensurePayload();
+			if (context.payloadError) return false;
+			void chat.sendMessage(
+				{ text: trimmed },
+				{
+					body: {
+						profile_id: profiles.activeProfileId,
+						context: built.payload || undefined,
+						context_manifest: built.manifest ?? undefined,
+						canvas_id: activeCanvasId ?? undefined,
+						audit: true,
+					},
+				},
+			);
+			return true;
+		},
+		[activeCanvasId, chat, context, profiles.activeProfileId],
+	);
+
+	const handleCopyAssistantResponse = useCallback(async (text: string) => {
+		setAssistantActionError("");
+		try {
+			await navigator.clipboard.writeText(text);
+		} catch (e) {
+			setAssistantActionError(
+				e instanceof Error ? e.message : "Failed to copy response",
+			);
+		}
+	}, []);
+
+	const handleSaveAssistantResponse = useCallback(async (text: string) => {
+		const trimmed = text.trim();
+		if (!trimmed) return;
+		setAssistantActionError("");
+		try {
+			const { save } = await import("@tauri-apps/plugin-dialog");
+			const selection = await save({
+				title: "Save AI response as Markdown",
+				defaultPath: "AI Response.md",
+				filters: [{ name: "Markdown", extensions: ["md"] }],
+			});
+			const absPath = Array.isArray(selection)
+				? (selection[0] ?? null)
+				: selection;
+			if (!absPath) return;
+			const rel = await invoke("vault_relativize_path", { abs_path: absPath });
+			const markdownRel = rel.toLowerCase().endsWith(".md") ? rel : `${rel}.md`;
+			await invoke("vault_write_text", {
+				path: markdownRel,
+				text: trimmed,
+				base_mtime_ms: null,
+			});
+		} catch (e) {
+			setAssistantActionError(
+				e instanceof Error ? e.message : "Failed to save response to file",
+			);
+		}
+	}, []);
+
+	const handleRetryFromAssistant = useCallback(
+		async (assistantIndex: number) => {
+			if (chat.status === "streaming") return;
+			setAssistantActionError("");
+			let userIndex = -1;
+			for (let i = assistantIndex - 1; i >= 0; i--) {
+				if (chat.messages[i]?.role === "user") {
+					userIndex = i;
+					break;
+				}
+			}
+			if (userIndex < 0) {
+				setAssistantActionError("No matching user prompt found for retry.");
+				return;
+			}
+			const userText = messageText(
+				chat.messages[userIndex] as UIMessage,
+			).trim();
+			if (!userText) {
+				setAssistantActionError("No matching user prompt found for retry.");
+				return;
+			}
+			chat.setMessages(chat.messages.slice(0, userIndex));
+			const ok = await sendWithCurrentContext(userText);
+			if (!ok) {
+				setAssistantActionError(
+					context.payloadError || "Retry failed due to missing AI context.",
+				);
+			}
+		},
+		[chat, context.payloadError, sendWithCurrentContext],
+	);
 
 	const handleAddContext = (kind: "folder" | "file", path: string) => {
 		context.addContext(kind, path);
@@ -311,13 +429,15 @@ export function AIPanel({
 			chat.stop();
 		}
 		setInput("");
+		scheduleComposerInputResize();
 		setToolTimeline([]);
+		setAssistantActionError("");
 		setActiveTools([]);
 		setLastToolEvent(null);
 		activeToolJobIdRef.current = null;
 		chat.setMessages([]);
 		chat.clearError();
-	}, [chat]);
+	}, [chat, scheduleComposerInputResize]);
 
 	const threadRef = useRef<HTMLDivElement>(null);
 	const prevStatusRef = useRef(chat.status);
@@ -480,6 +600,44 @@ export function AIPanel({
 									) : (
 										<div className="aiChatContent">{text}</div>
 									)}
+									{m.role === "assistant" && text ? (
+										<div className="aiAssistantActions">
+											<Button
+												type="button"
+												variant="ghost"
+												size="icon-sm"
+												className="aiAssistantActionBtn aiAssistantActionIconBtn"
+												onClick={() => void handleCopyAssistantResponse(text)}
+												title="Copy response"
+												aria-label="Copy response"
+											>
+												<Files size={12} />
+											</Button>
+											<Button
+												type="button"
+												variant="ghost"
+												size="icon-sm"
+												className="aiAssistantActionBtn aiAssistantActionIconBtn"
+												onClick={() => void handleSaveAssistantResponse(text)}
+												title="Save response to file"
+												aria-label="Save response to file"
+											>
+												<Save size={12} />
+											</Button>
+											<Button
+												type="button"
+												variant="ghost"
+												size="icon-sm"
+												className="aiAssistantActionBtn aiAssistantActionIconBtn"
+												onClick={() => void handleRetryFromAssistant(index)}
+												title="Retry this response"
+												aria-label="Retry response"
+												disabled={chat.status === "streaming"}
+											>
+												<RefreshCw size={12} />
+											</Button>
+										</div>
+									) : null}
 								</div>
 								{index === lastUserMessageIndex ? (
 									<AIToolTimeline
@@ -511,6 +669,14 @@ export function AIPanel({
 					<div className="aiPanelError">
 						<span>{chat.error.message}</span>
 						<button type="button" onClick={() => chat.clearError()}>
+							<X size={11} />
+						</button>
+					</div>
+				) : null}
+				{assistantActionError ? (
+					<div className="aiPanelError">
+						<span>{assistantActionError}</span>
+						<button type="button" onClick={() => setAssistantActionError("")}>
 							<X size={11} />
 						</button>
 					</div>
@@ -588,25 +754,31 @@ export function AIPanel({
 				) : null}
 
 				<div className="aiComposer">
-					<textarea
-						className="aiComposerInput"
-						value={input}
-						placeholder="Ask AI…"
-						disabled={chat.status === "streaming"}
-						onChange={(e) => setInput(e.target.value)}
-						onKeyDown={(e) => {
-							if (
-								e.key === "Enter" &&
-								!e.shiftKey &&
-								!e.metaKey &&
-								!e.ctrlKey
-							) {
-								e.preventDefault();
-								void handleSend();
-							}
-						}}
-						rows={1}
-					/>
+					<div className="aiComposerInputShell">
+						<textarea
+							ref={composerInputRef}
+							className="aiComposerInput"
+							value={input}
+							placeholder="Ask AI…"
+							disabled={chat.status === "streaming"}
+							onChange={(e) => {
+								setInput(e.target.value);
+								scheduleComposerInputResize();
+							}}
+							onKeyDown={(e) => {
+								if (
+									e.key === "Enter" &&
+									!e.shiftKey &&
+									!e.metaKey &&
+									!e.ctrlKey
+								) {
+									e.preventDefault();
+									void handleSend();
+								}
+							}}
+							rows={1}
+						/>
+					</div>
 					<div className="aiComposerBar">
 						<div className="aiComposerTools">
 							<Button

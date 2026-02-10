@@ -123,6 +123,39 @@ pub async fn search(
 }
 
 #[tauri::command]
+pub async fn recent_notes(
+    state: State<'_, VaultState>,
+    limit: Option<u32>,
+) -> Result<Vec<SearchResult>, String> {
+    let root = state.current_root()?;
+    let limit = limit.unwrap_or(8).min(50) as i64;
+    tauri::async_runtime::spawn_blocking(move || -> Result<Vec<SearchResult>, String> {
+        let conn = open_db(&root)?;
+        let mut stmt = conn
+            .prepare(
+                "SELECT id, title, preview AS snippet, 0.0 AS score
+                 FROM notes
+                 ORDER BY updated DESC
+                 LIMIT ?",
+            )
+            .map_err(|e| e.to_string())?;
+        let mut rows = stmt.query([limit]).map_err(|e| e.to_string())?;
+        let mut out = Vec::new();
+        while let Some(row) = rows.next().map_err(|e| e.to_string())? {
+            out.push(SearchResult {
+                id: row.get(0).map_err(|e| e.to_string())?,
+                title: row.get(1).map_err(|e| e.to_string())?,
+                snippet: row.get(2).map_err(|e| e.to_string())?,
+                score: row.get(3).map_err(|e| e.to_string())?,
+            });
+        }
+        Ok(out)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
 pub async fn tags_list(
     state: State<'_, VaultState>,
     limit: Option<u32>,
