@@ -47,7 +47,7 @@ import {
 	NoteNode,
 	TextNode,
 } from "./nodes";
-import { ChevronRight, Globe, Grid3X3, Layout } from "../Icons";
+import { Globe, Grid3X3, Layout } from "../Icons";
 import {
 	isFileNode,
 	isFolderNode,
@@ -94,7 +94,7 @@ function CanvasPane({
 	const [, setIsSaving] = useState(false);
 	const [snapToGrid, setSnapToGrid] = useState(true);
 	const [showMiniMap, setShowMiniMap] = useState(false);
-	const [controlsExtrasCollapsed, setControlsExtrasCollapsed] = useState(false);
+	const [controlsCollapsed, setControlsCollapsed] = useState(false);
 
 	const docIdRef = useRef<string | null>(null);
 	const latestDocRef = useRef(doc);
@@ -782,30 +782,27 @@ function CanvasPane({
 										maxZoom={2}
 										proOptions={{ hideAttribution: true }}
 									>
-										<Controls>
+										<Controls
+											showZoom={!controlsCollapsed}
+											showFitView={!controlsCollapsed}
+											showInteractive={!controlsCollapsed}
+										>
 											<ControlButton
-												onClick={() => setControlsExtrasCollapsed((v) => !v)}
+												onClick={() => setControlsCollapsed((v) => !v)}
 												title={
-													controlsExtrasCollapsed
-														? "Show extra controls"
-														: "Hide extra controls"
+													controlsCollapsed
+														? "Expand controls"
+														: "Collapse controls"
 												}
 												aria-label={
-													controlsExtrasCollapsed
-														? "Show extra controls"
-														: "Hide extra controls"
+													controlsCollapsed
+														? "Expand controls"
+														: "Collapse controls"
 												}
 											>
-												<ChevronRight
-													size={14}
-													style={{
-														transform: controlsExtrasCollapsed
-															? "rotate(0deg)"
-															: "rotate(180deg)",
-													}}
-												/>
+												<span className="canvasControlEllipsis">...</span>
 											</ControlButton>
-											{!controlsExtrasCollapsed ? (
+											{!controlsCollapsed ? (
 												<>
 													<ControlButton
 														onClick={() => setSnapToGrid((v) => !v)}
@@ -822,8 +819,6 @@ function CanvasPane({
 													>
 														<Layout size={14} />
 													</ControlButton>
-												</>
-											) : null}
 													<ControlButton
 														onClick={() => setShowMiniMap((v) => !v)}
 														title={showMiniMap ? "Hide minimap" : "Show minimap"}
@@ -832,7 +827,9 @@ function CanvasPane({
 													>
 														<Globe size={14} />
 													</ControlButton>
-												</Controls>
+												</>
+											) : null}
+										</Controls>
 												{showMiniMap ? (
 													<MiniMap zoomable pannable position="top-right" />
 												) : null}

@@ -163,8 +163,8 @@
 	background: transparent;
 	border: none;
 	border-right: 1px solid var(--border-default);
-	width: 32px;
-	height: 32px;
+	width: 28px;
+	height: 28px;
 	transition: all var(--transition-fast);
 	color: var(--text-secondary) !important;
 }
@@ -190,8 +190,15 @@
 .canvasFlowWrapper .xy-flow__controls-button svg {
 	fill: currentColor;
 	stroke: currentColor;
-	max-width: 14px;
-	max-height: 14px;
+	max-width: 12px;
+	max-height: 12px;
+}
+
+.canvasFlowWrapper .canvasControlEllipsis {
+	font-size: 12px;
+	line-height: 1;
+	letter-spacing: -0.03em;
+	font-weight: 600;
 }
 
 /* ReactFlow minimap */
