@@ -154,21 +154,34 @@
 	border: 1px solid var(--border-default);
 	overflow: hidden;
 	background: var(--bg-secondary) !important;
+	display: flex;
+	flex-direction: row !important;
 }
 
 .canvasFlowWrapper .react-flow__controls-button,
 .canvasFlowWrapper .xy-flow__controls-button {
 	background: transparent;
 	border: none;
-	border-bottom: 1px solid var(--border-default);
+	border-right: 1px solid var(--border-default);
 	width: 32px;
 	height: 32px;
 	transition: all var(--transition-fast);
 	color: var(--text-secondary) !important;
 }
 
+.canvasFlowWrapper .react-flow__controls-button:last-child,
+.canvasFlowWrapper .xy-flow__controls-button:last-child {
+	border-right: none;
+}
+
 .canvasFlowWrapper .react-flow__controls-button:hover,
 .canvasFlowWrapper .xy-flow__controls-button:hover {
+	background: var(--bg-hover) !important;
+	color: var(--text-primary) !important;
+}
+
+.canvasFlowWrapper .react-flow__controls-button.canvasControlActive,
+.canvasFlowWrapper .xy-flow__controls-button.canvasControlActive {
 	background: var(--bg-hover) !important;
 	color: var(--text-primary) !important;
 }

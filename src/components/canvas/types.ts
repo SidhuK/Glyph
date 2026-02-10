@@ -43,8 +43,6 @@ export interface CanvasPaneProps {
 	onSave: (doc: CanvasDocLike) => Promise<void>;
 	onOpenNote: (noteId: string) => void;
 	onOpenFolder: (dir: string) => void;
-	activeNoteId: string | null;
-	activeNoteTitle: string | null;
 	vaultPath: string | null;
 	onSelectionChange?: (selected: CanvasNode[]) => void;
 	externalCommand?: CanvasExternalCommand | null;

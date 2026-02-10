@@ -13,31 +13,6 @@
 	min-height: 0;
 }
 
-.canvasToolbar {
-	position: absolute;
-	bottom: 14px;
-	left: 56px;
-	z-index: 5;
-	display: flex;
-	align-items: center;
-	gap: 0;
-	height: 32px;
-	padding: 0;
-	background: var(--bg-secondary);
-	border: 1px solid var(--border-default);
-	border-radius: var(--radius-xl);
-	box-shadow: var(--shadow-lg);
-	overflow: hidden;
-}
-
-.canvasToolbar button {
-	width: 32px;
-	height: 32px;
-	min-width: 32px;
-	padding: 0;
-	border: none;
-	border-radius: 0;
-}
 
 .canvasFlowWrapper {
 	flex: 1;
@@ -63,13 +38,6 @@
 	width: 0;
 	height: 0;
 	display: none;
-}
-
-.toolbarDivider {
-	width: 1px;
-	height: 32px;
-	background: var(--border-default);
-	margin: 0;
 }
 
 .canvasBody {

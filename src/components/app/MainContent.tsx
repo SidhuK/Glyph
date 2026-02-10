@@ -1,6 +1,5 @@
 import { Suspense, lazy, useCallback } from "react";
 import {
-	useFileTreeContext,
 	useUIContext,
 	useVault,
 	useViewContext,
@@ -50,8 +49,6 @@ export function MainContent({
 		onContinueLastVault,
 		onCreateVault,
 	} = useVault();
-
-	const { activeNoteId, activeNoteTitle } = useFileTreeContext();
 
 	const {
 		activeViewDoc,
@@ -132,8 +129,6 @@ export function MainContent({
 								onSave={onSaveView}
 								onOpenNote={(p) => void fileTree.openFile(p)}
 								onOpenFolder={(dir) => void loadAndBuildFolderView(dir)}
-								activeNoteId={activeNoteId}
-								activeNoteTitle={activeNoteTitle}
 								vaultPath={vaultPath}
 								onSelectionChange={onCanvasSelectionChange}
 								externalCommand={canvasCommand}

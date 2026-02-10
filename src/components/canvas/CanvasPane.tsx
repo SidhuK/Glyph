@@ -33,7 +33,6 @@ import { titleForFile } from "../../lib/notePreview";
 import type { IndexNotePreview, RecentEntry } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 import { CanvasNoteOverlayEditor } from "./CanvasNoteOverlayEditor";
-import { CanvasToolbar } from "./CanvasToolbar";
 import { CanvasActionsContext, CanvasNoteEditContext } from "./contexts";
 import { useCanvasHistory } from "./hooks/useCanvasHistory";
 import { useCanvasToolbarActions } from "./hooks/useCanvasToolbarActions";
@@ -48,7 +47,7 @@ import {
 	NoteNode,
 	TextNode,
 } from "./nodes";
-import { Grid3X3 } from "../Icons";
+import { ChevronRight, Globe, Grid3X3, Layout } from "../Icons";
 import {
 	isFileNode,
 	isFolderNode,
@@ -85,8 +84,6 @@ function CanvasPane({
 	onSave,
 	onOpenNote,
 	onOpenFolder,
-	activeNoteId,
-	activeNoteTitle,
 	vaultPath,
 	onSelectionChange,
 	externalCommand,
@@ -96,11 +93,8 @@ function CanvasPane({
 	const [edges, setEdges, onEdgesChange] = useEdgesState<CanvasEdge>([]);
 	const [, setIsSaving] = useState(false);
 	const [snapToGrid, setSnapToGrid] = useState(true);
-	const [toolbarCollapsed, setToolbarCollapsed] = useState(false);
 	const [showMiniMap, setShowMiniMap] = useState(false);
-	const [selectedNodeIds, setSelectedNodeIds] = useState<Set<string>>(
-		new Set(),
-	);
+	const [controlsExtrasCollapsed, setControlsExtrasCollapsed] = useState(false);
 
 	const docIdRef = useRef<string | null>(null);
 	const latestDocRef = useRef(doc);
@@ -321,20 +315,12 @@ function CanvasPane({
 	}, [canvasBounds.maxRight, snapToGrid]);
 
 	const {
-		handleAddTextNode,
 		handleAddLinkNode,
-		handleAddCurrentNote,
-		handleRefreshLink,
-		handleFrameSelection,
 		handleReflowGrid,
 	} = useCanvasToolbarActions({
 		nodes,
-		selectedNodeIds,
 		setNodes,
 		findDropPosition,
-		snapToGrid,
-		activeNoteId,
-		activeNoteTitle,
 		vaultPath,
 	});
 
@@ -665,8 +651,6 @@ function CanvasPane({
 
 	const handleSelectionChange = useCallback(
 		(params: OnSelectionChangeParams) => {
-			const ids = new Set(params.nodes.map((n) => n.id));
-			setSelectedNodeIds(ids);
 			onSelectionChange?.(params.nodes as CanvasNode[]);
 		},
 		[onSelectionChange],
@@ -736,11 +720,6 @@ function CanvasPane({
 		],
 	);
 
-	const hasSelectedLink = useMemo(
-		() => nodes.some((n) => selectedNodeIds.has(n.id) && n.type === "link"),
-		[nodes, selectedNodeIds],
-	);
-
 	if (!doc) {
 		return (
 			<div className="canvasPaneEmpty">
@@ -805,36 +784,61 @@ function CanvasPane({
 									>
 										<Controls>
 											<ControlButton
-												onClick={() => setShowMiniMap((v) => !v)}
-												title={showMiniMap ? "Hide minimap" : "Show minimap"}
-												aria-label={showMiniMap ? "Hide minimap" : "Show minimap"}
+												onClick={() => setControlsExtrasCollapsed((v) => !v)}
+												title={
+													controlsExtrasCollapsed
+														? "Show extra controls"
+														: "Hide extra controls"
+												}
+												aria-label={
+													controlsExtrasCollapsed
+														? "Show extra controls"
+														: "Hide extra controls"
+												}
 											>
-												<Grid3X3 size={14} />
+												<ChevronRight
+													size={14}
+													style={{
+														transform: controlsExtrasCollapsed
+															? "rotate(0deg)"
+															: "rotate(180deg)",
+													}}
+												/>
 											</ControlButton>
-										</Controls>
-										{showMiniMap ? (
-											<MiniMap zoomable pannable position="top-right" />
-										) : null}
-									</ReactFlow>
-									<CanvasToolbar
-										collapsed={toolbarCollapsed}
-										snapToGrid={snapToGrid}
-										hasActiveNote={Boolean(activeNoteId)}
-										selectedCount={selectedNodeIds.size}
-										hasSelectedLink={hasSelectedLink}
-										onToggleCollapsed={() =>
-											setToolbarCollapsed((v) => !v)
-										}
-										onAddText={handleAddTextNode}
-										onAddLink={handleAddLinkNode}
-										onAddNote={handleAddCurrentNote}
-										onRefreshLink={handleRefreshLink}
-										onFrameSelection={handleFrameSelection}
-										onToggleSnap={() => setSnapToGrid((v) => !v)}
-										onReflowGrid={handleReflowGrid}
-									/>
-								</div>
-							</motion.div>
+											{!controlsExtrasCollapsed ? (
+												<>
+													<ControlButton
+														onClick={() => setSnapToGrid((v) => !v)}
+														title="Toggle snap to grid"
+														aria-label="Toggle snap to grid"
+														className={snapToGrid ? "canvasControlActive" : undefined}
+													>
+														<Grid3X3 size={14} />
+													</ControlButton>
+													<ControlButton
+														onClick={handleReflowGrid}
+														title="Reflow to grid"
+														aria-label="Reflow to grid"
+													>
+														<Layout size={14} />
+													</ControlButton>
+												</>
+											) : null}
+													<ControlButton
+														onClick={() => setShowMiniMap((v) => !v)}
+														title={showMiniMap ? "Hide minimap" : "Show minimap"}
+														aria-label={showMiniMap ? "Hide minimap" : "Show minimap"}
+														className={showMiniMap ? "canvasControlActive" : undefined}
+													>
+														<Globe size={14} />
+													</ControlButton>
+												</Controls>
+												{showMiniMap ? (
+													<MiniMap zoomable pannable position="top-right" />
+												) : null}
+											</ReactFlow>
+										</div>
+									</motion.div>
 						)}
 					</AnimatePresence>
 				</div>
