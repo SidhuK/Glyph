@@ -1,10 +1,7 @@
 import { memo } from "react";
-import { cn } from "../../utils/cn";
 import {
 	ChevronRight,
 	Frame,
-	Grid3X3,
-	Layout,
 	Link,
 	RefreshCw,
 	StickyNote,
@@ -14,7 +11,6 @@ import { Button } from "../ui/shadcn/button";
 
 interface CanvasToolbarProps {
 	collapsed: boolean;
-	snapToGrid: boolean;
 	hasActiveNote: boolean;
 	selectedCount: number;
 	hasSelectedLink: boolean;
@@ -24,13 +20,10 @@ interface CanvasToolbarProps {
 	onAddNote: () => void;
 	onRefreshLink: () => void;
 	onFrameSelection: () => void;
-	onToggleSnap: () => void;
-	onReflowGrid: () => void;
 }
 
 export const CanvasToolbar = memo(function CanvasToolbar({
 	collapsed,
-	snapToGrid,
 	hasActiveNote,
 	selectedCount,
 	hasSelectedLink,
@@ -40,8 +33,6 @@ export const CanvasToolbar = memo(function CanvasToolbar({
 	onAddNote,
 	onRefreshLink,
 	onFrameSelection,
-	onToggleSnap,
-	onReflowGrid,
 }: CanvasToolbarProps) {
 	if (collapsed) {
 		return (
@@ -119,25 +110,6 @@ export const CanvasToolbar = memo(function CanvasToolbar({
 				title="Group selection in a frame"
 			>
 				<Frame size={16} />
-			</Button>
-			<Button
-				variant="ghost"
-				size="icon"
-				type="button"
-				className={cn(snapToGrid && "bg-accent text-accent-foreground")}
-				onClick={onToggleSnap}
-				title="Toggle snap to grid"
-			>
-				<Grid3X3 size={16} />
-			</Button>
-			<Button
-				variant="ghost"
-				size="icon"
-				type="button"
-				onClick={onReflowGrid}
-				title="Reflow to grid"
-			>
-				<Layout size={16} />
 			</Button>
 		</div>
 	);
