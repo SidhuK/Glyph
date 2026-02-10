@@ -9,7 +9,6 @@ interface SidebarProps {
 	onToggleDir: (dirPath: string) => void;
 	onSelectDir: (dirPath: string) => void;
 	onOpenFile: (relPath: string) => void;
-	onNewFile: () => void;
 	onNewFileInDir: (dirPath: string) => void;
 	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
 	onRenameDir: (dirPath: string, nextName: string) => Promise<string | null>;
@@ -28,7 +27,6 @@ export function Sidebar({
 	onToggleDir,
 	onSelectDir,
 	onOpenFile,
-	onNewFile,
 	onNewFileInDir,
 	onNewFolderInDir,
 	onRenameDir,
@@ -84,7 +82,6 @@ export function Sidebar({
 							onToggleDir={onToggleDir}
 							onSelectDir={onSelectDir}
 							onOpenFile={onOpenFile}
-							onNewFile={onNewFile}
 							onNewFileInDir={onNewFileInDir}
 							onNewFolderInDir={onNewFolderInDir}
 							onRenameDir={onRenameDir}

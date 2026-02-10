@@ -3,8 +3,22 @@ import type { CSSProperties } from "react";
 import { memo, useCallback, useState } from "react";
 import type { DirChildSummary, FsEntry } from "../../lib/tauri";
 import { parentDir } from "../../utils/path";
-import { FolderPlus, Plus } from "../Icons";
+import { Database, FolderPlus, Plus } from "../Icons";
 import { Button } from "../ui/shadcn/button";
+import {
+	ContextMenu,
+	ContextMenuContent,
+	ContextMenuItem,
+	ContextMenuSeparator,
+	ContextMenuTrigger,
+} from "../ui/shadcn/context-menu";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "../ui/shadcn/dropdown-menu";
 import { FileTreeDirItem, FileTreeFileItem } from "./FileTreeItem";
 
 interface FileTreePaneProps {
@@ -17,10 +31,13 @@ interface FileTreePaneProps {
 	onToggleDir: (dirPath: string) => void;
 	onSelectDir: (dirPath: string) => void;
 	onOpenFile: (filePath: string) => void;
-	onNewFile: () => void;
 	onNewFileInDir: (dirPath: string) => void;
 	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
-	onRenameDir: (dirPath: string, nextName: string) => Promise<string | null>;
+	onRenameDir: (
+		path: string,
+		nextName: string,
+		kind?: "dir" | "file",
+	) => Promise<string | null>;
 }
 
 const springTransition = {
@@ -39,12 +56,11 @@ export const FileTreePane = memo(function FileTreePane({
 	onToggleDir,
 	onSelectDir,
 	onOpenFile,
-	onNewFile,
 	onNewFileInDir,
 	onNewFolderInDir,
 	onRenameDir,
 }: FileTreePaneProps) {
-	const [renamingDirPath, setRenamingDirPath] = useState<string | null>(null);
+	const [renamingPath, setRenamingPath] = useState<string | null>(null);
 
 	const handleRootClick = useCallback(() => {
 		onSelectDir("");
@@ -54,17 +70,27 @@ export const FileTreePane = memo(function FileTreePane({
 		async (dirPath: string) => {
 			const created = await onNewFolderInDir(dirPath);
 			if (created) {
-				setRenamingDirPath(created);
+				setRenamingPath(created);
 			}
 		},
 		[onNewFolderInDir],
 	);
 
-	const handleCommitRename = useCallback(
+	const handleCommitDirRename = useCallback(
 		async (dirPath: string, nextName: string) => {
-			const renamed = await onRenameDir(dirPath, nextName);
+			const renamed = await onRenameDir(dirPath, nextName, "dir");
 			if (renamed) {
-				setRenamingDirPath(null);
+				setRenamingPath(null);
+			}
+		},
+		[onRenameDir],
+	);
+
+	const handleCommitFileRename = useCallback(
+		async (path: string, nextName: string) => {
+			const renamed = await onRenameDir(path, nextName, "file");
+			if (renamed) {
+				setRenamingPath(null);
 			}
 		},
 		[onRenameDir],
@@ -108,14 +134,15 @@ export const FileTreePane = memo(function FileTreePane({
 								entry={e}
 								depth={depth}
 								isExpanded={isExpanded}
-								isRenaming={renamingDirPath === e.rel_path}
+								isRenaming={renamingPath === e.rel_path}
 								summary={summary}
 								onToggleDir={onToggleDir}
 								onSelectDir={onSelectDir}
 								onNewFileInDir={onNewFileInDir}
 								onNewFolderInDir={handleCreateFolder}
-								onCommitRename={handleCommitRename}
-								onCancelRename={() => setRenamingDirPath(null)}
+								onStartRename={() => setRenamingPath(e.rel_path)}
+								onCommitRename={handleCommitDirRename}
+								onCancelRename={() => setRenamingPath(null)}
 							>
 								{children && renderEntries(children, depth, e.rel_path)}
 							</FileTreeDirItem>
@@ -131,6 +158,10 @@ export const FileTreePane = memo(function FileTreePane({
 							onOpenFile={onOpenFile}
 							onNewFileInDir={onNewFileInDir}
 							onNewFolderInDir={handleCreateFolder}
+							isRenaming={renamingPath === e.rel_path}
+							onStartRename={() => setRenamingPath(e.rel_path)}
+							onCommitRename={handleCommitFileRename}
+							onCancelRename={() => setRenamingPath(null)}
 							parentDirPath={parentDir(e.rel_path)}
 						/>
 					);
@@ -148,34 +179,67 @@ export const FileTreePane = memo(function FileTreePane({
 		>
 			<div className="fileTreeHeader">
 				{vaultName && (
-					<button
-						type="button"
-						className="fileTreeVaultName"
-						onClick={handleRootClick}
-						title="Go to vault root"
-					>
-						<span className="fileTreeVaultNameText">{vaultName}</span>
-					</button>
+					<ContextMenu>
+						<ContextMenuTrigger asChild>
+							<button
+								type="button"
+								className="fileTreeVaultName"
+								onClick={handleRootClick}
+								title="Go to vault root"
+							>
+								<Database size={14} />
+								<span className="fileTreeVaultNameText">{vaultName}</span>
+							</button>
+						</ContextMenuTrigger>
+						<ContextMenuContent className="fileTreeCreateMenu">
+							<ContextMenuItem
+								className="fileTreeCreateMenuItem"
+								onSelect={() => void onNewFileInDir("")}
+							>
+								<Plus size={14} />
+								Add file
+							</ContextMenuItem>
+							<ContextMenuSeparator className="fileTreeCreateMenuSeparator" />
+							<ContextMenuItem
+								className="fileTreeCreateMenuItem"
+								onSelect={() => void handleCreateFolder("")}
+							>
+								<FolderPlus size={14} />
+								Add folder
+							</ContextMenuItem>
+						</ContextMenuContent>
+					</ContextMenu>
 				)}
 				<div className="fileTreeHeaderActions">
-					<Button
-						type="button"
-						variant="ghost"
-						size="icon-sm"
-						onClick={onNewFile}
-						title="New Markdown file"
-					>
-						<Plus size={16} />
-					</Button>
-					<Button
-						type="button"
-						variant="ghost"
-						size="icon-sm"
-						onClick={() => void handleCreateFolder("")}
-						title="New folder"
-					>
-						<FolderPlus size={16} />
-					</Button>
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<Button
+								type="button"
+								variant="ghost"
+								size="icon-sm"
+								title="Add to vault root"
+							>
+								<Plus size={16} />
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="end" className="fileTreeCreateMenu">
+							<DropdownMenuItem
+								className="fileTreeCreateMenuItem"
+								onClick={() => void onNewFileInDir("")}
+							>
+								<Plus size={14} />
+								Add file
+							</DropdownMenuItem>
+							<DropdownMenuSeparator className="fileTreeCreateMenuSeparator" />
+							<DropdownMenuItem
+								className="fileTreeCreateMenuItem"
+								onClick={() => void handleCreateFolder("")}
+							>
+								<FolderPlus size={14} />
+								Add folder
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
 				</div>
 			</div>
 			{rootEntries.length ? (

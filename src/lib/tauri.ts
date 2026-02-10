@@ -310,7 +310,7 @@ interface TauriCommands {
 		TextFileWriteResult
 	>;
 	vault_create_dir: CommandDef<{ path: string }, void>;
-	vault_rename_path: CommandDef<{ fromPath: string; toPath: string }, void>;
+	vault_rename_path: CommandDef<{ from_path: string; to_path: string }, void>;
 	vault_resolve_abs_path: CommandDef<{ path: string }, string>;
 	vault_relativize_path: CommandDef<{ abs_path: string }, string>;
 	lattice_read_text: CommandDef<{ path: string }, string>;

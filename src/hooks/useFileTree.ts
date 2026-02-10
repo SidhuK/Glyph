@@ -25,7 +25,11 @@ export interface UseFileTreeResult {
 	onNewFile: () => Promise<void>;
 	onNewFileInDir: (dirPath: string) => Promise<void>;
 	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
-	onRenameDir: (dirPath: string, nextName: string) => Promise<string | null>;
+	onRenameDir: (
+		path: string,
+		nextName: string,
+		kind?: "dir" | "file",
+	) => Promise<string | null>;
 }
 
 export interface UseFileTreeDeps {
@@ -369,7 +373,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 	);
 
 	const onRenameDir = useCallback(
-		async (dirPath: string, nextName: string) => {
+		async (dirPath: string, nextName: string, kind: "dir" | "file" = "dir") => {
 			const name = nextName.trim();
 			if (!name) return dirPath;
 			if (name === "." || name === "..") return null;
@@ -383,8 +387,8 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 			setError("");
 			try {
 				await invoke("vault_rename_path", {
-					fromPath: dirPath,
-					toPath: nextPath,
+					from_path: dirPath,
+					to_path: nextPath,
 				});
 				setExpandedDirs((prev) => {
 					const next = new Set<string>();
@@ -418,24 +422,40 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 							.sort(compareEntries),
 					);
 				}
-				setChildrenByDir((prev) => {
-					const next: Record<string, FsEntry[] | undefined> = {};
-					for (const [key, value] of Object.entries(prev)) {
-						const rewrittenKey = rewritePrefix(key, dirPath, nextPath);
-						next[rewrittenKey] = value?.map((entry) => ({
-							...entry,
-							rel_path: rewritePrefix(entry.rel_path, dirPath, nextPath),
-						}));
-					}
-					return next;
-				});
-				loadedDirsRef.current = new Set(
-					[...loadedDirsRef.current].map((loaded) =>
-						rewritePrefix(loaded, dirPath, nextPath),
-					),
-				);
+				if (kind === "dir") {
+					setChildrenByDir((prev) => {
+						const next: Record<string, FsEntry[] | undefined> = {};
+						for (const [key, value] of Object.entries(prev)) {
+							const rewrittenKey = rewritePrefix(key, dirPath, nextPath);
+							next[rewrittenKey] = value?.map((entry) => ({
+								...entry,
+								rel_path: rewritePrefix(entry.rel_path, dirPath, nextPath),
+							}));
+						}
+						return next;
+					});
+					loadedDirsRef.current = new Set(
+						[...loadedDirsRef.current].map((loaded) =>
+							rewritePrefix(loaded, dirPath, nextPath),
+						),
+					);
+				} else {
+					setChildrenByDir((prev) => {
+						const next: Record<string, FsEntry[] | undefined> = {};
+						for (const [key, value] of Object.entries(prev)) {
+							next[key] = value?.map((entry) =>
+								entry.rel_path === dirPath
+									? { ...entry, name, rel_path: nextPath }
+									: entry,
+							);
+						}
+						return next;
+					});
+				}
 				await refreshAfterCreate(parent);
-				await loadDir(nextPath, true);
+				if (kind === "dir") {
+					await loadDir(nextPath, true);
+				}
 				return nextPath;
 			} catch (e) {
 				setError(extractErrorMessage(e));

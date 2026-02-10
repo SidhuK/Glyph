@@ -578,7 +578,6 @@ export function AppShell() {
 			<Sidebar
 				onSelectDir={(p) => void openFolderView(p)}
 				onOpenFile={(p) => void fileTree.openFile(p)}
-				onNewFile={fileTree.onNewFile}
 				onNewFileInDir={(p) => void fileTree.onNewFileInDir(p)}
 				onNewFolderInDir={(p) => fileTree.onNewFolderInDir(p)}
 				onRenameDir={(p, name) => fileTree.onRenameDir(p, name)}

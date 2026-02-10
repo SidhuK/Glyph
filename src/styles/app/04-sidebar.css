@@ -48,7 +48,7 @@
 	height: calc(var(--header-height) - 4px);
 	padding: var(--space-1) var(--space-3) 0 var(--space-4);
 	padding-left: 78px; /* Space for macOS traffic lights */
-	border-bottom: 1px solid var(--border-light);
+	border-bottom: none;
 	flex-shrink: 0;
 	position: relative;
 	z-index: 2;
@@ -80,7 +80,7 @@
 }
 
 .sidebarSection {
-	border-bottom: 1px solid var(--border-light);
+	border-bottom: none;
 	padding: var(--space-1) 0;
 }
 
@@ -97,7 +97,7 @@
 	align-items: center;
 	justify-content: center;
 	padding: var(--space-2) var(--space-3);
-	border-bottom: 1px solid var(--border-light);
+	border-bottom: none;
 	flex-shrink: 0;
 }
 
@@ -151,7 +151,7 @@
 .sidebarFooter {
 	margin-top: auto;
 	padding: var(--space-2) var(--space-3);
-	border-top: 1px solid var(--border-light);
+	border-top: none;
 }
 
 .sidebarFooterBtn {
