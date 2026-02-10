@@ -1,8 +1,9 @@
 import type { UIMessage } from "@ai-sdk/react";
 import { useCallback, useEffect, useState } from "react";
 import {
+	type AiChatHistoryDetail,
 	type AiChatHistorySummary,
-	type AiMessage,
+	type AiStoredToolEvent,
 	TauriInvokeError,
 	invoke,
 } from "../../lib/tauri";
@@ -13,7 +14,10 @@ function errMessage(err: unknown): string {
 	return String(err);
 }
 
-function toUIMessages(jobId: string, messages: AiMessage[]): UIMessage[] {
+function toUIMessages(
+	jobId: string,
+	messages: AiChatHistoryDetail["messages"],
+): UIMessage[] {
 	const out: UIMessage[] = [];
 	for (let i = 0; i < messages.length; i += 1) {
 		const msg = messages[i];
@@ -25,6 +29,11 @@ function toUIMessages(jobId: string, messages: AiMessage[]): UIMessage[] {
 		});
 	}
 	return out;
+}
+
+export interface LoadedAiChat {
+	messages: UIMessage[];
+	toolEvents: AiStoredToolEvent[];
 }
 
 export function useAiHistory(limit = 20) {
@@ -54,9 +63,12 @@ export function useAiHistory(limit = 20) {
 		setLoadingJobId(jobId);
 		setError("");
 		try {
-			const messages = await invoke("ai_chat_history_get", { job_id: jobId });
+			const detail = await invoke("ai_chat_history_get", { job_id: jobId });
 			setSelectedJobId(jobId);
-			return toUIMessages(jobId, messages);
+			return {
+				messages: toUIMessages(jobId, detail.messages),
+				toolEvents: detail.tool_events ?? [],
+			} satisfies LoadedAiChat;
 		} catch (err) {
 			setError(errMessage(err));
 			return null;

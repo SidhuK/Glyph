@@ -32,6 +32,9 @@ export const Italic = (props: IconProps) => (
 export const Strikethrough = (props: IconProps) => (
 	<HugeiconsIcon icon={Icons.Strikethrough} {...props} />
 );
+export const Command = (props: IconProps) => (
+	<HugeiconsIcon icon={Icons.CommandIcon} {...props} />
+);
 export const Code = (props: IconProps) => (
 	<HugeiconsIcon icon={Icons.Code} {...props} />
 );

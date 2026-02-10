@@ -3,123 +3,133 @@
 	gap: 6px;
 }
 
-.commandPaletteTrigger {
-	display: inline-flex;
-	align-items: center;
-	gap: 4px;
-}
-
-.commandPaletteTrigger kbd {
-	min-width: 18px;
-	height: 18px;
-	padding: 0 5px;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	font-size: 11px;
-	line-height: 1;
-	font-weight: 600;
-	font-family: var(--font-mono);
-	letter-spacing: 0.01em;
-	color: var(--text-secondary);
-	background: color-mix(in srgb, var(--bg-tertiary) 88%, transparent);
-	border: 1px solid var(--border-default);
-	border-radius: var(--radius-sm);
-}
-
-.commandPaletteBackdrop {
-	position: fixed;
-	inset: 0;
-	z-index: 80;
-	display: grid;
-	place-items: center;
-	padding: 16px;
-	background: color-mix(in srgb, var(--bg-primary) 84%, transparent);
-	backdrop-filter: blur(4px);
-}
+/* ── Palette container ── */
 
 .commandPalette {
-	position: static;
-	width: min(640px, calc(100vw - 32px));
-	max-height: min(70vh, 600px);
+	width: min(560px, calc(100vw - 48px));
+	max-height: min(60vh, 440px);
 	overflow: hidden;
-	margin: 0;
-	border-radius: var(--radius-xl);
-	border: 1px solid var(--border-default);
-	background: var(--bg-secondary);
-	box-shadow: var(--shadow-xl);
+	border-radius: var(--radius-lg);
+	border: 1px solid var(--border-light);
+	background: var(--bg-primary);
+	box-shadow: var(--shadow-float);
+}
+
+/* ── Search input row ── */
+
+.commandPaletteInputWrapper {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	height: 48px;
+	padding: 0 16px;
+	border-bottom: 1px solid var(--border-light);
+}
+
+.commandPaletteSearchIcon {
+	flex-shrink: 0;
+	color: var(--text-tertiary);
 }
 
 .commandPaletteInput {
-	width: 100%;
-	height: 46px;
-	padding: 0 14px;
+	flex: 1;
+	height: 100%;
 	border: 0;
 	outline: 0;
 	font: inherit;
+	font-size: var(--text-base);
 	color: var(--text-primary);
 	background: transparent;
-	border-bottom: 1px solid var(--border-light);
 }
 
 .commandPaletteInput::placeholder {
 	color: var(--text-placeholder);
 }
 
+/* ── Results list ── */
+
 .commandPaletteList {
 	list-style: none;
 	margin: 0;
-	padding: 8px;
-	max-height: calc(min(70vh, 600px) - 46px);
-	overflow: auto;
+	padding: 6px;
+	max-height: calc(min(60vh, 440px) - 48px);
+	overflow-x: hidden;
+	overflow-y: auto;
+	scroll-padding: 6px;
 }
 
+.commandPaletteGroup {
+	overflow: hidden;
+}
+
+.commandPaletteSeparator {
+	height: 1px;
+	margin: 4px 8px;
+	background: var(--border-light);
+}
+
+/* ── Individual item ── */
+
 .commandPaletteItem {
-	width: 100%;
+	position: relative;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	gap: 12px;
-	height: 40px;
-	padding: 0 12px;
+	height: 36px;
+	padding: 0 10px;
 	border: 0;
 	border-radius: var(--radius-md);
 	background: transparent;
 	color: var(--text-primary);
+	font-size: var(--text-sm);
 	text-align: left;
-	transition: background var(--transition-fast), color var(--transition-fast);
+	cursor: default;
+	user-select: none;
+	outline: none;
+	transition: background var(--transition-fast);
 }
 
-.commandPaletteItem.selected {
-	background: var(--bg-hover);
+.commandPaletteItem[data-selected="true"] {
+	background: var(--interactive-hover);
 }
+
+.commandPaletteItem[data-disabled="true"] {
+	opacity: 0.4;
+	pointer-events: none;
+}
+
+/* ── Keyboard shortcut badges ── */
 
 .commandPaletteShortcut {
 	display: inline-flex;
 	align-items: center;
-	gap: 6px;
-	margin-left: 10px;
+	gap: 4px;
+	margin-left: auto;
 }
 
 .commandPaletteShortcut kbd {
-	min-width: 22px;
-	height: 22px;
-	padding: 0 7px;
+	min-width: 20px;
+	height: 20px;
+	padding: 0 5px;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	font-size: var(--text-xs);
+	font-size: 11px;
 	line-height: 1;
 	font-weight: var(--font-medium);
 	font-family: var(--font-mono);
-	color: var(--text-secondary);
-	background: color-mix(in srgb, var(--bg-tertiary) 90%, transparent);
-	border: 1px solid var(--border-default);
+	color: var(--text-tertiary);
+	background: var(--bg-tertiary);
+	border: 1px solid var(--border-light);
 	border-radius: var(--radius-sm);
-	box-shadow: var(--shadow-sm);
 }
 
+/* ── Empty state ── */
+
 .commandPaletteEmpty {
-	padding: 12px;
-	color: var(--text-secondary);
+	padding: 24px 16px;
+	text-align: center;
+	font-size: var(--text-sm);
+	color: var(--text-tertiary);
 }

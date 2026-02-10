@@ -55,6 +55,10 @@
 	overflow: hidden;
 }
 
+.aiFloatingHost .aiPanel[data-open="false"] {
+	visibility: hidden;
+}
+
 .aiPanelHeader {
 	display: flex;
 	align-items: center;
@@ -250,6 +254,20 @@
 	word-break: break-word;
 }
 
+.aiMessageMarkdown {
+	word-break: break-word;
+}
+
+.aiMessageMarkdown .aiMessageMarkdownContent {
+	font-size: inherit;
+	line-height: inherit;
+}
+
+.aiMessageMarkdown .aiMessageMarkdownContent pre {
+	max-width: 100%;
+	overflow-x: auto;
+}
+
 .aiToolStatus {
 	align-self: flex-start;
 	max-width: 88%;
@@ -280,6 +298,150 @@
 .aiToolStatusError .aiToolStatusDot {
 	animation: none;
 	background: #ff3b30;
+}
+
+.aiToolTimeline {
+	align-self: stretch;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	padding: 8px 10px;
+	border-radius: 10px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 70%, transparent);
+	background: linear-gradient(
+		145deg,
+		color-mix(in srgb, var(--bg-secondary) 86%, transparent),
+		color-mix(in srgb, var(--bg-primary) 96%, transparent)
+	);
+	box-shadow: inset 0 1px 0
+		color-mix(in srgb, var(--color-white) 24%, transparent);
+}
+
+.aiToolTimelineHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	font-size: 11px;
+	color: var(--text-tertiary);
+}
+
+.aiToolTimelineTitle {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.aiToolLiveBadge {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	padding: 1px 7px;
+	border-radius: 999px;
+	font-size: 10px;
+	color: var(--interactive-accent);
+	background: color-mix(in srgb, var(--interactive-accent) 16%, transparent);
+	border: 1px solid
+		color-mix(in srgb, var(--interactive-accent) 24%, transparent);
+}
+
+.aiToolLiveDot {
+	width: 6px;
+	height: 6px;
+	border-radius: 999px;
+	background: var(--interactive-accent);
+	animation: aiToolLivePulse 1s ease-in-out infinite;
+}
+
+.aiToolTimelineList {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	max-height: 160px;
+	overflow-y: auto;
+	scrollbar-width: thin;
+}
+
+.aiToolTimelineItem {
+	padding: 6px 8px;
+	border-radius: 8px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 60%, transparent);
+	transform-origin: center;
+}
+
+.aiToolTimelineItem-error {
+	border-color: color-mix(in srgb, #ff3b30 38%, transparent);
+}
+
+.aiToolTimelineItem-running {
+	border-color: color-mix(in srgb, var(--interactive-accent) 33%, transparent);
+	box-shadow: 0 0 0 1px
+		color-mix(in srgb, var(--interactive-accent) 9%, transparent);
+}
+
+.aiToolTimelineTop {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.aiToolPhase {
+	padding: 1px 6px;
+	border-radius: 999px;
+	font-size: 10px;
+	line-height: 1.5;
+}
+
+.aiToolPhase-call {
+	background: color-mix(in srgb, var(--interactive-accent) 18%, transparent);
+	color: var(--interactive-accent);
+}
+
+.aiToolPhase-result {
+	background: color-mix(in srgb, #22c55e 18%, transparent);
+	color: #16a34a;
+}
+
+.aiToolPhase-error {
+	background: color-mix(in srgb, #ff3b30 18%, transparent);
+	color: #ff3b30;
+}
+
+.aiToolName {
+	flex: 1;
+	font-size: 11px;
+	color: var(--text-primary);
+}
+
+.aiToolTime {
+	font-size: 10px;
+	color: var(--text-tertiary);
+}
+
+.aiToolSummary {
+	margin-top: 4px;
+	font-size: 11px;
+	color: var(--text-secondary);
+	word-break: break-word;
+}
+
+.aiToolError {
+	margin-top: 4px;
+	font-size: 11px;
+	color: #ff3b30;
+	word-break: break-word;
+}
+
+@keyframes aiToolLivePulse {
+	0%,
+	100% {
+		opacity: 0.45;
+		transform: scale(0.85);
+	}
+	50% {
+		opacity: 1;
+		transform: scale(1.1);
+	}
 }
 
 @keyframes aiToolPulse {

@@ -11,7 +11,7 @@ use super::local_secrets;
 use super::state::AiState;
 use super::store::{ensure_default_profiles, read_store, store_path, write_store};
 use super::types::{
-    AiChatRequest, AiChatStartResult, AiDoneEvent, AiErrorEvent, AiMessage, AiProfile,
+    AiChatRequest, AiChatStartResult, AiDoneEvent, AiErrorEvent, AiProfile,
 };
 
 #[tauri::command]
@@ -225,7 +225,7 @@ pub async fn ai_chat_start(
         .await;
 
         match result {
-            Ok((full, cancelled)) => {
+            Ok((full, cancelled, tool_events)) => {
                 let _ = app_for_task.emit(
                     "ai:done",
                     AiDoneEvent {
@@ -234,7 +234,15 @@ pub async fn ai_chat_start(
                     },
                 );
                 if let Some(root) = vault_root {
-                    write_audit_log(&root, &job_id_for_task, &profile, &request, &full, cancelled);
+                    write_audit_log(
+                        &root,
+                        &job_id_for_task,
+                        &profile,
+                        &request,
+                        &full,
+                        cancelled,
+                        &tool_events,
+                    );
                 }
                 if !cancelled {
                     let _ = app_for_task
@@ -286,6 +294,6 @@ pub async fn ai_chat_history_list(
 pub async fn ai_chat_history_get(
     vault_state: State<'_, VaultState>,
     job_id: String,
-) -> Result<Vec<AiMessage>, String> {
+) -> Result<history::AiChatHistoryDetail, String> {
     history::ai_chat_history_get(vault_state, job_id).await
 }

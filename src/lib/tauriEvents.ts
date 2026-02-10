@@ -13,6 +13,7 @@ export type TauriEventMap = {
 		job_id: string;
 		tool: string;
 		phase: string;
+		at_ms?: number;
 		call_id?: string;
 		payload?: unknown;
 		error?: string;

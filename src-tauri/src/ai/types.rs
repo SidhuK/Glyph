@@ -85,6 +85,23 @@ pub struct AiToolEvent {
     pub job_id: String,
     pub tool: String,
     pub phase: String,
+    pub at_ms: u64,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub call_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub payload: Option<serde_json::Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub error: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Default)]
+pub struct AiStoredToolEvent {
+    #[serde(default)]
+    pub tool: String,
+    #[serde(default)]
+    pub phase: String,
+    #[serde(default)]
+    pub at_ms: u64,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub call_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]

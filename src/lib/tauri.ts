@@ -237,6 +237,20 @@ export interface AiChatHistorySummary {
 	preview: string;
 }
 
+export interface AiStoredToolEvent {
+	tool: string;
+	phase: "call" | "result" | "error" | string;
+	at_ms: number;
+	call_id?: string | null;
+	payload?: unknown;
+	error?: string | null;
+}
+
+export interface AiChatHistoryDetail {
+	messages: AiMessage[];
+	tool_events: AiStoredToolEvent[];
+}
+
 type CommandDef<Args, Result> = { args: Args; result: Result };
 
 interface TauriCommands {
@@ -338,7 +352,7 @@ interface TauriCommands {
 		{ limit?: number | null },
 		AiChatHistorySummary[]
 	>;
-	ai_chat_history_get: CommandDef<{ job_id: string }, AiMessage[]>;
+	ai_chat_history_get: CommandDef<{ job_id: string }, AiChatHistoryDetail>;
 }
 
 export class TauriInvokeError extends Error {

@@ -45,4 +45,21 @@
 	.welcomeRecentPath {
 		word-break: break-all;
 	}
+
+	.welcomeTipsGrid {
+		grid-template-columns: 1fr;
+	}
+
+	.welcomeReadyActions {
+		flex-direction: column;
+		width: 100%;
+	}
+
+	.welcomeReadyActions button {
+		width: 100%;
+	}
+
+	.welcomeHeroTitle {
+		font-size: 2rem;
+	}
 }

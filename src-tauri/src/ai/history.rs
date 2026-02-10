@@ -3,7 +3,7 @@ use tauri::State;
 
 use crate::{lattice_paths, vault::VaultState};
 
-use super::types::AiMessage;
+use super::types::{AiMessage, AiStoredToolEvent};
 
 const HISTORY_VERSION: u32 = 1;
 const DEFAULT_LIMIT: usize = 25;
@@ -42,6 +42,14 @@ struct StoredHistory {
     profile: StoredProfile,
     #[serde(default)]
     messages: Vec<AiMessage>,
+    #[serde(default)]
+    tool_events: Vec<AiStoredToolEvent>,
+}
+
+#[derive(Serialize)]
+pub struct AiChatHistoryDetail {
+    pub messages: Vec<AiMessage>,
+    pub tool_events: Vec<AiStoredToolEvent>,
 }
 
 pub async fn ai_chat_history_list(
@@ -59,7 +67,7 @@ pub async fn ai_chat_history_list(
 pub async fn ai_chat_history_get(
     vault_state: State<'_, VaultState>,
     job_id: String,
-) -> Result<Vec<AiMessage>, String> {
+) -> Result<AiChatHistoryDetail, String> {
     let _ = uuid::Uuid::parse_str(&job_id).map_err(|_| "invalid job_id".to_string())?;
     let root = vault_state.current_root()?;
 
@@ -146,14 +154,17 @@ fn list_history_impl(
     Ok(out)
 }
 
-fn get_history_impl(root: &std::path::Path, job_id: &str) -> Result<Vec<AiMessage>, String> {
+fn get_history_impl(root: &std::path::Path, job_id: &str) -> Result<AiChatHistoryDetail, String> {
     let path = crate::ai::audit::history_log_path(root, job_id)?;
     let bytes = std::fs::read(&path).map_err(|e| e.to_string())?;
     let history: StoredHistory = serde_json::from_slice(&bytes).map_err(|e| e.to_string())?;
     if history.version != 0 && history.version != HISTORY_VERSION {
         return Err("unsupported history version".to_string());
     }
-    Ok(history.messages)
+    Ok(AiChatHistoryDetail {
+        messages: history.messages,
+        tool_events: history.tool_events,
+    })
 }
 
 fn preview_from_messages(messages: &[AiMessage]) -> String {

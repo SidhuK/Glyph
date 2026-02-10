@@ -181,14 +181,14 @@
    ───────────────────────────────────────────────────────────────────────────── */
 @media (prefers-color-scheme: dark) {
 	:root {
-		/* Surfaces - Notion-like dark mode */
-		--bg-primary: #2f3438;
-		--bg-secondary: #373c3f;
-		--bg-tertiary: #3f4448;
+		/* Surfaces - Obsidian-inspired neutral dark */
+		--bg-primary: #1e1e1e;
+		--bg-secondary: #262626;
+		--bg-tertiary: #303030;
 		--bg-hover: rgba(255, 255, 255, 0.06);
 		--bg-active: rgba(255, 255, 255, 0.12);
-		--bg-sidebar: #373c3f;
-		--bg-canvas: #2f3438;
+		--bg-sidebar: #262626;
+		--bg-canvas: #1e1e1e;
 
 		/* Text */
 		--text-primary: rgba(255, 255, 255, 0.92);
@@ -235,13 +235,13 @@
 		--shadow-float: 0 0 0 1px rgba(255, 255, 255, 0.06), 0 4px 12px
 			rgba(0, 0, 0, 0.3), 0 16px 32px rgba(0, 0, 0, 0.25);
 
-		/* Glass morphism - dark mode */
-		--glass-bg: rgba(47, 52, 56, 0.37);
-		--glass-border: rgba(255, 255, 255, 0.06);
-		--chrome-bg: rgba(55, 60, 63, 0.25);
-		--chrome-bg-strong: rgba(55, 60, 63, 0.31);
+		/* Glass morphism - dark mode (neutral, no tint) */
+		--glass-bg: rgba(30, 30, 30, 0.55);
+		--glass-border: rgba(255, 255, 255, 0.08);
+		--chrome-bg: rgba(38, 38, 38, 0.35);
+		--chrome-bg-strong: rgba(38, 38, 38, 0.45);
 		--chrome-sidebar-bg: var(--chrome-bg);
-		--chrome-border: rgba(255, 255, 255, 0.06);
+		--chrome-border: rgba(255, 255, 255, 0.1);
 		--chrome-blur: 22px;
 	}
 }

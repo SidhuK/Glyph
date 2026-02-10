@@ -71,6 +71,7 @@ export interface AiToolEventPayload {
 	job_id: string;
 	tool: "search_vault" | "list_files" | "read_file";
 	phase: "call" | "result" | "error";
+	at_ms?: number;
 	call_id?: string;
 	payload?: unknown;
 	error?: string;

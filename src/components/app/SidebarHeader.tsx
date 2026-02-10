@@ -1,7 +1,7 @@
 import { openSettingsWindow } from "../../lib/windows";
 import { cn } from "../../utils/cn";
 import { onWindowDragMouseDown } from "../../utils/window";
-import { FolderOpen, FolderPlus, Search, Settings } from "../Icons";
+import { Command, FolderOpen, FolderPlus, Search, Settings } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 
 interface SidebarHeaderProps {
@@ -79,12 +79,9 @@ export function SidebarHeader({
 						variant="ghost"
 						size="icon-sm"
 						onClick={onOpenCommandPalette}
-						title="Command palette"
+						title="Command palette (⌘K)"
 					>
-						<span className="commandPaletteTrigger" aria-label="Command K">
-							<kbd>⌘</kbd>
-							<kbd>K</kbd>
-						</span>
+						<Command size={14} />
 					</Button>
 				</div>
 			</div>

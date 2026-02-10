@@ -2,7 +2,7 @@ use crate::{io_atomic, lattice_paths};
 use std::path::{Path, PathBuf};
 
 use super::helpers::now_ms;
-use super::types::{AiChatRequest, AiMessage, AiProfile};
+use super::types::{AiChatRequest, AiMessage, AiProfile, AiStoredToolEvent};
 
 pub fn audit_log_path(vault_root: &Path, job_id: &str) -> Result<PathBuf, String> {
     let base = lattice_paths::ensure_lattice_cache_dir(vault_root)?;
@@ -30,6 +30,7 @@ pub fn write_audit_log(
     request: &AiChatRequest,
     response: &str,
     cancelled: bool,
+    tool_events: &[AiStoredToolEvent],
 ) {
     let created_at_ms = now_ms();
     let path = match audit_log_path(vault_root, job_id) {
@@ -58,6 +59,7 @@ pub fn write_audit_log(
         },
         "response": response_truncated,
         "cancelled": cancelled,
+        "tool_events": tool_events,
         "outcome": null
     });
     let bytes = serde_json::to_vec_pretty(&payload).unwrap_or_default();
@@ -70,6 +72,7 @@ pub fn write_audit_log(
         &response_truncated,
         cancelled,
         created_at_ms,
+        tool_events,
     );
 }
 
@@ -81,6 +84,7 @@ fn write_chat_history(
     response: &str,
     cancelled: bool,
     created_at_ms: u64,
+    tool_events: &[AiStoredToolEvent],
 ) {
     let path = match history_log_path(vault_root, job_id) {
         Ok(p) => p,
@@ -107,6 +111,7 @@ fn write_chat_history(
             "model": profile.model,
         },
         "messages": messages,
+        "tool_events": tool_events,
     });
     let bytes = serde_json::to_vec_pretty(&payload).unwrap_or_default();
     let _ = io_atomic::write_atomic(&path, &bytes);

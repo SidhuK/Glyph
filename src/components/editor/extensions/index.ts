@@ -51,7 +51,14 @@ const CalloutDecorations = Extension.create({
 	},
 });
 
-export function createEditorExtensions() {
+interface CreateEditorExtensionsOptions {
+	enableSlashCommand?: boolean;
+}
+
+export function createEditorExtensions(
+	options?: CreateEditorExtensionsOptions,
+) {
+	const { enableSlashCommand = true } = options ?? {};
 	return [
 		StarterKit.configure({
 			bulletList: { keepMarks: true, keepAttributes: false },
@@ -75,7 +82,7 @@ export function createEditorExtensions() {
 				breaks: false,
 			},
 		}),
-		SlashCommand,
+		...(enableSlashCommand ? [SlashCommand] : []),
 		CalloutDecorations,
 	];
 }
