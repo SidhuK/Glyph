@@ -96,6 +96,7 @@ function CanvasPane({
 	const [edges, setEdges, onEdgesChange] = useEdgesState<CanvasEdge>([]);
 	const [, setIsSaving] = useState(false);
 	const [snapToGrid, setSnapToGrid] = useState(true);
+	const [toolbarCollapsed, setToolbarCollapsed] = useState(false);
 	const [showMiniMap, setShowMiniMap] = useState(false);
 	const [selectedNodeIds, setSelectedNodeIds] = useState<Set<string>>(
 		new Set(),
@@ -326,8 +327,6 @@ function CanvasPane({
 		handleRefreshLink,
 		handleFrameSelection,
 		handleReflowGrid,
-		handleAlign,
-		handleDistribute,
 	} = useCanvasToolbarActions({
 		nodes,
 		selectedNodeIds,
@@ -818,10 +817,14 @@ function CanvasPane({
 										) : null}
 									</ReactFlow>
 									<CanvasToolbar
+										collapsed={toolbarCollapsed}
 										snapToGrid={snapToGrid}
 										hasActiveNote={Boolean(activeNoteId)}
 										selectedCount={selectedNodeIds.size}
 										hasSelectedLink={hasSelectedLink}
+										onToggleCollapsed={() =>
+											setToolbarCollapsed((v) => !v)
+										}
 										onAddText={handleAddTextNode}
 										onAddLink={handleAddLinkNode}
 										onAddNote={handleAddCurrentNote}
@@ -829,8 +832,6 @@ function CanvasPane({
 										onFrameSelection={handleFrameSelection}
 										onToggleSnap={() => setSnapToGrid((v) => !v)}
 										onReflowGrid={handleReflowGrid}
-										onAlign={handleAlign}
-										onDistribute={handleDistribute}
 									/>
 								</div>
 							</motion.div>

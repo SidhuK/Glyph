@@ -1,14 +1,7 @@
 import { memo } from "react";
 import { cn } from "../../utils/cn";
 import {
-	AlignCenter,
-	AlignCenterVertical,
-	AlignEndVertical,
-	AlignHorizontalSpaceAround,
-	AlignLeft,
-	AlignRight,
-	AlignStartVertical,
-	AlignVerticalSpaceAround,
+	ChevronRight,
 	Frame,
 	Grid3X3,
 	Layout,
@@ -20,10 +13,12 @@ import {
 import { Button } from "../ui/shadcn/button";
 
 interface CanvasToolbarProps {
+	collapsed: boolean;
 	snapToGrid: boolean;
 	hasActiveNote: boolean;
 	selectedCount: number;
 	hasSelectedLink: boolean;
+	onToggleCollapsed: () => void;
 	onAddText: () => void;
 	onAddLink: () => void;
 	onAddNote: () => void;
@@ -31,17 +26,15 @@ interface CanvasToolbarProps {
 	onFrameSelection: () => void;
 	onToggleSnap: () => void;
 	onReflowGrid: () => void;
-	onAlign: (
-		mode: "left" | "right" | "top" | "bottom" | "centerX" | "centerY",
-	) => void;
-	onDistribute: (axis: "x" | "y") => void;
 }
 
 export const CanvasToolbar = memo(function CanvasToolbar({
+	collapsed,
 	snapToGrid,
 	hasActiveNote,
 	selectedCount,
 	hasSelectedLink,
+	onToggleCollapsed,
 	onAddText,
 	onAddLink,
 	onAddNote,
@@ -49,11 +42,35 @@ export const CanvasToolbar = memo(function CanvasToolbar({
 	onFrameSelection,
 	onToggleSnap,
 	onReflowGrid,
-	onAlign,
-	onDistribute,
 }: CanvasToolbarProps) {
+	if (collapsed) {
+		return (
+			<div className="canvasToolbar">
+				<Button
+					variant="ghost"
+					size="icon"
+					type="button"
+					onClick={onToggleCollapsed}
+					title="Expand toolbar"
+				>
+					<ChevronRight size={16} />
+				</Button>
+			</div>
+		);
+	}
+
 	return (
 		<div className="canvasToolbar">
+			<Button
+				variant="ghost"
+				size="icon"
+				type="button"
+				onClick={onToggleCollapsed}
+				title="Collapse toolbar"
+			>
+				<ChevronRight size={16} style={{ transform: "rotate(180deg)" }} />
+			</Button>
+			<span className="toolbarDivider" />
 			<Button
 				variant="ghost"
 				size="icon"
@@ -121,88 +138,6 @@ export const CanvasToolbar = memo(function CanvasToolbar({
 				title="Reflow to grid"
 			>
 				<Layout size={16} />
-			</Button>
-			<span className="toolbarDivider" />
-			<Button
-				variant="ghost"
-				size="icon"
-				type="button"
-				onClick={() => onAlign("left")}
-				disabled={selectedCount < 2}
-				title="Align left"
-			>
-				<AlignLeft size={16} />
-			</Button>
-			<Button
-				variant="ghost"
-				size="icon"
-				type="button"
-				onClick={() => onAlign("centerX")}
-				disabled={selectedCount < 2}
-				title="Align center"
-			>
-				<AlignCenter size={16} />
-			</Button>
-			<Button
-				variant="ghost"
-				size="icon"
-				type="button"
-				onClick={() => onAlign("right")}
-				disabled={selectedCount < 2}
-				title="Align right"
-			>
-				<AlignRight size={16} />
-			</Button>
-			<Button
-				variant="ghost"
-				size="icon"
-				type="button"
-				onClick={() => onAlign("top")}
-				disabled={selectedCount < 2}
-				title="Align top"
-			>
-				<AlignStartVertical size={16} />
-			</Button>
-			<Button
-				variant="ghost"
-				size="icon"
-				type="button"
-				onClick={() => onAlign("centerY")}
-				disabled={selectedCount < 2}
-				title="Align middle"
-			>
-				<AlignCenterVertical size={16} />
-			</Button>
-			<Button
-				variant="ghost"
-				size="icon"
-				type="button"
-				onClick={() => onAlign("bottom")}
-				disabled={selectedCount < 2}
-				title="Align bottom"
-			>
-				<AlignEndVertical size={16} />
-			</Button>
-			<span className="toolbarDivider" />
-			<Button
-				variant="ghost"
-				size="icon"
-				type="button"
-				onClick={() => onDistribute("x")}
-				disabled={selectedCount < 3}
-				title="Distribute horizontally"
-			>
-				<AlignHorizontalSpaceAround size={16} />
-			</Button>
-			<Button
-				variant="ghost"
-				size="icon"
-				type="button"
-				onClick={() => onDistribute("y")}
-				disabled={selectedCount < 3}
-				title="Distribute vertically"
-			>
-				<AlignVerticalSpaceAround size={16} />
 			</Button>
 		</div>
 	);
