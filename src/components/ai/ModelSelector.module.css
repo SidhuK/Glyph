@@ -29,6 +29,15 @@
 	border-color: var(--border-default);
 }
 
+.triggerLogo {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	margin-right: 4px;
+	width: 18px;
+	height: 18px;
+}
+
 .triggerLabel {
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -68,6 +77,23 @@
 	border-bottom: 1px solid
 		color-mix(in srgb, var(--border-light) 40%, transparent);
 	flex-shrink: 0;
+}
+
+.providerIcon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 20px;
+	height: 20px;
+	margin-right: 6px;
+	color: var(--text-tertiary);
+}
+
+.providerSvg {
+	width: 18px;
+	height: 18px;
+	object-fit: contain;
+	display: block;
 }
 
 .dropdownTitle {

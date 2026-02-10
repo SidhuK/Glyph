@@ -10,7 +10,62 @@ import {
 import { createPortal } from "react-dom";
 import { type AiModel, type AiProviderKind, invoke } from "../../lib/tauri";
 import { ChevronDown, InformationCircle } from "../Icons";
+import openaiLogoUrl from "../../assets/provider-logos/openai-light.svg?url";
+import openrouterLogoUrl from "../../assets/provider-logos/open-router.svg?url";
+import anthropicLogoUrl from "../../assets/provider-logos/claude-ai.svg?url";
+import geminiLogoUrl from "../../assets/provider-logos/google-gemini.svg?url";
+import ollamaLogoUrl from "../../assets/provider-logos/ollama.svg?url";
 import styles from "./ModelSelector.module.css";
+
+const providerLogoMap: Record<
+	AiProviderKind,
+	{ src: string; label: string }
+> = {
+	openai: {
+		src: openaiLogoUrl,
+		label: "OpenAI",
+	},
+	openai_compat: {
+		src: openaiLogoUrl,
+		label: "OpenAI (compat)",
+	},
+	openrouter: {
+		src: openrouterLogoUrl,
+		label: "OpenRouter",
+	},
+	anthropic: {
+		src: anthropicLogoUrl,
+		label: "Anthropic",
+	},
+	gemini: {
+		src: geminiLogoUrl,
+		label: "Google Gemini",
+	},
+	ollama: {
+		src: ollamaLogoUrl,
+		label: "Ollama",
+	},
+};
+
+const ProviderLogo = ({
+	provider,
+	className,
+}: {
+	provider: AiProviderKind | null;
+	className?: string;
+}) => {
+	if (!provider) return null;
+	const config = providerLogoMap[provider];
+	if (!config) return null;
+	return (
+		<img
+			src={config.src}
+			alt={`${config.label} logo`}
+			className={className}
+			draggable={false}
+		/>
+	);
+};
 
 interface ModelSelectorProps {
 	profileId: string | null;
@@ -120,68 +175,6 @@ export function ModelSelector({
 		return `${name.slice(0, 27)}…`;
 	};
 
-	const providerLogoData: Record<
-		AiProviderKind,
-		{ paths: string[]; viewBox?: string; fill?: string }
-	> = {
-		Openai: {
-			paths: [
-				"M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20z",
-				"M12 6a6 6 0 1 1 0 12 6 6 0 0 1 0-12z",
-				"M12 8v8",
-				"M12 8a.5.5 0 0 0 0 1",
-			],
-		},
-		Anthropic: {
-			paths: [
-				"M4 6h16c1.1 0 2 .9 2 2v8c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V8c0-1.1.9-2 2-2z",
-				"M4 14h16",
-			],
-		},
-		Openrouter: {
-			paths: [
-				"M5 4l14 8-14 8V4z",
-				"M12 12l6-3.5",
-				"M12 12l-6-3.5",
-			],
-		},
-		Gemini: {
-			paths: [
-				"M4 12a8 8 0 1 0 16 0 8 8 0 0 0-16 0z",
-				"M9 9l6 6",
-				"M15 9l-6 6",
-			],
-		},
-		Ollama: {
-			paths: [
-				"M5 6h14v12H5z",
-				"M5 10h8",
-				"M5 14h8",
-			],
-		},
-	};
-
-	const ProviderLogo = ({ provider }: { provider: AiProviderKind | null }) => {
-		if (!provider) return null;
-		const data = providerLogoData[provider];
-		if (!data) return null;
-		return (
-			<span className={styles.providerIcon} title={provider}>
-				<svg viewBox={data.viewBox ?? "0 0 24 24"} fill="none" stroke="currentColor">
-					{data.paths.map((d, index) => (
-						<path
-							key={index}
-							d={d}
-							strokeWidth={index ? 1.5 : 1.7}
-							strokeLinecap="round"
-							strokeLinejoin="round"
-						/>
-					))}
-				</svg>
-			</span>
-		);
-	};
-
 	return (
 		<>
 				<button
@@ -192,8 +185,8 @@ export function ModelSelector({
 					title={value || "Select model"}
 				>
 					{provider && (
-						<span className={styles.triggerLogo}>
-							<ProviderLogo provider={provider} />
+						<span className={styles.triggerLogo} title={provider}>
+							<ProviderLogo provider={provider} className={styles.providerSvg} />
 						</span>
 					)}
 					<span className={styles.triggerLabel}>{displayLabel}</span>
@@ -217,7 +210,12 @@ export function ModelSelector({
 						}}
 					>
 						<div className={styles.dropdownHeader}>
-							<span className={styles.dropdownTitle}>Models</span>
+						{provider && (
+							<span className={styles.providerIcon} title={provider}>
+								<ProviderLogo provider={provider} className={styles.providerSvg} />
+							</span>
+						)}
+						<span className={styles.dropdownTitle}>Models</span>
 							{models && (
 								<span className={styles.dropdownCount}>{models.length}</span>
 							)}
