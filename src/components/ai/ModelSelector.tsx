@@ -4,6 +4,7 @@ import {
 	useCallback,
 	useEffect,
 	useLayoutEffect,
+	useMemo,
 	useRef,
 	useState,
 } from "react";
@@ -66,6 +67,36 @@ const ProviderLogo = ({
 		/>
 	);
 };
+
+const openRouterProviderHints: Array<{
+	kind: AiProviderKind;
+	keywords: string[];
+}> = [
+	{ kind: "openai", keywords: ["openai"] },
+	{ kind: "anthropic", keywords: ["anthropic", "claude"] },
+	{ kind: "gemini", keywords: ["gemini", "google"] },
+	{ kind: "ollama", keywords: ["ollama"] },
+];
+
+function guessOpenRouterProvider(modelName: string): AiProviderKind | null {
+	const normalized = modelName.toLowerCase();
+	for (const hint of openRouterProviderHints) {
+		if (hint.keywords.some((keyword) => normalized.includes(keyword))) {
+			return hint.kind;
+		}
+	}
+	return null;
+}
+
+function resolveLogoProvider(
+	provider: AiProviderKind | null,
+	modelName: string | undefined,
+): AiProviderKind | null {
+	if (provider !== "openrouter" || !modelName?.trim()) {
+		return provider;
+	}
+	return guessOpenRouterProvider(modelName) ?? provider;
+}
 
 interface ModelSelectorProps {
 	profileId: string | null;
@@ -175,21 +206,35 @@ export function ModelSelector({
 		return `${name.slice(0, 27)}…`;
 	};
 
+	const logoProvider = useMemo(
+		() => resolveLogoProvider(provider, selectedModel?.name),
+		[provider, selectedModel?.name],
+	);
+
+	const providerTitle = logoProvider
+		? providerLogoMap[logoProvider]?.label ?? logoProvider
+		: provider
+			? providerLogoMap[provider]?.label ?? provider
+			: "Model provider";
+
 	return (
 		<>
-				<button
-					ref={triggerRef}
-					type="button"
-					className={styles.trigger}
-					onClick={() => (open ? setOpen(false) : handleOpen())}
-					title={value || "Select model"}
-				>
-					{provider && (
-						<span className={styles.triggerLogo} title={provider}>
-							<ProviderLogo provider={provider} className={styles.providerSvg} />
-						</span>
-					)}
-					<span className={styles.triggerLabel}>{displayLabel}</span>
+			<button
+				ref={triggerRef}
+				type="button"
+				className={styles.trigger}
+				onClick={() => (open ? setOpen(false) : handleOpen())}
+				title={value || "Select model"}
+			>
+				{logoProvider && (
+					<span className={styles.triggerLogo} title={providerTitle}>
+						<ProviderLogo
+							provider={logoProvider}
+							className={styles.providerSvg}
+						/>
+					</span>
+				)}
+				<span className={styles.triggerLabel}>{displayLabel}</span>
 				<span
 					className={`${styles.triggerIcon} ${open ? styles.triggerIconOpen : ""}`}
 				>
@@ -210,12 +255,15 @@ export function ModelSelector({
 						}}
 					>
 						<div className={styles.dropdownHeader}>
-						{provider && (
-							<span className={styles.providerIcon} title={provider}>
-								<ProviderLogo provider={provider} className={styles.providerSvg} />
-							</span>
-						)}
-						<span className={styles.dropdownTitle}>Models</span>
+							{logoProvider && (
+								<span className={styles.providerIcon} title={providerTitle}>
+									<ProviderLogo
+										provider={logoProvider}
+										className={styles.providerSvg}
+									/>
+								</span>
+							)}
+							<span className={styles.dropdownTitle}>Models</span>
 							{models && (
 								<span className={styles.dropdownCount}>{models.length}</span>
 							)}
