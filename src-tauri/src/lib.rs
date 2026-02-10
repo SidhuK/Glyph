@@ -2,17 +2,19 @@ mod ai;
 mod canvas;
 mod index;
 mod io_atomic;
+mod lattice_fs;
+mod lattice_paths;
 mod links;
 mod net;
 mod notes;
 mod paths;
-mod lattice_fs;
-mod lattice_paths;
 mod vault;
 mod vault_fs;
 
 use serde::Serialize;
-use tauri::menu::{Menu, MenuItem, PredefinedMenuItem, Submenu, HELP_SUBMENU_ID, WINDOW_SUBMENU_ID};
+use tauri::menu::{
+    Menu, MenuItem, PredefinedMenuItem, Submenu, HELP_SUBMENU_ID, WINDOW_SUBMENU_ID,
+};
 use tauri::{Emitter, Manager, WindowEvent};
 
 #[cfg(target_os = "macos")]
@@ -215,6 +217,7 @@ pub fn run() {
             ai::commands::ai_secret_clear,
             ai::commands::ai_secret_status,
             ai::commands::ai_secret_list,
+            ai::commands::ai_provider_support,
             ai::commands::ai_audit_mark,
             ai::commands::ai_chat_start,
             ai::commands::ai_chat_cancel,

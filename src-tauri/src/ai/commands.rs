@@ -10,9 +10,54 @@ use super::history;
 use super::local_secrets;
 use super::state::AiState;
 use super::store::{ensure_default_profiles, read_store, store_path, write_store};
-use super::types::{
-    AiChatRequest, AiChatStartResult, AiDoneEvent, AiErrorEvent, AiProfile,
-};
+use super::types::{AiChatRequest, AiChatStartResult, AiDoneEvent, AiErrorEvent, AiProfile};
+use crate::lattice_paths;
+use serde::{Deserialize, Serialize};
+use serde_json;
+use std::collections::HashMap;
+use std::fs;
+use std::path::PathBuf;
+
+const PROVIDER_SUPPORT_URL: &str =
+    "https://raw.githubusercontent.com/BerriAI/litellm/refs/heads/main/provider_endpoints_support.json";
+const PROVIDER_SUPPORT_CACHE_FILE: &str = "provider_endpoints_support.json";
+const PROVIDER_SUPPORT_FALLBACK_JSON: &str =
+    include_str!("../../data/provider_endpoints_support.json");
+
+#[derive(Serialize, Deserialize)]
+pub(crate) struct ProviderSupportEntry {
+    display_name: String,
+    url: String,
+    endpoints: HashMap<String, bool>,
+}
+
+#[derive(Serialize, Deserialize)]
+pub(crate) struct ProviderSupportDocument {
+    #[serde(default)]
+    providers: HashMap<String, ProviderSupportEntry>,
+}
+
+async fn fetch_provider_support(cache_path: &PathBuf) -> Result<ProviderSupportDocument, String> {
+    let client = http_client().await?;
+    let resp = client
+        .get(PROVIDER_SUPPORT_URL)
+        .send()
+        .await
+        .map_err(|e| e.to_string())?;
+    if !resp.status().is_success() {
+        return Err(format!("fetch failed ({})", resp.status()));
+    }
+    let bytes = resp.bytes().await.map_err(|e| e.to_string())?;
+    let doc: ProviderSupportDocument = serde_json::from_slice(&bytes).map_err(|e| e.to_string())?;
+    let _ = fs::write(cache_path, &bytes);
+    Ok(doc)
+}
+
+fn read_cached_provider_support(cache_path: &PathBuf) -> Option<ProviderSupportDocument> {
+    fs::read(cache_path)
+        .ok()
+        .and_then(|bytes| serde_json::from_slice(&bytes).ok())
+}
 
 #[tauri::command]
 pub async fn ai_profiles_list(app: AppHandle) -> Result<Vec<AiProfile>, String> {
@@ -138,19 +183,41 @@ pub async fn ai_secret_list(vault_state: State<'_, VaultState>) -> Result<Vec<St
     local_secrets::secret_ids(&root)
 }
 
+#[tauri::command]
+pub async fn ai_provider_support(
+    vault_state: State<'_, VaultState>,
+) -> Result<ProviderSupportDocument, String> {
+    let root = vault_state
+        .current_root()
+        .map_err(|_| "Open a vault to fetch provider metadata".to_string())?;
+    let cache_dir = lattice_paths::ensure_lattice_cache_dir(&root)?;
+    let cache_path = cache_dir.join(PROVIDER_SUPPORT_CACHE_FILE);
+    match fetch_provider_support(&cache_path).await {
+        Ok(doc) => Ok(doc),
+        Err(fetch_err) => {
+            if let Some(cached) = read_cached_provider_support(&cache_path) {
+                return Ok(cached);
+            }
+            serde_json::from_str(PROVIDER_SUPPORT_FALLBACK_JSON).map_err(|parse_err| {
+                format!(
+                    "provider metadata unavailable ({fetch_err}); fallback parse failed ({parse_err})"
+                )
+            })
+        }
+    }
+}
+
 #[tauri::command(rename_all = "snake_case")]
 pub async fn ai_audit_mark(
     vault_state: State<'_, VaultState>,
     job_id: String,
     outcome: String,
 ) -> Result<(), String> {
-    let _ =
-        uuid::Uuid::parse_str(&job_id).map_err(|_| "invalid job_id".to_string())?;
+    let _ = uuid::Uuid::parse_str(&job_id).map_err(|_| "invalid job_id".to_string())?;
     let root = vault_state.current_root()?;
     let path = audit_log_path(&root, &job_id)?;
     let bytes = std::fs::read(&path).map_err(|e| e.to_string())?;
-    let mut v: serde_json::Value =
-        serde_json::from_slice(&bytes).map_err(|e| e.to_string())?;
+    let mut v: serde_json::Value = serde_json::from_slice(&bytes).map_err(|e| e.to_string())?;
     if let Some(obj) = v.as_object_mut() {
         let out = outcome.trim();
         let out = if out.len() > 200 { &out[..200] } else { out };

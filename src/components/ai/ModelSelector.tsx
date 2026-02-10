@@ -9,7 +9,13 @@ import {
 	useState,
 } from "react";
 import { createPortal } from "react-dom";
-import { type AiModel, type AiProviderKind, type AiProfile, invoke } from "../../lib/tauri";
+import {
+	type AiModel,
+	type AiProviderKind,
+	type AiProfile,
+	type ProviderSupportEntry,
+	invoke,
+} from "../../lib/tauri";
 import { ChevronDown, InformationCircle } from "../Icons";
 import openaiLogoUrl from "../../assets/provider-logos/openai-light.svg?url";
 import openrouterLogoUrl from "../../assets/provider-logos/open-router.svg?url";
@@ -98,6 +104,47 @@ function resolveLogoProvider(
 	return guessOpenRouterProvider(modelName) ?? provider;
 }
 
+const providerSupportKeyMap: Record<AiProviderKind, string> = {
+	openai: "openai",
+	openai_compat: "openai_like",
+	openrouter: "openrouter",
+	anthropic: "anthropic",
+	gemini: "gemini",
+	ollama: "ollama",
+};
+
+const endpointLabelMap: Record<string, string> = {
+	chat_completions: "Chat completions",
+	messages: "Messages",
+	responses: "Responses",
+	embeddings: "Embeddings",
+	image_generations: "Image generation",
+	image_variations: "Image variations",
+	image_edits: "Image edits",
+	audio_transcriptions: "Audio transcription",
+	audio_speech: "Text to speech",
+	moderations: "Moderations",
+	batches: "Batches",
+	rerank: "Re-rank",
+	a2a: "Agent-to-agent",
+	interactions: "Google Interactions",
+	vector_store_files: "Vector store files",
+	vector_stores_create: "Vector store create",
+	vector_stores_search: "Vector store search",
+	assistants: "Assistants",
+	container: "Containers",
+	container_files: "Container files",
+	fine_tuning: "Fine tuning",
+	search: "Search",
+	realtime: "Realtime",
+	text_completion: "Text completion",
+	compact: "Compact responses",
+};
+
+function formatEndpointLabel(endpoint: string) {
+	return endpointLabelMap[endpoint] ?? endpoint.replace(/_/g, " ");
+}
+
 interface ModelSelectorProps {
 	profileId: string | null;
 	value: string;
@@ -128,6 +175,9 @@ export function ModelSelector({
 		bottom: number;
 		right: number;
 	} | null>(null);
+	const [providerSupportMap, setProviderSupportMap] = useState<
+		Record<string, ProviderSupportEntry> | null
+	>(null);
 	const [secretProfileIds, setSecretProfileIds] = useState<string[]>([]);
 	const profileIdsKey = useMemo(() => profiles.map((p) => p.id).join("|"), [profiles]);
 
@@ -136,6 +186,25 @@ export function ModelSelector({
 		setModels(null);
 		setError("");
 	}, [profileId]);
+
+	useEffect(() => {
+		let cancelled = false;
+		void (async () => {
+			try {
+				const result = await invoke("ai_provider_support");
+				if (!cancelled) {
+					setProviderSupportMap(result.providers);
+				}
+			} catch {
+				if (!cancelled) {
+					setProviderSupportMap(null);
+				}
+			}
+		})();
+		return () => {
+			cancelled = true;
+		};
+	}, []);
 
 	const fetchModels = useCallback(async () => {
 		if (!profileId || models || loading) return;
@@ -277,6 +346,15 @@ export function ModelSelector({
 		() => resolveLogoProvider(provider, selectedModel?.name),
 		[provider, selectedModel?.name],
 	);
+
+	const detailProviderKind = logoProvider ?? provider;
+	const detailProviderKey = detailProviderKind
+		? providerSupportKeyMap[detailProviderKind]
+		: undefined;
+	const detailProviderSupport =
+		detailProviderKey && providerSupportMap
+			? providerSupportMap[detailProviderKey]
+			: undefined;
 
 	const providerTitle = logoProvider
 		? providerLogoMap[logoProvider]?.label ?? logoProvider
@@ -449,7 +527,12 @@ export function ModelSelector({
 									})}
 							</div>
 
-							{detailModel && <ModelDetail model={detailModel} />}
+							{detailModel && (
+								<ModelDetail
+									model={detailModel}
+									providerSupport={detailProviderSupport}
+								/>
+							)}
 						</div>
 					</div>,
 					document.body,
@@ -479,10 +562,19 @@ function formatPrice(perToken: string): string {
 	return `$${perMillion < 0.01 ? perMillion.toFixed(4) : perMillion.toFixed(2)}/M`;
 }
 
-function ModelDetail({ model }: { model: AiModel }) {
+function ModelDetail({
+	model,
+	providerSupport,
+}: {
+	model: AiModel;
+	providerSupport?: ProviderSupportEntry | null;
+}) {
 	const hasModalities =
 		model.input_modalities?.length || model.output_modalities?.length;
 	const hasParams = model.supported_parameters?.length;
+	const supportedEndpointEntries = providerSupport
+		? Object.entries(providerSupport.endpoints).filter(([, enabled]) => enabled)
+		: [];
 
 	return (
 		<div className={styles.detailPanel}>
@@ -566,6 +658,29 @@ function ModelDetail({ model }: { model: AiModel }) {
 					</div>
 				</div>
 			) : null}
+
+			{providerSupport && supportedEndpointEntries.length > 0 && (
+				<div className={styles.detailSection}>
+					<span className={styles.detailSectionTitle}>
+						{providerSupport.display_name} support
+					</span>
+					<div className={styles.detailTags}>
+						{supportedEndpointEntries.map(([endpoint]) => (
+							<span key={endpoint} className={styles.detailTag}>
+								{formatEndpointLabel(endpoint)}
+							</span>
+						))}
+					</div>
+					<a
+						className={styles.detailLink}
+						href={providerSupport.url}
+						target="_blank"
+						rel="noreferrer"
+					>
+						View {providerSupport.display_name} docs
+					</a>
+				</div>
+			)}
 
 			{model.description && (
 				<div className={styles.detailDescription}>{model.description}</div>

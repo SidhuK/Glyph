@@ -234,6 +234,16 @@ export interface AiModel {
 	max_completion_tokens: number | null;
 }
 
+export interface ProviderSupportEntry {
+	display_name: string;
+	url: string;
+	endpoints: Record<string, boolean>;
+}
+
+export interface ProviderSupportDocument {
+	providers: Record<string, ProviderSupportEntry>;
+}
+
 export interface AiChatHistorySummary {
 	job_id: string;
 	created_at_ms: number;
@@ -341,6 +351,7 @@ interface TauriCommands {
 	ai_secret_clear: CommandDef<{ profile_id: string }, void>;
 	ai_secret_status: CommandDef<{ profile_id: string }, boolean>;
 	ai_secret_list: CommandDef<void, string[]>;
+	ai_provider_support: CommandDef<void, ProviderSupportDocument>;
 	ai_audit_mark: CommandDef<{ job_id: string; outcome: string }, void>;
 	ai_chat_start: CommandDef<
 		{

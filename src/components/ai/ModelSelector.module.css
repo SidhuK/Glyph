@@ -373,6 +373,16 @@
 	color: var(--text-secondary);
 }
 
+.detailLink {
+	font-size: var(--text-xs);
+	color: var(--interactive-accent);
+	text-decoration: none;
+}
+
+.detailLink:hover {
+	text-decoration: underline;
+}
+
 .detailDescription {
 	font-size: var(--text-xs);
 	color: var(--text-secondary);
