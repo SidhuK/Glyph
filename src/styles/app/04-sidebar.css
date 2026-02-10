@@ -105,31 +105,37 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 0;
-	padding: 2px;
-	border: 1px solid transparent;
-	border-radius: var(--radius-full);
+	padding: 0;
+	border: none;
+	border-radius: 999px;
+	overflow: hidden;
 	background: transparent;
+	box-shadow: none;
 }
 
-.sidebarSectionToggle button {
+.sidebarSectionToggle [data-slot="tabs-trigger"] {
 	position: relative;
-	height: var(--button-height-sm);
-	padding: 0 var(--space-2);
-	border-radius: var(--radius-full);
+	height: calc(var(--button-height-sm) - 2px);
+	padding: 0 calc(var(--space-2) - 1px);
+	border-radius: 999px;
 	font-size: var(--text-xs);
 	color: var(--text-tertiary);
+	border: 1px solid transparent;
+	transition: background var(--transition-fast), color var(--transition-fast),
+		border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-.sidebarSectionToggle button:hover {
+.sidebarSectionToggle [data-slot="tabs-trigger"]:hover {
 	transform: none;
 	background: var(--bg-hover);
 	color: var(--text-primary);
 }
 
-.sidebarSectionToggle button.active {
-	background: var(--bg-primary);
+.sidebarSectionToggle [data-slot="tabs-trigger"][data-state="active"] {
+	background: color-mix(in srgb, var(--bg-primary) 96%, white 4%);
 	color: var(--text-primary);
-	border: 1px solid var(--border-light);
+	border-color: color-mix(in srgb, var(--border-light) 35%, transparent);
+	box-shadow: 0 1px 1.5px rgba(0, 0, 0, 0.08);
 }
 
 .sidebarSectionContent {

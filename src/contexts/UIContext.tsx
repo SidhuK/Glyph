@@ -14,8 +14,8 @@ import { useVault } from "./VaultContext";
 export interface UIContextValue {
 	sidebarCollapsed: boolean;
 	setSidebarCollapsed: (collapsed: boolean) => void;
-	sidebarViewMode: "files" | "tags" | "canvases";
-	setSidebarViewMode: (mode: "files" | "tags" | "canvases") => void;
+	sidebarViewMode: "files" | "tags";
+	setSidebarViewMode: (mode: "files" | "tags") => void;
 	sidebarWidth: number;
 	setSidebarWidth: (width: number) => void;
 	paletteOpen: boolean;
@@ -41,9 +41,9 @@ export function UIProvider({ children }: { children: ReactNode }) {
 	const { vaultPath } = useVault();
 
 	const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
-	const [sidebarViewMode, setSidebarViewMode] = useState<
-		"files" | "tags" | "canvases"
-	>("files");
+	const [sidebarViewMode, setSidebarViewMode] = useState<"files" | "tags">(
+		"files",
+	);
 	const [sidebarWidth, setSidebarWidth] = useState(260); // Default to CSS variable default
 	const [paletteOpen, setPaletteOpen] = useState(false);
 	const [activePreviewPath, setActivePreviewPath] = useState<string | null>(

@@ -33,6 +33,7 @@ export const TagsPane = memo(function TagsPane({
 			transition={springTransition}
 		>
 			<div className="tagsHeader">
+				<div className="tagsHeaderTitle">TAGS</div>
 				<Button
 					type="button"
 					variant="ghost"

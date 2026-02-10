@@ -1,6 +1,5 @@
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useUIContext, useVault } from "../../contexts";
-import type { CanvasLibraryMeta } from "../../lib/canvases";
 import { cn } from "../../utils/cn";
 import { SidebarContent } from "./SidebarContent";
 import { SidebarHeader } from "./SidebarHeader";
@@ -13,13 +12,6 @@ interface SidebarProps {
 	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
 	onRenameDir: (dirPath: string, nextName: string) => Promise<string | null>;
 	onSelectTag: (tag: string) => void;
-	canvases: CanvasLibraryMeta[];
-	activeCanvasId: string | null;
-	onSelectCanvas: (id: string) => void;
-	onCreateCanvas: () => void;
-	onAddNotesToCanvas: (paths: string[]) => Promise<void>;
-	onCreateNoteInCanvas: () => void;
-	onRenameCanvas: (id: string, title: string) => Promise<void>;
 	onOpenCommandPalette: () => void;
 }
 
@@ -31,13 +23,6 @@ export function Sidebar({
 	onNewFolderInDir,
 	onRenameDir,
 	onSelectTag,
-	canvases,
-	activeCanvasId,
-	onSelectCanvas,
-	onCreateCanvas,
-	onAddNotesToCanvas,
-	onCreateNoteInCanvas,
-	onRenameCanvas,
 	onOpenCommandPalette,
 }: SidebarProps) {
 	// Contexts
@@ -86,13 +71,6 @@ export function Sidebar({
 							onNewFolderInDir={onNewFolderInDir}
 							onRenameDir={onRenameDir}
 							onSelectTag={onSelectTag}
-							canvases={canvases}
-							activeCanvasId={activeCanvasId}
-							onSelectCanvas={onSelectCanvas}
-							onCreateCanvas={onCreateCanvas}
-							onAddNotesToCanvas={onAddNotesToCanvas}
-							onCreateNoteInCanvas={onCreateNoteInCanvas}
-							onRenameCanvas={onRenameCanvas}
 						/>
 					</motion.div>
 				)}

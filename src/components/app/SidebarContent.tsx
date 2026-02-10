@@ -1,9 +1,7 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useFileTreeContext, useUIContext, useVault } from "../../contexts";
-import type { CanvasLibraryMeta } from "../../lib/canvases";
-import { CanvasesPane } from "../CanvasesPane";
 import { FileTreePane } from "../FileTreePane";
-import { Files, Layout, Tags } from "../Icons";
+import { Files, Tags } from "../Icons";
 import { TagsPane } from "../TagsPane";
 import { ScrollArea } from "../ui/shadcn/scroll-area";
 import { Tabs, TabsList, TabsTrigger } from "../ui/shadcn/tabs";
@@ -16,13 +14,6 @@ interface SidebarContentProps {
 	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
 	onRenameDir: (dirPath: string, nextName: string) => Promise<string | null>;
 	onSelectTag: (tag: string) => void;
-	canvases: CanvasLibraryMeta[];
-	activeCanvasId: string | null;
-	onSelectCanvas: (id: string) => void;
-	onCreateCanvas: () => void;
-	onAddNotesToCanvas: (paths: string[]) => Promise<void>;
-	onCreateNoteInCanvas: () => void;
-	onRenameCanvas: (id: string, title: string) => Promise<void>;
 }
 
 export function SidebarContent({
@@ -33,13 +24,6 @@ export function SidebarContent({
 	onNewFolderInDir,
 	onRenameDir,
 	onSelectTag,
-	canvases,
-	activeCanvasId,
-	onSelectCanvas,
-	onCreateCanvas,
-	onAddNotesToCanvas,
-	onCreateNoteInCanvas,
-	onRenameCanvas,
 }: SidebarContentProps) {
 	// Contexts
 	const { vaultPath } = useVault();
@@ -75,7 +59,7 @@ export function SidebarContent({
 					<Tabs
 						value={sidebarViewMode}
 						onValueChange={(value) =>
-							setSidebarViewMode(value as "files" | "tags" | "canvases")
+							setSidebarViewMode(value as "files" | "tags")
 						}
 						className="sidebarSectionToggle"
 					>
@@ -86,15 +70,12 @@ export function SidebarContent({
 							<TabsTrigger value="tags" title="Tags">
 								<Tags size={14} />
 							</TabsTrigger>
-							<TabsTrigger value="canvases" title="Canvases">
-								<Layout size={14} />
-							</TabsTrigger>
 						</TabsList>
 					</Tabs>
 				</div>
 
 				<AnimatePresence mode="wait">
-					{sidebarViewMode === "files" ? (
+					{sidebarViewMode === "files" && (
 						<motion.div
 							key="files"
 							initial={{ x: -20 }}
@@ -118,7 +99,8 @@ export function SidebarContent({
 								summariesByParentDir={dirSummariesByParent}
 							/>
 						</motion.div>
-					) : sidebarViewMode === "tags" ? (
+					)}
+					{sidebarViewMode === "tags" && (
 						<motion.div
 							key="tags"
 							initial={{ x: 20 }}
@@ -135,28 +117,6 @@ export function SidebarContent({
 									tags={tags}
 									onSelectTag={onSelectTag}
 									onRefresh={() => void refreshTags()}
-								/>
-							</ScrollArea>
-						</motion.div>
-					) : (
-						<motion.div
-							key="canvases"
-							initial={{ x: 20 }}
-							animate={{ x: 0 }}
-							exit={{ x: 20 }}
-							transition={{ duration: 0.2 }}
-							className="sidebarSectionContent"
-							data-window-drag-ignore
-						>
-							<ScrollArea className="h-full">
-								<CanvasesPane
-									canvases={canvases}
-									activeCanvasId={activeCanvasId}
-									onSelectCanvas={onSelectCanvas}
-									onCreateCanvas={onCreateCanvas}
-									onAddNotesToCanvas={onAddNotesToCanvas}
-									onCreateNoteInCanvas={onCreateNoteInCanvas}
-									onRenameCanvas={onRenameCanvas}
 								/>
 							</ScrollArea>
 						</motion.div>

@@ -15,7 +15,6 @@ import { parseNotePreview } from "../../lib/notePreview";
 import type { Shortcut } from "../../lib/shortcuts";
 import { type FsEntry, invoke } from "../../lib/tauri";
 import { cn } from "../../utils/cn";
-import { isMarkdownPath } from "../../utils/path";
 import { onWindowDragMouseDown } from "../../utils/window";
 import type { CanvasExternalCommand } from "../CanvasPane";
 import { PanelLeftClose, PanelLeftOpen } from "../Icons";
@@ -100,7 +99,6 @@ export function AppShell() {
 		loadAndBuildFolderView,
 		loadAndBuildTagView,
 		loadCanvasView,
-		setActiveViewDoc,
 	} = useViewContext();
 
 	const {
@@ -296,18 +294,6 @@ export function AppShell() {
 		await openCanvas(created.meta.id);
 	}, [canvasLibrary, openCanvas]);
 
-	const renameCanvasAndUpdate = useCallback(
-		async (id: string, title: string) => {
-			const nextTitle = title.trim();
-			if (!nextTitle) return;
-			await canvasLibrary.renameCanvas(id, nextTitle);
-			if (activeViewDoc?.kind === "canvas" && activeViewDoc.selector === id) {
-				setActiveViewDoc({ ...activeViewDoc, title: nextTitle });
-			}
-		},
-		[activeViewDoc, canvasLibrary, setActiveViewDoc],
-	);
-
 	const dispatchCanvasCommand = useCallback(
 		async (command: CanvasExternalCommand) => {
 			await new Promise<void>((resolve) => {
@@ -351,70 +337,6 @@ export function AppShell() {
 		},
 		[dispatchCanvasCommand, ensureCanvasTarget],
 	);
-
-	const addNotesToCanvas = useCallback(
-		async (paths: string[]) => {
-			const notePaths = paths.filter((path) => isMarkdownPath(path));
-			if (!notePaths.length) return;
-			const docs = await invoke("vault_read_texts_batch", { paths: notePaths });
-			const byPath = new Map(docs.map((doc) => [doc.rel_path, doc] as const));
-			await addBatchToCanvas(
-				"manual",
-				notePaths.map((path) => {
-					const markdown = byPath.get(path)?.text ?? "";
-					const preview = markdown
-						? parseNotePreview(path, markdown)
-						: { title: fileTitleFromPath(path), content: "" };
-					return {
-						kind: "note" as const,
-						noteId: path,
-						title: preview.title,
-						content: preview.content,
-					};
-				}),
-			);
-		},
-		[addBatchToCanvas],
-	);
-
-	const createNewCanvasNote = useCallback(async () => {
-		if (!vaultPath) return;
-		const titleInput = window.prompt("New note title:", "Untitled Note");
-		if (titleInput == null) return;
-		const title = titleInput.trim() || "Untitled Note";
-		const activeDir =
-			activeViewDoc?.kind === "folder" ? activeViewDoc.selector || "" : "";
-		const safeBase =
-			title.replace(/[\\/:*?\"<>|]+/g, " ").trim() || "Untitled Note";
-		let notePath = activeDir ? `${activeDir}/${safeBase}.md` : `${safeBase}.md`;
-		let suffix = 2;
-		while (true) {
-			try {
-				await invoke("vault_read_text", { path: notePath });
-				notePath = activeDir
-					? `${activeDir}/${safeBase} ${suffix.toString()}.md`
-					: `${safeBase} ${suffix.toString()}.md`;
-				suffix += 1;
-			} catch {
-				break;
-			}
-		}
-		const body = `# ${title}\n\n`;
-		await invoke("vault_write_text", {
-			path: notePath,
-			text: body,
-			base_mtime_ms: null,
-		});
-		const preview = parseNotePreview(notePath, body);
-		await addBatchToCanvas("manual", [
-			{
-				kind: "note",
-				noteId: notePath,
-				title: preview.title,
-				content: preview.content,
-			},
-		]);
-	}, [activeViewDoc, addBatchToCanvas, vaultPath]);
 
 	const addAttachmentsToCanvas = useCallback(
 		async (paths: string[]) => {
@@ -583,13 +505,6 @@ export function AppShell() {
 				onRenameDir={(p, name) => fileTree.onRenameDir(p, name)}
 				onToggleDir={fileTree.toggleDir}
 				onSelectTag={(t) => void openTagView(t)}
-				canvases={canvasLibrary.canvases}
-				activeCanvasId={selectedCanvasId}
-				onSelectCanvas={(id) => void openCanvas(id)}
-				onCreateCanvas={() => void createCanvasAndOpen()}
-				onAddNotesToCanvas={addNotesToCanvas}
-				onCreateNoteInCanvas={() => void createNewCanvasNote()}
-				onRenameCanvas={renameCanvasAndUpdate}
 				onOpenCommandPalette={() => {
 					setPaletteInitialTab("commands");
 					setPaletteOpen(true);

@@ -1,5 +1,6 @@
 import {
 	type Connection,
+	ControlButton,
 	Controls,
 	MiniMap,
 	type NodeMouseHandler,
@@ -47,6 +48,7 @@ import {
 	NoteNode,
 	TextNode,
 } from "./nodes";
+import { Grid3X3 } from "../Icons";
 import {
 	isFileNode,
 	isFolderNode,
@@ -94,6 +96,7 @@ function CanvasPane({
 	const [edges, setEdges, onEdgesChange] = useEdgesState<CanvasEdge>([]);
 	const [, setIsSaving] = useState(false);
 	const [snapToGrid, setSnapToGrid] = useState(true);
+	const [showMiniMap, setShowMiniMap] = useState(false);
 	const [selectedNodeIds, setSelectedNodeIds] = useState<Set<string>>(
 		new Set(),
 	);
@@ -801,8 +804,18 @@ function CanvasPane({
 										maxZoom={2}
 										proOptions={{ hideAttribution: true }}
 									>
-										<Controls />
-										<MiniMap zoomable pannable />
+										<Controls>
+											<ControlButton
+												onClick={() => setShowMiniMap((v) => !v)}
+												title={showMiniMap ? "Hide minimap" : "Show minimap"}
+												aria-label={showMiniMap ? "Hide minimap" : "Show minimap"}
+											>
+												<Grid3X3 size={14} />
+											</ControlButton>
+										</Controls>
+										{showMiniMap ? (
+											<MiniMap zoomable pannable position="top-right" />
+										) : null}
 									</ReactFlow>
 									<CanvasToolbar
 										snapToGrid={snapToGrid}
