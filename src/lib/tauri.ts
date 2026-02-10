@@ -340,6 +340,7 @@ interface TauriCommands {
 	ai_secret_set: CommandDef<{ profile_id: string; api_key: string }, void>;
 	ai_secret_clear: CommandDef<{ profile_id: string }, void>;
 	ai_secret_status: CommandDef<{ profile_id: string }, boolean>;
+	ai_secret_list: CommandDef<void, string[]>;
 	ai_audit_mark: CommandDef<{ job_id: string; outcome: string }, void>;
 	ai_chat_start: CommandDef<
 		{

@@ -52,3 +52,9 @@ pub fn secret_clear(vault_root: &Path, profile_id: &str) -> Result<(), String> {
 pub fn secret_status(vault_root: &Path, profile_id: &str) -> Result<bool, String> {
     Ok(secret_get(vault_root, profile_id)?.is_some())
 }
+
+pub fn secret_ids(vault_root: &Path) -> Result<Vec<String>, String> {
+    let path = secrets_path(vault_root)?;
+    let map = read_map(&path);
+    Ok(map.keys().cloned().collect())
+}

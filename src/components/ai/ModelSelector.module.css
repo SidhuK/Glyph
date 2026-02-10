@@ -124,6 +124,71 @@
 	overflow-y: auto;
 	scrollbar-width: thin;
 	scrollbar-color: var(--scrollbar-thumb) transparent;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.profileSwitcher {
+	padding: 8px;
+	border-radius: var(--radius-lg);
+	border: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 80%, transparent);
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.profileSwitcherTitle {
+	font-size: 10px;
+	font-weight: var(--font-semibold);
+	color: var(--text-tertiary);
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+}
+
+.profilePills {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+
+.profilePill {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 4px 10px;
+	border-radius: var(--radius-full);
+	border: 1px solid color-mix(in srgb, var(--border-light) 70%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 80%, transparent);
+	color: var(--text-secondary);
+	font-size: var(--text-xs);
+	cursor: pointer;
+	transition: all var(--transition-base);
+}
+
+.profilePill:hover {
+	border-color: var(--border-default);
+	color: var(--text-primary);
+}
+
+.profilePillActive {
+	background: var(--bg-primary);
+	border-color: var(--border-default);
+	color: var(--text-primary);
+	box-shadow: var(--shadow-sm);
+}
+
+.profilePillLogo {
+	width: 14px;
+	height: 14px;
+}
+
+.profilePillName {
+	max-width: 100px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .dropdownLoading,

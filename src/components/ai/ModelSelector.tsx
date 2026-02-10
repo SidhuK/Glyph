@@ -9,7 +9,7 @@ import {
 	useState,
 } from "react";
 import { createPortal } from "react-dom";
-import { type AiModel, type AiProviderKind, invoke } from "../../lib/tauri";
+import { type AiModel, type AiProviderKind, type AiProfile, invoke } from "../../lib/tauri";
 import { ChevronDown, InformationCircle } from "../Icons";
 import openaiLogoUrl from "../../assets/provider-logos/openai-light.svg?url";
 import openrouterLogoUrl from "../../assets/provider-logos/open-router.svg?url";
@@ -103,6 +103,9 @@ interface ModelSelectorProps {
 	value: string;
 	onChange: (modelId: string) => void;
 	provider: AiProviderKind | null;
+	profiles: AiProfile[];
+	activeProfileId: string | null;
+	onProfileChange: (id: string | null) => void;
 }
 
 export function ModelSelector({
@@ -110,6 +113,9 @@ export function ModelSelector({
 	value,
 	onChange,
 	provider,
+	profiles,
+	activeProfileId,
+	onProfileChange,
 }: ModelSelectorProps) {
 	const [open, setOpen] = useState(false);
 	const [models, setModels] = useState<AiModel[] | null>(null);
@@ -122,6 +128,8 @@ export function ModelSelector({
 		bottom: number;
 		right: number;
 	} | null>(null);
+	const [secretProfileIds, setSecretProfileIds] = useState<string[]>([]);
+	const profileIdsKey = useMemo(() => profiles.map((p) => p.id).join("|"), [profiles]);
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: reset cache when profile changes
 	useEffect(() => {
@@ -196,6 +204,35 @@ export function ModelSelector({
 		return () => document.removeEventListener("mousedown", handleClick);
 	}, [open]);
 
+	useEffect(() => {
+		if (!open) return;
+		let cancelled = false;
+		void (async () => {
+			try {
+				const ids = await invoke("ai_secret_list");
+				if (!cancelled) {
+					setSecretProfileIds(ids);
+				}
+			} catch {
+				if (!cancelled) {
+					setSecretProfileIds([]);
+				}
+			}
+		})();
+		return () => {
+			cancelled = true;
+		};
+	}, [open, profileIdsKey]);
+
+	useEffect(() => {
+		if (!open) return;
+		void fetchModels();
+	}, [open, profileId, fetchModels]);
+
+	useEffect(() => {
+		setDetailModelId(null);
+	}, [profileId]);
+
 	const selectedModel = models?.find((m) => m.id === value);
 	const displayLabel = selectedModel?.name ?? value ?? "Model";
 	const detailModel = detailModelId
@@ -205,6 +242,36 @@ export function ModelSelector({
 		if (name.length <= 30) return name;
 		return `${name.slice(0, 27)}…`;
 	};
+
+	const secretProfileSet = useMemo(() => new Set(secretProfileIds), [secretProfileIds]);
+	const configuredProfiles = useMemo(() => {
+		return profiles
+			.filter((profile) => secretProfileSet.has(profile.id))
+			.map((profile) => {
+				const resolvedProvider =
+					resolveLogoProvider(profile.provider, profile.model) ?? profile.provider;
+				return {
+					id: profile.id,
+					name: profile.name || resolvedProvider,
+					logoProvider: resolvedProvider,
+					providerLabel:
+						providerLogoMap[resolvedProvider]?.label ?? profile.provider,
+				};
+			});
+	}, [profiles, secretProfileSet]);
+
+	const showProfileSwitcher = configuredProfiles.length > 1;
+
+	const handleProfileSelect = useCallback(
+		(id: string) => {
+			if (id === activeProfileId) return;
+			setModels(null);
+			setError("");
+			setDetailModelId(null);
+			void onProfileChange(id);
+		},
+		[activeProfileId, onProfileChange],
+	);
 
 	const logoProvider = useMemo(
 		() => resolveLogoProvider(provider, selectedModel?.name),
@@ -271,6 +338,37 @@ export function ModelSelector({
 
 						<div className={styles.dropdownBody}>
 							<div className={styles.dropdownList}>
+								{showProfileSwitcher && (
+									<div className={styles.profileSwitcher}>
+										<span className={styles.profileSwitcherTitle}>
+											API keys
+										</span>
+										<div className={styles.profilePills}>
+											{configuredProfiles.map((profile) => (
+												<button
+													key={profile.id}
+													type="button"
+													className={`${styles.profilePill} ${
+														profile.id === activeProfileId
+															? styles.profilePillActive
+															: ""
+													}`}
+													onClick={() => handleProfileSelect(profile.id)}
+													title={profile.providerLabel}
+													aria-pressed={profile.id === activeProfileId}
+												>
+													<ProviderLogo
+														provider={profile.logoProvider}
+														className={styles.profilePillLogo}
+													/>
+													<span className={styles.profilePillName}>
+														{profile.name}
+													</span>
+												</button>
+											))}
+										</div>
+									</div>
+								)}
 								{loading && (
 									<div className={styles.dropdownLoading}>Loading models…</div>
 								)}

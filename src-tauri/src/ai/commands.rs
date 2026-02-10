@@ -130,6 +130,14 @@ pub async fn ai_secret_status(
     local_secrets::secret_status(&root, &profile_id)
 }
 
+#[tauri::command]
+pub async fn ai_secret_list(vault_state: State<'_, VaultState>) -> Result<Vec<String>, String> {
+    let root = vault_state
+        .current_root()
+        .map_err(|_| "Open a vault to manage API keys".to_string())?;
+    local_secrets::secret_ids(&root)
+}
+
 #[tauri::command(rename_all = "snake_case")]
 pub async fn ai_audit_mark(
     vault_state: State<'_, VaultState>,
