@@ -4,7 +4,9 @@ use std::{
 };
 
 use super::db::{open_db, resolve_title_to_id};
-use super::frontmatter::{parse_frontmatter_title_created_updated, preview_from_markdown, split_frontmatter};
+use super::frontmatter::{
+    parse_frontmatter_title_created_updated, preview_from_markdown, split_frontmatter,
+};
 use super::helpers::{path_to_slash_string, sha256_hex, should_skip_entry};
 use super::links::parse_outgoing_links;
 use super::tags::parse_all_tags;

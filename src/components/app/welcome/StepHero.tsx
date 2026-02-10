@@ -1,4 +1,5 @@
 import { motion, useReducedMotion } from "motion/react";
+import { AiLattice } from "../../Icons";
 
 interface StepHeroProps {
 	appName: string | null;
@@ -10,7 +11,12 @@ export function StepHero({ appName, onNext }: StepHeroProps) {
 
 	return (
 		<div className="welcomeStepHero">
-			<div className="welcomeTitle">{appName ?? "Lattice"}</div>
+			<div className="welcomeBrand">
+				<div className="welcomeBrandIcon" aria-hidden="true">
+					<AiLattice size={28} />
+				</div>
+				<div className="welcomeTitle">{appName ?? "Lattice"}</div>
+			</div>
 			<div className="welcomeSubtitle">
 				A simple space for notes and canvases.
 			</div>

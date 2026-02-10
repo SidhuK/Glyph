@@ -1,4 +1,4 @@
-use crate::{io_atomic, paths, lattice_paths, vault::VaultState};
+use crate::{io_atomic, lattice_paths, paths, vault::VaultState};
 use std::path::{Path, PathBuf};
 use tauri::State;
 
@@ -32,7 +32,10 @@ fn lattice_abs_path(vault_root: &Path, rel_inside_lattice: &Path) -> Result<Path
 }
 
 #[tauri::command]
-pub async fn lattice_read_text(state: State<'_, VaultState>, path: String) -> Result<String, String> {
+pub async fn lattice_read_text(
+    state: State<'_, VaultState>,
+    path: String,
+) -> Result<String, String> {
     let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<String, String> {
         let rel = normalize_rel_path(&path)?;
@@ -63,4 +66,3 @@ pub async fn lattice_write_text(
     .await
     .map_err(|e| e.to_string())?
 }
-

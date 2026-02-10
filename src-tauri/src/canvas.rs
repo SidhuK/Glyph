@@ -69,9 +69,7 @@ pub async fn canvas_list(state: State<'_, VaultState>) -> Result<Vec<CanvasMeta>
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<CanvasMeta>, String> {
         let conn = index::open_db(&root)?;
         let mut stmt = conn
-            .prepare(
-                "SELECT id, title, updated FROM canvases ORDER BY updated DESC LIMIT 200",
-            )
+            .prepare("SELECT id, title, updated FROM canvases ORDER BY updated DESC LIMIT 200")
             .map_err(|e| e.to_string())?;
         let mut rows = stmt.query([]).map_err(|e| e.to_string())?;
         let mut out: Vec<CanvasMeta> = Vec::new();
@@ -89,7 +87,10 @@ pub async fn canvas_list(state: State<'_, VaultState>) -> Result<Vec<CanvasMeta>
 }
 
 #[tauri::command]
-pub async fn canvas_create(state: State<'_, VaultState>, title: String) -> Result<CanvasMeta, String> {
+pub async fn canvas_create(
+    state: State<'_, VaultState>,
+    title: String,
+) -> Result<CanvasMeta, String> {
     let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<CanvasMeta, String> {
         let conn = index::open_db(&root)?;
@@ -140,7 +141,10 @@ pub struct CanvasWritePayload {
 }
 
 #[tauri::command]
-pub async fn canvas_write(state: State<'_, VaultState>, doc: CanvasWritePayload) -> Result<CanvasDoc, String> {
+pub async fn canvas_write(
+    state: State<'_, VaultState>,
+    doc: CanvasWritePayload,
+) -> Result<CanvasDoc, String> {
     let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<CanvasDoc, String> {
         let conn = index::open_db(&root)?;

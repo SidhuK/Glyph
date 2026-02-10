@@ -63,9 +63,7 @@ pub async fn index_note_previews_batch(
                 .take(chunk.len())
                 .collect::<Vec<_>>()
                 .join(", ");
-            let sql = format!(
-                "SELECT id, title, preview FROM notes WHERE id IN ({placeholders})"
-            );
+            let sql = format!("SELECT id, title, preview FROM notes WHERE id IN ({placeholders})");
 
             let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;
             let params = rusqlite::params_from_iter(chunk.iter());

@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { Sparkles } from "../Icons";
+import { AiLattice } from "../Icons";
 import { AIPanel } from "./AIPanel";
 
 interface AIFloatingHostProps {
@@ -56,7 +56,7 @@ export function AIFloatingHost({
 					aria-label="Open AI panel"
 					title="Open AI panel"
 				>
-					<Sparkles size={18} />
+					<AiLattice size={34} />
 				</motion.button>
 			) : null}
 		</div>

@@ -1,6 +1,6 @@
+use base64::Engine;
 use std::{ffi::OsStr, io::Read, path::PathBuf};
 use tauri::State;
-use base64::Engine;
 
 use crate::{index, io_atomic, paths, vault::VaultState};
 
@@ -101,13 +101,11 @@ pub async fn vault_read_text_preview(
         let rel = PathBuf::from(&path);
         deny_hidden_rel_path(&rel)?;
         let abs = paths::join_under(&root, &rel)?;
-        let total_bytes = std::fs::metadata(&abs)
-            .map_err(|e| e.to_string())?
-            .len();
-        let requested = max_bytes.map(|v| v as u64).unwrap_or(TEXT_PREVIEW_DEFAULT_MAX_BYTES);
-        let max = requested
-            .max(1)
-            .min(TEXT_PREVIEW_MAX_BYTES_CAP);
+        let total_bytes = std::fs::metadata(&abs).map_err(|e| e.to_string())?.len();
+        let requested = max_bytes
+            .map(|v| v as u64)
+            .unwrap_or(TEXT_PREVIEW_DEFAULT_MAX_BYTES);
+        let max = requested.max(1).min(TEXT_PREVIEW_MAX_BYTES_CAP);
 
         let file = std::fs::File::open(&abs).map_err(|e| e.to_string())?;
         let mut bytes: Vec<u8> = Vec::new();
@@ -178,12 +176,10 @@ pub async fn vault_read_binary_preview(
             .and_then(|s| s.to_str())
             .map(|s| s.to_ascii_lowercase())
             .unwrap_or_default();
-        let mime = mime_for_preview_ext(&ext)
-            .ok_or_else(|| "unsupported preview format".to_string())?;
+        let mime =
+            mime_for_preview_ext(&ext).ok_or_else(|| "unsupported preview format".to_string())?;
 
-        let total_bytes = std::fs::metadata(&abs)
-            .map_err(|e| e.to_string())?
-            .len();
+        let total_bytes = std::fs::metadata(&abs).map_err(|e| e.to_string())?.len();
         let requested = max_bytes
             .map(|v| v as u64)
             .unwrap_or(BINARY_PREVIEW_DEFAULT_MAX_BYTES);
@@ -257,10 +253,7 @@ pub async fn vault_write_text(
 }
 
 #[tauri::command]
-pub async fn vault_create_dir(
-    state: State<'_, VaultState>,
-    path: String,
-) -> Result<(), String> {
+pub async fn vault_create_dir(state: State<'_, VaultState>, path: String) -> Result<(), String> {
     let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
         let rel = PathBuf::from(&path);

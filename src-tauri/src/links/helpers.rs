@@ -5,7 +5,7 @@ use std::{
 };
 use url::Url;
 
-use crate::{net, lattice_paths};
+use crate::{lattice_paths, net};
 
 pub const MAX_HTML_BYTES: u64 = 1024 * 512;
 pub const MAX_IMAGE_BYTES: u64 = 1024 * 1024 * 2;
@@ -48,8 +48,11 @@ pub fn image_rel_path(image_url: &Url) -> PathBuf {
             }
         }
     }
-    PathBuf::from(".lattice/cache/link-previews")
-        .join(format!("{}{}", sha256_hex(image_url.as_str()), ext))
+    PathBuf::from(".lattice/cache/link-previews").join(format!(
+        "{}{}",
+        sha256_hex(image_url.as_str()),
+        ext
+    ))
 }
 
 pub fn normalize_url(raw: &str) -> Result<Url, String> {
@@ -74,9 +77,7 @@ pub fn resolve_image_url(page: &Url, raw: &str) -> Option<Url> {
     if trimmed.is_empty() {
         return None;
     }
-    let parsed = Url::parse(trimmed)
-        .or_else(|_| page.join(trimmed))
-        .ok()?;
+    let parsed = Url::parse(trimmed).or_else(|_| page.join(trimmed)).ok()?;
     match parsed.scheme() {
         "http" | "https" => {}
         _ => return None,

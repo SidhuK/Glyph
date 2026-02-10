@@ -5,7 +5,10 @@ use crate::vault::VaultState;
 
 use super::cache::{read_cache, write_cache};
 use super::fetch::{build_preview, fetch_html};
-use super::helpers::{cache_dir, cache_path, http_client, normalize_url, now_ms, resolve_image_url, TTL_ERR_MS, TTL_OK_MS};
+use super::helpers::{
+    cache_dir, cache_path, http_client, normalize_url, now_ms, resolve_image_url, TTL_ERR_MS,
+    TTL_OK_MS,
+};
 use super::types::LinkPreview;
 
 #[tauri::command]
@@ -37,12 +40,26 @@ pub async fn link_preview(
 
         match fetch_html(&client, &normalized) {
             Ok(html) => {
-                let preview = build_preview(&root, &client, &normalized, Some(&html), None, resolve_image_url);
+                let preview = build_preview(
+                    &root,
+                    &client,
+                    &normalized,
+                    Some(&html),
+                    None,
+                    resolve_image_url,
+                );
                 let _ = write_cache(&path, &preview);
                 Ok(preview)
             }
             Err(e) => {
-                let preview = build_preview(&root, &client, &normalized, None, Some(&e), resolve_image_url);
+                let preview = build_preview(
+                    &root,
+                    &client,
+                    &normalized,
+                    None,
+                    Some(&e),
+                    resolve_image_url,
+                );
                 let _ = write_cache(&path, &preview);
                 Ok(preview)
             }

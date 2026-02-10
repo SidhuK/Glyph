@@ -181,9 +181,7 @@ pub fn build_preview(
     {
         None => (image_url, None),
         Some(resolved) => {
-            let rel = download_image(client, vault_root, &resolved)
-                .ok()
-                .flatten();
+            let rel = download_image(client, vault_root, &resolved).ok().flatten();
             (Some(resolved.as_str().to_string()), rel)
         }
     };

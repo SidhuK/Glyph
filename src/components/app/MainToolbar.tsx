@@ -1,6 +1,6 @@
 import { cn } from "../../utils/cn";
 import { onWindowDragMouseDown } from "../../utils/window";
-import { Sparkles } from "../Icons";
+import { AiLattice } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 
 interface MainToolbarProps {
@@ -28,7 +28,7 @@ export function MainToolbar({
 					onClick={onToggleAISidebar}
 					title="Toggle AI assistant"
 				>
-					<Sparkles size={16} />
+					<AiLattice size={20} />
 				</Button>
 			</div>
 		</div>

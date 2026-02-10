@@ -227,12 +227,14 @@ pub async fn vault_dir_recent_entries(
 
         let mut out: Vec<RecentEntry> = heap
             .into_iter()
-            .map(|Reverse((mtime_ms, rel_path, name, is_markdown))| RecentEntry {
-                rel_path,
-                name,
-                is_markdown,
-                mtime_ms,
-            })
+            .map(
+                |Reverse((mtime_ms, rel_path, name, is_markdown))| RecentEntry {
+                    rel_path,
+                    name,
+                    is_markdown,
+                    mtime_ms,
+                },
+            )
             .collect();
 
         out.sort_by(|a, b| b.mtime_ms.cmp(&a.mtime_ms));

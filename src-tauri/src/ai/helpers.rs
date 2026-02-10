@@ -1,8 +1,8 @@
 use std::time::Duration;
 use url::Url;
 
-use crate::net;
 use super::types::{AiMessage, AiProfile, AiProviderKind};
+use crate::net;
 
 const TOOL_PROTOCOL_PROMPT: &str = r#"You may use vault tools. Output JSON only when calling tools.
 
@@ -51,7 +51,11 @@ pub fn parse_base_url(profile: &AiProfile) -> Result<Url, String> {
         .base_url
         .as_deref()
         .unwrap_or_else(|| default_base_url(&profile.provider));
-    let normalized = if raw.ends_with('/') { raw.to_string() } else { format!("{}/", raw) };
+    let normalized = if raw.ends_with('/') {
+        raw.to_string()
+    } else {
+        format!("{}/", raw)
+    };
     let url = Url::parse(&normalized).map_err(|_| "invalid base_url".to_string())?;
     match url.scheme() {
         "https" => {}

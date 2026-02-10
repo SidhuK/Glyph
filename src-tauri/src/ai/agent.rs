@@ -18,7 +18,11 @@ const MAX_TOOL_RESULT_CHARS: usize = 120_000;
 const FAKE_CHUNK_CHARS: usize = 48;
 const FAKE_CHUNK_DELAY_MS: u64 = 14;
 
-enum AgentOutput { ToolCall(AgentToolCall), Final(String), Plain(String) }
+enum AgentOutput {
+    ToolCall(AgentToolCall),
+    Final(String),
+    Plain(String),
+}
 
 pub async fn run_agent_loop(
     client: &reqwest::Client,
@@ -36,8 +40,13 @@ pub async fn run_agent_loop(
     let mut total_tool_chars = 0usize;
     let mut tool_events: Vec<AiStoredToolEvent> = Vec::new();
     for _ in 0..MAX_AGENT_STEPS {
-        let (raw, cancelled) = call_provider_once(client, cancel, app, job_id, profile, api_key, &system, &convo).await?;
-        if cancelled { return Ok((String::new(), true, tool_events)); }
+        let (raw, cancelled) = call_provider_once(
+            client, cancel, app, job_id, profile, api_key, &system, &convo,
+        )
+        .await?;
+        if cancelled {
+            return Ok((String::new(), true, tool_events));
+        }
         match parse_output(&raw) {
             AgentOutput::ToolCall(call) => {
                 let call_event = emit_tool(
@@ -54,13 +63,19 @@ pub async fn run_agent_loop(
                     Some(root) => execute_tool_call(root, &call.name, call.args.clone()).await,
                     None => Err("No vault is open".to_string()),
                 };
-                convo.push(AiMessage { role: "assistant".to_string(), content: raw });
+                convo.push(AiMessage {
+                    role: "assistant".to_string(),
+                    content: raw,
+                });
                 match result {
                     Ok(payload) => {
-                        let payload_len = serde_json::to_string(&payload).map(|s| s.len()).unwrap_or(0);
+                        let payload_len = serde_json::to_string(&payload)
+                            .map(|s| s.len())
+                            .unwrap_or(0);
                         total_tool_chars += payload_len;
                         if total_tool_chars > MAX_TOOL_RESULT_CHARS {
-                            let text = "Tool result budget reached. Please ask a narrower follow-up.";
+                            let text =
+                                "Tool result budget reached. Please ask a narrower follow-up.";
                             emit_fake_chunks(cancel, app, job_id, text).await;
                             return Ok((text.to_string(), false, tool_events));
                         }
@@ -79,7 +94,8 @@ pub async fn run_agent_loop(
                     Err(err) => {
                         total_tool_chars += err.len();
                         if total_tool_chars > MAX_TOOL_RESULT_CHARS {
-                            let text = "Tool result budget reached. Please ask a narrower follow-up.";
+                            let text =
+                                "Tool result budget reached. Please ask a narrower follow-up.";
                             emit_fake_chunks(cancel, app, job_id, text).await;
                             return Ok((text.to_string(), false, tool_events));
                         }
@@ -119,15 +135,28 @@ async fn call_provider_once(
     messages: &[AiMessage],
 ) -> Result<(String, bool), String> {
     match profile.provider {
-        AiProviderKind::Openai | AiProviderKind::OpenaiCompat | AiProviderKind::Openrouter | AiProviderKind::Ollama => {
-            if matches!(profile.provider, AiProviderKind::Openai | AiProviderKind::Openrouter) && api_key.unwrap_or_default().trim().is_empty() {
+        AiProviderKind::Openai
+        | AiProviderKind::OpenaiCompat
+        | AiProviderKind::Openrouter
+        | AiProviderKind::Ollama => {
+            if matches!(
+                profile.provider,
+                AiProviderKind::Openai | AiProviderKind::Openrouter
+            ) && api_key.unwrap_or_default().trim().is_empty()
+            {
                 return Err("API key not set for this profile".to_string());
             }
             let base = parse_base_url(profile)?;
             let url = base.join("chat/completions").map_err(|e| e.to_string())?;
             let mut prompt_messages = messages.to_vec();
             if !system.is_empty() {
-                prompt_messages.insert(0, AiMessage { role: "system".to_string(), content: system.to_string() });
+                prompt_messages.insert(
+                    0,
+                    AiMessage {
+                        role: "system".to_string(),
+                        content: system.to_string(),
+                    },
+                );
             }
             let body = json!({
                 "model": profile.model,
@@ -135,24 +164,55 @@ async fn call_provider_once(
                 "temperature": 0.2,
                 "stream": true
             });
-            stream_openai_like(client, cancel, app, job_id, false, profile, api_key, body, url).await
+            stream_openai_like(
+                client, cancel, app, job_id, false, profile, api_key, body, url,
+            )
+            .await
         }
         AiProviderKind::Anthropic => {
             let base = parse_base_url(profile)?;
             let url = base.join("v1/messages").map_err(|e| e.to_string())?;
-            stream_anthropic(client, cancel, app, job_id, false, profile, api_key.unwrap_or_default(), system, messages, url).await
+            stream_anthropic(
+                client,
+                cancel,
+                app,
+                job_id,
+                false,
+                profile,
+                api_key.unwrap_or_default(),
+                system,
+                messages,
+                url,
+            )
+            .await
         }
         AiProviderKind::Gemini => {
             let base = parse_base_url(profile)?;
-            stream_gemini(client, cancel, app, job_id, false, profile, api_key.unwrap_or_default(), system, messages, base).await
+            stream_gemini(
+                client,
+                cancel,
+                app,
+                job_id,
+                false,
+                profile,
+                api_key.unwrap_or_default(),
+                system,
+                messages,
+                base,
+            )
+            .await
         }
     }
 }
 
 fn parse_output(raw: &str) -> AgentOutput {
     let trimmed = extract_payload(raw).trim().to_string();
-    if trimmed.is_empty() { return AgentOutput::Final(String::new()); }
-    let Ok(v) = serde_json::from_str::<Value>(&trimmed) else { return AgentOutput::Plain(trimmed); };
+    if trimmed.is_empty() {
+        return AgentOutput::Final(String::new());
+    }
+    let Ok(v) = serde_json::from_str::<Value>(&trimmed) else {
+        return AgentOutput::Plain(trimmed);
+    };
     if let Some(text) = extract_final_text(&v) {
         return AgentOutput::Final(text);
     }
@@ -276,7 +336,11 @@ fn parse_tool_call_object(v: &Value) -> Option<AgentToolCall> {
     })
 }
 
-fn tool_result_message(call: &AgentToolCall, payload: Option<Value>, error: Option<String>) -> AiMessage {
+fn tool_result_message(
+    call: &AgentToolCall,
+    payload: Option<Value>,
+    error: Option<String>,
+) -> AiMessage {
     AiMessage {
         role: "user".to_string(),
         content: json!({
@@ -286,16 +350,12 @@ fn tool_result_message(call: &AgentToolCall, payload: Option<Value>, error: Opti
             "ok": error.is_none(),
             "result": payload,
             "error": error,
-        }).to_string(),
+        })
+        .to_string(),
     }
 }
 
-async fn emit_fake_chunks(
-    cancel: &CancellationToken,
-    app: &AppHandle,
-    job_id: &str,
-    text: &str,
-) {
+async fn emit_fake_chunks(cancel: &CancellationToken, app: &AppHandle, job_id: &str, text: &str) {
     let mut chunk = String::new();
     let mut n = 0usize;
     for ch in text.chars() {
@@ -305,13 +365,27 @@ async fn emit_fake_chunks(
         chunk.push(ch);
         n += 1;
         if n >= FAKE_CHUNK_CHARS {
-            let _ = app.emit("ai:chunk", AiChunkEvent { job_id: job_id.to_string(), delta: chunk.clone() });
+            let _ = app.emit(
+                "ai:chunk",
+                AiChunkEvent {
+                    job_id: job_id.to_string(),
+                    delta: chunk.clone(),
+                },
+            );
             chunk.clear();
             n = 0;
             sleep(Duration::from_millis(FAKE_CHUNK_DELAY_MS)).await;
         }
     }
-    if !chunk.is_empty() { let _ = app.emit("ai:chunk", AiChunkEvent { job_id: job_id.to_string(), delta: chunk }); }
+    if !chunk.is_empty() {
+        let _ = app.emit(
+            "ai:chunk",
+            AiChunkEvent {
+                job_id: job_id.to_string(),
+                delta: chunk,
+            },
+        );
+    }
 }
 
 fn emit_tool(
@@ -324,15 +398,18 @@ fn emit_tool(
     error: Option<String>,
 ) -> AiStoredToolEvent {
     let at_ms = super::helpers::now_ms();
-    let _ = app.emit("ai:tool", AiToolEvent {
-        job_id: job_id.to_string(),
-        tool: tool.to_string(),
-        phase: phase.to_string(),
-        at_ms,
-        call_id: call_id.clone(),
-        payload: payload.clone(),
-        error: error.clone(),
-    });
+    let _ = app.emit(
+        "ai:tool",
+        AiToolEvent {
+            job_id: job_id.to_string(),
+            tool: tool.to_string(),
+            phase: phase.to_string(),
+            at_ms,
+            call_id: call_id.clone(),
+            payload: payload.clone(),
+            error: error.clone(),
+        },
+    );
     AiStoredToolEvent {
         tool: tool.to_string(),
         phase: phase.to_string(),

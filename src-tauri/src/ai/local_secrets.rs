@@ -28,11 +28,7 @@ pub fn secret_get(vault_root: &Path, profile_id: &str) -> Result<Option<String>,
     Ok(map.get(profile_id).map(ToString::to_string))
 }
 
-pub fn secret_set(
-    vault_root: &Path,
-    profile_id: &str,
-    secret: &str,
-) -> Result<(), String> {
+pub fn secret_set(vault_root: &Path, profile_id: &str, secret: &str) -> Result<(), String> {
     if secret.trim().is_empty() {
         return Err("empty secret".to_string());
     }

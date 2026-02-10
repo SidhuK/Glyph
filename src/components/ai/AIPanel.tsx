@@ -26,7 +26,7 @@ import {
 	Save,
 	Send,
 	Settings as SettingsIcon,
-	Sparkles,
+	AiLattice,
 	X,
 } from "../Icons";
 import { Button } from "../ui/shadcn/button";
@@ -485,7 +485,7 @@ export function AIPanel({
 				onPointerUp={onDragUp}
 			>
 				<div className="aiPanelTitle">
-					<Sparkles size={14} />
+					<AiLattice size={18} />
 					<span>AI</span>
 				</div>
 				<div className="aiPanelHeaderRight">
@@ -833,7 +833,7 @@ export function AIPanel({
 								}
 								disabled={!lastAssistantText}
 							>
-								<Sparkles size={14} />
+								<AiLattice size={18} />
 							</Button>
 						</div>
 						<div className="aiComposerRight">

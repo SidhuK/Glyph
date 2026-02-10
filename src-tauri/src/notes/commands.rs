@@ -129,8 +129,8 @@ pub async fn note_write(
             }
         }
 
-        let preserve_created = created_from_markdown(&current)
-            .or_else(|| read_existing_created(&path));
+        let preserve_created =
+            created_from_markdown(&current).or_else(|| read_existing_created(&path));
         let (yaml, body) = split_frontmatter(&markdown);
         let fm = parse_frontmatter(yaml)?;
         let fm = normalize_frontmatter(fm, &id, None, preserve_created.as_deref());

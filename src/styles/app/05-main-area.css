@@ -147,6 +147,24 @@
 	letter-spacing: -0.02em;
 }
 
+.welcomeBrand {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-2);
+}
+
+.welcomeBrandIcon {
+	width: 40px;
+	height: 40px;
+	border-radius: 12px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	background: color-mix(in srgb, var(--bg-secondary) 92%, transparent);
+	border: 1px solid color-mix(in srgb, var(--border-light) 85%, transparent);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
 .welcomeSubtitle {
 	font-size: var(--text-base);
 	color: var(--text-secondary);

@@ -57,7 +57,10 @@ pub async fn ai_chat_history_list(
     limit: Option<u32>,
 ) -> Result<Vec<AiChatHistorySummary>, String> {
     let root = vault_state.current_root()?;
-    let limit = limit.unwrap_or(DEFAULT_LIMIT as u32).max(1).min(MAX_LIMIT as u32) as usize;
+    let limit = limit
+        .unwrap_or(DEFAULT_LIMIT as u32)
+        .max(1)
+        .min(MAX_LIMIT as u32) as usize;
 
     tauri::async_runtime::spawn_blocking(move || list_history_impl(&root, limit))
         .await

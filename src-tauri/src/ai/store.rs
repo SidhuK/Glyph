@@ -56,20 +56,8 @@ pub fn ensure_default_profiles(store: &mut AiStore) {
         None,
         false,
     );
-    add(
-        "OpenRouter",
-        AiProviderKind::Openrouter,
-        "",
-        None,
-        false,
-    );
-    add(
-        "Anthropic",
-        AiProviderKind::Anthropic,
-        "",
-        None,
-        false,
-    );
+    add("OpenRouter", AiProviderKind::Openrouter, "", None, false);
+    add("Anthropic", AiProviderKind::Anthropic, "", None, false);
     add("Gemini", AiProviderKind::Gemini, "", None, false);
     add("Ollama", AiProviderKind::Ollama, "", None, true);
 }

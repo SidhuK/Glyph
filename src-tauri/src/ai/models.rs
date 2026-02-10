@@ -256,7 +256,11 @@ async fn list_gemini(
         .unwrap_or_default()
         .into_iter()
         .map(|m| {
-            let id = m.name.strip_prefix("models/").unwrap_or(&m.name).to_string();
+            let id = m
+                .name
+                .strip_prefix("models/")
+                .unwrap_or(&m.name)
+                .to_string();
             AiModel {
                 name: m.display_name.unwrap_or_else(|| id.clone()),
                 id,
@@ -304,7 +308,10 @@ pub async fn ai_models_list(
 
     let needs_key = matches!(
         profile.provider,
-        AiProviderKind::Openai | AiProviderKind::Openrouter | AiProviderKind::Anthropic | AiProviderKind::Gemini
+        AiProviderKind::Openai
+            | AiProviderKind::Openrouter
+            | AiProviderKind::Anthropic
+            | AiProviderKind::Gemini
     );
     if needs_key && api_key.is_empty() {
         return Err("API key not set for this profile".to_string());

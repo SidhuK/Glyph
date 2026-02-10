@@ -1,5 +1,5 @@
-mod audit;
 pub mod agent;
+mod audit;
 pub mod commands;
 mod helpers;
 pub mod history;

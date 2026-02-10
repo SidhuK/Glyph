@@ -48,4 +48,3 @@ pub fn write_atomic(dest: &Path, bytes: &[u8]) -> io::Result<()> {
 
     Ok(())
 }
-

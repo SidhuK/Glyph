@@ -1,7 +1,4 @@
-use std::{
-    path::PathBuf,
-    sync::Mutex,
-};
+use std::{path::PathBuf, sync::Mutex};
 
 pub struct VaultState {
     pub(crate) current: Mutex<Option<PathBuf>>,

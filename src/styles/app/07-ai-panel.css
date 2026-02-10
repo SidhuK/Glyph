@@ -12,26 +12,25 @@
 	right: 16px;
 	bottom: 16px;
 	pointer-events: auto;
-	width: 40px;
-	height: 40px;
+	width: 56px;
+	height: 56px;
 	border-radius: 999px;
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	border: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
-	background: color-mix(in srgb, var(--bg-secondary) 85%, transparent);
-	backdrop-filter: blur(12px);
-	-webkit-backdrop-filter: blur(12px);
-	box-shadow: 0 2px 8px color-mix(in srgb, var(--shadow-color) 20%, transparent);
+	border: none;
+	background: transparent;
+	backdrop-filter: none;
+	-webkit-backdrop-filter: none;
+	box-shadow: none;
 	color: var(--text-secondary);
 	cursor: pointer;
 }
 
 .aiFab:hover {
 	color: var(--interactive-accent);
-	border-color: color-mix(in srgb, var(--interactive-accent) 35%, transparent);
-	box-shadow: 0 4px 16px
-		color-mix(in srgb, var(--shadow-color) 30%, transparent);
+	background: transparent;
+	box-shadow: none;
 }
 
 .aiFloatingHost .aiPanel {
