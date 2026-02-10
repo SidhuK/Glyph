@@ -7,7 +7,6 @@ interface AIFloatingHostProps {
 	onToggle: () => void;
 	activeFolderPath: string | null;
 	activeCanvasId: string | null;
-	onNewAICanvas: () => Promise<void>;
 	onAddAttachmentsToCanvas: (paths: string[]) => Promise<void>;
 	onCreateNoteFromLastAssistant: (markdown: string) => Promise<void>;
 }
@@ -17,7 +16,6 @@ export function AIFloatingHost({
 	onToggle,
 	activeFolderPath,
 	activeCanvasId,
-	onNewAICanvas,
 	onAddAttachmentsToCanvas,
 	onCreateNoteFromLastAssistant,
 }: AIFloatingHostProps) {
@@ -37,7 +35,6 @@ export function AIFloatingHost({
 				activeFolderPath={activeFolderPath}
 				activeCanvasId={activeCanvasId}
 				onClose={onToggle}
-				onNewAICanvas={onNewAICanvas}
 				onAddAttachmentsToCanvas={onAddAttachmentsToCanvas}
 				onCreateNoteFromLastAssistant={onCreateNoteFromLastAssistant}
 			/>

@@ -243,16 +243,13 @@ export function AppShell() {
 	);
 
 	const ensureCanvasTarget = useCallback(
-		async (source: "manual" | "ai") => {
+		async (source: "manual") => {
 			if (activeViewDoc?.kind === "canvas") return activeViewDoc.selector;
 			if (selectedCanvasId) {
 				await openCanvas(selectedCanvasId);
 				return selectedCanvasId;
 			}
-			const created = await canvasLibrary.createCanvas(
-				source === "ai" ? "AI Canvas" : "Canvas",
-				source,
-			);
+			const created = await canvasLibrary.createCanvas("Canvas", source);
 			setSelectedCanvasId(created.meta.id);
 			await openCanvas(created.meta.id);
 			return created.meta.id;
@@ -262,7 +259,7 @@ export function AppShell() {
 
 	const addBatchToCanvas = useCallback(
 		async (
-			source: "manual" | "ai",
+			source: "manual",
 			nodes: Extract<
 				CanvasExternalCommand,
 				{ kind: "add_nodes_batch" }
@@ -278,10 +275,6 @@ export function AppShell() {
 		},
 		[dispatchCanvasCommand, ensureCanvasTarget],
 	);
-
-	const ensureCanvasForAI = useCallback(async () => {
-		return ensureCanvasTarget("ai");
-	}, [ensureCanvasTarget]);
 
 	const addNotesToCanvas = useCallback(
 		async (paths: string[]) => {
@@ -350,7 +343,7 @@ export function AppShell() {
 	const addAttachmentsToCanvas = useCallback(
 		async (paths: string[]) => {
 			await addBatchToCanvas(
-				"ai",
+				"manual",
 				paths.map((path) => ({
 					kind: "file",
 					path,
@@ -365,7 +358,6 @@ export function AppShell() {
 		async (markdown: string) => {
 			const text = markdown.trim();
 			if (!text) return;
-			await ensureCanvasForAI();
 			const dir =
 				activeViewDoc?.kind === "folder" ? activeViewDoc.selector : "";
 			const baseName = aiNoteFileName();
@@ -392,7 +384,7 @@ export function AppShell() {
 				base_mtime_ms: null,
 			});
 			const preview = parseNotePreview(filePath, body);
-			await addBatchToCanvas("ai", [
+			await addBatchToCanvas("manual", [
 				{
 					kind: "note",
 					noteId: filePath,
@@ -401,7 +393,7 @@ export function AppShell() {
 				},
 			]);
 		},
-		[activeViewDoc, addBatchToCanvas, ensureCanvasForAI],
+		[activeViewDoc, addBatchToCanvas],
 	);
 
 	// ---------------------------------------------------------------------------
@@ -557,13 +549,6 @@ export function AppShell() {
 							activeCanvasId={
 								activeViewDoc?.kind === "canvas" ? activeViewDoc.selector : null
 							}
-							onNewAICanvas={async () => {
-								const created = await canvasLibrary.createCanvas(
-									"AI Canvas",
-									"ai",
-								);
-								await openCanvas(created.meta.id);
-							}}
 							onAddAttachmentsToCanvas={addAttachmentsToCanvas}
 							onCreateNoteFromLastAssistant={createNoteFromAI}
 						/>

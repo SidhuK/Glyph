@@ -662,6 +662,25 @@
 	gap: 6px;
 }
 
+.aiComposerStatusDot {
+	width: 9px;
+	height: 9px;
+	border-radius: 999px;
+	background: var(--interactive-accent);
+	flex-shrink: 0;
+	animation: aiComposerPulse 1s ease-in-out infinite;
+}
+
+@keyframes aiComposerPulse {
+	0%,
+	100% {
+		opacity: 0.5;
+	}
+	50% {
+		opacity: 1;
+	}
+}
+
 .aiComposerSend {
 	color: var(--interactive-accent) !important;
 }

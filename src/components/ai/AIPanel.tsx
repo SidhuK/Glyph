@@ -89,7 +89,6 @@ interface AIPanelProps {
 	isOpen: boolean;
 	activeFolderPath: string | null;
 	activeCanvasId: string | null;
-	onNewAICanvas: () => Promise<void>;
 	onAddAttachmentsToCanvas: (paths: string[]) => Promise<void>;
 	onCreateNoteFromLastAssistant: (markdown: string) => Promise<void>;
 	onClose: () => void;
@@ -99,7 +98,6 @@ export function AIPanel({
 	isOpen,
 	activeFolderPath,
 	activeCanvasId,
-	onNewAICanvas,
 	onAddAttachmentsToCanvas,
 	onCreateNoteFromLastAssistant,
 	onClose,
@@ -211,9 +209,11 @@ export function AIPanel({
 		}
 		return "Thinking…";
 	}, [activeTools, lastToolEvent]);
+	const isAwaitingResponse =
+		chat.status === "submitted" || chat.status === "streaming";
 
 	const canSend =
-		chat.status !== "streaming" &&
+		!isAwaitingResponse &&
 		Boolean(input.trim()) &&
 		Boolean(profiles.activeProfileId);
 	const lastAssistantText = [...chat.messages]
@@ -761,7 +761,7 @@ export function AIPanel({
 							className="aiComposerInput"
 							value={input}
 							placeholder="Ask AI…"
-							disabled={chat.status === "streaming"}
+							disabled={isAwaitingResponse}
 							onChange={(e) => {
 								setInput(e.target.value);
 								scheduleComposerInputResize();
@@ -799,16 +799,6 @@ export function AIPanel({
 								type="button"
 								variant="ghost"
 								size="icon-sm"
-								aria-label="New AI canvas"
-								title="New AI canvas"
-								onClick={() => void onNewAICanvas()}
-							>
-								<Layout size={14} />
-							</Button>
-							<Button
-								type="button"
-								variant="ghost"
-								size="icon-sm"
 								aria-label="Add attachments to canvas"
 								title="Add attachments to canvas"
 								onClick={() =>
@@ -837,6 +827,13 @@ export function AIPanel({
 							</Button>
 						</div>
 						<div className="aiComposerRight">
+							{isAwaitingResponse ? (
+								<span
+									className="aiComposerStatusDot"
+									aria-label="AI responding"
+									title="AI responding"
+								/>
+							) : null}
 							<ModelSelector
 								profileId={profiles.activeProfileId}
 								value={profiles.activeProfile?.model ?? ""}
@@ -846,7 +843,7 @@ export function AIPanel({
 								onProfileChange={(id) => void profiles.setActive(id)}
 								onChange={(modelId) => void profiles.setModel(modelId)}
 							/>
-							{chat.status === "streaming" ? (
+							{isAwaitingResponse ? (
 								<button
 									type="button"
 									className="aiComposerStop"
