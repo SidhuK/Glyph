@@ -1,6 +1,5 @@
 import { listen } from "@tauri-apps/api/event";
 import { useEffect } from "react";
-import type { SettingsTab } from "./windows";
 
 export type TauriEventMap = {
 	"menu:open_vault": undefined;
@@ -18,8 +17,6 @@ export type TauriEventMap = {
 		payload?: unknown;
 		error?: string;
 	};
-	"settings:navigate": { tab: SettingsTab };
-	"settings:theme_changed": { theme: string };
 	"notes:external_changed": { rel_path: string };
 };
 

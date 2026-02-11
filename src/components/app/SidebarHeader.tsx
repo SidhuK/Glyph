@@ -41,7 +41,7 @@ export function SidebarHeader({
 						type="button"
 						variant="ghost"
 						size="icon-sm"
-						onClick={() => void openSettingsWindow("general")}
+						onClick={() => void openSettingsWindow()}
 						title="Settings"
 					>
 						<HugeiconsIcon icon={Icons.Settings05Icon} size={14} />

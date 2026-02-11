@@ -53,6 +53,7 @@
 .settingsHelp {
 	font-size: 10px;
 	color: var(--text-tertiary);
+	white-space: nowrap;
 }
 
 .settingsInline {
@@ -66,13 +67,15 @@
 	min-width: 92px;
 	font-size: var(--text-xs);
 	color: var(--text-tertiary);
+	white-space: nowrap;
 }
 
 .settingsValue {
 	font-size: var(--text-xs);
 	color: var(--text-secondary);
-	max-width: 360px;
-	word-break: break-word;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .settingsRow {

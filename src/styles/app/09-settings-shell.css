@@ -58,12 +58,6 @@
 	color: var(--text-primary);
 }
 
-.settingsHeaderSubtitle {
-	font-size: var(--text-xs);
-	color: var(--text-tertiary);
-	white-space: nowrap;
-}
-
 .settingsHeaderRight {
 	display: flex;
 	align-items: center;
@@ -71,102 +65,22 @@
 	-webkit-app-region: no-drag;
 }
 
-
-
-.settingsBody {
+.settingsMain {
 	flex: 1;
 	min-height: 0;
-	display: flex;
-	gap: var(--space-4);
+	overflow: auto;
 	padding: var(--space-4);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: var(--space-5);
 	position: relative;
 	z-index: 1;
 }
 
-.settingsNav {
-	width: 240px;
-	min-width: 240px;
-	padding: var(--space-2);
-	border: 1px solid var(--border-light);
-	border-radius: var(--radius-2xl);
-	background: color-mix(in srgb, var(--bg-primary) 75%, transparent);
-	backdrop-filter: blur(18px);
-	box-shadow: var(--shadow-sm);
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
-}
-
-.settingsNavButton {
-	position: relative;
-	z-index: 0;
-	display: grid;
-	grid-template-columns: 28px 1fr;
-	align-items: center;
-	gap: var(--space-2);
-	padding: var(--space-2) var(--space-3);
-	min-height: 54px;
-	border-radius: var(--radius-xl);
-	background: transparent;
-	border: 1px solid transparent;
-	color: var(--text-secondary);
-	overflow: hidden;
-}
-
-.settingsNavButton:focus-visible {
-	outline: 2px solid
-		color-mix(in srgb, var(--interactive-accent) 40%, transparent);
-	outline-offset: 2px;
-}
-
-.settingsNavButton.active {
-	color: var(--text-primary);
-}
-
-.settingsNavButton:hover {
-	background: color-mix(in srgb, var(--bg-secondary) 60%, transparent);
-	transform: none;
-}
-
-.settingsNavIcon {
-	height: 32px;
-	width: 32px;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	border-radius: var(--radius-lg);
-	background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
-	border: 1px solid var(--border-light);
-}
-
-.settingsNavText {
-	display: flex;
-	flex-direction: column;
-	gap: 2px;
-	text-align: left;
-}
-
-
-
-.settingsNavActive {
-	position: absolute;
-	inset: 4px;
-	border-radius: var(--radius-xl);
-	border: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
-	background: color-mix(in srgb, var(--bg-secondary) 78%, transparent);
-	z-index: -1;
-}
-
-.settingsMain {
-	flex: 1;
-	min-width: 0;
-	min-height: 0;
-	overflow: auto;
-	padding: var(--space-1);
-}
-
-.settingsPaneMotion {
-	min-height: 100%;
+.settingsPane {
+	width: 100%;
+	max-width: 540px;
 }
 
 .settingsPane h2 {
@@ -186,7 +100,7 @@
 .settingsHint {
 	font-size: var(--text-sm);
 	color: var(--text-secondary);
-	max-width: 420px;
+	white-space: nowrap;
 }
 
 .settingsBadge {
@@ -203,25 +117,6 @@
 	color: var(--text-tertiary);
 }
 
-.settingsBadgeWarn {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	padding: 4px 10px;
-	border-radius: var(--radius-full);
-	background: color-mix(in srgb, #6e1f1f 70%, transparent);
-	border: 1px solid color-mix(in srgb, #b43a3a 55%, transparent);
-	font-size: 10px;
-	letter-spacing: 0.06em;
-	text-transform: uppercase;
-	color: #f5d6d6;
-	white-space: nowrap;
-}
-
-.settingsMain [role="tabpanel"] {
-	outline: none;
-}
-
 .settingsLabelRow {
 	display: inline-flex;
 	align-items: center;
@@ -229,8 +124,8 @@
 }
 
 .settingsGrid {
-	display: grid;
-	grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+	display: flex;
+	flex-direction: column;
 	gap: var(--space-4);
 }
 
@@ -260,9 +155,11 @@
 	font-size: var(--text-sm);
 	font-weight: var(--font-semibold);
 	color: var(--text-primary);
+	white-space: nowrap;
 }
 
 .settingsCardHint {
 	font-size: var(--text-xs);
 	color: var(--text-tertiary);
+	white-space: nowrap;
 }

@@ -1,9 +1,8 @@
-import { getCurrentWebview } from "@tauri-apps/api/webview";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 
-export type SettingsTab = "general" | "vault" | "ai";
+export type SettingsTab = "vault" | "ai";
 
-export async function openSettingsWindow(tab: SettingsTab = "general") {
+export async function openSettingsWindow(tab?: SettingsTab) {
 	const existing = await WebviewWindow.getByLabel("settings");
 	if (existing) {
 		let shown = false;
@@ -15,19 +14,12 @@ export async function openSettingsWindow(tab: SettingsTab = "general") {
 			// If the handle is stale (e.g., window was closed/destroyed), fall through
 			// and recreate it.
 		}
-		if (shown) {
-			try {
-				await getCurrentWebview().emitTo("settings", "settings:navigate", {
-					tab,
-				});
-			} catch {
-				// ignore
-			}
-			return;
-		}
+		if (shown) return;
 	}
 
-	const url = `#/settings?tab=${encodeURIComponent(tab)}`;
+	const url = tab
+		? `#/settings?tab=${encodeURIComponent(tab)}`
+		: "#/settings";
 	const win = new WebviewWindow("settings", {
 		title: "Settings",
 		url,

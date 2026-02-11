@@ -83,8 +83,4 @@ export async function setAiSidebarWidth(width: number): Promise<void> {
 	await store.save();
 }
 
-export async function setTheme(theme: ThemeMode): Promise<void> {
-	await ensureLoaded();
-	await store.set(KEYS.theme, theme);
-	await store.save();
-}
+

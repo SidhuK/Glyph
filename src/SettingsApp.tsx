@@ -1,112 +1,9 @@
-import { AnimatePresence, motion } from "motion/react";
-import {
-	type KeyboardEvent,
-	useCallback,
-	useEffect,
-	useMemo,
-	useState,
-} from "react";
 import "./App.css";
-import {
-	FolderOpen,
-	Settings as SettingsIcon,
-	Sparkles,
-} from "./components/Icons";
+import { Settings as SettingsIcon } from "./components/Icons";
 import { AiSettingsPane } from "./components/settings/AiSettingsPane";
-import { GeneralSettingsPane } from "./components/settings/GeneralSettingsPane";
 import { VaultSettingsPane } from "./components/settings/VaultSettingsPane";
-import { useTauriEvent } from "./lib/tauriEvents";
-import type { SettingsTab } from "./lib/windows";
-import { cn } from "./utils/cn";
-
-function parseTabFromHash(hash: string): SettingsTab {
-	const raw = hash.startsWith("#/settings")
-		? hash.slice("#/settings".length)
-		: "";
-	const query = raw.startsWith("?") ? raw.slice(1) : "";
-	const params = new URLSearchParams(query);
-	const tab = params.get("tab");
-	if (tab === "vault" || tab === "ai" || tab === "general") return tab;
-	return "general";
-}
-
-function setSettingsHash(tab: SettingsTab) {
-	window.location.hash = `#/settings?tab=${encodeURIComponent(tab)}`;
-}
 
 export default function SettingsApp() {
-	const [tab, setTab] = useState<SettingsTab>(() =>
-		parseTabFromHash(window.location.hash),
-	);
-
-	useEffect(() => {
-		const onHashChange = () => setTab(parseTabFromHash(window.location.hash));
-		window.addEventListener("hashchange", onHashChange);
-		return () => window.removeEventListener("hashchange", onHashChange);
-	}, []);
-
-	const handleSettingsNavigate = useCallback(
-		(payload: { tab: SettingsTab }) => {
-			if (!payload.tab) return;
-			setSettingsHash(payload.tab);
-		},
-		[],
-	);
-	useTauriEvent("settings:navigate", handleSettingsNavigate);
-
-	const title = useMemo(() => {
-		if (tab === "ai") return "AI";
-		if (tab === "vault") return "Vault";
-		return "General";
-	}, [tab]);
-
-	const tabs = useMemo(
-		() =>
-			[
-				{ id: "general", label: "General", icon: SettingsIcon },
-				{ id: "vault", label: "Vault", icon: FolderOpen },
-				{ id: "ai", label: "AI", icon: Sparkles },
-			] as Array<{
-				id: SettingsTab;
-				label: string;
-				icon: typeof SettingsIcon;
-			}>,
-		[],
-	);
-
-	const activeTabIndex = tabs.findIndex((item) => item.id === tab);
-
-	const handleTabKeyDown = useCallback(
-		(event: KeyboardEvent<HTMLButtonElement>) => {
-			if (
-				![
-					"ArrowLeft",
-					"ArrowRight",
-					"ArrowUp",
-					"ArrowDown",
-					"Home",
-					"End",
-				].includes(event.key)
-			) {
-				return;
-			}
-			event.preventDefault();
-			if (event.key === "Home") {
-				setSettingsHash(tabs[0].id);
-				return;
-			}
-			if (event.key === "End") {
-				setSettingsHash(tabs[tabs.length - 1].id);
-				return;
-			}
-			const delta =
-				event.key === "ArrowLeft" || event.key === "ArrowUp" ? -1 : 1;
-			const next = (activeTabIndex + delta + tabs.length) % tabs.length;
-			setSettingsHash(tabs[next].id);
-		},
-		[activeTabIndex, tabs],
-	);
-
 	return (
 		<div className="settingsShell">
 			<div className="settingsBackdrop" aria-hidden="true" />
@@ -116,104 +13,13 @@ export default function SettingsApp() {
 						<SettingsIcon size={16} />
 						<span>Settings</span>
 					</div>
-					<div className="settingsHeaderSubtitle">{title}</div>
 				</div>
 			</div>
 
-			<div className="settingsBody">
-				<nav
-					className="settingsNav"
-					data-window-drag-ignore
-					role="tablist"
-					aria-label="Settings sections"
-				>
-					{tabs.map((item) => {
-						const Icon = item.icon;
-						const isActive = tab === item.id;
-						return (
-							<motion.button
-								key={item.id}
-								id={`settings-tab-${item.id}`}
-								type="button"
-								className={cn("settingsNavButton", isActive && "active")}
-								onClick={() => setSettingsHash(item.id)}
-								onKeyDown={handleTabKeyDown}
-								role="tab"
-								aria-selected={isActive}
-								aria-controls={`settings-panel-${item.id}`}
-								tabIndex={isActive ? 0 : -1}
-								whileHover={{ x: 4 }}
-								whileTap={{ scale: 0.98 }}
-								transition={{ type: "spring", stiffness: 320, damping: 24 }}
-							>
-								<span className="settingsNavIcon">
-									<Icon size={16} />
-								</span>
-								<span className="settingsNavText">
-									<span>{item.label}</span>
-								</span>
-								{isActive ? (
-									<motion.span
-										className="settingsNavActive"
-										layoutId="settingsNavActive"
-										transition={{ type: "spring", stiffness: 360, damping: 28 }}
-									/>
-								) : null}
-							</motion.button>
-						);
-					})}
-				</nav>
-
-				<main className="settingsMain" data-window-drag-ignore>
-					<AnimatePresence mode="wait">
-						{tab === "general" ? (
-							<motion.div
-								key="general"
-								className="settingsPaneMotion"
-								id="settings-panel-general"
-								role="tabpanel"
-								aria-labelledby="settings-tab-general"
-								initial={{ opacity: 0, y: 10 }}
-								animate={{ opacity: 1, y: 0 }}
-								exit={{ opacity: 0, y: -8 }}
-								transition={{ duration: 0.2 }}
-							>
-								<GeneralSettingsPane />
-							</motion.div>
-						) : null}
-						{tab === "vault" ? (
-							<motion.div
-								key="vault"
-								className="settingsPaneMotion"
-								id="settings-panel-vault"
-								role="tabpanel"
-								aria-labelledby="settings-tab-vault"
-								initial={{ opacity: 0, y: 10 }}
-								animate={{ opacity: 1, y: 0 }}
-								exit={{ opacity: 0, y: -8 }}
-								transition={{ duration: 0.2 }}
-							>
-								<VaultSettingsPane />
-							</motion.div>
-						) : null}
-						{tab === "ai" ? (
-							<motion.div
-								key="ai"
-								className="settingsPaneMotion"
-								id="settings-panel-ai"
-								role="tabpanel"
-								aria-labelledby="settings-tab-ai"
-								initial={{ opacity: 0, y: 10 }}
-								animate={{ opacity: 1, y: 0 }}
-								exit={{ opacity: 0, y: -8 }}
-								transition={{ duration: 0.2 }}
-							>
-								<AiSettingsPane />
-							</motion.div>
-						) : null}
-					</AnimatePresence>
-				</main>
-			</div>
+			<main className="settingsMain" data-window-drag-ignore>
+				<VaultSettingsPane />
+				<AiSettingsPane />
+			</main>
 		</div>
 	);
 }
