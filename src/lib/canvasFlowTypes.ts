@@ -41,11 +41,6 @@ export interface FolderNodeData {
 	[key: string]: unknown;
 }
 
-export interface FolderPreviewNodeData {
-	parentFolderNodeId: string;
-	[key: string]: unknown;
-}
-
 export type CanvasNodeData = Record<string, unknown>;
 
 type CanvasNodeLegacyProps = {
@@ -61,11 +56,6 @@ export type LinkCanvasNode = Node<LinkNodeData, "link"> & CanvasNodeLegacyProps;
 export type FrameCanvasNode = Node<FrameNodeData, "frame"> &
 	CanvasNodeLegacyProps;
 export type FolderCanvasNode = Node<FolderNodeData, "folder"> &
-	CanvasNodeLegacyProps;
-export type FolderPreviewCanvasNode = Node<
-	FolderPreviewNodeData,
-	"folderPreview"
-> &
 	CanvasNodeLegacyProps;
 
 export type CanvasEdge = Edge<Record<string, unknown>> & {
@@ -94,10 +84,4 @@ export function isFrameNode(n: CanvasNode): n is FrameCanvasNode {
 
 export function isFolderNode(n: CanvasNode): n is FolderCanvasNode {
 	return n.type === "folder";
-}
-
-export function isFolderPreviewNode(
-	n: CanvasNode,
-): n is FolderPreviewCanvasNode {
-	return n.type === "folderPreview";
 }

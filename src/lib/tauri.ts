@@ -9,8 +9,6 @@ export type {
 	FileNodeData,
 	FolderCanvasNode,
 	FolderNodeData,
-	FolderPreviewCanvasNode,
-	FolderPreviewNodeData,
 	FrameCanvasNode,
 	FrameNodeData,
 	LinkCanvasNode,
@@ -23,7 +21,6 @@ export type {
 export {
 	isFileNode,
 	isFolderNode,
-	isFolderPreviewNode,
 	isFrameNode,
 	isLinkNode,
 	isNoteNode,

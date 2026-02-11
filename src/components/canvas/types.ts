@@ -10,14 +10,12 @@ export type {
 	LinkNodeData,
 	FrameNodeData,
 	FolderNodeData,
-	FolderPreviewNodeData,
 	NoteCanvasNode,
 	TextCanvasNode,
 	FileCanvasNode,
 	LinkCanvasNode,
 	FrameCanvasNode,
 	FolderCanvasNode,
-	FolderPreviewCanvasNode,
 } from "../../lib/canvasFlowTypes";
 export {
 	isNoteNode,
@@ -26,7 +24,6 @@ export {
 	isLinkNode,
 	isFrameNode,
 	isFolderNode,
-	isFolderPreviewNode,
 } from "../../lib/canvasFlowTypes";
 import type { CanvasEdge, CanvasNode } from "../../lib/canvasFlowTypes";
 
@@ -126,9 +123,6 @@ export type CanvasActions = {
 		nextName: string,
 		kind?: "dir" | "file",
 	) => Promise<string | null>;
-	toggleFolderFan: (folderNodeId: string) => void;
-	holdFolderPreview: (folderNodeId: string) => void;
-	releaseFolderPreview: (folderNodeId: string) => void;
 };
 
 export type NoteTab = {

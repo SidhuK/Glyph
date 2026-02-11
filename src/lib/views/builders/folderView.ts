@@ -154,8 +154,7 @@ export async function buildFolderViewDoc(
 			if (
 				n.type === "note" ||
 				n.type === "file" ||
-				n.type === "folder" ||
-				n.type === "folderPreview"
+				n.type === "folder"
 			)
 				return false;
 			if (

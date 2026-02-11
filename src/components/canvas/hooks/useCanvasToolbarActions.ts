@@ -78,12 +78,7 @@ export function useCanvasToolbarActions({
 		const tightGapX = Math.max(GRID_SIZE, GRID_GAP - GRID_SIZE * 2);
 		const tightGapY = GRID_SIZE * 2;
 		setNodes((prev) => {
-			const layoutNodes = prev.filter(
-				(n) =>
-					n.type !== "folderPreview" &&
-					typeof n.data.fan_parent_folder_id !== "string" &&
-					!(n.type === "folder" && n.data.fan_expanded === true),
-			);
+			const layoutNodes = prev;
 			const columns = columnsForMaxRows(layoutNodes.length);
 			const positions = computeGridPositions(layoutNodes, {
 				columns,

@@ -19,25 +19,6 @@ import {
 import { AnimatePresence, motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { GRID_SIZE, estimateNodeSize, snapPoint } from "../../lib/canvasLayout";
-import {
-	FAN_COLLISION_MARGIN,
-	FAN_MAX_ENTRIES,
-	FAN_MOVE_TRANSITION,
-	FAN_MOVE_TRANSITION_MS,
-	FAN_REFLOW_SCAN_STEP,
-	FAN_REFLOW_X_PADDING,
-	type FolderFanState,
-	type RectBox,
-	computeFanGridLayout,
-	createSpatialHash,
-	folderFanNodeId,
-	intersectsRect,
-	nodeRectAtPosition,
-	sanitizeFolderDataForSave,
-} from "../../lib/fanLayout";
-import { titleForFile } from "../../lib/notePreview";
-import type { IndexNotePreview, RecentEntry } from "../../lib/tauri";
-import { invoke } from "../../lib/tauri";
 import { Grid3X3 } from "../Icons";
 import { CanvasNoteOverlayEditor } from "./CanvasNoteOverlayEditor";
 import { CanvasActionsContext, CanvasNoteEditContext } from "./contexts";
@@ -48,18 +29,12 @@ import { useNoteEditSession } from "./hooks/useNoteEditSession";
 import {
 	FileNode,
 	FolderNode,
-	FolderPreviewNode,
 	FrameNode,
 	LinkNode,
 	NoteNode,
 	TextNode,
 } from "./nodes";
-import {
-	isFileNode,
-	isFolderNode,
-	isFolderPreviewNode,
-	isNoteNode,
-} from "./types";
+import { isFileNode, isNoteNode } from "./types";
 import type {
 	CanvasActions,
 	CanvasEdge,
@@ -77,7 +52,6 @@ const nodeTypes = {
 	link: LinkNode,
 	frame: FrameNode,
 	folder: FolderNode,
-	folderPreview: FolderPreviewNode,
 };
 
 const FLOW_SURFACE_SIDE_PADDING = 260;
@@ -186,11 +160,6 @@ function CanvasPane({
 		edges: CanvasEdge[];
 	} | null>(null);
 	const initializedRef = useRef(false);
-	const nodesRef = useRef<CanvasNode[]>([]);
-	const folderPreviewHoldsRef = useRef<Map<string, number>>(new Map());
-	const folderFanStateRef = useRef<Map<string, FolderFanState>>(new Map());
-	const folderFanLoadingRef = useRef<Set<string>>(new Set());
-	const fanTransitionCleanupRef = useRef<number | null>(null);
 	const flowWrapperRef = useRef<HTMLDivElement | null>(null);
 	const [flowViewportSize, setFlowViewportSize] = useState({
 		width: 0,
@@ -202,20 +171,7 @@ function CanvasPane({
 			n: CanvasNode[],
 			e: CanvasEdge[],
 		): { nodes: CanvasNode[]; edges: CanvasEdge[] } => ({
-			nodes: n
-				.filter(
-					(node) =>
-						node.type !== "folderPreview" &&
-						typeof node.data.fan_parent_folder_id !== "string",
-				)
-				.map((node) =>
-					node.type === "folder"
-						? {
-								...node,
-								data: sanitizeFolderDataForSave(node.data ?? {}),
-							}
-						: node,
-				),
+			nodes: n,
 			edges: e,
 		}),
 		[],
@@ -312,10 +268,6 @@ function CanvasPane({
 	}, [doc]);
 
 	useEffect(() => {
-		nodesRef.current = nodes;
-	}, [nodes]);
-
-	useEffect(() => {
 		if (isNoteEditorOpen) return;
 		const wrapper = flowWrapperRef.current;
 		if (!wrapper) return;
@@ -333,10 +285,7 @@ function CanvasPane({
 
 	useEffect(() => {
 		if (!doc) return;
-		const incomingSnapshot = snapshotPersistedShape(
-			doc.nodes.filter((node) => node.type !== "folderPreview"),
-			doc.edges,
-		);
+		const incomingSnapshot = snapshotPersistedShape(doc.nodes, doc.edges);
 		if (
 			docIdRef.current === doc.id &&
 			initializedRef.current &&
@@ -350,7 +299,6 @@ function CanvasPane({
 		pendingSaveRef.current = null;
 		docIdRef.current = doc.id;
 		initializedRef.current = true;
-		folderFanStateRef.current.clear();
 		setNodes(doc.nodes);
 		setEdges(doc.edges);
 		lastSavedSnapshotRef.current = incomingSnapshot;
@@ -366,8 +314,6 @@ function CanvasPane({
 	useEffect(
 		() => () => {
 			if (saveTimeoutRef.current) clearTimeout(saveTimeoutRef.current);
-			if (fanTransitionCleanupRef.current)
-				clearTimeout(fanTransitionCleanupRef.current);
 		},
 		[],
 	);
@@ -413,329 +359,6 @@ function CanvasPane({
 		handleAddLinkNode,
 	});
 
-	const handleFolderPreviewHold = useCallback((folderNodeId: string) => {
-		const holds = folderPreviewHoldsRef.current;
-		holds.set(folderNodeId, (holds.get(folderNodeId) ?? 0) + 1);
-	}, []);
-
-	const handleFolderPreviewRelease = useCallback(
-		(folderNodeId: string) => {
-			const holds = folderPreviewHoldsRef.current;
-			const count = (holds.get(folderNodeId) ?? 1) - 1;
-			if (count <= 0) {
-				holds.delete(folderNodeId);
-				setNodes((prev) =>
-					prev.filter(
-						(n) =>
-							!isFolderPreviewNode(n) ||
-							n.data.parentFolderNodeId !== folderNodeId,
-					),
-				);
-			} else {
-				holds.set(folderNodeId, count);
-			}
-		},
-		[setNodes],
-	);
-
-	const collapseFolderFan = useCallback(
-		(folderNodeId: string) => {
-			setNodes((prev) => {
-				const state = folderFanStateRef.current.get(folderNodeId);
-				if (!state) return prev;
-				const next = prev.map((node) => {
-					if (node.id === folderNodeId) {
-						return {
-							...node,
-							data: { ...node.data, fan_expanded: false },
-						};
-					}
-					const original = state.displacedByNodeId.get(node.id);
-					if (!original || state.fanNodeIds.has(node.id)) return node;
-					return {
-						...node,
-						position: original,
-						style: {
-							...(node.style ?? {}),
-							transition: FAN_MOVE_TRANSITION,
-						},
-					};
-				});
-				folderFanStateRef.current.delete(folderNodeId);
-				return next.filter((node) => !state.fanNodeIds.has(node.id));
-			});
-		},
-		[setNodes],
-	);
-
-	const loadFolderFanEntries = useCallback(async (dir: string) => {
-		const entries = await invoke("vault_dir_recent_entries", {
-			dir: dir || null,
-			limit: FAN_MAX_ENTRIES,
-		});
-		const files = entries as RecentEntry[];
-		const markdownIds = files
-			.filter((entry) => entry.is_markdown)
-			.map((entry) => entry.rel_path);
-
-		let previews: IndexNotePreview[] = [];
-		try {
-			previews = await invoke("index_note_previews_batch", {
-				ids: markdownIds,
-			});
-		} catch {
-			previews = [];
-		}
-		const previewsById = new Map(
-			previews.map((preview) => [preview.id, preview]),
-		);
-		return { files, previewsById };
-	}, []);
-
-	const toggleFolderFan = useCallback(
-		(folderNodeId: string) => {
-			if (folderFanStateRef.current.has(folderNodeId)) {
-				collapseFolderFan(folderNodeId);
-				handleReflowGrid();
-				return;
-			}
-			if (folderFanLoadingRef.current.has(folderNodeId)) return;
-
-			const folderNode = nodesRef.current.find(
-				(node) => node.id === folderNodeId,
-			);
-			if (!folderNode || !isFolderNode(folderNode)) return;
-			const dir =
-				typeof folderNode.data.dir === "string" ? folderNode.data.dir : "";
-			if (!dir) return;
-
-			folderFanLoadingRef.current.add(folderNodeId);
-			void loadFolderFanEntries(dir)
-				.then(({ files, previewsById }) => {
-					if (!files.length) return;
-					setNodes((prev) => {
-						const currentFolderNode = prev.find(
-							(node) => node.id === folderNodeId,
-						);
-						if (!currentFolderNode || !isFolderNode(currentFolderNode))
-							return prev;
-
-						const fanNodeIds = new Set<string>();
-						const fanNodes: CanvasNode[] = [];
-						const layoutItems = files.map((file) =>
-							estimateNodeSize({
-								id: file.rel_path,
-								type: file.is_markdown ? "note" : "file",
-								data: {},
-							}),
-						);
-						const fanLayout = computeFanGridLayout(
-							currentFolderNode,
-							files.length,
-						);
-
-						let minX = Number.POSITIVE_INFINITY;
-						let minY = Number.POSITIVE_INFINITY;
-						let maxX = Number.NEGATIVE_INFINITY;
-						let maxY = Number.NEGATIVE_INFINITY;
-
-						for (const [index, file] of files.entries()) {
-							const layout = fanLayout[index];
-							const position = { x: layout.x, y: layout.y };
-							const { w: width, h: height } = layoutItems[index];
-							const id = folderFanNodeId(folderNodeId, file.rel_path);
-							fanNodeIds.add(id);
-							const preview = previewsById.get(file.rel_path);
-							const commonData = {
-								fan_parent_folder_id: folderNodeId,
-								fan_rel_path: file.rel_path,
-								fan_index: index,
-								fan_rotation: layout.rotation,
-							};
-							const fanNodeTransition = `${FAN_MOVE_TRANSITION} ${Math.min(
-								0.18,
-								index * 0.022,
-							).toFixed(3)}s`;
-							if (file.is_markdown) {
-								fanNodes.push({
-									id,
-									type: "note",
-									position,
-									zIndex: layout.zIndex,
-									style: { transition: fanNodeTransition },
-									data: {
-										noteId: file.rel_path,
-										title:
-											preview?.title?.trim() || titleForFile(file.rel_path),
-										content: preview?.preview ?? "",
-										...commonData,
-									},
-								});
-							} else {
-								fanNodes.push({
-									id,
-									type: "file",
-									position,
-									zIndex: layout.zIndex,
-									style: { transition: fanNodeTransition },
-									data: {
-										path: file.rel_path,
-										title: file.name || titleForFile(file.rel_path),
-										...commonData,
-									},
-								});
-							}
-							minX = Math.min(minX, position.x);
-							minY = Math.min(minY, position.y);
-							maxX = Math.max(maxX, position.x + width);
-							maxY = Math.max(maxY, position.y + height);
-						}
-
-						const fanBounds: RectBox = {
-							left: minX,
-							top: minY,
-							right: maxX,
-							bottom: maxY,
-						};
-						const reflowDeltaX =
-							maxX - minX + FAN_REFLOW_X_PADDING + FAN_COLLISION_MARGIN;
-						const displacedByNodeId = new Map<
-							string,
-							{ x: number; y: number }
-						>();
-						const next: CanvasNode[] = [];
-						const spatialIndex = createSpatialHash(256);
-
-						for (const node of prev) {
-							if (fanNodeIds.has(node.id)) continue;
-							if (node.id === folderNodeId) {
-								const expandedFolderNode: CanvasNode = {
-									...node,
-									data: { ...node.data, fan_expanded: true },
-								};
-								next.push(expandedFolderNode);
-								const rect = nodeRectAtPosition(
-									expandedFolderNode,
-									expandedFolderNode.position,
-								);
-								spatialIndex.insert(rect);
-								continue;
-							}
-							if (typeof node.data.fan_parent_folder_id === "string") continue;
-							next.push(node);
-						}
-
-						for (const node of fanNodes) {
-							const rect = nodeRectAtPosition(node, node.position);
-							spatialIndex.insert(rect);
-						}
-
-						const reflowCandidates = next
-							.filter((node) => node.id !== folderNodeId)
-							.map((node) => ({
-								node,
-								rect: nodeRectAtPosition(node, node.position),
-							}))
-							.filter(({ rect }) =>
-								intersectsRect(rect, fanBounds, FAN_COLLISION_MARGIN),
-							)
-							.sort((a, b) => a.node.position.x - b.node.position.x);
-
-						const movedNodeById = new Map<string, CanvasNode>();
-
-						for (const { node } of reflowCandidates) {
-							displacedByNodeId.set(node.id, { ...node.position });
-							let nextPosition = {
-								x: node.position.x + reflowDeltaX,
-								y: node.position.y,
-							};
-							if (snapToGrid) nextPosition = snapPoint(nextPosition);
-
-							let nextRect = nodeRectAtPosition(node, nextPosition);
-							let guard = 0;
-							while (
-								spatialIndex
-									.query(nextRect)
-									.some((occupied) =>
-										intersectsRect(
-											nextRect,
-											occupied,
-											FAN_COLLISION_MARGIN * 0.4,
-										),
-									) &&
-								guard < 120
-							) {
-								nextPosition = snapToGrid
-									? snapPoint({
-											x: nextPosition.x + FAN_REFLOW_SCAN_STEP,
-											y: nextPosition.y,
-										})
-									: {
-											x: nextPosition.x + FAN_REFLOW_SCAN_STEP,
-											y: nextPosition.y,
-										};
-								nextRect = nodeRectAtPosition(node, nextPosition);
-								guard += 1;
-							}
-
-							const movedNode: CanvasNode = {
-								...node,
-								position: nextPosition,
-								style: {
-									...(node.style ?? {}),
-									transition: FAN_MOVE_TRANSITION,
-								},
-							};
-							movedNodeById.set(node.id, movedNode);
-							spatialIndex.insert(nextRect);
-						}
-
-						const nextWithReflow = next.map(
-							(node) => movedNodeById.get(node.id) ?? node,
-						);
-
-						folderFanStateRef.current.set(folderNodeId, {
-							fanNodeIds,
-							displacedByNodeId,
-						});
-						return [...nextWithReflow, ...fanNodes];
-					});
-					handleReflowGrid();
-				})
-				.then(() => {
-					if (fanTransitionCleanupRef.current != null) {
-						window.clearTimeout(fanTransitionCleanupRef.current);
-					}
-					fanTransitionCleanupRef.current = window.setTimeout(() => {
-						setNodes((prev) =>
-							prev.map((n) => {
-								if (
-									!n.style ||
-									typeof n.style.transition !== "string" ||
-									!n.style.transition.startsWith("transform 320ms")
-								) {
-									return n;
-								}
-								const { transition: _, ...restStyle } = n.style;
-								return { ...n, style: restStyle };
-							}),
-						);
-						fanTransitionCleanupRef.current = null;
-					}, FAN_MOVE_TRANSITION_MS + 50);
-				})
-				.finally(() => {
-					folderFanLoadingRef.current.delete(folderNodeId);
-				});
-		},
-		[
-			collapseFolderFan,
-			handleReflowGrid,
-			loadFolderFanEntries,
-			setNodes,
-			snapToGrid,
-		],
-	);
-
 	const handleSelectionChange = useCallback(
 		(params: OnSelectionChangeParams) => {
 			onSelectionChange?.(params.nodes as CanvasNode[]);
@@ -769,9 +392,6 @@ function CanvasPane({
 			newFolderInDir: onNewFolderInDir,
 			reflowGrid: handleReflowGrid,
 			renamePath: onRenamePath,
-			toggleFolderFan,
-			holdFolderPreview: handleFolderPreviewHold,
-			releaseFolderPreview: handleFolderPreviewRelease,
 		}),
 		[
 			onOpenNote,
@@ -780,9 +400,6 @@ function CanvasPane({
 			onNewFolderInDir,
 			handleReflowGrid,
 			onRenamePath,
-			toggleFolderFan,
-			handleFolderPreviewHold,
-			handleFolderPreviewRelease,
 		],
 	);
 
