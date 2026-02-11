@@ -32,6 +32,7 @@ import {
 import { titleForFile } from "../../lib/notePreview";
 import type { IndexNotePreview, RecentEntry } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
+import { Globe, Grid3X3, Layout } from "../Icons";
 import { CanvasNoteOverlayEditor } from "./CanvasNoteOverlayEditor";
 import { CanvasActionsContext, CanvasNoteEditContext } from "./contexts";
 import { useCanvasHistory } from "./hooks/useCanvasHistory";
@@ -47,7 +48,6 @@ import {
 	NoteNode,
 	TextNode,
 } from "./nodes";
-import { Globe, Grid3X3, Layout } from "../Icons";
 import {
 	isFileNode,
 	isFolderNode,
@@ -314,11 +314,7 @@ function CanvasPane({
 		return snapToGrid ? snapPoint({ x, y }) : { x, y };
 	}, [canvasBounds.maxRight, snapToGrid]);
 
-	const {
-		handleAddLinkNode,
-		handleReflowGrid,
-	} = useCanvasToolbarActions({
-		nodes,
+	const { handleAddLinkNode, handleReflowGrid } = useCanvasToolbarActions({
 		setNodes,
 		findDropPosition,
 		vaultPath,
@@ -419,6 +415,7 @@ function CanvasPane({
 		(folderNodeId: string) => {
 			if (folderFanStateRef.current.has(folderNodeId)) {
 				collapseFolderFan(folderNodeId);
+				handleReflowGrid();
 				return;
 			}
 			if (folderFanLoadingRef.current.has(folderNodeId)) return;
@@ -445,9 +442,11 @@ function CanvasPane({
 						const fanNodeIds = new Set<string>();
 						const fanNodes: CanvasNode[] = [];
 						const layoutItems = files.map((file) =>
-							file.is_markdown
-								? { width: 230, height: 160 }
-								: { width: 220, height: 200 },
+							estimateNodeSize({
+								id: file.rel_path,
+								type: file.is_markdown ? "note" : "file",
+								data: {},
+							}),
 						);
 						const fanLayout = computeFanGridLayout(
 							currentFolderNode,
@@ -462,7 +461,7 @@ function CanvasPane({
 						for (const [index, file] of files.entries()) {
 							const layout = fanLayout[index];
 							const position = { x: layout.x, y: layout.y };
-							const { width, height } = layoutItems[index];
+							const { w: width, h: height } = layoutItems[index];
 							const id = folderFanNodeId(folderNodeId, file.rel_path);
 							fanNodeIds.add(id);
 							const preview = previewsById.get(file.rel_path);
@@ -620,6 +619,7 @@ function CanvasPane({
 						});
 						return [...nextWithReflow, ...fanNodes];
 					});
+					handleReflowGrid();
 				})
 				.then(() => {
 					if (fanTransitionCleanupRef.current != null) {
@@ -646,7 +646,13 @@ function CanvasPane({
 					folderFanLoadingRef.current.delete(folderNodeId);
 				});
 		},
-		[collapseFolderFan, loadFolderFanEntries, setNodes, snapToGrid],
+		[
+			collapseFolderFan,
+			handleReflowGrid,
+			loadFolderFanEntries,
+			setNodes,
+			snapToGrid,
+		],
 	);
 
 	const handleSelectionChange = useCallback(
@@ -811,41 +817,53 @@ function CanvasPane({
 														initial={{ width: 0, opacity: 0 }}
 														animate={{ width: "auto", opacity: 1 }}
 														exit={{ width: 0, opacity: 0 }}
-														transition={{ type: "spring", stiffness: 360, damping: 30 }}
+														transition={{
+															type: "spring",
+															stiffness: 360,
+															damping: 30,
+														}}
 													>
-													<ControlButton
-														onClick={() => setSnapToGrid((v) => !v)}
-														title="Toggle snap to grid"
-														aria-label="Toggle snap to grid"
-														className={snapToGrid ? "canvasControlActive" : undefined}
-													>
-														<Grid3X3 size={14} />
-													</ControlButton>
-													<ControlButton
-														onClick={handleReflowGrid}
-														title="Reflow to grid"
-														aria-label="Reflow to grid"
-													>
-														<Layout size={14} />
-													</ControlButton>
-													<ControlButton
-														onClick={() => setShowMiniMap((v) => !v)}
-														title={showMiniMap ? "Hide minimap" : "Show minimap"}
-														aria-label={showMiniMap ? "Hide minimap" : "Show minimap"}
-														className={showMiniMap ? "canvasControlActive" : undefined}
-													>
-														<Globe size={14} />
-													</ControlButton>
+														<ControlButton
+															onClick={() => setSnapToGrid((v) => !v)}
+															title="Toggle snap to grid"
+															aria-label="Toggle snap to grid"
+															className={
+																snapToGrid ? "canvasControlActive" : undefined
+															}
+														>
+															<Grid3X3 size={14} />
+														</ControlButton>
+														<ControlButton
+															onClick={handleReflowGrid}
+															title="Reflow to grid"
+															aria-label="Reflow to grid"
+														>
+															<Layout size={14} />
+														</ControlButton>
+														<ControlButton
+															onClick={() => setShowMiniMap((v) => !v)}
+															title={
+																showMiniMap ? "Hide minimap" : "Show minimap"
+															}
+															aria-label={
+																showMiniMap ? "Hide minimap" : "Show minimap"
+															}
+															className={
+																showMiniMap ? "canvasControlActive" : undefined
+															}
+														>
+															<Globe size={14} />
+														</ControlButton>
 													</motion.div>
 												) : null}
 											</AnimatePresence>
 										</Controls>
-												{showMiniMap ? (
-													<MiniMap zoomable pannable position="top-right" />
-												) : null}
-											</ReactFlow>
-										</div>
-									</motion.div>
+										{showMiniMap ? (
+											<MiniMap zoomable pannable position="top-right" />
+										) : null}
+									</ReactFlow>
+								</div>
+							</motion.div>
 						)}
 					</AnimatePresence>
 				</div>

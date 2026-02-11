@@ -14,7 +14,7 @@ export const STICKY_COLORS = [
 export const NODE_BASE_DIMENSIONS = {
 	"rfNodeNote--xs": { width: "100px", minHeight: "80px" },
 	"rfNodeNote--small": { width: "140px", minHeight: "100px" },
-	"rfNodeNote--medium": { width: "230px", minHeight: "150px" },
+	"rfNodeNote--medium": { width: "208px", minHeight: "260px" },
 	"rfNodeNote--large": { width: "280px", minHeight: "200px" },
 	"rfNodeNote--xl": { width: "360px", minHeight: "260px" },
 	"rfNodeNote--editor": { width: "520px", minHeight: "320px" },

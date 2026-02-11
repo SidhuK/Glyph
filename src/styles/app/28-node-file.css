@@ -8,8 +8,10 @@
 	border: 1px solid var(--border-light);
 	border-radius: 12px;
 	overflow: hidden;
-	min-width: 180px;
-	max-width: 280px;
+	width: 208px;
+	height: 260px;
+	min-width: 208px;
+	max-width: 208px;
 	padding: var(--space-3) var(--space-3) var(--space-4);
 }
 

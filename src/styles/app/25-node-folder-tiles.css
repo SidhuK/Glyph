@@ -11,7 +11,7 @@
 /* ── outer wrapper ────────────────────────────────────────────────────────── */
 .rfNodeFolder {
 	width: var(--folder-node-width);
-	min-height: var(--folder-node-height);
+	height: var(--folder-node-height);
 	appearance: none;
 	text-align: left;
 	border: none;

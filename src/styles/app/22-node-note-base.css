@@ -5,7 +5,7 @@
 	gap: var(--space-2);
 	/* Allow dynamic sizing via CSS variables */
 	width: var(--base-width, 200px);
-	min-height: var(--base-height, 140px);
+	height: var(--base-height, 140px);
 	min-width: 140px;
 	max-width: 420px;
 	max-height: 420px;
@@ -39,8 +39,8 @@
 }
 
 .rfNodeNote--medium {
-	--base-width: 230px;
-	--base-height: 150px;
+	--base-width: 208px;
+	--base-height: 260px;
 	padding: var(--space-4) var(--space-5);
 }
 

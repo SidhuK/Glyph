@@ -1,10 +1,14 @@
 import { useCallback } from "react";
-import { GRID_GAP, GRID_SIZE, columnsForMaxRows, computeGridPositions } from "../../../lib/canvasLayout";
+import {
+	GRID_GAP,
+	GRID_SIZE,
+	columnsForMaxRows,
+	computeGridPositions,
+} from "../../../lib/canvasLayout";
 import { invoke } from "../../../lib/tauri";
 import type { CanvasNode } from "../types";
 
 interface UseCanvasToolbarActionsProps {
-	nodes: CanvasNode[];
 	setNodes: React.Dispatch<React.SetStateAction<CanvasNode[]>>;
 	findDropPosition: () => { x: number; y: number };
 	vaultPath: string | null;
@@ -21,7 +25,6 @@ function previewImageSrc(
 }
 
 export function useCanvasToolbarActions({
-	nodes,
 	setNodes,
 	findDropPosition,
 	vaultPath,
@@ -74,21 +77,27 @@ export function useCanvasToolbarActions({
 	const handleReflowGrid = useCallback(() => {
 		const tightGapX = Math.max(GRID_SIZE, GRID_GAP - GRID_SIZE * 2);
 		const tightGapY = GRID_SIZE * 2;
-		const columns = columnsForMaxRows(nodes.length);
-		const positions = computeGridPositions(nodes, {
-			columns,
-			paddingX: tightGapX,
-			paddingY: tightGapY,
-			safetyPxX: Math.max(8, Math.round(GRID_SIZE * 0.35)),
-			safetyPxY: Math.max(0, Math.round(GRID_SIZE * 0.1)),
-		});
-		setNodes((prev) =>
-			prev.map((n) => {
+		setNodes((prev) => {
+			const layoutNodes = prev.filter(
+				(n) =>
+					n.type !== "folderPreview" &&
+					typeof n.data.fan_parent_folder_id !== "string" &&
+					!(n.type === "folder" && n.data.fan_expanded === true),
+			);
+			const columns = columnsForMaxRows(layoutNodes.length);
+			const positions = computeGridPositions(layoutNodes, {
+				columns,
+				paddingX: tightGapX,
+				paddingY: tightGapY,
+				safetyPxX: Math.max(8, Math.round(GRID_SIZE * 0.35)),
+				safetyPxY: Math.max(0, Math.round(GRID_SIZE * 0.1)),
+			});
+			return prev.map((n) => {
 				const pos = positions.get(n.id);
 				return pos ? { ...n, position: pos } : n;
-			}),
-		);
-	}, [nodes, setNodes]);
+			});
+		});
+	}, [setNodes]);
 
 	return {
 		handleAddLinkNode,
