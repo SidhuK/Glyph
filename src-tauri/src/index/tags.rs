@@ -20,6 +20,7 @@ pub fn normalize_tag(raw: &str) -> Option<String> {
 }
 
 pub fn parse_frontmatter_tags(markdown: &str) -> Vec<String> {
+    let markdown = markdown.strip_prefix('\u{feff}').unwrap_or(markdown);
     let (yaml, _body) = split_frontmatter(markdown);
     if yaml.is_empty() {
         return Vec::new();
@@ -28,38 +29,55 @@ pub fn parse_frontmatter_tags(markdown: &str) -> Vec<String> {
         Ok(v) => v,
         Err(_) => return Vec::new(),
     };
-    let tags_val = match v.get("tags") {
-        Some(t) => t,
-        None => return Vec::new(),
-    };
     let mut out = Vec::new();
-    match tags_val {
-        serde_yaml::Value::Sequence(items) => {
-            for it in items {
-                if let serde_yaml::Value::String(s) = it {
-                    if let Some(t) = normalize_tag(s) {
-                        out.push(t);
-                    }
-                }
-            }
-        }
-        serde_yaml::Value::String(s) => {
-            let parts = if s.contains(',') {
-                s.split(',').map(|p| p.trim()).collect::<Vec<_>>()
-            } else {
-                s.split_whitespace().collect::<Vec<_>>()
-            };
-            for p in parts {
-                if let Some(t) = normalize_tag(p) {
-                    out.push(t);
-                }
-            }
-        }
-        _ => {}
+    if let Some(tags_val) = extract_tags_value(&v) {
+        collect_tags_from_yaml_value(tags_val, &mut out);
     }
     out.sort();
     out.dedup();
     out
+}
+
+fn extract_tags_value(value: &serde_yaml::Value) -> Option<&serde_yaml::Value> {
+    let map = value.as_mapping()?;
+    map.iter().find_map(|(key, val)| {
+        key.as_str()
+            .map(|k| k.eq_ignore_ascii_case("tags"))
+            .filter(|matched| *matched)
+            .map(|_| val)
+    })
+}
+
+fn collect_tags_from_yaml_value(value: &serde_yaml::Value, out: &mut Vec<String>) {
+    match value {
+        serde_yaml::Value::Sequence(items) => {
+            for item in items {
+                collect_tags_from_yaml_value(item, out);
+            }
+        }
+        serde_yaml::Value::String(s) => {
+            collect_tags_from_string(s, out);
+        }
+        serde_yaml::Value::Number(n) => {
+            if let Some(t) = normalize_tag(&n.to_string()) {
+                out.push(t);
+            }
+        }
+        _ => {}
+    }
+}
+
+fn collect_tags_from_string(raw: &str, out: &mut Vec<String>) {
+    let parts = if raw.contains(',') {
+        raw.split(',').map(|p| p.trim()).collect::<Vec<_>>()
+    } else {
+        raw.split_whitespace().collect::<Vec<_>>()
+    };
+    for part in parts {
+        if let Some(t) = normalize_tag(part) {
+            out.push(t);
+        }
+    }
 }
 
 pub fn parse_inline_tags(markdown: &str) -> Vec<String> {
