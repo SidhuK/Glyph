@@ -10,7 +10,7 @@ interface FolderPreviewNodeProps {
 export const FolderPreviewNode = memo(function FolderPreviewNode({
 	data,
 }: FolderPreviewNodeProps) {
-	const { openNote, openFolder, holdFolderPreview, releaseFolderPreview } =
+	const { openFolder, holdFolderPreview, releaseFolderPreview } =
 		useCanvasActions();
 	const folderId = typeof data.folder_id === "string" ? data.folder_id : "";
 	const relPath = typeof data.rel_path === "string" ? data.rel_path : "";
@@ -38,11 +38,7 @@ export const FolderPreviewNode = memo(function FolderPreviewNode({
 			title={isMore ? "" : relPath}
 			onClick={(e) => {
 				e.stopPropagation();
-				if (isMore) {
-					if (dir) openFolder(dir);
-				} else {
-					if (relPath) openNote(relPath);
-				}
+				if (isMore && dir) openFolder(dir);
 			}}
 			initial={{ y: -10, scale: 0.96 }}
 			animate={{ y: 0, scale: 1 }}
@@ -58,20 +54,18 @@ export const FolderPreviewNode = memo(function FolderPreviewNode({
 			<div className="rfNodeFolderPreviewTitle">
 				{isMore ? `+${moreCount} more` : name}
 			</div>
-			<button
-				type="button"
-				className="rfNodeFolderPreviewAction nodrag nopan"
-				onClick={(e) => {
-					e.stopPropagation();
-					if (isMore) {
+			{isMore ? (
+				<button
+					type="button"
+					className="rfNodeFolderPreviewAction nodrag nopan"
+					onClick={(e) => {
+						e.stopPropagation();
 						if (dir) openFolder(dir);
-					} else {
-						if (relPath) openNote(relPath);
-					}
-				}}
-			>
-				Open
-			</button>
+					}}
+				>
+					Open
+				</button>
+			) : null}
 		</motion.div>
 	);
 });

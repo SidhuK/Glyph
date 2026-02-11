@@ -13,6 +13,7 @@ import { useCanvasActions } from "../contexts";
 import { NODE_BASE_DIMENSIONS } from "../constants";
 import type { CanvasNode } from "../types";
 import { getNodeRotation } from "../utils";
+import { NoteNodePreview } from "./NoteNodePreview";
 
 export const NoteNode = memo(function NoteNode({
 	data,
@@ -116,7 +117,11 @@ export const NoteNode = memo(function NoteNode({
 					<div className="rfNodeNoteHeader">
 						<div className="rfNodeNoteTitle">{title}</div>
 					</div>
-					{hasContent && <div className="rfNodeNoteContent">{content}</div>}
+					{hasContent && (
+						<div className="rfNodeNoteContent">
+							<NoteNodePreview markdown={content} />
+						</div>
+					)}
 				</motion.div>
 			</ContextMenuTrigger>
 			<ContextMenuContent className="fileTreeCreateMenu">
