@@ -3,11 +3,13 @@ import {
 	createContext,
 	useCallback,
 	useContext,
+	useEffect,
 	useMemo,
 	useRef,
 	useState,
 } from "react";
 import { useSearch } from "../hooks/useSearch";
+import { loadSettings, setAiSidebarWidth as saveAiSidebarWidth } from "../lib/settings";
 import type { SearchResult } from "../lib/tauri";
 import { useVault } from "./VaultContext";
 
@@ -22,6 +24,8 @@ export interface UIContextValue {
 	setPaletteOpen: (open: boolean) => void;
 	aiPanelOpen: boolean;
 	setAiPanelOpen: React.Dispatch<React.SetStateAction<boolean>>;
+	aiPanelWidth: number;
+	setAiPanelWidth: (width: number) => void;
 	searchQuery: string;
 	setSearchQuery: (query: string) => void;
 	searchResults: SearchResult[];
@@ -44,7 +48,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 	const [sidebarViewMode, setSidebarViewMode] = useState<"files" | "tags">(
 		"files",
 	);
-	const [sidebarWidth, setSidebarWidth] = useState(260); // Default to CSS variable default
+	const [sidebarWidth, setSidebarWidth] = useState(260);
 	const [paletteOpen, setPaletteOpen] = useState(false);
 	const [activePreviewPath, setActivePreviewPath] = useState<string | null>(
 		null,
@@ -52,6 +56,25 @@ export function UIProvider({ children }: { children: ReactNode }) {
 	const searchInputElRef = useRef<HTMLInputElement | null>(null);
 
 	const [aiPanelOpen, setAiPanelOpen] = useState(false);
+	const [aiPanelWidth, setAiPanelWidthState] = useState(380);
+
+	useEffect(() => {
+		let cancelled = false;
+		void loadSettings().then((s) => {
+			if (cancelled) return;
+			if (typeof s.ui.aiSidebarWidth === "number") {
+				setAiPanelWidthState(s.ui.aiSidebarWidth);
+			}
+		});
+		return () => {
+			cancelled = true;
+		};
+	}, []);
+
+	const setAiPanelWidth = useCallback((width: number) => {
+		setAiPanelWidthState(width);
+		void saveAiSidebarWidth(width);
+	}, []);
 
 	const {
 		searchQuery,
@@ -94,6 +117,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			setPaletteOpen,
 			aiPanelOpen,
 			setAiPanelOpen,
+			aiPanelWidth,
+			setAiPanelWidth,
 			searchQuery,
 			setSearchQuery,
 			searchResults,
@@ -112,6 +137,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			sidebarWidth,
 			paletteOpen,
 			aiPanelOpen,
+			aiPanelWidth,
+			setAiPanelWidth,
 			searchQuery,
 			setSearchQuery,
 			searchResults,

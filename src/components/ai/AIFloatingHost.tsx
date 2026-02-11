@@ -1,4 +1,5 @@
 import { AnimatePresence, motion } from "motion/react";
+import { useUIContext } from "../../contexts";
 import { AiLattice } from "../Icons";
 import { AIPanel } from "./AIPanel";
 
@@ -19,6 +20,8 @@ export function AIFloatingHost({
 	onAddAttachmentsToCanvas,
 	onCreateNoteFromLastAssistant,
 }: AIFloatingHostProps) {
+	const { aiPanelWidth } = useUIContext();
+
 	return (
 		<div
 			className="aiFloatingHost"
@@ -37,6 +40,7 @@ export function AIFloatingHost({
 				onClose={onToggle}
 				onAddAttachmentsToCanvas={onAddAttachmentsToCanvas}
 				onCreateNoteFromLastAssistant={onCreateNoteFromLastAssistant}
+				width={aiPanelWidth}
 			/>
 			<AnimatePresence initial={false}>
 				{!isOpen ? (

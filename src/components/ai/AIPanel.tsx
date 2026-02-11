@@ -92,6 +92,7 @@ interface AIPanelProps {
 	onAddAttachmentsToCanvas: (paths: string[]) => Promise<void>;
 	onCreateNoteFromLastAssistant: (markdown: string) => Promise<void>;
 	onClose: () => void;
+	width?: number;
 }
 
 export function AIPanel({
@@ -101,6 +102,7 @@ export function AIPanel({
 	onAddAttachmentsToCanvas,
 	onCreateNoteFromLastAssistant,
 	onClose,
+	width,
 }: AIPanelProps) {
 	const transport = useMemo(() => new TauriChatTransport(), []);
 	const chat = useChat({ transport, experimental_throttle: 32 });
@@ -463,6 +465,7 @@ export function AIPanel({
 			style={{
 				transform: `translate(${pos.x}px, ${pos.y}px)`,
 				pointerEvents: isOpen ? "auto" : "none",
+				...(width ? { width: `${width}px` } : {}),
 			}}
 			initial={false}
 			animate={

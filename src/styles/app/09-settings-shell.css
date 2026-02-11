@@ -40,7 +40,7 @@
 .settingsHeader {
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
+	justify-content: flex-end;
 	height: var(--header-height);
 	padding: 0 var(--space-4);
 	border-bottom: 1px solid var(--border-light);
@@ -48,13 +48,6 @@
 	backdrop-filter: blur(16px);
 	z-index: 2;
 	-webkit-app-region: drag;
-}
-
-.settingsHeaderLeft {
-	display: flex;
-	align-items: center;
-	gap: var(--space-3);
-	min-width: 0;
 }
 
 .settingsHeaderTitle {
@@ -78,18 +71,7 @@
 	-webkit-app-region: no-drag;
 }
 
-.settingsSearch {
-	-webkit-app-region: no-drag;
-}
 
-.settingsSearchInput {
-	height: 30px;
-	min-width: 180px;
-	border-radius: var(--radius-full);
-	padding-left: var(--space-4);
-	background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
-	border: 1px solid color-mix(in srgb, var(--border-light) 70%, transparent);
-}
 
 .settingsBody {
 	flex: 1;
@@ -164,10 +146,7 @@
 	text-align: left;
 }
 
-.settingsNavHint {
-	font-size: 10px;
-	color: var(--text-tertiary);
-}
+
 
 .settingsNavActive {
 	position: absolute;

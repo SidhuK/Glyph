@@ -15,8 +15,6 @@ import {
 import { AiSettingsPane } from "./components/settings/AiSettingsPane";
 import { GeneralSettingsPane } from "./components/settings/GeneralSettingsPane";
 import { VaultSettingsPane } from "./components/settings/VaultSettingsPane";
-import { Button } from "./components/ui/shadcn/button";
-import { Input } from "./components/ui/shadcn/input";
 import { useTauriEvent } from "./lib/tauriEvents";
 import type { SettingsTab } from "./lib/windows";
 import { cn } from "./utils/cn";
@@ -65,28 +63,12 @@ export default function SettingsApp() {
 	const tabs = useMemo(
 		() =>
 			[
-				{
-					id: "general",
-					label: "General",
-					description: "Appearance, typography, accessibility",
-					icon: SettingsIcon,
-				},
-				{
-					id: "vault",
-					label: "Vault",
-					description: "Storage, indexing, backups",
-					icon: FolderOpen,
-				},
-				{
-					id: "ai",
-					label: "AI",
-					description: "Providers, defaults, safety",
-					icon: Sparkles,
-				},
+				{ id: "general", label: "General", icon: SettingsIcon },
+				{ id: "vault", label: "Vault", icon: FolderOpen },
+				{ id: "ai", label: "AI", icon: Sparkles },
 			] as Array<{
 				id: SettingsTab;
 				label: string;
-				description: string;
 				icon: typeof SettingsIcon;
 			}>,
 		[],
@@ -129,30 +111,12 @@ export default function SettingsApp() {
 		<div className="settingsShell">
 			<div className="settingsBackdrop" aria-hidden="true" />
 			<div className="settingsHeader" data-tauri-drag-region>
-				<div className="settingsHeaderLeft">
+				<div className="settingsHeaderRight">
 					<div className="settingsHeaderTitle">
 						<SettingsIcon size={16} />
 						<span>Settings</span>
 					</div>
 					<div className="settingsHeaderSubtitle">{title}</div>
-				</div>
-				<div className="settingsHeaderRight">
-					<div className="settingsSearch" data-window-drag-ignore>
-						<Input
-							className="settingsSearchInput"
-							placeholder="Search settings"
-						/>
-					</div>
-					<Button
-						type="button"
-						variant="ghost"
-						size="icon-sm"
-						onClick={() => setSettingsHash("ai")}
-						title="AI settings"
-						className={cn(tab === "ai" && "bg-accent text-accent-foreground")}
-					>
-						<Sparkles size={14} />
-					</Button>
 				</div>
 			</div>
 
@@ -187,7 +151,6 @@ export default function SettingsApp() {
 								</span>
 								<span className="settingsNavText">
 									<span>{item.label}</span>
-									<span className="settingsNavHint">{item.description}</span>
 								</span>
 								{isActive ? (
 									<motion.span

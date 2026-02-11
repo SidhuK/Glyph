@@ -14,6 +14,7 @@ import { useMenuListeners } from "../../hooks/useMenuListeners";
 import { parseNotePreview } from "../../lib/notePreview";
 import type { Shortcut } from "../../lib/shortcuts";
 import { type FsEntry, invoke } from "../../lib/tauri";
+import { openSettingsWindow } from "../../lib/windows";
 import { cn } from "../../utils/cn";
 import { onWindowDragMouseDown } from "../../utils/window";
 import type { CanvasExternalCommand } from "../CanvasPane";
@@ -416,36 +417,42 @@ export function AppShell() {
 	);
 
 	const commands = useMemo<Command[]>(
-		() => [
-			{
-				id: "open-vault",
-				label: "Open vault",
-				shortcut: { meta: true, key: "o" },
-				action: onOpenVault,
-			},
-			{
-				id: "toggle-ai",
-				label: "Toggle AI",
-				shortcut: { meta: true, shift: true, key: "a" },
-				enabled: Boolean(vaultPath),
-				action: () => setAiPanelOpen((v) => !v),
-			},
-			{
-				id: "new-note",
-				label: "New note",
-				shortcut: { meta: true, key: "n" },
-				enabled: Boolean(vaultPath),
-				action: () => void fileTree.onNewFile(),
-			},
-			{
-				id: "new-canvas",
-				label: "New canvas",
-				shortcut: { meta: true, shift: true, key: "n" },
-				enabled: Boolean(vaultPath),
-				action: async () => createCanvasAndOpen(),
-			},
-		],
-		[fileTree, createCanvasAndOpen, onOpenVault, setAiPanelOpen, vaultPath],
+	() => [
+		{
+			id: "open-settings",
+			label: "Settings",
+			shortcut: { meta: true, key: "," },
+			action: () => void openSettingsWindow(),
+		},
+		{
+			id: "open-vault",
+			label: "Open vault",
+			shortcut: { meta: true, key: "o" },
+			action: onOpenVault,
+		},
+		{
+			id: "toggle-ai",
+			label: "Toggle AI",
+			shortcut: { meta: true, shift: true, key: "a" },
+			enabled: Boolean(vaultPath),
+			action: () => setAiPanelOpen((v) => !v),
+		},
+		{
+			id: "new-note",
+			label: "New note",
+			shortcut: { meta: true, key: "n" },
+			enabled: Boolean(vaultPath),
+			action: () => void fileTree.onNewFile(),
+		},
+		{
+			id: "new-canvas",
+			label: "New canvas",
+			shortcut: { meta: true, shift: true, key: "n" },
+			enabled: Boolean(vaultPath),
+			action: async () => createCanvasAndOpen(),
+		},
+	],
+	[fileTree, createCanvasAndOpen, onOpenVault, setAiPanelOpen, vaultPath],
 	);
 
 	useCommandShortcuts({

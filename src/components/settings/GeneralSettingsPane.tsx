@@ -1,3 +1,5 @@
+import { emit } from "@tauri-apps/api/event";
+import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import {
@@ -9,7 +11,7 @@ import {
 import { GeneralSettingsSections } from "./general/GeneralSettingsSections";
 
 export function GeneralSettingsPane() {
-	const [theme, setThemeState] = useState<ThemeMode>("system");
+	const { theme: activeTheme, setTheme: setNextTheme } = useTheme();
 	const [error, setError] = useState("");
 	const [aiSidebarWidth, setAiSidebarWidthState] = useState(420);
 
@@ -18,7 +20,9 @@ export function GeneralSettingsPane() {
 		(async () => {
 			try {
 				const s = await loadSettings();
-				if (!cancelled) setThemeState(s.ui.theme);
+				if (!cancelled) {
+					setNextTheme(s.ui.theme);
+				}
 				if (!cancelled) {
 					setAiSidebarWidthState(
 						typeof s.ui.aiSidebarWidth === "number" ? s.ui.aiSidebarWidth : 420,
@@ -31,7 +35,12 @@ export function GeneralSettingsPane() {
 		return () => {
 			cancelled = true;
 		};
-	}, []);
+	}, [setNextTheme]);
+
+	const themeValue: ThemeMode =
+		activeTheme === "light" || activeTheme === "dark"
+			? activeTheme
+			: "system";
 
 	return (
 		<div className="settingsPane">
@@ -48,10 +57,11 @@ export function GeneralSettingsPane() {
 
 			<div className="settingsGrid">
 				<GeneralSettingsSections
-					theme={theme}
+					theme={themeValue}
 					onThemeChange={(next) => {
-						setThemeState(next);
+						setNextTheme(next);
 						void setTheme(next);
+						void emit("settings:theme_changed", { theme: next });
 					}}
 					aiSidebarWidth={aiSidebarWidth}
 					onAiSidebarWidthChange={(next) => {

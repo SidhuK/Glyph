@@ -19,6 +19,7 @@ export type TauriEventMap = {
 		error?: string;
 	};
 	"settings:navigate": { tab: SettingsTab };
+	"settings:theme_changed": { theme: string };
 	"notes:external_changed": { rel_path: string };
 };
 
