@@ -45,7 +45,8 @@
 	top: calc(
 		var(--app-frame) +
 		(var(--header-height) - var(--button-height-sm)) /
-		2
+		2 -
+		5px
 	);
 	left: calc(var(--sidebar-width) + 8px);
 	z-index: 3;
