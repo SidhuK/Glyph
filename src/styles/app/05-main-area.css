@@ -877,8 +877,9 @@
 .mainTab.is-active {
 	border-color: var(--border-default);
 	background: var(--bg-primary);
-	box-shadow: var(--shadow-xs);
+	box-shadow: var(--shadow-md);
 	color: var(--text-primary);
+	transform: translateY(-1px);
 }
 
 .mainTabLabel {
