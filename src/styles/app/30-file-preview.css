@@ -90,7 +90,7 @@
 
 .markdownEditorContent {
 	overflow: auto;
-	padding: 0 var(--space-6) var(--space-6);
+	padding: 0 var(--space-6);
 }
 
 .markdownEditorPane {
@@ -111,7 +111,8 @@
 	max-width: 980px;
 	margin: 0 auto;
 	flex: 1;
-	min-height: 100%;
+	min-height: 0;
+	height: 100%;
 	display: flex;
 }
 

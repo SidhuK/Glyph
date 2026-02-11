@@ -1,10 +1,6 @@
 import { EditorContent } from "@tiptap/react";
-import { SourceCodeIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { memo, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { joinYamlFrontmatter } from "../../lib/notePreview";
-import { Edit, Eye } from "../Icons";
-import { Tabs, TabsList, TabsTrigger } from "../ui/shadcn/tabs";
 import { EditorRibbon } from "./EditorRibbon";
 import { useNoteEditor } from "./hooks/useNoteEditor";
 import type { CanvasNoteInlineEditorProps } from "./types";
@@ -16,7 +12,6 @@ function normalizeBody(markdown: string): string {
 export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	markdown,
 	mode,
-	onModeChange,
 	onChange,
 }: CanvasNoteInlineEditorProps) {
 	const {
@@ -69,27 +64,6 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 
 	return (
 		<div className="rfNodeNoteEditor nodrag nopan">
-			<div className="rfNodeNoteEditorHeaderBar nodrag nopan nowheel">
-				<div className="rfNodeNoteEditorHeaderSpacer" />
-				<Tabs
-					value={mode}
-					onValueChange={(value) =>
-						onModeChange(value as "plain" | "preview" | "rich")
-					}
-				>
-					<TabsList>
-						<TabsTrigger value="rich" title="Editing mode">
-							<Edit size={14} />
-						</TabsTrigger>
-						<TabsTrigger value="preview" title="View mode">
-							<Eye size={14} />
-						</TabsTrigger>
-						<TabsTrigger value="plain" title="Raw markdown mode">
-							<HugeiconsIcon icon={SourceCodeIcon} size={14} />
-						</TabsTrigger>
-					</TabsList>
-				</Tabs>
-			</div>
 			<div className="rfNodeNoteEditorBody nodrag nopan nowheel">
 				{mode === "plain" ? (
 					<textarea

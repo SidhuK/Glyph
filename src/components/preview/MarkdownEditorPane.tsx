@@ -1,11 +1,13 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { SourceCodeIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import {
 	CanvasNoteInlineEditor,
 	type CanvasInlineEditorMode,
 } from "../CanvasNoteInlineEditor";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { invoke } from "../../lib/tauri";
-import { RefreshCw, Save } from "../Icons";
+import { Edit, Eye, RefreshCw, Save } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 
 interface MarkdownEditorPaneProps {
@@ -79,6 +81,39 @@ export function MarkdownEditorPane({
 	return (
 		<section className="filePreviewPane markdownEditorPane">
 			<div className="markdownEditorFloatActions">
+				<Button
+					type="button"
+					variant="outline"
+					size="icon-sm"
+					onClick={() => setMode("rich")}
+					aria-label="Editing mode"
+					title="Editing mode"
+					data-state={mode === "rich" ? "active" : "inactive"}
+				>
+					<Edit size={14} />
+				</Button>
+				<Button
+					type="button"
+					variant="outline"
+					size="icon-sm"
+					onClick={() => setMode("preview")}
+					aria-label="Preview mode"
+					title="Preview mode"
+					data-state={mode === "preview" ? "active" : "inactive"}
+				>
+					<Eye size={14} />
+				</Button>
+				<Button
+					type="button"
+					variant="outline"
+					size="icon-sm"
+					onClick={() => setMode("plain")}
+					aria-label="Raw markdown mode"
+					title="Raw markdown mode"
+					data-state={mode === "plain" ? "active" : "inactive"}
+				>
+					<HugeiconsIcon icon={SourceCodeIcon} size={14} />
+				</Button>
 				<Button
 					type="button"
 					variant="outline"
