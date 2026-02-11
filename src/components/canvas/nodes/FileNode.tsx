@@ -1,12 +1,50 @@
 import { Handle, Position } from "@xyflow/react";
 import { motion } from "motion/react";
-import { memo } from "react";
+import { memo, useEffect, useMemo, useState } from "react";
+import { invoke } from "../../../lib/tauri";
+import { getInAppPreviewKind } from "../../../utils/filePreview";
 import { getNodeRotation } from "../utils";
 
 interface FileNodeProps {
 	data: Record<string, unknown>;
 	id: string;
 	selected?: boolean;
+}
+
+const BINARY_PREVIEW_MAX_BYTES = 8 * 1024 * 1024;
+const previewCache = new Map<string, string | null>();
+const previewInflight = new Map<string, Promise<string | null>>();
+
+async function loadPreviewDataUrl(path: string): Promise<string | null> {
+	if (previewCache.has(path)) return previewCache.get(path) ?? null;
+	const existing = previewInflight.get(path);
+	if (existing) return existing;
+
+	const request = (async () => {
+		try {
+			const doc = await invoke("vault_read_binary_preview", {
+				path,
+				max_bytes: BINARY_PREVIEW_MAX_BYTES,
+			});
+			const src = typeof doc?.data_url === "string" ? doc.data_url : null;
+			previewCache.set(path, src);
+			return src;
+		} catch {
+			previewCache.set(path, null);
+			return null;
+		} finally {
+			previewInflight.delete(path);
+		}
+	})();
+	previewInflight.set(path, request);
+	return request;
+}
+
+function compactPath(path: string): string {
+	if (!path) return "";
+	const parts = path.split("/").filter(Boolean);
+	if (parts.length <= 2) return path;
+	return `${parts[0]}/…/${parts[parts.length - 1]}`;
 }
 
 export const FileNode = memo(function FileNode({
@@ -25,7 +63,12 @@ export const FileNode = memo(function FileNode({
 				? (data.path.split("/").pop() ?? data.path)
 				: "File";
 	const path = typeof data.path === "string" ? data.path : "";
-	const imageSrc = typeof data.image_src === "string" ? data.image_src : "";
+	const storedImageSrc =
+		typeof data.image_src === "string" ? data.image_src : null;
+	const previewKind = path ? getInAppPreviewKind(path) : null;
+	const isPreviewableMedia = previewKind === "image" || previewKind === "pdf";
+	const [previewSrc, setPreviewSrc] = useState<string>(storedImageSrc ?? "");
+	const overlaySub = useMemo(() => compactPath(path), [path]);
 	const rotation = isFanNode ? fanRotation : getNodeRotation(id) * 0.8;
 	const motionInitial = isFanNode
 		? { opacity: 0, scale: 0.97, y: -12 }
@@ -54,6 +97,29 @@ export const FileNode = memo(function FileNode({
 				delay: Math.min(0.18, fanIndex * 0.022),
 			} as const)
 		: ({ duration: 0.15 } as const);
+	const pdfSrc = previewSrc
+		? `${previewSrc}#page=1&view=FitH&toolbar=0&navpanes=0&scrollbar=0`
+		: "";
+
+	useEffect(() => {
+		if (storedImageSrc) {
+			setPreviewSrc(storedImageSrc);
+			return;
+		}
+		if (!isPreviewableMedia || !path) {
+			setPreviewSrc("");
+			return;
+		}
+
+		let cancelled = false;
+		void loadPreviewDataUrl(path).then((src) => {
+			if (cancelled) return;
+			setPreviewSrc(src ?? "");
+		});
+		return () => {
+			cancelled = true;
+		};
+	}, [isPreviewableMedia, path, storedImageSrc]);
 
 	return (
 		<motion.div
@@ -66,12 +132,15 @@ export const FileNode = memo(function FileNode({
 		>
 			<Handle type="target" position={Position.Left} />
 			<Handle type="source" position={Position.Right} />
-			{imageSrc ? (
-				<img className="rfNodeFileThumb" alt="" src={imageSrc} />
+			{previewSrc && previewKind === "image" ? (
+				<img className="rfNodeFileThumb" alt="" src={previewSrc} />
 			) : null}
-			<div className="rfNodeTitle">{title}</div>
-			<div className="rfNodeSub mono">
-				{path ? `${path.slice(0, 14)}…` : ""}
+			{previewSrc && previewKind === "pdf" ? (
+				<object className="rfNodeFilePdf" data={pdfSrc} type="application/pdf" />
+			) : null}
+			<div className="rfNodeFileOverlay">
+				<div className="rfNodeTitle">{title}</div>
+				<div className="rfNodeSub mono">{overlaySub}</div>
 			</div>
 		</motion.div>
 	);
