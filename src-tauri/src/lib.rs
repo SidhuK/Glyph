@@ -237,6 +237,7 @@ pub fn run() {
             index::commands::index_rebuild,
             index::commands::index_note_previews_batch,
             index::commands::search,
+            index::commands::search_with_tags,
             index::commands::recent_notes,
             index::commands::tags_list,
             index::commands::tag_notes,

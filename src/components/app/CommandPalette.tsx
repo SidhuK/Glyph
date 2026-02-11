@@ -48,6 +48,28 @@ const springTransition = {
 	damping: 35,
 } as const;
 
+function parseSearchQuery(raw: string): { tags: string[]; text: string } {
+	const tokens = raw
+		.trim()
+		.split(/\s+/)
+		.filter(Boolean);
+	const tags: string[] = [];
+	const textParts: string[] = [];
+	for (const token of tokens) {
+		if (token.startsWith("#")) {
+			tags.push(token);
+			continue;
+		}
+		if (token.toLowerCase().startsWith("tag:")) {
+			const rest = token.slice(4).trim();
+			if (rest) tags.push(rest.startsWith("#") ? rest : `#${rest}`);
+			continue;
+		}
+		textParts.push(token);
+	}
+	return { tags, text: textParts.join(" ").trim() };
+}
+
 function renderSnippet(snippet: string): ReactNode[] {
 	const parts = snippet.split(/([⟦⟧])/);
 	const out: ReactNode[] = [];
@@ -170,14 +192,13 @@ export function CommandPalette({
 			return;
 		}
 		setIsSearching(true);
-		const normalizedTag = trimmed.startsWith("#")
-			? trimmed
-			: trimmed.startsWith("tag:")
-				? `#${trimmed.slice(4).trim()}`
-				: "";
+		const parsed = parseSearchQuery(trimmed);
 		debounceRef.current = setTimeout(() => {
-			(normalizedTag
-				? invoke("tag_notes", { tag: normalizedTag })
+			(parsed.tags.length > 0
+				? invoke("search_with_tags", {
+						tags: parsed.tags,
+						query: parsed.text || null,
+					})
 				: invoke("search", { query: trimmed }))
 				.then((results) => {
 					setSearchResults(results);
