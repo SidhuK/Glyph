@@ -33,6 +33,59 @@ const CalloutDecorations = Extension.create({
 		const key = new PluginKey("callout-decorations");
 		return [
 			new Plugin({
+				key: new PluginKey("callout-shortcut-transform"),
+				appendTransaction(transactions, _oldState, newState) {
+					if (!transactions.some((tr) => tr.docChanged)) return null;
+
+					const blockquote = newState.schema.nodes.blockquote;
+					const paragraph = newState.schema.nodes.paragraph;
+					const textNode = newState.schema.text.bind(newState.schema);
+					if (!blockquote || !paragraph) return null;
+
+					const replacements: Array<{
+						pos: number;
+						size: number;
+						marker: string;
+					}> = [];
+
+					newState.doc.descendants((node, pos) => {
+						if (node.type !== paragraph || node.childCount !== 1) return;
+						const text = node.textContent ?? "";
+						const match = text.match(/^\s*>\s*\[!([A-Za-z_-]+)\]\s*(.*)$/);
+						if (!match) return;
+						const rawKind = (match[1] ?? "note").toLowerCase();
+						const kind = rawKind === "warn" ? "warning" : rawKind;
+						const tail = (match[2] ?? "").trim();
+						const marker = tail.length ? `[!${kind}] ${tail}` : `[!${kind}]`;
+						replacements.push({ pos, size: node.nodeSize, marker });
+					});
+
+					if (!replacements.length) return null;
+
+					let tr = newState.tr;
+					for (let i = replacements.length - 1; i >= 0; i -= 1) {
+						const replacement = replacements[i];
+						const calloutNode = blockquote.create(
+							null,
+							[
+								paragraph.create(
+									null,
+									replacement.marker ? textNode(replacement.marker) : null,
+								),
+								paragraph.create(),
+							].filter(Boolean),
+						);
+						tr = tr.replaceWith(
+							replacement.pos,
+							replacement.pos + replacement.size,
+							calloutNode,
+						);
+					}
+
+					return tr.docChanged ? tr : null;
+				},
+			}),
+			new Plugin({
 				key,
 				props: {
 					decorations(state) {
