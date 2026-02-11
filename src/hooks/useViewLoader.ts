@@ -21,7 +21,6 @@ export interface UseViewLoaderResult {
 	loadAndBuildFolderView: (dir: string) => Promise<void>;
 	loadAndBuildSearchView: (query: string) => Promise<void>;
 	loadAndBuildTagView: (tag: string) => Promise<void>;
-	loadCanvasView: (id: string) => Promise<void>;
 }
 
 export interface UseViewLoaderDeps {
@@ -144,31 +143,6 @@ export function useViewLoader(deps: UseViewLoaderDeps): UseViewLoaderResult {
 		[loadAndBuildView],
 	);
 
-	const loadCanvasView = useCallback(
-		async (id: string) => {
-			const requestVersion = loadRequestVersionRef.current + 1;
-			loadRequestVersionRef.current = requestVersion;
-			const isStale = () => loadRequestVersionRef.current !== requestVersion;
-			setError("");
-			setCanvasLoadingMessage("");
-			try {
-				const loaded = await loadViewDoc({ kind: "canvas", id });
-				if (isStale()) return;
-				if (!loaded.doc) {
-					setError("Canvas not found.");
-					return;
-				}
-				setActiveViewPath(loaded.path);
-				setActiveViewDocAndRef(loaded.doc);
-				activeViewPathRef.current = loaded.path;
-			} catch (e) {
-				if (isStale()) return;
-				setError(extractErrorMessage(e));
-			}
-		},
-		[setError, setActiveViewDocAndRef],
-	);
-
 	return {
 		activeViewPath,
 		activeViewDoc,
@@ -179,6 +153,5 @@ export function useViewLoader(deps: UseViewLoaderDeps): UseViewLoaderResult {
 		loadAndBuildFolderView,
 		loadAndBuildSearchView,
 		loadAndBuildTagView,
-		loadCanvasView,
 	};
 }

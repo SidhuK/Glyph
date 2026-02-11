@@ -251,6 +251,20 @@
 	white-space: nowrap;
 }
 
+.fileTreeExtBadge {
+	flex-shrink: 0;
+	font-size: 9px;
+	line-height: 1;
+	padding: 1px 4px;
+	border-radius: var(--radius-sm);
+	background: var(--bg-hover);
+	color: var(--text-tertiary);
+	text-transform: uppercase;
+	letter-spacing: 0.03em;
+	margin-left: auto;
+	white-space: nowrap;
+}
+
 .fileTreeRenameInput {
 	flex: 1;
 	min-width: 0;

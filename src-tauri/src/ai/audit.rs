@@ -54,7 +54,6 @@ pub fn write_audit_log(
             "profile_id": request.profile_id,
             "messages": request.messages,
             "context_manifest": request.context_manifest,
-            "canvas_id": request.canvas_id,
             "context": context_truncated,
         },
         "response": response_truncated,

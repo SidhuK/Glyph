@@ -19,16 +19,8 @@
 @import "./styles/app/16-ai-legacy.css";
 @import "./styles/app/17-filetree-head.css";
 @import "./styles/app/18-filetree-body.css";
-@import "./styles/app/20-canvas-ui.css";
-@import "./styles/app/21-canvas-node-overlays.css";
-@import "./styles/app/22-node-note-base.css";
 @import "./styles/app/23-node-note-editor-a.css";
 @import "./styles/app/24-node-note-editor-b.css";
-@import "./styles/app/25-node-folder-tiles.css";
-@import "./styles/app/26-node-text.css";
-@import "./styles/app/27-node-link.css";
-@import "./styles/app/28-node-file.css";
-@import "./styles/app/29-node-frame.css";
 @import "./styles/app/30-file-preview.css";
 @import "./styles/app/31-responsive.css";
 @import "./styles/app/32-command-palette.css";

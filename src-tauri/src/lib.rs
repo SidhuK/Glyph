@@ -1,5 +1,4 @@
 mod ai;
-mod canvas;
 mod index;
 mod io_atomic;
 mod lattice_fs;
@@ -224,10 +223,6 @@ pub fn run() {
             ai::commands::ai_chat_history_list,
             ai::commands::ai_chat_history_get,
             ai::models::ai_models_list,
-            canvas::canvas_list,
-            canvas::canvas_create,
-            canvas::canvas_read,
-            canvas::canvas_write,
             index::commands::index_rebuild,
             index::commands::index_note_previews_batch,
             index::commands::search,

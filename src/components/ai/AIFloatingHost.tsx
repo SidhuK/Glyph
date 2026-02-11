@@ -7,8 +7,7 @@ interface AIFloatingHostProps {
 	isOpen: boolean;
 	onToggle: () => void;
 	activeFolderPath: string | null;
-	activeCanvasId: string | null;
-	onAddAttachmentsToCanvas: (paths: string[]) => Promise<void>;
+	onAttachContextFiles: (paths: string[]) => Promise<void>;
 	onCreateNoteFromLastAssistant: (markdown: string) => Promise<void>;
 }
 
@@ -16,8 +15,7 @@ export function AIFloatingHost({
 	isOpen,
 	onToggle,
 	activeFolderPath,
-	activeCanvasId,
-	onAddAttachmentsToCanvas,
+	onAttachContextFiles,
 	onCreateNoteFromLastAssistant,
 }: AIFloatingHostProps) {
 	const { aiPanelWidth } = useUIContext();
@@ -36,9 +34,8 @@ export function AIFloatingHost({
 			<AIPanel
 				isOpen={isOpen}
 				activeFolderPath={activeFolderPath}
-				activeCanvasId={activeCanvasId}
 				onClose={onToggle}
-				onAddAttachmentsToCanvas={onAddAttachmentsToCanvas}
+				onAttachContextFiles={onAttachContextFiles}
 				onCreateNoteFromLastAssistant={onCreateNoteFromLastAssistant}
 				width={aiPanelWidth}
 			/>

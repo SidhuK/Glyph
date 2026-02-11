@@ -98,7 +98,7 @@ export function FilePreviewPane({
 						Open Externally
 					</Button>
 					<Button type="button" variant="outline" size="sm" onClick={onClose}>
-						Back to Canvas
+						Close Preview
 					</Button>
 				</div>
 			</header>

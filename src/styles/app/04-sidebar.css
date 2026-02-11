@@ -20,6 +20,7 @@
 	position: absolute;
 	inset: 0;
 	z-index: 0;
+	pointer-events: none;
 }
 
 .sidebar > *:not(.sidebarDragLayer) {
@@ -154,10 +155,16 @@
 	-webkit-app-region: no-drag;
 }
 
+
 .sidebarFooter {
 	margin-top: auto;
 	padding: var(--space-2) var(--space-3);
 	border-top: none;
+	-webkit-app-region: no-drag;
+}
+
+.sidebarFooter * {
+	-webkit-app-region: no-drag;
 }
 
 .sidebarFooterBtn {

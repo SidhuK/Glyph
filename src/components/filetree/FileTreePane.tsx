@@ -4,7 +4,6 @@ import { memo, useCallback, useState } from "react";
 import type { DirChildSummary, FsEntry } from "../../lib/tauri";
 import { parentDir } from "../../utils/path";
 import { Database, FolderPlus, Plus } from "../Icons";
-import { Button } from "../ui/shadcn/button";
 import {
 	ContextMenu,
 	ContextMenuContent,
@@ -12,13 +11,6 @@ import {
 	ContextMenuSeparator,
 	ContextMenuTrigger,
 } from "../ui/shadcn/context-menu";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "../ui/shadcn/dropdown-menu";
 import { FileTreeDirItem, FileTreeFileItem } from "./FileTreeItem";
 
 interface FileTreePaneProps {
@@ -210,37 +202,6 @@ export const FileTreePane = memo(function FileTreePane({
 						</ContextMenuContent>
 					</ContextMenu>
 				)}
-				<div className="fileTreeHeaderActions">
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<Button
-								type="button"
-								variant="ghost"
-								size="icon-sm"
-								title="Add to vault root"
-							>
-								<Plus size={16} />
-							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent align="end" className="fileTreeCreateMenu">
-							<DropdownMenuItem
-								className="fileTreeCreateMenuItem"
-								onClick={() => void onNewFileInDir("")}
-							>
-								<Plus size={14} />
-								Add file
-							</DropdownMenuItem>
-							<DropdownMenuSeparator className="fileTreeCreateMenuSeparator" />
-							<DropdownMenuItem
-								className="fileTreeCreateMenuItem"
-								onClick={() => void handleCreateFolder("")}
-							>
-								<FolderPlus size={14} />
-								Add folder
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
-				</div>
 			</div>
 			{rootEntries.length ? (
 				<div className="fileTreeScroll">

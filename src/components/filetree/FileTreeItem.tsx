@@ -1,8 +1,13 @@
+import {
+	ArrowDown01Icon,
+	ArrowRight01Icon,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, motion } from "motion/react";
 import type { CSSProperties, MouseEvent, ReactNode } from "react";
 import { memo, useEffect, useRef, useState } from "react";
 import type { DirChildSummary, FsEntry } from "../../lib/tauri";
-import { FolderClosed, FolderOpen, FolderPlus, Plus } from "../Icons";
+import { FolderPlus, Plus } from "../Icons";
 import {
 	ContextMenu,
 	ContextMenuContent,
@@ -10,13 +15,6 @@ import {
 	ContextMenuSeparator,
 	ContextMenuTrigger,
 } from "../ui/shadcn/context-menu";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "../ui/shadcn/dropdown-menu";
 import { basename, getFileTypeInfo } from "./fileTypeUtils";
 
 const springTransition = {
@@ -24,23 +22,6 @@ const springTransition = {
 	stiffness: 400,
 	damping: 25,
 } as const;
-
-const iconVariants = {
-	idle: { scale: 1, rotate: 0 },
-	hover: { scale: 1.1, rotate: 5 },
-	active: {
-		scale: 1.15,
-		rotate: [0, 5, -5, 0],
-		transition: {
-			rotate: {
-				duration: 0.4,
-				repeat: Number.POSITIVE_INFINITY,
-				repeatDelay: 2,
-			},
-		},
-	},
-	tap: { scale: 0.95 },
-};
 
 const rowVariants = {
 	idle: { x: 0, backgroundColor: "transparent" },
@@ -160,22 +141,6 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 			<div className="fileTreeRowShell">
 				{isRenaming ? (
 					<div className="fileTreeRow fileTreeRowEditing" style={rowStyle}>
-						<motion.span
-							className="fileTreeIcon"
-							style={{
-								color: isExpanded
-									? "var(--text-accent)"
-									: "var(--text-tertiary)",
-							}}
-							animate={{ scale: isExpanded ? 1.1 : 1 }}
-							transition={springTransition}
-						>
-							{isExpanded ? (
-								<FolderOpen size={14} />
-							) : (
-								<FolderClosed size={14} />
-							)}
-						</motion.span>
 						<input
 							ref={inputRef}
 							className="fileTreeRenameInput"
@@ -219,22 +184,11 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 								transition={springTransition}
 								title={entry.rel_path || entry.name || "Folder"}
 							>
-								<motion.span
-									className="fileTreeIcon"
-									style={{
-										color: isExpanded
-											? "var(--text-accent)"
-											: "var(--text-tertiary)",
-									}}
-									animate={{ scale: isExpanded ? 1.1 : 1 }}
-									transition={springTransition}
-								>
-									{isExpanded ? (
-										<FolderOpen size={14} />
-									) : (
-										<FolderClosed size={14} />
-									)}
-								</motion.span>
+								<HugeiconsIcon
+									icon={isExpanded ? ArrowDown01Icon : ArrowRight01Icon}
+									size={12}
+									className="fileTreeChevron"
+								/>
 								<span className="fileTreeName">{displayDirName}</span>
 							</motion.button>
 						</ContextMenuTrigger>
@@ -263,13 +217,6 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 						</ContextMenuContent>
 					</ContextMenu>
 				)}
-				{!isRenaming ? (
-					<RowCreateActions
-						dirPath={entry.rel_path}
-						onNewFileInDir={onNewFileInDir}
-						onNewFolderInDir={onNewFolderInDir}
-					/>
-				) : null}
 				{countsLabel ? (
 					<span className="fileTreeCounts" title={`${countsLabel} files`}>
 						{countsLabel}
@@ -328,15 +275,14 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 		"--row-line-opacity": depth === 0 ? 0 : 0.85,
 	} as CSSProperties;
 
-	const { Icon, color, label } = getFileTypeInfo(
-		entry.rel_path,
-		entry.is_markdown,
-	);
+	const { label } = getFileTypeInfo(entry.rel_path, entry.is_markdown);
 	const { stem: fileStem, ext: fileExt } = splitEditableFileName(entry.name);
-	const displayFileName = truncateTreeLabel(
-		entry.name.trim() || basename(entry.rel_path).trim() || "Untitled.md",
-		true,
+	const isMd = fileExt.toLowerCase() === ".md";
+	const displayStem = truncateMiddle(
+		fileStem.trim() || basename(entry.rel_path).replace(/\.[^.]+$/, "").trim() || "Untitled",
+		24,
 	);
+	const extBadge = !isMd && fileExt ? fileExt.slice(1) : "";
 	const inputRef = useRef<HTMLInputElement | null>(null);
 	const renameSubmittedRef = useRef(false);
 	const [draftName, setDraftName] = useState(fileStem || entry.name);
@@ -369,14 +315,6 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 			<div className="fileTreeRowShell">
 				{isRenaming ? (
 					<div className="fileTreeRow fileTreeRowEditing" style={rowStyle}>
-						<motion.span
-							className="fileTreeIcon"
-							variants={iconVariants}
-							animate={isActive ? "active" : "idle"}
-							style={{ color }}
-						>
-							<Icon size={14} />
-						</motion.span>
 						<input
 							ref={inputRef}
 							className="fileTreeRenameInput"
@@ -418,17 +356,10 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 									animate={isActive ? "active" : "idle"}
 									transition={springTransition}
 								>
-									<motion.span
-										className="fileTreeIcon"
-										variants={iconVariants}
-										animate={isActive ? "active" : "idle"}
-										whileHover="hover"
-										whileTap="tap"
-										style={{ color }}
-									>
-										<Icon size={14} />
-									</motion.span>
-									<span className="fileTreeName">{displayFileName}</span>
+									<span className="fileTreeName">{displayStem}</span>
+									{extBadge && (
+										<span className="fileTreeExtBadge">{extBadge}</span>
+									)}
 								</motion.button>
 							</ContextMenuTrigger>
 							<ContextMenuContent className="fileTreeCreateMenu">
@@ -462,11 +393,6 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 								</ContextMenuItem>
 							</ContextMenuContent>
 						</ContextMenu>
-						<RowCreateActions
-							dirPath={parentDirPath}
-							onNewFileInDir={onNewFileInDir}
-							onNewFolderInDir={onNewFolderInDir}
-						/>
 					</>
 				)}
 			</div>
@@ -474,55 +400,4 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 	);
 });
 
-interface RowCreateActionsProps {
-	dirPath: string;
-	onNewFileInDir: (dirPath: string) => unknown;
-	onNewFolderInDir: (dirPath: string) => unknown;
-}
 
-function RowCreateActions({
-	dirPath,
-	onNewFileInDir,
-	onNewFolderInDir,
-}: RowCreateActionsProps) {
-	const locationLabel = dirPath || "vault root";
-	const stopRowEvents = (event: MouseEvent<HTMLButtonElement>) => {
-		event.preventDefault();
-		event.stopPropagation();
-	};
-
-	return (
-		<div className="fileTreeRowActions">
-			<DropdownMenu>
-				<DropdownMenuTrigger asChild>
-					<button
-						type="button"
-						className="fileTreeActionBtn"
-						title={`Add in ${locationLabel}`}
-						onMouseDown={stopRowEvents}
-						onClick={stopRowEvents}
-					>
-						<Plus size={12} />
-					</button>
-				</DropdownMenuTrigger>
-				<DropdownMenuContent align="end" className="fileTreeCreateMenu">
-					<DropdownMenuItem
-						className="fileTreeCreateMenuItem"
-						onSelect={() => void onNewFileInDir(dirPath)}
-					>
-						<Plus size={14} />
-						Add file
-					</DropdownMenuItem>
-					<DropdownMenuSeparator className="fileTreeCreateMenuSeparator" />
-					<DropdownMenuItem
-						className="fileTreeCreateMenuItem"
-						onSelect={() => void onNewFolderInDir(dirPath)}
-					>
-						<FolderPlus size={14} />
-						Add folder
-					</DropdownMenuItem>
-				</DropdownMenuContent>
-			</DropdownMenu>
-		</div>
-	);
-}

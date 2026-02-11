@@ -6,18 +6,15 @@ import {
 	useVault,
 	useViewContext,
 } from "../../contexts";
-import { useCanvasLibrary } from "../../hooks/useCanvasLibrary";
 import { useCommandShortcuts } from "../../hooks/useCommandShortcuts";
 import { useFileTree } from "../../hooks/useFileTree";
 
 import { useMenuListeners } from "../../hooks/useMenuListeners";
-import { parseNotePreview } from "../../lib/notePreview";
 import type { Shortcut } from "../../lib/shortcuts";
 import { type FsEntry, invoke } from "../../lib/tauri";
 import { openSettingsWindow } from "../../lib/windows";
 import { cn } from "../../utils/cn";
 import { onWindowDragMouseDown } from "../../utils/window";
-import type { CanvasExternalCommand } from "../CanvasPane";
 import { PanelLeftClose, PanelLeftOpen } from "../Icons";
 import { AIFloatingHost } from "../ai/AIFloatingHost";
 import {
@@ -99,7 +96,6 @@ export function AppShell() {
 		activeViewDocRef,
 		loadAndBuildFolderView,
 		loadAndBuildTagView,
-		loadCanvasView,
 	} = useViewContext();
 
 	const {
@@ -118,9 +114,6 @@ export function AppShell() {
 	const [paletteInitialTab, setPaletteInitialTab] = useState<
 		"commands" | "search"
 	>("commands");
-	const [canvasCommand, setCanvasCommand] =
-		useState<CanvasExternalCommand | null>(null);
-	const [selectedCanvasId, setSelectedCanvasId] = useState<string | null>(null);
 	const resizeRef = useRef<HTMLDivElement>(null);
 	const dragStartXRef = useRef(0);
 	const dragStartWidthRef = useRef(0);
@@ -183,11 +176,6 @@ export function AppShell() {
 		}
 	}, [setSidebarWidth]);
 
-	useEffect(() => {
-		if (activeViewDoc?.kind !== "canvas") return;
-		setSelectedCanvasId(activeViewDoc.selector);
-	}, [activeViewDoc]);
-
 	// ---------------------------------------------------------------------------
 	// Derived callbacks
 	// ---------------------------------------------------------------------------
@@ -197,15 +185,6 @@ export function AppShell() {
 		return current.selector || "";
 	}, [activeViewDocRef]);
 
-	const setCanvasCommandForFileTree = useCallback(
-		(
-			cmd: { id: string; kind: string; noteId?: string; title?: string } | null,
-		) => {
-			setCanvasCommand(cmd as CanvasExternalCommand | null);
-		},
-		[],
-	);
-
 	const fileTree = useFileTree({
 		vaultPath,
 		setChildrenByDir,
@@ -214,7 +193,6 @@ export function AppShell() {
 		setRootEntries,
 		setActiveFilePath,
 		setActivePreviewPath,
-		setCanvasCommand: setCanvasCommandForFileTree,
 		setError,
 		loadAndBuildFolderView,
 		getActiveFolderDir,
@@ -263,8 +241,6 @@ export function AppShell() {
 		};
 	}, [fileTree, setError]);
 
-	const canvasLibrary = useCanvasLibrary();
-
 	const openFolderView = useCallback(
 		async (dir: string) => {
 			setActivePreviewPath(null);
@@ -281,77 +257,7 @@ export function AppShell() {
 		[loadAndBuildTagView, setActivePreviewPath],
 	);
 
-	const openCanvas = useCallback(
-		async (id: string) => {
-			setSelectedCanvasId(id);
-			setActivePreviewPath(null);
-			await loadCanvasView(id);
-		},
-		[loadCanvasView, setActivePreviewPath],
-	);
-
-	const createCanvasAndOpen = useCallback(async () => {
-		const created = await canvasLibrary.createCanvas("Canvas", "manual");
-		await openCanvas(created.meta.id);
-	}, [canvasLibrary, openCanvas]);
-
-	const dispatchCanvasCommand = useCallback(
-		async (command: CanvasExternalCommand) => {
-			await new Promise<void>((resolve) => {
-				window.requestAnimationFrame(() => resolve());
-			});
-			setCanvasCommand(command);
-		},
-		[],
-	);
-
-	const ensureCanvasTarget = useCallback(
-		async (source: "manual") => {
-			if (activeViewDoc?.kind === "canvas") return activeViewDoc.selector;
-			if (selectedCanvasId) {
-				await openCanvas(selectedCanvasId);
-				return selectedCanvasId;
-			}
-			const created = await canvasLibrary.createCanvas("Canvas", source);
-			setSelectedCanvasId(created.meta.id);
-			await openCanvas(created.meta.id);
-			return created.meta.id;
-		},
-		[activeViewDoc, canvasLibrary, openCanvas, selectedCanvasId],
-	);
-
-	const addBatchToCanvas = useCallback(
-		async (
-			source: "manual",
-			nodes: Extract<
-				CanvasExternalCommand,
-				{ kind: "add_nodes_batch" }
-			>["nodes"],
-		) => {
-			if (!nodes.length) return;
-			await ensureCanvasTarget(source);
-			await dispatchCanvasCommand({
-				id: crypto.randomUUID(),
-				kind: "add_nodes_batch",
-				nodes,
-			});
-		},
-		[dispatchCanvasCommand, ensureCanvasTarget],
-	);
-
-	const addAttachmentsToCanvas = useCallback(
-		async (paths: string[]) => {
-			await addBatchToCanvas(
-				"manual",
-				paths.map((path) => ({
-					kind: "file",
-					path,
-					title: basename(path),
-				})),
-			);
-		},
-		[addBatchToCanvas],
-	);
+	const attachContextFiles = useCallback(async (_paths: string[]) => {}, []);
 
 	const createNoteFromAI = useCallback(
 		async (markdown: string) => {
@@ -382,17 +288,9 @@ export function AppShell() {
 				text: body,
 				base_mtime_ms: null,
 			});
-			const preview = parseNotePreview(filePath, body);
-			await addBatchToCanvas("manual", [
-				{
-					kind: "note",
-					noteId: filePath,
-					title: preview.title,
-					content: preview.content,
-				},
-			]);
+			await fileTree.openFile(filePath);
 		},
-		[activeViewDoc, addBatchToCanvas],
+		[activeViewDoc, fileTree],
 	);
 
 	// ---------------------------------------------------------------------------
@@ -444,15 +342,8 @@ export function AppShell() {
 			enabled: Boolean(vaultPath),
 			action: () => void fileTree.onNewFile(),
 		},
-		{
-			id: "new-canvas",
-			label: "New canvas",
-			shortcut: { meta: true, shift: true, key: "n" },
-			enabled: Boolean(vaultPath),
-			action: async () => createCanvasAndOpen(),
-		},
 	],
-	[fileTree, createCanvasAndOpen, onOpenVault, setAiPanelOpen, vaultPath],
+	[fileTree, onOpenVault, setAiPanelOpen, vaultPath],
 	);
 
 	useCommandShortcuts({
@@ -529,9 +420,6 @@ export function AppShell() {
 			/>
 
 			<MainContent
-				canvasCommand={canvasCommand}
-				setCanvasCommand={setCanvasCommand}
-				loadAndBuildFolderView={openFolderView}
 				fileTree={fileTree}
 				aiOverlay={
 					vaultPath ? (
@@ -543,10 +431,7 @@ export function AppShell() {
 									? activeViewDoc.selector || ""
 									: null
 							}
-							activeCanvasId={
-								activeViewDoc?.kind === "canvas" ? activeViewDoc.selector : null
-							}
-							onAddAttachmentsToCanvas={addAttachmentsToCanvas}
+							onAttachContextFiles={attachContextFiles}
 							onCreateNoteFromLastAssistant={createNoteFromAI}
 						/>
 					) : undefined
@@ -562,7 +447,7 @@ export function AppShell() {
 				commands={commands}
 				onClose={() => setPaletteOpen(false)}
 				vaultPath={vaultPath}
-				onSelectSearchNote={(id) => void fileTree.openMarkdownFileInCanvas(id)}
+				onSelectSearchNote={(id) => void fileTree.openMarkdownFile(id)}
 			/>
 		</div>
 	);

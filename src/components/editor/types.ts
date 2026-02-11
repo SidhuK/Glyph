@@ -1,6 +1,6 @@
 import type { Editor } from "@tiptap/core";
 
-export type CanvasInlineEditorMode = "rich" | "preview";
+export type CanvasInlineEditorMode = "plain" | "rich" | "preview";
 
 export interface CanvasNoteInlineEditorProps {
 	markdown: string;
