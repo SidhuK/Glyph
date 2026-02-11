@@ -13,7 +13,6 @@
 	min-height: 0;
 }
 
-
 .canvasFlowWrapper {
 	flex: 1;
 	min-height: 0;
@@ -26,6 +25,89 @@
 	-ms-overflow-style: none;
 	background: var(--bg-canvas);
 	position: relative;
+}
+
+.canvasFloatingBreadcrumbWrap {
+	position: absolute;
+	top: calc((var(--header-height) - var(--button-height-sm)) / 2);
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 5;
+	pointer-events: none;
+}
+
+.canvasFloatingBreadcrumb {
+	display: inline-flex;
+	align-items: center;
+	gap: 3px;
+	max-width: min(64vw, 780px);
+	height: 28px;
+	min-height: 28px;
+	max-height: 28px;
+	padding: 4px 10px;
+	border-radius: 12px;
+	border: 1px solid color-mix(in srgb, var(--border-default) 64%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 78%, transparent);
+	backdrop-filter: blur(10px);
+	box-shadow: 0 10px 26px rgba(17, 24, 39, 0.14), inset 0 1px 0
+		rgba(255, 255, 255, 0.35);
+	pointer-events: auto;
+	box-sizing: border-box;
+	overflow: hidden;
+	white-space: nowrap;
+}
+
+.canvasBreadcrumbItem {
+	display: inline-flex;
+	align-items: center;
+	min-width: 0;
+}
+
+.canvasBreadcrumbBtn,
+.canvasBreadcrumbText {
+	max-width: 184px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: 11px;
+	line-height: 14px;
+	flex-shrink: 1;
+}
+
+.canvasBreadcrumbBtn {
+	border: none;
+	background: transparent;
+	color: var(--text-secondary);
+	padding: 1px 5px;
+	border-radius: 8px;
+	height: 18px;
+	cursor: pointer;
+	transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.canvasBreadcrumbBtn:hover {
+	background: color-mix(in srgb, var(--bg-hover) 78%, transparent);
+	color: var(--text-primary);
+}
+
+.canvasBreadcrumbText {
+	color: var(--text-tertiary);
+	padding: 1px 3px;
+	height: 18px;
+	display: inline-flex;
+	align-items: center;
+}
+
+.canvasBreadcrumbTextActive {
+	color: var(--text-primary);
+	font-weight: var(--font-medium);
+}
+
+.canvasBreadcrumbSep {
+	color: var(--text-tertiary);
+	font-size: 10px;
+	padding: 0 1px;
+	user-select: none;
 }
 
 .canvasFlowWrapper .react-flow {

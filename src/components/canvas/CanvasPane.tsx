@@ -79,6 +79,78 @@ const FLOW_SURFACE_BOTTOM_PADDING = 220;
 const FLOW_DEFAULT_VIEWPORT_X = 0;
 const FLOW_DEFAULT_VIEWPORT_Y = 0;
 
+type BreadcrumbItem = {
+	key: string;
+	label: string;
+	dir: string | null;
+	isActive: boolean;
+};
+
+function buildCanvasBreadcrumbItems(
+	doc: CanvasPaneProps["doc"],
+): BreadcrumbItem[] {
+	if (!doc) return [];
+	if (doc.id.startsWith("folder:")) {
+		const rawDir = doc.id.slice("folder:".length).trim();
+		const segments = rawDir
+			.split("/")
+			.map((segment) => segment.trim())
+			.filter(Boolean);
+		if (segments.length === 0) {
+			return [{ key: "vault", label: "Vault", dir: "", isActive: true }];
+		}
+		const items: BreadcrumbItem[] = [
+			{
+				key: "vault",
+				label: "Vault",
+				dir: "",
+				isActive: false,
+			},
+		];
+		for (let i = 0; i < segments.length; i++) {
+			const dir = segments.slice(0, i + 1).join("/");
+			items.push({
+				key: `dir-${dir}`,
+				label: segments[i],
+				dir,
+				isActive: i === segments.length - 1,
+			});
+		}
+		return items;
+	}
+	if (doc.id.startsWith("tag:")) {
+		return [
+			{ key: "tag-root", label: "Tag", dir: null, isActive: false },
+			{ key: "tag", label: doc.title || "Tag", dir: null, isActive: true },
+		];
+	}
+	if (doc.id.startsWith("search:")) {
+		return [
+			{ key: "search-root", label: "Search", dir: null, isActive: false },
+			{
+				key: "search",
+				label: doc.title || "Results",
+				dir: null,
+				isActive: true,
+			},
+		];
+	}
+	if (doc.id.startsWith("canvas:")) {
+		return [
+			{ key: "canvas-root", label: "Canvas", dir: null, isActive: false },
+			{
+				key: "canvas",
+				label: doc.title || "Untitled Canvas",
+				dir: null,
+				isActive: true,
+			},
+		];
+	}
+	return [
+		{ key: "view", label: doc.title || "View", dir: null, isActive: true },
+	];
+}
+
 function CanvasPane({
 	doc,
 	onSave,
@@ -725,6 +797,7 @@ function CanvasPane({
 			updateInlineMarkdown,
 		],
 	);
+	const breadcrumbItems = useMemo(() => buildCanvasBreadcrumbItems(doc), [doc]);
 
 	if (!doc) {
 		return (
@@ -762,6 +835,96 @@ function CanvasPane({
 								transition={{ type: "spring", stiffness: 260, damping: 28 }}
 							>
 								<div className="canvasFlowWrapper" ref={flowWrapperRef}>
+									<div className="canvasFloatingBreadcrumbWrap">
+										<AnimatePresence mode="wait" initial={false}>
+											<motion.nav
+												key={doc.id}
+												className="canvasFloatingBreadcrumb"
+												aria-label="Canvas breadcrumb"
+												transition={{
+													type: "tween",
+													duration: 0.16,
+													ease: [0.22, 1, 0.36, 1],
+												}}
+												variants={{
+													hidden: {
+														opacity: 0,
+														y: -8,
+														scale: 0.98,
+														filter: "blur(2px)",
+														transition: { staggerChildren: 0.012 },
+													},
+													visible: {
+														opacity: 1,
+														y: 0,
+														scale: 1,
+														filter: "blur(0px)",
+														transition: {
+															delayChildren: 0.01,
+															staggerChildren: 0.015,
+														},
+													},
+												}}
+												initial="hidden"
+												animate="visible"
+												exit="hidden"
+											>
+												{breadcrumbItems.map((item, index) => {
+													const clickable = item.dir !== null && !item.isActive;
+													return (
+														<motion.div
+															className="canvasBreadcrumbItem"
+															key={item.key}
+															layout
+															variants={{
+																hidden: { opacity: 0, y: -4, scale: 0.95 },
+																visible: { opacity: 1, y: 0, scale: 1 },
+															}}
+															transition={{
+																type: "tween",
+																duration: 0.12,
+																ease: [0.22, 1, 0.36, 1],
+															}}
+														>
+															{clickable ? (
+																<motion.button
+																	type="button"
+																	className="canvasBreadcrumbBtn"
+																	onClick={() => {
+																		if (item.dir == null) return;
+																		onOpenFolder(item.dir);
+																	}}
+																	title={`Open ${item.label}`}
+																	whileHover={{ y: -1, scale: 1.015 }}
+																	whileTap={{ scale: 0.97 }}
+																>
+																	{item.label}
+																</motion.button>
+															) : (
+																<span
+																	className={`canvasBreadcrumbText ${
+																		item.isActive
+																			? "canvasBreadcrumbTextActive"
+																			: ""
+																	}`}
+																>
+																	{item.label}
+																</span>
+															)}
+															{index < breadcrumbItems.length - 1 ? (
+																<span
+																	className="canvasBreadcrumbSep"
+																	aria-hidden="true"
+																>
+																	/
+																</span>
+															) : null}
+														</motion.div>
+													);
+												})}
+											</motion.nav>
+										</AnimatePresence>
+									</div>
 									<ReactFlow
 										nodes={nodes}
 										edges={edges}
