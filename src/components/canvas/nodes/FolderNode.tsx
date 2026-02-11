@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { memo, useEffect, useMemo, useRef } from "react";
+import { memo, useMemo } from "react";
 import {
 	ContextMenu,
 	ContextMenuContent,
@@ -27,19 +27,10 @@ const PAPER_OFFSETS = [
 
 export const FolderNode = memo(function FolderNode({
 	data,
-	id,
 	selected,
 }: FolderNodeProps) {
-	const {
-		openFolder,
-		toggleFolderFan,
-		newFileInDir,
-		newFolderInDir,
-		reflowGrid,
-		renamePath,
-	} = useCanvasActions();
-	const clickTimeoutRef = useRef<number | null>(null);
-	const isExpanded = data.fan_expanded === true;
+	const { openFolder, newFileInDir, newFolderInDir, reflowGrid, renamePath } =
+		useCanvasActions();
 	const name = typeof data.name === "string" ? data.name : "Folder";
 	const dir = typeof data.dir === "string" ? data.dir : "";
 	const totalFiles =
@@ -51,20 +42,11 @@ export const FolderNode = memo(function FolderNode({
 		[sheetCount],
 	);
 
-	useEffect(
-		() => () => {
-			if (clickTimeoutRef.current != null) {
-				window.clearTimeout(clickTimeoutRef.current);
-			}
-		},
-		[],
-	);
-
 	return (
 		<ContextMenu>
 			<ContextMenuTrigger asChild>
 				<motion.div
-					className={`rfNode rfNodeFolder nodrag nopan ${isExpanded ? "rfNodeFolderOpen" : ""}`}
+					className="rfNode rfNodeFolder nodrag nopan"
 					initial={{ opacity: 0, y: 12, scale: 0.97 }}
 					animate={{
 						opacity: 1,
@@ -72,9 +54,7 @@ export const FolderNode = memo(function FolderNode({
 						scale: selected ? 1.01 : 1,
 						boxShadow: selected
 							? "0 0 0 2px color-mix(in srgb, var(--accent) 70%, white), 0 18px 36px rgba(14, 40, 60, 0.28)"
-							: isExpanded
-								? "0 0 0 1px var(--border-focus), 0 14px 30px rgba(14, 40, 60, 0.2)"
-								: "0 14px 30px rgba(14, 40, 60, 0.2)",
+							: "0 14px 30px rgba(14, 40, 60, 0.2)",
 					}}
 					transition={{ type: "spring", stiffness: 320, damping: 26 }}
 					layout
@@ -84,29 +64,16 @@ export const FolderNode = memo(function FolderNode({
 						type="button"
 						className="rfNodeFolderMain"
 						onClick={() => {
-							if (clickTimeoutRef.current != null) {
-								window.clearTimeout(clickTimeoutRef.current);
-							}
-							clickTimeoutRef.current = window.setTimeout(() => {
-								toggleFolderFan(id);
-								clickTimeoutRef.current = null;
-							}, 160);
-						}}
-						onDoubleClick={() => {
-							if (clickTimeoutRef.current != null) {
-								window.clearTimeout(clickTimeoutRef.current);
-								clickTimeoutRef.current = null;
-							}
 							if (dir) openFolder(dir);
 						}}
 						onKeyDown={(e) => {
 							if (e.key === "Enter") {
 								e.preventDefault();
-								toggleFolderFan(id);
+								if (dir) openFolder(dir);
 							}
 						}}
 						title={name}
-						aria-label={`${name} — click to fan, double-click to open`}
+						aria-label={`${name} — open folder`}
 					>
 						<div className="rfNodeFolderTab" />
 						<div className="rfNodeFolderBack" />
@@ -131,33 +98,6 @@ export const FolderNode = memo(function FolderNode({
 								{name}
 							</div>
 						</div>
-					</button>
-					<button
-						type="button"
-						className="rfNodeFolderFanBtn"
-						onClick={(e) => {
-							e.stopPropagation();
-							toggleFolderFan(id);
-						}}
-						aria-label={isExpanded ? "Collapse folder fan" : "Expand folder fan"}
-						aria-expanded={isExpanded}
-						title={isExpanded ? "Collapse" : "Expand"}
-					>
-						<svg
-							width="14"
-							height="14"
-							viewBox="0 0 14 14"
-							fill="none"
-							aria-hidden="true"
-						>
-							<path
-								d={isExpanded ? "M3 8.5L7 4.5L11 8.5" : "M3 5.5L7 9.5L11 5.5"}
-								stroke="currentColor"
-								strokeWidth="1.5"
-								strokeLinecap="round"
-								strokeLinejoin="round"
-							/>
-						</svg>
 					</button>
 				</motion.div>
 			</ContextMenuTrigger>
