@@ -20,7 +20,7 @@ export interface UseFileTreeResult {
 	loadDir: (dirPath: string, force?: boolean) => Promise<void>;
 	toggleDir: (dirPath: string) => void;
 	openFile: (relPath: string) => Promise<void>;
-	openMarkdownFileInCanvas: (relPath: string) => Promise<void>;
+	openMarkdownFile: (relPath: string) => Promise<void>;
 	openNonMarkdownExternally: (relPath: string) => Promise<void>;
 	onNewFile: () => Promise<void>;
 	onNewFileInDir: (dirPath: string) => Promise<void>;
@@ -44,9 +44,6 @@ export interface UseFileTreeDeps {
 	setRootEntries: React.Dispatch<React.SetStateAction<FsEntry[]>>;
 	setActiveFilePath: (path: string | null) => void;
 	setActivePreviewPath: (path: string | null) => void;
-	setCanvasCommand: (
-		cmd: { id: string; kind: string; noteId?: string; title?: string } | null,
-	) => void;
 	setError: (error: string) => void;
 	loadAndBuildFolderView: (dir: string) => Promise<void>;
 	getActiveFolderDir: () => string | null;
@@ -61,7 +58,6 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		setRootEntries,
 		setActiveFilePath,
 		setActivePreviewPath,
-		setCanvasCommand,
 		setError,
 		loadAndBuildFolderView,
 		getActiveFolderDir,
@@ -79,18 +75,6 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		loadRequestVersionRef.current.clear();
 		dirSummariesInFlightRef.current.clear();
 	}, [vaultPath]);
-
-	const issueOpenNoteCommand = useCallback(
-		(relPath: string) => {
-			setCanvasCommand({
-				id: crypto.randomUUID(),
-				kind: "open_note_editor",
-				noteId: relPath,
-				title: fileTitleFromRelPath(relPath),
-			});
-		},
-		[setCanvasCommand],
-	);
 
 	const loadDir = useCallback(
 		async (dirPath: string, force = false) => {
@@ -151,27 +135,19 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		[loadDir, setExpandedDirs],
 	);
 
-	const openMarkdownFileInCanvas = useCallback(
+	const openMarkdownFile = useCallback(
 		async (relPath: string) => {
 			setError("");
 			setActivePreviewPath(null);
 			setActiveFilePath(relPath);
-			issueOpenNoteCommand(relPath);
 			try {
 				const dir = parentDir(relPath);
 				await loadAndBuildFolderView(dir);
-				issueOpenNoteCommand(relPath);
 			} catch (e) {
 				setError(extractErrorMessage(e));
 			}
 		},
-		[
-			issueOpenNoteCommand,
-			loadAndBuildFolderView,
-			setActiveFilePath,
-			setActivePreviewPath,
-			setError,
-		],
+		[loadAndBuildFolderView, setActiveFilePath, setActivePreviewPath, setError],
 	);
 
 	const openNonMarkdownExternally = useCallback(
@@ -193,7 +169,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		async (relPath: string) => {
 			if (!relPath) return;
 			if (isMarkdownPath(relPath)) {
-				await openMarkdownFileInCanvas(relPath);
+				await openMarkdownFile(relPath);
 				return;
 			}
 			setActiveFilePath(relPath);
@@ -205,7 +181,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 			await openNonMarkdownExternally(relPath);
 		},
 		[
-			openMarkdownFileInCanvas,
+			openMarkdownFile,
 			openNonMarkdownExternally,
 			setActiveFilePath,
 			setActivePreviewPath,
@@ -476,7 +452,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		loadDir,
 		toggleDir,
 		openFile,
-		openMarkdownFileInCanvas,
+		openMarkdownFile,
 		openNonMarkdownExternally,
 		onNewFile,
 		onNewFileInDir,

@@ -88,6 +88,40 @@
 	flex-direction: column;
 }
 
+.markdownEditorContent {
+	overflow: auto;
+	padding: 0 var(--space-6);
+}
+
+.markdownEditorPane {
+	position: relative;
+}
+
+.markdownEditorFloatActions {
+	position: absolute;
+	top: 8px;
+	right: 12px;
+	z-index: 6;
+	display: inline-flex;
+	gap: var(--space-1);
+}
+
+.markdownEditorCenter {
+	width: 100%;
+	max-width: 980px;
+	margin: 0 auto;
+	flex: 1;
+	min-height: 0;
+	height: 100%;
+	display: flex;
+}
+
+.markdownEditorPane .rfNodeNoteEditor {
+	border: none;
+	border-radius: 0;
+	background: transparent;
+}
+
 .filePreviewText {
 	flex: 1;
 	min-height: 0;
@@ -98,124 +132,4 @@
 	line-height: 1.5;
 	color: var(--text-primary);
 	background: var(--bg-primary);
-}
-
-/* ReactFlow edges */
-.react-flow__edge-path {
-	stroke: var(--border-default);
-	stroke-width: 1.5;
-}
-
-.react-flow__edge.selected .react-flow__edge-path {
-	stroke: var(--interactive-accent);
-	stroke-width: 2;
-}
-
-/* Remove default focus outlines on ReactFlow nodes (we style selection via shadows instead). */
-.react-flow__node:focus,
-.react-flow__node:focus-visible {
-	outline: none;
-}
-
-/* Hide the "React Flow" attribution badge */
-.react-flow__attribution,
-.xy-flow__attribution {
-	display: none !important;
-}
-
-/* Solid canvas background (no dots/grid). */
-.canvasBody .react-flow,
-.canvasBody .xy-flow,
-.canvasFlowWrapper .react-flow,
-.canvasFlowWrapper .xy-flow {
-	background: var(--bg-canvas);
-	--xy-minimap-background-color: var(--bg-secondary) !important;
-	--xy-minimap-mask-background-color: color-mix(
-		in srgb,
-		var(--bg-canvas) 68%,
-		transparent
-	) !important;
-	--xy-minimap-mask-stroke-color: var(--border-default) !important;
-	--xy-minimap-node-background-color: var(--bg-hover) !important;
-	--xy-minimap-node-stroke-color: var(--border-default) !important;
-	--xy-controls-button-background-color: var(--bg-secondary) !important;
-	--xy-controls-button-background-color-hover: var(--bg-hover) !important;
-	--xy-controls-button-color: var(--text-secondary) !important;
-	--xy-controls-button-color-hover: var(--text-primary) !important;
-	--xy-controls-button-border-color: var(--border-default) !important;
-	--xy-controls-box-shadow: var(--shadow-lg) !important;
-}
-
-/* ReactFlow controls */
-.canvasFlowWrapper .react-flow__controls,
-.canvasFlowWrapper .xy-flow__controls {
-	box-shadow: var(--shadow-lg);
-	border-radius: var(--radius-xl);
-	border: 1px solid var(--border-default);
-	overflow: hidden;
-	background: var(--bg-secondary) !important;
-	display: flex;
-	flex-direction: row !important;
-}
-
-.canvasFlowWrapper .react-flow__controls-button,
-.canvasFlowWrapper .xy-flow__controls-button {
-	background: transparent;
-	border: none;
-	border-right: 1px solid var(--border-default);
-	width: 28px;
-	height: 28px;
-	transition: all var(--transition-fast);
-	color: var(--text-secondary) !important;
-}
-
-.canvasFlowWrapper .react-flow__controls-button:last-child,
-.canvasFlowWrapper .xy-flow__controls-button:last-child {
-	border-right: none;
-}
-
-.canvasFlowWrapper .canvasControlsExtras {
-	display: inline-flex;
-	overflow: hidden;
-}
-
-.canvasFlowWrapper .react-flow__controls-button:hover,
-.canvasFlowWrapper .xy-flow__controls-button:hover {
-	background: var(--bg-hover) !important;
-	color: var(--text-primary) !important;
-}
-
-.canvasFlowWrapper .react-flow__controls-button.canvasControlActive,
-.canvasFlowWrapper .xy-flow__controls-button.canvasControlActive {
-	background: var(--bg-hover) !important;
-	color: var(--text-primary) !important;
-}
-
-.canvasFlowWrapper .react-flow__controls-button svg,
-.canvasFlowWrapper .xy-flow__controls-button svg {
-	fill: currentColor;
-	stroke: currentColor;
-	max-width: 12px;
-	max-height: 12px;
-}
-
-.canvasFlowWrapper .canvasControlEllipsis {
-	font-size: 12px;
-	line-height: 1;
-	letter-spacing: -0.03em;
-	font-weight: 600;
-}
-
-.canvasFlowWrapper .react-flow__controls-button.canvasControlToggle,
-.canvasFlowWrapper .xy-flow__controls-button.canvasControlToggle {
-	order: -1;
-}
-
-/* ReactFlow minimap */
-.canvasFlowWrapper .react-flow__minimap,
-.canvasFlowWrapper .xy-flow__minimap {
-	background: var(--bg-secondary);
-	border-radius: var(--radius-xl);
-	border: 1px solid var(--border-default);
-	box-shadow: var(--shadow-md);
 }

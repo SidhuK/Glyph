@@ -1,8 +1,6 @@
 import { EditorContent } from "@tiptap/react";
 import { memo, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { joinYamlFrontmatter } from "../../lib/notePreview";
-import { Edit, Eye } from "../Icons";
-import { Tabs, TabsList, TabsTrigger } from "../ui/shadcn/tabs";
 import { EditorRibbon } from "./EditorRibbon";
 import { useNoteEditor } from "./hooks/useNoteEditor";
 import type { CanvasNoteInlineEditorProps } from "./types";
@@ -14,7 +12,6 @@ function normalizeBody(markdown: string): string {
 export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	markdown,
 	mode,
-	onModeChange,
 	onChange,
 }: CanvasNoteInlineEditorProps) {
 	const {
@@ -67,23 +64,15 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 
 	return (
 		<div className="rfNodeNoteEditor nodrag nopan">
-			<div className="rfNodeNoteEditorHeaderBar nodrag nopan nowheel">
-				<div className="rfNodeNoteEditorHeaderSpacer" />
-				<Tabs
-					value={mode}
-					onValueChange={(value) => onModeChange(value as "preview" | "rich")}
-				>
-					<TabsList>
-						<TabsTrigger value="rich" title="Editing mode">
-							<Edit size={14} />
-						</TabsTrigger>
-						<TabsTrigger value="preview" title="View mode">
-							<Eye size={14} />
-						</TabsTrigger>
-					</TabsList>
-				</Tabs>
-			</div>
 			<div className="rfNodeNoteEditorBody nodrag nopan nowheel">
+				{mode === "plain" ? (
+					<textarea
+						className="rfNodeNoteEditorRaw mono"
+						value={markdown}
+						onChange={(event) => onChange(event.target.value)}
+						spellCheck={false}
+					/>
+				) : null}
 				{mode === "rich" ? (
 					<div className="frontmatterPreview mono">
 						<div className="frontmatterLabel">Frontmatter</div>
@@ -102,19 +91,21 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 						<pre>{frontmatter.trimEnd()}</pre>
 					</div>
 				) : null}
-				<div
-					className={[
-						"tiptapHostInline",
-						mode === "preview" ? "is-preview" : "",
-						"nodrag",
-						"nopan",
-						"nowheel",
-					]
-						.filter(Boolean)
-						.join(" ")}
-				>
-					<EditorContent editor={editor} />
-				</div>
+				{mode !== "plain" ? (
+					<div
+						className={[
+							"tiptapHostInline",
+							mode === "preview" ? "is-preview" : "",
+							"nodrag",
+							"nopan",
+							"nowheel",
+						]
+							.filter(Boolean)
+							.join(" ")}
+					>
+						<EditorContent editor={editor} />
+					</div>
+				) : null}
 			</div>
 			{editor && mode === "rich" ? (
 				<EditorRibbon editor={editor} canEdit={canEdit} />

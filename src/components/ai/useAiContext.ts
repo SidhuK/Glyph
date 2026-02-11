@@ -353,7 +353,7 @@ export function useAiContext({
 		return buildPayload();
 	}, [buildPayload]);
 
-	const resolveAttachedPathsForCanvas = useCallback(async () => {
+	const resolveAttachedPaths = useCallback(async () => {
 		const out: string[] = [];
 		const seen = new Set<string>();
 		for (const item of attachedFolders) {
@@ -388,7 +388,7 @@ export function useAiContext({
 		payloadBuilding,
 		buildPayload,
 		ensurePayload,
-		resolveAttachedPathsForCanvas,
+		resolveAttachedPaths,
 		charBudget,
 		setCharBudget,
 	};

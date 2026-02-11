@@ -216,18 +216,23 @@ pub async fn ai_audit_mark(
     let _ = uuid::Uuid::parse_str(&job_id).map_err(|_| "invalid job_id".to_string())?;
     let root = vault_state.current_root()?;
     let path = audit_log_path(&root, &job_id)?;
-    let bytes = std::fs::read(&path).map_err(|e| e.to_string())?;
-    let mut v: serde_json::Value = serde_json::from_slice(&bytes).map_err(|e| e.to_string())?;
-    if let Some(obj) = v.as_object_mut() {
-        let out = outcome.trim();
-        let out = if out.len() > 200 { &out[..200] } else { out };
-        obj.insert(
-            "outcome".to_string(),
-            serde_json::Value::String(out.to_string()),
-        );
-    }
-    let out = serde_json::to_vec_pretty(&v).map_err(|e| e.to_string())?;
-    io_atomic::write_atomic(&path, &out).map_err(|e| e.to_string())
+    tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
+        let bytes = std::fs::read(&path).map_err(|e| e.to_string())?;
+        let mut v: serde_json::Value =
+            serde_json::from_slice(&bytes).map_err(|e| e.to_string())?;
+        if let Some(obj) = v.as_object_mut() {
+            let out = outcome.trim();
+            let out = if out.len() > 200 { &out[..200] } else { out };
+            obj.insert(
+                "outcome".to_string(),
+                serde_json::Value::String(out.to_string()),
+            );
+        }
+        let out = serde_json::to_vec_pretty(&v).map_err(|e| e.to_string())?;
+        io_atomic::write_atomic(&path, &out).map_err(|e| e.to_string())
+    })
+    .await
+    .map_err(|e| e.to_string())?
 }
 
 #[tauri::command]

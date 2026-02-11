@@ -19,7 +19,6 @@ export interface ViewContextValue {
 	loadAndBuildFolderView: (dir: string) => Promise<void>;
 	loadAndBuildSearchView: (query: string) => Promise<void>;
 	loadAndBuildTagView: (tag: string) => Promise<void>;
-	loadCanvasView: (id: string) => Promise<void>;
 }
 
 const ViewContext = createContext<ViewContextValue | null>(null);
@@ -37,7 +36,6 @@ export function ViewProvider({ children }: { children: ReactNode }) {
 		loadAndBuildFolderView,
 		loadAndBuildSearchView,
 		loadAndBuildTagView,
-		loadCanvasView,
 	} = useViewLoader({ setError, startIndexRebuild });
 
 	useEffect(() => {
@@ -63,7 +61,6 @@ export function ViewProvider({ children }: { children: ReactNode }) {
 			loadAndBuildFolderView,
 			loadAndBuildSearchView,
 			loadAndBuildTagView,
-			loadCanvasView,
 		}),
 		[
 			activeViewDoc,
@@ -74,7 +71,6 @@ export function ViewProvider({ children }: { children: ReactNode }) {
 			loadAndBuildFolderView,
 			loadAndBuildSearchView,
 			loadAndBuildTagView,
-			loadCanvasView,
 		],
 	);
 

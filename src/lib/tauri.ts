@@ -1,5 +1,4 @@
 import { invoke as tauriInvoke } from "@tauri-apps/api/core";
-import type { CanvasEdge, CanvasNode } from "./canvasFlowTypes";
 
 export type {
 	CanvasEdge,
@@ -129,21 +128,6 @@ export interface NoteWriteResult {
 export interface AttachmentResult {
 	asset_rel_path: string;
 	markdown: string;
-}
-
-export interface CanvasMeta {
-	id: string;
-	title: string;
-	updated: string;
-}
-
-export interface CanvasDoc {
-	version: number;
-	id: string;
-	title: string;
-	updated: string;
-	nodes: CanvasNode[];
-	edges: CanvasEdge[];
 }
 
 export interface SearchResult {
@@ -325,14 +309,13 @@ interface TauriCommands {
 		AttachmentResult
 	>;
 
-	canvas_list: CommandDef<void, CanvasMeta[]>;
-	canvas_create: CommandDef<{ title: string }, CanvasMeta>;
-	canvas_read: CommandDef<{ id: string }, CanvasDoc>;
-	canvas_write: CommandDef<{ doc: Omit<CanvasDoc, "updated"> }, CanvasDoc>;
-
 	index_rebuild: CommandDef<void, IndexRebuildResult>;
 	index_note_previews_batch: CommandDef<{ ids: string[] }, IndexNotePreview[]>;
 	search: CommandDef<{ query: string }, SearchResult[]>;
+	search_with_tags: CommandDef<
+		{ tags: string[]; query?: string | null; limit?: number | null },
+		SearchResult[]
+	>;
 	recent_notes: CommandDef<{ limit?: number | null }, SearchResult[]>;
 	tags_list: CommandDef<{ limit?: number | null }, TagCount[]>;
 	tag_notes: CommandDef<{ tag: string; limit?: number | null }, SearchResult[]>;
@@ -357,7 +340,6 @@ interface TauriCommands {
 				messages: AiMessage[];
 				context?: string;
 				context_manifest?: unknown;
-				canvas_id?: string;
 				audit?: boolean;
 			};
 		},

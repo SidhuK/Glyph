@@ -88,8 +88,7 @@ function formatToolName(tool: string): string {
 interface AIPanelProps {
 	isOpen: boolean;
 	activeFolderPath: string | null;
-	activeCanvasId: string | null;
-	onAddAttachmentsToCanvas: (paths: string[]) => Promise<void>;
+	onAttachContextFiles: (paths: string[]) => Promise<void>;
 	onCreateNoteFromLastAssistant: (markdown: string) => Promise<void>;
 	onClose: () => void;
 	width?: number;
@@ -98,8 +97,7 @@ interface AIPanelProps {
 export function AIPanel({
 	isOpen,
 	activeFolderPath,
-	activeCanvasId,
-	onAddAttachmentsToCanvas,
+	onAttachContextFiles,
 	onCreateNoteFromLastAssistant,
 	onClose,
 	width,
@@ -249,7 +247,6 @@ export function AIPanel({
 					profile_id: profiles.activeProfileId,
 					context: built.payload || undefined,
 					context_manifest: built.manifest ?? undefined,
-					canvas_id: activeCanvasId ?? undefined,
 					audit: true,
 				},
 			},
@@ -271,14 +268,13 @@ export function AIPanel({
 						profile_id: profiles.activeProfileId,
 						context: built.payload || undefined,
 						context_manifest: built.manifest ?? undefined,
-						canvas_id: activeCanvasId ?? undefined,
 						audit: true,
 					},
 				},
 			);
 			return true;
 		},
-		[activeCanvasId, chat, context, profiles.activeProfileId],
+		[chat, context, profiles.activeProfileId],
 	);
 
 	const handleCopyAssistantResponse = useCallback(async (text: string) => {
@@ -802,12 +798,12 @@ export function AIPanel({
 								type="button"
 								variant="ghost"
 								size="icon-sm"
-								aria-label="Add attachments to canvas"
-								title="Add attachments to canvas"
+								aria-label="Attach selected context files"
+								title="Attach selected context files"
 								onClick={() =>
 									void context
-										.resolveAttachedPathsForCanvas()
-										.then((paths) => onAddAttachmentsToCanvas(paths))
+										.resolveAttachedPaths()
+										.then((paths) => onAttachContextFiles(paths))
 								}
 								disabled={context.attachedFolders.length === 0}
 							>

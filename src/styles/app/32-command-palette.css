@@ -7,12 +7,15 @@
 
 .commandPalette {
 	width: min(560px, calc(100vw - 48px));
-	max-height: min(60vh, 440px);
+	max-height: min(82vh, 760px);
 	overflow: hidden;
 	border-radius: var(--radius-lg);
 	border: 1px solid var(--border-light);
 	background: var(--bg-primary);
 	box-shadow: var(--shadow-float);
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
 }
 
 /* ── Tab row ── */
@@ -109,11 +112,31 @@
 /* ── Results list ── */
 
 .commandPaletteList {
+	flex: 1;
+	min-height: 0;
 	padding: 4px 6px 6px;
-	max-height: calc(60vh - 120px);
+	max-height: none;
 	overflow-x: hidden;
 	overflow-y: auto;
 	scroll-padding: 4px;
+	position: relative;
+	padding-top: 28px;
+}
+
+.commandPaletteResultCountPill {
+	position: sticky;
+	top: 4px;
+	z-index: 2;
+	margin: 0 auto 6px;
+	width: fit-content;
+	padding: 2px 10px;
+	border-radius: var(--radius-full);
+	border: 1px solid var(--border-light);
+	background: color-mix(in srgb, var(--bg-secondary) 82%, transparent);
+	color: var(--text-tertiary);
+	font-size: 11px;
+	line-height: 1.4;
+	backdrop-filter: blur(4px);
 }
 
 /* ── Individual item ── */

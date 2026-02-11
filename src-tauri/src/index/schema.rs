@@ -8,13 +8,6 @@ CREATE TABLE IF NOT EXISTS meta (
   value TEXT NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS canvases (
-  id TEXT PRIMARY KEY,
-  title TEXT NOT NULL,
-  updated TEXT NOT NULL,
-  doc_json TEXT NOT NULL
-);
-
 CREATE TABLE IF NOT EXISTS notes (
   id TEXT PRIMARY KEY,
   title TEXT NOT NULL,

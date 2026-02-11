@@ -1,8 +1,20 @@
+import * as Icons from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, motion } from "motion/react";
 import { useFileTreeContext, useUIContext, useVault } from "../../contexts";
+import { openSettingsWindow } from "../../lib/windows";
+import { parentDir } from "../../utils/path";
 import { FileTreePane } from "../FileTreePane";
-import { Files, Tags } from "../Icons";
+import { Files, FolderPlus, Plus, Tags } from "../Icons";
 import { TagsPane } from "../TagsPane";
+import { Button } from "../ui/shadcn/button";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuSeparator,
+	DropdownMenuTrigger,
+} from "../ui/shadcn/dropdown-menu";
 import { ScrollArea } from "../ui/shadcn/scroll-area";
 import { Tabs, TabsList, TabsTrigger } from "../ui/shadcn/tabs";
 
@@ -38,6 +50,8 @@ export function SidebarContent({
 		refreshTags,
 	} = useFileTreeContext();
 	const { sidebarViewMode, setSidebarViewMode } = useUIContext();
+
+	const targetDir = activeFilePath ? parentDir(activeFilePath) : "";
 
 	if (!vaultPath) {
 		return (
@@ -122,6 +136,48 @@ export function SidebarContent({
 						</motion.div>
 					)}
 				</AnimatePresence>
+			</div>
+			<div className="sidebarFooter" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+				<Button
+					type="button"
+					variant="ghost"
+					size="icon-sm"
+					onClick={() => void openSettingsWindow()}
+					title="Settings"
+				>
+					<HugeiconsIcon icon={Icons.Settings05Icon} size={14} />
+				</Button>
+				{sidebarViewMode === "files" && (
+					<DropdownMenu>
+						<DropdownMenuTrigger asChild>
+							<Button
+								type="button"
+								variant="ghost"
+								size="icon-sm"
+								title={`Add in ${targetDir || "vault root"}`}
+							>
+								<Plus size={14} />
+							</Button>
+						</DropdownMenuTrigger>
+						<DropdownMenuContent align="end" side="top" className="fileTreeCreateMenu">
+							<DropdownMenuItem
+								className="fileTreeCreateMenuItem"
+								onSelect={() => void onNewFileInDir(targetDir)}
+							>
+								<Plus size={14} />
+								Add file
+							</DropdownMenuItem>
+							<DropdownMenuSeparator className="fileTreeCreateMenuSeparator" />
+							<DropdownMenuItem
+								className="fileTreeCreateMenuItem"
+								onSelect={() => void onNewFolderInDir(targetDir)}
+							>
+								<FolderPlus size={14} />
+								Add folder
+							</DropdownMenuItem>
+						</DropdownMenuContent>
+					</DropdownMenu>
+				)}
 			</div>
 		</>
 	);
