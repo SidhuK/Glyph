@@ -184,6 +184,7 @@ export function AiProfileSections({
 						</div>
 						<AiModelCombobox
 							profileId={profileDraft.id}
+							provider={profileDraft.provider}
 							value={profileDraft.model}
 							secretConfigured={secretConfigured}
 							onChange={(next) => updateDraft((p) => ({ ...p, model: next }))}

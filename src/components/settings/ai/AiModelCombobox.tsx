@@ -1,15 +1,20 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { type AiModel, invoke } from "../../../lib/tauri";
+import { type AiModel, type AiProviderKind, invoke } from "../../../lib/tauri";
 
 interface AiModelComboboxProps {
 	profileId: string;
+	provider: AiProviderKind;
 	value: string;
 	secretConfigured: boolean | null;
 	onChange: (modelId: string) => void;
 }
 
+const providerNeedsApiKey = (provider: AiProviderKind): boolean =>
+	provider !== "ollama" && provider !== "openai_compat";
+
 export function AiModelCombobox({
 	profileId,
+	provider,
 	value,
 	secretConfigured,
 	onChange,
@@ -18,12 +23,14 @@ export function AiModelCombobox({
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState("");
 	const lastSecretConfiguredRef = useRef<boolean | null>(secretConfigured);
+	const requiresApiKey = providerNeedsApiKey(provider);
+	const canFetchModels = !requiresApiKey || secretConfigured === true;
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: reset cache when profile changes
 	useEffect(() => {
 		setModels(null);
 		setError("");
-	}, [profileId]);
+	}, [profileId, provider]);
 
 	const fetchModels = useCallback(async () => {
 		if (models || loading) return;
@@ -42,20 +49,26 @@ export function AiModelCombobox({
 	}, [models, loading, profileId]);
 
 	useEffect(() => {
+		if (!canFetchModels) return;
 		void fetchModels();
-	}, [fetchModels]);
+	}, [canFetchModels, fetchModels]);
 
 	useEffect(() => {
-		if (secretConfigured === true && lastSecretConfiguredRef.current !== true) {
+		if (
+			canFetchModels &&
+			secretConfigured === true &&
+			lastSecretConfiguredRef.current !== true
+		) {
 			setModels(null);
 			setError("");
 			setLoading(false);
 			void fetchModels();
 		}
 		lastSecretConfiguredRef.current = secretConfigured;
-	}, [secretConfigured, fetchModels]);
+	}, [canFetchModels, secretConfigured, fetchModels]);
 
 	const handleRetry = useCallback(() => {
+		if (!canFetchModels) return;
 		setModels(null);
 		setError("");
 		setLoading(true);
@@ -71,7 +84,7 @@ export function AiModelCombobox({
 				setLoading(false);
 			}
 		})();
-	}, [profileId]);
+	}, [canFetchModels, profileId]);
 
 	const statusLabel = loading
 		? "Connecting…"
@@ -86,7 +99,7 @@ export function AiModelCombobox({
 					id="aiModel"
 					value={value}
 					onChange={(e) => onChange(e.target.value)}
-					disabled={loading || !models}
+					disabled={loading || !models || !canFetchModels}
 				>
 					<option value="">Select a model…</option>
 					{models?.map((m) => (
@@ -103,6 +116,11 @@ export function AiModelCombobox({
 					</span>
 				) : null}
 			</div>
+			{!canFetchModels ? (
+				<div className="modelComboboxStatus">
+					Save an API key to load models for this provider.
+				</div>
+			) : null}
 			{error ? (
 				<div className="modelComboboxStatus modelComboboxError">
 					<span>{error}</span>
