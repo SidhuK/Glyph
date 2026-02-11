@@ -255,14 +255,6 @@ export function MainContent({
 									);
 								})}
 							</div>
-							<button
-								type="button"
-								className="mainTabsClearAll"
-								onClick={closeAllTabs}
-								disabled={openTabs.length === 0}
-							>
-								Close All
-							</button>
 						</div>
 						<div className="mainTabsSide" />
 					</div>

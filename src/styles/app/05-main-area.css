@@ -843,7 +843,6 @@
 	min-width: 0;
 	display: flex;
 	align-items: center;
-	gap: var(--space-2);
 }
 
 .mainTabsStrip {
@@ -852,13 +851,14 @@
 	display: flex;
 	align-items: center;
 	gap: var(--space-1);
-	overflow-x: auto;
+	overflow: hidden;
 }
 
 .mainTab {
 	height: 30px;
-	max-width: 220px;
-	display: inline-flex;
+	min-width: 76px;
+	flex: 1 1 0;
+	display: flex;
 	align-items: center;
 	gap: var(--space-2);
 	padding: 0 8px;
@@ -882,6 +882,8 @@
 }
 
 .mainTabLabel {
+	flex: 1;
+	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -910,20 +912,4 @@
 .mainTabClose:hover {
 	background: var(--bg-hover);
 	color: var(--text-primary);
-}
-
-.mainTabsClearAll {
-	flex: 0 0 auto;
-	height: 30px;
-	padding: 0 10px;
-	border-radius: var(--radius-lg);
-	border: 1px solid var(--border-light);
-	background: color-mix(in srgb, var(--bg-primary) 72%, transparent);
-	color: var(--text-secondary);
-	font-size: var(--text-xs);
-}
-
-.mainTabsClearAll:disabled {
-	opacity: 0.5;
-	cursor: default;
 }
