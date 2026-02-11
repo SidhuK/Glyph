@@ -1,7 +1,9 @@
 import { EditorContent } from "@tiptap/react";
+import { SourceCodeIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { memo, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { joinYamlFrontmatter } from "../../lib/notePreview";
-import { Edit, Eye, FileText } from "../Icons";
+import { Edit, Eye } from "../Icons";
 import { Tabs, TabsList, TabsTrigger } from "../ui/shadcn/tabs";
 import { EditorRibbon } from "./EditorRibbon";
 import { useNoteEditor } from "./hooks/useNoteEditor";
@@ -76,14 +78,14 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 					}
 				>
 					<TabsList>
-						<TabsTrigger value="plain" title="Raw markdown mode">
-							<FileText size={14} />
-						</TabsTrigger>
 						<TabsTrigger value="rich" title="Editing mode">
 							<Edit size={14} />
 						</TabsTrigger>
 						<TabsTrigger value="preview" title="View mode">
 							<Eye size={14} />
+						</TabsTrigger>
+						<TabsTrigger value="plain" title="Raw markdown mode">
+							<HugeiconsIcon icon={SourceCodeIcon} size={14} />
 						</TabsTrigger>
 					</TabsList>
 				</Tabs>

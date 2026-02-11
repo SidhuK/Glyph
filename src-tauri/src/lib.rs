@@ -15,6 +15,7 @@ use tauri::menu::{
     Menu, MenuItem, PredefinedMenuItem, Submenu, HELP_SUBMENU_ID, WINDOW_SUBMENU_ID,
 };
 use tauri::{Emitter, Manager, WindowEvent};
+use tracing::warn;
 
 #[cfg(target_os = "macos")]
 use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
@@ -179,12 +180,22 @@ pub fn run() {
         .setup(|app| {
             #[cfg(target_os = "macos")]
             {
-                let window = app.get_webview_window("main").unwrap();
-                apply_vibrancy(&window, NSVisualEffectMaterial::Sidebar, None, None)
-                    .expect("Failed to apply vibrancy");
+                if let Some(window) = app.get_webview_window("main") {
+                    if let Err(e) =
+                        apply_vibrancy(&window, NSVisualEffectMaterial::Sidebar, None, None)
+                    {
+                        warn!("Failed to apply vibrancy to main window: {e}");
+                    }
+                } else {
+                    warn!("Main window not found during setup");
+                }
 
                 if let Some(settings) = app.get_webview_window("settings") {
-                    let _ = apply_vibrancy(&settings, NSVisualEffectMaterial::Sidebar, None, None);
+                    if let Err(e) =
+                        apply_vibrancy(&settings, NSVisualEffectMaterial::Sidebar, None, None)
+                    {
+                        warn!("Failed to apply vibrancy to settings window: {e}");
+                    }
                 }
             }
             Ok(())

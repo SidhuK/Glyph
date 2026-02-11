@@ -88,13 +88,22 @@
 	flex-direction: column;
 }
 
-.markdownEditorPane .filePreviewHeader {
-	padding: 0 var(--space-6);
-}
-
 .markdownEditorContent {
 	overflow: auto;
 	padding: 0 var(--space-6) var(--space-6);
+}
+
+.markdownEditorPane {
+	position: relative;
+}
+
+.markdownEditorFloatActions {
+	position: absolute;
+	top: 8px;
+	right: 12px;
+	z-index: 6;
+	display: inline-flex;
+	gap: var(--space-1);
 }
 
 .markdownEditorCenter {
