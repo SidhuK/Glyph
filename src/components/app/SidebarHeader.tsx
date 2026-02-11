@@ -1,6 +1,8 @@
+import * as Icons from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { openSettingsWindow } from "../../lib/windows";
 import { onWindowDragMouseDown } from "../../utils/window";
-import { Command, FolderOpen, Settings } from "../Icons";
+import { Command, FolderOpen } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 
 interface SidebarHeaderProps {
@@ -42,7 +44,7 @@ export function SidebarHeader({
 						onClick={() => void openSettingsWindow("general")}
 						title="Settings"
 					>
-						<Settings size={14} />
+						<HugeiconsIcon icon={Icons.Settings05Icon} size={14} />
 					</Button>
 					<Button
 						type="button"

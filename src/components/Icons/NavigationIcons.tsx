@@ -32,7 +32,7 @@ export const PanelLeftOpen = (props: IconProps) => (
 	<HugeiconsIcon icon={Icons.SidebarLeftIcon} {...props} />
 );
 export const PanelLeftClose = (props: IconProps) => (
-	<HugeiconsIcon icon={Icons.SidebarLeftIcon} {...props} />
+	<HugeiconsIcon icon={Icons.PanelLeftOpenIcon} {...props} />
 );
 export const Layout = (props: IconProps) => (
 	<HugeiconsIcon icon={Icons.Layout} {...props} />
@@ -41,7 +41,7 @@ export const Globe = (props: IconProps) => (
 	<HugeiconsIcon icon={Icons.Globe} {...props} />
 );
 export const Settings = (props: IconProps) => (
-	<HugeiconsIcon icon={Icons.Settings} {...props} />
+	<HugeiconsIcon icon={Icons.Settings05Icon} {...props} />
 );
 export const Maximize2 = (props: IconProps) => (
 	<HugeiconsIcon icon={Icons.Maximize} {...props} />

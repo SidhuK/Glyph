@@ -160,7 +160,7 @@ export const FolderPlus = (props: IconProps) => (
 );
 
 export const Settings = (props: IconProps) => (
-	<HugeiconsIcon icon={Icons.Settings} {...props} />
+	<HugeiconsIcon icon={Icons.Settings05Icon} {...props} />
 );
 export const Zap = (props: IconProps) => (
 	<HugeiconsIcon icon={Icons.Zap} {...props} />
@@ -182,7 +182,7 @@ export const PanelLeftOpen = (props: IconProps) => (
 	<HugeiconsIcon icon={Icons.SidebarLeftIcon} {...props} />
 );
 export const PanelLeftClose = (props: IconProps) => (
-	<HugeiconsIcon icon={Icons.SidebarLeftIcon} {...props} />
+	<HugeiconsIcon icon={Icons.PanelLeftOpenIcon} {...props} />
 );
 
 export const Bot = (props: IconProps) => (

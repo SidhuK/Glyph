@@ -1,4 +1,10 @@
 import {
+	DashboardSquare02Icon,
+	MapingIcon,
+	More01Icon,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
+import {
 	type Connection,
 	ControlButton,
 	Controls,
@@ -32,7 +38,7 @@ import {
 import { titleForFile } from "../../lib/notePreview";
 import type { IndexNotePreview, RecentEntry } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
-import { Globe, Grid3X3, Layout } from "../Icons";
+import { Grid3X3 } from "../Icons";
 import { CanvasNoteOverlayEditor } from "./CanvasNoteOverlayEditor";
 import { CanvasActionsContext, CanvasNoteEditContext } from "./contexts";
 import { useCanvasHistory } from "./hooks/useCanvasHistory";
@@ -981,7 +987,7 @@ function CanvasPane({
 												}
 												className="canvasControlToggle"
 											>
-												<span className="canvasControlEllipsis">...</span>
+												<HugeiconsIcon icon={More01Icon} size={14} />
 											</ControlButton>
 											<AnimatePresence initial={false}>
 												{!controlsCollapsed ? (
@@ -1012,7 +1018,7 @@ function CanvasPane({
 															title="Reflow to grid"
 															aria-label="Reflow to grid"
 														>
-															<Layout size={14} />
+															<HugeiconsIcon icon={DashboardSquare02Icon} size={14} />
 														</ControlButton>
 														<ControlButton
 															onClick={() => setShowMiniMap((v) => !v)}
@@ -1026,7 +1032,7 @@ function CanvasPane({
 																showMiniMap ? "canvasControlActive" : undefined
 															}
 														>
-															<Globe size={14} />
+															<HugeiconsIcon icon={MapingIcon} size={14} />
 														</ControlButton>
 													</motion.div>
 												) : null}
