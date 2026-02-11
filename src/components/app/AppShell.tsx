@@ -83,13 +83,8 @@ export function AppShell() {
 		vault;
 
 	const fileTreeCtx = useFileTreeContext();
-	const {
-		setRootEntries,
-		setChildrenByDir,
-		setDirSummariesByParent,
-		setExpandedDirs,
-		setActiveFilePath,
-	} = fileTreeCtx;
+	const { setRootEntries, setChildrenByDir, setExpandedDirs, setActiveFilePath } =
+		fileTreeCtx;
 
 	const {
 		activeViewDoc,
@@ -188,7 +183,6 @@ export function AppShell() {
 	const fileTree = useFileTree({
 		vaultPath,
 		setChildrenByDir,
-		setDirSummariesByParent,
 		setExpandedDirs,
 		setRootEntries,
 		setActiveFilePath,

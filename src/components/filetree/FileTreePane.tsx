@@ -1,7 +1,7 @@
 import { motion } from "motion/react";
 import type { CSSProperties } from "react";
 import { memo, useCallback, useState } from "react";
-import type { DirChildSummary, FsEntry } from "../../lib/tauri";
+import type { FsEntry } from "../../lib/tauri";
 import { parentDir } from "../../utils/path";
 import { Database, FolderPlus, Plus } from "../Icons";
 import {
@@ -17,7 +17,6 @@ interface FileTreePaneProps {
 	vaultName?: string;
 	rootEntries: FsEntry[];
 	childrenByDir: Record<string, FsEntry[] | undefined>;
-	summariesByParentDir: Record<string, DirChildSummary[] | undefined>;
 	expandedDirs: Set<string>;
 	activeFilePath: string | null;
 	onToggleDir: (dirPath: string) => void;
@@ -42,7 +41,6 @@ export const FileTreePane = memo(function FileTreePane({
 	vaultName,
 	rootEntries,
 	childrenByDir,
-	summariesByParentDir,
 	expandedDirs,
 	activeFilePath,
 	onToggleDir,
@@ -88,11 +86,7 @@ export const FileTreePane = memo(function FileTreePane({
 		[onRenameDir],
 	);
 
-	const renderEntries = (
-		entries: FsEntry[],
-		parentDepth: number,
-		parentDirPath: string,
-	) => {
+	const renderEntries = (entries: FsEntry[], parentDepth: number) => {
 		if (entries.length === 0) return null;
 		const listDepth = parentDepth + 1;
 		const listStyle = {
@@ -100,12 +94,6 @@ export const FileTreePane = memo(function FileTreePane({
 			"--tree-line-x": `${listDepth * 10 + 6}px`,
 			"--tree-line-opacity": listDepth === 0 ? 0 : 0.85,
 		} as CSSProperties;
-
-		const summaryMap = new Map(
-			(summariesByParentDir[parentDirPath] ?? []).map(
-				(s) => [s.dir_rel_path, s] as const,
-			),
-		);
 
 		return (
 			<ul className="fileTreeList" style={listStyle}>
@@ -118,7 +106,6 @@ export const FileTreePane = memo(function FileTreePane({
 					if (isDir) {
 						const isExpanded = expandedDirs.has(e.rel_path);
 						const children = childrenByDir[e.rel_path];
-						const summary = summaryMap.get(e.rel_path) ?? null;
 
 						return (
 							<FileTreeDirItem
@@ -127,7 +114,6 @@ export const FileTreePane = memo(function FileTreePane({
 								depth={depth}
 								isExpanded={isExpanded}
 								isRenaming={renamingPath === e.rel_path}
-								summary={summary}
 								onToggleDir={onToggleDir}
 								onSelectDir={onSelectDir}
 								onNewFileInDir={onNewFileInDir}
@@ -136,7 +122,7 @@ export const FileTreePane = memo(function FileTreePane({
 								onCommitRename={handleCommitDirRename}
 								onCancelRename={() => setRenamingPath(null)}
 							>
-								{children && renderEntries(children, depth, e.rel_path)}
+								{children && renderEntries(children, depth)}
 							</FileTreeDirItem>
 						);
 					}
@@ -205,7 +191,7 @@ export const FileTreePane = memo(function FileTreePane({
 			</div>
 			{rootEntries.length ? (
 				<div className="fileTreeScroll">
-					{renderEntries(rootEntries, -1, "")}
+					{renderEntries(rootEntries, -1)}
 				</div>
 			) : (
 				<motion.div

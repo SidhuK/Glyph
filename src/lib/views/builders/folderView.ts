@@ -1,5 +1,5 @@
 import { titleForFile } from "../../notePreview";
-import type { DirChildSummary, FsEntry } from "../../tauri";
+import type { FsEntry } from "../../tauri";
 import { invoke } from "../../tauri";
 import type { ViewDoc, ViewOptions } from "../types";
 import { basename, viewId } from "../utils";
@@ -20,10 +20,6 @@ export async function buildFolderViewDoc(
 
 	const entries = await invoke("vault_list_dir", {
 		dir: v.selector || null,
-	});
-	const childSummaries = await invoke("vault_dir_children_summary", {
-		dir: v.selector || null,
-		preview_limit: 8,
 	});
 
 	const recent = await invoke("vault_dir_recent_entries", {
@@ -56,9 +52,12 @@ export async function buildFolderViewDoc(
 	const rootFiles = alpha.sort((a, b) =>
 		a.rel_path.toLowerCase().localeCompare(b.rel_path.toLowerCase()),
 	);
-	const subfolders = (childSummaries as DirChildSummary[]).sort((a, b) =>
-		a.dir_rel_path.toLowerCase().localeCompare(b.dir_rel_path.toLowerCase()),
-	);
+	const subfolders = (entries as FsEntry[])
+		.filter((e) => e.kind === "dir")
+		.map((e) => ({ dir_rel_path: e.rel_path, name: e.name }))
+		.sort((a, b) =>
+			a.dir_rel_path.toLowerCase().localeCompare(b.dir_rel_path.toLowerCase()),
+		);
 	const folderNodeIdForDir = (dirRelPath: string) => `folder:${dirRelPath}`;
 	const folderByNodeId = new Map(
 		subfolders.map((folder) => [
@@ -95,13 +94,10 @@ export async function buildFolderViewDoc(
 						data: {
 							dir: folderSummary.dir_rel_path,
 							name: folderSummary.name,
-							total_files: folderSummary.total_files_recursive,
-							total_markdown: folderSummary.total_markdown_recursive,
-							recent_markdown: folderSummary.recent_markdown,
-							preview_truncated:
-								folderSummary.total_markdown_recursive >
-									folderSummary.recent_markdown.length ||
-								folderSummary.truncated,
+							total_files: 0,
+							total_markdown: 0,
+							recent_markdown: [],
+							preview_truncated: false,
 						},
 					},
 					isNew: !prevNode,

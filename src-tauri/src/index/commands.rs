@@ -6,6 +6,7 @@ use crate::vault::VaultState;
 
 use super::db::open_db;
 use super::indexer::rebuild;
+use super::search_hybrid::hybrid_search;
 use super::tags::normalize_tag;
 use super::types::{BacklinkItem, IndexNotePreview, IndexRebuildResult, SearchResult, TagCount};
 
@@ -90,31 +91,8 @@ pub async fn search(
 ) -> Result<Vec<SearchResult>, String> {
     let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<SearchResult>, String> {
-        let q = query.trim();
-        if q.is_empty() {
-            return Ok(Vec::new());
-        }
         let conn = open_db(&root)?;
-        let mut stmt = conn
-            .prepare(
-                "SELECT id, title, snippet(notes_fts, 2, '⟦', '⟧', '…', 10) AS snip, bm25(notes_fts) AS score
-                 FROM notes_fts
-                 WHERE notes_fts MATCH ?
-                 ORDER BY score
-                 LIMIT 50",
-            )
-            .map_err(|e| e.to_string())?;
-        let mut rows = stmt.query([q]).map_err(|e| e.to_string())?;
-        let mut out = Vec::new();
-        while let Some(row) = rows.next().map_err(|e| e.to_string())? {
-            out.push(SearchResult {
-                id: row.get(0).map_err(|e| e.to_string())?,
-                title: row.get(1).map_err(|e| e.to_string())?,
-                snippet: row.get(2).map_err(|e| e.to_string())?,
-                score: row.get(3).map_err(|e| e.to_string())?,
-            });
-        }
-        Ok(out)
+        hybrid_search(&conn, &query, &[], 50)
     })
     .await
     .map_err(|e| e.to_string())?
@@ -141,10 +119,7 @@ pub async fn search_with_tags(
             return Ok(Vec::new());
         }
 
-        let q = query
-            .unwrap_or_default()
-            .trim()
-            .to_string();
+        let q = query.unwrap_or_default().trim().to_string();
 
         let conn = open_db(&root)?;
         let mut out = Vec::new();
@@ -182,41 +157,7 @@ pub async fn search_with_tags(
             }
             return Ok(out);
         }
-
-        let mut sql = String::from(
-            "SELECT notes_fts.id, notes_fts.title,
-                    snippet(notes_fts, 2, '⟦', '⟧', '…', 10) AS snip,
-                    bm25(notes_fts) AS score
-             FROM notes_fts ",
-        );
-        for i in 0..norm_tags.len() {
-            sql.push_str(&format!(
-                "JOIN tags t{idx} ON t{idx}.note_id = notes_fts.id AND t{idx}.tag = ? ",
-                idx = i
-            ));
-        }
-        sql.push_str("WHERE notes_fts MATCH ? ORDER BY score LIMIT ?");
-
-        let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;
-        let mut params: Vec<rusqlite::types::Value> = norm_tags
-            .iter()
-            .map(|t| rusqlite::types::Value::from(t.clone()))
-            .collect();
-        params.push(rusqlite::types::Value::from(q));
-        params.push(rusqlite::types::Value::from(lim));
-
-        let mut rows = stmt
-            .query(rusqlite::params_from_iter(params.iter()))
-            .map_err(|e| e.to_string())?;
-        while let Some(row) = rows.next().map_err(|e| e.to_string())? {
-            out.push(SearchResult {
-                id: row.get(0).map_err(|e| e.to_string())?,
-                title: row.get(1).map_err(|e| e.to_string())?,
-                snippet: row.get(2).map_err(|e| e.to_string())?,
-                score: row.get(3).map_err(|e| e.to_string())?,
-            });
-        }
-        Ok(out)
+        hybrid_search(&conn, &q, &norm_tags, lim)
     })
     .await
     .map_err(|e| e.to_string())?
@@ -332,7 +273,9 @@ pub async fn tag_notes(
                      ORDER BY n.updated DESC",
                 )
                 .map_err(|e| e.to_string())?;
-            let mut rows = stmt.query(rusqlite::params![t]).map_err(|e| e.to_string())?;
+            let mut rows = stmt
+                .query(rusqlite::params![t])
+                .map_err(|e| e.to_string())?;
             let mut out = Vec::new();
             while let Some(row) = rows.next().map_err(|e| e.to_string())? {
                 out.push(SearchResult {

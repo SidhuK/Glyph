@@ -1,5 +1,5 @@
-use std::path::Path;
 use std::collections::HashMap;
+use std::path::Path;
 
 use serde_json::{json, Value};
 use tauri::{AppHandle, Emitter};
@@ -127,14 +127,7 @@ pub async fn run_agent_loop(
             AgentOutput::ToolCall(call) => {
                 if tool_calls_used >= policy.max_tool_calls {
                     return fallback_final_answer(
-                        client,
-                        cancel,
-                        app,
-                        job_id,
-                        profile,
-                        api_key,
-                        &system,
-                        &convo,
+                        client, cancel, app, job_id, profile, api_key, &system, &convo,
                     )
                     .await
                     .map(|(text, cancelled)| (text, cancelled, tool_events));
@@ -156,14 +149,7 @@ pub async fn run_agent_loop(
                     );
                     tool_events.push(error_event);
                     return fallback_final_answer(
-                        client,
-                        cancel,
-                        app,
-                        job_id,
-                        profile,
-                        api_key,
-                        &system,
-                        &convo,
+                        client, cancel, app, job_id, profile, api_key, &system, &convo,
                     )
                     .await
                     .map(|(text, cancelled)| (text, cancelled, tool_events));
@@ -239,14 +225,7 @@ pub async fn run_agent_loop(
         }
     }
     fallback_final_answer(
-        client,
-        cancel,
-        app,
-        job_id,
-        profile,
-        api_key,
-        &system,
-        &convo,
+        client, cancel, app, job_id, profile, api_key, &system, &convo,
     )
     .await
     .map(|(text, cancelled)| (text, cancelled, tool_events))

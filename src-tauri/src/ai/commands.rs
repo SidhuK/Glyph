@@ -218,8 +218,7 @@ pub async fn ai_audit_mark(
     let path = audit_log_path(&root, &job_id)?;
     tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
         let bytes = std::fs::read(&path).map_err(|e| e.to_string())?;
-        let mut v: serde_json::Value =
-            serde_json::from_slice(&bytes).map_err(|e| e.to_string())?;
+        let mut v: serde_json::Value = serde_json::from_slice(&bytes).map_err(|e| e.to_string())?;
         if let Some(obj) = v.as_object_mut() {
             let out = outcome.trim();
             let out = if out.len() > 200 { &out[..200] } else { out };

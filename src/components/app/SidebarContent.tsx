@@ -44,7 +44,6 @@ export function SidebarContent({
 		childrenByDir,
 		expandedDirs,
 		activeFilePath,
-		dirSummariesByParent,
 		tags,
 		tagsError,
 		refreshTags,
@@ -110,7 +109,6 @@ export function SidebarContent({
 								onNewFileInDir={onNewFileInDir}
 								onNewFolderInDir={onNewFolderInDir}
 								onRenameDir={onRenameDir}
-								summariesByParentDir={dirSummariesByParent}
 							/>
 						</motion.div>
 					)}

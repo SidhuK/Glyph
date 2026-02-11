@@ -2,7 +2,7 @@ import { join } from "@tauri-apps/api/path";
 import { openPath, openUrl } from "@tauri-apps/plugin-opener";
 import { useCallback, useEffect, useRef } from "react";
 import { extractErrorMessage } from "../lib/errorUtils";
-import type { DirChildSummary, FsEntry } from "../lib/tauri";
+import type { FsEntry } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
 import { isInAppPreviewable } from "../utils/filePreview";
 import { isMarkdownPath, parentDir } from "../utils/path";
@@ -37,9 +37,6 @@ export interface UseFileTreeDeps {
 	setChildrenByDir: React.Dispatch<
 		React.SetStateAction<Record<string, FsEntry[] | undefined>>
 	>;
-	setDirSummariesByParent: React.Dispatch<
-		React.SetStateAction<Record<string, DirChildSummary[] | undefined>>
-	>;
 	setExpandedDirs: React.Dispatch<React.SetStateAction<Set<string>>>;
 	setRootEntries: React.Dispatch<React.SetStateAction<FsEntry[]>>;
 	setActiveFilePath: (path: string | null) => void;
@@ -53,7 +50,6 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 	const {
 		vaultPath,
 		setChildrenByDir,
-		setDirSummariesByParent,
 		setExpandedDirs,
 		setRootEntries,
 		setActiveFilePath,
@@ -63,7 +59,6 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		getActiveFolderDir,
 	} = deps;
 
-	const dirSummariesInFlightRef = useRef(new Set<string>());
 	const loadedDirsRef = useRef(new Set<string>());
 	const loadRequestVersionRef = useRef(new Map<string, number>());
 	const previousVaultPathRef = useRef<string | null>(vaultPath);
@@ -73,7 +68,6 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		previousVaultPathRef.current = vaultPath;
 		loadedDirsRef.current.clear();
 		loadRequestVersionRef.current.clear();
-		dirSummariesInFlightRef.current.clear();
 	}, [vaultPath]);
 
 	const loadDir = useCallback(
@@ -93,30 +87,8 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 				setRootEntries(normalizedEntries);
 			}
 			loadedDirsRef.current.add(dirPath);
-
-			if (dirSummariesInFlightRef.current.has(dirPath)) return;
-			dirSummariesInFlightRef.current.add(dirPath);
-
-			void (async () => {
-				try {
-					const summaries = await invoke("vault_dir_children_summary", {
-						dir: dirPath || null,
-						preview_limit: 1,
-					});
-					if (loadRequestVersionRef.current.get(dirPath) !== nextVersion)
-						return;
-					setDirSummariesByParent((prev) => ({
-						...prev,
-						[dirPath]: summaries,
-					}));
-				} catch {
-					// ignore: counts are convenience UI
-				} finally {
-					dirSummariesInFlightRef.current.delete(dirPath);
-				}
-			})();
 		},
-		[setChildrenByDir, setDirSummariesByParent, setRootEntries],
+		[setChildrenByDir, setRootEntries],
 	);
 
 	const toggleDir = useCallback(

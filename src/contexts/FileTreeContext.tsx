@@ -8,7 +8,7 @@ import {
 	useState,
 } from "react";
 import { extractErrorMessage } from "../lib/errorUtils";
-import type { DirChildSummary, FsEntry, TagCount } from "../lib/tauri";
+import type { FsEntry, TagCount } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
 import { useVault } from "./VaultContext";
 
@@ -18,10 +18,6 @@ export interface FileTreeContextValue {
 	childrenByDir: Record<string, FsEntry[] | undefined>;
 	setChildrenByDir: React.Dispatch<
 		React.SetStateAction<Record<string, FsEntry[] | undefined>>
-	>;
-	dirSummariesByParent: Record<string, DirChildSummary[] | undefined>;
-	setDirSummariesByParent: React.Dispatch<
-		React.SetStateAction<Record<string, DirChildSummary[] | undefined>>
 	>;
 	expandedDirs: Set<string>;
 	setExpandedDirs: React.Dispatch<React.SetStateAction<Set<string>>>;
@@ -43,9 +39,6 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 	const [childrenByDir, setChildrenByDir] = useState<
 		Record<string, FsEntry[] | undefined>
 	>({});
-	const [dirSummariesByParent, setDirSummariesByParent] = useState<
-		Record<string, DirChildSummary[] | undefined>
-	>({});
 	const [expandedDirs, setExpandedDirs] = useState<Set<string>>(
 		() => new Set(),
 	);
@@ -66,7 +59,6 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 	useEffect(() => {
 		setRootEntries([]);
 		setChildrenByDir({});
-		setDirSummariesByParent({});
 		setExpandedDirs(new Set());
 		setActiveFilePath(null);
 		setTags([]);
@@ -106,8 +98,6 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 			setRootEntries,
 			childrenByDir,
 			setChildrenByDir,
-			dirSummariesByParent,
-			setDirSummariesByParent,
 			expandedDirs,
 			setExpandedDirs,
 			activeFilePath,
@@ -121,7 +111,6 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 		[
 			rootEntries,
 			childrenByDir,
-			dirSummariesByParent,
 			expandedDirs,
 			activeFilePath,
 			activeNoteId,

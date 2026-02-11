@@ -6,7 +6,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, motion } from "motion/react";
 import type { CSSProperties, MouseEvent, ReactNode } from "react";
 import { memo, useEffect, useRef, useState } from "react";
-import type { DirChildSummary, FsEntry } from "../../lib/tauri";
+import type { FsEntry } from "../../lib/tauri";
 import { FolderPlus, Plus } from "../Icons";
 import {
 	ContextMenu,
@@ -74,7 +74,6 @@ interface FileTreeDirItemProps {
 	depth: number;
 	isExpanded: boolean;
 	isRenaming: boolean;
-	summary: DirChildSummary | null;
 	children?: ReactNode;
 	onToggleDir: (dirPath: string) => void;
 	onSelectDir: (dirPath: string) => void;
@@ -90,7 +89,6 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 	depth,
 	isExpanded,
 	isRenaming,
-	summary,
 	children,
 	onToggleDir,
 	onSelectDir,
@@ -112,8 +110,6 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 	const renameSubmittedRef = useRef(false);
 	const [draftName, setDraftName] = useState(entry.name);
 	const displayDirName = truncateTreeLabel(entry.name, false);
-	const totalFiles = summary?.total_files_recursive ?? 0;
-	const countsLabel = summary && totalFiles > 0 ? String(totalFiles) : "";
 
 	useEffect(() => {
 		if (!isRenaming) return;
@@ -217,11 +213,6 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 						</ContextMenuContent>
 					</ContextMenu>
 				)}
-				{countsLabel ? (
-					<span className="fileTreeCounts" title={`${countsLabel} files`}>
-						{countsLabel}
-					</span>
-				) : null}
 			</div>
 			<AnimatePresence>
 				{isExpanded && children ? (
@@ -399,5 +390,3 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 		</li>
 	);
 });
-
-
