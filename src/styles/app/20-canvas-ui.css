@@ -140,18 +140,14 @@
 	min-height: 0;
 	display: flex;
 	flex-direction: column;
-	background: linear-gradient(
-		180deg,
-		color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary)) 0%,
-		var(--bg-canvas) 100%
-	);
+	background: var(--bg-primary);
 }
 
 .canvasNotePageHeader {
 	height: 56px;
 	padding: 0 var(--space-4);
-	border-bottom: 1px solid var(--border-light);
-	background: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary));
+	border-bottom: none;
+	background: var(--bg-primary);
 	display: grid;
 	grid-template-columns: auto 1fr auto;
 	align-items: center;
@@ -161,10 +157,10 @@
 .canvasNotePageBackBtn {
 	height: 36px;
 	margin-left: 46px;
-	padding: 0 12px;
+	padding: 0 10px;
 	border-radius: var(--radius-lg);
-	border: 1px solid var(--border-default);
-	background: var(--bg-secondary);
+	border: none;
+	background: transparent;
 	color: var(--text-secondary);
 	display: inline-flex;
 	align-items: center;
@@ -178,6 +174,10 @@
 .canvasNotePageBackBtn:hover {
 	background: var(--bg-hover);
 	color: var(--text-primary);
+}
+
+.canvasNotePageBackIcon {
+	transform: rotate(180deg);
 }
 
 .appShell.appShellSidebarCollapsed .canvasNotePageBackBtn {
@@ -212,8 +212,8 @@
 	gap: var(--space-2);
 	height: 44px;
 	padding: 0 var(--space-3) 0 var(--space-4);
-	border-bottom: 1px solid var(--border-light);
-	background: color-mix(in srgb, var(--bg-primary) 88%, var(--bg-secondary));
+	border-bottom: none;
+	background: var(--bg-primary);
 }
 
 .canvasNoteEditorTitle {
@@ -226,9 +226,40 @@
 }
 
 .canvasNoteEditorStatus {
-	font-size: var(--text-xs);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 16px;
+	height: 16px;
 	color: var(--text-tertiary);
-	white-space: nowrap;
+}
+
+.canvasNoteEditorStatusSaved {
+	color: var(--text-tertiary);
+}
+
+.canvasNoteEditorStatusDirty {
+	color: #d97706;
+}
+
+.canvasNoteEditorStatusMutating {
+	color: var(--text-tertiary);
+}
+
+.canvasNoteEditorStatusError {
+	color: var(--text-error);
+}
+
+.canvasStatusIconSpin {
+	animation: canvasSpin 0.9s linear infinite;
+}
+
+.canvasStatusDot {
+	display: inline-block;
+	width: 8px;
+	height: 8px;
+	border-radius: 999px;
+	background: currentColor;
 }
 
 .canvasNoteEditorActions {
@@ -259,8 +290,8 @@
 	justify-content: space-between;
 	gap: var(--space-2);
 	padding: var(--space-2) var(--space-3);
-	border-bottom: 1px solid var(--border-light);
-	background: var(--feedback-error-bg);
+	border-bottom: none;
+	background: transparent;
 	color: var(--text-primary);
 }
 
@@ -282,8 +313,8 @@
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
-	padding: var(--space-2);
-	background: color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary));
+	padding: 0;
+	background: var(--bg-primary);
 }
 
 .canvasNoteEditorEmpty {
@@ -304,23 +335,30 @@
 	justify-content: center;
 	font-size: var(--text-xs);
 	color: var(--text-tertiary);
-	border-radius: var(--radius-lg);
-	border: 1px dashed var(--border-light);
-	background: var(--bg-secondary);
+	border-radius: 0;
+	border: none;
+	background: transparent;
 }
 
 .canvasNotePageSurface .rfNodeNoteEditor {
 	border: none;
 	background: var(--bg-primary);
-	border-radius: 16px;
+	border-radius: 0;
 	box-shadow: none;
 	flex: 1;
 	min-height: 0;
 }
 
 .canvasNotePageSurface .rfNodeNoteEditorRibbon {
-	background: color-mix(in srgb, var(--bg-primary) 90%, var(--bg-secondary));
-	border-bottom: 1px solid var(--border-light);
+	background: var(--bg-primary);
+	border-bottom: none;
+	padding-left: var(--space-3);
+	padding-right: var(--space-3);
+}
+
+.canvasNotePageSurface .rfNodeNoteEditorHeaderBar {
+	background: var(--bg-primary);
+	border-bottom: none;
 }
 
 .canvasNotePageSurface .rfNodeNoteEditorBody {
@@ -330,23 +368,30 @@
 
 .canvasNotePageSurface .rfNodeNoteEditorRibbonBottom {
 	position: sticky;
-	bottom: 14px;
+	bottom: 8px;
 	z-index: 8;
 	align-self: center;
 	width: fit-content;
 	max-width: calc(100% - 24px);
 	border-top: none;
-	border: 1px solid color-mix(in srgb, var(--border-default) 78%, transparent);
+	border: none;
 	border-radius: 999px;
-	background: color-mix(in srgb, var(--bg-secondary) 90%, var(--bg-primary));
-	box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
-	backdrop-filter: blur(6px);
-	-webkit-backdrop-filter: blur(6px);
-	padding: 5px 8px;
+	background: var(--bg-primary);
+	box-shadow: none;
+	backdrop-filter: none;
+	-webkit-backdrop-filter: none;
+	padding: 4px 6px;
 }
 
 .canvasNotePageSurface .rfNodeNoteEditorRibbonBottom .ribbonGroup {
 	border-radius: 999px;
+	border: none;
+	background: transparent;
+	padding: 0;
+}
+
+.canvasNotePageSurface .rfNodeNoteEditorRibbon .ribbonDivider {
+	opacity: 0.2;
 }
 
 .canvasNotePageSurface .rfNodeNoteEditorRaw {
@@ -368,7 +413,19 @@
 }
 
 .canvasNotePageSurface .tiptapHostInline {
-	padding: clamp(18px, 2.3vw, 30px) clamp(22px, 3vw, 48px);
+	padding: clamp(18px, 2.3vw, 30px) clamp(44px, 6vw, 96px);
+}
+
+.canvasNotePageSurface .rfNodeNoteEditorRaw {
+	padding-left: clamp(44px, 6vw, 96px);
+	padding-right: clamp(44px, 6vw, 96px);
+}
+
+.canvasNotePageSurface .frontmatterPreview {
+	border: none;
+	background: var(--bg-primary);
+	padding: 0 0 var(--space-2);
+	margin-bottom: var(--space-2);
 }
 
 .canvasLoading {

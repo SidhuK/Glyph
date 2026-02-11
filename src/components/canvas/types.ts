@@ -43,6 +43,13 @@ export interface CanvasPaneProps {
 	onSave: (doc: CanvasDocLike) => Promise<void>;
 	onOpenNote: (noteId: string) => void;
 	onOpenFolder: (dir: string) => void;
+	onNewFileInDir: (dir: string) => Promise<void>;
+	onNewFolderInDir: (dir: string) => Promise<string | null>;
+	onRenamePath: (
+		path: string,
+		nextName: string,
+		kind?: "dir" | "file",
+	) => Promise<string | null>;
 	vaultPath: string | null;
 	onSelectionChange?: (selected: CanvasNode[]) => void;
 	externalCommand?: CanvasExternalCommand | null;
@@ -111,6 +118,14 @@ export type CanvasNoteEditActions = {
 export type CanvasActions = {
 	openNote: (relPath: string) => void;
 	openFolder: (dir: string) => void;
+	newFileInDir: (dir: string) => Promise<void>;
+	newFolderInDir: (dir: string) => Promise<string | null>;
+	reflowGrid: () => void;
+	renamePath: (
+		path: string,
+		nextName: string,
+		kind?: "dir" | "file",
+	) => Promise<string | null>;
 	toggleFolderFan: (folderNodeId: string) => void;
 	holdFolderPreview: (folderNodeId: string) => void;
 	releaseFolderPreview: (folderNodeId: string) => void;

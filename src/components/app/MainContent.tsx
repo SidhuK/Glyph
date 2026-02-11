@@ -28,6 +28,13 @@ interface MainContentProps {
 		openFile: (relPath: string) => Promise<void>;
 		openMarkdownFileInCanvas: (relPath: string) => Promise<void>;
 		openNonMarkdownExternally: (relPath: string) => Promise<void>;
+		onNewFileInDir: (dirPath: string) => Promise<void>;
+		onNewFolderInDir: (dirPath: string) => Promise<string | null>;
+		onRenameDir: (
+			path: string,
+			nextName: string,
+			kind?: "dir" | "file",
+		) => Promise<string | null>;
 	};
 	aiOverlay?: React.ReactNode;
 }
@@ -129,6 +136,11 @@ export function MainContent({
 								onSave={onSaveView}
 								onOpenNote={(p) => void fileTree.openFile(p)}
 								onOpenFolder={(dir) => void loadAndBuildFolderView(dir)}
+								onNewFileInDir={(dir) => fileTree.onNewFileInDir(dir)}
+								onNewFolderInDir={(dir) => fileTree.onNewFolderInDir(dir)}
+								onRenamePath={(path, name, kind) =>
+									fileTree.onRenameDir(path, name, kind)
+								}
 								vaultPath={vaultPath}
 								onSelectionChange={onCanvasSelectionChange}
 								externalCommand={canvasCommand}

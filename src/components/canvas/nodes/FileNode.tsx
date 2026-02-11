@@ -2,7 +2,16 @@ import { Handle, Position } from "@xyflow/react";
 import { motion } from "motion/react";
 import { memo, useEffect, useMemo, useState } from "react";
 import { invoke } from "../../../lib/tauri";
+import { parentDir } from "../../../utils/path";
 import { getInAppPreviewKind } from "../../../utils/filePreview";
+import {
+	ContextMenu,
+	ContextMenuContent,
+	ContextMenuItem,
+	ContextMenuSeparator,
+	ContextMenuTrigger,
+} from "../../ui/shadcn/context-menu";
+import { useCanvasActions } from "../contexts";
 import { getNodeRotation } from "../utils";
 
 interface FileNodeProps {
@@ -47,11 +56,25 @@ function compactPath(path: string): string {
 	return `${parts[0]}/…/${parts[parts.length - 1]}`;
 }
 
+function splitEditableFileName(name: string): { stem: string; ext: string } {
+	const trimmed = name.trim();
+	const dotIndex = trimmed.lastIndexOf(".");
+	if (dotIndex <= 0 || dotIndex === trimmed.length - 1) {
+		return { stem: trimmed, ext: "" };
+	}
+	return {
+		stem: trimmed.slice(0, dotIndex),
+		ext: trimmed.slice(dotIndex),
+	};
+}
+
 export const FileNode = memo(function FileNode({
 	data,
 	id,
 	selected,
 }: FileNodeProps) {
+	const { openNote, newFileInDir, newFolderInDir, reflowGrid, renamePath } =
+		useCanvasActions();
 	const isFanNode = typeof data.fan_parent_folder_id === "string";
 	const fanIndex = typeof data.fan_index === "number" ? data.fan_index : 0;
 	const fanRotation =
@@ -69,6 +92,7 @@ export const FileNode = memo(function FileNode({
 	const isPreviewableMedia = previewKind === "image" || previewKind === "pdf";
 	const [previewSrc, setPreviewSrc] = useState<string>(storedImageSrc ?? "");
 	const overlaySub = useMemo(() => compactPath(path), [path]);
+	const fileDir = useMemo(() => parentDir(path), [path]);
 	const rotation = isFanNode ? fanRotation : getNodeRotation(id) * 0.8;
 	const motionInitial = isFanNode
 		? { opacity: 0, scale: 0.97, y: -12 }
@@ -100,6 +124,16 @@ export const FileNode = memo(function FileNode({
 	const pdfSrc = previewSrc
 		? `${previewSrc}#page=1&view=FitH&toolbar=0&navpanes=0&scrollbar=0`
 		: "";
+	const handleRename = () => {
+		if (!path) return;
+		const currentName = path.split("/").pop() ?? path;
+		const { stem, ext } = splitEditableFileName(currentName);
+		const nextStem = window.prompt("Rename file", stem || currentName);
+		if (nextStem == null) return;
+		const trimmed = nextStem.trim();
+		if (!trimmed) return;
+		void renamePath(path, `${trimmed}${ext}`, "file");
+	};
 
 	useEffect(() => {
 		if (storedImageSrc) {
@@ -122,26 +156,70 @@ export const FileNode = memo(function FileNode({
 	}, [isPreviewableMedia, path, storedImageSrc]);
 
 	return (
-		<motion.div
-			className="rfNode rfNodeFile"
-			title={path}
-			style={{ transform: `rotate(${rotation}deg)` }}
-			initial={motionInitial}
-			animate={motionAnimate}
-			transition={motionTransition}
-		>
-			<Handle type="target" position={Position.Left} />
-			<Handle type="source" position={Position.Right} />
-			{previewSrc && previewKind === "image" ? (
-				<img className="rfNodeFileThumb" alt="" src={previewSrc} />
-			) : null}
-			{previewSrc && previewKind === "pdf" ? (
-				<object className="rfNodeFilePdf" data={pdfSrc} type="application/pdf" />
-			) : null}
-			<div className="rfNodeFileOverlay">
-				<div className="rfNodeTitle">{title}</div>
-				<div className="rfNodeSub mono">{overlaySub}</div>
-			</div>
-		</motion.div>
+		<ContextMenu>
+			<ContextMenuTrigger asChild>
+				<motion.div
+					className="rfNode rfNodeFile"
+					title={path}
+					style={{ transform: `rotate(${rotation}deg)` }}
+					initial={motionInitial}
+					animate={motionAnimate}
+					transition={motionTransition}
+				>
+					<Handle type="target" position={Position.Left} />
+					<Handle type="source" position={Position.Right} />
+					{previewSrc && previewKind === "image" ? (
+						<img className="rfNodeFileThumb" alt="" src={previewSrc} />
+					) : null}
+					{previewSrc && previewKind === "pdf" ? (
+						<object className="rfNodeFilePdf" data={pdfSrc} type="application/pdf" />
+					) : null}
+					<div className="rfNodeFileOverlay">
+						<div className="rfNodeTitle">{title}</div>
+						<div className="rfNodeSub mono">{overlaySub}</div>
+					</div>
+				</motion.div>
+			</ContextMenuTrigger>
+			<ContextMenuContent className="fileTreeCreateMenu">
+				<ContextMenuItem
+					className="fileTreeCreateMenuItem"
+					onSelect={() => {
+						if (path) openNote(path);
+					}}
+				>
+					Open
+				</ContextMenuItem>
+				<ContextMenuSeparator className="fileTreeCreateMenuSeparator" />
+				<ContextMenuItem
+					className="fileTreeCreateMenuItem"
+					onSelect={handleRename}
+				>
+					Rename
+				</ContextMenuItem>
+				<ContextMenuSeparator className="fileTreeCreateMenuSeparator" />
+				<ContextMenuItem
+					className="fileTreeCreateMenuItem"
+					onSelect={() =>
+						void (async () => {
+							await newFileInDir(fileDir);
+							reflowGrid();
+						})()
+					}
+				>
+					Add file
+				</ContextMenuItem>
+				<ContextMenuItem
+					className="fileTreeCreateMenuItem"
+					onSelect={() =>
+						void (async () => {
+							const created = await newFolderInDir(fileDir);
+							if (created) reflowGrid();
+						})()
+					}
+				>
+					Add folder
+				</ContextMenuItem>
+			</ContextMenuContent>
+		</ContextMenu>
 	);
 });

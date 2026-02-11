@@ -1,6 +1,6 @@
 import { motion } from "motion/react";
 import { memo, useMemo } from "react";
-import { RotateCcw, Save } from "../Icons";
+import { ChevronRight, RotateCcw, Save, X } from "../Icons";
 import { CanvasNoteInlineEditor } from "../editor";
 import { Button } from "../ui/shadcn/button";
 import { useCanvasNoteEdit } from "./contexts";
@@ -39,14 +39,48 @@ export const CanvasNoteOverlayEditor = memo(function CanvasNoteOverlayEditor({
 			? sessionNode.data.title
 			: (session?.noteId ?? "Untitled");
 
-	const statusLabel = (() => {
-		if (!session) return "";
-		if (session.phase === "loading") return "Loading...";
-		if (session.phase === "saving") return "Saving...";
-		if (session.phase === "conflict") return "Conflict";
-		if (session.phase === "error") return "Save failed";
-		if (session.dirty) return "Unsaved changes";
-		return "Saved";
+	const statusMeta = (() => {
+		if (!session) return null;
+		if (session.phase === "loading") {
+			return {
+				title: "Loading",
+				icon: <RotateCcw size={12} className="canvasStatusIconSpin" />,
+				className: "canvasNoteEditorStatusMutating",
+			};
+		}
+		if (session.phase === "saving") {
+			return {
+				title: "Saving",
+				icon: <RotateCcw size={12} className="canvasStatusIconSpin" />,
+				className: "canvasNoteEditorStatusMutating",
+			};
+		}
+		if (session.phase === "conflict") {
+			return {
+				title: "Conflict",
+				icon: <X size={12} />,
+				className: "canvasNoteEditorStatusError",
+			};
+		}
+		if (session.phase === "error") {
+			return {
+				title: "Save failed",
+				icon: <X size={12} />,
+				className: "canvasNoteEditorStatusError",
+			};
+		}
+		if (session.dirty) {
+			return {
+				title: "Unsaved changes",
+				icon: <span className="canvasStatusDot" aria-hidden="true" />,
+				className: "canvasNoteEditorStatusDirty",
+			};
+		}
+		return {
+			title: "Saved",
+			icon: <Save size={12} />,
+			className: "canvasNoteEditorStatusSaved",
+		};
 	})();
 
 	return (
@@ -63,19 +97,22 @@ export const CanvasNoteOverlayEditor = memo(function CanvasNoteOverlayEditor({
 					className="canvasNotePageBackBtn"
 					onClick={() => closeEditor()}
 				>
-					<span className="canvasNotePageBackGlyph">{"\u2190"}</span>
-					<span>Back to canvas</span>
+					<ChevronRight size={14} className="canvasNotePageBackIcon" />
+					<span>Back</span>
 				</button>
 				<div className="canvasNotePageTitleWrap">
 					<div className="canvasNotePageTitle" title={title}>
 						{title}
 					</div>
-					<div
-						className="canvasNoteEditorStatus"
-						title={session?.errorMessage ?? ""}
-					>
-						{statusLabel}
-					</div>
+					{statusMeta ? (
+						<div
+							className={`canvasNoteEditorStatus ${statusMeta.className}`}
+							title={session?.errorMessage || statusMeta.title}
+							aria-label={statusMeta.title}
+						>
+							{statusMeta.icon}
+						</div>
+					) : null}
 				</div>
 				<div className="canvasNoteEditorActions">
 					<Button

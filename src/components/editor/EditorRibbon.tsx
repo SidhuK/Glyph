@@ -61,8 +61,24 @@ export const EditorRibbon = memo(function EditorRibbon({
 	};
 
 	const insertCallout = (type: string) => {
-		const snippet = `\n> [!${type.toLowerCase()}]\n> `;
-		focusChain().insertContent(snippet).run();
+		const normalizedType =
+			type.toLowerCase() === "warn" ? "warning" : type.toLowerCase();
+		runCommand(() =>
+			focusChain()
+				.insertContent({
+					type: "blockquote",
+					content: [
+						{
+							type: "paragraph",
+							content: [{ type: "text", text: `[!${normalizedType}]` }],
+						},
+						{
+							type: "paragraph",
+						},
+					],
+				})
+				.run(),
+		);
 	};
 
 	useEffect(() => {

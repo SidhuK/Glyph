@@ -74,11 +74,11 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 					onValueChange={(value) => onModeChange(value as "preview" | "rich")}
 				>
 					<TabsList>
-						<TabsTrigger value="preview" title="Preview">
-							<Eye size={14} />
-						</TabsTrigger>
-						<TabsTrigger value="rich" title="Rich Text">
+						<TabsTrigger value="rich" title="Editing mode">
 							<Edit size={14} />
+						</TabsTrigger>
+						<TabsTrigger value="preview" title="View mode">
+							<Eye size={14} />
 						</TabsTrigger>
 					</TabsList>
 				</Tabs>

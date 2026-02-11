@@ -56,6 +56,20 @@
 .tiptapContentInline h2,
 .tiptapContentInline h3 {
 	margin: var(--space-4) 0 var(--space-2);
+	font-weight: var(--font-semibold);
+	line-height: 1.28;
+}
+
+.tiptapContentInline h1 {
+	font-size: clamp(1.6rem, 1.15rem + 1.2vw, 2rem);
+}
+
+.tiptapContentInline h2 {
+	font-size: clamp(1.35rem, 1.05rem + 0.75vw, 1.65rem);
+}
+
+.tiptapContentInline h3 {
+	font-size: clamp(1.15rem, 0.98rem + 0.45vw, 1.3rem);
 }
 
 .tiptapContentInline blockquote {
@@ -78,6 +92,25 @@
 	color: var(--text-primary);
 }
 
+.tiptapContentInline blockquote.callout > p:first-child {
+	display: none;
+}
+
+.tiptapContentInline blockquote.callout::before {
+	content: attr(data-callout-title);
+	display: block;
+	font-size: 11px;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	font-weight: var(--font-semibold);
+	color: color-mix(
+		in srgb,
+		var(--callout-accent, var(--interactive-accent)) 75%,
+		var(--text-primary)
+	);
+	margin-bottom: var(--space-2);
+}
+
 .tiptapContentInline blockquote.callout[data-callout="note"] {
 	--callout-accent: color-mix(
 		in srgb,
@@ -98,30 +131,12 @@
 	--callout-accent: #f0b429;
 }
 
+.tiptapContentInline blockquote.callout[data-callout="warn"] {
+	--callout-accent: #f0b429;
+}
+
 .tiptapContentInline blockquote.callout[data-callout="error"] {
 	--callout-accent: #f97066;
-}
-
-.tiptapHostInline.is-preview
-	.tiptapContentInline
-	blockquote.callout
-	> p:first-child {
-	display: none;
-}
-
-.tiptapHostInline.is-preview .tiptapContentInline blockquote.callout::before {
-	content: attr(data-callout-title);
-	display: block;
-	font-size: 11px;
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-	font-weight: var(--font-semibold);
-	color: color-mix(
-		in srgb,
-		var(--callout-accent, var(--interactive-accent)) 70%,
-		var(--text-primary)
-	);
-	margin-bottom: var(--space-2);
 }
 
 .tiptapContentInline code {
@@ -147,6 +162,26 @@
 .tiptapContentInline ol {
 	margin: 0 0 var(--space-3);
 	padding-left: var(--space-5);
+}
+
+.tiptapContentInline ul {
+	list-style: disc;
+}
+
+.tiptapContentInline ol {
+	list-style: decimal;
+}
+
+.tiptapContentInline ul ul {
+	list-style: circle;
+}
+
+.tiptapContentInline ul ul ul {
+	list-style: square;
+}
+
+.tiptapContentInline ol ol {
+	list-style: lower-alpha;
 }
 
 .tiptapContentInline li + li {
