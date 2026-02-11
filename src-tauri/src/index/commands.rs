@@ -192,33 +192,56 @@ pub async fn tag_notes(
     limit: Option<u32>,
 ) -> Result<Vec<SearchResult>, String> {
     let root = state.current_root()?;
-    let limit = limit.unwrap_or(500).min(10_000) as i64;
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<SearchResult>, String> {
         let t = normalize_tag(&tag).ok_or_else(|| "invalid tag".to_string())?;
         let conn = open_db(&root)?;
-        let mut stmt = conn
-            .prepare(
-                "SELECT n.id, n.title, '' AS snippet, 0.0 AS score
-                 FROM tags t
-                 JOIN notes n ON n.id = t.note_id
-                 WHERE t.tag = ?
-                 ORDER BY n.updated DESC
-                 LIMIT ?",
-            )
-            .map_err(|e| e.to_string())?;
-        let mut rows = stmt
-            .query(rusqlite::params![t, limit])
-            .map_err(|e| e.to_string())?;
-        let mut out = Vec::new();
-        while let Some(row) = rows.next().map_err(|e| e.to_string())? {
-            out.push(SearchResult {
-                id: row.get(0).map_err(|e| e.to_string())?,
-                title: row.get(1).map_err(|e| e.to_string())?,
-                snippet: row.get(2).map_err(|e| e.to_string())?,
-                score: row.get(3).map_err(|e| e.to_string())?,
-            });
+        if let Some(raw_limit) = limit {
+            let limit = raw_limit.min(100_000) as i64;
+            let mut stmt = conn
+                .prepare(
+                    "SELECT n.id, n.title, '' AS snippet, 0.0 AS score
+                     FROM tags t
+                     JOIN notes n ON n.id = t.note_id
+                     WHERE t.tag = ?
+                     ORDER BY n.updated DESC
+                     LIMIT ?",
+                )
+                .map_err(|e| e.to_string())?;
+            let mut rows = stmt
+                .query(rusqlite::params![t, limit])
+                .map_err(|e| e.to_string())?;
+            let mut out = Vec::new();
+            while let Some(row) = rows.next().map_err(|e| e.to_string())? {
+                out.push(SearchResult {
+                    id: row.get(0).map_err(|e| e.to_string())?,
+                    title: row.get(1).map_err(|e| e.to_string())?,
+                    snippet: row.get(2).map_err(|e| e.to_string())?,
+                    score: row.get(3).map_err(|e| e.to_string())?,
+                });
+            }
+            return Ok(out);
+        } else {
+            let mut stmt = conn
+                .prepare(
+                    "SELECT n.id, n.title, '' AS snippet, 0.0 AS score
+                     FROM tags t
+                     JOIN notes n ON n.id = t.note_id
+                     WHERE t.tag = ?
+                     ORDER BY n.updated DESC",
+                )
+                .map_err(|e| e.to_string())?;
+            let mut rows = stmt.query(rusqlite::params![t]).map_err(|e| e.to_string())?;
+            let mut out = Vec::new();
+            while let Some(row) = rows.next().map_err(|e| e.to_string())? {
+                out.push(SearchResult {
+                    id: row.get(0).map_err(|e| e.to_string())?,
+                    title: row.get(1).map_err(|e| e.to_string())?,
+                    snippet: row.get(2).map_err(|e| e.to_string())?,
+                    score: row.get(3).map_err(|e| e.to_string())?,
+                });
+            }
+            return Ok(out);
         }
-        Ok(out)
     })
     .await
     .map_err(|e| e.to_string())?

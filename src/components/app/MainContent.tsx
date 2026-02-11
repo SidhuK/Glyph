@@ -123,6 +123,18 @@ export function MainContent({
 			const mod = event.metaKey || event.ctrlKey;
 			if (!mod) return;
 			const key = event.key.toLowerCase();
+			if (key === "tab") {
+				if (!openTabs.length) return;
+				event.preventDefault();
+				const currentIndex = activeTabPath ? openTabs.indexOf(activeTabPath) : -1;
+				const step = event.shiftKey ? -1 : 1;
+				const base =
+					currentIndex >= 0 ? currentIndex : event.shiftKey ? 0 : -1;
+				const nextIndex =
+					(base + step + openTabs.length) % openTabs.length;
+				setActiveTabPath(openTabs[nextIndex] ?? null);
+				return;
+			}
 			if (key === "w" && event.shiftKey) {
 				event.preventDefault();
 				closeAllTabs();
@@ -143,7 +155,7 @@ export function MainContent({
 		};
 		window.addEventListener("keydown", onKeyDown);
 		return () => window.removeEventListener("keydown", onKeyDown);
-	}, [closeActiveTab, closeAllTabs, openTabs]);
+	}, [activeTabPath, closeActiveTab, closeAllTabs, openTabs]);
 
 	const viewerPath = activeTabPath;
 	const fileName = useCallback((path: string) => {

@@ -30,6 +30,7 @@ type Tab = "commands" | "search";
 interface CommandPaletteProps {
 	open: boolean;
 	initialTab?: Tab;
+	initialQuery?: string;
 	commands: Command[];
 	onClose: () => void;
 	vaultPath: string | null;
@@ -70,6 +71,7 @@ function renderSnippet(snippet: string): ReactNode[] {
 export function CommandPalette({
 	open,
 	initialTab = "commands",
+	initialQuery = "",
 	commands,
 	onClose,
 	vaultPath,
@@ -122,7 +124,7 @@ export function CommandPalette({
 		if (!open) return;
 		previousFocusRef.current = document.activeElement;
 		setActiveTab(initialTab);
-		setQuery("");
+		setQuery(initialTab === "search" ? initialQuery : "");
 		setSelectedIndex(0);
 		setSearchResults([]);
 		setRecentNotes([]);
@@ -134,7 +136,7 @@ export function CommandPalette({
 			const prev = previousFocusRef.current;
 			if (prev instanceof HTMLElement) prev.focus();
 		};
-	}, [open, initialTab]);
+	}, [open, initialQuery, initialTab]);
 
 	useEffect(() => {
 		if (!open || !vaultPath) return;
@@ -145,14 +147,14 @@ export function CommandPalette({
 
 	const switchTab = useCallback((tab: Tab) => {
 		setActiveTab(tab);
-		setQuery("");
+		setQuery(tab === "search" ? initialQuery : "");
 		setSelectedIndex(0);
 		setSearchResults([]);
 		setIsSearching(false);
 		window.requestAnimationFrame(() => {
 			inputRef.current?.focus();
 		});
-	}, []);
+	}, [initialQuery]);
 
 	useEffect(() => {
 		setSelectedIndex((curr) => Math.min(curr, Math.max(itemCount - 1, 0)));
@@ -168,8 +170,15 @@ export function CommandPalette({
 			return;
 		}
 		setIsSearching(true);
+		const normalizedTag = trimmed.startsWith("#")
+			? trimmed
+			: trimmed.startsWith("tag:")
+				? `#${trimmed.slice(4).trim()}`
+				: "";
 		debounceRef.current = setTimeout(() => {
-			invoke("search", { query: trimmed })
+			(normalizedTag
+				? invoke("tag_notes", { tag: normalizedTag })
+				: invoke("search", { query: trimmed }))
 				.then((results) => {
 					setSearchResults(results);
 					setSelectedIndex(0);
@@ -342,6 +351,13 @@ export function CommandPalette({
 						exit={{ opacity: 0, y: -4 }}
 						transition={{ duration: 0.12 }}
 					>
+						{activeTab === "search" && query.trim() ? (
+							<div className="commandPaletteResultCountPill" aria-live="polite">
+								{isSearching
+									? "Searching..."
+									: `${(titleMatches.length + contentMatches.length).toLocaleString()} results`}
+							</div>
+						) : null}
 						{activeTab === "commands" && (
 							<>
 								{filtered.map((cmd, index) => (
@@ -409,7 +425,11 @@ export function CommandPalette({
 									<>
 										{titleMatches.length > 0 && (
 											<>
-												<div className="commandPaletteGroupLabel">Notes</div>
+												<div className="commandPaletteGroupLabel">
+													{query.trim().startsWith("#")
+														? "Tagged Notes"
+														: "Notes"}
+												</div>
 												{titleMatches.map((r, index) => (
 													<div
 														key={r.id}
@@ -424,6 +444,9 @@ export function CommandPalette({
 														<div className="commandPaletteResultContent">
 															<div className="commandPaletteResultTitle">
 																{r.title || "Untitled"}
+															</div>
+															<div className="commandPaletteResultSnippet mono">
+																{r.id}
 															</div>
 															<div className="commandPaletteResultSnippet">
 																{renderSnippet(r.snippet)}
@@ -452,6 +475,9 @@ export function CommandPalette({
 															<div className="commandPaletteResultContent">
 																<div className="commandPaletteResultTitle">
 																	{r.title || "Untitled"}
+																</div>
+																<div className="commandPaletteResultSnippet mono">
+																	{r.id}
 																</div>
 																<div className="commandPaletteResultSnippet">
 																	{renderSnippet(r.snippet)}

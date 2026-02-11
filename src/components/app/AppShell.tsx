@@ -95,7 +95,6 @@ export function AppShell() {
 		activeViewDoc,
 		activeViewDocRef,
 		loadAndBuildFolderView,
-		loadAndBuildTagView,
 	} = useViewContext();
 
 	const {
@@ -114,6 +113,7 @@ export function AppShell() {
 	const [paletteInitialTab, setPaletteInitialTab] = useState<
 		"commands" | "search"
 	>("commands");
+	const [paletteInitialQuery, setPaletteInitialQuery] = useState("");
 	const resizeRef = useRef<HTMLDivElement>(null);
 	const dragStartXRef = useRef(0);
 	const dragStartWidthRef = useRef(0);
@@ -249,13 +249,11 @@ export function AppShell() {
 		[loadAndBuildFolderView, setActivePreviewPath],
 	);
 
-	const openTagView = useCallback(
-		async (tag: string) => {
-			setActivePreviewPath(null);
-			await loadAndBuildTagView(tag);
-		},
-		[loadAndBuildTagView, setActivePreviewPath],
-	);
+	const openTagSearchPalette = useCallback((tag: string) => {
+		setPaletteInitialTab("search");
+		setPaletteInitialQuery(tag.startsWith("#") ? tag : `#${tag}`);
+		setPaletteOpen(true);
+	}, [setPaletteOpen]);
 
 	const attachContextFiles = useCallback(async (_paths: string[]) => {}, []);
 
@@ -351,10 +349,12 @@ export function AppShell() {
 		paletteOpen,
 		onOpenPalette: () => {
 			setPaletteInitialTab("commands");
+			setPaletteInitialQuery("");
 			setPaletteOpen(true);
 		},
 		onOpenPaletteSearch: () => {
 			setPaletteInitialTab("search");
+			setPaletteInitialQuery("");
 			setPaletteOpen(true);
 		},
 		onClosePalette: () => setPaletteOpen(false),
@@ -402,9 +402,10 @@ export function AppShell() {
 				onNewFolderInDir={(p) => fileTree.onNewFolderInDir(p)}
 				onRenameDir={(p, name) => fileTree.onRenameDir(p, name)}
 				onToggleDir={fileTree.toggleDir}
-				onSelectTag={(t) => void openTagView(t)}
+				onSelectTag={(t) => openTagSearchPalette(t)}
 				onOpenCommandPalette={() => {
 					setPaletteInitialTab("commands");
+					setPaletteInitialQuery("");
 					setPaletteOpen(true);
 				}}
 			/>
@@ -444,6 +445,7 @@ export function AppShell() {
 			<CommandPalette
 				open={paletteOpen}
 				initialTab={paletteInitialTab}
+				initialQuery={paletteInitialQuery}
 				commands={commands}
 				onClose={() => setPaletteOpen(false)}
 				vaultPath={vaultPath}
