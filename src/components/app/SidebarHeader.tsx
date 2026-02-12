@@ -1,15 +1,20 @@
+import { getShortcutTooltip } from "../../lib/shortcuts";
 import { onWindowDragMouseDown } from "../../utils/window";
-import { Command, FolderOpen } from "../Icons";
+import { Command, FolderOpen, PanelLeftClose, PanelLeftOpen } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 
 interface SidebarHeaderProps {
 	onOpenVault: () => void;
 	onOpenCommandPalette: () => void;
+	sidebarCollapsed: boolean;
+	onToggleSidebar: () => void;
 }
 
 export function SidebarHeader({
 	onOpenVault,
 	onOpenCommandPalette,
+	sidebarCollapsed,
+	onToggleSidebar,
 }: SidebarHeaderProps) {
 	return (
 		<>
@@ -33,6 +38,23 @@ export function SidebarHeader({
 						title="Open vault"
 					>
 						<FolderOpen size={14} />
+					</Button>
+					<Button
+						data-sidebar="trigger"
+						type="button"
+						variant="ghost"
+						size="icon-sm"
+						aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+						aria-pressed={!sidebarCollapsed}
+						data-window-drag-ignore
+						onClick={onToggleSidebar}
+						title={`${sidebarCollapsed ? "Expand" : "Collapse"} sidebar (${getShortcutTooltip({ meta: true, key: "b" })})`}
+					>
+						{sidebarCollapsed ? (
+							<PanelLeftOpen size={14} />
+						) : (
+							<PanelLeftClose size={14} />
+						)}
 					</Button>
 					<Button
 						type="button"

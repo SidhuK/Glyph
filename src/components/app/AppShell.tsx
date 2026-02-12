@@ -17,7 +17,7 @@ import { type FsEntry, invoke } from "../../lib/tauri";
 import { openSettingsWindow } from "../../lib/windows";
 import { cn } from "../../utils/cn";
 import { onWindowDragMouseDown } from "../../utils/window";
-import { PanelLeftClose, PanelLeftOpen } from "../Icons";
+import { PanelLeftOpen } from "../Icons";
 import { AIFloatingHost } from "../ai/AIFloatingHost";
 import { dispatchAiContextAttach } from "../ai/aiContextEvents";
 import {
@@ -543,25 +543,23 @@ export function AppShell() {
 				data-tauri-drag-region
 				onMouseDown={onWindowDragMouseDown}
 			/>
-			<div className="sidebarTopToggle">
-				<Button
-					data-sidebar="trigger"
-					type="button"
-					variant="ghost"
-					size="icon-sm"
-					aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
-					aria-pressed={!sidebarCollapsed}
-					data-window-drag-ignore
-					onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-					title={`${sidebarCollapsed ? "Expand" : "Collapse"} sidebar (${getShortcutTooltip({ meta: true, key: "b" })})`}
-				>
-					{sidebarCollapsed ? (
+			{sidebarCollapsed && (
+				<div className="sidebarCollapsedToggle">
+					<Button
+						data-sidebar="trigger"
+						type="button"
+						variant="ghost"
+						size="icon-sm"
+						aria-label="Expand sidebar"
+						aria-pressed={false}
+						data-window-drag-ignore
+						onClick={() => setSidebarCollapsed(false)}
+						title={`Expand sidebar (${getShortcutTooltip({ meta: true, key: "b" })})`}
+					>
 						<PanelLeftOpen size={14} />
-					) : (
-						<PanelLeftClose size={14} />
-					)}
-				</Button>
-			</div>
+					</Button>
+				</div>
+			)}
 
 			<Sidebar
 				onSelectDir={(p) => void openFolderView(p)}
@@ -576,6 +574,8 @@ export function AppShell() {
 					setPaletteInitialQuery("");
 					setPaletteOpen(true);
 				}}
+				sidebarCollapsed={sidebarCollapsed}
+				onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
 			/>
 
 			<div

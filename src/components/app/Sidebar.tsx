@@ -13,6 +13,8 @@ interface SidebarProps {
 	onRenameDir: (dirPath: string, nextName: string) => Promise<string | null>;
 	onSelectTag: (tag: string) => void;
 	onOpenCommandPalette: () => void;
+	sidebarCollapsed: boolean;
+	onToggleSidebar: () => void;
 }
 
 export function Sidebar({
@@ -24,10 +26,12 @@ export function Sidebar({
 	onRenameDir,
 	onSelectTag,
 	onOpenCommandPalette,
+	sidebarCollapsed,
+	onToggleSidebar,
 }: SidebarProps) {
 	// Contexts
 	const { onOpenVault } = useVault();
-	const { sidebarCollapsed, sidebarWidth } = useUIContext();
+	const { sidebarWidth } = useUIContext();
 	const shouldReduceMotion = useReducedMotion();
 	const sidebarState = sidebarCollapsed ? "collapsed" : "expanded";
 
@@ -62,6 +66,8 @@ export function Sidebar({
 						<SidebarHeader
 							onOpenVault={onOpenVault}
 							onOpenCommandPalette={onOpenCommandPalette}
+							sidebarCollapsed={sidebarCollapsed}
+							onToggleSidebar={onToggleSidebar}
 						/>
 						<SidebarContent
 							onToggleDir={onToggleDir}
