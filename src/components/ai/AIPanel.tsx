@@ -491,9 +491,12 @@ export function AIPanel({
 									onClick={() => void handleLoadHistory(item.job_id)}
 									disabled={history.loadingJobId === item.job_id}
 								>
-									<div className="aiHistoryItemPreview">
-										{item.preview || "Untitled chat"}
+									<div className="aiHistoryItemTitle">
+										{item.title || "Untitled chat"}
 									</div>
+									{item.preview ? (
+										<div className="aiHistoryItemPreview">{item.preview}</div>
+									) : null}
 									<div className="aiHistoryItemMeta">
 										<span>{formatHistoryTime(item.created_at_ms)}</span>
 										<span>{item.profile_name || item.model || "AI"}</span>

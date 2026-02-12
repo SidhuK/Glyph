@@ -23,6 +23,53 @@ fn truncate(s: &str, max: usize) -> String {
     format!("{}…(truncated)", &s[..max])
 }
 
+fn derive_chat_title(messages: &[AiMessage]) -> String {
+    let user_text = messages
+        .iter()
+        .find(|m| m.role == "user" && !m.content.trim().is_empty())
+        .map(|m| m.content.trim())
+        .unwrap_or_default()
+        .to_lowercase();
+    if user_text.is_empty() {
+        return "Untitled Chat".to_string();
+    }
+
+    if user_text.contains("checklist")
+        || (user_text.contains("checked") && user_text.contains("unchecked"))
+    {
+        return "Checklist Reorder".to_string();
+    }
+    if user_text.contains("summar") {
+        return "Summary Request".to_string();
+    }
+    if user_text.contains("search") || user_text.contains("find") {
+        return "Search Request".to_string();
+    }
+
+    let mut words: Vec<String> = user_text
+        .split_whitespace()
+        .map(|w| w.trim_matches(|c: char| !c.is_alphanumeric()))
+        .filter(|w| w.len() > 2)
+        .take(6)
+        .map(|w| {
+            let mut chars = w.chars();
+            match chars.next() {
+                Some(first) => format!("{}{}", first.to_ascii_uppercase(), chars.as_str()),
+                None => String::new(),
+            }
+        })
+        .filter(|w| !w.is_empty())
+        .collect();
+
+    if words.is_empty() {
+        return "Untitled Chat".to_string();
+    }
+    if words.len() > 5 {
+        words.truncate(5);
+    }
+    words.join(" ")
+}
+
 pub fn write_audit_log(
     vault_root: &Path,
     job_id: &str,
@@ -97,10 +144,12 @@ fn write_chat_history(
             content: response.to_string(),
         });
     }
+    let title = derive_chat_title(&messages);
 
     let payload = serde_json::json!({
         "version": 1,
         "job_id": job_id,
+        "title": title,
         "created_at_ms": created_at_ms,
         "cancelled": cancelled,
         "profile": {

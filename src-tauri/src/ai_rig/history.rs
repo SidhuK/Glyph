@@ -12,6 +12,7 @@ const MAX_LIMIT: usize = 200;
 #[derive(Serialize)]
 pub struct AiChatHistorySummary {
     pub job_id: String,
+    pub title: String,
     pub created_at_ms: u64,
     pub cancelled: bool,
     pub profile_name: String,
@@ -34,6 +35,8 @@ struct StoredHistory {
     version: u32,
     #[serde(default)]
     job_id: String,
+    #[serde(default)]
+    title: String,
     #[serde(default)]
     created_at_ms: u64,
     #[serde(default)]
@@ -118,7 +121,7 @@ fn list_history_impl(
         let job_id = if history.job_id.trim().is_empty() {
             fallback_job_id
         } else {
-            history.job_id
+            history.job_id.clone()
         };
         if job_id.trim().is_empty() {
             continue;
@@ -137,6 +140,7 @@ fn list_history_impl(
 
         out.push(AiChatHistorySummary {
             job_id,
+            title: title_from_history(&history),
             created_at_ms,
             cancelled: history.cancelled,
             profile_name: history.profile.name,
@@ -168,6 +172,59 @@ fn get_history_impl(root: &std::path::Path, job_id: &str) -> Result<AiChatHistor
         messages: history.messages,
         tool_events: history.tool_events,
     })
+}
+
+fn title_from_history(history: &StoredHistory) -> String {
+    let stored = history.title.trim();
+    if !stored.is_empty() {
+        return stored.to_string();
+    }
+
+    let user_text = history
+        .messages
+        .iter()
+        .find(|m| m.role == "user" && !m.content.trim().is_empty())
+        .map(|m| m.content.trim())
+        .unwrap_or_default()
+        .to_lowercase();
+    if user_text.is_empty() {
+        return "Untitled Chat".to_string();
+    }
+
+    if user_text.contains("checklist")
+        || (user_text.contains("checked") && user_text.contains("unchecked"))
+    {
+        return "Checklist Reorder".to_string();
+    }
+    if user_text.contains("summar") {
+        return "Summary Request".to_string();
+    }
+    if user_text.contains("search") || user_text.contains("find") {
+        return "Search Request".to_string();
+    }
+
+    let mut words: Vec<String> = user_text
+        .split_whitespace()
+        .map(|w| w.trim_matches(|c: char| !c.is_alphanumeric()))
+        .filter(|w| w.len() > 2)
+        .take(6)
+        .map(|w| {
+            let mut chars = w.chars();
+            match chars.next() {
+                Some(first) => format!("{}{}", first.to_ascii_uppercase(), chars.as_str()),
+                None => String::new(),
+            }
+        })
+        .filter(|w| !w.is_empty())
+        .collect();
+
+    if words.is_empty() {
+        return "Untitled Chat".to_string();
+    }
+    if words.len() > 5 {
+        words.truncate(5);
+    }
+    words.join(" ")
 }
 
 fn preview_from_messages(messages: &[AiMessage]) -> String {
