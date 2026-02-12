@@ -34,7 +34,12 @@ export function MainContent({ fileTree }: MainContentProps) {
 	const { canvasLoadingMessage } = useViewContext();
 	const { activeFilePath, setActiveFilePath } = useFileTreeContext();
 
-	const { activePreviewPath, setActivePreviewPath } = useUIContext();
+	const {
+		activePreviewPath,
+		setActivePreviewPath,
+		setOpenMarkdownTabs,
+		setActiveMarkdownTabPath,
+	} = useUIContext();
 	const [openTabs, setOpenTabs] = useState<string[]>([]);
 	const [activeTabPath, setActiveTabPath] = useState<string | null>(null);
 	const [dragTabPath, setDragTabPath] = useState<string | null>(null);
@@ -70,6 +75,17 @@ export function MainContent({ fileTree }: MainContentProps) {
 		}
 		setActivePreviewPath(null);
 	}, [activeTabPath, setActiveFilePath, setActivePreviewPath]);
+
+	useEffect(() => {
+		const markdownTabs = openTabs.filter((path) =>
+			path.toLowerCase().endsWith(".md"),
+		);
+		setOpenMarkdownTabs(markdownTabs);
+		const activeMarkdown = activeTabPath?.toLowerCase().endsWith(".md")
+			? activeTabPath
+			: null;
+		setActiveMarkdownTabPath(activeMarkdown);
+	}, [activeTabPath, openTabs, setActiveMarkdownTabPath, setOpenMarkdownTabs]);
 
 	const closeTab = useCallback((path: string) => {
 		setOpenTabs((prev) => {

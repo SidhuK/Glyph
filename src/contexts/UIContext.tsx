@@ -40,6 +40,10 @@ export interface UIContextValue {
 	setSearchInputElement: (el: HTMLInputElement | null) => void;
 	activePreviewPath: string | null;
 	setActivePreviewPath: (path: string | null) => void;
+	openMarkdownTabs: string[];
+	setOpenMarkdownTabs: React.Dispatch<React.SetStateAction<string[]>>;
+	activeMarkdownTabPath: string | null;
+	setActiveMarkdownTabPath: (path: string | null) => void;
 }
 
 const UIContext = createContext<UIContextValue | null>(null);
@@ -56,6 +60,10 @@ export function UIProvider({ children }: { children: ReactNode }) {
 	const [activePreviewPath, setActivePreviewPath] = useState<string | null>(
 		null,
 	);
+	const [openMarkdownTabs, setOpenMarkdownTabs] = useState<string[]>([]);
+	const [activeMarkdownTabPath, setActiveMarkdownTabPath] = useState<
+		string | null
+	>(null);
 	const searchInputElRef = useRef<HTMLInputElement | null>(null);
 
 	const [aiPanelOpen, setAiPanelOpen] = useState(false);
@@ -63,6 +71,10 @@ export function UIProvider({ children }: { children: ReactNode }) {
 
 	useEffect(() => {
 		if (vaultPath) setSidebarCollapsed(false);
+		if (!vaultPath) {
+			setOpenMarkdownTabs([]);
+			setActiveMarkdownTabPath(null);
+		}
 	}, [vaultPath]);
 
 	useEffect(() => {
@@ -137,6 +149,10 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			setSearchInputElement,
 			activePreviewPath,
 			setActivePreviewPath: handleSetActivePreviewPath,
+			openMarkdownTabs,
+			setOpenMarkdownTabs,
+			activeMarkdownTabPath,
+			setActiveMarkdownTabPath,
 		}),
 		[
 			sidebarCollapsed,
@@ -157,6 +173,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			setSearchInputElement,
 			activePreviewPath,
 			handleSetActivePreviewPath,
+			openMarkdownTabs,
+			activeMarkdownTabPath,
 		],
 	);
 

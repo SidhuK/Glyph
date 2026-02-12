@@ -36,6 +36,10 @@ import {
 import { Button } from "../ui/shadcn/button";
 import { AIToolTimeline, type ToolTimelineEvent } from "./AIToolTimeline";
 import { ModelSelector } from "./ModelSelector";
+import {
+	AI_CONTEXT_ATTACH_EVENT,
+	type AiContextAttachDetail,
+} from "./aiContextEvents";
 import { type UIMessage, useRigChat } from "./hooks/useRigChat";
 import { useAiContext } from "./useAiContext";
 import { useAiHistory } from "./useAiHistory";
@@ -143,6 +147,26 @@ export function AIPanel({
 	useEffect(() => {
 		setContextSearch(panelQuery);
 	}, [panelQuery, setContextSearch]);
+
+	useEffect(() => {
+		const onAttach = (event: Event) => {
+			const detail = (event as CustomEvent<AiContextAttachDetail>).detail;
+			const paths = detail?.paths ?? [];
+			if (!paths.length) return;
+			for (const path of paths) {
+				context.addContext("file", path);
+			}
+			setAddPanelOpen(false);
+			setAddPanelQuery("");
+			window.requestAnimationFrame(() => {
+				composerInputRef.current?.focus();
+			});
+		};
+		window.addEventListener(AI_CONTEXT_ATTACH_EVENT, onAttach);
+		return () => {
+			window.removeEventListener(AI_CONTEXT_ATTACH_EVENT, onAttach);
+		};
+	}, [context.addContext]);
 
 	useEffect(() => {
 		if (chat.status === "streaming") return;

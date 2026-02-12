@@ -1,4 +1,4 @@
-import { Menu01Icon, SourceCodeIcon } from "@hugeicons/core-free-icons";
+import { MenuCircleIcon, SourceCodeIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useEditorRegistration } from "../../contexts";
@@ -109,7 +109,7 @@ export function MarkdownEditorPane({
 						title={actionsOpen ? "Close editor actions" : "Open editor actions"}
 						aria-expanded={actionsOpen}
 					>
-						<HugeiconsIcon icon={Menu01Icon} size={14} />
+						<HugeiconsIcon icon={MenuCircleIcon} size={14} />
 					</Button>
 					{actionsOpen ? (
 						<div className="markdownEditorActionsPanel">

@@ -19,6 +19,7 @@ import { cn } from "../../utils/cn";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { PanelLeftClose, PanelLeftOpen } from "../Icons";
 import { AIFloatingHost } from "../ai/AIFloatingHost";
+import { dispatchAiContextAttach } from "../ai/aiContextEvents";
 import {
 	WIKI_LINK_CLICK_EVENT,
 	type WikiLinkClickDetail,
@@ -104,6 +105,8 @@ export function AppShell() {
 		aiPanelOpen,
 		setAiPanelOpen,
 		setActivePreviewPath,
+		openMarkdownTabs,
+		activeMarkdownTabPath,
 	} = useUIContext();
 
 	const { saveCurrentEditor, hasUnsavedChanges } = useEditorContext();
@@ -321,7 +324,43 @@ export function AppShell() {
 		[setPaletteOpen],
 	);
 
-	const attachContextFiles = useCallback(async (_paths: string[]) => {}, []);
+	const attachContextFiles = useCallback(
+		async (paths: string[]) => {
+			const unique = Array.from(
+				new Set(
+					paths
+						.map((path) => path.trim())
+						.filter((path) => path.toLowerCase().endsWith(".md")),
+				),
+			);
+			if (unique.length === 0) return;
+			setAiPanelOpen(true);
+			window.setTimeout(() => {
+				dispatchAiContextAttach({ paths: unique });
+			}, 0);
+		},
+		[setAiPanelOpen],
+	);
+
+	const attachCurrentNoteToAi = useCallback(async () => {
+		const target = activeMarkdownTabPath;
+		if (!target) {
+			setError("No open markdown note to attach to AI.");
+			return;
+		}
+		await attachContextFiles([target]);
+	}, [activeMarkdownTabPath, attachContextFiles, setError]);
+
+	const attachAllOpenNotesToAi = useCallback(async () => {
+		const markdownTabs = openMarkdownTabs.filter((path) =>
+			path.toLowerCase().endsWith(".md"),
+		);
+		if (markdownTabs.length === 0) {
+			setError("No open markdown notes to attach to AI.");
+			return;
+		}
+		await attachContextFiles(markdownTabs);
+	}, [attachContextFiles, openMarkdownTabs, setError]);
 
 	const createNoteFromAI = useCallback(
 		async (markdown: string) => {
@@ -406,6 +445,20 @@ export function AppShell() {
 				action: () => setAiPanelOpen((v) => !v),
 			},
 			{
+				id: "ai-attach-current-note",
+				label: "AI: Attach current note",
+				shortcut: { meta: true, alt: true, key: "a" },
+				enabled: Boolean(activeMarkdownTabPath),
+				action: () => void attachCurrentNoteToAi(),
+			},
+			{
+				id: "ai-attach-all-open-notes",
+				label: "AI: Attach all open notes",
+				shortcut: { meta: true, alt: true, shift: true, key: "a" },
+				enabled: openMarkdownTabs.length > 0,
+				action: () => void attachAllOpenNotesToAi(),
+			},
+			{
 				id: "new-note",
 				label: "New note",
 				shortcut: { meta: true, key: "n" },
@@ -439,9 +492,13 @@ export function AppShell() {
 			},
 		],
 		[
+			activeMarkdownTabPath,
+			attachAllOpenNotesToAi,
+			attachCurrentNoteToAi,
 			fileTree,
 			hasUnsavedChanges,
 			onOpenVault,
+			openMarkdownTabs.length,
 			saveCurrentEditor,
 			setAiPanelOpen,
 			setPaletteOpen,
