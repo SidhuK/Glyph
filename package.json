@@ -19,7 +19,6 @@
 		"tauri": "tauri"
 	},
 	"dependencies": {
-		"@ai-sdk/react": "^3.0.70",
 		"@hookform/resolvers": "^5.2.2",
 		"@hugeicons/core-free-icons": "^3.1.1",
 		"@hugeicons/react": "^1.1.4",
@@ -57,7 +56,6 @@
 		"@tiptap/starter-kit": "^3.4.1",
 		"@tiptap/suggestion": "^3.4.1",
 		"@xyflow/react": "^12.10.0",
-		"ai": "^6.0.68",
 		"class-variance-authority": "^0.7.1",
 		"clsx": "^2.1.1",
 		"cmdk": "^1.1.1",

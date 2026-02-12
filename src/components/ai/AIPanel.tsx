@@ -1,5 +1,3 @@
-import { type UIMessage, useChat } from "@ai-sdk/react";
-
 import {
 	Fragment,
 	Suspense,
@@ -10,7 +8,6 @@ import {
 	useRef,
 	useState,
 } from "react";
-import { RigChatTransport } from "../../lib/ai/rigChatTransport";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { openSettingsWindow } from "../../lib/windows";
@@ -32,6 +29,7 @@ import {
 import { Button } from "../ui/shadcn/button";
 import { AIToolTimeline, type ToolTimelineEvent } from "./AIToolTimeline";
 import { ModelSelector } from "./ModelSelector";
+import { type UIMessage, useRigChat } from "./hooks/useRigChat";
 import { useAiContext } from "./useAiContext";
 import { useAiHistory } from "./useAiHistory";
 import { useAiProfiles } from "./useAiProfiles";
@@ -101,8 +99,7 @@ export function AIPanel({
 	onCreateNoteFromLastAssistant,
 	onClose,
 }: AIPanelProps) {
-	const transport = useMemo(() => new RigChatTransport(), []);
-	const chat = useChat({ transport, experimental_throttle: 32 });
+	const chat = useRigChat();
 	const [input, setInput] = useState("");
 	const [addPanelOpen, setAddPanelOpen] = useState(false);
 	const [addPanelQuery, setAddPanelQuery] = useState("");
@@ -243,7 +240,7 @@ export function AIPanel({
 			{ text },
 			{
 				body: {
-					profile_id: profiles.activeProfileId,
+					profile_id: profiles.activeProfileId ?? undefined,
 					context: built.payload || undefined,
 					context_manifest: built.manifest ?? undefined,
 					audit: true,
@@ -264,7 +261,7 @@ export function AIPanel({
 				{ text: trimmed },
 				{
 					body: {
-						profile_id: profiles.activeProfileId,
+						profile_id: profiles.activeProfileId ?? undefined,
 						context: built.payload || undefined,
 						context_manifest: built.manifest ?? undefined,
 						audit: true,

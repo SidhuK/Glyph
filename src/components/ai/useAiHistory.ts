@@ -1,4 +1,3 @@
-import type { UIMessage } from "@ai-sdk/react";
 import { useCallback, useEffect, useState } from "react";
 import {
 	type AiChatHistoryDetail,
@@ -7,6 +6,7 @@ import {
 	TauriInvokeError,
 	invoke,
 } from "../../lib/tauri";
+import type { UIMessage } from "./hooks/useRigChat";
 
 function errMessage(err: unknown): string {
 	if (err instanceof TauriInvokeError) return err.message;
