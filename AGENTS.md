@@ -75,7 +75,6 @@ State management via React Context (no prop drilling):
 - `AIFloatingHost.tsx` — Floating AI entry point
 - `ChatMessages.tsx` / `ChatInput.tsx` / `ChatActions.tsx` — Chat UI
 - `ModelSelector.tsx` — Model picker (multi-provider)
-- `ProfileSettings.tsx` — AI profile management
 - `ToolIndicator.tsx` / `ToolIndicatorGroup.tsx` — Tool-use status
 - `AIToolTimeline.tsx` — Tool call timeline display
 - `hooks/` — AI-specific hooks
@@ -120,7 +119,6 @@ State management via React Context (no prop drilling):
 - `tauriEvents.ts` — Tauri event listeners
 - `shortcuts/` — Keyboard shortcut registry (`registry.ts`, `platform.ts`)
 - `views/` — View document builders, persistence, sanitization
-- `ai/tauriChatTransport.ts` — AI chat transport layer
 - `canvasLayout.ts` — Canvas auto-layout algorithms
 - `canvasConstants.ts` / `canvasFlowTypes.ts` — Canvas type definitions
 - `diff.ts` — Text diffing utilities
