@@ -7,7 +7,11 @@ import {
 	useMemo,
 	useState,
 } from "react";
-import { loadSettings, setCurrentVaultPath } from "../lib/settings";
+import {
+	clearCurrentVaultPath,
+	loadSettings,
+	setCurrentVaultPath,
+} from "../lib/settings";
 import { type AppInfo, TauriInvokeError, invoke } from "../lib/tauri";
 
 export interface VaultContextValue {
@@ -19,6 +23,7 @@ export interface VaultContextValue {
 	vaultSchemaVersion: number | null;
 	recentVaults: string[];
 	isIndexing: boolean;
+	settingsLoaded: boolean;
 	startIndexRebuild: () => Promise<void>;
 	onOpenVault: () => Promise<void>;
 	onOpenVaultAtPath: (path: string) => Promise<void>;
@@ -46,6 +51,7 @@ export function VaultProvider({ children }: { children: ReactNode }) {
 	);
 	const [recentVaults, setRecentVaults] = useState<string[]>([]);
 	const [isIndexing, setIsIndexing] = useState(false);
+	const [settingsLoaded, setSettingsLoaded] = useState(false);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -70,8 +76,26 @@ export function VaultProvider({ children }: { children: ReactNode }) {
 				if (cancelled) return;
 				setRecentVaults(settings.recentVaults);
 				setLastVaultPath(settings.currentVaultPath);
+				setSettingsLoaded(true);
+
+				if (settings.currentVaultPath) {
+					try {
+						const vaultInfo = await invoke("vault_open", {
+							path: settings.currentVaultPath,
+						});
+						if (!cancelled) {
+							setVaultPath(vaultInfo.root);
+							setVaultSchemaVersion(vaultInfo.schema_version);
+						}
+					} catch {
+						if (!cancelled) setSettingsLoaded(true);
+					}
+				}
 			} catch (err) {
-				if (!cancelled) setError(extractError(err));
+				if (!cancelled) {
+					setError(extractError(err));
+					setSettingsLoaded(true);
+				}
 			}
 		})();
 		return () => {
@@ -119,6 +143,7 @@ export function VaultProvider({ children }: { children: ReactNode }) {
 		setError("");
 		try {
 			await invoke("vault_close");
+			await clearCurrentVaultPath();
 			setVaultPath(null);
 			setVaultSchemaVersion(null);
 		} catch (err) {
@@ -169,6 +194,7 @@ export function VaultProvider({ children }: { children: ReactNode }) {
 			vaultSchemaVersion,
 			recentVaults,
 			isIndexing,
+			settingsLoaded,
 			startIndexRebuild,
 			onOpenVault,
 			onOpenVaultAtPath,
@@ -184,6 +210,7 @@ export function VaultProvider({ children }: { children: ReactNode }) {
 			vaultSchemaVersion,
 			recentVaults,
 			isIndexing,
+			settingsLoaded,
 			startIndexRebuild,
 			onOpenVault,
 			onOpenVaultAtPath,

@@ -25,6 +25,7 @@ import {
 } from "../editor/markdown/wikiLinkEvents";
 import { Button } from "../ui/shadcn/button";
 import { type Command, CommandPalette } from "./CommandPalette";
+import { KeyboardShortcutsHelp } from "./KeyboardShortcutsHelp";
 import { MainContent } from "./MainContent";
 import { Sidebar } from "./Sidebar";
 
@@ -114,6 +115,7 @@ export function AppShell() {
     "commands" | "search"
   >("commands");
   const [paletteInitialQuery, setPaletteInitialQuery] = useState("");
+  const [shortcutsHelpOpen, setShortcutsHelpOpen] = useState(false);
   const resizeRef = useRef<HTMLDivElement>(null);
   const dragStartXRef = useRef(0);
   const dragStartWidthRef = useRef(0);
@@ -493,6 +495,10 @@ export function AppShell() {
         onClose={() => setPaletteOpen(false)}
         vaultPath={vaultPath}
         onSelectSearchNote={(id) => void fileTree.openMarkdownFile(id)}
+      />
+      <KeyboardShortcutsHelp
+        open={shortcutsHelpOpen}
+        onClose={() => setShortcutsHelpOpen(false)}
       />
     </div>
   );

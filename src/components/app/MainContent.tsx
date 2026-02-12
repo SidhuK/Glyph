@@ -28,6 +28,7 @@ export function MainContent({
 		vaultPath,
 		lastVaultPath,
 		recentVaults,
+		settingsLoaded,
 		onOpenVault,
 		onOpenVaultAtPath,
 		onContinueLastVault,
@@ -199,6 +200,9 @@ export function MainContent({
 	]);
 
 	if (!vaultPath) {
+		if (!settingsLoaded) {
+			return <main className="mainArea" />;
+		}
 		return (
 			<main className="mainArea mainAreaWelcome">
 				<WelcomeScreen
