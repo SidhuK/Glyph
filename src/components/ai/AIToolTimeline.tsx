@@ -99,107 +99,73 @@ export function AIToolTimeline({ events, streaming }: AIToolTimelineProps) {
 	if (events.length === 0) return null;
 
 	return (
-		<motion.section
-			className="aiToolTimeline"
-			initial={{ opacity: 0, y: 10, scale: 0.985 }}
-			animate={{ opacity: 1, y: 0, scale: 1 }}
-			transition={{ type: "spring", stiffness: 320, damping: 28 }}
-			aria-live="polite"
-			aria-label="AI tool timeline"
-		>
-			<div className="aiToolTimelineHeader">
-				<div className="aiToolTimelineTitle">
-					<span>{streaming ? "Tool activity" : "Tool log"}</span>
-					{streaming ? (
-						<span
-							className="aiToolLiveBadge"
-							aria-label="Tool call in progress"
+		<motion.div className="aiToolTimelineInline" aria-live="polite">
+			<AnimatePresence initial={false}>
+				{events.map((event) => {
+					const summary = summarizePayload(event.payload);
+					const error =
+						event.phase === "error" && typeof event.error === "string"
+							? event.error
+							: null;
+					const detail = detailTextForEvent(event);
+					const isExpanded = expanded[event.id] === true;
+					return (
+						<motion.div
+							key={event.id}
+							layout
+							initial={{ opacity: 0, y: 8, scale: 0.99 }}
+							animate={{ opacity: 1, y: 0, scale: 1 }}
+							exit={{ opacity: 0, y: -6 }}
+							transition={{ type: "spring", stiffness: 340, damping: 27 }}
+							className={cn(
+								"aiToolInlineItem",
+								event.phase === "error" && "aiToolTimelineItem-error",
+								event.phase === "call" && "aiToolTimelineItem-running",
+							)}
 						>
-							<span className="aiToolLiveDot" />
-							Live
-						</span>
-					) : null}
-				</div>
-				<span>{events.length} events</span>
-			</div>
-			<motion.div
-				className="aiToolTimelineList"
-				initial="hidden"
-				animate="visible"
-				variants={{
-					hidden: { opacity: 0 },
-					visible: {
-						opacity: 1,
-						transition: { staggerChildren: 0.05, delayChildren: 0.04 },
-					},
-				}}
-			>
-				<AnimatePresence initial={false}>
-					{events.map((event) => {
-						const summary = summarizePayload(event.payload);
-						const error =
-							event.phase === "error" && typeof event.error === "string"
-								? event.error
-								: null;
-						const detail = detailTextForEvent(event);
-						const isExpanded = expanded[event.id] === true;
-						return (
-							<motion.div
-								key={event.id}
-								layout
-								initial={{ opacity: 0, y: 8, scale: 0.99 }}
-								animate={{ opacity: 1, y: 0, scale: 1 }}
-								exit={{ opacity: 0, y: -6 }}
-								transition={{ type: "spring", stiffness: 340, damping: 27 }}
-								className={cn(
-									"aiToolTimelineItem",
-									event.phase === "error" && "aiToolTimelineItem-error",
-									event.phase === "call" && "aiToolTimelineItem-running",
-								)}
-								whileHover={{ y: -1, scale: 1.004 }}
+							<button
+								type="button"
+								className="aiToolTimelineTop aiToolExpandBtn"
+								onClick={() =>
+									setExpanded((prev) => ({
+										...prev,
+										[event.id]: !prev[event.id],
+									}))
+								}
+								aria-expanded={isExpanded}
 							>
-								<button
-									type="button"
-									className="aiToolTimelineTop aiToolExpandBtn"
-									onClick={() =>
-										setExpanded((prev) => ({
-											...prev,
-											[event.id]: !prev[event.id],
-										}))
-									}
-									aria-expanded={isExpanded}
+								<span
+									className={cn("aiToolPhase", `aiToolPhase-${event.phase}`)}
 								>
-									<span
-										className={cn("aiToolPhase", `aiToolPhase-${event.phase}`)}
-									>
-										{formatPhaseLabel(event.phase)}
-									</span>
-									<span className="aiToolName">
-										{formatToolName(event.tool)}
-									</span>
-									<span className="aiToolTime">{formatTime(event.at)}</span>
-									<span
-										className={cn(
-											"aiToolChevron",
-											isExpanded && "aiToolChevron-open",
-										)}
-										aria-hidden
-									>
-										<ChevronDown size={12} />
-									</span>
-								</button>
-								{summary ? (
-									<div className="aiToolSummary">{summary}</div>
-								) : null}
-								{error ? <div className="aiToolError">{error}</div> : null}
-								{isExpanded && detail ? (
-									<pre className="aiToolDetails">{detail}</pre>
-								) : null}
-							</motion.div>
-						);
-					})}
-				</AnimatePresence>
-			</motion.div>
-		</motion.section>
+									{formatPhaseLabel(event.phase)}
+								</span>
+								<span className="aiToolName">{formatToolName(event.tool)}</span>
+								<span className="aiToolTime">{formatTime(event.at)}</span>
+								<span
+									className={cn(
+										"aiToolChevron",
+										isExpanded && "aiToolChevron-open",
+									)}
+									aria-hidden
+								>
+									<ChevronDown size={12} />
+								</span>
+							</button>
+							{summary ? <div className="aiToolSummary">{summary}</div> : null}
+							{error ? <div className="aiToolError">{error}</div> : null}
+							{isExpanded && detail ? (
+								<pre className="aiToolDetails">{detail}</pre>
+							) : null}
+						</motion.div>
+					);
+				})}
+			</AnimatePresence>
+			{streaming ? (
+				<div className="aiToolInlineLive" aria-label="Tool call in progress">
+					<span className="aiToolLiveDot" />
+					Working with tools...
+				</div>
+			) : null}
+		</motion.div>
 	);
 }
