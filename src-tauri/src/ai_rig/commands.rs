@@ -28,6 +28,16 @@ const PROVIDER_SUPPORT_CACHE_FILE: &str = "provider_endpoints_support.json";
 const PROVIDER_SUPPORT_FALLBACK_JSON: &str =
     include_str!("../../data/provider_endpoints_support.json");
 
+fn is_transient_ai_error(message: &str) -> bool {
+    let msg = message.to_lowercase();
+    msg.contains("internal server error")
+        || msg.contains("\"internal_error\"")
+        || msg.contains("status code 500")
+        || msg.contains("temporarily unavailable")
+        || msg.contains("upstream")
+        || msg.contains("timeout")
+}
+
 #[derive(Serialize, Deserialize)]
 pub(crate) struct ProviderSupportEntry {
     display_name: String,
@@ -280,7 +290,7 @@ pub async fn ai_chat_start(
         let (system, messages) =
             split_system_and_messages(request.messages.clone(), request.context.clone());
 
-        let result = run_request(
+        let mut result = run_request(
             &cancel,
             &app_for_task,
             &job_id_for_task,
@@ -291,6 +301,22 @@ pub async fn ai_chat_start(
             vault_root.as_deref(),
         )
         .await;
+        if let Err(message) = &result {
+            if !cancel.is_cancelled() && is_transient_ai_error(message) {
+                tokio::time::sleep(std::time::Duration::from_millis(500)).await;
+                result = run_request(
+                    &cancel,
+                    &app_for_task,
+                    &job_id_for_task,
+                    &profile,
+                    api_key.as_deref(),
+                    &system,
+                    &messages,
+                    vault_root.as_deref(),
+                )
+                .await;
+            }
+        }
 
         match result {
             Ok((full, cancelled, tool_events)) => {

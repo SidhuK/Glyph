@@ -85,8 +85,24 @@ fn err_payload(error: &str) -> String {
 }
 
 fn tool_definition<T: JsonSchema>(name: &str, description: &str) -> ToolDefinition {
-    let parameters = serde_json::to_value(schemars::schema_for!(T))
+    let mut parameters = serde_json::to_value(schemars::schema_for!(T))
         .unwrap_or_else(|_| json!({"type": "object"}));
+    if let Some(root) = parameters.as_object_mut() {
+        let object = if root.contains_key("properties") {
+            Some(root)
+        } else {
+            root.get_mut("schema").and_then(|v| v.as_object_mut())
+        };
+        if let Some(schema_obj) = object {
+            if let Some(props) = schema_obj.get("properties").and_then(|v| v.as_object()) {
+                let required = props
+                    .keys()
+                    .map(|k| serde_json::Value::String(k.clone()))
+                    .collect::<Vec<_>>();
+                schema_obj.insert("required".to_string(), serde_json::Value::Array(required));
+            }
+        }
+    }
     ToolDefinition {
         name: name.to_string(),
         description: description.to_string(),

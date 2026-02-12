@@ -28,6 +28,19 @@ use super::{
 
 const TITLE_PREAMBLE: &str = "Generate concise chat titles. Return only a short title (3-6 words), no quotes, no punctuation-heavy output.";
 
+fn is_not_chat_model_error(err: &str) -> bool {
+    let lower = err.to_lowercase();
+    lower.contains("not a chat model")
+        || lower.contains("not supported in the v1/chat/completions endpoint")
+}
+
+fn not_chat_model_message(model: &str) -> String {
+    format!(
+        "Model '{}' is not chat-completions compatible. Select a chat model (for example: gpt-4o, gpt-4.1, gpt-4.1-mini, gpt-4o-mini).",
+        model
+    )
+}
+
 pub async fn run_with_rig(
     cancel: &CancellationToken,
     app: &AppHandle,
@@ -78,18 +91,28 @@ pub async fn run_with_rig(
                     .with_client(http_client.clone())
                     .build()
             };
-            let mut agent = client.agent(profile.model.trim()).temperature(0.2);
+            let model = client
+                .completion_model(profile.model.trim())
+                .completions_api();
+            let mut agent = AgentBuilder::new(model);
             if let Some(v) = max_tokens {
                 agent = agent.max_tokens(v);
             }
-            run_stream(
+            match run_stream(
                 cancel,
                 app,
                 job_id,
                 with_tools(agent.preamble(system), &tools).build(),
-                transcript,
+                transcript.clone(),
             )
-            .await?
+            .await
+            {
+                Ok(v) => v,
+                Err(e) if is_not_chat_model_error(&e) => {
+                    return Err(not_chat_model_message(profile.model.trim()));
+                }
+                Err(e) => return Err(e),
+            }
         }
         AiProviderKind::OpenaiCompat => {
             let key = api_key.unwrap_or("").trim();
@@ -100,18 +123,28 @@ pub async fn run_with_rig(
                 .with_client(http_client.clone())
                 .base_url(base)
                 .build();
-            let mut agent = client.agent(profile.model.trim()).temperature(0.2);
+            let model = client
+                .completion_model(profile.model.trim())
+                .completions_api();
+            let mut agent = AgentBuilder::new(model);
             if let Some(v) = max_tokens {
                 agent = agent.max_tokens(v);
             }
-            run_stream(
+            match run_stream(
                 cancel,
                 app,
                 job_id,
                 with_tools(agent.preamble(system), &tools).build(),
-                transcript,
+                transcript.clone(),
             )
-            .await?
+            .await
+            {
+                Ok(v) => v,
+                Err(e) if is_not_chat_model_error(&e) => {
+                    return Err(not_chat_model_message(profile.model.trim()));
+                }
+                Err(e) => return Err(e),
+            }
         }
         AiProviderKind::Openrouter => {
             let key = require_key(api_key)?;
@@ -125,7 +158,7 @@ pub async fn run_with_rig(
                     .with_client(http_client.clone())
                     .build()
             };
-            let mut agent = client.agent(profile.model.trim()).temperature(0.2);
+            let mut agent = client.agent(profile.model.trim());
             if let Some(v) = max_tokens {
                 agent = agent.max_tokens(v);
             }
@@ -152,7 +185,7 @@ pub async fn run_with_rig(
                     .build()
                     .map_err(|e| e.to_string())?
             };
-            let mut agent = client.agent(profile.model.trim()).temperature(0.2);
+            let mut agent = client.agent(profile.model.trim());
             if let Some(v) = max_tokens {
                 agent = agent.max_tokens(v);
             }
@@ -179,7 +212,7 @@ pub async fn run_with_rig(
                     .build()
                     .map_err(|e| e.to_string())?
             };
-            let mut agent = client.agent(profile.model.trim()).temperature(0.2);
+            let mut agent = client.agent(profile.model.trim());
             if let Some(v) = max_tokens {
                 agent = agent.max_tokens(v);
             }
@@ -200,7 +233,7 @@ pub async fn run_with_rig(
                 .with_client(http_client.clone())
                 .base_url(base)
                 .build();
-            let mut agent = client.agent(profile.model.trim()).temperature(0.2);
+            let mut agent = client.agent(profile.model.trim());
             if let Some(v) = max_tokens {
                 agent = agent.max_tokens(v);
             }
@@ -285,18 +318,29 @@ pub async fn generate_chat_title_with_rig(
                     .with_client(http_client.clone())
                     .build()
             };
-            let mut agent = client.agent(profile.model.trim()).temperature(0.0);
+            let model = client
+                .completion_model(profile.model.trim())
+                .completions_api();
+            let mut agent = AgentBuilder::new(model);
             if let Some(v) = max_tokens {
                 agent = agent.max_tokens(v);
             }
-            agent
+            match agent
                 .preamble(TITLE_PREAMBLE)
                 .build()
-                .prompt(prompt)
+                .prompt(&prompt)
                 .multi_turn(1)
                 .await
-                .map_err(|e| e.to_string())?
-                .to_string()
+            {
+                Ok(v) => v.to_string(),
+                Err(e) => {
+                    let msg = e.to_string();
+                    if is_not_chat_model_error(&msg) {
+                        return Err(not_chat_model_message(profile.model.trim()));
+                    }
+                    return Err(msg);
+                }
+            }
         }
         AiProviderKind::OpenaiCompat => {
             let key = api_key.unwrap_or("").trim();
@@ -307,18 +351,29 @@ pub async fn generate_chat_title_with_rig(
                 .with_client(http_client.clone())
                 .base_url(base)
                 .build();
-            let mut agent = client.agent(profile.model.trim()).temperature(0.0);
+            let model = client
+                .completion_model(profile.model.trim())
+                .completions_api();
+            let mut agent = AgentBuilder::new(model);
             if let Some(v) = max_tokens {
                 agent = agent.max_tokens(v);
             }
-            agent
+            match agent
                 .preamble(TITLE_PREAMBLE)
                 .build()
-                .prompt(prompt)
+                .prompt(&prompt)
                 .multi_turn(1)
                 .await
-                .map_err(|e| e.to_string())?
-                .to_string()
+            {
+                Ok(v) => v.to_string(),
+                Err(e) => {
+                    let msg = e.to_string();
+                    if is_not_chat_model_error(&msg) {
+                        return Err(not_chat_model_message(profile.model.trim()));
+                    }
+                    return Err(msg);
+                }
+            }
         }
         AiProviderKind::Openrouter => {
             let key = require_key(api_key)?;
@@ -332,7 +387,7 @@ pub async fn generate_chat_title_with_rig(
                     .with_client(http_client.clone())
                     .build()
             };
-            let mut agent = client.agent(profile.model.trim()).temperature(0.0);
+            let mut agent = client.agent(profile.model.trim());
             if let Some(v) = max_tokens {
                 agent = agent.max_tokens(v);
             }
@@ -359,7 +414,7 @@ pub async fn generate_chat_title_with_rig(
                     .build()
                     .map_err(|e| e.to_string())?
             };
-            let mut agent = client.agent(profile.model.trim()).temperature(0.0);
+            let mut agent = client.agent(profile.model.trim());
             if let Some(v) = max_tokens {
                 agent = agent.max_tokens(v);
             }
@@ -386,7 +441,7 @@ pub async fn generate_chat_title_with_rig(
                     .build()
                     .map_err(|e| e.to_string())?
             };
-            let mut agent = client.agent(profile.model.trim()).temperature(0.0);
+            let mut agent = client.agent(profile.model.trim());
             if let Some(v) = max_tokens {
                 agent = agent.max_tokens(v);
             }
@@ -407,7 +462,7 @@ pub async fn generate_chat_title_with_rig(
                 .with_client(http_client.clone())
                 .base_url(base)
                 .build();
-            let mut agent = client.agent(profile.model.trim()).temperature(0.0);
+            let mut agent = client.agent(profile.model.trim());
             if let Some(v) = max_tokens {
                 agent = agent.max_tokens(v);
             }
