@@ -1,4 +1,4 @@
-import { SourceCodeIcon } from "@hugeicons/core-free-icons";
+import { Menu01Icon, SourceCodeIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useEditorRegistration } from "../../contexts";
@@ -29,6 +29,7 @@ export function MarkdownEditorPane({
 	const [mode, setMode] = useState<CanvasInlineEditorMode>("rich");
 	const [saving, setSaving] = useState(false);
 	const [error, setError] = useState("");
+	const [actionsOpen, setActionsOpen] = useState(false);
 	const savedTextRef = useRef(savedText);
 
 	const isDirty = text !== savedText;
@@ -41,6 +42,7 @@ export function MarkdownEditorPane({
 		const cached = markdownDocCache.get(relPath) ?? "";
 		setText(cached);
 		setSavedText(cached);
+		setActionsOpen(false);
 	}, [relPath]);
 
 	const loadDoc = useCallback(async () => {
@@ -94,61 +96,96 @@ export function MarkdownEditorPane({
 	return (
 		<section className="filePreviewPane markdownEditorPane">
 			<div className="markdownEditorFloatActions">
-				<Button
-					type="button"
-					variant="outline"
-					size="icon-sm"
-					onClick={() => setMode("rich")}
-					aria-label="Editing mode"
-					title="Editing mode"
-					data-state={mode === "rich" ? "active" : "inactive"}
-				>
-					<Edit size={14} />
-				</Button>
-				<Button
-					type="button"
-					variant="outline"
-					size="icon-sm"
-					onClick={() => setMode("preview")}
-					aria-label="Preview mode"
-					title="Preview mode"
-					data-state={mode === "preview" ? "active" : "inactive"}
-				>
-					<Eye size={14} />
-				</Button>
-				<Button
-					type="button"
-					variant="outline"
-					size="icon-sm"
-					onClick={() => setMode("plain")}
-					aria-label="Raw markdown mode"
-					title="Raw markdown mode"
-					data-state={mode === "plain" ? "active" : "inactive"}
-				>
-					<HugeiconsIcon icon={SourceCodeIcon} size={14} />
-				</Button>
-				<Button
-					type="button"
-					variant="outline"
-					size="icon-sm"
-					onClick={() => void loadDoc()}
-					disabled={saving}
-					aria-label="Reload file"
-					title="Reload file"
-				>
-					<RefreshCw size={14} />
-				</Button>
-				<Button
-					type="button"
-					variant="default"
-					size="icon-sm"
-					onClick={() => void onSave()}
-					disabled={saving}
-					aria-label={saving ? "Saving" : "Save file"}
-					title={saving ? "Saving" : "Save file"}
-				>
-					<Save size={14} />
-				</Button>
+				<div className="markdownEditorActionsMenu">
+					<Button
+						type="button"
+						variant="outline"
+						size="icon-sm"
+						className="markdownEditorMenuTrigger"
+						onClick={() => setActionsOpen((prev) => !prev)}
+						aria-label={
+							actionsOpen ? "Close editor actions" : "Open editor actions"
+						}
+						title={actionsOpen ? "Close editor actions" : "Open editor actions"}
+						aria-expanded={actionsOpen}
+					>
+						<HugeiconsIcon icon={Menu01Icon} size={14} />
+					</Button>
+					{actionsOpen ? (
+						<div className="markdownEditorActionsPanel">
+							<Button
+								type="button"
+								variant="ghost"
+								size="xs"
+								className="markdownEditorActionItem"
+								data-active={mode === "rich"}
+								onClick={() => {
+									setMode("rich");
+									setActionsOpen(false);
+								}}
+							>
+								<Edit size={12} />
+								Edit
+							</Button>
+							<Button
+								type="button"
+								variant="ghost"
+								size="xs"
+								className="markdownEditorActionItem"
+								data-active={mode === "preview"}
+								onClick={() => {
+									setMode("preview");
+									setActionsOpen(false);
+								}}
+							>
+								<Eye size={12} />
+								Preview
+							</Button>
+							<Button
+								type="button"
+								variant="ghost"
+								size="xs"
+								className="markdownEditorActionItem"
+								data-active={mode === "plain"}
+								onClick={() => {
+									setMode("plain");
+									setActionsOpen(false);
+								}}
+							>
+								<HugeiconsIcon icon={SourceCodeIcon} size={12} />
+								Raw
+							</Button>
+							<Button
+								type="button"
+								variant="ghost"
+								size="xs"
+								className="markdownEditorActionItem"
+								onClick={() => {
+									void loadDoc();
+									setActionsOpen(false);
+								}}
+								disabled={saving}
+							>
+								<RefreshCw size={12} />
+								Reload
+							</Button>
+							<Button
+								type="button"
+								variant="ghost"
+								size="xs"
+								className="markdownEditorActionItem"
+								onClick={() => {
+									void onSave();
+									setActionsOpen(false);
+								}}
+								disabled={saving}
+							>
+								<Save size={12} />
+								{saving ? "Saving" : "Save"}
+							</Button>
+						</div>
+					) : null}
+				</div>
 			</div>
 
 			{error ? (

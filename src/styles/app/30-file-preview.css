@@ -102,8 +102,42 @@
 	top: 8px;
 	right: 12px;
 	z-index: 6;
-	display: inline-flex;
-	gap: var(--space-1);
+	display: inline-block;
+}
+
+.markdownEditorActionsMenu {
+	position: relative;
+}
+
+.markdownEditorMenuTrigger {
+	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
+}
+
+.markdownEditorActionsPanel {
+	position: absolute;
+	top: calc(100% + 6px);
+	right: 0;
+	min-width: 128px;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	padding: 4px;
+	border-radius: var(--radius-md);
+	border: 1px solid var(--border-light);
+	background: color-mix(in srgb, var(--bg-primary) 96%, transparent);
+	box-shadow: 0 6px 18px rgba(0, 0, 0, 0.12);
+}
+
+.markdownEditorActionItem {
+	width: 100%;
+	justify-content: flex-start;
+	font-size: 11px;
+	color: var(--text-secondary);
+}
+
+.markdownEditorActionItem[data-active="true"] {
+	background: var(--bg-secondary);
+	color: var(--text-primary);
 }
 
 .markdownEditorCenter {
