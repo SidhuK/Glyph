@@ -302,12 +302,22 @@ pub async fn ai_chat_start(
                     },
                 );
                 if let Some(root) = vault_root {
+                    let title = runtime::generate_chat_title_with_rig(
+                        &profile,
+                        api_key.as_deref(),
+                        request.context.as_deref(),
+                        &request.messages,
+                        &full,
+                    )
+                    .await
+                    .ok();
                     write_audit_log(
                         &root,
                         &job_id_for_task,
                         &profile,
                         &request,
                         &full,
+                        title.as_deref(),
                         cancelled,
                         &tool_events,
                     );

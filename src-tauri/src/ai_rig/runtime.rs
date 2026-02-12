@@ -9,6 +9,7 @@ use tokio_util::sync::CancellationToken;
 use rig::{
     agent::{Agent, AgentBuilder, AgentBuilderSimple, MultiTurnStreamItem},
     client::CompletionClient,
+    completion::Prompt,
     message::ToolResultContent,
     providers::{anthropic, gemini, ollama, openai, openrouter},
     streaming::{StreamedAssistantContent, StreamedUserContent, StreamingPrompt},
@@ -24,6 +25,8 @@ use super::{
     providers::{build_transcript, capabilities},
     tools::ToolBundle,
 };
+
+const TITLE_PREAMBLE: &str = "Generate concise chat titles. Return only a short title (3-6 words), no quotes, no punctuation-heavy output.";
 
 pub async fn run_with_rig(
     cancel: &CancellationToken,
@@ -225,6 +228,211 @@ pub async fn run_with_rig(
         },
     );
     Ok((full, false, tool_events))
+}
+
+pub async fn generate_chat_title_with_rig(
+    profile: &AiProfile,
+    api_key: Option<&str>,
+    context: Option<&str>,
+    messages: &[AiMessage],
+    assistant_response: &str,
+) -> Result<String, String> {
+    let caps = capabilities(&profile.provider);
+    let max_tokens = if caps.requires_max_tokens {
+        Some(64)
+    } else {
+        None
+    };
+    let http_client = build_http_client(profile)?;
+    let custom_base_url = profile
+        .base_url
+        .as_deref()
+        .map(|_| parse_base_url(profile))
+        .transpose()
+        .map_err(|e| e.to_string())?
+        .map(|u| u.to_string());
+
+    let user_text = messages
+        .iter()
+        .find(|m| m.role == "user" && !m.content.trim().is_empty())
+        .map(|m| m.content.trim())
+        .unwrap_or_default();
+    let context_trimmed = context.unwrap_or("").trim();
+    let context_short = if context_trimmed.len() > 1200 {
+        &context_trimmed[..1200]
+    } else {
+        context_trimmed
+    };
+    let assistant_short = if assistant_response.len() > 1000 {
+        &assistant_response[..1000]
+    } else {
+        assistant_response
+    };
+    let prompt = format!(
+        "User request:\n{user_text}\n\nContext:\n{context_short}\n\nAssistant response:\n{assistant_short}\n\nTitle:"
+    );
+
+    let title = match profile.provider {
+        AiProviderKind::Openai => {
+            let key = require_key(api_key)?;
+            let client = if let Some(base_url) = custom_base_url.as_deref() {
+                openai::Client::builder(key)
+                    .with_client(http_client.clone())
+                    .base_url(base_url)
+                    .build()
+            } else {
+                openai::Client::builder(key)
+                    .with_client(http_client.clone())
+                    .build()
+            };
+            let mut agent = client.agent(profile.model.trim()).temperature(0.0);
+            if let Some(v) = max_tokens {
+                agent = agent.max_tokens(v);
+            }
+            agent
+                .preamble(TITLE_PREAMBLE)
+                .build()
+                .prompt(prompt)
+                .multi_turn(1)
+                .await
+                .map_err(|e| e.to_string())?
+                .to_string()
+        }
+        AiProviderKind::OpenaiCompat => {
+            let key = api_key.unwrap_or("").trim();
+            let base = custom_base_url
+                .as_deref()
+                .unwrap_or(default_base_url(&AiProviderKind::OpenaiCompat));
+            let client = openai::Client::builder(key)
+                .with_client(http_client.clone())
+                .base_url(base)
+                .build();
+            let mut agent = client.agent(profile.model.trim()).temperature(0.0);
+            if let Some(v) = max_tokens {
+                agent = agent.max_tokens(v);
+            }
+            agent
+                .preamble(TITLE_PREAMBLE)
+                .build()
+                .prompt(prompt)
+                .multi_turn(1)
+                .await
+                .map_err(|e| e.to_string())?
+                .to_string()
+        }
+        AiProviderKind::Openrouter => {
+            let key = require_key(api_key)?;
+            let client = if let Some(base_url) = custom_base_url.as_deref() {
+                openrouter::Client::builder(key)
+                    .with_client(http_client.clone())
+                    .base_url(base_url)
+                    .build()
+            } else {
+                openrouter::Client::builder(key)
+                    .with_client(http_client.clone())
+                    .build()
+            };
+            let mut agent = client.agent(profile.model.trim()).temperature(0.0);
+            if let Some(v) = max_tokens {
+                agent = agent.max_tokens(v);
+            }
+            agent
+                .preamble(TITLE_PREAMBLE)
+                .build()
+                .prompt(prompt)
+                .multi_turn(1)
+                .await
+                .map_err(|e| e.to_string())?
+                .to_string()
+        }
+        AiProviderKind::Anthropic => {
+            let key = require_key(api_key)?;
+            let client = if let Some(base_url) = custom_base_url.as_deref() {
+                anthropic::Client::builder(key)
+                    .with_client(http_client.clone())
+                    .base_url(base_url)
+                    .build()
+                    .map_err(|e| e.to_string())?
+            } else {
+                anthropic::Client::builder(key)
+                    .with_client(http_client.clone())
+                    .build()
+                    .map_err(|e| e.to_string())?
+            };
+            let mut agent = client.agent(profile.model.trim()).temperature(0.0);
+            if let Some(v) = max_tokens {
+                agent = agent.max_tokens(v);
+            }
+            agent
+                .preamble(TITLE_PREAMBLE)
+                .build()
+                .prompt(prompt)
+                .multi_turn(1)
+                .await
+                .map_err(|e| e.to_string())?
+                .to_string()
+        }
+        AiProviderKind::Gemini => {
+            let key = require_key(api_key)?;
+            let client = if let Some(base_url) = custom_base_url.as_deref() {
+                gemini::Client::builder(key)
+                    .with_client(http_client.clone())
+                    .base_url(base_url)
+                    .build()
+                    .map_err(|e| e.to_string())?
+            } else {
+                gemini::Client::builder(key)
+                    .with_client(http_client.clone())
+                    .build()
+                    .map_err(|e| e.to_string())?
+            };
+            let mut agent = client.agent(profile.model.trim()).temperature(0.0);
+            if let Some(v) = max_tokens {
+                agent = agent.max_tokens(v);
+            }
+            agent
+                .preamble(TITLE_PREAMBLE)
+                .build()
+                .prompt(prompt)
+                .multi_turn(1)
+                .await
+                .map_err(|e| e.to_string())?
+                .to_string()
+        }
+        AiProviderKind::Ollama => {
+            let base = custom_base_url
+                .as_deref()
+                .unwrap_or(default_base_url(&AiProviderKind::Ollama));
+            let client = ollama::Client::builder()
+                .with_client(http_client.clone())
+                .base_url(base)
+                .build();
+            let mut agent = client.agent(profile.model.trim()).temperature(0.0);
+            if let Some(v) = max_tokens {
+                agent = agent.max_tokens(v);
+            }
+            agent
+                .preamble(TITLE_PREAMBLE)
+                .build()
+                .prompt(prompt)
+                .multi_turn(1)
+                .await
+                .map_err(|e| e.to_string())?
+                .to_string()
+        }
+    };
+
+    let line = title
+        .lines()
+        .find(|l| !l.trim().is_empty())
+        .map(str::trim)
+        .unwrap_or("Untitled Chat");
+    let line = line.trim_matches('"').trim_matches('`').to_string();
+    Ok(if line.len() > 80 {
+        line[..80].trim().to_string()
+    } else {
+        line
+    })
 }
 
 fn build_http_client(profile: &AiProfile) -> Result<reqwest::Client, String> {

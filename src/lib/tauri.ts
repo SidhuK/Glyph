@@ -213,6 +213,7 @@ export interface ProviderSupportDocument {
 export interface AiChatHistorySummary {
 	job_id: string;
 	title: string;
+	provider: AiProviderKind | null;
 	created_at_ms: number;
 	cancelled: boolean;
 	profile_name: string;

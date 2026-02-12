@@ -8,7 +8,13 @@ import {
 	useRef,
 	useState,
 } from "react";
+import anthropicLogoUrl from "../../assets/provider-logos/claude-ai.svg?url";
+import geminiLogoUrl from "../../assets/provider-logos/google-gemini.svg?url";
+import ollamaLogoUrl from "../../assets/provider-logos/ollama.svg?url";
+import openrouterLogoUrl from "../../assets/provider-logos/open-router.svg?url";
+import openaiLogoUrl from "../../assets/provider-logos/openai-light.svg?url";
 import { invoke } from "../../lib/tauri";
+import type { AiProviderKind } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { openSettingsWindow } from "../../lib/windows";
 import { cn } from "../../utils/cn";
@@ -69,19 +75,18 @@ function parseAddTrigger(input: string): AddTrigger | null {
 	return null;
 }
 
-function formatHistoryTime(createdAtMs: number): string {
-	if (!createdAtMs) return "Unknown time";
-	return new Date(createdAtMs).toLocaleString([], {
-		month: "short",
-		day: "numeric",
-		hour: "numeric",
-		minute: "2-digit",
-	});
-}
-
 function formatToolName(tool: string): string {
 	return tool.split("_").filter(Boolean).join(" ");
 }
+
+const providerLogoMap: Record<AiProviderKind, string> = {
+	openai: openaiLogoUrl,
+	openai_compat: openaiLogoUrl,
+	openrouter: openrouterLogoUrl,
+	anthropic: anthropicLogoUrl,
+	gemini: geminiLogoUrl,
+	ollama: ollamaLogoUrl,
+};
 
 interface AIPanelProps {
 	isOpen: boolean;
@@ -494,13 +499,14 @@ export function AIPanel({
 									<div className="aiHistoryItemTitle">
 										{item.title || "Untitled chat"}
 									</div>
-									{item.preview ? (
-										<div className="aiHistoryItemPreview">{item.preview}</div>
+									{item.provider ? (
+										<img
+											className="aiHistoryProviderIcon"
+											src={providerLogoMap[item.provider]}
+											alt={item.provider}
+											draggable={false}
+										/>
 									) : null}
-									<div className="aiHistoryItemMeta">
-										<span>{formatHistoryTime(item.created_at_ms)}</span>
-										<span>{item.profile_name || item.model || "AI"}</span>
-									</div>
 								</button>
 							))
 						) : (

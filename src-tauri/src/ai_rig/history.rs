@@ -3,7 +3,7 @@ use tauri::State;
 
 use crate::{lattice_paths, vault::VaultState};
 
-use super::types::{AiMessage, AiStoredToolEvent};
+use super::types::{AiMessage, AiProviderKind, AiStoredToolEvent};
 
 const HISTORY_VERSION: u32 = 1;
 const DEFAULT_LIMIT: usize = 25;
@@ -13,6 +13,7 @@ const MAX_LIMIT: usize = 200;
 pub struct AiChatHistorySummary {
     pub job_id: String,
     pub title: String,
+    pub provider: Option<AiProviderKind>,
     pub created_at_ms: u64,
     pub cancelled: bool,
     pub profile_name: String,
@@ -25,6 +26,8 @@ pub struct AiChatHistorySummary {
 struct StoredProfile {
     #[serde(default)]
     name: String,
+    #[serde(default)]
+    provider: Option<AiProviderKind>,
     #[serde(default)]
     model: String,
 }
@@ -141,6 +144,7 @@ fn list_history_impl(
         out.push(AiChatHistorySummary {
             job_id,
             title: title_from_history(&history),
+            provider: history.profile.provider.clone(),
             created_at_ms,
             cancelled: history.cancelled,
             profile_name: history.profile.name,

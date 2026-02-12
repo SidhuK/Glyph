@@ -76,6 +76,7 @@ pub fn write_audit_log(
     profile: &AiProfile,
     request: &AiChatRequest,
     response: &str,
+    title: Option<&str>,
     cancelled: bool,
     tool_events: &[AiStoredToolEvent],
 ) {
@@ -116,6 +117,7 @@ pub fn write_audit_log(
         profile,
         request,
         &response_truncated,
+        title,
         cancelled,
         created_at_ms,
         tool_events,
@@ -128,6 +130,7 @@ fn write_chat_history(
     profile: &AiProfile,
     request: &AiChatRequest,
     response: &str,
+    title: Option<&str>,
     cancelled: bool,
     created_at_ms: u64,
     tool_events: &[AiStoredToolEvent],
@@ -144,7 +147,11 @@ fn write_chat_history(
             content: response.to_string(),
         });
     }
-    let title = derive_chat_title(&messages);
+    let title = title
+        .map(str::trim)
+        .filter(|s| !s.is_empty())
+        .map(ToString::to_string)
+        .unwrap_or_else(|| derive_chat_title(&messages));
 
     let payload = serde_json::json!({
         "version": 1,

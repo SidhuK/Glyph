@@ -121,6 +121,9 @@
 }
 
 .aiHistoryItem {
+	display: flex;
+	align-items: center;
+	gap: 8px;
 	padding: 6px 8px;
 	border-radius: 8px;
 	border: 1px solid color-mix(in srgb, var(--border-light) 55%, transparent);
@@ -143,6 +146,7 @@
 }
 
 .aiHistoryItemTitle {
+	flex: 1;
 	font-size: 12px;
 	font-weight: var(--font-semibold);
 	color: var(--text-primary);
@@ -151,22 +155,12 @@
 	text-overflow: ellipsis;
 }
 
-.aiHistoryItemPreview {
-	margin-top: 1px;
-	font-size: var(--text-xs);
-	color: var(--text-secondary);
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-
-.aiHistoryItemMeta {
-	margin-top: 2px;
-	display: flex;
-	justify-content: space-between;
-	gap: 8px;
-	font-size: 11px;
-	color: var(--text-tertiary);
+.aiHistoryProviderIcon {
+	width: 14px;
+	height: 14px;
+	object-fit: contain;
+	flex-shrink: 0;
+	opacity: 0.95;
 }
 
 .aiHistoryEmpty {
