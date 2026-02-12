@@ -6,6 +6,7 @@ export type TauriEventMap = {
 	"menu:create_vault": undefined;
 	"menu:close_vault": undefined;
 	"ai:chunk": { job_id: string; delta: string };
+	"ai:status": { job_id: string; status: string; detail?: string };
 	"ai:done": { job_id: string; cancelled: boolean };
 	"ai:error": { job_id: string; message: string };
 	"ai:tool": {

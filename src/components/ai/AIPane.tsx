@@ -5,9 +5,9 @@ import { ChatMessages } from "./ChatMessages";
 import { ContextPayload } from "./ContextPayload";
 import { ProfileSettings } from "./ProfileSettings";
 import { useAIActions } from "./hooks/useAIActions";
-import { useAIChat } from "./hooks/useAIChat";
 import { useAIContext } from "./hooks/useAIContext";
 import { useAIProfiles } from "./hooks/useAIProfiles";
+import { useRigChat } from "./hooks/useRigChat";
 import type { AIPaneProps } from "./types";
 
 export type { AIPaneProps, SelectedCanvasNode } from "./types";
@@ -31,7 +31,7 @@ export function AIPane({
 		selectedCanvasNodes,
 		canvasDoc,
 	});
-	const chat = useAIChat({
+	const chat = useRigChat({
 		activeProfileId: profiles.activeProfileId,
 		payloadApproved: context.payloadApproved,
 		payloadManifest: context.payloadManifest,

@@ -69,7 +69,17 @@ export interface ActiveNoteDisk {
  */
 export interface AiToolEventPayload {
 	job_id: string;
-	tool: "search_vault" | "list_files" | "read_file";
+	tool:
+		| "list_dir"
+		| "search"
+		| "stat"
+		| "read_file"
+		| "read_files_batch"
+		| "write_file"
+		| "apply_patch"
+		| "move"
+		| "mkdir"
+		| "delete";
 	phase: "call" | "result" | "error";
 	at_ms?: number;
 	call_id?: string;

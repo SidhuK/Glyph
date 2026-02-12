@@ -10,7 +10,7 @@ import {
 	useRef,
 	useState,
 } from "react";
-import { TauriChatTransport } from "../../lib/ai/tauriChatTransport";
+import { RigChatTransport } from "../../lib/ai/rigChatTransport";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { openSettingsWindow } from "../../lib/windows";
@@ -101,7 +101,7 @@ export function AIPanel({
 	onCreateNoteFromLastAssistant,
 	onClose,
 }: AIPanelProps) {
-	const transport = useMemo(() => new TauriChatTransport(), []);
+	const transport = useMemo(() => new RigChatTransport(), []);
 	const chat = useChat({ transport, experimental_throttle: 32 });
 	const [input, setInput] = useState("");
 	const [addPanelOpen, setAddPanelOpen] = useState(false);
@@ -425,11 +425,7 @@ export function AIPanel({
 	}, [chat.status, history.refresh]);
 
 	return (
-		<div
-			className="aiPanel"
-			data-open={isOpen}
-			data-window-drag-ignore
-		>
+		<div className="aiPanel" data-open={isOpen} data-window-drag-ignore>
 			<div className="aiPanelHeader">
 				<div className="aiPanelTitle">
 					<AiLattice size={18} />

@@ -1,4 +1,5 @@
 mod ai;
+mod ai_rig;
 mod index;
 mod io_atomic;
 mod lattice_fs;

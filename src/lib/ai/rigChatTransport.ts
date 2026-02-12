@@ -2,30 +2,29 @@ import type { ChatTransport, UIMessage, UIMessageChunk } from "ai";
 import { invoke } from "../tauri";
 import { listenTauriEvent } from "../tauriEvents";
 
-type TauriChatBody = {
+type RigChatBody = {
 	profile_id: string;
 	context?: string;
 	context_manifest?: unknown;
 	audit?: boolean;
 };
 
-type TauriAiMessage = {
+type RigMessage = {
 	role: "system" | "user" | "assistant";
 	content: string;
 };
 
-function uiMessageToTauriMessage(message: UIMessage): TauriAiMessage | null {
+function uiToRigMessage(message: UIMessage): RigMessage | null {
 	const content = message.parts
 		.filter((p) => p.type === "text")
 		.map((p) => p.text)
 		.join("")
 		.trim();
-
 	if (!content) return null;
 	return { role: message.role, content };
 }
 
-export class TauriChatTransport implements ChatTransport<UIMessage> {
+export class RigChatTransport implements ChatTransport<UIMessage> {
 	async sendMessages({
 		messages,
 		abortSignal,
@@ -33,16 +32,14 @@ export class TauriChatTransport implements ChatTransport<UIMessage> {
 	}: Parameters<ChatTransport<UIMessage>["sendMessages"]>[0]): Promise<
 		ReadableStream<UIMessageChunk>
 	> {
-		const requestBody = (body ?? {}) as Partial<TauriChatBody>;
+		const requestBody = (body ?? {}) as Partial<RigChatBody>;
 		const profileId = requestBody.profile_id?.trim() ?? "";
 		if (!profileId) {
 			throw new Error("No AI profile selected.");
 		}
-
 		const requestMessages = messages
-			.map(uiMessageToTauriMessage)
-			.filter((m): m is TauriAiMessage => m != null);
-
+			.map(uiToRigMessage)
+			.filter((m): m is RigMessage => m != null);
 		const res = await invoke("ai_chat_start", {
 			request: {
 				profile_id: profileId,
@@ -55,14 +52,12 @@ export class TauriChatTransport implements ChatTransport<UIMessage> {
 
 		const jobId = res.job_id;
 		const textPartId = crypto.randomUUID();
-
 		const cleanupRef: { fn: (() => void) | null } = { fn: null };
 
 		return new ReadableStream<UIMessageChunk>({
 			start: async (controller) => {
 				let startedText = false;
 				let finished = false;
-
 				const cleanupFns: Array<() => void> = [];
 				const cleanup = () => {
 					if (finished) return;
@@ -77,10 +72,10 @@ export class TauriChatTransport implements ChatTransport<UIMessage> {
 					startedText = true;
 					controller.enqueue({ type: "text-start", id: textPartId });
 				};
-
 				const finishText = () => {
-					if (startedText)
+					if (startedText) {
 						controller.enqueue({ type: "text-end", id: textPartId });
+					}
 				};
 
 				if (abortSignal) {
@@ -88,10 +83,6 @@ export class TauriChatTransport implements ChatTransport<UIMessage> {
 						void invoke("ai_chat_cancel", { job_id: jobId }).catch(() => {});
 						try {
 							finishText();
-						} catch {
-							// ignore
-						}
-						try {
 							controller.close();
 						} catch {
 							// ignore
@@ -130,10 +121,7 @@ export class TauriChatTransport implements ChatTransport<UIMessage> {
 				const unlistenError = await listenTauriEvent("ai:error", (payload) => {
 					if (payload.job_id !== jobId) return;
 					try {
-						controller.enqueue({
-							type: "error",
-							errorText: payload.message,
-						});
+						controller.enqueue({ type: "error", errorText: payload.message });
 						controller.close();
 					} catch {
 						// ignore

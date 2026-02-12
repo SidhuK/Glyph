@@ -43,3 +43,5 @@ tokio-util = "0.7"
 keyring = "2"
 tokio = { version = "1", features = ["macros", "rt", "time"] }
 window-vibrancy = "0.7"
+rig-core = { version = "0.24.0", features = ["derive"] }
+schemars = "0.8"

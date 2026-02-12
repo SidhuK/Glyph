@@ -3,7 +3,6 @@ use tauri_plugin_notification::NotificationExt;
 
 use crate::{io_atomic, vault::VaultState};
 
-use super::agent;
 use super::audit::{audit_log_path, write_audit_log};
 use super::helpers::{http_client, parse_base_url, split_system_and_messages};
 use super::history;
@@ -12,6 +11,7 @@ use super::state::AiState;
 use super::store::{ensure_default_profiles, read_store, store_path, write_store};
 use super::types::{AiChatRequest, AiChatStartResult, AiDoneEvent, AiErrorEvent, AiProfile};
 use crate::lattice_paths;
+use crate::ai_rig;
 use serde::{Deserialize, Serialize};
 use serde_json;
 use std::collections::HashMap;
@@ -269,20 +269,6 @@ pub async fn ai_chat_start(
 
     tauri::async_runtime::spawn(async move {
         let ai_state_for_task = app_for_task.state::<AiState>();
-        let client = match http_client().await {
-            Ok(c) => c,
-            Err(e) => {
-                let _ = app_for_task.emit(
-                    "ai:error",
-                    AiErrorEvent {
-                        job_id: job_id_for_task.clone(),
-                        message: e,
-                    },
-                );
-                ai_state_for_task.finish(&job_id_for_task);
-                return;
-            }
-        };
 
         let api_key = vault_root
             .as_deref()
@@ -290,8 +276,7 @@ pub async fn ai_chat_start(
         let (system, messages) =
             split_system_and_messages(request.messages.clone(), request.context.clone());
 
-        let result = agent::run_agent_loop(
-            &client,
+        let result = ai_rig::commands::run_request(
             &cancel,
             &app_for_task,
             &job_id_for_task,

@@ -9,14 +9,14 @@ import type {
 } from "../types";
 import { errMessage } from "../utils";
 
-export interface UseAIChatOptions {
+export interface UseRigChatOptions {
 	activeProfileId: string | null;
 	payloadApproved: boolean;
 	payloadManifest: ContextManifest | null;
 	payloadPreview: string;
 }
 
-export interface UseAIChatResult {
+export interface UseRigChatResult {
 	chatMessages: ChatMessage[];
 	setChatMessages: React.Dispatch<React.SetStateAction<ChatMessage[]>>;
 	input: string;
@@ -36,7 +36,7 @@ export interface UseAIChatResult {
 	clearChat: () => void;
 }
 
-export function useAIChat(options: UseAIChatOptions): UseAIChatResult {
+export function useRigChat(options: UseRigChatOptions): UseRigChatResult {
 	const { activeProfileId, payloadApproved, payloadManifest, payloadPreview } =
 		options;
 
