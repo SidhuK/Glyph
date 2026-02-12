@@ -40,7 +40,6 @@ rusqlite = { version = "0.31", features = ["bundled"] }
 url = "2"
 futures-util = "0.3"
 tokio-util = "0.7"
-keyring = "2"
 tokio = { version = "1", features = ["macros", "rt", "time"] }
 window-vibrancy = "0.7"
 rig-core = { version = "0.24.0", features = ["derive"] }

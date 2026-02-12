@@ -114,10 +114,3 @@ pub struct AiStoredToolEvent {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub error: Option<String>,
 }
-
-#[derive(Clone, Debug)]
-pub struct AgentToolCall {
-    pub call_id: Option<String>,
-    pub name: String,
-    pub args: serde_json::Value,
-}

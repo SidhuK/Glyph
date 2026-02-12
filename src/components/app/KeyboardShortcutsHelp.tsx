@@ -1,8 +1,8 @@
 import { motion } from "motion/react";
 import {
 	SHORTCUTS,
-	formatShortcutPartsForPlatform,
 	type ShortcutDefinition,
+	formatShortcutPartsForPlatform,
 } from "../../lib/shortcuts/index";
 import { Dialog, DialogContent, DialogTitle } from "../ui/shadcn/dialog";
 

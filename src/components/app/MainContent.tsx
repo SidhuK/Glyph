@@ -189,13 +189,7 @@ export function MainContent({ fileTree }: MainContentProps) {
 			return <div className="canvasEmpty">{canvasLoadingMessage}</div>;
 		}
 		return null;
-	}, [
-		canvasLoadingMessage,
-		closeTab,
-		fileTree,
-		setActivePreviewPath,
-		viewerPath,
-	]);
+	}, [canvasLoadingMessage, closeTab, fileTree, viewerPath]);
 
 	if (!vaultPath) {
 		if (!settingsLoaded) {
@@ -248,25 +242,17 @@ export function MainContent({ fileTree }: MainContentProps) {
 												<span className="mainTabDirty" aria-hidden />
 											) : null}
 											<span className="mainTabLabel">{fileName(path)}</span>
-											<span
+											<button
+												type="button"
 												className="mainTabClose"
-												role="button"
-												tabIndex={0}
 												onClick={(event) => {
 													event.stopPropagation();
 													closeTab(path);
 												}}
-												onKeyDown={(event) => {
-													if (event.key === "Enter" || event.key === " ") {
-														event.preventDefault();
-														event.stopPropagation();
-														closeTab(path);
-													}
-												}}
 												aria-label={`Close ${fileName(path)}`}
 											>
 												<X size={12} />
-											</span>
+											</button>
 										</button>
 									);
 								})}

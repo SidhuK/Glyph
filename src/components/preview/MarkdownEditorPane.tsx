@@ -1,13 +1,13 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SourceCodeIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useEditorRegistration } from "../../contexts";
-import {
-	CanvasNoteInlineEditor,
-	type CanvasInlineEditorMode,
-} from "../CanvasNoteInlineEditor";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { invoke } from "../../lib/tauri";
+import {
+	type CanvasInlineEditorMode,
+	CanvasNoteInlineEditor,
+} from "../CanvasNoteInlineEditor";
 import { Edit, Eye, RefreshCw, Save } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 

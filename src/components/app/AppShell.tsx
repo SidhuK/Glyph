@@ -447,6 +447,7 @@ export function AppShell() {
 			setPaletteOpen,
 			setActivePreviewPath,
 			setSidebarCollapsed,
+			sidebarCollapsed,
 			vaultPath,
 		],
 	);
@@ -474,7 +475,11 @@ export function AppShell() {
 	// ---------------------------------------------------------------------------
 	return (
 		<div
-			className={cn("appShell", sidebarCollapsed && "appShellSidebarCollapsed", aiPanelOpen && "appShellAiOpen")}
+			className={cn(
+				"appShell",
+				sidebarCollapsed && "appShellSidebarCollapsed",
+				aiPanelOpen && "appShellAiOpen",
+			)}
 		>
 			<div
 				aria-hidden="true"

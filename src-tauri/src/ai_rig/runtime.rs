@@ -1,18 +1,21 @@
 use std::path::Path;
+use std::collections::HashMap;
 
+use futures_util::StreamExt;
+use reqwest::header::{HeaderMap, HeaderName, HeaderValue};
 use tauri::{AppHandle, Emitter};
-use tokio::time::{sleep, Duration};
 use tokio_util::sync::CancellationToken;
 
 use rig::{
-    agent::{Agent, AgentBuilder, AgentBuilderSimple},
+    agent::{Agent, AgentBuilder, AgentBuilderSimple, MultiTurnStreamItem},
     client::CompletionClient,
-    completion::Prompt,
+    message::ToolResultContent,
     providers::{anthropic, gemini, ollama, openai, openrouter},
+    streaming::{StreamedAssistantContent, StreamedUserContent, StreamingPrompt},
 };
 
 use crate::ai::{
-    helpers::default_base_url,
+    helpers::{default_base_url, parse_base_url},
     types::{AiChunkEvent, AiMessage, AiProfile, AiProviderKind, AiStoredToolEvent},
 };
 
@@ -21,9 +24,6 @@ use super::{
     providers::{build_transcript, capabilities},
     tools::ToolBundle,
 };
-
-const FAKE_CHUNK_CHARS: usize = 48;
-const FAKE_CHUNK_DELAY_MS: u64 = 12;
 
 pub async fn run_with_rig(
     cancel: &CancellationToken,
@@ -44,6 +44,14 @@ pub async fn run_with_rig(
     } else {
         None
     };
+    let http_client = build_http_client(profile)?;
+    let custom_base_url = profile
+        .base_url
+        .as_deref()
+        .map(|_| parse_base_url(profile))
+        .transpose()
+        .map_err(|e| e.to_string())?
+        .map(|u| u.to_string());
 
     let _ = app.emit(
         "ai:status",
@@ -54,97 +62,156 @@ pub async fn run_with_rig(
         },
     );
 
-    let full = match profile.provider {
+    let (full, tool_events, cancelled) = match profile.provider {
         AiProviderKind::Openai => {
             let key = require_key(api_key)?;
-            let client = if let Some(base_url) = profile.base_url.as_deref() {
-                openai::Client::builder(key).base_url(base_url).build()
+            let client = if let Some(base_url) = custom_base_url.as_deref() {
+                openai::Client::builder(key)
+                    .with_client(http_client.clone())
+                    .base_url(base_url)
+                    .build()
             } else {
-                openai::Client::new(key)
+                openai::Client::builder(key).with_client(http_client.clone()).build()
             };
             let mut agent = client.agent(profile.model.trim()).temperature(0.2);
             if let Some(v) = max_tokens {
                 agent = agent.max_tokens(v);
             }
-            run_prompt(with_tools(agent.preamble(system), &tools).build(), transcript).await?
+            run_stream(
+                cancel,
+                app,
+                job_id,
+                with_tools(agent.preamble(system), &tools).build(),
+                transcript,
+            )
+            .await?
         }
         AiProviderKind::OpenaiCompat => {
             let key = api_key.unwrap_or("").trim();
-            let base = profile
-                .base_url
+            let base = custom_base_url
                 .as_deref()
                 .unwrap_or(default_base_url(&AiProviderKind::OpenaiCompat));
-            let client = openai::Client::builder(key).base_url(base).build();
+            let client = openai::Client::builder(key)
+                .with_client(http_client.clone())
+                .base_url(base)
+                .build();
             let mut agent = client.agent(profile.model.trim()).temperature(0.2);
             if let Some(v) = max_tokens {
                 agent = agent.max_tokens(v);
             }
-            run_prompt(with_tools(agent.preamble(system), &tools).build(), transcript).await?
+            run_stream(
+                cancel,
+                app,
+                job_id,
+                with_tools(agent.preamble(system), &tools).build(),
+                transcript,
+            )
+            .await?
         }
         AiProviderKind::Openrouter => {
             let key = require_key(api_key)?;
-            let client = if let Some(base_url) = profile.base_url.as_deref() {
-                openrouter::Client::builder(key).base_url(base_url).build()
+            let client = if let Some(base_url) = custom_base_url.as_deref() {
+                openrouter::Client::builder(key)
+                    .with_client(http_client.clone())
+                    .base_url(base_url)
+                    .build()
             } else {
-                openrouter::Client::new(key)
+                openrouter::Client::builder(key).with_client(http_client.clone()).build()
             };
             let mut agent = client.agent(profile.model.trim()).temperature(0.2);
             if let Some(v) = max_tokens {
                 agent = agent.max_tokens(v);
             }
-            run_prompt(with_tools(agent.preamble(system), &tools).build(), transcript).await?
+            run_stream(
+                cancel,
+                app,
+                job_id,
+                with_tools(agent.preamble(system), &tools).build(),
+                transcript,
+            )
+            .await?
         }
         AiProviderKind::Anthropic => {
             let key = require_key(api_key)?;
-            let client = if let Some(base_url) = profile.base_url.as_deref() {
+            let client = if let Some(base_url) = custom_base_url.as_deref() {
                 anthropic::Client::builder(key)
+                    .with_client(http_client.clone())
                     .base_url(base_url)
                     .build()
                     .map_err(|e| e.to_string())?
             } else {
-                anthropic::Client::new(key)
+                anthropic::Client::builder(key)
+                    .with_client(http_client.clone())
+                    .build()
+                    .map_err(|e| e.to_string())?
             };
             let mut agent = client.agent(profile.model.trim()).temperature(0.2);
             if let Some(v) = max_tokens {
                 agent = agent.max_tokens(v);
             }
-            run_prompt(with_tools(agent.preamble(system), &tools).build(), transcript).await?
+            run_stream(
+                cancel,
+                app,
+                job_id,
+                with_tools(agent.preamble(system), &tools).build(),
+                transcript,
+            )
+            .await?
         }
         AiProviderKind::Gemini => {
             let key = require_key(api_key)?;
-            let client = if let Some(base_url) = profile.base_url.as_deref() {
+            let client = if let Some(base_url) = custom_base_url.as_deref() {
                 gemini::Client::builder(key)
+                    .with_client(http_client.clone())
                     .base_url(base_url)
                     .build()
                     .map_err(|e| e.to_string())?
             } else {
-                gemini::Client::new(key)
+                gemini::Client::builder(key)
+                    .with_client(http_client.clone())
+                    .build()
+                    .map_err(|e| e.to_string())?
             };
             let mut agent = client.agent(profile.model.trim()).temperature(0.2);
             if let Some(v) = max_tokens {
                 agent = agent.max_tokens(v);
             }
-            run_prompt(with_tools(agent.preamble(system), &tools).build(), transcript).await?
+            run_stream(
+                cancel,
+                app,
+                job_id,
+                with_tools(agent.preamble(system), &tools).build(),
+                transcript,
+            )
+            .await?
         }
         AiProviderKind::Ollama => {
-            let base = profile
-                .base_url
+            let base = custom_base_url
                 .as_deref()
                 .unwrap_or(default_base_url(&AiProviderKind::Ollama));
-            let client = ollama::Client::builder().base_url(base).build();
+            let client = ollama::Client::builder()
+                .with_client(http_client.clone())
+                .base_url(base)
+                .build();
             let mut agent = client.agent(profile.model.trim()).temperature(0.2);
             if let Some(v) = max_tokens {
                 agent = agent.max_tokens(v);
             }
-            run_prompt(with_tools(agent.preamble(system), &tools).build(), transcript).await?
+            run_stream(
+                cancel,
+                app,
+                job_id,
+                with_tools(agent.preamble(system), &tools).build(),
+                transcript,
+            )
+            .await?
         }
     };
 
-    if cancel.is_cancelled() {
-        return Ok((String::new(), true, Vec::new()));
+    if cancelled {
+        return Ok((String::new(), true, tool_events));
     }
 
-    emit_fake_chunks(cancel, app, job_id, &full).await;
     let _ = app.emit(
         "ai:status",
         AiStatusEvent {
@@ -153,7 +220,26 @@ pub async fn run_with_rig(
             detail: None,
         },
     );
-    Ok((full, false, Vec::new()))
+    Ok((full, false, tool_events))
+}
+
+fn build_http_client(profile: &AiProfile) -> Result<reqwest::Client, String> {
+    let mut headers = HeaderMap::new();
+    for h in &profile.headers {
+        let key = h.key.trim();
+        if key.is_empty() {
+            continue;
+        }
+        let name = HeaderName::from_bytes(key.as_bytes()).map_err(|e| e.to_string())?;
+        let value = HeaderValue::from_str(&h.value).map_err(|e| e.to_string())?;
+        headers.insert(name, value);
+    }
+    reqwest::Client::builder()
+        .timeout(std::time::Duration::from_secs(90))
+        .user_agent("Lattice/0.1 (ai)")
+        .default_headers(headers)
+        .build()
+        .map_err(|e| e.to_string())
 }
 
 fn require_key(api_key: Option<&str>) -> Result<&str, String> {
@@ -184,42 +270,188 @@ where
         .tool(tools.delete.clone())
 }
 
-async fn run_prompt<M>(agent: Agent<M>, prompt: String) -> Result<String, String>
+async fn run_stream<M>(
+    cancel: &CancellationToken,
+    app: &AppHandle,
+    job_id: &str,
+    agent: Agent<M>,
+    prompt: String,
+) -> Result<(String, Vec<AiStoredToolEvent>, bool), String>
 where
-    M: rig::completion::CompletionModel,
+    M: rig::completion::CompletionModel + 'static,
+    <M as rig::completion::CompletionModel>::StreamingResponse: rig::wasm_compat::WasmCompatSend,
 {
-    agent.prompt(prompt).await.map_err(|e| e.to_string())
-}
-
-async fn emit_fake_chunks(cancel: &CancellationToken, app: &AppHandle, job_id: &str, text: &str) {
-    let mut chunk = String::new();
-    let mut n = 0usize;
-    for ch in text.chars() {
+    let mut stream = agent.stream_prompt(prompt).multi_turn(10).await;
+    let mut full = String::new();
+    let mut tool_events = Vec::<AiStoredToolEvent>::new();
+    let mut tool_name_by_id = HashMap::<String, String>::new();
+    while let Some(item) = stream.next().await {
         if cancel.is_cancelled() {
-            return;
+            return Ok((String::new(), tool_events, true));
         }
-        chunk.push(ch);
-        n += 1;
-        if n >= FAKE_CHUNK_CHARS {
-            let _ = app.emit(
-                "ai:chunk",
-                AiChunkEvent {
-                    job_id: job_id.to_string(),
-                    delta: chunk.clone(),
-                },
-            );
-            chunk.clear();
-            n = 0;
-            sleep(Duration::from_millis(FAKE_CHUNK_DELAY_MS)).await;
+        let item = item.map_err(|e| e.to_string())?;
+        match item {
+            MultiTurnStreamItem::StreamAssistantItem(StreamedAssistantContent::Text(text)) => {
+                full.push_str(&text.text);
+                let _ = app.emit(
+                    "ai:chunk",
+                    AiChunkEvent {
+                        job_id: job_id.to_string(),
+                        delta: text.text,
+                    },
+                );
+            }
+            MultiTurnStreamItem::StreamAssistantItem(StreamedAssistantContent::ToolCall(call)) => {
+                let _ = app.emit(
+                    "ai:status",
+                    AiStatusEvent {
+                        job_id: job_id.to_string(),
+                        status: "tool_call".to_string(),
+                        detail: Some(call.function.name.clone()),
+                    },
+                );
+                tool_events.push(emit_tool(
+                    app,
+                    job_id,
+                    &call.function.name,
+                    "call",
+                    call.call_id.clone().or_else(|| Some(call.id.clone())),
+                    Some(serde_json::json!({
+                        "id": call.id,
+                        "arguments": call.function.arguments
+                    })),
+                    None,
+                ));
+                tool_name_by_id.insert(
+                    call.call_id.clone().unwrap_or_else(|| call.id.clone()),
+                    call.function.name,
+                );
+            }
+            MultiTurnStreamItem::StreamUserItem(StreamedUserContent::ToolResult(result)) => {
+                let tool_output = tool_result_text(&result.content);
+                let phase = if is_tool_error_payload(&tool_output) {
+                    "error"
+                } else {
+                    "result"
+                };
+                let _ = app.emit(
+                    "ai:status",
+                    AiStatusEvent {
+                        job_id: job_id.to_string(),
+                        status: "tool_result".to_string(),
+                        detail: Some(result.id.clone()),
+                    },
+                );
+                tool_events.push(emit_tool(
+                    app,
+                    job_id,
+                    tool_name_by_id
+                        .get(&result.call_id.clone().unwrap_or_else(|| result.id.clone()))
+                        .map(String::as_str)
+                        .unwrap_or("tool"),
+                    phase,
+                    result.call_id.clone().or_else(|| Some(result.id.clone())),
+                    Some(serde_json::json!({
+                        "id": result.id,
+                        "content": tool_output
+                    })),
+                    if phase == "error" { Some(tool_output) } else { None },
+                ));
+            }
+            MultiTurnStreamItem::StreamAssistantItem(StreamedAssistantContent::Reasoning(
+                reasoning,
+            )) => {
+                let delta = reasoning.reasoning.join("");
+                if !delta.is_empty() {
+                    full.push_str(&delta);
+                    let _ = app.emit(
+                        "ai:chunk",
+                        AiChunkEvent {
+                            job_id: job_id.to_string(),
+                            delta,
+                        },
+                    );
+                }
+            }
+            MultiTurnStreamItem::FinalResponse(final_response) => {
+                let response = final_response.response().trim();
+                if !response.is_empty() && response != full.trim() {
+                    // Ensure we emit any missing tail text from final response.
+                    let tail = response
+                        .strip_prefix(full.trim())
+                        .unwrap_or(response)
+                        .to_string();
+                    if !tail.trim().is_empty() {
+                        full.push_str(&tail);
+                        let _ = app.emit(
+                            "ai:chunk",
+                            AiChunkEvent {
+                                job_id: job_id.to_string(),
+                                delta: tail,
+                            },
+                        );
+                    }
+                }
+            }
+            _ => {}
         }
     }
-    if !chunk.is_empty() {
-        let _ = app.emit(
-            "ai:chunk",
-            AiChunkEvent {
-                job_id: job_id.to_string(),
-                delta: chunk,
-            },
-        );
+    Ok((full, tool_events, false))
+}
+
+fn tool_result_text(content: &rig::OneOrMany<ToolResultContent>) -> String {
+    let mut out = String::new();
+    for item in content.iter() {
+        if let ToolResultContent::Text(text) = item {
+            if !out.is_empty() {
+                out.push('\n');
+            }
+            out.push_str(&text.text);
+        }
+    }
+    out
+}
+
+fn is_tool_error_payload(payload: &str) -> bool {
+    let trimmed = payload.trim();
+    if trimmed.is_empty() {
+        return false;
+    }
+    if let Ok(v) = serde_json::from_str::<serde_json::Value>(trimmed) {
+        return v.get("ok").and_then(|x| x.as_bool()) == Some(false)
+            || v.get("error").and_then(|x| x.as_str()).is_some();
+    }
+    false
+}
+
+fn emit_tool(
+    app: &AppHandle,
+    job_id: &str,
+    tool: &str,
+    phase: &str,
+    call_id: Option<String>,
+    payload: Option<serde_json::Value>,
+    error: Option<String>,
+) -> AiStoredToolEvent {
+    let at_ms = crate::ai::helpers::now_ms();
+    let _ = app.emit(
+        "ai:tool",
+        crate::ai::types::AiToolEvent {
+            job_id: job_id.to_string(),
+            tool: tool.to_string(),
+            phase: phase.to_string(),
+            at_ms,
+            call_id: call_id.clone(),
+            payload: payload.clone(),
+            error: error.clone(),
+        },
+    );
+    AiStoredToolEvent {
+        tool: tool.to_string(),
+        phase: phase.to_string(),
+        at_ms,
+        call_id,
+        payload,
+        error,
     }
 }

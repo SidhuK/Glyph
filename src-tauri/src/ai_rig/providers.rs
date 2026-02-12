@@ -1,16 +1,12 @@
 use crate::ai::types::{AiMessage, AiProviderKind};
 
 pub struct ProviderCapabilities {
-    pub supports_tools: bool,
-    pub supports_streaming: bool,
     pub requires_max_tokens: bool,
 }
 
 pub fn capabilities(provider: &AiProviderKind) -> ProviderCapabilities {
     match provider {
         AiProviderKind::Anthropic => ProviderCapabilities {
-            supports_tools: true,
-            supports_streaming: true,
             requires_max_tokens: true,
         },
         AiProviderKind::Openai
@@ -18,8 +14,6 @@ pub fn capabilities(provider: &AiProviderKind) -> ProviderCapabilities {
         | AiProviderKind::Openrouter
         | AiProviderKind::Gemini
         | AiProviderKind::Ollama => ProviderCapabilities {
-            supports_tools: true,
-            supports_streaming: true,
             requires_max_tokens: false,
         },
     }
