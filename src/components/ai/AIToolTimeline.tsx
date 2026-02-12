@@ -1,5 +1,7 @@
 import { AnimatePresence, motion } from "motion/react";
+import { useState } from "react";
 import { cn } from "../../utils/cn";
+import { ChevronDown } from "../Icons";
 
 type ToolPhase = "call" | "result" | "error";
 
@@ -61,7 +63,39 @@ function formatTime(timestamp: number): string {
 	});
 }
 
+function stringifyDetail(value: unknown): string {
+	if (value == null) return "";
+	if (typeof value === "string") return value;
+	try {
+		return JSON.stringify(value, null, 2);
+	} catch {
+		return String(value);
+	}
+}
+
+function detailTextForEvent(event: ToolTimelineEvent): string {
+	const lines: string[] = [];
+	if (event.callId?.trim()) {
+		lines.push(`call_id: ${event.callId}`);
+	}
+	if (event.payload !== undefined) {
+		const payloadText = stringifyDetail(event.payload);
+		if (payloadText.trim()) {
+			lines.push("payload:");
+			lines.push(payloadText);
+		}
+	}
+	if (event.error?.trim()) {
+		lines.push("error:");
+		lines.push(event.error.trim());
+	}
+	const detail = lines.join("\n").trim();
+	if (detail.length <= 4000) return detail;
+	return `${detail.slice(0, 4000)}\n…(truncated)`;
+}
+
 export function AIToolTimeline({ events, streaming }: AIToolTimelineProps) {
+	const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 	if (events.length === 0) return null;
 
 	return (
@@ -107,6 +141,8 @@ export function AIToolTimeline({ events, streaming }: AIToolTimelineProps) {
 							event.phase === "error" && typeof event.error === "string"
 								? event.error
 								: null;
+						const detail = detailTextForEvent(event);
+						const isExpanded = expanded[event.id] === true;
 						return (
 							<motion.div
 								key={event.id}
@@ -122,7 +158,17 @@ export function AIToolTimeline({ events, streaming }: AIToolTimelineProps) {
 								)}
 								whileHover={{ y: -1, scale: 1.004 }}
 							>
-								<div className="aiToolTimelineTop">
+								<button
+									type="button"
+									className="aiToolTimelineTop aiToolExpandBtn"
+									onClick={() =>
+										setExpanded((prev) => ({
+											...prev,
+											[event.id]: !prev[event.id],
+										}))
+									}
+									aria-expanded={isExpanded}
+								>
 									<span
 										className={cn("aiToolPhase", `aiToolPhase-${event.phase}`)}
 									>
@@ -132,11 +178,23 @@ export function AIToolTimeline({ events, streaming }: AIToolTimelineProps) {
 										{formatToolName(event.tool)}
 									</span>
 									<span className="aiToolTime">{formatTime(event.at)}</span>
-								</div>
+									<span
+										className={cn(
+											"aiToolChevron",
+											isExpanded && "aiToolChevron-open",
+										)}
+										aria-hidden
+									>
+										<ChevronDown size={12} />
+									</span>
+								</button>
 								{summary ? (
 									<div className="aiToolSummary">{summary}</div>
 								) : null}
 								{error ? <div className="aiToolError">{error}</div> : null}
+								{isExpanded && detail ? (
+									<pre className="aiToolDetails">{detail}</pre>
+								) : null}
 							</motion.div>
 						);
 					})}

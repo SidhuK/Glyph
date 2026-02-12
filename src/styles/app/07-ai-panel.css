@@ -414,6 +414,16 @@
 	gap: 6px;
 }
 
+.aiToolExpandBtn {
+	width: 100%;
+	background: transparent;
+	border: 0;
+	padding: 0;
+	color: inherit;
+	text-align: left;
+	cursor: pointer;
+}
+
 .aiToolPhase {
 	padding: 1px 6px;
 	border-radius: 999px;
@@ -447,6 +457,17 @@
 	color: var(--text-tertiary);
 }
 
+.aiToolChevron {
+	display: inline-flex;
+	align-items: center;
+	color: var(--text-tertiary);
+	transition: transform var(--transition-fast);
+}
+
+.aiToolChevron-open {
+	transform: rotate(180deg);
+}
+
 .aiToolSummary {
 	margin-top: 4px;
 	font-size: 11px;
@@ -459,6 +480,21 @@
 	font-size: 11px;
 	color: #ff3b30;
 	word-break: break-word;
+}
+
+.aiToolDetails {
+	margin-top: 6px;
+	padding: 6px 8px;
+	border-radius: 8px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 85%, transparent);
+	color: var(--text-secondary);
+	font-size: 10px;
+	line-height: 1.45;
+	white-space: pre-wrap;
+	word-break: break-word;
+	max-height: 180px;
+	overflow: auto;
 }
 
 @keyframes aiToolLivePulse {
