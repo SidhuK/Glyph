@@ -30,12 +30,27 @@ export function useCommandShortcuts({
 			}
 
 			const t = e.target;
-			if (
+			const inEditableField =
 				t instanceof HTMLElement &&
 				(t.tagName === "INPUT" ||
 					t.tagName === "TEXTAREA" ||
-					t.isContentEditable)
-			) {
+					t.isContentEditable);
+			if (inEditableField) {
+				if (!paletteOpen) {
+					const saveCommand = commands.find(
+						(command) =>
+							command.id === "save-note" &&
+							command.enabled !== false &&
+							Boolean(command.shortcut),
+					);
+					if (
+						saveCommand?.shortcut &&
+						isShortcutMatch(e, saveCommand.shortcut)
+					) {
+						e.preventDefault();
+						void saveCommand.action();
+					}
+				}
 				return;
 			}
 
