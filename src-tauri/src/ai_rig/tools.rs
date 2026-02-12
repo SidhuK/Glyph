@@ -419,7 +419,6 @@ pub struct WriteFileArgs {
     path: String,
     content: String,
     mode: Option<String>,
-    confirm_token: Option<String>,
 }
 impl Tool for WriteFileTool {
     const NAME: &'static str = "write_file";
@@ -427,10 +426,7 @@ impl Tool for WriteFileTool {
     type Output = String;
     type Error = ToolError;
     async fn definition(&self, _prompt: String) -> ToolDefinition {
-        tool_definition::<WriteFileArgs>(
-            Self::NAME,
-            "Create or overwrite a file. Overwrites require confirmation token.",
-        )
+        tool_definition::<WriteFileArgs>(Self::NAME, "Create or overwrite a file.")
     }
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
         let abs = safe_join(&self.root, &args.path)?;
@@ -441,9 +437,6 @@ impl Tool for WriteFileTool {
         let mode = args.mode.unwrap_or_else(|| "overwrite".to_string());
         if exists && mode == "create_only" {
             return Ok(err_payload("file already exists"));
-        }
-        if exists && mode == "overwrite" && args.confirm_token.as_deref() != Some(CONFIRM_TOKEN) {
-            return Ok(json!({"ok": false, "requires_confirmation": true, "preview": {"path": args.path, "action": "overwrite"}}).to_string());
         }
         io_atomic::write_atomic(&abs, args.content.as_bytes())
             .map_err(|e| ToolError(e.to_string()))?;
@@ -463,7 +456,6 @@ pub struct ApplyPatchArgs {
     find: String,
     replace: String,
     all: Option<bool>,
-    confirm_token: Option<String>,
 }
 impl Tool for ApplyPatchTool {
     const NAME: &'static str = "apply_patch";
@@ -486,9 +478,6 @@ impl Tool for ApplyPatchTool {
         };
         if updated == text {
             return Ok(err_payload("no matching text for patch"));
-        }
-        if args.confirm_token.as_deref() != Some(CONFIRM_TOKEN) {
-            return Ok(json!({"ok": false, "requires_confirmation": true, "preview": {"path": args.path, "action": "patch"}}).to_string());
         }
         io_atomic::write_atomic(&abs, updated.as_bytes()).map_err(|e| ToolError(e.to_string()))?;
         Ok(ok(json!({"path": args.path, "patched": true})))

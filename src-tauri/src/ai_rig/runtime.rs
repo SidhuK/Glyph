@@ -282,6 +282,7 @@ where
     M: rig::completion::CompletionModel + 'static,
     <M as rig::completion::CompletionModel>::StreamingResponse: rig::wasm_compat::WasmCompatSend,
 {
+    const MAX_TOOL_EVENTS: usize = 24;
     let mut stream = agent.stream_prompt(prompt).multi_turn(10).await;
     let mut full = String::new();
     let mut tool_events = Vec::<AiStoredToolEvent>::new();
@@ -323,6 +324,11 @@ where
                     })),
                     None,
                 ));
+                if tool_events.len() >= MAX_TOOL_EVENTS {
+                    return Err(
+                        "tool loop detected; stopping after too many tool calls".to_string()
+                    );
+                }
                 tool_name_by_id.insert(
                     call.call_id.clone().unwrap_or_else(|| call.id.clone()),
                     call.function.name,
@@ -362,6 +368,11 @@ where
                         None
                     },
                 ));
+                if tool_events.len() >= MAX_TOOL_EVENTS {
+                    return Err(
+                        "tool loop detected; stopping after too many tool calls".to_string()
+                    );
+                }
             }
             MultiTurnStreamItem::StreamAssistantItem(StreamedAssistantContent::Reasoning(
                 reasoning,
