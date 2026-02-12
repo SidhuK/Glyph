@@ -4,6 +4,7 @@ export type CanvasInlineEditorMode = "plain" | "rich" | "preview";
 
 export interface CanvasNoteInlineEditorProps {
 	markdown: string;
+	relPath?: string;
 	mode: CanvasInlineEditorMode;
 	onModeChange: (mode: CanvasInlineEditorMode) => void;
 	onChange: (nextMarkdown: string) => void;

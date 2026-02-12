@@ -11,6 +11,18 @@
 	font-family: var(--font-mono);
 }
 
+.frontmatterToggle {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: inherit;
+	cursor: pointer;
+}
+
 .frontmatterEditor:focus {
 	outline: none;
 	box-shadow: none;
@@ -22,6 +34,48 @@
 	letter-spacing: 0.08em;
 	color: var(--text-tertiary);
 	margin-bottom: 6px;
+}
+
+.frontmatterToggle .frontmatterLabel {
+	margin-bottom: 0;
+}
+
+.frontmatterToggle + .frontmatterEditor {
+	margin-top: 6px;
+}
+
+.editorBacklinks {
+	margin-bottom: var(--space-2);
+	font-size: 11px;
+	color: var(--text-tertiary);
+}
+
+.editorBacklinksLabel {
+	margin-bottom: 6px;
+	text-transform: uppercase;
+	letter-spacing: 0.06em;
+}
+
+.editorBacklinksList {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+
+.editorBacklink {
+	border: 1px solid var(--border-light);
+	border-radius: 999px;
+	background: var(--bg-secondary);
+	color: var(--text-tertiary);
+	font-size: 11px;
+	line-height: 1.2;
+	padding: 4px 8px;
+	cursor: pointer;
+}
+
+.editorBacklink:hover {
+	border-color: var(--border-default);
+	color: var(--text-secondary);
 }
 
 .tiptapContentInline a {

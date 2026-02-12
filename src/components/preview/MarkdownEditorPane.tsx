@@ -161,7 +161,9 @@ export function MarkdownEditorPane({
 				<div className="filePreviewTextWrap markdownEditorContent">
 					<div className="markdownEditorCenter">
 						<CanvasNoteInlineEditor
+							key={relPath}
 							markdown={text}
+							relPath={relPath}
 							mode={mode}
 							onModeChange={setMode}
 							onChange={setText}
