@@ -1,6 +1,7 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { SourceCodeIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { useEditorRegistration } from "../../contexts";
 import {
 	CanvasNoteInlineEditor,
 	type CanvasInlineEditorMode,
@@ -29,6 +30,8 @@ export function MarkdownEditorPane({
 	const [saving, setSaving] = useState(false);
 	const [error, setError] = useState("");
 	const savedTextRef = useRef(savedText);
+
+	const isDirty = text !== savedText;
 
 	useEffect(() => {
 		savedTextRef.current = savedText;
@@ -74,9 +77,19 @@ export function MarkdownEditorPane({
 		}
 	}, [relPath, text]);
 
+	// Register editor state for keyboard shortcuts
+	const editorState = useMemo(
+		() => ({
+			isDirty,
+			save: onSave,
+		}),
+		[isDirty, onSave],
+	);
+	useEditorRegistration(editorState);
+
 	useEffect(() => {
-		onDirtyChange?.(text !== savedText);
-	}, [onDirtyChange, savedText, text]);
+		onDirtyChange?.(isDirty);
+	}, [onDirtyChange, isDirty]);
 
 	return (
 		<section className="filePreviewPane markdownEditorPane">

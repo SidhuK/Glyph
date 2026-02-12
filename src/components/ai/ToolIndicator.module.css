@@ -82,11 +82,10 @@
 	color: var(--text-tertiary);
 }
 
-/* Expand/collapse chevron */
+/* Expand/collapse chevron – rotation handled by motion */
 .chevron {
 	font-size: 10px;
 	color: var(--text-tertiary);
-	transition: transform var(--transition-base);
 }
 
 /* Expandable result section */

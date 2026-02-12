@@ -37,10 +37,20 @@
 	pointer-events: none;
 }
 
+.settingsDragStrip {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	height: 14px;
+	z-index: 10;
+	-webkit-app-region: drag;
+}
+
 .settingsHeader {
 	display: flex;
 	align-items: center;
-	justify-content: flex-end;
+	justify-content: center;
 	height: var(--header-height);
 	padding: 0 var(--space-4);
 	border-bottom: 1px solid var(--border-light);
@@ -50,19 +60,17 @@
 	-webkit-app-region: drag;
 }
 
+.settingsHeader button,
+.settingsHeader input {
+	-webkit-app-region: no-drag;
+}
+
 .settingsHeaderTitle {
 	display: inline-flex;
 	align-items: center;
 	gap: var(--space-2);
 	font-weight: var(--font-semibold);
 	color: var(--text-primary);
-}
-
-.settingsHeaderRight {
-	display: flex;
-	align-items: center;
-	gap: var(--space-2);
-	-webkit-app-region: no-drag;
 }
 
 .settingsMain {

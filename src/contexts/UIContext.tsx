@@ -59,6 +59,10 @@ export function UIProvider({ children }: { children: ReactNode }) {
 	const [aiPanelWidth, setAiPanelWidthState] = useState(380);
 
 	useEffect(() => {
+		if (vaultPath) setSidebarCollapsed(false);
+	}, [vaultPath]);
+
+	useEffect(() => {
 		let cancelled = false;
 		void loadSettings().then((s) => {
 			if (cancelled) return;

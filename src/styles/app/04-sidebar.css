@@ -12,7 +12,7 @@
 	-webkit-backdrop-filter: none;
 	overflow: hidden;
 	flex-shrink: 0;
-	transition: width var(--transition-base), min-width var(--transition-base);
+	/* width/min-width animated by motion layout */
 	position: relative;
 }
 
