@@ -913,10 +913,18 @@
 	width: 16px;
 	height: 16px;
 	border-radius: 999px;
-	color: var(--text-tertiary);
+	color: var(--text-primary);
+	opacity: 0.85;
+}
+
+.mainTabCloseGlyph {
+	font-size: 13px;
+	line-height: 1;
+	font-weight: 600;
 }
 
 .mainTabClose:hover {
 	background: var(--bg-hover);
 	color: var(--text-primary);
+	opacity: 1;
 }

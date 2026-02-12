@@ -109,7 +109,7 @@ export function AppShell() {
 		activeMarkdownTabPath,
 	} = useUIContext();
 
-	const { saveCurrentEditor, hasUnsavedChanges } = useEditorContext();
+	const { saveCurrentEditor } = useEditorContext();
 
 	// ---------------------------------------------------------------------------
 	// Local state
@@ -469,7 +469,7 @@ export function AppShell() {
 				id: "save-note",
 				label: "Save",
 				shortcut: { meta: true, key: "s" },
-				enabled: hasUnsavedChanges(),
+				enabled: Boolean(vaultPath),
 				action: () => void saveCurrentEditor(),
 			},
 			{
@@ -496,7 +496,6 @@ export function AppShell() {
 			attachAllOpenNotesToAi,
 			attachCurrentNoteToAi,
 			fileTree,
-			hasUnsavedChanges,
 			onOpenVault,
 			openMarkdownTabs.length,
 			saveCurrentEditor,

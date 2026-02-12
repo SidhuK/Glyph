@@ -6,7 +6,6 @@ import {
 	useViewContext,
 } from "../../contexts";
 import { isInAppPreviewable } from "../../utils/filePreview";
-import { X } from "../Icons";
 import { FilePreviewPane } from "../preview/FilePreviewPane";
 import { MarkdownEditorPane } from "../preview/MarkdownEditorPane";
 import { WelcomeScreen } from "./WelcomeScreen";
@@ -267,7 +266,9 @@ export function MainContent({ fileTree }: MainContentProps) {
 												}}
 												aria-label={`Close ${fileName(path)}`}
 											>
-												<X size={12} />
+												<span className="mainTabCloseGlyph" aria-hidden>
+													×
+												</span>
 											</button>
 										</button>
 									);
