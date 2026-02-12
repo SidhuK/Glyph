@@ -135,7 +135,14 @@ export function SidebarContent({
 					)}
 				</AnimatePresence>
 			</div>
-			<div className="sidebarFooter" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+			<div
+				className="sidebarFooter"
+				style={{
+					display: "flex",
+					justifyContent: "space-between",
+					alignItems: "center",
+				}}
+			>
 				<Button
 					type="button"
 					variant="ghost"
@@ -157,7 +164,11 @@ export function SidebarContent({
 								<Plus size={14} />
 							</Button>
 						</DropdownMenuTrigger>
-						<DropdownMenuContent align="end" side="top" className="fileTreeCreateMenu">
+						<DropdownMenuContent
+							align="end"
+							side="top"
+							className="fileTreeCreateMenu"
+						>
 							<DropdownMenuItem
 								className="fileTreeCreateMenuItem"
 								onSelect={() => void onNewFileInDir(targetDir)}

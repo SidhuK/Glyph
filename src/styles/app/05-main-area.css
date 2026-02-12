@@ -18,6 +18,12 @@
 		1px 3px rgba(0, 0, 0, 0.08);
 }
 
+.appShell.appShellAiOpen .mainArea {
+	margin-right: 0;
+	border-top-right-radius: calc(var(--app-radius) - var(--app-frame));
+	border-bottom-right-radius: calc(var(--app-radius) - var(--app-frame));
+}
+
 .mainAreaWelcome {
 	background: var(--bg-primary);
 }

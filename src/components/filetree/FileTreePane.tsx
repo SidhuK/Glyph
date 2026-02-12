@@ -190,9 +190,7 @@ export const FileTreePane = memo(function FileTreePane({
 				)}
 			</div>
 			{rootEntries.length ? (
-				<div className="fileTreeScroll">
-					{renderEntries(rootEntries, -1)}
-				</div>
+				<div className="fileTreeScroll">{renderEntries(rootEntries, -1)}</div>
 			) : (
 				<motion.div
 					className="fileTreeEmpty"

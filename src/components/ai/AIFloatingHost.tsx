@@ -1,65 +1,76 @@
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useUIContext } from "../../contexts";
 import { getShortcutTooltip } from "../../lib/shortcuts";
 import { AiLattice } from "../Icons";
 import { AIPanel } from "./AIPanel";
 
 interface AIFloatingHostProps {
-  isOpen: boolean;
-  onToggle: () => void;
-  activeFolderPath: string | null;
-  onAttachContextFiles: (paths: string[]) => Promise<void>;
-  onCreateNoteFromLastAssistant: (markdown: string) => Promise<void>;
+	isOpen: boolean;
+	onToggle: () => void;
+	activeFolderPath: string | null;
+	onAttachContextFiles: (paths: string[]) => Promise<void>;
+	onCreateNoteFromLastAssistant: (markdown: string) => Promise<void>;
 }
 
 export function AIFloatingHost({
-  isOpen,
-  onToggle,
-  activeFolderPath,
-  onAttachContextFiles,
-  onCreateNoteFromLastAssistant,
+	isOpen,
+	onToggle,
+	activeFolderPath,
+	onAttachContextFiles,
+	onCreateNoteFromLastAssistant,
 }: AIFloatingHostProps) {
-  const { aiPanelWidth } = useUIContext();
+	const { aiPanelWidth } = useUIContext();
+	const panelWidth = aiPanelWidth || 380;
+	const shouldReduceMotion = useReducedMotion();
 
-  return (
-    <div
-      className="aiFloatingHost"
-      style={{
-        position: "absolute",
-        inset: 0,
-        zIndex: 20,
-        pointerEvents: "none",
-      }}
-      data-window-drag-ignore
-    >
-      <AIPanel
-        isOpen={isOpen}
-        activeFolderPath={activeFolderPath}
-        onClose={onToggle}
-        onAttachContextFiles={onAttachContextFiles}
-        onCreateNoteFromLastAssistant={onCreateNoteFromLastAssistant}
-        width={aiPanelWidth}
-      />
-      <AnimatePresence initial={false}>
-        {!isOpen ? (
-          <motion.button
-            type="button"
-            className="aiFab"
-            onClick={onToggle}
-            style={{ pointerEvents: "auto" }}
-            initial={{ opacity: 0, scale: 0.82, x: 8 }}
-            animate={{ opacity: 1, scale: 1, x: 0 }}
-            exit={{ opacity: 0, scale: 0.82, x: 8 }}
-            whileHover={{ scale: 1.08 }}
-            whileTap={{ scale: 0.95 }}
-            transition={{ type: "spring", stiffness: 320, damping: 24 }}
-            aria-label="Open AI panel"
-            title={`Open AI panel (${getShortcutTooltip({ meta: true, shift: true, key: "a" })})`}
-          >
-            <AiLattice size={34} />
-          </motion.button>
-        ) : null}
-      </AnimatePresence>
-    </div>
-  );
+	return (
+		<>
+			<motion.div
+				className="aiSidebarPanel"
+				style={{ width: isOpen ? panelWidth : 0 }}
+				layout
+				transition={
+					shouldReduceMotion
+						? { type: "tween", duration: 0 }
+						: { type: "spring", stiffness: 400, damping: 30 }
+				}
+				data-window-drag-ignore
+			>
+				<AnimatePresence>
+					{isOpen && (
+						<motion.div
+							key="ai-panel-content"
+							className="aiSidebarPanelInner"
+							initial={shouldReduceMotion ? false : { opacity: 0 }}
+							animate={{ opacity: 1 }}
+							exit={shouldReduceMotion ? {} : { opacity: 0 }}
+							transition={
+								shouldReduceMotion ? { duration: 0 } : { duration: 0.15 }
+							}
+						>
+							<AIPanel
+								isOpen={isOpen}
+								activeFolderPath={activeFolderPath}
+								onClose={onToggle}
+								onAttachContextFiles={onAttachContextFiles}
+								onCreateNoteFromLastAssistant={onCreateNoteFromLastAssistant}
+								width={panelWidth}
+							/>
+						</motion.div>
+					)}
+				</AnimatePresence>
+			</motion.div>
+			{!isOpen && (
+				<button
+					type="button"
+					className="aiFab"
+					onClick={onToggle}
+					aria-label="Open AI panel"
+					title={`Open AI panel (${getShortcutTooltip({ meta: true, shift: true, key: "a" })})`}
+				>
+					<AiLattice size={34} />
+				</button>
+			)}
+		</>
+	);
 }

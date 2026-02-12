@@ -17,9 +17,7 @@ export async function openSettingsWindow(tab?: SettingsTab) {
 		if (shown) return;
 	}
 
-	const url = tab
-		? `#/settings?tab=${encodeURIComponent(tab)}`
-		: "#/settings";
+	const url = tab ? `#/settings?tab=${encodeURIComponent(tab)}` : "#/settings";
 	const win = new WebviewWindow("settings", {
 		title: "Settings",
 		url,

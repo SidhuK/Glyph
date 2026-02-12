@@ -147,11 +147,7 @@ export async function buildFolderViewDoc(
 			};
 		},
 		shouldPreservePrevNode(n) {
-			if (
-				n.type === "note" ||
-				n.type === "file" ||
-				n.type === "folder"
-			)
+			if (n.type === "note" || n.type === "file" || n.type === "folder")
 				return false;
 			if (
 				n.type === "frame" &&

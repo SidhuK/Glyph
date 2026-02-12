@@ -44,11 +44,7 @@
 
 .tiptapContentInline .wikiLink:hover {
 	background: color-mix(in srgb, var(--interactive-accent) 20%, transparent);
-	border-color: color-mix(
-		in srgb,
-		var(--interactive-accent) 40%,
-		transparent
-	);
+	border-color: color-mix(in srgb, var(--interactive-accent) 40%, transparent);
 }
 
 .tiptapContentInline .wikiLink[data-unresolved="true"] {

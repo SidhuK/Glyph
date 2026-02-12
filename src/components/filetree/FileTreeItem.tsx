@@ -1,7 +1,4 @@
-import {
-	ArrowDown01Icon,
-	ArrowRight01Icon,
-} from "@hugeicons/core-free-icons";
+import { ArrowDown01Icon, ArrowRight01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, motion } from "motion/react";
 import type { CSSProperties, MouseEvent, ReactNode } from "react";
@@ -270,7 +267,11 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 	const { stem: fileStem, ext: fileExt } = splitEditableFileName(entry.name);
 	const isMd = fileExt.toLowerCase() === ".md";
 	const displayStem = truncateMiddle(
-		fileStem.trim() || basename(entry.rel_path).replace(/\.[^.]+$/, "").trim() || "Untitled",
+		fileStem.trim() ||
+			basename(entry.rel_path)
+				.replace(/\.[^.]+$/, "")
+				.trim() ||
+			"Untitled",
 		24,
 	);
 	const extBadge = !isMd && fileExt ? fileExt.slice(1) : "";

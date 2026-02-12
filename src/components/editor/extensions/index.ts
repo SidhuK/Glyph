@@ -14,7 +14,9 @@ import StarterKit from "@tiptap/starter-kit";
 import { SlashCommand } from "../slashCommands";
 import { WikiLink } from "./wikiLink";
 
-function parseCalloutMarker(text: string): { kind: string; title: string } | null {
+function parseCalloutMarker(
+	text: string,
+): { kind: string; title: string } | null {
 	const trimmed = text.trim();
 	if (!trimmed.startsWith("[!")) return null;
 	const match = trimmed.match(/^\[!([A-Za-z_-]+)\]\s*(.*)$/);
@@ -22,8 +24,7 @@ function parseCalloutMarker(text: string): { kind: string; title: string } | nul
 	const rawKind = (match[1] ?? "note").toLowerCase();
 	const kind = rawKind === "warn" ? "warning" : rawKind;
 	const rawTitle = (match[2] ?? "").trim();
-	const title =
-		rawTitle || `${kind.slice(0, 1).toUpperCase()}${kind.slice(1)}`;
+	const title = rawTitle || `${kind.slice(0, 1).toUpperCase()}${kind.slice(1)}`;
 	return { kind, title };
 }
 

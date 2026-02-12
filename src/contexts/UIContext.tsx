@@ -9,7 +9,10 @@ import {
 	useState,
 } from "react";
 import { useSearch } from "../hooks/useSearch";
-import { loadSettings, setAiSidebarWidth as saveAiSidebarWidth } from "../lib/settings";
+import {
+	loadSettings,
+	setAiSidebarWidth as saveAiSidebarWidth,
+} from "../lib/settings";
 import type { SearchResult } from "../lib/tauri";
 import { useVault } from "./VaultContext";
 

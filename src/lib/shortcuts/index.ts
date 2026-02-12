@@ -10,34 +10,34 @@
 // Re-export from the main shortcuts file
 export type { Shortcut } from "../shortcuts";
 export {
-  isShortcutMatch,
-  formatShortcut,
-  formatShortcutParts,
-  getShortcutTooltip,
+	isShortcutMatch,
+	formatShortcut,
+	formatShortcutParts,
+	getShortcutTooltip,
 } from "../shortcuts";
 
 // Export platform utilities
 export {
-  getPlatform,
-  isMacOS,
-  isWindows,
-  isLinux,
-  getPlatformModifier,
-  formatShortcutForPlatform,
-  formatShortcutPartsForPlatform,
-  getModifierDisplay,
+	getPlatform,
+	isMacOS,
+	isWindows,
+	isLinux,
+	getPlatformModifier,
+	formatShortcutForPlatform,
+	formatShortcutPartsForPlatform,
+	getModifierDisplay,
 } from "./platform";
 
 // Export registry
 export {
-  SHORTCUTS,
-  getShortcutById,
-  getShortcutsByContext,
-  getShortcutsByCategory,
+	SHORTCUTS,
+	getShortcutById,
+	getShortcutsByContext,
+	getShortcutsByCategory,
 } from "./registry";
 export type {
-  ShortcutCategory,
-  ShortcutContext,
-  ShortcutDefinition,
-  ShortcutId,
+	ShortcutCategory,
+	ShortcutContext,
+	ShortcutDefinition,
+	ShortcutId,
 } from "./registry";

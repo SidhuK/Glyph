@@ -1,5 +1,5 @@
 import { type UIMessage, useChat } from "@ai-sdk/react";
-import { motion, useReducedMotion } from "motion/react";
+
 import {
 	Fragment,
 	Suspense,
@@ -100,7 +100,6 @@ export function AIPanel({
 	onAttachContextFiles,
 	onCreateNoteFromLastAssistant,
 	onClose,
-	width,
 }: AIPanelProps) {
 	const transport = useMemo(() => new TauriChatTransport(), []);
 	const chat = useChat({ transport, experimental_throttle: 32 });
@@ -134,7 +133,7 @@ export function AIPanel({
 			el.style.overflowY = el.scrollHeight > maxHeight ? "auto" : "hidden";
 		});
 	}, []);
-	const shouldReduceMotion = useReducedMotion();
+
 	const activeToolJobIdRef = useRef<string | null>(null);
 
 	useEffect(() => {
@@ -362,36 +361,6 @@ export function AIPanel({
 		setAddPanelQuery("");
 	};
 
-	const [pos, setPos] = useState({ x: 0, y: 0 });
-	const dragging = useRef(false);
-	const dragOrigin = useRef({ px: 0, py: 0, ox: 0, oy: 0 });
-
-	const onDragDown = useCallback(
-		(e: React.PointerEvent<HTMLDivElement>) => {
-			dragging.current = true;
-			dragOrigin.current = {
-				px: e.clientX,
-				py: e.clientY,
-				ox: pos.x,
-				oy: pos.y,
-			};
-			e.currentTarget.setPointerCapture(e.pointerId);
-		},
-		[pos],
-	);
-
-	const onDragMove = useCallback((e: React.PointerEvent<HTMLDivElement>) => {
-		if (!dragging.current) return;
-		setPos({
-			x: dragOrigin.current.ox + (e.clientX - dragOrigin.current.px),
-			y: dragOrigin.current.oy + (e.clientY - dragOrigin.current.py),
-		});
-	}, []);
-
-	const onDragUp = useCallback(() => {
-		dragging.current = false;
-	}, []);
-
 	const handleLoadHistory = useCallback(
 		async (jobId: string) => {
 			const loaded = await history.loadChatMessages(jobId);
@@ -456,33 +425,12 @@ export function AIPanel({
 	}, [chat.status, history.refresh]);
 
 	return (
-		<motion.div
+		<div
 			className="aiPanel"
-			style={{
-				transform: `translate(${pos.x}px, ${pos.y}px)`,
-				pointerEvents: isOpen ? "auto" : "none",
-				...(width ? { width: `${width}px` } : {}),
-			}}
-			initial={false}
-			animate={
-				isOpen
-					? { opacity: 1, scale: 1, y: 0 }
-					: { opacity: 0, scale: 0.92, y: 12 }
-			}
-			transition={
-				shouldReduceMotion
-					? { type: "tween", duration: 0 }
-					: { type: "spring", stiffness: 260, damping: 24 }
-			}
 			data-open={isOpen}
 			data-window-drag-ignore
 		>
-			<div
-				className="aiPanelHeader"
-				onPointerDown={onDragDown}
-				onPointerMove={onDragMove}
-				onPointerUp={onDragUp}
-			>
+			<div className="aiPanelHeader">
 				<div className="aiPanelTitle">
 					<AiLattice size={18} />
 					<span>AI</span>
@@ -868,6 +816,6 @@ export function AIPanel({
 					</div>
 				</div>
 			</div>
-		</motion.div>
+		</div>
 	);
 }

@@ -82,5 +82,3 @@ export async function setAiSidebarWidth(width: number): Promise<void> {
 	await store.set(KEYS.aiSidebarWidth, Math.floor(width));
 	await store.save();
 }
-
-

@@ -1,17 +1,28 @@
-/* FLOATING AI PANEL */
+/* AI SIDEBAR PANEL */
 
-.aiFloatingHost {
-	position: absolute;
-	inset: 0;
-	pointer-events: none;
-	z-index: 20;
+.aiSidebarPanel {
+	display: flex;
+	flex-direction: column;
+	position: relative;
+	z-index: 1;
+	align-self: stretch;
+	overflow: hidden;
+	flex-shrink: 0;
+}
+
+.aiSidebarPanelInner {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+	overflow: hidden;
 }
 
 .aiFab {
 	position: absolute;
 	right: 16px;
 	bottom: 16px;
-	pointer-events: auto;
+	z-index: 20;
 	width: 56px;
 	height: 56px;
 	border-radius: 999px;
@@ -33,29 +44,15 @@
 	box-shadow: none;
 }
 
-.aiFloatingHost .aiPanel {
-	position: absolute;
-	right: 16px;
-	top: 16px;
-	bottom: 16px;
-	width: 380px;
-	max-height: none;
-	pointer-events: auto;
+.aiSidebarPanel .aiPanel {
 	display: flex;
 	flex-direction: column;
-	border: 1px solid color-mix(in srgb, var(--border-light) 70%, transparent);
-	border-radius: 16px;
-	background: color-mix(in srgb, var(--bg-primary) 95%, transparent);
-	backdrop-filter: blur(20px);
-	-webkit-backdrop-filter: blur(20px);
-	box-shadow: 0 16px 48px
-		color-mix(in srgb, var(--shadow-color) 25%, transparent), 0 2px 8px
-		color-mix(in srgb, var(--shadow-color) 10%, transparent);
+	flex: 1;
+	min-height: 0;
+	background: transparent;
+	border-left: 1px solid
+		color-mix(in srgb, var(--border-light) 70%, transparent);
 	overflow: hidden;
-}
-
-.aiFloatingHost .aiPanel[data-open="false"] {
-	visibility: hidden;
 }
 
 .aiPanelHeader {
@@ -65,13 +62,8 @@
 	padding: 8px 12px;
 	border-bottom: 1px solid
 		color-mix(in srgb, var(--border-light) 50%, transparent);
-	cursor: grab;
 	flex-shrink: 0;
 	user-select: none;
-}
-
-.aiPanelHeader:active {
-	cursor: grabbing;
 }
 
 .aiPanelTitle {
@@ -588,11 +580,7 @@
 	flex-shrink: 0;
 	padding: 10px 12px 12px;
 	border-top: 1px solid color-mix(in srgb, var(--border-light) 40%, transparent);
-	background: linear-gradient(
-		180deg,
-		color-mix(in srgb, var(--bg-primary) 68%, transparent),
-		color-mix(in srgb, var(--bg-secondary) 84%, transparent)
-	);
+	background: transparent;
 }
 
 .aiComposerInputShell {

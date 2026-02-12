@@ -14,10 +14,6 @@
 }
 
 .aiPanel {
-	bottom: var(--space-4);
-	right: var(--space-4);
-	width: 360px;
-	max-height: 480px;
 	display: flex;
 	flex-direction: column;
 }

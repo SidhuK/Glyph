@@ -16,13 +16,9 @@ interface MainContentProps {
 		openFile: (relPath: string) => Promise<void>;
 		openNonMarkdownExternally: (relPath: string) => Promise<void>;
 	};
-	aiOverlay?: React.ReactNode;
 }
 
-export function MainContent({
-	fileTree,
-	aiOverlay,
-}: MainContentProps) {
+export function MainContent({ fileTree }: MainContentProps) {
 	const {
 		info,
 		vaultPath,
@@ -127,12 +123,12 @@ export function MainContent({
 			if (key === "tab") {
 				if (!openTabs.length) return;
 				event.preventDefault();
-				const currentIndex = activeTabPath ? openTabs.indexOf(activeTabPath) : -1;
+				const currentIndex = activeTabPath
+					? openTabs.indexOf(activeTabPath)
+					: -1;
 				const step = event.shiftKey ? -1 : 1;
-				const base =
-					currentIndex >= 0 ? currentIndex : event.shiftKey ? 0 : -1;
-				const nextIndex =
-					(base + step + openTabs.length) % openTabs.length;
+				const base = currentIndex >= 0 ? currentIndex : event.shiftKey ? 0 : -1;
+				const nextIndex = (base + step + openTabs.length) % openTabs.length;
 				setActiveTabPath(openTabs[nextIndex] ?? null);
 				return;
 			}
@@ -172,7 +168,9 @@ export function MainContent({
 					relPath={viewerPath}
 					onDirtyChange={(dirty) =>
 						setDirtyByPath((prev) =>
-							prev[viewerPath] === dirty ? prev : { ...prev, [viewerPath]: dirty },
+							prev[viewerPath] === dirty
+								? prev
+								: { ...prev, [viewerPath]: dirty },
 						)
 					}
 				/>
@@ -246,7 +244,9 @@ export function MainContent({
 												setDragTabPath(null);
 											}}
 										>
-											{isDirty ? <span className="mainTabDirty" aria-hidden /> : null}
+											{isDirty ? (
+												<span className="mainTabDirty" aria-hidden />
+											) : null}
 											<span className="mainTabLabel">{fileName(path)}</span>
 											<span
 												className="mainTabClose"
@@ -276,7 +276,6 @@ export function MainContent({
 					</div>
 					{content}
 				</div>
-				{aiOverlay}
 			</div>
 		</main>
 	);
