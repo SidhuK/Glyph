@@ -1,5 +1,5 @@
-use std::path::Path;
 use std::collections::HashMap;
+use std::path::Path;
 
 use futures_util::StreamExt;
 use reqwest::header::{HeaderMap, HeaderName, HeaderValue};
@@ -14,7 +14,7 @@ use rig::{
     streaming::{StreamedAssistantContent, StreamedUserContent, StreamingPrompt},
 };
 
-use crate::ai::{
+use crate::ai_rig::{
     helpers::{default_base_url, parse_base_url},
     types::{AiChunkEvent, AiMessage, AiProfile, AiProviderKind, AiStoredToolEvent},
 };
@@ -71,7 +71,9 @@ pub async fn run_with_rig(
                     .base_url(base_url)
                     .build()
             } else {
-                openai::Client::builder(key).with_client(http_client.clone()).build()
+                openai::Client::builder(key)
+                    .with_client(http_client.clone())
+                    .build()
             };
             let mut agent = client.agent(profile.model.trim()).temperature(0.2);
             if let Some(v) = max_tokens {
@@ -116,7 +118,9 @@ pub async fn run_with_rig(
                     .base_url(base_url)
                     .build()
             } else {
-                openrouter::Client::builder(key).with_client(http_client.clone()).build()
+                openrouter::Client::builder(key)
+                    .with_client(http_client.clone())
+                    .build()
             };
             let mut agent = client.agent(profile.model.trim()).temperature(0.2);
             if let Some(v) = max_tokens {
@@ -250,10 +254,7 @@ fn require_key(api_key: Option<&str>) -> Result<&str, String> {
     Ok(key)
 }
 
-fn with_tools<M>(
-    builder: AgentBuilder<M>,
-    tools: &ToolBundle,
-) -> AgentBuilderSimple<M>
+fn with_tools<M>(builder: AgentBuilder<M>, tools: &ToolBundle) -> AgentBuilderSimple<M>
 where
     M: rig::completion::CompletionModel,
 {
@@ -355,7 +356,11 @@ where
                         "id": result.id,
                         "content": tool_output
                     })),
-                    if phase == "error" { Some(tool_output) } else { None },
+                    if phase == "error" {
+                        Some(tool_output)
+                    } else {
+                        None
+                    },
                 ));
             }
             MultiTurnStreamItem::StreamAssistantItem(StreamedAssistantContent::Reasoning(
@@ -433,10 +438,10 @@ fn emit_tool(
     payload: Option<serde_json::Value>,
     error: Option<String>,
 ) -> AiStoredToolEvent {
-    let at_ms = crate::ai::helpers::now_ms();
+    let at_ms = crate::ai_rig::helpers::now_ms();
     let _ = app.emit(
         "ai:tool",
-        crate::ai::types::AiToolEvent {
+        crate::ai_rig::types::AiToolEvent {
             job_id: job_id.to_string(),
             tool: tool.to_string(),
             phase: phase.to_string(),

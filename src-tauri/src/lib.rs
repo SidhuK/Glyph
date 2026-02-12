@@ -1,4 +1,3 @@
-mod ai;
 mod ai_rig;
 mod index;
 mod io_atomic;
@@ -209,7 +208,7 @@ pub fn run() {
                 }
             }
         })
-        .manage(ai::AiState::default())
+        .manage(ai_rig::AiState::default())
         .manage(vault::VaultState::default())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_notification::init())
@@ -219,22 +218,22 @@ pub fn run() {
             greet,
             ping,
             app_info,
-            ai::commands::ai_profiles_list,
-            ai::commands::ai_active_profile_get,
-            ai::commands::ai_active_profile_set,
-            ai::commands::ai_profile_upsert,
-            ai::commands::ai_profile_delete,
-            ai::commands::ai_secret_set,
-            ai::commands::ai_secret_clear,
-            ai::commands::ai_secret_status,
-            ai::commands::ai_secret_list,
-            ai::commands::ai_provider_support,
-            ai::commands::ai_audit_mark,
-            ai::commands::ai_chat_start,
-            ai::commands::ai_chat_cancel,
-            ai::commands::ai_chat_history_list,
-            ai::commands::ai_chat_history_get,
-            ai::models::ai_models_list,
+            ai_rig::commands::ai_profiles_list,
+            ai_rig::commands::ai_active_profile_get,
+            ai_rig::commands::ai_active_profile_set,
+            ai_rig::commands::ai_profile_upsert,
+            ai_rig::commands::ai_profile_delete,
+            ai_rig::commands::ai_secret_set,
+            ai_rig::commands::ai_secret_clear,
+            ai_rig::commands::ai_secret_status,
+            ai_rig::commands::ai_secret_list,
+            ai_rig::commands::ai_provider_support,
+            ai_rig::commands::ai_audit_mark,
+            ai_rig::commands::ai_chat_start,
+            ai_rig::commands::ai_chat_cancel,
+            ai_rig::commands::ai_chat_history_list,
+            ai_rig::commands::ai_chat_history_get,
+            ai_rig::models::ai_models_list,
             index::commands::index_rebuild,
             index::commands::index_note_previews_batch,
             index::commands::search,

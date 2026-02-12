@@ -158,7 +158,7 @@ fn list_history_impl(
 }
 
 fn get_history_impl(root: &std::path::Path, job_id: &str) -> Result<AiChatHistoryDetail, String> {
-    let path = crate::ai::audit::history_log_path(root, job_id)?;
+    let path = crate::ai_rig::audit::history_log_path(root, job_id)?;
     let bytes = std::fs::read(&path).map_err(|e| e.to_string())?;
     let history: StoredHistory = serde_json::from_slice(&bytes).map_err(|e| e.to_string())?;
     if history.version != 0 && history.version != HISTORY_VERSION {
@@ -189,7 +189,7 @@ fn preview_from_messages(messages: &[AiMessage]) -> String {
 
     if preview.len() > 160 {
         preview.truncate(160);
-        preview.push_str("…");
+        preview.push('…');
     }
     preview
 }

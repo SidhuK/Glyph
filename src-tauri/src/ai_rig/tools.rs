@@ -56,14 +56,16 @@ fn is_markdown_path(path: &Path) -> bool {
 }
 
 fn is_utf8_text(path: &Path) -> bool {
-    let Ok(bytes) = fs::read(path) else { return false };
+    let Ok(bytes) = fs::read(path) else {
+        return false;
+    };
     std::str::from_utf8(&bytes).is_ok()
 }
 
 fn safe_join(root: &Path, rel: &str) -> Result<PathBuf, ToolError> {
     let rel = PathBuf::from(rel.trim());
     deny_hidden_rel_path(&rel)?;
-    Ok(paths::join_under(root, &rel).map_err(ToolError)?)
+    paths::join_under(root, &rel).map_err(ToolError)
 }
 
 fn mtime_ms(meta: &fs::Metadata) -> u64 {
@@ -211,7 +213,9 @@ impl Tool for SearchTool {
                 }
             }
             if !rows.is_empty() {
-                return Ok(ok(json!({"results": rows, "truncated": false, "source": "fts"})));
+                return Ok(ok(
+                    json!({"results": rows, "truncated": false, "source": "fts"}),
+                ));
             }
         }
         let matcher = if args.regex.unwrap_or(false) {
@@ -246,7 +250,11 @@ impl Tool for SearchTool {
                     continue;
                 }
                 if !exts.is_empty() {
-                    let ext = rel.extension().and_then(|s| s.to_str()).unwrap_or("").to_string();
+                    let ext = rel
+                        .extension()
+                        .and_then(|s| s.to_str())
+                        .unwrap_or("")
+                        .to_string();
                     if !exts.iter().any(|x| x.eq_ignore_ascii_case(&ext)) {
                         continue;
                     }
@@ -266,12 +274,16 @@ impl Tool for SearchTool {
                     let snippet = text.get(start..end).unwrap_or("").replace('\n', " ");
                     out.push(json!({"rel_path": rel.to_string_lossy().to_string(), "snippet": snippet.trim()}));
                     if out.len() >= limit {
-                        return Ok(ok(json!({"results": out, "truncated": true, "source": "fs"})));
+                        return Ok(ok(
+                            json!({"results": out, "truncated": true, "source": "fs"}),
+                        ));
                     }
                 }
             }
         }
-        Ok(ok(json!({"results": out, "truncated": false, "source": "fs"})))
+        Ok(ok(
+            json!({"results": out, "truncated": false, "source": "fs"}),
+        ))
     }
 }
 
@@ -348,7 +360,9 @@ impl Tool for ReadFileTool {
                 out.push(ch);
             }
         }
-        Ok(ok(json!({"path": args.path, "text": out, "truncated": total > cap, "total_chars": total})))
+        Ok(ok(
+            json!({"path": args.path, "text": out, "truncated": total > cap, "total_chars": total}),
+        ))
     }
 }
 
@@ -376,20 +390,37 @@ impl Tool for ReadFilesBatchTool {
         let max_chars = args.max_chars_each.unwrap_or(3000).min(MAX_READ_CHARS);
         let mut results = Vec::new();
         for path in args.paths.into_iter().take(40) {
-            let res = ReadFileTool { root: self.root.clone() }
-                .call(ReadFileArgs { path, offset: None, length: None, max_chars: Some(max_chars) })
-                .await
-                .unwrap_or_else(|e| err_payload(&e.to_string()));
-            results.push(serde_json::from_str::<serde_json::Value>(&res).unwrap_or_else(|_| json!({"ok": false})));
+            let res = ReadFileTool {
+                root: self.root.clone(),
+            }
+            .call(ReadFileArgs {
+                path,
+                offset: None,
+                length: None,
+                max_chars: Some(max_chars),
+            })
+            .await
+            .unwrap_or_else(|e| err_payload(&e.to_string()));
+            results.push(
+                serde_json::from_str::<serde_json::Value>(&res)
+                    .unwrap_or_else(|_| json!({"ok": false})),
+            );
         }
         Ok(ok(json!({"results": results})))
     }
 }
 
 #[derive(Clone)]
-pub struct WriteFileTool { pub root: PathBuf }
+pub struct WriteFileTool {
+    pub root: PathBuf,
+}
 #[derive(Deserialize, JsonSchema)]
-pub struct WriteFileArgs { path: String, content: String, mode: Option<String>, confirm_token: Option<String> }
+pub struct WriteFileArgs {
+    path: String,
+    content: String,
+    mode: Option<String>,
+    confirm_token: Option<String>,
+}
 impl Tool for WriteFileTool {
     const NAME: &'static str = "write_file";
     type Args = WriteFileArgs;
@@ -403,7 +434,9 @@ impl Tool for WriteFileTool {
     }
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
         let abs = safe_join(&self.root, &args.path)?;
-        if let Some(parent) = abs.parent() { fs::create_dir_all(parent)?; }
+        if let Some(parent) = abs.parent() {
+            fs::create_dir_all(parent)?;
+        }
         let exists = abs.exists();
         let mode = args.mode.unwrap_or_else(|| "overwrite".to_string());
         if exists && mode == "create_only" {
@@ -412,15 +445,26 @@ impl Tool for WriteFileTool {
         if exists && mode == "overwrite" && args.confirm_token.as_deref() != Some(CONFIRM_TOKEN) {
             return Ok(json!({"ok": false, "requires_confirmation": true, "preview": {"path": args.path, "action": "overwrite"}}).to_string());
         }
-        io_atomic::write_atomic(&abs, args.content.as_bytes()).map_err(|e| ToolError(e.to_string()))?;
-        Ok(ok(json!({"path": args.path, "bytes_written": args.content.len()})))
+        io_atomic::write_atomic(&abs, args.content.as_bytes())
+            .map_err(|e| ToolError(e.to_string()))?;
+        Ok(ok(
+            json!({"path": args.path, "bytes_written": args.content.len()}),
+        ))
     }
 }
 
 #[derive(Clone)]
-pub struct ApplyPatchTool { pub root: PathBuf }
+pub struct ApplyPatchTool {
+    pub root: PathBuf,
+}
 #[derive(Deserialize, JsonSchema)]
-pub struct ApplyPatchArgs { path: String, find: String, replace: String, all: Option<bool>, confirm_token: Option<String> }
+pub struct ApplyPatchArgs {
+    path: String,
+    find: String,
+    replace: String,
+    all: Option<bool>,
+    confirm_token: Option<String>,
+}
 impl Tool for ApplyPatchTool {
     const NAME: &'static str = "apply_patch";
     type Args = ApplyPatchArgs;
@@ -435,7 +479,11 @@ impl Tool for ApplyPatchTool {
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
         let abs = safe_join(&self.root, &args.path)?;
         let text = fs::read_to_string(&abs).map_err(|e| ToolError(e.to_string()))?;
-        let updated = if args.all.unwrap_or(false) { text.replace(&args.find, &args.replace) } else { text.replacen(&args.find, &args.replace, 1) };
+        let updated = if args.all.unwrap_or(false) {
+            text.replace(&args.find, &args.replace)
+        } else {
+            text.replacen(&args.find, &args.replace, 1)
+        };
         if updated == text {
             return Ok(err_payload("no matching text for patch"));
         }
@@ -448,9 +496,15 @@ impl Tool for ApplyPatchTool {
 }
 
 #[derive(Clone)]
-pub struct MoveTool { pub root: PathBuf }
+pub struct MoveTool {
+    pub root: PathBuf,
+}
 #[derive(Deserialize, JsonSchema)]
-pub struct MoveArgs { src: String, dest: String, confirm_token: Option<String> }
+pub struct MoveArgs {
+    src: String,
+    dest: String,
+    confirm_token: Option<String>,
+}
 impl Tool for MoveTool {
     const NAME: &'static str = "move";
     type Args = MoveArgs;
@@ -465,7 +519,9 @@ impl Tool for MoveTool {
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
         let src = safe_join(&self.root, &args.src)?;
         let dest = safe_join(&self.root, &args.dest)?;
-        if let Some(parent) = dest.parent() { fs::create_dir_all(parent)?; }
+        if let Some(parent) = dest.parent() {
+            fs::create_dir_all(parent)?;
+        }
         if dest.exists() && args.confirm_token.as_deref() != Some(CONFIRM_TOKEN) {
             return Ok(json!({"ok": false, "requires_confirmation": true, "preview": {"src": args.src, "dest": args.dest, "action": "overwrite_move"}}).to_string());
         }
@@ -475,9 +531,14 @@ impl Tool for MoveTool {
 }
 
 #[derive(Clone)]
-pub struct MkdirTool { pub root: PathBuf }
+pub struct MkdirTool {
+    pub root: PathBuf,
+}
 #[derive(Deserialize, JsonSchema)]
-pub struct MkdirArgs { path: String, parents: Option<bool> }
+pub struct MkdirArgs {
+    path: String,
+    parents: Option<bool>,
+}
 impl Tool for MkdirTool {
     const NAME: &'static str = "mkdir";
     type Args = MkdirArgs;
@@ -488,15 +549,25 @@ impl Tool for MkdirTool {
     }
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
         let abs = safe_join(&self.root, &args.path)?;
-        if args.parents.unwrap_or(true) { fs::create_dir_all(&abs)?; } else { fs::create_dir(&abs)?; }
+        if args.parents.unwrap_or(true) {
+            fs::create_dir_all(&abs)?;
+        } else {
+            fs::create_dir(&abs)?;
+        }
         Ok(ok(json!({"path": args.path})))
     }
 }
 
 #[derive(Clone)]
-pub struct DeleteTool { pub root: PathBuf }
+pub struct DeleteTool {
+    pub root: PathBuf,
+}
 #[derive(Deserialize, JsonSchema)]
-pub struct DeleteArgs { path: String, recursive: Option<bool>, confirm_token: Option<String> }
+pub struct DeleteArgs {
+    path: String,
+    recursive: Option<bool>,
+    confirm_token: Option<String>,
+}
 impl Tool for DeleteTool {
     const NAME: &'static str = "delete";
     type Args = DeleteArgs;
@@ -515,7 +586,11 @@ impl Tool for DeleteTool {
             return Ok(json!({"ok": false, "requires_confirmation": true, "preview": {"path": args.path, "recursive": recursive, "action": "delete"}}).to_string());
         }
         if abs.is_dir() {
-            if recursive { fs::remove_dir_all(abs)?; } else { fs::remove_dir(abs)?; }
+            if recursive {
+                fs::remove_dir_all(abs)?;
+            } else {
+                fs::remove_dir(abs)?;
+            }
         } else if abs.exists() {
             fs::remove_file(abs)?;
         } else {

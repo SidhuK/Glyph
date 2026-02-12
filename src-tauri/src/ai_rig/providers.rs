@@ -1,4 +1,4 @@
-use crate::ai::types::{AiMessage, AiProviderKind};
+use crate::ai_rig::types::{AiMessage, AiProviderKind};
 
 pub struct ProviderCapabilities {
     pub requires_max_tokens: bool,
@@ -29,7 +29,11 @@ pub fn build_transcript(system: &str, messages: &[AiMessage]) -> String {
         if role == "system" {
             continue;
         }
-        let label = if role == "assistant" { "Assistant" } else { "User" };
+        let label = if role == "assistant" {
+            "Assistant"
+        } else {
+            "User"
+        };
         parts.push(format!("{label}:\n{}", m.content.trim()));
     }
     parts.join("\n\n")
