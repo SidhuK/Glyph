@@ -8,8 +8,8 @@ use crate::index;
 use super::state::VaultState;
 
 #[derive(Serialize, Clone)]
-struct ExternalNoteChange {
-    id: String,
+struct ExternalChangeEvent {
+    rel_path: String,
 }
 
 fn is_markdown_path(path: &std::path::Path) -> bool {
@@ -47,9 +47,6 @@ pub fn set_notes_watcher(
         }
 
         for path in event.paths {
-            if !is_markdown_path(&path) {
-                continue;
-            }
             let rel = match path.strip_prefix(&root2) {
                 Ok(r) => r,
                 Err(_) => continue,
@@ -66,13 +63,22 @@ pub fn set_notes_watcher(
                 continue;
             }
 
-            if is_remove {
-                let _ = index::remove_note(&root2, &rel_s);
-            } else if let Ok(markdown) = std::fs::read_to_string(&path) {
-                let _ = index::index_note(&root2, &rel_s, &markdown);
+            if is_markdown_path(&path) {
+                if is_remove {
+                    let _ = index::remove_note(&root2, &rel_s);
+                } else if let Ok(markdown) = std::fs::read_to_string(&path) {
+                    let _ = index::index_note(&root2, &rel_s, &markdown);
+                }
+
+                let _ = app2.emit(
+                    "notes:external_changed",
+                    ExternalChangeEvent {
+                        rel_path: rel_s.clone(),
+                    },
+                );
             }
 
-            let _ = app2.emit("notes:external_changed", ExternalNoteChange { id: rel_s });
+            let _ = app2.emit("vault:fs_changed", ExternalChangeEvent { rel_path: rel_s });
         }
     })
     .map_err(|e| e.to_string())?;

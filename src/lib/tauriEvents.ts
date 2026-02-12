@@ -19,6 +19,7 @@ export type TauriEventMap = {
 		error?: string;
 	};
 	"notes:external_changed": { rel_path: string };
+	"vault:fs_changed": { rel_path: string };
 };
 
 type TauriEventHandler<K extends keyof TauriEventMap> =

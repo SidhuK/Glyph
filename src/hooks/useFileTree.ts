@@ -7,6 +7,7 @@ import { invoke } from "../lib/tauri";
 import { isInAppPreviewable } from "../utils/filePreview";
 import { isMarkdownPath, parentDir } from "../utils/path";
 import {
+	areEntriesEqual,
 	compareEntries,
 	fileTitleFromRelPath,
 	normalizeEntries,
@@ -82,9 +83,15 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 			const normalizedEntries = normalizeEntries(entries);
 			if (loadRequestVersionRef.current.get(dirPath) !== nextVersion) return;
 			if (dirPath) {
-				setChildrenByDir((prev) => ({ ...prev, [dirPath]: normalizedEntries }));
+				setChildrenByDir((prev) => {
+					const current = prev[dirPath];
+					if (areEntriesEqual(current, normalizedEntries)) return prev;
+					return { ...prev, [dirPath]: normalizedEntries };
+				});
 			} else {
-				setRootEntries(normalizedEntries);
+				setRootEntries((prev) =>
+					areEntriesEqual(prev, normalizedEntries) ? prev : normalizedEntries,
+				);
 			}
 			loadedDirsRef.current.add(dirPath);
 		},

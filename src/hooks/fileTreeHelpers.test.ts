@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import type { FsEntry } from "../lib/tauri";
 import {
+	areEntriesEqual,
 	compareEntries,
 	fileTitleFromRelPath,
 	normalizeEntries,
@@ -82,6 +83,40 @@ describe("fileTreeHelpers", () => {
 		expect(entries[0]?.kind).toBe("dir");
 		expect(entries[0]?.name).toBe("A");
 		expect(entries[1]?.rel_path).toBe("b.md");
+	});
+
+	it("compares entry arrays by stable fields", () => {
+		const base = normalizeEntries([
+			mkEntry({ name: "A", rel_path: "A", kind: "dir" }),
+			mkEntry({
+				name: "note.md",
+				rel_path: "note.md",
+				kind: "file",
+				is_markdown: true,
+			}),
+		]);
+		const same = normalizeEntries([
+			mkEntry({ name: "A", rel_path: "A", kind: "dir" }),
+			mkEntry({
+				name: "note.md",
+				rel_path: "note.md",
+				kind: "file",
+				is_markdown: true,
+			}),
+		]);
+		const different = normalizeEntries([
+			mkEntry({ name: "A", rel_path: "A", kind: "dir" }),
+			mkEntry({
+				name: "note-2.md",
+				rel_path: "note-2.md",
+				kind: "file",
+				is_markdown: true,
+			}),
+		]);
+
+		expect(areEntriesEqual(base, same)).toBe(true);
+		expect(areEntriesEqual(base, different)).toBe(false);
+		expect(areEntriesEqual(undefined, same)).toBe(false);
 	});
 
 	it("inserts only when missing and preserves sort", () => {

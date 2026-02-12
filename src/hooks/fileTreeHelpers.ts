@@ -47,6 +47,25 @@ export function normalizeEntries(entries: FsEntry[]): FsEntry[] {
 	return [...byPath.values()].sort(compareEntries);
 }
 
+export function areEntriesEqual(a: FsEntry[] | undefined, b: FsEntry[]): boolean {
+	if (!a) return false;
+	if (a.length !== b.length) return false;
+	for (let i = 0; i < a.length; i += 1) {
+		const left = a[i];
+		const right = b[i];
+		if (!left || !right) return false;
+		if (
+			left.rel_path !== right.rel_path ||
+			left.name !== right.name ||
+			left.kind !== right.kind ||
+			left.is_markdown !== right.is_markdown
+		) {
+			return false;
+		}
+	}
+	return true;
+}
+
 export function withInsertedEntry(
 	entries: FsEntry[],
 	entry: FsEntry,

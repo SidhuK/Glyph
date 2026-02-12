@@ -14,6 +14,7 @@ import { useMenuListeners } from "../../hooks/useMenuListeners";
 import type { Shortcut } from "../../lib/shortcuts";
 import { getShortcutTooltip } from "../../lib/shortcuts";
 import { type FsEntry, invoke } from "../../lib/tauri";
+import { useTauriEvent } from "../../lib/tauriEvents";
 import { openSettingsWindow } from "../../lib/windows";
 import { cn } from "../../utils/cn";
 import { onWindowDragMouseDown } from "../../utils/window";
@@ -78,6 +79,17 @@ function aiNoteFileName(): string {
 	)}.md`;
 }
 
+function normalizeRelPath(path: string): string {
+	return path.replace(/\\/g, "/").replace(/^\/+/, "").replace(/\/+$/, "").trim();
+}
+
+function parentDir(path: string): string {
+	const normalized = normalizeRelPath(path);
+	const idx = normalized.lastIndexOf("/");
+	if (idx < 0) return "";
+	return normalized.slice(0, idx);
+}
+
 export function AppShell() {
 	// ---------------------------------------------------------------------------
 	// Contexts
@@ -88,6 +100,7 @@ export function AppShell() {
 
 	const fileTreeCtx = useFileTreeContext();
 	const {
+		expandedDirs,
 		setRootEntries,
 		setChildrenByDir,
 		setExpandedDirs,
@@ -263,6 +276,9 @@ export function AppShell() {
 		loadAndBuildFolderView,
 		getActiveFolderDir,
 	});
+	const { loadDir } = fileTree;
+	const fsRefreshQueueRef = useRef<Set<string>>(new Set());
+	const fsRefreshTimerRef = useRef<number | null>(null);
 
 	useEffect(() => {
 		let cachedEntries: FsEntry[] = [];
@@ -400,6 +416,47 @@ export function AppShell() {
 	// Menu listeners
 	// ---------------------------------------------------------------------------
 	useMenuListeners({ onOpenVault, onCreateVault, closeVault });
+
+	const handleVaultFsChanged = useCallback(
+		(payload: { rel_path: string }) => {
+			if (!vaultPath) return;
+			const changedPath = normalizeRelPath(payload.rel_path);
+			if (!changedPath) return;
+			fsRefreshQueueRef.current.add(changedPath);
+			if (fsRefreshTimerRef.current !== null) return;
+
+			fsRefreshTimerRef.current = window.setTimeout(() => {
+				fsRefreshTimerRef.current = null;
+				const changed = [...fsRefreshQueueRef.current];
+				fsRefreshQueueRef.current.clear();
+				if (changed.length === 0) return;
+
+				const dirsToRefresh = new Set<string>([""]);
+				for (const relPath of changed) {
+					dirsToRefresh.add(parentDir(relPath));
+					if (expandedDirs.has(relPath)) {
+						dirsToRefresh.add(relPath);
+					}
+				}
+
+				for (const dir of dirsToRefresh) {
+					void loadDir(dir, true);
+				}
+			}, 150);
+		},
+		[expandedDirs, loadDir, vaultPath],
+	);
+
+	useTauriEvent("vault:fs_changed", handleVaultFsChanged);
+
+	useEffect(
+		() => () => {
+			if (fsRefreshTimerRef.current !== null) {
+				window.clearTimeout(fsRefreshTimerRef.current);
+			}
+		},
+		[],
+	);
 
 	// ---------------------------------------------------------------------------
 	// Commands
