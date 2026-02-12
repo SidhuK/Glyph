@@ -35,7 +35,7 @@ cd src-tauri && cargo clippy  # Lint Rust
 | Backend | Tauri 2 + Rust | `src-tauri/` |
 | Canvas | @xyflow/react | `src/components/canvas/` |
 | Editor | TipTap + Markdown | `src/components/editor/` |
-| AI | Multi-provider chat with tool use | `src/components/ai/` |
+| AI | Rig-backed multi-provider chat with tool use (`rig.rs`) | `src/components/ai/` + `src-tauri/src/ai_rig/` |
 | UI | shadcn/ui + Motion (Framer Motion) | `src/components/ui/` |
 | Storage | SQLite + Filesystem | `.lattice/lattice.sqlite` |
 
@@ -71,13 +71,11 @@ State management via React Context (no prop drilling):
 - `CanvasNoteInlineEditor.tsx` — Inline note editing on canvas
 
 ### AI (`src/components/ai/`)
-- `AIPanel.tsx` / `AIPane.tsx` — AI chat sidebar
+- `AIPanel.tsx` — AI chat sidebar
 - `AIFloatingHost.tsx` — Floating AI entry point
-- `ChatMessages.tsx` / `ChatInput.tsx` / `ChatActions.tsx` — Chat UI
 - `ModelSelector.tsx` — Model picker (multi-provider)
-- `ToolIndicator.tsx` / `ToolIndicatorGroup.tsx` — Tool-use status
 - `AIToolTimeline.tsx` — Tool call timeline display
-- `hooks/` — AI-specific hooks
+- `hooks/useRigChat.ts` — Rig/Tauri chat state + streaming
 - `useAiContext.ts` / `useAiHistory.ts` / `useAiProfiles.ts` — AI state
 
 ### Editor (`src/components/editor/`)
@@ -143,7 +141,7 @@ State management via React Context (no prop drilling):
 | `notes/` | Note CRUD, attachments, frontmatter |
 | `index/` | SQLite search, tags, backlinks, hybrid search |
 | `links/` | Link fetching, caching, metadata extraction |
-| `ai/` | AI chat, profiles, streaming, tool use, keychain, agent |
+| `ai_rig/` | Rig runtime (`rig.rs`) for providers, tools, streaming events, profiles/history/secrets |
 | `paths.rs` | Safe path joining (prevents traversal) |
 | `lattice_paths.rs` | `.lattice/` directory and DB path helpers |
 | `lattice_fs.rs` | Lattice-specific filesystem operations |
