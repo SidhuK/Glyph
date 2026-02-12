@@ -32,16 +32,30 @@
 .tiptapContentInline .wikiLink {
 	color: var(--interactive-accent);
 	text-decoration: none;
-	background: color-mix(in srgb, var(--interactive-accent) 14%, transparent);
+	background: color-mix(in srgb, var(--interactive-accent) 10%, transparent);
 	border: 1px solid
-		color-mix(in srgb, var(--interactive-accent) 28%, transparent);
-	border-radius: 6px;
-	padding: 0 4px;
+		color-mix(in srgb, var(--interactive-accent) 22%, transparent);
+	border-radius: 4px;
+	padding: 1px 5px;
+	font-weight: var(--font-medium);
+	transition: background 120ms ease, border-color 120ms ease;
+	cursor: pointer;
+}
+
+.tiptapContentInline .wikiLink:hover {
+	background: color-mix(in srgb, var(--interactive-accent) 20%, transparent);
+	border-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 40%,
+		transparent
+	);
 }
 
 .tiptapContentInline .wikiLink[data-unresolved="true"] {
 	color: var(--text-tertiary);
 	border-style: dashed;
+	background: color-mix(in srgb, var(--text-tertiary) 6%, transparent);
+	border-color: color-mix(in srgb, var(--text-tertiary) 20%, transparent);
 }
 
 .tiptapContentInline p {
@@ -54,22 +68,38 @@
 
 .tiptapContentInline h1,
 .tiptapContentInline h2,
-.tiptapContentInline h3 {
-	margin: var(--space-4) 0 var(--space-2);
+.tiptapContentInline h3,
+.tiptapContentInline h4,
+.tiptapContentInline h5,
+.tiptapContentInline h6 {
+	margin: var(--space-3) 0 var(--space-1);
 	font-weight: var(--font-semibold);
-	line-height: 1.28;
+	line-height: 1.25;
 }
 
 .tiptapContentInline h1 {
-	font-size: clamp(1.6rem, 1.15rem + 1.2vw, 2rem);
+	font-size: 1.25rem;
 }
 
 .tiptapContentInline h2 {
-	font-size: clamp(1.35rem, 1.05rem + 0.75vw, 1.65rem);
+	font-size: 1.1rem;
 }
 
 .tiptapContentInline h3 {
-	font-size: clamp(1.15rem, 0.98rem + 0.45vw, 1.3rem);
+	font-size: 1rem;
+}
+
+.tiptapContentInline h4 {
+	font-size: 0.925rem;
+}
+
+.tiptapContentInline h5 {
+	font-size: 0.875rem;
+}
+
+.tiptapContentInline h6 {
+	font-size: 0.825rem;
+	color: var(--text-secondary);
 }
 
 .tiptapContentInline blockquote {
@@ -308,30 +338,29 @@
 
 .wikiLinkSuggestionMenu {
 	position: fixed;
-	min-width: 240px;
-	max-width: 320px;
-	max-height: 280px;
-	overflow: auto;
+	width: 280px;
+	max-height: 260px;
+	overflow-y: auto;
 	background: var(--bg-primary);
 	border: 1px solid var(--border-light);
 	border-radius: var(--radius-lg);
 	box-shadow: var(--shadow-lg);
-	padding: 6px;
+	padding: 4px;
 	z-index: 2100;
 }
 
 .wikiLinkSuggestionItem {
+	display: block;
 	width: 100%;
+	box-sizing: border-box;
 	text-align: left;
-	padding: 6px 8px;
+	padding: 6px 10px;
 	border-radius: var(--radius-md);
 	border: none;
 	background: transparent;
 	color: var(--text-primary);
-	display: flex;
-	flex-direction: column;
-	gap: 2px;
 	cursor: pointer;
+	overflow: hidden;
 }
 
 .wikiLinkSuggestionItem:hover,
@@ -340,13 +369,21 @@
 }
 
 .wikiLinkSuggestionTitle {
+	display: block;
 	font-size: var(--text-sm);
 	font-weight: var(--font-medium);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .wikiLinkSuggestionPath {
+	display: block;
 	font-size: var(--text-xs);
 	color: var(--text-tertiary);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .editorLinkPopover {

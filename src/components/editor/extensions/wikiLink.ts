@@ -250,7 +250,7 @@ export const WikiLink = Node.create({
 							const button = document.createElement("button");
 							button.type = "button";
 							button.className = "wikiLinkSuggestionItem";
-							button.innerHTML = `<div class="wikiLinkSuggestionTitle">${item.title}</div><div class="wikiLinkSuggestionPath">${item.path}</div>`;
+							button.innerHTML = `<span class="wikiLinkSuggestionTitle">${item.title}</span><span class="wikiLinkSuggestionPath">${item.path}</span>`;
 							button.addEventListener("mousedown", (event) => {
 								event.preventDefault();
 								props.command(item);

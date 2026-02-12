@@ -183,30 +183,53 @@ button.ribbonBtn.active {
 .editorBody .tiptapContent h2,
 .editorBody .tiptapContent h3,
 .editorBody .tiptapContent h4,
+.editorBody .tiptapContent h5,
+.editorBody .tiptapContent h6,
 .editorBody .tiptap h1,
 .editorBody .tiptap h2,
 .editorBody .tiptap h3,
-.editorBody .tiptap h4 {
-	margin: var(--space-5) 0 var(--space-2) 0;
+.editorBody .tiptap h4,
+.editorBody .tiptap h5,
+.editorBody .tiptap h6 {
+	margin: var(--space-4) 0 var(--space-2) 0;
 	letter-spacing: -0.01em;
 }
 
 .editorBody .tiptapContent h1,
 .editorBody .tiptap h1 {
-	font-size: 2rem;
-	line-height: 1.2;
+	font-size: 1.5rem;
+	line-height: 1.25;
 }
 
 .editorBody .tiptapContent h2,
 .editorBody .tiptap h2 {
-	font-size: 1.6rem;
-	line-height: 1.25;
+	font-size: 1.25rem;
+	line-height: 1.3;
 }
 
 .editorBody .tiptapContent h3,
 .editorBody .tiptap h3 {
-	font-size: 1.25rem;
-	line-height: 1.3;
+	font-size: 1.1rem;
+	line-height: 1.35;
+}
+
+.editorBody .tiptapContent h4,
+.editorBody .tiptap h4 {
+	font-size: 1rem;
+	line-height: 1.4;
+}
+
+.editorBody .tiptapContent h5,
+.editorBody .tiptap h5 {
+	font-size: 0.925rem;
+	line-height: 1.4;
+}
+
+.editorBody .tiptapContent h6,
+.editorBody .tiptap h6 {
+	font-size: 0.85rem;
+	line-height: 1.45;
+	color: var(--text-secondary);
 }
 
 .editorBody .tiptapContent blockquote,
