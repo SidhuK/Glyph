@@ -20,6 +20,7 @@ import { openSettingsWindow } from "../../lib/windows";
 import { cn } from "../../utils/cn";
 import {
 	AiLattice,
+	ChevronDown,
 	FileText,
 	Files,
 	Layout,
@@ -122,6 +123,7 @@ export function AIPanel({
 	);
 	const [toolTimeline, setToolTimeline] = useState<ToolTimelineEvent[]>([]);
 	const [assistantActionError, setAssistantActionError] = useState("");
+	const [historyExpanded, setHistoryExpanded] = useState(false);
 	const composerInputRef = useRef<HTMLTextAreaElement | null>(null);
 	const scheduleComposerInputResize = useCallback(() => {
 		window.requestAnimationFrame(() => {
@@ -474,47 +476,67 @@ export function AIPanel({
 			<div className="aiPanelBody">
 				<div className="aiHistory">
 					<div className="aiHistoryHeader">
-						<span>Recent Chats</span>
 						<button
 							type="button"
-							onClick={() => void history.refresh()}
-							disabled={history.listLoading}
+							className="aiHistoryToggle"
+							aria-expanded={historyExpanded}
+							onClick={() => setHistoryExpanded((prev) => !prev)}
 						>
-							Refresh
+							<span>Recent Chats</span>
+							<ChevronDown
+								size={12}
+								className={cn(
+									"aiHistoryChevron",
+									historyExpanded && "aiHistoryChevron-open",
+								)}
+							/>
 						</button>
+						{historyExpanded ? (
+							<button
+								type="button"
+								onClick={() => void history.refresh()}
+								disabled={history.listLoading}
+							>
+								Refresh
+							</button>
+						) : null}
 					</div>
-					<div className="aiHistoryList">
-						{history.summaries.length > 0 ? (
-							history.summaries.map((item) => (
-								<button
-									key={item.job_id}
-									type="button"
-									className={cn(
-										"aiHistoryItem",
-										history.selectedJobId === item.job_id && "active",
-									)}
-									onClick={() => void handleLoadHistory(item.job_id)}
-									disabled={history.loadingJobId === item.job_id}
-								>
-									<div className="aiHistoryItemTitle">
-										{item.title || "Untitled chat"}
-									</div>
-									{item.provider ? (
-										<img
-											className="aiHistoryProviderIcon"
-											src={providerLogoMap[item.provider]}
-											alt={item.provider}
-											draggable={false}
-										/>
-									) : null}
-								</button>
-							))
-						) : (
-							<div className="aiHistoryEmpty">
-								{history.listLoading ? "Loading chats…" : "No chat history yet"}
-							</div>
-						)}
-					</div>
+					{historyExpanded ? (
+						<div className="aiHistoryList">
+							{history.summaries.length > 0 ? (
+								history.summaries.map((item) => (
+									<button
+										key={item.job_id}
+										type="button"
+										className={cn(
+											"aiHistoryItem",
+											history.selectedJobId === item.job_id && "active",
+										)}
+										onClick={() => void handleLoadHistory(item.job_id)}
+										disabled={history.loadingJobId === item.job_id}
+									>
+										<div className="aiHistoryItemTitle">
+											{item.title || "Untitled chat"}
+										</div>
+										{item.provider ? (
+											<img
+												className="aiHistoryProviderIcon"
+												src={providerLogoMap[item.provider]}
+												alt={item.provider}
+												draggable={false}
+											/>
+										) : null}
+									</button>
+								))
+							) : (
+								<div className="aiHistoryEmpty">
+									{history.listLoading
+										? "Loading chats…"
+										: "No chat history yet"}
+								</div>
+							)}
+						</div>
+					) : null}
 				</div>
 
 				<div className="aiChatThread" ref={threadRef}>

@@ -102,6 +102,26 @@
 	margin-bottom: 4px;
 }
 
+.aiHistoryToggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
+	background: transparent;
+	border: 0;
+	padding: 0;
+	cursor: pointer;
+}
+
+.aiHistoryChevron {
+	transition: transform var(--transition-fast);
+}
+
+.aiHistoryChevron-open {
+	transform: rotate(180deg);
+}
+
 .aiHistoryHeader button {
 	font-size: 11px;
 	color: var(--text-tertiary);
