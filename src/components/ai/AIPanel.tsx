@@ -1,3 +1,5 @@
+import { Navigation03Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import {
 	Fragment,
 	Suspense,
@@ -29,7 +31,6 @@ import {
 	Plus,
 	RefreshCw,
 	Save,
-	Send,
 	Settings as SettingsIcon,
 	X,
 } from "../Icons";
@@ -857,7 +858,7 @@ export function AIPanel({
 									aria-label="Send"
 									title="Send"
 								>
-									<Send size={14} />
+									<HugeiconsIcon icon={Navigation03Icon} size={14} />
 								</Button>
 							)}
 						</div>

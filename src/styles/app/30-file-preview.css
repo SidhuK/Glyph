@@ -90,7 +90,7 @@
 
 .markdownEditorContent {
 	overflow: auto;
-	padding: 0 var(--space-6);
+	padding: 0 var(--space-8);
 }
 
 .markdownEditorPane {

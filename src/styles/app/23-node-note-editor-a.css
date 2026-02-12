@@ -235,7 +235,7 @@
 
 .tiptapContentInline {
 	min-height: 100%;
-	padding: 10px 12px;
+	padding: 10px 18px;
 	font-size: 13px;
 	line-height: 1.5;
 	color: var(--text-primary);
@@ -258,7 +258,7 @@
 .frontmatterPreview {
 	border: 1px dashed var(--border-light);
 	border-radius: var(--radius-lg);
-	padding: var(--space-2) var(--space-3);
+	padding: var(--space-2) var(--space-4);
 	background: var(--bg-secondary);
 	color: var(--text-secondary);
 	font-size: 12px;
