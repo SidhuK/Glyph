@@ -35,6 +35,8 @@ cd src-tauri && cargo clippy  # Lint Rust
 | Backend | Tauri 2 + Rust | `src-tauri/` |
 | Canvas | @xyflow/react | `src/components/canvas/` |
 | Editor | TipTap + Markdown | `src/components/editor/` |
+| AI | Multi-provider chat with tool use | `src/components/ai/` |
+| UI | shadcn/ui + Motion (Framer Motion) | `src/components/ui/` |
 | Storage | SQLite + Filesystem | `.lattice/lattice.sqlite` |
 
 ## Key Frontend Files
@@ -53,38 +55,102 @@ State management via React Context (no prop drilling):
 | `FileTreeContext` | File tree state, tags, active file |
 | `ViewContext` | Active view doc, canvas loaders |
 | `UIContext` | Sidebar, AI sidebar, search, preview state |
+| `EditorContext` | Active TipTap editor instance state |
 
 ### App Shell (`src/components/app/`)
 - `AppShell.tsx` — Main layout, consumes all contexts
-- `Sidebar.tsx` / `SidebarContent.tsx` — File tree or tags view
+- `Sidebar.tsx` / `SidebarContent.tsx` / `SidebarHeader.tsx` — File tree or tags view
 - `MainContent.tsx` — Canvas area + welcome screen
+- `MainToolbar.tsx` — Top toolbar controls
+- `CommandPalette.tsx` — Cmd+K command palette
+- `KeyboardShortcutsHelp.tsx` — Shortcut reference overlay
+- `WelcomeScreen.tsx` — Shown when no vault is open
 
-### Canvas (`src/components/canvas/`)
+### Canvas (`src/components/`)
 - `CanvasPane.tsx` — Main ReactFlow canvas
-- `nodes/*.tsx` — Node components (NoteNode, TextNode, FileNode, etc.)
-- `hooks/useCanvasHistory.ts` — Undo/redo
+- `CanvasNoteInlineEditor.tsx` — Inline note editing on canvas
+
+### AI (`src/components/ai/`)
+- `AIPanel.tsx` / `AIPane.tsx` — AI chat sidebar
+- `AIFloatingHost.tsx` — Floating AI entry point
+- `ChatMessages.tsx` / `ChatInput.tsx` / `ChatActions.tsx` — Chat UI
+- `ModelSelector.tsx` — Model picker (multi-provider)
+- `ProfileSettings.tsx` — AI profile management
+- `ToolIndicator.tsx` / `ToolIndicatorGroup.tsx` — Tool-use status
+- `AIToolTimeline.tsx` — Tool call timeline display
+- `hooks/` — AI-specific hooks
+- `useAiContext.ts` / `useAiHistory.ts` / `useAiProfiles.ts` — AI state
+
+### Editor (`src/components/editor/`)
+- `CanvasNoteInlineEditor.tsx` — TipTap editor in canvas nodes
+- `EditorRibbon.tsx` — Formatting toolbar
+- `extensions/` — Custom TipTap extensions
+- `hooks/` — Editor-specific hooks
+- `markdown/` — Markdown serialization
+- `slashCommands.ts` — Slash command menu
+
+### File Tree (`src/components/filetree/`)
+- `FileTreePane.tsx` / `FileTreeItem.tsx` — File browser
+- `fileTypeUtils.ts` — File type detection
+
+### Preview & Shelf
+- `src/components/preview/` — File preview, markdown editor panes
+- `src/components/shelf/` — Folder shelf (pinned folders)
+
+### Settings (`src/components/settings/`)
+- `AiSettingsPane.tsx` — AI provider/model configuration
+- `VaultSettingsPane.tsx` — Vault settings
+
+### UI Components (`src/components/ui/`)
+- `MotionButton.tsx` / `MotionPanel.tsx` / `MotionWrappers.tsx` — Animated UI components
+- `animations.ts` — Shared animation configs
+- `shadcn/` — shadcn/ui base components
+- `button.tsx` / `command.tsx` / `dialog.tsx` — Core UI primitives
 
 ### Key Hooks (`src/hooks/`)
 - `useViewLoader.ts` — View document loading (folder/search/tag)
 - `useFileTree.ts` — File tree operations
 - `useSearch.ts` — Search state
+- `useFolderShelf.ts` — Folder shelf state
+- `useCommandShortcuts.ts` — Global keyboard shortcuts
+- `useMenuListeners.ts` — Native menu event listeners
 
-### IPC (`src/lib/tauri.ts`)
-Typed wrapper for Tauri commands. Always use `invoke()` from here.
+### Lib (`src/lib/`)
+- `tauri.ts` — Typed IPC wrapper; always use `invoke()` from here
+- `tauriEvents.ts` — Tauri event listeners
+- `shortcuts/` — Keyboard shortcut registry (`registry.ts`, `platform.ts`)
+- `views/` — View document builders, persistence, sanitization
+- `ai/tauriChatTransport.ts` — AI chat transport layer
+- `canvasLayout.ts` — Canvas auto-layout algorithms
+- `canvasConstants.ts` / `canvasFlowTypes.ts` — Canvas type definitions
+- `diff.ts` — Text diffing utilities
+- `notePreview.ts` — Note preview generation
+- `settings.ts` — App settings helpers
+- `windows.ts` — Multi-window management
+- `errorUtils.ts` — Error handling utilities
+
+### Styles (`src/styles/`)
+- `shadcn-theme.css` / `shadcn-base.css` — shadcn/ui theming
+- `app/` — 25 numbered CSS files (bundled into one by Vite; no perf concern)
+- `src/design-tokens.css` — Design token variables
+- Module CSS: `*.module.css` files co-located with components
 
 ## Key Backend Files (`src-tauri/src/`)
 
 | Module | Purpose |
 |--------|---------|
 | `lib.rs` | Tauri setup, command registration |
-| `vault/` | Vault lifecycle, file watching |
-| `vault_fs/` | Filesystem operations (list, read, write) |
-| `notes/` | Note CRUD, attachments |
-| `index/` | SQLite search, tags, backlinks |
-| `canvas.rs` | Canvas CRUD (stored in SQLite) |
-| `ai/` | AI chat, profiles, streaming |
+| `vault/` | Vault lifecycle, file watching (`watcher.rs`, `state.rs`) |
+| `vault_fs/` | Filesystem operations (list, read, write, summary) |
+| `notes/` | Note CRUD, attachments, frontmatter |
+| `index/` | SQLite search, tags, backlinks, hybrid search |
+| `links/` | Link fetching, caching, metadata extraction |
+| `ai/` | AI chat, profiles, streaming, tool use, keychain, agent |
 | `paths.rs` | Safe path joining (prevents traversal) |
+| `lattice_paths.rs` | `.lattice/` directory and DB path helpers |
+| `lattice_fs.rs` | Lattice-specific filesystem operations |
 | `io_atomic.rs` | Crash-safe atomic writes |
+| `net.rs` | Network safety (SSRF prevention) |
 
 ## Vault Layout
 
@@ -104,6 +170,8 @@ any-vault-folder/
 - **React:** Functional components, hooks, lazy-load heavy components
 - **Rust:** serde for serialization, tracing for logs, atomic writes
 - **Formatting:** Biome handles it (auto-organizes imports)
+- **Animations:** Use Motion (Framer Motion) via `src/components/ui/` wrappers
+- **CSS:** Global styles in numbered `src/styles/app/` files + CSS modules for component-scoped styles
 
 ## Safety Rules
 
@@ -112,6 +180,7 @@ any-vault-folder/
 - Use `io_atomic::write_atomic()` for file writes
 - Version durable documents (`version: 1`) and reject unsupported versions
 - Never log secrets or API keys
+- Use `net.rs` SSRF checks for any user-supplied URLs
 
 ## Adding a Tauri Command
 

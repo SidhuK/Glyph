@@ -13,6 +13,7 @@ export {
   isShortcutMatch,
   formatShortcut,
   formatShortcutParts,
+  getShortcutTooltip,
 } from "../shortcuts";
 
 // Export platform utilities

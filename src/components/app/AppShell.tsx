@@ -329,6 +329,12 @@ export function AppShell() {
         action: onOpenVault,
       },
       {
+        id: "toggle-sidebar",
+        label: "Toggle sidebar",
+        shortcut: { meta: true, key: "b" },
+        action: () => setSidebarCollapsed(!sidebarCollapsed),
+      },
+      {
         id: "toggle-ai",
         label: "Toggle AI",
         shortcut: { meta: true, shift: true, key: "a" },
@@ -342,8 +348,43 @@ export function AppShell() {
         enabled: Boolean(vaultPath),
         action: () => void fileTree.onNewFile(),
       },
+      {
+        id: "save-note",
+        label: "Save",
+        shortcut: { meta: true, key: "s" },
+        enabled: hasUnsavedChanges(),
+        action: () => void saveCurrentEditor(),
+      },
+      {
+        id: "close-preview",
+        label: "Close preview",
+        shortcut: { meta: true, key: "w" },
+        enabled: Boolean(vaultPath),
+        action: () => setActivePreviewPath(null),
+      },
+      {
+        id: "quick-open",
+        label: "Quick open",
+        shortcut: { meta: true, key: "p" },
+        enabled: Boolean(vaultPath),
+        action: () => {
+          setPaletteInitialTab("search");
+          setPaletteInitialQuery("");
+          setPaletteOpen(true);
+        },
+      },
     ],
-    [fileTree, onOpenVault, setAiPanelOpen, vaultPath],
+    [
+      fileTree,
+      hasUnsavedChanges,
+      onOpenVault,
+      saveCurrentEditor,
+      setAiPanelOpen,
+      setPaletteOpen,
+      setActivePreviewPath,
+      setSidebarCollapsed,
+      vaultPath,
+    ],
   );
 
   useCommandShortcuts({
@@ -387,7 +428,7 @@ export function AppShell() {
           aria-pressed={!sidebarCollapsed}
           data-window-drag-ignore
           onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
-          title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+          title={`${sidebarCollapsed ? "Expand" : "Collapse"} sidebar (${getShortcutTooltip({ meta: true, key: "b" })})`}
         >
           {sidebarCollapsed ? (
             <PanelLeftOpen size={14} />
