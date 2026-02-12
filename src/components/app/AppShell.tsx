@@ -121,7 +121,8 @@ export function AppShell() {
 	const dragStartWidthRef = useRef(0);
 	const isDraggingRef = useRef(false);
 
-	const { sidebarWidth, setSidebarWidth } = useUIContext();
+	const { sidebarWidth, setSidebarWidth, aiPanelWidth, setAiPanelWidth } =
+		useUIContext();
 
 	const handleResizeStart = useCallback(
 		(e: React.PointerEvent) => {
@@ -177,6 +178,67 @@ export function AppShell() {
 			};
 		}
 	}, [setSidebarWidth]);
+
+	// AI panel resize (mirrored: drag left = wider)
+	const aiResizeRef = useRef<HTMLDivElement>(null);
+	const aiDragStartXRef = useRef(0);
+	const aiDragStartWidthRef = useRef(0);
+	const aiIsDraggingRef = useRef(false);
+
+	const handleAiResizeStart = useCallback(
+		(e: React.PointerEvent) => {
+			if (!aiPanelOpen) return;
+			aiIsDraggingRef.current = true;
+			aiDragStartXRef.current = e.clientX;
+			aiDragStartWidthRef.current = aiPanelWidth;
+			if (aiResizeRef.current) {
+				aiResizeRef.current.setPointerCapture(e.pointerId);
+			}
+		},
+		[aiPanelOpen, aiPanelWidth],
+	);
+
+	const handleAiResizeMove = useCallback(
+		(e: React.PointerEvent) => {
+			if (!aiIsDraggingRef.current) return;
+			const delta = aiDragStartXRef.current - e.clientX;
+			const newWidth = Math.max(
+				280,
+				Math.min(700, aiDragStartWidthRef.current + delta),
+			);
+			setAiPanelWidth(newWidth);
+		},
+		[setAiPanelWidth],
+	);
+
+	const handleAiResizeEnd = useCallback(() => {
+		aiIsDraggingRef.current = false;
+	}, []);
+
+	useEffect(() => {
+		const handleGlobalMove = (e: PointerEvent) => {
+			if (!aiIsDraggingRef.current) return;
+			const delta = aiDragStartXRef.current - e.clientX;
+			const newWidth = Math.max(
+				280,
+				Math.min(700, aiDragStartWidthRef.current + delta),
+			);
+			setAiPanelWidth(newWidth);
+		};
+
+		const handleGlobalEnd = () => {
+			aiIsDraggingRef.current = false;
+		};
+
+		if (aiIsDraggingRef.current) {
+			window.addEventListener("pointermove", handleGlobalMove);
+			window.addEventListener("pointerup", handleGlobalEnd);
+			return () => {
+				window.removeEventListener("pointermove", handleGlobalMove);
+				window.removeEventListener("pointerup", handleGlobalEnd);
+			};
+		}
+	}, [setAiPanelWidth]);
 
 	// ---------------------------------------------------------------------------
 	// Derived callbacks
@@ -466,6 +528,18 @@ export function AppShell() {
 			/>
 
 			<MainContent fileTree={fileTree} />
+
+			{vaultPath && aiPanelOpen && (
+				<div
+					ref={aiResizeRef}
+					className="sidebarResizeHandle"
+					onPointerDown={handleAiResizeStart}
+					onPointerMove={handleAiResizeMove}
+					onPointerUp={handleAiResizeEnd}
+					data-window-drag-ignore
+					style={{ cursor: "col-resize" }}
+				/>
+			)}
 
 			{vaultPath && (
 				<AIFloatingHost
