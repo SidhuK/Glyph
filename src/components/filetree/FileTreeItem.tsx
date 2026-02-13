@@ -321,6 +321,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 			<div className="fileTreeRowShell">
 				{isRenaming ? (
 					<div className="fileTreeRow fileTreeRowEditing" style={rowStyle}>
+						<span className="fileTreeLeadingSpacer" aria-hidden="true" />
 						<input
 							ref={inputRef}
 							className="fileTreeRenameInput"
@@ -362,6 +363,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 									animate={isActive ? "active" : "idle"}
 									transition={springTransition}
 								>
+									<span className="fileTreeLeadingSpacer" aria-hidden="true" />
 									<span className="fileTreeName">{displayStem}</span>
 									{extBadge && (
 										<span className="fileTreeExtBadge">{extBadge}</span>

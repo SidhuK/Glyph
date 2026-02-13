@@ -218,6 +218,13 @@
 	transition: background var(--transition-fast);
 }
 
+.fileTreeLeadingSpacer {
+	display: inline-flex;
+	width: 14px;
+	height: 14px;
+	flex-shrink: 0;
+}
+
 .fileTreeChevron:hover {
 	background: var(--bg-active);
 }
