@@ -70,6 +70,7 @@ interface FileTreeDirItemProps {
 	entry: FsEntry;
 	depth: number;
 	isExpanded: boolean;
+	isActive: boolean;
 	isRenaming: boolean;
 	children?: ReactNode;
 	onToggleDir: (dirPath: string) => void;
@@ -86,6 +87,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 	entry,
 	depth,
 	isExpanded,
+	isActive,
 	isRenaming,
 	children,
 	onToggleDir,
@@ -175,7 +177,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 								variants={rowVariants}
 								whileHover="hover"
 								whileTap="tap"
-								animate={isExpanded ? "active" : "idle"}
+								animate={isActive ? "active" : "idle"}
 								transition={springTransition}
 								title={entry.rel_path || entry.name || "Folder"}
 							>

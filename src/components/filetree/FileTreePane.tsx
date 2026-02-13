@@ -19,6 +19,7 @@ interface FileTreePaneProps {
 	childrenByDir: Record<string, FsEntry[] | undefined>;
 	expandedDirs: Set<string>;
 	activeFilePath: string | null;
+	activeDirPath: string | null;
 	onToggleDir: (dirPath: string) => void;
 	onSelectDir: (dirPath: string) => void;
 	onOpenFile: (filePath: string) => void;
@@ -44,6 +45,7 @@ export const FileTreePane = memo(function FileTreePane({
 	childrenByDir,
 	expandedDirs,
 	activeFilePath,
+	activeDirPath,
 	onToggleDir,
 	onSelectDir,
 	onOpenFile,
@@ -125,6 +127,7 @@ export const FileTreePane = memo(function FileTreePane({
 								entry={e}
 								depth={depth}
 								isExpanded={isExpanded}
+								isActive={e.rel_path === activeDirPath}
 								isRenaming={renamingPath === e.rel_path}
 								onToggleDir={onToggleDir}
 								onSelectDir={onSelectDir}

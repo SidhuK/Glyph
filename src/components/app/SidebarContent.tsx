@@ -4,6 +4,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useCallback } from "react";
 import { toast } from "sonner";
 import { useFileTreeContext, useUIContext, useVault } from "../../contexts";
+import { useViewContext } from "../../contexts";
 import { openSettingsWindow } from "../../lib/windows";
 import { parentDir } from "../../utils/path";
 import { FileTreePane } from "../FileTreePane";
@@ -47,6 +48,7 @@ export function SidebarContent({
 }: SidebarContentProps) {
 	// Contexts
 	const { vaultPath } = useVault();
+	const { activeViewDoc } = useViewContext();
 	const {
 		rootEntries,
 		childrenByDir,
@@ -70,6 +72,8 @@ export function SidebarContent({
 	}, [dailyNotesFolder, onOpenDailyNote]);
 
 	const targetDir = activeFilePath ? parentDir(activeFilePath) : "";
+	const activeDirPath =
+		activeViewDoc?.kind === "folder" ? (activeViewDoc.selector ?? "") : null;
 
 	if (!vaultPath) {
 		return (
@@ -122,6 +126,7 @@ export function SidebarContent({
 								childrenByDir={childrenByDir}
 								expandedDirs={expandedDirs}
 								activeFilePath={activeFilePath}
+								activeDirPath={activeDirPath}
 								onToggleDir={onToggleDir}
 								onSelectDir={onSelectDir}
 								onOpenFile={onOpenFile}
