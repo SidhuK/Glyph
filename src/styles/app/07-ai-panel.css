@@ -50,8 +50,7 @@
 	flex: 1;
 	min-height: 0;
 	background: transparent;
-	border-left: 1px solid
-		color-mix(in srgb, var(--border-light) 70%, transparent);
+	border-left: none;
 	overflow: hidden;
 }
 
