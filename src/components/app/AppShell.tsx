@@ -139,6 +139,9 @@ export function AppShell() {
 		"commands" | "search"
 	>("commands");
 	const [paletteInitialQuery, setPaletteInitialQuery] = useState("");
+	const [movePickerSourcePath, setMovePickerSourcePath] = useState<
+		string | null
+	>(null);
 	const [moveTargetDirs, setMoveTargetDirs] = useState<string[]>([]);
 	const [shortcutsHelpOpen, setShortcutsHelpOpen] = useState(false);
 	const resizeRef = useRef<HTMLDivElement>(null);
@@ -489,24 +492,47 @@ export function AppShell() {
 	);
 
 	useEffect(() => {
-		if (!vaultPath || !paletteOpen || !activeFilePath) {
+		const sourcePath = movePickerSourcePath ?? activeFilePath;
+		if (!vaultPath || !paletteOpen || !sourcePath) {
 			setMoveTargetDirs([]);
 			return;
 		}
 		let cancelled = false;
-		void invoke("vault_list_files", {
-			recursive: true,
-			limit: 4000,
-		})
-			.then((entries) => {
+		const listAllDirs = async (): Promise<string[]> => {
+			const out: string[] = [];
+			const seen = new Set<string>([""]);
+			const queue: string[] = [""];
+			let processed = 0;
+			const maxDirs = 5000;
+
+			while (queue.length > 0 && processed < maxDirs) {
+				const dir = queue.shift() ?? "";
+				const entries = await invoke(
+					"vault_list_dir",
+					dir ? { dir } : {},
+				);
+				processed += 1;
+				for (const entry of entries) {
+					if (entry.kind !== "dir") continue;
+					const rel = entry.rel_path;
+					if (seen.has(rel)) continue;
+					seen.add(rel);
+					out.push(rel);
+					queue.push(rel);
+				}
+			}
+			return out;
+		};
+
+		void listAllDirs()
+			.then((dirs) => {
 				if (cancelled) return;
-				const fromDir = parentDir(activeFilePath);
-				const dirs = entries
-					.filter((entry) => entry.kind === "dir")
-					.map((entry) => entry.rel_path)
-					.filter((dir) => dir !== fromDir)
-					.sort((a, b) => a.localeCompare(b));
-				setMoveTargetDirs(dirs);
+				const fromDir = parentDir(sourcePath);
+				setMoveTargetDirs(
+					dirs
+						.filter((dir) => dir !== fromDir)
+						.sort((a, b) => a.localeCompare(b)),
+				);
 			})
 			.catch(() => {
 				if (!cancelled) setMoveTargetDirs([]);
@@ -514,7 +540,13 @@ export function AppShell() {
 		return () => {
 			cancelled = true;
 		};
-	}, [activeFilePath, paletteOpen, vaultPath]);
+	}, [activeFilePath, movePickerSourcePath, paletteOpen, vaultPath]);
+
+	useEffect(() => {
+		if (!paletteOpen) {
+			setMovePickerSourcePath(null);
+		}
+	}, [paletteOpen]);
 
 	// ---------------------------------------------------------------------------
 	// Commands
@@ -545,106 +577,123 @@ export function AppShell() {
 	}, [setPaletteOpen]);
 
 	const commands = useMemo<Command[]>(
-		() => [
-			{
-				id: "open-settings",
-				label: "Settings",
-				shortcut: { meta: true, key: "," },
-				action: () => void openSettingsWindow(),
-			},
-			{
-				id: "open-vault",
-				label: "Open vault",
-				shortcut: { meta: true, key: "o" },
-				action: onOpenVault,
-			},
-			{
-				id: "toggle-sidebar",
-				label: "Toggle sidebar",
-				shortcut: { meta: true, key: "b" },
-				action: () => setSidebarCollapsed(!sidebarCollapsed),
-			},
-			{
-				id: "toggle-ai",
-				label: "Toggle AI",
-				shortcut: { meta: true, shift: true, key: "a" },
-				enabled: Boolean(vaultPath),
-				action: () => setAiPanelOpen((v) => !v),
-			},
-			{
-				id: "ai-attach-current-note",
-				label: "AI: Attach current note",
-				shortcut: { meta: true, alt: true, key: "a" },
-				enabled: Boolean(activeMarkdownTabPath),
-				action: () => void attachCurrentNoteToAi(),
-			},
-			{
-				id: "ai-attach-all-open-notes",
-				label: "AI: Attach all open notes",
-				shortcut: { meta: true, alt: true, shift: true, key: "a" },
-				enabled: openMarkdownTabs.length > 0,
-				action: () => void attachAllOpenNotesToAi(),
-			},
-			{
-				id: "new-note",
-				label: "New note",
-				shortcut: { meta: true, key: "n" },
-				enabled: Boolean(vaultPath),
-				action: () => void fileTree.onNewFile(),
-			},
-			{
-				id: "open-daily-note",
-				label: "Open daily note (today)",
-				shortcut: { meta: true, shift: true, key: "d" },
-				enabled: Boolean(vaultPath) && Boolean(dailyNotesFolder),
-				action: () => void handleOpenDailyNote(),
-			},
-			{
-				id: "save-note",
-				label: "Save",
-				shortcut: { meta: true, key: "s" },
-				enabled: Boolean(vaultPath),
-				action: () => void saveCurrentEditor(),
-			},
-			{
-				id: "close-preview",
-				label: "Close preview",
-				shortcut: { meta: true, key: "w" },
-				enabled: Boolean(vaultPath),
-				action: () => setActivePreviewPath(null),
-			},
-			{
-				id: "quick-open",
-				label: "Quick open",
-				shortcut: { meta: true, key: "p" },
-				enabled: Boolean(vaultPath),
-				action: openSearchPalette,
-			},
-			{
-				id: "move-active-file-root",
-				label: "Move active file to Vault root",
-				enabled: Boolean(vaultPath) && Boolean(activeFilePath),
-				action: async () => {
-					if (!activeFilePath) return;
-					const nextPath = await fileTree.onMovePath(activeFilePath, "");
-					if (nextPath) {
-						await fileTree.openFile(nextPath);
-					}
+		() => {
+			if (movePickerSourcePath) {
+				return [
+					{
+						id: "move-picker-root",
+						label: "Move to / (Vault root)",
+						action: async () => {
+							const nextPath = await fileTree.onMovePath(movePickerSourcePath, "");
+							if (nextPath) {
+								setMovePickerSourcePath(null);
+								await fileTree.openFile(nextPath);
+							}
+						},
+					},
+					...moveTargetDirs.map((dir) => ({
+						id: `move-picker:${dir}`,
+						label: `Move to ${dir}`,
+						action: async () => {
+							const nextPath = await fileTree.onMovePath(movePickerSourcePath, dir);
+							if (nextPath) {
+								setMovePickerSourcePath(null);
+								await fileTree.openFile(nextPath);
+							}
+						},
+					})),
+				];
+			}
+
+			return [
+				{
+					id: "open-settings",
+					label: "Settings",
+					shortcut: { meta: true, key: "," },
+					action: () => void openSettingsWindow(),
 				},
-			},
-			...moveTargetDirs.map((dir) => ({
-				id: `move-active-file:${dir}`,
-				label: `Move active file to ${dir}`,
-				enabled: Boolean(vaultPath) && Boolean(activeFilePath),
-				action: async () => {
-					if (!activeFilePath) return;
-					const nextPath = await fileTree.onMovePath(activeFilePath, dir);
-					if (nextPath) {
-						await fileTree.openFile(nextPath);
-					}
+				{
+					id: "open-vault",
+					label: "Open vault",
+					shortcut: { meta: true, key: "o" },
+					action: onOpenVault,
 				},
-			})),
-		],
+				{
+					id: "toggle-sidebar",
+					label: "Toggle sidebar",
+					shortcut: { meta: true, key: "b" },
+					action: () => setSidebarCollapsed(!sidebarCollapsed),
+				},
+				{
+					id: "toggle-ai",
+					label: "Toggle AI",
+					shortcut: { meta: true, shift: true, key: "a" },
+					enabled: Boolean(vaultPath),
+					action: () => setAiPanelOpen((v) => !v),
+				},
+				{
+					id: "ai-attach-current-note",
+					label: "AI: Attach current note",
+					shortcut: { meta: true, alt: true, key: "a" },
+					enabled: Boolean(activeMarkdownTabPath),
+					action: () => void attachCurrentNoteToAi(),
+				},
+				{
+					id: "ai-attach-all-open-notes",
+					label: "AI: Attach all open notes",
+					shortcut: { meta: true, alt: true, shift: true, key: "a" },
+					enabled: openMarkdownTabs.length > 0,
+					action: () => void attachAllOpenNotesToAi(),
+				},
+				{
+					id: "new-note",
+					label: "New note",
+					shortcut: { meta: true, key: "n" },
+					enabled: Boolean(vaultPath),
+					action: () => void fileTree.onNewFile(),
+				},
+				{
+					id: "open-daily-note",
+					label: "Open daily note (today)",
+					shortcut: { meta: true, shift: true, key: "d" },
+					enabled: Boolean(vaultPath) && Boolean(dailyNotesFolder),
+					action: () => void handleOpenDailyNote(),
+				},
+				{
+					id: "save-note",
+					label: "Save",
+					shortcut: { meta: true, key: "s" },
+					enabled: Boolean(vaultPath),
+					action: () => void saveCurrentEditor(),
+				},
+				{
+					id: "close-preview",
+					label: "Close preview",
+					shortcut: { meta: true, key: "w" },
+					enabled: Boolean(vaultPath),
+					action: () => setActivePreviewPath(null),
+				},
+				{
+					id: "quick-open",
+					label: "Quick open",
+					shortcut: { meta: true, key: "p" },
+					enabled: Boolean(vaultPath),
+					action: openSearchPalette,
+				},
+				{
+					id: "move-active-file",
+					label: "Move to…",
+					enabled: Boolean(vaultPath) && Boolean(activeFilePath),
+					action: () => {
+						if (!activeFilePath) return;
+						setMovePickerSourcePath(activeFilePath);
+						setPaletteInitialTab("commands");
+						setPaletteInitialQuery("");
+						setPaletteOpen(true);
+					},
+				},
+			];
+		},
 		[
 			activeMarkdownTabPath,
 			activeFilePath,
@@ -663,6 +712,7 @@ export function AppShell() {
 			vaultPath,
 			openSearchPalette,
 			moveTargetDirs,
+			movePickerSourcePath,
 		],
 	);
 
