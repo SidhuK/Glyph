@@ -789,6 +789,7 @@ export function AppShell() {
 
 			<MainContent
 				fileTree={fileTree}
+				onOpenFolder={openFolderView}
 				onOpenCommandPalette={openCommandPalette}
 				onOpenSearchPalette={openSearchPalette}
 			/>

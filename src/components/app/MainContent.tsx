@@ -16,12 +16,14 @@ interface MainContentProps {
 		openFile: (relPath: string) => Promise<void>;
 		openNonMarkdownExternally: (relPath: string) => Promise<void>;
 	};
+	onOpenFolder: (dirPath: string) => Promise<void>;
 	onOpenCommandPalette: () => void;
 	onOpenSearchPalette: () => void;
 }
 
 export function MainContent({
 	fileTree,
+	onOpenFolder,
 	onOpenCommandPalette,
 	onOpenSearchPalette,
 }: MainContentProps) {
@@ -194,12 +196,15 @@ export function MainContent({
 	const content = useMemo(() => {
 		if (!viewerPath) return null;
 		if (viewerPath.toLowerCase().endsWith(".md")) {
-			return (
-				<MarkdownEditorPane
-					relPath={viewerPath}
-					onDirtyChange={(dirty) =>
-						setDirtyByPath((prev) =>
-							prev[viewerPath] === dirty
+				return (
+					<MarkdownEditorPane
+						relPath={viewerPath}
+						onOpenFolder={(dirPath) => {
+							void onOpenFolder(dirPath);
+						}}
+						onDirtyChange={(dirty) =>
+							setDirtyByPath((prev) =>
+								prev[viewerPath] === dirty
 								? prev
 								: { ...prev, [viewerPath]: dirty },
 						)
@@ -220,7 +225,7 @@ export function MainContent({
 			return <div className="canvasEmpty">{canvasLoadingMessage}</div>;
 		}
 		return null;
-	}, [canvasLoadingMessage, closeTab, fileTree, viewerPath]);
+	}, [canvasLoadingMessage, closeTab, fileTree, onOpenFolder, viewerPath]);
 
 	if (!vaultPath) {
 		if (!settingsLoaded) {

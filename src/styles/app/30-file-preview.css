@@ -97,6 +97,74 @@
 	position: relative;
 }
 
+.markdownEditorPathRow {
+	position: sticky;
+	top: 0;
+	z-index: 5;
+	display: flex;
+	justify-content: center;
+	padding: 2px 12px 0;
+	margin-bottom: var(--space-2);
+	opacity: 0;
+	transform: translateY(-4px);
+	pointer-events: none;
+	transition: opacity var(--transition-fast), transform var(--transition-fast);
+}
+
+.markdownEditorContent:hover .markdownEditorPathRow {
+	opacity: 1;
+	transform: translateY(0);
+	pointer-events: auto;
+}
+
+.markdownEditorPathRow .folderBreadcrumb {
+	max-width: min(760px, calc(100% - 64px));
+	padding: 0;
+	margin: 0 auto;
+	background: transparent;
+	border: 0;
+	box-shadow: none;
+}
+
+.markdownEditorPathRow .folderBreadcrumbIcon {
+	display: none;
+}
+
+.markdownEditorPathRow .folderBreadcrumbTrail {
+	gap: 4px;
+}
+
+.markdownEditorPathRow .folderCrumbBtn {
+	padding: 0;
+	border: 0;
+	border-radius: 0;
+	background: transparent;
+	color: var(--text-tertiary);
+	font-size: 10px;
+	line-height: 1.2;
+}
+
+.markdownEditorPathRow .folderCrumbBtn:hover {
+	background: transparent;
+	color: var(--text-primary);
+	text-decoration: underline;
+}
+
+.markdownEditorPathRow .folderCrumbBtn.isCurrent {
+	background: transparent;
+	border: 0;
+	color: var(--text-secondary);
+}
+
+.markdownEditorPathRow .folderCrumbSep {
+	opacity: 0.55;
+}
+
+.markdownEditorPathRow .folderCrumbSep svg {
+	width: 10px;
+	height: 10px;
+}
+
 .markdownEditorFloatActions {
 	position: absolute;
 	top: 8px;

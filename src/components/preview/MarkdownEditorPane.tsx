@@ -4,15 +4,18 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useEditorRegistration } from "../../contexts";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { invoke } from "../../lib/tauri";
+import { parentDir } from "../../utils/path";
 import {
 	type CanvasInlineEditorMode,
 	CanvasNoteInlineEditor,
 } from "../CanvasNoteInlineEditor";
+import { FolderBreadcrumb } from "../FolderBreadcrumb";
 import { Edit, Eye, RefreshCw, Save } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 
 interface MarkdownEditorPaneProps {
 	relPath: string;
+	onOpenFolder: (dirPath: string) => void;
 	onDirtyChange?: (dirty: boolean) => void;
 }
 
@@ -20,6 +23,7 @@ const markdownDocCache = new Map<string, string>();
 
 export function MarkdownEditorPane({
 	relPath,
+	onOpenFolder,
 	onDirtyChange,
 }: MarkdownEditorPaneProps) {
 	const [text, setText] = useState(() => markdownDocCache.get(relPath) ?? "");
@@ -92,6 +96,8 @@ export function MarkdownEditorPane({
 	useEffect(() => {
 		onDirtyChange?.(isDirty);
 	}, [onDirtyChange, isDirty]);
+
+	const currentDir = useMemo(() => parentDir(relPath), [relPath]);
 
 	return (
 		<section className="filePreviewPane markdownEditorPane">
@@ -196,6 +202,9 @@ export function MarkdownEditorPane({
 
 			{!error ? (
 				<div className="filePreviewTextWrap markdownEditorContent">
+					<div className="markdownEditorPathRow">
+						<FolderBreadcrumb dir={currentDir} onOpenFolder={onOpenFolder} />
+					</div>
 					<div className="markdownEditorCenter">
 						<CanvasNoteInlineEditor
 							key={relPath}
