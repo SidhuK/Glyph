@@ -35,18 +35,20 @@ export function DailyNotesSettingsPane() {
 					setError("No vault is currently open.");
 					return;
 				}
-				const vaultPrefix = currentVaultPath.endsWith("/")
-					? currentVaultPath
-					: `${currentVaultPath}/`;
+				const normSelected = selected.replace(/\\/g, "/");
+				const normVault = currentVaultPath.replace(/\\/g, "/");
+				const vaultPrefix = normVault.endsWith("/")
+					? normVault
+					: `${normVault}/`;
 				if (
-					selected !== currentVaultPath &&
-					!selected.startsWith(vaultPrefix)
+					normSelected !== normVault &&
+					!normSelected.startsWith(vaultPrefix)
 				) {
 					setError("Selected folder must be inside the current vault.");
 					return;
 				}
-				const relativePath = selected
-					.slice(currentVaultPath.length)
+				const relativePath = normSelected
+					.slice(normVault.length)
 					.replace(/^\/+/, "");
 				await setDailyNotesFolder(relativePath || null);
 				setCurrentFolder(relativePath || null);

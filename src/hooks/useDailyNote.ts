@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
 	getDailyNoteContent,
 	getDailyNotePath,
@@ -19,9 +19,12 @@ export interface UseDailyNoteReturn {
 export function useDailyNote(options: UseDailyNoteOptions): UseDailyNoteReturn {
 	const { onOpenFile, setError } = options;
 	const [isCreating, setIsCreating] = useState(false);
+	const lockRef = useRef(false);
 
 	const openOrCreateDailyNote = useCallback(
 		async (folder: string): Promise<string | null> => {
+			if (lockRef.current) return null;
+			lockRef.current = true;
 			setIsCreating(true);
 			try {
 				const todayDate = getTodayDateString();
@@ -58,6 +61,7 @@ export function useDailyNote(options: UseDailyNoteOptions): UseDailyNoteReturn {
 				setError(message);
 				return null;
 			} finally {
+				lockRef.current = false;
 				setIsCreating(false);
 			}
 		},
