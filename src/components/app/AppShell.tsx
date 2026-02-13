@@ -548,6 +548,13 @@ export function AppShell() {
 				action: () => void fileTree.onNewFile(),
 			},
 			{
+				id: "open-daily-note",
+				label: "Open daily note (today)",
+				shortcut: { meta: true, shift: true, key: "d" },
+				enabled: Boolean(vaultPath) && Boolean(dailyNotesFolder),
+				action: () => void handleOpenDailyNote(),
+			},
+			{
 				id: "save-note",
 				label: "Save",
 				shortcut: { meta: true, key: "s" },
@@ -577,7 +584,9 @@ export function AppShell() {
 			activeMarkdownTabPath,
 			attachAllOpenNotesToAi,
 			attachCurrentNoteToAi,
+			dailyNotesFolder,
 			fileTree,
+			handleOpenDailyNote,
 			onOpenVault,
 			openMarkdownTabs.length,
 			saveCurrentEditor,

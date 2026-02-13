@@ -93,6 +93,14 @@ export const SHORTCUTS: ShortcutDefinition[] = [
 		context: "vault",
 	},
 	{
+		id: "open-daily-note",
+		shortcut: { meta: true, shift: true, key: "d" },
+		label: "Open Daily Note",
+		description: "Open or create today's daily note",
+		category: "file",
+		context: "vault",
+	},
+	{
 		id: "save-note",
 		shortcut: { meta: true, key: "s" },
 		label: "Save Note",
