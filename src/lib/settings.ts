@@ -16,9 +16,16 @@ function asThemeMode(value: unknown): ThemeMode {
 		: "system";
 }
 
+export interface RecentFile {
+	path: string;
+	vaultPath: string;
+	openedAt: number;
+}
+
 export interface AppSettings {
 	currentVaultPath: string | null;
 	recentVaults: string[];
+	recentFiles: RecentFile[];
 	ui: {
 		aiSidebarWidth: number | null;
 		theme: ThemeMode;
@@ -31,6 +38,7 @@ export interface AppSettings {
 const KEYS = {
 	currentVaultPath: "vault.currentPath",
 	recentVaults: "vault.recent",
+	recentFiles: "files.recent",
 	aiSidebarWidth: "ui.aiSidebarWidth",
 	theme: "ui.theme",
 	dailyNotesFolder: "dailyNotes.folder",
@@ -41,12 +49,31 @@ export async function reloadFromDisk(): Promise<void> {
 	await store.reload();
 }
 
+function isRecentFileArray(value: unknown): value is RecentFile[] {
+	return (
+		Array.isArray(value) &&
+		value.every(
+			(item) =>
+				typeof item === "object" &&
+				item !== null &&
+				"path" in item &&
+				"vaultPath" in item &&
+				"openedAt" in item &&
+				typeof (item as RecentFile).path === "string" &&
+				typeof (item as RecentFile).vaultPath === "string" &&
+				typeof (item as RecentFile).openedAt === "number",
+		)
+	);
+}
+
 export async function loadSettings(): Promise<AppSettings> {
 	await ensureLoaded();
 	const currentVaultPath =
 		(await store.get<string | null>(KEYS.currentVaultPath)) ?? null;
 	const recentVaults =
 		(await store.get<string[] | null>(KEYS.recentVaults)) ?? [];
+	const rawRecentFiles = await store.get<unknown>(KEYS.recentFiles);
+	const recentFiles = isRecentFileArray(rawRecentFiles) ? rawRecentFiles : [];
 	const aiSidebarWidth =
 		(await store.get<number | null>(KEYS.aiSidebarWidth)) ?? null;
 	const rawTheme = await store.get<unknown>(KEYS.theme);
@@ -56,6 +83,7 @@ export async function loadSettings(): Promise<AppSettings> {
 	return {
 		currentVaultPath,
 		recentVaults: Array.isArray(recentVaults) ? recentVaults : [],
+		recentFiles,
 		ui: {
 			aiSidebarWidth:
 				typeof aiSidebarWidth === "number" && Number.isFinite(aiSidebarWidth)
@@ -111,5 +139,35 @@ export async function setDailyNotesFolder(
 	} else {
 		await store.set(KEYS.dailyNotesFolder, folder);
 	}
+	await store.save();
+}
+
+export async function getRecentFiles(): Promise<RecentFile[]> {
+	await ensureLoaded();
+	const raw = await store.get<unknown>(KEYS.recentFiles);
+	return isRecentFileArray(raw) ? raw : [];
+}
+
+export async function addRecentFile(
+	path: string,
+	vaultPath: string,
+): Promise<void> {
+	await ensureLoaded();
+	const raw = await store.get<unknown>(KEYS.recentFiles);
+	const recent = isRecentFileArray(raw) ? raw : [];
+	const filtered = recent.filter(
+		(r) => r.path !== path || r.vaultPath !== vaultPath,
+	);
+	const next: RecentFile[] = [
+		{ path, vaultPath, openedAt: Date.now() },
+		...filtered,
+	].slice(0, 20);
+	await store.set(KEYS.recentFiles, next);
+	await store.save();
+}
+
+export async function clearRecentFiles(): Promise<void> {
+	await ensureLoaded();
+	await store.set(KEYS.recentFiles, []);
 	await store.save();
 }

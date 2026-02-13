@@ -933,9 +933,11 @@
 	flex: 1;
 	min-height: 0;
 	display: flex;
+	flex-direction: column;
 	align-items: center;
 	justify-content: center;
 	padding: var(--space-5);
+	overflow-y: auto;
 }
 
 .mainEmptyActions {
@@ -992,4 +994,71 @@
 	border: 1px solid var(--border-default);
 	background: color-mix(in srgb, var(--bg-primary) 90%, transparent);
 	color: var(--text-secondary);
+}
+
+.mainRecentFiles {
+	margin-top: var(--space-8);
+	width: min(320px, 100%);
+}
+
+.mainRecentFilesTitle {
+	font-size: var(--text-xs);
+	font-weight: var(--font-semibold);
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+	color: var(--text-tertiary);
+	margin-bottom: var(--space-3);
+	text-align: center;
+}
+
+.mainRecentFilesList {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-1);
+}
+
+.mainRecentFileItem {
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+	padding: var(--space-2) var(--space-3);
+	border-radius: var(--radius-lg);
+	border: 1px solid transparent;
+	background: transparent;
+	color: var(--text-primary);
+	cursor: pointer;
+	transition: background var(--transition-fast), border-color
+		var(--transition-fast);
+	text-align: left;
+	width: 100%;
+}
+
+.mainRecentFileItem:hover {
+	background: color-mix(in srgb, var(--bg-hover) 86%, var(--bg-secondary));
+	border-color: var(--border-light);
+}
+
+.mainRecentFileIcon {
+	flex-shrink: 0;
+	color: var(--text-tertiary);
+}
+
+.mainRecentFileName {
+	font-size: var(--text-sm);
+	font-weight: var(--font-medium);
+	flex-shrink: 0;
+	max-width: 140px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.mainRecentFilePath {
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	flex: 1;
+	text-align: right;
 }

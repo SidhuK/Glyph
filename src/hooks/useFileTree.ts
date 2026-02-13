@@ -464,7 +464,8 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 					if (kind !== "dir") return prev;
 					const next = new Set<string>();
 					for (const expanded of prev) {
-						if (expanded === target || expanded.startsWith(`${target}/`)) continue;
+						if (expanded === target || expanded.startsWith(`${target}/`))
+							continue;
 						next.add(expanded);
 					}
 					return next;
@@ -479,7 +480,10 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 				setChildrenByDir((prev) => {
 					const next: Record<string, FsEntry[] | undefined> = {};
 					for (const [key, entries] of Object.entries(prev)) {
-						if (kind === "dir" && (key === target || key.startsWith(`${target}/`))) {
+						if (
+							kind === "dir" &&
+							(key === target || key.startsWith(`${target}/`))
+						) {
 							continue;
 						}
 						next[key] = entries?.filter(
@@ -505,7 +509,8 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 				}
 				if (
 					activePreviewPath === target ||
-					(kind === "dir" && Boolean(activePreviewPath?.startsWith(`${target}/`)))
+					(kind === "dir" &&
+						Boolean(activePreviewPath?.startsWith(`${target}/`)))
 				) {
 					setActivePreviewPath(null);
 				}

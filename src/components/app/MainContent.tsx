@@ -1,3 +1,4 @@
+import { motion } from "motion/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
 	useFileTreeContext,
@@ -5,8 +6,10 @@ import {
 	useVault,
 	useViewContext,
 } from "../../contexts";
+import { useRecentFiles } from "../../hooks/useRecentFiles";
 import { formatShortcutPartsForPlatform } from "../../lib/shortcuts/platform";
 import { isInAppPreviewable } from "../../utils/filePreview";
+import { FileText } from "../Icons";
 import { FilePreviewPane } from "../preview/FilePreviewPane";
 import { MarkdownEditorPane } from "../preview/MarkdownEditorPane";
 import { WelcomeScreen } from "./WelcomeScreen";
@@ -41,6 +44,7 @@ export function MainContent({
 
 	const { canvasLoadingMessage } = useViewContext();
 	const { activeFilePath, setActiveFilePath } = useFileTreeContext();
+	const { recentFiles, addRecentFile } = useRecentFiles(vaultPath, 7);
 
 	const {
 		activePreviewPath,
@@ -94,6 +98,12 @@ export function MainContent({
 			: null;
 		setActiveMarkdownTabPath(activeMarkdown);
 	}, [activeTabPath, openTabs, setActiveMarkdownTabPath, setOpenMarkdownTabs]);
+
+	useEffect(() => {
+		if (activeTabPath && vaultPath) {
+			void addRecentFile(activeTabPath, vaultPath);
+		}
+	}, [activeTabPath, vaultPath, addRecentFile]);
 
 	const closeTab = useCallback((path: string) => {
 		setOpenTabs((prev) => {
@@ -196,15 +206,15 @@ export function MainContent({
 	const content = useMemo(() => {
 		if (!viewerPath) return null;
 		if (viewerPath.toLowerCase().endsWith(".md")) {
-				return (
-					<MarkdownEditorPane
-						relPath={viewerPath}
-						onOpenFolder={(dirPath) => {
-							void onOpenFolder(dirPath);
-						}}
-						onDirtyChange={(dirty) =>
-							setDirtyByPath((prev) =>
-								prev[viewerPath] === dirty
+			return (
+				<MarkdownEditorPane
+					relPath={viewerPath}
+					onOpenFolder={(dirPath) => {
+						void onOpenFolder(dirPath);
+					}}
+					onDirtyChange={(dirty) =>
+						setDirtyByPath((prev) =>
+							prev[viewerPath] === dirty
 								? prev
 								: { ...prev, [viewerPath]: dirty },
 						)
@@ -330,6 +340,33 @@ export function MainContent({
 									</span>
 								</button>
 							</div>
+							{recentFiles.length > 0 && (
+								<div className="mainRecentFiles">
+									<div className="mainRecentFilesTitle">Recently opened</div>
+									<div className="mainRecentFilesList">
+										{recentFiles.map((file, index) => (
+											<motion.button
+												key={`${file.vaultPath}:${file.path}`}
+												type="button"
+												className="mainRecentFileItem"
+												onClick={() => setActiveTabPath(file.path)}
+												initial={{ opacity: 0, y: 8 }}
+												animate={{ opacity: 1, y: 0 }}
+												transition={{
+													delay: 0.05 + index * 0.04,
+													duration: 0.22,
+												}}
+											>
+												<FileText size={14} className="mainRecentFileIcon" />
+												<span className="mainRecentFileName">
+													{file.path.split("/").pop() ?? file.path}
+												</span>
+												<span className="mainRecentFilePath">{file.path}</span>
+											</motion.button>
+										))}
+									</div>
+								</div>
+							)}
 						</div>
 					)}
 				</div>
