@@ -312,3 +312,8 @@ export const Files = (props: IconProps) => (
 export const Tags = (props: IconProps) => (
 	<HugeiconsIcon icon={Icons.Hash} {...props} />
 );
+
+// Daily Notes icon
+export const Calendar = (props: IconProps) => (
+	<HugeiconsIcon icon={Icons.Calendar03Icon} {...props} />
+);

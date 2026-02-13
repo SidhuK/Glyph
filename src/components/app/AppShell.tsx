@@ -8,6 +8,7 @@ import {
 	useViewContext,
 } from "../../contexts";
 import { useCommandShortcuts } from "../../hooks/useCommandShortcuts";
+import { useDailyNote } from "../../hooks/useDailyNote";
 import { useFileTree } from "../../hooks/useFileTree";
 
 import { useMenuListeners } from "../../hooks/useMenuListeners";
@@ -80,7 +81,11 @@ function aiNoteFileName(): string {
 }
 
 function normalizeRelPath(path: string): string {
-	return path.replace(/\\/g, "/").replace(/^\/+/, "").replace(/\/+$/, "").trim();
+	return path
+		.replace(/\\/g, "/")
+		.replace(/^\/+/, "")
+		.replace(/\/+$/, "")
+		.trim();
 }
 
 function parentDir(path: string): string {
@@ -120,6 +125,7 @@ export function AppShell() {
 		setActivePreviewPath,
 		openMarkdownTabs,
 		activeMarkdownTabPath,
+		dailyNotesFolder,
 	} = useUIContext();
 
 	const { saveCurrentEditor } = useEditorContext();
@@ -277,6 +283,25 @@ export function AppShell() {
 		getActiveFolderDir,
 	});
 	const { loadDir } = fileTree;
+
+	const { openOrCreateDailyNote, isCreating: isDailyNoteCreating } =
+		useDailyNote({
+			onOpenFile: (path) => fileTree.openFile(path),
+			setError,
+		});
+
+	const handleOpenDailyNote = useCallback(async () => {
+		if (!dailyNotesFolder) {
+			return;
+		}
+		try {
+			await openOrCreateDailyNote(dailyNotesFolder);
+		} catch (e) {
+			setError(
+				`Failed to open daily note: ${e instanceof Error ? e.message : String(e)}`,
+			);
+		}
+	}, [dailyNotesFolder, openOrCreateDailyNote, setError]);
 	const fsRefreshQueueRef = useRef<Set<string>>(new Set());
 	const fsRefreshTimerRef = useRef<number | null>(null);
 
@@ -633,6 +658,8 @@ export function AppShell() {
 				}}
 				sidebarCollapsed={sidebarCollapsed}
 				onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+				onOpenDailyNote={handleOpenDailyNote}
+				isDailyNoteCreating={isDailyNoteCreating}
 			/>
 
 			<div

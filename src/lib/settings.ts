@@ -23,6 +23,9 @@ export interface AppSettings {
 		aiSidebarWidth: number | null;
 		theme: ThemeMode;
 	};
+	dailyNotes: {
+		folder: string | null;
+	};
 }
 
 const KEYS = {
@@ -30,7 +33,13 @@ const KEYS = {
 	recentVaults: "vault.recent",
 	aiSidebarWidth: "ui.aiSidebarWidth",
 	theme: "ui.theme",
+	dailyNotesFolder: "dailyNotes.folder",
 } as const;
+
+export async function reloadFromDisk(): Promise<void> {
+	await ensureLoaded();
+	await store.reload();
+}
 
 export async function loadSettings(): Promise<AppSettings> {
 	await ensureLoaded();
@@ -42,6 +51,8 @@ export async function loadSettings(): Promise<AppSettings> {
 		(await store.get<number | null>(KEYS.aiSidebarWidth)) ?? null;
 	const rawTheme = await store.get<unknown>(KEYS.theme);
 	const theme = asThemeMode(rawTheme);
+	const dailyNotesFolder =
+		(await store.get<string | null>(KEYS.dailyNotesFolder)) ?? null;
 	return {
 		currentVaultPath,
 		recentVaults: Array.isArray(recentVaults) ? recentVaults : [],
@@ -51,6 +62,9 @@ export async function loadSettings(): Promise<AppSettings> {
 					? aiSidebarWidth
 					: null,
 			theme,
+		},
+		dailyNotes: {
+			folder: dailyNotesFolder,
 		},
 	};
 }
@@ -80,5 +94,22 @@ export async function setAiSidebarWidth(width: number): Promise<void> {
 	await ensureLoaded();
 	if (!Number.isFinite(width)) return;
 	await store.set(KEYS.aiSidebarWidth, Math.floor(width));
+	await store.save();
+}
+
+export async function getDailyNotesFolder(): Promise<string | null> {
+	await ensureLoaded();
+	return (await store.get<string | null>(KEYS.dailyNotesFolder)) ?? null;
+}
+
+export async function setDailyNotesFolder(
+	folder: string | null,
+): Promise<void> {
+	await ensureLoaded();
+	if (folder === null) {
+		await store.delete(KEYS.dailyNotesFolder);
+	} else {
+		await store.set(KEYS.dailyNotesFolder, folder);
+	}
 	await store.save();
 }

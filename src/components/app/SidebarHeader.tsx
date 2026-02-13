@@ -44,7 +44,9 @@ export function SidebarHeader({
 						type="button"
 						variant="ghost"
 						size="icon-sm"
-						aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+						aria-label={
+							sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"
+						}
 						aria-pressed={!sidebarCollapsed}
 						data-window-drag-ignore
 						onClick={onToggleSidebar}

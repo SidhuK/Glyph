@@ -1,6 +1,7 @@
 import "./App.css";
 import { Settings as SettingsIcon } from "./components/Icons";
 import { AiSettingsPane } from "./components/settings/AiSettingsPane";
+import { DailyNotesSettingsPane } from "./components/settings/DailyNotesSettingsPane";
 import { VaultSettingsPane } from "./components/settings/VaultSettingsPane";
 import { onWindowDragMouseDown } from "./utils/window";
 
@@ -27,6 +28,7 @@ export default function SettingsApp() {
 
 			<main className="settingsMain">
 				<VaultSettingsPane />
+				<DailyNotesSettingsPane />
 				<AiSettingsPane />
 			</main>
 		</div>

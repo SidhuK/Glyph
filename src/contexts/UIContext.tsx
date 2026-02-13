@@ -1,3 +1,4 @@
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import {
 	type ReactNode,
 	createContext,
@@ -11,6 +12,7 @@ import {
 import { useSearch } from "../hooks/useSearch";
 import {
 	loadSettings,
+	reloadFromDisk,
 	setAiSidebarWidth as saveAiSidebarWidth,
 } from "../lib/settings";
 import type { SearchResult } from "../lib/tauri";
@@ -44,6 +46,7 @@ export interface UIContextValue {
 	setOpenMarkdownTabs: React.Dispatch<React.SetStateAction<string[]>>;
 	activeMarkdownTabPath: string | null;
 	setActiveMarkdownTabPath: (path: string | null) => void;
+	dailyNotesFolder: string | null;
 }
 
 const UIContext = createContext<UIContextValue | null>(null);
@@ -68,6 +71,9 @@ export function UIProvider({ children }: { children: ReactNode }) {
 
 	const [aiPanelOpen, setAiPanelOpen] = useState(false);
 	const [aiPanelWidth, setAiPanelWidthState] = useState(380);
+	const [dailyNotesFolder, setDailyNotesFolderState] = useState<string | null>(
+		null,
+	);
 
 	useEffect(() => {
 		if (vaultPath) setSidebarCollapsed(false);
@@ -79,16 +85,41 @@ export function UIProvider({ children }: { children: ReactNode }) {
 
 	useEffect(() => {
 		let cancelled = false;
-		void loadSettings().then((s) => {
+		const loadAndApplySettings = async () => {
+			const s = await loadSettings();
 			if (cancelled) return;
 			if (typeof s.ui.aiSidebarWidth === "number") {
 				setAiPanelWidthState(s.ui.aiSidebarWidth);
 			}
+			if (s.dailyNotes?.folder !== undefined) {
+				setDailyNotesFolderState(s.dailyNotes.folder);
+			}
+		};
+		void loadAndApplySettings();
+
+		const win = getCurrentWindow();
+		const unlisten = win.onFocusChanged(({ payload: focused }) => {
+			if (focused && !cancelled) {
+				void reloadFromDisk().then(() => loadAndApplySettings());
+			}
 		});
+
 		return () => {
 			cancelled = true;
+			unlisten.then((fn) => fn()).catch(() => {});
 		};
 	}, []);
+
+	useEffect(() => {
+		if (!vaultPath) return;
+		void reloadFromDisk().then(() =>
+			loadSettings().then((s) => {
+				if (s.dailyNotes?.folder !== undefined) {
+					setDailyNotesFolderState(s.dailyNotes.folder);
+				}
+			}),
+		);
+	}, [vaultPath]);
 
 	const setAiPanelWidth = useCallback((width: number) => {
 		setAiPanelWidthState(width);
@@ -153,6 +184,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			setOpenMarkdownTabs,
 			activeMarkdownTabPath,
 			setActiveMarkdownTabPath,
+			dailyNotesFolder,
 		}),
 		[
 			sidebarCollapsed,
@@ -175,6 +207,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			handleSetActivePreviewPath,
 			openMarkdownTabs,
 			activeMarkdownTabPath,
+			dailyNotesFolder,
 		],
 	);
 

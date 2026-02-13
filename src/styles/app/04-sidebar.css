@@ -2,6 +2,7 @@
    LEFT SIDEBAR - Floating Navigation Panel
    ───────────────────────────────────────────────────────────────────────────── */
 .sidebar {
+	--sidebar-traffic-light-pad: 78px;
 	display: flex;
 	flex-direction: column;
 	width: var(--sidebar-width);
@@ -48,7 +49,7 @@
 	justify-content: space-between;
 	height: calc(var(--header-height) - 4px);
 	padding: var(--space-1) var(--space-3) 0 var(--space-4);
-	padding-left: 78px; /* Space for macOS traffic lights */
+	padding-left: var(--sidebar-traffic-light-pad);
 	border-bottom: none;
 	flex-shrink: 0;
 	position: relative;

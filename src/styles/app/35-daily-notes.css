@@ -1,0 +1,42 @@
+.sidebarDailyNotesBtn {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-2);
+	padding: var(--space-1) var(--space-3);
+	font-size: var(--text-xs);
+	color: var(--text-secondary);
+	background: none;
+	border: none;
+	border-radius: var(--radius-md);
+	cursor: pointer;
+	transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.sidebarDailyNotesBtn:hover {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}
+
+.sidebarDailyNotesBtn:disabled {
+	opacity: 0.5;
+	pointer-events: none;
+}
+
+.sidebarDailyNotesBtn .dailyNotesLabel {
+	font-weight: var(--font-medium);
+}
+
+.dailyNotesFolderField {
+	padding-top: var(--space-2);
+}
+
+.dailyNotesFolderPath {
+	padding-top: var(--space-2);
+	font-size: var(--text-xs);
+	color: var(--text-secondary);
+	word-break: break-all;
+}
+
+.dailyNotesError {
+	margin-top: var(--space-2);
+}

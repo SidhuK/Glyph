@@ -1,11 +1,13 @@
 import * as Icons from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, motion } from "motion/react";
+import { useCallback } from "react";
+import { toast } from "sonner";
 import { useFileTreeContext, useUIContext, useVault } from "../../contexts";
 import { openSettingsWindow } from "../../lib/windows";
 import { parentDir } from "../../utils/path";
 import { FileTreePane } from "../FileTreePane";
-import { Files, FolderPlus, Plus, Tags } from "../Icons";
+import { Calendar, Files, FolderPlus, Plus, Tags } from "../Icons";
 import { TagsPane } from "../TagsPane";
 import { Button } from "../ui/shadcn/button";
 import {
@@ -26,6 +28,8 @@ interface SidebarContentProps {
 	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
 	onRenameDir: (dirPath: string, nextName: string) => Promise<string | null>;
 	onSelectTag: (tag: string) => void;
+	onOpenDailyNote: () => void;
+	isDailyNoteCreating: boolean;
 }
 
 export function SidebarContent({
@@ -36,6 +40,8 @@ export function SidebarContent({
 	onNewFolderInDir,
 	onRenameDir,
 	onSelectTag,
+	onOpenDailyNote,
+	isDailyNoteCreating,
 }: SidebarContentProps) {
 	// Contexts
 	const { vaultPath } = useVault();
@@ -48,7 +54,18 @@ export function SidebarContent({
 		tagsError,
 		refreshTags,
 	} = useFileTreeContext();
-	const { sidebarViewMode, setSidebarViewMode } = useUIContext();
+	const { sidebarViewMode, setSidebarViewMode, dailyNotesFolder } =
+		useUIContext();
+
+	const handleDailyNoteClick = useCallback(() => {
+		if (!dailyNotesFolder) {
+			toast.error("Daily Notes folder not configured", {
+				description: "Go to Settings to configure a folder for daily notes.",
+			});
+			return;
+		}
+		onOpenDailyNote();
+	}, [dailyNotesFolder, onOpenDailyNote]);
 
 	const targetDir = activeFilePath ? parentDir(activeFilePath) : "";
 
@@ -138,8 +155,8 @@ export function SidebarContent({
 			<div
 				className="sidebarFooter"
 				style={{
-					display: "flex",
-					justifyContent: "space-between",
+					display: "grid",
+					gridTemplateColumns: "auto 1fr auto",
 					alignItems: "center",
 				}}
 			>
@@ -152,41 +169,54 @@ export function SidebarContent({
 				>
 					<HugeiconsIcon icon={Icons.Settings05Icon} size={14} />
 				</Button>
-				{sidebarViewMode === "files" && (
-					<DropdownMenu>
-						<DropdownMenuTrigger asChild>
-							<Button
-								type="button"
-								variant="ghost"
-								size="icon-sm"
-								title={`Add in ${targetDir || "vault root"}`}
+				<button
+					type="button"
+					className="sidebarDailyNotesBtn"
+					onClick={handleDailyNoteClick}
+					disabled={isDailyNoteCreating}
+					title="Open today's daily note"
+					style={{ justifySelf: "center" }}
+				>
+					<Calendar size={14} />
+					<span className="dailyNotesLabel">Daily Note</span>
+				</button>
+				<div style={{ justifySelf: "end" }}>
+					{sidebarViewMode === "files" && (
+						<DropdownMenu>
+							<DropdownMenuTrigger asChild>
+								<Button
+									type="button"
+									variant="ghost"
+									size="icon-sm"
+									title={`Add in ${targetDir || "vault root"}`}
+								>
+									<Plus size={14} />
+								</Button>
+							</DropdownMenuTrigger>
+							<DropdownMenuContent
+								align="end"
+								side="top"
+								className="fileTreeCreateMenu"
 							>
-								<Plus size={14} />
-							</Button>
-						</DropdownMenuTrigger>
-						<DropdownMenuContent
-							align="end"
-							side="top"
-							className="fileTreeCreateMenu"
-						>
-							<DropdownMenuItem
-								className="fileTreeCreateMenuItem"
-								onSelect={() => void onNewFileInDir(targetDir)}
-							>
-								<Plus size={14} />
-								Add file
-							</DropdownMenuItem>
-							<DropdownMenuSeparator className="fileTreeCreateMenuSeparator" />
-							<DropdownMenuItem
-								className="fileTreeCreateMenuItem"
-								onSelect={() => void onNewFolderInDir(targetDir)}
-							>
-								<FolderPlus size={14} />
-								Add folder
-							</DropdownMenuItem>
-						</DropdownMenuContent>
-					</DropdownMenu>
-				)}
+								<DropdownMenuItem
+									className="fileTreeCreateMenuItem"
+									onSelect={() => void onNewFileInDir(targetDir)}
+								>
+									<Plus size={14} />
+									Add file
+								</DropdownMenuItem>
+								<DropdownMenuSeparator className="fileTreeCreateMenuSeparator" />
+								<DropdownMenuItem
+									className="fileTreeCreateMenuItem"
+									onSelect={() => void onNewFolderInDir(targetDir)}
+								>
+									<FolderPlus size={14} />
+									Add folder
+								</DropdownMenuItem>
+							</DropdownMenuContent>
+						</DropdownMenu>
+					)}
+				</div>
 			</div>
 		</>
 	);

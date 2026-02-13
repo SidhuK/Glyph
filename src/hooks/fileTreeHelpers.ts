@@ -47,7 +47,10 @@ export function normalizeEntries(entries: FsEntry[]): FsEntry[] {
 	return [...byPath.values()].sort(compareEntries);
 }
 
-export function areEntriesEqual(a: FsEntry[] | undefined, b: FsEntry[]): boolean {
+export function areEntriesEqual(
+	a: FsEntry[] | undefined,
+	b: FsEntry[],
+): boolean {
 	if (!a) return false;
 	if (a.length !== b.length) return false;
 	for (let i = 0; i < a.length; i += 1) {

@@ -15,6 +15,8 @@ interface SidebarProps {
 	onOpenCommandPalette: () => void;
 	sidebarCollapsed: boolean;
 	onToggleSidebar: () => void;
+	onOpenDailyNote: () => void;
+	isDailyNoteCreating: boolean;
 }
 
 export function Sidebar({
@@ -28,6 +30,8 @@ export function Sidebar({
 	onOpenCommandPalette,
 	sidebarCollapsed,
 	onToggleSidebar,
+	onOpenDailyNote,
+	isDailyNoteCreating,
 }: SidebarProps) {
 	// Contexts
 	const { onOpenVault } = useVault();
@@ -77,6 +81,8 @@ export function Sidebar({
 							onNewFolderInDir={onNewFolderInDir}
 							onRenameDir={onRenameDir}
 							onSelectTag={onSelectTag}
+							onOpenDailyNote={onOpenDailyNote}
+							isDailyNoteCreating={isDailyNoteCreating}
 						/>
 					</motion.div>
 				)}
