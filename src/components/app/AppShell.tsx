@@ -582,7 +582,7 @@ export function AppShell() {
 				return [
 					{
 						id: "move-picker-root",
-						label: "Move to / (Vault root)",
+						label: "/",
 						action: async () => {
 							const nextPath = await fileTree.onMovePath(movePickerSourcePath, "");
 							if (nextPath) {
@@ -593,7 +593,7 @@ export function AppShell() {
 					},
 					...moveTargetDirs.map((dir) => ({
 						id: `move-picker:${dir}`,
-						label: `Move to ${dir}`,
+						label: `/${dir}`,
 						action: async () => {
 							const nextPath = await fileTree.onMovePath(movePickerSourcePath, dir);
 							if (nextPath) {
