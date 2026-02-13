@@ -228,23 +228,33 @@
    ───────────────────────────────────────────────────────────────────────────── */
 .sidebarResizeHandle {
 	position: relative;
-	width: 4px;
+	width: 8px;
 	cursor: col-resize;
 	user-select: none;
 	-webkit-user-select: none;
 	background: transparent;
-	transition: background-color 150ms ease-out;
+	transition: none;
 
 	/* Expanded hit area for easier dragging */
 	margin-left: -2px;
 	margin-right: -2px;
-	width: 8px;
+}
+
+.sidebarResizeHandle::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 50%;
+	width: 1px;
+	transform: translateX(-50%);
+	background: color-mix(in srgb, var(--border-light) 75%, transparent);
 }
 
 .sidebarResizeHandle:hover {
-	background: var(--interactive-accent, rgba(59, 130, 246, 0.2));
+	background: transparent;
 }
 
 .sidebarResizeHandle:active {
-	background: var(--interactive-accent, rgba(59, 130, 246, 0.3));
+	background: transparent;
 }
