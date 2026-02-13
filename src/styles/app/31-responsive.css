@@ -62,4 +62,9 @@
 	.welcomeHeroTitle {
 		font-size: 2rem;
 	}
+
+	.mainEmptyActions {
+		grid-template-columns: 1fr;
+		width: min(210px, 100%);
+	}
 }

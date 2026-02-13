@@ -5,6 +5,7 @@ import {
 	useVault,
 	useViewContext,
 } from "../../contexts";
+import { formatShortcutPartsForPlatform } from "../../lib/shortcuts/platform";
 import { isInAppPreviewable } from "../../utils/filePreview";
 import { FilePreviewPane } from "../preview/FilePreviewPane";
 import { MarkdownEditorPane } from "../preview/MarkdownEditorPane";
@@ -15,9 +16,15 @@ interface MainContentProps {
 		openFile: (relPath: string) => Promise<void>;
 		openNonMarkdownExternally: (relPath: string) => Promise<void>;
 	};
+	onOpenCommandPalette: () => void;
+	onOpenSearchPalette: () => void;
 }
 
-export function MainContent({ fileTree }: MainContentProps) {
+export function MainContent({
+	fileTree,
+	onOpenCommandPalette,
+	onOpenSearchPalette,
+}: MainContentProps) {
 	const {
 		info,
 		vaultPath,
@@ -170,6 +177,15 @@ export function MainContent({ fileTree }: MainContentProps) {
 	}, [activeTabPath, closeActiveTab, closeAllTabs, openTabs]);
 
 	const viewerPath = activeTabPath;
+	const commandShortcutParts = useMemo(
+		() => formatShortcutPartsForPlatform({ meta: true, key: "k" }),
+		[],
+	);
+	const searchShortcutParts = useMemo(
+		() => formatShortcutPartsForPlatform({ meta: true, key: "f" }),
+		[],
+	);
+
 	const fileName = useCallback((path: string) => {
 		const parts = path.split("/").filter(Boolean);
 		return parts[parts.length - 1] ?? path;
@@ -229,55 +245,88 @@ export function MainContent({ fileTree }: MainContentProps) {
 		<main className="mainArea">
 			<div className="canvasWrapper">
 				<div className="canvasPaneHost">
-					<div className="mainTabsBar">
-						<div className="mainTabsSide" />
-						<div className="mainTabsCenter">
-							<div className="mainTabsStrip">
-								{openTabs.map((path) => {
-									const isActive = path === activeTabPath;
-									const isDirty = Boolean(dirtyByPath[path]);
-									return (
-										<button
-											key={path}
-											type="button"
-											className={`mainTab ${isActive ? "is-active" : ""}`}
-											onClick={() => setActiveTabPath(path)}
-											title={path}
-											draggable
-											onDragStart={() => setDragTabPath(path)}
-											onDragEnd={() => setDragTabPath(null)}
-											onDragOver={(event) => event.preventDefault()}
-											onDrop={(event) => {
-												event.preventDefault();
-												if (dragTabPath) reorderTabs(dragTabPath, path);
-												setDragTabPath(null);
-											}}
-										>
-											{isDirty ? (
-												<span className="mainTabDirty" aria-hidden />
-											) : null}
-											<span className="mainTabLabel">{fileName(path)}</span>
+					{openTabs.length > 0 ? (
+						<div className="mainTabsBar">
+							<div className="mainTabsSide" />
+							<div className="mainTabsCenter">
+								<div className="mainTabsStrip">
+									{openTabs.map((path) => {
+										const isActive = path === activeTabPath;
+										const isDirty = Boolean(dirtyByPath[path]);
+										return (
 											<button
+												key={path}
 												type="button"
-												className="mainTabClose"
-												onClick={(event) => {
-													event.stopPropagation();
-													closeTab(path);
+												className={`mainTab ${isActive ? "is-active" : ""}`}
+												onClick={() => setActiveTabPath(path)}
+												title={path}
+												draggable
+												onDragStart={() => setDragTabPath(path)}
+												onDragEnd={() => setDragTabPath(null)}
+												onDragOver={(event) => event.preventDefault()}
+												onDrop={(event) => {
+													event.preventDefault();
+													if (dragTabPath) reorderTabs(dragTabPath, path);
+													setDragTabPath(null);
 												}}
-												aria-label={`Close ${fileName(path)}`}
 											>
-												<span className="mainTabCloseGlyph" aria-hidden>
-													×
-												</span>
+												{isDirty ? (
+													<span className="mainTabDirty" aria-hidden />
+												) : null}
+												<span className="mainTabLabel">{fileName(path)}</span>
+												<button
+													type="button"
+													className="mainTabClose"
+													onClick={(event) => {
+														event.stopPropagation();
+														closeTab(path);
+													}}
+													aria-label={`Close ${fileName(path)}`}
+												>
+													<span className="mainTabCloseGlyph" aria-hidden>
+														×
+													</span>
+												</button>
 											</button>
-										</button>
-									);
-								})}
+										);
+									})}
+								</div>
+							</div>
+							<div className="mainTabsSide" />
+						</div>
+					) : null}
+					{content ?? (
+						<div className="mainEmptyState">
+							<div className="mainEmptyActions">
+								<button
+									type="button"
+									className="mainEmptyAction"
+									onClick={onOpenCommandPalette}
+									title="List commands"
+								>
+									<span className="mainEmptyActionLabel">List commands</span>
+									<span className="mainEmptyShortcut" aria-hidden>
+										{commandShortcutParts.map((part) => (
+											<kbd key={part}>{part}</kbd>
+										))}
+									</span>
+								</button>
+								<button
+									type="button"
+									className="mainEmptyAction"
+									onClick={onOpenSearchPalette}
+									title="Search files"
+								>
+									<span className="mainEmptyActionLabel">Search files</span>
+									<span className="mainEmptyShortcut" aria-hidden>
+										{searchShortcutParts.map((part) => (
+											<kbd key={part}>{part}</kbd>
+										))}
+									</span>
+								</button>
 							</div>
 						</div>
-						<div className="mainTabsSide" />
-					</div>
-					{content}
+					)}
 				</div>
 			</div>
 		</main>

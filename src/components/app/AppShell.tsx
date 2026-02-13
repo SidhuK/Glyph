@@ -499,6 +499,18 @@ export function AppShell() {
 		[],
 	);
 
+	const openCommandPalette = useCallback(() => {
+		setPaletteInitialTab("commands");
+		setPaletteInitialQuery("");
+		setPaletteOpen(true);
+	}, [setPaletteOpen]);
+
+	const openSearchPalette = useCallback(() => {
+		setPaletteInitialTab("search");
+		setPaletteInitialQuery("");
+		setPaletteOpen(true);
+	}, [setPaletteOpen]);
+
 	const commands = useMemo<Command[]>(
 		() => [
 			{
@@ -573,11 +585,7 @@ export function AppShell() {
 				label: "Quick open",
 				shortcut: { meta: true, key: "p" },
 				enabled: Boolean(vaultPath),
-				action: () => {
-					setPaletteInitialTab("search");
-					setPaletteInitialQuery("");
-					setPaletteOpen(true);
-				},
+				action: openSearchPalette,
 			},
 		],
 		[
@@ -591,27 +599,19 @@ export function AppShell() {
 			openMarkdownTabs.length,
 			saveCurrentEditor,
 			setAiPanelOpen,
-			setPaletteOpen,
 			setActivePreviewPath,
 			setSidebarCollapsed,
 			sidebarCollapsed,
 			vaultPath,
+			openSearchPalette,
 		],
 	);
 
 	useCommandShortcuts({
 		commands,
 		paletteOpen,
-		onOpenPalette: () => {
-			setPaletteInitialTab("commands");
-			setPaletteInitialQuery("");
-			setPaletteOpen(true);
-		},
-		onOpenPaletteSearch: () => {
-			setPaletteInitialTab("search");
-			setPaletteInitialQuery("");
-			setPaletteOpen(true);
-		},
+		onOpenPalette: openCommandPalette,
+		onOpenPaletteSearch: openSearchPalette,
 		onClosePalette: () => setPaletteOpen(false),
 		openPaletteShortcuts,
 		openSearchShortcuts,
@@ -660,11 +660,7 @@ export function AppShell() {
 				onRenameDir={(p, name) => fileTree.onRenameDir(p, name)}
 				onToggleDir={fileTree.toggleDir}
 				onSelectTag={(t) => openTagSearchPalette(t)}
-				onOpenCommandPalette={() => {
-					setPaletteInitialTab("commands");
-					setPaletteInitialQuery("");
-					setPaletteOpen(true);
-				}}
+				onOpenCommandPalette={openCommandPalette}
 				sidebarCollapsed={sidebarCollapsed}
 				onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
 				onOpenDailyNote={handleOpenDailyNote}
@@ -681,7 +677,11 @@ export function AppShell() {
 				style={{ cursor: sidebarCollapsed ? "default" : "col-resize" }}
 			/>
 
-			<MainContent fileTree={fileTree} />
+			<MainContent
+				fileTree={fileTree}
+				onOpenCommandPalette={openCommandPalette}
+				onOpenSearchPalette={openSearchPalette}
+			/>
 
 			{vaultPath && aiPanelOpen && (
 				<div
