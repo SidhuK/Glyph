@@ -29,6 +29,7 @@ interface FileTreePaneProps {
 		nextName: string,
 		kind?: "dir" | "file",
 	) => Promise<string | null>;
+	onDeletePath: (path: string, kind: "dir" | "file") => Promise<boolean>;
 }
 
 const springTransition = {
@@ -49,6 +50,7 @@ export const FileTreePane = memo(function FileTreePane({
 	onNewFileInDir,
 	onNewFolderInDir,
 	onRenameDir,
+	onDeletePath,
 }: FileTreePaneProps) {
 	const [renamingPath, setRenamingPath] = useState<string | null>(null);
 
@@ -86,6 +88,16 @@ export const FileTreePane = memo(function FileTreePane({
 		[onRenameDir],
 	);
 
+	const handleDeletePath = useCallback(
+		async (path: string, kind: "dir" | "file") => {
+			const noun = kind === "dir" ? "folder" : "file";
+			const confirmed = window.confirm(`Delete this ${noun}?`);
+			if (!confirmed) return;
+			await onDeletePath(path, kind);
+		},
+		[onDeletePath],
+	);
+
 	const renderEntries = (entries: FsEntry[], parentDepth: number) => {
 		if (entries.length === 0) return null;
 		const listDepth = parentDepth + 1;
@@ -118,6 +130,7 @@ export const FileTreePane = memo(function FileTreePane({
 								onSelectDir={onSelectDir}
 								onNewFileInDir={onNewFileInDir}
 								onNewFolderInDir={handleCreateFolder}
+								onDeletePath={handleDeletePath}
 								onStartRename={() => setRenamingPath(e.rel_path)}
 								onCommitRename={handleCommitDirRename}
 								onCancelRename={() => setRenamingPath(null)}
@@ -141,6 +154,7 @@ export const FileTreePane = memo(function FileTreePane({
 							onCommitRename={handleCommitFileRename}
 							onCancelRename={() => setRenamingPath(null)}
 							parentDirPath={parentDir(e.rel_path)}
+							onDeletePath={handleDeletePath}
 						/>
 					);
 				})}

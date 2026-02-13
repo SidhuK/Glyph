@@ -27,6 +27,7 @@ interface SidebarContentProps {
 	onNewFileInDir: (dirPath: string) => void;
 	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
 	onRenameDir: (dirPath: string, nextName: string) => Promise<string | null>;
+	onDeletePath: (path: string, kind: "dir" | "file") => Promise<boolean>;
 	onSelectTag: (tag: string) => void;
 	onOpenDailyNote: () => void;
 	isDailyNoteCreating: boolean;
@@ -39,6 +40,7 @@ export function SidebarContent({
 	onNewFileInDir,
 	onNewFolderInDir,
 	onRenameDir,
+	onDeletePath,
 	onSelectTag,
 	onOpenDailyNote,
 	isDailyNoteCreating,
@@ -126,6 +128,7 @@ export function SidebarContent({
 								onNewFileInDir={onNewFileInDir}
 								onNewFolderInDir={onNewFolderInDir}
 								onRenameDir={onRenameDir}
+								onDeletePath={onDeletePath}
 							/>
 						</motion.div>
 					)}

@@ -11,6 +11,7 @@ interface SidebarProps {
 	onNewFileInDir: (dirPath: string) => void;
 	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
 	onRenameDir: (dirPath: string, nextName: string) => Promise<string | null>;
+	onDeletePath: (path: string, kind: "dir" | "file") => Promise<boolean>;
 	onSelectTag: (tag: string) => void;
 	onOpenCommandPalette: () => void;
 	sidebarCollapsed: boolean;
@@ -26,6 +27,7 @@ export function Sidebar({
 	onNewFileInDir,
 	onNewFolderInDir,
 	onRenameDir,
+	onDeletePath,
 	onSelectTag,
 	onOpenCommandPalette,
 	sidebarCollapsed,
@@ -80,6 +82,7 @@ export function Sidebar({
 							onNewFileInDir={onNewFileInDir}
 							onNewFolderInDir={onNewFolderInDir}
 							onRenameDir={onRenameDir}
+							onDeletePath={onDeletePath}
 							onSelectTag={onSelectTag}
 							onOpenDailyNote={onOpenDailyNote}
 							isDailyNoteCreating={isDailyNoteCreating}

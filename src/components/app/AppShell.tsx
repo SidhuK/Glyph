@@ -106,6 +106,7 @@ export function AppShell() {
 	const fileTreeCtx = useFileTreeContext();
 	const {
 		expandedDirs,
+		activeFilePath,
 		setRootEntries,
 		setChildrenByDir,
 		setExpandedDirs,
@@ -122,6 +123,7 @@ export function AppShell() {
 		setPaletteOpen,
 		aiPanelOpen,
 		setAiPanelOpen,
+		activePreviewPath,
 		setActivePreviewPath,
 		openMarkdownTabs,
 		activeMarkdownTabPath,
@@ -137,6 +139,7 @@ export function AppShell() {
 		"commands" | "search"
 	>("commands");
 	const [paletteInitialQuery, setPaletteInitialQuery] = useState("");
+	const [moveTargetDirs, setMoveTargetDirs] = useState<string[]>([]);
 	const [shortcutsHelpOpen, setShortcutsHelpOpen] = useState(false);
 	const resizeRef = useRef<HTMLDivElement>(null);
 	const dragStartXRef = useRef(0);
@@ -278,6 +281,8 @@ export function AppShell() {
 		setRootEntries,
 		setActiveFilePath,
 		setActivePreviewPath,
+		activeFilePath,
+		activePreviewPath,
 		setError,
 		loadAndBuildFolderView,
 		getActiveFolderDir,
@@ -483,6 +488,34 @@ export function AppShell() {
 		[],
 	);
 
+	useEffect(() => {
+		if (!vaultPath || !paletteOpen || !activeFilePath) {
+			setMoveTargetDirs([]);
+			return;
+		}
+		let cancelled = false;
+		void invoke("vault_list_files", {
+			recursive: true,
+			limit: 4000,
+		})
+			.then((entries) => {
+				if (cancelled) return;
+				const fromDir = parentDir(activeFilePath);
+				const dirs = entries
+					.filter((entry) => entry.kind === "dir")
+					.map((entry) => entry.rel_path)
+					.filter((dir) => dir !== fromDir)
+					.sort((a, b) => a.localeCompare(b));
+				setMoveTargetDirs(dirs);
+			})
+			.catch(() => {
+				if (!cancelled) setMoveTargetDirs([]);
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, [activeFilePath, paletteOpen, vaultPath]);
+
 	// ---------------------------------------------------------------------------
 	// Commands
 	// ---------------------------------------------------------------------------
@@ -587,9 +620,34 @@ export function AppShell() {
 				enabled: Boolean(vaultPath),
 				action: openSearchPalette,
 			},
+			{
+				id: "move-active-file-root",
+				label: "Move active file to Vault root",
+				enabled: Boolean(vaultPath) && Boolean(activeFilePath),
+				action: async () => {
+					if (!activeFilePath) return;
+					const nextPath = await fileTree.onMovePath(activeFilePath, "");
+					if (nextPath) {
+						await fileTree.openFile(nextPath);
+					}
+				},
+			},
+			...moveTargetDirs.map((dir) => ({
+				id: `move-active-file:${dir}`,
+				label: `Move active file to ${dir}`,
+				enabled: Boolean(vaultPath) && Boolean(activeFilePath),
+				action: async () => {
+					if (!activeFilePath) return;
+					const nextPath = await fileTree.onMovePath(activeFilePath, dir);
+					if (nextPath) {
+						await fileTree.openFile(nextPath);
+					}
+				},
+			})),
 		],
 		[
 			activeMarkdownTabPath,
+			activeFilePath,
 			attachAllOpenNotesToAi,
 			attachCurrentNoteToAi,
 			dailyNotesFolder,
@@ -604,6 +662,7 @@ export function AppShell() {
 			sidebarCollapsed,
 			vaultPath,
 			openSearchPalette,
+			moveTargetDirs,
 		],
 	);
 
@@ -658,6 +717,7 @@ export function AppShell() {
 				onNewFileInDir={(p) => void fileTree.onNewFileInDir(p)}
 				onNewFolderInDir={(p) => fileTree.onNewFolderInDir(p)}
 				onRenameDir={(p, name) => fileTree.onRenameDir(p, name)}
+				onDeletePath={(p, kind) => fileTree.onDeletePath(p, kind)}
 				onToggleDir={fileTree.toggleDir}
 				onSelectTag={(t) => openTagSearchPalette(t)}
 				onOpenCommandPalette={openCommandPalette}

@@ -295,6 +295,35 @@ pub async fn vault_rename_path(
 }
 
 #[tauri::command(rename_all = "snake_case")]
+pub async fn vault_delete_path(
+    state: State<'_, VaultState>,
+    path: String,
+    recursive: Option<bool>,
+) -> Result<(), String> {
+    let root = state.current_root()?;
+    tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
+        let rel = PathBuf::from(&path);
+        if rel.as_os_str().is_empty() {
+            return Err("path is required".to_string());
+        }
+        deny_hidden_rel_path(&rel)?;
+        let abs = paths::join_under(&root, &rel)?;
+        let meta = std::fs::metadata(&abs).map_err(|e| e.to_string())?;
+        if meta.is_dir() {
+            if recursive.unwrap_or(false) {
+                std::fs::remove_dir_all(abs).map_err(|e| e.to_string())
+            } else {
+                std::fs::remove_dir(abs).map_err(|e| e.to_string())
+            }
+        } else {
+            std::fs::remove_file(abs).map_err(|e| e.to_string())
+        }
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command(rename_all = "snake_case")]
 pub async fn vault_relativize_path(
     state: State<'_, VaultState>,
     abs_path: String,

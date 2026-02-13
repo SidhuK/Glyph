@@ -12,6 +12,7 @@ import {
 	fileTitleFromRelPath,
 	normalizeEntries,
 	normalizeEntry,
+	normalizeRelPath,
 	rewritePrefix,
 	shouldRefreshActiveFolderView,
 	withInsertedEntry,
@@ -31,6 +32,8 @@ export interface UseFileTreeResult {
 		nextName: string,
 		kind?: "dir" | "file",
 	) => Promise<string | null>;
+	onDeletePath: (path: string, kind: "dir" | "file") => Promise<boolean>;
+	onMovePath: (fromPath: string, toDirPath: string) => Promise<string | null>;
 }
 
 export interface UseFileTreeDeps {
@@ -42,6 +45,8 @@ export interface UseFileTreeDeps {
 	setRootEntries: React.Dispatch<React.SetStateAction<FsEntry[]>>;
 	setActiveFilePath: (path: string | null) => void;
 	setActivePreviewPath: (path: string | null) => void;
+	activeFilePath: string | null;
+	activePreviewPath: string | null;
 	setError: (error: string) => void;
 	loadAndBuildFolderView: (dir: string) => Promise<void>;
 	getActiveFolderDir: () => string | null;
@@ -55,6 +60,8 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		setRootEntries,
 		setActiveFilePath,
 		setActivePreviewPath,
+		activeFilePath,
+		activePreviewPath,
 		setError,
 		loadAndBuildFolderView,
 		getActiveFolderDir,
@@ -184,6 +191,21 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 			if (activeDir === null) return;
 			if (!shouldRefreshActiveFolderView(activeDir, createdInDir)) return;
 			await loadAndBuildFolderView(activeDir);
+		},
+		[getActiveFolderDir, loadAndBuildFolderView],
+	);
+
+	const refreshActiveFolderViewAfterPathChange = useCallback(
+		async (changedPath: string) => {
+			const activeDir = getActiveFolderDir();
+			if (activeDir === null) return;
+			if (
+				activeDir === changedPath ||
+				activeDir.startsWith(`${changedPath}/`) ||
+				changedPath.startsWith(`${activeDir}/`)
+			) {
+				await loadAndBuildFolderView(activeDir);
+			}
 		},
 		[getActiveFolderDir, loadAndBuildFolderView],
 	);
@@ -427,6 +449,155 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		],
 	);
 
+	const onDeletePath = useCallback(
+		async (path: string, kind: "dir" | "file") => {
+			const target = normalizeRelPath(path);
+			if (!target) return false;
+			setError("");
+			try {
+				await invoke("vault_delete_path", {
+					path: target,
+					recursive: kind === "dir",
+				});
+				const parent = parentDir(target);
+				setExpandedDirs((prev) => {
+					if (kind !== "dir") return prev;
+					const next = new Set<string>();
+					for (const expanded of prev) {
+						if (expanded === target || expanded.startsWith(`${target}/`)) continue;
+						next.add(expanded);
+					}
+					return next;
+				});
+				setRootEntries((prev) =>
+					prev.filter(
+						(entry) =>
+							entry.rel_path !== target &&
+							(kind !== "dir" || !entry.rel_path.startsWith(`${target}/`)),
+					),
+				);
+				setChildrenByDir((prev) => {
+					const next: Record<string, FsEntry[] | undefined> = {};
+					for (const [key, entries] of Object.entries(prev)) {
+						if (kind === "dir" && (key === target || key.startsWith(`${target}/`))) {
+							continue;
+						}
+						next[key] = entries?.filter(
+							(entry) =>
+								entry.rel_path !== target &&
+								(kind !== "dir" || !entry.rel_path.startsWith(`${target}/`)),
+						);
+					}
+					return next;
+				});
+				loadedDirsRef.current = new Set(
+					[...loadedDirsRef.current].filter(
+						(dir) =>
+							dir !== target &&
+							(kind !== "dir" || !dir.startsWith(`${target}/`)),
+					),
+				);
+				if (
+					activeFilePath === target ||
+					(kind === "dir" && Boolean(activeFilePath?.startsWith(`${target}/`)))
+				) {
+					setActiveFilePath(null);
+				}
+				if (
+					activePreviewPath === target ||
+					(kind === "dir" && Boolean(activePreviewPath?.startsWith(`${target}/`)))
+				) {
+					setActivePreviewPath(null);
+				}
+				await loadDir(parent, true);
+				await refreshActiveFolderViewAfterPathChange(target);
+				return true;
+			} catch (e) {
+				setError(extractErrorMessage(e));
+				return false;
+			}
+		},
+		[
+			loadDir,
+			refreshActiveFolderViewAfterPathChange,
+			setActiveFilePath,
+			setActivePreviewPath,
+			setChildrenByDir,
+			setError,
+			setExpandedDirs,
+			setRootEntries,
+			activeFilePath,
+			activePreviewPath,
+		],
+	);
+
+	const onMovePath = useCallback(
+		async (fromPath: string, toDirPath: string) => {
+			const from = normalizeRelPath(fromPath);
+			const toDir = normalizeRelPath(toDirPath);
+			if (!from) return null;
+			const fileName = from.split("/").pop() ?? "";
+			if (!fileName) return null;
+			const nextPath = toDir ? `${toDir}/${fileName}` : fileName;
+			if (nextPath === from) return nextPath;
+			setError("");
+			try {
+				await invoke("vault_rename_path", {
+					from_path: from,
+					to_path: nextPath,
+				});
+				const fromParent = parentDir(from);
+				const toParent = parentDir(nextPath);
+				const nextName = nextPath.split("/").pop() ?? fileName;
+				setChildrenByDir((prev) => {
+					const next: Record<string, FsEntry[] | undefined> = {};
+					for (const [key, value] of Object.entries(prev)) {
+						next[key] = value?.map((entry) =>
+							entry.rel_path === from
+								? { ...entry, name: nextName, rel_path: nextPath }
+								: entry,
+						);
+					}
+					return next;
+				});
+				setRootEntries((prev) =>
+					prev.map((entry) =>
+						entry.rel_path === from
+							? { ...entry, name: nextName, rel_path: nextPath }
+							: entry,
+					),
+				);
+				if (activeFilePath === from) {
+					setActiveFilePath(nextPath);
+				}
+				if (activePreviewPath === from) {
+					setActivePreviewPath(nextPath);
+				}
+				await Promise.all([
+					loadDir(fromParent, true),
+					loadDir(toParent, true),
+					refreshActiveFolderViewAfterPathChange(from),
+					refreshActiveFolderViewAfterPathChange(toParent),
+				]);
+				return nextPath;
+			} catch (e) {
+				setError(extractErrorMessage(e));
+				return null;
+			}
+		},
+		[
+			loadDir,
+			refreshActiveFolderViewAfterPathChange,
+			setActiveFilePath,
+			setActivePreviewPath,
+			setChildrenByDir,
+			setError,
+			setRootEntries,
+			activeFilePath,
+			activePreviewPath,
+		],
+	);
+
 	return {
 		loadDir,
 		toggleDir,
@@ -437,5 +608,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		onNewFileInDir,
 		onNewFolderInDir,
 		onRenameDir,
+		onDeletePath,
+		onMovePath,
 	};
 }

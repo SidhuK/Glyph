@@ -255,6 +255,7 @@ pub fn run() {
             vault_fs::read_write::vault_write_text,
             vault_fs::read_write::vault_create_dir,
             vault_fs::read_write::vault_rename_path,
+            vault_fs::read_write::vault_delete_path,
             vault_fs::read_write::vault_resolve_abs_path,
             vault_fs::read_write::vault_relativize_path,
             lattice_fs::lattice_read_text,

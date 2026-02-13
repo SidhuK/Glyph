@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from "motion/react";
 import type { CSSProperties, MouseEvent, ReactNode } from "react";
 import { memo, useEffect, useRef, useState } from "react";
 import type { FsEntry } from "../../lib/tauri";
-import { FolderPlus, Plus } from "../Icons";
+import { FolderPlus, Plus, Trash2 } from "../Icons";
 import {
 	ContextMenu,
 	ContextMenuContent,
@@ -79,6 +79,7 @@ interface FileTreeDirItemProps {
 	onCancelRename: () => void;
 	onNewFileInDir: (dirPath: string) => unknown;
 	onNewFolderInDir: (dirPath: string) => unknown;
+	onDeletePath: (path: string, kind: "dir" | "file") => void;
 }
 
 export const FileTreeDirItem = memo(function FileTreeDirItem({
@@ -94,6 +95,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 	onCancelRename,
 	onNewFileInDir,
 	onNewFolderInDir,
+	onDeletePath,
 }: FileTreeDirItemProps) {
 	const paddingLeft = 10 + depth * 10;
 	const rowStyle = {
@@ -207,6 +209,14 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 							>
 								Rename
 							</ContextMenuItem>
+							<ContextMenuSeparator className="fileTreeCreateMenuSeparator" />
+							<ContextMenuItem
+								className="fileTreeCreateMenuItem"
+								onSelect={() => onDeletePath(entry.rel_path, "dir")}
+							>
+								<Trash2 size={14} />
+								Delete folder
+							</ContextMenuItem>
 						</ContextMenuContent>
 					</ContextMenu>
 				)}
@@ -240,6 +250,7 @@ interface FileTreeFileItemProps {
 	onCommitRename: (path: string, nextName: string) => Promise<void> | void;
 	onCancelRename: () => void;
 	parentDirPath: string;
+	onDeletePath: (path: string, kind: "dir" | "file") => void;
 }
 
 export const FileTreeFileItem = memo(function FileTreeFileItem({
@@ -254,6 +265,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 	onCommitRename,
 	onCancelRename,
 	parentDirPath,
+	onDeletePath,
 }: FileTreeFileItemProps) {
 	const paddingLeft = 10 + depth * 10;
 	const rowStyle = {
@@ -382,6 +394,14 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 								>
 									<FolderPlus size={14} />
 									Add folder
+								</ContextMenuItem>
+								<ContextMenuSeparator className="fileTreeCreateMenuSeparator" />
+								<ContextMenuItem
+									className="fileTreeCreateMenuItem"
+									onSelect={() => onDeletePath(entry.rel_path, "file")}
+								>
+									<Trash2 size={14} />
+									Delete file
 								</ContextMenuItem>
 							</ContextMenuContent>
 						</ContextMenu>
