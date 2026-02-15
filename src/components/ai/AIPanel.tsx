@@ -62,6 +62,12 @@ function messageText(message: UIMessage): string {
 
 type AddTrigger = { start: number; query: string };
 type ToolPhase = "call" | "result" | "error";
+type ResponsePhase =
+	| "idle"
+	| "submitted"
+	| "tooling"
+	| "streaming"
+	| "finalizing";
 
 interface ToolStatusEvent {
 	tool: string;
@@ -109,6 +115,9 @@ const AI_MODES: Array<{ value: AiAssistantMode; label: string; hint: string }> =
 			hint: "Agentic mode with tools and file actions.",
 		},
 	];
+
+const SLOW_START_MS = 3000;
+const FINALIZING_MS = 280;
 
 function normalizePath(path: string | null | undefined): string {
 	return (path ?? "")
@@ -160,6 +169,8 @@ export function AIPanel({
 		null,
 	);
 	const [toolTimeline, setToolTimeline] = useState<ToolTimelineEvent[]>([]);
+	const [responsePhase, setResponsePhase] = useState<ResponsePhase>("idle");
+	const [showSlowStart, setShowSlowStart] = useState(false);
 	const [assistantActionError, setAssistantActionError] = useState("");
 	const [historyExpanded, setHistoryExpanded] = useState(false);
 	const composerInputRef = useRef<HTMLTextAreaElement | null>(null);
@@ -177,6 +188,20 @@ export function AIPanel({
 	}, []);
 
 	const activeToolJobIdRef = useRef<string | null>(null);
+	const slowStartTimerRef = useRef<number | null>(null);
+	const finalizingTimerRef = useRef<number | null>(null);
+
+	const clearSlowStartTimer = useCallback(() => {
+		if (slowStartTimerRef.current == null) return;
+		window.clearTimeout(slowStartTimerRef.current);
+		slowStartTimerRef.current = null;
+	}, []);
+
+	const clearFinalizingTimer = useCallback(() => {
+		if (finalizingTimerRef.current == null) return;
+		window.clearTimeout(finalizingTimerRef.current);
+		finalizingTimerRef.current = null;
+	}, []);
 
 	useEffect(() => {
 		setContextSearch(panelQuery);
@@ -257,6 +282,9 @@ export function AIPanel({
 
 		if (phase === "call") {
 			setActiveTools((prev) => (prev.includes(tool) ? prev : [...prev, tool]));
+			setResponsePhase((prev) =>
+				prev === "streaming" ? "streaming" : "tooling",
+			);
 		} else {
 			setActiveTools((prev) => prev.filter((name) => name !== tool));
 		}
@@ -299,6 +327,22 @@ export function AIPanel({
 	const isAwaitingResponse =
 		chat.status === "submitted" || chat.status === "streaming";
 
+	const phaseStatusText = useMemo(() => {
+		if (responsePhase === "submitted") {
+			return showSlowStart ? "Still thinking…" : "Preparing response…";
+		}
+		if (responsePhase === "tooling") {
+			return showSlowStart ? "Still working…" : "Working with tools…";
+		}
+		if (responsePhase === "streaming") {
+			return activeTools.length > 0 ? toolStatusText : "Writing response…";
+		}
+		if (responsePhase === "finalizing") {
+			return "Finalizing…";
+		}
+		return "";
+	}, [activeTools.length, responsePhase, showSlowStart, toolStatusText]);
+
 	const canSend =
 		!isAwaitingResponse &&
 		Boolean(input.trim()) &&
@@ -317,12 +361,17 @@ export function AIPanel({
 		if (!canSend) return;
 		const text = context.resolveMentionsFromInput(input);
 		if (!text) return;
+		clearFinalizingTimer();
+		setShowSlowStart(false);
+		setResponsePhase("submitted");
 		setToolTimeline([]);
 		activeToolJobIdRef.current = null;
 		setInput("");
 		scheduleComposerInputResize();
 		const built = await context.ensurePayload();
 		if (context.payloadError) {
+			setResponsePhase("idle");
+			setShowSlowStart(false);
 			setInput(text);
 			scheduleComposerInputResize();
 			return;
@@ -345,10 +394,17 @@ export function AIPanel({
 		async (text: string) => {
 			const trimmed = text.trim();
 			if (!trimmed || !profiles.activeProfileId) return false;
+			clearFinalizingTimer();
+			setShowSlowStart(false);
+			setResponsePhase("submitted");
 			setToolTimeline([]);
 			activeToolJobIdRef.current = null;
 			const built = await context.ensurePayload();
-			if (context.payloadError) return false;
+			if (context.payloadError) {
+				setResponsePhase("idle");
+				setShowSlowStart(false);
+				return false;
+			}
 			void chat.sendMessage(
 				{ text: trimmed },
 				{
@@ -363,7 +419,13 @@ export function AIPanel({
 			);
 			return true;
 		},
-		[aiAssistantMode, chat, context, profiles.activeProfileId],
+		[
+			aiAssistantMode,
+			chat,
+			clearFinalizingTimer,
+			context,
+			profiles.activeProfileId,
+		],
 	);
 
 	const handleCopyAssistantResponse = useCallback(async (text: string) => {
@@ -502,16 +564,25 @@ export function AIPanel({
 		if (chat.status === "streaming") {
 			chat.stop();
 		}
+		clearSlowStartTimer();
+		clearFinalizingTimer();
 		setInput("");
 		scheduleComposerInputResize();
 		setToolTimeline([]);
 		setAssistantActionError("");
+		setShowSlowStart(false);
+		setResponsePhase("idle");
 		setActiveTools([]);
 		setLastToolEvent(null);
 		activeToolJobIdRef.current = null;
 		chat.setMessages([]);
 		chat.clearError();
-	}, [chat, scheduleComposerInputResize]);
+	}, [
+		chat,
+		clearFinalizingTimer,
+		clearSlowStartTimer,
+		scheduleComposerInputResize,
+	]);
 
 	const threadRef = useRef<HTMLDivElement>(null);
 	const prevStatusRef = useRef(chat.status);
@@ -523,12 +594,81 @@ export function AIPanel({
 	}, [msgCount]);
 
 	useEffect(() => {
+		if (!isAwaitingResponse) return;
+		if (chat.messages.length === 0) return;
+		const el = threadRef.current;
+		if (!el) return;
+		el.scrollTop = el.scrollHeight;
+	}, [chat.messages, isAwaitingResponse]);
+
+	useEffect(() => {
 		const prev = prevStatusRef.current;
 		if (prev === "streaming" && chat.status !== "streaming") {
 			void history.refresh();
 		}
+		if (chat.status === "submitted" && responsePhase === "idle") {
+			setShowSlowStart(false);
+			setResponsePhase("submitted");
+		}
+		if (chat.status === "streaming") {
+			clearFinalizingTimer();
+			setShowSlowStart(false);
+			setResponsePhase("streaming");
+		}
+		if (chat.status === "ready") {
+			if (prev === "streaming") {
+				clearFinalizingTimer();
+				setResponsePhase("finalizing");
+				finalizingTimerRef.current = window.setTimeout(() => {
+					setResponsePhase("idle");
+					setShowSlowStart(false);
+					finalizingTimerRef.current = null;
+				}, FINALIZING_MS);
+			} else if (prev === "submitted") {
+				setResponsePhase("idle");
+				setShowSlowStart(false);
+			}
+		}
+		if (chat.status === "error") {
+			clearSlowStartTimer();
+			clearFinalizingTimer();
+			setShowSlowStart(false);
+			setResponsePhase("idle");
+		}
 		prevStatusRef.current = chat.status;
-	}, [chat.status, history.refresh]);
+	}, [
+		chat.status,
+		clearFinalizingTimer,
+		clearSlowStartTimer,
+		history.refresh,
+		responsePhase,
+	]);
+
+	useEffect(() => {
+		clearSlowStartTimer();
+		if (
+			!isAwaitingResponse ||
+			responsePhase === "idle" ||
+			responsePhase === "streaming" ||
+			responsePhase === "finalizing"
+		) {
+			setShowSlowStart(false);
+			return;
+		}
+		slowStartTimerRef.current = window.setTimeout(() => {
+			setShowSlowStart(true);
+			slowStartTimerRef.current = null;
+		}, SLOW_START_MS);
+		return () => clearSlowStartTimer();
+	}, [clearSlowStartTimer, isAwaitingResponse, responsePhase]);
+
+	useEffect(
+		() => () => {
+			clearSlowStartTimer();
+			clearFinalizingTimer();
+		},
+		[clearFinalizingTimer, clearSlowStartTimer],
+	);
 
 	return (
 		<div
@@ -659,7 +799,12 @@ export function AIPanel({
 					) : null}
 					{chat.messages.map((m, index) => {
 						const text = messageText(m).trim();
-						if (!text) return null;
+						const isPendingAssistant =
+							m.role === "assistant" &&
+							!text &&
+							isAwaitingResponse &&
+							index === chat.messages.length - 1;
+						if (!text && !isPendingAssistant) return null;
 						return (
 							<Fragment key={m.id}>
 								<div
@@ -670,7 +815,36 @@ export function AIPanel({
 											: "aiChatMsg-assistant",
 									)}
 								>
-									{m.role === "assistant" ? (
+									{isPendingAssistant ? (
+										<motion.div
+											className="aiPendingAssistant"
+											initial={
+												shouldReduceMotion
+													? false
+													: { opacity: 0, y: 4, scale: 0.99 }
+											}
+											animate={{ opacity: 1, y: 0, scale: 1 }}
+											transition={
+												shouldReduceMotion
+													? { duration: 0 }
+													: { duration: 0.18, ease: "easeOut" }
+											}
+										>
+											<div className="aiPendingHeader">
+												<span className="aiPendingDot" />
+												<span>{phaseStatusText || "Preparing response…"}</span>
+											</div>
+											<div className="aiPendingSkeleton">
+												<span className="aiPendingLine aiPendingLine-1" />
+												<span className="aiPendingLine aiPendingLine-2" />
+											</div>
+											<div className="aiPendingDots" aria-hidden="true">
+												<span />
+												<span />
+												<span />
+											</div>
+										</motion.div>
+									) : m.role === "assistant" ? (
 										<Suspense
 											fallback={<div className="aiChatContent">{text}</div>}
 										>
@@ -942,16 +1116,6 @@ export function AIPanel({
 							</Button>
 						</div>
 						<div className="aiComposerRight">
-							{isAwaitingResponse ? (
-								<span
-									className={cn(
-										"aiComposerStatusDot",
-										`aiComposerStatusDot-${aiAssistantMode}`,
-									)}
-									aria-label="AI responding"
-									title="AI responding"
-								/>
-							) : null}
 							<ModelSelector
 								profileId={profiles.activeProfileId}
 								value={profiles.activeProfile?.model ?? ""}

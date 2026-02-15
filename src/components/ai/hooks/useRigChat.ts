@@ -27,6 +27,7 @@ type SendMessageOptions = {
 };
 
 type RigChatStatus = "ready" | "submitted" | "streaming" | "error";
+const DONE_SETTLE_MS = 140;
 
 function asAiMessages(messages: UIMessage[]): AiMessage[] {
 	const out: AiMessage[] = [];
@@ -50,6 +51,7 @@ export function useRigChat() {
 	const messagesRef = useRef<UIMessage[]>([]);
 	const activeJobIdRef = useRef<string | null>(null);
 	const stopListenersRef = useRef<Array<() => void>>([]);
+	const doneTimerRef = useRef<number | null>(null);
 
 	useEffect(() => {
 		messagesRef.current = messages;
@@ -62,6 +64,19 @@ export function useRigChat() {
 		stopListenersRef.current = [];
 	}, []);
 
+	const clearDoneTimer = useCallback(() => {
+		if (doneTimerRef.current == null) return;
+		window.clearTimeout(doneTimerRef.current);
+		doneTimerRef.current = null;
+	}, []);
+
+	const completeActiveJob = useCallback(() => {
+		clearDoneTimer();
+		activeJobIdRef.current = null;
+		cleanupListeners();
+		setStatus("ready");
+	}, [cleanupListeners, clearDoneTimer]);
+
 	const clearError = useCallback(() => {
 		setError(null);
 		setStatus((prev) => (prev === "error" ? "ready" : prev));
@@ -72,10 +87,11 @@ export function useRigChat() {
 		if (jobId) {
 			void invoke("ai_chat_cancel", { job_id: jobId }).catch(() => {});
 		}
+		clearDoneTimer();
 		activeJobIdRef.current = null;
 		cleanupListeners();
 		setStatus("ready");
-	}, [cleanupListeners]);
+	}, [cleanupListeners, clearDoneTimer]);
 
 	const sendMessage = useCallback(
 		async ({ text }: SendMessageArgs, options?: SendMessageOptions) => {
@@ -112,6 +128,7 @@ export function useRigChat() {
 			setStatus("submitted");
 
 			try {
+				clearDoneTimer();
 				const { job_id: jobId } = await invoke("ai_chat_start", {
 					request: {
 						profile_id: profileId,
@@ -127,6 +144,7 @@ export function useRigChat() {
 
 				const onChunk = await listenTauriEvent("ai:chunk", (payload) => {
 					if (payload.job_id !== activeJobIdRef.current) return;
+					clearDoneTimer();
 					setStatus("streaming");
 					setMessages((prev) =>
 						prev.map((m) => {
@@ -147,13 +165,16 @@ export function useRigChat() {
 
 				const onDone = await listenTauriEvent("ai:done", (payload) => {
 					if (payload.job_id !== activeJobIdRef.current) return;
-					activeJobIdRef.current = null;
-					cleanupListeners();
-					setStatus("ready");
+					clearDoneTimer();
+					doneTimerRef.current = window.setTimeout(() => {
+						if (payload.job_id !== activeJobIdRef.current) return;
+						completeActiveJob();
+					}, DONE_SETTLE_MS);
 				});
 
 				const onError = await listenTauriEvent("ai:error", (payload) => {
 					if (payload.job_id !== activeJobIdRef.current) return;
+					clearDoneTimer();
 					activeJobIdRef.current = null;
 					cleanupListeners();
 					setError(new Error(payload.message));
@@ -162,16 +183,23 @@ export function useRigChat() {
 
 				stopListenersRef.current = [onChunk, onDone, onError];
 			} catch (err) {
+				clearDoneTimer();
 				activeJobIdRef.current = null;
 				cleanupListeners();
 				setError(err instanceof Error ? err : new Error(String(err)));
 				setStatus("error");
 			}
 		},
-		[cleanupListeners, stop],
+		[cleanupListeners, clearDoneTimer, completeActiveJob, stop],
 	);
 
-	useEffect(() => () => stop(), [stop]);
+	useEffect(
+		() => () => {
+			clearDoneTimer();
+			stop();
+		},
+		[clearDoneTimer, stop],
+	);
 
 	return {
 		messages,
