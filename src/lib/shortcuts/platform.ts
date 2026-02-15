@@ -19,7 +19,7 @@ export function getPlatform(): "macos" | "windows" | "linux" {
 			cachedPlatform = "macos";
 			return "macos";
 		}
-		if (ua.includes("win")) {
+		if (/windows/i.test(ua)) {
 			cachedPlatform = "windows";
 			return "windows";
 		}

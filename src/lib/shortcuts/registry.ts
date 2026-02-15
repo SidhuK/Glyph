@@ -44,7 +44,7 @@ export interface ShortcutDefinition {
  * All keyboard shortcuts in the application.
  * This is the single source of truth for shortcut definitions.
  */
-export const SHORTCUTS: ShortcutDefinition[] = [
+export const SHORTCUTS = [
 	// ─────────────────────────────────────────────────────────────────────────
 	// Navigation
 	// ─────────────────────────────────────────────────────────────────────────
@@ -172,13 +172,17 @@ export const SHORTCUTS: ShortcutDefinition[] = [
 		category: "window",
 		context: "global",
 	},
-];
+] as const satisfies ShortcutDefinition[];
+
+const SHORTCUTS_BY_ID = new Map<string, ShortcutDefinition>(
+	SHORTCUTS.map((shortcut) => [shortcut.id, shortcut]),
+);
 
 /**
  * Get a shortcut definition by its ID
  */
 export function getShortcutById(id: string): ShortcutDefinition | undefined {
-	return SHORTCUTS.find((s) => s.id === id);
+	return SHORTCUTS_BY_ID.get(id);
 }
 
 /**

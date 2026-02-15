@@ -7,6 +7,7 @@ import { StepReady } from "./welcome/StepReady";
 import { WelcomeStep } from "./welcome/WelcomeStep";
 
 const STEP_LABELS = ["hero", "tips", "start"] as const;
+const SMOOTH_EASE = [0.22, 1, 0.36, 1] as const;
 
 interface WelcomeScreenProps {
 	appName: string | null;
@@ -29,7 +30,6 @@ export function WelcomeScreen({
 }: WelcomeScreenProps) {
 	const reduceMotion = useReducedMotion();
 	const [step, setStep] = useState(0);
-	const smoothEase = [0.22, 1, 0.36, 1] as const;
 
 	const goNext = useCallback(() => {
 		setStep((s) => Math.min(s + 1, STEP_LABELS.length - 1));
@@ -62,7 +62,7 @@ export function WelcomeScreen({
 						transition={{
 							duration: 12,
 							repeat: Number.POSITIVE_INFINITY,
-							ease: smoothEase,
+							ease: SMOOTH_EASE,
 						}}
 					/>
 					<motion.div
@@ -75,7 +75,7 @@ export function WelcomeScreen({
 						transition={{
 							duration: 14,
 							repeat: Number.POSITIVE_INFINITY,
-							ease: smoothEase,
+							ease: SMOOTH_EASE,
 						}}
 					/>
 				</div>

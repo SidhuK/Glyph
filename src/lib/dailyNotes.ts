@@ -28,6 +28,14 @@ export function getDailyNotePath(folder: string, date?: string): string {
 	const d = date ?? getTodayDateString();
 	const filename = getDailyNoteFilename(d);
 	const normalizedFolder = folder.replace(/\\/g, "/").replace(/\/+$/g, "");
+	const hasTraversal = normalizedFolder
+		.split("/")
+		.some((segment) => segment === "..");
+	if (hasTraversal) {
+		throw new Error(
+			`Daily note folder cannot include parent traversal segments: ${folder}`,
+		);
+	}
 	if (!normalizedFolder) {
 		return filename;
 	}

@@ -1,6 +1,8 @@
 import type { Edge, Node } from "@xyflow/react";
 import type { LinkPreview } from "./tauri";
 
+// React Flow's Node generic accepts open-ended data objects; these index
+// signatures are intentional to preserve compatibility with dynamic node data.
 export interface NoteNodeData {
 	noteId: string;
 	title: string;

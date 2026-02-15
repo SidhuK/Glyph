@@ -1,4 +1,5 @@
 import type { FsEntry } from "../../lib/tauri";
+import { normalizeRelPath, parentDir } from "../../utils/path";
 
 export function basename(path: string): string {
 	const parts = path.split("/").filter(Boolean);
@@ -48,17 +49,4 @@ export function aiNoteFileName(): string {
 	)}.md`;
 }
 
-export function normalizeRelPath(path: string): string {
-	return path
-		.replace(/\\/g, "/")
-		.replace(/^\/+/, "")
-		.replace(/\/+$/, "")
-		.trim();
-}
-
-export function parentDir(path: string): string {
-	const normalized = normalizeRelPath(path);
-	const idx = normalized.lastIndexOf("/");
-	if (idx < 0) return "";
-	return normalized.slice(0, idx);
-}
+export { normalizeRelPath, parentDir };

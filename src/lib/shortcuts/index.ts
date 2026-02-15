@@ -11,8 +11,6 @@
 export type { Shortcut } from "../shortcuts";
 export {
 	isShortcutMatch,
-	formatShortcut,
-	formatShortcutParts,
 	getShortcutTooltip,
 } from "../shortcuts";
 

@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { type FsEntry, TauriInvokeError, invoke } from "../../lib/tauri";
+import { extractErrorMessage } from "../../lib/errorUtils";
+import { type FsEntry, invoke } from "../../lib/tauri";
+import { normalizeRelPath } from "../../utils/path";
 
 type ContextManifestItem = {
 	kind: string;
@@ -28,21 +30,8 @@ type ContextEntry = {
 	label: string;
 };
 
-function errMessage(err: unknown): string {
-	if (err instanceof TauriInvokeError) return err.message;
-	if (err instanceof Error) return err.message;
-	return String(err);
-}
-
 function estimateTokens(chars: number): number {
 	return Math.ceil(chars / 4);
-}
-
-function normalizeRelPath(path: string): string {
-	return path
-		.trim()
-		.replace(/\\/g, "/")
-		.replace(/^\/+|\/+$/g, "");
 }
 
 const FILE_LIST_LIMIT = 20_000;
@@ -191,7 +180,7 @@ export function useAiContext({
 				setFileIndex(files.sort((a, b) => a.path.localeCompare(b.path)));
 			} catch (e) {
 				if (cancelled) return;
-				setFolderIndexError(errMessage(e));
+				setFolderIndexError(extractErrorMessage(e));
 			}
 		})();
 		return () => {
@@ -342,7 +331,7 @@ export function useAiContext({
 			setPayloadManifest(manifest);
 			return { payload, manifest };
 		} catch (e) {
-			setPayloadError(errMessage(e));
+			setPayloadError(extractErrorMessage(e));
 			return { payload: "", manifest: null };
 		} finally {
 			setPayloadBuilding(false);

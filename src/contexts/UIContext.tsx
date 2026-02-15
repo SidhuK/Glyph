@@ -1,6 +1,8 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import {
+	type Dispatch,
 	type ReactNode,
+	type SetStateAction,
 	createContext,
 	useCallback,
 	useContext,
@@ -20,7 +22,7 @@ import {
 import type { SearchResult } from "../lib/tauri";
 import { useVault } from "./VaultContext";
 
-export interface UIContextValue {
+export interface UILayoutContextValue {
 	sidebarCollapsed: boolean;
 	setSidebarCollapsed: (collapsed: boolean) => void;
 	sidebarViewMode: "files" | "tags";
@@ -29,12 +31,25 @@ export interface UIContextValue {
 	setSidebarWidth: (width: number) => void;
 	paletteOpen: boolean;
 	setPaletteOpen: (open: boolean) => void;
+	activePreviewPath: string | null;
+	setActivePreviewPath: (path: string | null) => void;
+	openMarkdownTabs: string[];
+	setOpenMarkdownTabs: Dispatch<SetStateAction<string[]>>;
+	activeMarkdownTabPath: string | null;
+	setActiveMarkdownTabPath: (path: string | null) => void;
+	dailyNotesFolder: string | null;
+}
+
+export interface AISidebarContextValue {
 	aiPanelOpen: boolean;
-	setAiPanelOpen: React.Dispatch<React.SetStateAction<boolean>>;
+	setAiPanelOpen: Dispatch<SetStateAction<boolean>>;
 	aiPanelWidth: number;
 	setAiPanelWidth: (width: number) => void;
 	aiAssistantMode: AiAssistantMode;
 	setAiAssistantMode: (mode: AiAssistantMode) => void;
+}
+
+export interface SearchUIContextValue {
 	searchQuery: string;
 	setSearchQuery: (query: string) => void;
 	searchResults: SearchResult[];
@@ -44,16 +59,15 @@ export interface UIContextValue {
 	setShowSearch: (show: boolean) => void;
 	focusSearchInput: () => void;
 	setSearchInputElement: (el: HTMLInputElement | null) => void;
-	activePreviewPath: string | null;
-	setActivePreviewPath: (path: string | null) => void;
-	openMarkdownTabs: string[];
-	setOpenMarkdownTabs: React.Dispatch<React.SetStateAction<string[]>>;
-	activeMarkdownTabPath: string | null;
-	setActiveMarkdownTabPath: (path: string | null) => void;
-	dailyNotesFolder: string | null;
 }
 
-const UIContext = createContext<UIContextValue | null>(null);
+export type UIContextValue = UILayoutContextValue &
+	AISidebarContextValue &
+	SearchUIContextValue;
+
+const UILayoutContext = createContext<UILayoutContextValue | null>(null);
+const AISidebarContext = createContext<AISidebarContextValue | null>(null);
+const SearchUIContext = createContext<SearchUIContextValue | null>(null);
 
 export function UIProvider({ children }: { children: ReactNode }) {
 	const { vaultPath } = useVault();
@@ -64,22 +78,23 @@ export function UIProvider({ children }: { children: ReactNode }) {
 	);
 	const [sidebarWidth, setSidebarWidth] = useState(260);
 	const [paletteOpen, setPaletteOpen] = useState(false);
-	const [activePreviewPath, setActivePreviewPath] = useState<string | null>(
+	const [activePreviewPath, setActivePreviewPathState] = useState<string | null>(
 		null,
 	);
 	const [openMarkdownTabs, setOpenMarkdownTabs] = useState<string[]>([]);
 	const [activeMarkdownTabPath, setActiveMarkdownTabPath] = useState<
 		string | null
 	>(null);
-	const searchInputElRef = useRef<HTMLInputElement | null>(null);
+	const [dailyNotesFolder, setDailyNotesFolderState] = useState<string | null>(
+		null,
+	);
 
 	const [aiPanelOpen, setAiPanelOpen] = useState(false);
 	const [aiPanelWidth, setAiPanelWidthState] = useState(380);
 	const [aiAssistantMode, setAiAssistantModeState] =
 		useState<AiAssistantMode>("create");
-	const [dailyNotesFolder, setDailyNotesFolderState] = useState<string | null>(
-		null,
-	);
+
+	const searchInputElRef = useRef<HTMLInputElement | null>(null);
 
 	useEffect(() => {
 		if (vaultPath) setSidebarCollapsed(false);
@@ -92,23 +107,32 @@ export function UIProvider({ children }: { children: ReactNode }) {
 	useEffect(() => {
 		let cancelled = false;
 		const loadAndApplySettings = async () => {
-			const s = await loadSettings();
-			if (cancelled) return;
-			if (typeof s.ui.aiSidebarWidth === "number") {
-				setAiPanelWidthState(s.ui.aiSidebarWidth);
-			}
-			setAiAssistantModeState(s.ui.aiAssistantMode);
-			if (s.dailyNotes?.folder !== undefined) {
-				setDailyNotesFolderState(s.dailyNotes.folder);
+			try {
+				const s = await loadSettings();
+				if (cancelled) return;
+				if (typeof s.ui.aiSidebarWidth === "number") {
+					setAiPanelWidthState(s.ui.aiSidebarWidth);
+				}
+				setAiAssistantModeState(s.ui.aiAssistantMode);
+				setDailyNotesFolderState(s.dailyNotes?.folder ?? null);
+			} catch {
+				// best-effort settings hydration
 			}
 		};
-		void loadAndApplySettings();
 
+		void loadAndApplySettings();
 		const win = getCurrentWindow();
 		const unlisten = win.onFocusChanged(({ payload: focused }) => {
-			if (focused && !cancelled) {
-				void reloadFromDisk().then(() => loadAndApplySettings());
-			}
+			if (!focused || cancelled) return;
+			void (async () => {
+				try {
+					await reloadFromDisk();
+					if (cancelled) return;
+					await loadAndApplySettings();
+				} catch {
+					// best-effort refresh
+				}
+			})();
 		});
 
 		return () => {
@@ -119,13 +143,21 @@ export function UIProvider({ children }: { children: ReactNode }) {
 
 	useEffect(() => {
 		if (!vaultPath) return;
-		void reloadFromDisk().then(() =>
-			loadSettings().then((s) => {
-				if (s.dailyNotes?.folder !== undefined) {
-					setDailyNotesFolderState(s.dailyNotes.folder);
-				}
-			}),
-		);
+		let cancelled = false;
+		void (async () => {
+			try {
+				await reloadFromDisk();
+				if (cancelled) return;
+				const s = await loadSettings();
+				if (cancelled) return;
+				setDailyNotesFolderState(s.dailyNotes?.folder ?? null);
+			} catch {
+				// best-effort settings refresh
+			}
+		})();
+		return () => {
+			cancelled = true;
+		};
 	}, [vaultPath]);
 
 	const setAiPanelWidth = useCallback((width: number) => {
@@ -148,10 +180,10 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		setShowSearch,
 	} = useSearch(vaultPath);
 
-	const handleSetActivePreviewPath = useCallback(
+	const setActivePreviewPath = useCallback(
 		(path: string | null) => {
 			if (!vaultPath && path) return;
-			setActivePreviewPath(path);
+			setActivePreviewPathState(path);
 		},
 		[vaultPath],
 	);
@@ -167,7 +199,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		el.select();
 	}, []);
 
-	const value: UIContextValue = useMemo(
+	const layoutValue = useMemo<UILayoutContextValue>(
 		() => ({
 			sidebarCollapsed,
 			setSidebarCollapsed,
@@ -177,23 +209,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			setSidebarWidth,
 			paletteOpen,
 			setPaletteOpen,
-			aiPanelOpen,
-			setAiPanelOpen,
-			aiPanelWidth,
-			setAiPanelWidth,
-			aiAssistantMode,
-			setAiAssistantMode,
-			searchQuery,
-			setSearchQuery,
-			searchResults,
-			isSearching,
-			searchError,
-			showSearch,
-			setShowSearch,
-			focusSearchInput,
-			setSearchInputElement,
 			activePreviewPath,
-			setActivePreviewPath: handleSetActivePreviewPath,
+			setActivePreviewPath,
 			openMarkdownTabs,
 			setOpenMarkdownTabs,
 			activeMarkdownTabPath,
@@ -205,11 +222,34 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			sidebarViewMode,
 			sidebarWidth,
 			paletteOpen,
+			activePreviewPath,
+			setActivePreviewPath,
+			openMarkdownTabs,
+			activeMarkdownTabPath,
+			dailyNotesFolder,
+		],
+	);
+
+	const aiSidebarValue = useMemo<AISidebarContextValue>(
+		() => ({
+			aiPanelOpen,
+			setAiPanelOpen,
+			aiPanelWidth,
+			setAiPanelWidth,
+			aiAssistantMode,
+			setAiAssistantMode,
+		}),
+		[
 			aiPanelOpen,
 			aiPanelWidth,
 			setAiPanelWidth,
 			aiAssistantMode,
 			setAiAssistantMode,
+		],
+	);
+
+	const searchValue = useMemo<SearchUIContextValue>(
+		() => ({
 			searchQuery,
 			setSearchQuery,
 			searchResults,
@@ -219,19 +259,54 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			setShowSearch,
 			focusSearchInput,
 			setSearchInputElement,
-			activePreviewPath,
-			handleSetActivePreviewPath,
-			openMarkdownTabs,
-			activeMarkdownTabPath,
-			dailyNotesFolder,
+		}),
+		[
+			searchQuery,
+			setSearchQuery,
+			searchResults,
+			isSearching,
+			searchError,
+			showSearch,
+			setShowSearch,
+			focusSearchInput,
+			setSearchInputElement,
 		],
 	);
 
-	return <UIContext.Provider value={value}>{children}</UIContext.Provider>;
+	return (
+		<UILayoutContext.Provider value={layoutValue}>
+			<AISidebarContext.Provider value={aiSidebarValue}>
+				<SearchUIContext.Provider value={searchValue}>
+					{children}
+				</SearchUIContext.Provider>
+			</AISidebarContext.Provider>
+		</UILayoutContext.Provider>
+	);
+}
+
+export function useUILayoutContext(): UILayoutContextValue {
+	const ctx = useContext(UILayoutContext);
+	if (!ctx) throw new Error("useUILayoutContext must be used within UIProvider");
+	return ctx;
+}
+
+export function useAISidebarContext(): AISidebarContextValue {
+	const ctx = useContext(AISidebarContext);
+	if (!ctx)
+		throw new Error("useAISidebarContext must be used within UIProvider");
+	return ctx;
+}
+
+export function useSearchUIContext(): SearchUIContextValue {
+	const ctx = useContext(SearchUIContext);
+	if (!ctx) throw new Error("useSearchUIContext must be used within UIProvider");
+	return ctx;
 }
 
 export function useUIContext(): UIContextValue {
-	const ctx = useContext(UIContext);
-	if (!ctx) throw new Error("useUIContext must be used within UIProvider");
-	return ctx;
+	return {
+		...useUILayoutContext(),
+		...useAISidebarContext(),
+		...useSearchUIContext(),
+	};
 }

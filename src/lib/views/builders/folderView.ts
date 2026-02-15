@@ -18,7 +18,16 @@ export async function buildFolderViewDoc(
 	const recursive = options.recursive ?? false;
 	const limit = options.limit ?? 500;
 
-	const entries = await invoke("vault_list_dir", {
+	const entries = recursive
+		? await invoke("vault_list_files", {
+				dir: v.selector || null,
+				recursive: true,
+				limit,
+			})
+		: await invoke("vault_list_dir", {
+				dir: v.selector || null,
+			});
+	const dirEntries = await invoke("vault_list_dir", {
 		dir: v.selector || null,
 	});
 
@@ -52,7 +61,7 @@ export async function buildFolderViewDoc(
 	const rootFiles = alpha.sort((a, b) =>
 		a.rel_path.toLowerCase().localeCompare(b.rel_path.toLowerCase()),
 	);
-	const subfolders = (entries as FsEntry[])
+	const subfolders = (dirEntries as FsEntry[])
 		.filter((e) => e.kind === "dir")
 		.map((e) => ({ dir_rel_path: e.rel_path, name: e.name }))
 		.sort((a, b) =>

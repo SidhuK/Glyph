@@ -142,7 +142,13 @@ export const SlashCommand = Extension.create({
 							const button = document.createElement("button");
 							button.type = "button";
 							button.className = "slashCommandItem";
-							button.innerHTML = `<div class="slashCommandTitle">${item.title}</div><div class="slashCommandDesc">${item.description}</div>`;
+							const title = document.createElement("div");
+							title.className = "slashCommandTitle";
+							title.textContent = item.title;
+							const description = document.createElement("div");
+							description.className = "slashCommandDesc";
+							description.textContent = item.description;
+							button.append(title, description);
 							button.addEventListener("mousedown", (event) => {
 								event.preventDefault();
 								props.command(item);

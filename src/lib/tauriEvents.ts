@@ -1,5 +1,5 @@
 import { listen } from "@tauri-apps/api/event";
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 
 export type TauriEventMap = {
 	"menu:open_vault": undefined;
@@ -45,12 +45,22 @@ export function useTauriEvent<K extends keyof TauriEventMap>(
 	event: K,
 	handler: TauriEventHandler<K>,
 ): void {
+	const handlerRef = useRef(handler);
+	handlerRef.current = handler;
+
 	useEffect(() => {
 		let cancelled = false;
 		let unlisten: (() => void) | null = null;
 
 		void (async () => {
-			const stop = await listenTauriEvent(event, handler);
+			const stop = await listen<TauriEventMap[K]>(event, (evt) => {
+				const payload = evt.payload as TauriEventMap[K];
+				if (payload === undefined) {
+					(handlerRef.current as () => void)();
+					return;
+				}
+				(handlerRef.current as (value: TauriEventMap[K]) => void)(payload);
+			});
 			if (cancelled) {
 				stop();
 				return;
@@ -62,5 +72,5 @@ export function useTauriEvent<K extends keyof TauriEventMap>(
 			cancelled = true;
 			unlisten?.();
 		};
-	}, [event, handler]);
+	}, [event]);
 }

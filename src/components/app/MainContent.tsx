@@ -1,5 +1,5 @@
 import { motion } from "motion/react";
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import { useVault } from "../../contexts";
 import { formatShortcutPartsForPlatform } from "../../lib/shortcuts/platform";
 import { isInAppPreviewable } from "../../utils/filePreview";
@@ -20,7 +20,7 @@ interface MainContentProps {
 	onOpenSearchPalette: () => void;
 }
 
-export function MainContent({
+export const MainContent = memo(function MainContent({
 	fileTree,
 	onOpenFolder,
 	onOpenCommandPalette,
@@ -191,4 +191,4 @@ export function MainContent({
 			</div>
 		</main>
 	);
-}
+});

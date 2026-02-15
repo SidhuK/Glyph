@@ -1,5 +1,5 @@
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { useUIContext } from "../../contexts";
+import { useAISidebarContext } from "../../contexts";
 import { getShortcutTooltip } from "../../lib/shortcuts";
 import { AiLattice } from "../Icons";
 import { AIPanel } from "./AIPanel";
@@ -21,7 +21,7 @@ export function AIFloatingHost({
 	onAttachContextFiles,
 	onCreateNoteFromLastAssistant,
 }: AIFloatingHostProps) {
-	const { aiPanelWidth } = useUIContext();
+	const { aiPanelWidth } = useAISidebarContext();
 	const panelWidth = aiPanelWidth || 380;
 	const shouldReduceMotion = useReducedMotion();
 

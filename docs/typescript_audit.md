@@ -29,7 +29,7 @@
 
 ## 🔴 Critical Issues
 
-### C-01 · `AIPanel.tsx` exceeds 200 LOC limit (1176 lines)
+### [x] C-01 · `AIPanel.tsx` exceeds 200 LOC limit (1176 lines)
 
 | Field | Value |
 |-------|-------|
@@ -41,7 +41,7 @@
 
 ---
 
-### C-02 · `AppShell.tsx` exceeds 200 LOC limit (845 lines)
+### [x] C-02 · `AppShell.tsx` exceeds 200 LOC limit (845 lines)
 
 | Field | Value |
 |-------|-------|
@@ -53,7 +53,7 @@
 
 ---
 
-### C-03 · `ModelSelector.tsx` exceeds 200 LOC limit (735 lines)
+### [x] C-03 · `ModelSelector.tsx` exceeds 200 LOC limit (735 lines)
 
 | Field | Value |
 |-------|-------|
@@ -65,7 +65,7 @@
 
 ---
 
-### C-04 · `useFileTree.ts` exceeds 200 LOC limit (619 lines)
+### [x] C-04 · `useFileTree.ts` exceeds 200 LOC limit (619 lines)
 
 | Field | Value |
 |-------|-------|
@@ -77,7 +77,7 @@
 
 ---
 
-### C-05 · `CommandPalette.tsx` exceeds 200 LOC limit (532 lines)
+### [x] C-05 · `CommandPalette.tsx` exceeds 200 LOC limit (532 lines)
 
 | Field | Value |
 |-------|-------|
@@ -89,7 +89,7 @@
 
 ---
 
-### C-06 · `FileTreeItem.tsx` exceeds 200 LOC limit (417 lines)
+### [x] C-06 · `FileTreeItem.tsx` exceeds 200 LOC limit (417 lines)
 
 | Field | Value |
 |-------|-------|
@@ -101,7 +101,7 @@
 
 ---
 
-### C-07 · `MainContent.tsx` exceeds 200 LOC limit (376 lines)
+### [x] C-07 · `MainContent.tsx` exceeds 200 LOC limit (376 lines)
 
 | Field | Value |
 |-------|-------|
@@ -113,7 +113,7 @@
 
 ---
 
-### C-08 · `EditorRibbon.tsx` exceeds 200 LOC limit (337 lines)
+### [x] C-08 · `EditorRibbon.tsx` exceeds 200 LOC limit (337 lines)
 
 | Field | Value |
 |-------|-------|
@@ -125,7 +125,7 @@
 
 ---
 
-### C-09 · `EditorContext.tsx` — Side effect during render + missing cleanup
+### [x] C-09 · `EditorContext.tsx` — Side effect during render + missing cleanup
 
 | Field | Value |
 |-------|-------|
@@ -137,7 +137,7 @@
 
 ---
 
-### C-10 · Two competing `cn()` implementations — wrong one used by 8+ components
+### [x] C-10 · Two competing `cn()` implementations — wrong one used by 8+ components
 
 | Field | Value |
 |-------|-------|
@@ -175,7 +175,7 @@
 
 ---
 
-### H-03 · `VaultContext.tsx` — Race condition in `applyVaultSelection`
+### [x] H-03 · `VaultContext.tsx` — Race condition in `applyVaultSelection`
 
 | Field | Value |
 |-------|-------|
@@ -187,7 +187,7 @@
 
 ---
 
-### H-04 · `useViewLoader.ts` — Silent error swallowing in async IIFE
+### [x] H-04 · `useViewLoader.ts` — Silent error swallowing in async IIFE
 
 | Field | Value |
 |-------|-------|
@@ -199,7 +199,7 @@
 
 ---
 
-### H-05 · `AppShell.tsx` — Sidebar resize effect is broken
+### [x] H-05 · `AppShell.tsx` — Sidebar resize effect is broken
 
 | Field | Value |
 |-------|-------|
@@ -211,7 +211,7 @@
 
 ---
 
-### H-06 · `AppShell.tsx` — Duplicate resize logic (copy-pasted ~100 lines)
+### [x] H-06 · `AppShell.tsx` — Duplicate resize logic (copy-pasted ~100 lines)
 
 | Field | Value |
 |-------|-------|
@@ -223,7 +223,7 @@
 
 ---
 
-### H-07 · Cross-platform shortcut matching is broken on Windows/Linux
+### [x] H-07 · Cross-platform shortcut matching is broken on Windows/Linux
 
 | Field | Value |
 |-------|-------|
@@ -235,7 +235,7 @@
 
 ---
 
-### H-08 · `AIPanel.tsx` — `handleSend` not wrapped in `useCallback`
+### [x] H-08 · `AIPanel.tsx` — `handleSend` not wrapped in `useCallback`
 
 | Field | Value |
 |-------|-------|
@@ -247,7 +247,7 @@
 
 ---
 
-### H-09 · `useTauriEvent` handler causes listener churn
+### [x] H-09 · `useTauriEvent` handler causes listener churn
 
 | Field | Value |
 |-------|-------|
@@ -271,7 +271,7 @@
 
 ---
 
-### H-11 · `hasViewDocChanged` uses JSON.stringify for deep comparison
+### [x] H-11 · `hasViewDocChanged` uses JSON.stringify for deep comparison
 
 | Field | Value |
 |-------|-------|
@@ -283,7 +283,7 @@
 
 ---
 
-### H-12 · `fetchNotePreviewsAllAtOnce` silently swallows errors
+### [x] H-12 · `fetchNotePreviewsAllAtOnce` silently swallows errors
 
 | Field | Value |
 |-------|-------|
@@ -295,7 +295,7 @@
 
 ---
 
-### H-13 · `folderView.ts` — `recursive` option declared but never used
+### [x] H-13 · `folderView.ts` — `recursive` option declared but never used
 
 | Field | Value |
 |-------|-------|
@@ -307,7 +307,7 @@
 
 ---
 
-### H-14 · Duplicated `errMessage()` utility in 4 files
+### [x] H-14 · Duplicated `errMessage()` utility in 4 files
 
 | Field | Value |
 |-------|-------|
@@ -318,7 +318,7 @@
 
 ---
 
-### H-15 · Duplicated `normalizeRelPath()` / `normalizePath()` in 3 files
+### [x] H-15 · Duplicated `normalizeRelPath()` / `normalizePath()` in 3 files
 
 | Field | Value |
 |-------|-------|
@@ -362,7 +362,7 @@
 
 ---
 
-### H-19 · `searchView.ts` / `tagView.ts` — copy-pasted `buildPrimaryNode`
+### [x] H-19 · `searchView.ts` / `tagView.ts` — copy-pasted `buildPrimaryNode`
 
 | Field | Value |
 |-------|-------|
@@ -373,7 +373,7 @@
 
 ---
 
-### H-20 · `AiAssistantMode` type defined in two places
+### [x] H-20 · `AiAssistantMode` type defined in two places
 
 | Field | Value |
 |-------|-------|
@@ -1003,8 +1003,8 @@
 
 ## Checklist for Resolution
 
-- [ ] **Phase 1 — Critical bugs** (C-09, C-10, H-05, H-07): Fix broken features immediately
-- [ ] **Phase 2 — File splits** (C-01 through C-08): Break apart the 8 oversized files
+- [x] **Phase 1 — Critical bugs** (C-09, C-10, H-05, H-07): Fix broken features immediately
+- [x] **Phase 2 — File splits** (C-01 through C-08): Break apart the 8 oversized files
 - [ ] **Phase 3 — Deduplication** (H-14 through H-20): Consolidate duplicated code
 - [ ] **Phase 4 — Context architecture** (H-01, H-02): Split `UIContext`, wrap `FileTreeContext` setters
 - [ ] **Phase 5 — Error handling** (H-03, H-04, M-16 through M-19): Add guards, catches, and error boundaries

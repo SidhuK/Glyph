@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import type { CSSProperties } from "react";
 import { memo, useCallback, useState } from "react";
+import { confirm } from "@tauri-apps/plugin-dialog";
 import type { FsEntry } from "../../lib/tauri";
 import { parentDir } from "../../utils/path";
 import { Database, FolderPlus, Plus } from "../Icons";
@@ -94,7 +95,11 @@ export const FileTreePane = memo(function FileTreePane({
 	const handleDeletePath = useCallback(
 		async (path: string, kind: "dir" | "file") => {
 			const noun = kind === "dir" ? "folder" : "file";
-			const confirmed = window.confirm(`Delete this ${noun}?`);
+			const confirmed = await confirm(`Delete this ${noun}?`, {
+				title: "Confirm delete",
+				okLabel: "Delete",
+				cancelLabel: "Cancel",
+			});
 			if (!confirmed) return;
 			await onDeletePath(path, kind);
 		},

@@ -28,9 +28,15 @@ export interface UseFileTreeResult {
 
 export interface UseFileTreeDeps {
 	vaultPath: string | null;
-	setChildrenByDir: React.Dispatch<React.SetStateAction<Record<string, FsEntry[] | undefined>>>;
-	setExpandedDirs: React.Dispatch<React.SetStateAction<Set<string>>>;
-	setRootEntries: React.Dispatch<React.SetStateAction<FsEntry[]>>;
+	updateChildrenByDir: (
+		next:
+			| Record<string, FsEntry[] | undefined>
+			| ((prev: Record<string, FsEntry[] | undefined>) => Record<string, FsEntry[] | undefined>),
+	) => void;
+	updateExpandedDirs: (
+		next: Set<string> | ((prev: Set<string>) => Set<string>),
+	) => void;
+	updateRootEntries: (next: FsEntry[] | ((prev: FsEntry[]) => FsEntry[])) => void;
 	setActiveFilePath: (path: string | null) => void;
 	setActivePreviewPath: (path: string | null) => void;
 	activeFilePath: string | null;
@@ -41,7 +47,7 @@ export interface UseFileTreeDeps {
 }
 
 export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
-	const { vaultPath, setChildrenByDir, setExpandedDirs, setRootEntries, setActiveFilePath, setActivePreviewPath, setError, loadAndBuildFolderView, getActiveFolderDir, activeFilePath, activePreviewPath } = deps;
+	const { vaultPath, updateChildrenByDir, updateExpandedDirs, updateRootEntries, setActiveFilePath, setActivePreviewPath, setError, loadAndBuildFolderView, getActiveFolderDir, activeFilePath, activePreviewPath } = deps;
 
 	const loadedDirsRef = useRef(new Set<string>());
 	const loadRequestVersionRef = useRef(new Map<string, number>());
@@ -62,21 +68,21 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		const normalizedEntries = normalizeEntries(entries);
 		if (loadRequestVersionRef.current.get(dirPath) !== nextVersion) return;
 		if (dirPath) {
-			setChildrenByDir((prev) => { const c = prev[dirPath]; if (areEntriesEqual(c, normalizedEntries)) return prev; return { ...prev, [dirPath]: normalizedEntries }; });
+			updateChildrenByDir((prev) => { const c = prev[dirPath]; if (areEntriesEqual(c, normalizedEntries)) return prev; return { ...prev, [dirPath]: normalizedEntries }; });
 		} else {
-			setRootEntries((prev) => areEntriesEqual(prev, normalizedEntries) ? prev : normalizedEntries);
+			updateRootEntries((prev) => areEntriesEqual(prev, normalizedEntries) ? prev : normalizedEntries);
 		}
 		loadedDirsRef.current.add(dirPath);
-	}, [setChildrenByDir, setRootEntries]);
+	}, [updateChildrenByDir, updateRootEntries]);
 
 	const toggleDir = useCallback((dirPath: string) => {
-		setExpandedDirs((prev) => {
+		updateExpandedDirs((prev) => {
 			const next = new Set(prev);
 			if (next.has(dirPath)) next.delete(dirPath);
 			else { next.add(dirPath); void loadDir(dirPath); }
 			return next;
 		});
-	}, [loadDir, setExpandedDirs]);
+	}, [loadDir, updateExpandedDirs]);
 
 	const openMarkdownFile = useCallback(async (relPath: string) => {
 		setError("");
@@ -103,7 +109,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 	}, [openMarkdownFile, openNonMarkdownExternally, setActiveFilePath, setActivePreviewPath]);
 
 	const crud = useFileTreeCRUD({
-		vaultPath, setChildrenByDir, setExpandedDirs, setRootEntries,
+		vaultPath, updateChildrenByDir, updateExpandedDirs, updateRootEntries,
 		setActiveFilePath, setActivePreviewPath, activeFilePath, activePreviewPath,
 		setError, loadDir, loadAndBuildFolderView, getActiveFolderDir, loadedDirsRef,
 	});

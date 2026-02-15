@@ -27,6 +27,7 @@ export function MainToolbar({
 					className={cn(aiSidebarOpen && "bg-accent text-accent-foreground")}
 					onClick={onToggleAISidebar}
 					title="Toggle AI assistant"
+					aria-label="Toggle AI panel"
 				>
 					<AiLattice size={20} />
 				</Button>

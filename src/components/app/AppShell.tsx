@@ -1,9 +1,10 @@
 import { AnimatePresence } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
+	useAISidebarContext,
 	useEditorContext,
 	useFileTreeContext,
-	useUIContext,
+	useUILayoutContext,
 	useVault,
 	useViewContext,
 } from "../../contexts";
@@ -43,9 +44,10 @@ export function AppShell() {
 	const vault = useVault();
 	const { vaultPath, error, setError, onOpenVault, onCreateVault, closeVault } = vault;
 	const fileTreeCtx = useFileTreeContext();
-	const { expandedDirs, activeFilePath, setRootEntries, setChildrenByDir, setExpandedDirs, setActiveFilePath } = fileTreeCtx;
+	const { expandedDirs, activeFilePath, updateRootEntries, updateChildrenByDir, updateExpandedDirs, setActiveFilePath } = fileTreeCtx;
 	const { activeViewDoc, activeViewDocRef, loadAndBuildFolderView } = useViewContext();
-	const { sidebarCollapsed, setSidebarCollapsed, paletteOpen, setPaletteOpen, aiPanelOpen, setAiPanelOpen, activePreviewPath, setActivePreviewPath, openMarkdownTabs, activeMarkdownTabPath, dailyNotesFolder, sidebarWidth, setSidebarWidth, aiPanelWidth, setAiPanelWidth } = useUIContext();
+	const { sidebarCollapsed, setSidebarCollapsed, paletteOpen, setPaletteOpen, activePreviewPath, setActivePreviewPath, openMarkdownTabs, activeMarkdownTabPath, dailyNotesFolder, sidebarWidth, setSidebarWidth } = useUILayoutContext();
+	const { aiPanelOpen, setAiPanelOpen, aiPanelWidth, setAiPanelWidth } = useAISidebarContext();
 	const { saveCurrentEditor } = useEditorContext();
 
 	const [paletteInitialTab, setPaletteInitialTab] = useState<"commands" | "search">("commands");
@@ -62,7 +64,7 @@ export function AppShell() {
 		return current?.kind === "folder" ? current.selector || "" : null;
 	}, [activeViewDocRef]);
 
-	const fileTree = useFileTree({ vaultPath, setChildrenByDir, setExpandedDirs, setRootEntries, setActiveFilePath, setActivePreviewPath, activeFilePath, activePreviewPath, setError, loadAndBuildFolderView, getActiveFolderDir });
+	const fileTree = useFileTree({ vaultPath, updateChildrenByDir, updateExpandedDirs, updateRootEntries, setActiveFilePath, setActivePreviewPath, activeFilePath, activePreviewPath, setError, loadAndBuildFolderView, getActiveFolderDir });
 
 	const { openOrCreateDailyNote, isCreating: isDailyNoteCreating } = useDailyNote({ onOpenFile: (path) => fileTree.openFile(path), setError });
 

@@ -23,10 +23,18 @@ export function isShortcutMatch(
 	event: KeyboardEvent,
 	shortcut: Shortcut,
 ): boolean {
-	if (event.metaKey !== Boolean(shortcut.meta)) return false;
+	const isMac = isMacOS();
+	if (shortcut.meta) {
+		const primaryPressed = isMac ? event.metaKey : event.ctrlKey;
+		if (!primaryPressed) return false;
+	} else if (event.metaKey) {
+		return false;
+	}
 	if (event.shiftKey !== Boolean(shortcut.shift)) return false;
 	if (event.altKey !== Boolean(shortcut.alt)) return false;
-	if (event.ctrlKey !== Boolean(shortcut.ctrl)) return false;
+	if (!(shortcut.meta && !isMac)) {
+		if (event.ctrlKey !== Boolean(shortcut.ctrl)) return false;
+	}
 	return normalizeKey(event.key) === normalizeKey(shortcut.key);
 }
 

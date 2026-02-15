@@ -26,6 +26,7 @@ const ViewContext = createContext<ViewContextValue | null>(null);
 export function ViewProvider({ children }: { children: ReactNode }) {
 	const { vaultPath, setError, startIndexRebuild } = useVault();
 	const initialViewLoadVaultRef = useRef<string | null>(null);
+	const activeViewDocSnapshotRef = useRef<ViewDoc | null>(null);
 
 	const {
 		activeViewDoc,
@@ -39,17 +40,25 @@ export function ViewProvider({ children }: { children: ReactNode }) {
 	} = useViewLoader({ setError, startIndexRebuild });
 
 	useEffect(() => {
+		activeViewDocSnapshotRef.current = activeViewDoc;
+	}, [activeViewDoc]);
+
+	useEffect(() => {
 		if (!vaultPath) {
 			initialViewLoadVaultRef.current = null;
 			return;
 		}
-		if (activeViewDoc || initialViewLoadVaultRef.current === vaultPath) return;
+		if (
+			activeViewDocSnapshotRef.current ||
+			initialViewLoadVaultRef.current === vaultPath
+		)
+			return;
 		initialViewLoadVaultRef.current = vaultPath;
 		void loadAndBuildFolderView("").finally(() => {
 			if (initialViewLoadVaultRef.current === vaultPath)
 				initialViewLoadVaultRef.current = null;
 		});
-	}, [vaultPath, activeViewDoc, loadAndBuildFolderView]);
+	}, [vaultPath, loadAndBuildFolderView]);
 
 	const value = useMemo<ViewContextValue>(
 		() => ({

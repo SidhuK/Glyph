@@ -14,13 +14,23 @@ import { useVault } from "./VaultContext";
 
 export interface FileTreeContextValue {
 	rootEntries: FsEntry[];
-	setRootEntries: React.Dispatch<React.SetStateAction<FsEntry[]>>;
+	updateRootEntries: (
+		next:
+			| FsEntry[]
+			| ((prev: FsEntry[]) => FsEntry[]),
+	) => void;
 	childrenByDir: Record<string, FsEntry[] | undefined>;
-	setChildrenByDir: React.Dispatch<
-		React.SetStateAction<Record<string, FsEntry[] | undefined>>
-	>;
+	updateChildrenByDir: (
+		next:
+			| Record<string, FsEntry[] | undefined>
+			| ((prev: Record<string, FsEntry[] | undefined>) => Record<string, FsEntry[] | undefined>),
+	) => void;
 	expandedDirs: Set<string>;
-	setExpandedDirs: React.Dispatch<React.SetStateAction<Set<string>>>;
+	updateExpandedDirs: (
+		next:
+			| Set<string>
+			| ((prev: Set<string>) => Set<string>),
+	) => void;
 	activeFilePath: string | null;
 	setActiveFilePath: (path: string | null) => void;
 	activeNoteId: string | null;
@@ -91,30 +101,70 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 	const activeNoteTitle = activeNoteId
 		? activeNoteId.split("/").pop() || activeNoteId
 		: null;
+	const memoizedActiveNoteId = useMemo(() => activeNoteId, [activeNoteId]);
+	const memoizedActiveNoteTitle = useMemo(
+		() => activeNoteTitle,
+		[activeNoteTitle],
+	);
+
+	const updateRootEntries = useCallback<
+		FileTreeContextValue["updateRootEntries"]
+	>((next) => {
+		setRootEntries((prev) =>
+			typeof next === "function"
+				? (next as (value: FsEntry[]) => FsEntry[])(prev)
+				: next,
+		);
+	}, []);
+
+	const updateChildrenByDir = useCallback<
+		FileTreeContextValue["updateChildrenByDir"]
+	>((next) => {
+		setChildrenByDir((prev) =>
+			typeof next === "function"
+				? (next as (
+						value: Record<string, FsEntry[] | undefined>,
+					) => Record<string, FsEntry[] | undefined>)(prev)
+				: next,
+		);
+	}, []);
+
+	const updateExpandedDirs = useCallback<
+		FileTreeContextValue["updateExpandedDirs"]
+	>((next) => {
+		setExpandedDirs((prev) =>
+			typeof next === "function"
+				? (next as (value: Set<string>) => Set<string>)(prev)
+				: next,
+		);
+	}, []);
 
 	const value = useMemo<FileTreeContextValue>(
 		() => ({
 			rootEntries,
-			setRootEntries,
+			updateRootEntries,
 			childrenByDir,
-			setChildrenByDir,
+			updateChildrenByDir,
 			expandedDirs,
-			setExpandedDirs,
+			updateExpandedDirs,
 			activeFilePath,
 			setActiveFilePath,
-			activeNoteId,
-			activeNoteTitle,
+			activeNoteId: memoizedActiveNoteId,
+			activeNoteTitle: memoizedActiveNoteTitle,
 			tags,
 			tagsError,
 			refreshTags,
 		}),
 		[
 			rootEntries,
+			updateRootEntries,
 			childrenByDir,
+			updateChildrenByDir,
 			expandedDirs,
+			updateExpandedDirs,
 			activeFilePath,
-			activeNoteId,
-			activeNoteTitle,
+			memoizedActiveNoteId,
+			memoizedActiveNoteTitle,
 			tags,
 			tagsError,
 			refreshTags,

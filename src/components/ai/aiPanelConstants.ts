@@ -1,10 +1,7 @@
-import anthropicLogoUrl from "../../assets/provider-logos/claude-ai.svg?url";
-import geminiLogoUrl from "../../assets/provider-logos/google-gemini.svg?url";
-import ollamaLogoUrl from "../../assets/provider-logos/ollama.svg?url";
-import openrouterLogoUrl from "../../assets/provider-logos/open-router.svg?url";
-import openaiLogoUrl from "../../assets/provider-logos/openai-light.svg?url";
 import type { AiAssistantMode, AiProviderKind } from "../../lib/tauri";
+import { normalizeRelPath } from "../../utils/path";
 import type { UIMessage } from "./hooks/useRigChat";
+import { providerLogoMap } from "./providerLogos";
 
 export type AddTrigger = { start: number; query: string };
 export type ToolPhase = "call" | "result" | "error";
@@ -46,14 +43,7 @@ export function formatToolName(tool: string): string {
 	return tool.split("_").filter(Boolean).join(" ");
 }
 
-export const providerLogoMap: Record<AiProviderKind, string> = {
-	openai: openaiLogoUrl,
-	openai_compat: openaiLogoUrl,
-	openrouter: openrouterLogoUrl,
-	anthropic: anthropicLogoUrl,
-	gemini: geminiLogoUrl,
-	ollama: ollamaLogoUrl,
-};
+export { providerLogoMap };
 
 export const AI_MODES: Array<{
 	value: AiAssistantMode;
@@ -75,9 +65,5 @@ export const AI_MODES: Array<{
 export const SLOW_START_MS = 3000;
 export const FINALIZING_MS = 280;
 
-export function normalizePath(path: string | null | undefined): string {
-	return (path ?? "")
-		.trim()
-		.replace(/\\/g, "/")
-		.replace(/^\/+|\/+$/g, "");
-}
+export const normalizePath = (path: string | null | undefined): string =>
+	normalizeRelPath(path ?? "");

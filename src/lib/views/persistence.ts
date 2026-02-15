@@ -4,7 +4,7 @@ import type { ViewDoc, ViewRef } from "./types";
 import { viewDocPath } from "./utils";
 
 function isRecord(value: unknown): value is Record<string, unknown> {
-	return Boolean(value) && typeof value === "object";
+	return Boolean(value) && typeof value === "object" && !Array.isArray(value);
 }
 
 function isViewKind(value: unknown): value is ViewDoc["kind"] {

@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import {
 	useFileTreeContext,
-	useUIContext,
+	useUILayoutContext,
 	useViewContext,
 } from "../../contexts";
 import { useRecentFiles } from "../../hooks/useRecentFiles";
@@ -16,7 +16,7 @@ export function useTabManager(vaultPath: string | null) {
 		setActivePreviewPath,
 		setOpenMarkdownTabs,
 		setActiveMarkdownTabPath,
-	} = useUIContext();
+	} = useUILayoutContext();
 
 	const [openTabs, setOpenTabs] = useState<string[]>([]);
 	const [activeTabPath, setActiveTabPath] = useState<string | null>(null);

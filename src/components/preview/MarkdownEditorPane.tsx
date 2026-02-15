@@ -1,7 +1,7 @@
 import { MenuCircleIcon, SourceCodeIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useEditorRegistration } from "../../contexts";
+import { useEditorRegistration, useVault } from "../../contexts";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { invoke } from "../../lib/tauri";
 import { parentDir } from "../../utils/path";
@@ -35,6 +35,7 @@ export function MarkdownEditorPane({
 	const [error, setError] = useState("");
 	const [actionsOpen, setActionsOpen] = useState(false);
 	const savedTextRef = useRef(savedText);
+	const { vaultPath } = useVault();
 
 	const isDirty = text !== savedText;
 
@@ -48,6 +49,10 @@ export function MarkdownEditorPane({
 		setSavedText(cached);
 		setActionsOpen(false);
 	}, [relPath]);
+
+	useEffect(() => {
+		markdownDocCache.clear();
+	}, [vaultPath]);
 
 	const loadDoc = useCallback(async () => {
 		setError("");

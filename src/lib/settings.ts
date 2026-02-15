@@ -1,4 +1,7 @@
 import { LazyStore } from "@tauri-apps/plugin-store";
+import type { AiAssistantMode } from "./tauri";
+
+export type { AiAssistantMode } from "./tauri";
 
 const store = new LazyStore("settings.json");
 const initPromise = store.init();
@@ -9,7 +12,6 @@ async function ensureLoaded(): Promise<void> {
 
 export type ThemeMode = "system" | "light" | "dark";
 const THEME_MODES = new Set<ThemeMode>(["system", "light", "dark"]);
-export type AiAssistantMode = "chat" | "create";
 const AI_ASSISTANT_MODES = new Set<AiAssistantMode>(["chat", "create"]);
 
 function asThemeMode(value: unknown): ThemeMode {

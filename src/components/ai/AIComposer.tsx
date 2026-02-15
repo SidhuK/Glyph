@@ -1,7 +1,7 @@
 import { Navigation03Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { motion, useReducedMotion } from "motion/react";
-import { useUIContext } from "../../contexts";
+import { useAISidebarContext } from "../../contexts";
 import { cn } from "@/lib/utils";
 import {
 	AiLattice,
@@ -63,7 +63,7 @@ export function AIComposer({
 	onAttachContextFiles,
 	onCreateNoteFromLastAssistant,
 }: AIComposerProps) {
-	const { aiAssistantMode, setAiAssistantMode } = useUIContext();
+	const { aiAssistantMode, setAiAssistantMode } = useAISidebarContext();
 	const shouldReduceMotion = useReducedMotion();
 
 	return (

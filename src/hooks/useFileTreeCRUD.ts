@@ -16,9 +16,15 @@ import {
 
 export interface UseFileTreeCRUDDeps {
 	vaultPath: string | null;
-	setChildrenByDir: React.Dispatch<React.SetStateAction<Record<string, FsEntry[] | undefined>>>;
-	setExpandedDirs: React.Dispatch<React.SetStateAction<Set<string>>>;
-	setRootEntries: React.Dispatch<React.SetStateAction<FsEntry[]>>;
+	updateChildrenByDir: (
+		next:
+			| Record<string, FsEntry[] | undefined>
+			| ((prev: Record<string, FsEntry[] | undefined>) => Record<string, FsEntry[] | undefined>),
+	) => void;
+	updateExpandedDirs: (
+		next: Set<string> | ((prev: Set<string>) => Set<string>),
+	) => void;
+	updateRootEntries: (next: FsEntry[] | ((prev: FsEntry[]) => FsEntry[])) => void;
 	setActiveFilePath: (path: string | null) => void;
 	setActivePreviewPath: (path: string | null) => void;
 	activeFilePath: string | null;
@@ -31,7 +37,7 @@ export interface UseFileTreeCRUDDeps {
 }
 
 export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
-	const { vaultPath, setChildrenByDir, setExpandedDirs, setRootEntries, setActiveFilePath, setActivePreviewPath, activeFilePath, activePreviewPath, setError, loadDir, loadAndBuildFolderView, getActiveFolderDir, loadedDirsRef } = deps;
+	const { vaultPath, updateChildrenByDir, updateExpandedDirs, updateRootEntries, setActiveFilePath, setActivePreviewPath, activeFilePath, activePreviewPath, setError, loadDir, loadAndBuildFolderView, getActiveFolderDir, loadedDirsRef } = deps;
 
 	const refreshAfterCreate = useCallback(async (targetDir: string) => {
 		await loadDir(targetDir, true);
@@ -57,11 +63,11 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 		const normalizedEntry = normalizeEntry(entry);
 		if (!normalizedEntry) return;
 		if (parentDirPath) {
-			setChildrenByDir((prev) => { const c = prev[parentDirPath]; if (!c) return prev; return { ...prev, [parentDirPath]: withInsertedEntry(c, normalizedEntry) }; });
+			updateChildrenByDir((prev) => { const c = prev[parentDirPath]; if (!c) return prev; return { ...prev, [parentDirPath]: withInsertedEntry(c, normalizedEntry) }; });
 			return;
 		}
-		setRootEntries((prev) => withInsertedEntry(prev, normalizedEntry));
-	}, [setChildrenByDir, setRootEntries]);
+		updateRootEntries((prev) => withInsertedEntry(prev, normalizedEntry));
+	}, [updateChildrenByDir, updateRootEntries]);
 
 	const onNewFileInDir = useCallback(async (dirPath: string) => {
 		if (!vaultPath) return;
@@ -79,12 +85,12 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			if (dirPath && !markdownRel.startsWith(`${dirPath}/`)) { setError(`Choose a file path inside "${dirPath}"`); return; }
 			await invoke("vault_write_text", { path: markdownRel, text: `# ${fileTitle}\n`, base_mtime_ms: null });
 			insertEntryOptimistic(parentDir(markdownRel), { name: fileName, rel_path: markdownRel, kind: "file", is_markdown: true });
-			if (dirPath) setExpandedDirs((prev) => { if (prev.has(dirPath)) return prev; const next = new Set(prev); next.add(dirPath); return next; });
+			if (dirPath) updateExpandedDirs((prev) => { if (prev.has(dirPath)) return prev; const next = new Set(prev); next.add(dirPath); return next; });
 			const createdInDir = parentDir(markdownRel);
 			await refreshAfterCreate(createdInDir);
 			await refreshActiveFolderViewAfterCreate(createdInDir);
 		} catch (e) { setError(extractErrorMessage(e)); }
-	}, [insertEntryOptimistic, refreshAfterCreate, refreshActiveFolderViewAfterCreate, setError, setExpandedDirs, vaultPath]);
+	}, [insertEntryOptimistic, refreshAfterCreate, refreshActiveFolderViewAfterCreate, setError, updateExpandedDirs, vaultPath]);
 
 	const onNewFile = useCallback(async () => { await onNewFileInDir(""); }, [onNewFileInDir]);
 
@@ -99,13 +105,13 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			const path = dirPath ? `${dirPath}/${name}` : name;
 			await invoke("vault_create_dir", { path });
 			insertEntryOptimistic(dirPath, { name, rel_path: path, kind: "dir", is_markdown: false });
-			setExpandedDirs((prev) => { const next = new Set(prev); if (dirPath) next.add(dirPath); return next; });
+			updateExpandedDirs((prev) => { const next = new Set(prev); if (dirPath) next.add(dirPath); return next; });
 			await refreshAfterCreate(dirPath);
 			await refreshActiveFolderViewAfterCreate(dirPath);
 			return path;
 		} catch (e) { setError(extractErrorMessage(e)); }
 		return null;
-	}, [insertEntryOptimistic, refreshAfterCreate, refreshActiveFolderViewAfterCreate, setError, setExpandedDirs, vaultPath]);
+	}, [insertEntryOptimistic, refreshAfterCreate, refreshActiveFolderViewAfterCreate, setError, updateExpandedDirs, vaultPath]);
 
 	const onRenameDir = useCallback(async (dirPath: string, nextName: string, kind: "dir" | "file" = "dir") => {
 		const name = nextName.trim();
@@ -118,20 +124,20 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 		setError("");
 		try {
 			await invoke("vault_rename_path", { from_path: dirPath, to_path: nextPath });
-			setExpandedDirs((prev) => { const next = new Set<string>(); for (const expanded of prev) next.add(rewritePrefix(expanded, dirPath, nextPath)); return next; });
-			if (parent) { setChildrenByDir((prev) => { const pe = prev[parent] ?? []; return { ...prev, [parent]: pe.map((e) => e.rel_path === dirPath ? { ...e, name, rel_path: nextPath } : e).sort(compareEntries) }; }); }
-			else { setRootEntries((prev) => prev.map((e) => e.rel_path === dirPath ? { ...e, name, rel_path: nextPath } : e).sort(compareEntries)); }
+			updateExpandedDirs((prev) => { const next = new Set<string>(); for (const expanded of prev) next.add(rewritePrefix(expanded, dirPath, nextPath)); return next; });
+			if (parent) { updateChildrenByDir((prev) => { const pe = prev[parent] ?? []; return { ...prev, [parent]: pe.map((e) => e.rel_path === dirPath ? { ...e, name, rel_path: nextPath } : e).sort(compareEntries) }; }); }
+			else { updateRootEntries((prev) => prev.map((e) => e.rel_path === dirPath ? { ...e, name, rel_path: nextPath } : e).sort(compareEntries)); }
 			if (kind === "dir") {
-				setChildrenByDir((prev) => { const next: Record<string, FsEntry[] | undefined> = {}; for (const [k, v] of Object.entries(prev)) { next[rewritePrefix(k, dirPath, nextPath)] = v?.map((e) => ({ ...e, rel_path: rewritePrefix(e.rel_path, dirPath, nextPath) })); } return next; });
+				updateChildrenByDir((prev) => { const next: Record<string, FsEntry[] | undefined> = {}; for (const [k, v] of Object.entries(prev)) { next[rewritePrefix(k, dirPath, nextPath)] = v?.map((e) => ({ ...e, rel_path: rewritePrefix(e.rel_path, dirPath, nextPath) })); } return next; });
 				loadedDirsRef.current = new Set([...loadedDirsRef.current].map((l) => rewritePrefix(l, dirPath, nextPath)));
 			} else {
-				setChildrenByDir((prev) => { const next: Record<string, FsEntry[] | undefined> = {}; for (const [k, v] of Object.entries(prev)) { next[k] = v?.map((e) => e.rel_path === dirPath ? { ...e, name, rel_path: nextPath } : e); } return next; });
+				updateChildrenByDir((prev) => { const next: Record<string, FsEntry[] | undefined> = {}; for (const [k, v] of Object.entries(prev)) { next[k] = v?.map((e) => e.rel_path === dirPath ? { ...e, name, rel_path: nextPath } : e); } return next; });
 			}
 			await refreshAfterCreate(parent);
 			if (kind === "dir") await loadDir(nextPath, true);
 			return nextPath;
 		} catch (e) { setError(extractErrorMessage(e)); return null; }
-	}, [loadDir, loadedDirsRef, refreshAfterCreate, setChildrenByDir, setError, setExpandedDirs, setRootEntries]);
+	}, [loadDir, loadedDirsRef, refreshAfterCreate, updateChildrenByDir, setError, updateExpandedDirs, updateRootEntries]);
 
 	const onDeletePath = useCallback(async (path: string, kind: "dir" | "file") => {
 		const target = normalizeRelPath(path);
@@ -140,9 +146,9 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 		try {
 			await invoke("vault_delete_path", { path: target, recursive: kind === "dir" });
 			const parent = parentDir(target);
-			setExpandedDirs((prev) => { if (kind !== "dir") return prev; const next = new Set<string>(); for (const e of prev) { if (e === target || e.startsWith(`${target}/`)) continue; next.add(e); } return next; });
-			setRootEntries((prev) => prev.filter((e) => e.rel_path !== target && (kind !== "dir" || !e.rel_path.startsWith(`${target}/`))));
-			setChildrenByDir((prev) => { const next: Record<string, FsEntry[] | undefined> = {}; for (const [k, entries] of Object.entries(prev)) { if (kind === "dir" && (k === target || k.startsWith(`${target}/`))) continue; next[k] = entries?.filter((e) => e.rel_path !== target && (kind !== "dir" || !e.rel_path.startsWith(`${target}/`))); } return next; });
+			updateExpandedDirs((prev) => { if (kind !== "dir") return prev; const next = new Set<string>(); for (const e of prev) { if (e === target || e.startsWith(`${target}/`)) continue; next.add(e); } return next; });
+			updateRootEntries((prev) => prev.filter((e) => e.rel_path !== target && (kind !== "dir" || !e.rel_path.startsWith(`${target}/`))));
+			updateChildrenByDir((prev) => { const next: Record<string, FsEntry[] | undefined> = {}; for (const [k, entries] of Object.entries(prev)) { if (kind === "dir" && (k === target || k.startsWith(`${target}/`))) continue; next[k] = entries?.filter((e) => e.rel_path !== target && (kind !== "dir" || !e.rel_path.startsWith(`${target}/`))); } return next; });
 			loadedDirsRef.current = new Set([...loadedDirsRef.current].filter((d) => d !== target && (kind !== "dir" || !d.startsWith(`${target}/`))));
 			if (activeFilePath === target || (kind === "dir" && Boolean(activeFilePath?.startsWith(`${target}/`)))) setActiveFilePath(null);
 			if (activePreviewPath === target || (kind === "dir" && Boolean(activePreviewPath?.startsWith(`${target}/`)))) setActivePreviewPath(null);
@@ -150,7 +156,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			await refreshActiveFolderViewAfterPathChange(target);
 			return true;
 		} catch (e) { setError(extractErrorMessage(e)); return false; }
-	}, [loadDir, loadedDirsRef, refreshActiveFolderViewAfterPathChange, setActiveFilePath, setActivePreviewPath, setChildrenByDir, setError, setExpandedDirs, setRootEntries, activeFilePath, activePreviewPath]);
+	}, [loadDir, loadedDirsRef, refreshActiveFolderViewAfterPathChange, setActiveFilePath, setActivePreviewPath, updateChildrenByDir, setError, updateExpandedDirs, updateRootEntries, activeFilePath, activePreviewPath]);
 
 	const onMovePath = useCallback(async (fromPath: string, toDirPath: string) => {
 		const from = normalizeRelPath(fromPath);
@@ -166,14 +172,14 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			const fromParent = parentDir(from);
 			const toParent = parentDir(nextPath);
 			const nextName = nextPath.split("/").pop() ?? fileName;
-			setChildrenByDir((prev) => { const next: Record<string, FsEntry[] | undefined> = {}; for (const [k, v] of Object.entries(prev)) { next[k] = v?.map((e) => e.rel_path === from ? { ...e, name: nextName, rel_path: nextPath } : e); } return next; });
-			setRootEntries((prev) => prev.map((e) => e.rel_path === from ? { ...e, name: nextName, rel_path: nextPath } : e));
+			updateChildrenByDir((prev) => { const next: Record<string, FsEntry[] | undefined> = {}; for (const [k, v] of Object.entries(prev)) { next[k] = v?.map((e) => e.rel_path === from ? { ...e, name: nextName, rel_path: nextPath } : e); } return next; });
+			updateRootEntries((prev) => prev.map((e) => e.rel_path === from ? { ...e, name: nextName, rel_path: nextPath } : e));
 			if (activeFilePath === from) setActiveFilePath(nextPath);
 			if (activePreviewPath === from) setActivePreviewPath(nextPath);
 			await Promise.all([loadDir(fromParent, true), loadDir(toParent, true), refreshActiveFolderViewAfterPathChange(from), refreshActiveFolderViewAfterPathChange(toParent)]);
 			return nextPath;
 		} catch (e) { setError(extractErrorMessage(e)); return null; }
-	}, [loadDir, refreshActiveFolderViewAfterPathChange, setActiveFilePath, setActivePreviewPath, setChildrenByDir, setError, setRootEntries, activeFilePath, activePreviewPath]);
+	}, [loadDir, refreshActiveFolderViewAfterPathChange, setActiveFilePath, setActivePreviewPath, updateChildrenByDir, setError, updateRootEntries, activeFilePath, activePreviewPath]);
 
 	return { onNewFile, onNewFileInDir, onNewFolderInDir, onRenameDir, onDeletePath, onMovePath };
 }

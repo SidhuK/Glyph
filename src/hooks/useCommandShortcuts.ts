@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import type { Command } from "../components/app/CommandPalette";
 import { type Shortcut, isShortcutMatch } from "../lib/shortcuts";
 
@@ -21,11 +21,32 @@ export function useCommandShortcuts({
 	openPaletteShortcuts,
 	openSearchShortcuts,
 }: UseCommandShortcutsProps) {
+	const commandsRef = useRef(commands);
+	commandsRef.current = commands;
+
+	const paletteOpenRef = useRef(paletteOpen);
+	paletteOpenRef.current = paletteOpen;
+
+	const openPaletteRef = useRef(onOpenPalette);
+	openPaletteRef.current = onOpenPalette;
+
+	const openSearchRef = useRef(onOpenPaletteSearch);
+	openSearchRef.current = onOpenPaletteSearch;
+
+	const closePaletteRef = useRef(onClosePalette);
+	closePaletteRef.current = onClosePalette;
+
+	const openPaletteShortcutsRef = useRef(openPaletteShortcuts);
+	openPaletteShortcutsRef.current = openPaletteShortcuts;
+
+	const openSearchShortcutsRef = useRef(openSearchShortcuts);
+	openSearchShortcutsRef.current = openSearchShortcuts;
+
 	useEffect(() => {
 		const handler = (e: KeyboardEvent) => {
-			if (openSearchShortcuts.some((s) => isShortcutMatch(e, s))) {
+			if (openSearchShortcutsRef.current.some((s) => isShortcutMatch(e, s))) {
 				e.preventDefault();
-				onOpenPaletteSearch();
+				openSearchRef.current();
 				return;
 			}
 
@@ -36,8 +57,8 @@ export function useCommandShortcuts({
 					t.tagName === "TEXTAREA" ||
 					t.isContentEditable);
 			if (inEditableField) {
-				if (!paletteOpen) {
-					const saveCommand = commands.find(
+				if (!paletteOpenRef.current) {
+					const saveCommand = commandsRef.current.find(
 						(command) =>
 							command.id === "save-note" &&
 							command.enabled !== false &&
@@ -54,20 +75,20 @@ export function useCommandShortcuts({
 				return;
 			}
 
-			if (openPaletteShortcuts.some((s) => isShortcutMatch(e, s))) {
+			if (openPaletteShortcutsRef.current.some((s) => isShortcutMatch(e, s))) {
 				e.preventDefault();
-				onOpenPalette();
+				openPaletteRef.current();
 				return;
 			}
 
-			if (paletteOpen && e.key === "Escape") {
+			if (paletteOpenRef.current && e.key === "Escape") {
 				e.preventDefault();
-				onClosePalette();
+				closePaletteRef.current();
 				return;
 			}
-			if (paletteOpen) return;
+			if (paletteOpenRef.current) return;
 
-			for (const command of commands) {
+			for (const command of commandsRef.current) {
 				if (command.enabled === false || !command.shortcut) continue;
 				if (!isShortcutMatch(e, command.shortcut)) continue;
 				e.preventDefault();
@@ -78,13 +99,5 @@ export function useCommandShortcuts({
 
 		window.addEventListener("keydown", handler);
 		return () => window.removeEventListener("keydown", handler);
-	}, [
-		commands,
-		onClosePalette,
-		onOpenPalette,
-		onOpenPaletteSearch,
-		openPaletteShortcuts,
-		openSearchShortcuts,
-		paletteOpen,
-	]);
+	}, []);
 }

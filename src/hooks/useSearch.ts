@@ -27,6 +27,7 @@ export function useSearch(vaultPath: string | null): UseSearchResult {
 		if (!searchQuery.trim()) {
 			setSearchResults([]);
 			setSearchError("");
+			setIsSearching(false);
 			return;
 		}
 		setIsSearching(true);

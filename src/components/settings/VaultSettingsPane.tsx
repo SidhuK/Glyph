@@ -64,6 +64,7 @@ export function VaultSettingsPane() {
 						</div>
 						<button
 							type="button"
+							aria-label="Clear recent vaults"
 							onClick={async () => {
 								await clearRecentVaults();
 								await refresh();

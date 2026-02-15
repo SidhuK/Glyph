@@ -89,8 +89,10 @@ export function useViewLoader(deps: UseViewLoaderDeps): UseViewLoaderResult {
 								if (isStale()) return;
 								try {
 									await buildAndSet();
-								} catch {
-									// ignore
+								} catch (innerError) {
+									if (isStale()) return;
+									setCanvasLoadingMessage("");
+									setError(extractErrorMessage(innerError));
 								}
 							})();
 							return;

@@ -1,6 +1,16 @@
 export type InAppPreviewKind = "image" | "pdf" | "text";
 
-const IMAGE_EXTS = new Set(["png", "jpg", "jpeg", "webp"]);
+const IMAGE_EXTS = new Set([
+	"png",
+	"jpg",
+	"jpeg",
+	"webp",
+	"gif",
+	"svg",
+	"bmp",
+	"avif",
+	"tiff",
+]);
 
 function extForPath(relPath: string): string {
 	const file = relPath.split("/").pop() ?? relPath;

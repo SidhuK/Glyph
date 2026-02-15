@@ -5,6 +5,7 @@ import {
 	useContext,
 	useEffect,
 	useMemo,
+	useRef,
 	useState,
 } from "react";
 import {
@@ -52,6 +53,7 @@ export function VaultProvider({ children }: { children: ReactNode }) {
 	const [recentVaults, setRecentVaults] = useState<string[]>([]);
 	const [isIndexing, setIsIndexing] = useState(false);
 	const [settingsLoaded, setSettingsLoaded] = useState(false);
+	const isOpeningVaultRef = useRef(false);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -76,7 +78,6 @@ export function VaultProvider({ children }: { children: ReactNode }) {
 				if (cancelled) return;
 				setRecentVaults(settings.recentVaults);
 				setLastVaultPath(settings.currentVaultPath);
-				setSettingsLoaded(true);
 
 				if (settings.currentVaultPath) {
 					try {
@@ -87,15 +88,14 @@ export function VaultProvider({ children }: { children: ReactNode }) {
 							setVaultPath(vaultInfo.root);
 							setVaultSchemaVersion(vaultInfo.schema_version);
 						}
-					} catch {
-						if (!cancelled) setSettingsLoaded(true);
-					}
+					} catch {}
 				}
 			} catch (err) {
 				if (!cancelled) {
 					setError(extractError(err));
-					setSettingsLoaded(true);
 				}
+			} finally {
+				if (!cancelled) setSettingsLoaded(true);
 			}
 		})();
 		return () => {
@@ -116,6 +116,8 @@ export function VaultProvider({ children }: { children: ReactNode }) {
 
 	const applyVaultSelection = useCallback(
 		async (path: string, mode: "open" | "create") => {
+			if (isOpeningVaultRef.current) return;
+			isOpeningVaultRef.current = true;
 			setError("");
 			try {
 				const vaultInfo =
@@ -134,6 +136,8 @@ export function VaultProvider({ children }: { children: ReactNode }) {
 				setVaultSchemaVersion(vaultInfo.schema_version);
 			} catch (err) {
 				setError(extractError(err));
+			} finally {
+				isOpeningVaultRef.current = false;
 			}
 		},
 		[],

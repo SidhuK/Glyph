@@ -1,18 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
+import { extractErrorMessage } from "../../lib/errorUtils";
 import {
 	type AiChatHistoryDetail,
 	type AiChatHistorySummary,
 	type AiStoredToolEvent,
-	TauriInvokeError,
 	invoke,
 } from "../../lib/tauri";
 import type { UIMessage } from "./hooks/useRigChat";
-
-function errMessage(err: unknown): string {
-	if (err instanceof TauriInvokeError) return err.message;
-	if (err instanceof Error) return err.message;
-	return String(err);
-}
 
 function toUIMessages(
 	jobId: string,
@@ -53,7 +47,7 @@ export function useAiHistory(limit = 20) {
 				prev && !list.some((item) => item.job_id === prev) ? null : prev,
 			);
 		} catch (err) {
-			setError(errMessage(err));
+			setError(extractErrorMessage(err));
 		} finally {
 			setListLoading(false);
 		}
@@ -70,7 +64,7 @@ export function useAiHistory(limit = 20) {
 				toolEvents: detail.tool_events ?? [],
 			} satisfies LoadedAiChat;
 		} catch (err) {
-			setError(errMessage(err));
+			setError(extractErrorMessage(err));
 			return null;
 		} finally {
 			setLoadingJobId(null);

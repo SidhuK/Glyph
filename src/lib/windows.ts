@@ -29,9 +29,9 @@ export async function openSettingsWindow(tab?: SettingsTab) {
 	});
 
 	win.once("tauri://created", () => {
-		// no-op
+		console.debug("settings window created");
 	});
-	win.once("tauri://error", () => {
-		// no-op
+	win.once("tauri://error", (event) => {
+		console.error("failed to create settings window", event);
 	});
 }

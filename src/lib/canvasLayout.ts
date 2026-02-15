@@ -8,6 +8,10 @@ import {
 export const GRID_SIZE = 24;
 export const GRID_GAP = GRID_SIZE * 4;
 export const MAX_CANVAS_AUTO_ROWS = 3;
+const LINK_NODE_SIZE = { w: 260, h: 200 } as const;
+const TEXT_NODE_SIZE = { w: 190, h: 110 } as const;
+const FRAME_NODE_SIZE = { w: 300, h: 220 } as const;
+const DEFAULT_NODE_SIZE = { w: 220, h: 160 } as const;
 
 export type LayoutNode = {
 	id: string;
@@ -31,10 +35,10 @@ export function estimateNodeSize(node: LayoutNode): { w: number; h: number } {
 	if (type === "note") return { w: CANVAS_CARD_WIDTH, h: CANVAS_CARD_HEIGHT };
 	if (type === "file") return { w: CANVAS_CARD_WIDTH, h: CANVAS_CARD_HEIGHT };
 	if (type === "folder") return { w: FOLDER_NODE_WIDTH, h: FOLDER_NODE_HEIGHT };
-	if (type === "link") return { w: 260, h: 200 };
-	if (type === "text") return { w: 190, h: 110 };
-	if (type === "frame") return { w: 300, h: 220 };
-	return { w: 220, h: 160 };
+	if (type === "link") return LINK_NODE_SIZE;
+	if (type === "text") return TEXT_NODE_SIZE;
+	if (type === "frame") return FRAME_NODE_SIZE;
+	return DEFAULT_NODE_SIZE;
 }
 
 export function columnsForMaxRows(

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useUIContext } from "../../contexts";
+import { useAISidebarContext } from "../../contexts";
 import { openSettingsWindow } from "../../lib/windows";
 import { cn } from "@/lib/utils";
 import { AiLattice, Minus, Plus, Settings as SettingsIcon, X } from "../Icons";
@@ -39,7 +39,7 @@ export function AIPanel({
 	onClose,
 }: AIPanelProps) {
 	const chat = useRigChat();
-	const { aiAssistantMode } = useUIContext();
+	const { aiAssistantMode } = useAISidebarContext();
 	const isChatMode = aiAssistantMode === "chat";
 	const normalizedCurrentFilePath = useMemo(
 		() => normalizePath(currentFilePath),

@@ -1,8 +1,7 @@
+import { basename } from "../utils/path";
+
 function titleForFile(relPath: string): string {
-	const name =
-		relPath.split("/").filter(Boolean).pop() ??
-		relPath.split("/").pop() ??
-		relPath;
+	const name = basename(relPath);
 	return name.toLowerCase().endsWith(".md") ? name.slice(0, -3) : name;
 }
 
@@ -14,11 +13,22 @@ export function parseNotePreview(
 	// Extract title from frontmatter or first heading
 	let title = titleForFile(relPath);
 	// Check for YAML frontmatter title
-	const fmMatch = normalizedText.match(
-		/^---\n[\s\S]*?title:\s*["']?([^\n"']+)["']?[\s\S]*?\n---/,
+	const frontmatterTitleMatch = normalizedText.match(
+		/^---\n([\s\S]*?)\n---\n?/,
 	);
-	if (fmMatch?.[1]) {
-		title = fmMatch[1].trim();
+	if (frontmatterTitleMatch?.[1]) {
+		for (const line of frontmatterTitleMatch[1].split("\n")) {
+			const match = line.match(
+				/^\s*title\s*:\s*(?:"((?:\\.|[^"])*)"|'((?:\\.|[^'])*)'|([^#\n]+))\s*$/,
+			);
+			if (!match) continue;
+			const raw = match[1] ?? match[2] ?? match[3] ?? "";
+			const parsed = raw.trim().replace(/^['"]|['"]$/g, "");
+			if (parsed) {
+				title = parsed;
+				break;
+			}
+		}
 	} else {
 		// Check for first # heading
 		const headingMatch = normalizedText.match(/^#\s+(.+)$/m);
@@ -62,7 +72,6 @@ export function joinYamlFrontmatter(
 	const fm = frontmatter?.trimEnd() ?? "";
 	const b = body ?? "";
 	if (!fm) return b;
-	if (!fm.startsWith("---")) return `${fm}\n${b}`;
 	// Ensure exactly one blank line between frontmatter and body (unless body is empty).
 	const normalizedBody = b.length ? b.replace(/^\n+/, "\n") : "";
 	return `${fm}\n${normalizedBody}`;

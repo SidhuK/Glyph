@@ -1,11 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { type AiProfile, TauriInvokeError, invoke } from "../../lib/tauri";
-
-function errMessage(err: unknown): string {
-	if (err instanceof TauriInvokeError) return err.message;
-	if (err instanceof Error) return err.message;
-	return String(err);
-}
+import { extractErrorMessage } from "../../lib/errorUtils";
+import { type AiProfile, invoke } from "../../lib/tauri";
 
 export function useAiProfiles() {
 	const [profiles, setProfiles] = useState<AiProfile[]>([]);
@@ -32,7 +27,7 @@ export function useAiProfiles() {
 					await invoke("ai_active_profile_set", { id: list[0].id });
 				}
 			} catch (e) {
-				if (!cancelled) setError(errMessage(e));
+				if (!cancelled) setError(extractErrorMessage(e));
 			}
 		})();
 		return () => {
@@ -72,7 +67,7 @@ export function useAiProfiles() {
 		try {
 			await invoke("ai_active_profile_set", { id });
 		} catch (e) {
-			setError(errMessage(e));
+			setError(extractErrorMessage(e));
 		}
 	}, []);
 
@@ -88,7 +83,7 @@ export function useAiProfiles() {
 				});
 				setProfiles((prev) => prev.map((p) => (p.id === saved.id ? saved : p)));
 			} catch (e) {
-				setError(errMessage(e));
+				setError(extractErrorMessage(e));
 			}
 		},
 		[activeProfileId, profiles],

@@ -1,9 +1,6 @@
 import type { ViewKind, ViewRef } from "./types";
-
-export function basename(relPath: string): string {
-	const parts = relPath.split("/").filter(Boolean);
-	return parts[parts.length - 1] ?? relPath;
-}
+export { basename } from "../../utils/path";
+import { basename } from "../../utils/path";
 
 export function viewId(view: ViewRef): {
 	id: string;

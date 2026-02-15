@@ -1,9 +1,8 @@
-import { titleForFile } from "../../notePreview";
 import { invoke } from "../../tauri";
 import type { ViewDoc, ViewOptions } from "../types";
 import { viewId } from "../utils";
 import { buildListViewDoc } from "./buildListViewDoc";
-import { fetchNotePreviewsAllAtOnce } from "./common";
+import { buildPrimaryNoteNode, fetchNotePreviewsAllAtOnce } from "./common";
 
 export async function buildSearchViewDoc(
 	query: string,
@@ -34,40 +33,7 @@ export async function buildSearchViewDoc(
 		primaryIds: ids,
 		buildPrimaryNode({ id, prevNode }) {
 			const noteData = noteContents.get(id);
-			if (prevNode) {
-				if (prevNode.type === "note") {
-					return {
-						node: {
-							...prevNode,
-							data: {
-								...prevNode.data,
-								title:
-									noteData?.title ||
-									(typeof prevNode.data.title === "string"
-										? prevNode.data.title
-										: undefined) ||
-									titleForFile(id),
-								content: noteData?.content || "",
-							},
-						},
-						isNew: false,
-					};
-				}
-				return { node: { ...prevNode }, isNew: false };
-			}
-			return {
-				node: {
-					id,
-					type: "note",
-					position: { x: 0, y: 0 },
-					data: {
-						noteId: id,
-						title: noteData?.title || titleById.get(id) || titleForFile(id),
-						content: noteData?.content || "",
-					},
-				},
-				isNew: true,
-			};
+			return buildPrimaryNoteNode(id, prevNode, noteData, titleById.get(id));
 		},
 		shouldPreservePrevNode(n) {
 			return n.type !== "note";

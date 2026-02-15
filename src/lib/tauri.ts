@@ -226,7 +226,7 @@ export interface AiChatHistorySummary {
 
 export interface AiStoredToolEvent {
 	tool: string;
-	phase: "call" | "result" | "error" | string;
+	phase: "call" | "result" | "error";
 	at_ms: number;
 	call_id?: string | null;
 	payload?: unknown;
@@ -367,6 +367,12 @@ function errorMessage(raw: unknown): string {
 	return "Unknown error";
 }
 
+function asInvokePayload(value: unknown): Record<string, unknown> {
+	if (value == null) return {};
+	if (typeof value !== "object" || Array.isArray(value)) return {};
+	return value as Record<string, unknown>;
+}
+
 type ArgsTuple<K extends keyof TauriCommands> =
 	TauriCommands[K]["args"] extends void ? [] : [TauriCommands[K]["args"]];
 
@@ -375,10 +381,7 @@ export async function invoke<K extends keyof TauriCommands>(
 	...args: ArgsTuple<K>
 ): Promise<TauriCommands[K]["result"]> {
 	try {
-		const payload: Record<string, unknown> =
-			args.length > 0 && args[0] != null
-				? (args[0] as Record<string, unknown>)
-				: {};
+		const payload = args.length > 0 ? asInvokePayload(args[0]) : {};
 		return (await tauriInvoke(command, payload)) as TauriCommands[K]["result"];
 	} catch (raw) {
 		throw new TauriInvokeError(errorMessage(raw), raw);

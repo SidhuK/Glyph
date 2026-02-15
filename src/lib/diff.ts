@@ -7,13 +7,13 @@ function myersDiff(a: string[], b: string[], maxD: number): DiffOp[] | null {
 	const n = a.length;
 	const m = b.length;
 	const max = n + m;
-	const v = new Map<number, number>();
+	let v = new Map<number, number>();
 	v.set(1, 0);
 	const trace: Array<Map<number, number>> = [];
 
 	for (let d = 0; d <= Math.min(max, maxD); d++) {
-		const vNext = new Map(v);
-		trace.push(vNext);
+		trace.push(new Map(v));
+		const vNext = new Map<number, number>();
 		for (let k = -d; k <= d; k += 2) {
 			const x =
 				k === -d || (k !== d && (v.get(k - 1) ?? 0) < (v.get(k + 1) ?? 0))
@@ -71,8 +71,7 @@ function myersDiff(a: string[], b: string[], maxD: number): DiffOp[] | null {
 				return ops.reverse();
 			}
 		}
-		v.clear();
-		for (const [k, val] of vNext) v.set(k, val);
+		v = vNext;
 	}
 
 	return null;
@@ -87,7 +86,7 @@ export function unifiedDiff(
 	const maxDiffLines = opts?.maxDiffLines ?? 4000;
 	const a = before.replace(/\r\n/g, "\n").split("\n");
 	const b = after.replace(/\r\n/g, "\n").split("\n");
-	const ops = myersDiff(a, b, 10_000);
+	const ops = myersDiff(a, b, 3000);
 	if (!ops) return "Diff too large to compute.";
 
 	const lines: string[] = [];

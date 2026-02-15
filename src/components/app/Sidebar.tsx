@@ -1,5 +1,6 @@
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
-import { useUIContext, useVault } from "../../contexts";
+import { memo } from "react";
+import { useUILayoutContext, useVault } from "../../contexts";
 import { cn } from "@/lib/utils";
 import { SidebarContent } from "./SidebarContent";
 import { SidebarHeader } from "./SidebarHeader";
@@ -20,7 +21,7 @@ interface SidebarProps {
 	isDailyNoteCreating: boolean;
 }
 
-export function Sidebar({
+export const Sidebar = memo(function Sidebar({
 	onToggleDir,
 	onSelectDir,
 	onOpenFile,
@@ -37,7 +38,7 @@ export function Sidebar({
 }: SidebarProps) {
 	// Contexts
 	const { onOpenVault } = useVault();
-	const { sidebarWidth } = useUIContext();
+	const { sidebarWidth } = useUILayoutContext();
 	const shouldReduceMotion = useReducedMotion();
 	const sidebarState = sidebarCollapsed ? "collapsed" : "expanded";
 
@@ -92,4 +93,4 @@ export function Sidebar({
 			</AnimatePresence>
 		</motion.aside>
 	);
-}
+});

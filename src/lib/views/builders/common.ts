@@ -4,6 +4,7 @@ import type { CanvasEdge, CanvasNode } from "../../tauri";
 import { invoke } from "../../tauri";
 import { sanitizeEdges, sanitizeNodes } from "../sanitize";
 import type { ViewDoc } from "../types";
+import type { BuildPrimaryResult } from "./buildListViewDoc";
 
 export function normalizeLegacyFrameChildren(
 	nodes: CanvasNode[],
@@ -71,7 +72,11 @@ export async function fetchNotePreviewsAllAtOnce(
 	let previews: Array<{ id: string; title: string; preview: string }> = [];
 	try {
 		previews = await invoke("index_note_previews_batch", { ids: noteIds });
-	} catch {
+	} catch (error) {
+		console.warn(
+			"index_note_previews_batch failed, falling back to disk",
+			error,
+		);
 		previews = [];
 	}
 
@@ -120,6 +125,74 @@ export async function fetchNotePreviewsAllAtOnce(
 	return resultMap;
 }
 
+export function buildPrimaryNoteNode(
+	id: string,
+	prevNode: CanvasNode | undefined,
+	noteData: { title: string; content: string } | undefined,
+	titleOverride?: string,
+): BuildPrimaryResult {
+	if (prevNode) {
+		if (prevNode.type === "note") {
+			return {
+				node: {
+					...prevNode,
+					data: {
+						...prevNode.data,
+						title:
+							noteData?.title ||
+							(typeof prevNode.data.title === "string"
+								? prevNode.data.title
+								: undefined) ||
+							titleOverride ||
+							titleForFile(id),
+						content: noteData?.content || "",
+					},
+				},
+				isNew: false,
+			};
+		}
+		return { node: { ...prevNode }, isNew: false };
+	}
+	return {
+		node: {
+			id,
+			type: "note",
+			position: { x: 0, y: 0 },
+			data: {
+				noteId: id,
+				title: noteData?.title || titleOverride || titleForFile(id),
+				content: noteData?.content || "",
+			},
+		},
+		isNew: true,
+	};
+}
+
+function isDeepEqual(a: unknown, b: unknown): boolean {
+	if (Object.is(a, b)) return true;
+	if (typeof a !== typeof b) return false;
+	if (a == null || b == null) return false;
+	if (typeof a !== "object") return false;
+	if (Array.isArray(a) || Array.isArray(b)) {
+		if (!Array.isArray(a) || !Array.isArray(b)) return false;
+		if (a.length !== b.length) return false;
+		for (let i = 0; i < a.length; i += 1) {
+			if (!isDeepEqual(a[i], b[i])) return false;
+		}
+		return true;
+	}
+	const aRecord = a as Record<string, unknown>;
+	const bRecord = b as Record<string, unknown>;
+	const aKeys = Object.keys(aRecord);
+	const bKeys = Object.keys(bRecord);
+	if (aKeys.length !== bKeys.length) return false;
+	for (const key of aKeys) {
+		if (!(key in bRecord)) return false;
+		if (!isDeepEqual(aRecord[key], bRecord[key])) return false;
+	}
+	return true;
+}
+
 export function hasViewDocChanged(
 	prev: ViewDoc | null,
 	prevNodes: CanvasNode[],
@@ -129,11 +202,11 @@ export function hasViewDocChanged(
 ): boolean {
 	if (!prev) return true;
 
-	const prevNodesSignature = JSON.stringify(sanitizeNodes(prevNodes));
-	const nextNodesSignature = JSON.stringify(sanitizeNodes(nextNodes));
-	if (prevNodesSignature !== nextNodesSignature) return true;
+	const sanitizedPrevNodes = sanitizeNodes(prevNodes);
+	const sanitizedNextNodes = sanitizeNodes(nextNodes);
+	if (!isDeepEqual(sanitizedPrevNodes, sanitizedNextNodes)) return true;
 
-	const prevEdgesSignature = JSON.stringify(sanitizeEdges(prevEdges));
-	const nextEdgesSignature = JSON.stringify(sanitizeEdges(nextEdges));
-	return prevEdgesSignature !== nextEdgesSignature;
+	const sanitizedPrevEdges = sanitizeEdges(prevEdges);
+	const sanitizedNextEdges = sanitizeEdges(nextEdges);
+	return !isDeepEqual(sanitizedPrevEdges, sanitizedNextEdges);
 }

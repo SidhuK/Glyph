@@ -1,9 +1,8 @@
-import { type AiHeader, TauriInvokeError } from "../../../lib/tauri";
+import { extractErrorMessage } from "../../../lib/errorUtils";
+import type { AiHeader } from "../../../lib/tauri";
 
 export function errMessage(err: unknown): string {
-	if (err instanceof TauriInvokeError) return err.message;
-	if (err instanceof Error) return err.message;
-	return String(err);
+	return extractErrorMessage(err);
 }
 
 export function headersToText(headers: AiHeader[]): string {

@@ -7,11 +7,15 @@ interface AIMessageMarkdownProps {
 	markdown: string;
 }
 
+const MARKDOWN_VIEW_EXTENSIONS = createEditorExtensions({
+	enableSlashCommand: false,
+});
+
 export function AIMessageMarkdown({ markdown }: AIMessageMarkdownProps) {
 	const lastAppliedRef = useRef(markdown);
 	const editor = useEditor({
 		editable: false,
-		extensions: createEditorExtensions({ enableSlashCommand: false }),
+		extensions: MARKDOWN_VIEW_EXTENSIONS,
 		content: markdown,
 		contentType: "markdown",
 		editorProps: {

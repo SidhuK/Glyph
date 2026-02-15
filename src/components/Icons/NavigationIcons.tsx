@@ -1,6 +1,7 @@
 import * as Icons from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { ComponentProps } from "react";
+import latticeIconUrl from "../../assets/lattice.svg?url";
 
 export type IconProps = Omit<ComponentProps<typeof HugeiconsIcon>, "icon">;
 
@@ -48,4 +49,20 @@ export const Maximize2 = (props: IconProps) => (
 );
 export const Minimize2 = (props: IconProps) => (
 	<HugeiconsIcon icon={Icons.Minimize} {...props} />
+);
+export const AiLattice = ({
+	size = 16,
+	alt = "",
+	style,
+	...props
+}: Omit<ComponentProps<"img">, "src"> & { size?: number | string }) => (
+	<img
+		src={latticeIconUrl}
+		alt={alt}
+		width={size}
+		height={size}
+		style={{ display: "block", border: 0, ...style }}
+		aria-hidden={alt ? undefined : true}
+		{...props}
+	/>
 );

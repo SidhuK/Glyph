@@ -1,6 +1,6 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { useEditor } from "@tiptap/react";
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import {
 	joinYamlFrontmatter,
 	splitYamlFrontmatter,
@@ -36,13 +36,14 @@ export function useNoteEditor({
 	const lastEmittedMarkdownRef = useRef(markdown);
 	const ignoreNextUpdateRef = useRef(false);
 	const suppressUpdateRef = useRef(false);
+	const extensions = useMemo(() => createEditorExtensions(), []);
 
 	useEffect(() => {
 		frontmatterRef.current = frontmatter;
 	}, [frontmatter]);
 
 	const editor = useEditor({
-		extensions: createEditorExtensions(),
+		extensions,
 		content: editorBody,
 		contentType: "markdown",
 		editorProps: {

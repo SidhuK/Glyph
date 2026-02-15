@@ -1,9 +1,9 @@
 import * as Icons from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, motion } from "motion/react";
-import { useCallback } from "react";
+import { memo, useCallback } from "react";
 import { toast } from "sonner";
-import { useFileTreeContext, useUIContext, useVault } from "../../contexts";
+import { useFileTreeContext, useUILayoutContext, useVault } from "../../contexts";
 import { useViewContext } from "../../contexts";
 import { openSettingsWindow } from "../../lib/windows";
 import { parentDir } from "../../utils/path";
@@ -34,7 +34,16 @@ interface SidebarContentProps {
 	isDailyNoteCreating: boolean;
 }
 
-export function SidebarContent({
+const SIDEBAR_FOOTER_STYLE = {
+	display: "grid",
+	gridTemplateColumns: "auto 1fr auto",
+	alignItems: "center",
+} as const;
+
+const DAILY_NOTE_BUTTON_STYLE = { justifySelf: "center" } as const;
+const ACTIONS_STYLE = { justifySelf: "end" } as const;
+
+export const SidebarContent = memo(function SidebarContent({
 	onToggleDir,
 	onSelectDir,
 	onOpenFile,
@@ -59,7 +68,7 @@ export function SidebarContent({
 		refreshTags,
 	} = useFileTreeContext();
 	const { sidebarViewMode, setSidebarViewMode, dailyNotesFolder } =
-		useUIContext();
+		useUILayoutContext();
 
 	const handleDailyNoteClick = useCallback(() => {
 		if (!dailyNotesFolder) {
@@ -160,14 +169,7 @@ export function SidebarContent({
 					)}
 				</AnimatePresence>
 			</div>
-			<div
-				className="sidebarFooter"
-				style={{
-					display: "grid",
-					gridTemplateColumns: "auto 1fr auto",
-					alignItems: "center",
-				}}
-			>
+			<div className="sidebarFooter" style={SIDEBAR_FOOTER_STYLE}>
 				<Button
 					type="button"
 					variant="ghost"
@@ -183,12 +185,12 @@ export function SidebarContent({
 					onClick={handleDailyNoteClick}
 					disabled={isDailyNoteCreating}
 					title="Open today's daily note"
-					style={{ justifySelf: "center" }}
+					style={DAILY_NOTE_BUTTON_STYLE}
 				>
 					<Calendar size={14} />
 					<span className="dailyNotesLabel">Daily Note</span>
 				</button>
-				<div style={{ justifySelf: "end" }}>
+				<div style={ACTIONS_STYLE}>
 					{sidebarViewMode === "files" && (
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
@@ -228,4 +230,4 @@ export function SidebarContent({
 			</div>
 		</>
 	);
-}
+});

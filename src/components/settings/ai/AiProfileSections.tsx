@@ -29,6 +29,16 @@ export function AiProfileSections({
 	);
 	const [keySaved, setKeySaved] = useState(false);
 	const [error, setError] = useState("");
+	const [keySavedTimeout, setKeySavedTimeout] = useState<number | null>(null);
+
+	useEffect(
+		() => () => {
+			if (keySavedTimeout !== null) {
+				window.clearTimeout(keySavedTimeout);
+			}
+		},
+		[keySavedTimeout],
+	);
 
 	useEffect(() => {
 		if (!activeProfileId) {
@@ -71,11 +81,15 @@ export function AiProfileSections({
 			setApiKeyDraft("");
 			setSecretConfigured(true);
 			setKeySaved(true);
-			setTimeout(() => setKeySaved(false), 3000);
+			if (keySavedTimeout !== null) {
+				window.clearTimeout(keySavedTimeout);
+			}
+			const timeout = window.setTimeout(() => setKeySaved(false), 3000);
+			setKeySavedTimeout(timeout);
 		} catch (e) {
 			setError(errMessage(e));
 		}
-	}, [activeProfileId, apiKeyDraft]);
+	}, [activeProfileId, apiKeyDraft, keySavedTimeout]);
 
 	const handleClearApiKey = useCallback(async () => {
 		if (!activeProfileId) return;

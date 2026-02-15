@@ -1,4 +1,5 @@
 import { motion } from "motion/react";
+import { useMemo } from "react";
 import {
 	SHORTCUTS,
 	type ShortcutDefinition,
@@ -46,7 +47,7 @@ export function KeyboardShortcutsHelp({
 	open,
 	onClose,
 }: KeyboardShortcutsHelpProps) {
-	const grouped = groupByCategory(SHORTCUTS);
+	const grouped = useMemo(() => groupByCategory(SHORTCUTS), []);
 
 	return (
 		<Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
