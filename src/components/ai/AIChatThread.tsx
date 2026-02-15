@@ -1,6 +1,6 @@
+import { cn } from "@/lib/utils";
 import { motion, useReducedMotion } from "motion/react";
 import { Fragment, Suspense, lazy } from "react";
-import { cn } from "@/lib/utils";
 import { Files, RefreshCw, Save } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { AIToolTimeline, type ToolTimelineEvent } from "./AIToolTimeline";
@@ -43,9 +43,7 @@ export function AIChatThread({
 		<>
 			{messages.length === 0 ? (
 				<div className="aiChatEmpty">
-					<div className="aiChatEmptyTitle">
-						Ask anything about your notes
-					</div>
+					<div className="aiChatEmptyTitle">Ask anything about your notes</div>
 					<div className="aiChatEmptyMeta">
 						Use @ to mention files or folders
 					</div>

@@ -10,7 +10,6 @@ import {
 	ContextMenuSeparator,
 	ContextMenuTrigger,
 } from "../ui/shadcn/context-menu";
-import { basename, getFileTypeInfo } from "./fileTypeUtils";
 import {
 	buildRowStyle,
 	rowVariants,
@@ -18,6 +17,7 @@ import {
 	springTransition,
 	truncateMiddle,
 } from "./fileTreeItemHelpers";
+import { basename, getFileTypeInfo } from "./fileTypeUtils";
 
 interface FileTreeFileItemProps {
 	entry: FsEntry;

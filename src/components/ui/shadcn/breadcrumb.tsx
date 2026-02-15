@@ -1,4 +1,7 @@
-import { ChevronRight as ChevronRightIcon, MoreHorizontal as MoreHorizontalIcon } from "@hugeicons/core-free-icons";
+import {
+	ChevronRight as ChevronRightIcon,
+	MoreHorizontal as MoreHorizontalIcon,
+} from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { Slot } from "radix-ui";
 import type * as React from "react";

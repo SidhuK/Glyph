@@ -1,6 +1,12 @@
 "use client";
 
-import { Alert02Icon, CheckCircle, Info, LoaderCircle, OctagonIcon } from "@hugeicons/core-free-icons";
+import {
+	Alert02Icon,
+	CheckCircle,
+	Info,
+	LoaderCircle,
+	OctagonIcon,
+} from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useTheme } from "next-themes";
 import { Toaster as Sonner, type ToasterProps } from "sonner";
@@ -17,7 +23,9 @@ const Toaster = ({ ...props }: ToasterProps) => {
 				info: <HugeiconsIcon icon={Info} className="size-4" />,
 				warning: <HugeiconsIcon icon={Alert02Icon} className="size-4" />,
 				error: <HugeiconsIcon icon={OctagonIcon} className="size-4" />,
-				loading: <HugeiconsIcon icon={LoaderCircle} className="size-4 animate-spin" />,
+				loading: (
+					<HugeiconsIcon icon={LoaderCircle} className="size-4 animate-spin" />
+				),
 			}}
 			style={
 				{

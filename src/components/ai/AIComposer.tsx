@@ -1,15 +1,9 @@
+import { cn } from "@/lib/utils";
 import { Navigation03Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { motion, useReducedMotion } from "motion/react";
 import { useAISidebarContext } from "../../contexts";
-import { cn } from "@/lib/utils";
-import {
-	AiLattice,
-	FileText,
-	Layout,
-	Paperclip,
-	X,
-} from "../Icons";
+import { AiLattice, FileText, Layout, Paperclip, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { ModelSelector } from "./ModelSelector";
 import { AI_MODES } from "./aiPanelConstants";
@@ -144,7 +138,12 @@ export function AIComposer({
 							scheduleComposerInputResize();
 						}}
 						onKeyDown={(e) => {
-							if (e.key === "Enter" && !e.shiftKey && !e.metaKey && !e.ctrlKey) {
+							if (
+								e.key === "Enter" &&
+								!e.shiftKey &&
+								!e.metaKey &&
+								!e.ctrlKey
+							) {
 								e.preventDefault();
 								onSend();
 							}
@@ -221,7 +220,9 @@ export function AIComposer({
 							size="icon-sm"
 							aria-label="Create note from last reply"
 							title="Create note from last reply"
-							onClick={() => void onCreateNoteFromLastAssistant(lastAssistantText)}
+							onClick={() =>
+								void onCreateNoteFromLastAssistant(lastAssistantText)
+							}
 							disabled={isChatMode || !lastAssistantText}
 						>
 							<AiLattice size={18} />
@@ -238,11 +239,7 @@ export function AIComposer({
 							onChange={(modelId) => void profiles.setModel(modelId)}
 						/>
 						{isAwaitingResponse ? (
-							<button
-								type="button"
-								className="aiComposerStop"
-								onClick={onStop}
-							>
+							<button type="button" className="aiComposerStop" onClick={onStop}>
 								Stop
 							</button>
 						) : (

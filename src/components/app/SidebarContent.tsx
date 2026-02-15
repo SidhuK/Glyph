@@ -3,7 +3,11 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, motion } from "motion/react";
 import { memo, useCallback } from "react";
 import { toast } from "sonner";
-import { useFileTreeContext, useUILayoutContext, useVault } from "../../contexts";
+import {
+	useFileTreeContext,
+	useUILayoutContext,
+	useVault,
+} from "../../contexts";
 import { useViewContext } from "../../contexts";
 import { openSettingsWindow } from "../../lib/windows";
 import { parentDir } from "../../utils/path";

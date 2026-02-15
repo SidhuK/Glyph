@@ -1,21 +1,25 @@
+import { cn } from "@/lib/utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAISidebarContext } from "../../contexts";
 import { openSettingsWindow } from "../../lib/windows";
-import { cn } from "@/lib/utils";
 import { AiLattice, Minus, Plus, Settings as SettingsIcon, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
-import type { ToolTimelineEvent } from "./AIToolTimeline";
 import { AIChatThread } from "./AIChatThread";
 import { AIComposer } from "./AIComposer";
 import { AIHistoryPanel } from "./AIHistoryPanel";
-import { messageText, normalizePath, parseAddTrigger } from "./aiPanelConstants";
+import type { ToolTimelineEvent } from "./AIToolTimeline";
 import {
 	AI_CONTEXT_ATTACH_EVENT,
 	type AiContextAttachDetail,
 } from "./aiContextEvents";
+import {
+	messageText,
+	normalizePath,
+	parseAddTrigger,
+} from "./aiPanelConstants";
 import { useAiActions } from "./hooks/useAiActions";
-import { useRigChat } from "./hooks/useRigChat";
 import { useAiToolEvents } from "./hooks/useAiToolEvents";
+import { useRigChat } from "./hooks/useRigChat";
 import { useAiContext } from "./useAiContext";
 import { useAiHistory } from "./useAiHistory";
 import { useAiProfiles } from "./useAiProfiles";
@@ -93,16 +97,31 @@ export function AIPanel({
 	}, [context.addContext]);
 
 	useEffect(() => {
-		if (removedAutoContextFile && removedAutoContextFile !== normalizedCurrentFilePath)
+		if (
+			removedAutoContextFile &&
+			removedAutoContextFile !== normalizedCurrentFilePath
+		)
 			setRemovedAutoContextFile("");
 		if (!isChatMode || !normalizedCurrentFilePath) return;
 		if (removedAutoContextFile === normalizedCurrentFilePath) return;
 		context.addContext("file", normalizedCurrentFilePath);
-	}, [context.addContext, isChatMode, normalizedCurrentFilePath, removedAutoContextFile]);
+	}, [
+		context.addContext,
+		isChatMode,
+		normalizedCurrentFilePath,
+		removedAutoContextFile,
+	]);
 
-	const canSend = !toolEvents.isAwaitingResponse && Boolean(input.trim()) && Boolean(profiles.activeProfileId);
-	const lastAssistantMsg = [...chat.messages].reverse().find((m) => m.role === "assistant");
-	const lastAssistantText = lastAssistantMsg ? messageText(lastAssistantMsg) : "";
+	const canSend =
+		!toolEvents.isAwaitingResponse &&
+		Boolean(input.trim()) &&
+		Boolean(profiles.activeProfileId);
+	const lastAssistantMsg = [...chat.messages]
+		.reverse()
+		.find((m) => m.role === "assistant");
+	const lastAssistantText = lastAssistantMsg
+		? messageText(lastAssistantMsg)
+		: "";
 	const lastUserMessageIndex = useMemo(() => {
 		for (let i = chat.messages.length - 1; i >= 0; i--) {
 			if (chat.messages[i]?.role === "user") return i;
@@ -125,7 +144,15 @@ export function AIPanel({
 			}
 			void chat.sendMessage(
 				{ text: trimmed },
-				{ body: { profile_id: profiles.activeProfileId ?? undefined, mode: aiAssistantMode, context: built.payload || undefined, context_manifest: built.manifest ?? undefined, audit: true } },
+				{
+					body: {
+						profile_id: profiles.activeProfileId ?? undefined,
+						mode: aiAssistantMode,
+						context: built.payload || undefined,
+						context_manifest: built.manifest ?? undefined,
+						audit: true,
+					},
+				},
 			);
 			return true;
 		},
@@ -151,19 +178,41 @@ export function AIPanel({
 		}
 		void chat.sendMessage(
 			{ text },
-			{ body: { profile_id: profiles.activeProfileId ?? undefined, mode: aiAssistantMode, context: built.payload || undefined, context_manifest: built.manifest ?? undefined, audit: true } },
+			{
+				body: {
+					profile_id: profiles.activeProfileId ?? undefined,
+					mode: aiAssistantMode,
+					context: built.payload || undefined,
+					context_manifest: built.manifest ?? undefined,
+					audit: true,
+				},
+			},
 		);
-	}, [aiAssistantMode, canSend, chat, context, input, profiles.activeProfileId, scheduleResize, toolEvents]);
+	}, [
+		aiAssistantMode,
+		canSend,
+		chat,
+		context,
+		input,
+		profiles.activeProfileId,
+		scheduleResize,
+		toolEvents,
+	]);
 
 	const handleRetry = useMemo(
-		() => actions.createRetryHandler(sendWithCurrentContext, context.payloadError),
+		() =>
+			actions.createRetryHandler(sendWithCurrentContext, context.payloadError),
 		[actions, sendWithCurrentContext, context.payloadError],
 	);
 
 	const handleAddContext = useCallback(
 		(kind: "folder" | "file", path: string) => {
 			context.addContext(kind, path);
-			if (trigger) setInput((prev) => { const before = prev.slice(0, trigger.start).trimEnd(); return before ? `${before} ` : ""; });
+			if (trigger)
+				setInput((prev) => {
+					const before = prev.slice(0, trigger.start).trimEnd();
+					return before ? `${before} ` : "";
+				});
 			setAddPanelOpen(false);
 			setAddPanelQuery("");
 		},
@@ -173,7 +222,12 @@ export function AIPanel({
 	const handleRemoveContext = useCallback(
 		(kind: "folder" | "file", path: string) => {
 			const normalized = normalizePath(path);
-			if (kind === "file" && isChatMode && normalizedCurrentFilePath && normalized === normalizedCurrentFilePath)
+			if (
+				kind === "file" &&
+				isChatMode &&
+				normalizedCurrentFilePath &&
+				normalized === normalizedCurrentFilePath
+			)
 				setRemovedAutoContextFile(normalizedCurrentFilePath);
 			context.removeContext(kind, path);
 		},
@@ -187,11 +241,17 @@ export function AIPanel({
 			const restoredTimeline = loaded.toolEvents.map((event, index) => ({
 				id: `${event.call_id?.trim() ? `${event.call_id}-${event.phase}` : `${event.tool}-${event.phase}-${index}`}-${event.at_ms ?? 0}`,
 				tool: event.tool || "tool",
-				phase: event.phase === "result" || event.phase === "error" ? event.phase : "call",
+				phase:
+					event.phase === "result" || event.phase === "error"
+						? event.phase
+						: "call",
 				callId: event.call_id ?? undefined,
 				payload: event.payload,
 				error: typeof event.error === "string" ? event.error : undefined,
-				at: typeof event.at_ms === "number" && event.at_ms > 0 ? event.at_ms : Date.now(),
+				at:
+					typeof event.at_ms === "number" && event.at_ms > 0
+						? event.at_ms
+						: Date.now(),
 			})) as ToolTimelineEvent[];
 			toolEvents.setToolTimeline(restoredTimeline);
 			chat.setMessages(loaded.messages);
@@ -217,7 +277,10 @@ export function AIPanel({
 	const threadRef = useRef<HTMLDivElement>(null);
 	const msgCount = chat.messages.length;
 	// biome-ignore lint/correctness/useExhaustiveDependencies: scroll on new messages
-	useEffect(() => { const el = threadRef.current; if (el) el.scrollTop = el.scrollHeight; }, [msgCount]);
+	useEffect(() => {
+		const el = threadRef.current;
+		if (el) el.scrollTop = el.scrollHeight;
+	}, [msgCount]);
 	useEffect(() => {
 		if (!toolEvents.isAwaitingResponse || !chat.messages.length) return;
 		const el = threadRef.current;
@@ -226,33 +289,140 @@ export function AIPanel({
 
 	useEffect(() => {
 		if (chat.status !== "streaming") void history.refresh();
-	}, [chat.status === "streaming"]);
+	}, [chat.status, history.refresh]);
 
 	return (
-		<div className="aiPanel" data-open={isOpen} data-ai-mode={aiAssistantMode} data-window-drag-ignore>
+		<div
+			className="aiPanel"
+			data-open={isOpen}
+			data-ai-mode={aiAssistantMode}
+			data-window-drag-ignore
+		>
 			<div className="aiPanelHeader">
-				<div className="aiPanelTitle"><AiLattice size={18} /><span>AI</span></div>
+				<div className="aiPanelTitle">
+					<AiLattice size={18} />
+					<span>AI</span>
+				</div>
 				<div className="aiPanelHeaderRight">
-					<Button type="button" variant="ghost" size="icon-sm" aria-label="New chat" onClick={handleNewChat} title="New chat" disabled={chat.status === "streaming"} onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}><Plus size={13} /></Button>
-					<Button type="button" variant="ghost" size="icon-sm" aria-label="Settings" onClick={() => void openSettingsWindow("ai")} title="Settings" onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}><SettingsIcon size={13} /></Button>
-					<Button type="button" variant="ghost" size="icon-sm" aria-label="Minimize" onClick={onClose} title="Minimize" onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}><Minus size={13} /></Button>
+					<Button
+						type="button"
+						variant="ghost"
+						size="icon-sm"
+						aria-label="New chat"
+						onClick={handleNewChat}
+						title="New chat"
+						disabled={chat.status === "streaming"}
+						onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
+					>
+						<Plus size={13} />
+					</Button>
+					<Button
+						type="button"
+						variant="ghost"
+						size="icon-sm"
+						aria-label="Settings"
+						onClick={() => void openSettingsWindow("ai")}
+						title="Settings"
+						onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
+					>
+						<SettingsIcon size={13} />
+					</Button>
+					<Button
+						type="button"
+						variant="ghost"
+						size="icon-sm"
+						aria-label="Minimize"
+						onClick={onClose}
+						title="Minimize"
+						onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
+					>
+						<Minus size={13} />
+					</Button>
 				</div>
 			</div>
 			<div className="aiPanelBody">
-				<AIHistoryPanel history={history} historyExpanded={historyExpanded} setHistoryExpanded={setHistoryExpanded} onLoadHistory={(jobId) => void handleLoadHistory(jobId)} />
+				<AIHistoryPanel
+					history={history}
+					historyExpanded={historyExpanded}
+					setHistoryExpanded={setHistoryExpanded}
+					onLoadHistory={(jobId) => void handleLoadHistory(jobId)}
+				/>
 				<div className="aiChatThread" ref={threadRef}>
-					<AIChatThread messages={chat.messages} isChatMode={isChatMode} isAwaitingResponse={toolEvents.isAwaitingResponse} chatStatus={chat.status} phaseStatusText={toolEvents.phaseStatusText} toolTimeline={toolEvents.toolTimeline} lastUserMessageIndex={lastUserMessageIndex} onCopy={(t) => void actions.handleCopyAssistantResponse(t)} onSave={(t) => void actions.handleSaveAssistantResponse(t)} onRetry={(i) => void handleRetry(i)} />
+					<AIChatThread
+						messages={chat.messages}
+						isChatMode={isChatMode}
+						isAwaitingResponse={toolEvents.isAwaitingResponse}
+						chatStatus={chat.status}
+						phaseStatusText={toolEvents.phaseStatusText}
+						toolTimeline={toolEvents.toolTimeline}
+						lastUserMessageIndex={lastUserMessageIndex}
+						onCopy={(t) => void actions.handleCopyAssistantResponse(t)}
+						onSave={(t) => void actions.handleSaveAssistantResponse(t)}
+						onRetry={(i) => void handleRetry(i)}
+					/>
 					{!isChatMode && chat.status === "streaming" && (
-						<div className={cn("aiToolStatus", toolEvents.lastToolEvent?.phase === "error" && "aiToolStatusError")} aria-live="polite" aria-label="Tool status">
-							<span className="aiToolStatusDot" /><span>{toolEvents.toolStatusText}</span>
+						<div
+							className={cn(
+								"aiToolStatus",
+								toolEvents.lastToolEvent?.phase === "error" &&
+									"aiToolStatusError",
+							)}
+							aria-live="polite"
+							aria-label="Tool status"
+						>
+							<span className="aiToolStatusDot" />
+							<span>{toolEvents.toolStatusText}</span>
 						</div>
 					)}
 				</div>
-				{chat.error ? <div className="aiPanelError"><span>{chat.error.message}</span><button type="button" onClick={() => chat.clearError()}><X size={11} /></button></div> : null}
-				{actions.assistantActionError ? <div className="aiPanelError"><span>{actions.assistantActionError}</span><button type="button" onClick={() => actions.setAssistantActionError("")}><X size={11} /></button></div> : null}
-				{profiles.error ? <div className="aiPanelError">{profiles.error}</div> : null}
-				{history.error ? <div className="aiPanelError">{history.error}</div> : null}
-				<AIComposer input={input} setInput={setInput} isAwaitingResponse={toolEvents.isAwaitingResponse} canSend={canSend} isChatMode={isChatMode} lastAssistantText={lastAssistantText} onSend={() => void handleSend()} onStop={() => chat.stop()} composerInputRef={composerInputRef} scheduleComposerInputResize={scheduleResize} profiles={profiles} context={context} showAddPanel={showAddPanel} panelQuery={panelQuery} addPanelOpen={addPanelOpen} setAddPanelOpen={setAddPanelOpen} setAddPanelQuery={setAddPanelQuery} onAddContext={handleAddContext} onRemoveContext={handleRemoveContext} onAttachContextFiles={onAttachContextFiles} onCreateNoteFromLastAssistant={onCreateNoteFromLastAssistant} />
+				{chat.error ? (
+					<div className="aiPanelError">
+						<span>{chat.error.message}</span>
+						<button type="button" onClick={() => chat.clearError()}>
+							<X size={11} />
+						</button>
+					</div>
+				) : null}
+				{actions.assistantActionError ? (
+					<div className="aiPanelError">
+						<span>{actions.assistantActionError}</span>
+						<button
+							type="button"
+							onClick={() => actions.setAssistantActionError("")}
+						>
+							<X size={11} />
+						</button>
+					</div>
+				) : null}
+				{profiles.error ? (
+					<div className="aiPanelError">{profiles.error}</div>
+				) : null}
+				{history.error ? (
+					<div className="aiPanelError">{history.error}</div>
+				) : null}
+				<AIComposer
+					input={input}
+					setInput={setInput}
+					isAwaitingResponse={toolEvents.isAwaitingResponse}
+					canSend={canSend}
+					isChatMode={isChatMode}
+					lastAssistantText={lastAssistantText}
+					onSend={() => void handleSend()}
+					onStop={() => chat.stop()}
+					composerInputRef={composerInputRef}
+					scheduleComposerInputResize={scheduleResize}
+					profiles={profiles}
+					context={context}
+					showAddPanel={showAddPanel}
+					panelQuery={panelQuery}
+					addPanelOpen={addPanelOpen}
+					setAddPanelOpen={setAddPanelOpen}
+					setAddPanelQuery={setAddPanelQuery}
+					onAddContext={handleAddContext}
+					onRemoveContext={handleRemoveContext}
+					onAttachContextFiles={onAttachContextFiles}
+					onCreateNoteFromLastAssistant={onCreateNoteFromLastAssistant}
+				/>
 			</div>
 		</div>
 	);

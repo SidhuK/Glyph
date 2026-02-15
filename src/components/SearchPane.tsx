@@ -52,7 +52,9 @@ export const SearchPane = memo(function SearchPane({
 				continue;
 			}
 			out.push(
-				<Fragment key={`snippet-${partIndex++}`}>{inMark ? <mark>{p}</mark> : p}</Fragment>,
+				<Fragment key={`snippet-${partIndex++}`}>
+					{inMark ? <mark>{p}</mark> : p}
+				</Fragment>,
 			);
 		}
 		return out;

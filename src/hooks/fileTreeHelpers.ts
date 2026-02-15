@@ -7,7 +7,10 @@ export function compareEntries(a: FsEntry, b: FsEntry): number {
 }
 
 export function normalizeRelPath(relPath: string): string {
-	const normalized = relPath.replace(/\u200b/g, "").replace(/\\/g, "/").trim();
+	const normalized = relPath
+		.replace(/\u200b/g, "")
+		.replace(/\\/g, "/")
+		.trim();
 	return normalized.replace(/^\/+/, "").replace(/\/+$/, "");
 }
 

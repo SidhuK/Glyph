@@ -149,9 +149,7 @@ export function SearchResultsList({
 			)}
 			{titleMatches.length === 0 &&
 				contentMatches.length === 0 &&
-				!isSearching && (
-					<div className="commandPaletteEmpty">No results</div>
-				)}
+				!isSearching && <div className="commandPaletteEmpty">No results</div>}
 			{isSearching &&
 				titleMatches.length === 0 &&
 				contentMatches.length === 0 && (

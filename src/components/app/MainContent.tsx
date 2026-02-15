@@ -92,7 +92,14 @@ export const MainContent = memo(function MainContent({
 			return <div className="canvasEmpty">{canvasLoadingMessage}</div>;
 		}
 		return null;
-	}, [canvasLoadingMessage, closeTab, fileTree, onOpenFolder, viewerPath, setDirtyByPath]);
+	}, [
+		canvasLoadingMessage,
+		closeTab,
+		fileTree,
+		onOpenFolder,
+		viewerPath,
+		setDirtyByPath,
+	]);
 
 	if (!vaultPath) {
 		if (!settingsLoaded) return <main className="mainArea" />;

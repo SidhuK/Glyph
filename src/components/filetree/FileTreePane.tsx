@@ -1,11 +1,11 @@
+import { confirm } from "@tauri-apps/plugin-dialog";
 import { motion } from "motion/react";
 import type { CSSProperties } from "react";
 import { memo, useCallback, useState } from "react";
-import { confirm } from "@tauri-apps/plugin-dialog";
 import type { FsEntry } from "../../lib/tauri";
-import { springPresets } from "../ui/animations";
 import { parentDir } from "../../utils/path";
 import { Database, FolderPlus, Plus } from "../Icons";
+import { springPresets } from "../ui/animations";
 import {
 	ContextMenu,
 	ContextMenuContent,

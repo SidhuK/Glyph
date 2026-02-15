@@ -64,18 +64,14 @@ export function useAiActions(chat: Chat) {
 					}
 				}
 				if (userIndex < 0) {
-					setAssistantActionError(
-						"No matching user prompt found for retry.",
-					);
+					setAssistantActionError("No matching user prompt found for retry.");
 					return;
 				}
 				const userText = messageText(
 					chat.messages[userIndex] as UIMessage,
 				).trim();
 				if (!userText) {
-					setAssistantActionError(
-						"No matching user prompt found for retry.",
-					);
+					setAssistantActionError("No matching user prompt found for retry.");
 					return;
 				}
 				chat.setMessages(chat.messages.slice(0, userIndex));

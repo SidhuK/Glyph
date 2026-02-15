@@ -6,7 +6,9 @@ import type { useAiHistory } from "./useAiHistory";
 interface AIHistoryPanelProps {
 	history: ReturnType<typeof useAiHistory>;
 	historyExpanded: boolean;
-	setHistoryExpanded: (expanded: boolean | ((prev: boolean) => boolean)) => void;
+	setHistoryExpanded: (
+		expanded: boolean | ((prev: boolean) => boolean),
+	) => void;
 	onLoadHistory: (jobId: string) => void;
 }
 
@@ -73,9 +75,7 @@ export function AIHistoryPanel({
 						))
 					) : (
 						<div className="aiHistoryEmpty">
-							{history.listLoading
-								? "Loading chats…"
-								: "No chat history yet"}
+							{history.listLoading ? "Loading chats…" : "No chat history yet"}
 						</div>
 					)}
 				</div>

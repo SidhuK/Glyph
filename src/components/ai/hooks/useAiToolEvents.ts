@@ -3,8 +3,8 @@ import { useTauriEvent } from "../../../lib/tauriEvents";
 import type { ToolTimelineEvent } from "../AIToolTimeline";
 import {
 	FINALIZING_MS,
-	SLOW_START_MS,
 	type ResponsePhase,
+	SLOW_START_MS,
 	type ToolPhase,
 	type ToolStatusEvent,
 	formatToolName,

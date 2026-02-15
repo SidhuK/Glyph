@@ -124,12 +124,7 @@ export function RibbonLinkPopover({
 					<span>Open in new tab</span>
 				</label>
 				<div className="editorLinkPopoverActions">
-					<Button
-						type="button"
-						variant="ghost"
-						size="sm"
-						onClick={removeLink}
-					>
+					<Button type="button" variant="ghost" size="sm" onClick={removeLink}>
 						<X size={14} />
 						Remove
 					</Button>

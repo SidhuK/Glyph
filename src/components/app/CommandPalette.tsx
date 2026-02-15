@@ -6,8 +6,8 @@ import { CommandList } from "./CommandList";
 import { SearchResultsList } from "./CommandSearchResults";
 import {
 	type Command,
-	type Tab,
 	TABS,
+	type Tab,
 	springTransition,
 } from "./commandPaletteHelpers";
 import { useCommandSearch } from "./useCommandSearch";
@@ -115,7 +115,14 @@ export function CommandPalette({
 			onClose();
 			onSelectSearchNote(result.id);
 		},
-		[titleMatches, contentMatches, recentNotes, query, onClose, onSelectSearchNote],
+		[
+			titleMatches,
+			contentMatches,
+			recentNotes,
+			query,
+			onClose,
+			onSelectSearchNote,
+		],
 	);
 
 	const handleSelect = useCallback(
@@ -130,7 +137,9 @@ export function CommandPalette({
 		(e: React.KeyboardEvent) => {
 			if (e.key === "ArrowDown") {
 				e.preventDefault();
-				setSelectedIndex((c) => (itemCount ? Math.min(c + 1, itemCount - 1) : 0));
+				setSelectedIndex((c) =>
+					itemCount ? Math.min(c + 1, itemCount - 1) : 0,
+				);
 				return;
 			}
 			if (e.key === "ArrowUp") {
@@ -207,7 +216,9 @@ export function CommandPalette({
 						ref={inputRef}
 						className="commandPaletteInput"
 						placeholder={
-							activeTab === "commands" ? "Type a command…" : "Search your notes…"
+							activeTab === "commands"
+								? "Type a command…"
+								: "Search your notes…"
 						}
 						value={query}
 						onChange={(e) => setQuery(e.target.value)}

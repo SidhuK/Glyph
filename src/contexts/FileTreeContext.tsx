@@ -15,21 +15,19 @@ import { useVault } from "./VaultContext";
 export interface FileTreeContextValue {
 	rootEntries: FsEntry[];
 	updateRootEntries: (
-		next:
-			| FsEntry[]
-			| ((prev: FsEntry[]) => FsEntry[]),
+		next: FsEntry[] | ((prev: FsEntry[]) => FsEntry[]),
 	) => void;
 	childrenByDir: Record<string, FsEntry[] | undefined>;
 	updateChildrenByDir: (
 		next:
 			| Record<string, FsEntry[] | undefined>
-			| ((prev: Record<string, FsEntry[] | undefined>) => Record<string, FsEntry[] | undefined>),
+			| ((
+					prev: Record<string, FsEntry[] | undefined>,
+			  ) => Record<string, FsEntry[] | undefined>),
 	) => void;
 	expandedDirs: Set<string>;
 	updateExpandedDirs: (
-		next:
-			| Set<string>
-			| ((prev: Set<string>) => Set<string>),
+		next: Set<string> | ((prev: Set<string>) => Set<string>),
 	) => void;
 	activeFilePath: string | null;
 	setActiveFilePath: (path: string | null) => void;
@@ -122,9 +120,11 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 	>((next) => {
 		setChildrenByDir((prev) =>
 			typeof next === "function"
-				? (next as (
-						value: Record<string, FsEntry[] | undefined>,
-					) => Record<string, FsEntry[] | undefined>)(prev)
+				? (
+						next as (
+							value: Record<string, FsEntry[] | undefined>,
+						) => Record<string, FsEntry[] | undefined>
+					)(prev)
 				: next,
 		);
 	}, []);

@@ -40,7 +40,10 @@ export function useDailyNote(options: UseDailyNoteOptions): UseDailyNoteReturn {
 				} catch (readErr: unknown) {
 					const parent = parentDir(notePath);
 					const fileName = basename(notePath);
-					const siblings = await invoke("vault_list_dir", parent ? { dir: parent } : {});
+					const siblings = await invoke(
+						"vault_list_dir",
+						parent ? { dir: parent } : {},
+					);
 					const exists = siblings.some(
 						(entry) => entry.kind === "file" && entry.name === fileName,
 					);

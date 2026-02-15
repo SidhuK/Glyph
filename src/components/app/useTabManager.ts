@@ -126,8 +126,7 @@ export function useTabManager(vaultPath: string | null) {
 					? openTabs.indexOf(activeTabPath)
 					: -1;
 				const step = event.shiftKey ? -1 : 1;
-				const base =
-					currentIndex >= 0 ? currentIndex : event.shiftKey ? 0 : -1;
+				const base = currentIndex >= 0 ? currentIndex : event.shiftKey ? 0 : -1;
 				const nextIndex = (base + step + openTabs.length) % openTabs.length;
 				setActiveTabPath(openTabs[nextIndex] ?? null);
 				return;
