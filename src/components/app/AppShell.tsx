@@ -10,8 +10,8 @@ import {
 import { useCommandShortcuts } from "../../hooks/useCommandShortcuts";
 import { useDailyNote } from "../../hooks/useDailyNote";
 import { useFileTree } from "../../hooks/useFileTree";
-
 import { useMenuListeners } from "../../hooks/useMenuListeners";
+import { useResizablePanel } from "../../hooks/useResizablePanel";
 import type { Shortcut } from "../../lib/shortcuts";
 import { getShortcutTooltip } from "../../lib/shortcuts";
 import { type FsEntry, invoke } from "../../lib/tauri";
@@ -31,285 +31,47 @@ import { type Command, CommandPalette } from "./CommandPalette";
 import { KeyboardShortcutsHelp } from "./KeyboardShortcutsHelp";
 import { MainContent } from "./MainContent";
 import { Sidebar } from "./Sidebar";
-
-function basename(path: string): string {
-	const parts = path.split("/").filter(Boolean);
-	return parts[parts.length - 1] ?? path;
-}
-
-function fileTitleFromPath(path: string): string {
-	return basename(path).replace(/\.md$/i, "").trim() || "Untitled";
-}
-
-function normalizeWikiLinkTarget(target: string): string {
-	return target.trim().replace(/\\/g, "/").replace(/^\.\//, "");
-}
-
-function resolveWikiLinkPath(
-	target: string,
-	entries: FsEntry[],
-): string | null {
-	const normalized = normalizeWikiLinkTarget(target).replace(/\.md$/i, "");
-	if (!normalized) return null;
-	const lowered = normalized.toLowerCase();
-
-	const exactPath = entries.find(
-		(entry) => entry.rel_path.replace(/\.md$/i, "").toLowerCase() === lowered,
-	);
-	if (exactPath) return exactPath.rel_path;
-
-	const exactTitle = entries.find((entry) => {
-		const title = fileTitleFromPath(entry.rel_path).toLowerCase();
-		return title === lowered;
-	});
-	if (exactTitle) return exactTitle.rel_path;
-
-	const suffixPath = entries.find((entry) =>
-		entry.rel_path.replace(/\.md$/i, "").toLowerCase().endsWith(`/${lowered}`),
-	);
-	return suffixPath?.rel_path ?? null;
-}
-
-function aiNoteFileName(): string {
-	const now = new Date();
-	const pad = (n: number) => n.toString().padStart(2, "0");
-	return `AI Note ${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(
-		now.getDate(),
-	)} ${pad(now.getHours())}-${pad(now.getMinutes())}-${pad(
-		now.getSeconds(),
-	)}.md`;
-}
-
-function normalizeRelPath(path: string): string {
-	return path
-		.replace(/\\/g, "/")
-		.replace(/^\/+/, "")
-		.replace(/\/+$/, "")
-		.trim();
-}
-
-function parentDir(path: string): string {
-	const normalized = normalizeRelPath(path);
-	const idx = normalized.lastIndexOf("/");
-	if (idx < 0) return "";
-	return normalized.slice(0, idx);
-}
+import {
+	aiNoteFileName,
+	fileTitleFromPath,
+	normalizeRelPath,
+	parentDir,
+	resolveWikiLinkPath,
+} from "./appShellHelpers";
 
 export function AppShell() {
-	// ---------------------------------------------------------------------------
-	// Contexts
-	// ---------------------------------------------------------------------------
 	const vault = useVault();
-	const { vaultPath, error, setError, onOpenVault, onCreateVault, closeVault } =
-		vault;
-
+	const { vaultPath, error, setError, onOpenVault, onCreateVault, closeVault } = vault;
 	const fileTreeCtx = useFileTreeContext();
-	const {
-		expandedDirs,
-		activeFilePath,
-		setRootEntries,
-		setChildrenByDir,
-		setExpandedDirs,
-		setActiveFilePath,
-	} = fileTreeCtx;
-
-	const { activeViewDoc, activeViewDocRef, loadAndBuildFolderView } =
-		useViewContext();
-
-	const {
-		sidebarCollapsed,
-		setSidebarCollapsed,
-		paletteOpen,
-		setPaletteOpen,
-		aiPanelOpen,
-		setAiPanelOpen,
-		activePreviewPath,
-		setActivePreviewPath,
-		openMarkdownTabs,
-		activeMarkdownTabPath,
-		dailyNotesFolder,
-	} = useUIContext();
-
+	const { expandedDirs, activeFilePath, setRootEntries, setChildrenByDir, setExpandedDirs, setActiveFilePath } = fileTreeCtx;
+	const { activeViewDoc, activeViewDocRef, loadAndBuildFolderView } = useViewContext();
+	const { sidebarCollapsed, setSidebarCollapsed, paletteOpen, setPaletteOpen, aiPanelOpen, setAiPanelOpen, activePreviewPath, setActivePreviewPath, openMarkdownTabs, activeMarkdownTabPath, dailyNotesFolder, sidebarWidth, setSidebarWidth, aiPanelWidth, setAiPanelWidth } = useUIContext();
 	const { saveCurrentEditor } = useEditorContext();
 
-	// ---------------------------------------------------------------------------
-	// Local state
-	// ---------------------------------------------------------------------------
-	const [paletteInitialTab, setPaletteInitialTab] = useState<
-		"commands" | "search"
-	>("commands");
+	const [paletteInitialTab, setPaletteInitialTab] = useState<"commands" | "search">("commands");
 	const [paletteInitialQuery, setPaletteInitialQuery] = useState("");
-	const [movePickerSourcePath, setMovePickerSourcePath] = useState<
-		string | null
-	>(null);
+	const [movePickerSourcePath, setMovePickerSourcePath] = useState<string | null>(null);
 	const [moveTargetDirs, setMoveTargetDirs] = useState<string[]>([]);
 	const [shortcutsHelpOpen, setShortcutsHelpOpen] = useState(false);
-	const resizeRef = useRef<HTMLDivElement>(null);
-	const dragStartXRef = useRef(0);
-	const dragStartWidthRef = useRef(0);
-	const isDraggingRef = useRef(false);
 
-	const { sidebarWidth, setSidebarWidth, aiPanelWidth, setAiPanelWidth } =
-		useUIContext();
+	const sidebarResize = useResizablePanel({ min: 220, max: 600, disabled: sidebarCollapsed, direction: "right", onResize: setSidebarWidth, currentWidth: sidebarWidth });
+	const aiResize = useResizablePanel({ min: 280, max: 700, disabled: !aiPanelOpen, direction: "left", onResize: setAiPanelWidth, currentWidth: aiPanelWidth });
 
-	const handleResizeStart = useCallback(
-		(e: React.PointerEvent) => {
-			if (sidebarCollapsed) return;
-			isDraggingRef.current = true;
-			dragStartXRef.current = e.clientX;
-			dragStartWidthRef.current = sidebarWidth;
-			if (resizeRef.current) {
-				resizeRef.current.setPointerCapture(e.pointerId);
-			}
-		},
-		[sidebarCollapsed, sidebarWidth],
-	);
-
-	const handleResizeMove = useCallback(
-		(e: React.PointerEvent) => {
-			if (!isDraggingRef.current) return;
-			const delta = e.clientX - dragStartXRef.current;
-			const newWidth = Math.max(
-				220,
-				Math.min(600, dragStartWidthRef.current + delta),
-			);
-			setSidebarWidth(newWidth);
-		},
-		[setSidebarWidth],
-	);
-
-	const handleResizeEnd = useCallback(() => {
-		isDraggingRef.current = false;
-	}, []);
-
-	useEffect(() => {
-		const handleGlobalMove = (e: PointerEvent) => {
-			if (!isDraggingRef.current) return;
-			const delta = e.clientX - dragStartXRef.current;
-			const newWidth = Math.max(
-				220,
-				Math.min(600, dragStartWidthRef.current + delta),
-			);
-			setSidebarWidth(newWidth);
-		};
-
-		const handleGlobalEnd = () => {
-			isDraggingRef.current = false;
-		};
-
-		if (isDraggingRef.current) {
-			window.addEventListener("pointermove", handleGlobalMove);
-			window.addEventListener("pointerup", handleGlobalEnd);
-			return () => {
-				window.removeEventListener("pointermove", handleGlobalMove);
-				window.removeEventListener("pointerup", handleGlobalEnd);
-			};
-		}
-	}, [setSidebarWidth]);
-
-	// AI panel resize (mirrored: drag left = wider)
-	const aiResizeRef = useRef<HTMLDivElement>(null);
-	const aiDragStartXRef = useRef(0);
-	const aiDragStartWidthRef = useRef(0);
-	const aiIsDraggingRef = useRef(false);
-
-	const handleAiResizeStart = useCallback(
-		(e: React.PointerEvent) => {
-			if (!aiPanelOpen) return;
-			aiIsDraggingRef.current = true;
-			aiDragStartXRef.current = e.clientX;
-			aiDragStartWidthRef.current = aiPanelWidth;
-			if (aiResizeRef.current) {
-				aiResizeRef.current.setPointerCapture(e.pointerId);
-			}
-		},
-		[aiPanelOpen, aiPanelWidth],
-	);
-
-	const handleAiResizeMove = useCallback(
-		(e: React.PointerEvent) => {
-			if (!aiIsDraggingRef.current) return;
-			const delta = aiDragStartXRef.current - e.clientX;
-			const newWidth = Math.max(
-				280,
-				Math.min(700, aiDragStartWidthRef.current + delta),
-			);
-			setAiPanelWidth(newWidth);
-		},
-		[setAiPanelWidth],
-	);
-
-	const handleAiResizeEnd = useCallback(() => {
-		aiIsDraggingRef.current = false;
-	}, []);
-
-	useEffect(() => {
-		const handleGlobalMove = (e: PointerEvent) => {
-			if (!aiIsDraggingRef.current) return;
-			const delta = aiDragStartXRef.current - e.clientX;
-			const newWidth = Math.max(
-				280,
-				Math.min(700, aiDragStartWidthRef.current + delta),
-			);
-			setAiPanelWidth(newWidth);
-		};
-
-		const handleGlobalEnd = () => {
-			aiIsDraggingRef.current = false;
-		};
-
-		if (aiIsDraggingRef.current) {
-			window.addEventListener("pointermove", handleGlobalMove);
-			window.addEventListener("pointerup", handleGlobalEnd);
-			return () => {
-				window.removeEventListener("pointermove", handleGlobalMove);
-				window.removeEventListener("pointerup", handleGlobalEnd);
-			};
-		}
-	}, [setAiPanelWidth]);
-
-	// ---------------------------------------------------------------------------
-	// Derived callbacks
-	// ---------------------------------------------------------------------------
 	const getActiveFolderDir = useCallback(() => {
 		const current = activeViewDocRef.current;
-		if (!current || current.kind !== "folder") return null;
-		return current.selector || "";
+		return current?.kind === "folder" ? current.selector || "" : null;
 	}, [activeViewDocRef]);
 
-	const fileTree = useFileTree({
-		vaultPath,
-		setChildrenByDir,
-		setExpandedDirs,
-		setRootEntries,
-		setActiveFilePath,
-		setActivePreviewPath,
-		activeFilePath,
-		activePreviewPath,
-		setError,
-		loadAndBuildFolderView,
-		getActiveFolderDir,
-	});
-	const { loadDir } = fileTree;
+	const fileTree = useFileTree({ vaultPath, setChildrenByDir, setExpandedDirs, setRootEntries, setActiveFilePath, setActivePreviewPath, activeFilePath, activePreviewPath, setError, loadAndBuildFolderView, getActiveFolderDir });
 
-	const { openOrCreateDailyNote, isCreating: isDailyNoteCreating } =
-		useDailyNote({
-			onOpenFile: (path) => fileTree.openFile(path),
-			setError,
-		});
+	const { openOrCreateDailyNote, isCreating: isDailyNoteCreating } = useDailyNote({ onOpenFile: (path) => fileTree.openFile(path), setError });
 
 	const handleOpenDailyNote = useCallback(async () => {
-		if (!dailyNotesFolder) {
-			return;
-		}
-		try {
-			await openOrCreateDailyNote(dailyNotesFolder);
-		} catch (e) {
-			setError(
-				`Failed to open daily note: ${e instanceof Error ? e.message : String(e)}`,
-			);
-		}
+		if (!dailyNotesFolder) return;
+		try { await openOrCreateDailyNote(dailyNotesFolder); }
+		catch (e) { setError(`Failed to open daily note: ${e instanceof Error ? e.message : String(e)}`); }
 	}, [dailyNotesFolder, openOrCreateDailyNote, setError]);
+
 	const fsRefreshQueueRef = useRef<Set<string>>(new Set());
 	const fsRefreshTimerRef = useRef<number | null>(null);
 
@@ -317,529 +79,161 @@ export function AppShell() {
 		let cachedEntries: FsEntry[] = [];
 		let loadedAt = 0;
 		const ensureEntries = async () => {
-			const now = Date.now();
-			if (!cachedEntries.length || now - loadedAt > 30_000) {
-				cachedEntries = await invoke("vault_list_markdown_files", {
-					recursive: true,
-					limit: 4000,
-				});
-				loadedAt = now;
+			if (!cachedEntries.length || Date.now() - loadedAt > 30_000) {
+				cachedEntries = await invoke("vault_list_markdown_files", { recursive: true, limit: 4000 });
+				loadedAt = Date.now();
 			}
 			return cachedEntries;
 		};
-
 		const onWikiLinkClick = (event: Event) => {
 			const detail = (event as CustomEvent<WikiLinkClickDetail>).detail;
 			if (!detail?.target) return;
-			const targetWithoutAnchor =
-				detail.target.split("#", 1)[0] ?? detail.target;
+			const targetWithoutAnchor = detail.target.split("#", 1)[0] ?? detail.target;
 			void (async () => {
 				try {
 					const entries = await ensureEntries();
 					const resolved = resolveWikiLinkPath(targetWithoutAnchor, entries);
-					if (!resolved) {
-						setError(`Could not resolve wikilink: ${detail.target}`);
-						return;
-					}
+					if (!resolved) { setError(`Could not resolve wikilink: ${detail.target}`); return; }
 					await fileTree.openFile(resolved);
-				} catch (e) {
-					setError(
-						`Failed to open wikilink: ${e instanceof Error ? e.message : String(e)}`,
-					);
-				}
+				} catch (e) { setError(`Failed to open wikilink: ${e instanceof Error ? e.message : String(e)}`); }
 			})();
 		};
-
 		window.addEventListener(WIKI_LINK_CLICK_EVENT, onWikiLinkClick);
-		return () => {
-			window.removeEventListener(WIKI_LINK_CLICK_EVENT, onWikiLinkClick);
-		};
+		return () => window.removeEventListener(WIKI_LINK_CLICK_EVENT, onWikiLinkClick);
 	}, [fileTree, setError]);
 
-	const openFolderView = useCallback(
-		async (dir: string) => {
-			setActivePreviewPath(null);
-			await loadAndBuildFolderView(dir);
-		},
-		[loadAndBuildFolderView, setActivePreviewPath],
-	);
+	const openFolderView = useCallback(async (dir: string) => { setActivePreviewPath(null); await loadAndBuildFolderView(dir); }, [loadAndBuildFolderView, setActivePreviewPath]);
+	const openTagSearchPalette = useCallback((tag: string) => { setPaletteInitialTab("search"); setPaletteInitialQuery(tag.startsWith("#") ? tag : `#${tag}`); setPaletteOpen(true); }, [setPaletteOpen]);
 
-	const openTagSearchPalette = useCallback(
-		(tag: string) => {
-			setPaletteInitialTab("search");
-			setPaletteInitialQuery(tag.startsWith("#") ? tag : `#${tag}`);
-			setPaletteOpen(true);
-		},
-		[setPaletteOpen],
-	);
-
-	const attachContextFiles = useCallback(
-		async (paths: string[]) => {
-			const unique = Array.from(
-				new Set(
-					paths
-						.map((path) => path.trim())
-						.filter((path) => path.toLowerCase().endsWith(".md")),
-				),
-			);
-			if (unique.length === 0) return;
-			setAiPanelOpen(true);
-			window.setTimeout(() => {
-				dispatchAiContextAttach({ paths: unique });
-			}, 0);
-		},
-		[setAiPanelOpen],
-	);
+	const attachContextFiles = useCallback(async (paths: string[]) => {
+		const unique = Array.from(new Set(paths.map((p) => p.trim()).filter((p) => p.toLowerCase().endsWith(".md"))));
+		if (!unique.length) return;
+		setAiPanelOpen(true);
+		window.setTimeout(() => dispatchAiContextAttach({ paths: unique }), 0);
+	}, [setAiPanelOpen]);
 
 	const attachCurrentNoteToAi = useCallback(async () => {
-		const target = activeMarkdownTabPath;
-		if (!target) {
-			setError("No open markdown note to attach to AI.");
-			return;
-		}
-		await attachContextFiles([target]);
+		if (!activeMarkdownTabPath) { setError("No open markdown note to attach to AI."); return; }
+		await attachContextFiles([activeMarkdownTabPath]);
 	}, [activeMarkdownTabPath, attachContextFiles, setError]);
 
 	const attachAllOpenNotesToAi = useCallback(async () => {
-		const markdownTabs = openMarkdownTabs.filter((path) =>
-			path.toLowerCase().endsWith(".md"),
-		);
-		if (markdownTabs.length === 0) {
-			setError("No open markdown notes to attach to AI.");
-			return;
-		}
-		await attachContextFiles(markdownTabs);
+		const tabs = openMarkdownTabs.filter((p) => p.toLowerCase().endsWith(".md"));
+		if (!tabs.length) { setError("No open markdown notes to attach to AI."); return; }
+		await attachContextFiles(tabs);
 	}, [attachContextFiles, openMarkdownTabs, setError]);
 
-	const createNoteFromAI = useCallback(
-		async (markdown: string) => {
-			const text = markdown.trim();
-			if (!text) return;
-			const dir =
-				activeViewDoc?.kind === "folder" ? activeViewDoc.selector : "";
-			const baseName = aiNoteFileName();
-			let filePath = dir ? `${dir}/${baseName}` : baseName;
-			let suffix = 2;
-			while (true) {
-				try {
-					await invoke("vault_read_text", { path: filePath });
-					const nextName = baseName.replace(
-						/\.md$/i,
-						` ${suffix.toString()}.md`,
-					);
-					filePath = dir ? `${dir}/${nextName}` : nextName;
-					suffix += 1;
-				} catch {
-					break;
-				}
-			}
-			const title = fileTitleFromPath(filePath);
-			const body = text.startsWith("# ") ? text : `# ${title}\n\n${text}`;
-			await invoke("vault_write_text", {
-				path: filePath,
-				text: body,
-				base_mtime_ms: null,
-			});
-			await fileTree.openFile(filePath);
-		},
-		[activeViewDoc, fileTree],
-	);
+	const createNoteFromAI = useCallback(async (markdown: string) => {
+		const text = markdown.trim();
+		if (!text) return;
+		const dir = activeViewDoc?.kind === "folder" ? activeViewDoc.selector : "";
+		const baseName = aiNoteFileName();
+		let filePath = dir ? `${dir}/${baseName}` : baseName;
+		let suffix = 2;
+		while (true) {
+			try { await invoke("vault_read_text", { path: filePath }); filePath = dir ? `${dir}/${baseName.replace(/\.md$/i, ` ${suffix.toString()}.md`)}` : baseName.replace(/\.md$/i, ` ${suffix.toString()}.md`); suffix += 1; }
+			catch { break; }
+		}
+		const title = fileTitleFromPath(filePath);
+		const body = text.startsWith("# ") ? text : `# ${title}\n\n${text}`;
+		await invoke("vault_write_text", { path: filePath, text: body, base_mtime_ms: null });
+		await fileTree.openFile(filePath);
+	}, [activeViewDoc, fileTree]);
 
-	// ---------------------------------------------------------------------------
-	// Menu listeners
-	// ---------------------------------------------------------------------------
 	useMenuListeners({ onOpenVault, onCreateVault, closeVault });
 
-	const handleVaultFsChanged = useCallback(
-		(payload: { rel_path: string }) => {
-			if (!vaultPath) return;
-			const changedPath = normalizeRelPath(payload.rel_path);
-			if (!changedPath) return;
-			fsRefreshQueueRef.current.add(changedPath);
-			if (fsRefreshTimerRef.current !== null) return;
-
-			fsRefreshTimerRef.current = window.setTimeout(() => {
-				fsRefreshTimerRef.current = null;
-				const changed = [...fsRefreshQueueRef.current];
-				fsRefreshQueueRef.current.clear();
-				if (changed.length === 0) return;
-
-				const dirsToRefresh = new Set<string>([""]);
-				for (const relPath of changed) {
-					dirsToRefresh.add(parentDir(relPath));
-					if (expandedDirs.has(relPath)) {
-						dirsToRefresh.add(relPath);
-					}
-				}
-
-				for (const dir of dirsToRefresh) {
-					void loadDir(dir, true);
-				}
-			}, 150);
-		},
-		[expandedDirs, loadDir, vaultPath],
-	);
+	const handleVaultFsChanged = useCallback((payload: { rel_path: string }) => {
+		if (!vaultPath) return;
+		const changedPath = normalizeRelPath(payload.rel_path);
+		if (!changedPath) return;
+		fsRefreshQueueRef.current.add(changedPath);
+		if (fsRefreshTimerRef.current !== null) return;
+		fsRefreshTimerRef.current = window.setTimeout(() => {
+			fsRefreshTimerRef.current = null;
+			const changed = [...fsRefreshQueueRef.current];
+			fsRefreshQueueRef.current.clear();
+			if (!changed.length) return;
+			const dirs = new Set<string>([""]);
+			for (const rel of changed) { dirs.add(parentDir(rel)); if (expandedDirs.has(rel)) dirs.add(rel); }
+			for (const dir of dirs) void fileTree.loadDir(dir, true);
+		}, 150);
+	}, [expandedDirs, fileTree.loadDir, vaultPath]);
 
 	useTauriEvent("vault:fs_changed", handleVaultFsChanged);
-
-	useEffect(
-		() => () => {
-			if (fsRefreshTimerRef.current !== null) {
-				window.clearTimeout(fsRefreshTimerRef.current);
-			}
-		},
-		[],
-	);
+	useEffect(() => () => { if (fsRefreshTimerRef.current !== null) window.clearTimeout(fsRefreshTimerRef.current); }, []);
 
 	useEffect(() => {
 		const sourcePath = movePickerSourcePath ?? activeFilePath;
-		if (!vaultPath || !paletteOpen || !sourcePath) {
-			setMoveTargetDirs([]);
-			return;
-		}
+		if (!vaultPath || !paletteOpen || !sourcePath) { setMoveTargetDirs([]); return; }
 		let cancelled = false;
-		const listAllDirs = async (): Promise<string[]> => {
+		void (async () => {
 			const out: string[] = [];
 			const seen = new Set<string>([""]);
 			const queue: string[] = [""];
-			let processed = 0;
-			const maxDirs = 5000;
-
-			while (queue.length > 0 && processed < maxDirs) {
+			while (queue.length > 0 && out.length < 5000) {
 				const dir = queue.shift() ?? "";
 				const entries = await invoke("vault_list_dir", dir ? { dir } : {});
-				processed += 1;
-				for (const entry of entries) {
-					if (entry.kind !== "dir") continue;
-					const rel = entry.rel_path;
-					if (seen.has(rel)) continue;
-					seen.add(rel);
-					out.push(rel);
-					queue.push(rel);
-				}
+				for (const entry of entries) { if (entry.kind !== "dir" || seen.has(entry.rel_path)) continue; seen.add(entry.rel_path); out.push(entry.rel_path); queue.push(entry.rel_path); }
 			}
-			return out;
-		};
-
-		void listAllDirs()
-			.then((dirs) => {
-				if (cancelled) return;
-				const fromDir = parentDir(sourcePath);
-				setMoveTargetDirs(
-					dirs
-						.filter((dir) => dir !== fromDir)
-						.sort((a, b) => a.localeCompare(b)),
-				);
-			})
-			.catch(() => {
-				if (!cancelled) setMoveTargetDirs([]);
-			});
-		return () => {
-			cancelled = true;
-		};
+			if (!cancelled) { const fromDir = parentDir(sourcePath); setMoveTargetDirs(out.filter((d) => d !== fromDir).sort((a, b) => a.localeCompare(b))); }
+		})().catch(() => { if (!cancelled) setMoveTargetDirs([]); });
+		return () => { cancelled = true; };
 	}, [activeFilePath, movePickerSourcePath, paletteOpen, vaultPath]);
 
-	useEffect(() => {
-		if (!paletteOpen) {
-			setMovePickerSourcePath(null);
-		}
-	}, [paletteOpen]);
+	useEffect(() => { if (!paletteOpen) setMovePickerSourcePath(null); }, [paletteOpen]);
 
-	// ---------------------------------------------------------------------------
-	// Commands
-	// ---------------------------------------------------------------------------
-	const openPaletteShortcuts = useMemo<Shortcut[]>(
-		() => [
-			{ meta: true, key: "k" },
-			{ meta: true, shift: true, key: "p" },
-		],
-		[],
-	);
-
-	const openSearchShortcuts = useMemo<Shortcut[]>(
-		() => [{ meta: true, key: "f" }],
-		[],
-	);
-
-	const openCommandPalette = useCallback(() => {
-		setPaletteInitialTab("commands");
-		setPaletteInitialQuery("");
-		setPaletteOpen(true);
-	}, [setPaletteOpen]);
-
-	const openSearchPalette = useCallback(() => {
-		setPaletteInitialTab("search");
-		setPaletteInitialQuery("");
-		setPaletteOpen(true);
-	}, [setPaletteOpen]);
+	const openPaletteShortcuts = useMemo<Shortcut[]>(() => [{ meta: true, key: "k" }, { meta: true, shift: true, key: "p" }], []);
+	const openSearchShortcuts = useMemo<Shortcut[]>(() => [{ meta: true, key: "f" }], []);
+	const openCommandPalette = useCallback(() => { setPaletteInitialTab("commands"); setPaletteInitialQuery(""); setPaletteOpen(true); }, [setPaletteOpen]);
+	const openSearchPalette = useCallback(() => { setPaletteInitialTab("search"); setPaletteInitialQuery(""); setPaletteOpen(true); }, [setPaletteOpen]);
 
 	const commands = useMemo<Command[]>(() => {
 		if (movePickerSourcePath) {
 			return [
-				{
-					id: "move-picker-root",
-					label: "/",
-					action: async () => {
-						const nextPath = await fileTree.onMovePath(
-							movePickerSourcePath,
-							"",
-						);
-						if (nextPath) {
-							setMovePickerSourcePath(null);
-							await fileTree.openFile(nextPath);
-						}
-					},
-				},
-				...moveTargetDirs.map((dir) => ({
-					id: `move-picker:${dir}`,
-					label: `/${dir}`,
-					action: async () => {
-						const nextPath = await fileTree.onMovePath(
-							movePickerSourcePath,
-							dir,
-						);
-						if (nextPath) {
-							setMovePickerSourcePath(null);
-							await fileTree.openFile(nextPath);
-						}
-					},
-				})),
+				{ id: "move-picker-root", label: "/", action: async () => { const n = await fileTree.onMovePath(movePickerSourcePath, ""); if (n) { setMovePickerSourcePath(null); await fileTree.openFile(n); } } },
+				...moveTargetDirs.map((dir) => ({ id: `move-picker:${dir}`, label: `/${dir}`, action: async () => { const n = await fileTree.onMovePath(movePickerSourcePath, dir); if (n) { setMovePickerSourcePath(null); await fileTree.openFile(n); } } })),
 			];
 		}
-
 		return [
-			{
-				id: "open-settings",
-				label: "Settings",
-				shortcut: { meta: true, key: "," },
-				action: () => void openSettingsWindow(),
-			},
-			{
-				id: "open-vault",
-				label: "Open vault",
-				shortcut: { meta: true, key: "o" },
-				action: onOpenVault,
-			},
-			{
-				id: "toggle-sidebar",
-				label: "Toggle sidebar",
-				shortcut: { meta: true, key: "b" },
-				action: () => setSidebarCollapsed(!sidebarCollapsed),
-			},
-			{
-				id: "toggle-ai",
-				label: "Toggle AI",
-				shortcut: { meta: true, shift: true, key: "a" },
-				enabled: Boolean(vaultPath),
-				action: () => setAiPanelOpen((v) => !v),
-			},
-			{
-				id: "ai-attach-current-note",
-				label: "AI: Attach current note",
-				shortcut: { meta: true, alt: true, key: "a" },
-				enabled: Boolean(activeMarkdownTabPath),
-				action: () => void attachCurrentNoteToAi(),
-			},
-			{
-				id: "ai-attach-all-open-notes",
-				label: "AI: Attach all open notes",
-				shortcut: { meta: true, alt: true, shift: true, key: "a" },
-				enabled: openMarkdownTabs.length > 0,
-				action: () => void attachAllOpenNotesToAi(),
-			},
-			{
-				id: "new-note",
-				label: "New note",
-				shortcut: { meta: true, key: "n" },
-				enabled: Boolean(vaultPath),
-				action: () => void fileTree.onNewFile(),
-			},
-			{
-				id: "open-daily-note",
-				label: "Open daily note (today)",
-				shortcut: { meta: true, shift: true, key: "d" },
-				enabled: Boolean(vaultPath) && Boolean(dailyNotesFolder),
-				action: () => void handleOpenDailyNote(),
-			},
-			{
-				id: "save-note",
-				label: "Save",
-				shortcut: { meta: true, key: "s" },
-				enabled: Boolean(vaultPath),
-				action: () => void saveCurrentEditor(),
-			},
-			{
-				id: "close-preview",
-				label: "Close preview",
-				shortcut: { meta: true, key: "w" },
-				enabled: Boolean(vaultPath),
-				action: () => setActivePreviewPath(null),
-			},
-			{
-				id: "quick-open",
-				label: "Quick open",
-				shortcut: { meta: true, key: "p" },
-				enabled: Boolean(vaultPath),
-				action: openSearchPalette,
-			},
-			{
-				id: "move-active-file",
-				label: "Move to…",
-				enabled: Boolean(vaultPath) && Boolean(activeFilePath),
-				action: () => {
-					if (!activeFilePath) return;
-					setMovePickerSourcePath(activeFilePath);
-					setPaletteInitialTab("commands");
-					setPaletteInitialQuery("");
-					setPaletteOpen(true);
-				},
-			},
+			{ id: "open-settings", label: "Settings", shortcut: { meta: true, key: "," }, action: () => void openSettingsWindow() },
+			{ id: "open-vault", label: "Open vault", shortcut: { meta: true, key: "o" }, action: onOpenVault },
+			{ id: "toggle-sidebar", label: "Toggle sidebar", shortcut: { meta: true, key: "b" }, action: () => setSidebarCollapsed(!sidebarCollapsed) },
+			{ id: "toggle-ai", label: "Toggle AI", shortcut: { meta: true, shift: true, key: "a" }, enabled: Boolean(vaultPath), action: () => setAiPanelOpen((v) => !v) },
+			{ id: "ai-attach-current-note", label: "AI: Attach current note", shortcut: { meta: true, alt: true, key: "a" }, enabled: Boolean(activeMarkdownTabPath), action: () => void attachCurrentNoteToAi() },
+			{ id: "ai-attach-all-open-notes", label: "AI: Attach all open notes", shortcut: { meta: true, alt: true, shift: true, key: "a" }, enabled: openMarkdownTabs.length > 0, action: () => void attachAllOpenNotesToAi() },
+			{ id: "new-note", label: "New note", shortcut: { meta: true, key: "n" }, enabled: Boolean(vaultPath), action: () => void fileTree.onNewFile() },
+			{ id: "open-daily-note", label: "Open daily note (today)", shortcut: { meta: true, shift: true, key: "d" }, enabled: Boolean(vaultPath) && Boolean(dailyNotesFolder), action: () => void handleOpenDailyNote() },
+			{ id: "save-note", label: "Save", shortcut: { meta: true, key: "s" }, enabled: Boolean(vaultPath), action: () => void saveCurrentEditor() },
+			{ id: "close-preview", label: "Close preview", shortcut: { meta: true, key: "w" }, enabled: Boolean(vaultPath), action: () => setActivePreviewPath(null) },
+			{ id: "quick-open", label: "Quick open", shortcut: { meta: true, key: "p" }, enabled: Boolean(vaultPath), action: openSearchPalette },
+			{ id: "move-active-file", label: "Move to…", enabled: Boolean(vaultPath) && Boolean(activeFilePath), action: () => { if (!activeFilePath) return; setMovePickerSourcePath(activeFilePath); setPaletteInitialTab("commands"); setPaletteInitialQuery(""); setPaletteOpen(true); } },
 		];
-	}, [
-		activeMarkdownTabPath,
-		activeFilePath,
-		attachAllOpenNotesToAi,
-		attachCurrentNoteToAi,
-		dailyNotesFolder,
-		fileTree,
-		handleOpenDailyNote,
-		onOpenVault,
-		openMarkdownTabs.length,
-		saveCurrentEditor,
-		setAiPanelOpen,
-		setPaletteOpen,
-		setActivePreviewPath,
-		setSidebarCollapsed,
-		sidebarCollapsed,
-		vaultPath,
-		openSearchPalette,
-		moveTargetDirs,
-		movePickerSourcePath,
-	]);
+	}, [activeMarkdownTabPath, activeFilePath, attachAllOpenNotesToAi, attachCurrentNoteToAi, dailyNotesFolder, fileTree, handleOpenDailyNote, onOpenVault, openMarkdownTabs.length, saveCurrentEditor, setAiPanelOpen, setPaletteOpen, setActivePreviewPath, setSidebarCollapsed, sidebarCollapsed, vaultPath, openSearchPalette, moveTargetDirs, movePickerSourcePath]);
 
-	useCommandShortcuts({
-		commands,
-		paletteOpen,
-		onOpenPalette: openCommandPalette,
-		onOpenPaletteSearch: openSearchPalette,
-		onClosePalette: () => setPaletteOpen(false),
-		openPaletteShortcuts,
-		openSearchShortcuts,
-	});
+	useCommandShortcuts({ commands, paletteOpen, onOpenPalette: openCommandPalette, onOpenPaletteSearch: openSearchPalette, onClosePalette: () => setPaletteOpen(false), openPaletteShortcuts, openSearchShortcuts });
 
-	// ---------------------------------------------------------------------------
-	// Render
-	// ---------------------------------------------------------------------------
 	return (
-		<div
-			className={cn(
-				"appShell",
-				sidebarCollapsed && "appShellSidebarCollapsed",
-				aiPanelOpen && "appShellAiOpen",
-			)}
-		>
-			<div
-				aria-hidden="true"
-				className="windowDragStrip"
-				data-tauri-drag-region
-				onMouseDown={onWindowDragMouseDown}
-			/>
+		<div className={cn("appShell", sidebarCollapsed && "appShellSidebarCollapsed", aiPanelOpen && "appShellAiOpen")}>
+			<div aria-hidden="true" className="windowDragStrip" data-tauri-drag-region onMouseDown={onWindowDragMouseDown} />
 			{sidebarCollapsed && (
 				<div className="sidebarCollapsedToggle">
-					<Button
-						data-sidebar="trigger"
-						type="button"
-						variant="ghost"
-						size="icon-sm"
-						aria-label="Expand sidebar"
-						aria-pressed={false}
-						data-window-drag-ignore
-						onClick={() => setSidebarCollapsed(false)}
-						title={`Expand sidebar (${getShortcutTooltip({ meta: true, key: "b" })})`}
-					>
+					<Button data-sidebar="trigger" type="button" variant="ghost" size="icon-sm" aria-label="Expand sidebar" aria-pressed={false} data-window-drag-ignore onClick={() => setSidebarCollapsed(false)} title={`Expand sidebar (${getShortcutTooltip({ meta: true, key: "b" })})`}>
 						<PanelLeftOpen size={14} />
 					</Button>
 				</div>
 			)}
-
-			<Sidebar
-				onSelectDir={(p) => void openFolderView(p)}
-				onOpenFile={(p) => void fileTree.openFile(p)}
-				onNewFileInDir={(p) => void fileTree.onNewFileInDir(p)}
-				onNewFolderInDir={(p) => fileTree.onNewFolderInDir(p)}
-				onRenameDir={(p, name) => fileTree.onRenameDir(p, name)}
-				onDeletePath={(p, kind) => fileTree.onDeletePath(p, kind)}
-				onToggleDir={fileTree.toggleDir}
-				onSelectTag={(t) => openTagSearchPalette(t)}
-				onOpenCommandPalette={openCommandPalette}
-				sidebarCollapsed={sidebarCollapsed}
-				onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
-				onOpenDailyNote={handleOpenDailyNote}
-				isDailyNoteCreating={isDailyNoteCreating}
-			/>
-
-			<div
-				ref={resizeRef}
-				className="sidebarResizeHandle"
-				onPointerDown={handleResizeStart}
-				onPointerMove={handleResizeMove}
-				onPointerUp={handleResizeEnd}
-				data-window-drag-ignore
-				style={{ cursor: sidebarCollapsed ? "default" : "col-resize" }}
-			/>
-
-			<MainContent
-				fileTree={fileTree}
-				onOpenFolder={openFolderView}
-				onOpenCommandPalette={openCommandPalette}
-				onOpenSearchPalette={openSearchPalette}
-			/>
-
+			<Sidebar onSelectDir={(p) => void openFolderView(p)} onOpenFile={(p) => void fileTree.openFile(p)} onNewFileInDir={(p) => void fileTree.onNewFileInDir(p)} onNewFolderInDir={(p) => fileTree.onNewFolderInDir(p)} onRenameDir={(p, name) => fileTree.onRenameDir(p, name)} onDeletePath={(p, kind) => fileTree.onDeletePath(p, kind)} onToggleDir={fileTree.toggleDir} onSelectTag={(t) => openTagSearchPalette(t)} onOpenCommandPalette={openCommandPalette} sidebarCollapsed={sidebarCollapsed} onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)} onOpenDailyNote={handleOpenDailyNote} isDailyNoteCreating={isDailyNoteCreating} />
+			<div ref={sidebarResize.resizeRef} className="sidebarResizeHandle" onPointerDown={sidebarResize.handlePointerDown} onPointerMove={sidebarResize.handlePointerMove} onPointerUp={sidebarResize.handlePointerUp} data-window-drag-ignore style={{ cursor: sidebarCollapsed ? "default" : "col-resize" }} />
+			<MainContent fileTree={fileTree} onOpenFolder={openFolderView} onOpenCommandPalette={openCommandPalette} onOpenSearchPalette={openSearchPalette} />
 			{vaultPath && aiPanelOpen && (
-				<div
-					ref={aiResizeRef}
-					className="sidebarResizeHandle"
-					onPointerDown={handleAiResizeStart}
-					onPointerMove={handleAiResizeMove}
-					onPointerUp={handleAiResizeEnd}
-					data-window-drag-ignore
-					style={{ cursor: "col-resize" }}
-				/>
+				<div ref={aiResize.resizeRef} className="sidebarResizeHandle" onPointerDown={aiResize.handlePointerDown} onPointerMove={aiResize.handlePointerMove} onPointerUp={aiResize.handlePointerUp} data-window-drag-ignore style={{ cursor: "col-resize" }} />
 			)}
-
 			{vaultPath && (
-				<AIFloatingHost
-					isOpen={aiPanelOpen}
-					onToggle={() => setAiPanelOpen((v) => !v)}
-					activeFolderPath={
-						activeViewDoc?.kind === "folder"
-							? activeViewDoc.selector || ""
-							: null
-					}
-					currentFilePath={
-						activeMarkdownTabPath ?? activePreviewPath ?? activeFilePath ?? null
-					}
-					onAttachContextFiles={attachContextFiles}
-					onCreateNoteFromLastAssistant={createNoteFromAI}
-				/>
+				<AIFloatingHost isOpen={aiPanelOpen} onToggle={() => setAiPanelOpen((v) => !v)} activeFolderPath={activeViewDoc?.kind === "folder" ? activeViewDoc.selector || "" : null} currentFilePath={activeMarkdownTabPath ?? activePreviewPath ?? activeFilePath ?? null} onAttachContextFiles={attachContextFiles} onCreateNoteFromLastAssistant={createNoteFromAI} />
 			)}
-
-			<AnimatePresence>
-				{error && <div className="appError">{error}</div>}
-			</AnimatePresence>
-			<CommandPalette
-				open={paletteOpen}
-				initialTab={paletteInitialTab}
-				initialQuery={paletteInitialQuery}
-				commands={commands}
-				onClose={() => setPaletteOpen(false)}
-				vaultPath={vaultPath}
-				onSelectSearchNote={(id) => void fileTree.openMarkdownFile(id)}
-			/>
-			<KeyboardShortcutsHelp
-				open={shortcutsHelpOpen}
-				onClose={() => setShortcutsHelpOpen(false)}
-			/>
+			<AnimatePresence>{error && <div className="appError">{error}</div>}</AnimatePresence>
+			<CommandPalette open={paletteOpen} initialTab={paletteInitialTab} initialQuery={paletteInitialQuery} commands={commands} onClose={() => setPaletteOpen(false)} vaultPath={vaultPath} onSelectSearchNote={(id) => void fileTree.openMarkdownFile(id)} />
+			<KeyboardShortcutsHelp open={shortcutsHelpOpen} onClose={() => setShortcutsHelpOpen(false)} />
 		</div>
 	);
 }

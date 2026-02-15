@@ -11,7 +11,8 @@ import {
 	ContextMenuSeparator,
 	ContextMenuTrigger,
 } from "../ui/shadcn/context-menu";
-import { FileTreeDirItem, FileTreeFileItem } from "./FileTreeItem";
+import { FileTreeDirItem } from "./FileTreeDirItem";
+import { FileTreeFileItem } from "./FileTreeFileItem";
 
 interface FileTreePaneProps {
 	vaultName?: string;

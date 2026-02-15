@@ -1,31 +1,18 @@
 import { AnimatePresence, motion } from "motion/react";
-import {
-	Fragment,
-	useCallback,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
-import type { ReactNode } from "react";
-import {
-	type Shortcut,
-	formatShortcut,
-	formatShortcutParts,
-} from "../../lib/shortcuts";
-import { type SearchResult, invoke } from "../../lib/tauri";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Search } from "../Icons";
 import { Dialog, DialogContent, DialogTitle } from "../ui/shadcn/dialog";
+import { CommandList } from "./CommandList";
+import { SearchResultsList } from "./CommandSearchResults";
+import {
+	type Command,
+	type Tab,
+	TABS,
+	springTransition,
+} from "./commandPaletteHelpers";
+import { useCommandSearch } from "./useCommandSearch";
 
-export interface Command {
-	id: string;
-	label: string;
-	shortcut?: Shortcut;
-	action: () => void | Promise<void>;
-	enabled?: boolean;
-}
-
-type Tab = "commands" | "search";
+export type { Command } from "./commandPaletteHelpers";
 
 interface CommandPaletteProps {
 	open: boolean;
@@ -35,56 +22,6 @@ interface CommandPaletteProps {
 	onClose: () => void;
 	vaultPath: string | null;
 	onSelectSearchNote: (id: string) => void;
-}
-
-const TABS: { id: Tab; label: string }[] = [
-	{ id: "commands", label: "Commands" },
-	{ id: "search", label: "Search" },
-];
-
-const springTransition = {
-	type: "spring",
-	stiffness: 500,
-	damping: 35,
-} as const;
-
-function parseSearchQuery(raw: string): { tags: string[]; text: string } {
-	const tokens = raw.trim().split(/\s+/).filter(Boolean);
-	const tags: string[] = [];
-	const textParts: string[] = [];
-	for (const token of tokens) {
-		if (token.startsWith("#")) {
-			tags.push(token);
-			continue;
-		}
-		if (token.toLowerCase().startsWith("tag:")) {
-			const rest = token.slice(4).trim();
-			if (rest) tags.push(rest.startsWith("#") ? rest : `#${rest}`);
-			continue;
-		}
-		textParts.push(token);
-	}
-	return { tags, text: textParts.join(" ").trim() };
-}
-
-function renderSnippet(snippet: string): ReactNode[] {
-	const parts = snippet.split(/([⟦⟧])/);
-	const out: ReactNode[] = [];
-	let inMark = false;
-	let key = 0;
-	for (const p of parts) {
-		if (!p) continue;
-		if (p === "⟦") {
-			inMark = true;
-			continue;
-		}
-		if (p === "⟧") {
-			inMark = false;
-			continue;
-		}
-		out.push(<Fragment key={key++}>{inMark ? <mark>{p}</mark> : p}</Fragment>);
-	}
-	return out;
 }
 
 export function CommandPalette({
@@ -99,13 +36,12 @@ export function CommandPalette({
 	const [activeTab, setActiveTab] = useState<Tab>(initialTab);
 	const [query, setQuery] = useState("");
 	const [selectedIndex, setSelectedIndex] = useState(0);
-	const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
-	const [recentNotes, setRecentNotes] = useState<SearchResult[]>([]);
-	const [isSearching, setIsSearching] = useState(false);
 	const inputRef = useRef<HTMLInputElement | null>(null);
 	const previousFocusRef = useRef<Element | null>(null);
 	const listRef = useRef<HTMLDivElement | null>(null);
-	const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+	const { recentNotes, isSearching, titleMatches, contentMatches, reset } =
+		useCommandSearch(open, activeTab, query, vaultPath);
 
 	const filtered = useMemo(() => {
 		if (activeTab !== "commands") return [];
@@ -115,22 +51,6 @@ export function CommandPalette({
 			: commands;
 		return matches.filter((cmd) => cmd.enabled !== false);
 	}, [commands, query, activeTab]);
-
-	const { titleMatches, contentMatches } = useMemo(() => {
-		if (activeTab !== "search" || !query.trim())
-			return { titleMatches: [], contentMatches: [] };
-		const q = query.trim().toLowerCase();
-		const title: SearchResult[] = [];
-		const content: SearchResult[] = [];
-		for (const r of searchResults) {
-			if (r.title.toLowerCase().includes(q)) {
-				title.push(r);
-			} else {
-				content.push(r);
-			}
-		}
-		return { titleMatches: title, contentMatches: content };
-	}, [searchResults, query, activeTab]);
 
 	const itemCount =
 		activeTab === "commands"
@@ -145,37 +65,23 @@ export function CommandPalette({
 		setActiveTab(initialTab);
 		setQuery(initialTab === "search" ? initialQuery : "");
 		setSelectedIndex(0);
-		setSearchResults([]);
-		setRecentNotes([]);
-		setIsSearching(false);
-		window.requestAnimationFrame(() => {
-			inputRef.current?.focus();
-		});
+		reset();
+		window.requestAnimationFrame(() => inputRef.current?.focus());
 		return () => {
 			const prev = previousFocusRef.current;
 			if (prev instanceof HTMLElement) prev.focus();
 		};
-	}, [open, initialQuery, initialTab]);
-
-	useEffect(() => {
-		if (!open || !vaultPath) return;
-		invoke("recent_notes", { limit: 8 })
-			.then(setRecentNotes)
-			.catch(() => setRecentNotes([]));
-	}, [open, vaultPath]);
+	}, [open, initialQuery, initialTab, reset]);
 
 	const switchTab = useCallback(
 		(tab: Tab) => {
 			setActiveTab(tab);
 			setQuery(tab === "search" ? initialQuery : "");
 			setSelectedIndex(0);
-			setSearchResults([]);
-			setIsSearching(false);
-			window.requestAnimationFrame(() => {
-				inputRef.current?.focus();
-			});
+			reset();
+			window.requestAnimationFrame(() => inputRef.current?.focus());
 		},
-		[initialQuery],
+		[initialQuery, reset],
 	);
 
 	useEffect(() => {
@@ -183,44 +89,10 @@ export function CommandPalette({
 	}, [itemCount]);
 
 	useEffect(() => {
-		if (activeTab !== "search") return;
-		if (debounceRef.current) clearTimeout(debounceRef.current);
-		const trimmed = query.trim();
-		if (!trimmed) {
-			setSearchResults([]);
-			setIsSearching(false);
-			return;
-		}
-		setIsSearching(true);
-		const parsed = parseSearchQuery(trimmed);
-		debounceRef.current = setTimeout(() => {
-			(parsed.tags.length > 0
-				? invoke("search_with_tags", {
-						tags: parsed.tags,
-						query: parsed.text || null,
-					})
-				: invoke("search", { query: trimmed })
-			)
-				.then((results) => {
-					setSearchResults(results);
-					setSelectedIndex(0);
-				})
-				.catch(() => {
-					setSearchResults([]);
-				})
-				.finally(() => {
-					setIsSearching(false);
-				});
-		}, 200);
-		return () => {
-			if (debounceRef.current) clearTimeout(debounceRef.current);
-		};
-	}, [query, activeTab]);
-
-	useEffect(() => {
 		if (!listRef.current) return;
-		const items = listRef.current.children;
-		const selected = items[selectedIndex] as HTMLElement | undefined;
+		const selected = listRef.current.children[
+			selectedIndex
+		] as HTMLElement | null;
 		selected?.scrollIntoView({ block: "nearest" });
 	}, [selectedIndex]);
 
@@ -236,25 +108,14 @@ export function CommandPalette({
 
 	const selectSearchResult = useCallback(
 		(index: number) => {
-			let result: SearchResult | undefined;
-			if (query.trim()) {
-				const combined = [...titleMatches, ...contentMatches];
-				result = combined[index];
-			} else {
-				result = recentNotes[index];
-			}
+			const result = query.trim()
+				? [...titleMatches, ...contentMatches][index]
+				: recentNotes[index];
 			if (!result) return;
 			onClose();
 			onSelectSearchNote(result.id);
 		},
-		[
-			titleMatches,
-			contentMatches,
-			recentNotes,
-			query,
-			onClose,
-			onSelectSearchNote,
-		],
+		[titleMatches, contentMatches, recentNotes, query, onClose, onSelectSearchNote],
 	);
 
 	const handleSelect = useCallback(
@@ -269,14 +130,12 @@ export function CommandPalette({
 		(e: React.KeyboardEvent) => {
 			if (e.key === "ArrowDown") {
 				e.preventDefault();
-				setSelectedIndex((curr) =>
-					itemCount ? Math.min(curr + 1, itemCount - 1) : 0,
-				);
+				setSelectedIndex((c) => (itemCount ? Math.min(c + 1, itemCount - 1) : 0));
 				return;
 			}
 			if (e.key === "ArrowUp") {
 				e.preventDefault();
-				setSelectedIndex((curr) => (curr > 0 ? curr - 1 : 0));
+				setSelectedIndex((c) => (c > 0 ? c - 1 : 0));
 				return;
 			}
 			if (e.key === "Enter") {
@@ -301,7 +160,6 @@ export function CommandPalette({
 			>
 				<DialogTitle className="sr-only">Command Palette</DialogTitle>
 
-				{/* ── Tabs ── */}
 				<div className="commandPaletteTabs">
 					<div className="commandPaletteTabGroup">
 						{TABS.map((tab) => {
@@ -330,7 +188,6 @@ export function CommandPalette({
 					</div>
 				</div>
 
-				{/* ── Input ── */}
 				<div className="commandPaletteInputWrapper">
 					<AnimatePresence mode="wait">
 						{activeTab === "search" && (
@@ -350,9 +207,7 @@ export function CommandPalette({
 						ref={inputRef}
 						className="commandPaletteInput"
 						placeholder={
-							activeTab === "commands"
-								? "Type a command…"
-								: "Search your notes…"
+							activeTab === "commands" ? "Type a command…" : "Search your notes…"
 						}
 						value={query}
 						onChange={(e) => setQuery(e.target.value)}
@@ -362,7 +217,6 @@ export function CommandPalette({
 					/>
 				</div>
 
-				{/* ── List ── */}
 				<AnimatePresence mode="wait">
 					<motion.div
 						key={activeTab}
@@ -380,149 +234,27 @@ export function CommandPalette({
 									: `${(titleMatches.length + contentMatches.length).toLocaleString()} results`}
 							</div>
 						) : null}
+
 						{activeTab === "commands" && (
-							<>
-								{filtered.map((cmd, index) => (
-									<div
-										key={cmd.id}
-										className="commandPaletteItem"
-										data-selected={index === selectedIndex}
-										onMouseEnter={() => setSelectedIndex(index)}
-										onMouseDown={(e) => {
-											e.preventDefault();
-											runCommand(index);
-										}}
-									>
-										<span>{cmd.label}</span>
-										{cmd.shortcut ? (
-											<span
-												className="commandPaletteShortcut"
-												aria-label={formatShortcut(cmd.shortcut)}
-											>
-												{formatShortcutParts(cmd.shortcut).map((part) => (
-													<kbd key={part}>{part}</kbd>
-												))}
-											</span>
-										) : null}
-									</div>
-								))}
-								{filtered.length === 0 && (
-									<div className="commandPaletteEmpty">No commands</div>
-								)}
-							</>
+							<CommandList
+								filtered={filtered}
+								selectedIndex={selectedIndex}
+								onSetSelectedIndex={setSelectedIndex}
+								onRunCommand={runCommand}
+							/>
 						)}
 
 						{activeTab === "search" && (
-							<>
-								{!query.trim() && (
-									<>
-										{recentNotes.length > 0 && (
-											<>
-												<div className="commandPaletteGroupLabel">Recent</div>
-												{recentNotes.map((r, index) => (
-													<div
-														key={r.id}
-														className="commandPaletteItem"
-														data-selected={index === selectedIndex}
-														onMouseEnter={() => setSelectedIndex(index)}
-														onMouseDown={(e) => {
-															e.preventDefault();
-															selectSearchResult(index);
-														}}
-													>
-														<span>{r.title || "Untitled"}</span>
-													</div>
-												))}
-											</>
-										)}
-										{recentNotes.length === 0 && (
-											<div className="commandPaletteEmpty">
-												Type to search your notes…
-											</div>
-										)}
-									</>
-								)}
-
-								{query.trim() && (
-									<>
-										{titleMatches.length > 0 && (
-											<>
-												<div className="commandPaletteGroupLabel">
-													{query.trim().startsWith("#")
-														? "Tagged Notes"
-														: "Notes"}
-												</div>
-												{titleMatches.map((r, index) => (
-													<div
-														key={r.id}
-														className="commandPaletteItem commandPaletteResultItem"
-														data-selected={index === selectedIndex}
-														onMouseEnter={() => setSelectedIndex(index)}
-														onMouseDown={(e) => {
-															e.preventDefault();
-															selectSearchResult(index);
-														}}
-													>
-														<div className="commandPaletteResultContent">
-															<div className="commandPaletteResultTitle">
-																{r.title || "Untitled"}
-															</div>
-															<div className="commandPaletteResultSnippet mono">
-																{r.id}
-															</div>
-															<div className="commandPaletteResultSnippet">
-																{renderSnippet(r.snippet)}
-															</div>
-														</div>
-													</div>
-												))}
-											</>
-										)}
-										{contentMatches.length > 0 && (
-											<>
-												<div className="commandPaletteGroupLabel">Content</div>
-												{contentMatches.map((r, index) => {
-													const globalIndex = titleMatches.length + index;
-													return (
-														<div
-															key={r.id}
-															className="commandPaletteItem commandPaletteResultItem"
-															data-selected={globalIndex === selectedIndex}
-															onMouseEnter={() => setSelectedIndex(globalIndex)}
-															onMouseDown={(e) => {
-																e.preventDefault();
-																selectSearchResult(globalIndex);
-															}}
-														>
-															<div className="commandPaletteResultContent">
-																<div className="commandPaletteResultTitle">
-																	{r.title || "Untitled"}
-																</div>
-																<div className="commandPaletteResultSnippet mono">
-																	{r.id}
-																</div>
-																<div className="commandPaletteResultSnippet">
-																	{renderSnippet(r.snippet)}
-																</div>
-															</div>
-														</div>
-													);
-												})}
-											</>
-										)}
-										{titleMatches.length === 0 &&
-											contentMatches.length === 0 &&
-											!isSearching && (
-												<div className="commandPaletteEmpty">No results</div>
-											)}
-										{isSearching &&
-											titleMatches.length === 0 &&
-											contentMatches.length === 0 && (
-												<div className="commandPaletteEmpty">Searching…</div>
-											)}
-									</>
-								)}
-							</>
+							<SearchResultsList
+								query={query}
+								isSearching={isSearching}
+								titleMatches={titleMatches}
+								contentMatches={contentMatches}
+								recentNotes={recentNotes}
+								selectedIndex={selectedIndex}
+								onSetSelectedIndex={setSelectedIndex}
+								onSelectResult={selectSearchResult}
+							/>
 						)}
 					</motion.div>
 				</AnimatePresence>
