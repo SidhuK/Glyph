@@ -57,8 +57,6 @@ export interface SearchUIContextValue {
 	searchError: string;
 	showSearch: boolean;
 	setShowSearch: (show: boolean) => void;
-	focusSearchInput: () => void;
-	setSearchInputElement: (el: HTMLInputElement | null) => void;
 }
 
 export type UIContextValue = UILayoutContextValue &
@@ -93,8 +91,6 @@ export function UIProvider({ children }: { children: ReactNode }) {
 	const [aiPanelWidth, setAiPanelWidthState] = useState(380);
 	const [aiAssistantMode, setAiAssistantModeState] =
 		useState<AiAssistantMode>("create");
-
-	const searchInputElRef = useRef<HTMLInputElement | null>(null);
 
 	useEffect(() => {
 		if (vaultPath) setSidebarCollapsed(false);
@@ -188,17 +184,6 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		[vaultPath],
 	);
 
-	const setSearchInputElement = useCallback((el: HTMLInputElement | null) => {
-		searchInputElRef.current = el;
-	}, []);
-
-	const focusSearchInput = useCallback(() => {
-		const el = searchInputElRef.current;
-		if (!el) return;
-		el.focus();
-		el.select();
-	}, []);
-
 	const layoutValue = useMemo<UILayoutContextValue>(
 		() => ({
 			sidebarCollapsed,
@@ -257,8 +242,6 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			searchError,
 			showSearch,
 			setShowSearch,
-			focusSearchInput,
-			setSearchInputElement,
 		}),
 		[
 			searchQuery,
@@ -268,8 +251,6 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			searchError,
 			showSearch,
 			setShowSearch,
-			focusSearchInput,
-			setSearchInputElement,
 		],
 	);
 

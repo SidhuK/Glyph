@@ -8,7 +8,7 @@ import { parentDir } from "../../utils/path";
 import {
 	type CanvasInlineEditorMode,
 	CanvasNoteInlineEditor,
-} from "../CanvasNoteInlineEditor";
+} from "../editor/CanvasNoteInlineEditor";
 import { FolderBreadcrumb } from "../FolderBreadcrumb";
 import { Edit, Eye, RefreshCw, Save } from "../Icons";
 import { Button } from "../ui/shadcn/button";

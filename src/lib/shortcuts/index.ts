@@ -8,7 +8,7 @@
  */
 
 // Re-export from the main shortcuts file
-export type { Shortcut } from "../shortcuts";
+export type { Shortcut } from "./types";
 export {
 	isShortcutMatch,
 	getShortcutTooltip,

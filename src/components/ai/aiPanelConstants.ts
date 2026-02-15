@@ -40,7 +40,11 @@ export function parseAddTrigger(input: string): AddTrigger | null {
 }
 
 export function formatToolName(tool: string): string {
-	return tool.split("_").filter(Boolean).join(" ");
+	return tool
+		.split("_")
+		.filter(Boolean)
+		.map((part) => part[0]?.toUpperCase() + part.slice(1))
+		.join(" ");
 }
 
 export { providerLogoMap };

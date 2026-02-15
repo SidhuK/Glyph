@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { Fragment, memo, useCallback } from "react";
 import type { ChangeEvent, ReactNode } from "react";
 import type { SearchResult } from "../lib/tauri";
+import { springPresets } from "./ui/animations";
 import { Button } from "./ui/shadcn/button";
 import { Input } from "./ui/shadcn/input";
 
@@ -16,11 +17,7 @@ interface SearchPaneProps {
 	onSearchInputRef?: (el: HTMLInputElement | null) => void;
 }
 
-const springTransition = {
-	type: "spring",
-	stiffness: 400,
-	damping: 25,
-} as const;
+const springTransition = springPresets.bouncy;
 
 export const SearchPane = memo(function SearchPane({
 	query,
@@ -43,7 +40,7 @@ export const SearchPane = memo(function SearchPane({
 		const parts = snippet.split(/([⟦⟧])/);
 		const out: ReactNode[] = [];
 		let inMark = false;
-		let key = 0;
+		let partIndex = 0;
 		for (const p of parts) {
 			if (!p) continue;
 			if (p === "⟦") {
@@ -55,7 +52,7 @@ export const SearchPane = memo(function SearchPane({
 				continue;
 			}
 			out.push(
-				<Fragment key={key++}>{inMark ? <mark>{p}</mark> : p}</Fragment>,
+				<Fragment key={`snippet-${partIndex++}`}>{inMark ? <mark>{p}</mark> : p}</Fragment>,
 			);
 		}
 		return out;

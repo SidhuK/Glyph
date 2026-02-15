@@ -40,6 +40,8 @@ export function useFolderShelf(
 		const dir = activeViewDoc.selector || "";
 		const cached = folderShelfCacheRef.current.get(dir);
 		if (cached) {
+			folderShelfCacheRef.current.delete(dir);
+			folderShelfCacheRef.current.set(dir, cached);
 			setFolderShelfSubfolders(cached.subfolders);
 			setFolderShelfRecents(cached.recents);
 		} else {
@@ -61,6 +63,9 @@ export function useFolderShelf(
 						a.name.toLowerCase().localeCompare(b.name.toLowerCase()),
 					);
 				const next = { subfolders, recents };
+				if (folderShelfCacheRef.current.has(dir)) {
+					folderShelfCacheRef.current.delete(dir);
+				}
 				folderShelfCacheRef.current.set(dir, next);
 				if (folderShelfCacheRef.current.size > MAX_FOLDER_SHELF_CACHE_SIZE) {
 					const oldestKey = folderShelfCacheRef.current.keys().next().value;

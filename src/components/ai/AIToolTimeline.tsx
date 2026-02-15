@@ -2,6 +2,7 @@ import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { ChevronDown } from "../Icons";
+import { formatToolName } from "./aiPanelConstants";
 
 type ToolPhase = "call" | "result" | "error";
 
@@ -18,14 +19,6 @@ export interface ToolTimelineEvent {
 interface AIToolTimelineProps {
 	events: ToolTimelineEvent[];
 	streaming: boolean;
-}
-
-function formatToolName(tool: string): string {
-	return tool
-		.split("_")
-		.filter(Boolean)
-		.map((part) => part[0]?.toUpperCase() + part.slice(1))
-		.join(" ");
 }
 
 function summarizePayload(payload: unknown): string {

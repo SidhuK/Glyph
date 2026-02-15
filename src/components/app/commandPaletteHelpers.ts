@@ -1,4 +1,5 @@
 import type { Shortcut } from "../../lib/shortcuts";
+import { springPresets } from "../ui/animations";
 
 export interface Command {
 	id: string;
@@ -15,11 +16,7 @@ export const TABS: { id: Tab; label: string }[] = [
 	{ id: "search", label: "Search" },
 ];
 
-export const springTransition = {
-	type: "spring",
-	stiffness: 500,
-	damping: 35,
-} as const;
+export const springTransition = springPresets.snappy;
 
 export function parseSearchQuery(raw: string): {
 	tags: string[];

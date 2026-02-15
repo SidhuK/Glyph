@@ -3,11 +3,18 @@ import type { AiAssistantMode } from "./tauri";
 
 export type { AiAssistantMode } from "./tauri";
 
-const store = new LazyStore("settings.json");
-const initPromise = store.init();
+let storeInstance: LazyStore | null = null;
+let storeInitPromise: Promise<void> | null = null;
 
-async function ensureLoaded(): Promise<void> {
-	await initPromise;
+async function getStore(): Promise<LazyStore> {
+	if (!storeInstance) {
+		storeInstance = new LazyStore("settings.json");
+		storeInitPromise = storeInstance.init();
+	}
+	if (storeInitPromise) {
+		await storeInitPromise;
+	}
+	return storeInstance;
 }
 
 export type ThemeMode = "system" | "light" | "dark";
@@ -58,7 +65,7 @@ const KEYS = {
 } as const;
 
 export async function reloadFromDisk(): Promise<void> {
-	await ensureLoaded();
+	const store = await getStore();
 	await store.reload();
 }
 
@@ -80,21 +87,31 @@ function isRecentFileArray(value: unknown): value is RecentFile[] {
 }
 
 export async function loadSettings(): Promise<AppSettings> {
-	await ensureLoaded();
-	const currentVaultPath =
-		(await store.get<string | null>(KEYS.currentVaultPath)) ?? null;
-	const recentVaults =
-		(await store.get<string[] | null>(KEYS.recentVaults)) ?? [];
-	const rawRecentFiles = await store.get<unknown>(KEYS.recentFiles);
+	const store = await getStore();
+	const [
+		currentVaultPathRaw,
+		recentVaultsRaw,
+		rawRecentFiles,
+		aiSidebarWidthRaw,
+		rawAiAssistantMode,
+		rawTheme,
+		dailyNotesFolderRaw,
+	] = await Promise.all([
+		store.get<string | null>(KEYS.currentVaultPath),
+		store.get<string[] | null>(KEYS.recentVaults),
+		store.get<unknown>(KEYS.recentFiles),
+		store.get<number | null>(KEYS.aiSidebarWidth),
+		store.get<unknown>(KEYS.aiAssistantMode),
+		store.get<unknown>(KEYS.theme),
+		store.get<string | null>(KEYS.dailyNotesFolder),
+	]);
+	const currentVaultPath = currentVaultPathRaw ?? null;
+	const recentVaults = recentVaultsRaw ?? [];
 	const recentFiles = isRecentFileArray(rawRecentFiles) ? rawRecentFiles : [];
-	const aiSidebarWidth =
-		(await store.get<number | null>(KEYS.aiSidebarWidth)) ?? null;
-	const rawAiAssistantMode = await store.get<unknown>(KEYS.aiAssistantMode);
+	const aiSidebarWidth = aiSidebarWidthRaw ?? null;
 	const aiAssistantMode = asAiAssistantMode(rawAiAssistantMode);
-	const rawTheme = await store.get<unknown>(KEYS.theme);
 	const theme = asThemeMode(rawTheme);
-	const dailyNotesFolder =
-		(await store.get<string | null>(KEYS.dailyNotesFolder)) ?? null;
+	const dailyNotesFolder = dailyNotesFolderRaw ?? null;
 	return {
 		currentVaultPath,
 		recentVaults: Array.isArray(recentVaults) ? recentVaults : [],
@@ -114,7 +131,7 @@ export async function loadSettings(): Promise<AppSettings> {
 }
 
 export async function setCurrentVaultPath(path: string): Promise<void> {
-	await ensureLoaded();
+	const store = await getStore();
 	await store.set(KEYS.currentVaultPath, path);
 	const prev = (await store.get<string[] | null>(KEYS.recentVaults)) ?? [];
 	const next = [path, ...prev.filter((p) => p !== path)].slice(0, 20);
@@ -123,39 +140,39 @@ export async function setCurrentVaultPath(path: string): Promise<void> {
 }
 
 export async function clearCurrentVaultPath(): Promise<void> {
-	await ensureLoaded();
+	const store = await getStore();
 	await store.set(KEYS.currentVaultPath, null);
 	await store.save();
 }
 
 export async function clearRecentVaults(): Promise<void> {
-	await ensureLoaded();
+	const store = await getStore();
 	await store.set(KEYS.recentVaults, []);
 	await store.save();
 }
 
 export async function setAiSidebarWidth(width: number): Promise<void> {
-	await ensureLoaded();
+	const store = await getStore();
 	if (!Number.isFinite(width)) return;
 	await store.set(KEYS.aiSidebarWidth, Math.floor(width));
 	await store.save();
 }
 
 export async function setAiAssistantMode(mode: AiAssistantMode): Promise<void> {
-	await ensureLoaded();
+	const store = await getStore();
 	await store.set(KEYS.aiAssistantMode, mode);
 	await store.save();
 }
 
 export async function getDailyNotesFolder(): Promise<string | null> {
-	await ensureLoaded();
+	const store = await getStore();
 	return (await store.get<string | null>(KEYS.dailyNotesFolder)) ?? null;
 }
 
 export async function setDailyNotesFolder(
 	folder: string | null,
 ): Promise<void> {
-	await ensureLoaded();
+	const store = await getStore();
 	if (folder === null) {
 		await store.delete(KEYS.dailyNotesFolder);
 	} else {
@@ -165,7 +182,7 @@ export async function setDailyNotesFolder(
 }
 
 export async function getRecentFiles(): Promise<RecentFile[]> {
-	await ensureLoaded();
+	const store = await getStore();
 	const raw = await store.get<unknown>(KEYS.recentFiles);
 	return isRecentFileArray(raw) ? raw : [];
 }
@@ -174,7 +191,7 @@ export async function addRecentFile(
 	path: string,
 	vaultPath: string,
 ): Promise<void> {
-	await ensureLoaded();
+	const store = await getStore();
 	const raw = await store.get<unknown>(KEYS.recentFiles);
 	const recent = isRecentFileArray(raw) ? raw : [];
 	const filtered = recent.filter(
@@ -189,7 +206,7 @@ export async function addRecentFile(
 }
 
 export async function clearRecentFiles(): Promise<void> {
-	await ensureLoaded();
+	const store = await getStore();
 	await store.set(KEYS.recentFiles, []);
 	await store.save();
 }

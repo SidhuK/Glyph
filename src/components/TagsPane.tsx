@@ -1,6 +1,7 @@
 import { motion } from "motion/react";
 import { memo, useCallback } from "react";
 import type { TagCount } from "../lib/tauri";
+import { springPresets } from "./ui/animations";
 import { Button } from "./ui/shadcn/button";
 
 interface TagsPaneProps {
@@ -9,11 +10,7 @@ interface TagsPaneProps {
 	onRefresh: () => void;
 }
 
-const springTransition = {
-	type: "spring",
-	stiffness: 400,
-	damping: 25,
-} as const;
+const springTransition = springPresets.bouncy;
 
 export const TagsPane = memo(function TagsPane({
 	tags,

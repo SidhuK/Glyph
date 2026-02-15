@@ -3,6 +3,7 @@ import type { CSSProperties } from "react";
 import { memo, useCallback, useState } from "react";
 import { confirm } from "@tauri-apps/plugin-dialog";
 import type { FsEntry } from "../../lib/tauri";
+import { springPresets } from "../ui/animations";
 import { parentDir } from "../../utils/path";
 import { Database, FolderPlus, Plus } from "../Icons";
 import {
@@ -35,11 +36,7 @@ interface FileTreePaneProps {
 	onDeletePath: (path: string, kind: "dir" | "file") => Promise<boolean>;
 }
 
-const springTransition = {
-	type: "spring",
-	stiffness: 400,
-	damping: 25,
-} as const;
+const springTransition = springPresets.bouncy;
 
 export const FileTreePane = memo(function FileTreePane({
 	vaultName,

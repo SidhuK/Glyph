@@ -5,6 +5,7 @@ import {
 	getTodayDateString,
 } from "../lib/dailyNotes";
 import { invoke } from "../lib/tauri";
+import { basename, parentDir } from "../utils/path";
 
 export interface UseDailyNoteOptions {
 	onOpenFile: (path: string) => Promise<void>;
@@ -37,13 +38,13 @@ export function useDailyNote(options: UseDailyNoteOptions): UseDailyNoteReturn {
 					await onOpenFile(notePath);
 					return notePath;
 				} catch (readErr: unknown) {
-					const msg =
-						readErr instanceof Error ? readErr.message.toLowerCase() : "";
-					const isNotFound =
-						msg.includes("not found") ||
-						msg.includes("does not exist") ||
-						msg.includes("no such file");
-					if (!isNotFound) {
+					const parent = parentDir(notePath);
+					const fileName = basename(notePath);
+					const siblings = await invoke("vault_list_dir", parent ? { dir: parent } : {});
+					const exists = siblings.some(
+						(entry) => entry.kind === "file" && entry.name === fileName,
+					);
+					if (exists) {
 						throw readErr;
 					}
 					const content = getDailyNoteContent(todayDate);

@@ -1,5 +1,5 @@
 import { join } from "@tauri-apps/api/path";
-import { useCallback } from "react";
+import { useCallback, useEffect, useRef } from "react";
 import { extractErrorMessage } from "../lib/errorUtils";
 import type { FsEntry } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
@@ -38,6 +38,16 @@ export interface UseFileTreeCRUDDeps {
 
 export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 	const { vaultPath, updateChildrenByDir, updateExpandedDirs, updateRootEntries, setActiveFilePath, setActivePreviewPath, activeFilePath, activePreviewPath, setError, loadDir, loadAndBuildFolderView, getActiveFolderDir, loadedDirsRef } = deps;
+	const activeFilePathRef = useRef(activeFilePath);
+	const activePreviewPathRef = useRef(activePreviewPath);
+
+	useEffect(() => {
+		activeFilePathRef.current = activeFilePath;
+	}, [activeFilePath]);
+
+	useEffect(() => {
+		activePreviewPathRef.current = activePreviewPath;
+	}, [activePreviewPath]);
 
 	const refreshAfterCreate = useCallback(async (targetDir: string) => {
 		await loadDir(targetDir, true);
@@ -150,13 +160,15 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			updateRootEntries((prev) => prev.filter((e) => e.rel_path !== target && (kind !== "dir" || !e.rel_path.startsWith(`${target}/`))));
 			updateChildrenByDir((prev) => { const next: Record<string, FsEntry[] | undefined> = {}; for (const [k, entries] of Object.entries(prev)) { if (kind === "dir" && (k === target || k.startsWith(`${target}/`))) continue; next[k] = entries?.filter((e) => e.rel_path !== target && (kind !== "dir" || !e.rel_path.startsWith(`${target}/`))); } return next; });
 			loadedDirsRef.current = new Set([...loadedDirsRef.current].filter((d) => d !== target && (kind !== "dir" || !d.startsWith(`${target}/`))));
-			if (activeFilePath === target || (kind === "dir" && Boolean(activeFilePath?.startsWith(`${target}/`)))) setActiveFilePath(null);
-			if (activePreviewPath === target || (kind === "dir" && Boolean(activePreviewPath?.startsWith(`${target}/`)))) setActivePreviewPath(null);
+			const activeFile = activeFilePathRef.current;
+			const activePreview = activePreviewPathRef.current;
+			if (activeFile === target || (kind === "dir" && Boolean(activeFile?.startsWith(`${target}/`)))) setActiveFilePath(null);
+			if (activePreview === target || (kind === "dir" && Boolean(activePreview?.startsWith(`${target}/`)))) setActivePreviewPath(null);
 			await loadDir(parent, true);
 			await refreshActiveFolderViewAfterPathChange(target);
 			return true;
 		} catch (e) { setError(extractErrorMessage(e)); return false; }
-	}, [loadDir, loadedDirsRef, refreshActiveFolderViewAfterPathChange, setActiveFilePath, setActivePreviewPath, updateChildrenByDir, setError, updateExpandedDirs, updateRootEntries, activeFilePath, activePreviewPath]);
+	}, [loadDir, loadedDirsRef, refreshActiveFolderViewAfterPathChange, setActiveFilePath, setActivePreviewPath, updateChildrenByDir, setError, updateExpandedDirs, updateRootEntries]);
 
 	const onMovePath = useCallback(async (fromPath: string, toDirPath: string) => {
 		const from = normalizeRelPath(fromPath);
@@ -174,12 +186,12 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			const nextName = nextPath.split("/").pop() ?? fileName;
 			updateChildrenByDir((prev) => { const next: Record<string, FsEntry[] | undefined> = {}; for (const [k, v] of Object.entries(prev)) { next[k] = v?.map((e) => e.rel_path === from ? { ...e, name: nextName, rel_path: nextPath } : e); } return next; });
 			updateRootEntries((prev) => prev.map((e) => e.rel_path === from ? { ...e, name: nextName, rel_path: nextPath } : e));
-			if (activeFilePath === from) setActiveFilePath(nextPath);
-			if (activePreviewPath === from) setActivePreviewPath(nextPath);
+			if (activeFilePathRef.current === from) setActiveFilePath(nextPath);
+			if (activePreviewPathRef.current === from) setActivePreviewPath(nextPath);
 			await Promise.all([loadDir(fromParent, true), loadDir(toParent, true), refreshActiveFolderViewAfterPathChange(from), refreshActiveFolderViewAfterPathChange(toParent)]);
 			return nextPath;
 		} catch (e) { setError(extractErrorMessage(e)); return null; }
-	}, [loadDir, refreshActiveFolderViewAfterPathChange, setActiveFilePath, setActivePreviewPath, updateChildrenByDir, setError, updateRootEntries, activeFilePath, activePreviewPath]);
+	}, [loadDir, refreshActiveFolderViewAfterPathChange, setActiveFilePath, setActivePreviewPath, updateChildrenByDir, setError, updateRootEntries]);
 
 	return { onNewFile, onNewFileInDir, onNewFolderInDir, onRenameDir, onDeletePath, onMovePath };
 }

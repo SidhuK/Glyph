@@ -1,4 +1,4 @@
-import type { Shortcut } from "../shortcuts";
+import type { Shortcut } from "./types";
 
 /**
  * Categories for organizing shortcuts in the UI
