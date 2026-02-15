@@ -1,4 +1,5 @@
-import { XIcon } from "lucide-react";
+import { Close } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { Dialog as SheetPrimitive } from "radix-ui";
 import type * as React from "react";
 
@@ -74,7 +75,7 @@ function SheetContent({
 				{children}
 				{showCloseButton && (
 					<SheetPrimitive.Close className="ring-offset-background focus:ring-ring data-[state=open]:bg-secondary absolute top-4 right-4 rounded-xs opacity-70 transition-opacity hover:opacity-100 focus:ring-2 focus:ring-offset-2 focus:outline-hidden disabled:pointer-events-none">
-						<XIcon className="size-4" />
+						<HugeiconsIcon icon={Close} className="size-4" />
 						<span className="sr-only">Close</span>
 					</SheetPrimitive.Close>
 				)}
