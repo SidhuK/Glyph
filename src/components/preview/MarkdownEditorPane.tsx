@@ -5,12 +5,10 @@ import { useEditorRegistration, useVault } from "../../contexts";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { invoke } from "../../lib/tauri";
 import { parentDir } from "../../utils/path";
-import {
-	type CanvasInlineEditorMode,
-	CanvasNoteInlineEditor,
-} from "../editor/CanvasNoteInlineEditor";
 import { FolderBreadcrumb } from "../FolderBreadcrumb";
 import { Edit, Eye, RefreshCw, Save } from "../Icons";
+import { CanvasNoteInlineEditor } from "../editor/CanvasNoteInlineEditor";
+import type { CanvasInlineEditorMode } from "../editor/types";
 import { Button } from "../ui/shadcn/button";
 
 interface MarkdownEditorPaneProps {
@@ -51,6 +49,10 @@ export function MarkdownEditorPane({
 	}, [relPath]);
 
 	useEffect(() => {
+		if (vaultPath === null) {
+			markdownDocCache.clear();
+			return;
+		}
 		markdownDocCache.clear();
 	}, [vaultPath]);
 

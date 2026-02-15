@@ -1,5 +1,6 @@
 import { isMacOS } from "./shortcuts/platform";
 import type { Shortcut } from "./shortcuts/types";
+export type { Shortcut } from "./shortcuts/types";
 
 /**
  * Check if a keyboard event matches a shortcut definition

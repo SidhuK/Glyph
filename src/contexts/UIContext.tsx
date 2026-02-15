@@ -8,7 +8,6 @@ import {
 	useContext,
 	useEffect,
 	useMemo,
-	useRef,
 	useState,
 } from "react";
 import { useSearch } from "../hooks/useSearch";
@@ -76,9 +75,9 @@ export function UIProvider({ children }: { children: ReactNode }) {
 	);
 	const [sidebarWidth, setSidebarWidth] = useState(260);
 	const [paletteOpen, setPaletteOpen] = useState(false);
-	const [activePreviewPath, setActivePreviewPathState] = useState<string | null>(
-		null,
-	);
+	const [activePreviewPath, setActivePreviewPathState] = useState<
+		string | null
+	>(null);
 	const [openMarkdownTabs, setOpenMarkdownTabs] = useState<string[]>([]);
 	const [activeMarkdownTabPath, setActiveMarkdownTabPath] = useState<
 		string | null
@@ -267,7 +266,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 
 export function useUILayoutContext(): UILayoutContextValue {
 	const ctx = useContext(UILayoutContext);
-	if (!ctx) throw new Error("useUILayoutContext must be used within UIProvider");
+	if (!ctx)
+		throw new Error("useUILayoutContext must be used within UIProvider");
 	return ctx;
 }
 
@@ -280,7 +280,8 @@ export function useAISidebarContext(): AISidebarContextValue {
 
 export function useSearchUIContext(): SearchUIContextValue {
 	const ctx = useContext(SearchUIContext);
-	if (!ctx) throw new Error("useSearchUIContext must be used within UIProvider");
+	if (!ctx)
+		throw new Error("useSearchUIContext must be used within UIProvider");
 	return ctx;
 }
 

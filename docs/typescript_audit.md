@@ -151,7 +151,7 @@
 
 ## 🟠 High Issues
 
-### H-01 · `UIContext.tsx` — Overly large context causing cascade re-renders
+### [x] H-01 · `UIContext.tsx` — Overly large context causing cascade re-renders
 
 | Field | Value |
 |-------|-------|
@@ -163,7 +163,7 @@
 
 ---
 
-### H-02 · `FileTreeContext.tsx` — Exposes raw setState dispatchers
+### [x] H-02 · `FileTreeContext.tsx` — Exposes raw setState dispatchers
 
 | Field | Value |
 |-------|-------|
@@ -259,7 +259,7 @@
 
 ---
 
-### H-10 · `FileTreeContext.tsx` — Derived values defeat memoization
+### [x] H-10 · `FileTreeContext.tsx` — Derived values defeat memoization
 
 | Field | Value |
 |-------|-------|
@@ -329,7 +329,7 @@
 
 ---
 
-### H-16 · Duplicated `providerLogoMap` in 2 files
+### [x] H-16 · Duplicated `providerLogoMap` in 2 files
 
 | Field | Value |
 |-------|-------|
@@ -340,7 +340,7 @@
 
 ---
 
-### H-17 · `FolderShelf.tsx` — Entire component duplicated
+### [x] H-17 · `FolderShelf.tsx` — Entire component duplicated
 
 | Field | Value |
 |-------|-------|
@@ -351,7 +351,7 @@
 
 ---
 
-### H-18 · `Icons.tsx` barrel vs `Icons/` directory — competing icon sources
+### [x] H-18 · `Icons.tsx` barrel vs `Icons/` directory — competing icon sources
 
 | Field | Value |
 |-------|-------|
@@ -386,7 +386,7 @@
 
 ## 🟡 Medium Issues
 
-### M-01 · `MainContent.tsx` — No `React.memo`
+### [x] M-01 · `MainContent.tsx` — No `React.memo`
 
 | Field | Value |
 |-------|-------|
@@ -398,7 +398,7 @@
 
 ---
 
-### M-02 · `MainContent.tsx` — Inline handlers in tab render loop
+### [x] M-02 · `MainContent.tsx` — Inline handlers in tab render loop
 
 | Field | Value |
 |-------|-------|
@@ -410,7 +410,7 @@
 
 ---
 
-### M-03 · `CommandPalette.tsx` — Unstable incremental keys
+### [x] M-03 · `CommandPalette.tsx` — Unstable incremental keys
 
 | Field | Value |
 |-------|-------|
@@ -422,7 +422,7 @@
 
 ---
 
-### M-04 · `Sidebar.tsx` — No `React.memo` (14 props)
+### [x] M-04 · `Sidebar.tsx` — No `React.memo` (14 props)
 
 | Field | Value |
 |-------|-------|
@@ -434,7 +434,7 @@
 
 ---
 
-### M-05 · `SidebarContent.tsx` — No `React.memo` (10 props + 3 contexts)
+### [x] M-05 · `SidebarContent.tsx` — No `React.memo` (10 props + 3 contexts)
 
 | Field | Value |
 |-------|-------|
@@ -446,7 +446,7 @@
 
 ---
 
-### M-06 · `AIMessageMarkdown.tsx` — `createEditorExtensions()` on every mount
+### [x] M-06 · `AIMessageMarkdown.tsx` — `createEditorExtensions()` on every mount
 
 | Field | Value |
 |-------|-------|
@@ -458,7 +458,7 @@
 
 ---
 
-### M-07 · `useNoteEditor.ts` — Same `createEditorExtensions()` issue
+### [x] M-07 · `useNoteEditor.ts` — Same `createEditorExtensions()` issue
 
 | Field | Value |
 |-------|-------|
@@ -470,7 +470,7 @@
 
 ---
 
-### M-08 · `KeyboardShortcutsHelp.tsx` — `groupByCategory` runs every render
+### [x] M-08 · `KeyboardShortcutsHelp.tsx` — `groupByCategory` runs every render
 
 | Field | Value |
 |-------|-------|
@@ -482,7 +482,7 @@
 
 ---
 
-### M-09 · `WelcomeScreen.tsx` — Array constant inside component body
+### [x] M-09 · `WelcomeScreen.tsx` — Array constant inside component body
 
 | Field | Value |
 |-------|-------|
@@ -494,7 +494,7 @@
 
 ---
 
-### M-10 · `SidebarContent.tsx` — Inline `style` objects
+### [x] M-10 · `SidebarContent.tsx` — Inline `style` objects
 
 | Field | Value |
 |-------|-------|
@@ -506,7 +506,7 @@
 
 ---
 
-### M-11 · `diff.ts` — O(d²) memory in Myers diff
+### [x] M-11 · `diff.ts` — O(d²) memory in Myers diff
 
 | Field | Value |
 |-------|-------|
@@ -518,7 +518,7 @@
 
 ---
 
-### M-12 · `settings.ts` — Sequential `await`s for independent loads
+### [x] M-12 · `settings.ts` — Sequential `await`s for independent loads
 
 | Field | Value |
 |-------|-------|
@@ -530,7 +530,7 @@
 
 ---
 
-### M-13 · `shortcuts/registry.ts` — `getShortcutById` uses linear scan
+### [x] M-13 · `shortcuts/registry.ts` — `getShortcutById` uses linear scan
 
 | Field | Value |
 |-------|-------|
@@ -542,7 +542,7 @@
 
 ---
 
-### M-14 · `slashCommands.ts` — `innerHTML` with string interpolation (XSS pattern)
+### [x] M-14 · `slashCommands.ts` — `innerHTML` with string interpolation (XSS pattern)
 
 | Field | Value |
 |-------|-------|
@@ -554,7 +554,7 @@
 
 ---
 
-### M-15 · `dailyNotes.ts` — Frontend path validation allows `../` traversal
+### [x] M-15 · `dailyNotes.ts` — Frontend path validation allows `../` traversal
 
 | Field | Value |
 |-------|-------|
@@ -566,7 +566,7 @@
 
 ---
 
-### M-16 · `UIContext.tsx` — Unhandled promise rejection in `.then()` chain
+### [x] M-16 · `UIContext.tsx` — Unhandled promise rejection in `.then()` chain
 
 | Field | Value |
 |-------|-------|
@@ -578,7 +578,7 @@
 
 ---
 
-### M-17 · `useRecentFiles.ts` — No error handling in `refreshRecentFiles`
+### [x] M-17 · `useRecentFiles.ts` — No error handling in `refreshRecentFiles`
 
 | Field | Value |
 |-------|-------|
@@ -590,7 +590,7 @@
 
 ---
 
-### M-18 · `contexts/index.tsx` — No ErrorBoundary wrapping `AppProviders`
+### [x] M-18 · `contexts/index.tsx` — No ErrorBoundary wrapping `AppProviders`
 
 | Field | Value |
 |-------|-------|
@@ -602,7 +602,7 @@
 
 ---
 
-### M-19 · `windows.ts` — Window creation error handler is a no-op
+### [x] M-19 · `windows.ts` — Window creation error handler is a no-op
 
 | Field | Value |
 |-------|-------|
@@ -614,7 +614,7 @@
 
 ---
 
-### M-20 · `UIContext.tsx` — `onFocusChanged` stale closure
+### [x] M-20 · `UIContext.tsx` — `onFocusChanged` stale closure
 
 | Field | Value |
 |-------|-------|
@@ -626,7 +626,7 @@
 
 ---
 
-### M-21 · `useSearch.ts` — `isSearching` never reset on empty query
+### [x] M-21 · `useSearch.ts` — `isSearching` never reset on empty query
 
 | Field | Value |
 |-------|-------|
@@ -638,7 +638,7 @@
 
 ---
 
-### M-22 · `VaultContext.tsx` — Confusing triple `setSettingsLoaded(true)`
+### [x] M-22 · `VaultContext.tsx` — Confusing triple `setSettingsLoaded(true)`
 
 | Field | Value |
 |-------|-------|
@@ -650,7 +650,7 @@
 
 ---
 
-### M-23 · `useFileTree.ts` — Cascade callback recreation from `activeFilePath` deps
+### [x] M-23 · `useFileTree.ts` — Cascade callback recreation from `activeFilePath` deps
 
 | Field | Value |
 |-------|-------|
@@ -662,7 +662,7 @@
 
 ---
 
-### M-24 · `MarkdownEditorPane.tsx` — Module-level cache never cleared
+### [x] M-24 · `MarkdownEditorPane.tsx` — Module-level cache never cleared
 
 | Field | Value |
 |-------|-------|
@@ -674,7 +674,7 @@
 
 ---
 
-### M-25 · `MainToolbar.tsx` — Missing `aria-label` on icon-only button
+### [x] M-25 · `MainToolbar.tsx` — Missing `aria-label` on icon-only button
 
 | Field | Value |
 |-------|-------|
@@ -686,7 +686,7 @@
 
 ---
 
-### M-26 · `VaultSettingsPane.tsx` — Missing `aria-label` on "Clear" button
+### [x] M-26 · `VaultSettingsPane.tsx` — Missing `aria-label` on "Clear" button
 
 | Field | Value |
 |-------|-------|
@@ -698,7 +698,7 @@
 
 ---
 
-### M-27 · `FileTreePane.tsx` — Uses `window.confirm()` for delete
+### [x] M-27 · `FileTreePane.tsx` — Uses `window.confirm()` for delete
 
 | Field | Value |
 |-------|-------|
@@ -710,7 +710,7 @@
 
 ---
 
-### M-28 · `shortcuts/registry.ts` — `ShortcutId` resolves to `string`
+### [x] M-28 · `shortcuts/registry.ts` — `ShortcutId` resolves to `string`
 
 | Field | Value |
 |-------|-------|
@@ -722,7 +722,7 @@
 
 ---
 
-### M-29 · `tauri.ts` — `AiStoredToolEvent.phase` union is meaningless
+### [x] M-29 · `tauri.ts` — `AiStoredToolEvent.phase` union is meaningless
 
 | Field | Value |
 |-------|-------|
@@ -734,7 +734,7 @@
 
 ---
 
-### M-30 · `tauri.ts` — Unsafe cast in `invoke`
+### [x] M-30 · `tauri.ts` — Unsafe cast in `invoke`
 
 | Field | Value |
 |-------|-------|
@@ -746,7 +746,7 @@
 
 ---
 
-### M-31 · `views/persistence.ts` — `isRecord()` returns `true` for arrays
+### [x] M-31 · `views/persistence.ts` — `isRecord()` returns `true` for arrays
 
 | Field | Value |
 |-------|-------|
@@ -758,7 +758,7 @@
 
 ---
 
-### M-32 · `settings.ts` — Module-level side effect on import
+### [x] M-32 · `settings.ts` — Module-level side effect on import
 
 | Field | Value |
 |-------|-------|
@@ -770,7 +770,7 @@
 
 ---
 
-### M-33 · `AiProfileSections.tsx` — `setTimeout` without cleanup
+### [x] M-33 · `AiProfileSections.tsx` — `setTimeout` without cleanup
 
 | Field | Value |
 |-------|-------|
@@ -784,7 +784,7 @@
 
 ## 🟢 Low Issues
 
-### L-01 · `notePreview.ts` — Frontmatter regex edge cases
+### [x] L-01 · `notePreview.ts` — Frontmatter regex edge cases
 
 | Field | Value |
 |-------|-------|
@@ -795,7 +795,7 @@
 
 ---
 
-### L-02 · `notePreview.ts` — Heading regex matches `##` as title
+### [x] L-02 · `notePreview.ts` — Heading regex matches `##` as title
 
 | Field | Value |
 |-------|-------|
@@ -806,7 +806,7 @@
 
 ---
 
-### L-03 · `notePreview.ts` — Dead code in `joinYamlFrontmatter`
+### [x] L-03 · `notePreview.ts` — Dead code in `joinYamlFrontmatter`
 
 | Field | Value |
 |-------|-------|
@@ -817,7 +817,7 @@
 
 ---
 
-### L-04 · `shortcuts.ts` — Deprecated functions still re-exported
+### [x] L-04 · `shortcuts.ts` — Deprecated functions still re-exported
 
 | Field | Value |
 |-------|-------|
@@ -827,7 +827,7 @@
 
 ---
 
-### L-05 · `canvasLayout.ts` — Magic numbers not in constants
+### [x] L-05 · `canvasLayout.ts` — Magic numbers not in constants
 
 | Field | Value |
 |-------|-------|
@@ -838,7 +838,7 @@
 
 ---
 
-### L-06 · `canvasFlowTypes.ts` — Index signatures weaken type safety
+### [x] L-06 · `canvasFlowTypes.ts` — Index signatures weaken type safety
 
 | Field | Value |
 |-------|-------|
@@ -849,7 +849,7 @@
 
 ---
 
-### L-07 · `shortcuts/platform.ts` — Fragile user-agent detection
+### [x] L-07 · `shortcuts/platform.ts` — Fragile user-agent detection
 
 | Field | Value |
 |-------|-------|
@@ -860,7 +860,7 @@
 
 ---
 
-### L-08 · `filePreview.ts` — `IMAGE_EXTS` missing common formats
+### [x] L-08 · `filePreview.ts` — `IMAGE_EXTS` missing common formats
 
 | Field | Value |
 |-------|-------|
@@ -871,7 +871,7 @@
 
 ---
 
-### L-09 · `views/utils.ts` + `notePreview.ts` — Redundant basename utilities
+### [x] L-09 · `views/utils.ts` + `notePreview.ts` — Redundant basename utilities
 
 | Field | Value |
 |-------|-------|
@@ -881,7 +881,7 @@
 
 ---
 
-### L-10 · `use-mobile.ts` — Layout flash on first render
+### [x] L-10 · `use-mobile.ts` — Layout flash on first render
 
 | Field | Value |
 |-------|-------|
@@ -892,7 +892,7 @@
 
 ---
 
-### L-11 · `UIContext.tsx` — Direct DOM manipulation via `focusSearchInput`
+### [x] L-11 · `UIContext.tsx` — Direct DOM manipulation via `focusSearchInput`
 
 | Field | Value |
 |-------|-------|
@@ -903,7 +903,7 @@
 
 ---
 
-### L-12 · `useCommandShortcuts.ts` — `commands` array in deps causes listener churn
+### [x] L-12 · `useCommandShortcuts.ts` — `commands` array in deps causes listener churn
 
 | Field | Value |
 |-------|-------|
@@ -914,7 +914,7 @@
 
 ---
 
-### L-13 · `fileTreeHelpers.ts` — Inconsistent Unicode sanitization
+### [x] L-13 · `fileTreeHelpers.ts` — Inconsistent Unicode sanitization
 
 | Field | Value |
 |-------|-------|
@@ -925,7 +925,7 @@
 
 ---
 
-### L-14 · `ViewContext.tsx` — `activeViewDoc` in deps causes unnecessary effect re-runs
+### [x] L-14 · `ViewContext.tsx` — `activeViewDoc` in deps causes unnecessary effect re-runs
 
 | Field | Value |
 |-------|-------|
@@ -936,7 +936,7 @@
 
 ---
 
-### L-15 · `useDailyNote.ts` — Error detection via fragile string matching
+### [x] L-15 · `useDailyNote.ts` — Error detection via fragile string matching
 
 | Field | Value |
 |-------|-------|
@@ -947,7 +947,7 @@
 
 ---
 
-### L-16 · `useFolderShelf.ts` — Implicit LRU via Map insertion order
+### [x] L-16 · `useFolderShelf.ts` — Implicit LRU via Map insertion order
 
 | Field | Value |
 |-------|-------|
@@ -958,7 +958,7 @@
 
 ---
 
-### L-17 · Multiple files — `springTransition` constant duplicated 5 times
+### [x] L-17 · Multiple files — `springTransition` constant duplicated 5 times
 
 | Field | Value |
 |-------|-------|
@@ -968,7 +968,7 @@
 
 ---
 
-### L-18 · `AIToolTimeline.tsx` + `AIPanel.tsx` — Duplicate `formatToolName`
+### [x] L-18 · `AIToolTimeline.tsx` + `AIPanel.tsx` — Duplicate `formatToolName`
 
 | Field | Value |
 |-------|-------|
@@ -978,7 +978,7 @@
 
 ---
 
-### L-19 · `MotionUI.tsx` + `CanvasNoteInlineEditor.tsx` — Thin re-export barrel files
+### [x] L-19 · `MotionUI.tsx` + `CanvasNoteInlineEditor.tsx` — Thin re-export barrel files
 
 | Field | Value |
 |-------|-------|
@@ -990,7 +990,7 @@
 
 ## Circular / Structural Concerns
 
-### S-01 · Circular dependency: `shortcuts.ts` ↔ `shortcuts/platform.ts`
+### [x] S-01 · Circular dependency: `shortcuts.ts` ↔ `shortcuts/platform.ts`
 
 | Field | Value |
 |-------|-------|
@@ -1005,10 +1005,10 @@
 
 - [x] **Phase 1 — Critical bugs** (C-09, C-10, H-05, H-07): Fix broken features immediately
 - [x] **Phase 2 — File splits** (C-01 through C-08): Break apart the 8 oversized files
-- [ ] **Phase 3 — Deduplication** (H-14 through H-20): Consolidate duplicated code
-- [ ] **Phase 4 — Context architecture** (H-01, H-02): Split `UIContext`, wrap `FileTreeContext` setters
-- [ ] **Phase 5 — Error handling** (H-03, H-04, M-16 through M-19): Add guards, catches, and error boundaries
-- [ ] **Phase 6 — Performance** (M-01 through M-13): Add memoization, `React.memo`, `useCallback`
-- [ ] **Phase 7 — Security & a11y** (M-14, M-15, M-25 through M-27): Fix `innerHTML`, path validation, aria labels
-- [ ] **Phase 8 — Type safety** (M-28 through M-32): Tighten types, remove unsafe casts
-- [ ] **Phase 9 — Low-priority cleanup** (L-01 through L-19): Address remaining issues
+- [x] **Phase 3 — Deduplication** (H-14 through H-20): Consolidate duplicated code
+- [x] **Phase 4 — Context architecture** (H-01, H-02): Split `UIContext`, wrap `FileTreeContext` setters
+- [x] **Phase 5 — Error handling** (H-03, H-04, M-16 through M-19): Add guards, catches, and error boundaries
+- [x] **Phase 6 — Performance** (M-01 through M-13): Add memoization, `React.memo`, `useCallback`
+- [x] **Phase 7 — Security & a11y** (M-14, M-15, M-25 through M-27): Fix `innerHTML`, path validation, aria labels
+- [x] **Phase 8 — Type safety** (M-28 through M-32): Tighten types, remove unsafe casts
+- [x] **Phase 9 — Low-priority cleanup** (L-01 through L-19): Address remaining issues

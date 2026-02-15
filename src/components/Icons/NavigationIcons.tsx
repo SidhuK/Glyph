@@ -8,6 +8,9 @@ export type IconProps = Omit<ComponentProps<typeof HugeiconsIcon>, "icon">;
 export const Search = (props: IconProps) => (
 	<HugeiconsIcon icon={Icons.Search} {...props} />
 );
+export const Command = (props: IconProps) => (
+	<HugeiconsIcon icon={Icons.CommandIcon} {...props} />
+);
 export const ChevronRight = (props: IconProps) => (
 	<HugeiconsIcon icon={Icons.ArrowRight} {...props} />
 );
@@ -49,6 +52,12 @@ export const Maximize2 = (props: IconProps) => (
 );
 export const Minimize2 = (props: IconProps) => (
 	<HugeiconsIcon icon={Icons.Minimize} {...props} />
+);
+export const InformationCircle = (props: IconProps) => (
+	<HugeiconsIcon icon={Icons.Help} {...props} />
+);
+export const Calendar = (props: IconProps) => (
+	<HugeiconsIcon icon={Icons.Calendar03Icon} {...props} />
 );
 export const AiLattice = ({
 	size = 16,

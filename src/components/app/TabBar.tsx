@@ -1,4 +1,5 @@
-import { useCallback } from "react";
+import { memo, useCallback } from "react";
+import type { DragEvent, MouseEvent } from "react";
 
 interface TabBarProps {
 	openTabs: string[];
@@ -34,43 +35,20 @@ export function TabBar({
 			<div className="mainTabsCenter">
 				<div className="mainTabsStrip">
 					{openTabs.map((path) => {
-						const isActive = path === activeTabPath;
-						const isDirty = Boolean(dirtyByPath[path]);
 						return (
-							<button
+							<TabItem
 								key={path}
-								type="button"
-								className={`mainTab ${isActive ? "is-active" : ""}`}
-								onClick={() => onSelectTab(path)}
-								title={path}
-								draggable
-								onDragStart={() => onDragStart(path)}
+								path={path}
+								fileName={fileName(path)}
+								isActive={path === activeTabPath}
+								isDirty={Boolean(dirtyByPath[path])}
+								dragTabPath={dragTabPath}
+								onSelectTab={onSelectTab}
+								onCloseTab={onCloseTab}
+								onDragStart={onDragStart}
 								onDragEnd={onDragEnd}
-								onDragOver={(event) => event.preventDefault()}
-								onDrop={(event) => {
-									event.preventDefault();
-									if (dragTabPath) onReorder(dragTabPath, path);
-									onDragEnd();
-								}}
-							>
-								{isDirty ? (
-									<span className="mainTabDirty" aria-hidden />
-								) : null}
-								<span className="mainTabLabel">{fileName(path)}</span>
-								<button
-									type="button"
-									className="mainTabClose"
-									onClick={(event) => {
-										event.stopPropagation();
-										onCloseTab(path);
-									}}
-									aria-label={`Close ${fileName(path)}`}
-								>
-									<span className="mainTabCloseGlyph" aria-hidden>
-										×
-									</span>
-								</button>
-							</button>
+								onReorder={onReorder}
+							/>
 						);
 					})}
 				</div>
@@ -79,3 +57,81 @@ export function TabBar({
 		</div>
 	);
 }
+
+const TabItem = memo(function TabItem({
+	path,
+	fileName,
+	isActive,
+	isDirty,
+	dragTabPath,
+	onSelectTab,
+	onCloseTab,
+	onDragStart,
+	onDragEnd,
+	onReorder,
+}: {
+	path: string;
+	fileName: string;
+	isActive: boolean;
+	isDirty: boolean;
+	dragTabPath: string | null;
+	onSelectTab: (path: string) => void;
+	onCloseTab: (path: string) => void;
+	onDragStart: (path: string) => void;
+	onDragEnd: () => void;
+	onReorder: (fromPath: string, toPath: string) => void;
+}) {
+	const handleSelect = useCallback(
+		() => onSelectTab(path),
+		[onSelectTab, path],
+	);
+	const handleDragStart = useCallback(
+		() => onDragStart(path),
+		[onDragStart, path],
+	);
+	const handleDragOver = useCallback((event: DragEvent<HTMLButtonElement>) => {
+		event.preventDefault();
+	}, []);
+	const handleDrop = useCallback(
+		(event: DragEvent<HTMLButtonElement>) => {
+			event.preventDefault();
+			if (dragTabPath) onReorder(dragTabPath, path);
+			onDragEnd();
+		},
+		[dragTabPath, onDragEnd, onReorder, path],
+	);
+	const handleClose = useCallback(
+		(event: MouseEvent<HTMLButtonElement>) => {
+			event.stopPropagation();
+			onCloseTab(path);
+		},
+		[onCloseTab, path],
+	);
+
+	return (
+		<button
+			type="button"
+			className={`mainTab ${isActive ? "is-active" : ""}`}
+			onClick={handleSelect}
+			title={path}
+			draggable
+			onDragStart={handleDragStart}
+			onDragEnd={onDragEnd}
+			onDragOver={handleDragOver}
+			onDrop={handleDrop}
+		>
+			{isDirty ? <span className="mainTabDirty" aria-hidden /> : null}
+			<span className="mainTabLabel">{fileName}</span>
+			<button
+				type="button"
+				className="mainTabClose"
+				onClick={handleClose}
+				aria-label={`Close ${fileName}`}
+			>
+				<span className="mainTabCloseGlyph" aria-hidden>
+					×
+				</span>
+			</button>
+		</button>
+	);
+});

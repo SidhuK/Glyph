@@ -1,4 +1,4 @@
-import type { AiAssistantMode, AiProviderKind } from "../../lib/tauri";
+import type { AiAssistantMode } from "../../lib/tauri";
 import { normalizeRelPath } from "../../utils/path";
 import type { UIMessage } from "./hooks/useRigChat";
 import { providerLogoMap } from "./providerLogos";
