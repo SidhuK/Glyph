@@ -1,6 +1,6 @@
 import { AnimatePresence, motion } from "motion/react";
 import { useState } from "react";
-import { cn } from "../../utils/cn";
+import { cn } from "@/lib/utils";
 import { ChevronDown } from "../Icons";
 
 type ToolPhase = "call" | "result" | "error";

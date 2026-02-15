@@ -1,5 +1,5 @@
 import { forwardRef } from "react";
-import { cn } from "../../utils/cn";
+import { cn } from "@/lib/utils";
 
 type DivProps = React.HTMLAttributes<HTMLDivElement>;
 type ListProps = React.HTMLAttributes<HTMLUListElement>;

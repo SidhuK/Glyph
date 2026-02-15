@@ -4,7 +4,7 @@
 
 import { type HTMLMotionProps, motion } from "motion/react";
 import { forwardRef } from "react";
-import { cn } from "../../utils/cn";
+import { cn } from "@/lib/utils";
 import { springPresets } from "./animations";
 
 type MotionButtonProps = HTMLMotionProps<"button"> & {

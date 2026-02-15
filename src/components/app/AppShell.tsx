@@ -17,7 +17,7 @@ import { getShortcutTooltip } from "../../lib/shortcuts";
 import { type FsEntry, invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { openSettingsWindow } from "../../lib/windows";
-import { cn } from "../../utils/cn";
+import { cn } from "@/lib/utils";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { PanelLeftOpen } from "../Icons";
 import { AIFloatingHost } from "../ai/AIFloatingHost";

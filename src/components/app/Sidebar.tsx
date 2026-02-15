@@ -1,6 +1,6 @@
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useUIContext, useVault } from "../../contexts";
-import { cn } from "../../utils/cn";
+import { cn } from "@/lib/utils";
 import { SidebarContent } from "./SidebarContent";
 import { SidebarHeader } from "./SidebarHeader";
 

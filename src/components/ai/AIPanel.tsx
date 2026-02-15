@@ -1,44 +1,26 @@
-import { Navigation03Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
-import { motion, useReducedMotion } from "motion/react";
-import {
-	Fragment,
-	Suspense,
-	lazy,
-	useCallback,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
-import anthropicLogoUrl from "../../assets/provider-logos/claude-ai.svg?url";
-import geminiLogoUrl from "../../assets/provider-logos/google-gemini.svg?url";
-import ollamaLogoUrl from "../../assets/provider-logos/ollama.svg?url";
-import openrouterLogoUrl from "../../assets/provider-logos/open-router.svg?url";
-import openaiLogoUrl from "../../assets/provider-logos/openai-light.svg?url";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useUIContext } from "../../contexts";
 import { invoke } from "../../lib/tauri";
-import type { AiAssistantMode, AiProviderKind } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { openSettingsWindow } from "../../lib/windows";
-import { cn } from "../../utils/cn";
-import {
-	AiLattice,
-	ChevronDown,
-	FileText,
-	Files,
-	Layout,
-	Minus,
-	Paperclip,
-	Plus,
-	RefreshCw,
-	Save,
-	Settings as SettingsIcon,
-	X,
-} from "../Icons";
+import { cn } from "@/lib/utils";
+import { AiLattice, Minus, Plus, Settings as SettingsIcon, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
-import { AIToolTimeline, type ToolTimelineEvent } from "./AIToolTimeline";
-import { ModelSelector } from "./ModelSelector";
+import { type ToolTimelineEvent } from "./AIToolTimeline";
+import { AIChatThread } from "./AIChatThread";
+import { AIComposer } from "./AIComposer";
+import { AIHistoryPanel } from "./AIHistoryPanel";
+import {
+	FINALIZING_MS,
+	SLOW_START_MS,
+	type ResponsePhase,
+	type ToolPhase,
+	type ToolStatusEvent,
+	formatToolName,
+	messageText,
+	normalizePath,
+	parseAddTrigger,
+} from "./aiPanelConstants";
 import {
 	AI_CONTEXT_ATTACH_EVENT,
 	type AiContextAttachDetail,
@@ -47,84 +29,6 @@ import { type UIMessage, useRigChat } from "./hooks/useRigChat";
 import { useAiContext } from "./useAiContext";
 import { useAiHistory } from "./useAiHistory";
 import { useAiProfiles } from "./useAiProfiles";
-
-const AIMessageMarkdown = lazy(async () => {
-	const module = await import("./AIMessageMarkdown");
-	return { default: module.AIMessageMarkdown };
-});
-
-function messageText(message: UIMessage): string {
-	return message.parts
-		.filter((p) => p.type === "text")
-		.map((p) => p.text)
-		.join("");
-}
-
-type AddTrigger = { start: number; query: string };
-type ToolPhase = "call" | "result" | "error";
-type ResponsePhase =
-	| "idle"
-	| "submitted"
-	| "tooling"
-	| "streaming"
-	| "finalizing";
-
-interface ToolStatusEvent {
-	tool: string;
-	phase: ToolPhase;
-	error?: string;
-}
-
-function parseAddTrigger(input: string): AddTrigger | null {
-	const addMatch = input.match(/(?:^|\s)\/add\s*([\w\-./ ]*)$/);
-	if (addMatch) {
-		const idx = input.lastIndexOf("/add");
-		return { start: idx, query: (addMatch[1] ?? "").trim() };
-	}
-	const atMatch = input.match(/(?:^|\s)@([\w\-./ ]*)$/);
-	if (atMatch) {
-		const idx = input.lastIndexOf("@");
-		return { start: idx, query: (atMatch[1] ?? "").trim() };
-	}
-	return null;
-}
-
-function formatToolName(tool: string): string {
-	return tool.split("_").filter(Boolean).join(" ");
-}
-
-const providerLogoMap: Record<AiProviderKind, string> = {
-	openai: openaiLogoUrl,
-	openai_compat: openaiLogoUrl,
-	openrouter: openrouterLogoUrl,
-	anthropic: anthropicLogoUrl,
-	gemini: geminiLogoUrl,
-	ollama: ollamaLogoUrl,
-};
-
-const AI_MODES: Array<{ value: AiAssistantMode; label: string; hint: string }> =
-	[
-		{
-			value: "chat",
-			label: "Chat",
-			hint: "Read-only answers from attached/current context.",
-		},
-		{
-			value: "create",
-			label: "Create",
-			hint: "Agentic mode with tools and file actions.",
-		},
-	];
-
-const SLOW_START_MS = 3000;
-const FINALIZING_MS = 280;
-
-function normalizePath(path: string | null | undefined): string {
-	return (path ?? "")
-		.trim()
-		.replace(/\\/g, "/")
-		.replace(/^\/+|\/+$/g, "");
-}
 
 interface AIPanelProps {
 	isOpen: boolean;
@@ -145,8 +49,7 @@ export function AIPanel({
 	onClose,
 }: AIPanelProps) {
 	const chat = useRigChat();
-	const { aiAssistantMode, setAiAssistantMode } = useUIContext();
-	const shouldReduceMotion = useReducedMotion();
+	const { aiAssistantMode } = useUIContext();
 	const isChatMode = aiAssistantMode === "chat";
 	const normalizedCurrentFilePath = useMemo(
 		() => normalizePath(currentFilePath),
@@ -265,13 +168,11 @@ export function AIPanel({
 		if (
 			activeToolJobIdRef.current &&
 			payload.job_id !== activeToolJobIdRef.current
-		) {
+		)
 			return;
-		}
 		if (!activeToolJobIdRef.current) {
 			activeToolJobIdRef.current = payload.job_id;
 		}
-
 		const tool = payload.tool?.trim() || "tool";
 		const phase: ToolPhase =
 			payload.phase === "call" ||
@@ -279,7 +180,6 @@ export function AIPanel({
 			payload.phase === "error"
 				? payload.phase
 				: "call";
-
 		if (phase === "call") {
 			setActiveTools((prev) => (prev.includes(tool) ? prev : [...prev, tool]));
 			setResponsePhase((prev) =>
@@ -288,13 +188,11 @@ export function AIPanel({
 		} else {
 			setActiveTools((prev) => prev.filter((name) => name !== tool));
 		}
-
 		setLastToolEvent({
 			tool,
 			phase,
 			error: typeof payload.error === "string" ? payload.error : undefined,
 		});
-
 		setToolTimeline((prev) => [
 			...prev,
 			{
@@ -324,6 +222,7 @@ export function AIPanel({
 		}
 		return "Thinking…";
 	}, [activeTools, lastToolEvent]);
+
 	const isAwaitingResponse =
 		chat.status === "submitted" || chat.status === "streaming";
 
@@ -337,9 +236,7 @@ export function AIPanel({
 		if (responsePhase === "streaming") {
 			return activeTools.length > 0 ? toolStatusText : "Writing response…";
 		}
-		if (responsePhase === "finalizing") {
-			return "Finalizing…";
-		}
+		if (responsePhase === "finalizing") return "Finalizing…";
 		return "";
 	}, [activeTools.length, responsePhase, showSlowStart, toolStatusText]);
 
@@ -347,9 +244,12 @@ export function AIPanel({
 		!isAwaitingResponse &&
 		Boolean(input.trim()) &&
 		Boolean(profiles.activeProfileId);
-	const lastAssistantText = [...chat.messages]
+	const lastAssistantMsg = [...chat.messages]
 		.reverse()
 		.find((m) => m.role === "assistant");
+	const lastAssistantText = lastAssistantMsg
+		? messageText(lastAssistantMsg)
+		: "";
 	const lastUserMessageIndex = useMemo(() => {
 		for (let i = chat.messages.length - 1; i >= 0; i--) {
 			if (chat.messages[i]?.role === "user") return i;
@@ -357,7 +257,7 @@ export function AIPanel({
 		return -1;
 	}, [chat.messages]);
 
-	const handleSend = async () => {
+	const handleSend = useCallback(async () => {
 		if (!canSend) return;
 		const text = context.resolveMentionsFromInput(input);
 		if (!text) return;
@@ -388,7 +288,16 @@ export function AIPanel({
 				},
 			},
 		);
-	};
+	}, [
+		aiAssistantMode,
+		canSend,
+		chat,
+		clearFinalizingTimer,
+		context,
+		input,
+		profiles.activeProfileId,
+		scheduleComposerInputResize,
+	]);
 
 	const sendWithCurrentContext = useCallback(
 		async (text: string) => {
@@ -501,17 +410,20 @@ export function AIPanel({
 		[chat, context.payloadError, sendWithCurrentContext],
 	);
 
-	const handleAddContext = (kind: "folder" | "file", path: string) => {
-		context.addContext(kind, path);
-		if (trigger) {
-			setInput((prev) => {
-				const before = prev.slice(0, trigger.start).trimEnd();
-				return before ? `${before} ` : "";
-			});
-		}
-		setAddPanelOpen(false);
-		setAddPanelQuery("");
-	};
+	const handleAddContext = useCallback(
+		(kind: "folder" | "file", path: string) => {
+			context.addContext(kind, path);
+			if (trigger) {
+				setInput((prev) => {
+					const before = prev.slice(0, trigger.start).trimEnd();
+					return before ? `${before} ` : "";
+				});
+			}
+			setAddPanelOpen(false);
+			setAddPanelQuery("");
+		},
+		[context.addContext, trigger],
+	);
 
 	const handleRemoveContext = useCallback(
 		(kind: "folder" | "file", path: string) => {
@@ -561,9 +473,7 @@ export function AIPanel({
 	);
 
 	const handleNewChat = useCallback(() => {
-		if (chat.status === "streaming") {
-			chat.stop();
-		}
+		if (chat.status === "streaming") chat.stop();
 		clearSlowStartTimer();
 		clearFinalizingTimer();
 		setInput("");
@@ -577,16 +487,12 @@ export function AIPanel({
 		activeToolJobIdRef.current = null;
 		chat.setMessages([]);
 		chat.clearError();
-	}, [
-		chat,
-		clearFinalizingTimer,
-		clearSlowStartTimer,
-		scheduleComposerInputResize,
-	]);
+	}, [chat, clearFinalizingTimer, clearSlowStartTimer, scheduleComposerInputResize]);
 
 	const threadRef = useRef<HTMLDivElement>(null);
 	const prevStatusRef = useRef(chat.status);
 	const msgCount = chat.messages.length;
+
 	// biome-ignore lint/correctness/useExhaustiveDependencies: scroll on new messages
 	useEffect(() => {
 		const el = threadRef.current;
@@ -721,188 +627,26 @@ export function AIPanel({
 			</div>
 
 			<div className="aiPanelBody">
-				<div className="aiHistory">
-					<div className="aiHistoryHeader">
-						<button
-							type="button"
-							className="aiHistoryToggle"
-							aria-expanded={historyExpanded}
-							onClick={() => setHistoryExpanded((prev) => !prev)}
-						>
-							<span>Recent Chats</span>
-							<ChevronDown
-								size={12}
-								className={cn(
-									"aiHistoryChevron",
-									historyExpanded && "aiHistoryChevron-open",
-								)}
-							/>
-						</button>
-						{historyExpanded ? (
-							<button
-								type="button"
-								onClick={() => void history.refresh()}
-								disabled={history.listLoading}
-							>
-								Refresh
-							</button>
-						) : null}
-					</div>
-					{historyExpanded ? (
-						<div className="aiHistoryList">
-							{history.summaries.length > 0 ? (
-								history.summaries.map((item) => (
-									<button
-										key={item.job_id}
-										type="button"
-										className={cn(
-											"aiHistoryItem",
-											history.selectedJobId === item.job_id && "active",
-										)}
-										onClick={() => void handleLoadHistory(item.job_id)}
-										disabled={history.loadingJobId === item.job_id}
-									>
-										<div className="aiHistoryItemTitle">
-											{item.title || "Untitled chat"}
-										</div>
-										{item.provider ? (
-											<img
-												className="aiHistoryProviderIcon"
-												src={providerLogoMap[item.provider]}
-												alt={item.provider}
-												draggable={false}
-											/>
-										) : null}
-									</button>
-								))
-							) : (
-								<div className="aiHistoryEmpty">
-									{history.listLoading
-										? "Loading chats…"
-										: "No chat history yet"}
-								</div>
-							)}
-						</div>
-					) : null}
-				</div>
+				<AIHistoryPanel
+					history={history}
+					historyExpanded={historyExpanded}
+					setHistoryExpanded={setHistoryExpanded}
+					onLoadHistory={(jobId) => void handleLoadHistory(jobId)}
+				/>
 
 				<div className="aiChatThread" ref={threadRef}>
-					{chat.messages.length === 0 ? (
-						<div className="aiChatEmpty">
-							<div className="aiChatEmptyTitle">
-								Ask anything about your notes
-							</div>
-							<div className="aiChatEmptyMeta">
-								Use @ to mention files or folders
-							</div>
-						</div>
-					) : null}
-					{chat.messages.map((m, index) => {
-						const text = messageText(m).trim();
-						const isPendingAssistant =
-							m.role === "assistant" &&
-							!text &&
-							isAwaitingResponse &&
-							index === chat.messages.length - 1;
-						if (!text && !isPendingAssistant) return null;
-						return (
-							<Fragment key={m.id}>
-								<div
-									className={cn(
-										"aiChatMsg",
-										m.role === "user"
-											? "aiChatMsg-user"
-											: "aiChatMsg-assistant",
-									)}
-								>
-									{isPendingAssistant ? (
-										<motion.div
-											className="aiPendingAssistant"
-											initial={
-												shouldReduceMotion
-													? false
-													: { opacity: 0, y: 4, scale: 0.99 }
-											}
-											animate={{ opacity: 1, y: 0, scale: 1 }}
-											transition={
-												shouldReduceMotion
-													? { duration: 0 }
-													: { duration: 0.18, ease: "easeOut" }
-											}
-										>
-											<div className="aiPendingHeader">
-												<span className="aiPendingDot" />
-												<span>{phaseStatusText || "Preparing response…"}</span>
-											</div>
-											<div className="aiPendingSkeleton">
-												<span className="aiPendingLine aiPendingLine-1" />
-												<span className="aiPendingLine aiPendingLine-2" />
-											</div>
-											<div className="aiPendingDots" aria-hidden="true">
-												<span />
-												<span />
-												<span />
-											</div>
-										</motion.div>
-									) : m.role === "assistant" ? (
-										<Suspense
-											fallback={<div className="aiChatContent">{text}</div>}
-										>
-											<AIMessageMarkdown markdown={text} />
-										</Suspense>
-									) : (
-										<div className="aiChatContent">{text}</div>
-									)}
-									{m.role === "assistant" && text ? (
-										<div className="aiAssistantActions">
-											<Button
-												type="button"
-												variant="ghost"
-												size="icon-sm"
-												className="aiAssistantActionBtn aiAssistantActionIconBtn"
-												onClick={() => void handleCopyAssistantResponse(text)}
-												title="Copy response"
-												aria-label="Copy response"
-											>
-												<Files size={12} />
-											</Button>
-											<Button
-												type="button"
-												variant="ghost"
-												size="icon-sm"
-												className="aiAssistantActionBtn aiAssistantActionIconBtn"
-												onClick={() => void handleSaveAssistantResponse(text)}
-												title="Save response to file"
-												aria-label="Save response to file"
-											>
-												<Save size={12} />
-											</Button>
-											<Button
-												type="button"
-												variant="ghost"
-												size="icon-sm"
-												className="aiAssistantActionBtn aiAssistantActionIconBtn"
-												onClick={() => void handleRetryFromAssistant(index)}
-												title="Retry this response"
-												aria-label="Retry response"
-												disabled={chat.status === "streaming"}
-											>
-												<RefreshCw size={12} />
-											</Button>
-										</div>
-									) : null}
-								</div>
-								{!isChatMode && index === lastUserMessageIndex ? (
-									<AIToolTimeline
-										events={toolTimeline}
-										streaming={
-											chat.status === "streaming" || chat.status === "submitted"
-										}
-									/>
-								) : null}
-							</Fragment>
-						);
-					})}
+					<AIChatThread
+						messages={chat.messages}
+						isChatMode={isChatMode}
+						isAwaitingResponse={isAwaitingResponse}
+						chatStatus={chat.status}
+						phaseStatusText={phaseStatusText}
+						toolTimeline={toolTimeline}
+						lastUserMessageIndex={lastUserMessageIndex}
+						onCopy={(t) => void handleCopyAssistantResponse(t)}
+						onSave={(t) => void handleSaveAssistantResponse(t)}
+						onRetry={(i) => void handleRetryFromAssistant(i)}
+					/>
 					{!isChatMode && chat.status === "streaming" && (
 						<div
 							className={cn(
@@ -934,222 +678,36 @@ export function AIPanel({
 						</button>
 					</div>
 				) : null}
-
 				{profiles.error ? (
 					<div className="aiPanelError">{profiles.error}</div>
 				) : null}
-
 				{history.error ? (
 					<div className="aiPanelError">{history.error}</div>
 				) : null}
 
-				{context.attachedFolders.length > 0 ? (
-					<div className="aiContextChips">
-						{context.attachedFolders.map((item) => (
-							<button
-								key={`${item.kind}:${item.path || "vault"}`}
-								type="button"
-								className="aiContextChip"
-								onClick={() => handleRemoveContext(item.kind, item.path)}
-								title={`Remove ${item.label}`}
-							>
-								<span>{item.label || "Vault"}</span>
-								<X size={10} />
-							</button>
-						))}
-					</div>
-				) : null}
-
-				{showAddPanel ? (
-					<div className="aiAddPanel">
-						<input
-							type="search"
-							className="aiAddPanelInput"
-							placeholder="Search files & folders…"
-							value={panelQuery}
-							onChange={(e) => {
-								if (!addPanelOpen) setAddPanelOpen(true);
-								setAddPanelQuery(e.target.value);
-							}}
-						/>
-						{context.folderIndexError ? (
-							<div className="aiPanelError">{context.folderIndexError}</div>
-						) : null}
-						<div className="aiAddPanelList">
-							{context.visibleSuggestions.length ? (
-								context.visibleSuggestions.map((item) => (
-									<button
-										key={`${item.kind}:${item.path || "vault"}`}
-										type="button"
-										className="aiAddPanelItem"
-										onClick={() => handleAddContext(item.kind, item.path)}
-									>
-										{item.kind === "folder" ? (
-											<Layout size={12} />
-										) : (
-											<FileText size={12} />
-										)}
-										<span>{item.label || "Vault"}</span>
-									</button>
-								))
-							) : (
-								<div className="aiAddPanelEmpty">No results</div>
-							)}
-						</div>
-						<button
-							type="button"
-							className="aiAddPanelClose"
-							onClick={() => setAddPanelOpen(false)}
-						>
-							<X size={11} />
-						</button>
-					</div>
-				) : null}
-
-				<div className="aiComposer">
-					<div className="aiComposerInputShell">
-						<textarea
-							ref={composerInputRef}
-							className="aiComposerInput"
-							value={input}
-							placeholder="Ask AI…"
-							disabled={isAwaitingResponse}
-							onChange={(e) => {
-								setInput(e.target.value);
-								scheduleComposerInputResize();
-							}}
-							onKeyDown={(e) => {
-								if (
-									e.key === "Enter" &&
-									!e.shiftKey &&
-									!e.metaKey &&
-									!e.ctrlKey
-								) {
-									e.preventDefault();
-									void handleSend();
-								}
-							}}
-							rows={1}
-						/>
-						<div
-							className="aiModeMiniToggle"
-							role="tablist"
-							aria-label="AI mode"
-						>
-							{AI_MODES.map((mode) => {
-								const active = mode.value === aiAssistantMode;
-								return (
-									<button
-										key={mode.value}
-										type="button"
-										role="tab"
-										aria-selected={active}
-										className={cn("aiModeMiniOption", active && "active")}
-										title={mode.hint}
-										onClick={() => setAiAssistantMode(mode.value)}
-										disabled={isAwaitingResponse}
-									>
-										{active ? (
-											<motion.span
-												layoutId="ai-mode-active"
-												className={cn(
-													"aiModeMiniActive",
-													`aiModeMiniActive-${mode.value}`,
-												)}
-												transition={
-													shouldReduceMotion
-														? { duration: 0 }
-														: { type: "spring", stiffness: 420, damping: 28 }
-												}
-											/>
-										) : null}
-										<span className="aiModeMiniText">{mode.label}</span>
-									</button>
-								);
-							})}
-						</div>
-					</div>
-					<div className="aiComposerBar">
-						<div className="aiComposerTools">
-							<Button
-								type="button"
-								variant="ghost"
-								size="icon-sm"
-								aria-label="Attach file or folder"
-								title="Attach file or folder"
-								onClick={() => {
-									setAddPanelOpen(true);
-									setAddPanelQuery("");
-								}}
-							>
-								<Paperclip size={14} />
-							</Button>
-							<Button
-								type="button"
-								variant="ghost"
-								size="icon-sm"
-								aria-label="Attach selected context files"
-								title="Attach selected context files"
-								onClick={() =>
-									void context
-										.resolveAttachedPaths()
-										.then((paths) => onAttachContextFiles(paths))
-								}
-								disabled={context.attachedFolders.length === 0}
-							>
-								<FileText size={14} />
-							</Button>
-							<Button
-								type="button"
-								variant="ghost"
-								size="icon-sm"
-								aria-label="Create note from last reply"
-								title="Create note from last reply"
-								onClick={() =>
-									void onCreateNoteFromLastAssistant(
-										lastAssistantText ? messageText(lastAssistantText) : "",
-									)
-								}
-								disabled={isChatMode || !lastAssistantText}
-							>
-								<AiLattice size={18} />
-							</Button>
-						</div>
-						<div className="aiComposerRight">
-							<ModelSelector
-								profileId={profiles.activeProfileId}
-								value={profiles.activeProfile?.model ?? ""}
-								provider={profiles.activeProfile?.provider ?? null}
-								profiles={profiles.profiles}
-								activeProfileId={profiles.activeProfileId}
-								onProfileChange={(id) => void profiles.setActive(id)}
-								onChange={(modelId) => void profiles.setModel(modelId)}
-							/>
-							{isAwaitingResponse ? (
-								<button
-									type="button"
-									className="aiComposerStop"
-									onClick={() => chat.stop()}
-								>
-									Stop
-								</button>
-							) : (
-								<Button
-									type="button"
-									variant="ghost"
-									size="icon-sm"
-									className="aiComposerSend"
-									disabled={!canSend}
-									onClick={handleSend}
-									aria-label="Send"
-									title="Send"
-								>
-									<HugeiconsIcon icon={Navigation03Icon} size={14} />
-								</Button>
-							)}
-						</div>
-					</div>
-				</div>
+				<AIComposer
+					input={input}
+					setInput={setInput}
+					isAwaitingResponse={isAwaitingResponse}
+					canSend={canSend}
+					isChatMode={isChatMode}
+					lastAssistantText={lastAssistantText}
+					onSend={() => void handleSend()}
+					onStop={() => chat.stop()}
+					composerInputRef={composerInputRef}
+					scheduleComposerInputResize={scheduleComposerInputResize}
+					profiles={profiles}
+					context={context}
+					showAddPanel={showAddPanel}
+					panelQuery={panelQuery}
+					addPanelOpen={addPanelOpen}
+					setAddPanelOpen={setAddPanelOpen}
+					setAddPanelQuery={setAddPanelQuery}
+					onAddContext={handleAddContext}
+					onRemoveContext={handleRemoveContext}
+					onAttachContextFiles={onAttachContextFiles}
+					onCreateNoteFromLastAssistant={onCreateNoteFromLastAssistant}
+				/>
 			</div>
 		</div>
 	);

@@ -1,4 +1,4 @@
-import { cn } from "../../utils/cn";
+import { cn } from "@/lib/utils";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { AiLattice } from "../Icons";
 import { Button } from "../ui/shadcn/button";

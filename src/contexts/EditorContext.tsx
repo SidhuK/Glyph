@@ -3,6 +3,7 @@ import {
 	createContext,
 	useCallback,
 	useContext,
+	useEffect,
 	useRef,
 } from "react";
 
@@ -89,11 +90,11 @@ export function useEditorContext(): EditorContextValue {
 export function useEditorRegistration(state: EditorSaveState | null): void {
 	const { registerEditor } = useEditorContext();
 
-	// Register on mount, unregister on unmount
-	// Using a ref to avoid re-registering on every render
 	const stateRef = useRef(state);
 	stateRef.current = state;
 
-	// Register the current state
-	registerEditor(state);
+	useEffect(() => {
+		registerEditor(stateRef.current);
+		return () => registerEditor(null);
+	}, [registerEditor]);
 }

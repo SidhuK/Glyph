@@ -1,5 +1,5 @@
 import { forwardRef } from "react";
-import { cn } from "../../utils/cn";
+import { cn } from "@/lib/utils";
 
 type ButtonVariant = "default" | "primary" | "ghost" | "icon";
 type ButtonSize = "default" | "sm";
