@@ -17,7 +17,9 @@ use rig::{
 
 use crate::ai_rig::{
     helpers::{default_base_url, parse_base_url},
-    types::{AiChunkEvent, AiMessage, AiProfile, AiProviderKind, AiStoredToolEvent},
+    types::{
+        AiAssistantMode, AiChunkEvent, AiMessage, AiProfile, AiProviderKind, AiStoredToolEvent,
+    },
 };
 
 use super::{
@@ -49,6 +51,7 @@ pub async fn run_with_rig(
     api_key: Option<&str>,
     system: &str,
     messages: &[AiMessage],
+    mode: &AiAssistantMode,
     vault_root: Option<&Path>,
 ) -> Result<(String, bool, Vec<AiStoredToolEvent>), String> {
     let root = vault_root.ok_or_else(|| "No vault is open".to_string())?;
@@ -98,11 +101,16 @@ pub async fn run_with_rig(
             if let Some(v) = max_tokens {
                 agent = agent.max_tokens(v);
             }
+            let agent = if matches!(mode, AiAssistantMode::Create) {
+                with_tools(agent.preamble(system), &tools).build()
+            } else {
+                agent.preamble(system).build()
+            };
             match run_stream(
                 cancel,
                 app,
                 job_id,
-                with_tools(agent.preamble(system), &tools).build(),
+                agent,
                 transcript.clone(),
             )
             .await
@@ -130,11 +138,16 @@ pub async fn run_with_rig(
             if let Some(v) = max_tokens {
                 agent = agent.max_tokens(v);
             }
+            let agent = if matches!(mode, AiAssistantMode::Create) {
+                with_tools(agent.preamble(system), &tools).build()
+            } else {
+                agent.preamble(system).build()
+            };
             match run_stream(
                 cancel,
                 app,
                 job_id,
-                with_tools(agent.preamble(system), &tools).build(),
+                agent,
                 transcript.clone(),
             )
             .await
@@ -162,11 +175,16 @@ pub async fn run_with_rig(
             if let Some(v) = max_tokens {
                 agent = agent.max_tokens(v);
             }
+            let agent = if matches!(mode, AiAssistantMode::Create) {
+                with_tools(agent.preamble(system), &tools).build()
+            } else {
+                agent.preamble(system).build()
+            };
             run_stream(
                 cancel,
                 app,
                 job_id,
-                with_tools(agent.preamble(system), &tools).build(),
+                agent,
                 transcript,
             )
             .await?
@@ -189,11 +207,16 @@ pub async fn run_with_rig(
             if let Some(v) = max_tokens {
                 agent = agent.max_tokens(v);
             }
+            let agent = if matches!(mode, AiAssistantMode::Create) {
+                with_tools(agent.preamble(system), &tools).build()
+            } else {
+                agent.preamble(system).build()
+            };
             run_stream(
                 cancel,
                 app,
                 job_id,
-                with_tools(agent.preamble(system), &tools).build(),
+                agent,
                 transcript,
             )
             .await?
@@ -216,11 +239,16 @@ pub async fn run_with_rig(
             if let Some(v) = max_tokens {
                 agent = agent.max_tokens(v);
             }
+            let agent = if matches!(mode, AiAssistantMode::Create) {
+                with_tools(agent.preamble(system), &tools).build()
+            } else {
+                agent.preamble(system).build()
+            };
             run_stream(
                 cancel,
                 app,
                 job_id,
-                with_tools(agent.preamble(system), &tools).build(),
+                agent,
                 transcript,
             )
             .await?
@@ -237,11 +265,16 @@ pub async fn run_with_rig(
             if let Some(v) = max_tokens {
                 agent = agent.max_tokens(v);
             }
+            let agent = if matches!(mode, AiAssistantMode::Create) {
+                with_tools(agent.preamble(system), &tools).build()
+            } else {
+                agent.preamble(system).build()
+            };
             run_stream(
                 cancel,
                 app,
                 job_id,
-                with_tools(agent.preamble(system), &tools).build(),
+                agent,
                 transcript,
             )
             .await?

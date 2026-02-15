@@ -11,8 +11,8 @@ use super::runtime;
 use super::state::AiState;
 use super::store::{ensure_default_profiles, read_store, store_path, write_store};
 use super::types::{
-    AiChatRequest, AiChatStartResult, AiDoneEvent, AiErrorEvent, AiMessage, AiProfile,
-    AiStoredToolEvent,
+    AiAssistantMode, AiChatRequest, AiChatStartResult, AiDoneEvent, AiErrorEvent, AiMessage,
+    AiProfile, AiStoredToolEvent,
 };
 use crate::lattice_paths;
 use serde::{Deserialize, Serialize};
@@ -298,6 +298,7 @@ pub async fn ai_chat_start(
             api_key.as_deref(),
             &system,
             &messages,
+            &request.mode,
             vault_root.as_deref(),
         )
         .await;
@@ -312,6 +313,7 @@ pub async fn ai_chat_start(
                     api_key.as_deref(),
                     &system,
                     &messages,
+                    &request.mode,
                     vault_root.as_deref(),
                 )
                 .await;
@@ -410,10 +412,11 @@ pub async fn run_request(
     api_key: Option<&str>,
     system: &str,
     messages: &[AiMessage],
+    mode: &AiAssistantMode,
     vault_root: Option<&std::path::Path>,
 ) -> Result<(String, bool, Vec<AiStoredToolEvent>), String> {
     runtime::run_with_rig(
-        cancel, app, job_id, profile, api_key, system, messages, vault_root,
+        cancel, app, job_id, profile, api_key, system, messages, mode, vault_root,
     )
     .await
 }

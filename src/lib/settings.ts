@@ -9,11 +9,20 @@ async function ensureLoaded(): Promise<void> {
 
 export type ThemeMode = "system" | "light" | "dark";
 const THEME_MODES = new Set<ThemeMode>(["system", "light", "dark"]);
+export type AiAssistantMode = "chat" | "create";
+const AI_ASSISTANT_MODES = new Set<AiAssistantMode>(["chat", "create"]);
 
 function asThemeMode(value: unknown): ThemeMode {
 	return typeof value === "string" && THEME_MODES.has(value as ThemeMode)
 		? (value as ThemeMode)
 		: "system";
+}
+
+function asAiAssistantMode(value: unknown): AiAssistantMode {
+	return typeof value === "string" &&
+		AI_ASSISTANT_MODES.has(value as AiAssistantMode)
+		? (value as AiAssistantMode)
+		: "create";
 }
 
 export interface RecentFile {
@@ -29,6 +38,7 @@ export interface AppSettings {
 	ui: {
 		aiSidebarWidth: number | null;
 		theme: ThemeMode;
+		aiAssistantMode: AiAssistantMode;
 	};
 	dailyNotes: {
 		folder: string | null;
@@ -40,6 +50,7 @@ const KEYS = {
 	recentVaults: "vault.recent",
 	recentFiles: "files.recent",
 	aiSidebarWidth: "ui.aiSidebarWidth",
+	aiAssistantMode: "ui.aiAssistantMode",
 	theme: "ui.theme",
 	dailyNotesFolder: "dailyNotes.folder",
 } as const;
@@ -76,6 +87,8 @@ export async function loadSettings(): Promise<AppSettings> {
 	const recentFiles = isRecentFileArray(rawRecentFiles) ? rawRecentFiles : [];
 	const aiSidebarWidth =
 		(await store.get<number | null>(KEYS.aiSidebarWidth)) ?? null;
+	const rawAiAssistantMode = await store.get<unknown>(KEYS.aiAssistantMode);
+	const aiAssistantMode = asAiAssistantMode(rawAiAssistantMode);
 	const rawTheme = await store.get<unknown>(KEYS.theme);
 	const theme = asThemeMode(rawTheme);
 	const dailyNotesFolder =
@@ -90,6 +103,7 @@ export async function loadSettings(): Promise<AppSettings> {
 					? aiSidebarWidth
 					: null,
 			theme,
+			aiAssistantMode,
 		},
 		dailyNotes: {
 			folder: dailyNotesFolder,
@@ -122,6 +136,12 @@ export async function setAiSidebarWidth(width: number): Promise<void> {
 	await ensureLoaded();
 	if (!Number.isFinite(width)) return;
 	await store.set(KEYS.aiSidebarWidth, Math.floor(width));
+	await store.save();
+}
+
+export async function setAiAssistantMode(mode: AiAssistantMode): Promise<void> {
+	await ensureLoaded();
+	await store.set(KEYS.aiAssistantMode, mode);
 	await store.save();
 }
 

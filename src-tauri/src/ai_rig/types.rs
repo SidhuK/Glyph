@@ -36,6 +36,14 @@ pub struct AiMessage {
     pub content: String,
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug, Default)]
+#[serde(rename_all = "snake_case")]
+pub enum AiAssistantMode {
+    Chat,
+    #[default]
+    Create,
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct AiModel {
     pub id: String,
@@ -55,6 +63,8 @@ pub struct AiModel {
 pub struct AiChatRequest {
     pub profile_id: String,
     pub messages: Vec<AiMessage>,
+    #[serde(default)]
+    pub mode: AiAssistantMode,
     pub context: Option<String>,
     #[serde(default)]
     pub context_manifest: Option<serde_json::Value>,

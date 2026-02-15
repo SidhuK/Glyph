@@ -707,6 +707,7 @@ export function AppShell() {
 		openMarkdownTabs.length,
 		saveCurrentEditor,
 		setAiPanelOpen,
+		setPaletteOpen,
 		setActivePreviewPath,
 		setSidebarCollapsed,
 		sidebarCollapsed,
@@ -814,6 +815,9 @@ export function AppShell() {
 						activeViewDoc?.kind === "folder"
 							? activeViewDoc.selector || ""
 							: null
+					}
+					currentFilePath={
+						activeMarkdownTabPath ?? activePreviewPath ?? activeFilePath ?? null
 					}
 					onAttachContextFiles={attachContextFiles}
 					onCreateNoteFromLastAssistant={createNoteFromAI}

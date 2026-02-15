@@ -162,6 +162,8 @@ export type AiProviderKind =
 	| "gemini"
 	| "ollama";
 
+export type AiAssistantMode = "chat" | "create";
+
 export interface AiHeader {
 	key: string;
 	value: string;
@@ -325,6 +327,7 @@ interface TauriCommands {
 			request: {
 				profile_id: string;
 				messages: AiMessage[];
+				mode: AiAssistantMode;
 				context?: string;
 				context_manifest?: unknown;
 				audit?: boolean;

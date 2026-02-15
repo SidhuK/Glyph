@@ -54,6 +54,16 @@
 	overflow: hidden;
 }
 
+.aiPanel[data-ai-mode="chat"] {
+	--ai-mode-accent: #2a9d6f;
+	--ai-mode-accent-soft: color-mix(in srgb, #2a9d6f 14%, transparent);
+}
+
+.aiPanel[data-ai-mode="create"] {
+	--ai-mode-accent: #d85b57;
+	--ai-mode-accent-soft: color-mix(in srgb, #d85b57 14%, transparent);
+}
+
 .aiPanelHeader {
 	display: flex;
 	align-items: center;
@@ -632,7 +642,11 @@
 	padding: 1px;
 	background: linear-gradient(
 		140deg,
-		color-mix(in srgb, var(--interactive-accent) 18%, transparent),
+		color-mix(
+			in srgb,
+			var(--ai-mode-accent, var(--interactive-accent)) 18%,
+			transparent
+		),
 		color-mix(in srgb, var(--border-light) 48%, transparent)
 	);
 }
@@ -694,13 +708,97 @@
 	gap: 6px;
 }
 
+.aiModeToggle {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	gap: 3px;
+	padding: 3px;
+	border-radius: 999px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 68%, transparent);
+}
+
+.aiModeToggleOption {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 2px 9px;
+	border-radius: 999px;
+	border: 0;
+	background: transparent;
+	color: var(--text-secondary);
+	font-size: 11px;
+	font-weight: var(--font-semibold);
+}
+
+.aiModeToggleOption.active {
+	color: var(--text-primary);
+}
+
+.aiModeToggleOption:disabled {
+	opacity: 0.45;
+}
+
+.aiModeToggleActive {
+	position: absolute;
+	inset: 0;
+	border-radius: 999px;
+	z-index: 0;
+}
+
+.aiModeToggleActive-chat {
+	background: color-mix(in srgb, #2a9d6f 22%, transparent);
+}
+
+.aiModeToggleActive-create {
+	background: color-mix(in srgb, #d85b57 20%, transparent);
+}
+
+.aiModeToggleText {
+	position: relative;
+	z-index: 1;
+}
+
+.aiModeBadge {
+	display: inline-flex;
+	align-items: center;
+	padding: 2px 8px;
+	border-radius: 999px;
+	font-size: 10px;
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.02em;
+	border: 1px solid transparent;
+}
+
+.aiModeBadge-chat {
+	color: #2a9d6f;
+	background: color-mix(in srgb, #2a9d6f 12%, transparent);
+	border-color: color-mix(in srgb, #2a9d6f 35%, transparent);
+}
+
+.aiModeBadge-create {
+	color: #d85b57;
+	background: color-mix(in srgb, #d85b57 10%, transparent);
+	border-color: color-mix(in srgb, #d85b57 32%, transparent);
+}
+
 .aiComposerStatusDot {
 	width: 9px;
 	height: 9px;
 	border-radius: 999px;
-	background: var(--interactive-accent);
+	background: var(--ai-mode-accent, var(--interactive-accent));
 	flex-shrink: 0;
 	animation: aiComposerPulse 1s ease-in-out infinite;
+}
+
+.aiComposerStatusDot-chat {
+	background: #2a9d6f;
+}
+
+.aiComposerStatusDot-create {
+	background: #d85b57;
 }
 
 @keyframes aiComposerPulse {
@@ -733,4 +831,10 @@
 .aiComposerStop:hover {
 	color: var(--text-primary);
 	border-color: var(--border-default);
+}
+
+.aiModeHint {
+	margin-top: 8px;
+	font-size: 11px;
+	color: color-mix(in srgb, var(--text-tertiary) 88%, var(--ai-mode-accent));
 }

@@ -1,5 +1,6 @@
 import { Navigation03Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { motion, useReducedMotion } from "motion/react";
 import {
 	Fragment,
 	Suspense,
@@ -15,8 +16,9 @@ import geminiLogoUrl from "../../assets/provider-logos/google-gemini.svg?url";
 import ollamaLogoUrl from "../../assets/provider-logos/ollama.svg?url";
 import openrouterLogoUrl from "../../assets/provider-logos/open-router.svg?url";
 import openaiLogoUrl from "../../assets/provider-logos/openai-light.svg?url";
+import { useUIContext } from "../../contexts";
 import { invoke } from "../../lib/tauri";
-import type { AiProviderKind } from "../../lib/tauri";
+import type { AiAssistantMode, AiProviderKind } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { openSettingsWindow } from "../../lib/windows";
 import { cn } from "../../utils/cn";
@@ -94,9 +96,31 @@ const providerLogoMap: Record<AiProviderKind, string> = {
 	ollama: ollamaLogoUrl,
 };
 
+const AI_MODES: Array<{ value: AiAssistantMode; label: string; hint: string }> =
+	[
+		{
+			value: "chat",
+			label: "Chat",
+			hint: "Read-only answers from attached/current context.",
+		},
+		{
+			value: "create",
+			label: "Create",
+			hint: "Agentic mode with tools and file actions.",
+		},
+	];
+
+function normalizePath(path: string | null | undefined): string {
+	return (path ?? "")
+		.trim()
+		.replace(/\\/g, "/")
+		.replace(/^\/+|\/+$/g, "");
+}
+
 interface AIPanelProps {
 	isOpen: boolean;
 	activeFolderPath: string | null;
+	currentFilePath: string | null;
 	onAttachContextFiles: (paths: string[]) => Promise<void>;
 	onCreateNoteFromLastAssistant: (markdown: string) => Promise<void>;
 	onClose: () => void;
@@ -106,14 +130,23 @@ interface AIPanelProps {
 export function AIPanel({
 	isOpen,
 	activeFolderPath,
+	currentFilePath,
 	onAttachContextFiles,
 	onCreateNoteFromLastAssistant,
 	onClose,
 }: AIPanelProps) {
 	const chat = useRigChat();
+	const { aiAssistantMode, setAiAssistantMode } = useUIContext();
+	const shouldReduceMotion = useReducedMotion();
+	const isChatMode = aiAssistantMode === "chat";
+	const normalizedCurrentFilePath = useMemo(
+		() => normalizePath(currentFilePath),
+		[currentFilePath],
+	);
 	const [input, setInput] = useState("");
 	const [addPanelOpen, setAddPanelOpen] = useState(false);
 	const [addPanelQuery, setAddPanelQuery] = useState("");
+	const [removedAutoContextFile, setRemovedAutoContextFile] = useState("");
 
 	const profiles = useAiProfiles();
 	const context = useAiContext({ activeFolderPath });
@@ -170,13 +203,39 @@ export function AIPanel({
 	}, [context.addContext]);
 
 	useEffect(() => {
+		if (
+			removedAutoContextFile &&
+			removedAutoContextFile !== normalizedCurrentFilePath
+		) {
+			setRemovedAutoContextFile("");
+		}
+		if (!isChatMode || !normalizedCurrentFilePath) return;
+		if (removedAutoContextFile === normalizedCurrentFilePath) return;
+		context.addContext("file", normalizedCurrentFilePath);
+	}, [
+		context.addContext,
+		isChatMode,
+		normalizedCurrentFilePath,
+		removedAutoContextFile,
+	]);
+
+	useEffect(() => {
 		if (chat.status === "streaming") return;
 		activeToolJobIdRef.current = null;
 		setActiveTools([]);
 		setLastToolEvent(null);
 	}, [chat.status]);
 
+	useEffect(() => {
+		if (!isChatMode) return;
+		activeToolJobIdRef.current = null;
+		setToolTimeline([]);
+		setActiveTools([]);
+		setLastToolEvent(null);
+	}, [isChatMode]);
+
 	useTauriEvent("ai:tool", (payload) => {
+		if (isChatMode) return;
 		if (chat.status !== "submitted" && chat.status !== "streaming") return;
 		if (
 			activeToolJobIdRef.current &&
@@ -273,6 +332,7 @@ export function AIPanel({
 			{
 				body: {
 					profile_id: profiles.activeProfileId ?? undefined,
+					mode: aiAssistantMode,
 					context: built.payload || undefined,
 					context_manifest: built.manifest ?? undefined,
 					audit: true,
@@ -294,6 +354,7 @@ export function AIPanel({
 				{
 					body: {
 						profile_id: profiles.activeProfileId ?? undefined,
+						mode: aiAssistantMode,
 						context: built.payload || undefined,
 						context_manifest: built.manifest ?? undefined,
 						audit: true,
@@ -302,7 +363,7 @@ export function AIPanel({
 			);
 			return true;
 		},
-		[chat, context, profiles.activeProfileId],
+		[aiAssistantMode, chat, context, profiles.activeProfileId],
 	);
 
 	const handleCopyAssistantResponse = useCallback(async (text: string) => {
@@ -390,6 +451,22 @@ export function AIPanel({
 		setAddPanelQuery("");
 	};
 
+	const handleRemoveContext = useCallback(
+		(kind: "folder" | "file", path: string) => {
+			const normalized = normalizePath(path);
+			if (
+				kind === "file" &&
+				isChatMode &&
+				normalizedCurrentFilePath &&
+				normalized === normalizedCurrentFilePath
+			) {
+				setRemovedAutoContextFile(normalizedCurrentFilePath);
+			}
+			context.removeContext(kind, path);
+		},
+		[context.removeContext, isChatMode, normalizedCurrentFilePath],
+	);
+
 	const handleLoadHistory = useCallback(
 		async (jobId: string) => {
 			const loaded = await history.loadChatMessages(jobId);
@@ -454,7 +531,12 @@ export function AIPanel({
 	}, [chat.status, history.refresh]);
 
 	return (
-		<div className="aiPanel" data-open={isOpen} data-window-drag-ignore>
+		<div
+			className="aiPanel"
+			data-open={isOpen}
+			data-ai-mode={aiAssistantMode}
+			data-window-drag-ignore
+		>
 			<div className="aiPanelHeader">
 				<div className="aiPanelTitle">
 					<AiLattice size={18} />
@@ -636,7 +718,7 @@ export function AIPanel({
 										</div>
 									) : null}
 								</div>
-								{index === lastUserMessageIndex ? (
+								{!isChatMode && index === lastUserMessageIndex ? (
 									<AIToolTimeline
 										events={toolTimeline}
 										streaming={
@@ -647,7 +729,7 @@ export function AIPanel({
 							</Fragment>
 						);
 					})}
-					{chat.status === "streaming" && (
+					{!isChatMode && chat.status === "streaming" && (
 						<div
 							className={cn(
 								"aiToolStatus",
@@ -694,7 +776,7 @@ export function AIPanel({
 								key={`${item.kind}:${item.path || "vault"}`}
 								type="button"
 								className="aiContextChip"
-								onClick={() => context.removeContext(item.kind, item.path)}
+								onClick={() => handleRemoveContext(item.kind, item.path)}
 								title={`Remove ${item.label}`}
 							>
 								<span>{item.label || "Vault"}</span>
@@ -817,15 +899,60 @@ export function AIPanel({
 										lastAssistantText ? messageText(lastAssistantText) : "",
 									)
 								}
-								disabled={!lastAssistantText}
+								disabled={isChatMode || !lastAssistantText}
 							>
 								<AiLattice size={18} />
 							</Button>
 						</div>
 						<div className="aiComposerRight">
+							<div className="aiModeToggle" role="tablist" aria-label="AI mode">
+								{AI_MODES.map((mode) => {
+									const active = mode.value === aiAssistantMode;
+									return (
+										<button
+											key={mode.value}
+											type="button"
+											role="tab"
+											aria-selected={active}
+											className={cn("aiModeToggleOption", active && "active")}
+											title={mode.hint}
+											onClick={() => setAiAssistantMode(mode.value)}
+											disabled={isAwaitingResponse}
+										>
+											{active ? (
+												<motion.span
+													layoutId="ai-mode-active"
+													className={cn(
+														"aiModeToggleActive",
+														`aiModeToggleActive-${mode.value}`,
+													)}
+													transition={
+														shouldReduceMotion
+															? { duration: 0 }
+															: {
+																	type: "spring",
+																	stiffness: 420,
+																	damping: 28,
+																}
+													}
+												/>
+											) : null}
+											<span className="aiModeToggleText">{mode.label}</span>
+										</button>
+									);
+								})}
+							</div>
+							<span
+								className={cn("aiModeBadge", `aiModeBadge-${aiAssistantMode}`)}
+							>
+								{isChatMode ? "Read-only" : "Tools enabled"}
+							</span>
 							{isAwaitingResponse ? (
 								<span
-									className="aiComposerStatusDot"
+									className={cn(
+										"aiComposerStatusDot",
+										`aiComposerStatusDot-${aiAssistantMode}`,
+									)}
 									aria-label="AI responding"
 									title="AI responding"
 								/>
@@ -863,6 +990,11 @@ export function AIPanel({
 							)}
 						</div>
 					</div>
+					{isChatMode ? (
+						<div className="aiModeHint">
+							Chat mode uses note context only and does not run tools.
+						</div>
+					) : null}
 				</div>
 			</div>
 		</div>

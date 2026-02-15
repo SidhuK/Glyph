@@ -8,6 +8,7 @@ interface AIFloatingHostProps {
 	isOpen: boolean;
 	onToggle: () => void;
 	activeFolderPath: string | null;
+	currentFilePath: string | null;
 	onAttachContextFiles: (paths: string[]) => Promise<void>;
 	onCreateNoteFromLastAssistant: (markdown: string) => Promise<void>;
 }
@@ -16,6 +17,7 @@ export function AIFloatingHost({
 	isOpen,
 	onToggle,
 	activeFolderPath,
+	currentFilePath,
 	onAttachContextFiles,
 	onCreateNoteFromLastAssistant,
 }: AIFloatingHostProps) {
@@ -51,6 +53,7 @@ export function AIFloatingHost({
 							<AIPanel
 								isOpen={isOpen}
 								activeFolderPath={activeFolderPath}
+								currentFilePath={currentFilePath}
 								onClose={onToggle}
 								onAttachContextFiles={onAttachContextFiles}
 								onCreateNoteFromLastAssistant={onCreateNoteFromLastAssistant}

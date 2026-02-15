@@ -1,5 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { type AiMessage, invoke } from "../../../lib/tauri";
+import {
+	type AiAssistantMode,
+	type AiMessage,
+	invoke,
+} from "../../../lib/tauri";
 import { listenTauriEvent } from "../../../lib/tauriEvents";
 
 export type UIMessagePart = { type: "text"; text: string };
@@ -15,6 +19,7 @@ type SendMessageArgs = { text: string };
 type SendMessageOptions = {
 	body?: {
 		profile_id?: string;
+		mode?: AiAssistantMode;
 		context?: string;
 		context_manifest?: unknown;
 		audit?: boolean;
@@ -111,6 +116,7 @@ export function useRigChat() {
 					request: {
 						profile_id: profileId,
 						messages: asAiMessages([...messagesRef.current, userMessage]),
+						mode: options?.body?.mode ?? "create",
 						context: options?.body?.context || undefined,
 						context_manifest: options?.body?.context_manifest,
 						audit: options?.body?.audit ?? true,

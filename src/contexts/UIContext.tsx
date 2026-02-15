@@ -11,8 +11,10 @@ import {
 } from "react";
 import { useSearch } from "../hooks/useSearch";
 import {
+	type AiAssistantMode,
 	loadSettings,
 	reloadFromDisk,
+	setAiAssistantMode as saveAiAssistantMode,
 	setAiSidebarWidth as saveAiSidebarWidth,
 } from "../lib/settings";
 import type { SearchResult } from "../lib/tauri";
@@ -31,6 +33,8 @@ export interface UIContextValue {
 	setAiPanelOpen: React.Dispatch<React.SetStateAction<boolean>>;
 	aiPanelWidth: number;
 	setAiPanelWidth: (width: number) => void;
+	aiAssistantMode: AiAssistantMode;
+	setAiAssistantMode: (mode: AiAssistantMode) => void;
 	searchQuery: string;
 	setSearchQuery: (query: string) => void;
 	searchResults: SearchResult[];
@@ -71,6 +75,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 
 	const [aiPanelOpen, setAiPanelOpen] = useState(false);
 	const [aiPanelWidth, setAiPanelWidthState] = useState(380);
+	const [aiAssistantMode, setAiAssistantModeState] =
+		useState<AiAssistantMode>("create");
 	const [dailyNotesFolder, setDailyNotesFolderState] = useState<string | null>(
 		null,
 	);
@@ -91,6 +97,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			if (typeof s.ui.aiSidebarWidth === "number") {
 				setAiPanelWidthState(s.ui.aiSidebarWidth);
 			}
+			setAiAssistantModeState(s.ui.aiAssistantMode);
 			if (s.dailyNotes?.folder !== undefined) {
 				setDailyNotesFolderState(s.dailyNotes.folder);
 			}
@@ -124,6 +131,11 @@ export function UIProvider({ children }: { children: ReactNode }) {
 	const setAiPanelWidth = useCallback((width: number) => {
 		setAiPanelWidthState(width);
 		void saveAiSidebarWidth(width);
+	}, []);
+
+	const setAiAssistantMode = useCallback((mode: AiAssistantMode) => {
+		setAiAssistantModeState(mode);
+		void saveAiAssistantMode(mode);
 	}, []);
 
 	const {
@@ -169,6 +181,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			setAiPanelOpen,
 			aiPanelWidth,
 			setAiPanelWidth,
+			aiAssistantMode,
+			setAiAssistantMode,
 			searchQuery,
 			setSearchQuery,
 			searchResults,
@@ -194,6 +208,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			aiPanelOpen,
 			aiPanelWidth,
 			setAiPanelWidth,
+			aiAssistantMode,
+			setAiAssistantMode,
 			searchQuery,
 			setSearchQuery,
 			searchResults,
