@@ -857,6 +857,43 @@ export function AIPanel({
 							}}
 							rows={1}
 						/>
+						<div
+							className="aiModeMiniToggle"
+							role="tablist"
+							aria-label="AI mode"
+						>
+							{AI_MODES.map((mode) => {
+								const active = mode.value === aiAssistantMode;
+								return (
+									<button
+										key={mode.value}
+										type="button"
+										role="tab"
+										aria-selected={active}
+										className={cn("aiModeMiniOption", active && "active")}
+										title={mode.hint}
+										onClick={() => setAiAssistantMode(mode.value)}
+										disabled={isAwaitingResponse}
+									>
+										{active ? (
+											<motion.span
+												layoutId="ai-mode-active"
+												className={cn(
+													"aiModeMiniActive",
+													`aiModeMiniActive-${mode.value}`,
+												)}
+												transition={
+													shouldReduceMotion
+														? { duration: 0 }
+														: { type: "spring", stiffness: 420, damping: 28 }
+												}
+											/>
+										) : null}
+										<span className="aiModeMiniText">{mode.label}</span>
+									</button>
+								);
+							})}
+						</div>
 					</div>
 					<div className="aiComposerBar">
 						<div className="aiComposerTools">
@@ -905,48 +942,6 @@ export function AIPanel({
 							</Button>
 						</div>
 						<div className="aiComposerRight">
-							<div className="aiModeToggle" role="tablist" aria-label="AI mode">
-								{AI_MODES.map((mode) => {
-									const active = mode.value === aiAssistantMode;
-									return (
-										<button
-											key={mode.value}
-											type="button"
-											role="tab"
-											aria-selected={active}
-											className={cn("aiModeToggleOption", active && "active")}
-											title={mode.hint}
-											onClick={() => setAiAssistantMode(mode.value)}
-											disabled={isAwaitingResponse}
-										>
-											{active ? (
-												<motion.span
-													layoutId="ai-mode-active"
-													className={cn(
-														"aiModeToggleActive",
-														`aiModeToggleActive-${mode.value}`,
-													)}
-													transition={
-														shouldReduceMotion
-															? { duration: 0 }
-															: {
-																	type: "spring",
-																	stiffness: 420,
-																	damping: 28,
-																}
-													}
-												/>
-											) : null}
-											<span className="aiModeToggleText">{mode.label}</span>
-										</button>
-									);
-								})}
-							</div>
-							<span
-								className={cn("aiModeBadge", `aiModeBadge-${aiAssistantMode}`)}
-							>
-								{isChatMode ? "Read-only" : "Tools enabled"}
-							</span>
 							{isAwaitingResponse ? (
 								<span
 									className={cn(
@@ -990,11 +985,6 @@ export function AIPanel({
 							)}
 						</div>
 					</div>
-					{isChatMode ? (
-						<div className="aiModeHint">
-							Chat mode uses note context only and does not run tools.
-						</div>
-					) : null}
 				</div>
 			</div>
 		</div>

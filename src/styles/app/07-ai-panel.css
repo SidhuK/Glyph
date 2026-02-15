@@ -638,6 +638,7 @@
 }
 
 .aiComposerInputShell {
+	position: relative;
 	border-radius: 12px;
 	padding: 1px;
 	background: linear-gradient(
@@ -657,7 +658,7 @@
 	min-height: 40px;
 	max-height: 180px;
 	border-radius: 11px;
-	padding: 10px 12px;
+	padding: 10px 12px 36px;
 	font-size: var(--text-sm);
 	background: color-mix(in srgb, var(--bg-primary) 90%, transparent);
 	border: 1px solid transparent;
@@ -708,80 +709,68 @@
 	gap: 6px;
 }
 
-.aiModeToggle {
+.aiModeMiniToggle {
 	position: relative;
-	display: inline-flex;
+	position: absolute;
+	left: 8px;
+	right: 8px;
+	bottom: 8px;
+	display: flex;
 	align-items: center;
-	gap: 3px;
-	padding: 3px;
-	border-radius: 999px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
-	background: color-mix(in srgb, var(--bg-secondary) 68%, transparent);
+	gap: 2px;
+	padding: 2px;
+	height: 22px;
+	border-radius: 7px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 70%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 88%, transparent);
+	backdrop-filter: blur(6px);
+	-webkit-backdrop-filter: blur(6px);
+	box-shadow: 0 2px 10px color-mix(in srgb, #000 10%, transparent);
 }
 
-.aiModeToggleOption {
+.aiModeMiniOption {
 	position: relative;
-	display: inline-flex;
+	flex: 1;
+	display: flex;
 	align-items: center;
 	justify-content: center;
-	padding: 2px 9px;
-	border-radius: 999px;
+	height: 100%;
+	padding: 0 6px;
+	border-radius: 5px;
 	border: 0;
 	background: transparent;
 	color: var(--text-secondary);
-	font-size: 11px;
+	font-size: 10px;
+	line-height: 1.35;
 	font-weight: var(--font-semibold);
 }
 
-.aiModeToggleOption.active {
+.aiModeMiniOption.active {
 	color: var(--text-primary);
 }
 
-.aiModeToggleOption:disabled {
+.aiModeMiniOption:disabled {
 	opacity: 0.45;
 }
 
-.aiModeToggleActive {
+.aiModeMiniActive {
 	position: absolute;
 	inset: 0;
 	border-radius: 999px;
 	z-index: 0;
 }
 
-.aiModeToggleActive-chat {
+.aiModeMiniActive-chat {
 	background: color-mix(in srgb, #2a9d6f 22%, transparent);
 }
 
-.aiModeToggleActive-create {
+.aiModeMiniActive-create {
 	background: color-mix(in srgb, #d85b57 20%, transparent);
 }
 
-.aiModeToggleText {
+.aiModeMiniText {
 	position: relative;
 	z-index: 1;
-}
-
-.aiModeBadge {
-	display: inline-flex;
-	align-items: center;
-	padding: 2px 8px;
-	border-radius: 999px;
-	font-size: 10px;
-	font-weight: var(--font-semibold);
-	letter-spacing: 0.02em;
-	border: 1px solid transparent;
-}
-
-.aiModeBadge-chat {
-	color: #2a9d6f;
-	background: color-mix(in srgb, #2a9d6f 12%, transparent);
-	border-color: color-mix(in srgb, #2a9d6f 35%, transparent);
-}
-
-.aiModeBadge-create {
-	color: #d85b57;
-	background: color-mix(in srgb, #d85b57 10%, transparent);
-	border-color: color-mix(in srgb, #d85b57 32%, transparent);
 }
 
 .aiComposerStatusDot {
@@ -831,10 +820,4 @@
 .aiComposerStop:hover {
 	color: var(--text-primary);
 	border-color: var(--border-default);
-}
-
-.aiModeHint {
-	margin-top: 8px;
-	font-size: 11px;
-	color: color-mix(in srgb, var(--text-tertiary) 88%, var(--ai-mode-accent));
 }
