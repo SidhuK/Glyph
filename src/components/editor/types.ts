@@ -8,6 +8,9 @@ export interface CanvasNoteInlineEditorProps {
 	mode: CanvasInlineEditorMode;
 	onModeChange: (mode: CanvasInlineEditorMode) => void;
 	onChange: (nextMarkdown: string) => void;
+	onRegisterCalloutInserter?:
+		| ((inserter: ((type: string) => void) | null) => void)
+		| undefined;
 }
 
 export interface SlashCommandItem {

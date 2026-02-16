@@ -16,6 +16,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	markdown,
 	relPath,
 	mode,
+	onRegisterCalloutInserter,
 	onChange,
 }: CanvasNoteInlineEditorProps) {
 	const {
@@ -67,6 +68,42 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	}, [frontmatterDraft, mode]);
 
 	const canEdit = mode === "rich" && Boolean(editor?.isEditable);
+
+	useEffect(() => {
+		if (!onRegisterCalloutInserter) return;
+		if (!editor || mode !== "rich") {
+			onRegisterCalloutInserter(null);
+			return;
+		}
+		onRegisterCalloutInserter((type: string) => {
+			const normalizedType =
+				type.toLowerCase() === "warn" ? "warning" : type.toLowerCase();
+			const host = editor.view.dom.closest(
+				".rfNodeNoteEditorBody",
+			) as HTMLElement | null;
+			const scrollTop = host?.scrollTop ?? 0;
+			editor
+				.chain()
+				.focus(undefined, { scrollIntoView: false })
+				.insertContent({
+					type: "blockquote",
+					content: [
+						{
+							type: "paragraph",
+							content: [{ type: "text", text: `[!${normalizedType}]` }],
+						},
+						{ type: "paragraph" },
+					],
+				})
+				.run();
+			if (host) {
+				requestAnimationFrame(() => {
+					host.scrollTop = scrollTop;
+				});
+			}
+		});
+		return () => onRegisterCalloutInserter(null);
+	}, [editor, mode, onRegisterCalloutInserter]);
 
 	const handleFrontmatterChange = (
 		event: React.ChangeEvent<HTMLTextAreaElement>,
@@ -174,7 +211,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 					</div>
 				) : null}
 			</div>
-			{editor && mode === "rich" ? (
+			{editor && canEdit ? (
 				<EditorRibbon editor={editor} canEdit={canEdit} />
 			) : null}
 		</div>

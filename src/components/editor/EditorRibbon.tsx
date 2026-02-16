@@ -4,7 +4,6 @@ import { memo } from "react";
 import { springPresets } from "../ui/animations";
 import { RibbonLinkPopover } from "./RibbonLinkPopover";
 import {
-	CALLOUT_TYPES,
 	type RibbonButtonConfig,
 	getBlockButtons,
 	getFormatButtons,
@@ -37,25 +36,6 @@ export const EditorRibbon = memo(function EditorRibbon({
 				host.scrollTop = scrollTop;
 			});
 		}
-	};
-
-	const insertCallout = (type: string) => {
-		const normalizedType =
-			type.toLowerCase() === "warn" ? "warning" : type.toLowerCase();
-		runCommand(() =>
-			focusChain()
-				.insertContent({
-					type: "blockquote",
-					content: [
-						{
-							type: "paragraph",
-							content: [{ type: "text", text: `[!${normalizedType}]` }],
-						},
-						{ type: "paragraph" },
-					],
-				})
-				.run(),
-		);
 	};
 
 	const renderButtons = (buttons: RibbonButtonConfig[]) =>
@@ -104,24 +84,6 @@ export const EditorRibbon = memo(function EditorRibbon({
 			<span className="ribbonDivider" />
 			<div className="ribbonGroup">
 				{renderButtons(getBlockButtons(editor, runCommand, focusChain))}
-			</div>
-			<span className="ribbonDivider" />
-			<div className="ribbonGroup">
-				{CALLOUT_TYPES.map((type) => (
-					<motion.button
-						key={type}
-						type="button"
-						className="ribbonBtn"
-						title={`Callout: ${type === "Warn" ? "Warning" : type}`}
-						disabled={!canEdit}
-						onMouseDown={preventMouseDown}
-						onClick={() => canEdit && insertCallout(type)}
-						whileTap={{ scale: 0.92 }}
-						transition={springPresets.snappy}
-					>
-						{type}
-					</motion.button>
-				))}
 			</div>
 		</div>
 	);

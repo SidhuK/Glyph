@@ -8,6 +8,7 @@ import { parentDir } from "../../utils/path";
 import { FolderBreadcrumb } from "../FolderBreadcrumb";
 import { Edit, Eye, RefreshCw, Save } from "../Icons";
 import { CanvasNoteInlineEditor } from "../editor/CanvasNoteInlineEditor";
+import { CALLOUT_TYPES } from "../editor/ribbonButtonConfigs";
 import type { CanvasInlineEditorMode } from "../editor/types";
 import { Button } from "../ui/shadcn/button";
 
@@ -32,6 +33,7 @@ export function MarkdownEditorPane({
 	const [saving, setSaving] = useState(false);
 	const [error, setError] = useState("");
 	const [actionsOpen, setActionsOpen] = useState(false);
+	const calloutInserterRef = useRef<((type: string) => void) | null>(null);
 	const savedTextRef = useRef(savedText);
 	const { vaultPath } = useVault();
 
@@ -105,6 +107,13 @@ export function MarkdownEditorPane({
 	}, [onDirtyChange, isDirty]);
 
 	const currentDir = useMemo(() => parentDir(relPath), [relPath]);
+	const canInsertCallouts = mode === "rich";
+	const registerCalloutInserter = useCallback(
+		(inserter: ((type: string) => void) | null) => {
+			calloutInserterRef.current = inserter;
+		},
+		[],
+	);
 
 	return (
 		<section className="filePreviewPane markdownEditorPane">
@@ -168,6 +177,33 @@ export function MarkdownEditorPane({
 								<HugeiconsIcon icon={SourceCodeIcon} size={12} />
 								Raw
 							</Button>
+							{canInsertCallouts ? (
+								<>
+									<div className="markdownEditorActionDivider" />
+									<div className="markdownEditorCalloutSection">
+										<div className="markdownEditorCalloutLabel">Callouts</div>
+										<div className="markdownEditorCalloutRow">
+											{CALLOUT_TYPES.map((type) => (
+												<Button
+													key={type}
+													type="button"
+													variant="ghost"
+													size="xs"
+													className="markdownEditorCalloutChip"
+													onClick={() => {
+														calloutInserterRef.current?.(type);
+														setActionsOpen(false);
+													}}
+													title={`Insert ${type === "Warn" ? "Warning" : type} callout`}
+												>
+													{type}
+												</Button>
+											))}
+										</div>
+									</div>
+									<div className="markdownEditorActionDivider" />
+								</>
+							) : null}
 							<Button
 								type="button"
 								variant="ghost"
@@ -220,6 +256,7 @@ export function MarkdownEditorPane({
 							mode={mode}
 							onModeChange={setMode}
 							onChange={setText}
+							onRegisterCalloutInserter={registerCalloutInserter}
 						/>
 					</div>
 				</div>

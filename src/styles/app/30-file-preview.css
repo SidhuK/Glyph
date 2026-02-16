@@ -208,6 +208,47 @@
 	color: var(--text-primary);
 }
 
+.markdownEditorActionDivider {
+	height: 1px;
+	margin: 3px 2px;
+	background: color-mix(in srgb, var(--border-light) 80%, transparent);
+}
+
+.markdownEditorCalloutSection {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	padding: 2px 2px 4px;
+}
+
+.markdownEditorCalloutLabel {
+	font-size: 10px;
+	font-weight: 600;
+	color: var(--text-tertiary);
+	padding: 0 4px;
+}
+
+.markdownEditorCalloutRow {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 3px;
+}
+
+.markdownEditorCalloutChip {
+	height: 22px;
+	min-width: 0;
+	padding: 0 7px;
+	font-size: 10px;
+	line-height: 1;
+	border-radius: 999px;
+	color: var(--text-secondary);
+}
+
+.markdownEditorCalloutChip:hover:not(:disabled) {
+	color: var(--text-primary);
+	background: var(--bg-hover);
+}
+
 .markdownEditorCenter {
 	width: 100%;
 	max-width: 980px;

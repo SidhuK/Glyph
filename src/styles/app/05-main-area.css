@@ -859,14 +859,21 @@
 	overflow: hidden;
 }
 
-.mainTab {
-	height: 30px;
+.mainTabWrap {
+	position: relative;
 	min-width: 76px;
 	flex: 1 1 0;
+}
+
+.mainTab {
+	height: 30px;
+	width: 100%;
+	min-width: 0;
+	flex: 0 0 auto;
 	display: flex;
 	align-items: center;
 	gap: var(--space-2);
-	padding: 0 8px;
+	padding: 0 24px 0 8px;
 	border-radius: var(--radius-lg);
 	border: 1px solid var(--border-light);
 	background: color-mix(in srgb, var(--bg-primary) 72%, transparent);
@@ -905,6 +912,10 @@
 }
 
 .mainTabClose {
+	position: absolute;
+	top: 50%;
+	right: 6px;
+	transform: translateY(-50%);
 	flex: 0 0 auto;
 	display: inline-flex;
 	align-items: center;

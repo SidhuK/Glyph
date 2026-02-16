@@ -109,19 +109,21 @@ const TabItem = memo(function TabItem({
 	);
 
 	return (
-		<button
-			type="button"
-			className={`mainTab ${isActive ? "is-active" : ""}`}
-			onClick={handleSelect}
-			title={path}
-			draggable
-			onDragStart={handleDragStart}
-			onDragEnd={onDragEnd}
-			onDragOver={handleDragOver}
-			onDrop={handleDrop}
-		>
-			{isDirty ? <span className="mainTabDirty" aria-hidden /> : null}
-			<span className="mainTabLabel">{fileName}</span>
+		<div className="mainTabWrap">
+			<button
+				type="button"
+				className={`mainTab ${isActive ? "is-active" : ""}`}
+				onClick={handleSelect}
+				title={path}
+				draggable
+				onDragStart={handleDragStart}
+				onDragEnd={onDragEnd}
+				onDragOver={handleDragOver}
+				onDrop={handleDrop}
+			>
+				{isDirty ? <span className="mainTabDirty" aria-hidden /> : null}
+				<span className="mainTabLabel">{fileName}</span>
+			</button>
 			<button
 				type="button"
 				className="mainTabClose"
@@ -132,6 +134,6 @@ const TabItem = memo(function TabItem({
 					×
 				</span>
 			</button>
-		</button>
+		</div>
 	);
 });
