@@ -117,9 +117,11 @@
 }
 
 .settingsRange {
+	position: relative;
 	display: inline-flex;
 	align-items: center;
 	gap: var(--space-2);
+	padding-top: 16px;
 }
 
 .settingsRange input[type="range"] {
@@ -146,6 +148,24 @@
 	color: var(--text-secondary);
 	min-width: 42px;
 	text-align: right;
+}
+
+.settingsRangeHoverValue {
+	position: absolute;
+	top: -6px;
+	right: 0;
+	font-size: 11px;
+	opacity: 0;
+	transform: translateY(2px);
+	transition: opacity var(--transition-fast), transform var(--transition-fast);
+	pointer-events: none;
+	white-space: nowrap;
+}
+
+.settingsRange:hover .settingsRangeHoverValue,
+.settingsRange:focus-within .settingsRangeHoverValue {
+	opacity: 1;
+	transform: translateY(0);
 }
 
 .settingsTextarea {

@@ -23,6 +23,9 @@ export function AppearanceTypographyCard({
 	onMonoFontFamilyChange,
 	onFontSizeChange,
 }: AppearanceTypographyCardProps) {
+	const minFontSize = fontSizeOptions[0] ?? 7;
+	const maxFontSize = fontSizeOptions[fontSizeOptions.length - 1] ?? 40;
+
 	return (
 		<section className="settingsCard">
 			<div className="settingsCardHeader">
@@ -80,19 +83,23 @@ export function AppearanceTypographyCard({
 					</label>
 					<div className="settingsHelp">Numeric scale from 7 to 40.</div>
 				</div>
-				<select
-					id="settingsFontSize"
-					value={fontSize}
-					onChange={(event) =>
-						void onFontSizeChange(Number(event.target.value))
-					}
-				>
-					{fontSizeOptions.map((size) => (
-						<option key={size} value={size}>
-							{size}
-						</option>
-					))}
-				</select>
+				<div className="settingsRange">
+					<input
+						id="settingsFontSize"
+						type="range"
+						min={minFontSize}
+						max={maxFontSize}
+						step={1}
+						value={fontSize}
+						onChange={(event) =>
+							void onFontSizeChange(Number(event.target.value))
+						}
+						aria-label="Font size"
+					/>
+					<span className="settingsRangeValue settingsRangeHoverValue">
+						{fontSize}
+					</span>
+				</div>
 			</div>
 		</section>
 	);

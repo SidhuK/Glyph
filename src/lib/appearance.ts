@@ -24,6 +24,10 @@ export function applyUiTypography(
 	const safeFamily = fontFamily.trim() || "Inter";
 	const safeMonoFamily = monoFontFamily.trim() || "JetBrains Mono";
 	const scale = Math.max(0.5, Math.min(3, fontSize / 14));
+	const rootRemPx = 16 * scale;
+
+	// Scale rem-based typography globally so Tailwind/shadcn text sizes follow too.
+	root.style.fontSize = `${Math.round(rootRemPx * 100) / 100}px`;
 	root.style.setProperty(
 		"--font-sans",
 		`"${safeFamily}", -apple-system, BlinkMacSystemFont, sans-serif`,
