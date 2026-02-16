@@ -20,6 +20,22 @@ async function getStore(): Promise<LazyStore> {
 
 export type ThemeMode = "system" | "light" | "dark";
 const THEME_MODES = new Set<ThemeMode>(["system", "light", "dark"]);
+export type UiAccent =
+	| "neutral"
+	| "cerulean"
+	| "tropical-teal"
+	| "light-yellow"
+	| "soft-apricot"
+	| "vibrant-coral";
+const UI_ACCENTS = new Set<UiAccent>([
+	"neutral",
+	"cerulean",
+	"tropical-teal",
+	"light-yellow",
+	"soft-apricot",
+	"vibrant-coral",
+]);
+const DEFAULT_UI_ACCENT: UiAccent = "neutral";
 const DEFAULT_UI_FONT_FAMILY = "Inter";
 const DEFAULT_UI_MONO_FONT_FAMILY = "JetBrains Mono";
 const MIN_UI_FONT_SIZE = 7;
@@ -40,6 +56,12 @@ function asAiAssistantMode(value: unknown): AiAssistantMode {
 		AI_ASSISTANT_MODES.has(value as AiAssistantMode)
 		? (value as AiAssistantMode)
 		: "create";
+}
+
+function asUiAccent(value: unknown): UiAccent {
+	return typeof value === "string" && UI_ACCENTS.has(value as UiAccent)
+		? (value as UiAccent)
+		: DEFAULT_UI_ACCENT;
 }
 
 function asUiFontFamily(value: unknown): UiFontFamily {
@@ -76,6 +98,7 @@ function asShowBreadcrumbs(value: unknown): boolean {
 async function emitSettingsUpdated(payload: {
 	ui?: {
 		theme?: ThemeMode;
+		accent?: UiAccent;
 		fontFamily?: UiFontFamily;
 		monoFontFamily?: UiFontFamily;
 		fontSize?: UiFontSize;
@@ -107,6 +130,7 @@ export interface AppSettings {
 	ui: {
 		aiSidebarWidth: number | null;
 		theme: ThemeMode;
+		accent: UiAccent;
 		fontFamily: UiFontFamily;
 		monoFontFamily: UiFontFamily;
 		fontSize: UiFontSize;
@@ -125,6 +149,7 @@ const KEYS = {
 	aiSidebarWidth: "ui.aiSidebarWidth",
 	aiAssistantMode: "ui.aiAssistantMode",
 	theme: "ui.theme",
+	accent: "ui.accent",
 	fontFamily: "ui.fontFamily",
 	monoFontFamily: "ui.monoFontFamily",
 	fontSize: "ui.fontSize",
@@ -163,6 +188,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		aiSidebarWidthRaw,
 		rawAiAssistantMode,
 		rawTheme,
+		rawAccent,
 		rawFontFamily,
 		rawMonoFontFamily,
 		rawFontSize,
@@ -175,6 +201,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<number | null>(KEYS.aiSidebarWidth),
 		store.get<unknown>(KEYS.aiAssistantMode),
 		store.get<unknown>(KEYS.theme),
+		store.get<unknown>(KEYS.accent),
 		store.get<unknown>(KEYS.fontFamily),
 		store.get<unknown>(KEYS.monoFontFamily),
 		store.get<unknown>(KEYS.fontSize),
@@ -187,6 +214,7 @@ export async function loadSettings(): Promise<AppSettings> {
 	const aiSidebarWidth = aiSidebarWidthRaw ?? null;
 	const aiAssistantMode = asAiAssistantMode(rawAiAssistantMode);
 	const theme = asThemeMode(rawTheme);
+	const accent = asUiAccent(rawAccent);
 	const fontFamily = asUiFontFamily(rawFontFamily);
 	const monoFontFamily = asUiMonoFontFamily(rawMonoFontFamily);
 	const fontSize = asUiFontSize(rawFontSize);
@@ -202,6 +230,7 @@ export async function loadSettings(): Promise<AppSettings> {
 					? aiSidebarWidth
 					: null,
 			theme,
+			accent,
 			fontFamily,
 			monoFontFamily,
 			fontSize,
@@ -256,6 +285,14 @@ export async function setThemeMode(theme: ThemeMode): Promise<void> {
 	await store.set(KEYS.theme, theme);
 	await store.save();
 	void emitSettingsUpdated({ ui: { theme } });
+}
+
+export async function setUiAccent(accent: UiAccent): Promise<void> {
+	const store = await getStore();
+	const next = asUiAccent(accent);
+	await store.set(KEYS.accent, next);
+	await store.save();
+	void emitSettingsUpdated({ ui: { accent: next } });
 }
 
 export async function setUiFontFamily(fontFamily: UiFontFamily): Promise<void> {

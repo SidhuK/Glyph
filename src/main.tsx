@@ -6,7 +6,8 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import SettingsApp from "./SettingsApp";
 import { Toaster } from "./components/ui/shadcn/sonner";
-import { applyUiTypography } from "./lib/appearance";
+import { applyUiAccent, applyUiTypography } from "./lib/appearance";
+import type { UiAccent } from "./lib/settings";
 import { loadSettings, reloadFromDisk } from "./lib/settings";
 import { useTauriEvent } from "./lib/tauriEvents";
 
@@ -27,6 +28,7 @@ function Root() {
 
 function ThemeAndTypographyBridge() {
 	const { setTheme } = useTheme();
+	const [accent, setAccent] = React.useState<UiAccent | null>(null);
 	const [fontFamily, setFontFamily] = React.useState<string | null>(null);
 	const [monoFontFamily, setMonoFontFamily] = React.useState<string | null>(
 		null,
@@ -44,6 +46,7 @@ function ThemeAndTypographyBridge() {
 				const settings = await loadSettings();
 				if (cancelled) return;
 				setTheme(settings.ui.theme);
+				setAccent(settings.ui.accent);
 				setFontFamily(settings.ui.fontFamily);
 				setMonoFontFamily(settings.ui.monoFontFamily);
 				setFontSize(settings.ui.fontSize);
@@ -84,6 +87,16 @@ function ThemeAndTypographyBridge() {
 		) {
 			setTheme(nextTheme);
 		}
+		if (
+			payload.ui?.accent === "neutral" ||
+			payload.ui?.accent === "cerulean" ||
+			payload.ui?.accent === "tropical-teal" ||
+			payload.ui?.accent === "light-yellow" ||
+			payload.ui?.accent === "soft-apricot" ||
+			payload.ui?.accent === "vibrant-coral"
+		) {
+			setAccent(payload.ui.accent);
+		}
 		if (typeof payload.ui?.fontFamily === "string") {
 			setFontFamily(payload.ui.fontFamily);
 		}
@@ -102,6 +115,11 @@ function ThemeAndTypographyBridge() {
 		if (!fontFamily || !monoFontFamily || typeof fontSize !== "number") return;
 		applyUiTypography(fontFamily, monoFontFamily, fontSize);
 	}, [fontFamily, monoFontFamily, fontSize]);
+
+	React.useEffect(() => {
+		if (!accent) return;
+		applyUiAccent(accent);
+	}, [accent]);
 
 	return null;
 }

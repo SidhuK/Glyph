@@ -9,7 +9,11 @@ export const springTransition = {
 export const rowVariants = {
 	idle: { x: 0, backgroundColor: "transparent" },
 	hover: { x: 4, backgroundColor: "var(--bg-hover)" },
-	active: { backgroundColor: "var(--selection-bg-muted)" },
+	active: {
+		backgroundColor: "color-mix(in srgb, var(--interactive-accent) 14%, transparent)",
+		boxShadow:
+			"inset 0 0 0 1px color-mix(in srgb, var(--interactive-accent) 24%, transparent)",
+	},
 	tap: { scale: 0.98 },
 };
 

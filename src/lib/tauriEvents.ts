@@ -23,6 +23,13 @@ export type TauriEventMap = {
 	"settings:updated": {
 		ui?: {
 			theme?: string;
+			accent?:
+				| "neutral"
+				| "cerulean"
+				| "tropical-teal"
+				| "light-yellow"
+				| "soft-apricot"
+				| "vibrant-coral";
 			fontFamily?: string;
 			monoFontFamily?: string;
 			fontSize?: number;

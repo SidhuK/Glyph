@@ -310,3 +310,35 @@
 .settingsSwatch[data-swatch="rose"] span {
 	background: #b83280;
 }
+
+.settingsAccentRow {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	flex-wrap: nowrap;
+}
+
+.settingsAccentDot {
+	height: 24px;
+	width: 24px;
+	padding: 0;
+	border-radius: 999px;
+	border: 1px solid var(--border-light);
+	background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.settingsAccentDot span {
+	height: 14px;
+	width: 14px;
+	border-radius: 999px;
+	border: 1px solid color-mix(in srgb, var(--border-default) 45%, transparent);
+}
+
+.settingsAccentDot.active {
+	border-color: color-mix(in srgb, var(--interactive-accent) 45%, transparent);
+	box-shadow: 0 0 0 2px
+		color-mix(in srgb, var(--interactive-accent) 16%, transparent);
+}

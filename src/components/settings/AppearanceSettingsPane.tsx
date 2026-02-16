@@ -1,16 +1,19 @@
 import { useTheme } from "next-themes";
 import { useCallback, useEffect, useState } from "react";
-import { applyUiTypography } from "../../lib/appearance";
+import { applyUiAccent, applyUiTypography } from "../../lib/appearance";
 import {
+	type UiAccent,
 	type ThemeMode,
 	type UiFontFamily,
 	type UiFontSize,
 	loadSettings,
 	setThemeMode,
+	setUiAccent,
 	setUiFontFamily,
 	setUiFontSize,
 	setUiMonoFontFamily,
 } from "../../lib/settings";
+import { AppearanceAccentCard } from "./AppearanceAccentCard";
 import { AppearanceTypographyCard } from "./AppearanceTypographyCard";
 import {
 	DEFAULT_FONT_FAMILY,
@@ -22,6 +25,7 @@ import {
 export function AppearanceSettingsPane() {
 	const { setTheme } = useTheme();
 	const [themeMode, setThemeModeState] = useState<ThemeMode>("system");
+	const [accent, setAccentState] = useState<UiAccent>("neutral");
 	const [fontFamily, setFontFamilyState] =
 		useState<UiFontFamily>(DEFAULT_FONT_FAMILY);
 	const [monoFontFamily, setMonoFontFamilyState] =
@@ -46,6 +50,7 @@ export function AppearanceSettingsPane() {
 				]);
 				if (cancelled) return;
 				setThemeModeState(settings.ui.theme);
+				setAccentState(settings.ui.accent);
 				setFontFamilyState(settings.ui.fontFamily);
 				setMonoFontFamilyState(settings.ui.monoFontFamily);
 				setFontSizeState(settings.ui.fontSize);
@@ -60,6 +65,7 @@ export function AppearanceSettingsPane() {
 						: [settings.ui.monoFontFamily, ...monoFonts],
 				);
 				setTheme(settings.ui.theme);
+				applyUiAccent(settings.ui.accent);
 				applyUiTypography(
 					settings.ui.fontFamily,
 					settings.ui.monoFontFamily,
@@ -131,6 +137,18 @@ export function AppearanceSettingsPane() {
 		},
 		[fontFamily, monoFontFamily],
 	);
+
+	const onAccentChange = useCallback(async (next: UiAccent) => {
+		setError("");
+		setAccentState(next);
+		applyUiAccent(next);
+		try {
+			await setUiAccent(next);
+		} catch (e) {
+			setError(e instanceof Error ? e.message : "Failed to save settings");
+		}
+	}, []);
+
 	return (
 		<div className="settingsPane">
 			<div className="settingsHero">
@@ -189,6 +207,10 @@ export function AppearanceSettingsPane() {
 						</div>
 					</div>
 				</section>
+				<AppearanceAccentCard
+					accent={accent}
+					onAccentChange={onAccentChange}
+				/>
 				<AppearanceTypographyCard
 					fontFamily={fontFamily}
 					monoFontFamily={monoFontFamily}
