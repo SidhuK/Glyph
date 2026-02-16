@@ -759,15 +759,18 @@
 }
 
 .aiPanel .aiContextChips + .aiComposer {
-	padding-top: 0;
+	padding-top: 3px;
 }
 
 .aiComposerInputShell {
 	position: relative;
 	border-radius: 12px;
 	padding: 0;
-	border: 1px solid color-mix(in srgb, var(--border-light) 55%, transparent);
+	border: none;
 	background: var(--bg-primary);
+	box-shadow: 0 0 0 1px color-mix(in srgb, var(--ai-mode-accent) 16%, transparent),
+		0 0 14px color-mix(in srgb, var(--ai-mode-accent) 14%, transparent);
+	transition: box-shadow var(--transition-base);
 }
 
 .aiComposerInput {
@@ -795,6 +798,11 @@
 	border-color: transparent;
 	background: var(--bg-primary);
 	box-shadow: none;
+}
+
+.aiComposerInputShell:focus-within {
+	box-shadow: 0 0 0 1px color-mix(in srgb, var(--ai-mode-accent) 26%, transparent),
+		0 0 20px color-mix(in srgb, var(--ai-mode-accent) 22%, transparent);
 }
 
 .aiComposerBar {
