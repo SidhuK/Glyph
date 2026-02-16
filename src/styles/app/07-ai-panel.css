@@ -651,7 +651,8 @@
 	display: flex;
 	flex-wrap: wrap;
 	gap: 2px;
-	padding: 0 12px 2px;
+	padding: 0 12px 0;
+	margin: 0;
 }
 
 .aiPanel .aiContextChip {
@@ -758,14 +759,15 @@
 }
 
 .aiPanel .aiContextChips + .aiComposer {
-	padding-top: 2px;
+	padding-top: 0;
 }
 
 .aiComposerInputShell {
 	position: relative;
 	border-radius: 12px;
-	padding: 1px;
-	background: color-mix(in srgb, var(--border-light) 55%, transparent);
+	padding: 0;
+	border: 1px solid color-mix(in srgb, var(--border-light) 55%, transparent);
+	background: var(--bg-primary);
 }
 
 .aiComposerInput {
@@ -776,8 +778,8 @@
 	border-radius: 11px;
 	padding: 10px 12px 68px;
 	font-size: var(--text-sm);
-	background: color-mix(in srgb, var(--bg-primary) 90%, transparent);
-	border: 1px solid transparent;
+	background: var(--bg-primary);
+	border: none;
 	color: var(--text-primary);
 	line-height: var(--leading-relaxed);
 	transition: border-color var(--transition-fast), background
@@ -790,8 +792,8 @@
 
 .aiComposerInput:focus {
 	outline: none;
-	border-color: color-mix(in srgb, var(--interactive-accent) 45%, transparent);
-	background: color-mix(in srgb, var(--bg-primary) 96%, transparent);
+	border-color: transparent;
+	background: var(--bg-primary);
 	box-shadow: none;
 }
 
