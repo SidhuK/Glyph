@@ -11,6 +11,7 @@ interface SlashKeyDownProps {
 
 export const SLASH_COMMANDS: SlashCommandItem[] = [
 	{
+		icon: "H1",
 		title: "Heading 1",
 		description: "Big section heading",
 		keywords: ["h1", "header", "title"],
@@ -23,6 +24,7 @@ export const SLASH_COMMANDS: SlashCommandItem[] = [
 				.run(),
 	},
 	{
+		icon: "H2",
 		title: "Heading 2",
 		description: "Section heading",
 		keywords: ["h2", "header"],
@@ -35,6 +37,7 @@ export const SLASH_COMMANDS: SlashCommandItem[] = [
 				.run(),
 	},
 	{
+		icon: "H3",
 		title: "Heading 3",
 		description: "Subheading",
 		keywords: ["h3", "header"],
@@ -47,6 +50,7 @@ export const SLASH_COMMANDS: SlashCommandItem[] = [
 				.run(),
 	},
 	{
+		icon: "•",
 		title: "Bullet list",
 		description: "Start a bullet list",
 		keywords: ["ul", "bullet", "list"],
@@ -54,6 +58,7 @@ export const SLASH_COMMANDS: SlashCommandItem[] = [
 			editor.chain().focus().deleteRange(range).toggleBulletList().run(),
 	},
 	{
+		icon: "1.",
 		title: "Numbered list",
 		description: "Start a numbered list",
 		keywords: ["ol", "ordered", "list"],
@@ -61,6 +66,7 @@ export const SLASH_COMMANDS: SlashCommandItem[] = [
 			editor.chain().focus().deleteRange(range).toggleOrderedList().run(),
 	},
 	{
+		icon: "❝",
 		title: "Quote",
 		description: "Insert a blockquote",
 		keywords: ["blockquote", "quote"],
@@ -68,6 +74,7 @@ export const SLASH_COMMANDS: SlashCommandItem[] = [
 			editor.chain().focus().deleteRange(range).toggleBlockquote().run(),
 	},
 	{
+		icon: "</>",
 		title: "Code block",
 		description: "Insert a code block",
 		keywords: ["code", "block"],
@@ -75,6 +82,7 @@ export const SLASH_COMMANDS: SlashCommandItem[] = [
 			editor.chain().focus().deleteRange(range).toggleCodeBlock().run(),
 	},
 	{
+		icon: "▦",
 		title: "Table",
 		description: "Insert a markdown table",
 		keywords: ["table", "columns", "rows", "grid"],
@@ -87,6 +95,7 @@ export const SLASH_COMMANDS: SlashCommandItem[] = [
 				.run(),
 	},
 	{
+		icon: "—",
 		title: "Divider",
 		description: "Insert a horizontal rule",
 		keywords: ["hr", "divider", "rule"],
@@ -154,13 +163,13 @@ export const SlashCommand = Extension.create({
 							const button = document.createElement("button");
 							button.type = "button";
 							button.className = "slashCommandItem";
+							const icon = document.createElement("span");
+							icon.className = "slashCommandIcon";
+							icon.textContent = item.icon;
 							const title = document.createElement("div");
 							title.className = "slashCommandTitle";
 							title.textContent = item.title;
-							const description = document.createElement("div");
-							description.className = "slashCommandDesc";
-							description.textContent = item.description;
-							button.append(title, description);
+							button.append(icon, title);
 							button.addEventListener("mousedown", (event) => {
 								event.preventDefault();
 								props.command(item);

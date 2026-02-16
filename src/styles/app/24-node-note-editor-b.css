@@ -393,8 +393,9 @@
 	background: transparent;
 	color: var(--text-primary);
 	display: flex;
-	flex-direction: column;
-	gap: 2px;
+	align-items: center;
+	justify-content: flex-start;
+	gap: 8px;
 	cursor: pointer;
 }
 
@@ -403,14 +404,20 @@
 	background: var(--bg-hover);
 }
 
+.slashCommandIcon {
+	width: 18px;
+	flex: 0 0 18px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 11px;
+	line-height: 1;
+	color: var(--text-tertiary);
+}
+
 .slashCommandTitle {
 	font-size: var(--text-sm);
 	font-weight: var(--font-medium);
-}
-
-.slashCommandDesc {
-	font-size: var(--text-xs);
-	color: var(--text-tertiary);
 }
 
 .wikiLinkSuggestionMenu {

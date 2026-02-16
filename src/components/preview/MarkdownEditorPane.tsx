@@ -6,7 +6,7 @@ import { extractErrorMessage } from "../../lib/errorUtils";
 import { loadSettings } from "../../lib/settings";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
-import { parentDir } from "../../utils/path";
+import { normalizeRelPath, parentDir } from "../../utils/path";
 import { FolderBreadcrumb } from "../FolderBreadcrumb";
 import { Edit, Eye, RefreshCw, Save } from "../Icons";
 import { CanvasNoteInlineEditor } from "../editor/CanvasNoteInlineEditor";
@@ -36,8 +36,16 @@ export function MarkdownEditorPane({
 	const [error, setError] = useState("");
 	const [actionsOpen, setActionsOpen] = useState(false);
 	const [showBreadcrumbs, setShowBreadcrumbs] = useState(false);
+	const [lastSavedMtimeMs, setLastSavedMtimeMs] = useState<number | null>(null);
 	const calloutInserterRef = useRef<((type: string) => void) | null>(null);
 	const savedTextRef = useRef(savedText);
+	const textRef = useRef(text);
+	const mtimeRef = useRef<number | null>(lastSavedMtimeMs);
+	const autosaveInFlightRef = useRef(false);
+	const autosaveQueuedRef = useRef(false);
+	const hasUserEditsRef = useRef(false);
+	const externalSyncTimerRef = useRef<number | null>(null);
+	const pendingExternalReloadRef = useRef(false);
 	const { vaultPath } = useVault();
 
 	const isDirty = text !== savedText;
@@ -47,9 +55,19 @@ export function MarkdownEditorPane({
 	}, [savedText]);
 
 	useEffect(() => {
+		textRef.current = text;
+	}, [text]);
+
+	useEffect(() => {
+		mtimeRef.current = lastSavedMtimeMs;
+	}, [lastSavedMtimeMs]);
+
+	useEffect(() => {
 		const cached = markdownDocCache.get(relPath) ?? "";
 		setText(cached);
 		setSavedText(cached);
+		setLastSavedMtimeMs(null);
+		hasUserEditsRef.current = false;
 		setActionsOpen(false);
 	}, [relPath]);
 
@@ -68,6 +86,23 @@ export function MarkdownEditorPane({
 			markdownDocCache.set(relPath, doc.text);
 			setText((prev) => (prev === savedTextRef.current ? doc.text : prev));
 			setSavedText(doc.text);
+			setLastSavedMtimeMs(doc.mtime_ms);
+			hasUserEditsRef.current = false;
+		} catch (e) {
+			setError(extractErrorMessage(e));
+		}
+	}, [relPath]);
+
+	const loadDocFromExternalChange = useCallback(async () => {
+		setError("");
+		try {
+			const doc = await invoke("vault_read_text", { path: relPath });
+			if (doc.mtime_ms === mtimeRef.current && doc.text === savedTextRef.current) return;
+			markdownDocCache.set(relPath, doc.text);
+			setText(doc.text);
+			setSavedText(doc.text);
+			setLastSavedMtimeMs(doc.mtime_ms);
+			hasUserEditsRef.current = false;
 		} catch (e) {
 			setError(extractErrorMessage(e));
 		}
@@ -77,23 +112,143 @@ export function MarkdownEditorPane({
 		void loadDoc();
 	}, [loadDoc]);
 
+	const persistDoc = useCallback(
+		async (path: string, nextText: string): Promise<boolean> => {
+			const applySaveState = (saved: string, mtimeMs: number) => {
+				if (path !== relPath) return;
+				markdownDocCache.set(path, saved);
+				setSavedText(saved);
+				setLastSavedMtimeMs(mtimeMs);
+				hasUserEditsRef.current = false;
+			};
+
+			setError("");
+			try {
+				const result = await invoke("vault_write_text", {
+					path,
+					text: nextText,
+					base_mtime_ms: mtimeRef.current,
+				});
+				applySaveState(nextText, result.mtime_ms);
+				return true;
+			} catch (e) {
+				const message = extractErrorMessage(e);
+				const isConflict = message.includes(
+					"conflict: on-disk file changed since it was opened",
+				);
+				if (!isConflict) {
+					setError(message);
+					return false;
+				}
+
+				// Conflict recovery: refresh latest mtime/content and retry save once.
+				try {
+					const latest = await invoke("vault_read_text", { path });
+					if (latest.text === nextText) {
+						applySaveState(nextText, latest.mtime_ms);
+						return true;
+					}
+					const retry = await invoke("vault_write_text", {
+						path,
+						text: nextText,
+						base_mtime_ms: latest.mtime_ms,
+					});
+					applySaveState(nextText, retry.mtime_ms);
+					return true;
+				} catch (retryError) {
+					setError(extractErrorMessage(retryError));
+					return false;
+				}
+			}
+		},
+		[relPath],
+	);
+
 	const onSave = useCallback(async () => {
 		setSaving(true);
-		setError("");
 		try {
-			await invoke("vault_write_text", {
-				path: relPath,
-				text,
-				base_mtime_ms: null,
-			});
-			markdownDocCache.set(relPath, text);
-			setSavedText(text);
-		} catch (e) {
-			setError(extractErrorMessage(e));
+			await persistDoc(relPath, text);
 		} finally {
 			setSaving(false);
 		}
-	}, [relPath, text]);
+	}, [persistDoc, relPath, text]);
+
+	const runAutosave = useCallback(() => {
+		if (autosaveInFlightRef.current) {
+			autosaveQueuedRef.current = true;
+			return;
+		}
+
+		const path = relPath;
+		const snapshot = textRef.current;
+		if (snapshot === savedTextRef.current) return;
+
+		autosaveInFlightRef.current = true;
+		void persistDoc(path, snapshot).then((ok) => {
+			autosaveInFlightRef.current = false;
+			if (autosaveQueuedRef.current) {
+				autosaveQueuedRef.current = false;
+				runAutosave();
+				return;
+			}
+			if (ok && textRef.current !== savedTextRef.current) {
+				runAutosave();
+			}
+		});
+	}, [persistDoc, relPath]);
+
+	useEffect(() => {
+		if (!isDirty || !hasUserEditsRef.current) return;
+		const timer = window.setTimeout(() => {
+			runAutosave();
+		}, 900);
+		return () => window.clearTimeout(timer);
+	}, [isDirty, runAutosave, text, relPath]);
+
+	useEffect(() => {
+		return () => {
+			if (textRef.current === savedTextRef.current) return;
+			runAutosave();
+		};
+	}, [runAutosave]);
+
+	const handleExternalNoteChanged = useCallback(
+		(payload: { rel_path: string }) => {
+			const changed = normalizeRelPath(payload.rel_path);
+			const current = normalizeRelPath(relPath);
+			if (!changed || changed !== current) return;
+			if (externalSyncTimerRef.current !== null) {
+				window.clearTimeout(externalSyncTimerRef.current);
+			}
+			externalSyncTimerRef.current = window.setTimeout(() => {
+				externalSyncTimerRef.current = null;
+				if (isDirty || autosaveInFlightRef.current || saving) {
+					pendingExternalReloadRef.current = true;
+					return;
+				}
+				void loadDocFromExternalChange();
+			}, 180);
+		},
+		[isDirty, loadDocFromExternalChange, relPath, saving],
+	);
+
+	useTauriEvent("notes:external_changed", handleExternalNoteChanged);
+
+	useEffect(() => {
+		if (!pendingExternalReloadRef.current) return;
+		if (isDirty || saving) return;
+		pendingExternalReloadRef.current = false;
+		void loadDocFromExternalChange();
+	}, [isDirty, loadDocFromExternalChange, saving]);
+
+	useEffect(
+		() => () => {
+			if (externalSyncTimerRef.current !== null) {
+				window.clearTimeout(externalSyncTimerRef.current);
+			}
+		},
+		[],
+	);
 
 	// Register editor state for keyboard shortcuts
 	const editorState = useMemo(
@@ -282,7 +437,10 @@ export function MarkdownEditorPane({
 							relPath={relPath}
 							mode={mode}
 							onModeChange={setMode}
-							onChange={setText}
+							onChange={(nextText) => {
+								hasUserEditsRef.current = true;
+								setText(nextText);
+							}}
 							onRegisterCalloutInserter={registerCalloutInserter}
 						/>
 					</div>

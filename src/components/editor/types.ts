@@ -14,6 +14,7 @@ export interface CanvasNoteInlineEditorProps {
 }
 
 export interface SlashCommandItem {
+	icon: string;
 	title: string;
 	description: string;
 	keywords: string[];
