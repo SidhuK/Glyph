@@ -1,9 +1,10 @@
 import "./App.css";
+import { AiBrain04Icon } from "@hugeicons/core-free-icons";
+import { TextFontIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-	AiLattice,
 	FolderOpen,
-	Layout,
 	Settings as SettingsIcon,
 } from "./components/Icons/NavigationIcons";
 import { AiSettingsPane } from "./components/settings/AiSettingsPane";
@@ -92,7 +93,7 @@ export default function SettingsApp() {
 						onClick={() => switchTab("appearance")}
 						aria-pressed={activeTab === "appearance"}
 					>
-						<Layout size={14} />
+						<HugeiconsIcon icon={TextFontIcon} size={14} />
 						<span>Appearance</span>
 					</button>
 					<button
@@ -101,7 +102,7 @@ export default function SettingsApp() {
 						onClick={() => switchTab("ai")}
 						aria-pressed={activeTab === "ai"}
 					>
-						<AiLattice size={14} />
+						<HugeiconsIcon icon={AiBrain04Icon} size={14} />
 						<span>AI</span>
 					</button>
 					<button

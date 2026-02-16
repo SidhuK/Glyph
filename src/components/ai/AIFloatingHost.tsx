@@ -1,7 +1,8 @@
+import { AiBrain04Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import { useAISidebarContext } from "../../contexts";
 import { getShortcutTooltip } from "../../lib/shortcuts";
-import { AiLattice } from "../Icons";
 import { AIPanel } from "./AIPanel";
 
 interface AIFloatingHostProps {
@@ -65,7 +66,7 @@ export function AIFloatingHost({
 					aria-label="Open AI panel"
 					title={`Open AI panel (${getShortcutTooltip({ meta: true, shift: true, key: "a" })})`}
 				>
-					<AiLattice size={34} />
+					<HugeiconsIcon icon={AiBrain04Icon} size={34} />
 				</button>
 			)}
 		</>

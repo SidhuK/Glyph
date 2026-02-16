@@ -1,8 +1,14 @@
 import { cn } from "@/lib/utils";
+import {
+	AiBrain04Icon,
+	ChatAdd01Icon,
+	Logout01Icon,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAISidebarContext } from "../../contexts";
 import { openSettingsWindow } from "../../lib/windows";
-import { AiLattice, Minus, Plus, Settings as SettingsIcon, X } from "../Icons";
+import { Settings as SettingsIcon, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { AIChatThread } from "./AIChatThread";
 import { AIComposer } from "./AIComposer";
@@ -259,8 +265,8 @@ export function AIPanel({
 		>
 			<div className="aiPanelHeader">
 				<div className="aiPanelTitle">
-					<AiLattice size={18} />
-					<span>AI</span>
+					<HugeiconsIcon icon={AiBrain04Icon} size={18} />
+					<span>Lattice AI</span>
 				</div>
 				<div className="aiPanelHeaderRight">
 					<Button
@@ -273,7 +279,7 @@ export function AIPanel({
 						disabled={chat.status === "streaming"}
 						onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
 					>
-						<Plus size={13} />
+						<HugeiconsIcon icon={ChatAdd01Icon} size={13} />
 					</Button>
 					<Button
 						type="button"
@@ -295,7 +301,7 @@ export function AIPanel({
 						title="Minimize"
 						onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
 					>
-						<Minus size={13} />
+						<HugeiconsIcon icon={Logout01Icon} size={13} />
 					</Button>
 				</div>
 			</div>

@@ -1,5 +1,6 @@
+import { AiBrain04Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { motion, useReducedMotion } from "motion/react";
-import { AiLattice } from "../../Icons";
 
 interface StepHeroProps {
 	appName: string | null;
@@ -13,7 +14,7 @@ export function StepHero({ appName, onNext }: StepHeroProps) {
 		<div className="welcomeStepHero">
 			<div className="welcomeBrand">
 				<div className="welcomeBrandIcon" aria-hidden="true">
-					<AiLattice size={28} />
+					<HugeiconsIcon icon={AiBrain04Icon} size={28} />
 				</div>
 				<div className="welcomeTitle">{appName ?? "Lattice"}</div>
 			</div>

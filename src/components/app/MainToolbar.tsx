@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
+import { AiBrain04Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { onWindowDragMouseDown } from "../../utils/window";
-import { AiLattice } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 
 interface MainToolbarProps {
@@ -29,7 +30,7 @@ export function MainToolbar({
 					title="Toggle AI assistant"
 					aria-label="Toggle AI panel"
 				>
-					<AiLattice size={20} />
+					<HugeiconsIcon icon={AiBrain04Icon} size={20} />
 				</Button>
 			</div>
 		</div>
