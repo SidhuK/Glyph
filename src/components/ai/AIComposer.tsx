@@ -142,7 +142,7 @@ export function AIComposer({
 						ref={composerInputRef}
 						className="aiComposerInput"
 						value={input}
-						placeholder="Ask Lattice AI"
+						placeholder="Write. Reflect. Discover."
 						disabled={isAwaitingResponse}
 						onChange={(e) => {
 							setInput(e.target.value);
