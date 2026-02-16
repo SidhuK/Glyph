@@ -244,6 +244,7 @@ interface TauriCommands {
 	greet: CommandDef<{ name: string }, string>;
 	ping: CommandDef<void, string>;
 	app_info: CommandDef<void, AppInfo>;
+	system_fonts_list: CommandDef<void, string[]>;
 	vault_create: CommandDef<{ path: string }, VaultInfo>;
 	vault_open: CommandDef<{ path: string }, VaultInfo>;
 	vault_get_current: CommandDef<void, string | null>;
