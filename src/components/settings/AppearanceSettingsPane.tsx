@@ -9,12 +9,14 @@ import {
 	setThemeMode,
 	setUiFontFamily,
 	setUiFontSize,
+	setUiMonoFontFamily,
 } from "../../lib/settings";
 import { AppearanceTypographyCard } from "./AppearanceTypographyCard";
 import {
 	DEFAULT_FONT_FAMILY,
 	FONT_SIZE_OPTIONS,
 	loadAvailableFonts,
+	loadAvailableMonospaceFonts,
 } from "./appearanceOptions";
 
 export function AppearanceSettingsPane() {
@@ -22,31 +24,47 @@ export function AppearanceSettingsPane() {
 	const [themeMode, setThemeModeState] = useState<ThemeMode>("system");
 	const [fontFamily, setFontFamilyState] =
 		useState<UiFontFamily>(DEFAULT_FONT_FAMILY);
+	const [monoFontFamily, setMonoFontFamilyState] =
+		useState<UiFontFamily>("JetBrains Mono");
 	const [fontSize, setFontSizeState] = useState<UiFontSize>(14);
 	const [availableFonts, setAvailableFonts] = useState<string[]>([
 		DEFAULT_FONT_FAMILY,
 	]);
+	const [availableMonospaceFonts, setAvailableMonospaceFonts] = useState<
+		string[]
+	>(["JetBrains Mono"]);
 	const [error, setError] = useState("");
 
 	useEffect(() => {
 		let cancelled = false;
 		void (async () => {
 			try {
-				const [settings, fonts] = await Promise.all([
+				const [settings, fonts, monoFonts] = await Promise.all([
 					loadSettings(),
 					loadAvailableFonts(),
+					loadAvailableMonospaceFonts(),
 				]);
 				if (cancelled) return;
 				setThemeModeState(settings.ui.theme);
 				setFontFamilyState(settings.ui.fontFamily);
+				setMonoFontFamilyState(settings.ui.monoFontFamily);
 				setFontSizeState(settings.ui.fontSize);
 				setAvailableFonts(
 					fonts.includes(settings.ui.fontFamily)
 						? fonts
 						: [settings.ui.fontFamily, ...fonts],
 				);
+				setAvailableMonospaceFonts(
+					monoFonts.includes(settings.ui.monoFontFamily)
+						? monoFonts
+						: [settings.ui.monoFontFamily, ...monoFonts],
+				);
 				setTheme(settings.ui.theme);
-				applyUiTypography(settings.ui.fontFamily, settings.ui.fontSize);
+				applyUiTypography(
+					settings.ui.fontFamily,
+					settings.ui.monoFontFamily,
+					settings.ui.fontSize,
+				);
 			} catch (e) {
 				if (!cancelled) {
 					setError(e instanceof Error ? e.message : "Failed to load settings");
@@ -76,28 +94,42 @@ export function AppearanceSettingsPane() {
 		async (next: UiFontFamily) => {
 			setError("");
 			setFontFamilyState(next);
-			applyUiTypography(next, fontSize);
+			applyUiTypography(next, monoFontFamily, fontSize);
 			try {
 				await setUiFontFamily(next);
 			} catch (e) {
 				setError(e instanceof Error ? e.message : "Failed to save settings");
 			}
 		},
-		[fontSize],
+		[fontSize, monoFontFamily],
+	);
+
+	const onMonoFontFamilyChange = useCallback(
+		async (next: UiFontFamily) => {
+			setError("");
+			setMonoFontFamilyState(next);
+			applyUiTypography(fontFamily, next, fontSize);
+			try {
+				await setUiMonoFontFamily(next);
+			} catch (e) {
+				setError(e instanceof Error ? e.message : "Failed to save settings");
+			}
+		},
+		[fontFamily, fontSize],
 	);
 
 	const onFontSizeChange = useCallback(
 		async (next: UiFontSize) => {
 			setError("");
 			setFontSizeState(next);
-			applyUiTypography(fontFamily, next);
+			applyUiTypography(fontFamily, monoFontFamily, next);
 			try {
 				await setUiFontSize(next);
 			} catch (e) {
 				setError(e instanceof Error ? e.message : "Failed to save settings");
 			}
 		},
-		[fontFamily],
+		[fontFamily, monoFontFamily],
 	);
 	return (
 		<div className="settingsPane">
@@ -159,10 +191,13 @@ export function AppearanceSettingsPane() {
 				</section>
 				<AppearanceTypographyCard
 					fontFamily={fontFamily}
+					monoFontFamily={monoFontFamily}
 					fontSize={fontSize}
 					availableFonts={availableFonts}
+					availableMonospaceFonts={availableMonospaceFonts}
 					fontSizeOptions={FONT_SIZE_OPTIONS}
 					onFontFamilyChange={onFontFamilyChange}
+					onMonoFontFamilyChange={onMonoFontFamilyChange}
 					onFontSizeChange={onFontSizeChange}
 				/>
 			</div>

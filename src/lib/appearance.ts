@@ -17,14 +17,20 @@ function scaledPx(px: number, scale: number): string {
 
 export function applyUiTypography(
 	fontFamily: UiFontFamily,
+	monoFontFamily: UiFontFamily,
 	fontSize: UiFontSize,
 ): void {
 	const root = document.documentElement;
 	const safeFamily = fontFamily.trim() || "Inter";
+	const safeMonoFamily = monoFontFamily.trim() || "JetBrains Mono";
 	const scale = Math.max(0.5, Math.min(3, fontSize / 14));
 	root.style.setProperty(
 		"--font-sans",
 		`"${safeFamily}", -apple-system, BlinkMacSystemFont, sans-serif`,
+	);
+	root.style.setProperty(
+		"--font-mono",
+		`"${safeMonoFamily}", ui-monospace, SFMono-Regular, Menlo, monospace`,
 	);
 	root.style.setProperty("--text-xs", scaledPx(BASE_TEXT_SIZES.xs, scale));
 	root.style.setProperty("--text-sm", scaledPx(BASE_TEXT_SIZES.sm, scale));

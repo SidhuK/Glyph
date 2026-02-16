@@ -2,19 +2,25 @@ import type { UiFontFamily, UiFontSize } from "../../lib/settings";
 
 interface AppearanceTypographyCardProps {
 	fontFamily: UiFontFamily;
+	monoFontFamily: UiFontFamily;
 	fontSize: UiFontSize;
 	availableFonts: string[];
+	availableMonospaceFonts: string[];
 	fontSizeOptions: number[];
 	onFontFamilyChange: (font: UiFontFamily) => Promise<void>;
+	onMonoFontFamilyChange: (font: UiFontFamily) => Promise<void>;
 	onFontSizeChange: (size: UiFontSize) => Promise<void>;
 }
 
 export function AppearanceTypographyCard({
 	fontFamily,
+	monoFontFamily,
 	fontSize,
 	availableFonts,
+	availableMonospaceFonts,
 	fontSizeOptions,
 	onFontFamilyChange,
+	onMonoFontFamilyChange,
 	onFontSizeChange,
 }: AppearanceTypographyCardProps) {
 	return (
@@ -40,6 +46,26 @@ export function AppearanceTypographyCard({
 					onChange={(event) => void onFontFamilyChange(event.target.value)}
 				>
 					{availableFonts.map((font) => (
+						<option key={font} value={font}>
+							{font}
+						</option>
+					))}
+				</select>
+			</div>
+
+			<div className="settingsField">
+				<div>
+					<label className="settingsLabel" htmlFor="settingsMonoFontFamily">
+						Mono Font
+					</label>
+					<div className="settingsHelp">Monospace families only.</div>
+				</div>
+				<select
+					id="settingsMonoFontFamily"
+					value={monoFontFamily}
+					onChange={(event) => void onMonoFontFamilyChange(event.target.value)}
+				>
+					{availableMonospaceFonts.map((font) => (
 						<option key={font} value={font}>
 							{font}
 						</option>

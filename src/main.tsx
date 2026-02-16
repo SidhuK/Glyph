@@ -28,6 +28,9 @@ function Root() {
 function ThemeAndTypographyBridge() {
 	const { setTheme } = useTheme();
 	const [fontFamily, setFontFamily] = React.useState<string | null>(null);
+	const [monoFontFamily, setMonoFontFamily] = React.useState<string | null>(
+		null,
+	);
 	const [fontSize, setFontSize] = React.useState<number | null>(null);
 
 	React.useEffect(() => {
@@ -42,6 +45,7 @@ function ThemeAndTypographyBridge() {
 				if (cancelled) return;
 				setTheme(settings.ui.theme);
 				setFontFamily(settings.ui.fontFamily);
+				setMonoFontFamily(settings.ui.monoFontFamily);
 				setFontSize(settings.ui.fontSize);
 			} catch {
 				// best-effort hydration
@@ -83,6 +87,9 @@ function ThemeAndTypographyBridge() {
 		if (typeof payload.ui?.fontFamily === "string") {
 			setFontFamily(payload.ui.fontFamily);
 		}
+		if (typeof payload.ui?.monoFontFamily === "string") {
+			setMonoFontFamily(payload.ui.monoFontFamily);
+		}
 		if (
 			typeof payload.ui?.fontSize === "number" &&
 			Number.isFinite(payload.ui.fontSize)
@@ -92,9 +99,9 @@ function ThemeAndTypographyBridge() {
 	});
 
 	React.useEffect(() => {
-		if (!fontFamily || typeof fontSize !== "number") return;
-		applyUiTypography(fontFamily, fontSize);
-	}, [fontFamily, fontSize]);
+		if (!fontFamily || !monoFontFamily || typeof fontSize !== "number") return;
+		applyUiTypography(fontFamily, monoFontFamily, fontSize);
+	}, [fontFamily, monoFontFamily, fontSize]);
 
 	return null;
 }

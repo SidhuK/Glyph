@@ -64,6 +64,11 @@ fn system_fonts_list() -> Result<Vec<String>, String> {
     system_fonts::list_system_font_families()
 }
 
+#[tauri::command]
+fn system_monospace_fonts_list() -> Result<Vec<String>, String> {
+    system_fonts::list_monospace_font_families()
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     init_tracing();
@@ -225,6 +230,7 @@ pub fn run() {
             ping,
             app_info,
             system_fonts_list,
+            system_monospace_fonts_list,
             ai_rig::commands::ai_profiles_list,
             ai_rig::commands::ai_active_profile_get,
             ai_rig::commands::ai_active_profile_set,

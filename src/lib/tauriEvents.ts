@@ -24,6 +24,7 @@ export type TauriEventMap = {
 		ui?: {
 			theme?: string;
 			fontFamily?: string;
+			monoFontFamily?: string;
 			fontSize?: number;
 			aiAssistantMode?: "chat" | "create";
 			aiSidebarWidth?: number | null;

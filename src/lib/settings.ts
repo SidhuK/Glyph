@@ -21,6 +21,7 @@ async function getStore(): Promise<LazyStore> {
 export type ThemeMode = "system" | "light" | "dark";
 const THEME_MODES = new Set<ThemeMode>(["system", "light", "dark"]);
 const DEFAULT_UI_FONT_FAMILY = "Inter";
+const DEFAULT_UI_MONO_FONT_FAMILY = "JetBrains Mono";
 const MIN_UI_FONT_SIZE = 7;
 const MAX_UI_FONT_SIZE = 40;
 const DEFAULT_UI_FONT_SIZE = 14;
@@ -48,6 +49,13 @@ function asUiFontFamily(value: unknown): UiFontFamily {
 	return trimmed.slice(0, 80);
 }
 
+function asUiMonoFontFamily(value: unknown): UiFontFamily {
+	if (typeof value !== "string") return DEFAULT_UI_MONO_FONT_FAMILY;
+	const trimmed = value.trim();
+	if (!trimmed) return DEFAULT_UI_MONO_FONT_FAMILY;
+	return trimmed.slice(0, 80);
+}
+
 function asUiFontSize(value: unknown): UiFontSize {
 	if (typeof value === "number" && Number.isFinite(value)) {
 		return Math.max(
@@ -65,6 +73,7 @@ async function emitSettingsUpdated(payload: {
 	ui?: {
 		theme?: ThemeMode;
 		fontFamily?: UiFontFamily;
+		monoFontFamily?: UiFontFamily;
 		fontSize?: UiFontSize;
 		aiAssistantMode?: AiAssistantMode;
 		aiSidebarWidth?: number | null;
@@ -94,6 +103,7 @@ export interface AppSettings {
 		aiSidebarWidth: number | null;
 		theme: ThemeMode;
 		fontFamily: UiFontFamily;
+		monoFontFamily: UiFontFamily;
 		fontSize: UiFontSize;
 		aiAssistantMode: AiAssistantMode;
 	};
@@ -110,6 +120,7 @@ const KEYS = {
 	aiAssistantMode: "ui.aiAssistantMode",
 	theme: "ui.theme",
 	fontFamily: "ui.fontFamily",
+	monoFontFamily: "ui.monoFontFamily",
 	fontSize: "ui.fontSize",
 	dailyNotesFolder: "dailyNotes.folder",
 } as const;
@@ -146,6 +157,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		rawAiAssistantMode,
 		rawTheme,
 		rawFontFamily,
+		rawMonoFontFamily,
 		rawFontSize,
 		dailyNotesFolderRaw,
 	] = await Promise.all([
@@ -156,6 +168,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<unknown>(KEYS.aiAssistantMode),
 		store.get<unknown>(KEYS.theme),
 		store.get<unknown>(KEYS.fontFamily),
+		store.get<unknown>(KEYS.monoFontFamily),
 		store.get<unknown>(KEYS.fontSize),
 		store.get<string | null>(KEYS.dailyNotesFolder),
 	]);
@@ -166,6 +179,7 @@ export async function loadSettings(): Promise<AppSettings> {
 	const aiAssistantMode = asAiAssistantMode(rawAiAssistantMode);
 	const theme = asThemeMode(rawTheme);
 	const fontFamily = asUiFontFamily(rawFontFamily);
+	const monoFontFamily = asUiMonoFontFamily(rawMonoFontFamily);
 	const fontSize = asUiFontSize(rawFontSize);
 	const dailyNotesFolder = dailyNotesFolderRaw ?? null;
 	return {
@@ -179,6 +193,7 @@ export async function loadSettings(): Promise<AppSettings> {
 					: null,
 			theme,
 			fontFamily,
+			monoFontFamily,
 			fontSize,
 			aiAssistantMode,
 		},
@@ -238,6 +253,16 @@ export async function setUiFontFamily(fontFamily: UiFontFamily): Promise<void> {
 	await store.set(KEYS.fontFamily, next);
 	await store.save();
 	void emitSettingsUpdated({ ui: { fontFamily: next } });
+}
+
+export async function setUiMonoFontFamily(
+	fontFamily: UiFontFamily,
+): Promise<void> {
+	const store = await getStore();
+	const next = asUiMonoFontFamily(fontFamily);
+	await store.set(KEYS.monoFontFamily, next);
+	await store.save();
+	void emitSettingsUpdated({ ui: { monoFontFamily: next } });
 }
 
 export async function setUiFontSize(fontSize: UiFontSize): Promise<void> {
