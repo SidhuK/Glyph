@@ -12,7 +12,7 @@ import { useViewContext } from "../../contexts";
 import { openSettingsWindow } from "../../lib/windows";
 import { parentDir } from "../../utils/path";
 import { FileTreePane } from "../FileTreePane";
-import { Calendar, Files, FolderPlus, Plus, Tags } from "../Icons";
+import { Calendar, Files, FolderPlus, Plus } from "../Icons";
 import { TagsPane } from "../TagsPane";
 import { Button } from "../ui/shadcn/button";
 import {
@@ -117,7 +117,7 @@ export const SidebarContent = memo(function SidebarContent({
 								<Files size={14} />
 							</TabsTrigger>
 							<TabsTrigger value="tags" title="Tags">
-								<Tags size={14} />
+								<HugeiconsIcon icon={Icons.Tag01Icon} size={14} />
 							</TabsTrigger>
 						</TabsList>
 					</Tabs>

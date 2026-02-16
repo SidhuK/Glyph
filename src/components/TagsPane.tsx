@@ -1,3 +1,5 @@
+import { Tag01Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { motion } from "motion/react";
 import { memo, useCallback } from "react";
 import type { TagCount } from "../lib/tauri";
@@ -56,7 +58,9 @@ export const TagsPane = memo(function TagsPane({
 						hidden: {},
 					}}
 				>
-					{tags.map((t, index) => (
+					{tags.map((t, index) => {
+						const displayTag = t.tag.startsWith("#") ? t.tag.slice(1) : t.tag;
+						return (
 						<motion.li
 							key={t.tag}
 							className="tagsItem"
@@ -79,11 +83,15 @@ export const TagsPane = memo(function TagsPane({
 								whileTap={{ scale: 0.98 }}
 								transition={springTransition}
 							>
-								<span className="tagsName">#{t.tag}</span>
+								<span className="tagsNameWrap">
+									<HugeiconsIcon icon={Tag01Icon} size={12} />
+									<span className="tagsName">{displayTag}</span>
+								</span>
 								<span className="tagsCount mono">{t.count}</span>
 							</motion.button>
 						</motion.li>
-					))}
+						);
+					})}
 				</motion.ul>
 			) : (
 				<div className="tagsEmpty">No tags found.</div>
