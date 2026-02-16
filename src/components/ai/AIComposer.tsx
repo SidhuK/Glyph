@@ -1,9 +1,14 @@
 import { cn } from "@/lib/utils";
-import { Navigation03Icon } from "@hugeicons/core-free-icons";
+import {
+	Chat01Icon,
+	Link01Icon,
+	Navigation03Icon,
+	PaintBrush04Icon,
+} from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { motion, useReducedMotion } from "motion/react";
 import { useAISidebarContext } from "../../contexts";
-import { AiLattice, FileText, Layout, Paperclip, X } from "../Icons";
+import { AiLattice, FileText, Layout, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { ModelSelector } from "./ModelSelector";
 import { AI_MODES } from "./aiPanelConstants";
@@ -183,7 +188,15 @@ export function AIComposer({
 											}
 										/>
 									) : null}
-									<span className="aiModeMiniText">{mode.label}</span>
+									<span className="aiModeMiniText">
+										<HugeiconsIcon
+											icon={
+												mode.value === "create" ? PaintBrush04Icon : Chat01Icon
+											}
+											size={11}
+										/>
+										{mode.label}
+									</span>
 								</button>
 							);
 						})}
@@ -202,7 +215,7 @@ export function AIComposer({
 								setAddPanelQuery("");
 							}}
 						>
-							<Paperclip size={14} />
+							<HugeiconsIcon icon={Link01Icon} size={14} />
 						</Button>
 						<Button
 							type="button"

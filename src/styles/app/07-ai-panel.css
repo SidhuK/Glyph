@@ -55,13 +55,13 @@
 }
 
 .aiPanel[data-ai-mode="chat"] {
-	--ai-mode-accent: #2a9d6f;
-	--ai-mode-accent-soft: color-mix(in srgb, #2a9d6f 14%, transparent);
+	--ai-mode-accent: #57cc99;
+	--ai-mode-accent-soft: color-mix(in srgb, #57cc99 14%, transparent);
 }
 
 .aiPanel[data-ai-mode="create"] {
-	--ai-mode-accent: #d85b57;
-	--ai-mode-accent-soft: color-mix(in srgb, #d85b57 14%, transparent);
+	--ai-mode-accent: #fca311;
+	--ai-mode-accent-soft: color-mix(in srgb, #fca311 14%, transparent);
 }
 
 .aiPanelHeader {
@@ -69,8 +69,6 @@
 	align-items: center;
 	justify-content: space-between;
 	padding: 8px 12px;
-	border-bottom: 1px solid
-		color-mix(in srgb, var(--border-light) 50%, transparent);
 	flex-shrink: 0;
 	user-select: none;
 }
@@ -740,7 +738,6 @@
 .aiComposer {
 	flex-shrink: 0;
 	padding: 10px 12px 12px;
-	border-top: 1px solid color-mix(in srgb, var(--border-light) 40%, transparent);
 	background: transparent;
 }
 
@@ -748,15 +745,7 @@
 	position: relative;
 	border-radius: 12px;
 	padding: 1px;
-	background: linear-gradient(
-		140deg,
-		color-mix(
-			in srgb,
-			var(--ai-mode-accent, var(--interactive-accent)) 18%,
-			transparent
-		),
-		color-mix(in srgb, var(--border-light) 48%, transparent)
-	);
+	background: color-mix(in srgb, var(--border-light) 55%, transparent);
 }
 
 .aiComposerInput {
@@ -771,8 +760,8 @@
 	border: 1px solid transparent;
 	color: var(--text-primary);
 	line-height: var(--leading-relaxed);
-	transition: border-color var(--transition-fast), box-shadow
-		var(--transition-fast), background var(--transition-fast);
+	transition: border-color var(--transition-fast), background
+		var(--transition-fast);
 }
 
 .aiComposerInput::placeholder {
@@ -783,6 +772,7 @@
 	outline: none;
 	border-color: color-mix(in srgb, var(--interactive-accent) 45%, transparent);
 	background: color-mix(in srgb, var(--bg-primary) 96%, transparent);
+	box-shadow: none;
 }
 
 .aiComposerBar {
@@ -830,9 +820,9 @@
 	border-radius: 7px;
 	border: none;
 	background: color-mix(in srgb, var(--bg-secondary) 88%, transparent);
-	backdrop-filter: blur(6px);
-	-webkit-backdrop-filter: blur(6px);
-	box-shadow: 0 1px 8px color-mix(in srgb, #000 8%, transparent);
+	backdrop-filter: none;
+	-webkit-backdrop-filter: none;
+	box-shadow: none;
 }
 
 .aiModeMiniOption {
@@ -870,14 +860,17 @@
 }
 
 .aiModeMiniActive-chat {
-	background: color-mix(in srgb, #2a9d6f 22%, transparent);
+	background: color-mix(in srgb, #57cc99 22%, transparent);
 }
 
 .aiModeMiniActive-create {
-	background: color-mix(in srgb, #d85b57 20%, transparent);
+	background: color-mix(in srgb, #fca311 20%, transparent);
 }
 
 .aiModeMiniText {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
 	position: relative;
 	z-index: 1;
 }
