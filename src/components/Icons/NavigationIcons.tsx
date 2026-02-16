@@ -54,7 +54,7 @@ export const Minimize2 = (props: IconProps) => (
 	<HugeiconsIcon icon={Icons.Minimize} {...props} />
 );
 export const InformationCircle = (props: IconProps) => (
-	<HugeiconsIcon icon={Icons.Help} {...props} />
+	<HugeiconsIcon icon={Icons.InformationCircleIcon} {...props} />
 );
 export const Calendar = (props: IconProps) => (
 	<HugeiconsIcon icon={Icons.Calendar03Icon} {...props} />

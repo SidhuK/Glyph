@@ -305,12 +305,21 @@
 	justify-content: center;
 	width: 22px;
 	height: 22px;
+	flex-shrink: 0;
 	border-radius: var(--radius-full);
 	color: var(--text-tertiary);
 	cursor: pointer;
 	transition: all var(--transition-base);
 	border: 1px solid transparent;
 	background: transparent;
+	line-height: 0;
+}
+
+.infoInline svg {
+	display: block;
+	width: 14px;
+	height: 14px;
+	color: currentColor;
 }
 
 .infoInlineActive {

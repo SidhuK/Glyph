@@ -356,13 +356,13 @@ export function ModelSelector({
 										const handleInfoToggle = () =>
 											setDetailModelId((prev) => (prev === m.id ? null : m.id));
 										const handleInfoClick = (
-											e: ReactMouseEvent<HTMLButtonElement>,
+											e: ReactMouseEvent<HTMLSpanElement>,
 										) => {
 											e.stopPropagation();
 											handleInfoToggle();
 										};
 										const handleInfoKeyDown = (
-											e: KeyboardEvent<HTMLButtonElement>,
+											e: KeyboardEvent<HTMLSpanElement>,
 										) => {
 											if (e.key === " " || e.key === "Enter") {
 												e.preventDefault();
@@ -388,8 +388,9 @@ export function ModelSelector({
 													{truncateLabel(m.name)}
 												</span>
 												{detailAvailable && (
-													<button
-														type="button"
+													<span
+														role="button"
+														tabIndex={0}
 														onClick={handleInfoClick}
 														onKeyDown={handleInfoKeyDown}
 														className={`${styles.infoInline} ${infoActive ? styles.infoInlineActive : ""}`}
@@ -397,8 +398,8 @@ export function ModelSelector({
 														aria-pressed={infoActive}
 														aria-label="Model info"
 													>
-														<InformationCircle size={14} />
-													</button>
+														<InformationCircle size={14} strokeWidth={1.8} />
+													</span>
 												)}
 											</button>
 										);
