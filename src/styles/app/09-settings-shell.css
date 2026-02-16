@@ -86,6 +86,55 @@
 	z-index: 1;
 }
 
+.settingsTabs {
+	position: sticky;
+	top: 0;
+	z-index: 2;
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 8px;
+	width: 100%;
+	max-width: 540px;
+	padding: 6px;
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-2xl);
+	background: color-mix(in srgb, var(--bg-secondary) 80%, transparent);
+	backdrop-filter: blur(10px);
+}
+
+.settingsTabButton {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	min-height: 38px;
+	padding: 0 10px;
+	border-radius: var(--radius-full);
+	color: var(--text-secondary);
+	background: transparent;
+	border: 1px solid transparent;
+	font-size: var(--text-xs);
+}
+
+.settingsTabButton.active {
+	color: var(--text-primary);
+	background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
+	border-color: var(--border-light);
+	box-shadow: var(--shadow-sm);
+}
+
+.settingsTabButton:hover {
+	transform: none;
+}
+
+.settingsTabPanel {
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: var(--space-5);
+}
+
 .settingsPane {
 	width: 100%;
 	max-width: 540px;
@@ -170,4 +219,10 @@
 	font-size: var(--text-xs);
 	color: var(--text-tertiary);
 	white-space: nowrap;
+}
+
+@media (max-width: 680px) {
+	.settingsTabs {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
 }

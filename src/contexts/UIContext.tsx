@@ -19,6 +19,7 @@ import {
 	setAiSidebarWidth as saveAiSidebarWidth,
 } from "../lib/settings";
 import type { SearchResult } from "../lib/tauri";
+import { useTauriEvent } from "../lib/tauriEvents";
 import { useVault } from "./VaultContext";
 
 export interface UILayoutContextValue {
@@ -98,6 +99,20 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			setActiveMarkdownTabPath(null);
 		}
 	}, [vaultPath]);
+
+	useTauriEvent("settings:updated", (payload) => {
+		const nextMode = payload.ui?.aiAssistantMode;
+		if (nextMode === "chat" || nextMode === "create") {
+			setAiAssistantModeState(nextMode);
+		}
+		const nextWidth = payload.ui?.aiSidebarWidth;
+		if (typeof nextWidth === "number" && Number.isFinite(nextWidth)) {
+			setAiPanelWidthState(nextWidth);
+		}
+		if (payload.dailyNotes && "folder" in payload.dailyNotes) {
+			setDailyNotesFolderState(payload.dailyNotes.folder ?? null);
+		}
+	});
 
 	useEffect(() => {
 		let cancelled = false;

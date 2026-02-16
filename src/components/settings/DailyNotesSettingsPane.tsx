@@ -1,8 +1,7 @@
-import { open } from "@tauri-apps/plugin-dialog";
 import { useCallback, useEffect, useState } from "react";
 import { getDailyNotesFolder, setDailyNotesFolder } from "../../lib/settings";
 import { invoke } from "../../lib/tauri";
-import { FolderOpen } from "../Icons";
+import { FolderOpen } from "../Icons/NavigationIcons";
 import { Button } from "../ui/shadcn/button";
 
 export function DailyNotesSettingsPane() {
@@ -25,6 +24,7 @@ export function DailyNotesSettingsPane() {
 	const handleBrowseFolder = useCallback(async () => {
 		setError(null);
 		try {
+			const { open } = await import("@tauri-apps/plugin-dialog");
 			const selected = await open({
 				directory: true,
 				multiple: false,
@@ -98,7 +98,7 @@ export function DailyNotesSettingsPane() {
 									YYYY-MM-DD.md
 								</div>
 							</div>
-							<div className="settingsActions">
+							<div className="settingsActions dailyNotesActions">
 								<Button
 									type="button"
 									variant="outline"
@@ -107,7 +107,7 @@ export function DailyNotesSettingsPane() {
 									disabled={isLoading}
 								>
 									<FolderOpen size={14} />
-									Browse...
+									Browse
 								</Button>
 								{currentFolder && (
 									<Button

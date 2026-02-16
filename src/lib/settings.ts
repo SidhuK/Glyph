@@ -1,3 +1,4 @@
+import { emit } from "@tauri-apps/api/event";
 import { LazyStore } from "@tauri-apps/plugin-store";
 import type { AiAssistantMode } from "./tauri";
 
@@ -19,6 +20,12 @@ async function getStore(): Promise<LazyStore> {
 
 export type ThemeMode = "system" | "light" | "dark";
 const THEME_MODES = new Set<ThemeMode>(["system", "light", "dark"]);
+const DEFAULT_UI_FONT_FAMILY = "Inter";
+const MIN_UI_FONT_SIZE = 7;
+const MAX_UI_FONT_SIZE = 40;
+const DEFAULT_UI_FONT_SIZE = 14;
+export type UiFontFamily = string;
+export type UiFontSize = number;
 const AI_ASSISTANT_MODES = new Set<AiAssistantMode>(["chat", "create"]);
 
 function asThemeMode(value: unknown): ThemeMode {
@@ -34,6 +41,45 @@ function asAiAssistantMode(value: unknown): AiAssistantMode {
 		: "create";
 }
 
+function asUiFontFamily(value: unknown): UiFontFamily {
+	if (typeof value !== "string") return DEFAULT_UI_FONT_FAMILY;
+	const trimmed = value.trim();
+	if (!trimmed) return DEFAULT_UI_FONT_FAMILY;
+	return trimmed.slice(0, 80);
+}
+
+function asUiFontSize(value: unknown): UiFontSize {
+	if (typeof value === "number" && Number.isFinite(value)) {
+		return Math.max(
+			MIN_UI_FONT_SIZE,
+			Math.min(MAX_UI_FONT_SIZE, Math.round(value)),
+		);
+	}
+	if (value === "small") return 12;
+	if (value === "medium") return DEFAULT_UI_FONT_SIZE;
+	if (value === "large") return 16;
+	return DEFAULT_UI_FONT_SIZE;
+}
+
+async function emitSettingsUpdated(payload: {
+	ui?: {
+		theme?: ThemeMode;
+		fontFamily?: UiFontFamily;
+		fontSize?: UiFontSize;
+		aiAssistantMode?: AiAssistantMode;
+		aiSidebarWidth?: number | null;
+	};
+	dailyNotes?: {
+		folder?: string | null;
+	};
+}): Promise<void> {
+	try {
+		await emit("settings:updated", payload);
+	} catch {
+		// best-effort cross-window sync
+	}
+}
+
 export interface RecentFile {
 	path: string;
 	vaultPath: string;
@@ -47,6 +93,8 @@ export interface AppSettings {
 	ui: {
 		aiSidebarWidth: number | null;
 		theme: ThemeMode;
+		fontFamily: UiFontFamily;
+		fontSize: UiFontSize;
 		aiAssistantMode: AiAssistantMode;
 	};
 	dailyNotes: {
@@ -61,6 +109,8 @@ const KEYS = {
 	aiSidebarWidth: "ui.aiSidebarWidth",
 	aiAssistantMode: "ui.aiAssistantMode",
 	theme: "ui.theme",
+	fontFamily: "ui.fontFamily",
+	fontSize: "ui.fontSize",
 	dailyNotesFolder: "dailyNotes.folder",
 } as const;
 
@@ -95,6 +145,8 @@ export async function loadSettings(): Promise<AppSettings> {
 		aiSidebarWidthRaw,
 		rawAiAssistantMode,
 		rawTheme,
+		rawFontFamily,
+		rawFontSize,
 		dailyNotesFolderRaw,
 	] = await Promise.all([
 		store.get<string | null>(KEYS.currentVaultPath),
@@ -103,6 +155,8 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<number | null>(KEYS.aiSidebarWidth),
 		store.get<unknown>(KEYS.aiAssistantMode),
 		store.get<unknown>(KEYS.theme),
+		store.get<unknown>(KEYS.fontFamily),
+		store.get<unknown>(KEYS.fontSize),
 		store.get<string | null>(KEYS.dailyNotesFolder),
 	]);
 	const currentVaultPath = currentVaultPathRaw ?? null;
@@ -111,6 +165,8 @@ export async function loadSettings(): Promise<AppSettings> {
 	const aiSidebarWidth = aiSidebarWidthRaw ?? null;
 	const aiAssistantMode = asAiAssistantMode(rawAiAssistantMode);
 	const theme = asThemeMode(rawTheme);
+	const fontFamily = asUiFontFamily(rawFontFamily);
+	const fontSize = asUiFontSize(rawFontSize);
 	const dailyNotesFolder = dailyNotesFolderRaw ?? null;
 	return {
 		currentVaultPath,
@@ -122,6 +178,8 @@ export async function loadSettings(): Promise<AppSettings> {
 					? aiSidebarWidth
 					: null,
 			theme,
+			fontFamily,
+			fontSize,
 			aiAssistantMode,
 		},
 		dailyNotes: {
@@ -154,14 +212,40 @@ export async function clearRecentVaults(): Promise<void> {
 export async function setAiSidebarWidth(width: number): Promise<void> {
 	const store = await getStore();
 	if (!Number.isFinite(width)) return;
-	await store.set(KEYS.aiSidebarWidth, Math.floor(width));
+	const next = Math.floor(width);
+	await store.set(KEYS.aiSidebarWidth, next);
 	await store.save();
+	void emitSettingsUpdated({ ui: { aiSidebarWidth: next } });
 }
 
 export async function setAiAssistantMode(mode: AiAssistantMode): Promise<void> {
 	const store = await getStore();
 	await store.set(KEYS.aiAssistantMode, mode);
 	await store.save();
+	void emitSettingsUpdated({ ui: { aiAssistantMode: mode } });
+}
+
+export async function setThemeMode(theme: ThemeMode): Promise<void> {
+	const store = await getStore();
+	await store.set(KEYS.theme, theme);
+	await store.save();
+	void emitSettingsUpdated({ ui: { theme } });
+}
+
+export async function setUiFontFamily(fontFamily: UiFontFamily): Promise<void> {
+	const store = await getStore();
+	const next = asUiFontFamily(fontFamily);
+	await store.set(KEYS.fontFamily, next);
+	await store.save();
+	void emitSettingsUpdated({ ui: { fontFamily: next } });
+}
+
+export async function setUiFontSize(fontSize: UiFontSize): Promise<void> {
+	const store = await getStore();
+	const next = asUiFontSize(fontSize);
+	await store.set(KEYS.fontSize, next);
+	await store.save();
+	void emitSettingsUpdated({ ui: { fontSize: next } });
 }
 
 export async function getDailyNotesFolder(): Promise<string | null> {
@@ -179,6 +263,7 @@ export async function setDailyNotesFolder(
 		await store.set(KEYS.dailyNotesFolder, folder);
 	}
 	await store.save();
+	void emitSettingsUpdated({ dailyNotes: { folder } });
 }
 
 export async function getRecentFiles(): Promise<RecentFile[]> {

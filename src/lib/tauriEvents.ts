@@ -20,6 +20,18 @@ export type TauriEventMap = {
 	};
 	"notes:external_changed": { rel_path: string };
 	"vault:fs_changed": { rel_path: string };
+	"settings:updated": {
+		ui?: {
+			theme?: string;
+			fontFamily?: string;
+			fontSize?: number;
+			aiAssistantMode?: "chat" | "create";
+			aiSidebarWidth?: number | null;
+		};
+		dailyNotes?: {
+			folder?: string | null;
+		};
+	};
 };
 
 type TauriEventHandler<K extends keyof TauriEventMap> =
