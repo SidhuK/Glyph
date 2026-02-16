@@ -267,7 +267,10 @@
 
 .aiChatMsg-assistant {
 	align-self: flex-start;
-	background: color-mix(in srgb, var(--bg-secondary) 80%, transparent);
+	max-width: 100%;
+	padding: 0;
+	border-radius: 0;
+	background: transparent;
 	color: var(--text-primary);
 }
 

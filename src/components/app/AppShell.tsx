@@ -33,8 +33,6 @@ import { KeyboardShortcutsHelp } from "./KeyboardShortcutsHelp";
 import { MainContent } from "./MainContent";
 import { Sidebar } from "./Sidebar";
 import {
-	aiNoteFileName,
-	fileTitleFromPath,
 	normalizeRelPath,
 	parentDir,
 	resolveWikiLinkPath,
@@ -224,38 +222,6 @@ export function AppShell() {
 		}
 		await attachContextFiles(tabs);
 	}, [attachContextFiles, openMarkdownTabs, setError]);
-
-	const createNoteFromAI = useCallback(
-		async (markdown: string) => {
-			const text = markdown.trim();
-			if (!text) return;
-			const dir =
-				activeViewDoc?.kind === "folder" ? activeViewDoc.selector : "";
-			const baseName = aiNoteFileName();
-			let filePath = dir ? `${dir}/${baseName}` : baseName;
-			let suffix = 2;
-			while (true) {
-				try {
-					await invoke("vault_read_text", { path: filePath });
-					filePath = dir
-						? `${dir}/${baseName.replace(/\.md$/i, ` ${suffix.toString()}.md`)}`
-						: baseName.replace(/\.md$/i, ` ${suffix.toString()}.md`);
-					suffix += 1;
-				} catch {
-					break;
-				}
-			}
-			const title = fileTitleFromPath(filePath);
-			const body = text.startsWith("# ") ? text : `# ${title}\n\n${text}`;
-			await invoke("vault_write_text", {
-				path: filePath,
-				text: body,
-				base_mtime_ms: null,
-			});
-			await fileTree.openFile(filePath);
-		},
-		[activeViewDoc, fileTree],
-	);
 
 	useMenuListeners({ onOpenVault, onCreateVault, closeVault });
 
