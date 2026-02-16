@@ -824,18 +824,19 @@
 	bottom: 8px;
 	display: flex;
 	align-items: center;
-	gap: 2px;
+	gap: 0;
 	padding: 2px;
 	height: 22px;
 	border-radius: 7px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 70%, transparent);
+	border: none;
 	background: color-mix(in srgb, var(--bg-secondary) 88%, transparent);
 	backdrop-filter: blur(6px);
 	-webkit-backdrop-filter: blur(6px);
-	box-shadow: 0 2px 10px color-mix(in srgb, #000 10%, transparent);
+	box-shadow: 0 1px 8px color-mix(in srgb, #000 8%, transparent);
 }
 
 .aiModeMiniOption {
+	--ai-mode-mini-radius: 5px;
 	position: relative;
 	flex: 1;
 	display: flex;
@@ -843,13 +844,14 @@
 	justify-content: center;
 	height: 100%;
 	padding: 0 6px;
-	border-radius: 5px;
+	border-radius: var(--ai-mode-mini-radius);
 	border: 0;
 	background: transparent;
 	color: var(--text-secondary);
 	font-size: 10px;
 	line-height: 1.35;
 	font-weight: var(--font-semibold);
+	transition: color 220ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .aiModeMiniOption.active {
@@ -863,7 +865,7 @@
 .aiModeMiniActive {
 	position: absolute;
 	inset: 0;
-	border-radius: 999px;
+	border-radius: var(--ai-mode-mini-radius);
 	z-index: 0;
 }
 

@@ -174,7 +174,12 @@ export function AIComposer({
 											transition={
 												shouldReduceMotion
 													? { duration: 0 }
-													: { type: "spring", stiffness: 420, damping: 28 }
+													: {
+															type: "spring",
+															stiffness: 260,
+															damping: 30,
+															mass: 0.9,
+														}
 											}
 										/>
 									) : null}
