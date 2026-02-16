@@ -751,10 +751,10 @@
 .aiComposerInput {
 	width: 100%;
 	resize: none;
-	min-height: 40px;
+	min-height: 88px;
 	max-height: 180px;
 	border-radius: 11px;
-	padding: 10px 12px 36px;
+	padding: 10px 12px 68px;
 	font-size: var(--text-sm);
 	background: color-mix(in srgb, var(--bg-primary) 90%, transparent);
 	border: 1px solid transparent;
@@ -776,10 +776,14 @@
 }
 
 .aiComposerBar {
+	position: absolute;
+	left: 8px;
+	right: 8px;
+	bottom: 8px;
+	z-index: 2;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	margin-top: 8px;
 }
 
 .aiComposerTools {
@@ -811,7 +815,7 @@
 	position: absolute;
 	left: 8px;
 	right: 8px;
-	bottom: 8px;
+	bottom: 40px;
 	display: flex;
 	align-items: center;
 	gap: 0;
@@ -884,17 +888,21 @@
 }
 
 .aiComposerStop {
-	font-size: var(--text-xs);
-	padding: 3px 10px;
-	border-radius: 999px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
-	background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
-	color: var(--text-secondary);
+	width: 26px;
+	height: 26px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: 8px;
+	border: 1px solid color-mix(in srgb, #ff5a5f 38%, transparent);
+	background: color-mix(in srgb, #ff5a5f 14%, transparent);
+	color: #ff5a5f;
 }
 
 .aiComposerStop:hover {
-	color: var(--text-primary);
-	border-color: var(--border-default);
+	border-color: color-mix(in srgb, #ff5a5f 52%, transparent);
+	background: color-mix(in srgb, #ff5a5f 20%, transparent);
+	color: #ff6b70;
 }
 
 @media (prefers-reduced-motion: reduce) {

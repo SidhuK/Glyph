@@ -4,6 +4,7 @@ import {
 	Link01Icon,
 	Navigation03Icon,
 	PaintBrush04Icon,
+	StopIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { motion, useReducedMotion } from "motion/react";
@@ -201,79 +202,85 @@ export function AIComposer({
 							);
 						})}
 					</div>
-				</div>
-				<div className="aiComposerBar">
-					<div className="aiComposerTools">
-						<Button
-							type="button"
-							variant="ghost"
-							size="icon-sm"
-							aria-label="Attach file or folder"
-							title="Attach file or folder"
-							onClick={() => {
-								setAddPanelOpen(true);
-								setAddPanelQuery("");
-							}}
-						>
-							<HugeiconsIcon icon={Link01Icon} size={14} />
-						</Button>
-						<Button
-							type="button"
-							variant="ghost"
-							size="icon-sm"
-							aria-label="Attach selected context files"
-							title="Attach selected context files"
-							onClick={() =>
-								void context
-									.resolveAttachedPaths()
-									.then((paths) => onAttachContextFiles(paths))
-							}
-							disabled={context.attachedFolders.length === 0}
-						>
-							<FileText size={14} />
-						</Button>
-						<Button
-							type="button"
-							variant="ghost"
-							size="icon-sm"
-							aria-label="Create note from last reply"
-							title="Create note from last reply"
-							onClick={() =>
-								void onCreateNoteFromLastAssistant(lastAssistantText)
-							}
-							disabled={isChatMode || !lastAssistantText}
-						>
-							<AiLattice size={18} />
-						</Button>
-					</div>
-					<div className="aiComposerRight">
-						<ModelSelector
-							profileId={profiles.activeProfileId}
-							value={profiles.activeProfile?.model ?? ""}
-							provider={profiles.activeProfile?.provider ?? null}
-							profiles={profiles.profiles}
-							activeProfileId={profiles.activeProfileId}
-							onProfileChange={(id) => void profiles.setActive(id)}
-							onChange={(modelId) => void profiles.setModel(modelId)}
-						/>
-						{isAwaitingResponse ? (
-							<button type="button" className="aiComposerStop" onClick={onStop}>
-								Stop
-							</button>
-						) : (
+					<div className="aiComposerBar">
+						<div className="aiComposerTools">
 							<Button
 								type="button"
 								variant="ghost"
 								size="icon-sm"
-								className="aiComposerSend"
-								disabled={!canSend}
-								onClick={onSend}
-								aria-label="Send"
-								title="Send"
+								aria-label="Attach file or folder"
+								title="Attach file or folder"
+								onClick={() => {
+									setAddPanelOpen(true);
+									setAddPanelQuery("");
+								}}
 							>
-								<HugeiconsIcon icon={Navigation03Icon} size={14} />
+								<HugeiconsIcon icon={Link01Icon} size={14} />
 							</Button>
-						)}
+							<Button
+								type="button"
+								variant="ghost"
+								size="icon-sm"
+								aria-label="Attach selected context files"
+								title="Attach selected context files"
+								onClick={() =>
+									void context
+										.resolveAttachedPaths()
+										.then((paths) => onAttachContextFiles(paths))
+								}
+								disabled={context.attachedFolders.length === 0}
+							>
+								<FileText size={14} />
+							</Button>
+							<Button
+								type="button"
+								variant="ghost"
+								size="icon-sm"
+								aria-label="Create note from last reply"
+								title="Create note from last reply"
+								onClick={() =>
+									void onCreateNoteFromLastAssistant(lastAssistantText)
+								}
+								disabled={isChatMode || !lastAssistantText}
+							>
+								<AiLattice size={18} />
+							</Button>
+						</div>
+						<div className="aiComposerRight">
+							<ModelSelector
+								profileId={profiles.activeProfileId}
+								value={profiles.activeProfile?.model ?? ""}
+								provider={profiles.activeProfile?.provider ?? null}
+								profiles={profiles.profiles}
+								activeProfileId={profiles.activeProfileId}
+								onProfileChange={(id) => void profiles.setActive(id)}
+								onChange={(modelId) => void profiles.setModel(modelId)}
+							/>
+							{isAwaitingResponse ? (
+								<button
+									type="button"
+									className="aiComposerStop"
+									onClick={onStop}
+									aria-label="Stop"
+									title="Stop"
+								>
+									<HugeiconsIcon icon={StopIcon} size={14} />
+								</button>
+							) : (
+								<Button
+									type="button"
+									variant="ghost"
+									size="icon-sm"
+									className="aiComposerSend"
+									disabled={!canSend}
+									onClick={onSend}
+									aria-label="Send"
+									title="Send"
+								>
+									<HugeiconsIcon icon={Navigation03Icon} size={14} />
+								</Button>
+							)}
+						</div>
 					</div>
 				</div>
 			</div>
