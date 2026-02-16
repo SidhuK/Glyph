@@ -124,6 +124,15 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		onChange(nextMarkdown);
 	};
 
+	const handleFrontmatterPreviewClick = (
+		event: React.MouseEvent<HTMLDivElement>,
+	) => {
+		const target = event.target;
+		if (!(target instanceof HTMLElement)) return;
+		if (target.closest(".frontmatterEditor")) return;
+		setFrontmatterExpanded((prev) => !prev);
+	};
+
 	return (
 		<div
 			className={[
@@ -145,11 +154,13 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 					/>
 				) : null}
 				{mode === "rich" ? (
-					<div className="frontmatterPreview mono">
+					<div
+						className="frontmatterPreview frontmatterPreviewInteractive mono"
+						onClick={handleFrontmatterPreviewClick}
+					>
 						<button
 							type="button"
 							className="frontmatterToggle"
-							onClick={() => setFrontmatterExpanded((prev) => !prev)}
 							aria-expanded={frontmatterExpanded}
 						>
 							{frontmatterExpanded ? (

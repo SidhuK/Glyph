@@ -44,6 +44,14 @@
 	margin-top: 6px;
 }
 
+.frontmatterPreviewInteractive {
+	cursor: pointer;
+}
+
+.frontmatterPreviewInteractive .frontmatterEditor {
+	cursor: text;
+}
+
 .editorBacklinks {
 	margin-bottom: var(--space-2);
 	font-size: 11px;
