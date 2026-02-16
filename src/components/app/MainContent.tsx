@@ -76,7 +76,10 @@ export const MainContent = memo(function MainContent({
 		if (!viewerPath) return null;
 		if (viewerPath === TASKS_TAB_ID) {
 			return (
-				<TasksPane onOpenFile={(relPath) => void fileTree.openFile(relPath)} />
+				<TasksPane
+					onOpenFile={(relPath) => void fileTree.openFile(relPath)}
+					onClosePane={() => closeTab(TASKS_TAB_ID)}
+				/>
 			);
 		}
 		if (viewerPath.toLowerCase().endsWith(".md")) {

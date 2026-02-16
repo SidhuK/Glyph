@@ -190,6 +190,7 @@ export const SidebarContent = memo(function SidebarContent({
 					onClick={onOpenTasks}
 					title="Open Tasks"
 				>
+					<HugeiconsIcon icon={Icons.NoteDoneIcon} size={14} />
 					<span className="dailyNotesLabel">Tasks</span>
 				</button>
 				<button
