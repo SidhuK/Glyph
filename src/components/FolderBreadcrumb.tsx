@@ -16,7 +16,7 @@ export const FolderBreadcrumb = memo(function FolderBreadcrumb({
 }: FolderBreadcrumbProps) {
 	const crumbs = useMemo(() => {
 		const parts = dir.split("/").filter(Boolean);
-		return [{ label: "Vault", dir: "" }].concat(
+		return [{ label: "/", dir: "" }].concat(
 			parts.map((p, idx) => ({ label: p, dir: joinPrefix(parts, idx) })),
 		);
 	}, [dir]);
@@ -40,7 +40,7 @@ export const FolderBreadcrumb = memo(function FolderBreadcrumb({
 									isLast ? "folderCrumbBtn isCurrent" : "folderCrumbBtn"
 								}
 								onClick={() => onOpenFolder(c.dir)}
-								title={c.dir || "Vault"}
+								title={c.dir || "Root"}
 							>
 								{c.label}
 							</button>
