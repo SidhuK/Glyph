@@ -324,6 +324,10 @@
 .aiMessageMarkdown .aiMessageMarkdownContent {
 	font-size: inherit;
 	line-height: inherit;
+	width: auto;
+	max-width: 100%;
+	margin: 0;
+	padding: 0;
 }
 
 .aiMessageMarkdown .aiMessageMarkdownContent pre {
@@ -768,8 +772,9 @@
 	padding: 0;
 	border: none;
 	background: var(--bg-primary);
-	box-shadow: 0 0 0 1px color-mix(in srgb, var(--ai-mode-accent) 16%, transparent),
-		0 0 14px color-mix(in srgb, var(--ai-mode-accent) 14%, transparent);
+	box-shadow: 0 0 0 1px
+		color-mix(in srgb, var(--ai-mode-accent) 16%, transparent), 0 0 14px
+		color-mix(in srgb, var(--ai-mode-accent) 14%, transparent);
 	transition: box-shadow var(--transition-base);
 }
 
@@ -801,8 +806,9 @@
 }
 
 .aiComposerInputShell:focus-within {
-	box-shadow: 0 0 0 1px color-mix(in srgb, var(--ai-mode-accent) 26%, transparent),
-		0 0 20px color-mix(in srgb, var(--ai-mode-accent) 22%, transparent);
+	box-shadow: 0 0 0 1px
+		color-mix(in srgb, var(--ai-mode-accent) 26%, transparent), 0 0 20px
+		color-mix(in srgb, var(--ai-mode-accent) 22%, transparent);
 }
 
 .aiComposerBar {

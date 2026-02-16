@@ -129,9 +129,9 @@ button.ribbonBtn.active {
 
 .editorBody .tiptapContent {
 	min-height: 100%;
-	max-width: 780px;
+	max-width: var(--readable-content-max-width);
 	margin: 0 auto;
-	padding: 0 var(--space-6) var(--space-6);
+	padding: 0 var(--readable-content-gutter) var(--space-6);
 	font-size: 16px;
 	letter-spacing: -0.005em;
 	line-height: var(--leading-relaxed);
@@ -142,9 +142,9 @@ button.ribbonBtn.active {
 /* Back-compat if the host ends up being the ProseMirror element */
 .editorBody .tiptap {
 	min-height: 100%;
-	max-width: 780px;
+	max-width: var(--readable-content-max-width);
 	margin: 0 auto;
-	padding: var(--space-6) var(--space-6) var(--space-6);
+	padding: var(--space-6) var(--readable-content-gutter) var(--space-6);
 	overflow: visible;
 	line-height: var(--leading-relaxed);
 	outline: none;
@@ -279,13 +279,22 @@ button.ribbonBtn.active {
 }
 
 .mdRawEditor {
-	width: 100%;
+	width: min(
+		100%,
+		calc(
+			var(--readable-content-max-width) +
+			(2 * var(--readable-content-gutter))
+		)
+	);
 	height: 100%;
 	flex: 1;
 	min-height: 0;
+	margin: 0 auto;
+	display: block;
+	box-sizing: border-box;
 	border: none;
 	border-radius: 0;
-	padding: var(--space-4);
+	padding: var(--space-6) var(--readable-content-gutter);
 	background: transparent;
 	color: var(--text-primary);
 	font-family: var(--font-mono);
@@ -322,7 +331,15 @@ button.ribbonBtn.active {
 }
 
 .editorBody .cm-scroller {
-	padding: var(--space-4);
+	width: min(
+		100%,
+		calc(
+			var(--readable-content-max-width) +
+			(2 * var(--readable-content-gutter))
+		)
+	);
+	margin: 0 auto;
+	padding: var(--space-6) var(--readable-content-gutter);
 	line-height: var(--leading-relaxed);
 	overflow: auto;
 }

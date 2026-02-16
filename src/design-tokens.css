@@ -330,6 +330,9 @@
 	/* Pane dimensions */
 	--editor-width: 380px;
 	--editor-min-width: 300px;
+	--readable-content-max-width: 760px;
+	--readable-content-gutter: clamp(24px, 6vw, 64px);
+	--readable-content-gutter-compact: clamp(14px, 3vw, 28px);
 
 	/* Floating panel spacing */
 	--float-gap: 12px;

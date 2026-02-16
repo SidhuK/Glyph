@@ -53,7 +53,14 @@
 }
 
 .editorBacklinks {
-	margin-bottom: var(--space-2);
+	width: min(
+		100%,
+		calc(
+			var(--readable-content-max-width) +
+			(2 * var(--readable-content-gutter-compact))
+		)
+	);
+	margin: 0 auto var(--space-2);
 	font-size: 11px;
 	color: var(--text-tertiary);
 }
