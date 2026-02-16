@@ -248,7 +248,7 @@
 	left: 50%;
 	width: 1px;
 	transform: translateX(-50%);
-	background: color-mix(in srgb, var(--border-light) 75%, transparent);
+	background: transparent;
 }
 
 .sidebarResizeHandle:hover {

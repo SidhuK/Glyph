@@ -12,11 +12,7 @@ import {
 	AI_CONTEXT_ATTACH_EVENT,
 	type AiContextAttachDetail,
 } from "./aiContextEvents";
-import {
-	messageText,
-	normalizePath,
-	parseAddTrigger,
-} from "./aiPanelConstants";
+import { messageText, parseAddTrigger } from "./aiPanelConstants";
 import { useAiActions } from "./hooks/useAiActions";
 import { useAiToolEvents } from "./hooks/useAiToolEvents";
 import { useRigChat } from "./hooks/useRigChat";
@@ -27,7 +23,6 @@ import { useAiProfiles } from "./useAiProfiles";
 interface AIPanelProps {
 	isOpen: boolean;
 	activeFolderPath: string | null;
-	currentFilePath: string | null;
 	onAttachContextFiles: (paths: string[]) => Promise<void>;
 	onCreateNoteFromLastAssistant: (markdown: string) => Promise<void>;
 	onClose: () => void;
@@ -37,7 +32,6 @@ interface AIPanelProps {
 export function AIPanel({
 	isOpen,
 	activeFolderPath,
-	currentFilePath,
 	onAttachContextFiles,
 	onCreateNoteFromLastAssistant,
 	onClose,
@@ -45,15 +39,10 @@ export function AIPanel({
 	const chat = useRigChat();
 	const { aiAssistantMode } = useAISidebarContext();
 	const isChatMode = aiAssistantMode === "chat";
-	const normalizedCurrentFilePath = useMemo(
-		() => normalizePath(currentFilePath),
-		[currentFilePath],
-	);
 
 	const [input, setInput] = useState("");
 	const [addPanelOpen, setAddPanelOpen] = useState(false);
 	const [addPanelQuery, setAddPanelQuery] = useState("");
-	const [removedAutoContextFile, setRemovedAutoContextFile] = useState("");
 	const [historyExpanded, setHistoryExpanded] = useState(false);
 
 	const profiles = useAiProfiles();
@@ -95,22 +84,6 @@ export function AIPanel({
 		window.addEventListener(AI_CONTEXT_ATTACH_EVENT, onAttach);
 		return () => window.removeEventListener(AI_CONTEXT_ATTACH_EVENT, onAttach);
 	}, [context.addContext]);
-
-	useEffect(() => {
-		if (
-			removedAutoContextFile &&
-			removedAutoContextFile !== normalizedCurrentFilePath
-		)
-			setRemovedAutoContextFile("");
-		if (!isChatMode || !normalizedCurrentFilePath) return;
-		if (removedAutoContextFile === normalizedCurrentFilePath) return;
-		context.addContext("file", normalizedCurrentFilePath);
-	}, [
-		context.addContext,
-		isChatMode,
-		normalizedCurrentFilePath,
-		removedAutoContextFile,
-	]);
 
 	const canSend =
 		!toolEvents.isAwaitingResponse &&
@@ -221,17 +194,9 @@ export function AIPanel({
 
 	const handleRemoveContext = useCallback(
 		(kind: "folder" | "file", path: string) => {
-			const normalized = normalizePath(path);
-			if (
-				kind === "file" &&
-				isChatMode &&
-				normalizedCurrentFilePath &&
-				normalized === normalizedCurrentFilePath
-			)
-				setRemovedAutoContextFile(normalizedCurrentFilePath);
 			context.removeContext(kind, path);
 		},
-		[context.removeContext, isChatMode, normalizedCurrentFilePath],
+		[context.removeContext],
 	);
 
 	const handleLoadHistory = useCallback(

@@ -14,8 +14,7 @@
 	border-top-left-radius: calc(var(--app-radius) - var(--app-frame));
 	border-bottom-left-radius: calc(var(--app-radius) - var(--app-frame));
 	/* Shadow style matches sticky notes (two-layer), but softer. */
-	box-shadow: 0 0 0 1px var(--border-light), 2px 4px 8px rgba(0, 0, 0, 0.1), 0
-		1px 3px rgba(0, 0, 0, 0.08);
+	box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 .appShell.appShellAiOpen .mainArea {

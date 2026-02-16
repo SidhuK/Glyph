@@ -53,12 +53,11 @@ function contextKey(kind: ContextEntryKind, path: string): string {
 }
 
 export function useAiContext({
-	activeFolderPath,
+	activeFolderPath: _activeFolderPath,
 }: {
 	activeFolderPath: string | null;
 }) {
 	const [attachedContext, setAttachedContext] = useState<ContextEntry[]>([]);
-	const [removedActiveFolder, setRemovedActiveFolder] = useState(false);
 	const [contextSearch, setContextSearch] = useState("");
 	const [folderIndex, setFolderIndex] = useState<FolderEntry[]>([]);
 	const [fileIndex, setFileIndex] = useState<FolderEntry[]>([]);
@@ -73,71 +72,37 @@ export function useAiContext({
 	const folderFilesCacheRef = useRef<Map<string, string[]>>(new Map());
 	const fileTextCacheRef = useRef<Map<string, string>>(new Map());
 
-	const normalizedActive = useMemo(() => {
-		const next =
-			activeFolderPath != null ? normalizeRelPath(activeFolderPath) : "";
-		return next;
-	}, [activeFolderPath]);
-	const hasActiveFolder = activeFolderPath !== null;
-
-	// biome-ignore lint/correctness/useExhaustiveDependencies: reset on folder change
-	useEffect(() => {
-		setRemovedActiveFolder(false);
-	}, [activeFolderPath]);
-
 	const attachedFolders = useMemo(() => {
 		const seen = new Set<string>();
 		const list: ContextEntry[] = [];
-		if (hasActiveFolder && !removedActiveFolder) {
-			const key = contextKey("folder", normalizedActive);
-			seen.add(key);
-			list.push({
-				kind: "folder",
-				path: normalizedActive,
-				label: folderLabel(normalizedActive),
-			});
-		}
 		for (const entry of attachedContext) {
 			const key = contextKey(entry.kind, entry.path);
 			if (seen.has(key)) continue;
-			if (entry.kind === "folder" && !entry.path && !normalizedActive) continue;
 			seen.add(key);
 			list.push(entry);
 		}
 		return list;
-	}, [attachedContext, hasActiveFolder, normalizedActive, removedActiveFolder]);
+	}, [attachedContext]);
 
-	const addContext = useCallback(
-		(kind: ContextEntryKind, rawPath: string) => {
-			const path = normalizeRelPath(rawPath);
-			if (kind === "file" && !path) return;
-			if (kind === "folder" && path === normalizedActive) {
-				setRemovedActiveFolder(false);
-				return;
-			}
-			const label = kind === "folder" ? folderLabel(path) : fileLabel(path);
-			setAttachedContext((prev) => {
-				const key = contextKey(kind, path);
-				if (prev.some((it) => contextKey(it.kind, it.path) === key))
-					return prev;
-				return [...prev, { kind, path, label }];
-			});
-		},
-		[normalizedActive],
-	);
+	const addContext = useCallback((kind: ContextEntryKind, rawPath: string) => {
+		const path = normalizeRelPath(rawPath);
+		if (kind === "file" && !path) return;
+		const label = kind === "folder" ? folderLabel(path) : fileLabel(path);
+		setAttachedContext((prev) => {
+			const key = contextKey(kind, path);
+			if (prev.some((it) => contextKey(it.kind, it.path) === key)) return prev;
+			return [...prev, { kind, path, label }];
+		});
+	}, []);
 
 	const removeContext = useCallback(
 		(kind: ContextEntryKind, rawPath: string) => {
 			const path = normalizeRelPath(rawPath);
-			if (kind === "folder" && path === normalizedActive) {
-				setRemovedActiveFolder(true);
-				return;
-			}
 			setAttachedContext((prev) =>
 				prev.filter((it) => !(it.kind === kind && it.path === path)),
 			);
 		},
-		[normalizedActive],
+		[],
 	);
 
 	useEffect(() => {

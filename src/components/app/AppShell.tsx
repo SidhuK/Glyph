@@ -580,9 +580,6 @@ export function AppShell() {
 							? activeViewDoc.selector || ""
 							: null
 					}
-					currentFilePath={
-						activeMarkdownTabPath ?? activePreviewPath ?? activeFilePath ?? null
-					}
 					onAttachContextFiles={attachContextFiles}
 					onCreateNoteFromLastAssistant={createNoteFromAI}
 				/>
