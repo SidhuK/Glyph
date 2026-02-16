@@ -223,6 +223,11 @@ export function ModelSelector({
 		detailProviderKey && providerSupportMap
 			? providerSupportMap[detailProviderKey]
 			: undefined;
+	const listProviderKey = provider ? providerSupportKeyMap[provider] : undefined;
+	const listProviderSupport =
+		listProviderKey && providerSupportMap
+			? providerSupportMap[listProviderKey]
+			: undefined;
 	const providerTitle = logoProvider
 		? (providerLogoMap[logoProvider]?.label ?? logoProvider)
 		: provider
@@ -351,7 +356,10 @@ export function ModelSelector({
 								{!loading &&
 									!error &&
 									filteredModels.map((m) => {
-										const detailAvailable = hasDetailData(m);
+										const detailAvailable = hasDetailData(
+											m,
+											listProviderSupport,
+										);
 										const infoActive = detailModel?.id === m.id;
 										const handleInfoToggle = () =>
 											setDetailModelId((prev) => (prev === m.id ? null : m.id));

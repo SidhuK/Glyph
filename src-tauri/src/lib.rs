@@ -189,6 +189,8 @@ pub fn run() {
             _ => {}
         })
         .setup(|app| {
+            ai_rig::commands::refresh_provider_support_on_startup(app.handle().clone());
+
             #[cfg(target_os = "macos")]
             {
                 if let Some(window) = app.get_webview_window("main") {

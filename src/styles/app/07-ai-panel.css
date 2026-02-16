@@ -647,28 +647,40 @@
 	}
 }
 
-.aiContextChips {
+.aiPanel .aiContextChips {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 4px;
-	padding: 0 12px 6px;
+	gap: 2px;
+	padding: 0 12px 2px;
 }
 
-.aiContextChip {
+.aiPanel .aiContextChip {
 	display: inline-flex;
 	align-items: center;
-	gap: 4px;
-	padding: 2px 8px;
-	border-radius: 999px;
-	font-size: 11px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
-	background: color-mix(in srgb, var(--bg-secondary) 60%, transparent);
-	color: var(--text-secondary);
+	gap: 3px;
+	height: 20px;
+	padding: 0 6px;
+	border-radius: 3px;
+	font-size: 10px;
+	line-height: 1;
+	border: 1px solid color-mix(in srgb, var(--border-light) 45%, transparent);
+	background: transparent;
+	color: var(--text-tertiary);
 	cursor: pointer;
+	transition: border-color var(--transition-fast), color var(--transition-fast),
+		background var(--transition-fast);
 }
 
-.aiContextChip:hover {
-	border-color: color-mix(in srgb, #ff3b30 40%, transparent);
+.aiPanel .aiContextChipLabel {
+	max-width: 150px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.aiPanel .aiContextChip:hover {
+	border-color: color-mix(in srgb, var(--border-default) 75%, transparent);
+	background: transparent;
 	color: var(--text-primary);
 }
 
@@ -706,7 +718,8 @@
 .aiAddPanelItem {
 	display: flex;
 	align-items: center;
-	gap: 6px;
+	justify-content: flex-start;
+	width: 100%;
 	padding: 5px 8px;
 	border-radius: 6px;
 	font-size: var(--text-xs);
@@ -742,6 +755,10 @@
 	flex-shrink: 0;
 	padding: 10px 12px 12px;
 	background: transparent;
+}
+
+.aiPanel .aiContextChips + .aiComposer {
+	padding-top: 2px;
 }
 
 .aiComposerInputShell {

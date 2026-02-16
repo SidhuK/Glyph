@@ -2,7 +2,14 @@ import type { AiModel, ProviderSupportEntry } from "../../lib/tauri";
 import styles from "./ModelSelector.module.css";
 import { formatEndpointLabel } from "./modelSelectorConstants";
 
-export function hasDetailData(model: AiModel): boolean {
+export function hasDetailData(
+	model: AiModel,
+	providerSupport?: ProviderSupportEntry | null,
+): boolean {
+	const hasProviderSupport = Boolean(
+		providerSupport &&
+			Object.values(providerSupport.endpoints).some((enabled) => enabled),
+	);
 	return Boolean(
 		model.context_length ||
 			model.max_completion_tokens ||
@@ -12,7 +19,8 @@ export function hasDetailData(model: AiModel): boolean {
 			model.input_modalities?.length ||
 			model.output_modalities?.length ||
 			model.tokenizer ||
-			model.supported_parameters?.length,
+			model.supported_parameters?.length ||
+			hasProviderSupport,
 	);
 }
 

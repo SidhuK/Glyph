@@ -1,5 +1,6 @@
 use tauri::{AppHandle, Emitter, Manager, State};
 use tauri_plugin_notification::NotificationExt;
+use tracing::warn;
 
 use crate::{io_atomic, vault::VaultState};
 
@@ -14,7 +15,6 @@ use super::types::{
     AiAssistantMode, AiChatRequest, AiChatStartResult, AiDoneEvent, AiErrorEvent, AiMessage,
     AiProfile, AiStoredToolEvent,
 };
-use crate::lattice_paths;
 use serde::{Deserialize, Serialize};
 use serde_json;
 use std::collections::HashMap;
@@ -25,8 +25,6 @@ use tokio_util::sync::CancellationToken;
 const PROVIDER_SUPPORT_URL: &str =
     "https://raw.githubusercontent.com/BerriAI/litellm/refs/heads/main/provider_endpoints_support.json";
 const PROVIDER_SUPPORT_CACHE_FILE: &str = "provider_endpoints_support.json";
-const PROVIDER_SUPPORT_FALLBACK_JSON: &str =
-    include_str!("../../data/provider_endpoints_support.json");
 
 fn is_transient_ai_error(message: &str) -> bool {
     let msg = message.to_lowercase();
@@ -71,6 +69,27 @@ fn read_cached_provider_support(cache_path: &PathBuf) -> Option<ProviderSupportD
     fs::read(cache_path)
         .ok()
         .and_then(|bytes| serde_json::from_slice(&bytes).ok())
+}
+
+fn provider_support_cache_path(app: &AppHandle) -> Result<PathBuf, String> {
+    let dir = app.path().app_config_dir().map_err(|e| e.to_string())?;
+    fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
+    Ok(dir.join(PROVIDER_SUPPORT_CACHE_FILE))
+}
+
+pub fn refresh_provider_support_on_startup(app: AppHandle) {
+    tauri::async_runtime::spawn(async move {
+        let cache_path = match provider_support_cache_path(&app) {
+            Ok(path) => path,
+            Err(err) => {
+                warn!("provider support startup refresh skipped: {err}");
+                return;
+            }
+        };
+        if let Err(err) = fetch_provider_support(&cache_path).await {
+            warn!("provider support startup refresh failed: {err}");
+        }
+    });
 }
 
 #[tauri::command]
@@ -199,24 +218,18 @@ pub async fn ai_secret_list(vault_state: State<'_, VaultState>) -> Result<Vec<St
 
 #[tauri::command]
 pub async fn ai_provider_support(
-    vault_state: State<'_, VaultState>,
+    app: AppHandle,
 ) -> Result<ProviderSupportDocument, String> {
-    let root = vault_state
-        .current_root()
-        .map_err(|_| "Open a vault to fetch provider metadata".to_string())?;
-    let cache_dir = lattice_paths::ensure_lattice_cache_dir(&root)?;
-    let cache_path = cache_dir.join(PROVIDER_SUPPORT_CACHE_FILE);
+    let cache_path = provider_support_cache_path(&app)?;
     match fetch_provider_support(&cache_path).await {
         Ok(doc) => Ok(doc),
         Err(fetch_err) => {
             if let Some(cached) = read_cached_provider_support(&cache_path) {
                 return Ok(cached);
             }
-            serde_json::from_str(PROVIDER_SUPPORT_FALLBACK_JSON).map_err(|parse_err| {
-                format!(
-                    "provider metadata unavailable ({fetch_err}); fallback parse failed ({parse_err})"
-                )
-            })
+            Err(format!(
+                "provider metadata unavailable ({fetch_err}); no cached provider data found"
+            ))
         }
     }
 }

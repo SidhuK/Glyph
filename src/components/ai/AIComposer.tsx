@@ -9,7 +9,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import { motion, useReducedMotion } from "motion/react";
 import { useAISidebarContext } from "../../contexts";
-import { FileText, Layout, X } from "../Icons";
+import { FileText, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { ModelSelector } from "./ModelSelector";
 import { AI_MODES } from "./aiPanelConstants";
@@ -35,6 +35,16 @@ interface AIComposerProps {
 	onAddContext: (kind: "folder" | "file", path: string) => void;
 	onRemoveContext: (kind: "folder" | "file", path: string) => void;
 	onAttachContextFiles: (paths: string[]) => Promise<void>;
+}
+
+function fileNameFromPath(path: string): string {
+	const parts = path.split(/[\\/]/).filter(Boolean);
+	return parts.length ? parts[parts.length - 1] : path;
+}
+
+function truncateLabel(text: string, max = 28): string {
+	if (text.length <= max) return text;
+	return `${text.slice(0, max - 1)}…`;
 }
 
 export function AIComposer({
@@ -72,7 +82,11 @@ export function AIComposer({
 							onClick={() => onRemoveContext(item.kind, item.path)}
 							title={`Remove ${item.label}`}
 						>
-							<span>{item.label || "Vault"}</span>
+							<span className="aiContextChipLabel">
+								{item.kind === "file"
+									? truncateLabel(fileNameFromPath(item.path || item.label))
+									: (item.label || "Vault")}
+							</span>
 							<X size={10} />
 						</button>
 					))}
@@ -103,16 +117,13 @@ export function AIComposer({
 									className="aiAddPanelItem"
 									onClick={() => onAddContext(item.kind, item.path)}
 								>
-									{item.kind === "folder" ? (
-										<Layout size={12} />
-									) : (
-										<FileText size={12} />
-									)}
 									<span>{item.label || "Vault"}</span>
 								</button>
 							))
 						) : (
-							<div className="aiAddPanelEmpty">No results</div>
+							<div className="aiAddPanelEmpty">
+								{panelQuery.trim() ? "No results" : "Type to search files & folders"}
+							</div>
 						)}
 					</div>
 					<button

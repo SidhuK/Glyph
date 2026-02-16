@@ -155,12 +155,9 @@ export function useAiContext({
 
 	const visibleSuggestions = useMemo(() => {
 		const q = contextSearch.trim().toLowerCase();
-		const folders = q
-			? folderIndex.filter((f) => f.label.toLowerCase().includes(q))
-			: folderIndex;
-		const files = q
-			? fileIndex.filter((f) => f.label.toLowerCase().includes(q))
-			: fileIndex;
+		if (!q) return [];
+		const folders = folderIndex.filter((f) => f.label.toLowerCase().includes(q));
+		const files = fileIndex.filter((f) => f.label.toLowerCase().includes(q));
 		return [
 			...folders.map((f) => ({ kind: "folder" as const, ...f })),
 			...files.map((f) => ({ kind: "file" as const, ...f })),
