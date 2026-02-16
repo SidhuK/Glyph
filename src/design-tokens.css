@@ -180,7 +180,7 @@
    SEMANTIC TOKENS - DARK THEME (Obsidian-inspired)
    ───────────────────────────────────────────────────────────────────────────── */
 @media (prefers-color-scheme: dark) {
-	:root {
+	:root:not(.light):not(.dark) {
 		/* Surfaces - Obsidian-inspired neutral dark */
 		--bg-primary: #1e1e1e;
 		--bg-secondary: #262626;
@@ -244,6 +244,71 @@
 		--chrome-border: rgba(255, 255, 255, 0.1);
 		--chrome-blur: 22px;
 	}
+}
+
+:root.dark {
+	/* Surfaces - Obsidian-inspired neutral dark */
+	--bg-primary: #1e1e1e;
+	--bg-secondary: #262626;
+	--bg-tertiary: #303030;
+	--bg-hover: rgba(255, 255, 255, 0.06);
+	--bg-active: rgba(255, 255, 255, 0.12);
+	--bg-sidebar: #262626;
+	--bg-canvas: #1e1e1e;
+
+	/* Text */
+	--text-primary: rgba(255, 255, 255, 0.92);
+	--text-secondary: rgba(255, 255, 255, 0.65);
+	--text-tertiary: rgba(255, 255, 255, 0.45);
+	--text-placeholder: rgba(255, 255, 255, 0.3);
+	--text-inverse: var(--color-gray-900);
+	--text-accent: rgba(255, 255, 255, 0.92);
+	--text-error: var(--color-red-500);
+
+	/* Borders */
+	--border-light: rgba(255, 255, 255, 0.06);
+	--border-default: rgba(255, 255, 255, 0.1);
+	--border-strong: rgba(255, 255, 255, 0.18);
+	--border-focus: rgba(255, 255, 255, 0.24);
+
+	/* Interactive */
+	--interactive-hover: rgba(255, 255, 255, 0.06);
+	--interactive-active: rgba(255, 255, 255, 0.12);
+	--interactive-accent: rgba(255, 255, 255, 0.92);
+	--interactive-accent-hover: rgba(255, 255, 255, 1);
+
+	/* Links - Notion-like blue on dark surfaces */
+	--link-color: var(--color-blue-300);
+	--link-color-hover: var(--color-blue-200);
+
+	/* Selection */
+	--selection-bg: rgba(255, 255, 255, 0.12);
+	--selection-bg-muted: rgba(255, 255, 255, 0.08);
+
+	/* Feedback */
+	--feedback-error-bg: rgba(224, 62, 62, 0.18);
+	--feedback-success-bg: rgba(15, 123, 15, 0.18);
+
+	/* Scrollbar */
+	--scrollbar-thumb: rgba(255, 255, 255, 0.16);
+	--scrollbar-thumb-hover: rgba(255, 255, 255, 0.24);
+
+	/* Shadows - softer in dark mode */
+	--shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
+	--shadow-md: 0 2px 4px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15);
+	--shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 0, 0, 0.2);
+	--shadow-xl: 0 8px 16px rgba(0, 0, 0, 0.25), 0 24px 48px rgba(0, 0, 0, 0.3);
+	--shadow-float: 0 0 0 1px rgba(255, 255, 255, 0.06), 0 4px 12px
+		rgba(0, 0, 0, 0.3), 0 16px 32px rgba(0, 0, 0, 0.25);
+
+	/* Glass morphism - dark mode (neutral, no tint) */
+	--glass-bg: rgba(30, 30, 30, 0.55);
+	--glass-border: rgba(255, 255, 255, 0.08);
+	--chrome-bg: rgba(38, 38, 38, 0.35);
+	--chrome-bg-strong: rgba(38, 38, 38, 0.45);
+	--chrome-sidebar-bg: var(--chrome-bg);
+	--chrome-border: rgba(255, 255, 255, 0.1);
+	--chrome-blur: 22px;
 }
 
 /* ─────────────────────────────────────────────────────────────────────────────
