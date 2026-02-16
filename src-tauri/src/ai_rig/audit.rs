@@ -73,6 +73,7 @@ fn derive_chat_title(messages: &[AiMessage]) -> String {
 pub fn write_audit_log(
     vault_root: &Path,
     job_id: &str,
+    history_id: &str,
     profile: &AiProfile,
     request: &AiChatRequest,
     response: &str,
@@ -113,7 +114,7 @@ pub fn write_audit_log(
     let _ = io_atomic::write_atomic(&path, &bytes);
     write_chat_history(
         vault_root,
-        job_id,
+        history_id,
         profile,
         request,
         &response_truncated,
@@ -126,7 +127,7 @@ pub fn write_audit_log(
 
 fn write_chat_history(
     vault_root: &Path,
-    job_id: &str,
+    history_id: &str,
     profile: &AiProfile,
     request: &AiChatRequest,
     response: &str,
@@ -135,7 +136,7 @@ fn write_chat_history(
     created_at_ms: u64,
     tool_events: &[AiStoredToolEvent],
 ) {
-    let path = match history_log_path(vault_root, job_id) {
+    let path = match history_log_path(vault_root, history_id) {
         Ok(p) => p,
         Err(_) => return,
     };
@@ -155,7 +156,7 @@ fn write_chat_history(
 
     let payload = serde_json::json!({
         "version": 1,
-        "job_id": job_id,
+        "job_id": history_id,
         "title": title,
         "created_at_ms": created_at_ms,
         "cancelled": cancelled,

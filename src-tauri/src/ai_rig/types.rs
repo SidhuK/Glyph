@@ -64,6 +64,8 @@ pub struct AiChatRequest {
     pub profile_id: String,
     pub messages: Vec<AiMessage>,
     #[serde(default)]
+    pub thread_id: Option<String>,
+    #[serde(default)]
     pub mode: AiAssistantMode,
     pub context: Option<String>,
     #[serde(default)]

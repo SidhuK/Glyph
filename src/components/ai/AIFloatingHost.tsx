@@ -9,7 +9,6 @@ interface AIFloatingHostProps {
 	onToggle: () => void;
 	activeFolderPath: string | null;
 	onAttachContextFiles: (paths: string[]) => Promise<void>;
-	onCreateNoteFromLastAssistant: (markdown: string) => Promise<void>;
 }
 
 export function AIFloatingHost({
@@ -17,7 +16,6 @@ export function AIFloatingHost({
 	onToggle,
 	activeFolderPath,
 	onAttachContextFiles,
-	onCreateNoteFromLastAssistant,
 }: AIFloatingHostProps) {
 	const { aiPanelWidth } = useAISidebarContext();
 	const panelWidth = aiPanelWidth || 380;
@@ -53,7 +51,6 @@ export function AIFloatingHost({
 								activeFolderPath={activeFolderPath}
 								onClose={onToggle}
 								onAttachContextFiles={onAttachContextFiles}
-								onCreateNoteFromLastAssistant={onCreateNoteFromLastAssistant}
 								width={panelWidth}
 							/>
 						</motion.div>

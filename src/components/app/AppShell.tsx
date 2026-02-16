@@ -581,7 +581,6 @@ export function AppShell() {
 							: null
 					}
 					onAttachContextFiles={attachContextFiles}
-					onCreateNoteFromLastAssistant={createNoteFromAI}
 				/>
 			)}
 			<AnimatePresence>

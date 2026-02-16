@@ -12,7 +12,7 @@ import {
 	AI_CONTEXT_ATTACH_EVENT,
 	type AiContextAttachDetail,
 } from "./aiContextEvents";
-import { messageText, parseAddTrigger } from "./aiPanelConstants";
+import { parseAddTrigger } from "./aiPanelConstants";
 import { useAiActions } from "./hooks/useAiActions";
 import { useAiToolEvents } from "./hooks/useAiToolEvents";
 import { useRigChat } from "./hooks/useRigChat";
@@ -24,7 +24,6 @@ interface AIPanelProps {
 	isOpen: boolean;
 	activeFolderPath: string | null;
 	onAttachContextFiles: (paths: string[]) => Promise<void>;
-	onCreateNoteFromLastAssistant: (markdown: string) => Promise<void>;
 	onClose: () => void;
 	width?: number;
 }
@@ -33,7 +32,6 @@ export function AIPanel({
 	isOpen,
 	activeFolderPath,
 	onAttachContextFiles,
-	onCreateNoteFromLastAssistant,
 	onClose,
 }: AIPanelProps) {
 	const chat = useRigChat();
@@ -89,12 +87,6 @@ export function AIPanel({
 		!toolEvents.isAwaitingResponse &&
 		Boolean(input.trim()) &&
 		Boolean(profiles.activeProfileId);
-	const lastAssistantMsg = [...chat.messages]
-		.reverse()
-		.find((m) => m.role === "assistant");
-	const lastAssistantText = lastAssistantMsg
-		? messageText(lastAssistantMsg)
-		: "";
 	const lastUserMessageIndex = useMemo(() => {
 		for (let i = chat.messages.length - 1; i >= 0; i--) {
 			if (chat.messages[i]?.role === "user") return i;
@@ -219,6 +211,7 @@ export function AIPanel({
 						: Date.now(),
 			})) as ToolTimelineEvent[];
 			toolEvents.setToolTimeline(restoredTimeline);
+			chat.setThreadId(jobId);
 			chat.setMessages(loaded.messages);
 			chat.clearError();
 		},
@@ -235,6 +228,7 @@ export function AIPanel({
 		setInput("");
 		scheduleResize();
 		actions.setAssistantActionError("");
+		chat.setThreadId(null);
 		chat.setMessages([]);
 		chat.clearError();
 	}, [actions, chat, scheduleResize, toolEvents]);
@@ -370,8 +364,6 @@ export function AIPanel({
 					setInput={setInput}
 					isAwaitingResponse={toolEvents.isAwaitingResponse}
 					canSend={canSend}
-					isChatMode={isChatMode}
-					lastAssistantText={lastAssistantText}
 					onSend={() => void handleSend()}
 					onStop={() => chat.stop()}
 					composerInputRef={composerInputRef}
@@ -386,7 +378,6 @@ export function AIPanel({
 					onAddContext={handleAddContext}
 					onRemoveContext={handleRemoveContext}
 					onAttachContextFiles={onAttachContextFiles}
-					onCreateNoteFromLastAssistant={onCreateNoteFromLastAssistant}
 				/>
 			</div>
 		</div>

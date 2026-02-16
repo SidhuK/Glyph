@@ -9,7 +9,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import { motion, useReducedMotion } from "motion/react";
 import { useAISidebarContext } from "../../contexts";
-import { AiLattice, FileText, Layout, X } from "../Icons";
+import { FileText, Layout, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { ModelSelector } from "./ModelSelector";
 import { AI_MODES } from "./aiPanelConstants";
@@ -21,8 +21,6 @@ interface AIComposerProps {
 	setInput: (value: string) => void;
 	isAwaitingResponse: boolean;
 	canSend: boolean;
-	isChatMode: boolean;
-	lastAssistantText: string;
 	onSend: () => void;
 	onStop: () => void;
 	composerInputRef: React.RefObject<HTMLTextAreaElement | null>;
@@ -37,7 +35,6 @@ interface AIComposerProps {
 	onAddContext: (kind: "folder" | "file", path: string) => void;
 	onRemoveContext: (kind: "folder" | "file", path: string) => void;
 	onAttachContextFiles: (paths: string[]) => Promise<void>;
-	onCreateNoteFromLastAssistant: (markdown: string) => Promise<void>;
 }
 
 export function AIComposer({
@@ -45,8 +42,6 @@ export function AIComposer({
 	setInput,
 	isAwaitingResponse,
 	canSend,
-	isChatMode,
-	lastAssistantText,
 	onSend,
 	onStop,
 	composerInputRef,
@@ -61,7 +56,6 @@ export function AIComposer({
 	onAddContext,
 	onRemoveContext,
 	onAttachContextFiles,
-	onCreateNoteFromLastAssistant,
 }: AIComposerProps) {
 	const { aiAssistantMode, setAiAssistantMode } = useAISidebarContext();
 	const shouldReduceMotion = useReducedMotion();
@@ -137,7 +131,7 @@ export function AIComposer({
 						ref={composerInputRef}
 						className="aiComposerInput"
 						value={input}
-						placeholder="Ask AI…"
+						placeholder="Ask Lattice AI"
 						disabled={isAwaitingResponse}
 						onChange={(e) => {
 							setInput(e.target.value);
@@ -231,19 +225,6 @@ export function AIComposer({
 								disabled={context.attachedFolders.length === 0}
 							>
 								<FileText size={14} />
-							</Button>
-							<Button
-								type="button"
-								variant="ghost"
-								size="icon-sm"
-								aria-label="Create note from last reply"
-								title="Create note from last reply"
-								onClick={() =>
-									void onCreateNoteFromLastAssistant(lastAssistantText)
-								}
-								disabled={isChatMode || !lastAssistantText}
-							>
-								<AiLattice size={18} />
 							</Button>
 						</div>
 						<div className="aiComposerRight">

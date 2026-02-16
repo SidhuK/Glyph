@@ -19,6 +19,7 @@ type SendMessageArgs = { text: string };
 type SendMessageOptions = {
 	body?: {
 		profile_id?: string;
+		thread_id?: string;
 		mode?: AiAssistantMode;
 		context?: string;
 		context_manifest?: unknown;
@@ -50,6 +51,7 @@ export function useRigChat() {
 
 	const messagesRef = useRef<UIMessage[]>([]);
 	const activeJobIdRef = useRef<string | null>(null);
+	const activeThreadIdRef = useRef<string | null>(null);
 	const stopListenersRef = useRef<Array<() => void>>([]);
 	const doneTimerRef = useRef<number | null>(null);
 
@@ -129,10 +131,15 @@ export function useRigChat() {
 
 			try {
 				clearDoneTimer();
+				const requestedThreadId = options?.body?.thread_id?.trim() ?? "";
+				const threadId =
+					requestedThreadId || activeThreadIdRef.current || crypto.randomUUID();
+				activeThreadIdRef.current = threadId;
 				const { job_id: jobId } = await invoke("ai_chat_start", {
 					request: {
 						profile_id: profileId,
 						messages: asAiMessages([...messagesRef.current, userMessage]),
+						thread_id: threadId,
 						mode: options?.body?.mode ?? "create",
 						context: options?.body?.context || undefined,
 						context_manifest: options?.body?.context_manifest,
@@ -206,7 +213,13 @@ export function useRigChat() {
 		status,
 		error,
 		sendMessage,
-		setMessages,
+		setMessages: (next: UIMessage[]) => {
+			if (next.length === 0) activeThreadIdRef.current = null;
+			setMessages(next);
+		},
+		setThreadId: (threadId: string | null) => {
+			activeThreadIdRef.current = threadId?.trim() || null;
+		},
 		clearError,
 		stop,
 	};

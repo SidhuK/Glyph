@@ -329,6 +329,7 @@ interface TauriCommands {
 			request: {
 				profile_id: string;
 				messages: AiMessage[];
+				thread_id?: string;
 				mode: AiAssistantMode;
 				context?: string;
 				context_manifest?: unknown;

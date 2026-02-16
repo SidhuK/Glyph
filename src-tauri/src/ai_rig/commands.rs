@@ -256,6 +256,20 @@ pub async fn ai_chat_start(
     mut request: AiChatRequest,
 ) -> Result<AiChatStartResult, String> {
     let job_id = uuid::Uuid::new_v4().to_string();
+    let history_id = request
+        .thread_id
+        .as_deref()
+        .and_then(|id| {
+            let trimmed = id.trim();
+            if trimmed.is_empty() {
+                None
+            } else if uuid::Uuid::parse_str(trimmed).is_ok() {
+                Some(trimmed.to_string())
+            } else {
+                None
+            }
+        })
+        .unwrap_or_else(|| job_id.clone());
     let cancel = ai_state.register(&job_id);
 
     if !request.audit {
@@ -342,6 +356,7 @@ pub async fn ai_chat_start(
                     write_audit_log(
                         &root,
                         &job_id_for_task,
+                        &history_id,
                         &profile,
                         &request,
                         &full,
