@@ -1,5 +1,6 @@
 import { memo, useCallback } from "react";
 import type { DragEvent, MouseEvent } from "react";
+import { TASKS_TAB_ID } from "../../lib/tasks";
 
 interface TabBarProps {
 	openTabs: string[];
@@ -27,6 +28,7 @@ export function TabBar({
 	onReorder,
 }: TabBarProps) {
 	const fileName = useCallback((path: string) => {
+		if (path === TASKS_TAB_ID) return "Tasks";
 		const parts = path.split("/").filter(Boolean);
 		return parts[parts.length - 1] ?? path;
 	}, []);
@@ -125,7 +127,7 @@ const TabItem = memo(function TabItem({
 				type="button"
 				className={`mainTab ${isActive ? "is-active" : ""}`}
 				onClick={handleSelect}
-				title={path}
+				title={fileName}
 				draggable
 				onDragStart={handleDragStart}
 				onDragEnd={onDragEnd}

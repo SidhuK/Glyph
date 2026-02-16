@@ -7,6 +7,7 @@ mod links;
 mod schema;
 mod search_hybrid;
 mod tags;
+mod tasks;
 mod types;
 
 pub use db::open_db;

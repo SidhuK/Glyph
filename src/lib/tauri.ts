@@ -143,6 +143,24 @@ export interface IndexNotePreview {
 	preview: string;
 }
 
+export type TaskBucket = "inbox" | "today" | "upcoming";
+
+export interface TaskItem {
+	task_id: string;
+	note_id: string;
+	note_title: string;
+	note_path: string;
+	line_start: number;
+	raw_text: string;
+	checked: boolean;
+	status: string;
+	priority: number;
+	due_date: string | null;
+	scheduled_date: string | null;
+	section: string | null;
+	note_updated: string;
+}
+
 export interface LinkPreview {
 	url: string;
 	hostname: string;
@@ -310,6 +328,23 @@ interface TauriCommands {
 	recent_notes: CommandDef<{ limit?: number | null }, SearchResult[]>;
 	tags_list: CommandDef<{ limit?: number | null }, TagCount[]>;
 	tag_notes: CommandDef<{ tag: string; limit?: number | null }, SearchResult[]>;
+	tasks_query: CommandDef<
+		{
+			bucket: TaskBucket;
+			today: string;
+			limit?: number | null;
+		},
+		TaskItem[]
+	>;
+	task_set_checked: CommandDef<{ task_id: string; checked: boolean }, void>;
+	task_set_dates: CommandDef<
+		{
+			task_id: string;
+			scheduled_date?: string | null;
+			due_date?: string | null;
+		},
+		void
+	>;
 	backlinks: CommandDef<{ note_id: string }, BacklinkItem[]>;
 	link_preview: CommandDef<{ url: string; force?: boolean }, LinkPreview>;
 

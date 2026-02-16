@@ -1,11 +1,13 @@
 import { motion } from "motion/react";
-import { memo, useMemo } from "react";
+import { memo, useEffect, useMemo } from "react";
 import { useVault } from "../../contexts";
 import { formatShortcutPartsForPlatform } from "../../lib/shortcuts/platform";
+import { TASKS_TAB_ID } from "../../lib/tasks";
 import { isInAppPreviewable } from "../../utils/filePreview";
 import { FileText } from "../Icons";
 import { FilePreviewPane } from "../preview/FilePreviewPane";
 import { MarkdownEditorPane } from "../preview/MarkdownEditorPane";
+import { TasksPane } from "../tasks/TasksPane";
 import { TabBar } from "./TabBar";
 import { WelcomeScreen } from "./WelcomeScreen";
 import { useTabManager } from "./useTabManager";
@@ -18,6 +20,7 @@ interface MainContentProps {
 	onOpenFolder: (dirPath: string) => Promise<void>;
 	onOpenCommandPalette: () => void;
 	onOpenSearchPalette: () => void;
+	openTasksRequest: number;
 }
 
 export const MainContent = memo(function MainContent({
@@ -25,6 +28,7 @@ export const MainContent = memo(function MainContent({
 	onOpenFolder,
 	onOpenCommandPalette,
 	onOpenSearchPalette,
+	openTasksRequest,
 }: MainContentProps) {
 	const {
 		info,
@@ -48,9 +52,15 @@ export const MainContent = memo(function MainContent({
 		setDirtyByPath,
 		closeTab,
 		reorderTabs,
+		openSpecialTab,
 		recentFiles,
 		canvasLoadingMessage,
 	} = useTabManager(vaultPath);
+
+	useEffect(() => {
+		if (!vaultPath || openTasksRequest === 0) return;
+		openSpecialTab(TASKS_TAB_ID);
+	}, [openSpecialTab, openTasksRequest, vaultPath]);
 
 	const viewerPath = activeTabPath;
 	const commandShortcutParts = useMemo(
@@ -64,6 +74,11 @@ export const MainContent = memo(function MainContent({
 
 	const content = useMemo(() => {
 		if (!viewerPath) return null;
+		if (viewerPath === TASKS_TAB_ID) {
+			return (
+				<TasksPane onOpenFile={(relPath) => void fileTree.openFile(relPath)} />
+			);
+		}
 		if (viewerPath.toLowerCase().endsWith(".md")) {
 			return (
 				<MarkdownEditorPane

@@ -379,6 +379,64 @@
 	display: inline;
 }
 
+.tiptapHostInline {
+	position: relative;
+}
+
+.taskInlineDateBtn {
+	position: absolute;
+	left: 20px;
+	z-index: 15;
+	width: 14px;
+	height: 14px;
+	border: none;
+	background: transparent;
+	color: var(--text-secondary);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+}
+
+.taskInlineDateBtn:hover {
+	color: var(--text-primary);
+	background: transparent;
+}
+
+.taskInlineDateGlyph {
+	font-size: 11px;
+	line-height: 1;
+}
+
+.taskInlineDatePopover {
+	width: 220px;
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-2);
+}
+
+.taskInlineDatePopover label {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	font-size: var(--text-xs);
+	color: var(--text-secondary);
+}
+
+.taskInlineDatePopover input[type="date"] {
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-md);
+	background: var(--bg-primary);
+	padding: 6px 8px;
+	font-size: var(--text-xs);
+}
+
+.taskInlineDateActions {
+	display: flex;
+	justify-content: flex-end;
+	gap: var(--space-2);
+}
+
 .slashCommandMenu {
 	position: absolute;
 	min-width: 220px;

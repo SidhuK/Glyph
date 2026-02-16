@@ -19,6 +19,7 @@ interface SidebarProps {
 	onToggleSidebar: () => void;
 	onOpenDailyNote: () => void;
 	isDailyNoteCreating: boolean;
+	onOpenTasks: () => void;
 }
 
 export const Sidebar = memo(function Sidebar({
@@ -35,6 +36,7 @@ export const Sidebar = memo(function Sidebar({
 	onToggleSidebar,
 	onOpenDailyNote,
 	isDailyNoteCreating,
+	onOpenTasks,
 }: SidebarProps) {
 	// Contexts
 	const { onOpenVault } = useVault();
@@ -87,6 +89,7 @@ export const Sidebar = memo(function Sidebar({
 							onSelectTag={onSelectTag}
 							onOpenDailyNote={onOpenDailyNote}
 							isDailyNoteCreating={isDailyNoteCreating}
+							onOpenTasks={onOpenTasks}
 						/>
 					</motion.div>
 				)}

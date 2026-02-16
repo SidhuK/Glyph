@@ -3,9 +3,12 @@ import { memo, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { joinYamlFrontmatter } from "../../lib/notePreview";
 import { type BacklinkItem, invoke } from "../../lib/tauri";
 import { ChevronDown, ChevronRight } from "../Icons";
+import { Button } from "../ui/shadcn/button";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 import { EditorRibbon } from "./EditorRibbon";
 import { useNoteEditor } from "./hooks/useNoteEditor";
 import { dispatchWikiLinkClick } from "./markdown/editorEvents";
+import { getTaskDatesByOrdinal, updateTaskLineByOrdinal } from "./taskMetadata";
 import type { CanvasNoteInlineEditorProps } from "./types";
 
 function normalizeBody(markdown: string): string {
@@ -32,6 +35,22 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	const lastFrontmatterRef = useRef(frontmatter);
 	const [frontmatterExpanded, setFrontmatterExpanded] = useState(false);
 	const [backlinks, setBacklinks] = useState<BacklinkItem[]>([]);
+	const tiptapHostRef = useRef<HTMLDivElement | null>(null);
+	const [taskAnchors, setTaskAnchors] = useState<
+		Array<{
+			ordinal: number;
+			top: number;
+		}>
+	>([]);
+	const [selectedTaskOrdinal, setSelectedTaskOrdinal] = useState<number | null>(
+		null,
+	);
+	const [scheduleAnchor, setScheduleAnchor] = useState<{
+		ordinal: number;
+		top: number;
+	} | null>(null);
+	const [scheduledDate, setScheduledDate] = useState("");
+	const [dueDate, setDueDate] = useState("");
 
 	useEffect(() => {
 		if (frontmatter === lastFrontmatterRef.current) return;
@@ -124,13 +143,92 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		onChange(nextMarkdown);
 	};
 
-	const handleFrontmatterPreviewClick = (
-		event: React.MouseEvent<HTMLDivElement>,
-	) => {
-		const target = event.target;
-		if (!(target instanceof HTMLElement)) return;
-		if (target.closest(".frontmatterEditor")) return;
-		setFrontmatterExpanded((prev) => !prev);
+	useEffect(() => {
+		if (!editor || mode !== "rich") {
+			setTaskAnchors([]);
+			setSelectedTaskOrdinal(null);
+			setScheduleAnchor(null);
+			return;
+		}
+		const host = tiptapHostRef.current;
+		if (!host) return;
+
+		const syncAnchors = () => {
+			const items = Array.from(
+				host.querySelectorAll("li[data-type='taskItem'], li[data-checked]"),
+			) as HTMLElement[];
+			setTaskAnchors(
+				items.map((item, ordinal) => ({ ordinal, top: item.offsetTop + 2 })),
+			);
+		};
+		const syncSelectedTask = () => {
+			const selection = window.getSelection();
+			if (!selection?.anchorNode) {
+				setSelectedTaskOrdinal(null);
+				return;
+			}
+			const anchorElement =
+				selection.anchorNode instanceof HTMLElement
+					? selection.anchorNode
+					: selection.anchorNode.parentElement;
+			if (!anchorElement || !host.contains(anchorElement)) {
+				setSelectedTaskOrdinal(null);
+				return;
+			}
+			const taskEl = anchorElement.closest(
+				"li[data-type='taskItem'], li[data-checked]",
+			) as HTMLElement | null;
+			if (!taskEl) {
+				setSelectedTaskOrdinal(null);
+				return;
+			}
+			const items = Array.from(
+				host.querySelectorAll("li[data-type='taskItem'], li[data-checked]"),
+			) as HTMLElement[];
+			const ordinal = items.indexOf(taskEl);
+			setSelectedTaskOrdinal(ordinal >= 0 ? ordinal : null);
+		};
+
+		syncAnchors();
+		syncSelectedTask();
+		const observer = new MutationObserver(() => syncAnchors());
+		observer.observe(host, {
+			childList: true,
+			subtree: true,
+			characterData: true,
+		});
+		document.addEventListener("selectionchange", syncSelectedTask);
+		editor.on("selectionUpdate", syncSelectedTask);
+		return () => {
+			observer.disconnect();
+			document.removeEventListener("selectionchange", syncSelectedTask);
+			editor.off("selectionUpdate", syncSelectedTask);
+		};
+	}, [editor, mode]);
+
+	const selectedTaskAnchor =
+		selectedTaskOrdinal == null
+			? null
+			: (taskAnchors.find((anchor) => anchor.ordinal === selectedTaskOrdinal) ??
+				null);
+
+	const openTaskPopover = (anchor: { ordinal: number; top: number }) => {
+		setScheduleAnchor(anchor);
+		const existing = getTaskDatesByOrdinal(markdown, anchor.ordinal);
+		setScheduledDate(existing?.scheduledDate ?? "");
+		setDueDate(existing?.dueDate ?? "");
+	};
+	const applyTaskDates = () => {
+		if (!scheduleAnchor) return;
+		const next = updateTaskLineByOrdinal(
+			markdown,
+			scheduleAnchor.ordinal,
+			scheduledDate,
+			dueDate,
+		);
+		if (!next) return;
+		onChange(next);
+		setScheduleAnchor(null);
 	};
 
 	return (
@@ -154,14 +252,12 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 					/>
 				) : null}
 				{mode === "rich" ? (
-					<div
-						className="frontmatterPreview frontmatterPreviewInteractive mono"
-						onClick={handleFrontmatterPreviewClick}
-					>
+					<div className="frontmatterPreview frontmatterPreviewInteractive mono">
 						<button
 							type="button"
 							className="frontmatterToggle"
 							aria-expanded={frontmatterExpanded}
+							onClick={() => setFrontmatterExpanded((prev) => !prev)}
 						>
 							{frontmatterExpanded ? (
 								<ChevronDown size={12} />
@@ -217,6 +313,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 				) : null}
 				{mode !== "plain" ? (
 					<div
+						ref={tiptapHostRef}
 						className={[
 							"tiptapHostInline",
 							mode === "preview" ? "is-preview" : "",
@@ -228,6 +325,75 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 							.join(" ")}
 					>
 						<EditorContent editor={editor} />
+						{canEdit && selectedTaskAnchor ? (
+							<Popover
+								open={scheduleAnchor?.ordinal === selectedTaskAnchor.ordinal}
+								onOpenChange={(open) => {
+									if (!open) setScheduleAnchor(null);
+								}}
+							>
+								<PopoverTrigger asChild>
+									<button
+										type="button"
+										className="taskInlineDateBtn"
+										style={{ top: `${selectedTaskAnchor.top}px` }}
+										onClick={() => openTaskPopover(selectedTaskAnchor)}
+										title="Schedule selected task"
+									>
+										<span className="taskInlineDateGlyph" aria-hidden>
+											📅
+										</span>
+									</button>
+								</PopoverTrigger>
+								<PopoverContent
+									className="taskInlineDatePopover"
+									align="start"
+									onInteractOutside={(event) => event.preventDefault()}
+									onPointerDownOutside={(event) => event.preventDefault()}
+								>
+									<label>
+										Scheduled
+										<input
+											type="date"
+											value={scheduledDate}
+											onChange={(event) => setScheduledDate(event.target.value)}
+										/>
+									</label>
+									<label>
+										Due
+										<input
+											type="date"
+											value={dueDate}
+											onChange={(event) => setDueDate(event.target.value)}
+										/>
+									</label>
+									<div className="taskInlineDateActions">
+										<Button
+											type="button"
+											size="xs"
+											variant="ghost"
+											onClick={() => setScheduleAnchor(null)}
+										>
+											Close
+										</Button>
+										<Button
+											type="button"
+											size="xs"
+											variant="outline"
+											onClick={() => {
+												setScheduledDate("");
+												setDueDate("");
+											}}
+										>
+											Clear
+										</Button>
+										<Button type="button" size="xs" onClick={applyTaskDates}>
+											Apply
+										</Button>
+									</div>
+								</PopoverContent>
+							</Popover>
+						) : null}
 					</div>
 				) : null}
 			</div>

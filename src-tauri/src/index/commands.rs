@@ -5,9 +5,13 @@ use tauri_plugin_notification::NotificationExt;
 use crate::vault::VaultState;
 
 use super::db::open_db;
+use super::indexer::index_note;
 use super::indexer::rebuild;
 use super::search_hybrid::hybrid_search;
 use super::tags::normalize_tag;
+use super::tasks::{
+    mutate_task_line, note_abs_path, query_tasks, write_note, IndexedTask, TaskBucket,
+};
 use super::types::{BacklinkItem, IndexNotePreview, IndexRebuildResult, SearchResult, TagCount};
 
 #[tauri::command]
@@ -287,6 +291,87 @@ pub async fn tag_notes(
             }
             return Ok(out);
         }
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+pub async fn tasks_query(
+    state: State<'_, VaultState>,
+    bucket: String,
+    today: String,
+    limit: Option<u32>,
+) -> Result<Vec<IndexedTask>, String> {
+    let root = state.current_root()?;
+    let bucket = TaskBucket::parse(&bucket)?;
+    let limit = limit.unwrap_or(500).min(5_000) as i64;
+    tauri::async_runtime::spawn_blocking(move || -> Result<Vec<IndexedTask>, String> {
+        let conn = open_db(&root)?;
+        query_tasks(&conn, bucket, &today, limit)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command(rename_all = "snake_case")]
+pub async fn task_set_checked(
+    state: State<'_, VaultState>,
+    task_id: String,
+    checked: bool,
+) -> Result<(), String> {
+    let root = state.current_root()?;
+    tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
+        let conn = open_db(&root)?;
+        let mut stmt = conn
+            .prepare("SELECT note_id, note_path, line_start FROM tasks WHERE task_id = ? LIMIT 1")
+            .map_err(|e| e.to_string())?;
+        let (note_id, note_path, line_start): (String, String, i64) = stmt
+            .query_row([task_id], |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)))
+            .map_err(|e| e.to_string())?;
+
+        let abs = note_abs_path(&root, &note_path)?;
+        let markdown = std::fs::read_to_string(&abs).map_err(|e| e.to_string())?;
+        let next = mutate_task_line(&markdown, line_start, Some(checked), None, None)
+            .ok_or_else(|| "task line no longer exists".to_string())?;
+        write_note(&abs, &next)?;
+        let _ = index_note(&root, &note_id, &next);
+        Ok(())
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command(rename_all = "snake_case")]
+pub async fn task_set_dates(
+    state: State<'_, VaultState>,
+    task_id: String,
+    scheduled_date: Option<String>,
+    due_date: Option<String>,
+) -> Result<(), String> {
+    let root = state.current_root()?;
+    tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
+        let conn = open_db(&root)?;
+        let mut stmt = conn
+            .prepare("SELECT note_id, note_path, line_start FROM tasks WHERE task_id = ? LIMIT 1")
+            .map_err(|e| e.to_string())?;
+        let (note_id, note_path, line_start): (String, String, i64) = stmt
+            .query_row([task_id], |row| Ok((row.get(0)?, row.get(1)?, row.get(2)?)))
+            .map_err(|e| e.to_string())?;
+
+        let abs = note_abs_path(&root, &note_path)?;
+        let markdown = std::fs::read_to_string(&abs).map_err(|e| e.to_string())?;
+        let next = mutate_task_line(
+            &markdown,
+            line_start,
+            None,
+            scheduled_date.as_deref(),
+            due_date.as_deref(),
+        )
+        .ok_or_else(|| "task line no longer exists".to_string())?;
+        write_note(&abs, &next)?;
+        let _ = index_note(&root, &note_id, &next);
+        Ok(())
     })
     .await
     .map_err(|e| e.to_string())?

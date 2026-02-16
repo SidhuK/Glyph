@@ -25,8 +25,8 @@ import { AIFloatingHost } from "../ai/AIFloatingHost";
 import { dispatchAiContextAttach } from "../ai/aiContextEvents";
 import {
 	TAG_CLICK_EVENT,
-	WIKI_LINK_CLICK_EVENT,
 	type TagClickDetail,
+	WIKI_LINK_CLICK_EVENT,
 	type WikiLinkClickDetail,
 } from "../editor/markdown/editorEvents";
 import { Button } from "../ui/shadcn/button";
@@ -76,6 +76,7 @@ export function AppShell() {
 		"commands" | "search"
 	>("commands");
 	const [paletteInitialQuery, setPaletteInitialQuery] = useState("");
+	const [openTasksRequest, setOpenTasksRequest] = useState(0);
 	const [movePickerSourcePath, setMovePickerSourcePath] = useState<
 		string | null
 	>(null);
@@ -331,6 +332,9 @@ export function AppShell() {
 		setPaletteInitialQuery("");
 		setPaletteOpen(true);
 	}, [setPaletteOpen]);
+	const openTasksTab = useCallback(() => {
+		setOpenTasksRequest((prev) => prev + 1);
+	}, []);
 
 	const commands = useMemo<Command[]>(() => {
 		if (movePickerSourcePath) {
@@ -435,6 +439,12 @@ export function AppShell() {
 				action: openSearchPalette,
 			},
 			{
+				id: "open-tasks",
+				label: "Open tasks",
+				enabled: Boolean(vaultPath),
+				action: openTasksTab,
+			},
+			{
 				id: "move-active-file",
 				label: "Move to…",
 				enabled: Boolean(vaultPath) && Boolean(activeFilePath),
@@ -465,6 +475,7 @@ export function AppShell() {
 		sidebarCollapsed,
 		vaultPath,
 		openSearchPalette,
+		openTasksTab,
 		moveTargetDirs,
 		movePickerSourcePath,
 	]);
@@ -524,6 +535,7 @@ export function AppShell() {
 				onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
 				onOpenDailyNote={handleOpenDailyNote}
 				isDailyNoteCreating={isDailyNoteCreating}
+				onOpenTasks={openTasksTab}
 			/>
 			<div
 				ref={sidebarResize.resizeRef}
@@ -539,6 +551,7 @@ export function AppShell() {
 				onOpenFolder={openFolderView}
 				onOpenCommandPalette={openCommandPalette}
 				onOpenSearchPalette={openSearchPalette}
+				openTasksRequest={openTasksRequest}
 			/>
 			{vaultPath && aiPanelOpen && (
 				<div

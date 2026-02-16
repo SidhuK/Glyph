@@ -10,6 +10,7 @@ use super::frontmatter::{
 use super::helpers::{path_to_slash_string, sha256_hex, should_skip_entry};
 use super::links::parse_outgoing_links;
 use super::tags::parse_all_tags;
+use super::tasks::{delete_note_tasks, reindex_note_tasks};
 use super::types::IndexRebuildResult;
 
 fn is_markdown_path(path: &Path) -> bool {
@@ -133,6 +134,7 @@ fn index_note_with_conn(
         )
         .map_err(|e| e.to_string())?;
     }
+    reindex_note_tasks(conn, note_id, &rel_path, &updated, &etag, markdown)?;
 
     let (to_ids, to_titles) = parse_outgoing_links(note_id, markdown);
     let mut inserted = HashSet::<(Option<String>, Option<String>, &'static str)>::new();
@@ -171,6 +173,9 @@ pub fn remove_note(vault_root: &Path, note_id: &str) -> Result<(), String> {
         rusqlite::params![note_id, note_id],
     )
     .map_err(|e| e.to_string())?;
+    conn.execute("DELETE FROM tags WHERE note_id = ?", [note_id])
+        .map_err(|e| e.to_string())?;
+    delete_note_tasks(&conn, note_id)?;
     Ok(())
 }
 
@@ -231,6 +236,7 @@ pub fn rebuild(vault_root: &Path) -> Result<IndexRebuildResult, String> {
             )
             .map_err(|e| e.to_string())?;
         }
+        reindex_note_tasks(&tx, rel, rel, &updated, &etag, markdown)?;
     }
 
     for (rel, markdown) in &notes {

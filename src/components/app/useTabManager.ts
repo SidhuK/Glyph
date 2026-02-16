@@ -5,6 +5,7 @@ import {
 	useViewContext,
 } from "../../contexts";
 import { useRecentFiles } from "../../hooks/useRecentFiles";
+import { TASKS_TAB_ID } from "../../lib/tasks";
 import { isInAppPreviewable } from "../../utils/filePreview";
 
 export function useTabManager(vaultPath: string | null) {
@@ -38,6 +39,11 @@ export function useTabManager(vaultPath: string | null) {
 
 	useEffect(() => {
 		if (!activeTabPath) {
+			setActivePreviewPath(null);
+			setActiveFilePath(null);
+			return;
+		}
+		if (activeTabPath === TASKS_TAB_ID) {
 			setActivePreviewPath(null);
 			setActiveFilePath(null);
 			return;
@@ -114,6 +120,11 @@ export function useTabManager(vaultPath: string | null) {
 		});
 	}, []);
 
+	const openSpecialTab = useCallback((tabId: string) => {
+		setOpenTabs((prev) => (prev.includes(tabId) ? prev : [...prev, tabId]));
+		setActiveTabPath(tabId);
+	}, []);
+
 	useEffect(() => {
 		const onKeyDown = (event: KeyboardEvent) => {
 			const mod = event.metaKey || event.ctrlKey;
@@ -163,6 +174,7 @@ export function useTabManager(vaultPath: string | null) {
 		setDirtyByPath,
 		closeTab,
 		reorderTabs,
+		openSpecialTab,
 		recentFiles,
 		canvasLoadingMessage,
 	};

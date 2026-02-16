@@ -36,11 +36,12 @@ interface SidebarContentProps {
 	onSelectTag: (tag: string) => void;
 	onOpenDailyNote: () => void;
 	isDailyNoteCreating: boolean;
+	onOpenTasks: () => void;
 }
 
 const SIDEBAR_FOOTER_STYLE = {
 	display: "grid",
-	gridTemplateColumns: "auto 1fr auto",
+	gridTemplateColumns: "auto auto 1fr auto",
 	alignItems: "center",
 } as const;
 
@@ -58,6 +59,7 @@ export const SidebarContent = memo(function SidebarContent({
 	onSelectTag,
 	onOpenDailyNote,
 	isDailyNoteCreating,
+	onOpenTasks,
 }: SidebarContentProps) {
 	// Contexts
 	const { vaultPath } = useVault();
@@ -182,6 +184,14 @@ export const SidebarContent = memo(function SidebarContent({
 				>
 					<HugeiconsIcon icon={Icons.Settings05Icon} size={14} />
 				</Button>
+				<button
+					type="button"
+					className="sidebarDailyNotesBtn"
+					onClick={onOpenTasks}
+					title="Open Tasks"
+				>
+					<span className="dailyNotesLabel">Tasks</span>
+				</button>
 				<button
 					type="button"
 					className="sidebarDailyNotesBtn"
