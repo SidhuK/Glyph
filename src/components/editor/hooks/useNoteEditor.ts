@@ -6,7 +6,10 @@ import {
 	splitYamlFrontmatter,
 } from "../../../lib/notePreview";
 import { createEditorExtensions } from "../extensions";
-import { dispatchWikiLinkClick } from "../markdown/wikiLinkEvents";
+import {
+	dispatchTagClick,
+	dispatchWikiLinkClick,
+} from "../markdown/editorEvents";
 import {
 	postprocessMarkdownFromEditor,
 	preprocessMarkdownForEditor,
@@ -53,6 +56,16 @@ export function useNoteEditor({
 			},
 			handleClick: (_view, _pos, event) => {
 				const target = event.target as HTMLElement | null;
+				const tagToken = target?.closest(".tagToken") as HTMLElement | null;
+				if (tagToken) {
+					event.preventDefault();
+					const rawTag =
+						tagToken.getAttribute("data-tag") ?? tagToken.textContent ?? "";
+					const normalized = rawTag.trim().replace(/^#+/, "");
+					if (!normalized) return true;
+					dispatchTagClick({ tag: `#${normalized}` });
+					return true;
+				}
 				const wikiLink = target?.closest(
 					'[data-wikilink="true"]',
 				) as HTMLElement | null;

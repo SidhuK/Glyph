@@ -5,7 +5,7 @@ import { type BacklinkItem, invoke } from "../../lib/tauri";
 import { ChevronDown, ChevronRight } from "../Icons";
 import { EditorRibbon } from "./EditorRibbon";
 import { useNoteEditor } from "./hooks/useNoteEditor";
-import { dispatchWikiLinkClick } from "./markdown/wikiLinkEvents";
+import { dispatchWikiLinkClick } from "./markdown/editorEvents";
 import type { CanvasNoteInlineEditorProps } from "./types";
 
 function normalizeBody(markdown: string): string {

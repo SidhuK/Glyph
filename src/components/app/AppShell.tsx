@@ -24,9 +24,11 @@ import { PanelLeftOpen } from "../Icons";
 import { AIFloatingHost } from "../ai/AIFloatingHost";
 import { dispatchAiContextAttach } from "../ai/aiContextEvents";
 import {
+	TAG_CLICK_EVENT,
 	WIKI_LINK_CLICK_EVENT,
+	type TagClickDetail,
 	type WikiLinkClickDetail,
-} from "../editor/markdown/wikiLinkEvents";
+} from "../editor/markdown/editorEvents";
 import { Button } from "../ui/shadcn/button";
 import { type Command, CommandPalette } from "./CommandPalette";
 import { KeyboardShortcutsHelp } from "./KeyboardShortcutsHelp";
@@ -167,10 +169,22 @@ export function AppShell() {
 				}
 			})();
 		};
+		const onTagClick = (event: Event) => {
+			const detail = (event as CustomEvent<TagClickDetail>).detail;
+			if (!detail?.tag) return;
+			setPaletteInitialTab("search");
+			setPaletteInitialQuery(
+				detail.tag.startsWith("#") ? detail.tag : `#${detail.tag}`,
+			);
+			setPaletteOpen(true);
+		};
 		window.addEventListener(WIKI_LINK_CLICK_EVENT, onWikiLinkClick);
-		return () =>
+		window.addEventListener(TAG_CLICK_EVENT, onTagClick);
+		return () => {
 			window.removeEventListener(WIKI_LINK_CLICK_EVENT, onWikiLinkClick);
-	}, [fileTree, setError]);
+			window.removeEventListener(TAG_CLICK_EVENT, onTagClick);
+		};
+	}, [fileTree, setError, setPaletteOpen]);
 
 	const openFolderView = useCallback(
 		async (dir: string) => {

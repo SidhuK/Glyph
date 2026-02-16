@@ -12,6 +12,7 @@ import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import StarterKit from "@tiptap/starter-kit";
 import { SlashCommand } from "../slashCommands";
+import { TagDecorations } from "./tagDecorations";
 import { WikiLink } from "./wikiLink";
 
 function parseCalloutMarker(
@@ -152,5 +153,6 @@ export function createEditorExtensions(
 		...(enableWikiLinks ? [WikiLink] : []),
 		...(enableSlashCommand ? [SlashCommand] : []),
 		CalloutDecorations,
+		TagDecorations,
 	];
 }

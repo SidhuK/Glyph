@@ -1,4 +1,5 @@
 export const WIKI_LINK_CLICK_EVENT = "lattice:wikilink-click";
+export const TAG_CLICK_EVENT = "lattice:tag-click";
 
 export interface WikiLinkClickDetail {
 	raw: string;
@@ -9,8 +10,16 @@ export interface WikiLinkClickDetail {
 	unresolved: boolean;
 }
 
+export interface TagClickDetail {
+	tag: string;
+}
+
 export function dispatchWikiLinkClick(detail: WikiLinkClickDetail): void {
 	window.dispatchEvent(
 		new CustomEvent<WikiLinkClickDetail>(WIKI_LINK_CLICK_EVENT, { detail }),
 	);
+}
+
+export function dispatchTagClick(detail: TagClickDetail): void {
+	window.dispatchEvent(new CustomEvent<TagClickDetail>(TAG_CLICK_EVENT, { detail }));
 }
