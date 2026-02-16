@@ -89,6 +89,7 @@
 }
 
 .markdownEditorContent {
+	position: relative;
 	overflow: auto;
 	padding: 0 var(--space-8);
 }
@@ -98,13 +99,14 @@
 }
 
 .markdownEditorPathRow {
-	position: sticky;
+	position: absolute;
 	top: 0;
+	left: 0;
+	right: 0;
 	z-index: 5;
 	display: flex;
 	justify-content: center;
-	padding: 2px 12px 0;
-	margin-bottom: var(--space-2);
+	padding: 4px 12px 0;
 	opacity: 0;
 	transform: translateY(-4px);
 	pointer-events: none;

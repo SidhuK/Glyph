@@ -125,7 +125,16 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	};
 
 	return (
-		<div className="rfNodeNoteEditor nodrag nopan">
+		<div
+			className={[
+				"rfNodeNoteEditor",
+				"nodrag",
+				"nopan",
+				editor && mode === "rich" ? "hasRibbon" : "",
+			]
+				.filter(Boolean)
+				.join(" ")}
+		>
 			<div className="rfNodeNoteEditorBody nodrag nopan nowheel">
 				{mode === "plain" ? (
 					<textarea
