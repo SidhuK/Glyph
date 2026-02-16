@@ -7,6 +7,7 @@
 		"core:default",
 		"core:window:allow-set-focus",
 		"core:window:allow-show",
-		"store:default"
+		"store:default",
+		"updater:default"
 	]
 }

@@ -1,0 +1,56 @@
+name: Tauri Release (Placeholder)
+
+on:
+  workflow_dispatch:
+    inputs:
+      publish_release:
+        description: "Set to true after replacing placeholders and making repo public"
+        required: true
+        default: "false"
+
+jobs:
+  build-and-release:
+    runs-on: macos-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Guardrail
+        run: |
+          if [ "${{ github.event.inputs.publish_release }}" != "true" ]; then
+            echo "This workflow is scaffold-only for now."
+            echo "Set publish_release=true when you're ready to ship."
+            exit 1
+          fi
+
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build and publish release
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          tagName: v__VERSION__
+          releaseName: "Lattice v__VERSION__"
+          releaseDraft: true
+          prerelease: false
+          includeUpdaterJson: true
