@@ -101,28 +101,28 @@
 .markdownEditorPathRow {
 	position: absolute;
 	top: 0;
-	left: 0;
-	right: 0;
+	left: 50%;
+	width: min(100%, 980px);
 	z-index: 5;
 	display: flex;
-	justify-content: center;
-	padding: 4px 12px 0;
+	justify-content: flex-start;
+	padding: 4px 0 0 12px;
 	opacity: 0;
-	transform: translateY(-4px);
+	transform: translate(-50%, -4px);
 	pointer-events: none;
 	transition: opacity var(--transition-fast), transform var(--transition-fast);
 }
 
 .markdownEditorContent:hover .markdownEditorPathRow {
 	opacity: 1;
-	transform: translateY(0);
+	transform: translate(-50%, 0);
 	pointer-events: auto;
 }
 
 .markdownEditorPathRow .folderBreadcrumb {
-	max-width: min(760px, calc(100% - 64px));
+	max-width: min(760px, 100%);
 	padding: 0;
-	margin: 0 auto;
+	margin: 0;
 	background: transparent;
 	border: 0;
 	box-shadow: none;
