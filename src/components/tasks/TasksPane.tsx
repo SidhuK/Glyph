@@ -17,7 +17,7 @@ import { Button } from "../ui/shadcn/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 
 interface TasksPaneProps {
-	onOpenFile: (relPath: string) => void;
+	onOpenFile: (relPath: string) => void | Promise<void>;
 	onClosePane?: () => void;
 }
 
@@ -26,8 +26,8 @@ const BUCKETS: Array<{
 	label: string;
 	icon: ComponentProps<typeof HugeiconsIcon>["icon"];
 }> = [
-	{ id: "inbox", label: "Inbox", icon: Icons.CalendarAdd01Icon },
-	{ id: "today", label: "Today", icon: Icons.CalendarFavorite02Icon },
+	{ id: "inbox", label: "Inbox", icon: Icons.InboxIcon },
+	{ id: "today", label: "Today", icon: Icons.SunriseIcon },
 	{ id: "upcoming", label: "Upcoming", icon: Icons.CalendarCheckOut02Icon },
 ];
 
@@ -85,9 +85,11 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 	const showGroupedInbox = bucket === "inbox";
 
 	const openTaskFile = useCallback(
-		(notePath: string) => {
-			onOpenFile(notePath);
-			if (!isPinned) onClosePane?.();
+		async (notePath: string) => {
+			await Promise.resolve(onOpenFile(notePath));
+			if (!isPinned && onClosePane) {
+				window.setTimeout(() => onClosePane(), 0);
+			}
 		},
 		[isPinned, onClosePane, onOpenFile],
 	);
@@ -143,12 +145,16 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 						open={editingTaskId === task.task_id}
 						onOpenChange={(open) => {
 							if (!open) {
-								setEditingTaskId(null);
+								if (editingTaskId === task.task_id) {
+									setEditingTaskId(null);
+								}
 								return;
 							}
-							setEditingTaskId(task.task_id);
-							setScheduledDate(task.scheduled_date ?? "");
-							setDueDate(task.due_date ?? "");
+							if (editingTaskId !== task.task_id) {
+								setEditingTaskId(task.task_id);
+								setScheduledDate(task.scheduled_date ?? "");
+								setDueDate(task.due_date ?? "");
+							}
 						}}
 					>
 						<PopoverTrigger asChild>
@@ -213,7 +219,7 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 						<button
 							type="button"
 							className="tasksRowPath"
-							onClick={() => openTaskFile(task.note_path)}
+							onClick={() => void openTaskFile(task.note_path)}
 							title={task.note_path}
 						>
 							{task.note_path}
@@ -234,12 +240,13 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 							key={item.id}
 							type="button"
 							className="tasksBucketPill"
+							data-bucket={item.id}
 							data-active={bucket === item.id}
 							onClick={() => setBucket(item.id)}
 						>
 							<HugeiconsIcon
 								icon={item.icon}
-								size={13}
+								size={20}
 								className="tasksBucketPillIcon"
 							/>
 							{item.label}
@@ -282,7 +289,7 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 							<button
 								type="button"
 								className="tasksNoteHeader"
-								onClick={() => openTaskFile(notePath)}
+								onClick={() => void openTaskFile(notePath)}
 							>
 								<span className="tasksNoteHeaderLead">
 									<span className="tasksNoteHeaderTitle">

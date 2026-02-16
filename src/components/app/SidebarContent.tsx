@@ -41,11 +41,10 @@ interface SidebarContentProps {
 
 const SIDEBAR_FOOTER_STYLE = {
 	display: "grid",
-	gridTemplateColumns: "auto auto 1fr auto",
+	gridTemplateColumns: "auto 1fr auto",
 	alignItems: "center",
 } as const;
 
-const DAILY_NOTE_BUTTON_STYLE = { justifySelf: "center" } as const;
 const ACTIONS_STYLE = { justifySelf: "end" } as const;
 
 export const SidebarContent = memo(function SidebarContent({
@@ -106,6 +105,27 @@ export const SidebarContent = memo(function SidebarContent({
 	return (
 		<>
 			<div className="sidebarSection sidebarSectionGrow">
+				<div className="sidebarQuickActions">
+					<button
+						type="button"
+						className="sidebarDailyNotesBtn"
+						onClick={onOpenTasks}
+						title="Open Tasks"
+					>
+						<HugeiconsIcon icon={Icons.NoteDoneIcon} size={14} />
+						<span className="dailyNotesLabel">Tasks</span>
+					</button>
+					<button
+						type="button"
+						className="sidebarDailyNotesBtn"
+						onClick={handleDailyNoteClick}
+						disabled={isDailyNoteCreating}
+						title="Open today's daily note"
+					>
+						<Calendar size={14} />
+						<span className="dailyNotesLabel">Daily Note</span>
+					</button>
+				</div>
 				<div className="sidebarSectionHeader">
 					<Tabs
 						value={sidebarViewMode}
@@ -184,26 +204,6 @@ export const SidebarContent = memo(function SidebarContent({
 				>
 					<HugeiconsIcon icon={Icons.Settings05Icon} size={14} />
 				</Button>
-				<button
-					type="button"
-					className="sidebarDailyNotesBtn"
-					onClick={onOpenTasks}
-					title="Open Tasks"
-				>
-					<HugeiconsIcon icon={Icons.NoteDoneIcon} size={14} />
-					<span className="dailyNotesLabel">Tasks</span>
-				</button>
-				<button
-					type="button"
-					className="sidebarDailyNotesBtn"
-					onClick={handleDailyNoteClick}
-					disabled={isDailyNoteCreating}
-					title="Open today's daily note"
-					style={DAILY_NOTE_BUTTON_STYLE}
-				>
-					<Calendar size={14} />
-					<span className="dailyNotesLabel">Daily Note</span>
-				</button>
 				<div style={ACTIONS_STYLE}>
 					{sidebarViewMode === "files" && (
 						<DropdownMenu>
