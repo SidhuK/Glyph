@@ -36,7 +36,7 @@
 	padding: 0 var(--space-3);
 	height: 44px;
 	border-bottom: 1px solid var(--border-light);
-	background: color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary));
+	background: transparent;
 	flex-shrink: 0;
 }
 

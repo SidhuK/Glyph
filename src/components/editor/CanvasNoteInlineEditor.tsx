@@ -211,7 +211,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 					</div>
 				) : null}
 			</div>
-			{editor && canEdit ? (
+			{editor && mode === "rich" ? (
 				<EditorRibbon editor={editor} canEdit={canEdit} />
 			) : null}
 		</div>
