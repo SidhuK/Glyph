@@ -3,20 +3,11 @@ import type { CSSProperties } from "react";
 import { memo, useCallback, useState } from "react";
 import type { FsEntry } from "../../lib/tauri";
 import { parentDir } from "../../utils/path";
-import { Database, FolderPlus, Plus } from "../Icons";
 import { springPresets } from "../ui/animations";
-import {
-	ContextMenu,
-	ContextMenuContent,
-	ContextMenuItem,
-	ContextMenuSeparator,
-	ContextMenuTrigger,
-} from "../ui/shadcn/context-menu";
 import { FileTreeDirItem } from "./FileTreeDirItem";
 import { FileTreeFileItem } from "./FileTreeFileItem";
 
 interface FileTreePaneProps {
-	vaultName?: string;
 	rootEntries: FsEntry[];
 	childrenByDir: Record<string, FsEntry[] | undefined>;
 	expandedDirs: Set<string>;
@@ -38,7 +29,6 @@ interface FileTreePaneProps {
 const springTransition = springPresets.bouncy;
 
 export const FileTreePane = memo(function FileTreePane({
-	vaultName,
 	rootEntries,
 	childrenByDir,
 	expandedDirs,
@@ -53,10 +43,6 @@ export const FileTreePane = memo(function FileTreePane({
 	onDeletePath,
 }: FileTreePaneProps) {
 	const [renamingPath, setRenamingPath] = useState<string | null>(null);
-
-	const handleRootClick = useCallback(() => {
-		onSelectDir("");
-	}, [onSelectDir]);
 
 	const handleCreateFolder = useCallback(
 		async (dirPath: string) => {
@@ -175,40 +161,6 @@ export const FileTreePane = memo(function FileTreePane({
 			animate={{ y: 0 }}
 			transition={springTransition}
 		>
-			<div className="fileTreeHeader">
-				{vaultName && (
-					<ContextMenu>
-						<ContextMenuTrigger asChild>
-							<button
-								type="button"
-								className="fileTreeVaultName"
-								onClick={handleRootClick}
-								title="Go to vault root"
-							>
-								<Database size={14} />
-								<span className="fileTreeVaultNameText">{vaultName}</span>
-							</button>
-						</ContextMenuTrigger>
-						<ContextMenuContent className="fileTreeCreateMenu">
-							<ContextMenuItem
-								className="fileTreeCreateMenuItem"
-								onSelect={() => void onNewFileInDir("")}
-							>
-								<Plus size={14} />
-								Add file
-							</ContextMenuItem>
-							<ContextMenuSeparator className="fileTreeCreateMenuSeparator" />
-							<ContextMenuItem
-								className="fileTreeCreateMenuItem"
-								onSelect={() => void handleCreateFolder("")}
-							>
-								<FolderPlus size={14} />
-								Add folder
-							</ContextMenuItem>
-						</ContextMenuContent>
-					</ContextMenu>
-				)}
-			</div>
 			{rootEntries.length ? (
 				<div className="fileTreeScroll">{renderEntries(rootEntries, -1)}</div>
 			) : (
