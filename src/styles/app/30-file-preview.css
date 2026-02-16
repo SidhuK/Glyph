@@ -119,6 +119,12 @@
 	pointer-events: auto;
 }
 
+.markdownEditorPathRow.isAlwaysVisible {
+	opacity: 1;
+	transform: translate(-50%, 0);
+	pointer-events: auto;
+}
+
 .markdownEditorPathRow .folderBreadcrumb {
 	max-width: min(760px, 100%);
 	padding: 0;

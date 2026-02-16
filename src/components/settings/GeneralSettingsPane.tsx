@@ -3,11 +3,13 @@ import {
 	type AiAssistantMode,
 	loadSettings,
 	setAiAssistantMode,
+	setShowBreadcrumbs,
 } from "../../lib/settings";
 
 export function GeneralSettingsPane() {
 	const [aiAssistantMode, setAiAssistantModeState] =
 		useState<AiAssistantMode>("create");
+	const [showBreadcrumbs, setShowBreadcrumbsState] = useState(false);
 	const [error, setError] = useState("");
 
 	useEffect(() => {
@@ -17,6 +19,7 @@ export function GeneralSettingsPane() {
 				const settings = await loadSettings();
 				if (cancelled) return;
 				setAiAssistantModeState(settings.ui.aiAssistantMode);
+				setShowBreadcrumbsState(settings.ui.showBreadcrumbs);
 			} catch (e) {
 				if (!cancelled) {
 					setError(e instanceof Error ? e.message : "Failed to load settings");
@@ -26,6 +29,16 @@ export function GeneralSettingsPane() {
 		return () => {
 			cancelled = true;
 		};
+	}, []);
+
+	const updateShowBreadcrumbs = useCallback(async (enabled: boolean) => {
+		setError("");
+		setShowBreadcrumbsState(enabled);
+		try {
+			await setShowBreadcrumbs(enabled);
+		} catch (e) {
+			setError(e instanceof Error ? e.message : "Failed to save settings");
+		}
 	}, []);
 
 	const updateAssistantMode = useCallback(async (mode: AiAssistantMode) => {
@@ -91,6 +104,25 @@ export function GeneralSettingsPane() {
 								Chat
 							</button>
 						</div>
+					</div>
+
+					<div className="settingsField">
+						<div>
+							<div className="settingsLabel">Breadcrumbs</div>
+							<div className="settingsHelp">
+								Keep the editor path breadcrumb always visible.
+							</div>
+						</div>
+						<label className="settingsToggle" aria-label="Show breadcrumbs">
+							<input
+								type="checkbox"
+								checked={showBreadcrumbs}
+								onChange={(event) =>
+									void updateShowBreadcrumbs(event.target.checked)
+								}
+							/>
+							<span />
+						</label>
 					</div>
 				</section>
 			</div>
