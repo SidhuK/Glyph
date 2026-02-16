@@ -941,6 +941,26 @@
 	transform: translateY(-50%);
 }
 
+.mainTabAdd {
+	height: 30px;
+	width: 30px;
+	flex: 0 0 auto;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: var(--radius-lg);
+	border: 1px solid transparent;
+	background: color-mix(in srgb, var(--bg-primary) 72%, transparent);
+	color: var(--text-secondary);
+	font-size: 16px;
+	line-height: 1;
+}
+
+.mainTabAdd:hover {
+	background: color-mix(in srgb, var(--bg-hover) 90%, transparent);
+	color: var(--text-primary);
+}
+
 .mainEmptyState {
 	flex: 1;
 	min-height: 0;

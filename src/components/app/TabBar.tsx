@@ -6,6 +6,7 @@ interface TabBarProps {
 	activeTabPath: string | null;
 	dirtyByPath: Record<string, boolean>;
 	dragTabPath: string | null;
+	onOpenBlankTab: () => void;
 	onSelectTab: (path: string) => void;
 	onCloseTab: (path: string) => void;
 	onDragStart: (path: string) => void;
@@ -18,6 +19,7 @@ export function TabBar({
 	activeTabPath,
 	dirtyByPath,
 	dragTabPath,
+	onOpenBlankTab,
 	onSelectTab,
 	onCloseTab,
 	onDragStart,
@@ -51,6 +53,15 @@ export function TabBar({
 							/>
 						);
 					})}
+					<button
+						type="button"
+						className="mainTabAdd"
+						onClick={onOpenBlankTab}
+						title="Open blank tab"
+						aria-label="Open blank tab"
+					>
+						+
+					</button>
 				</div>
 			</div>
 			<div className="mainTabsSide" />

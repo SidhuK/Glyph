@@ -128,6 +128,7 @@ export const MainContent = memo(function MainContent({
 							activeTabPath={activeTabPath}
 							dirtyByPath={dirtyByPath}
 							dragTabPath={dragTabPath}
+							onOpenBlankTab={() => setActiveTabPath(null)}
 							onSelectTab={setActiveTabPath}
 							onCloseTab={closeTab}
 							onDragStart={setDragTabPath}

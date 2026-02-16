@@ -28,10 +28,6 @@ pub fn ai_history_dir(vault_root: &Path) -> Result<PathBuf, String> {
     paths::join_under(&base, Path::new(AI_HISTORY_DIR_NAME))
 }
 
-pub fn lattice_assets_dir(vault_root: &Path) -> Result<PathBuf, String> {
-    Ok(lattice_dir(vault_root)?.join("assets"))
-}
-
 pub fn ensure_lattice_dir(vault_root: &Path) -> Result<PathBuf, String> {
     let dir = lattice_dir(vault_root)?;
     std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
