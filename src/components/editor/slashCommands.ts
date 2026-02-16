@@ -75,6 +75,18 @@ export const SLASH_COMMANDS: SlashCommandItem[] = [
 			editor.chain().focus().deleteRange(range).toggleCodeBlock().run(),
 	},
 	{
+		title: "Table",
+		description: "Insert a markdown table",
+		keywords: ["table", "columns", "rows", "grid"],
+		command: ({ editor, range }) =>
+			editor
+				.chain()
+				.focus()
+				.deleteRange(range)
+				.insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+				.run(),
+	},
+	{
 		title: "Divider",
 		description: "Insert a horizontal rule",
 		keywords: ["hr", "divider", "rule"],
