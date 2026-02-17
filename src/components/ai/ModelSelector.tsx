@@ -1,5 +1,4 @@
 import {
-	type KeyboardEvent,
 	type MouseEvent as ReactMouseEvent,
 	useCallback,
 	useEffect,
@@ -365,20 +364,12 @@ export function ModelSelector({
 										const infoActive = detailModel?.id === m.id;
 										const handleInfoToggle = () =>
 											setDetailModelId((prev) => (prev === m.id ? null : m.id));
-										const handleInfoClick = (
+										const handleInfoMouseDown = (
 											e: ReactMouseEvent<HTMLSpanElement>,
 										) => {
+											e.preventDefault();
 											e.stopPropagation();
 											handleInfoToggle();
-										};
-										const handleInfoKeyDown = (
-											e: KeyboardEvent<HTMLSpanElement>,
-										) => {
-											if (e.key === " " || e.key === "Enter") {
-												e.preventDefault();
-												e.stopPropagation();
-												handleInfoToggle();
-											}
 										};
 										return (
 											<button
@@ -399,13 +390,9 @@ export function ModelSelector({
 												</span>
 												{detailAvailable && (
 													<span
-														role="button"
-														tabIndex={0}
-														onClick={handleInfoClick}
-														onKeyDown={handleInfoKeyDown}
+														onMouseDown={handleInfoMouseDown}
 														className={`${styles.infoInline} ${infoActive ? styles.infoInlineActive : ""}`}
 														title="Model info"
-														aria-pressed={infoActive}
 														aria-label="Model info"
 													>
 														<InformationCircle size={14} strokeWidth={1.8} />

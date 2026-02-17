@@ -110,11 +110,7 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 	);
 
 	const scheduleDates = useCallback(
-		async (
-			taskId: string,
-			scheduled: string | null,
-			due: string | null,
-		) => {
+		async (taskId: string, scheduled: string | null, due: string | null) => {
 			try {
 				setError("");
 				await invoke("task_set_dates", {
@@ -187,9 +183,7 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 			</header>
 
 			{error ? <div className="tasksPaneError">{error}</div> : null}
-			{loading ? (
-				<div className="tasksPaneEmpty">Loading tasks…</div>
-			) : null}
+			{loading ? <div className="tasksPaneEmpty">Loading tasks…</div> : null}
 			{!loading && tasks.length === 0 ? (
 				<div className="tasksPaneEmptyState">
 					<HugeiconsIcon
@@ -214,9 +208,7 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 									<span className="tasksNoteHeaderTitle">
 										{noteTasks[0]?.note_title || notePath}
 									</span>
-									<span className="tasksNoteHeaderPath">
-										{notePath}
-									</span>
+									<span className="tasksNoteHeaderPath">{notePath}</span>
 								</span>
 								<Badge variant="outline">{noteTasks.length}</Badge>
 							</button>

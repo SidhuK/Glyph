@@ -1,6 +1,6 @@
-import Image from "@tiptap/extension-image";
 import type { MarkdownToken } from "@tiptap/core";
 import { nodeInputRule } from "@tiptap/core";
+import Image from "@tiptap/extension-image";
 
 interface MarkdownImageAttrs {
 	src: string;
@@ -21,7 +21,9 @@ function findUnescaped(text: string, char: string, start = 0): number {
 	return -1;
 }
 
-function splitImageInside(inside: string): { imageSrc: string; title: string } | null {
+function splitImageInside(
+	inside: string,
+): { imageSrc: string; title: string } | null {
 	const trimmed = inside.trim();
 	if (!trimmed) return null;
 	const titleMatch = trimmed.match(/^(.*)\s+("([^"]*)"|'([^']*)')\s*$/);

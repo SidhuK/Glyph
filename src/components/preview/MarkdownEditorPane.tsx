@@ -3,11 +3,9 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useEditorRegistration, useVault } from "../../contexts";
 import { extractErrorMessage } from "../../lib/errorUtils";
-import { loadSettings } from "../../lib/settings";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
-import { normalizeRelPath, parentDir } from "../../utils/path";
-import { FolderBreadcrumb } from "../FolderBreadcrumb";
+import { normalizeRelPath } from "../../utils/path";
 import { Edit, Eye, RefreshCw, Save } from "../Icons";
 import { CanvasNoteInlineEditor } from "../editor/CanvasNoteInlineEditor";
 import { CALLOUT_TYPES } from "../editor/ribbonButtonConfigs";
@@ -16,7 +14,6 @@ import { Button } from "../ui/shadcn/button";
 
 interface MarkdownEditorPaneProps {
 	relPath: string;
-	onOpenFolder: (dirPath: string) => void;
 	onDirtyChange?: (dirty: boolean) => void;
 }
 
@@ -24,7 +21,6 @@ const markdownDocCache = new Map<string, string>();
 
 export function MarkdownEditorPane({
 	relPath,
-	onOpenFolder,
 	onDirtyChange,
 }: MarkdownEditorPaneProps) {
 	const [text, setText] = useState(() => markdownDocCache.get(relPath) ?? "");
@@ -35,7 +31,6 @@ export function MarkdownEditorPane({
 	const [saving, setSaving] = useState(false);
 	const [error, setError] = useState("");
 	const [actionsOpen, setActionsOpen] = useState(false);
-	const [showBreadcrumbs, setShowBreadcrumbs] = useState(false);
 	const [lastSavedMtimeMs, setLastSavedMtimeMs] = useState<number | null>(null);
 	const calloutInserterRef = useRef<((type: string) => void) | null>(null);
 	const savedTextRef = useRef(savedText);
@@ -207,7 +202,7 @@ export function MarkdownEditorPane({
 			runAutosave();
 		}, 900);
 		return () => window.clearTimeout(timer);
-	}, [isDirty, runAutosave, text, relPath]);
+	}, [isDirty, runAutosave]);
 
 	useEffect(() => {
 		return () => {
@@ -268,29 +263,6 @@ export function MarkdownEditorPane({
 		onDirtyChange?.(isDirty);
 	}, [onDirtyChange, isDirty]);
 
-	useEffect(() => {
-		let cancelled = false;
-		void (async () => {
-			try {
-				const settings = await loadSettings();
-				if (cancelled) return;
-				setShowBreadcrumbs(settings.ui.showBreadcrumbs);
-			} catch {
-				// best-effort settings hydration
-			}
-		})();
-		return () => {
-			cancelled = true;
-		};
-	}, []);
-
-	useTauriEvent("settings:updated", (payload) => {
-		if (typeof payload.ui?.showBreadcrumbs === "boolean") {
-			setShowBreadcrumbs(payload.ui.showBreadcrumbs);
-		}
-	});
-
-	const currentDir = useMemo(() => parentDir(relPath), [relPath]);
 	const canInsertCallouts = mode === "rich";
 	const registerCalloutInserter = useCallback(
 		(inserter: ((type: string) => void) | null) => {
@@ -429,11 +401,6 @@ export function MarkdownEditorPane({
 
 			{!error ? (
 				<div className="filePreviewTextWrap markdownEditorContent">
-					<div
-						className={`markdownEditorPathRow ${showBreadcrumbs ? "isAlwaysVisible" : ""}`}
-					>
-						<FolderBreadcrumb dir={currentDir} onOpenFolder={onOpenFolder} />
-					</div>
 					<div className="markdownEditorCenter">
 						<CanvasNoteInlineEditor
 							key={relPath}

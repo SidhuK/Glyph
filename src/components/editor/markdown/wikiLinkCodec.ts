@@ -15,7 +15,7 @@ function hasBalancedBrackets(inner: string): boolean {
 
 export function parseWikiLink(raw: string): WikiLinkAttrs | null {
 	const embed = raw.startsWith("![[");
-	const open = embed ? "![[": "[[";
+	const open = embed ? "![[" : "[[";
 	if (!raw.startsWith(open) || !raw.endsWith("]]")) return null;
 	const inner = raw.slice(open.length, -2).trim();
 	if (!inner || !hasBalancedBrackets(inner)) return null;

@@ -35,7 +35,6 @@ export type TauriEventMap = {
 			fontSize?: number;
 			aiAssistantMode?: "chat" | "create";
 			aiSidebarWidth?: number | null;
-			showBreadcrumbs?: boolean;
 		};
 		dailyNotes?: {
 			folder?: string | null;

@@ -91,10 +91,6 @@ function asUiFontSize(value: unknown): UiFontSize {
 	return DEFAULT_UI_FONT_SIZE;
 }
 
-function asShowBreadcrumbs(value: unknown): boolean {
-	return value === true;
-}
-
 async function emitSettingsUpdated(payload: {
 	ui?: {
 		theme?: ThemeMode;
@@ -104,7 +100,6 @@ async function emitSettingsUpdated(payload: {
 		fontSize?: UiFontSize;
 		aiAssistantMode?: AiAssistantMode;
 		aiSidebarWidth?: number | null;
-		showBreadcrumbs?: boolean;
 	};
 	dailyNotes?: {
 		folder?: string | null;
@@ -135,7 +130,6 @@ export interface AppSettings {
 		monoFontFamily: UiFontFamily;
 		fontSize: UiFontSize;
 		aiAssistantMode: AiAssistantMode;
-		showBreadcrumbs: boolean;
 	};
 	dailyNotes: {
 		folder: string | null;
@@ -153,7 +147,6 @@ const KEYS = {
 	fontFamily: "ui.fontFamily",
 	monoFontFamily: "ui.monoFontFamily",
 	fontSize: "ui.fontSize",
-	showBreadcrumbs: "ui.showBreadcrumbs",
 	dailyNotesFolder: "dailyNotes.folder",
 } as const;
 
@@ -192,7 +185,6 @@ export async function loadSettings(): Promise<AppSettings> {
 		rawFontFamily,
 		rawMonoFontFamily,
 		rawFontSize,
-		rawShowBreadcrumbs,
 		dailyNotesFolderRaw,
 	] = await Promise.all([
 		store.get<string | null>(KEYS.currentVaultPath),
@@ -205,7 +197,6 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<unknown>(KEYS.fontFamily),
 		store.get<unknown>(KEYS.monoFontFamily),
 		store.get<unknown>(KEYS.fontSize),
-		store.get<unknown>(KEYS.showBreadcrumbs),
 		store.get<string | null>(KEYS.dailyNotesFolder),
 	]);
 	const currentVaultPath = currentVaultPathRaw ?? null;
@@ -218,7 +209,6 @@ export async function loadSettings(): Promise<AppSettings> {
 	const fontFamily = asUiFontFamily(rawFontFamily);
 	const monoFontFamily = asUiMonoFontFamily(rawMonoFontFamily);
 	const fontSize = asUiFontSize(rawFontSize);
-	const showBreadcrumbs = asShowBreadcrumbs(rawShowBreadcrumbs);
 	const dailyNotesFolder = dailyNotesFolderRaw ?? null;
 	return {
 		currentVaultPath,
@@ -235,7 +225,6 @@ export async function loadSettings(): Promise<AppSettings> {
 			monoFontFamily,
 			fontSize,
 			aiAssistantMode,
-			showBreadcrumbs,
 		},
 		dailyNotes: {
 			folder: dailyNotesFolder,
@@ -319,16 +308,6 @@ export async function setUiFontSize(fontSize: UiFontSize): Promise<void> {
 	await store.set(KEYS.fontSize, next);
 	await store.save();
 	void emitSettingsUpdated({ ui: { fontSize: next } });
-}
-
-export async function setShowBreadcrumbs(
-	showBreadcrumbs: boolean,
-): Promise<void> {
-	const store = await getStore();
-	const next = showBreadcrumbs === true;
-	await store.set(KEYS.showBreadcrumbs, next);
-	await store.save();
-	void emitSettingsUpdated({ ui: { showBreadcrumbs: next } });
 }
 
 export async function getDailyNotesFolder(): Promise<string | null> {

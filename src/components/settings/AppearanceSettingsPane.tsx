@@ -2,8 +2,8 @@ import { useTheme } from "next-themes";
 import { useCallback, useEffect, useState } from "react";
 import { applyUiAccent, applyUiTypography } from "../../lib/appearance";
 import {
-	type UiAccent,
 	type ThemeMode,
+	type UiAccent,
 	type UiFontFamily,
 	type UiFontSize,
 	loadSettings,

@@ -80,7 +80,9 @@ export function resolveMarkdownLinkPath(
 
 	for (const candidate of candidates) {
 		const match = entries.find(
-			(entry) => normalizeRelPath(entry.rel_path).toLowerCase() === candidate.toLowerCase(),
+			(entry) =>
+				normalizeRelPath(entry.rel_path).toLowerCase() ===
+				candidate.toLowerCase(),
 		);
 		if (match) return match.rel_path;
 	}

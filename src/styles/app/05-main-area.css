@@ -610,65 +610,6 @@
 	color: var(--text-primary);
 }
 
-.folderBreadcrumb {
-	display: inline-flex;
-	align-items: center;
-	gap: 10px;
-	min-width: 0;
-}
-
-.folderBreadcrumbIcon {
-	color: var(--text-accent);
-	display: inline-flex;
-	flex-shrink: 0;
-}
-
-.folderBreadcrumbTrail {
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
-	min-width: 0;
-	flex-wrap: wrap;
-}
-
-.folderCrumb {
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
-	min-width: 0;
-}
-
-.folderCrumbBtn {
-	border: 1px solid transparent;
-	background: transparent;
-	padding: 2px 6px;
-	border-radius: var(--radius-md);
-	color: var(--text-secondary);
-	font-size: var(--text-xs);
-	cursor: pointer;
-	white-space: nowrap;
-	max-width: 220px;
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-
-.folderCrumbBtn:hover {
-	background: var(--bg-hover);
-	color: var(--text-primary);
-}
-
-.folderCrumbBtn.isCurrent {
-	border-color: var(--border-light);
-	background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
-	color: var(--text-primary);
-}
-
-.folderCrumbSep {
-	color: var(--text-tertiary);
-	display: inline-flex;
-	opacity: 0.7;
-}
-
 .folderShelf {
 	flex-shrink: 0;
 	padding: 6px var(--space-4);

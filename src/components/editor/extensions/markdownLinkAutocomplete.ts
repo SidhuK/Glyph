@@ -1,9 +1,9 @@
 import { Extension } from "@tiptap/core";
 import { PluginKey } from "@tiptap/pm/state";
 import Suggestion, { type SuggestionProps } from "@tiptap/suggestion";
-import { parentDir } from "../../../utils/path";
 import type { FsEntry } from "../../../lib/tauri";
 import { invoke } from "../../../lib/tauri";
+import { parentDir } from "../../../utils/path";
 
 const MD_LINK_SUGGESTION_KEY = new PluginKey("markdown-link-suggestion");
 
@@ -188,7 +188,8 @@ export const MarkdownLinkAutocomplete = Extension.create({
 							}
 							if (event.key === "ArrowUp") {
 								selectedIndex =
-									(selectedIndex - 1 + current.items.length) % current.items.length;
+									(selectedIndex - 1 + current.items.length) %
+									current.items.length;
 								updateMenu(current);
 								return true;
 							}

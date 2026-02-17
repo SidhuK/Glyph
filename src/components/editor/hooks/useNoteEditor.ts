@@ -3,14 +3,11 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 import { useEditor } from "@tiptap/react";
 import { useEffect, useMemo, useRef } from "react";
 import {
-	normalizeRelPath,
-	parentDir,
-} from "../../../utils/path";
-import { invoke } from "../../../lib/tauri";
-import {
 	joinYamlFrontmatter,
 	splitYamlFrontmatter,
 } from "../../../lib/notePreview";
+import { invoke } from "../../../lib/tauri";
+import { normalizeRelPath, parentDir } from "../../../utils/path";
 import { createEditorExtensions } from "../extensions";
 import {
 	dispatchMarkdownLinkClick,
@@ -42,7 +39,10 @@ function normalizeSegments(path: string): string {
 	return normalizeRelPath(stack.join("/"));
 }
 
-function resolveRelativeAssetPath(sourcePath: string, href: string): string | null {
+function resolveRelativeAssetPath(
+	sourcePath: string,
+	href: string,
+): string | null {
 	const cleaned = href.split("#", 1)[0]?.trim().replace(/\\/g, "/") ?? "";
 	if (!cleaned) return null;
 	if (/^[a-z][a-z0-9+.-]*:/i.test(cleaned)) return null;
@@ -62,7 +62,10 @@ function isRemoteAssetPath(path: string): boolean {
 	);
 }
 
-function listAssetPathCandidates(sourcePath: string, rawPath: string): string[] {
+function listAssetPathCandidates(
+	sourcePath: string,
+	rawPath: string,
+): string[] {
 	const cleaned = rawPath.split("#", 1)[0]?.trim().replace(/\\/g, "/") ?? "";
 	if (!cleaned || /^[a-z][a-z0-9+.-]*:/i.test(cleaned)) return [];
 	const candidates: string[] = [];
@@ -205,7 +208,9 @@ export function useNoteEditor({
 		const inFlightBySource = new Map<string, Promise<string | null>>();
 		const failedAtBySource = new Map<string, number>();
 
-		const resolveCandidate = async (candidate: string): Promise<string | null> => {
+		const resolveCandidate = async (
+			candidate: string,
+		): Promise<string | null> => {
 			const cached = resolvedByPath.get(candidate);
 			if (cached) return cached;
 			try {
@@ -262,7 +267,8 @@ export function useNoteEditor({
 				""
 			).trim();
 			if (!source || isRemoteAssetPath(source)) return;
-			const alreadyResolvedFrom = img.getAttribute("data-cipher-resolved-from") ?? "";
+			const alreadyResolvedFrom =
+				img.getAttribute("data-cipher-resolved-from") ?? "";
 			if (alreadyResolvedFrom === source && isRemoteAssetPath(img.src)) return;
 			const converted = await resolveSource(source);
 			if (!converted || cancelled) return;

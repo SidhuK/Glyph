@@ -17,7 +17,6 @@ interface MainContentProps {
 		openFile: (relPath: string) => Promise<void>;
 		openNonMarkdownExternally: (relPath: string) => Promise<void>;
 	};
-	onOpenFolder: (dirPath: string) => Promise<void>;
 	onOpenCommandPalette: () => void;
 	onOpenSearchPalette: () => void;
 	openTasksRequest: number;
@@ -25,7 +24,6 @@ interface MainContentProps {
 
 export const MainContent = memo(function MainContent({
 	fileTree,
-	onOpenFolder,
 	onOpenCommandPalette,
 	onOpenSearchPalette,
 	openTasksRequest,
@@ -86,7 +84,6 @@ export const MainContent = memo(function MainContent({
 			return (
 				<MarkdownEditorPane
 					relPath={viewerPath}
-					onOpenFolder={(dirPath) => void onOpenFolder(dirPath)}
 					onDirtyChange={(dirty) =>
 						setDirtyByPath((prev) =>
 							prev[viewerPath] === dirty
@@ -110,14 +107,7 @@ export const MainContent = memo(function MainContent({
 			return <div className="canvasEmpty">{canvasLoadingMessage}</div>;
 		}
 		return null;
-	}, [
-		canvasLoadingMessage,
-		closeTab,
-		fileTree,
-		onOpenFolder,
-		viewerPath,
-		setDirtyByPath,
-	]);
+	}, [canvasLoadingMessage, closeTab, fileTree, viewerPath, setDirtyByPath]);
 
 	if (!vaultPath) {
 		if (!settingsLoaded) return <main className="mainArea" />;

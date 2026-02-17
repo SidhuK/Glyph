@@ -12,8 +12,8 @@ import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import StarterKit from "@tiptap/starter-kit";
 import { SlashCommand } from "../slashCommands";
-import { MarkdownLinkAutocomplete } from "./markdownLinkAutocomplete";
 import { MarkdownImage } from "./markdownImage";
+import { MarkdownLinkAutocomplete } from "./markdownLinkAutocomplete";
 import { TagDecorations } from "./tagDecorations";
 import { WikiLink } from "./wikiLink";
 

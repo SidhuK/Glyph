@@ -25,10 +25,10 @@ import { AIFloatingHost } from "../ai/AIFloatingHost";
 import { dispatchAiContextAttach } from "../ai/aiContextEvents";
 import {
 	MARKDOWN_LINK_CLICK_EVENT,
+	type MarkdownLinkClickDetail,
 	TAG_CLICK_EVENT,
 	type TagClickDetail,
 	WIKI_LINK_CLICK_EVENT,
-	type MarkdownLinkClickDetail,
 	type WikiLinkClickDetail,
 } from "../editor/markdown/editorEvents";
 import { Button } from "../ui/shadcn/button";
@@ -38,8 +38,8 @@ import { MainContent } from "./MainContent";
 import { Sidebar } from "./Sidebar";
 import {
 	normalizeRelPath,
-	resolveMarkdownLinkPath,
 	parentDir,
+	resolveMarkdownLinkPath,
 	resolveWikiLinkPath,
 } from "./appShellHelpers";
 
@@ -201,7 +201,10 @@ export function AppShell() {
 						return;
 					}
 					const markdownEntries = await ensureMarkdownEntries();
-					const wikiFallback = resolveWikiLinkPath(detail.href, markdownEntries);
+					const wikiFallback = resolveWikiLinkPath(
+						detail.href,
+						markdownEntries,
+					);
 					if (wikiFallback) {
 						await fileTree.openFile(wikiFallback);
 						return;
@@ -228,7 +231,10 @@ export function AppShell() {
 		window.addEventListener(TAG_CLICK_EVENT, onTagClick);
 		return () => {
 			window.removeEventListener(WIKI_LINK_CLICK_EVENT, onWikiLinkClick);
-			window.removeEventListener(MARKDOWN_LINK_CLICK_EVENT, onMarkdownLinkClick);
+			window.removeEventListener(
+				MARKDOWN_LINK_CLICK_EVENT,
+				onMarkdownLinkClick,
+			);
 			window.removeEventListener(TAG_CLICK_EVENT, onTagClick);
 		};
 	}, [fileTree, setError, setPaletteOpen]);
@@ -594,7 +600,6 @@ export function AppShell() {
 			/>
 			<MainContent
 				fileTree={fileTree}
-				onOpenFolder={openFolderView}
 				onOpenCommandPalette={openCommandPalette}
 				onOpenSearchPalette={openSearchPalette}
 				openTasksRequest={openTasksRequest}
