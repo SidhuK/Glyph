@@ -60,41 +60,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a23eb6b1614318a8071c9b2521f36b424b2c83db5eb3a0fead4a6c0809af6e61"
 
 [[package]]
-name = "app"
-version = "0.1.0"
-dependencies = [
- "base64 0.22.1",
- "core-text",
- "futures-util",
- "hex",
- "notify",
- "regex",
- "reqwest 0.12.28",
- "rig-core",
- "rusqlite",
- "schemars 0.8.22",
- "serde",
- "serde_json",
- "serde_yaml",
- "sha2",
- "tauri",
- "tauri-build",
- "tauri-plugin-dialog",
- "tauri-plugin-notification",
- "tauri-plugin-opener",
- "tauri-plugin-store",
- "tauri-plugin-updater",
- "time",
- "tokio",
- "tokio-util",
- "tracing",
- "tracing-subscriber",
- "url",
- "uuid",
- "window-vibrancy 0.7.1",
-]
-
-[[package]]
 name = "arbitrary"
 version = "1.4.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -535,6 +500,41 @@ dependencies = [
  "num-traits",
  "serde",
  "windows-link 0.2.1",
+]
+
+[[package]]
+name = "cipher"
+version = "0.1.0"
+dependencies = [
+ "base64 0.22.1",
+ "core-text",
+ "futures-util",
+ "hex",
+ "notify",
+ "regex",
+ "reqwest 0.12.28",
+ "rig-core",
+ "rusqlite",
+ "schemars 0.8.22",
+ "serde",
+ "serde_json",
+ "serde_yaml",
+ "sha2",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-dialog",
+ "tauri-plugin-notification",
+ "tauri-plugin-opener",
+ "tauri-plugin-store",
+ "tauri-plugin-updater",
+ "time",
+ "tokio",
+ "tokio-util",
+ "tracing",
+ "tracing-subscriber",
+ "url",
+ "uuid",
+ "window-vibrancy 0.7.1",
 ]
 
 [[package]]

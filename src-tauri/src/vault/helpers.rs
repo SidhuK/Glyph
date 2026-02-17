@@ -1,7 +1,7 @@
 use serde::Serialize;
 use std::path::{Path, PathBuf};
 
-use crate::lattice_paths;
+use crate::cipher_paths;
 
 #[derive(Serialize)]
 pub struct VaultInfo {
@@ -11,10 +11,10 @@ pub struct VaultInfo {
 
 pub const VAULT_SCHEMA_VERSION: u32 = 1;
 
-pub fn ensure_lattice_dirs(root: &Path) -> Result<(), String> {
-    let _ = lattice_paths::ensure_lattice_dir(root)?;
-    let _ = lattice_paths::ensure_lattice_cache_dir(root)?;
-    let _ = lattice_paths::ensure_lattice_app_dir(root)?;
+pub fn ensure_cipher_dirs(root: &Path) -> Result<(), String> {
+    let _ = cipher_paths::ensure_cipher_dir(root)?;
+    let _ = cipher_paths::ensure_cipher_cache_dir(root)?;
+    let _ = cipher_paths::ensure_cipher_app_dir(root)?;
     Ok(())
 }
 
@@ -27,7 +27,7 @@ pub fn canonicalize_dir(path: &Path) -> Result<PathBuf, String> {
 }
 
 pub fn create_or_open_impl(root: &Path) -> Result<VaultInfo, String> {
-    ensure_lattice_dirs(root)?;
+    ensure_cipher_dirs(root)?;
     let _ = cleanup_tmp_files(root);
     Ok(VaultInfo {
         root: root.to_string_lossy().to_string(),
@@ -73,7 +73,7 @@ fn cleanup_tmp_files(root: &Path) -> Result<(), String> {
         Ok(())
     }
 
-    if let Ok(dir) = lattice_paths::lattice_dir(root) {
+    if let Ok(dir) = cipher_paths::cipher_dir(root) {
         if dir.is_dir() {
             let _ = recurse(&dir);
         }

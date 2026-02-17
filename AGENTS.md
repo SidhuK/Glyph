@@ -27,7 +27,7 @@ cd src-tauri && cargo clippy  # Lint Rust
 
 ## Architecture Overview
 
-**Lattice** is a desktop note-taking app with a node-based canvas editor.
+**Cipher** is a desktop note-taking app with a node-based canvas editor.
 
 | Layer | Tech | Location |
 |-------|------|----------|
@@ -37,7 +37,7 @@ cd src-tauri && cargo clippy  # Lint Rust
 | Editor | TipTap + Markdown | `src/components/editor/` |
 | AI | Rig-backed multi-provider chat with tool use (`rig.rs`) | `src/components/ai/` + `src-tauri/src/ai_rig/` |
 | UI | shadcn/ui + Motion (Framer Motion) | `src/components/ui/` |
-| Storage | SQLite + Filesystem | `.lattice/lattice.sqlite` |
+| Storage | SQLite + Filesystem | `.cipher/cipher.sqlite` |
 
 ## Key Frontend Files
 
@@ -143,20 +143,20 @@ State management via React Context (no prop drilling):
 | `links/` | Link fetching, caching, metadata extraction |
 | `ai_rig/` | Rig runtime (`rig.rs`) for providers, tools, streaming events, profiles/history/secrets |
 | `paths.rs` | Safe path joining (prevents traversal) |
-| `lattice_paths.rs` | `.lattice/` directory and DB path helpers |
-| `lattice_fs.rs` | Lattice-specific filesystem operations |
+| `cipher_paths.rs` | `.cipher/` directory and DB path helpers |
+| `cipher_fs.rs` | Cipher-specific filesystem operations |
 | `io_atomic.rs` | Crash-safe atomic writes |
 | `net.rs` | Network safety (SSRF prevention) |
 
 ## Vault Layout
 
-Lattice works with any Obsidian-compatible vault. User markdown files stay wherever they are in the vault. Lattice only creates a `.lattice/` folder for its own data:
+Cipher works with any Obsidian-compatible vault. User markdown files stay wherever they are in the vault. Cipher only creates a `.cipher/` folder for its own data:
 
 ```
 any-vault-folder/
 ├── (user's existing .md files and folders)
-└── .lattice/
-    ├── lattice.sqlite   # Index, search, canvases
+└── .cipher/
+    ├── cipher.sqlite   # Index, search, canvases
     └── cache/           # Temporary data
 ```
 

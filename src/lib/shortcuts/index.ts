@@ -1,5 +1,5 @@
 /**
- * Shortcuts module - centralized keyboard shortcuts for Lattice
+ * Shortcuts module - centralized keyboard shortcuts for Cipher
  *
  * This module provides:
  * - Type definitions for shortcuts

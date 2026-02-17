@@ -56,7 +56,7 @@ pub fn extract_image(html: &str) -> Option<String> {
 pub fn fetch_html(client: &reqwest::blocking::Client, url: &Url) -> Result<String, String> {
     let resp = client
         .get(url.clone())
-        .header("User-Agent", "Lattice/0.1 (link preview)")
+        .header("User-Agent", "Cipher/0.1 (link preview)")
         .send()
         .map_err(|e| e.to_string())?;
 
@@ -99,7 +99,7 @@ pub fn fetch_youtube_oembed(
     net::validate_url_host(&oembed, false)?;
     let resp = client
         .get(oembed)
-        .header("User-Agent", "Lattice/0.1 (link preview)")
+        .header("User-Agent", "Cipher/0.1 (link preview)")
         .send()
         .map_err(|e| e.to_string())?;
     if !resp.status().is_success() {
@@ -131,7 +131,7 @@ pub fn download_image(
 
     let resp = client
         .get(image_url.clone())
-        .header("User-Agent", "Lattice/0.1 (link preview)")
+        .header("User-Agent", "Cipher/0.1 (link preview)")
         .header("Accept", "image/*")
         .send()
         .map_err(|e| e.to_string())?;

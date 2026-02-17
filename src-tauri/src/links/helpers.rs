@@ -5,7 +5,7 @@ use std::{
 };
 use url::Url;
 
-use crate::{lattice_paths, net};
+use crate::{cipher_paths, net};
 
 pub const MAX_HTML_BYTES: u64 = 1024 * 512;
 pub const MAX_IMAGE_BYTES: u64 = 1024 * 1024 * 2;
@@ -26,7 +26,7 @@ pub fn sha256_hex(s: &str) -> String {
 }
 
 pub fn cache_dir(vault_root: &Path) -> Result<PathBuf, String> {
-    let base = lattice_paths::ensure_lattice_cache_dir(vault_root)?;
+    let base = cipher_paths::ensure_cipher_cache_dir(vault_root)?;
     Ok(base.join("link-previews"))
 }
 
@@ -48,7 +48,7 @@ pub fn image_rel_path(image_url: &Url) -> PathBuf {
             }
         }
     }
-    PathBuf::from(".lattice/cache/link-previews").join(format!(
+    PathBuf::from(".cipher/cache/link-previews").join(format!(
         "{}{}",
         sha256_hex(image_url.as_str()),
         ext

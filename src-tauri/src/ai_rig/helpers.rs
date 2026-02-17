@@ -88,7 +88,7 @@ pub fn split_system_and_messages(
 pub async fn http_client() -> Result<reqwest::Client, String> {
     reqwest::Client::builder()
         .timeout(Duration::from_secs(90))
-        .user_agent("Lattice/0.1 (ai)")
+        .user_agent("Cipher/0.1 (ai)")
         .build()
         .map_err(|e| e.to_string())
 }

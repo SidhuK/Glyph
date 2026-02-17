@@ -27,7 +27,7 @@ pub async fn index_rebuild(
     let _ = app
         .notification()
         .builder()
-        .title("Lattice")
+        .title("Cipher")
         .body(format!("Index rebuilt ({})", res.indexed))
         .show();
     Ok(res)

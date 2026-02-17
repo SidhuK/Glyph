@@ -1,4 +1,4 @@
-export const AI_CONTEXT_ATTACH_EVENT = "lattice:ai-context-attach";
+export const AI_CONTEXT_ATTACH_EVENT = "cipher:ai-context-attach";
 
 export interface AiContextAttachDetail {
 	paths: string[];

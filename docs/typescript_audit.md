@@ -1,4 +1,4 @@
-# Lattice Frontend — TypeScript Code Audit
+# Cipher Frontend — TypeScript Code Audit
 
 > **Date:** 2026-02-15
 > **Scope:** `src/` directory (React 19 + TypeScript + Vite frontend)

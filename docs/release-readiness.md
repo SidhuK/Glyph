@@ -1,4 +1,4 @@
-# Lattice Release Readiness (macOS)
+# Cipher Release Readiness (macOS)
 
 ## Build
 

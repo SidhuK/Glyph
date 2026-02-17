@@ -266,7 +266,7 @@ export function AIPanel({
 			<div className="aiPanelHeader">
 				<div className="aiPanelTitle">
 					<HugeiconsIcon icon={AiBrain04Icon} size={18} />
-					<span>Lattice AI</span>
+					<span>Cipher AI</span>
 				</div>
 				<div className="aiPanelHeaderRight">
 					<Button

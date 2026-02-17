@@ -1,4 +1,4 @@
-# Lattice Updater Setup (Tauri v2, GitHub Releases)
+# Cipher Updater Setup (Tauri v2, GitHub Releases)
 
 This document is a future-ready checklist for shipping auto-updates to users outside the Mac App Store.
 
@@ -34,7 +34,7 @@ If you stay private, use a separate authenticated update server/proxy instead of
 Run locally once:
 
 ```bash
-cargo tauri signer generate -w ~/.tauri/lattice-updater.key
+cargo tauri signer generate -w ~/.tauri/cipher-updater.key
 ```
 
 You will get:

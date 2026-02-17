@@ -257,27 +257,27 @@ export function useNoteEditor({
 
 		const resolveImage = async (img: HTMLImageElement) => {
 			const source = (
-				img.getAttribute("data-lattice-source-src") ??
+				img.getAttribute("data-cipher-source-src") ??
 				img.getAttribute("src") ??
 				""
 			).trim();
 			if (!source || isRemoteAssetPath(source)) return;
-			const alreadyResolvedFrom = img.getAttribute("data-lattice-resolved-from") ?? "";
+			const alreadyResolvedFrom = img.getAttribute("data-cipher-resolved-from") ?? "";
 			if (alreadyResolvedFrom === source && isRemoteAssetPath(img.src)) return;
 			const converted = await resolveSource(source);
 			if (!converted || cancelled) return;
 			const latestSource = (
-				img.getAttribute("data-lattice-source-src") ??
+				img.getAttribute("data-cipher-source-src") ??
 				img.getAttribute("src") ??
 				""
 			).trim();
 			if (!latestSource || latestSource !== source) return;
 			if (img.src === converted) {
-				img.setAttribute("data-lattice-resolved-from", source);
+				img.setAttribute("data-cipher-resolved-from", source);
 				return;
 			}
-			img.setAttribute("data-lattice-source-src", source);
-			img.setAttribute("data-lattice-resolved-from", source);
+			img.setAttribute("data-cipher-source-src", source);
+			img.setAttribute("data-cipher-resolved-from", source);
 			img.src = converted;
 		};
 

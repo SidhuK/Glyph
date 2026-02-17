@@ -18,7 +18,7 @@ cd src-tauri && cargo build   # Build Rust backend
 
 ## Architecture
 
-**Lattice** is a desktop note-taking app with a node-based canvas editor.
+**Cipher** is a desktop note-taking app with a node-based canvas editor.
 
 - **Frontend**: React 19 + TypeScript + Vite in `src/`
 - **Backend**: Tauri 2 + Rust in `src-tauri/`

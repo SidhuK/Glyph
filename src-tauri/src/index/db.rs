@@ -1,10 +1,10 @@
-use crate::lattice_paths;
+use crate::cipher_paths;
 use std::path::{Path, PathBuf};
 
 use super::schema::ensure_schema;
 
 pub fn db_path(vault_root: &Path) -> Result<PathBuf, String> {
-    lattice_paths::lattice_db_path(vault_root)
+    cipher_paths::cipher_db_path(vault_root)
 }
 
 pub fn open_db(vault_root: &Path) -> Result<rusqlite::Connection, String> {
