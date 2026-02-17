@@ -15,7 +15,7 @@ use serde::Serialize;
 use tauri::menu::{
     Menu, MenuItem, PredefinedMenuItem, Submenu, HELP_SUBMENU_ID, WINDOW_SUBMENU_ID,
 };
-use tauri::{Emitter, Manager, WindowEvent};
+use tauri::{Emitter, Manager, RunEvent, WindowEvent};
 use tracing::warn;
 
 #[cfg(target_os = "macos")]
@@ -220,6 +220,16 @@ pub fn run() {
                     let _ = window.hide();
                 }
             }
+
+            #[cfg(target_os = "macos")]
+            if window.label() == "main" {
+                if let WindowEvent::CloseRequested { api, .. } = event {
+                    // Keep app alive on macOS when the last window is closed.
+                    // Dock activation can then restore this window.
+                    api.prevent_close();
+                    let _ = window.hide();
+                }
+            }
         })
         .manage(ai_rig::AiState::default())
         .manage(vault::VaultState::default())
@@ -291,6 +301,16 @@ pub fn run() {
             vault::commands::vault_get_current,
             vault::commands::vault_close
         ])
-        .run(tauri::generate_context!())
-        .expect("error while running tauri application");
+        .build(tauri::generate_context!())
+        .expect("error while building tauri application")
+        .run(|app_handle, event| {
+            #[cfg(target_os = "macos")]
+            if let RunEvent::Reopen { .. } = event {
+                if let Some(window) = app_handle.get_webview_window("main") {
+                    let _ = window.show();
+                    let _ = window.unminimize();
+                    let _ = window.set_focus();
+                }
+            }
+        });
 }
