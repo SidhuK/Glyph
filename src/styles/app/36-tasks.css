@@ -272,13 +272,6 @@
 	transition: opacity 180ms ease;
 }
 
-.tasksRowMeta {
-	display: flex;
-	align-items: center;
-	flex-wrap: wrap;
-	gap: 6px;
-}
-
 .tasksRowPath {
 	margin-left: auto;
 	border: none;
