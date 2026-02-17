@@ -84,7 +84,7 @@ export default function SettingsApp() {
 						onClick={() => switchTab("general")}
 						aria-pressed={activeTab === "general"}
 					>
-						<SettingsIcon size={14} />
+						<SettingsIcon size={13} />
 						<span>General</span>
 					</button>
 					<button
@@ -93,7 +93,7 @@ export default function SettingsApp() {
 						onClick={() => switchTab("appearance")}
 						aria-pressed={activeTab === "appearance"}
 					>
-						<HugeiconsIcon icon={TextFontIcon} size={14} />
+						<HugeiconsIcon icon={TextFontIcon} size={13} />
 						<span>Appearance</span>
 					</button>
 					<button
@@ -102,7 +102,7 @@ export default function SettingsApp() {
 						onClick={() => switchTab("ai")}
 						aria-pressed={activeTab === "ai"}
 					>
-						<HugeiconsIcon icon={AiBrain04Icon} size={14} />
+						<HugeiconsIcon icon={AiBrain04Icon} size={13} />
 						<span>AI</span>
 					</button>
 					<button
@@ -111,7 +111,7 @@ export default function SettingsApp() {
 						onClick={() => switchTab("vault")}
 						aria-pressed={activeTab === "vault"}
 					>
-						<FolderOpen size={14} />
+						<FolderOpen size={13} />
 						<span>Vault</span>
 					</button>
 				</nav>

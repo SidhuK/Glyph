@@ -120,6 +120,12 @@ export function VaultProvider({ children }: { children: ReactNode }) {
 			isOpeningVaultRef.current = true;
 			setError("");
 			try {
+				if (vaultPath) {
+					await invoke("vault_close");
+					await clearCurrentVaultPath();
+					setVaultPath(null);
+					setVaultSchemaVersion(null);
+				}
 				const vaultInfo =
 					mode === "create"
 						? await invoke("vault_create", { path })
@@ -140,7 +146,7 @@ export function VaultProvider({ children }: { children: ReactNode }) {
 				isOpeningVaultRef.current = false;
 			}
 		},
-		[],
+		[vaultPath],
 	);
 
 	const closeVault = useCallback(async () => {

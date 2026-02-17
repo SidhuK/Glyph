@@ -10,7 +10,7 @@ interface AiModelComboboxProps {
 }
 
 const providerNeedsApiKey = (provider: AiProviderKind): boolean =>
-	provider !== "ollama" && provider !== "openai_compat";
+	provider !== "ollama";
 
 export function AiModelCombobox({
 	profileId,
@@ -22,6 +22,7 @@ export function AiModelCombobox({
 	const [models, setModels] = useState<AiModel[] | null>(null);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState("");
+	const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
 	const lastSecretConfiguredRef = useRef<boolean | null>(secretConfigured);
 	const requiresApiKey = providerNeedsApiKey(provider);
 	const canFetchModels = !requiresApiKey || secretConfigured === true;
@@ -30,49 +31,15 @@ export function AiModelCombobox({
 	useEffect(() => {
 		setModels(null);
 		setError("");
+		setHasAttemptedFetch(false);
 	}, [profileId, provider]);
 
-	const fetchModels = useCallback(async () => {
-		if (models || loading) return;
-		setLoading(true);
-		setError("");
-		try {
-			const result = await invoke("ai_models_list", {
-				profile_id: profileId,
-			});
-			setModels(result);
-		} catch (e) {
-			setError(e instanceof Error ? e.message : String(e));
-		} finally {
-			setLoading(false);
-		}
-	}, [models, loading, profileId]);
-
-	useEffect(() => {
-		if (!canFetchModels) return;
-		void fetchModels();
-	}, [canFetchModels, fetchModels]);
-
-	useEffect(() => {
-		if (
-			canFetchModels &&
-			secretConfigured === true &&
-			lastSecretConfiguredRef.current !== true
-		) {
-			setModels(null);
+	const fetchModels = useCallback(
+		async (force = false) => {
+			if (!force && (models || loading || hasAttemptedFetch)) return;
+			setLoading(true);
+			setHasAttemptedFetch(true);
 			setError("");
-			setLoading(false);
-			void fetchModels();
-		}
-		lastSecretConfiguredRef.current = secretConfigured;
-	}, [canFetchModels, secretConfigured, fetchModels]);
-
-	const handleRetry = useCallback(() => {
-		if (!canFetchModels) return;
-		setModels(null);
-		setError("");
-		setLoading(true);
-		void (async () => {
 			try {
 				const result = await invoke("ai_models_list", {
 					profile_id: profileId,
@@ -83,8 +50,37 @@ export function AiModelCombobox({
 			} finally {
 				setLoading(false);
 			}
-		})();
-	}, [canFetchModels, profileId]);
+		},
+		[models, loading, hasAttemptedFetch, profileId],
+	);
+
+	useEffect(() => {
+		if (!canFetchModels || hasAttemptedFetch) return;
+		void fetchModels();
+	}, [canFetchModels, hasAttemptedFetch, fetchModels]);
+
+	useEffect(() => {
+		if (
+			canFetchModels &&
+			secretConfigured === true &&
+			lastSecretConfiguredRef.current !== true
+		) {
+			setModels(null);
+			setError("");
+			setLoading(false);
+			setHasAttemptedFetch(false);
+			void fetchModels(true);
+		}
+		lastSecretConfiguredRef.current = secretConfigured;
+	}, [canFetchModels, secretConfigured, fetchModels]);
+
+	const handleRetry = useCallback(() => {
+		if (!canFetchModels) return;
+		setModels(null);
+		setError("");
+		setHasAttemptedFetch(false);
+		void fetchModels(true);
+	}, [canFetchModels, fetchModels]);
 
 	const statusLabel = loading
 		? "Connecting…"

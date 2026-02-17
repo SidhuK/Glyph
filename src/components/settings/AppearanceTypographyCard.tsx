@@ -25,6 +25,9 @@ export function AppearanceTypographyCard({
 }: AppearanceTypographyCardProps) {
 	const minFontSize = fontSizeOptions[0] ?? 7;
 	const maxFontSize = fontSizeOptions[fontSizeOptions.length - 1] ?? 40;
+	const clampFontSize = (value: number): UiFontSize => {
+		return Math.min(maxFontSize, Math.max(minFontSize, value));
+	};
 
 	return (
 		<section className="settingsCard">
@@ -95,6 +98,20 @@ export function AppearanceTypographyCard({
 							void onFontSizeChange(Number(event.target.value))
 						}
 						aria-label="Font size"
+					/>
+					<input
+						type="number"
+						className="settingsRangeNumber"
+						min={minFontSize}
+						max={maxFontSize}
+						step={1}
+						value={fontSize}
+						onChange={(event) => {
+							const next = Number(event.target.value);
+							if (!Number.isFinite(next)) return;
+							void onFontSizeChange(clampFontSize(next));
+						}}
+						aria-label="Font size value"
 					/>
 					<span className="settingsRangeValue settingsRangeHoverValue">
 						{fontSize}

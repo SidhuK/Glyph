@@ -92,10 +92,10 @@
 	z-index: 2;
 	display: grid;
 	grid-template-columns: repeat(4, minmax(0, 1fr));
-	gap: 8px;
+	gap: 6px;
 	width: 100%;
-	max-width: 540px;
-	padding: 6px;
+	max-width: 520px;
+	padding: 4px;
 	border: 1px solid var(--border-light);
 	border-radius: var(--radius-2xl);
 	background: color-mix(in srgb, var(--bg-secondary) 80%, transparent);
@@ -107,13 +107,13 @@
 	align-items: center;
 	justify-content: center;
 	gap: 6px;
-	min-height: 38px;
-	padding: 0 10px;
+	min-height: 32px;
+	padding: 0 9px;
 	border-radius: var(--radius-full);
 	color: var(--text-secondary);
 	background: transparent;
 	border: 1px solid transparent;
-	font-size: var(--text-xs);
+	font-size: 11px;
 }
 
 .settingsTabButton.active {
@@ -164,7 +164,7 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	padding: 6px 12px;
+	padding: 4px 10px;
 	border-radius: var(--radius-full);
 	background: color-mix(in srgb, var(--bg-secondary) 75%, transparent);
 	border: 1px solid var(--border-light);

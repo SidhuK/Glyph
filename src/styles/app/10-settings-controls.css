@@ -1,9 +1,9 @@
 .settingsPill {
-	padding: 4px 10px;
+	padding: 3px 8px;
 	border-radius: var(--radius-full);
 	background: color-mix(in srgb, var(--bg-secondary) 65%, transparent);
 	border: 1px solid var(--border-light);
-	font-size: 10px;
+	font-size: 9px;
 	letter-spacing: 0.08em;
 	text-transform: uppercase;
 	color: var(--text-tertiary);
@@ -36,7 +36,7 @@
 	min-width: 160px;
 	max-width: 280px;
 	width: 100%;
-	min-height: 44px;
+	min-height: 36px;
 }
 
 .settingsField input:focus-visible,
@@ -120,14 +120,14 @@
 	position: relative;
 	display: inline-flex;
 	align-items: center;
-	gap: var(--space-2);
-	padding-top: 16px;
+	gap: 8px;
+	padding-top: 14px;
 }
 
 .settingsRange input[type="range"] {
 	appearance: none;
 	height: 4px;
-	width: 160px;
+	width: 140px;
 	border-radius: var(--radius-full);
 	background: color-mix(in srgb, var(--bg-tertiary) 60%, transparent);
 }
@@ -146,8 +146,17 @@
 .settingsRangeValue {
 	font-size: var(--text-xs);
 	color: var(--text-secondary);
-	min-width: 42px;
+	min-width: 36px;
 	text-align: right;
+}
+
+.settingsRangeNumber {
+	width: 62px;
+	min-width: 62px;
+	max-width: 62px;
+	min-height: 32px;
+	text-align: right;
+	padding-right: 8px;
 }
 
 .settingsRangeHoverValue {
@@ -176,10 +185,10 @@
 
 .settingsToggle {
 	position: relative;
-	width: 52px;
-	height: 32px;
-	min-width: 44px;
-	min-height: 44px;
+	width: 46px;
+	height: 28px;
+	min-width: 34px;
+	min-height: 34px;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -207,8 +216,8 @@
 .settingsToggle span::after {
 	content: "";
 	position: absolute;
-	height: 24px;
-	width: 24px;
+	height: 20px;
+	width: 20px;
 	left: 3px;
 	border-radius: 50%;
 	background: var(--bg-primary);
@@ -222,14 +231,14 @@
 }
 
 .settingsToggle input:checked + span::after {
-	transform: translateX(20px);
+	transform: translateX(18px);
 	background: var(--interactive-accent);
 }
 
 .settingsSegmented {
 	display: inline-flex;
 	align-items: center;
-	padding: 4px;
+	padding: 3px;
 	border-radius: var(--radius-full);
 	border: 1px solid var(--border-light);
 	background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
@@ -237,10 +246,10 @@
 }
 
 .settingsSegmented button {
-	min-height: 36px;
-	padding: 0 12px;
+	min-height: 30px;
+	padding: 0 10px;
 	border-radius: var(--radius-full);
-	font-size: var(--text-xs);
+	font-size: 11px;
 	color: var(--text-secondary);
 }
 
@@ -264,12 +273,12 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 8px;
-	min-height: 44px;
-	padding: 6px 10px;
+	min-height: 36px;
+	padding: 5px 9px;
 	border-radius: var(--radius-full);
 	border: 1px solid var(--border-light);
 	background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
-	font-size: 10px;
+	font-size: 9px;
 	text-transform: capitalize;
 }
 
