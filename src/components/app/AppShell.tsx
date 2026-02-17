@@ -24,9 +24,11 @@ import { PanelLeftOpen } from "../Icons";
 import { AIFloatingHost } from "../ai/AIFloatingHost";
 import { dispatchAiContextAttach } from "../ai/aiContextEvents";
 import {
+	MARKDOWN_LINK_CLICK_EVENT,
 	TAG_CLICK_EVENT,
 	type TagClickDetail,
 	WIKI_LINK_CLICK_EVENT,
+	type MarkdownLinkClickDetail,
 	type WikiLinkClickDetail,
 } from "../editor/markdown/editorEvents";
 import { Button } from "../ui/shadcn/button";
@@ -36,6 +38,7 @@ import { MainContent } from "./MainContent";
 import { Sidebar } from "./Sidebar";
 import {
 	normalizeRelPath,
+	resolveMarkdownLinkPath,
 	parentDir,
 	resolveWikiLinkPath,
 } from "./appShellHelpers";
@@ -137,17 +140,29 @@ export function AppShell() {
 	const fsRefreshTimerRef = useRef<number | null>(null);
 
 	useEffect(() => {
-		let cachedEntries: FsEntry[] = [];
-		let loadedAt = 0;
-		const ensureEntries = async () => {
-			if (!cachedEntries.length || Date.now() - loadedAt > 30_000) {
-				cachedEntries = await invoke("vault_list_markdown_files", {
+		let markdownEntries: FsEntry[] = [];
+		let markdownLoadedAt = 0;
+		let allFileEntries: FsEntry[] = [];
+		let allFileLoadedAt = 0;
+		const ensureMarkdownEntries = async () => {
+			if (!markdownEntries.length || Date.now() - markdownLoadedAt > 30_000) {
+				markdownEntries = await invoke("vault_list_markdown_files", {
 					recursive: true,
 					limit: 4000,
 				});
-				loadedAt = Date.now();
+				markdownLoadedAt = Date.now();
 			}
-			return cachedEntries;
+			return markdownEntries;
+		};
+		const ensureAllFileEntries = async () => {
+			if (!allFileEntries.length || Date.now() - allFileLoadedAt > 30_000) {
+				allFileEntries = await invoke("vault_list_files", {
+					recursive: true,
+					limit: 20000,
+				});
+				allFileLoadedAt = Date.now();
+			}
+			return allFileEntries;
 		};
 		const onWikiLinkClick = (event: Event) => {
 			const detail = (event as CustomEvent<WikiLinkClickDetail>).detail;
@@ -156,7 +171,7 @@ export function AppShell() {
 				detail.target.split("#", 1)[0] ?? detail.target;
 			void (async () => {
 				try {
-					const entries = await ensureEntries();
+					const entries = await ensureMarkdownEntries();
 					const resolved = resolveWikiLinkPath(targetWithoutAnchor, entries);
 					if (!resolved) {
 						setError(`Could not resolve wikilink: ${detail.target}`);
@@ -166,6 +181,35 @@ export function AppShell() {
 				} catch (e) {
 					setError(
 						`Failed to open wikilink: ${e instanceof Error ? e.message : String(e)}`,
+					);
+				}
+			})();
+		};
+		const onMarkdownLinkClick = (event: Event) => {
+			const detail = (event as CustomEvent<MarkdownLinkClickDetail>).detail;
+			if (!detail?.href) return;
+			void (async () => {
+				try {
+					const allEntries = await ensureAllFileEntries();
+					const resolved = resolveMarkdownLinkPath(
+						detail.href,
+						detail.sourcePath,
+						allEntries,
+					);
+					if (resolved) {
+						await fileTree.openFile(resolved);
+						return;
+					}
+					const markdownEntries = await ensureMarkdownEntries();
+					const wikiFallback = resolveWikiLinkPath(detail.href, markdownEntries);
+					if (wikiFallback) {
+						await fileTree.openFile(wikiFallback);
+						return;
+					}
+					setError(`Could not resolve markdown link: ${detail.href}`);
+				} catch (e) {
+					setError(
+						`Failed to open markdown link: ${e instanceof Error ? e.message : String(e)}`,
 					);
 				}
 			})();
@@ -180,9 +224,11 @@ export function AppShell() {
 			setPaletteOpen(true);
 		};
 		window.addEventListener(WIKI_LINK_CLICK_EVENT, onWikiLinkClick);
+		window.addEventListener(MARKDOWN_LINK_CLICK_EVENT, onMarkdownLinkClick);
 		window.addEventListener(TAG_CLICK_EVENT, onTagClick);
 		return () => {
 			window.removeEventListener(WIKI_LINK_CLICK_EVENT, onWikiLinkClick);
+			window.removeEventListener(MARKDOWN_LINK_CLICK_EVENT, onMarkdownLinkClick);
 			window.removeEventListener(TAG_CLICK_EVENT, onTagClick);
 		};
 	}, [fileTree, setError, setPaletteOpen]);

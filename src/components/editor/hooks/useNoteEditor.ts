@@ -7,6 +7,7 @@ import {
 } from "../../../lib/notePreview";
 import { createEditorExtensions } from "../extensions";
 import {
+	dispatchMarkdownLinkClick,
 	dispatchTagClick,
 	dispatchWikiLinkClick,
 } from "../markdown/editorEvents";
@@ -23,12 +24,14 @@ function normalizeBody(markdown: string): string {
 interface UseNoteEditorOptions {
 	markdown: string;
 	mode: CanvasInlineEditorMode;
+	relPath?: string;
 	onChange: (nextMarkdown: string) => void;
 }
 
 export function useNoteEditor({
 	markdown,
 	mode,
+	relPath = "",
 	onChange,
 }: UseNoteEditorOptions) {
 	const { frontmatter, body } = splitYamlFrontmatter(markdown);
@@ -39,7 +42,14 @@ export function useNoteEditor({
 	const lastEmittedMarkdownRef = useRef(markdown);
 	const ignoreNextUpdateRef = useRef(false);
 	const suppressUpdateRef = useRef(false);
-	const extensions = useMemo(() => createEditorExtensions(), []);
+	const extensions = useMemo(
+		() =>
+			createEditorExtensions({
+				currentPath: relPath,
+				enableMarkdownLinkAutocomplete: true,
+			}),
+		[relPath],
+	);
 
 	useEffect(() => {
 		frontmatterRef.current = frontmatter;
@@ -87,15 +97,19 @@ export function useNoteEditor({
 				}
 				const link = target?.closest("a") as HTMLAnchorElement | null;
 				const href = link?.getAttribute("href") ?? "";
-				if (
-					href &&
-					(href.startsWith("http://") || href.startsWith("https://"))
-				) {
+				if (!href) return false;
+				if (href.startsWith("http://") || href.startsWith("https://")) {
 					event.preventDefault();
 					void openUrl(href);
 					return true;
 				}
-				return false;
+				if (href.startsWith("#")) return false;
+				event.preventDefault();
+				dispatchMarkdownLinkClick({
+					href,
+					sourcePath: relPath,
+				});
+				return true;
 			},
 		},
 		onTransaction: ({ editor: instance, transaction }) => {

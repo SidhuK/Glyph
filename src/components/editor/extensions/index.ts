@@ -12,6 +12,7 @@ import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import StarterKit from "@tiptap/starter-kit";
 import { SlashCommand } from "../slashCommands";
+import { MarkdownLinkAutocomplete } from "./markdownLinkAutocomplete";
 import { TagDecorations } from "./tagDecorations";
 import { WikiLink } from "./wikiLink";
 
@@ -171,12 +172,19 @@ const TableEnterNavigation = Extension.create({
 interface CreateEditorExtensionsOptions {
 	enableSlashCommand?: boolean;
 	enableWikiLinks?: boolean;
+	enableMarkdownLinkAutocomplete?: boolean;
+	currentPath?: string;
 }
 
 export function createEditorExtensions(
 	options?: CreateEditorExtensionsOptions,
 ) {
-	const { enableSlashCommand = true, enableWikiLinks = true } = options ?? {};
+	const {
+		enableSlashCommand = true,
+		enableWikiLinks = true,
+		enableMarkdownLinkAutocomplete = true,
+		currentPath = "",
+	} = options ?? {};
 	return [
 		StarterKit.configure({
 			bulletList: { keepMarks: true, keepAttributes: false },
@@ -202,6 +210,13 @@ export function createEditorExtensions(
 			},
 		}),
 		...(enableWikiLinks ? [WikiLink] : []),
+		...(enableMarkdownLinkAutocomplete
+			? [
+					MarkdownLinkAutocomplete.configure({
+						currentPath,
+					}),
+				]
+			: []),
 		...(enableSlashCommand ? [SlashCommand] : []),
 		CalloutDecorations,
 		TagDecorations,

@@ -28,7 +28,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		frontmatterRef,
 		lastAppliedBodyRef,
 		lastEmittedMarkdownRef,
-	} = useNoteEditor({ markdown, mode, onChange });
+	} = useNoteEditor({ markdown, mode, relPath, onChange });
 
 	const [frontmatterDraft, setFrontmatterDraft] = useState(frontmatter ?? "");
 	const frontmatterTextAreaRef = useRef<HTMLTextAreaElement | null>(null);

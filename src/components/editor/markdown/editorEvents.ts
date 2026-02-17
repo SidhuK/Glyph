@@ -1,4 +1,5 @@
 export const WIKI_LINK_CLICK_EVENT = "lattice:wikilink-click";
+export const MARKDOWN_LINK_CLICK_EVENT = "lattice:markdown-link-click";
 export const TAG_CLICK_EVENT = "lattice:tag-click";
 
 export interface WikiLinkClickDetail {
@@ -14,6 +15,11 @@ export interface TagClickDetail {
 	tag: string;
 }
 
+export interface MarkdownLinkClickDetail {
+	href: string;
+	sourcePath: string;
+}
+
 export function dispatchWikiLinkClick(detail: WikiLinkClickDetail): void {
 	window.dispatchEvent(
 		new CustomEvent<WikiLinkClickDetail>(WIKI_LINK_CLICK_EVENT, { detail }),
@@ -23,5 +29,15 @@ export function dispatchWikiLinkClick(detail: WikiLinkClickDetail): void {
 export function dispatchTagClick(detail: TagClickDetail): void {
 	window.dispatchEvent(
 		new CustomEvent<TagClickDetail>(TAG_CLICK_EVENT, { detail }),
+	);
+}
+
+export function dispatchMarkdownLinkClick(
+	detail: MarkdownLinkClickDetail,
+): void {
+	window.dispatchEvent(
+		new CustomEvent<MarkdownLinkClickDetail>(MARKDOWN_LINK_CLICK_EVENT, {
+			detail,
+		}),
 	);
 }
