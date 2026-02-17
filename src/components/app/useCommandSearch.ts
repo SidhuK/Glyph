@@ -33,13 +33,12 @@ export function useCommandSearch(
 		setIsSearching(true);
 		const parsed = parseSearchQuery(trimmed);
 		debounceRef.current = setTimeout(() => {
-			(parsed.tags.length > 0
-				? invoke("search_with_tags", {
-						tags: parsed.tags,
-						query: parsed.text || null,
-					})
-				: invoke("search", { query: trimmed })
-			)
+			invoke("search_advanced", {
+				request: {
+					...parsed.request,
+					limit: 1500,
+				},
+			})
 				.then((results) => {
 					setSearchResults(results);
 				})
@@ -58,11 +57,15 @@ export function useCommandSearch(
 	const { titleMatches, contentMatches } = useMemo(() => {
 		if (activeTab !== "search" || !query.trim())
 			return { titleMatches: [], contentMatches: [] };
-		const q = query.trim().toLowerCase();
+		const parsed = parseSearchQuery(query.trim());
+		const q = parsed.text.toLowerCase();
+		if (parsed.request.tag_only) {
+			return { titleMatches: searchResults, contentMatches: [] };
+		}
 		const title: SearchResult[] = [];
 		const content: SearchResult[] = [];
 		for (const r of searchResults) {
-			if (r.title.toLowerCase().includes(q)) {
+			if (!q || r.title.toLowerCase().includes(q)) {
 				title.push(r);
 			} else {
 				content.push(r);

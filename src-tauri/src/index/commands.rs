@@ -7,6 +7,7 @@ use crate::vault::VaultState;
 use super::db::open_db;
 use super::indexer::index_note;
 use super::indexer::rebuild;
+use super::search_advanced::{run_search_advanced, SearchAdvancedRequest};
 use super::search_hybrid::hybrid_search;
 use super::tags::normalize_tag;
 use super::tasks::{
@@ -97,6 +98,20 @@ pub async fn search(
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<SearchResult>, String> {
         let conn = open_db(&root)?;
         hybrid_search(&conn, &query, &[], 50)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+pub async fn search_advanced(
+    state: State<'_, VaultState>,
+    request: SearchAdvancedRequest,
+) -> Result<Vec<SearchResult>, String> {
+    let root = state.current_root()?;
+    tauri::async_runtime::spawn_blocking(move || -> Result<Vec<SearchResult>, String> {
+        let conn = open_db(&root)?;
+        run_search_advanced(&conn, request)
     })
     .await
     .map_err(|e| e.to_string())?

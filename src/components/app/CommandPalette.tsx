@@ -3,11 +3,13 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Search } from "../Icons";
 import { Dialog, DialogContent, DialogTitle } from "../ui/shadcn/dialog";
 import { CommandList } from "./CommandList";
+import { CommandSearchFilters } from "./CommandSearchFilters";
 import { SearchResultsList } from "./CommandSearchResults";
 import {
 	type Command,
 	TABS,
 	type Tab,
+	parseSearchQuery,
 	springTransition,
 } from "./commandPaletteHelpers";
 import { useCommandSearch } from "./useCommandSearch";
@@ -58,6 +60,7 @@ export function CommandPalette({
 			: query.trim()
 				? titleMatches.length + contentMatches.length
 				: recentNotes.length;
+	const parsedSearch = useMemo(() => parseSearchQuery(query), [query]);
 
 	useEffect(() => {
 		if (!open) return;
@@ -227,6 +230,12 @@ export function CommandPalette({
 						spellCheck={false}
 					/>
 				</div>
+				{activeTab === "search" ? (
+					<CommandSearchFilters
+						request={parsedSearch.request}
+						onChangeQuery={setQuery}
+					/>
+				) : null}
 
 				<AnimatePresence mode="wait">
 					<motion.div

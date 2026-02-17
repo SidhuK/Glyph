@@ -122,6 +122,14 @@ export interface SearchResult {
 	score: number;
 }
 
+export interface SearchAdvancedRequest {
+	query?: string | null;
+	tags?: string[];
+	title_only?: boolean;
+	tag_only?: boolean;
+	limit?: number | null;
+}
+
 export interface BacklinkItem {
 	id: string;
 	title: string;
@@ -321,6 +329,10 @@ interface TauriCommands {
 	index_rebuild: CommandDef<void, IndexRebuildResult>;
 	index_note_previews_batch: CommandDef<{ ids: string[] }, IndexNotePreview[]>;
 	search: CommandDef<{ query: string }, SearchResult[]>;
+	search_advanced: CommandDef<
+		{ request: SearchAdvancedRequest },
+		SearchResult[]
+	>;
 	search_with_tags: CommandDef<
 		{ tags: string[]; query?: string | null; limit?: number | null },
 		SearchResult[]

@@ -104,6 +104,33 @@
 	color: var(--text-placeholder);
 }
 
+.commandSearchFilters {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	padding: var(--space-2) var(--space-4) 8px;
+}
+
+.commandSearchFilterBtn {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-full);
+	background: var(--bg-secondary);
+	color: var(--text-secondary);
+	height: 26px;
+	padding: 0 10px;
+	font-size: var(--text-xs);
+}
+
+.commandSearchFilterBtn[data-active="true"] {
+	color: var(--text-primary);
+	border-color: var(--border-default);
+	background: color-mix(in srgb, var(--bg-tertiary) 80%, transparent);
+}
+
 /* ── Results list ── */
 
 .commandPaletteList {
