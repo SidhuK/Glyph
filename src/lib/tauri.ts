@@ -222,7 +222,7 @@ export interface AiModel {
 
 export interface ProviderSupportEntry {
 	display_name: string;
-	url: string;
+	url: string | null;
 	endpoints: Record<string, boolean>;
 }
 

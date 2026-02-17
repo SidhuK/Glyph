@@ -114,10 +114,7 @@
 }
 
 .tasksNoteGroup {
-	border: 1px solid var(--border-light);
-	border-radius: var(--radius-lg);
-	background: var(--bg-secondary);
-	padding: var(--space-2);
+	padding: 0;
 }
 
 .tasksNoteHeader {

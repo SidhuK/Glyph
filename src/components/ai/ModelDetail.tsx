@@ -140,14 +140,16 @@ export function ModelDetail({
 							</span>
 						))}
 					</div>
-					<a
-						className={styles.detailLink}
-						href={providerSupport.url}
-						target="_blank"
-						rel="noreferrer"
-					>
-						View {providerSupport.display_name} docs
-					</a>
+					{providerSupport.url && (
+						<a
+							className={styles.detailLink}
+							href={providerSupport.url}
+							target="_blank"
+							rel="noreferrer"
+						>
+							View {providerSupport.display_name} docs
+						</a>
+					)}
 				</div>
 			)}
 

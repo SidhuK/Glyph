@@ -39,7 +39,8 @@ fn is_transient_ai_error(message: &str) -> bool {
 #[derive(Serialize, Deserialize)]
 pub(crate) struct ProviderSupportEntry {
     display_name: String,
-    url: String,
+    #[serde(default)]
+    url: Option<String>,
     endpoints: HashMap<String, bool>,
 }
 

@@ -101,26 +101,22 @@
 .tiptapContentInline .wikiLink {
 	color: var(--interactive-accent);
 	text-decoration: none;
-	background: color-mix(in srgb, var(--interactive-accent) 10%, transparent);
-	border: 1px solid
-		color-mix(in srgb, var(--interactive-accent) 22%, transparent);
-	border-radius: 4px;
-	padding: 1px 5px;
+	background: color-mix(in srgb, var(--interactive-accent) 8%, transparent);
+	border: none;
+	border-radius: 3px;
+	padding: 1px 4px;
 	font-weight: var(--font-medium);
-	transition: background 120ms ease, border-color 120ms ease;
+	transition: background 120ms ease;
 	cursor: pointer;
 }
 
 .tiptapContentInline .wikiLink:hover {
-	background: color-mix(in srgb, var(--interactive-accent) 20%, transparent);
-	border-color: color-mix(in srgb, var(--interactive-accent) 40%, transparent);
+	background: color-mix(in srgb, var(--interactive-accent) 16%, transparent);
 }
 
 .tiptapContentInline .wikiLink[data-unresolved="true"] {
 	color: var(--text-tertiary);
-	border-style: dashed;
 	background: color-mix(in srgb, var(--text-tertiary) 6%, transparent);
-	border-color: color-mix(in srgb, var(--text-tertiary) 20%, transparent);
 }
 
 .tiptapContentInline .tagToken {
