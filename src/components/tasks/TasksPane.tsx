@@ -1,5 +1,6 @@
 import * as Icons from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { motion } from "motion/react";
 import {
 	type ComponentProps,
 	useCallback,
@@ -11,10 +12,11 @@ import {
 import { todayIsoDateLocal } from "../../lib/tasks";
 import { type TaskBucket, type TaskItem, invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
-import { Calendar, RefreshCw } from "../Icons";
+import { RefreshCw } from "../Icons";
+import { springPresets } from "../ui/animations";
 import { Badge } from "../ui/shadcn/badge";
 import { Button } from "../ui/shadcn/button";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
+import { TaskRow } from "./TaskRow";
 
 interface TasksPaneProps {
 	onOpenFile: (relPath: string) => void | Promise<void>;
@@ -37,9 +39,6 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState("");
 	const [isPinned, setIsPinned] = useState(false);
-	const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
-	const [scheduledDate, setScheduledDate] = useState("");
-	const [dueDate, setDueDate] = useState("");
 	const requestVersionRef = useRef(0);
 
 	const loadTasks = useCallback(async () => {
@@ -98,7 +97,10 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 		async (task: TaskItem, checked: boolean) => {
 			try {
 				setError("");
-				await invoke("task_set_checked", { task_id: task.task_id, checked });
+				await invoke("task_set_checked", {
+					task_id: task.task_id,
+					checked,
+				});
 				await loadTasks();
 			} catch (e) {
 				setError(e instanceof Error ? e.message : String(e));
@@ -107,127 +109,25 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 		[loadTasks],
 	);
 
-	const applyDates = useCallback(async () => {
-		if (!editingTaskId) return;
-		try {
-			setError("");
-			await invoke("task_set_dates", {
-				task_id: editingTaskId,
-				scheduled_date: scheduledDate || null,
-				due_date: dueDate || null,
-			});
-			setEditingTaskId(null);
-			await loadTasks();
-		} catch (e) {
-			setError(e instanceof Error ? e.message : String(e));
-		}
-	}, [dueDate, editingTaskId, loadTasks, scheduledDate]);
-
-	const renderTaskRow = (task: TaskItem, withPath: boolean) => (
-		<div key={task.task_id} className="tasksRow">
-			<input
-				type="checkbox"
-				checked={task.checked}
-				onChange={(event) => {
-					void toggleTask(task, event.target.checked);
-				}}
-			/>
-			<div className="tasksRowContent tasksRowContentInline">
-				<div className="tasksRowLine">
-					<div className="tasksRowText">{task.raw_text}</div>
-					{task.scheduled_date ? (
-						<Badge variant="outline">⏳ {task.scheduled_date}</Badge>
-					) : null}
-					{task.due_date ? (
-						<Badge variant="outline">📅 {task.due_date}</Badge>
-					) : null}
-					<Popover
-						open={editingTaskId === task.task_id}
-						onOpenChange={(open) => {
-							if (!open) {
-								if (editingTaskId === task.task_id) {
-									setEditingTaskId(null);
-								}
-								return;
-							}
-							if (editingTaskId !== task.task_id) {
-								setEditingTaskId(task.task_id);
-								setScheduledDate(task.scheduled_date ?? "");
-								setDueDate(task.due_date ?? "");
-							}
-						}}
-					>
-						<PopoverTrigger asChild>
-							<Button type="button" variant="ghost" size="xs">
-								<Calendar size={12} />
-								Schedule
-							</Button>
-						</PopoverTrigger>
-						<PopoverContent
-							className="tasksDatePopover"
-							align="start"
-							onInteractOutside={(event) => event.preventDefault()}
-							onPointerDownOutside={(event) => event.preventDefault()}
-						>
-							<label>
-								Scheduled
-								<input
-									type="date"
-									value={scheduledDate}
-									onChange={(e) => setScheduledDate(e.target.value)}
-								/>
-							</label>
-							<label>
-								Due
-								<input
-									type="date"
-									value={dueDate}
-									onChange={(e) => setDueDate(e.target.value)}
-								/>
-							</label>
-							<div className="tasksDateActions">
-								<Button
-									type="button"
-									variant="ghost"
-									size="xs"
-									onClick={() => setEditingTaskId(null)}
-								>
-									Close
-								</Button>
-								<Button
-									type="button"
-									variant="outline"
-									size="xs"
-									onClick={() => {
-										setScheduledDate("");
-										setDueDate("");
-									}}
-								>
-									Clear
-								</Button>
-								<Button
-									type="button"
-									size="xs"
-									onClick={() => void applyDates()}
-								>
-									Apply
-								</Button>
-							</div>
-						</PopoverContent>
-					</Popover>
-					{withPath ? (
-						<button
-							type="button"
-							className="tasksRowPath"
-							onClick={() => void openTaskFile(task.note_path)}
-							title={task.note_path}
-						>
-							{task.note_path}
-						</button>
-					) : null}
-				</div>
-			</div>
-		</div>
+	const scheduleDates = useCallback(
+		async (
+			taskId: string,
+			scheduled: string | null,
+			due: string | null,
+		) => {
+			try {
+				setError("");
+				await invoke("task_set_dates", {
+					task_id: taskId,
+					scheduled_date: scheduled,
+					due_date: due,
+				});
+				await loadTasks();
+			} catch (e) {
+				setError(e instanceof Error ? e.message : String(e));
+			}
+		},
+		[loadTasks],
 	);
 
 	return (
@@ -235,23 +135,33 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 			<header className="tasksPaneHeader">
 				<div className="tasksPaneHeaderSpacer" />
 				<div className="tasksBucketPills">
-					{BUCKETS.map((item) => (
-						<button
-							key={item.id}
-							type="button"
-							className="tasksBucketPill"
-							data-bucket={item.id}
-							data-active={bucket === item.id}
-							onClick={() => setBucket(item.id)}
-						>
-							<HugeiconsIcon
-								icon={item.icon}
-								size={20}
-								className="tasksBucketPillIcon"
-							/>
-							{item.label}
-						</button>
-					))}
+					{BUCKETS.map((item) => {
+						const active = bucket === item.id;
+						return (
+							<button
+								key={item.id}
+								type="button"
+								className="tasksBucketPill"
+								data-bucket={item.id}
+								data-active={active}
+								onClick={() => setBucket(item.id)}
+							>
+								{active && (
+									<motion.span
+										className="tasksBucketPillBg"
+										layoutId="tasksBucketActive"
+										transition={springPresets.snappy}
+									/>
+								)}
+								<HugeiconsIcon
+									icon={item.icon}
+									size={20}
+									className="tasksBucketPillIcon"
+								/>
+								{item.label}
+							</button>
+						);
+					})}
 				</div>
 				<div className="tasksPaneHeaderActions">
 					<Button
@@ -277,9 +187,18 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 			</header>
 
 			{error ? <div className="tasksPaneError">{error}</div> : null}
-			{loading ? <div className="tasksPaneEmpty">Loading tasks…</div> : null}
+			{loading ? (
+				<div className="tasksPaneEmpty">Loading tasks…</div>
+			) : null}
 			{!loading && tasks.length === 0 ? (
-				<div className="tasksPaneEmpty">No tasks in this bucket.</div>
+				<div className="tasksPaneEmptyState">
+					<HugeiconsIcon
+						icon={Icons.CheckListIcon}
+						size={32}
+						className="tasksPaneEmptyIcon"
+					/>
+					<span>No tasks in this bucket</span>
+				</div>
 			) : null}
 
 			{showGroupedInbox ? (
@@ -295,7 +214,9 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 									<span className="tasksNoteHeaderTitle">
 										{noteTasks[0]?.note_title || notePath}
 									</span>
-									<span className="tasksNoteHeaderPath">{notePath}</span>
+									<span className="tasksNoteHeaderPath">
+										{notePath}
+									</span>
 								</span>
 								<Badge variant="outline">{noteTasks.length}</Badge>
 							</button>
@@ -304,7 +225,16 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 				</div>
 			) : (
 				<div className="tasksList tasksListFlat">
-					{tasks.map((task) => renderTaskRow(task, true))}
+					{tasks.map((task) => (
+						<TaskRow
+							key={task.task_id}
+							task={task}
+							withPath={true}
+							onToggle={toggleTask}
+							onSchedule={scheduleDates}
+							onOpenFile={(p) => void openTaskFile(p)}
+						/>
+					))}
 				</div>
 			)}
 		</section>

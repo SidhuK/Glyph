@@ -223,7 +223,9 @@ export function ModelSelector({
 		detailProviderKey && providerSupportMap
 			? providerSupportMap[detailProviderKey]
 			: undefined;
-	const listProviderKey = provider ? providerSupportKeyMap[provider] : undefined;
+	const listProviderKey = provider
+		? providerSupportKeyMap[provider]
+		: undefined;
 	const listProviderSupport =
 		listProviderKey && providerSupportMap
 			? providerSupportMap[listProviderKey]

@@ -21,5 +21,7 @@ export function dispatchWikiLinkClick(detail: WikiLinkClickDetail): void {
 }
 
 export function dispatchTagClick(detail: TagClickDetail): void {
-	window.dispatchEvent(new CustomEvent<TagClickDetail>(TAG_CLICK_EVENT, { detail }));
+	window.dispatchEvent(
+		new CustomEvent<TagClickDetail>(TAG_CLICK_EVENT, { detail }),
+	);
 }

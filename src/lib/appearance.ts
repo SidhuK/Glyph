@@ -81,5 +81,8 @@ export function applyUiAccent(accent: UiAccent): void {
 	const accentColor = UI_ACCENT_COLORS[accent] ?? UI_ACCENT_COLORS.cerulean;
 	root.style.setProperty("--accent-color", accentColor);
 	root.style.setProperty("--interactive-accent", accentColor);
-	root.style.setProperty("--interactive-accent-hover", shiftHexColor(accentColor, -18));
+	root.style.setProperty(
+		"--interactive-accent-hover",
+		shiftHexColor(accentColor, -18),
+	);
 }

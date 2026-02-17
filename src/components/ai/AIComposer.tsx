@@ -85,7 +85,7 @@ export function AIComposer({
 							<span className="aiContextChipLabel">
 								{item.kind === "file"
 									? truncateLabel(fileNameFromPath(item.path || item.label))
-									: (item.label || "Vault")}
+									: item.label || "Vault"}
 							</span>
 							<X size={10} />
 						</button>
@@ -122,7 +122,9 @@ export function AIComposer({
 							))
 						) : (
 							<div className="aiAddPanelEmpty">
-								{panelQuery.trim() ? "No results" : "Type to search files & folders"}
+								{panelQuery.trim()
+									? "No results"
+									: "Type to search files & folders"}
 							</div>
 						)}
 					</div>

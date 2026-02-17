@@ -61,35 +61,35 @@ export const TagsPane = memo(function TagsPane({
 					{tags.map((t, index) => {
 						const displayTag = t.tag.startsWith("#") ? t.tag.slice(1) : t.tag;
 						return (
-						<motion.li
-							key={t.tag}
-							className="tagsItem"
-							variants={{
-								hidden: { scale: 0.9 },
-								visible: { scale: 1 },
-							}}
-							transition={{ ...springTransition, delay: index * 0.015 }}
-						>
-							<motion.button
-								type="button"
-								className="tagsButton"
-								onClick={() => onClick(t.tag)}
-								title={`${t.count}`}
-								whileHover={{
-									scale: 1.02,
-									y: -1,
-									backgroundColor: "var(--bg-hover)",
+							<motion.li
+								key={t.tag}
+								className="tagsItem"
+								variants={{
+									hidden: { scale: 0.9 },
+									visible: { scale: 1 },
 								}}
-								whileTap={{ scale: 0.98 }}
-								transition={springTransition}
+								transition={{ ...springTransition, delay: index * 0.015 }}
 							>
-								<span className="tagsNameWrap">
-									<HugeiconsIcon icon={Tag01Icon} size={12} />
-									<span className="tagsName">{displayTag}</span>
-								</span>
-								<span className="tagsCount mono">{t.count}</span>
-							</motion.button>
-						</motion.li>
+								<motion.button
+									type="button"
+									className="tagsButton"
+									onClick={() => onClick(t.tag)}
+									title={`${t.count}`}
+									whileHover={{
+										scale: 1.02,
+										y: -1,
+										backgroundColor: "var(--bg-hover)",
+									}}
+									whileTap={{ scale: 0.98 }}
+									transition={springTransition}
+								>
+									<span className="tagsNameWrap">
+										<HugeiconsIcon icon={Tag01Icon} size={12} />
+										<span className="tagsName">{displayTag}</span>
+									</span>
+									<span className="tagsCount mono">{t.count}</span>
+								</motion.button>
+							</motion.li>
 						);
 					})}
 				</motion.ul>

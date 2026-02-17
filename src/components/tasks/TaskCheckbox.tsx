@@ -11,11 +11,16 @@ export function TaskCheckbox({ checked, onChange }: TaskCheckboxProps) {
 		<button
 			type="button"
 			className="tasksCheckbox"
-			role="checkbox"
-			aria-checked={checked}
+			aria-label={checked ? "Uncheck task" : "Check task"}
 			onClick={() => onChange(!checked)}
 		>
-			<svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+			<svg
+				width="18"
+				height="18"
+				viewBox="0 0 18 18"
+				fill="none"
+				aria-hidden="true"
+			>
 				<motion.circle
 					cx="9"
 					cy="9"
@@ -24,12 +29,8 @@ export function TaskCheckbox({ checked, onChange }: TaskCheckboxProps) {
 					className="tasksCheckboxCircle"
 					initial={false}
 					animate={{
-						fill: checked
-							? "var(--text-primary)"
-							: "transparent",
-						stroke: checked
-							? "var(--text-primary)"
-							: "var(--border-strong)",
+						fill: checked ? "var(--text-primary)" : "transparent",
+						stroke: checked ? "var(--text-primary)" : "var(--border-strong)",
 					}}
 					transition={springPresets.snappy}
 				/>

@@ -207,10 +207,7 @@ export function AppearanceSettingsPane() {
 						</div>
 					</div>
 				</section>
-				<AppearanceAccentCard
-					accent={accent}
-					onAccentChange={onAccentChange}
-				/>
+				<AppearanceAccentCard accent={accent} onAccentChange={onAccentChange} />
 				<AppearanceTypographyCard
 					fontFamily={fontFamily}
 					monoFontFamily={monoFontFamily}

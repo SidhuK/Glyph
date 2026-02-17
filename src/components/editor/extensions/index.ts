@@ -148,12 +148,15 @@ const TableEnterNavigation = Extension.create({
 					}
 				}
 
-				if (cellDepth === -1 || rowDepth === -1 || tableDepth === -1) return false;
+				if (cellDepth === -1 || rowDepth === -1 || tableDepth === -1)
+					return false;
 
 				const rowNode = $from.node(rowDepth);
 				const tableNode = $from.node(tableDepth);
-				const isLastCellInRow = $from.index(rowDepth) === rowNode.childCount - 1;
-				const isLastRowInTable = $from.index(tableDepth) === tableNode.childCount - 1;
+				const isLastCellInRow =
+					$from.index(rowDepth) === rowNode.childCount - 1;
+				const isLastRowInTable =
+					$from.index(tableDepth) === tableNode.childCount - 1;
 
 				if (isLastCellInRow && isLastRowInTable) {
 					return editor.chain().focus().addRowAfter().goToNextCell().run();

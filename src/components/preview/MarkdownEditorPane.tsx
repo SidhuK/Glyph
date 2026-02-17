@@ -97,7 +97,11 @@ export function MarkdownEditorPane({
 		setError("");
 		try {
 			const doc = await invoke("vault_read_text", { path: relPath });
-			if (doc.mtime_ms === mtimeRef.current && doc.text === savedTextRef.current) return;
+			if (
+				doc.mtime_ms === mtimeRef.current &&
+				doc.text === savedTextRef.current
+			)
+				return;
 			markdownDocCache.set(relPath, doc.text);
 			setText(doc.text);
 			setSavedText(doc.text);

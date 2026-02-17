@@ -3,7 +3,7 @@
 	display: flex;
 	flex-direction: column;
 	gap: var(--space-3);
-	padding: var(--space-4) var(--space-3);
+	padding: var(--space-4) var(--space-5);
 	overflow: auto;
 }
 
@@ -29,6 +29,8 @@
 	gap: var(--space-1);
 }
 
+/* ── Bucket pills ── */
+
 .tasksBucketPills {
 	display: flex;
 	align-items: center;
@@ -38,15 +40,6 @@
 	height: 33px;
 	border-radius: 10px;
 	background: transparent;
-}
-
-.tasksPinGlyph {
-	width: 10px;
-	height: 10px;
-	border: 1.5px solid currentcolor;
-	border-radius: 2px 2px 6px 6px;
-	transform: rotate(35deg);
-	opacity: 0.85;
 }
 
 .tasksBucketPill {
@@ -65,52 +58,91 @@
 	font-size: 15px;
 	line-height: 1.35;
 	font-weight: var(--font-semibold);
-	transition: color 220ms cubic-bezier(0.22, 1, 0.36, 1), background-color 220ms
-		cubic-bezier(0.22, 1, 0.36, 1);
+	cursor: pointer;
+	transition: color 180ms ease;
+}
+
+.tasksBucketPillBg {
+	position: absolute;
+	inset: 0;
+	border-radius: 8px;
+	background: var(--bg-hover);
+	z-index: 0;
 }
 
 .tasksBucketPillIcon {
+	position: relative;
+	z-index: 1;
 	opacity: 0.9;
 }
 
-.tasksBucketPill[data-active="true"] {
-	color: var(--text-primary);
+.tasksBucketPill > *:not(.tasksBucketPillBg) {
+	position: relative;
+	z-index: 1;
 }
 
 .tasksBucketPill:hover {
 	color: var(--text-primary);
 }
 
-.tasksBucketPill[data-bucket="inbox"] {
-	color: #0077b6;
+.tasksBucketPill[data-active="true"] {
+	color: var(--text-primary);
 }
 
 .tasksBucketPill[data-bucket="inbox"][data-active="true"] {
 	color: #0077b6;
 }
 
-.tasksBucketPill[data-bucket="today"] {
-	color: #ffbd00;
-}
-
 .tasksBucketPill[data-bucket="today"][data-active="true"] {
-	color: #ffbd00;
+	color: #c89b00;
 }
 
 .tasksBucketPill[data-bucket="upcoming"][data-active="true"] {
-	color: #fca311;
+	color: #d48800;
 }
 
-.tasksPaneError,
+.tasksPinGlyph {
+	width: 10px;
+	height: 10px;
+	border: 1.5px solid currentcolor;
+	border-radius: 2px 2px 6px 6px;
+	transform: rotate(35deg);
+	opacity: 0.85;
+}
+
+/* ── Error / empty ── */
+
+.tasksPaneError {
+	font-size: var(--text-sm);
+	color: var(--text-error);
+}
+
 .tasksPaneEmpty {
 	font-size: var(--text-sm);
 	color: var(--text-secondary);
 }
 
+.tasksPaneEmptyState {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: var(--space-3);
+	padding: var(--space-8) var(--space-4);
+	color: var(--text-tertiary);
+	font-size: var(--text-sm);
+	text-align: center;
+}
+
+.tasksPaneEmptyIcon {
+	opacity: 0.4;
+}
+
+/* ── Groups (inbox) ── */
+
 .tasksGroups {
 	display: flex;
 	flex-direction: column;
-	gap: var(--space-3);
+	gap: var(--space-1);
 }
 
 .tasksNoteGroup {
@@ -134,10 +166,14 @@
 	transition: background-color var(--transition-fast);
 }
 
+.tasksNoteHeader:hover {
+	background: var(--bg-hover);
+}
+
 .tasksNoteHeaderLead {
 	min-width: 0;
 	display: inline-flex;
-	align-items: baseline;
+	align-items: center;
 	gap: var(--space-2);
 }
 
@@ -155,15 +191,13 @@
 	white-space: nowrap;
 }
 
-.tasksNoteHeader:hover {
-	background: color-mix(in srgb, var(--bg-primary) 70%, var(--bg-secondary));
-}
+/* ── Task list / rows ── */
 
 .tasksList {
 	display: flex;
 	flex-direction: column;
-	gap: var(--space-2);
-	padding: var(--space-2);
+	gap: var(--space-1);
+	padding: var(--space-1) var(--space-2);
 }
 
 .tasksListFlat {
@@ -175,11 +209,43 @@
 	grid-template-columns: auto 1fr;
 	align-items: start;
 	gap: var(--space-2);
+	padding: var(--space-1) var(--space-2);
+	border-radius: var(--radius-md);
+	transition: background-color var(--transition-fast);
 }
 
-.tasksRow input[type="checkbox"] {
-	margin-top: 3px;
+.tasksRow:hover {
+	background: var(--bg-hover);
 }
+
+.tasksRow[data-checked="true"] .tasksRowText {
+	text-decoration: line-through;
+	opacity: 0.45;
+}
+
+/* ── Custom checkbox ── */
+
+.tasksCheckbox {
+	border: none;
+	background: transparent;
+	padding: 1px;
+	margin-top: 1px;
+	cursor: pointer;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+}
+
+.tasksCheckboxCircle {
+	stroke: var(--border-strong);
+}
+
+.tasksCheckboxCheck {
+	stroke: var(--bg-primary);
+}
+
+/* ── Row content ── */
 
 .tasksRowContent {
 	min-width: 0;
@@ -203,6 +269,7 @@
 	font-size: var(--text-sm);
 	color: var(--text-primary);
 	word-break: break-word;
+	transition: opacity 180ms ease;
 }
 
 .tasksRowMeta {
@@ -232,6 +299,17 @@
 	text-decoration: underline;
 }
 
+.tasksScheduleBtn {
+	opacity: 0;
+	transition: opacity var(--transition-fast);
+}
+
+.tasksRow:hover .tasksScheduleBtn {
+	opacity: 1;
+}
+
+/* ── Schedule popover ── */
+
 .tasksDatePopover {
 	width: 240px;
 	display: flex;
@@ -253,6 +331,11 @@
 	background: var(--bg-primary);
 	padding: 6px 8px;
 	font-size: var(--text-xs);
+}
+
+.tasksQuickDates {
+	display: flex;
+	gap: var(--space-1);
 }
 
 .tasksDateActions {

@@ -84,10 +84,13 @@ export const WikiLink = Node.create({
 		return [{ tag: 'span[data-wikilink="true"]' }];
 	},
 	renderHTML({ node, HTMLAttributes }) {
-		const alias = typeof node.attrs.alias === "string" ? node.attrs.alias.trim() : "";
-		const target = typeof node.attrs.target === "string" ? node.attrs.target.trim() : "";
+		const alias =
+			typeof node.attrs.alias === "string" ? node.attrs.alias.trim() : "";
+		const target =
+			typeof node.attrs.target === "string" ? node.attrs.target.trim() : "";
 		// Show alias if present, otherwise just the filename without path/extension
-		const displayName = alias || target.split("/").pop()?.replace(/\.md$/i, "") || target;
+		const displayName =
+			alias || target.split("/").pop()?.replace(/\.md$/i, "") || target;
 		return [
 			"span",
 			mergeAttributes(HTMLAttributes, {
