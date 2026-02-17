@@ -14,8 +14,10 @@ function hasBalancedBrackets(inner: string): boolean {
 }
 
 export function parseWikiLink(raw: string): WikiLinkAttrs | null {
-	if (!raw.startsWith("[[") || !raw.endsWith("]]")) return null;
-	const inner = raw.slice(2, -2).trim();
+	const embed = raw.startsWith("![[");
+	const open = embed ? "![[": "[[";
+	if (!raw.startsWith(open) || !raw.endsWith("]]")) return null;
+	const inner = raw.slice(open.length, -2).trim();
 	if (!inner || !hasBalancedBrackets(inner)) return null;
 
 	const aliasIdx = findUnescapedIndex(inner, "|");
@@ -45,6 +47,7 @@ export function parseWikiLink(raw: string): WikiLinkAttrs | null {
 		raw,
 		target,
 		alias: alias || null,
+		embed,
 		anchorKind,
 		anchor,
 		unresolved: false,
@@ -57,6 +60,7 @@ export function wikiLinkAttrsToMarkdown(attrs: Partial<WikiLinkAttrs>): string {
 	if (!target) return raw || "";
 
 	const alias = typeof attrs.alias === "string" ? attrs.alias.trim() : "";
+	const embed = Boolean(attrs.embed);
 	const anchorKind = attrs.anchorKind ?? "none";
 	const anchor = typeof attrs.anchor === "string" ? attrs.anchor.trim() : "";
 
@@ -67,14 +71,15 @@ export function wikiLinkAttrsToMarkdown(attrs: Partial<WikiLinkAttrs>): string {
 		return raw || `[[${target}]]`;
 	}
 
-	return alias ? `[[${ref}|${alias}]]` : `[[${ref}]]`;
+	const base = alias ? `[[${ref}|${alias}]]` : `[[${ref}]]`;
+	return embed ? `!${base}` : base;
 }
 
 export function findWikiLinkSpans(
 	text: string,
 ): Array<{ start: number; end: number; raw: string }> {
 	const spans: Array<{ start: number; end: number; raw: string }> = [];
-	const matcher = /\[\[[^\]\n]+\]\]/g;
+	const matcher = /!?\[\[[^\]\n]+\]\]/g;
 	for (const match of text.matchAll(matcher)) {
 		if (match.index === undefined) continue;
 		spans.push({

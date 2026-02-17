@@ -5,7 +5,10 @@
 	"type": "module",
 	"packageManager": "pnpm@10.28.2",
 	"pnpm": {
-		"onlyBuiltDependencies": ["@biomejs/biome", "esbuild"]
+		"onlyBuiltDependencies": [
+			"@biomejs/biome",
+			"esbuild"
+		]
 	},
 	"scripts": {
 		"dev": "vite",
@@ -29,6 +32,7 @@
 		"@tauri-apps/plugin-store": "^2",
 		"@tauri-apps/plugin-updater": "^2.10.0",
 		"@tiptap/core": "^3.4.1",
+		"@tiptap/extension-image": "^3.19.0",
 		"@tiptap/extension-link": "^3.4.1",
 		"@tiptap/extension-table": "^3.4.1",
 		"@tiptap/extension-task-item": "^3.4.1",

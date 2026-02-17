@@ -13,6 +13,7 @@ import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import StarterKit from "@tiptap/starter-kit";
 import { SlashCommand } from "../slashCommands";
 import { MarkdownLinkAutocomplete } from "./markdownLinkAutocomplete";
+import { MarkdownImage } from "./markdownImage";
 import { TagDecorations } from "./tagDecorations";
 import { WikiLink } from "./wikiLink";
 
@@ -203,6 +204,10 @@ export function createEditorExtensions(
 		TableRow,
 		TableHeader,
 		TableCell,
+		MarkdownImage.configure({
+			inline: true,
+			allowBase64: true,
+		}),
 		Markdown.configure({
 			markedOptions: {
 				gfm: true,

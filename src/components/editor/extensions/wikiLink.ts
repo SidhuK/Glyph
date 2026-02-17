@@ -15,8 +15,8 @@ import {
 } from "../markdown/wikiLinkCodec";
 import type { WikiLinkAttrs } from "../markdown/wikiLinkTypes";
 
-const WIKI_LINK_INPUT_REGEX = /(\[\[[^\]\n]+\]\])$/;
-const WIKI_LINK_PASTE_REGEX = /(\[\[[^\]\n]+\]\])/g;
+const WIKI_LINK_INPUT_REGEX = /(!?\[\[[^\]\n]+\]\])$/;
+const WIKI_LINK_PASTE_REGEX = /(!?\[\[[^\]\n]+\]\])/g;
 const WIKI_LINK_SUGGESTION_KEY = new PluginKey("wiki-link-suggestion");
 
 interface WikiLinkSuggestionItem {
@@ -37,6 +37,20 @@ function titleFromRelPath(path: string): string {
 
 function normalizeForMatch(input: string): string {
 	return input.toLowerCase().trim().replace(/\\/g, "/");
+}
+
+function isImageTarget(target: string): boolean {
+	const lower = target.toLowerCase();
+	return (
+		lower.endsWith(".png") ||
+		lower.endsWith(".jpg") ||
+		lower.endsWith(".jpeg") ||
+		lower.endsWith(".webp") ||
+		lower.endsWith(".gif") ||
+		lower.endsWith(".svg") ||
+		lower.endsWith(".bmp") ||
+		lower.endsWith(".avif")
+	);
 }
 
 function buildSuggestionItem(entry: FsEntry): WikiLinkSuggestionItem {
@@ -75,6 +89,7 @@ export const WikiLink = Node.create({
 			raw: { default: "" },
 			target: { default: "" },
 			alias: { default: null },
+			embed: { default: false },
 			anchorKind: { default: "none" },
 			anchor: { default: null },
 			unresolved: { default: false },
@@ -88,6 +103,16 @@ export const WikiLink = Node.create({
 			typeof node.attrs.alias === "string" ? node.attrs.alias.trim() : "";
 		const target =
 			typeof node.attrs.target === "string" ? node.attrs.target.trim() : "";
+		if ((node.attrs.embed || !alias) && target && isImageTarget(target)) {
+			return [
+				"img",
+				mergeAttributes(HTMLAttributes, {
+					src: target,
+					alt: "",
+					class: "markdownImage wikiLinkImage",
+				}),
+			];
+		}
 		// Show alias if present, otherwise just the filename without path/extension
 		const displayName =
 			alias || target.split("/").pop()?.replace(/\.md$/i, "") || target;
@@ -121,11 +146,11 @@ export const WikiLink = Node.create({
 		name: "wikiLink",
 		level: "inline",
 		start(src: string) {
-			const match = src.match(/\[\[[^\]\n]+\]\]/);
+			const match = src.match(/!?\[\[[^\]\n]+\]\]/);
 			return match?.index ?? -1;
 		},
 		tokenize(src: string) {
-			const match = src.match(/^\[\[[^\]\n]+\]\]/);
+			const match = src.match(/^!?\[\[[^\]\n]+\]\]/);
 			if (!match) return undefined;
 			const parsed = attrsFromRaw(match[0]);
 			if (!parsed) return undefined;

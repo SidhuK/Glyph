@@ -104,6 +104,33 @@ export const MarkdownLinkAutocomplete = Extension.create({
 				startOfLine: false,
 				items: ({ query }) => getItems(query),
 				command: ({ editor, range, props }) => {
+					const lookbackFrom = Math.max(0, range.from - 300);
+					const before = editor.state.doc.textBetween(
+						lookbackFrom,
+						range.from,
+						"\n",
+						"\n",
+					);
+					const imagePrefixMatch = before.match(/!\[([^\]\n]*)$/);
+					if (imagePrefixMatch) {
+						const imagePrefixLength = imagePrefixMatch[0]?.length ?? 0;
+						const imageStart = range.from - imagePrefixLength;
+						const alt = (imagePrefixMatch[1] ?? "").trim();
+						editor
+							.chain()
+							.focus()
+							.deleteRange({ from: imageStart, to: range.to })
+							.insertContent({
+								type: "image",
+								attrs: {
+									src: props.insertText,
+									alt: alt || null,
+									title: null,
+								},
+							})
+							.run();
+						return;
+					}
 					editor
 						.chain()
 						.focus()

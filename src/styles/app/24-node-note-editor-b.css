@@ -98,6 +98,15 @@
 	text-decoration: underline;
 }
 
+.tiptapContentInline img,
+.tiptapContentInline .markdownImage {
+	display: inline-block;
+	vertical-align: middle;
+	max-width: min(100%, 720px);
+	height: auto;
+	border-radius: var(--radius-md);
+}
+
 .tiptapContentInline .wikiLink {
 	color: var(--interactive-accent);
 	text-decoration: none;

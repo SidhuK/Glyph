@@ -4,6 +4,7 @@ export interface WikiLinkAttrs {
 	raw: string;
 	target: string;
 	alias: string | null;
+	embed: boolean;
 	anchorKind: WikiLinkAnchorKind;
 	anchor: string | null;
 	unresolved: boolean;
