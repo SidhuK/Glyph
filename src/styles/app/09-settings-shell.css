@@ -14,8 +14,8 @@
 .settingsBackdrop {
 	position: absolute;
 	inset: 0;
-	background: color-mix(in srgb, var(--bg-secondary) 30%, transparent);
-	opacity: 0.45;
+	background: transparent;
+	opacity: 1;
 	pointer-events: none;
 }
 
@@ -58,7 +58,7 @@
 	flex: 1;
 	min-height: 0;
 	overflow: hidden;
-	padding: 22px;
+	padding: 0;
 	display: flex;
 	align-items: stretch;
 	justify-content: center;
@@ -72,7 +72,7 @@
 	display: grid;
 	grid-template-columns: 172px minmax(0, 1fr);
 	border-radius: 14px;
-	background: color-mix(in srgb, var(--bg-secondary) 10%, var(--bg-primary));
+	background: var(--bg-primary);
 	overflow: hidden;
 }
 
@@ -80,8 +80,8 @@
 	display: flex;
 	flex-direction: column;
 	gap: 2px;
-	padding: 14px 10px;
-	background: color-mix(in srgb, var(--bg-secondary) 20%, var(--bg-primary));
+	padding: 50px 8px 10px 10px;
+	background: transparent;
 }
 
 .settingsTabButton {
@@ -93,7 +93,7 @@
 	min-height: 34px;
 	padding: 0 10px;
 	border-radius: 8px;
-	color: color-mix(in srgb, var(--text-secondary) 88%, var(--text-tertiary));
+	color: #606067;
 	background: transparent;
 	border: 0;
 	font-size: 12px;
@@ -102,8 +102,8 @@
 }
 
 .settingsTabButton.active {
-	color: var(--interactive-accent);
-	background: color-mix(in srgb, var(--interactive-accent) 12%, transparent);
+	color: #1677ff;
+	background: var(--bg-secondary);
 }
 
 .settingsTabButton:hover {
@@ -112,8 +112,8 @@
 }
 
 .settingsTabButton.active:hover {
-	color: var(--interactive-accent);
-	background: color-mix(in srgb, var(--interactive-accent) 12%, transparent);
+	color: #1677ff;
+	background: var(--bg-secondary);
 }
 
 .settingsTabPanel {
@@ -135,7 +135,7 @@
 	padding: 0 0 12px;
 	font-size: 16px;
 	font-weight: var(--font-semibold);
-	color: var(--text-primary);
+	color: #444449;
 }
 
 .settingsHero {
@@ -175,17 +175,17 @@
 .settingsGrid {
 	display: flex;
 	flex-direction: column;
-	gap: 10px;
+	gap: 16px;
 	padding-top: 12px;
 }
 
 .settingsCard {
-	background: color-mix(in srgb, var(--bg-secondary) 14%, var(--bg-primary));
-	border-radius: 10px;
-	padding: 10px;
+	background: transparent;
+	border-radius: 0;
+	padding: 0;
 	display: flex;
 	flex-direction: column;
-	gap: 6px;
+	gap: 8px;
 }
 
 .settingsSpan {
@@ -197,7 +197,7 @@
 	align-items: center;
 	justify-content: space-between;
 	gap: var(--space-2);
-	padding: 2px 2px 4px;
+	padding: 0;
 }
 
 .settingsCardTitle {
@@ -214,7 +214,7 @@
 
 @media (max-width: 680px) {
 	.settingsMain {
-		padding: 10px;
+		padding: 0;
 	}
 
 	.settingsFrame {

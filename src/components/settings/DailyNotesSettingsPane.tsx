@@ -68,8 +68,6 @@ export function DailyNotesSettingsPane() {
 
 	return (
 		<div className="settingsPane">
-			<h2>Daily Notes</h2>
-
 			<div className="settingsGrid">
 				<section className="settingsCard">
 					<div className="settingsCardHeader">
@@ -86,7 +84,7 @@ export function DailyNotesSettingsPane() {
 							<div className="settingsActions dailyNotesActions">
 								<Button
 									type="button"
-									variant="outline"
+									variant="default"
 									size="sm"
 									onClick={handleBrowseFolder}
 									disabled={isLoading}

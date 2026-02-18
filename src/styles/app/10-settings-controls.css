@@ -1,8 +1,8 @@
 .settingsPill {
-	padding: 3px 8px;
-	border-radius: var(--radius-full);
-	background: color-mix(in srgb, var(--bg-secondary) 65%, transparent);
-	border: 1px solid var(--border-light);
+	padding: 0;
+	border-radius: 0;
+	background: transparent;
+	border: 0;
 	font-size: 9px;
 	letter-spacing: 0.08em;
 	text-transform: uppercase;
@@ -18,10 +18,6 @@
 	padding: 6px 2px;
 }
 
-.settingsField + .settingsField {
-	border-top: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
-}
-
 .settingsField > div:first-child {
 	display: flex;
 	flex-direction: column;
@@ -29,8 +25,10 @@
 }
 
 .settingsField > input,
+.settingsField > select,
 .settingsField > textarea,
 .settingsField .settingsInline > input,
+.settingsField .settingsInline > select,
 .settingsField .settingsInline > textarea {
 	min-width: 170px;
 	max-width: 320px;
@@ -39,6 +37,7 @@
 }
 
 .settingsField input:focus-visible,
+.settingsField select:focus-visible,
 .settingsField textarea:focus-visible,
 .settingsField button:focus-visible,
 .settingsSegmented button:focus-visible,
@@ -48,9 +47,31 @@
 	outline-offset: 2px;
 }
 
+.settingsPane select {
+	-webkit-appearance: none;
+	appearance: none;
+	background-color: #f3f3f4;
+	border: 1px solid #c4c4ca;
+	border-radius: 10px;
+	color: #2e2e33;
+	padding: 0 30px 0 10px;
+	height: 30px;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='14' viewBox='0 0 10 14'%3E%3Cpath d='M2 5l3-3 3 3' fill='none' stroke='%231677ff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M2 9l3 3 3-3' fill='none' stroke='%231677ff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: right 8px center;
+}
+
+.settingsPane select:focus,
+.settingsPane select:focus-visible,
+.settingsPane select:active {
+	outline: none;
+	box-shadow: none;
+	border-color: #c4c4ca;
+}
+
 .settingsHelp {
 	font-size: 10px;
-	color: var(--text-tertiary);
+	color: #6f6f76;
 	white-space: nowrap;
 }
 
@@ -66,7 +87,7 @@
 	font-size: 12px;
 	font-weight: var(--font-medium);
 	letter-spacing: 0.01em;
-	color: color-mix(in srgb, var(--text-secondary) 90%, var(--text-tertiary));
+	color: #5a5a60;
 }
 
 .settingsValue {

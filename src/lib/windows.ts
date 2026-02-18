@@ -1,3 +1,4 @@
+import { LogicalPosition } from "@tauri-apps/api/dpi";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 
 export type SettingsTab = "general" | "appearance" | "ai" | "vault";
@@ -25,7 +26,10 @@ export async function openSettingsWindow(tab?: SettingsTab) {
 		height: 640,
 		resizable: true,
 		decorations: true,
-		transparent: true,
+		titleBarStyle: "overlay",
+		hiddenTitle: true,
+		trafficLightPosition: new LogicalPosition(14, 14),
+		transparent: false,
 	});
 
 	win.once("tauri://created", () => {

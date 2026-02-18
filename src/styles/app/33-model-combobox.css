@@ -16,6 +16,11 @@
 	padding-right: 70px;
 }
 
+.modelComboboxInputWrap > select {
+	width: 100%;
+	padding-right: 70px;
+}
+
 .modelComboboxBadge {
 	position: absolute;
 	right: 8px;
@@ -67,13 +72,6 @@
 	border: 2px solid color-mix(in srgb, var(--text-tertiary) 30%, transparent);
 	border-top-color: var(--interactive-accent);
 	border-radius: 50%;
-	animation: modelSpin 0.6s linear infinite;
-}
-
-@keyframes modelSpin {
-	to {
-		transform: rotate(360deg);
-	}
 }
 
 .modelComboboxError {

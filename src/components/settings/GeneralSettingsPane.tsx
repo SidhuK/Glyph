@@ -40,7 +40,6 @@ export function GeneralSettingsPane() {
 
 	return (
 		<div className="settingsPane">
-			<h2>General</h2>
 			{error ? <div className="settingsError">{error}</div> : null}
 
 			<div className="settingsGrid">

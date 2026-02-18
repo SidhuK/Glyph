@@ -5,8 +5,10 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
 	FolderOpen,
+	InformationCircle,
 	Settings as SettingsIcon,
 } from "./components/Icons/NavigationIcons";
+import { AboutSettingsPane } from "./components/settings/AboutSettingsPane";
 import { AiSettingsPane } from "./components/settings/AiSettingsPane";
 import { AppearanceSettingsPane } from "./components/settings/AppearanceSettingsPane";
 import { DailyNotesSettingsPane } from "./components/settings/DailyNotesSettingsPane";
@@ -14,7 +16,7 @@ import { GeneralSettingsPane } from "./components/settings/GeneralSettingsPane";
 import { VaultSettingsPane } from "./components/settings/VaultSettingsPane";
 import { onWindowDragMouseDown } from "./utils/window";
 
-type SettingsTab = "general" | "appearance" | "ai" | "vault";
+type SettingsTab = "general" | "appearance" | "ai" | "vault" | "about";
 
 function parseTabFromHash(hash: string): SettingsTab {
 	const query = hash.split("?")[1] ?? "";
@@ -23,6 +25,7 @@ function parseTabFromHash(hash: string): SettingsTab {
 	if (tab === "appearance") return "appearance";
 	if (tab === "ai") return "ai";
 	if (tab === "vault") return "vault";
+	if (tab === "about") return "about";
 	return "general";
 }
 
@@ -45,15 +48,18 @@ export default function SettingsApp() {
 	}, []);
 
 	const tabContent = useMemo(() => {
-		if (activeTab === "general") return <GeneralSettingsPane />;
+		if (activeTab === "general") {
+			return (
+				<>
+					<GeneralSettingsPane />
+					<DailyNotesSettingsPane />
+				</>
+			);
+		}
 		if (activeTab === "appearance") return <AppearanceSettingsPane />;
 		if (activeTab === "ai") return <AiSettingsPane />;
-		return (
-			<>
-				<VaultSettingsPane />
-				<DailyNotesSettingsPane />
-			</>
-		);
+		if (activeTab === "about") return <AboutSettingsPane />;
+		return <VaultSettingsPane />;
 	}, [activeTab]);
 
 	return (
@@ -108,6 +114,16 @@ export default function SettingsApp() {
 						>
 							<FolderOpen size={14} />
 							<span>Vault</span>
+						</button>
+						<button
+							type="button"
+							className={`settingsTabButton ${activeTab === "about" ? "active" : ""}`}
+							onClick={() => switchTab("about")}
+							aria-pressed={activeTab === "about"}
+							aria-current={activeTab === "about" ? "page" : undefined}
+						>
+							<InformationCircle size={14} />
+							<span>About</span>
 						</button>
 					</nav>
 					<div className="settingsTabPanel">{tabContent}</div>

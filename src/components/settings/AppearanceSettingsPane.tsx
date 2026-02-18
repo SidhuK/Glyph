@@ -151,7 +151,6 @@ export function AppearanceSettingsPane() {
 
 	return (
 		<div className="settingsPane">
-			<h2>Appearance</h2>
 			{error ? <div className="settingsError">{error}</div> : null}
 			<div className="settingsGrid">
 				<section className="settingsCard">

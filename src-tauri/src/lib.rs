@@ -203,13 +203,6 @@ pub fn run() {
                     warn!("Main window not found during setup");
                 }
 
-                if let Some(settings) = app.get_webview_window("settings") {
-                    if let Err(e) =
-                        apply_vibrancy(&settings, NSVisualEffectMaterial::Sidebar, None, None)
-                    {
-                        warn!("Failed to apply vibrancy to settings window: {e}");
-                    }
-                }
             }
             Ok(())
         })
