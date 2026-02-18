@@ -8,7 +8,6 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 import { EditorRibbon } from "./EditorRibbon";
 import { useNoteEditor } from "./hooks/useNoteEditor";
 import { dispatchWikiLinkClick } from "./markdown/editorEvents";
-import { getTaskDatesByOrdinal, updateTaskLineByOrdinal } from "./taskMetadata";
 import type { CanvasNoteInlineEditorProps } from "./types";
 
 function normalizeBody(markdown: string): string {
@@ -212,20 +211,28 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 			: (taskAnchors.find((anchor) => anchor.ordinal === selectedTaskOrdinal) ??
 				null);
 
-	const openTaskPopover = (anchor: { ordinal: number; top: number }) => {
+	const openTaskPopover = async (anchor: { ordinal: number; top: number }) => {
 		setScheduleAnchor(anchor);
-		const existing = getTaskDatesByOrdinal(markdown, anchor.ordinal);
-		setScheduledDate(existing?.scheduledDate ?? "");
-		setDueDate(existing?.dueDate ?? "");
+		try {
+			const existing = await invoke("task_dates_by_ordinal", {
+				markdown,
+				ordinal: anchor.ordinal,
+			});
+			setScheduledDate(existing?.scheduled_date ?? "");
+			setDueDate(existing?.due_date ?? "");
+		} catch {
+			setScheduledDate("");
+			setDueDate("");
+		}
 	};
-	const applyTaskDates = () => {
+	const applyTaskDates = async () => {
 		if (!scheduleAnchor) return;
-		const next = updateTaskLineByOrdinal(
+		const next = await invoke("task_update_by_ordinal", {
 			markdown,
-			scheduleAnchor.ordinal,
-			scheduledDate,
-			dueDate,
-		);
+			ordinal: scheduleAnchor.ordinal,
+			scheduled_date: scheduledDate,
+			due_date: dueDate,
+		});
 		if (!next) return;
 		onChange(next);
 		setScheduleAnchor(null);
@@ -337,7 +344,9 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 										type="button"
 										className="taskInlineDateBtn"
 										style={{ top: `${selectedTaskAnchor.top}px` }}
-										onClick={() => openTaskPopover(selectedTaskAnchor)}
+										onClick={() => {
+											void openTaskPopover(selectedTaskAnchor);
+										}}
 										title="Schedule selected task"
 									>
 										<span className="taskInlineDateGlyph" aria-hidden>
@@ -387,7 +396,13 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 										>
 											Clear
 										</Button>
-										<Button type="button" size="xs" onClick={applyTaskDates}>
+										<Button
+											type="button"
+											size="xs"
+											onClick={() => {
+												void applyTaskDates();
+											}}
+										>
 											Apply
 										</Button>
 									</div>

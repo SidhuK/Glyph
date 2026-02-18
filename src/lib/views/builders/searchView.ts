@@ -2,7 +2,7 @@ import { invoke } from "../../tauri";
 import type { ViewDoc, ViewOptions } from "../types";
 import { viewId } from "../utils";
 import { buildListViewDoc } from "./buildListViewDoc";
-import { buildPrimaryNoteNode, fetchNotePreviewsAllAtOnce } from "./common";
+import { buildPrimaryNoteNode } from "./common";
 
 export async function buildSearchViewDoc(
 	query: string,
@@ -11,16 +11,13 @@ export async function buildSearchViewDoc(
 ): Promise<{ doc: ViewDoc; changed: boolean }> {
 	const v = viewId({ kind: "search", query });
 	const limit = options.limit ?? 200;
-	const results = await invoke("search", { query: v.selector });
-
-	const ids = (results ?? [])
-		.map((r) => r.id)
-		.filter(Boolean)
-		.slice(0, limit);
-
-	const noteContents = await fetchNotePreviewsAllAtOnce(ids);
-	const titleById = new Map(
-		(results ?? []).map((r) => [r.id, r.title] as const),
+	const results = await invoke("search_view_data", {
+		query: v.selector,
+		limit,
+	});
+	const ids = results.map((r) => r.id);
+	const noteContents = new Map(
+		results.map((r) => [r.id, { title: r.title, content: r.content }] as const),
 	);
 
 	return buildListViewDoc({
@@ -33,7 +30,7 @@ export async function buildSearchViewDoc(
 		primaryIds: ids,
 		buildPrimaryNode({ id, prevNode }) {
 			const noteData = noteContents.get(id);
-			return buildPrimaryNoteNode(id, prevNode, noteData, titleById.get(id));
+			return buildPrimaryNoteNode(id, prevNode, noteData, noteData?.title);
 		},
 		shouldPreservePrevNode(n) {
 			return n.type !== "note";

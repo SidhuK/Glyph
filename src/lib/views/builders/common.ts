@@ -1,7 +1,6 @@
 import { estimateNodeSize } from "../../canvasLayout";
-import { parseNotePreview, titleForFile } from "../../notePreview";
+import { titleForFile } from "../../notePreview";
 import type { CanvasEdge, CanvasNode } from "../../tauri";
-import { invoke } from "../../tauri";
 import { sanitizeEdges, sanitizeNodes } from "../sanitize";
 import type { ViewDoc } from "../types";
 import type { BuildPrimaryResult } from "./buildListViewDoc";
@@ -59,70 +58,6 @@ export class NeedsIndexRebuildError extends Error {
 		this.name = "NeedsIndexRebuildError";
 		this.missingCount = missingCount;
 	}
-}
-
-export async function fetchNotePreviewsAllAtOnce(
-	noteIds: string[],
-): Promise<Map<string, { title: string; content: string }>> {
-	const MAX_DISK_FILL = 50;
-
-	if (noteIds.length === 0) return new Map();
-
-	const resultMap = new Map<string, { title: string; content: string }>();
-	let previews: Array<{ id: string; title: string; preview: string }> = [];
-	try {
-		previews = await invoke("index_note_previews_batch", { ids: noteIds });
-	} catch (error) {
-		console.warn(
-			"index_note_previews_batch failed, falling back to disk",
-			error,
-		);
-		previews = [];
-	}
-
-	for (const p of previews) {
-		const id = typeof p.id === "string" ? p.id : "";
-		if (!id) continue;
-		const title =
-			typeof p.title === "string" && p.title ? p.title : titleForFile(id);
-		const content = typeof p.preview === "string" ? p.preview : "";
-		resultMap.set(id, { title, content });
-	}
-
-	const missing: string[] = [];
-	for (const id of noteIds) {
-		if (!resultMap.has(id)) missing.push(id);
-	}
-	if (!missing.length) return resultMap;
-
-	if (missing.length > MAX_DISK_FILL) {
-		throw new NeedsIndexRebuildError(
-			`index missing too many previews (${missing.length})`,
-			missing.length,
-		);
-	}
-
-	try {
-		const batchResults = await invoke("vault_read_texts_batch", {
-			paths: missing,
-		});
-		for (const doc of batchResults) {
-			const rel = doc.rel_path;
-			if (!rel) continue;
-			if (doc.text != null) {
-				resultMap.set(rel, parseNotePreview(rel, doc.text));
-			} else {
-				resultMap.set(rel, { title: titleForFile(rel), content: "" });
-			}
-		}
-	} catch {
-		for (const id of missing) {
-			if (!resultMap.has(id))
-				resultMap.set(id, { title: titleForFile(id), content: "" });
-		}
-	}
-
-	return resultMap;
 }
 
 export function buildPrimaryNoteNode(

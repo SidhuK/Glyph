@@ -2,7 +2,7 @@ use std::path::Path;
 use tauri::{AppHandle, State};
 use tauri_plugin_notification::NotificationExt;
 
-use crate::vault::VaultState;
+use crate::{paths, vault::VaultState};
 
 use super::db::open_db;
 use super::indexer::index_note;
@@ -13,7 +13,129 @@ use super::tags::normalize_tag;
 use super::tasks::{
     mutate_task_line, note_abs_path, query_tasks, write_note, IndexedTask, TaskBucket,
 };
-use super::types::{BacklinkItem, IndexNotePreview, IndexRebuildResult, SearchResult, TagCount};
+use super::types::{
+    BacklinkItem, IndexNotePreview, IndexRebuildResult, SearchResult, TagCount, TaskDateInfo,
+    ViewNotePreview,
+};
+
+fn tokenize_search_query(raw: &str) -> Vec<String> {
+    let mut out: Vec<String> = Vec::new();
+    let mut cur = String::new();
+    let mut in_quotes = false;
+    for ch in raw.chars() {
+        if ch == '"' {
+            in_quotes = !in_quotes;
+            continue;
+        }
+        if ch.is_whitespace() && !in_quotes {
+            if !cur.trim().is_empty() {
+                out.push(cur.trim().to_string());
+            }
+            cur.clear();
+            continue;
+        }
+        cur.push(ch);
+    }
+    if !cur.trim().is_empty() {
+        out.push(cur.trim().to_string());
+    }
+    out
+}
+
+fn task_line_parts(line: &str) -> Option<(&str, &str)> {
+    let trimmed = line.trim_start();
+    let list_prefix = ["- [ ] ", "- [x] ", "- [X] ", "* [ ] ", "* [x] ", "* [X] ", "+ [ ] ", "+ [x] ", "+ [X] "];
+    for prefix in list_prefix {
+        if trimmed.starts_with(prefix) {
+            let head_offset = line.len() - trimmed.len();
+            let split_at = head_offset + prefix.len();
+            return Some((&line[..split_at], &line[split_at..]));
+        }
+    }
+    None
+}
+
+fn is_iso_date(v: &str) -> bool {
+    let b = v.as_bytes();
+    b.len() == 10
+        && b[4] == b'-'
+        && b[7] == b'-'
+        && b.iter()
+            .enumerate()
+            .all(|(i, c)| i == 4 || i == 7 || c.is_ascii_digit())
+}
+
+fn parse_task_dates(body: &str) -> (String, String) {
+    let tokens: Vec<&str> = body.split_whitespace().collect();
+    let mut scheduled_date = String::new();
+    let mut due_date = String::new();
+    for i in 0..tokens.len() {
+        let next = tokens.get(i + 1).copied().unwrap_or("");
+        if tokens[i] == "⏳" && is_iso_date(next) {
+            scheduled_date = next.to_string();
+        }
+        if tokens[i] == "📅" && is_iso_date(next) {
+            due_date = next.to_string();
+        }
+    }
+    (scheduled_date, due_date)
+}
+
+fn rewrite_task_dates(body: &str, scheduled_date: &str, due_date: &str) -> String {
+    let tokens: Vec<&str> = body.split_whitespace().collect();
+    let mut kept: Vec<&str> = Vec::new();
+    let mut i = 0usize;
+    while i < tokens.len() {
+        let next = tokens.get(i + 1).copied().unwrap_or("");
+        if (tokens[i] == "⏳" || tokens[i] == "📅") && is_iso_date(next) {
+            i += 2;
+            continue;
+        }
+        kept.push(tokens[i]);
+        i += 1;
+    }
+    let mut out = kept.join(" ");
+    if !scheduled_date.is_empty() {
+        out = if out.is_empty() {
+            format!("⏳ {scheduled_date}")
+        } else {
+            format!("{out} ⏳ {scheduled_date}")
+        };
+    }
+    if !due_date.is_empty() {
+        out = if out.is_empty() {
+            format!("📅 {due_date}")
+        } else {
+            format!("{out} 📅 {due_date}")
+        };
+    }
+    out.trim().to_string()
+}
+
+fn fetch_previews_by_ids(
+    conn: &rusqlite::Connection,
+    ids: &[String],
+) -> Result<std::collections::HashMap<String, String>, String> {
+    if ids.is_empty() {
+        return Ok(std::collections::HashMap::new());
+    }
+    let placeholders = std::iter::repeat("?")
+        .take(ids.len())
+        .collect::<Vec<_>>()
+        .join(", ");
+    let sql = format!("SELECT id, preview FROM notes WHERE id IN ({placeholders})");
+    let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;
+    let params = rusqlite::params_from_iter(ids.iter());
+    let mut rows = stmt.query(params).map_err(|e| e.to_string())?;
+    let mut map = std::collections::HashMap::<String, String>::new();
+    while let Some(row) = rows.next().map_err(|e| e.to_string())? {
+        map.insert(
+            row.get::<_, String>(0).map_err(|e| e.to_string())?,
+            row.get::<_, String>(1).map_err(|e| e.to_string())?,
+        );
+    }
+    Ok(map)
+}
 
 #[tauri::command]
 pub async fn index_rebuild(
@@ -40,6 +162,7 @@ pub async fn index_note_previews_batch(
 ) -> Result<Vec<IndexNotePreview>, String> {
     const MAX_IDS: usize = 20_000;
     const CHUNK: usize = 400;
+    const MAX_DISK_FILL: usize = 50;
 
     let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<IndexNotePreview>, String> {
@@ -83,7 +206,94 @@ pub async fn index_note_previews_batch(
             }
         }
 
-        Ok(out)
+        let mut by_id: std::collections::HashMap<String, IndexNotePreview> =
+            out.into_iter().map(|p| (p.id.clone(), p)).collect();
+
+        let missing: Vec<String> = uniq
+            .into_iter()
+            .filter(|id| !by_id.contains_key(id))
+            .collect();
+        if missing.len() > MAX_DISK_FILL {
+            return Err(format!("index missing too many previews ({})", missing.len()));
+        }
+
+        for id in missing {
+            let abs = paths::join_under(&root, Path::new(&id))?;
+            let text = match std::fs::read_to_string(&abs) {
+                Ok(v) => v,
+                Err(_) => {
+                    by_id.insert(
+                        id.clone(),
+                        IndexNotePreview {
+                            id: id.clone(),
+                            title: Path::new(&id)
+                                .file_stem()
+                                .and_then(|s| s.to_str())
+                                .unwrap_or("Untitled")
+                                .to_string(),
+                            preview: String::new(),
+                        },
+                    );
+                    continue;
+                }
+            };
+
+            let normalized = text.replace("\r\n", "\n");
+            let mut title = Path::new(&id)
+                .file_stem()
+                .and_then(|s| s.to_str())
+                .unwrap_or("Untitled")
+                .to_string();
+            if normalized.starts_with("---\n") {
+                if let Some(end_idx) = normalized.find("\n---\n") {
+                    let yaml = &normalized[4..end_idx];
+                    for line in yaml.lines() {
+                        if let Some((k, v)) = line.split_once(':') {
+                            if k.trim().eq_ignore_ascii_case("title") {
+                                let parsed = v.trim().trim_matches('"').trim_matches('\'').trim();
+                                if !parsed.is_empty() {
+                                    title = parsed.to_string();
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
+            } else if let Some(heading) = normalized
+                .lines()
+                .find_map(|line| line.strip_prefix("# ").map(|v| v.trim()))
+            {
+                if !heading.is_empty() {
+                    title = heading.to_string();
+                }
+            }
+
+            let body = if normalized.starts_with("---\n") {
+                if let Some(end_idx) = normalized.find("\n---\n") {
+                    normalized[end_idx + 5..].trim().to_string()
+                } else {
+                    normalized.clone()
+                }
+            } else {
+                normalized.clone()
+            };
+            let lines = body.lines().take(20).collect::<Vec<_>>();
+            let mut preview = lines.join("\n");
+            if body.lines().count() > 20 {
+                preview.push('\n');
+                preview.push('…');
+            }
+            by_id.insert(
+                id.clone(),
+                IndexNotePreview {
+                    id,
+                    title,
+                    preview,
+                },
+            );
+        }
+
+        Ok(by_id.into_values().collect())
     })
     .await
     .map_err(|e| e.to_string())?
@@ -112,6 +322,94 @@ pub async fn search_advanced(
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<SearchResult>, String> {
         let conn = open_db(&root)?;
         run_search_advanced(&conn, request)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+pub async fn search_parse_and_run(
+    state: State<'_, VaultState>,
+    raw_query: String,
+    limit: Option<u32>,
+) -> Result<Vec<SearchResult>, String> {
+    let root = state.current_root()?;
+    tauri::async_runtime::spawn_blocking(move || -> Result<Vec<SearchResult>, String> {
+        let mut req = SearchAdvancedRequest {
+            limit: Some(limit.unwrap_or(1500).clamp(1, 2_000)),
+            ..SearchAdvancedRequest::default()
+        };
+        let mut tags: Vec<String> = Vec::new();
+        let mut text_parts: Vec<String> = Vec::new();
+
+        for token in tokenize_search_query(raw_query.trim()) {
+            let lower = token.to_lowercase();
+            if lower == "title:only" {
+                req.title_only = true;
+                continue;
+            }
+            if lower == "tag:only" {
+                req.tag_only = true;
+                continue;
+            }
+            if token.starts_with('#') {
+                tags.push(token);
+                continue;
+            }
+            if lower.starts_with("tag:") {
+                let rest = token[4..].trim();
+                if !rest.is_empty() {
+                    tags.push(if rest.starts_with('#') {
+                        rest.to_string()
+                    } else {
+                        format!("#{rest}")
+                    });
+                }
+                continue;
+            }
+            text_parts.push(token);
+        }
+
+        req.tags = tags;
+        let text = text_parts.join(" ").trim().to_string();
+        req.query = if text.is_empty() { None } else { Some(text) };
+
+        let conn = open_db(&root)?;
+        run_search_advanced(&conn, req)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+pub async fn search_view_data(
+    state: State<'_, VaultState>,
+    query: String,
+    limit: Option<u32>,
+) -> Result<Vec<ViewNotePreview>, String> {
+    let root = state.current_root()?;
+    tauri::async_runtime::spawn_blocking(move || -> Result<Vec<ViewNotePreview>, String> {
+        let lim = limit.unwrap_or(200).clamp(1, 2_000) as usize;
+        let conn = open_db(&root)?;
+        let results = hybrid_search(&conn, &query, &[], lim as i64)?;
+        let ids = results
+            .iter()
+            .map(|r| r.id.clone())
+            .filter(|id| !id.trim().is_empty())
+            .collect::<Vec<_>>();
+        let preview_by_id = fetch_previews_by_ids(&conn, &ids)?;
+        Ok(results
+            .into_iter()
+            .take(lim)
+            .map(|r| ViewNotePreview {
+                id: r.id.clone(),
+                title: r.title,
+                content: preview_by_id
+                    .get(&r.id)
+                    .cloned()
+                    .unwrap_or(r.snippet),
+            })
+            .collect())
     })
     .await
     .map_err(|e| e.to_string())?
@@ -312,6 +610,44 @@ pub async fn tag_notes(
 }
 
 #[tauri::command]
+pub async fn tag_view_data(
+    state: State<'_, VaultState>,
+    tag: String,
+    limit: Option<u32>,
+) -> Result<Vec<ViewNotePreview>, String> {
+    let root = state.current_root()?;
+    tauri::async_runtime::spawn_blocking(move || -> Result<Vec<ViewNotePreview>, String> {
+        let lim = limit.unwrap_or(500).clamp(1, 2_000) as usize;
+        let t = normalize_tag(&tag).ok_or_else(|| "invalid tag".to_string())?;
+        let conn = open_db(&root)?;
+        let mut stmt = conn
+            .prepare(
+                "SELECT n.id, n.title, n.preview AS snippet, 0.0 AS score
+                 FROM tags t
+                 JOIN notes n ON n.id = t.note_id
+                 WHERE t.tag = ?
+                 ORDER BY n.updated DESC
+                 LIMIT ?",
+            )
+            .map_err(|e| e.to_string())?;
+        let mut rows = stmt
+            .query(rusqlite::params![t, lim as i64])
+            .map_err(|e| e.to_string())?;
+        let mut out: Vec<ViewNotePreview> = Vec::new();
+        while let Some(row) = rows.next().map_err(|e| e.to_string())? {
+            out.push(ViewNotePreview {
+                id: row.get(0).map_err(|e| e.to_string())?,
+                title: row.get(1).map_err(|e| e.to_string())?,
+                content: row.get(2).map_err(|e| e.to_string())?,
+            });
+        }
+        Ok(out)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
 pub async fn tasks_query(
     state: State<'_, VaultState>,
     bucket: String,
@@ -390,6 +726,54 @@ pub async fn task_set_dates(
     })
     .await
     .map_err(|e| e.to_string())?
+}
+
+#[tauri::command(rename_all = "snake_case")]
+pub fn task_dates_by_ordinal(markdown: String, ordinal: u32) -> Option<TaskDateInfo> {
+    let mut idx = 0u32;
+    for line in markdown.lines() {
+        let Some((_prefix, body)) = task_line_parts(line) else {
+            continue;
+        };
+        if idx == ordinal {
+            let (scheduled_date, due_date) = parse_task_dates(body);
+            return Some(TaskDateInfo {
+                scheduled_date,
+                due_date,
+            });
+        }
+        idx += 1;
+    }
+    None
+}
+
+#[tauri::command(rename_all = "snake_case")]
+pub fn task_update_by_ordinal(
+    markdown: String,
+    ordinal: u32,
+    scheduled_date: String,
+    due_date: String,
+) -> Option<String> {
+    let newline = if markdown.contains("\r\n") { "\r\n" } else { "\n" };
+    let mut lines: Vec<String> = markdown.lines().map(|line| line.to_string()).collect();
+    let mut idx = 0u32;
+    for line in &mut lines {
+        let Some((prefix, body)) = task_line_parts(line) else {
+            continue;
+        };
+        if idx != ordinal {
+            idx += 1;
+            continue;
+        }
+        let rebuilt = rewrite_task_dates(body, scheduled_date.trim(), due_date.trim());
+        *line = format!("{prefix}{rebuilt}");
+        let mut next = lines.join(newline);
+        if markdown.ends_with(newline) {
+            next.push_str(newline);
+        }
+        return Some(next);
+    }
+    None
 }
 
 #[tauri::command(rename_all = "snake_case")]

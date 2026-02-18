@@ -23,6 +23,11 @@ export function useCommandSearch(
 
 	useEffect(() => {
 		if (activeTab !== "search") return;
+		if (!vaultPath) {
+			setSearchResults([]);
+			setIsSearching(false);
+			return;
+		}
 		if (debounceRef.current) clearTimeout(debounceRef.current);
 		const trimmed = query.trim();
 		if (!trimmed) {
@@ -31,28 +36,40 @@ export function useCommandSearch(
 			return;
 		}
 		setIsSearching(true);
-		const parsed = parseSearchQuery(trimmed);
 		debounceRef.current = setTimeout(() => {
-			invoke("search_advanced", {
-				request: {
-					...parsed.request,
-					limit: 1500,
-				},
+			const parsed = parseSearchQuery(trimmed);
+			invoke("search_parse_and_run", {
+				raw_query: trimmed,
+				limit: 1500,
 			})
 				.then((results) => {
 					setSearchResults(results);
 				})
-				.catch(() => {
-					setSearchResults([]);
-				})
+				.catch(() =>
+					invoke("search_advanced", {
+						request: {
+							...parsed.request,
+							limit: 1500,
+						},
+					})
+						.then((results) => {
+							setSearchResults(results);
+						})
+						.catch(() => {
+							setSearchResults([]);
+						}),
+				)
 				.finally(() => {
+					setIsSearching(false);
+				})
+				.catch(() => {
 					setIsSearching(false);
 				});
 		}, 200);
 		return () => {
 			if (debounceRef.current) clearTimeout(debounceRef.current);
 		};
-	}, [query, activeTab]);
+	}, [query, activeTab, vaultPath]);
 
 	const { titleMatches, contentMatches } = useMemo(() => {
 		if (activeTab !== "search" || !query.trim())

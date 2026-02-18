@@ -1,13 +1,9 @@
 import { titleForFile } from "../../notePreview";
-import type { FsEntry } from "../../tauri";
 import { invoke } from "../../tauri";
 import type { ViewDoc, ViewOptions } from "../types";
 import { basename, viewId } from "../utils";
 import { buildListViewDoc } from "./buildListViewDoc";
-import {
-	fetchNotePreviewsAllAtOnce,
-	normalizeLegacyFrameChildren,
-} from "./common";
+import { normalizeLegacyFrameChildren } from "./common";
 
 export async function buildFolderViewDoc(
 	dir: string,
@@ -15,58 +11,15 @@ export async function buildFolderViewDoc(
 	existing: ViewDoc | null,
 ): Promise<{ doc: ViewDoc; changed: boolean }> {
 	const v = viewId({ kind: "folder", dir });
-	const recursive = options.recursive ?? false;
+	const recursive = options.recursive ?? true;
 	const limit = options.limit ?? 500;
-
-	const entries = recursive
-		? await invoke("vault_list_files", {
-				dir: v.selector || null,
-				recursive: true,
-				limit,
-			})
-		: await invoke("vault_list_dir", {
-				dir: v.selector || null,
-			});
-	const dirEntries = await invoke("vault_list_dir", {
+	const folder = await invoke("vault_folder_view_data", {
 		dir: v.selector || null,
+		limit,
+		recent_limit: 5,
 	});
-
-	const recent = await invoke("vault_dir_recent_entries", {
-		dir: v.selector || null,
-		limit: 5,
-	});
-	const recentIds = new Set(recent.map((r) => r.rel_path));
-
-	const fileByRel = new Map(
-		(entries as FsEntry[])
-			.filter((e) => e.kind === "file")
-			.map((e) => [e.rel_path, e] as const),
-	);
-
-	const alpha: FsEntry[] = [...fileByRel.values()]
-		.sort((a, b) =>
-			a.rel_path.toLowerCase().localeCompare(b.rel_path.toLowerCase()),
-		)
-		.slice(0, limit);
-	const included = new Set(alpha.map((e) => e.rel_path));
-
-	for (const rel of recentIds) {
-		const e = fileByRel.get(rel);
-		if (!e) continue;
-		if (included.has(rel)) continue;
-		alpha.push(e);
-		included.add(rel);
-	}
-
-	const rootFiles = alpha.sort((a, b) =>
-		a.rel_path.toLowerCase().localeCompare(b.rel_path.toLowerCase()),
-	);
-	const subfolders = (dirEntries as FsEntry[])
-		.filter((e) => e.kind === "dir")
-		.map((e) => ({ dir_rel_path: e.rel_path, name: e.name }))
-		.sort((a, b) =>
-			a.dir_rel_path.toLowerCase().localeCompare(b.dir_rel_path.toLowerCase()),
-		);
+	const rootFiles = folder.files;
+	const subfolders = folder.subfolders;
 	const folderNodeIdForDir = (dirRelPath: string) => `folder:${dirRelPath}`;
 	const folderByNodeId = new Map(
 		subfolders.map((folder) => [
@@ -75,8 +28,12 @@ export async function buildFolderViewDoc(
 		]),
 	);
 
-	const mdRoot = rootFiles.filter((f) => f.is_markdown).map((f) => f.rel_path);
-	const noteContents = await fetchNotePreviewsAllAtOnce(mdRoot);
+	const noteContents = new Map(
+		folder.note_previews.map((note) => [
+			note.id,
+			{ title: note.title, content: note.content },
+		]),
+	);
 	const fileSet = new Map(rootFiles.map((f) => [f.rel_path, f] as const));
 	const primaryIds = [
 		...subfolders.map((folder) => folderNodeIdForDir(folder.dir_rel_path)),

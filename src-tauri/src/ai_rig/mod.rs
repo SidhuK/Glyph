@@ -1,5 +1,6 @@
 mod audit;
 pub mod commands;
+pub mod context;
 pub mod events;
 pub(crate) mod helpers;
 pub mod history;

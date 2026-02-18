@@ -16,7 +16,7 @@ import { useMenuListeners } from "../../hooks/useMenuListeners";
 import { useResizablePanel } from "../../hooks/useResizablePanel";
 import type { Shortcut } from "../../lib/shortcuts";
 import { getShortcutTooltip } from "../../lib/shortcuts";
-import { type FsEntry, invoke } from "../../lib/tauri";
+import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { openSettingsWindow } from "../../lib/windows";
 import { onWindowDragMouseDown } from "../../utils/window";
@@ -36,12 +36,7 @@ import { type Command, CommandPalette } from "./CommandPalette";
 import { KeyboardShortcutsHelp } from "./KeyboardShortcutsHelp";
 import { MainContent } from "./MainContent";
 import { Sidebar } from "./Sidebar";
-import {
-	normalizeRelPath,
-	parentDir,
-	resolveMarkdownLinkPath,
-	resolveWikiLinkPath,
-} from "./appShellHelpers";
+import { normalizeRelPath, parentDir } from "./appShellHelpers";
 
 export function AppShell() {
 	const vault = useVault();
@@ -140,30 +135,6 @@ export function AppShell() {
 	const fsRefreshTimerRef = useRef<number | null>(null);
 
 	useEffect(() => {
-		let markdownEntries: FsEntry[] = [];
-		let markdownLoadedAt = 0;
-		let allFileEntries: FsEntry[] = [];
-		let allFileLoadedAt = 0;
-		const ensureMarkdownEntries = async () => {
-			if (!markdownEntries.length || Date.now() - markdownLoadedAt > 30_000) {
-				markdownEntries = await invoke("vault_list_markdown_files", {
-					recursive: true,
-					limit: 4000,
-				});
-				markdownLoadedAt = Date.now();
-			}
-			return markdownEntries;
-		};
-		const ensureAllFileEntries = async () => {
-			if (!allFileEntries.length || Date.now() - allFileLoadedAt > 30_000) {
-				allFileEntries = await invoke("vault_list_files", {
-					recursive: true,
-					limit: 20000,
-				});
-				allFileLoadedAt = Date.now();
-			}
-			return allFileEntries;
-		};
 		const onWikiLinkClick = (event: Event) => {
 			const detail = (event as CustomEvent<WikiLinkClickDetail>).detail;
 			if (!detail?.target) return;
@@ -171,8 +142,9 @@ export function AppShell() {
 				detail.target.split("#", 1)[0] ?? detail.target;
 			void (async () => {
 				try {
-					const entries = await ensureMarkdownEntries();
-					const resolved = resolveWikiLinkPath(targetWithoutAnchor, entries);
+					const resolved = await invoke("vault_resolve_wikilink", {
+						target: targetWithoutAnchor,
+					});
 					if (!resolved) {
 						setError(`Could not resolve wikilink: ${detail.target}`);
 						return;
@@ -190,21 +162,17 @@ export function AppShell() {
 			if (!detail?.href) return;
 			void (async () => {
 				try {
-					const allEntries = await ensureAllFileEntries();
-					const resolved = resolveMarkdownLinkPath(
-						detail.href,
-						detail.sourcePath,
-						allEntries,
-					);
+					const resolved = await invoke("vault_resolve_markdown_link", {
+						href: detail.href,
+						source_path: detail.sourcePath,
+					});
 					if (resolved) {
 						await fileTree.openFile(resolved);
 						return;
 					}
-					const markdownEntries = await ensureMarkdownEntries();
-					const wikiFallback = resolveWikiLinkPath(
-						detail.href,
-						markdownEntries,
-					);
+					const wikiFallback = await invoke("vault_resolve_wikilink", {
+						target: detail.href,
+					});
 					if (wikiFallback) {
 						await fileTree.openFile(wikiFallback);
 						return;

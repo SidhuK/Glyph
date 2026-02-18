@@ -8,7 +8,6 @@ export { loadViewDoc, saveViewDoc } from "./persistence";
 
 export {
 	NeedsIndexRebuildError,
-	fetchNotePreviewsAllAtOnce,
 	hasViewDocChanged,
 	maxBottomForNodes,
 	normalizeLegacyFrameChildren,

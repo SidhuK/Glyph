@@ -1,9 +1,7 @@
 import { Extension } from "@tiptap/core";
 import { PluginKey } from "@tiptap/pm/state";
 import Suggestion, { type SuggestionProps } from "@tiptap/suggestion";
-import type { FsEntry } from "../../../lib/tauri";
 import { invoke } from "../../../lib/tauri";
-import { parentDir } from "../../../utils/path";
 
 const MD_LINK_SUGGESTION_KEY = new PluginKey("markdown-link-suggestion");
 
@@ -11,61 +9,6 @@ interface LinkSuggestionItem {
 	path: string;
 	title: string;
 	insertText: string;
-}
-
-function normalize(input: string): string {
-	return input.toLowerCase().trim().replace(/\\/g, "/");
-}
-
-function basename(path: string): string {
-	const parts = path.split("/").filter(Boolean);
-	return parts[parts.length - 1] ?? path;
-}
-
-function relativePath(fromDir: string, toPath: string): string {
-	const from = fromDir.split("/").filter(Boolean);
-	const to = toPath.split("/").filter(Boolean);
-	let i = 0;
-	while (i < from.length && i < to.length && from[i] === to[i]) i += 1;
-	const up = from.slice(i).map(() => "..");
-	const down = to.slice(i);
-	return [...up, ...down].join("/") || ".";
-}
-
-function makeItem(entry: FsEntry, currentPath: string): LinkSuggestionItem {
-	const relDir = parentDir(currentPath);
-	const rel = relDir ? relativePath(relDir, entry.rel_path) : entry.rel_path;
-	return {
-		path: entry.rel_path,
-		title: basename(entry.rel_path),
-		insertText: rel,
-	};
-}
-
-function filterItems(
-	items: LinkSuggestionItem[],
-	query: string,
-	limit: number,
-): LinkSuggestionItem[] {
-	const q = normalize(query);
-	if (!q) return items.slice(0, limit);
-	const scored = items
-		.map((item) => {
-			const title = normalize(item.title);
-			const path = normalize(item.path);
-			const rel = normalize(item.insertText);
-			const titleStarts = title.startsWith(q) ? 20 : 0;
-			const relStarts = rel.startsWith(q) ? 16 : 0;
-			const pathStarts = path.startsWith(q) ? 12 : 0;
-			const contains =
-				(title.includes(q) ? 6 : 0) +
-				(rel.includes(q) ? 4 : 0) +
-				(path.includes(q) ? 2 : 0);
-			return { item, score: titleStarts + relStarts + pathStarts + contains };
-		})
-		.filter((row) => row.score > 0)
-		.sort((a, b) => b.score - a.score);
-	return scored.slice(0, limit).map((row) => row.item);
 }
 
 export const MarkdownLinkAutocomplete = Extension.create({
@@ -77,22 +20,22 @@ export const MarkdownLinkAutocomplete = Extension.create({
 		};
 	},
 	addProseMirrorPlugins() {
-		let cachedEntries: FsEntry[] = [];
-		let lastLoadedAt = 0;
-
 		const getItems = async (query: string): Promise<LinkSuggestionItem[]> => {
-			const now = Date.now();
-			if (!cachedEntries.length || now - lastLoadedAt > 30_000) {
-				cachedEntries = await invoke("vault_list_files", {
-					recursive: true,
-					limit: 10_000,
-				});
-				lastLoadedAt = now;
-			}
-			const all = cachedEntries
-				.filter((entry) => entry.kind === "file")
-				.map((entry) => makeItem(entry, this.options.currentPath || ""));
-			return filterItems(all, query, this.options.suggestionLimit);
+			const results = await invoke("vault_suggest_links", {
+				request: {
+					query,
+					source_path: this.options.currentPath || null,
+					markdown_only: false,
+					strip_markdown_ext: false,
+					relative_to_source: true,
+					limit: this.options.suggestionLimit,
+				},
+			});
+			return results.map((item) => ({
+				path: item.path,
+				title: item.title,
+				insertText: item.insert_text,
+			}));
 		};
 
 		return [

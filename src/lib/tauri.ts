@@ -63,6 +63,11 @@ export interface TextFileWriteResult {
 	mtime_ms: number;
 }
 
+export interface OpenOrCreateTextResult {
+	created: boolean;
+	mtime_ms: number;
+}
+
 export interface TextFileDocBatch {
 	rel_path: string;
 	text: string | null;
@@ -149,6 +154,70 @@ export interface IndexNotePreview {
 	id: string;
 	title: string;
 	preview: string;
+}
+
+export interface ViewNotePreview {
+	id: string;
+	title: string;
+	content: string;
+}
+
+export interface TaskDateInfo {
+	scheduled_date: string;
+	due_date: string;
+}
+
+export interface LinkSuggestionItem {
+	path: string;
+	title: string;
+	insert_text: string;
+}
+
+export interface AiContextAttachment {
+	kind: "folder" | "file";
+	path: string;
+	label?: string | null;
+}
+
+export interface AiContextIndexItem {
+	path: string;
+	label: string;
+}
+
+export interface AiContextIndexResponse {
+	folders: AiContextIndexItem[];
+	files: AiContextIndexItem[];
+}
+
+export interface AiContextManifestItem {
+	kind: string;
+	label: string;
+	chars: number;
+	est_tokens: number;
+	truncated: boolean;
+}
+
+export interface AiContextManifestResponse {
+	items: AiContextManifestItem[];
+	total_chars: number;
+	est_tokens: number;
+}
+
+export interface AiContextBuildResponse {
+	payload: string;
+	manifest: AiContextManifestResponse;
+	resolved_paths: string[];
+}
+
+export interface FolderViewFolder {
+	dir_rel_path: string;
+	name: string;
+}
+
+export interface FolderViewData {
+	files: FsEntry[];
+	subfolders: FolderViewFolder[];
+	note_previews: ViewNotePreview[];
 }
 
 export type TaskBucket = "inbox" | "today" | "upcoming";
@@ -303,6 +372,10 @@ interface TauriCommands {
 		{ path: string; text: string; base_mtime_ms?: number | null },
 		TextFileWriteResult
 	>;
+	vault_open_or_create_text: CommandDef<
+		{ path: string; text: string },
+		OpenOrCreateTextResult
+	>;
 	vault_create_dir: CommandDef<{ path: string }, void>;
 	vault_rename_path: CommandDef<{ from_path: string; to_path: string }, void>;
 	vault_delete_path: CommandDef<
@@ -311,6 +384,32 @@ interface TauriCommands {
 	>;
 	vault_resolve_abs_path: CommandDef<{ path: string }, string>;
 	vault_relativize_path: CommandDef<{ abs_path: string }, string>;
+	vault_resolve_wikilink: CommandDef<{ target: string }, string | null>;
+	vault_resolve_markdown_link: CommandDef<
+		{ href: string; source_path: string },
+		string | null
+	>;
+	vault_suggest_links: CommandDef<
+		{
+			request: {
+				query: string;
+				source_path?: string | null;
+				markdown_only?: boolean | null;
+				strip_markdown_ext?: boolean | null;
+				relative_to_source?: boolean | null;
+				limit?: number | null;
+			};
+		},
+		LinkSuggestionItem[]
+	>;
+	vault_folder_view_data: CommandDef<
+		{
+			dir?: string | null;
+			limit?: number | null;
+			recent_limit?: number | null;
+		},
+		FolderViewData
+	>;
 	cipher_read_text: CommandDef<{ path: string }, string>;
 	cipher_write_text: CommandDef<{ path: string; text: string }, void>;
 	notes_list: CommandDef<void, NoteMeta[]>;
@@ -333,6 +432,14 @@ interface TauriCommands {
 		{ request: SearchAdvancedRequest },
 		SearchResult[]
 	>;
+	search_parse_and_run: CommandDef<
+		{ raw_query: string; limit?: number | null },
+		SearchResult[]
+	>;
+	search_view_data: CommandDef<
+		{ query: string; limit?: number | null },
+		ViewNotePreview[]
+	>;
 	search_with_tags: CommandDef<
 		{ tags: string[]; query?: string | null; limit?: number | null },
 		SearchResult[]
@@ -340,6 +447,10 @@ interface TauriCommands {
 	recent_notes: CommandDef<{ limit?: number | null }, SearchResult[]>;
 	tags_list: CommandDef<{ limit?: number | null }, TagCount[]>;
 	tag_notes: CommandDef<{ tag: string; limit?: number | null }, SearchResult[]>;
+	tag_view_data: CommandDef<
+		{ tag: string; limit?: number | null },
+		ViewNotePreview[]
+	>;
 	tasks_query: CommandDef<
 		{
 			bucket: TaskBucket;
@@ -356,6 +467,19 @@ interface TauriCommands {
 			due_date?: string | null;
 		},
 		void
+	>;
+	task_dates_by_ordinal: CommandDef<
+		{ markdown: string; ordinal: number },
+		TaskDateInfo | null
+	>;
+	task_update_by_ordinal: CommandDef<
+		{
+			markdown: string;
+			ordinal: number;
+			scheduled_date: string;
+			due_date: string;
+		},
+		string | null
 	>;
 	backlinks: CommandDef<{ note_id: string }, BacklinkItem[]>;
 	link_preview: CommandDef<{ url: string; force?: boolean }, LinkPreview>;
@@ -392,6 +516,20 @@ interface TauriCommands {
 		AiChatHistorySummary[]
 	>;
 	ai_chat_history_get: CommandDef<{ job_id: string }, AiChatHistoryDetail>;
+	ai_context_index: CommandDef<void, AiContextIndexResponse>;
+	ai_context_build: CommandDef<
+		{
+			request: {
+				attachments: AiContextAttachment[];
+				char_budget?: number | null;
+			};
+		},
+		AiContextBuildResponse
+	>;
+	ai_context_resolve_paths: CommandDef<
+		{ attachments: AiContextAttachment[] },
+		string[]
+	>;
 }
 
 export class TauriInvokeError extends Error {

@@ -6,7 +6,8 @@ use crate::{index, io_atomic, paths, vault::VaultState};
 
 use super::helpers::{deny_hidden_rel_path, etag_for, file_mtime_ms};
 use super::types::{
-    BinaryFilePreviewDoc, TextFileDoc, TextFileDocBatch, TextFilePreviewDoc, TextFileWriteResult,
+    BinaryFilePreviewDoc, OpenOrCreateTextResult, TextFileDoc, TextFileDocBatch, TextFilePreviewDoc,
+    TextFileWriteResult,
 };
 
 const TEXT_PREVIEW_DEFAULT_MAX_BYTES: u64 = 1_048_576;
@@ -304,6 +305,38 @@ pub async fn vault_write_text(
         }
         Ok(TextFileWriteResult {
             etag: etag_for(&bytes),
+            mtime_ms: file_mtime_ms(&abs),
+        })
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command(rename_all = "snake_case")]
+pub async fn vault_open_or_create_text(
+    state: State<'_, VaultState>,
+    path: String,
+    text: String,
+) -> Result<OpenOrCreateTextResult, String> {
+    let root = state.current_root()?;
+    tauri::async_runtime::spawn_blocking(move || -> Result<OpenOrCreateTextResult, String> {
+        let rel = PathBuf::from(&path);
+        deny_hidden_rel_path(&rel)?;
+        let abs = paths::join_under(&root, &rel)?;
+
+        if abs.exists() {
+            return Ok(OpenOrCreateTextResult {
+                created: false,
+                mtime_ms: file_mtime_ms(&abs),
+            });
+        }
+
+        if let Some(parent) = abs.parent() {
+            std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+        }
+        io_atomic::write_atomic(&abs, text.as_bytes()).map_err(|e| e.to_string())?;
+        Ok(OpenOrCreateTextResult {
+            created: true,
             mtime_ms: file_mtime_ms(&abs),
         })
     })

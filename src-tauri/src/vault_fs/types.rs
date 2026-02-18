@@ -22,6 +22,12 @@ pub struct TextFileWriteResult {
     pub mtime_ms: u64,
 }
 
+#[derive(Serialize)]
+pub struct OpenOrCreateTextResult {
+    pub created: bool,
+    pub mtime_ms: u64,
+}
+
 #[derive(Serialize, Clone)]
 pub struct RecentMarkdown {
     pub rel_path: String,

@@ -7,7 +7,6 @@ import {
 import type { MarkdownToken } from "@tiptap/core";
 import { PluginKey } from "@tiptap/pm/state";
 import Suggestion, { type SuggestionProps } from "@tiptap/suggestion";
-import type { FsEntry } from "../../../lib/tauri";
 import { invoke } from "../../../lib/tauri";
 import {
 	parseWikiLink,
@@ -35,10 +34,6 @@ function titleFromRelPath(path: string): string {
 	return name.replace(/\.md$/i, "") || name;
 }
 
-function normalizeForMatch(input: string): string {
-	return input.toLowerCase().trim().replace(/\\/g, "/");
-}
-
 function isImageTarget(target: string): boolean {
 	const lower = target.toLowerCase();
 	return (
@@ -51,14 +46,6 @@ function isImageTarget(target: string): boolean {
 		lower.endsWith(".bmp") ||
 		lower.endsWith(".avif")
 	);
-}
-
-function buildSuggestionItem(entry: FsEntry): WikiLinkSuggestionItem {
-	return {
-		path: entry.rel_path,
-		title: titleFromRelPath(entry.rel_path),
-		insertText: entry.rel_path.replace(/\.md$/i, ""),
-	};
 }
 
 declare module "@tiptap/core" {
@@ -200,30 +187,23 @@ export const WikiLink = Node.create({
 		];
 	},
 	addProseMirrorPlugins() {
-		let cachedEntries: FsEntry[] = [];
-		let lastLoadedAt = 0;
 		const getSuggestions = async (
 			query: string,
 		): Promise<WikiLinkSuggestionItem[]> => {
-			const now = Date.now();
-			if (!cachedEntries.length || now - lastLoadedAt > 30_000) {
-				cachedEntries = await invoke("vault_list_markdown_files", {
-					recursive: true,
-					limit: 4000,
-				});
-				lastLoadedAt = now;
-			}
-			const q = normalizeForMatch(query);
-			const items = cachedEntries.map(buildSuggestionItem);
-			if (!q) return items.slice(0, this.options.suggestionLimit);
-			return items
-				.filter((item) => {
-					const title = normalizeForMatch(item.title);
-					const path = normalizeForMatch(item.path);
-					const bare = normalizeForMatch(item.insertText);
-					return title.includes(q) || path.includes(q) || bare.includes(q);
-				})
-				.slice(0, this.options.suggestionLimit);
+			const results = await invoke("vault_suggest_links", {
+				request: {
+					query,
+					markdown_only: true,
+					strip_markdown_ext: true,
+					relative_to_source: false,
+					limit: this.options.suggestionLimit,
+				},
+			});
+			return results.map((item) => ({
+				path: item.path,
+				title: item.title || titleFromRelPath(item.path),
+				insertText: item.insert_text,
+			}));
 		};
 
 		return [
