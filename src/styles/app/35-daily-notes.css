@@ -6,7 +6,7 @@
 	gap: var(--space-2);
 	min-height: 28px;
 	padding: 2px var(--space-2);
-	font-size: var(--text-xs);
+	font-size: 13px;
 	color: var(--text-primary);
 	background: none;
 	border: none;
@@ -27,6 +27,7 @@
 
 .sidebarDailyNotesBtn .dailyNotesLabel {
 	font-weight: var(--font-medium);
+	font-size: 13px;
 }
 
 .dailyNotesFolderField {

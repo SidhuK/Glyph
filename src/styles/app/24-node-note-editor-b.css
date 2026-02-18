@@ -100,10 +100,11 @@
 
 .tiptapContentInline img,
 .tiptapContentInline .markdownImage {
-	display: inline-block;
-	vertical-align: middle;
+	display: block;
 	max-width: min(100%, 720px);
+	width: auto;
 	height: auto;
+	margin: var(--space-2) 0;
 	border-radius: var(--radius-md);
 }
 

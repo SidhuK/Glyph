@@ -116,18 +116,12 @@ export const MarkdownLinkAutocomplete = Extension.create({
 						const imagePrefixLength = imagePrefixMatch[0]?.length ?? 0;
 						const imageStart = range.from - imagePrefixLength;
 						const alt = (imagePrefixMatch[1] ?? "").trim();
+						const imageMarkdown = `![${alt}](${props.insertText})`;
 						editor
 							.chain()
 							.focus()
 							.deleteRange({ from: imageStart, to: range.to })
-							.insertContent({
-								type: "image",
-								attrs: {
-									src: props.insertText,
-									alt: alt || null,
-									title: null,
-								},
-							})
+							.insertContent(imageMarkdown)
 							.run();
 						return;
 					}

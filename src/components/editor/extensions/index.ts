@@ -205,7 +205,6 @@ export function createEditorExtensions(
 		TableHeader,
 		TableCell,
 		MarkdownImage.configure({
-			inline: true,
 			allowBase64: true,
 		}),
 		Markdown.configure({

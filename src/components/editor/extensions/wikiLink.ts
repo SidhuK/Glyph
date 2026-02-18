@@ -103,19 +103,11 @@ export const WikiLink = Node.create({
 			typeof node.attrs.alias === "string" ? node.attrs.alias.trim() : "";
 		const target =
 			typeof node.attrs.target === "string" ? node.attrs.target.trim() : "";
-		if ((node.attrs.embed || !alias) && target && isImageTarget(target)) {
-			return [
-				"img",
-				mergeAttributes(HTMLAttributes, {
-					src: target,
-					alt: "",
-					class: "markdownImage wikiLinkImage",
-				}),
-			];
-		}
 		// Show alias if present, otherwise just the filename without path/extension
-		const displayName =
-			alias || target.split("/").pop()?.replace(/\.md$/i, "") || target;
+		const imageLike = (node.attrs.embed || !alias) && target && isImageTarget(target);
+		const displayName = imageLike
+			? ((node.attrs.raw as string) || `![[${target}]]`)
+			: alias || target.split("/").pop()?.replace(/\.md$/i, "") || target;
 		return [
 			"span",
 			mergeAttributes(HTMLAttributes, {
