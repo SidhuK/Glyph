@@ -1,11 +1,28 @@
 import { useCallback, useEffect, useState } from "react";
+import { useVault } from "../../contexts";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { clearRecentVaults, loadSettings } from "../../lib/settings";
 
 export function VaultSettingsPane() {
+	const { vaultPath, isIndexing, startIndexRebuild } = useVault();
 	const [currentVaultPath, setCurrentVaultPath] = useState<string | null>(null);
 	const [recentVaults, setRecentVaults] = useState<string[]>([]);
 	const [error, setError] = useState("");
+	const [reindexStatus, setReindexStatus] = useState("");
+
+	const onRebuildIndex = useCallback(async () => {
+		if (!vaultPath) {
+			setReindexStatus("Open a vault first to rebuild the index.");
+			return;
+		}
+		setReindexStatus("");
+		try {
+			await startIndexRebuild();
+			setReindexStatus("Index rebuild completed.");
+		} catch (e) {
+			setReindexStatus(extractErrorMessage(e));
+		}
+	}, [startIndexRebuild, vaultPath]);
 
 	const refresh = useCallback(async () => {
 		setError("");
@@ -72,6 +89,29 @@ export function VaultSettingsPane() {
 					) : (
 						<div className="settingsEmpty">No recent vaults.</div>
 					)}
+				</section>
+
+				<section className="settingsCard settingsSpan">
+					<div className="settingsCardHeader">
+						<div>
+							<div className="settingsCardTitle">Search Index</div>
+						</div>
+						<button
+							type="button"
+							onClick={() => {
+								void onRebuildIndex();
+							}}
+							disabled={!vaultPath || isIndexing}
+						>
+							{isIndexing ? "Rebuilding…" : "Rebuild Index"}
+						</button>
+					</div>
+					<div className="settingsEmpty">
+						Use this if search results are missing or stale.
+					</div>
+					{reindexStatus ? (
+						<div className="settingsEmpty">{reindexStatus}</div>
+					) : null}
 				</section>
 			</div>
 		</div>

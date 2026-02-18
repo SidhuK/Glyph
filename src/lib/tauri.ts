@@ -150,12 +150,6 @@ export interface IndexRebuildResult {
 	indexed: number;
 }
 
-export interface IndexNotePreview {
-	id: string;
-	title: string;
-	preview: string;
-}
-
 export interface ViewNotePreview {
 	id: string;
 	title: string;
@@ -426,7 +420,6 @@ interface TauriCommands {
 	>;
 
 	index_rebuild: CommandDef<void, IndexRebuildResult>;
-	index_note_previews_batch: CommandDef<{ ids: string[] }, IndexNotePreview[]>;
 	search: CommandDef<{ query: string }, SearchResult[]>;
 	search_advanced: CommandDef<
 		{ request: SearchAdvancedRequest },

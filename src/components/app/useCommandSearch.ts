@@ -42,28 +42,22 @@ export function useCommandSearch(
 				raw_query: trimmed,
 				limit: 1500,
 			})
-				.then((results) => {
-					setSearchResults(results);
-				})
 				.catch(() =>
 					invoke("search_advanced", {
 						request: {
 							...parsed.request,
 							limit: 1500,
 						},
-					})
-						.then((results) => {
-							setSearchResults(results);
-						})
-						.catch(() => {
-							setSearchResults([]);
-						}),
+					}),
 				)
+				.then((results) => {
+					setSearchResults(results);
+				})
 				.finally(() => {
 					setIsSearching(false);
 				})
 				.catch(() => {
-					setIsSearching(false);
+					setSearchResults([]);
 				});
 		}, 200);
 		return () => {

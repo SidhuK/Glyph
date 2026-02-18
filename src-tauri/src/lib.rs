@@ -257,7 +257,6 @@ pub fn run() {
             ai_rig::context::ai_context_resolve_paths,
             ai_rig::models::ai_models_list,
             index::commands::index_rebuild,
-            index::commands::index_note_previews_batch,
             index::commands::search,
             index::commands::search_advanced,
             index::commands::search_parse_and_run,

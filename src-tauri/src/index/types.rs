@@ -9,13 +9,6 @@ pub struct SearchResult {
 }
 
 #[derive(Serialize)]
-pub struct IndexNotePreview {
-    pub id: String,
-    pub title: String,
-    pub preview: String,
-}
-
-#[derive(Serialize)]
 pub struct IndexRebuildResult {
     pub indexed: usize,
 }

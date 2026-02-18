@@ -2,7 +2,7 @@ use std::path::Path;
 use tauri::{AppHandle, State};
 use tauri_plugin_notification::NotificationExt;
 
-use crate::{paths, vault::VaultState};
+use crate::vault::VaultState;
 
 use super::db::open_db;
 use super::indexer::index_note;
@@ -14,7 +14,7 @@ use super::tasks::{
     mutate_task_line, note_abs_path, query_tasks, write_note, IndexedTask, TaskBucket,
 };
 use super::types::{
-    BacklinkItem, IndexNotePreview, IndexRebuildResult, SearchResult, TagCount, TaskDateInfo,
+    BacklinkItem, IndexRebuildResult, SearchResult, TagCount, TaskDateInfo,
     ViewNotePreview,
 };
 
@@ -153,150 +153,6 @@ pub async fn index_rebuild(
         .body(format!("Index rebuilt ({})", res.indexed))
         .show();
     Ok(res)
-}
-
-#[tauri::command]
-pub async fn index_note_previews_batch(
-    state: State<'_, VaultState>,
-    ids: Vec<String>,
-) -> Result<Vec<IndexNotePreview>, String> {
-    const MAX_IDS: usize = 20_000;
-    const CHUNK: usize = 400;
-    const MAX_DISK_FILL: usize = 50;
-
-    let root = state.current_root()?;
-    tauri::async_runtime::spawn_blocking(move || -> Result<Vec<IndexNotePreview>, String> {
-        if ids.is_empty() {
-            return Ok(Vec::new());
-        }
-        if ids.len() > MAX_IDS {
-            return Err("too many ids".to_string());
-        }
-
-        let mut seen = std::collections::HashSet::<String>::new();
-        let mut uniq: Vec<String> = Vec::with_capacity(ids.len());
-        for id in ids {
-            if id.trim().is_empty() {
-                continue;
-            }
-            if seen.insert(id.clone()) {
-                uniq.push(id);
-            }
-        }
-
-        let conn = open_db(&root)?;
-        let mut out: Vec<IndexNotePreview> = Vec::new();
-
-        for chunk in uniq.chunks(CHUNK) {
-            let placeholders = std::iter::repeat("?")
-                .take(chunk.len())
-                .collect::<Vec<_>>()
-                .join(", ");
-            let sql = format!("SELECT id, title, preview FROM notes WHERE id IN ({placeholders})");
-
-            let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;
-            let params = rusqlite::params_from_iter(chunk.iter());
-            let mut rows = stmt.query(params).map_err(|e| e.to_string())?;
-            while let Some(row) = rows.next().map_err(|e| e.to_string())? {
-                out.push(IndexNotePreview {
-                    id: row.get(0).map_err(|e| e.to_string())?,
-                    title: row.get(1).map_err(|e| e.to_string())?,
-                    preview: row.get(2).map_err(|e| e.to_string())?,
-                });
-            }
-        }
-
-        let mut by_id: std::collections::HashMap<String, IndexNotePreview> =
-            out.into_iter().map(|p| (p.id.clone(), p)).collect();
-
-        let missing: Vec<String> = uniq
-            .into_iter()
-            .filter(|id| !by_id.contains_key(id))
-            .collect();
-        if missing.len() > MAX_DISK_FILL {
-            return Err(format!("index missing too many previews ({})", missing.len()));
-        }
-
-        for id in missing {
-            let abs = paths::join_under(&root, Path::new(&id))?;
-            let text = match std::fs::read_to_string(&abs) {
-                Ok(v) => v,
-                Err(_) => {
-                    by_id.insert(
-                        id.clone(),
-                        IndexNotePreview {
-                            id: id.clone(),
-                            title: Path::new(&id)
-                                .file_stem()
-                                .and_then(|s| s.to_str())
-                                .unwrap_or("Untitled")
-                                .to_string(),
-                            preview: String::new(),
-                        },
-                    );
-                    continue;
-                }
-            };
-
-            let normalized = text.replace("\r\n", "\n");
-            let mut title = Path::new(&id)
-                .file_stem()
-                .and_then(|s| s.to_str())
-                .unwrap_or("Untitled")
-                .to_string();
-            if normalized.starts_with("---\n") {
-                if let Some(end_idx) = normalized.find("\n---\n") {
-                    let yaml = &normalized[4..end_idx];
-                    for line in yaml.lines() {
-                        if let Some((k, v)) = line.split_once(':') {
-                            if k.trim().eq_ignore_ascii_case("title") {
-                                let parsed = v.trim().trim_matches('"').trim_matches('\'').trim();
-                                if !parsed.is_empty() {
-                                    title = parsed.to_string();
-                                    break;
-                                }
-                            }
-                        }
-                    }
-                }
-            } else if let Some(heading) = normalized
-                .lines()
-                .find_map(|line| line.strip_prefix("# ").map(|v| v.trim()))
-            {
-                if !heading.is_empty() {
-                    title = heading.to_string();
-                }
-            }
-
-            let body = if normalized.starts_with("---\n") {
-                if let Some(end_idx) = normalized.find("\n---\n") {
-                    normalized[end_idx + 5..].trim().to_string()
-                } else {
-                    normalized.clone()
-                }
-            } else {
-                normalized.clone()
-            };
-            let lines = body.lines().take(20).collect::<Vec<_>>();
-            let mut preview = lines.join("\n");
-            if body.lines().count() > 20 {
-                preview.push('\n');
-                preview.push('…');
-            }
-            by_id.insert(
-                id.clone(),
-                IndexNotePreview {
-                    id,
-                    title,
-                    preview,
-                },
-            );
-        }
-
-        Ok(by_id.into_values().collect())
-    })
-    .await
-    .map_err(|e| e.to_string())?
 }
 
 #[tauri::command]
