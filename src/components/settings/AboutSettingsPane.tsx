@@ -32,7 +32,7 @@ export function AboutSettingsPane() {
 	}, [appInfo?.version]);
 
 	const handleCopyDebugInfo = async () => {
-		const info = `Name: ${appInfo?.name ?? "Cipher"}\nVersion: ${appInfo?.version ?? "-"}\nIdentifier: ${appInfo?.identifier ?? "-"}`;
+		const info = `Name: ${appInfo?.name ?? "Glyph"}\nVersion: ${appInfo?.version ?? "-"}\nIdentifier: ${appInfo?.identifier ?? "-"}`;
 		try {
 			await navigator.clipboard.writeText(info);
 			setCopyLabel("Copied");
@@ -50,14 +50,14 @@ export function AboutSettingsPane() {
 			<div className="aboutContent">
 				<div className="aboutLogoWrap">
 					<img
-						src="/cipher-app-icon.png"
+						src="/glyph-app-icon.png"
 						alt=""
 						className="aboutLogo"
 						aria-hidden="true"
 					/>
 				</div>
 				<div className="aboutTitleRow">
-					<span className="aboutAppName">{appInfo?.name ?? "Cipher"}</span>
+					<span className="aboutAppName">{appInfo?.name ?? "Glyph"}</span>
 					<span className="aboutVersion">{versionLabel}</span>
 				</div>
 

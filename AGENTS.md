@@ -16,7 +16,7 @@ cd src-tauri && cargo clippy   # Lint Rust
 **Pre-push:** `pnpm check && pnpm build && cd src-tauri && cargo check`
 
 ## Architecture
-**Cipher** — offline-first desktop note-taking app. Frontend: React 19 + TypeScript + Vite + Tailwind 4 (`src/`). Backend: Tauri 2 + Rust (`src-tauri/`). Editor: TipTap + Markdown. AI: Rig-backed multi-provider chat. UI: shadcn/ui + Radix + Motion. Storage: SQLite + filesystem in `.cipher/` folder.
+**Glyph** — offline-first desktop note-taking app. Frontend: React 19 + TypeScript + Vite + Tailwind 4 (`src/`). Backend: Tauri 2 + Rust (`src-tauri/`). Editor: TipTap + Markdown. AI: Rig-backed multi-provider chat. UI: shadcn/ui + Radix + Motion. Storage: SQLite + filesystem in `.glyph/` folder.
 
 ## Frontend Overview (`src/`)
 - `main.tsx` / `App.tsx` — Entry point, wraps `<AppShell>` in `<AppProviders>` (all contexts)
@@ -47,7 +47,7 @@ cd src-tauri && cargo clippy   # Lint Rust
 - `paths.rs` — Safe path joining (prevents traversal via `join_under()`)
 - `io_atomic.rs` — Crash-safe atomic writes
 - `net.rs` — SSRF prevention for user-supplied URLs
-- `cipher_paths.rs` / `cipher_fs.rs` — `.cipher/` directory helpers
+- `glyph_paths.rs` / `glyph_fs.rs` — `.glyph/` directory helpers
 - `system_fonts.rs` — System font enumeration
 
 ## Code Style & Safety

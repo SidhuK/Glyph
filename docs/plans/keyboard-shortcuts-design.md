@@ -2,7 +2,7 @@
 
 ## Overview
 
-This document outlines a comprehensive keyboard shortcuts system for Cipher, a desktop note-taking app with a node-based canvas editor. The design builds upon existing infrastructure while introducing a more organized, extensible approach to shortcut management.
+This document outlines a comprehensive keyboard shortcuts system for Glyph, a desktop note-taking app with a node-based canvas editor. The design builds upon existing infrastructure while introducing a more organized, extensible approach to shortcut management.
 
 ## Current State Analysis
 

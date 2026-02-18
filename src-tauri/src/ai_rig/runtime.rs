@@ -536,7 +536,7 @@ fn build_http_client(profile: &AiProfile) -> Result<reqwest::Client, String> {
     }
     reqwest::Client::builder()
         .timeout(std::time::Duration::from_secs(90))
-        .user_agent("Cipher/0.1 (ai)")
+        .user_agent("Glyph/0.1 (ai)")
         .default_headers(headers)
         .build()
         .map_err(|e| e.to_string())

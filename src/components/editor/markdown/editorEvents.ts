@@ -1,6 +1,6 @@
-export const WIKI_LINK_CLICK_EVENT = "cipher:wikilink-click";
-export const MARKDOWN_LINK_CLICK_EVENT = "cipher:markdown-link-click";
-export const TAG_CLICK_EVENT = "cipher:tag-click";
+export const WIKI_LINK_CLICK_EVENT = "glyph:wikilink-click";
+export const MARKDOWN_LINK_CLICK_EVENT = "glyph:markdown-link-click";
+export const TAG_CLICK_EVENT = "glyph:tag-click";
 
 export interface WikiLinkClickDetail {
 	raw: string;

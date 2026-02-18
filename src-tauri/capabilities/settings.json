@@ -5,6 +5,7 @@
 	"windows": ["settings"],
 	"permissions": [
 		"core:default",
+		"core:window:allow-close",
 		"core:window:allow-set-focus",
 		"core:window:allow-show",
 		"store:default",

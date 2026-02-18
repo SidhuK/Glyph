@@ -503,41 +503,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "cipher"
-version = "0.1.0"
-dependencies = [
- "base64 0.22.1",
- "core-text",
- "futures-util",
- "hex",
- "notify",
- "regex",
- "reqwest 0.12.28",
- "rig-core",
- "rusqlite",
- "schemars 0.8.22",
- "serde",
- "serde_json",
- "serde_yaml",
- "sha2",
- "tauri",
- "tauri-build",
- "tauri-plugin-dialog",
- "tauri-plugin-notification",
- "tauri-plugin-opener",
- "tauri-plugin-store",
- "tauri-plugin-updater",
- "time",
- "tokio",
- "tokio-util",
- "tracing",
- "tracing-subscriber",
- "url",
- "uuid",
- "window-vibrancy 0.7.1",
-]
-
-[[package]]
 name = "combine"
 version = "4.6.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1579,6 +1544,41 @@ name = "glob"
 version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "0cc23270f6e1808e30a928bdc84dea0b9b4136a8bc82338574f23baf47bbd280"
+
+[[package]]
+name = "glyph"
+version = "0.1.0"
+dependencies = [
+ "base64 0.22.1",
+ "core-text",
+ "futures-util",
+ "hex",
+ "notify",
+ "regex",
+ "reqwest 0.12.28",
+ "rig-core",
+ "rusqlite",
+ "schemars 0.8.22",
+ "serde",
+ "serde_json",
+ "serde_yaml",
+ "sha2",
+ "tauri",
+ "tauri-build",
+ "tauri-plugin-dialog",
+ "tauri-plugin-notification",
+ "tauri-plugin-opener",
+ "tauri-plugin-store",
+ "tauri-plugin-updater",
+ "time",
+ "tokio",
+ "tokio-util",
+ "tracing",
+ "tracing-subscriber",
+ "url",
+ "uuid",
+ "window-vibrancy 0.7.1",
+]
 
 [[package]]
 name = "gobject-sys"

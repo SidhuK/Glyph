@@ -1,4 +1,5 @@
 import "./App.css";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { AiBrain04Icon } from "@hugeicons/core-free-icons";
 import { TextFontIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -46,6 +47,9 @@ export default function SettingsApp() {
 		const nextHash = `#/settings?tab=${encodeURIComponent(tab)}`;
 		window.history.replaceState(null, "", nextHash);
 	}, []);
+	const closeWindow = useCallback(() => {
+		void getCurrentWindow().close();
+	}, []);
 
 	const tabContent = useMemo(() => {
 		if (activeTab === "general") {
@@ -71,6 +75,17 @@ export default function SettingsApp() {
 				data-tauri-drag-region
 				onMouseDown={onWindowDragMouseDown}
 			/>
+			<button
+				type="button"
+				className="settingsWindowClose"
+				aria-label="Close settings"
+				title="Close settings"
+				onClick={closeWindow}
+			>
+				<span className="settingsWindowCloseGlyph" aria-hidden>
+					×
+				</span>
+			</button>
 
 			<main className="settingsMain">
 				<div className="settingsFrame">

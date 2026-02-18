@@ -1,4 +1,4 @@
-export const TASKS_TAB_ID = "__cipher_tasks__";
+export const TASKS_TAB_ID = "__glyph_tasks__";
 
 export function todayIsoDateLocal(now = new Date()): string {
 	const year = now.getFullYear();

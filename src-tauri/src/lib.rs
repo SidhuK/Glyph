@@ -1,8 +1,8 @@
 mod ai_rig;
 mod index;
 mod io_atomic;
-mod cipher_fs;
-mod cipher_paths;
+mod glyph_fs;
+mod glyph_paths;
 mod links;
 mod net;
 mod notes;
@@ -23,7 +23,7 @@ use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
 
 fn init_tracing() {
     let filter = tracing_subscriber::EnvFilter::try_from_default_env()
-        .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info,tauri=info,cipher_lib=info"));
+        .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info,tauri=info,glyph_lib=info"));
 
     let _ = tracing_subscriber::fmt()
         .with_env_filter(filter)
@@ -293,8 +293,8 @@ pub fn run() {
             vault_fs::read_write::vault_delete_path,
             vault_fs::read_write::vault_resolve_abs_path,
             vault_fs::read_write::vault_relativize_path,
-            cipher_fs::cipher_read_text,
-            cipher_fs::cipher_write_text,
+            glyph_fs::glyph_read_text,
+            glyph_fs::glyph_write_text,
             notes::commands::notes_list,
             notes::commands::note_create,
             notes::commands::note_read,

@@ -149,7 +149,7 @@ pub async fn index_rebuild(
     let _ = app
         .notification()
         .builder()
-        .title("Cipher")
+        .title("Glyph")
         .body(format!("Index rebuilt ({})", res.indexed))
         .show();
     Ok(res)

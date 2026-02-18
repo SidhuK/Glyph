@@ -404,8 +404,8 @@ interface TauriCommands {
 		},
 		FolderViewData
 	>;
-	cipher_read_text: CommandDef<{ path: string }, string>;
-	cipher_write_text: CommandDef<{ path: string; text: string }, void>;
+	glyph_read_text: CommandDef<{ path: string }, string>;
+	glyph_write_text: CommandDef<{ path: string; text: string }, void>;
 	notes_list: CommandDef<void, NoteMeta[]>;
 	note_create: CommandDef<{ title: string }, NoteMeta>;
 	note_read: CommandDef<{ id: string }, NoteDoc>;

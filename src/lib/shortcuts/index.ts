@@ -1,5 +1,5 @@
 /**
- * Shortcuts module - centralized keyboard shortcuts for Cipher
+ * Shortcuts module - centralized keyboard shortcuts for Glyph
  *
  * This module provides:
  * - Type definitions for shortcuts

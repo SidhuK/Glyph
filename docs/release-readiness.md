@@ -1,4 +1,4 @@
-# Cipher Release Readiness (macOS)
+# Glyph Release Readiness (macOS)
 
 ## Build
 

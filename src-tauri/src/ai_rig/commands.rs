@@ -383,7 +383,7 @@ pub async fn ai_chat_start(
                     let _ = app_for_task
                         .notification()
                         .builder()
-                        .title("Cipher")
+                        .title("Glyph")
                         .body("AI response ready")
                         .show();
                 }
@@ -400,7 +400,7 @@ pub async fn ai_chat_start(
                 let _ = app_for_task
                     .notification()
                     .builder()
-                    .title("Cipher")
+                    .title("Glyph")
                     .body("AI request failed")
                     .show();
                 ai_state_for_task.finish(&job_id_for_task);

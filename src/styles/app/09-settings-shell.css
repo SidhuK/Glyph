@@ -7,7 +7,8 @@
 	width: 100%;
 	display: flex;
 	flex-direction: column;
-	background: var(--bg-primary);
+	background: transparent;
+	border-radius: 14px;
 	overflow: hidden;
 }
 
@@ -24,9 +25,38 @@
 	top: 0;
 	left: 0;
 	right: 0;
-	height: 14px;
+	height: 42px;
 	z-index: 10;
 	-webkit-app-region: drag;
+}
+
+.settingsWindowClose {
+	position: absolute;
+	top: 10px;
+	right: 12px;
+	z-index: 20;
+	height: 22px;
+	width: 22px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border: 0;
+	border-radius: 999px;
+	background: transparent;
+	color: var(--text-tertiary);
+	-webkit-app-region: no-drag;
+}
+
+.settingsWindowClose:hover {
+	background: var(--bg-secondary);
+	color: var(--text-primary);
+}
+
+.settingsWindowCloseGlyph {
+	display: inline-block;
+	font-size: 14px;
+	line-height: 1;
+	font-weight: 500;
 }
 
 .settingsHeader {
@@ -58,7 +88,7 @@
 	flex: 1;
 	min-height: 0;
 	overflow: hidden;
-	padding: 0;
+	padding: 6px;
 	display: flex;
 	align-items: stretch;
 	justify-content: center;
@@ -80,7 +110,7 @@
 	display: flex;
 	flex-direction: column;
 	gap: 2px;
-	padding: 50px 8px 10px 10px;
+	padding: 44px 8px 10px 10px;
 	background: transparent;
 }
 
@@ -122,7 +152,7 @@
 	overflow: auto;
 	display: flex;
 	flex-direction: column;
-	padding: 14px 18px 18px;
+	padding: 44px 18px 18px;
 }
 
 .settingsPane {

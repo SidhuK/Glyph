@@ -1,4 +1,4 @@
-use crate::{io_atomic, cipher_paths, paths, vault::VaultState};
+use crate::{io_atomic, glyph_paths, paths, vault::VaultState};
 use std::path::{Path, PathBuf};
 use tauri::State;
 
@@ -26,20 +26,20 @@ fn normalize_rel_path(raw: &str) -> Result<PathBuf, String> {
     }
 }
 
-fn cipher_abs_path(vault_root: &Path, rel_inside_cipher: &Path) -> Result<PathBuf, String> {
-    let cipher_dir = cipher_paths::ensure_cipher_dir(vault_root)?;
-    paths::join_under(&cipher_dir, rel_inside_cipher)
+fn glyph_abs_path(vault_root: &Path, rel_inside_glyph: &Path) -> Result<PathBuf, String> {
+    let glyph_dir = glyph_paths::ensure_glyph_dir(vault_root)?;
+    paths::join_under(&glyph_dir, rel_inside_glyph)
 }
 
 #[tauri::command]
-pub async fn cipher_read_text(
+pub async fn glyph_read_text(
     state: State<'_, VaultState>,
     path: String,
 ) -> Result<String, String> {
     let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<String, String> {
         let rel = normalize_rel_path(&path)?;
-        let abs = cipher_abs_path(&root, &rel)?;
+        let abs = glyph_abs_path(&root, &rel)?;
         let bytes = std::fs::read(&abs).map_err(|e| e.to_string())?;
         String::from_utf8(bytes).map_err(|_| "file is not valid UTF-8".to_string())
     })
@@ -48,7 +48,7 @@ pub async fn cipher_read_text(
 }
 
 #[tauri::command]
-pub async fn cipher_write_text(
+pub async fn glyph_write_text(
     state: State<'_, VaultState>,
     path: String,
     text: String,
@@ -56,7 +56,7 @@ pub async fn cipher_write_text(
     let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
         let rel = normalize_rel_path(&path)?;
-        let abs = cipher_abs_path(&root, &rel)?;
+        let abs = glyph_abs_path(&root, &rel)?;
         if let Some(parent) = abs.parent() {
             std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
         }

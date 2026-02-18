@@ -3,12 +3,12 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use crate::{io_atomic, cipher_paths};
+use crate::{io_atomic, glyph_paths};
 
 const AI_SECRETS_FILE: &str = "ai_secrets.json";
 
 fn secrets_path(vault_root: &Path) -> Result<PathBuf, String> {
-    let dir = cipher_paths::ensure_cipher_app_dir(vault_root)?;
+    let dir = glyph_paths::ensure_glyph_app_dir(vault_root)?;
     Ok(dir.join(AI_SECRETS_FILE))
 }
 

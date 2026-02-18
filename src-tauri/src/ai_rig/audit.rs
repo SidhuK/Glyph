@@ -1,18 +1,18 @@
-use crate::{io_atomic, cipher_paths};
+use crate::{io_atomic, glyph_paths};
 use std::path::{Path, PathBuf};
 
 use super::helpers::now_ms;
 use super::types::{AiChatRequest, AiMessage, AiProfile, AiStoredToolEvent};
 
 pub fn audit_log_path(vault_root: &Path, job_id: &str) -> Result<PathBuf, String> {
-    let base = cipher_paths::ensure_cipher_cache_dir(vault_root)?;
+    let base = glyph_paths::ensure_glyph_cache_dir(vault_root)?;
     let dir = base.join("ai");
     std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
     Ok(dir.join(format!("{job_id}.json")))
 }
 
 pub fn history_log_path(vault_root: &Path, job_id: &str) -> Result<PathBuf, String> {
-    let dir = cipher_paths::ensure_ai_history_dir(vault_root)?;
+    let dir = glyph_paths::ensure_ai_history_dir(vault_root)?;
     Ok(dir.join(format!("{job_id}.json")))
 }
 

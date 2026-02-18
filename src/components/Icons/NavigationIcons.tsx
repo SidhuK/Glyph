@@ -1,7 +1,7 @@
 import * as Icons from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { ComponentProps } from "react";
-import cipherIconUrl from "../../assets/cipher.svg?url";
+import glyphIconUrl from "../../assets/glyph.svg?url";
 
 export type IconProps = Omit<ComponentProps<typeof HugeiconsIcon>, "icon">;
 
@@ -59,14 +59,14 @@ export const InformationCircle = (props: IconProps) => (
 export const Calendar = (props: IconProps) => (
 	<HugeiconsIcon icon={Icons.Calendar03Icon} {...props} />
 );
-export const AiCipher = ({
+export const AiGlyph = ({
 	size = 16,
 	alt = "",
 	style,
 	...props
 }: Omit<ComponentProps<"img">, "src"> & { size?: number | string }) => (
 	<img
-		src={cipherIconUrl}
+		src={glyphIconUrl}
 		alt={alt}
 		width={size}
 		height={size}

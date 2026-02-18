@@ -16,7 +16,7 @@ export function StepHero({ appName, onNext }: StepHeroProps) {
 				<div className="welcomeBrandIcon" aria-hidden="true">
 					<HugeiconsIcon icon={AiBrain04Icon} size={28} />
 				</div>
-				<div className="welcomeTitle">{appName ?? "Cipher"}</div>
+				<div className="welcomeTitle">{appName ?? "Glyph"}</div>
 			</div>
 			<div className="welcomeSubtitle">
 				A simple space for notes and canvases.
