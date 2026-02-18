@@ -1,28 +1,31 @@
 import { useCallback, useEffect, useState } from "react";
-import { useVault } from "../../contexts";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { clearRecentVaults, loadSettings } from "../../lib/settings";
+import { invoke } from "../../lib/tauri";
 
 export function VaultSettingsPane() {
-	const { vaultPath, isIndexing, startIndexRebuild } = useVault();
 	const [currentVaultPath, setCurrentVaultPath] = useState<string | null>(null);
 	const [recentVaults, setRecentVaults] = useState<string[]>([]);
 	const [error, setError] = useState("");
 	const [reindexStatus, setReindexStatus] = useState("");
+	const [isIndexing, setIsIndexing] = useState(false);
 
 	const onRebuildIndex = useCallback(async () => {
-		if (!vaultPath) {
+		if (!currentVaultPath) {
 			setReindexStatus("Open a vault first to rebuild the index.");
 			return;
 		}
 		setReindexStatus("");
 		try {
-			await startIndexRebuild();
+			setIsIndexing(true);
+			await invoke("index_rebuild");
 			setReindexStatus("Index rebuild completed.");
 		} catch (e) {
 			setReindexStatus(extractErrorMessage(e));
+		} finally {
+			setIsIndexing(false);
 		}
-	}, [startIndexRebuild, vaultPath]);
+	}, [currentVaultPath]);
 
 	const refresh = useCallback(async () => {
 		setError("");
@@ -101,7 +104,7 @@ export function VaultSettingsPane() {
 							onClick={() => {
 								void onRebuildIndex();
 							}}
-							disabled={!vaultPath || isIndexing}
+							disabled={!currentVaultPath || isIndexing}
 						>
 							{isIndexing ? "Rebuilding…" : "Rebuild Index"}
 						</button>
