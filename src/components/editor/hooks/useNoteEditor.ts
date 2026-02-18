@@ -5,7 +5,6 @@ import {
 	joinYamlFrontmatter,
 	splitYamlFrontmatter,
 } from "../../../lib/notePreview";
-import { parentDir } from "../../../utils/path";
 import { createEditorExtensions } from "../extensions";
 import {
 	dispatchMarkdownLinkClick,
@@ -21,7 +20,6 @@ import type { CanvasInlineEditorMode } from "../types";
 function normalizeBody(markdown: string): string {
 	return markdown.replace(/\u00a0/g, " ").replace(/&nbsp;/g, " ");
 }
-
 
 interface UseNoteEditorOptions {
 	markdown: string;

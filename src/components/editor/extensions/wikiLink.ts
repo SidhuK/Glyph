@@ -104,9 +104,10 @@ export const WikiLink = Node.create({
 		const target =
 			typeof node.attrs.target === "string" ? node.attrs.target.trim() : "";
 		// Show alias if present, otherwise just the filename without path/extension
-		const imageLike = (node.attrs.embed || !alias) && target && isImageTarget(target);
+		const imageLike =
+			(node.attrs.embed || !alias) && target && isImageTarget(target);
 		const displayName = imageLike
-			? ((node.attrs.raw as string) || `![[${target}]]`)
+			? (node.attrs.raw as string) || `![[${target}]]`
 			: alias || target.split("/").pop()?.replace(/\.md$/i, "") || target;
 		return [
 			"span",
