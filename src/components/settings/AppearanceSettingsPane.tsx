@@ -151,60 +151,30 @@ export function AppearanceSettingsPane() {
 
 	return (
 		<div className="settingsPane">
-			<div className="settingsHero">
-				<div>
-					<h2>Appearance</h2>
-					<p className="settingsHint">
-						Adjust theme and typography for the app UI.
-					</p>
-				</div>
-				<div className="settingsBadge">Visual</div>
-			</div>
+			<h2>Appearance</h2>
 			{error ? <div className="settingsError">{error}</div> : null}
 			<div className="settingsGrid">
 				<section className="settingsCard">
 					<div className="settingsCardHeader">
 						<div>
 							<div className="settingsCardTitle">Theme</div>
-							<div className="settingsCardHint">
-								Choose light, dark, or follow system preference.
-							</div>
 						</div>
 					</div>
 					<div className="settingsField">
 						<div>
 							<div className="settingsLabel">Mode</div>
 						</div>
-						<div
-							className="settingsSegmented"
-							role="tablist"
+						<select
 							aria-label="Theme mode"
+							value={themeMode}
+							onChange={(event) =>
+								void onThemeModeChange(event.target.value as ThemeMode)
+							}
 						>
-							<button
-								type="button"
-								className={themeMode === "light" ? "active" : ""}
-								onClick={() => void onThemeModeChange("light")}
-								aria-pressed={themeMode === "light"}
-							>
-								Light
-							</button>
-							<button
-								type="button"
-								className={themeMode === "dark" ? "active" : ""}
-								onClick={() => void onThemeModeChange("dark")}
-								aria-pressed={themeMode === "dark"}
-							>
-								Dark
-							</button>
-							<button
-								type="button"
-								className={themeMode === "system" ? "active" : ""}
-								onClick={() => void onThemeModeChange("system")}
-								aria-pressed={themeMode === "system"}
-							>
-								System
-							</button>
-						</div>
+							<option value="light">Light</option>
+							<option value="dark">Dark</option>
+							<option value="system">System</option>
+						</select>
 					</div>
 				</section>
 				<AppearanceAccentCard accent={accent} onAccentChange={onAccentChange} />

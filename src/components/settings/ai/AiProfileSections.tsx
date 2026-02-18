@@ -110,9 +110,6 @@ export function AiProfileSections({
 					<div className="settingsCardHeader">
 						<div>
 							<div className="settingsCardTitle">Profile</div>
-							<div className="settingsCardHint">
-								Switch between provider configurations.
-							</div>
 						</div>
 					</div>
 					<div className="settingsField">
@@ -141,9 +138,6 @@ export function AiProfileSections({
 					<div className="settingsCardHeader">
 						<div>
 							<div className="settingsCardTitle">Get Started</div>
-							<div className="settingsCardHint">
-								Create a profile to connect an AI provider.
-							</div>
 						</div>
 					</div>
 					<div className="settingsRow">
@@ -159,9 +153,6 @@ export function AiProfileSections({
 					<div className="settingsCardHeader">
 						<div>
 							<div className="settingsCardTitle">Provider</div>
-							<div className="settingsCardHint">
-								Choose your AI service and model.
-							</div>
 						</div>
 					</div>
 
@@ -211,9 +202,6 @@ export function AiProfileSections({
 								<label className="settingsLabel" htmlFor="aiBaseUrl">
 									Base URL
 								</label>
-								<div className="settingsHelp">
-									API endpoint for your provider.
-								</div>
 							</div>
 							<input
 								id="aiBaseUrl"
@@ -244,9 +232,6 @@ export function AiProfileSections({
 					<div className="settingsCardHeader">
 						<div>
 							<div className="settingsCardTitle">API Key</div>
-							<div className="settingsCardHint">
-								Stored locally in your vault.
-							</div>
 						</div>
 						<div
 							className={`settingsPill ${secretConfigured ? "settingsPillOk" : ""}`}

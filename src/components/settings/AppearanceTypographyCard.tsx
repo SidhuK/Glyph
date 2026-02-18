@@ -34,9 +34,6 @@ export function AppearanceTypographyCard({
 			<div className="settingsCardHeader">
 				<div>
 					<div className="settingsCardTitle">Typography</div>
-					<div className="settingsCardHint">
-						Set the app font and global text size.
-					</div>
 				</div>
 			</div>
 			<div className="settingsField">
@@ -44,7 +41,6 @@ export function AppearanceTypographyCard({
 					<label className="settingsLabel" htmlFor="settingsFontFamily">
 						Font
 					</label>
-					<div className="settingsHelp">System fonts from your machine.</div>
 				</div>
 				<select
 					id="settingsFontFamily"
@@ -64,7 +60,6 @@ export function AppearanceTypographyCard({
 					<label className="settingsLabel" htmlFor="settingsMonoFontFamily">
 						Mono Font
 					</label>
-					<div className="settingsHelp">Monospace families only.</div>
 				</div>
 				<select
 					id="settingsMonoFontFamily"
@@ -84,7 +79,6 @@ export function AppearanceTypographyCard({
 					<label className="settingsLabel" htmlFor="settingsFontSize">
 						Font Size
 					</label>
-					<div className="settingsHelp">Numeric scale from 7 to 40.</div>
 				</div>
 				<div className="settingsRange">
 					<input

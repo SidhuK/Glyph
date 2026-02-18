@@ -7,33 +7,15 @@
 	width: 100%;
 	display: flex;
 	flex-direction: column;
-	background: radial-gradient(
-			circle at 10% 20%,
-			color-mix(in srgb, var(--bg-tertiary) 80%, transparent),
-			transparent 55%
-		),
-		radial-gradient(
-			circle at 90% 0%,
-			color-mix(in srgb, var(--bg-secondary) 70%, transparent),
-			transparent 50%
-		),
-		linear-gradient(
-			135deg,
-			color-mix(in srgb, var(--bg-primary) 70%, transparent),
-			color-mix(in srgb, var(--bg-secondary) 90%, transparent)
-		);
+	background: var(--bg-primary);
 	overflow: hidden;
 }
 
 .settingsBackdrop {
 	position: absolute;
 	inset: 0;
-	background: linear-gradient(
-		140deg,
-		color-mix(in srgb, var(--bg-secondary) 92%, transparent),
-		transparent 55%
-	);
-	opacity: 0.7;
+	background: color-mix(in srgb, var(--bg-secondary) 30%, transparent);
+	opacity: 0.45;
 	pointer-events: none;
 }
 
@@ -54,8 +36,7 @@
 	height: var(--header-height);
 	padding: 0 var(--space-4);
 	border-bottom: 1px solid var(--border-light);
-	background: color-mix(in srgb, var(--bg-primary) 70%, transparent);
-	backdrop-filter: blur(16px);
+	background: color-mix(in srgb, var(--bg-secondary) 25%, var(--bg-primary));
 	z-index: 2;
 	-webkit-app-region: drag;
 }
@@ -76,73 +57,84 @@
 .settingsMain {
 	flex: 1;
 	min-height: 0;
-	overflow: auto;
-	padding: var(--space-4);
+	overflow: hidden;
+	padding: 22px;
 	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: var(--space-5);
+	align-items: stretch;
+	justify-content: center;
 	position: relative;
 	z-index: 1;
 }
 
-.settingsTabs {
-	position: sticky;
-	top: 0;
-	z-index: 2;
-	display: grid;
-	grid-template-columns: repeat(4, minmax(0, 1fr));
-	gap: 6px;
+.settingsFrame {
 	width: 100%;
-	max-width: 520px;
-	padding: 4px;
-	border: 1px solid var(--border-light);
-	border-radius: var(--radius-2xl);
-	background: color-mix(in srgb, var(--bg-secondary) 80%, transparent);
-	backdrop-filter: blur(10px);
+	height: 100%;
+	display: grid;
+	grid-template-columns: 172px minmax(0, 1fr);
+	border-radius: 14px;
+	background: color-mix(in srgb, var(--bg-secondary) 10%, var(--bg-primary));
+	overflow: hidden;
+}
+
+.settingsTabs {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	padding: 14px 10px;
+	background: color-mix(in srgb, var(--bg-secondary) 20%, var(--bg-primary));
 }
 
 .settingsTabButton {
 	display: inline-flex;
+	flex-direction: row;
 	align-items: center;
-	justify-content: center;
-	gap: 6px;
-	min-height: 32px;
-	padding: 0 9px;
-	border-radius: var(--radius-full);
-	color: var(--text-secondary);
+	justify-content: flex-start;
+	gap: 10px;
+	min-height: 34px;
+	padding: 0 10px;
+	border-radius: 8px;
+	color: color-mix(in srgb, var(--text-secondary) 88%, var(--text-tertiary));
 	background: transparent;
-	border: 1px solid transparent;
-	font-size: 11px;
+	border: 0;
+	font-size: 12px;
+	font-weight: var(--font-medium);
+	line-height: 1;
 }
 
 .settingsTabButton.active {
-	color: var(--text-primary);
-	background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
-	border-color: var(--border-light);
-	box-shadow: var(--shadow-sm);
+	color: var(--interactive-accent);
+	background: color-mix(in srgb, var(--interactive-accent) 12%, transparent);
 }
 
 .settingsTabButton:hover {
-	transform: none;
+	color: color-mix(in srgb, var(--text-secondary) 88%, var(--text-tertiary));
+	background: transparent;
+}
+
+.settingsTabButton.active:hover {
+	color: var(--interactive-accent);
+	background: color-mix(in srgb, var(--interactive-accent) 12%, transparent);
 }
 
 .settingsTabPanel {
-	width: 100%;
+	min-width: 0;
+	height: 100%;
+	overflow: auto;
 	display: flex;
 	flex-direction: column;
-	align-items: center;
-	gap: var(--space-5);
+	padding: 14px 18px 18px;
 }
 
 .settingsPane {
 	width: 100%;
-	max-width: 540px;
+	max-width: none;
 }
 
 .settingsPane h2 {
-	margin: 0 0 var(--space-3);
-	font-size: var(--text-lg);
+	margin: 0;
+	padding: 0 0 12px;
+	font-size: 16px;
+	font-weight: var(--font-semibold);
 	color: var(--text-primary);
 }
 
@@ -183,18 +175,17 @@
 .settingsGrid {
 	display: flex;
 	flex-direction: column;
-	gap: var(--space-4);
+	gap: 10px;
+	padding-top: 12px;
 }
 
 .settingsCard {
-	background: color-mix(in srgb, var(--bg-primary) 85%, transparent);
-	border: 1px solid var(--border-light);
-	border-radius: var(--radius-2xl);
-	padding: var(--space-4);
-	box-shadow: var(--shadow-sm);
+	background: color-mix(in srgb, var(--bg-secondary) 14%, var(--bg-primary));
+	border-radius: 10px;
+	padding: 10px;
 	display: flex;
 	flex-direction: column;
-	gap: var(--space-3);
+	gap: 6px;
 }
 
 .settingsSpan {
@@ -206,23 +197,40 @@
 	align-items: center;
 	justify-content: space-between;
 	gap: var(--space-2);
+	padding: 2px 2px 4px;
 }
 
 .settingsCardTitle {
-	font-size: var(--text-sm);
+	font-size: 12px;
 	font-weight: var(--font-semibold);
 	color: var(--text-primary);
-	white-space: nowrap;
+	line-height: 1.35;
 }
 
 .settingsCardHint {
 	font-size: var(--text-xs);
 	color: var(--text-tertiary);
-	white-space: nowrap;
 }
 
 @media (max-width: 680px) {
+	.settingsMain {
+		padding: 10px;
+	}
+
+	.settingsFrame {
+		grid-template-columns: 1fr;
+		grid-template-rows: auto 1fr;
+	}
+
 	.settingsTabs {
-		grid-template-columns: repeat(2, minmax(0, 1fr));
+		flex-direction: row;
+		flex-wrap: wrap;
+		border-right: 0;
+	}
+
+	.settingsTabButton {
+		min-height: 30px;
+		padding: 0 8px;
+		gap: 6px;
 	}
 }

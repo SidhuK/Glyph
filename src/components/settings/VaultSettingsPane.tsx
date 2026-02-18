@@ -24,15 +24,7 @@ export function VaultSettingsPane() {
 
 	return (
 		<div className="settingsPane">
-			<div className="settingsHero">
-				<div>
-					<h2>Vault</h2>
-					<p className="settingsHint">
-						Control storage, indexing, and how your vault is managed locally.
-					</p>
-				</div>
-				<div className="settingsBadge">Filesystem</div>
-			</div>
+			<h2>Vault</h2>
 			{error ? <div className="settingsError">{error}</div> : null}
 
 			<div className="settingsGrid">
@@ -40,7 +32,6 @@ export function VaultSettingsPane() {
 					<div className="settingsCardHeader">
 						<div>
 							<div className="settingsCardTitle">Current Vault</div>
-							<div className="settingsCardHint">Active vault location.</div>
 						</div>
 						<div className="settingsPill">Active</div>
 					</div>
@@ -48,7 +39,6 @@ export function VaultSettingsPane() {
 					<div className="settingsField">
 						<div>
 							<div className="settingsLabel">Path</div>
-							<div className="settingsHelp">Vault root on disk.</div>
 						</div>
 						<div className="settingsValue mono">
 							{currentVaultPath ?? "(none selected)"}
@@ -60,7 +50,6 @@ export function VaultSettingsPane() {
 					<div className="settingsCardHeader">
 						<div>
 							<div className="settingsCardTitle">Recent Vaults</div>
-							<div className="settingsCardHint">Quickly reopen vaults.</div>
 						</div>
 						<button
 							type="button"

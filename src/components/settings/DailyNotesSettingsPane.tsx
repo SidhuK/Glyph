@@ -68,24 +68,13 @@ export function DailyNotesSettingsPane() {
 
 	return (
 		<div className="settingsPane">
-			<div className="settingsHero">
-				<div>
-					<h2>Daily Notes</h2>
-					<p className="settingsHint">
-						Configure where daily notes are stored in your vault.
-					</p>
-				</div>
-				<div className="settingsBadge">Notes</div>
-			</div>
+			<h2>Daily Notes</h2>
 
 			<div className="settingsGrid">
 				<section className="settingsCard">
 					<div className="settingsCardHeader">
 						<div>
 							<div className="settingsCardTitle">Daily Notes Folder</div>
-							<div className="settingsCardHint">
-								Select a folder where daily notes will be created automatically.
-							</div>
 						</div>
 					</div>
 
@@ -93,10 +82,6 @@ export function DailyNotesSettingsPane() {
 						<div className="settingsField">
 							<div>
 								<div className="settingsLabel">Folder Path</div>
-								<div className="settingsHelp">
-									Daily notes will be created as Markdown files named
-									YYYY-MM-DD.md
-								</div>
 							</div>
 							<div className="settingsActions dailyNotesActions">
 								<Button

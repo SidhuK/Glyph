@@ -40,15 +40,7 @@ export function GeneralSettingsPane() {
 
 	return (
 		<div className="settingsPane">
-			<div className="settingsHero">
-				<div>
-					<h2>General</h2>
-					<p className="settingsHint">
-						Core app behavior that is not tied to a specific vault.
-					</p>
-				</div>
-				<div className="settingsBadge">App</div>
-			</div>
+			<h2>General</h2>
 			{error ? <div className="settingsError">{error}</div> : null}
 
 			<div className="settingsGrid">
@@ -56,41 +48,23 @@ export function GeneralSettingsPane() {
 					<div className="settingsCardHeader">
 						<div>
 							<div className="settingsCardTitle">AI Assistant Entry</div>
-							<div className="settingsCardHint">
-								Pick what opens by default in the AI panel.
-							</div>
 						</div>
 					</div>
 
 					<div className="settingsField">
 						<div>
 							<div className="settingsLabel">Default Mode</div>
-							<div className="settingsHelp">
-								Choose between quick creation or direct chat.
-							</div>
 						</div>
-						<div
-							className="settingsSegmented"
-							role="tablist"
+						<select
 							aria-label="AI mode"
+							value={aiAssistantMode}
+							onChange={(event) =>
+								void updateAssistantMode(event.target.value as AiAssistantMode)
+							}
 						>
-							<button
-								type="button"
-								className={aiAssistantMode === "create" ? "active" : ""}
-								onClick={() => void updateAssistantMode("create")}
-								aria-pressed={aiAssistantMode === "create"}
-							>
-								Create
-							</button>
-							<button
-								type="button"
-								className={aiAssistantMode === "chat" ? "active" : ""}
-								onClick={() => void updateAssistantMode("chat")}
-								aria-pressed={aiAssistantMode === "chat"}
-							>
-								Chat
-							</button>
-						</div>
+							<option value="create">Create</option>
+							<option value="chat">Chat</option>
+						</select>
 					</div>
 				</section>
 			</div>

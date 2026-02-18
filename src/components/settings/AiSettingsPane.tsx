@@ -80,12 +80,7 @@ export function AiSettingsPane() {
 
 	return (
 		<div className="settingsPane">
-			<div className="settingsHero">
-				<div>
-					<h2>AI</h2>
-					<p className="settingsHint">Configure your AI provider and model.</p>
-				</div>
-			</div>
+			<h2>AI</h2>
 			{error ? <div className="settingsError">{error}</div> : null}
 
 			<div className="settingsGrid">

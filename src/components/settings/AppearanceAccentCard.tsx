@@ -15,14 +15,13 @@ export function AppearanceAccentCard({
 			<div className="settingsCardHeader">
 				<div>
 					<div className="settingsCardTitle">Accent</div>
-					<div className="settingsCardHint">
-						Choose the highlight color used across interactive UI.
-					</div>
 				</div>
 			</div>
 			<div className="settingsField">
 				<div>
-					<div className="settingsLabel">Palette</div>
+					<label className="settingsLabel" htmlFor="settingsAccent">
+						Palette
+					</label>
 				</div>
 				<div
 					className="settingsAccentRow"

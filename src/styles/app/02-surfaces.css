@@ -2,8 +2,7 @@
    INPUTS - Modern rounded style
    ───────────────────────────────────────────────────────────────────────────── */
 input,
-textarea,
-select {
+textarea {
 	height: var(--input-height);
 	padding: var(--space-2) var(--space-3);
 	font-family: inherit;

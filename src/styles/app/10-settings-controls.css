@@ -13,12 +13,13 @@
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	gap: var(--space-3);
-	padding-top: var(--space-2);
+	gap: 12px;
+	min-height: 42px;
+	padding: 6px 2px;
 }
 
 .settingsField + .settingsField {
-	border-top: 1px solid var(--border-light);
+	border-top: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
 }
 
 .settingsField > div:first-child {
@@ -28,19 +29,16 @@
 }
 
 .settingsField > input,
-.settingsField > select,
 .settingsField > textarea,
 .settingsField .settingsInline > input,
-.settingsField .settingsInline > select,
 .settingsField .settingsInline > textarea {
-	min-width: 160px;
-	max-width: 280px;
+	min-width: 170px;
+	max-width: 320px;
 	width: 100%;
-	min-height: 36px;
+	min-height: 32px;
 }
 
 .settingsField input:focus-visible,
-.settingsField select:focus-visible,
 .settingsField textarea:focus-visible,
 .settingsField button:focus-visible,
 .settingsSegmented button:focus-visible,
@@ -64,16 +62,17 @@
 }
 
 .settingsLabel {
-	min-width: 92px;
-	font-size: var(--text-xs);
-	color: var(--text-tertiary);
-	white-space: nowrap;
+	min-width: 104px;
+	font-size: 12px;
+	font-weight: var(--font-medium);
+	letter-spacing: 0.01em;
+	color: color-mix(in srgb, var(--text-secondary) 90%, var(--text-tertiary));
 }
 
 .settingsValue {
-	font-size: var(--text-xs);
+	font-size: 12px;
 	color: var(--text-secondary);
-	white-space: nowrap;
+	line-height: 1.4;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }
@@ -96,7 +95,7 @@
 
 .settingsList {
 	margin: 0;
-	padding-left: 18px;
+	padding-left: 14px;
 	font-size: var(--text-xs);
 	color: var(--text-secondary);
 }
@@ -107,9 +106,9 @@
 }
 
 .settingsError {
-	margin: 0 0 var(--space-3);
-	padding: 10px;
-	border-radius: var(--radius-lg);
+	margin: 0 0 10px;
+	padding: 8px 10px;
+	border-radius: 8px;
 	border: 1px solid color-mix(in srgb, #ff3b30 30%, var(--border-light));
 	background: color-mix(in srgb, #ff3b30 8%, transparent);
 	color: var(--text-primary);
@@ -117,11 +116,9 @@
 }
 
 .settingsRange {
-	position: relative;
 	display: inline-flex;
 	align-items: center;
 	gap: 8px;
-	padding-top: 14px;
 }
 
 .settingsRange input[type="range"] {
@@ -160,21 +157,8 @@
 }
 
 .settingsRangeHoverValue {
-	position: absolute;
-	top: -6px;
-	right: 0;
 	font-size: 11px;
-	opacity: 0;
-	transform: translateY(2px);
-	transition: opacity var(--transition-fast), transform var(--transition-fast);
-	pointer-events: none;
 	white-space: nowrap;
-}
-
-.settingsRange:hover .settingsRangeHoverValue,
-.settingsRange:focus-within .settingsRangeHoverValue {
-	opacity: 1;
-	transform: translateY(0);
 }
 
 .settingsTextarea {
@@ -210,7 +194,6 @@
 	background: color-mix(in srgb, var(--bg-tertiary) 80%, transparent);
 	border: 1px solid var(--border-light);
 	position: relative;
-	transition: background var(--transition-base), border var(--transition-base);
 }
 
 .settingsToggle span::after {
@@ -222,7 +205,6 @@
 	border-radius: 50%;
 	background: var(--bg-primary);
 	box-shadow: var(--shadow-sm);
-	transition: transform var(--transition-base);
 }
 
 .settingsToggle input:checked + span {
@@ -238,28 +220,23 @@
 .settingsSegmented {
 	display: inline-flex;
 	align-items: center;
-	padding: 3px;
-	border-radius: var(--radius-full);
-	border: 1px solid var(--border-light);
-	background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
-	gap: 4px;
+	padding: 2px;
+	border-radius: 8px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 40%, transparent);
+	gap: 2px;
 }
 
 .settingsSegmented button {
-	min-height: 30px;
+	min-height: 28px;
 	padding: 0 10px;
-	border-radius: var(--radius-full);
+	border-radius: 6px;
 	font-size: 11px;
 	color: var(--text-secondary);
 }
 
-.settingsSegmented button:hover {
-	transform: none;
-}
-
 .settingsSegmented button.active {
 	background: var(--bg-primary);
-	box-shadow: var(--shadow-sm);
 	color: var(--text-primary);
 }
 
@@ -280,10 +257,6 @@
 	background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
 	font-size: 9px;
 	text-transform: capitalize;
-}
-
-.settingsSwatch:hover {
-	transform: none;
 }
 
 .settingsSwatch span {

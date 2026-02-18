@@ -11,8 +11,7 @@
 	align-items: center;
 }
 
-.modelComboboxInputWrap > input,
-.modelComboboxInputWrap > select {
+.modelComboboxInputWrap > input {
 	width: 100%;
 	padding-right: 70px;
 }
@@ -165,17 +164,6 @@
 	color: #34c759;
 	font-size: var(--text-xs);
 	text-align: center;
-	animation: keySavedFade 3s ease-out forwards;
-}
-
-@keyframes keySavedFade {
-	0%,
-	70% {
-		opacity: 1;
-	}
-	100% {
-		opacity: 0;
-	}
 }
 
 /* Active pill color */
