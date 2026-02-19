@@ -19,6 +19,30 @@ interface SearchPaneProps {
 
 const springTransition = springPresets.bouncy;
 
+function HighlightedSnippet({ snippet }: { snippet: string }) {
+	const parts = snippet.split(/([⟦⟧])/);
+	const out: ReactNode[] = [];
+	let inMark = false;
+	let partIndex = 0;
+	for (const p of parts) {
+		if (!p) continue;
+		if (p === "⟦") {
+			inMark = true;
+			continue;
+		}
+		if (p === "⟧") {
+			inMark = false;
+			continue;
+		}
+		out.push(
+			<Fragment key={`snippet-${partIndex++}`}>
+				{inMark ? <mark>{p}</mark> : p}
+			</Fragment>,
+		);
+	}
+	return <>{out}</>;
+}
+
 export const SearchPane = memo(function SearchPane({
 	query,
 	results,
@@ -35,30 +59,6 @@ export const SearchPane = memo(function SearchPane({
 	);
 
 	const showResults = query.trim().length > 0;
-
-	const renderSnippet = useCallback((snippet: string) => {
-		const parts = snippet.split(/([⟦⟧])/);
-		const out: ReactNode[] = [];
-		let inMark = false;
-		let partIndex = 0;
-		for (const p of parts) {
-			if (!p) continue;
-			if (p === "⟦") {
-				inMark = true;
-				continue;
-			}
-			if (p === "⟧") {
-				inMark = false;
-				continue;
-			}
-			out.push(
-				<Fragment key={`snippet-${partIndex++}`}>
-					{inMark ? <mark>{p}</mark> : p}
-				</Fragment>,
-			);
-		}
-		return out;
-	}, []);
 
 	return (
 		<m.section
@@ -173,7 +173,7 @@ export const SearchPane = memo(function SearchPane({
 											{r.title || "Untitled"}
 										</div>
 										<div className="searchResultSnippet">
-											{renderSnippet(r.snippet)}
+											<HighlightedSnippet snippet={r.snippet} />
 										</div>
 									</m.button>
 								</m.li>

@@ -3,7 +3,6 @@ import { invoke as tauriInvoke } from "@tauri-apps/api/core";
 export type {
 	CanvasEdge,
 	CanvasNode,
-	CanvasNodeData,
 	FileCanvasNode,
 	FileNodeData,
 	FolderCanvasNode,
@@ -18,7 +17,6 @@ export type {
 	TextNodeData,
 } from "./canvasFlowTypes";
 export {
-	isFileNode,
 	isFolderNode,
 	isFrameNode,
 	isLinkNode,

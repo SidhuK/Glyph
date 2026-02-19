@@ -28,6 +28,129 @@ interface FileTreePaneProps {
 
 const springTransition = springPresets.bouncy;
 
+interface TreeEntriesProps {
+	entries: FsEntry[];
+	parentDepth: number;
+	childrenByDir: Record<string, FsEntry[] | undefined>;
+	expandedDirs: Set<string>;
+	activeFilePath: string | null;
+	activeDirPath: string | null;
+	renamingPath: string | null;
+	onToggleDir: (dirPath: string) => void;
+	onSelectDir: (dirPath: string) => void;
+	onOpenFile: (filePath: string) => void;
+	onNewFileInDir: (dirPath: string) => void;
+	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
+	onDeletePath: (path: string, kind: "dir" | "file") => Promise<void>;
+	onStartRename: (path: string) => void;
+	onCommitDirRename: (dirPath: string, nextName: string) => Promise<void>;
+	onCommitFileRename: (path: string, nextName: string) => Promise<void>;
+	onCancelRename: () => void;
+}
+
+function TreeEntries({
+	entries,
+	parentDepth,
+	childrenByDir,
+	expandedDirs,
+	activeFilePath,
+	activeDirPath,
+	renamingPath,
+	onToggleDir,
+	onSelectDir,
+	onOpenFile,
+	onNewFileInDir,
+	onNewFolderInDir,
+	onDeletePath,
+	onStartRename,
+	onCommitDirRename,
+	onCommitFileRename,
+	onCancelRename,
+}: TreeEntriesProps) {
+	if (entries.length === 0) return null;
+	const listDepth = parentDepth + 1;
+	const listStyle = {
+		"--tree-depth": listDepth,
+		"--tree-line-x": `${listDepth * 10 + 6}px`,
+		"--tree-line-opacity": listDepth === 0 ? 0 : 0.85,
+	} as CSSProperties;
+
+	return (
+		<ul className="fileTreeList" style={listStyle}>
+			{entries.map((e) => {
+				const isDir = e.kind === "dir";
+				const depth = parentDepth + 1;
+				const rowKey =
+					e.rel_path.trim() || `${e.kind}:${e.name.trim()}:${depth}`;
+
+				if (isDir) {
+					const isExpanded = expandedDirs.has(e.rel_path);
+					const children = childrenByDir[e.rel_path];
+
+					return (
+						<FileTreeDirItem
+							key={rowKey}
+							entry={e}
+							depth={depth}
+							isExpanded={isExpanded}
+							isActive={e.rel_path === activeDirPath}
+							isRenaming={renamingPath === e.rel_path}
+							onToggleDir={onToggleDir}
+							onSelectDir={onSelectDir}
+							onNewFileInDir={onNewFileInDir}
+							onNewFolderInDir={onNewFolderInDir}
+							onDeletePath={onDeletePath}
+							onStartRename={() => onStartRename(e.rel_path)}
+							onCommitRename={onCommitDirRename}
+							onCancelRename={onCancelRename}
+						>
+							{children && (
+								<TreeEntries
+									entries={children}
+									parentDepth={depth}
+									childrenByDir={childrenByDir}
+									expandedDirs={expandedDirs}
+									activeFilePath={activeFilePath}
+									activeDirPath={activeDirPath}
+									renamingPath={renamingPath}
+									onToggleDir={onToggleDir}
+									onSelectDir={onSelectDir}
+									onOpenFile={onOpenFile}
+									onNewFileInDir={onNewFileInDir}
+									onNewFolderInDir={onNewFolderInDir}
+									onDeletePath={onDeletePath}
+									onStartRename={onStartRename}
+									onCommitDirRename={onCommitDirRename}
+									onCommitFileRename={onCommitFileRename}
+									onCancelRename={onCancelRename}
+								/>
+							)}
+						</FileTreeDirItem>
+					);
+				}
+
+				return (
+					<FileTreeFileItem
+						key={rowKey}
+						entry={e}
+						depth={depth}
+						isActive={e.rel_path === activeFilePath}
+						onOpenFile={onOpenFile}
+						onNewFileInDir={onNewFileInDir}
+						onNewFolderInDir={onNewFolderInDir}
+						isRenaming={renamingPath === e.rel_path}
+						onStartRename={() => onStartRename(e.rel_path)}
+						onCommitRename={onCommitFileRename}
+						onCancelRename={onCancelRename}
+						parentDirPath={parentDir(e.rel_path)}
+						onDeletePath={onDeletePath}
+					/>
+				);
+			})}
+		</ul>
+	);
+}
+
 export const FileTreePane = memo(function FileTreePane({
 	rootEntries,
 	childrenByDir,
@@ -50,6 +173,7 @@ export const FileTreePane = memo(function FileTreePane({
 			if (created) {
 				setRenamingPath(created);
 			}
+			return created;
 		},
 		[onNewFolderInDir],
 	);
@@ -89,71 +213,6 @@ export const FileTreePane = memo(function FileTreePane({
 		[onDeletePath],
 	);
 
-	const renderEntries = (entries: FsEntry[], parentDepth: number) => {
-		if (entries.length === 0) return null;
-		const listDepth = parentDepth + 1;
-		const listStyle = {
-			"--tree-depth": listDepth,
-			"--tree-line-x": `${listDepth * 10 + 6}px`,
-			"--tree-line-opacity": listDepth === 0 ? 0 : 0.85,
-		} as CSSProperties;
-
-		return (
-			<ul className="fileTreeList" style={listStyle}>
-				{entries.map((e) => {
-					const isDir = e.kind === "dir";
-					const depth = parentDepth + 1;
-					const rowKey =
-						e.rel_path.trim() || `${e.kind}:${e.name.trim()}:${depth}`;
-
-					if (isDir) {
-						const isExpanded = expandedDirs.has(e.rel_path);
-						const children = childrenByDir[e.rel_path];
-
-						return (
-							<FileTreeDirItem
-								key={rowKey}
-								entry={e}
-								depth={depth}
-								isExpanded={isExpanded}
-								isActive={e.rel_path === activeDirPath}
-								isRenaming={renamingPath === e.rel_path}
-								onToggleDir={onToggleDir}
-								onSelectDir={onSelectDir}
-								onNewFileInDir={onNewFileInDir}
-								onNewFolderInDir={handleCreateFolder}
-								onDeletePath={handleDeletePath}
-								onStartRename={() => setRenamingPath(e.rel_path)}
-								onCommitRename={handleCommitDirRename}
-								onCancelRename={() => setRenamingPath(null)}
-							>
-								{children && renderEntries(children, depth)}
-							</FileTreeDirItem>
-						);
-					}
-
-					return (
-						<FileTreeFileItem
-							key={rowKey}
-							entry={e}
-							depth={depth}
-							isActive={e.rel_path === activeFilePath}
-							onOpenFile={onOpenFile}
-							onNewFileInDir={onNewFileInDir}
-							onNewFolderInDir={handleCreateFolder}
-							isRenaming={renamingPath === e.rel_path}
-							onStartRename={() => setRenamingPath(e.rel_path)}
-							onCommitRename={handleCommitFileRename}
-							onCancelRename={() => setRenamingPath(null)}
-							parentDirPath={parentDir(e.rel_path)}
-							onDeletePath={handleDeletePath}
-						/>
-					);
-				})}
-			</ul>
-		);
-	};
-
 	return (
 		<m.aside
 			className="fileTreePane"
@@ -162,7 +221,27 @@ export const FileTreePane = memo(function FileTreePane({
 			transition={springTransition}
 		>
 			{rootEntries.length ? (
-				<div className="fileTreeScroll">{renderEntries(rootEntries, -1)}</div>
+				<div className="fileTreeScroll">
+					<TreeEntries
+						entries={rootEntries}
+						parentDepth={-1}
+						childrenByDir={childrenByDir}
+						expandedDirs={expandedDirs}
+						activeFilePath={activeFilePath}
+						activeDirPath={activeDirPath}
+						renamingPath={renamingPath}
+						onToggleDir={onToggleDir}
+						onSelectDir={onSelectDir}
+						onOpenFile={onOpenFile}
+						onNewFileInDir={onNewFileInDir}
+						onNewFolderInDir={handleCreateFolder}
+						onDeletePath={handleDeletePath}
+						onStartRename={setRenamingPath}
+						onCommitDirRename={handleCommitDirRename}
+						onCommitFileRename={handleCommitFileRename}
+						onCancelRename={() => setRenamingPath(null)}
+					/>
+				</div>
 			) : (
 				<m.div
 					className="fileTreeEmpty"

@@ -8,7 +8,7 @@ import {
 	useContext,
 	useEffect,
 	useMemo,
-	useState,
+	useReducer,
 } from "react";
 import { useSearch } from "../hooks/useSearch";
 import {
@@ -67,50 +67,129 @@ const UILayoutContext = createContext<UILayoutContextValue | null>(null);
 const AISidebarContext = createContext<AISidebarContextValue | null>(null);
 const SearchUIContext = createContext<SearchUIContextValue | null>(null);
 
+type UIState = {
+	sidebarCollapsed: boolean;
+	sidebarViewMode: "files" | "tags";
+	sidebarWidth: number;
+	paletteOpen: boolean;
+	activePreviewPath: string | null;
+	openMarkdownTabs: string[];
+	activeMarkdownTabPath: string | null;
+	dailyNotesFolder: string | null;
+	aiPanelOpen: boolean;
+	aiPanelWidth: number;
+	aiAssistantMode: AiAssistantMode;
+};
+
+type UIAction =
+	| { type: "setSidebarCollapsed"; value: boolean }
+	| { type: "setSidebarViewMode"; value: "files" | "tags" }
+	| { type: "setSidebarWidth"; value: number }
+	| { type: "setPaletteOpen"; value: boolean }
+	| { type: "setActivePreviewPath"; value: string | null }
+	| { type: "setOpenMarkdownTabs"; value: string[] }
+	| { type: "setActiveMarkdownTabPath"; value: string | null }
+	| { type: "setDailyNotesFolder"; value: string | null }
+	| { type: "setAiPanelOpen"; value: boolean }
+	| { type: "setAiPanelWidth"; value: number }
+	| { type: "setAiAssistantMode"; value: AiAssistantMode }
+	| { type: "onVaultPathChanged"; hasVault: boolean }
+	| {
+			type: "hydrateSettings";
+			aiPanelWidth?: number;
+			aiAssistantMode: AiAssistantMode;
+			dailyNotesFolder: string | null;
+	  };
+
+const initialUIState: UIState = {
+	sidebarCollapsed: true,
+	sidebarViewMode: "files",
+	sidebarWidth: 260,
+	paletteOpen: false,
+	activePreviewPath: null,
+	openMarkdownTabs: [],
+	activeMarkdownTabPath: null,
+	dailyNotesFolder: null,
+	aiPanelOpen: false,
+	aiPanelWidth: 380,
+	aiAssistantMode: "create",
+};
+
+function uiReducer(state: UIState, action: UIAction): UIState {
+	switch (action.type) {
+		case "setSidebarCollapsed":
+			return { ...state, sidebarCollapsed: action.value };
+		case "setSidebarViewMode":
+			return { ...state, sidebarViewMode: action.value };
+		case "setSidebarWidth":
+			return { ...state, sidebarWidth: action.value };
+		case "setPaletteOpen":
+			return { ...state, paletteOpen: action.value };
+		case "setActivePreviewPath":
+			return { ...state, activePreviewPath: action.value };
+		case "setOpenMarkdownTabs":
+			return { ...state, openMarkdownTabs: action.value };
+		case "setActiveMarkdownTabPath":
+			return { ...state, activeMarkdownTabPath: action.value };
+		case "setDailyNotesFolder":
+			return { ...state, dailyNotesFolder: action.value };
+		case "setAiPanelOpen":
+			return { ...state, aiPanelOpen: action.value };
+		case "setAiPanelWidth":
+			return { ...state, aiPanelWidth: action.value };
+		case "setAiAssistantMode":
+			return { ...state, aiAssistantMode: action.value };
+		case "onVaultPathChanged":
+			return action.hasVault
+				? { ...state, sidebarCollapsed: false }
+				: { ...state, openMarkdownTabs: [], activeMarkdownTabPath: null };
+		case "hydrateSettings":
+			return {
+				...state,
+				aiPanelWidth: action.aiPanelWidth ?? state.aiPanelWidth,
+				aiAssistantMode: action.aiAssistantMode,
+				dailyNotesFolder: action.dailyNotesFolder,
+			};
+		default:
+			return state;
+	}
+}
+
 export function UIProvider({ children }: { children: ReactNode }) {
 	const { vaultPath } = useVault();
-
-	const [sidebarCollapsed, setSidebarCollapsed] = useState(true);
-	const [sidebarViewMode, setSidebarViewMode] = useState<"files" | "tags">(
-		"files",
-	);
-	const [sidebarWidth, setSidebarWidth] = useState(260);
-	const [paletteOpen, setPaletteOpen] = useState(false);
-	const [activePreviewPath, setActivePreviewPathState] = useState<
-		string | null
-	>(null);
-	const [openMarkdownTabs, setOpenMarkdownTabs] = useState<string[]>([]);
-	const [activeMarkdownTabPath, setActiveMarkdownTabPath] = useState<
-		string | null
-	>(null);
-	const [dailyNotesFolder, setDailyNotesFolderState] = useState<string | null>(
-		null,
-	);
-
-	const [aiPanelOpen, setAiPanelOpen] = useState(false);
-	const [aiPanelWidth, setAiPanelWidthState] = useState(380);
-	const [aiAssistantMode, setAiAssistantModeState] =
-		useState<AiAssistantMode>("create");
+	const [state, dispatch] = useReducer(uiReducer, initialUIState);
+	const {
+		sidebarCollapsed,
+		sidebarViewMode,
+		sidebarWidth,
+		paletteOpen,
+		activePreviewPath,
+		openMarkdownTabs,
+		activeMarkdownTabPath,
+		dailyNotesFolder,
+		aiPanelOpen,
+		aiPanelWidth,
+		aiAssistantMode,
+	} = state;
 
 	useEffect(() => {
-		if (vaultPath) setSidebarCollapsed(false);
-		if (!vaultPath) {
-			setOpenMarkdownTabs([]);
-			setActiveMarkdownTabPath(null);
-		}
+		dispatch({ type: "onVaultPathChanged", hasVault: Boolean(vaultPath) });
 	}, [vaultPath]);
 
 	useTauriEvent("settings:updated", (payload) => {
 		const nextMode = payload.ui?.aiAssistantMode;
 		if (nextMode === "chat" || nextMode === "create") {
-			setAiAssistantModeState(nextMode);
+			dispatch({ type: "setAiAssistantMode", value: nextMode });
 		}
 		const nextWidth = payload.ui?.aiSidebarWidth;
 		if (typeof nextWidth === "number" && Number.isFinite(nextWidth)) {
-			setAiPanelWidthState(nextWidth);
+			dispatch({ type: "setAiPanelWidth", value: nextWidth });
 		}
 		if (payload.dailyNotes && "folder" in payload.dailyNotes) {
-			setDailyNotesFolderState(payload.dailyNotes.folder ?? null);
+			dispatch({
+				type: "setDailyNotesFolder",
+				value: payload.dailyNotes.folder ?? null,
+			});
 		}
 	});
 
@@ -120,11 +199,15 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			try {
 				const s = await loadSettings();
 				if (cancelled) return;
-				if (typeof s.ui.aiSidebarWidth === "number") {
-					setAiPanelWidthState(s.ui.aiSidebarWidth);
-				}
-				setAiAssistantModeState(s.ui.aiAssistantMode);
-				setDailyNotesFolderState(s.dailyNotes?.folder ?? null);
+				dispatch({
+					type: "hydrateSettings",
+					aiPanelWidth:
+						typeof s.ui.aiSidebarWidth === "number"
+							? s.ui.aiSidebarWidth
+							: undefined,
+					aiAssistantMode: s.ui.aiAssistantMode,
+					dailyNotesFolder: s.dailyNotes?.folder ?? null,
+				});
 			} catch {
 				// best-effort settings hydration
 			}
@@ -160,7 +243,10 @@ export function UIProvider({ children }: { children: ReactNode }) {
 				if (cancelled) return;
 				const s = await loadSettings();
 				if (cancelled) return;
-				setDailyNotesFolderState(s.dailyNotes?.folder ?? null);
+				dispatch({
+					type: "setDailyNotesFolder",
+					value: s.dailyNotes?.folder ?? null,
+				});
 			} catch {
 				// best-effort settings refresh
 			}
@@ -171,14 +257,54 @@ export function UIProvider({ children }: { children: ReactNode }) {
 	}, [vaultPath]);
 
 	const setAiPanelWidth = useCallback((width: number) => {
-		setAiPanelWidthState(width);
+		dispatch({ type: "setAiPanelWidth", value: width });
 		void saveAiSidebarWidth(width);
 	}, []);
 
 	const setAiAssistantMode = useCallback((mode: AiAssistantMode) => {
-		setAiAssistantModeState(mode);
+		dispatch({ type: "setAiAssistantMode", value: mode });
 		void saveAiAssistantMode(mode);
 	}, []);
+
+	const setSidebarCollapsed = useCallback(
+		(collapsed: boolean) =>
+			dispatch({ type: "setSidebarCollapsed", value: collapsed }),
+		[],
+	);
+	const setSidebarViewMode = useCallback(
+		(mode: "files" | "tags") =>
+			dispatch({ type: "setSidebarViewMode", value: mode }),
+		[],
+	);
+	const setSidebarWidth = useCallback(
+		(width: number) => dispatch({ type: "setSidebarWidth", value: width }),
+		[],
+	);
+	const setPaletteOpen = useCallback(
+		(open: boolean) => dispatch({ type: "setPaletteOpen", value: open }),
+		[],
+	);
+	const setOpenMarkdownTabs = useCallback(
+		(next: SetStateAction<string[]>) =>
+			dispatch({
+				type: "setOpenMarkdownTabs",
+				value: typeof next === "function" ? next(state.openMarkdownTabs) : next,
+			}),
+		[state.openMarkdownTabs],
+	);
+	const setActiveMarkdownTabPath = useCallback(
+		(path: string | null) =>
+			dispatch({ type: "setActiveMarkdownTabPath", value: path }),
+		[],
+	);
+	const setAiPanelOpen = useCallback(
+		(next: SetStateAction<boolean>) =>
+			dispatch({
+				type: "setAiPanelOpen",
+				value: typeof next === "function" ? next(state.aiPanelOpen) : next,
+			}),
+		[state.aiPanelOpen],
+	);
 
 	const {
 		searchQuery,
@@ -193,7 +319,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 	const setActivePreviewPath = useCallback(
 		(path: string | null) => {
 			if (!vaultPath && path) return;
-			setActivePreviewPathState(path);
+			dispatch({ type: "setActivePreviewPath", value: path });
 		},
 		[vaultPath],
 	);
@@ -218,13 +344,19 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		}),
 		[
 			sidebarCollapsed,
+			setSidebarCollapsed,
 			sidebarViewMode,
+			setSidebarViewMode,
 			sidebarWidth,
+			setSidebarWidth,
 			paletteOpen,
+			setPaletteOpen,
 			activePreviewPath,
 			setActivePreviewPath,
 			openMarkdownTabs,
+			setOpenMarkdownTabs,
 			activeMarkdownTabPath,
+			setActiveMarkdownTabPath,
 			dailyNotesFolder,
 		],
 	);
@@ -240,6 +372,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		}),
 		[
 			aiPanelOpen,
+			setAiPanelOpen,
 			aiPanelWidth,
 			setAiPanelWidth,
 			aiAssistantMode,

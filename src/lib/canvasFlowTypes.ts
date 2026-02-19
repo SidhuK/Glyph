@@ -43,13 +43,11 @@ export interface FolderNodeData {
 	[key: string]: unknown;
 }
 
-export type CanvasNodeData = Record<string, unknown>;
-
 type CanvasNodeLegacyProps = {
 	parentNode?: string | null;
 };
 
-export type CanvasNode = Node<CanvasNodeData> & CanvasNodeLegacyProps;
+export type CanvasNode = Node<Record<string, unknown>> & CanvasNodeLegacyProps;
 
 export type NoteCanvasNode = Node<NoteNodeData, "note"> & CanvasNodeLegacyProps;
 export type TextCanvasNode = Node<TextNodeData, "text"> & CanvasNodeLegacyProps;
@@ -70,10 +68,6 @@ export function isNoteNode(n: CanvasNode): n is NoteCanvasNode {
 
 export function isTextNode(n: CanvasNode): n is TextCanvasNode {
 	return n.type === "text";
-}
-
-export function isFileNode(n: CanvasNode): n is FileCanvasNode {
-	return n.type === "file";
 }
 
 export function isLinkNode(n: CanvasNode): n is LinkCanvasNode {

@@ -11,19 +11,15 @@ interface DialogContentProps extends React.HTMLAttributes<HTMLDialogElement> {
 	children: React.ReactNode;
 }
 
-export function Dialog({ open, onOpenChange, children }: DialogProps) {
+export function Dialog({
+	open,
+	onOpenChange: _onOpenChange,
+	children,
+}: DialogProps) {
 	if (!open) return null;
 
 	return createPortal(
-		<div
-			className="commandPaletteBackdrop"
-			onMouseDown={(e) => {
-				if (e.target !== e.currentTarget) return;
-				onOpenChange(false);
-			}}
-		>
-			{children}
-		</div>,
+		<div className="commandPaletteBackdrop">{children}</div>,
 		document.body,
 	);
 }
