@@ -55,13 +55,13 @@
 }
 
 .aiPanel[data-ai-mode="chat"] {
-	--ai-mode-accent: #57cc99;
-	--ai-mode-accent-soft: color-mix(in srgb, #57cc99 14%, transparent);
+	--ai-mode-accent: #014f86;
+	--ai-mode-accent-soft: color-mix(in srgb, #014f86 14%, transparent);
 }
 
 .aiPanel[data-ai-mode="create"] {
-	--ai-mode-accent: #fca311;
-	--ai-mode-accent-soft: color-mix(in srgb, #fca311 14%, transparent);
+	--ai-mode-accent: #c1121f;
+	--ai-mode-accent-soft: color-mix(in srgb, #c1121f 14%, transparent);
 }
 
 .aiPanelHeader {
@@ -888,6 +888,14 @@
 	color: var(--text-primary);
 }
 
+.aiModeMiniOption-chat.active {
+	color: #014f86;
+}
+
+.aiModeMiniOption-create.active {
+	color: #c1121f;
+}
+
 .aiModeMiniOption:disabled {
 	opacity: 0.45;
 }
@@ -900,11 +908,11 @@
 }
 
 .aiModeMiniActive-chat {
-	background: color-mix(in srgb, #57cc99 22%, transparent);
+	background: color-mix(in srgb, #014f86 22%, transparent);
 }
 
 .aiModeMiniActive-create {
-	background: color-mix(in srgb, #fca311 20%, transparent);
+	background: color-mix(in srgb, #c1121f 20%, transparent);
 }
 
 .aiModeMiniText {

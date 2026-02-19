@@ -172,7 +172,11 @@ export function AIComposer({
 									type="button"
 									role="tab"
 									aria-selected={active}
-									className={cn("aiModeMiniOption", active && "active")}
+									className={cn(
+										"aiModeMiniOption",
+										`aiModeMiniOption-${mode.value}`,
+										active && "active",
+									)}
 									title={mode.hint}
 									onClick={() => setAiAssistantMode(mode.value)}
 									disabled={isAwaitingResponse}
