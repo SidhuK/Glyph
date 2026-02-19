@@ -143,6 +143,9 @@
 	scroll-padding: 4px;
 	position: relative;
 	padding-top: 28px;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
 }
 
 .commandPaletteResultCountPill {
@@ -194,8 +197,10 @@
 	flex-direction: column;
 	align-items: flex-start;
 	justify-content: center;
-	gap: 2px;
-	padding: 6px 10px;
+	gap: 4px;
+	padding: 8px 12px;
+	min-height: 52px;
+	border-radius: var(--radius-lg);
 }
 
 .commandPaletteResultContent {
@@ -215,6 +220,7 @@
 .commandPaletteResultSnippet {
 	font-size: var(--text-xs);
 	color: var(--text-tertiary);
+	line-height: var(--leading-snug);
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
