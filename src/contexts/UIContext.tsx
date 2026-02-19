@@ -87,10 +87,10 @@ type UIAction =
 	| { type: "setSidebarWidth"; value: number }
 	| { type: "setPaletteOpen"; value: boolean }
 	| { type: "setActivePreviewPath"; value: string | null }
-	| { type: "setOpenMarkdownTabs"; value: string[] }
+	| { type: "setOpenMarkdownTabs"; value: SetStateAction<string[]> }
 	| { type: "setActiveMarkdownTabPath"; value: string | null }
 	| { type: "setDailyNotesFolder"; value: string | null }
-	| { type: "setAiPanelOpen"; value: boolean }
+	| { type: "setAiPanelOpen"; value: SetStateAction<boolean> }
 	| { type: "setAiPanelWidth"; value: number }
 	| { type: "setAiAssistantMode"; value: AiAssistantMode }
 	| { type: "onVaultPathChanged"; hasVault: boolean }
@@ -128,13 +128,25 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 		case "setActivePreviewPath":
 			return { ...state, activePreviewPath: action.value };
 		case "setOpenMarkdownTabs":
-			return { ...state, openMarkdownTabs: action.value };
+			return {
+				...state,
+				openMarkdownTabs:
+					typeof action.value === "function"
+						? action.value(state.openMarkdownTabs)
+						: action.value,
+			};
 		case "setActiveMarkdownTabPath":
 			return { ...state, activeMarkdownTabPath: action.value };
 		case "setDailyNotesFolder":
 			return { ...state, dailyNotesFolder: action.value };
 		case "setAiPanelOpen":
-			return { ...state, aiPanelOpen: action.value };
+			return {
+				...state,
+				aiPanelOpen:
+					typeof action.value === "function"
+						? action.value(state.aiPanelOpen)
+						: action.value,
+			};
 		case "setAiPanelWidth":
 			return { ...state, aiPanelWidth: action.value };
 		case "setAiAssistantMode":
@@ -288,9 +300,9 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		(next: SetStateAction<string[]>) =>
 			dispatch({
 				type: "setOpenMarkdownTabs",
-				value: typeof next === "function" ? next(state.openMarkdownTabs) : next,
+				value: next,
 			}),
-		[state.openMarkdownTabs],
+		[],
 	);
 	const setActiveMarkdownTabPath = useCallback(
 		(path: string | null) =>
@@ -301,9 +313,9 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		(next: SetStateAction<boolean>) =>
 			dispatch({
 				type: "setAiPanelOpen",
-				value: typeof next === "function" ? next(state.aiPanelOpen) : next,
+				value: next,
 			}),
-		[state.aiPanelOpen],
+		[],
 	);
 
 	const {
