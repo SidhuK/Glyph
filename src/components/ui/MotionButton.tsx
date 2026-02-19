@@ -3,7 +3,7 @@
  */
 
 import { cn } from "@/lib/utils";
-import { type HTMLMotionProps, motion } from "motion/react";
+import { type HTMLMotionProps, m } from "motion/react";
 import { forwardRef } from "react";
 import { springPresets } from "./animations";
 
@@ -27,7 +27,7 @@ export const MotionButton = forwardRef<HTMLButtonElement, MotionButtonProps>(
 			variant === "primary" ? "primary" : variant === "ghost" ? "ghost" : "";
 
 		return (
-			<motion.button
+			<m.button
 				ref={ref}
 				className={cn(baseClass, variantClass, className)}
 				whileHover={{ scale: 1.05, y: -1 }}
@@ -55,7 +55,7 @@ export const MotionIconButton = forwardRef<HTMLButtonElement, IconButtonProps>(
 		const activeClass = active ? "bg-accent text-accent-foreground" : "";
 
 		return (
-			<motion.button
+			<m.button
 				ref={ref}
 				className={cn(sizeClass, activeClass, className)}
 				whileHover={{
@@ -77,7 +77,7 @@ type MotionInputProps = HTMLMotionProps<"input">;
 export const MotionInput = forwardRef<HTMLInputElement, MotionInputProps>(
 	({ className = "", ...props }, ref) => {
 		return (
-			<motion.input
+			<m.input
 				ref={ref}
 				className={className}
 				whileFocus={{

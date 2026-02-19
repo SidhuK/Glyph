@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, m } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Search } from "../Icons";
 import { Dialog, DialogContent, DialogTitle } from "../ui/shadcn/dialog";
@@ -35,9 +35,16 @@ export function CommandPalette({
 	vaultPath,
 	onSelectSearchNote,
 }: CommandPaletteProps) {
-	const [activeTab, setActiveTab] = useState<Tab>(initialTab);
-	const [query, setQuery] = useState("");
-	const [selectedIndex, setSelectedIndex] = useState(0);
+	const [state, setState] = useState<{
+		activeTab: Tab;
+		query: string;
+		selectedIndex: number;
+	}>({
+		activeTab: "commands",
+		query: "",
+		selectedIndex: 0,
+	});
+	const { activeTab, query, selectedIndex } = state;
 	const inputRef = useRef<HTMLInputElement | null>(null);
 	const previousFocusRef = useRef<Element | null>(null);
 	const listRef = useRef<HTMLDivElement | null>(null);
@@ -65,9 +72,11 @@ export function CommandPalette({
 	useEffect(() => {
 		if (!open) return;
 		previousFocusRef.current = document.activeElement;
-		setActiveTab(initialTab);
-		setQuery(initialTab === "search" ? initialQuery : "");
-		setSelectedIndex(0);
+		setState({
+			activeTab: initialTab,
+			query: initialTab === "search" ? initialQuery : "",
+			selectedIndex: 0,
+		});
 		reset();
 		window.requestAnimationFrame(() => inputRef.current?.focus());
 		return () => {
@@ -78,9 +87,11 @@ export function CommandPalette({
 
 	const switchTab = useCallback(
 		(tab: Tab) => {
-			setActiveTab(tab);
-			setQuery(tab === "search" ? initialQuery : "");
-			setSelectedIndex(0);
+			setState({
+				activeTab: tab,
+				query: tab === "search" ? initialQuery : "",
+				selectedIndex: 0,
+			});
 			reset();
 			window.requestAnimationFrame(() => inputRef.current?.focus());
 		},
@@ -88,7 +99,10 @@ export function CommandPalette({
 	);
 
 	useEffect(() => {
-		setSelectedIndex((curr) => Math.min(curr, Math.max(itemCount - 1, 0)));
+		setState((curr) => ({
+			...curr,
+			selectedIndex: Math.min(curr.selectedIndex, Math.max(itemCount - 1, 0)),
+		}));
 	}, [itemCount]);
 
 	useEffect(() => {
@@ -140,14 +154,20 @@ export function CommandPalette({
 		(e: React.KeyboardEvent) => {
 			if (e.key === "ArrowDown") {
 				e.preventDefault();
-				setSelectedIndex((c) =>
-					itemCount ? Math.min(c + 1, itemCount - 1) : 0,
-				);
+				setState((curr) => ({
+					...curr,
+					selectedIndex: itemCount
+						? Math.min(curr.selectedIndex + 1, itemCount - 1)
+						: 0,
+				}));
 				return;
 			}
 			if (e.key === "ArrowUp") {
 				e.preventDefault();
-				setSelectedIndex((c) => (c > 0 ? c - 1 : 0));
+				setState((curr) => ({
+					...curr,
+					selectedIndex: curr.selectedIndex > 0 ? curr.selectedIndex - 1 : 0,
+				}));
 				return;
 			}
 			if (e.key === "Enter") {
@@ -187,7 +207,7 @@ export function CommandPalette({
 									onClick={() => switchTab(tab.id)}
 								>
 									{isActive && (
-										<motion.span
+										<m.span
 											className="commandPaletteTabPill"
 											layoutId="paletteTabPill"
 											transition={springTransition}
@@ -203,7 +223,7 @@ export function CommandPalette({
 				<div className="commandPaletteInputWrapper">
 					<AnimatePresence mode="wait">
 						{activeTab === "search" && (
-							<motion.span
+							<m.span
 								key="search-icon"
 								className="commandPaletteSearchIcon"
 								initial={{ opacity: 0, scale: 0.8 }}
@@ -212,7 +232,7 @@ export function CommandPalette({
 								transition={{ duration: 0.12 }}
 							>
 								<Search size={15} />
-							</motion.span>
+							</m.span>
 						)}
 					</AnimatePresence>
 					<input
@@ -224,7 +244,9 @@ export function CommandPalette({
 								: "Search your notes…"
 						}
 						value={query}
-						onChange={(e) => setQuery(e.target.value)}
+						onChange={(e) =>
+							setState((curr) => ({ ...curr, query: e.target.value }))
+						}
 						autoCorrect="off"
 						autoCapitalize="off"
 						spellCheck={false}
@@ -233,12 +255,14 @@ export function CommandPalette({
 				{activeTab === "search" ? (
 					<CommandSearchFilters
 						request={parsedSearch.request}
-						onChangeQuery={setQuery}
+						onChangeQuery={(nextQuery) =>
+							setState((curr) => ({ ...curr, query: nextQuery }))
+						}
 					/>
 				) : null}
 
 				<AnimatePresence mode="wait">
-					<motion.div
+					<m.div
 						key={activeTab}
 						className="commandPaletteList"
 						ref={listRef}
@@ -259,7 +283,9 @@ export function CommandPalette({
 							<CommandList
 								filtered={filtered}
 								selectedIndex={selectedIndex}
-								onSetSelectedIndex={setSelectedIndex}
+								onSetSelectedIndex={(index) =>
+									setState((curr) => ({ ...curr, selectedIndex: index }))
+								}
 								onRunCommand={runCommand}
 							/>
 						)}
@@ -272,11 +298,13 @@ export function CommandPalette({
 								contentMatches={contentMatches}
 								recentNotes={recentNotes}
 								selectedIndex={selectedIndex}
-								onSetSelectedIndex={setSelectedIndex}
+								onSetSelectedIndex={(index) =>
+									setState((curr) => ({ ...curr, selectedIndex: index }))
+								}
 								onSelectResult={selectSearchResult}
 							/>
 						)}
-					</motion.div>
+					</m.div>
 				</AnimatePresence>
 			</DialogContent>
 		</Dialog>

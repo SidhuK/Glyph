@@ -17,11 +17,8 @@ export function Dialog({ open, onOpenChange, children }: DialogProps) {
 	return createPortal(
 		<div
 			className="commandPaletteBackdrop"
-			onClick={() => onOpenChange(false)}
-			onKeyDown={(e) => {
-				if (e.key !== "Escape" && e.key !== "Enter" && e.key !== " ") return;
-				e.preventDefault();
-				e.stopPropagation();
+			onMouseDown={(e) => {
+				if (e.target !== e.currentTarget) return;
 				onOpenChange(false);
 			}}
 		>
@@ -34,7 +31,7 @@ export function Dialog({ open, onOpenChange, children }: DialogProps) {
 export const DialogContent = forwardRef<HTMLDialogElement, DialogContentProps>(
 	({ children, ...props }, ref) => {
 		return (
-			<dialog ref={ref} open onClick={(e) => e.stopPropagation()} {...props}>
+			<dialog ref={ref} open {...props}>
 				{children}
 			</dialog>
 		);

@@ -23,13 +23,21 @@ export function AiProfileSections({
 	const [profileDraft, setProfileDraft] = useState<AiProfile | null>(
 		activeProfile ? structuredClone(activeProfile) : null,
 	);
-	const [apiKeyDraft, setApiKeyDraft] = useState("");
-	const [secretConfigured, setSecretConfigured] = useState<boolean | null>(
-		null,
-	);
-	const [keySaved, setKeySaved] = useState(false);
-	const [error, setError] = useState("");
-	const [keySavedTimeout, setKeySavedTimeout] = useState<number | null>(null);
+	const [apiState, setApiState] = useState<{
+		apiKeyDraft: string;
+		secretConfigured: boolean | null;
+		keySaved: boolean;
+		error: string;
+		keySavedTimeout: number | null;
+	}>({
+		apiKeyDraft: "",
+		secretConfigured: null,
+		keySaved: false,
+		error: "",
+		keySavedTimeout: null,
+	});
+	const { apiKeyDraft, secretConfigured, keySaved, error, keySavedTimeout } =
+		apiState;
 
 	useEffect(
 		() => () => {
@@ -42,7 +50,7 @@ export function AiProfileSections({
 
 	useEffect(() => {
 		if (!activeProfileId) {
-			setSecretConfigured(null);
+			setApiState((prev) => ({ ...prev, secretConfigured: null }));
 			return;
 		}
 		let cancelled = false;
@@ -51,9 +59,13 @@ export function AiProfileSections({
 				const configured = await invoke("ai_secret_status", {
 					profile_id: activeProfileId,
 				});
-				if (!cancelled) setSecretConfigured(configured);
+				if (!cancelled) {
+					setApiState((prev) => ({ ...prev, secretConfigured: configured }));
+				}
 			} catch {
-				if (!cancelled) setSecretConfigured(null);
+				if (!cancelled) {
+					setApiState((prev) => ({ ...prev, secretConfigured: null }));
+				}
 			}
 		})();
 		return () => {
@@ -72,34 +84,42 @@ export function AiProfileSections({
 
 	const handleSetApiKey = useCallback(async () => {
 		if (!activeProfileId || !apiKeyDraft.trim()) return;
-		setError("");
+		setApiState((prev) => ({ ...prev, error: "" }));
 		try {
 			await invoke("ai_secret_set", {
 				profile_id: activeProfileId,
 				api_key: apiKeyDraft,
 			});
-			setApiKeyDraft("");
-			setSecretConfigured(true);
-			setKeySaved(true);
+			setApiState((prev) => ({
+				...prev,
+				apiKeyDraft: "",
+				secretConfigured: true,
+				keySaved: true,
+			}));
 			if (keySavedTimeout !== null) {
 				window.clearTimeout(keySavedTimeout);
 			}
-			const timeout = window.setTimeout(() => setKeySaved(false), 3000);
-			setKeySavedTimeout(timeout);
+			const timeout = window.setTimeout(() => {
+				setApiState((prev) => ({ ...prev, keySaved: false }));
+			}, 3000);
+			setApiState((prev) => ({ ...prev, keySavedTimeout: timeout }));
 		} catch (e) {
-			setError(errMessage(e));
+			setApiState((prev) => ({ ...prev, error: errMessage(e) }));
 		}
 	}, [activeProfileId, apiKeyDraft, keySavedTimeout]);
 
 	const handleClearApiKey = useCallback(async () => {
 		if (!activeProfileId) return;
-		setError("");
+		setApiState((prev) => ({ ...prev, error: "" }));
 		try {
 			await invoke("ai_secret_clear", { profile_id: activeProfileId });
-			setApiKeyDraft("");
-			setSecretConfigured(false);
+			setApiState((prev) => ({
+				...prev,
+				apiKeyDraft: "",
+				secretConfigured: false,
+			}));
 		} catch (e) {
-			setError(errMessage(e));
+			setApiState((prev) => ({ ...prev, error: errMessage(e) }));
 		}
 	}, [activeProfileId]);
 
@@ -188,6 +208,7 @@ export function AiProfileSections({
 							</label>
 						</div>
 						<AiModelCombobox
+							key={`${profileDraft.id}:${profileDraft.provider}`}
 							profileId={profileDraft.id}
 							provider={profileDraft.provider}
 							value={profileDraft.model}
@@ -256,7 +277,12 @@ export function AiProfileSections({
 								type="password"
 								placeholder="paste key…"
 								value={apiKeyDraft}
-								onChange={(e) => setApiKeyDraft(e.target.value)}
+								onChange={(e) =>
+									setApiState((prev) => ({
+										...prev,
+										apiKeyDraft: e.target.value,
+									}))
+								}
 							/>
 							<button type="button" onClick={() => void handleSetApiKey()}>
 								Save

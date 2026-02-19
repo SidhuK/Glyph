@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, m } from "motion/react";
 import { Fragment, memo, useCallback } from "react";
 import type { ChangeEvent, ReactNode } from "react";
 import type { SearchResult } from "../lib/tauri";
@@ -61,7 +61,7 @@ export const SearchPane = memo(function SearchPane({
 	}, []);
 
 	return (
-		<motion.section
+		<m.section
 			className="searchPane"
 			initial={{ y: -10 }}
 			animate={{ y: 0 }}
@@ -87,14 +87,14 @@ export const SearchPane = memo(function SearchPane({
 				) : null}
 				<AnimatePresence>
 					{isSearching && (
-						<motion.div
+						<m.div
 							className="searchStatus"
 							initial={{ scale: 0.9 }}
 							animate={{ scale: 1 }}
 							exit={{ scale: 0.9 }}
 							transition={springTransition}
 						>
-							<motion.span
+							<m.span
 								animate={{ rotate: 360 }}
 								transition={{
 									duration: 1,
@@ -104,8 +104,8 @@ export const SearchPane = memo(function SearchPane({
 								style={{ display: "inline-block" }}
 							>
 								⟳
-							</motion.span>
-						</motion.div>
+							</m.span>
+						</m.div>
 					)}
 				</AnimatePresence>
 			</div>
@@ -124,7 +124,7 @@ export const SearchPane = memo(function SearchPane({
 
 			<AnimatePresence>
 				{error && (
-					<motion.div
+					<m.div
 						className="searchError"
 						initial={{ height: 0 }}
 						animate={{ height: "auto" }}
@@ -132,13 +132,13 @@ export const SearchPane = memo(function SearchPane({
 						transition={springTransition}
 					>
 						{error}
-					</motion.div>
+					</m.div>
 				)}
 			</AnimatePresence>
 
 			<AnimatePresence mode="wait">
 				{showResults && (
-					<motion.ul
+					<m.ul
 						className="searchResults"
 						initial={{ y: 5 }}
 						animate={{ y: 0 }}
@@ -150,7 +150,7 @@ export const SearchPane = memo(function SearchPane({
 						) : null}
 						<AnimatePresence>
 							{results.map((r, index) => (
-								<motion.li
+								<m.li
 									key={r.id}
 									className="searchResult"
 									initial={{ x: -10 }}
@@ -158,7 +158,7 @@ export const SearchPane = memo(function SearchPane({
 									exit={{ x: -10 }}
 									transition={{ ...springTransition, delay: index * 0.03 }}
 								>
-									<motion.button
+									<m.button
 										type="button"
 										className="searchResultButton"
 										onClick={() => onSelectNote(r.id)}
@@ -175,13 +175,13 @@ export const SearchPane = memo(function SearchPane({
 										<div className="searchResultSnippet">
 											{renderSnippet(r.snippet)}
 										</div>
-									</motion.button>
-								</motion.li>
+									</m.button>
+								</m.li>
 							))}
 						</AnimatePresence>
-					</motion.ul>
+					</m.ul>
 				)}
 			</AnimatePresence>
-		</motion.section>
+		</m.section>
 	);
 });

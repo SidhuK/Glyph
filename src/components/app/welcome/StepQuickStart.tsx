@@ -1,4 +1,4 @@
-import { motion, useReducedMotion } from "motion/react";
+import { m, useReducedMotion } from "motion/react";
 import { FileText, FolderOpen, Search } from "../../Icons";
 
 const quickStartSteps = [
@@ -31,7 +31,7 @@ export function StepQuickStart({ onNext }: StepQuickStartProps) {
 			<div className="welcomeStepTitle">Three things to know</div>
 			<div className="welcomeOnboardingList">
 				{quickStartSteps.map((step, index) => (
-					<motion.div
+					<m.div
 						key={step.title}
 						className="welcomeOnboardingCard"
 						initial={{
@@ -61,10 +61,10 @@ export function StepQuickStart({ onNext }: StepQuickStartProps) {
 						</div>
 						<div className="welcomeOnboardingTitle">{step.title}</div>
 						<div className="welcomeOnboardingBody">{step.description}</div>
-					</motion.div>
+					</m.div>
 				))}
 			</div>
-			<motion.button
+			<m.button
 				type="button"
 				className="welcomeGetStarted"
 				onClick={onNext}
@@ -73,7 +73,7 @@ export function StepQuickStart({ onNext }: StepQuickStartProps) {
 				transition={{ type: "spring", stiffness: 400, damping: 25 }}
 			>
 				Next →
-			</motion.button>
+			</m.button>
 		</div>
 	);
 }

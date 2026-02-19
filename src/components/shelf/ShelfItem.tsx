@@ -1,4 +1,4 @@
-import { motion } from "motion/react";
+import { m } from "motion/react";
 import { memo } from "react";
 import type { FsEntry, RecentEntry } from "../../lib/tauri";
 import { FolderClosed } from "../Icons";
@@ -25,7 +25,7 @@ export const FolderShelfItem = memo(function FolderShelfItem({
 }: FolderShelfItemProps) {
 	return (
 		<li className="folderShelfItem">
-			<motion.button
+			<m.button
 				type="button"
 				className="folderCard"
 				onClick={() => onOpenFolder(folder.rel_path)}
@@ -40,7 +40,7 @@ export const FolderShelfItem = memo(function FolderShelfItem({
 				<span className="folderCardText">
 					<span className="folderCardName">{folder.name}</span>
 				</span>
-			</motion.button>
+			</m.button>
 		</li>
 	);
 });
@@ -73,7 +73,7 @@ export const RecentShelfItem = memo(function RecentShelfItem({
 
 	return (
 		<li className="folderShelfItem">
-			<motion.button
+			<m.button
 				type="button"
 				className="recentFileCard"
 				onClick={handleClick}
@@ -93,7 +93,7 @@ export const RecentShelfItem = memo(function RecentShelfItem({
 						{rel}
 					</span>
 				) : null}
-			</motion.button>
+			</m.button>
 		</li>
 	);
 });

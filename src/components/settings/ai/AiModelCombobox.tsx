@@ -27,13 +27,6 @@ export function AiModelCombobox({
 	const requiresApiKey = providerNeedsApiKey(provider);
 	const canFetchModels = !requiresApiKey || secretConfigured === true;
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: reset cache when profile changes
-	useEffect(() => {
-		setModels(null);
-		setError("");
-		setHasAttemptedFetch(false);
-	}, [profileId, provider]);
-
 	const fetchModels = useCallback(
 		async (force = false) => {
 			if (!force && (models || loading || hasAttemptedFetch)) return;

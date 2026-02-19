@@ -1,4 +1,4 @@
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, m } from "motion/react";
 import { memo } from "react";
 import type { FsEntry, RecentEntry } from "../../lib/tauri";
 import { FolderClosed, RefreshCw } from "../Icons";
@@ -28,7 +28,7 @@ export const FolderShelf = memo(function FolderShelf({
 	onFocusNode,
 }: FolderShelfProps) {
 	return (
-		<motion.section
+		<m.section
 			className="folderShelf"
 			initial={{ y: -6 }}
 			animate={{ y: 0 }}
@@ -91,6 +91,6 @@ export const FolderShelf = memo(function FolderShelf({
 					</ul>
 				</div>
 			</div>
-		</motion.section>
+		</m.section>
 	);
 });

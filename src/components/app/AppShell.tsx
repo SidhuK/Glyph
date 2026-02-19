@@ -599,6 +599,7 @@ export function AppShell() {
 				{error && <div className="appError">{error}</div>}
 			</AnimatePresence>
 			<CommandPalette
+				key={`${paletteInitialTab}:${paletteInitialQuery}`}
 				open={paletteOpen}
 				initialTab={paletteInitialTab}
 				initialQuery={paletteInitialQuery}

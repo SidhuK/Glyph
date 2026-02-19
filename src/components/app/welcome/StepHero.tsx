@@ -1,6 +1,6 @@
 import { AiBrain04Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { motion, useReducedMotion } from "motion/react";
+import { m, useReducedMotion } from "motion/react";
 
 interface StepHeroProps {
 	appName: string | null;
@@ -21,7 +21,7 @@ export function StepHero({ appName, onNext }: StepHeroProps) {
 			<div className="welcomeSubtitle">
 				A simple space for notes and canvases.
 			</div>
-			<motion.button
+			<m.button
 				type="button"
 				className="welcomeGetStarted"
 				onClick={onNext}
@@ -30,7 +30,7 @@ export function StepHero({ appName, onNext }: StepHeroProps) {
 				transition={{ type: "spring", stiffness: 400, damping: 25 }}
 			>
 				Get Started →
-			</motion.button>
+			</m.button>
 		</div>
 	);
 }

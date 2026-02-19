@@ -118,7 +118,7 @@ export interface RecentFile {
 	openedAt: number;
 }
 
-export interface AppSettings {
+interface AppSettings {
 	currentVaultPath: string | null;
 	recentVaults: string[];
 	recentFiles: RecentFile[];
@@ -349,11 +349,5 @@ export async function addRecentFile(
 		...filtered,
 	].slice(0, 20);
 	await store.set(KEYS.recentFiles, next);
-	await store.save();
-}
-
-export async function clearRecentFiles(): Promise<void> {
-	const store = await getStore();
-	await store.set(KEYS.recentFiles, []);
 	await store.save();
 }

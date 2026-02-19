@@ -1,4 +1,4 @@
-import { motion } from "motion/react";
+import { m } from "motion/react";
 import type { CSSProperties } from "react";
 import { memo, useCallback, useState } from "react";
 import type { FsEntry } from "../../lib/tauri";
@@ -100,11 +100,11 @@ export const FileTreePane = memo(function FileTreePane({
 
 		return (
 			<ul className="fileTreeList" style={listStyle}>
-				{entries.map((e, index) => {
+				{entries.map((e) => {
 					const isDir = e.kind === "dir";
 					const depth = parentDepth + 1;
 					const rowKey =
-						e.rel_path.trim() || `${e.kind}:${e.name.trim() || `row-${index}`}`;
+						e.rel_path.trim() || `${e.kind}:${e.name.trim()}:${depth}`;
 
 					if (isDir) {
 						const isExpanded = expandedDirs.has(e.rel_path);
@@ -155,7 +155,7 @@ export const FileTreePane = memo(function FileTreePane({
 	};
 
 	return (
-		<motion.aside
+		<m.aside
 			className="fileTreePane"
 			initial={{ y: 10 }}
 			animate={{ y: 0 }}
@@ -164,15 +164,15 @@ export const FileTreePane = memo(function FileTreePane({
 			{rootEntries.length ? (
 				<div className="fileTreeScroll">{renderEntries(rootEntries, -1)}</div>
 			) : (
-				<motion.div
+				<m.div
 					className="fileTreeEmpty"
 					initial={{ opacity: 0 }}
 					animate={{ opacity: 1 }}
 					transition={{ delay: 0.2 }}
 				>
 					No files found.
-				</motion.div>
+				</m.div>
 			)}
-		</motion.aside>
+		</m.aside>
 	);
 });

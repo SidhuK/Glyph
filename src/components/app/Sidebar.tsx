@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import { memo } from "react";
 import { useUILayoutContext, useVault } from "../../contexts";
 import { SidebarContent } from "./SidebarContent";
@@ -45,7 +45,7 @@ export const Sidebar = memo(function Sidebar({
 	const sidebarState = sidebarCollapsed ? "collapsed" : "expanded";
 
 	return (
-		<motion.aside
+		<m.aside
 			data-slot="sidebar"
 			data-sidebar="sidebar"
 			data-state={sidebarState}
@@ -61,7 +61,7 @@ export const Sidebar = memo(function Sidebar({
 		>
 			<AnimatePresence>
 				{!sidebarCollapsed && (
-					<motion.div
+					<m.div
 						key="sidebar-content"
 						data-slot="sidebar-inner"
 						className="sidebarContentRoot"
@@ -91,9 +91,9 @@ export const Sidebar = memo(function Sidebar({
 							isDailyNoteCreating={isDailyNoteCreating}
 							onOpenTasks={onOpenTasks}
 						/>
-					</motion.div>
+					</m.div>
 				)}
 			</AnimatePresence>
-		</motion.aside>
+		</m.aside>
 	);
 });

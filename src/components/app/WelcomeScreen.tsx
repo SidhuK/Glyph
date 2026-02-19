@@ -1,4 +1,4 @@
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import { useCallback, useState } from "react";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { StepHero } from "./welcome/StepHero";
@@ -41,18 +41,20 @@ export function WelcomeScreen({
 
 	return (
 		<>
-			<div
-				className="mainToolbar"
-				data-tauri-drag-region
-				onMouseDown={onWindowDragMouseDown}
-			>
+			<div className="mainToolbar" data-tauri-drag-region>
+				<div
+					aria-hidden="true"
+					className="mainToolbarDragLayer"
+					data-tauri-drag-region
+					onMouseDown={onWindowDragMouseDown}
+				/>
 				<div className="mainToolbarLeft">
 					<span className="canvasTitle">Launch</span>
 				</div>
 			</div>
 			<div className="welcomeScreen">
 				<div className="welcomeAmbient" aria-hidden="true">
-					<motion.div
+					<m.div
 						className="welcomeOrb welcomeOrbA"
 						animate={
 							reduceMotion
@@ -65,7 +67,7 @@ export function WelcomeScreen({
 							ease: SMOOTH_EASE,
 						}}
 					/>
-					<motion.div
+					<m.div
 						className="welcomeOrb welcomeOrbB"
 						animate={
 							reduceMotion
@@ -98,7 +100,7 @@ export function WelcomeScreen({
 					</AnimatePresence>
 					<div className="welcomeDots">
 						{STEP_LABELS.map((label, i) => (
-							<motion.button
+							<m.button
 								key={label}
 								type="button"
 								className={`welcomeDot ${i === step ? "welcomeDotActive" : ""}`}

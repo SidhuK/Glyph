@@ -1,4 +1,4 @@
-import { motion, useReducedMotion } from "motion/react";
+import { m, useReducedMotion } from "motion/react";
 import { FolderOpen, FolderPlus } from "../../Icons";
 
 interface StepReadyProps {
@@ -41,7 +41,7 @@ export function StepReady({
 			</div>
 			<div className="welcomeReadyActions">
 				{lastVaultPath && (
-					<motion.button
+					<m.button
 						type="button"
 						className="welcomeLaunchPrimary"
 						onClick={() => void onContinueLastVault()}
@@ -51,9 +51,9 @@ export function StepReady({
 					>
 						<FolderOpen size={14} strokeWidth={1.8} />
 						Continue {lastVaultName}
-					</motion.button>
+					</m.button>
 				)}
-				<motion.button
+				<m.button
 					type="button"
 					className="welcomeLaunchSecondary"
 					onClick={onOpenVault}
@@ -63,8 +63,8 @@ export function StepReady({
 				>
 					<FolderOpen size={14} strokeWidth={1.8} />
 					Open Vault
-				</motion.button>
-				<motion.button
+				</m.button>
+				<m.button
 					type="button"
 					className="welcomeLaunchSecondary"
 					onClick={onCreateVault}
@@ -74,7 +74,7 @@ export function StepReady({
 				>
 					<FolderPlus size={14} strokeWidth={1.8} />
 					Create Vault
-				</motion.button>
+				</m.button>
 			</div>
 			{lastVaultPath && (
 				<div className="welcomeVaultPath mono">{lastVaultPath}</div>
@@ -83,7 +83,7 @@ export function StepReady({
 				<div className="welcomeRecents">
 					<div className="welcomeRecentList">
 						{launchRecents.map((p, index) => (
-							<motion.button
+							<m.button
 								key={p}
 								type="button"
 								className="welcomeRecentItem"
@@ -101,7 +101,7 @@ export function StepReady({
 									{p.split("/").pop() ?? p}
 								</span>
 								<span className="welcomeRecentPath mono">{p}</span>
-							</motion.button>
+							</m.button>
 						))}
 					</div>
 				</div>

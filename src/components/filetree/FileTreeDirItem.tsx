@@ -1,6 +1,6 @@
 import { ArrowDown01Icon, ArrowRight01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, m } from "motion/react";
 import type { MouseEvent, ReactNode } from "react";
 import { memo, useEffect, useRef, useState } from "react";
 import type { FsEntry } from "../../lib/tauri";
@@ -110,7 +110,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 				) : (
 					<ContextMenu>
 						<ContextMenuTrigger asChild>
-							<motion.button
+							<m.button
 								type="button"
 								className="fileTreeRow"
 								onClick={() => {
@@ -131,7 +131,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 									className="fileTreeChevron"
 								/>
 								<span className="fileTreeName">{displayDirName}</span>
-							</motion.button>
+							</m.button>
 						</ContextMenuTrigger>
 						<ContextMenuContent className="fileTreeCreateMenu">
 							<ContextMenuItem
@@ -169,7 +169,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 			</div>
 			<AnimatePresence>
 				{isExpanded && children ? (
-					<motion.div
+					<m.div
 						initial={{ height: 0, opacity: 0 }}
 						animate={{ height: "auto", opacity: 1 }}
 						exit={{ height: 0, opacity: 0 }}
@@ -177,7 +177,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 						style={{ overflow: "hidden" }}
 					>
 						{children}
-					</motion.div>
+					</m.div>
 				) : null}
 			</AnimatePresence>
 		</li>

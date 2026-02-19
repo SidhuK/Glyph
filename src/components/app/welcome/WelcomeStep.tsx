@@ -1,4 +1,4 @@
-import { motion, useReducedMotion } from "motion/react";
+import { m, useReducedMotion } from "motion/react";
 import { type ReactNode, useMemo } from "react";
 
 interface WelcomeStepProps {
@@ -32,7 +32,7 @@ export function WelcomeStep({ stepKey, children }: WelcomeStepProps) {
 		: { type: "spring" as const, stiffness: 300, damping: 30 };
 
 	return (
-		<motion.div
+		<m.div
 			key={stepKey}
 			className="welcomeStepContent"
 			variants={variants}
@@ -42,6 +42,6 @@ export function WelcomeStep({ stepKey, children }: WelcomeStepProps) {
 			transition={transition}
 		>
 			{children}
-		</motion.div>
+		</m.div>
 	);
 }

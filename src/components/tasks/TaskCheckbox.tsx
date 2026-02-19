@@ -1,4 +1,4 @@
-import { motion } from "motion/react";
+import { m } from "motion/react";
 import { springPresets } from "../ui/animations";
 
 interface TaskCheckboxProps {
@@ -21,7 +21,7 @@ export function TaskCheckbox({ checked, onChange }: TaskCheckboxProps) {
 				fill="none"
 				aria-hidden="true"
 			>
-				<motion.circle
+				<m.circle
 					cx="9"
 					cy="9"
 					r="7.5"
@@ -34,7 +34,7 @@ export function TaskCheckbox({ checked, onChange }: TaskCheckboxProps) {
 					}}
 					transition={springPresets.snappy}
 				/>
-				<motion.path
+				<m.path
 					d="M6 9.5L8 11.5L12 7"
 					strokeWidth="1.5"
 					strokeLinecap="round"

@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { motion, useReducedMotion } from "motion/react";
+import { m, useReducedMotion } from "motion/react";
 import { Fragment, Suspense, lazy } from "react";
 import { Files, RefreshCw, Save } from "../Icons";
 import { Button } from "../ui/shadcn/button";
@@ -49,24 +49,24 @@ export function AIChatThread({
 					</div>
 				</div>
 			) : null}
-			{messages.map((m, index) => {
-				const text = messageText(m).trim();
+			{messages.map((msg, index) => {
+				const text = messageText(msg).trim();
 				const isPendingAssistant =
-					m.role === "assistant" &&
+					msg.role === "assistant" &&
 					!text &&
 					isAwaitingResponse &&
 					index === messages.length - 1;
 				if (!text && !isPendingAssistant) return null;
 				return (
-					<Fragment key={m.id}>
+					<Fragment key={msg.id}>
 						<div
 							className={cn(
 								"aiChatMsg",
-								m.role === "user" ? "aiChatMsg-user" : "aiChatMsg-assistant",
+								msg.role === "user" ? "aiChatMsg-user" : "aiChatMsg-assistant",
 							)}
 						>
 							{isPendingAssistant ? (
-								<motion.div
+								<m.div
 									className="aiPendingAssistant"
 									initial={
 										shouldReduceMotion
@@ -93,8 +93,8 @@ export function AIChatThread({
 										<span />
 										<span />
 									</div>
-								</motion.div>
-							) : m.role === "assistant" ? (
+								</m.div>
+							) : msg.role === "assistant" ? (
 								<Suspense
 									fallback={<div className="aiChatContent">{text}</div>}
 								>
@@ -103,7 +103,7 @@ export function AIChatThread({
 							) : (
 								<div className="aiChatContent">{text}</div>
 							)}
-							{m.role === "assistant" && text ? (
+							{msg.role === "assistant" && text ? (
 								<div className="aiAssistantActions">
 									<Button
 										type="button"

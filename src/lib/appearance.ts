@@ -11,7 +11,7 @@ const BASE_TEXT_SIZES = {
 	"3xl": 30,
 } as const;
 
-export const UI_ACCENT_COLORS: Record<UiAccent, string> = {
+const UI_ACCENT_COLORS: Record<UiAccent, string> = {
 	neutral: "#2f2f2f",
 	cerulean: "#0081a7",
 	"tropical-teal": "#00afb9",

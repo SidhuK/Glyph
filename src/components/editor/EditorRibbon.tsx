@@ -1,5 +1,5 @@
 import type { Editor } from "@tiptap/core";
-import { motion } from "motion/react";
+import { m } from "motion/react";
 import { memo } from "react";
 import { springPresets } from "../ui/animations";
 import { RibbonLinkPopover } from "./RibbonLinkPopover";
@@ -15,6 +15,34 @@ interface EditorRibbonProps {
 	editor: Editor;
 	canEdit: boolean;
 }
+
+interface RibbonButtonListProps {
+	buttons: RibbonButtonConfig[];
+	canEdit: boolean;
+	onPreventMouseDown: (e: React.MouseEvent) => void;
+}
+
+const RibbonButtonList = memo(function RibbonButtonList({
+	buttons,
+	canEdit,
+	onPreventMouseDown,
+}: RibbonButtonListProps) {
+	return buttons.map((btn) => (
+		<m.button
+			key={btn.title}
+			type="button"
+			className={`ribbonBtn ${btn.isActive?.() ? "active" : ""}`}
+			title={btn.title}
+			disabled={!canEdit}
+			onMouseDown={onPreventMouseDown}
+			onClick={() => canEdit && btn.onClick()}
+			whileTap={{ scale: 0.92 }}
+			transition={springPresets.snappy}
+		>
+			{btn.icon}
+		</m.button>
+	));
+});
 
 export const EditorRibbon = memo(function EditorRibbon({
 	editor,
@@ -38,30 +66,14 @@ export const EditorRibbon = memo(function EditorRibbon({
 		}
 	};
 
-	const renderButtons = (buttons: RibbonButtonConfig[]) =>
-		buttons.map((btn) => (
-			<motion.button
-				key={btn.title}
-				type="button"
-				className={`ribbonBtn ${btn.isActive?.() ? "active" : ""}`}
-				title={btn.title}
-				disabled={!canEdit}
-				onMouseDown={preventMouseDown}
-				onClick={() => canEdit && btn.onClick()}
-				whileTap={{ scale: 0.92 }}
-				transition={springPresets.snappy}
-			>
-				{btn.icon}
-			</motion.button>
-		));
-
 	return (
-		<div
-			className="rfNodeNoteEditorRibbon rfNodeNoteEditorRibbonBottom nodrag nopan nowheel"
-			onMouseDown={preventMouseDown}
-		>
+		<div className="rfNodeNoteEditorRibbon rfNodeNoteEditorRibbonBottom nodrag nopan nowheel">
 			<div className="ribbonGroup">
-				{renderButtons(getFormatButtons(editor, runCommand, focusChain))}
+				<RibbonButtonList
+					buttons={getFormatButtons(editor, runCommand, focusChain)}
+					canEdit={canEdit}
+					onPreventMouseDown={preventMouseDown}
+				/>
 			</div>
 			<span className="ribbonDivider" />
 			<div className="ribbonGroup">
@@ -75,15 +87,27 @@ export const EditorRibbon = memo(function EditorRibbon({
 			</div>
 			<span className="ribbonDivider" />
 			<div className="ribbonGroup">
-				{renderButtons(getHeadingButtons(editor, runCommand, focusChain))}
+				<RibbonButtonList
+					buttons={getHeadingButtons(editor, runCommand, focusChain)}
+					canEdit={canEdit}
+					onPreventMouseDown={preventMouseDown}
+				/>
 			</div>
 			<span className="ribbonDivider" />
 			<div className="ribbonGroup">
-				{renderButtons(getListButtons(editor, runCommand, focusChain))}
+				<RibbonButtonList
+					buttons={getListButtons(editor, runCommand, focusChain)}
+					canEdit={canEdit}
+					onPreventMouseDown={preventMouseDown}
+				/>
 			</div>
 			<span className="ribbonDivider" />
 			<div className="ribbonGroup">
-				{renderButtons(getBlockButtons(editor, runCommand, focusChain))}
+				<RibbonButtonList
+					buttons={getBlockButtons(editor, runCommand, focusChain)}
+					canEdit={canEdit}
+					onPreventMouseDown={preventMouseDown}
+				/>
 			</div>
 		</div>
 	);

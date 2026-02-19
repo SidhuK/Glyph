@@ -2,12 +2,12 @@ import { Fragment } from "react";
 import type { ReactNode } from "react";
 import type { SearchResult } from "../../lib/tauri";
 
-function renderSnippet(snippet: string): ReactNode[] {
+function HighlightedSnippet({ snippet }: { snippet: string }) {
 	const parts = snippet.split(/([⟦⟧])/);
 	const out: ReactNode[] = [];
 	let inMark = false;
-	for (let i = 0; i < parts.length; i++) {
-		const p = parts[i];
+	let cursor = 0;
+	for (const p of parts) {
 		if (!p) continue;
 		if (p === "⟦") {
 			inMark = true;
@@ -17,13 +17,11 @@ function renderSnippet(snippet: string): ReactNode[] {
 			inMark = false;
 			continue;
 		}
-		out.push(
-			<Fragment key={`${i}-${p.slice(0, 8)}`}>
-				{inMark ? <mark>{p}</mark> : p}
-			</Fragment>,
-		);
+		const key = `${cursor}:${p.slice(0, 8)}`;
+		out.push(<Fragment key={key}>{inMark ? <mark>{p}</mark> : p}</Fragment>);
+		cursor += p.length;
 	}
-	return out;
+	return <>{out}</>;
 }
 
 interface SearchResultItemProps {
@@ -40,7 +38,8 @@ export function SearchResultItem({
 	onSelect,
 }: SearchResultItemProps) {
 	return (
-		<div
+		<button
+			type="button"
 			className="commandPaletteItem commandPaletteResultItem"
 			data-selected={isSelected}
 			onMouseEnter={onMouseEnter}
@@ -55,10 +54,10 @@ export function SearchResultItem({
 				</div>
 				<div className="commandPaletteResultSnippet mono">{result.id}</div>
 				<div className="commandPaletteResultSnippet">
-					{renderSnippet(result.snippet)}
+					<HighlightedSnippet snippet={result.snippet} />
 				</div>
 			</div>
-		</div>
+		</button>
 	);
 }
 
@@ -91,8 +90,9 @@ export function SearchResultsList({
 				<>
 					<div className="commandPaletteGroupLabel">Recent</div>
 					{recentNotes.map((r, index) => (
-						<div
+						<button
 							key={r.id}
+							type="button"
 							className="commandPaletteItem"
 							data-selected={index === selectedIndex}
 							onMouseEnter={() => onSetSelectedIndex(index)}
@@ -102,7 +102,7 @@ export function SearchResultsList({
 							}}
 						>
 							<span>{r.title || "Untitled"}</span>
-						</div>
+						</button>
 					))}
 				</>
 			);

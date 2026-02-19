@@ -1,7 +1,7 @@
 import { listen } from "@tauri-apps/api/event";
 import { useEffect, useRef } from "react";
 
-export type TauriEventMap = {
+type TauriEventMap = {
 	"menu:open_vault": undefined;
 	"menu:create_vault": undefined;
 	"menu:close_vault": undefined;

@@ -1,4 +1,4 @@
-import { motion } from "motion/react";
+import { m } from "motion/react";
 import { memo, useEffect, useMemo } from "react";
 import { useVault } from "../../contexts";
 import { formatShortcutPartsForPlatform } from "../../lib/shortcuts/platform";
@@ -179,7 +179,7 @@ export const MainContent = memo(function MainContent({
 									<div className="mainRecentFilesTitle">Recently opened</div>
 									<div className="mainRecentFilesList">
 										{recentFiles.map((file, index) => (
-											<motion.button
+											<m.button
 												key={`${file.vaultPath}:${file.path}`}
 												type="button"
 												className="mainRecentFileItem"
@@ -196,7 +196,7 @@ export const MainContent = memo(function MainContent({
 													{file.path.split("/").pop() ?? file.path}
 												</span>
 												<span className="mainRecentFilePath">{file.path}</span>
-											</motion.button>
+											</m.button>
 										))}
 									</div>
 								</div>

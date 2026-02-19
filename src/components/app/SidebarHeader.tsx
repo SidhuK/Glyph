@@ -24,11 +24,7 @@ export function SidebarHeader({
 				data-tauri-drag-region
 				onMouseDown={onWindowDragMouseDown}
 			/>
-			<div
-				className="sidebarHeader"
-				data-tauri-drag-region
-				onMouseDown={onWindowDragMouseDown}
-			>
+			<div className="sidebarHeader" data-tauri-drag-region>
 				<div className="sidebarActions">
 					<Button
 						type="button"

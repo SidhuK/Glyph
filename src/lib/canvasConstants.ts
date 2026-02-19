@@ -2,6 +2,3 @@
 // 25-node-folder-tiles.css, and 28-node-file.css.
 export const CANVAS_CARD_WIDTH = 208;
 export const CANVAS_CARD_HEIGHT = 260;
-
-export const FOLDER_NODE_WIDTH = CANVAS_CARD_WIDTH;
-export const FOLDER_NODE_HEIGHT = CANVAS_CARD_HEIGHT;

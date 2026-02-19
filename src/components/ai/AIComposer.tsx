@@ -7,7 +7,7 @@ import {
 	StopIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { motion, useReducedMotion } from "motion/react";
+import { m, useReducedMotion } from "motion/react";
 import { useAISidebarContext } from "../../contexts";
 import { FileText, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
@@ -178,7 +178,7 @@ export function AIComposer({
 									disabled={isAwaitingResponse}
 								>
 									{active ? (
-										<motion.span
+										<m.span
 											layoutId="ai-mode-active"
 											className={cn(
 												"aiModeMiniActive",
@@ -242,6 +242,7 @@ export function AIComposer({
 						</div>
 						<div className="aiComposerRight">
 							<ModelSelector
+								key={profiles.activeProfileId ?? "no-profile"}
 								profileId={profiles.activeProfileId}
 								value={profiles.activeProfile?.model ?? ""}
 								provider={profiles.activeProfile?.provider ?? null}

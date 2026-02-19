@@ -99,11 +99,6 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 	const activeNoteTitle = activeNoteId
 		? activeNoteId.split("/").pop() || activeNoteId
 		: null;
-	const memoizedActiveNoteId = useMemo(() => activeNoteId, [activeNoteId]);
-	const memoizedActiveNoteTitle = useMemo(
-		() => activeNoteTitle,
-		[activeNoteTitle],
-	);
 
 	const updateRootEntries = useCallback<
 		FileTreeContextValue["updateRootEntries"]
@@ -149,8 +144,8 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 			updateExpandedDirs,
 			activeFilePath,
 			setActiveFilePath,
-			activeNoteId: memoizedActiveNoteId,
-			activeNoteTitle: memoizedActiveNoteTitle,
+			activeNoteId,
+			activeNoteTitle,
 			tags,
 			tagsError,
 			refreshTags,
@@ -163,8 +158,8 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 			expandedDirs,
 			updateExpandedDirs,
 			activeFilePath,
-			memoizedActiveNoteId,
-			memoizedActiveNoteTitle,
+			activeNoteId,
+			activeNoteTitle,
 			tags,
 			tagsError,
 			refreshTags,

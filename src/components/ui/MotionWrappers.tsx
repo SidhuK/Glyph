@@ -2,7 +2,7 @@
  * Motion utility wrapper components
  */
 
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, m } from "motion/react";
 import type { ReactNode } from "react";
 import { springPresets } from "./animations";
 
@@ -20,7 +20,7 @@ export function MotionTooltip({
 	return (
 		<AnimatePresence>
 			{isVisible && (
-				<motion.div
+				<m.div
 					className={className}
 					initial={{ opacity: 0, y: 5, scale: 0.95 }}
 					animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -28,7 +28,7 @@ export function MotionTooltip({
 					transition={{ duration: 0.15 }}
 				>
 					{content}
-				</motion.div>
+				</m.div>
 			)}
 		</AnimatePresence>
 	);
@@ -45,7 +45,8 @@ export function StaggeredList({
 	className = "",
 	as: Component = "ul",
 }: StaggeredListProps) {
-	const MotionComponent = motion[Component];
+	const MotionComponent =
+		Component === "ul" ? m.ul : Component === "ol" ? m.ol : m.div;
 
 	return (
 		<MotionComponent
@@ -73,14 +74,14 @@ interface FadeInProps {
 
 export function FadeIn({ children, className = "", delay = 0 }: FadeInProps) {
 	return (
-		<motion.div
+		<m.div
 			className={className}
 			initial={{ opacity: 0 }}
 			animate={{ opacity: 1 }}
 			transition={{ duration: 0.3, delay }}
 		>
 			{children}
-		</motion.div>
+		</m.div>
 	);
 }
 
@@ -96,13 +97,13 @@ export function ScaleOnHover({
 	scale = 1.05,
 }: ScaleOnHoverProps) {
 	return (
-		<motion.div
+		<m.div
 			className={className}
 			whileHover={{ scale }}
 			whileTap={{ scale: 0.98 }}
 			transition={springPresets.bouncy}
 		>
 			{children}
-		</motion.div>
+		</m.div>
 	);
 }

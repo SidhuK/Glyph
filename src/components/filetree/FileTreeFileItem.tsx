@@ -1,4 +1,4 @@
-import { motion } from "motion/react";
+import { m } from "motion/react";
 import type { MouseEvent } from "react";
 import { memo, useEffect, useRef, useState } from "react";
 import type { FsEntry } from "../../lib/tauri";
@@ -120,7 +120,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 				) : (
 					<ContextMenu>
 						<ContextMenuTrigger asChild>
-							<motion.button
+							<m.button
 								type="button"
 								className="fileTreeRow"
 								onClick={() => onOpenFile(entry.rel_path)}
@@ -137,7 +137,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 								{extBadge && (
 									<span className="fileTreeExtBadge">{extBadge}</span>
 								)}
-							</motion.button>
+							</m.button>
 						</ContextMenuTrigger>
 						<ContextMenuContent className="fileTreeCreateMenu">
 							<ContextMenuItem

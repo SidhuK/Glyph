@@ -1,10 +1,8 @@
-import { motion } from "motion/react";
+import { m } from "motion/react";
 import { useMemo } from "react";
-import {
-	SHORTCUTS,
-	type ShortcutDefinition,
-	formatShortcutPartsForPlatform,
-} from "../../lib/shortcuts/index";
+import { formatShortcutPartsForPlatform } from "../../lib/shortcuts/platform";
+import { SHORTCUTS } from "../../lib/shortcuts/registry";
+import type { ShortcutDefinition } from "../../lib/shortcuts/registry";
 import { Dialog, DialogContent, DialogTitle } from "../ui/shadcn/dialog";
 
 interface KeyboardShortcutsHelpProps {
@@ -55,7 +53,7 @@ export function KeyboardShortcutsHelp({
 				<DialogTitle>Keyboard Shortcuts</DialogTitle>
 				<div className="keyboardShortcutsContent">
 					{Object.entries(grouped).map(([category, shortcuts]) => (
-						<motion.div
+						<m.div
 							key={category}
 							className="keyboardShortcutsGroup"
 							initial={{ opacity: 0, y: 8 }}
@@ -81,7 +79,7 @@ export function KeyboardShortcutsHelp({
 									</div>
 								))}
 							</div>
-						</motion.div>
+						</m.div>
 					))}
 				</div>
 			</DialogContent>

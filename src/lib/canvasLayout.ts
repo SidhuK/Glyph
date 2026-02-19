@@ -1,9 +1,4 @@
-import {
-	CANVAS_CARD_HEIGHT,
-	CANVAS_CARD_WIDTH,
-	FOLDER_NODE_HEIGHT,
-	FOLDER_NODE_WIDTH,
-} from "./canvasConstants";
+import { CANVAS_CARD_HEIGHT, CANVAS_CARD_WIDTH } from "./canvasConstants";
 
 export const GRID_SIZE = 24;
 export const GRID_GAP = GRID_SIZE * 4;
@@ -34,7 +29,7 @@ export function estimateNodeSize(node: LayoutNode): { w: number; h: number } {
 	const type = node.type ?? "";
 	if (type === "note") return { w: CANVAS_CARD_WIDTH, h: CANVAS_CARD_HEIGHT };
 	if (type === "file") return { w: CANVAS_CARD_WIDTH, h: CANVAS_CARD_HEIGHT };
-	if (type === "folder") return { w: FOLDER_NODE_WIDTH, h: FOLDER_NODE_HEIGHT };
+	if (type === "folder") return { w: CANVAS_CARD_WIDTH, h: CANVAS_CARD_HEIGHT };
 	if (type === "link") return LINK_NODE_SIZE;
 	if (type === "text") return TEXT_NODE_SIZE;
 	if (type === "frame") return FRAME_NODE_SIZE;

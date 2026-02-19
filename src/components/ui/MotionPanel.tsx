@@ -2,7 +2,7 @@
  * Motion-enhanced panel and container components
  */
 
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, m } from "motion/react";
 import type { ReactNode } from "react";
 import { directionVariants, springPresets } from "./animations";
 
@@ -22,7 +22,7 @@ export function MotionListItem({
 	className = "",
 }: MotionListItemProps) {
 	return (
-		<motion.li
+		<m.li
 			className={className}
 			initial={{ x: -10 }}
 			animate={{ x: 0 }}
@@ -38,7 +38,7 @@ export function MotionListItem({
 			onClick={onClick}
 		>
 			{children}
-		</motion.li>
+		</m.li>
 	);
 }
 
@@ -54,13 +54,13 @@ export function MotionPanel({
 	direction = "left",
 }: MotionPanelProps) {
 	return (
-		<motion.div
+		<m.div
 			className={className}
 			{...directionVariants[direction]}
 			transition={springPresets.gentle}
 		>
 			{children}
-		</motion.div>
+		</m.div>
 	);
 }
 
@@ -79,7 +79,7 @@ export function MotionFloatingPanel({
 	return (
 		<AnimatePresence>
 			{isOpen && (
-				<motion.div
+				<m.div
 					className={className}
 					initial={{ scale: 0.95, y: 10 }}
 					animate={{ scale: 1, y: 0 }}
@@ -87,7 +87,7 @@ export function MotionFloatingPanel({
 					transition={springPresets.bouncy}
 				>
 					{children}
-				</motion.div>
+				</m.div>
 			)}
 		</AnimatePresence>
 	);
@@ -105,7 +105,7 @@ export function MotionSidebar({
 	isCollapsed = false,
 }: MotionSidebarProps) {
 	return (
-		<motion.aside
+		<m.aside
 			className={className}
 			initial={{ x: -20 }}
 			animate={{
@@ -115,7 +115,7 @@ export function MotionSidebar({
 			transition={springPresets.gentle}
 		>
 			{children}
-		</motion.aside>
+		</m.aside>
 	);
 }
 
@@ -133,7 +133,7 @@ export function MotionEditorPanel({
 	return (
 		<AnimatePresence>
 			{isOpen && (
-				<motion.aside
+				<m.aside
 					className={className}
 					initial={{ x: 30 }}
 					animate={{ x: 0 }}
@@ -141,7 +141,7 @@ export function MotionEditorPanel({
 					transition={springPresets.gentle}
 				>
 					{children}
-				</motion.aside>
+				</m.aside>
 			)}
 		</AnimatePresence>
 	);
@@ -161,7 +161,7 @@ export function MotionCard({
 	onClick,
 }: MotionCardProps) {
 	return (
-		<motion.div
+		<m.div
 			className={className}
 			layout
 			whileHover={{ y: -4, boxShadow: "var(--shadow-lg)" }}
@@ -173,6 +173,6 @@ export function MotionCard({
 			onClick={onClick}
 		>
 			{children}
-		</motion.div>
+		</m.div>
 	);
 }

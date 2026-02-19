@@ -1,5 +1,5 @@
 import type { Editor } from "@tiptap/core";
-import { motion } from "motion/react";
+import { m } from "motion/react";
 import { useEffect, useState } from "react";
 import { Link2, X } from "../Icons";
 import { springPresets } from "../ui/animations";
@@ -80,7 +80,7 @@ export function RibbonLinkPopover({
 	return (
 		<Popover open={linkOpen} onOpenChange={setLinkOpen}>
 			<PopoverTrigger asChild>
-				<motion.button
+				<m.button
 					type="button"
 					className={`ribbonBtn ${editor.isActive("link") ? "active" : ""}`}
 					title="Link"
@@ -91,7 +91,7 @@ export function RibbonLinkPopover({
 					transition={springPresets.snappy}
 				>
 					<Link2 size={14} />
-				</motion.button>
+				</m.button>
 			</PopoverTrigger>
 			<PopoverContent
 				className="editorLinkPopover"

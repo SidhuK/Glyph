@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, m } from "motion/react";
 import { useState } from "react";
 import { ChevronDown } from "../Icons";
 import { formatToolName } from "./aiPanelConstants";
@@ -92,7 +92,7 @@ export function AIToolTimeline({ events, streaming }: AIToolTimelineProps) {
 	if (events.length === 0) return null;
 
 	return (
-		<motion.div className="aiToolTimelineInline" aria-live="polite">
+		<m.div className="aiToolTimelineInline" aria-live="polite">
 			<AnimatePresence initial={false}>
 				{events.map((event) => {
 					const summary = summarizePayload(event.payload);
@@ -103,7 +103,7 @@ export function AIToolTimeline({ events, streaming }: AIToolTimelineProps) {
 					const detail = detailTextForEvent(event);
 					const isExpanded = expanded[event.id] === true;
 					return (
-						<motion.div
+						<m.div
 							key={event.id}
 							layout
 							initial={{ opacity: 0, y: 8, scale: 0.99 }}
@@ -149,7 +149,7 @@ export function AIToolTimeline({ events, streaming }: AIToolTimelineProps) {
 							{isExpanded && detail ? (
 								<pre className="aiToolDetails">{detail}</pre>
 							) : null}
-						</motion.div>
+						</m.div>
 					);
 				})}
 			</AnimatePresence>
@@ -159,6 +159,6 @@ export function AIToolTimeline({ events, streaming }: AIToolTimelineProps) {
 					Working with tools...
 				</div>
 			) : null}
-		</motion.div>
+		</m.div>
 	);
 }

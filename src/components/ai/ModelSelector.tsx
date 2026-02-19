@@ -63,12 +63,6 @@ export function ModelSelector({
 	> | null>(null);
 	const [secretProfileIds, setSecretProfileIds] = useState<string[]>([]);
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: reset cache when profile changes
-	useEffect(() => {
-		setModels(null);
-		setError("");
-	}, [profileId]);
-
 	useEffect(() => {
 		let cancelled = false;
 		void (async () => {
@@ -100,8 +94,14 @@ export function ModelSelector({
 	const handleOpen = useCallback(() => {
 		setOpen(true);
 		setDetailModelId(null);
+		setModelQuery("");
 		void fetchModels();
 	}, [fetchModels]);
+	const handleClose = useCallback(() => {
+		setOpen(false);
+		setDetailModelId(null);
+		setModelQuery("");
+	}, []);
 	const handleRetry = useCallback(() => {
 		setModels(null);
 		setError("");
@@ -133,12 +133,11 @@ export function ModelSelector({
 			const t = e.target as Node;
 			if (triggerRef.current?.contains(t) || dropdownRef.current?.contains(t))
 				return;
-			setOpen(false);
-			setDetailModelId(null);
+			handleClose();
 		};
 		document.addEventListener("mousedown", handleClick);
 		return () => document.removeEventListener("mousedown", handleClick);
-	}, [open]);
+	}, [open, handleClose]);
 
 	useEffect(() => {
 		if (!open) return;
@@ -155,13 +154,6 @@ export function ModelSelector({
 			c = true;
 		};
 	}, [open]);
-	useEffect(() => {
-		if (open) void fetchModels();
-	}, [open, fetchModels]);
-	useEffect(() => {
-		if (open) setModelQuery("");
-	}, [open]);
-
 	const selectedModel = models?.find((m) => m.id === value);
 	const displayLabel = selectedModel?.name ?? value ?? "Model";
 	const detailModel = detailModelId
@@ -241,7 +233,7 @@ export function ModelSelector({
 				ref={triggerRef}
 				type="button"
 				className={styles.trigger}
-				onClick={() => (open ? setOpen(false) : handleOpen())}
+				onClick={() => (open ? handleClose() : handleOpen())}
 				title={value || "Select model"}
 			>
 				{logoProvider && (
@@ -389,14 +381,15 @@ export function ModelSelector({
 													{truncateLabel(m.name)}
 												</span>
 												{detailAvailable && (
-													<span
+													<button
+														type="button"
 														onMouseDown={handleInfoMouseDown}
 														className={`${styles.infoInline} ${infoActive ? styles.infoInlineActive : ""}`}
 														title="Model info"
 														aria-label="Model info"
 													>
 														<InformationCircle size={14} strokeWidth={1.8} />
-													</span>
+													</button>
 												)}
 											</button>
 										);

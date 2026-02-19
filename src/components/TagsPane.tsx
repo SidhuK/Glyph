@@ -1,6 +1,6 @@
 import { Tag01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { motion } from "motion/react";
+import { m } from "motion/react";
 import { memo, useCallback } from "react";
 import type { TagCount } from "../lib/tauri";
 import { springPresets } from "./ui/animations";
@@ -25,7 +25,7 @@ export const TagsPane = memo(function TagsPane({
 	);
 
 	return (
-		<motion.section
+		<m.section
 			className="tagsPane"
 			initial={{ y: 10 }}
 			animate={{ y: 0 }}
@@ -40,16 +40,13 @@ export const TagsPane = memo(function TagsPane({
 					onClick={onRefresh}
 					title="Refresh tags"
 				>
-					<motion.span
-						whileHover={{ rotate: 180 }}
-						transition={{ duration: 0.3 }}
-					>
+					<m.span whileHover={{ rotate: 180 }} transition={{ duration: 0.3 }}>
 						↻
-					</motion.span>
+					</m.span>
 				</Button>
 			</div>
 			{tags.length ? (
-				<motion.ul
+				<m.ul
 					className="tagsList"
 					initial="hidden"
 					animate="visible"
@@ -61,7 +58,7 @@ export const TagsPane = memo(function TagsPane({
 					{tags.map((t, index) => {
 						const displayTag = t.tag.startsWith("#") ? t.tag.slice(1) : t.tag;
 						return (
-							<motion.li
+							<m.li
 								key={t.tag}
 								className="tagsItem"
 								variants={{
@@ -70,7 +67,7 @@ export const TagsPane = memo(function TagsPane({
 								}}
 								transition={{ ...springTransition, delay: index * 0.015 }}
 							>
-								<motion.button
+								<m.button
 									type="button"
 									className="tagsButton"
 									onClick={() => onClick(t.tag)}
@@ -88,14 +85,14 @@ export const TagsPane = memo(function TagsPane({
 										<span className="tagsName">{displayTag}</span>
 									</span>
 									<span className="tagsCount mono">{t.count}</span>
-								</motion.button>
-							</motion.li>
+								</m.button>
+							</m.li>
 						);
 					})}
-				</motion.ul>
+				</m.ul>
 			) : (
 				<div className="tagsEmpty">No tags found.</div>
 			)}
-		</motion.section>
+		</m.section>
 	);
 });

@@ -1,6 +1,6 @@
 import * as Icons from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { motion } from "motion/react";
+import { m } from "motion/react";
 import {
 	type ComponentProps,
 	useCallback,
@@ -143,7 +143,7 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 								onClick={() => setBucket(item.id)}
 							>
 								{active && (
-									<motion.span
+									<m.span
 										className="tasksBucketPillBg"
 										layoutId="tasksBucketActive"
 										transition={springPresets.snappy}

@@ -1,6 +1,6 @@
 import * as Icons from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { AnimatePresence, motion } from "motion/react";
+import { AnimatePresence, m } from "motion/react";
 import { memo, useCallback } from "react";
 import { toast } from "sonner";
 import {
@@ -147,7 +147,7 @@ export const SidebarContent = memo(function SidebarContent({
 
 				<AnimatePresence mode="wait">
 					{sidebarViewMode === "files" && (
-						<motion.div
+						<m.div
 							key="files"
 							initial={{ x: -20 }}
 							animate={{ x: 0 }}
@@ -169,10 +169,10 @@ export const SidebarContent = memo(function SidebarContent({
 								onRenameDir={onRenameDir}
 								onDeletePath={onDeletePath}
 							/>
-						</motion.div>
+						</m.div>
 					)}
 					{sidebarViewMode === "tags" && (
-						<motion.div
+						<m.div
 							key="tags"
 							initial={{ x: 20 }}
 							animate={{ x: 0 }}
@@ -190,7 +190,7 @@ export const SidebarContent = memo(function SidebarContent({
 									onRefresh={() => void refreshTags()}
 								/>
 							</ScrollArea>
-						</motion.div>
+						</m.div>
 					)}
 				</AnimatePresence>
 			</div>

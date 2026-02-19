@@ -21,8 +21,9 @@ export function CommandList({
 	return (
 		<>
 			{filtered.map((cmd, index) => (
-				<div
+				<button
 					key={cmd.id}
+					type="button"
 					className="commandPaletteItem"
 					data-selected={index === selectedIndex}
 					onMouseEnter={() => onSetSelectedIndex(index)}
@@ -42,7 +43,7 @@ export function CommandList({
 							))}
 						</span>
 					) : null}
-				</div>
+				</button>
 			))}
 		</>
 	);

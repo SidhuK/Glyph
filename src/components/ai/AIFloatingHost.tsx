@@ -1,6 +1,6 @@
 import { AiBrain04Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
+import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import { useAISidebarContext } from "../../contexts";
 import { getShortcutTooltip } from "../../lib/shortcuts";
 import { AIPanel } from "./AIPanel";
@@ -24,7 +24,7 @@ export function AIFloatingHost({
 
 	return (
 		<>
-			<motion.div
+			<m.div
 				className="aiSidebarPanel"
 				style={{ width: isOpen ? panelWidth : 0 }}
 				layout
@@ -37,7 +37,7 @@ export function AIFloatingHost({
 			>
 				<AnimatePresence>
 					{isOpen && (
-						<motion.div
+						<m.div
 							key="ai-panel-content"
 							className="aiSidebarPanelInner"
 							initial={shouldReduceMotion ? false : { opacity: 0 }}
@@ -54,10 +54,10 @@ export function AIFloatingHost({
 								onAttachContextFiles={onAttachContextFiles}
 								width={panelWidth}
 							/>
-						</motion.div>
+						</m.div>
 					)}
 				</AnimatePresence>
-			</motion.div>
+			</m.div>
 			{!isOpen && (
 				<button
 					type="button"

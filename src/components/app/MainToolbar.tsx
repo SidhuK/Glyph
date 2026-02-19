@@ -14,11 +14,13 @@ export function MainToolbar({
 	onToggleAISidebar,
 }: MainToolbarProps) {
 	return (
-		<div
-			className="mainToolbar"
-			data-tauri-drag-region
-			onMouseDown={onWindowDragMouseDown}
-		>
+		<div className="mainToolbar" data-tauri-drag-region>
+			<div
+				aria-hidden="true"
+				className="mainToolbarDragLayer"
+				data-tauri-drag-region
+				onMouseDown={onWindowDragMouseDown}
+			/>
 			<div className="mainToolbarLeft" />
 			<div className="mainToolbarRight">
 				<Button
