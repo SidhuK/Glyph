@@ -50,13 +50,13 @@
 .settingsPane select {
 	-webkit-appearance: none;
 	appearance: none;
-	background-color: #f3f3f4;
-	border: 1px solid #c4c4ca;
+	background-color: var(--bg-secondary);
+	border: 1px solid var(--border-default);
 	border-radius: 10px;
-	color: #2e2e33;
+	color: var(--text-primary);
 	padding: 0 30px 0 10px;
 	height: 30px;
-	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='14' viewBox='0 0 10 14'%3E%3Cpath d='M2 5l3-3 3 3' fill='none' stroke='%231677ff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M2 9l3 3 3-3' fill='none' stroke='%231677ff' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='14' viewBox='0 0 10 14'%3E%3Cpath d='M2 5l3-3 3 3' fill='none' stroke='%23787774' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M2 9l3 3 3-3' fill='none' stroke='%23787774' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 	background-repeat: no-repeat;
 	background-position: right 8px center;
 }
@@ -66,12 +66,12 @@
 .settingsPane select:active {
 	outline: none;
 	box-shadow: none;
-	border-color: #c4c4ca;
+	border-color: var(--border-default);
 }
 
 .settingsHelp {
 	font-size: 10px;
-	color: #6f6f76;
+	color: var(--text-tertiary);
 	white-space: nowrap;
 }
 
@@ -87,7 +87,7 @@
 	font-size: 12px;
 	font-weight: var(--font-medium);
 	letter-spacing: 0.01em;
-	color: #5a5a60;
+	color: var(--text-secondary);
 }
 
 .settingsValue {

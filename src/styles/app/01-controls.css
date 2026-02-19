@@ -25,12 +25,10 @@ button {
 button:hover {
 	background: var(--bg-hover);
 	color: var(--text-primary);
-	transform: translateY(-1px);
 }
 
 button:active {
 	background: var(--bg-active);
-	transform: translateY(0);
 }
 
 button:disabled {

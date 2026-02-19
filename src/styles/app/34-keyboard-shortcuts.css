@@ -10,64 +10,64 @@
 .keyboardShortcutsContent {
 	display: flex;
 	flex-direction: column;
-	gap: 1.25rem;
-	padding-top: 0.5rem;
+	gap: var(--space-5);
+	padding-top: var(--space-2);
 }
 
 .keyboardShortcutsGroup {
 	display: flex;
 	flex-direction: column;
-	gap: 0.5rem;
+	gap: var(--space-2);
 }
 
 .keyboardShortcutsGroupLabel {
-	font-size: 0.75rem;
-	font-weight: 600;
+	font-size: var(--text-xs);
+	font-weight: var(--font-semibold);
 	text-transform: uppercase;
 	letter-spacing: 0.05em;
-	color: var(--text-muted);
-	margin-bottom: 0.25rem;
+	color: var(--text-tertiary);
+	margin-bottom: var(--space-1);
 }
 
 .keyboardShortcutsList {
 	display: flex;
 	flex-direction: column;
-	gap: 0.375rem;
+	gap: 6px;
 }
 
 .keyboardShortcutItem {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	padding: 0.375rem 0;
-	gap: 1rem;
+	padding: 6px 0;
+	gap: var(--space-4);
 }
 
 .keyboardShortcutLabel {
-	font-size: 0.875rem;
-	color: var(--text);
+	font-size: var(--text-base);
+	color: var(--text-primary);
 }
 
 .keyboardShortcutKeys {
 	display: flex;
 	align-items: center;
-	gap: 0.125rem;
+	gap: 2px;
 }
 
 .keyboardShortcutKeys kbd {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	min-width: 1.5rem;
-	height: 1.5rem;
-	padding: 0 0.375rem;
-	font-size: 0.75rem;
+	min-width: 24px;
+	height: 24px;
+	padding: 0 6px;
+	font-size: var(--text-xs);
 	font-family: var(--font-mono);
-	font-weight: 500;
+	font-weight: var(--font-medium);
 	line-height: 1;
-	color: var(--text);
-	background-color: var(--surface-muted);
-	border: 1px solid var(--border-subtle);
-	border-radius: 0.25rem;
-	box-shadow: 0 1px 0 var(--border-subtle);
+	color: var(--text-primary);
+	background-color: var(--bg-tertiary);
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-sm);
+	box-shadow: var(--shadow-sm);
 }

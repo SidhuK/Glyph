@@ -64,6 +64,16 @@
 	--ai-mode-accent-soft: color-mix(in srgb, #c1121f 14%, transparent);
 }
 
+.dark .aiPanel[data-ai-mode="chat"] {
+	--ai-mode-accent: #4aa3ff;
+	--ai-mode-accent-soft: color-mix(in srgb, #4aa3ff 14%, transparent);
+}
+
+.dark .aiPanel[data-ai-mode="create"] {
+	--ai-mode-accent: #ff6b6b;
+	--ai-mode-accent-soft: color-mix(in srgb, #ff6b6b 14%, transparent);
+}
+
 .aiPanelHeader {
 	display: flex;
 	align-items: center;
@@ -894,6 +904,14 @@
 
 .aiModeMiniOption-create.active {
 	color: #c1121f;
+}
+
+.dark .aiModeMiniOption-chat.active {
+	color: #4aa3ff;
+}
+
+.dark .aiModeMiniOption-create.active {
+	color: #ff6b6b;
 }
 
 .aiModeMiniOption:disabled {

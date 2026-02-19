@@ -101,6 +101,18 @@
 	color: #d48800;
 }
 
+.dark .tasksBucketPill[data-bucket="inbox"][data-active="true"] {
+	color: #4aa3ff;
+}
+
+.dark .tasksBucketPill[data-bucket="today"][data-active="true"] {
+	color: #f0c240;
+}
+
+.dark .tasksBucketPill[data-bucket="upcoming"][data-active="true"] {
+	color: #f0a030;
+}
+
 .tasksPinGlyph {
 	width: 10px;
 	height: 10px;
