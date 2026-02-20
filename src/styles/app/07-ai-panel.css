@@ -297,6 +297,77 @@
 	opacity: 0.82;
 }
 
+.aiCitations {
+	margin-top: 6px;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.aiFootnoteRefs {
+	margin-top: 2px;
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.aiFootnoteRef {
+	border: 0;
+	background: transparent;
+	color: var(--interactive-accent);
+	font-size: 11px;
+	line-height: 1;
+	padding: 0;
+	cursor: pointer;
+}
+
+.aiCitationsToggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	width: fit-content;
+	border: 0;
+	background: transparent;
+	color: var(--text-tertiary);
+	font-size: 11px;
+	padding: 0;
+	cursor: pointer;
+}
+
+.aiCitationsChevron {
+	display: inline-flex;
+	transition: transform var(--transition-fast);
+}
+
+.aiCitationsChevron.open {
+	transform: rotate(180deg);
+}
+
+.aiCitationsList {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.aiCitationLink {
+	border: 1px solid color-mix(in srgb, var(--border-light) 70%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 55%, transparent);
+	color: var(--interactive-accent);
+	font-size: 11px;
+	padding: 4px 8px;
+	border-radius: 8px;
+	cursor: pointer;
+	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	text-align: left;
+}
+
+.aiCitationLink:hover {
+	filter: brightness(1.05);
+}
+
 .aiAssistantActionBtn {
 	display: inline-flex;
 	align-items: center;

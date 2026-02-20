@@ -2,6 +2,7 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 import { EditorContent, useEditor } from "@tiptap/react";
 import { useEffect, useRef } from "react";
 import { createEditorExtensions } from "../editor/extensions";
+import { dispatchMarkdownLinkClick } from "../editor/markdown/editorEvents";
 
 interface AIMessageMarkdownProps {
 	markdown: string;
@@ -33,6 +34,14 @@ export function AIMessageMarkdown({ markdown }: AIMessageMarkdownProps) {
 				) {
 					event.preventDefault();
 					void openUrl(href);
+					return true;
+				}
+				if (href && !href.startsWith("#")) {
+					event.preventDefault();
+					dispatchMarkdownLinkClick({
+						href,
+						sourcePath: "",
+					});
 					return true;
 				}
 				return false;

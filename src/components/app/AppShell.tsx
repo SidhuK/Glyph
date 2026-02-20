@@ -164,7 +164,7 @@ export function AppShell() {
 				try {
 					const resolved = await invoke("vault_resolve_markdown_link", {
 						href: detail.href,
-						source_path: detail.sourcePath,
+						sourcePath: detail.sourcePath,
 					});
 					if (resolved) {
 						await fileTree.openFile(resolved);

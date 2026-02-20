@@ -1,7 +1,8 @@
 import { cn } from "@/lib/utils";
 import { m, useReducedMotion } from "motion/react";
-import { Fragment, Suspense, lazy } from "react";
-import { Files, RefreshCw, Save } from "../Icons";
+import { Fragment, Suspense, lazy, useState } from "react";
+import { dispatchMarkdownLinkClick } from "../editor/markdown/editorEvents";
+import { ChevronDown, Files, RefreshCw, Save } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { AIToolTimeline, type ToolTimelineEvent } from "./AIToolTimeline";
 import { messageText } from "./aiPanelConstants";
@@ -25,6 +26,96 @@ interface AIChatThreadProps {
 	onRetry: (index: number) => void;
 }
 
+type CitationItem = {
+	path: string;
+	snippet?: string;
+};
+
+function isMarkdownPath(path: string): boolean {
+	const lower = path.toLowerCase();
+	return lower.endsWith(".md") || lower.endsWith(".markdown");
+}
+
+function parseJsonLoose(value: unknown): unknown {
+	if (typeof value !== "string") return value;
+	const trimmed = value.trim();
+	if (!trimmed) return value;
+	try {
+		const parsed = JSON.parse(trimmed);
+		if (typeof parsed === "string") {
+			const inner = parsed.trim();
+			if (inner.startsWith("{") || inner.startsWith("[")) {
+				try {
+					return JSON.parse(inner);
+				} catch {
+					return parsed;
+				}
+			}
+		}
+		return parsed;
+	} catch {
+		return value;
+	}
+}
+
+function collectFromEntries(entries: unknown[]): CitationItem[] {
+	const out: CitationItem[] = [];
+	for (const entry of entries) {
+		if (!entry || typeof entry !== "object") continue;
+		const rec = entry as Record<string, unknown>;
+		const relPath =
+			typeof rec.rel_path === "string"
+				? rec.rel_path
+				: typeof rec.path === "string"
+					? rec.path
+					: "";
+		if (!relPath || !isMarkdownPath(relPath)) continue;
+		out.push({
+			path: relPath,
+			snippet: typeof rec.snippet === "string" ? rec.snippet : undefined,
+		});
+	}
+	return out;
+}
+
+function extractCitations(events: ToolTimelineEvent[]): CitationItem[] {
+	const byPath = new Map<string, CitationItem>();
+	for (const event of events) {
+		if (event.phase !== "result") continue;
+		let payload = parseJsonLoose(event.payload);
+		if (payload && typeof payload === "object") {
+			const root = payload as Record<string, unknown>;
+			if ("content" in root) payload = parseJsonLoose(root.content);
+		}
+		if (!payload || typeof payload !== "object") continue;
+		const root = payload as Record<string, unknown>;
+		const data =
+			root.payload && typeof root.payload === "object"
+				? (root.payload as Record<string, unknown>)
+				: root;
+		const collected: CitationItem[] = [];
+		if (Array.isArray(data.results)) {
+			collected.push(...collectFromEntries(data.results));
+		}
+		if (Array.isArray(data.files)) {
+			collected.push(...collectFromEntries(data.files));
+		}
+		const singlePath =
+			typeof data.rel_path === "string"
+				? data.rel_path
+				: typeof data.path === "string"
+					? data.path
+					: "";
+		if (singlePath && isMarkdownPath(singlePath)) {
+			collected.push({ path: singlePath });
+		}
+		for (const item of collected) {
+			if (!byPath.has(item.path)) byPath.set(item.path, item);
+		}
+	}
+	return Array.from(byPath.values()).slice(0, 8);
+}
+
 export function AIChatThread({
 	messages,
 	isChatMode,
@@ -38,6 +129,8 @@ export function AIChatThread({
 	onRetry,
 }: AIChatThreadProps) {
 	const shouldReduceMotion = useReducedMotion();
+	const citations = extractCitations(toolTimeline);
+	const [citationsOpen, setCitationsOpen] = useState(false);
 
 	return (
 		<>
@@ -139,6 +232,75 @@ export function AIChatThread({
 									>
 										<RefreshCw size={12} />
 									</Button>
+								</div>
+							) : null}
+							{msg.role === "assistant" &&
+							text &&
+							!isChatMode &&
+							index === messages.length - 1 &&
+							citations.length > 0 ? (
+								<div className="aiFootnoteRefs" aria-label="Footnote citations">
+									{citations.map((item, citationIndex) => (
+										<button
+											key={item.path}
+											type="button"
+											className="aiFootnoteRef"
+											title={item.snippet || item.path}
+											onClick={() =>
+												dispatchMarkdownLinkClick({
+													href: item.path,
+													sourcePath: "",
+												})
+											}
+										>
+											[{citationIndex + 1}]
+										</button>
+									))}
+								</div>
+							) : null}
+							{msg.role === "assistant" &&
+							text &&
+							!isChatMode &&
+							index === messages.length - 1 &&
+							citations.length > 0 ? (
+								<div className="aiCitations" aria-label="Citations">
+									<button
+										type="button"
+										className="aiCitationsToggle"
+										onClick={() => setCitationsOpen((prev) => !prev)}
+										aria-expanded={citationsOpen}
+									>
+										<span>Cited Notes</span>
+										<span
+											className={cn(
+												"aiCitationsChevron",
+												citationsOpen && "open",
+											)}
+											aria-hidden
+										>
+											<ChevronDown size={12} />
+										</span>
+									</button>
+									{citationsOpen ? (
+										<div className="aiCitationsList">
+											{citations.map((item, citationIndex) => (
+												<button
+													key={item.path}
+													type="button"
+													className="aiCitationLink"
+													title={item.snippet || item.path}
+													onClick={() =>
+														dispatchMarkdownLinkClick({
+															href: item.path,
+															sourcePath: "",
+														})
+													}
+												>
+													[{citationIndex + 1}] {item.path}
+												</button>
+											))}
+										</div>
+									) : null}
 								</div>
 							) : null}
 						</div>

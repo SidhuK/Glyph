@@ -378,7 +378,7 @@ interface TauriCommands {
 	vault_relativize_path: CommandDef<{ abs_path: string }, string>;
 	vault_resolve_wikilink: CommandDef<{ target: string }, string | null>;
 	vault_resolve_markdown_link: CommandDef<
-		{ href: string; source_path: string },
+		{ href: string; sourcePath: string },
 		string | null
 	>;
 	vault_suggest_links: CommandDef<
