@@ -29,6 +29,7 @@ use super::{
 };
 
 const TITLE_PREAMBLE: &str = "Generate concise chat titles. Return only a short title (3-6 words), no quotes, no punctuation-heavy output.";
+const CREATE_MODE_DISCIPLINE_PREAMBLE: &str = "Tool discipline for this run: use the minimum number of tool calls needed. Prefer at most 1-2 search/list calls before answering. If a tool returns usable evidence, stop searching and summarize what you found with uncertainty notes rather than continuing to explore.";
 
 fn is_not_chat_model_error(err: &str) -> bool {
     let lower = err.to_lowercase();
@@ -55,7 +56,16 @@ pub async fn run_with_rig(
     vault_root: Option<&Path>,
 ) -> Result<(String, bool, Vec<AiStoredToolEvent>), String> {
     let root = vault_root.ok_or_else(|| "No vault is open".to_string())?;
-    let transcript = build_transcript(system, messages);
+    let effective_system = if matches!(mode, AiAssistantMode::Create) {
+        if system.trim().is_empty() {
+            CREATE_MODE_DISCIPLINE_PREAMBLE.to_string()
+        } else {
+            format!("{CREATE_MODE_DISCIPLINE_PREAMBLE}\n\n{}", system.trim())
+        }
+    } else {
+        system.to_string()
+    };
+    let transcript = build_transcript(&effective_system, messages);
     let tools = ToolBundle::new(root.to_path_buf());
     let caps = capabilities(&profile.provider);
     let max_tokens = if caps.requires_max_tokens {
@@ -102,9 +112,9 @@ pub async fn run_with_rig(
                 agent = agent.max_tokens(v);
             }
             let agent = if matches!(mode, AiAssistantMode::Create) {
-                with_tools(agent.preamble(system), &tools).build()
+                with_tools(agent.preamble(&effective_system), &tools).build()
             } else {
-                agent.preamble(system).build()
+                agent.preamble(&effective_system).build()
             };
             match run_stream(
                 cancel,
@@ -139,9 +149,9 @@ pub async fn run_with_rig(
                 agent = agent.max_tokens(v);
             }
             let agent = if matches!(mode, AiAssistantMode::Create) {
-                with_tools(agent.preamble(system), &tools).build()
+                with_tools(agent.preamble(&effective_system), &tools).build()
             } else {
-                agent.preamble(system).build()
+                agent.preamble(&effective_system).build()
             };
             match run_stream(
                 cancel,
@@ -176,9 +186,9 @@ pub async fn run_with_rig(
                 agent = agent.max_tokens(v);
             }
             let agent = if matches!(mode, AiAssistantMode::Create) {
-                with_tools(agent.preamble(system), &tools).build()
+                with_tools(agent.preamble(&effective_system), &tools).build()
             } else {
-                agent.preamble(system).build()
+                agent.preamble(&effective_system).build()
             };
             run_stream(
                 cancel,
@@ -208,9 +218,9 @@ pub async fn run_with_rig(
                 agent = agent.max_tokens(v);
             }
             let agent = if matches!(mode, AiAssistantMode::Create) {
-                with_tools(agent.preamble(system), &tools).build()
+                with_tools(agent.preamble(&effective_system), &tools).build()
             } else {
-                agent.preamble(system).build()
+                agent.preamble(&effective_system).build()
             };
             run_stream(
                 cancel,
@@ -240,9 +250,9 @@ pub async fn run_with_rig(
                 agent = agent.max_tokens(v);
             }
             let agent = if matches!(mode, AiAssistantMode::Create) {
-                with_tools(agent.preamble(system), &tools).build()
+                with_tools(agent.preamble(&effective_system), &tools).build()
             } else {
-                agent.preamble(system).build()
+                agent.preamble(&effective_system).build()
             };
             run_stream(
                 cancel,
@@ -266,9 +276,9 @@ pub async fn run_with_rig(
                 agent = agent.max_tokens(v);
             }
             let agent = if matches!(mode, AiAssistantMode::Create) {
-                with_tools(agent.preamble(system), &tools).build()
+                with_tools(agent.preamble(&effective_system), &tools).build()
             } else {
-                agent.preamble(system).build()
+                agent.preamble(&effective_system).build()
             };
             run_stream(
                 cancel,
@@ -578,8 +588,8 @@ where
     M: rig::completion::CompletionModel + 'static,
     <M as rig::completion::CompletionModel>::StreamingResponse: rig::wasm_compat::WasmCompatSend,
 {
-    const MAX_TOOL_EVENTS: usize = 24;
-    let mut stream = agent.stream_prompt(prompt).multi_turn(10).await;
+    const MAX_TOOL_EVENTS: usize = 10;
+    let mut stream = agent.stream_prompt(prompt).multi_turn(4).await;
     let mut full = String::new();
     let mut tool_events = Vec::<AiStoredToolEvent>::new();
     let mut tool_name_by_id = HashMap::<String, String>::new();

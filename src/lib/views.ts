@@ -14,7 +14,6 @@ export {
 	NeedsIndexRebuildError,
 	hasViewDocChanged,
 	maxBottomForNodes,
-	normalizeLegacyFrameChildren,
 } from "./views/builders/common";
 
 export {

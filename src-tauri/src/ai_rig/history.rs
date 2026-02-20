@@ -112,20 +112,11 @@ fn list_history_impl(
             Ok(v) => v,
             Err(_) => continue,
         };
-        if history.version != 0 && history.version != HISTORY_VERSION {
+        if history.version != HISTORY_VERSION {
             continue;
         }
 
-        let fallback_job_id = path
-            .file_stem()
-            .and_then(|s| s.to_str())
-            .unwrap_or_default()
-            .to_string();
-        let job_id = if history.job_id.trim().is_empty() {
-            fallback_job_id
-        } else {
-            history.job_id.clone()
-        };
+        let job_id = history.job_id.clone();
         if job_id.trim().is_empty() {
             continue;
         }
@@ -169,7 +160,7 @@ fn get_history_impl(root: &std::path::Path, job_id: &str) -> Result<AiChatHistor
     let path = crate::ai_rig::audit::history_log_path(root, job_id)?;
     let bytes = std::fs::read(&path).map_err(|e| e.to_string())?;
     let history: StoredHistory = serde_json::from_slice(&bytes).map_err(|e| e.to_string())?;
-    if history.version != 0 && history.version != HISTORY_VERSION {
+    if history.version != HISTORY_VERSION {
         return Err("unsupported history version".to_string());
     }
     Ok(AiChatHistoryDetail {

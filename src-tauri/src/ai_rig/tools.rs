@@ -63,9 +63,33 @@ fn is_utf8_text(path: &Path) -> bool {
 }
 
 fn safe_join(root: &Path, rel: &str) -> Result<PathBuf, ToolError> {
-    let rel = PathBuf::from(rel.trim());
+    let normalized = normalize_rel_path(rel)?;
+    let rel = PathBuf::from(normalized);
     deny_hidden_rel_path(&rel)?;
     paths::join_under(root, &rel).map_err(ToolError)
+}
+
+fn normalize_rel_path(raw: &str) -> Result<String, ToolError> {
+    let trimmed = raw.trim().replace('\\', "/");
+    if trimmed.is_empty() || trimmed == "." {
+        return Ok(String::new());
+    }
+
+    let mut out = Vec::<&str>::new();
+    for part in trimmed.split('/') {
+        let p = part.trim();
+        if p.is_empty() || p == "." {
+            continue;
+        }
+        if p == ".." {
+            return Err(ToolError("parent path segments are not accessible".to_string()));
+        }
+        if p.starts_with('.') {
+            return Err(ToolError("hidden paths are not accessible".to_string()));
+        }
+        out.push(p);
+    }
+    Ok(out.join("/"))
 }
 
 fn mtime_ms(meta: &fs::Metadata) -> u64 {

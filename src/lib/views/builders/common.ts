@@ -5,36 +5,6 @@ import { sanitizeEdges, sanitizeNodes } from "../sanitize";
 import type { ViewDoc } from "../types";
 import type { BuildPrimaryResult } from "./buildListViewDoc";
 
-export function normalizeLegacyFrameChildren(
-	nodes: CanvasNode[],
-): CanvasNode[] {
-	const legacyFrames = new Map<string, CanvasNode>();
-	for (const n of nodes) {
-		if (
-			n.type === "frame" &&
-			typeof n.id === "string" &&
-			n.id.startsWith("folder:")
-		)
-			legacyFrames.set(n.id, n);
-	}
-
-	return nodes.map((n) => {
-		const parentNode = n.parentNode ?? null;
-		if (typeof parentNode !== "string") return n;
-		const frame = legacyFrames.get(parentNode);
-		if (!frame) return n;
-		const fp = frame.position ?? { x: 0, y: 0 };
-		const cp = n.position ?? { x: 0, y: 0 };
-		const next: CanvasNode = {
-			...n,
-			position: { x: fp.x + cp.x, y: fp.y + cp.y },
-		};
-		next.parentNode = undefined;
-		next.extent = undefined;
-		return next;
-	});
-}
-
 export function maxBottomForNodes(nodes: CanvasNode[]): number {
 	let maxBottom = 0;
 	for (const node of nodes) {

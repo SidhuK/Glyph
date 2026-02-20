@@ -3,7 +3,6 @@ import { invoke } from "../../tauri";
 import type { ViewDoc, ViewOptions } from "../types";
 import { basename, viewId } from "../utils";
 import { buildListViewDoc } from "./buildListViewDoc";
-import { normalizeLegacyFrameChildren } from "./common";
 
 export async function buildFolderViewDoc(
 	dir: string,
@@ -48,7 +47,6 @@ export async function buildFolderViewDoc(
 		options: { recursive, limit },
 		existing,
 		primaryIds,
-		normalizePrevNodes: normalizeLegacyFrameChildren,
 		buildPrimaryNode({ id, prevNode }) {
 			const folderSummary = folderByNodeId.get(id);
 			if (folderSummary) {

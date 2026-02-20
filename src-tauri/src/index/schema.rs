@@ -3,11 +3,6 @@ use rusqlite::Connection;
 pub fn ensure_schema(conn: &Connection) -> Result<(), String> {
     conn.execute_batch(
         r#"
-CREATE TABLE IF NOT EXISTS meta (
-  key TEXT PRIMARY KEY,
-  value TEXT NOT NULL
-);
-
 CREATE TABLE IF NOT EXISTS notes (
   id TEXT PRIMARY KEY,
   title TEXT NOT NULL,
@@ -89,49 +84,5 @@ CREATE VIRTUAL TABLE IF NOT EXISTS tasks_fts USING fts5(
 );
 "#,
     )
-    .map_err(|e| e.to_string())?;
-
-    let mut has_preview = false;
-    let mut stmt = conn
-        .prepare("PRAGMA table_info(notes)")
-        .map_err(|e| e.to_string())?;
-    let mut rows = stmt.query([]).map_err(|e| e.to_string())?;
-    while let Some(row) = rows.next().map_err(|e| e.to_string())? {
-        let name: String = row.get(1).map_err(|e| e.to_string())?;
-        if name == "preview" {
-            has_preview = true;
-            break;
-        }
-    }
-    if !has_preview {
-        match conn.execute(
-            "ALTER TABLE notes ADD COLUMN preview TEXT NOT NULL DEFAULT ''",
-            [],
-        ) {
-            Ok(_) => {}
-            Err(e) => {
-                let msg = e.to_string().to_lowercase();
-                if !msg.contains("duplicate column") {
-                    return Err(e.to_string());
-                }
-            }
-        }
-    }
-
-    let schema_version: Option<String> = conn
-        .query_row(
-            "SELECT value FROM meta WHERE key = 'schema_version' LIMIT 1",
-            [],
-            |row| row.get(0),
-        )
-        .ok();
-    if schema_version.as_deref() != Some("3") {
-        conn.execute(
-            "INSERT OR REPLACE INTO meta(key, value) VALUES('schema_version', '3')",
-            [],
-        )
-        .map_err(|e| e.to_string())?;
-    }
-
-    Ok(())
+    .map_err(|e| e.to_string())
 }
