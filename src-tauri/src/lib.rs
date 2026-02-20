@@ -15,7 +15,9 @@ use serde::Serialize;
 use tauri::menu::{
     Menu, MenuItem, PredefinedMenuItem, Submenu, HELP_SUBMENU_ID, WINDOW_SUBMENU_ID,
 };
-use tauri::{Emitter, Manager, RunEvent, WindowEvent};
+use tauri::{
+    Emitter, Manager, PhysicalPosition, PhysicalSize, Position, RunEvent, Size, WindowEvent,
+};
 use tracing::warn;
 
 #[cfg(target_os = "macos")]
@@ -190,6 +192,19 @@ pub fn run() {
         })
         .setup(|app| {
             ai_rig::commands::refresh_provider_support_on_startup(app.handle().clone());
+
+            if let Some(window) = app.get_webview_window("main") {
+                if let Ok(Some(monitor)) = window.current_monitor() {
+                    let monitor_size = monitor.size();
+                    let monitor_pos = monitor.position();
+                    let width = ((monitor_size.width as f64) * 0.7).round() as u32;
+                    let height = ((monitor_size.height as f64) * 0.7).round() as u32;
+                    let _ = window.set_size(Size::Physical(PhysicalSize::new(width, height)));
+                    let x = monitor_pos.x + ((monitor_size.width as i32 - width as i32) / 2);
+                    let y = monitor_pos.y + ((monitor_size.height as i32 - height as i32) / 2);
+                    let _ = window.set_position(Position::Physical(PhysicalPosition::new(x, y)));
+                }
+            }
 
             #[cfg(target_os = "macos")]
             {
