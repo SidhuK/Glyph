@@ -41,6 +41,7 @@ export const providerSupportKeyMap: Record<AiProviderKind, string> = {
 	anthropic: "anthropic",
 	gemini: "gemini",
 	ollama: "ollama",
+	codex_chatgpt: "openai",
 };
 
 const endpointLabelMap: Record<string, string> = {

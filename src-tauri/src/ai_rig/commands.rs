@@ -302,7 +302,9 @@ pub async fn ai_chat_start(
         .find(|p| p.id == request.profile_id)
         .cloned()
         .ok_or_else(|| "unknown profile".to_string())?;
-    if profile.model.trim().is_empty() {
+    if profile.model.trim().is_empty()
+        && !matches!(profile.provider, super::types::AiProviderKind::CodexChatgpt)
+    {
         return Err("Model not set for this profile".to_string());
     }
 
@@ -311,6 +313,7 @@ pub async fn ai_chat_start(
 
     tauri::async_runtime::spawn(async move {
         let ai_state_for_task = app_for_task.state::<AiState>();
+        let codex_state = app_for_task.state::<crate::ai_codex::state::CodexState>();
 
         let api_key = vault_root
             .as_deref()
@@ -320,6 +323,7 @@ pub async fn ai_chat_start(
 
         let mut result = run_request(
             &cancel,
+            codex_state.clone(),
             &app_for_task,
             &job_id_for_task,
             &profile,
@@ -328,6 +332,7 @@ pub async fn ai_chat_start(
             &messages,
             &request.mode,
             vault_root.as_deref(),
+            request.thread_id.as_deref(),
         )
         .await;
         if let Err(message) = &result {
@@ -335,6 +340,7 @@ pub async fn ai_chat_start(
                 tokio::time::sleep(std::time::Duration::from_millis(500)).await;
                 result = run_request(
                     &cancel,
+                    codex_state.clone(),
                     &app_for_task,
                     &job_id_for_task,
                     &profile,
@@ -343,6 +349,7 @@ pub async fn ai_chat_start(
                     &messages,
                     &request.mode,
                     vault_root.as_deref(),
+                    request.thread_id.as_deref(),
                 )
                 .await;
             }
@@ -435,6 +442,7 @@ pub async fn ai_chat_history_get(
 
 pub async fn run_request(
     cancel: &CancellationToken,
+    codex_state: State<'_, crate::ai_codex::state::CodexState>,
     app: &AppHandle,
     job_id: &str,
     profile: &AiProfile,
@@ -443,7 +451,18 @@ pub async fn run_request(
     messages: &[AiMessage],
     mode: &AiAssistantMode,
     vault_root: Option<&std::path::Path>,
+    thread_id: Option<&str>,
 ) -> Result<(String, bool, Vec<AiStoredToolEvent>), String> {
+    if matches!(
+        profile.provider,
+        super::types::AiProviderKind::CodexChatgpt
+    ) {
+        return crate::ai_codex::chat::run_with_codex(
+            codex_state, cancel, app, job_id, profile, system, messages, mode, vault_root, thread_id,
+        )
+        .await;
+    }
+
     runtime::run_with_rig(
         cancel, app, job_id, profile, api_key, system, messages, mode, vault_root,
     )

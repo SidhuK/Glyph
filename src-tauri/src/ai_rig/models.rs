@@ -1,5 +1,6 @@
 use tauri::{AppHandle, State};
 
+use crate::ai_codex::{state::CodexState, transport::rpc_call};
 use super::helpers::{apply_extra_headers, http_client, parse_base_url};
 use super::local_secrets;
 use super::store::{ensure_default_profiles, read_store, store_path, write_store};
@@ -280,11 +281,82 @@ async fn list_gemini(
     Ok(models)
 }
 
+fn parse_codex_model_item(value: &serde_json::Value) -> Option<AiModel> {
+    let id = value
+        .get("id")
+        .or_else(|| value.get("model"))
+        .and_then(|v| v.as_str())
+        .map(|s| s.trim().to_string())
+        .filter(|s| !s.is_empty())?;
+    let name = value
+        .get("name")
+        .and_then(|v| v.as_str())
+        .map(|s| s.to_string())
+        .unwrap_or_else(|| id.clone());
+    let context_length = value
+        .get("contextLength")
+        .or_else(|| value.get("context_length"))
+        .and_then(|v| v.as_u64())
+        .and_then(|n| u32::try_from(n).ok());
+    let max_completion_tokens = value
+        .get("maxOutputTokens")
+        .or_else(|| value.get("max_completion_tokens"))
+        .and_then(|v| v.as_u64())
+        .and_then(|n| u32::try_from(n).ok());
+
+    Some(AiModel {
+        id,
+        name,
+        context_length,
+        description: value
+            .get("description")
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_string()),
+        input_modalities: None,
+        output_modalities: None,
+        tokenizer: None,
+        prompt_pricing: None,
+        completion_pricing: None,
+        supported_parameters: None,
+        max_completion_tokens,
+    })
+}
+
+fn list_codex_models(codex_state: &CodexState) -> Result<Vec<AiModel>, String> {
+    let result = rpc_call(
+        codex_state,
+        "model/list",
+        serde_json::json!({}),
+        std::time::Duration::from_secs(20),
+    )?;
+
+    let list = if let Some(arr) = result.as_array() {
+        arr
+    } else if let Some(arr) = result.get("items").and_then(|v| v.as_array()) {
+        arr
+    } else if let Some(arr) = result.get("models").and_then(|v| v.as_array()) {
+        arr
+    } else if let Some(arr) = result.get("data").and_then(|v| v.as_array()) {
+        arr
+    } else {
+        return Err("codex model/list returned no model array".to_string());
+    };
+
+    let mut models: Vec<AiModel> = list.iter().filter_map(parse_codex_model_item).collect();
+    models.sort_by(|a, b| a.name.cmp(&b.name));
+    if models.is_empty() {
+        return Err("codex model/list returned an empty model set".to_string());
+    }
+    Ok(models)
+}
+
 #[tauri::command(rename_all = "snake_case")]
 pub async fn ai_models_list(
     app: AppHandle,
+    codex_state: State<'_, CodexState>,
     vault_state: State<'_, VaultState>,
     profile_id: String,
+    provider: Option<AiProviderKind>,
 ) -> Result<Vec<AiModel>, String> {
     let path = store_path(&app)?;
     let mut store = read_store(&path);
@@ -298,6 +370,7 @@ pub async fn ai_models_list(
         .find(|p| p.id == profile_id)
         .cloned()
         .ok_or_else(|| "unknown profile".to_string())?;
+    let effective_provider = provider.unwrap_or_else(|| profile.provider.clone());
 
     let client = http_client().await?;
     let api_key = vault_root
@@ -307,7 +380,7 @@ pub async fn ai_models_list(
     let api_key = api_key.trim().to_string();
 
     let needs_key = matches!(
-        profile.provider,
+        effective_provider,
         AiProviderKind::Openai
             | AiProviderKind::Openrouter
             | AiProviderKind::Anthropic
@@ -317,12 +390,13 @@ pub async fn ai_models_list(
         return Err("API key not set for this profile".to_string());
     }
 
-    match profile.provider {
+    match effective_provider {
         AiProviderKind::Openai | AiProviderKind::OpenaiCompat | AiProviderKind::Ollama => {
             list_openai_like(&client, &profile, &api_key).await
         }
         AiProviderKind::Openrouter => list_openrouter(&client, &profile, &api_key).await,
         AiProviderKind::Anthropic => list_anthropic(&client, &profile, &api_key).await,
         AiProviderKind::Gemini => list_gemini(&client, &profile, &api_key).await,
+        AiProviderKind::CodexChatgpt => list_codex_models(codex_state.inner()),
     }
 }

@@ -1,7 +1,33 @@
-# Tauri + React + Typescript
+# Glyph
 
-This template should help get you started developing with Tauri, React and Typescript in Vite.
+Glyph is an offline-first desktop notes app built with Tauri + React + TypeScript.
 
-## Recommended IDE Setup
+## Development
 
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+- `pnpm dev` - frontend dev server
+- `pnpm tauri dev` - full desktop app
+- `pnpm build` - typecheck + production build
+- `pnpm check` - lint/format checks
+- `pnpm test` - frontend tests
+- `cd src-tauri && cargo check` - Rust typecheck
+
+## AI Providers
+
+Glyph supports multiple AI providers in settings, including:
+- OpenAI
+- OpenAI-compatible
+- OpenRouter
+- Anthropic
+- Gemini
+- Ollama
+- Codex (ChatGPT OAuth via Codex App Server)
+
+## Codex App Server
+
+Codex integration runs as a managed local app-server process through stdio JSON-RPC from the Tauri backend.
+
+For implementation details and rollout checklist:
+- `docs/codex-app-server-integration-checklist.md`
+
+For troubleshooting:
+- `docs/codex-app-server-troubleshooting.md`

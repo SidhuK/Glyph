@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { openUrl } from "@tauri-apps/plugin-opener";
 import { type AiProfile, invoke } from "../../../lib/tauri";
 import { AiModelCombobox } from "./AiModelCombobox";
 import { errMessage } from "./utils";
@@ -38,6 +39,26 @@ export function AiProfileSections({
 	});
 	const { apiKeyDraft, secretConfigured, keySaved, error, keySavedTimeout } =
 		apiState;
+	const providerUsesApiKey = profileDraft?.provider !== "codex_chatgpt";
+	const [codexState, setCodexState] = useState<{
+		status: string;
+		email: string | null;
+		displayName: string | null;
+		authMode: string | null;
+		usedPercent: number | null;
+		windowMinutes: number | null;
+		error: string;
+		loading: boolean;
+	}>({
+		status: "disconnected",
+		email: null,
+		displayName: null,
+		authMode: null,
+		usedPercent: null,
+		windowMinutes: null,
+		error: "",
+		loading: false,
+	});
 
 	useEffect(
 		() => () => {
@@ -72,6 +93,82 @@ export function AiProfileSections({
 			cancelled = true;
 		};
 	}, [activeProfileId]);
+
+	const refreshCodexAccount = useCallback(async () => {
+		setCodexState((prev) => ({ ...prev, loading: true, error: "" }));
+		try {
+			const info = await invoke("codex_account_read");
+			let usedPercent: number | null = null;
+			let windowMinutes: number | null = null;
+			try {
+				const limits = await invoke("codex_rate_limits_read");
+				usedPercent = Number.isFinite(limits.used_percent)
+					? limits.used_percent
+					: null;
+				windowMinutes =
+					typeof limits.window_minutes === "number"
+						? limits.window_minutes
+						: null;
+			} catch {
+				// Non-fatal for account status.
+			}
+			setCodexState({
+				status: info.status,
+				email: info.email ?? null,
+				displayName: info.display_name ?? null,
+				authMode: info.auth_mode ?? null,
+				usedPercent,
+				windowMinutes,
+				error: "",
+				loading: false,
+			});
+		} catch (e) {
+			setCodexState((prev) => ({
+				...prev,
+				error: errMessage(e),
+				loading: false,
+			}));
+		}
+	}, []);
+
+	useEffect(() => {
+		if (profileDraft?.provider !== "codex_chatgpt") return;
+		void refreshCodexAccount();
+	}, [profileDraft?.provider, refreshCodexAccount]);
+
+	const handleCodexConnect = useCallback(async () => {
+		setCodexState((prev) => ({ ...prev, loading: true, error: "" }));
+		try {
+			const started = await invoke("codex_login_start");
+			await openUrl(started.auth_url);
+			try {
+				await invoke("codex_login_complete", { flow_id: started.flow_id });
+			} catch {
+				// Completion may be async depending on provider callback timing.
+			}
+			await refreshCodexAccount();
+		} catch (e) {
+			setCodexState((prev) => ({
+				...prev,
+				error: errMessage(e),
+				loading: false,
+			}));
+		}
+	}, [refreshCodexAccount]);
+
+	const handleCodexDisconnect = useCallback(async () => {
+		setCodexState((prev) => ({ ...prev, loading: true, error: "" }));
+		try {
+			await invoke("codex_logout");
+			await refreshCodexAccount();
+		} catch (e) {
+			setCodexState((prev) => ({
+				...prev,
+				error: errMessage(e),
+				loading: false,
+			}));
+		}
+	}, [refreshCodexAccount]);
 
 	const updateDraft = useCallback((updater: (prev: AiProfile) => AiProfile) => {
 		setProfileDraft((prev) => (prev ? updater(prev) : prev));
@@ -198,6 +295,7 @@ export function AiProfileSections({
 							<option value="gemini">Gemini</option>
 							<option value="ollama">Ollama</option>
 							<option value="openai_compat">OpenAI-compatible</option>
+							<option value="codex_chatgpt">Codex (ChatGPT OAuth)</option>
 						</select>
 					</div>
 
@@ -248,7 +346,74 @@ export function AiProfileSections({
 
 			{error ? <div className="settingsError">{error}</div> : null}
 
-			{profileDraft ? (
+			{profileDraft?.provider === "codex_chatgpt" ? (
+				<section className="settingsCard">
+					<div className="settingsCardHeader">
+						<div>
+							<div className="settingsCardTitle">ChatGPT Account</div>
+						</div>
+						<div
+							className={`settingsPill ${codexState.status === "connected" ? "settingsPillOk" : ""}`}
+						>
+							{codexState.status}
+						</div>
+					</div>
+					<div className="settingsField">
+						<div className="settingsLabel">Identity</div>
+						<div className="settingsHint">
+							{codexState.displayName || codexState.email || "Not connected"}
+						</div>
+					</div>
+					{codexState.authMode ? (
+						<div className="settingsField">
+							<div className="settingsLabel">Auth Mode</div>
+							<div className="settingsHint">{codexState.authMode}</div>
+						</div>
+					) : null}
+					{codexState.usedPercent != null ? (
+						<div className="settingsField">
+							<div className="settingsLabel">Rate Limit Usage</div>
+							<div className="settingsHint">
+								{`${codexState.usedPercent.toFixed(1)}%`}
+								{codexState.windowMinutes != null
+									? ` of ${codexState.windowMinutes}-minute window`
+									: ""}
+							</div>
+						</div>
+					) : null}
+					<div className="settingsInline">
+						{codexState.status === "connected" ? (
+							<button
+								type="button"
+								onClick={() => void handleCodexDisconnect()}
+								disabled={codexState.loading}
+							>
+								Disconnect
+							</button>
+						) : (
+							<button
+								type="button"
+								onClick={() => void handleCodexConnect()}
+								disabled={codexState.loading}
+							>
+								Sign in with ChatGPT
+							</button>
+						)}
+						<button
+							type="button"
+							onClick={() => void refreshCodexAccount()}
+							disabled={codexState.loading}
+						>
+							Refresh
+						</button>
+					</div>
+					{codexState.error ? (
+						<div className="settingsError">{codexState.error}</div>
+					) : null}
+				</section>
+			) : null}
+
+			{profileDraft && providerUsesApiKey ? (
 				<section className="settingsCard">
 					<div className="settingsCardHeader">
 						<div>

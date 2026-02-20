@@ -20,6 +20,7 @@ pub fn default_base_url(provider: &AiProviderKind) -> &'static str {
         AiProviderKind::Anthropic => "https://api.anthropic.com",
         AiProviderKind::Gemini => "https://generativelanguage.googleapis.com",
         AiProviderKind::Ollama => "http://localhost:11434/v1",
+        AiProviderKind::CodexChatgpt => "https://developers.openai.com/codex/app-server/",
     }
 }
 

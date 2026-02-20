@@ -60,4 +60,11 @@ pub fn ensure_default_profiles(store: &mut AiStore) {
     add("Anthropic", AiProviderKind::Anthropic, "", None, false);
     add("Gemini", AiProviderKind::Gemini, "", None, false);
     add("Ollama", AiProviderKind::Ollama, "", None, true);
+    add(
+        "Codex (ChatGPT OAuth)",
+        AiProviderKind::CodexChatgpt,
+        "codex",
+        None,
+        false,
+    );
 }

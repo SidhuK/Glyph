@@ -247,7 +247,8 @@ export type AiProviderKind =
 	| "openrouter"
 	| "anthropic"
 	| "gemini"
-	| "ollama";
+	| "ollama"
+	| "codex_chatgpt";
 
 export type AiAssistantMode = "chat" | "create";
 
@@ -501,12 +502,59 @@ interface TauriCommands {
 		AiChatStartResult
 	>;
 	ai_chat_cancel: CommandDef<{ job_id: string }, void>;
-	ai_models_list: CommandDef<{ profile_id: string }, AiModel[]>;
+	ai_models_list: CommandDef<
+		{ profile_id: string; provider?: AiProviderKind | null },
+		AiModel[]
+	>;
 	ai_chat_history_list: CommandDef<
 		{ limit?: number | null },
 		AiChatHistorySummary[]
 	>;
 	ai_chat_history_get: CommandDef<{ job_id: string }, AiChatHistoryDetail>;
+	codex_account_read: CommandDef<
+		void,
+		{
+			status: string;
+			email?: string | null;
+			display_name?: string | null;
+			auth_mode?: string | null;
+		}
+	>;
+	codex_login_start: CommandDef<
+		void,
+		{
+			auth_url: string;
+			flow_id: string;
+		}
+	>;
+	codex_login_complete: CommandDef<
+		{ flow_id: string },
+		{
+			connected: boolean;
+		}
+	>;
+	codex_logout: CommandDef<void, void>;
+	codex_rate_limits_read: CommandDef<
+		void,
+		{
+			used_percent: number;
+			window_minutes?: number | null;
+			reset_at_ms?: number | null;
+		}
+	>;
+	codex_chat_start: CommandDef<
+		{
+			request: {
+				profile_id: string;
+				thread_id?: string | null;
+				messages: AiMessage[];
+				context?: string | null;
+				mode?: AiAssistantMode | null;
+			};
+		},
+		{ job_id: string }
+	>;
+	codex_chat_cancel: CommandDef<{ job_id: string }, void>;
 	ai_context_index: CommandDef<void, AiContextIndexResponse>;
 	ai_context_build: CommandDef<
 		{

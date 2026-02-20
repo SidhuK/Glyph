@@ -10,7 +10,7 @@ interface AiModelComboboxProps {
 }
 
 const providerNeedsApiKey = (provider: AiProviderKind): boolean =>
-	provider !== "ollama";
+	provider !== "ollama" && provider !== "codex_chatgpt";
 
 export function AiModelCombobox({
 	profileId,
@@ -36,6 +36,7 @@ export function AiModelCombobox({
 			try {
 				const result = await invoke("ai_models_list", {
 					profile_id: profileId,
+					provider,
 				});
 				setModels(result);
 			} catch (e) {

@@ -1,3 +1,4 @@
+mod ai_codex;
 mod ai_rig;
 mod index;
 mod io_atomic;
@@ -240,6 +241,7 @@ pub fn run() {
             }
         })
         .manage(ai_rig::AiState::default())
+        .manage(ai_codex::state::CodexState::default())
         .manage(vault::VaultState::default())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_notification::init())
@@ -267,6 +269,13 @@ pub fn run() {
             ai_rig::commands::ai_chat_cancel,
             ai_rig::commands::ai_chat_history_list,
             ai_rig::commands::ai_chat_history_get,
+            ai_codex::commands::codex_account_read,
+            ai_codex::commands::codex_login_start,
+            ai_codex::commands::codex_login_complete,
+            ai_codex::commands::codex_logout,
+            ai_codex::commands::codex_rate_limits_read,
+            ai_codex::commands::codex_chat_start,
+            ai_codex::commands::codex_chat_cancel,
             ai_rig::context::ai_context_index,
             ai_rig::context::ai_context_build,
             ai_rig::context::ai_context_resolve_paths,

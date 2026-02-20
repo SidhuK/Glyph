@@ -289,6 +289,9 @@ pub async fn run_with_rig(
             )
             .await?
         }
+        AiProviderKind::CodexChatgpt => {
+            return Err("Codex provider uses dedicated app-server flow; not available in Rig runtime".to_string());
+        }
     };
 
     if cancelled {
@@ -517,6 +520,9 @@ pub async fn generate_chat_title_with_rig(
                 .await
                 .map_err(|e| e.to_string())?
                 .to_string()
+        }
+        AiProviderKind::CodexChatgpt => {
+            return Ok("Codex Chat".to_string());
         }
     };
 

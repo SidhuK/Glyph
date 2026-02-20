@@ -9,6 +9,7 @@ pub enum AiProviderKind {
     Anthropic,
     Gemini,
     Ollama,
+    CodexChatgpt,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]

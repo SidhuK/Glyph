@@ -13,7 +13,8 @@ pub fn capabilities(provider: &AiProviderKind) -> ProviderCapabilities {
         | AiProviderKind::OpenaiCompat
         | AiProviderKind::Openrouter
         | AiProviderKind::Gemini
-        | AiProviderKind::Ollama => ProviderCapabilities {
+        | AiProviderKind::Ollama
+        | AiProviderKind::CodexChatgpt => ProviderCapabilities {
             requires_max_tokens: false,
         },
     }

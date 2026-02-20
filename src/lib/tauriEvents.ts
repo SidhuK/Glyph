@@ -9,6 +9,19 @@ type TauriEventMap = {
 	"ai:status": { job_id: string; status: string; detail?: string };
 	"ai:done": { job_id: string; cancelled: boolean };
 	"ai:error": { job_id: string; message: string };
+	"codex:chunk": { job_id: string; delta: string };
+	"codex:status": { job_id: string; status: string; detail?: string };
+	"codex:done": { job_id: string; cancelled: boolean };
+	"codex:error": { job_id: string; message: string };
+	"codex:tool": {
+		job_id: string;
+		tool: string;
+		phase: string;
+		at_ms?: number;
+		call_id?: string;
+		payload?: unknown;
+		error?: string;
+	};
 	"ai:tool": {
 		job_id: string;
 		tool: string;
