@@ -6,8 +6,8 @@ use crate::{index, io_atomic, paths, vault::VaultState};
 
 use super::helpers::{deny_hidden_rel_path, etag_for, file_mtime_ms};
 use super::types::{
-    BinaryFilePreviewDoc, OpenOrCreateTextResult, TextFileDoc, TextFileDocBatch, TextFilePreviewDoc,
-    TextFileWriteResult,
+    BinaryFilePreviewDoc, OpenOrCreateTextResult, TextFileDoc, TextFileDocBatch,
+    TextFilePreviewDoc, TextFileWriteResult,
 };
 
 const TEXT_PREVIEW_DEFAULT_MAX_BYTES: u64 = 1_048_576;

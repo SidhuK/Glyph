@@ -1,8 +1,8 @@
 import { cn } from "@/lib/utils";
 import { m, useReducedMotion } from "motion/react";
 import { Fragment, Suspense, lazy, useState } from "react";
-import { dispatchMarkdownLinkClick } from "../editor/markdown/editorEvents";
 import { ChevronDown, Files, RefreshCw, Save } from "../Icons";
+import { dispatchMarkdownLinkClick } from "../editor/markdown/editorEvents";
 import { Button } from "../ui/shadcn/button";
 import { AIToolTimeline, type ToolTimelineEvent } from "./AIToolTimeline";
 import { messageText } from "./aiPanelConstants";
@@ -132,7 +132,9 @@ export function AIChatThread({
 	const shouldReduceMotion = useReducedMotion();
 	const citations = extractCitations(toolTimeline);
 	const [citationsOpen, setCitationsOpen] = useState(false);
-	const hasInterleavedTextTimeline = toolTimeline.some((e) => e.kind === "text");
+	const hasInterleavedTextTimeline = toolTimeline.some(
+		(e) => e.kind === "text",
+	);
 	const lastAssistantMessageIndex = (() => {
 		for (let i = messages.length - 1; i >= 0; i -= 1) {
 			if (messages[i]?.role === "assistant") return i;

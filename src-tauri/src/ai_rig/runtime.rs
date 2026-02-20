@@ -116,15 +116,7 @@ pub async fn run_with_rig(
             } else {
                 agent.preamble(&effective_system).build()
             };
-            match run_stream(
-                cancel,
-                app,
-                job_id,
-                agent,
-                transcript.clone(),
-            )
-            .await
-            {
+            match run_stream(cancel, app, job_id, agent, transcript.clone()).await {
                 Ok(v) => v,
                 Err(e) if is_not_chat_model_error(&e) => {
                     return Err(not_chat_model_message(profile.model.trim()));
@@ -153,15 +145,7 @@ pub async fn run_with_rig(
             } else {
                 agent.preamble(&effective_system).build()
             };
-            match run_stream(
-                cancel,
-                app,
-                job_id,
-                agent,
-                transcript.clone(),
-            )
-            .await
-            {
+            match run_stream(cancel, app, job_id, agent, transcript.clone()).await {
                 Ok(v) => v,
                 Err(e) if is_not_chat_model_error(&e) => {
                     return Err(not_chat_model_message(profile.model.trim()));
@@ -190,14 +174,7 @@ pub async fn run_with_rig(
             } else {
                 agent.preamble(&effective_system).build()
             };
-            run_stream(
-                cancel,
-                app,
-                job_id,
-                agent,
-                transcript,
-            )
-            .await?
+            run_stream(cancel, app, job_id, agent, transcript).await?
         }
         AiProviderKind::Anthropic => {
             let key = require_key(api_key)?;
@@ -222,14 +199,7 @@ pub async fn run_with_rig(
             } else {
                 agent.preamble(&effective_system).build()
             };
-            run_stream(
-                cancel,
-                app,
-                job_id,
-                agent,
-                transcript,
-            )
-            .await?
+            run_stream(cancel, app, job_id, agent, transcript).await?
         }
         AiProviderKind::Gemini => {
             let key = require_key(api_key)?;
@@ -254,14 +224,7 @@ pub async fn run_with_rig(
             } else {
                 agent.preamble(&effective_system).build()
             };
-            run_stream(
-                cancel,
-                app,
-                job_id,
-                agent,
-                transcript,
-            )
-            .await?
+            run_stream(cancel, app, job_id, agent, transcript).await?
         }
         AiProviderKind::Ollama => {
             let base = custom_base_url
@@ -280,17 +243,13 @@ pub async fn run_with_rig(
             } else {
                 agent.preamble(&effective_system).build()
             };
-            run_stream(
-                cancel,
-                app,
-                job_id,
-                agent,
-                transcript,
-            )
-            .await?
+            run_stream(cancel, app, job_id, agent, transcript).await?
         }
         AiProviderKind::CodexChatgpt => {
-            return Err("Codex provider uses dedicated app-server flow; not available in Rig runtime".to_string());
+            return Err(
+                "Codex provider uses dedicated app-server flow; not available in Rig runtime"
+                    .to_string(),
+            );
         }
     };
 

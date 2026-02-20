@@ -38,19 +38,26 @@ pub fn run_search_advanced(
         }
     }
 
-    let query_text = if req.tag_only {
-        String::new()
-    } else {
-        text
-    };
+    let query_text = if req.tag_only { String::new() } else { text };
 
     let mut out = if !query_text.is_empty() && !req.title_only {
-        hybrid_search(conn, &query_text, &tags, (limit as i64 * 8).clamp(200, 5_000))?
+        hybrid_search(
+            conn,
+            &query_text,
+            &tags,
+            (limit as i64 * 8).clamp(200, 5_000),
+        )?
     } else {
-        select_candidates(conn, &query_text, req.title_only, &tags, (limit as i64 * 8).clamp(200, 5_000))?
-            .into_iter()
-            .map(|item| item.result)
-            .collect()
+        select_candidates(
+            conn,
+            &query_text,
+            req.title_only,
+            &tags,
+            (limit as i64 * 8).clamp(200, 5_000),
+        )?
+        .into_iter()
+        .map(|item| item.result)
+        .collect()
     };
 
     if out.len() > limit {
@@ -70,9 +77,7 @@ fn select_candidates(
     tags: &[String],
     limit: i64,
 ) -> Result<Vec<Candidate>, String> {
-    let mut sql = String::from(
-        "SELECT n.id, n.title, n.preview FROM notes n ",
-    );
+    let mut sql = String::from("SELECT n.id, n.title, n.preview FROM notes n ");
     for i in 0..tags.len() {
         sql.push_str(&format!(
             "JOIN tags t{idx} ON t{idx}.note_id = n.id AND t{idx}.tag = ? ",
@@ -85,7 +90,10 @@ fn select_candidates(
         .collect();
     if title_only && !text.is_empty() {
         sql.push_str("WHERE lower(n.title) LIKE ? ");
-        params.push(rusqlite::types::Value::from(format!("%{}%", text.to_lowercase())));
+        params.push(rusqlite::types::Value::from(format!(
+            "%{}%",
+            text.to_lowercase()
+        )));
     }
     sql.push_str("ORDER BY n.updated DESC LIMIT ?");
     params.push(rusqlite::types::Value::from(limit));

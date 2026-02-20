@@ -14,12 +14,31 @@ pub struct CodexAccountInfo {
 
 #[derive(Serialize, Clone)]
 #[serde(rename_all = "snake_case")]
-pub struct CodexRateLimits {
+pub struct CodexRateLimitWindow {
     pub used_percent: f64,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub window_minutes: Option<u64>,
+    pub window_duration_mins: Option<u64>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub reset_at_ms: Option<u64>,
+    pub resets_at: Option<u64>,
+}
+
+#[derive(Serialize, Clone)]
+#[serde(rename_all = "snake_case")]
+pub struct CodexRateLimitBucket {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub limit_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub limit_name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub primary: Option<CodexRateLimitWindow>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub secondary: Option<CodexRateLimitWindow>,
+}
+
+#[derive(Serialize, Clone)]
+#[serde(rename_all = "snake_case")]
+pub struct CodexRateLimits {
+    pub buckets: Vec<CodexRateLimitBucket>,
 }
 
 #[derive(Serialize, Clone)]

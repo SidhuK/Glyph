@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useState } from "react";
 import { openUrl } from "@tauri-apps/plugin-opener";
+import { useCallback, useEffect, useState } from "react";
 import { type AiModel, type AiProfile, invoke } from "../../../lib/tauri";
 import { AiModelCombobox } from "./AiModelCombobox";
 import { errMessage } from "./utils";
@@ -13,6 +13,24 @@ interface AiProfileSectionsProps {
 	onSaveProfile: (draft: AiProfile) => Promise<void>;
 }
 
+const CODEX_RATE_LIMIT_REFRESH_MS = 30 * 60 * 1000;
+
+function formatRateLimitWindow(minutes: number | null): string {
+	if (minutes == null || !Number.isFinite(minutes)) return "window";
+	if (minutes === 10080) return "weekly window";
+	if (minutes === 300) return "5-hour window";
+	if (minutes >= 60 && minutes % 60 === 0) {
+		const hours = minutes / 60;
+		return `${hours}-hour window`;
+	}
+	return `${minutes}-minute window`;
+}
+
+function clampPercent(value: number): number {
+	if (!Number.isFinite(value)) return 0;
+	return Math.max(0, Math.min(100, value));
+}
+
 export function AiProfileSections({
 	profiles,
 	activeProfileId,
@@ -24,7 +42,9 @@ export function AiProfileSections({
 	const [profileDraft, setProfileDraft] = useState<AiProfile | null>(
 		activeProfile ? structuredClone(activeProfile) : null,
 	);
-	const [availableModels, setAvailableModels] = useState<AiModel[] | null>(null);
+	const [availableModels, setAvailableModels] = useState<AiModel[] | null>(
+		null,
+	);
 	const [apiState, setApiState] = useState<{
 		apiKeyDraft: string;
 		secretConfigured: boolean | null;
@@ -46,8 +66,13 @@ export function AiProfileSections({
 		email: string | null;
 		displayName: string | null;
 		authMode: string | null;
-		usedPercent: number | null;
-		windowMinutes: number | null;
+		rateLimits: Array<{
+			key: string;
+			label: string;
+			usedPercent: number;
+			windowMinutes: number | null;
+			resetsAt: number | null;
+		}>;
 		error: string;
 		loading: boolean;
 	}>({
@@ -55,8 +80,7 @@ export function AiProfileSections({
 		email: null,
 		displayName: null,
 		authMode: null,
-		usedPercent: null,
-		windowMinutes: null,
+		rateLimits: [],
 		error: "",
 		loading: false,
 	});
@@ -99,17 +123,85 @@ export function AiProfileSections({
 		setCodexState((prev) => ({ ...prev, loading: true, error: "" }));
 		try {
 			const info = await invoke("codex_account_read");
-			let usedPercent: number | null = null;
-			let windowMinutes: number | null = null;
+			let rateLimits: Array<{
+				key: string;
+				label: string;
+				usedPercent: number;
+				windowMinutes: number | null;
+				resetsAt: number | null;
+			}> = [];
 			try {
 				const limits = await invoke("codex_rate_limits_read");
-				usedPercent = Number.isFinite(limits.used_percent)
-					? limits.used_percent
-					: null;
-				windowMinutes =
-					typeof limits.window_minutes === "number"
-						? limits.window_minutes
-						: null;
+				rateLimits = (limits.buckets ?? []).flatMap((bucket, bucketIndex) => {
+					const bucketName =
+						bucket.limit_name || bucket.limit_id || `limit-${bucketIndex + 1}`;
+					const windows: Array<{
+						key: string;
+						label: string;
+						usedPercent: number;
+						windowMinutes: number | null;
+						resetsAt: number | null;
+					}> = [];
+					const pushWindow = (
+						kind: "primary" | "secondary",
+						window:
+							| {
+									used_percent: number;
+									window_duration_mins?: number | null;
+									resets_at?: number | null;
+							  }
+							| null
+							| undefined,
+					) => {
+						if (!window || !Number.isFinite(window.used_percent)) return;
+						const windowMinutes =
+							typeof window.window_duration_mins === "number"
+								? window.window_duration_mins
+								: null;
+						const resetsAt =
+							typeof window.resets_at === "number" ? window.resets_at : null;
+						const humanWindow = formatRateLimitWindow(windowMinutes);
+						windows.push({
+							key: `${bucketName}:${kind}`,
+							label: humanWindow,
+							usedPercent: window.used_percent,
+							windowMinutes,
+							resetsAt,
+						});
+					};
+					pushWindow("primary", bucket.primary);
+					pushWindow("secondary", bucket.secondary);
+					return windows;
+				});
+				const deduped = new Map<
+					string,
+					{
+						key: string;
+						label: string;
+						usedPercent: number;
+						windowMinutes: number | null;
+						resetsAt: number | null;
+					}
+				>();
+				for (const item of rateLimits) {
+					const dedupeKey =
+						typeof item.windowMinutes === "number"
+							? `window:${item.windowMinutes}`
+							: item.label.toLowerCase();
+					const nextItem = {
+						...item,
+						usedPercent: clampPercent(item.usedPercent),
+					};
+					const existing = deduped.get(dedupeKey);
+					if (!existing || nextItem.usedPercent > existing.usedPercent) {
+						deduped.set(dedupeKey, nextItem);
+					}
+				}
+				rateLimits = Array.from(deduped.values()).sort((a, b) => {
+					const aMinutes = a.windowMinutes ?? Number.MAX_SAFE_INTEGER;
+					const bMinutes = b.windowMinutes ?? Number.MAX_SAFE_INTEGER;
+					return aMinutes - bMinutes;
+				});
 			} catch {
 				// Non-fatal for account status.
 			}
@@ -118,8 +210,7 @@ export function AiProfileSections({
 				email: info.email ?? null,
 				displayName: info.display_name ?? null,
 				authMode: info.auth_mode ?? null,
-				usedPercent,
-				windowMinutes,
+				rateLimits,
 				error: "",
 				loading: false,
 			});
@@ -135,6 +226,14 @@ export function AiProfileSections({
 	useEffect(() => {
 		if (profileDraft?.provider !== "codex_chatgpt") return;
 		void refreshCodexAccount();
+	}, [profileDraft?.provider, refreshCodexAccount]);
+
+	useEffect(() => {
+		if (profileDraft?.provider !== "codex_chatgpt") return;
+		const timer = window.setInterval(() => {
+			void refreshCodexAccount();
+		}, CODEX_RATE_LIMIT_REFRESH_MS);
+		return () => window.clearInterval(timer);
 	}, [profileDraft?.provider, refreshCodexAccount]);
 
 	const handleCodexConnect = useCallback(async () => {
@@ -178,8 +277,7 @@ export function AiProfileSections({
 	const selectedModel =
 		availableModels?.find((m) => m.id === profileDraft?.model) ?? null;
 	const reasoningOptions = selectedModel?.reasoning_effort ?? null;
-	const shouldShowReasoningSelect =
-		profileDraft?.provider === "codex_chatgpt";
+	const shouldShowReasoningSelect = profileDraft?.provider === "codex_chatgpt";
 
 	const handleSave = useCallback(async () => {
 		if (!profileDraft) return;
@@ -295,7 +393,7 @@ export function AiProfileSections({
 									provider: e.target.value as AiProfile["provider"],
 									reasoning_effort:
 										e.target.value === "codex_chatgpt"
-											? p.reasoning_effort ?? null
+											? (p.reasoning_effort ?? null)
 											: null,
 								}))
 							}
@@ -324,14 +422,16 @@ export function AiProfileSections({
 							secretConfigured={secretConfigured}
 							onChange={(next) =>
 								updateDraft((p) => {
-									const model = availableModels?.find((m) => m.id === next) ?? null;
+									const model =
+										availableModels?.find((m) => m.id === next) ?? null;
 									const options = model?.reasoning_effort ?? null;
 									const current = p.reasoning_effort ?? null;
-									const stillValid = !!options?.some((o) => o.effort === current);
+									const stillValid = !!options?.some(
+										(o) => o.effort === current,
+									);
 									const nextEffort = stillValid
 										? current
-										: model?.default_reasoning_effort ??
-											current;
+										: (model?.default_reasoning_effort ?? current);
 									return {
 										...p,
 										model: next,
@@ -357,7 +457,8 @@ export function AiProfileSections({
 									value={
 										profileDraft?.reasoning_effort ??
 										selectedModel?.default_reasoning_effort ??
-										(reasoningOptions?.[0]?.effort ?? "")
+										reasoningOptions?.[0]?.effort ??
+										""
 									}
 									onChange={(e) =>
 										updateDraft((p) => ({
@@ -451,14 +552,37 @@ export function AiProfileSections({
 							<div className="settingsHint">{codexState.authMode}</div>
 						</div>
 					) : null}
-					{codexState.usedPercent != null ? (
+					{codexState.rateLimits.length > 0 ? (
 						<div className="settingsField">
-							<div className="settingsLabel">Rate Limit Usage</div>
-							<div className="settingsHint">
-								{`${codexState.usedPercent.toFixed(1)}%`}
-								{codexState.windowMinutes != null
-									? ` of ${codexState.windowMinutes}-minute window`
-									: ""}
+							<div className="settingsLabel">Rate Limits</div>
+							<div className="codexRateLimitList">
+								{codexState.rateLimits.map((item) => (
+									<div key={item.key} className="codexRateLimitItem">
+										<div className="codexRateLimitRow">
+											<span>{item.label}</span>
+											<span>{`${(100 - item.usedPercent).toFixed(1)}% remaining`}</span>
+										</div>
+										<div
+											className="codexRateLimitBar"
+											role="progressbar"
+											tabIndex={0}
+											aria-label={`${item.label} remaining`}
+											aria-valuemin={0}
+											aria-valuemax={100}
+											aria-valuenow={Math.round(100 - item.usedPercent)}
+										>
+											<div
+												className="codexRateLimitBarFill"
+												style={{
+													width: `${clampPercent(100 - item.usedPercent)}%`,
+												}}
+											/>
+										</div>
+										<div className="codexRateLimitMeta">
+											{`${item.usedPercent.toFixed(1)}% used`}
+										</div>
+									</div>
+								))}
 							</div>
 						</div>
 					) : null}

@@ -218,9 +218,7 @@ pub async fn ai_secret_list(vault_state: State<'_, VaultState>) -> Result<Vec<St
 }
 
 #[tauri::command]
-pub async fn ai_provider_support(
-    app: AppHandle,
-) -> Result<ProviderSupportDocument, String> {
+pub async fn ai_provider_support(app: AppHandle) -> Result<ProviderSupportDocument, String> {
     let cache_path = provider_support_cache_path(&app)?;
     match fetch_provider_support(&cache_path).await {
         Ok(doc) => Ok(doc),
@@ -453,12 +451,18 @@ pub async fn run_request(
     vault_root: Option<&std::path::Path>,
     thread_id: Option<&str>,
 ) -> Result<(String, bool, Vec<AiStoredToolEvent>), String> {
-    if matches!(
-        profile.provider,
-        super::types::AiProviderKind::CodexChatgpt
-    ) {
+    if matches!(profile.provider, super::types::AiProviderKind::CodexChatgpt) {
         return crate::ai_codex::chat::run_with_codex(
-            codex_state, cancel, app, job_id, profile, system, messages, mode, vault_root, thread_id,
+            codex_state,
+            cancel,
+            app,
+            job_id,
+            profile,
+            system,
+            messages,
+            mode,
+            vault_root,
+            thread_id,
         )
         .await;
     }

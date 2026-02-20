@@ -1,8 +1,13 @@
 import { cn } from "@/lib/utils";
 import { AnimatePresence, m } from "motion/react";
-import { useState } from "react";
+import { Suspense, lazy, useState } from "react";
 import { ChevronDown } from "../Icons";
 import { formatToolName } from "./aiPanelConstants";
+
+const AIMessageMarkdown = lazy(async () => {
+	const module = await import("./AIMessageMarkdown");
+	return { default: module.AIMessageMarkdown };
+});
 
 type ToolPhase = "call" | "result" | "error";
 
@@ -117,7 +122,13 @@ export function AIToolTimeline({ events, streaming }: AIToolTimelineProps) {
 								transition={{ type: "spring", stiffness: 340, damping: 27 }}
 								className="aiToolInlineText"
 							>
-								<div className="aiToolInlineTextContent">{event.text}</div>
+								<Suspense
+									fallback={
+										<div className="aiToolInlineTextContent">{event.text}</div>
+									}
+								>
+									<AIMessageMarkdown markdown={event.text} />
+								</Suspense>
 								<div className="aiToolTime">{formatTime(event.at)}</div>
 							</m.div>
 						);

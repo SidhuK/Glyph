@@ -3,7 +3,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use crate::{io_atomic, glyph_paths};
+use crate::{glyph_paths, io_atomic};
 
 const AI_SECRETS_FILE: &str = "ai_secrets.json";
 

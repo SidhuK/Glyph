@@ -1,10 +1,17 @@
 use serde::Serialize;
-use std::{collections::HashMap, ffi::OsStr, path::{Path, PathBuf}};
+use std::{
+    collections::HashMap,
+    ffi::OsStr,
+    path::{Path, PathBuf},
+};
 use tauri::State;
 
 use crate::{index::open_db, paths, vault::VaultState};
 
-use super::{helpers::{deny_hidden_rel_path, should_hide}, types::FsEntry};
+use super::{
+    helpers::{deny_hidden_rel_path, should_hide},
+    types::FsEntry,
+};
 
 #[derive(Serialize)]
 #[serde(rename_all = "snake_case")]
@@ -102,10 +109,8 @@ pub async fn vault_folder_view_data(
         deny_hidden_rel_path(&dir_rel)?;
 
         let files = list_files(&root, &dir_rel, limit)?;
-        let mut file_by_rel: HashMap<String, FsEntry> = files
-            .into_iter()
-            .map(|f| (f.rel_path.clone(), f))
-            .collect();
+        let mut file_by_rel: HashMap<String, FsEntry> =
+            files.into_iter().map(|f| (f.rel_path.clone(), f)).collect();
 
         let abs_dir = paths::join_under(&root, &dir_rel)?;
         let mut subfolders: Vec<FolderViewFolder> = Vec::new();

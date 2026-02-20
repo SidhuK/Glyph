@@ -60,7 +60,10 @@ fn basename(path: &str) -> String {
 }
 
 fn title_from_rel(path: &str) -> String {
-    basename(path).trim_end_matches(".md").trim_end_matches(".MD").to_string()
+    basename(path)
+        .trim_end_matches(".md")
+        .trim_end_matches(".MD")
+        .to_string()
 }
 
 fn normalize_segments(path: &str) -> String {
@@ -162,16 +165,21 @@ pub async fn vault_resolve_wikilink(
         if lowered.is_empty() {
             return Ok(None);
         }
-        if let Some(hit) = entries.iter().find(|e| normalize(e.rel_path.trim_end_matches(".md")) == lowered) {
-            return Ok(Some(hit.rel_path.clone()));
-        }
-        if let Some(hit) = entries.iter().find(|e| normalize(&title_from_rel(&e.rel_path)) == lowered) {
+        if let Some(hit) = entries
+            .iter()
+            .find(|e| normalize(e.rel_path.trim_end_matches(".md")) == lowered)
+        {
             return Ok(Some(hit.rel_path.clone()));
         }
         if let Some(hit) = entries
             .iter()
-            .find(|e| normalize(e.rel_path.trim_end_matches(".md")).ends_with(&format!("/{lowered}")))
+            .find(|e| normalize(&title_from_rel(&e.rel_path)) == lowered)
         {
+            return Ok(Some(hit.rel_path.clone()));
+        }
+        if let Some(hit) = entries.iter().find(|e| {
+            normalize(e.rel_path.trim_end_matches(".md")).ends_with(&format!("/{lowered}"))
+        }) {
             return Ok(Some(hit.rel_path.clone()));
         }
         Ok(None)
@@ -189,7 +197,12 @@ pub async fn vault_resolve_markdown_link(
     let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || {
         let entries = list_files(&root, false, 80_000)?;
-        let raw = href.split('#').next().unwrap_or("").trim().replace('\\', "/");
+        let raw = href
+            .split('#')
+            .next()
+            .unwrap_or("")
+            .trim()
+            .replace('\\', "/");
         if raw.is_empty() || raw.starts_with("http://") || raw.starts_with("https://") {
             return Ok(None);
         }
@@ -199,7 +212,9 @@ pub async fn vault_resolve_markdown_link(
         if raw.starts_with('/') {
             candidates.push(normalize_segments(&raw));
         } else {
-            candidates.push(normalize_segments(&format!("{source_dir}/{normalized_raw}")));
+            candidates.push(normalize_segments(&format!(
+                "{source_dir}/{normalized_raw}"
+            )));
             candidates.push(normalize_segments(normalized_raw));
         }
         let mut expanded = candidates.clone();
@@ -209,7 +224,10 @@ pub async fn vault_resolve_markdown_link(
             }
         }
         for c in expanded {
-            if let Some(hit) = entries.iter().find(|e| normalize_path(&e.rel_path).eq_ignore_ascii_case(&c)) {
+            if let Some(hit) = entries
+                .iter()
+                .find(|e| normalize_path(&e.rel_path).eq_ignore_ascii_case(&c))
+            {
                 return Ok(Some(hit.rel_path.clone()));
             }
         }
@@ -230,7 +248,11 @@ pub async fn vault_suggest_links(
         let strip_md = request.strip_markdown_ext.unwrap_or(false);
         let relative = request.relative_to_source.unwrap_or(false);
         let limit = request.limit.unwrap_or(10).clamp(1, 200) as usize;
-        let source_dir = request.source_path.as_deref().map(parent_dir).unwrap_or_default();
+        let source_dir = request
+            .source_path
+            .as_deref()
+            .map(parent_dir)
+            .unwrap_or_default();
         let entries = list_files(&root, markdown_only, 100_000)?;
         let q = normalize(&request.query);
 
@@ -276,7 +298,10 @@ pub async fn vault_suggest_links(
             ));
         }
 
-        rows.sort_by(|a, b| b.0.cmp(&a.0).then_with(|| a.1.path.to_lowercase().cmp(&b.1.path.to_lowercase())));
+        rows.sort_by(|a, b| {
+            b.0.cmp(&a.0)
+                .then_with(|| a.1.path.to_lowercase().cmp(&b.1.path.to_lowercase()))
+        });
         Ok(rows.into_iter().take(limit).map(|r| r.1).collect())
     })
     .await

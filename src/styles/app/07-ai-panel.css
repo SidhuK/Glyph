@@ -568,11 +568,11 @@
 
 .aiToolInlineText {
 	align-self: flex-start;
-	max-width: 92%;
-	padding: 8px 10px;
-	border-radius: 10px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 55%, transparent);
-	background: color-mix(in srgb, var(--bg-primary) 90%, transparent);
+	max-width: 100%;
+	padding: 0;
+	border-radius: 0;
+	border: 0;
+	background: transparent;
 	display: flex;
 	flex-direction: column;
 	gap: 4px;

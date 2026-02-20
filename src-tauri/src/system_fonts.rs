@@ -2,9 +2,7 @@ use std::collections::BTreeSet;
 
 #[cfg(target_os = "macos")]
 use core_text::{
-    font::new_from_name,
-    font_collection::get_family_names,
-    font_descriptor::SymbolicTraitAccessors,
+    font::new_from_name, font_collection::get_family_names, font_descriptor::SymbolicTraitAccessors,
 };
 
 #[cfg(target_os = "macos")]

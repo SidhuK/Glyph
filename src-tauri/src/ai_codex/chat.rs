@@ -6,8 +6,8 @@ use tokio_util::sync::CancellationToken;
 use crate::ai_rig::events::AiStatusEvent;
 use crate::ai_rig::providers::build_transcript;
 use crate::ai_rig::types::{
-    AiAssistantMode, AiChunkEvent, AiDoneEvent, AiErrorEvent, AiMessage, AiProfile, AiStoredToolEvent,
-    AiToolEvent,
+    AiAssistantMode, AiChunkEvent, AiDoneEvent, AiErrorEvent, AiMessage, AiProfile,
+    AiStoredToolEvent, AiToolEvent,
 };
 
 use super::state::CodexState;
@@ -82,7 +82,12 @@ fn parse_item_type(params: &Value) -> Option<String> {
         .and_then(|i| i.get("type"))
         .and_then(|v| v.as_str())
         .map(|s| s.to_string())
-        .or_else(|| params.get("type").and_then(|v| v.as_str()).map(|s| s.to_string()))
+        .or_else(|| {
+            params
+                .get("type")
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_string())
+        })
 }
 
 fn parse_item_status(params: &Value) -> Option<String> {
@@ -242,7 +247,12 @@ pub async fn run_with_codex(
                 Duration::from_secs(20),
             )?;
             extract_thread_id(&started)
-                .or_else(|| started.get("id").and_then(|v| v.as_str()).map(|s| s.to_string()))
+                .or_else(|| {
+                    started
+                        .get("id")
+                        .and_then(|v| v.as_str())
+                        .map(|s| s.to_string())
+                })
                 .ok_or_else(|| "missing thread id from codex thread/start".to_string())?
         }
     };
@@ -267,8 +277,7 @@ pub async fn run_with_codex(
     });
     if let Some(effort) = profile
         .reasoning_effort
-        .as_ref()
-        .map(String::as_str)
+        .as_deref()
         .map(str::trim)
         .filter(|s| !s.is_empty())
     {
@@ -283,7 +292,12 @@ pub async fn run_with_codex(
         Duration::from_secs(30),
     )?;
     let turn_id = extract_turn_id(&started)
-        .or_else(|| started.get("id").and_then(|v| v.as_str()).map(|s| s.to_string()))
+        .or_else(|| {
+            started
+                .get("id")
+                .and_then(|v| v.as_str())
+                .map(|s| s.to_string())
+        })
         .ok_or_else(|| "missing turn id from codex turn/start".to_string())?;
 
     let mut full = String::new();
@@ -352,20 +366,24 @@ pub async fn run_with_codex(
 
         if method == "item/completed" {
             if let Some(item_type) = parse_item_type(params) {
-                if item_type == "agentMessage" {
-                    if full.trim().is_empty() {
-                        if let Some(text) = params
-                            .pointer("/item/text")
-                            .and_then(|v| v.as_str())
-                            .map(|s| s.to_string())
-                            .or_else(|| params.pointer("/item/content").and_then(|v| v.as_str()).map(|s| s.to_string()))
-                        {
-                            full = text;
-                        }
+                if item_type == "agentMessage" && full.trim().is_empty() {
+                    if let Some(text) = params
+                        .pointer("/item/text")
+                        .and_then(|v| v.as_str())
+                        .map(|s| s.to_string())
+                        .or_else(|| {
+                            params
+                                .pointer("/item/content")
+                                .and_then(|v| v.as_str())
+                                .map(|s| s.to_string())
+                        })
+                    {
+                        full = text;
                     }
                 }
                 if is_tool_type(&item_type) {
-                    let status = parse_item_status(params).unwrap_or_else(|| "completed".to_string());
+                    let status =
+                        parse_item_status(params).unwrap_or_else(|| "completed".to_string());
                     let is_error = matches!(status.as_str(), "failed" | "error" | "cancelled");
                     push_tool_event(
                         app,
@@ -400,15 +418,13 @@ pub async fn run_with_codex(
                     .or_else(|| params.get("status").and_then(|v| v.as_str()))
                     .unwrap_or("completed");
                 if status == "failed" {
-                    return Err(
-                        params
-                            .get("turn")
-                            .and_then(|v| v.get("error"))
-                            .and_then(|v| v.get("message"))
-                            .and_then(|v| v.as_str())
-                            .map(|s| s.to_string())
-                            .unwrap_or_else(|| "codex turn failed".to_string()),
-                    );
+                    return Err(params
+                        .get("turn")
+                        .and_then(|v| v.get("error"))
+                        .and_then(|v| v.get("message"))
+                        .and_then(|v| v.as_str())
+                        .map(|s| s.to_string())
+                        .unwrap_or_else(|| "codex turn failed".to_string()));
                 }
                 let cancelled = interrupted || status == "interrupted" || status == "cancelled";
                 let _ = app.emit(
@@ -448,7 +464,6 @@ pub async fn run_with_codex(
         }
     }
 }
-
 
 #[cfg(test)]
 mod tests {

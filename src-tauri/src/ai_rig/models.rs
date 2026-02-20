@@ -1,10 +1,10 @@
 use tauri::{AppHandle, State};
 
-use crate::ai_codex::{state::CodexState, transport::rpc_call};
 use super::helpers::{apply_extra_headers, http_client, parse_base_url};
 use super::local_secrets;
 use super::store::{ensure_default_profiles, read_store, store_path, write_store};
 use super::types::{AiModel, AiProviderKind, AiReasoningEffortOption};
+use crate::ai_codex::{state::CodexState, transport::rpc_call};
 use crate::vault::VaultState;
 
 #[derive(serde::Deserialize)]
@@ -351,14 +351,22 @@ fn parse_codex_model_item(value: &serde_json::Value) -> Option<AiModel> {
         .or_else(|| value.get("reasoning"))
         .or_else(|| value.get("effortOptions"));
     let reasoning_effort = if let Some(arr) = reasoning_effort_value.and_then(|v| v.as_array()) {
-        Some(arr.iter().filter_map(parse_effort_option).collect::<Vec<_>>())
+        Some(
+            arr.iter()
+                .filter_map(parse_effort_option)
+                .collect::<Vec<_>>(),
+        )
     } else if let Some(obj) = reasoning_effort_value.and_then(|v| v.as_object()) {
         obj.get("available")
             .or_else(|| obj.get("options"))
             .or_else(|| obj.get("supported"))
             .or_else(|| obj.get("values"))
             .and_then(|v| v.as_array())
-            .map(|arr| arr.iter().filter_map(parse_effort_option).collect::<Vec<_>>())
+            .map(|arr| {
+                arr.iter()
+                    .filter_map(parse_effort_option)
+                    .collect::<Vec<_>>()
+            })
     } else {
         None
     }

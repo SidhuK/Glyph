@@ -65,12 +65,12 @@ pub struct AiContextBuildResponse {
 }
 
 fn normalize_rel(raw: &str) -> Option<String> {
-	let mut parts: Vec<&str> = Vec::new();
-	let normalized = raw.trim().replace('\\', "/");
-	for part in normalized.split('/') {
-		let p = part.trim();
-		if p.is_empty() || p == "." {
-			continue;
+    let mut parts: Vec<&str> = Vec::new();
+    let normalized = raw.trim().replace('\\', "/");
+    for part in normalized.split('/') {
+        let p = part.trim();
+        if p.is_empty() || p == "." {
+            continue;
         }
         if p == ".." {
             return None;
@@ -92,40 +92,40 @@ fn to_slash(path: &Path) -> String {
 }
 
 fn estimate_tokens(chars: usize) -> usize {
-	chars.div_ceil(4)
+    chars.div_ceil(4)
 }
 
 fn push_manifest_item(
-	kind: &str,
-	label: String,
-	raw: String,
-	remaining: &mut usize,
-	parts: &mut Vec<String>,
-	items: &mut Vec<AiContextManifestItem>,
+    kind: &str,
+    label: String,
+    raw: String,
+    remaining: &mut usize,
+    parts: &mut Vec<String>,
+    items: &mut Vec<AiContextManifestItem>,
 ) {
-	if *remaining == 0 || raw.trim().is_empty() {
-		return;
-	}
-	let mut clipped = raw.trim().to_string();
-	let mut truncated = false;
-	if clipped.len() > *remaining {
-		let keep = remaining.saturating_sub(TRUNC_SUFFIX.len());
-		clipped = format!("{}{}", &clipped[..keep], TRUNC_SUFFIX);
-		truncated = true;
-	}
-	let chars = clipped.len();
-	if chars == 0 {
-		return;
-	}
-	*remaining = remaining.saturating_sub(chars);
-	parts.push(clipped);
-	items.push(AiContextManifestItem {
-		kind: kind.to_string(),
-		label,
-		chars,
-		est_tokens: estimate_tokens(chars),
-		truncated,
-	});
+    if *remaining == 0 || raw.trim().is_empty() {
+        return;
+    }
+    let mut clipped = raw.trim().to_string();
+    let mut truncated = false;
+    if clipped.len() > *remaining {
+        let keep = remaining.saturating_sub(TRUNC_SUFFIX.len());
+        clipped = format!("{}{}", &clipped[..keep], TRUNC_SUFFIX);
+        truncated = true;
+    }
+    let chars = clipped.len();
+    if chars == 0 {
+        return;
+    }
+    *remaining = remaining.saturating_sub(chars);
+    parts.push(clipped);
+    items.push(AiContextManifestItem {
+        kind: kind.to_string(),
+        label,
+        chars,
+        est_tokens: estimate_tokens(chars),
+        truncated,
+    });
 }
 
 fn list_files(root: &Path, dir: &str, limit: usize) -> Result<Vec<String>, String> {
@@ -175,7 +175,9 @@ fn list_files(root: &Path, dir: &str, limit: usize) -> Result<Vec<String>, Strin
 }
 
 #[tauri::command]
-pub async fn ai_context_index(state: State<'_, VaultState>) -> Result<AiContextIndexResponse, String> {
+pub async fn ai_context_index(
+    state: State<'_, VaultState>,
+) -> Result<AiContextIndexResponse, String> {
     let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || {
         let files = list_files(&root, "", DEFAULT_FILE_LIST_LIMIT)?;
@@ -186,7 +188,11 @@ pub async fn ai_context_index(state: State<'_, VaultState>) -> Result<AiContextI
             let _ = parts.pop();
             let mut acc = String::new();
             for p in parts {
-                acc = if acc.is_empty() { p.to_string() } else { format!("{acc}/{p}") };
+                acc = if acc.is_empty() {
+                    p.to_string()
+                } else {
+                    format!("{acc}/{p}")
+                };
                 dirs.insert(acc.clone());
             }
         }
@@ -195,7 +201,11 @@ pub async fn ai_context_index(state: State<'_, VaultState>) -> Result<AiContextI
             folders: dirs
                 .into_iter()
                 .map(|path| AiContextIndexItem {
-                    label: if path.is_empty() { "Vault".to_string() } else { path.clone() },
+                    label: if path.is_empty() {
+                        "Vault".to_string()
+                    } else {
+                        path.clone()
+                    },
                     path,
                 })
                 .collect(),
@@ -229,67 +239,73 @@ pub async fn ai_context_build(
         let mut resolved_paths: Vec<String> = Vec::new();
         let mut seen = std::collections::BTreeSet::<String>::new();
 
-		for attachment in request.attachments {
-			if remaining == 0 {
-				break;
+        for attachment in request.attachments {
+            if remaining == 0 {
+                break;
             }
             let Some(path) = normalize_rel(&attachment.path) else {
                 continue;
             };
             if attachment.kind == "folder" {
-				let label = attachment
-					.label
-					.filter(|v| !v.trim().is_empty())
-					.unwrap_or_else(|| if path.is_empty() { "Vault".to_string() } else { path.clone() });
-				push_manifest_item(
-					"folder",
-					label.clone(),
-					format!("# Folder: {label}"),
-					&mut remaining,
-					&mut parts,
-					&mut items,
-				);
-				let files = list_files(&root, &path, DEFAULT_FILE_LIST_LIMIT)?;
-				for rel in files {
-					if remaining == 0 || seen.contains(&rel) {
+                let label = attachment
+                    .label
+                    .filter(|v| !v.trim().is_empty())
+                    .unwrap_or_else(|| {
+                        if path.is_empty() {
+                            "Vault".to_string()
+                        } else {
+                            path.clone()
+                        }
+                    });
+                push_manifest_item(
+                    "folder",
+                    label.clone(),
+                    format!("# Folder: {label}"),
+                    &mut remaining,
+                    &mut parts,
+                    &mut items,
+                );
+                let files = list_files(&root, &path, DEFAULT_FILE_LIST_LIMIT)?;
+                for rel in files {
+                    if remaining == 0 || seen.contains(&rel) {
                         continue;
                     }
                     let abs = paths::join_under(&root, &PathBuf::from(&rel))?;
                     let text = match std::fs::read_to_string(&abs) {
                         Ok(v) => v,
                         Err(_) => continue,
-					};
-					seen.insert(rel.clone());
-					resolved_paths.push(rel.clone());
-					push_manifest_item(
-						"file",
-						rel.clone(),
-						format!("# File: {rel}\n\n{text}"),
-						&mut remaining,
-						&mut parts,
-						&mut items,
-					);
-				}
-				continue;
-			}
+                    };
+                    seen.insert(rel.clone());
+                    resolved_paths.push(rel.clone());
+                    push_manifest_item(
+                        "file",
+                        rel.clone(),
+                        format!("# File: {rel}\n\n{text}"),
+                        &mut remaining,
+                        &mut parts,
+                        &mut items,
+                    );
+                }
+                continue;
+            }
 
             if path.is_empty() || seen.contains(&path) {
                 continue;
             }
             let abs = paths::join_under(&root, &PathBuf::from(&path))?;
-			if let Ok(text) = std::fs::read_to_string(&abs) {
-				seen.insert(path.clone());
-				resolved_paths.push(path.clone());
-				push_manifest_item(
-					"file",
-					path.clone(),
-					format!("# File: {path}\n\n{text}"),
-					&mut remaining,
-					&mut parts,
-					&mut items,
-				);
-			}
-		}
+            if let Ok(text) = std::fs::read_to_string(&abs) {
+                seen.insert(path.clone());
+                resolved_paths.push(path.clone());
+                push_manifest_item(
+                    "file",
+                    path.clone(),
+                    format!("# File: {path}\n\n{text}"),
+                    &mut remaining,
+                    &mut parts,
+                    &mut items,
+                );
+            }
+        }
 
         let payload = parts.join("\n\n---\n\n");
         Ok(AiContextBuildResponse {

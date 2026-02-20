@@ -82,7 +82,9 @@ fn normalize_rel_path(raw: &str) -> Result<String, ToolError> {
             continue;
         }
         if p == ".." {
-            return Err(ToolError("parent path segments are not accessible".to_string()));
+            return Err(ToolError(
+                "parent path segments are not accessible".to_string(),
+            ));
         }
         if p.starts_with('.') {
             return Err(ToolError("hidden paths are not accessible".to_string()));

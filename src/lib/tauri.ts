@@ -334,6 +334,23 @@ export interface AiChatHistoryDetail {
 	tool_events: AiStoredToolEvent[];
 }
 
+export interface CodexRateLimitWindow {
+	used_percent: number;
+	window_duration_mins?: number | null;
+	resets_at?: number | null;
+}
+
+export interface CodexRateLimitBucket {
+	limit_id?: string | null;
+	limit_name?: string | null;
+	primary?: CodexRateLimitWindow | null;
+	secondary?: CodexRateLimitWindow | null;
+}
+
+export interface CodexRateLimits {
+	buckets: CodexRateLimitBucket[];
+}
+
 type CommandDef<Args, Result> = { args: Args; result: Result };
 
 interface TauriCommands {
@@ -542,14 +559,7 @@ interface TauriCommands {
 		}
 	>;
 	codex_logout: CommandDef<void, void>;
-	codex_rate_limits_read: CommandDef<
-		void,
-		{
-			used_percent: number;
-			window_minutes?: number | null;
-			reset_at_ms?: number | null;
-		}
-	>;
+	codex_rate_limits_read: CommandDef<void, CodexRateLimits>;
 	codex_chat_start: CommandDef<
 		{
 			request: {

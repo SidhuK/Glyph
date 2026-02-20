@@ -6,7 +6,7 @@ use super::state::CodexState;
 use super::transport::{latest_seq, rpc_call, wait_notification_after};
 use super::types::{
     CodexAccountInfo, CodexChatStartRequest, CodexChatStartResult, CodexLoginCompleteResult,
-    CodexLoginStartResult, CodexRateLimits,
+    CodexLoginStartResult, CodexRateLimitBucket, CodexRateLimitWindow, CodexRateLimits,
 };
 
 #[tauri::command]
@@ -124,25 +124,60 @@ pub async fn codex_rate_limits_read(
         json!({}),
         Duration::from_secs(20),
     )?;
-    let used_percent = value
-        .get("usedPercent")
-        .or_else(|| value.get("used_percent"))
-        .and_then(|v| v.as_f64())
-        .unwrap_or(0.0);
-    let window_minutes = value
-        .get("windowMinutes")
-        .or_else(|| value.get("window_minutes"))
-        .and_then(|v| v.as_u64());
-    let reset_at_ms = value
-        .get("resetsAt")
-        .or_else(|| value.get("reset_at_ms"))
-        .and_then(|v| v.as_u64());
+    let parse_window = |v: &serde_json::Value| -> Option<CodexRateLimitWindow> {
+        let used_percent = v
+            .get("usedPercent")
+            .or_else(|| v.get("used_percent"))
+            .and_then(|x| x.as_f64())
+            .unwrap_or(0.0);
+        let window_duration_mins = v
+            .get("windowDurationMins")
+            .or_else(|| v.get("window_minutes"))
+            .and_then(|x| x.as_u64());
+        let resets_at = v
+            .get("resetsAt")
+            .or_else(|| v.get("reset_at"))
+            .and_then(|x| x.as_u64());
+        Some(CodexRateLimitWindow {
+            used_percent,
+            window_duration_mins,
+            resets_at,
+        })
+    };
 
-    Ok(CodexRateLimits {
-        used_percent,
-        window_minutes,
-        reset_at_ms,
-    })
+    let parse_bucket =
+        |v: &serde_json::Value, limit_id: Option<String>| -> Option<CodexRateLimitBucket> {
+            let primary = v.get("primary").and_then(parse_window);
+            let secondary = v.get("secondary").and_then(parse_window);
+            if primary.is_none() && secondary.is_none() {
+                return None;
+            }
+            let limit_name = v
+                .get("limitName")
+                .or_else(|| v.get("name"))
+                .and_then(|x| x.as_str())
+                .map(|s| s.to_string());
+            Some(CodexRateLimitBucket {
+                limit_id,
+                limit_name,
+                primary,
+                secondary,
+            })
+        };
+
+    let mut buckets: Vec<CodexRateLimitBucket> = Vec::new();
+    if let Some(default_bucket) = value.get("rateLimits").and_then(|v| parse_bucket(v, None)) {
+        buckets.push(default_bucket);
+    }
+    if let Some(by_id) = value.get("rateLimitsByLimitId").and_then(|v| v.as_object()) {
+        for (id, bucket_value) in by_id {
+            if let Some(bucket) = parse_bucket(bucket_value, Some(id.clone())) {
+                buckets.push(bucket);
+            }
+        }
+    }
+
+    Ok(CodexRateLimits { buckets })
 }
 
 #[tauri::command(rename_all = "snake_case")]
@@ -211,10 +246,7 @@ pub async fn codex_chat_start(
 }
 
 #[tauri::command(rename_all = "snake_case")]
-pub async fn codex_chat_cancel(
-    state: State<'_, CodexState>,
-    job_id: String,
-) -> Result<(), String> {
+pub async fn codex_chat_cancel(state: State<'_, CodexState>, job_id: String) -> Result<(), String> {
     let _ = rpc_call(
         &state,
         "turn/interrupt",

@@ -1,4 +1,4 @@
-use crate::{io_atomic, glyph_paths, paths, vault::VaultState};
+use crate::{glyph_paths, io_atomic, paths, vault::VaultState};
 use std::path::{Path, PathBuf};
 use tauri::State;
 
@@ -32,10 +32,7 @@ fn glyph_abs_path(vault_root: &Path, rel_inside_glyph: &Path) -> Result<PathBuf,
 }
 
 #[tauri::command]
-pub async fn glyph_read_text(
-    state: State<'_, VaultState>,
-    path: String,
-) -> Result<String, String> {
+pub async fn glyph_read_text(state: State<'_, VaultState>, path: String) -> Result<String, String> {
     let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<String, String> {
         let rel = normalize_rel_path(&path)?;

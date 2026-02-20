@@ -41,7 +41,11 @@ impl NotificationQueue {
     fn push(&mut self, method: String, params: Value) -> u64 {
         let seq = self.next_seq;
         self.next_seq = self.next_seq.saturating_add(1);
-        self.items.push_back(CodexNotification { seq, method, params });
+        self.items.push_back(CodexNotification {
+            seq,
+            method,
+            params,
+        });
         while self.items.len() > 4000 {
             let _ = self.items.pop_front();
         }
@@ -148,11 +152,14 @@ impl CodexState {
             }
         });
         let _ = self.call_locked(process, "initialize", init_params, Duration::from_secs(20))?;
-        Self::write_line(process, &json!({
-            "jsonrpc": "2.0",
-            "method": "initialized",
-            "params": {}
-        }))?;
+        Self::write_line(
+            process,
+            &json!({
+                "jsonrpc": "2.0",
+                "method": "initialized",
+                "params": {}
+            }),
+        )?;
         process.initialized = true;
         Ok(())
     }
@@ -241,7 +248,6 @@ impl CodexState {
         queue = next;
         Ok(queue.first_after(after_seq))
     }
-
 }
 
 impl Drop for CodexState {

@@ -14,8 +14,7 @@ use super::tasks::{
     mutate_task_line, note_abs_path, query_tasks, write_note, IndexedTask, TaskBucket,
 };
 use super::types::{
-    BacklinkItem, IndexRebuildResult, SearchResult, TagCount, TaskDateInfo,
-    ViewNotePreview,
+    BacklinkItem, IndexRebuildResult, SearchResult, TagCount, TaskDateInfo, ViewNotePreview,
 };
 
 fn tokenize_search_query(raw: &str) -> Vec<String> {
@@ -44,7 +43,9 @@ fn tokenize_search_query(raw: &str) -> Vec<String> {
 
 fn task_line_parts(line: &str) -> Option<(&str, &str)> {
     let trimmed = line.trim_start();
-    let list_prefix = ["- [ ] ", "- [x] ", "- [X] ", "* [ ] ", "* [x] ", "* [X] ", "+ [ ] ", "+ [x] ", "+ [X] "];
+    let list_prefix = [
+        "- [ ] ", "- [x] ", "- [X] ", "* [ ] ", "* [x] ", "* [X] ", "+ [ ] ", "+ [x] ", "+ [X] ",
+    ];
     for prefix in list_prefix {
         if trimmed.starts_with(prefix) {
             let head_offset = line.len() - trimmed.len();
@@ -260,10 +261,7 @@ pub async fn search_view_data(
             .map(|r| ViewNotePreview {
                 id: r.id.clone(),
                 title: r.title,
-                content: preview_by_id
-                    .get(&r.id)
-                    .cloned()
-                    .unwrap_or(r.snippet),
+                content: preview_by_id.get(&r.id).cloned().unwrap_or(r.snippet),
             })
             .collect())
     })
@@ -610,7 +608,11 @@ pub fn task_update_by_ordinal(
     scheduled_date: String,
     due_date: String,
 ) -> Option<String> {
-    let newline = if markdown.contains("\r\n") { "\r\n" } else { "\n" };
+    let newline = if markdown.contains("\r\n") {
+        "\r\n"
+    } else {
+        "\n"
+    };
     let mut lines: Vec<String> = markdown.lines().map(|line| line.to_string()).collect();
     let mut idx = 0u32;
     for line in &mut lines {

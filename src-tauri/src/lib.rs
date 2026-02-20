@@ -1,9 +1,9 @@
 mod ai_codex;
 mod ai_rig;
-mod index;
-mod io_atomic;
 mod glyph_fs;
 mod glyph_paths;
+mod index;
+mod io_atomic;
 mod links;
 mod net;
 mod notes;
@@ -218,7 +218,6 @@ pub fn run() {
                 } else {
                     warn!("Main window not found during setup");
                 }
-
             }
             Ok(())
         })

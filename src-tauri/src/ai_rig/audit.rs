@@ -1,4 +1,4 @@
-use crate::{io_atomic, glyph_paths};
+use crate::{glyph_paths, io_atomic};
 use std::path::{Path, PathBuf};
 
 use super::helpers::now_ms;

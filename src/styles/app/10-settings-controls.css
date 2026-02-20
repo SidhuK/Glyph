@@ -182,6 +182,61 @@
 	white-space: nowrap;
 }
 
+.codexRateLimitList {
+	min-width: 230px;
+	max-width: 320px;
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.codexRateLimitItem {
+	padding: 10px 12px;
+	border-radius: 10px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 75%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 55%, transparent);
+}
+
+.codexRateLimitRow {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 8px;
+	font-size: var(--text-xs);
+	color: var(--text-secondary);
+}
+
+.codexRateLimitRow span:last-child {
+	color: var(--text-primary);
+	font-weight: var(--font-semibold);
+}
+
+.codexRateLimitBar {
+	margin-top: 8px;
+	height: 8px;
+	border-radius: 999px;
+	overflow: hidden;
+	background: color-mix(in srgb, var(--bg-tertiary) 75%, transparent);
+	border: 1px solid color-mix(in srgb, var(--border-light) 65%, transparent);
+}
+
+.codexRateLimitBarFill {
+	height: 100%;
+	border-radius: inherit;
+	background: linear-gradient(
+		90deg,
+		color-mix(in srgb, var(--interactive-accent) 88%, #8ddf8d 12%) 0%,
+		color-mix(in srgb, var(--interactive-accent) 72%, #8ddf8d 28%) 100%
+	);
+}
+
+.codexRateLimitMeta {
+	margin-top: 7px;
+	font-size: 11px;
+	color: var(--text-tertiary);
+}
+
 .settingsTextarea {
 	max-width: 100%;
 	min-width: 280px;
