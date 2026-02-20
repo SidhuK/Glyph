@@ -248,26 +248,38 @@ pub async fn run_with_codex(
     };
 
     let mut seq = latest_seq(codex_state.inner())?;
+    let mut turn_params = json!({
+        "threadId": thread_id,
+        "input": [
+            {
+                "type": "text",
+                "text": input_text
+            }
+        ],
+        "model": model,
+        "cwd": root_str.clone(),
+        "approvalPolicy": "never",
+        "sandboxPolicy": {
+            "type": "workspaceWrite",
+            "writableRoots": [root_str.clone()],
+            "networkAccess": true
+        }
+    });
+    if let Some(effort) = profile
+        .reasoning_effort
+        .as_ref()
+        .map(String::as_str)
+        .map(str::trim)
+        .filter(|s| !s.is_empty())
+    {
+        if let Some(obj) = turn_params.as_object_mut() {
+            obj.insert("effort".to_string(), json!(effort));
+        }
+    }
     let started = rpc_call(
         codex_state.inner(),
         "turn/start",
-        json!({
-            "threadId": thread_id,
-            "input": [
-                {
-                    "type": "text",
-                    "text": input_text
-                }
-            ],
-            "model": model,
-            "cwd": root_str.clone(),
-            "approvalPolicy": "never",
-            "sandboxPolicy": {
-                "type": "workspaceWrite",
-                "writableRoots": [root_str.clone()],
-                "networkAccess": true
-            }
-        }),
+        turn_params,
         Duration::from_secs(30),
     )?;
     let turn_id = extract_turn_id(&started)

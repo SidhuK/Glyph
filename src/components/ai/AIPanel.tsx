@@ -203,6 +203,7 @@ export function AIPanel({
 			if (!loaded) return;
 			const restoredTimeline = loaded.toolEvents.map((event, index) => ({
 				id: `${event.call_id?.trim() ? `${event.call_id}-${event.phase}` : `${event.tool}-${event.phase}-${index}`}-${event.at_ms ?? 0}`,
+				kind: "tool" as const,
 				tool: event.tool || "tool",
 				phase:
 					event.phase === "result" || event.phase === "error"

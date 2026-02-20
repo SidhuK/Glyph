@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { openUrl } from "@tauri-apps/plugin-opener";
-import { type AiProfile, invoke } from "../../../lib/tauri";
+import { type AiModel, type AiProfile, invoke } from "../../../lib/tauri";
 import { AiModelCombobox } from "./AiModelCombobox";
 import { errMessage } from "./utils";
 
@@ -24,6 +24,7 @@ export function AiProfileSections({
 	const [profileDraft, setProfileDraft] = useState<AiProfile | null>(
 		activeProfile ? structuredClone(activeProfile) : null,
 	);
+	const [availableModels, setAvailableModels] = useState<AiModel[] | null>(null);
 	const [apiState, setApiState] = useState<{
 		apiKeyDraft: string;
 		secretConfigured: boolean | null;
@@ -174,6 +175,12 @@ export function AiProfileSections({
 		setProfileDraft((prev) => (prev ? updater(prev) : prev));
 	}, []);
 
+	const selectedModel =
+		availableModels?.find((m) => m.id === profileDraft?.model) ?? null;
+	const reasoningOptions = selectedModel?.reasoning_effort ?? null;
+	const shouldShowReasoningSelect =
+		profileDraft?.provider === "codex_chatgpt";
+
 	const handleSave = useCallback(async () => {
 		if (!profileDraft) return;
 		await onSaveProfile(profileDraft);
@@ -286,6 +293,10 @@ export function AiProfileSections({
 								updateDraft((p) => ({
 									...p,
 									provider: e.target.value as AiProfile["provider"],
+									reasoning_effort:
+										e.target.value === "codex_chatgpt"
+											? p.reasoning_effort ?? null
+											: null,
 								}))
 							}
 						>
@@ -311,9 +322,79 @@ export function AiProfileSections({
 							provider={profileDraft.provider}
 							value={profileDraft.model}
 							secretConfigured={secretConfigured}
-							onChange={(next) => updateDraft((p) => ({ ...p, model: next }))}
+							onChange={(next) =>
+								updateDraft((p) => {
+									const model = availableModels?.find((m) => m.id === next) ?? null;
+									const options = model?.reasoning_effort ?? null;
+									const current = p.reasoning_effort ?? null;
+									const stillValid = !!options?.some((o) => o.effort === current);
+									const nextEffort = stillValid
+										? current
+										: model?.default_reasoning_effort ??
+											current;
+									return {
+										...p,
+										model: next,
+										reasoning_effort:
+											p.provider === "codex_chatgpt" ? nextEffort : null,
+									};
+								})
+							}
+							onModelsChange={setAvailableModels}
 						/>
 					</div>
+
+					{shouldShowReasoningSelect ? (
+						<div className="settingsField">
+							<div>
+								<label className="settingsLabel" htmlFor="aiReasoningEffort">
+									Reasoning level
+								</label>
+							</div>
+							{(reasoningOptions?.length ?? 0) > 0 ? (
+								<select
+									id="aiReasoningEffort"
+									value={
+										profileDraft?.reasoning_effort ??
+										selectedModel?.default_reasoning_effort ??
+										(reasoningOptions?.[0]?.effort ?? "")
+									}
+									onChange={(e) =>
+										updateDraft((p) => ({
+											...p,
+											reasoning_effort: e.target.value || null,
+										}))
+									}
+								>
+									{reasoningOptions?.map((option) => (
+										<option key={option.effort} value={option.effort}>
+											{option.description
+												? `${option.effort} - ${option.description}`
+												: option.effort}
+										</option>
+									))}
+								</select>
+							) : (
+								<>
+									<input
+										id="aiReasoningEffort"
+										value={profileDraft?.reasoning_effort ?? ""}
+										placeholder="e.g. low, medium, high"
+										onChange={(e) =>
+											updateDraft((p) => ({
+												...p,
+												reasoning_effort: e.target.value || null,
+											}))
+										}
+									/>
+									<div className="settingsHint">
+										This model did not publish reasoning options; enter effort
+										manually.
+									</div>
+								</>
+							)}
+						</div>
+					) : null}
 
 					{profileDraft.provider === "openai_compat" ? (
 						<div className="settingsField">

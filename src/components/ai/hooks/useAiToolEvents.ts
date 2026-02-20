@@ -97,6 +97,7 @@ export function useAiToolEvents({
 			...prev,
 			{
 				id: `${payload.call_id ?? crypto.randomUUID()}-${phase}-${Date.now()}`,
+				kind: "tool",
 				tool,
 				phase,
 				callId: payload.call_id,
@@ -108,6 +109,48 @@ export function useAiToolEvents({
 						: Date.now(),
 			},
 		]);
+	});
+
+	useTauriEvent("ai:chunk", (payload) => {
+		if (isChatMode) return;
+		if (chatStatus !== "submitted" && chatStatus !== "streaming") return;
+		if (
+			activeToolJobIdRef.current &&
+			payload.job_id !== activeToolJobIdRef.current
+		)
+			return;
+		if (!activeToolJobIdRef.current) {
+			activeToolJobIdRef.current = payload.job_id;
+		}
+		if (!payload.delta) return;
+		setShowSlowStart(false);
+		setResponsePhase("streaming");
+		setToolTimeline((prev) => {
+			const at = Date.now();
+			const last = prev[prev.length - 1];
+			if (
+				last &&
+				last.kind === "text" &&
+				at - last.at <= 900 &&
+				last.text.length < 6000
+			) {
+				const merged = {
+					...last,
+					text: `${last.text}${payload.delta}`,
+					at,
+				};
+				return [...prev.slice(0, -1), merged];
+			}
+			return [
+				...prev,
+				{
+					id: `text-${at}-${crypto.randomUUID()}`,
+					kind: "text",
+					text: payload.delta,
+					at,
+				},
+			];
+		});
 	});
 
 	const toolStatusText = useMemo(() => {

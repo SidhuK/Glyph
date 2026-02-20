@@ -29,6 +29,8 @@ pub struct AiProfile {
     pub headers: Vec<AiHeader>,
     #[serde(default)]
     pub allow_private_hosts: bool,
+    #[serde(default)]
+    pub reasoning_effort: Option<String>,
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
@@ -46,6 +48,13 @@ pub enum AiAssistantMode {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug)]
+pub struct AiReasoningEffortOption {
+    pub effort: String,
+    #[serde(default)]
+    pub description: Option<String>,
+}
+
+#[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct AiModel {
     pub id: String,
     pub name: String,
@@ -58,6 +67,10 @@ pub struct AiModel {
     pub completion_pricing: Option<String>,
     pub supported_parameters: Option<Vec<String>>,
     pub max_completion_tokens: Option<u32>,
+    #[serde(default)]
+    pub reasoning_effort: Option<Vec<AiReasoningEffortOption>>,
+    #[serde(default)]
+    pub default_reasoning_effort: Option<String>,
 }
 
 #[derive(Deserialize, Clone)]

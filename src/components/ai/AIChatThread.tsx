@@ -81,6 +81,7 @@ function collectFromEntries(entries: unknown[]): CitationItem[] {
 function extractCitations(events: ToolTimelineEvent[]): CitationItem[] {
 	const byPath = new Map<string, CitationItem>();
 	for (const event of events) {
+		if (event.kind === "text") continue;
 		if (event.phase !== "result") continue;
 		let payload = parseJsonLoose(event.payload);
 		if (payload && typeof payload === "object") {
@@ -123,7 +124,7 @@ export function AIChatThread({
 	chatStatus,
 	phaseStatusText,
 	toolTimeline,
-	lastUserMessageIndex,
+	lastUserMessageIndex: _lastUserMessageIndex,
 	onCopy,
 	onSave,
 	onRetry,
@@ -131,6 +132,13 @@ export function AIChatThread({
 	const shouldReduceMotion = useReducedMotion();
 	const citations = extractCitations(toolTimeline);
 	const [citationsOpen, setCitationsOpen] = useState(false);
+	const hasInterleavedTextTimeline = toolTimeline.some((e) => e.kind === "text");
+	const lastAssistantMessageIndex = (() => {
+		for (let i = messages.length - 1; i >= 0; i -= 1) {
+			if (messages[i]?.role === "assistant") return i;
+		}
+		return -1;
+	})();
 
 	return (
 		<>
@@ -188,11 +196,15 @@ export function AIChatThread({
 									</div>
 								</m.div>
 							) : msg.role === "assistant" ? (
-								<Suspense
-									fallback={<div className="aiChatContent">{text}</div>}
-								>
-									<AIMessageMarkdown markdown={text} />
-								</Suspense>
+								!isChatMode &&
+								index === lastAssistantMessageIndex &&
+								hasInterleavedTextTimeline ? null : (
+									<Suspense
+										fallback={<div className="aiChatContent">{text}</div>}
+									>
+										<AIMessageMarkdown markdown={text} />
+									</Suspense>
+								)
 							) : (
 								<div className="aiChatContent">{text}</div>
 							)}
@@ -304,7 +316,7 @@ export function AIChatThread({
 								</div>
 							) : null}
 						</div>
-						{!isChatMode && index === lastUserMessageIndex ? (
+						{!isChatMode && index === lastAssistantMessageIndex ? (
 							<AIToolTimeline
 								events={toolTimeline}
 								streaming={

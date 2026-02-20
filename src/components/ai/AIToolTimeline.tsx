@@ -6,8 +6,9 @@ import { formatToolName } from "./aiPanelConstants";
 
 type ToolPhase = "call" | "result" | "error";
 
-export interface ToolTimelineEvent {
+export interface ToolTimelineToolEvent {
 	id: string;
+	kind?: "tool";
 	tool: string;
 	phase: ToolPhase;
 	at: number;
@@ -15,6 +16,15 @@ export interface ToolTimelineEvent {
 	payload?: unknown;
 	error?: string;
 }
+
+export interface ToolTimelineTextEvent {
+	id: string;
+	kind: "text";
+	text: string;
+	at: number;
+}
+
+export type ToolTimelineEvent = ToolTimelineToolEvent | ToolTimelineTextEvent;
 
 interface AIToolTimelineProps {
 	events: ToolTimelineEvent[];
@@ -66,7 +76,7 @@ function stringifyDetail(value: unknown): string {
 	}
 }
 
-function detailTextForEvent(event: ToolTimelineEvent): string {
+function detailTextForEvent(event: ToolTimelineToolEvent): string {
 	const lines: string[] = [];
 	if (event.callId?.trim()) {
 		lines.push(`call_id: ${event.callId}`);
@@ -90,11 +100,28 @@ function detailTextForEvent(event: ToolTimelineEvent): string {
 export function AIToolTimeline({ events, streaming }: AIToolTimelineProps) {
 	const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 	if (events.length === 0) return null;
+	const orderedEvents = [...events].sort((a, b) => a.at - b.at);
 
 	return (
 		<m.div className="aiToolTimelineInline" aria-live="polite">
 			<AnimatePresence initial={false}>
-				{events.map((event) => {
+				{orderedEvents.map((event) => {
+					if (event.kind === "text") {
+						return (
+							<m.div
+								key={event.id}
+								layout
+								initial={{ opacity: 0, y: 8, scale: 0.99 }}
+								animate={{ opacity: 1, y: 0, scale: 1 }}
+								exit={{ opacity: 0, y: -6 }}
+								transition={{ type: "spring", stiffness: 340, damping: 27 }}
+								className="aiToolInlineText"
+							>
+								<div className="aiToolInlineTextContent">{event.text}</div>
+								<div className="aiToolTime">{formatTime(event.at)}</div>
+							</m.div>
+						);
+					}
 					const summary = summarizePayload(event.payload);
 					const error =
 						event.phase === "error" && typeof event.error === "string"

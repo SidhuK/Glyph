@@ -265,6 +265,7 @@ export interface AiProfile {
 	base_url: string | null;
 	headers: AiHeader[];
 	allow_private_hosts: boolean;
+	reasoning_effort?: string | null;
 }
 
 export interface AiMessage {
@@ -288,6 +289,13 @@ export interface AiModel {
 	completion_pricing: string | null;
 	supported_parameters: string[] | null;
 	max_completion_tokens: number | null;
+	reasoning_effort?: AiReasoningEffortOption[] | null;
+	default_reasoning_effort?: string | null;
+}
+
+export interface AiReasoningEffortOption {
+	effort: string;
+	description?: string | null;
 }
 
 export interface ProviderSupportEntry {

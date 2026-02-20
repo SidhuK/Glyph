@@ -7,6 +7,7 @@ interface AiModelComboboxProps {
 	value: string;
 	secretConfigured: boolean | null;
 	onChange: (modelId: string) => void;
+	onModelsChange?: (models: AiModel[] | null) => void;
 }
 
 const providerNeedsApiKey = (provider: AiProviderKind): boolean =>
@@ -18,6 +19,7 @@ export function AiModelCombobox({
 	value,
 	secretConfigured,
 	onChange,
+	onModelsChange,
 }: AiModelComboboxProps) {
 	const [models, setModels] = useState<AiModel[] | null>(null);
 	const [loading, setLoading] = useState(false);
@@ -39,13 +41,15 @@ export function AiModelCombobox({
 					provider,
 				});
 				setModels(result);
+				onModelsChange?.(result);
 			} catch (e) {
 				setError(e instanceof Error ? e.message : String(e));
+				onModelsChange?.(null);
 			} finally {
 				setLoading(false);
 			}
 		},
-		[models, loading, hasAttemptedFetch, profileId],
+		[models, loading, hasAttemptedFetch, profileId, provider, onModelsChange],
 	);
 
 	useEffect(() => {
@@ -71,10 +75,18 @@ export function AiModelCombobox({
 	const handleRetry = useCallback(() => {
 		if (!canFetchModels) return;
 		setModels(null);
+		onModelsChange?.(null);
 		setError("");
 		setHasAttemptedFetch(false);
 		void fetchModels(true);
-	}, [canFetchModels, fetchModels]);
+	}, [canFetchModels, fetchModels, onModelsChange]);
+
+	useEffect(() => {
+		if (!canFetchModels) {
+			setModels(null);
+			onModelsChange?.(null);
+		}
+	}, [canFetchModels, onModelsChange]);
 
 	const statusLabel = loading
 		? "Connecting…"

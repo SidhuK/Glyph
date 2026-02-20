@@ -4,7 +4,7 @@ use crate::ai_codex::{state::CodexState, transport::rpc_call};
 use super::helpers::{apply_extra_headers, http_client, parse_base_url};
 use super::local_secrets;
 use super::store::{ensure_default_profiles, read_store, store_path, write_store};
-use super::types::{AiModel, AiProviderKind};
+use super::types::{AiModel, AiProviderKind, AiReasoningEffortOption};
 use crate::vault::VaultState;
 
 #[derive(serde::Deserialize)]
@@ -54,6 +54,8 @@ async fn list_openai_like(
             completion_pricing: None,
             supported_parameters: None,
             max_completion_tokens: None,
+            reasoning_effort: None,
+            default_reasoning_effort: None,
         })
         .collect();
     models.sort_by(|a, b| a.id.cmp(&b.id));
@@ -156,6 +158,8 @@ async fn list_openrouter(
                 completion_pricing: pricing.and_then(|p| p.completion.clone()),
                 supported_parameters: m.supported_parameters,
                 max_completion_tokens: m.top_provider.and_then(|t| t.max_completion_tokens),
+                reasoning_effort: None,
+                default_reasoning_effort: None,
             }
         })
         .collect();
@@ -212,6 +216,8 @@ async fn list_anthropic(
             completion_pricing: None,
             supported_parameters: None,
             max_completion_tokens: None,
+            reasoning_effort: None,
+            default_reasoning_effort: None,
         })
         .collect();
     models.sort_by(|a, b| a.name.cmp(&b.name));
@@ -274,6 +280,8 @@ async fn list_gemini(
                 completion_pricing: None,
                 supported_parameters: None,
                 max_completion_tokens: None,
+                reasoning_effort: None,
+                default_reasoning_effort: None,
             }
         })
         .collect();
@@ -290,6 +298,7 @@ fn parse_codex_model_item(value: &serde_json::Value) -> Option<AiModel> {
         .filter(|s| !s.is_empty())?;
     let name = value
         .get("name")
+        .or_else(|| value.get("displayName"))
         .and_then(|v| v.as_str())
         .map(|s| s.to_string())
         .unwrap_or_else(|| id.clone());
@@ -303,6 +312,67 @@ fn parse_codex_model_item(value: &serde_json::Value) -> Option<AiModel> {
         .or_else(|| value.get("max_completion_tokens"))
         .and_then(|v| v.as_u64())
         .and_then(|n| u32::try_from(n).ok());
+    let parse_effort_option = |entry: &serde_json::Value| -> Option<AiReasoningEffortOption> {
+        if let Some(text) = entry.as_str() {
+            let effort = text.trim();
+            if effort.is_empty() {
+                return None;
+            }
+            return Some(AiReasoningEffortOption {
+                effort: effort.to_string(),
+                description: None,
+            });
+        }
+
+        let effort = entry
+            .get("effort")
+            .or_else(|| entry.get("reasoningEffort"))
+            .or_else(|| entry.get("id"))
+            .or_else(|| entry.get("value"))
+            .and_then(|v| v.as_str())
+            .map(str::trim)
+            .filter(|s| !s.is_empty())?;
+
+        let description = entry
+            .get("description")
+            .or_else(|| entry.get("label"))
+            .and_then(|v| v.as_str())
+            .map(|s| s.to_string());
+
+        Some(AiReasoningEffortOption {
+            effort: effort.to_string(),
+            description,
+        })
+    };
+    let reasoning_effort_value = value
+        .get("reasoningEffort")
+        .or_else(|| value.get("reasoning_effort"))
+        .or_else(|| value.get("supportedReasoningEfforts"))
+        .or_else(|| value.get("reasoning"))
+        .or_else(|| value.get("effortOptions"));
+    let reasoning_effort = if let Some(arr) = reasoning_effort_value.and_then(|v| v.as_array()) {
+        Some(arr.iter().filter_map(parse_effort_option).collect::<Vec<_>>())
+    } else if let Some(obj) = reasoning_effort_value.and_then(|v| v.as_object()) {
+        obj.get("available")
+            .or_else(|| obj.get("options"))
+            .or_else(|| obj.get("supported"))
+            .or_else(|| obj.get("values"))
+            .and_then(|v| v.as_array())
+            .map(|arr| arr.iter().filter_map(parse_effort_option).collect::<Vec<_>>())
+    } else {
+        None
+    }
+    .filter(|arr| !arr.is_empty());
+    let default_reasoning_effort = value
+        .get("defaultReasoningEffort")
+        .or_else(|| value.get("default_reasoning_effort"))
+        .or_else(|| value.pointer("/reasoningEffort/default"))
+        .or_else(|| value.pointer("/reasoning/default"))
+        .or_else(|| value.pointer("/reasoning/defaultEffort"))
+        .and_then(|v| v.as_str())
+        .map(str::trim)
+        .filter(|s| !s.is_empty())
+        .map(|s| s.to_string());
 
     Some(AiModel {
         id,
@@ -312,13 +382,33 @@ fn parse_codex_model_item(value: &serde_json::Value) -> Option<AiModel> {
             .get("description")
             .and_then(|v| v.as_str())
             .map(|s| s.to_string()),
-        input_modalities: None,
-        output_modalities: None,
+        input_modalities: value
+            .get("inputModalities")
+            .or_else(|| value.get("input_modalities"))
+            .and_then(|v| v.as_array())
+            .map(|arr| {
+                arr.iter()
+                    .filter_map(|entry| entry.as_str().map(|s| s.to_string()))
+                    .collect::<Vec<_>>()
+            })
+            .filter(|arr| !arr.is_empty()),
+        output_modalities: value
+            .get("outputModalities")
+            .or_else(|| value.get("output_modalities"))
+            .and_then(|v| v.as_array())
+            .map(|arr| {
+                arr.iter()
+                    .filter_map(|entry| entry.as_str().map(|s| s.to_string()))
+                    .collect::<Vec<_>>()
+            })
+            .filter(|arr| !arr.is_empty()),
         tokenizer: None,
         prompt_pricing: None,
         completion_pricing: None,
         supported_parameters: None,
         max_completion_tokens,
+        reasoning_effort,
+        default_reasoning_effort,
     })
 }
 

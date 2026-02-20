@@ -45,6 +45,7 @@ pub fn ensure_default_profiles(store: &mut AiStore) {
             base_url: base_url.map(str::to_string),
             headers: Vec::new(),
             allow_private_hosts,
+            reasoning_effort: None,
         });
     };
 

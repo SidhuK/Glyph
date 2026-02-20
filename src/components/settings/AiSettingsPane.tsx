@@ -50,6 +50,7 @@ export function AiSettingsPane() {
 					base_url: null,
 					headers: [],
 					allow_private_hosts: false,
+					reasoning_effort: null,
 				},
 			});
 			setProfiles((prev) => [...prev, created]);
