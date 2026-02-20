@@ -58,7 +58,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 				.replace(/\.[^.]+$/, "")
 				.trim() ||
 			"Untitled",
-		24,
+		18,
 	);
 	const extBadge = !isMd && fileExt ? fileExt.slice(1) : "";
 	const inputRef = useRef<HTMLInputElement | null>(null);

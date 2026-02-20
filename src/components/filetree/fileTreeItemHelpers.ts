@@ -30,19 +30,19 @@ export function truncateMiddle(text: string, maxChars: number): string {
 export function truncateTreeLabel(name: string, isFile: boolean): string {
 	const trimmed = name.trim();
 	if (!trimmed) return isFile ? "Untitled.md" : "New Folder";
-	if (!isFile) return truncateMiddle(trimmed, 22);
+	if (!isFile) return truncateMiddle(trimmed, 18);
 	const dotIndex = trimmed.lastIndexOf(".");
 	if (dotIndex > 0 && dotIndex < trimmed.length - 1) {
 		const ext = trimmed.slice(dotIndex);
 		const base = trimmed.slice(0, dotIndex);
-		const maxChars = 24;
+		const maxChars = 20;
 		if (trimmed.length <= maxChars) return trimmed;
 		const availableBase = maxChars - ext.length - 3;
 		if (availableBase >= 4) {
 			return `${base.slice(0, availableBase)}...${ext}`;
 		}
 	}
-	return truncateMiddle(trimmed, 24);
+	return truncateMiddle(trimmed, 20);
 }
 
 export function splitEditableFileName(name: string): {

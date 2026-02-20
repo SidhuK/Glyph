@@ -119,6 +119,7 @@
 	display: flex;
 	align-items: center;
 	gap: 6px;
+	min-width: 0;
 }
 
 .fileTreeRow {
@@ -126,6 +127,7 @@
 	display: flex;
 	align-items: center;
 	gap: var(--space-1);
+	min-width: 0;
 	min-height: 28px;
 	padding: 2px var(--space-2);
 	text-align: left;
@@ -248,6 +250,8 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	flex: 1;
+	min-width: 0;
+	max-width: 100%;
 }
 
 .fileTreeCounts {

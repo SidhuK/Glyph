@@ -27,11 +27,21 @@ export function TabBar({
 	onDragEnd,
 	onReorder,
 }: TabBarProps) {
-	const fileName = useCallback((path: string) => {
-		if (path === TASKS_TAB_ID) return "Tasks";
-		const parts = path.split("/").filter(Boolean);
-		return parts[parts.length - 1] ?? path;
+	const stripFileExtension = useCallback((name: string) => {
+		if (!name || name.startsWith(".")) return name;
+		const withoutExt = name.replace(/\.[^./]+$/, "");
+		return withoutExt || name;
 	}, []);
+
+	const fileName = useCallback(
+		(path: string) => {
+			if (path === TASKS_TAB_ID) return "Tasks";
+			const parts = path.split("/").filter(Boolean);
+			const rawName = parts[parts.length - 1] ?? path;
+			return stripFileExtension(rawName);
+		},
+		[stripFileExtension],
+	);
 
 	return (
 		<div className="mainTabsBar">

@@ -22,6 +22,13 @@ interface MainContentProps {
 	openTasksRequest: number;
 }
 
+function recentDisplayName(relPath: string): string {
+	const fileName = relPath.split("/").pop() ?? relPath;
+	if (!fileName || fileName.startsWith(".")) return fileName || relPath;
+	const withoutExt = fileName.replace(/\.[^./]+$/, "");
+	return withoutExt || fileName;
+}
+
 export const MainContent = memo(function MainContent({
 	fileTree,
 	onOpenCommandPalette,
@@ -193,7 +200,7 @@ export const MainContent = memo(function MainContent({
 											>
 												<FileText size={14} className="mainRecentFileIcon" />
 												<span className="mainRecentFileName">
-													{file.path.split("/").pop() ?? file.path}
+													{recentDisplayName(file.path)}
 												</span>
 												<span className="mainRecentFilePath">{file.path}</span>
 											</m.button>
