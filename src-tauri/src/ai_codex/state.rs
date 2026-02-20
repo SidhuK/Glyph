@@ -1,6 +1,7 @@
 use serde_json::{json, Value};
 use std::collections::{HashMap, VecDeque};
 use std::io::{BufRead, BufReader, Write};
+use std::path::{Path, PathBuf};
 use std::process::{Child, ChildStderr, ChildStdin, ChildStdout, Command, Stdio};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{mpsc, Arc, Condvar, Mutex};
@@ -80,14 +81,76 @@ impl Default for CodexState {
 }
 
 impl CodexState {
+    fn candidate_codex_paths() -> Vec<PathBuf> {
+        let mut candidates: Vec<PathBuf> = Vec::new();
+        if let Some(explicit) = std::env::var_os("CODEX_CLI_PATH") {
+            candidates.push(PathBuf::from(explicit));
+        }
+        if let Some(path_var) = std::env::var_os("PATH") {
+            for dir in std::env::split_paths(&path_var) {
+                candidates.push(dir.join("codex"));
+            }
+        }
+        if let Some(home) = std::env::var_os("HOME") {
+            let home = PathBuf::from(home);
+            candidates.push(home.join(".bun/bin/codex"));
+            candidates.push(home.join(".npm-global/bin/codex"));
+            candidates.push(home.join(".local/bin/codex"));
+        }
+        candidates.push(PathBuf::from("/opt/homebrew/bin/codex"));
+        candidates.push(PathBuf::from("/usr/local/bin/codex"));
+        candidates.push(PathBuf::from("/usr/bin/codex"));
+        candidates
+    }
+
+    fn is_executable(path: &Path) -> bool {
+        if !path.is_file() {
+            return false;
+        }
+        #[cfg(unix)]
+        {
+            use std::os::unix::fs::PermissionsExt;
+            if let Ok(meta) = std::fs::metadata(path) {
+                let mode = meta.permissions().mode();
+                return mode & 0o111 != 0;
+            }
+            false
+        }
+        #[cfg(not(unix))]
+        {
+            true
+        }
+    }
+
+    fn resolve_codex_binary() -> Result<PathBuf, String> {
+        let mut searched: Vec<String> = Vec::new();
+        for candidate in Self::candidate_codex_paths() {
+            searched.push(candidate.display().to_string());
+            if Self::is_executable(&candidate) {
+                return Ok(candidate);
+            }
+        }
+        Err(format!(
+            "failed to locate codex CLI binary. Set CODEX_CLI_PATH to the full executable path. searched: {}",
+            searched.join(", ")
+        ))
+    }
+
     fn spawn_process(&self) -> Result<RuntimeProcess, String> {
-        let mut child = Command::new("codex")
+        let codex_bin = Self::resolve_codex_binary()?;
+        let mut child = Command::new(&codex_bin)
             .args(["app-server"])
             .stdin(Stdio::piped())
             .stdout(Stdio::piped())
             .stderr(Stdio::piped())
             .spawn()
-            .map_err(|e| format!("failed to start codex app-server: {e}"))?;
+            .map_err(|e| {
+                format!(
+                    "failed to start codex app-server using {}: {}",
+                    codex_bin.display(),
+                    e
+                )
+            })?;
 
         let stdin = child
             .stdin
