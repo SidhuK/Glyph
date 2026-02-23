@@ -8,6 +8,7 @@
 		"core:window:allow-close",
 		"core:window:allow-set-focus",
 		"core:window:allow-show",
+		"process:allow-restart",
 		"store:default",
 		"updater:default"
 	]

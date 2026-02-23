@@ -29,6 +29,12 @@ function recentDisplayName(relPath: string): string {
 	return withoutExt || fileName;
 }
 
+function recentDisplayFolder(relPath: string): string {
+	const parts = relPath.split("/").filter(Boolean);
+	if (parts.length <= 1) return "";
+	return `${parts.slice(0, -1).join("/")}/`;
+}
+
 export const MainContent = memo(function MainContent({
 	fileTree,
 	onOpenCommandPalette,
@@ -202,7 +208,9 @@ export const MainContent = memo(function MainContent({
 												<span className="mainRecentFileName">
 													{recentDisplayName(file.path)}
 												</span>
-												<span className="mainRecentFilePath">{file.path}</span>
+												<span className="mainRecentFilePath">
+													{recentDisplayFolder(file.path)}
+												</span>
 											</m.button>
 										))}
 									</div>
