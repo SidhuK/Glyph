@@ -6,7 +6,7 @@ use std::{
 };
 use tauri::State;
 
-use crate::{index::open_db, paths, vault::VaultState};
+use crate::{index::open_db, paths, utils, vault::VaultState};
 
 use super::{
     helpers::{deny_hidden_rel_path, should_hide},
@@ -34,20 +34,6 @@ pub struct FolderViewData {
     pub files: Vec<FsEntry>,
     pub subfolders: Vec<FolderViewFolder>,
     pub note_previews: Vec<FolderViewNotePreview>,
-}
-
-fn is_markdown(path: &Path) -> bool {
-    path.extension()
-        .and_then(|ext| ext.to_str())
-        .map(|ext| ext.eq_ignore_ascii_case("md") || ext.eq_ignore_ascii_case("markdown"))
-        .unwrap_or(false)
-}
-
-fn to_slash(path: &Path) -> String {
-    path.components()
-        .filter_map(|c| c.as_os_str().to_str())
-        .collect::<Vec<_>>()
-        .join("/")
 }
 
 fn list_files(root: &Path, dir: &Path, limit: usize) -> Result<Vec<FsEntry>, String> {
@@ -78,9 +64,9 @@ fn list_files(root: &Path, dir: &Path, limit: usize) -> Result<Vec<FsEntry>, Str
             }
             out.push(FsEntry {
                 name,
-                rel_path: to_slash(&child_rel),
+                rel_path: utils::to_slash(&child_rel),
                 kind: "file".to_string(),
-                is_markdown: is_markdown(&child_rel),
+                is_markdown: utils::is_markdown_path(&child_rel),
             });
             if out.len() >= limit {
                 break;
@@ -90,7 +76,7 @@ fn list_files(root: &Path, dir: &Path, limit: usize) -> Result<Vec<FsEntry>, Str
             break;
         }
     }
-    out.sort_by_key(|f| f.rel_path.to_lowercase());
+    out.sort_by_cached_key(|f| f.rel_path.to_lowercase());
     Ok(out)
 }
 
@@ -125,7 +111,7 @@ pub async fn vault_folder_view_data(
             let rel = dir_rel.join(&name);
             if meta.is_dir() {
                 subfolders.push(FolderViewFolder {
-                    dir_rel_path: to_slash(&rel),
+                    dir_rel_path: utils::to_slash(&rel),
                     name,
                 });
                 continue;
@@ -137,7 +123,7 @@ pub async fn vault_folder_view_data(
                     .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
                     .map(|d| d.as_millis() as u64)
                     .unwrap_or(0);
-                recent.push((mtime, to_slash(&rel)));
+                recent.push((mtime, utils::to_slash(&rel)));
             }
         }
 
@@ -160,7 +146,7 @@ pub async fn vault_folder_view_data(
         }
 
         let mut root_files = file_by_rel.into_values().collect::<Vec<_>>();
-        root_files.sort_by_key(|f| f.rel_path.to_lowercase());
+        root_files.sort_by_cached_key(|f| f.rel_path.to_lowercase());
         let ids = root_files
             .iter()
             .filter(|f| f.is_markdown)
@@ -171,8 +157,7 @@ pub async fn vault_folder_view_data(
             Vec::new()
         } else {
             let conn = open_db(&root)?;
-            let placeholders = std::iter::repeat("?")
-                .take(ids.len())
+            let placeholders = std::iter::repeat_n("?", ids.len())
                 .collect::<Vec<_>>()
                 .join(", ");
             let sql = format!("SELECT id, title, preview FROM notes WHERE id IN ({placeholders})");
@@ -191,7 +176,7 @@ pub async fn vault_folder_view_data(
             out
         };
 
-        subfolders.sort_by_key(|f| f.dir_rel_path.to_lowercase());
+        subfolders.sort_by_cached_key(|f| f.dir_rel_path.to_lowercase());
         Ok(FolderViewData {
             files: root_files,
             subfolders,

@@ -1,10 +1,11 @@
-use sha2::{Digest, Sha256};
 use std::path::{Path, PathBuf};
 
 use crate::paths;
 
 use super::frontmatter::{now_rfc3339, parse_frontmatter, split_frontmatter};
 use super::types::NoteMeta;
+
+pub use crate::utils::file_mtime_ms;
 
 pub fn note_rel_path(note_id: &str) -> Result<PathBuf, String> {
     let _ = uuid::Uuid::parse_str(note_id).map_err(|_| "invalid note id".to_string())?;
@@ -28,19 +29,8 @@ pub fn read_to_string(path: &Path) -> Result<String, String> {
     std::fs::read_to_string(path).map_err(|e| e.to_string())
 }
 
-pub fn file_mtime_ms(path: &Path) -> u64 {
-    std::fs::metadata(path)
-        .and_then(|m| m.modified())
-        .ok()
-        .and_then(|t| t.duration_since(std::time::UNIX_EPOCH).ok())
-        .map(|d| d.as_millis() as u64)
-        .unwrap_or(0)
-}
-
 pub fn etag_for(markdown: &str) -> String {
-    let mut hasher = Sha256::new();
-    hasher.update(markdown.as_bytes());
-    hex::encode(hasher.finalize())
+    crate::utils::sha256_hex(markdown.as_bytes())
 }
 
 pub fn extract_meta(note_id: &str, markdown: &str) -> Result<NoteMeta, String> {

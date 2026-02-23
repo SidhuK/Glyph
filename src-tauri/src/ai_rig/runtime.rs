@@ -44,6 +44,7 @@ fn not_chat_model_message(model: &str) -> String {
     )
 }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn run_with_rig(
     cancel: &CancellationToken,
     app: &AppHandle,

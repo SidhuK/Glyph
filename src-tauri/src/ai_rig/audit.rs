@@ -1,7 +1,7 @@
 use crate::{glyph_paths, io_atomic};
 use std::path::{Path, PathBuf};
 
-use super::helpers::now_ms;
+use super::helpers::{derive_chat_title, now_ms};
 use super::types::{AiChatRequest, AiMessage, AiProfile, AiStoredToolEvent};
 
 pub fn audit_log_path(vault_root: &Path, job_id: &str) -> Result<PathBuf, String> {
@@ -23,132 +23,72 @@ fn truncate(s: &str, max: usize) -> String {
     format!("{}…(truncated)", &s[..max])
 }
 
-fn derive_chat_title(messages: &[AiMessage]) -> String {
-    let user_text = messages
-        .iter()
-        .find(|m| m.role == "user" && !m.content.trim().is_empty())
-        .map(|m| m.content.trim())
-        .unwrap_or_default()
-        .to_lowercase();
-    if user_text.is_empty() {
-        return "Untitled Chat".to_string();
-    }
-
-    if user_text.contains("checklist")
-        || (user_text.contains("checked") && user_text.contains("unchecked"))
-    {
-        return "Checklist Reorder".to_string();
-    }
-    if user_text.contains("summar") {
-        return "Summary Request".to_string();
-    }
-    if user_text.contains("search") || user_text.contains("find") {
-        return "Search Request".to_string();
-    }
-
-    let mut words: Vec<String> = user_text
-        .split_whitespace()
-        .map(|w| w.trim_matches(|c: char| !c.is_alphanumeric()))
-        .filter(|w| w.len() > 2)
-        .take(6)
-        .map(|w| {
-            let mut chars = w.chars();
-            match chars.next() {
-                Some(first) => format!("{}{}", first.to_ascii_uppercase(), chars.as_str()),
-                None => String::new(),
-            }
-        })
-        .filter(|w| !w.is_empty())
-        .collect();
-
-    if words.is_empty() {
-        return "Untitled Chat".to_string();
-    }
-    if words.len() > 5 {
-        words.truncate(5);
-    }
-    words.join(" ")
+pub struct AuditLogParams<'a> {
+    pub vault_root: &'a Path,
+    pub job_id: &'a str,
+    pub history_id: &'a str,
+    pub profile: &'a AiProfile,
+    pub request: &'a AiChatRequest,
+    pub response: &'a str,
+    pub title: Option<&'a str>,
+    pub cancelled: bool,
+    pub tool_events: &'a [AiStoredToolEvent],
 }
 
-pub fn write_audit_log(
-    vault_root: &Path,
-    job_id: &str,
-    history_id: &str,
-    profile: &AiProfile,
-    request: &AiChatRequest,
-    response: &str,
-    title: Option<&str>,
-    cancelled: bool,
-    tool_events: &[AiStoredToolEvent],
-) {
+pub fn write_audit_log(params: &AuditLogParams<'_>) {
     let created_at_ms = now_ms();
-    let path = match audit_log_path(vault_root, job_id) {
+    let path = match audit_log_path(params.vault_root, params.job_id) {
         Ok(p) => p,
         Err(_) => return,
     };
 
-    let response_truncated = truncate(response, 80_000);
-    let context_truncated = request.context.as_deref().map(|s| truncate(s, 30_000));
+    let response_truncated = truncate(params.response, 80_000);
+    let context_truncated = params
+        .request
+        .context
+        .as_deref()
+        .map(|s| truncate(s, 30_000));
     let payload = serde_json::json!({
-        "job_id": job_id,
+        "job_id": params.job_id,
         "created_at_ms": created_at_ms,
         "profile": {
-            "id": profile.id,
-            "name": profile.name,
-            "provider": profile.provider,
-            "model": profile.model,
-            "base_url": profile.base_url,
+            "id": params.profile.id,
+            "name": params.profile.name,
+            "provider": params.profile.provider,
+            "model": params.profile.model,
+            "base_url": params.profile.base_url,
         },
         "request": {
-            "profile_id": request.profile_id,
-            "messages": request.messages,
-            "context_manifest": request.context_manifest,
+            "profile_id": params.request.profile_id,
+            "messages": params.request.messages,
+            "context_manifest": params.request.context_manifest,
             "context": context_truncated,
         },
         "response": response_truncated,
-        "cancelled": cancelled,
-        "tool_events": tool_events,
+        "cancelled": params.cancelled,
+        "tool_events": params.tool_events,
         "outcome": null
     });
     let bytes = serde_json::to_vec_pretty(&payload).unwrap_or_default();
     let _ = io_atomic::write_atomic(&path, &bytes);
-    write_chat_history(
-        vault_root,
-        history_id,
-        profile,
-        request,
-        &response_truncated,
-        title,
-        cancelled,
-        created_at_ms,
-        tool_events,
-    );
+    write_chat_history(params, &response_truncated, created_at_ms);
 }
 
-fn write_chat_history(
-    vault_root: &Path,
-    history_id: &str,
-    profile: &AiProfile,
-    request: &AiChatRequest,
-    response: &str,
-    title: Option<&str>,
-    cancelled: bool,
-    created_at_ms: u64,
-    tool_events: &[AiStoredToolEvent],
-) {
-    let path = match history_log_path(vault_root, history_id) {
+fn write_chat_history(params: &AuditLogParams<'_>, response: &str, created_at_ms: u64) {
+    let path = match history_log_path(params.vault_root, params.history_id) {
         Ok(p) => p,
         Err(_) => return,
     };
 
-    let mut messages = request.messages.clone();
+    let mut messages = params.request.messages.clone();
     if !response.trim().is_empty() {
         messages.push(AiMessage {
             role: "assistant".to_string(),
             content: response.to_string(),
         });
     }
-    let title = title
+    let title = params
+        .title
         .map(str::trim)
         .filter(|s| !s.is_empty())
         .map(ToString::to_string)
@@ -156,18 +96,18 @@ fn write_chat_history(
 
     let payload = serde_json::json!({
         "version": 1,
-        "job_id": history_id,
+        "job_id": params.history_id,
         "title": title,
         "created_at_ms": created_at_ms,
-        "cancelled": cancelled,
+        "cancelled": params.cancelled,
         "profile": {
-            "id": profile.id,
-            "name": profile.name,
-            "provider": profile.provider,
-            "model": profile.model,
+            "id": params.profile.id,
+            "name": params.profile.name,
+            "provider": params.profile.provider,
+            "model": params.profile.model,
         },
         "messages": messages,
-        "tool_events": tool_events,
+        "tool_events": params.tool_events,
     });
     let bytes = serde_json::to_vec_pretty(&payload).unwrap_or_default();
     let _ = io_atomic::write_atomic(&path, &bytes);

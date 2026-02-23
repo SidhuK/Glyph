@@ -152,6 +152,7 @@ fn push_tool_event(
     });
 }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn run_with_codex(
     codex_state: State<'_, CodexState>,
     cancel: &CancellationToken,

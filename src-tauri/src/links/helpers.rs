@@ -1,7 +1,6 @@
-use sha2::{Digest, Sha256};
 use std::{
     path::{Path, PathBuf},
-    time::{Duration, SystemTime, UNIX_EPOCH},
+    time::Duration,
 };
 use url::Url;
 
@@ -12,17 +11,10 @@ pub const MAX_IMAGE_BYTES: u64 = 1024 * 1024 * 2;
 pub const TTL_OK_MS: u64 = 1000 * 60 * 60 * 24;
 pub const TTL_ERR_MS: u64 = 1000 * 60 * 10;
 
-pub fn now_ms() -> u64 {
-    SystemTime::now()
-        .duration_since(UNIX_EPOCH)
-        .unwrap_or_default()
-        .as_millis() as u64
-}
+pub use crate::utils::now_ms;
 
 pub fn sha256_hex(s: &str) -> String {
-    let mut h = Sha256::new();
-    h.update(s.as_bytes());
-    hex::encode(h.finalize())
+    crate::utils::sha256_hex(s.as_bytes())
 }
 
 pub fn cache_dir(vault_root: &Path) -> Result<PathBuf, String> {

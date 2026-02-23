@@ -154,7 +154,7 @@ pub async fn vault_dir_children_summary(
             });
         }
 
-        out.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
+        out.sort_by_cached_key(|e| e.name.to_lowercase());
         Ok(out)
     })
     .await

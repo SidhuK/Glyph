@@ -120,8 +120,7 @@ fn fetch_previews_by_ids(
     if ids.is_empty() {
         return Ok(std::collections::HashMap::new());
     }
-    let placeholders = std::iter::repeat("?")
-        .take(ids.len())
+    let placeholders = std::iter::repeat_n("?", ids.len())
         .collect::<Vec<_>>()
         .join(", ");
     let sql = format!("SELECT id, preview FROM notes WHERE id IN ({placeholders})");
@@ -433,7 +432,7 @@ pub async fn tag_notes(
                     score: row.get(3).map_err(|e| e.to_string())?,
                 });
             }
-            return Ok(out);
+            Ok(out)
         } else {
             let mut stmt = conn
                 .prepare(
@@ -456,7 +455,7 @@ pub async fn tag_notes(
                     score: row.get(3).map_err(|e| e.to_string())?,
                 });
             }
-            return Ok(out);
+            Ok(out)
         }
     })
     .await

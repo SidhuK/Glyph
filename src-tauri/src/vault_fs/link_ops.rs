@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use tauri::State;
 
-use crate::{paths, vault::VaultState};
+use crate::{paths, utils, vault::VaultState};
 
 #[derive(Clone)]
 struct FileEntry {
@@ -37,22 +37,8 @@ fn normalize_path(path: &str) -> String {
     path.replace('\\', "/").trim_matches('/').to_string()
 }
 
-fn is_markdown(path: &Path) -> bool {
-    path.extension()
-        .and_then(|e| e.to_str())
-        .map(|ext| ext.eq_ignore_ascii_case("md") || ext.eq_ignore_ascii_case("markdown"))
-        .unwrap_or(false)
-}
-
 fn should_hide(name: &str) -> bool {
     name.starts_with('.') || name.eq_ignore_ascii_case("node_modules")
-}
-
-fn to_slash(path: &Path) -> String {
-    path.components()
-        .filter_map(|c| c.as_os_str().to_str())
-        .collect::<Vec<_>>()
-        .join("/")
 }
 
 fn basename(path: &str) -> String {
@@ -131,8 +117,8 @@ fn list_files(root: &Path, markdown_only: bool, limit: usize) -> Result<Vec<File
             if !meta.is_file() {
                 continue;
             }
-            let rel = to_slash(&child_rel);
-            let md = is_markdown(Path::new(&rel));
+            let rel = utils::to_slash(&child_rel);
+            let md = utils::is_markdown_path(Path::new(&rel));
             if markdown_only && !md {
                 continue;
             }
@@ -148,7 +134,7 @@ fn list_files(root: &Path, markdown_only: bool, limit: usize) -> Result<Vec<File
             break;
         }
     }
-    out.sort_by_key(|e| e.rel_path.to_lowercase());
+    out.sort_by_cached_key(|e| e.rel_path.to_lowercase());
     Ok(out)
 }
 

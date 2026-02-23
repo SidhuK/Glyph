@@ -3,6 +3,8 @@ use std::{
     path::{Path, PathBuf},
 };
 
+use crate::utils;
+
 use super::db::{open_db, resolve_title_to_id};
 use super::frontmatter::{
     parse_frontmatter_title_created_updated, preview_from_markdown, split_frontmatter,
@@ -12,13 +14,6 @@ use super::links::parse_outgoing_links;
 use super::tags::parse_all_tags;
 use super::tasks::{delete_note_tasks, reindex_note_tasks};
 use super::types::IndexRebuildResult;
-
-fn is_markdown_path(path: &Path) -> bool {
-    path.extension()
-        .and_then(|ext| ext.to_str())
-        .map(|ext| ext.eq_ignore_ascii_case("md") || ext.eq_ignore_ascii_case("markdown"))
-        .unwrap_or(false)
-}
 
 fn fts_body_with_frontmatter(markdown: &str) -> String {
     let (yaml, body) = split_frontmatter(markdown);
@@ -61,7 +56,7 @@ fn collect_markdown_files(vault_root: &Path) -> Result<Vec<(String, PathBuf)>, S
             if !meta.is_file() {
                 continue;
             }
-            if !is_markdown_path(&path) {
+            if !utils::is_markdown_path(&path) {
                 continue;
             }
             let rel = match path.strip_prefix(vault_root) {
@@ -90,6 +85,8 @@ fn index_note_with_conn(
     note_id: &str,
     markdown: &str,
 ) -> Result<(), String> {
+    let tx = conn.unchecked_transaction().map_err(|e| e.to_string())?;
+
     let (mut title, created, updated) = parse_frontmatter_title_created_updated(markdown);
     if title == "Untitled" {
         if let Some(stem) = Path::new(note_id)
@@ -106,35 +103,35 @@ fn index_note_with_conn(
     let preview = preview_from_markdown(note_id, markdown);
     let rel_path = note_id.to_string();
 
-    conn.execute(
+    tx.execute(
         "INSERT OR REPLACE INTO notes(id, title, created, updated, path, etag, preview) VALUES(?, ?, ?, ?, ?, ?, ?)",
         rusqlite::params![note_id, title, created, updated, rel_path, etag, preview],
     )
     .map_err(|e| e.to_string())?;
 
-    conn.execute("DELETE FROM notes_fts WHERE id = ?", [note_id])
+    tx.execute("DELETE FROM notes_fts WHERE id = ?", [note_id])
         .map_err(|e| e.to_string())?;
     let body = fts_body_with_frontmatter(markdown);
-    conn.execute(
+    tx.execute(
         "INSERT INTO notes_fts(id, title, body) VALUES(?, ?, ?)",
         rusqlite::params![note_id, title_for_fts, body],
     )
     .map_err(|e| e.to_string())?;
 
-    conn.execute("DELETE FROM links WHERE from_id = ?", [note_id])
+    tx.execute("DELETE FROM links WHERE from_id = ?", [note_id])
         .map_err(|e| e.to_string())?;
 
-    conn.execute("DELETE FROM tags WHERE note_id = ?", [note_id])
+    tx.execute("DELETE FROM tags WHERE note_id = ?", [note_id])
         .map_err(|e| e.to_string())?;
 
     for tag in parse_all_tags(markdown) {
-        conn.execute(
+        tx.execute(
             "INSERT OR IGNORE INTO tags(note_id, tag) VALUES(?, ?)",
             rusqlite::params![note_id, tag],
         )
         .map_err(|e| e.to_string())?;
     }
-    reindex_note_tasks(conn, note_id, &rel_path, &updated, &etag, markdown)?;
+    reindex_note_tasks(&tx, note_id, &rel_path, &updated, &etag, markdown)?;
 
     let (to_ids, to_titles) = parse_outgoing_links(note_id, markdown);
     let mut inserted = HashSet::<(Option<String>, Option<String>, &'static str)>::new();
@@ -144,7 +141,7 @@ fn index_note_with_conn(
     }
 
     for to_title in to_titles {
-        if let Some(to_id) = resolve_title_to_id(conn, &to_title)? {
+        if let Some(to_id) = resolve_title_to_id(&tx, &to_title)? {
             inserted.insert((Some(to_id), None, "note"));
         } else {
             inserted.insert((None, Some(to_title), "wikilink"));
@@ -152,30 +149,33 @@ fn index_note_with_conn(
     }
 
     for (to_id, to_title, kind) in inserted {
-        conn.execute(
+        tx.execute(
             "INSERT OR IGNORE INTO links(from_id, to_id, to_title, kind) VALUES(?, ?, ?, ?)",
             rusqlite::params![note_id, to_id, to_title, kind],
         )
         .map_err(|e| e.to_string())?;
     }
 
+    tx.commit().map_err(|e| e.to_string())?;
     Ok(())
 }
 
 pub fn remove_note(vault_root: &Path, note_id: &str) -> Result<(), String> {
     let conn = open_db(vault_root)?;
-    conn.execute("DELETE FROM notes WHERE id = ?", [note_id])
+    let tx = conn.unchecked_transaction().map_err(|e| e.to_string())?;
+    tx.execute("DELETE FROM notes WHERE id = ?", [note_id])
         .map_err(|e| e.to_string())?;
-    conn.execute("DELETE FROM notes_fts WHERE id = ?", [note_id])
+    tx.execute("DELETE FROM notes_fts WHERE id = ?", [note_id])
         .map_err(|e| e.to_string())?;
-    conn.execute(
+    tx.execute(
         "DELETE FROM links WHERE from_id = ? OR to_id = ?",
         rusqlite::params![note_id, note_id],
     )
     .map_err(|e| e.to_string())?;
-    conn.execute("DELETE FROM tags WHERE note_id = ?", [note_id])
+    tx.execute("DELETE FROM tags WHERE note_id = ?", [note_id])
         .map_err(|e| e.to_string())?;
-    delete_note_tasks(&conn, note_id)?;
+    delete_note_tasks(&tx, note_id)?;
+    tx.commit().map_err(|e| e.to_string())?;
     Ok(())
 }
 
@@ -193,13 +193,13 @@ pub fn rebuild(vault_root: &Path) -> Result<IndexRebuildResult, String> {
         .map_err(|e| e.to_string())?;
 
     let note_paths = collect_markdown_files(vault_root)?;
-    let mut notes: Vec<(String, String)> = Vec::with_capacity(note_paths.len());
-    for (rel, path) in note_paths {
-        let markdown = std::fs::read_to_string(&path).map_err(|e| e.to_string())?;
-        notes.push((rel, markdown));
-    }
+    let mut link_data: Vec<(String, HashSet<String>, HashSet<String>)> =
+        Vec::with_capacity(note_paths.len());
+    let count = note_paths.len();
 
-    for (rel, markdown) in &notes {
+    for (rel, path) in &note_paths {
+        let markdown = std::fs::read_to_string(path).map_err(|e| e.to_string())?;
+
         let (mut title, created, updated) = parse_frontmatter_title_created_updated(&markdown);
         if title == "Untitled" {
             if let Some(stem) = Path::new(rel)
@@ -222,7 +222,7 @@ pub fn rebuild(vault_root: &Path) -> Result<IndexRebuildResult, String> {
 
         tx.execute("DELETE FROM notes_fts WHERE id = ?", [rel])
             .map_err(|e| e.to_string())?;
-        let body = fts_body_with_frontmatter(markdown);
+        let body = fts_body_with_frontmatter(&markdown);
         tx.execute(
             "INSERT INTO notes_fts(id, title, body) VALUES(?, ?, ?)",
             rusqlite::params![rel, title, body],
@@ -236,21 +236,22 @@ pub fn rebuild(vault_root: &Path) -> Result<IndexRebuildResult, String> {
             )
             .map_err(|e| e.to_string())?;
         }
-        reindex_note_tasks(&tx, rel, rel, &updated, &etag, markdown)?;
+        reindex_note_tasks(&tx, rel, rel, &updated, &etag, &markdown)?;
+
+        let (to_ids, to_titles) = parse_outgoing_links(rel, &markdown);
+        link_data.push((rel.clone(), to_ids, to_titles));
     }
 
-    for (rel, markdown) in &notes {
-        let (to_ids, to_titles) = parse_outgoing_links(rel, &markdown);
-
+    for (rel, to_ids, to_titles) in &link_data {
         let mut inserted = HashSet::<(Option<String>, Option<String>, &'static str)>::new();
         for to_id in to_ids {
-            inserted.insert((Some(to_id), None, "file"));
+            inserted.insert((Some(to_id.clone()), None, "file"));
         }
         for to_title in to_titles {
-            if let Some(to_id) = resolve_title_to_id(&tx, &to_title)? {
+            if let Some(to_id) = resolve_title_to_id(&tx, to_title)? {
                 inserted.insert((Some(to_id), None, "file"));
             } else {
-                inserted.insert((None, Some(to_title), "wikilink"));
+                inserted.insert((None, Some(to_title.clone()), "wikilink"));
             }
         }
         for (to_id, to_title, kind) in inserted {
@@ -263,7 +264,5 @@ pub fn rebuild(vault_root: &Path) -> Result<IndexRebuildResult, String> {
     }
 
     tx.commit().map_err(|e| e.to_string())?;
-    Ok(IndexRebuildResult {
-        indexed: notes.len(),
-    })
+    Ok(IndexRebuildResult { indexed: count })
 }

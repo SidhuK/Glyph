@@ -9,6 +9,7 @@ mod net;
 mod notes;
 mod paths;
 mod system_fonts;
+pub(crate) mod utils;
 mod vault;
 mod vault_fs;
 

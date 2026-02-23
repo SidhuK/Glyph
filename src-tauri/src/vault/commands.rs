@@ -1,6 +1,8 @@
 use std::path::PathBuf;
 use tauri::State;
 
+use crate::index::db::reset_schema_cache;
+
 use super::helpers::{canonicalize_dir, create_or_open_impl, VaultInfo};
 use super::state::VaultState;
 use super::watcher::set_notes_watcher;
@@ -20,6 +22,7 @@ pub async fn vault_create(
     .await
     .map_err(|e| e.to_string())??;
 
+    reset_schema_cache();
     let mut guard = state
         .current
         .lock()
@@ -44,6 +47,7 @@ pub async fn vault_open(
     .await
     .map_err(|e| e.to_string())??;
 
+    reset_schema_cache();
     let mut guard = state
         .current
         .lock()
@@ -74,5 +78,6 @@ pub fn vault_close(state: State<'_, VaultState>) -> Result<(), String> {
         .lock()
         .map_err(|_| "vault watcher state poisoned".to_string())?;
     *watcher_guard = None;
+    reset_schema_cache();
     Ok(())
 }

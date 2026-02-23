@@ -5,13 +5,16 @@ pub fn ensure_schema(conn: &Connection) -> Result<(), String> {
         r#"
 CREATE TABLE IF NOT EXISTS notes (
   id TEXT PRIMARY KEY,
-  title TEXT NOT NULL,
+  title TEXT NOT NULL COLLATE NOCASE,
   created TEXT NOT NULL,
   updated TEXT NOT NULL,
   path TEXT NOT NULL,
   etag TEXT NOT NULL,
   preview TEXT NOT NULL DEFAULT ''
 );
+
+CREATE INDEX IF NOT EXISTS notes_title_idx ON notes(title);
+CREATE INDEX IF NOT EXISTS notes_title_nocase_idx ON notes(title COLLATE NOCASE);
 
 CREATE TABLE IF NOT EXISTS links (
   from_id TEXT NOT NULL,

@@ -1,5 +1,5 @@
 use base64::Engine;
-use std::{ffi::OsStr, io::Read, path::PathBuf};
+use std::{ffi::OsStr, io::Read, path::{Path, PathBuf}};
 use tauri::State;
 
 use crate::{index, io_atomic, paths, vault::VaultState};
@@ -37,7 +37,7 @@ fn resolve_trash_dir() -> Result<PathBuf, String> {
     Err("Move to Trash is not supported on this platform".to_string())
 }
 
-fn unique_trash_dest(trash_dir: &PathBuf, src: &PathBuf) -> Result<PathBuf, String> {
+fn unique_trash_dest(trash_dir: &Path, src: &Path) -> Result<PathBuf, String> {
     let file_name = src
         .file_name()
         .ok_or_else(|| "invalid path: missing file name".to_string())?;
@@ -67,7 +67,7 @@ fn unique_trash_dest(trash_dir: &PathBuf, src: &PathBuf) -> Result<PathBuf, Stri
     Err("unable to find an available Trash destination name".to_string())
 }
 
-fn move_path_to_trash(src: &PathBuf) -> Result<(), String> {
+fn move_path_to_trash(src: &Path) -> Result<(), String> {
     let trash_dir = resolve_trash_dir()?;
     std::fs::create_dir_all(&trash_dir).map_err(|e| e.to_string())?;
     let dest = unique_trash_dest(&trash_dir, src)?;
@@ -165,7 +165,7 @@ pub async fn vault_read_text_preview(
         let requested = max_bytes
             .map(|v| v as u64)
             .unwrap_or(TEXT_PREVIEW_DEFAULT_MAX_BYTES);
-        let max = requested.max(1).min(TEXT_PREVIEW_MAX_BYTES_CAP);
+        let max = requested.clamp(1, TEXT_PREVIEW_MAX_BYTES_CAP);
 
         let file = std::fs::File::open(&abs).map_err(|e| e.to_string())?;
         let mut bytes: Vec<u8> = Vec::new();
@@ -243,7 +243,7 @@ pub async fn vault_read_binary_preview(
         let requested = max_bytes
             .map(|v| v as u64)
             .unwrap_or(BINARY_PREVIEW_DEFAULT_MAX_BYTES);
-        let max = requested.max(1).min(BINARY_PREVIEW_MAX_BYTES_CAP);
+        let max = requested.clamp(1, BINARY_PREVIEW_MAX_BYTES_CAP);
 
         let file = std::fs::File::open(&abs).map_err(|e| e.to_string())?;
         let mut bytes: Vec<u8> = Vec::new();
@@ -293,15 +293,12 @@ pub async fn vault_write_text(
         }
         let rel_s = rel.to_string_lossy().to_string();
         let should_index = rel.extension() == Some(OsStr::new("md"));
-        let text_for_index = if should_index {
-            Some(text.clone())
-        } else {
-            None
-        };
         let bytes = text.into_bytes();
         io_atomic::write_atomic(&abs, &bytes).map_err(|e| e.to_string())?;
-        if let Some(markdown) = text_for_index {
-            let _ = index::index_note(&root, &rel_s, &markdown);
+        if should_index {
+            if let Ok(markdown) = std::str::from_utf8(&bytes) {
+                let _ = index::index_note(&root, &rel_s, markdown);
+            }
         }
         Ok(TextFileWriteResult {
             etag: etag_for(&bytes),

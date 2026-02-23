@@ -50,7 +50,7 @@ pub fn parse_frontmatter_title_created_updated(markdown: &str) -> (String, Strin
         Ok(fm) => (
             fm.title.unwrap_or_else(|| "Untitled".to_string()),
             fm.created.unwrap_or_else(|| now.clone()),
-            fm.updated.unwrap_or_else(|| now),
+            fm.updated.unwrap_or(now),
         ),
         Err(_) => ("Untitled".to_string(), now.clone(), now),
     }
@@ -64,9 +64,8 @@ pub fn preview_from_markdown(note_id: &str, markdown: &str) -> String {
     }
 
     let mut out = String::new();
-    let mut count = 0usize;
     let mut has_more = false;
-    for line in body.lines() {
+    for (count, line) in body.lines().enumerate() {
         if count >= 20 {
             has_more = true;
             break;
@@ -75,7 +74,6 @@ pub fn preview_from_markdown(note_id: &str, markdown: &str) -> String {
             out.push('\n');
         }
         out.push_str(line);
-        count += 1;
     }
     if has_more {
         out.push('\n');

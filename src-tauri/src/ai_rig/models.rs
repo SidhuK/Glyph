@@ -470,7 +470,7 @@ pub async fn ai_models_list(
         .ok_or_else(|| "unknown profile".to_string())?;
     let effective_provider = provider.unwrap_or_else(|| profile.provider.clone());
 
-    let client = http_client().await?;
+    let client = http_client()?;
     let api_key = vault_root
         .as_deref()
         .and_then(|root| local_secrets::secret_get(root, &profile.id).ok().flatten())

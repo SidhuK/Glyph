@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use tauri::State;
 
-use crate::{paths, vault::VaultState};
+use crate::{paths, utils, vault::VaultState};
 
 const DEFAULT_FILE_LIST_LIMIT: usize = 20_000;
 const DEFAULT_CHAR_BUDGET: usize = 12_000;
@@ -84,13 +84,6 @@ fn should_hide(name: &str) -> bool {
     name.starts_with('.') || name.eq_ignore_ascii_case("node_modules")
 }
 
-fn to_slash(path: &Path) -> String {
-    path.components()
-        .filter_map(|c| c.as_os_str().to_str())
-        .collect::<Vec<_>>()
-        .join("/")
-}
-
 fn estimate_tokens(chars: usize) -> usize {
     chars.div_ceil(4)
 }
@@ -160,7 +153,7 @@ fn list_files(root: &Path, dir: &str, limit: usize) -> Result<Vec<String>, Strin
             if !meta.is_file() {
                 continue;
             }
-            out.push(to_slash(&child_rel));
+            out.push(utils::to_slash(&child_rel));
             if out.len() >= limit {
                 break;
             }

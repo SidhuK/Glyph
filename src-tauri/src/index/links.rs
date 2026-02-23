@@ -13,9 +13,7 @@ pub fn normalize_rel_path(raw: &str) -> Option<String> {
             continue;
         }
         if part == ".." {
-            if out.pop().is_none() {
-                return None;
-            }
+            out.pop()?;
             continue;
         }
         if part.starts_with('.') {

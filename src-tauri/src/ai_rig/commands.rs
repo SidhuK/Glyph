@@ -4,7 +4,7 @@ use tracing::warn;
 
 use crate::{io_atomic, vault::VaultState};
 
-use super::audit::{audit_log_path, write_audit_log};
+use super::audit::{audit_log_path, write_audit_log, AuditLogParams};
 use super::helpers::{http_client, parse_base_url, split_system_and_messages};
 use super::history;
 use super::local_secrets;
@@ -51,7 +51,7 @@ pub(crate) struct ProviderSupportDocument {
 }
 
 async fn fetch_provider_support(cache_path: &PathBuf) -> Result<ProviderSupportDocument, String> {
-    let client = http_client().await?;
+    let client = http_client()?;
     let resp = client
         .get(PROVIDER_SUPPORT_URL)
         .send()
@@ -372,17 +372,17 @@ pub async fn ai_chat_start(
                     )
                     .await
                     .ok();
-                    write_audit_log(
-                        &root,
-                        &job_id_for_task,
-                        &history_id,
-                        &profile,
-                        &request,
-                        &full,
-                        title.as_deref(),
+                    write_audit_log(&AuditLogParams {
+                        vault_root: &root,
+                        job_id: &job_id_for_task,
+                        history_id: &history_id,
+                        profile: &profile,
+                        request: &request,
+                        response: &full,
+                        title: title.as_deref(),
                         cancelled,
-                        &tool_events,
-                    );
+                        tool_events: &tool_events,
+                    });
                 }
                 if !cancelled {
                     let _ = app_for_task
@@ -438,6 +438,7 @@ pub async fn ai_chat_history_get(
     history::ai_chat_history_get(vault_state, job_id).await
 }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn run_request(
     cancel: &CancellationToken,
     codex_state: State<'_, crate::ai_codex::state::CodexState>,

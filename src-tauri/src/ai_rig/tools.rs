@@ -11,7 +11,7 @@ use schemars::JsonSchema;
 use serde::Deserialize;
 use serde_json::json;
 
-use crate::{index::open_db, io_atomic, paths};
+use crate::{index::open_db, io_atomic, paths, utils};
 
 const MAX_READ_BYTES: u64 = 512 * 1024;
 const MAX_READ_CHARS: usize = 12_000;
@@ -46,13 +46,6 @@ fn deny_hidden_rel_path(rel: &Path) -> Result<(), ToolError> {
         }
     }
     Ok(())
-}
-
-fn is_markdown_path(path: &Path) -> bool {
-    path.extension()
-        .and_then(|ext| ext.to_str())
-        .map(|ext| ext.eq_ignore_ascii_case("md") || ext.eq_ignore_ascii_case("markdown"))
-        .unwrap_or(false)
 }
 
 fn is_utf8_text(path: &Path) -> bool {
@@ -189,7 +182,7 @@ impl Tool for ListDirTool {
                     "name": name,
                     "rel_path": child_rel.to_string_lossy().to_string(),
                     "kind": if meta.is_dir() { "dir" } else { "file" },
-                    "is_markdown": meta.is_file() && is_markdown_path(&child_rel),
+                    "is_markdown": meta.is_file() && utils::is_markdown_path(&child_rel),
                     "size_bytes": if meta.is_file() { meta.len() } else { 0 },
                     "mtime_ms": mtime_ms(&meta),
                 }));
@@ -353,7 +346,7 @@ impl Tool for StatTool {
             "kind": if meta.is_dir() { "dir" } else { "file" },
             "size_bytes": meta.len(),
             "mtime_ms": mtime_ms(&meta),
-            "is_markdown": meta.is_file() && is_markdown_path(Path::new(&args.path)),
+            "is_markdown": meta.is_file() && utils::is_markdown_path(Path::new(&args.path)),
         })))
     }
 }

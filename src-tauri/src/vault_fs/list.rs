@@ -1,17 +1,10 @@
 use std::path::{Path, PathBuf};
 use tauri::State;
 
-use crate::{paths, vault::VaultState};
+use crate::{paths, utils, vault::VaultState};
 
 use super::helpers::{deny_hidden_rel_path, should_hide};
 use super::types::FsEntry;
-
-fn is_markdown_path(path: &Path) -> bool {
-    path.extension()
-        .and_then(|ext| ext.to_str())
-        .map(|ext| ext.eq_ignore_ascii_case("md") || ext.eq_ignore_ascii_case("markdown"))
-        .unwrap_or(false)
-}
 
 #[tauri::command]
 pub async fn vault_list_markdown_files(
@@ -49,7 +42,7 @@ pub async fn vault_list_markdown_files(
                 if !path.is_file() {
                     continue;
                 }
-                if !is_markdown_path(&path) {
+                if !utils::is_markdown_path(&path) {
                     continue;
                 }
                 let rel_path = start_rel.join(&name);
@@ -92,7 +85,7 @@ pub async fn vault_list_markdown_files(
                     if !meta.is_file() {
                         continue;
                     }
-                    if !is_markdown_path(Path::new(&name)) {
+                    if !utils::is_markdown_path(Path::new(&name)) {
                         continue;
                     }
                     out.push(FsEntry {
@@ -111,7 +104,7 @@ pub async fn vault_list_markdown_files(
             }
         }
 
-        out.sort_by(|a, b| a.rel_path.to_lowercase().cmp(&b.rel_path.to_lowercase()));
+        out.sort_by_cached_key(|e| e.rel_path.to_lowercase());
         Ok(out)
     })
     .await
@@ -155,7 +148,7 @@ pub async fn vault_list_files(
                     continue;
                 }
                 let rel_path = start_rel.join(&name);
-                let is_markdown = is_markdown_path(&rel_path);
+                let is_markdown = utils::is_markdown_path(&rel_path);
                 out.push(FsEntry {
                     name,
                     rel_path: rel_path.to_string_lossy().to_string(),
@@ -195,7 +188,7 @@ pub async fn vault_list_files(
                     if !meta.is_file() {
                         continue;
                     }
-                    let is_markdown = is_markdown_path(Path::new(&name));
+                    let is_markdown = utils::is_markdown_path(Path::new(&name));
                     out.push(FsEntry {
                         name,
                         rel_path: child_rel.to_string_lossy().to_string(),
@@ -212,7 +205,7 @@ pub async fn vault_list_files(
             }
         }
 
-        out.sort_by(|a, b| a.rel_path.to_lowercase().cmp(&b.rel_path.to_lowercase()));
+        out.sort_by_cached_key(|e| e.rel_path.to_lowercase());
         Ok(out)
     })
     .await
@@ -251,7 +244,7 @@ pub async fn vault_list_dir(
                 continue;
             };
             let rel_path = rel.join(&name);
-            let is_markdown = is_markdown_path(&rel_path);
+            let is_markdown = utils::is_markdown_path(&rel_path);
             entries.push(FsEntry {
                 name,
                 rel_path: rel_path.to_string_lossy().to_string(),
@@ -260,11 +253,7 @@ pub async fn vault_list_dir(
             });
         }
 
-        entries.sort_by(|a, b| match (a.kind.as_str(), b.kind.as_str()) {
-            ("dir", "file") => std::cmp::Ordering::Less,
-            ("file", "dir") => std::cmp::Ordering::Greater,
-            _ => a.name.to_lowercase().cmp(&b.name.to_lowercase()),
-        });
+        entries.sort_by_cached_key(|e| (if e.kind == "dir" { 0u8 } else { 1 }, e.name.to_lowercase()));
 
         Ok(entries)
     })

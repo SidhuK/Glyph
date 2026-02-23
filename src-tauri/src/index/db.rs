@@ -1,7 +1,14 @@
 use crate::glyph_paths;
+use std::collections::HashSet;
 use std::path::{Path, PathBuf};
+use std::sync::{Mutex, OnceLock};
 
 use super::schema::ensure_schema;
+
+fn schema_cache() -> &'static Mutex<HashSet<PathBuf>> {
+    static CACHE: OnceLock<Mutex<HashSet<PathBuf>>> = OnceLock::new();
+    CACHE.get_or_init(|| Mutex::new(HashSet::new()))
+}
 
 pub fn db_path(vault_root: &Path) -> Result<PathBuf, String> {
     glyph_paths::glyph_db_path(vault_root)
@@ -12,11 +19,22 @@ pub fn open_db(vault_root: &Path) -> Result<rusqlite::Connection, String> {
     if let Some(parent) = path.parent() {
         std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
     }
-    let conn = rusqlite::Connection::open(path).map_err(|e| e.to_string())?;
+    let conn = rusqlite::Connection::open(&path).map_err(|e| e.to_string())?;
     conn.pragma_update(None, "journal_mode", "WAL")
         .map_err(|e| e.to_string())?;
-    ensure_schema(&conn)?;
+
+    let mut cache = schema_cache().lock().unwrap_or_else(|p| p.into_inner());
+    if !cache.contains(&path) {
+        ensure_schema(&conn)?;
+        cache.insert(path);
+    }
+
     Ok(conn)
+}
+
+pub fn reset_schema_cache() {
+    let mut cache = schema_cache().lock().unwrap_or_else(|p| p.into_inner());
+    cache.clear();
 }
 
 pub fn resolve_title_to_id(
@@ -24,7 +42,7 @@ pub fn resolve_title_to_id(
     title: &str,
 ) -> Result<Option<String>, String> {
     let mut stmt = conn
-        .prepare("SELECT id FROM notes WHERE lower(title) = lower(?) LIMIT 2")
+        .prepare("SELECT id FROM notes WHERE title = ? COLLATE NOCASE LIMIT 2")
         .map_err(|e| e.to_string())?;
     let mut rows = stmt.query([title]).map_err(|e| e.to_string())?;
     let first: Option<String> = match rows.next().map_err(|e| e.to_string())? {
