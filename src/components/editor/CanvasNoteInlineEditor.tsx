@@ -1,3 +1,4 @@
+import { openUrl } from "@tauri-apps/plugin-opener";
 import { EditorContent } from "@tiptap/react";
 import { memo, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { joinYamlFrontmatter } from "../../lib/notePreview";
@@ -7,11 +8,60 @@ import { Button } from "../ui/shadcn/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 import { EditorRibbon } from "./EditorRibbon";
 import { useNoteEditor } from "./hooks/useNoteEditor";
-import { dispatchWikiLinkClick } from "./markdown/editorEvents";
+import {
+	dispatchMarkdownLinkClick,
+	dispatchWikiLinkClick,
+} from "./markdown/editorEvents";
+import { parseWikiLink } from "./markdown/wikiLinkCodec";
 import type { CanvasNoteInlineEditorProps } from "./types";
 
 function normalizeBody(markdown: string): string {
 	return markdown.replace(/\u00a0/g, " ").replace(/&nbsp;/g, " ");
+}
+
+type FrontmatterLinkToken =
+	| { kind: "wiki"; raw: string; start: number; end: number }
+	| { kind: "href"; raw: string; href: string; start: number; end: number };
+
+const FRONTMATTER_LINK_PATTERN =
+	/!?\[\[[^\]\n]+\]\]|\[[^\]\n]+\]\((?:\\.|[^)\n])+\)|https?:\/\/[^\s<>"')\]]+/g;
+
+function markdownHrefFromToken(raw: string): string | null {
+	const match = raw.match(/^\[[^\]\n]+\]\(([^)\s]+)(?:\s+"[^"]*")?\)$/);
+	return match?.[1] ?? null;
+}
+
+function extractFrontmatterLinkTokens(text: string): FrontmatterLinkToken[] {
+	const tokens: FrontmatterLinkToken[] = [];
+	for (const match of text.matchAll(FRONTMATTER_LINK_PATTERN)) {
+		if (match.index === undefined) continue;
+		const raw = match[0];
+		const start = match.index;
+		const end = start + raw.length;
+		if (raw.includes("[[")) {
+			if (parseWikiLink(raw)) tokens.push({ kind: "wiki", raw, start, end });
+			continue;
+		}
+		if (raw.startsWith("[")) {
+			const href = markdownHrefFromToken(raw);
+			if (href) tokens.push({ kind: "href", raw, href, start, end });
+			continue;
+		}
+		tokens.push({ kind: "href", raw, href: raw, start, end });
+	}
+	return tokens;
+}
+
+async function openFrontmatterHref(
+	href: string,
+	sourcePath: string,
+): Promise<void> {
+	if (href.startsWith("http://") || href.startsWith("https://")) {
+		await openUrl(href);
+		return;
+	}
+	if (href.startsWith("#")) return;
+	dispatchMarkdownLinkClick({ href, sourcePath });
 }
 
 export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
@@ -140,6 +190,81 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		if (nextMarkdown === lastEmittedMarkdownRef.current) return;
 		lastEmittedMarkdownRef.current = nextMarkdown;
 		onChange(nextMarkdown);
+	};
+
+	const handleFrontmatterLinkActivate = (
+		event: React.MouseEvent<HTMLTextAreaElement>,
+	) => {
+		const caret = event.currentTarget.selectionStart;
+		if (caret === null) return;
+		const token = extractFrontmatterLinkTokens(frontmatterDraft).find(
+			(item) => caret >= item.start && caret <= item.end,
+		);
+		if (!token) return;
+		event.preventDefault();
+		if (token.kind === "wiki") {
+			const parsed = parseWikiLink(token.raw);
+			if (!parsed) return;
+			dispatchWikiLinkClick({
+				raw: parsed.raw,
+				target: parsed.target,
+				alias: parsed.alias,
+				anchorKind: parsed.anchorKind,
+				anchor: parsed.anchor,
+				unresolved: parsed.unresolved,
+			});
+			return;
+		}
+		void openFrontmatterHref(token.href, relPath ?? "");
+	};
+
+	const renderFrontmatterWithLinks = (text: string) => {
+		const tokens = extractFrontmatterLinkTokens(text);
+		if (!tokens.length) return text;
+		const nodes: React.ReactNode[] = [];
+		let cursor = 0;
+		for (const token of tokens) {
+			if (cursor < token.start) nodes.push(text.slice(cursor, token.start));
+			if (token.kind === "wiki") {
+				const parsed = parseWikiLink(token.raw);
+				nodes.push(
+					<button
+						key={`fm-${token.start}-${token.end}`}
+						type="button"
+						className="frontmatterInlineLink"
+						onClick={() => {
+							if (!parsed) return;
+							dispatchWikiLinkClick({
+								raw: parsed.raw,
+								target: parsed.target,
+								alias: parsed.alias,
+								anchorKind: parsed.anchorKind,
+								anchor: parsed.anchor,
+								unresolved: parsed.unresolved,
+							});
+						}}
+					>
+						{token.raw}
+					</button>,
+				);
+			} else {
+				nodes.push(
+					<button
+						key={`fm-${token.start}-${token.end}`}
+						type="button"
+						className="frontmatterInlineLink"
+						onClick={() => {
+							void openFrontmatterHref(token.href, relPath ?? "");
+						}}
+					>
+						{token.raw}
+					</button>,
+				);
+			}
+			cursor = token.end;
+		}
+		if (cursor < text.length) nodes.push(text.slice(cursor));
+		return nodes;
 	};
 
 	useEffect(() => {
@@ -279,6 +404,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 								className="frontmatterEditor"
 								value={frontmatterDraft}
 								onChange={handleFrontmatterChange}
+								onMouseUp={handleFrontmatterLinkActivate}
 								placeholder="---\ntitle: Untitled\n---"
 								spellCheck={false}
 							/>
@@ -287,7 +413,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 				) : frontmatter ? (
 					<div className="frontmatterPreview mono">
 						<div className="frontmatterLabel">Frontmatter</div>
-						<pre>{frontmatter.trimEnd()}</pre>
+						<pre>{renderFrontmatterWithLinks(frontmatter.trimEnd())}</pre>
 					</div>
 				) : null}
 				{mode !== "plain" && backlinks.length > 0 ? (

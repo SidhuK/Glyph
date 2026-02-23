@@ -52,6 +52,18 @@
 	cursor: text;
 }
 
+.frontmatterInlineLink {
+	display: inline;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: var(--interactive-accent);
+	text-decoration: underline;
+	font: inherit;
+	line-height: inherit;
+	cursor: pointer;
+}
+
 .editorBacklinks {
 	width: min(
 		100%,
