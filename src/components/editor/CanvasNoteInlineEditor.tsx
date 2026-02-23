@@ -76,14 +76,14 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		};
 	}, [relPath]);
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: resize on draft change
+	// biome-ignore lint/correctness/useExhaustiveDependencies: resize on draft and expand state changes
 	useLayoutEffect(() => {
-		if (mode !== "rich") return;
+		if (mode !== "rich" || !frontmatterExpanded) return;
 		const el = frontmatterTextAreaRef.current;
 		if (!el) return;
 		el.style.height = "0px";
 		el.style.height = `${el.scrollHeight}px`;
-	}, [frontmatterDraft, mode]);
+	}, [frontmatterDraft, mode, frontmatterExpanded]);
 
 	const canEdit = mode === "rich" && Boolean(editor?.isEditable);
 
