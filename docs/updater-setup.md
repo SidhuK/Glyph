@@ -1,15 +1,16 @@
 # Glyph Updater Setup (Tauri v2, GitHub Releases)
 
-This document is a future-ready checklist for shipping auto-updates to users outside the Mac App Store.
+This document is the runbook for shipping auto-updates to users outside the Mac App Store.
 
 ## Current Scaffold Added
 
-The repo now includes placeholder updater scaffolding:
+The repo already includes updater scaffolding:
 
 - `src-tauri/tauri.conf.json`
   - `bundle.createUpdaterArtifacts: true`
-  - `plugins.updater.pubkey` placeholder
-  - `plugins.updater.endpoints` placeholder
+  - `plugins.updater.pubkey` placeholder (you must replace this)
+  - `plugins.updater.endpoints` set to:
+    - `https://github.com/SidhuK/Glyph/releases/latest/download/latest.json`
 - `src-tauri/Cargo.toml`
   - `tauri-plugin-updater` dependency
 - `src-tauri/src/lib.rs`
@@ -18,8 +19,8 @@ The repo now includes placeholder updater scaffolding:
   - `updater:default`
 - `src-tauri/capabilities/settings.json`
   - `updater:default`
-- `.github/workflows/tauri-release-placeholder.yml`
-  - manual-only release workflow with guardrail and placeholders
+- `.github/workflows/tauri-release.yml`
+  - auto-release workflow on every push to `main`
 
 ## When You Are Ready To Publish
 
@@ -39,21 +40,19 @@ cargo tauri signer generate -w ~/.tauri/glyph-updater.key
 
 You will get:
 
-- public key (paste into config)
-- private key (store in CI secret)
+- public key (copy this into `src-tauri/tauri.conf.json` -> `plugins.updater.pubkey`)
+- private key file (`~/.tauri/glyph-updater.key`) for CI secrets
 
-### 3. Fill placeholders in `src-tauri/tauri.conf.json`
+### 3. Fill placeholder in `src-tauri/tauri.conf.json`
 
 Replace:
 
 - `REPLACE_WITH_TAURI_UPDATER_PUBLIC_KEY`
-- `REPLACE_OWNER`
-- `REPLACE_REPO`
 
-Endpoint should look like:
+The endpoint is already set for your repo:
 
 ```json
-"https://github.com/<owner>/<repo>/releases/latest/download/latest.json"
+"https://github.com/SidhuK/Glyph/releases/latest/download/latest.json"
 ```
 
 ### 4. Configure GitHub repository secrets
@@ -63,24 +62,37 @@ Add:
 - `TAURI_SIGNING_PRIVATE_KEY`
 - `TAURI_SIGNING_PRIVATE_KEY_PASSWORD` (if you set one)
 
-### 5. Update workflow placeholders
+### 5. Use the release workflow
 
-In `.github/workflows/tauri-release-placeholder.yml` replace:
+Workflow file:
 
-- `v__VERSION__` tag pattern (or switch to using `${{ github.ref_name }}`)
-- draft/prerelease behavior as desired
+- `.github/workflows/tauri-release.yml`
+
+Workflow behavior:
+
+- Runs automatically on every push to `main`.
+- Computes next version from latest Git tag and bumps patch:
+  - `0.1.0` -> `0.1.1` -> `0.1.2` ...
+- Syncs versions in:
+  - `package.json`
+  - `src-tauri/tauri.conf.json`
+  - `src-tauri/Cargo.toml`
+- Publishes GitHub release with updater artifacts + `latest.json`.
+- Generates release notes from commit messages since the previous tag.
 
 ### 6. Release process
 
-1. Bump `src-tauri/tauri.conf.json` version.
-2. Run local checks:
+1. Merge changes to `main`.
+2. (Recommended pre-merge) Run local checks:
    - `pnpm check`
    - `pnpm build`
    - `cd src-tauri && cargo check`
-3. Trigger workflow manually with:
-   - `publish_release=true`
+3. Workflow runs automatically and publishes:
+   - new tag (`vX.Y.Z`)
+   - release artifacts
+   - `latest.json`
 
-The workflow will build Tauri bundles and publish updater artifacts + `latest.json`.
+The workflow also supports manual `workflow_dispatch` if needed.
 
 ## Notes For Your Current Distribution Model (No Notarization)
 
@@ -88,12 +100,11 @@ The workflow will build Tauri bundles and publish updater artifacts + `latest.js
 - macOS trust prompts and first-run friction are expected outside notarization.
 - If user experience becomes a priority later, add Developer ID signing + notarization.
 
-## Optional Next Step (Not yet implemented)
+## Current In-App Behavior
 
-Add an in-app update check UX (Settings > About / General):
+Auto-update is already wired in the app startup path:
 
-- check for updates
-- show version/changelog
-- install and relaunch
+- [src/App.tsx](/Users/karatsidhu/Code/Glyph/src/App.tsx)
+- [src/hooks/useAutoUpdater.ts](/Users/karatsidhu/Code/Glyph/src/hooks/useAutoUpdater.ts)
 
-This can be done with `@tauri-apps/plugin-updater` on the frontend when you are ready.
+On app start (main window, non-dev), Glyph checks for updates, downloads, installs, and relaunches.

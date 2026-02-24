@@ -1,4 +1,6 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
+import { relaunch } from "@tauri-apps/plugin-process";
+import { check } from "@tauri-apps/plugin-updater";
 import { useEffect, useMemo, useState } from "react";
 import type { AppInfo } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
@@ -7,6 +9,8 @@ export function AboutSettingsPane() {
 	const [appInfo, setAppInfo] = useState<AppInfo | null>(null);
 	const [error, setError] = useState("");
 	const [copyLabel, setCopyLabel] = useState("Copy Debug Info");
+	const [updateStatus, setUpdateStatus] = useState("");
+	const [checkingUpdates, setCheckingUpdates] = useState(false);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -40,6 +44,29 @@ export function AboutSettingsPane() {
 		} catch {
 			setCopyLabel("Copy failed");
 			window.setTimeout(() => setCopyLabel("Copy Debug Info"), 1800);
+		}
+	};
+
+	const handleCheckForUpdates = async () => {
+		if (checkingUpdates) return;
+		setCheckingUpdates(true);
+		setUpdateStatus("");
+		try {
+			const update = await check();
+			if (!update) {
+				setUpdateStatus("You are on the latest version.");
+				return;
+			}
+			setUpdateStatus(`Installing v${update.version}...`);
+			await update.downloadAndInstall();
+			setUpdateStatus("Update installed. Restarting Glyph...");
+			await relaunch();
+		} catch (e) {
+			setUpdateStatus(
+				e instanceof Error ? e.message : "Failed to check for updates",
+			);
+		} finally {
+			setCheckingUpdates(false);
 		}
 	};
 
@@ -85,20 +112,20 @@ export function AboutSettingsPane() {
 					<button
 						type="button"
 						onClick={() =>
-							void openUrl("https://github.com/SidhuK/Tether/releases")
+							void openUrl("https://github.com/SidhuK/Glyph/releases")
 						}
 					>
 						Changelog
 					</button>
 					<button
 						type="button"
-						onClick={() =>
-							void openUrl("https://github.com/SidhuK/Tether/releases/latest")
-						}
+						disabled={checkingUpdates}
+						onClick={() => void handleCheckForUpdates()}
 					>
-						Check for Updates
+						{checkingUpdates ? "Checking..." : "Check for Updates"}
 					</button>
 				</div>
+				{updateStatus ? <p className="settingsHint">{updateStatus}</p> : null}
 			</div>
 		</div>
 	);

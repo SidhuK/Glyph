@@ -1,0 +1,145 @@
+name: Tauri Release
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+concurrency:
+  group: tauri-release-main
+  cancel-in-progress: false
+
+jobs:
+  build-and-release:
+    runs-on: macos-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Install Rust stable
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Compute next version
+        id: version
+        run: |
+          set -euo pipefail
+
+          latest_tag="$(git tag -l 'v*' --sort=-v:refname | head -n1 || true)"
+          if [ -n "${latest_tag}" ]; then
+            base_version="${latest_tag#v}"
+          else
+            base_version="$(node -p "JSON.parse(require('fs').readFileSync('src-tauri/tauri.conf.json','utf8')).version")"
+          fi
+
+          IFS='.' read -r major minor patch <<< "${base_version}"
+          if ! [[ "${major}" =~ ^[0-9]+$ && "${minor}" =~ ^[0-9]+$ && "${patch}" =~ ^[0-9]+$ ]]; then
+            echo "Invalid base version: ${base_version}"
+            exit 1
+          fi
+
+          next_patch=$((patch + 1))
+          next_version="${major}.${minor}.${next_patch}"
+          next_tag="v${next_version}"
+
+          echo "latest_tag=${latest_tag}" >> "$GITHUB_OUTPUT"
+          echo "next_version=${next_version}" >> "$GITHUB_OUTPUT"
+          echo "next_tag=${next_tag}" >> "$GITHUB_OUTPUT"
+
+      - name: Sync version files
+        env:
+          NEXT_VERSION: ${{ steps.version.outputs.next_version }}
+        run: |
+          set -euo pipefail
+
+          node -e '
+            const fs = require("fs");
+            const next = process.env.NEXT_VERSION;
+
+            const pkgPath = "package.json";
+            const pkg = JSON.parse(fs.readFileSync(pkgPath, "utf8"));
+            pkg.version = next;
+            fs.writeFileSync(pkgPath, `${JSON.stringify(pkg, null, "\t")}\n`);
+
+            const tauriPath = "src-tauri/tauri.conf.json";
+            const tauri = JSON.parse(fs.readFileSync(tauriPath, "utf8"));
+            tauri.version = next;
+            fs.writeFileSync(tauriPath, `${JSON.stringify(tauri, null, "\t")}\n`);
+          '
+
+          sed -i.bak -E "0,/^version = \"[^\"]+\"/s//version = \"${NEXT_VERSION}\"/" src-tauri/Cargo.toml
+          rm -f src-tauri/Cargo.toml.bak
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Validate
+        run: |
+          pnpm check
+          pnpm build
+          cd src-tauri && cargo check
+
+      - name: Build changelog
+        id: changelog
+        env:
+          LATEST_TAG: ${{ steps.version.outputs.latest_tag }}
+          NEXT_TAG: ${{ steps.version.outputs.next_tag }}
+        run: |
+          set -euo pipefail
+
+          if [ -n "${LATEST_TAG}" ]; then
+            {
+              echo "## Changes in ${NEXT_TAG}"
+              echo
+              git log "${LATEST_TAG}..HEAD" --no-merges --pretty=format:'- %s (%h)'
+            } > RELEASE_NOTES.md
+          else
+            {
+              echo "## Changes in ${NEXT_TAG}"
+              echo
+              git log --no-merges --pretty=format:'- %s (%h)'
+            } > RELEASE_NOTES.md
+          fi
+
+          if [ ! -s RELEASE_NOTES.md ] || [ "$(wc -l < RELEASE_NOTES.md)" -lt 2 ]; then
+            {
+              echo "## Changes in ${NEXT_TAG}"
+              echo
+              echo "- Maintenance release"
+            } > RELEASE_NOTES.md
+          fi
+
+          {
+            echo "body<<EOF"
+            cat RELEASE_NOTES.md
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+
+      - name: Build and publish release
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
+        with:
+          tagName: ${{ steps.version.outputs.next_tag }}
+          releaseName: "Glyph ${{ steps.version.outputs.next_tag }}"
+          releaseBody: ${{ steps.changelog.outputs.body }}
+          releaseDraft: false
+          prerelease: false
+          includeUpdaterJson: true
