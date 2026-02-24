@@ -52,6 +52,9 @@ type TauriEventMap = {
 		dailyNotes?: {
 			folder?: string | null;
 		};
+		analytics?: {
+			enabled?: boolean;
+		};
 	};
 };
 

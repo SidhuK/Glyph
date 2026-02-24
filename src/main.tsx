@@ -6,6 +6,7 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import SettingsApp from "./SettingsApp";
 import { Toaster } from "./components/ui/shadcn/sonner";
+import { trackAppStarted } from "./lib/analytics";
 import { applyUiAccent, applyUiTypography } from "./lib/appearance";
 import type { UiAccent } from "./lib/settings";
 import { loadSettings, reloadFromDisk } from "./lib/settings";
@@ -17,6 +18,11 @@ function isSettingsRoute(hash: string): boolean {
 
 function Root() {
 	const [hash, setHash] = React.useState(() => window.location.hash);
+	React.useEffect(() => {
+		if (isSettingsRoute(window.location.hash)) return;
+		void trackAppStarted();
+	}, []);
+
 	React.useEffect(() => {
 		const onHashChange = () => setHash(window.location.hash);
 		window.addEventListener("hashchange", onHashChange);

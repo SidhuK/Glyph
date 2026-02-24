@@ -241,6 +241,21 @@ export interface LinkPreview {
 	ok: boolean;
 }
 
+export type AnalyticsEventName =
+	| "app_started"
+	| "vault_opened"
+	| "index_rebuild_started"
+	| "search_executed"
+	| "note_created"
+	| "ai_chat_started"
+	| "settings_changed";
+
+export interface AnalyticsTrackRequest {
+	event: AnalyticsEventName;
+	distinct_id: string;
+	properties?: Record<string, unknown>;
+}
+
 export type AiProviderKind =
 	| "openai"
 	| "openai_compat"
@@ -587,6 +602,7 @@ interface TauriCommands {
 		{ attachments: AiContextAttachment[] },
 		string[]
 	>;
+	analytics_track: CommandDef<{ request: AnalyticsTrackRequest }, void>;
 }
 
 export class TauriInvokeError extends Error {

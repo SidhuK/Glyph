@@ -41,6 +41,7 @@ const DEFAULT_UI_MONO_FONT_FAMILY = "JetBrains Mono";
 const MIN_UI_FONT_SIZE = 7;
 const MAX_UI_FONT_SIZE = 40;
 const DEFAULT_UI_FONT_SIZE = 14;
+const DEFAULT_ANALYTICS_ENABLED = false;
 export type UiFontFamily = string;
 export type UiFontSize = number;
 const AI_ASSISTANT_MODES = new Set<AiAssistantMode>(["chat", "create"]);
@@ -104,6 +105,9 @@ async function emitSettingsUpdated(payload: {
 	dailyNotes?: {
 		folder?: string | null;
 	};
+	analytics?: {
+		enabled?: boolean;
+	};
 }): Promise<void> {
 	try {
 		await emit("settings:updated", payload);
@@ -134,6 +138,10 @@ interface AppSettings {
 	dailyNotes: {
 		folder: string | null;
 	};
+	analytics: {
+		enabled: boolean;
+		distinctId: string;
+	};
 }
 
 const KEYS = {
@@ -148,6 +156,8 @@ const KEYS = {
 	monoFontFamily: "ui.monoFontFamily",
 	fontSize: "ui.fontSize",
 	dailyNotesFolder: "dailyNotes.folder",
+	analyticsEnabled: "analytics.enabled",
+	analyticsDistinctId: "analytics.distinctId",
 } as const;
 
 export async function reloadFromDisk(): Promise<void> {
@@ -186,6 +196,8 @@ export async function loadSettings(): Promise<AppSettings> {
 		rawMonoFontFamily,
 		rawFontSize,
 		dailyNotesFolderRaw,
+		analyticsEnabledRaw,
+		analyticsDistinctIdRaw,
 	] = await Promise.all([
 		store.get<string | null>(KEYS.currentVaultPath),
 		store.get<string[] | null>(KEYS.recentVaults),
@@ -198,6 +210,8 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<unknown>(KEYS.monoFontFamily),
 		store.get<unknown>(KEYS.fontSize),
 		store.get<string | null>(KEYS.dailyNotesFolder),
+		store.get<boolean | null>(KEYS.analyticsEnabled),
+		store.get<string | null>(KEYS.analyticsDistinctId),
 	]);
 	const currentVaultPath = currentVaultPathRaw ?? null;
 	const recentVaults = recentVaultsRaw ?? [];
@@ -210,6 +224,12 @@ export async function loadSettings(): Promise<AppSettings> {
 	const monoFontFamily = asUiMonoFontFamily(rawMonoFontFamily);
 	const fontSize = asUiFontSize(rawFontSize);
 	const dailyNotesFolder = dailyNotesFolderRaw ?? null;
+	const analyticsEnabled =
+		typeof analyticsEnabledRaw === "boolean"
+			? analyticsEnabledRaw
+			: DEFAULT_ANALYTICS_ENABLED;
+	const analyticsDistinctId =
+		typeof analyticsDistinctIdRaw === "string" ? analyticsDistinctIdRaw : "";
 	return {
 		currentVaultPath,
 		recentVaults: Array.isArray(recentVaults) ? recentVaults : [],
@@ -228,6 +248,10 @@ export async function loadSettings(): Promise<AppSettings> {
 		},
 		dailyNotes: {
 			folder: dailyNotesFolder,
+		},
+		analytics: {
+			enabled: analyticsEnabled,
+			distinctId: analyticsDistinctId,
 		},
 	};
 }
@@ -326,6 +350,31 @@ export async function setDailyNotesFolder(
 	}
 	await store.save();
 	void emitSettingsUpdated({ dailyNotes: { folder } });
+}
+
+export async function getAnalyticsEnabled(): Promise<boolean> {
+	const store = await getStore();
+	const raw = await store.get<boolean | null>(KEYS.analyticsEnabled);
+	return typeof raw === "boolean" ? raw : DEFAULT_ANALYTICS_ENABLED;
+}
+
+export async function setAnalyticsEnabled(enabled: boolean): Promise<void> {
+	const store = await getStore();
+	await store.set(KEYS.analyticsEnabled, enabled);
+	await store.save();
+	void emitSettingsUpdated({ analytics: { enabled } });
+}
+
+export async function getOrCreateAnalyticsDistinctId(): Promise<string> {
+	const store = await getStore();
+	const existing = await store.get<string | null>(KEYS.analyticsDistinctId);
+	if (typeof existing === "string" && existing.trim().length > 0) {
+		return existing.trim();
+	}
+	const next = crypto.randomUUID();
+	await store.set(KEYS.analyticsDistinctId, next);
+	await store.save();
+	return next;
 }
 
 export async function getRecentFiles(): Promise<RecentFile[]> {

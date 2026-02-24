@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { trackAiChatStarted } from "../../../lib/analytics";
 import {
 	type AiAssistantMode,
 	type AiMessage,
+	type AiProviderKind,
 	invoke,
 } from "../../../lib/tauri";
 import { listenTauriEvent } from "../../../lib/tauriEvents";
@@ -19,6 +21,7 @@ type SendMessageArgs = { text: string };
 type SendMessageOptions = {
 	body?: {
 		profile_id?: string;
+		provider?: AiProviderKind;
 		thread_id?: string;
 		mode?: AiAssistantMode;
 		context?: string;
@@ -145,6 +148,11 @@ export function useRigChat() {
 						context_manifest: options?.body?.context_manifest,
 						audit: options?.body?.audit ?? true,
 					},
+				});
+				void trackAiChatStarted({
+					provider: options?.body?.provider ?? "openai_compat",
+					mode: options?.body?.mode ?? "create",
+					hasContext: Boolean(options?.body?.context?.trim()),
 				});
 
 				activeJobIdRef.current = jobId;

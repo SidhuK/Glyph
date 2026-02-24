@@ -1,5 +1,6 @@
 import { join } from "@tauri-apps/api/path";
 import { useCallback, useEffect, useRef } from "react";
+import { trackNoteCreated } from "../lib/analytics";
 import { extractErrorMessage } from "../lib/errorUtils";
 import type { FsEntry } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
@@ -153,6 +154,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 					text: `# ${fileTitle}\n`,
 					base_mtime_ms: null,
 				});
+				void trackNoteCreated({ entrypoint: "ui" });
 				insertEntryOptimistic(parentDir(markdownRel), {
 					name: fileName,
 					rel_path: markdownRel,

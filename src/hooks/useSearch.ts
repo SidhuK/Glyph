@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { trackSearchExecuted } from "../lib/analytics";
 import { extractErrorMessage } from "../lib/errorUtils";
 import type { SearchResult } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
@@ -37,8 +38,13 @@ export function useSearch(vaultPath: string | null): UseSearchResult {
 			(async () => {
 				try {
 					const res = await invoke("search", { query: searchQuery });
-					if (!cancelled && requestId === requestIdRef.current)
+					if (!cancelled && requestId === requestIdRef.current) {
 						setSearchResults(res);
+						void trackSearchExecuted({
+							query: searchQuery,
+							resultCount: res.length,
+						});
+					}
 				} catch (e) {
 					if (!cancelled && requestId === requestIdRef.current)
 						setSearchError(extractErrorMessage(e));

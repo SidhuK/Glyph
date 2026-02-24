@@ -1,13 +1,16 @@
 import { useCallback, useEffect, useState } from "react";
+import { trackSettingsChanged } from "../../lib/analytics";
 import {
 	type AiAssistantMode,
 	loadSettings,
 	setAiAssistantMode,
+	setAnalyticsEnabled,
 } from "../../lib/settings";
 
 export function GeneralSettingsPane() {
 	const [aiAssistantMode, setAiAssistantModeState] =
 		useState<AiAssistantMode>("create");
+	const [analyticsEnabled, setAnalyticsEnabledState] = useState(false);
 	const [error, setError] = useState("");
 
 	useEffect(() => {
@@ -17,6 +20,7 @@ export function GeneralSettingsPane() {
 				const settings = await loadSettings();
 				if (cancelled) return;
 				setAiAssistantModeState(settings.ui.aiAssistantMode);
+				setAnalyticsEnabledState(settings.analytics.enabled);
 			} catch (e) {
 				if (!cancelled) {
 					setError(e instanceof Error ? e.message : "Failed to load settings");
@@ -33,6 +37,24 @@ export function GeneralSettingsPane() {
 		setAiAssistantModeState(mode);
 		try {
 			await setAiAssistantMode(mode);
+			void trackSettingsChanged({
+				settingKey: "aiAssistantMode",
+				newValue: mode,
+			});
+		} catch (e) {
+			setError(e instanceof Error ? e.message : "Failed to save settings");
+		}
+	}, []);
+
+	const updateAnalyticsEnabled = useCallback(async (enabled: boolean) => {
+		setError("");
+		setAnalyticsEnabledState(enabled);
+		try {
+			await setAnalyticsEnabled(enabled);
+			void trackSettingsChanged({
+				settingKey: "analyticsEnabled",
+				newValue: enabled ? "enabled" : "disabled",
+			});
 		} catch (e) {
 			setError(e instanceof Error ? e.message : "Failed to save settings");
 		}
@@ -65,6 +87,33 @@ export function GeneralSettingsPane() {
 							<option value="chat">Chat</option>
 						</select>
 					</div>
+				</section>
+				<section className="settingsCard">
+					<div className="settingsCardHeader">
+						<div>
+							<div className="settingsCardTitle">Anonymous Analytics</div>
+						</div>
+					</div>
+
+					<div className="settingsField">
+						<div>
+							<div className="settingsLabel">Usage Metrics</div>
+						</div>
+						<select
+							aria-label="Anonymous analytics"
+							value={analyticsEnabled ? "enabled" : "disabled"}
+							onChange={(event) =>
+								void updateAnalyticsEnabled(event.target.value === "enabled")
+							}
+						>
+							<option value="disabled">Disabled</option>
+							<option value="enabled">Enabled</option>
+						</select>
+					</div>
+					<p className="settingsHint">
+						Sends anonymous product usage metrics only. Never sends note
+						content.
+					</p>
 				</section>
 			</div>
 		</div>

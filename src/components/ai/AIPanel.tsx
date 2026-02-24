@@ -93,6 +93,7 @@ export function AIPanel({
 		!toolEvents.isAwaitingResponse &&
 		Boolean(input.trim()) &&
 		Boolean(profiles.activeProfileId);
+	const activeProvider = profiles.activeProfile?.provider;
 	const lastUserMessageIndex = useMemo(() => {
 		for (let i = chat.messages.length - 1; i >= 0; i--) {
 			if (chat.messages[i]?.role === "user") return i;
@@ -118,6 +119,7 @@ export function AIPanel({
 				{
 					body: {
 						profile_id: profiles.activeProfileId ?? undefined,
+						provider: activeProvider,
 						mode: aiAssistantMode,
 						context: built.payload || undefined,
 						context_manifest: built.manifest ?? undefined,
@@ -127,7 +129,14 @@ export function AIPanel({
 			);
 			return true;
 		},
-		[aiAssistantMode, chat, context, profiles.activeProfileId, toolEvents],
+		[
+			activeProvider,
+			aiAssistantMode,
+			chat,
+			context,
+			profiles.activeProfileId,
+			toolEvents,
+		],
 	);
 
 	const handleSend = useCallback(async () => {
@@ -152,6 +161,7 @@ export function AIPanel({
 			{
 				body: {
 					profile_id: profiles.activeProfileId ?? undefined,
+					provider: activeProvider,
 					mode: aiAssistantMode,
 					context: built.payload || undefined,
 					context_manifest: built.manifest ?? undefined,
@@ -166,6 +176,7 @@ export function AIPanel({
 		context,
 		input,
 		profiles.activeProfileId,
+		activeProvider,
 		scheduleResize,
 		toolEvents,
 	]);

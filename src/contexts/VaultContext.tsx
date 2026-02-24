@@ -8,6 +8,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { trackIndexRebuildStarted, trackVaultOpened } from "../lib/analytics";
 import {
 	clearCurrentVaultPath,
 	loadSettings,
@@ -106,6 +107,7 @@ export function VaultProvider({ children }: { children: ReactNode }) {
 	const startIndexRebuild = useCallback(async (): Promise<void> => {
 		setIsIndexing(true);
 		try {
+			void trackIndexRebuildStarted();
 			await invoke("index_rebuild");
 		} catch {
 			/* index is derived; ignore */
@@ -115,7 +117,11 @@ export function VaultProvider({ children }: { children: ReactNode }) {
 	}, []);
 
 	const applyVaultSelection = useCallback(
-		async (path: string, mode: "open" | "create") => {
+		async (
+			path: string,
+			mode: "open" | "create",
+			source: "continue_last" | "open_dialog" | "open_recent" | "create_dialog",
+		) => {
 			if (isOpeningVaultRef.current) return;
 			isOpeningVaultRef.current = true;
 			setError("");
@@ -140,6 +146,10 @@ export function VaultProvider({ children }: { children: ReactNode }) {
 				setLastVaultPath(vaultInfo.root);
 				setVaultPath(vaultInfo.root);
 				setVaultSchemaVersion(vaultInfo.schema_version);
+				void trackVaultOpened({
+					source,
+					vaultSchemaVersion: vaultInfo.schema_version,
+				});
 			} catch (err) {
 				setError(extractError(err));
 			} finally {
@@ -170,17 +180,18 @@ export function VaultProvider({ children }: { children: ReactNode }) {
 		});
 		if (!selection) return;
 		const path = Array.isArray(selection) ? selection[0] : selection;
-		if (path) await applyVaultSelection(path, "open");
+		if (path) await applyVaultSelection(path, "open", "open_dialog");
 	}, [applyVaultSelection]);
 
 	const onOpenVaultAtPath = useCallback(
-		async (path: string) => applyVaultSelection(path, "open"),
+		async (path: string) => applyVaultSelection(path, "open", "open_recent"),
 		[applyVaultSelection],
 	);
 
 	const onContinueLastVault = useCallback(async () => {
-		if (lastVaultPath) await onOpenVaultAtPath(lastVaultPath);
-	}, [lastVaultPath, onOpenVaultAtPath]);
+		if (lastVaultPath)
+			await applyVaultSelection(lastVaultPath, "open", "continue_last");
+	}, [lastVaultPath, applyVaultSelection]);
 
 	const onCreateVault = useCallback(async () => {
 		const { open } = await import("@tauri-apps/plugin-dialog");
@@ -191,7 +202,7 @@ export function VaultProvider({ children }: { children: ReactNode }) {
 		});
 		if (!selection) return;
 		const path = Array.isArray(selection) ? selection[0] : selection;
-		if (path) await applyVaultSelection(path, "create");
+		if (path) await applyVaultSelection(path, "create", "create_dialog");
 	}, [applyVaultSelection]);
 
 	const value = useMemo<VaultContextValue>(

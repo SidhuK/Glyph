@@ -20,3 +20,9 @@
 - AI requests/responses are optionally logged under `vault/cache/ai/` without secrets.
 - Logs include the user-approved context manifest and an `outcome` field (applied/rejected/created_*).
 
+## Analytics (PostHog)
+
+- Analytics is opt-in and disabled by default via Settings -> General -> Anonymous Analytics.
+- Events are sent from the Rust backend only, using `POSTHOG_API_KEY` and optional `POSTHOG_HOST`.
+- Only coarse product usage events are collected (for example app start, vault open, search bucket metrics).
+- Note content, note paths, AI prompts, search text, URLs, and API secrets are never sent.
