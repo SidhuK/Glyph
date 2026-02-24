@@ -84,6 +84,9 @@ jobs:
           sed -i.bak -E "0,/^version = \"[^\"]+\"/s//version = \"${NEXT_VERSION}\"/" src-tauri/Cargo.toml
           rm -f src-tauri/Cargo.toml.bak
 
+      - name: Format updated version files
+        run: pnpm exec biome format --write package.json src-tauri/tauri.conf.json
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
