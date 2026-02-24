@@ -66,8 +66,13 @@ export function AppShell() {
 		sidebarWidth,
 		setSidebarWidth,
 	} = useUILayoutContext();
-	const { aiPanelOpen, setAiPanelOpen, aiPanelWidth, setAiPanelWidth } =
-		useAISidebarContext();
+	const {
+		aiEnabled,
+		aiPanelOpen,
+		setAiPanelOpen,
+		aiPanelWidth,
+		setAiPanelWidth,
+	} = useAISidebarContext();
 	const { saveCurrentEditor } = useEditorContext();
 
 	const [paletteInitialTab, setPaletteInitialTab] = useState<
@@ -225,6 +230,7 @@ export function AppShell() {
 
 	const attachContextFiles = useCallback(
 		async (paths: string[]) => {
+			if (!aiEnabled) return;
 			const unique = Array.from(
 				new Set(
 					paths
@@ -236,7 +242,7 @@ export function AppShell() {
 			setAiPanelOpen(true);
 			window.setTimeout(() => dispatchAiContextAttach({ paths: unique }), 0);
 		},
-		[setAiPanelOpen],
+		[aiEnabled, setAiPanelOpen],
 	);
 
 	const attachCurrentNoteToAi = useCallback(async () => {
@@ -383,6 +389,32 @@ export function AppShell() {
 				})),
 			];
 		}
+		const aiCommands: Command[] = aiEnabled
+			? [
+					{
+						id: "toggle-ai",
+						label: "Toggle AI",
+						shortcut: { meta: true, shift: true, key: "a" },
+						enabled: Boolean(vaultPath),
+						action: () => setAiPanelOpen((v) => !v),
+					},
+					{
+						id: "ai-attach-current-note",
+						label: "AI: Attach current note",
+						shortcut: { meta: true, alt: true, key: "a" },
+						enabled: Boolean(activeMarkdownTabPath),
+						action: () => void attachCurrentNoteToAi(),
+					},
+					{
+						id: "ai-attach-all-open-notes",
+						label: "AI: Attach all open notes",
+						shortcut: { meta: true, alt: true, shift: true, key: "a" },
+						enabled: openMarkdownTabs.length > 0,
+						action: () => void attachAllOpenNotesToAi(),
+					},
+				]
+			: [];
+
 		return [
 			{
 				id: "open-settings",
@@ -402,27 +434,7 @@ export function AppShell() {
 				shortcut: { meta: true, key: "b" },
 				action: () => setSidebarCollapsed(!sidebarCollapsed),
 			},
-			{
-				id: "toggle-ai",
-				label: "Toggle AI",
-				shortcut: { meta: true, shift: true, key: "a" },
-				enabled: Boolean(vaultPath),
-				action: () => setAiPanelOpen((v) => !v),
-			},
-			{
-				id: "ai-attach-current-note",
-				label: "AI: Attach current note",
-				shortcut: { meta: true, alt: true, key: "a" },
-				enabled: Boolean(activeMarkdownTabPath),
-				action: () => void attachCurrentNoteToAi(),
-			},
-			{
-				id: "ai-attach-all-open-notes",
-				label: "AI: Attach all open notes",
-				shortcut: { meta: true, alt: true, shift: true, key: "a" },
-				enabled: openMarkdownTabs.length > 0,
-				action: () => void attachAllOpenNotesToAi(),
-			},
+			...aiCommands,
 			{
 				id: "new-note",
 				label: "New note",
@@ -480,6 +492,7 @@ export function AppShell() {
 	}, [
 		activeMarkdownTabPath,
 		activeFilePath,
+		aiEnabled,
 		attachAllOpenNotesToAi,
 		attachCurrentNoteToAi,
 		dailyNotesFolder,
@@ -515,7 +528,7 @@ export function AppShell() {
 			className={cn(
 				"appShell",
 				sidebarCollapsed && "appShellSidebarCollapsed",
-				aiPanelOpen && "appShellAiOpen",
+				aiEnabled && aiPanelOpen && "appShellAiOpen",
 			)}
 		>
 			<div
@@ -572,7 +585,7 @@ export function AppShell() {
 				onOpenSearchPalette={openSearchPalette}
 				openTasksRequest={openTasksRequest}
 			/>
-			{vaultPath && aiPanelOpen && (
+			{vaultPath && aiEnabled && aiPanelOpen && (
 				<div
 					ref={aiResize.resizeRef}
 					className="sidebarResizeHandle"
@@ -583,7 +596,7 @@ export function AppShell() {
 					style={{ cursor: "col-resize" }}
 				/>
 			)}
-			{vaultPath && (
+			{vaultPath && aiEnabled && (
 				<AIFloatingHost
 					isOpen={aiPanelOpen}
 					onToggle={() => setAiPanelOpen((v) => !v)}

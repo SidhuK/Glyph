@@ -46,6 +46,7 @@ type TauriEventMap = {
 			fontFamily?: string;
 			monoFontFamily?: string;
 			fontSize?: number;
+			aiEnabled?: boolean;
 			aiAssistantMode?: "chat" | "create";
 			aiSidebarWidth?: number | null;
 		};

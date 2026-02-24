@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { loadSettings, setAiEnabled } from "../../lib/settings";
 import { type AiProfile, invoke } from "../../lib/tauri";
 import { AiProfileSections } from "./ai/AiProfileSections";
 import { errMessage } from "./ai/utils";
 
 export function AiSettingsPane() {
+	const [aiEnabled, setAiEnabledState] = useState(true);
 	const [profiles, setProfiles] = useState<AiProfile[]>([]);
 	const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
 	const [error, setError] = useState("");
@@ -18,6 +20,9 @@ export function AiSettingsPane() {
 		(async () => {
 			setError("");
 			try {
+				const settings = await loadSettings();
+				if (cancelled) return;
+				setAiEnabledState(settings.ui.aiEnabled);
 				const [list, active] = await Promise.all([
 					invoke("ai_profiles_list"),
 					invoke("ai_active_profile_get"),
@@ -36,6 +41,16 @@ export function AiSettingsPane() {
 		return () => {
 			cancelled = true;
 		};
+	}, []);
+
+	const updateAiEnabled = useCallback(async (enabled: boolean) => {
+		setError("");
+		setAiEnabledState(enabled);
+		try {
+			await setAiEnabled(enabled);
+		} catch (e) {
+			setError(errMessage(e));
+		}
 	}, []);
 
 	const createDefaultProfile = useCallback(async () => {
@@ -84,6 +99,34 @@ export function AiSettingsPane() {
 			{error ? <div className="settingsError">{error}</div> : null}
 
 			<div className="settingsGrid">
+				<section className="settingsCard">
+					<div className="settingsCardHeader">
+						<div>
+							<div className="settingsCardTitle">AI Availability</div>
+						</div>
+					</div>
+
+					<div className="settingsField">
+						<div>
+							<div className="settingsLabel">Enable AI</div>
+						</div>
+						<select
+							aria-label="Enable AI"
+							value={aiEnabled ? "enabled" : "disabled"}
+							onChange={(event) =>
+								void updateAiEnabled(event.target.value === "enabled")
+							}
+						>
+							<option value="enabled">Enabled</option>
+							<option value="disabled">Disabled</option>
+						</select>
+					</div>
+					<p className="settingsHint">
+						When disabled, AI UI and AI command palette actions are hidden
+						throughout the app.
+					</p>
+				</section>
+
 				<AiProfileSections
 					key={activeProfileId ?? "none"}
 					profiles={profiles}

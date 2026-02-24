@@ -41,6 +41,7 @@ export interface UILayoutContextValue {
 }
 
 export interface AISidebarContextValue {
+	aiEnabled: boolean;
 	aiPanelOpen: boolean;
 	setAiPanelOpen: Dispatch<SetStateAction<boolean>>;
 	aiPanelWidth: number;
@@ -76,6 +77,7 @@ type UIState = {
 	openMarkdownTabs: string[];
 	activeMarkdownTabPath: string | null;
 	dailyNotesFolder: string | null;
+	aiEnabled: boolean;
 	aiPanelOpen: boolean;
 	aiPanelWidth: number;
 	aiAssistantMode: AiAssistantMode;
@@ -90,12 +92,14 @@ type UIAction =
 	| { type: "setOpenMarkdownTabs"; value: SetStateAction<string[]> }
 	| { type: "setActiveMarkdownTabPath"; value: string | null }
 	| { type: "setDailyNotesFolder"; value: string | null }
+	| { type: "setAiEnabled"; value: boolean }
 	| { type: "setAiPanelOpen"; value: SetStateAction<boolean> }
 	| { type: "setAiPanelWidth"; value: number }
 	| { type: "setAiAssistantMode"; value: AiAssistantMode }
 	| { type: "onVaultPathChanged"; hasVault: boolean }
 	| {
 			type: "hydrateSettings";
+			aiEnabled: boolean;
 			aiPanelWidth?: number;
 			aiAssistantMode: AiAssistantMode;
 			dailyNotesFolder: string | null;
@@ -110,6 +114,7 @@ const initialUIState: UIState = {
 	openMarkdownTabs: [],
 	activeMarkdownTabPath: null,
 	dailyNotesFolder: null,
+	aiEnabled: true,
 	aiPanelOpen: false,
 	aiPanelWidth: 380,
 	aiAssistantMode: "create",
@@ -139,7 +144,14 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 			return { ...state, activeMarkdownTabPath: action.value };
 		case "setDailyNotesFolder":
 			return { ...state, dailyNotesFolder: action.value };
+		case "setAiEnabled":
+			return {
+				...state,
+				aiEnabled: action.value,
+				aiPanelOpen: action.value ? state.aiPanelOpen : false,
+			};
 		case "setAiPanelOpen":
+			if (!state.aiEnabled) return { ...state, aiPanelOpen: false };
 			return {
 				...state,
 				aiPanelOpen:
@@ -158,6 +170,8 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 		case "hydrateSettings":
 			return {
 				...state,
+				aiEnabled: action.aiEnabled,
+				aiPanelOpen: action.aiEnabled ? state.aiPanelOpen : false,
 				aiPanelWidth: action.aiPanelWidth ?? state.aiPanelWidth,
 				aiAssistantMode: action.aiAssistantMode,
 				dailyNotesFolder: action.dailyNotesFolder,
@@ -179,6 +193,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		openMarkdownTabs,
 		activeMarkdownTabPath,
 		dailyNotesFolder,
+		aiEnabled,
 		aiPanelOpen,
 		aiPanelWidth,
 		aiAssistantMode,
@@ -189,6 +204,10 @@ export function UIProvider({ children }: { children: ReactNode }) {
 	}, [vaultPath]);
 
 	useTauriEvent("settings:updated", (payload) => {
+		const nextEnabled = payload.ui?.aiEnabled;
+		if (typeof nextEnabled === "boolean") {
+			dispatch({ type: "setAiEnabled", value: nextEnabled });
+		}
 		const nextMode = payload.ui?.aiAssistantMode;
 		if (nextMode === "chat" || nextMode === "create") {
 			dispatch({ type: "setAiAssistantMode", value: nextMode });
@@ -213,6 +232,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 				if (cancelled) return;
 				dispatch({
 					type: "hydrateSettings",
+					aiEnabled: s.ui.aiEnabled,
 					aiPanelWidth:
 						typeof s.ui.aiSidebarWidth === "number"
 							? s.ui.aiSidebarWidth
@@ -375,6 +395,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 
 	const aiSidebarValue = useMemo<AISidebarContextValue>(
 		() => ({
+			aiEnabled,
 			aiPanelOpen,
 			setAiPanelOpen,
 			aiPanelWidth,
@@ -383,6 +404,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			setAiAssistantMode,
 		}),
 		[
+			aiEnabled,
 			aiPanelOpen,
 			setAiPanelOpen,
 			aiPanelWidth,

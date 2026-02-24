@@ -42,6 +42,7 @@ const MIN_UI_FONT_SIZE = 7;
 const MAX_UI_FONT_SIZE = 40;
 const DEFAULT_UI_FONT_SIZE = 14;
 const DEFAULT_ANALYTICS_ENABLED = false;
+const DEFAULT_AI_ENABLED = true;
 export type UiFontFamily = string;
 export type UiFontSize = number;
 const AI_ASSISTANT_MODES = new Set<AiAssistantMode>(["chat", "create"]);
@@ -100,6 +101,7 @@ async function emitSettingsUpdated(payload: {
 		monoFontFamily?: UiFontFamily;
 		fontSize?: UiFontSize;
 		aiAssistantMode?: AiAssistantMode;
+		aiEnabled?: boolean;
 		aiSidebarWidth?: number | null;
 	};
 	dailyNotes?: {
@@ -127,6 +129,7 @@ interface AppSettings {
 	recentVaults: string[];
 	recentFiles: RecentFile[];
 	ui: {
+		aiEnabled: boolean;
 		aiSidebarWidth: number | null;
 		theme: ThemeMode;
 		accent: UiAccent;
@@ -148,6 +151,7 @@ const KEYS = {
 	currentVaultPath: "vault.currentPath",
 	recentVaults: "vault.recent",
 	recentFiles: "files.recent",
+	aiEnabled: "ui.aiEnabled",
 	aiSidebarWidth: "ui.aiSidebarWidth",
 	aiAssistantMode: "ui.aiAssistantMode",
 	theme: "ui.theme",
@@ -188,6 +192,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		currentVaultPathRaw,
 		recentVaultsRaw,
 		rawRecentFiles,
+		rawAiEnabled,
 		aiSidebarWidthRaw,
 		rawAiAssistantMode,
 		rawTheme,
@@ -202,6 +207,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<string | null>(KEYS.currentVaultPath),
 		store.get<string[] | null>(KEYS.recentVaults),
 		store.get<unknown>(KEYS.recentFiles),
+		store.get<boolean | null>(KEYS.aiEnabled),
 		store.get<number | null>(KEYS.aiSidebarWidth),
 		store.get<unknown>(KEYS.aiAssistantMode),
 		store.get<unknown>(KEYS.theme),
@@ -216,6 +222,8 @@ export async function loadSettings(): Promise<AppSettings> {
 	const currentVaultPath = currentVaultPathRaw ?? null;
 	const recentVaults = recentVaultsRaw ?? [];
 	const recentFiles = isRecentFileArray(rawRecentFiles) ? rawRecentFiles : [];
+	const aiEnabled =
+		typeof rawAiEnabled === "boolean" ? rawAiEnabled : DEFAULT_AI_ENABLED;
 	const aiSidebarWidth = aiSidebarWidthRaw ?? null;
 	const aiAssistantMode = asAiAssistantMode(rawAiAssistantMode);
 	const theme = asThemeMode(rawTheme);
@@ -235,6 +243,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		recentVaults: Array.isArray(recentVaults) ? recentVaults : [],
 		recentFiles,
 		ui: {
+			aiEnabled,
 			aiSidebarWidth:
 				typeof aiSidebarWidth === "number" && Number.isFinite(aiSidebarWidth)
 					? aiSidebarWidth
@@ -291,6 +300,13 @@ export async function setAiAssistantMode(mode: AiAssistantMode): Promise<void> {
 	await store.set(KEYS.aiAssistantMode, mode);
 	await store.save();
 	void emitSettingsUpdated({ ui: { aiAssistantMode: mode } });
+}
+
+export async function setAiEnabled(enabled: boolean): Promise<void> {
+	const store = await getStore();
+	await store.set(KEYS.aiEnabled, enabled);
+	await store.save();
+	void emitSettingsUpdated({ ui: { aiEnabled: enabled } });
 }
 
 export async function setThemeMode(theme: ThemeMode): Promise<void> {
