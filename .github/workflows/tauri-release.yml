@@ -130,7 +130,7 @@ jobs:
           {
             echo "body<<${delimiter}"
             cat RELEASE_NOTES.md
-            echo "${delimiter}"
+            printf '\n%s\n' "${delimiter}"
           } >> "$GITHUB_OUTPUT"
 
       - name: Build and publish release
