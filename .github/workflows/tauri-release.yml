@@ -126,10 +126,11 @@ jobs:
             } > RELEASE_NOTES.md
           fi
 
+          delimiter="RELEASE_NOTES_$(date +%s)_$RANDOM"
           {
-            echo "body<<EOF"
+            echo "body<<${delimiter}"
             cat RELEASE_NOTES.md
-            echo "EOF"
+            echo "${delimiter}"
           } >> "$GITHUB_OUTPUT"
 
       - name: Build and publish release
