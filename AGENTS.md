@@ -58,3 +58,6 @@ cd src-tauri && cargo clippy   # Lint Rust
 - Use `paths::join_under()` for vault paths (prevent traversal). Never log secrets.
 - Use `net.rs` SSRF checks for user-supplied URLs. Version durable documents (`version: 1`).
 - New Tauri commands: implement in `src-tauri/src/`, register in `lib.rs`, add types to `TauriCommands` in `src/lib/tauri.ts`.
+
+## Migration Policy
+- Use a hard cutover approach and never implement backward compatibility.
