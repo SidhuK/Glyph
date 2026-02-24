@@ -87,6 +87,7 @@ export function AboutSettingsPane() {
 					<span className="aboutAppName">{appInfo?.name ?? "Glyph"}</span>
 					<span className="aboutVersion">{versionLabel}</span>
 				</div>
+				<p className="settingsHint">Update channel: GitHub Releases</p>
 
 				<div className="aboutLinksRow">
 					<button

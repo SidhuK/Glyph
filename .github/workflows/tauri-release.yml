@@ -31,8 +31,25 @@ jobs:
         with:
           version: 10.28.2
 
+      - name: Resolve pnpm store path
+        id: pnpm-store
+        run: echo "STORE_PATH=$(pnpm store path --silent)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache pnpm store
+        uses: actions/cache@v4
+        with:
+          path: ${{ steps.pnpm-store.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
       - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache Rust artifacts
+        uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
 
       - name: Compute next version
         id: version
@@ -40,11 +57,23 @@ jobs:
           set -euo pipefail
 
           latest_tag="$(git tag -l 'v*' --sort=-v:refname | head -n1 || true)"
-          if [ -n "${latest_tag}" ]; then
-            base_version="${latest_tag#v}"
-          else
-            base_version="$(node -p "JSON.parse(require('fs').readFileSync('src-tauri/tauri.conf.json','utf8')).version")"
+          file_version="$(node -p "JSON.parse(require('fs').readFileSync('src-tauri/tauri.conf.json','utf8')).version")"
+          tag_version="${latest_tag#v}"
+          if [ -z "${latest_tag}" ]; then
+            tag_version="0.0.0"
           fi
+
+          base_version="$(node -e '
+            const [a, b] = process.argv.slice(1);
+            const parse = (v) => v.split(".").map((x) => Number.parseInt(x, 10));
+            const av = parse(a);
+            const bv = parse(b);
+            const pickA =
+              av[0] > bv[0] ||
+              (av[0] === bv[0] && av[1] > bv[1]) ||
+              (av[0] === bv[0] && av[1] === bv[1] && av[2] >= bv[2]);
+            process.stdout.write(pickA ? a : b);
+          ' "${file_version}" "${tag_version}")"
 
           IFS='.' read -r major minor patch <<< "${base_version}"
           if ! [[ "${major}" =~ ^[0-9]+$ && "${minor}" =~ ^[0-9]+$ && "${patch}" =~ ^[0-9]+$ ]]; then
