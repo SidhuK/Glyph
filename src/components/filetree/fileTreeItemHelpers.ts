@@ -12,8 +12,6 @@ export const rowVariants = {
 	active: {
 		backgroundColor:
 			"color-mix(in srgb, var(--interactive-accent) 14%, transparent)",
-		boxShadow:
-			"inset 0 0 0 1px color-mix(in srgb, var(--interactive-accent) 24%, transparent)",
 	},
 	tap: { scale: 0.98 },
 };

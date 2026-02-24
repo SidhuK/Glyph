@@ -100,8 +100,6 @@
 
 .fileTreeItem.active > .fileTreeRowShell > .fileTreeRow {
 	background: color-mix(in srgb, var(--interactive-accent) 14%, transparent);
-	box-shadow: inset 0 0 0 1px
-		color-mix(in srgb, var(--interactive-accent) 24%, transparent);
 	color: var(--text-primary);
 	border-radius: var(--radius-md);
 }
