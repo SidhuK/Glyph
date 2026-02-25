@@ -5,6 +5,7 @@ import { springPresets } from "../ui/animations";
 export interface Command {
 	id: string;
 	label: string;
+	category?: string;
 	shortcut?: Shortcut;
 	action: () => void | Promise<void>;
 	enabled?: boolean;

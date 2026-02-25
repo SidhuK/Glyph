@@ -186,7 +186,7 @@ export function CommandPalette({
 	return (
 		<Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
 			<DialogContent
-				className="commandPalette gap-0 border-none bg-transparent p-0 shadow-none sm:max-w-[560px]"
+				className="commandPalette top-[46%] gap-0 border-none bg-transparent p-0 shadow-none sm:max-w-[560px]"
 				showCloseButton={false}
 				onKeyDown={handleKeyDown}
 			>
