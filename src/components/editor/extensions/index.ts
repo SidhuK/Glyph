@@ -148,7 +148,9 @@ const TaskListMarkdownShortcut = Extension.create({
 						const match = text.match(/^\[([ xX])\]\s*(.*)$/);
 						if (!match) return;
 
-						const $pos = newState.doc.resolve(pos);
+						// Resolve inside the paragraph node (not at its boundary) so depth
+						// points at paragraph > listItem > bulletList correctly.
+						const $pos = newState.doc.resolve(pos + 1);
 						const listItemDepth = $pos.depth - 1;
 						const listDepth = $pos.depth - 2;
 						if (listItemDepth < 1 || listDepth < 1) return;
