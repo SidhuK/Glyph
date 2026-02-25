@@ -134,8 +134,18 @@
 	position: absolute;
 	left: 0;
 	right: 0;
-	bottom: 0;
+	bottom: 10px;
 	z-index: 3;
+	opacity: 0;
+	transform: translateY(6px);
+	pointer-events: none;
+	transition: opacity 140ms ease, transform 140ms ease;
+}
+
+.rfNodeNoteEditor.showRibbon .rfNodeNoteEditorRibbonBottom {
+	opacity: 1;
+	transform: translateY(0);
+	pointer-events: auto;
 }
 
 .rfNodeNoteEditorRibbon .ribbonGroup {
@@ -196,7 +206,7 @@
 }
 
 .rfNodeNoteEditor.hasRibbon .rfNodeNoteEditorBody {
-	padding-bottom: 40px;
+	padding-bottom: 50px;
 }
 
 .rfNodeNoteEditorLoading {
