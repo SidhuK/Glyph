@@ -68,13 +68,16 @@ export function GeneralSettingsPane() {
 				<section className="settingsCard">
 					<div className="settingsCardHeader">
 						<div>
-							<div className="settingsCardTitle">AI Assistant Entry</div>
+							<div className="settingsCardTitle">Assistant Default View</div>
+							<div className="settingsCardHint">
+								Choose which assistant view opens first.
+							</div>
 						</div>
 					</div>
 
 					<div className="settingsField">
 						<div>
-							<div className="settingsLabel">Default Mode</div>
+							<div className="settingsLabel">Open Assistant In</div>
 						</div>
 						<select
 							aria-label="AI mode"
@@ -83,8 +86,8 @@ export function GeneralSettingsPane() {
 								void updateAssistantMode(event.target.value as AiAssistantMode)
 							}
 						>
-							<option value="create">Create</option>
-							<option value="chat">Chat</option>
+							<option value="create">Create View</option>
+							<option value="chat">Chat View</option>
 						</select>
 					</div>
 				</section>
@@ -92,12 +95,15 @@ export function GeneralSettingsPane() {
 					<div className="settingsCardHeader">
 						<div>
 							<div className="settingsCardTitle">Anonymous Analytics</div>
+							<div className="settingsCardHint">
+								Help improve Glyph with anonymous usage signals.
+							</div>
 						</div>
 					</div>
 
 					<div className="settingsField">
 						<div>
-							<div className="settingsLabel">Usage Metrics</div>
+							<div className="settingsLabel">Share Anonymous Metrics</div>
 						</div>
 						<select
 							aria-label="Anonymous analytics"
@@ -111,8 +117,8 @@ export function GeneralSettingsPane() {
 						</select>
 					</div>
 					<p className="settingsHint">
-						Sends anonymous product usage metrics only. Never sends note
-						content.
+						Only app interaction metrics are sent. Your note content is never
+						collected.
 					</p>
 				</section>
 			</div>

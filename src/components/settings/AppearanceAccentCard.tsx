@@ -15,6 +15,9 @@ export function AppearanceAccentCard({
 			<div className="settingsCardHeader">
 				<div>
 					<div className="settingsCardTitle">Accent</div>
+					<div className="settingsCardHint">
+						Choose the color used for highlights and focus.
+					</div>
 				</div>
 			</div>
 			<div className="settingsField">

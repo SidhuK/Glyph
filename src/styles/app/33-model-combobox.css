@@ -150,24 +150,3 @@
 	background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
 	border: 1px solid color-mix(in srgb, var(--border-light) 50%, transparent);
 }
-
-/* API key saved flash */
-
-.settingsKeySaved {
-	margin-top: 6px;
-	padding: 6px 10px;
-	border-radius: var(--radius-md);
-	background: color-mix(in srgb, #34c759 10%, transparent);
-	border: 1px solid color-mix(in srgb, #34c759 25%, transparent);
-	color: #34c759;
-	font-size: var(--text-xs);
-	text-align: center;
-}
-
-/* Active pill color */
-
-.settingsPillOk {
-	color: #34c759;
-	border-color: color-mix(in srgb, #34c759 30%, transparent);
-	background: color-mix(in srgb, #34c759 8%, transparent);
-}

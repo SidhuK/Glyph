@@ -32,22 +32,30 @@
 
 .dailyNotesFolderField {
 	padding-top: var(--space-2);
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
 }
 
 .dailyNotesActions {
 	display: inline-flex;
-	flex-direction: column;
-	align-items: stretch;
+	flex-direction: row;
+	align-items: center;
+	flex-wrap: wrap;
 	gap: var(--space-2);
 }
 
 .dailyNotesFolderPath {
-	padding-top: var(--space-2);
+	padding: 8px 10px;
 	font-size: var(--text-xs);
+	line-height: 1.45;
 	color: var(--text-secondary);
 	word-break: break-all;
+	border: 1px solid color-mix(in srgb, var(--border-light) 70%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 58%, transparent);
+	border-radius: var(--radius-lg);
 }
 
 .dailyNotesError {
-	margin-top: var(--space-2);
+	margin-top: 0;
 }

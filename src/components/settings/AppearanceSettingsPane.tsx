@@ -157,6 +157,9 @@ export function AppearanceSettingsPane() {
 					<div className="settingsCardHeader">
 						<div>
 							<div className="settingsCardTitle">Theme</div>
+							<div className="settingsCardHint">
+								Set the app theme behavior across all windows.
+							</div>
 						</div>
 					</div>
 					<div className="settingsField">
