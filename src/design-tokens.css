@@ -169,6 +169,57 @@
 	/* Feedback */
 	--feedback-error-bg: var(--color-red-100);
 	--feedback-success-bg: var(--color-green-100);
+	--status-info-fg: var(--color-blue-600);
+	--status-info-bg: color-mix(in srgb, var(--color-blue-500) 12%, transparent);
+	--status-info-border: color-mix(
+		in srgb,
+		var(--color-blue-500) 34%,
+		transparent
+	);
+	--status-success-fg: var(--color-green-500);
+	--status-success-bg: color-mix(
+		in srgb,
+		var(--color-green-500) 14%,
+		transparent
+	);
+	--status-success-border: color-mix(
+		in srgb,
+		var(--color-green-500) 34%,
+		transparent
+	);
+	--status-warning-fg: color-mix(
+		in srgb,
+		var(--color-yellow-500) 92%,
+		var(--text-primary)
+	);
+	--status-warning-bg: color-mix(
+		in srgb,
+		var(--color-yellow-500) 16%,
+		transparent
+	);
+	--status-warning-border: color-mix(
+		in srgb,
+		var(--color-yellow-500) 38%,
+		transparent
+	);
+	--status-danger-fg: var(--color-red-600);
+	--status-danger-bg: color-mix(in srgb, var(--color-red-500) 12%, transparent);
+	--status-danger-border: color-mix(
+		in srgb,
+		var(--color-red-500) 36%,
+		transparent
+	);
+
+	/* Role accents */
+	--ai-accent-chat: #014f86;
+	--ai-accent-create: #c1121f;
+	--task-bucket-inbox: #0077b6;
+	--task-bucket-today: #c89b00;
+	--task-bucket-upcoming: #d48800;
+	--callout-info: var(--color-blue-400);
+	--callout-tip: #3ccf8e;
+	--callout-warning: #f0b429;
+	--callout-error: #f97066;
 
 	/* Scrollbar */
 	--scrollbar-track: transparent;
@@ -222,6 +273,33 @@
 		/* Feedback */
 		--feedback-error-bg: rgba(224, 62, 62, 0.18);
 		--feedback-success-bg: rgba(15, 123, 15, 0.18);
+		--status-info-fg: var(--color-blue-300);
+		--status-info-bg: color-mix(in srgb, var(--color-blue-400) 18%, transparent);
+		--status-info-border: color-mix(
+			in srgb,
+			var(--color-blue-400) 42%,
+			transparent
+		);
+		--status-success-fg: #62d49a;
+		--status-success-bg: color-mix(in srgb, #3ccf8e 18%, transparent);
+		--status-success-border: color-mix(in srgb, #3ccf8e 45%, transparent);
+		--status-warning-fg: #f0c240;
+		--status-warning-bg: color-mix(in srgb, #f0c240 20%, transparent);
+		--status-warning-border: color-mix(in srgb, #f0c240 48%, transparent);
+		--status-danger-fg: #ff7a74;
+		--status-danger-bg: color-mix(in srgb, #ff7a74 20%, transparent);
+		--status-danger-border: color-mix(in srgb, #ff7a74 45%, transparent);
+
+		/* Role accents */
+		--ai-accent-chat: #4aa3ff;
+		--ai-accent-create: #ff6b6b;
+		--task-bucket-inbox: #4aa3ff;
+		--task-bucket-today: #f0c240;
+		--task-bucket-upcoming: #f0a030;
+		--callout-info: #4aa3ff;
+		--callout-tip: #62d49a;
+		--callout-warning: #f0c240;
+		--callout-error: #ff7a74;
 
 		/* Scrollbar */
 		--scrollbar-thumb: rgba(255, 255, 255, 0.16);
@@ -288,6 +366,33 @@
 	/* Feedback */
 	--feedback-error-bg: rgba(224, 62, 62, 0.18);
 	--feedback-success-bg: rgba(15, 123, 15, 0.18);
+	--status-info-fg: var(--color-blue-300);
+	--status-info-bg: color-mix(in srgb, var(--color-blue-400) 18%, transparent);
+	--status-info-border: color-mix(
+		in srgb,
+		var(--color-blue-400) 42%,
+		transparent
+	);
+	--status-success-fg: #62d49a;
+	--status-success-bg: color-mix(in srgb, #3ccf8e 18%, transparent);
+	--status-success-border: color-mix(in srgb, #3ccf8e 45%, transparent);
+	--status-warning-fg: #f0c240;
+	--status-warning-bg: color-mix(in srgb, #f0c240 20%, transparent);
+	--status-warning-border: color-mix(in srgb, #f0c240 48%, transparent);
+	--status-danger-fg: #ff7a74;
+	--status-danger-bg: color-mix(in srgb, #ff7a74 20%, transparent);
+	--status-danger-border: color-mix(in srgb, #ff7a74 45%, transparent);
+
+	/* Role accents */
+	--ai-accent-chat: #4aa3ff;
+	--ai-accent-create: #ff6b6b;
+	--task-bucket-inbox: #4aa3ff;
+	--task-bucket-today: #f0c240;
+	--task-bucket-upcoming: #f0a030;
+	--callout-info: #4aa3ff;
+	--callout-tip: #62d49a;
+	--callout-warning: #f0c240;
+	--callout-error: #ff7a74;
 
 	/* Scrollbar */
 	--scrollbar-thumb: rgba(255, 255, 255, 0.16);

@@ -207,9 +207,9 @@
 	margin: 0;
 	padding: 9px 10px;
 	border-radius: 10px;
-	border: 1px solid color-mix(in srgb, #e03e3e 28%, var(--border-light));
-	background: color-mix(in srgb, #e03e3e 8%, transparent);
-	color: color-mix(in srgb, #e03e3e 82%, var(--text-primary));
+	border: 1px solid var(--status-danger-border);
+	background: var(--status-danger-bg);
+	color: var(--status-danger-fg);
 	font-size: 12px;
 	line-height: 1.4;
 }
@@ -322,7 +322,7 @@
 	background: linear-gradient(
 		90deg,
 		color-mix(in srgb, var(--color-green-500) 72%, var(--interactive-accent)) 0%,
-		color-mix(in srgb, var(--color-green-500) 86%, #8ddf8d) 100%
+		color-mix(in srgb, var(--color-green-500) 86%, var(--bg-primary)) 100%
 	);
 }
 
@@ -331,7 +331,7 @@
 		90deg,
 		color-mix(in srgb, var(--color-yellow-500) 78%, var(--interactive-accent))
 			0%,
-		color-mix(in srgb, var(--color-yellow-500) 88%, #f3d188) 100%
+		color-mix(in srgb, var(--color-yellow-500) 88%, var(--bg-primary)) 100%
 	);
 }
 
@@ -339,7 +339,7 @@
 	background: linear-gradient(
 		90deg,
 		color-mix(in srgb, var(--color-red-500) 76%, var(--interactive-accent)) 0%,
-		color-mix(in srgb, var(--color-red-500) 88%, #f4a1a1) 100%
+		color-mix(in srgb, var(--color-red-500) 88%, var(--bg-primary)) 100%
 	);
 }
 

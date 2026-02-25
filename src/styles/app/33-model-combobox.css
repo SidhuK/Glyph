@@ -47,7 +47,7 @@
 	border: 1px solid var(--border-light);
 	background: var(--bg-primary);
 	box-shadow: 0 8px 24px
-		color-mix(in srgb, var(--shadow-color) 20%, transparent);
+		color-mix(in srgb, var(--text-primary) 16%, transparent);
 	padding: 4px;
 	display: flex;
 	flex-direction: column;
@@ -75,7 +75,7 @@
 }
 
 .modelComboboxError {
-	color: #ff3b30;
+	color: var(--status-danger-fg);
 	flex-direction: column;
 	gap: 6px;
 }

@@ -22,7 +22,7 @@
 
 .rfNode.rfNodeNoteEditing:hover {
 	transform: none !important;
-	box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.15), 0 1px 3px rgba(0, 0, 0, 0.1);
+	box-shadow: var(--shadow-lg);
 }
 
 .rfNodeNoteEditingInner {
@@ -68,12 +68,13 @@
 	gap: var(--space-2);
 	padding: 6px 8px;
 	border-radius: 10px;
-	background: var(--bg-hover);
+	background: var(--status-danger-bg);
+	border: 1px solid var(--status-danger-border);
 }
 
 .rfNodeNoteEditorErrorText {
 	font-size: 11px;
-	color: var(--text-secondary);
+	color: var(--status-danger-fg);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;

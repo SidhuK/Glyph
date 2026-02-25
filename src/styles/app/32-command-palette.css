@@ -193,7 +193,9 @@
 }
 
 .commandPaletteItem[data-selected="true"] {
-	background: var(--interactive-hover);
+	background: color-mix(in srgb, var(--interactive-accent) 12%, var(--bg-hover));
+	border: 1px solid
+		color-mix(in srgb, var(--interactive-accent) 24%, transparent);
 }
 
 /* ── Search result layout ── */
@@ -232,8 +234,10 @@
 }
 
 .commandPaletteResultSnippet mark {
-	background: transparent;
-	color: var(--text-primary);
+	background: color-mix(in srgb, var(--interactive-accent) 20%, transparent);
+	color: color-mix(in srgb, var(--interactive-accent) 75%, var(--text-primary));
+	border-radius: 3px;
+	padding: 0 2px;
 	font-weight: var(--font-medium);
 	text-decoration: none;
 }
@@ -262,6 +266,15 @@
 	background: var(--bg-tertiary);
 	border: 1px solid var(--border-light);
 	border-radius: var(--radius-sm);
+}
+
+.commandPaletteTab:focus-visible,
+.commandSearchFilterBtn:focus-visible,
+.commandPaletteItem:focus-visible,
+.commandPaletteShortcut kbd:focus-visible {
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	outline-offset: 2px;
 }
 
 /* ── Group labels ── */

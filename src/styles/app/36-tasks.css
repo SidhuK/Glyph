@@ -97,34 +97,51 @@
 }
 
 .tasksBucketPill[data-bucket="inbox"][data-active="true"] {
-	color: #0077b6;
+	color: var(--task-bucket-inbox);
+}
+
+.tasksBucketPill[data-bucket="inbox"][data-active="true"] .tasksBucketPillBg {
+	background: color-mix(in srgb, var(--task-bucket-inbox) 18%, transparent);
 }
 
 .tasksBucketPill[data-bucket="today"][data-active="true"] {
-	color: #c89b00;
+	color: var(--task-bucket-today);
+}
+
+.tasksBucketPill[data-bucket="today"][data-active="true"] .tasksBucketPillBg {
+	background: color-mix(in srgb, var(--task-bucket-today) 20%, transparent);
 }
 
 .tasksBucketPill[data-bucket="upcoming"][data-active="true"] {
-	color: #d48800;
+	color: var(--task-bucket-upcoming);
+}
+
+.tasksBucketPill[data-bucket="upcoming"][data-active="true"]
+	.tasksBucketPillBg {
+	background: color-mix(in srgb, var(--task-bucket-upcoming) 20%, transparent);
 }
 
 .dark .tasksBucketPill[data-bucket="inbox"][data-active="true"] {
-	color: #4aa3ff;
+	color: var(--task-bucket-inbox);
 }
 
 .dark .tasksBucketPill[data-bucket="today"][data-active="true"] {
-	color: #f0c240;
+	color: var(--task-bucket-today);
 }
 
 .dark .tasksBucketPill[data-bucket="upcoming"][data-active="true"] {
-	color: #f0a030;
+	color: var(--task-bucket-upcoming);
 }
 
 /* ── Error / empty ── */
 
 .tasksPaneError {
 	font-size: var(--text-sm);
-	color: var(--text-error);
+	color: var(--status-danger-fg);
+	background: var(--status-danger-bg);
+	border: 1px solid var(--status-danger-border);
+	border-radius: var(--radius-md);
+	padding: var(--space-2) var(--space-3);
 }
 
 .tasksPaneEmpty {
@@ -317,6 +334,16 @@
 
 .tasksRow:hover .tasksScheduleBtn {
 	opacity: 1;
+}
+
+.tasksBucketPill:focus-visible,
+.tasksNoteHeader:focus-visible,
+.tasksCheckbox:focus-visible,
+.tasksRowPath:focus-visible,
+.tasksScheduleBtn:focus-visible {
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	outline-offset: 2px;
 }
 
 /* ── Schedule popover ── */

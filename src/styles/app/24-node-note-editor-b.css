@@ -252,23 +252,23 @@
 }
 
 .tiptapContentInline blockquote.callout[data-callout="info"] {
-	--callout-accent: #4aa3ff;
+	--callout-accent: var(--callout-info);
 }
 
 .tiptapContentInline blockquote.callout[data-callout="tip"] {
-	--callout-accent: #3ccf8e;
+	--callout-accent: var(--callout-tip);
 }
 
 .tiptapContentInline blockquote.callout[data-callout="warning"] {
-	--callout-accent: #f0b429;
+	--callout-accent: var(--callout-warning);
 }
 
 .tiptapContentInline blockquote.callout[data-callout="warn"] {
-	--callout-accent: #f0b429;
+	--callout-accent: var(--callout-warning);
 }
 
 .tiptapContentInline blockquote.callout[data-callout="error"] {
-	--callout-accent: #f97066;
+	--callout-accent: var(--callout-error);
 }
 
 .tiptapContentInline code {

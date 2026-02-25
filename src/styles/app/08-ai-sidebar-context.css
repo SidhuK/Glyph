@@ -141,7 +141,7 @@
 }
 
 .aiContextApproved.ok {
-	color: color-mix(in srgb, var(--interactive-accent) 65%, var(--text-primary));
+	color: var(--status-success-fg);
 }
 
 .aiContextMeta {
