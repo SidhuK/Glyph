@@ -91,7 +91,7 @@
 .markdownEditorContent {
 	position: relative;
 	overflow: auto;
-	padding: 0 var(--readable-content-gutter);
+	padding: 0;
 }
 
 .markdownEditorPane {
@@ -184,13 +184,7 @@
 
 .markdownEditorCenter {
 	width: 100%;
-	max-width: min(
-		100%,
-		calc(
-			var(--readable-content-max-width) +
-			(2 * var(--readable-content-gutter))
-		)
-	);
+	max-width: 100%;
 	margin: 0 auto;
 	flex: 1;
 	min-height: 0;
