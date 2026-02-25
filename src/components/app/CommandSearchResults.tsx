@@ -26,6 +26,7 @@ function HighlightedSnippet({ snippet }: { snippet: string }) {
 
 interface SearchResultItemProps {
 	result: SearchResult;
+	index: number;
 	isSelected: boolean;
 	onMouseEnter: () => void;
 	onSelect: () => void;
@@ -33,6 +34,7 @@ interface SearchResultItemProps {
 
 export function SearchResultItem({
 	result,
+	index,
 	isSelected,
 	onMouseEnter,
 	onSelect,
@@ -41,6 +43,7 @@ export function SearchResultItem({
 		<button
 			type="button"
 			className="commandPaletteItem commandPaletteResultItem"
+			data-search-index={index}
 			data-selected={isSelected}
 			onMouseEnter={onMouseEnter}
 			onMouseDown={(e) => {
@@ -94,6 +97,7 @@ export function SearchResultsList({
 							key={r.id}
 							type="button"
 							className="commandPaletteItem"
+							data-search-index={index}
 							data-selected={index === selectedIndex}
 							onMouseEnter={() => onSetSelectedIndex(index)}
 							onMouseDown={(e) => {
@@ -123,6 +127,7 @@ export function SearchResultsList({
 						<SearchResultItem
 							key={r.id}
 							result={r}
+							index={index}
 							isSelected={index === selectedIndex}
 							onMouseEnter={() => onSetSelectedIndex(index)}
 							onSelect={() => onSelectResult(index)}
@@ -139,6 +144,7 @@ export function SearchResultsList({
 							<SearchResultItem
 								key={r.id}
 								result={r}
+								index={globalIndex}
 								isSelected={globalIndex === selectedIndex}
 								onMouseEnter={() => onSetSelectedIndex(globalIndex)}
 								onSelect={() => onSelectResult(globalIndex)}

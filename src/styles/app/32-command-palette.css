@@ -4,7 +4,7 @@
 	width: min(560px, calc(100vw - 48px));
 	max-height: min(82vh, 760px);
 	overflow: hidden;
-	border-radius: var(--radius-lg);
+	border-radius: var(--radius-2xl);
 	border: 1px solid var(--border-light);
 	background: var(--bg-primary);
 	box-shadow: var(--shadow-float);
@@ -80,6 +80,9 @@
 	gap: 8px;
 	height: 36px;
 	padding: 0 var(--space-4);
+	border: 0;
+	background: transparent;
+	box-shadow: none;
 }
 
 .commandPaletteSearchIcon {
@@ -94,10 +97,12 @@
 	height: 100%;
 	border: 0;
 	outline: 0;
+	appearance: none;
 	font: inherit;
 	font-size: var(--text-sm);
 	color: var(--text-primary);
 	background: transparent;
+	box-shadow: none;
 }
 
 .commandPaletteInput::placeholder {
@@ -266,6 +271,16 @@
 	font-size: var(--text-xs);
 	font-weight: var(--font-medium);
 	color: var(--text-tertiary);
+	user-select: none;
+}
+
+.commandPaletteSectionLabel {
+	padding: 8px 10px 4px;
+	font-size: 10px;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	font-weight: var(--font-medium);
+	color: color-mix(in srgb, var(--text-tertiary) 88%, transparent);
 	user-select: none;
 }
 
