@@ -28,6 +28,56 @@ interface UseNoteEditorOptions {
 	onChange: (nextMarkdown: string) => void;
 }
 
+function handleEditorClick(event: MouseEvent, relPath: string): boolean {
+	const target = event.target instanceof Element ? event.target : null;
+	const tagToken = target?.closest(".tagToken") as HTMLElement | null;
+	if (tagToken) {
+		event.preventDefault();
+		const rawTag =
+			tagToken.getAttribute("data-tag") ?? tagToken.textContent ?? "";
+		const normalized = rawTag.trim().replace(/^#+/, "");
+		if (!normalized) return true;
+		dispatchTagClick({ tag: `#${normalized}` });
+		return true;
+	}
+
+	const wikiLink = target?.closest(
+		'[data-wikilink="true"]',
+	) as HTMLElement | null;
+	if (wikiLink) {
+		event.preventDefault();
+		dispatchWikiLinkClick({
+			raw: wikiLink.textContent ?? "",
+			target: wikiLink.getAttribute("data-target") ?? "",
+			alias: wikiLink.getAttribute("data-alias") || null,
+			anchorKind:
+				(wikiLink.getAttribute("data-anchor-kind") as
+					| "none"
+					| "heading"
+					| "block") ?? "none",
+			anchor: wikiLink.getAttribute("data-anchor") || null,
+			unresolved: wikiLink.getAttribute("data-unresolved") === "true",
+		});
+		return true;
+	}
+
+	const link = target?.closest("a") as HTMLAnchorElement | null;
+	const href = link?.getAttribute("href") ?? "";
+	if (!href) return false;
+	if (href.startsWith("http://") || href.startsWith("https://")) {
+		event.preventDefault();
+		void openUrl(href);
+		return true;
+	}
+	if (href.startsWith("#")) return false;
+	event.preventDefault();
+	dispatchMarkdownLinkClick({
+		href,
+		sourcePath: relPath,
+	});
+	return true;
+}
+
 export function useNoteEditor({
 	markdown,
 	mode,
@@ -64,52 +114,11 @@ export function useNoteEditor({
 				class: "tiptapContentInline",
 				spellcheck: "true",
 			},
-			handleClick: (_view, _pos, event) => {
-				const target = event.target as HTMLElement | null;
-				const tagToken = target?.closest(".tagToken") as HTMLElement | null;
-				if (tagToken) {
-					event.preventDefault();
-					const rawTag =
-						tagToken.getAttribute("data-tag") ?? tagToken.textContent ?? "";
-					const normalized = rawTag.trim().replace(/^#+/, "");
-					if (!normalized) return true;
-					dispatchTagClick({ tag: `#${normalized}` });
-					return true;
-				}
-				const wikiLink = target?.closest(
-					'[data-wikilink="true"]',
-				) as HTMLElement | null;
-				if (wikiLink) {
-					event.preventDefault();
-					dispatchWikiLinkClick({
-						raw: wikiLink.textContent ?? "",
-						target: wikiLink.getAttribute("data-target") ?? "",
-						alias: wikiLink.getAttribute("data-alias") || null,
-						anchorKind:
-							(wikiLink.getAttribute("data-anchor-kind") as
-								| "none"
-								| "heading"
-								| "block") ?? "none",
-						anchor: wikiLink.getAttribute("data-anchor") || null,
-						unresolved: wikiLink.getAttribute("data-unresolved") === "true",
-					});
-					return true;
-				}
-				const link = target?.closest("a") as HTMLAnchorElement | null;
-				const href = link?.getAttribute("href") ?? "";
-				if (!href) return false;
-				if (href.startsWith("http://") || href.startsWith("https://")) {
-					event.preventDefault();
-					void openUrl(href);
-					return true;
-				}
-				if (href.startsWith("#")) return false;
-				event.preventDefault();
-				dispatchMarkdownLinkClick({
-					href,
-					sourcePath: relPath,
-				});
-				return true;
+			handleDOMEvents: {
+				click: (_view, event) => {
+					if (!(event instanceof MouseEvent)) return false;
+					return handleEditorClick(event, relPath);
+				},
 			},
 		},
 		onTransaction: ({ editor: instance, transaction }) => {
