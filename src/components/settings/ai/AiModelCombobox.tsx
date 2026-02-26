@@ -89,7 +89,7 @@ export function AiModelCombobox({
 	}, [canFetchModels, onModelsChange]);
 
 	const statusLabel = loading
-		? "Connecting…"
+		? "Connecting..."
 		: models
 			? `${models.length} models`
 			: null;
@@ -103,7 +103,7 @@ export function AiModelCombobox({
 					onChange={(e) => onChange(e.target.value)}
 					disabled={loading || !models || !canFetchModels}
 				>
-					<option value="">Select a model…</option>
+					<option value="">Select a model...</option>
 					{models?.map((m) => (
 						<option key={m.id} value={m.id}>
 							{m.name}

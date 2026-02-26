@@ -120,6 +120,89 @@ const CalloutDecorations = Extension.create({
 	},
 });
 
+const TaskListMarkdownShortcut = Extension.create({
+	name: "task-list-markdown-shortcut",
+	addProseMirrorPlugins() {
+		const key = new PluginKey("task-list-markdown-shortcut");
+		return [
+			new Plugin({
+				key,
+				appendTransaction(transactions, _oldState, newState) {
+					if (!transactions.some((tr) => tr.docChanged)) return null;
+
+					const paragraph = newState.schema.nodes.paragraph;
+					const taskList = newState.schema.nodes.taskList;
+					const taskItem = newState.schema.nodes.taskItem;
+					if (!paragraph || !taskList || !taskItem) return null;
+
+					const replacements: Array<{
+						pos: number;
+						size: number;
+						checked: boolean;
+						text: string;
+					}> = [];
+
+					newState.doc.descendants((node, pos) => {
+						if (node.type !== paragraph || node.childCount !== 1) return;
+						const text = node.textContent ?? "";
+						const match = text.match(/^\[([ xX])\]\s*(.*)$/);
+						if (!match) return;
+
+						// Resolve inside the paragraph node (not at its boundary) so depth
+						// points at paragraph > listItem > bulletList correctly.
+						const $pos = newState.doc.resolve(pos + 1);
+						const listItemDepth = $pos.depth - 1;
+						const listDepth = $pos.depth - 2;
+						if (listItemDepth < 1 || listDepth < 1) return;
+
+						const listItemNode = $pos.node(listItemDepth);
+						const listNode = $pos.node(listDepth);
+						if (
+							listItemNode.type.name !== "listItem" ||
+							listNode.type.name !== "bulletList" ||
+							listNode.childCount !== 1 ||
+							listItemNode.childCount !== 1
+						) {
+							return;
+						}
+
+						replacements.push({
+							pos: $pos.before(listDepth),
+							size: listNode.nodeSize,
+							checked: (match[1] ?? " ").toLowerCase() === "x",
+							text: (match[2] ?? "").trimStart(),
+						});
+					});
+
+					if (!replacements.length) return null;
+
+					const textNode = newState.schema.text.bind(newState.schema);
+					let tr = newState.tr;
+					for (let i = replacements.length - 1; i >= 0; i -= 1) {
+						const replacement = replacements[i];
+						const paragraphNode = newState.schema.nodes.paragraph.create(
+							null,
+							replacement.text ? textNode(replacement.text) : null,
+						);
+						const taskItemNode = taskItem.create(
+							{ checked: replacement.checked },
+							paragraphNode,
+						);
+						const taskListNode = taskList.create(null, [taskItemNode]);
+						tr = tr.replaceWith(
+							replacement.pos,
+							replacement.pos + replacement.size,
+							taskListNode,
+						);
+					}
+
+					return tr.docChanged ? tr : null;
+				},
+			}),
+		];
+	},
+});
+
 const TableEnterNavigation = Extension.create({
 	name: "table-enter-navigation",
 	addKeyboardShortcuts() {
@@ -199,6 +282,7 @@ export function createEditorExtensions(
 		}),
 		TaskList,
 		TaskItem.configure({ nested: true }),
+		TaskListMarkdownShortcut,
 		TableEnterNavigation,
 		Table.configure({ resizable: true }),
 		TableRow,

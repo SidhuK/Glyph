@@ -55,23 +55,39 @@
 }
 
 .aiPanel[data-ai-mode="chat"] {
-	--ai-mode-accent: #014f86;
-	--ai-mode-accent-soft: color-mix(in srgb, #014f86 14%, transparent);
+	--ai-mode-accent: var(--ai-accent-chat);
+	--ai-mode-accent-soft: color-mix(
+		in srgb,
+		var(--ai-accent-chat) 14%,
+		transparent
+	);
 }
 
 .aiPanel[data-ai-mode="create"] {
-	--ai-mode-accent: #c1121f;
-	--ai-mode-accent-soft: color-mix(in srgb, #c1121f 14%, transparent);
+	--ai-mode-accent: var(--ai-accent-create);
+	--ai-mode-accent-soft: color-mix(
+		in srgb,
+		var(--ai-accent-create) 14%,
+		transparent
+	);
 }
 
 .dark .aiPanel[data-ai-mode="chat"] {
-	--ai-mode-accent: #4aa3ff;
-	--ai-mode-accent-soft: color-mix(in srgb, #4aa3ff 14%, transparent);
+	--ai-mode-accent: var(--ai-accent-chat);
+	--ai-mode-accent-soft: color-mix(
+		in srgb,
+		var(--ai-accent-chat) 14%,
+		transparent
+	);
 }
 
 .dark .aiPanel[data-ai-mode="create"] {
-	--ai-mode-accent: #ff6b6b;
-	--ai-mode-accent-soft: color-mix(in srgb, #ff6b6b 14%, transparent);
+	--ai-mode-accent: var(--ai-accent-create);
+	--ai-mode-accent-soft: color-mix(
+		in srgb,
+		var(--ai-accent-create) 14%,
+		transparent
+	);
 }
 
 .aiPanelHeader {
@@ -211,8 +227,9 @@
 	margin: 6px 12px;
 	padding: 6px 10px;
 	border-radius: 8px;
-	background: color-mix(in srgb, #ff3b30 8%, transparent);
-	color: var(--text-primary);
+	background: var(--status-danger-bg);
+	color: var(--status-danger-fg);
+	border: 1px solid var(--status-danger-border);
 	font-size: var(--text-xs);
 	display: flex;
 	align-items: center;
@@ -513,13 +530,13 @@
 }
 
 .aiToolStatusError {
-	border-color: color-mix(in srgb, #ff3b30 45%, transparent);
-	color: var(--text-primary);
+	border-color: var(--status-danger-border);
+	color: var(--status-danger-fg);
 }
 
 .aiToolStatusError .aiToolStatusDot {
 	animation: none;
-	background: #ff3b30;
+	background: var(--status-danger-fg);
 }
 
 .aiToolTimelineInline {
@@ -584,7 +601,7 @@
 }
 
 .aiToolTimelineItem-error {
-	border-color: color-mix(in srgb, #ff3b30 38%, transparent);
+	border-color: var(--status-danger-border);
 }
 
 .aiToolTimelineItem-running {
@@ -622,13 +639,13 @@
 }
 
 .aiToolPhase-result {
-	background: color-mix(in srgb, #22c55e 18%, transparent);
-	color: #16a34a;
+	background: var(--status-success-bg);
+	color: var(--status-success-fg);
 }
 
 .aiToolPhase-error {
-	background: color-mix(in srgb, #ff3b30 18%, transparent);
-	color: #ff3b30;
+	background: var(--status-danger-bg);
+	color: var(--status-danger-fg);
 }
 
 .aiToolName {
@@ -663,7 +680,7 @@
 .aiToolError {
 	margin-top: 4px;
 	font-size: 11px;
-	color: #ff3b30;
+	color: var(--status-danger-fg);
 	word-break: break-word;
 }
 
@@ -987,19 +1004,19 @@
 }
 
 .aiModeMiniOption-chat.active {
-	color: #014f86;
+	color: var(--ai-accent-chat);
 }
 
 .aiModeMiniOption-create.active {
-	color: #c1121f;
+	color: var(--ai-accent-create);
 }
 
 .dark .aiModeMiniOption-chat.active {
-	color: #4aa3ff;
+	color: var(--ai-accent-chat);
 }
 
 .dark .aiModeMiniOption-create.active {
-	color: #ff6b6b;
+	color: var(--ai-accent-create);
 }
 
 .aiModeMiniOption:disabled {
@@ -1014,11 +1031,11 @@
 }
 
 .aiModeMiniActive-chat {
-	background: color-mix(in srgb, #014f86 22%, transparent);
+	background: color-mix(in srgb, var(--ai-accent-chat) 22%, transparent);
 }
 
 .aiModeMiniActive-create {
-	background: color-mix(in srgb, #c1121f 20%, transparent);
+	background: color-mix(in srgb, var(--ai-accent-create) 20%, transparent);
 }
 
 .aiModeMiniText {
@@ -1044,15 +1061,15 @@
 	align-items: center;
 	justify-content: center;
 	border-radius: 8px;
-	border: 1px solid color-mix(in srgb, #ff5a5f 38%, transparent);
-	background: color-mix(in srgb, #ff5a5f 14%, transparent);
-	color: #ff5a5f;
+	border: 1px solid var(--status-danger-border);
+	background: var(--status-danger-bg);
+	color: var(--status-danger-fg);
 }
 
 .aiComposerStop:hover {
-	border-color: color-mix(in srgb, #ff5a5f 52%, transparent);
-	background: color-mix(in srgb, #ff5a5f 20%, transparent);
-	color: #ff6b70;
+	border-color: color-mix(in srgb, var(--status-danger-border) 80%, transparent);
+	background: color-mix(in srgb, var(--status-danger-bg) 88%, transparent);
+	color: color-mix(in srgb, var(--status-danger-fg) 92%, var(--text-primary));
 }
 
 @media (prefers-reduced-motion: reduce) {

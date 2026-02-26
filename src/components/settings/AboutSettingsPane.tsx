@@ -1,14 +1,17 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { relaunch } from "@tauri-apps/plugin-process";
 import { check } from "@tauri-apps/plugin-updater";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { AppInfo } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 
 export function AboutSettingsPane() {
 	const [appInfo, setAppInfo] = useState<AppInfo | null>(null);
 	const [error, setError] = useState("");
-	const [copyLabel, setCopyLabel] = useState("Copy Debug Info");
+	const [copyLabel, setCopyLabel] = useState("Copy Diagnostics");
+	const copyResetTimerRef = useRef<
+		ReturnType<typeof window.setTimeout> | undefined
+	>(undefined);
 	const [updateStatus, setUpdateStatus] = useState("");
 	const [checkingUpdates, setCheckingUpdates] = useState(false);
 
@@ -35,15 +38,34 @@ export function AboutSettingsPane() {
 		return `v${appInfo.version}`;
 	}, [appInfo?.version]);
 
+	useEffect(() => {
+		return () => {
+			if (copyResetTimerRef.current !== undefined) {
+				window.clearTimeout(copyResetTimerRef.current);
+				copyResetTimerRef.current = undefined;
+			}
+		};
+	}, []);
+
+	const scheduleCopyLabelReset = () => {
+		if (copyResetTimerRef.current !== undefined) {
+			window.clearTimeout(copyResetTimerRef.current);
+		}
+		copyResetTimerRef.current = window.setTimeout(() => {
+			setCopyLabel("Copy Diagnostics");
+			copyResetTimerRef.current = undefined;
+		}, 1800);
+	};
+
 	const handleCopyDebugInfo = async () => {
 		const info = `Name: ${appInfo?.name ?? "Glyph"}\nVersion: ${appInfo?.version ?? "-"}\nIdentifier: ${appInfo?.identifier ?? "-"}`;
 		try {
 			await navigator.clipboard.writeText(info);
-			setCopyLabel("Copied");
-			window.setTimeout(() => setCopyLabel("Copy Debug Info"), 1800);
+			setCopyLabel("Copied to Clipboard");
+			scheduleCopyLabelReset();
 		} catch {
-			setCopyLabel("Copy failed");
-			window.setTimeout(() => setCopyLabel("Copy Debug Info"), 1800);
+			setCopyLabel("Copy Failed");
+			scheduleCopyLabelReset();
 		}
 	};
 
@@ -54,12 +76,14 @@ export function AboutSettingsPane() {
 		try {
 			const update = await check();
 			if (!update) {
-				setUpdateStatus("You are on the latest version.");
+				setUpdateStatus("You're already on the latest version.");
 				return;
 			}
+			setUpdateStatus(`Downloading v${update.version}...`);
+			await update.download();
 			setUpdateStatus(`Installing v${update.version}...`);
-			await update.downloadAndInstall();
-			setUpdateStatus("Update installed. Restarting Glyph...");
+			await update.install();
+			setUpdateStatus("Restarting Glyph...");
 			await relaunch();
 		} catch (e) {
 			setUpdateStatus(
@@ -87,14 +111,13 @@ export function AboutSettingsPane() {
 					<span className="aboutAppName">{appInfo?.name ?? "Glyph"}</span>
 					<span className="aboutVersion">{versionLabel}</span>
 				</div>
-				<p className="settingsHint">Update channel: GitHub Releases</p>
 
 				<div className="aboutLinksRow">
 					<button
 						type="button"
 						onClick={() => void openUrl("https://x.com/karat_sidhu")}
 					>
-						Twitter
+						X (Twitter)
 					</button>
 					<span className="aboutDot">·</span>
 					<button
@@ -112,18 +135,10 @@ export function AboutSettingsPane() {
 				<div className="aboutLinksRow aboutActionsRow">
 					<button
 						type="button"
-						onClick={() =>
-							void openUrl("https://github.com/SidhuK/Glyph/releases")
-						}
-					>
-						Changelog
-					</button>
-					<button
-						type="button"
 						disabled={checkingUpdates}
 						onClick={() => void handleCheckForUpdates()}
 					>
-						{checkingUpdates ? "Checking..." : "Check for Updates"}
+						{checkingUpdates ? "Checking for Updates..." : "Check for Updates"}
 					</button>
 				</div>
 				{updateStatus ? <p className="settingsHint">{updateStatus}</p> : null}

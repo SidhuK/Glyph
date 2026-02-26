@@ -236,7 +236,8 @@ button.ribbonBtn.active {
 .editorBody .tiptap blockquote {
 	margin: 0 0 var(--space-4) 0;
 	padding: var(--space-3) var(--space-4);
-	border-left: 3px solid color-mix(in srgb, var(--interactive-accent) 60%, #bbb);
+	border-left: 3px solid
+		color-mix(in srgb, var(--interactive-accent) 60%, var(--border-default));
 	background: var(--bg-secondary);
 	border-radius: var(--radius-lg);
 }
@@ -363,6 +364,8 @@ button.ribbonBtn.active {
 .editorError {
 	padding: var(--space-2) var(--space-3);
 	font-size: var(--text-xs);
-	color: var(--text-error);
-	background: var(--feedback-error-bg);
+	color: var(--status-danger-fg);
+	background: var(--status-danger-bg);
+	border: 1px solid var(--status-danger-border);
+	border-radius: var(--radius-md);
 }

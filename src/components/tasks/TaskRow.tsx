@@ -1,5 +1,8 @@
 import { useCallback, useState } from "react";
-import { todayIsoDateLocal } from "../../lib/tasks";
+import {
+	folderBreadcrumbFromNotePath,
+	todayIsoDateLocal,
+} from "../../lib/tasks";
 import type { TaskItem } from "../../lib/tauri";
 import { Calendar } from "../Icons";
 import { Badge } from "../ui/shadcn/badge";
@@ -29,6 +32,7 @@ export function TaskRow({
 	const [open, setOpen] = useState(false);
 	const [scheduledDate, setScheduledDate] = useState(task.scheduled_date ?? "");
 	const [dueDate, setDueDate] = useState(task.due_date ?? "");
+	const folderBreadcrumb = folderBreadcrumbFromNotePath(task.note_path);
 
 	const applyDates = useCallback(async () => {
 		await onSchedule(task.task_id, scheduledDate || null, dueDate || null);
@@ -155,7 +159,7 @@ export function TaskRow({
 							onClick={() => onOpenFile(task.note_path)}
 							title={task.note_path}
 						>
-							{task.note_path}
+							{folderBreadcrumb}
 						</button>
 					) : null}
 				</div>

@@ -73,13 +73,16 @@ export function DailyNotesSettingsPane() {
 					<div className="settingsCardHeader">
 						<div>
 							<div className="settingsCardTitle">Daily Notes Folder</div>
+							<div className="settingsCardHint">
+								New daily notes will be created here.
+							</div>
 						</div>
 					</div>
 
 					<div className="dailyNotesFolderField">
 						<div className="settingsField">
 							<div>
-								<div className="settingsLabel">Folder Path</div>
+								<div className="settingsLabel">Location</div>
 							</div>
 							<div className="settingsActions dailyNotesActions">
 								<Button

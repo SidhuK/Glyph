@@ -47,7 +47,7 @@
 	border: 1px solid var(--border-light);
 	background: var(--bg-primary);
 	box-shadow: 0 8px 24px
-		color-mix(in srgb, var(--shadow-color) 20%, transparent);
+		color-mix(in srgb, var(--text-primary) 16%, transparent);
 	padding: 4px;
 	display: flex;
 	flex-direction: column;
@@ -75,7 +75,7 @@
 }
 
 .modelComboboxError {
-	color: #ff3b30;
+	color: var(--status-danger-fg);
 	flex-direction: column;
 	gap: 6px;
 }
@@ -149,25 +149,4 @@
 	border-radius: var(--radius-full);
 	background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
 	border: 1px solid color-mix(in srgb, var(--border-light) 50%, transparent);
-}
-
-/* API key saved flash */
-
-.settingsKeySaved {
-	margin-top: 6px;
-	padding: 6px 10px;
-	border-radius: var(--radius-md);
-	background: color-mix(in srgb, #34c759 10%, transparent);
-	border: 1px solid color-mix(in srgb, #34c759 25%, transparent);
-	color: #34c759;
-	font-size: var(--text-xs);
-	text-align: center;
-}
-
-/* Active pill color */
-
-.settingsPillOk {
-	color: #34c759;
-	border-color: color-mix(in srgb, #34c759 30%, transparent);
-	background: color-mix(in srgb, #34c759 8%, transparent);
 }

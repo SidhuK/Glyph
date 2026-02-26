@@ -368,6 +368,7 @@ export function AppShell() {
 				{
 					id: "move-picker-root",
 					label: "/",
+					category: "Move Destination",
 					action: async () => {
 						const n = await fileTree.onMovePath(movePickerSourcePath, "");
 						if (n) {
@@ -379,6 +380,7 @@ export function AppShell() {
 				...moveTargetDirs.map((dir) => ({
 					id: `move-picker:${dir}`,
 					label: `/${dir}`,
+					category: "Move Destination",
 					action: async () => {
 						const n = await fileTree.onMovePath(movePickerSourcePath, dir);
 						if (n) {
@@ -394,6 +396,7 @@ export function AppShell() {
 					{
 						id: "toggle-ai",
 						label: "Toggle AI",
+						category: "AI",
 						shortcut: { meta: true, shift: true, key: "a" },
 						enabled: Boolean(vaultPath),
 						action: () => setAiPanelOpen((v) => !v),
@@ -401,6 +404,7 @@ export function AppShell() {
 					{
 						id: "ai-attach-current-note",
 						label: "AI: Attach current note",
+						category: "AI",
 						shortcut: { meta: true, alt: true, key: "a" },
 						enabled: Boolean(activeMarkdownTabPath),
 						action: () => void attachCurrentNoteToAi(),
@@ -408,6 +412,7 @@ export function AppShell() {
 					{
 						id: "ai-attach-all-open-notes",
 						label: "AI: Attach all open notes",
+						category: "AI",
 						shortcut: { meta: true, alt: true, shift: true, key: "a" },
 						enabled: openMarkdownTabs.length > 0,
 						action: () => void attachAllOpenNotesToAi(),
@@ -419,18 +424,21 @@ export function AppShell() {
 			{
 				id: "open-settings",
 				label: "Settings",
+				category: "Workspace",
 				shortcut: { meta: true, key: "," },
 				action: () => void openSettingsWindow(),
 			},
 			{
 				id: "open-vault",
 				label: "Open vault",
+				category: "Workspace",
 				shortcut: { meta: true, key: "o" },
 				action: onOpenVault,
 			},
 			{
 				id: "toggle-sidebar",
 				label: "Toggle sidebar",
+				category: "Workspace",
 				shortcut: { meta: true, key: "b" },
 				action: () => setSidebarCollapsed(!sidebarCollapsed),
 			},
@@ -438,6 +446,7 @@ export function AppShell() {
 			{
 				id: "new-note",
 				label: "New note",
+				category: "File Operations",
 				shortcut: { meta: true, key: "n" },
 				enabled: Boolean(vaultPath),
 				action: () => void fileTree.onNewFile(),
@@ -445,6 +454,7 @@ export function AppShell() {
 			{
 				id: "open-daily-note",
 				label: "Open daily note (today)",
+				category: "File Operations",
 				shortcut: { meta: true, shift: true, key: "d" },
 				enabled: Boolean(vaultPath) && Boolean(dailyNotesFolder),
 				action: () => void handleOpenDailyNote(),
@@ -452,6 +462,7 @@ export function AppShell() {
 			{
 				id: "save-note",
 				label: "Save",
+				category: "File Operations",
 				shortcut: { meta: true, key: "s" },
 				enabled: Boolean(vaultPath),
 				action: () => void saveCurrentEditor(),
@@ -459,6 +470,7 @@ export function AppShell() {
 			{
 				id: "close-preview",
 				label: "Close preview",
+				category: "Navigation",
 				shortcut: { meta: true, key: "w" },
 				enabled: Boolean(vaultPath),
 				action: () => setActivePreviewPath(null),
@@ -466,6 +478,7 @@ export function AppShell() {
 			{
 				id: "quick-open",
 				label: "Quick open",
+				category: "Navigation",
 				shortcut: { meta: true, key: "p" },
 				enabled: Boolean(vaultPath),
 				action: openSearchPalette,
@@ -473,12 +486,14 @@ export function AppShell() {
 			{
 				id: "open-tasks",
 				label: "Open tasks",
+				category: "Navigation",
 				enabled: Boolean(vaultPath),
 				action: openTasksTab,
 			},
 			{
 				id: "move-active-file",
 				label: "Move to…",
+				category: "File Operations",
 				enabled: Boolean(vaultPath) && Boolean(activeFilePath),
 				action: () => {
 					if (!activeFilePath) return;

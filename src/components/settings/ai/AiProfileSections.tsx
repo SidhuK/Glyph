@@ -31,6 +31,35 @@ function clampPercent(value: number): number {
 	return Math.max(0, Math.min(100, value));
 }
 
+function toneForRateLimitUsed(usedPercent: number): "ok" | "warn" | "danger" {
+	const clamped = clampPercent(usedPercent);
+	const remaining = 100 - clamped;
+	if (remaining <= 20) return "danger";
+	if (remaining <= 50) return "warn";
+	return "ok";
+}
+
+function toneForCodexStatus(
+	status: string,
+): "settingsPillOk" | "settingsPillWarn" | "settingsPillInfo" {
+	if (status === "connected") return "settingsPillOk";
+	if (status === "disconnected") return "settingsPillWarn";
+	return "settingsPillInfo";
+}
+
+function toneForSecretConfigured(
+	secretConfigured: boolean | null,
+): "settingsPillOk" | "settingsPillWarn" | "settingsPillError" {
+	if (secretConfigured === true) return "settingsPillOk";
+	if (secretConfigured === false) return "settingsPillError";
+	return "settingsPillWarn";
+}
+
+function labelForCodexStatus(status: string): string {
+	if (!status) return "Unknown";
+	return status.charAt(0).toUpperCase() + status.slice(1);
+}
+
 export function AiProfileSections({
 	profiles,
 	activeProfileId,
@@ -331,7 +360,10 @@ export function AiProfileSections({
 				<section className="settingsCard">
 					<div className="settingsCardHeader">
 						<div>
-							<div className="settingsCardTitle">Profile</div>
+							<div className="settingsCardTitle">Active Profile</div>
+							<div className="settingsCardHint">
+								Switch between saved provider profiles.
+							</div>
 						</div>
 					</div>
 					<div className="settingsField">
@@ -360,11 +392,14 @@ export function AiProfileSections({
 					<div className="settingsCardHeader">
 						<div>
 							<div className="settingsCardTitle">Get Started</div>
+							<div className="settingsCardHint">
+								Create your first provider profile.
+							</div>
 						</div>
 					</div>
 					<div className="settingsRow">
 						<button type="button" onClick={onCreateProfile}>
-							Create profile
+							Create Profile
 						</button>
 					</div>
 				</section>
@@ -375,6 +410,9 @@ export function AiProfileSections({
 					<div className="settingsCardHeader">
 						<div>
 							<div className="settingsCardTitle">Provider</div>
+							<div className="settingsCardHint">
+								Choose service, model, and advanced options.
+							</div>
 						</div>
 					</div>
 
@@ -520,7 +558,7 @@ export function AiProfileSections({
 
 					<div className="settingsRow">
 						<button type="button" onClick={() => void handleSave()}>
-							Save
+							Save Profile
 						</button>
 					</div>
 				</section>
@@ -533,11 +571,14 @@ export function AiProfileSections({
 					<div className="settingsCardHeader">
 						<div>
 							<div className="settingsCardTitle">ChatGPT Account</div>
+							<div className="settingsCardHint">
+								Check connection status and usage limits.
+							</div>
 						</div>
 						<div
-							className={`settingsPill ${codexState.status === "connected" ? "settingsPillOk" : ""}`}
+							className={`settingsPill ${toneForCodexStatus(codexState.status)}`}
 						>
-							{codexState.status}
+							{labelForCodexStatus(codexState.status)}
 						</div>
 					</div>
 					<div className="settingsField">
@@ -548,7 +589,7 @@ export function AiProfileSections({
 					</div>
 					{codexState.authMode ? (
 						<div className="settingsField">
-							<div className="settingsLabel">Auth Mode</div>
+							<div className="settingsLabel">Authentication</div>
 							<div className="settingsHint">{codexState.authMode}</div>
 						</div>
 					) : null}
@@ -572,7 +613,7 @@ export function AiProfileSections({
 											aria-valuenow={Math.round(100 - item.usedPercent)}
 										>
 											<div
-												className="codexRateLimitBarFill"
+												className={`codexRateLimitBarFill codexRateLimitBarFill--${toneForRateLimitUsed(item.usedPercent)}`}
 												style={{
 													width: `${clampPercent(100 - item.usedPercent)}%`,
 												}}
@@ -601,7 +642,7 @@ export function AiProfileSections({
 								onClick={() => void handleCodexConnect()}
 								disabled={codexState.loading}
 							>
-								Sign in with ChatGPT
+								Sign In with ChatGPT
 							</button>
 						)}
 						<button
@@ -609,7 +650,7 @@ export function AiProfileSections({
 							onClick={() => void refreshCodexAccount()}
 							disabled={codexState.loading}
 						>
-							Refresh
+							Refresh Status
 						</button>
 					</div>
 					{codexState.error ? (
@@ -623,9 +664,12 @@ export function AiProfileSections({
 					<div className="settingsCardHeader">
 						<div>
 							<div className="settingsCardTitle">API Key</div>
+							<div className="settingsCardHint">
+								Stored locally in the secure secret store.
+							</div>
 						</div>
 						<div
-							className={`settingsPill ${secretConfigured ? "settingsPillOk" : ""}`}
+							className={`settingsPill ${toneForSecretConfigured(secretConfigured)}`}
 						>
 							{secretConfigured == null
 								? "Unknown"
@@ -645,7 +689,7 @@ export function AiProfileSections({
 							<input
 								id="aiApiKeyInput"
 								type="password"
-								placeholder="paste key…"
+								placeholder="Paste key..."
 								value={apiKeyDraft}
 								onChange={(e) =>
 									setApiState((prev) => ({

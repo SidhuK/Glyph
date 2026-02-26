@@ -103,27 +103,29 @@ export function AiSettingsPane() {
 					<div className="settingsCardHeader">
 						<div>
 							<div className="settingsCardTitle">AI Availability</div>
+							<div className="settingsCardHint">
+								Turn AI tools on or off across Glyph.
+							</div>
 						</div>
 					</div>
 
 					<div className="settingsField">
 						<div>
-							<div className="settingsLabel">Enable AI</div>
+							<div className="settingsLabel">AI Features</div>
 						</div>
 						<select
-							aria-label="Enable AI"
+							aria-label="AI Features"
 							value={aiEnabled ? "enabled" : "disabled"}
 							onChange={(event) =>
 								void updateAiEnabled(event.target.value === "enabled")
 							}
 						>
-							<option value="enabled">Enabled</option>
-							<option value="disabled">Disabled</option>
+							<option value="enabled">On</option>
+							<option value="disabled">Off</option>
 						</select>
 					</div>
 					<p className="settingsHint">
-						When disabled, AI UI and AI command palette actions are hidden
-						throughout the app.
+						When off, AI panels and AI command-palette actions stay hidden.
 					</p>
 				</section>
 

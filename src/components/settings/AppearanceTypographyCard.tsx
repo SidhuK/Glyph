@@ -34,6 +34,9 @@ export function AppearanceTypographyCard({
 			<div className="settingsCardHeader">
 				<div>
 					<div className="settingsCardTitle">Typography</div>
+					<div className="settingsCardHint">
+						Tune fonts and base UI scale for readability.
+					</div>
 				</div>
 			</div>
 			<div className="settingsField">

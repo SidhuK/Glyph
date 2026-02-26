@@ -49,25 +49,41 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	padding: 10px;
 }
 
 .aboutContent {
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	gap: 18px;
+	gap: 16px;
 	max-width: 560px;
 	text-align: center;
+	padding: 24px 20px;
+	border-radius: 16px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
+	background: linear-gradient(
+		140deg,
+		color-mix(in srgb, var(--interactive-accent) 6%, var(--bg-primary)) 0%,
+		color-mix(in srgb, var(--bg-primary) 90%, var(--bg-secondary)) 100%
+	);
+	box-shadow: inset 0 1px 0
+		color-mix(in srgb, var(--bg-primary) 75%, transparent), 0 12px 36px
+		color-mix(in srgb, var(--text-primary) 8%, transparent);
 }
 
 .aboutLogoWrap {
-	width: 108px;
-	height: 108px;
+	width: 112px;
+	height: 112px;
 	border-radius: 24px;
-	background: transparent;
+	background: color-mix(in srgb, var(--interactive-accent) 14%, transparent);
+	border: 1px solid
+		color-mix(in srgb, var(--interactive-accent) 20%, transparent);
 	display: flex;
 	align-items: center;
 	justify-content: center;
+	padding: 10px;
+	animation: about-logo-breath 8s ease-in-out infinite;
 }
 
 .aboutLogo {
@@ -84,14 +100,14 @@
 }
 
 .aboutAppName {
-	font-size: 40px;
+	font-size: 38px;
 	font-weight: 700;
 	letter-spacing: -0.02em;
 	color: var(--text-primary);
 }
 
 .aboutVersion {
-	font-size: 22px;
+	font-size: 20px;
 	color: var(--text-secondary);
 }
 
@@ -104,16 +120,23 @@
 }
 
 .aboutLinksRow button {
-	background: transparent;
+	background: color-mix(in srgb, var(--bg-secondary) 74%, transparent);
 	color: var(--text-secondary);
-	font-size: 14px;
-	padding: 0;
-	height: auto;
+	font-size: 12px;
+	padding: 0 12px;
+	height: 30px;
+	border-radius: var(--radius-full);
+	border: 1px solid color-mix(in srgb, var(--border-light) 75%, transparent);
 }
 
 .aboutLinksRow button:hover {
 	color: var(--text-primary);
-	background: transparent;
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 12%,
+		var(--bg-primary)
+	);
+	border-color: color-mix(in srgb, var(--interactive-accent) 24%, transparent);
 }
 
 .aboutDot {
@@ -121,11 +144,48 @@
 }
 
 .aboutActionsRow {
-	margin-top: 14px;
-	gap: 30px;
+	margin-top: 8px;
+	gap: 12px;
 }
 
 .aboutActionsRow button {
-	font-size: 17px;
+	font-size: 12px;
 	color: var(--text-primary);
+	height: 32px;
+	padding: 0 14px;
+	border-radius: var(--radius-full);
+	border: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 72%, transparent);
+}
+
+@media (max-width: 760px) {
+	.aboutContent {
+		padding: 18px 14px;
+	}
+
+	.aboutLinksRow {
+		gap: 8px;
+	}
+
+	.aboutLinksRow button,
+	.aboutActionsRow button {
+		height: 32px;
+		min-height: 32px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.aboutLogoWrap {
+		animation: none;
+	}
+}
+
+@keyframes about-logo-breath {
+	0%,
+	100% {
+		transform: translateY(0);
+	}
+	50% {
+		transform: translateY(-2px);
+	}
 }

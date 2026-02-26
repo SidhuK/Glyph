@@ -1,12 +1,38 @@
 .settingsPill {
-	padding: 0;
-	border-radius: 0;
-	background: transparent;
-	border: 0;
+	padding: 4px 10px;
+	border-radius: var(--radius-full);
+	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 74%, transparent);
 	font-size: 9px;
-	letter-spacing: 0.08em;
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.12em;
 	text-transform: uppercase;
 	color: var(--text-tertiary);
+	line-height: 1;
+}
+
+.settingsPillOk {
+	color: color-mix(in srgb, var(--color-green-500) 86%, var(--text-primary));
+	border-color: color-mix(in srgb, var(--color-green-500) 34%, transparent);
+	background: color-mix(in srgb, var(--color-green-500) 10%, transparent);
+}
+
+.settingsPillWarn {
+	color: color-mix(in srgb, var(--color-yellow-500) 92%, var(--text-primary));
+	border-color: color-mix(in srgb, var(--color-yellow-500) 36%, transparent);
+	background: color-mix(in srgb, var(--color-yellow-500) 12%, transparent);
+}
+
+.settingsPillError {
+	color: color-mix(in srgb, var(--color-red-500) 86%, var(--text-primary));
+	border-color: color-mix(in srgb, var(--color-red-500) 34%, transparent);
+	background: color-mix(in srgb, var(--color-red-500) 10%, transparent);
+}
+
+.settingsPillInfo {
+	color: color-mix(in srgb, var(--color-blue-600) 84%, var(--text-primary));
+	border-color: color-mix(in srgb, var(--color-blue-500) 34%, transparent);
+	background: color-mix(in srgb, var(--color-blue-500) 10%, transparent);
 }
 
 .settingsField {
@@ -14,14 +40,20 @@
 	align-items: center;
 	justify-content: space-between;
 	gap: 12px;
-	min-height: 42px;
-	padding: 6px 2px;
+	min-height: 40px;
+	padding: 7px 10px;
+	border-radius: 10px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 68%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 42%, transparent);
+	transition: border-color var(--transition-base), background
+		var(--transition-base);
 }
 
 .settingsField > div:first-child {
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
+	min-width: 120px;
 }
 
 .settingsField > input,
@@ -33,7 +65,14 @@
 	min-width: 170px;
 	max-width: 320px;
 	width: 100%;
-	min-height: 32px;
+	min-height: 34px;
+}
+
+.settingsField input,
+.settingsField select,
+.settingsField textarea {
+	background: color-mix(in srgb, var(--bg-primary) 90%, var(--bg-secondary));
+	border-color: color-mix(in srgb, var(--border-default) 90%, transparent);
 }
 
 .settingsField input:focus-visible,
@@ -41,38 +80,66 @@
 .settingsField textarea:focus-visible,
 .settingsField button:focus-visible,
 .settingsSegmented button:focus-visible,
-.settingsSwatch:focus-visible {
+.settingsSwatch:focus-visible,
+.settingsAccentDot:focus-visible {
 	outline: 2px solid
-		color-mix(in srgb, var(--interactive-accent) 40%, transparent);
+		color-mix(in srgb, var(--interactive-accent) 44%, transparent);
 	outline-offset: 2px;
 }
 
 .settingsPane select {
 	-webkit-appearance: none;
 	appearance: none;
-	background-color: var(--bg-secondary);
-	border: 1px solid var(--border-default);
+	--settings-select-chevron-color: color-mix(
+		in srgb,
+		var(--text-tertiary) 88%,
+		transparent
+	);
+
+	background-color: color-mix(
+		in srgb,
+		var(--bg-primary) 90%,
+		var(--bg-secondary)
+	);
+	border: 1px solid color-mix(in srgb, var(--border-default) 88%, transparent);
 	border-radius: 10px;
 	color: var(--text-primary);
-	padding: 0 30px 0 10px;
-	height: 30px;
-	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='14' viewBox='0 0 10 14'%3E%3Cpath d='M2 5l3-3 3 3' fill='none' stroke='%23787774' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3Cpath d='M2 9l3 3 3-3' fill='none' stroke='%23787774' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+	padding: 0 32px 0 10px;
+	height: 32px;
+	background-image: linear-gradient(
+			45deg,
+			transparent 50%,
+			var(--settings-select-chevron-color) 50%
+		),
+		linear-gradient(
+			135deg,
+			var(--settings-select-chevron-color) 50%,
+			transparent 50%
+		);
 	background-repeat: no-repeat;
-	background-position: right 8px center;
+	background-position: calc(100% - 13px) 13px, calc(100% - 8px) 13px;
+	background-size: 5px 5px, 5px 5px;
 }
 
 .settingsPane select:focus,
 .settingsPane select:focus-visible,
 .settingsPane select:active {
 	outline: none;
-	box-shadow: none;
-	border-color: var(--border-default);
+	box-shadow: 0 0 0 3px
+		color-mix(in srgb, var(--interactive-accent) 14%, transparent);
+	border-color: color-mix(in srgb, var(--interactive-accent) 34%, transparent);
+	--settings-select-chevron-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 72%,
+		var(--text-primary)
+	);
 }
 
 .settingsHelp {
 	font-size: 10px;
+	line-height: 1.35;
 	color: var(--text-tertiary);
-	white-space: nowrap;
+	white-space: normal;
 }
 
 .settingsInline {
@@ -82,20 +149,29 @@
 	flex-wrap: wrap;
 }
 
+.settingsActions {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
 .settingsLabel {
-	min-width: 104px;
-	font-size: 12px;
-	font-weight: var(--font-medium);
-	letter-spacing: 0.01em;
-	color: var(--text-secondary);
+	font-size: 11px;
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: color-mix(in srgb, var(--text-secondary) 86%, var(--text-primary));
 }
 
 .settingsValue {
+	max-width: 100%;
 	font-size: 12px;
-	color: var(--text-secondary);
 	line-height: 1.4;
+	color: var(--text-secondary);
 	overflow: hidden;
 	text-overflow: ellipsis;
+	overflow-wrap: anywhere;
 }
 
 .settingsRow {
@@ -103,7 +179,7 @@
 	align-items: center;
 	gap: var(--space-2);
 	flex-wrap: wrap;
-	margin-top: var(--space-2);
+	margin-top: 2px;
 }
 
 .settingsInlineToggle {
@@ -116,30 +192,46 @@
 
 .settingsList {
 	margin: 0;
-	padding-left: 14px;
-	font-size: var(--text-xs);
+	padding-left: 18px;
+	font-size: 12px;
+	line-height: 1.55;
 	color: var(--text-secondary);
 }
 
 .settingsEmpty {
-	font-size: var(--text-xs);
+	font-size: 12px;
+	line-height: 1.45;
 	color: var(--text-tertiary);
 }
 
 .settingsError {
-	margin: 0 0 10px;
+	margin: 0;
+	padding: 9px 10px;
+	border-radius: 10px;
+	border: 1px solid var(--status-danger-border);
+	background: var(--status-danger-bg);
+	color: var(--status-danger-fg);
+	font-size: 12px;
+	line-height: 1.4;
+}
+
+.settingsKeySaved {
+	margin-top: 6px;
 	padding: 8px 10px;
-	border-radius: 8px;
-	border: 1px solid color-mix(in srgb, #ff3b30 30%, var(--border-light));
-	background: color-mix(in srgb, #ff3b30 8%, transparent);
-	color: var(--text-primary);
+	border-radius: var(--radius-md);
+	background: color-mix(in srgb, var(--color-green-500) 11%, transparent);
+	border: 1px solid color-mix(in srgb, var(--color-green-500) 30%, transparent);
+	color: color-mix(in srgb, var(--color-green-500) 80%, var(--text-primary));
 	font-size: var(--text-xs);
+	text-align: center;
+	animation: settings-toast-in 260ms cubic-bezier(0.19, 1, 0.22, 1);
 }
 
 .settingsRange {
 	display: inline-flex;
 	align-items: center;
 	gap: 8px;
+	flex-wrap: wrap;
 }
 
 .settingsRange input[type="range"] {
@@ -147,7 +239,7 @@
 	height: 4px;
 	width: 140px;
 	border-radius: var(--radius-full);
-	background: color-mix(in srgb, var(--bg-tertiary) 60%, transparent);
+	background: color-mix(in srgb, var(--bg-tertiary) 65%, transparent);
 }
 
 .settingsRange input[type="range"]::-webkit-slider-thumb {
@@ -162,7 +254,7 @@
 }
 
 .settingsRangeValue {
-	font-size: var(--text-xs);
+	font-size: 11px;
 	color: var(--text-secondary);
 	min-width: 36px;
 	text-align: right;
@@ -194,8 +286,8 @@
 .codexRateLimitItem {
 	padding: 10px 12px;
 	border-radius: 10px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 75%, transparent);
-	background: color-mix(in srgb, var(--bg-secondary) 55%, transparent);
+	border: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 62%, transparent);
 }
 
 .codexRateLimitRow {
@@ -224,10 +316,31 @@
 .codexRateLimitBarFill {
 	height: 100%;
 	border-radius: inherit;
+	background: color-mix(in srgb, var(--interactive-accent) 80%, transparent);
+}
+
+.codexRateLimitBarFill--ok {
 	background: linear-gradient(
 		90deg,
-		color-mix(in srgb, var(--interactive-accent) 88%, #8ddf8d 12%) 0%,
-		color-mix(in srgb, var(--interactive-accent) 72%, #8ddf8d 28%) 100%
+		color-mix(in srgb, var(--color-green-500) 72%, var(--interactive-accent)) 0%,
+		color-mix(in srgb, var(--color-green-500) 86%, var(--bg-primary)) 100%
+	);
+}
+
+.codexRateLimitBarFill--warn {
+	background: linear-gradient(
+		90deg,
+		color-mix(in srgb, var(--color-yellow-500) 78%, var(--interactive-accent))
+			0%,
+		color-mix(in srgb, var(--color-yellow-500) 88%, var(--bg-primary)) 100%
+	);
+}
+
+.codexRateLimitBarFill--danger {
+	background: linear-gradient(
+		90deg,
+		color-mix(in srgb, var(--color-red-500) 76%, var(--interactive-accent)) 0%,
+		color-mix(in srgb, var(--color-red-500) 88%, var(--bg-primary)) 100%
 	);
 }
 
@@ -270,6 +383,8 @@
 	background: color-mix(in srgb, var(--bg-tertiary) 80%, transparent);
 	border: 1px solid var(--border-light);
 	position: relative;
+	transition: background var(--transition-base), border-color
+		var(--transition-base);
 }
 
 .settingsToggle span::after {
@@ -281,6 +396,8 @@
 	border-radius: 50%;
 	background: var(--bg-primary);
 	box-shadow: var(--shadow-sm);
+	transition: transform var(--transition-base), background
+		var(--transition-base);
 }
 
 .settingsToggle input:checked + span {
@@ -297,22 +414,22 @@
 	display: inline-flex;
 	align-items: center;
 	padding: 2px;
-	border-radius: 8px;
+	border-radius: 9px;
 	border: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
-	background: color-mix(in srgb, var(--bg-secondary) 40%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 45%, transparent);
 	gap: 2px;
 }
 
 .settingsSegmented button {
 	min-height: 28px;
 	padding: 0 10px;
-	border-radius: 6px;
+	border-radius: 7px;
 	font-size: 11px;
 	color: var(--text-secondary);
 }
 
 .settingsSegmented button.active {
-	background: var(--bg-primary);
+	background: color-mix(in srgb, var(--bg-primary) 90%, transparent);
 	color: var(--text-primary);
 }
 
@@ -329,7 +446,7 @@
 	min-height: 36px;
 	padding: 5px 9px;
 	border-radius: var(--radius-full);
-	border: 1px solid var(--border-light);
+	border: 1px solid color-mix(in srgb, var(--border-light) 74%, transparent);
 	background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
 	font-size: 9px;
 	text-transform: capitalize;
@@ -377,15 +494,17 @@
 }
 
 .settingsAccentDot {
-	height: 24px;
-	width: 24px;
+	height: 26px;
+	width: 26px;
 	padding: 0;
 	border-radius: 999px;
-	border: 1px solid var(--border-light);
-	background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
+	border: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 75%, transparent);
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
+	transition: border-color var(--transition-base), transform
+		var(--transition-base), box-shadow var(--transition-base);
 }
 
 .settingsAccentDot span {
@@ -395,8 +514,58 @@
 	border: 1px solid color-mix(in srgb, var(--border-default) 45%, transparent);
 }
 
+.settingsAccentDot:hover {
+	transform: translateY(-1px);
+}
+
 .settingsAccentDot.active {
-	border-color: color-mix(in srgb, var(--interactive-accent) 45%, transparent);
+	border-color: color-mix(in srgb, var(--interactive-accent) 50%, transparent);
 	box-shadow: 0 0 0 2px
-		color-mix(in srgb, var(--interactive-accent) 16%, transparent);
+		color-mix(in srgb, var(--interactive-accent) 18%, transparent);
+}
+
+@media (max-width: 760px) {
+	.settingsField {
+		gap: 10px;
+		padding: 7px 8px;
+	}
+
+	.settingsField > div:first-child {
+		min-width: 102px;
+	}
+
+	.settingsField > input,
+	.settingsField > select,
+	.settingsField > textarea,
+	.settingsField .settingsInline > input,
+	.settingsField .settingsInline > select,
+	.settingsField .settingsInline > textarea {
+		min-width: 146px;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.settingsField,
+	.settingsToggle span,
+	.settingsToggle span::after,
+	.settingsAccentDot,
+	.settingsKeySaved {
+		transition: none;
+		animation: none;
+	}
+
+	.settingsAccentDot:hover {
+		transform: none;
+	}
+}
+
+@keyframes settings-toast-in {
+	0% {
+		opacity: 0;
+		transform: translateY(2px);
+	}
+	100% {
+		opacity: 1;
+		transform: translateY(0);
+	}
 }

@@ -79,6 +79,7 @@
 	display: flex;
 	align-items: center;
 	gap: 6px;
+	margin-top: 2px;
 }
 
 .sidebarSection {
@@ -146,7 +147,7 @@
 	background: color-mix(in srgb, var(--bg-primary) 96%, white 4%);
 	color: var(--text-primary);
 	border-color: color-mix(in srgb, var(--border-light) 35%, transparent);
-	box-shadow: 0 1px 1.5px rgba(0, 0, 0, 0.08);
+	box-shadow: var(--shadow-sm);
 }
 
 .sidebarSectionContent {
@@ -194,6 +195,13 @@
 	background: var(--bg-hover);
 	color: var(--text-primary);
 	transform: none;
+}
+
+.sidebarSectionToggle [data-slot="tabs-trigger"]:focus-visible,
+.sidebarFooterBtn:focus-visible {
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	outline-offset: 2px;
 }
 
 .vaultInfo {

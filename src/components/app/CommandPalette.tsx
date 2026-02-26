@@ -56,7 +56,14 @@ export function CommandPalette({
 		if (activeTab !== "commands") return [];
 		const q = query.trim().toLowerCase();
 		const matches = q
-			? commands.filter((cmd) => cmd.label.toLowerCase().includes(q))
+			? commands.filter((cmd) => {
+					const category = cmd.category?.toLowerCase() ?? "";
+					return (
+						cmd.label.toLowerCase().includes(q) ||
+						category.includes(q) ||
+						cmd.id.toLowerCase().includes(q)
+					);
+				})
 			: commands;
 		return matches.filter((cmd) => cmd.enabled !== false);
 	}, [commands, query, activeTab]);
@@ -107,9 +114,10 @@ export function CommandPalette({
 
 	useEffect(() => {
 		if (!listRef.current) return;
-		const selected = listRef.current.children[
-			selectedIndex
-		] as HTMLElement | null;
+		const selected =
+			listRef.current.querySelector<HTMLElement>(
+				`[data-command-index="${selectedIndex}"], [data-search-index="${selectedIndex}"]`,
+			) ?? listRef.current.querySelector<HTMLElement>('[data-selected="true"]');
 		selected?.scrollIntoView({ block: "nearest" });
 	}, [selectedIndex]);
 
@@ -186,7 +194,7 @@ export function CommandPalette({
 	return (
 		<Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
 			<DialogContent
-				className="commandPalette gap-0 border-none bg-transparent p-0 shadow-none sm:max-w-[560px]"
+				className="commandPalette top-[46%] gap-0 border-none bg-transparent p-0 shadow-none sm:max-w-[560px]"
 				showCloseButton={false}
 				onKeyDown={handleKeyDown}
 			>
@@ -239,9 +247,7 @@ export function CommandPalette({
 						ref={inputRef}
 						className="commandPaletteInput"
 						placeholder={
-							activeTab === "commands"
-								? "Type a command…"
-								: "Search your notes…"
+							activeTab === "commands" ? "Search Commands" : "Search notes…"
 						}
 						value={query}
 						onChange={(e) =>

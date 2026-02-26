@@ -13,8 +13,7 @@
 	border-radius: var(--app-radius);
 	border-top-left-radius: calc(var(--app-radius) - var(--app-frame));
 	border-bottom-left-radius: calc(var(--app-radius) - var(--app-frame));
-	/* Shadow style matches sticky notes (two-layer), but softer. */
-	box-shadow: 2px 4px 8px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+	box-shadow: var(--shadow-lg);
 }
 
 .appShell.appShellAiOpen .mainArea {
@@ -167,7 +166,7 @@
 	justify-content: center;
 	background: color-mix(in srgb, var(--bg-secondary) 92%, transparent);
 	border: 1px solid color-mix(in srgb, var(--border-light) 85%, transparent);
-	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+	box-shadow: var(--shadow-md);
 }
 
 .welcomeSubtitle {
@@ -191,7 +190,7 @@
 	border-radius: var(--radius-xl);
 	border: 1px solid var(--border-light);
 	background: color-mix(in srgb, var(--bg-secondary) 82%, transparent);
-	box-shadow: 0 6px 20px rgba(0, 0, 0, 0.06);
+	box-shadow: var(--shadow-md);
 	backdrop-filter: blur(6px);
 	-webkit-backdrop-filter: blur(6px);
 	margin-top: auto;

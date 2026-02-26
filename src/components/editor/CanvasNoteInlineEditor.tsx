@@ -25,6 +25,7 @@ type FrontmatterLinkToken =
 
 const FRONTMATTER_LINK_PATTERN =
 	/!?\[\[[^\]\n]+\]\]|\[[^\]\n]+\]\((?:\\.|[^)\n])+\)|https?:\/\/[^\s<>"')\]]+/g;
+const RIBBON_HOVER_ZONE_PX = 72;
 
 function markdownHrefFromToken(raw: string): string | null {
 	const match = raw.match(/^\[[^\]\n]+\]\(([^)\s]+)(?:\s+"[^"]*")?\)$/);
@@ -100,12 +101,17 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	} | null>(null);
 	const [scheduledDate, setScheduledDate] = useState("");
 	const [dueDate, setDueDate] = useState("");
+	const [showBottomRibbon, setShowBottomRibbon] = useState(false);
 
 	useEffect(() => {
 		if (frontmatter === lastFrontmatterRef.current) return;
 		lastFrontmatterRef.current = frontmatter;
 		setFrontmatterDraft(frontmatter ?? "");
 	}, [frontmatter]);
+
+	useEffect(() => {
+		if (mode !== "rich") setShowBottomRibbon(false);
+	}, [mode]);
 
 	useEffect(() => {
 		if (!relPath) {
@@ -363,6 +369,15 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		setScheduleAnchor(null);
 	};
 
+	const updateRibbonVisibility = (
+		event: React.PointerEvent<HTMLDivElement>,
+	) => {
+		if (mode !== "rich") return;
+		const bounds = event.currentTarget.getBoundingClientRect();
+		const shouldShow = bounds.bottom - event.clientY <= RIBBON_HOVER_ZONE_PX;
+		setShowBottomRibbon((prev) => (prev === shouldShow ? prev : shouldShow));
+	};
+
 	return (
 		<div
 			className={[
@@ -370,9 +385,13 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 				"nodrag",
 				"nopan",
 				editor && mode === "rich" ? "hasRibbon" : "",
+				showBottomRibbon ? "showRibbon" : "",
 			]
 				.filter(Boolean)
 				.join(" ")}
+			onPointerEnter={updateRibbonVisibility}
+			onPointerMove={updateRibbonVisibility}
+			onPointerLeave={() => setShowBottomRibbon(false)}
 		>
 			<div className="rfNodeNoteEditorBody nodrag nopan nowheel">
 				{mode === "plain" ? (

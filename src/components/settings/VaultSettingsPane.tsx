@@ -51,8 +51,11 @@ export function VaultSettingsPane() {
 					<div className="settingsCardHeader">
 						<div>
 							<div className="settingsCardTitle">Current Vault</div>
+							<div className="settingsCardHint">
+								The vault currently open in this window.
+							</div>
 						</div>
-						<div className="settingsPill">Active</div>
+						<div className="settingsPill settingsPillOk">Active</div>
 					</div>
 
 					<div className="settingsField">
@@ -69,6 +72,9 @@ export function VaultSettingsPane() {
 					<div className="settingsCardHeader">
 						<div>
 							<div className="settingsCardTitle">Recent Vaults</div>
+							<div className="settingsCardHint">
+								Recently opened vaults on this Mac.
+							</div>
 						</div>
 						<button
 							type="button"
@@ -98,6 +104,9 @@ export function VaultSettingsPane() {
 					<div className="settingsCardHeader">
 						<div>
 							<div className="settingsCardTitle">Search Index</div>
+							<div className="settingsCardHint">
+								Rebuild if search results are incomplete or outdated.
+							</div>
 						</div>
 						<button
 							type="button"
@@ -106,11 +115,11 @@ export function VaultSettingsPane() {
 							}}
 							disabled={!currentVaultPath || isIndexing}
 						>
-							{isIndexing ? "Rebuilding…" : "Rebuild Index"}
+							{isIndexing ? "Rebuilding..." : "Rebuild Index"}
 						</button>
 					</div>
 					<div className="settingsEmpty">
-						Use this if search results are missing or stale.
+						Use this when search results look stale or missing.
 					</div>
 					{reindexStatus ? (
 						<div className="settingsEmpty">{reindexStatus}</div>

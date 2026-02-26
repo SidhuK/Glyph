@@ -39,6 +39,7 @@
 	display: flex;
 	align-items: center;
 	border-radius: var(--radius-lg);
+	border: 1px solid transparent;
 	margin-bottom: 2px;
 	transition: all var(--transition-fast);
 }
@@ -48,7 +49,9 @@
 }
 
 .notesListItem.active {
-	background: var(--selection-bg-muted);
+	background: color-mix(in srgb, var(--interactive-accent) 12%, transparent);
+	border: 1px solid
+		color-mix(in srgb, var(--interactive-accent) 22%, transparent);
 }
 
 .notesListButton {
@@ -90,4 +93,11 @@
 	color: var(--text-tertiary);
 	opacity: 0;
 	flex-shrink: 0;
+}
+
+.notesListButton:focus-visible,
+.notesListDelete:focus-visible {
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	outline-offset: 2px;
 }

@@ -9,12 +9,14 @@ import {
 	useRef,
 	useState,
 } from "react";
-import { todayIsoDateLocal } from "../../lib/tasks";
+import {
+	folderBreadcrumbFromNotePath,
+	todayIsoDateLocal,
+} from "../../lib/tasks";
 import { type TaskBucket, type TaskItem, invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { RefreshCw } from "../Icons";
 import { springPresets } from "../ui/animations";
-import { Badge } from "../ui/shadcn/badge";
 import { Button } from "../ui/shadcn/button";
 import { TaskRow } from "./TaskRow";
 
@@ -38,7 +40,6 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 	const [tasks, setTasks] = useState<TaskItem[]>([]);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState("");
-	const [isPinned, setIsPinned] = useState(false);
 	const requestVersionRef = useRef(0);
 
 	const loadTasks = useCallback(async () => {
@@ -86,11 +87,11 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 	const openTaskFile = useCallback(
 		async (notePath: string) => {
 			await Promise.resolve(onOpenFile(notePath));
-			if (!isPinned && onClosePane) {
+			if (onClosePane) {
 				window.setTimeout(() => onClosePane(), 0);
 			}
 		},
-		[isPinned, onClosePane, onOpenFile],
+		[onClosePane, onOpenFile],
 	);
 
 	const toggleTask = useCallback(
@@ -128,107 +129,103 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 
 	return (
 		<section className="tasksPane">
-			<header className="tasksPaneHeader">
-				<div className="tasksPaneHeaderSpacer" />
-				<div className="tasksBucketPills">
-					{BUCKETS.map((item) => {
-						const active = bucket === item.id;
-						return (
-							<button
-								key={item.id}
-								type="button"
-								className="tasksBucketPill"
-								data-bucket={item.id}
-								data-active={active}
-								onClick={() => setBucket(item.id)}
-							>
-								{active && (
-									<m.span
-										className="tasksBucketPillBg"
-										layoutId="tasksBucketActive"
-										transition={springPresets.snappy}
+			<div className="tasksPaneContent">
+				<header className="tasksPaneHeader">
+					<div className="tasksPaneHeaderSpacer" />
+					<div className="tasksBucketPills">
+						{BUCKETS.map((item) => {
+							const active = bucket === item.id;
+							return (
+								<button
+									key={item.id}
+									type="button"
+									className="tasksBucketPill"
+									data-bucket={item.id}
+									data-active={active}
+									onClick={() => setBucket(item.id)}
+								>
+									{active && (
+										<m.span
+											className="tasksBucketPillBg"
+											layoutId="tasksBucketActive"
+											transition={springPresets.snappy}
+										/>
+									)}
+									<HugeiconsIcon
+										icon={item.icon}
+										size={20}
+										className="tasksBucketPillIcon"
 									/>
-								)}
-								<HugeiconsIcon
-									icon={item.icon}
-									size={20}
-									className="tasksBucketPillIcon"
-								/>
-								{item.label}
-							</button>
-						);
-					})}
-				</div>
-				<div className="tasksPaneHeaderActions">
-					<Button
-						type="button"
-						variant={isPinned ? "outline" : "ghost"}
-						size="xs"
-						onClick={() => setIsPinned((prev) => !prev)}
-						title={isPinned ? "Unpin tasks pane" : "Pin tasks pane open"}
-					>
-						<span className="tasksPinGlyph" aria-hidden />
-						{isPinned ? "Pinned" : "Pin"}
-					</Button>
-					<Button
-						type="button"
-						variant="ghost"
-						size="icon-sm"
-						onClick={() => void loadTasks()}
-						title="Refresh tasks"
-					>
-						<RefreshCw size={14} />
-					</Button>
-				</div>
-			</header>
+									{item.label}
+								</button>
+							);
+						})}
+					</div>
+					<div className="tasksPaneHeaderActions">
+						<Button
+							type="button"
+							variant="ghost"
+							size="icon-sm"
+							onClick={() => void loadTasks()}
+							title="Refresh tasks"
+						>
+							<RefreshCw size={14} />
+						</Button>
+					</div>
+				</header>
 
-			{error ? <div className="tasksPaneError">{error}</div> : null}
-			{loading ? <div className="tasksPaneEmpty">Loading tasks…</div> : null}
-			{!loading && tasks.length === 0 ? (
-				<div className="tasksPaneEmptyState">
-					<HugeiconsIcon
-						icon={Icons.CheckListIcon}
-						size={32}
-						className="tasksPaneEmptyIcon"
-					/>
-					<span>No tasks in this bucket</span>
-				</div>
-			) : null}
-
-			{showGroupedInbox ? (
-				<div className="tasksGroups">
-					{grouped.map(([notePath, noteTasks]) => (
-						<section key={notePath} className="tasksNoteGroup">
-							<button
-								type="button"
-								className="tasksNoteHeader"
-								onClick={() => void openTaskFile(notePath)}
-							>
-								<span className="tasksNoteHeaderLead">
-									<span className="tasksNoteHeaderTitle">
-										{noteTasks[0]?.note_title || notePath}
-									</span>
-									<span className="tasksNoteHeaderPath">{notePath}</span>
-								</span>
-								<Badge variant="outline">{noteTasks.length}</Badge>
-							</button>
-						</section>
-					))}
-				</div>
-			) : (
-				<div className="tasksList tasksListFlat">
-					{tasks.map((task) => (
-						<TaskRow
-							key={task.task_id}
-							task={task}
-							withPath={true}
-							onToggle={toggleTask}
-							onSchedule={scheduleDates}
-							onOpenFile={(p) => void openTaskFile(p)}
+				{error ? <div className="tasksPaneError">{error}</div> : null}
+				{loading ? <div className="tasksPaneEmpty">Loading tasks…</div> : null}
+				{!loading && tasks.length === 0 ? (
+					<div className="tasksPaneEmptyState">
+						<HugeiconsIcon
+							icon={Icons.CheckListIcon}
+							size={32}
+							className="tasksPaneEmptyIcon"
 						/>
-					))}
-				</div>
-			)}
+						<span>No tasks in this bucket</span>
+					</div>
+				) : null}
+
+				{showGroupedInbox ? (
+					<div className="tasksGroups">
+						{grouped.map(([notePath, noteTasks]) => (
+							<section key={notePath} className="tasksNoteGroup">
+								<button
+									type="button"
+									className="tasksNoteHeader"
+									onClick={() => void openTaskFile(notePath)}
+								>
+									<span className="tasksNoteHeaderLead">
+										<span className="tasksNoteHeaderTitle">
+											{noteTasks[0]?.note_title || notePath}
+										</span>
+										<span className="tasksNoteHeaderPath">
+											{folderBreadcrumbFromNotePath(notePath)}
+										</span>
+									</span>
+									<span className="tasksNoteHeaderCount">
+										{noteTasks.length}
+									</span>
+								</button>
+							</section>
+						))}
+					</div>
+				) : (
+					<div className="tasksList tasksListFlat">
+						{tasks.map((task) => (
+							<TaskRow
+								key={task.task_id}
+								task={task}
+								withPath={true}
+								onToggle={toggleTask}
+								onSchedule={scheduleDates}
+								onOpenFile={(p) => void openTaskFile(p)}
+							/>
+						))}
+					</div>
+				)}
+			</div>
 		</section>
 	);
 }
