@@ -22,12 +22,21 @@
 						}
 					},
 					"glass": false,
+					"hidden": true,
 					"image-name": "Untitled.png",
 					"name": "Untitled",
 					"opacity": 1,
 					"position": {
 						"scale": 2.6,
 						"translation-in-points": [-13.200000000000045, -118.1171875]
+					}
+				},
+				{
+					"image-name": "896a277d6e1dfa27b6511ed5002bbbbfe8c95784e10dc1b78104ad13378056bd.png",
+					"name": "896a277d6e1dfa27b6511ed5002bbbbfe8c95784e10dc1b78104ad13378056bd",
+					"position": {
+						"scale": 1.1,
+						"translation-in-points": [22.8828125, 52.72499999999991]
 					}
 				}
 			],

@@ -7,12 +7,7 @@
 	width: 100%;
 	display: flex;
 	flex-direction: column;
-	background: linear-gradient(
-		160deg,
-		color-mix(in srgb, var(--bg-secondary) 92%, var(--interactive-accent) 8%) 0%,
-		var(--bg-primary) 48%,
-		color-mix(in srgb, var(--bg-primary) 90%, var(--bg-secondary) 10%) 100%
-	);
+	background: var(--bg-primary);
 	border-radius: 14px;
 	overflow: hidden;
 }
@@ -20,20 +15,9 @@
 .settingsBackdrop {
 	position: absolute;
 	inset: 0;
-	background: radial-gradient(
-			ellipse 42% 52% at 2% 0%,
-			color-mix(in srgb, var(--interactive-accent) 12%, transparent),
-			transparent 72%
-		),
-		radial-gradient(
-			ellipse 46% 56% at 100% 100%,
-			color-mix(in srgb, var(--color-blue-500) 9%, transparent),
-			transparent 76%
-		);
-	background-size: 120% 120%;
-	opacity: 1;
+	background: none;
+	opacity: 0;
 	pointer-events: none;
-	animation: settings-backdrop-drift 18s ease-in-out infinite alternate;
 }
 
 .settingsDragStrip {
@@ -139,17 +123,7 @@
 	flex-direction: column;
 	gap: 4px;
 	padding: 44px 10px 12px;
-	background: linear-gradient(
-			180deg,
-			color-mix(in srgb, var(--bg-secondary) 90%, transparent) 0%,
-			color-mix(in srgb, var(--bg-primary) 96%, transparent) 100%
-		),
-		repeating-linear-gradient(
-			0deg,
-			transparent 0,
-			transparent 23px,
-			color-mix(in srgb, var(--border-light) 28%, transparent) 24px
-		);
+	background: color-mix(in srgb, var(--bg-secondary) 74%, var(--bg-primary));
 	border-right: 1px solid
 		color-mix(in srgb, var(--border-light) 85%, transparent);
 }
@@ -310,11 +284,7 @@
 	padding: 15px 14px 14px;
 	border-radius: 12px;
 	border: 1px solid color-mix(in srgb, var(--border-light) 84%, transparent);
-	background: linear-gradient(
-		125deg,
-		color-mix(in srgb, var(--interactive-accent) 7%, var(--bg-primary)) 0%,
-		color-mix(in srgb, var(--bg-primary) 88%, var(--bg-secondary)) 100%
-	);
+	background: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary));
 }
 
 .settingsPanelEyebrow {

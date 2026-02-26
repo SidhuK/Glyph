@@ -101,7 +101,7 @@ export function AboutSettingsPane() {
 			<div className="aboutContent">
 				<div className="aboutLogoWrap">
 					<img
-						src="/glyph-app-icon.png"
+						src={`/glyph-app-icon.png?v=${appInfo?.version ?? "dev"}`}
 						alt=""
 						className="aboutLogo"
 						aria-hidden="true"
