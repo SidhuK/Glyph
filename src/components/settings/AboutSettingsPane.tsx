@@ -1,7 +1,7 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { relaunch } from "@tauri-apps/plugin-process";
 import { check } from "@tauri-apps/plugin-updater";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { AppInfo } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 
@@ -9,6 +9,9 @@ export function AboutSettingsPane() {
 	const [appInfo, setAppInfo] = useState<AppInfo | null>(null);
 	const [error, setError] = useState("");
 	const [copyLabel, setCopyLabel] = useState("Copy Diagnostics");
+	const copyResetTimerRef = useRef<
+		ReturnType<typeof window.setTimeout> | undefined
+	>(undefined);
 	const [updateStatus, setUpdateStatus] = useState("");
 	const [checkingUpdates, setCheckingUpdates] = useState(false);
 
@@ -35,15 +38,34 @@ export function AboutSettingsPane() {
 		return `v${appInfo.version}`;
 	}, [appInfo?.version]);
 
+	useEffect(() => {
+		return () => {
+			if (copyResetTimerRef.current !== undefined) {
+				window.clearTimeout(copyResetTimerRef.current);
+				copyResetTimerRef.current = undefined;
+			}
+		};
+	}, []);
+
+	const scheduleCopyLabelReset = () => {
+		if (copyResetTimerRef.current !== undefined) {
+			window.clearTimeout(copyResetTimerRef.current);
+		}
+		copyResetTimerRef.current = window.setTimeout(() => {
+			setCopyLabel("Copy Diagnostics");
+			copyResetTimerRef.current = undefined;
+		}, 1800);
+	};
+
 	const handleCopyDebugInfo = async () => {
 		const info = `Name: ${appInfo?.name ?? "Glyph"}\nVersion: ${appInfo?.version ?? "-"}\nIdentifier: ${appInfo?.identifier ?? "-"}`;
 		try {
 			await navigator.clipboard.writeText(info);
 			setCopyLabel("Copied to Clipboard");
-			window.setTimeout(() => setCopyLabel("Copy Diagnostics"), 1800);
+			scheduleCopyLabelReset();
 		} catch {
 			setCopyLabel("Copy Failed");
-			window.setTimeout(() => setCopyLabel("Copy Diagnostics"), 1800);
+			scheduleCopyLabelReset();
 		}
 	};
 
@@ -58,8 +80,10 @@ export function AboutSettingsPane() {
 				return;
 			}
 			setUpdateStatus(`Downloading v${update.version}...`);
-			await update.downloadAndInstall();
-			setUpdateStatus("Update installed. Restarting Glyph...");
+			await update.download();
+			setUpdateStatus(`Installing v${update.version}...`);
+			await update.install();
+			setUpdateStatus("Restarting Glyph...");
 			await relaunch();
 		} catch (e) {
 			setUpdateStatus(

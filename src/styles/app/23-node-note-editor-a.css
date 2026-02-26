@@ -138,15 +138,20 @@
 	bottom: 10px;
 	z-index: 3;
 	opacity: 0;
+	visibility: hidden;
 	transform: translateY(6px);
 	pointer-events: none;
-	transition: opacity 140ms ease, transform 140ms ease;
+	transition: opacity 140ms ease, transform 140ms ease, visibility 0s linear
+		140ms;
 }
 
-.rfNodeNoteEditor.showRibbon .rfNodeNoteEditorRibbonBottom {
+.rfNodeNoteEditor.showRibbon .rfNodeNoteEditorRibbonBottom,
+.rfNodeNoteEditor:focus-within .rfNodeNoteEditorRibbonBottom {
 	opacity: 1;
+	visibility: visible;
 	transform: translateY(0);
 	pointer-events: auto;
+	transition-delay: 0s;
 }
 
 .rfNodeNoteEditorRibbon .ribbonGroup {

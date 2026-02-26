@@ -336,6 +336,11 @@
 	opacity: 1;
 }
 
+.tasksRow:focus-within .tasksScheduleBtn,
+.tasksScheduleBtn:focus-visible {
+	opacity: 1;
+}
+
 .tasksBucketPill:focus-visible,
 .tasksNoteHeader:focus-visible,
 .tasksCheckbox:focus-visible,

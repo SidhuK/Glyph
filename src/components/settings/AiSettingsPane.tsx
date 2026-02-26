@@ -114,7 +114,7 @@ export function AiSettingsPane() {
 							<div className="settingsLabel">AI Features</div>
 						</div>
 						<select
-							aria-label="Enable AI"
+							aria-label="AI Features"
 							value={aiEnabled ? "enabled" : "disabled"}
 							onChange={(event) =>
 								void updateAiEnabled(event.target.value === "enabled")

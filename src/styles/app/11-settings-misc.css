@@ -83,7 +83,7 @@
 	align-items: center;
 	justify-content: center;
 	padding: 10px;
-	animation: aboutLogoBreath 8s ease-in-out infinite;
+	animation: about-logo-breath 8s ease-in-out infinite;
 }
 
 .aboutLogo {
@@ -180,7 +180,7 @@
 	}
 }
 
-@keyframes aboutLogoBreath {
+@keyframes about-logo-breath {
 	0%,
 	100% {
 		transform: translateY(0);

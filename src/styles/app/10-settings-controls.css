@@ -95,6 +95,7 @@
 		var(--text-tertiary) 88%,
 		transparent
 	);
+
 	background-color: color-mix(
 		in srgb,
 		var(--bg-primary) 90%,
@@ -170,7 +171,7 @@
 	color: var(--text-secondary);
 	overflow: hidden;
 	text-overflow: ellipsis;
-	word-break: break-word;
+	overflow-wrap: anywhere;
 }
 
 .settingsRow {
@@ -223,7 +224,7 @@
 	color: color-mix(in srgb, var(--color-green-500) 80%, var(--text-primary));
 	font-size: var(--text-xs);
 	text-align: center;
-	animation: settingsToastIn 260ms cubic-bezier(0.19, 1, 0.22, 1);
+	animation: settings-toast-in 260ms cubic-bezier(0.19, 1, 0.22, 1);
 }
 
 .settingsRange {
@@ -558,7 +559,7 @@
 	}
 }
 
-@keyframes settingsToastIn {
+@keyframes settings-toast-in {
 	0% {
 		opacity: 0;
 		transform: translateY(2px);

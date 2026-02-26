@@ -15,5 +15,5 @@ export function folderBreadcrumbFromNotePath(notePath: string): string {
 	if (!normalized) return "/";
 	const lastSlash = normalized.lastIndexOf("/");
 	if (lastSlash === -1) return "/";
-	return `${normalized.slice(0, lastSlash + 1)}`;
+	return normalized.slice(0, lastSlash + 1);
 }

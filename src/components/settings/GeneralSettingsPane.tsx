@@ -80,7 +80,7 @@ export function GeneralSettingsPane() {
 							<div className="settingsLabel">Open Assistant In</div>
 						</div>
 						<select
-							aria-label="AI mode"
+							aria-label="Open Assistant In"
 							value={aiAssistantMode}
 							onChange={(event) =>
 								void updateAssistantMode(event.target.value as AiAssistantMode)

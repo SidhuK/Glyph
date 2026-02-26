@@ -33,7 +33,7 @@
 	background-size: 120% 120%;
 	opacity: 1;
 	pointer-events: none;
-	animation: settingsBackdropDrift 18s ease-in-out infinite alternate;
+	animation: settings-backdrop-drift 18s ease-in-out infinite alternate;
 }
 
 .settingsDragStrip {
@@ -515,7 +515,7 @@
 	}
 }
 
-@keyframes settingsBackdropDrift {
+@keyframes settings-backdrop-drift {
 	0% {
 		background-position: 0% 0%;
 	}

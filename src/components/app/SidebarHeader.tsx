@@ -40,7 +40,7 @@ export function SidebarHeader({
 						variant="ghost"
 						size="icon-sm"
 						onClick={onOpenCommandPalette}
-						title="Command palette (⌘K)"
+						title={`Command palette (${getShortcutTooltip({ meta: true, key: "k" })})`}
 					>
 						<Command size={14} />
 					</Button>

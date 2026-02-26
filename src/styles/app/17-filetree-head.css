@@ -39,6 +39,7 @@
 	display: flex;
 	align-items: center;
 	border-radius: var(--radius-lg);
+	border: 1px solid transparent;
 	margin-bottom: 2px;
 	transition: all var(--transition-fast);
 }

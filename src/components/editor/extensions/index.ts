@@ -160,7 +160,8 @@ const TaskListMarkdownShortcut = Extension.create({
 						if (
 							listItemNode.type.name !== "listItem" ||
 							listNode.type.name !== "bulletList" ||
-							listNode.childCount !== 1
+							listNode.childCount !== 1 ||
+							listItemNode.childCount !== 1
 						) {
 							return;
 						}

@@ -65,18 +65,18 @@ const SETTINGS_TABS: SettingsTabMeta[] = [
 	},
 ];
 
+const SETTINGS_TAB_IDS = new Set<SettingsTab>(
+	SETTINGS_TABS.map((tab) => tab.id),
+);
+
+function isSettingsTab(tab: string): tab is SettingsTab {
+	return SETTINGS_TAB_IDS.has(tab as SettingsTab);
+}
+
 function parseTabFromHash(hash: string): SettingsTab {
 	const query = hash.split("?")[1] ?? "";
 	const tab = new URLSearchParams(query).get("tab");
-	if (
-		tab === "general" ||
-		tab === "appearance" ||
-		tab === "ai" ||
-		tab === "vault" ||
-		tab === "about"
-	) {
-		return tab;
-	}
+	if (tab && isSettingsTab(tab)) return tab;
 	return "general";
 }
 
