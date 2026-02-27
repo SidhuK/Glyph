@@ -311,82 +311,146 @@
 }
 
 .codexRateLimitList {
-	min-width: 230px;
-	max-width: 320px;
 	width: 100%;
 	display: flex;
-	flex-direction: column;
-	gap: 10px;
+	flex-direction: row;
+	gap: 12px;
+	overflow-x: auto;
+	padding: 2px 2px 6px;
+	scroll-snap-type: x proximity;
 }
 
 .codexRateLimitItem {
-	padding: 10px 12px;
-	border-radius: var(--radius-md);
-	border: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
-	background: color-mix(in srgb, var(--bg-secondary) 62%, transparent);
+	--codex-tone: var(--interactive-accent);
+	flex: 0 0 clamp(188px, 46%, 228px);
+	padding: 12px;
+	border-radius: calc(var(--radius-md) + 2px);
+	border: 1px solid
+		color-mix(in srgb, var(--codex-tone) 30%, var(--border-light));
+	background: radial-gradient(
+			120% 140% at 100% -40%,
+			color-mix(in srgb, var(--codex-tone) 16%, transparent) 0%,
+			transparent 48%
+		),
+		linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--bg-secondary) 72%, transparent) 0%,
+			color-mix(in srgb, var(--bg-primary) 62%, transparent) 100%
+		);
+	box-shadow: inset 0 1px 0
+		color-mix(in srgb, var(--bg-primary) 55%, transparent), 0 14px 32px -28px
+		color-mix(in srgb, var(--codex-tone) 70%, transparent);
+	scroll-snap-align: start;
+}
+
+.codexRateLimitItem--ok {
+	--codex-tone: var(--color-green-500);
+}
+
+.codexRateLimitItem--warn {
+	--codex-tone: var(--color-yellow-500);
+}
+
+.codexRateLimitItem--danger {
+	--codex-tone: var(--color-red-500);
 }
 
 .codexRateLimitRow {
 	display: flex;
 	align-items: baseline;
-	justify-content: space-between;
+	justify-content: flex-start;
 	gap: 8px;
-	font-size: var(--text-xs);
-	color: var(--text-secondary);
-}
-
-.codexRateLimitRow span:last-child {
 	color: var(--text-primary);
-	font-weight: var(--font-semibold);
 }
 
-.codexRateLimitBar {
+.codexRateLimitWindow {
+	font-size: 11px;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: color-mix(in srgb, var(--text-secondary) 88%, var(--text-primary));
+}
+
+.codexRateLimitMeasureRow {
 	margin-top: 8px;
-	height: 8px;
-	border-radius: 999px;
-	overflow: hidden;
-	background: color-mix(in srgb, var(--bg-tertiary) 75%, transparent);
-	border: 1px solid color-mix(in srgb, var(--border-light) 65%, transparent);
+	display: flex;
+	align-items: center;
+	gap: 10px;
 }
 
-.codexRateLimitBarFill {
-	height: 100%;
-	border-radius: inherit;
-	background: color-mix(in srgb, var(--interactive-accent) 80%, transparent);
+.codexRateLimitBattery {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	flex: 0 0 auto;
 }
 
-.codexRateLimitBarFill--ok {
-	background: linear-gradient(
-		90deg,
-		color-mix(in srgb, var(--color-green-500) 72%, var(--interactive-accent)) 0%,
-		color-mix(in srgb, var(--color-green-500) 86%, var(--bg-primary)) 100%
-	);
+.codexRateLimitBatteryBody {
+	width: 62px;
+	height: 28px;
+	padding: 4px;
+	border-radius: 8px;
+	display: grid;
+	grid-template-columns: repeat(12, minmax(0, 1fr));
+	gap: 2px;
+	border: 1px solid
+		color-mix(in srgb, var(--codex-tone) 34%, var(--border-light));
+	background: color-mix(in srgb, var(--bg-secondary) 88%, var(--bg-primary));
 }
 
-.codexRateLimitBarFill--warn {
-	background: linear-gradient(
-		90deg,
-		color-mix(in srgb, var(--color-yellow-500) 78%, var(--interactive-accent))
-			0%,
-		color-mix(in srgb, var(--color-yellow-500) 88%, var(--bg-primary)) 100%
-	);
+.codexRateLimitBatteryCell {
+	border-radius: 2px;
+	background: color-mix(in srgb, var(--bg-tertiary) 92%, transparent);
+	border: 1px solid color-mix(in srgb, var(--border-light) 70%, transparent);
 }
 
-.codexRateLimitBarFill--danger {
-	background: linear-gradient(
-		90deg,
-		color-mix(in srgb, var(--color-red-500) 76%, var(--interactive-accent)) 0%,
-		color-mix(in srgb, var(--color-red-500) 88%, var(--bg-primary)) 100%
-	);
+.codexRateLimitBatteryCell--active {
+	background: color-mix(in srgb, var(--codex-tone) 75%, var(--bg-primary));
+	border-color: color-mix(in srgb, var(--codex-tone) 50%, transparent);
+}
+
+.codexRateLimitBatteryCap {
+	width: 4px;
+	height: 13px;
+	border-radius: 2px;
+	background: color-mix(in srgb, var(--codex-tone) 46%, var(--border-light));
+}
+
+.codexRateLimitRemainingValue {
+	font-size: 13px;
+	line-height: 1.05;
+	font-weight: var(--font-semibold);
+	color: color-mix(in srgb, var(--codex-tone) 82%, var(--text-primary));
+}
+
+.codexRateLimitStats {
+	min-width: 0;
+	flex: 1;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	text-align: right;
 }
 
 .codexRateLimitMeta {
-	margin-top: 7px;
+	margin-top: 6px;
 	font-size: 11px;
 	color: var(--text-tertiary);
 	display: flex;
-	flex-direction: column;
-	gap: 2px;
+	justify-content: flex-end;
+	width: 100%;
+}
+
+.codexRateLimitResetMeta {
+	display: inline-flex;
+	align-items: center;
+	padding: 3px 7px;
+	border-radius: var(--radius-sm);
+	border: 1px solid
+		color-mix(in srgb, var(--codex-tone) 28%, var(--border-light));
+	background: color-mix(in srgb, var(--codex-tone) 9%, transparent);
+	color: color-mix(in srgb, var(--codex-tone) 35%, var(--text-secondary));
+	font-size: 10px;
+	line-height: 1.35;
 }
 
 .settingsTextarea {

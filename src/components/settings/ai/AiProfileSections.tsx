@@ -82,15 +82,12 @@ function formatCountdown(targetEpochMs: number, nowMs: number): string {
 	return parts.slice(0, 2).join(" ");
 }
 
-function formatResetAt(timestamp: number | null): string | null {
-	const epochMs = toEpochMs(timestamp);
-	if (!epochMs) return null;
-	return new Intl.DateTimeFormat(undefined, {
-		month: "short",
-		day: "numeric",
-		hour: "numeric",
-		minute: "2-digit",
-	}).format(new Date(epochMs));
+function formatResetMessage(timestamp: number | null, nowMs: number): string {
+	const resetEpochMs = toEpochMs(timestamp);
+	if (!resetEpochMs) return "Reset time unavailable";
+	if (resetEpochMs <= nowMs) return "Reset reached";
+	const countdown = formatCountdown(resetEpochMs, nowMs);
+	return `Resets in ${countdown}`;
 }
 
 export function AiProfileSections({
@@ -651,56 +648,62 @@ export function AiProfileSections({
 						<div className="settingsField">
 							<div className="settingsLabel">Rate Limits</div>
 							<div className="codexRateLimitList">
-								{codexState.rateLimits.map((item) => (
-									<div key={item.key} className="codexRateLimitItem">
-										<div className="codexRateLimitRow">
-											<span>{item.label}</span>
-											<span>{`${(100 - item.usedPercent).toFixed(1)}% remaining`}</span>
-										</div>
+								{codexState.rateLimits.map((item) => {
+									const remainingPercent = clampPercent(100 - item.usedPercent);
+									const tone = toneForRateLimitUsed(item.usedPercent);
+									const batteryCellCount = 12;
+									const activeBatteryCells = Math.round(
+										(remainingPercent / 100) * batteryCellCount,
+									);
+									return (
 										<div
-											className="codexRateLimitBar"
-											role="progressbar"
-											tabIndex={0}
-											aria-label={`${item.label} remaining`}
-											aria-valuemin={0}
-											aria-valuemax={100}
-											aria-valuenow={Math.round(100 - item.usedPercent)}
+											key={item.key}
+											className={`codexRateLimitItem codexRateLimitItem--${tone}`}
 										>
-											<div
-												className={`codexRateLimitBarFill codexRateLimitBarFill--${toneForRateLimitUsed(item.usedPercent)}`}
-												style={{
-													width: `${clampPercent(100 - item.usedPercent)}%`,
-												}}
-											/>
-										</div>
-										<div className="codexRateLimitMeta">
-											<div>{`${item.usedPercent.toFixed(1)}% used`}</div>
-											{item.resetsAt != null ? (
-												<div>
-													{(() => {
-														const resetEpochMs = toEpochMs(item.resetsAt);
-														if (!resetEpochMs) return "Reset time unavailable";
-														const resetAtLabel = formatResetAt(item.resetsAt);
-														if (resetEpochMs <= nowMs) {
-															return resetAtLabel
-																? `Reset reached at ${resetAtLabel}`
-																: "Reset reached";
-														}
-														const countdown = formatCountdown(
-															resetEpochMs,
-															nowMs,
-														);
-														return resetAtLabel
-															? `Resets in ${countdown} (${resetAtLabel})`
-															: `Resets in ${countdown}`;
-													})()}
+											<div className="codexRateLimitRow">
+												<span className="codexRateLimitWindow">
+													{item.label}
+												</span>
+											</div>
+											<div className="codexRateLimitMeasureRow">
+												<div
+													className="codexRateLimitBattery"
+													role="progressbar"
+													tabIndex={0}
+													aria-label={`${item.label} remaining`}
+													aria-valuemin={0}
+													aria-valuemax={100}
+													aria-valuenow={Math.round(remainingPercent)}
+												>
+													<div className="codexRateLimitBatteryBody">
+														{Array.from({ length: batteryCellCount }).map(
+															(_, index) => (
+																<div
+																	key={`${item.key}-battery-cell-${index.toString()}`}
+																	className={`codexRateLimitBatteryCell ${index < activeBatteryCells ? "codexRateLimitBatteryCell--active" : ""}`}
+																/>
+															),
+														)}
+													</div>
+													<div
+														className="codexRateLimitBatteryCap"
+														aria-hidden="true"
+													/>
 												</div>
-											) : (
-												<div>Reset time unavailable</div>
-											)}
+												<div className="codexRateLimitStats">
+													<div className="codexRateLimitRemainingValue">
+														{`${remainingPercent.toFixed(1)}% left`}
+													</div>
+													<div className="codexRateLimitMeta">
+														<div className="codexRateLimitResetMeta">
+															{formatResetMessage(item.resetsAt, nowMs)}
+														</div>
+													</div>
+												</div>
+											</div>
 										</div>
-									</div>
-								))}
+									);
+								})}
 							</div>
 						</div>
 					) : null}
