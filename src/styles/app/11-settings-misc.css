@@ -56,11 +56,11 @@
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	gap: 16px;
+	gap: 14px;
 	max-width: 560px;
 	text-align: center;
 	width: min(560px, 100%);
-	padding: 18px 8px 12px;
+	padding: 18px 10px 12px;
 	border: 0;
 	background: transparent;
 }
@@ -83,68 +83,76 @@
 .aboutTitleRow {
 	display: inline-flex;
 	align-items: baseline;
-	gap: 10px;
+	gap: 8px;
 }
 
 .aboutAppName {
-	font-size: 38px;
+	font-size: 34px;
 	font-weight: 700;
 	letter-spacing: -0.02em;
 	color: var(--text-primary);
 }
 
 .aboutVersion {
-	font-size: 20px;
+	font-size: 18px;
 	color: var(--text-secondary);
 }
 
 .aboutEarlyAccessBadge {
-	margin-top: -4px;
+	margin-top: 0;
 }
 
 .aboutStatusRow {
 	display: inline-flex;
 	align-items: center;
-	gap: 8px;
+	flex-wrap: wrap;
+	justify-content: center;
+	gap: 10px;
+	margin-top: 2px;
 }
 
 .aboutOpenSourceMark {
 	display: inline-flex;
 	align-items: center;
 	gap: 4px;
+	padding: 3px 8px;
+	border-radius: var(--radius-md);
+	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 42%, transparent);
 	font-size: 10px;
 	font-weight: var(--font-semibold);
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-	color: var(--text-tertiary);
+	letter-spacing: 0.04em;
+	color: color-mix(in srgb, var(--text-secondary) 86%, var(--text-primary));
 }
 
 .aboutLinksRow {
 	position: relative;
 	display: inline-flex;
 	align-items: center;
-	gap: 12px;
+	gap: 14px;
 	flex-wrap: wrap;
 	justify-content: center;
-	width: 100%;
-	padding-top: 10px;
+	width: min(360px, 100%);
+	padding-top: 14px;
+	margin-top: 2px;
 	border-top: 0;
 }
 
 .aboutLinksRow::before {
 	content: "";
 	position: absolute;
-	left: 0;
-	right: 0;
+	left: 50%;
+	width: 100%;
+	transform: translateX(-50%);
 	top: 0;
 	height: 1px;
 	background: linear-gradient(
 		90deg,
 		transparent 0%,
-		color-mix(in srgb, var(--border-light) 30%, transparent) 10%,
-		color-mix(in srgb, var(--border-light) 74%, transparent) 24%,
-		color-mix(in srgb, var(--border-light) 74%, transparent) 76%,
-		color-mix(in srgb, var(--border-light) 30%, transparent) 90%,
+		color-mix(in srgb, var(--border-light) 26%, transparent) 12%,
+		color-mix(in srgb, var(--border-light) 62%, transparent) 28%,
+		color-mix(in srgb, var(--border-light) 62%, transparent) 72%,
+		color-mix(in srgb, var(--border-light) 26%, transparent) 88%,
 		transparent 100%
 	);
 }
@@ -152,7 +160,8 @@
 .aboutLinksRow button {
 	background: transparent;
 	color: var(--text-secondary);
-	font-size: 12px;
+	font-size: 11px;
+	font-weight: var(--font-medium);
 	padding: 2px 4px;
 	height: auto;
 	border-radius: var(--radius-sm);
@@ -172,13 +181,15 @@
 
 .aboutDot {
 	color: var(--text-tertiary);
+	opacity: 0.7;
 }
 
 .aboutActionsRow {
-	margin-top: 2px;
-	gap: 12px;
+	margin-top: 6px;
+	gap: 0;
 	border-top: 0;
 	padding-top: 0;
+	width: auto;
 }
 
 .aboutActionsRow::before {
@@ -186,13 +197,19 @@
 }
 
 .aboutActionsRow button {
-	font-size: 12px;
+	font-size: 11px;
+	font-weight: var(--font-medium);
 	color: var(--text-primary);
-	height: 32px;
-	padding: 0 14px;
+	height: 30px;
+	padding: 0 12px;
 	border-radius: var(--radius-md);
 	border: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
-	background: transparent;
+	background: color-mix(in srgb, var(--bg-secondary) 36%, transparent);
+}
+
+.aboutActionsRow button:hover {
+	background: color-mix(in srgb, var(--bg-secondary) 54%, transparent);
+	border-color: color-mix(in srgb, var(--border-default) 55%, transparent);
 }
 
 @media (max-width: 760px) {
@@ -200,14 +217,18 @@
 		padding: 18px 14px;
 	}
 
-	.aboutLinksRow {
+	.aboutStatusRow {
 		gap: 8px;
+	}
+
+	.aboutLinksRow {
+		gap: 10px;
+		width: 100%;
 	}
 
 	.aboutLinksRow button,
 	.aboutActionsRow button {
-		height: 32px;
-		min-height: 32px;
+		min-height: 30px;
 	}
 }
 
