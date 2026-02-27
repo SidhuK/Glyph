@@ -21,10 +21,12 @@ export function useAiProfiles() {
 				]);
 				if (cancelled) return;
 				setProfiles(list);
-				const nextActive = active ?? list[0]?.id ?? null;
+				const hasActive =
+					!!active && list.some((profile) => profile.id === active);
+				const nextActive = hasActive ? active : (list[0]?.id ?? null);
 				setActiveProfileId(nextActive);
-				if (!active && list[0]?.id) {
-					await invoke("ai_active_profile_set", { id: list[0].id });
+				if ((!hasActive || !active) && nextActive) {
+					await invoke("ai_active_profile_set", { id: nextActive });
 				}
 			} catch (e) {
 				if (!cancelled) setError(extractErrorMessage(e));

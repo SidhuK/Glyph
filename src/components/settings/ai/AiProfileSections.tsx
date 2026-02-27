@@ -14,6 +14,7 @@ interface AiProfileSectionsProps {
 }
 
 const CODEX_RATE_LIMIT_REFRESH_MS = 30 * 60 * 1000;
+const CODEX_RESET_TIME_TICK_MS = 30 * 1000;
 
 function formatRateLimitWindow(minutes: number | null): string {
 	if (minutes == null || !Number.isFinite(minutes)) return "window";
@@ -58,6 +59,38 @@ function toneForSecretConfigured(
 function labelForCodexStatus(status: string): string {
 	if (!status) return "Unknown";
 	return status.charAt(0).toUpperCase() + status.slice(1);
+}
+
+function toEpochMs(timestamp: number | null): number | null {
+	if (timestamp == null || !Number.isFinite(timestamp) || timestamp <= 0) {
+		return null;
+	}
+	return timestamp < 1_000_000_000_000 ? timestamp * 1000 : timestamp;
+}
+
+function formatCountdown(targetEpochMs: number, nowMs: number): string {
+	const diffMs = Math.max(0, targetEpochMs - nowMs);
+	const totalMinutes = Math.ceil(diffMs / 60_000);
+	if (totalMinutes <= 1) return "<1m";
+	const days = Math.floor(totalMinutes / 1_440);
+	const hours = Math.floor((totalMinutes % 1_440) / 60);
+	const minutes = totalMinutes % 60;
+	const parts: string[] = [];
+	if (days > 0) parts.push(`${days}d`);
+	if (hours > 0) parts.push(`${hours}h`);
+	if (minutes > 0 && days === 0) parts.push(`${minutes}m`);
+	return parts.slice(0, 2).join(" ");
+}
+
+function formatResetAt(timestamp: number | null): string | null {
+	const epochMs = toEpochMs(timestamp);
+	if (!epochMs) return null;
+	return new Intl.DateTimeFormat(undefined, {
+		month: "short",
+		day: "numeric",
+		hour: "numeric",
+		minute: "2-digit",
+	}).format(new Date(epochMs));
 }
 
 export function AiProfileSections({
@@ -113,6 +146,7 @@ export function AiProfileSections({
 		error: "",
 		loading: false,
 	});
+	const [nowMs, setNowMs] = useState(() => Date.now());
 
 	useEffect(
 		() => () => {
@@ -265,6 +299,14 @@ export function AiProfileSections({
 		return () => window.clearInterval(timer);
 	}, [profileDraft?.provider, refreshCodexAccount]);
 
+	useEffect(() => {
+		if (profileDraft?.provider !== "codex_chatgpt") return;
+		const timer = window.setInterval(() => {
+			setNowMs(Date.now());
+		}, CODEX_RESET_TIME_TICK_MS);
+		return () => window.clearInterval(timer);
+	}, [profileDraft?.provider]);
+
 	const handleCodexConnect = useCallback(async () => {
 		setCodexState((prev) => ({ ...prev, loading: true, error: "" }));
 		try {
@@ -302,6 +344,14 @@ export function AiProfileSections({
 	const updateDraft = useCallback((updater: (prev: AiProfile) => AiProfile) => {
 		setProfileDraft((prev) => (prev ? updater(prev) : prev));
 	}, []);
+
+	const persistDraft = useCallback(
+		async (nextDraft: AiProfile) => {
+			setProfileDraft(nextDraft);
+			await onSaveProfile(nextDraft);
+		},
+		[onSaveProfile],
+	);
 
 	const selectedModel =
 		availableModels?.find((m) => m.id === profileDraft?.model) ?? null;
@@ -411,7 +461,8 @@ export function AiProfileSections({
 						<div>
 							<div className="settingsCardTitle">Provider</div>
 							<div className="settingsCardHint">
-								Choose service, model, and advanced options.
+								Choose service, model, and advanced options. Service and model
+								changes save automatically.
 							</div>
 						</div>
 					</div>
@@ -425,24 +476,26 @@ export function AiProfileSections({
 						<select
 							id="aiProvider"
 							value={profileDraft.provider}
-							onChange={(e) =>
-								updateDraft((p) => ({
-									...p,
-									provider: e.target.value as AiProfile["provider"],
+							onChange={(e) => {
+								const nextProvider = e.target.value as AiProfile["provider"];
+								const nextDraft: AiProfile = {
+									...profileDraft,
+									provider: nextProvider,
 									reasoning_effort:
-										e.target.value === "codex_chatgpt"
-											? (p.reasoning_effort ?? null)
+										nextProvider === "codex_chatgpt"
+											? (profileDraft.reasoning_effort ?? null)
 											: null,
-								}))
-							}
+								};
+								void persistDraft(nextDraft);
+							}}
 						>
+							<option value="codex_chatgpt">Codex (ChatGPT OAuth)</option>
 							<option value="openai">OpenAI</option>
 							<option value="openrouter">OpenRouter</option>
 							<option value="anthropic">Anthropic</option>
 							<option value="gemini">Gemini</option>
 							<option value="ollama">Ollama</option>
 							<option value="openai_compat">OpenAI-compatible</option>
-							<option value="codex_chatgpt">Codex (ChatGPT OAuth)</option>
 						</select>
 					</div>
 
@@ -458,26 +511,27 @@ export function AiProfileSections({
 							provider={profileDraft.provider}
 							value={profileDraft.model}
 							secretConfigured={secretConfigured}
-							onChange={(next) =>
-								updateDraft((p) => {
-									const model =
-										availableModels?.find((m) => m.id === next) ?? null;
-									const options = model?.reasoning_effort ?? null;
-									const current = p.reasoning_effort ?? null;
-									const stillValid = !!options?.some(
-										(o) => o.effort === current,
-									);
-									const nextEffort = stillValid
-										? current
-										: (model?.default_reasoning_effort ?? current);
-									return {
-										...p,
-										model: next,
-										reasoning_effort:
-											p.provider === "codex_chatgpt" ? nextEffort : null,
-									};
-								})
-							}
+							onChange={(next) => {
+								const model =
+									availableModels?.find((entry) => entry.id === next) ?? null;
+								const options = model?.reasoning_effort ?? null;
+								const current = profileDraft.reasoning_effort ?? null;
+								const stillValid = !!options?.some(
+									(option) => option.effort === current,
+								);
+								const nextEffort = stillValid
+									? current
+									: (model?.default_reasoning_effort ?? current);
+								const nextDraft: AiProfile = {
+									...profileDraft,
+									model: next,
+									reasoning_effort:
+										profileDraft.provider === "codex_chatgpt"
+											? nextEffort
+											: null,
+								};
+								void persistDraft(nextDraft);
+							}}
 							onModelsChange={setAvailableModels}
 						/>
 					</div>
@@ -499,10 +553,10 @@ export function AiProfileSections({
 										""
 									}
 									onChange={(e) =>
-										updateDraft((p) => ({
-											...p,
+										void persistDraft({
+											...profileDraft,
 											reasoning_effort: e.target.value || null,
-										}))
+										})
 									}
 								>
 									{reasoningOptions?.map((option) => (
@@ -620,7 +674,30 @@ export function AiProfileSections({
 											/>
 										</div>
 										<div className="codexRateLimitMeta">
-											{`${item.usedPercent.toFixed(1)}% used`}
+											<div>{`${item.usedPercent.toFixed(1)}% used`}</div>
+											{item.resetsAt != null ? (
+												<div>
+													{(() => {
+														const resetEpochMs = toEpochMs(item.resetsAt);
+														if (!resetEpochMs) return "Reset time unavailable";
+														const resetAtLabel = formatResetAt(item.resetsAt);
+														if (resetEpochMs <= nowMs) {
+															return resetAtLabel
+																? `Reset reached at ${resetAtLabel}`
+																: "Reset reached";
+														}
+														const countdown = formatCountdown(
+															resetEpochMs,
+															nowMs,
+														);
+														return resetAtLabel
+															? `Resets in ${countdown} (${resetAtLabel})`
+															: `Resets in ${countdown}`;
+													})()}
+												</div>
+											) : (
+												<div>Reset time unavailable</div>
+											)}
 										</div>
 									</div>
 								))}

@@ -384,6 +384,9 @@
 	margin-top: 7px;
 	font-size: 11px;
 	color: var(--text-tertiary);
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
 }
 
 .settingsTextarea {

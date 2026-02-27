@@ -29,10 +29,12 @@ export function AiSettingsPane() {
 				]);
 				if (cancelled) return;
 				setProfiles(list);
-				const id = active ?? list[0]?.id ?? null;
+				const hasActive =
+					!!active && list.some((profile) => profile.id === active);
+				const id = hasActive ? active : (list[0]?.id ?? null);
 				setActiveProfileId(id);
-				if (!active && list[0]?.id) {
-					await invoke("ai_active_profile_set", { id: list[0].id });
+				if ((!hasActive || !active) && id) {
+					await invoke("ai_active_profile_set", { id });
 				}
 			} catch (e) {
 				if (!cancelled) setError(errMessage(e));
@@ -82,6 +84,7 @@ export function AiSettingsPane() {
 			const saved = await invoke("ai_profile_upsert", {
 				profile: draft,
 			});
+			await invoke("ai_active_profile_set", { id: saved.id });
 			setProfiles((prev) => prev.map((p) => (p.id === saved.id ? saved : p)));
 			setActiveProfileId(saved.id);
 		} catch (e) {
@@ -99,6 +102,16 @@ export function AiSettingsPane() {
 			{error ? <div className="settingsError">{error}</div> : null}
 
 			<div className="settingsGrid">
+				<AiProfileSections
+					key={activeProfileId ?? "none"}
+					profiles={profiles}
+					activeProfileId={activeProfileId}
+					activeProfile={activeProfile}
+					onActiveProfileChange={onActiveProfileChange}
+					onCreateProfile={() => void createDefaultProfile()}
+					onSaveProfile={saveProfile}
+				/>
+
 				<section className="settingsCard">
 					<div className="settingsCardHeader">
 						<div>
@@ -128,16 +141,6 @@ export function AiSettingsPane() {
 						When off, AI panels and AI command-palette actions stay hidden.
 					</p>
 				</section>
-
-				<AiProfileSections
-					key={activeProfileId ?? "none"}
-					profiles={profiles}
-					activeProfileId={activeProfileId}
-					activeProfile={activeProfile}
-					onActiveProfileChange={onActiveProfileChange}
-					onCreateProfile={() => void createDefaultProfile()}
-					onSaveProfile={saveProfile}
-				/>
 			</div>
 		</div>
 	);
