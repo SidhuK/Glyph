@@ -1,12 +1,26 @@
 import { MenuCircleIcon, SourceCodeIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useEditorRegistration, useVault } from "../../contexts";
+import {
+	useAISidebarContext,
+	useEditorRegistration,
+	useVault,
+} from "../../contexts";
 import { extractErrorMessage } from "../../lib/errorUtils";
+import { splitYamlFrontmatter } from "../../lib/notePreview";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { normalizeRelPath } from "../../utils/path";
-import { Edit, Eye, RefreshCw, Save } from "../Icons";
+import {
+	Calendar,
+	Edit,
+	Eye,
+	FileText,
+	List,
+	RefreshCw,
+	Save,
+	Type,
+} from "../Icons";
 import { CanvasNoteInlineEditor } from "../editor/CanvasNoteInlineEditor";
 import { CALLOUT_TYPES } from "../editor/ribbonButtonConfigs";
 import type { CanvasInlineEditorMode } from "../editor/types";
@@ -18,6 +32,28 @@ interface MarkdownEditorPaneProps {
 }
 
 const markdownDocCache = new Map<string, string>();
+const WORDS_PER_MINUTE = 200;
+
+function countWords(text: string): number {
+	const cleaned = text.trim();
+	if (!cleaned) return 0;
+	return cleaned.split(/\s+/u).length;
+}
+
+function countLines(text: string): number {
+	if (!text.length) return 0;
+	return text.split(/\r?\n/).length;
+}
+
+function formatReadingTime(words: number): string {
+	if (words <= 0) return "0s";
+	const totalSeconds = Math.ceil((words / WORDS_PER_MINUTE) * 60);
+	const minutes = Math.floor(totalSeconds / 60);
+	const seconds = totalSeconds % 60;
+	if (minutes <= 0) return `${seconds}s`;
+	if (seconds === 0) return `${minutes}m`;
+	return `${minutes}m ${seconds}s`;
+}
 
 export function MarkdownEditorPane({
 	relPath,
@@ -42,8 +78,21 @@ export function MarkdownEditorPane({
 	const externalSyncTimerRef = useRef<number | null>(null);
 	const pendingExternalReloadRef = useRef(false);
 	const { vaultPath } = useVault();
+	const { aiEnabled, aiPanelOpen } = useAISidebarContext();
 
 	const isDirty = text !== savedText;
+	const stats = useMemo(() => {
+		const { body } = splitYamlFrontmatter(text);
+		const words = countWords(body);
+		const characters = body.length;
+		const lines = countLines(body);
+		return {
+			words,
+			characters,
+			lines,
+			readingTime: formatReadingTime(words),
+		};
+	}, [text]);
 
 	useEffect(() => {
 		savedTextRef.current = savedText;
@@ -392,6 +441,52 @@ export function MarkdownEditorPane({
 					) : null}
 				</div>
 			</div>
+			{mode !== "preview" ? (
+				<div
+					className={[
+						"markdownEditorStatsDock",
+						aiEnabled && !aiPanelOpen ? "withAiFab" : "",
+					]
+						.filter(Boolean)
+						.join(" ")}
+					aria-label="Editor statistics"
+				>
+					<div className="markdownEditorStatsPill">
+						<div
+							className="markdownEditorStatsItem"
+							title={`Words: ${stats.words.toLocaleString()}`}
+							aria-label={`Words: ${stats.words.toLocaleString()}`}
+						>
+							<FileText size={13} aria-hidden />
+							<span>{stats.words.toLocaleString()}</span>
+						</div>
+						<div
+							className="markdownEditorStatsItem"
+							title={`Characters: ${stats.characters.toLocaleString()}`}
+							aria-label={`Characters: ${stats.characters.toLocaleString()}`}
+						>
+							<Type size={13} aria-hidden />
+							<span>{stats.characters.toLocaleString()}</span>
+						</div>
+						<div
+							className="markdownEditorStatsItem"
+							title={`Lines: ${stats.lines.toLocaleString()}`}
+							aria-label={`Lines: ${stats.lines.toLocaleString()}`}
+						>
+							<List size={13} aria-hidden />
+							<span>{stats.lines.toLocaleString()}</span>
+						</div>
+						<div
+							className="markdownEditorStatsItem"
+							title={`Reading time: ${stats.readingTime}`}
+							aria-label={`Reading time: ${stats.readingTime}`}
+						>
+							<Calendar size={13} aria-hidden />
+							<span>{stats.readingTime}</span>
+						</div>
+					</div>
+				</div>
+			) : null}
 
 			{error ? (
 				<div className="filePreviewMeta">

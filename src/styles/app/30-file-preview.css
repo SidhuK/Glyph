@@ -113,6 +113,50 @@
 	display: inline-block;
 }
 
+.markdownEditorStatsDock {
+	position: absolute;
+	right: 12px;
+	bottom: 12px;
+	z-index: 18;
+	pointer-events: auto;
+}
+
+.markdownEditorStatsDock.withAiFab {
+	right: 82px;
+}
+
+.markdownEditorStatsPill {
+	display: inline-flex;
+	align-items: center;
+	gap: 0;
+	min-height: 30px;
+	padding: 2px;
+	border-radius: var(--radius-md);
+	border: 1px solid color-mix(in srgb, var(--border-light) 84%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 88%, var(--bg-secondary));
+}
+
+.markdownEditorStatsItem {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 0 10px;
+	min-height: 24px;
+	font-size: 11px;
+	line-height: 1;
+	color: var(--text-secondary);
+	cursor: help;
+}
+
+.markdownEditorStatsItem + .markdownEditorStatsItem {
+	border-left: 1px solid
+		color-mix(in srgb, var(--border-light) 72%, transparent);
+}
+
+.markdownEditorStatsItem svg {
+	opacity: 0.9;
+}
+
 .markdownEditorActionsMenu {
 	position: relative;
 }
@@ -218,6 +262,23 @@
 
 .markdownEditorPane .editorBacklinks {
 	width: var(--readable-content-outer-width);
+}
+
+@media (max-width: 760px) {
+	.markdownEditorStatsDock {
+		right: 8px;
+		bottom: 8px;
+	}
+
+	.markdownEditorStatsDock.withAiFab {
+		right: 72px;
+	}
+
+	.markdownEditorStatsItem {
+		padding: 0 7px;
+		gap: 4px;
+		font-size: 10px;
+	}
 }
 
 .filePreviewText {
