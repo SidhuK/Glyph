@@ -11,6 +11,7 @@ import {
 	useMemo,
 	useState,
 } from "react";
+import { X } from "./components/Icons";
 import {
 	FolderOpen,
 	InformationCircle,
@@ -22,6 +23,7 @@ import { AppearanceSettingsPane } from "./components/settings/AppearanceSettings
 import { DailyNotesSettingsPane } from "./components/settings/DailyNotesSettingsPane";
 import { GeneralSettingsPane } from "./components/settings/GeneralSettingsPane";
 import { VaultSettingsPane } from "./components/settings/VaultSettingsPane";
+import { Button } from "./components/ui/shadcn/button";
 import { onWindowDragMouseDown } from "./utils/window";
 
 type SettingsTab = "general" | "appearance" | "ai" | "vault" | "about";
@@ -105,6 +107,33 @@ export default function SettingsApp() {
 		void getCurrentWindow().close();
 	}, []);
 
+	useEffect(() => {
+		const onKeyDown = (event: KeyboardEvent) => {
+			if (event.key !== "Escape") return;
+			const activeElement = document.activeElement as HTMLElement | null;
+			if (activeElement) {
+				const tagName = activeElement.tagName;
+				if (
+					tagName === "INPUT" ||
+					tagName === "TEXTAREA" ||
+					tagName === "SELECT" ||
+					activeElement.isContentEditable ||
+					Boolean(
+						activeElement.closest(
+							'[contenteditable="true"], [contenteditable=""], [contenteditable="plaintext-only"]',
+						),
+					)
+				) {
+					return;
+				}
+			}
+			event.preventDefault();
+			closeWindow();
+		};
+		window.addEventListener("keydown", onKeyDown);
+		return () => window.removeEventListener("keydown", onKeyDown);
+	}, [closeWindow]);
+
 	const tabContent = useMemo(() => {
 		if (activeTab === "general") {
 			return (
@@ -130,25 +159,27 @@ export default function SettingsApp() {
 					data-tauri-drag-region
 					onMouseDown={onWindowDragMouseDown}
 				/>
-				<button
+				<Button
 					type="button"
 					className="settingsWindowClose"
+					variant="ghost"
+					size="icon-sm"
 					aria-label="Close settings"
-					title="Close settings"
+					title="Close settings (Esc)"
 					onClick={closeWindow}
 				>
-					<span className="settingsWindowCloseGlyph" aria-hidden>
-						×
-					</span>
-				</button>
+					<X size={14} />
+				</Button>
 
 				<main className="settingsMain">
 					<div className="settingsFrame">
 						<nav className="settingsTabs" aria-label="Settings sections">
 							<header className="settingsNavHeader">
-								<p className="settingsNavEyebrow">Preferences</p>
 								<h1 className="settingsNavTitle">Glyph</h1>
 								<p className="settingsNavMeta">macOS</p>
+								<span className="settingsPill settingsNavEarlyAccessBadge earlyAccessBadge">
+									Early Access
+								</span>
 							</header>
 							{SETTINGS_TABS.map((tab) => (
 								<button
@@ -169,7 +200,6 @@ export default function SettingsApp() {
 						</nav>
 						<div className="settingsTabPanel">
 							<header className="settingsPanelHeader">
-								<p className="settingsPanelEyebrow">Settings</p>
 								<h2 className="settingsPanelTitle">{activeTabMeta.label}</h2>
 								<p className="settingsPanelSubtitle">
 									{activeTabMeta.subtitle}

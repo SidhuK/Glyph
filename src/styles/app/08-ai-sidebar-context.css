@@ -20,7 +20,7 @@
 .aiAddFolderItem {
 	text-align: left;
 	padding: 8px 10px;
-	border-radius: 12px;
+	border-radius: var(--radius-md);
 	border: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
 	background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
 	color: var(--text-primary);
@@ -203,7 +203,7 @@
 	flex-direction: column;
 	gap: 4px;
 	padding: 8px 10px;
-	border-radius: 12px;
+	border-radius: var(--radius-md);
 	border: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
 	background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
 	color: var(--text-primary);

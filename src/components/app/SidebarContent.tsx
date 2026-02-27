@@ -204,6 +204,9 @@ export const SidebarContent = memo(function SidebarContent({
 				>
 					<HugeiconsIcon icon={Icons.Settings05Icon} size={14} />
 				</Button>
+				<span className="settingsPill sidebarEarlyAccessBadge earlyAccessBadge">
+					Early Access
+				</span>
 				<div style={ACTIONS_STYLE}>
 					{sidebarViewMode === "files" && (
 						<DropdownMenu>

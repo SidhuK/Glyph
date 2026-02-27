@@ -110,9 +110,6 @@ export function AppearanceTypographyCard({
 						}}
 						aria-label="Font size value"
 					/>
-					<span className="settingsRangeValue settingsRangeHoverValue">
-						{fontSize}
-					</span>
 				</div>
 			</div>
 		</section>

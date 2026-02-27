@@ -204,6 +204,71 @@
 	color: var(--text-secondary);
 }
 
+/* Edit-mode heading rail (H1/H2/...) */
+.tiptapHostInline:not(.is-preview) .tiptapContentInline {
+	--heading-rail-width: 22px;
+	--heading-rail-gap: 8px;
+	position: relative;
+	padding-left: calc(
+		var(--readable-content-gutter-compact) +
+		var(--heading-rail-width) +
+		var(--heading-rail-gap)
+	);
+}
+
+.tiptapHostInline:not(.is-preview) .tiptapContentInline::before {
+	content: none;
+}
+
+.tiptapHostInline:not(.is-preview) .tiptapContentInline h1,
+.tiptapHostInline:not(.is-preview) .tiptapContentInline h2,
+.tiptapHostInline:not(.is-preview) .tiptapContentInline h3,
+.tiptapHostInline:not(.is-preview) .tiptapContentInline h4,
+.tiptapHostInline:not(.is-preview) .tiptapContentInline h5,
+.tiptapHostInline:not(.is-preview) .tiptapContentInline h6 {
+	position: relative;
+}
+
+.tiptapHostInline:not(.is-preview) .tiptapContentInline h1::before,
+.tiptapHostInline:not(.is-preview) .tiptapContentInline h2::before,
+.tiptapHostInline:not(.is-preview) .tiptapContentInline h3::before,
+.tiptapHostInline:not(.is-preview) .tiptapContentInline h4::before,
+.tiptapHostInline:not(.is-preview) .tiptapContentInline h5::before,
+.tiptapHostInline:not(.is-preview) .tiptapContentInline h6::before {
+	position: absolute;
+	bottom: 0;
+	left: calc(-1 * (var(--heading-rail-width) + var(--heading-rail-gap)) + 2px);
+	font-size: 11px;
+	font-weight: var(--font-medium);
+	letter-spacing: 0.04em;
+	color: color-mix(in srgb, var(--text-tertiary) 86%, transparent);
+	pointer-events: none;
+}
+
+.tiptapHostInline:not(.is-preview) .tiptapContentInline h1::before {
+	content: "H1";
+}
+
+.tiptapHostInline:not(.is-preview) .tiptapContentInline h2::before {
+	content: "H2";
+}
+
+.tiptapHostInline:not(.is-preview) .tiptapContentInline h3::before {
+	content: "H3";
+}
+
+.tiptapHostInline:not(.is-preview) .tiptapContentInline h4::before {
+	content: "H4";
+}
+
+.tiptapHostInline:not(.is-preview) .tiptapContentInline h5::before {
+	content: "H5";
+}
+
+.tiptapHostInline:not(.is-preview) .tiptapContentInline h6::before {
+	content: "H6";
+}
+
 .tiptapContentInline blockquote {
 	margin: var(--space-3) 0;
 	padding: var(--space-2) var(--space-3);
@@ -440,6 +505,22 @@
 		input[type="checkbox"],
 	.tiptapContentInline li[data-checked] > label input[type="checkbox"] {
 		transition: none;
+	}
+}
+
+@media (max-width: 760px) {
+	.tiptapHostInline:not(.is-preview) .tiptapContentInline {
+		padding-left: var(--readable-content-gutter-compact);
+	}
+
+	.tiptapHostInline:not(.is-preview) .tiptapContentInline::before,
+	.tiptapHostInline:not(.is-preview) .tiptapContentInline h1::before,
+	.tiptapHostInline:not(.is-preview) .tiptapContentInline h2::before,
+	.tiptapHostInline:not(.is-preview) .tiptapContentInline h3::before,
+	.tiptapHostInline:not(.is-preview) .tiptapContentInline h4::before,
+	.tiptapHostInline:not(.is-preview) .tiptapContentInline h5::before,
+	.tiptapHostInline:not(.is-preview) .tiptapContentInline h6::before {
+		display: none;
 	}
 }
 

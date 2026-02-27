@@ -177,6 +177,11 @@
 	-webkit-app-region: no-drag;
 }
 
+.sidebarEarlyAccessBadge {
+	justify-self: center;
+	white-space: nowrap;
+}
+
 .sidebarFooterBtn {
 	width: 100%;
 	display: flex;

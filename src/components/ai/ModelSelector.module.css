@@ -61,7 +61,6 @@
 	border-radius: var(--radius-lg);
 	border: 1px solid color-mix(in srgb, var(--border-light) 70%, transparent);
 	background: var(--bg-primary);
-	box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25), 0 4px 12px rgba(0, 0, 0, 0.12);
 	z-index: 9999;
 	display: flex;
 	flex-direction: column;
@@ -205,7 +204,6 @@
 	background: var(--bg-primary);
 	border-color: var(--border-default);
 	color: var(--text-primary);
-	box-shadow: var(--shadow-sm);
 }
 
 .profilePillLogo {
@@ -435,10 +433,6 @@
    DARK MODE
    ───────────────────────────────────────────────────────────────────────────── */
 @media (prefers-color-scheme: dark) {
-	.dropdown {
-		box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.3);
-	}
-
 	.modelItemActive {
 		background: color-mix(in srgb, var(--color-blue-900) 30%, transparent);
 	}
@@ -446,10 +440,6 @@
 	.modelItemActive:hover {
 		background: color-mix(in srgb, var(--color-blue-900) 45%, transparent);
 	}
-}
-
-[data-theme="dark"] .dropdown {
-	box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 [data-theme="dark"] .modelItemActive {

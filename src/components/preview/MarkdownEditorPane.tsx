@@ -1,12 +1,27 @@
 import { MenuCircleIcon, SourceCodeIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useEditorRegistration, useVault } from "../../contexts";
+import {
+	useAISidebarContext,
+	useEditorRegistration,
+	useVault,
+} from "../../contexts";
 import { extractErrorMessage } from "../../lib/errorUtils";
+import { splitYamlFrontmatter } from "../../lib/notePreview";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
+import { countLines, countWords, formatReadingTime } from "../../lib/textStats";
 import { normalizeRelPath } from "../../utils/path";
-import { Edit, Eye, RefreshCw, Save } from "../Icons";
+import {
+	Calendar,
+	Edit,
+	Eye,
+	FileText,
+	List,
+	RefreshCw,
+	Save,
+	Type,
+} from "../Icons";
 import { CanvasNoteInlineEditor } from "../editor/CanvasNoteInlineEditor";
 import { CALLOUT_TYPES } from "../editor/ribbonButtonConfigs";
 import type { CanvasInlineEditorMode } from "../editor/types";
@@ -17,7 +32,28 @@ interface MarkdownEditorPaneProps {
 	onDirtyChange?: (dirty: boolean) => void;
 }
 
+type StatsLayout = "full" | "collapsed" | "hidden";
+
 const markdownDocCache = new Map<string, string>();
+
+function isVisibleElement(element: HTMLElement | null): boolean {
+	if (!element) return false;
+	const style = window.getComputedStyle(element);
+	return (
+		style.display !== "none" &&
+		style.visibility !== "hidden" &&
+		Number.parseFloat(style.opacity || "1") > 0.02
+	);
+}
+
+function rectsOverlap(a: DOMRect, b: DOMRect, padding = 0): boolean {
+	return !(
+		a.right - padding <= b.left ||
+		a.left + padding >= b.right ||
+		a.bottom - padding <= b.top ||
+		a.top + padding >= b.bottom
+	);
+}
 
 export function MarkdownEditorPane({
 	relPath,
@@ -41,9 +77,56 @@ export function MarkdownEditorPane({
 	const hasUserEditsRef = useRef(false);
 	const externalSyncTimerRef = useRef<number | null>(null);
 	const pendingExternalReloadRef = useRef(false);
+	const paneRef = useRef<HTMLElement | null>(null);
+	const statsDockRef = useRef<HTMLDivElement | null>(null);
 	const { vaultPath } = useVault();
+	const { aiEnabled, aiPanelOpen } = useAISidebarContext();
 
 	const isDirty = text !== savedText;
+	const [statsLayout, setStatsLayout] = useState<StatsLayout>("full");
+	const stats = useMemo(() => {
+		const { body } = splitYamlFrontmatter(text);
+		const words = countWords(body);
+		const characters = body.length;
+		const lines = countLines(body);
+		return {
+			words,
+			characters,
+			lines,
+			readingTime: formatReadingTime(words),
+		};
+	}, [text]);
+
+	const syncStatsLayout = useCallback(() => {
+		if (mode === "preview") {
+			setStatsLayout("full");
+			return;
+		}
+		const pane = paneRef.current;
+		const dock = statsDockRef.current;
+		if (!pane || !dock) return;
+
+		const width = pane.clientWidth;
+		const ribbon = pane.querySelector(
+			".rfNodeNoteEditorRibbonBottom",
+		) as HTMLElement | null;
+		const ribbonVisible = isVisibleElement(ribbon);
+
+		let next: StatsLayout = "full";
+		if (width < 1160) next = "collapsed";
+		if (width < 860) next = "hidden";
+
+		if (ribbonVisible && ribbon) {
+			const dockRect = dock.getBoundingClientRect();
+			const ribbonRect = ribbon.getBoundingClientRect();
+			if (rectsOverlap(dockRect, ribbonRect, 6)) {
+				next = "collapsed";
+				if (width < 1040) next = "hidden";
+			}
+		}
+
+		setStatsLayout((prev) => (prev === next ? prev : next));
+	}, [mode]);
 
 	useEffect(() => {
 		savedTextRef.current = savedText;
@@ -263,6 +346,47 @@ export function MarkdownEditorPane({
 		onDirtyChange?.(isDirty);
 	}, [onDirtyChange, isDirty]);
 
+	useEffect(() => {
+		if (mode === "preview") return;
+		const pane = paneRef.current;
+		if (!pane) return;
+
+		let raf = 0;
+		const schedule = () => {
+			if (raf) window.cancelAnimationFrame(raf);
+			raf = window.requestAnimationFrame(syncStatsLayout);
+		};
+
+		const resizeObserver = new ResizeObserver(schedule);
+		resizeObserver.observe(pane);
+		const editorRoot = pane.querySelector(
+			".rfNodeNoteEditor",
+		) as HTMLElement | null;
+		const ribbon = pane.querySelector(
+			".rfNodeNoteEditorRibbonBottom",
+		) as HTMLElement | null;
+		if (editorRoot) resizeObserver.observe(editorRoot);
+		if (ribbon) resizeObserver.observe(ribbon);
+
+		const mutationObserver = new MutationObserver(schedule);
+		mutationObserver.observe(pane, {
+			attributes: true,
+			childList: true,
+			subtree: true,
+			attributeFilter: ["class", "style"],
+		});
+
+		window.addEventListener("resize", schedule);
+		schedule();
+
+		return () => {
+			if (raf) window.cancelAnimationFrame(raf);
+			window.removeEventListener("resize", schedule);
+			resizeObserver.disconnect();
+			mutationObserver.disconnect();
+		};
+	}, [mode, syncStatsLayout]);
+
 	const canInsertCallouts = mode === "rich";
 	const registerCalloutInserter = useCallback(
 		(inserter: ((type: string) => void) | null) => {
@@ -272,7 +396,7 @@ export function MarkdownEditorPane({
 	);
 
 	return (
-		<section className="filePreviewPane markdownEditorPane">
+		<section className="filePreviewPane markdownEditorPane" ref={paneRef}>
 			<div className="markdownEditorFloatActions">
 				<div className="markdownEditorActionsMenu">
 					<Button
@@ -392,6 +516,59 @@ export function MarkdownEditorPane({
 					) : null}
 				</div>
 			</div>
+			{mode !== "preview" ? (
+				<div
+					ref={statsDockRef}
+					className={[
+						"markdownEditorStatsDock",
+						aiEnabled && !aiPanelOpen ? "withAiFab" : "",
+						statsLayout === "collapsed" ? "is-collapsed" : "",
+						statsLayout === "hidden" ? "is-hidden" : "",
+					]
+						.filter(Boolean)
+						.join(" ")}
+					aria-label="Editor statistics"
+				>
+					<div className="markdownEditorStatsPill">
+						<div
+							className="markdownEditorStatsItem"
+							data-metric="words"
+							title={`Words: ${stats.words.toLocaleString()}`}
+							aria-label={`Words: ${stats.words.toLocaleString()}`}
+						>
+							<FileText size={13} aria-hidden />
+							<span>{stats.words.toLocaleString()}</span>
+						</div>
+						<div
+							className="markdownEditorStatsItem"
+							data-metric="characters"
+							title={`Characters: ${stats.characters.toLocaleString()}`}
+							aria-label={`Characters: ${stats.characters.toLocaleString()}`}
+						>
+							<Type size={13} aria-hidden />
+							<span>{stats.characters.toLocaleString()}</span>
+						</div>
+						<div
+							className="markdownEditorStatsItem"
+							data-metric="lines"
+							title={`Lines: ${stats.lines.toLocaleString()}`}
+							aria-label={`Lines: ${stats.lines.toLocaleString()}`}
+						>
+							<List size={13} aria-hidden />
+							<span>{stats.lines.toLocaleString()}</span>
+						</div>
+						<div
+							className="markdownEditorStatsItem"
+							data-metric="reading-time"
+							title={`Reading time: ${stats.readingTime}`}
+							aria-label={`Reading time: ${stats.readingTime}`}
+						>
+							<Calendar size={13} aria-hidden />
+							<span>{stats.readingTime}</span>
+						</div>
+					</div>
+				</div>
+			) : null}
 
 			{error ? (
 				<div className="filePreviewMeta">

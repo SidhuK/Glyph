@@ -1,6 +1,6 @@
 .settingsPill {
 	padding: 4px 10px;
-	border-radius: var(--radius-full);
+	border-radius: var(--radius-sm);
 	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
 	background: color-mix(in srgb, var(--bg-secondary) 74%, transparent);
 	font-size: 9px;
@@ -35,18 +35,54 @@
 	background: color-mix(in srgb, var(--color-blue-500) 10%, transparent);
 }
 
+.earlyAccessBadge {
+	--early-access-color: var(--interactive-accent);
+	padding: 3px 8px;
+	border-radius: var(--radius-sm);
+	border: 1px solid
+		color-mix(in srgb, var(--early-access-color) 52%, transparent);
+	font-size: 8px;
+	letter-spacing: 0.1em;
+	line-height: 1;
+	color: color-mix(in srgb, var(--early-access-color) 40%, var(--text-primary));
+	background: color-mix(in srgb, var(--early-access-color) 16%, transparent);
+}
+
 .settingsField {
+	position: relative;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	gap: 12px;
 	min-height: 40px;
-	padding: 7px 10px;
-	border-radius: 10px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 68%, transparent);
-	background: color-mix(in srgb, var(--bg-secondary) 42%, transparent);
+	padding: 9px 0;
+	border-radius: 0;
+	border: 0;
+	background: transparent;
 	transition: border-color var(--transition-base), background
 		var(--transition-base);
+}
+
+.settingsField::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 1px;
+	background: linear-gradient(
+		90deg,
+		transparent 0%,
+		color-mix(in srgb, var(--border-light) 30%, transparent) 10%,
+		color-mix(in srgb, var(--border-light) 72%, transparent) 24%,
+		color-mix(in srgb, var(--border-light) 72%, transparent) 76%,
+		color-mix(in srgb, var(--border-light) 30%, transparent) 90%,
+		transparent 100%
+	);
+}
+
+.settingsCard .settingsField:last-of-type::after {
+	display: none;
 }
 
 .settingsField > div:first-child {
@@ -102,7 +138,7 @@
 		var(--bg-secondary)
 	);
 	border: 1px solid color-mix(in srgb, var(--border-default) 88%, transparent);
-	border-radius: 10px;
+	border-radius: var(--radius-md);
 	color: var(--text-primary);
 	padding: 0 32px 0 10px;
 	height: 32px;
@@ -207,7 +243,7 @@
 .settingsError {
 	margin: 0;
 	padding: 9px 10px;
-	border-radius: 10px;
+	border-radius: var(--radius-md);
 	border: 1px solid var(--status-danger-border);
 	background: var(--status-danger-bg);
 	color: var(--status-danger-fg);
@@ -238,7 +274,7 @@
 	appearance: none;
 	height: 4px;
 	width: 140px;
-	border-radius: var(--radius-full);
+	border-radius: var(--radius-sm);
 	background: color-mix(in srgb, var(--bg-tertiary) 65%, transparent);
 }
 
@@ -246,7 +282,7 @@
 	appearance: none;
 	height: 16px;
 	width: 16px;
-	border-radius: 50%;
+	border-radius: var(--radius-sm);
 	background: var(--interactive-accent);
 	box-shadow: 0 0 0 3px
 		color-mix(in srgb, var(--interactive-accent) 20%, transparent);
@@ -285,7 +321,7 @@
 
 .codexRateLimitItem {
 	padding: 10px 12px;
-	border-radius: 10px;
+	border-radius: var(--radius-md);
 	border: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
 	background: color-mix(in srgb, var(--bg-secondary) 62%, transparent);
 }
@@ -379,7 +415,7 @@
 	align-items: center;
 	width: 100%;
 	height: 100%;
-	border-radius: var(--radius-full);
+	border-radius: var(--radius-md);
 	background: color-mix(in srgb, var(--bg-tertiary) 80%, transparent);
 	border: 1px solid var(--border-light);
 	position: relative;
@@ -393,7 +429,7 @@
 	height: 20px;
 	width: 20px;
 	left: 3px;
-	border-radius: 50%;
+	border-radius: var(--radius-sm);
 	background: var(--bg-primary);
 	box-shadow: var(--shadow-sm);
 	transition: transform var(--transition-base), background
@@ -414,7 +450,7 @@
 	display: inline-flex;
 	align-items: center;
 	padding: 2px;
-	border-radius: 9px;
+	border-radius: var(--radius-md);
 	border: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
 	background: color-mix(in srgb, var(--bg-secondary) 45%, transparent);
 	gap: 2px;
@@ -423,7 +459,7 @@
 .settingsSegmented button {
 	min-height: 28px;
 	padding: 0 10px;
-	border-radius: 7px;
+	border-radius: var(--radius-sm);
 	font-size: 11px;
 	color: var(--text-secondary);
 }
@@ -445,7 +481,7 @@
 	gap: 8px;
 	min-height: 36px;
 	padding: 5px 9px;
-	border-radius: var(--radius-full);
+	border-radius: var(--radius-md);
 	border: 1px solid color-mix(in srgb, var(--border-light) 74%, transparent);
 	background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
 	font-size: 9px;
@@ -455,7 +491,7 @@
 .settingsSwatch span {
 	height: 14px;
 	width: 14px;
-	border-radius: 50%;
+	border-radius: var(--radius-sm);
 	background: var(--bg-primary);
 	border: 1px solid var(--border-light);
 }
@@ -494,12 +530,12 @@
 }
 
 .settingsAccentDot {
-	height: 26px;
-	width: 26px;
+	height: 22px;
+	width: 22px;
 	padding: 0;
-	border-radius: 999px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
-	background: color-mix(in srgb, var(--bg-secondary) 75%, transparent);
+	border-radius: var(--radius-md);
+	border: 0;
+	background: transparent;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -508,10 +544,10 @@
 }
 
 .settingsAccentDot span {
-	height: 14px;
-	width: 14px;
-	border-radius: 999px;
-	border: 1px solid color-mix(in srgb, var(--border-default) 45%, transparent);
+	height: 16px;
+	width: 16px;
+	border-radius: var(--radius-sm);
+	border: 1px solid color-mix(in srgb, var(--border-default) 40%, transparent);
 }
 
 .settingsAccentDot:hover {
@@ -519,7 +555,6 @@
 }
 
 .settingsAccentDot.active {
-	border-color: color-mix(in srgb, var(--interactive-accent) 50%, transparent);
 	box-shadow: 0 0 0 2px
 		color-mix(in srgb, var(--interactive-accent) 18%, transparent);
 }

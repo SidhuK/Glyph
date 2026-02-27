@@ -46,8 +46,6 @@
 	border-radius: var(--radius-lg);
 	border: 1px solid var(--border-light);
 	background: var(--bg-primary);
-	box-shadow: 0 8px 24px
-		color-mix(in srgb, var(--text-primary) 16%, transparent);
 	padding: 4px;
 	display: flex;
 	flex-direction: column;

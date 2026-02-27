@@ -43,6 +43,13 @@ export function TabBar({
 		[stripFileExtension],
 	);
 
+	const breadcrumb = useCallback((path: string) => {
+		if (path === TASKS_TAB_ID) return "";
+		const parts = path.split("/").filter(Boolean);
+		if (parts.length <= 1) return "/";
+		return parts.slice(0, -1).join(" / ");
+	}, []);
+
 	return (
 		<div className="mainTabsBar">
 			<div className="mainTabsSide" />
@@ -54,6 +61,7 @@ export function TabBar({
 								key={path}
 								path={path}
 								fileName={fileName(path)}
+								breadcrumb={breadcrumb(path)}
 								isActive={path === activeTabPath}
 								isDirty={Boolean(dirtyByPath[path])}
 								dragTabPath={dragTabPath}
@@ -84,6 +92,7 @@ export function TabBar({
 const TabItem = memo(function TabItem({
 	path,
 	fileName,
+	breadcrumb,
 	isActive,
 	isDirty,
 	dragTabPath,
@@ -95,6 +104,7 @@ const TabItem = memo(function TabItem({
 }: {
 	path: string;
 	fileName: string;
+	breadcrumb: string;
 	isActive: boolean;
 	isDirty: boolean;
 	dragTabPath: string | null;
@@ -137,7 +147,7 @@ const TabItem = memo(function TabItem({
 				type="button"
 				className={`mainTab ${isActive ? "is-active" : ""}`}
 				onClick={handleSelect}
-				title={fileName}
+				title={path === TASKS_TAB_ID ? fileName : path}
 				draggable
 				onDragStart={handleDragStart}
 				onDragEnd={onDragEnd}
@@ -145,7 +155,16 @@ const TabItem = memo(function TabItem({
 				onDrop={handleDrop}
 			>
 				{isDirty ? <span className="mainTabDirty" aria-hidden /> : null}
-				<span className="mainTabLabel">{fileName}</span>
+				<span
+					className={["mainTabText", !breadcrumb ? "is-single" : ""]
+						.filter(Boolean)
+						.join(" ")}
+				>
+					<span className="mainTabLabel">{fileName}</span>
+					{breadcrumb ? (
+						<span className="mainTabBreadcrumb">{breadcrumb}</span>
+					) : null}
+				</span>
 			</button>
 			<button
 				type="button"

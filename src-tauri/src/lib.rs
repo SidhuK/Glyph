@@ -214,7 +214,12 @@ pub fn run() {
             {
                 if let Some(window) = app.get_webview_window("main") {
                     if let Err(e) =
-                        apply_vibrancy(&window, NSVisualEffectMaterial::Sidebar, None, None)
+                        apply_vibrancy(
+                            &window,
+                            NSVisualEffectMaterial::Sidebar,
+                            None,
+                            Some(6.0),
+                        )
                     {
                         warn!("Failed to apply vibrancy to main window: {e}");
                     }
