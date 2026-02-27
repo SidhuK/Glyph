@@ -16,6 +16,7 @@ export function parseNotePreview(
 	const frontmatterTitleMatch = normalizedText.match(
 		/^---\n([\s\S]*?)\n---\n?/,
 	);
+	let titleFoundInFrontmatter = false;
 	if (frontmatterTitleMatch?.[1]) {
 		for (const line of frontmatterTitleMatch[1].split("\n")) {
 			const match = line.match(
@@ -26,10 +27,12 @@ export function parseNotePreview(
 			const parsed = raw.trim().replace(/^['"]|['"]$/g, "");
 			if (parsed) {
 				title = parsed;
+				titleFoundInFrontmatter = true;
 				break;
 			}
 		}
-	} else {
+	}
+	if (!titleFoundInFrontmatter) {
 		// Check for first # heading
 		const headingMatch = normalizedText.match(/^#\s+(.+)$/m);
 		if (headingMatch?.[1]) {
@@ -56,7 +59,7 @@ export function splitYamlFrontmatter(markdown: string): {
 	frontmatter: string | null;
 	body: string;
 } {
-	const text = markdown ?? "";
+	const text = (markdown ?? "").replace(/\r\n?/g, "\n");
 	if (!text.startsWith("---\n")) return { frontmatter: null, body: text };
 	const endIdx = text.indexOf("\n---\n", 4);
 	if (endIdx === -1) return { frontmatter: null, body: text };

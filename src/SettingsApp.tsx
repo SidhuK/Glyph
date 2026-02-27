@@ -110,6 +110,23 @@ export default function SettingsApp() {
 	useEffect(() => {
 		const onKeyDown = (event: KeyboardEvent) => {
 			if (event.key !== "Escape") return;
+			const activeElement = document.activeElement as HTMLElement | null;
+			if (activeElement) {
+				const tagName = activeElement.tagName;
+				if (
+					tagName === "INPUT" ||
+					tagName === "TEXTAREA" ||
+					tagName === "SELECT" ||
+					activeElement.isContentEditable ||
+					Boolean(
+						activeElement.closest(
+							'[contenteditable="true"], [contenteditable=""], [contenteditable="plaintext-only"]',
+						),
+					)
+				) {
+					return;
+				}
+			}
 			event.preventDefault();
 			closeWindow();
 		};

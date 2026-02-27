@@ -222,6 +222,15 @@
 		var(--border-light) 30%,
 		transparent
 	);
+	--settings-divider-gradient: linear-gradient(
+		90deg,
+		transparent 0%,
+		var(--settings-divider-soft) 10%,
+		var(--settings-divider-core) 24%,
+		var(--settings-divider-core) 76%,
+		var(--settings-divider-soft) 90%,
+		transparent 100%
+	);
 }
 
 .settingsPanelHeader {
@@ -241,15 +250,7 @@
 	right: 0;
 	bottom: 0;
 	height: 1px;
-	background: linear-gradient(
-		90deg,
-		transparent 0%,
-		var(--settings-divider-soft) 10%,
-		var(--settings-divider-core) 24%,
-		var(--settings-divider-core) 76%,
-		var(--settings-divider-soft) 90%,
-		transparent 100%
-	);
+	background: var(--settings-divider-gradient);
 }
 
 .settingsPanelEyebrow {
@@ -354,15 +355,7 @@
 	right: 0;
 	top: 0;
 	height: 1px;
-	background: linear-gradient(
-		90deg,
-		transparent 0%,
-		var(--settings-divider-soft) 10%,
-		var(--settings-divider-core) 24%,
-		var(--settings-divider-core) 76%,
-		var(--settings-divider-soft) 90%,
-		transparent 100%
-	);
+	background: var(--settings-divider-gradient);
 }
 
 .settingsSpan {

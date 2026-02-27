@@ -118,11 +118,17 @@
 	right: 12px;
 	bottom: 12px;
 	z-index: 18;
+	max-width: min(56vw, 560px);
+	overflow-x: auto;
+	overflow-y: hidden;
+	-webkit-overflow-scrolling: touch;
+	scrollbar-width: thin;
 	pointer-events: auto;
 }
 
 .markdownEditorStatsDock.withAiFab {
 	right: 82px;
+	max-width: min(48vw, 500px);
 }
 
 .markdownEditorStatsDock.is-hidden {
@@ -290,16 +296,22 @@
 	.markdownEditorStatsDock {
 		right: 8px;
 		bottom: 8px;
+		max-width: calc(100vw - 16px);
 	}
 
 	.markdownEditorStatsDock.withAiFab {
 		right: 72px;
+		max-width: calc(100vw - 80px);
 	}
 
 	.markdownEditorStatsItem {
 		padding: 0 7px;
 		gap: 4px;
 		font-size: 10px;
+		max-width: 32vw;
+		white-space: nowrap;
+		overflow: hidden;
+		text-overflow: ellipsis;
 	}
 }
 

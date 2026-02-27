@@ -89,7 +89,7 @@
 	--space-10: 40px;
 	--space-12: 48px;
 
-	/* Border radius - flattened geometry */
+	/* Border radius - flattened geometry (md/lg intentionally equal for a flatter UI) */
 	--radius-sm: 3px;
 	--radius-md: 4px;
 	--radius-lg: 4px;

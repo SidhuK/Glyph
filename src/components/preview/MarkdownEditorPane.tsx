@@ -10,6 +10,7 @@ import { extractErrorMessage } from "../../lib/errorUtils";
 import { splitYamlFrontmatter } from "../../lib/notePreview";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
+import { countLines, countWords, formatReadingTime } from "../../lib/textStats";
 import { normalizeRelPath } from "../../utils/path";
 import {
 	Calendar,
@@ -34,28 +35,6 @@ interface MarkdownEditorPaneProps {
 type StatsLayout = "full" | "collapsed" | "hidden";
 
 const markdownDocCache = new Map<string, string>();
-const WORDS_PER_MINUTE = 200;
-
-function countWords(text: string): number {
-	const cleaned = text.trim();
-	if (!cleaned) return 0;
-	return cleaned.split(/\s+/u).length;
-}
-
-function countLines(text: string): number {
-	if (!text.length) return 0;
-	return text.split(/\r?\n/).length;
-}
-
-function formatReadingTime(words: number): string {
-	if (words <= 0) return "0s";
-	const totalSeconds = Math.ceil((words / WORDS_PER_MINUTE) * 60);
-	const minutes = Math.floor(totalSeconds / 60);
-	const seconds = totalSeconds % 60;
-	if (minutes <= 0) return `${seconds}s`;
-	if (seconds === 0) return `${minutes}m`;
-	return `${minutes}m ${seconds}s`;
-}
 
 function isVisibleElement(element: HTMLElement | null): boolean {
 	if (!element) return false;
