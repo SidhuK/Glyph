@@ -125,6 +125,10 @@
 	right: 82px;
 }
 
+.markdownEditorStatsDock.is-hidden {
+	display: none;
+}
+
 .markdownEditorStatsPill {
 	display: inline-flex;
 	align-items: center;
@@ -155,6 +159,24 @@
 
 .markdownEditorStatsItem svg {
 	opacity: 0.9;
+}
+
+.markdownEditorStatsDock.is-collapsed .markdownEditorStatsPill {
+	min-height: 28px;
+	padding: 1px;
+}
+
+.markdownEditorStatsDock.is-collapsed .markdownEditorStatsItem {
+	padding: 0 7px;
+	gap: 4px;
+	font-size: 10px;
+}
+
+.markdownEditorStatsDock.is-collapsed
+	.markdownEditorStatsItem[data-metric="characters"],
+.markdownEditorStatsDock.is-collapsed
+	.markdownEditorStatsItem[data-metric="lines"] {
+	display: none;
 }
 
 .markdownEditorActionsMenu {
