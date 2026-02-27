@@ -159,6 +159,11 @@
 	color: var(--text-tertiary);
 }
 
+.settingsNavEarlyAccessBadge {
+	margin-top: 6px;
+	width: max-content;
+}
+
 .settingsTabButton {
 	position: relative;
 	display: inline-flex;

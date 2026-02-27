@@ -149,6 +149,9 @@ export default function SettingsApp() {
 								<p className="settingsNavEyebrow">Preferences</p>
 								<h1 className="settingsNavTitle">Glyph</h1>
 								<p className="settingsNavMeta">macOS</p>
+								<span className="settingsPill settingsNavEarlyAccessBadge earlyAccessBadge">
+									Early Access
+								</span>
 							</header>
 							{SETTINGS_TABS.map((tab) => (
 								<button

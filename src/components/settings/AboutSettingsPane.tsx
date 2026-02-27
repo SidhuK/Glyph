@@ -111,6 +111,9 @@ export function AboutSettingsPane() {
 					<span className="aboutAppName">{appInfo?.name ?? "Glyph"}</span>
 					<span className="aboutVersion">{versionLabel}</span>
 				</div>
+				<span className="settingsPill aboutEarlyAccessBadge earlyAccessBadge">
+					Early Access
+				</span>
 
 				<div className="aboutLinksRow">
 					<button

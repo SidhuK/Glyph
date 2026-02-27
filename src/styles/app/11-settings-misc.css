@@ -98,6 +98,10 @@
 	color: var(--text-secondary);
 }
 
+.aboutEarlyAccessBadge {
+	margin-top: -4px;
+}
+
 .aboutLinksRow {
 	display: inline-flex;
 	align-items: center;

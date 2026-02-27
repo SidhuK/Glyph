@@ -35,6 +35,24 @@
 	background: color-mix(in srgb, var(--color-blue-500) 10%, transparent);
 }
 
+.earlyAccessBadge {
+	--early-access-color: rgb(145 224 231);
+	padding: 3px 8px;
+	border-radius: 4px;
+	font-size: 8px;
+	letter-spacing: 0.1em;
+	line-height: 1;
+	color: color-mix(in srgb, var(--early-access-color) 78%, var(--text-primary));
+	border-color: color-mix(in srgb, var(--early-access-color) 44%, transparent);
+	background: color-mix(in srgb, var(--early-access-color) 16%, transparent);
+}
+
+@supports (color: color(display-p3 1 1 1)) {
+	.earlyAccessBadge {
+		--early-access-color: color(display-p3 0.57 0.879 0.905);
+	}
+}
+
 .settingsField {
 	display: flex;
 	align-items: center;
