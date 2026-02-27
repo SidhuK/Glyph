@@ -79,6 +79,11 @@ fn mime_for_preview_ext(ext: &str) -> Option<&'static str> {
         "png" => Some("image/png"),
         "jpg" | "jpeg" => Some("image/jpeg"),
         "webp" => Some("image/webp"),
+        "gif" => Some("image/gif"),
+        "svg" => Some("image/svg+xml"),
+        "bmp" => Some("image/bmp"),
+        "avif" => Some("image/avif"),
+        "tif" | "tiff" => Some("image/tiff"),
         "pdf" => Some("application/pdf"),
         _ => None,
     }

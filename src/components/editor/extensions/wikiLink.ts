@@ -90,9 +90,22 @@ export const WikiLink = Node.create({
 			typeof node.attrs.alias === "string" ? node.attrs.alias.trim() : "";
 		const target =
 			typeof node.attrs.target === "string" ? node.attrs.target.trim() : "";
+		const imageLike = target && isImageTarget(target);
+		if (node.attrs.embed && imageLike) {
+			const fallbackName = target.split("/").pop() ?? target;
+			const alt = alias || fallbackName;
+			return [
+				"img",
+				mergeAttributes(HTMLAttributes, {
+					src: target,
+					alt,
+					"data-wikilink-embed": "true",
+					class: "markdownImage wikiLinkEmbedImage",
+				}),
+			];
+		}
+
 		// Show alias if present, otherwise just the filename without path/extension
-		const imageLike =
-			(node.attrs.embed || !alias) && target && isImageTarget(target);
 		const displayName = imageLike
 			? (node.attrs.raw as string) || `![[${target}]]`
 			: alias || target.split("/").pop()?.replace(/\.md$/i, "") || target;

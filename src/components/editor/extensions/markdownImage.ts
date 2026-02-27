@@ -15,13 +15,11 @@ export const MarkdownImage = Image.extend({
 		if (!src.trim()) {
 			return helpers.createTextNode(token.raw ?? token.text ?? "");
 		}
-		const srcValue = src.trim();
-		const altValue = (alt ?? "").trim();
-		const titleValue = (title ?? "").trim();
-		const raw = titleValue
-			? `![${altValue}](${srcValue} "${titleValue}")`
-			: `![${altValue}](${srcValue})`;
-		return helpers.createTextNode(raw);
+		return helpers.createNode("image", {
+			src: src.trim(),
+			alt: (alt ?? "").trim(),
+			title: (title ?? "").trim(),
+		});
 	},
 
 	renderMarkdown(node) {
