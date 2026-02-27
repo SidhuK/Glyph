@@ -2,6 +2,7 @@
    MAIN CANVAS AREA - Floating center panel
    ───────────────────────────────────────────────────────────────────────────── */
 .mainArea {
+	--main-shell-radius: calc(var(--app-radius) + 2px);
 	flex: 1;
 	display: flex;
 	flex-direction: column;
@@ -10,16 +11,18 @@
 	background: var(--bg-primary);
 	overflow: hidden;
 	margin: var(--app-frame) var(--app-frame) var(--app-frame) 0;
-	border-radius: var(--app-radius);
-	border-top-left-radius: calc(var(--app-radius) - var(--app-frame));
-	border-bottom-left-radius: calc(var(--app-radius) - var(--app-frame));
-	box-shadow: var(--shadow-lg);
+	border-radius: var(--main-shell-radius);
+	border-top-left-radius: calc(var(--app-radius) - var(--app-frame) + 2px);
+	border-bottom-left-radius: calc(var(--app-radius) - var(--app-frame) + 2px);
+	border: 1px solid color-mix(in srgb, var(--border-light) 62%, transparent);
+	box-sizing: border-box;
+	box-shadow: 0 1px 4px color-mix(in srgb, var(--text-primary) 10%, transparent);
 }
 
 .appShell.appShellAiOpen .mainArea {
 	margin-right: 0;
-	border-top-right-radius: calc(var(--app-radius) - var(--app-frame));
-	border-bottom-right-radius: calc(var(--app-radius) - var(--app-frame));
+	border-top-right-radius: calc(var(--app-radius) - var(--app-frame) + 2px);
+	border-bottom-right-radius: calc(var(--app-radius) - var(--app-frame) + 2px);
 }
 
 .mainAreaWelcome {

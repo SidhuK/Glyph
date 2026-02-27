@@ -91,7 +91,7 @@
 	flex-direction: column;
 	gap: 4px;
 	padding: 44px 10px 12px;
-	background: color-mix(in srgb, var(--bg-secondary) 74%, var(--bg-primary));
+	background: color-mix(in srgb, var(--bg-secondary) 46%, var(--bg-primary));
 	border-right: 1px solid
 		color-mix(in srgb, var(--border-light) 85%, transparent);
 }
@@ -160,7 +160,7 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 46%, transparent);
 	color: var(--text-tertiary);
 	transition: color var(--transition-base), background var(--transition-base);
 }
@@ -179,61 +179,28 @@
 
 .settingsTabButton:hover {
 	color: var(--text-primary);
-	background: color-mix(in srgb, var(--bg-secondary) 72%, transparent);
-	border-color: color-mix(in srgb, var(--border-light) 72%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 54%, transparent);
+	border-color: color-mix(in srgb, var(--border-light) 58%, transparent);
 }
 
 .settingsTabButton:hover .settingsTabIcon {
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 10%,
-		var(--bg-secondary)
-	);
-	color: var(--text-primary);
+	background: color-mix(in srgb, var(--bg-secondary) 60%, transparent);
+	color: var(--text-secondary);
 }
 
 .settingsTabButton.active {
 	color: var(--text-primary);
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 12%,
-		var(--bg-primary)
-	);
-	border-color: color-mix(in srgb, var(--interactive-accent) 34%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 64%, transparent);
+	border-color: color-mix(in srgb, var(--border-default) 45%, transparent);
 }
 
 .settingsTabButton.active::before {
-	background: color-mix(in srgb, var(--interactive-accent) 68%, transparent);
+	background: color-mix(in srgb, var(--border-default) 65%, transparent);
 }
 
 .settingsTabButton.active .settingsTabIcon {
-	background: color-mix(in srgb, var(--interactive-accent) 19%, transparent);
-	color: color-mix(in srgb, var(--interactive-accent) 72%, var(--text-primary));
-}
-
-.settingsTabButton[data-tab="general"].active .settingsTabIcon {
-	background: color-mix(in srgb, var(--color-blue-500) 18%, transparent);
-	color: color-mix(in srgb, var(--color-blue-600) 82%, var(--text-primary));
-}
-
-.settingsTabButton[data-tab="appearance"].active .settingsTabIcon {
-	background: color-mix(in srgb, var(--color-purple-500) 20%, transparent);
-	color: color-mix(in srgb, var(--color-purple-500) 85%, var(--text-primary));
-}
-
-.settingsTabButton[data-tab="ai"].active .settingsTabIcon {
-	background: color-mix(in srgb, var(--color-green-500) 20%, transparent);
-	color: color-mix(in srgb, var(--color-green-500) 82%, var(--text-primary));
-}
-
-.settingsTabButton[data-tab="vault"].active .settingsTabIcon {
-	background: color-mix(in srgb, var(--color-yellow-500) 22%, transparent);
-	color: color-mix(in srgb, var(--color-yellow-500) 90%, var(--text-primary));
-}
-
-.settingsTabButton[data-tab="about"].active .settingsTabIcon {
-	background: color-mix(in srgb, var(--color-blue-400) 18%, transparent);
-	color: color-mix(in srgb, var(--color-blue-500) 84%, var(--text-primary));
+	background: color-mix(in srgb, var(--bg-secondary) 72%, transparent);
+	color: var(--text-primary);
 }
 
 .settingsTabPanel {

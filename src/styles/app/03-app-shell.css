@@ -49,6 +49,6 @@
 
 .appShell.appShellSidebarCollapsed .mainArea {
 	margin-left: var(--app-frame);
-	border-top-left-radius: var(--app-radius);
-	border-bottom-left-radius: var(--app-radius);
+	border-top-left-radius: calc(var(--app-radius) + 2px);
+	border-bottom-left-radius: calc(var(--app-radius) + 2px);
 }
