@@ -254,29 +254,25 @@
 .notePropertyPill {
 	display: inline-flex;
 	align-items: center;
-	padding: 3px 8px;
-	border-radius: var(--radius-full);
+	padding: 2px 6px;
+	border-radius: var(--radius-md);
 	background: color-mix(in srgb, var(--interactive-accent) 12%, transparent);
 	color: var(--interactive-accent);
-	font-size: 11px;
+	font-size: 10px;
 	line-height: 1.2;
-}
-
-.notePropertyPillsEditable {
-	gap: 6px;
 }
 
 .notePropertyToken {
 	display: inline-flex;
 	align-items: center;
-	gap: 6px;
-	padding: 4px 9px;
+	gap: 4px;
+	padding: 2px 6px;
 	border: 1px solid
 		color-mix(in srgb, var(--interactive-accent) 14%, var(--border-light));
-	border-radius: 999px;
+	border-radius: var(--radius-md);
 	background: color-mix(in srgb, var(--interactive-accent) 10%, transparent);
 	color: var(--interactive-accent);
-	font-size: 11px;
+	font-size: 10px;
 	line-height: 1.2;
 	cursor: pointer;
 }
@@ -289,15 +285,44 @@
 	color: color-mix(in srgb, var(--interactive-accent) 72%, var(--text-tertiary));
 }
 
-.notePropertyTagComposer {
+.notePropertyTagField {
 	display: flex;
+	flex-wrap: wrap;
 	align-items: center;
-	gap: 8px;
+	gap: 4px;
+	min-height: 34px;
+	width: 100%;
+	padding: 3px 6px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 78%, transparent);
+	border-radius: var(--radius-md);
+	background: color-mix(in srgb, var(--bg-primary) 54%, transparent);
+	cursor: text;
 }
 
-.notePropertyTagAddButton {
-	gap: 6px;
-	flex: 0 0 auto;
+.notePropertyTagField:focus-within {
+	border-color: color-mix(in srgb, var(--interactive-accent) 28%, transparent);
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 18%, transparent);
+	outline-offset: 1px;
+}
+
+.notePropertyTagInput {
+	flex: 1 1 96px;
+	min-width: 96px;
+	height: 20px;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: var(--text-primary);
+	font: inherit;
+	font-size: 12px;
+	line-height: 1.4;
+	outline: none;
+	box-shadow: none;
+}
+
+.notePropertyTagInput::placeholder {
+	color: var(--text-tertiary);
 }
 
 .notePropertySuggestions {
@@ -324,10 +349,10 @@
 .notePropertySuggestionChip {
 	display: inline-flex;
 	align-items: center;
-	gap: 7px;
-	padding: 4px 8px;
+	gap: 5px;
+	padding: 3px 6px;
 	border: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
-	border-radius: 999px;
+	border-radius: var(--radius-md);
 	background: color-mix(in srgb, var(--bg-primary) 64%, transparent);
 	color: var(--text-secondary);
 	font-size: 10px;
@@ -345,13 +370,13 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	min-width: 16px;
-	height: 16px;
-	padding: 0 4px;
-	border-radius: 999px;
+	min-width: 14px;
+	height: 14px;
+	padding: 0 3px;
+	border-radius: var(--radius-md);
 	background: color-mix(in srgb, var(--bg-secondary) 82%, transparent);
 	color: var(--text-tertiary);
-	font-size: 10px;
+	font-size: 9px;
 }
 
 .notePropertyYamlInput {
@@ -421,13 +446,8 @@
 		flex: 1 1 100%;
 	}
 
-	.notePropertyTagComposer {
-		align-items: stretch;
-		flex-direction: column;
-	}
-
-	.notePropertyTagAddButton {
-		justify-content: center;
+	.notePropertyTagField {
+		padding-block: 6px;
 	}
 }
 

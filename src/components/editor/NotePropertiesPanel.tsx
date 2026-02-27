@@ -233,6 +233,7 @@ export function NotePropertiesPanel({
 		frontmatter ?? null,
 	);
 	const propertyRowIdCounterRef = useRef(0);
+	const tagInputRefs = useRef<Record<number, HTMLInputElement | null>>({});
 
 	useEffect(() => {
 		if ((frontmatter ?? null) === lastCommittedFrontmatterRef.current) {
@@ -427,35 +428,14 @@ export function NotePropertiesPanel({
 											</label>
 										) : property.kind === "tags" ? (
 											<>
-												<div className="notePropertyTagComposer">
-													<Input
-														className="notePropertyFieldInput"
-														value={tagDrafts[index] ?? ""}
-														placeholder="Add a tag"
-														onChange={(event) =>
-															setTagDraft(index, event.target.value)
-														}
-														onKeyDown={(event) => {
-															if (event.key === "Enter" || event.key === ",") {
-																event.preventDefault();
-																addTag(index, tagDrafts[index] ?? "");
-															}
-														}}
-													/>
-													<Button
-														type="button"
-														size="xs"
-														variant="outline"
-														className="notePropertyTagAddButton"
-														onClick={() =>
-															addTag(index, tagDrafts[index] ?? "")
-														}
-													>
-														<Plus size={12} />
-														Add
-													</Button>
-												</div>
-												<div className="notePropertyPills notePropertyPillsEditable">
+												<div
+													className="notePropertyTagField"
+													onMouseDown={(event) => {
+														if (event.target !== event.currentTarget) return;
+														event.preventDefault();
+														tagInputRefs.current[index]?.focus();
+													}}
+												>
 													{property.value_list.map((value) => (
 														<button
 															key={value}
@@ -468,6 +448,41 @@ export function NotePropertiesPanel({
 															<X size={10} />
 														</button>
 													))}
+													<input
+														ref={(node) => {
+															tagInputRefs.current[index] = node;
+														}}
+														type="text"
+														className="notePropertyTagInput"
+														value={tagDrafts[index] ?? ""}
+														placeholder={
+															property.value_list.length > 0 ? "" : "Add a tag"
+														}
+														onChange={(event) =>
+															setTagDraft(index, event.target.value)
+														}
+														onBlur={() => addTag(index, tagDrafts[index] ?? "")}
+														onKeyDown={(event) => {
+															if (event.key === "Enter" || event.key === ",") {
+																event.preventDefault();
+																addTag(index, tagDrafts[index] ?? "");
+																return;
+															}
+															if (
+																event.key === "Backspace" &&
+																!(tagDrafts[index] ?? "").length
+															) {
+																const currentTags =
+																	properties[index]?.value_list ?? [];
+																const lastTag =
+																	currentTags[currentTags.length - 1];
+																if (lastTag) {
+																	event.preventDefault();
+																	removeTag(index, lastTag);
+																}
+															}
+														}}
+													/>
 												</div>
 												{(() => {
 													const draft = normalizeTagToken(
@@ -493,7 +508,10 @@ export function NotePropertiesPanel({
 																		key={tag}
 																		type="button"
 																		className="notePropertySuggestionChip"
-																		onClick={() => addTag(index, tag)}
+																		onMouseDown={(event) => {
+																			event.preventDefault();
+																			addTag(index, tag);
+																		}}
 																	>
 																		<span>{formatTagLabel(tag)}</span>
 																		<span className="notePropertySuggestionCount mono">
