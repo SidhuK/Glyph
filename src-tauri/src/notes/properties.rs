@@ -55,10 +55,71 @@ fn infer_string_kind(value: &str) -> &'static str {
     {
         return "date";
     }
-    if trimmed.contains('T') && (trimmed.ends_with('Z') || trimmed.contains('+')) {
+    if is_iso8601_datetime(trimmed) {
         return "datetime";
     }
     "text"
+}
+
+fn is_iso8601_datetime(value: &str) -> bool {
+    let bytes = value.as_bytes();
+    if bytes.len() < 20 {
+        return false;
+    }
+    let is_digit = |index: usize| bytes.get(index).is_some_and(u8::is_ascii_digit);
+    if !(is_digit(0)
+        && is_digit(1)
+        && is_digit(2)
+        && is_digit(3)
+        && bytes.get(4) == Some(&b'-')
+        && is_digit(5)
+        && is_digit(6)
+        && bytes.get(7) == Some(&b'-')
+        && is_digit(8)
+        && is_digit(9)
+        && bytes.get(10) == Some(&b'T')
+        && is_digit(11)
+        && is_digit(12)
+        && bytes.get(13) == Some(&b':')
+        && is_digit(14)
+        && is_digit(15)
+        && bytes.get(16) == Some(&b':')
+        && is_digit(17)
+        && is_digit(18))
+    {
+        return false;
+    }
+
+    let mut index = 19;
+    if bytes.get(index) == Some(&b'.') {
+        index += 1;
+        let fraction_start = index;
+        while bytes.get(index).is_some_and(u8::is_ascii_digit) {
+            index += 1;
+        }
+        if index == fraction_start {
+            return false;
+        }
+    }
+
+    match bytes.get(index) {
+        Some(b'Z') => index += 1,
+        Some(b'+') | Some(b'-') => {
+            index += 1;
+            if !(is_digit(index)
+                && is_digit(index + 1)
+                && bytes.get(index + 2) == Some(&b':')
+                && is_digit(index + 3)
+                && is_digit(index + 4))
+            {
+                return false;
+            }
+            index += 5;
+        }
+        _ => return false,
+    }
+
+    index == bytes.len()
 }
 
 fn yaml_value_to_property(key: &str, value: &Value) -> Result<NoteProperty, String> {
@@ -150,7 +211,9 @@ fn property_to_yaml_value(property: &NoteProperty) -> Result<Value, String> {
             }
             serde_yaml::from_str::<Value>(&raw).map_err(|e| e.to_string())
         }
-        _ => Ok(Value::String(property.value_text.clone().unwrap_or_default())),
+        _ => Ok(Value::String(
+            property.value_text.clone().unwrap_or_default(),
+        )),
     }
 }
 
@@ -222,14 +285,26 @@ tags:
 
         let properties = note_frontmatter_parse_properties(input).expect("should parse");
 
-        let title = properties.iter().find(|property| property.key == "title").unwrap();
+        let title = properties
+            .iter()
+            .find(|property| property.key == "title")
+            .unwrap();
         assert_eq!(title.kind, "text");
-        assert_eq!(title.value_text.as_deref(), Some("The Flawed V02 Max Craze"));
+        assert_eq!(
+            title.value_text.as_deref(),
+            Some("The Flawed V02 Max Craze")
+        );
 
-        let source = properties.iter().find(|property| property.key == "source").unwrap();
+        let source = properties
+            .iter()
+            .find(|property| property.key == "source")
+            .unwrap();
         assert_eq!(source.kind, "url");
 
-        let author = properties.iter().find(|property| property.key == "author").unwrap();
+        let author = properties
+            .iter()
+            .find(|property| property.key == "author")
+            .unwrap();
         assert_eq!(author.kind, "list");
         assert_eq!(author.value_list, vec!["[[Eric Topol]]".to_string()]);
 
@@ -239,10 +314,16 @@ tags:
             .unwrap();
         assert_eq!(published.kind, "date");
 
-        let created = properties.iter().find(|property| property.key == "created").unwrap();
+        let created = properties
+            .iter()
+            .find(|property| property.key == "created")
+            .unwrap();
         assert_eq!(created.kind, "date");
 
-        let tags = properties.iter().find(|property| property.key == "tags").unwrap();
+        let tags = properties
+            .iter()
+            .find(|property| property.key == "tags")
+            .unwrap();
         assert_eq!(tags.kind, "tags");
         assert_eq!(tags.value_list, vec!["clippings".to_string()]);
     }

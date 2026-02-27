@@ -3,10 +3,30 @@ import { useEffect } from "react";
 import { invoke } from "../../../lib/tauri";
 
 const INLINE_IMAGE_MAX_BYTES = 20 * 1024 * 1024;
+const INLINE_IMAGE_CACHE_MAX = 256;
 
 const dataUrlCache = new Map<string, string>();
 const missCache = new Set<string>();
 const inFlightCache = new Map<string, Promise<string | null>>();
+
+function trimOldestCacheEntries() {
+	while (dataUrlCache.size > INLINE_IMAGE_CACHE_MAX) {
+		const oldestKey = dataUrlCache.keys().next().value;
+		if (!oldestKey) break;
+		dataUrlCache.delete(oldestKey);
+	}
+	while (missCache.size > INLINE_IMAGE_CACHE_MAX) {
+		const oldestKey = missCache.values().next().value;
+		if (!oldestKey) break;
+		missCache.delete(oldestKey);
+	}
+}
+
+export function clearInlineImageHydrationCache() {
+	dataUrlCache.clear();
+	missCache.clear();
+	inFlightCache.clear();
+}
 
 function isDirectImageUrl(src: string): boolean {
 	return /^(https?:|data:|blob:|asset:|tauri:|file:|\/\/)/i.test(src);
@@ -53,6 +73,7 @@ async function resolveInlineImageDataUrl(
 			const relPath = await resolveVaultImagePath(sourcePath, rawSrc);
 			if (!relPath) {
 				missCache.add(key);
+				trimOldestCacheEntries();
 				return null;
 			}
 			const preview = await invoke("vault_read_binary_preview", {
@@ -61,12 +82,15 @@ async function resolveInlineImageDataUrl(
 			});
 			if (preview.truncated) {
 				missCache.add(key);
+				trimOldestCacheEntries();
 				return null;
 			}
 			dataUrlCache.set(key, preview.data_url);
+			trimOldestCacheEntries();
 			return preview.data_url;
 		} catch {
 			missCache.add(key);
+			trimOldestCacheEntries();
 			return null;
 		} finally {
 			inFlightCache.delete(key);
@@ -104,8 +128,8 @@ export function useHydrateInlineImages(
 				void resolveInlineImageDataUrl(sourcePath, originalSrc).then(
 					(dataUrl) => {
 						if (cancelled || !dataUrl) return;
-						image.setAttribute("src", dataUrl);
 						image.setAttribute("data-glyph-hydrated-key", key);
+						image.setAttribute("src", dataUrl);
 					},
 				);
 			}

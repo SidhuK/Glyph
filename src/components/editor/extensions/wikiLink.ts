@@ -44,7 +44,9 @@ function isImageTarget(target: string): boolean {
 		lower.endsWith(".gif") ||
 		lower.endsWith(".svg") ||
 		lower.endsWith(".bmp") ||
-		lower.endsWith(".avif")
+		lower.endsWith(".avif") ||
+		lower.endsWith(".tif") ||
+		lower.endsWith(".tiff")
 	);
 }
 
@@ -83,7 +85,27 @@ export const WikiLink = Node.create({
 		};
 	},
 	parseHTML() {
-		return [{ tag: 'span[data-wikilink="true"]' }];
+		return [
+			{ tag: 'span[data-wikilink="true"]' },
+			{
+				tag: 'img[data-wikilink-embed="true"]',
+				getAttrs: (element) => {
+					if (!(element instanceof HTMLElement)) return false;
+					const target =
+						element.getAttribute("data-target") ??
+						element.getAttribute("src") ??
+						"";
+					if (!target || !isImageTarget(target)) return false;
+					const alias = element.getAttribute("data-alias");
+					return {
+						raw: element.getAttribute("data-raw") ?? `![[${target}]]`,
+						target,
+						alias: alias && alias.length > 0 ? alias : null,
+						embed: true,
+					};
+				},
+			},
+		];
 	},
 	renderHTML({ node, HTMLAttributes }) {
 		const alias =
@@ -99,6 +121,10 @@ export const WikiLink = Node.create({
 				mergeAttributes(HTMLAttributes, {
 					src: target,
 					alt,
+					"data-wikilink": "true",
+					"data-target": node.attrs.target,
+					"data-alias": node.attrs.alias ?? "",
+					"data-raw": node.attrs.raw ?? "",
 					"data-wikilink-embed": "true",
 					class: "markdownImage wikiLinkEmbedImage",
 				}),

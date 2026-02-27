@@ -89,11 +89,7 @@ pub fn normalize_frontmatter_mapping(
     default_title: Option<&str>,
     preserve_created: Option<&str>,
 ) -> Mapping {
-    if get_string(&mapping, "id").is_none() {
-        set_value(&mut mapping, "id", Value::String(note_id.to_string()));
-    } else {
-        set_value(&mut mapping, "id", Value::String(note_id.to_string()));
-    }
+    set_value(&mut mapping, "id", Value::String(note_id.to_string()));
 
     if get_string(&mapping, "title").is_none() {
         set_value(

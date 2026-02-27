@@ -54,7 +54,7 @@ cd src-tauri && cargo clippy   # Lint Rust
 - TypeScript strict mode, no `any` (use `unknown` + narrowing). Biome handles formatting/imports.
 - Functional React components, hooks, lazy-load heavy components. State via Context (no prop drilling).
 - Rust: serde for serialization, tracing for logs, atomic writes via `io_atomic::write_atomic()`.
-- Max 200 LOC per file; refactor into subfolders as needed.
+- Aim for roughly 200 LOC per file; treat this as a guideline, not a hard rule. Don't obsess over landing exactly at 200, but do refactor into subfolders when a file is getting out of hand.
 - Use `paths::join_under()` for vault paths (prevent traversal). Never log secrets.
 - Use `net.rs` SSRF checks for user-supplied URLs. Version durable documents (`version: 1`).
 - New Tauri commands: implement in `src-tauri/src/`, register in `lib.rs`, add types to `TauriCommands` in `src/lib/tauri.ts`.

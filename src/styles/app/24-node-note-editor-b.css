@@ -161,7 +161,7 @@
 .notePropertyValueStatic {
 	color: var(--text-secondary);
 	min-width: 0;
-	word-break: break-word;
+	overflow-wrap: break-word;
 	font-size: 13px;
 	line-height: 1.45;
 }

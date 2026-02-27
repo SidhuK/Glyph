@@ -197,6 +197,10 @@ pub fn rebuild(vault_root: &Path) -> Result<IndexRebuildResult, String> {
         .map_err(|e| e.to_string())?;
     tx.execute("DELETE FROM note_properties", [])
         .map_err(|e| e.to_string())?;
+    tx.execute("DELETE FROM tasks", [])
+        .map_err(|e| e.to_string())?;
+    tx.execute("DELETE FROM tasks_fts", [])
+        .map_err(|e| e.to_string())?;
 
     let note_paths = collect_markdown_files(vault_root)?;
     let mut link_data: Vec<(String, HashSet<String>, HashSet<String>)> =

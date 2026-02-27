@@ -1,6 +1,6 @@
-mod analytics;
 mod ai_codex;
 mod ai_rig;
+mod analytics;
 mod glyph_fs;
 mod glyph_paths;
 mod index;
@@ -214,12 +214,7 @@ pub fn run() {
             {
                 if let Some(window) = app.get_webview_window("main") {
                     if let Err(e) =
-                        apply_vibrancy(
-                            &window,
-                            NSVisualEffectMaterial::Sidebar,
-                            None,
-                            Some(6.0),
-                        )
+                        apply_vibrancy(&window, NSVisualEffectMaterial::Sidebar, None, Some(6.0))
                     {
                         warn!("Failed to apply vibrancy to main window: {e}");
                     }
@@ -316,17 +311,17 @@ pub fn run() {
             vault_fs::summary::vault_dir_children_summary,
             vault_fs::summary::vault_dir_recent_entries,
             vault_fs::view_data::vault_folder_view_data,
-            vault_fs::read_write::vault_read_text,
-            vault_fs::read_write::vault_read_texts_batch,
-            vault_fs::read_write::vault_read_text_preview,
-            vault_fs::read_write::vault_read_binary_preview,
-            vault_fs::read_write::vault_write_text,
-            vault_fs::read_write::vault_open_or_create_text,
-            vault_fs::read_write::vault_create_dir,
-            vault_fs::read_write::vault_rename_path,
-            vault_fs::read_write::vault_delete_path,
-            vault_fs::read_write::vault_resolve_abs_path,
-            vault_fs::read_write::vault_relativize_path,
+            vault_fs::read_write::text::vault_read_text,
+            vault_fs::read_write::text::vault_read_texts_batch,
+            vault_fs::read_write::preview::vault_read_text_preview,
+            vault_fs::read_write::preview::vault_read_binary_preview,
+            vault_fs::read_write::text::vault_write_text,
+            vault_fs::read_write::text::vault_open_or_create_text,
+            vault_fs::read_write::paths::vault_create_dir,
+            vault_fs::read_write::paths::vault_rename_path,
+            vault_fs::read_write::paths::vault_delete_path,
+            vault_fs::read_write::paths::vault_resolve_abs_path,
+            vault_fs::read_write::paths::vault_relativize_path,
             glyph_fs::glyph_read_text,
             glyph_fs::glyph_write_text,
             notes::commands::notes_list,

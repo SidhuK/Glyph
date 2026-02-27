@@ -1,17 +1,23 @@
 import type { MarkdownToken } from "@tiptap/core";
 import Image from "@tiptap/extension-image";
 
+function getTokenField(
+	token: MarkdownToken,
+	field: "href" | "text" | "title" | "src" | "alt",
+): string | null {
+	const direct = (token as Record<string, unknown>)[field];
+	if (typeof direct === "string") return direct;
+	const attrs = token.attributes as Record<string, unknown> | undefined;
+	const attributeValue = attrs?.[field];
+	return typeof attributeValue === "string" ? attributeValue : null;
+}
+
 export const MarkdownImage = Image.extend({
 	parseMarkdown(token: MarkdownToken, helpers) {
-		const src = ((token as Record<string, unknown>).href ??
-			(token.attributes as Record<string, unknown> | undefined)?.src ??
-			"") as string;
-		const alt = ((token as Record<string, unknown>).text ??
-			(token.attributes as Record<string, unknown> | undefined)?.alt ??
-			null) as string | null;
-		const title = ((token as Record<string, unknown>).title ??
-			(token.attributes as Record<string, unknown> | undefined)?.title ??
-			null) as string | null;
+		const src =
+			getTokenField(token, "href") ?? getTokenField(token, "src") ?? "";
+		const alt = getTokenField(token, "text") ?? getTokenField(token, "alt");
+		const title = getTokenField(token, "title");
 		if (!src.trim()) {
 			return helpers.createTextNode(token.raw ?? token.text ?? "");
 		}
