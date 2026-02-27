@@ -45,7 +45,7 @@
 	justify-self: center;
 	padding: 3px;
 	height: 33px;
-	border-radius: 10px;
+	border-radius: var(--radius-md);
 	background: transparent;
 }
 
@@ -55,7 +55,7 @@
 	border: 0;
 	background: transparent;
 	color: var(--text-secondary);
-	border-radius: 8px;
+	border-radius: var(--radius-md);
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -72,7 +72,7 @@
 .tasksBucketPillBg {
 	position: absolute;
 	inset: 0;
-	border-radius: 8px;
+	border-radius: var(--radius-md);
 	background: var(--bg-hover);
 	z-index: 0;
 }

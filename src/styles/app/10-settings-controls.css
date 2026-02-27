@@ -54,17 +54,40 @@
 }
 
 .settingsField {
+	position: relative;
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	gap: 12px;
 	min-height: 40px;
-	padding: 7px 10px;
-	border-radius: 10px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 68%, transparent);
-	background: color-mix(in srgb, var(--bg-secondary) 42%, transparent);
+	padding: 9px 0;
+	border-radius: 0;
+	border: 0;
+	background: transparent;
 	transition: border-color var(--transition-base), background
 		var(--transition-base);
+}
+
+.settingsField::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	height: 1px;
+	background: linear-gradient(
+		90deg,
+		transparent 0%,
+		color-mix(in srgb, var(--border-light) 30%, transparent) 10%,
+		color-mix(in srgb, var(--border-light) 72%, transparent) 24%,
+		color-mix(in srgb, var(--border-light) 72%, transparent) 76%,
+		color-mix(in srgb, var(--border-light) 30%, transparent) 90%,
+		transparent 100%
+	);
+}
+
+.settingsCard .settingsField:last-of-type::after {
+	display: none;
 }
 
 .settingsField > div:first-child {
@@ -120,7 +143,7 @@
 		var(--bg-secondary)
 	);
 	border: 1px solid color-mix(in srgb, var(--border-default) 88%, transparent);
-	border-radius: 10px;
+	border-radius: var(--radius-md);
 	color: var(--text-primary);
 	padding: 0 32px 0 10px;
 	height: 32px;
@@ -225,7 +248,7 @@
 .settingsError {
 	margin: 0;
 	padding: 9px 10px;
-	border-radius: 10px;
+	border-radius: var(--radius-md);
 	border: 1px solid var(--status-danger-border);
 	background: var(--status-danger-bg);
 	color: var(--status-danger-fg);
@@ -303,7 +326,7 @@
 
 .codexRateLimitItem {
 	padding: 10px 12px;
-	border-radius: 10px;
+	border-radius: var(--radius-md);
 	border: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
 	background: color-mix(in srgb, var(--bg-secondary) 62%, transparent);
 }
@@ -432,7 +455,7 @@
 	display: inline-flex;
 	align-items: center;
 	padding: 2px;
-	border-radius: 9px;
+	border-radius: var(--radius-md);
 	border: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
 	background: color-mix(in srgb, var(--bg-secondary) 45%, transparent);
 	gap: 2px;
@@ -441,7 +464,7 @@
 .settingsSegmented button {
 	min-height: 28px;
 	padding: 0 10px;
-	border-radius: 7px;
+	border-radius: var(--radius-sm);
 	font-size: 11px;
 	color: var(--text-secondary);
 }

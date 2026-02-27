@@ -160,7 +160,7 @@
 .welcomeBrandIcon {
 	width: 40px;
 	height: 40px;
-	border-radius: 12px;
+	border-radius: var(--radius-md);
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;

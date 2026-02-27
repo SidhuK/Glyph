@@ -1,3 +1,5 @@
+import { CodesandboxIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { relaunch } from "@tauri-apps/plugin-process";
 import { check } from "@tauri-apps/plugin-updater";
@@ -111,9 +113,15 @@ export function AboutSettingsPane() {
 					<span className="aboutAppName">{appInfo?.name ?? "Glyph"}</span>
 					<span className="aboutVersion">{versionLabel}</span>
 				</div>
-				<span className="settingsPill aboutEarlyAccessBadge earlyAccessBadge">
-					Early Access
-				</span>
+				<div className="aboutStatusRow">
+					<span className="settingsPill aboutEarlyAccessBadge earlyAccessBadge">
+						Early Access
+					</span>
+					<span className="aboutOpenSourceMark" title="Open Source project">
+						<HugeiconsIcon icon={CodesandboxIcon} size={12} />
+						<span>Open Source</span>
+					</span>
+				</div>
 
 				<div className="aboutLinksRow">
 					<button

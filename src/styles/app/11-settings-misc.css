@@ -59,10 +59,10 @@
 	gap: 16px;
 	max-width: 560px;
 	text-align: center;
-	padding: 24px 20px;
-	border-radius: 16px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
-	background: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary));
+	width: min(560px, 100%);
+	padding: 18px 8px 12px;
+	border: 0;
+	background: transparent;
 }
 
 .aboutLogoWrap {
@@ -102,32 +102,72 @@
 	margin-top: -4px;
 }
 
-.aboutLinksRow {
+.aboutStatusRow {
 	display: inline-flex;
 	align-items: center;
-	gap: 10px;
+	gap: 8px;
+}
+
+.aboutOpenSourceMark {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	font-size: 10px;
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--text-tertiary);
+}
+
+.aboutLinksRow {
+	position: relative;
+	display: inline-flex;
+	align-items: center;
+	gap: 12px;
 	flex-wrap: wrap;
 	justify-content: center;
+	width: 100%;
+	padding-top: 10px;
+	border-top: 0;
+}
+
+.aboutLinksRow::before {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 0;
+	height: 1px;
+	background: linear-gradient(
+		90deg,
+		transparent 0%,
+		color-mix(in srgb, var(--border-light) 30%, transparent) 10%,
+		color-mix(in srgb, var(--border-light) 74%, transparent) 24%,
+		color-mix(in srgb, var(--border-light) 74%, transparent) 76%,
+		color-mix(in srgb, var(--border-light) 30%, transparent) 90%,
+		transparent 100%
+	);
 }
 
 .aboutLinksRow button {
-	background: color-mix(in srgb, var(--bg-secondary) 74%, transparent);
+	background: transparent;
 	color: var(--text-secondary);
 	font-size: 12px;
-	padding: 0 12px;
-	height: 30px;
-	border-radius: var(--radius-full);
-	border: 1px solid color-mix(in srgb, var(--border-light) 75%, transparent);
+	padding: 2px 4px;
+	height: auto;
+	border-radius: var(--radius-sm);
+	border: 0;
+	border-bottom: 1px solid transparent;
 }
 
 .aboutLinksRow button:hover {
 	color: var(--text-primary);
-	background: color-mix(
+	background: transparent;
+	border-bottom-color: color-mix(
 		in srgb,
-		var(--interactive-accent) 12%,
-		var(--bg-primary)
+		var(--interactive-accent) 30%,
+		transparent
 	);
-	border-color: color-mix(in srgb, var(--interactive-accent) 24%, transparent);
 }
 
 .aboutDot {
@@ -135,8 +175,14 @@
 }
 
 .aboutActionsRow {
-	margin-top: 8px;
+	margin-top: 2px;
 	gap: 12px;
+	border-top: 0;
+	padding-top: 0;
+}
+
+.aboutActionsRow::before {
+	display: none;
 }
 
 .aboutActionsRow button {
@@ -144,9 +190,9 @@
 	color: var(--text-primary);
 	height: 32px;
 	padding: 0 14px;
-	border-radius: var(--radius-full);
+	border-radius: var(--radius-md);
 	border: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
-	background: color-mix(in srgb, var(--bg-secondary) 72%, transparent);
+	background: transparent;
 }
 
 @media (max-width: 760px) {

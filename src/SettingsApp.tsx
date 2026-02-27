@@ -11,6 +11,7 @@ import {
 	useMemo,
 	useState,
 } from "react";
+import { X } from "./components/Icons";
 import {
 	FolderOpen,
 	InformationCircle,
@@ -22,6 +23,7 @@ import { AppearanceSettingsPane } from "./components/settings/AppearanceSettings
 import { DailyNotesSettingsPane } from "./components/settings/DailyNotesSettingsPane";
 import { GeneralSettingsPane } from "./components/settings/GeneralSettingsPane";
 import { VaultSettingsPane } from "./components/settings/VaultSettingsPane";
+import { Button } from "./components/ui/shadcn/button";
 import { onWindowDragMouseDown } from "./utils/window";
 
 type SettingsTab = "general" | "appearance" | "ai" | "vault" | "about";
@@ -105,6 +107,16 @@ export default function SettingsApp() {
 		void getCurrentWindow().close();
 	}, []);
 
+	useEffect(() => {
+		const onKeyDown = (event: KeyboardEvent) => {
+			if (event.key !== "Escape") return;
+			event.preventDefault();
+			closeWindow();
+		};
+		window.addEventListener("keydown", onKeyDown);
+		return () => window.removeEventListener("keydown", onKeyDown);
+	}, [closeWindow]);
+
 	const tabContent = useMemo(() => {
 		if (activeTab === "general") {
 			return (
@@ -130,17 +142,17 @@ export default function SettingsApp() {
 					data-tauri-drag-region
 					onMouseDown={onWindowDragMouseDown}
 				/>
-				<button
+				<Button
 					type="button"
 					className="settingsWindowClose"
+					variant="ghost"
+					size="icon-sm"
 					aria-label="Close settings"
-					title="Close settings"
+					title="Close settings (Esc)"
 					onClick={closeWindow}
 				>
-					<span className="settingsWindowCloseGlyph" aria-hidden>
-						×
-					</span>
-				</button>
+					<X size={14} />
+				</Button>
 
 				<main className="settingsMain">
 					<div className="settingsFrame">

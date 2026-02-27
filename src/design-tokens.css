@@ -89,27 +89,21 @@
 	--space-10: 40px;
 	--space-12: 48px;
 
-	/* Border radius - Modern rounded aesthetic */
-	--radius-sm: 4px;
-	--radius-md: 6px;
-	--radius-lg: 10px;
-	--radius-xl: 14px;
-	--radius-2xl: 22px;
-	--radius-3xl: 28px;
+	/* Border radius - flattened geometry */
+	--radius-sm: 3px;
+	--radius-md: 4px;
+	--radius-lg: 4px;
+	--radius-xl: 5px;
+	--radius-2xl: 6px;
+	--radius-3xl: 8px;
 	--radius-full: 9999px;
 
-	/* Shadows - Layered for depth */
-	--shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.06);
-	--shadow-md: 0 2px 4px rgba(0, 0, 0, 0.04), 0 4px 8px rgba(0, 0, 0, 0.06), 0
-		8px 16px rgba(0, 0, 0, 0.04);
-	--shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.04), 0 8px 16px rgba(0, 0, 0, 0.06), 0
-		16px 32px rgba(0, 0, 0, 0.08);
-	--shadow-xl: 0 8px 16px rgba(0, 0, 0, 0.06), 0 16px 32px rgba(0, 0, 0, 0.08),
-		0 32px 64px rgba(0, 0, 0, 0.1);
-
-	/* Floating panel shadows */
-	--shadow-float: 0 0 0 1px rgba(0, 0, 0, 0.04), 0 4px 8px rgba(0, 0, 0, 0.04),
-		0 12px 24px rgba(0, 0, 0, 0.06), 0 24px 48px rgba(0, 0, 0, 0.08);
+	/* Shadows - flattened visual language */
+	--shadow-sm: none;
+	--shadow-md: none;
+	--shadow-lg: none;
+	--shadow-xl: none;
+	--shadow-float: none;
 
 	/* Transitions */
 	--transition-fast: 100ms cubic-bezier(0.4, 0, 0.2, 1);
@@ -336,13 +330,12 @@
 		--scrollbar-thumb: rgba(255, 255, 255, 0.16);
 		--scrollbar-thumb-hover: rgba(255, 255, 255, 0.24);
 
-		/* Shadows - softer in dark mode */
-		--shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
-		--shadow-md: 0 2px 4px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15);
-		--shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 0, 0, 0.2);
-		--shadow-xl: 0 8px 16px rgba(0, 0, 0, 0.25), 0 24px 48px rgba(0, 0, 0, 0.3);
-		--shadow-float: 0 0 0 1px rgba(255, 255, 255, 0.06), 0 4px 12px
-			rgba(0, 0, 0, 0.3), 0 16px 32px rgba(0, 0, 0, 0.25);
+		/* Shadows - flattened visual language */
+		--shadow-sm: none;
+		--shadow-md: none;
+		--shadow-lg: none;
+		--shadow-xl: none;
+		--shadow-float: none;
 
 		/* Glass morphism - dark mode (neutral, no tint) */
 		--glass-bg: rgba(30, 30, 30, 0.55);
@@ -453,13 +446,12 @@
 	--scrollbar-thumb: rgba(255, 255, 255, 0.16);
 	--scrollbar-thumb-hover: rgba(255, 255, 255, 0.24);
 
-	/* Shadows - softer in dark mode */
-	--shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
-	--shadow-md: 0 2px 4px rgba(0, 0, 0, 0.2), 0 4px 12px rgba(0, 0, 0, 0.15);
-	--shadow-lg: 0 4px 8px rgba(0, 0, 0, 0.2), 0 8px 24px rgba(0, 0, 0, 0.2);
-	--shadow-xl: 0 8px 16px rgba(0, 0, 0, 0.25), 0 24px 48px rgba(0, 0, 0, 0.3);
-	--shadow-float: 0 0 0 1px rgba(255, 255, 255, 0.06), 0 4px 12px
-		rgba(0, 0, 0, 0.3), 0 16px 32px rgba(0, 0, 0, 0.25);
+	/* Shadows - flattened visual language */
+	--shadow-sm: none;
+	--shadow-md: none;
+	--shadow-lg: none;
+	--shadow-xl: none;
+	--shadow-float: none;
 
 	/* Glass morphism - dark mode (neutral, no tint) */
 	--glass-bg: rgba(30, 30, 30, 0.55);
