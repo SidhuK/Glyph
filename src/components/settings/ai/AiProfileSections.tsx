@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import type { AiModel, AiProfile } from "../../../lib/tauri";
 import { AiActiveProfileSection } from "./AiActiveProfileSection";
 import { AiApiKeySection } from "./AiApiKeySection";
@@ -30,6 +30,7 @@ export function AiProfileSections({
 	const [availableModels, setAvailableModels] = useState<AiModel[] | null>(
 		null,
 	);
+	const lastSavePromiseRef = useRef<Promise<void>>(Promise.resolve());
 
 	const { apiState, setApiKeyDraft, handleSetApiKey, handleClearApiKey } =
 		useApiKeySettings(activeProfileId);
@@ -53,7 +54,11 @@ export function AiProfileSections({
 	const persistDraft = useCallback(
 		async (nextDraft: AiProfile) => {
 			setProfileDraft(nextDraft);
-			await onSaveProfile(nextDraft);
+			const savePromise = lastSavePromiseRef.current
+				.catch(() => undefined)
+				.then(() => onSaveProfile(nextDraft));
+			lastSavePromiseRef.current = savePromise.catch(() => undefined);
+			await savePromise;
 		},
 		[onSaveProfile],
 	);

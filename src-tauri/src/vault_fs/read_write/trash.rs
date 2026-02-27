@@ -1,5 +1,7 @@
 use std::path::{Path, PathBuf};
 
+const CROSS_DEVICE_RENAME_ERRNO: i32 = 18;
+
 #[cfg(any(target_os = "macos", target_os = "linux"))]
 fn home_dir() -> Result<PathBuf, String> {
     std::env::var_os("HOME")
@@ -56,5 +58,35 @@ pub(super) fn move_path_to_trash(src: &Path) -> Result<(), String> {
     let trash_dir = resolve_trash_dir()?;
     std::fs::create_dir_all(&trash_dir).map_err(|e| e.to_string())?;
     let dest = unique_trash_dest(&trash_dir, src)?;
-    std::fs::rename(src, &dest).map_err(|e| e.to_string())
+    match std::fs::rename(src, &dest) {
+        Ok(()) => Ok(()),
+        Err(error) if error.raw_os_error() == Some(CROSS_DEVICE_RENAME_ERRNO) => {
+            copy_path_recursive(src, &dest)?;
+            if src.is_dir() {
+                std::fs::remove_dir_all(src).map_err(|e| e.to_string())
+            } else {
+                std::fs::remove_file(src).map_err(|e| e.to_string())
+            }
+        }
+        Err(error) => Err(error.to_string()),
+    }
+}
+
+fn copy_path_recursive(src: &Path, dest: &Path) -> Result<(), String> {
+    if src.is_dir() {
+        std::fs::create_dir_all(dest).map_err(|e| e.to_string())?;
+        for entry in std::fs::read_dir(src).map_err(|e| e.to_string())? {
+            let entry = entry.map_err(|e| e.to_string())?;
+            let entry_src = entry.path();
+            let entry_dest = dest.join(entry.file_name());
+            copy_path_recursive(&entry_src, &entry_dest)?;
+        }
+        return Ok(());
+    }
+
+    if let Some(parent) = dest.parent() {
+        std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+    }
+    std::fs::copy(src, dest).map_err(|e| e.to_string())?;
+    Ok(())
 }

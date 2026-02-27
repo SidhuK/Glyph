@@ -124,7 +124,6 @@ fn index_note_with_conn(
 
     tx.execute("DELETE FROM tags WHERE note_id = ?", [note_id])
         .map_err(|e| e.to_string())?;
-    delete_note_properties(&tx, note_id)?;
 
     for tag in parse_all_tags(markdown) {
         tx.execute(
@@ -133,7 +132,14 @@ fn index_note_with_conn(
         )
         .map_err(|e| e.to_string())?;
     }
-    reindex_note_properties(&tx, note_id, markdown)?;
+    if let Err(error) = reindex_note_properties(&tx, note_id, markdown) {
+        tracing::warn!(
+            note_id = note_id,
+            rel_path = rel_path,
+            error = %error,
+            "Skipping note property indexing after frontmatter parse error"
+        );
+    }
     reindex_note_tasks(&tx, note_id, &rel_path, &updated, &etag, markdown)?;
 
     let (to_ids, to_titles) = parse_outgoing_links(note_id, markdown);
@@ -246,7 +252,14 @@ pub fn rebuild(vault_root: &Path) -> Result<IndexRebuildResult, String> {
             )
             .map_err(|e| e.to_string())?;
         }
-        reindex_note_properties(&tx, rel, &markdown)?;
+        if let Err(error) = reindex_note_properties(&tx, rel, &markdown) {
+            tracing::warn!(
+                note_id = rel,
+                rel_path = rel,
+                error = %error,
+                "Skipping note property indexing during rebuild after frontmatter parse error"
+            );
+        }
         reindex_note_tasks(&tx, rel, rel, &updated, &etag, &markdown)?;
 
         let (to_ids, to_titles) = parse_outgoing_links(rel, &markdown);

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { resolveActiveProfileId } from "../../lib/aiProfiles";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { type AiProfile, invoke } from "../../lib/tauri";
@@ -10,6 +10,7 @@ export function useAiProfiles() {
 		null,
 	);
 	const [error, setError] = useState("");
+	const lastSetRequestIdRef = useRef(0);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -65,11 +66,13 @@ export function useAiProfiles() {
 	const setActive = useCallback(
 		async (id: string | null) => {
 			const previous = activeProfileId;
+			const requestId = ++lastSetRequestIdRef.current;
 			setActiveProfileId(id);
 			setError("");
 			try {
 				await invoke("ai_active_profile_set", { id });
 			} catch (e) {
+				if (requestId !== lastSetRequestIdRef.current) return;
 				setActiveProfileId(previous);
 				setError(extractErrorMessage(e));
 			}

@@ -12,12 +12,12 @@ interface NotePropertyRowProps {
 	readOnly: boolean;
 	availableTags: TagCount[];
 	tagDraft: string;
-	onSetTagDraft: (index: number, value: string) => void;
-	onAddTag: (index: number, rawValue: string) => void;
+	onSetTagDraft: (rowId: string, value: string) => void;
+	onAddTag: (rowId: string, index: number, rawValue: string) => void;
 	onRemoveTag: (index: number, tag: string) => void;
 	onUpdate: (index: number, patch: Partial<NoteProperty>) => void;
 	onRemove: (index: number) => void;
-	onSetTagInputRef: (index: number, node: HTMLInputElement | null) => void;
+	onSetTagInputRef: (rowId: string, node: HTMLInputElement | null) => void;
 	tagInputRef: HTMLInputElement | null;
 }
 
@@ -37,7 +37,7 @@ export function NotePropertyRow({
 	tagInputRef,
 }: NotePropertyRowProps) {
 	return (
-		<div key={rowId} className="notePropertyRow">
+		<div className="notePropertyRow">
 			{readOnly ? (
 				<>
 					<div className="notePropertyIdentity">
@@ -46,6 +46,7 @@ export function NotePropertyRow({
 					</div>
 					<div className="notePropertyValueStatic">
 						<NotePropertyValueField
+							rowId={rowId}
 							index={index}
 							property={property}
 							readOnly
@@ -77,6 +78,7 @@ export function NotePropertyRow({
 					</div>
 					<div className="notePropertyValue">
 						<NotePropertyValueField
+							rowId={rowId}
 							index={index}
 							property={property}
 							readOnly={false}

@@ -127,7 +127,7 @@ export function useHydrateInlineImages(
 				if (image.getAttribute("data-glyph-hydrated-key") === key) continue;
 				void resolveInlineImageDataUrl(sourcePath, originalSrc).then(
 					(dataUrl) => {
-						if (cancelled || !dataUrl) return;
+						if (cancelled || !dataUrl || !image.isConnected) return;
 						image.setAttribute("data-glyph-hydrated-key", key);
 						image.setAttribute("src", dataUrl);
 					},

@@ -72,10 +72,7 @@ pub fn reindex_note_properties(
     Ok(())
 }
 
-pub fn delete_note_properties(
-    tx: &rusqlite::Transaction<'_>,
-    note_id: &str,
-) -> Result<(), String> {
+pub fn delete_note_properties(tx: &rusqlite::Transaction<'_>, note_id: &str) -> Result<(), String> {
     tx.execute("DELETE FROM note_properties WHERE note_id = ?", [note_id])
         .map_err(|e| e.to_string())?;
     Ok(())

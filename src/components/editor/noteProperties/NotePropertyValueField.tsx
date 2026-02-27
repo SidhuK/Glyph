@@ -9,20 +9,22 @@ import {
 } from "./utils";
 
 interface NotePropertyValueFieldProps {
+	rowId: string;
 	index: number;
 	property: NoteProperty;
 	readOnly: boolean;
 	availableTags: TagCount[];
 	tagDraft: string;
-	onSetTagDraft: (index: number, value: string) => void;
-	onAddTag: (index: number, rawValue: string) => void;
+	onSetTagDraft: (rowId: string, value: string) => void;
+	onAddTag: (rowId: string, index: number, rawValue: string) => void;
 	onRemoveTag: (index: number, tag: string) => void;
 	onUpdate: (index: number, patch: Partial<NoteProperty>) => void;
-	onSetTagInputRef: (index: number, node: HTMLInputElement | null) => void;
+	onSetTagInputRef: (rowId: string, node: HTMLInputElement | null) => void;
 	tagInputRef: HTMLInputElement | null;
 }
 
 export function NotePropertyValueField({
+	rowId,
 	index,
 	property,
 	readOnly,
@@ -39,8 +41,11 @@ export function NotePropertyValueField({
 		if (property.kind === "tags" || property.kind === "list") {
 			return (
 				<div className="notePropertyPills">
-					{property.value_list.map((value) => (
-						<span key={value} className="notePropertyPill">
+					{property.value_list.map((value, valueIndex) => (
+						<span
+							key={`${property.key || rowId}-${valueIndex}-${value}`}
+							className="notePropertyPill"
+						>
 							{property.kind === "tags" ? formatTagLabel(value) : value}
 						</span>
 					))}
@@ -84,9 +89,9 @@ export function NotePropertyValueField({
 						tagInputRef?.focus();
 					}}
 				>
-					{property.value_list.map((value) => (
+					{property.value_list.map((value, valueIndex) => (
 						<button
-							key={value}
+							key={`${property.key || rowId}-${valueIndex}-${value}`}
 							type="button"
 							className="notePropertyToken"
 							onClick={() => onRemoveTag(index, value)}
@@ -97,17 +102,17 @@ export function NotePropertyValueField({
 						</button>
 					))}
 					<input
-						ref={(node) => onSetTagInputRef(index, node)}
+						ref={(node) => onSetTagInputRef(rowId, node)}
 						type="text"
 						className="notePropertyTagInput"
 						value={tagDraft}
 						placeholder={property.value_list.length > 0 ? "" : "Add a tag"}
-						onChange={(event) => onSetTagDraft(index, event.target.value)}
-						onBlur={() => onAddTag(index, tagDraft)}
+						onChange={(event) => onSetTagDraft(rowId, event.target.value)}
+						onBlur={() => onAddTag(rowId, index, tagDraft)}
 						onKeyDown={(event) => {
 							if (event.key === "Enter" || event.key === ",") {
 								event.preventDefault();
-								onAddTag(index, tagDraft);
+								onAddTag(rowId, index, tagDraft);
 								return;
 							}
 							if (event.key !== "Backspace" || tagDraft.length > 0) {
@@ -132,7 +137,7 @@ export function NotePropertyValueField({
 									className="notePropertySuggestionChip"
 									onMouseDown={(event) => {
 										event.preventDefault();
-										onAddTag(index, tag);
+										onAddTag(rowId, index, tag);
 									}}
 								>
 									<span>{formatTagLabel(tag)}</span>
@@ -162,8 +167,11 @@ export function NotePropertyValueField({
 					}
 				/>
 				<div className="notePropertyPills">
-					{property.value_list.map((value) => (
-						<span key={value} className="notePropertyPill">
+					{property.value_list.map((value, valueIndex) => (
+						<span
+							key={`${property.key || rowId}-${valueIndex}-${value}`}
+							className="notePropertyPill"
+						>
 							{value}
 						</span>
 					))}
@@ -192,9 +200,11 @@ export function NotePropertyValueField({
 					? "number"
 					: property.kind === "date"
 						? "date"
-						: property.kind === "url"
-							? "url"
-							: "text"
+						: property.kind === "datetime"
+							? "text"
+							: property.kind === "url"
+								? "url"
+								: "text"
 			}
 			value={property.value_text ?? ""}
 			placeholder="Value"

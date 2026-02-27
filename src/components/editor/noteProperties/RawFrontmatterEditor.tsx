@@ -1,6 +1,11 @@
 interface RawFrontmatterEditorProps {
 	value: string;
 	readOnly: boolean;
+	/**
+	 * Provides both the normalized frontmatter value and the raw editor text.
+	 * `value` is trimmed and becomes `null` when the editor is empty, while
+	 * `rawText` preserves the original whitespace exactly as typed.
+	 */
 	onChange: (value: string | null, rawText: string) => void;
 }
 

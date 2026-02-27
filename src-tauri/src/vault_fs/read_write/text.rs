@@ -1,4 +1,4 @@
-use std::{ffi::OsStr, path::PathBuf};
+use std::{ffi::OsStr, io::Write, path::PathBuf};
 use tauri::State;
 
 use crate::{index, io_atomic, paths, vault::VaultState};
@@ -136,7 +136,22 @@ pub async fn vault_open_or_create_text(
         if let Some(parent) = abs.parent() {
             std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
         }
-        io_atomic::write_atomic(&abs, text.as_bytes()).map_err(|e| e.to_string())?;
+        match std::fs::OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&abs)
+        {
+            Ok(mut file) => {
+                file.write_all(text.as_bytes()).map_err(|e| e.to_string())?;
+            }
+            Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => {
+                return Ok(OpenOrCreateTextResult {
+                    created: false,
+                    mtime_ms: file_mtime_ms(&abs),
+                });
+            }
+            Err(error) => return Err(error.to_string()),
+        }
         Ok(OpenOrCreateTextResult {
             created: true,
             mtime_ms: file_mtime_ms(&abs),

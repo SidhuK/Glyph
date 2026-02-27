@@ -38,6 +38,12 @@ pub async fn vault_read_text_preview(
         let rel = PathBuf::from(&path);
         deny_hidden_rel_path(&rel)?;
         let abs = paths::join_under(&root, &rel)?;
+        if !abs.exists() {
+            return Err("path does not exist".to_string());
+        }
+        if !abs.is_file() {
+            return Err("path is not a file".to_string());
+        }
         let total_bytes = std::fs::metadata(&abs).map_err(|e| e.to_string())?.len();
         let requested = max_bytes
             .map(|value| value as u64)

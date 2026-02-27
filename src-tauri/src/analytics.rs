@@ -1,4 +1,7 @@
-use std::{collections::BTreeSet, time::{SystemTime, UNIX_EPOCH}};
+use std::{
+    collections::BTreeSet,
+    time::{SystemTime, UNIX_EPOCH},
+};
 
 use serde::Deserialize;
 use serde_json::{Map, Value};
@@ -106,9 +109,7 @@ impl AnalyticsEventName {
             Self::AppStarted => BTreeSet::from(["has_previous_vault"]),
             Self::VaultOpened => BTreeSet::from(["source", "vault_schema_version"]),
             Self::IndexRebuildStarted => BTreeSet::new(),
-            Self::SearchExecuted => {
-                BTreeSet::from(["query_length_bucket", "result_count_bucket"])
-            }
+            Self::SearchExecuted => BTreeSet::from(["query_length_bucket", "result_count_bucket"]),
             Self::NoteCreated => BTreeSet::from(["entrypoint"]),
             Self::AiChatStarted => BTreeSet::from(["provider", "mode", "has_context"]),
             Self::SettingsChanged => BTreeSet::from(["setting_key", "new_value"]),

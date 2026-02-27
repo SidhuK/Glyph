@@ -58,7 +58,8 @@ function toEpochMs(timestamp: number | null): number | null {
 function formatCountdown(targetEpochMs: number, nowMs: number): string {
 	const diffMs = Math.max(0, targetEpochMs - nowMs);
 	const totalMinutes = Math.ceil(diffMs / 60_000);
-	if (totalMinutes <= 1) return "<1m";
+	if (totalMinutes === 0) return "<1m";
+	if (totalMinutes === 1) return "1m";
 	const days = Math.floor(totalMinutes / 1_440);
 	const hours = Math.floor((totalMinutes % 1_440) / 60);
 	const minutes = totalMinutes % 60;

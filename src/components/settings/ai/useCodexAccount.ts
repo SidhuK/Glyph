@@ -1,5 +1,5 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { type AiProfile, invoke } from "../../../lib/tauri";
 import {
 	CODEX_RATE_LIMIT_REFRESH_MS,
@@ -61,8 +61,10 @@ export function useCodexAccount(provider: AiProfile["provider"] | undefined) {
 	});
 	const [nowMs, setNowMs] = useState(() => Date.now());
 	const isCodexProvider = provider === "codex_chatgpt";
+	const latestRefreshIdRef = useRef(0);
 
 	const refreshCodexAccount = useCallback(async () => {
+		const requestId = ++latestRefreshIdRef.current;
 		setCodexState((prev) => ({ ...prev, loading: true, error: "" }));
 		try {
 			const info = await invoke("codex_account_read");
@@ -111,6 +113,7 @@ export function useCodexAccount(provider: AiProfile["provider"] | undefined) {
 			} catch {
 				// Non-fatal for account status.
 			}
+			if (requestId !== latestRefreshIdRef.current) return;
 			setCodexState({
 				status: info.status,
 				email: info.email ?? null,
@@ -121,6 +124,7 @@ export function useCodexAccount(provider: AiProfile["provider"] | undefined) {
 				loading: false,
 			});
 		} catch (error) {
+			if (requestId !== latestRefreshIdRef.current) return;
 			setCodexState((prev) => ({
 				...prev,
 				error: errMessage(error),
@@ -157,8 +161,10 @@ export function useCodexAccount(provider: AiProfile["provider"] | undefined) {
 			await openUrl(started.auth_url);
 			try {
 				await invoke("codex_login_complete", { flow_id: started.flow_id });
-			} catch {
-				// Completion may be async depending on provider callback timing.
+			} catch (error) {
+				if (!/pending/i.test(errMessage(error))) {
+					throw error;
+				}
 			}
 			await refreshCodexAccount();
 		} catch (error) {

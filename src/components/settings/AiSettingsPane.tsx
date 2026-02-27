@@ -11,6 +11,7 @@ export function AiSettingsPane() {
 	const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
 	const [error, setError] = useState("");
 	const saveProfileRequestIdRef = useRef(0);
+	const activeProfileChangeRequestIdRef = useRef(0);
 
 	const activeProfile = useMemo(() => {
 		if (!activeProfileId) return null;
@@ -99,11 +100,13 @@ export function AiSettingsPane() {
 	const onActiveProfileChange = useCallback(
 		async (id: string | null) => {
 			const previous = activeProfileId;
+			const requestId = ++activeProfileChangeRequestIdRef.current;
 			setActiveProfileId(id);
 			setError("");
 			try {
 				await invoke("ai_active_profile_set", { id });
 			} catch (e) {
+				if (requestId !== activeProfileChangeRequestIdRef.current) return;
 				setActiveProfileId(previous);
 				setError(errMessage(e));
 			}

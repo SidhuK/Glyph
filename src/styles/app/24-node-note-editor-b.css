@@ -195,7 +195,8 @@
 	background: color-mix(in srgb, var(--bg-primary) 72%, transparent);
 }
 
-.notePropertyKindTrigger:hover {
+.notePropertyKindTrigger:hover,
+.notePropertyKindTrigger:focus-visible {
 	background: color-mix(
 		in srgb,
 		var(--interactive-accent) 8%,
@@ -277,7 +278,8 @@
 	cursor: pointer;
 }
 
-.notePropertyToken:hover {
+.notePropertyToken:hover,
+.notePropertyToken:focus-visible {
 	background: color-mix(in srgb, var(--interactive-accent) 14%, transparent);
 }
 
@@ -360,7 +362,8 @@
 	cursor: pointer;
 }
 
-.notePropertySuggestionChip:hover {
+.notePropertySuggestionChip:hover,
+.notePropertySuggestionChip:focus-visible {
 	border-color: color-mix(in srgb, var(--interactive-accent) 20%, transparent);
 	color: var(--text-primary);
 	background: color-mix(in srgb, var(--interactive-accent) 8%, transparent);
@@ -416,7 +419,8 @@
 	margin-top: 0;
 }
 
-.notePropertyRemoveButton:hover {
+.notePropertyRemoveButton:hover,
+.notePropertyRemoveButton:focus-visible {
 	opacity: 1;
 	background: color-mix(in srgb, var(--status-danger-bg) 44%, transparent);
 	color: var(--status-danger-fg);

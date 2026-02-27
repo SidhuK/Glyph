@@ -30,12 +30,29 @@ export function NotePropertiesPanel({
 	const [propertyRowIds, setPropertyRowIds] = useState<string[]>([]);
 	const [rawDraft, setRawDraft] = useState(frontmatter ?? "");
 	const [availableTags, setAvailableTags] = useState<TagCount[]>([]);
-	const [tagDrafts, setTagDrafts] = useState<Record<number, string>>({});
+	const [tagDrafts, setTagDrafts] = useState<Record<string, string>>({});
 	const lastCommittedFrontmatterRef = useRef<string | null>(null);
 	const propertyRowIdCounterRef = useRef(0);
-	const tagInputRefs = useRef<Record<number, HTMLInputElement | null>>({});
+	const tagInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 	const parseRequestIdRef = useRef(0);
 	const renderRequestIdRef = useRef(0);
+
+	const pruneRowScopedState = (nextRowIds: string[]) => {
+		setTagDrafts((current) =>
+			Object.fromEntries(
+				nextRowIds.flatMap((rowId) =>
+					rowId in current ? [[rowId, current[rowId] ?? ""]] : [],
+				),
+			),
+		);
+		tagInputRefs.current = Object.fromEntries(
+			nextRowIds.flatMap((rowId) =>
+				rowId in tagInputRefs.current
+					? [[rowId, tagInputRefs.current[rowId] ?? null]]
+					: [],
+			),
+		);
+	};
 
 	useEffect(() => {
 		if (mode === "raw") {
@@ -52,9 +69,12 @@ export function NotePropertiesPanel({
 			.then((parsed) => {
 				if (requestId !== parseRequestIdRef.current) return;
 				setProperties(parsed);
-				setPropertyRowIds(
-					parsed.map(() => `property-row-${propertyRowIdCounterRef.current++}`),
+				const nextRowIds = parsed.map(
+					() => `property-row-${propertyRowIdCounterRef.current++}`,
 				);
+				setPropertyRowIds(nextRowIds);
+				setTagDrafts({});
+				tagInputRefs.current = {};
 				lastCommittedFrontmatterRef.current = frontmatter ?? null;
 				onErrorChange?.("");
 			})
@@ -84,6 +104,7 @@ export function NotePropertiesPanel({
 		const requestId = ++renderRequestIdRef.current;
 		setProperties(nextProperties);
 		setPropertyRowIds(nextRowIds);
+		pruneRowScopedState(nextRowIds);
 		void invoke("note_frontmatter_render_properties", {
 			properties: nextProperties,
 		})
@@ -128,64 +149,78 @@ export function NotePropertiesPanel({
 				/>
 			) : (
 				<div className="notePropertiesList">
-					{properties.map((property, index) => (
-						<NotePropertyRow
-							key={propertyRowIds[index] ?? `property-row-fallback-${index}`}
-							rowId={propertyRowIds[index] ?? `property-row-fallback-${index}`}
-							index={index}
-							property={property}
-							readOnly={readOnly}
-							availableTags={availableTags}
-							tagDraft={tagDrafts[index] ?? ""}
-							onSetTagDraft={(propertyIndex, value) =>
-								setTagDrafts((current) => ({
-									...current,
-									[propertyIndex]: value,
-								}))
-							}
-							onAddTag={(propertyIndex, rawValue) => {
-								const nextTag = normalizeTagToken(rawValue);
-								if (!nextTag) return;
-								const currentTags = properties[propertyIndex]?.value_list ?? [];
-								if (currentTags.includes(nextTag)) {
+					{properties.map((property, index) => {
+						const rowId =
+							propertyRowIds[index] ?? `property-row-fallback-${index}`;
+						return (
+							<NotePropertyRow
+								key={rowId}
+								rowId={rowId}
+								index={index}
+								property={property}
+								readOnly={readOnly}
+								availableTags={availableTags}
+								tagDraft={tagDrafts[rowId] ?? ""}
+								onSetTagDraft={(nextRowId, value) =>
 									setTagDrafts((current) => ({
 										...current,
-										[propertyIndex]: "",
-									}));
-									return;
+										[nextRowId]: value,
+									}))
 								}
-								updateProperty(propertyIndex, {
-									value_list: [...currentTags, nextTag],
-								});
-								setTagDrafts((current) => ({
-									...current,
-									[propertyIndex]: "",
-								}));
-							}}
-							onRemoveTag={(propertyIndex, tag) =>
-								updateProperty(propertyIndex, {
-									value_list: (
-										properties[propertyIndex]?.value_list ?? []
-									).filter((currentTag) => currentTag !== tag),
-								})
-							}
-							onUpdate={updateProperty}
-							onRemove={(propertyIndex) =>
-								commitProperties(
-									properties.filter(
-										(_, currentIndex) => currentIndex !== propertyIndex,
-									),
-									propertyRowIds.filter(
-										(_, currentIndex) => currentIndex !== propertyIndex,
-									),
-								)
-							}
-							onSetTagInputRef={(propertyIndex, node) => {
-								tagInputRefs.current[propertyIndex] = node;
-							}}
-							tagInputRef={tagInputRefs.current[index] ?? null}
-						/>
-					))}
+								onAddTag={(nextRowId, propertyIndex, rawValue) => {
+									const nextTag = normalizeTagToken(rawValue);
+									if (!nextTag) return;
+									const currentTags =
+										properties[propertyIndex]?.value_list ?? [];
+									if (currentTags.includes(nextTag)) {
+										setTagDrafts((current) => ({
+											...current,
+											[nextRowId]: "",
+										}));
+										return;
+									}
+									updateProperty(propertyIndex, {
+										value_list: [...currentTags, nextTag],
+									});
+									setTagDrafts((current) => ({
+										...current,
+										[nextRowId]: "",
+									}));
+								}}
+								onRemoveTag={(propertyIndex, tag) =>
+									updateProperty(propertyIndex, {
+										value_list: (
+											properties[propertyIndex]?.value_list ?? []
+										).filter((currentTag) => currentTag !== tag),
+									})
+								}
+								onUpdate={updateProperty}
+								onRemove={(propertyIndex) => {
+									const removedRowId = propertyRowIds[propertyIndex];
+									if (removedRowId) {
+										setTagDrafts((current) => {
+											const next = { ...current };
+											delete next[removedRowId];
+											return next;
+										});
+										delete tagInputRefs.current[removedRowId];
+									}
+									commitProperties(
+										properties.filter(
+											(_, currentIndex) => currentIndex !== propertyIndex,
+										),
+										propertyRowIds.filter(
+											(_, currentIndex) => currentIndex !== propertyIndex,
+										),
+									);
+								}}
+								onSetTagInputRef={(nextRowId, node) => {
+									tagInputRefs.current[nextRowId] = node;
+								}}
+								tagInputRef={tagInputRefs.current[rowId] ?? null}
+							/>
+						);
+					})}
 					{!readOnly ? (
 						<Button
 							type="button"
