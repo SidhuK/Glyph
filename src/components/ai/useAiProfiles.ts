@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { resolveActiveProfileId } from "../../lib/aiProfiles";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { type AiProfile, invoke } from "../../lib/tauri";
 
@@ -9,6 +10,7 @@ export function useAiProfiles() {
 		null,
 	);
 	const [error, setError] = useState("");
+	const lastSetRequestIdRef = useRef(0);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -21,10 +23,10 @@ export function useAiProfiles() {
 				]);
 				if (cancelled) return;
 				setProfiles(list);
-				const nextActive = active ?? list[0]?.id ?? null;
+				const nextActive = resolveActiveProfileId(list, active);
 				setActiveProfileId(nextActive);
-				if (!active && list[0]?.id) {
-					await invoke("ai_active_profile_set", { id: list[0].id });
+				if (active !== nextActive && nextActive) {
+					await invoke("ai_active_profile_set", { id: nextActive });
 				}
 			} catch (e) {
 				if (!cancelled) setError(extractErrorMessage(e));
@@ -61,15 +63,22 @@ export function useAiProfiles() {
 		return profiles.find((p) => p.id === activeProfileId) ?? null;
 	}, [activeProfileId, profiles]);
 
-	const setActive = useCallback(async (id: string | null) => {
-		setActiveProfileId(id);
-		setError("");
-		try {
-			await invoke("ai_active_profile_set", { id });
-		} catch (e) {
-			setError(extractErrorMessage(e));
-		}
-	}, []);
+	const setActive = useCallback(
+		async (id: string | null) => {
+			const previous = activeProfileId;
+			const requestId = ++lastSetRequestIdRef.current;
+			setActiveProfileId(id);
+			setError("");
+			try {
+				await invoke("ai_active_profile_set", { id });
+			} catch (e) {
+				if (requestId !== lastSetRequestIdRef.current) return;
+				setActiveProfileId(previous);
+				setError(extractErrorMessage(e));
+			}
+		},
+		[activeProfileId],
+	);
 
 	const setModel = useCallback(
 		async (modelId: string) => {

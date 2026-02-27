@@ -8,6 +8,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { clearInlineImageHydrationCache } from "../components/editor/hooks/useHydrateInlineImages";
 import { trackIndexRebuildStarted, trackVaultOpened } from "../lib/analytics";
 import {
 	clearCurrentVaultPath,
@@ -129,6 +130,7 @@ export function VaultProvider({ children }: { children: ReactNode }) {
 				if (vaultPath) {
 					await invoke("vault_close");
 					await clearCurrentVaultPath();
+					clearInlineImageHydrationCache();
 					setVaultPath(null);
 					setVaultSchemaVersion(null);
 				}
@@ -164,6 +166,7 @@ export function VaultProvider({ children }: { children: ReactNode }) {
 		try {
 			await invoke("vault_close");
 			await clearCurrentVaultPath();
+			clearInlineImageHydrationCache();
 			setVaultPath(null);
 			setVaultSchemaVersion(null);
 		} catch (err) {

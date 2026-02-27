@@ -4,6 +4,7 @@ mod frontmatter;
 mod helpers;
 mod indexer;
 mod links;
+mod properties;
 mod schema;
 mod search_advanced;
 mod search_hybrid;

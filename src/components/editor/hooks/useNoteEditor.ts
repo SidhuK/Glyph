@@ -16,6 +16,7 @@ import {
 	preprocessMarkdownForEditor,
 } from "../markdown/wikiLinkMarkdownBridge";
 import type { CanvasInlineEditorMode } from "../types";
+import { useHydrateInlineImages } from "./useHydrateInlineImages";
 
 function normalizeBody(markdown: string): string {
 	return markdown.replace(/\u00a0/g, " ").replace(/&nbsp;/g, " ");
@@ -161,6 +162,8 @@ export function useNoteEditor({
 		lastAppliedBodyRef.current = editorBody;
 		lastEmittedMarkdownRef.current = markdown;
 	}, [editor, editorBody, markdown]);
+
+	useHydrateInlineImages(editor, relPath);
 
 	return {
 		editor,

@@ -285,7 +285,7 @@
 .markdownEditorPane .frontmatterPreview {
 	width: var(--readable-content-outer-width);
 	box-sizing: border-box;
-	padding-inline: var(--readable-content-gutter);
+	padding-inline: clamp(10px, 1.6vw, 16px);
 }
 
 .markdownEditorPane .editorBacklinks {

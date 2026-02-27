@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { resolveActiveProfileId } from "../../lib/aiProfiles";
 import { loadSettings, setAiEnabled } from "../../lib/settings";
 import { type AiProfile, invoke } from "../../lib/tauri";
 import { AiProfileSections } from "./ai/AiProfileSections";
@@ -9,6 +10,8 @@ export function AiSettingsPane() {
 	const [profiles, setProfiles] = useState<AiProfile[]>([]);
 	const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
 	const [error, setError] = useState("");
+	const saveProfileRequestIdRef = useRef(0);
+	const activeProfileChangeRequestIdRef = useRef(0);
 
 	const activeProfile = useMemo(() => {
 		if (!activeProfileId) return null;
@@ -29,10 +32,10 @@ export function AiSettingsPane() {
 				]);
 				if (cancelled) return;
 				setProfiles(list);
-				const id = active ?? list[0]?.id ?? null;
+				const id = resolveActiveProfileId(list, active);
 				setActiveProfileId(id);
-				if (!active && list[0]?.id) {
-					await invoke("ai_active_profile_set", { id: list[0].id });
+				if (active !== id && id) {
+					await invoke("ai_active_profile_set", { id });
 				}
 			} catch (e) {
 				if (!cancelled) setError(errMessage(e));
@@ -77,28 +80,55 @@ export function AiSettingsPane() {
 	}, []);
 
 	const saveProfile = useCallback(async (draft: AiProfile) => {
+		const requestId = ++saveProfileRequestIdRef.current;
 		setError("");
 		try {
 			const saved = await invoke("ai_profile_upsert", {
 				profile: draft,
 			});
+			if (requestId !== saveProfileRequestIdRef.current) return;
+			await invoke("ai_active_profile_set", { id: saved.id });
+			if (requestId !== saveProfileRequestIdRef.current) return;
 			setProfiles((prev) => prev.map((p) => (p.id === saved.id ? saved : p)));
 			setActiveProfileId(saved.id);
 		} catch (e) {
+			if (requestId !== saveProfileRequestIdRef.current) return;
 			setError(errMessage(e));
 		}
 	}, []);
 
-	const onActiveProfileChange = useCallback(async (id: string | null) => {
-		setActiveProfileId(id);
-		await invoke("ai_active_profile_set", { id });
-	}, []);
+	const onActiveProfileChange = useCallback(
+		async (id: string | null) => {
+			const previous = activeProfileId;
+			const requestId = ++activeProfileChangeRequestIdRef.current;
+			setActiveProfileId(id);
+			setError("");
+			try {
+				await invoke("ai_active_profile_set", { id });
+			} catch (e) {
+				if (requestId !== activeProfileChangeRequestIdRef.current) return;
+				setActiveProfileId(previous);
+				setError(errMessage(e));
+			}
+		},
+		[activeProfileId],
+	);
 
 	return (
 		<div className="settingsPane">
 			{error ? <div className="settingsError">{error}</div> : null}
 
 			<div className="settingsGrid">
+				<AiProfileSections
+					key={activeProfileId ?? "none"}
+					profiles={profiles}
+					activeProfileId={activeProfileId}
+					activeProfile={activeProfile}
+					onActiveProfileChange={onActiveProfileChange}
+					onCreateProfile={() => void createDefaultProfile()}
+					onSaveProfile={saveProfile}
+				/>
+
 				<section className="settingsCard">
 					<div className="settingsCardHeader">
 						<div>
@@ -128,16 +158,6 @@ export function AiSettingsPane() {
 						When off, AI panels and AI command-palette actions stay hidden.
 					</p>
 				</section>
-
-				<AiProfileSections
-					key={activeProfileId ?? "none"}
-					profiles={profiles}
-					activeProfileId={activeProfileId}
-					activeProfile={activeProfile}
-					onActiveProfileChange={onActiveProfileChange}
-					onCreateProfile={() => void createDefaultProfile()}
-					onSaveProfile={saveProfile}
-				/>
 			</div>
 		</div>
 	);

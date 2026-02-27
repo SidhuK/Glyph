@@ -1,12 +1,12 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { EditorContent } from "@tiptap/react";
-import { memo, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { joinYamlFrontmatter } from "../../lib/notePreview";
 import { type BacklinkItem, invoke } from "../../lib/tauri";
-import { ChevronDown, ChevronRight } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 import { EditorRibbon } from "./EditorRibbon";
+import { NotePropertiesPanel } from "./NotePropertiesPanel";
 import { useNoteEditor } from "./hooks/useNoteEditor";
 import {
 	dispatchMarkdownLinkClick,
@@ -81,9 +81,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	} = useNoteEditor({ markdown, mode, relPath, onChange });
 
 	const [frontmatterDraft, setFrontmatterDraft] = useState(frontmatter ?? "");
-	const frontmatterTextAreaRef = useRef<HTMLTextAreaElement | null>(null);
 	const lastFrontmatterRef = useRef(frontmatter);
-	const [frontmatterExpanded, setFrontmatterExpanded] = useState(false);
 	const [backlinks, setBacklinks] = useState<BacklinkItem[]>([]);
 	const tiptapHostRef = useRef<HTMLDivElement | null>(null);
 	const [taskAnchors, setTaskAnchors] = useState<
@@ -132,15 +130,6 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		};
 	}, [relPath]);
 
-	// biome-ignore lint/correctness/useExhaustiveDependencies: resize on draft and expand state changes
-	useLayoutEffect(() => {
-		if (mode !== "rich" || !frontmatterExpanded) return;
-		const el = frontmatterTextAreaRef.current;
-		if (!el) return;
-		el.style.height = "0px";
-		el.style.height = `${el.scrollHeight}px`;
-	}, [frontmatterDraft, mode, frontmatterExpanded]);
-
 	const canEdit = mode === "rich" && Boolean(editor?.isEditable);
 
 	useEffect(() => {
@@ -179,12 +168,9 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		return () => onRegisterCalloutInserter(null);
 	}, [editor, mode, onRegisterCalloutInserter]);
 
-	const handleFrontmatterChange = (
-		event: React.ChangeEvent<HTMLTextAreaElement>,
-	) => {
-		const next = event.target.value;
-		setFrontmatterDraft(next);
-		const normalizedFrontmatter = next.trim().length ? next : null;
+	const handleFrontmatterChange = (next: string | null) => {
+		const normalizedFrontmatter = next?.trim().length ? next : null;
+		setFrontmatterDraft(normalizedFrontmatter ?? "");
 		frontmatterRef.current = normalizedFrontmatter;
 		const currentBody = normalizeBody(
 			editor?.getMarkdown() ?? lastAppliedBodyRef.current ?? "",
@@ -196,32 +182,6 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		if (nextMarkdown === lastEmittedMarkdownRef.current) return;
 		lastEmittedMarkdownRef.current = nextMarkdown;
 		onChange(nextMarkdown);
-	};
-
-	const handleFrontmatterLinkActivate = (
-		event: React.MouseEvent<HTMLTextAreaElement>,
-	) => {
-		const caret = event.currentTarget.selectionStart;
-		if (caret === null) return;
-		const token = extractFrontmatterLinkTokens(frontmatterDraft).find(
-			(item) => caret >= item.start && caret <= item.end,
-		);
-		if (!token) return;
-		event.preventDefault();
-		if (token.kind === "wiki") {
-			const parsed = parseWikiLink(token.raw);
-			if (!parsed) return;
-			dispatchWikiLinkClick({
-				raw: parsed.raw,
-				target: parsed.target,
-				alias: parsed.alias,
-				anchorKind: parsed.anchorKind,
-				anchor: parsed.anchor,
-				unresolved: parsed.unresolved,
-			});
-			return;
-		}
-		void openFrontmatterHref(token.href, relPath ?? "");
 	};
 
 	const renderFrontmatterWithLinks = (text: string) => {
@@ -403,31 +363,12 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 					/>
 				) : null}
 				{mode === "rich" ? (
-					<div className="frontmatterPreview frontmatterPreviewInteractive mono">
-						<button
-							type="button"
-							className="frontmatterToggle"
-							aria-expanded={frontmatterExpanded}
-							onClick={() => setFrontmatterExpanded((prev) => !prev)}
-						>
-							{frontmatterExpanded ? (
-								<ChevronDown size={12} />
-							) : (
-								<ChevronRight size={12} />
-							)}
-							<div className="frontmatterLabel">Frontmatter</div>
-						</button>
-						{frontmatterExpanded ? (
-							<textarea
-								ref={frontmatterTextAreaRef}
-								className="frontmatterEditor"
-								value={frontmatterDraft}
-								onChange={handleFrontmatterChange}
-								onMouseUp={handleFrontmatterLinkActivate}
-								placeholder="---\ntitle: Untitled\n---"
-								spellCheck={false}
-							/>
-						) : null}
+					<div className="frontmatterPreview mono">
+						<div className="frontmatterLabel">Frontmatter</div>
+						<NotePropertiesPanel
+							frontmatter={frontmatterDraft || null}
+							onChange={handleFrontmatterChange}
+						/>
 					</div>
 				) : frontmatter ? (
 					<div className="frontmatterPreview mono">

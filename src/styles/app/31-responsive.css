@@ -64,7 +64,12 @@
 	}
 
 	.mainEmptyActions {
-		grid-template-columns: 1fr;
-		width: min(210px, 100%);
+		max-width: 420px;
+		gap: var(--space-2);
+	}
+
+	.mainEmptyAction {
+		min-width: 152px;
+		min-height: 108px;
 	}
 }

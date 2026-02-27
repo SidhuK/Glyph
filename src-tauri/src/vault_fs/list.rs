@@ -253,7 +253,8 @@ pub async fn vault_list_dir(
             });
         }
 
-        entries.sort_by_cached_key(|e| (if e.kind == "dir" { 0u8 } else { 1 }, e.name.to_lowercase()));
+        entries
+            .sort_by_cached_key(|e| (if e.kind == "dir" { 0u8 } else { 1 }, e.name.to_lowercase()));
 
         Ok(entries)
     })
