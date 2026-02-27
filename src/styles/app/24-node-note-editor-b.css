@@ -7,7 +7,7 @@
 	line-height: 1.5;
 	padding: 0;
 	resize: none;
-	overflow: hidden;
+	overflow: visible;
 	font-family: var(--font-mono);
 }
 
@@ -62,6 +62,373 @@
 	font: inherit;
 	line-height: inherit;
 	cursor: pointer;
+}
+
+.notePropertiesPanel {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.notePropertiesToolbar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	padding-bottom: 2px;
+}
+
+.notePropertiesToolbarLabel {
+	font-size: 11px;
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--text-tertiary);
+}
+
+.notePropertiesToolbarActions {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.notePropertiesList {
+	display: flex;
+	flex-direction: column;
+	gap: 0;
+}
+
+.notePropertyRow {
+	display: grid;
+	grid-template-columns: minmax(180px, 0.9fr) minmax(0, 1.45fr) auto;
+	align-items: start;
+	gap: 10px;
+	padding: 8px 0;
+	border-top: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
+	transition: border-color var(--transition-fast), background
+		var(--transition-fast);
+}
+
+.notePropertyRow:first-child {
+	border-top: 0;
+	padding-top: 0;
+}
+
+.notePropertyRow:hover {
+	border-color: color-mix(in srgb, var(--interactive-accent) 20%, transparent);
+}
+
+.notePropertyIdentity {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	min-width: 0;
+}
+
+.notePropertyKeyInput,
+.notePropertyFieldInput,
+.notePropertyValue input {
+	height: 34px;
+	width: 100%;
+	border-color: color-mix(in srgb, var(--border-light) 78%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 54%, transparent);
+	box-shadow: none;
+}
+
+.notePropertyKeyInput {
+	flex: 1 1 auto;
+}
+
+.notePropertyKeyStatic {
+	font-weight: var(--font-medium);
+	color: var(--text-primary);
+	min-width: 0;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	font-size: 13px;
+	letter-spacing: 0.01em;
+}
+
+.notePropertyValue {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	min-width: 0;
+	padding-top: 1px;
+}
+
+.notePropertyValueStatic {
+	color: var(--text-secondary);
+	min-width: 0;
+	word-break: break-word;
+	font-size: 13px;
+	line-height: 1.45;
+}
+
+.notePropertyKindBadge {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	flex: 0 0 auto;
+	padding: 0 10px;
+	height: 30px;
+	border-radius: 999px;
+	border: 1px solid color-mix(in srgb, var(--border-default) 68%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 72%, transparent);
+	color: var(--text-secondary);
+	font-size: 10px;
+	font-weight: var(--font-semibold);
+	line-height: 1;
+	text-transform: uppercase;
+	letter-spacing: 0.08em;
+}
+
+.notePropertyKindBadge svg {
+	color: var(--interactive-accent);
+}
+
+.notePropertyKindTrigger {
+	min-height: 30px;
+	padding: 0 10px;
+	justify-content: flex-start;
+	background: color-mix(in srgb, var(--bg-primary) 72%, transparent);
+}
+
+.notePropertyKindTrigger:hover {
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 8%,
+		var(--bg-primary)
+	);
+	color: var(--text-primary);
+}
+
+.notePropertyKindTrigger > :last-child {
+	color: var(--text-tertiary);
+}
+
+.notePropertyKindMenu {
+	min-width: 176px;
+	padding: 6px;
+	border-radius: calc(var(--radius-lg) + 2px);
+	border-color: color-mix(in srgb, var(--border-default) 70%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 96%, transparent);
+	box-shadow: var(--shadow-float);
+}
+
+.notePropertyKindOption {
+	gap: 10px;
+	padding: 8px 10px 8px 28px;
+	border-radius: var(--radius-md);
+	font-size: 12px;
+	color: var(--text-secondary);
+}
+
+.notePropertyKindOption[data-state="checked"] {
+	background: color-mix(in srgb, var(--interactive-accent) 10%, transparent);
+	color: var(--text-primary);
+}
+
+.notePropertyKindOptionIcon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--interactive-accent) 8%, transparent);
+	color: var(--interactive-accent);
+}
+
+.notePropertyKindOptionLabel {
+	font-weight: var(--font-medium);
+}
+
+.notePropertyPills {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 5px;
+}
+
+.notePropertyPill {
+	display: inline-flex;
+	align-items: center;
+	padding: 3px 8px;
+	border-radius: var(--radius-full);
+	background: color-mix(in srgb, var(--interactive-accent) 12%, transparent);
+	color: var(--interactive-accent);
+	font-size: 11px;
+	line-height: 1.2;
+}
+
+.notePropertyPillsEditable {
+	gap: 6px;
+}
+
+.notePropertyToken {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 4px 9px;
+	border: 1px solid
+		color-mix(in srgb, var(--interactive-accent) 14%, var(--border-light));
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--interactive-accent) 10%, transparent);
+	color: var(--interactive-accent);
+	font-size: 11px;
+	line-height: 1.2;
+	cursor: pointer;
+}
+
+.notePropertyToken:hover {
+	background: color-mix(in srgb, var(--interactive-accent) 14%, transparent);
+}
+
+.notePropertyToken svg {
+	color: color-mix(in srgb, var(--interactive-accent) 72%, var(--text-tertiary));
+}
+
+.notePropertyTagComposer {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.notePropertyTagAddButton {
+	gap: 6px;
+	flex: 0 0 auto;
+}
+
+.notePropertySuggestions {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+	padding-top: 0;
+}
+
+.notePropertySuggestionsLabel {
+	font-size: 10px;
+	font-weight: var(--font-medium);
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--text-tertiary);
+}
+
+.notePropertySuggestionList {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 5px;
+}
+
+.notePropertySuggestionChip {
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
+	padding: 4px 8px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--bg-primary) 64%, transparent);
+	color: var(--text-secondary);
+	font-size: 10px;
+	line-height: 1.2;
+	cursor: pointer;
+}
+
+.notePropertySuggestionChip:hover {
+	border-color: color-mix(in srgb, var(--interactive-accent) 20%, transparent);
+	color: var(--text-primary);
+	background: color-mix(in srgb, var(--interactive-accent) 8%, transparent);
+}
+
+.notePropertySuggestionCount {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 16px;
+	height: 16px;
+	padding: 0 4px;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--bg-secondary) 82%, transparent);
+	color: var(--text-tertiary);
+	font-size: 10px;
+}
+
+.notePropertyYamlInput {
+	min-height: 64px;
+	padding: 8px 10px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 78%, transparent);
+	border-radius: var(--radius-md);
+	background: color-mix(in srgb, var(--bg-primary) 54%, transparent);
+	color: var(--text-primary);
+	font-family: var(--font-mono);
+	font-size: 12px;
+	line-height: 1.5;
+	resize: vertical;
+}
+
+.notePropertyYamlInput:focus {
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 28%, transparent);
+	outline-offset: 1px;
+}
+
+.notePropertyToggle {
+	align-self: flex-start;
+}
+
+.notePropertyAddButton {
+	align-self: flex-start;
+	gap: 8px;
+	margin-top: 10px;
+	padding-inline: 6px;
+	border-radius: var(--radius-lg);
+}
+
+.notePropertyRemoveButton {
+	opacity: 0.68;
+	align-self: center;
+	margin-top: 0;
+}
+
+.notePropertyRemoveButton:hover {
+	opacity: 1;
+	background: color-mix(in srgb, var(--status-danger-bg) 44%, transparent);
+	color: var(--status-danger-fg);
+}
+
+@media (max-width: 720px) {
+	.notePropertyRow {
+		grid-template-columns: 1fr auto;
+		align-items: start;
+	}
+
+	.notePropertyIdentity,
+	.notePropertyValue {
+		grid-column: 1 / 2;
+	}
+
+	.notePropertyRemoveButton {
+		grid-column: 2 / 3;
+		grid-row: 1 / 3;
+	}
+
+	.notePropertyIdentity {
+		flex-wrap: wrap;
+	}
+
+	.notePropertyKeyInput {
+		flex: 1 1 100%;
+	}
+
+	.notePropertyTagComposer {
+		align-items: stretch;
+		flex-direction: column;
+	}
+
+	.notePropertyTagAddButton {
+		justify-content: center;
+	}
 }
 
 .editorBacklinks {

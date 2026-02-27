@@ -334,6 +334,8 @@ pub fn run() {
             notes::commands::note_read,
             notes::commands::note_write,
             notes::commands::note_delete,
+            notes::properties::note_frontmatter_parse_properties,
+            notes::properties::note_frontmatter_render_properties,
             notes::attachments::note_attach_file,
             vault::commands::vault_create,
             vault::commands::vault_open,

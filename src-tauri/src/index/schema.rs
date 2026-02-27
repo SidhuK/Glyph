@@ -34,6 +34,19 @@ CREATE TABLE IF NOT EXISTS tags (
 
 CREATE INDEX IF NOT EXISTS tags_tag_idx ON tags(tag);
 
+CREATE TABLE IF NOT EXISTS note_properties (
+  note_id TEXT NOT NULL,
+  key TEXT NOT NULL,
+  value_type TEXT NOT NULL,
+  value_text TEXT NOT NULL,
+  value_json TEXT NOT NULL,
+  ordinal INTEGER NOT NULL DEFAULT 0,
+  PRIMARY KEY (note_id, key)
+);
+
+CREATE INDEX IF NOT EXISTS note_properties_key_idx ON note_properties(key);
+CREATE INDEX IF NOT EXISTS note_properties_lookup_idx ON note_properties(key, value_text);
+
 CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(
   id UNINDEXED,
   title,

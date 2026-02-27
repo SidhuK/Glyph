@@ -118,6 +118,14 @@ export interface AttachmentResult {
 	markdown: string;
 }
 
+export interface NoteProperty {
+	key: string;
+	kind: string;
+	value_text: string | null;
+	value_bool: boolean | null;
+	value_list: string[];
+}
+
 export interface SearchResult {
 	id: string;
 	title: string;
@@ -453,6 +461,14 @@ interface TauriCommands {
 		NoteWriteResult
 	>;
 	note_delete: CommandDef<{ id: string }, void>;
+	note_frontmatter_parse_properties: CommandDef<
+		{ frontmatter?: string | null },
+		NoteProperty[]
+	>;
+	note_frontmatter_render_properties: CommandDef<
+		{ properties: NoteProperty[] },
+		string | null
+	>;
 	note_attach_file: CommandDef<
 		{ note_id: string; source_path: string },
 		AttachmentResult

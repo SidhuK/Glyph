@@ -4,8 +4,8 @@ use tauri::State;
 use crate::{index, io_atomic, paths, vault::VaultState};
 
 use super::frontmatter::{
-    normalize_frontmatter, now_rfc3339, parse_frontmatter, render_frontmatter_yaml,
-    split_frontmatter, Frontmatter,
+    normalize_frontmatter_mapping, now_rfc3339, parse_frontmatter, parse_frontmatter_mapping,
+    render_frontmatter_mapping_yaml, split_frontmatter,
 };
 use super::helpers::{
     etag_for, extract_meta, file_mtime_ms, note_abs_path, note_rel_path, notes_dir, read_to_string,
@@ -55,16 +55,29 @@ pub async fn note_create(state: State<'_, VaultState>, title: String) -> Result<
         let path = paths::join_under(&root, &rel)?;
 
         let now = now_rfc3339();
-        let fm = Frontmatter {
-            id: Some(id.clone()),
-            title: Some(title.clone()),
-            created: Some(now.clone()),
-            updated: Some(now.clone()),
-            tags: Some(Vec::new()),
-            extra: Default::default(),
-        };
+        let mut fm = serde_yaml::Mapping::new();
+        fm.insert(
+            serde_yaml::Value::String("id".to_string()),
+            serde_yaml::Value::String(id.clone()),
+        );
+        fm.insert(
+            serde_yaml::Value::String("title".to_string()),
+            serde_yaml::Value::String(title.clone()),
+        );
+        fm.insert(
+            serde_yaml::Value::String("created".to_string()),
+            serde_yaml::Value::String(now.clone()),
+        );
+        fm.insert(
+            serde_yaml::Value::String("updated".to_string()),
+            serde_yaml::Value::String(now.clone()),
+        );
+        fm.insert(
+            serde_yaml::Value::String("tags".to_string()),
+            serde_yaml::Value::Sequence(Vec::new()),
+        );
 
-        let yaml = render_frontmatter_yaml(&fm)?;
+        let yaml = render_frontmatter_mapping_yaml(&fm)?;
         let markdown = format!("---\n{yaml}---\n\n");
         io_atomic::write_atomic(&path, markdown.as_bytes()).map_err(|e| e.to_string())?;
         let _ = index::index_note(&root, &id, &markdown);
@@ -132,9 +145,9 @@ pub async fn note_write(
         let preserve_created =
             created_from_markdown(&current).or_else(|| read_existing_created(&path));
         let (yaml, body) = split_frontmatter(&markdown);
-        let fm = parse_frontmatter(yaml)?;
-        let fm = normalize_frontmatter(fm, &id, None, preserve_created.as_deref());
-        let yaml = render_frontmatter_yaml(&fm)?;
+        let fm = parse_frontmatter_mapping(yaml)?;
+        let fm = normalize_frontmatter_mapping(fm, &id, None, preserve_created.as_deref());
+        let yaml = render_frontmatter_mapping_yaml(&fm)?;
         let normalized = format!("---\n{yaml}---\n\n{}", body.trim_start_matches('\n'));
         io_atomic::write_atomic(&path, normalized.as_bytes()).map_err(|e| e.to_string())?;
         let _ = index::index_note(&root, &id, &normalized);
