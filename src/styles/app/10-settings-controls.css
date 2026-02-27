@@ -529,12 +529,12 @@
 }
 
 .settingsAccentDot {
-	height: 26px;
-	width: 26px;
+	height: 22px;
+	width: 22px;
 	padding: 0;
 	border-radius: var(--radius-md);
-	border: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
-	background: color-mix(in srgb, var(--bg-secondary) 75%, transparent);
+	border: 0;
+	background: transparent;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -543,10 +543,10 @@
 }
 
 .settingsAccentDot span {
-	height: 14px;
-	width: 14px;
+	height: 16px;
+	width: 16px;
 	border-radius: var(--radius-sm);
-	border: 1px solid color-mix(in srgb, var(--border-default) 45%, transparent);
+	border: 1px solid color-mix(in srgb, var(--border-default) 40%, transparent);
 }
 
 .settingsAccentDot:hover {
@@ -554,7 +554,6 @@
 }
 
 .settingsAccentDot.active {
-	border-color: color-mix(in srgb, var(--interactive-accent) 50%, transparent);
 	box-shadow: 0 0 0 2px
 		color-mix(in srgb, var(--interactive-accent) 18%, transparent);
 }

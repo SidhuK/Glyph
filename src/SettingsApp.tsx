@@ -158,7 +158,6 @@ export default function SettingsApp() {
 					<div className="settingsFrame">
 						<nav className="settingsTabs" aria-label="Settings sections">
 							<header className="settingsNavHeader">
-								<p className="settingsNavEyebrow">Preferences</p>
 								<h1 className="settingsNavTitle">Glyph</h1>
 								<p className="settingsNavMeta">macOS</p>
 								<span className="settingsPill settingsNavEarlyAccessBadge earlyAccessBadge">
@@ -184,7 +183,6 @@ export default function SettingsApp() {
 						</nav>
 						<div className="settingsTabPanel">
 							<header className="settingsPanelHeader">
-								<p className="settingsPanelEyebrow">Settings</p>
 								<h2 className="settingsPanelTitle">{activeTabMeta.label}</h2>
 								<p className="settingsPanelSubtitle">
 									{activeTabMeta.subtitle}
