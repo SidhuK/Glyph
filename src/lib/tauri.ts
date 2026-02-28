@@ -126,6 +126,98 @@ export interface NoteProperty {
 	value_list: string[];
 }
 
+export interface DatabaseSource {
+	kind: "folder" | "tag" | "search";
+	value: string;
+	recursive: boolean;
+}
+
+export interface DatabaseNewNoteConfig {
+	folder: string;
+	title_prefix: string;
+}
+
+export interface DatabaseViewState {
+	layout: "table" | "board";
+	board_group_by?: string | null;
+}
+
+export interface DatabaseColumn {
+	id: string;
+	type: "title" | "tags" | "path" | "created" | "updated" | "property";
+	label: string;
+	icon?: string | null;
+	width?: number | null;
+	visible: boolean;
+	property_key?: string | null;
+	property_kind?: string | null;
+}
+
+export interface DatabaseSort {
+	column_id: string;
+	direction: "asc" | "desc";
+}
+
+export interface DatabaseFilter {
+	column_id: string;
+	operator:
+		| "contains"
+		| "equals"
+		| "is_empty"
+		| "is_not_empty"
+		| "is_true"
+		| "is_false"
+		| "tags_contains";
+	value_text?: string | null;
+	value_bool?: boolean | null;
+	value_list: string[];
+}
+
+export interface DatabaseConfig {
+	source: DatabaseSource;
+	new_note: DatabaseNewNoteConfig;
+	view: DatabaseViewState;
+	columns: DatabaseColumn[];
+	sorts: DatabaseSort[];
+	filters: DatabaseFilter[];
+}
+
+export interface DatabaseCellValue {
+	kind: string;
+	value_text?: string | null;
+	value_bool?: boolean | null;
+	value_list: string[];
+}
+
+export interface DatabaseRow {
+	note_path: string;
+	title: string;
+	created: string;
+	updated: string;
+	preview?: string;
+	tags: string[];
+	properties: Record<string, DatabaseCellValue>;
+}
+
+export interface DatabasePropertyOption {
+	key: string;
+	kind: string;
+	count: number;
+}
+
+export interface DatabaseLoadResult {
+	config: DatabaseConfig;
+	rows: DatabaseRow[];
+	available_properties: DatabasePropertyOption[];
+	truncated: boolean;
+	total_loaded: number;
+}
+
+export interface DatabaseCreateRowResult {
+	note_path: string;
+	row: DatabaseRow;
+}
+
 export interface SearchResult {
 	id: string;
 	title: string;
@@ -386,6 +478,7 @@ interface TauriCommands {
 	vault_open: CommandDef<{ path: string }, VaultInfo>;
 	vault_get_current: CommandDef<void, string | null>;
 	vault_close: CommandDef<void, void>;
+	vault_list_dirs: CommandDef<{ dir?: string | null }, FsEntry[]>;
 	vault_list_dir: CommandDef<{ dir?: string | null }, FsEntry[]>;
 	vault_list_markdown_files: CommandDef<
 		{ dir?: string | null; recursive?: boolean | null; limit?: number | null },
@@ -472,6 +565,26 @@ interface TauriCommands {
 	note_attach_file: CommandDef<
 		{ note_id: string; source_path: string },
 		AttachmentResult
+	>;
+	database_load: CommandDef<
+		{ path: string; limit?: number | null },
+		DatabaseLoadResult
+	>;
+	database_save_config: CommandDef<
+		{ path: string; config: DatabaseConfig },
+		DatabaseConfig
+	>;
+	database_update_cell: CommandDef<
+		{
+			note_path: string;
+			column: DatabaseColumn;
+			value: DatabaseCellValue;
+		},
+		DatabaseRow
+	>;
+	database_create_row: CommandDef<
+		{ database_path: string; title?: string | null },
+		DatabaseCreateRowResult
 	>;
 
 	index_rebuild: CommandDef<void, IndexRebuildResult>;

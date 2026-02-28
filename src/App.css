@@ -27,6 +27,7 @@
 @import "./styles/app/34-keyboard-shortcuts.css";
 @import "./styles/app/35-daily-notes.css";
 @import "./styles/app/36-tasks.css";
+@import "./styles/app/37-database.css";
 
 /* Flatten elevation utilities globally; keep focus rings intact via ring classes. */
 .shadow,

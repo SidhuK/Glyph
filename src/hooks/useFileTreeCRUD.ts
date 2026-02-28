@@ -1,6 +1,11 @@
 import { join } from "@tauri-apps/api/path";
 import { useCallback, useEffect, useRef } from "react";
 import { trackNoteCreated } from "../lib/analytics";
+import {
+	createDatabaseNotePath,
+	createDefaultDatabaseConfig,
+	createStarterDatabaseMarkdown,
+} from "../lib/database/config";
 import { extractErrorMessage } from "../lib/errorUtils";
 import type { FsEntry } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
@@ -188,6 +193,58 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 	const onNewFile = useCallback(async () => {
 		await onNewFileInDir("");
 	}, [onNewFileInDir]);
+
+	const onNewDatabaseInDir = useCallback(
+		async (dirPath: string) => {
+			if (!vaultPath) return null;
+			setError("");
+			try {
+				const entries = await invoke(
+					"vault_list_dir",
+					dirPath ? { dir: dirPath } : {},
+				);
+				const existing = new Set(
+					entries.map((entry) => entry.rel_path.toLowerCase()),
+				);
+				let nextPath = createDatabaseNotePath(dirPath);
+				let suffix = 2;
+				while (existing.has(nextPath.toLowerCase())) {
+					nextPath = createDatabaseNotePath(dirPath, `New Database ${suffix}`);
+					suffix += 1;
+				}
+				const title =
+					nextPath.split("/").pop()?.replace(/\.md$/i, "") ?? "New Database";
+				const markdown = createStarterDatabaseMarkdown(
+					title,
+					createDefaultDatabaseConfig(dirPath),
+				);
+				await invoke("vault_write_text", {
+					path: nextPath,
+					text: markdown,
+					base_mtime_ms: null,
+				});
+				insertEntryOptimistic(parentDir(nextPath), {
+					name: nextPath.split("/").pop() ?? "New Database.md",
+					rel_path: nextPath,
+					kind: "file",
+					is_markdown: true,
+				});
+				await refreshAfterCreate(parentDir(nextPath));
+				await refreshActiveFolderViewAfterCreate(parentDir(nextPath));
+				return nextPath;
+			} catch (e) {
+				setError(extractErrorMessage(e));
+				return null;
+			}
+		},
+		[
+			insertEntryOptimistic,
+			refreshActiveFolderViewAfterCreate,
+			refreshAfterCreate,
+			setError,
+			vaultPath,
+		],
+	);
 
 	const onNewFolderInDir = useCallback(
 		async (dirPath: string) => {
@@ -477,6 +534,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 	return {
 		onNewFile,
 		onNewFileInDir,
+		onNewDatabaseInDir,
 		onNewFolderInDir,
 		onRenameDir,
 		onDeletePath,

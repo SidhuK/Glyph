@@ -17,6 +17,7 @@ export interface UseFileTreeResult {
 	openNonMarkdownExternally: (relPath: string) => Promise<void>;
 	onNewFile: () => Promise<void>;
 	onNewFileInDir: (dirPath: string) => Promise<void>;
+	onNewDatabaseInDir: (dirPath: string) => Promise<string | null>;
 	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
 	onRenameDir: (
 		path: string,

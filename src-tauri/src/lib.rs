@@ -1,6 +1,7 @@
 mod ai_codex;
 mod ai_rig;
 mod analytics;
+mod database;
 mod glyph_fs;
 mod glyph_paths;
 mod index;
@@ -285,6 +286,10 @@ pub fn run() {
             ai_rig::context::ai_context_build,
             ai_rig::context::ai_context_resolve_paths,
             ai_rig::models::ai_models_list,
+            database::mutations::database_load,
+            database::mutations::database_save_config,
+            database::mutations::database_update_cell,
+            database::mutations::database_create_row,
             index::commands::index_rebuild,
             index::commands::search,
             index::commands::search_advanced,
@@ -302,6 +307,7 @@ pub fn run() {
             index::commands::task_update_by_ordinal,
             index::commands::backlinks,
             links::commands::link_preview,
+            vault_fs::list::vault_list_dirs,
             vault_fs::list::vault_list_dir,
             vault_fs::list::vault_list_markdown_files,
             vault_fs::list::vault_list_files,

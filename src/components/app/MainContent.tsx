@@ -5,8 +5,8 @@ import { formatShortcutPartsForPlatform } from "../../lib/shortcuts/platform";
 import { TASKS_TAB_ID } from "../../lib/tasks";
 import { isInAppPreviewable } from "../../utils/filePreview";
 import { FileText } from "../Icons";
+import { DatabasePane } from "../database/DatabasePane";
 import { FilePreviewPane } from "../preview/FilePreviewPane";
-import { MarkdownEditorPane } from "../preview/MarkdownEditorPane";
 import { TasksPane } from "../tasks/TasksPane";
 import { TabBar } from "./TabBar";
 import { WelcomeScreen } from "./WelcomeScreen";
@@ -95,8 +95,9 @@ export const MainContent = memo(function MainContent({
 		}
 		if (viewerPath.toLowerCase().endsWith(".md")) {
 			return (
-				<MarkdownEditorPane
+				<DatabasePane
 					relPath={viewerPath}
+					onOpenFile={(relPath) => fileTree.openFile(relPath)}
 					onDirtyChange={(dirty) =>
 						setDirtyByPath((prev) =>
 							prev[viewerPath] === dirty

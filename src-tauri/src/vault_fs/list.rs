@@ -7,6 +7,70 @@ use super::helpers::{deny_hidden_rel_path, should_hide};
 use super::types::FsEntry;
 
 #[tauri::command]
+pub async fn vault_list_dirs(
+    state: State<'_, VaultState>,
+    dir: Option<String>,
+) -> Result<Vec<FsEntry>, String> {
+    let root = state.current_root()?;
+    let dir = dir.unwrap_or_default();
+
+    tauri::async_runtime::spawn_blocking(move || -> Result<Vec<FsEntry>, String> {
+        let start_rel = if dir.trim().is_empty() {
+            PathBuf::new()
+        } else {
+            PathBuf::from(&dir)
+        };
+        deny_hidden_rel_path(&start_rel)?;
+        let start_abs = paths::join_under(&root, &start_rel)?;
+        if !start_abs.exists() {
+            return Ok(Vec::new());
+        }
+
+        let mut out: Vec<FsEntry> = Vec::new();
+        let mut stack: Vec<PathBuf> = vec![start_rel.clone()];
+
+        while let Some(rel_dir) = stack.pop() {
+            let abs_dir = paths::join_under(&root, &rel_dir)?;
+            let entries = match std::fs::read_dir(&abs_dir) {
+                Ok(entries) => entries,
+                Err(_) => continue,
+            };
+
+            for entry in entries {
+                let entry = match entry {
+                    Ok(entry) => entry,
+                    Err(_) => continue,
+                };
+                let name = entry.file_name().to_string_lossy().to_string();
+                if should_hide(&name) {
+                    continue;
+                }
+                let meta = match entry.metadata() {
+                    Ok(meta) => meta,
+                    Err(_) => continue,
+                };
+                if !meta.is_dir() {
+                    continue;
+                }
+                let child_rel = rel_dir.join(&name);
+                out.push(FsEntry {
+                    name,
+                    rel_path: child_rel.to_string_lossy().to_string(),
+                    kind: "dir".to_string(),
+                    is_markdown: false,
+                });
+                stack.push(child_rel);
+            }
+        }
+
+        out.sort_by_cached_key(|entry| entry.rel_path.to_lowercase());
+        Ok(out)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
 pub async fn vault_list_markdown_files(
     state: State<'_, VaultState>,
     dir: Option<String>,

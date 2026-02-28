@@ -10,6 +10,7 @@ interface SidebarProps {
 	onSelectDir: (dirPath: string) => void;
 	onOpenFile: (relPath: string) => void;
 	onNewFileInDir: (dirPath: string) => void;
+	onNewDatabaseInDir: (dirPath: string) => Promise<string | null>;
 	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
 	onRenameDir: (dirPath: string, nextName: string) => Promise<string | null>;
 	onDeletePath: (path: string, kind: "dir" | "file") => Promise<boolean>;
@@ -27,6 +28,7 @@ export const Sidebar = memo(function Sidebar({
 	onSelectDir,
 	onOpenFile,
 	onNewFileInDir,
+	onNewDatabaseInDir,
 	onNewFolderInDir,
 	onRenameDir,
 	onDeletePath,
@@ -83,6 +85,7 @@ export const Sidebar = memo(function Sidebar({
 							onSelectDir={onSelectDir}
 							onOpenFile={onOpenFile}
 							onNewFileInDir={onNewFileInDir}
+							onNewDatabaseInDir={onNewDatabaseInDir}
 							onNewFolderInDir={onNewFolderInDir}
 							onRenameDir={onRenameDir}
 							onDeletePath={onDeletePath}

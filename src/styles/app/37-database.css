@@ -1,0 +1,1198 @@
+.databaseHostPane {
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	height: 100%;
+	background: var(--bg-primary);
+}
+
+.databaseToolbar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 14px 18px;
+	border-bottom: 1px solid var(--border-light);
+	background: color-mix(in srgb, var(--bg-secondary) 32%, var(--bg-primary));
+}
+
+.databaseToolbarPrimary,
+.databaseToolbarActions,
+.databaseToolbarMeta,
+.databaseModeSwitch,
+.databaseFooter {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.databaseToolbarPrimary,
+.databaseToolbarMeta {
+	min-width: 0;
+}
+
+.databaseToolbarMeta {
+	flex-direction: row;
+	align-items: baseline;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+
+.databaseToolbarTitle,
+.databaseFooterTitle {
+	font-size: 0.96rem;
+	font-weight: 600;
+}
+
+.databaseToolbarSubtitle,
+.databaseFooterPath,
+.databaseCellEmpty {
+	color: var(--text-secondary);
+	font-size: 0.82rem;
+}
+
+.databaseToolbarSubtitle {
+	display: inline-flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 8px;
+	font-size: 0.76rem;
+	color: color-mix(in srgb, var(--text-secondary) 84%, transparent);
+}
+
+.databaseToolbarBadge {
+	display: inline-flex;
+	align-items: center;
+	height: 20px;
+	padding: 0 8px;
+	border-radius: var(--radius-sm);
+	border: 1px solid color-mix(in srgb, var(--border-light) 74%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 74%, transparent);
+	font-size: 0.68rem;
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: color-mix(in srgb, var(--text-secondary) 92%, var(--text-primary));
+}
+
+.databaseToolbarChip {
+	border-radius: var(--radius-md);
+	border-color: color-mix(in srgb, var(--border-light) 78%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
+	color: var(--text-secondary);
+}
+
+.databaseToolbarChip:hover {
+	border-color: var(--border-default);
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}
+
+.databaseToolbarChip.is-active {
+	border-color: color-mix(in srgb, var(--interactive-accent) 30%, transparent);
+	background: color-mix(in srgb, var(--interactive-accent) 8%, var(--bg-hover));
+	color: var(--text-primary);
+}
+
+.databaseToolbarChip.is-accent {
+	border-color: color-mix(in srgb, var(--border-default) 82%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 82%, transparent);
+	color: var(--text-primary);
+}
+
+.databaseTableShell {
+	flex: 1;
+	min-height: 0;
+	padding: 14px 18px 18px;
+	overflow: auto;
+}
+
+.databaseBoardShell {
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 12px;
+	padding: 14px 18px 18px;
+}
+
+.databaseBoardControls {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	flex-wrap: wrap;
+}
+
+.databaseBoardGroupControl {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	min-width: 0;
+}
+
+.databaseBoardGroupLabel {
+	font-size: 0.75rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--text-tertiary);
+}
+
+.databaseBoardGroupSelect {
+	width: auto;
+	min-width: 180px;
+	max-width: 260px;
+}
+
+.databaseBoardError,
+.databaseBoardLaneEmpty,
+.databaseBoardEmptyText {
+	font-size: 0.82rem;
+	color: var(--text-secondary);
+}
+
+.databaseBoardError {
+	color: var(--text-danger, #b54a3f);
+}
+
+.databaseBoardScroller {
+	display: grid;
+	grid-auto-flow: column;
+	grid-auto-columns: minmax(320px, 380px);
+	gap: var(--space-4);
+	min-height: 0;
+	overflow: auto;
+	padding-bottom: var(--space-2);
+	align-items: start;
+}
+
+.databaseBoardLane {
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+	max-height: 100%;
+	border: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
+	border-radius: var(--radius-lg);
+	background: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary));
+	transition: border-color var(--transition-base), background-color
+		var(--transition-base);
+}
+
+.databaseBoardLane[data-active="true"] {
+	border-color: color-mix(in srgb, var(--interactive-accent) 32%, transparent);
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 5%,
+		var(--bg-primary)
+	);
+}
+
+.databaseBoardLaneHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--space-2);
+	padding: var(--space-3) var(--space-3) var(--space-2);
+	border-bottom: 1px solid
+		color-mix(in srgb, var(--border-subtle) 72%, transparent);
+}
+
+.databaseBoardLaneTitle {
+	font-size: var(--text-sm);
+	font-weight: var(--font-semibold);
+	color: var(--text-primary);
+}
+
+.databaseBoardLaneCount {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 20px;
+	min-height: 20px;
+	padding: 2px 6px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
+	border-radius: var(--radius-sm);
+	background: color-mix(in srgb, var(--bg-secondary) 68%, transparent);
+	font-size: 0.69rem;
+	font-weight: var(--font-medium);
+	line-height: 1.15;
+	color: var(--text-secondary);
+}
+
+.databaseBoardLaneBody {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-2);
+	padding: var(--space-2);
+	min-height: 220px;
+	overflow: auto;
+}
+
+.databaseBoardCard {
+	display: flex;
+	flex-direction: column;
+	align-items: stretch;
+	justify-content: flex-start;
+	gap: var(--space-2);
+	width: 100%;
+	min-width: 0;
+	min-height: 112px;
+	padding: 12px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 84%, transparent);
+	border-radius: var(--radius-md);
+	background: color-mix(in srgb, var(--bg-primary) 96%, var(--bg-secondary));
+	cursor: pointer;
+	text-align: left;
+	white-space: normal;
+	transition: border-color var(--transition-base), background-color
+		var(--transition-base);
+	overflow: hidden;
+}
+
+.databaseBoardCard[draggable="true"] {
+	cursor: grab;
+}
+
+.databaseBoardCard[data-dragging="true"] {
+	opacity: 0.68;
+	cursor: grabbing;
+}
+
+.databaseBoardCard:hover {
+	border-color: color-mix(in srgb, var(--border-default) 88%, transparent);
+	background: var(--bg-hover);
+}
+
+.databaseBoardCard[data-state="selected"] {
+	border-color: color-mix(in srgb, var(--interactive-accent) 30%, transparent);
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 7%,
+		var(--bg-primary)
+	);
+}
+
+.databaseBoardCardTitle {
+	width: 100%;
+	min-width: 0;
+	font-size: var(--text-sm);
+	font-weight: var(--font-semibold);
+	line-height: 1.35;
+	letter-spacing: -0.01em;
+	color: var(--text-primary);
+	text-align: left;
+	display: -webkit-box;
+	-webkit-line-clamp: 2;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	white-space: normal;
+}
+
+.databaseBoardCardHead {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+	min-width: 0;
+}
+
+.databaseBoardCardPreview {
+	display: -webkit-box;
+	-webkit-line-clamp: 3;
+	-webkit-box-orient: vertical;
+	overflow: hidden;
+	font-size: var(--text-xs);
+	line-height: 1.45;
+	color: var(--text-secondary);
+	white-space: normal;
+	overflow-wrap: anywhere;
+}
+
+.databaseBoardCardPreview.is-placeholder {
+	color: var(--text-tertiary);
+	font-style: italic;
+}
+
+.databaseBoardCardTags {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 5px;
+	min-width: 0;
+}
+
+.databaseBoardTag {
+	display: inline-flex;
+	align-items: center;
+	max-width: 100%;
+	padding: 2px 6px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
+	border-radius: var(--radius-sm);
+	background: color-mix(in srgb, var(--bg-secondary) 74%, transparent);
+	font-size: 0.68rem;
+	line-height: 1.2;
+	color: var(--text-secondary);
+	white-space: nowrap;
+}
+
+.databaseBoardCardDetails {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+	min-width: 0;
+	padding-top: 2px;
+}
+
+.databaseBoardCardDetail {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr);
+	align-items: center;
+	gap: 7px;
+	min-width: 0;
+}
+
+.databaseBoardCardDetailLabel {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 18px;
+	height: 18px;
+	border-radius: var(--radius-sm);
+	background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
+	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
+	color: var(--text-tertiary);
+}
+
+.databaseBoardCardDetailValue {
+	min-width: 0;
+	font-size: var(--text-xs);
+	color: var(--text-secondary);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.databaseBoardCardPath {
+	margin-top: auto;
+	padding-top: 6px;
+	border-top: 1px solid
+		color-mix(in srgb, var(--border-subtle) 60%, transparent);
+	font-size: 0.68rem;
+	line-height: 1.35;
+	color: var(--text-tertiary);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.databaseBoardEmptyState {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	padding: 24px;
+	text-align: center;
+}
+
+.databaseBoardEmptyActions {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+.databaseBoardEmptyTitle {
+	font-size: 0.94rem;
+	font-weight: 600;
+	color: var(--text-primary);
+}
+
+.databaseTable {
+	border-collapse: separate;
+	border-spacing: 0;
+	min-width: 100%;
+	table-layout: fixed;
+	background: var(--bg-primary);
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-lg);
+	overflow: hidden;
+}
+
+.databaseHeadCell {
+	position: sticky;
+	top: 0;
+	z-index: 1;
+	background: color-mix(in srgb, var(--bg-secondary) 48%, var(--bg-primary));
+	text-align: left;
+}
+
+.databaseHeaderButton,
+.databaseCellButton {
+	width: 100%;
+	border: 0;
+	background: transparent;
+	text-align: left;
+	padding: 0;
+	color: inherit;
+}
+
+.databaseHeaderButton {
+	font-weight: 600;
+	display: flex;
+	align-items: center;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.databaseHeaderLabel {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	min-width: 0;
+}
+
+.databaseHeaderIcon {
+	color: color-mix(in srgb, var(--text-secondary) 86%, var(--text-primary));
+	flex: 0 0 auto;
+}
+
+.databaseHeaderText {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.databaseHeaderSort {
+	flex: 0 0 auto;
+}
+
+.databaseBodyCell {
+	vertical-align: top;
+	text-align: left;
+}
+
+.databaseCellInput,
+.databaseNativeSelect {
+	width: 100%;
+}
+
+.databaseCellInput {
+	height: 34px;
+}
+
+.databaseNativeSelect {
+	-webkit-appearance: none;
+	appearance: none;
+	min-height: 34px;
+	border-radius: var(--radius-md);
+	border: 1px solid color-mix(in srgb, var(--border-default) 88%, transparent);
+	background-color: color-mix(
+		in srgb,
+		var(--bg-primary) 90%,
+		var(--bg-secondary)
+	);
+	color: var(--text-primary);
+	padding: 0 34px 0 11px;
+	background-image: linear-gradient(
+			45deg,
+			transparent 50%,
+			color-mix(in srgb, var(--text-tertiary) 88%, transparent) 50%
+		),
+		linear-gradient(
+			135deg,
+			color-mix(in srgb, var(--text-tertiary) 88%, transparent) 50%,
+			transparent 50%
+		);
+	background-repeat: no-repeat;
+	background-position: calc(100% - 13px) 13px, calc(100% - 8px) 13px;
+	background-size: 5px 5px, 5px 5px;
+}
+
+.databaseNativeSelect:focus,
+.databaseNativeSelect:focus-visible {
+	outline: none;
+	box-shadow: 0 0 0 3px
+		color-mix(in srgb, var(--interactive-accent) 14%, transparent);
+	border-color: color-mix(in srgb, var(--interactive-accent) 34%, transparent);
+}
+
+.databaseCellPills {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+	min-height: 0;
+}
+
+.databaseTagEditor {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.databaseTagField {
+	min-height: 32px;
+	background: color-mix(in srgb, var(--bg-primary) 78%, var(--bg-secondary));
+}
+
+.databaseTagSuggestions {
+	padding-top: 2px;
+}
+
+.databaseCellPill {
+	padding: 3px 8px;
+	border-radius: var(--radius-sm);
+	border: 1px solid color-mix(in srgb, var(--border-light) 74%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 74%, transparent);
+	font-size: 0.78rem;
+	color: var(--text-secondary);
+}
+
+.databaseCellYaml {
+	margin: 0;
+	white-space: pre-wrap;
+	font-size: 0.76rem;
+	color: var(--text-secondary);
+}
+
+.databaseCellButton {
+	display: block;
+	min-width: 0;
+	min-height: 24px;
+	cursor: default;
+}
+
+.databaseCellButton.is-title {
+	font-weight: 600;
+}
+
+.databaseCellText,
+.databaseFooterPath {
+	display: block;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.databaseRow {
+	cursor: default;
+	transition: background-color var(--transition-base);
+}
+
+.databaseRow:hover {
+	background: var(--bg-hover);
+}
+
+.databaseRow[data-state="selected"] {
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 12%,
+		var(--bg-primary)
+	);
+}
+
+.databaseRow[data-state="selected"]:hover {
+	background: color-mix(in srgb, var(--interactive-accent) 15%, var(--bg-hover));
+}
+
+.databaseLoadingState,
+.databaseNotice,
+.databaseFooter {
+	padding: 14px 18px;
+}
+
+.databaseNotice {
+	border-bottom: 1px solid var(--border-subtle);
+}
+
+.databaseNoticeError {
+	color: var(--text-danger, #b54a3f);
+	background: color-mix(in srgb, #f6d8d1 20%, var(--bg-primary));
+}
+
+.databaseFooter {
+	justify-content: space-between;
+	border-top: 1px solid var(--border-light);
+	background: color-mix(in srgb, var(--bg-secondary) 32%, var(--bg-primary));
+}
+
+.databaseDialog {
+	max-width: min(900px, calc(100vw - 2rem));
+	padding: 1.1rem;
+	gap: 0.75rem;
+	border-radius: var(--radius-lg);
+	border-color: var(--border-light);
+	background: var(--bg-primary);
+	box-shadow: var(--shadow-md);
+}
+
+.databaseDialog [data-slot="dialog-header"] {
+	padding-inline: 0.3rem;
+}
+
+.databaseDialogBody {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	max-height: min(68vh, 700px);
+	overflow: auto;
+	padding: 0.1rem 0.2rem 0.05rem;
+}
+
+.databaseDialogBodyTight {
+	gap: 0;
+}
+
+.databaseDialogBodyColumns {
+	display: grid;
+	grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.95fr);
+	gap: 14px;
+	align-items: start;
+}
+
+.databaseDialogSidebar {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.databaseDialogSection {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+}
+
+.databaseDialogSectionTitle {
+	font-size: 0.84rem;
+	font-weight: 600;
+	color: var(--text-secondary);
+}
+
+.databaseDialogList {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	max-height: 340px;
+	overflow: auto;
+}
+
+.databaseSettingsCard {
+	padding: 8px 0;
+}
+
+.databaseSettingsCard .settingsCardTitle {
+	letter-spacing: 0.08em;
+}
+
+.databaseSettingsCard .settingsCardHint {
+	max-width: 58ch;
+}
+
+.databaseSettingsCard .settingsCardHeader {
+	margin-bottom: 2px;
+}
+
+.databaseDialogRow,
+.databaseFilterRow,
+.databaseFilterCard {
+	display: grid;
+	gap: 8px;
+	padding: 8px 10px;
+	border-radius: var(--radius-md);
+	border: 1px solid color-mix(in srgb, var(--border-light) 78%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 36%, transparent);
+}
+
+.databaseDialogRow {
+	grid-template-columns: minmax(0, 1fr) auto auto;
+	align-items: center;
+}
+
+.databaseSourceGrid {
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto;
+}
+
+.databaseFilterRow {
+	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+}
+
+.databaseFilterCard {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.databaseFilterCardHeader {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 10px;
+	padding-bottom: 2px;
+}
+
+.databaseDialogRowMeta {
+	min-width: 0;
+}
+
+.databaseDialogRowLead {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-width: 0;
+}
+
+.databaseDialogRowTitle {
+	font-weight: 600;
+	line-height: 1.2;
+}
+
+.databaseDialogRowSubtitle {
+	font-size: 0.74rem;
+	color: var(--text-secondary);
+}
+
+.databaseDialogRowActions,
+.databaseDialogChipList,
+.databaseManualProperty,
+.databaseDialogActions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+	align-items: center;
+}
+
+.databaseDialogRowActions {
+	flex-wrap: nowrap;
+	gap: 4px;
+}
+
+.databaseColumnWidthControl {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	padding: 0 2px;
+}
+
+.databaseColumnWidthValue {
+	min-width: 48px;
+	font-size: 0.72rem;
+	line-height: 1;
+	color: var(--text-secondary);
+	text-align: center;
+}
+
+.databaseColumnIconButton {
+	border-radius: var(--radius-md);
+	border: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
+	color: var(--text-secondary);
+}
+
+.databaseColumnIconButton:hover {
+	border-color: var(--border-default);
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}
+
+.databaseDialogActions {
+	padding: 0.3rem 0.35rem 0;
+}
+
+.databaseManualProperty {
+	width: 100%;
+	margin-left: 0;
+}
+
+.databaseManualProperty > * {
+	flex: 1 1 140px;
+}
+
+.databaseManualProperty > button {
+	flex: 0 0 auto;
+}
+
+.databaseDialogToggle {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 0.82rem;
+	color: var(--text-secondary);
+}
+
+.databaseToggleBlock {
+	min-height: 36px;
+	padding: 0 10px;
+	border-radius: var(--radius-md);
+	border: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
+}
+
+.databaseEmptyCell {
+	padding: 30px 14px;
+	text-align: center;
+	color: var(--text-secondary);
+}
+
+.databaseDialogEmptyState {
+	padding: 12px 2px;
+	font-size: 0.84rem;
+	color: var(--text-secondary);
+}
+
+.databaseCheckboxCell {
+	justify-content: flex-start;
+}
+
+.databaseFilterPassiveHint {
+	padding: 0 2px 2px;
+	font-size: 0.76rem;
+	line-height: 1.35;
+	color: var(--text-secondary);
+}
+
+.databasePickerTrigger {
+	width: min(100%, 320px);
+	max-width: 320px;
+	min-height: 44px;
+	justify-content: flex-start;
+	padding: 8px 10px;
+	gap: 10px;
+	border-radius: var(--radius-md);
+	border-color: color-mix(in srgb, var(--border-light) 78%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
+	align-self: flex-start;
+}
+
+.databasePickerTrigger:hover {
+	border-color: var(--border-default);
+	background: var(--bg-hover);
+}
+
+.databasePickerTriggerIcon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	border-radius: var(--radius-sm);
+	background: color-mix(in srgb, var(--bg-secondary) 76%, transparent);
+	color: var(--text-secondary);
+	flex: 0 0 auto;
+}
+
+.databasePickerTriggerText {
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 2px;
+}
+
+.databasePickerTriggerLabel {
+	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: 0.88rem;
+	font-weight: 600;
+	color: var(--text-primary);
+}
+
+.databasePickerTriggerMeta {
+	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: 0.76rem;
+	color: var(--text-tertiary);
+}
+
+.databasePickerPopover {
+	width: min(420px, calc(100vw - 2rem));
+	border-radius: var(--radius-lg);
+	border-color: var(--border-light);
+	padding: 12px;
+	background: var(--bg-primary);
+	box-shadow: var(--shadow-md);
+}
+
+.databaseColumnIconPopover {
+	width: min(380px, calc(100vw - 2rem));
+	padding-bottom: 10px;
+}
+
+.databasePickerHeader {
+	gap: 4px;
+	padding: 2px 2px 6px;
+}
+
+.databasePickerEyebrow {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 0.68rem;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--text-tertiary);
+}
+
+.databasePickerSearch {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	margin-bottom: 8px;
+	padding: 7px 9px;
+	border-radius: var(--radius-md);
+	border: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
+}
+
+.databasePickerSearch svg {
+	color: var(--text-tertiary);
+	flex: 0 0 auto;
+}
+
+.databasePickerSearch input {
+	border: 0;
+	box-shadow: none;
+	padding: 0;
+	height: 24px;
+	background: transparent;
+}
+
+.databasePickerSearch input:focus-visible {
+	outline: none;
+	box-shadow: none;
+}
+
+.databaseFolderBreadcrumbs {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 4px;
+	margin-bottom: 8px;
+	padding: 0 2px;
+}
+
+.databaseFolderCrumbSegment {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+}
+
+.databaseFolderCrumb,
+.databaseFolderCurrent {
+	border-radius: var(--radius-sm);
+}
+
+.databaseFolderCrumb {
+	padding: 3px 8px;
+	font-size: 0.75rem;
+	color: var(--text-secondary);
+	background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
+}
+
+.databaseFolderCrumb[data-active="true"] {
+	color: var(--text-primary);
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 10%,
+		var(--bg-primary)
+	);
+}
+
+.databaseFolderCurrent {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	margin-bottom: 8px;
+	padding: 8px 10px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 38%, transparent);
+}
+
+.databaseFolderCurrentMeta {
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.databasePickerResults {
+	height: min(240px, 38vh);
+}
+
+.databaseColumnIconGrid {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 8px;
+	max-height: min(280px, 42vh);
+	overflow: auto;
+	padding: 2px 2px 4px;
+}
+
+.databaseColumnIconOption {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	min-height: 74px;
+	padding: 10px 8px;
+	border-radius: var(--radius-md);
+	border: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
+	text-align: center;
+	transition: border-color var(--transition-base), background-color
+		var(--transition-base);
+}
+
+.databaseColumnIconOption:hover,
+.databaseColumnIconOption:focus-visible,
+.databaseColumnIconOption[data-active="true"] {
+	border-color: var(--border-default);
+	background: var(--bg-hover);
+}
+
+.databaseColumnIconOption:focus-visible {
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 18%, transparent);
+	outline-offset: 2px;
+}
+
+.databaseColumnIconOptionGlyph {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	border-radius: var(--radius-sm);
+	background: color-mix(in srgb, var(--bg-secondary) 72%, transparent);
+	color: var(--text-primary);
+}
+
+.databaseColumnIconOptionLabel {
+	font-size: 0.72rem;
+	line-height: 1.2;
+	color: var(--text-secondary);
+}
+
+.databasePickerList {
+	display: flex;
+	flex-direction: column;
+	gap: 5px;
+	padding: 0 4px 2px 2px;
+}
+
+.databasePickerOption {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	width: 100%;
+	padding: 8px 10px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
+	border-radius: var(--radius-md);
+	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
+	text-align: left;
+	transition: border-color var(--transition-base), background-color
+		var(--transition-base);
+}
+
+.databasePickerOption:hover,
+.databasePickerOption:focus-visible,
+.databasePickerOption[data-active="true"] {
+	border-color: var(--border-default);
+	background: var(--bg-hover);
+}
+
+.databasePickerOption:focus-visible {
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 18%, transparent);
+	outline-offset: 2px;
+}
+
+.databasePickerOptionMain {
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.databasePickerOptionLabel,
+.databasePickerOptionPath {
+	font-size: 0.84rem;
+	color: var(--text-primary);
+}
+
+.databasePickerOptionLabel {
+	font-weight: 600;
+}
+
+.databasePickerOptionMeta,
+.databasePickerEmpty {
+	font-size: 0.76rem;
+	line-height: 1.45;
+	color: var(--text-tertiary);
+}
+
+.databasePickerOptionPath,
+.databasePickerOptionMeta {
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.databasePickerOptionBadge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 26px;
+	height: 22px;
+	padding: 0 8px;
+	border-radius: var(--radius-sm);
+	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 72%, transparent);
+	font-size: 0.72rem;
+	font-weight: 600;
+	color: var(--text-secondary);
+	flex: 0 0 auto;
+}
+
+.databasePickerEmpty {
+	padding: 8px 4px 2px;
+}
+
+@media (max-width: 960px) {
+	.databaseDialogBodyColumns {
+		grid-template-columns: 1fr;
+	}
+
+	.databaseToolbar,
+	.databaseToolbarPrimary,
+	.databaseToolbarActions,
+	.databaseFooter,
+	.databaseFilterRow,
+	.databaseDialogRow {
+		flex-wrap: wrap;
+		grid-template-columns: 1fr;
+	}
+
+	.databaseTableShell {
+		padding: 12px;
+	}
+
+	.databaseBoardShell {
+		padding: 12px;
+	}
+
+	.databaseManualProperty {
+		width: 100%;
+		margin-left: 0;
+	}
+}

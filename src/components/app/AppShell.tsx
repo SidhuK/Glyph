@@ -452,6 +452,18 @@ export function AppShell() {
 				action: () => void fileTree.onNewFile(),
 			},
 			{
+				id: "new-database",
+				label: "New database",
+				category: "File Operations",
+				enabled: Boolean(vaultPath),
+				action: () =>
+					void fileTree
+						.onNewDatabaseInDir(getActiveFolderDir() ?? "")
+						.then((path) => {
+							if (path) void fileTree.openFile(path);
+						}),
+			},
+			{
 				id: "open-daily-note",
 				label: "Open daily note (today)",
 				category: "File Operations",
@@ -526,6 +538,7 @@ export function AppShell() {
 		openTasksTab,
 		moveTargetDirs,
 		movePickerSourcePath,
+		getActiveFolderDir,
 	]);
 
 	useCommandShortcuts({
@@ -573,6 +586,12 @@ export function AppShell() {
 				onSelectDir={(p) => void openFolderView(p)}
 				onOpenFile={(p) => void fileTree.openFile(p)}
 				onNewFileInDir={(p) => void fileTree.onNewFileInDir(p)}
+				onNewDatabaseInDir={(p) =>
+					fileTree.onNewDatabaseInDir(p).then((path) => {
+						if (path) void fileTree.openFile(path);
+						return path;
+					})
+				}
 				onNewFolderInDir={(p) => fileTree.onNewFolderInDir(p)}
 				onRenameDir={(p, name) => fileTree.onRenameDir(p, name)}
 				onDeletePath={(p, kind) => fileTree.onDeletePath(p, kind)}
