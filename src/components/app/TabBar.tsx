@@ -90,10 +90,9 @@ export function TabBar({
 				<div className="mainTabsSide" />
 			</div>
 			{breadcrumbSegments.length > 0 && (
-				<div
-					className={`mainTabsBreadcrumb ${hovered ? "is-visible" : ""}`}
-				>
+				<div className={`mainTabsBreadcrumb ${hovered ? "is-visible" : ""}`}>
 					{breadcrumbSegments.map((segment, i, arr) => (
+						// biome-ignore lint/suspicious/noArrayIndexKey: breadcrumb segments are derived from a static path split and never reorder
 						<span key={`${segment}-${i}`} className="mainTabsBreadcrumbItem">
 							{i > 0 && (
 								<span className="mainTabsBreadcrumbSep" aria-hidden>

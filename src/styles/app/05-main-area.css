@@ -882,8 +882,8 @@
 	color: var(--text-tertiary);
 	cursor: pointer;
 	transition: background var(--transition-fast), border-color
-		var(--transition-fast), color var(--transition-fast),
-		box-shadow var(--transition-fast);
+		var(--transition-fast), color var(--transition-fast), box-shadow
+		var(--transition-fast);
 }
 
 .mainTab:hover {
@@ -898,7 +898,8 @@
 	background: var(--bg-primary);
 	border-color: color-mix(in srgb, var(--border-light) 60%, transparent);
 	color: var(--text-primary);
-	box-shadow: 0 1px 2px color-mix(in srgb, var(--shadow-color, #000) 8%, transparent);
+	box-shadow: 0 1px 2px
+		color-mix(in srgb, var(--shadow-color, #000) 8%, transparent);
 }
 
 .mainTabText {
