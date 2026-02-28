@@ -41,6 +41,51 @@ fn tokenize_search_query(raw: &str) -> Vec<String> {
     out
 }
 
+pub(crate) fn parse_raw_search_query(
+    raw_query: &str,
+    limit: Option<u32>,
+) -> SearchAdvancedRequest {
+    let mut req = SearchAdvancedRequest {
+        limit: Some(limit.unwrap_or(1500).clamp(1, 2_000)),
+        ..SearchAdvancedRequest::default()
+    };
+    let mut tags: Vec<String> = Vec::new();
+    let mut text_parts: Vec<String> = Vec::new();
+
+    for token in tokenize_search_query(raw_query.trim()) {
+        let lower = token.to_lowercase();
+        if lower == "title:only" {
+            req.title_only = true;
+            continue;
+        }
+        if lower == "tag:only" {
+            req.tag_only = true;
+            continue;
+        }
+        if token.starts_with('#') {
+            tags.push(token);
+            continue;
+        }
+        if lower.starts_with("tag:") {
+            let rest = token[4..].trim();
+            if !rest.is_empty() {
+                tags.push(if rest.starts_with('#') {
+                    rest.to_string()
+                } else {
+                    format!("#{rest}")
+                });
+            }
+            continue;
+        }
+        text_parts.push(token);
+    }
+
+    req.tags = tags;
+    let text = text_parts.join(" ").trim().to_string();
+    req.query = if text.is_empty() { None } else { Some(text) };
+    req
+}
+
 fn task_line_parts(line: &str) -> Option<(&str, &str)> {
     let trimmed = line.trim_start();
     let list_prefix = [
@@ -191,45 +236,7 @@ pub async fn search_parse_and_run(
 ) -> Result<Vec<SearchResult>, String> {
     let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<SearchResult>, String> {
-        let mut req = SearchAdvancedRequest {
-            limit: Some(limit.unwrap_or(1500).clamp(1, 2_000)),
-            ..SearchAdvancedRequest::default()
-        };
-        let mut tags: Vec<String> = Vec::new();
-        let mut text_parts: Vec<String> = Vec::new();
-
-        for token in tokenize_search_query(raw_query.trim()) {
-            let lower = token.to_lowercase();
-            if lower == "title:only" {
-                req.title_only = true;
-                continue;
-            }
-            if lower == "tag:only" {
-                req.tag_only = true;
-                continue;
-            }
-            if token.starts_with('#') {
-                tags.push(token);
-                continue;
-            }
-            if lower.starts_with("tag:") {
-                let rest = token[4..].trim();
-                if !rest.is_empty() {
-                    tags.push(if rest.starts_with('#') {
-                        rest.to_string()
-                    } else {
-                        format!("#{rest}")
-                    });
-                }
-                continue;
-            }
-            text_parts.push(token);
-        }
-
-        req.tags = tags;
-        let text = text_parts.join(" ").trim().to_string();
-        req.query = if text.is_empty() { None } else { Some(text) };
-
+        let req = parse_raw_search_query(&raw_query, limit);
         let conn = open_db(&root)?;
         run_search_advanced(&conn, req)
     })

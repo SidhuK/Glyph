@@ -1,16 +1,21 @@
 import { m } from "motion/react";
-import { memo, useEffect, useMemo } from "react";
+import { Suspense, lazy, memo, useEffect, useMemo } from "react";
 import { useVault } from "../../contexts";
 import { formatShortcutPartsForPlatform } from "../../lib/shortcuts/platform";
 import { TASKS_TAB_ID } from "../../lib/tasks";
 import { isInAppPreviewable } from "../../utils/filePreview";
 import { FileText } from "../Icons";
 import { FilePreviewPane } from "../preview/FilePreviewPane";
-import { MarkdownEditorPane } from "../preview/MarkdownEditorPane";
 import { TasksPane } from "../tasks/TasksPane";
 import { TabBar } from "./TabBar";
 import { WelcomeScreen } from "./WelcomeScreen";
 import { useTabManager } from "./useTabManager";
+
+const LazyDatabasePane = lazy(() =>
+	import("../database/DatabasePane").then((module) => ({
+		default: module.DatabasePane,
+	})),
+);
 
 interface MainContentProps {
 	fileTree: {
@@ -95,16 +100,21 @@ export const MainContent = memo(function MainContent({
 		}
 		if (viewerPath.toLowerCase().endsWith(".md")) {
 			return (
-				<MarkdownEditorPane
-					relPath={viewerPath}
-					onDirtyChange={(dirty) =>
-						setDirtyByPath((prev) =>
-							prev[viewerPath] === dirty
-								? prev
-								: { ...prev, [viewerPath]: dirty },
-						)
-					}
-				/>
+				<Suspense
+					fallback={<div className="mainEmptyState">Loading note…</div>}
+				>
+					<LazyDatabasePane
+						relPath={viewerPath}
+						onOpenFile={(relPath) => fileTree.openFile(relPath)}
+						onDirtyChange={(dirty) =>
+							setDirtyByPath((prev) =>
+								prev[viewerPath] === dirty
+									? prev
+									: { ...prev, [viewerPath]: dirty },
+							)
+						}
+					/>
+				</Suspense>
 			);
 		}
 		if (isInAppPreviewable(viewerPath)) {

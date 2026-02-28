@@ -77,6 +77,12 @@ export const Archive = (props: IconProps) => (
 export const Database = (props: IconProps) => (
 	<HugeiconsIcon icon={Icons.Database} {...props} />
 );
+export const Table = (props: IconProps) => (
+	<HugeiconsIcon icon={Icons.TableIcon} {...props} />
+);
+export const Kanban = (props: IconProps) => (
+	<HugeiconsIcon icon={Icons.KanbanIcon} {...props} />
+);
 export const Cpu = (props: IconProps) => (
 	<HugeiconsIcon icon={Icons.Cpu} {...props} />
 );

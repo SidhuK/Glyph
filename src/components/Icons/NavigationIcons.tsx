@@ -14,6 +14,9 @@ export const Command = (props: IconProps) => (
 export const ChevronRight = (props: IconProps) => (
 	<HugeiconsIcon icon={Icons.ArrowRight} {...props} />
 );
+export const ChevronUp = (props: IconProps) => (
+	<HugeiconsIcon icon={Icons.ArrowUp} {...props} />
+);
 export const ChevronDown = (props: IconProps) => (
 	<HugeiconsIcon icon={Icons.ArrowDown} {...props} />
 );

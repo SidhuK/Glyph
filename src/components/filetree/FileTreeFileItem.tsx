@@ -26,6 +26,7 @@ interface FileTreeFileItemProps {
 	isRenaming: boolean;
 	onOpenFile: (filePath: string) => void;
 	onNewFileInDir: (dirPath: string) => unknown;
+	onNewDatabaseInDir: (dirPath: string) => unknown;
 	onNewFolderInDir: (dirPath: string) => unknown;
 	onStartRename: () => void;
 	onCommitRename: (path: string, nextName: string) => Promise<void> | void;
@@ -41,6 +42,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 	isRenaming,
 	onOpenFile,
 	onNewFileInDir,
+	onNewDatabaseInDir,
 	onNewFolderInDir,
 	onStartRename,
 	onCommitRename,
@@ -160,6 +162,13 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 							>
 								<Plus size={14} />
 								Add file
+							</ContextMenuItem>
+							<ContextMenuItem
+								className="fileTreeCreateMenuItem"
+								onSelect={() => void onNewDatabaseInDir(parentDirPath)}
+							>
+								<Plus size={14} />
+								Add database
 							</ContextMenuItem>
 							<ContextMenuItem
 								className="fileTreeCreateMenuItem"

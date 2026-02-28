@@ -32,6 +32,7 @@ interface FileTreeDirItemProps {
 	onCommitRename: (dirPath: string, nextName: string) => Promise<void> | void;
 	onCancelRename: () => void;
 	onNewFileInDir: (dirPath: string) => unknown;
+	onNewDatabaseInDir: (dirPath: string) => unknown;
 	onNewFolderInDir: (dirPath: string) => unknown;
 	onDeletePath: (path: string, kind: "dir" | "file") => void;
 }
@@ -49,6 +50,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 	onCommitRename,
 	onCancelRename,
 	onNewFileInDir,
+	onNewDatabaseInDir,
 	onNewFolderInDir,
 	onDeletePath,
 }: FileTreeDirItemProps) {
@@ -140,6 +142,13 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 							>
 								<Plus size={14} />
 								Add file
+							</ContextMenuItem>
+							<ContextMenuItem
+								className="fileTreeCreateMenuItem"
+								onSelect={() => void onNewDatabaseInDir(entry.rel_path)}
+							>
+								<Plus size={14} />
+								Add database
 							</ContextMenuItem>
 							<ContextMenuItem
 								className="fileTreeCreateMenuItem"

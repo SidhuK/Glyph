@@ -6,7 +6,7 @@ mod indexer;
 mod links;
 mod properties;
 mod schema;
-mod search_advanced;
+pub(crate) mod search_advanced;
 mod search_hybrid;
 mod tags;
 mod tasks;

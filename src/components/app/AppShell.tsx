@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { AnimatePresence } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 import {
 	useAISidebarContext,
 	useEditorContext,
@@ -452,6 +453,29 @@ export function AppShell() {
 				action: () => void fileTree.onNewFile(),
 			},
 			{
+				id: "new-database",
+				label: "New database",
+				category: "File Operations",
+				enabled: Boolean(vaultPath),
+				action: async () => {
+					try {
+						const dir = getActiveFolderDir() ?? "";
+						const path = await fileTree.onNewDatabaseInDir(dir);
+						if (path) {
+							await fileTree.openFile(path);
+						}
+					} catch (error) {
+						const message =
+							error instanceof Error ? error.message : String(error);
+						console.error("Failed to create database note", error);
+						setError(message);
+						toast.error("Could not create database", {
+							description: message,
+						});
+					}
+				},
+			},
+			{
 				id: "open-daily-note",
 				label: "Open daily note (today)",
 				category: "File Operations",
@@ -526,6 +550,8 @@ export function AppShell() {
 		openTasksTab,
 		moveTargetDirs,
 		movePickerSourcePath,
+		getActiveFolderDir,
+		setError,
 	]);
 
 	useCommandShortcuts({
@@ -573,6 +599,29 @@ export function AppShell() {
 				onSelectDir={(p) => void openFolderView(p)}
 				onOpenFile={(p) => void fileTree.openFile(p)}
 				onNewFileInDir={(p) => void fileTree.onNewFileInDir(p)}
+				onNewDatabaseInDir={(p) =>
+					fileTree
+						.onNewDatabaseInDir(p)
+						.then(async (path) => {
+							if (path) {
+								await fileTree.openFile(path);
+							}
+							return path;
+						})
+						.catch((error) => {
+							const message =
+								error instanceof Error ? error.message : String(error);
+							console.error(
+								"Failed to create database note in directory",
+								error,
+							);
+							setError(message);
+							toast.error("Could not create database", {
+								description: message,
+							});
+							return null;
+						})
+				}
 				onNewFolderInDir={(p) => fileTree.onNewFolderInDir(p)}
 				onRenameDir={(p, name) => fileTree.onRenameDir(p, name)}
 				onDeletePath={(p, kind) => fileTree.onDeletePath(p, kind)}
