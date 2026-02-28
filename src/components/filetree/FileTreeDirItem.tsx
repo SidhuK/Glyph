@@ -16,7 +16,6 @@ import {
 	buildRowStyle,
 	rowVariants,
 	springTransition,
-	truncateTreeLabel,
 } from "./fileTreeItemHelpers";
 
 interface FileTreeDirItemProps {
@@ -58,7 +57,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 	const inputRef = useRef<HTMLInputElement | null>(null);
 	const renameSubmittedRef = useRef(false);
 	const [draftName, setDraftName] = useState(entry.name);
-	const displayDirName = truncateTreeLabel(entry.name, false);
+	const displayDirName = entry.name.trim() || "New Folder";
 
 	useEffect(() => {
 		if (!isRenaming) return;

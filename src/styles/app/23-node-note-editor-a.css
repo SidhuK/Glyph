@@ -301,13 +301,13 @@
 			(2 * var(--readable-content-gutter-compact))
 		)
 	);
-	margin: 0 auto var(--space-2);
-	border: 1px dashed var(--border-light);
-	border-radius: var(--radius-lg);
-	padding: 10px 14px;
-	background: var(--bg-secondary);
+	margin: 0 auto var(--space-1);
+	border: none;
+	border-radius: 0;
+	padding: 0 14px;
+	background: transparent;
 	color: var(--text-secondary);
-	font-size: 12px;
+	font-size: var(--text-xs);
 }
 
 .frontmatterPreview pre {

@@ -16,33 +16,6 @@ export const rowVariants = {
 	tap: { scale: 0.98 },
 };
 
-export function truncateMiddle(text: string, maxChars: number): string {
-	if (text.length <= maxChars) return text;
-	if (maxChars <= 4) return `${text.slice(0, maxChars)}...`;
-	const keep = maxChars - 3;
-	const head = Math.ceil(keep / 2);
-	const tail = Math.floor(keep / 2);
-	return `${text.slice(0, head)}...${text.slice(-tail)}`;
-}
-
-export function truncateTreeLabel(name: string, isFile: boolean): string {
-	const trimmed = name.trim();
-	if (!trimmed) return isFile ? "Untitled.md" : "New Folder";
-	if (!isFile) return truncateMiddle(trimmed, 18);
-	const dotIndex = trimmed.lastIndexOf(".");
-	if (dotIndex > 0 && dotIndex < trimmed.length - 1) {
-		const ext = trimmed.slice(dotIndex);
-		const base = trimmed.slice(0, dotIndex);
-		const maxChars = 20;
-		if (trimmed.length <= maxChars) return trimmed;
-		const availableBase = maxChars - ext.length - 3;
-		if (availableBase >= 4) {
-			return `${base.slice(0, availableBase)}...${ext}`;
-		}
-	}
-	return truncateMiddle(trimmed, 20);
-}
-
 export function splitEditableFileName(name: string): {
 	stem: string;
 	ext: string;
@@ -59,10 +32,10 @@ export function splitEditableFileName(name: string): {
 }
 
 export function buildRowStyle(depth: number): CSSProperties {
-	const paddingLeft = 10 + depth * 10;
+	const paddingLeft = 4 + depth * 10;
 	return {
 		paddingLeft,
-		"--tree-line-x": `${depth * 10 + 6}px`,
+		"--tree-line-x": `${depth * 10 + 2}px`,
 		"--row-indent": `${paddingLeft}px`,
 		"--row-line-opacity": depth === 0 ? 0 : 0.85,
 	} as CSSProperties;

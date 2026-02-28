@@ -15,7 +15,6 @@ import {
 	rowVariants,
 	splitEditableFileName,
 	springTransition,
-	truncateMiddle,
 } from "./fileTreeItemHelpers";
 import { basename, getFileTypeInfo } from "./fileTypeUtils";
 
@@ -54,14 +53,12 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 	const { label } = getFileTypeInfo(entry.rel_path, entry.is_markdown);
 	const { stem: fileStem, ext: fileExt } = splitEditableFileName(entry.name);
 	const isMd = fileExt.toLowerCase() === ".md";
-	const displayStem = truncateMiddle(
+	const displayStem =
 		fileStem.trim() ||
-			basename(entry.rel_path)
-				.replace(/\.[^.]+$/, "")
-				.trim() ||
-			"Untitled",
-		18,
-	);
+		basename(entry.rel_path)
+			.replace(/\.[^.]+$/, "")
+			.trim() ||
+		"Untitled";
 	const extBadge = !isMd && fileExt ? fileExt.slice(1) : "";
 	const inputRef = useRef<HTMLInputElement | null>(null);
 	const renameSubmittedRef = useRef(false);

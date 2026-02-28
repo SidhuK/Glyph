@@ -362,17 +362,15 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 						spellCheck={false}
 					/>
 				) : null}
-				{mode === "rich" ? (
+				{mode === "rich" && frontmatterDraft ? (
 					<div className="frontmatterPreview mono">
-						<div className="frontmatterLabel">Frontmatter</div>
 						<NotePropertiesPanel
-							frontmatter={frontmatterDraft || null}
+							frontmatter={frontmatterDraft}
 							onChange={handleFrontmatterChange}
 						/>
 					</div>
 				) : frontmatter ? (
 					<div className="frontmatterPreview mono">
-						<div className="frontmatterLabel">Frontmatter</div>
 						<pre>{renderFrontmatterWithLinks(frontmatter.trimEnd())}</pre>
 					</div>
 				) : null}

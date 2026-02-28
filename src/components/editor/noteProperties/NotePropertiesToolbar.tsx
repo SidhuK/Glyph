@@ -13,7 +13,7 @@ export function NotePropertiesToolbar({
 }: NotePropertiesToolbarProps) {
 	return (
 		<div className="notePropertiesToolbar">
-			<div className="notePropertiesToolbarLabel">Properties</div>
+			<div className="notePropertiesToolbarLabel">Frontmatter</div>
 			<div className="notePropertiesToolbarActions">
 				<Button
 					type="button"
