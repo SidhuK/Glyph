@@ -7,7 +7,7 @@ use tauri::Emitter;
 
 use crate::{index, utils};
 
-use super::state::SpaceState;
+use super::state::{has_recent_local_change, SpaceState};
 
 #[derive(Serialize, Clone)]
 struct ExternalChangeEvent {
@@ -66,6 +66,7 @@ pub fn set_notes_watcher(
 
     let app2 = app.clone();
     let root2 = root.clone();
+    let recent_local_changes = state.recent_local_changes();
 
     let watcher = notify::recommended_watcher(move |res: notify::Result<notify::Event>| {
         let event = match res {
@@ -98,14 +99,16 @@ pub fn set_notes_watcher(
             }
 
             if utils::is_markdown_path(&path) {
-                let _ = idx_tx.send((rel_s.clone(), is_remove));
+                if !has_recent_local_change(&recent_local_changes, &rel_s) {
+                    let _ = idx_tx.send((rel_s.clone(), is_remove));
 
-                let _ = app2.emit(
-                    "notes:external_changed",
-                    ExternalChangeEvent {
-                        rel_path: rel_s.clone(),
-                    },
-                );
+                    let _ = app2.emit(
+                        "notes:external_changed",
+                        ExternalChangeEvent {
+                            rel_path: rel_s.clone(),
+                        },
+                    );
+                }
             }
 
             let _ = app2.emit("space:fs_changed", ExternalChangeEvent { rel_path: rel_s });

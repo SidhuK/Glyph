@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 use tauri::State;
 
-use crate::{paths, utils, space::SpaceState};
+use crate::{paths, space::SpaceState, utils};
 
 use super::helpers::{deny_hidden_rel_path, should_hide};
 use super::types::FsEntry;

@@ -10,6 +10,7 @@ use crate::notes::frontmatter::{
     render_frontmatter_mapping_yaml, split_frontmatter,
 };
 use crate::paths;
+use crate::space::state::{mark_recent_local_change, RecentLocalChanges};
 use crate::space::SpaceState;
 use crate::space_fs::helpers::deny_hidden_rel_path;
 
@@ -93,13 +94,19 @@ fn yaml_value_from_cell(
     }
 }
 
-fn write_markdown_note(root: &Path, rel_path: &str, markdown: &str) -> Result<(), String> {
+fn write_markdown_note(
+    root: &Path,
+    recent_local_changes: &RecentLocalChanges,
+    rel_path: &str,
+    markdown: &str,
+) -> Result<(), String> {
     let rel = PathBuf::from(rel_path);
     deny_hidden_rel_path(&rel)?;
     let abs = paths::join_under(root, &rel)?;
     if let Some(parent) = abs.parent() {
         std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
     }
+    mark_recent_local_change(recent_local_changes, rel_path);
     io_atomic::write_atomic(&abs, markdown.as_bytes()).map_err(|e| e.to_string())?;
     index_note(root, rel_path, markdown)?;
     Ok(())
@@ -213,10 +220,11 @@ pub async fn database_save_config(
     config: DatabaseConfig,
 ) -> Result<DatabaseConfig, String> {
     let root = state.current_root()?;
+    let recent_local_changes = state.recent_local_changes();
     tauri::async_runtime::spawn_blocking(move || -> Result<DatabaseConfig, String> {
         let existing = read_database_markdown(&root, &path)?;
         let next = render_database_markdown(&path, &existing, &config)?;
-        write_markdown_note(&root, &path, &next)?;
+        write_markdown_note(&root, &recent_local_changes, &path, &next)?;
         Ok(config)
     })
     .await
@@ -231,13 +239,14 @@ pub async fn database_update_cell(
     value: DatabaseCellValue,
 ) -> Result<DatabaseRow, String> {
     let root = state.current_root()?;
+    let recent_local_changes = state.recent_local_changes();
     tauri::async_runtime::spawn_blocking(move || -> Result<DatabaseRow, String> {
         let rel = PathBuf::from(&note_path);
         deny_hidden_rel_path(&rel)?;
         let abs = paths::join_under(&root, &rel)?;
         let markdown = std::fs::read_to_string(&abs).map_err(|e| e.to_string())?;
         let next = apply_cell_update_to_markdown(&note_path, &markdown, &column, &value)?;
-        write_markdown_note(&root, &note_path, &next)?;
+        write_markdown_note(&root, &recent_local_changes, &note_path, &next)?;
         let row = row_by_path(&root, &note_path)?;
         Ok(apply_cell_value_to_row(row, &column, &value))
     })
@@ -333,6 +342,7 @@ pub async fn database_create_row(
     title: Option<String>,
 ) -> Result<DatabaseCreateRowResult, String> {
     let root = state.current_root()?;
+    let recent_local_changes = state.recent_local_changes();
     tauri::async_runtime::spawn_blocking(move || -> Result<DatabaseCreateRowResult, String> {
         let database_markdown = read_database_markdown(&root, &database_path)?;
         let config = parse_database_config(&database_markdown)?;
@@ -370,7 +380,7 @@ pub async fn database_create_row(
         }
 
         let next = create_new_row_markdown(&candidate, &title)?;
-        write_markdown_note(&root, &candidate, &next)?;
+        write_markdown_note(&root, &recent_local_changes, &candidate, &next)?;
         let row = row_by_path(&root, &candidate)?;
         Ok(DatabaseCreateRowResult {
             note_path: candidate,

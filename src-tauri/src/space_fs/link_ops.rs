@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use tauri::State;
 
-use crate::{paths, utils, space::SpaceState};
+use crate::{paths, space::SpaceState, utils};
 
 #[derive(Clone)]
 struct FileEntry {

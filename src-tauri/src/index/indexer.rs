@@ -86,6 +86,18 @@ fn index_note_with_conn(
     note_id: &str,
     markdown: &str,
 ) -> Result<(), String> {
+    let etag = sha256_hex(markdown.as_bytes());
+    let existing_etag: Option<String> = conn
+        .query_row(
+            "SELECT etag FROM notes WHERE id = ? LIMIT 1",
+            [note_id],
+            |row| row.get(0),
+        )
+        .ok();
+    if existing_etag.as_deref() == Some(etag.as_str()) {
+        return Ok(());
+    }
+
     let tx = conn.unchecked_transaction().map_err(|e| e.to_string())?;
 
     let (mut title, created, updated) = parse_frontmatter_title_created_updated(markdown);
@@ -100,7 +112,6 @@ fn index_note_with_conn(
         }
     }
     let title_for_fts = title.clone();
-    let etag = sha256_hex(markdown.as_bytes());
     let preview = preview_from_markdown(note_id, markdown);
     let rel_path = note_id.to_string();
 
@@ -289,4 +300,81 @@ pub fn rebuild(space_root: &Path) -> Result<IndexRebuildResult, String> {
 
     tx.commit().map_err(|e| e.to_string())?;
     Ok(IndexRebuildResult { indexed: count })
+}
+
+#[cfg(test)]
+mod tests {
+    use super::index_note;
+    use crate::index::db::open_db;
+    use std::path::{Path, PathBuf};
+    use std::thread;
+    use std::time::Duration;
+
+    struct TempSpace {
+        root: PathBuf,
+    }
+
+    impl TempSpace {
+        fn new() -> Self {
+            let root =
+                std::env::temp_dir().join(format!("glyph-indexer-test-{}", uuid::Uuid::new_v4()));
+            std::fs::create_dir_all(&root).expect("temp space should be created");
+            Self { root }
+        }
+
+        fn path(&self) -> &Path {
+            &self.root
+        }
+    }
+
+    impl Drop for TempSpace {
+        fn drop(&mut self) {
+            let _ = std::fs::remove_dir_all(&self.root);
+        }
+    }
+
+    #[test]
+    fn skips_reindex_when_etag_matches_existing_note() {
+        let temp_space = TempSpace::new();
+        let root = temp_space.path();
+        let note_id = "Projects/Idle Churn.md";
+        let markdown = "- [ ] Keep index stable\n";
+
+        index_note(root, note_id, markdown).expect("first index should succeed");
+
+        let conn = open_db(root).expect("db should open");
+        let first_updated: String = conn
+            .query_row("SELECT updated FROM notes WHERE id = ?", [note_id], |row| {
+                row.get(0)
+            })
+            .expect("note row should exist");
+        let first_indexed_at: String = conn
+            .query_row(
+                "SELECT indexed_at FROM tasks WHERE note_id = ? LIMIT 1",
+                [note_id],
+                |row| row.get(0),
+            )
+            .expect("task row should exist");
+        drop(conn);
+
+        thread::sleep(Duration::from_millis(1100));
+        index_note(root, note_id, markdown).expect("second index should succeed");
+
+        let conn = open_db(root).expect("db should reopen");
+        let second_updated: String = conn
+            .query_row("SELECT updated FROM notes WHERE id = ?", [note_id], |row| {
+                row.get(0)
+            })
+            .expect("note row should still exist");
+        let second_indexed_at: String = conn
+            .query_row(
+                "SELECT indexed_at FROM tasks WHERE note_id = ? LIMIT 1",
+                [note_id],
+                |row| row.get(0),
+            )
+            .expect("task row should still exist");
+
+        assert_eq!(second_updated, first_updated);
+        assert_eq!(second_indexed_at, first_indexed_at);
+    }
 }

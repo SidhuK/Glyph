@@ -1,6 +1,7 @@
 use std::{ffi::OsStr, io::Write, path::PathBuf};
 use tauri::State;
 
+use crate::space::state::mark_recent_local_change;
 use crate::{index, io_atomic, paths, space::SpaceState};
 
 use super::super::helpers::{deny_hidden_rel_path, etag_for, file_mtime_ms};
@@ -81,6 +82,7 @@ pub async fn space_write_text(
     base_mtime_ms: Option<u64>,
 ) -> Result<TextFileWriteResult, String> {
     let root = state.current_root()?;
+    let recent_local_changes = state.recent_local_changes();
     tauri::async_runtime::spawn_blocking(move || -> Result<TextFileWriteResult, String> {
         let rel = PathBuf::from(&path);
         deny_hidden_rel_path(&rel)?;
@@ -98,6 +100,9 @@ pub async fn space_write_text(
         let rel_path = rel.to_string_lossy().to_string();
         let should_index = rel.extension() == Some(OsStr::new("md"));
         let bytes = text.into_bytes();
+        if should_index {
+            mark_recent_local_change(&recent_local_changes, &rel_path);
+        }
         io_atomic::write_atomic(&abs, &bytes).map_err(|e| e.to_string())?;
         if should_index {
             if let Ok(markdown) = std::str::from_utf8(&bytes) {

@@ -10,10 +10,10 @@ mod links;
 mod net;
 mod notes;
 mod paths;
-mod system_fonts;
-pub(crate) mod utils;
 mod space;
 mod space_fs;
+mod system_fonts;
+pub(crate) mod utils;
 
 use serde::Serialize;
 use tauri::menu::{

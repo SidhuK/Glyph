@@ -1,6 +1,7 @@
 use std::{ffi::OsStr, path::Path};
 use tauri::State;
 
+use crate::space::state::mark_recent_local_change;
 use crate::{index, io_atomic, paths, space::SpaceState};
 
 use super::frontmatter::{
@@ -49,10 +50,12 @@ pub async fn notes_list(state: State<'_, SpaceState>) -> Result<Vec<NoteMeta>, S
 #[tauri::command]
 pub async fn note_create(state: State<'_, SpaceState>, title: String) -> Result<NoteMeta, String> {
     let root = state.current_root()?;
+    let recent_local_changes = state.recent_local_changes();
     tauri::async_runtime::spawn_blocking(move || -> Result<NoteMeta, String> {
         let id = uuid::Uuid::new_v4().to_string();
         let rel = note_rel_path(&id)?;
         let path = paths::join_under(&root, &rel)?;
+        let rel_path = rel.to_string_lossy().to_string();
 
         let now = now_rfc3339();
         let mut fm = serde_yaml::Mapping::new();
@@ -79,6 +82,7 @@ pub async fn note_create(state: State<'_, SpaceState>, title: String) -> Result<
 
         let yaml = render_frontmatter_mapping_yaml(&fm)?;
         let markdown = format!("---\n{yaml}---\n\n");
+        mark_recent_local_change(&recent_local_changes, &rel_path);
         io_atomic::write_atomic(&path, markdown.as_bytes()).map_err(|e| e.to_string())?;
         let _ = index::index_note(&root, &id, &markdown);
 
@@ -132,6 +136,7 @@ pub async fn note_write(
     base_etag: Option<String>,
 ) -> Result<NoteWriteResult, String> {
     let root = state.current_root()?;
+    let recent_local_changes = state.recent_local_changes();
     tauri::async_runtime::spawn_blocking(move || -> Result<NoteWriteResult, String> {
         let path = note_abs_path(&root, &id)?;
         let current = std::fs::read_to_string(&path).map_err(|e| e.to_string())?;
@@ -149,6 +154,8 @@ pub async fn note_write(
         let fm = normalize_frontmatter_mapping(fm, &id, None, preserve_created.as_deref());
         let yaml = render_frontmatter_mapping_yaml(&fm)?;
         let normalized = format!("---\n{yaml}---\n\n{}", body.trim_start_matches('\n'));
+        let rel_path = note_rel_path(&id)?.to_string_lossy().to_string();
+        mark_recent_local_change(&recent_local_changes, &rel_path);
         io_atomic::write_atomic(&path, normalized.as_bytes()).map_err(|e| e.to_string())?;
         let _ = index::index_note(&root, &id, &normalized);
         let meta = extract_meta(&id, &normalized)?;
@@ -165,8 +172,11 @@ pub async fn note_write(
 #[tauri::command]
 pub async fn note_delete(state: State<'_, SpaceState>, id: String) -> Result<(), String> {
     let root = state.current_root()?;
+    let recent_local_changes = state.recent_local_changes();
     tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
         let path = note_abs_path(&root, &id)?;
+        let rel_path = note_rel_path(&id)?.to_string_lossy().to_string();
+        mark_recent_local_change(&recent_local_changes, &rel_path);
         std::fs::remove_file(&path).map_err(|e| e.to_string())?;
         let _ = index::remove_note(&root, &id);
         Ok(())

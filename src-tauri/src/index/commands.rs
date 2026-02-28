@@ -2,6 +2,7 @@ use std::path::Path;
 use tauri::{AppHandle, State};
 use tauri_plugin_notification::NotificationExt;
 
+use crate::space::state::mark_recent_local_change;
 use crate::space::SpaceState;
 
 use super::db::open_db;
@@ -41,10 +42,7 @@ fn tokenize_search_query(raw: &str) -> Vec<String> {
     out
 }
 
-pub(crate) fn parse_raw_search_query(
-    raw_query: &str,
-    limit: Option<u32>,
-) -> SearchAdvancedRequest {
+pub(crate) fn parse_raw_search_query(raw_query: &str, limit: Option<u32>) -> SearchAdvancedRequest {
     let mut req = SearchAdvancedRequest {
         limit: Some(limit.unwrap_or(1500).clamp(1, 2_000)),
         ..SearchAdvancedRequest::default()
@@ -532,6 +530,7 @@ pub async fn task_set_checked(
     checked: bool,
 ) -> Result<(), String> {
     let root = state.current_root()?;
+    let recent_local_changes = state.recent_local_changes();
     tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
         let conn = open_db(&root)?;
         let mut stmt = conn
@@ -545,6 +544,7 @@ pub async fn task_set_checked(
         let markdown = std::fs::read_to_string(&abs).map_err(|e| e.to_string())?;
         let next = mutate_task_line(&markdown, line_start, Some(checked), None, None)
             .ok_or_else(|| "task line no longer exists".to_string())?;
+        mark_recent_local_change(&recent_local_changes, &note_path);
         write_note(&abs, &next)?;
         let _ = index_note(&root, &note_id, &next);
         Ok(())
@@ -561,6 +561,7 @@ pub async fn task_set_dates(
     due_date: Option<String>,
 ) -> Result<(), String> {
     let root = state.current_root()?;
+    let recent_local_changes = state.recent_local_changes();
     tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
         let conn = open_db(&root)?;
         let mut stmt = conn
@@ -580,6 +581,7 @@ pub async fn task_set_dates(
             due_date.as_deref(),
         )
         .ok_or_else(|| "task line no longer exists".to_string())?;
+        mark_recent_local_change(&recent_local_changes, &note_path);
         write_note(&abs, &next)?;
         let _ = index_note(&root, &note_id, &next);
         Ok(())

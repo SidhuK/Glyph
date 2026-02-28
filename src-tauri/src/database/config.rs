@@ -8,9 +8,7 @@ use crate::notes::frontmatter::{
 
 use super::types::DatabaseConfig;
 #[cfg(test)]
-use super::types::{
-    DatabaseColumn, DatabaseNewNoteConfig, DatabaseSource, DatabaseViewState,
-};
+use super::types::{DatabaseColumn, DatabaseNewNoteConfig, DatabaseSource, DatabaseViewState};
 
 const DATABASE_KIND: &str = "database";
 const DATABASE_VERSION: i64 = 1;
@@ -204,7 +202,10 @@ Body
         assert_eq!(config.source.kind, "folder");
         assert_eq!(config.source.value, "Projects");
         assert_eq!(config.view.layout, "board");
-        assert_eq!(config.view.board_group_by.as_deref(), Some("property:status"));
+        assert_eq!(
+            config.view.board_group_by.as_deref(),
+            Some("property:status")
+        );
         assert!(is_database_markdown(markdown));
     }
 
@@ -327,7 +328,10 @@ glyph:
             .expect("render should succeed");
         let reparsed = parse_database_config(&rendered).expect("config should reparse");
         assert_eq!(reparsed.view.layout, "board");
-        assert_eq!(reparsed.view.board_group_by.as_deref(), Some("property:status"));
+        assert_eq!(
+            reparsed.view.board_group_by.as_deref(),
+            Some("property:status")
+        );
     }
 
     #[test]

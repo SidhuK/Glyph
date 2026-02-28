@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use tauri::State;
 
-use crate::{paths, utils, space::SpaceState};
+use crate::{paths, space::SpaceState, utils};
 
 const DEFAULT_FILE_LIST_LIMIT: usize = 20_000;
 const DEFAULT_CHAR_BUDGET: usize = 12_000;

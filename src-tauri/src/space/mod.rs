@@ -1,6 +1,6 @@
 pub mod commands;
 mod helpers;
-mod state;
+pub(crate) mod state;
 mod watcher;
 
 pub use state::SpaceState;

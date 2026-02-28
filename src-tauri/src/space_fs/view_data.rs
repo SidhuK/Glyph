@@ -6,7 +6,7 @@ use std::{
 };
 use tauri::State;
 
-use crate::{index::open_db, paths, utils, space::SpaceState};
+use crate::{index::open_db, paths, space::SpaceState, utils};
 
 use super::{
     helpers::{deny_hidden_rel_path, should_hide},
