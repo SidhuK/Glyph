@@ -101,6 +101,15 @@ async function resolveInlineImageDataUrl(
 	return promise;
 }
 
+function getMountedEditorRoot(editor: Editor): HTMLElement | null {
+	try {
+		const root = editor.view.dom;
+		return root instanceof HTMLElement ? root : null;
+	} catch {
+		return null;
+	}
+}
+
 export function useHydrateInlineImages(
 	editor: Editor | null,
 	sourcePath: string,
@@ -110,9 +119,11 @@ export function useHydrateInlineImages(
 
 		let cancelled = false;
 		let rafId: number | null = null;
-		const root = editor.view.dom as HTMLElement;
+		let root: HTMLElement | null = null;
+		let observer: MutationObserver | null = null;
 
 		const hydrateImages = () => {
+			if (!root) return;
 			const images = root.querySelectorAll("img[src]");
 			for (const image of images) {
 				const current = image.getAttribute("src")?.trim() ?? "";
@@ -136,6 +147,7 @@ export function useHydrateInlineImages(
 		};
 
 		const scheduleHydration = () => {
+			if (!root) return;
 			if (rafId !== null) return;
 			rafId = window.requestAnimationFrame(() => {
 				rafId = null;
@@ -143,20 +155,51 @@ export function useHydrateInlineImages(
 			});
 		};
 
-		const observer = new MutationObserver(scheduleHydration);
-		observer.observe(root, {
-			childList: true,
-			subtree: true,
-			attributes: true,
-			attributeFilter: ["src"],
-		});
+		const disconnectObserver = () => {
+			if (rafId !== null) {
+				window.cancelAnimationFrame(rafId);
+				rafId = null;
+			}
+			observer?.disconnect();
+			observer = null;
+			root = null;
+		};
 
-		scheduleHydration();
+		const connectObserver = () => {
+			const nextRoot = getMountedEditorRoot(editor);
+			if (!nextRoot) return;
+			if (root !== nextRoot) {
+				disconnectObserver();
+				root = nextRoot;
+				observer = new MutationObserver(scheduleHydration);
+				observer.observe(root, {
+					childList: true,
+					subtree: true,
+					attributes: true,
+					attributeFilter: ["src"],
+				});
+			}
+			scheduleHydration();
+		};
+
+		const handleMount = () => {
+			if (cancelled) return;
+			connectObserver();
+		};
+
+		const handleUnmount = () => {
+			disconnectObserver();
+		};
+
+		connectObserver();
+		editor.on("mount", handleMount);
+		editor.on("unmount", handleUnmount);
 
 		return () => {
 			cancelled = true;
-			if (rafId !== null) window.cancelAnimationFrame(rafId);
-			observer.disconnect();
+			editor.off("mount", handleMount);
+			editor.off("unmount", handleUnmount);
+			disconnectObserver();
 		};
 	}, [editor, sourcePath]);
 }
