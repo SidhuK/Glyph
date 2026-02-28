@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import { memo } from "react";
-import { useUILayoutContext, useVault } from "../../contexts";
+import { useSpace, useUILayoutContext } from "../../contexts";
 import { SidebarContent } from "./SidebarContent";
 import { SidebarHeader } from "./SidebarHeader";
 
@@ -41,7 +41,7 @@ export const Sidebar = memo(function Sidebar({
 	onOpenTasks,
 }: SidebarProps) {
 	// Contexts
-	const { onOpenVault } = useVault();
+	const { onOpenSpace } = useSpace();
 	const { sidebarWidth } = useUILayoutContext();
 	const shouldReduceMotion = useReducedMotion();
 	const sidebarState = sidebarCollapsed ? "collapsed" : "expanded";
@@ -75,7 +75,7 @@ export const Sidebar = memo(function Sidebar({
 						}
 					>
 						<SidebarHeader
-							onOpenVault={onOpenVault}
+							onOpenSpace={onOpenSpace}
 							onOpenCommandPalette={onOpenCommandPalette}
 							sidebarCollapsed={sidebarCollapsed}
 							onToggleSidebar={onToggleSidebar}

@@ -79,7 +79,7 @@ export function DatabasePane({
 	const detectNoteKind = useCallback(async () => {
 		try {
 			setDetectError("");
-			const doc = await invoke("vault_read_text", { path: relPath });
+			const doc = await invoke("space_read_text", { path: relPath });
 			const isDatabase = isDatabaseNote(doc.text);
 			setNoteKind(isDatabase ? "database" : "markdown");
 			setMode((current) => (isDatabase ? current : "markdown"));
@@ -155,7 +155,7 @@ export function DatabasePane({
 		[currentConfig, noteKind],
 	);
 
-	useTauriEvent("vault:fs_changed", (payload) => {
+	useTauriEvent("space:fs_changed", (payload) => {
 		const changedPath = normalizeRelPath(payload.rel_path);
 		if (!changedPath) return;
 		if (isRecentLocalMutation(changedPath)) {

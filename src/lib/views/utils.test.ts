@@ -7,7 +7,7 @@ describe("views/utils", () => {
 			id: "global",
 			kind: "global",
 			selector: "",
-			title: "Vault",
+			title: "Space",
 		});
 		expect(viewId({ kind: "folder", dir: " /notes/work/ " })).toEqual({
 			id: "folder:notes/work",

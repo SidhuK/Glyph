@@ -10,13 +10,13 @@ export function viewId(view: ViewRef): {
 } {
 	switch (view.kind) {
 		case "global":
-			return { id: "global", kind: "global", selector: "", title: "Vault" };
+			return { id: "global", kind: "global", selector: "", title: "Space" };
 		case "folder": {
 			const dir = view.dir
 				.trim()
 				.replace(/\\/g, "/")
 				.replace(/^\/+|\/+$/g, "");
-			const title = dir ? basename(dir) : "Vault";
+			const title = dir ? basename(dir) : "Space";
 			return { id: `folder:${dir}`, kind: "folder", selector: dir, title };
 		}
 		case "tag":

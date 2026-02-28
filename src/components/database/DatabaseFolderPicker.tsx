@@ -27,7 +27,7 @@ function folderParts(path: string): string[] {
 }
 
 function folderName(path: string): string {
-	if (!path) return "Vault root";
+	if (!path) return "Space root";
 	const parts = folderParts(path);
 	return parts[parts.length - 1] ?? path;
 }
@@ -65,7 +65,7 @@ export function DatabaseFolderPicker({
 			setLoading(true);
 			setError("");
 			try {
-				const nextEntries = await invoke("vault_list_dir", {
+				const nextEntries = await invoke("space_list_dir", {
 					dir: browserPath || null,
 				});
 				if (cancelled) return;
@@ -133,7 +133,7 @@ export function DatabaseFolderPicker({
 						data-active={browserPath === "" ? "true" : undefined}
 						onClick={() => setBrowserPath("")}
 					>
-						Vault root
+						Space root
 					</button>
 					{browserParts.map((part, index) => {
 						const nextPath = browserParts.slice(0, index + 1).join("/");
@@ -166,7 +166,7 @@ export function DatabaseFolderPicker({
 							{folderName(browserPath)}
 						</div>
 						<div className="databasePickerOptionMeta">
-							{browserPath || "Vault root"}
+							{browserPath || "Space root"}
 						</div>
 					</div>
 					<Button

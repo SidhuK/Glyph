@@ -8,7 +8,7 @@ import {
 } from "react";
 import { useViewLoader } from "../hooks/useViewLoader";
 import type { ViewDoc } from "../lib/views";
-import { useVault } from "./VaultContext";
+import { useSpace } from "./SpaceContext";
 
 export interface ViewContextValue {
 	activeViewDoc: ViewDoc | null;
@@ -24,8 +24,8 @@ export interface ViewContextValue {
 const ViewContext = createContext<ViewContextValue | null>(null);
 
 export function ViewProvider({ children }: { children: ReactNode }) {
-	const { vaultPath, setError, startIndexRebuild } = useVault();
-	const initialViewLoadVaultRef = useRef<string | null>(null);
+	const { spacePath, setError, startIndexRebuild } = useSpace();
+	const initialViewLoadSpaceRef = useRef<string | null>(null);
 	const activeViewDocSnapshotRef = useRef<ViewDoc | null>(null);
 
 	const {
@@ -44,21 +44,21 @@ export function ViewProvider({ children }: { children: ReactNode }) {
 	}, [activeViewDoc]);
 
 	useEffect(() => {
-		if (!vaultPath) {
-			initialViewLoadVaultRef.current = null;
+		if (!spacePath) {
+			initialViewLoadSpaceRef.current = null;
 			return;
 		}
 		if (
 			activeViewDocSnapshotRef.current ||
-			initialViewLoadVaultRef.current === vaultPath
+			initialViewLoadSpaceRef.current === spacePath
 		)
 			return;
-		initialViewLoadVaultRef.current = vaultPath;
+		initialViewLoadSpaceRef.current = spacePath;
 		void loadAndBuildFolderView("").finally(() => {
-			if (initialViewLoadVaultRef.current === vaultPath)
-				initialViewLoadVaultRef.current = null;
+			if (initialViewLoadSpaceRef.current === spacePath)
+				initialViewLoadSpaceRef.current = null;
 		});
-	}, [vaultPath, loadAndBuildFolderView]);
+	}, [spacePath, loadAndBuildFolderView]);
 
 	const value = useMemo<ViewContextValue>(
 		() => ({

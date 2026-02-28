@@ -148,7 +148,7 @@ impl Tool for ListDirTool {
     async fn definition(&self, _prompt: String) -> ToolDefinition {
         tool_definition::<ListDirArgs>(
             Self::NAME,
-            "List files and folders under a vault-relative path.",
+            "List files and folders under a space-relative path.",
         )
     }
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
@@ -218,7 +218,7 @@ impl Tool for SearchTool {
     async fn definition(&self, _prompt: String) -> ToolDefinition {
         tool_definition::<SearchArgs>(
             Self::NAME,
-            "Search file names and text content in the vault.",
+            "Search file names and text content in the space.",
         )
     }
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {
@@ -537,7 +537,7 @@ impl Tool for MoveTool {
     async fn definition(&self, _prompt: String) -> ToolDefinition {
         tool_definition::<MoveArgs>(
             Self::NAME,
-            "Move or rename a path within the vault. Overwrites require confirmation.",
+            "Move or rename a path within the space. Overwrites require confirmation.",
         )
     }
     async fn call(&self, args: Self::Args) -> Result<Self::Output, Self::Error> {

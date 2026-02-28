@@ -5,8 +5,8 @@ import { memo, useCallback } from "react";
 import { toast } from "sonner";
 import {
 	useFileTreeContext,
+	useSpace,
 	useUILayoutContext,
-	useVault,
 } from "../../contexts";
 import { useViewContext } from "../../contexts";
 import { openSettingsWindow } from "../../lib/windows";
@@ -63,7 +63,7 @@ export const SidebarContent = memo(function SidebarContent({
 	onOpenTasks,
 }: SidebarContentProps) {
 	// Contexts
-	const { vaultPath } = useVault();
+	const { spacePath } = useSpace();
 	const { activeViewDoc } = useViewContext();
 	const {
 		rootEntries,
@@ -91,13 +91,13 @@ export const SidebarContent = memo(function SidebarContent({
 	const activeDirPath =
 		activeViewDoc?.kind === "folder" ? (activeViewDoc.selector ?? "") : null;
 
-	if (!vaultPath) {
+	if (!spacePath) {
 		return (
 			<>
 				<div className="sidebarSection sidebarEmpty">
-					<div className="sidebarEmptyTitle">No vault open</div>
+					<div className="sidebarEmptyTitle">No space open</div>
 					<div className="sidebarEmptyHint">
-						Open or create a vault to get started.
+						Open or create a space to get started.
 					</div>
 				</div>
 			</>
@@ -218,7 +218,7 @@ export const SidebarContent = memo(function SidebarContent({
 									type="button"
 									variant="ghost"
 									size="icon-sm"
-									title={`Add in ${targetDir || "vault root"}`}
+									title={`Add in ${targetDir || "space root"}`}
 								>
 									<Plus size={14} />
 								</Button>

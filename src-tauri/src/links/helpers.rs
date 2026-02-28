@@ -17,13 +17,13 @@ pub fn sha256_hex(s: &str) -> String {
     crate::utils::sha256_hex(s.as_bytes())
 }
 
-pub fn cache_dir(vault_root: &Path) -> Result<PathBuf, String> {
-    let base = glyph_paths::ensure_glyph_cache_dir(vault_root)?;
+pub fn cache_dir(space_root: &Path) -> Result<PathBuf, String> {
+    let base = glyph_paths::ensure_glyph_cache_dir(space_root)?;
     Ok(base.join("link-previews"))
 }
 
-pub fn cache_path(vault_root: &Path, normalized_url: &str) -> Result<PathBuf, String> {
-    let dir = cache_dir(vault_root)?;
+pub fn cache_path(space_root: &Path, normalized_url: &str) -> Result<PathBuf, String> {
+    let dir = cache_dir(space_root)?;
     Ok(dir.join(format!("{}.json", sha256_hex(normalized_url))))
 }
 

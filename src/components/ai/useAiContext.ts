@@ -35,7 +35,7 @@ const MAX_VISIBLE_FOLDERS = 120;
 const MENTION_RE = /(^|\s)@([^\s@]+)/g;
 
 function folderLabel(path: string): string {
-	return path || "Vault";
+	return path || "Space";
 }
 
 function fileLabel(path: string): string {

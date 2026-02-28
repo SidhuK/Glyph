@@ -11,22 +11,22 @@ const SMOOTH_EASE = [0.22, 1, 0.36, 1] as const;
 
 interface WelcomeScreenProps {
 	appName: string | null;
-	lastVaultPath: string | null;
-	recentVaults: string[];
-	onOpenVault: () => void;
-	onCreateVault: () => void;
-	onContinueLastVault: () => void;
-	onSelectRecentVault: (path: string) => Promise<void>;
+	lastSpacePath: string | null;
+	recentSpaces: string[];
+	onOpenSpace: () => void;
+	onCreateSpace: () => void;
+	onContinueLastSpace: () => void;
+	onSelectRecentSpace: (path: string) => Promise<void>;
 }
 
 export function WelcomeScreen({
 	appName,
-	lastVaultPath,
-	recentVaults,
-	onOpenVault,
-	onCreateVault,
-	onContinueLastVault,
-	onSelectRecentVault,
+	lastSpacePath,
+	recentSpaces,
+	onOpenSpace,
+	onCreateSpace,
+	onContinueLastSpace,
+	onSelectRecentSpace,
 }: WelcomeScreenProps) {
 	const reduceMotion = useReducedMotion();
 	const [step, setStep] = useState(0);
@@ -88,12 +88,12 @@ export function WelcomeScreen({
 							{step === 1 && <StepQuickStart onNext={goNext} />}
 							{step === 2 && (
 								<StepReady
-									lastVaultPath={lastVaultPath}
-									recentVaults={recentVaults}
-									onOpenVault={onOpenVault}
-									onCreateVault={onCreateVault}
-									onContinueLastVault={onContinueLastVault}
-									onSelectRecentVault={onSelectRecentVault}
+									lastSpacePath={lastSpacePath}
+									recentSpaces={recentSpaces}
+									onOpenSpace={onOpenSpace}
+									onCreateSpace={onCreateSpace}
+									onContinueLastSpace={onContinueLastSpace}
+									onSelectRecentSpace={onSelectRecentSpace}
 								/>
 							)}
 						</WelcomeStep>

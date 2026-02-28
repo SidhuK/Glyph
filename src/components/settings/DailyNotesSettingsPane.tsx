@@ -30,25 +30,25 @@ export function DailyNotesSettingsPane() {
 				multiple: false,
 			});
 			if (selected && typeof selected === "string") {
-				const currentVaultPath = await invoke("vault_get_current");
-				if (!currentVaultPath) {
-					setError("No vault is currently open.");
+				const currentSpacePath = await invoke("space_get_current");
+				if (!currentSpacePath) {
+					setError("No space is currently open.");
 					return;
 				}
 				const normSelected = selected.replace(/\\/g, "/");
-				const normVault = currentVaultPath.replace(/\\/g, "/");
-				const vaultPrefix = normVault.endsWith("/")
-					? normVault
-					: `${normVault}/`;
+				const normSpace = currentSpacePath.replace(/\\/g, "/");
+				const spacePrefix = normSpace.endsWith("/")
+					? normSpace
+					: `${normSpace}/`;
 				if (
-					normSelected !== normVault &&
-					!normSelected.startsWith(vaultPrefix)
+					normSelected !== normSpace &&
+					!normSelected.startsWith(spacePrefix)
 				) {
-					setError("Selected folder must be inside the current vault.");
+					setError("Selected folder must be inside the current space.");
 					return;
 				}
 				const relativePath = normSelected
-					.slice(normVault.length)
+					.slice(normSpace.length)
 					.replace(/^\/+/, "");
 				await setDailyNotesFolder(relativePath || null);
 				setCurrentFolder(relativePath || null);

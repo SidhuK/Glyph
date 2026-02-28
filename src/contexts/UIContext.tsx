@@ -20,7 +20,7 @@ import {
 } from "../lib/settings";
 import type { SearchResult } from "../lib/tauri";
 import { useTauriEvent } from "../lib/tauriEvents";
-import { useVault } from "./VaultContext";
+import { useSpace } from "./SpaceContext";
 
 export interface UILayoutContextValue {
 	sidebarCollapsed: boolean;
@@ -96,7 +96,7 @@ type UIAction =
 	| { type: "setAiPanelOpen"; value: SetStateAction<boolean> }
 	| { type: "setAiPanelWidth"; value: number }
 	| { type: "setAiAssistantMode"; value: AiAssistantMode }
-	| { type: "onVaultPathChanged"; hasVault: boolean }
+	| { type: "onSpacePathChanged"; hasSpace: boolean }
 	| {
 			type: "hydrateSettings";
 			aiEnabled: boolean;
@@ -163,8 +163,8 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 			return { ...state, aiPanelWidth: action.value };
 		case "setAiAssistantMode":
 			return { ...state, aiAssistantMode: action.value };
-		case "onVaultPathChanged":
-			return action.hasVault
+		case "onSpacePathChanged":
+			return action.hasSpace
 				? { ...state, sidebarCollapsed: false }
 				: { ...state, openMarkdownTabs: [], activeMarkdownTabPath: null };
 		case "hydrateSettings":
@@ -182,7 +182,7 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 }
 
 export function UIProvider({ children }: { children: ReactNode }) {
-	const { vaultPath } = useVault();
+	const { spacePath } = useSpace();
 	const [state, dispatch] = useReducer(uiReducer, initialUIState);
 	const {
 		sidebarCollapsed,
@@ -200,8 +200,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 	} = state;
 
 	useEffect(() => {
-		dispatch({ type: "onVaultPathChanged", hasVault: Boolean(vaultPath) });
-	}, [vaultPath]);
+		dispatch({ type: "onSpacePathChanged", hasSpace: Boolean(spacePath) });
+	}, [spacePath]);
 
 	useTauriEvent("settings:updated", (payload) => {
 		const nextEnabled = payload.ui?.aiEnabled;
@@ -267,7 +267,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 	}, []);
 
 	useEffect(() => {
-		if (!vaultPath) return;
+		if (!spacePath) return;
 		let cancelled = false;
 		void (async () => {
 			try {
@@ -286,7 +286,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		return () => {
 			cancelled = true;
 		};
-	}, [vaultPath]);
+	}, [spacePath]);
 
 	const setAiPanelWidth = useCallback((width: number) => {
 		dispatch({ type: "setAiPanelWidth", value: width });
@@ -346,14 +346,14 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		searchError,
 		showSearch,
 		setShowSearch,
-	} = useSearch(vaultPath);
+	} = useSearch(spacePath);
 
 	const setActivePreviewPath = useCallback(
 		(path: string | null) => {
-			if (!vaultPath && path) return;
+			if (!spacePath && path) return;
 			dispatch({ type: "setActivePreviewPath", value: path });
 		},
-		[vaultPath],
+		[spacePath],
 	);
 
 	const layoutValue = useMemo<UILayoutContextValue>(

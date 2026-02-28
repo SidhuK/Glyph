@@ -2,27 +2,27 @@ import { useCallback } from "react";
 import { useTauriEvent } from "../lib/tauriEvents";
 
 export interface UseMenuListenersProps {
-	onOpenVault: () => void;
-	onCreateVault: () => void;
-	closeVault: () => Promise<void>;
+	onOpenSpace: () => void;
+	onCreateSpace: () => void;
+	closeSpace: () => Promise<void>;
 }
 
 export function useMenuListeners({
-	onOpenVault,
-	onCreateVault,
-	closeVault,
+	onOpenSpace,
+	onCreateSpace,
+	closeSpace,
 }: UseMenuListenersProps): void {
-	const handleOpenVault = useCallback(() => {
-		void onOpenVault();
-	}, [onOpenVault]);
-	const handleCreateVault = useCallback(() => {
-		void onCreateVault();
-	}, [onCreateVault]);
-	const handleCloseVault = useCallback(() => {
-		void closeVault();
-	}, [closeVault]);
+	const handleOpenSpace = useCallback(() => {
+		void onOpenSpace();
+	}, [onOpenSpace]);
+	const handleCreateSpace = useCallback(() => {
+		void onCreateSpace();
+	}, [onCreateSpace]);
+	const handleCloseSpace = useCallback(() => {
+		void closeSpace();
+	}, [closeSpace]);
 
-	useTauriEvent("menu:open_vault", handleOpenVault);
-	useTauriEvent("menu:create_vault", handleCreateVault);
-	useTauriEvent("menu:close_vault", handleCloseVault);
+	useTauriEvent("menu:open_space", handleOpenSpace);
+	useTauriEvent("menu:create_space", handleCreateSpace);
+	useTauriEvent("menu:close_space", handleCloseSpace);
 }

@@ -177,8 +177,8 @@ pub fn mutate_task_line(
     Some(next)
 }
 
-pub fn note_abs_path(vault_root: &Path, note_path: &str) -> Result<std::path::PathBuf, String> {
-    paths::join_under(vault_root, Path::new(note_path))
+pub fn note_abs_path(space_root: &Path, note_path: &str) -> Result<std::path::PathBuf, String> {
+    paths::join_under(space_root, Path::new(note_path))
 }
 
 pub fn write_note(path: &Path, text: &str) -> Result<(), String> {

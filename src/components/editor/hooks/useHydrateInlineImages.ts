@@ -45,12 +45,12 @@ function dedupeCandidates(href: string): string[] {
 	return Array.from(new Set(out));
 }
 
-async function resolveVaultImagePath(
+async function resolveSpaceImagePath(
 	sourcePath: string,
 	href: string,
 ): Promise<string | null> {
 	for (const candidate of dedupeCandidates(href)) {
-		const resolved = await invoke("vault_resolve_markdown_link", {
+		const resolved = await invoke("space_resolve_markdown_link", {
 			href: candidate,
 			sourcePath,
 		});
@@ -70,13 +70,13 @@ async function resolveInlineImageDataUrl(
 
 	const promise = (async () => {
 		try {
-			const relPath = await resolveVaultImagePath(sourcePath, rawSrc);
+			const relPath = await resolveSpaceImagePath(sourcePath, rawSrc);
 			if (!relPath) {
 				missCache.add(key);
 				trimOldestCacheEntries();
 				return null;
 			}
-			const preview = await invoke("vault_read_binary_preview", {
+			const preview = await invoke("space_read_binary_preview", {
 				path: relPath,
 				max_bytes: INLINE_IMAGE_MAX_BYTES,
 			});

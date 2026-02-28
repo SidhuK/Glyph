@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use tauri::State;
 
-use crate::{glyph_paths, vault::VaultState};
+use crate::{glyph_paths, space::SpaceState};
 
 use super::helpers::derive_chat_title;
 use super::types::{AiMessage, AiProviderKind, AiStoredToolEvent};
@@ -60,10 +60,10 @@ pub struct AiChatHistoryDetail {
 }
 
 pub async fn ai_chat_history_list(
-    vault_state: State<'_, VaultState>,
+    space_state: State<'_, SpaceState>,
     limit: Option<u32>,
 ) -> Result<Vec<AiChatHistorySummary>, String> {
-    let root = vault_state.current_root()?;
+    let root = space_state.current_root()?;
     let limit = limit
         .unwrap_or(DEFAULT_LIMIT as u32)
         .max(1)
@@ -75,11 +75,11 @@ pub async fn ai_chat_history_list(
 }
 
 pub async fn ai_chat_history_get(
-    vault_state: State<'_, VaultState>,
+    space_state: State<'_, SpaceState>,
     job_id: String,
 ) -> Result<AiChatHistoryDetail, String> {
     let _ = uuid::Uuid::parse_str(&job_id).map_err(|_| "invalid job_id".to_string())?;
-    let root = vault_state.current_root()?;
+    let root = space_state.current_root()?;
 
     tauri::async_runtime::spawn_blocking(move || get_history_impl(&root, &job_id))
         .await

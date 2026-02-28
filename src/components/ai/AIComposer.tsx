@@ -76,7 +76,7 @@ export function AIComposer({
 				<div className="aiContextChips">
 					{context.attachedFolders.map((item) => (
 						<button
-							key={`${item.kind}:${item.path || "vault"}`}
+							key={`${item.kind}:${item.path || "space"}`}
 							type="button"
 							className="aiContextChip"
 							onClick={() => onRemoveContext(item.kind, item.path)}
@@ -85,7 +85,7 @@ export function AIComposer({
 							<span className="aiContextChipLabel">
 								{item.kind === "file"
 									? truncateLabel(fileNameFromPath(item.path || item.label))
-									: item.label || "Vault"}
+									: item.label || "Space"}
 							</span>
 							<X size={10} />
 						</button>
@@ -112,12 +112,12 @@ export function AIComposer({
 						{context.visibleSuggestions.length ? (
 							context.visibleSuggestions.map((item) => (
 								<button
-									key={`${item.kind}:${item.path || "vault"}`}
+									key={`${item.kind}:${item.path || "space"}`}
 									type="button"
 									className="aiAddPanelItem"
 									onClick={() => onAddContext(item.kind, item.path)}
 								>
-									<span>{item.label || "Vault"}</span>
+									<span>{item.label || "Space"}</span>
 								</button>
 							))
 						) : (

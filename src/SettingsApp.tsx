@@ -22,11 +22,11 @@ import { AiSettingsPane } from "./components/settings/AiSettingsPane";
 import { AppearanceSettingsPane } from "./components/settings/AppearanceSettingsPane";
 import { DailyNotesSettingsPane } from "./components/settings/DailyNotesSettingsPane";
 import { GeneralSettingsPane } from "./components/settings/GeneralSettingsPane";
-import { VaultSettingsPane } from "./components/settings/VaultSettingsPane";
+import { SpaceSettingsPane } from "./components/settings/SpaceSettingsPane";
 import { Button } from "./components/ui/shadcn/button";
 import { onWindowDragMouseDown } from "./utils/window";
 
-type SettingsTab = "general" | "appearance" | "ai" | "vault" | "about";
+type SettingsTab = "general" | "appearance" | "ai" | "space" | "about";
 type SettingsTabMeta = {
 	id: SettingsTab;
 	label: string;
@@ -54,9 +54,9 @@ const SETTINGS_TABS: SettingsTabMeta[] = [
 		renderIcon: () => <HugeiconsIcon icon={AiBrain04Icon} size={14} />,
 	},
 	{
-		id: "vault",
-		label: "Vault",
-		subtitle: "Current vault details, recent vaults, and index tools.",
+		id: "space",
+		label: "Space",
+		subtitle: "Current space details, recent spaces, and index tools.",
 		renderIcon: () => <FolderOpen size={14} />,
 	},
 	{
@@ -146,7 +146,7 @@ export default function SettingsApp() {
 		if (activeTab === "appearance") return <AppearanceSettingsPane />;
 		if (activeTab === "ai") return <AiSettingsPane />;
 		if (activeTab === "about") return <AboutSettingsPane />;
-		return <VaultSettingsPane />;
+		return <SpaceSettingsPane />;
 	}, [activeTab]);
 
 	return (

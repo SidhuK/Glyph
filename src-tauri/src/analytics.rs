@@ -83,7 +83,7 @@ impl AnalyticsState {
 #[serde(rename_all = "snake_case")]
 pub enum AnalyticsEventName {
     AppStarted,
-    VaultOpened,
+    SpaceOpened,
     IndexRebuildStarted,
     SearchExecuted,
     NoteCreated,
@@ -95,7 +95,7 @@ impl AnalyticsEventName {
     fn as_str(self) -> &'static str {
         match self {
             Self::AppStarted => "app_started",
-            Self::VaultOpened => "vault_opened",
+            Self::SpaceOpened => "space_opened",
             Self::IndexRebuildStarted => "index_rebuild_started",
             Self::SearchExecuted => "search_executed",
             Self::NoteCreated => "note_created",
@@ -106,8 +106,8 @@ impl AnalyticsEventName {
 
     fn allowed_properties(self) -> BTreeSet<&'static str> {
         match self {
-            Self::AppStarted => BTreeSet::from(["has_previous_vault"]),
-            Self::VaultOpened => BTreeSet::from(["source", "vault_schema_version"]),
+            Self::AppStarted => BTreeSet::from(["has_previous_space"]),
+            Self::SpaceOpened => BTreeSet::from(["source", "space_schema_version"]),
             Self::IndexRebuildStarted => BTreeSet::new(),
             Self::SearchExecuted => BTreeSet::from(["query_length_bucket", "result_count_bucket"]),
             Self::NoteCreated => BTreeSet::from(["entrypoint"]),

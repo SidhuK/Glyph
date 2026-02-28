@@ -76,23 +76,23 @@ export async function trackAppStarted(): Promise<void> {
 	try {
 		const settings = await loadSettings();
 		await track("app_started", {
-			has_previous_vault: Boolean(settings.currentVaultPath),
+			has_previous_space: Boolean(settings.currentSpacePath),
 		});
 	} catch {
 		// best effort telemetry
 	}
 }
 
-export async function trackVaultOpened(params: {
+export async function trackSpaceOpened(params: {
 	source: "continue_last" | "open_dialog" | "open_recent" | "create_dialog";
-	vaultSchemaVersion?: number | null;
+	spaceSchemaVersion?: number | null;
 }): Promise<void> {
 	try {
-		await track("vault_opened", {
+		await track("space_opened", {
 			source: params.source,
-			vault_schema_version:
-				typeof params.vaultSchemaVersion === "number"
-					? params.vaultSchemaVersion
+			space_schema_version:
+				typeof params.spaceSchemaVersion === "number"
+					? params.spaceSchemaVersion
 					: null,
 		});
 	} catch {

@@ -29,7 +29,7 @@ export interface UseFileTreeResult {
 }
 
 export interface UseFileTreeDeps {
-	vaultPath: string | null;
+	spacePath: string | null;
 	updateChildrenByDir: (
 		next:
 			| Record<string, FsEntry[] | undefined>
@@ -54,7 +54,7 @@ export interface UseFileTreeDeps {
 
 export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 	const {
-		vaultPath,
+		spacePath,
 		updateChildrenByDir,
 		updateExpandedDirs,
 		updateRootEntries,
@@ -69,14 +69,14 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 
 	const loadedDirsRef = useRef(new Set<string>());
 	const loadRequestVersionRef = useRef(new Map<string, number>());
-	const previousVaultPathRef = useRef<string | null>(vaultPath);
+	const previousSpacePathRef = useRef<string | null>(spacePath);
 
 	useEffect(() => {
-		if (previousVaultPathRef.current === vaultPath) return;
-		previousVaultPathRef.current = vaultPath;
+		if (previousSpacePathRef.current === spacePath) return;
+		previousSpacePathRef.current = spacePath;
 		loadedDirsRef.current.clear();
 		loadRequestVersionRef.current.clear();
-	}, [vaultPath]);
+	}, [spacePath]);
 
 	const loadDir = useCallback(
 		async (dirPath: string, force = false) => {
@@ -84,7 +84,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 			const nextVersion = (loadRequestVersionRef.current.get(dirPath) ?? 0) + 1;
 			loadRequestVersionRef.current.set(dirPath, nextVersion);
 			const entries = await invoke(
-				"vault_list_dir",
+				"space_list_dir",
 				dirPath ? { dir: dirPath } : {},
 			);
 			const normalizedEntries = normalizeEntries(entries);
@@ -136,17 +136,17 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 
 	const openNonMarkdownExternally = useCallback(
 		async (relPath: string) => {
-			if (!vaultPath) return;
+			if (!spacePath) return;
 			if (relPath.startsWith("http://") || relPath.startsWith("https://")) {
 				await openUrl(relPath);
 				return;
 			}
-			const abs = await invoke("vault_resolve_abs_path", {
+			const abs = await invoke("space_resolve_abs_path", {
 				path: relPath,
-			}).catch(async () => join(vaultPath, relPath));
+			}).catch(async () => join(spacePath, relPath));
 			await openPath(abs);
 		},
-		[vaultPath],
+		[spacePath],
 	);
 
 	const openFile = useCallback(
@@ -173,7 +173,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 	);
 
 	const crud = useFileTreeCRUD({
-		vaultPath,
+		spacePath,
 		updateChildrenByDir,
 		updateExpandedDirs,
 		updateRootEntries,

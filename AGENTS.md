@@ -21,7 +21,7 @@ cd src-tauri && cargo clippy   # Lint Rust
 ## Frontend Overview (`src/`)
 - `main.tsx` / `App.tsx` — Entry point, wraps `<AppShell>` in `<AppProviders>` (all contexts)
 - `SettingsApp.tsx` — Separate settings window entry
-- **`contexts/`** — State via React Context: `VaultContext` (vault path/lifecycle), `FileTreeContext` (files, tags, active file), `ViewContext` (active view doc), `UIContext` (sidebar, search, preview state), `EditorContext` (TipTap editor instance)
+- **`contexts/`** — State via React Context: `SpaceContext` (space path/lifecycle), `FileTreeContext` (files, tags, active file), `ViewContext` (active view doc), `UIContext` (sidebar, search, preview state), `EditorContext` (TipTap editor instance)
 - **`components/app/`** — App shell: `AppShell`, `Sidebar`, `MainContent` (tab-based file/markdown/preview panes), `TabBar`, `CommandPalette`, `MainToolbar`, `WelcomeScreen`, `KeyboardShortcutsHelp`
 - **`components/editor/`** — TipTap markdown editor: `CanvasNoteInlineEditor`, `EditorRibbon`, `extensions/`, `markdown/` serialization, `slashCommands`
 - **`components/ai/`** — AI chat sidebar: `AIPanel`, `AIComposer`, `AIChatThread`, `ModelSelector`, `AIToolTimeline`, `useRigChat` hook, profiles/history hooks
@@ -29,7 +29,7 @@ cd src-tauri && cargo clippy   # Lint Rust
 - **`components/preview/`** — `FilePreviewPane` (in-app file preview), `MarkdownEditorPane`
 - **`components/tasks/`** — `TasksPane`, `TaskRow`, `TaskCheckbox`
 - **`components/shelf/`** — `FolderShelf` (pinned folders), `ShelfItem`
-- **`components/settings/`** — Settings panes: AI, Appearance (accent, typography), Vault, DailyNotes, General, About
+- **`components/settings/`** — Settings panes: AI, Appearance (accent, typography), Space, DailyNotes, General, About
 - **`components/ui/`** — shadcn/ui primitives + `MotionButton`, `MotionPanel`, `MotionWrappers`, `animations.ts`
 - **`hooks/`** — `useFileTree`, `useFileTreeCRUD`, `useViewLoader`, `useSearch`, `useFolderShelf`, `useCommandShortcuts`, `useMenuListeners`, `useDailyNote`, `useRecentFiles`
 - **`lib/`** — `tauri.ts` (typed IPC wrapper — always use `invoke()` from here), `tauriEvents.ts`, `shortcuts/` (registry + platform), `views/` (view doc builders), `settings.ts`, `dailyNotes.ts`, `tasks.ts`, `diff.ts`, `errorUtils.ts`, `notePreview.ts`, `windows.ts`
@@ -38,8 +38,8 @@ cd src-tauri && cargo clippy   # Lint Rust
 
 ## Backend Overview (`src-tauri/src/`)
 - `lib.rs` / `main.rs` — Tauri setup, command registration
-- **`vault/`** — Vault lifecycle: open/close/create, file `watcher.rs`, `state.rs`
-- **`vault_fs/`** — Filesystem ops: `list.rs`, `read_write.rs`, `summary.rs`, `link_ops.rs`, `view_data.rs`
+- **`space/`** — Space lifecycle: open/close/create, file `watcher.rs`, `state.rs`
+- **`space_fs/`** — Filesystem ops: `list.rs`, `read_write.rs`, `summary.rs`, `link_ops.rs`, `view_data.rs`
 - **`notes/`** — Note CRUD, `attachments.rs`, `frontmatter.rs`
 - **`index/`** — SQLite index: `db.rs`, `schema.rs`, `indexer.rs`, `search_hybrid.rs`, `search_advanced.rs`, `tags.rs`, `links.rs`, `frontmatter.rs`, `tasks/`
 - **`ai_rig/`** — Rig AI runtime: `runtime.rs`, `providers.rs`, `models.rs`, `tools.rs`, `commands.rs`, `events.rs`, `history.rs`, `local_secrets.rs`, `store.rs`, `context.rs`
@@ -55,7 +55,7 @@ cd src-tauri && cargo clippy   # Lint Rust
 - Functional React components, hooks, lazy-load heavy components. State via Context (no prop drilling).
 - Rust: serde for serialization, tracing for logs, atomic writes via `io_atomic::write_atomic()`.
 - Aim for roughly 200 LOC per file; treat this as a guideline, not a hard rule. Don't obsess over landing exactly at 200, but do refactor into subfolders when a file is getting out of hand.
-- Use `paths::join_under()` for vault paths (prevent traversal). Never log secrets.
+- Use `paths::join_under()` for space paths (prevent traversal). Never log secrets.
 - Use `net.rs` SSRF checks for user-supplied URLs. Version durable documents (`version: 1`).
 - New Tauri commands: implement in `src-tauri/src/`, register in `lib.rs`, add types to `TauriCommands` in `src/lib/tauri.ts`.
 

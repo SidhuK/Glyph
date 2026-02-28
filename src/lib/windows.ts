@@ -1,6 +1,6 @@
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 
-export type SettingsTab = "general" | "appearance" | "ai" | "vault";
+export type SettingsTab = "general" | "appearance" | "ai" | "space";
 
 export async function openSettingsWindow(tab?: SettingsTab) {
 	const existing = await WebviewWindow.getByLabel("settings");

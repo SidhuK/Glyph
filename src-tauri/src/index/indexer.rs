@@ -27,9 +27,9 @@ fn fts_body_with_frontmatter(markdown: &str) -> String {
     }
 }
 
-fn collect_markdown_files(vault_root: &Path) -> Result<Vec<(String, PathBuf)>, String> {
+fn collect_markdown_files(space_root: &Path) -> Result<Vec<(String, PathBuf)>, String> {
     let mut out: Vec<(String, PathBuf)> = Vec::new();
-    let mut stack: Vec<PathBuf> = vec![vault_root.to_path_buf()];
+    let mut stack: Vec<PathBuf> = vec![space_root.to_path_buf()];
 
     while let Some(dir) = stack.pop() {
         let entries = match std::fs::read_dir(&dir) {
@@ -60,7 +60,7 @@ fn collect_markdown_files(vault_root: &Path) -> Result<Vec<(String, PathBuf)>, S
             if !utils::is_markdown_path(&path) {
                 continue;
             }
-            let rel = match path.strip_prefix(vault_root) {
+            let rel = match path.strip_prefix(space_root) {
                 Ok(r) => r,
                 Err(_) => continue,
             };
@@ -76,8 +76,8 @@ fn collect_markdown_files(vault_root: &Path) -> Result<Vec<(String, PathBuf)>, S
     Ok(out)
 }
 
-pub fn index_note(vault_root: &Path, note_id: &str, markdown: &str) -> Result<(), String> {
-    let conn = open_db(vault_root)?;
+pub fn index_note(space_root: &Path, note_id: &str, markdown: &str) -> Result<(), String> {
+    let conn = open_db(space_root)?;
     index_note_with_conn(&conn, note_id, markdown)
 }
 
@@ -169,8 +169,8 @@ fn index_note_with_conn(
     Ok(())
 }
 
-pub fn remove_note(vault_root: &Path, note_id: &str) -> Result<(), String> {
-    let conn = open_db(vault_root)?;
+pub fn remove_note(space_root: &Path, note_id: &str) -> Result<(), String> {
+    let conn = open_db(space_root)?;
     let tx = conn.unchecked_transaction().map_err(|e| e.to_string())?;
     tx.execute("DELETE FROM notes WHERE id = ?", [note_id])
         .map_err(|e| e.to_string())?;
@@ -189,8 +189,8 @@ pub fn remove_note(vault_root: &Path, note_id: &str) -> Result<(), String> {
     Ok(())
 }
 
-pub fn rebuild(vault_root: &Path) -> Result<IndexRebuildResult, String> {
-    let mut conn = open_db(vault_root)?;
+pub fn rebuild(space_root: &Path) -> Result<IndexRebuildResult, String> {
+    let mut conn = open_db(space_root)?;
     let tx = conn.transaction().map_err(|e| e.to_string())?;
 
     tx.execute("DELETE FROM notes", [])
@@ -208,7 +208,7 @@ pub fn rebuild(vault_root: &Path) -> Result<IndexRebuildResult, String> {
     tx.execute("DELETE FROM tasks_fts", [])
         .map_err(|e| e.to_string())?;
 
-    let note_paths = collect_markdown_files(vault_root)?;
+    let note_paths = collect_markdown_files(space_root)?;
     let mut link_data: Vec<(String, HashSet<String>, HashSet<String>)> =
         Vec::with_capacity(note_paths.len());
     let count = note_paths.len();

@@ -7,7 +7,7 @@ use tauri::Emitter;
 
 use crate::{index, utils};
 
-use super::state::VaultState;
+use super::state::SpaceState;
 
 #[derive(Serialize, Clone)]
 struct ExternalChangeEvent {
@@ -17,14 +17,14 @@ struct ExternalChangeEvent {
 const DEBOUNCE_MS: u64 = 100;
 
 pub fn set_notes_watcher(
-    state: &VaultState,
+    state: &SpaceState,
     app: tauri::AppHandle,
     root: PathBuf,
 ) -> Result<(), String> {
     let mut guard = state
         .notes_watcher
         .lock()
-        .map_err(|_| "vault watcher state poisoned".to_string())?;
+        .map_err(|_| "space watcher state poisoned".to_string())?;
     *guard = None;
 
     let (idx_tx, idx_rx) = std_mpsc::channel::<(String, bool)>();
@@ -108,7 +108,7 @@ pub fn set_notes_watcher(
                 );
             }
 
-            let _ = app2.emit("vault:fs_changed", ExternalChangeEvent { rel_path: rel_s });
+            let _ = app2.emit("space:fs_changed", ExternalChangeEvent { rel_path: rel_s });
         }
     })
     .map_err(|e| e.to_string())?;

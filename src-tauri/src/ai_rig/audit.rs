@@ -4,15 +4,15 @@ use std::path::{Path, PathBuf};
 use super::helpers::{derive_chat_title, now_ms};
 use super::types::{AiChatRequest, AiMessage, AiProfile, AiStoredToolEvent};
 
-pub fn audit_log_path(vault_root: &Path, job_id: &str) -> Result<PathBuf, String> {
-    let base = glyph_paths::ensure_glyph_cache_dir(vault_root)?;
+pub fn audit_log_path(space_root: &Path, job_id: &str) -> Result<PathBuf, String> {
+    let base = glyph_paths::ensure_glyph_cache_dir(space_root)?;
     let dir = base.join("ai");
     std::fs::create_dir_all(&dir).map_err(|e| e.to_string())?;
     Ok(dir.join(format!("{job_id}.json")))
 }
 
-pub fn history_log_path(vault_root: &Path, job_id: &str) -> Result<PathBuf, String> {
-    let dir = glyph_paths::ensure_ai_history_dir(vault_root)?;
+pub fn history_log_path(space_root: &Path, job_id: &str) -> Result<PathBuf, String> {
+    let dir = glyph_paths::ensure_ai_history_dir(space_root)?;
     Ok(dir.join(format!("{job_id}.json")))
 }
 
@@ -24,7 +24,7 @@ fn truncate(s: &str, max: usize) -> String {
 }
 
 pub struct AuditLogParams<'a> {
-    pub vault_root: &'a Path,
+    pub space_root: &'a Path,
     pub job_id: &'a str,
     pub history_id: &'a str,
     pub profile: &'a AiProfile,
@@ -37,7 +37,7 @@ pub struct AuditLogParams<'a> {
 
 pub fn write_audit_log(params: &AuditLogParams<'_>) {
     let created_at_ms = now_ms();
-    let path = match audit_log_path(params.vault_root, params.job_id) {
+    let path = match audit_log_path(params.space_root, params.job_id) {
         Ok(p) => p,
         Err(_) => return,
     };
@@ -75,7 +75,7 @@ pub fn write_audit_log(params: &AuditLogParams<'_>) {
 }
 
 fn write_chat_history(params: &AuditLogParams<'_>, response: &str, created_at_ms: u64) {
-    let path = match history_log_path(params.vault_root, params.history_id) {
+    let path = match history_log_path(params.space_root, params.history_id) {
         Ok(p) => p,
         Err(_) => return,
     };

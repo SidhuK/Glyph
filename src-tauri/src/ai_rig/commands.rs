@@ -2,7 +2,7 @@ use tauri::{AppHandle, Emitter, Manager, State};
 use tauri_plugin_notification::NotificationExt;
 use tracing::warn;
 
-use crate::{io_atomic, vault::VaultState};
+use crate::{io_atomic, space::SpaceState};
 
 use super::audit::{audit_log_path, write_audit_log, AuditLogParams};
 use super::helpers::{http_client, parse_base_url, split_system_and_messages};
@@ -159,13 +159,13 @@ pub async fn ai_profile_upsert(app: AppHandle, profile: AiProfile) -> Result<AiP
 #[tauri::command]
 pub async fn ai_profile_delete(
     app: AppHandle,
-    vault_state: State<'_, VaultState>,
+    space_state: State<'_, SpaceState>,
     id: String,
 ) -> Result<(), String> {
     let path = store_path(&app)?;
     let mut store = read_store(&path);
     store.profiles.retain(|p| p.id != id);
-    if let Ok(root) = vault_state.current_root() {
+    if let Ok(root) = space_state.current_root() {
         let _ = local_secrets::secret_clear(&root, &id);
     }
     if store.active_profile_id.as_deref() == Some(&id) {
@@ -176,33 +176,33 @@ pub async fn ai_profile_delete(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn ai_secret_set(
-    vault_state: State<'_, VaultState>,
+    space_state: State<'_, SpaceState>,
     profile_id: String,
     api_key: String,
 ) -> Result<(), String> {
-    let root = vault_state
+    let root = space_state
         .current_root()
-        .map_err(|_| "Open a vault to store API keys locally".to_string())?;
+        .map_err(|_| "Open a space to store API keys locally".to_string())?;
     local_secrets::secret_set(&root, &profile_id, api_key.trim())
 }
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn ai_secret_clear(
-    vault_state: State<'_, VaultState>,
+    space_state: State<'_, SpaceState>,
     profile_id: String,
 ) -> Result<(), String> {
-    let root = vault_state
+    let root = space_state
         .current_root()
-        .map_err(|_| "Open a vault to manage API keys".to_string())?;
+        .map_err(|_| "Open a space to manage API keys".to_string())?;
     local_secrets::secret_clear(&root, &profile_id)
 }
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn ai_secret_status(
-    vault_state: State<'_, VaultState>,
+    space_state: State<'_, SpaceState>,
     profile_id: String,
 ) -> Result<bool, String> {
-    let root = match vault_state.current_root() {
+    let root = match space_state.current_root() {
         Ok(root) => root,
         Err(_) => return Ok(false),
     };
@@ -210,10 +210,10 @@ pub async fn ai_secret_status(
 }
 
 #[tauri::command]
-pub async fn ai_secret_list(vault_state: State<'_, VaultState>) -> Result<Vec<String>, String> {
-    let root = vault_state
+pub async fn ai_secret_list(space_state: State<'_, SpaceState>) -> Result<Vec<String>, String> {
+    let root = space_state
         .current_root()
-        .map_err(|_| "Open a vault to manage API keys".to_string())?;
+        .map_err(|_| "Open a space to manage API keys".to_string())?;
     local_secrets::secret_ids(&root)
 }
 
@@ -235,12 +235,12 @@ pub async fn ai_provider_support(app: AppHandle) -> Result<ProviderSupportDocume
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn ai_audit_mark(
-    vault_state: State<'_, VaultState>,
+    space_state: State<'_, SpaceState>,
     job_id: String,
     outcome: String,
 ) -> Result<(), String> {
     let _ = uuid::Uuid::parse_str(&job_id).map_err(|_| "invalid job_id".to_string())?;
-    let root = vault_state.current_root()?;
+    let root = space_state.current_root()?;
     let path = audit_log_path(&root, &job_id)?;
     tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
         let bytes = std::fs::read(&path).map_err(|e| e.to_string())?;
@@ -263,7 +263,7 @@ pub async fn ai_audit_mark(
 #[tauri::command]
 pub async fn ai_chat_start(
     ai_state: State<'_, AiState>,
-    vault_state: State<'_, VaultState>,
+    space_state: State<'_, SpaceState>,
     app: AppHandle,
     mut request: AiChatRequest,
 ) -> Result<AiChatStartResult, String> {
@@ -291,7 +291,7 @@ pub async fn ai_chat_start(
     let store_path = store_path(&app)?;
     let mut store = read_store(&store_path);
     ensure_default_profiles(&mut store);
-    let vault_root = vault_state.current_root().ok();
+    let space_root = space_state.current_root().ok();
     let _ = write_store(&store_path, &store);
 
     let profile = store
@@ -313,7 +313,7 @@ pub async fn ai_chat_start(
         let ai_state_for_task = app_for_task.state::<AiState>();
         let codex_state = app_for_task.state::<crate::ai_codex::state::CodexState>();
 
-        let api_key = vault_root
+        let api_key = space_root
             .as_deref()
             .and_then(|root| local_secrets::secret_get(root, &profile.id).ok().flatten());
         let (system, messages) =
@@ -329,7 +329,7 @@ pub async fn ai_chat_start(
             &system,
             &messages,
             &request.mode,
-            vault_root.as_deref(),
+            space_root.as_deref(),
             request.thread_id.as_deref(),
         )
         .await;
@@ -346,7 +346,7 @@ pub async fn ai_chat_start(
                     &system,
                     &messages,
                     &request.mode,
-                    vault_root.as_deref(),
+                    space_root.as_deref(),
                     request.thread_id.as_deref(),
                 )
                 .await;
@@ -362,7 +362,7 @@ pub async fn ai_chat_start(
                         cancelled,
                     },
                 );
-                if let Some(root) = vault_root {
+                if let Some(root) = space_root {
                     let title = runtime::generate_chat_title_with_rig(
                         &profile,
                         api_key.as_deref(),
@@ -373,7 +373,7 @@ pub async fn ai_chat_start(
                     .await
                     .ok();
                     write_audit_log(&AuditLogParams {
-                        vault_root: &root,
+                        space_root: &root,
                         job_id: &job_id_for_task,
                         history_id: &history_id,
                         profile: &profile,
@@ -424,18 +424,18 @@ pub async fn ai_chat_cancel(ai_state: State<'_, AiState>, job_id: String) -> Res
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn ai_chat_history_list(
-    vault_state: State<'_, VaultState>,
+    space_state: State<'_, SpaceState>,
     limit: Option<u32>,
 ) -> Result<Vec<history::AiChatHistorySummary>, String> {
-    history::ai_chat_history_list(vault_state, limit).await
+    history::ai_chat_history_list(space_state, limit).await
 }
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn ai_chat_history_get(
-    vault_state: State<'_, VaultState>,
+    space_state: State<'_, SpaceState>,
     job_id: String,
 ) -> Result<history::AiChatHistoryDetail, String> {
-    history::ai_chat_history_get(vault_state, job_id).await
+    history::ai_chat_history_get(space_state, job_id).await
 }
 
 #[allow(clippy::too_many_arguments)]
@@ -449,7 +449,7 @@ pub async fn run_request(
     system: &str,
     messages: &[AiMessage],
     mode: &AiAssistantMode,
-    vault_root: Option<&std::path::Path>,
+    space_root: Option<&std::path::Path>,
     thread_id: Option<&str>,
 ) -> Result<(String, bool, Vec<AiStoredToolEvent>), String> {
     if matches!(profile.provider, super::types::AiProviderKind::CodexChatgpt) {
@@ -462,14 +462,14 @@ pub async fn run_request(
             system,
             messages,
             mode,
-            vault_root,
+            space_root,
             thread_id,
         )
         .await;
     }
 
     runtime::run_with_rig(
-        cancel, app, job_id, profile, api_key, system, messages, mode, vault_root,
+        cancel, app, job_id, profile, api_key, system, messages, mode, space_root,
     )
     .await
 }

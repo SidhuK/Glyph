@@ -24,28 +24,28 @@ cd src-tauri && cargo build   # Build Rust backend
 - **Backend**: Tauri 2 + Rust in `src-tauri/`
 - **Canvas**: `@xyflow/react` for node-based editing
 - **Note Editor**: CodeMirror with markdown support
-- **Persistence**: `@tauri-apps/plugin-store` for settings, filesystem for vault data
+- **Persistence**: `@tauri-apps/plugin-store` for settings, filesystem for space data
 
 ### IPC Layer
 
 Tauri commands are defined in `src-tauri/src/lib.rs` and individual modules. The frontend uses a typed wrapper at `src/lib/tauri.ts` that maps command names to their argument/result types via the `TauriCommands` interface. Always use the `invoke()` helper from this module rather than calling `tauriInvoke` directly.
 
-### Vault System
+### Space System
 
-The app uses a vault-based architecture where a vault is a directory containing:
+The app uses a space-based architecture where a space is a directory containing:
 
 - `notes/` - Markdown files with YAML frontmatter (UUID filenames)
 - `canvases/` - JSON files storing node/edge graphs (UUID filenames)
 - `assets/` - Attached files (content-addressed by SHA256 hash)
 - `cache/` - Temporary/cached data
-- `vault.json` - Schema version and metadata
+- `space.json` - Schema version and metadata
 
 ## Frontend Files (`src/`)
 
 | File       | Purpose                                                                                              |
 | ---------- | ---------------------------------------------------------------------------------------------------- |
 | `main.tsx` | React app entry point, renders `<App />`                                                             |
-| `App.tsx`  | Root component: vault selection, note/canvas state management, layout shell with sidebar + main area |
+| `App.tsx`  | Root component: space selection, note/canvas state management, layout shell with sidebar + main area |
 | `App.css`  | Global styles for the app shell, sidebar, and components                                             |
 
 ### Components (`src/components/`)
@@ -62,15 +62,15 @@ The app uses a vault-based architecture where a vault is a directory containing:
 | File          | Purpose                                                                                                                                                        |
 | ------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `tauri.ts`    | Typed IPC wrapper: defines `TauriCommands` interface mapping command names to arg/result types, exports typed `invoke()` function and `TauriInvokeError` class |
-| `settings.ts` | App settings persistence via `@tauri-apps/plugin-store`: current vault path, recent vaults list (max 20)                                                       |
+| `settings.ts` | App settings persistence via `@tauri-apps/plugin-store`: current space path, recent spaces list (max 20)                                                       |
 
 ## Backend Files (`src-tauri/src/`)
 
 | File           | Purpose                                                                                                                                                                                    |
 | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `main.rs`      | Tauri app entry point, calls `app_lib::run()`                                                                                                                                              |
-| `lib.rs`       | Tauri builder setup: registers plugins (dialog, opener, store), manages `VaultState`, registers all IPC commands                                                                           |
-| `vault.rs`     | Vault lifecycle: `vault_create`, `vault_open`, `vault_get_current` commands; creates directory structure and `vault.json`; holds current vault path in `VaultState` (Mutex-guarded)        |
+| `lib.rs`       | Tauri builder setup: registers plugins (dialog, opener, store), manages `SpaceState`, registers all IPC commands                                                                           |
+| `space.rs`     | Space lifecycle: `space_create`, `space_open`, `space_get_current` commands; creates directory structure and `space.json`; holds current space path in `SpaceState` (Mutex-guarded)        |
 | `notes.rs`     | Note CRUD: `notes_list`, `note_create`, `note_read`, `note_write`, `note_delete`, `note_attach_file`; parses/renders YAML frontmatter; content-addressed asset storage with SHA256 hashing |
 | `canvas.rs`    | Canvas CRUD: `canvas_list`, `canvas_create`, `canvas_read`, `canvas_write`; stores nodes/edges as JSON with version field                                                                  |
 | `io_atomic.rs` | Atomic file writes: writes to temp file, syncs, renames to destination, syncs parent directory (crash-safe)                                                                                |

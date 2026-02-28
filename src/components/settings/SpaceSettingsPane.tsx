@@ -1,18 +1,18 @@
 import { useCallback, useEffect, useState } from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
-import { clearRecentVaults, loadSettings } from "../../lib/settings";
+import { clearRecentSpaces, loadSettings } from "../../lib/settings";
 import { invoke } from "../../lib/tauri";
 
-export function VaultSettingsPane() {
-	const [currentVaultPath, setCurrentVaultPath] = useState<string | null>(null);
-	const [recentVaults, setRecentVaults] = useState<string[]>([]);
+export function SpaceSettingsPane() {
+	const [currentSpacePath, setCurrentSpacePath] = useState<string | null>(null);
+	const [recentSpaces, setRecentSpaces] = useState<string[]>([]);
 	const [error, setError] = useState("");
 	const [reindexStatus, setReindexStatus] = useState("");
 	const [isIndexing, setIsIndexing] = useState(false);
 
 	const onRebuildIndex = useCallback(async () => {
-		if (!currentVaultPath) {
-			setReindexStatus("Open a vault first to rebuild the index.");
+		if (!currentSpacePath) {
+			setReindexStatus("Open a space first to rebuild the index.");
 			return;
 		}
 		setReindexStatus("");
@@ -25,14 +25,14 @@ export function VaultSettingsPane() {
 		} finally {
 			setIsIndexing(false);
 		}
-	}, [currentVaultPath]);
+	}, [currentSpacePath]);
 
 	const refresh = useCallback(async () => {
 		setError("");
 		try {
 			const s = await loadSettings();
-			setCurrentVaultPath(s.currentVaultPath);
-			setRecentVaults(s.recentVaults);
+			setCurrentSpacePath(s.currentSpacePath);
+			setRecentSpaces(s.recentSpaces);
 		} catch (e) {
 			setError(extractErrorMessage(e));
 		}
@@ -50,9 +50,9 @@ export function VaultSettingsPane() {
 				<section className="settingsCard">
 					<div className="settingsCardHeader">
 						<div>
-							<div className="settingsCardTitle">Current Vault</div>
+							<div className="settingsCardTitle">Current Space</div>
 							<div className="settingsCardHint">
-								The vault currently open in this window.
+								The space currently open in this window.
 							</div>
 						</div>
 						<div className="settingsPill settingsPillOk">Active</div>
@@ -63,7 +63,7 @@ export function VaultSettingsPane() {
 							<div className="settingsLabel">Path</div>
 						</div>
 						<div className="settingsValue mono">
-							{currentVaultPath ?? "(none selected)"}
+							{currentSpacePath ?? "(none selected)"}
 						</div>
 					</div>
 				</section>
@@ -71,32 +71,32 @@ export function VaultSettingsPane() {
 				<section className="settingsCard settingsSpan">
 					<div className="settingsCardHeader">
 						<div>
-							<div className="settingsCardTitle">Recent Vaults</div>
+							<div className="settingsCardTitle">Recent Spaces</div>
 							<div className="settingsCardHint">
-								Recently opened vaults on this Mac.
+								Recently opened spaces on this Mac.
 							</div>
 						</div>
 						<button
 							type="button"
-							aria-label="Clear recent vaults"
+							aria-label="Clear recent spaces"
 							onClick={async () => {
-								await clearRecentVaults();
+								await clearRecentSpaces();
 								await refresh();
 							}}
 						>
 							Clear
 						</button>
 					</div>
-					{recentVaults.length ? (
+					{recentSpaces.length ? (
 						<ul className="settingsList">
-							{recentVaults.map((p) => (
+							{recentSpaces.map((p) => (
 								<li key={p} className="mono">
 									{p}
 								</li>
 							))}
 						</ul>
 					) : (
-						<div className="settingsEmpty">No recent vaults.</div>
+						<div className="settingsEmpty">No recent spaces.</div>
 					)}
 				</section>
 
@@ -113,7 +113,7 @@ export function VaultSettingsPane() {
 							onClick={() => {
 								void onRebuildIndex();
 							}}
-							disabled={!currentVaultPath || isIndexing}
+							disabled={!currentSpacePath || isIndexing}
 						>
 							{isIndexing ? "Rebuilding..." : "Rebuild Index"}
 						</button>

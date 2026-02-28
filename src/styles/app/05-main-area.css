@@ -310,7 +310,7 @@
 	text-align: center;
 }
 
-.welcomeLastVault {
+.welcomeLastSpace {
 	font-size: var(--text-xs);
 	color: var(--text-tertiary);
 	text-align: center;
@@ -405,7 +405,7 @@
 	color: var(--text-inverse);
 }
 
-/* Vault step (unused, kept for reference) */
+/* Space step (unused, kept for reference) */
 
 .welcomeStepTitle {
 	font-size: var(--text-xl, 1.25rem);
@@ -504,7 +504,7 @@
 	max-width: 480px;
 }
 
-.welcomeVaultPath {
+.welcomeSpacePath {
 	font-size: var(--text-xs);
 	color: var(--text-tertiary);
 	text-align: center;

@@ -120,13 +120,13 @@ async function emitSettingsUpdated(payload: {
 
 export interface RecentFile {
 	path: string;
-	vaultPath: string;
+	spacePath: string;
 	openedAt: number;
 }
 
 interface AppSettings {
-	currentVaultPath: string | null;
-	recentVaults: string[];
+	currentSpacePath: string | null;
+	recentSpaces: string[];
 	recentFiles: RecentFile[];
 	ui: {
 		aiEnabled: boolean;
@@ -148,8 +148,8 @@ interface AppSettings {
 }
 
 const KEYS = {
-	currentVaultPath: "vault.currentPath",
-	recentVaults: "vault.recent",
+	currentSpacePath: "space.currentPath",
+	recentSpaces: "space.recent",
 	recentFiles: "files.recent",
 	aiEnabled: "ui.aiEnabled",
 	aiSidebarWidth: "ui.aiSidebarWidth",
@@ -177,10 +177,10 @@ function isRecentFileArray(value: unknown): value is RecentFile[] {
 				typeof item === "object" &&
 				item !== null &&
 				"path" in item &&
-				"vaultPath" in item &&
+				"spacePath" in item &&
 				"openedAt" in item &&
 				typeof (item as RecentFile).path === "string" &&
-				typeof (item as RecentFile).vaultPath === "string" &&
+				typeof (item as RecentFile).spacePath === "string" &&
 				typeof (item as RecentFile).openedAt === "number",
 		)
 	);
@@ -189,8 +189,8 @@ function isRecentFileArray(value: unknown): value is RecentFile[] {
 export async function loadSettings(): Promise<AppSettings> {
 	const store = await getStore();
 	const [
-		currentVaultPathRaw,
-		recentVaultsRaw,
+		currentSpacePathRaw,
+		recentSpacesRaw,
 		rawRecentFiles,
 		rawAiEnabled,
 		aiSidebarWidthRaw,
@@ -204,8 +204,8 @@ export async function loadSettings(): Promise<AppSettings> {
 		analyticsEnabledRaw,
 		analyticsDistinctIdRaw,
 	] = await Promise.all([
-		store.get<string | null>(KEYS.currentVaultPath),
-		store.get<string[] | null>(KEYS.recentVaults),
+		store.get<string | null>(KEYS.currentSpacePath),
+		store.get<string[] | null>(KEYS.recentSpaces),
 		store.get<unknown>(KEYS.recentFiles),
 		store.get<boolean | null>(KEYS.aiEnabled),
 		store.get<number | null>(KEYS.aiSidebarWidth),
@@ -219,8 +219,8 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<boolean | null>(KEYS.analyticsEnabled),
 		store.get<string | null>(KEYS.analyticsDistinctId),
 	]);
-	const currentVaultPath = currentVaultPathRaw ?? null;
-	const recentVaults = recentVaultsRaw ?? [];
+	const currentSpacePath = currentSpacePathRaw ?? null;
+	const recentSpaces = recentSpacesRaw ?? [];
 	const recentFiles = isRecentFileArray(rawRecentFiles) ? rawRecentFiles : [];
 	const aiEnabled =
 		typeof rawAiEnabled === "boolean" ? rawAiEnabled : DEFAULT_AI_ENABLED;
@@ -239,8 +239,8 @@ export async function loadSettings(): Promise<AppSettings> {
 	const analyticsDistinctId =
 		typeof analyticsDistinctIdRaw === "string" ? analyticsDistinctIdRaw : "";
 	return {
-		currentVaultPath,
-		recentVaults: Array.isArray(recentVaults) ? recentVaults : [],
+		currentSpacePath,
+		recentSpaces: Array.isArray(recentSpaces) ? recentSpaces : [],
 		recentFiles,
 		ui: {
 			aiEnabled,
@@ -265,24 +265,24 @@ export async function loadSettings(): Promise<AppSettings> {
 	};
 }
 
-export async function setCurrentVaultPath(path: string): Promise<void> {
+export async function setCurrentSpacePath(path: string): Promise<void> {
 	const store = await getStore();
-	await store.set(KEYS.currentVaultPath, path);
-	const prev = (await store.get<string[] | null>(KEYS.recentVaults)) ?? [];
+	await store.set(KEYS.currentSpacePath, path);
+	const prev = (await store.get<string[] | null>(KEYS.recentSpaces)) ?? [];
 	const next = [path, ...prev.filter((p) => p !== path)].slice(0, 20);
-	await store.set(KEYS.recentVaults, next);
+	await store.set(KEYS.recentSpaces, next);
 	await store.save();
 }
 
-export async function clearCurrentVaultPath(): Promise<void> {
+export async function clearCurrentSpacePath(): Promise<void> {
 	const store = await getStore();
-	await store.set(KEYS.currentVaultPath, null);
+	await store.set(KEYS.currentSpacePath, null);
 	await store.save();
 }
 
-export async function clearRecentVaults(): Promise<void> {
+export async function clearRecentSpaces(): Promise<void> {
 	const store = await getStore();
-	await store.set(KEYS.recentVaults, []);
+	await store.set(KEYS.recentSpaces, []);
 	await store.save();
 }
 
@@ -401,16 +401,16 @@ export async function getRecentFiles(): Promise<RecentFile[]> {
 
 export async function addRecentFile(
 	path: string,
-	vaultPath: string,
+	spacePath: string,
 ): Promise<void> {
 	const store = await getStore();
 	const raw = await store.get<unknown>(KEYS.recentFiles);
 	const recent = isRecentFileArray(raw) ? raw : [];
 	const filtered = recent.filter(
-		(r) => r.path !== path || r.vaultPath !== vaultPath,
+		(r) => r.path !== path || r.spacePath !== spacePath,
 	);
 	const next: RecentFile[] = [
-		{ path, vaultPath, openedAt: Date.now() },
+		{ path, spacePath, openedAt: Date.now() },
 		...filtered,
 	].slice(0, 20);
 	await store.set(KEYS.recentFiles, next);

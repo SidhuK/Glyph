@@ -10,8 +10,8 @@ use crate::notes::frontmatter::{
     render_frontmatter_mapping_yaml, split_frontmatter,
 };
 use crate::paths;
-use crate::vault::VaultState;
-use crate::vault_fs::helpers::deny_hidden_rel_path;
+use crate::space::SpaceState;
+use crate::space_fs::helpers::deny_hidden_rel_path;
 
 use super::config::{parse_database_config, render_database_markdown};
 use super::query::{hydrate_rows_by_paths, load_database, read_database_markdown};
@@ -196,7 +196,7 @@ fn apply_cell_value_to_row(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn database_load(
-    state: State<'_, VaultState>,
+    state: State<'_, SpaceState>,
     path: String,
     limit: Option<u32>,
 ) -> Result<super::types::DatabaseLoadResult, String> {
@@ -208,7 +208,7 @@ pub async fn database_load(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn database_save_config(
-    state: State<'_, VaultState>,
+    state: State<'_, SpaceState>,
     path: String,
     config: DatabaseConfig,
 ) -> Result<DatabaseConfig, String> {
@@ -225,7 +225,7 @@ pub async fn database_save_config(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn database_update_cell(
-    state: State<'_, VaultState>,
+    state: State<'_, SpaceState>,
     note_path: String,
     column: DatabaseColumn,
     value: DatabaseCellValue,
@@ -328,7 +328,7 @@ mod tests {
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn database_create_row(
-    state: State<'_, VaultState>,
+    state: State<'_, SpaceState>,
     database_path: String,
     title: Option<String>,
 ) -> Result<DatabaseCreateRowResult, String> {

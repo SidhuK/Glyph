@@ -2,7 +2,7 @@ use std::path::Path;
 use tauri::{AppHandle, State};
 use tauri_plugin_notification::NotificationExt;
 
-use crate::vault::VaultState;
+use crate::space::SpaceState;
 
 use super::db::open_db;
 use super::indexer::index_note;
@@ -185,7 +185,7 @@ fn fetch_previews_by_ids(
 #[tauri::command]
 pub async fn index_rebuild(
     app: AppHandle,
-    state: State<'_, VaultState>,
+    state: State<'_, SpaceState>,
 ) -> Result<IndexRebuildResult, String> {
     let root = state.current_root()?;
     let res = tauri::async_runtime::spawn_blocking(move || rebuild(&root))
@@ -202,7 +202,7 @@ pub async fn index_rebuild(
 
 #[tauri::command]
 pub async fn search(
-    state: State<'_, VaultState>,
+    state: State<'_, SpaceState>,
     query: String,
 ) -> Result<Vec<SearchResult>, String> {
     let root = state.current_root()?;
@@ -216,7 +216,7 @@ pub async fn search(
 
 #[tauri::command]
 pub async fn search_advanced(
-    state: State<'_, VaultState>,
+    state: State<'_, SpaceState>,
     request: SearchAdvancedRequest,
 ) -> Result<Vec<SearchResult>, String> {
     let root = state.current_root()?;
@@ -230,7 +230,7 @@ pub async fn search_advanced(
 
 #[tauri::command]
 pub async fn search_parse_and_run(
-    state: State<'_, VaultState>,
+    state: State<'_, SpaceState>,
     raw_query: String,
     limit: Option<u32>,
 ) -> Result<Vec<SearchResult>, String> {
@@ -246,7 +246,7 @@ pub async fn search_parse_and_run(
 
 #[tauri::command]
 pub async fn search_view_data(
-    state: State<'_, VaultState>,
+    state: State<'_, SpaceState>,
     query: String,
     limit: Option<u32>,
 ) -> Result<Vec<ViewNotePreview>, String> {
@@ -277,7 +277,7 @@ pub async fn search_view_data(
 
 #[tauri::command]
 pub async fn search_with_tags(
-    state: State<'_, VaultState>,
+    state: State<'_, SpaceState>,
     tags: Vec<String>,
     query: Option<String>,
     limit: Option<u32>,
@@ -342,7 +342,7 @@ pub async fn search_with_tags(
 
 #[tauri::command]
 pub async fn recent_notes(
-    state: State<'_, VaultState>,
+    state: State<'_, SpaceState>,
     limit: Option<u32>,
 ) -> Result<Vec<SearchResult>, String> {
     let root = state.current_root()?;
@@ -375,7 +375,7 @@ pub async fn recent_notes(
 
 #[tauri::command]
 pub async fn tags_list(
-    state: State<'_, VaultState>,
+    state: State<'_, SpaceState>,
     limit: Option<u32>,
 ) -> Result<Vec<TagCount>, String> {
     let root = state.current_root()?;
@@ -407,7 +407,7 @@ pub async fn tags_list(
 
 #[tauri::command]
 pub async fn tag_notes(
-    state: State<'_, VaultState>,
+    state: State<'_, SpaceState>,
     tag: String,
     limit: Option<u32>,
 ) -> Result<Vec<SearchResult>, String> {
@@ -471,7 +471,7 @@ pub async fn tag_notes(
 
 #[tauri::command]
 pub async fn tag_view_data(
-    state: State<'_, VaultState>,
+    state: State<'_, SpaceState>,
     tag: String,
     limit: Option<u32>,
 ) -> Result<Vec<ViewNotePreview>, String> {
@@ -509,7 +509,7 @@ pub async fn tag_view_data(
 
 #[tauri::command]
 pub async fn tasks_query(
-    state: State<'_, VaultState>,
+    state: State<'_, SpaceState>,
     bucket: String,
     today: String,
     limit: Option<u32>,
@@ -527,7 +527,7 @@ pub async fn tasks_query(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn task_set_checked(
-    state: State<'_, VaultState>,
+    state: State<'_, SpaceState>,
     task_id: String,
     checked: bool,
 ) -> Result<(), String> {
@@ -555,7 +555,7 @@ pub async fn task_set_checked(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn task_set_dates(
-    state: State<'_, VaultState>,
+    state: State<'_, SpaceState>,
     task_id: String,
     scheduled_date: Option<String>,
     due_date: Option<String>,
@@ -642,7 +642,7 @@ pub fn task_update_by_ordinal(
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn backlinks(
-    state: State<'_, VaultState>,
+    state: State<'_, SpaceState>,
     note_id: String,
 ) -> Result<Vec<BacklinkItem>, String> {
     let root = state.current_root()?;

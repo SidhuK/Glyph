@@ -12,7 +12,7 @@ export async function buildFolderViewDoc(
 	const v = viewId({ kind: "folder", dir });
 	const recursive = options.recursive ?? true;
 	const limit = options.limit ?? 500;
-	const folder = await invoke("vault_folder_view_data", {
+	const folder = await invoke("space_folder_view_data", {
 		dir: v.selector || null,
 		limit,
 		recent_limit: 5,

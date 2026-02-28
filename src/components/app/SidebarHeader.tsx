@@ -4,14 +4,14 @@ import { Command, FolderOpen, PanelLeftClose, PanelLeftOpen } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 
 interface SidebarHeaderProps {
-	onOpenVault: () => void;
+	onOpenSpace: () => void;
 	onOpenCommandPalette: () => void;
 	sidebarCollapsed: boolean;
 	onToggleSidebar: () => void;
 }
 
 export function SidebarHeader({
-	onOpenVault,
+	onOpenSpace,
 	onOpenCommandPalette,
 	sidebarCollapsed,
 	onToggleSidebar,
@@ -30,8 +30,8 @@ export function SidebarHeader({
 						type="button"
 						variant="ghost"
 						size="icon-sm"
-						onClick={onOpenVault}
-						title="Open vault"
+						onClick={onOpenSpace}
+						title="Open space"
 					>
 						<FolderOpen size={14} />
 					</Button>

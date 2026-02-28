@@ -43,7 +43,7 @@ function sourceKindLabel(config: DatabaseConfig): string {
 function sourceTitle(config: DatabaseConfig): string {
 	switch (config.source.kind) {
 		case "folder":
-			return config.source.value || "Vault root";
+			return config.source.value || "Space root";
 		case "tag":
 			return config.source.value || "Tag";
 		case "search":

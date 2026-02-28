@@ -30,7 +30,7 @@ export interface AppInfo {
 	identifier: string;
 }
 
-export interface VaultInfo {
+export interface SpaceInfo {
 	root: string;
 	schema_version: number;
 }
@@ -343,7 +343,7 @@ export interface LinkPreview {
 
 export type AnalyticsEventName =
 	| "app_started"
-	| "vault_opened"
+	| "space_opened"
 	| "index_rebuild_started"
 	| "search_executed"
 	| "note_created"
@@ -474,59 +474,59 @@ interface TauriCommands {
 	app_info: CommandDef<void, AppInfo>;
 	system_fonts_list: CommandDef<void, string[]>;
 	system_monospace_fonts_list: CommandDef<void, string[]>;
-	vault_create: CommandDef<{ path: string }, VaultInfo>;
-	vault_open: CommandDef<{ path: string }, VaultInfo>;
-	vault_get_current: CommandDef<void, string | null>;
-	vault_close: CommandDef<void, void>;
-	vault_list_dirs: CommandDef<
+	space_create: CommandDef<{ path: string }, SpaceInfo>;
+	space_open: CommandDef<{ path: string }, SpaceInfo>;
+	space_get_current: CommandDef<void, string | null>;
+	space_close: CommandDef<void, void>;
+	space_list_dirs: CommandDef<
 		{ dir?: string | null; limit?: number | null },
 		FsEntry[]
 	>;
-	vault_list_dir: CommandDef<{ dir?: string | null }, FsEntry[]>;
-	vault_list_markdown_files: CommandDef<
+	space_list_dir: CommandDef<{ dir?: string | null }, FsEntry[]>;
+	space_list_markdown_files: CommandDef<
 		{ dir?: string | null; recursive?: boolean | null; limit?: number | null },
 		FsEntry[]
 	>;
-	vault_list_files: CommandDef<
+	space_list_files: CommandDef<
 		{ dir?: string | null; recursive?: boolean | null; limit?: number | null },
 		FsEntry[]
 	>;
-	vault_dir_recent_entries: CommandDef<
+	space_dir_recent_entries: CommandDef<
 		{ dir?: string | null; limit?: number | null },
 		RecentEntry[]
 	>;
-	vault_read_text: CommandDef<{ path: string }, TextFileDoc>;
-	vault_read_texts_batch: CommandDef<{ paths: string[] }, TextFileDocBatch[]>;
-	vault_read_text_preview: CommandDef<
+	space_read_text: CommandDef<{ path: string }, TextFileDoc>;
+	space_read_texts_batch: CommandDef<{ paths: string[] }, TextFileDocBatch[]>;
+	space_read_text_preview: CommandDef<
 		{ path: string; max_bytes?: number | null },
 		TextFilePreviewDoc
 	>;
-	vault_read_binary_preview: CommandDef<
+	space_read_binary_preview: CommandDef<
 		{ path: string; max_bytes?: number | null },
 		BinaryFilePreviewDoc
 	>;
-	vault_write_text: CommandDef<
+	space_write_text: CommandDef<
 		{ path: string; text: string; base_mtime_ms?: number | null },
 		TextFileWriteResult
 	>;
-	vault_open_or_create_text: CommandDef<
+	space_open_or_create_text: CommandDef<
 		{ path: string; text: string },
 		OpenOrCreateTextResult
 	>;
-	vault_create_dir: CommandDef<{ path: string }, void>;
-	vault_rename_path: CommandDef<{ from_path: string; to_path: string }, void>;
-	vault_delete_path: CommandDef<
+	space_create_dir: CommandDef<{ path: string }, void>;
+	space_rename_path: CommandDef<{ from_path: string; to_path: string }, void>;
+	space_delete_path: CommandDef<
 		{ path: string; recursive?: boolean | null },
 		void
 	>;
-	vault_resolve_abs_path: CommandDef<{ path: string }, string>;
-	vault_relativize_path: CommandDef<{ abs_path: string }, string>;
-	vault_resolve_wikilink: CommandDef<{ target: string }, string | null>;
-	vault_resolve_markdown_link: CommandDef<
+	space_resolve_abs_path: CommandDef<{ path: string }, string>;
+	space_relativize_path: CommandDef<{ abs_path: string }, string>;
+	space_resolve_wikilink: CommandDef<{ target: string }, string | null>;
+	space_resolve_markdown_link: CommandDef<
 		{ href: string; sourcePath: string },
 		string | null
 	>;
-	vault_suggest_links: CommandDef<
+	space_suggest_links: CommandDef<
 		{
 			request: {
 				query: string;
@@ -539,7 +539,7 @@ interface TauriCommands {
 		},
 		LinkSuggestionItem[]
 	>;
-	vault_folder_view_data: CommandDef<
+	space_folder_view_data: CommandDef<
 		{
 			dir?: string | null;
 			limit?: number | null;

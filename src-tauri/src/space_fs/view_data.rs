@@ -6,7 +6,7 @@ use std::{
 };
 use tauri::State;
 
-use crate::{index::open_db, paths, utils, vault::VaultState};
+use crate::{index::open_db, paths, utils, space::SpaceState};
 
 use super::{
     helpers::{deny_hidden_rel_path, should_hide},
@@ -81,8 +81,8 @@ fn list_files(root: &Path, dir: &Path, limit: usize) -> Result<Vec<FsEntry>, Str
 }
 
 #[tauri::command(rename_all = "snake_case")]
-pub async fn vault_folder_view_data(
-    state: State<'_, VaultState>,
+pub async fn space_folder_view_data(
+    state: State<'_, SpaceState>,
     dir: Option<String>,
     limit: Option<u32>,
     recent_limit: Option<u32>,

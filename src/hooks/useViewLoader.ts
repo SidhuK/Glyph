@@ -97,7 +97,7 @@ export function useViewLoader(deps: UseViewLoaderDeps): UseViewLoaderResult {
 							})();
 							return;
 						}
-						setCanvasLoadingMessage("Indexing vault…");
+						setCanvasLoadingMessage("Indexing space…");
 						await startIndexRebuild();
 						if (isStale()) return;
 						setCanvasLoadingMessage("");

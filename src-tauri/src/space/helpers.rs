@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 use crate::glyph_paths;
 
 #[derive(Serialize)]
-pub struct VaultInfo {
+pub struct SpaceInfo {
     pub root: String,
     pub schema_version: u32,
 }
@@ -26,10 +26,10 @@ pub fn canonicalize_dir(path: &Path) -> Result<PathBuf, String> {
     Ok(p)
 }
 
-pub fn create_or_open_impl(root: &Path) -> Result<VaultInfo, String> {
+pub fn create_or_open_impl(root: &Path) -> Result<SpaceInfo, String> {
     ensure_glyph_dirs(root)?;
     let _ = cleanup_tmp_files(root);
-    Ok(VaultInfo {
+    Ok(SpaceInfo {
         root: root.to_string_lossy().to_string(),
         schema_version: VAULT_SCHEMA_VERSION,
     })

@@ -7,12 +7,12 @@ import {
 
 export interface UseRecentFilesReturn {
 	recentFiles: RecentFile[];
-	addRecentFile: (path: string, vaultPath: string) => Promise<void>;
+	addRecentFile: (path: string, spacePath: string) => Promise<void>;
 	refreshRecentFiles: () => Promise<void>;
 }
 
 export function useRecentFiles(
-	currentVaultPath: string | null,
+	currentSpacePath: string | null,
 	limit = 7,
 ): UseRecentFilesReturn {
 	const [recentFiles, setRecentFiles] = useState<RecentFile[]>([]);
@@ -20,18 +20,18 @@ export function useRecentFiles(
 	const refreshRecentFiles = useCallback(async () => {
 		try {
 			const all = await getRecentFilesFromStore();
-			const filtered = currentVaultPath
-				? all.filter((f) => f.vaultPath === currentVaultPath).slice(0, limit)
+			const filtered = currentSpacePath
+				? all.filter((f) => f.spacePath === currentSpacePath).slice(0, limit)
 				: all.slice(0, limit);
 			setRecentFiles(filtered);
 		} catch {
 			setRecentFiles([]);
 		}
-	}, [currentVaultPath, limit]);
+	}, [currentSpacePath, limit]);
 
 	const addRecentFile = useCallback(
-		async (path: string, vaultPath: string) => {
-			await addRecentFileToStore(path, vaultPath);
+		async (path: string, spacePath: string) => {
+			await addRecentFileToStore(path, spacePath);
 			await refreshRecentFiles();
 		},
 		[refreshRecentFiles],

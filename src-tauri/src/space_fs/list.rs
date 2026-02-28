@@ -1,14 +1,14 @@
 use std::path::{Path, PathBuf};
 use tauri::State;
 
-use crate::{paths, utils, vault::VaultState};
+use crate::{paths, utils, space::SpaceState};
 
 use super::helpers::{deny_hidden_rel_path, should_hide};
 use super::types::FsEntry;
 
 #[tauri::command]
-pub async fn vault_list_dirs(
-    state: State<'_, VaultState>,
+pub async fn space_list_dirs(
+    state: State<'_, SpaceState>,
     dir: Option<String>,
     limit: Option<usize>,
 ) -> Result<Vec<FsEntry>, String> {
@@ -79,8 +79,8 @@ pub async fn vault_list_dirs(
 }
 
 #[tauri::command]
-pub async fn vault_list_markdown_files(
-    state: State<'_, VaultState>,
+pub async fn space_list_markdown_files(
+    state: State<'_, SpaceState>,
     dir: Option<String>,
     recursive: Option<bool>,
     limit: Option<u32>,
@@ -184,8 +184,8 @@ pub async fn vault_list_markdown_files(
 }
 
 #[tauri::command]
-pub async fn vault_list_files(
-    state: State<'_, VaultState>,
+pub async fn space_list_files(
+    state: State<'_, SpaceState>,
     dir: Option<String>,
     recursive: Option<bool>,
     limit: Option<u32>,
@@ -285,8 +285,8 @@ pub async fn vault_list_files(
 }
 
 #[tauri::command]
-pub async fn vault_list_dir(
-    state: State<'_, VaultState>,
+pub async fn space_list_dir(
+    state: State<'_, SpaceState>,
     dir: Option<String>,
 ) -> Result<Vec<FsEntry>, String> {
     let root = state.current_root()?;

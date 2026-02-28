@@ -3,4 +3,4 @@ mod helpers;
 mod state;
 mod watcher;
 
-pub use state::VaultState;
+pub use state::SpaceState;

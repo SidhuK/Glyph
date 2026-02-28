@@ -4,7 +4,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
 	useAISidebarContext,
 	useEditorRegistration,
-	useVault,
+	useSpace,
 } from "../../contexts";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { splitYamlFrontmatter } from "../../lib/notePreview";
@@ -79,7 +79,7 @@ export function MarkdownEditorPane({
 	const pendingExternalReloadRef = useRef(false);
 	const paneRef = useRef<HTMLElement | null>(null);
 	const statsDockRef = useRef<HTMLDivElement | null>(null);
-	const { vaultPath } = useVault();
+	const { spacePath } = useSpace();
 	const { aiEnabled, aiPanelOpen } = useAISidebarContext();
 
 	const isDirty = text !== savedText;
@@ -150,17 +150,17 @@ export function MarkdownEditorPane({
 	}, [relPath]);
 
 	useEffect(() => {
-		if (vaultPath === null) {
+		if (spacePath === null) {
 			markdownDocCache.clear();
 			return;
 		}
 		markdownDocCache.clear();
-	}, [vaultPath]);
+	}, [spacePath]);
 
 	const loadDoc = useCallback(async () => {
 		setError("");
 		try {
-			const doc = await invoke("vault_read_text", { path: relPath });
+			const doc = await invoke("space_read_text", { path: relPath });
 			markdownDocCache.set(relPath, doc.text);
 			setText((prev) => (prev === savedTextRef.current ? doc.text : prev));
 			setSavedText(doc.text);
@@ -174,7 +174,7 @@ export function MarkdownEditorPane({
 	const loadDocFromExternalChange = useCallback(async () => {
 		setError("");
 		try {
-			const doc = await invoke("vault_read_text", { path: relPath });
+			const doc = await invoke("space_read_text", { path: relPath });
 			if (
 				doc.mtime_ms === mtimeRef.current &&
 				doc.text === savedTextRef.current
@@ -206,7 +206,7 @@ export function MarkdownEditorPane({
 
 			setError("");
 			try {
-				const result = await invoke("vault_write_text", {
+				const result = await invoke("space_write_text", {
 					path,
 					text: nextText,
 					base_mtime_ms: mtimeRef.current,
@@ -225,12 +225,12 @@ export function MarkdownEditorPane({
 
 				// Conflict recovery: refresh latest mtime/content and retry save once.
 				try {
-					const latest = await invoke("vault_read_text", { path });
+					const latest = await invoke("space_read_text", { path });
 					if (latest.text === nextText) {
 						applySaveState(nextText, latest.mtime_ms);
 						return true;
 					}
-					const retry = await invoke("vault_write_text", {
+					const retry = await invoke("space_write_text", {
 						path,
 						text: nextText,
 						base_mtime_ms: latest.mtime_ms,

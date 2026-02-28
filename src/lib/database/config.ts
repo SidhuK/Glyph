@@ -348,7 +348,7 @@ export function sourceSummary(config: DatabaseConfig): string {
 		case "folder":
 			return config.source.value
 				? `Folder: ${config.source.value}${config.source.recursive ? " (with subfolders)" : ""}`
-				: `Folder: Vault root${config.source.recursive ? " (with subfolders)" : ""}`;
+				: `Folder: Space root${config.source.recursive ? " (with subfolders)" : ""}`;
 		case "tag":
 			return `Tag: ${config.source.value}`;
 		case "search":

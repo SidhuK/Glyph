@@ -21,7 +21,7 @@ import {
 } from "./fileTreeHelpers";
 
 export interface UseFileTreeCRUDDeps {
-	vaultPath: string | null;
+	spacePath: string | null;
 	updateChildrenByDir: (
 		next:
 			| Record<string, FsEntry[] | undefined>
@@ -48,7 +48,7 @@ export interface UseFileTreeCRUDDeps {
 
 export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 	const {
-		vaultPath,
+		spacePath,
 		updateChildrenByDir,
 		updateExpandedDirs,
 		updateRootEntries,
@@ -128,13 +128,13 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 
 	const onNewFileInDir = useCallback(
 		async (dirPath: string) => {
-			if (!vaultPath) return;
+			if (!spacePath) return;
 			setError("");
 			try {
 				const { save } = await import("@tauri-apps/plugin-dialog");
 				const defaultPath = dirPath
-					? await join(vaultPath, dirPath, "Untitled.md")
-					: await join(vaultPath, "Untitled.md");
+					? await join(spacePath, dirPath, "Untitled.md")
+					: await join(spacePath, "Untitled.md");
 				const selection = await save({
 					title: "Create new Markdown file",
 					defaultPath,
@@ -144,7 +144,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 					? (selection[0] ?? null)
 					: selection;
 				if (!absPath) return;
-				const rel = await invoke("vault_relativize_path", {
+				const rel = await invoke("space_relativize_path", {
 					abs_path: absPath,
 				});
 				const markdownRel = isMarkdownPath(rel) ? rel : `${rel}.md`;
@@ -154,7 +154,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 					setError(`Choose a file path inside "${dirPath}"`);
 					return;
 				}
-				await invoke("vault_write_text", {
+				await invoke("space_write_text", {
 					path: markdownRel,
 					text: `# ${fileTitle}\n`,
 					base_mtime_ms: null,
@@ -186,7 +186,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			refreshActiveFolderViewAfterCreate,
 			setError,
 			updateExpandedDirs,
-			vaultPath,
+			spacePath,
 		],
 	);
 
@@ -196,11 +196,11 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 
 	const onNewDatabaseInDir = useCallback(
 		async (dirPath: string) => {
-			if (!vaultPath) return null;
+			if (!spacePath) return null;
 			setError("");
 			try {
 				const entries = await invoke(
-					"vault_list_dir",
+					"space_list_dir",
 					dirPath ? { dir: dirPath } : {},
 				);
 				const existing = new Set(
@@ -218,7 +218,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 					title,
 					createDefaultDatabaseConfig(dirPath),
 				);
-				await invoke("vault_write_text", {
+				await invoke("space_write_text", {
 					path: nextPath,
 					text: markdown,
 					base_mtime_ms: null,
@@ -243,16 +243,16 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			refreshActiveFolderViewAfterCreate,
 			refreshAfterCreate,
 			setError,
-			vaultPath,
+			spacePath,
 		],
 	);
 
 	const onNewFolderInDir = useCallback(
 		async (dirPath: string) => {
-			if (!vaultPath) return null;
+			if (!spacePath) return null;
 			try {
 				const siblings = await invoke(
-					"vault_list_dir",
+					"space_list_dir",
 					dirPath ? { dir: dirPath } : {},
 				);
 				const siblingNames = new Set(
@@ -268,7 +268,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 				}
 				setError("");
 				const path = dirPath ? `${dirPath}/${name}` : name;
-				await invoke("vault_create_dir", { path });
+				await invoke("space_create_dir", { path });
 				insertEntryOptimistic(dirPath, {
 					name,
 					rel_path: path,
@@ -294,7 +294,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			refreshActiveFolderViewAfterCreate,
 			setError,
 			updateExpandedDirs,
-			vaultPath,
+			spacePath,
 		],
 	);
 
@@ -312,7 +312,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			if (nextPath === dirPath) return nextPath;
 			setError("");
 			try {
-				await invoke("vault_rename_path", {
+				await invoke("space_rename_path", {
 					from_path: dirPath,
 					to_path: nextPath,
 				});
@@ -397,7 +397,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			if (!target) return false;
 			setError("");
 			try {
-				await invoke("vault_delete_path", {
+				await invoke("space_delete_path", {
 					path: target,
 					recursive: kind === "dir",
 				});
@@ -481,7 +481,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			if (nextPath === from) return nextPath;
 			setError("");
 			try {
-				await invoke("vault_rename_path", {
+				await invoke("space_rename_path", {
 					from_path: from,
 					to_path: nextPath,
 				});

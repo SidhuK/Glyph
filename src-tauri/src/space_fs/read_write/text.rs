@@ -1,7 +1,7 @@
 use std::{ffi::OsStr, io::Write, path::PathBuf};
 use tauri::State;
 
-use crate::{index, io_atomic, paths, vault::VaultState};
+use crate::{index, io_atomic, paths, space::SpaceState};
 
 use super::super::helpers::{deny_hidden_rel_path, etag_for, file_mtime_ms};
 use super::super::types::{
@@ -9,8 +9,8 @@ use super::super::types::{
 };
 
 #[tauri::command]
-pub async fn vault_read_text(
-    state: State<'_, VaultState>,
+pub async fn space_read_text(
+    state: State<'_, SpaceState>,
     path: String,
 ) -> Result<TextFileDoc, String> {
     let root = state.current_root()?;
@@ -33,8 +33,8 @@ pub async fn vault_read_text(
 }
 
 #[tauri::command]
-pub async fn vault_read_texts_batch(
-    state: State<'_, VaultState>,
+pub async fn space_read_texts_batch(
+    state: State<'_, SpaceState>,
     paths: Vec<String>,
 ) -> Result<Vec<TextFileDocBatch>, String> {
     let root = state.current_root()?;
@@ -74,8 +74,8 @@ pub async fn vault_read_texts_batch(
 }
 
 #[tauri::command(rename_all = "snake_case")]
-pub async fn vault_write_text(
-    state: State<'_, VaultState>,
+pub async fn space_write_text(
+    state: State<'_, SpaceState>,
     path: String,
     text: String,
     base_mtime_ms: Option<u64>,
@@ -115,8 +115,8 @@ pub async fn vault_write_text(
 }
 
 #[tauri::command(rename_all = "snake_case")]
-pub async fn vault_open_or_create_text(
-    state: State<'_, VaultState>,
+pub async fn space_open_or_create_text(
+    state: State<'_, SpaceState>,
     path: String,
     text: String,
 ) -> Result<OpenOrCreateTextResult, String> {

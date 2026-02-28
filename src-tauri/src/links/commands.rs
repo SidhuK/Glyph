@@ -1,7 +1,7 @@
 use std::fs;
 use tauri::State;
 
-use crate::vault::VaultState;
+use crate::space::SpaceState;
 
 use super::cache::{read_cache, write_cache};
 use super::fetch::{build_preview, fetch_html};
@@ -13,7 +13,7 @@ use super::types::LinkPreview;
 
 #[tauri::command]
 pub async fn link_preview(
-    state: State<'_, VaultState>,
+    state: State<'_, SpaceState>,
     url: String,
     force: Option<bool>,
 ) -> Result<LinkPreview, String> {

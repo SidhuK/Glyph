@@ -12,17 +12,17 @@ pub fn note_rel_path(note_id: &str) -> Result<PathBuf, String> {
     Ok(PathBuf::from("notes").join(format!("{note_id}.md")))
 }
 
-pub fn note_abs_path(vault_root: &Path, note_id: &str) -> Result<PathBuf, String> {
+pub fn note_abs_path(space_root: &Path, note_id: &str) -> Result<PathBuf, String> {
     let rel = note_rel_path(note_id)?;
-    paths::join_under(vault_root, &rel)
+    paths::join_under(space_root, &rel)
 }
 
-pub fn notes_dir(vault_root: &Path) -> Result<PathBuf, String> {
-    paths::join_under(vault_root, Path::new("notes"))
+pub fn notes_dir(space_root: &Path) -> Result<PathBuf, String> {
+    paths::join_under(space_root, Path::new("notes"))
 }
 
-pub fn assets_dir(vault_root: &Path) -> Result<PathBuf, String> {
-    paths::join_under(vault_root, Path::new("assets"))
+pub fn assets_dir(space_root: &Path) -> Result<PathBuf, String> {
+    paths::join_under(space_root, Path::new("assets"))
 }
 
 pub fn read_to_string(path: &Path) -> Result<String, String> {

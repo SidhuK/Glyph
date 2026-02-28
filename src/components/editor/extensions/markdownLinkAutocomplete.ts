@@ -21,7 +21,7 @@ export const MarkdownLinkAutocomplete = Extension.create({
 	},
 	addProseMirrorPlugins() {
 		const getItems = async (query: string): Promise<LinkSuggestionItem[]> => {
-			const results = await invoke("vault_suggest_links", {
+			const results = await invoke("space_suggest_links", {
 				request: {
 					query,
 					source_path: this.options.currentPath || null,

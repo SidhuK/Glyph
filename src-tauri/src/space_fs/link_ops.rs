@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use tauri::State;
 
-use crate::{paths, utils, vault::VaultState};
+use crate::{paths, utils, space::SpaceState};
 
 #[derive(Clone)]
 struct FileEntry {
@@ -139,8 +139,8 @@ fn list_files(root: &Path, markdown_only: bool, limit: usize) -> Result<Vec<File
 }
 
 #[tauri::command]
-pub async fn vault_resolve_wikilink(
-    state: State<'_, VaultState>,
+pub async fn space_resolve_wikilink(
+    state: State<'_, SpaceState>,
     target: String,
 ) -> Result<Option<String>, String> {
     let root = state.current_root()?;
@@ -175,8 +175,8 @@ pub async fn vault_resolve_wikilink(
 }
 
 #[tauri::command]
-pub async fn vault_resolve_markdown_link(
-    state: State<'_, VaultState>,
+pub async fn space_resolve_markdown_link(
+    state: State<'_, SpaceState>,
     href: String,
     source_path: String,
 ) -> Result<Option<String>, String> {
@@ -224,8 +224,8 @@ pub async fn vault_resolve_markdown_link(
 }
 
 #[tauri::command]
-pub async fn vault_suggest_links(
-    state: State<'_, VaultState>,
+pub async fn space_suggest_links(
+    state: State<'_, SpaceState>,
     request: LinkSuggestRequest,
 ) -> Result<Vec<LinkSuggestionItem>, String> {
     let root = state.current_root()?;

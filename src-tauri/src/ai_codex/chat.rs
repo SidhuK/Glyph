@@ -162,10 +162,10 @@ pub async fn run_with_codex(
     system: &str,
     messages: &[AiMessage],
     _mode: &AiAssistantMode,
-    vault_root: Option<&std::path::Path>,
+    space_root: Option<&std::path::Path>,
     thread_hint: Option<&str>,
 ) -> Result<(String, bool, Vec<AiStoredToolEvent>), String> {
-    let root = vault_root.ok_or_else(|| "No vault is open".to_string())?;
+    let root = space_root.ok_or_else(|| "No space is open".to_string())?;
 
     let _ = app.emit(
         "ai:status",

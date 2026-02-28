@@ -8,10 +8,10 @@ import { useRecentFiles } from "../../hooks/useRecentFiles";
 import { TASKS_TAB_ID } from "../../lib/tasks";
 import { isInAppPreviewable } from "../../utils/filePreview";
 
-export function useTabManager(vaultPath: string | null) {
+export function useTabManager(spacePath: string | null) {
 	const { canvasLoadingMessage } = useViewContext();
 	const { activeFilePath, setActiveFilePath } = useFileTreeContext();
-	const { recentFiles, addRecentFile } = useRecentFiles(vaultPath, 7);
+	const { recentFiles, addRecentFile } = useRecentFiles(spacePath, 7);
 	const {
 		activePreviewPath,
 		setActivePreviewPath,
@@ -72,10 +72,10 @@ export function useTabManager(vaultPath: string | null) {
 	}, [activeTabPath, openTabs, setActiveMarkdownTabPath, setOpenMarkdownTabs]);
 
 	useEffect(() => {
-		if (activeTabPath && vaultPath) {
-			void addRecentFile(activeTabPath, vaultPath);
+		if (activeTabPath && spacePath) {
+			void addRecentFile(activeTabPath, spacePath);
 		}
-	}, [activeTabPath, vaultPath, addRecentFile]);
+	}, [activeTabPath, spacePath, addRecentFile]);
 
 	const closeTab = useCallback((path: string) => {
 		setOpenTabs((prev) => {

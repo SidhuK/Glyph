@@ -5,7 +5,7 @@ const quickStartSteps = [
 	{
 		icon: FolderOpen,
 		title: "Open folder",
-		description: "Choose your local vault folder.",
+		description: "Choose your local space folder.",
 	},
 	{
 		icon: FileText,

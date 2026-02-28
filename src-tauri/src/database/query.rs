@@ -8,7 +8,7 @@ use crate::index::open_db;
 use crate::index::search_advanced::run_search_advanced;
 use crate::notes::frontmatter::split_frontmatter;
 use crate::paths;
-use crate::vault_fs::helpers::deny_hidden_rel_path;
+use crate::space_fs::helpers::deny_hidden_rel_path;
 
 use super::config::parse_database_config;
 use super::types::{DatabaseCellValue, DatabaseLoadResult, DatabasePropertyOption, DatabaseRow};

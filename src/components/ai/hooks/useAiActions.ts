@@ -34,9 +34,9 @@ export function useAiActions(chat: Chat) {
 				? (selection[0] ?? null)
 				: selection;
 			if (!absPath) return;
-			const rel = await invoke("vault_relativize_path", { abs_path: absPath });
+			const rel = await invoke("space_relativize_path", { abs_path: absPath });
 			const markdownRel = rel.toLowerCase().endsWith(".md") ? rel : `${rel}.md`;
-			await invoke("vault_write_text", {
+			await invoke("space_write_text", {
 				path: markdownRel,
 				text: trimmed,
 				base_mtime_ms: null,

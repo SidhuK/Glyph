@@ -6,8 +6,8 @@ import {
 	useAISidebarContext,
 	useEditorContext,
 	useFileTreeContext,
+	useSpace,
 	useUILayoutContext,
-	useVault,
 	useViewContext,
 } from "../../contexts";
 import { useCommandShortcuts } from "../../hooks/useCommandShortcuts";
@@ -40,9 +40,9 @@ import { Sidebar } from "./Sidebar";
 import { normalizeRelPath, parentDir } from "./appShellHelpers";
 
 export function AppShell() {
-	const vault = useVault();
-	const { vaultPath, error, setError, onOpenVault, onCreateVault, closeVault } =
-		vault;
+	const space = useSpace();
+	const { spacePath, error, setError, onOpenSpace, onCreateSpace, closeSpace } =
+		space;
 	const fileTreeCtx = useFileTreeContext();
 	const {
 		expandedDirs,
@@ -110,7 +110,7 @@ export function AppShell() {
 	}, [activeViewDocRef]);
 
 	const fileTree = useFileTree({
-		vaultPath,
+		spacePath,
 		updateChildrenByDir,
 		updateExpandedDirs,
 		updateRootEntries,
@@ -148,7 +148,7 @@ export function AppShell() {
 				detail.target.split("#", 1)[0] ?? detail.target;
 			void (async () => {
 				try {
-					const resolved = await invoke("vault_resolve_wikilink", {
+					const resolved = await invoke("space_resolve_wikilink", {
 						target: targetWithoutAnchor,
 					});
 					if (!resolved) {
@@ -168,7 +168,7 @@ export function AppShell() {
 			if (!detail?.href) return;
 			void (async () => {
 				try {
-					const resolved = await invoke("vault_resolve_markdown_link", {
+					const resolved = await invoke("space_resolve_markdown_link", {
 						href: detail.href,
 						sourcePath: detail.sourcePath,
 					});
@@ -176,7 +176,7 @@ export function AppShell() {
 						await fileTree.openFile(resolved);
 						return;
 					}
-					const wikiFallback = await invoke("vault_resolve_wikilink", {
+					const wikiFallback = await invoke("space_resolve_wikilink", {
 						target: detail.href,
 					});
 					if (wikiFallback) {
@@ -265,11 +265,11 @@ export function AppShell() {
 		await attachContextFiles(tabs);
 	}, [attachContextFiles, openMarkdownTabs, setError]);
 
-	useMenuListeners({ onOpenVault, onCreateVault, closeVault });
+	useMenuListeners({ onOpenSpace, onCreateSpace, closeSpace });
 
-	const handleVaultFsChanged = useCallback(
+	const handleSpaceFsChanged = useCallback(
 		(payload: { rel_path: string }) => {
-			if (!vaultPath) return;
+			if (!spacePath) return;
 			const changedPath = normalizeRelPath(payload.rel_path);
 			if (!changedPath) return;
 			fsRefreshQueueRef.current.add(changedPath);
@@ -287,10 +287,10 @@ export function AppShell() {
 				for (const dir of dirs) void fileTree.loadDir(dir, true);
 			}, 150);
 		},
-		[expandedDirs, fileTree.loadDir, vaultPath],
+		[expandedDirs, fileTree.loadDir, spacePath],
 	);
 
-	useTauriEvent("vault:fs_changed", handleVaultFsChanged);
+	useTauriEvent("space:fs_changed", handleSpaceFsChanged);
 	useEffect(
 		() => () => {
 			if (fsRefreshTimerRef.current !== null)
@@ -301,7 +301,7 @@ export function AppShell() {
 
 	useEffect(() => {
 		const sourcePath = movePickerSourcePath ?? activeFilePath;
-		if (!vaultPath || !paletteOpen || !sourcePath) {
+		if (!spacePath || !paletteOpen || !sourcePath) {
 			setMoveTargetDirs([]);
 			return;
 		}
@@ -312,7 +312,7 @@ export function AppShell() {
 			const queue: string[] = [""];
 			while (queue.length > 0 && out.length < 5000) {
 				const dir = queue.shift() ?? "";
-				const entries = await invoke("vault_list_dir", dir ? { dir } : {});
+				const entries = await invoke("space_list_dir", dir ? { dir } : {});
 				for (const entry of entries) {
 					if (entry.kind !== "dir" || seen.has(entry.rel_path)) continue;
 					seen.add(entry.rel_path);
@@ -332,7 +332,7 @@ export function AppShell() {
 		return () => {
 			cancelled = true;
 		};
-	}, [activeFilePath, movePickerSourcePath, paletteOpen, vaultPath]);
+	}, [activeFilePath, movePickerSourcePath, paletteOpen, spacePath]);
 
 	useEffect(() => {
 		if (!paletteOpen) setMovePickerSourcePath(null);
@@ -399,7 +399,7 @@ export function AppShell() {
 						label: "Toggle AI",
 						category: "AI",
 						shortcut: { meta: true, shift: true, key: "a" },
-						enabled: Boolean(vaultPath),
+						enabled: Boolean(spacePath),
 						action: () => setAiPanelOpen((v) => !v),
 					},
 					{
@@ -430,11 +430,11 @@ export function AppShell() {
 				action: () => void openSettingsWindow(),
 			},
 			{
-				id: "open-vault",
-				label: "Open vault",
+				id: "open-space",
+				label: "Open space",
 				category: "Workspace",
 				shortcut: { meta: true, key: "o" },
-				action: onOpenVault,
+				action: onOpenSpace,
 			},
 			{
 				id: "toggle-sidebar",
@@ -449,14 +449,14 @@ export function AppShell() {
 				label: "New note",
 				category: "File Operations",
 				shortcut: { meta: true, key: "n" },
-				enabled: Boolean(vaultPath),
+				enabled: Boolean(spacePath),
 				action: () => void fileTree.onNewFile(),
 			},
 			{
 				id: "new-database",
 				label: "New database",
 				category: "File Operations",
-				enabled: Boolean(vaultPath),
+				enabled: Boolean(spacePath),
 				action: async () => {
 					try {
 						const dir = getActiveFolderDir() ?? "";
@@ -480,7 +480,7 @@ export function AppShell() {
 				label: "Open daily note (today)",
 				category: "File Operations",
 				shortcut: { meta: true, shift: true, key: "d" },
-				enabled: Boolean(vaultPath) && Boolean(dailyNotesFolder),
+				enabled: Boolean(spacePath) && Boolean(dailyNotesFolder),
 				action: () => void handleOpenDailyNote(),
 			},
 			{
@@ -488,7 +488,7 @@ export function AppShell() {
 				label: "Save",
 				category: "File Operations",
 				shortcut: { meta: true, key: "s" },
-				enabled: Boolean(vaultPath),
+				enabled: Boolean(spacePath),
 				action: () => void saveCurrentEditor(),
 			},
 			{
@@ -496,7 +496,7 @@ export function AppShell() {
 				label: "Close preview",
 				category: "Navigation",
 				shortcut: { meta: true, key: "w" },
-				enabled: Boolean(vaultPath),
+				enabled: Boolean(spacePath),
 				action: () => setActivePreviewPath(null),
 			},
 			{
@@ -504,21 +504,21 @@ export function AppShell() {
 				label: "Quick open",
 				category: "Navigation",
 				shortcut: { meta: true, key: "p" },
-				enabled: Boolean(vaultPath),
+				enabled: Boolean(spacePath),
 				action: openSearchPalette,
 			},
 			{
 				id: "open-tasks",
 				label: "Open tasks",
 				category: "Navigation",
-				enabled: Boolean(vaultPath),
+				enabled: Boolean(spacePath),
 				action: openTasksTab,
 			},
 			{
 				id: "move-active-file",
 				label: "Move to…",
 				category: "File Operations",
-				enabled: Boolean(vaultPath) && Boolean(activeFilePath),
+				enabled: Boolean(spacePath) && Boolean(activeFilePath),
 				action: () => {
 					if (!activeFilePath) return;
 					setMovePickerSourcePath(activeFilePath);
@@ -537,7 +537,7 @@ export function AppShell() {
 		dailyNotesFolder,
 		fileTree,
 		handleOpenDailyNote,
-		onOpenVault,
+		onOpenSpace,
 		openMarkdownTabs.length,
 		saveCurrentEditor,
 		setAiPanelOpen,
@@ -545,7 +545,7 @@ export function AppShell() {
 		setActivePreviewPath,
 		setSidebarCollapsed,
 		sidebarCollapsed,
-		vaultPath,
+		spacePath,
 		openSearchPalette,
 		openTasksTab,
 		moveTargetDirs,
@@ -649,7 +649,7 @@ export function AppShell() {
 				onOpenSearchPalette={openSearchPalette}
 				openTasksRequest={openTasksRequest}
 			/>
-			{vaultPath && aiEnabled && aiPanelOpen && (
+			{spacePath && aiEnabled && aiPanelOpen && (
 				<div
 					ref={aiResize.resizeRef}
 					className="sidebarResizeHandle"
@@ -660,7 +660,7 @@ export function AppShell() {
 					style={{ cursor: "col-resize" }}
 				/>
 			)}
-			{vaultPath && aiEnabled && (
+			{spacePath && aiEnabled && (
 				<AIFloatingHost
 					isOpen={aiPanelOpen}
 					onToggle={() => setAiPanelOpen((v) => !v)}
@@ -682,7 +682,7 @@ export function AppShell() {
 				initialQuery={paletteInitialQuery}
 				commands={commands}
 				onClose={() => setPaletteOpen(false)}
-				vaultPath={vaultPath}
+				spacePath={spacePath}
 				onSelectSearchNote={(id) => void fileTree.openMarkdownFile(id)}
 			/>
 			<KeyboardShortcutsHelp

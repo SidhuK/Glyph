@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use tauri::State;
 
-use crate::{paths, utils, vault::VaultState};
+use crate::{paths, utils, space::SpaceState};
 
 const DEFAULT_FILE_LIST_LIMIT: usize = 20_000;
 const DEFAULT_CHAR_BUDGET: usize = 12_000;
@@ -169,7 +169,7 @@ fn list_files(root: &Path, dir: &str, limit: usize) -> Result<Vec<String>, Strin
 
 #[tauri::command]
 pub async fn ai_context_index(
-    state: State<'_, VaultState>,
+    state: State<'_, SpaceState>,
 ) -> Result<AiContextIndexResponse, String> {
     let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || {
@@ -195,7 +195,7 @@ pub async fn ai_context_index(
                 .into_iter()
                 .map(|path| AiContextIndexItem {
                     label: if path.is_empty() {
-                        "Vault".to_string()
+                        "Space".to_string()
                     } else {
                         path.clone()
                     },
@@ -217,7 +217,7 @@ pub async fn ai_context_index(
 
 #[tauri::command]
 pub async fn ai_context_build(
-    state: State<'_, VaultState>,
+    state: State<'_, SpaceState>,
     request: AiContextBuildRequest,
 ) -> Result<AiContextBuildResponse, String> {
     let root = state.current_root()?;
@@ -245,7 +245,7 @@ pub async fn ai_context_build(
                     .filter(|v| !v.trim().is_empty())
                     .unwrap_or_else(|| {
                         if path.is_empty() {
-                            "Vault".to_string()
+                            "Space".to_string()
                         } else {
                             path.clone()
                         }
@@ -317,7 +317,7 @@ pub async fn ai_context_build(
 
 #[tauri::command]
 pub async fn ai_context_resolve_paths(
-    state: State<'_, VaultState>,
+    state: State<'_, SpaceState>,
     attachments: Vec<AiContextAttachment>,
 ) -> Result<Vec<String>, String> {
     let root = state.current_root()?;

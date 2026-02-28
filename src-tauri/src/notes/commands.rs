@@ -1,7 +1,7 @@
 use std::{ffi::OsStr, path::Path};
 use tauri::State;
 
-use crate::{index, io_atomic, paths, vault::VaultState};
+use crate::{index, io_atomic, paths, space::SpaceState};
 
 use super::frontmatter::{
     normalize_frontmatter_mapping, now_rfc3339, parse_frontmatter, parse_frontmatter_mapping,
@@ -13,7 +13,7 @@ use super::helpers::{
 use super::types::{NoteDoc, NoteMeta, NoteWriteResult};
 
 #[tauri::command]
-pub async fn notes_list(state: State<'_, VaultState>) -> Result<Vec<NoteMeta>, String> {
+pub async fn notes_list(state: State<'_, SpaceState>) -> Result<Vec<NoteMeta>, String> {
     let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<NoteMeta>, String> {
         let dir = notes_dir(&root)?;
@@ -47,7 +47,7 @@ pub async fn notes_list(state: State<'_, VaultState>) -> Result<Vec<NoteMeta>, S
 }
 
 #[tauri::command]
-pub async fn note_create(state: State<'_, VaultState>, title: String) -> Result<NoteMeta, String> {
+pub async fn note_create(state: State<'_, SpaceState>, title: String) -> Result<NoteMeta, String> {
     let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<NoteMeta, String> {
         let id = uuid::Uuid::new_v4().to_string();
@@ -94,7 +94,7 @@ pub async fn note_create(state: State<'_, VaultState>, title: String) -> Result<
 }
 
 #[tauri::command]
-pub async fn note_read(state: State<'_, VaultState>, id: String) -> Result<NoteDoc, String> {
+pub async fn note_read(state: State<'_, SpaceState>, id: String) -> Result<NoteDoc, String> {
     let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<NoteDoc, String> {
         let path = note_abs_path(&root, &id)?;
@@ -126,7 +126,7 @@ fn created_from_markdown(markdown: &str) -> Option<String> {
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn note_write(
-    state: State<'_, VaultState>,
+    state: State<'_, SpaceState>,
     id: String,
     markdown: String,
     base_etag: Option<String>,
@@ -163,7 +163,7 @@ pub async fn note_write(
 }
 
 #[tauri::command]
-pub async fn note_delete(state: State<'_, VaultState>, id: String) -> Result<(), String> {
+pub async fn note_delete(state: State<'_, SpaceState>, id: String) -> Result<(), String> {
     let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
         let path = note_abs_path(&root, &id)?;

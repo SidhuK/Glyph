@@ -14,7 +14,7 @@ export interface UseSearchResult {
 	setShowSearch: (show: boolean) => void;
 }
 
-export function useSearch(vaultPath: string | null): UseSearchResult {
+export function useSearch(spacePath: string | null): UseSearchResult {
 	const [searchQuery, setSearchQuery] = useState("");
 	const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
 	const [isSearching, setIsSearching] = useState(false);
@@ -23,7 +23,7 @@ export function useSearch(vaultPath: string | null): UseSearchResult {
 	const requestIdRef = useRef(0);
 
 	useEffect(() => {
-		if (!vaultPath) return;
+		if (!spacePath) return;
 		let cancelled = false;
 		if (!searchQuery.trim()) {
 			setSearchResults([]);
@@ -58,7 +58,7 @@ export function useSearch(vaultPath: string | null): UseSearchResult {
 			cancelled = true;
 			window.clearTimeout(t);
 		};
-	}, [searchQuery, vaultPath]);
+	}, [searchQuery, spacePath]);
 
 	return {
 		searchQuery,

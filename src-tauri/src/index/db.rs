@@ -10,12 +10,12 @@ fn schema_cache() -> &'static Mutex<HashSet<PathBuf>> {
     CACHE.get_or_init(|| Mutex::new(HashSet::new()))
 }
 
-pub fn db_path(vault_root: &Path) -> Result<PathBuf, String> {
-    glyph_paths::glyph_db_path(vault_root)
+pub fn db_path(space_root: &Path) -> Result<PathBuf, String> {
+    glyph_paths::glyph_db_path(space_root)
 }
 
-pub fn open_db(vault_root: &Path) -> Result<rusqlite::Connection, String> {
-    let path = db_path(vault_root)?;
+pub fn open_db(space_root: &Path) -> Result<rusqlite::Connection, String> {
+    let path = db_path(space_root)?;
     if let Some(parent) = path.parent() {
         std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
     }

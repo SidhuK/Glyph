@@ -1,14 +1,14 @@
 use std::{cmp::Reverse, collections::BinaryHeap, ffi::OsStr, path::PathBuf};
 use tauri::State;
 
-use crate::{paths, vault::VaultState};
+use crate::{paths, space::SpaceState};
 
 use super::helpers::{deny_hidden_rel_path, file_mtime_ms, should_hide};
 use super::types::{DirChildSummary, RecentEntry, RecentMarkdown};
 
 #[tauri::command(rename_all = "snake_case")]
-pub async fn vault_dir_children_summary(
-    state: State<'_, VaultState>,
+pub async fn space_dir_children_summary(
+    state: State<'_, SpaceState>,
     dir: Option<String>,
     preview_limit: Option<u32>,
 ) -> Result<Vec<DirChildSummary>, String> {
@@ -162,8 +162,8 @@ pub async fn vault_dir_children_summary(
 }
 
 #[tauri::command]
-pub async fn vault_dir_recent_entries(
-    state: State<'_, VaultState>,
+pub async fn space_dir_recent_entries(
+    state: State<'_, SpaceState>,
     dir: Option<String>,
     limit: Option<u32>,
 ) -> Result<Vec<RecentEntry>, String> {

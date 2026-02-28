@@ -2,7 +2,7 @@ use base64::Engine;
 use std::{io::Read, path::PathBuf};
 use tauri::State;
 
-use crate::{paths, vault::VaultState};
+use crate::{paths, space::SpaceState};
 
 use super::super::helpers::{deny_hidden_rel_path, file_mtime_ms};
 use super::super::types::{BinaryFilePreviewDoc, TextFilePreviewDoc};
@@ -28,8 +28,8 @@ fn mime_for_preview_ext(ext: &str) -> Option<&'static str> {
 }
 
 #[tauri::command(rename_all = "snake_case")]
-pub async fn vault_read_text_preview(
-    state: State<'_, VaultState>,
+pub async fn space_read_text_preview(
+    state: State<'_, SpaceState>,
     path: String,
     max_bytes: Option<u32>,
 ) -> Result<TextFilePreviewDoc, String> {
@@ -74,8 +74,8 @@ pub async fn vault_read_text_preview(
 }
 
 #[tauri::command(rename_all = "snake_case")]
-pub async fn vault_read_binary_preview(
-    state: State<'_, VaultState>,
+pub async fn space_read_binary_preview(
+    state: State<'_, SpaceState>,
     path: String,
     max_bytes: Option<u32>,
 ) -> Result<BinaryFilePreviewDoc, String> {

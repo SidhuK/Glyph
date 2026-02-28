@@ -16,7 +16,7 @@ export type ShortcutCategory =
  */
 export type ShortcutContext =
 	| "global" // Always active
-	| "vault" // Active when a vault is open
+	| "space" // Active when a space is open
 	| "editor" // Active when editor is focused
 	| "canvas"; // Active when canvas is focused
 
@@ -78,7 +78,7 @@ export const SHORTCUTS = [
 		label: "Toggle AI Panel",
 		description: "Show or hide the AI assistant panel",
 		category: "navigation",
-		context: "vault",
+		context: "space",
 	},
 
 	// ─────────────────────────────────────────────────────────────────────────
@@ -90,7 +90,7 @@ export const SHORTCUTS = [
 		label: "New Note",
 		description: "Create a new note in the current folder",
 		category: "file",
-		context: "vault",
+		context: "space",
 	},
 	{
 		id: "open-daily-note",
@@ -98,7 +98,7 @@ export const SHORTCUTS = [
 		label: "Open Daily Note",
 		description: "Open or create today's daily note",
 		category: "file",
-		context: "vault",
+		context: "space",
 	},
 	{
 		id: "save-note",
@@ -114,7 +114,7 @@ export const SHORTCUTS = [
 		label: "Close Preview",
 		description: "Close the current preview or note",
 		category: "file",
-		context: "vault",
+		context: "space",
 	},
 
 	// ─────────────────────────────────────────────────────────────────────────
@@ -150,7 +150,7 @@ export const SHORTCUTS = [
 		label: "Quick Open",
 		description: "Quick file open (command palette in file mode)",
 		category: "search",
-		context: "vault",
+		context: "space",
 	},
 
 	// ─────────────────────────────────────────────────────────────────────────
@@ -165,10 +165,10 @@ export const SHORTCUTS = [
 		context: "global",
 	},
 	{
-		id: "open-vault",
+		id: "open-space",
 		shortcut: { meta: true, key: "o" },
-		label: "Open Vault",
-		description: "Open an existing vault",
+		label: "Open Space",
+		description: "Open an existing space",
 		category: "window",
 		context: "global",
 	},

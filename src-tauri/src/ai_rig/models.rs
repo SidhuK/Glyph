@@ -5,7 +5,7 @@ use super::local_secrets;
 use super::store::{ensure_default_profiles, read_store, store_path, write_store};
 use super::types::{AiModel, AiProviderKind, AiReasoningEffortOption};
 use crate::ai_codex::{state::CodexState, transport::rpc_call};
-use crate::vault::VaultState;
+use crate::space::SpaceState;
 
 #[derive(serde::Deserialize)]
 struct OpenAIModelsResp {
@@ -452,14 +452,14 @@ fn list_codex_models(codex_state: &CodexState) -> Result<Vec<AiModel>, String> {
 pub async fn ai_models_list(
     app: AppHandle,
     codex_state: State<'_, CodexState>,
-    vault_state: State<'_, VaultState>,
+    space_state: State<'_, SpaceState>,
     profile_id: String,
     provider: Option<AiProviderKind>,
 ) -> Result<Vec<AiModel>, String> {
     let path = store_path(&app)?;
     let mut store = read_store(&path);
     ensure_default_profiles(&mut store);
-    let vault_root = vault_state.current_root().ok();
+    let space_root = space_state.current_root().ok();
     let _ = write_store(&path, &store);
 
     let profile = store
@@ -471,7 +471,7 @@ pub async fn ai_models_list(
     let effective_provider = provider.unwrap_or_else(|| profile.provider.clone());
 
     let client = http_client()?;
-    let api_key = vault_root
+    let api_key = space_root
         .as_deref()
         .and_then(|root| local_secrets::secret_get(root, &profile.id).ok().flatten())
         .unwrap_or_default();

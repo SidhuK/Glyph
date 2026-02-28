@@ -116,12 +116,12 @@ pub fn fetch_youtube_oembed(
 
 pub fn download_image(
     client: &reqwest::blocking::Client,
-    vault_root: &Path,
+    space_root: &Path,
     image_url: &Url,
 ) -> Result<Option<String>, String> {
     net::validate_url_host(image_url, false)?;
     let rel = image_rel_path(image_url);
-    let abs = paths::join_under(vault_root, &rel)?;
+    let abs = paths::join_under(space_root, &rel)?;
     if abs.exists() {
         return Ok(Some(rel.to_string_lossy().to_string()));
     }
@@ -150,7 +150,7 @@ pub fn download_image(
 }
 
 pub fn build_preview(
-    vault_root: &Path,
+    space_root: &Path,
     client: &reqwest::blocking::Client,
     normalized: &Url,
     html: Option<&str>,
@@ -181,7 +181,7 @@ pub fn build_preview(
     {
         None => (image_url, None),
         Some(resolved) => {
-            let rel = download_image(client, vault_root, &resolved).ok().flatten();
+            let rel = download_image(client, space_root, &resolved).ok().flatten();
             (Some(resolved.as_str().to_string()), rel)
         }
     };

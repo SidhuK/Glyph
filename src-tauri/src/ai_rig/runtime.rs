@@ -54,9 +54,9 @@ pub async fn run_with_rig(
     system: &str,
     messages: &[AiMessage],
     mode: &AiAssistantMode,
-    vault_root: Option<&Path>,
+    space_root: Option<&Path>,
 ) -> Result<(String, bool, Vec<AiStoredToolEvent>), String> {
-    let root = vault_root.ok_or_else(|| "No vault is open".to_string())?;
+    let root = space_root.ok_or_else(|| "No space is open".to_string())?;
     let effective_system = if matches!(mode, AiAssistantMode::Create) {
         if system.trim().is_empty() {
             CREATE_MODE_DISCIPLINE_PREAMBLE.to_string()

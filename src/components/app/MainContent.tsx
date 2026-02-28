@@ -1,6 +1,6 @@
 import { m } from "motion/react";
 import { Suspense, lazy, memo, useEffect, useMemo } from "react";
-import { useVault } from "../../contexts";
+import { useSpace } from "../../contexts";
 import { formatShortcutPartsForPlatform } from "../../lib/shortcuts/platform";
 import { TASKS_TAB_ID } from "../../lib/tasks";
 import { isInAppPreviewable } from "../../utils/filePreview";
@@ -48,15 +48,15 @@ export const MainContent = memo(function MainContent({
 }: MainContentProps) {
 	const {
 		info,
-		vaultPath,
-		lastVaultPath,
-		recentVaults,
+		spacePath,
+		lastSpacePath,
+		recentSpaces,
 		settingsLoaded,
-		onOpenVault,
-		onOpenVaultAtPath,
-		onContinueLastVault,
-		onCreateVault,
-	} = useVault();
+		onOpenSpace,
+		onOpenSpaceAtPath,
+		onContinueLastSpace,
+		onCreateSpace,
+	} = useSpace();
 
 	const {
 		openTabs,
@@ -71,12 +71,12 @@ export const MainContent = memo(function MainContent({
 		openSpecialTab,
 		recentFiles,
 		canvasLoadingMessage,
-	} = useTabManager(vaultPath);
+	} = useTabManager(spacePath);
 
 	useEffect(() => {
-		if (!vaultPath || openTasksRequest === 0) return;
+		if (!spacePath || openTasksRequest === 0) return;
 		openSpecialTab(TASKS_TAB_ID);
-	}, [openSpecialTab, openTasksRequest, vaultPath]);
+	}, [openSpecialTab, openTasksRequest, spacePath]);
 
 	const viewerPath = activeTabPath;
 	const commandShortcutParts = useMemo(
@@ -132,18 +132,18 @@ export const MainContent = memo(function MainContent({
 		return null;
 	}, [canvasLoadingMessage, closeTab, fileTree, viewerPath, setDirtyByPath]);
 
-	if (!vaultPath) {
+	if (!spacePath) {
 		if (!settingsLoaded) return <main className="mainArea" />;
 		return (
 			<main className="mainArea mainAreaWelcome">
 				<WelcomeScreen
 					appName={info?.name ?? null}
-					lastVaultPath={lastVaultPath}
-					recentVaults={recentVaults}
-					onOpenVault={onOpenVault}
-					onCreateVault={onCreateVault}
-					onContinueLastVault={onContinueLastVault}
-					onSelectRecentVault={onOpenVaultAtPath}
+					lastSpacePath={lastSpacePath}
+					recentSpaces={recentSpaces}
+					onOpenSpace={onOpenSpace}
+					onCreateSpace={onCreateSpace}
+					onContinueLastSpace={onContinueLastSpace}
+					onSelectRecentSpace={onOpenSpaceAtPath}
 				/>
 			</main>
 		);
@@ -203,7 +203,7 @@ export const MainContent = memo(function MainContent({
 									<div className="mainRecentFilesList">
 										{recentFiles.map((file, index) => (
 											<m.button
-												key={`${file.vaultPath}:${file.path}`}
+												key={`${file.spacePath}:${file.path}`}
 												type="button"
 												className="mainRecentFileItem"
 												onClick={() => setActiveTabPath(file.path)}

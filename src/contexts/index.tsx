@@ -1,11 +1,11 @@
 import { Component, type ErrorInfo, type ReactNode } from "react";
 import { EditorProvider } from "./EditorContext";
 import { FileTreeProvider } from "./FileTreeContext";
+import { SpaceProvider } from "./SpaceContext";
 import { UIProvider } from "./UIContext";
-import { VaultProvider } from "./VaultContext";
 import { ViewProvider } from "./ViewContext";
 
-export { useVault } from "./VaultContext";
+export { useSpace } from "./SpaceContext";
 export { useFileTreeContext } from "./FileTreeContext";
 export { useViewContext } from "./ViewContext";
 export { useUIContext } from "./UIContext";
@@ -16,7 +16,7 @@ export {
 } from "./UIContext";
 export { useEditorContext, useEditorRegistration } from "./EditorContext";
 
-export type { VaultContextValue } from "./VaultContext";
+export type { SpaceContextValue } from "./SpaceContext";
 export type { FileTreeContextValue } from "./FileTreeContext";
 export type { ViewContextValue } from "./ViewContext";
 export type { UIContextValue } from "./UIContext";
@@ -63,7 +63,7 @@ class ProvidersErrorBoundary extends Component<
 export function AppProviders({ children }: { children: ReactNode }) {
 	return (
 		<ProvidersErrorBoundary>
-			<VaultProvider>
+			<SpaceProvider>
 				<FileTreeProvider>
 					<ViewProvider>
 						<UIProvider>
@@ -71,7 +71,7 @@ export function AppProviders({ children }: { children: ReactNode }) {
 						</UIProvider>
 					</ViewProvider>
 				</FileTreeProvider>
-			</VaultProvider>
+			</SpaceProvider>
 		</ProvidersErrorBoundary>
 	);
 }

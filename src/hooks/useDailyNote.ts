@@ -31,7 +31,7 @@ export function useDailyNote(options: UseDailyNoteOptions): UseDailyNoteReturn {
 				const todayDate = getTodayDateString();
 				const notePath = getDailyNotePath(folder, todayDate);
 				const content = getDailyNoteContent(todayDate);
-				const result = await invoke("vault_open_or_create_text", {
+				const result = await invoke("space_open_or_create_text", {
 					path: notePath,
 					text: content,
 				});

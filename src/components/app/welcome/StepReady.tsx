@@ -2,26 +2,26 @@ import { m, useReducedMotion } from "motion/react";
 import { FolderOpen, FolderPlus } from "../../Icons";
 
 interface StepReadyProps {
-	lastVaultPath: string | null;
-	recentVaults: string[];
-	onOpenVault: () => void;
-	onCreateVault: () => void;
-	onContinueLastVault: () => void;
-	onSelectRecentVault: (path: string) => Promise<void>;
+	lastSpacePath: string | null;
+	recentSpaces: string[];
+	onOpenSpace: () => void;
+	onCreateSpace: () => void;
+	onContinueLastSpace: () => void;
+	onSelectRecentSpace: (path: string) => Promise<void>;
 }
 
 export function StepReady({
-	lastVaultPath,
-	recentVaults,
-	onOpenVault,
-	onCreateVault,
-	onContinueLastVault,
-	onSelectRecentVault,
+	lastSpacePath,
+	recentSpaces,
+	onOpenSpace,
+	onCreateSpace,
+	onContinueLastSpace,
+	onSelectRecentSpace,
 }: StepReadyProps) {
 	const reduceMotion = useReducedMotion();
-	const lastVaultName = lastVaultPath?.split("/").pop() ?? null;
-	const launchRecents = recentVaults
-		.filter((p) => p !== lastVaultPath)
+	const lastSpaceName = lastSpacePath?.split("/").pop() ?? null;
+	const launchRecents = recentSpaces
+		.filter((p) => p !== lastSpacePath)
 		.slice(0, 6);
 
 	const hoverEffect = reduceMotion ? undefined : { y: -2, scale: 1.015 };
@@ -34,50 +34,50 @@ export function StepReady({
 
 	return (
 		<div className="welcomeStepReady">
-			<div className="welcomeStepTitle">Open a vault to begin</div>
+			<div className="welcomeStepTitle">Open a space to begin</div>
 			<div className="welcomeStepSubtitle">
-				A vault is just a folder on your computer. Pick one below, or open a new
+				A space is just a folder on your computer. Pick one below, or open a new
 				one.
 			</div>
 			<div className="welcomeReadyActions">
-				{lastVaultPath && (
+				{lastSpacePath && (
 					<m.button
 						type="button"
 						className="welcomeLaunchPrimary"
-						onClick={() => void onContinueLastVault()}
+						onClick={() => void onContinueLastSpace()}
 						whileHover={hoverEffect}
 						whileTap={tapEffect}
 						transition={springTransition}
 					>
 						<FolderOpen size={14} strokeWidth={1.8} />
-						Continue {lastVaultName}
+						Continue {lastSpaceName}
 					</m.button>
 				)}
 				<m.button
 					type="button"
 					className="welcomeLaunchSecondary"
-					onClick={onOpenVault}
+					onClick={onOpenSpace}
 					whileHover={hoverEffect}
 					whileTap={tapEffect}
 					transition={springTransition}
 				>
 					<FolderOpen size={14} strokeWidth={1.8} />
-					Open Vault
+					Open Space
 				</m.button>
 				<m.button
 					type="button"
 					className="welcomeLaunchSecondary"
-					onClick={onCreateVault}
+					onClick={onCreateSpace}
 					whileHover={hoverEffect}
 					whileTap={tapEffect}
 					transition={springTransition}
 				>
 					<FolderPlus size={14} strokeWidth={1.8} />
-					Create Vault
+					Create Space
 				</m.button>
 			</div>
-			{lastVaultPath && (
-				<div className="welcomeVaultPath mono">{lastVaultPath}</div>
+			{lastSpacePath && (
+				<div className="welcomeSpacePath mono">{lastSpacePath}</div>
 			)}
 			{launchRecents.length > 0 && (
 				<div className="welcomeRecents">
@@ -87,7 +87,7 @@ export function StepReady({
 								key={p}
 								type="button"
 								className="welcomeRecentItem"
-								onClick={() => void onSelectRecentVault(p)}
+								onClick={() => void onSelectRecentSpace(p)}
 								initial={{ opacity: 0, y: reduceMotion ? 0 : 8 }}
 								animate={{ opacity: 1, y: 0 }}
 								transition={{

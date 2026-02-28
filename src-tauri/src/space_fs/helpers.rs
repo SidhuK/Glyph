@@ -10,7 +10,7 @@ pub fn deny_hidden_rel_path(rel: &Path) -> Result<(), String> {
     for c in rel.components() {
         let s = c.as_os_str().to_string_lossy();
         if s.starts_with('.') {
-            return Err("hidden paths are not accessible via vault FS".to_string());
+            return Err("hidden paths are not accessible via space FS".to_string());
         }
     }
     Ok(())

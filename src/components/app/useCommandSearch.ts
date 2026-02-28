@@ -7,7 +7,7 @@ export function useCommandSearch(
 	open: boolean,
 	activeTab: Tab,
 	query: string,
-	vaultPath: string | null,
+	spacePath: string | null,
 ) {
 	const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
 	const [recentNotes, setRecentNotes] = useState<SearchResult[]>([]);
@@ -15,15 +15,15 @@ export function useCommandSearch(
 	const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
 	useEffect(() => {
-		if (!open || !vaultPath) return;
+		if (!open || !spacePath) return;
 		invoke("recent_notes", { limit: 8 })
 			.then(setRecentNotes)
 			.catch(() => setRecentNotes([]));
-	}, [open, vaultPath]);
+	}, [open, spacePath]);
 
 	useEffect(() => {
 		if (activeTab !== "search") return;
-		if (!vaultPath) {
+		if (!spacePath) {
 			setSearchResults([]);
 			setIsSearching(false);
 			return;
@@ -63,7 +63,7 @@ export function useCommandSearch(
 		return () => {
 			if (debounceRef.current) clearTimeout(debounceRef.current);
 		};
-	}, [query, activeTab, vaultPath]);
+	}, [query, activeTab, spacePath]);
 
 	const { titleMatches, contentMatches } = useMemo(() => {
 		if (activeTab !== "search" || !query.trim())

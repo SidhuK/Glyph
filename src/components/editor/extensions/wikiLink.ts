@@ -229,7 +229,7 @@ export const WikiLink = Node.create({
 		const getSuggestions = async (
 			query: string,
 		): Promise<WikiLinkSuggestionItem[]> => {
-			const results = await invoke("vault_suggest_links", {
+			const results = await invoke("space_suggest_links", {
 				request: {
 					query,
 					markdown_only: true,

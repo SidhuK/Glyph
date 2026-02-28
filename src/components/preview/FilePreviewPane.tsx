@@ -37,7 +37,7 @@ export function FilePreviewPane({
 		try {
 			if (kind === "text") {
 				setFileSrc("");
-				const next = await invoke("vault_read_text_preview", {
+				const next = await invoke("space_read_text_preview", {
 					path: relPath,
 					max_bytes: TEXT_PREVIEW_MAX_BYTES,
 				});
@@ -46,7 +46,7 @@ export function FilePreviewPane({
 			}
 			if (kind === "image" || kind === "pdf") {
 				setTextDoc(null);
-				const next = await invoke("vault_read_binary_preview", {
+				const next = await invoke("space_read_binary_preview", {
 					path: relPath,
 					max_bytes: BINARY_PREVIEW_MAX_BYTES,
 				});

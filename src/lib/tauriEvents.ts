@@ -2,9 +2,9 @@ import { listen } from "@tauri-apps/api/event";
 import { useEffect, useRef } from "react";
 
 type TauriEventMap = {
-	"menu:open_vault": undefined;
-	"menu:create_vault": undefined;
-	"menu:close_vault": undefined;
+	"menu:open_space": undefined;
+	"menu:create_space": undefined;
+	"menu:close_space": undefined;
 	"ai:chunk": { job_id: string; delta: string };
 	"ai:status": { job_id: string; status: string; detail?: string };
 	"ai:done": { job_id: string; cancelled: boolean };
@@ -32,7 +32,7 @@ type TauriEventMap = {
 		error?: string;
 	};
 	"notes:external_changed": { rel_path: string };
-	"vault:fs_changed": { rel_path: string };
+	"space:fs_changed": { rel_path: string };
 	"settings:updated": {
 		ui?: {
 			theme?: string;

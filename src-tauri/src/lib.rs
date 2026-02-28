@@ -12,8 +12,8 @@ mod notes;
 mod paths;
 mod system_fonts;
 pub(crate) mod utils;
-mod vault;
-mod vault_fs;
+mod space;
+mod space_fs;
 
 use serde::Serialize;
 use tauri::menu::{
@@ -99,31 +99,31 @@ pub fn run() {
                 ],
             )?;
 
-            let open_vault = MenuItem::with_id(
+            let open_space = MenuItem::with_id(
                 app,
-                "file.open_vault",
-                "Open Vault…",
+                "file.open_space",
+                "Open Space…",
                 true,
                 Some("CmdOrCtrl+O"),
             )?;
-            let create_vault = MenuItem::with_id(
+            let create_space = MenuItem::with_id(
                 app,
-                "file.create_vault",
-                "Create Vault…",
+                "file.create_space",
+                "Create Space…",
                 true,
                 Some("CmdOrCtrl+Shift+N"),
             )?;
-            let close_vault =
-                MenuItem::with_id(app, "file.close_vault", "Close Vault", true, None::<&str>)?;
+            let close_space =
+                MenuItem::with_id(app, "file.close_space", "Close Space", true, None::<&str>)?;
 
             let file_menu = Submenu::with_items(
                 app,
                 "File",
                 true,
                 &[
-                    &open_vault,
-                    &create_vault,
-                    &close_vault,
+                    &open_space,
+                    &create_space,
+                    &close_space,
                     &PredefinedMenuItem::separator(app)?,
                     &PredefinedMenuItem::close_window(app, None)?,
                     #[cfg(not(target_os = "macos"))]
@@ -184,14 +184,14 @@ pub fn run() {
             )
         })
         .on_menu_event(|app, event| match event.id().as_ref() {
-            "file.open_vault" => {
-                let _ = app.emit("menu:open_vault", ());
+            "file.open_space" => {
+                let _ = app.emit("menu:open_space", ());
             }
-            "file.create_vault" => {
-                let _ = app.emit("menu:create_vault", ());
+            "file.create_space" => {
+                let _ = app.emit("menu:create_space", ());
             }
-            "file.close_vault" => {
-                let _ = app.emit("menu:close_vault", ());
+            "file.close_space" => {
+                let _ = app.emit("menu:close_space", ());
             }
             _ => {}
         })
@@ -246,7 +246,7 @@ pub fn run() {
         .manage(ai_rig::AiState::default())
         .manage(ai_codex::state::CodexState::default())
         .manage(analytics::AnalyticsState::from_env())
-        .manage(vault::VaultState::default())
+        .manage(space::SpaceState::default())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_opener::init())
@@ -307,27 +307,27 @@ pub fn run() {
             index::commands::task_update_by_ordinal,
             index::commands::backlinks,
             links::commands::link_preview,
-            vault_fs::list::vault_list_dirs,
-            vault_fs::list::vault_list_dir,
-            vault_fs::list::vault_list_markdown_files,
-            vault_fs::list::vault_list_files,
-            vault_fs::link_ops::vault_resolve_wikilink,
-            vault_fs::link_ops::vault_resolve_markdown_link,
-            vault_fs::link_ops::vault_suggest_links,
-            vault_fs::summary::vault_dir_children_summary,
-            vault_fs::summary::vault_dir_recent_entries,
-            vault_fs::view_data::vault_folder_view_data,
-            vault_fs::read_write::text::vault_read_text,
-            vault_fs::read_write::text::vault_read_texts_batch,
-            vault_fs::read_write::preview::vault_read_text_preview,
-            vault_fs::read_write::preview::vault_read_binary_preview,
-            vault_fs::read_write::text::vault_write_text,
-            vault_fs::read_write::text::vault_open_or_create_text,
-            vault_fs::read_write::paths::vault_create_dir,
-            vault_fs::read_write::paths::vault_rename_path,
-            vault_fs::read_write::paths::vault_delete_path,
-            vault_fs::read_write::paths::vault_resolve_abs_path,
-            vault_fs::read_write::paths::vault_relativize_path,
+            space_fs::list::space_list_dirs,
+            space_fs::list::space_list_dir,
+            space_fs::list::space_list_markdown_files,
+            space_fs::list::space_list_files,
+            space_fs::link_ops::space_resolve_wikilink,
+            space_fs::link_ops::space_resolve_markdown_link,
+            space_fs::link_ops::space_suggest_links,
+            space_fs::summary::space_dir_children_summary,
+            space_fs::summary::space_dir_recent_entries,
+            space_fs::view_data::space_folder_view_data,
+            space_fs::read_write::text::space_read_text,
+            space_fs::read_write::text::space_read_texts_batch,
+            space_fs::read_write::preview::space_read_text_preview,
+            space_fs::read_write::preview::space_read_binary_preview,
+            space_fs::read_write::text::space_write_text,
+            space_fs::read_write::text::space_open_or_create_text,
+            space_fs::read_write::paths::space_create_dir,
+            space_fs::read_write::paths::space_rename_path,
+            space_fs::read_write::paths::space_delete_path,
+            space_fs::read_write::paths::space_resolve_abs_path,
+            space_fs::read_write::paths::space_relativize_path,
             glyph_fs::glyph_read_text,
             glyph_fs::glyph_write_text,
             notes::commands::notes_list,
@@ -338,10 +338,10 @@ pub fn run() {
             notes::properties::note_frontmatter_parse_properties,
             notes::properties::note_frontmatter_render_properties,
             notes::attachments::note_attach_file,
-            vault::commands::vault_create,
-            vault::commands::vault_open,
-            vault::commands::vault_get_current,
-            vault::commands::vault_close
+            space::commands::space_create,
+            space::commands::space_open,
+            space::commands::space_get_current,
+            space::commands::space_close
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

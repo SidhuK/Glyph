@@ -6,7 +6,7 @@ use std::{
 };
 use tauri::State;
 
-use crate::vault::VaultState;
+use crate::space::SpaceState;
 
 use super::helpers::{assets_dir, note_rel_path};
 use super::types::AttachmentResult;
@@ -61,7 +61,7 @@ fn copy_into_assets_atomic(assets_dir: &Path, source: &Path) -> Result<(String, 
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn note_attach_file(
-    state: State<'_, VaultState>,
+    state: State<'_, SpaceState>,
     note_id: String,
     source_path: String,
 ) -> Result<AttachmentResult, String> {

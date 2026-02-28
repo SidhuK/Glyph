@@ -21,7 +21,7 @@
 	border-bottom: none;
 }
 
-.fileTreeVaultName {
+.fileTreeSpaceName {
 	display: flex;
 	align-items: center;
 	justify-content: flex-start;
@@ -291,7 +291,7 @@
 	line-height: 1.2;
 }
 
-.fileTreeVaultName:focus-visible,
+.fileTreeSpaceName:focus-visible,
 .fileTreeRow:focus-visible,
 .fileTreeActionBtn:focus-visible,
 .fileTreeRenameInput:focus-visible {

@@ -22,7 +22,7 @@ interface CommandPaletteProps {
 	initialQuery?: string;
 	commands: Command[];
 	onClose: () => void;
-	vaultPath: string | null;
+	spacePath: string | null;
 	onSelectSearchNote: (id: string) => void;
 }
 
@@ -32,7 +32,7 @@ export function CommandPalette({
 	initialQuery = "",
 	commands,
 	onClose,
-	vaultPath,
+	spacePath,
 	onSelectSearchNote,
 }: CommandPaletteProps) {
 	const [state, setState] = useState<{
@@ -50,7 +50,7 @@ export function CommandPalette({
 	const listRef = useRef<HTMLDivElement | null>(null);
 
 	const { recentNotes, isSearching, titleMatches, contentMatches, reset } =
-		useCommandSearch(open, activeTab, query, vaultPath);
+		useCommandSearch(open, activeTab, query, spacePath);
 
 	const filtered = useMemo(() => {
 		if (activeTab !== "commands") return [];
@@ -204,7 +204,7 @@ export function CommandPalette({
 					<div className="commandPaletteTabGroup">
 						{TABS.map((tab) => {
 							const isActive = activeTab === tab.id;
-							const isDisabled = tab.id === "search" && !vaultPath;
+							const isDisabled = tab.id === "search" && !spacePath;
 							return (
 								<button
 									key={tab.id}

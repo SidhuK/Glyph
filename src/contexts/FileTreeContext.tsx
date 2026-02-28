@@ -10,7 +10,7 @@ import {
 import { extractErrorMessage } from "../lib/errorUtils";
 import type { FsEntry, TagCount } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
-import { useVault } from "./VaultContext";
+import { useSpace } from "./SpaceContext";
 
 export interface FileTreeContextValue {
 	rootEntries: FsEntry[];
@@ -41,7 +41,7 @@ export interface FileTreeContextValue {
 const FileTreeContext = createContext<FileTreeContextValue | null>(null);
 
 export function FileTreeProvider({ children }: { children: ReactNode }) {
-	const { vaultPath, isIndexing, startIndexRebuild } = useVault();
+	const { spacePath, isIndexing, startIndexRebuild } = useSpace();
 
 	const [rootEntries, setRootEntries] = useState<FsEntry[]>([]);
 	const [childrenByDir, setChildrenByDir] = useState<
@@ -71,12 +71,12 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 		setActiveFilePath(null);
 		setTags([]);
 		setTagsError("");
-		if (!vaultPath) return;
+		if (!spacePath) return;
 
 		let cancelled = false;
 		(async () => {
 			try {
-				const entries = await invoke("vault_list_dir", {});
+				const entries = await invoke("space_list_dir", {});
 				if (!cancelled) setRootEntries(entries);
 				void startIndexRebuild();
 				void refreshTags();
@@ -87,11 +87,11 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 		return () => {
 			cancelled = true;
 		};
-	}, [vaultPath, startIndexRebuild, refreshTags]);
+	}, [spacePath, startIndexRebuild, refreshTags]);
 
 	useEffect(() => {
-		if (!isIndexing && vaultPath) void refreshTags();
-	}, [isIndexing, vaultPath, refreshTags]);
+		if (!isIndexing && spacePath) void refreshTags();
+	}, [isIndexing, spacePath, refreshTags]);
 
 	const activeNoteId = activeFilePath?.toLowerCase().endsWith(".md")
 		? activeFilePath

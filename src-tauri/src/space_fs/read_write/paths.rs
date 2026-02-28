@@ -1,13 +1,13 @@
 use std::path::PathBuf;
 use tauri::State;
 
-use crate::{paths, vault::VaultState};
+use crate::{paths, space::SpaceState};
 
 use super::super::helpers::deny_hidden_rel_path;
 use super::trash::move_path_to_trash;
 
 #[tauri::command]
-pub async fn vault_create_dir(state: State<'_, VaultState>, path: String) -> Result<(), String> {
+pub async fn space_create_dir(state: State<'_, SpaceState>, path: String) -> Result<(), String> {
     let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
         let rel = PathBuf::from(&path);
@@ -20,8 +20,8 @@ pub async fn vault_create_dir(state: State<'_, VaultState>, path: String) -> Res
 }
 
 #[tauri::command]
-pub async fn vault_resolve_abs_path(
-    state: State<'_, VaultState>,
+pub async fn space_resolve_abs_path(
+    state: State<'_, SpaceState>,
     path: String,
 ) -> Result<String, String> {
     let root = state.current_root()?;
@@ -42,8 +42,8 @@ pub async fn vault_resolve_abs_path(
 }
 
 #[tauri::command(rename_all = "snake_case")]
-pub async fn vault_rename_path(
-    state: State<'_, VaultState>,
+pub async fn space_rename_path(
+    state: State<'_, SpaceState>,
     from_path: String,
     to_path: String,
 ) -> Result<(), String> {
@@ -71,8 +71,8 @@ pub async fn vault_rename_path(
 }
 
 #[tauri::command(rename_all = "snake_case")]
-pub async fn vault_delete_path(
-    state: State<'_, VaultState>,
+pub async fn space_delete_path(
+    state: State<'_, SpaceState>,
     path: String,
     recursive: Option<bool>,
 ) -> Result<(), String> {
@@ -100,8 +100,8 @@ pub async fn vault_delete_path(
 }
 
 #[tauri::command(rename_all = "snake_case")]
-pub async fn vault_relativize_path(
-    state: State<'_, VaultState>,
+pub async fn space_relativize_path(
+    state: State<'_, SpaceState>,
     abs_path: String,
 ) -> Result<String, String> {
     let root = state.current_root()?;
@@ -122,7 +122,7 @@ pub async fn vault_relativize_path(
         };
         let rel = abs
             .strip_prefix(&root)
-            .map_err(|_| "path is not inside the current vault".to_string())?;
+            .map_err(|_| "path is not inside the current space".to_string())?;
         Ok(rel.to_string_lossy().to_string())
     })
     .await
