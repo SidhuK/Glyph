@@ -1,6 +1,6 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { relaunch } from "@tauri-apps/plugin-process";
-import { check, type Update } from "@tauri-apps/plugin-updater";
+import { type Update, check } from "@tauri-apps/plugin-updater";
 import { useCallback, useEffect, useState } from "react";
 
 let didAttemptAutoUpdate = false;
