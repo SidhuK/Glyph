@@ -12,7 +12,7 @@ import { useViewContext } from "../../contexts";
 import { openSettingsWindow } from "../../lib/windows";
 import { parentDir } from "../../utils/path";
 import { FileTreePane } from "../FileTreePane";
-import { Calendar, Files, FolderPlus, Plus } from "../Icons";
+import { Calendar, Files, FolderPlus, Plus, RefreshCw } from "../Icons";
 import { TagsPane } from "../TagsPane";
 import { Button } from "../ui/shadcn/button";
 import {
@@ -38,6 +38,9 @@ interface SidebarContentProps {
 	onOpenDailyNote: () => void;
 	isDailyNoteCreating: boolean;
 	onOpenTasks: () => void;
+	updateReady: boolean;
+	updateVersion: string | null;
+	onInstallUpdate: () => void;
 }
 
 const SIDEBAR_FOOTER_STYLE = {
@@ -61,6 +64,9 @@ export const SidebarContent = memo(function SidebarContent({
 	onOpenDailyNote,
 	isDailyNoteCreating,
 	onOpenTasks,
+	updateReady,
+	updateVersion,
+	onInstallUpdate,
 }: SidebarContentProps) {
 	// Contexts
 	const { spacePath } = useSpace();
@@ -207,9 +213,17 @@ export const SidebarContent = memo(function SidebarContent({
 				>
 					<HugeiconsIcon icon={Icons.Settings05Icon} size={14} />
 				</Button>
-				<span className="settingsPill sidebarEarlyAccessBadge earlyAccessBadge">
-					Early Access
-				</span>
+				{updateReady && (
+					<button
+						type="button"
+						className="sidebarUpdateBadge"
+						onClick={onInstallUpdate}
+						title={`Update to ${updateVersion}`}
+					>
+						<RefreshCw size={12} />
+						<span>Update available</span>
+					</button>
+				)}
 				<div style={ACTIONS_STYLE}>
 					{sidebarViewMode === "files" && (
 						<DropdownMenu>

@@ -1,4 +1,4 @@
-import { memo, useCallback } from "react";
+import { memo, useCallback, useState } from "react";
 import type { DragEvent, MouseEvent } from "react";
 import { TASKS_TAB_ID } from "../../lib/tasks";
 
@@ -43,48 +43,78 @@ export function TabBar({
 		[stripFileExtension],
 	);
 
-	const breadcrumb = useCallback((path: string) => {
-		if (path === TASKS_TAB_ID) return "";
-		const parts = path.split("/").filter(Boolean);
-		if (parts.length <= 1) return "/";
-		return parts.slice(0, -1).join(" / ");
-	}, []);
+	const [hovered, setHovered] = useState(false);
+
+	const breadcrumbSegments = activeTabPath
+		? activeTabPath.split("/").filter(Boolean)
+		: [];
 
 	return (
-		<div className="mainTabsBar">
-			<div className="mainTabsSide" />
-			<div className="mainTabsCenter">
-				<div className="mainTabsStrip">
-					{openTabs.map((path) => {
-						return (
-							<TabItem
-								key={path}
-								path={path}
-								fileName={fileName(path)}
-								breadcrumb={breadcrumb(path)}
-								isActive={path === activeTabPath}
-								isDirty={Boolean(dirtyByPath[path])}
-								dragTabPath={dragTabPath}
-								onSelectTab={onSelectTab}
-								onCloseTab={onCloseTab}
-								onDragStart={onDragStart}
-								onDragEnd={onDragEnd}
-								onReorder={onReorder}
-							/>
-						);
-					})}
-					<button
-						type="button"
-						className="mainTabAdd"
-						onClick={onOpenBlankTab}
-						title="Open blank tab"
-						aria-label="Open blank tab"
-					>
-						+
-					</button>
+		<div
+			className="mainTabsBarWrap"
+			onPointerEnter={() => setHovered(true)}
+			onPointerLeave={() => setHovered(false)}
+		>
+			<div className="mainTabsBar">
+				<div className="mainTabsSide" />
+				<div className="mainTabsCenter">
+					<div className="mainTabsStrip">
+						{openTabs.map((path) => {
+							return (
+								<TabItem
+									key={path}
+									path={path}
+									fileName={fileName(path)}
+									isActive={path === activeTabPath}
+									isDirty={Boolean(dirtyByPath[path])}
+									dragTabPath={dragTabPath}
+									onSelectTab={onSelectTab}
+									onCloseTab={onCloseTab}
+									onDragStart={onDragStart}
+									onDragEnd={onDragEnd}
+									onReorder={onReorder}
+								/>
+							);
+						})}
+						<button
+							type="button"
+							className="mainTabAdd"
+							onClick={onOpenBlankTab}
+							title="Open blank tab"
+							aria-label="Open blank tab"
+						>
+							+
+						</button>
+					</div>
 				</div>
+				<div className="mainTabsSide" />
 			</div>
-			<div className="mainTabsSide" />
+			{breadcrumbSegments.length > 0 && (
+				<div
+					className={`mainTabsBreadcrumb ${hovered ? "is-visible" : ""}`}
+				>
+					{breadcrumbSegments.map((segment, i, arr) => (
+						<span key={`${segment}-${i}`} className="mainTabsBreadcrumbItem">
+							{i > 0 && (
+								<span className="mainTabsBreadcrumbSep" aria-hidden>
+									/
+								</span>
+							)}
+							<span
+								className={
+									i === arr.length - 1
+										? "mainTabsBreadcrumbCurrent"
+										: "mainTabsBreadcrumbSegment"
+								}
+							>
+								{i === arr.length - 1
+									? segment.replace(/\.[^.]+$/, "")
+									: segment}
+							</span>
+						</span>
+					))}
+				</div>
+			)}
 		</div>
 	);
 }
@@ -92,7 +122,6 @@ export function TabBar({
 const TabItem = memo(function TabItem({
 	path,
 	fileName,
-	breadcrumb,
 	isActive,
 	isDirty,
 	dragTabPath,
@@ -104,7 +133,6 @@ const TabItem = memo(function TabItem({
 }: {
 	path: string;
 	fileName: string;
-	breadcrumb: string;
 	isActive: boolean;
 	isDirty: boolean;
 	dragTabPath: string | null;
@@ -155,15 +183,8 @@ const TabItem = memo(function TabItem({
 				onDrop={handleDrop}
 			>
 				{isDirty ? <span className="mainTabDirty" aria-hidden /> : null}
-				<span
-					className={["mainTabText", !breadcrumb ? "is-single" : ""]
-						.filter(Boolean)
-						.join(" ")}
-				>
+				<span className="mainTabText">
 					<span className="mainTabLabel">{fileName}</span>
-					{breadcrumb ? (
-						<span className="mainTabBreadcrumb">{breadcrumb}</span>
-					) : null}
 				</span>
 			</button>
 			<button

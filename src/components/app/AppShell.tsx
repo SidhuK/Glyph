@@ -10,6 +10,7 @@ import {
 	useUILayoutContext,
 	useViewContext,
 } from "../../contexts";
+import { useAutoUpdater } from "../../hooks/useAutoUpdater";
 import { useCommandShortcuts } from "../../hooks/useCommandShortcuts";
 import { useDailyNote } from "../../hooks/useDailyNote";
 import { useFileTree } from "../../hooks/useFileTree";
@@ -86,6 +87,7 @@ export function AppShell() {
 	>(null);
 	const [moveTargetDirs, setMoveTargetDirs] = useState<string[]>([]);
 	const [shortcutsHelpOpen, setShortcutsHelpOpen] = useState(false);
+	const autoUpdater = useAutoUpdater();
 
 	const sidebarResize = useResizablePanel({
 		min: 220,
@@ -633,6 +635,9 @@ export function AppShell() {
 				onOpenDailyNote={handleOpenDailyNote}
 				isDailyNoteCreating={isDailyNoteCreating}
 				onOpenTasks={openTasksTab}
+				updateReady={autoUpdater.updateReady}
+				updateVersion={autoUpdater.updateVersion}
+				onInstallUpdate={autoUpdater.installAndRelaunch}
 			/>
 			<div
 				ref={sidebarResize.resizeRef}

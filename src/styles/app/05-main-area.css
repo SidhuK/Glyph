@@ -771,6 +771,10 @@
 	flex-direction: column;
 }
 
+.mainTabsBarWrap {
+	flex-shrink: 0;
+}
+
 .mainTabsBar {
 	height: 44px;
 	display: flex;
@@ -784,6 +788,51 @@
 		color-mix(in srgb, var(--bg-secondary) 52%, var(--bg-primary)) 0%,
 		color-mix(in srgb, var(--bg-secondary) 34%, var(--bg-primary)) 100%
 	);
+}
+
+.mainTabsBreadcrumb {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 2px;
+	padding: 4px var(--space-3);
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
+	overflow: hidden;
+	max-height: 0;
+	opacity: 0;
+	transition: max-height 140ms ease, opacity 140ms ease, padding 140ms ease;
+	padding-top: 0;
+	padding-bottom: 0;
+}
+
+.mainTabsBreadcrumb.is-visible {
+	max-height: 24px;
+	opacity: 1;
+	padding-top: 4px;
+	padding-bottom: 4px;
+}
+
+.mainTabsBreadcrumbItem {
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
+	white-space: nowrap;
+}
+
+.mainTabsBreadcrumbSep {
+	color: var(--text-tertiary);
+	opacity: 0.4;
+	margin: 0 2px;
+}
+
+.mainTabsBreadcrumbSegment {
+	color: var(--text-tertiary);
+}
+
+.mainTabsBreadcrumbCurrent {
+	color: var(--text-secondary);
+	font-weight: var(--font-medium);
 }
 
 .mainTabsSide {
@@ -803,121 +852,67 @@
 	min-width: 0;
 	display: flex;
 	align-items: center;
-	gap: 4px;
-	padding: 0;
-	border-radius: 0;
+	gap: 2px;
+	padding: 3px;
+	border-radius: var(--radius-3xl);
 	border: 0;
-	background: transparent;
+	background: var(--bg-hover);
 	overflow: hidden;
 }
 
 .mainTabWrap {
 	position: relative;
 	min-width: 78px;
-	max-width: 210px;
-	flex: 1 1 112px;
+	flex: 1 1 0%;
 }
 
 .mainTab {
 	position: relative;
-	height: 30px;
+	height: 28px;
 	width: 100%;
 	min-width: 0;
 	flex: 0 0 auto;
 	display: flex;
-	align-items: flex-start;
+	align-items: center;
 	gap: 7px;
-	padding: 2px 28px 2px 10px;
-	border-radius: var(--radius-sm);
+	padding: 0 26px 0 10px;
+	border-radius: var(--radius-2xl);
 	border: 1px solid transparent;
 	background: transparent;
 	color: var(--text-tertiary);
 	cursor: pointer;
 	transition: background var(--transition-fast), border-color
-		var(--transition-fast), color var(--transition-fast);
-}
-
-.mainTab::before {
-	content: "";
-	position: absolute;
-	left: 4px;
-	top: 7px;
-	bottom: 7px;
-	width: 2px;
-	border-radius: var(--radius-sm);
-	background: transparent;
-	opacity: 0;
-	transform: scaleY(0.4);
-	transform-origin: center;
-	transition: background var(--transition-fast), opacity var(--transition-fast),
-		transform var(--transition-fast);
+		var(--transition-fast), color var(--transition-fast),
+		box-shadow var(--transition-fast);
 }
 
 .mainTab:hover {
-	background: color-mix(in srgb, var(--bg-hover) 76%, transparent);
-	border-color: color-mix(in srgb, var(--border-light) 68%, transparent);
 	color: var(--text-primary);
-}
-
-.mainTab:hover::before {
-	background: color-mix(in srgb, var(--interactive-accent) 42%, transparent);
-	opacity: 0.72;
-	transform: scaleY(0.8);
 }
 
 .mainTab:active {
-	background: color-mix(in srgb, var(--bg-hover) 90%, transparent);
+	opacity: 0.85;
 }
 
 .mainTab.is-active {
-	border-color: color-mix(in srgb, var(--border-default) 72%, transparent);
-	background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
+	background: var(--bg-primary);
+	border-color: color-mix(in srgb, var(--border-light) 60%, transparent);
 	color: var(--text-primary);
-}
-
-.mainTab.is-active::before {
-	background: color-mix(in srgb, var(--interactive-accent) 72%, transparent);
-	opacity: 1;
-	transform: scaleY(1);
+	box-shadow: 0 1px 2px color-mix(in srgb, var(--shadow-color, #000) 8%, transparent);
 }
 
 .mainTabText {
 	flex: 1;
 	min-width: 0;
-	display: flex;
-	flex-direction: column;
-	justify-content: space-between;
-	gap: 1px;
-}
-
-.mainTabText.is-single {
-	justify-content: center;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .mainTabLabel {
-	flex: 1;
-	min-width: 0;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
 	font-size: 11px;
 	line-height: 1.2;
 	font-weight: var(--font-medium);
-}
-
-.mainTabBreadcrumb {
-	min-width: 0;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-	font-size: 8px;
-	line-height: 1.05;
-	letter-spacing: 0.015em;
-	color: color-mix(in srgb, var(--text-tertiary) 90%, transparent);
-}
-
-.mainTab.is-active .mainTabBreadcrumb {
-	color: color-mix(in srgb, var(--text-secondary) 88%, transparent);
 }
 
 .mainTabDirty {
@@ -974,31 +969,28 @@
 }
 
 .mainTabAdd {
-	height: 30px;
-	width: 30px;
+	height: 28px;
+	width: 28px;
 	flex: 0 0 auto;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	border-radius: var(--radius-sm);
-	border: 1px solid color-mix(in srgb, var(--border-light) 74%, transparent);
-	background: color-mix(in srgb, var(--bg-primary) 66%, transparent);
-	color: var(--text-secondary);
-	font-size: 16px;
+	border-radius: var(--radius-md);
+	border: 1px solid transparent;
+	background: transparent;
+	color: var(--text-tertiary);
+	font-size: 15px;
 	font-weight: var(--font-medium);
 	line-height: 1;
-	transition: background var(--transition-fast), border-color
-		var(--transition-fast), color var(--transition-fast);
+	transition: background var(--transition-fast), color var(--transition-fast);
 }
 
 .mainTabAdd:hover {
-	background: color-mix(in srgb, var(--bg-hover) 82%, transparent);
-	border-color: color-mix(in srgb, var(--interactive-accent) 32%, transparent);
 	color: var(--text-primary);
 }
 
 .mainTabAdd:active {
-	background: color-mix(in srgb, var(--bg-hover) 94%, transparent);
+	opacity: 0.85;
 }
 
 .mainTab:focus-visible,

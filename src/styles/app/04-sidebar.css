@@ -177,9 +177,25 @@
 	-webkit-app-region: no-drag;
 }
 
-.sidebarEarlyAccessBadge {
+.sidebarUpdateBadge {
 	justify-self: center;
 	white-space: nowrap;
+	display: inline-flex;
+	align-items: center;
+	gap: var(--space-1);
+	padding: 2px 8px;
+	border: none;
+	border-radius: var(--radius-full);
+	background: var(--interactive-hover);
+	color: var(--text-secondary);
+	font-size: var(--text-xs);
+	cursor: pointer;
+	transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.sidebarUpdateBadge:hover {
+	background: var(--bg-active);
+	color: var(--text-primary);
 }
 
 .sidebarFooterBtn {

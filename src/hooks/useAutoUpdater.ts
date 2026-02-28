@@ -1,42 +1,70 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { relaunch } from "@tauri-apps/plugin-process";
-import { check } from "@tauri-apps/plugin-updater";
-import { useEffect } from "react";
-import { toast } from "sonner";
+import { check, type Update } from "@tauri-apps/plugin-updater";
+import { useCallback, useEffect, useState } from "react";
 
 let didAttemptAutoUpdate = false;
+let cachedUpdate: Update | null = null;
 
-async function runAutoUpdaterOnce(): Promise<void> {
-	if (didAttemptAutoUpdate || import.meta.env.DEV) return;
+async function downloadUpdate(): Promise<Update | null> {
+	if (didAttemptAutoUpdate || import.meta.env.DEV) return null;
 	didAttemptAutoUpdate = true;
 
 	let windowLabel = "";
 	try {
 		windowLabel = getCurrentWindow().label;
 	} catch {
-		return;
+		return null;
 	}
-	if (windowLabel !== "main") return;
+	if (windowLabel !== "main") return null;
 
 	try {
 		const update = await check();
-		if (!update) return;
+		if (!update) return null;
 
-		toast.info(`Glyph ${update.version} is available`, {
-			description: "Downloading and installing update...",
-		});
-		await update.downloadAndInstall();
-		toast.success("Update installed", {
-			description: "Restarting Glyph to finish update...",
-		});
-		await relaunch();
+		await update.download();
+		cachedUpdate = update;
+		return update;
 	} catch (error) {
-		console.warn("Auto-update check/install failed", error);
+		console.warn("Auto-update check/download failed", error);
+		return null;
 	}
 }
 
-export function useAutoUpdater(): void {
+export interface AutoUpdaterState {
+	updateReady: boolean;
+	updateVersion: string | null;
+	installAndRelaunch: () => void;
+}
+
+export function useAutoUpdater(): AutoUpdaterState {
+	const [update, setUpdate] = useState<Update | null>(cachedUpdate);
+
 	useEffect(() => {
-		void runAutoUpdaterOnce();
+		if (cachedUpdate) {
+			setUpdate(cachedUpdate);
+			return;
+		}
+		void downloadUpdate().then((u) => {
+			if (u) setUpdate(u);
+		});
 	}, []);
+
+	const installAndRelaunch = useCallback(() => {
+		if (!update) return;
+		void (async () => {
+			try {
+				await update.install();
+				await relaunch();
+			} catch (error) {
+				console.error("Failed to install update", error);
+			}
+		})();
+	}, [update]);
+
+	return {
+		updateReady: update !== null,
+		updateVersion: update?.version ?? null,
+		installAndRelaunch,
+	};
 }

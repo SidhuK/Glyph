@@ -145,8 +145,7 @@
 		140ms;
 }
 
-.rfNodeNoteEditor.showRibbon .rfNodeNoteEditorRibbonBottom,
-.rfNodeNoteEditor:focus-within .rfNodeNoteEditorRibbonBottom {
+.rfNodeNoteEditor.showRibbon .rfNodeNoteEditorRibbonBottom {
 	opacity: 1;
 	visibility: visible;
 	transform: translateY(0);

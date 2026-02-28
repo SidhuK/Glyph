@@ -21,6 +21,9 @@ interface SidebarProps {
 	onOpenDailyNote: () => void;
 	isDailyNoteCreating: boolean;
 	onOpenTasks: () => void;
+	updateReady: boolean;
+	updateVersion: string | null;
+	onInstallUpdate: () => void;
 }
 
 export const Sidebar = memo(function Sidebar({
@@ -39,6 +42,9 @@ export const Sidebar = memo(function Sidebar({
 	onOpenDailyNote,
 	isDailyNoteCreating,
 	onOpenTasks,
+	updateReady,
+	updateVersion,
+	onInstallUpdate,
 }: SidebarProps) {
 	// Contexts
 	const { onOpenSpace } = useSpace();
@@ -93,6 +99,9 @@ export const Sidebar = memo(function Sidebar({
 							onOpenDailyNote={onOpenDailyNote}
 							isDailyNoteCreating={isDailyNoteCreating}
 							onOpenTasks={onOpenTasks}
+							updateReady={updateReady}
+							updateVersion={updateVersion}
+							onInstallUpdate={onInstallUpdate}
 						/>
 					</m.div>
 				)}
