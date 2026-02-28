@@ -152,8 +152,20 @@
 	color: var(--text-secondary);
 }
 
-.databaseBoardError {
+.databaseBoardError,
+.databaseCellError,
+.databaseDialogInlineError {
 	color: var(--text-danger, #b54a3f);
+}
+
+.databaseCellError,
+.databaseDialogInlineError {
+	font-size: 0.76rem;
+	line-height: 1.35;
+}
+
+.databaseDialogInlineError {
+	padding: 0 2px 6px;
 }
 
 .databaseBoardScroller {

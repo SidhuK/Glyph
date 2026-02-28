@@ -1,4 +1,6 @@
+import { useState } from "react";
 import type { DatabaseConfig, DatabaseFilter } from "../../lib/database/types";
+import { extractErrorMessage } from "../../lib/errorUtils";
 import { Button } from "../ui/shadcn/button";
 import {
 	Dialog,
@@ -43,13 +45,22 @@ export function DatabaseFilterDialog({
 	onOpenChange,
 	onChangeConfig,
 }: DatabaseFilterDialogProps) {
+	const [error, setError] = useState("");
+
 	const updateFilters = async (
 		updater: (filters: DatabaseFilter[]) => DatabaseFilter[],
 	) => {
-		await onChangeConfig({
-			...config,
-			filters: updater(config.filters),
-		});
+		try {
+			setError("");
+			await onChangeConfig({
+				...config,
+				filters: updater(config.filters),
+			});
+		} catch (cause) {
+			const message = extractErrorMessage(cause);
+			console.error("Failed to update database filters", cause);
+			setError(message);
+		}
 	};
 
 	const defaultColumnId = config.columns[0]?.id ?? "title";
@@ -64,6 +75,9 @@ export function DatabaseFilterDialog({
 					</DialogDescription>
 				</DialogHeader>
 				<div className="databaseDialogBody">
+					{error ? (
+						<div className="databaseDialogInlineError">{error}</div>
+					) : null}
 					<section className="settingsCard databaseSettingsCard">
 						<div className="settingsCardHeader">
 							<div>

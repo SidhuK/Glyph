@@ -19,6 +19,8 @@ use super::types::{
     DatabaseCellValue, DatabaseColumn, DatabaseConfig, DatabaseCreateRowResult, DatabaseRow,
 };
 
+const MAX_ROW_CREATE_COLLISION_INDEX: usize = 1_000;
+
 fn key(name: &str) -> Value {
     Value::String(name.to_string())
 }
@@ -354,6 +356,11 @@ pub async fn database_create_row(
         };
         let mut index = 2;
         while note_exists(&root, &candidate)? {
+            if index > MAX_ROW_CREATE_COLLISION_INDEX {
+                return Err(format!(
+                    "reached note name collision limit while creating database row for slug '{slug}' in folder '{folder}' (last candidate: '{candidate}', next index: {index})"
+                ));
+            }
             candidate = if folder.is_empty() {
                 format!("{slug} {index}.md")
             } else {

@@ -32,7 +32,7 @@ export function useDatabaseBoard({
 		[deferredColumns],
 	);
 	const [groupColumnId, setGroupColumnId] = useState<string | null>(
-		() => initialGroupColumnId ?? defaultBoardGroupColumnId(columns),
+		() => initialGroupColumnId ?? defaultBoardGroupColumnId(deferredColumns),
 	);
 
 	useEffect(() => {
@@ -74,7 +74,7 @@ export function useDatabaseBoard({
 		groupColumn,
 		groupColumnId,
 		lanes,
-		setGroupColumnId: (nextColumnId: string) => {
+		setGroupColumnId: (nextColumnId: string | null) => {
 			startTransition(() => setGroupColumnId(nextColumnId));
 			onGroupColumnIdChange?.(nextColumnId);
 		},

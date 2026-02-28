@@ -124,7 +124,7 @@ fn tag_source_ids(conn: &Connection, tag: &str, limit: usize) -> Result<Vec<Stri
 }
 
 fn search_source_ids(conn: &Connection, query: &str, limit: usize) -> Result<Vec<String>, String> {
-    let request = parse_raw_search_query(query, Some(limit as u32))?;
+    let request = parse_raw_search_query(query, Some(limit as u32));
     Ok(run_search_advanced(conn, request)?
         .into_iter()
         .map(|result| result.id)

@@ -60,6 +60,15 @@ export function compareDatabaseRowValues(
 	const leftCell = databaseCellValueFromRow(left, column);
 	const rightCell = databaseCellValueFromRow(right, column);
 
+	if (leftCell.kind !== rightCell.kind) {
+		return compareNullable(
+			stringValue(leftCell),
+			stringValue(rightCell),
+			(a, b) =>
+				a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }),
+		);
+	}
+
 	switch (leftCell.kind) {
 		case "checkbox":
 			return compareNullable(

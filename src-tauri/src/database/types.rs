@@ -31,13 +31,22 @@ pub struct DatabaseNewNoteConfig {
     pub title_prefix: String,
 }
 
-#[derive(Debug, Clone, Default, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub struct DatabaseViewState {
     #[serde(default = "default_database_layout")]
     pub layout: String,
     #[serde(default)]
     pub board_group_by: Option<String>,
+}
+
+impl Default for DatabaseViewState {
+    fn default() -> Self {
+        Self {
+            layout: default_database_layout(),
+            board_group_by: None,
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

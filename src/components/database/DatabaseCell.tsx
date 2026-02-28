@@ -6,6 +6,7 @@ import {
 	isColumnEditable,
 } from "../../lib/database/config";
 import type { DatabaseColumn, DatabaseRow } from "../../lib/database/types";
+import { extractErrorMessage } from "../../lib/errorUtils";
 import { X } from "../Icons";
 import {
 	buildTagSuggestions,
@@ -52,6 +53,7 @@ export function DatabaseCell({
 		cellValue.value_text ?? listDraft(row, column),
 	);
 	const [tagDraft, setTagDraft] = useState("");
+	const [saveError, setSaveError] = useState("");
 	const isTagsColumn =
 		column.type === "tags" || column.property_kind === "tags";
 	const tagSuggestions = useMemo(
@@ -116,6 +118,7 @@ export function DatabaseCell({
 			: (cellValue.value_text ?? "");
 
 	const saveTagList = async (values: string[]) => {
+		setSaveError("");
 		await onSave(row.note_path, column, {
 			kind: column.property_kind ?? "tags",
 			value_list: values,
@@ -316,10 +319,16 @@ export function DatabaseCell({
 								return;
 							}
 							void (async () => {
-								if (tagDraft.trim()) {
-									await addTag(tagDraft);
+								try {
+									if (tagDraft.trim()) {
+										await addTag(tagDraft);
+									}
+								} catch (error) {
+									console.error("Failed to save database tags on blur", error);
+									setSaveError(extractErrorMessage(error));
+								} finally {
+									setEditing(false);
 								}
-								setEditing(false);
 							})();
 						}}
 						onClick={(event) => {
@@ -358,9 +367,17 @@ export function DatabaseCell({
 									key={tag}
 									type="button"
 									className="notePropertySuggestionChip"
-									onMouseDown={(event) => {
+									onMouseDown={async (event) => {
 										event.preventDefault();
-										void addTag(tag);
+										try {
+											await addTag(tag);
+										} catch (error) {
+											console.error(
+												"Failed to add suggested database tag",
+												error,
+											);
+											setSaveError(extractErrorMessage(error));
+										}
 									}}
 								>
 									<span>{formatTagLabel(tag)}</span>
@@ -371,6 +388,9 @@ export function DatabaseCell({
 							))}
 						</div>
 					</div>
+				) : null}
+				{saveError ? (
+					<div className="databaseCellError">{saveError}</div>
 				) : null}
 			</div>
 		);

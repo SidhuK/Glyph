@@ -44,7 +44,7 @@ fn tokenize_search_query(raw: &str) -> Vec<String> {
 pub(crate) fn parse_raw_search_query(
     raw_query: &str,
     limit: Option<u32>,
-) -> Result<SearchAdvancedRequest, String> {
+) -> SearchAdvancedRequest {
     let mut req = SearchAdvancedRequest {
         limit: Some(limit.unwrap_or(1500).clamp(1, 2_000)),
         ..SearchAdvancedRequest::default()
@@ -83,7 +83,7 @@ pub(crate) fn parse_raw_search_query(
     req.tags = tags;
     let text = text_parts.join(" ").trim().to_string();
     req.query = if text.is_empty() { None } else { Some(text) };
-    Ok(req)
+    req
 }
 
 fn task_line_parts(line: &str) -> Option<(&str, &str)> {
@@ -236,7 +236,7 @@ pub async fn search_parse_and_run(
 ) -> Result<Vec<SearchResult>, String> {
     let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<SearchResult>, String> {
-        let req = parse_raw_search_query(&raw_query, limit)?;
+        let req = parse_raw_search_query(&raw_query, limit);
         let conn = open_db(&root)?;
         run_search_advanced(&conn, req)
     })

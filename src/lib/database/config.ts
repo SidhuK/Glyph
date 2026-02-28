@@ -9,7 +9,7 @@ import type {
 } from "./types";
 
 function yamlString(value: string): string {
-	return `'${(value ?? "").replace(/'/g, "''")}'`;
+	return JSON.stringify(value ?? "");
 }
 
 function normalizeDir(dirPath: string): string {
@@ -76,6 +76,11 @@ export function createStarterDatabaseMarkdown(
 	title: string,
 	config: DatabaseConfig,
 ): string {
+	// This starter note YAML is assembled manually on purpose because the inputs
+	// here are the app-controlled DatabaseConfig shape (config.columns,
+	// config.sorts, config.filters, and config.view), not arbitrary user-authored
+	// YAML. If this ever starts accepting more dynamic/untrusted values or more
+	// complex scalar types, switch this helper over to a dedicated YAML emitter.
 	const columnsYaml = config.columns
 		.map((column) => {
 			const width =

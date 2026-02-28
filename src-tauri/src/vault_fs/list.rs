@@ -10,9 +10,11 @@ use super::types::FsEntry;
 pub async fn vault_list_dirs(
     state: State<'_, VaultState>,
     dir: Option<String>,
+    limit: Option<usize>,
 ) -> Result<Vec<FsEntry>, String> {
     let root = state.current_root()?;
     let dir = dir.unwrap_or_default();
+    let max_count = limit.unwrap_or(usize::MAX);
 
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<FsEntry>, String> {
         let start_rel = if dir.trim().is_empty() {
@@ -59,7 +61,13 @@ pub async fn vault_list_dirs(
                     kind: "dir".to_string(),
                     is_markdown: false,
                 });
+                if out.len() >= max_count {
+                    break;
+                }
                 stack.push(child_rel);
+            }
+            if out.len() >= max_count {
+                break;
             }
         }
 

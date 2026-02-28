@@ -478,7 +478,10 @@ interface TauriCommands {
 	vault_open: CommandDef<{ path: string }, VaultInfo>;
 	vault_get_current: CommandDef<void, string | null>;
 	vault_close: CommandDef<void, void>;
-	vault_list_dirs: CommandDef<{ dir?: string | null }, FsEntry[]>;
+	vault_list_dirs: CommandDef<
+		{ dir?: string | null; limit?: number | null },
+		FsEntry[]
+	>;
 	vault_list_dir: CommandDef<{ dir?: string | null }, FsEntry[]>;
 	vault_list_markdown_files: CommandDef<
 		{ dir?: string | null; recursive?: boolean | null; limit?: number | null },

@@ -223,6 +223,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 					text: markdown,
 					base_mtime_ms: null,
 				});
+				void trackNoteCreated({ entrypoint: "ui" });
 				insertEntryOptimistic(parentDir(nextPath), {
 					name: nextPath.split("/").pop() ?? "New Database.md",
 					rel_path: nextPath,

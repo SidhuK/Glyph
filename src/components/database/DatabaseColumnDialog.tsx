@@ -375,22 +375,28 @@ export function DatabaseColumnDialog({
 										onClick={() => {
 											const property = manualKey.trim();
 											if (!property) return;
-											void updateColumns((columns) => [
-												...columns,
-												{
-													id: `property:${property}`,
-													type: "property",
-													label: property,
-													icon: defaultDatabaseColumnIconName({
+											void updateColumns((columns) => {
+												const nextId = `property:${property}`;
+												if (columns.some((column) => column.id === nextId)) {
+													return columns;
+												}
+												return [
+													...columns,
+													{
+														id: nextId,
 														type: "property",
+														label: property,
+														icon: defaultDatabaseColumnIconName({
+															type: "property",
+															property_kind: manualKind,
+														}),
+														width: 180,
+														visible: true,
+														property_key: property,
 														property_kind: manualKind,
-													}),
-													width: 180,
-													visible: true,
-													property_key: property,
-													property_kind: manualKind,
-												},
-											]);
+													},
+												];
+											});
 											setManualKey("");
 										}}
 									>

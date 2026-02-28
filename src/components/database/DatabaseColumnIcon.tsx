@@ -16,6 +16,9 @@ interface DatabaseColumnIconProps {
 function iconDefinition(iconName: string) {
 	const option = getDatabaseColumnIconOption(iconName);
 	if (!option) return Icons.Document;
+	if (typeof option.iconKey !== "string" || !(option.iconKey in Icons)) {
+		return Icons.Document;
+	}
 	return Icons[option.iconKey as keyof typeof Icons];
 }
 
