@@ -1,11 +1,10 @@
-import type { DatabaseConfig } from "../../lib/database/types";
+import { FilterEditIcon, TableIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import {
 	Database,
 	FileText,
-	FolderClosed,
-	Grid3X3,
+
 	Kanban,
-	ListChecks,
 	Plus,
 	RefreshCw,
 	Table,
@@ -15,82 +14,24 @@ import { Button } from "../ui/shadcn/button";
 interface DatabaseToolbarProps {
 	mode: "database" | "markdown";
 	databaseView: "table" | "board";
-	config: DatabaseConfig;
-	rowCount: number;
-	truncated: boolean;
-	selectedRowPath: string | null;
 	onModeChange: (mode: "database" | "markdown") => void;
 	onDatabaseViewChange: (view: "table" | "board") => void;
 	onAddRow: () => void;
-	onOpenSelected: () => void;
 	onReload: () => void;
 	onOpenSource: () => void;
 	onOpenColumns: () => void;
-	onOpenFilters: () => void;
-}
-
-function sourceKindLabel(config: DatabaseConfig): string {
-	switch (config.source.kind) {
-		case "folder":
-			return "Folder";
-		case "tag":
-			return "Tag";
-		case "search":
-			return "Search";
-	}
-}
-
-function sourceTitle(config: DatabaseConfig): string {
-	switch (config.source.kind) {
-		case "folder":
-			return config.source.value || "Space root";
-		case "tag":
-			return config.source.value || "Tag";
-		case "search":
-			return config.source.value || "Search";
-	}
-}
-
-function sourceMeta(
-	config: DatabaseConfig,
-	rowCount: number,
-	truncated: boolean,
-): string {
-	const parts = [`${rowCount} row${rowCount === 1 ? "" : "s"}`];
-	if (config.source.kind === "folder" && config.source.recursive) {
-		parts.push("with subfolders");
-	}
-	if (config.filters.length > 0) {
-		parts.push(
-			`${config.filters.length} filter${config.filters.length === 1 ? "" : "s"}`,
-		);
-	}
-	if (truncated) {
-		parts.push("first 500");
-	}
-	return parts.join(" • ");
 }
 
 export function DatabaseToolbar({
 	mode,
 	databaseView,
-	config,
-	rowCount,
-	truncated,
-	selectedRowPath,
 	onModeChange,
 	onDatabaseViewChange,
 	onAddRow,
-	onOpenSelected,
 	onReload,
 	onOpenSource,
 	onOpenColumns,
-	onOpenFilters,
 }: DatabaseToolbarProps) {
-	const heading = sourceTitle(config);
-	const kind = sourceKindLabel(config);
-	const meta = sourceMeta(config, rowCount, truncated);
-
 	return (
 		<div className="databaseToolbar">
 			<div className="databaseToolbarPrimary">
@@ -172,13 +113,6 @@ export function DatabaseToolbar({
 						</Button>
 					</div>
 				) : null}
-				<div className="databaseToolbarMeta">
-					<div className="databaseToolbarTitle">{heading}</div>
-					<div className="databaseToolbarSubtitle">
-						<span className="databaseToolbarBadge">{kind}</span>
-						<span>{meta}</span>
-					</div>
-				</div>
 			</div>
 			<div className="databaseToolbarActions">
 				<Button
@@ -198,10 +132,10 @@ export function DatabaseToolbar({
 					size="icon-sm"
 					className="databaseToolbarChip"
 					onClick={onOpenSource}
-					title="Source"
-					aria-label="Source"
+					title="Source & Filters"
+					aria-label="Source & Filters"
 				>
-					<FolderClosed size={14} />
+					<HugeiconsIcon icon={FilterEditIcon} size={14} />
 				</Button>
 				<Button
 					type="button"
@@ -212,30 +146,7 @@ export function DatabaseToolbar({
 					title="Columns"
 					aria-label="Columns"
 				>
-					<Grid3X3 size={14} />
-				</Button>
-				<Button
-					type="button"
-					variant="ghost"
-					size="icon-sm"
-					className="databaseToolbarChip"
-					onClick={onOpenFilters}
-					title="Filters"
-					aria-label="Filters"
-				>
-					<ListChecks size={14} />
-				</Button>
-				<Button
-					type="button"
-					variant="ghost"
-					size="icon-sm"
-					className="databaseToolbarChip"
-					onClick={onOpenSelected}
-					disabled={!selectedRowPath}
-					title="Open note"
-					aria-label="Open note"
-				>
-					<FileText size={14} />
+					<HugeiconsIcon icon={TableIcon} size={14} />
 				</Button>
 				<Button
 					type="button"

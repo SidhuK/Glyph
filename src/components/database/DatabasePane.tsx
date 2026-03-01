@@ -4,7 +4,6 @@ import {
 	startTransition,
 	useCallback,
 	useEffect,
-	useMemo,
 	useRef,
 	useState,
 } from "react";
@@ -21,10 +20,8 @@ import { extractErrorMessage } from "../../lib/errorUtils";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { isMarkdownPath, normalizeRelPath, parentDir } from "../../utils/path";
-import { Button } from "../ui/shadcn/button";
 import { DatabaseBoard } from "./DatabaseBoard";
 import { DatabaseColumnDialog } from "./DatabaseColumnDialog";
-import { DatabaseFilterDialog } from "./DatabaseFilterDialog";
 import { DatabaseSourceDialog } from "./DatabaseSourceDialog";
 import { DatabaseTable } from "./DatabaseTable";
 import { DatabaseToolbar } from "./DatabaseToolbar";
@@ -54,7 +51,6 @@ export function DatabasePane({
 	const [databaseView, setDatabaseView] = useState<"table" | "board">("table");
 	const [detectError, setDetectError] = useState("");
 	const [columnsOpen, setColumnsOpen] = useState(false);
-	const [filtersOpen, setFiltersOpen] = useState(false);
 	const [sourceOpen, setSourceOpen] = useState(false);
 	const [actionError, setActionError] = useState("");
 	const { data, loading, error, reload, saveConfig, updateCell, createRow } =
@@ -291,14 +287,6 @@ export function DatabasePane({
 		});
 	}, [currentConfig, handleBoardGroupByChange, handleSaveConfig]);
 
-	const selectedRow = useMemo(
-		() =>
-			tableState.rows.find(
-				(row) => row.note_path === tableState.selectedRowPath,
-			) ?? null,
-		[tableState.rows, tableState.selectedRowPath],
-	);
-
 	if (noteKind === "loading") {
 		return <div className="databaseLoadingState">Loading note…</div>;
 	}
@@ -330,10 +318,6 @@ export function DatabasePane({
 					<DatabaseToolbar
 						mode={mode}
 						databaseView={databaseView}
-						config={currentConfig}
-						rowCount={tableState.rows.length}
-						truncated={Boolean(data?.truncated)}
-						selectedRowPath={tableState.selectedRowPath}
 						onModeChange={setMode}
 						onDatabaseViewChange={handleDatabaseViewChange}
 						onAddRow={() =>
@@ -349,15 +333,9 @@ export function DatabasePane({
 								}
 							})()
 						}
-						onOpenSelected={() =>
-							void (selectedRow
-								? onOpenFile(selectedRow.note_path)
-								: Promise.resolve())
-						}
 						onReload={() => void reload()}
 						onOpenSource={() => setSourceOpen(true)}
 						onOpenColumns={() => setColumnsOpen(true)}
-						onOpenFilters={() => setFiltersOpen(true)}
 					/>
 					{mode === "markdown" ? (
 						<Suspense
@@ -426,32 +404,11 @@ export function DatabasePane({
 						onOpenChange={setSourceOpen}
 						onChangeConfig={handleSaveConfig}
 					/>
-					<DatabaseFilterDialog
-						open={filtersOpen}
-						config={currentConfig}
-						onOpenChange={setFiltersOpen}
-						onChangeConfig={handleSaveConfig}
-					/>
-				</>
+					</>
 			) : (
 				<div className="databaseLoadingState">Loading database…</div>
 			)}
-			{mode === "database" && selectedRow ? (
-				<div className="databaseFooter">
-					<div className="databaseFooterMeta">
-						<div className="databaseFooterTitle">{selectedRow.title}</div>
-						<div className="databaseFooterPath">{selectedRow.note_path}</div>
-					</div>
-					<Button
-						type="button"
-						variant="ghost"
-						size="sm"
-						onClick={() => void onOpenFile(selectedRow.note_path)}
-					>
-						Open note
-					</Button>
-				</div>
-			) : null}
+
 		</div>
 	);
 }
