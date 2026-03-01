@@ -1,3 +1,4 @@
+import { parentDir } from "../../utils/path";
 import { defaultDatabaseColumnIconName } from "./columnIcons";
 import type {
 	DatabaseCellValue,
@@ -231,7 +232,7 @@ export function databaseCellValueFromRow(
 		case "path":
 			return {
 				kind: "text",
-				value_text: row.note_path,
+				value_text: parentDir(row.note_path) || "/",
 				value_list: [],
 			};
 		case "created":

@@ -3,6 +3,29 @@ use std::path::Path;
 
 use super::helpers::now_sqlite_compatible_iso8601;
 
+fn format_system_time(t: std::time::SystemTime) -> String {
+    let dt = time::OffsetDateTime::from(t);
+    dt.format(&time::format_description::well_known::Rfc3339)
+        .unwrap_or_else(|_| now_sqlite_compatible_iso8601())
+}
+
+fn file_timestamps(path: &Path) -> (String, String) {
+    let now = now_sqlite_compatible_iso8601();
+    let meta = match std::fs::metadata(path) {
+        Ok(m) => m,
+        Err(_) => return (now.clone(), now),
+    };
+    let created = meta
+        .created()
+        .map(|t| format_system_time(t))
+        .unwrap_or_else(|_| now.clone());
+    let updated = meta
+        .modified()
+        .map(|t| format_system_time(t))
+        .unwrap_or_else(|_| now.clone());
+    (created, updated)
+}
+
 pub fn split_frontmatter(markdown: &str) -> (&str, &str) {
     if let Some(rest) = markdown.strip_prefix("---\n") {
         if let Some(idx) = rest.find("\n---\n") {
@@ -38,21 +61,31 @@ struct Frontmatter {
     updated: Option<String>,
 }
 
-pub fn parse_frontmatter_title_created_updated(markdown: &str) -> (String, String, String) {
+pub fn parse_frontmatter_title_created_updated(
+    markdown: &str,
+    file_path: &Path,
+) -> (String, String, String) {
     let (yaml, _body) = split_frontmatter(markdown);
+    let fs_fallback = || file_timestamps(file_path);
+
     if yaml.is_empty() {
-        let now = now_sqlite_compatible_iso8601();
-        return ("Untitled".to_string(), now.clone(), now);
+        let (created, updated) = fs_fallback();
+        return ("Untitled".to_string(), created, updated);
     }
     let fm: Result<Frontmatter, _> = serde_yaml::from_str(yaml);
-    let now = now_sqlite_compatible_iso8601();
     match fm {
-        Ok(fm) => (
-            fm.title.unwrap_or_else(|| "Untitled".to_string()),
-            fm.created.unwrap_or_else(|| now.clone()),
-            fm.updated.unwrap_or(now),
-        ),
-        Err(_) => ("Untitled".to_string(), now.clone(), now),
+        Ok(fm) => {
+            let (fs_created, fs_updated) = fs_fallback();
+            (
+                fm.title.unwrap_or_else(|| "Untitled".to_string()),
+                fm.created.unwrap_or(fs_created),
+                fm.updated.unwrap_or(fs_updated),
+            )
+        }
+        Err(_) => {
+            let (created, updated) = fs_fallback();
+            ("Untitled".to_string(), created, updated)
+        }
     }
 }
 

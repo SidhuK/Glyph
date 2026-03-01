@@ -1,14 +1,6 @@
 import { FilterEditIcon, TableIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import {
-	Database,
-	FileText,
-
-	Kanban,
-	Plus,
-	RefreshCw,
-	Table,
-} from "../Icons";
+import { Database, FileText, Kanban, Plus, RefreshCw, Table } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 
 interface DatabaseToolbarProps {

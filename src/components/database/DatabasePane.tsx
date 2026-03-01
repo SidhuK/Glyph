@@ -404,11 +404,10 @@ export function DatabasePane({
 						onOpenChange={setSourceOpen}
 						onChangeConfig={handleSaveConfig}
 					/>
-					</>
+				</>
 			) : (
 				<div className="databaseLoadingState">Loading database…</div>
 			)}
-
 		</div>
 	);
 }
