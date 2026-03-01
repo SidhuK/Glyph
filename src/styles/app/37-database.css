@@ -1208,3 +1208,11 @@
 		margin-left: 0;
 	}
 }
+
+.databaseBoardMoveLabel {
+	padding: 4px 10px 2px;
+	font-size: var(--text-xs);
+	font-weight: var(--font-medium);
+	color: var(--text-tertiary);
+	letter-spacing: 0.02em;
+}

@@ -47,7 +47,6 @@ export function DatabasePane({
 	const [noteKind, setNoteKind] = useState<"loading" | "markdown" | "database">(
 		"loading",
 	);
-	const [mode, setMode] = useState<"database" | "markdown">("database");
 	const [databaseView, setDatabaseView] = useState<"table" | "board">("table");
 	const [detectError, setDetectError] = useState("");
 	const [columnsOpen, setColumnsOpen] = useState(false);
@@ -78,7 +77,6 @@ export function DatabasePane({
 			const doc = await invoke("space_read_text", { path: relPath });
 			const isDatabase = isDatabaseNote(doc.text);
 			setNoteKind(isDatabase ? "database" : "markdown");
-			setMode((current) => (isDatabase ? current : "markdown"));
 		} catch (error) {
 			setDetectError(extractErrorMessage(error));
 			setNoteKind("markdown");
@@ -87,7 +85,6 @@ export function DatabasePane({
 
 	useEffect(() => {
 		setNoteKind("loading");
-		setMode("database");
 		setDatabaseView("table");
 		void detectNoteKind();
 	}, [detectNoteKind]);
@@ -316,9 +313,7 @@ export function DatabasePane({
 			{currentConfig ? (
 				<>
 					<DatabaseToolbar
-						mode={mode}
 						databaseView={databaseView}
-						onModeChange={setMode}
 						onDatabaseViewChange={handleDatabaseViewChange}
 						onAddRow={() =>
 							void (async () => {
@@ -337,59 +332,40 @@ export function DatabasePane({
 						onOpenSource={() => setSourceOpen(true)}
 						onOpenColumns={() => setColumnsOpen(true)}
 					/>
-					{mode === "markdown" ? (
-						<Suspense
-							fallback={
-								<div className="databaseLoadingState">Loading note…</div>
-							}
-						>
-							<LazyMarkdownEditorPane
-								relPath={relPath}
-								onDirtyChange={onDirtyChange}
-							/>
-						</Suspense>
+					{actionError || error ? (
+						<div className="databaseNotice databaseNoticeError">
+							{actionError || error}
+						</div>
+					) : null}
+					{loading ? (
+						<div className="databaseLoadingState">Loading database…</div>
+					) : databaseView === "table" ? (
+						<DatabaseTable
+							rows={tableState.rows}
+							columns={tableState.visibleColumns}
+							selectedRowPath={tableState.selectedRowPath}
+							activeSort={activeSort}
+							onSelectRow={tableState.setSelectedRowPath}
+							onOpenRow={(notePath) => void onOpenFile(notePath)}
+							onToggleSort={(column) => void handleToggleSort(column)}
+							onSaveCell={handleUpdateCell}
+						/>
 					) : (
-						<>
-							{actionError || error ? (
-								<div className="databaseNotice databaseNoticeError">
-									{actionError || error}
-								</div>
-							) : null}
-							{loading ? (
-								<div className="databaseLoadingState">Loading database…</div>
-							) : (
-								<>
-									{databaseView === "table" ? (
-										<DatabaseTable
-											rows={tableState.rows}
-											columns={tableState.visibleColumns}
-											selectedRowPath={tableState.selectedRowPath}
-											activeSort={activeSort}
-											onSelectRow={tableState.setSelectedRowPath}
-											onOpenRow={(notePath) => void onOpenFile(notePath)}
-											onToggleSort={(column) => void handleToggleSort(column)}
-											onSaveCell={handleUpdateCell}
-										/>
-									) : (
-										<DatabaseBoard
-											rows={tableState.rows}
-											columns={currentConfig.columns}
-											visibleColumns={tableState.visibleColumns}
-											groupColumnId={currentConfig.view.board_group_by ?? null}
-											selectedRowPath={tableState.selectedRowPath}
-											onSelectRow={tableState.setSelectedRowPath}
-											onOpenRow={(notePath) => void onOpenFile(notePath)}
-											onOpenColumns={() => setColumnsOpen(true)}
-											onCreateDefaultGroupField={() =>
-												void handleCreateDefaultBoardGroupField()
-											}
-											onGroupColumnIdChange={handleBoardGroupByChange}
-											onSaveCell={handleUpdateCell}
-										/>
-									)}
-								</>
-							)}
-						</>
+						<DatabaseBoard
+							rows={tableState.rows}
+							columns={currentConfig.columns}
+							visibleColumns={tableState.visibleColumns}
+							groupColumnId={currentConfig.view.board_group_by ?? null}
+							selectedRowPath={tableState.selectedRowPath}
+							onSelectRow={tableState.setSelectedRowPath}
+							onOpenRow={(notePath) => void onOpenFile(notePath)}
+							onOpenColumns={() => setColumnsOpen(true)}
+							onCreateDefaultGroupField={() =>
+								void handleCreateDefaultBoardGroupField()
+							}
+							onGroupColumnIdChange={handleBoardGroupByChange}
+							onSaveCell={handleUpdateCell}
+						/>
 					)}
 					<DatabaseColumnDialog
 						open={columnsOpen}

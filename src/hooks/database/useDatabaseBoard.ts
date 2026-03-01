@@ -1,10 +1,4 @@
-import {
-	startTransition,
-	useDeferredValue,
-	useEffect,
-	useMemo,
-	useState,
-} from "react";
+import { startTransition, useEffect, useMemo, useState } from "react";
 import {
 	createBoardLanes,
 	defaultBoardGroupColumnId,
@@ -25,14 +19,9 @@ export function useDatabaseBoard({
 	initialGroupColumnId = null,
 	onGroupColumnIdChange,
 }: UseDatabaseBoardParams) {
-	const deferredRows = useDeferredValue(rows);
-	const deferredColumns = useDeferredValue(columns);
-	const groupColumns = useMemo(
-		() => getBoardGroupColumns(deferredColumns),
-		[deferredColumns],
-	);
+	const groupColumns = useMemo(() => getBoardGroupColumns(columns), [columns]);
 	const [groupColumnId, setGroupColumnId] = useState<string | null>(
-		() => initialGroupColumnId ?? defaultBoardGroupColumnId(deferredColumns),
+		() => initialGroupColumnId ?? defaultBoardGroupColumnId(columns),
 	);
 
 	useEffect(() => {
@@ -65,8 +54,8 @@ export function useDatabaseBoard({
 	);
 
 	const lanes = useMemo(
-		() => createBoardLanes(deferredRows, groupColumn),
-		[deferredRows, groupColumn],
+		() => createBoardLanes(rows, groupColumn),
+		[rows, groupColumn],
 	);
 
 	return {

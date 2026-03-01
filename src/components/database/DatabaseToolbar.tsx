@@ -1,12 +1,10 @@
-import { FilterEditIcon, TableIcon } from "@hugeicons/core-free-icons";
+import { EditTableIcon, FilterEditIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { Database, FileText, Kanban, Plus, RefreshCw, Table } from "../Icons";
+import { Kanban, Plus, RefreshCw, Table } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 
 interface DatabaseToolbarProps {
-	mode: "database" | "markdown";
 	databaseView: "table" | "board";
-	onModeChange: (mode: "database" | "markdown") => void;
 	onDatabaseViewChange: (view: "table" | "board") => void;
 	onAddRow: () => void;
 	onReload: () => void;
@@ -15,9 +13,7 @@ interface DatabaseToolbarProps {
 }
 
 export function DatabaseToolbar({
-	mode,
 	databaseView,
-	onModeChange,
 	onDatabaseViewChange,
 	onAddRow,
 	onReload,
@@ -30,81 +26,41 @@ export function DatabaseToolbar({
 				<div
 					className="databaseModeSwitch"
 					role="tablist"
-					aria-label="Database note mode"
+					aria-label="Database view"
 				>
 					<Button
 						type="button"
-						variant={mode === "database" ? "outline" : "ghost"}
+						variant={databaseView === "table" ? "outline" : "ghost"}
 						size="icon-sm"
 						className={[
 							"databaseToolbarChip",
-							mode === "database" ? "is-active" : "",
+							databaseView === "table" ? "is-active" : "",
 						]
 							.filter(Boolean)
 							.join(" ")}
-						onClick={() => onModeChange("database")}
-						title="Database view"
-						aria-label="Database view"
+						onClick={() => onDatabaseViewChange("table")}
+						title="Table view"
+						aria-label="Table view"
 					>
-						<Database size={14} />
+						<Table size={14} />
 					</Button>
 					<Button
 						type="button"
-						variant={mode === "markdown" ? "outline" : "ghost"}
+						variant={databaseView === "board" ? "outline" : "ghost"}
 						size="icon-sm"
 						className={[
 							"databaseToolbarChip",
-							mode === "markdown" ? "is-active" : "",
+							databaseView === "board" ? "is-active" : "",
 						]
 							.filter(Boolean)
 							.join(" ")}
-						onClick={() => onModeChange("markdown")}
-						title="Markdown view"
-						aria-label="Markdown view"
+						onClick={() => onDatabaseViewChange("board")}
+						title="Board view"
+						aria-label="Board view"
 					>
-						<FileText size={14} />
+						<Kanban size={14} />
 					</Button>
 				</div>
-				{mode === "database" ? (
-					<div
-						className="databaseModeSwitch"
-						role="tablist"
-						aria-label="Database view"
-					>
-						<Button
-							type="button"
-							variant={databaseView === "table" ? "outline" : "ghost"}
-							size="icon-sm"
-							className={[
-								"databaseToolbarChip",
-								databaseView === "table" ? "is-active" : "",
-							]
-								.filter(Boolean)
-								.join(" ")}
-							onClick={() => onDatabaseViewChange("table")}
-							title="Table view"
-							aria-label="Table view"
-						>
-							<Table size={14} />
-						</Button>
-						<Button
-							type="button"
-							variant={databaseView === "board" ? "outline" : "ghost"}
-							size="icon-sm"
-							className={[
-								"databaseToolbarChip",
-								databaseView === "board" ? "is-active" : "",
-							]
-								.filter(Boolean)
-								.join(" ")}
-							onClick={() => onDatabaseViewChange("board")}
-							title="Board view"
-							aria-label="Board view"
-						>
-							<Kanban size={14} />
-						</Button>
-					</div>
-				) : null}
 			</div>
 			<div className="databaseToolbarActions">
 				<Button
@@ -138,7 +94,7 @@ export function DatabaseToolbar({
 					title="Columns"
 					aria-label="Columns"
 				>
-					<HugeiconsIcon icon={TableIcon} size={14} />
+					<HugeiconsIcon icon={EditTableIcon} size={14} />
 				</Button>
 				<Button
 					type="button"

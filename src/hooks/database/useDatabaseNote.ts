@@ -136,18 +136,16 @@ export function useDatabaseNote(
 			value: DatabaseCellValue,
 		) => {
 			requestVersionRef.current += 1;
-			startTransition(() => {
-				setData((current) => {
-					if (!current) return current;
-					return {
-						...current,
-						rows: current.rows.map((entry) =>
-							entry.note_path === notePath
-								? applyCellValueToRow(entry, column, value)
-								: entry,
-						),
-					};
-				});
+			setData((current) => {
+				if (!current) return current;
+				return {
+					...current,
+					rows: current.rows.map((entry) =>
+						entry.note_path === notePath
+							? applyCellValueToRow(entry, column, value)
+							: entry,
+					),
+				};
 			});
 			try {
 				const row = await invoke("database_update_cell", {

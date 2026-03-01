@@ -10,6 +10,13 @@ import type { DatabaseColumn, DatabaseRow } from "../../lib/database/types";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { formatTagLabel } from "../editor/noteProperties/utils";
 import { Button } from "../ui/shadcn/button";
+import {
+	ContextMenu,
+	ContextMenuContent,
+	ContextMenuItem,
+	ContextMenuSeparator,
+	ContextMenuTrigger,
+} from "../ui/shadcn/context-menu";
 import { DatabaseColumnIcon } from "./DatabaseColumnIcon";
 
 interface DatabaseBoardProps {
@@ -210,123 +217,160 @@ export function DatabaseBoard({
 							</div>
 							<div className="databaseBoardLaneBody">
 								{lane.rows.length > 0 ? (
-									lane.rows.map((row) =>
-										(() => {
-											const title = boardCardTitle(row, lane.label);
-											const preview = boardCardPreview(row, title);
-											const tags = showTags
-												? row.tags.filter(
-														(tag) =>
-															!(
-																groupColumn?.type === "tags" &&
-																tag.toLowerCase() === lane.id.toLowerCase()
-															),
-													)
-												: [];
+									lane.rows.map((row) => {
+										const title = boardCardTitle(row, lane.label);
+										const preview = boardCardPreview(row, title);
+										const tags = showTags
+											? row.tags.filter(
+													(tag) =>
+														!(
+															groupColumn?.type === "tags" &&
+															tag.toLowerCase() === lane.id.toLowerCase()
+														),
+												)
+											: [];
+										const otherLanes = lanes.filter(
+											(l) =>
+												l.id !== lane.id &&
+												groupColumn != null &&
+												!boardRowHasLane(row, groupColumn, l.id),
+										);
 
-											return (
-												<button
-													key={row.note_path}
-													type="button"
-													className="databaseBoardCard"
-													data-state={
-														row.note_path === selectedRowPath
-															? "selected"
-															: undefined
-													}
-													data-dragging={
-														row.note_path === draggingRowPath
-															? "true"
-															: undefined
-													}
-													draggable
-													onDragStart={(event) => {
-														event.dataTransfer.effectAllowed = "move";
-														event.dataTransfer.setData(
-															"text/plain",
-															row.note_path,
-														);
-														setDraggingRowPath(row.note_path);
-														setDropLaneId(null);
-													}}
-													onDragEnd={() => {
-														setDraggingRowPath(null);
-														setDropLaneId(null);
-													}}
-													onClick={() => onSelectRow(row.note_path)}
-													onDoubleClick={() => onOpenRow(row.note_path)}
-													title="Double-click to open note"
-												>
-													<div className="databaseBoardCardHead">
-														<div className="databaseBoardCardTitle">
-															{title}
-														</div>
-														{preview ? (
-															<div className="databaseBoardCardPreview">
-																{preview}
-															</div>
-														) : (
-															<div className="databaseBoardCardPreview is-placeholder">
-																No preview yet
-															</div>
-														)}
-													</div>
-													{tags.length > 0 ? (
-														<div className="databaseBoardCardTags">
-															{tags.slice(0, 4).map((tag) => (
-																<span
-																	key={`${row.note_path}:${tag}`}
-																	className="databaseBoardTag"
-																>
-																	{formatTagLabel(tag)}
-																</span>
-															))}
-														</div>
-													) : null}
-													{cardColumns.length > 0 ? (
-														<div className="databaseBoardCardDetails">
-															{cardColumns.map((column) => {
-																const cell = databaseCellValueFromRow(
-																	row,
-																	column,
-																);
-																const value = formatBoardCellValue(cell);
-																if (!value.trim()) return null;
-																return (
-																	<div
-																		key={`${row.note_path}:${column.id}`}
-																		className="databaseBoardCardDetail"
-																	>
-																		<span
-																			className="databaseBoardCardDetailLabel"
-																			title={column.label}
-																		>
-																			<DatabaseColumnIcon
-																				column={column}
-																				size={11}
-																			/>
-																		</span>
-																		<span
-																			className="databaseBoardCardDetailValue"
-																			title={value}
-																		>
-																			{value}
-																		</span>
-																	</div>
-																);
-															})}
-														</div>
-													) : null}
-													<div
-														className="databaseBoardCardPath"
-														title={row.note_path}
+										return (
+											<ContextMenu key={row.note_path}>
+												<ContextMenuTrigger asChild>
+													<button
+														type="button"
+														className="databaseBoardCard"
+														data-state={
+															row.note_path === selectedRowPath
+																? "selected"
+																: undefined
+														}
+														data-dragging={
+															row.note_path === draggingRowPath
+																? "true"
+																: undefined
+														}
+														draggable
+														onDragStart={(event) => {
+															event.dataTransfer.effectAllowed = "move";
+															event.dataTransfer.setData(
+																"text/plain",
+																row.note_path,
+															);
+															setDraggingRowPath(row.note_path);
+															setDropLaneId(null);
+														}}
+														onDragEnd={() => {
+															setDraggingRowPath(null);
+															setDropLaneId(null);
+														}}
+														onClick={() => onSelectRow(row.note_path)}
+														onDoubleClick={() => onOpenRow(row.note_path)}
+														title="Double-click to open note"
 													>
-														{row.note_path}
-													</div>
-												</button>
-											);
-										})(),
-									)
+														<div className="databaseBoardCardHead">
+															<div className="databaseBoardCardTitle">
+																{title}
+															</div>
+															{preview ? (
+																<div className="databaseBoardCardPreview">
+																	{preview}
+																</div>
+															) : (
+																<div className="databaseBoardCardPreview is-placeholder">
+																	No preview yet
+																</div>
+															)}
+														</div>
+														{tags.length > 0 ? (
+															<div className="databaseBoardCardTags">
+																{tags.slice(0, 4).map((tag) => (
+																	<span
+																		key={`${row.note_path}:${tag}`}
+																		className="databaseBoardTag"
+																	>
+																		{formatTagLabel(tag)}
+																	</span>
+																))}
+															</div>
+														) : null}
+														{cardColumns.length > 0 ? (
+															<div className="databaseBoardCardDetails">
+																{cardColumns.map((column) => {
+																	const cell = databaseCellValueFromRow(
+																		row,
+																		column,
+																	);
+																	const value = formatBoardCellValue(cell);
+																	if (!value.trim()) return null;
+																	return (
+																		<div
+																			key={`${row.note_path}:${column.id}`}
+																			className="databaseBoardCardDetail"
+																		>
+																			<span
+																				className="databaseBoardCardDetailLabel"
+																				title={column.label}
+																			>
+																				<DatabaseColumnIcon
+																					column={column}
+																					size={11}
+																				/>
+																			</span>
+																			<span
+																				className="databaseBoardCardDetailValue"
+																				title={value}
+																			>
+																				{value}
+																			</span>
+																		</div>
+																	);
+																})}
+															</div>
+														) : null}
+														<div
+															className="databaseBoardCardPath"
+															title={row.note_path}
+														>
+															{row.note_path}
+														</div>
+													</button>
+												</ContextMenuTrigger>
+												<ContextMenuContent className="fileTreeCreateMenu">
+													<ContextMenuItem
+														className="fileTreeCreateMenuItem"
+														onSelect={() => onOpenRow(row.note_path)}
+													>
+														Open note
+													</ContextMenuItem>
+													{otherLanes.length > 0 ? (
+														<>
+															<ContextMenuSeparator className="fileTreeCreateMenuSeparator" />
+															<div className="databaseBoardMoveLabel">
+																Move to
+															</div>
+															{otherLanes.map((targetLane) => (
+																<ContextMenuItem
+																	className="fileTreeCreateMenuItem"
+																	key={targetLane.id}
+																	onSelect={() =>
+																		void handleLaneDrop(
+																			row.note_path,
+																			targetLane.id,
+																		)
+																	}
+																>
+																	{targetLane.label}
+																</ContextMenuItem>
+															))}
+														</>
+													) : null}
+												</ContextMenuContent>
+											</ContextMenu>
+										);
+									})
 								) : (
 									<div className="databaseBoardLaneEmpty">
 										No notes in this lane
