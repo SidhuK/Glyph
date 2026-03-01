@@ -1,7 +1,8 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use tauri::State;
 
-use crate::{paths, space::SpaceState};
+use crate::space::state::{mark_recent_local_change, RecentLocalChanges};
+use crate::{index, paths, space::SpaceState, utils};
 
 use super::super::helpers::deny_hidden_rel_path;
 use super::trash::move_path_to_trash;
@@ -48,6 +49,7 @@ pub async fn space_rename_path(
     to_path: String,
 ) -> Result<(), String> {
     let root = state.current_root()?;
+    let recent_local_changes = state.recent_local_changes();
     tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
         let from_rel = PathBuf::from(&from_path);
         let to_rel = PathBuf::from(&to_path);
@@ -64,10 +66,60 @@ pub async fn space_rename_path(
         if let Some(parent) = to_abs.parent() {
             std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
         }
-        std::fs::rename(from_abs, to_abs).map_err(|e| e.to_string())
+        let is_dir = from_abs.is_dir();
+        std::fs::rename(&from_abs, &to_abs).map_err(|e| e.to_string())?;
+        reindex_after_rename(&root, &from_path, &to_path, &to_abs, is_dir, &recent_local_changes);
+        Ok(())
     })
     .await
     .map_err(|e| e.to_string())?
+}
+
+fn reindex_after_rename(
+    root: &Path,
+    from_path: &str,
+    to_path: &str,
+    to_abs: &Path,
+    is_dir: bool,
+    recent_local_changes: &RecentLocalChanges,
+) {
+    if is_dir {
+        let prefix = if from_path.ends_with('/') {
+            from_path.to_string()
+        } else {
+            format!("{from_path}/")
+        };
+        let new_prefix = if to_path.ends_with('/') {
+            to_path.to_string()
+        } else {
+            format!("{to_path}/")
+        };
+        if let Ok(conn) = index::open_db(root) {
+            if let Ok(mut stmt) = conn.prepare("SELECT id FROM notes WHERE id LIKE ?") {
+                let pattern = format!("{prefix}%");
+                if let Ok(rows) = stmt.query_map([&pattern], |row| row.get::<_, String>(0)) {
+                    let old_ids: Vec<String> = rows.filter_map(|r| r.ok()).collect();
+                    for old_id in old_ids {
+                        let new_id = format!("{new_prefix}{}", &old_id[prefix.len()..]);
+                        mark_recent_local_change(recent_local_changes, &old_id);
+                        mark_recent_local_change(recent_local_changes, &new_id);
+                        let _ = index::remove_note(root, &old_id);
+                        let abs = root.join(&new_id);
+                        if let Ok(markdown) = std::fs::read_to_string(&abs) {
+                            let _ = index::index_note(root, &new_id, &markdown);
+                        }
+                    }
+                }
+            }
+        }
+    } else if utils::is_markdown_path(to_abs) {
+        mark_recent_local_change(recent_local_changes, from_path);
+        mark_recent_local_change(recent_local_changes, to_path);
+        let _ = index::remove_note(root, from_path);
+        if let Ok(markdown) = std::fs::read_to_string(to_abs) {
+            let _ = index::index_note(root, to_path, &markdown);
+        }
+    }
 }
 
 #[tauri::command(rename_all = "snake_case")]

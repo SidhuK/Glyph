@@ -4,11 +4,13 @@ import {
 	startTransition,
 	useCallback,
 	useEffect,
+	useMemo,
 	useRef,
 	useState,
 } from "react";
 import { useDatabaseNote } from "../../hooks/database/useDatabaseNote";
 import { useDatabaseTable } from "../../hooks/database/useDatabaseTable";
+import { getBoardGroupColumns } from "../../lib/database/board";
 import { defaultDatabaseColumnIconName } from "../../lib/database/columnIcons";
 import { isDatabaseNote } from "../../lib/database/isDatabaseNote";
 import type {
@@ -116,6 +118,11 @@ export function DatabasePane({
 	});
 
 	const activeSort = data?.config.sorts[0] ?? null;
+
+	const groupColumns = useMemo(
+		() => getBoardGroupColumns(currentConfig?.columns ?? []),
+		[currentConfig?.columns],
+	);
 
 	const shouldReloadForPath = useCallback(
 		(changedPath: string) => {
@@ -314,6 +321,9 @@ export function DatabasePane({
 				<>
 					<DatabaseToolbar
 						databaseView={databaseView}
+						groupColumns={groupColumns}
+						groupColumnId={currentConfig.view.board_group_by ?? null}
+						onGroupColumnIdChange={handleBoardGroupByChange}
 						onDatabaseViewChange={handleDatabaseViewChange}
 						onAddRow={() =>
 							void (async () => {

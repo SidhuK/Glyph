@@ -84,13 +84,12 @@ export function DatabaseBoard({
 	onGroupColumnIdChange,
 	onSaveCell,
 }: DatabaseBoardProps) {
-	const { groupColumn, groupColumnId, groupColumns, lanes, setGroupColumnId } =
-		useDatabaseBoard({
-			rows,
-			columns,
-			initialGroupColumnId: persistedGroupColumnId,
-			onGroupColumnIdChange,
-		});
+	const { groupColumn, groupColumns, lanes } = useDatabaseBoard({
+		rows,
+		columns,
+		initialGroupColumnId: persistedGroupColumnId,
+		onGroupColumnIdChange,
+	});
 	const [draggingRowPath, setDraggingRowPath] = useState<string | null>(null);
 	const [dropLaneId, setDropLaneId] = useState<string | null>(null);
 	const [moveError, setMoveError] = useState("");
@@ -137,29 +136,7 @@ export function DatabaseBoard({
 
 	return (
 		<div className="databaseBoardShell">
-			<div className="databaseBoardControls">
-				<label className="databaseBoardGroupControl">
-					<span className="databaseBoardGroupLabel">Group by</span>
-					<select
-						className="databaseNativeSelect databaseBoardGroupSelect"
-						value={groupColumnId ?? ""}
-						disabled={groupColumns.length === 0}
-						onChange={(event) => setGroupColumnId(event.target.value)}
-					>
-						{groupColumns.length === 0 ? (
-							<option value="">No grouping fields yet</option>
-						) : null}
-						{groupColumns.map((column) => (
-							<option key={column.id} value={column.id}>
-								{column.label}
-							</option>
-						))}
-					</select>
-				</label>
-				{moveError ? (
-					<div className="databaseBoardError">{moveError}</div>
-				) : null}
-			</div>
+			{moveError ? <div className="databaseBoardError">{moveError}</div> : null}
 			{groupColumns.length === 0 ? (
 				<div className="databaseBoardEmptyState">
 					<div className="databaseBoardEmptyTitle">

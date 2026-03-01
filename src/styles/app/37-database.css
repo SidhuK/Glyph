@@ -100,6 +100,52 @@
 	color: var(--text-primary);
 }
 
+.databaseToolbarGroupBy {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	min-width: 0;
+}
+
+.databaseToolbarGroupByLabel {
+	font-size: var(--text-xs);
+	font-weight: var(--font-medium);
+	color: var(--text-tertiary);
+	white-space: nowrap;
+}
+
+.databaseToolbarGroupBySelect {
+	height: 26px;
+	padding: 0 22px 0 8px;
+	border-radius: var(--radius-md);
+	border: 1px solid color-mix(in srgb, var(--border-light) 78%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
+	color: var(--text-secondary);
+	font-size: var(--text-xs);
+	line-height: 1;
+	appearance: none;
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%23888' stroke-width='2'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+	background-repeat: no-repeat;
+	background-position: right 6px center;
+	cursor: pointer;
+}
+
+.databaseToolbarGroupBySelect:hover {
+	border-color: var(--border-default);
+	background-color: var(--bg-hover);
+	color: var(--text-primary);
+}
+
+.databaseToolbarGroupBySelect:focus,
+.databaseToolbarGroupBySelect:focus-visible {
+	outline: none;
+	border-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 50%,
+		var(--border-default)
+	);
+}
+
 .databaseTableShell {
 	flex: 1;
 	min-height: 0;
@@ -114,35 +160,6 @@
 	flex-direction: column;
 	gap: 12px;
 	padding: 14px 18px 18px;
-}
-
-.databaseBoardControls {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 12px;
-	flex-wrap: wrap;
-}
-
-.databaseBoardGroupControl {
-	display: inline-flex;
-	align-items: center;
-	gap: 10px;
-	min-width: 0;
-}
-
-.databaseBoardGroupLabel {
-	font-size: 0.75rem;
-	font-weight: 700;
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-	color: var(--text-tertiary);
-}
-
-.databaseBoardGroupSelect {
-	width: auto;
-	min-width: 180px;
-	max-width: 260px;
 }
 
 .databaseBoardError,

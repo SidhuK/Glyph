@@ -1,10 +1,14 @@
 import { EditTableIcon, FilterEditIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import type { DatabaseColumn } from "../../lib/database/types";
 import { Kanban, Plus, RefreshCw, Table } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 
 interface DatabaseToolbarProps {
 	databaseView: "table" | "board";
+	groupColumns: DatabaseColumn[];
+	groupColumnId: string | null;
+	onGroupColumnIdChange: (groupColumnId: string | null) => void;
 	onDatabaseViewChange: (view: "table" | "board") => void;
 	onAddRow: () => void;
 	onReload: () => void;
@@ -14,6 +18,9 @@ interface DatabaseToolbarProps {
 
 export function DatabaseToolbar({
 	databaseView,
+	groupColumns,
+	groupColumnId,
+	onGroupColumnIdChange,
 	onDatabaseViewChange,
 	onAddRow,
 	onReload,
@@ -63,6 +70,24 @@ export function DatabaseToolbar({
 				</div>
 			</div>
 			<div className="databaseToolbarActions">
+				{databaseView === "board" && groupColumns.length > 0 ? (
+					<label className="databaseToolbarGroupBy">
+						<span className="databaseToolbarGroupByLabel">Group by</span>
+						<select
+							className="databaseToolbarGroupBySelect"
+							value={groupColumnId ?? ""}
+							onChange={(event) =>
+								onGroupColumnIdChange(event.target.value || null)
+							}
+						>
+							{groupColumns.map((column) => (
+								<option key={column.id} value={column.id}>
+									{column.label}
+								</option>
+							))}
+						</select>
+					</label>
+				) : null}
 				<Button
 					type="button"
 					variant="ghost"
