@@ -12,6 +12,14 @@ fn task_id_for(note_id: &str, list_path: &str, line_start: i64, text_norm: &str)
     super::super::helpers::sha256_hex(key.as_bytes())
 }
 
+fn like_prefix_pattern(folder: &str) -> String {
+    let escaped = folder
+        .replace('\\', "\\\\")
+        .replace('%', "\\%")
+        .replace('_', "\\_");
+    format!("{escaped}/%")
+}
+
 pub fn delete_note_tasks(conn: &rusqlite::Connection, note_id: &str) -> Result<(), String> {
     conn.execute(
         "DELETE FROM tasks_fts WHERE task_id IN (SELECT task_id FROM tasks WHERE note_id = ?)",
@@ -101,6 +109,7 @@ pub fn query_tasks(
     bucket: TaskBucket,
     today: &str,
     limit: i64,
+    folders: Option<&[String]>,
 ) -> Result<Vec<IndexedTask>, String> {
     if !is_valid_date(today) {
         return Err("invalid today date".to_string());
@@ -119,19 +128,38 @@ pub fn query_tasks(
             "COALESCE(t.scheduled_date, t.due_date) ASC, t.priority ASC, n.title ASC, t.line_start ASC",
         ),
     };
+    let folder_where = match folders {
+        Some(folders) if !folders.is_empty() => {
+            let clauses = std::iter::repeat_n("t.note_path LIKE ? ESCAPE '\\'", folders.len())
+                .collect::<Vec<_>>()
+                .join(" OR ");
+            format!(" AND ({clauses})")
+        }
+        _ => String::new(),
+    };
 
     let sql = format!(
         "SELECT t.task_id, t.note_id, n.title, t.note_path, t.line_start, t.raw_text, t.checked,
             t.status, t.priority, t.due_date, t.scheduled_date, t.section, t.note_updated
          FROM tasks t JOIN notes n ON n.id = t.note_id
-         WHERE {where_sql} ORDER BY {order_sql} LIMIT ?"
+         WHERE {where_sql}{folder_where} ORDER BY {order_sql} LIMIT ?"
     );
     let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;
-    let mut rows = match bucket {
-        TaskBucket::Inbox => stmt.query(rusqlite::params![limit]),
-        _ => stmt.query(rusqlite::params![today, today, limit]),
+    let mut params: Vec<rusqlite::types::Value> = Vec::new();
+    match bucket {
+        TaskBucket::Inbox => {}
+        _ => {
+            params.push(rusqlite::types::Value::from(today.to_string()));
+            params.push(rusqlite::types::Value::from(today.to_string()));
+        }
     }
-    .map_err(|e| e.to_string())?;
+    for folder in folders.unwrap_or(&[]) {
+        params.push(rusqlite::types::Value::from(like_prefix_pattern(folder)));
+    }
+    params.push(rusqlite::types::Value::from(limit));
+    let mut rows = stmt
+        .query(rusqlite::params_from_iter(params.iter()))
+        .map_err(|e| e.to_string())?;
 
     let mut out = Vec::new();
     while let Some(row) = rows.next().map_err(|e| e.to_string())? {

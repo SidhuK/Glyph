@@ -1,5 +1,6 @@
 import { emit } from "@tauri-apps/api/event";
 import { LazyStore } from "@tauri-apps/plugin-store";
+import { normalizeRelPath } from "../utils/path";
 import type { AiAssistantMode } from "./tauri";
 
 export type { AiAssistantMode } from "./tauri";
@@ -46,6 +47,12 @@ const DEFAULT_AI_ENABLED = true;
 export type UiFontFamily = string;
 export type UiFontSize = number;
 const AI_ASSISTANT_MODES = new Set<AiAssistantMode>(["chat", "create"]);
+export type TaskSourceMode = "space" | "folders";
+
+export interface TaskSourceSetting {
+	mode: TaskSourceMode;
+	folders: string[];
+}
 
 function asThemeMode(value: unknown): ThemeMode {
 	return typeof value === "string" && THEME_MODES.has(value as ThemeMode)
@@ -107,6 +114,9 @@ async function emitSettingsUpdated(payload: {
 	dailyNotes?: {
 		folder?: string | null;
 	};
+	tasks?: {
+		source?: TaskSourceSetting;
+	};
 	analytics?: {
 		enabled?: boolean;
 	};
@@ -141,6 +151,9 @@ interface AppSettings {
 	dailyNotes: {
 		folder: string | null;
 	};
+	tasks: {
+		source: TaskSourceSetting;
+	};
 	analytics: {
 		enabled: boolean;
 		distinctId: string;
@@ -160,9 +173,51 @@ const KEYS = {
 	monoFontFamily: "ui.monoFontFamily",
 	fontSize: "ui.fontSize",
 	dailyNotesFolder: "dailyNotes.folder",
+	taskSource: "tasks.source",
 	analyticsEnabled: "analytics.enabled",
 	analyticsDistinctId: "analytics.distinctId",
 } as const;
+
+function normalizeTaskSourceSetting(value: unknown): TaskSourceSetting {
+	const rawMode =
+		typeof value === "object" && value !== null && "mode" in value
+			? (value as { mode?: unknown }).mode
+			: null;
+	const mode: TaskSourceMode = rawMode === "folders" ? "folders" : "space";
+	const rawFolders =
+		typeof value === "object" && value !== null && "folders" in value
+			? (value as { folders?: unknown }).folders
+			: [];
+	const folders = Array.isArray(rawFolders)
+		? Array.from(
+				new Set(
+					rawFolders
+						.filter((entry): entry is string => typeof entry === "string")
+						.map((entry) => normalizeRelPath(entry))
+						.filter(Boolean),
+				),
+			).slice(0, 50)
+		: [];
+	return {
+		mode,
+		folders,
+	};
+}
+
+function normalizeLegacyTaskSourceSetting(
+	value: unknown,
+): TaskSourceSetting | null {
+	if (typeof value !== "object" || value === null) return null;
+	for (const bucket of ["inbox", "today", "upcoming"]) {
+		const bucketValue = (value as Record<string, unknown>)[bucket];
+		if (!bucketValue) continue;
+		const normalized = normalizeTaskSourceSetting(bucketValue);
+		if (normalized.mode === "folders" || normalized.folders.length > 0) {
+			return normalized;
+		}
+	}
+	return null;
+}
 
 export async function reloadFromDisk(): Promise<void> {
 	const store = await getStore();
@@ -201,6 +256,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		rawMonoFontFamily,
 		rawFontSize,
 		dailyNotesFolderRaw,
+		taskSourceRaw,
 		analyticsEnabledRaw,
 		analyticsDistinctIdRaw,
 	] = await Promise.all([
@@ -216,6 +272,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<unknown>(KEYS.monoFontFamily),
 		store.get<unknown>(KEYS.fontSize),
 		store.get<string | null>(KEYS.dailyNotesFolder),
+		store.get<unknown>(KEYS.taskSource),
 		store.get<boolean | null>(KEYS.analyticsEnabled),
 		store.get<string | null>(KEYS.analyticsDistinctId),
 	]);
@@ -232,6 +289,9 @@ export async function loadSettings(): Promise<AppSettings> {
 	const monoFontFamily = asUiMonoFontFamily(rawMonoFontFamily);
 	const fontSize = asUiFontSize(rawFontSize);
 	const dailyNotesFolder = dailyNotesFolderRaw ?? null;
+	const taskSource =
+		normalizeLegacyTaskSourceSetting(taskSourceRaw) ??
+		normalizeTaskSourceSetting(taskSourceRaw);
 	const analyticsEnabled =
 		typeof analyticsEnabledRaw === "boolean"
 			? analyticsEnabledRaw
@@ -257,6 +317,9 @@ export async function loadSettings(): Promise<AppSettings> {
 		},
 		dailyNotes: {
 			folder: dailyNotesFolder,
+		},
+		tasks: {
+			source: taskSource,
 		},
 		analytics: {
 			enabled: analyticsEnabled,
@@ -366,6 +429,14 @@ export async function setDailyNotesFolder(
 	}
 	await store.save();
 	void emitSettingsUpdated({ dailyNotes: { folder } });
+}
+
+export async function setTaskSource(source: TaskSourceSetting): Promise<void> {
+	const store = await getStore();
+	const next = normalizeTaskSourceSetting(source);
+	await store.set(KEYS.taskSource, next);
+	await store.save();
+	void emitSettingsUpdated({ tasks: { source: next } });
 }
 
 export async function getAnalyticsEnabled(): Promise<boolean> {

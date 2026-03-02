@@ -511,13 +511,24 @@ pub async fn tasks_query(
     bucket: String,
     today: String,
     limit: Option<u32>,
+    folders: Option<Vec<String>>,
 ) -> Result<Vec<IndexedTask>, String> {
     let root = state.current_root()?;
     let bucket = TaskBucket::parse(&bucket)?;
     let limit = limit.unwrap_or(500).min(5_000) as i64;
+    let folders = folders.map(|folders| {
+        folders
+            .into_iter()
+            .map(|folder| folder.trim().trim_matches('/').replace('\\', "/"))
+            .filter(|folder| !folder.is_empty())
+            .collect::<Vec<_>>()
+    });
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<IndexedTask>, String> {
+        if folders.as_ref().is_some_and(|folders| folders.is_empty()) {
+            return Ok(Vec::new());
+        }
         let conn = open_db(&root)?;
-        query_tasks(&conn, bucket, &today, limit)
+        query_tasks(&conn, bucket, &today, limit, folders.as_deref())
     })
     .await
     .map_err(|e| e.to_string())?

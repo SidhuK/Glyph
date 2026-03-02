@@ -651,6 +651,7 @@ interface TauriCommands {
 			bucket: TaskBucket;
 			today: string;
 			limit?: number | null;
+			folders?: string[] | null;
 		},
 		TaskItem[]
 	>;

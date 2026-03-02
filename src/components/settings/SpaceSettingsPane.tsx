@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { clearRecentSpaces, loadSettings } from "../../lib/settings";
 import { invoke } from "../../lib/tauri";
+import { TaskSourcesSettingsCard } from "./TaskSourcesSettingsCard";
 
 export function SpaceSettingsPane() {
 	const [currentSpacePath, setCurrentSpacePath] = useState<string | null>(null);
@@ -125,6 +126,8 @@ export function SpaceSettingsPane() {
 						<div className="settingsEmpty">{reindexStatus}</div>
 					) : null}
 				</section>
+
+				<TaskSourcesSettingsCard currentSpacePath={currentSpacePath} />
 			</div>
 		</div>
 	);

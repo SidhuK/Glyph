@@ -212,6 +212,73 @@
 	border-color: color-mix(in srgb, var(--border-default) 55%, transparent);
 }
 
+.settingsTaskSourceBlock {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	padding-top: 8px;
+}
+
+.settingsTaskSourceBlock + .settingsTaskSourceBlock {
+	margin-top: 6px;
+	border-top: 1px solid color-mix(in srgb, var(--border-light) 55%, transparent);
+}
+
+.settingsTaskSourceFolders {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	padding-bottom: 4px;
+}
+
+.settingsTaskSourcePickerRow {
+	align-items: flex-start;
+}
+
+.settingsTaskSourcePicker {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+.settingsTaskSourceChipList {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
+}
+
+.settingsTaskSourceChip {
+	display: inline-flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 2px;
+	padding: 8px 10px;
+	border-radius: var(--radius-md);
+	border: 1px solid color-mix(in srgb, var(--border-light) 75%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 58%, transparent);
+	color: var(--text-secondary);
+	text-align: left;
+}
+
+.settingsTaskSourceChip:hover {
+	border-color: color-mix(in srgb, var(--interactive-accent) 32%, transparent);
+	background: color-mix(in srgb, var(--interactive-accent) 9%, transparent);
+	color: var(--text-primary);
+}
+
+.settingsTaskSourceChipLabel {
+	font-size: 12px;
+	font-weight: var(--font-medium);
+	color: inherit;
+}
+
+.settingsTaskSourceChipMeta {
+	font-size: 10px;
+	color: var(--text-tertiary);
+}
+
 @media (max-width: 760px) {
 	.aboutContent {
 		padding: 18px 14px;
@@ -229,6 +296,11 @@
 	.aboutLinksRow button,
 	.aboutActionsRow button {
 		min-height: 30px;
+	}
+
+	.settingsTaskSourcePicker {
+		width: 100%;
+		justify-content: stretch;
 	}
 }
 

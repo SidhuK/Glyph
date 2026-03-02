@@ -68,6 +68,9 @@ type TauriEventMap = {
 		dailyNotes?: {
 			folder?: string | null;
 		};
+		tasks?: {
+			source?: { mode?: "space" | "folders"; folders?: string[] };
+		};
 		analytics?: {
 			enabled?: boolean;
 		};

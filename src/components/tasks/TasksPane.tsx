@@ -9,6 +9,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { loadSettings } from "../../lib/settings";
 import {
 	folderBreadcrumbFromNotePath,
 	todayIsoDateLocal,
@@ -67,10 +68,13 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 		setLoading(true);
 		setError("");
 		try {
+			const settings = await loadSettings();
+			const source = settings.tasks.source;
 			const rows = await invoke("tasks_query", {
 				bucket,
 				today: todayIsoDateLocal(),
 				limit: 2000,
+				folders: source.mode === "folders" ? source.folders : null,
 			});
 			if (isStale()) return;
 			setTasks(rows);
@@ -88,6 +92,11 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 	}, [loadTasks]);
 
 	useTauriEvent("notes:external_changed", () => {
+		void loadTasks();
+	});
+
+	useTauriEvent("settings:updated", (payload) => {
+		if (!payload.tasks?.source) return;
 		void loadTasks();
 	});
 
