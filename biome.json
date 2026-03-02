@@ -5,7 +5,11 @@
 			".claude",
 			"dist",
 			"src-tauri/gen",
-			"src-tauri/target"
+			"src-tauri/target",
+			"website/.astro",
+			"website/.vscode",
+			"website/dist",
+			"website/node_modules"
 		]
 	},
 	"formatter": {

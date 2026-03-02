@@ -147,7 +147,10 @@ export function AIComposer({
 							<HugeiconsIcon icon={AtIcon} size={13} />
 						</Button>
 						{context.attachedFolders.length > 0 ? (
-							<div className="aiComposerContextStrip" aria-label="Attached context">
+							<div
+								className="aiComposerContextStrip"
+								aria-label="Attached context"
+							>
 								{context.attachedFolders.map((item) => (
 									<button
 										key={`${item.kind}:${item.path || "space"}`}

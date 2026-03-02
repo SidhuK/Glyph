@@ -35,7 +35,8 @@ const BUCKETS: Array<{
 		id: "today",
 		label: "Today",
 		icon: Icons.SunriseIcon,
-		description: "Work scheduled or due for today, laid out as a focused action list.",
+		description:
+			"Work scheduled or due for today, laid out as a focused action list.",
 	},
 	{
 		id: "upcoming",
@@ -47,7 +48,8 @@ const BUCKETS: Array<{
 		id: "inbox",
 		label: "Inbox",
 		icon: Icons.InboxIcon,
-		description: "Unscheduled tasks grouped by note so triage stays close to source material.",
+		description:
+			"Unscheduled tasks grouped by note so triage stays close to source material.",
 	},
 ];
 
@@ -159,7 +161,10 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 					</p>
 				</div>
 				<div className="tasksPaneToolbarActions">
-					<span className="tasksPaneScopeChip" data-bucket={activeBucketMeta.id}>
+					<span
+						className="tasksPaneScopeChip"
+						data-bucket={activeBucketMeta.id}
+					>
 						<HugeiconsIcon icon={activeBucketMeta.icon} size={14} />
 						{activeBucketMeta.label}
 					</span>
@@ -208,7 +213,9 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 				</div>
 
 				{error ? <div className="tasksPaneError">{error}</div> : null}
-				{loading ? <div className="tasksPaneLoading">Loading tasks…</div> : null}
+				{loading ? (
+					<div className="tasksPaneLoading">Loading tasks…</div>
+				) : null}
 				{!loading && tasks.length === 0 ? (
 					<div className="tasksPaneEmptyState">
 						<HugeiconsIcon
@@ -217,8 +224,13 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 							className="tasksPaneEmptyIcon"
 						/>
 						<div className="tasksPaneEmptyCopy">
-							<strong>No tasks in {activeBucketMeta.label.toLowerCase()}.</strong>
-							<span>Tasks from your notes will appear here as soon as they match this bucket.</span>
+							<strong>
+								No tasks in {activeBucketMeta.label.toLowerCase()}.
+							</strong>
+							<span>
+								Tasks from your notes will appear here as soon as they match
+								this bucket.
+							</span>
 						</div>
 					</div>
 				) : null}

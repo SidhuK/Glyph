@@ -91,8 +91,16 @@
 }
 
 .tasksPaneScopeChip[data-bucket="today"] {
-	border-color: color-mix(in srgb, var(--task-bucket-today) 30%, var(--border-light));
-	background: color-mix(in srgb, var(--task-bucket-today) 12%, var(--bg-primary));
+	border-color: color-mix(
+		in srgb,
+		var(--task-bucket-today) 30%,
+		var(--border-light)
+	);
+	background: color-mix(
+		in srgb,
+		var(--task-bucket-today) 12%,
+		var(--bg-primary)
+	);
 	color: color-mix(in srgb, var(--task-bucket-today) 70%, var(--text-primary));
 }
 
@@ -107,12 +115,24 @@
 		var(--task-bucket-upcoming) 12%,
 		var(--bg-primary)
 	);
-	color: color-mix(in srgb, var(--task-bucket-upcoming) 72%, var(--text-primary));
+	color: color-mix(
+		in srgb,
+		var(--task-bucket-upcoming) 72%,
+		var(--text-primary)
+	);
 }
 
 .tasksPaneScopeChip[data-bucket="inbox"] {
-	border-color: color-mix(in srgb, var(--task-bucket-inbox) 30%, var(--border-light));
-	background: color-mix(in srgb, var(--task-bucket-inbox) 12%, var(--bg-primary));
+	border-color: color-mix(
+		in srgb,
+		var(--task-bucket-inbox) 30%,
+		var(--border-light)
+	);
+	background: color-mix(
+		in srgb,
+		var(--task-bucket-inbox) 12%,
+		var(--bg-primary)
+	);
 	color: color-mix(in srgb, var(--task-bucket-inbox) 72%, var(--text-primary));
 }
 
@@ -195,7 +215,11 @@
 }
 
 .tasksBucketPill[data-bucket="inbox"][data-active="true"] .tasksBucketPillBg {
-	background: color-mix(in srgb, var(--task-bucket-inbox) 22%, var(--bg-primary));
+	background: color-mix(
+		in srgb,
+		var(--task-bucket-inbox) 22%,
+		var(--bg-primary)
+	);
 	border-color: color-mix(
 		in srgb,
 		var(--task-bucket-inbox) 40%,
@@ -204,7 +228,11 @@
 }
 
 .tasksBucketPill[data-bucket="today"][data-active="true"] .tasksBucketPillBg {
-	background: color-mix(in srgb, var(--task-bucket-today) 24%, var(--bg-primary));
+	background: color-mix(
+		in srgb,
+		var(--task-bucket-today) 24%,
+		var(--bg-primary)
+	);
 	border-color: color-mix(
 		in srgb,
 		var(--task-bucket-today) 42%,
@@ -212,7 +240,8 @@
 	);
 }
 
-.tasksBucketPill[data-bucket="upcoming"][data-active="true"] .tasksBucketPillBg {
+.tasksBucketPill[data-bucket="upcoming"][data-active="true"]
+	.tasksBucketPillBg {
 	background: color-mix(
 		in srgb,
 		var(--task-bucket-upcoming) 24%,
@@ -237,7 +266,8 @@
 	color: var(--task-bucket-today);
 }
 
-.tasksBucketPill[data-bucket="upcoming"][data-active="true"] .tasksBucketPillIcon {
+.tasksBucketPill[data-bucket="upcoming"][data-active="true"]
+	.tasksBucketPillIcon {
 	color: var(--task-bucket-upcoming);
 }
 
@@ -325,7 +355,8 @@
 	padding: 12px 14px 10px;
 	text-align: left;
 	cursor: pointer;
-	border-bottom: 1px solid color-mix(in srgb, var(--border-subtle) 72%, transparent);
+	border-bottom: 1px solid
+		color-mix(in srgb, var(--border-subtle) 72%, transparent);
 	transition: background-color var(--transition-fast);
 }
 
@@ -496,7 +527,11 @@
 .tasksMetaBadgeDue {
 	border-color: color-mix(in srgb, var(--task-bucket-upcoming) 28%, transparent);
 	background: color-mix(in srgb, var(--task-bucket-upcoming) 10%, transparent);
-	color: color-mix(in srgb, var(--task-bucket-upcoming) 72%, var(--text-primary));
+	color: color-mix(
+		in srgb,
+		var(--task-bucket-upcoming) 72%,
+		var(--text-primary)
+	);
 }
 
 .tasksRowPath {

@@ -85,7 +85,10 @@ export const MainContent = memo(function MainContent({
 		};
 		window.addEventListener("glyph:close-active-tab", handleCloseActiveTab);
 		return () =>
-			window.removeEventListener("glyph:close-active-tab", handleCloseActiveTab);
+			window.removeEventListener(
+				"glyph:close-active-tab",
+				handleCloseActiveTab,
+			);
 	}, [closeActiveTab]);
 
 	const viewerPath = activeTabPath;

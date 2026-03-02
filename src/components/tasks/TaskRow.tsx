@@ -65,7 +65,10 @@ export function TaskRow({
 						</Badge>
 					) : null}
 					{task.due_date ? (
-						<Badge variant="outline" className="tasksMetaBadge tasksMetaBadgeDue">
+						<Badge
+							variant="outline"
+							className="tasksMetaBadge tasksMetaBadgeDue"
+						>
 							<Calendar size={11} />
 							Due {task.due_date}
 						</Badge>

@@ -1,6 +1,6 @@
-import { openSettingsWindow } from "../lib/windows";
 import { useCallback } from "react";
 import { useTauriEvent } from "../lib/tauriEvents";
+import { openSettingsWindow } from "../lib/windows";
 
 export interface UseMenuListenersProps {
 	onNewNote: () => void;
