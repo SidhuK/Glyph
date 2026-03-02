@@ -1,95 +1,11 @@
 ---
 import Layout from '../layouts/Layout.astro';
 
-const svgAttrs = 'width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"';
-
-const pillars = [
-  {
-    num: '01',
-    verb: 'Write.',
-    subtitle: 'A markdown editor that stays out of your way',
-    text: 'Start typing, or hit / for commands. Headings, lists, code blocks, and embeds render as you type. Select text for a floating toolbar. Your files are plain .md — open them in anything.',
-  },
-  {
-    num: '02',
-    verb: 'Connect.',
-    subtitle: 'See how your ideas relate',
-    text: 'Link notes with [[double brackets]] and see what links back. Drag notes, images, and web links onto a spatial canvas. Your thinking becomes something you can see and rearrange.',
-  },
-  {
-    num: '03',
-    verb: 'Ask.',
-    subtitle: 'An AI that reads your notes',
-    text: 'Chat with an AI that has context on your vault. Ask it to summarize a meeting, compare two documents, or draft something new. Bring your own key — OpenAI, Anthropic, or a local model.',
-  },
-];
-
-const features = [
-  {
-    icon: `<svg ${svgAttrs}><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>`,
-    title: 'Daily notes',
-    text: 'A fresh page every morning, auto-titled and ready to go.',
-  },
-  {
-    icon: `<svg ${svgAttrs}><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 12l2 2 4-4"/></svg>`,
-    title: 'Tasks',
-    text: 'Write checkboxes in any note. Glyph gathers them into Inbox, Today, and Upcoming.',
-  },
-  {
-    icon: `<svg ${svgAttrs}><circle cx="11" cy="11" r="7"/><path d="m21 21-4.35-4.35"/></svg>`,
-    title: 'Instant search',
-    text: '⌘P to find anything. Filter by tags, folders, or full-text content.',
-  },
-  {
-    icon: `<svg ${svgAttrs}><path d="M4 9h16M4 15h16M10 3l-2 18M16 3l-2 18"/></svg>`,
-    title: 'Tags',
-    text: 'Organize with #tags and browse your vault by topic.',
-  },
-  {
-    icon: `<svg ${svgAttrs}><rect x="2" y="4" width="20" height="16" rx="2"/><path d="M2 8h20M8 4v4"/></svg>`,
-    title: 'Tabs',
-    text: 'Keep multiple notes open. Switch between them like browser tabs.',
-  },
-  {
-    icon: `<svg ${svgAttrs}><rect x="2" y="6" width="20" height="12" rx="2"/><path d="M6 10h.01M10 10h.01M14 10h.01M18 10h.01M8 14h8"/></svg>`,
-    title: 'Keyboard-first',
-    text: 'Navigate, create, and search — without lifting your hands from the keyboard.',
-  },
-  {
-    icon: `<svg ${svgAttrs}><rect x="1" y="7" width="22" height="10" rx="5"/><circle cx="16" cy="12" r="3"/></svg>`,
-    title: 'Make it yours',
-    text: 'Choose your accent color, pick a font, adjust the layout to fit how you think.',
-  },
-  {
-    icon: `<svg ${svgAttrs}><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>`,
-    title: 'Pinned folders',
-    text: 'Keep your most-used folders one click away in the sidebar.',
-  },
-];
-
 const stats = [
   { value: '< 1s', label: 'to launch' },
   { value: '~80 MB', label: 'of memory' },
   { value: '0 bytes', label: 'uploaded' },
   { value: '.md', label: 'plain files' },
-];
-
-const useCases = [
-  {
-    marker: 'R',
-    title: 'Researchers',
-    text: 'Link papers to reading notes, tag concepts across projects, and ask the AI to summarize or compare sources — all from one local vault.',
-  },
-  {
-    marker: 'E',
-    title: 'Engineers',
-    text: 'Keep architecture decisions, runbooks, and code snippets in markdown. Use the canvas to map systems and the AI to answer questions about your docs.',
-  },
-  {
-    marker: 'W',
-    title: 'Writers',
-    text: 'Outline chapters on the canvas, write drafts in the editor, and tag scenes by character or theme. The AI helps brainstorm without breaking your flow.',
-  },
 ];
 ---
 
@@ -137,9 +53,14 @@ const useCases = [
             <a href="#" class="btn btn-ghost">View on GitHub</a>
           </div>
         </div>
-
         <div class="hero-media-wrap">
           <div class="hero-glow" aria-hidden="true"></div>
+          <div class="hero-float hero-float--cmd" aria-hidden="true">⌘P</div>
+          <div class="hero-float hero-float--link" aria-hidden="true">[[Research Notes]]</div>
+          <div class="hero-float hero-float--task" aria-hidden="true">
+            <span class="hf-check">✓</span>
+            Review outline
+          </div>
           <img
             class="hero-media"
             src="/main-image.png"
@@ -150,54 +71,159 @@ const useCases = [
       </div>
     </section>
 
-    <!-- ── PILLARS ── -->
-    <section id="features" class="pillars shell">
+    <!-- ── FEATURES BENTO ── -->
+    <section id="features" class="features-section shell">
       <div class="section-head" data-reveal>
-        <p class="eyebrow">How it works</p>
-        <h2>Three ways to work with your&nbsp;notes.</h2>
+        <p class="eyebrow">Features</p>
+        <h2>Everything you need to think&nbsp;clearly.</h2>
       </div>
 
-      <div class="pillar-grid">
-        {pillars.map((p, i) => (
-          <article class="pillar-card" data-reveal style={`--delay: ${i * 80}ms`}>
-            <span class="pillar-num" aria-hidden="true">{p.num}</span>
-            <h3 class="pillar-verb">{p.verb}</h3>
-            <p class="pillar-subtitle">{p.subtitle}</p>
-            <p class="pillar-text">{p.text}</p>
-          </article>
-        ))}
-      </div>
-    </section>
+      <div class="bento">
+        <!-- Write (tall) -->
+        <article class="bento-card tall" data-reveal>
+          <h3>Write.</h3>
+          <p class="bento-sub">A clean editor with a floating toolbar, slash commands, and live preview</p>
+          <p>Everything you type is saved as a plain .md file. Open your notes in any app, anytime.</p>
+          <div class="mockup m-editor" aria-hidden="true">
+            <div class="m-bar">
+              <span class="m-dot"></span><span class="m-dot"></span><span class="m-dot"></span>
+            </div>
+            <div class="m-body">
+              <div class="m-ln heading" style="width: 50%"></div>
+              <div class="m-ln" style="width: 92%"></div>
+              <div class="m-ln" style="width: 70%"></div>
+              <div class="m-ln sel" style="width: 85%"></div>
+              <div class="m-ln" style="width: 55%"></div>
+              <div class="m-ln" style="width: 78%"></div>
+              <div class="m-ln" style="width: 40%"></div>
+            </div>
+          </div>
+        </article>
 
-    <!-- ── FEATURES ── -->
-    <section class="extras shell">
-      <div class="section-head" data-reveal>
-        <p class="eyebrow">And everything else</p>
-        <h2>The details that make it feel like&nbsp;home.</h2>
-      </div>
+        <!-- Connect (tall) -->
+        <article class="bento-card tall" data-reveal style="--delay: 80ms">
+          <h3>Connect.</h3>
+          <p class="bento-sub">Link notes with [[wikilinks]] and see what links&nbsp;back</p>
+          <p>Drag notes, images, and web links onto a spatial canvas. Watch your thinking take shape.</p>
+          <svg class="mockup m-canvas-svg" viewBox="0 0 240 170" aria-hidden="true">
+            <line x1="60" y1="45" x2="135" y2="95" style="stroke: #DAD6CE; stroke-width: 1.5"/>
+            <line x1="135" y1="95" x2="195" y2="50" style="stroke: #DAD6CE; stroke-width: 1.5"/>
+            <line x1="60" y1="45" x2="85" y2="140" style="stroke: #DAD6CE; stroke-width: 1.5"/>
+            <line x1="85" y1="140" x2="135" y2="95" style="stroke: #DAD6CE; stroke-width: 1.5"/>
+            <circle cx="60" cy="45" r="22" style="fill: #F8F7F3; stroke: #DAD6CE; stroke-width: 1.5"/>
+            <text x="60" y="48" text-anchor="middle" style="fill: #7A766D; font-size: 9px; font-family: system-ui">Ideas</text>
+            <circle cx="135" cy="95" r="26" style="fill: #E8EDE6; stroke: #4A6741; stroke-width: 2"/>
+            <text x="135" y="98" text-anchor="middle" style="fill: #4A6741; font-size: 9px; font-weight: 600; font-family: system-ui">Draft</text>
+            <circle cx="195" cy="50" r="20" style="fill: #F8F7F3; stroke: #DAD6CE; stroke-width: 1.5"/>
+            <text x="195" y="53" text-anchor="middle" style="fill: #7A766D; font-size: 8px; font-family: system-ui">Research</text>
+            <circle cx="85" cy="140" r="18" style="fill: #F8F7F3; stroke: #DAD6CE; stroke-width: 1.5"/>
+            <text x="85" y="143" text-anchor="middle" style="fill: #7A766D; font-size: 8px; font-family: system-ui">Notes</text>
+          </svg>
+        </article>
 
-      <div class="extras-grid">
-        {features.map((f, i) => (
-          <article class="extra-card" data-reveal style={`--delay: ${i * 50}ms`}>
-            <div class="extra-icon" set:html={f.icon} />
-            <h3>{f.title}</h3>
-            <p>{f.text}</p>
-          </article>
-        ))}
+        <!-- Ask -->
+        <article class="bento-card" data-reveal style="--delay: 160ms">
+          <h3>Ask.</h3>
+          <p class="bento-sub">An AI that reads your notes</p>
+          <p>Summarize, compare, or draft — with OpenAI, Anthropic, or a local model.</p>
+          <div class="mockup m-chat" aria-hidden="true">
+            <div class="m-msg m-user">Summarize this week's notes</div>
+            <div class="m-msg m-ai">
+              <div class="m-ln" style="width: 100%"></div>
+              <div class="m-ln" style="width: 88%"></div>
+              <div class="m-ln" style="width: 55%"></div>
+            </div>
+          </div>
+        </article>
+
+        <!-- Tasks -->
+        <article class="bento-card" data-reveal style="--delay: 200ms">
+          <h3>Tasks</h3>
+          <p>Write checkboxes in any note. Glyph gathers them into Inbox, Today, and Upcoming.</p>
+          <div class="mockup m-tasks" aria-hidden="true">
+            <div class="m-task done"><span class="m-check">✓</span><div class="m-ln" style="width: 65%"></div></div>
+            <div class="m-task done"><span class="m-check">✓</span><div class="m-ln" style="width: 50%"></div></div>
+            <div class="m-task"><span class="m-check"></span><div class="m-ln" style="width: 80%"></div></div>
+            <div class="m-task"><span class="m-check"></span><div class="m-ln" style="width: 60%"></div></div>
+          </div>
+        </article>
+
+        <!-- Search -->
+        <article class="bento-card" data-reveal style="--delay: 100ms">
+          <h3>Instant search</h3>
+          <p>⌘P to find anything. Filter by tags, folders, or full-text content.</p>
+          <div class="mockup m-search" aria-hidden="true">
+            <div class="m-searchbar">
+              <span class="m-search-key">⌘P</span>
+              <span class="m-search-text">meeting notes…</span>
+            </div>
+            <div class="m-result"><div class="m-result-dot"></div><div class="m-ln" style="width: 72%"></div></div>
+            <div class="m-result"><div class="m-result-dot"></div><div class="m-ln" style="width: 58%"></div></div>
+          </div>
+        </article>
+
+        <!-- Daily Notes -->
+        <article class="bento-card" data-reveal style="--delay: 150ms">
+          <h3>Daily notes</h3>
+          <p>A fresh page every morning, auto-titled and ready to go.</p>
+          <div class="mockup m-daily" aria-hidden="true">
+            <span class="m-daily-day">Sun</span>
+            <span class="m-daily-num">02</span>
+            <span class="m-daily-month">March 2026</span>
+          </div>
+        </article>
+
+        <!-- Make it yours -->
+        <article class="bento-card" data-reveal style="--delay: 200ms">
+          <h3>Make it yours</h3>
+          <p>Accent colors, fonts, pinned folders, and keyboard shortcuts — adjust everything.</p>
+          <div class="mockup m-customize" aria-hidden="true">
+            <div class="m-swatches">
+              <span class="m-swatch selected" style="--c: #4A6741"></span>
+              <span class="m-swatch" style="--c: #5B7FB5"></span>
+              <span class="m-swatch" style="--c: #B8956A"></span>
+              <span class="m-swatch" style="--c: #9B6B8E"></span>
+              <span class="m-swatch" style="--c: #C75D3A"></span>
+            </div>
+          </div>
+        </article>
       </div>
     </section>
 
     <!-- ── PRIVACY ── -->
     <section class="privacy shell">
-      <div class="section-head" data-reveal>
-        <p class="eyebrow">Local-first</p>
-        <h2>Yours, completely.</h2>
+      <div class="privacy-grid">
+        <div class="privacy-content">
+          <div class="section-head" data-reveal>
+            <p class="eyebrow">Local-first</p>
+            <h2>Yours, completely.</h2>
+          </div>
+          <p class="privacy-text" data-reveal>
+            Glyph reads files from your disk and never phones home.
+            No account. No subscription. No cloud sync.
+            Just open a folder and start writing.
+          </p>
+        </div>
+        <div class="privacy-visual" data-reveal style="--delay: 120ms" aria-hidden="true">
+          <div class="m-filetree">
+            <div class="m-ft-header">
+              <span class="m-ft-dot"></span>
+              <span class="m-ft-dot"></span>
+              <span class="m-ft-dot"></span>
+              <span class="m-ft-title">~/vault</span>
+            </div>
+            <div class="m-ft-body">
+              <div class="m-ft-row folder">Projects</div>
+              <div class="m-ft-row file">meeting-notes.md</div>
+              <div class="m-ft-row file">architecture.md</div>
+              <div class="m-ft-row folder">Daily</div>
+              <div class="m-ft-row file">2026-03-02.md</div>
+              <div class="m-ft-row file">2026-03-01.md</div>
+              <div class="m-ft-row folder">Research</div>
+            </div>
+          </div>
+        </div>
       </div>
-      <p class="privacy-text" data-reveal>
-        Glyph reads files from your disk and never phones home.
-        No account. No subscription. No cloud sync.
-        Just open a folder and start writing.
-      </p>
       <div class="stats-grid" data-reveal>
         {stats.map((s) => (
           <div class="stat">
@@ -214,15 +240,44 @@ const useCases = [
         <p class="eyebrow">Who it's for</p>
         <h2>People who think for a&nbsp;living.</h2>
       </div>
-
       <div class="uc-grid">
-        {useCases.map((uc, i) => (
-          <article class="uc-card" data-reveal style={`--delay: ${i * 80}ms`}>
-            <div class="uc-marker" aria-hidden="true">{uc.marker}</div>
-            <h3>{uc.title}</h3>
-            <p>{uc.text}</p>
-          </article>
-        ))}
+        <article class="uc-card" data-reveal>
+          <div class="uc-marker" aria-hidden="true">R</div>
+          <h3>Researchers</h3>
+          <p>Link papers to reading notes, tag concepts across projects, and ask the AI to summarize or compare sources — all from one local vault.</p>
+          <div class="uc-visual" aria-hidden="true">
+            <span class="uc-wikilink">[[Smith 2024]]</span>
+            <span class="uc-arrow">→</span>
+            <span class="uc-wikilink">[[Lit Review]]</span>
+          </div>
+        </article>
+
+        <article class="uc-card" data-reveal style="--delay: 80ms">
+          <div class="uc-marker" aria-hidden="true">E</div>
+          <h3>Engineers</h3>
+          <p>Keep architecture decisions, runbooks, and code snippets in markdown. Use the canvas to map systems and the AI to answer questions about your docs.</p>
+          <div class="uc-visual" aria-hidden="true">
+            <div class="uc-doc">
+              <div class="uc-doc-title">ADR-001: Cache Strategy</div>
+              <div class="m-ln" style="width: 85%"></div>
+              <div class="m-ln" style="width: 60%"></div>
+              <div class="m-ln" style="width: 40%"></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="uc-card" data-reveal style="--delay: 160ms">
+          <div class="uc-marker" aria-hidden="true">W</div>
+          <h3>Writers</h3>
+          <p>Outline chapters on the canvas, write drafts in the editor, and tag scenes by character or theme. The AI helps brainstorm without breaking your flow.</p>
+          <div class="uc-visual" aria-hidden="true">
+            <div class="uc-outline">
+              <div class="uc-chapter">Ch. 1 — The Beginning</div>
+              <div class="uc-chapter">Ch. 2 — Rising Action</div>
+              <div class="uc-chapter active">Ch. 3 — The Turn</div>
+            </div>
+          </div>
+        </article>
       </div>
     </section>
 
@@ -276,20 +331,9 @@ const useCases = [
 
 <style>
   /* ── Page ── */
-  .page {
-    padding: 1.5rem 0 0;
-    position: relative;
-  }
-
-  .shell {
-    width: min(1200px, 92vw);
-    margin-inline: auto;
-  }
-
-  /* ── Section Heads ── */
-  .section-head {
-    margin-bottom: 3rem;
-  }
+  .page { padding: 1.5rem 0 0; position: relative; }
+  .shell { width: min(1200px, 92vw); margin-inline: auto; }
+  .section-head { margin-bottom: 3rem; }
 
   .eyebrow {
     text-transform: uppercase;
@@ -312,12 +356,7 @@ const useCases = [
   }
 
   /* ── Topbar ── */
-  .topbar {
-    display: flex;
-    align-items: center;
-    gap: 2rem;
-    padding: 0.75rem 0;
-  }
+  .topbar { display: flex; align-items: center; gap: 2rem; padding: 0.75rem 0; }
 
   .brand {
     display: inline-flex;
@@ -329,31 +368,11 @@ const useCases = [
     letter-spacing: -0.02em;
   }
 
-  .brand-mark {
-    width: 1.85rem;
-    height: 1.85rem;
-    object-fit: cover;
-    border-radius: 0.22rem;
-    display: block;
-  }
+  .brand-mark { width: 1.85rem; height: 1.85rem; object-fit: cover; border-radius: 0.22rem; display: block; }
 
-  .nav {
-    display: flex;
-    align-items: center;
-    gap: 1.8rem;
-    margin-left: auto;
-  }
-
-  .nav a {
-    font-size: 0.88rem;
-    color: var(--muted);
-    font-weight: 500;
-    transition: color 0.2s ease;
-  }
-
-  .nav a:hover {
-    color: var(--ink);
-  }
+  .nav { display: flex; align-items: center; gap: 1.8rem; margin-left: auto; }
+  .nav a { font-size: 0.88rem; color: var(--muted); font-weight: 500; transition: color 0.2s ease; }
+  .nav a:hover { color: var(--ink); }
 
   .nav-cta {
     display: inline-flex;
@@ -368,19 +387,11 @@ const useCases = [
     transition: background 0.2s ease, color 0.2s ease;
   }
 
-  .nav-cta:hover {
-    background: var(--accent);
-    color: #fff;
-  }
-
-  .nav-cta-arrow {
-    font-size: 0.75rem;
-  }
+  .nav-cta:hover { background: var(--accent); color: #fff; }
+  .nav-cta-arrow { font-size: 0.75rem; }
 
   /* ── Hero ── */
-  .hero {
-    padding: 5rem 0 6rem;
-  }
+  .hero { padding: 5rem 0 6rem; }
 
   .hero-grid {
     display: grid;
@@ -402,13 +413,7 @@ const useCases = [
     margin: 0 0 1.8rem;
   }
 
-  .badge-dot {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--accent);
-    flex-shrink: 0;
-  }
+  .badge-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex-shrink: 0; }
 
   h1 {
     font-family: var(--font-display);
@@ -420,30 +425,13 @@ const useCases = [
     color: var(--ink);
   }
 
-  .h1-line {
-    display: block;
-    opacity: 0;
-    animation: fadeUp 0.55s ease both;
-  }
-
+  .h1-line { display: block; opacity: 0; animation: fadeUp 0.55s ease both; }
   .h1-line:nth-child(1) { animation-delay: 0.1s; }
   .h1-line:nth-child(2) { animation-delay: 0.2s; }
   .h1-line:nth-child(3) { animation-delay: 0.3s; }
 
-  .lede {
-    font-size: 1.12rem;
-    line-height: 1.65;
-    color: var(--muted);
-    max-width: 440px;
-    margin: 0 0 2rem;
-  }
-
-  /* ── Buttons ── */
-  .actions {
-    display: flex;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-  }
+  .lede { font-size: 1.12rem; line-height: 1.65; color: var(--muted); max-width: 440px; margin: 0 0 2rem; }
+  .actions { display: flex; gap: 0.75rem; flex-wrap: wrap; }
 
   .btn {
     display: inline-flex;
@@ -459,64 +447,25 @@ const useCases = [
     transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
   }
 
-  .btn:hover {
-    transform: translateY(-1px);
-  }
+  .btn:hover { transform: translateY(-1px); }
+  .btn:active { transform: translateY(1px); }
+  .btn-arrow { transition: transform 0.2s ease; }
+  .btn:hover .btn-arrow { transform: translateX(3px); }
 
-  .btn:active {
-    transform: translateY(1px);
-  }
-
-  .btn-arrow {
-    transition: transform 0.2s ease;
-  }
-
-  .btn:hover .btn-arrow {
-    transform: translateX(3px);
-  }
-
-  .btn-primary {
-    background: var(--accent);
-    color: #fff;
-    box-shadow: 0 4px 16px -4px rgba(74, 103, 65, 0.35);
-  }
-
-  .btn-primary:hover {
-    background: #3d5736;
-    box-shadow: 0 8px 24px -4px rgba(74, 103, 65, 0.4);
-  }
-
-  .btn-ghost {
-    background: transparent;
-    border: 1.5px solid var(--line);
-    color: var(--ink);
-  }
-
-  .btn-ghost:hover {
-    border-color: var(--muted);
-    background: var(--surface);
-  }
+  .btn-primary { background: var(--accent); color: #fff; box-shadow: 0 4px 16px -4px rgba(74, 103, 65, 0.35); }
+  .btn-primary:hover { background: #3d5736; box-shadow: 0 8px 24px -4px rgba(74, 103, 65, 0.4); }
+  .btn-ghost { background: transparent; border: 1.5px solid var(--line); color: var(--ink); }
+  .btn-ghost:hover { border-color: var(--muted); background: var(--surface); }
 
   /* ── Hero Media ── */
-  .hero-media-wrap {
-    position: relative;
-    border-radius: 1rem;
-    overflow: hidden;
-  }
+  .hero-media-wrap { position: relative; border-radius: 1rem; overflow: visible; }
 
   .hero-glow {
     position: absolute;
     inset: -20%;
-    background: radial-gradient(
-      ellipse at 40% 50%,
-      rgba(74, 103, 65, 0.12) 0%,
-      transparent 60%
-    ),
-    radial-gradient(
-      ellipse at 70% 30%,
-      rgba(184, 149, 106, 0.1) 0%,
-      transparent 50%
-    );
+    background:
+      radial-gradient(ellipse at 40% 50%, rgba(74, 103, 65, 0.12) 0%, transparent 60%),
+      radial-gradient(ellipse at 70% 30%, rgba(184, 149, 106, 0.1) 0%, transparent 50%);
     z-index: 0;
     pointer-events: none;
   }
@@ -527,138 +476,222 @@ const useCases = [
     height: auto;
     border-radius: 0.85rem;
     border: 1px solid var(--line);
-    box-shadow:
-      0 24px 80px -16px rgba(21, 19, 14, 0.18),
-      0 8px 24px -8px rgba(21, 19, 14, 0.08);
+    box-shadow: 0 24px 80px -16px rgba(21, 19, 14, 0.18), 0 8px 24px -8px rgba(21, 19, 14, 0.08);
     position: relative;
     z-index: 1;
   }
 
-  /* ── Pillars ── */
-  .pillars {
-    padding: 5rem 0;
-  }
-
-  .pillar-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
-  }
-
-  .pillar-card {
-    padding: 2rem 2rem 2.2rem;
-    border-left: 3px solid var(--accent);
-    background: var(--surface);
-    border-radius: 0 var(--radius) var(--radius) 0;
-    transition: box-shadow 0.25s ease;
-  }
-
-  .pillar-card:hover {
-    box-shadow: 0 8px 32px -8px rgba(21, 19, 14, 0.08);
-  }
-
-  .pillar-num {
-    display: block;
-    font-family: var(--font-display);
-    font-size: 0.72rem;
-    font-weight: 700;
-    color: var(--gold);
-    letter-spacing: 0.06em;
-    margin-bottom: 1rem;
-  }
-
-  .pillar-verb {
-    font-family: var(--font-display);
-    font-size: 1.65rem;
-    font-weight: 800;
-    letter-spacing: -0.02em;
-    margin: 0 0 0.35rem;
-    color: var(--ink);
-  }
-
-  .pillar-subtitle {
-    font-size: 0.95rem;
-    color: var(--accent);
-    font-weight: 500;
-    margin: 0 0 1rem;
-  }
-
-  .pillar-text {
-    font-size: 0.9rem;
-    line-height: 1.65;
-    color: var(--muted);
-    margin: 0;
-  }
-
-  /* ── Extras ── */
-  .extras {
-    padding: 4rem 0 5rem;
-  }
-
-  .extras-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 1.25rem;
-  }
-
-  .extra-card {
-    padding: 1.5rem;
-    background: var(--surface);
-    border-radius: var(--radius);
+  /* ── Hero Floating Elements ── */
+  .hero-float {
+    position: absolute;
+    z-index: 2;
+    background: #fff;
     border: 1px solid var(--line);
-    transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.25s ease;
+    border-radius: 0.5rem;
+    padding: 0.4rem 0.75rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    box-shadow: 0 8px 24px -8px rgba(21, 19, 14, 0.12);
+    white-space: nowrap;
+    opacity: 0;
+    animation: floatIn 0.6s ease both;
   }
 
-  .extra-card:hover {
-    border-color: var(--accent);
-    transform: translateY(-2px);
-    box-shadow: 0 8px 24px -8px rgba(21, 19, 14, 0.06);
+  .hero-float--cmd {
+    top: 8%;
+    left: -5%;
+    font-family: ui-monospace, 'SF Mono', monospace;
+    font-weight: 700;
+    font-size: 0.7rem;
+    color: var(--muted);
+    background: var(--bg);
+    padding: 0.35rem 0.6rem;
+    border-radius: 0.35rem;
+    animation-delay: 0.5s;
   }
 
-  .extra-icon {
-    width: 2.4rem;
-    height: 2.4rem;
+  .hero-float--link {
+    top: 14%;
+    right: -4%;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-color: rgba(74, 103, 65, 0.2);
+    animation-delay: 0.65s;
+  }
+
+  .hero-float--task {
+    bottom: 16%;
+    left: -6%;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    animation-delay: 0.8s;
+  }
+
+  .hf-check {
+    width: 14px;
+    height: 14px;
+    border-radius: 3px;
+    background: var(--accent);
+    color: #fff;
     display: flex;
     align-items: center;
     justify-content: center;
-    border-radius: 0.45rem;
-    background: var(--accent-soft);
-    color: var(--accent);
-    margin-bottom: 1rem;
+    font-size: 8px;
+    flex-shrink: 0;
+    line-height: 1;
   }
 
-  .extra-icon :global(svg) {
-    width: 1.2rem;
-    height: 1.2rem;
+  /* ── Bento Grid ── */
+  .features-section { padding: 5rem 0; }
+
+  .bento { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+
+  .bento-card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 0.85rem;
+    padding: 1.75rem;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: border-color 0.2s ease, box-shadow 0.25s ease;
   }
 
-  .extra-card h3 {
-    font-family: var(--font-display);
-    font-size: 0.95rem;
-    font-weight: 700;
-    margin: 0 0 0.4rem;
-    letter-spacing: -0.01em;
-    color: var(--ink);
-  }
+  .bento-card:hover { border-color: rgba(74, 103, 65, 0.35); box-shadow: 0 8px 32px -8px rgba(21, 19, 14, 0.07); }
+  .bento-card.tall { grid-row: span 2; }
 
-  .extra-card p {
-    font-size: 0.84rem;
-    line-height: 1.55;
-    color: var(--muted);
-    margin: 0;
-  }
+  .bento-card h3 { font-family: var(--font-display); font-size: 1.15rem; font-weight: 700; letter-spacing: -0.015em; margin: 0 0 0.3rem; color: var(--ink); }
+  .bento-card.tall h3 { font-size: 1.55rem; font-weight: 800; letter-spacing: -0.02em; margin-bottom: 0.5rem; }
+  .bento-sub { font-size: 0.9rem; color: var(--accent); font-weight: 500; margin: 0 0 0.6rem; line-height: 1.4; }
+  .bento-card p { font-size: 0.86rem; line-height: 1.6; color: var(--muted); margin: 0; }
+  .bento-card.tall p { font-size: 0.9rem; }
+
+  /* ── Mockups (shared) ── */
+  .mockup { margin-top: auto; padding-top: 1.25rem; }
+  .m-ln { height: 6px; border-radius: 3px; background: var(--line); }
+
+  .m-editor { background: #fff; border-radius: 0.55rem; border: 1px solid var(--line); overflow: hidden; }
+  .m-bar { display: flex; gap: 5px; padding: 7px 10px; border-bottom: 1px solid var(--line); }
+  .m-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--line); }
+  .m-body { padding: 12px 14px; display: flex; flex-direction: column; gap: 7px; }
+  .m-ln.heading { height: 9px; background: var(--ink); opacity: 0.55; border-radius: 4px; }
+  .m-ln.sel { background: var(--accent-soft); box-shadow: -4px 0 0 var(--accent-soft), 4px 0 0 var(--accent-soft); }
+
+  .m-canvas-svg { width: 100%; height: auto; margin-top: auto; padding-top: 1rem; }
+
+  .m-chat { display: flex; flex-direction: column; gap: 0.55rem; }
+  .m-msg { border-radius: 0.7rem; padding: 0.55rem 0.8rem; font-size: 0.72rem; max-width: 88%; }
+  .m-user { background: var(--accent); color: #fff; align-self: flex-end; font-weight: 500; }
+  .m-ai { background: #fff; border: 1px solid var(--line); display: flex; flex-direction: column; gap: 5px; align-self: flex-start; }
+
+  .m-tasks { display: flex; flex-direction: column; gap: 0.45rem; }
+  .m-task { display: flex; align-items: center; gap: 0.5rem; }
+  .m-check { width: 15px; height: 15px; border-radius: 3px; border: 1.5px solid var(--line); display: flex; align-items: center; justify-content: center; font-size: 9px; color: transparent; flex-shrink: 0; line-height: 1; }
+  .m-task.done .m-check { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .m-task.done .m-ln { opacity: 0.35; }
+
+  .m-search { display: flex; flex-direction: column; gap: 0.45rem; }
+  .m-searchbar { display: flex; align-items: center; gap: 0.5rem; padding: 0.5rem 0.7rem; background: #fff; border: 1px solid var(--line); border-radius: 0.45rem; }
+  .m-search-key { font-size: 0.65rem; font-weight: 700; color: var(--muted); background: var(--bg); padding: 0.15rem 0.35rem; border-radius: 3px; border: 1px solid var(--line); flex-shrink: 0; font-family: var(--font-body); }
+  .m-search-text { font-size: 0.72rem; color: var(--muted); opacity: 0.6; }
+  .m-result { display: flex; align-items: center; gap: 0.5rem; padding: 0.35rem 0.7rem; }
+  .m-result-dot { width: 6px; height: 6px; border-radius: 1.5px; background: var(--accent-soft); border: 1px solid var(--accent); flex-shrink: 0; }
+
+  .m-daily { display: flex; flex-direction: column; align-items: center; text-align: center; gap: 0; }
+  .m-daily-day { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); font-weight: 600; }
+  .m-daily-num { font-family: var(--font-display); font-size: 3rem; font-weight: 800; line-height: 1; color: var(--accent); letter-spacing: -0.03em; }
+  .m-daily-month { font-size: 0.72rem; color: var(--muted); margin-top: 0.15rem; }
+
+  .m-customize { display: flex; justify-content: center; }
+  .m-swatches { display: flex; gap: 0.6rem; }
+  .m-swatch { width: 1.6rem; height: 1.6rem; border-radius: 50%; background: var(--c); transition: transform 0.15s ease; cursor: default; }
+  .m-swatch:hover { transform: scale(1.15); }
+  .m-swatch.selected { box-shadow: 0 0 0 2px var(--surface), 0 0 0 3.5px var(--ink); }
 
   /* ── Privacy ── */
-  .privacy {
-    padding: 5rem 0;
+  .privacy { padding: 5rem 0; }
+
+  .privacy-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3.5rem;
+    align-items: start;
   }
+
+  .privacy-content .section-head { margin-bottom: 1.5rem; }
 
   .privacy-text {
     font-size: 1.12rem;
     line-height: 1.7;
     color: var(--muted);
     max-width: 520px;
-    margin: -1rem 0 0;
+    margin: 0;
+  }
+
+  /* ── File Tree Mockup ── */
+  .m-filetree {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 0.55rem;
+    overflow: hidden;
+    box-shadow: 0 8px 32px -8px rgba(21, 19, 14, 0.08);
+  }
+
+  .m-ft-header {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 8px 12px;
+    border-bottom: 1px solid var(--line);
+    background: var(--bg);
+  }
+
+  .m-ft-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--line); }
+
+  .m-ft-title {
+    font-size: 0.7rem;
+    color: var(--muted);
+    font-weight: 500;
+    margin-left: 6px;
+    font-family: ui-monospace, 'SF Mono', 'Cascadia Code', monospace;
+  }
+
+  .m-ft-body { padding: 6px 0; }
+
+  .m-ft-row {
+    display: flex;
+    align-items: center;
+    padding: 0.3rem 1rem;
+    font-size: 0.76rem;
+    color: var(--muted);
+  }
+
+  .m-ft-row.folder {
+    font-weight: 600;
+    color: var(--ink);
+  }
+
+  .m-ft-row.folder::before {
+    content: '▸';
+    margin-right: 0.4rem;
+    color: var(--gold);
+    font-size: 0.7rem;
+  }
+
+  .m-ft-row.file {
+    padding-left: 2.4rem;
+  }
+
+  .m-ft-row.file::before {
+    content: '';
+    display: inline-block;
+    width: 5px;
+    height: 5px;
+    background: var(--line);
+    border-radius: 1px;
+    margin-right: 0.4rem;
+    flex-shrink: 0;
   }
 
   .stats-grid {
@@ -668,14 +701,10 @@ const useCases = [
     background: var(--line);
     border-radius: var(--radius);
     overflow: hidden;
-    margin-top: 2.5rem;
+    margin-top: 3rem;
   }
 
-  .stat {
-    background: var(--surface);
-    padding: 2rem 1.5rem;
-    text-align: center;
-  }
+  .stat { background: var(--surface); padding: 2rem 1.5rem; text-align: center; }
 
   .stat-value {
     display: block;
@@ -697,28 +726,20 @@ const useCases = [
   }
 
   /* ── Use Cases ── */
-  .use-cases {
-    padding: 4rem 0 5rem;
-  }
-
-  .uc-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1.5rem;
-  }
+  .use-cases { padding: 4rem 0 5rem; }
+  .uc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; }
 
   .uc-card {
     padding: 2rem;
     background: var(--surface);
     border-radius: var(--radius);
     border: 1px solid var(--line);
+    display: flex;
+    flex-direction: column;
     transition: border-color 0.2s ease, transform 0.2s ease;
   }
 
-  .uc-card:hover {
-    border-color: var(--gold);
-    transform: translateY(-2px);
-  }
+  .uc-card:hover { border-color: var(--gold); transform: translateY(-2px); }
 
   .uc-marker {
     width: 2.2rem;
@@ -735,26 +756,68 @@ const useCases = [
     margin-bottom: 1.2rem;
   }
 
-  .uc-card h3 {
-    font-family: var(--font-display);
-    font-size: 1.1rem;
-    font-weight: 700;
-    margin: 0 0 0.6rem;
-    letter-spacing: -0.01em;
-    color: var(--ink);
+  .uc-card h3 { font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; margin: 0 0 0.6rem; letter-spacing: -0.01em; color: var(--ink); }
+  .uc-card > p { font-size: 0.88rem; line-height: 1.6; color: var(--muted); margin: 0; }
+
+  /* ── Use Case Visuals ── */
+  .uc-visual {
+    margin-top: auto;
+    padding-top: 1.2rem;
+    border-top: 1px solid var(--line);
+    margin-top: 1.2rem;
   }
 
-  .uc-card p {
-    font-size: 0.88rem;
-    line-height: 1.6;
+  .uc-wikilink {
+    display: inline-block;
+    padding: 0.22rem 0.5rem;
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-radius: 0.3rem;
+    font-size: 0.72rem;
+    font-weight: 500;
+  }
+
+  .uc-arrow {
+    color: var(--line);
+    font-size: 0.8rem;
+    margin: 0 0.25rem;
+  }
+
+  .uc-doc {
+    background: #fff;
+    border: 1px solid var(--line);
+    border-radius: 0.4rem;
+    padding: 0.6rem 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+  }
+
+  .uc-doc-title {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 1px;
+  }
+
+  .uc-outline { display: flex; flex-direction: column; gap: 0.3rem; }
+
+  .uc-chapter {
+    font-size: 0.72rem;
     color: var(--muted);
-    margin: 0;
+    padding: 0.25rem 0.55rem;
+    border-radius: 0.25rem;
+    transition: background 0.2s ease;
+  }
+
+  .uc-chapter.active {
+    background: var(--accent-soft);
+    color: var(--accent);
+    font-weight: 500;
   }
 
   /* ── CTA ── */
-  .cta-section {
-    padding: 2rem 0 0;
-  }
+  .cta-section { padding: 2rem 0 0; }
 
   .cta-box {
     text-align: center;
@@ -776,15 +839,7 @@ const useCases = [
     pointer-events: none;
   }
 
-  .cta-eyebrow {
-    text-transform: uppercase;
-    letter-spacing: 0.18em;
-    font-size: 0.7rem;
-    color: rgba(255, 255, 255, 0.35);
-    font-weight: 700;
-    margin: 0 0 1.2rem;
-    position: relative;
-  }
+  .cta-eyebrow { text-transform: uppercase; letter-spacing: 0.18em; font-size: 0.7rem; color: rgba(255, 255, 255, 0.35); font-weight: 700; margin: 0 0 1.2rem; position: relative; }
 
   .cta-box h2 {
     font-family: var(--font-display);
@@ -797,47 +852,16 @@ const useCases = [
     position: relative;
   }
 
-  .cta-sub {
-    margin: 1rem 0 0;
-    color: rgba(255, 255, 255, 0.4);
-    font-size: 1rem;
-    position: relative;
-  }
+  .cta-sub { margin: 1rem 0 0; color: rgba(255, 255, 255, 0.4); font-size: 1rem; position: relative; }
+  .cta-actions { justify-content: center; margin-top: 2.2rem; position: relative; }
 
-  .cta-actions {
-    justify-content: center;
-    margin-top: 2.2rem;
-    position: relative;
-  }
-
-  .btn-cta-primary {
-    background: #fff;
-    color: var(--ink);
-    box-shadow: 0 8px 28px -8px rgba(255, 255, 255, 0.15);
-  }
-
-  .btn-cta-primary:hover {
-    background: #F0EDE6;
-    box-shadow: 0 12px 36px -8px rgba(255, 255, 255, 0.2);
-  }
-
-  .btn-cta-ghost {
-    border: 1.5px solid rgba(255, 255, 255, 0.15);
-    background: transparent;
-    color: rgba(255, 255, 255, 0.6);
-  }
-
-  .btn-cta-ghost:hover {
-    background: rgba(255, 255, 255, 0.06);
-    color: rgba(255, 255, 255, 0.85);
-    border-color: rgba(255, 255, 255, 0.25);
-  }
+  .btn-cta-primary { background: #fff; color: var(--ink); box-shadow: 0 8px 28px -8px rgba(255, 255, 255, 0.15); }
+  .btn-cta-primary:hover { background: #F0EDE6; box-shadow: 0 12px 36px -8px rgba(255, 255, 255, 0.2); }
+  .btn-cta-ghost { border: 1.5px solid rgba(255, 255, 255, 0.15); background: transparent; color: rgba(255, 255, 255, 0.6); }
+  .btn-cta-ghost:hover { background: rgba(255, 255, 255, 0.06); color: rgba(255, 255, 255, 0.85); border-color: rgba(255, 255, 255, 0.25); }
 
   /* ── Footer ── */
-  .footer {
-    margin-top: 5rem;
-    padding-bottom: 2.5rem;
-  }
+  .footer { margin-top: 5rem; padding-bottom: 2.5rem; }
 
   .footer-inner {
     display: flex;
@@ -848,88 +872,37 @@ const useCases = [
     border-top: 1.5px solid var(--line);
   }
 
-  .footer-brand {
-    max-width: 260px;
-  }
-
-  .footer-tagline {
-    margin: 0.6rem 0 0;
-    color: var(--muted);
-    font-size: 0.88rem;
-    font-style: italic;
-  }
-
-  .footer-links {
-    display: flex;
-    gap: 4rem;
-  }
-
-  .footer-col {
-    display: flex;
-    flex-direction: column;
-    gap: 0.45rem;
-  }
-
-  .footer-col h4 {
-    margin: 0 0 0.4rem;
-    font-family: var(--font-display);
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-    color: var(--muted);
-    font-weight: 700;
-  }
-
-  .footer-col a {
-    font-size: 0.88rem;
-    color: #6A665E;
-    transition: color 0.18s ease;
-  }
-
-  .footer-col a:hover {
-    color: var(--ink);
-  }
-
-  .footer-bottom {
-    border-top: 1.5px solid var(--line);
-    padding-top: 1.5rem;
-  }
-
-  .footer-bottom p {
-    margin: 0;
-    font-size: 0.76rem;
-    color: var(--muted);
-    letter-spacing: 0.01em;
-  }
+  .footer-brand { max-width: 260px; }
+  .footer-tagline { margin: 0.6rem 0 0; color: var(--muted); font-size: 0.88rem; font-style: italic; }
+  .footer-links { display: flex; gap: 4rem; }
+  .footer-col { display: flex; flex-direction: column; gap: 0.45rem; }
+  .footer-col h4 { margin: 0 0 0.4rem; font-family: var(--font-display); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); font-weight: 700; }
+  .footer-col a { font-size: 0.88rem; color: #6A665E; transition: color 0.18s ease; }
+  .footer-col a:hover { color: var(--ink); }
+  .footer-bottom { border-top: 1.5px solid var(--line); padding-top: 1.5rem; }
+  .footer-bottom p { margin: 0; font-size: 0.76rem; color: var(--muted); letter-spacing: 0.01em; }
 
   /* ── Animations ── */
   @keyframes fadeUp {
-    from {
-      opacity: 0;
-      transform: translateY(18px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    from { opacity: 0; transform: translateY(18px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes floatIn {
+    from { opacity: 0; transform: translateY(8px) scale(0.96); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
   }
 
   [data-reveal] {
     opacity: 0;
     transform: translateY(20px);
-    transition:
-      opacity 0.6s ease var(--delay, 0ms),
-      transform 0.6s ease var(--delay, 0ms);
+    transition: opacity 0.6s ease var(--delay, 0ms), transform 0.6s ease var(--delay, 0ms);
   }
 
-  [data-reveal].revealed {
-    opacity: 1;
-    transform: none;
-  }
+  [data-reveal].revealed { opacity: 1; transform: none; }
 
   @media (prefers-reduced-motion: reduce) {
-    .h1-line,
-    [data-reveal] {
+    .h1-line, [data-reveal], .hero-float {
       opacity: 1;
       transform: none;
       animation: none;
@@ -939,98 +912,37 @@ const useCases = [
 
   /* ── Responsive ── */
   @media (max-width: 1080px) {
-    .hero-grid {
-      grid-template-columns: 1fr;
-      gap: 2.5rem;
-    }
+    .hero-grid { grid-template-columns: 1fr; gap: 2.5rem; }
+    .hero { padding: 3rem 0 4rem; }
+    .hero-copy { text-align: center; }
+    .lede { margin-inline: auto; }
+    .actions { justify-content: center; }
+    .hero-float { display: none; }
 
-    .hero {
-      padding: 3rem 0 4rem;
-    }
+    .bento { grid-template-columns: repeat(2, 1fr); }
+    .bento-card.tall { grid-row: span 1; }
 
-    .hero-copy {
-      text-align: center;
-    }
-
-    .lede {
-      margin-inline: auto;
-    }
-
-    .actions {
-      justify-content: center;
-    }
-
-    .pillar-grid {
-      grid-template-columns: 1fr;
-      gap: 1.25rem;
-    }
-
-    .extras-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-
-    .uc-grid {
-      grid-template-columns: 1fr;
-      gap: 1.25rem;
-    }
+    .privacy-grid { grid-template-columns: 1fr; gap: 2rem; }
+    .uc-grid { grid-template-columns: 1fr; gap: 1.25rem; }
   }
 
   @media (max-width: 780px) {
-    .page {
-      padding-top: 1rem;
-    }
+    .page { padding-top: 1rem; }
+    .topbar { gap: 1rem; }
+    .nav { display: none; }
 
-    .topbar {
-      gap: 1rem;
-    }
+    h1 { font-size: clamp(2.2rem, 9vw, 3.2rem); }
+    .badge { font-size: 0.74rem; }
+    .actions { flex-direction: column; width: 100%; }
+    .btn { width: 100%; justify-content: center; }
 
-    .nav {
-      display: none;
-    }
+    .bento { grid-template-columns: 1fr; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .section-head h2 { font-size: clamp(1.5rem, 5vw, 2rem); }
 
-    h1 {
-      font-size: clamp(2.2rem, 9vw, 3.2rem);
-    }
-
-    .badge {
-      font-size: 0.74rem;
-    }
-
-    .actions {
-      flex-direction: column;
-      width: 100%;
-    }
-
-    .btn {
-      width: 100%;
-      justify-content: center;
-    }
-
-    .extras-grid {
-      grid-template-columns: 1fr;
-    }
-
-    .stats-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-
-    .footer-inner {
-      flex-direction: column;
-      gap: 2rem;
-    }
-
-    .footer-links {
-      flex-wrap: wrap;
-      gap: 2rem;
-    }
-
-    .cta-box {
-      padding: 3.5rem 1.5rem;
-    }
-
-    .section-head h2 {
-      font-size: clamp(1.5rem, 5vw, 2rem);
-    }
+    .footer-inner { flex-direction: column; gap: 2rem; }
+    .footer-links { flex-wrap: wrap; gap: 2rem; }
+    .cta-box { padding: 3.5rem 1.5rem; }
   }
 </style>
 
