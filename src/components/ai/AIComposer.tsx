@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import {
+	AtIcon,
 	Chat01Icon,
 	Link01Icon,
 	Navigation03Icon,
@@ -8,6 +9,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { m, useReducedMotion } from "motion/react";
+import type { Dispatch, SetStateAction } from "react";
 import { useAISidebarContext } from "../../contexts";
 import { FileText, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
@@ -18,7 +20,7 @@ import type { useAiProfiles } from "./useAiProfiles";
 
 interface AIComposerProps {
 	input: string;
-	setInput: (value: string) => void;
+	setInput: Dispatch<SetStateAction<string>>;
 	isAwaitingResponse: boolean;
 	canSend: boolean;
 	onSend: () => void;
@@ -69,6 +71,18 @@ export function AIComposer({
 }: AIComposerProps) {
 	const { aiAssistantMode, setAiAssistantMode } = useAISidebarContext();
 	const shouldReduceMotion = useReducedMotion();
+
+	const handleInsertMentionTrigger = () => {
+		if (isAwaitingResponse) return;
+		setInput((prev) => {
+			const trimmedEnd = prev.replace(/\s+$/, "");
+			if (!trimmedEnd) return "@";
+			if (/(?:^|\s)@[\w\-./ ]*$/.test(prev)) return prev;
+			return /\s$/.test(prev) ? `${prev}@` : `${prev} @`;
+		});
+		scheduleComposerInputResize();
+		window.requestAnimationFrame(() => composerInputRef.current?.focus());
+	};
 
 	return (
 		<>
@@ -140,6 +154,18 @@ export function AIComposer({
 
 			<div className="aiComposer">
 				<div className="aiComposerInputShell">
+					<Button
+						type="button"
+						variant="ghost"
+						size="icon-sm"
+						className="aiComposerMentionButton"
+						aria-label="Add note with @"
+						title="Add note with @"
+						onClick={handleInsertMentionTrigger}
+						disabled={isAwaitingResponse}
+					>
+						<HugeiconsIcon icon={AtIcon} size={13} />
+					</Button>
 					<textarea
 						ref={composerInputRef}
 						className="aiComposerInput"

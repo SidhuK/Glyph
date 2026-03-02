@@ -888,13 +888,34 @@
 	transition: border-color var(--transition-base);
 }
 
+.aiComposerMentionButton {
+	position: absolute;
+	top: 8px;
+	left: 8px;
+	z-index: 3;
+	width: 26px;
+	height: 26px;
+	border-radius: 8px;
+	color: color-mix(in srgb, var(--ai-mode-accent) 70%, var(--text-secondary));
+	background: color-mix(in srgb, var(--bg-secondary) 82%, transparent);
+}
+
+.aiComposerMentionButton:hover:not(:disabled) {
+	color: var(--ai-mode-accent);
+	background: color-mix(in srgb, var(--ai-mode-accent) 12%, var(--bg-secondary));
+}
+
+.aiComposerMentionButton:disabled {
+	opacity: 0.4;
+}
+
 .aiComposerInput {
 	width: 100%;
 	resize: none;
 	min-height: 88px;
 	max-height: 180px;
 	border-radius: var(--radius-md);
-	padding: 10px 12px 68px;
+	padding: 40px 12px 68px;
 	font-size: var(--text-sm);
 	background: var(--bg-primary);
 	border: none;
