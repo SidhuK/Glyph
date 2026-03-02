@@ -444,8 +444,18 @@ export function AppShell() {
 				label: "Buy Glyph license",
 				category: "Workspace",
 				action: async () => {
-					const status = await getLicenseStatus();
-					await openUrl(status.purchase_url);
+					try {
+						const status = await getLicenseStatus();
+						await openUrl(status.purchase_url);
+					} catch (error) {
+						console.error("Failed to open Gumroad purchase page", error);
+						toast.error("Could not open the license page", {
+							description:
+								error instanceof Error
+									? error.message
+									: "Try again in a moment.",
+						});
+					}
 				},
 			},
 			{

@@ -1,4 +1,5 @@
 use tauri::AppHandle;
+use tracing::error;
 
 use super::service::verify_license_key;
 use super::store::{license_path, read_record, write_record};
@@ -25,7 +26,13 @@ pub fn license_bootstrap_status(app: AppHandle) -> Result<super::types::LicenseS
     }
 
     let path = license_path(&app)?;
-    let mut record = read_record(&path);
+    let mut record = read_record(&path).map_err(|read_error| {
+        error!(
+            path = %path.display(),
+            "failed to read license record during bootstrap: {read_error}"
+        );
+        "Failed to read local license status.".to_string()
+    })?;
     let mut changed = false;
 
     if record.version == 0 {
@@ -59,7 +66,13 @@ pub async fn license_activate(
 
     let normalized_key = normalize_license_key(&license_key)?;
     let path = license_path(&app)?;
-    let mut record = read_record(&path);
+    let mut record = read_record(&path).map_err(|read_error| {
+        error!(
+            path = %path.display(),
+            "failed to read license record during activation: {read_error}"
+        );
+        "Failed to read local license status.".to_string()
+    })?;
 
     if record.version == 0 {
         record.version = 1;
@@ -69,7 +82,13 @@ pub async fn license_activate(
 
     if let Err(error) = verify_license_key(&normalized_key).await {
         record.last_error_code = Some(error.code.as_str().to_string());
-        let _ = write_record(&path, &record);
+        if let Err(write_error) = write_record(&path, &record) {
+            error!(
+                path = %path.display(),
+                error_code = error.code.as_str(),
+                "failed to write license record after activation failure: {write_error}"
+            );
+        }
         return Err(error.message);
     }
 
@@ -98,7 +117,13 @@ pub fn license_clear_local(app: AppHandle) -> Result<LicenseActivateResult, Stri
     }
 
     let path = license_path(&app)?;
-    let mut record = read_record(&path);
+    let mut record = read_record(&path).map_err(|read_error| {
+        error!(
+            path = %path.display(),
+            "failed to read license record while clearing activation: {read_error}"
+        );
+        "Failed to read local license status.".to_string()
+    })?;
     let had_activation_at_ms = record.activated_at_ms;
 
     record.version = 1;

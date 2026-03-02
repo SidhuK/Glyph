@@ -110,8 +110,8 @@ pub fn ensure_trial_window_from_activation(record: &mut LicenseRecord, fallback_
     ensure_trial_window(record, base)
 }
 
-pub fn build_status(record: &LicenseRecord, now_ms: u64) -> LicenseStatus {
-    if !is_official_build() {
+fn build_status_for(record: &LicenseRecord, now_ms: u64, official_build: bool) -> LicenseStatus {
+    if !official_build {
         return LicenseStatus {
             mode: LicenseMode::CommunityBuild,
             can_use_app: true,
@@ -177,6 +177,10 @@ pub fn build_status(record: &LicenseRecord, now_ms: u64) -> LicenseStatus {
     }
 }
 
+pub fn build_status(record: &LicenseRecord, now_ms: u64) -> LicenseStatus {
+    build_status_for(record, now_ms, is_official_build())
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -204,5 +208,51 @@ mod tests {
             mask_license_key("38B1A8B4-9AE64752-AE8C53E8-08BA26EB"),
             "38B1-****-26EB"
         );
+    }
+
+    #[test]
+    fn build_status_reports_licensed_record() {
+        let record = LicenseRecord {
+            licensed: true,
+            activated_at_ms: Some(12_000),
+            license_key_masked: Some("38B1-****-26EB".to_string()),
+            ..Default::default()
+        };
+
+        let status = build_status_for(&record, 15_000, true);
+
+        assert_eq!(status.mode, LicenseMode::Licensed);
+        assert!(status.can_use_app);
+        assert_eq!(status.activated_at_ms, Some(12_000));
+        assert_eq!(status.license_key_masked.as_deref(), Some("38B1-****-26EB"));
+    }
+
+    #[test]
+    fn build_status_reports_active_trial_record() {
+        let mut record = LicenseRecord::default();
+        ensure_trial_window(&mut record, 1_000);
+
+        let status = build_status_for(&record, 2_000, true);
+
+        assert_eq!(status.mode, LicenseMode::TrialActive);
+        assert!(status.can_use_app);
+        assert_eq!(status.trial_started_at_ms, Some(1_000));
+        assert_eq!(status.trial_expires_at_ms, Some(1_000 + TRIAL_DURATION_MS));
+        assert_eq!(status.trial_remaining_seconds, Some((TRIAL_DURATION_MS - 1_000 + 999) / 1000));
+    }
+
+    #[test]
+    fn build_status_reports_expired_trial_record() {
+        let record = LicenseRecord {
+            trial_started_at_ms: Some(1_000),
+            trial_expires_at_ms: Some(1_000 + TRIAL_DURATION_MS),
+            ..Default::default()
+        };
+
+        let status = build_status_for(&record, 1_000 + TRIAL_DURATION_MS + 1, true);
+
+        assert_eq!(status.mode, LicenseMode::TrialExpired);
+        assert!(!status.can_use_app);
+        assert_eq!(status.trial_remaining_seconds, Some(0));
     }
 }

@@ -45,7 +45,7 @@ export function LicenseLockScreen({
 					This official build includes a 48-hour free trial. After that, a
 					lifetime Gumroad license unlocks Glyph forever on all of your devices.
 				</p>
-				{status?.is_official_build ? (
+				{status?.mode === "trial_expired" ? (
 					<div className="licenseLockMetaRow">
 						<span className="settingsPill settingsPillError">Trial Ended</span>
 						<span className="licenseLockMetaText">
@@ -100,16 +100,25 @@ export function LicenseLockScreen({
 				</div>
 
 				<div className="licenseLockLinks">
-					<button type="button" onClick={onRetry}>
+					<Button
+						type="button"
+						variant="link"
+						size="sm"
+						className="licenseLockLinkButton"
+						onClick={onRetry}
+					>
 						Retry Status Check
-					</button>
+					</Button>
 					{status ? (
-						<button
+						<Button
 							type="button"
+							variant="link"
+							size="sm"
+							className="licenseLockLinkButton"
 							onClick={() => void openUrl(status.support_url)}
 						>
 							Get Support
-						</button>
+						</Button>
 					) : null}
 				</div>
 			</div>

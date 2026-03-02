@@ -185,9 +185,8 @@ jobs:
             echo
             echo "## Licensing"
             echo
-            echo "- Official Glyph binaries include a 48-hour free trial."
-            echo "- After the trial ends, enter your Gumroad license key inside Glyph to keep using the official build."
-            echo "- Glyph remains open source, and self-built/community builds are unchanged."
+            sed -n '/^> Official Glyph binaries/,/^$/p' docs/release-notes-licensed-binaries.md \
+              | sed 's/^> //'
           } >> RELEASE_NOTES.md
 
           delimiter="RELEASE_NOTES_$(date +%s)_$RANDOM"

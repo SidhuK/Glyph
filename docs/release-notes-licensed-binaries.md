@@ -14,4 +14,4 @@ Use this copy in GitHub release notes for official Glyph binaries:
 
 - Gumroad: [https://karatsidhu.gumroad.com/l/sqxfay](https://karatsidhu.gumroad.com/l/sqxfay)
 - GitHub Releases: [https://github.com/SidhuK/Glyph/releases](https://github.com/SidhuK/Glyph/releases)
-- Licensing docs: [licensing.md](licensing.md)
+- Licensing docs: [Licensing](https://github.com/SidhuK/Glyph/blob/main/docs/licensing.md)

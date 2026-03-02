@@ -5,6 +5,7 @@ use tauri::{AppHandle, Manager};
 use super::types::LicenseRecord;
 
 const LICENSE_STORE_FILE: &str = "license.json";
+type LicenseStoreError = Box<dyn std::error::Error + Send + Sync>;
 
 pub fn license_path(app: &AppHandle) -> Result<PathBuf, String> {
     let dir = app.path().app_config_dir().map_err(|e| e.to_string())?;
@@ -12,9 +13,12 @@ pub fn license_path(app: &AppHandle) -> Result<PathBuf, String> {
     Ok(dir.join(LICENSE_STORE_FILE))
 }
 
-pub fn read_record(path: &Path) -> LicenseRecord {
-    let bytes = std::fs::read(path).unwrap_or_default();
-    serde_json::from_slice(&bytes).unwrap_or_default()
+pub fn read_record(path: &Path) -> Result<LicenseRecord, LicenseStoreError> {
+    match std::fs::read(path) {
+        Ok(bytes) => Ok(serde_json::from_slice(&bytes)?),
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok(LicenseRecord::default()),
+        Err(error) => Err(Box::new(error)),
+    }
 }
 
 pub fn write_record(path: &Path, record: &LicenseRecord) -> Result<(), String> {

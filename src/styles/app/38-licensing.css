@@ -110,13 +110,21 @@
 	flex-wrap: wrap;
 }
 
-.licenseLockLinks button {
+.licenseLockLinkButton {
+	height: auto;
 	padding: 0;
 	border: 0;
 	background: transparent;
 	color: var(--text-secondary);
 	text-decoration: underline;
 	text-underline-offset: 3px;
+}
+
+.licenseLockLinkButton:focus-visible {
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 50%, transparent);
+	outline-offset: 4px;
+	box-shadow: none;
 }
 
 .licenseTrialBanner {

@@ -124,7 +124,7 @@ impl AnalyticsEventName {
             Self::LicenseTrialStarted => BTreeSet::new(),
             Self::LicenseTrialExpired => BTreeSet::new(),
             Self::LicenseActivationSucceeded => BTreeSet::new(),
-            Self::LicenseActivationFailed => BTreeSet::new(),
+            Self::LicenseActivationFailed => BTreeSet::from(["error_code"]),
         }
     }
 }

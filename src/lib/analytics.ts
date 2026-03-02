@@ -186,9 +186,13 @@ export async function trackLicenseActivationSucceeded(): Promise<void> {
 	}
 }
 
-export async function trackLicenseActivationFailed(): Promise<void> {
+export async function trackLicenseActivationFailed(
+	errorCode?: string,
+): Promise<void> {
 	try {
-		await track("license_activation_failed", {});
+		await track("license_activation_failed", {
+			error_code: errorCode ?? "unknown",
+		});
 	} catch {
 		// best effort telemetry
 	}

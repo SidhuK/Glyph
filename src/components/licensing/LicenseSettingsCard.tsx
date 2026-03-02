@@ -52,11 +52,20 @@ export function LicenseSettingsCard() {
 	}, [successMessage]);
 
 	const handleActivate = async () => {
+		if (isSubmitting) return;
+
+		const normalizedLicenseKey = licenseKey.trim();
+		if (!normalizedLicenseKey) {
+			setSuccessMessage("");
+			setActionError("Please provide a license key");
+			return;
+		}
+
 		setActionError("");
 		setSuccessMessage("");
 		setIsSubmitting(true);
 		try {
-			await activateLicenseKey(licenseKey);
+			await activateLicenseKey(normalizedLicenseKey);
 			setLicenseKey("");
 			setSuccessMessage("License activated.");
 			await reload();
@@ -160,9 +169,11 @@ export function LicenseSettingsCard() {
 					</div>
 					<div className="licenseSettingsInputWrap">
 						<input
+							id="settings-license-key"
 							type="text"
 							autoComplete="off"
 							spellCheck={false}
+							aria-label="Gumroad license key"
 							placeholder="XXXX-XXXX-XXXX-XXXX"
 							value={licenseKey}
 							onChange={(event) => setLicenseKey(event.target.value)}
