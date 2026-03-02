@@ -17,7 +17,7 @@ fn now_ms() -> u64 {
         .unwrap_or_default()
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub fn license_bootstrap_status(app: AppHandle) -> Result<super::types::LicenseStatus, String> {
     let current_ms = now_ms();
 
@@ -51,7 +51,7 @@ pub fn license_bootstrap_status(app: AppHandle) -> Result<super::types::LicenseS
     Ok(build_status(&record, current_ms))
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub async fn license_activate(
     app: AppHandle,
     license_key: String,
@@ -106,7 +106,7 @@ pub async fn license_activate(
     })
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 pub fn license_clear_local(app: AppHandle) -> Result<LicenseActivateResult, String> {
     let current_ms = now_ms();
 
