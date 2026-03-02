@@ -52,14 +52,23 @@ export function TaskRow({
 				checked={task.checked}
 				onChange={(c) => onToggle(task, c)}
 			/>
-			<div className="tasksRowContent tasksRowContentInline">
-				<div className="tasksRowLine">
-					<div className="tasksRowText">{task.raw_text}</div>
+			<div className="tasksRowContent">
+				<div className="tasksRowText">{task.raw_text}</div>
+				<div className="tasksRowMeta">
+					{task.section ? (
+						<span className="tasksMetaTag">{task.section}</span>
+					) : null}
 					{task.scheduled_date ? (
-						<Badge variant="outline">⏳ {task.scheduled_date}</Badge>
+						<Badge variant="outline" className="tasksMetaBadge">
+							<Calendar size={11} />
+							Scheduled {task.scheduled_date}
+						</Badge>
 					) : null}
 					{task.due_date ? (
-						<Badge variant="outline">📅 {task.due_date}</Badge>
+						<Badge variant="outline" className="tasksMetaBadge tasksMetaBadgeDue">
+							<Calendar size={11} />
+							Due {task.due_date}
+						</Badge>
 					) : null}
 					<Popover
 						open={open}

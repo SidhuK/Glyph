@@ -15,7 +15,7 @@ import {
 } from "../../lib/tasks";
 import { type TaskBucket, type TaskItem, invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
-import { RefreshCw } from "../Icons";
+import { FileText, RefreshCw } from "../Icons";
 import { springPresets } from "../ui/animations";
 import { Button } from "../ui/shadcn/button";
 import { TaskRow } from "./TaskRow";
@@ -29,10 +29,26 @@ const BUCKETS: Array<{
 	id: TaskBucket;
 	label: string;
 	icon: ComponentProps<typeof HugeiconsIcon>["icon"];
+	description: string;
 }> = [
-	{ id: "inbox", label: "Inbox", icon: Icons.InboxIcon },
-	{ id: "today", label: "Today", icon: Icons.SunriseIcon },
-	{ id: "upcoming", label: "Upcoming", icon: Icons.CalendarCheckOut02Icon },
+	{
+		id: "today",
+		label: "Today",
+		icon: Icons.SunriseIcon,
+		description: "Work scheduled or due for today, laid out as a focused action list.",
+	},
+	{
+		id: "upcoming",
+		label: "Upcoming",
+		icon: Icons.CalendarCheckOut02Icon,
+		description: "Forward-looking tasks sorted by their next relevant date.",
+	},
+	{
+		id: "inbox",
+		label: "Inbox",
+		icon: Icons.InboxIcon,
+		description: "Unscheduled tasks grouped by note so triage stays close to source material.",
+	},
 ];
 
 export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
@@ -83,6 +99,9 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 		return [...map.entries()];
 	}, [tasks]);
 	const showGroupedInbox = bucket === "inbox";
+	const activeBucketMeta =
+		BUCKETS.find((item) => item.id === bucket) ?? BUCKETS[0];
+	const taskCountLabel = `${tasks.length} task${tasks.length === 1 ? "" : "s"}`;
 
 	const openTaskFile = useCallback(
 		async (notePath: string) => {
@@ -129,9 +148,34 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 
 	return (
 		<section className="tasksPane">
-			<div className="tasksPaneContent">
-				<header className="tasksPaneHeader">
-					<div className="tasksPaneHeaderSpacer" />
+			<header className="tasksPaneToolbar">
+				<div className="tasksPaneToolbarPrimary">
+					<div className="tasksPaneToolbarTitleRow">
+						<h2 className="tasksPaneToolbarTitle">Tasks</h2>
+						<span className="tasksPaneToolbarBadge">{taskCountLabel}</span>
+					</div>
+					<p className="tasksPaneToolbarSubtitle">
+						{activeBucketMeta.description}
+					</p>
+				</div>
+				<div className="tasksPaneToolbarActions">
+					<span className="tasksPaneScopeChip" data-bucket={activeBucketMeta.id}>
+						<HugeiconsIcon icon={activeBucketMeta.icon} size={14} />
+						{activeBucketMeta.label}
+					</span>
+					<Button
+						type="button"
+						variant="ghost"
+						size="icon-sm"
+						onClick={() => void loadTasks()}
+						title="Refresh tasks"
+					>
+						<RefreshCw size={14} />
+					</Button>
+				</div>
+			</header>
+			<div className="tasksPaneBody">
+				<div className="tasksPaneFilters">
 					<div className="tasksBucketPills">
 						{BUCKETS.map((item) => {
 							const active = bucket === item.id;
@@ -153,29 +197,18 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 									)}
 									<HugeiconsIcon
 										icon={item.icon}
-										size={20}
+										size={16}
 										className="tasksBucketPillIcon"
 									/>
-									{item.label}
+									<span className="tasksBucketPillLabel">{item.label}</span>
 								</button>
 							);
 						})}
 					</div>
-					<div className="tasksPaneHeaderActions">
-						<Button
-							type="button"
-							variant="ghost"
-							size="icon-sm"
-							onClick={() => void loadTasks()}
-							title="Refresh tasks"
-						>
-							<RefreshCw size={14} />
-						</Button>
-					</div>
-				</header>
+				</div>
 
 				{error ? <div className="tasksPaneError">{error}</div> : null}
-				{loading ? <div className="tasksPaneEmpty">Loading tasks…</div> : null}
+				{loading ? <div className="tasksPaneLoading">Loading tasks…</div> : null}
 				{!loading && tasks.length === 0 ? (
 					<div className="tasksPaneEmptyState">
 						<HugeiconsIcon
@@ -183,7 +216,10 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 							size={32}
 							className="tasksPaneEmptyIcon"
 						/>
-						<span>No tasks in this bucket</span>
+						<div className="tasksPaneEmptyCopy">
+							<strong>No tasks in {activeBucketMeta.label.toLowerCase()}.</strong>
+							<span>Tasks from your notes will appear here as soon as they match this bucket.</span>
+						</div>
 					</div>
 				) : null}
 
@@ -197,17 +233,34 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 									onClick={() => void openTaskFile(notePath)}
 								>
 									<span className="tasksNoteHeaderLead">
-										<span className="tasksNoteHeaderTitle">
-											{noteTasks[0]?.note_title || notePath}
+										<span className="tasksNoteHeaderIcon" aria-hidden="true">
+											<FileText size={14} />
 										</span>
-										<span className="tasksNoteHeaderPath">
-											{folderBreadcrumbFromNotePath(notePath)}
+										<span className="tasksNoteHeaderMeta">
+											<span className="tasksNoteHeaderTitle">
+												{noteTasks[0]?.note_title || notePath}
+											</span>
+											<span className="tasksNoteHeaderPath">
+												{folderBreadcrumbFromNotePath(notePath)}
+											</span>
 										</span>
 									</span>
 									<span className="tasksNoteHeaderCount">
-										{noteTasks.length}
+										{noteTasks.length} item{noteTasks.length === 1 ? "" : "s"}
 									</span>
 								</button>
+								<div className="tasksNoteGroupList">
+									{noteTasks.map((task) => (
+										<TaskRow
+											key={task.task_id}
+											task={task}
+											withPath={false}
+											onToggle={toggleTask}
+											onSchedule={scheduleDates}
+											onOpenFile={(p) => void openTaskFile(p)}
+										/>
+									))}
+								</div>
 							</section>
 						))}
 					</div>
