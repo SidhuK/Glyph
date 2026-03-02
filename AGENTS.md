@@ -10,6 +10,8 @@ pnpm format         # Auto-format with Biome
 pnpm test           # Run all tests (vitest)
 pnpm test -- src/lib/diff.test.ts          # Single test file
 pnpm test -- -t "test name"               # Single test by name
+cd website && pnpm dev      # Astro marketing site dev server
+cd website && pnpm build    # Astro marketing site production build
 cd src-tauri && cargo check    # Typecheck Rust backend
 cd src-tauri && cargo clippy   # Lint Rust
 ```
@@ -17,6 +19,8 @@ cd src-tauri && cargo clippy   # Lint Rust
 
 ## Architecture
 **Glyph** — offline-first desktop note-taking app. Frontend: React 19 + TypeScript + Vite + Tailwind 4 (`src/`). Backend: Tauri 2 + Rust (`src-tauri/`). Editor: TipTap + Markdown. AI: Rig-backed multi-provider chat. UI: shadcn/ui + Radix + Motion. Storage: SQLite + filesystem in `.glyph/` folder.
+
+Repo extras: the public Astro marketing site is stored in `website/`. Internal product and engineering docs live in `docs/`.
 
 ## Frontend Overview (`src/`)
 - `main.tsx` / `App.tsx` — Entry point, wraps `<AppShell>` in `<AppProviders>` (all contexts)
