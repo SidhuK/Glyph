@@ -7,6 +7,7 @@ mod glyph_paths;
 mod index;
 mod io_atomic;
 mod links;
+mod license;
 mod net;
 mod notes;
 mod paths;
@@ -260,6 +261,9 @@ pub fn run() {
             analytics::analytics_track,
             system_fonts_list,
             system_monospace_fonts_list,
+            license::commands::license_bootstrap_status,
+            license::commands::license_activate,
+            license::commands::license_clear_local,
             ai_rig::commands::ai_profiles_list,
             ai_rig::commands::ai_active_profile_get,
             ai_rig::commands::ai_active_profile_set,

@@ -89,6 +89,10 @@ pub enum AnalyticsEventName {
     NoteCreated,
     AiChatStarted,
     SettingsChanged,
+    LicenseTrialStarted,
+    LicenseTrialExpired,
+    LicenseActivationSucceeded,
+    LicenseActivationFailed,
 }
 
 impl AnalyticsEventName {
@@ -101,6 +105,10 @@ impl AnalyticsEventName {
             Self::NoteCreated => "note_created",
             Self::AiChatStarted => "ai_chat_started",
             Self::SettingsChanged => "settings_changed",
+            Self::LicenseTrialStarted => "license_trial_started",
+            Self::LicenseTrialExpired => "license_trial_expired",
+            Self::LicenseActivationSucceeded => "license_activation_succeeded",
+            Self::LicenseActivationFailed => "license_activation_failed",
         }
     }
 
@@ -113,6 +121,10 @@ impl AnalyticsEventName {
             Self::NoteCreated => BTreeSet::from(["entrypoint"]),
             Self::AiChatStarted => BTreeSet::from(["provider", "mode", "has_context"]),
             Self::SettingsChanged => BTreeSet::from(["setting_key", "new_value"]),
+            Self::LicenseTrialStarted => BTreeSet::new(),
+            Self::LicenseTrialExpired => BTreeSet::new(),
+            Self::LicenseActivationSucceeded => BTreeSet::new(),
+            Self::LicenseActivationFailed => BTreeSet::new(),
         }
     }
 }

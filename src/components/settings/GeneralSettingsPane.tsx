@@ -6,6 +6,7 @@ import {
 	setAiAssistantMode,
 	setAnalyticsEnabled,
 } from "../../lib/settings";
+import { LicenseSettingsCard } from "../licensing/LicenseSettingsCard";
 
 export function GeneralSettingsPane() {
 	const [aiAssistantMode, setAiAssistantModeState] =
@@ -121,6 +122,7 @@ export function GeneralSettingsPane() {
 						collected.
 					</p>
 				</section>
+				<LicenseSettingsCard />
 			</div>
 		</div>
 	);

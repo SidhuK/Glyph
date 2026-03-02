@@ -2,6 +2,14 @@
 
 Glyph is an offline-first desktop notes app built with Tauri + React + TypeScript.
 
+## Licensing
+
+Glyph is open source, but official release binaries use a 48-hour trial plus Gumroad license activation.
+
+- Official releases: [GitHub Releases](https://github.com/SidhuK/Glyph/releases)
+- Purchase: [Gumroad](https://karatsidhu.gumroad.com/l/sqxfay)
+- Details: [docs/licensing.md](docs/licensing.md)
+
 ## Development
 
 - `pnpm dev` - frontend dev server

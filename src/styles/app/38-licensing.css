@@ -1,0 +1,200 @@
+.licenseLoadingScreen,
+.licenseLockScreen {
+	min-height: 100vh;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 32px 20px;
+	background: radial-gradient(
+			circle at top left,
+			color-mix(in srgb, var(--interactive-accent) 14%, transparent),
+			transparent 34%
+		),
+		radial-gradient(
+			circle at bottom right,
+			color-mix(in srgb, var(--color-yellow-500) 10%, transparent),
+			transparent 28%
+		), color-mix(in srgb, var(--bg-primary) 96%, var(--bg-secondary));
+}
+
+.licenseLoadingPanel,
+.licenseLockPanel {
+	width: min(100%, 640px);
+	padding: 28px;
+	border-radius: 24px;
+	border: 1px solid color-mix(in srgb, var(--border-default) 58%, transparent);
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--bg-secondary) 74%, transparent),
+		color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary))
+	);
+	box-shadow: 0 20px 70px color-mix(in srgb, #000 26%, transparent);
+}
+
+.licenseLoadingPanel h1,
+.licenseLockTitle {
+	margin: 0;
+	font-size: clamp(28px, 4vw, 40px);
+	line-height: 1.05;
+	letter-spacing: -0.03em;
+	color: var(--text-primary);
+}
+
+.licenseLoadingPanel p,
+.licenseLockBody {
+	margin: 12px 0 0;
+	font-size: 14px;
+	line-height: 1.6;
+	color: var(--text-secondary);
+	max-width: 58ch;
+}
+
+.licenseLockEyebrow {
+	margin-bottom: 10px;
+	font-size: 11px;
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.18em;
+	text-transform: uppercase;
+	color: var(--text-tertiary);
+}
+
+.licenseLockMetaRow {
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+	margin-top: 18px;
+	flex-wrap: wrap;
+}
+
+.licenseLockMetaText {
+	font-size: 12px;
+	color: var(--text-secondary);
+}
+
+.licenseLockField {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	margin-top: 24px;
+}
+
+.licenseLockField input,
+.licenseSettingsInputWrap input {
+	width: 100%;
+	min-height: 40px;
+	padding: 0 12px;
+	border-radius: 14px;
+	border: 1px solid color-mix(in srgb, var(--border-default) 88%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary));
+	color: var(--text-primary);
+}
+
+.licenseLockField input:focus-visible,
+.licenseSettingsInputWrap input:focus-visible {
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	outline-offset: 2px;
+}
+
+.licenseLockActions {
+	display: flex;
+	gap: 10px;
+	margin-top: 18px;
+	flex-wrap: wrap;
+}
+
+.licenseLockLinks {
+	display: flex;
+	gap: 14px;
+	margin-top: 14px;
+	flex-wrap: wrap;
+}
+
+.licenseLockLinks button {
+	padding: 0;
+	border: 0;
+	background: transparent;
+	color: var(--text-secondary);
+	text-decoration: underline;
+	text-underline-offset: 3px;
+}
+
+.licenseTrialBanner {
+	position: fixed;
+	top: 12px;
+	left: 50%;
+	transform: translateX(-50%);
+	z-index: 60;
+	width: min(calc(100% - 24px), 720px);
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 14px;
+	padding: 12px 14px;
+	border-radius: 18px;
+	border: 1px solid color-mix(in srgb, var(--color-yellow-500) 28%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary));
+	backdrop-filter: blur(18px);
+	box-shadow: 0 10px 40px color-mix(in srgb, #000 18%, transparent);
+}
+
+.licenseTrialBannerCopy {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-width: 0;
+}
+
+.licenseTrialBannerTitle {
+	font-size: 13px;
+	font-weight: var(--font-semibold);
+	color: var(--text-primary);
+}
+
+.licenseTrialBannerMeta {
+	font-size: 12px;
+	color: var(--text-secondary);
+}
+
+.licenseTrialBannerActions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+.licenseSettingsField {
+	align-items: flex-start;
+}
+
+.licenseSettingsInputWrap {
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	width: min(100%, 340px);
+}
+
+@media (max-width: 720px) {
+	.licenseLoadingScreen,
+	.licenseLockScreen {
+		padding: 16px;
+	}
+
+	.licenseLoadingPanel,
+	.licenseLockPanel {
+		padding: 20px;
+		border-radius: 18px;
+	}
+
+	.licenseLockActions,
+	.licenseTrialBanner,
+	.licenseTrialBannerActions {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.licenseTrialBanner {
+		top: 10px;
+		padding: 12px;
+	}
+}

@@ -161,3 +161,35 @@ export async function trackSettingsChanged(params: {
 		// best effort telemetry
 	}
 }
+
+export async function trackLicenseTrialStarted(): Promise<void> {
+	try {
+		await track("license_trial_started", {});
+	} catch {
+		// best effort telemetry
+	}
+}
+
+export async function trackLicenseTrialExpired(): Promise<void> {
+	try {
+		await track("license_trial_expired", {});
+	} catch {
+		// best effort telemetry
+	}
+}
+
+export async function trackLicenseActivationSucceeded(): Promise<void> {
+	try {
+		await track("license_activation_succeeded", {});
+	} catch {
+		// best effort telemetry
+	}
+}
+
+export async function trackLicenseActivationFailed(): Promise<void> {
+	try {
+		await track("license_activation_failed", {});
+	} catch {
+		// best effort telemetry
+	}
+}

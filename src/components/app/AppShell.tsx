@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { openUrl } from "@tauri-apps/plugin-opener";
 import { AnimatePresence } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -16,6 +17,7 @@ import { useDailyNote } from "../../hooks/useDailyNote";
 import { useFileTree } from "../../hooks/useFileTree";
 import { useMenuListeners } from "../../hooks/useMenuListeners";
 import { useResizablePanel } from "../../hooks/useResizablePanel";
+import { getLicenseStatus } from "../../lib/license";
 import type { Shortcut } from "../../lib/shortcuts";
 import { getShortcutTooltip } from "../../lib/shortcuts";
 import { invoke } from "../../lib/tauri";
@@ -430,6 +432,21 @@ export function AppShell() {
 				category: "Workspace",
 				shortcut: { meta: true, key: "," },
 				action: () => void openSettingsWindow(),
+			},
+			{
+				id: "open-license-settings",
+				label: "Manage license",
+				category: "Workspace",
+				action: () => void openSettingsWindow("general"),
+			},
+			{
+				id: "buy-glyph-license",
+				label: "Buy Glyph license",
+				category: "Workspace",
+				action: async () => {
+					const status = await getLicenseStatus();
+					await openUrl(status.purchase_url);
+				},
 			},
 			{
 				id: "open-space",
