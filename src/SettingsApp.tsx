@@ -24,6 +24,7 @@ import { DailyNotesSettingsPane } from "./components/settings/DailyNotesSettings
 import { GeneralSettingsPane } from "./components/settings/GeneralSettingsPane";
 import { SpaceSettingsPane } from "./components/settings/SpaceSettingsPane";
 import { Button } from "./components/ui/shadcn/button";
+import { useTauriEvent } from "./lib/tauriEvents";
 import { onWindowDragMouseDown } from "./utils/window";
 
 type SettingsTab = "general" | "appearance" | "ai" | "space" | "about";
@@ -106,6 +107,11 @@ export default function SettingsApp() {
 	const closeWindow = useCallback(() => {
 		void getCurrentWindow().close();
 	}, []);
+
+	useTauriEvent("settings:navigate", ({ tab }) => {
+		if (!isSettingsTab(tab)) return;
+		switchTab(tab);
+	});
 
 	useEffect(() => {
 		const onKeyDown = (event: KeyboardEvent) => {

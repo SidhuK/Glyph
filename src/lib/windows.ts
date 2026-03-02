@@ -1,6 +1,6 @@
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 
-export type SettingsTab = "general" | "appearance" | "ai" | "space";
+export type SettingsTab = "general" | "appearance" | "ai" | "space" | "about";
 
 export async function openSettingsWindow(tab?: SettingsTab) {
 	const existing = await WebviewWindow.getByLabel("settings");
@@ -14,7 +14,12 @@ export async function openSettingsWindow(tab?: SettingsTab) {
 			// If the handle is stale (e.g., window was closed/destroyed), fall through
 			// and recreate it.
 		}
-		if (shown) return;
+		if (shown) {
+			if (tab) {
+				await existing.emit("settings:navigate", { tab });
+			}
+			return;
+		}
 	}
 
 	const url = tab ? `#/settings?tab=${encodeURIComponent(tab)}` : "#/settings";

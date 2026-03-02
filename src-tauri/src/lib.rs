@@ -84,12 +84,21 @@ pub fn run() {
     tauri::Builder::default()
         .menu(|app| {
             #[cfg(target_os = "macos")]
+            let app_about = MenuItem::with_id(
+                app,
+                "app.about",
+                format!("About {}", app.package_info().name),
+                true,
+                None::<&str>,
+            )?;
+
+            #[cfg(target_os = "macos")]
             let app_menu = Submenu::with_items(
                 app,
                 app.package_info().name.clone(),
                 true,
                 &[
-                    &PredefinedMenuItem::about(app, None, None)?,
+                    &app_about,
                     &PredefinedMenuItem::separator(app)?,
                     &PredefinedMenuItem::services(app, None)?,
                     &PredefinedMenuItem::separator(app)?,
@@ -116,6 +125,8 @@ pub fn run() {
             )?;
             let close_space =
                 MenuItem::with_id(app, "file.close_space", "Close Space", true, None::<&str>)?;
+            let about_glyph =
+                MenuItem::with_id(app, "file.about", "About Glyph", true, None::<&str>)?;
 
             let file_menu = Submenu::with_items(
                 app,
@@ -125,6 +136,8 @@ pub fn run() {
                     &open_space,
                     &create_space,
                     &close_space,
+                    &PredefinedMenuItem::separator(app)?,
+                    &about_glyph,
                     &PredefinedMenuItem::separator(app)?,
                     &PredefinedMenuItem::close_window(app, None)?,
                     #[cfg(not(target_os = "macos"))]
@@ -193,6 +206,12 @@ pub fn run() {
             }
             "file.close_space" => {
                 let _ = app.emit("menu:close_space", ());
+            }
+            "file.about" => {
+                let _ = app.emit("menu:open_about", ());
+            }
+            "app.about" => {
+                let _ = app.emit("menu:open_about", ());
             }
             _ => {}
         })

@@ -1,3 +1,4 @@
+import { openSettingsWindow } from "../lib/windows";
 import { useCallback } from "react";
 import { useTauriEvent } from "../lib/tauriEvents";
 
@@ -21,8 +22,12 @@ export function useMenuListeners({
 	const handleCloseSpace = useCallback(() => {
 		void closeSpace();
 	}, [closeSpace]);
+	const handleOpenAbout = useCallback(() => {
+		void openSettingsWindow("about");
+	}, []);
 
 	useTauriEvent("menu:open_space", handleOpenSpace);
 	useTauriEvent("menu:create_space", handleCreateSpace);
 	useTauriEvent("menu:close_space", handleCloseSpace);
+	useTauriEvent("menu:open_about", handleOpenAbout);
 }

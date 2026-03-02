@@ -5,6 +5,8 @@ type TauriEventMap = {
 	"menu:open_space": undefined;
 	"menu:create_space": undefined;
 	"menu:close_space": undefined;
+	"menu:open_about": undefined;
+	"settings:navigate": { tab: "general" | "appearance" | "ai" | "space" | "about" };
 	"ai:chunk": { job_id: string; delta: string };
 	"ai:status": { job_id: string; status: string; detail?: string };
 	"ai:done": { job_id: string; cancelled: boolean };
