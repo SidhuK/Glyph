@@ -341,6 +341,30 @@ export interface LinkPreview {
 	ok: boolean;
 }
 
+export type LicenseMode =
+	| "community_build"
+	| "licensed"
+	| "trial_active"
+	| "trial_expired";
+
+export interface LicenseStatus {
+	mode: LicenseMode;
+	can_use_app: boolean;
+	is_official_build: boolean;
+	purchase_url: string;
+	support_url: string;
+	trial_started_at_ms: number | null;
+	trial_expires_at_ms: number | null;
+	trial_remaining_seconds: number | null;
+	activated_at_ms: number | null;
+	license_key_masked: string | null;
+	error_code: string | null;
+}
+
+export interface LicenseActivateResult {
+	status: LicenseStatus;
+}
+
 export type AnalyticsEventName =
 	| "app_started"
 	| "space_opened"
@@ -348,7 +372,11 @@ export type AnalyticsEventName =
 	| "search_executed"
 	| "note_created"
 	| "ai_chat_started"
-	| "settings_changed";
+	| "settings_changed"
+	| "license_trial_started"
+	| "license_trial_expired"
+	| "license_activation_succeeded"
+	| "license_activation_failed";
 
 export interface AnalyticsTrackRequest {
 	event: AnalyticsEventName;
@@ -474,6 +502,9 @@ interface TauriCommands {
 	app_info: CommandDef<void, AppInfo>;
 	system_fonts_list: CommandDef<void, string[]>;
 	system_monospace_fonts_list: CommandDef<void, string[]>;
+	license_bootstrap_status: CommandDef<void, LicenseStatus>;
+	license_activate: CommandDef<{ license_key: string }, LicenseActivateResult>;
+	license_clear_local: CommandDef<void, LicenseActivateResult>;
 	space_create: CommandDef<{ path: string }, SpaceInfo>;
 	space_open: CommandDef<{ path: string }, SpaceInfo>;
 	space_get_current: CommandDef<void, string | null>;

@@ -181,6 +181,14 @@ jobs:
             } > RELEASE_NOTES.md
           fi
 
+          {
+            echo
+            echo "## Licensing"
+            echo
+            sed -n '/^> Official Glyph binaries/,/^$/p' docs/release-notes-licensed-binaries.md \
+              | sed 's/^> //'
+          } >> RELEASE_NOTES.md
+
           delimiter="RELEASE_NOTES_$(date +%s)_$RANDOM"
           {
             echo "body<<${delimiter}"
@@ -192,6 +200,10 @@ jobs:
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GLYPH_OFFICIAL_BUILD: "1"
+          GLYPH_GUMROAD_PRODUCT_ID: "jfc0rwnuPw7VuqCyw5ctTw=="
+          GLYPH_GUMROAD_PRODUCT_URL: "https://karatsidhu.gumroad.com/l/sqxfay"
+          GLYPH_SUPPORT_URL: "https://github.com/SidhuK/Glyph/issues"
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           TAURI_SIGNING_PRIVATE_KEY_PASSWORD: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY_PASSWORD }}
           APPLE_CERTIFICATE: ${{ secrets.APPLE_CERTIFICATE }}

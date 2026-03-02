@@ -5,6 +5,7 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import SettingsApp from "./SettingsApp";
+import { LicenseGate } from "./components/licensing/LicenseGate";
 import { Toaster } from "./components/ui/shadcn/sonner";
 import { trackAppStarted } from "./lib/analytics";
 import { applyUiAccent, applyUiTypography } from "./lib/appearance";
@@ -29,7 +30,13 @@ function Root() {
 		return () => window.removeEventListener("hashchange", onHashChange);
 	}, []);
 
-	return isSettingsRoute(hash) ? <SettingsApp /> : <App />;
+	return isSettingsRoute(hash) ? (
+		<SettingsApp />
+	) : (
+		<LicenseGate>
+			<App />
+		</LicenseGate>
+	);
 }
 
 function ThemeAndTypographyBridge() {
