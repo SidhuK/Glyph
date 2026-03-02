@@ -95,11 +95,13 @@ export function TaskSourcesSettingsCard({
 				</div>
 			) : null}
 			<div className="settingsTaskSourceBlock">
-					<div className="settingsField">
-						<div>
-							<div className="settingsLabel">Scope</div>
-							<div className="settingsHelp">This applies everywhere in Tasks.</div>
+				<div className="settingsField">
+					<div>
+						<div className="settingsLabel">Scope</div>
+						<div className="settingsHelp">
+							This applies everywhere in Tasks.
 						</div>
+					</div>
 					<select
 						value={source.mode}
 						disabled={!hasSpace || saving}
