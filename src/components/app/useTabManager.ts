@@ -173,6 +173,7 @@ export function useTabManager(spacePath: string | null) {
 		dirtyByPath,
 		setDirtyByPath,
 		closeTab,
+		closeActiveTab,
 		reorderTabs,
 		openSpecialTab,
 		recentFiles,

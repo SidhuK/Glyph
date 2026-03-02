@@ -67,6 +67,7 @@ export const MainContent = memo(function MainContent({
 		dirtyByPath,
 		setDirtyByPath,
 		closeTab,
+		closeActiveTab,
 		reorderTabs,
 		openSpecialTab,
 		recentFiles,
@@ -77,6 +78,15 @@ export const MainContent = memo(function MainContent({
 		if (!spacePath || openTasksRequest === 0) return;
 		openSpecialTab(TASKS_TAB_ID);
 	}, [openSpecialTab, openTasksRequest, spacePath]);
+
+	useEffect(() => {
+		const handleCloseActiveTab = () => {
+			closeActiveTab();
+		};
+		window.addEventListener("glyph:close-active-tab", handleCloseActiveTab);
+		return () =>
+			window.removeEventListener("glyph:close-active-tab", handleCloseActiveTab);
+	}, [closeActiveTab]);
 
 	const viewerPath = activeTabPath;
 	const commandShortcutParts = useMemo(

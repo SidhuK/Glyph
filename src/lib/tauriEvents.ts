@@ -2,10 +2,21 @@ import { listen } from "@tauri-apps/api/event";
 import { useEffect, useRef } from "react";
 
 type TauriEventMap = {
+	"menu:new_note": undefined;
+	"menu:open_daily_note": undefined;
+	"menu:save_note": undefined;
+	"menu:close_tab": undefined;
 	"menu:open_space": undefined;
 	"menu:create_space": undefined;
 	"menu:close_space": undefined;
+	"menu:reveal_space": undefined;
+	"menu:open_space_settings": undefined;
 	"menu:open_about": undefined;
+	"menu:toggle_ai": undefined;
+	"menu:close_ai": undefined;
+	"menu:ai_attach_current_note": undefined;
+	"menu:ai_attach_all_open_notes": undefined;
+	"menu:open_ai_settings": undefined;
 	"settings:navigate": { tab: "general" | "appearance" | "ai" | "space" | "about" };
 	"ai:chunk": { job_id: string; delta: string };
 	"ai:status": { job_id: string; status: string; detail?: string };

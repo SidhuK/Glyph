@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { openUrl } from "@tauri-apps/plugin-opener";
+import { openPath, openUrl } from "@tauri-apps/plugin-opener";
 import { AnimatePresence } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { toast } from "sonner";
@@ -269,7 +269,69 @@ export function AppShell() {
 		await attachContextFiles(tabs);
 	}, [attachContextFiles, openMarkdownTabs, setError]);
 
-	useMenuListeners({ onOpenSpace, onCreateSpace, closeSpace });
+	const handleNewNoteFromMenu = useCallback(() => {
+		if (!spacePath) return;
+		void fileTree.onNewFile();
+	}, [fileTree, spacePath]);
+
+	const handleOpenDailyNoteFromMenu = useCallback(() => {
+		if (!spacePath || !dailyNotesFolder) return;
+		void handleOpenDailyNote();
+	}, [dailyNotesFolder, handleOpenDailyNote, spacePath]);
+
+	const handleSaveNoteFromMenu = useCallback(() => {
+		if (!spacePath) return;
+		void saveCurrentEditor();
+	}, [saveCurrentEditor, spacePath]);
+
+	const handleRevealSpaceFromMenu = useCallback(() => {
+		if (!spacePath) return;
+		void openPath(spacePath);
+	}, [spacePath]);
+
+	const handleOpenSpaceSettings = useCallback(() => {
+		void openSettingsWindow("space");
+	}, []);
+
+	const handleToggleAiPaneFromMenu = useCallback(() => {
+		if (!spacePath || !aiEnabled) return;
+		setAiPanelOpen((v) => !v);
+	}, [aiEnabled, setAiPanelOpen, spacePath]);
+
+	const handleCloseAiPaneFromMenu = useCallback(() => {
+		setAiPanelOpen(false);
+	}, [setAiPanelOpen]);
+
+	const handleAttachCurrentNoteFromMenu = useCallback(() => {
+		void attachCurrentNoteToAi();
+	}, [attachCurrentNoteToAi]);
+
+	const handleAttachAllOpenNotesFromMenu = useCallback(() => {
+		void attachAllOpenNotesToAi();
+	}, [attachAllOpenNotesToAi]);
+
+	const handleOpenAiSettings = useCallback(() => {
+		void openSettingsWindow("ai");
+	}, []);
+
+	useMenuListeners({
+		onNewNote: handleNewNoteFromMenu,
+		onOpenDailyNote: handleOpenDailyNoteFromMenu,
+		onSaveNote: handleSaveNoteFromMenu,
+		onCloseTab: () => {
+			window.dispatchEvent(new Event("glyph:close-active-tab"));
+		},
+		onOpenSpace,
+		onCreateSpace,
+		closeSpace,
+		onRevealSpace: handleRevealSpaceFromMenu,
+		onOpenSpaceSettings: handleOpenSpaceSettings,
+		onToggleAiPane: handleToggleAiPaneFromMenu,
+		onCloseAiPane: handleCloseAiPaneFromMenu,
+		onAttachCurrentNoteToAi: handleAttachCurrentNoteFromMenu,
+		onAttachAllOpenNotesToAi: handleAttachAllOpenNotesFromMenu,
+		onOpenAiSettings: handleOpenAiSettings,
+	});
 
 	const handleSpaceFsChanged = useCallback(
 		(payload: { rel_path: string }) => {

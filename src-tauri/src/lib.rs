@@ -111,37 +111,133 @@ pub fn run() {
 
             let open_space = MenuItem::with_id(
                 app,
-                "file.open_space",
+                "space.open",
                 "Open Space…",
                 true,
                 Some("CmdOrCtrl+O"),
             )?;
             let create_space = MenuItem::with_id(
                 app,
-                "file.create_space",
-                "Create Space…",
+                "space.create",
+                "New Space…",
                 true,
                 Some("CmdOrCtrl+Shift+N"),
             )?;
             let close_space =
-                MenuItem::with_id(app, "file.close_space", "Close Space", true, None::<&str>)?;
-            let about_glyph =
-                MenuItem::with_id(app, "file.about", "About Glyph", true, None::<&str>)?;
+                MenuItem::with_id(app, "space.close", "Close Space", true, None::<&str>)?;
+            let reveal_space = MenuItem::with_id(
+                app,
+                "space.reveal",
+                "Show Space in Finder",
+                true,
+                None::<&str>,
+            )?;
+            let open_space_settings = MenuItem::with_id(
+                app,
+                "space.settings",
+                "Space Settings…",
+                true,
+                None::<&str>,
+            )?;
+            let new_note = MenuItem::with_id(
+                app,
+                "file.new_note",
+                "New Note",
+                true,
+                Some("CmdOrCtrl+N"),
+            )?;
+            let open_daily_note = MenuItem::with_id(
+                app,
+                "file.open_daily_note",
+                "Open Daily Note",
+                true,
+                Some("CmdOrCtrl+Shift+D"),
+            )?;
+            let save_note = MenuItem::with_id(
+                app,
+                "file.save_note",
+                "Save",
+                true,
+                Some("CmdOrCtrl+S"),
+            )?;
+            let close_tab = MenuItem::with_id(
+                app,
+                "file.close_tab",
+                "Close Tab",
+                true,
+                Some("CmdOrCtrl+W"),
+            )?;
+            let toggle_ai = MenuItem::with_id(
+                app,
+                "ai.toggle",
+                "Toggle AI Pane",
+                true,
+                Some("CmdOrCtrl+Shift+A"),
+            )?;
+            let close_ai =
+                MenuItem::with_id(app, "ai.close", "Close AI Pane", true, None::<&str>)?;
+            let attach_current_note = MenuItem::with_id(
+                app,
+                "ai.attach_current_note",
+                "Send Current Note to AI",
+                true,
+                Some("CmdOrCtrl+Alt+A"),
+            )?;
+            let attach_all_open_notes = MenuItem::with_id(
+                app,
+                "ai.attach_all_open_notes",
+                "Send All Open Notes to AI",
+                true,
+                Some("CmdOrCtrl+Alt+Shift+A"),
+            )?;
+            let open_ai_settings = MenuItem::with_id(
+                app,
+                "ai.settings",
+                "AI Settings…",
+                true,
+                None::<&str>,
+            )?;
 
             let file_menu = Submenu::with_items(
                 app,
                 "File",
                 true,
                 &[
-                    &open_space,
+                    &new_note,
+                    &open_daily_note,
+                    &PredefinedMenuItem::separator(app)?,
+                    &save_note,
+                    &close_tab,
+                ],
+            )?;
+
+            let ai_menu = Submenu::with_items(
+                app,
+                "AI",
+                true,
+                &[
+                    &toggle_ai,
+                    &close_ai,
+                    &PredefinedMenuItem::separator(app)?,
+                    &attach_current_note,
+                    &attach_all_open_notes,
+                    &PredefinedMenuItem::separator(app)?,
+                    &open_ai_settings,
+                ],
+            )?;
+
+            let space_menu = Submenu::with_items(
+                app,
+                "Space",
+                true,
+                &[
                     &create_space,
+                    &open_space,
+                    &PredefinedMenuItem::separator(app)?,
                     &close_space,
+                    &reveal_space,
                     &PredefinedMenuItem::separator(app)?,
-                    &about_glyph,
-                    &PredefinedMenuItem::separator(app)?,
-                    &PredefinedMenuItem::close_window(app, None)?,
-                    #[cfg(not(target_os = "macos"))]
-                    &PredefinedMenuItem::quit(app, None)?,
+                    &open_space_settings,
                 ],
             )?;
 
@@ -192,26 +288,58 @@ pub fn run() {
                     &app_menu,
                     &file_menu,
                     &edit_menu,
+                    &ai_menu,
+                    &space_menu,
                     &window_menu,
                     &help_menu,
                 ],
             )
         })
         .on_menu_event(|app, event| match event.id().as_ref() {
-            "file.open_space" => {
+            "file.new_note" => {
+                let _ = app.emit("menu:new_note", ());
+            }
+            "file.open_daily_note" => {
+                let _ = app.emit("menu:open_daily_note", ());
+            }
+            "file.save_note" => {
+                let _ = app.emit("menu:save_note", ());
+            }
+            "file.close_tab" => {
+                let _ = app.emit("menu:close_tab", ());
+            }
+            "space.open" => {
                 let _ = app.emit("menu:open_space", ());
             }
-            "file.create_space" => {
+            "space.create" => {
                 let _ = app.emit("menu:create_space", ());
             }
-            "file.close_space" => {
+            "space.close" => {
                 let _ = app.emit("menu:close_space", ());
             }
-            "file.about" => {
-                let _ = app.emit("menu:open_about", ());
+            "space.reveal" => {
+                let _ = app.emit("menu:reveal_space", ());
+            }
+            "space.settings" => {
+                let _ = app.emit("menu:open_space_settings", ());
             }
             "app.about" => {
                 let _ = app.emit("menu:open_about", ());
+            }
+            "ai.toggle" => {
+                let _ = app.emit("menu:toggle_ai", ());
+            }
+            "ai.close" => {
+                let _ = app.emit("menu:close_ai", ());
+            }
+            "ai.attach_current_note" => {
+                let _ = app.emit("menu:ai_attach_current_note", ());
+            }
+            "ai.attach_all_open_notes" => {
+                let _ = app.emit("menu:ai_attach_all_open_notes", ());
+            }
+            "ai.settings" => {
+                let _ = app.emit("menu:open_ai_settings", ());
             }
             _ => {}
         })
