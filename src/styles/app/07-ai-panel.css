@@ -778,6 +778,7 @@
 	gap: 3px;
 	height: 20px;
 	padding: 0 6px;
+	flex: 0 0 auto;
 	border-radius: 3px;
 	font-size: 10px;
 	line-height: 1;
@@ -875,10 +876,6 @@
 	background: transparent;
 }
 
-.aiPanel .aiContextChips + .aiComposer {
-	padding-top: 3px;
-}
-
 .aiComposerInputShell {
 	position: relative;
 	border-radius: var(--radius-md);
@@ -888,14 +885,21 @@
 	transition: border-color var(--transition-base);
 }
 
+.aiComposerAttachmentRow {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	min-height: 34px;
+	padding: 8px 8px 0;
+}
+
 .aiComposerMentionButton {
-	position: absolute;
-	top: 8px;
-	left: 8px;
-	z-index: 3;
+	position: relative;
+	z-index: 1;
 	width: 26px;
 	height: 26px;
 	border-radius: 8px;
+	flex: 0 0 auto;
 	color: color-mix(in srgb, var(--ai-mode-accent) 70%, var(--text-secondary));
 	background: color-mix(in srgb, var(--bg-secondary) 82%, transparent);
 }
@@ -909,13 +913,29 @@
 	opacity: 0.4;
 }
 
+.aiComposerContextStrip {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	flex: 1;
+	min-width: 0;
+	overflow-x: auto;
+	overflow-y: hidden;
+	padding-bottom: 2px;
+	scrollbar-width: none;
+}
+
+.aiComposerContextStrip::-webkit-scrollbar {
+	display: none;
+}
+
 .aiComposerInput {
 	width: 100%;
 	resize: none;
 	min-height: 88px;
 	max-height: 180px;
 	border-radius: var(--radius-md);
-	padding: 40px 12px 68px;
+	padding: 8px 12px 68px;
 	font-size: var(--text-sm);
 	background: var(--bg-primary);
 	border: none;

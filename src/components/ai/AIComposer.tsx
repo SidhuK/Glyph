@@ -86,27 +86,6 @@ export function AIComposer({
 
 	return (
 		<>
-			{context.attachedFolders.length > 0 ? (
-				<div className="aiContextChips">
-					{context.attachedFolders.map((item) => (
-						<button
-							key={`${item.kind}:${item.path || "space"}`}
-							type="button"
-							className="aiContextChip"
-							onClick={() => onRemoveContext(item.kind, item.path)}
-							title={`Remove ${item.label}`}
-						>
-							<span className="aiContextChipLabel">
-								{item.kind === "file"
-									? truncateLabel(fileNameFromPath(item.path || item.label))
-									: item.label || "Space"}
-							</span>
-							<X size={10} />
-						</button>
-					))}
-				</div>
-			) : null}
-
 			{showAddPanel ? (
 				<div className="aiAddPanel">
 					<input
@@ -154,18 +133,42 @@ export function AIComposer({
 
 			<div className="aiComposer">
 				<div className="aiComposerInputShell">
-					<Button
-						type="button"
-						variant="ghost"
-						size="icon-sm"
-						className="aiComposerMentionButton"
-						aria-label="Add note with @"
-						title="Add note with @"
-						onClick={handleInsertMentionTrigger}
-						disabled={isAwaitingResponse}
-					>
-						<HugeiconsIcon icon={AtIcon} size={13} />
-					</Button>
+					<div className="aiComposerAttachmentRow">
+						<Button
+							type="button"
+							variant="ghost"
+							size="icon-sm"
+							className="aiComposerMentionButton"
+							aria-label="Add note with @"
+							title="Add note with @"
+							onClick={handleInsertMentionTrigger}
+							disabled={isAwaitingResponse}
+						>
+							<HugeiconsIcon icon={AtIcon} size={13} />
+						</Button>
+						{context.attachedFolders.length > 0 ? (
+							<div className="aiComposerContextStrip" aria-label="Attached context">
+								{context.attachedFolders.map((item) => (
+									<button
+										key={`${item.kind}:${item.path || "space"}`}
+										type="button"
+										className="aiContextChip"
+										onClick={() => onRemoveContext(item.kind, item.path)}
+										title={`Remove ${item.label}`}
+									>
+										<span className="aiContextChipLabel">
+											{item.kind === "file"
+												? truncateLabel(
+														fileNameFromPath(item.path || item.label),
+													)
+												: item.label || "Space"}
+										</span>
+										<X size={10} />
+									</button>
+								))}
+							</div>
+						) : null}
+					</div>
 					<textarea
 						ref={composerInputRef}
 						className="aiComposerInput"
