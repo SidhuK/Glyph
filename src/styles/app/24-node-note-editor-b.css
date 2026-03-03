@@ -559,6 +559,11 @@
 	margin-bottom: 0;
 }
 
+.tiptapContentInline {
+	letter-spacing: 0;
+	line-height: 1.6;
+}
+
 .tiptapContentInline h1,
 .tiptapContentInline h2,
 .tiptapContentInline h3,
@@ -597,8 +602,8 @@
 
 /* Edit-mode heading rail (H1/H2/...) */
 .tiptapHostInline:not(.is-preview) .tiptapContentInline {
-	--heading-rail-width: 22px;
-	--heading-rail-gap: 8px;
+	--heading-rail-width: 16px;
+	--heading-rail-gap: 6px;
 	position: relative;
 	padding-left: calc(
 		var(--readable-content-gutter-compact) +
@@ -631,7 +636,7 @@
 	left: calc(-1 * (var(--heading-rail-width) + var(--heading-rail-gap)) + 2px);
 	font-size: 11px;
 	font-weight: var(--font-medium);
-	letter-spacing: 0.04em;
+	letter-spacing: 0.025em;
 	color: color-mix(in srgb, var(--text-tertiary) 86%, transparent);
 	pointer-events: none;
 }

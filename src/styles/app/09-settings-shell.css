@@ -206,7 +206,8 @@
 .settingsTabPanel {
 	min-width: 0;
 	height: 100%;
-	overflow: auto;
+	overflow-x: hidden;
+	overflow-y: auto;
 	display: flex;
 	flex-direction: column;
 	gap: 12px;

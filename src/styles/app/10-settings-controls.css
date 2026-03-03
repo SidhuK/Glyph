@@ -53,6 +53,7 @@
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
+	flex-wrap: wrap;
 	gap: 12px;
 	min-height: 40px;
 	padding: 9px 0;
@@ -88,8 +89,9 @@
 .settingsField > div:first-child {
 	display: flex;
 	flex-direction: column;
+	flex: 1 1 180px;
 	gap: 4px;
-	min-width: 120px;
+	min-width: 0;
 }
 
 .settingsField > input,
@@ -98,7 +100,8 @@
 .settingsField .settingsInline > input,
 .settingsField .settingsInline > select,
 .settingsField .settingsInline > textarea {
-	min-width: 170px;
+	flex: 1 1 220px;
+	min-width: 0;
 	max-width: 320px;
 	width: 100%;
 	min-height: 34px;
@@ -455,7 +458,7 @@
 
 .settingsTextarea {
 	max-width: 100%;
-	min-width: 280px;
+	min-width: 0;
 	width: 100%;
 }
 

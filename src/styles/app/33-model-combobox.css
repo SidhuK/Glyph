@@ -1,6 +1,6 @@
 .modelCombobox {
 	position: relative;
-	min-width: 160px;
+	min-width: 0;
 	max-width: 280px;
 	width: 100%;
 }
