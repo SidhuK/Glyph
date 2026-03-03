@@ -740,7 +740,6 @@ export function AppShell() {
 			<MainContent
 				fileTree={fileTree}
 				onOpenCommandPalette={openCommandPalette}
-				onOpenSearchPalette={openSearchPalette}
 				openTasksRequest={openTasksRequest}
 			/>
 			{spacePath && aiEnabled && aiPanelOpen && (
@@ -777,7 +776,7 @@ export function AppShell() {
 				commands={commands}
 				onClose={() => setPaletteOpen(false)}
 				spacePath={spacePath}
-				onSelectSearchNote={(id) => void fileTree.openMarkdownFile(id)}
+				onSelectSearchResult={(id) => void fileTree.openFile(id)}
 			/>
 			<KeyboardShortcutsHelp
 				open={shortcutsHelpOpen}

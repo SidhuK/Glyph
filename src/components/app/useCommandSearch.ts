@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useRecentFiles } from "../../hooks/useRecentFiles";
 import type { SearchResult } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 import { type Tab, parseSearchQuery } from "./commandPaletteHelpers";
@@ -10,16 +11,14 @@ export function useCommandSearch(
 	spacePath: string | null,
 ) {
 	const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
-	const [recentNotes, setRecentNotes] = useState<SearchResult[]>([]);
 	const [isSearching, setIsSearching] = useState(false);
 	const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const { recentFiles, refreshRecentFiles } = useRecentFiles(spacePath, 8);
 
 	useEffect(() => {
 		if (!open || !spacePath) return;
-		invoke("recent_notes", { limit: 8 })
-			.then(setRecentNotes)
-			.catch(() => setRecentNotes([]));
-	}, [open, spacePath]);
+		void refreshRecentFiles();
+	}, [open, spacePath, refreshRecentFiles]);
 
 	useEffect(() => {
 		if (activeTab !== "search") return;
@@ -87,13 +86,12 @@ export function useCommandSearch(
 
 	const reset = useCallback(() => {
 		setSearchResults([]);
-		setRecentNotes([]);
 		setIsSearching(false);
 	}, []);
 
 	return {
 		searchResults,
-		recentNotes,
+		recentFiles,
 		isSearching,
 		titleMatches,
 		contentMatches,

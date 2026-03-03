@@ -11,6 +11,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { m, useReducedMotion } from "motion/react";
 import type { Dispatch, SetStateAction } from "react";
 import { useAISidebarContext } from "../../contexts";
+import { APP_TAGLINE } from "../../lib/copy";
 import { FileText, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { ModelSelector } from "./ModelSelector";
@@ -176,7 +177,7 @@ export function AIComposer({
 						ref={composerInputRef}
 						className="aiComposerInput"
 						value={input}
-						placeholder="Write. Reflect. Discover."
+						placeholder={APP_TAGLINE}
 						disabled={isAwaitingResponse}
 						onChange={(e) => {
 							setInput(e.target.value);

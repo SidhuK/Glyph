@@ -1,10 +1,9 @@
-import { m } from "motion/react";
 import { Suspense, lazy, memo, useEffect, useMemo } from "react";
 import { useSpace } from "../../contexts";
+import { APP_TAGLINE } from "../../lib/copy";
 import { formatShortcutPartsForPlatform } from "../../lib/shortcuts/platform";
 import { TASKS_TAB_ID } from "../../lib/tasks";
 import { isInAppPreviewable } from "../../utils/filePreview";
-import { FileText } from "../Icons";
 import { FilePreviewPane } from "../preview/FilePreviewPane";
 import { TasksPane } from "../tasks/TasksPane";
 import { TabBar } from "./TabBar";
@@ -23,27 +22,12 @@ interface MainContentProps {
 		openNonMarkdownExternally: (relPath: string) => Promise<void>;
 	};
 	onOpenCommandPalette: () => void;
-	onOpenSearchPalette: () => void;
 	openTasksRequest: number;
-}
-
-function recentDisplayName(relPath: string): string {
-	const fileName = relPath.split("/").pop() ?? relPath;
-	if (!fileName || fileName.startsWith(".")) return fileName || relPath;
-	const withoutExt = fileName.replace(/\.[^./]+$/, "");
-	return withoutExt || fileName;
-}
-
-function recentDisplayFolder(relPath: string): string {
-	const parts = relPath.split("/").filter(Boolean);
-	if (parts.length <= 1) return "";
-	return `${parts.slice(0, -1).join("/")}/`;
 }
 
 export const MainContent = memo(function MainContent({
 	fileTree,
 	onOpenCommandPalette,
-	onOpenSearchPalette,
 	openTasksRequest,
 }: MainContentProps) {
 	const {
@@ -70,7 +54,6 @@ export const MainContent = memo(function MainContent({
 		closeActiveTab,
 		reorderTabs,
 		openSpecialTab,
-		recentFiles,
 		canvasLoadingMessage,
 	} = useTabManager(spacePath);
 
@@ -94,10 +77,6 @@ export const MainContent = memo(function MainContent({
 	const viewerPath = activeTabPath;
 	const commandShortcutParts = useMemo(
 		() => formatShortcutPartsForPlatform({ meta: true, key: "k" }),
-		[],
-	);
-	const searchShortcutParts = useMemo(
-		() => formatShortcutPartsForPlatform({ meta: true, key: "f" }),
 		[],
 	);
 
@@ -182,63 +161,21 @@ export const MainContent = memo(function MainContent({
 					)}
 					{content ?? (
 						<div className="mainEmptyState">
-							<div className="mainEmptyActions">
+							<p className="mainEmptyPrompt">
+								Press{" "}
 								<button
 									type="button"
-									className="mainEmptyAction"
+									className="mainEmptyShortcutInline"
 									onClick={onOpenCommandPalette}
-									title="List commands"
+									title="Open command palette"
 								>
-									<span className="mainEmptyActionLabel">List commands</span>
-									<span className="mainEmptyShortcut" aria-hidden>
-										{commandShortcutParts.map((part) => (
-											<kbd key={part}>{part}</kbd>
-										))}
-									</span>
-								</button>
-								<button
-									type="button"
-									className="mainEmptyAction"
-									onClick={onOpenSearchPalette}
-									title="Search files"
-								>
-									<span className="mainEmptyActionLabel">Search files</span>
-									<span className="mainEmptyShortcut" aria-hidden>
-										{searchShortcutParts.map((part) => (
-											<kbd key={part}>{part}</kbd>
-										))}
-									</span>
-								</button>
-							</div>
-							{recentFiles.length > 0 && (
-								<div className="mainRecentFiles">
-									<div className="mainRecentFilesTitle">Recently opened</div>
-									<div className="mainRecentFilesList">
-										{recentFiles.map((file, index) => (
-											<m.button
-												key={`${file.spacePath}:${file.path}`}
-												type="button"
-												className="mainRecentFileItem"
-												onClick={() => setActiveTabPath(file.path)}
-												initial={{ opacity: 0, y: 8 }}
-												animate={{ opacity: 1, y: 0 }}
-												transition={{
-													delay: 0.05 + index * 0.04,
-													duration: 0.22,
-												}}
-											>
-												<FileText size={14} className="mainRecentFileIcon" />
-												<span className="mainRecentFileName">
-													{recentDisplayName(file.path)}
-												</span>
-												<span className="mainRecentFilePath">
-													{recentDisplayFolder(file.path)}
-												</span>
-											</m.button>
-										))}
-									</div>
-								</div>
-							)}
+									{commandShortcutParts.map((part) => (
+										<kbd key={part}>{part}</kbd>
+									))}
+								</button>{" "}
+								to get started
+							</p>
+							<div className="mainEmptyTagline">{APP_TAGLINE}</div>
 						</div>
 					)}
 				</div>

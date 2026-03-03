@@ -1,6 +1,8 @@
 import { Fragment } from "react";
 import type { ReactNode } from "react";
+import type { RecentFile } from "../../lib/settings";
 import type { SearchResult } from "../../lib/tauri";
+import { FileText } from "../Icons";
 
 function HighlightedSnippet({ snippet }: { snippet: string }) {
 	const parts = snippet.split(/([⟦⟧])/);
@@ -69,10 +71,23 @@ interface SearchResultsListProps {
 	isSearching: boolean;
 	titleMatches: SearchResult[];
 	contentMatches: SearchResult[];
-	recentNotes: SearchResult[];
+	recentFiles: RecentFile[];
 	selectedIndex: number;
 	onSetSelectedIndex: (index: number) => void;
 	onSelectResult: (index: number) => void;
+}
+
+function recentDisplayName(relPath: string): string {
+	const fileName = relPath.split("/").pop() ?? relPath;
+	if (!fileName || fileName.startsWith(".")) return fileName || relPath;
+	const withoutExt = fileName.replace(/\.[^./]+$/, "");
+	return withoutExt || fileName;
+}
+
+function recentDisplayFolder(relPath: string): string {
+	const parts = relPath.split("/").filter(Boolean);
+	if (parts.length <= 1) return "";
+	return `${parts.slice(0, -1).join("/")}/`;
 }
 
 export function SearchResultsList({
@@ -80,7 +95,7 @@ export function SearchResultsList({
 	isSearching,
 	titleMatches,
 	contentMatches,
-	recentNotes,
+	recentFiles,
 	selectedIndex,
 	onSetSelectedIndex,
 	onSelectResult,
@@ -88,15 +103,15 @@ export function SearchResultsList({
 	const trimmed = query.trim();
 
 	if (!trimmed) {
-		if (recentNotes.length > 0) {
+		if (recentFiles.length > 0) {
 			return (
 				<>
-					<div className="commandPaletteGroupLabel">Recent</div>
-					{recentNotes.map((r, index) => (
+					<div className="commandPaletteGroupLabel">Recently opened</div>
+					{recentFiles.map((file, index) => (
 						<button
-							key={r.id}
+							key={`${file.spacePath}:${file.path}`}
 							type="button"
-							className="commandPaletteItem"
+							className="commandPaletteItem commandPaletteRecentItem"
 							data-search-index={index}
 							data-selected={index === selectedIndex}
 							onMouseEnter={() => onSetSelectedIndex(index)}
@@ -105,7 +120,20 @@ export function SearchResultsList({
 								onSelectResult(index);
 							}}
 						>
-							<span>{r.title || "Untitled"}</span>
+							<div className="commandPaletteRecentIcon">
+								<FileText size={14} />
+							</div>
+							<div className="commandPaletteRecentContent">
+								<span className="commandPaletteResultTitle">
+									{recentDisplayName(file.path)}
+								</span>
+								<span className="commandPaletteRecentSeparator" aria-hidden>
+									-
+								</span>
+								<span className="commandPaletteRecentPath mono">
+									{recentDisplayFolder(file.path) || file.path}
+								</span>
+							</div>
 						</button>
 					))}
 				</>

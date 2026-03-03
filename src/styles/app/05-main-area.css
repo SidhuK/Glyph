@@ -1027,57 +1027,37 @@
 	overflow-y: auto;
 }
 
-.mainEmptyActions {
+.mainEmptyPrompt {
 	display: flex;
-	align-items: stretch;
-	justify-content: center;
-	gap: var(--space-3);
-	width: 100%;
-	max-width: 440px;
-	margin-inline: auto;
-}
-
-.mainEmptyAction {
-	flex: 1 1 0;
-	min-width: 164px;
-	max-width: 204px;
-	aspect-ratio: 1 / 0.92;
-	min-height: 118px;
-	display: flex;
-	flex-direction: column;
 	align-items: center;
 	justify-content: center;
 	gap: 8px;
-	padding: var(--space-2);
-	border-radius: var(--radius-xl);
-	border: 1px solid var(--border-light);
-	background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
-	color: var(--text-primary);
-	transition: background var(--transition-fast), border-color
-		var(--transition-fast), transform var(--transition-fast);
-}
-
-.mainEmptyAction:hover {
-	background: color-mix(in srgb, var(--bg-hover) 86%, var(--bg-secondary));
-	border-color: color-mix(in srgb, var(--accent-color) 34%, var(--border-light));
-	transform: translateY(-1px);
-}
-
-.mainEmptyActionLabel {
-	font-size: var(--text-sm);
-	font-weight: var(--font-semibold);
-	letter-spacing: 0.01em;
+	flex-wrap: wrap;
+	width: 100%;
+	margin: 0;
+	font-size: var(--text-base);
+	color: var(--text-secondary);
 	text-align: center;
 }
 
-.mainEmptyShortcut {
+.mainEmptyShortcutInline {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	gap: 6px;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	cursor: pointer;
+	color: var(--text-primary);
 }
 
-.mainEmptyShortcut kbd {
+.mainEmptyShortcutInline:hover,
+.mainEmptyShortcutInline:active {
+	background: transparent;
+}
+
+.mainEmptyShortcutInline kbd {
 	min-width: 26px;
 	height: 24px;
 	padding: 0 7px;
@@ -1088,8 +1068,31 @@
 	font-weight: var(--font-semibold);
 	border-radius: var(--radius-md);
 	border: 1px solid var(--border-default);
-	background: color-mix(in srgb, var(--bg-primary) 90%, transparent);
+	background: transparent;
 	color: var(--text-secondary);
+}
+
+.mainEmptyShortcutInline:hover kbd {
+	border-color: color-mix(
+		in srgb,
+		var(--accent-color) 38%,
+		var(--border-default)
+	);
+	color: var(--text-primary);
+}
+
+.mainEmptyShortcutInline:focus-visible {
+	outline: 2px solid color-mix(in srgb, var(--accent-color) 42%, transparent);
+	outline-offset: 4px;
+	border-radius: var(--radius-md);
+}
+
+.mainEmptyTagline {
+	margin-top: var(--space-3);
+	font-size: var(--text-sm);
+	color: var(--text-placeholder);
+	letter-spacing: 0.02em;
+	text-align: center;
 }
 
 .mainRecentFiles {

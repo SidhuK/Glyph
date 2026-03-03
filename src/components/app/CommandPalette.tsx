@@ -23,7 +23,7 @@ interface CommandPaletteProps {
 	commands: Command[];
 	onClose: () => void;
 	spacePath: string | null;
-	onSelectSearchNote: (id: string) => void;
+	onSelectSearchResult: (id: string) => void;
 }
 
 export function CommandPalette({
@@ -33,7 +33,7 @@ export function CommandPalette({
 	commands,
 	onClose,
 	spacePath,
-	onSelectSearchNote,
+	onSelectSearchResult,
 }: CommandPaletteProps) {
 	const [state, setState] = useState<{
 		activeTab: Tab;
@@ -49,7 +49,7 @@ export function CommandPalette({
 	const previousFocusRef = useRef<Element | null>(null);
 	const listRef = useRef<HTMLDivElement | null>(null);
 
-	const { recentNotes, isSearching, titleMatches, contentMatches, reset } =
+	const { recentFiles, isSearching, titleMatches, contentMatches, reset } =
 		useCommandSearch(open, activeTab, query, spacePath);
 
 	const filtered = useMemo(() => {
@@ -73,7 +73,7 @@ export function CommandPalette({
 			? filtered.length
 			: query.trim()
 				? titleMatches.length + contentMatches.length
-				: recentNotes.length;
+				: recentFiles.length;
 	const parsedSearch = useMemo(() => parseSearchQuery(query), [query]);
 
 	useEffect(() => {
@@ -133,20 +133,20 @@ export function CommandPalette({
 
 	const selectSearchResult = useCallback(
 		(index: number) => {
-			const result = query.trim()
-				? [...titleMatches, ...contentMatches][index]
-				: recentNotes[index];
-			if (!result) return;
+			const resultId = query.trim()
+				? [...titleMatches, ...contentMatches][index]?.id
+				: recentFiles[index]?.path;
+			if (!resultId) return;
 			onClose();
-			onSelectSearchNote(result.id);
+			onSelectSearchResult(resultId);
 		},
 		[
 			titleMatches,
 			contentMatches,
-			recentNotes,
+			recentFiles,
 			query,
 			onClose,
-			onSelectSearchNote,
+			onSelectSearchResult,
 		],
 	);
 
@@ -302,7 +302,7 @@ export function CommandPalette({
 								isSearching={isSearching}
 								titleMatches={titleMatches}
 								contentMatches={contentMatches}
-								recentNotes={recentNotes}
+								recentFiles={recentFiles}
 								selectedIndex={selectedIndex}
 								onSetSelectedIndex={(index) =>
 									setState((curr) => ({ ...curr, selectedIndex: index }))
