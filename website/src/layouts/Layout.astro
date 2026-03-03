@@ -3,6 +3,8 @@ interface Props {
 	title?: string;
 }
 
+import logoG from "../../assets/logo_g.PNG";
+
 const { title = "Glyph — A space to think" } = Astro.props;
 ---
 
@@ -11,8 +13,8 @@ const { title = "Glyph — A space to think" } = Astro.props;
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-		<link rel="apple-touch-icon" href="/glyph-logo.png" />
+		<link rel="icon" type="image/png" href={logoG.src} />
+		<link rel="apple-touch-icon" href={logoG.src} />
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
 		<meta

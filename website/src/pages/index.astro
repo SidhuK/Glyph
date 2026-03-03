@@ -1,5 +1,6 @@
 ---
 import Layout from "../layouts/Layout.astro";
+import logoG from "../../assets/logo_g.PNG";
 
 const features = [
 	{
@@ -70,7 +71,7 @@ const faqs = [
 		<!-- ── HEADER ── -->
 		<header class="header">
 			<a href="/" class="logo">
-				<img src="/glyph-logo.png" alt="" class="logo-icon" />
+				<img src={logoG.src} alt="" class="logo-icon" />
 				<span>GLYPH</span>
 				<span class="logo-version">v1</span>
 			</a>
@@ -209,7 +210,7 @@ const faqs = [
 			<div class="footer-inner">
 				<div class="footer-col">
 					<a href="/" class="logo">
-						<img src="/glyph-logo.png" alt="" class="logo-icon" />
+						<img src={logoG.src} alt="" class="logo-icon" />
 						<span>GLYPH</span>
 					</a>
 				</div>
