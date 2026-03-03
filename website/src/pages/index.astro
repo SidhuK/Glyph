@@ -4,856 +4,818 @@ import Layout from "../layouts/Layout.astro";
 const features = [
 	{
 		num: "01",
-		title: "Markdown-native",
+		cat: "EDITOR",
+		title: "Markdown-native.",
 		desc: "A distraction-free editor with a floating toolbar, slash commands, and live preview. Every note is a plain .md file you own forever.",
 	},
 	{
 		num: "02",
-		title: "Wikilinks & backlinks",
-		desc: "Connect any idea to any other with [[wikilinks]]. See what links back. Your notes become a knowledge graph, not a filing cabinet.",
+		cat: "CONNECTIONS",
+		title: "Wikilinks & backlinks.",
+		desc: "Connect any idea to any other with [[wikilinks]]. See what links back. Your notes stay linked together — no folders, no silos.",
 	},
 	{
 		num: "03",
-		title: "AI that actually knows you",
-		desc: "Ask questions about your own notes. Summarize, compare, or draft — powered by OpenAI, Anthropic, or a local model you control.",
+		cat: "INTELLIGENCE",
+		title: "AI that knows you.",
+		desc: "Ask questions about your own notes. Summarize, compare, or draft — powered by your existing ChatGPT subscription (Plus, Team, or Pro), Anthropic, or a local model you control.",
 	},
 	{
 		num: "04",
-		title: "Tasks, everywhere",
-		desc: "Drop a checkbox in any note. Glyph pulls them all into Inbox, Today, and Upcoming — no separate app needed.",
+		cat: "PRODUCTIVITY",
+		title: "Tasks, tables & boards.",
+		desc: "Drop a checkbox in any note. Organize with tables and kanban boards. Glyph pulls tasks into Inbox, Today, and Upcoming — no separate app needed.",
 	},
-];
-
-const details = [
 	{
-		title: "Instant search",
+		num: "05",
+		cat: "SEARCH",
+		title: "Find anything, instantly.",
 		desc: "Hit ⌘P and find anything — by tag, folder, or full-text. Results appear before you finish typing.",
 	},
 	{
-		title: "Keyboard-first",
-		desc: "Every single action has a shortcut. Navigate, create, and organize without lifting your hands.",
-	},
-	{
-		title: "Make it yours",
-		desc: "Accent colors, custom fonts, pinned folders, and shortcuts — bend Glyph to match how you think.",
+		num: "06",
+		cat: "CUSTOMIZATION",
+		title: "Make it yours.",
+		desc: "Accent colors, custom fonts, daily notes, and shortcuts — bend Glyph to match how you think.",
 	},
 ];
 
 const faqs = [
 	{
 		q: "Is there a subscription?",
-		a: "No. Glyph is free and open source. No subscriptions, no payments, no accounts. Just download and go.",
+		a: "No. Glyph is a one-time purchase with lifetime access. No recurring fees, no seat limits, no device binding.",
 	},
 	{
 		q: "Do you collect my data?",
 		a: "Never. Your notes stay on your Mac as plain markdown files. Nothing is uploaded, tracked, or phoned home. Ever.",
 	},
 	{
+		q: "Can I try it before buying?",
+		a: 'Yes. Glyph comes with a 48-hour free trial. No credit card required — just <a href="https://github.com/SidhuK/Glyph/releases" target="_blank" rel="noopener" style="text-decoration:underline">download the latest version</a> and start writing.',
+	},
+	{
+		q: "Is it open source?",
+		a: "Yes. The source code is public on GitHub. Official release binaries are licensed, but you can always build from source.",
+	},
+	{
 		q: "Is a Windows version planned?",
-		a: "Yes. Glyph is built with Tauri and Rust, so Windows and Linux are on the roadmap.",
+		a: "Eventually, yes. Glyph is built with cross-platform technology, so Windows and Linux are absolutely possible. Right now, all our energy goes into making the Mac experience exceptional.",
 	},
 ];
 ---
 
 <Layout>
-  <main class="page">
-    <!-- Decorative squares -->
-    <div class="deco deco-1" aria-hidden="true"></div>
-    <div class="deco deco-2" aria-hidden="true"></div>
-    <div class="deco deco-3" aria-hidden="true"></div>
-    <div class="deco deco-4" aria-hidden="true"></div>
-    <div class="deco deco-5" aria-hidden="true"></div>
+	<div class="page">
 
-    <!-- ── HEADER ── -->
-    <header class="header">
-      <a href="#" class="logo" aria-label="Glyph home">
-        <img src="/glyph-logo.png" alt="" class="logo-mark" aria-hidden="true" />
-        <span class="logo-text">glyph</span>
-      </a>
-    </header>
+		<!-- ── HEADER ── -->
+		<header class="header">
+			<a href="/" class="logo">
+				<img src="/glyph-logo.png" alt="" class="logo-icon" />
+				<span>GLYPH</span>
+				<span class="logo-version">v1</span>
+			</a>
+			<nav class="nav">
+				<a href="https://github.com/SidhuK/Glyph" target="_blank" rel="noopener">GitHub</a>
+				<a href="https://github.com/SidhuK/Glyph/releases" target="_blank" rel="noopener">Changelog</a>
+			</nav>
+			<a href="https://karatsidhu.gumroad.com/l/sqxfay" class="header-cta" target="_blank" rel="noopener">Get Glyph ↗</a>
+		</header>
 
-    <!-- ── HERO ── -->
-    <section class="hero">
-      <div class="dock" aria-hidden="true">
-        <img src="/dock.png" alt="" class="dock-img" />
-      </div>
+		<!-- ── HERO ── -->
+		<section class="hero">
+			<p class="label">LOCAL-FIRST · MARKDOWN · MACOS</p>
+			<h1>A quiet place for your<br />thoughts and ideas</h1>
+			<p class="hero-sub">Write in markdown. Connect ideas with links. Let AI help when you ask. Everything lives on your machine — plain files, always yours.</p>
+			<div class="hero-actions">
+				<a href="https://karatsidhu.gumroad.com/l/sqxfay" class="btn-primary" target="_blank" rel="noopener">Get Started</a>
+				<a href="https://github.com/SidhuK/Glyph" class="btn-outline" target="_blank" rel="noopener">GitHub</a>
+			</div>
+		</section>
 
-      <h1>
-        <span class="h1-line" data-reveal>Your space to think with</span>
-        <span class="h1-line" data-reveal style="--delay: 80ms"><strong>notes,</strong></span>
-        <span class="h1-line" data-reveal style="--delay: 160ms"><strong class="italic">links</strong> or anything else.</span>
-      </h1>
+		<!-- ── SHOWCASE ── -->
+		<section class="showcase" data-reveal>
+			<div class="showcase-wrap">
+				<img class="showcase-img showcase-light" src="/light.webp" alt="Glyph in light mode" loading="eager" />
+				<img class="showcase-img showcase-dark" src="/dark.webp" alt="Glyph in dark mode" loading="eager" />
+			</div>
+			<div class="mode-toggle-wrap">
+				<button class="mode-toggle" data-mode-toggle aria-label="Switch between light and dark preview">
+					<svg class="mode-icon icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+					<svg class="mode-icon icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+				</button>
+			</div>
+		</section>
 
-      <div class="hero-actions" data-reveal style="--delay: 240ms">
-        <a href="#" class="btn-primary">
-          <svg class="btn-apple" width="14" height="17" viewBox="0 0 14 17" fill="none" aria-hidden="true"><path d="M13.2 13.14c-.31.72-.68 1.38-1.12 1.99-.59.83-1.08 1.41-1.45 1.73-.58.53-1.2.8-1.86.81-.48 0-1.05-.13-1.73-.41-.68-.27-1.3-.41-1.87-.41-.59 0-1.23.14-1.91.41C2.58 17.53 2.02 17.67 1.57 17.68c-.63.02-1.26-.26-1.9-.84C-.73 16.49-1.25 15.88-1.87 15.01c-.67-.93-1.22-2.01-1.64-3.24C-3.94 10.44-4.16 9.15-4.16 7.91c0-1.41.3-2.63.92-3.65a5.38 5.38 0 0 1 1.92-1.94A5.16 5.16 0 0 1 1.27 1.5c.5 0 1.16.16 1.98.47.82.31 1.34.47 1.57.47.17 0 .75-.19 1.72-.56.92-.35 1.69-.49 2.32-.43 1.72.14 3.01.82 3.86 2.05-1.54.93-2.3 2.24-2.28 3.92.02 1.31.49 2.4 1.4 3.27.42.4.88.7 1.4.92-.11.33-.23.64-.36.94zM9.54-3.32c0 1.03-.37 1.99-1.12 2.87-.9 1.05-1.99 1.66-3.17 1.57a3.19 3.19 0 0 1-.02-.39c0-.99.43-2.04 1.19-2.9.38-.44.86-.8 1.45-1.09.59-.28 1.14-.44 1.67-.47v.41z" transform="translate(4.16 3.32)" fill="currentColor"/></svg>
-          Get Glyph for Mac
-        </a>
-      </div>
-      <p class="hero-sub" data-reveal style="--delay: 300ms">
-        free &amp; open source. no subscriptions.
-      </p>
-    </section>
+		<!-- ── FEATURES ── -->
+		<section class="section" data-reveal>
+			<p class="label">FEATURES</p>
+			<h2>Not your average<br />notes app</h2>
+			<div class="features-grid">
+				{features.map((f) => (
+					<div class="feature-cell">
+						<p class="feature-label"><span class="feature-num">{f.num}</span> {f.cat}</p>
+						<h3 class="feature-title">{f.title}</h3>
+						<p class="feature-desc">{f.desc}</p>
+					</div>
+				))}
+			</div>
+		</section>
 
-    <!-- ── PRODUCT SHOWCASE ── -->
-    <section class="showcase" data-reveal style="--delay: 350ms">
-      <img
-        class="showcase-img"
-        src="/main_image.png"
-        alt="Glyph workspace showing the markdown editor, file tree, and AI chat panel"
-        loading="eager"
-      />
-    </section>
+		<!-- ── LOCAL-FIRST ── -->
+		<section class="section" data-reveal>
+			<p class="label">PRIVACY</p>
+			<h2>Yours, completely</h2>
+			<p class="section-sub">Your notes never leave your machine. No account, no cloud, no telemetry. Open a folder and start writing.</p>
+			<div class="privacy-grid">
+				<div class="privacy-cell">
+					<p class="privacy-stat">0</p>
+					<p class="privacy-label">data collected</p>
+				</div>
+				<div class="privacy-cell">
+					<p class="privacy-stat">∞</p>
+					<p class="privacy-label">offline access</p>
+				</div>
+				<div class="privacy-cell">
+					<p class="privacy-stat">.md</p>
+					<p class="privacy-label">plain files you own</p>
+				</div>
+				<div class="privacy-cell privacy-cell--tip">
+					<p class="privacy-stat">&lt;35<span class="privacy-unit">MB</span></p>
+					<p class="privacy-label">app size</p>
+					<div class="tip-card">
+						<p class="tip-title">Why so small?</p>
+						<ul class="tip-list">
+							<li>Built natively with Tauri &amp; Rust</li>
+							<li>No Electron, no bundled browser</li>
+							<li>Uses under 250 MB of memory</li>
+						</ul>
+						<p class="tip-foot">A lean, fast app that respects your disk and your battery.</p>
+					</div>
+				</div>
+				<div class="privacy-cell privacy-cell--tip">
+					<p class="privacy-stat">BYOK</p>
+					<p class="privacy-label">bring your own AI key</p>
+					<div class="tip-card">
+						<p class="tip-title">Supported providers</p>
+						<ul class="tip-list">
+							<li>OpenAI / ChatGPT (Plus, Team, Pro)</li>
+							<li>Anthropic (Claude)</li>
+							<li>Google Gemini</li>
+							<li>OpenRouter</li>
+							<li>Local models (Ollama, LM Studio)</li>
+						</ul>
+						<p class="tip-foot">Use your own API key — we never store or proxy it.</p>
+					</div>
+				</div>
+			</div>
+		</section>
 
-    <!-- ── NOT YOUR AVERAGE ── -->
-    <section class="features-intro" data-reveal>
-      <div class="section-marker" aria-hidden="true"></div>
-      <h2><strong>Not</strong> your average notes app</h2>
-      <p class="section-sub">
-        Scattered docs and clunky apps are over. Local-first markdown is where it's at.
-      </p>
-    </section>
+		<!-- ── DESIGN ── -->
+		<section class="section" data-reveal>
+			<p class="label">DESIGN</p>
+			<h2>Obsessively crafted</h2>
+			<p class="section-sub">A native macOS app built by people who sweat the details. Every pixel, every shortcut, every transition.</p>
+		</section>
 
-    <!-- ── FEATURES GRID ── -->
-    <section class="features-grid" data-reveal>
-      {features.map((f) => (
-        <div class="feature-cell">
-          <div class="feature-head">
-            <h3>{f.title}</h3>
-            <span class="feature-num">{f.num}</span>
-          </div>
-          <p class="feature-desc">{f.desc}</p>
-        </div>
-      ))}
-    </section>
+		<!-- ── FAQ ── -->
+		<section class="section" data-reveal>
+			<p class="label">FREQUENT CONCERNS</p>
+			<h2>Everything you need to<br />know before you begin</h2>
+			<div class="faq-list">
+				{faqs.map((f) => (
+					<details class="faq-item">
+						<summary class="faq-summary">
+							<span class="faq-q">{f.q}</span>
+							<span class="faq-plus">+</span>
+						</summary>
+						<p class="faq-a" set:html={f.a} />
+					</details>
+				))}
+			</div>
+		</section>
 
-    <!-- ── SHOWCASE 2 ── -->
-    <section class="canvas-showcase" data-reveal>
-      <h2>The editor is your <em>canvas</em></h2>
-      <p class="section-sub">
-        Wikilinks, slash commands, and AI — all in one place. Build a writing workflow that fits the way you already think.
-      </p>
-      <div class="canvas-demo">
-        <img
-          src="/main-image.png"
-          alt="Glyph editor with markdown, AI panel, and file tree"
-          class="canvas-demo-img"
-          loading="lazy"
-        />
-      </div>
-    </section>
+		<!-- ── CTA ── -->
+		<section class="section cta" data-reveal>
+			<p class="label">YOUR NEXT STEP</p>
+			<h2>Start writing with<br />Glyph today</h2>
+			<div class="cta-actions">
+				<a href="https://karatsidhu.gumroad.com/l/sqxfay" class="btn-primary" target="_blank" rel="noopener">Get Glyph</a>
+				<a href="https://github.com/SidhuK/Glyph" class="btn-outline" target="_blank" rel="noopener">View Source</a>
+			</div>
+		</section>
 
-    <!-- ── BEAUTIFULLY DESIGNED ── -->
-    <section class="design-section" data-reveal>
-      <h2>Obsessively <em>crafted</em></h2>
-      <p class="section-sub">
-        A native macOS app built by people who sweat the details. Every pixel, every shortcut, every transition.
-      </p>
-      <div class="design-grid">
-        {details.map((d) => (
-          <div class="design-card">
-            <h3>{d.title}</h3>
-            <p>{d.desc}</p>
-          </div>
-        ))}
-      </div>
-    </section>
+		<!-- ── FOOTER ── -->
+		<footer class="footer">
+			<div class="footer-inner">
+				<div class="footer-col">
+					<a href="/" class="logo">
+						<img src="/glyph-logo.png" alt="" class="logo-icon" />
+						<span>GLYPH</span>
+					</a>
+				</div>
+				<div class="footer-col">
+					<p class="footer-heading">PRODUCT</p>
+					<a href="https://github.com/SidhuK/Glyph/releases" target="_blank" rel="noopener">Changelog</a>
+					<a href="https://github.com/SidhuK/Glyph" target="_blank" rel="noopener">GitHub</a>
+				</div>
+				<div class="footer-col">
+					<p class="footer-heading">PURCHASE</p>
+					<a href="https://karatsidhu.gumroad.com/l/sqxfay" target="_blank" rel="noopener">Gumroad</a>
+				</div>
+				<div class="footer-col">
+					<p class="footer-heading">LEGAL</p>
+					<a href="#">Terms</a>
+					<a href="#">Privacy</a>
+				</div>
+			</div>
+			<p class="footer-copy">© 2026 Glyph. All rights reserved.</p>
+		</footer>
 
-    <p class="delights" data-reveal>...and a million other small delights.</p>
-
-    <!-- ── LOCAL FIRST ── -->
-    <section class="local-section" data-reveal>
-      <h2>Yours, <em>completely</em></h2>
-      <p class="section-sub">
-        Your notes never leave your machine. No account, no cloud, no telemetry. Open a folder and start writing.
-      </p>
-      <div class="local-visual" aria-hidden="true">
-        <div class="file-tree-mock">
-          <div class="ft-header">
-            <span class="ft-dot"></span>
-            <span class="ft-dot"></span>
-            <span class="ft-dot"></span>
-            <span class="ft-title">~/vault</span>
-          </div>
-          <div class="ft-body">
-            <div class="ft-row folder">Projects</div>
-            <div class="ft-row file">meeting-notes.md</div>
-            <div class="ft-row file">architecture.md</div>
-            <div class="ft-row folder">Daily</div>
-            <div class="ft-row file">2026-03-02.md</div>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- ── FAQ ── -->
-    <section class="faq-section" data-reveal>
-      <h2>Frequent questions</h2>
-      <div class="faq-list">
-        {faqs.map((f, i) => (
-          <details class="faq-item">
-            <summary class="faq-summary">
-              <span class="faq-num">{String(i + 1).padStart(2, "0")}</span>
-              <span class="faq-question">{f.q}</span>
-              <span class="faq-chevron" aria-hidden="true">+</span>
-            </summary>
-            <div class="faq-answer">
-              <p>{f.a}</p>
-            </div>
-          </details>
-        ))}
-      </div>
-    </section>
-
-    <!-- ── CTA ── -->
-    <section class="cta-section" data-reveal>
-      <h2>Get Glyph on Mac</h2>
-      <div class="cta-actions">
-        <a href="#" class="btn-primary btn-large">
-          <svg class="btn-apple" width="14" height="17" viewBox="0 0 14 17" fill="none" aria-hidden="true"><path d="M13.2 13.14c-.31.72-.68 1.38-1.12 1.99-.59.83-1.08 1.41-1.45 1.73-.58.53-1.2.8-1.86.81-.48 0-1.05-.13-1.73-.41-.68-.27-1.3-.41-1.87-.41-.59 0-1.23.14-1.91.41C2.58 17.53 2.02 17.67 1.57 17.68c-.63.02-1.26-.26-1.9-.84C-.73 16.49-1.25 15.88-1.87 15.01c-.67-.93-1.22-2.01-1.64-3.24C-3.94 10.44-4.16 9.15-4.16 7.91c0-1.41.3-2.63.92-3.65a5.38 5.38 0 0 1 1.92-1.94A5.16 5.16 0 0 1 1.27 1.5c.5 0 1.16.16 1.98.47.82.31 1.34.47 1.57.47.17 0 .75-.19 1.72-.56.92-.35 1.69-.49 2.32-.43 1.72.14 3.01.82 3.86 2.05-1.54.93-2.3 2.24-2.28 3.92.02 1.31.49 2.4 1.4 3.27.42.4.88.7 1.4.92-.11.33-.23.64-.36.94zM9.54-3.32c0 1.03-.37 1.99-1.12 2.87-.9 1.05-1.99 1.66-3.17 1.57a3.19 3.19 0 0 1-.02-.39c0-.99.43-2.04 1.19-2.9.38-.44.86-.8 1.45-1.09.59-.28 1.14-.44 1.67-.47v.41z" transform="translate(4.16 3.32)" fill="currentColor"/></svg>
-          Download for Mac
-        </a>
-      </div>
-    </section>
-
-    <!-- ── FOOTER ── -->
-    <footer class="footer">
-      <div class="footer-inner">
-        <a href="#" class="logo" aria-label="Glyph home">
-          <img src="/glyph-logo.png" alt="" class="logo-mark" aria-hidden="true" />
-          <span class="logo-text">glyph</span>
-        </a>
-        <div class="footer-links">
-          <a href="#">GitHub</a>
-          <a href="#">Discord</a>
-          <a href="#">Changelog</a>
-        </div>
-      </div>
-      <p class="footer-copy">© 2026 Glyph. All rights reserved.</p>
-    </footer>
-  </main>
+	</div>
 </Layout>
 
 <style>
-  /* ── Layout ── */
-  .page {
-    position: relative;
-    overflow-x: hidden;
-  }
-
-  .header,
-  .hero,
-  .features-intro,
-  .features-grid,
-  .canvas-showcase,
-  .design-section,
-  .local-section,
-  .faq-section,
-  .cta-section,
-  .footer {
-    width: min(740px, 90vw);
-    margin-inline: auto;
-  }
-
-  /* ── Decorative squares ── */
-  .deco {
-    position: absolute;
-    width: 12px;
-    height: 12px;
-    pointer-events: none;
-    z-index: 1;
-  }
-
-  .deco-1 { top: 180px; right: calc(50% + 370px); background: var(--purple); }
-  .deco-2 { top: 220px; left: calc(50% + 360px); background: var(--accent); }
-  .deco-3 { top: 300px; right: calc(50% + 350px); background: var(--magenta); }
-  .deco-4 { top: 620px; left: calc(50% + 370px); background: var(--cyan); }
-  .deco-5 { top: 520px; right: calc(50% + 340px); background: var(--magenta); }
-
-  /* ── Header ── */
-  .header {
-    display: flex;
-    justify-content: center;
-    padding: 2rem 0 1.5rem;
-  }
-
-  .logo {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  .logo-mark {
-    width: 1.6rem;
-    height: 1.6rem;
-    border-radius: 4px;
-  }
-
-  .logo-text {
-    font-family: var(--font-mono);
-    font-size: 0.92rem;
-    font-weight: 500;
-    letter-spacing: 0.02em;
-  }
-
-  /* ── Hero ── */
-  .hero {
-    text-align: center;
-    padding: 2rem 0 3rem;
-  }
-
-  .dock {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 2.5rem;
-  }
-
-  .dock-img {
-    max-width: 420px;
-    width: 100%;
-    height: auto;
-  }
-
-  h1 {
-    font-family: var(--font-sans);
-    font-size: clamp(3rem, 8vw, 5rem);
-    font-weight: 700;
-    line-height: 1.05;
-    letter-spacing: -0.04em;
-    color: var(--ink);
-    margin: 0 0 2rem;
-  }
-
-  h1 strong {
-    font-weight: 900;
-    letter-spacing: -0.05em;
-  }
-
-  h1 .italic {
-    font-style: italic;
-    font-weight: 900;
-    letter-spacing: -0.05em;
-  }
-
-  .h1-line {
-    display: block;
-  }
-
-  .hero-actions {
-    margin-bottom: 1rem;
-  }
-
-  .btn-primary {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.7rem 1.6rem;
-    background: var(--accent);
-    color: var(--ink);
-    font-family: var(--font-mono);
-    font-size: 0.8rem;
-    font-weight: 600;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    border-radius: 999px;
-    border: none;
-    cursor: pointer;
-    transition: background 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
-    box-shadow: 0 2px 12px rgba(255, 215, 0, 0.3);
-  }
-
-  .btn-primary:hover {
-    background: var(--accent-dark);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 20px rgba(255, 215, 0, 0.4);
-  }
-
-  .btn-primary:active { transform: translateY(1px); }
-
-  .btn-large {
-    padding: 0.85rem 2rem;
-    font-size: 0.85rem;
-  }
-
-  .btn-apple {
-    flex-shrink: 0;
-  }
-
-  .hero-sub {
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-    color: var(--subtle);
-    text-transform: uppercase;
-    letter-spacing: 0.12em;
-  }
-
-  /* ── Showcase ── */
-  .showcase {
-    width: 100%;
-    padding: 0 0 6rem;
-  }
-
-  .showcase-img {
-    width: 100%;
-    display: block;
-  }
-
-  /* ── Section typography ── */
-  h2 {
-    font-family: var(--font-sans);
-    font-size: clamp(2rem, 5vw, 3.2rem);
-    font-weight: 700;
-    line-height: 1.1;
-    letter-spacing: -0.04em;
-    color: var(--ink);
-    margin: 0;
-  }
-
-  h2 strong {
-    font-weight: 900;
-    letter-spacing: -0.05em;
-  }
-
-  h2 em {
-    font-style: italic;
-    font-weight: 900;
-    letter-spacing: -0.05em;
-  }
-
-  .section-marker {
-    width: 10px;
-    height: 10px;
-    background: var(--accent);
-    margin: 0 auto 1rem;
-  }
-
-  .section-sub {
-    font-family: var(--font-mono);
-    font-size: 0.85rem;
-    color: var(--muted);
-    line-height: 1.7;
-    margin-top: 0.75rem;
-    max-width: 500px;
-  }
-
-  /* ── Features intro ── */
-  .features-intro {
-    text-align: center;
-    padding: 6rem 0 3rem;
-  }
-
-  .features-intro .section-sub {
-    margin-inline: auto;
-  }
-
-  /* ── Features grid ── */
-  .features-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    border-top: 1px solid var(--line);
-    margin-bottom: 6rem;
-  }
-
-  .feature-cell {
-    padding: 2rem;
-    border-bottom: 1px solid var(--line);
-    transition: background 0.25s ease;
-  }
-
-  .feature-cell:hover {
-    background: var(--surface);
-  }
-
-  .feature-cell:nth-child(odd) {
-    border-right: 1px solid var(--line);
-  }
-
-  .feature-head {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    margin-bottom: 0.75rem;
-  }
-
-  .feature-cell h3 {
-    font-family: var(--font-sans);
-    font-size: 1.3rem;
-    font-weight: 700;
-    letter-spacing: -0.01em;
-    color: var(--ink);
-    margin: 0;
-  }
-
-  .feature-num {
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-    color: var(--subtle);
-    letter-spacing: 0.05em;
-    flex-shrink: 0;
-  }
-
-  .feature-desc {
-    font-family: var(--font-mono);
-    font-size: 0.82rem;
-    line-height: 1.7;
-    color: var(--muted);
-    margin: 0;
-  }
-
-  /* ── Canvas showcase ── */
-  .canvas-showcase {
-    text-align: center;
-    padding: 0 0 6rem;
-  }
-
-  .canvas-showcase .section-sub {
-    margin-inline: auto;
-  }
-
-  .canvas-demo {
-    margin-top: 2.5rem;
-    border-radius: 16px;
-    overflow: hidden;
-    border: 1px solid var(--line);
-    box-shadow:
-      0 27px 16px rgba(0, 0, 0, 0.04),
-      0 12px 12px rgba(0, 0, 0, 0.06),
-      0 3px 7px rgba(0, 0, 0, 0.08);
-  }
-
-  .canvas-demo-img {
-    width: 100%;
-    display: block;
-  }
-
-  /* ── Design section ── */
-  .design-section {
-    text-align: center;
-    padding: 6rem 0;
-    border-top: 1px solid var(--line);
-  }
-
-  .design-section .section-sub {
-    margin-inline: auto;
-  }
-
-  .design-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 1px;
-    margin-top: 3rem;
-    border: 1px solid var(--line);
-    border-radius: 12px;
-    overflow: hidden;
-    background: var(--line);
-  }
-
-  .design-card {
-    background: var(--bg);
-    padding: 1.5rem;
-    text-align: left;
-    transition: background 0.25s ease;
-  }
-
-  .design-card:hover {
-    background: var(--surface);
-  }
-
-  .design-card h3 {
-    font-family: var(--font-sans);
-    font-size: 1.05rem;
-    font-weight: 700;
-    color: var(--ink);
-    margin: 0 0 0.5rem;
-    letter-spacing: -0.01em;
-  }
-
-  .design-card p {
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-    color: var(--muted);
-    line-height: 1.65;
-    margin: 0;
-  }
-
-  /* ── Delights ── */
-  .delights {
-    width: min(740px, 90vw);
-    margin-inline: auto;
-    text-align: center;
-    font-family: var(--font-sans);
-    font-size: 1rem;
-    font-style: italic;
-    font-weight: 500;
-    color: var(--subtle);
-    padding: 2rem 0 0;
-  }
-
-  /* ── Local section ── */
-  .local-section {
-    text-align: center;
-    padding: 6rem 0;
-    border-top: 1px solid var(--line);
-  }
-
-  .local-section .section-sub {
-    margin-inline: auto;
-  }
-
-  .local-visual {
-    max-width: 340px;
-    margin: 2.5rem auto 0;
-  }
-
-  .file-tree-mock {
-    border: 1px solid var(--line);
-    border-radius: 10px;
-    overflow: hidden;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.05);
-    background: var(--bg);
-  }
-
-  .ft-header {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    padding: 10px 14px;
-    border-bottom: 1px solid var(--line);
-    background: var(--surface);
-  }
-
-  .ft-dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--line);
-  }
-
-  .ft-title {
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-    color: var(--muted);
-    font-weight: 500;
-    margin-left: 6px;
-  }
-
-  .ft-body { padding: 8px 0; }
-
-  .ft-row {
-    display: flex;
-    align-items: center;
-    padding: 0.35rem 1.2rem;
-    font-family: var(--font-mono);
-    font-size: 0.82rem;
-    color: var(--muted);
-  }
-
-  .ft-row.folder { font-weight: 600; color: var(--ink); }
-  .ft-row.folder::before {
-    content: '▸';
-    margin-right: 0.5rem;
-    color: var(--accent);
-    font-size: 0.78rem;
-  }
-
-  .ft-row.file { padding-left: 2.6rem; }
-  .ft-row.file::before {
-    content: '';
-    display: inline-block;
-    width: 5px;
-    height: 5px;
-    background: var(--line);
-    border-radius: 1px;
-    margin-right: 0.5rem;
-    flex-shrink: 0;
-  }
-
-  /* ── FAQ ── */
-  .faq-section {
-    padding: 6rem 0;
-    border-top: 1px solid var(--line);
-  }
-
-  .faq-section h2 {
-    margin-bottom: 2.5rem;
-    text-align: center;
-  }
-
-  .faq-list {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .faq-item {
-    border-top: 1px solid var(--line);
-  }
-
-  .faq-item:last-child {
-    border-bottom: 1px solid var(--line);
-  }
-
-  .faq-summary {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    padding: 1.2rem 0;
-    cursor: pointer;
-    list-style: none;
-    user-select: none;
-  }
-
-  .faq-summary::-webkit-details-marker { display: none; }
-  .faq-summary::marker { display: none; content: ''; }
-
-  .faq-num {
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-    color: var(--subtle);
-    flex-shrink: 0;
-    width: 2rem;
-  }
-
-  .faq-question {
-    font-family: var(--font-sans);
-    font-size: 1.05rem;
-    font-weight: 600;
-    color: var(--ink);
-    flex: 1;
-    transition: color 0.2s ease;
-  }
-
-  .faq-chevron {
-    font-family: var(--font-mono);
-    font-size: 1.2rem;
-    color: var(--subtle);
-    flex-shrink: 0;
-    transition: transform 0.2s ease;
-  }
-
-  .faq-item[open] .faq-chevron {
-    transform: rotate(45deg);
-  }
-
-  .faq-summary:hover .faq-question {
-    color: var(--muted);
-  }
-
-  .faq-answer {
-    padding: 0 0 1.2rem 3rem;
-  }
-
-  .faq-answer p {
-    font-family: var(--font-mono);
-    font-size: 0.85rem;
-    color: var(--muted);
-    line-height: 1.7;
-    margin: 0;
-  }
-
-  /* ── CTA ── */
-  .cta-section {
-    text-align: center;
-    padding: 6rem 0;
-    border-top: 1px solid var(--line);
-  }
-
-  .cta-actions {
-    margin-top: 2rem;
-  }
-
-  /* ── Footer ── */
-  .footer {
-    padding: 6rem 0 2rem;
-    border-top: 1px solid var(--line);
-  }
-
-  .footer-inner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-bottom: 2rem;
-    border-bottom: 1px solid var(--line);
-  }
-
-  .footer-links {
-    display: flex;
-    gap: 2rem;
-  }
-
-  .footer-links a {
-    font-family: var(--font-mono);
-    font-size: 0.85rem;
-    color: var(--subtle);
-    transition: color 0.18s ease;
-  }
-
-  .footer-links a:hover { color: var(--ink); }
-
-  .footer-copy {
-    margin-top: 1.5rem;
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    color: var(--subtle);
-    letter-spacing: 0.02em;
-  }
-
-  /* ── Reveal animations ── */
-  :global([data-reveal]) {
-    opacity: 0;
-    transform: translateY(20px);
-    transition: opacity 0.6s ease var(--delay, 0ms), transform 0.6s ease var(--delay, 0ms);
-  }
-
-  :global([data-reveal].revealed) {
-    opacity: 1;
-    transform: none;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    :global([data-reveal]) {
-      opacity: 1;
-      transform: none;
-      transition: none;
-    }
-  }
-
-  /* ── Responsive ── */
-  @media (max-width: 680px) {
-    .deco { display: none; }
-
-    h1 { font-size: clamp(2.2rem, 9vw, 3.2rem); }
-
-    .dock-img { max-width: 300px; }
-
-
-
-    .features-grid { grid-template-columns: 1fr; }
-    .feature-cell:nth-child(odd) { border-right: none; }
-
-    .design-grid { grid-template-columns: 1fr; }
-
-    .footer-inner {
-      flex-direction: column;
-      gap: 1.5rem;
-      align-items: flex-start;
-    }
-
-    .footer-links { flex-wrap: wrap; gap: 1.2rem; }
-  }
+	/* ── Page ── */
+	.page {
+		width: min(720px, 90vw);
+		margin-inline: auto;
+	}
+
+	/* ── Header ── */
+	.header {
+		position: sticky;
+		top: 0;
+		z-index: 100;
+		display: flex;
+		align-items: center;
+		padding: 0.75rem 0;
+		background: transparent;
+	}
+
+	.logo {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.45rem;
+		font-size: 0.75rem;
+		font-weight: 600;
+		letter-spacing: 0.14em;
+	}
+
+	.logo-icon {
+		width: 1.25rem;
+		height: 1.25rem;
+		border-radius: 4px;
+	}
+
+	.logo-version {
+		font-size: 0.55rem;
+		font-weight: 500;
+		letter-spacing: 0.06em;
+		color: var(--faint);
+		border: 1px solid var(--border);
+		padding: 0.1rem 0.35rem;
+		border-radius: 3px;
+		line-height: 1;
+		margin-left: 0.1rem;
+	}
+
+	.nav {
+		display: flex;
+		align-items: center;
+		gap: 0.2rem;
+		margin-left: auto;
+	}
+
+	.nav a {
+		display: flex;
+		align-items: center;
+		padding: 0.4rem 0.7rem;
+		font-size: 0.72rem;
+		font-weight: 500;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--muted);
+		border-radius: 4px;
+		transition: color 0.15s, background 0.15s;
+	}
+
+	.nav a:hover {
+		color: var(--ink);
+		background: rgba(0, 0, 0, 0.04);
+	}
+
+	.header-cta {
+		display: inline-flex;
+		align-items: center;
+		margin-left: 0.6rem;
+		padding: 0.4rem 0.9rem;
+		background: var(--ink);
+		color: var(--bg);
+		font-family: var(--mono);
+		font-size: 0.7rem;
+		font-weight: 500;
+		letter-spacing: 0.04em;
+		border-radius: 4px;
+		border: 1px solid var(--ink);
+		cursor: pointer;
+		transition: opacity 0.15s;
+	}
+
+	.header-cta:hover { opacity: 0.8; }
+
+	.btn-primary {
+		display: inline-flex;
+		align-items: center;
+		padding: 0.5rem 1.2rem;
+		background: var(--ink);
+		color: var(--bg);
+		font-family: var(--mono);
+		font-size: 0.75rem;
+		font-weight: 500;
+		letter-spacing: 0.04em;
+		border-radius: 0;
+		border: 1px solid var(--ink);
+		cursor: pointer;
+		transition: opacity 0.15s;
+	}
+
+	.btn-primary:hover { opacity: 0.85; }
+
+	.btn-outline {
+		display: inline-flex;
+		align-items: center;
+		padding: 0.5rem 1.2rem;
+		background: transparent;
+		color: var(--ink);
+		font-family: var(--mono);
+		font-size: 0.75rem;
+		font-weight: 500;
+		letter-spacing: 0.04em;
+		border: 1px solid var(--border);
+		cursor: pointer;
+		transition: border-color 0.15s;
+	}
+
+	.btn-outline:hover { border-color: var(--ink); }
+
+	/* ── Label ── */
+	.label {
+		font-family: var(--mono);
+		font-size: 0.68rem;
+		font-weight: 500;
+		letter-spacing: 0.18em;
+		color: var(--faint);
+		text-align: center;
+		margin-bottom: 0.8rem;
+	}
+
+	/* ── Hero ── */
+	.hero {
+		text-align: center;
+		padding: 5rem 0 3.5rem;
+	}
+
+	h1 {
+		font-family: var(--serif);
+		font-size: clamp(2.4rem, 6vw, 3rem);
+		font-weight: 400;
+		line-height: 1.18;
+		font-style: italic;
+		color: var(--ink);
+		margin-bottom: 1.2rem;
+	}
+
+	.hero-sub {
+		font-size: 0.85rem;
+		color: var(--muted);
+		line-height: 1.7;
+		max-width: 460px;
+		margin: 0 auto 2rem;
+	}
+
+	.hero-actions {
+		display: flex;
+		gap: 0;
+		justify-content: center;
+	}
+
+	.hero-actions .btn-outline {
+		border-left: none;
+	}
+
+	/* ── Showcase ── */
+	.showcase {
+		padding: 3.5rem 0;
+		width: min(1100px, 96vw);
+		margin-left: calc(-1 * (min(1100px, 96vw) - 100%) / 2);
+	}
+
+	.showcase-wrap {
+		position: relative;
+		line-height: 0;
+	}
+
+	.showcase-img {
+		width: 100%;
+		display: block;
+		transition: opacity 0.4s ease;
+	}
+
+	.showcase-dark {
+		position: absolute;
+		inset: 0;
+		opacity: 0;
+	}
+
+	.showcase.is-dark .showcase-light { opacity: 0; }
+	.showcase.is-dark .showcase-dark { opacity: 1; }
+
+	.mode-toggle-wrap {
+		display: flex;
+		justify-content: center;
+		margin-top: 0.8rem;
+	}
+
+	.mode-toggle {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		padding: 0.3rem 0.6rem;
+		background: transparent;
+		border: 1px solid var(--border);
+		cursor: pointer;
+		transition: border-color 0.15s;
+	}
+
+	.mode-toggle:hover { border-color: var(--faint); }
+
+	.mode-icon {
+		display: block;
+		color: var(--faint);
+		transition: color 0.2s;
+	}
+
+	.icon-sun { color: var(--ink); }
+	.showcase.is-dark .icon-sun { color: var(--faint); }
+	.showcase.is-dark .icon-moon { color: var(--ink); }
+
+	/* ── Sections ── */
+	.section {
+		padding: 4.5rem 0;
+		text-align: center;
+	}
+
+	h2 {
+		font-family: var(--serif);
+		font-size: clamp(1.8rem, 5vw, 2.4rem);
+		font-weight: 400;
+		font-style: italic;
+		line-height: 1.2;
+		color: var(--ink);
+		margin-bottom: 1rem;
+	}
+
+	.section-sub {
+		font-size: 0.85rem;
+		color: var(--muted);
+		line-height: 1.7;
+		max-width: 480px;
+		margin: 0 auto 2.5rem;
+	}
+
+	/* ── Feature grid (3-col windowpane) ── */
+	.features-grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		border: 1px solid var(--border);
+		margin-top: 2.5rem;
+		text-align: left;
+	}
+
+	.feature-cell {
+		padding: 1.5rem;
+		border-bottom: 1px solid var(--border);
+		border-right: 1px solid var(--border);
+	}
+
+	.feature-cell:nth-child(3n) { border-right: none; }
+	.feature-cell:nth-last-child(-n+3) { border-bottom: none; }
+
+	.feature-label {
+		font-family: var(--mono);
+		font-size: 0.65rem;
+		font-weight: 500;
+		letter-spacing: 0.12em;
+		color: var(--faint);
+		margin-bottom: 0.6rem;
+	}
+
+	.feature-num {
+		color: var(--muted);
+	}
+
+	.feature-title {
+		font-family: var(--mono);
+		font-size: 0.9rem;
+		font-weight: 600;
+		margin-bottom: 0.6rem;
+		color: var(--ink);
+	}
+
+	.feature-desc {
+		font-size: 0.78rem;
+		color: var(--muted);
+		line-height: 1.65;
+	}
+
+	/* ── Privacy grid ── */
+	.privacy-grid {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		border: 1px solid var(--border);
+		text-align: center;
+	}
+
+	.privacy-cell {
+		padding: 2rem 1rem;
+		width: calc(100% / 3);
+		border-right: 1px solid var(--border);
+		border-bottom: 1px solid var(--border);
+	}
+
+	.privacy-cell:nth-child(3) { border-right: none; }
+	.privacy-cell:nth-child(4) { border-left: none; }
+	.privacy-cell:nth-child(n+4) { border-bottom: none; }
+	.privacy-cell:last-child { border-right: none; }
+
+	.privacy-stat {
+		font-family: var(--serif);
+		font-size: 2.4rem;
+		font-weight: 400;
+		font-style: italic;
+		color: var(--ink);
+		line-height: 1;
+		margin-bottom: 0.5rem;
+	}
+
+	.privacy-unit {
+		font-size: 1.2rem;
+		font-style: normal;
+		margin-left: 0.15rem;
+	}
+
+	.privacy-label {
+		font-size: 0.72rem;
+		font-weight: 500;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--faint);
+	}
+
+	/* ── Tooltip card ── */
+	.privacy-cell--tip {
+		position: relative;
+		cursor: default;
+	}
+
+	.tip-card {
+		position: absolute;
+		top: calc(100% + 10px);
+		left: 50%;
+		transform: translateX(-50%) translateY(-6px);
+		width: 240px;
+		padding: 1rem 1.1rem;
+		background: var(--bg);
+		border: 1px solid var(--border);
+		border-radius: 6px;
+		text-align: left;
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 0.2s ease, transform 0.2s ease;
+		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+		z-index: 50;
+	}
+
+	.tip-card::after {
+		content: '';
+		position: absolute;
+		bottom: 100%;
+		left: 50%;
+		transform: translateX(-50%);
+		border: 6px solid transparent;
+		border-bottom-color: var(--border);
+	}
+
+	.privacy-cell--tip:hover .tip-card {
+		opacity: 1;
+		pointer-events: auto;
+		transform: translateX(-50%) translateY(0);
+	}
+
+	.tip-title {
+		font-family: var(--mono);
+		font-size: 0.65rem;
+		font-weight: 600;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--faint);
+		margin-bottom: 0.5rem;
+	}
+
+	.tip-list {
+		list-style: none;
+		display: flex;
+		flex-direction: column;
+		gap: 0.3rem;
+		margin-bottom: 0.6rem;
+	}
+
+	.tip-list li {
+		font-size: 0.75rem;
+		color: var(--ink);
+		line-height: 1.4;
+	}
+
+	.tip-list li::before {
+		content: '·';
+		color: var(--faint);
+		margin-right: 0.4rem;
+		font-weight: 700;
+	}
+
+	.tip-foot {
+		font-size: 0.68rem;
+		color: var(--faint);
+		line-height: 1.5;
+		border-top: 1px solid var(--border);
+		padding-top: 0.5rem;
+	}
+
+	/* ── FAQ ── */
+	.faq-list {
+		text-align: left;
+		margin-top: 2rem;
+		border: 1px solid var(--border);
+	}
+
+	.faq-item {
+		border-bottom: 1px solid var(--border);
+	}
+
+	.faq-item:last-child { border-bottom: none; }
+
+	.faq-summary {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		padding: 1rem 1.2rem;
+		cursor: pointer;
+		list-style: none;
+		user-select: none;
+		transition: background 0.15s;
+	}
+
+	.faq-summary:hover { background: rgba(0,0,0,0.015); }
+	.faq-summary::-webkit-details-marker { display: none; }
+	.faq-summary::marker { display: none; content: ''; }
+
+	.faq-q {
+		font-size: 0.85rem;
+		font-weight: 500;
+	}
+
+	.faq-plus {
+		font-family: var(--mono);
+		font-size: 1rem;
+		color: var(--faint);
+		transition: transform 0.2s;
+		flex-shrink: 0;
+		margin-left: 1rem;
+	}
+
+	.faq-item[open] .faq-plus { transform: rotate(45deg); }
+
+	.faq-a {
+		padding: 0 1.2rem 1.2rem;
+		font-size: 0.82rem;
+		color: var(--muted);
+		line-height: 1.7;
+	}
+
+	/* ── CTA ── */
+	.cta { padding: 5rem 0; }
+
+	.cta-actions {
+		display: flex;
+		gap: 0;
+		justify-content: center;
+		margin-top: 1.5rem;
+	}
+
+	.cta-actions .btn-outline { border-left: none; }
+
+	/* ── Footer ── */
+	.footer {
+		border-top: none;
+		padding: 3rem 0 2rem;
+	}
+
+	.footer-inner {
+		display: grid;
+		grid-template-columns: 1.5fr repeat(3, 1fr);
+		gap: 2rem;
+		padding-bottom: 2rem;
+		border-bottom: 1px solid var(--border);
+	}
+
+	.footer-col {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.footer-heading {
+		font-size: 0.65rem;
+		font-weight: 600;
+		letter-spacing: 0.12em;
+		color: var(--faint);
+		margin-bottom: 0.2rem;
+	}
+
+	.footer-col a {
+		font-size: 0.82rem;
+		color: var(--muted);
+		transition: color 0.15s;
+	}
+
+	.footer-col a:hover { color: var(--ink); }
+
+	.footer-copy {
+		margin-top: 1.5rem;
+		font-size: 0.7rem;
+		color: var(--faint);
+		letter-spacing: 0.02em;
+		text-align: center;
+	}
+
+	/* ── Reveal ── */
+	:global([data-reveal]) {
+		opacity: 0;
+		transform: translateY(16px);
+		transition: opacity 0.5s ease, transform 0.5s ease;
+	}
+
+	:global([data-reveal].revealed) {
+		opacity: 1;
+		transform: none;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		:global([data-reveal]) {
+			opacity: 1;
+			transform: none;
+			transition: none;
+		}
+	}
+
+	/* ── Responsive ── */
+	@media (max-width: 640px) {
+		.header { flex-wrap: wrap; }
+		.nav a { padding: 0.35rem 0.5rem; font-size: 0.65rem; }
+		.header-cta { padding: 0.35rem 0.7rem; font-size: 0.65rem; }
+
+		h1 { font-size: clamp(1.8rem, 8vw, 2.4rem); }
+
+		.features-grid { grid-template-columns: 1fr; }
+		.feature-cell { border-right: none !important; }
+		.feature-cell:last-child { border-bottom: none; }
+
+		.privacy-cell { width: 100% !important; border-right: none !important; border-bottom: 1px solid var(--border) !important; }
+		.privacy-cell:last-child { border-bottom: none !important; }
+
+		.footer-inner { grid-template-columns: 1fr 1fr; }
+	}
 </style>
 
 <script>
-  const observer = new IntersectionObserver(
-    (entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          entry.target.classList.add('revealed');
-          observer.unobserve(entry.target);
-        }
-      });
-    },
-    { threshold: 0.1 }
-  );
+	const observer = new IntersectionObserver(
+		(entries) => {
+			entries.forEach((entry) => {
+				if (entry.isIntersecting) {
+					entry.target.classList.add('revealed');
+					observer.unobserve(entry.target);
+				}
+			});
+		},
+		{ threshold: 0.1 }
+	);
 
-  document.querySelectorAll('[data-reveal]').forEach((el) => observer.observe(el));
+	document.querySelectorAll('[data-reveal]').forEach((el) => observer.observe(el));
+
+	const toggle = document.querySelector('[data-mode-toggle]');
+	const showcase = toggle?.closest('.showcase');
+	toggle?.addEventListener('click', () => {
+		showcase?.classList.toggle('is-dark');
+	});
 </script>
