@@ -324,7 +324,7 @@
 	--codex-tone: var(--interactive-accent);
 	flex: 0 0 clamp(188px, 46%, 228px);
 	padding: 12px;
-	border-radius: calc(var(--radius-md) + 2px);
+	border-radius: var(--radius-8);
 	border: 1px solid
 		color-mix(in srgb, var(--codex-tone) 30%, var(--border-light));
 	background: radial-gradient(
@@ -388,7 +388,7 @@
 	width: 62px;
 	height: 28px;
 	padding: 4px;
-	border-radius: 8px;
+	border-radius: var(--radius-8);
 	display: grid;
 	grid-template-columns: repeat(12, minmax(0, 1fr));
 	gap: 2px;
@@ -398,7 +398,7 @@
 }
 
 .codexRateLimitBatteryCell {
-	border-radius: 2px;
+	border-radius: var(--radius-2xs);
 	background: color-mix(in srgb, var(--bg-tertiary) 92%, transparent);
 	border: 1px solid color-mix(in srgb, var(--border-light) 70%, transparent);
 }
@@ -411,7 +411,7 @@
 .codexRateLimitBatteryCap {
 	width: 4px;
 	height: 13px;
-	border-radius: 2px;
+	border-radius: var(--radius-2xs);
 	background: color-mix(in srgb, var(--codex-tone) 46%, var(--border-light));
 }
 

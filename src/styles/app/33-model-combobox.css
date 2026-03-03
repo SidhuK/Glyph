@@ -69,7 +69,7 @@
 	height: 12px;
 	border: 2px solid color-mix(in srgb, var(--text-tertiary) 30%, transparent);
 	border-top-color: var(--interactive-accent);
-	border-radius: 50%;
+	border-radius: var(--radius-full);
 }
 
 .modelComboboxError {

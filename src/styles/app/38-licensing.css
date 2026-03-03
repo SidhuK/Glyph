@@ -21,7 +21,7 @@
 .licenseLockPanel {
 	width: min(100%, 640px);
 	padding: 28px;
-	border-radius: 24px;
+	border-radius: var(--radius-3xl);
 	border: 1px solid color-mix(in srgb, var(--border-default) 58%, transparent);
 	background: linear-gradient(
 		180deg,
@@ -83,7 +83,7 @@
 	width: 100%;
 	min-height: 40px;
 	padding: 0 12px;
-	border-radius: 14px;
+	border-radius: var(--radius-xl);
 	border: 1px solid color-mix(in srgb, var(--border-default) 88%, transparent);
 	background: color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary));
 	color: var(--text-primary);
@@ -139,7 +139,7 @@
 	justify-content: space-between;
 	gap: 14px;
 	padding: 12px 14px;
-	border-radius: 18px;
+	border-radius: var(--radius-2xl);
 	border: 1px solid color-mix(in srgb, var(--color-yellow-500) 28%, transparent);
 	background: color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary));
 	backdrop-filter: blur(18px);
@@ -191,7 +191,7 @@
 	.licenseLoadingPanel,
 	.licenseLockPanel {
 		padding: 20px;
-		border-radius: 18px;
+		border-radius: var(--radius-2xl);
 	}
 
 	.licenseLockActions,

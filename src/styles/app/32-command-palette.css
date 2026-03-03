@@ -280,7 +280,7 @@
 .commandPaletteResultSnippet mark {
 	background: color-mix(in srgb, var(--interactive-accent) 20%, transparent);
 	color: color-mix(in srgb, var(--interactive-accent) 75%, var(--text-primary));
-	border-radius: 3px;
+	border-radius: var(--radius-xs);
 	padding: 0 2px;
 	font-weight: var(--font-medium);
 	text-decoration: none;

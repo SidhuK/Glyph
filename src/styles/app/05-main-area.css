@@ -108,7 +108,7 @@
 
 .welcomeOrb {
 	position: absolute;
-	border-radius: 999px;
+	border-radius: var(--radius-full);
 	filter: blur(2px);
 	opacity: 0.75;
 }
@@ -338,7 +338,7 @@
 .welcomeDot {
 	width: 8px;
 	height: 8px;
-	border-radius: 999px;
+	border-radius: var(--radius-full);
 	background: var(--border-default);
 	border: none;
 	padding: 0;

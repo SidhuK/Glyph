@@ -29,17 +29,11 @@ import { useAiProfiles } from "./useAiProfiles";
 interface AIPanelProps {
 	isOpen: boolean;
 	activeFolderPath: string | null;
-	onAttachContextFiles: (paths: string[]) => Promise<void>;
 	onClose: () => void;
 	width?: number;
 }
 
-export function AIPanel({
-	isOpen,
-	activeFolderPath,
-	onAttachContextFiles,
-	onClose,
-}: AIPanelProps) {
+export function AIPanel({ isOpen, activeFolderPath, onClose }: AIPanelProps) {
 	const chat = useRigChat();
 	const { aiAssistantMode } = useAISidebarContext();
 	const isChatMode = aiAssistantMode === "chat";
@@ -395,7 +389,6 @@ export function AIPanel({
 					setAddPanelQuery={setAddPanelQuery}
 					onAddContext={handleAddContext}
 					onRemoveContext={handleRemoveContext}
-					onAttachContextFiles={onAttachContextFiles}
 				/>
 			</div>
 		</div>

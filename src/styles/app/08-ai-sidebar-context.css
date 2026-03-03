@@ -70,7 +70,7 @@
 }
 
 .aiContextHeaderActions button {
-	border-radius: 999px;
+	border-radius: var(--radius-full);
 	padding: 6px 12px;
 	font-size: var(--text-xs);
 }
@@ -171,7 +171,7 @@
 	align-items: center;
 	gap: 6px;
 	padding: 4px 8px;
-	border-radius: 999px;
+	border-radius: var(--radius-full);
 	font-size: 11px;
 	border: 1px solid color-mix(in srgb, var(--border-light) 70%, transparent);
 	background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
@@ -250,7 +250,7 @@
 }
 
 .aiContextScopeBar button {
-	border-radius: 999px;
+	border-radius: var(--radius-full);
 	padding: 8px 10px;
 	font-size: var(--text-xs);
 }

@@ -3,7 +3,7 @@
    ───────────────────────────────────────────────────────────────────────────── */
 .appShell {
 	--app-frame: var(--space-1);
-	--app-radius: calc(var(--radius-xl) + 1px);
+	--app-radius: var(--radius-15);
 	isolation: isolate;
 	display: flex;
 	position: relative;

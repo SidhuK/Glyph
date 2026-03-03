@@ -762,7 +762,6 @@ export function AppShell() {
 							? activeViewDoc.selector || ""
 							: null
 					}
-					onAttachContextFiles={attachContextFiles}
 				/>
 			)}
 			<AnimatePresence>

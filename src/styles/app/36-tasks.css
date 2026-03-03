@@ -167,7 +167,7 @@
 	border: 0;
 	background: transparent;
 	color: var(--text-secondary);
-	border-radius: calc(var(--radius-xl) - 4px);
+	border-radius: var(--radius-lg);
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -411,7 +411,7 @@
 	align-items: center;
 	height: 22px;
 	padding: 0 8px;
-	border-radius: 999px;
+	border-radius: var(--radius-full);
 	border: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
 	background: color-mix(in srgb, var(--bg-secondary) 72%, transparent);
 	font-size: 0.68rem;
@@ -507,7 +507,7 @@
 	align-items: center;
 	height: 20px;
 	padding: 0 8px;
-	border-radius: 999px;
+	border-radius: var(--radius-full);
 	border: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
 	background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
 	font-size: 0.68rem;
@@ -518,7 +518,7 @@
 .tasksMetaBadge {
 	height: 22px;
 	padding-inline: 8px;
-	border-radius: 999px;
+	border-radius: var(--radius-full);
 	border-color: color-mix(in srgb, var(--border-light) 76%, transparent);
 	background: color-mix(in srgb, var(--bg-secondary) 72%, transparent);
 	color: var(--text-secondary);
@@ -556,7 +556,7 @@
 .tasksScheduleBtn {
 	height: 22px;
 	padding-inline: 8px;
-	border-radius: 999px;
+	border-radius: var(--radius-full);
 	color: var(--text-secondary);
 }
 

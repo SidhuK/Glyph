@@ -9,14 +9,12 @@ interface AIFloatingHostProps {
 	isOpen: boolean;
 	onToggle: () => void;
 	activeFolderPath: string | null;
-	onAttachContextFiles: (paths: string[]) => Promise<void>;
 }
 
 export function AIFloatingHost({
 	isOpen,
 	onToggle,
 	activeFolderPath,
-	onAttachContextFiles,
 }: AIFloatingHostProps) {
 	const { aiPanelWidth } = useAISidebarContext();
 	const panelWidth = aiPanelWidth || 380;
@@ -51,7 +49,6 @@ export function AIFloatingHost({
 								isOpen={isOpen}
 								activeFolderPath={activeFolderPath}
 								onClose={onToggle}
-								onAttachContextFiles={onAttachContextFiles}
 								width={panelWidth}
 							/>
 						</m.div>

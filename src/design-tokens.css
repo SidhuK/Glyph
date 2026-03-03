@@ -89,14 +89,31 @@
 	--space-10: 40px;
 	--space-12: 48px;
 
-	/* Border radius - flattened geometry (md/lg intentionally equal for a flatter UI) */
-	--radius-sm: 3px;
-	--radius-md: 4px;
-	--radius-lg: 4px;
-	--radius-xl: 5px;
-	--radius-2xl: 6px;
-	--radius-3xl: 8px;
-	--radius-full: 9999px;
+	/* Border radius - primitive steps plus semantic aliases */
+	--radius-2: 2px;
+	--radius-3: 3px;
+	--radius-4: 4px;
+	--radius-5: 5px;
+	--radius-6: 6px;
+	--radius-7: 7px;
+	--radius-8: 8px;
+	--radius-10: 10px;
+	--radius-12: 12px;
+	--radius-14: 14px;
+	--radius-15: 15px;
+	--radius-18: 18px;
+	--radius-24: 24px;
+	--radius-round: 9999px;
+
+	--radius-2xs: var(--radius-2);
+	--radius-xs: var(--radius-3);
+	--radius-sm: var(--radius-4);
+	--radius-md: var(--radius-6);
+	--radius-lg: var(--radius-10);
+	--radius-xl: var(--radius-14);
+	--radius-2xl: var(--radius-18);
+	--radius-3xl: var(--radius-24);
+	--radius-full: var(--radius-round);
 
 	/* Shadows - flattened visual language */
 	--shadow-sm: none;

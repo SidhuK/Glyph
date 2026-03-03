@@ -25,7 +25,7 @@
 	z-index: 20;
 	width: 56px;
 	height: 56px;
-	border-radius: 999px;
+	border-radius: var(--radius-full);
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -392,7 +392,7 @@
 	height: 26px;
 	width: 26px;
 	padding: 0;
-	border-radius: 999px;
+	border-radius: var(--radius-full);
 	border: 1px solid transparent;
 	background: transparent;
 	color: var(--text-secondary);
@@ -451,7 +451,7 @@
 .aiPendingDot {
 	width: 6px;
 	height: 6px;
-	border-radius: 999px;
+	border-radius: var(--radius-full);
 	background: var(--ai-mode-accent, var(--interactive-accent));
 	animation: aiPendingPulse 1.15s ease-in-out infinite;
 }
@@ -465,7 +465,7 @@
 .aiPendingLine {
 	display: block;
 	height: 8px;
-	border-radius: 999px;
+	border-radius: var(--radius-full);
 	background: linear-gradient(
 		100deg,
 		color-mix(in srgb, var(--bg-primary) 76%, transparent) 30%,
@@ -494,7 +494,7 @@
 .aiPendingDots span {
 	width: 5px;
 	height: 5px;
-	border-radius: 999px;
+	border-radius: var(--radius-full);
 	background: color-mix(in srgb, var(--text-tertiary) 90%, transparent);
 	animation: aiPendingDotWave 1s ease-in-out infinite;
 }
@@ -524,7 +524,7 @@
 .aiToolStatusDot {
 	width: 6px;
 	height: 6px;
-	border-radius: 999px;
+	border-radius: var(--radius-full);
 	background: var(--interactive-accent);
 	animation: aiToolPulse 1.15s ease-in-out infinite;
 }
@@ -551,7 +551,7 @@
 	align-items: center;
 	gap: 5px;
 	padding: 1px 7px;
-	border-radius: 999px;
+	border-radius: var(--radius-full);
 	font-size: 10px;
 	color: var(--interactive-accent);
 	background: color-mix(in srgb, var(--interactive-accent) 16%, transparent);
@@ -562,7 +562,7 @@
 .aiToolLiveDot {
 	width: 6px;
 	height: 6px;
-	border-radius: 999px;
+	border-radius: var(--radius-full);
 	background: var(--interactive-accent);
 	animation: aiToolLivePulse 1s ease-in-out infinite;
 }
@@ -626,7 +626,7 @@
 
 .aiToolPhase {
 	padding: 1px 6px;
-	border-radius: 999px;
+	border-radius: var(--radius-full);
 	font-size: 10px;
 	line-height: 1.5;
 }
@@ -779,7 +779,7 @@
 	height: 20px;
 	padding: 0 6px;
 	flex: 0 0 auto;
-	border-radius: 3px;
+	border-radius: var(--radius-xs);
 	font-size: 10px;
 	line-height: 1;
 	border: 1px solid color-mix(in srgb, var(--border-light) 45%, transparent);
@@ -818,7 +818,7 @@
 .aiAddPanelInput {
 	width: 100%;
 	height: 28px;
-	border-radius: 6px;
+	border-radius: var(--radius-md);
 	padding: 0 8px;
 	font-size: var(--text-xs);
 	border: 1px solid color-mix(in srgb, var(--border-light) 50%, transparent);
@@ -840,7 +840,7 @@
 	justify-content: flex-start;
 	width: 100%;
 	padding: 5px 8px;
-	border-radius: 6px;
+	border-radius: var(--radius-md);
 	font-size: var(--text-xs);
 	color: var(--text-primary);
 	text-align: left;
@@ -898,7 +898,7 @@
 	z-index: 1;
 	width: 26px;
 	height: 26px;
-	border-radius: 8px;
+	border-radius: var(--radius-8);
 	flex: 0 0 auto;
 	color: color-mix(in srgb, var(--ai-mode-accent) 70%, var(--text-secondary));
 	background: color-mix(in srgb, var(--bg-secondary) 82%, transparent);
@@ -968,28 +968,13 @@
 	z-index: 2;
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
+	gap: 8px;
+	justify-content: flex-end;
 }
 
-.aiComposerTools {
-	display: flex;
-	align-items: center;
-	gap: 2px;
-}
-
-.aiComposerTools button {
-	color: var(--text-tertiary);
-}
-
-.aiComposerTools button:hover:not(:disabled) {
-	color: var(--text-primary);
-}
-
-.aiComposerTools button:disabled {
-	opacity: 0.3;
-}
-
-.aiComposerRight {
+.aiComposerControls {
+	flex: 1 1 auto;
+	min-width: 0;
 	display: flex;
 	align-items: center;
 	gap: 6px;
@@ -997,16 +982,14 @@
 
 .aiModeMiniToggle {
 	position: relative;
-	position: absolute;
-	left: 8px;
-	right: 8px;
-	bottom: 40px;
 	display: flex;
 	align-items: center;
+	flex: 1 1 50%;
+	min-width: 0;
 	gap: 0;
 	padding: 2px;
-	height: 22px;
-	border-radius: 7px;
+	height: 26px;
+	border-radius: var(--radius-7);
 	border: none;
 	background: color-mix(in srgb, var(--bg-secondary) 88%, transparent);
 	backdrop-filter: none;
@@ -1015,7 +998,7 @@
 }
 
 .aiModeMiniOption {
-	--ai-mode-mini-radius: 5px;
+	--ai-mode-mini-radius: var(--radius-5);
 	position: relative;
 	flex: 1;
 	display: flex;
@@ -1078,6 +1061,13 @@
 	gap: 4px;
 	position: relative;
 	z-index: 1;
+}
+
+.aiComposerRight {
+	flex: 1 1 50%;
+	min-width: 0;
+	display: flex;
+	align-items: center;
 }
 
 .aiComposerSend {

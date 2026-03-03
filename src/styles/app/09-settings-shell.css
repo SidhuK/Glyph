@@ -156,7 +156,7 @@
 .settingsTabIcon {
 	height: 20px;
 	width: 20px;
-	border-radius: 999px;
+	border-radius: var(--radius-full);
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;

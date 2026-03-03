@@ -6,6 +6,7 @@
 	display: inline-flex;
 	align-items: center;
 	gap: var(--space-1);
+	width: 100%;
 	height: var(--button-height-sm);
 	padding: 0 var(--space-2);
 	border-radius: var(--radius-md);
@@ -17,7 +18,7 @@
 	color: var(--text-secondary);
 	cursor: pointer;
 	transition: all var(--transition-base);
-	max-width: 180px;
+	min-width: 0;
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -39,6 +40,8 @@
 }
 
 .triggerLabel {
+	flex: 1 1 auto;
+	min-width: 0;
 	overflow: hidden;
 	text-overflow: ellipsis;
 }

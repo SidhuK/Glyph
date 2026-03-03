@@ -2,7 +2,6 @@ import { cn } from "@/lib/utils";
 import {
 	AtIcon,
 	Chat01Icon,
-	Link01Icon,
 	Navigation03Icon,
 	PaintBrush04Icon,
 	StopIcon,
@@ -12,7 +11,7 @@ import { m, useReducedMotion } from "motion/react";
 import type { Dispatch, SetStateAction } from "react";
 import { useAISidebarContext } from "../../contexts";
 import { APP_TAGLINE } from "../../lib/copy";
-import { FileText, X } from "../Icons";
+import { X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { ModelSelector } from "./ModelSelector";
 import { AI_MODES } from "./aiPanelConstants";
@@ -37,7 +36,6 @@ interface AIComposerProps {
 	setAddPanelQuery: (query: string) => void;
 	onAddContext: (kind: "folder" | "file", path: string) => void;
 	onRemoveContext: (kind: "folder" | "file", path: string) => void;
-	onAttachContextFiles: (paths: string[]) => Promise<void>;
 }
 
 function fileNameFromPath(path: string): string {
@@ -68,7 +66,6 @@ export function AIComposer({
 	setAddPanelQuery,
 	onAddContext,
 	onRemoveContext,
-	onAttachContextFiles,
 }: AIComposerProps) {
 	const { aiAssistantMode, setAiAssistantMode } = useAISidebarContext();
 	const shouldReduceMotion = useReducedMotion();
@@ -196,123 +193,101 @@ export function AIComposer({
 						}}
 						rows={1}
 					/>
-					<div className="aiModeMiniToggle" role="tablist" aria-label="AI mode">
-						{AI_MODES.map((mode) => {
-							const active = mode.value === aiAssistantMode;
-							return (
-								<button
-									key={mode.value}
-									type="button"
-									role="tab"
-									aria-selected={active}
-									className={cn(
-										"aiModeMiniOption",
-										`aiModeMiniOption-${mode.value}`,
-										active && "active",
-									)}
-									title={mode.hint}
-									onClick={() => setAiAssistantMode(mode.value)}
-									disabled={isAwaitingResponse}
-								>
-									{active ? (
-										<m.span
-											layoutId="ai-mode-active"
-											className={cn(
-												"aiModeMiniActive",
-												`aiModeMiniActive-${mode.value}`,
-											)}
-											transition={
-												shouldReduceMotion
-													? { duration: 0 }
-													: {
-															type: "spring",
-															stiffness: 260,
-															damping: 30,
-															mass: 0.9,
-														}
-											}
-										/>
-									) : null}
-									<span className="aiModeMiniText">
-										<HugeiconsIcon
-											icon={
-												mode.value === "create" ? PaintBrush04Icon : Chat01Icon
-											}
-											size={11}
-										/>
-										{mode.label}
-									</span>
-								</button>
-							);
-						})}
-					</div>
 					<div className="aiComposerBar">
-						<div className="aiComposerTools">
+						<div className="aiComposerControls">
+							<div
+								className="aiModeMiniToggle"
+								role="tablist"
+								aria-label="AI mode"
+							>
+								{AI_MODES.map((mode) => {
+									const active = mode.value === aiAssistantMode;
+									return (
+										<button
+											key={mode.value}
+											type="button"
+											role="tab"
+											aria-selected={active}
+											className={cn(
+												"aiModeMiniOption",
+												`aiModeMiniOption-${mode.value}`,
+												active && "active",
+											)}
+											title={mode.hint}
+											onClick={() => setAiAssistantMode(mode.value)}
+											disabled={isAwaitingResponse}
+										>
+											{active ? (
+												<m.span
+													layoutId="ai-mode-active"
+													className={cn(
+														"aiModeMiniActive",
+														`aiModeMiniActive-${mode.value}`,
+													)}
+													transition={
+														shouldReduceMotion
+															? { duration: 0 }
+															: {
+																	type: "spring",
+																	stiffness: 260,
+																	damping: 30,
+																	mass: 0.9,
+																}
+													}
+												/>
+											) : null}
+											<span className="aiModeMiniText">
+												<HugeiconsIcon
+													icon={
+														mode.value === "create"
+															? PaintBrush04Icon
+															: Chat01Icon
+													}
+													size={11}
+												/>
+												{mode.label}
+											</span>
+										</button>
+									);
+								})}
+							</div>
+							<div className="aiComposerRight">
+								<ModelSelector
+									key={profiles.activeProfileId ?? "no-profile"}
+									profileId={profiles.activeProfileId}
+									value={profiles.activeProfile?.model ?? ""}
+									provider={profiles.activeProfile?.provider ?? null}
+									profiles={profiles.profiles}
+									activeProfileId={profiles.activeProfileId}
+									onProfileChange={(id) => void profiles.setActive(id)}
+									onChange={(modelId) => void profiles.setModel(modelId)}
+								/>
+							</div>
+						</div>
+						{isAwaitingResponse ? (
+							<button
+								type="button"
+								className="aiComposerStop"
+								onClick={onStop}
+								aria-label="Stop"
+								title="Stop"
+							>
+								<HugeiconsIcon icon={StopIcon} size={14} />
+							</button>
+						) : (
 							<Button
 								type="button"
 								variant="ghost"
 								size="icon-sm"
-								aria-label="Attach file or folder"
-								title="Attach file or folder"
-								onClick={() => {
-									setAddPanelOpen(true);
-									setAddPanelQuery("");
-								}}
+								className="aiComposerSend"
+								disabled={!canSend}
+								onClick={onSend}
+								aria-label="Send"
+								title="Send"
 							>
-								<HugeiconsIcon icon={Link01Icon} size={14} />
+								<HugeiconsIcon icon={Navigation03Icon} size={14} />
 							</Button>
-							<Button
-								type="button"
-								variant="ghost"
-								size="icon-sm"
-								aria-label="Attach selected context files"
-								title="Attach selected context files"
-								onClick={() =>
-									void context
-										.resolveAttachedPaths()
-										.then((paths) => onAttachContextFiles(paths))
-								}
-								disabled={context.attachedFolders.length === 0}
-							>
-								<FileText size={14} />
-							</Button>
-						</div>
-						<div className="aiComposerRight">
-							<ModelSelector
-								key={profiles.activeProfileId ?? "no-profile"}
-								profileId={profiles.activeProfileId}
-								value={profiles.activeProfile?.model ?? ""}
-								provider={profiles.activeProfile?.provider ?? null}
-								profiles={profiles.profiles}
-								activeProfileId={profiles.activeProfileId}
-								onProfileChange={(id) => void profiles.setActive(id)}
-								onChange={(modelId) => void profiles.setModel(modelId)}
-							/>
-							{isAwaitingResponse ? (
-								<button
-									type="button"
-									className="aiComposerStop"
-									onClick={onStop}
-									aria-label="Stop"
-									title="Stop"
-								>
-									<HugeiconsIcon icon={StopIcon} size={14} />
-								</button>
-							) : (
-								<Button
-									type="button"
-									variant="ghost"
-									size="icon-sm"
-									className="aiComposerSend"
-									disabled={!canSend}
-									onClick={onSend}
-									aria-label="Send"
-									title="Send"
-								>
-									<HugeiconsIcon icon={Navigation03Icon} size={14} />
-								</Button>
-							)}
-						</div>
+						)}
 					</div>
 				</div>
 			</div>
