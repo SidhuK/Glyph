@@ -1,3 +1,5 @@
+import { Close } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { formatTrialRemaining } from "../../lib/license";
 import type { LicenseStatus } from "../../lib/tauri";
@@ -6,9 +8,10 @@ import { Button } from "../ui/shadcn/button";
 
 interface TrialBannerProps {
 	status: LicenseStatus;
+	onDismiss: () => void;
 }
 
-export function TrialBanner({ status }: TrialBannerProps) {
+export function TrialBanner({ status, onDismiss }: TrialBannerProps) {
 	return (
 		<output className="licenseTrialBanner" aria-live="polite">
 			<div className="licenseTrialBannerCopy">
@@ -24,6 +27,15 @@ export function TrialBanner({ status }: TrialBannerProps) {
 			</div>
 
 			<div className="licenseTrialBannerActions">
+				<button
+					type="button"
+					className="licenseTrialBannerDismiss"
+					onClick={onDismiss}
+					aria-label="Dismiss trial banner"
+					title="Dismiss"
+				>
+					<HugeiconsIcon icon={Close} size={14} />
+				</button>
 				<Button
 					type="button"
 					variant="outline"

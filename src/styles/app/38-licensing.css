@@ -171,6 +171,33 @@
 	flex-wrap: wrap;
 }
 
+.licenseTrialBannerDismiss {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	padding: 0;
+	border: 0;
+	border-radius: var(--radius-full);
+	background: transparent;
+	color: var(--text-tertiary);
+	cursor: pointer;
+	transition: color 140ms ease, background-color 140ms ease;
+}
+
+.licenseTrialBannerDismiss:hover {
+	background: color-mix(in srgb, var(--text-primary) 8%, transparent);
+	color: var(--text-primary);
+}
+
+.licenseTrialBannerDismiss:focus-visible {
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	outline-offset: 2px;
+	color: var(--text-primary);
+}
+
 .licenseSettingsField {
 	align-items: flex-start;
 }

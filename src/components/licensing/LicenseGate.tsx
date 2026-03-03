@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { type ReactNode, useState } from "react";
 import { useLicenseStatus } from "../../lib/license";
 import { LicenseLockScreen } from "./LicenseLockScreen";
 import { TrialBanner } from "./TrialBanner";
@@ -9,6 +9,7 @@ interface LicenseGateProps {
 
 export function LicenseGate({ children }: LicenseGateProps) {
 	const { status, loading, error, reload } = useLicenseStatus();
+	const [trialBannerDismissed, setTrialBannerDismissed] = useState(false);
 
 	if (loading) {
 		return (
@@ -38,7 +39,12 @@ export function LicenseGate({ children }: LicenseGateProps) {
 
 	return (
 		<>
-			{status.mode === "trial_active" ? <TrialBanner status={status} /> : null}
+			{status.mode === "trial_active" && !trialBannerDismissed ? (
+				<TrialBanner
+					status={status}
+					onDismiss={() => setTrialBannerDismissed(true)}
+				/>
+			) : null}
 			{children}
 		</>
 	);

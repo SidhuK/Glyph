@@ -75,13 +75,7 @@ const faqs = [
     <!-- ── HERO ── -->
     <section class="hero">
       <div class="dock" aria-hidden="true">
-        <div class="dock-bar">
-          <img src="/glyph-logo.png" alt="" class="dock-icon dock-icon-main" />
-          <div class="dock-icon dock-placeholder" style="background: #3B82F6"></div>
-          <div class="dock-icon dock-placeholder" style="background: #10B981"></div>
-          <div class="dock-icon dock-placeholder" style="background: #F59E0B"></div>
-          <div class="dock-icon dock-placeholder" style="background: #8B5CF6"></div>
-        </div>
+        <img src="/dock.png" alt="" class="dock-img" />
       </div>
 
       <h1>
@@ -103,44 +97,12 @@ const faqs = [
 
     <!-- ── PRODUCT SHOWCASE ── -->
     <section class="showcase" data-reveal style="--delay: 350ms">
-      <div class="showcase-frame">
-        <div class="showcase-topbar">
-          <span class="showcase-breadcrumb">
-            <img src="/glyph-logo.png" alt="" class="showcase-bc-icon" />
-            glyph
-          </span>
-          <span class="showcase-sep">/</span>
-          <span class="showcase-breadcrumb">monday</span>
-        </div>
-        <div class="showcase-canvas">
-          <div class="showcase-card">
-            <div class="showcase-card-content">
-              <p>☐ you can create to dos</p>
-              <p>unordered lists</p>
-              <p>or just write your thoughts</p>
-            </div>
-          </div>
-          <img
-            class="showcase-screenshot"
-            src="/main-image.png"
-            alt="Glyph workspace showing the markdown editor, file tree, and AI chat panel"
-            loading="eager"
-          />
-        </div>
-        <div class="showcase-toolbar">
-          <span class="showcase-tool active">
-            <span class="tool-icon">✎</span> Card
-          </span>
-          <span class="showcase-tool-sep">|</span>
-          <span class="showcase-tool">
-            <span class="tool-icon">✏</span> 2
-          </span>
-          <span class="showcase-tool-sep">|</span>
-          <span class="showcase-tool">
-            <span class="tool-icon">✏</span> 3
-          </span>
-        </div>
-      </div>
+      <img
+        class="showcase-img"
+        src="/main_image.png"
+        alt="Glyph workspace showing the markdown editor, file tree, and AI chat panel"
+        loading="eager"
+      />
     </section>
 
     <!-- ── NOT YOUR AVERAGE ── -->
@@ -346,30 +308,10 @@ const faqs = [
     margin-bottom: 2.5rem;
   }
 
-  .dock-bar {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    padding: 0.6rem 1rem;
-    background: var(--surface);
-    border-radius: 16px;
-    border: 1px solid var(--line);
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
-  }
-
-  .dock-icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 12px;
-    object-fit: cover;
-  }
-
-  .dock-icon-main {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
-  }
-
-  .dock-placeholder {
-    opacity: 0.7;
+  .dock-img {
+    max-width: 420px;
+    width: 100%;
+    height: auto;
   }
 
   h1 {
@@ -447,118 +389,14 @@ const faqs = [
 
   /* ── Showcase ── */
   .showcase {
-    width: min(740px, 90vw);
-    margin-inline: auto;
+    width: 100%;
     padding: 0 0 6rem;
   }
 
-  .showcase-frame {
-    border-radius: 16px;
-    overflow: hidden;
-    background: var(--card-bg);
-    box-shadow:
-      0 48px 19px rgba(0, 0, 0, 0.02),
-      0 27px 16px rgba(0, 0, 0, 0.06),
-      0 12px 12px rgba(0, 0, 0, 0.1),
-      0 3px 7px rgba(0, 0, 0, 0.12);
+  .showcase-img {
+    width: 100%;
+    display: block;
   }
-
-  .showcase-topbar {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.75rem 1rem;
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-    color: rgba(255, 255, 255, 0.5);
-  }
-
-  .showcase-breadcrumb {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-  }
-
-  .showcase-bc-icon {
-    width: 14px;
-    height: 14px;
-    border-radius: 3px;
-  }
-
-  .showcase-sep { color: rgba(255, 255, 255, 0.25); }
-
-  .showcase-canvas {
-    position: relative;
-    min-height: 340px;
-    background-image:
-      radial-gradient(circle, rgba(255, 255, 255, 0.08) 1px, transparent 1px);
-    background-size: 20px 20px;
-    padding: 1.5rem;
-    display: flex;
-    align-items: flex-start;
-    gap: 1.5rem;
-  }
-
-  .showcase-card {
-    flex-shrink: 0;
-    width: 200px;
-    background: rgba(255, 255, 255, 0.08);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    padding: 1rem;
-  }
-
-  .showcase-card-content p {
-    font-family: var(--font-mono);
-    font-size: 0.78rem;
-    color: rgba(255, 255, 255, 0.8);
-    line-height: 1.7;
-    margin: 0;
-  }
-
-  .showcase-screenshot {
-    flex: 1;
-    min-width: 0;
-    border-radius: 8px;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    object-fit: cover;
-    max-height: 300px;
-  }
-
-  .showcase-toolbar {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    background: rgba(0, 0, 0, 0.3);
-    border-top: 1px solid rgba(255, 255, 255, 0.06);
-  }
-
-  .showcase-tool {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.3rem;
-    font-family: var(--font-mono);
-    font-size: 0.72rem;
-    color: rgba(255, 255, 255, 0.4);
-    padding: 0.2rem 0.5rem;
-    border-radius: 4px;
-  }
-
-  .showcase-tool.active {
-    background: var(--accent);
-    color: var(--ink);
-    font-weight: 600;
-  }
-
-  .showcase-tool-sep {
-    color: rgba(255, 255, 255, 0.15);
-    font-size: 0.72rem;
-  }
-
-  .tool-icon { font-size: 0.85rem; }
 
   /* ── Section typography ── */
   h2 {
@@ -985,11 +823,9 @@ const faqs = [
 
     h1 { font-size: clamp(2.2rem, 9vw, 3.2rem); }
 
-    .dock-icon { width: 38px; height: 38px; border-radius: 10px; }
+    .dock-img { max-width: 300px; }
 
-    .showcase-canvas { flex-direction: column; min-height: auto; }
-    .showcase-card { width: 100%; }
-    .showcase-screenshot { max-height: 200px; }
+
 
     .features-grid { grid-template-columns: 1fr; }
     .feature-cell:nth-child(odd) { border-right: none; }
