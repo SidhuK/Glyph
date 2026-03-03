@@ -1,6 +1,7 @@
 import { join } from "@tauri-apps/api/path";
 import { useCallback, useEffect, useRef } from "react";
 import { trackNoteCreated } from "../lib/analytics";
+import { dispatchPathRemoved } from "../lib/appEvents";
 import {
 	createDatabaseNotePath,
 	createDefaultDatabaseConfig,
@@ -449,6 +450,10 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 					(kind === "dir" && Boolean(activePreview?.startsWith(`${target}/`)))
 				)
 					setActivePreviewPath(null);
+				dispatchPathRemoved({
+					path: target,
+					recursive: kind === "dir",
+				});
 				await loadDir(parent, true);
 				await refreshActiveFolderViewAfterPathChange(target);
 				return true;

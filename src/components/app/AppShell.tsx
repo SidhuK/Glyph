@@ -17,6 +17,7 @@ import { useDailyNote } from "../../hooks/useDailyNote";
 import { useFileTree } from "../../hooks/useFileTree";
 import { useMenuListeners } from "../../hooks/useMenuListeners";
 import { useResizablePanel } from "../../hooks/useResizablePanel";
+import { dispatchPathRemoved } from "../../lib/appEvents";
 import { getLicenseStatus } from "../../lib/license";
 import type { Shortcut } from "../../lib/shortcuts";
 import { getShortcutTooltip } from "../../lib/shortcuts";
@@ -334,10 +335,13 @@ export function AppShell() {
 	});
 
 	const handleSpaceFsChanged = useCallback(
-		(payload: { rel_path: string }) => {
+		(payload: { rel_path: string; removed: boolean }) => {
 			if (!spacePath) return;
 			const changedPath = normalizeRelPath(payload.rel_path);
 			if (!changedPath) return;
+			if (payload.removed) {
+				dispatchPathRemoved({ path: changedPath, recursive: true });
+			}
 			fsRefreshQueueRef.current.add(changedPath);
 			if (fsRefreshTimerRef.current !== null) return;
 			fsRefreshTimerRef.current = window.setTimeout(() => {

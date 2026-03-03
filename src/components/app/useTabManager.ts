@@ -107,6 +107,47 @@ export function useTabManager(spacePath: string | null) {
 		closeTab(activeTabPath);
 	}, [activeTabPath, closeTab]);
 
+	const closeTabsForPathRemoval = useCallback(
+		(path: string, recursive = false) => {
+			setOpenTabs((prev) => {
+				const next = prev.filter((tabPath) => {
+					if (tabPath === TASKS_TAB_ID) return true;
+					if (tabPath === path) return false;
+					return !(recursive && tabPath.startsWith(`${path}/`));
+				});
+				if (next.length === prev.length) return prev;
+				setActiveTabPath((current) => {
+					if (!current) return current;
+					if (current === path) {
+						const removedIndex = prev.indexOf(current);
+						return next[removedIndex] ?? next[removedIndex - 1] ?? null;
+					}
+					if (recursive && current.startsWith(`${path}/`)) {
+						const removedIndex = prev.indexOf(current);
+						return next[removedIndex] ?? next[removedIndex - 1] ?? null;
+					}
+					return current;
+				});
+				return next;
+			});
+			setDirtyByPath((prev) => {
+				let changed = false;
+				const next: Record<string, boolean> = {};
+				for (const [tabPath, dirty] of Object.entries(prev)) {
+					const removed =
+						tabPath === path || (recursive && tabPath.startsWith(`${path}/`));
+					if (removed) {
+						changed = true;
+						continue;
+					}
+					next[tabPath] = dirty;
+				}
+				return changed ? next : prev;
+			});
+		},
+		[],
+	);
+
 	const reorderTabs = useCallback((fromPath: string, toPath: string) => {
 		if (!fromPath || !toPath || fromPath === toPath) return;
 		setOpenTabs((prev) => {
@@ -174,6 +215,7 @@ export function useTabManager(spacePath: string | null) {
 		setDirtyByPath,
 		closeTab,
 		closeActiveTab,
+		closeTabsForPathRemoval,
 		reorderTabs,
 		openSpecialTab,
 		recentFiles,

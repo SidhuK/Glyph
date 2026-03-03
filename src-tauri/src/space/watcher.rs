@@ -12,6 +12,7 @@ use super::state::{has_recent_local_change, SpaceState};
 #[derive(Serialize, Clone)]
 struct ExternalChangeEvent {
     rel_path: String,
+    removed: bool,
 }
 
 const DEBOUNCE_MS: u64 = 100;
@@ -99,21 +100,28 @@ pub fn set_notes_watcher(
             }
 
             if utils::is_markdown_path(&path) {
-                if !has_recent_local_change(&recent_local_changes, &rel_s) {
-                    let _ = idx_tx.send((rel_s.clone(), is_remove));
+	                if !has_recent_local_change(&recent_local_changes, &rel_s) {
+	                    let _ = idx_tx.send((rel_s.clone(), is_remove));
 
-                    let _ = app2.emit(
-                        "notes:external_changed",
-                        ExternalChangeEvent {
-                            rel_path: rel_s.clone(),
-                        },
-                    );
-                }
-            }
+	                    let _ = app2.emit(
+	                        "notes:external_changed",
+	                        ExternalChangeEvent {
+	                            rel_path: rel_s.clone(),
+	                            removed: is_remove,
+	                        },
+	                    );
+	                }
+	            }
 
-            let _ = app2.emit("space:fs_changed", ExternalChangeEvent { rel_path: rel_s });
-        }
-    })
+	            let _ = app2.emit(
+	                "space:fs_changed",
+	                ExternalChangeEvent {
+	                    rel_path: rel_s,
+	                    removed: is_remove,
+	                },
+	            );
+	        }
+	    })
     .map_err(|e| e.to_string())?;
 
     let mut watcher = watcher;

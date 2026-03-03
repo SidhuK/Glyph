@@ -1,5 +1,9 @@
 import { Suspense, lazy, memo, useEffect, useMemo } from "react";
 import { useSpace } from "../../contexts";
+import {
+	PATH_REMOVED_EVENT,
+	type PathRemovedDetail,
+} from "../../lib/appEvents";
 import { APP_TAGLINE } from "../../lib/copy";
 import { formatShortcutPartsForPlatform } from "../../lib/shortcuts/platform";
 import { TASKS_TAB_ID } from "../../lib/tasks";
@@ -52,6 +56,7 @@ export const MainContent = memo(function MainContent({
 		setDirtyByPath,
 		closeTab,
 		closeActiveTab,
+		closeTabsForPathRemoval,
 		reorderTabs,
 		openSpecialTab,
 		canvasLoadingMessage,
@@ -66,13 +71,21 @@ export const MainContent = memo(function MainContent({
 		const handleCloseActiveTab = () => {
 			closeActiveTab();
 		};
+		const handlePathRemoved = (event: Event) => {
+			const detail = (event as CustomEvent<PathRemovedDetail>).detail;
+			if (!detail?.path) return;
+			closeTabsForPathRemoval(detail.path, detail.recursive);
+		};
 		window.addEventListener("glyph:close-active-tab", handleCloseActiveTab);
-		return () =>
+		window.addEventListener(PATH_REMOVED_EVENT, handlePathRemoved);
+		return () => {
 			window.removeEventListener(
 				"glyph:close-active-tab",
 				handleCloseActiveTab,
 			);
-	}, [closeActiveTab]);
+			window.removeEventListener(PATH_REMOVED_EVENT, handlePathRemoved);
+		};
+	}, [closeActiveTab, closeTabsForPathRemoval]);
 
 	const viewerPath = activeTabPath;
 	const commandShortcutParts = useMemo(

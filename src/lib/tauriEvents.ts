@@ -46,8 +46,8 @@ type TauriEventMap = {
 		payload?: unknown;
 		error?: string;
 	};
-	"notes:external_changed": { rel_path: string };
-	"space:fs_changed": { rel_path: string };
+	"notes:external_changed": { rel_path: string; removed: boolean };
+	"space:fs_changed": { rel_path: string; removed: boolean };
 	"settings:updated": {
 		ui?: {
 			theme?: string;

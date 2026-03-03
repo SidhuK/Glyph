@@ -7,6 +7,41 @@ use crate::{index, paths, space::SpaceState, utils};
 use super::super::helpers::deny_hidden_rel_path;
 use super::trash::move_path_to_trash;
 
+fn remove_markdown_notes_from_index(
+    root: &Path,
+    rel_path: &str,
+    abs_path: &Path,
+    recent_local_changes: &RecentLocalChanges,
+    is_dir: bool,
+) {
+    if is_dir {
+        let prefix = if rel_path.ends_with('/') {
+            rel_path.to_string()
+        } else {
+            format!("{rel_path}/")
+        };
+        if let Ok(conn) = index::open_db(root) {
+            if let Ok(mut stmt) = conn.prepare("SELECT id FROM notes WHERE id = ? OR id LIKE ?") {
+                let pattern = format!("{prefix}%");
+                if let Ok(rows) =
+                    stmt.query_map([rel_path, pattern.as_str()], |row| row.get::<_, String>(0))
+                {
+                    for note_id in rows.filter_map(|row| row.ok()) {
+                        mark_recent_local_change(recent_local_changes, &note_id);
+                        let _ = index::remove_note(root, &note_id);
+                    }
+                }
+            }
+        }
+        return;
+    }
+
+    if utils::is_markdown_path(abs_path) {
+        mark_recent_local_change(recent_local_changes, rel_path);
+        let _ = index::remove_note(root, rel_path);
+    }
+}
+
 #[tauri::command]
 pub async fn space_create_dir(state: State<'_, SpaceState>, path: String) -> Result<(), String> {
     let root = state.current_root()?;
@@ -129,6 +164,7 @@ pub async fn space_delete_path(
     recursive: Option<bool>,
 ) -> Result<(), String> {
     let root = state.current_root()?;
+    let recent_local_changes = state.recent_local_changes();
     tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
         let rel = PathBuf::from(&path);
         if rel.as_os_str().is_empty() {
@@ -137,6 +173,13 @@ pub async fn space_delete_path(
         deny_hidden_rel_path(&rel)?;
         let abs = paths::join_under(&root, &rel)?;
         let meta = std::fs::metadata(&abs).map_err(|e| e.to_string())?;
+        remove_markdown_notes_from_index(
+            &root,
+            &path,
+            &abs,
+            &recent_local_changes,
+            meta.is_dir(),
+        );
         if meta.is_dir() {
             if recursive.unwrap_or(false) {
                 move_path_to_trash(&abs)
