@@ -111,19 +111,14 @@ export function AboutSettingsPane() {
 						/>
 					</div>
 					<div className="aboutTitleRow">
-						<span className="aboutAppName">
-							{appInfo?.name ?? "Glyph"}
-						</span>
+						<span className="aboutAppName">{appInfo?.name ?? "Glyph"}</span>
 						<span className="aboutVersion">{versionLabel}</span>
 					</div>
 					<div className="aboutStatusRow">
 						<span className="settingsPill aboutEarlyAccessBadge earlyAccessBadge">
 							Early Access
 						</span>
-						<span
-							className="aboutOpenSourceMark"
-							title="Open Source project"
-						>
+						<span className="aboutOpenSourceMark" title="Open Source project">
 							<HugeiconsIcon icon={CodesandboxIcon} size={12} />
 							<span>Open Source</span>
 						</span>
@@ -154,9 +149,7 @@ export function AboutSettingsPane() {
 								: "Check for Updates"}
 						</button>
 					</div>
-					{updateStatus ? (
-						<p className="settingsHint">{updateStatus}</p>
-					) : null}
+					{updateStatus ? <p className="settingsHint">{updateStatus}</p> : null}
 				</div>
 			</div>
 		</div>

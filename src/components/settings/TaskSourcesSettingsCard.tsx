@@ -118,9 +118,7 @@ export function TaskSourcesSettingsCard({
 							variant="outline"
 							size="sm"
 							disabled={
-								!draftFolder ||
-								source.folders.includes(draftFolder) ||
-								saving
+								!draftFolder || source.folders.includes(draftFolder) || saving
 							}
 							onClick={() => {
 								const next = [...source.folders, draftFolder].sort((a, b) =>
