@@ -81,12 +81,21 @@ export function TaskSourcesSettingsCard({
 			<div className="settingsCardHeader">
 				<div>
 					<div className="settingsCardTitle">Task Sources</div>
-					<div className="settingsCardHint">
-						Choose whether tasks come from your whole space or only selected
-						folders.
-					</div>
 				</div>
-				<div className="settingsPill settingsPillInfo">All task views</div>
+				<select
+					aria-label="Task source scope"
+					value={source.mode}
+					disabled={!hasSpace || saving}
+					onChange={(event) =>
+						void persist({
+							mode: event.target.value === "folders" ? "folders" : "space",
+							folders: source.folders,
+						})
+					}
+				>
+					<option value="space">Whole space</option>
+					<option value="folders">Selected folders</option>
+				</select>
 			</div>
 			{error ? <div className="settingsError">{error}</div> : null}
 			{!hasSpace ? (
@@ -94,100 +103,69 @@ export function TaskSourcesSettingsCard({
 					Open a space first to choose which folders feed the Tasks pane.
 				</div>
 			) : null}
-			<div className="settingsTaskSourceBlock">
-				<div className="settingsField">
-					<div>
-						<div className="settingsLabel">Scope</div>
-						<div className="settingsHelp">
-							This applies everywhere in Tasks.
-						</div>
+			{source.mode === "folders" ? (
+				<div className="settingsTaskSourceFolders">
+					<div className="settingsTaskSourcePicker">
+						<DatabaseFolderPicker
+							value={draftFolder}
+							label="Task Folder"
+							description="Pick a folder to include in the Tasks pane."
+							placeholder="Choose a folder"
+							onChange={setDraftFolder}
+						/>
+						<Button
+							type="button"
+							variant="outline"
+							size="sm"
+							disabled={
+								!draftFolder ||
+								source.folders.includes(draftFolder) ||
+								saving
+							}
+							onClick={() => {
+								const next = [...source.folders, draftFolder].sort((a, b) =>
+									a.localeCompare(b),
+								);
+								void persist({ mode: "folders", folders: next });
+								setDraftFolder("");
+							}}
+						>
+							Add folder
+						</Button>
 					</div>
-					<select
-						value={source.mode}
-						disabled={!hasSpace || saving}
-						onChange={(event) =>
-							void persist({
-								mode: event.target.value === "folders" ? "folders" : "space",
-								folders: source.folders,
-							})
-						}
-					>
-						<option value="space">Whole space</option>
-						<option value="folders">Selected folders</option>
-					</select>
-				</div>
-				{source.mode === "folders" ? (
-					<div className="settingsTaskSourceFolders">
-						<div className="settingsField settingsTaskSourcePickerRow">
-							<div>
-								<div className="settingsLabel">Included Folders</div>
-								<div className="settingsHelp">
-									Only tasks in these folders will show up.
-								</div>
-							</div>
-							<div className="settingsTaskSourcePicker">
-								<DatabaseFolderPicker
-									value={draftFolder}
-									label="Task Folder"
-									description="Pick a folder to include in the Tasks pane."
-									placeholder="Choose a folder"
-									onChange={setDraftFolder}
-								/>
-								<Button
+					{source.folders.length > 0 ? (
+						<div className="settingsTaskSourceChipList">
+							{source.folders.map((folder) => (
+								<button
+									key={folder}
 									type="button"
-									variant="outline"
-									size="sm"
-									disabled={
-										!draftFolder ||
-										source.folders.includes(draftFolder) ||
-										saving
+									className="settingsPill settingsTaskSourceChip"
+									disabled={saving}
+									onClick={() =>
+										void persist({
+											mode: "folders",
+											folders: source.folders.filter(
+												(entry) => entry !== folder,
+											),
+										})
 									}
-									onClick={() => {
-										const next = [...source.folders, draftFolder].sort((a, b) =>
-											a.localeCompare(b),
-										);
-										void persist({ mode: "folders", folders: next });
-										setDraftFolder("");
-									}}
+									title={`Remove ${folder}`}
 								>
-									Add folder
-								</Button>
-							</div>
+									{folderName(folder)}
+									<span className="settingsTaskSourceChipX" aria-hidden="true">
+										×
+									</span>
+								</button>
+							))}
 						</div>
-						{source.folders.length > 0 ? (
-							<div className="settingsTaskSourceChipList">
-								{source.folders.map((folder) => (
-									<button
-										key={folder}
-										type="button"
-										className="settingsTaskSourceChip"
-										disabled={saving}
-										onClick={() =>
-											void persist({
-												mode: "folders",
-												folders: source.folders.filter(
-													(entry) => entry !== folder,
-												),
-											})
-										}
-										title={`Remove ${folder}`}
-									>
-										<span className="settingsTaskSourceChipLabel">
-											{folderName(folder)}
-										</span>
-										<span className="settingsTaskSourceChipMeta">{folder}</span>
-									</button>
-								))}
-							</div>
-						) : (
-							<div className="settingsEmpty">
-								No folders selected yet. Add at least one folder or switch back
-								to whole space.
-							</div>
-						)}
-					</div>
-				) : null}
-			</div>
+					) : (
+						<div className="settingsEmpty">
+							No folders selected yet. Add at least one folder or switch back to
+							whole space.
+						</div>
+					)}
+				</div>
+			) : null}
 		</section>
 	);
 }

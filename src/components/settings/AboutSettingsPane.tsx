@@ -101,58 +101,63 @@ export function AboutSettingsPane() {
 			{error ? <div className="settingsError">{error}</div> : null}
 
 			<div className="aboutContent">
-				<div className="aboutLogoWrap">
-					<img
-						src={`/glyph-app-icon.png?v=${appInfo?.version ?? "dev"}`}
-						alt=""
-						className="aboutLogo"
-						aria-hidden="true"
-					/>
+				<div className="aboutFooter">
+					<div className="aboutLogoWrap">
+						<img
+							src={`/glyph-app-icon.png?v=${appInfo?.version ?? "dev"}`}
+							alt=""
+							className="aboutLogo"
+							aria-hidden="true"
+						/>
+					</div>
+					<div className="aboutTitleRow">
+						<span className="aboutAppName">
+							{appInfo?.name ?? "Glyph"}
+						</span>
+						<span className="aboutVersion">{versionLabel}</span>
+					</div>
+					<div className="aboutStatusRow">
+						<span className="settingsPill aboutEarlyAccessBadge earlyAccessBadge">
+							Early Access
+						</span>
+						<span
+							className="aboutOpenSourceMark"
+							title="Open Source project"
+						>
+							<HugeiconsIcon icon={CodesandboxIcon} size={12} />
+							<span>Open Source</span>
+						</span>
+					</div>
+					<div className="aboutLinksGrid">
+						<button
+							type="button"
+							onClick={() => void openUrl("https://x.com/karat_sidhu")}
+						>
+							X (Twitter)
+						</button>
+						<button
+							type="button"
+							onClick={() => void openUrl("https://github.com/SidhuK")}
+						>
+							GitHub
+						</button>
+						<button type="button" onClick={() => void handleCopyDebugInfo()}>
+							{copyLabel}
+						</button>
+						<button
+							type="button"
+							disabled={checkingUpdates}
+							onClick={() => void handleCheckForUpdates()}
+						>
+							{checkingUpdates
+								? "Checking for Updates..."
+								: "Check for Updates"}
+						</button>
+					</div>
+					{updateStatus ? (
+						<p className="settingsHint">{updateStatus}</p>
+					) : null}
 				</div>
-				<div className="aboutTitleRow">
-					<span className="aboutAppName">{appInfo?.name ?? "Glyph"}</span>
-					<span className="aboutVersion">{versionLabel}</span>
-				</div>
-				<div className="aboutStatusRow">
-					<span className="settingsPill aboutEarlyAccessBadge earlyAccessBadge">
-						Early Access
-					</span>
-					<span className="aboutOpenSourceMark" title="Open Source project">
-						<HugeiconsIcon icon={CodesandboxIcon} size={12} />
-						<span>Open Source</span>
-					</span>
-				</div>
-
-				<div className="aboutLinksRow">
-					<button
-						type="button"
-						onClick={() => void openUrl("https://x.com/karat_sidhu")}
-					>
-						X (Twitter)
-					</button>
-					<span className="aboutDot">·</span>
-					<button
-						type="button"
-						onClick={() => void openUrl("https://github.com/SidhuK")}
-					>
-						GitHub
-					</button>
-					<span className="aboutDot">·</span>
-					<button type="button" onClick={() => void handleCopyDebugInfo()}>
-						{copyLabel}
-					</button>
-				</div>
-
-				<div className="aboutLinksRow aboutActionsRow">
-					<button
-						type="button"
-						disabled={checkingUpdates}
-						onClick={() => void handleCheckForUpdates()}
-					>
-						{checkingUpdates ? "Checking for Updates..." : "Check for Updates"}
-					</button>
-				</div>
-				{updateStatus ? <p className="settingsHint">{updateStatus}</p> : null}
 			</div>
 		</div>
 	);

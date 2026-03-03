@@ -19,19 +19,10 @@ export function AiActiveProfileSection({
 				<div className="settingsCardHeader">
 					<div>
 						<div className="settingsCardTitle">Active Profile</div>
-						<div className="settingsCardHint">
-							Switch between saved provider profiles.
-						</div>
-					</div>
-				</div>
-				<div className="settingsField">
-					<div>
-						<label className="settingsLabel" htmlFor="aiProfileSel">
-							Active profile
-						</label>
 					</div>
 					<select
 						id="aiProfileSel"
+						aria-label="Active profile"
 						value={activeProfileId ?? ""}
 						onChange={(event) =>
 							void onActiveProfileChange(event.target.value || null)

@@ -308,6 +308,11 @@
 	white-space: normal;
 }
 
+.settingsHintWarn {
+	color: var(--text-primary);
+	font-weight: 500;
+}
+
 .settingsBadge {
 	display: inline-flex;
 	align-items: center;

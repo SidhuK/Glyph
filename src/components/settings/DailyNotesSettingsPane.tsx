@@ -77,37 +77,32 @@ export function DailyNotesSettingsPane() {
 								New daily notes will be created here.
 							</div>
 						</div>
+						<div className="settingsActions dailyNotesActions">
+							<Button
+								type="button"
+								variant="default"
+								size="sm"
+								onClick={handleBrowseFolder}
+								disabled={isLoading}
+							>
+								<FolderOpen size={14} />
+								Browse
+							</Button>
+							{currentFolder && (
+								<Button
+									type="button"
+									variant="ghost"
+									size="sm"
+									onClick={handleClearFolder}
+									disabled={isLoading}
+								>
+									Clear
+								</Button>
+							)}
+						</div>
 					</div>
 
 					<div className="dailyNotesFolderField">
-						<div className="settingsField">
-							<div>
-								<div className="settingsLabel">Location</div>
-							</div>
-							<div className="settingsActions dailyNotesActions">
-								<Button
-									type="button"
-									variant="default"
-									size="sm"
-									onClick={handleBrowseFolder}
-									disabled={isLoading}
-								>
-									<FolderOpen size={14} />
-									Browse
-								</Button>
-								{currentFolder && (
-									<Button
-										type="button"
-										variant="ghost"
-										size="sm"
-										onClick={handleClearFolder}
-										disabled={isLoading}
-									>
-										Clear
-									</Button>
-								)}
-							</div>
-						</div>
 						<div className="dailyNotesFolderPath mono">
 							{isLoading ? "Loading..." : folderDisplay}
 						</div>

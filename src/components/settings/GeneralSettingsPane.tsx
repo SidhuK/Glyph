@@ -48,9 +48,6 @@ export function GeneralSettingsPane() {
 					<div className="settingsCardHeader">
 						<div>
 							<div className="settingsCardTitle">Assistant Default View</div>
-							<div className="settingsCardHint">
-								Choose which assistant view opens first.
-							</div>
 						</div>
 					</div>
 

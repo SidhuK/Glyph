@@ -154,7 +154,7 @@ export function AiSettingsPane() {
 							<option value="disabled">Off</option>
 						</select>
 					</div>
-					<p className="settingsHint">
+					<p className="settingsHint settingsHintWarn">
 						When off, AI panels and AI command-palette actions stay hidden.
 					</p>
 				</section>

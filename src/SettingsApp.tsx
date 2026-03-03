@@ -39,31 +39,31 @@ const SETTINGS_TABS: SettingsTabMeta[] = [
 	{
 		id: "general",
 		label: "General",
-		subtitle: "Assistant defaults and core app behavior.",
+		subtitle: "",
 		renderIcon: () => <SettingsIcon size={14} />,
 	},
 	{
 		id: "appearance",
 		label: "Appearance",
-		subtitle: "Theme mode, accent palette, and typography choices.",
+		subtitle: "",
 		renderIcon: () => <HugeiconsIcon icon={TextFontIcon} size={14} />,
 	},
 	{
 		id: "ai",
 		label: "AI",
-		subtitle: "Providers, profiles, API keys, and model settings.",
+		subtitle: "",
 		renderIcon: () => <HugeiconsIcon icon={AiBrain04Icon} size={14} />,
 	},
 	{
 		id: "space",
 		label: "Space",
-		subtitle: "Current space details, recent spaces, and index tools.",
+		subtitle: "",
 		renderIcon: () => <FolderOpen size={14} />,
 	},
 	{
 		id: "about",
 		label: "About",
-		subtitle: "Version info, release updates, and support links.",
+		subtitle: "",
 		renderIcon: () => <InformationCircle size={14} />,
 	},
 ];

@@ -103,7 +103,7 @@ export function LicenseSettingsCard() {
 				<div>
 					<div className="settingsCardTitle">License</div>
 					<div className="settingsCardHint">
-						Manage the 48-hour trial and your Gumroad activation for this build.
+						Manage your trial and activate your license.
 					</div>
 				</div>
 				<span className={statusPillClassName(status)}>
@@ -116,15 +116,6 @@ export function LicenseSettingsCard() {
 			{successMessage ? (
 				<div className="settingsKeySaved">{successMessage}</div>
 			) : null}
-
-			<div className="settingsField">
-				<div>
-					<div className="settingsLabel">Build Type</div>
-					<div className="settingsValue">
-						{status?.is_official_build ? "Official release" : "Community build"}
-					</div>
-				</div>
-			</div>
 
 			{status?.mode === "trial_active" || status?.mode === "trial_expired" ? (
 				<div className="settingsField">
@@ -163,8 +154,7 @@ export function LicenseSettingsCard() {
 					<div>
 						<div className="settingsLabel">Activate Glyph</div>
 						<div className="settingsCardHint">
-							Enter your Gumroad license key to unlock Glyph forever on this
-							device.
+							Enter your license key to unlock Glyph forever on this device.
 						</div>
 					</div>
 					<div className="licenseSettingsInputWrap">
@@ -173,7 +163,7 @@ export function LicenseSettingsCard() {
 							type="text"
 							autoComplete="off"
 							spellCheck={false}
-							aria-label="Gumroad license key"
+							aria-label="License key"
 							placeholder="XXXX-XXXX-XXXX-XXXX"
 							value={licenseKey}
 							onChange={(event) => setLicenseKey(event.target.value)}

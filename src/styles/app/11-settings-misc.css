@@ -47,31 +47,35 @@
 .aboutPane {
 	height: 100%;
 	display: flex;
-	align-items: center;
-	justify-content: center;
-	padding: 10px;
+	align-items: stretch;
+	padding: 0;
 }
 
 .aboutContent {
 	display: flex;
 	flex-direction: column;
-	align-items: center;
-	gap: 14px;
-	max-width: 560px;
-	text-align: center;
-	width: min(560px, 100%);
-	padding: 18px 10px 12px;
-	border: 0;
-	background: transparent;
+	justify-content: flex-end;
+	align-items: flex-end;
+	flex: 1;
+	padding: 24px 28px 28px;
 }
 
 .aboutLogoWrap {
-	width: 112px;
-	height: 112px;
+	width: 56px;
+	height: 56px;
+	flex-shrink: 0;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	animation: about-logo-breath 8s ease-in-out infinite;
+}
+
+.aboutFooter {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 10px;
+	text-align: right;
 }
 
 .aboutLogo {
@@ -87,14 +91,14 @@
 }
 
 .aboutAppName {
-	font-size: 34px;
+	font-size: 28px;
 	font-weight: 700;
 	letter-spacing: -0.02em;
 	color: var(--text-primary);
 }
 
 .aboutVersion {
-	font-size: 18px;
+	font-size: 15px;
 	color: var(--text-secondary);
 }
 
@@ -106,9 +110,7 @@
 	display: inline-flex;
 	align-items: center;
 	flex-wrap: wrap;
-	justify-content: center;
-	gap: 10px;
-	margin-top: 2px;
+	gap: 8px;
 }
 
 .aboutOpenSourceMark {
@@ -125,120 +127,43 @@
 	color: color-mix(in srgb, var(--text-secondary) 86%, var(--text-primary));
 }
 
-.aboutLinksRow {
-	position: relative;
-	display: inline-flex;
-	align-items: center;
-	gap: 14px;
-	flex-wrap: wrap;
-	justify-content: center;
-	width: min(360px, 100%);
-	padding-top: 14px;
-	margin-top: 2px;
-	border-top: 0;
-}
-
-.aboutLinksRow::before {
-	content: "";
-	position: absolute;
-	left: 50%;
-	width: 100%;
-	transform: translateX(-50%);
-	top: 0;
-	height: 1px;
-	background: linear-gradient(
-		90deg,
-		transparent 0%,
-		color-mix(in srgb, var(--border-light) 26%, transparent) 12%,
-		color-mix(in srgb, var(--border-light) 62%, transparent) 28%,
-		color-mix(in srgb, var(--border-light) 62%, transparent) 72%,
-		color-mix(in srgb, var(--border-light) 26%, transparent) 88%,
-		transparent 100%
-	);
-}
-
-.aboutLinksRow button {
-	background: transparent;
-	color: var(--text-secondary);
-	font-size: 11px;
-	font-weight: var(--font-medium);
-	padding: 2px 4px;
-	height: auto;
-	border-radius: var(--radius-sm);
-	border: 0;
-	border-bottom: 1px solid transparent;
-}
-
-.aboutLinksRow button:hover {
-	color: var(--text-primary);
-	background: transparent;
-	border-bottom-color: color-mix(
-		in srgb,
-		var(--interactive-accent) 30%,
-		transparent
-	);
-}
-
-.aboutDot {
-	color: var(--text-tertiary);
-	opacity: 0.7;
-}
-
-.aboutActionsRow {
-	margin-top: 6px;
-	gap: 0;
-	border-top: 0;
-	padding-top: 0;
-	width: auto;
-}
-
-.aboutActionsRow::before {
-	display: none;
-}
-
-.aboutActionsRow button {
-	font-size: 11px;
-	font-weight: var(--font-medium);
-	color: var(--text-primary);
-	height: 30px;
-	padding: 0 12px;
-	border-radius: var(--radius-md);
-	border: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
-	background: color-mix(in srgb, var(--bg-secondary) 36%, transparent);
-}
-
-.aboutActionsRow button:hover {
-	background: color-mix(in srgb, var(--bg-secondary) 54%, transparent);
-	border-color: color-mix(in srgb, var(--border-default) 55%, transparent);
-}
-
-.settingsTaskSourceBlock {
+.aboutLinksGrid {
 	display: flex;
 	flex-direction: column;
-	gap: 10px;
-	padding-top: 8px;
+	gap: 4px;
+	align-items: flex-end;
+	margin-top: 4px;
 }
 
-.settingsTaskSourceBlock + .settingsTaskSourceBlock {
-	margin-top: 6px;
-	border-top: 1px solid color-mix(in srgb, var(--border-light) 55%, transparent);
+.aboutLinksGrid button {
+	display: flex;
+	align-items: center;
+	font-size: 11px;
+	font-weight: var(--font-medium);
+	color: var(--text-secondary);
+	height: 26px;
+	padding: 0 8px;
+	border-radius: var(--radius-sm);
+	border: 0;
+	background: transparent;
+	transition: background var(--transition-base), color var(--transition-base);
+}
+
+.aboutLinksGrid button:hover {
+	color: var(--text-primary);
+	background: color-mix(in srgb, var(--bg-secondary) 64%, transparent);
 }
 
 .settingsTaskSourceFolders {
 	display: flex;
 	flex-direction: column;
 	gap: 10px;
-	padding-bottom: 4px;
-}
-
-.settingsTaskSourcePickerRow {
-	align-items: flex-start;
+	padding: 4px 0;
 }
 
 .settingsTaskSourcePicker {
 	display: flex;
 	align-items: center;
-	justify-content: flex-end;
 	gap: 8px;
 	flex-wrap: wrap;
 }
@@ -246,37 +171,33 @@
 .settingsTaskSourceChipList {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 8px;
+	gap: 6px;
 }
 
 .settingsTaskSourceChip {
 	display: inline-flex;
-	flex-direction: column;
-	align-items: flex-start;
-	gap: 2px;
-	padding: 8px 10px;
-	border-radius: var(--radius-md);
-	border: 1px solid color-mix(in srgb, var(--border-light) 75%, transparent);
-	background: color-mix(in srgb, var(--bg-secondary) 58%, transparent);
-	color: var(--text-secondary);
-	text-align: left;
+	align-items: center;
+	gap: 5px;
+	cursor: pointer;
+	transition: border-color var(--transition-base),
+		background var(--transition-base), color var(--transition-base);
 }
 
 .settingsTaskSourceChip:hover {
-	border-color: color-mix(in srgb, var(--interactive-accent) 32%, transparent);
-	background: color-mix(in srgb, var(--interactive-accent) 9%, transparent);
+	border-color: color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	background: color-mix(in srgb, var(--interactive-accent) 12%, transparent);
 	color: var(--text-primary);
 }
 
-.settingsTaskSourceChipLabel {
-	font-size: 12px;
-	font-weight: var(--font-medium);
-	color: inherit;
+.settingsTaskSourceChipX {
+	font-size: 11px;
+	line-height: 1;
+	opacity: 0.45;
+	transition: opacity var(--transition-base);
 }
 
-.settingsTaskSourceChipMeta {
-	font-size: 10px;
-	color: var(--text-tertiary);
+.settingsTaskSourceChip:hover .settingsTaskSourceChipX {
+	opacity: 1;
 }
 
 @media (max-width: 760px) {
@@ -286,16 +207,6 @@
 
 	.aboutStatusRow {
 		gap: 8px;
-	}
-
-	.aboutLinksRow {
-		gap: 10px;
-		width: 100%;
-	}
-
-	.aboutLinksRow button,
-	.aboutActionsRow button {
-		min-height: 30px;
 	}
 
 	.settingsTaskSourcePicker {

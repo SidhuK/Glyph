@@ -52,20 +52,11 @@ export function SpaceSettingsPane() {
 					<div className="settingsCardHeader">
 						<div>
 							<div className="settingsCardTitle">Current Space</div>
-							<div className="settingsCardHint">
-								The space currently open in this window.
+							<div className="settingsCardHint mono">
+								{currentSpacePath ?? "(none selected)"}
 							</div>
 						</div>
 						<div className="settingsPill settingsPillOk">Active</div>
-					</div>
-
-					<div className="settingsField">
-						<div>
-							<div className="settingsLabel">Path</div>
-						</div>
-						<div className="settingsValue mono">
-							{currentSpacePath ?? "(none selected)"}
-						</div>
 					</div>
 				</section>
 
@@ -73,9 +64,6 @@ export function SpaceSettingsPane() {
 					<div className="settingsCardHeader">
 						<div>
 							<div className="settingsCardTitle">Recent Spaces</div>
-							<div className="settingsCardHint">
-								Recently opened spaces on this Mac.
-							</div>
 						</div>
 						<button
 							type="button"
