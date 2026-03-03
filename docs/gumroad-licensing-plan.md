@@ -364,19 +364,6 @@ New frontend helper module:
 - `clearLocalLicense()`
 - `formatTrialRemaining()`
 
-## Analytics Additions
-
-If anonymous analytics is enabled, add these events:
-
-- `license_trial_started`
-- `license_trial_expired`
-- `license_activation_succeeded`
-- `license_activation_failed`
-
-Update allowlists in [src-tauri/src/analytics.rs](/Users/karatsidhu/Code/Glyph/src-tauri/src/analytics.rs) and wrappers in [src/lib/analytics.ts](/Users/karatsidhu/Code/Glyph/src/lib/analytics.ts).
-
-Do not include raw license keys or hashes in analytics.
-
 ## Test Plan
 
 ### Rust unit tests

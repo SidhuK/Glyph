@@ -1,5 +1,4 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { trackAiChatStarted } from "../../../lib/analytics";
 import {
 	type AiAssistantMode,
 	type AiMessage,
@@ -148,11 +147,6 @@ export function useRigChat() {
 						context_manifest: options?.body?.context_manifest,
 						audit: options?.body?.audit ?? true,
 					},
-				});
-				void trackAiChatStarted({
-					provider: options?.body?.provider ?? "openai_compat",
-					mode: options?.body?.mode ?? "create",
-					hasContext: Boolean(options?.body?.context?.trim()),
 				});
 
 				activeJobIdRef.current = jobId;

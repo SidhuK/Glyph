@@ -47,7 +47,6 @@ export const DATABASE_COLUMN_ICON_OPTIONS = [
 	{ id: "shield", label: "Shield", iconKey: "Shield01Icon" },
 	{ id: "settings", label: "Settings", iconKey: "Settings01Icon" },
 	{ id: "chart", label: "Chart", iconKey: "ChartIcon" },
-	{ id: "analytics", label: "Analytics", iconKey: "Analytics01Icon" },
 	{ id: "database", label: "Database", iconKey: "DatabaseIcon" },
 	{ id: "source", label: "Source", iconKey: "SourceCodeIcon" },
 	{ id: "terminal", label: "Terminal", iconKey: "CodeIcon" },

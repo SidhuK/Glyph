@@ -9,7 +9,6 @@ import {
 	useState,
 } from "react";
 import { clearInlineImageHydrationCache } from "../components/editor/hooks/useHydrateInlineImages";
-import { trackIndexRebuildStarted, trackSpaceOpened } from "../lib/analytics";
 import {
 	clearCurrentSpacePath,
 	loadSettings,
@@ -108,7 +107,6 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 	const startIndexRebuild = useCallback(async (): Promise<void> => {
 		setIsIndexing(true);
 		try {
-			void trackIndexRebuildStarted();
 			await invoke("index_rebuild");
 		} catch {
 			/* index is derived; ignore */
@@ -118,11 +116,7 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 	}, []);
 
 	const applySpaceSelection = useCallback(
-		async (
-			path: string,
-			mode: "open" | "create",
-			source: "continue_last" | "open_dialog" | "open_recent" | "create_dialog",
-		) => {
+		async (path: string, mode: "open" | "create") => {
 			if (isOpeningSpaceRef.current) return;
 			isOpeningSpaceRef.current = true;
 			setError("");
@@ -148,10 +142,6 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 				setLastSpacePath(spaceInfo.root);
 				setSpacePath(spaceInfo.root);
 				setSpaceSchemaVersion(spaceInfo.schema_version);
-				void trackSpaceOpened({
-					source,
-					spaceSchemaVersion: spaceInfo.schema_version,
-				});
 			} catch (err) {
 				setError(extractError(err));
 			} finally {
@@ -183,17 +173,16 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 		});
 		if (!selection) return;
 		const path = Array.isArray(selection) ? selection[0] : selection;
-		if (path) await applySpaceSelection(path, "open", "open_dialog");
+		if (path) await applySpaceSelection(path, "open");
 	}, [applySpaceSelection]);
 
 	const onOpenSpaceAtPath = useCallback(
-		async (path: string) => applySpaceSelection(path, "open", "open_recent"),
+		async (path: string) => applySpaceSelection(path, "open"),
 		[applySpaceSelection],
 	);
 
 	const onContinueLastSpace = useCallback(async () => {
-		if (lastSpacePath)
-			await applySpaceSelection(lastSpacePath, "open", "continue_last");
+		if (lastSpacePath) await applySpaceSelection(lastSpacePath, "open");
 	}, [lastSpacePath, applySpaceSelection]);
 
 	const onCreateSpace = useCallback(async () => {
@@ -205,7 +194,7 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 		});
 		if (!selection) return;
 		const path = Array.isArray(selection) ? selection[0] : selection;
-		if (path) await applySpaceSelection(path, "create", "create_dialog");
+		if (path) await applySpaceSelection(path, "create");
 	}, [applySpaceSelection]);
 
 	const value = useMemo<SpaceContextValue>(

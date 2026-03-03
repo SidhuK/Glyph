@@ -1,61 +1,17 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-	trackLicenseActivationFailed,
-	trackLicenseActivationSucceeded,
-	trackLicenseTrialExpired,
-	trackLicenseTrialStarted,
-} from "./analytics";
-import {
 	type LicenseActivateResult,
 	type LicenseStatus,
 	invoke,
 } from "./tauri";
 
 const LICENSE_UPDATED_EVENT = "glyph:license-updated";
-const MAX_TRACKED_TRIAL_EVENTS = 32;
-const trackedTrialStartTimes = new Set<number>();
-const trackedTrialExpiryTimes = new Set<number>();
 
 function dispatchLicenseUpdated(status: LicenseStatus) {
 	window.dispatchEvent(
 		new CustomEvent<LicenseStatus>(LICENSE_UPDATED_EVENT, { detail: status }),
 	);
-}
-
-function rememberTrackedTrial(set: Set<number>, timestampMs: number): boolean {
-	if (set.has(timestampMs)) return false;
-	if (set.size >= MAX_TRACKED_TRIAL_EVENTS) {
-		const oldest = set.values().next().value;
-		if (typeof oldest === "number") {
-			set.delete(oldest);
-		}
-	}
-	set.add(timestampMs);
-	return true;
-}
-
-function detectLicenseErrorCode(cause: unknown): string {
-	if (typeof cause === "object" && cause !== null && "code" in cause) {
-		const code = (cause as { code?: unknown }).code;
-		if (typeof code === "string" && code.trim()) {
-			return code;
-		}
-	}
-
-	const message =
-		cause instanceof Error
-			? cause.message.toLowerCase()
-			: typeof cause === "string"
-				? cause.toLowerCase()
-				: "";
-
-	if (message.includes("invalid")) return "invalid_license";
-	if (message.includes("timed out") || message.includes("could not reach")) {
-		return "network_error";
-	}
-	if (message.includes("too many")) return "service_error";
-	return "unknown";
 }
 
 export async function getLicenseStatus(): Promise<LicenseStatus> {
@@ -65,17 +21,11 @@ export async function getLicenseStatus(): Promise<LicenseStatus> {
 export async function activateLicenseKey(
 	licenseKey: string,
 ): Promise<LicenseActivateResult> {
-	try {
-		const result = await invoke("license_activate", {
-			license_key: licenseKey,
-		});
-		dispatchLicenseUpdated(result.status);
-		void trackLicenseActivationSucceeded();
-		return result;
-	} catch (cause) {
-		void trackLicenseActivationFailed(detectLicenseErrorCode(cause));
-		throw cause;
-	}
+	const result = await invoke("license_activate", {
+		license_key: licenseKey,
+	});
+	dispatchLicenseUpdated(result.status);
+	return result;
 }
 
 export async function clearLocalLicense(): Promise<LicenseActivateResult> {
@@ -165,27 +115,6 @@ export function useLicenseStatus(reloadOnWindowFocus = true): {
 		window.addEventListener(LICENSE_UPDATED_EVENT, onUpdated);
 		return () => window.removeEventListener(LICENSE_UPDATED_EVENT, onUpdated);
 	}, []);
-
-	useEffect(() => {
-		if (!status?.is_official_build) return;
-
-		if (
-			status.mode === "trial_active" &&
-			typeof status.trial_started_at_ms === "number" &&
-			Math.abs(Date.now() - status.trial_started_at_ms) < 15_000 &&
-			rememberTrackedTrial(trackedTrialStartTimes, status.trial_started_at_ms)
-		) {
-			void trackLicenseTrialStarted();
-		}
-
-		if (
-			status.mode === "trial_expired" &&
-			typeof status.trial_expires_at_ms === "number" &&
-			rememberTrackedTrial(trackedTrialExpiryTimes, status.trial_expires_at_ms)
-		) {
-			void trackLicenseTrialExpired();
-		}
-	}, [status]);
 
 	useEffect(() => {
 		if (!reloadOnWindowFocus) return;

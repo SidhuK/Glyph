@@ -39,7 +39,7 @@ const SETTINGS_TABS: SettingsTabMeta[] = [
 	{
 		id: "general",
 		label: "General",
-		subtitle: "Assistant defaults, analytics, and core app behavior.",
+		subtitle: "Assistant defaults and core app behavior.",
 		renderIcon: () => <SettingsIcon size={14} />,
 	},
 	{

@@ -42,7 +42,6 @@ const DEFAULT_UI_MONO_FONT_FAMILY = "JetBrains Mono";
 const MIN_UI_FONT_SIZE = 7;
 const MAX_UI_FONT_SIZE = 40;
 const DEFAULT_UI_FONT_SIZE = 14;
-const DEFAULT_ANALYTICS_ENABLED = false;
 const DEFAULT_AI_ENABLED = true;
 export type UiFontFamily = string;
 export type UiFontSize = number;
@@ -117,9 +116,6 @@ async function emitSettingsUpdated(payload: {
 	tasks?: {
 		source?: TaskSourceSetting;
 	};
-	analytics?: {
-		enabled?: boolean;
-	};
 }): Promise<void> {
 	try {
 		await emit("settings:updated", payload);
@@ -154,10 +150,6 @@ interface AppSettings {
 	tasks: {
 		source: TaskSourceSetting;
 	};
-	analytics: {
-		enabled: boolean;
-		distinctId: string;
-	};
 }
 
 const KEYS = {
@@ -174,8 +166,6 @@ const KEYS = {
 	fontSize: "ui.fontSize",
 	dailyNotesFolder: "dailyNotes.folder",
 	taskSource: "tasks.source",
-	analyticsEnabled: "analytics.enabled",
-	analyticsDistinctId: "analytics.distinctId",
 } as const;
 
 function normalizeTaskSourceSetting(value: unknown): TaskSourceSetting {
@@ -257,8 +247,6 @@ export async function loadSettings(): Promise<AppSettings> {
 		rawFontSize,
 		dailyNotesFolderRaw,
 		taskSourceRaw,
-		analyticsEnabledRaw,
-		analyticsDistinctIdRaw,
 	] = await Promise.all([
 		store.get<string | null>(KEYS.currentSpacePath),
 		store.get<string[] | null>(KEYS.recentSpaces),
@@ -273,8 +261,6 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<unknown>(KEYS.fontSize),
 		store.get<string | null>(KEYS.dailyNotesFolder),
 		store.get<unknown>(KEYS.taskSource),
-		store.get<boolean | null>(KEYS.analyticsEnabled),
-		store.get<string | null>(KEYS.analyticsDistinctId),
 	]);
 	const currentSpacePath = currentSpacePathRaw ?? null;
 	const recentSpaces = recentSpacesRaw ?? [];
@@ -292,12 +278,6 @@ export async function loadSettings(): Promise<AppSettings> {
 	const taskSource =
 		normalizeLegacyTaskSourceSetting(taskSourceRaw) ??
 		normalizeTaskSourceSetting(taskSourceRaw);
-	const analyticsEnabled =
-		typeof analyticsEnabledRaw === "boolean"
-			? analyticsEnabledRaw
-			: DEFAULT_ANALYTICS_ENABLED;
-	const analyticsDistinctId =
-		typeof analyticsDistinctIdRaw === "string" ? analyticsDistinctIdRaw : "";
 	return {
 		currentSpacePath,
 		recentSpaces: Array.isArray(recentSpaces) ? recentSpaces : [],
@@ -320,10 +300,6 @@ export async function loadSettings(): Promise<AppSettings> {
 		},
 		tasks: {
 			source: taskSource,
-		},
-		analytics: {
-			enabled: analyticsEnabled,
-			distinctId: analyticsDistinctId,
 		},
 	};
 }
@@ -437,31 +413,6 @@ export async function setTaskSource(source: TaskSourceSetting): Promise<void> {
 	await store.set(KEYS.taskSource, next);
 	await store.save();
 	void emitSettingsUpdated({ tasks: { source: next } });
-}
-
-export async function getAnalyticsEnabled(): Promise<boolean> {
-	const store = await getStore();
-	const raw = await store.get<boolean | null>(KEYS.analyticsEnabled);
-	return typeof raw === "boolean" ? raw : DEFAULT_ANALYTICS_ENABLED;
-}
-
-export async function setAnalyticsEnabled(enabled: boolean): Promise<void> {
-	const store = await getStore();
-	await store.set(KEYS.analyticsEnabled, enabled);
-	await store.save();
-	void emitSettingsUpdated({ analytics: { enabled } });
-}
-
-export async function getOrCreateAnalyticsDistinctId(): Promise<string> {
-	const store = await getStore();
-	const existing = await store.get<string | null>(KEYS.analyticsDistinctId);
-	if (typeof existing === "string" && existing.trim().length > 0) {
-		return existing.trim();
-	}
-	const next = crypto.randomUUID();
-	await store.set(KEYS.analyticsDistinctId, next);
-	await store.save();
-	return next;
 }
 
 export async function getRecentFiles(): Promise<RecentFile[]> {

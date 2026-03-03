@@ -1,6 +1,5 @@
 import { join } from "@tauri-apps/api/path";
 import { useCallback, useEffect, useRef } from "react";
-import { trackNoteCreated } from "../lib/analytics";
 import { dispatchPathRemoved } from "../lib/appEvents";
 import {
 	createDatabaseNotePath,
@@ -160,7 +159,6 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 					text: `# ${fileTitle}\n`,
 					base_mtime_ms: null,
 				});
-				void trackNoteCreated({ entrypoint: "ui" });
 				insertEntryOptimistic(parentDir(markdownRel), {
 					name: fileName,
 					rel_path: markdownRel,
@@ -224,7 +222,6 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 					text: markdown,
 					base_mtime_ms: null,
 				});
-				void trackNoteCreated({ entrypoint: "ui" });
 				insertEntryOptimistic(parentDir(nextPath), {
 					name: nextPath.split("/").pop() ?? "New Database.md",
 					rel_path: nextPath,

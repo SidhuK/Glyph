@@ -1,6 +1,5 @@
 mod ai_codex;
 mod ai_rig;
-mod analytics;
 mod database;
 mod glyph_fs;
 mod glyph_paths;
@@ -80,7 +79,6 @@ fn system_monospace_fonts_list() -> Result<Vec<String>, String> {
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     init_tracing();
-    analytics::load_env_files();
 
     tauri::Builder::default()
         .menu(|app| {
@@ -402,7 +400,6 @@ pub fn run() {
         })
         .manage(ai_rig::AiState::default())
         .manage(ai_codex::state::CodexState::default())
-        .manage(analytics::AnalyticsState::from_env())
         .manage(space::SpaceState::default())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_notification::init())
@@ -414,7 +411,6 @@ pub fn run() {
             greet,
             ping,
             app_info,
-            analytics::analytics_track,
             system_fonts_list,
             system_monospace_fonts_list,
             license::commands::license_bootstrap_status,

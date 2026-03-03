@@ -1,5 +1,4 @@
 import { useCallback, useRef, useState } from "react";
-import { trackNoteCreated } from "../lib/analytics";
 import {
 	getDailyNoteContent,
 	getDailyNotePath,
@@ -31,13 +30,10 @@ export function useDailyNote(options: UseDailyNoteOptions): UseDailyNoteReturn {
 				const todayDate = getTodayDateString();
 				const notePath = getDailyNotePath(folder, todayDate);
 				const content = getDailyNoteContent(todayDate);
-				const result = await invoke("space_open_or_create_text", {
+				await invoke("space_open_or_create_text", {
 					path: notePath,
 					text: content,
 				});
-				if (result.created) {
-					void trackNoteCreated({ entrypoint: "daily_note" });
-				}
 				await onOpenFile(notePath);
 				return notePath;
 			} catch (err) {

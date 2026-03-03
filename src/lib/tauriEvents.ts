@@ -71,9 +71,6 @@ type TauriEventMap = {
 		tasks?: {
 			source?: { mode?: "space" | "folders"; folders?: string[] };
 		};
-		analytics?: {
-			enabled?: boolean;
-		};
 	};
 };
 
