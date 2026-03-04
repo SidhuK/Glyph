@@ -89,11 +89,11 @@ const faqs = [
 				<span class="logo-version">EARLY ACCESS</span>
 			</a>
 			<nav class="nav">
-				<a href="/docs">Docs</a>
+				<a href="/docs/introduction">Docs</a>
 				<a href="https://github.com/SidhuK/Glyph" target="_blank" rel="noopener">GitHub</a>
 				<a href="https://github.com/SidhuK/Glyph/releases" target="_blank" rel="noopener">Changelog</a>
 			</nav>
-			<a href="https://karatsidhu.gumroad.com/l/sqxfay" class="header-cta" target="_blank" rel="noopener">Get Glyph ↗</a>
+			<a href="https://karatsidhu.gumroad.com/l/sqxfay" class="header-cta" target="_blank" rel="noopener">Get Glyph</a>
 		</header>
 
 		<!-- ── HERO ── -->
@@ -303,7 +303,7 @@ const faqs = [
 				</div>
 				<div class="footer-col">
 					<p class="footer-heading">PRODUCT</p>
-					<a href="/docs">Docs</a>
+					<a href="/docs/introduction">Docs</a>
 					<a href="https://github.com/SidhuK/Glyph/releases" target="_blank" rel="noopener">Changelog</a>
 					<a href="https://github.com/SidhuK/Glyph" target="_blank" rel="noopener">GitHub</a>
 				</div>
@@ -1092,8 +1092,42 @@ const faqs = [
 	}
 
 	/* ── Responsive ── */
+	@media (max-width: 900px) {
+		.header {
+			flex-wrap: wrap;
+			align-items: flex-start;
+			gap: 0.7rem 1rem;
+		}
+
+		.logo {
+			width: 100%;
+		}
+
+		.nav {
+			margin-left: 0;
+			flex: 1 1 0;
+			flex-wrap: wrap;
+		}
+
+		.header-cta {
+			margin-left: 0;
+		}
+	}
+
 	@media (max-width: 640px) {
-		.header { flex-wrap: wrap; }
+		.header {
+			gap: 0.6rem;
+		}
+
+		.logo {
+			flex-wrap: wrap;
+		}
+
+		.nav {
+			width: 100%;
+			gap: 0.05rem;
+		}
+
 		.nav a { padding: 0.35rem 0.5rem; font-size: 0.65rem; }
 		.header-cta { padding: 0.35rem 0.7rem; font-size: 0.65rem; }
 
