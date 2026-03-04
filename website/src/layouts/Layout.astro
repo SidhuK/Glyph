@@ -1,4 +1,7 @@
 ---
+import Analytics from "@vercel/analytics/astro";
+import SpeedInsights from "@vercel/speed-insights/astro";
+
 interface Props {
 	title?: string;
 	description?: string;
@@ -85,6 +88,8 @@ const socialImageUrl = Astro.site
 	</head>
 	<body>
 		<slot />
+		<Analytics />
+		<SpeedInsights />
 	</body>
 </html>
 
