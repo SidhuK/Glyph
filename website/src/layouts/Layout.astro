@@ -21,8 +21,12 @@ const {
 	preloadImageSizes,
 	preloadImageSrcSet,
 } = Astro.props;
-const canonicalUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).toString() : undefined;
-const socialImageUrl = Astro.site ? new URL(ogImage, Astro.site).toString() : ogImage;
+const canonicalUrl = Astro.site
+	? new URL(Astro.url.pathname, Astro.site).toString()
+	: undefined;
+const socialImageUrl = Astro.site
+	? new URL(ogImage, Astro.site).toString()
+	: ogImage;
 ---
 
 <!doctype html>
