@@ -1,0 +1,167 @@
+---
+import logoG from "../../assets/logo_g.PNG";
+import Layout from "./Layout.astro";
+
+interface Props {
+	title: string;
+	description: string;
+	summary: string;
+}
+
+const { title, description, summary } = Astro.props;
+---
+
+<Layout title={`${title} — Glyph`} description={description}>
+	<div class="legal-page">
+		<header class="legal-header">
+			<a href="/" class="legal-logo">
+				<img src={logoG.src} alt="" class="legal-logo-icon" />
+				<span>GLYPH</span>
+			</a>
+			<a href="/" class="legal-home">Back home</a>
+		</header>
+
+		<main class="legal-main">
+			<p class="legal-label">LEGAL</p>
+			<h1>{title}</h1>
+			<p class="legal-summary">{summary}</p>
+			<div class="legal-content">
+				<slot />
+			</div>
+		</main>
+	</div>
+</Layout>
+
+<style>
+	.legal-page {
+		width: min(760px, 90vw);
+		margin: 0 auto;
+		padding: 2.5rem 0 4rem;
+	}
+
+	.legal-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		margin-bottom: 3rem;
+	}
+
+	.legal-logo {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.45rem;
+		font-size: 0.75rem;
+		font-weight: 600;
+		letter-spacing: 0.14em;
+	}
+
+	.legal-logo-icon {
+		width: 1.25rem;
+		height: 1.25rem;
+		border-radius: 4px;
+	}
+
+	.legal-home {
+		font-size: 0.72rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--muted);
+		border-bottom: 1px solid transparent;
+		transition: color 0.15s ease, border-color 0.15s ease;
+	}
+
+	.legal-home:hover {
+		color: var(--ink);
+		border-color: rgba(17, 17, 17, 0.2);
+	}
+
+	.legal-label {
+		font-size: 0.68rem;
+		font-weight: 500;
+		letter-spacing: 0.18em;
+		color: var(--faint);
+		margin-bottom: 0.85rem;
+	}
+
+	h1 {
+		font-family: var(--serif);
+		font-size: clamp(2.3rem, 5vw, 3rem);
+		font-style: italic;
+		font-weight: 400;
+		line-height: 1.1;
+		margin-bottom: 1rem;
+	}
+
+	.legal-summary {
+		max-width: 42rem;
+		font-size: 0.9rem;
+		line-height: 1.8;
+		color: var(--muted);
+		margin-bottom: 2.25rem;
+	}
+
+	.legal-content {
+		display: grid;
+		gap: 1.8rem;
+	}
+
+	:global(.legal-section) {
+		border-top: 1px solid var(--border);
+		padding-top: 1.15rem;
+	}
+
+	:global(.legal-section h2) {
+		font-family: var(--mono);
+		font-size: 0.78rem;
+		font-weight: 600;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		margin-bottom: 0.7rem;
+	}
+
+	:global(.legal-section p) {
+		font-size: 0.88rem;
+		line-height: 1.8;
+		color: var(--muted);
+	}
+
+	:global(.legal-section ul) {
+		list-style: none;
+		display: grid;
+		gap: 0.55rem;
+	}
+
+	:global(.legal-section li) {
+		font-size: 0.88rem;
+		line-height: 1.75;
+		color: var(--muted);
+		padding-left: 0.9rem;
+		position: relative;
+	}
+
+	:global(.legal-section li::before) {
+		content: "·";
+		position: absolute;
+		left: 0;
+		top: 0;
+		color: var(--faint);
+		font-weight: 700;
+	}
+
+	:global(.legal-note) {
+		color: var(--ink);
+	}
+
+	@media (max-width: 640px) {
+		.legal-page {
+			padding-top: 1.75rem;
+		}
+
+		.legal-header {
+			flex-direction: column;
+			align-items: flex-start;
+			margin-bottom: 2.25rem;
+		}
+	}
+</style>

@@ -99,9 +99,19 @@ const faqs = [
 			<div class="hero-cta-stack">
 				<div class="hero-actions">
 					<a href="https://karatsidhu.gumroad.com/l/sqxfay" class="btn-primary" target="_blank" rel="noopener">Get Started</a>
-					<a href="https://github.com/SidhuK/Glyph" class="btn-outline" target="_blank" rel="noopener">GitHub</a>
+					<a href="https://github.com/SidhuK/Glyph" class="btn-github" target="_blank" rel="noopener">
+						<svg class="btn-github-mark" viewBox="0 0 438.549 438.549" aria-hidden="true">
+							<path d="M409.132 114.573c-19.608-33.596-46.205-60.194-79.798-79.8-33.598-19.607-70.277-29.408-110.063-29.408-39.781 0-76.472 9.804-110.063 29.408-33.596 19.605-60.192 46.204-79.8 79.8C9.803 148.168 0 184.854 0 224.63c0 47.78 13.94 90.745 41.827 128.906 27.884 38.164 63.906 64.572 108.063 79.227 5.14.954 8.945.283 11.419-1.996 2.475-2.282 3.711-5.14 3.711-8.562 0-.571-.049-5.708-.144-15.417a2549.81 2549.81 0 01-.144-25.406l-6.567 1.136c-4.187.767-9.469 1.092-15.846 1-6.374-.089-12.991-.757-19.842-1.999-6.854-1.231-13.229-4.086-19.13-8.559-5.898-4.473-10.085-10.328-12.56-17.556l-2.855-6.57c-1.903-4.374-4.899-9.233-8.992-14.559-4.093-5.331-8.232-8.945-12.419-10.848l-1.999-1.431c-1.332-.951-2.568-2.098-3.711-3.429-1.142-1.331-1.997-2.663-2.568-3.997-.572-1.335-.098-2.43 1.427-3.289 1.525-.859 4.281-1.276 8.28-1.276l5.708.853c3.807.763 8.516 3.042 14.133 6.851 5.614 3.806 10.229 8.754 13.846 14.842 4.38 7.806 9.657 13.754 15.846 17.847 6.184 4.093 12.419 6.136 18.699 6.136 6.28 0 11.704-.476 16.274-1.423 4.565-.952 8.848-2.383 12.847-4.285 1.713-12.758 6.377-22.559 13.988-29.41-10.848-1.14-20.601-2.857-29.264-5.14-8.658-2.286-17.605-5.996-26.835-11.14-9.235-5.137-16.896-11.516-22.985-19.126-6.09-7.614-11.088-17.61-14.987-29.979-3.901-12.374-5.852-26.648-5.852-42.826 0-23.035 7.52-42.637 22.557-58.817-7.044-17.318-6.379-36.732 1.997-58.24 5.52-1.715 13.706-.428 24.554 3.853 10.85 4.283 18.794 7.952 23.84 10.994 5.046 3.041 9.089 5.618 12.135 7.708 17.705-4.947 35.976-7.421 54.818-7.421s37.117 2.474 54.823 7.421l10.849-6.849c7.419-4.57 16.18-8.758 26.262-12.565 10.088-3.805 17.802-4.853 23.134-3.138 8.562 21.509 9.325 40.922 2.279 58.24 15.036 16.18 22.559 35.787 22.559 58.817 0 16.178-1.958 30.497-5.853 42.966-3.9 12.471-8.941 22.457-15.125 29.979-6.191 7.521-13.901 13.85-23.131 18.986-9.232 5.14-18.182 8.85-26.84 11.136-8.662 2.286-18.415 4.004-29.263 5.146 9.894 8.562 14.842 22.077 14.842 40.539v60.237c0 3.422 1.19 6.279 3.572 8.562 2.379 2.279 6.136 2.95 11.276 1.995 44.163-14.653 80.185-41.062 108.068-79.226 27.88-38.161 41.825-81.126 41.825-128.906-.01-39.771-9.818-76.454-29.414-110.049z"></path>
+						</svg>
+						<span>Star on GitHub</span>
+						<span class="btn-github-stars" aria-hidden="true">
+							<svg class="btn-github-star" viewBox="0 0 24 24">
+								<path d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.006 5.404.434c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.434 2.082-5.005Z"></path>
+							</svg>
+						</span>
+					</a>
 				</div>
-				<div class="install-strip" aria-label="Homebrew install command">
+				<div class="install-strip" aria-label="Homebrew install command" data-install-strip>
 					<div class="install-strip-bar">
 						<code class="install-strip-code" data-install-command>brew install --cask SidhuK/glyph/glyph</code>
 						<button class="install-strip-copy" type="button" data-copy-install aria-label="Copy Homebrew install command" title="Copy command">
@@ -111,6 +121,7 @@ const faqs = [
 							</svg>
 						</button>
 					</div>
+					<p class="install-strip-status" data-install-status aria-live="polite">Ready for Terminal.</p>
 				</div>
 			</div>
 		</section>
@@ -256,7 +267,17 @@ const faqs = [
 			<h2>Start writing with<br />Glyph today</h2>
 			<div class="cta-actions">
 				<a href="https://karatsidhu.gumroad.com/l/sqxfay" class="btn-primary" target="_blank" rel="noopener">Get Glyph</a>
-				<a href="https://github.com/SidhuK/Glyph" class="btn-outline" target="_blank" rel="noopener">View Source</a>
+				<a href="https://github.com/SidhuK/Glyph" class="btn-github" target="_blank" rel="noopener">
+					<svg class="btn-github-mark" viewBox="0 0 438.549 438.549" aria-hidden="true">
+						<path d="M409.132 114.573c-19.608-33.596-46.205-60.194-79.798-79.8-33.598-19.607-70.277-29.408-110.063-29.408-39.781 0-76.472 9.804-110.063 29.408-33.596 19.605-60.192 46.204-79.8 79.8C9.803 148.168 0 184.854 0 224.63c0 47.78 13.94 90.745 41.827 128.906 27.884 38.164 63.906 64.572 108.063 79.227 5.14.954 8.945.283 11.419-1.996 2.475-2.282 3.711-5.14 3.711-8.562 0-.571-.049-5.708-.144-15.417a2549.81 2549.81 0 01-.144-25.406l-6.567 1.136c-4.187.767-9.469 1.092-15.846 1-6.374-.089-12.991-.757-19.842-1.999-6.854-1.231-13.229-4.086-19.13-8.559-5.898-4.473-10.085-10.328-12.56-17.556l-2.855-6.57c-1.903-4.374-4.899-9.233-8.992-14.559-4.093-5.331-8.232-8.945-12.419-10.848l-1.999-1.431c-1.332-.951-2.568-2.098-3.711-3.429-1.142-1.331-1.997-2.663-2.568-3.997-.572-1.335-.098-2.43 1.427-3.289 1.525-.859 4.281-1.276 8.28-1.276l5.708.853c3.807.763 8.516 3.042 14.133 6.851 5.614 3.806 10.229 8.754 13.846 14.842 4.38 7.806 9.657 13.754 15.846 17.847 6.184 4.093 12.419 6.136 18.699 6.136 6.28 0 11.704-.476 16.274-1.423 4.565-.952 8.848-2.383 12.847-4.285 1.713-12.758 6.377-22.559 13.988-29.41-10.848-1.14-20.601-2.857-29.264-5.14-8.658-2.286-17.605-5.996-26.835-11.14-9.235-5.137-16.896-11.516-22.985-19.126-6.09-7.614-11.088-17.61-14.987-29.979-3.901-12.374-5.852-26.648-5.852-42.826 0-23.035 7.52-42.637 22.557-58.817-7.044-17.318-6.379-36.732 1.997-58.24 5.52-1.715 13.706-.428 24.554 3.853 10.85 4.283 18.794 7.952 23.84 10.994 5.046 3.041 9.089 5.618 12.135 7.708 17.705-4.947 35.976-7.421 54.818-7.421s37.117 2.474 54.823 7.421l10.849-6.849c7.419-4.57 16.18-8.758 26.262-12.565 10.088-3.805 17.802-4.853 23.134-3.138 8.562 21.509 9.325 40.922 2.279 58.24 15.036 16.18 22.559 35.787 22.559 58.817 0 16.178-1.958 30.497-5.853 42.966-3.9 12.471-8.941 22.457-15.125 29.979-6.191 7.521-13.901 13.85-23.131 18.986-9.232 5.14-18.182 8.85-26.84 11.136-8.662 2.286-18.415 4.004-29.263 5.146 9.894 8.562 14.842 22.077 14.842 40.539v60.237c0 3.422 1.19 6.279 3.572 8.562 2.379 2.279 6.136 2.95 11.276 1.995 44.163-14.653 80.185-41.062 108.068-79.226 27.88-38.161 41.825-81.126 41.825-128.906-.01-39.771-9.818-76.454-29.414-110.049z"></path>
+					</svg>
+					<span>Star on GitHub</span>
+					<span class="btn-github-stars" aria-hidden="true">
+						<svg class="btn-github-star" viewBox="0 0 24 24">
+							<path d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.006 5.404.434c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.434 2.082-5.005Z"></path>
+						</svg>
+					</span>
+				</a>
 			</div>
 		</section>
 
@@ -280,8 +301,9 @@ const faqs = [
 				</div>
 				<div class="footer-col">
 					<p class="footer-heading">LEGAL</p>
-					<a href="#">Terms</a>
-					<a href="#">Privacy</a>
+					<a href="/terms">Terms</a>
+					<a href="/privacy">Privacy</a>
+					<a href="/legal">Legal</a>
 				</div>
 			</div>
 			<p class="footer-copy">© 2026 Glyph. All rights reserved.</p>
@@ -366,24 +388,37 @@ const faqs = [
 		justify-content: center;
 		margin-left: 0.6rem;
 		min-height: 2.4rem;
-		padding: 0.45rem 1rem;
-		background: var(--ink);
+		gap: 0.45rem;
+		padding: 0.5rem 1.02rem;
+		background:
+			linear-gradient(180deg, rgba(28, 28, 28, 0.96), rgba(17, 17, 17, 0.98)),
+			linear-gradient(135deg, rgba(255, 255, 255, 0.12), transparent 55%);
 		color: var(--bg);
 		font-family: var(--mono);
 		font-size: 0.7rem;
 		font-weight: 600;
-		letter-spacing: 0.03em;
-		border-radius: 6px;
-		border: 1px solid var(--ink);
+		letter-spacing: 0.05em;
+		border-radius: 0.72rem;
+		border: 1px solid rgba(17, 17, 17, 0.92);
+		box-shadow:
+			inset 0 1px 0 rgba(255, 255, 255, 0.08),
+			0 8px 18px rgba(17, 17, 17, 0.08);
 		cursor: pointer;
 		transition:
-			transform 0.15s ease,
-			background 0.15s ease;
+			transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+			box-shadow 0.25s ease,
+			border-color 0.2s ease,
+			background 0.2s ease;
 	}
 
 	.header-cta:hover {
 		transform: translateY(-1px);
-		background: #222;
+		background:
+			linear-gradient(180deg, rgba(34, 34, 34, 0.96), rgba(20, 20, 20, 0.98)),
+			linear-gradient(135deg, rgba(255, 255, 255, 0.16), transparent 55%);
+		box-shadow:
+			inset 0 1px 0 rgba(255, 255, 255, 0.1),
+			0 12px 24px rgba(17, 17, 17, 0.12);
 	}
 
 	.header-cta:focus-visible,
@@ -398,23 +433,35 @@ const faqs = [
 		align-items: center;
 		justify-content: center;
 		min-height: 3rem;
-		padding: 0.72rem 1.3rem;
-		background: var(--ink);
+		padding: 0.76rem 1.34rem;
+		background:
+			linear-gradient(180deg, rgba(28, 28, 28, 0.98), rgba(17, 17, 17, 1)),
+			linear-gradient(135deg, rgba(255, 255, 255, 0.14), transparent 55%);
 		color: var(--bg);
 		font-family: var(--mono);
 		font-size: 0.75rem;
 		font-weight: 600;
-		letter-spacing: 0.03em;
+		letter-spacing: 0.05em;
 		border: none;
-		border-right: 1px solid rgba(250, 250, 250, 0.12);
+		border-radius: 0.72rem;
+		box-shadow:
+			inset 0 1px 0 rgba(255, 255, 255, 0.08),
+			0 10px 22px rgba(17, 17, 17, 0.1);
 		cursor: pointer;
 		transition:
-			background 0.15s ease,
-			color 0.15s ease;
+			background 0.2s ease,
+			color 0.15s ease,
+			transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+			box-shadow 0.25s ease;
 	}
 
 	.btn-primary:hover {
-		background: #202020;
+		background:
+			linear-gradient(180deg, rgba(34, 34, 34, 0.98), rgba(20, 20, 20, 1)),
+			linear-gradient(135deg, rgba(255, 255, 255, 0.16), transparent 55%);
+		box-shadow:
+			inset 0 1px 0 rgba(255, 255, 255, 0.1),
+			0 14px 28px rgba(17, 17, 17, 0.14);
 	}
 
 	.btn-outline {
@@ -438,6 +485,91 @@ const faqs = [
 
 	.btn-outline:hover {
 		background: rgba(17, 17, 17, 0.06);
+	}
+
+	.btn-github {
+		position: relative;
+		display: inline-flex;
+		align-items: center;
+		gap: 0.55rem;
+		min-height: 3rem;
+		padding: 0;
+		border-radius: 0.72rem;
+		background: transparent;
+		color: var(--ink);
+		overflow: hidden;
+		transition:
+			transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+			box-shadow 0.25s ease;
+	}
+
+	.btn-github::before {
+		content: '';
+		position: absolute;
+		inset: auto 18% -24% 18%;
+		height: 36%;
+		background: linear-gradient(90deg, rgba(188, 170, 135, 0.05), rgba(188, 170, 135, 0.32), rgba(188, 170, 135, 0.05));
+		filter: blur(14px);
+		opacity: 0;
+		transition: opacity 0.25s ease;
+		pointer-events: none;
+	}
+
+	.btn-github:hover {
+		transform: translateY(-1px) scale(1.01);
+		box-shadow: 0 12px 26px rgba(17, 17, 17, 0.08);
+	}
+
+	.btn-github:hover::before {
+		opacity: 1;
+	}
+
+	.btn-github:active {
+		transform: translateY(0) scale(0.985);
+	}
+
+	.btn-github {
+		padding: 0.62rem 1rem;
+		font-family: var(--mono);
+		font-size: 0.72rem;
+		font-weight: 600;
+		letter-spacing: 0.03em;
+		background: rgba(255, 255, 255, 0.96);
+		box-shadow:
+			inset 0 0 0 1px rgba(17, 17, 17, 0.08),
+			inset 0 -1px 0 rgba(17, 17, 17, 0.03);
+	}
+
+	.btn-github-stars {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.32rem;
+		margin-left: 0.08rem;
+		color: var(--muted);
+	}
+
+	.btn-github-mark,
+	.btn-github-star {
+		flex: none;
+		display: block;
+	}
+
+	.btn-github-mark {
+		width: 0.88rem;
+		height: 0.88rem;
+		fill: currentColor;
+	}
+
+	.btn-github-star {
+		width: 0.82rem;
+		height: 0.82rem;
+		fill: #b38a2f;
+		transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), fill 0.2s ease;
+	}
+
+	.btn-github:hover .btn-github-star {
+		transform: rotate(12deg) scale(1.08);
+		fill: #c9a247;
 	}
 
 	/* ── Label ── */
@@ -486,11 +618,7 @@ const faqs = [
 		display: inline-flex;
 		align-items: stretch;
 		justify-content: center;
-		border: 1px solid rgba(17, 17, 17, 0.12);
-		border-radius: 9px;
-		overflow: hidden;
-		background: rgba(255, 255, 255, 0.82);
-		backdrop-filter: blur(10px);
+		gap: 0.28rem;
 	}
 
 	.install-strip {
@@ -517,6 +645,16 @@ const faqs = [
 		line-height: 1.45;
 		min-width: 0;
 		overflow-wrap: anywhere;
+		transition:
+			transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+			letter-spacing 0.28s ease,
+			opacity 0.28s ease;
+	}
+
+	.install-strip.is-typing .install-strip-code {
+		transform: translateX(4px);
+		letter-spacing: 0.05em;
+		opacity: 0.88;
 	}
 
 	.install-strip-copy {
@@ -540,6 +678,11 @@ const faqs = [
 		border-color: rgba(17, 17, 17, 0.2);
 	}
 
+	.install-strip-copy.is-failed {
+		border-color: rgba(120, 60, 35, 0.24);
+		color: #6b4333;
+	}
+
 	.install-strip-copy:hover {
 		background: rgba(17, 17, 17, 0.05);
 		color: var(--ink);
@@ -549,6 +692,23 @@ const faqs = [
 	.install-strip-copy:focus-visible {
 		outline: 2px solid rgba(17, 17, 17, 0.15);
 		outline-offset: 2px;
+	}
+
+	.install-strip-status {
+		margin-top: 0.5rem;
+		font-size: 0.68rem;
+		color: var(--faint);
+		letter-spacing: 0.03em;
+		transition:
+			color 0.2s ease,
+			opacity 0.2s ease,
+			transform 0.2s ease;
+	}
+
+	.install-strip.is-copied .install-strip-status,
+	.install-strip.is-typing .install-strip-status {
+		color: var(--ink);
+		transform: translateY(-1px);
 	}
 
 	/* ── Showcase ── */
@@ -843,11 +1003,7 @@ const faqs = [
 		align-items: stretch;
 		justify-content: center;
 		margin-top: 1.5rem;
-		border: 1px solid rgba(17, 17, 17, 0.12);
-		border-radius: 9px;
-		overflow: hidden;
-		background: rgba(255, 255, 255, 0.82);
-		backdrop-filter: blur(10px);
+		gap: 0.28rem;
 	}
 
 	/* ── Footer ── */
@@ -1016,31 +1172,65 @@ const faqs = [
 	});
 
 	const copyButton = document.querySelector('[data-copy-install]');
+	const installStrip = document.querySelector('[data-install-strip]');
+	const installStatus = document.querySelector('[data-install-status]');
 	const installCommand = document.querySelector('[data-install-command]')?.textContent?.trim();
 	let copyResetTimer;
 
 	copyButton?.addEventListener('click', async () => {
-		if (!installCommand) return;
+		if (!installCommand || !(installStrip instanceof HTMLElement)) return;
+
+		installStrip.classList.remove('is-copied');
+		installStrip.classList.remove('is-failed');
+		copyButton.classList.remove('is-copied');
+		copyButton.classList.remove('is-failed');
+		installStrip.classList.add('is-typing');
+		if (installStatus instanceof HTMLElement) {
+			installStatus.textContent = 'Typing the command into memory...';
+		}
+		window.clearTimeout(copyResetTimer);
 
 		try {
 			await navigator.clipboard.writeText(installCommand);
-			copyButton.classList.add('is-copied');
-			copyButton.setAttribute('aria-label', copiedCopyLabel);
-			copyButton.setAttribute('title', copiedCopyLabel);
-			window.clearTimeout(copyResetTimer);
+			window.setTimeout(() => {
+				installStrip.classList.remove('is-typing');
+				installStrip.classList.add('is-copied');
+				copyButton.classList.add('is-copied');
+				copyButton.classList.remove('is-failed');
+				copyButton.setAttribute('aria-label', copiedCopyLabel);
+				copyButton.setAttribute('title', copiedCopyLabel);
+				if (installStatus instanceof HTMLElement) {
+					installStatus.textContent = 'Copied. Paste into Terminal.';
+				}
+			}, 180);
 			copyResetTimer = window.setTimeout(() => {
+				installStrip.classList.remove('is-typing');
+				installStrip.classList.remove('is-copied');
 				copyButton.classList.remove('is-copied');
 				copyButton.setAttribute('aria-label', defaultCopyLabel);
 				copyButton.setAttribute('title', defaultCopyLabel);
-			}, 1600);
+				if (installStatus instanceof HTMLElement) {
+					installStatus.textContent = 'Ready for Terminal.';
+				}
+			}, 1900);
 		} catch {
+			installStrip.classList.remove('is-typing');
+			installStrip.classList.add('is-failed');
+			copyButton.classList.add('is-failed');
 			copyButton.setAttribute('aria-label', failedCopyLabel);
 			copyButton.setAttribute('title', failedCopyLabel);
-			window.clearTimeout(copyResetTimer);
+			if (installStatus instanceof HTMLElement) {
+				installStatus.textContent = 'Clipboard access blocked. You can still copy it manually.';
+			}
 			copyResetTimer = window.setTimeout(() => {
+				installStrip.classList.remove('is-failed');
+				copyButton.classList.remove('is-failed');
 				copyButton.setAttribute('aria-label', defaultCopyLabel);
 				copyButton.setAttribute('title', defaultCopyLabel);
-			}, 1600);
+				if (installStatus instanceof HTMLElement) {
+					installStatus.textContent = 'Ready for Terminal.';
+				}
+			}, 2200);
 		}
 	});
 </script>
