@@ -1,0 +1,310 @@
+---
+title: Codex ChatGPT OAuth
+description: Connect to ChatGPT using Codex OAuth authentication
+---
+
+Glyph uses OpenAI's Codex app-server flow for ChatGPT OAuth, so you can connect through the official OpenAI Codex CLI instead of managing a separate API key.
+
+## Prerequisites
+
+- OpenAI Codex CLI installed
+- A ChatGPT account
+- A supported ChatGPT plan if you want access to higher limits or more capable models
+- Codex must be in your system PATH
+
+## Setup
+
+<Steps>
+  <Step title="Install Codex CLI">
+    Install the official OpenAI Codex CLI:
+    
+    <Tabs>
+      <Tab title="npm">
+        ```bash
+        npm install -g @openai/codex
+        ```
+      </Tab>
+      
+      <Tab title="Homebrew">
+        ```bash
+        brew install --cask codex
+        ```
+      </Tab>
+    </Tabs>
+
+    You can also download official binaries from the OpenAI Codex GitHub releases if you prefer.
+    
+    Verify installation:
+    ```bash
+    codex --version
+    ```
+  </Step>
+  
+  <Step title="Verify Codex App Server">
+    Test that the OpenAI Codex app-server starts:
+    
+    ```bash
+    codex app-server
+    ```
+    
+    You should see JSON-RPC output. Press Ctrl+C to exit.
+  </Step>
+  
+  <Step title="Open Glyph AI Settings">
+    Go to **Settings → AI** and select the **Codex (ChatGPT OAuth)** profile.
+  </Step>
+  
+  <Step title="Connect ChatGPT Account">
+    1. Click **Connect** in the Codex account section
+    2. Your browser opens the OpenAI / ChatGPT sign-in flow
+    3. Log in and authorize Codex
+    4. Return to Glyph
+    5. Click **Refresh** to verify connection
+    
+    You should see your email and account status as "connected".
+  </Step>
+  
+  <Step title="Select Model">
+    Click the **Model** dropdown. Codex fetches the models currently available to your ChatGPT account.
+
+    Exact model availability can change over time based on your ChatGPT plan and OpenAI's current Codex rollout.
+  </Step>
+  
+  <Step title="Configure Reasoning Level (Optional)">
+    For supported reasoning models, select a reasoning effort:
+    - **low** - Faster responses
+    - **medium** - Balanced (default)
+    - **high** - More thorough reasoning
+  </Step>
+  
+  <Step title="Test Connection">
+    Open the AI panel and send a test message. You should receive a response from ChatGPT.
+  </Step>
+</Steps>
+
+## How It Works
+
+Glyph runs Codex as a managed child process:
+1. When Glyph starts, it launches `codex app-server` via stdio
+2. Communication happens over JSON-RPC
+3. OAuth tokens stored by Codex (not in Glyph)
+4. Glyph sends chat requests through Codex
+5. Codex streams responses back to Glyph
+
+## Configuration
+
+### Provider Settings
+
+- **Service**: `codex_chatgpt`
+- **Model**: Set from the models exposed by the Codex app-server
+- **Authentication**: OAuth via Codex (no API key)
+- **Reasoning Effort**: Available for reasoning models
+
+### Account Management
+
+#### Check Connection Status
+
+In Settings → AI → Codex section, you'll see:
+- **Status**: `connected` or `disconnected`
+- **Email**: Your ChatGPT account email
+- **Display Name**: Your ChatGPT account name
+- **Auth Mode**: `chatgpt` or similar
+
+#### Refresh Status
+
+Click **Refresh** to update account status and rate limits.
+
+#### Disconnect
+
+Click **Disconnect** to log out of ChatGPT. This clears OAuth tokens stored by Codex.
+
+### Rate Limits
+
+Codex reports ChatGPT rate limits in Glyph settings:
+- **Requests per hour**
+- **Requests per day**
+- **Usage percentage**
+- **Reset time**
+
+Rate limits refresh automatically every 30 seconds.
+
+## Reasoning Effort
+
+Select reasoning effort in Settings → AI:
+
+| Level | Description | Use Case |
+|-------|-------------|----------|
+| **low** | Quick thinking, faster responses | Simple tasks, iterations |
+| **medium** | Balanced reasoning (default) | General problem-solving |
+| **high** | Deep thinking, slower responses | Complex math, logic puzzles |
+
+Reasoning models show thinking process in the AI panel before providing answers.
+
+## Features
+
+### Chat Mode
+
+Conversational interaction:
+- Back-and-forth dialogue
+- No file system access
+- Uses ChatGPT's web interface rate limits
+- Best for Q&A and brainstorming
+
+### Create Mode
+
+ChatGPT with workspace tools:
+- **read_file** - Read files from your space
+- **search_notes** - Search note content
+- **list_dir** - List directory contents
+- Tool usage tracked in timeline view
+- Best for research and knowledge retrieval
+
+### Context Attachment
+
+Attach notes for grounded responses:
+- Attach files or folders via context menu
+- Mention with `@filename` syntax
+- Configure character budget (up to 250K chars)
+- Context sent through Codex to ChatGPT
+
+## Billing and Costs
+
+Codex uses your ChatGPT account rather than a separate OpenAI API key:
+- ✅ No separate API key setup for this flow
+- ✅ No per-request API billing inside Glyph for this provider
+- ✅ Uses the access and limits included with your ChatGPT plan
+- ✅ Paid ChatGPT plans generally provide better limits than free access
+
+<Note>
+Codex ChatGPT OAuth is a good fit if you already use ChatGPT and want Glyph to connect through OpenAI's Codex tooling instead of a raw API key.
+</Note>
+
+## Troubleshooting
+
+### "failed to start codex app-server"
+
+**Cause**: Codex is not installed or not in PATH.
+
+**Solution**:
+1. Verify installation: `codex --version`
+2. Ensure `codex` is in your system PATH
+3. Try running `codex app-server` manually to check for errors
+
+### "codex request timed out"
+
+**Possible causes**:
+- Network connectivity issues
+- Codex app-server crashed
+- ChatGPT API is down
+
+**Solution**:
+1. Restart Glyph (this restarts Codex app-server)
+2. Check network connectivity
+3. Try disconnecting and reconnecting your account
+
+### Login opens browser but status shows disconnected
+
+**Solution**:
+1. Click **Refresh** in AI Settings
+2. Wait a few seconds for Codex to complete login
+3. Check that you authorized in the browser
+4. Some OAuth flows complete asynchronously
+
+### "AI responses fail immediately"
+
+**Checklist**:
+1. ✅ Profile provider is `Codex (ChatGPT OAuth)`
+2. ✅ Model is selected (not empty)
+3. ✅ Account status is `connected`
+4. ✅ Rate limits not exceeded
+
+**Solution**: Disconnect and reconnect account, or restart Glyph.
+
+### No streaming text appears
+
+**Cause**: Codex app-server may have exited or stopped sending notifications.
+
+**Solution**: Restart Glyph to restart Codex app-server.
+
+### Rate limit exceeded
+
+**Cause**: You've hit ChatGPT's hourly or daily message limits.
+
+**Solution**: Wait for the rate limit to reset (shown in settings). ChatGPT Plus has higher limits than free tier.
+
+### Model list is empty
+
+**Cause**: Codex couldn't fetch models from ChatGPT.
+
+**Solution**:
+1. Verify account is connected
+2. Click **Refresh**
+3. Check that you're logged into ChatGPT in your browser
+4. Restart Glyph
+
+## Advanced Configuration
+
+### Codex Logs
+
+Codex app-server logs are managed by Glyph. Check Glyph's logs for Codex communication details.
+
+### Custom Codex Path
+
+If Codex is not in PATH, you'll need to add it. Glyph doesn't support custom Codex paths in the UI.
+
+**macOS/Linux**:
+```bash
+export PATH="$PATH:/path/to/codex"
+```
+
+**Windows**:
+Add Codex directory to System PATH in Environment Variables.
+
+## Operational Notes
+
+- Glyph runs Codex app-server as a managed child process over stdio JSON-RPC
+- OAuth is started via `account/login/start` with `type: "chatgpt"`
+- Chat requests use `thread/start` + `turn/start` and stream via notifications
+- Authentication tokens stored by Codex, not Glyph
+- Codex process lifetime is tied to Glyph (restarts with app)
+- The provider integration is based on OpenAI's Codex app-server flow
+
+## Security
+
+- OAuth tokens are stored by the Codex CLI, not by Glyph
+- Codex handles authentication flow
+- No API keys stored in Glyph
+- Communication over local stdio (not network)
+
+## Codex vs OpenAI API
+
+### Use Codex ChatGPT OAuth When:
+
+✅ You have ChatGPT Plus or Team subscription
+✅ You want flat-rate billing (no per-token charges)
+✅ You prefer OAuth over API keys
+✅ You want access to reasoning models included in Plus
+
+### Use OpenAI API When:
+
+✅ You need programmatic access for automation
+✅ You want higher rate limits
+✅ You need fine-tuned models
+✅ You prefer pay-as-you-go billing
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Chat Modes" icon="messages" href="/ai/chat-modes">
+    Learn about chat vs create modes
+  </Card>
+  <Card title="Context Management" icon="folder" href="/ai/context-management">
+    Attach notes to conversations
+  </Card>
+  <Card title="OpenAI API" icon="brain" href="/ai/providers/openai">
+    Compare with direct OpenAI API integration
+  </Card>
+  <Card title="Troubleshooting" icon="wrench" href="/ai/providers/codex#troubleshooting">
+    Codex-specific troubleshooting
+  </Card>
+</CardGroup>

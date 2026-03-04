@@ -1,0 +1,239 @@
+---
+title: Anthropic Configuration
+description: Set up Anthropic Claude models in Glyph
+---
+
+Connect Glyph to Anthropic's API to use the current Claude 4 family and other Claude models.
+
+## Prerequisites
+
+- Anthropic API account: [console.anthropic.com](https://console.anthropic.com)
+- API key with appropriate permissions
+- Sufficient API credits
+
+## Setup
+
+<Steps>
+  <Step title="Get API Key">
+    1. Log in to [Anthropic Console](https://console.anthropic.com)
+    2. Navigate to **API Keys**
+    3. Click **Create Key**
+    4. Copy the key (starts with `sk-ant-`)
+    
+    <Warning>
+    Store your API key securely. Anthropic only shows it once.
+    </Warning>
+  </Step>
+  
+  <Step title="Open Glyph AI Settings">
+    Go to **Settings → AI** and select the **Anthropic** profile.
+  </Step>
+  
+  <Step title="Add API Key">
+    1. Click **Set API Key** in the authentication section
+    2. Paste your Anthropic API key
+    3. Click **Save**
+    
+    The key is stored locally in Glyph's per-space internal data.
+  </Step>
+  
+  <Step title="Select Model">
+    Click the **Model** dropdown. Glyph fetches available models from Anthropic's API.
+    
+    Popular current models:
+    - `claude-opus-4.1` - Anthropic's highest-end current Claude model
+    - `claude-sonnet-4` - Best default for many users
+    - `claude-3.7-sonnet` - Strong earlier reasoning-oriented option
+    - `claude-3.5-haiku` - Fast, lower-cost Claude option
+  </Step>
+  
+  <Step title="Test Connection">
+    Open the AI panel and send a test message. You should receive a response from Claude.
+  </Step>
+</Steps>
+
+## Configuration
+
+### Provider Settings
+
+- **Service**: `anthropic`
+- **Base URL**: `https://api.anthropic.com` (default)
+- **Authentication**: `x-api-key` header
+- **API Version**: `2023-06-01` (automatically set)
+
+### Custom Endpoint
+
+To use a custom Anthropic endpoint (proxy, self-hosted):
+
+1. Set **Base URL** to your endpoint (e.g., `https://your-proxy.com`)
+2. Add any required headers in **Custom Headers**
+3. Enable **Allow Private Hosts** if using localhost
+
+## Model Selection
+
+Glyph fetches the latest model list from Anthropic's `/v1/models` endpoint.
+
+### Recommended Models
+
+| Model | Use Case | Context Window | Max Output |
+|-------|----------|----------------|------------|
+| `claude-opus-4.1` | Highest-end reasoning, coding, and analysis | 200K tokens | Varies by model |
+| `claude-sonnet-4` | Best default balance of quality and speed | 200K tokens | Varies by model |
+| `claude-3.7-sonnet` | Strong earlier reasoning model | 200K tokens | Varies by model |
+| `claude-3.5-haiku` | Fast, lightweight tasks | 200K tokens | Varies by model |
+
+<Note>
+Claude models have a **200K token context window**, allowing you to attach large amounts of context from your notes.
+</Note>
+
+### Max Tokens Requirement
+
+Anthropic requires the `max_tokens` parameter for all requests. Glyph automatically sets this to **2048 tokens** for Anthropic models.
+
+If you need longer responses, this value is hardcoded in `src-tauri/src/ai_rig/runtime.rs:73`.
+
+## Features
+
+### Chat Mode
+
+Conversational interaction without tools:
+- Back-and-forth dialogue with Claude
+- No file system access
+- Faster responses
+- Best for discussion and brainstorming
+
+### Create Mode
+
+Claude with workspace tools:
+- **read_file** - Read files from your space
+- **search_notes** - Search note content
+- **list_dir** - List directory contents
+- Tool usage shown in timeline view
+- Best for research, summarization, and analysis
+
+### Context Attachment
+
+Attach notes to leverage Claude's 200K context window:
+- Attach files or folders via context menu
+- Mention with `@filename` syntax
+- Configure character budget (up to 250K chars)
+- View token estimates before sending
+
+## API Usage and Billing
+
+Glyph makes direct API calls to Anthropic:
+- You are billed by Anthropic based on token usage
+- No additional fees from Glyph
+- Check usage at [console.anthropic.com](https://console.anthropic.com)
+
+### Cost Estimation
+
+Use the context manifest to estimate token usage before sending, then compare that with Anthropic's current pricing in [Anthropic Console](https://console.anthropic.com) or Anthropic's pricing documentation.
+
+## Rate Limits
+
+Anthropic enforces rate limits based on your usage tier:
+- Limits vary by model and tier
+- Check your tier at [console.anthropic.com](https://console.anthropic.com)
+- Rate limit errors include retry-after headers
+
+If you hit rate limits, Glyph displays the error. Wait before retrying.
+
+## Troubleshooting
+
+### "API key not set for this profile"
+
+**Solution**: Add your Anthropic API key in Settings → AI.
+
+### "model list failed (401)"
+
+**Solution**: Your API key is invalid or expired. Generate a new key from Anthropic Console.
+
+### "model list failed (403)"
+
+**Solution**: Your API key doesn't have permission to list models. This is non-fatal; type the model ID manually.
+
+### "model list failed (429)"
+
+**Solution**: You've hit Anthropic's rate limit. Wait before retrying.
+
+### Model list is empty
+
+**Solution**: Type the model ID manually:
+- `claude-opus-4.1`
+- `claude-sonnet-4`
+- `claude-3.7-sonnet`
+- `claude-3.5-haiku`
+
+The model will work even if the list fetch failed.
+
+### Responses are truncated
+
+**Cause**: Anthropic's `max_tokens` parameter (default 2048) limits output length.
+
+**Solution**: To increase output length, modify `src-tauri/src/ai_rig/runtime.rs:73` and rebuild:
+
+```rust
+let max_tokens = if caps.requires_max_tokens {
+    Some(4096)  // Increase from 2048
+} else {
+    None
+};
+```
+
+### "context length exceeded"
+
+**Cause**: Total tokens (context + conversation) exceeds 200K.
+
+**Solution**: Reduce attached context or use a smaller character budget.
+
+## Security Best Practices
+
+<Warning>
+- Never commit `.glyph/` secrets or app-managed data to version control
+- Rotate API keys if exposed
+- Use separate keys for different projects
+- Monitor usage in Anthropic Console
+</Warning>
+
+## Claude-Specific Tips
+
+### Extended Thinking
+
+Claude models excel at reasoning tasks. In create mode, Claude can:
+- Read multiple files to synthesize information
+- Search your notes for relevant context
+- Chain multiple tool calls to answer complex questions
+
+### System Prompts
+
+Claude respects system prompts well. In create mode, Glyph adds:
+
+```
+Tool discipline for this run: use the minimum number of tool calls needed.
+Prefer at most 1-2 search/list calls before answering.
+If a tool returns usable evidence, stop searching and summarize.
+```
+
+This reduces unnecessary tool usage and improves response speed.
+
+### Markdown and Code
+
+Claude generates well-formatted markdown and code. Responses render beautifully in Glyph's AI panel.
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Chat Modes" icon="messages" href="/ai/chat-modes">
+    Learn about chat vs create modes
+  </Card>
+  <Card title="Context Management" icon="folder" href="/ai/context-management">
+    Attach notes to leverage Claude's 200K context
+  </Card>
+  <Card title="OpenAI" icon="brain" href="/ai/providers/openai">
+    Compare with OpenAI GPT models
+  </Card>
+  <Card title="Profiles" icon="user-group" href="/ai/profiles">
+    Manage multiple AI profiles
+  </Card>
+</CardGroup>

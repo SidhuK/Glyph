@@ -1,0 +1,409 @@
+---
+title: 'Building Glyph'
+description: 'Build commands and production release process'
+---
+
+## Available Commands
+
+### Development
+
+<CodeGroup>
+```bash Frontend Dev Server
+pnpm dev
+# Starts Vite at http://localhost:5173
+# Hot module replacement enabled
+# Tauri commands will NOT work
+```
+
+```bash Full Tauri App
+pnpm tauri dev
+# Compiles Rust backend
+# Starts Vite dev server
+# Opens native desktop window
+# Auto-reloads on changes
+```
+</CodeGroup>
+
+### Type Checking
+
+<CodeGroup>
+```bash TypeScript
+pnpm build
+# Runs: tsc && vite build
+# Checks types + builds frontend
+```
+
+```bash Rust
+cd src-tauri && cargo check
+# Type-checks Rust without building
+```
+
+```bash Rust (with lints)
+cd src-tauri && cargo clippy
+# Runs Clippy linter for Rust
+```
+</CodeGroup>
+
+### Linting & Formatting
+
+<CodeGroup>
+```bash Check All
+pnpm check
+# Runs Biome lint + format check
+# Exits with error if issues found
+```
+
+```bash Lint Only
+pnpm lint
+# Runs Biome linter
+```
+
+```bash Auto-format
+pnpm format
+# Formats all files with Biome
+# Auto-organizes imports
+```
+</CodeGroup>
+
+### Testing
+
+<CodeGroup>
+```bash Run All Tests
+pnpm test
+# Runs Vitest test suite
+```
+
+```bash Watch Mode
+pnpm test:watch
+# Re-runs tests on file changes
+```
+
+```bash Single File
+pnpm test -- src/lib/diff.test.ts
+# Runs specific test file
+```
+
+```bash Single Test
+pnpm test -- -t "test name"
+# Runs test matching name
+```
+</CodeGroup>
+
+## Production Build
+
+### Build Desktop App
+
+```bash
+pnpm tauri build
+```
+
+This command:
+
+<Steps>
+  <Step title="TypeScript type check">
+    Runs `tsc` to verify frontend types
+  </Step>
+  
+  <Step title="Vite production build">
+    Bundles frontend to `src-tauri/target/release/bundle/`
+    - Minifies JavaScript/CSS
+    - Optimizes images
+    - Generates source maps (optional)
+  </Step>
+  
+  <Step title="Rust release build">
+    Compiles Rust with optimizations:
+    ```bash
+    cargo build --release
+    ```
+    - Full optimizations (`-O3` equivalent)
+    - No debug symbols (smaller binary)
+    - Takes ~2-5 minutes
+  </Step>
+  
+  <Step title="Create platform bundles">
+    Generates installers for current platform
+  </Step>
+</Steps>
+
+### Output Artifacts
+
+<Tabs>
+  <Tab title="macOS">
+    ```
+    src-tauri/target/release/bundle/
+    ├── dmg/
+    │   └── Glyph_0.1.10_aarch64.dmg       # Installer
+    ├── macos/
+    │   └── Glyph.app                      # Application bundle
+    └── updater/
+        └── Glyph_0.1.10_aarch64.app.tar.gz # Auto-updater
+    ```
+    
+    <Note>
+    Separate builds needed for `x86_64` (Intel) and `aarch64` (Apple Silicon)
+    </Note>
+  </Tab>
+  
+  <Tab title="Windows">
+    ```
+    src-tauri/target/release/bundle/
+    ├── msi/
+    │   └── Glyph_0.1.10_x64_en-US.msi     # Installer
+    ├── nsis/
+    │   └── Glyph_0.1.10_x64-setup.exe     # NSIS installer
+    └── updater/
+        └── Glyph_0.1.10_x64.msi.zip       # Auto-updater
+    ```
+  </Tab>
+  
+  <Tab title="Linux">
+    ```
+    src-tauri/target/release/bundle/
+    ├── deb/
+    │   └── glyph_0.1.10_amd64.deb         # Debian package
+    ├── appimage/
+    │   └── glyph_0.1.10_amd64.AppImage    # Portable app
+    └── updater/
+        └── glyph_0.1.10_amd64.AppImage.tar.gz
+    ```
+  </Tab>
+</Tabs>
+
+## Pre-push Checklist
+
+Before pushing to remote, run:
+
+```bash
+pnpm check && pnpm build && cd src-tauri && cargo check
+```
+
+This verifies:
+- ✅ Code is formatted (Biome)
+- ✅ No linting errors (Biome)
+- ✅ TypeScript compiles
+- ✅ Rust compiles
+
+<Tip>
+Add this as a Git pre-push hook:
+
+```bash .git/hooks/pre-push
+#!/bin/sh
+pnpm check && pnpm build && cd src-tauri && cargo check
+```
+
+Make executable:
+```bash
+chmod +x .git/hooks/pre-push
+```
+</Tip>
+
+## Build Optimization
+
+### Rust Release Profile
+
+Configured in `src-tauri/Cargo.toml`:
+
+```toml Cargo.toml
+[profile.release]
+opt-level = 3           # Maximum optimization
+lto = true              # Link-time optimization
+codegen-units = 1       # Single codegen unit (slower build, faster runtime)
+strip = true            # Remove debug symbols
+panic = 'abort'         # Smaller binary (no unwinding)
+```
+
+### Vite Build Options
+
+Configured in `vite.config.ts`:
+
+```typescript vite.config.ts
+export default defineConfig({
+  build: {
+    target: 'esnext',
+    minify: 'esbuild',     // Fast minification
+    sourcemap: false,      // Disable for smaller bundle
+    rollupOptions: {
+      output: {
+        manualChunks: {    // Code splitting
+          vendor: ['react', 'react-dom'],
+          editor: ['@tiptap/react', '@tiptap/starter-kit']
+        }
+      }
+    }
+  }
+});
+```
+
+## Platform-Specific Builds
+
+### macOS: Universal Binary
+
+Build for both Intel and Apple Silicon:
+
+```bash
+# Build x86_64 (Intel)
+rustup target add x86_64-apple-darwin
+pnpm tauri build -- --target x86_64-apple-darwin
+
+# Build aarch64 (Apple Silicon)
+rustup target add aarch64-apple-darwin
+pnpm tauri build -- --target aarch64-apple-darwin
+
+# Combine into universal binary
+lipo -create \
+  src-tauri/target/x86_64-apple-darwin/release/glyph \
+  src-tauri/target/aarch64-apple-darwin/release/glyph \
+  -output glyph-universal
+```
+
+### Windows: 32-bit and 64-bit
+
+```bash
+# 64-bit (default)
+pnpm tauri build
+
+# 32-bit
+rustup target add i686-pc-windows-msvc
+pnpm tauri build -- --target i686-pc-windows-msvc
+```
+
+### Linux: Multiple Distros
+
+```bash
+# Debian/Ubuntu (.deb)
+pnpm tauri build -- --bundles deb
+
+# AppImage (universal)
+pnpm tauri build -- --bundles appimage
+
+# Both
+pnpm tauri build -- --bundles deb,appimage
+```
+
+## CI/CD Pipeline
+
+### GitHub Actions Example
+
+```yaml .github/workflows/build.yml
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 10.28.2
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: pnpm
+      - run: pnpm install
+      - run: pnpm check
+      - run: pnpm build
+  
+  build-macos:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+      - uses: actions/setup-node@v3
+      - uses: dtolnay/rust-toolchain@stable
+      - run: pnpm install
+      - run: pnpm tauri build
+      - uses: actions/upload-artifact@v3
+        with:
+          name: macos-dmg
+          path: src-tauri/target/release/bundle/dmg/*.dmg
+```
+
+## Versioning
+
+Version is stored in two places and **must match**:
+
+```json package.json
+{
+  "version": "0.1.10"
+}
+```
+
+```toml src-tauri/Cargo.toml
+[package]
+version = "0.1.10"
+```
+
+<Warning>
+If versions don't match, build will fail. Use a script to sync versions:
+
+```bash scripts/bump-version.sh
+#!/bin/bash
+VERSION=$1
+jq ".version = \"$VERSION\"" package.json > package.json.tmp
+mv package.json.tmp package.json
+sed -i '' "s/version = .*/version = \"$VERSION\"/" src-tauri/Cargo.toml
+```
+
+Usage: `./scripts/bump-version.sh 0.1.11`
+</Warning>
+
+## Bundle Size Analysis
+
+### Frontend Bundle
+
+```bash
+pnpm build
+# Check output in terminal:
+# dist/assets/index-a1b2c3.js   245.67 kB
+```
+
+### Rust Binary Size
+
+```bash
+cd src-tauri
+cargo build --release
+ls -lh target/release/glyph
+# Example: 12M (macOS), 8M (Linux), 10M (Windows)
+```
+
+### Reduce Binary Size
+
+1. **Strip symbols** (enabled by default in release profile)
+2. **Enable LTO** (enabled by default)
+3. **Use `wee_alloc`** (minimal allocator):
+   ```toml Cargo.toml
+   [dependencies]
+   wee_alloc = "0.4"
+   ```
+
+## Debug Builds
+
+For debugging production issues:
+
+```bash
+# Build with debug symbols
+pnpm tauri build -- --debug
+
+# Or modify Cargo.toml temporarily:
+[profile.release]
+strip = false
+debug = true
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Testing" icon="vial" href="/development/testing">
+    Write and run tests
+  </Card>
+  
+  <Card title="Architecture" icon="diagram-project" href="/development/architecture">
+    Understand the codebase
+  </Card>
+</CardGroup>

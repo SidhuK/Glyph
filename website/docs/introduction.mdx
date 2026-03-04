@@ -1,0 +1,188 @@
+---
+title: Introduction
+description: Glyph is an offline-first desktop notes app that helps you think, capture ideas, and chat with AI—all in one local workspace.
+---
+
+# Welcome to Glyph
+
+Glyph is an offline-first desktop notes app built with Tauri, React, and TypeScript. It combines powerful markdown editing, AI chat capabilities, and local-first data storage to create a simple space for your notes and ideas.
+
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Get up and running in 5 minutes
+  </Card>
+  <Card title="Installation" icon="download" href="/installation">
+    Download and install Glyph on your system
+  </Card>
+  <Card title="Features" icon="sparkles" href="#key-features">
+    Explore what makes Glyph powerful
+  </Card>
+  <Card title="GitHub" icon="github" href="https://github.com/SidhuK/Glyph">
+    View source code and contribute
+  </Card>
+</CardGroup>
+
+## What is Glyph?
+
+Glyph is designed for people who want a fast, offline-first notes app that doesn't compromise on features. Your notes live in a local folder as plain markdown files, giving you full ownership and portability.
+
+<Note>
+  **Offline-first:** All your data stays on your device. No cloud sync, no servers, no vendor lock-in. Just you and your files.
+</Note>
+
+## Key Features
+
+### Markdown-First Editing
+
+Glyph uses a powerful TipTap-based markdown editor that supports:
+
+- Standard markdown syntax
+- Wikilinks for connecting notes (`[[note-name]]`)
+- Slash commands for quick formatting
+- Task lists with checkboxes
+- Frontmatter metadata
+
+### AI Chat Integration
+
+Chat with AI models directly from your notes sidebar. Glyph supports multiple AI providers:
+
+- **OpenAI** - GPT-4, GPT-3.5
+- **Anthropic** - Claude models
+- **Google Gemini** - Gemini Pro and Flash
+- **Ollama** - Local models
+- **OpenRouter** - Access to multiple models
+- **OpenAI-compatible** - Custom endpoints
+
+The AI panel includes:
+- Multi-turn conversations with context
+- Chat history and session management
+- Multiple AI profiles for different use cases
+- Attach files and folders as context
+
+```typescript
+// From src/components/ai/AIPanel.tsx:111
+void chat.sendMessage(
+  { text: trimmed },
+  {
+    body: {
+      profile_id: profiles.activeProfileId ?? undefined,
+      provider: activeProvider,
+      mode: aiAssistantMode,
+      context: built.payload || undefined,
+      context_manifest: built.manifest ?? undefined,
+      audit: true,
+    },
+  },
+);
+```
+
+### Daily Notes
+
+Create a note for each day automatically. Glyph generates daily notes with YYYY-MM-DD naming:
+
+```typescript
+// From src/lib/dailyNotes.ts:13
+export function getDailyNoteFilename(date?: string): string {
+  const d = date ?? getTodayDateString();
+  return `${d}.md`; // e.g., "2026-03-03.md"
+}
+```
+
+Configure your daily notes folder in Settings → Daily Notes.
+
+### Tasks & Databases
+
+Glyph indexes your markdown task lists and provides a unified tasks view:
+
+- Checkbox syntax: `- [ ] task` and `- [x] completed`
+- Task filtering and search
+- View tasks across all notes
+- Task completion tracking
+
+### Fast Search
+
+Hybrid search powered by SQLite indexing:
+
+- Full-text search across all notes
+- Tag search and filtering
+- Link graph exploration
+- Frontmatter metadata queries
+
+<Info>
+  Search uses a hybrid index stored in `.glyph/` within your space folder, combining full-text and metadata indexing.
+</Info>
+
+### Wikilinks & Backlinks
+
+Connect your notes with wikilinks:
+
+- `[[Note Title]]` - Link to another note
+- Automatic backlink detection
+- Link graph for exploring connections
+- Works with partial matches
+
+## Architecture
+
+<AccordionGroup>
+  <Accordion title="Frontend (React + TypeScript)">
+    - **Framework:** React 19 + Vite + TypeScript
+    - **UI:** shadcn/ui + Radix + Tailwind 4
+    - **Editor:** TipTap (ProseMirror)
+    - **State:** React Context API
+    - **Animation:** Motion (Framer Motion)
+  </Accordion>
+  
+  <Accordion title="Backend (Tauri + Rust)">
+    - **Framework:** Tauri 2
+    - **Database:** SQLite (via rusqlite)
+    - **AI Runtime:** Rig framework
+    - **File watching:** notify-rs
+    - **Storage:** Local filesystem + `.glyph/` metadata
+  </Accordion>
+</AccordionGroup>
+
+## Local-First Philosophy
+
+Glyph stores everything locally:
+
+- **Notes:** Plain markdown files in your chosen folder
+- **Index:** SQLite database in `.glyph/index.db`
+- **Settings:** Per-space configuration in `.glyph/`
+- **No cloud:** Your data never leaves your device (unless you choose to sync the folder yourself)
+
+## Open Source
+
+Glyph is open source on GitHub. Official release binaries include a 48-hour free trial with optional Gumroad license activation.
+
+<CardGroup cols={2}>
+  <Card title="Download" icon="download" href="https://github.com/SidhuK/Glyph/releases">
+    Get the latest release
+  </Card>
+  <Card title="Purchase License" icon="credit-card" href="https://karatsidhu.gumroad.com/l/sqxfay">
+    Support development on Gumroad
+  </Card>
+</CardGroup>
+
+<Note>
+  **Development builds** are free and unlimited. The trial and licensing only apply to official release binaries.
+</Note>
+
+## Next Steps
+
+<Steps>
+  <Step title="Install Glyph">
+    [Download and install](/installation) Glyph for your platform
+  </Step>
+  <Step title="Create your first space">
+    Follow the [quickstart guide](/quickstart) to set up your workspace
+  </Step>
+  <Step title="Start taking notes">
+    Create your first note and explore the editor
+  </Step>
+</Steps>
+
+---
+
+<Card title="Ready to get started?" icon="rocket" href="/quickstart">
+  Jump into the quickstart guide
+</Card>

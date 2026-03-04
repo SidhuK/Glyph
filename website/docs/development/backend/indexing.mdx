@@ -1,0 +1,510 @@
+---
+title: 'SQLite Indexing'
+description: 'Full-text search and metadata indexing'
+---
+
+## Overview
+
+Glyph uses **SQLite with FTS5** (Full-Text Search) to index all notes for fast searching. The index is stored in `.glyph/index.db` and includes:
+
+- Note content (full-text searchable)
+- Frontmatter properties (tags, custom fields)
+- Internal links (wikilinks + markdown links)
+- Task items (with due dates, scheduled dates)
+
+<Note>
+The index is **derived data**. It can be rebuilt from source files at any time via `index_rebuild` command.
+</Note>
+
+## Schema
+
+### Notes Table (FTS5)
+
+```sql src-tauri/src/index/schema.rs
+CREATE VIRTUAL TABLE notes_fts USING fts5(
+  id UNINDEXED,          -- Note path (e.g., 'notes/example.md')
+  title,                 -- Note title (from frontmatter or filename)
+  content,               -- Full markdown content
+  tokenize='porter'      -- Porter stemming ("running" matches "run")
+);
+```
+
+### Tags Table
+
+```sql
+CREATE TABLE tags (
+  note_id TEXT NOT NULL,     -- Foreign key to note path
+  tag TEXT NOT NULL,         -- Tag name (e.g., 'research')
+  PRIMARY KEY (note_id, tag)
+);
+
+CREATE INDEX idx_tags_tag ON tags(tag);
+```
+
+### Links Table
+
+```sql
+CREATE TABLE links (
+  source_id TEXT NOT NULL,   -- Source note path
+  target_id TEXT NOT NULL,   -- Target note path (resolved)
+  link_type TEXT NOT NULL,   -- 'wikilink' or 'markdown'
+  PRIMARY KEY (source_id, target_id)
+);
+
+CREATE INDEX idx_links_target ON links(target_id);
+```
+
+### Tasks Table
+
+```sql
+CREATE TABLE tasks (
+  task_id TEXT PRIMARY KEY,     -- Unique task ID
+  note_id TEXT NOT NULL,        -- Parent note path
+  line_start INTEGER NOT NULL,  -- Line number in note
+  raw_text TEXT NOT NULL,       -- Full task markdown
+  checked BOOLEAN NOT NULL,     -- Completion status
+  status TEXT,                  -- Custom status (e.g., '> in progress')
+  priority INTEGER,             -- Priority level (1-3)
+  due_date TEXT,                -- ISO date (YYYY-MM-DD)
+  scheduled_date TEXT,          -- ISO date (YYYY-MM-DD)
+  section TEXT                  -- Parent heading
+);
+
+CREATE INDEX idx_tasks_note ON tasks(note_id);
+CREATE INDEX idx_tasks_due ON tasks(due_date);
+CREATE INDEX idx_tasks_scheduled ON tasks(scheduled_date);
+```
+
+## Indexing Process
+
+### Initial Index Build
+
+When a space is opened:
+
+<Steps>
+  <Step title="Create/open database">
+    ```rust src-tauri/src/index/db.rs
+    pub fn open_db(glyph_dir: &Path) -> Result<Connection, rusqlite::Error> {
+      let db_path = glyph_dir.join("index.db");
+      let db = Connection::open(db_path)?;
+      schema::ensure_schema(&db)?; // Create tables if missing
+      Ok(db)
+    }
+    ```
+  </Step>
+  
+  <Step title="Scan notes directory">
+    ```rust src-tauri/src/index/indexer.rs
+    pub fn rebuild_index(space_root: &Path, db: &Connection) -> Result<usize, String> {
+      let notes_dir = space_root.join("notes");
+      let mut indexed = 0;
+      
+      for entry in WalkDir::new(notes_dir) {
+        let path = entry.path();
+        if path.extension() == Some(OsStr::new("md")) {
+          index_note(path, db)?;
+          indexed += 1;
+        }
+      }
+      
+      Ok(indexed)
+    }
+    ```
+  </Step>
+  
+  <Step title="Parse each note">
+    ```rust
+    fn index_note(path: &Path, db: &Connection) -> Result<(), String> {
+      let content = fs::read_to_string(path)?;
+      let (frontmatter, body) = parse_frontmatter(&content)?;
+      
+      // Extract metadata
+      let title = frontmatter.get("title")
+        .or_else(|| extract_first_heading(&body))
+        .unwrap_or_else(|| path.file_stem().to_string());
+      
+      let tags = frontmatter.get("tags")
+        .map(|v| parse_tag_list(v))
+        .unwrap_or_default();
+      
+      // Index content
+      index_note_content(db, path, &title, &body)?;
+      index_tags(db, path, &tags)?;
+      index_links(db, path, &body)?;
+      index_tasks(db, path, &body)?;
+      
+      Ok(())
+    }
+    ```
+  </Step>
+</Steps>
+
+### Incremental Updates
+
+The filesystem watcher triggers re-indexing on file changes:
+
+```rust src-tauri/src/space/watcher.rs
+let watcher = notify::recommended_watcher(move |event| {
+  match event {
+    Ok(Event { kind: EventKind::Modify(_), paths, .. }) => {
+      for path in paths {
+        if path.extension() == Some(OsStr::new("md")) {
+          // Re-index single file
+          indexer::reindex_file(&path, &db)?;
+        }
+      }
+    }
+    Ok(Event { kind: EventKind::Remove(_), paths, .. }) => {
+      for path in paths {
+        // Remove from index
+        indexer::delete_from_index(&path, &db)?;
+      }
+    }
+    _ => {}
+  }
+})?;
+```
+
+## Search Implementation
+
+### Basic Search
+
+```rust src-tauri/src/index/search_hybrid.rs
+#[tauri::command]
+pub fn search(
+  query: String,
+  state: State<SpaceState>,
+) -> Result<Vec<SearchResult>, String> {
+  let current = state.current.lock().unwrap();
+  let space = current.as_ref().ok_or("No space open")?;
+  
+  let mut stmt = space.db.prepare("
+    SELECT id, title, snippet(notes_fts, 2, '<mark>', '</mark>', '...', 32) as snippet
+    FROM notes_fts
+    WHERE notes_fts MATCH ?
+    ORDER BY rank
+    LIMIT 50
+  ")?;
+  
+  let results = stmt.query_map([query], |row| {
+    Ok(SearchResult {
+      id: row.get(0)?,
+      title: row.get(1)?,
+      snippet: row.get(2)?,
+      score: 1.0, // FTS5 rank is negative, normalize later
+    })
+  })?.collect()?;
+  
+  Ok(results)
+}
+```
+
+### Advanced Search
+
+```rust src-tauri/src/index/search_advanced.rs
+pub fn search_advanced(
+  request: SearchAdvancedRequest,
+  db: &Connection,
+) -> Result<Vec<SearchResult>, String> {
+  let mut where_clauses = vec![];
+  let mut params: Vec<Box<dyn ToSql>> = vec![];
+  
+  // Text query
+  if let Some(query) = request.query {
+    if request.title_only {
+      where_clauses.push("title MATCH ?");
+    } else {
+      where_clauses.push("notes_fts MATCH ?");
+    }
+    params.push(Box::new(query));
+  }
+  
+  // Tag filter
+  if let Some(tags) = request.tags {
+    where_clauses.push("
+      id IN (
+        SELECT note_id FROM tags
+        WHERE tag IN (" + placeholders(&tags) + ")
+        GROUP BY note_id
+        HAVING COUNT(DISTINCT tag) = ?
+      )
+    ");
+    for tag in &tags {
+      params.push(Box::new(tag.clone()));
+    }
+    params.push(Box::new(tags.len()));
+  }
+  
+  let sql = format!(
+    "SELECT id, title, snippet(notes_fts, 2, '<mark>', '</mark>', '...', 32)
+     FROM notes_fts
+     WHERE {}
+     ORDER BY rank
+     LIMIT ?",
+    where_clauses.join(" AND ")
+  );
+  
+  params.push(Box::new(request.limit.unwrap_or(50)));
+  
+  // Execute query...
+}
+```
+
+## Tag Indexing
+
+### Extracting Tags
+
+Tags come from two sources:
+
+1. **Frontmatter**: `tags: [research, ai]`
+2. **Inline hashtags**: `#research #ai`
+
+```rust src-tauri/src/index/tags.rs
+pub fn extract_tags(frontmatter: &HashMap<String, Value>, body: &str) -> Vec<String> {
+  let mut tags = HashSet::new();
+  
+  // Frontmatter tags
+  if let Some(Value::Array(arr)) = frontmatter.get("tags") {
+    for v in arr {
+      if let Value::String(s) = v {
+        tags.insert(s.clone());
+      }
+    }
+  }
+  
+  // Inline hashtags
+  let hashtag_re = Regex::new(r"#([\w-]+)").unwrap();
+  for cap in hashtag_re.captures_iter(body) {
+    tags.insert(cap[1].to_string());
+  }
+  
+  tags.into_iter().collect()
+}
+
+pub fn index_tags(
+  db: &Connection,
+  note_id: &str,
+  tags: &[String],
+) -> Result<(), rusqlite::Error> {
+  // Clear existing tags
+  db.execute("DELETE FROM tags WHERE note_id = ?", [note_id])?;
+  
+  // Insert new tags
+  let mut stmt = db.prepare("INSERT INTO tags (note_id, tag) VALUES (?, ?)")?;
+  for tag in tags {
+    stmt.execute([note_id, tag])?;
+  }
+  
+  Ok(())
+}
+```
+
+### Tag Queries
+
+```rust src-tauri/src/index/tags.rs
+#[tauri::command]
+pub fn tags_list(
+  limit: Option<usize>,
+  state: State<SpaceState>,
+) -> Result<Vec<TagCount>, String> {
+  let current = state.current.lock().unwrap();
+  let space = current.as_ref().ok_or("No space open")?;
+  
+  let mut stmt = space.db.prepare("
+    SELECT tag, COUNT(*) as count
+    FROM tags
+    GROUP BY tag
+    ORDER BY count DESC, tag ASC
+    LIMIT ?
+  ")?;
+  
+  let tags = stmt.query_map([limit.unwrap_or(100)], |row| {
+    Ok(TagCount {
+      tag: row.get(0)?,
+      count: row.get(1)?,
+    })
+  })?.collect()?;
+  
+  Ok(tags)
+}
+```
+
+## Link Indexing
+
+### Extracting Links
+
+```rust src-tauri/src/index/links.rs
+pub fn extract_links(note_id: &str, body: &str) -> Vec<Link> {
+  let mut links = vec![];
+  
+  // Wikilinks: [[target]] or [[target|alias]]
+  let wikilink_re = Regex::new(r"\[\[([^\]|]+)(?:\|[^\]]+)?\]\]").unwrap();
+  for cap in wikilink_re.captures_iter(body) {
+    links.push(Link {
+      source: note_id.to_string(),
+      target: cap[1].to_string(),
+      link_type: "wikilink".to_string(),
+    });
+  }
+  
+  // Markdown links: [text](href)
+  let md_link_re = Regex::new(r"\[([^\]]+)\]\(([^)]+)\)").unwrap();
+  for cap in md_link_re.captures_iter(body) {
+    let href = &cap[2];
+    if !href.starts_with("http://") && !href.starts_with("https://") {
+      links.push(Link {
+        source: note_id.to_string(),
+        target: href.to_string(),
+        link_type: "markdown".to_string(),
+      });
+    }
+  }
+  
+  links
+}
+```
+
+### Backlink Queries
+
+```rust
+#[tauri::command]
+pub fn backlinks(
+  note_id: String,
+  state: State<SpaceState>,
+) -> Result<Vec<BacklinkItem>, String> {
+  let current = state.current.lock().unwrap();
+  let space = current.as_ref().ok_or("No space open")?;
+  
+  let mut stmt = space.db.prepare("
+    SELECT DISTINCT n.id, n.title, n.updated
+    FROM links l
+    JOIN notes_fts n ON l.source_id = n.id
+    WHERE l.target_id = ?
+    ORDER BY n.updated DESC
+  ")?;
+  
+  let backlinks = stmt.query_map([note_id], |row| {
+    Ok(BacklinkItem {
+      id: row.get(0)?,
+      title: row.get(1)?,
+      updated: row.get(2)?,
+    })
+  })?.collect()?;
+  
+  Ok(backlinks)
+}
+```
+
+## Task Indexing
+
+### Parsing Tasks
+
+```rust src-tauri/src/index/tasks/parse.rs
+pub fn parse_tasks(note_id: &str, markdown: &str) -> Vec<TaskItem> {
+  let mut tasks = vec![];
+  let mut current_section = None;
+  
+  for (line_num, line) in markdown.lines().enumerate() {
+    // Track headings for section context
+    if line.starts_with('#') {
+      current_section = Some(line.trim_start_matches('#').trim().to_string());
+      continue;
+    }
+    
+    // Parse task: - [ ] or - [x]
+    if let Some(task) = parse_task_line(line) {
+      let (due_date, scheduled_date) = extract_dates(line);
+      
+      tasks.push(TaskItem {
+        task_id: format!("{}-{}", note_id, line_num),
+        note_id: note_id.to_string(),
+        line_start: line_num,
+        raw_text: line.to_string(),
+        checked: task.checked,
+        status: task.status,
+        priority: task.priority,
+        due_date,
+        scheduled_date,
+        section: current_section.clone(),
+      });
+    }
+  }
+  
+  tasks
+}
+```
+
+### Task Queries
+
+```rust src-tauri/src/index/tasks/store.rs
+pub fn query_tasks(
+  bucket: &str,
+  today: &str,
+  folders: Option<&[String]>,
+  db: &Connection,
+) -> Result<Vec<TaskItem>, String> {
+  let where_clause = match bucket {
+    "inbox" => "scheduled_date IS NULL AND due_date IS NULL AND checked = 0",
+    "today" => "(scheduled_date <= ? OR due_date = ?) AND checked = 0",
+    "upcoming" => "scheduled_date > ? AND checked = 0",
+    _ => return Err("Invalid bucket".to_string()),
+  };
+  
+  let sql = if let Some(folders) = folders {
+    format!(
+      "SELECT * FROM tasks WHERE {} AND note_id LIKE ?",
+      where_clause
+    )
+  } else {
+    format!("SELECT * FROM tasks WHERE {}", where_clause)
+  };
+  
+  // Execute query...
+}
+```
+
+## Performance Optimization
+
+### FTS5 Optimization
+
+```sql
+-- Use 'optimize' to merge segments
+INSERT INTO notes_fts(notes_fts) VALUES('optimize');
+```
+
+```rust
+pub fn optimize_index(db: &Connection) -> Result<(), rusqlite::Error> {
+  db.execute("INSERT INTO notes_fts(notes_fts) VALUES('optimize')", [])?;
+  Ok(())
+}
+```
+
+### Batch Inserts
+
+```rust
+pub fn index_notes_batch(
+  notes: &[&Path],
+  db: &Connection,
+) -> Result<(), String> {
+  let tx = db.transaction()?;
+  
+  for note in notes {
+    index_note(note, &tx)?;
+  }
+  
+  tx.commit()?;
+  Ok(())
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Storage" icon="hard-drive" href="/development/backend/storage">
+    Content-addressed file storage
+  </Card>
+  
+  <Card title="Commands" icon="terminal" href="/development/backend/tauri-commands">
+    Learn IPC communication
+  </Card>
+</CardGroup>

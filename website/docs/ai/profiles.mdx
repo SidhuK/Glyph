@@ -1,0 +1,420 @@
+---
+title: AI Profile Management
+description: Create and manage multiple AI profiles in Glyph
+---
+
+AI profiles allow you to configure and switch between different AI providers, models, and settings. Create profiles for different use cases, models, or accounts.
+
+## What is an AI Profile?
+
+An AI profile stores:
+- **Provider** - Which AI service (OpenAI, Anthropic, Gemini, etc.)
+- **Model** - Which model to use (gpt-4o, claude-3.5-sonnet, etc.)
+- **Base URL** - API endpoint (optional, for custom endpoints)
+- **Headers** - Custom HTTP headers (optional)
+- **Settings** - Provider-specific options (reasoning effort, etc.)
+- **API Key** - Stored separately per space in `.glyph/app/ai_secrets.json`
+
+## Default Profiles
+
+On first launch, Glyph creates 7 default profiles:
+
+1. **OpenAI** - Empty model, requires API key
+2. **OpenAI-compatible** - Points to `http://localhost:11434/v1`
+3. **OpenRouter** - Empty model, requires API key
+4. **Anthropic** - Empty model, requires API key
+5. **Gemini** - Empty model, requires API key
+6. **Ollama** - Empty model, allows private hosts
+7. **Codex (ChatGPT OAuth)** - Model `codex`, OAuth authentication
+
+## Creating Profiles
+
+<Note>
+Glyph doesn't currently expose profile creation in the UI. You must edit `ai.json` manually to create new profiles.
+</Note>
+
+### Profile Storage Location
+
+```
+~/.config/glyph/ai.json  (Linux)
+~/Library/Application Support/glyph/ai.json  (macOS)
+%APPDATA%/glyph/ai.json  (Windows)
+```
+
+### Manual Profile Creation
+
+<Steps>
+  <Step title="Close Glyph">
+    Close Glyph to avoid conflicts when editing `ai.json`.
+  </Step>
+  
+  <Step title="Open ai.json">
+    Navigate to the config directory and open `ai.json` in a text editor.
+  </Step>
+  
+  <Step title="Add Profile">
+    Add a new profile object to the `profiles` array:
+    
+    ```json
+    {
+      "profiles": [
+        {
+          "id": "unique-uuid-here",
+          "name": "My Custom Profile",
+          "provider": "openai",
+          "model": "gpt-4o",
+          "base_url": null,
+          "headers": [],
+          "allow_private_hosts": false,
+          "reasoning_effort": null
+        }
+      ],
+      "active_profile_id": "unique-uuid-here"
+    }
+    ```
+    
+    Generate a UUID at [uuidgenerator.net](https://www.uuidgenerator.net/).
+  </Step>
+  
+  <Step title="Save and Reopen Glyph">
+    Save `ai.json` and reopen Glyph. Your new profile appears in Settings → AI.
+  </Step>
+</Steps>
+
+## Profile Structure
+
+### Required Fields
+
+```typescript
+interface AiProfile {
+  id: string;              // Unique UUID
+  name: string;            // Display name
+  provider: AiProviderKind; // See providers below
+  model: string;           // Model ID (e.g., "gpt-4o")
+}
+```
+
+### Optional Fields
+
+```typescript
+interface AiProfile {
+  base_url?: string | null;        // Custom endpoint
+  headers?: AiHeader[];            // Custom HTTP headers
+  allow_private_hosts?: boolean;   // Allow http:// and private IPs
+  reasoning_effort?: string | null; // For Codex reasoning models
+}
+```
+
+### Provider Values
+
+```typescript
+type AiProviderKind = 
+  | "openai"
+  | "openai_compat"
+  | "openrouter"
+  | "anthropic"
+  | "gemini"
+  | "ollama"
+  | "codex_chatgpt";
+```
+
+### Custom Headers
+
+```typescript
+interface AiHeader {
+  key: string;    // Header name
+  value: string;  // Header value
+}
+```
+
+Example:
+```json
+{
+  "headers": [
+    { "key": "X-Custom-Header", "value": "my-value" },
+    { "key": "Authorization", "value": "Bearer token" }
+  ]
+}
+```
+
+## Switching Profiles
+
+### Via Settings UI
+
+<Steps>
+  <Step title="Open AI Settings">
+    Go to **Settings → AI**.
+  </Step>
+  
+  <Step title="Select Profile">
+    Click the profile dropdown and select a profile.
+  </Step>
+  
+  <Step title="Configure Profile">
+    Set API key, select model, and adjust settings.
+  </Step>
+  
+  <Step title="Use in AI Panel">
+    The AI panel uses the active profile for all conversations.
+  </Step>
+</Steps>
+
+### Active Profile Storage
+
+The active profile ID is stored in `ai.json`:
+
+```json
+{
+  "profiles": [...],
+  "active_profile_id": "uuid-of-active-profile"
+}
+```
+
+Changing profiles in the UI updates this field.
+
+## Use Cases
+
+### Multiple Accounts
+
+**Scenario**: You have personal and work OpenAI accounts.
+
+**Solution**: Create two OpenAI profiles with different names and API keys.
+
+```json
+[
+  {
+    "id": "uuid-1",
+    "name": "OpenAI (Personal)",
+    "provider": "openai",
+    "model": "gpt-4o"
+  },
+  {
+    "id": "uuid-2",
+    "name": "OpenAI (Work)",
+    "provider": "openai",
+    "model": "gpt-4o-mini"
+  }
+]
+```
+
+Set different API keys for each in `.glyph/app/ai_secrets.json`:
+
+```json
+{
+  "uuid-1": "sk-personal-key",
+  "uuid-2": "sk-work-key"
+}
+```
+
+### Model Variants
+
+**Scenario**: You want quick access to different models.
+
+**Solution**: Create profiles for each model.
+
+```json
+[
+  {
+    "id": "uuid-1",
+    "name": "GPT-4o (Fast)",
+    "provider": "openai",
+    "model": "gpt-4o-mini"
+  },
+  {
+    "id": "uuid-2",
+    "name": "GPT-4 (Quality)",
+    "provider": "openai",
+    "model": "gpt-4"
+  }
+]
+```
+
+Switch profiles to use different models without reconfiguring.
+
+### Local and Cloud
+
+**Scenario**: Use Ollama for private notes, OpenAI for general tasks.
+
+**Solution**: Keep both profiles configured and switch as needed.
+
+### Provider Comparison
+
+**Scenario**: Compare responses from different providers.
+
+**Solution**: Create profiles for OpenAI, Anthropic, and Gemini with similar models. Switch profiles and ask the same question to compare.
+
+## API Key Management
+
+### Per-Profile API Keys
+
+API keys are stored per profile ID in `.glyph/app/ai_secrets.json`:
+
+```json
+{
+  "profile-uuid-1": "sk-openai-key",
+  "profile-uuid-2": "sk-ant-anthropic-key",
+  "profile-uuid-3": "google-api-key"
+}
+```
+
+### Setting API Keys
+
+In Settings → AI:
+1. Select a profile
+2. Click **Set API Key**
+3. Paste your API key
+4. Click **Save**
+
+The key is stored under the profile's UUID.
+
+### Clearing API Keys
+
+Click **Clear API Key** to remove the key for the active profile.
+
+### Security
+
+- Keys stored **per space**, not globally
+- Each space has independent `ai_secrets.json`
+- Add `.glyph/` to `.gitignore` to avoid committing keys
+- Keys never logged or sent to Glyph servers
+
+## Profile Examples
+
+### Azure OpenAI Profile
+
+```json
+{
+  "id": "azure-uuid",
+  "name": "Azure OpenAI",
+  "provider": "openai_compat",
+  "model": "gpt-4",
+  "base_url": "https://your-resource.openai.azure.com/openai/deployments/gpt-4",
+  "headers": [
+    { "key": "api-key", "value": "your-azure-api-key" },
+    { "key": "api-version", "value": "2024-02-15-preview" }
+  ],
+  "allow_private_hosts": false
+}
+```
+
+### Local LLaMA Profile
+
+```json
+{
+  "id": "llama-uuid",
+  "name": "LLaMA 3.1 (Local)",
+  "provider": "ollama",
+  "model": "llama3.1:70b",
+  "base_url": "http://localhost:11434/v1",
+  "headers": [],
+  "allow_private_hosts": true
+}
+```
+
+### OpenRouter with Custom Headers
+
+```json
+{
+  "id": "or-uuid",
+  "name": "OpenRouter",
+  "provider": "openrouter",
+  "model": "anthropic/claude-3.5-sonnet",
+  "base_url": null,
+  "headers": [
+    { "key": "HTTP-Referer", "value": "https://glyph.app" },
+    { "key": "X-Title", "value": "Glyph" }
+  ],
+  "allow_private_hosts": false
+}
+```
+
+## Troubleshooting
+
+### Profile doesn't appear in UI
+
+**Cause**: Invalid JSON in `ai.json`.
+
+**Solution**: Validate JSON syntax at [jsonlint.com](https://jsonlint.com/).
+
+### "Unknown profile" error
+
+**Cause**: Profile ID mismatch or profile deleted.
+
+**Solution**: Check that `active_profile_id` matches a profile ID in the `profiles` array.
+
+### API key not working after switching profiles
+
+**Cause**: Each profile has its own API key.
+
+**Solution**: Set the API key for each profile separately.
+
+### Profile settings not saving
+
+**Cause**: File permissions or Glyph config directory not writable.
+
+**Solution**: Check file permissions on `ai.json`.
+
+### Duplicate profile names
+
+**Cause**: Multiple profiles with the same name.
+
+**Solution**: Profile IDs must be unique, but names can be the same. Rename for clarity.
+
+## Best Practices
+
+### Naming Conventions
+
+Use descriptive names:
+- ✅ `OpenAI (Personal)`
+- ✅ `GPT-4o-mini (Fast)`
+- ✅ `Claude 3.5 Sonnet (Research)`
+- ❌ `Profile 1`
+- ❌ `Test`
+
+### Profile Organization
+
+Group profiles by:
+- **Provider**: OpenAI, Anthropic, Gemini
+- **Use case**: Research, coding, writing
+- **Speed**: Fast (mini models), Quality (full models)
+- **Cost**: Free (Ollama), Paid (OpenAI)
+
+### Backup Profiles
+
+Backup `ai.json` before making changes:
+
+```bash
+cp ~/.config/glyph/ai.json ~/.config/glyph/ai.json.bak
+```
+
+Restore if needed:
+
+```bash
+cp ~/.config/glyph/ai.json.bak ~/.config/glyph/ai.json
+```
+
+## Future Enhancements
+
+Potential profile features (not yet implemented):
+- Profile creation via UI
+- Profile import/export
+- Profile templates
+- Per-space profile overrides
+- Profile-specific system prompts
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="AI Setup" icon="gear" href="/ai/setup">
+    Configure your first AI profile
+  </Card>
+  <Card title="Providers" icon="plug" href="/ai/providers/openai">
+    Provider-specific setup guides
+  </Card>
+  <Card title="Chat Modes" icon="messages" href="/ai/chat-modes">
+    Learn about chat vs create modes
+  </Card>
+  <Card title="Context Management" icon="folder" href="/ai/context-management">
+    Attach notes to conversations
+  </Card>
+</CardGroup>

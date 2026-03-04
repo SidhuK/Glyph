@@ -1,0 +1,497 @@
+---
+import logoG from "../../assets/logo_g.PNG";
+import {
+	docsTabs,
+	getDocLocation,
+	getDocNeighbors,
+	getDocUrl,
+} from "../lib/docs";
+import Layout from "./Layout.astro";
+
+interface Props {
+	title: string;
+	description: string;
+	slug: string;
+	hasVisibleHeading?: boolean;
+}
+
+const { title, description, slug, hasVisibleHeading = false } = Astro.props;
+const location = getDocLocation(slug);
+const neighbors = getDocNeighbors(slug);
+const activeTab = location ? docsTabs[location.tabIndex] : docsTabs[0];
+---
+
+<Layout title={`${title} — Glyph Docs`} description={description}>
+	<div class="docs-page">
+		<header class="docs-header">
+			<a href="/" class="docs-logo">
+				<img src={logoG.src} alt="" class="docs-logo-icon" />
+				<span>GLYPH</span>
+			</a>
+			<nav class="docs-header-nav">
+				<a href="/docs">Docs</a>
+				<a href="https://github.com/SidhuK/Glyph" target="_blank" rel="noopener">GitHub</a>
+				<a href="https://github.com/SidhuK/Glyph/releases" target="_blank" rel="noopener">Changelog</a>
+			</nav>
+			<a href="https://karatsidhu.gumroad.com/l/sqxfay" class="docs-header-cta" target="_blank" rel="noopener">Get Glyph ↗</a>
+		</header>
+
+		<div class="docs-status-note" role="note" aria-label="Documentation warning">
+			<span class="docs-status-note-label">Warning</span>
+			<span>
+				This documentation is still a work in progress. Some details may be out of date depending on the version of Glyph you are using, but it is being actively reviewed and improved.
+			</span>
+		</div>
+
+		<div class="docs-tabs-strip">
+			{docsTabs.map((tab) => (
+				<a href={getDocUrl(tab.groups[0]?.pages[0] ?? "introduction")} class:list={{ "docs-tab-link": true, active: tab.tab === activeTab?.tab }}>
+					{tab.tab}
+				</a>
+			))}
+		</div>
+
+		<div class="docs-shell">
+			<aside class="docs-sidebar">
+				{activeTab?.groups.map((group) => (
+					<section class="docs-sidebar-group">
+						<p class="docs-sidebar-heading">{group.group}</p>
+						<div class="docs-sidebar-links">
+							{group.pages.map((page) => (
+								<a href={getDocUrl(page)} class:list={{ "docs-sidebar-link": true, active: page === slug }}>
+									{page.split("/").at(-1)?.replace(/-/g, " ")}
+								</a>
+							))}
+						</div>
+					</section>
+				))}
+			</aside>
+
+			<main class="docs-main">
+				<p class="docs-kicker">Documentation</p>
+				{!hasVisibleHeading && <h1>{title}</h1>}
+				<p class="docs-summary">{description}</p>
+				<article class="docs-prose">
+					<slot />
+				</article>
+				<div class="docs-pagination">
+					{neighbors.previous ? (
+						<a href={getDocUrl(neighbors.previous)} class="docs-pagination-link">
+							<span>Previous</span>
+							<strong>{neighbors.previous.split("/").at(-1)?.replace(/-/g, " ")}</strong>
+						</a>
+					) : (
+						<span></span>
+					)}
+					{neighbors.next ? (
+						<a href={getDocUrl(neighbors.next)} class="docs-pagination-link docs-pagination-link--next">
+							<span>Next</span>
+							<strong>{neighbors.next.split("/").at(-1)?.replace(/-/g, " ")}</strong>
+						</a>
+					) : (
+						<span></span>
+					)}
+				</div>
+			</main>
+		</div>
+
+		<footer class="docs-footer">
+			<div class="docs-footer-inner">
+				<div class="docs-footer-col">
+					<a href="/" class="docs-logo">
+						<img src={logoG.src} alt="" class="docs-logo-icon" />
+						<span>GLYPH</span>
+					</a>
+				</div>
+				<div class="docs-footer-col">
+					<p class="docs-footer-heading">PRODUCT</p>
+					<a href="/docs">Docs</a>
+					<a href="https://github.com/SidhuK/Glyph/releases" target="_blank" rel="noopener">Changelog</a>
+					<a href="https://github.com/SidhuK/Glyph" target="_blank" rel="noopener">GitHub</a>
+				</div>
+				<div class="docs-footer-col">
+					<p class="docs-footer-heading">PURCHASE</p>
+					<a href="https://karatsidhu.gumroad.com/l/sqxfay" target="_blank" rel="noopener">Gumroad</a>
+				</div>
+				<div class="docs-footer-col">
+					<p class="docs-footer-heading">LEGAL</p>
+					<a href="/terms">Terms</a>
+					<a href="/privacy">Privacy</a>
+					<a href="/legal">Legal</a>
+				</div>
+			</div>
+		</footer>
+	</div>
+</Layout>
+
+<style>
+	.docs-page {
+		width: min(1200px, 94vw);
+		margin: 0 auto;
+		padding: 1rem 0 3rem;
+	}
+
+	.docs-header {
+		position: sticky;
+		top: 0;
+		z-index: 40;
+		display: flex;
+		align-items: center;
+		gap: 1rem;
+		padding: 0.75rem 0;
+		background: rgba(250, 250, 250, 0.92);
+		backdrop-filter: blur(12px);
+	}
+
+	.docs-logo {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.45rem;
+		font-size: 0.75rem;
+		font-weight: 600;
+		letter-spacing: 0.14em;
+	}
+
+	.docs-logo-icon {
+		width: 1.25rem;
+		height: 1.25rem;
+		border-radius: 4px;
+	}
+
+	.docs-header-nav {
+		display: flex;
+		align-items: center;
+		gap: 0.2rem;
+		margin-left: auto;
+	}
+
+	.docs-header-nav a,
+	.docs-tab-link {
+		padding: 0.4rem 0.7rem;
+		font-size: 0.72rem;
+		font-weight: 500;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--muted);
+	}
+
+	.docs-header-nav a:hover,
+	.docs-tab-link:hover,
+	.docs-tab-link.active {
+		color: var(--ink);
+	}
+
+	.docs-header-cta {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		margin-left: 0.4rem;
+		min-height: 2.4rem;
+		padding: 0.5rem 1.02rem;
+		background:
+			linear-gradient(180deg, rgba(28, 28, 28, 0.96), rgba(17, 17, 17, 0.98)),
+			linear-gradient(135deg, rgba(255, 255, 255, 0.12), transparent 55%);
+		color: var(--bg);
+		font-size: 0.7rem;
+		font-weight: 600;
+		letter-spacing: 0.05em;
+		border-radius: 0.72rem;
+		border: 1px solid rgba(17, 17, 17, 0.92);
+	}
+
+	.docs-tabs-strip {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.35rem;
+		padding: 0.85rem 0 1.4rem;
+		border-bottom: 1px solid var(--border);
+	}
+
+	.docs-status-note {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.75rem;
+		margin: 0;
+		padding: 0.95rem 1rem;
+		border: 1px solid rgba(181, 130, 24, 0.28);
+		border-radius: 0.9rem;
+		background: rgba(255, 247, 221, 0.92);
+		color: #8a6708;
+		font-size: 0.82rem;
+		line-height: 1.55;
+	}
+
+	.docs-status-note-label {
+		flex-shrink: 0;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0.16rem 0.42rem;
+		border-radius: 999px;
+		background: rgba(181, 130, 24, 0.14);
+		color: #6f5205;
+		font-size: 0.68rem;
+		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+
+	.docs-shell {
+		display: grid;
+		grid-template-columns: 250px minmax(0, 1fr);
+		gap: 2rem;
+		padding-top: 1.75rem;
+	}
+
+	.docs-sidebar {
+		position: sticky;
+		top: 5.6rem;
+		align-self: start;
+		display: grid;
+		gap: 1.2rem;
+	}
+
+	.docs-sidebar-heading,
+	.docs-kicker,
+	.docs-footer-heading {
+		font-size: 0.68rem;
+		font-weight: 500;
+		letter-spacing: 0.18em;
+		text-transform: uppercase;
+		color: var(--faint);
+	}
+
+	.docs-sidebar-links {
+		display: grid;
+		gap: 0.35rem;
+		margin-top: 0.45rem;
+	}
+
+	.docs-sidebar-link {
+		font-size: 0.82rem;
+		line-height: 1.5;
+		color: var(--muted);
+		padding: 0.25rem 0;
+		text-transform: capitalize;
+	}
+
+	.docs-sidebar-link.active,
+	.docs-sidebar-link:hover {
+		color: var(--ink);
+	}
+
+	.docs-main h1,
+	.docs-prose :global(h1) {
+		font-family: var(--serif);
+		font-size: clamp(2.2rem, 4vw, 3.1rem);
+		font-style: italic;
+		font-weight: 400;
+		line-height: 1.08;
+		margin-bottom: 1rem;
+	}
+
+	.docs-summary {
+		max-width: 48rem;
+		font-size: 0.92rem;
+		line-height: 1.8;
+		color: var(--muted);
+		margin: 0.7rem 0 2rem;
+	}
+
+	.docs-prose {
+		display: grid;
+		gap: 1.2rem;
+	}
+
+	.docs-prose :global(h2) {
+		font-family: var(--serif);
+		font-size: 1.8rem;
+		font-style: italic;
+		font-weight: 400;
+		line-height: 1.15;
+		margin: 1.2rem 0 0.6rem;
+	}
+
+	.docs-prose :global(h3) {
+		font-size: 1rem;
+		font-weight: 600;
+		line-height: 1.4;
+		margin: 0.9rem 0 0.3rem;
+	}
+
+	.docs-prose :global(p),
+	.docs-prose :global(li),
+	.docs-prose :global(blockquote) {
+		font-size: 0.88rem;
+		line-height: 1.85;
+		color: var(--muted);
+	}
+
+	.docs-prose :global(ul),
+	.docs-prose :global(ol) {
+		padding-left: 1.2rem;
+		display: grid;
+		gap: 0.35rem;
+	}
+
+	.docs-prose :global(strong) {
+		color: var(--ink);
+	}
+
+	.docs-prose :global(a) {
+		text-decoration: underline;
+		text-decoration-color: rgba(17, 17, 17, 0.2);
+		text-underline-offset: 0.18em;
+	}
+
+	.docs-prose :global(blockquote) {
+		border-left: 2px solid var(--border);
+		padding-left: 1rem;
+	}
+
+	.docs-prose :global(pre) {
+		overflow-x: auto;
+		padding: 1rem 1.05rem;
+		border: 1px solid var(--border);
+		background: #f4f4f2;
+		font-size: 0.77rem;
+		line-height: 1.7;
+	}
+
+	.docs-prose :global(code) {
+		font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+		font-size: 0.82em;
+	}
+
+	.docs-prose :global(p code),
+	.docs-prose :global(li code),
+	.docs-prose :global(td code) {
+		padding: 0.08rem 0.32rem;
+		border: 1px solid var(--border);
+		background: rgba(255, 255, 255, 0.76);
+	}
+
+	.docs-prose :global(img) {
+		max-width: 100%;
+		height: auto;
+	}
+
+	.docs-prose :global(table) {
+		width: 100%;
+		border-collapse: collapse;
+	}
+
+	.docs-prose :global(th),
+	.docs-prose :global(td) {
+		padding: 0.7rem 0.85rem;
+		border-bottom: 1px solid var(--border);
+		text-align: left;
+		vertical-align: top;
+	}
+
+	.docs-prose :global(hr) {
+		border: 0;
+		border-top: 1px solid var(--border);
+		margin: 1rem 0;
+	}
+
+	.docs-pagination {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 0.8rem;
+		margin-top: 2.4rem;
+	}
+
+	.docs-pagination-link {
+		display: grid;
+		gap: 0.2rem;
+		padding: 0.95rem 1rem;
+		border: 1px solid var(--border);
+		background: rgba(255, 255, 255, 0.76);
+	}
+
+	.docs-pagination-link--next {
+		text-align: right;
+	}
+
+	.docs-pagination-link span {
+		font-size: 0.68rem;
+		font-weight: 600;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--faint);
+	}
+
+	.docs-pagination-link strong {
+		font-size: 0.86rem;
+		font-weight: 600;
+		text-transform: capitalize;
+	}
+
+	.docs-footer {
+		padding-top: 3rem;
+		margin-top: 3rem;
+		border-top: 1px solid var(--border);
+	}
+
+	.docs-footer-inner {
+		display: grid;
+		grid-template-columns: 1.3fr repeat(3, 1fr);
+		gap: 2rem;
+	}
+
+	.docs-footer-col {
+		display: flex;
+		flex-direction: column;
+		gap: 0.45rem;
+	}
+
+	.docs-footer-col a {
+		font-size: 0.82rem;
+		color: var(--muted);
+	}
+
+	.docs-footer-col a:hover {
+		color: var(--ink);
+	}
+
+	@media (max-width: 980px) {
+		.docs-shell {
+			grid-template-columns: 1fr;
+		}
+
+		.docs-sidebar {
+			position: static;
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+
+		.docs-footer-inner {
+			grid-template-columns: 1fr 1fr;
+		}
+	}
+
+	@media (max-width: 720px) {
+		.docs-page {
+			width: min(92vw, 100%);
+		}
+
+		.docs-header {
+			flex-wrap: wrap;
+		}
+
+		.docs-header-nav {
+			order: 3;
+			margin-left: 0;
+			width: 100%;
+		}
+
+		.docs-sidebar {
+			grid-template-columns: 1fr;
+		}
+
+		.docs-pagination,
+		.docs-footer-inner {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>

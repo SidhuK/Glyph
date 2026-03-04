@@ -1,0 +1,255 @@
+---
+title: Frequently Asked Questions
+description: Common questions about Glyph licensing and trials
+---
+
+Answers to common questions about purchasing, activating, and managing your Glyph license.
+
+## General Questions
+
+<Accordion title="Is Glyph open source?">
+  Yes! Glyph's **source code is public** on [GitHub](https://github.com/SidhuK/Glyph) and licensed under an open source license.
+  
+  However, **official release binaries** downloaded from GitHub Releases require a license after the 48-hour trial period.
+  
+  You can always build Glyph from source yourself without any licensing restrictions.
+</Accordion>
+
+<Accordion title="What's the difference between open source and licensed binaries?">
+  - **Source code**: Remains public and freely accessible on GitHub
+  - **Official binaries**: Pre-built releases that include a 48-hour trial and require a Gumroad license
+  - **Community builds**: Self-built or contributor builds that don't enforce licensing
+  
+  Think of it as "pay for convenience" - the official binaries are professionally built, signed, and auto-updated.
+</Accordion>
+
+<Accordion title="Can I use Glyph for free?">
+  Yes, in two ways:
+  
+  1. **48-hour trial**: Every official binary includes a free trial
+  2. **Build from source**: Clone the repo and build Glyph yourself - no licensing restrictions
+  
+  For continued use of official binaries, a one-time purchase is required.
+</Accordion>
+
+<Accordion title="How much does Glyph cost?">
+  Glyph is available for a **one-time purchase** on [Gumroad](https://karatsidhu.gumroad.com/l/sqxfay).
+  
+  - **No subscription fees**
+  - **Lifetime access**
+  - **All future updates included**
+  - **Unlimited devices**
+</Accordion>
+
+## Licensing Questions
+
+<Accordion title="How many devices can I use my license on?">
+  **Unlimited!** There are no device limits, seat restrictions, or activation caps.
+  
+  Purchase once and use on:
+  - Multiple computers (Mac, Windows, Linux)
+  - Work and personal machines
+  - Unlimited reinstalls
+  
+  No device fingerprinting or hardware binding.
+</Accordion>
+
+<Accordion title="Do I need internet to use Glyph?">
+  **Only once for activation**. Here's how it works:
+  
+  1. **First activation**: Requires internet to verify with Gumroad
+  2. **After activation**: Glyph works completely offline forever
+  3. **No periodic checks**: No "phone home" or online rechecks
+  
+  Your license is validated once and stored locally.
+</Accordion>
+
+<Accordion title="What happens if I change computers?">
+  Nothing! Your license key works on the new computer too:
+  
+  1. Download Glyph on your new device
+  2. Enter the same license key
+  3. Glyph verifies with Gumroad (internet required)
+  4. You're activated on the new device
+  
+  Your old device stays activated as well - no limits.
+</Accordion>
+
+<Accordion title="Is there a refund policy?">
+  Refunds are handled through **Gumroad's policies**. Contact Gumroad support or check your purchase email for refund options.
+  
+  We recommend trying the **48-hour free trial** first to ensure Glyph meets your needs.
+</Accordion>
+
+## Trial Questions
+
+<Accordion title="How long is the trial?">
+  Exactly **48 hours** (2 days) from the moment you first launch an official Glyph binary.
+  
+  The trial starts automatically - no signup or email required.
+</Accordion>
+
+<Accordion title="Can I extend the trial?">
+  No, the trial is a one-time 48-hour period. However:
+  
+  - You have full access to all features during the trial
+  - You can purchase and activate anytime during or after the trial
+  - Building from source gives you unlimited access without a trial
+</Accordion>
+
+<Accordion title="What happens after the trial expires?">
+  After 48 hours:
+  
+  1. Glyph shows a **lock screen** requiring activation
+  2. You cannot access the app or your notes
+  3. You can enter a license key to unlock
+  4. Or purchase a license directly from the lock screen
+  
+  Your notes remain safe and accessible once you activate.
+</Accordion>
+
+<Accordion title="Can I get another trial on a different device?">
+  Each device gets its own 48-hour trial when you first install Glyph.
+  
+  However, if you plan to use Glyph on multiple devices, consider purchasing a license - it works on **unlimited devices** with no restrictions.
+</Accordion>
+
+## Activation Questions
+
+<Accordion title="Where do I enter my license key?">
+  You can activate through any of these methods:
+  
+  - Click **Enter License Key** in the trial banner
+  - Wait for trial expiration and use the lock screen
+  - Go to **Settings → General → License**
+  - Use command palette: `Manage license`
+</Accordion>
+
+<Accordion title="How does activation work?">
+  1. You enter your license key from Gumroad
+  2. Glyph sends it to Gumroad's verification API (requires internet)
+  3. Gumroad confirms it's valid
+  4. Glyph stores a local activation record (not the raw key)
+  5. You're unlocked permanently on that device
+  
+  After first activation, no internet required - works offline forever.
+</Accordion>
+
+<Accordion title="Is my license key stored on my computer?">
+  **No, your raw license key is never stored.** For security, Glyph only stores:
+  
+  - Masked key (e.g., `ABCD-****-****-WXYZ`) for display
+  - SHA-256 hash of the key for verification
+  - Activation timestamp
+  
+  This is stored in `app_config_dir()/license.json`.
+</Accordion>
+
+<Accordion title="I lost my license key. How do I get it back?">
+  Check your **Gumroad purchase email** - your license key is included there.
+  
+  If you can't find it:
+  
+  1. Log into [Gumroad Library](https://gumroad.com/library)
+  2. Find your Glyph purchase
+  3. View your license key
+  
+  For further help, contact Gumroad support.
+</Accordion>
+
+<Accordion title="Can I deactivate my license on one computer to move it to another?">
+  **Not necessary!** Your license has no device limits.
+  
+  You can:
+  - Keep it activated on your old computer
+  - Activate it on your new computer
+  - Use both simultaneously
+  
+  If you want to remove local activation for testing:
+  
+  1. Go to **Settings → General → License**
+  2. Click **Remove Local Activation**
+  3. This doesn't invalidate your key - you can reactivate anytime
+</Accordion>
+
+## Technical Questions
+
+<Accordion title="How do I know if I'm using an official build?">
+  Check in **Settings → General → License**:
+  
+  - **Official Release**: Shows license status and trial info
+  - **Community Build**: Shows "Community Build" badge
+  
+  Official builds are only available from [GitHub Releases](https://github.com/SidhuK/Glyph/releases).
+</Accordion>
+
+<Accordion title="What if I build Glyph from source?">
+  **No licensing restrictions!** Builds you create yourself:
+  
+  - Don't include the `GLYPH_OFFICIAL_BUILD=1` flag
+  - Skip trial and licensing entirely
+  - Have full functionality immediately
+  - Remain unrestricted forever
+  
+  This is part of Glyph's open source commitment.
+</Accordion>
+
+<Accordion title="Can I modify the source code?">
+  **Yes!** Glyph is open source. You can:
+  
+  - Fork the repository
+  - Modify the code
+  - Build custom versions
+  - Distribute your builds (respecting the license terms)
+  
+  Only official binaries from the maintainers require licensing.
+</Accordion>
+
+<Accordion title="Does the license expire?">
+  **Never!** Your license is:
+  
+  - **One-time purchase** - Pay once
+  - **Lifetime access** - No expiration
+  - **No subscriptions** - No recurring fees
+  - **All updates included** - Future versions covered
+</Accordion>
+
+## Support Questions
+
+<Accordion title="I'm having trouble activating my license. Where can I get help?">
+  For licensing support:
+  
+  1. Check [Troubleshooting](/licensing/troubleshooting) for common issues
+  2. Open a support ticket at [GitHub Issues](https://github.com/SidhuK/Glyph/issues)
+  3. Include:
+     - Error message (if any)
+     - Whether you're online/offline
+     - Whether the key is from Gumroad
+</Accordion>
+
+<Accordion title="The trial expired but I already purchased. What do I do?">
+  Simply enter your license key:
+  
+  1. When the lock screen appears, paste your key in the input field
+  2. Click **Activate License**
+  3. Glyph will verify with Gumroad and unlock immediately
+  
+  Your notes are safe and will be accessible after activation.
+</Accordion>
+
+<Accordion title="Can I get an invoice for my purchase?">
+  Gumroad provides receipts automatically. Check:
+  
+  - Your purchase confirmation email
+  - [Gumroad Library](https://gumroad.com/library) for purchase history
+  
+  For formal invoices, contact Gumroad support.
+</Accordion>
+
+## Still Have Questions?
+
+If your question isn't answered here:
+
+- [Troubleshooting](/licensing/troubleshooting) - Common issues and solutions
+- [GitHub Issues](https://github.com/SidhuK/Glyph/issues) - Community support
+- [Purchase on Gumroad](https://karatsidhu.gumroad.com/l/sqxfay) - Buy a license

@@ -1,0 +1,316 @@
+---
+title: 'Development Setup'
+description: 'Set up your development environment for Glyph'
+---
+
+## Prerequisites
+
+### Required Tools
+
+<Steps>
+  <Step title="Install Node.js 18+">
+    Download from [nodejs.org](https://nodejs.org/) or use a version manager:
+    
+    ```bash macOS/Linux (nvm)
+    nvm install 18
+    nvm use 18
+    ```
+    
+    ```bash Windows (nvm-windows)
+    nvm install 18
+    nvm use 18
+    ```
+  </Step>
+  
+  <Step title="Install pnpm 10.28.2">
+    Fast, disk-efficient package manager:
+    
+    ```bash
+    npm install -g pnpm@10.28.2
+    ```
+    
+    Verify installation:
+    ```bash
+    pnpm --version
+    # Should output: 10.28.2
+    ```
+  </Step>
+  
+  <Step title="Install Rust (latest stable)">
+    Install via [rustup](https://rustup.rs/):
+    
+    ```bash macOS/Linux
+    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+    ```
+    
+    ```powershell Windows
+    # Download and run rustup-init.exe from https://rustup.rs/
+    ```
+    
+    Verify installation:
+    ```bash
+    rustc --version
+    cargo --version
+    ```
+  </Step>
+  
+  <Step title="Install Tauri system dependencies">
+    <Tabs>
+      <Tab title="macOS">
+        ```bash
+        # Install Xcode Command Line Tools
+        xcode-select --install
+        ```
+      </Tab>
+      
+      <Tab title="Linux (Ubuntu/Debian)">
+        ```bash
+        sudo apt update
+        sudo apt install libwebkit2gtk-4.1-dev \
+          build-essential \
+          curl \
+          wget \
+          file \
+          libssl-dev \
+          libayatana-appindicator3-dev \
+          librsvg2-dev
+        ```
+      </Tab>
+      
+      <Tab title="Windows">
+        Install:
+        - [Microsoft C++ Build Tools](https://visualstudio.microsoft.com/visual-cpp-build-tools/)
+        - [WebView2](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) (usually pre-installed on Windows 11)
+      </Tab>
+    </Tabs>
+  </Step>
+</Steps>
+
+## Clone Repository
+
+```bash
+git clone https://github.com/YourOrg/Glyph.git
+cd Glyph
+```
+
+## Install Dependencies
+
+<Steps>
+  <Step title="Install frontend dependencies">
+    ```bash
+    pnpm install
+    ```
+    
+    This installs all packages from `package.json`.
+  </Step>
+  
+  <Step title="Install Rust dependencies">
+    Rust dependencies are automatically downloaded during first build.
+    
+    To verify Rust setup:
+    ```bash
+    cd src-tauri
+    cargo check
+    ```
+  </Step>
+</Steps>
+
+## Editor Setup
+
+### VS Code (Recommended)
+
+Install recommended extensions:
+
+```json .vscode/extensions.json
+{
+  "recommendations": [
+    "rust-lang.rust-analyzer",      // Rust language support
+    "tauri-apps.tauri-vscode",      // Tauri tooling
+    "biomejs.biome",                // Linting + formatting
+    "bradlc.vscode-tailwindcss"    // Tailwind IntelliSense
+  ]
+}
+```
+
+### Settings
+
+```json .vscode/settings.json
+{
+  "editor.defaultFormatter": "biomejs.biome",
+  "editor.formatOnSave": true,
+  "editor.codeActionsOnSave": {
+    "quickfix.biome": "explicit",
+    "source.organizeImports.biome": "explicit"
+  },
+  "[rust]": {
+    "editor.defaultFormatter": "rust-lang.rust-analyzer",
+    "editor.formatOnSave": true
+  },
+  "rust-analyzer.check.command": "clippy"
+}
+```
+
+## Environment Variables
+
+### Optional: AI Provider Keys
+
+Create `.env` in project root for development API keys:
+
+```bash .env
+# OpenAI
+OPENAI_API_KEY=sk-...
+
+# Anthropic
+ANTHROPIC_API_KEY=sk-ant-...
+
+# Google Gemini
+GEMINI_API_KEY=...
+```
+
+<Note>
+These are **optional**. Glyph stores API keys in the user's space via the settings UI. `.env` is only for testing during development.
+</Note>
+
+## Verify Setup
+
+Run these commands to verify everything is working:
+
+<Steps>
+  <Step title="Frontend typecheck">
+    ```bash
+    pnpm build
+    # Should complete without errors
+    ```
+  </Step>
+  
+  <Step title="Rust typecheck">
+    ```bash
+    cd src-tauri
+    cargo check
+    # Should complete without errors
+    ```
+  </Step>
+  
+  <Step title="Linting">
+    ```bash
+    pnpm check
+    # Should pass all Biome checks
+    ```
+  </Step>
+  
+  <Step title="Tests">
+    ```bash
+    pnpm test
+    # Should pass all Vitest tests
+    ```
+  </Step>
+</Steps>
+
+## Running the App
+
+### Development Mode
+
+<Tabs>
+  <Tab title="Full Desktop App (Recommended)">
+    ```bash
+    pnpm tauri dev
+    ```
+    
+    This:
+    - Starts Vite dev server with HMR
+    - Compiles Rust backend
+    - Opens native desktop window
+    - Auto-reloads on file changes
+  </Tab>
+  
+  <Tab title="Frontend Only">
+    ```bash
+    pnpm dev
+    ```
+    
+    Opens Vite dev server at `http://localhost:5173`.
+    
+    <Warning>
+    Tauri commands will **not work** in this mode. Use for UI-only development.
+    </Warning>
+  </Tab>
+</Tabs>
+
+### Hot Reload Behavior
+
+- **Frontend changes** (TypeScript/React/CSS): Instant HMR
+- **Rust changes**: Full recompile (~5-30s depending on changes)
+
+## Troubleshooting
+
+### "pnpm: command not found"
+
+```bash
+npm install -g pnpm
+```
+
+### "rustc: command not found"
+
+Restart terminal after installing Rust, or run:
+
+```bash
+source $HOME/.cargo/env
+```
+
+### Tauri dev fails with "webkit2gtk not found" (Linux)
+
+```bash
+sudo apt install libwebkit2gtk-4.1-dev
+```
+
+### "error: linker `cc` not found" (Linux)
+
+```bash
+sudo apt install build-essential
+```
+
+### macOS: "xcrun: error: invalid active developer path"
+
+```bash
+xcode-select --install
+```
+
+### Windows: "error: the `cargo` binary is missing"
+
+Ensure `%USERPROFILE%\.cargo\bin` is in your PATH. Restart terminal after installing Rust.
+
+### pnpm install fails with EACCES
+
+```bash
+# Fix npm global permissions
+sudo chown -R $(whoami) ~/.npm
+sudo chown -R $(whoami) /usr/local/lib/node_modules
+```
+
+### Biome errors in VS Code
+
+Ensure Biome extension is installed and enabled:
+
+```bash
+code --install-extension biomejs.biome
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Building" icon="hammer" href="/development/building">
+    Learn how to build production releases
+  </Card>
+  
+  <Card title="Testing" icon="vial" href="/development/testing">
+    Run tests and write new ones
+  </Card>
+  
+  <Card title="Architecture" icon="diagram-project" href="/development/architecture">
+    Understand the codebase structure
+  </Card>
+  
+  <Card title="Tauri Commands" icon="terminal" href="/development/backend/tauri-commands">
+    Learn IPC communication
+  </Card>
+</CardGroup>

@@ -1,0 +1,78 @@
+---
+interface Props {
+	path: string;
+	type?: string;
+	required?: boolean;
+	default?: string;
+}
+
+const {
+	path,
+	type,
+	required = false,
+	default: defaultValue,
+} = Astro.props;
+---
+
+<section class="docs-param-field">
+	<div class="docs-param-field-head">
+		<code>{path}</code>
+		{type && <span class="docs-param-field-type">{type}</span>}
+	</div>
+	<div class="docs-param-field-meta">
+		{required && <span>Required</span>}
+		{defaultValue && <span>Default: {defaultValue}</span>}
+	</div>
+	<div class="docs-param-field-body">
+		<slot />
+	</div>
+</section>
+
+<style>
+	.docs-param-field {
+		border: 1px solid var(--border);
+		background: rgba(255, 255, 255, 0.76);
+		padding: 1rem 1.05rem;
+	}
+
+	.docs-param-field-head {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.55rem;
+		align-items: center;
+		margin-bottom: 0.55rem;
+	}
+
+	.docs-param-field-head code,
+	.docs-param-field-type {
+		font-family: var(--mono);
+		font-size: 0.76rem;
+	}
+
+	.docs-param-field-head code {
+		font-weight: 600;
+	}
+
+	.docs-param-field-type {
+		color: var(--muted);
+	}
+
+	.docs-param-field-meta {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+		margin-bottom: 0.7rem;
+	}
+
+	.docs-param-field-meta span {
+		font-size: 0.68rem;
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--faint);
+	}
+
+	.docs-param-field-body :global(*:last-child) {
+		margin-bottom: 0;
+	}
+</style>

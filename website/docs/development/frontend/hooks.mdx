@@ -1,0 +1,610 @@
+---
+title: 'React Hooks'
+description: 'Custom hooks for business logic'
+---
+
+## Overview
+
+Glyph uses custom hooks to **separate business logic from UI**. Hooks handle:
+
+- File tree operations (load, rename, delete)
+- Editor state (save, auto-save, conflict detection)
+- Search (full-text, advanced filters)
+- AI chat (streaming, tool calls)
+- View loading (folder, tag, database views)
+
+<Note>
+Hooks follow the "hooks as logic, components as UI" pattern. Components should be thin wrappers around hooks.
+</Note>
+
+## File Tree Hooks
+
+### useFileTree
+
+**Location**: `src/hooks/useFileTree.ts`
+
+Manages file tree operations (load, toggle, open).
+
+<CodeGroup>
+```typescript Interface
+interface UseFileTreeResult {
+  loadDir: (dirPath: string, force?: boolean) => Promise<void>;
+  toggleDir: (dirPath: string) => void;
+  openFile: (relPath: string) => Promise<void>;
+  openMarkdownFile: (relPath: string) => Promise<void>;
+  openNonMarkdownExternally: (relPath: string) => Promise<void>;
+  
+  // CRUD operations (from useFileTreeCRUD)
+  onNewFile: () => Promise<void>;
+  onNewFileInDir: (dirPath: string) => Promise<void>;
+  onNewFolderInDir: (dirPath: string) => Promise<void>;
+  onRenameDir: (path: string, nextName: string) => Promise<string | null>;
+  onDeletePath: (path: string, kind: 'dir' | 'file') => Promise<boolean>;
+  onMovePath: (fromPath: string, toDirPath: string) => Promise<string | null>;
+}
+```
+
+```typescript Usage
+import { useFileTree } from '@/hooks/useFileTree';
+
+function FileTreePane() {
+  const { spacePath } = useSpace();
+  const { updateChildrenByDir, expandedDirs, ... } = useFileTreeContext();
+  const { setActiveFilePath, setActivePreviewPath, activeFilePath } = useUIContext();
+  
+  const fileTree = useFileTree({
+    spacePath,
+    updateChildrenByDir,
+    updateExpandedDirs,
+    setActiveFilePath,
+    setActivePreviewPath,
+    activeFilePath,
+    // ... other deps
+  });
+  
+  return (
+    <div>
+      <button onClick={() => fileTree.toggleDir('notes/projects')}>
+        Toggle Projects
+      </button>
+      
+      <button onClick={() => fileTree.openFile('notes/example.md')}>
+        Open Example
+      </button>
+    </div>
+  );
+}
+```
+</CodeGroup>
+
+### useFileTreeCRUD
+
+**Location**: `src/hooks/useFileTreeCRUD.ts`
+
+Create, rename, delete operations.
+
+```typescript src/hooks/useFileTreeCRUD.ts
+export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
+  const onNewFile = useCallback(async () => {
+    const dirPath = deps.getActiveFolderDir() || '';
+    const name = prompt('File name:');
+    if (!name) return;
+    
+    const path = dirPath ? `${dirPath}/${name}` : name;
+    
+    try {
+      await invoke('space_open_or_create_text', {
+        path,
+        text: '# ' + name.replace(/\.md$/, '')
+      });
+      
+      await deps.loadDir(dirPath, true); // Refresh
+      deps.setActiveFilePath(path);
+    } catch (err) {
+      deps.setError(extractErrorMessage(err));
+    }
+  }, [deps]);
+  
+  const onDeletePath = useCallback(async (
+    path: string,
+    kind: 'dir' | 'file'
+  ): Promise<boolean> => {
+    const confirmed = confirm(`Delete ${kind} "${path}"?`);
+    if (!confirmed) return false;
+    
+    try {
+      await invoke('space_delete_path', {
+        path,
+        recursive: kind === 'dir'
+      });
+      
+      // Refresh parent directory
+      const parentPath = parentDir(path);
+      await deps.loadDir(parentPath, true);
+      
+      // Clear active file if deleted
+      if (deps.activeFilePath === path) {
+        deps.setActiveFilePath(null);
+      }
+      
+      return true;
+    } catch (err) {
+      deps.setError(extractErrorMessage(err));
+      return false;
+    }
+  }, [deps]);
+  
+  return {
+    onNewFile,
+    onNewFileInDir,
+    onNewFolderInDir,
+    onRenameDir,
+    onDeletePath,
+    onMovePath,
+  };
+}
+```
+
+## Search Hooks
+
+### useSearch
+
+**Location**: `src/hooks/useSearch.ts`
+
+Debounced search with result caching.
+
+```typescript
+import { useCallback, useEffect, useState, useMemo } from 'react';
+import { invoke } from '@/lib/tauri';
+import type { SearchResult } from '@/lib/tauri';
+
+export function useSearch(query: string, debounceMs = 300) {
+  const [results, setResults] = useState<SearchResult[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  
+  // Debounce query
+  const debouncedQuery = useDebounce(query, debounceMs);
+  
+  useEffect(() => {
+    if (!debouncedQuery) {
+      setResults([]);
+      return;
+    }
+    
+    let cancelled = false;
+    
+    (async () => {
+      setLoading(true);
+      setError('');
+      
+      try {
+        const searchResults = await invoke('search', {
+          query: debouncedQuery
+        });
+        
+        if (!cancelled) {
+          setResults(searchResults);
+        }
+      } catch (err) {
+        if (!cancelled) {
+          setError(extractErrorMessage(err));
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    })();
+    
+    return () => {
+      cancelled = true;
+    };
+  }, [debouncedQuery]);
+  
+  return { results, loading, error };
+}
+
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState(value);
+  
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedValue(value), delay);
+    return () => clearTimeout(timer);
+  }, [value, delay]);
+  
+  return debouncedValue;
+}
+```
+
+## View Loading Hooks
+
+### useViewLoader
+
+**Location**: `src/hooks/useViewLoader.ts`
+
+Loads and builds view documents (folder, tag, search, database).
+
+```typescript
+export function useViewLoader() {
+  const { setActiveViewDoc, setIsLoadingView, setViewError } = useViewContext();
+  
+  const loadFolderView = useCallback(async (dir: string) => {
+    setIsLoadingView(true);
+    setViewError('');
+    
+    try {
+      const data = await invoke('space_folder_view_data', {
+        dir,
+        limit: 100,
+        recent_limit: 10
+      });
+      
+      setActiveViewDoc({
+        type: 'folder',
+        dir,
+        files: data.files,
+        subfolders: data.subfolders,
+        note_previews: data.note_previews,
+      });
+    } catch (err) {
+      setViewError(extractErrorMessage(err));
+    } finally {
+      setIsLoadingView(false);
+    }
+  }, [setActiveViewDoc, setIsLoadingView, setViewError]);
+  
+  const loadTagView = useCallback(async (tag: string) => {
+    setIsLoadingView(true);
+    
+    try {
+      const previews = await invoke('tag_view_data', {
+        tag,
+        limit: 100
+      });
+      
+      setActiveViewDoc({
+        type: 'tag',
+        tag,
+        note_previews: previews,
+      });
+    } catch (err) {
+      setViewError(extractErrorMessage(err));
+    } finally {
+      setIsLoadingView(false);
+    }
+  }, [setActiveViewDoc, setIsLoadingView, setViewError]);
+  
+  return {
+    loadFolderView,
+    loadTagView,
+    loadSearchView,
+    loadDatabaseView,
+  };
+}
+```
+
+## Editor Hooks
+
+### useNoteEditor
+
+**Location**: `src/components/editor/hooks/useNoteEditor.ts`
+
+Manages TipTap editor with auto-save and conflict detection.
+
+```typescript
+import { useEditor } from '@tiptap/react';
+import { useMemo, useCallback, useEffect, useState } from 'react';
+import { debounce } from '@/lib/utils';
+
+export function useNoteEditor(path: string) {
+  const [doc, setDoc] = useState<TextFileDoc | null>(null);
+  const [saveState, setSaveState] = useState<'saved' | 'saving' | 'unsaved'>('saved');
+  
+  // Load note
+  useEffect(() => {
+    let cancelled = false;
+    
+    (async () => {
+      try {
+        const loaded = await invoke('space_read_text', { path });
+        if (!cancelled) setDoc(loaded);
+      } catch (err) {
+        toast.error('Failed to load note');
+      }
+    })();
+    
+    return () => { cancelled = true; };
+  }, [path]);
+  
+  // Auto-save handler
+  const handleSave = useCallback(async (text: string) => {
+    if (!doc) return;
+    
+    setSaveState('saving');
+    
+    try {
+      const result = await invoke('space_write_text', {
+        path,
+        text,
+        base_mtime_ms: doc.mtime_ms, // Conflict detection
+      });
+      
+      setDoc(prev => prev ? { ...prev, etag: result.etag, mtime_ms: result.mtime_ms } : null);
+      setSaveState('saved');
+    } catch (err) {
+      if (err.message.includes('conflict')) {
+        toast.error('File was modified externally. Reload to see changes.');
+      } else {
+        toast.error('Failed to save');
+      }
+      setSaveState('unsaved');
+    }
+  }, [path, doc]);
+  
+  const debouncedSave = useMemo(
+    () => debounce(handleSave, 500),
+    [handleSave]
+  );
+  
+  // TipTap editor
+  const editor = useEditor({
+    extensions: [/* ... */],
+    content: doc?.text || '',
+    onUpdate: ({ editor }) => {
+      setSaveState('unsaved');
+      debouncedSave(editor.getText());
+    },
+  });
+  
+  return {
+    editor,
+    doc,
+    saveState,
+  };
+}
+```
+
+## AI Hooks
+
+### useRigChat
+
+**Location**: `src/components/ai/hooks/useRigChat.ts`
+
+Manages streaming AI chat with tool calls.
+
+```typescript
+import { useState, useCallback } from 'react';
+import { listen } from '@tauri-apps/api/event';
+
+export function useRigChat() {
+  const [messages, setMessages] = useState<AiMessage[]>([]);
+  const [isStreaming, setIsStreaming] = useState(false);
+  const [currentJobId, setCurrentJobId] = useState<string | null>(null);
+  
+  const sendMessage = useCallback(async (content: string) => {
+    const userMessage: AiMessage = { role: 'user', content };
+    setMessages(prev => [...prev, userMessage]);
+    
+    setIsStreaming(true);
+    
+    try {
+      const { job_id } = await invoke('ai_chat_start', {
+        request: {
+          profile_id: activeProfile.id,
+          messages: [...messages, userMessage],
+          mode: 'chat',
+        }
+      });
+      
+      setCurrentJobId(job_id);
+      
+      // Listen for streaming chunks
+      const unlisten = await listen<{ delta: string }>(
+        `ai_stream_${job_id}`,
+        (event) => {
+          setMessages(prev => {
+            const last = prev[prev.length - 1];
+            if (last?.role === 'assistant') {
+              return [
+                ...prev.slice(0, -1),
+                { ...last, content: last.content + event.payload.delta }
+              ];
+            } else {
+              return [
+                ...prev,
+                { role: 'assistant', content: event.payload.delta }
+              ];
+            }
+          });
+        }
+      );
+      
+      // Wait for completion
+      await listen<{ job_id: string }>(
+        `ai_complete_${job_id}`,
+        () => {
+          setIsStreaming(false);
+          setCurrentJobId(null);
+          unlisten();
+        }
+      );
+    } catch (err) {
+      toast.error('AI request failed');
+      setIsStreaming(false);
+    }
+  }, [messages, activeProfile]);
+  
+  const cancelStream = useCallback(async () => {
+    if (!currentJobId) return;
+    
+    try {
+      await invoke('ai_chat_cancel', { job_id: currentJobId });
+      setIsStreaming(false);
+      setCurrentJobId(null);
+    } catch (err) {
+      console.error('Failed to cancel:', err);
+    }
+  }, [currentJobId]);
+  
+  return {
+    messages,
+    isStreaming,
+    sendMessage,
+    cancelStream,
+  };
+}
+```
+
+## Database Hooks
+
+### useDatabaseTable
+
+**Location**: `src/hooks/database/useDatabaseTable.ts`
+
+Manages database view (table/board) state.
+
+```typescript
+import { useState, useEffect, useCallback } from 'react';
+import type { DatabaseConfig, DatabaseRow } from '@/lib/tauri';
+
+export function useDatabaseTable(path: string) {
+  const [config, setConfig] = useState<DatabaseConfig | null>(null);
+  const [rows, setRows] = useState<DatabaseRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  
+  // Load database
+  useEffect(() => {
+    let cancelled = false;
+    
+    (async () => {
+      setLoading(true);
+      
+      try {
+        const data = await invoke('database_load', { path, limit: 500 });
+        
+        if (!cancelled) {
+          setConfig(data.config);
+          setRows(data.rows);
+        }
+      } catch (err) {
+        toast.error('Failed to load database');
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    
+    return () => { cancelled = true; };
+  }, [path]);
+  
+  // Update cell
+  const updateCell = useCallback(async (
+    row: DatabaseRow,
+    column: DatabaseColumn,
+    value: DatabaseCellValue
+  ) => {
+    try {
+      const updatedRow = await invoke('database_update_cell', {
+        note_path: row.note_path,
+        column,
+        value,
+      });
+      
+      setRows(prev => prev.map(r =>
+        r.note_path === row.note_path ? updatedRow : r
+      ));
+    } catch (err) {
+      toast.error('Failed to update cell');
+    }
+  }, []);
+  
+  // Create row
+  const createRow = useCallback(async (title?: string) => {
+    if (!config) return;
+    
+    try {
+      const result = await invoke('database_create_row', {
+        database_path: path,
+        title,
+      });
+      
+      setRows(prev => [result.row, ...prev]);
+      
+      // Open new note
+      // ...
+    } catch (err) {
+      toast.error('Failed to create row');
+    }
+  }, [path, config]);
+  
+  return {
+    config,
+    rows,
+    loading,
+    updateCell,
+    createRow,
+  };
+}
+```
+
+## Hook Patterns
+
+### Dependencies Object Pattern
+
+Instead of 20 individual parameters:
+
+```typescript Good
+interface UseFileTreeDeps {
+  spacePath: string | null;
+  updateChildrenByDir: (...) => void;
+  setActiveFilePath: (path: string | null) => void;
+  // ... more
+}
+
+export function useFileTree(deps: UseFileTreeDeps) {
+  // Use deps.spacePath, deps.updateChildrenByDir, etc.
+}
+```
+
+### Async Hook Pattern
+
+For hooks that load data:
+
+```typescript
+export function useAsyncData<T>(fetchFn: () => Promise<T>) {
+  const [data, setData] = useState<T | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<Error | null>(null);
+  
+  useEffect(() => {
+    let cancelled = false;
+    
+    (async () => {
+      try {
+        const result = await fetchFn();
+        if (!cancelled) setData(result);
+      } catch (err) {
+        if (!cancelled) setError(err as Error);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+    
+    return () => { cancelled = true; };
+  }, [fetchFn]);
+  
+  return { data, loading, error };
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Components" icon="react" href="/development/frontend/components">
+    Component architecture
+  </Card>
+  
+  <Card title="Contexts" icon="sitemap" href="/development/frontend/contexts">
+    State management
+  </Card>
+</CardGroup>

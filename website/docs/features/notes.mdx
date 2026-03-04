@@ -1,0 +1,118 @@
+---
+title: Notes
+description: Create, edit, and organize markdown notes in Glyph
+---
+
+Glyph stores all your notes as plain markdown files on your local filesystem, giving you complete ownership and portability of your data.
+
+## Creating Notes
+
+You can create new notes in several ways:
+
+<Steps>
+  <Step title="Via File Tree">
+    Right-click any folder in the file tree and select **New Note**. A file dialog will appear where you can name your note.
+  </Step>
+  
+  <Step title="Via Keyboard Shortcut">
+    Press `Cmd+N` (macOS) or `Ctrl+N` (Windows/Linux) to create a new note in the current folder.
+  </Step>
+  
+  <Step title="Via Command Palette">
+    Open the command palette and search for "New Note".
+  </Step>
+</Steps>
+
+<Note>
+  All notes are automatically saved as `.md` files. If you don't include the extension, Glyph adds it for you.
+</Note>
+
+## Note Structure
+
+Each note can contain:
+
+- **Title**: Generated from the filename (without `.md` extension)
+- **Frontmatter**: YAML metadata block at the top (optional)
+- **Body**: Your markdown content
+
+### Frontmatter
+
+Add structured metadata to your notes using YAML frontmatter:
+
+```markdown
+---
+tags: [project, draft]
+status: in-progress
+created: 2024-01-15
+---
+
+# Your Note Content
+```
+
+Frontmatter supports:
+- **Text properties**: `status: draft`
+- **Boolean properties**: `published: true`
+- **List properties**: `tags: [work, important]`
+- **Date properties**: `created: 2024-01-15`
+
+<Tip>
+  You can click links inside frontmatter - both wikilinks `[[Note]]` and markdown links `[text](url)` work.
+</Tip>
+
+## Managing Notes
+
+### Renaming Notes
+
+<Steps>
+  <Step title="Right-click the note">
+    Find the note in your file tree.
+  </Step>
+  
+  <Step title="Select Rename">
+    Choose **Rename** from the context menu.
+  </Step>
+  
+  <Step title="Enter new name">
+    Type the new name and press Enter. Links to this note are updated automatically.
+  </Step>
+</Steps>
+
+### Moving Notes
+
+Drag and drop notes between folders in the file tree. All wikilinks pointing to the note are updated to reflect the new location.
+
+### Deleting Notes
+
+Right-click a note and select **Delete**. A confirmation dialog will appear before permanent deletion.
+
+<Warning>
+  Deleted notes cannot be recovered unless you have a backup. Consider using version control or regular backups for important notes.
+</Warning>
+
+## Note Properties Panel
+
+When editing a note with frontmatter in rich mode, Glyph displays a properties panel above your content. You can:
+
+- Edit property values inline
+- Add new properties
+- Remove existing properties
+- Toggle between structured view and raw YAML editor
+
+The properties panel automatically syncs with your frontmatter YAML.
+
+## File Storage
+
+Notes are stored as plain text markdown files in your space folder:
+
+- **Location**: Wherever you created your Glyph space
+- **Format**: Standard markdown (`.md` files)
+- **Encoding**: UTF-8
+- **Newlines**: Preserved as-is
+
+You can edit these files in any text editor, use git for version control, or sync them with any file sync service.
+
+## Backlinks
+
+When viewing a note, Glyph automatically displays all other notes that link to it at the bottom of the editor. This creates a bidirectional link graph without requiring manual maintenance.
+
+See [Wikilinks](/features/wikilinks) for more details on linking between notes.

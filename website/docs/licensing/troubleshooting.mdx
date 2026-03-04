@@ -1,0 +1,323 @@
+---
+title: Troubleshooting
+description: Common licensing issues and solutions
+---
+
+Solutions to common problems with trial periods, license activation, and verification.
+
+## Activation Issues
+
+<Accordion title="Error: 'License key is invalid'">
+  **Possible causes:**
+  
+  - Typo in the license key
+  - Copying extra spaces or characters
+  - Using a key from a different product
+  - Internet connection problems preventing Gumroad verification
+  
+  **Solutions:**
+  
+  1. **Copy the key again** from your Gumroad purchase email
+  2. **Paste directly** - don't type it manually
+  3. **Check for spaces** - remove any leading/trailing spaces
+  4. **Verify internet connection** - activation requires online access
+  5. **Try the key on Gumroad** - verify it's valid at [gumroad.com/library](https://gumroad.com/library)
+</Accordion>
+
+<Accordion title="Error: 'Failed to verify license key'">
+  **This usually means a network issue.**
+  
+  **Solutions:**
+  
+  1. **Check internet connection** - can you browse the web?
+  2. **Disable VPN temporarily** - some VPNs block Gumroad API
+  3. **Check firewall settings** - ensure Glyph can access `api.gumroad.com`
+  4. **Try a different network** - mobile hotspot, different WiFi, etc.
+  5. **Wait and retry** - Gumroad API might be temporarily down
+  
+  **Network requirements:**
+  
+  Glyph needs to reach:
+  ```
+  POST https://api.gumroad.com/v2/licenses/verify
+  ```
+</Accordion>
+
+<Accordion title="Activation button does nothing">
+  **Possible causes:**
+  
+  - Empty license key field
+  - Already submitting (button disabled during verification)
+  - JavaScript error in the app
+  
+  **Solutions:**
+  
+  1. **Ensure key is entered** - paste your license key in the input field
+  2. **Wait for current attempt** - if "Verifying..." is shown, wait
+  3. **Restart Glyph** - close and reopen the app
+  4. **Check for app updates** - download the latest version from GitHub Releases
+  5. **Open browser console** - check for JavaScript errors (Cmd/Ctrl+Shift+I)
+</Accordion>
+
+<Accordion title="License activated but trial banner still shows">
+  **This shouldn't happen, but if it does:**
+  
+  **Solutions:**
+  
+  1. **Restart Glyph** - close completely and reopen
+  2. **Check Settings** - go to Settings → General → License to verify status
+  3. **Look for activation timestamp** - if present, you're licensed
+  4. **Hard refresh the UI** - Cmd/Ctrl+R if in dev mode
+  
+  If the problem persists after restart, report it on [GitHub Issues](https://github.com/SidhuK/Glyph/issues).
+</Accordion>
+
+## Trial Issues
+
+<Accordion title="Trial already expired on first launch">
+  **Possible causes:**
+  
+  - Clock or time zone issues
+  - Leftover license file from previous installation
+  - System time was changed
+  
+  **Solutions:**
+  
+  1. **Check system time** - ensure your computer's clock is accurate
+  2. **Check time zone** - verify it matches your location
+  3. **Fresh install:**
+     - Quit Glyph completely
+     - Delete `app_config_dir()/license.json`
+     - Restart Glyph for a fresh trial
+  4. **Or skip trial** - enter your license key immediately
+</Accordion>
+
+<Accordion title="Trial shows negative time remaining">
+  **This happens when:**
+  
+  - System clock was changed after trial started
+  - Computer was asleep near trial expiration
+  
+  **Solutions:**
+  
+  1. **Restart Glyph** - should show lock screen if expired
+  2. **Check system time** - ensure clock is accurate
+  3. **Enter license key** - activate to bypass trial
+</Accordion>
+
+<Accordion title="Can't start trial offline">
+  **Actually, you can!** The trial starts based on local system time and doesn't require internet.
+  
+  If you're seeing a lock screen immediately:
+  
+  1. Your trial might have already been used on this device
+  2. Check `app_config_dir()/license.json` for existing trial timestamps
+  3. Delete the file for a fresh trial (if legitimate)
+  4. Or enter your license key to activate
+</Accordion>
+
+## License File Issues
+
+<Accordion title="Where is the license file stored?">
+  License data is stored in:
+  
+  ```
+  app_config_dir()/license.json
+  ```
+  
+  **Platform-specific paths:**
+  
+  - **macOS**: `~/Library/Application Support/com.glyph.app/license.json`
+  - **Windows**: `%APPDATA%\com.glyph.app\license.json`
+  - **Linux**: `~/.config/com.glyph.app/license.json`
+  
+  <Warning>
+  Don't manually edit this file unless troubleshooting. Corruption may require reactivation.
+  </Warning>
+</Accordion>
+
+<Accordion title="License file corrupted">
+  **Symptoms:**
+  
+  - Can't activate even with valid key
+  - Trial state is weird (negative time, wrong dates)
+  - Lock screen appears incorrectly
+  
+  **Solutions:**
+  
+  1. **Delete the license file**:
+     - Quit Glyph
+     - Navigate to `app_config_dir()/license.json`
+     - Delete the file
+     - Restart Glyph
+  2. **Reactivate** - enter your license key again
+  3. **Fresh trial** - if you deleted the file before activating, you get a new 48-hour trial
+</Accordion>
+
+<Accordion title="Want to reset trial for testing">
+  **For developers/testers:**
+  
+  1. Quit Glyph
+  2. Delete `app_config_dir()/license.json`
+  3. Restart Glyph
+  4. New trial starts
+  
+  **Note:** This only works with official builds. Development builds skip licensing entirely.
+  
+  <Info>
+  Building from source with `GLYPH_OFFICIAL_BUILD` unset gives you unlimited unlicensed access for development.
+  </Info>
+</Accordion>
+
+## Gumroad Integration Issues
+
+<Accordion title="Gumroad API is down">
+  **Symptoms:**
+  
+  - Activation fails with network errors
+  - "Failed to verify license key" message
+  - Works on other networks
+  
+  **Solutions:**
+  
+  1. **Check Gumroad status** - visit [gumroad.com](https://gumroad.com) to see if it's accessible
+  2. **Wait and retry** - API might be temporarily unavailable
+  3. **Try different network** - mobile hotspot, different location
+  4. **Contact support** - if Gumroad is down for extended period, report to GitHub Issues
+  
+  <Info>
+  If you're already activated, Gumroad being down won't affect your usage. The app works offline after initial activation.
+  </Info>
+</Accordion>
+
+<Accordion title="Firewall blocking Gumroad API">
+  **Symptoms:**
+  
+  - Activation fails on corporate/school networks
+  - Works on mobile hotspot
+  - Other apps can access internet
+  
+  **Solutions:**
+  
+  1. **Whitelist Gumroad domains**:
+     ```
+     api.gumroad.com
+     gumroad.com
+     ```
+  2. **Try different network** - activate on home/mobile network
+  3. **Contact IT** - ask them to allow Gumroad API access
+  4. **Activate elsewhere** - use a different network just for activation, then use offline
+</Accordion>
+
+## Multiple Devices
+
+<Accordion title="License key not working on second device">
+  **The same key should work everywhere.**
+  
+  **If it's failing:**
+  
+  1. **Check internet connection** - second device needs online access for first activation
+  2. **Copy key carefully** - ensure no extra characters or spaces
+  3. **Verify it's the same product** - confirm purchase is for Glyph
+  4. **Check Gumroad purchase** - log into [gumroad.com/library](https://gumroad.com/library) to confirm
+  5. **Contact support** - if key works on one device but not another, report it
+</Accordion>
+
+<Accordion title="Exceeded device limit?">
+  **There is NO device limit!** You can use your license on:
+  
+  - Unlimited computers
+  - All platforms (Mac, Windows, Linux)
+  - Simultaneously
+  
+  If you're seeing errors about device limits, this is a bug. Report it on [GitHub Issues](https://github.com/SidhuK/Glyph/issues).
+</Accordion>
+
+## Community Build vs Official Build
+
+<Accordion title="Built from source but seeing trial/license screens">
+  **This means `GLYPH_OFFICIAL_BUILD=1` was set during build.**
+  
+  **Solutions:**
+  
+  1. **Don't set the official build flag** - it's only for release builds
+  2. **Rebuild without the flag**:
+     ```bash
+     # Don't do this for dev builds:
+     # GLYPH_OFFICIAL_BUILD=1 pnpm tauri build
+     
+     # Do this instead:
+     pnpm tauri dev    # for development
+     pnpm tauri build  # for personal builds
+     ```
+  3. **Check CI configuration** - ensure you're not using the release workflow
+</Accordion>
+
+<Accordion title="How to verify build type?">
+  **Check in the app:**
+  
+  1. Open **Settings → General → License**
+  2. Look at the build indicator:
+     - **Official Release** - requires license
+     - **Community Build** - no licensing
+  
+  **Community builds:**
+  - Don't show trial banner
+  - Don't show lock screen
+  - Don't have license settings
+</Accordion>
+
+## Getting Help
+
+<Accordion title="None of these solutions worked">
+  **Report the issue:**
+  
+  1. Go to [GitHub Issues](https://github.com/SidhuK/Glyph/issues)
+  2. Open a new issue with:
+     - **Error message** (exact text)
+     - **Steps you tried** from this troubleshooting guide
+     - **Platform** (Mac/Windows/Linux)
+     - **Glyph version** (from Settings → About)
+     - **Network environment** (home/corporate/VPN/etc.)
+  3. **Don't include your license key** in the issue!
+  
+  The community and maintainers will help you resolve it.
+</Accordion>
+
+<Accordion title="Lost license key after purchase">
+  **Check these places:**
+  
+  1. **Email** - search for "Gumroad" in your inbox
+  2. **Gumroad Library** - log in at [gumroad.com/library](https://gumroad.com/library)
+  3. **Gumroad account** - check your purchase history
+  
+  **Still can't find it?**
+  
+  Contact **Gumroad support** (not Glyph support) - they handle purchase records and can resend your key.
+</Accordion>
+
+## Emergency: Can't Access Notes
+
+<Warning>
+If the trial expired and you can't activate due to technical issues, your notes are safe but temporarily inaccessible.
+</Warning>
+
+**Options:**
+
+1. **Troubleshoot activation** - try solutions above to unlock with your license key
+2. **Find a working network** - activate on mobile hotspot or different WiFi
+3. **Build from source** - clone the repo and build without the official flag
+4. **Export notes manually**:
+   - Your notes are in your workspace folder (likely `~/Documents/Glyph` or similar)
+   - They're plain markdown files - accessible with any text editor
+   - Copy them to safety while troubleshooting
+
+<Info>
+Glyph stores notes as plain markdown files in your chosen workspace directory. They're always accessible outside the app if needed.
+</Info>
+
+## Still Need Help?
+
+- [FAQ](/licensing/faq) - Common questions about licensing
+- [GitHub Issues](https://github.com/SidhuK/Glyph/issues) - Technical support
+- [Gumroad Support](https://gumroad.com/help) - Purchase and key issues

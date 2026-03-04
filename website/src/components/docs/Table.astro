@@ -1,0 +1,18 @@
+<div class="docs-table-wrap">
+	<table class="docs-table">
+		<slot />
+	</table>
+</div>
+
+<style>
+	.docs-table-wrap {
+		overflow-x: auto;
+		border: 1px solid var(--border);
+		background: rgba(255, 255, 255, 0.76);
+	}
+
+	.docs-table {
+		width: 100%;
+		border-collapse: collapse;
+	}
+</style>

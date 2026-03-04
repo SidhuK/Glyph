@@ -1,0 +1,59 @@
+---
+import { rewriteDocsHref } from "../../lib/docs";
+
+interface Props {
+	title: string;
+	href?: string;
+	icon?: string;
+}
+
+const { title, href, icon: _icon } = Astro.props;
+const resolvedHref = rewriteDocsHref(href);
+const isExternal =
+	resolvedHref?.startsWith("http://") || resolvedHref?.startsWith("https://");
+const Tag = resolvedHref ? "a" : "div";
+---
+
+<Tag
+	class="docs-card"
+	href={resolvedHref}
+	target={isExternal ? "_blank" : undefined}
+	rel={isExternal ? "noopener" : undefined}
+>
+	<p class="docs-card-title">{title}</p>
+	<div class="docs-card-body">
+		<slot />
+	</div>
+</Tag>
+
+<style>
+	.docs-card {
+		display: block;
+		padding: 1rem 1.05rem;
+		border: 1px solid var(--border);
+		background: rgba(255, 255, 255, 0.76);
+		transition: transform 0.18s ease, border-color 0.18s ease, background 0.18s ease;
+	}
+
+	a.docs-card:hover {
+		transform: translateY(-1px);
+		border-color: rgba(17, 17, 17, 0.18);
+		background: rgba(255, 255, 255, 0.92);
+	}
+
+	.docs-card-title {
+		font-size: 0.86rem;
+		font-weight: 600;
+		margin-bottom: 0.35rem;
+	}
+
+	.docs-card-body {
+		font-size: 0.82rem;
+		color: var(--muted);
+		line-height: 1.7;
+	}
+
+	.docs-card-body :global(*:last-child) {
+		margin-bottom: 0;
+	}
+</style>

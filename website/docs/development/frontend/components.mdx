@@ -1,0 +1,648 @@
+---
+title: 'React Components'
+description: 'Frontend component architecture and organization'
+---
+
+## Component Structure
+
+Glyph's frontend is organized into logical component groups:
+
+```
+src/components/
+├── app/              # App shell & chrome
+├── editor/           # TipTap markdown editor
+├── ai/               # AI chat panel
+├── filetree/         # File browser sidebar
+├── preview/          # File preview pane
+├── tasks/            # Task list views
+├── database/         # Database table/board views
+├── settings/         # Settings panes
+├── licensing/        # License activation
+└── ui/               # shadcn/ui primitives
+```
+
+## App Shell Components
+
+### AppShell
+
+**Location**: `src/components/app/AppShell.tsx`
+
+Root layout component that orchestrates the main UI:
+
+```typescript
+export function AppShell() {
+  return (
+    <div className="app-shell">
+      <Sidebar />           {/* Left sidebar: file tree, tags, etc. */}
+      <MainContent />       {/* Center: editor, preview, database views */}
+      <CommandPalette />    {/* Cmd+K search */}
+      <KeyboardShortcutsHelp />  {/* ? help modal */}
+    </div>
+  );
+}
+```
+
+### Sidebar
+
+**Location**: `src/components/app/Sidebar.tsx`
+
+Navigable sidebar with multiple panes:
+
+<CodeGroup>
+```typescript Structure
+export function Sidebar() {
+  const { activePane } = useUIContext();
+  
+  return (
+    <aside>
+      <SidebarHeader />  {/* Logo, new note button */}
+      <SidebarContent>
+        {activePane === 'files' && <FileTreePane />}
+        {activePane === 'tags' && <TagsPane />}
+        {activePane === 'ai' && <AIPanel />}
+        {activePane === 'tasks' && <TasksPane />}
+      </SidebarContent>
+    </aside>
+  );
+}
+```
+
+```typescript Switching Panes
+const { setActivePane } = useUIContext();
+
+<IconButton onClick={() => setActivePane('files')}>
+  <FileIcon />
+</IconButton>
+```
+</CodeGroup>
+
+### MainContent
+
+**Location**: `src/components/app/MainContent.tsx`
+
+Tab-based content area:
+
+```typescript
+export function MainContent() {
+  const { activeFilePath, activePreviewPath } = useFileTreeContext();
+  const { activeViewDoc } = useViewContext();
+  
+  return (
+    <main>
+      <TabBar />  {/* File tabs */}
+      
+      {activeFilePath?.endsWith('.md') && (
+        <MarkdownEditorPane path={activeFilePath} />
+      )}
+      
+      {activePreviewPath && (
+        <FilePreviewPane path={activePreviewPath} />
+      )}
+      
+      {activeViewDoc && (
+        <ViewRenderer doc={activeViewDoc} />
+      )}
+    </main>
+  );
+}
+```
+
+### CommandPalette
+
+**Location**: `src/components/app/CommandPalette.tsx`
+
+Cmd+K quick actions:
+
+```typescript
+import { Command } from 'cmdk';
+
+export function CommandPalette() {
+  const { isOpen, setIsOpen } = useUIContext();
+  const [query, setQuery] = useState('');
+  
+  return (
+    <Command.Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <Command.Input
+        placeholder="Search notes, commands..."
+        value={query}
+        onValueChange={setQuery}
+      />
+      
+      <Command.List>
+        <CommandSearchResults query={query} />
+        
+        <Command.Group heading="Actions">
+          <Command.Item onSelect={handleNewNote}>
+            <PlusIcon /> New Note
+          </Command.Item>
+          <Command.Item onSelect={handleOpenSettings}>
+            <SettingsIcon /> Settings
+          </Command.Item>
+        </Command.Group>
+      </Command.List>
+    </Command.Dialog>
+  );
+}
+```
+
+## Editor Components
+
+### CanvasNoteInlineEditor
+
+**Location**: `src/components/editor/CanvasNoteInlineEditor.tsx`
+
+TipTap-based markdown editor:
+
+<CodeGroup>
+```typescript Editor Setup
+import { useEditor, EditorContent } from '@tiptap/react';
+import StarterKit from '@tiptap/starter-kit';
+import { Markdown } from '@tiptap/extension-markdown';
+import { WikiLink } from './extensions/wikiLink';
+
+export function CanvasNoteInlineEditor({ path }: { path: string }) {
+  const [doc, setDoc] = useState<TextFileDoc | null>(null);
+  
+  const editor = useEditor({
+    extensions: [
+      StarterKit,
+      Markdown,
+      WikiLink,
+      // ... more extensions
+    ],
+    content: doc?.text || '',
+    onUpdate: ({ editor }) => {
+      debouncedSave(editor.getText());
+    },
+  });
+  
+  return (
+    <div className="editor-container">
+      <EditorRibbon editor={editor} />
+      <EditorContent editor={editor} />
+    </div>
+  );
+}
+```
+
+```typescript Auto-save
+const debouncedSave = useMemo(
+  () => debounce(async (text: string) => {
+    try {
+      setSaveState('saving');
+      await invoke('space_write_text', {
+        path,
+        text,
+        base_mtime_ms: doc?.mtime_ms,
+      });
+      setSaveState('saved');
+    } catch (err) {
+      setSaveState('error');
+      toast.error('Failed to save');
+    }
+  }, 500),
+  [path, doc?.mtime_ms]
+);
+```
+</CodeGroup>
+
+### EditorRibbon
+
+**Location**: `src/components/editor/EditorRibbon.tsx`
+
+Formatting toolbar:
+
+```typescript
+export function EditorRibbon({ editor }: { editor: Editor | null }) {
+  if (!editor) return null;
+  
+  return (
+    <div className="editor-ribbon">
+      <MotionButton
+        onClick={() => editor.chain().focus().toggleBold().run()}
+        data-active={editor.isActive('bold')}
+      >
+        <BoldIcon />
+      </MotionButton>
+      
+      <MotionButton
+        onClick={() => editor.chain().focus().toggleItalic().run()}
+        data-active={editor.isActive('italic')}
+      >
+        <ItalicIcon />
+      </MotionButton>
+      
+      <RibbonLinkPopover editor={editor} />
+      
+      {/* ... more buttons */}
+    </div>
+  );
+}
+```
+
+### NotePropertiesPanel
+
+**Location**: `src/components/editor/NotePropertiesPanel.tsx`
+
+Frontmatter editor:
+
+```typescript
+export function NotePropertiesPanel({ path }: { path: string }) {
+  const [properties, setProperties] = useState<NoteProperty[]>([]);
+  
+  const handleAddProperty = () => {
+    setProperties([...properties, {
+      key: '',
+      kind: 'text',
+      value_text: null,
+      value_bool: null,
+      value_list: [],
+    }]);
+  };
+  
+  const handleSave = async () => {
+    const frontmatter = await invoke('note_frontmatter_render_properties', {
+      properties,
+    });
+    
+    // Update note with new frontmatter...
+  };
+  
+  return (
+    <div className="properties-panel">
+      {properties.map((prop, i) => (
+        <NotePropertyRow
+          key={i}
+          property={prop}
+          onChange={(updated) => updateProperty(i, updated)}
+        />
+      ))}
+      
+      <Button onClick={handleAddProperty}>
+        <PlusIcon /> Add Property
+      </Button>
+    </div>
+  );
+}
+```
+
+## File Tree Components
+
+### FileTreePane
+
+**Location**: `src/components/filetree/FileTreePane.tsx`
+
+Recursive file browser:
+
+```typescript
+export function FileTreePane() {
+  const { rootEntries, expandedDirs } = useFileTreeContext();
+  const { loadDir, toggleDir, openFile } = useFileTree(/* deps */);
+  
+  useEffect(() => {
+    loadDir(''); // Load root
+  }, []);
+  
+  return (
+    <div className="file-tree">
+      {rootEntries.map(entry => (
+        entry.kind === 'dir' ? (
+          <FileTreeDirItem
+            key={entry.rel_path}
+            entry={entry}
+            isExpanded={expandedDirs.has(entry.rel_path)}
+            onToggle={() => toggleDir(entry.rel_path)}
+          />
+        ) : (
+          <FileTreeFileItem
+            key={entry.rel_path}
+            entry={entry}
+            onClick={() => openFile(entry.rel_path)}
+          />
+        )
+      ))}
+    </div>
+  );
+}
+```
+
+### FileTreeDirItem
+
+**Location**: `src/components/filetree/FileTreeDirItem.tsx`
+
+Collapsible directory:
+
+```typescript
+export function FileTreeDirItem({
+  entry,
+  isExpanded,
+  onToggle,
+}: FileTreeDirItemProps) {
+  const { childrenByDir } = useFileTreeContext();
+  const children = childrenByDir[entry.rel_path] || [];
+  
+  return (
+    <div className="dir-item">
+      <button onClick={onToggle}>
+        <ChevronIcon rotation={isExpanded ? 90 : 0} />
+        <FolderIcon />
+        {entry.name}
+      </button>
+      
+      {isExpanded && (
+        <div className="dir-children">
+          {children.map(child => (
+            child.kind === 'dir' ? (
+              <FileTreeDirItem key={child.rel_path} entry={child} />
+            ) : (
+              <FileTreeFileItem key={child.rel_path} entry={child} />
+            )
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+```
+
+## AI Components
+
+### AIPanel
+
+**Location**: `src/components/ai/AIPanel.tsx`
+
+AI chat sidebar:
+
+```typescript
+export function AIPanel() {
+  const { messages, sendMessage, isStreaming } = useRigChat();
+  
+  return (
+    <div className="ai-panel">
+      <ModelSelector />  {/* GPT-4, Claude, etc. */}
+      
+      <AIChatThread messages={messages} />
+      
+      <AIComposer
+        onSend={sendMessage}
+        disabled={isStreaming}
+      />
+      
+      {isStreaming && <AIToolTimeline />}
+    </div>
+  );
+}
+```
+
+### AIChatThread
+
+**Location**: `src/components/ai/AIChatThread.tsx`
+
+Message list:
+
+```typescript
+export function AIChatThread({ messages }: { messages: AiMessage[] }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  
+  useEffect(() => {
+    scrollRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages.length]);
+  
+  return (
+    <div className="chat-thread">
+      {messages.map((msg, i) => (
+        <div
+          key={i}
+          className={cn('message', msg.role)}
+        >
+          {msg.role === 'user' ? <UserAvatar /> : <AIAvatar />}
+          <AIMessageMarkdown content={msg.content} />
+        </div>
+      ))}
+      <div ref={scrollRef} />
+    </div>
+  );
+}
+```
+
+## Database Components
+
+### DatabasePane
+
+**Location**: `src/components/database/DatabasePane.tsx`
+
+Database view (table or board):
+
+```typescript
+export function DatabasePane({ path }: { path: string }) {
+  const { config, rows, loading } = useDatabaseNote(path);
+  
+  return (
+    <div className="database-pane">
+      <DatabaseToolbar config={config} />
+      
+      {config.view.layout === 'table' ? (
+        <DatabaseTable config={config} rows={rows} />
+      ) : (
+        <DatabaseBoard config={config} rows={rows} />
+      )}
+    </div>
+  );
+}
+```
+
+### DatabaseTable
+
+**Location**: `src/components/database/DatabaseTable.tsx`
+
+TanStack Table:
+
+```typescript
+import { useReactTable, getCoreRowModel } from '@tanstack/react-table';
+
+export function DatabaseTable({ config, rows }: DatabaseTableProps) {
+  const table = useReactTable({
+    data: rows,
+    columns: config.columns.map(col => ({
+      id: col.id,
+      header: col.label,
+      cell: ({ row }) => (
+        <DatabaseCell
+          column={col}
+          row={row.original}
+          onChange={(value) => handleCellUpdate(row.original, col, value)}
+        />
+      ),
+    })),
+    getCoreRowModel: getCoreRowModel(),
+  });
+  
+  return (
+    <table>
+      <thead>
+        {table.getHeaderGroups().map(headerGroup => (
+          <tr key={headerGroup.id}>
+            {headerGroup.headers.map(header => (
+              <th key={header.id}>{header.column.columnDef.header}</th>
+            ))}
+          </tr>
+        ))}
+      </thead>
+      <tbody>
+        {table.getRowModel().rows.map(row => (
+          <tr key={row.id}>
+            {row.getVisibleCells().map(cell => (
+              <td key={cell.id}>
+                {cell.column.columnDef.cell(cell.getContext())}
+              </td>
+            ))}
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  );
+}
+```
+
+## UI Primitives
+
+### shadcn/ui Components
+
+**Location**: `src/components/ui/shadcn/`
+
+Accessible Radix UI-based components:
+
+- `Button` - Buttons with variants
+- `Dialog` - Modals
+- `Popover` - Floating menus
+- `DropdownMenu` - Context menus
+- `Input` - Text inputs
+- `Tabs` - Tab navigation
+- `Table` - Semantic tables
+- `ScrollArea` - Custom scrollbars
+
+### Motion Components
+
+**Location**: `src/components/ui/animations.ts`
+
+Animated wrappers:
+
+```typescript
+import { motion } from 'motion/react';
+
+export const MotionButton = motion.button;
+export const MotionPanel = motion.div;
+
+export const fadeIn = {
+  initial: { opacity: 0 },
+  animate: { opacity: 1 },
+  exit: { opacity: 0 },
+};
+
+export const slideIn = {
+  initial: { x: -20, opacity: 0 },
+  animate: { x: 0, opacity: 1 },
+  exit: { x: 20, opacity: 0 },
+};
+```
+
+Usage:
+
+```typescript
+<MotionPanel {...fadeIn}>
+  Content appears with fade
+</MotionPanel>
+```
+
+## Component Patterns
+
+### Compound Components
+
+```typescript
+// Parent manages state, children consume via context
+export function Accordion({ children }) {
+  const [openId, setOpenId] = useState<string | null>(null);
+  
+  return (
+    <AccordionContext.Provider value={{ openId, setOpenId }}>
+      {children}
+    </AccordionContext.Provider>
+  );
+}
+
+Accordion.Item = function AccordionItem({ id, children }) {
+  const { openId, setOpenId } = useAccordionContext();
+  const isOpen = openId === id;
+  
+  return (
+    <div>
+      <button onClick={() => setOpenId(isOpen ? null : id)}>
+        {children}
+      </button>
+    </div>
+  );
+};
+```
+
+### Render Props
+
+```typescript
+interface FileListProps {
+  files: FsEntry[];
+  renderFile: (file: FsEntry) => ReactNode;
+}
+
+export function FileList({ files, renderFile }: FileListProps) {
+  return (
+    <div>
+      {files.map(file => (
+        <div key={file.rel_path}>
+          {renderFile(file)}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// Usage
+<FileList
+  files={entries}
+  renderFile={(file) => (
+    <div>{file.name}</div>
+  )}
+/>
+```
+
+### Custom Hooks as Logic
+
+```typescript
+function useFileTreeItem(entry: FsEntry) {
+  const { openFile, renameFile, deleteFile } = useFileTree(/* deps */);
+  const [isRenaming, setIsRenaming] = useState(false);
+  
+  const handleRename = async (newName: string) => {
+    await renameFile(entry.rel_path, newName);
+    setIsRenaming(false);
+  };
+  
+  return {
+    isRenaming,
+    startRename: () => setIsRenaming(true),
+    handleRename,
+    handleDelete: () => deleteFile(entry.rel_path),
+    handleOpen: () => openFile(entry.rel_path),
+  };
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Contexts" icon="sitemap" href="/development/frontend/contexts">
+    React Context state management
+  </Card>
+  
+  <Card title="Hooks" icon="hook" href="/development/frontend/hooks">
+    Custom React hooks
+  </Card>
+</CardGroup>

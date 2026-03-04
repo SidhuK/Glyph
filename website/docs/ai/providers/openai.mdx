@@ -1,0 +1,222 @@
+---
+title: OpenAI Configuration
+description: Set up OpenAI GPT models in Glyph
+---
+
+Connect Glyph to OpenAI's API to use the current GPT-5 family, GPT-4.1, and other OpenAI models.
+
+## Prerequisites
+
+- OpenAI API account: [platform.openai.com](https://platform.openai.com)
+- API key with appropriate permissions
+- Sufficient API credits
+
+## Setup
+
+<Steps>
+  <Step title="Get API Key">
+    1. Log in to [OpenAI Platform](https://platform.openai.com)
+    2. Navigate to **API Keys** in your account settings
+    3. Click **Create new secret key**
+    4. Copy the key (starts with `sk-`)
+    
+    <Warning>
+    Store your API key securely. OpenAI only shows it once.
+    </Warning>
+  </Step>
+  
+  <Step title="Open Glyph AI Settings">
+    Go to **Settings → AI** and select the **OpenAI** profile.
+  </Step>
+  
+  <Step title="Add API Key">
+    1. Click **Set API Key** in the authentication section
+    2. Paste your OpenAI API key
+    3. Click **Save**
+    
+    The key is stored locally in Glyph's per-space internal data.
+  </Step>
+  
+  <Step title="Select Model">
+    Click the **Model** dropdown. Glyph fetches available models from OpenAI's API.
+    
+    Popular current models:
+    - `gpt-5` - Best default choice for most users
+    - `gpt-5-pro` - More compute for harder reasoning and coding tasks
+    - `gpt-5-mini` - Faster and lower cost
+    - `gpt-5-nano` - Smallest high-throughput GPT-5 option
+    - `gpt-4.1` - Strong fallback for chat and tool use
+
+    Depending on your account and API access, you may also see dated variants or aliases such as `gpt-5-chat-latest`.
+  </Step>
+  
+  <Step title="Test Connection">
+    Open the AI panel and send a test message. You should receive a response from your selected model.
+  </Step>
+</Steps>
+
+## Configuration
+
+### Provider Settings
+
+- **Service**: `openai`
+- **Base URL**: `https://api.openai.com/v1` (default)
+- **Authentication**: Bearer token (API key)
+
+### Custom Endpoint
+
+To use a custom OpenAI endpoint (proxy, Azure OpenAI, etc.):
+
+1. Set **Base URL** to your endpoint
+2. Add any required headers in **Custom Headers**
+3. Enable **Allow Private Hosts** if using localhost
+
+<Tabs>
+  <Tab title="Azure OpenAI">
+    ```json
+    Base URL: https://<resource-name>.openai.azure.com/openai/deployments/<deployment-name>
+    Headers:
+    [
+      { "key": "api-key", "value": "your-azure-api-key" },
+      { "key": "api-version", "value": "2024-02-15-preview" }
+    ]
+    ```
+  </Tab>
+  
+  <Tab title="OpenAI Proxy">
+    ```json
+    Base URL: https://your-proxy.com/v1
+    Headers: (if required by proxy)
+    ```
+  </Tab>
+</Tabs>
+
+## Model Selection
+
+Glyph fetches the latest model list from OpenAI's `/v1/models` endpoint.
+
+### Recommended Model Families
+
+| Model | Use Case |
+|-------|----------|
+| `gpt-5` | Best default choice for complex reasoning, coding, and agentic tasks |
+| `gpt-5-pro` | Harder problems where quality matters more than latency |
+| `gpt-5-mini` | Balanced speed, price, and capability |
+| `gpt-5-nano` | Lightweight, high-throughput tasks |
+| `gpt-4.1` | Strong non-reasoning fallback for chat and tool use |
+
+<Note>
+Glyph displays models returned by the API. If a model isn't listed, type its ID manually in the model field.
+</Note>
+
+### Chat Completion Models Only
+
+Glyph uses the `/v1/chat/completions` endpoint. Ensure your selected model supports chat completions.
+
+<Warning>
+Models like `text-davinci-003` or `gpt-3.5-turbo-instruct` are **not** chat models. If you select one, you'll see:
+
+```
+Model 'gpt-3.5-turbo-instruct' is not chat-completions compatible.
+Select a chat-capable model (for example, a current GPT-5 or GPT-4.1 model).
+```
+</Warning>
+
+## Features
+
+### Chat Mode
+
+Conversational interaction without tools:
+- Back-and-forth dialogue
+- Faster responses (no tool overhead)
+- Best for brainstorming and discussion
+
+### Create Mode
+
+AI with workspace access:
+- File reading via `read_file` tool
+- Search notes with `search_notes` tool
+- List files with `list_dir` tool
+- Best for research and knowledge retrieval
+
+### Context Attachment
+
+Attach files or folders to ground responses:
+- Attach via context menu in AI panel
+- Mention files with `@filename` syntax
+- Context sent in system message
+- Token estimates shown before sending
+
+## API Usage and Billing
+
+Glyph makes direct API calls to OpenAI:
+- You are billed by OpenAI based on token usage
+- No additional fees from Glyph
+- Check usage at [platform.openai.com/usage](https://platform.openai.com/usage)
+
+### Cost Estimation
+
+Use the context manifest in Glyph to estimate token usage, then compare it with the current pricing on [OpenAI's pricing page](https://openai.com/pricing).
+
+## Rate Limits
+
+OpenAI enforces rate limits based on your usage tier and the specific model you choose.
+
+If you hit rate limits, Glyph displays the error from OpenAI. Wait before retrying or upgrade your tier.
+
+## Troubleshooting
+
+### "API key not set for this profile"
+
+**Solution**: Add your OpenAI API key in Settings → AI.
+
+### "model list failed (401)"
+
+**Solution**: Your API key is invalid or expired. Generate a new key from OpenAI Platform.
+
+### "model list failed (429)"
+
+**Solution**: You've hit OpenAI's rate limit. Wait before retrying.
+
+### "This model is not chat-completions compatible"
+
+**Solution**: Select a current chat-capable model like `gpt-5`, `gpt-5-mini`, or `gpt-4.1`.
+
+### Model list is empty
+
+**Solution**: Type the model ID manually (for example, `gpt-5` or `gpt-4.1`). The model can still work even if the list fetch failed.
+
+### Responses are slow
+
+**Possible causes**:
+- Large context (10K+ tokens)
+- Complex tool usage in create mode
+- OpenAI API latency
+
+**Solution**: Try a faster model like `gpt-5-mini` or reduce context size.
+
+## Security Best Practices
+
+<Warning>
+- Never commit `.glyph/` secrets or app-managed data to version control
+- Rotate API keys if exposed
+- Use separate keys for different projects
+- Set spending limits in OpenAI dashboard
+</Warning>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Chat Modes" icon="messages" href="/ai/chat-modes">
+    Learn about chat vs create modes
+  </Card>
+  <Card title="Context Management" icon="folder" href="/ai/context-management">
+    Attach notes to conversations
+  </Card>
+  <Card title="OpenRouter" icon="network" href="/ai/providers/openrouter">
+    Access hundreds of models via OpenRouter
+  </Card>
+  <Card title="Profiles" icon="user-group" href="/ai/profiles">
+    Manage multiple AI profiles
+  </Card>
+</CardGroup>

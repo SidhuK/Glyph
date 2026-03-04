@@ -1,0 +1,226 @@
+---
+title: AI Setup and Configuration
+description: Configure AI profiles, models, and authentication in Glyph
+---
+
+Set up AI assistance in Glyph by creating profiles, configuring providers, and managing authentication credentials.
+
+## Initial Setup
+
+<Steps>
+  <Step title="Open AI Settings">
+    Navigate to **Settings → AI** or press the settings keyboard shortcut and select the AI tab.
+  </Step>
+  
+  <Step title="Select a Profile">
+    Glyph creates default profiles for all supported providers. Select the profile for your preferred provider (OpenAI, Anthropic, Gemini, etc.).
+  </Step>
+  
+  <Step title="Configure Provider">
+    Each profile has provider-specific settings:
+    - **Service**: The AI provider (OpenAI, Anthropic, Gemini, OpenRouter, Ollama, OpenAI-compatible, Codex)
+    - **Model**: Select from available models (fetched from the provider)
+    - **Base URL**: Custom endpoint (optional, for OpenAI-compatible or self-hosted)
+    - **Headers**: Additional HTTP headers (optional)
+    - **Allow Private Hosts**: Enable for local models (Ollama, localhost endpoints)
+  </Step>
+  
+  <Step title="Add Authentication">
+    Most providers require an API key:
+    - **OpenAI, Anthropic, Gemini, OpenRouter**: API key required
+    - **Ollama, OpenAI-compatible**: Optional (depends on endpoint)
+    - **Codex**: OAuth authentication (no API key needed)
+    
+    API keys are stored in `.glyph/app/ai_secrets.json` in your space directory.
+  </Step>
+  
+  <Step title="Select Model">
+    Click the model dropdown to fetch and select from available models. The list is retrieved from the provider API.
+  </Step>
+</Steps>
+
+## Profile Configuration
+
+### Service Selection
+
+Each profile is associated with a single provider. To use multiple providers, create or switch between profiles.
+
+Available services:
+- `openai` - OpenAI GPT models
+- `anthropic` - Anthropic Claude models
+- `gemini` - Google Gemini models
+- `openrouter` - OpenRouter multi-model API
+- `ollama` - Ollama local models
+- `openai_compat` - Any OpenAI-compatible endpoint
+- `codex_chatgpt` - Codex ChatGPT OAuth
+
+### Model Selection
+
+Click **Model** to open the model selector:
+
+1. **Automatic Model List**: Glyph fetches available models from the provider API
+2. **Search Models**: Type to filter the model list
+3. **Model Details**: Hover over the info icon to view:
+   - Context length
+   - Pricing (for OpenRouter)
+   - Supported parameters
+   - Input/output modalities
+4. **Manual Entry**: If model fetch fails, type the model ID manually
+
+### Advanced Options
+
+#### Base URL
+
+Override the default API endpoint:
+- **OpenAI**: `https://api.openai.com/v1`
+- **Anthropic**: `https://api.anthropic.com`
+- **Gemini**: `https://generativelanguage.googleapis.com`
+- **OpenRouter**: `https://openrouter.ai/api/v1`
+- **Ollama**: `http://localhost:11434/v1`
+- **OpenAI-compatible**: `http://localhost:11434/v1` (default)
+
+<Note>
+Custom base URLs are validated for SSRF attacks. Enable **Allow Private Hosts** to use `http://localhost` or private IP addresses.
+</Note>
+
+#### Custom Headers
+
+Add additional HTTP headers to requests:
+
+```json
+[
+  { "key": "X-Custom-Header", "value": "my-value" },
+  { "key": "Authorization", "value": "Bearer custom-token" }
+]
+```
+
+Headers are applied to all requests for this profile.
+
+#### Reasoning Effort (Codex only)
+
+For models that support reasoning modes (e.g., `o1`, `o3-mini`):
+- **low** - Faster responses, less thorough
+- **medium** - Balanced (default)
+- **high** - More thorough, slower
+
+The option appears only when using Codex with a reasoning-capable model.
+
+## API Key Management
+
+### Setting an API Key
+
+<Tabs>
+  <Tab title="Via Settings UI">
+    1. Select a profile that requires an API key
+    2. Click **Set API Key** in the authentication section
+    3. Paste your API key
+    4. Click **Save**
+    
+    The key is encrypted and stored in `.glyph/app/ai_secrets.json`.
+  </Tab>
+  
+  <Tab title="Manual File Edit">
+    Create or edit `.glyph/app/ai_secrets.json` in your space:
+    
+    ```json
+    {
+      "<profile-id>": "sk-your-api-key-here"
+    }
+    ```
+    
+    Profile IDs are UUIDs visible in the settings UI or `ai.json`.
+  </Tab>
+</Tabs>
+
+### Security
+
+- API keys are stored **per space**, not globally
+- Keys are stored in `.glyph/app/ai_secrets.json` (add to `.gitignore`)
+- File uses atomic writes to prevent corruption
+- Keys are never logged or sent to Glyph servers
+- Each space has independent API key storage
+
+### Clearing an API Key
+
+In Settings → AI, click **Clear API Key** for the active profile. This removes the key from `ai_secrets.json`.
+
+## Profile Storage
+
+Profile configurations (excluding API keys) are stored in:
+
+```
+~/.config/glyph/ai.json  (Linux)
+~/Library/Application Support/glyph/ai.json  (macOS)
+%APPDATA%/glyph/ai.json  (Windows)
+```
+
+Example `ai.json`:
+
+```json
+{
+  "profiles": [
+    {
+      "id": "uuid-here",
+      "name": "OpenAI",
+      "provider": "openai",
+      "model": "gpt-4o",
+      "base_url": null,
+      "headers": [],
+      "allow_private_hosts": false,
+      "reasoning_effort": null
+    }
+  ],
+  "active_profile_id": "uuid-here"
+}
+```
+
+## Default Profiles
+
+On first launch, Glyph creates these default profiles:
+
+- **OpenAI** - Empty model, requires API key
+- **OpenAI-compatible** - Points to `http://localhost:11434/v1`
+- **OpenRouter** - Empty model, requires API key
+- **Anthropic** - Empty model, requires API key
+- **Gemini** - Empty model, requires API key
+- **Ollama** - Empty model, allows private hosts
+- **Codex (ChatGPT OAuth)** - Model `codex`, OAuth authentication
+
+## Troubleshooting
+
+### "API key not set for this profile"
+
+Add your API key in Settings → AI → Authentication.
+
+### "Model list failed"
+
+Check:
+1. API key is valid and has correct permissions
+2. Network connectivity
+3. Base URL is correct (if customized)
+4. Provider service is operational
+
+### "http base_url blocked"
+
+Enable **Allow Private Hosts** in advanced settings to use `http://` URLs.
+
+### Model dropdown is empty
+
+Type the model ID manually in the model field. The app will use it even if the model list fetch failed.
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="OpenAI Setup" icon="brain" href="/ai/providers/openai">
+    Configure OpenAI provider
+  </Card>
+  <Card title="Anthropic Setup" icon="robot" href="/ai/providers/anthropic">
+    Configure Anthropic Claude
+  </Card>
+  <Card title="Ollama Setup" icon="server" href="/ai/providers/ollama">
+    Run models locally
+  </Card>
+  <Card title="Chat Modes" icon="messages" href="/ai/chat-modes">
+    Learn about chat vs create modes
+  </Card>
+</CardGroup>

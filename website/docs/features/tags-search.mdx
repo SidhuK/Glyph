@@ -1,0 +1,389 @@
+---
+title: Tags & Search
+description: Find notes instantly with full-text search and tag filtering
+---
+
+Glyph provides powerful search capabilities backed by SQLite full-text indexing, making it easy to find any note regardless of how large your space grows.
+
+## Full-Text Search
+
+### Opening Search
+
+Access search in multiple ways:
+
+<Tabs>
+  <Tab title="Keyboard Shortcut">
+    Press `Cmd+P` (macOS) or `Ctrl+P` (Windows/Linux) to open the command palette with search.
+  </Tab>
+  
+  <Tab title="Search Button">
+    Click the search icon in the toolbar.
+  </Tab>
+  
+  <Tab title="Command Palette">
+    Open the palette and start typing to search.
+  </Tab>
+</Tabs>
+
+### Search Behavior
+
+When you type a search query:
+
+1. **Debounced**: Waits 180ms after you stop typing
+2. **Full-text**: Searches note titles and content
+3. **Ranked results**: Most relevant notes appear first
+4. **Live updates**: Results refresh as you type
+
+<Note>
+  Search queries are case-insensitive and support partial word matching.
+</Note>
+
+## Search Syntax
+
+### Basic Search
+
+Type any word or phrase:
+
+```
+project alpha
+```
+
+Finds notes containing both "project" and "alpha".
+
+### Phrase Search
+
+Use quotes for exact phrases:
+
+```
+"user interface design"
+```
+
+Finds notes with that exact phrase.
+
+### Keyword Matching
+
+Glyph tokenizes your query and searches for:
+
+- **Individual terms**: Each word is a search term
+- **Minimum length**: Terms must be 2+ characters
+- **Stopword filtering**: Common words like "the", "a" may be filtered
+
+## Search Results
+
+Results display:
+
+- **Note title**: Name of the matching note
+- **Snippet**: Preview of matching content with highlights
+- **Relevance score**: Higher scores appear first
+- **Match context**: Surrounding text for context
+
+<Steps>
+  <Step title="View results">
+    Search results appear as you type, ordered by relevance.
+  </Step>
+  
+  <Step title="Navigate results">
+    Use arrow keys to move between results.
+  </Step>
+  
+  <Step title="Open note">
+    Press Enter or click a result to open that note.
+  </Step>
+</Steps>
+
+## Ranking Algorithm
+
+Glyph uses a hybrid search algorithm combining:
+
+### Keyword Overlap
+
+- Counts how many search terms appear in the note
+- Higher overlap = higher score
+
+### Trigram Similarity
+
+- Compares character trigrams between query and content
+- Handles typos and fuzzy matching
+
+### Phrase Bonus
+
+- If the exact query phrase appears, boost the score
+
+### Title Bonus
+
+- Notes with query terms in the title rank higher
+
+**Formula:**
+```
+score = (0.6 × overlap) + (0.4 × trigram) + phrase_bonus + title_bonus
+```
+
+## Tags
+
+### Tag Syntax
+
+Add tags anywhere in your notes:
+
+```markdown
+# Project Notes
+
+#project #important #2024
+
+This note contains three tags.
+```
+
+Tags must:
+- Start with `#`
+- Contain alphanumeric characters, dashes, underscores
+- Not contain spaces (use `-` instead: `#project-alpha`)
+
+### Nested Tags
+
+Create hierarchies with `/`:
+
+```markdown
+#projects/alpha
+#projects/beta
+#work/client/acme
+```
+
+<Tip>
+  Nested tags help organize large tag sets. Searching for `#projects` can include all nested tags.
+</Tip>
+
+### Frontmatter Tags
+
+Define tags in YAML frontmatter:
+
+```markdown
+---
+tags: [project, draft, urgent]
+---
+
+# Note Content
+```
+
+Both inline tags and frontmatter tags are indexed identically.
+
+## Tag-Based Search
+
+### Filtering by Tag
+
+Use the tag filter in the search interface:
+
+1. Open search
+2. Select one or more tags
+3. Results narrow to notes with those tags
+4. Optionally add a text query
+
+### Tag Autocomplete
+
+When typing tags, Glyph suggests:
+
+- Existing tags in your space
+- Tag counts (how many notes use each tag)
+- Nested tag paths
+
+### Multiple Tags
+
+Select multiple tags to find notes with **all** selected tags (AND logic):
+
+- Tag `#project` AND `#urgent`
+- Shows only notes containing both tags
+
+## Combined Search
+
+Combine text search with tag filtering:
+
+```
+Query: "user interface"
+Tags: #project, #draft
+```
+
+Finds notes that:
+1. Contain the phrase "user interface"
+2. Have both `#project` and `#draft` tags
+
+## Tag Browser
+
+View all tags in your space:
+
+<Steps>
+  <Step title="Open Tags view">
+    Click the Tags icon in the sidebar or press the tags shortcut.
+  </Step>
+  
+  <Step title="Browse tags">
+    See all tags with usage counts.
+  </Step>
+  
+  <Step title="Click a tag">
+    View all notes with that tag.
+  </Step>
+</Steps>
+
+The tags list shows:
+- **Tag name**: The full tag text
+- **Count**: Number of notes using this tag
+- **Sorted**: By count (most used first) or alphabetically
+
+## Advanced Search
+
+Glyph supports advanced search parameters via the Tauri command interface:
+
+### Search Options
+
+- **`query`**: Text to search for
+- **`tags`**: Array of tags to filter by
+- **`title_only`**: Search only note titles
+- **`tag_only`**: Search only tags (no content)
+- **`limit`**: Maximum results (default: 50)
+
+### Example Searches
+
+<Tabs>
+  <Tab title="Title Only">
+    Search only in note titles, not content:
+    
+    ```typescript
+    invoke("search_advanced", {
+      request: {
+        query: "meeting",
+        title_only: true
+      }
+    });
+    ```
+  </Tab>
+  
+  <Tab title="Tags Only">
+    Find notes by tag without text search:
+    
+    ```typescript
+    invoke("search_with_tags", {
+      tags: ["project", "active"]
+    });
+    ```
+  </Tab>
+  
+  <Tab title="Combined">
+    Text search + tag filter + limit:
+    
+    ```typescript
+    invoke("search_advanced", {
+      request: {
+        query: "design system",
+        tags: ["ui", "reference"],
+        limit: 20
+      }
+    });
+    ```
+  </Tab>
+</Tabs>
+
+## Indexing
+
+### Automatic Indexing
+
+Glyph indexes your notes automatically:
+
+- **On save**: Every time you save a note
+- **On create**: When you create a new note
+- **On delete**: When you delete a note
+- **On rename**: When you rename a note
+
+### Index Contents
+
+The search index stores:
+
+- **Note title**: Filename without extension
+- **Note content**: Full markdown text
+- **Tags**: Both inline and frontmatter tags
+- **Paths**: Relative path in your space
+- **Timestamps**: Created and updated times
+
+### Rebuild Index
+
+If search results seem outdated:
+
+<Steps>
+  <Step title="Open Settings">
+    Go to Settings > General.
+  </Step>
+  
+  <Step title="Rebuild Index">
+    Click **Rebuild Search Index**.
+  </Step>
+  
+  <Step title="Wait for completion">
+    Glyph re-indexes all notes. Large spaces may take a minute.
+  </Step>
+</Steps>
+
+<Warning>
+  Rebuilding the index locks search temporarily. Avoid doing this during active work sessions.
+</Warning>
+
+## Recent Notes
+
+View recently modified notes:
+
+```typescript
+invoke("recent_notes", { limit: 10 });
+```
+
+This returns the 10 most recently updated notes, useful for:
+
+- Quick access to recent work
+- "Continue where you left off" features
+- Recent activity timeline
+
+## Performance
+
+### Search Speed
+
+Glyph's search is optimized for spaces with thousands of notes:
+
+- **SQLite FTS5**: Full-text search engine
+- **Indexed queries**: Sub-100ms for most queries
+- **Candidate limiting**: Fetches top 300 candidates, then ranks
+- **Debounced input**: Reduces unnecessary queries
+
+### Scaling
+
+Search performance characteristics:
+
+| Space Size | Index Time | Query Time |
+|------------|------------|------------|
+| 100 notes  | < 1s       | < 10ms     |
+| 1,000 notes| ~5s        | ~50ms      |
+| 10,000 notes| ~30s      | ~100ms     |
+
+<Tip>
+  Search performance depends on note size. Many small notes search faster than fewer large notes.
+</Tip>
+
+## Troubleshooting
+
+### Search returns no results
+
+**Solutions:**
+1. Check spelling and try synonyms
+2. Simplify your query (use fewer words)
+3. Rebuild the search index
+4. Verify the note exists in your space
+
+### Search is slow
+
+**Solutions:**
+1. Reduce query complexity
+2. Use more specific search terms
+3. Filter by tags to narrow results
+4. Rebuild index if it's corrupted
+
+### Tags not appearing
+
+**Solutions:**
+1. Ensure tags start with `#`
+2. Check for spaces (use `#tag-name` not `#tag name`)
+3. Save the note (tags index on save)
+4. Rebuild index if needed

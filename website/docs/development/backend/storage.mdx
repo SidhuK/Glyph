@@ -1,0 +1,434 @@
+---
+title: 'File Storage System'
+description: 'Content-addressed storage and atomic writes'
+---
+
+## Overview
+
+Glyph's storage system consists of:
+
+1. **Space Files** - User-created markdown files in `notes/`
+2. **Assets** - Content-addressed files in `assets/` (SHA256 hash)
+3. **Cache** - Derived data in `cache/` (link previews, thumbnails)
+4. **Atomic Writes** - Crash-safe file operations
+
+## Content-Addressed Storage
+
+### Why Content-Addressing?
+
+Storing files by their **SHA256 hash** provides:
+
+- **Deduplication** - Same file stored once, even if used in 100 notes
+- **Integrity** - Hash mismatch = corrupted file
+- **Immutability** - Content can't change without changing hash
+- **Cache-friendly** - Hash is permanent, perfect for CDNs
+
+### Implementation
+
+```rust src-tauri/src/notes/attachments.rs
+use sha2::{Sha256, Digest};
+use std::io;
+
+pub fn attach_file(
+  note_id: &str,
+  source_path: &Path,
+  space_root: &Path,
+) -> Result<AttachmentResult, String> {
+  // Read source file
+  let mut file = File::open(source_path)
+    .map_err(|e| format!("Failed to open file: {}", e))?;
+  
+  // Compute SHA256 hash while reading
+  let mut hasher = Sha256::new();
+  let mut buffer = Vec::new();
+  io::copy(&mut file, &mut hasher)?;
+  let hash = hex::encode(hasher.finalize());
+  
+  // Get file extension
+  let extension = source_path
+    .extension()
+    .and_then(|s| s.to_str())
+    .unwrap_or("bin");
+  
+  // Asset filename: {hash}.{ext}
+  let asset_name = format!("{}.{}", hash, extension);
+  let asset_path = space_root.join("assets").join(&asset_name);
+  
+  // Only copy if not already exists (deduplication!)
+  if !asset_path.exists() {
+    fs::copy(source_path, &asset_path)
+      .map_err(|e| format!("Failed to copy: {}", e))?;
+  }
+  
+  // Generate markdown link (relative from note)
+  let rel_path = relative_path(note_id, &format!("assets/{}", asset_name));
+  let markdown = format!("![]({})", rel_path);
+  
+  Ok(AttachmentResult {
+    asset_rel_path: format!("assets/{}", asset_name),
+    markdown,
+  })
+}
+```
+
+### Example
+
+```typescript Frontend
+// User attaches logo.png to notes/project/readme.md
+const result = await invoke('note_attach_file', {
+  note_id: 'notes/project/readme.md',
+  source_path: '/Users/me/Downloads/logo.png'
+});
+
+// Returns:
+// {
+//   asset_rel_path: 'assets/a1b2c3d4e5f6...789.png',
+//   markdown: '![](../../assets/a1b2c3d4e5f6...789.png)'
+// }
+
+// Markdown is inserted into editor at cursor
+editor.commands.insertContent(result.markdown);
+```
+
+If the same `logo.png` is attached to 10 different notes, only **one copy** exists on disk.
+
+## Atomic Writes
+
+### The Problem
+
+Naive file writes can corrupt data if:
+
+- App crashes mid-write
+- Disk full during write
+- Power loss during write
+
+### The Solution
+
+Write to temp file → fsync → rename → fsync parent directory.
+
+```rust src-tauri/src/io_atomic.rs
+use std::fs;
+use std::io::{self, Write};
+use std::path::Path;
+
+pub fn write_atomic(path: &Path, contents: &[u8]) -> io::Result<()> {
+  // 1. Write to temporary file in same directory
+  let temp_path = path.with_extension("tmp");
+  let mut file = fs::File::create(&temp_path)?;
+  file.write_all(contents)?;
+  
+  // 2. Flush OS buffers to disk (critical!)
+  file.sync_all()?;
+  drop(file);
+  
+  // 3. Atomically rename temp to final path
+  // This is atomic on all major filesystems (ext4, APFS, NTFS)
+  fs::rename(&temp_path, path)?;
+  
+  // 4. Sync parent directory to persist rename
+  if let Some(parent) = path.parent() {
+    let parent_file = fs::File::open(parent)?;
+    parent_file.sync_all()?;
+  }
+  
+  Ok(())
+}
+```
+
+### Usage
+
+```rust src-tauri/src/space_fs/read_write/text.rs
+use crate::io_atomic::write_atomic;
+
+#[tauri::command]
+pub fn space_write_text(
+  path: String,
+  text: String,
+  state: State<SpaceState>,
+) -> Result<TextFileWriteResult, String> {
+  let current = state.current.lock().unwrap();
+  let space = current.as_ref().ok_or("No space open")?;
+  
+  let abs_path = paths::join_under(&space.root, &path)?;
+  
+  // Atomic write - crash-safe!
+  write_atomic(&abs_path, text.as_bytes())
+    .map_err(|e| format!("Write failed: {}", e))?;
+  
+  let metadata = fs::metadata(&abs_path)?;
+  let mtime_ms = metadata.modified()?
+    .duration_since(UNIX_EPOCH)
+    .unwrap()
+    .as_millis() as u64;
+  
+  Ok(TextFileWriteResult {
+    etag: format!("{}-{}", mtime_ms, metadata.len()),
+    mtime_ms,
+  })
+}
+```
+
+## Path Safety
+
+### Preventing Path Traversal
+
+All user-provided paths are validated:
+
+```rust src-tauri/src/paths.rs
+use std::path::{Path, PathBuf, Component};
+
+pub fn join_under(base: &Path, rel: &str) -> Result<PathBuf, String> {
+  // Normalize path by stripping ".." components
+  let normalized = PathBuf::from(rel)
+    .components()
+    .filter(|c| !matches!(c, Component::ParentDir))
+    .collect::<PathBuf>();
+  
+  let joined = base.join(&normalized);
+  
+  // Ensure result is still under base
+  if !joined.starts_with(base) {
+    return Err(format!(
+      "Path traversal detected: '{}' escapes base '{}'",
+      rel,
+      base.display()
+    ));
+  }
+  
+  Ok(joined)
+}
+```
+
+### Examples
+
+```rust
+let base = PathBuf::from("/space");
+
+// ✅ Safe paths
+assert_eq!(
+  join_under(&base, "notes/example.md"),
+  Ok(PathBuf::from("/space/notes/example.md"))
+);
+
+assert_eq!(
+  join_under(&base, "./notes/../assets/file.png"),
+  Ok(PathBuf::from("/space/assets/file.png"))
+);
+
+// ❌ Rejected paths
+assert!(join_under(&base, "../../../etc/passwd").is_err());
+assert!(join_under(&base, "/absolute/path").is_err());
+```
+
+## Cache System
+
+### Link Preview Cache
+
+External link metadata is cached to avoid repeated fetching:
+
+```rust src-tauri/src/links/cache.rs
+use std::time::SystemTime;
+
+pub struct LinkCache {
+  pub url: String,
+  pub title: String,
+  pub description: String,
+  pub image_url: Option<String>,
+  pub fetched_at: SystemTime,
+}
+
+pub fn cache_link_preview(
+  space_root: &Path,
+  url: &str,
+  preview: &LinkPreview,
+) -> Result<(), io::Error> {
+  let cache_dir = space_root.join("cache").join("links");
+  fs::create_dir_all(&cache_dir)?;
+  
+  // Hash URL to get cache filename
+  let url_hash = sha256_str(url);
+  let cache_file = cache_dir.join(format!("{}.json", url_hash));
+  
+  let json = serde_json::to_vec_pretty(preview)?;
+  write_atomic(&cache_file, &json)?;
+  
+  Ok(())
+}
+
+pub fn read_cached_link(
+  space_root: &Path,
+  url: &str,
+) -> Option<LinkPreview> {
+  let cache_dir = space_root.join("cache").join("links");
+  let url_hash = sha256_str(url);
+  let cache_file = cache_dir.join(format!("{}.json", url_hash));
+  
+  if !cache_file.exists() {
+    return None;
+  }
+  
+  // Check if cache is stale (> 7 days)
+  let metadata = fs::metadata(&cache_file).ok()?;
+  let age = SystemTime::now()
+    .duration_since(metadata.modified().ok()?)
+    .ok()?;
+  
+  if age.as_secs() > 7 * 24 * 60 * 60 {
+    return None; // Stale, re-fetch
+  }
+  
+  let json = fs::read_to_string(&cache_file).ok()?;
+  serde_json::from_str(&json).ok()
+}
+```
+
+## Space Structure Summary
+
+```
+my-space/
+├── notes/                      # User files (version control this)
+│   ├── daily/
+│   │   └── 2024-03-15.md
+│   ├── projects/
+│   │   └── project-x.md
+│   └── readme.md
+│
+├── assets/                     # Content-addressed (version control this)
+│   ├── a1b2c3d4...789.png      # SHA256 hash
+│   └── f4e5d6c7...012.pdf
+│
+├── cache/                      # Derived data (DO NOT version control)
+│   ├── links/                  # Link preview JSON files
+│   │   └── abc123.json
+│   └── images/                 # Cached external images
+│       └── xyz789.jpg
+│
+├── .glyph/                     # App data (DO NOT version control)
+│   ├── index.db                # SQLite FTS index
+│   ├── ai_history.db           # Chat history
+│   └── profiles.json           # AI provider configs
+│
+└── space.json                  # Schema version (version control this)
+```
+
+### .gitignore Recommendation
+
+```gitignore .gitignore
+# Glyph derived data
+.glyph/
+cache/
+
+# Keep notes and assets
+!notes/
+!assets/
+!space.json
+```
+
+## File Watching
+
+### Filesystem Watcher
+
+```rust src-tauri/src/space/watcher.rs
+use notify::{RecommendedWatcher, RecursiveMode, Watcher, Event, EventKind};
+use std::sync::mpsc::channel;
+
+pub fn start_watcher(
+  space_root: &Path,
+  db: Arc<Mutex<Connection>>,
+) -> Result<RecommendedWatcher, notify::Error> {
+  let (tx, rx) = channel();
+  
+  let mut watcher = RecommendedWatcher::new(tx, Config::default())?;
+  
+  // Watch notes directory recursively
+  watcher.watch(
+    &space_root.join("notes"),
+    RecursiveMode::Recursive
+  )?;
+  
+  // Spawn event handler thread
+  std::thread::spawn(move || {
+    for event in rx {
+      match event {
+        Ok(Event { kind: EventKind::Modify(_), paths, .. }) => {
+          for path in paths {
+            if path.extension() == Some(OsStr::new("md")) {
+              // Re-index modified note
+              let db = db.lock().unwrap();
+              let _ = indexer::reindex_file(&path, &db);
+            }
+          }
+        }
+        Ok(Event { kind: EventKind::Remove(_), paths, .. }) => {
+          for path in paths {
+            // Remove from index
+            let db = db.lock().unwrap();
+            let _ = indexer::delete_from_index(&path, &db);
+          }
+        }
+        _ => {}
+      }
+    }
+  });
+  
+  Ok(watcher)
+}
+```
+
+## Performance Considerations
+
+### Large Files
+
+For files >10MB, use streaming instead of loading into memory:
+
+```rust
+pub fn hash_large_file(path: &Path) -> io::Result<String> {
+  let file = File::open(path)?;
+  let mut reader = BufReader::new(file);
+  let mut hasher = Sha256::new();
+  
+  // Stream in 8KB chunks
+  let mut buffer = [0u8; 8192];
+  loop {
+    let n = reader.read(&mut buffer)?;
+    if n == 0 { break; }
+    hasher.update(&buffer[..n]);
+  }
+  
+  Ok(hex::encode(hasher.finalize()))
+}
+```
+
+### Batch Operations
+
+Use database transactions for bulk inserts:
+
+```rust
+pub fn attach_multiple_files(
+  files: &[PathBuf],
+  db: &Connection,
+) -> Result<Vec<AttachmentResult>, String> {
+  let tx = db.transaction()?;
+  let mut results = vec![];
+  
+  for file in files {
+    let result = attach_file(file, &tx)?;
+    results.push(result);
+  }
+  
+  tx.commit()?;
+  Ok(results)
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Tauri Commands" icon="terminal" href="/development/backend/tauri-commands">
+    Learn IPC communication
+  </Card>
+  
+  <Card title="Components" icon="react" href="/development/frontend/components">
+    Frontend component structure
+  </Card>
+</CardGroup>

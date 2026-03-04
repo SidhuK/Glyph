@@ -1,0 +1,183 @@
+---
+title: Trial System
+description: Understanding Glyph's 48-hour free trial
+---
+
+Official Glyph binaries include a **48-hour free trial** that starts automatically on first launch.
+
+## How the Trial Works
+
+When you launch an official Glyph binary for the first time:
+
+<Steps>
+  <Step title="Trial starts automatically">
+    Glyph detects it's the first launch and starts a 48-hour timer.
+  </Step>
+
+  <Step title="Full access during trial">
+    You have complete access to all features during the trial period.
+  </Step>
+
+  <Step title="Trial banner appears">
+    A banner at the top shows your remaining trial time with options to enter a license key or purchase.
+  </Step>
+
+  <Step title="Trial expires after 48 hours">
+    When the trial ends, Glyph shows a lock screen requiring license activation.
+  </Step>
+</Steps>
+
+## Trial Duration
+
+The trial is exactly **48 hours** (2 days) from the moment you first launch an official build.
+
+- **Start time**: Recorded on first launch
+- **Expiry time**: Exactly 48 hours later
+- **Clock**: Based on your system time
+
+<Warning>
+Changing your system clock will not extend the trial. Trial timestamps are recorded and compared against current time.
+</Warning>
+
+## Trial Banner
+
+During the trial, you'll see a banner at the top of the app:
+
+```
+🟡 Trial | Your Glyph trial is active
+         | [Remaining time]
+         | [Enter License Key] [Buy on Gumroad]
+```
+
+The banner displays:
+
+- **Trial badge** indicating you're in trial mode
+- **Remaining time** in days, hours, and minutes
+- **Enter License Key** button to activate immediately
+- **Buy on Gumroad** button to purchase a license
+
+## What Happens When Trial Expires
+
+After 48 hours, the trial expires and:
+
+1. **Lock screen appears** - Glyph shows a full-screen activation view
+2. **App shell is blocked** - You cannot access notes or features
+3. **Settings remain accessible** - You can enter a license key to activate
+4. **Purchase option available** - Direct link to buy on Gumroad
+
+### Lock Screen
+
+The lock screen displays:
+
+```
+Official Release
+
+Glyph requires a license key
+
+This official build includes a 48-hour free trial. After that,
+a lifetime Gumroad license unlocks Glyph forever on all of your devices.
+
+🔴 Trial Ended | Trial expired [time ago]
+
+[License Key input field]
+
+[Activate License] [Buy on Gumroad]
+
+[Retry Status Check] [Get Support]
+```
+
+## Activating During Trial
+
+You don't have to wait for the trial to expire. You can activate anytime during the trial:
+
+1. Click **Enter License Key** in the trial banner
+2. Or go to **Settings → General → License**
+3. Enter your license key from Gumroad
+4. Click **Activate**
+
+<Info>
+Activating during the trial immediately removes the trial banner and unlocks Glyph permanently.
+</Info>
+
+## Trial State Storage
+
+Trial information is stored locally in:
+
+```
+app_config_dir()/license.json
+```
+
+The file contains:
+
+```json
+{
+  "version": 1,
+  "trial_started_at": "2026-03-01T08:00:00Z",
+  "trial_expires_at": "2026-03-03T08:00:00Z",
+  "licensed": false
+}
+```
+
+<Warning>
+Deleting or modifying this file may reset your trial state, but you won't get an additional 48 hours. The trial period is tied to the original start time.
+</Warning>
+
+## Community Builds vs Official Builds
+
+Only **official binaries** from GitHub Releases enforce the trial:
+
+| Build Type | Trial | License Required |
+|------------|-------|------------------|
+| Official Release | Yes (48 hours) | Yes, after trial |
+| Community Build | No | No |
+| Development Build | No | No |
+| Self-Built | No | No |
+
+Official builds are identified by the `GLYPH_OFFICIAL_BUILD=1` flag set during the release build process.
+
+## Checking Trial Status
+
+You can check your trial status anytime:
+
+1. Open **Settings → General → License**
+2. Look for the status badge:
+   - 🟡 **Trial Active** - Trial is running
+   - 🔴 **Trial Expired** - Trial has ended
+   - 🟢 **Licensed** - Activated with license key
+   - 🔵 **Community Build** - No licensing enforced
+
+## Trial + Offline Use
+
+### First Launch Offline
+
+If you first launch Glyph while offline:
+
+- Trial starts normally based on system time
+- No internet connection required to start trial
+- Trial countdown continues based on local time
+
+### Trial Expiry Offline
+
+If your trial expires while offline:
+
+- Lock screen appears as normal
+- You must connect to internet to activate with Gumroad
+- Once activated, you can use Glyph offline forever
+
+## Reinstalling Glyph
+
+If you reinstall Glyph or move to a new device:
+
+- **First install**: New 48-hour trial starts
+- **With license key**: Activate immediately to skip trial
+- **Multiple devices**: Each device gets its own trial, but one license key works everywhere
+
+<Info>
+Your license key has no device limits. Purchase once and activate on unlimited devices.
+</Info>
+
+## Next Steps
+
+- [License Activation](/licensing/activation) - How to activate your license
+- [Purchase Glyph](https://karatsidhu.gumroad.com/l/sqxfay) - Buy a lifetime license
+- [FAQ](/licensing/faq) - Common questions about trials and licensing

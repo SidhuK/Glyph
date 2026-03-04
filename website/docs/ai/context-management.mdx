@@ -1,0 +1,474 @@
+---
+title: Context Management
+description: Attach files and folders to AI conversations in Glyph
+---
+
+Ground AI responses in your notes by attaching files and folders as context. Glyph builds a context payload from your attachments and sends it with your message.
+
+## Overview
+
+Context attachment allows you to:
+- Include specific files or entire folders in conversations
+- Mention files using `@filename` syntax
+- Configure character budgets (200 - 250,000 chars)
+- View token estimates before sending
+- Store context manifest with conversation history
+
+## How Context Works
+
+1. **Attach**: Select files or folders to include
+2. **Build**: Glyph reads and concatenates content
+3. **Budget**: Content is truncated to fit character budget
+4. **Estimate**: View token estimates (chars ÷ 4)
+5. **Send**: Context sent in system message
+6. **Store**: Manifest saved with conversation history
+
+## Attaching Context
+
+### Via Context Menu
+
+<Steps>
+  <Step title="Open AI Panel">
+    Click the AI icon in the sidebar or use the keyboard shortcut.
+  </Step>
+  
+  <Step title="Open Context Menu">
+    Click the **Context** button or **@** icon in the AI composer.
+  </Step>
+  
+  <Step title="Search for Files/Folders">
+    Type to filter the index:
+    - Files: Individual notes (e.g., `roadmap.md`)
+    - Folders: Entire directories (e.g., `projects/`)
+    - Space: Root folder (all files)
+  </Step>
+  
+  <Step title="Select Attachments">
+    Click files or folders to attach. Selected items appear in the attached context list.
+  </Step>
+  
+  <Step title="Review Manifest">
+    View the context manifest showing:
+    - Items attached
+    - Character count per item
+    - Token estimates
+    - Truncation warnings
+  </Step>
+</Steps>
+
+### Via @mentions
+
+Type `@` in your message to mention files:
+
+```
+@roadmap.md what are the key milestones?
+```
+
+Glyph automatically:
+1. Detects the `@mention`
+2. Searches the file index
+3. Attaches the file to context
+4. Removes the `@mention` from your message
+
+Multiple mentions work too:
+
+```
+Compare @design-doc.md with @implementation-notes.md
+```
+
+## Context Index
+
+Glyph maintains an in-memory index of your space:
+
+### Indexing
+
+- **When**: On AI panel open
+- **What**: All files and folders in your space
+- **Excludes**: Hidden files (`.gitignore`, `.env`, etc.), `node_modules`
+- **Limit**: Up to 20,000 files
+
+### Structure
+
+From `src-tauri/src/ai_rig/context.rs:174`:
+
+```rust
+ai_context_index() -> AiContextIndexResponse {
+  folders: Vec<{ path: String, label: String }>,
+  files: Vec<{ path: String, label: String }>
+}
+```
+
+Folders and files are listed separately for easy filtering.
+
+## Character Budget
+
+Control how much context to include:
+
+### Default Budget
+
+- **Default**: 12,000 characters (~3,000 tokens)
+- **Minimum**: 200 characters
+- **Maximum**: 250,000 characters (~62,500 tokens)
+
+### Adjusting Budget
+
+In the context menu, adjust the character budget slider or input:
+
+- **Lower budget**: Faster, cheaper, may truncate important content
+- **Higher budget**: More complete context, slower, more expensive
+
+### How Budget is Applied
+
+1. Files and folders are processed in order
+2. Each item's content is read and formatted
+3. If content exceeds remaining budget, it's truncated with `…(truncated)` suffix
+4. Truncated items marked in manifest with `truncated: true`
+
+## Context Payload Format
+
+Glyph formats attached context as:
+
+```markdown
+# Folder: projects
+
+# File: projects/roadmap.md
+
+<file contents>
+
+---
+
+# File: projects/tasks.md
+
+<file contents>
+```
+
+- Folder headers mark directory attachments
+- File headers show relative paths
+- Content separated by `---` dividers
+- Sent in system message or user message depending on provider
+
+## Context Manifest
+
+The manifest provides transparency into context composition.
+
+### Manifest Structure
+
+From `src-tauri/src/ai_rig/context.rs:42`:
+
+```typescript
+interface ContextManifest {
+  items: Array<{
+    kind: 'file' | 'folder',
+    label: string,
+    chars: number,
+    estTokens: number,
+    truncated: boolean
+  }>,
+  totalChars: number,
+  estTokens: number
+}
+```
+
+### Viewing Manifest
+
+In the AI panel:
+1. Attach context
+2. Click **View Manifest** or expand context section
+3. See breakdown of attached items
+
+### Manifest Storage
+
+Manifests are stored with conversation history:
+
+```json
+{
+  "job_id": "uuid",
+  "messages": [...],
+  "context_manifest": {
+    "items": [...],
+    "totalChars": 15000,
+    "estTokens": 3750
+  }
+}
+```
+
+This allows you to review what context was sent with past conversations.
+
+## Token Estimation
+
+Glyph estimates tokens using:
+
+```rust
+fn estimate_tokens(chars: usize) -> usize {
+    chars.div_ceil(4)
+}
+```
+
+**Formula**: `tokens ≈ characters ÷ 4`
+
+<Note>
+This is a rough estimate. Actual tokenization varies by model. GPT-4 may use ~3 chars/token, Claude ~4 chars/token.
+</Note>
+
+### Cost Estimation
+
+Use token estimates to calculate costs:
+
+1. Check manifest token estimate
+2. Look up model pricing (input tokens)
+3. Calculate: `tokens × (price / 1M tokens)`
+
+Example with GPT-4o:
+- 12,000 chars = ~3,000 tokens
+- GPT-4o input: $2.50 / 1M tokens
+- Cost: 3,000 × ($2.50 / 1M) = $0.0075 (~$0.01)
+
+## Folder Attachments
+
+Attaching a folder includes all files within it (recursively).
+
+### Folder Behavior
+
+- **Recursive**: All subdirectories included
+- **File limit**: Up to 20,000 files per folder
+- **Sorting**: Files sorted alphabetically
+- **Excludes**: Hidden files and `node_modules`
+
+### Example
+
+Attaching `projects/` folder:
+
+```
+projects/
+  glyph/
+    roadmap.md
+    tasks.md
+  notes/
+    2024-01-15.md
+```
+
+Context includes:
+1. Folder header: `# Folder: projects`
+2. `projects/glyph/roadmap.md`
+3. `projects/glyph/tasks.md`
+4. `projects/notes/2024-01-15.md`
+
+Files are concatenated until character budget is exhausted.
+
+## File Limits
+
+### Per-File Limits
+
+When reading files for context:
+- **Max file size**: No hard limit (entire file read)
+- **Character budget**: Shared across all files
+- **UTF-8 only**: Binary files skipped
+
+### Total Limits
+
+- **Character budget**: 200 - 250,000 chars
+- **File count**: Up to 20,000 files per folder
+- **Memory**: Limited by character budget, not file count
+
+## Security and Privacy
+
+### Path Safety
+
+- ✅ All paths restricted to current space
+- ❌ Path traversal blocked (`../` not allowed)
+- ❌ Hidden files excluded (files starting with `.`)
+- ❌ Symlinks outside space blocked
+
+From `src-tauri/src/ai_rig/context.rs:83`:
+
+```rust
+fn should_hide(name: &str) -> bool {
+    name.starts_with('.') || name.eq_ignore_ascii_case("node_modules")
+}
+```
+
+### No Secrets in Context
+
+<Warning>
+Be careful when attaching folders that might contain:
+- `.env` files (excluded by default)
+- API keys in config files
+- Passwords or tokens in notes
+
+Review the manifest before sending to ensure no sensitive data is included.
+</Warning>
+
+## Use Cases
+
+### Research and Summarization
+
+**Scenario**: Summarize all notes from a project.
+
+```
+Attach: projects/glyph/
+Prompt: Summarize the key features and roadmap items.
+```
+
+The AI reads all files in `projects/glyph/` and provides a summary.
+
+### Question Answering
+
+**Scenario**: Answer a specific question about your notes.
+
+```
+Mention: @meeting-notes-2024-01-15.md
+Prompt: What action items were discussed?
+```
+
+The AI reads the meeting notes and extracts action items.
+
+### Content Generation
+
+**Scenario**: Generate content based on existing notes.
+
+```
+Attach: research/ai-features.md, research/user-feedback.md
+Prompt: Write a blog post about AI integration based on these notes.
+```
+
+The AI uses the attached files as source material.
+
+### Comparison
+
+**Scenario**: Compare two documents.
+
+```
+Attach: design-v1.md, design-v2.md
+Prompt: What changed between these two design docs?
+```
+
+The AI reads both files and highlights differences.
+
+## Best Practices
+
+### Start Small
+
+- Begin with specific files
+- Attach folders only when necessary
+- Use @mentions for targeted context
+
+### Review Manifest
+
+- Check token estimates before sending
+- Ensure no truncation of critical content
+- Adjust budget if items are truncated
+
+### Be Specific
+
+- Attach only relevant files
+- Avoid attaching entire space unless needed
+- Use folders for related content groups
+
+### Monitor Costs
+
+- Large contexts = higher costs
+- Free tier models may have stricter limits
+- Ollama (local) has no token costs
+
+## Troubleshooting
+
+### "Context index failed to load"
+
+**Cause**: Error reading file tree.
+
+**Solution**: Ensure space is open and accessible.
+
+### Files not appearing in context menu
+
+**Possible causes**:
+- File is hidden (starts with `.`)
+- File is in `node_modules`
+- File index hasn't loaded yet
+
+**Solution**: Wait for index to load or refresh AI panel.
+
+### @mention not working
+
+**Cause**: File not in index or typo in filename.
+
+**Solution**: 
+1. Use context menu to verify file path
+2. Ensure exact filename match (case-sensitive)
+3. Use autocomplete if available
+
+### Context truncated unexpectedly
+
+**Cause**: Character budget too low.
+
+**Solution**: Increase character budget in context settings.
+
+### "Total chars exceeds budget"
+
+**Cause**: Attached files exceed 250K character limit.
+
+**Solution**:
+1. Remove some attachments
+2. Attach specific files instead of large folders
+3. Split into multiple conversations
+
+## History and Audit
+
+Context is preserved in conversation history:
+
+### Storage Location
+
+```
+.glyph/ai_history/<thread_id>.json
+```
+
+### History Structure
+
+```json
+{
+  "version": 1,
+  "job_id": "uuid",
+  "title": "Conversation title",
+  "created_at_ms": 1704067200000,
+  "profile": {...},
+  "messages": [...],
+  "context_manifest": {
+    "items": [
+      {
+        "kind": "file",
+        "label": "roadmap.md",
+        "chars": 2500,
+        "est_tokens": 625,
+        "truncated": false
+      }
+    ],
+    "total_chars": 2500,
+    "est_tokens": 625
+  },
+  "tool_events": [...]
+}
+```
+
+### Reviewing History
+
+In AI panel:
+1. Click **History**
+2. Select a past conversation
+3. View messages, context manifest, and tool usage
+4. Resume conversation or start new based on context
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Chat Modes" icon="messages" href="/ai/chat-modes">
+    Learn about chat vs create modes
+  </Card>
+  <Card title="AI Setup" icon="gear" href="/ai/setup">
+    Configure AI profiles and models
+  </Card>
+  <Card title="Profiles" icon="user-group" href="/ai/profiles">
+    Manage multiple AI configurations
+  </Card>
+  <Card title="Providers" icon="plug" href="/ai/providers/openai">
+    Provider-specific guides
+  </Card>
+</CardGroup>

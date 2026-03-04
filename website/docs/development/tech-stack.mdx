@@ -1,0 +1,341 @@
+---
+title: 'Technology Stack'
+description: 'Core technologies and dependencies used in Glyph'
+---
+
+## Frontend Stack
+
+### Core Framework
+
+<ParamField path="React" type="19.1.0">
+  UI framework with modern hooks and concurrent features
+</ParamField>
+
+<ParamField path="TypeScript" type="~5.8.3">
+  Type-safe JavaScript with strict mode enabled
+</ParamField>
+
+<ParamField path="Vite" type="^7.0.4">
+  Build tool with fast HMR and optimized production builds
+</ParamField>
+
+### UI & Styling
+
+<ParamField path="Tailwind CSS" type="^4.1.18">
+  Utility-first CSS framework with custom design tokens
+</ParamField>
+
+<ParamField path="Radix UI" type="radix-ui@^1.4.3">
+  Accessible headless UI primitives (Dialog, Popover, DropdownMenu, etc.)
+</ParamField>
+
+<ParamField path="Motion" type="^12.29.2">
+  Animation library for smooth transitions (successor to Framer Motion)
+</ParamField>
+
+<ParamField path="shadcn/ui" type="custom">
+  Pre-built accessible components built on Radix UI + Tailwind
+</ParamField>
+
+### Editor & Rich Text
+
+<ParamField path="TipTap" type="^3.4.1">
+  Headless rich text editor framework
+  - `@tiptap/react` - React integration
+  - `@tiptap/markdown` - Markdown parsing/serialization
+  - `@tiptap/starter-kit` - Common extensions
+  - `@tiptap/extension-*` - Task lists, tables, links, images
+</ParamField>
+
+<ParamField path="@tiptap/pm" type="^3.4.1">
+  ProseMirror core (powers TipTap)
+</ParamField>
+
+### Data & Forms
+
+<ParamField path="@tanstack/react-table" type="^8.21.3">
+  Headless table library for database views
+</ParamField>
+
+<ParamField path="react-hook-form" type="^7.71.1">
+  Performant form validation
+</ParamField>
+
+<ParamField path="zod" type="^4.3.6">
+  TypeScript-first schema validation
+</ParamField>
+
+<ParamField path="@hookform/resolvers" type="^5.2.2">
+  Zod integration for react-hook-form
+</ParamField>
+
+### Canvas & Visualization
+
+<ParamField path="@xyflow/react" type="^12.10.0">
+  Node-based canvas editor (formerly React Flow)
+</ParamField>
+
+### Utilities
+
+<ParamField path="cmdk" type="^1.1.1">
+  Command palette component (Command+K)
+</ParamField>
+
+<ParamField path="sonner" type="^2.0.7">
+  Toast notifications
+</ParamField>
+
+<ParamField path="next-themes" type="^0.4.6">
+  Dark mode theme switching
+</ParamField>
+
+<ParamField path="class-variance-authority" type="^0.7.1">
+  Type-safe CSS class variants
+</ParamField>
+
+<ParamField path="clsx" type="^2.1.1" default="tailwind-merge">
+  Conditional class names + Tailwind class merging
+</ParamField>
+
+<ParamField path="react-resizable-panels" type="^4.6.2">
+  Resizable sidebar/panel layouts
+</ParamField>
+
+## Backend Stack
+
+### Core Framework
+
+<ParamField path="Tauri" type="2.x">
+  Rust-based framework for building desktop apps
+  - `tauri` - Core runtime
+  - `@tauri-apps/api` - JavaScript bindings
+  - `@tauri-apps/cli` - Build tooling
+</ParamField>
+
+<ParamField path="Rust" type="2021 edition">
+  Systems programming language (see `Cargo.toml`)
+</ParamField>
+
+### Tauri Plugins
+
+<ParamField path="tauri-plugin-dialog" type="2.x">
+  Native file picker dialogs
+</ParamField>
+
+<ParamField path="tauri-plugin-opener" type="2.x">
+  Open files/URLs in default system apps
+</ParamField>
+
+<ParamField path="tauri-plugin-store" type="2.x">
+  Persistent key-value settings storage
+</ParamField>
+
+<ParamField path="tauri-plugin-updater" type="^2.10.0">
+  Auto-update functionality
+</ParamField>
+
+<ParamField path="tauri-plugin-notification" type="2.x">
+  System notifications
+</ParamField>
+
+<ParamField path="tauri-plugin-process" type="^2.3.1">
+  Process management for Codex app-server
+</ParamField>
+
+### Serialization & Data
+
+<ParamField path="serde" type="^1.0" default="derive">
+  Rust serialization framework
+</ParamField>
+
+<ParamField path="serde_json" type="^1.0">
+  JSON serialization for IPC and file storage
+</ParamField>
+
+<ParamField path="serde_yaml" type="^0.9">
+  YAML frontmatter parsing
+</ParamField>
+
+<ParamField path="rusqlite" type="^0.31" default="bundled">
+  SQLite bindings with embedded SQLite
+</ParamField>
+
+### Filesystem & I/O
+
+<ParamField path="notify" type="^6.0">
+  Cross-platform filesystem watcher
+</ParamField>
+
+<ParamField path="sha2" type="^0.10">
+  SHA256 hashing for content-addressed storage
+</ParamField>
+
+<ParamField path="hex" type="^0.4">
+  Hex encoding for hash strings
+</ParamField>
+
+<ParamField path="base64" type="^0.22">
+  Base64 encoding for binary data URLs
+</ParamField>
+
+### Networking
+
+<ParamField path="reqwest" type="^0.12" default="rustls-tls">
+  HTTP client for link preview fetching
+  - Uses `rustls` instead of OpenSSL
+  - `blocking` - Synchronous API
+  - `json` - JSON body support
+  - `stream` - Streaming responses
+</ParamField>
+
+<ParamField path="url" type="^2.0">
+  URL parsing and validation
+</ParamField>
+
+### AI & LLM
+
+<ParamField path="rig-core" type="^0.24.0" default="derive">
+  Multi-provider LLM framework
+  - OpenAI, Anthropic, Gemini, Ollama support
+  - Tool calling & structured outputs
+</ParamField>
+
+<ParamField path="schemars" type="^0.8">
+  JSON Schema generation for AI tool definitions
+</ParamField>
+
+### Utilities
+
+<ParamField path="uuid" type="^1.0" default="v4">
+  UUID generation for note IDs
+</ParamField>
+
+<ParamField path="time" type="^0.3" default="formatting">
+  Date/time handling (used for daily notes)
+</ParamField>
+
+<ParamField path="regex" type="^1.0">
+  Regular expressions for parsing
+</ParamField>
+
+<ParamField path="tracing" type="^0.1">
+  Structured logging
+</ParamField>
+
+<ParamField path="tracing-subscriber" type="^0.3" default="env-filter">
+  Log filtering and formatting
+</ParamField>
+
+<ParamField path="tokio" type="^1.0" default="macros, rt, time">
+  Async runtime for AI streaming
+</ParamField>
+
+<ParamField path="futures-util" type="^0.3">
+  Async utilities
+</ParamField>
+
+<ParamField path="tokio-util" type="^0.7">
+  Additional Tokio utilities
+</ParamField>
+
+### Platform-Specific
+
+<ParamField path="window-vibrancy" type="^0.7">
+  macOS window blur effects
+</ParamField>
+
+<ParamField path="core-text" type="^20.0" default="macOS only">
+  macOS font enumeration
+</ParamField>
+
+## Development Tools
+
+### Linting & Formatting
+
+<ParamField path="@biomejs/biome" type="^1.9.4">
+  Fast linter + formatter (replaces ESLint + Prettier)
+  - Auto-organizes imports
+  - Enforces code style
+  - TypeScript-first
+</ParamField>
+
+### Testing
+
+<ParamField path="vitest" type="^4.0.18">
+  Vite-native test runner
+  - Unit tests for utilities
+  - Integration tests for editor extensions
+</ParamField>
+
+### Type Definitions
+
+<ParamField path="@types/react" type="^19.1.8">
+  React type definitions
+</ParamField>
+
+<ParamField path="@types/react-dom" type="^19.1.6">
+  React DOM type definitions
+</ParamField>
+
+## Package Manager
+
+<ParamField path="pnpm" type="10.28.2">
+  Fast, disk-efficient package manager
+  
+  Only builds native modules when needed:
+  ```json package.json
+  "pnpm": {
+    "onlyBuiltDependencies": ["@biomejs/biome", "esbuild"]
+  }
+  ```
+</ParamField>
+
+## Icon Library
+
+<ParamField path="@hugeicons/react" type="^1.1.4">
+  Open-source React icon library
+</ParamField>
+
+<ParamField path="@hugeicons/core-free-icons" type="^3.1.1">
+  Core icon set
+</ParamField>
+
+## Version Matrix
+
+| Component | Version | Notes |
+|-----------|---------|-------|
+| Node.js | 18+ | Required for pnpm |
+| Rust | 1.70+ | 2021 edition |
+| macOS | 11+ | Big Sur or later |
+| Windows | 10+ | 64-bit |
+| Linux | Ubuntu 20.04+ | Debian-based |
+
+## Architecture Decisions
+
+### Why Tauri over Electron?
+
+- Smaller bundle size (~10MB vs 100MB+)
+- Lower memory footprint
+- Native system integration
+- Rust security guarantees
+
+### Why TipTap over other editors?
+
+- TypeScript-first
+- Full control over markdown serialization
+- Extensible plugin system
+- ProseMirror foundation (battle-tested)
+
+### Why Biome over ESLint/Prettier?
+
+- 10-100x faster
+- Single tool for linting + formatting
+- Built in Rust
+- Auto-import organization
+
+### Why Rig over LangChain?
+
+- Rust-native (type-safe)
+- Multi-provider abstraction
+- Streaming support
+- Tool calling with JSON schema

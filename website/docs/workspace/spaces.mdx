@@ -1,0 +1,197 @@
+---
+title: Spaces
+description: Understanding and managing your Glyph workspace
+---
+
+A **space** in Glyph is a directory-based workspace that contains your notes and any related files you want to keep together. Glyph treats the folder you open as the root of that workspace and keeps its own support data inside `.glyph/`.
+
+## What is a Space?
+
+A space is simply a folder on your computer that Glyph uses to store and organize your notes. When you create or open a space, Glyph sets up a special `.glyph/` directory inside it for app-managed data like the search index, caches, and AI history.
+
+### Directory Structure
+
+When you create or open a space, Glyph ensures a structure like this exists:
+
+```
+your-space/
+├── .glyph/
+│   ├── glyph.sqlite       # Search index database
+│   ├── cache/
+│   │   ├── ai/            # AI audit logs
+│   │   └── link-previews/ # Cached link preview data
+│   └── Glyph/
+│       ├── ai_history/    # AI conversation history JSON
+│       └── ai_secrets.json
+├── assets/                # Attachments (created on demand)
+├── notes/                 # Optional conventional notes folder
+└── (your files and folders)
+```
+
+<Note>
+The `.glyph/` folder is automatically managed by Glyph. Your own markdown files do not need to live in a hardcoded folder structure to be part of the space.
+</Note>
+
+## Creating a Space
+
+You can create a new space in two ways:
+
+1. **From the Welcome Screen**: Click "Create Space" and choose a directory
+2. **From the Menu**: Navigate to File → Create Space (or use `Cmd+Shift+N` on macOS)
+
+When you create a space, Glyph:
+- Creates the `.glyph/` directory structure
+- Opens the search database when needed
+- Sets up the file watcher for real-time updates across the space
+- Cleans up any temporary files from previous sessions
+
+```rust
+// From src-tauri/src/space/helpers.rs
+pub fn create_or_open_impl(root: &Path) -> Result<SpaceInfo, String> {
+    ensure_glyph_dirs(root)?;
+    let _ = cleanup_tmp_files(root);
+    Ok(SpaceInfo {
+        root: root.to_string_lossy().to_string(),
+        schema_version: VAULT_SCHEMA_VERSION,
+    })
+}
+```
+
+## Opening a Space
+
+To open an existing space:
+
+1. Use `Cmd+O`
+2. Select the folder containing your notes
+3. Glyph will detect if it's an existing space or create a new one
+
+<Accordion title="What happens when you open a space?">
+When you open a space, Glyph performs these operations:
+
+1. **Validates the directory** - Ensures it's a valid folder path
+2. **Initializes metadata** - Creates `.glyph/` structure if needed
+3. **Starts file watcher** - Monitors changes to your files in real-time
+4. **Loads the index** - Opens `.glyph/glyph.sqlite` for search
+5. **Cleans temporary files** - Removes `.tmp` files from crashes
+
+The file watcher (implemented in `src-tauri/src/space/watcher.rs`) monitors all changes and updates the search index automatically with a 100ms debounce.
+</Accordion>
+
+## File Watching
+
+Glyph monitors your space directory for changes using a recursive file watcher. This means:
+
+- **Real-time updates**: Changes from external editors appear immediately
+- **Smart indexing**: Only modified files are re-indexed
+- **Change debouncing**: Multiple rapid changes are batched (100ms window)
+- **Hidden file filtering**: Ignores files/folders starting with `.`
+
+### How It Works
+
+```rust
+// From src-tauri/src/space/watcher.rs
+const DEBOUNCE_MS: u64 = 100;
+
+// The watcher monitors three types of events:
+// - Create: New files or folders
+// - Modify: Content changes
+// - Remove: Deleted files or folders
+```
+
+When changes are detected:
+1. External changes trigger a `space:fs_changed` event to the frontend
+2. Markdown files are automatically re-indexed for search
+3. The file tree UI updates to reflect changes
+4. Recent local changes (within 2 seconds) are tracked to avoid duplicate processing
+
+<Note>
+Glyph ignores its own writes for 2 seconds to prevent re-indexing files you just saved.
+</Note>
+
+## Closing a Space
+
+To close the current space:
+
+- Use File → Close Space from the menu
+- The file watcher stops
+- The search index connection closes
+- Recent spaces list is updated
+
+Your files remain untouched - closing a space just disconnects Glyph from monitoring it.
+
+## Recent Spaces
+
+Glyph remembers recently opened spaces for quick access. You can:
+
+- View recent spaces in **Settings → Space**
+- Clear the recent list with the "Clear" button
+- Reopen a recent space from the welcome screen
+
+## Space Operations Reference
+
+<Table>
+  <thead>
+    <tr>
+      <th>Operation</th>
+      <th>Command</th>
+      <th>Description</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Create Space</td>
+      <td>`space_create`</td>
+      <td>Creates directory structure and initializes a new space</td>
+    </tr>
+    <tr>
+      <td>Open Space</td>
+      <td>`space_open`</td>
+      <td>Opens existing space or creates if needed</td>
+    </tr>
+    <tr>
+      <td>Close Space</td>
+      <td>`space_close`</td>
+      <td>Stops watcher and closes index connection</td>
+    </tr>
+    <tr>
+      <td>Get Current</td>
+      <td>`space_get_current`</td>
+      <td>Returns the path of currently open space</td>
+    </tr>
+  </tbody>
+</Table>
+
+## Best Practices
+
+1. **Keep spaces focused**: Create separate spaces for different projects or areas
+2. **Use cloud sync carefully**: If syncing with Dropbox/iCloud, be mindful that `.glyph/` is app-managed support data
+3. **Don't nest spaces**: Avoid creating one space inside another
+4. **Backup regularly**: The `.glyph/` folder can be recreated, but back up your notes
+
+<Accordion title="Can I use Git with spaces?">
+Yes. You can version control your space with Git. A reasonable starting point is:
+
+```
+.glyph/cache/
+.glyph/Glyph/ai_history/
+.glyph/Glyph/ai_secrets.json
+.glyph/*.tmp
+```
+
+The search database (`.glyph/glyph.sqlite`) can be committed or ignored depending on your workflow. Glyph will rebuild it if missing.
+</Accordion>
+
+## Troubleshooting
+
+### Space won't open
+- Ensure the folder exists and you have read/write permissions
+- Check that the path doesn't contain special characters
+- Try creating a new space instead
+
+### Search not working
+- Go to **Settings → Space** and click "Rebuild Index"
+- This re-indexes all markdown files in your space
+
+### Changes not appearing
+- The file watcher may have stopped - try closing and reopening the space
+- Check that changed files aren't in hidden folders (starting with `.`)

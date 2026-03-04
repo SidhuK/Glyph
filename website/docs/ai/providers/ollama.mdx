@@ -1,0 +1,306 @@
+---
+title: Ollama Configuration
+description: Run AI models locally with Ollama in Glyph
+---
+
+Run open-source AI models locally on your machine using Ollama. No API keys, no cloud dependencies, complete privacy.
+
+## Prerequisites
+
+- Ollama installed: [ollama.ai](https://ollama.ai)
+- Sufficient disk space for models (2-10GB per model)
+- Adequate RAM (8GB minimum, 16GB+ recommended)
+
+## Setup
+
+<Steps>
+  <Step title="Install Ollama">
+    Download and install Ollama from [ollama.ai](https://ollama.ai).
+    
+    <Tabs>
+      <Tab title="macOS">
+        ```bash
+        brew install ollama
+        ollama serve
+        ```
+      </Tab>
+      
+      <Tab title="Linux">
+        ```bash
+        curl -fsSL https://ollama.ai/install.sh | sh
+        ollama serve
+        ```
+      </Tab>
+      
+      <Tab title="Windows">
+        Download the installer from [ollama.ai/download](https://ollama.ai/download) and run it.
+      </Tab>
+    </Tabs>
+  </Step>
+  
+  <Step title="Pull a Model">
+    Download a model from Ollama's library:
+    
+    ```bash
+    # Fast, capable model
+    ollama pull llama3.2
+    
+    # Larger, more capable
+    ollama pull llama3.1:70b
+    
+    # Code-focused
+    ollama pull codellama
+    
+    # Lightweight
+    ollama pull phi3
+    ```
+    
+    View all models at [ollama.ai/library](https://ollama.ai/library).
+  </Step>
+  
+  <Step title="Verify Ollama is Running">
+    Check that Ollama is running on `localhost:11434`:
+    
+    ```bash
+    curl http://localhost:11434/v1/models
+    ```
+    
+    You should see a JSON response with your installed models.
+  </Step>
+  
+  <Step title="Open Glyph AI Settings">
+    Go to **Settings → AI** and select the **Ollama** profile.
+  </Step>
+  
+  <Step title="Configure Base URL">
+    The default base URL is `http://localhost:11434/v1`. If Ollama runs on a different host or port, update the base URL.
+    
+    **Allow Private Hosts** is enabled by default for Ollama.
+  </Step>
+  
+  <Step title="Select Model">
+    Click the **Model** dropdown. Glyph fetches models from Ollama's local API.
+    
+    Select your downloaded model (e.g., `llama3.2`, `llama3.1:70b`).
+  </Step>
+  
+  <Step title="Test Connection">
+    Open the AI panel and send a test message. You should receive a response from your local model.
+  </Step>
+</Steps>
+
+## Configuration
+
+### Provider Settings
+
+- **Service**: `ollama`
+- **Base URL**: `http://localhost:11434/v1` (default)
+- **Authentication**: None (local API)
+- **Allow Private Hosts**: Enabled (required for localhost)
+
+### Custom Port
+
+If Ollama runs on a different port:
+
+```
+Base URL: http://localhost:8080/v1
+```
+
+### Remote Ollama Server
+
+To connect to Ollama on another machine:
+
+```
+Base URL: http://192.168.1.100:11434/v1
+```
+
+Ensure **Allow Private Hosts** is enabled.
+
+## Model Selection
+
+Glyph uses Ollama's OpenAI-compatible `/v1/models` endpoint to list models.
+
+### Recommended Models
+
+| Model | Size | Use Case | RAM Required |
+|-------|------|----------|-------------|
+| `llama3.2` | 3B | Fast, everyday tasks | 8GB |
+| `llama3.1` | 8B | General purpose | 8GB |
+| `llama3.1:70b` | 70B | Most capable | 32GB+ |
+| `mistral` | 7B | Balanced performance | 8GB |
+| `codellama` | 7B | Code generation | 8GB |
+| `phi3` | 3.8B | Lightweight | 4GB |
+| `gemma2` | 9B | Google's open model | 8GB |
+
+Explore all models at [ollama.ai/library](https://ollama.ai/library).
+
+### Model Tags
+
+Ollama models use tags for variants:
+- `llama3.1:latest` - Latest stable version
+- `llama3.1:70b` - 70 billion parameter variant
+- `llama3.1:8b-q4_0` - 4-bit quantized (smaller, faster)
+
+## Features
+
+### Chat Mode
+
+Conversational interaction:
+- Back-and-forth dialogue
+- No file system access
+- Fast local inference
+- Best for brainstorming and Q&A
+
+### Create Mode
+
+Local AI with workspace tools:
+- **read_file** - Read files from your space
+- **search_notes** - Search note content
+- **list_dir** - List directory contents
+- Tool usage tracked in timeline view
+- Best for research and knowledge retrieval
+
+### Context Attachment
+
+Attach notes for grounded responses:
+- Attach files or folders via context menu
+- Mention with `@filename` syntax
+- Configure character budget (up to 250K chars)
+- Context sent locally, never leaves your machine
+
+## Performance
+
+### Inference Speed
+
+Local inference speed depends on:
+- **Model size**: Smaller models (3B-8B) are faster
+- **Hardware**: GPU acceleration significantly improves speed
+- **Context length**: Longer contexts increase latency
+
+### GPU Acceleration
+
+Ollama automatically uses GPU if available:
+- **NVIDIA**: CUDA support
+- **AMD**: ROCm support
+- **Apple Silicon**: Metal acceleration
+
+Check GPU usage:
+```bash
+ollama ps
+```
+
+### Context Window
+
+Ollama models have varying context windows:
+- `llama3.1`: 128K tokens
+- `mistral`: 32K tokens
+- `codellama`: 16K tokens
+
+Larger contexts increase memory usage and latency.
+
+## Privacy and Security
+
+Ollama runs entirely on your machine:
+- ✅ No data sent to external servers
+- ✅ No API keys required
+- ✅ Complete privacy for sensitive notes
+- ✅ Works offline
+- ✅ No usage limits or billing
+
+<Note>
+Ollama is ideal for private notes, confidential documents, or offline environments.
+</Note>
+
+## Troubleshooting
+
+### "model list failed"
+
+**Cause**: Glyph can't connect to Ollama.
+
+**Solution**:
+1. Verify Ollama is running: `ollama ps`
+2. Check the base URL in settings
+3. Ensure **Allow Private Hosts** is enabled
+4. Test connection: `curl http://localhost:11434/v1/models`
+
+### Model not in dropdown
+
+**Solution**: Type the model name manually (e.g., `llama3.2`, `codellama`).
+
+### "connection refused"
+
+**Cause**: Ollama is not running.
+
+**Solution**: Start Ollama:
+```bash
+ollama serve
+```
+
+### Responses are very slow
+
+**Possible causes**:
+- Large model (70B+) without sufficient RAM
+- No GPU acceleration
+- Long context
+
+**Solutions**:
+- Use a smaller model (`llama3.2`, `phi3`)
+- Enable GPU acceleration (automatic if hardware supports it)
+- Reduce context size
+- Close other memory-intensive applications
+
+### "out of memory"
+
+**Cause**: Model is too large for available RAM.
+
+**Solution**:
+- Use a smaller model
+- Use quantized variants (e.g., `llama3.1:8b-q4_0`)
+- Close other applications
+- Increase system swap space
+
+### Tool calls fail in create mode
+
+**Cause**: Some Ollama models don't support function calling well.
+
+**Solution**: Use chat mode instead, or try a different model. `llama3.1` has good tool support.
+
+## Advanced Configuration
+
+### Custom Ollama Endpoint
+
+If you run Ollama with custom settings:
+
+```bash
+OLLAMA_HOST=0.0.0.0:8080 ollama serve
+```
+
+Update base URL in Glyph:
+```
+Base URL: http://localhost:8080/v1
+```
+
+### Model Parameters
+
+To adjust model parameters (temperature, top_p, etc.), you'll need to modify Glyph's source code or use a different provider (OpenAI-compatible supports more options).
+
+### Multiple Ollama Instances
+
+Run multiple Ollama instances on different ports and create separate profiles in Glyph for each.
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Chat Modes" icon="messages" href="/ai/chat-modes">
+    Learn about chat vs create modes
+  </Card>
+  <Card title="Context Management" icon="folder" href="/ai/context-management">
+    Attach notes to local AI conversations
+  </Card>
+  <Card title="OpenAI-Compatible" icon="server" href="/ai/providers/openai">
+    Use other OpenAI-compatible endpoints
+  </Card>
+  <Card title="Profiles" icon="user-group" href="/ai/profiles">
+    Manage multiple AI profiles
+  </Card>
+</CardGroup>

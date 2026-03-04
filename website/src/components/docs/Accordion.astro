@@ -1,0 +1,47 @@
+---
+interface Props {
+	title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<details class="docs-accordion">
+	<summary>{title}</summary>
+	<div class="docs-accordion-body">
+		<slot />
+	</div>
+</details>
+
+<style>
+	.docs-accordion {
+		border: 1px solid var(--border);
+		background: rgba(255, 255, 255, 0.74);
+	}
+
+	.docs-accordion summary {
+		list-style: none;
+		cursor: pointer;
+		padding: 0.95rem 1.05rem;
+		font-size: 0.84rem;
+		font-weight: 600;
+	}
+
+	.docs-accordion summary::-webkit-details-marker {
+		display: none;
+	}
+
+	.docs-accordion summary::after {
+		content: "+";
+		float: right;
+		color: var(--faint);
+	}
+
+	.docs-accordion[open] summary::after {
+		content: "−";
+	}
+
+	.docs-accordion-body {
+		padding: 0 1.05rem 1rem;
+	}
+</style>

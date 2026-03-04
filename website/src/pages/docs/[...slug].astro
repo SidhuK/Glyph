@@ -1,0 +1,62 @@
+---
+import Accordion from "../../components/docs/Accordion.astro";
+import AccordionGroup from "../../components/docs/AccordionGroup.astro";
+import Card from "../../components/docs/Card.astro";
+import CardGroup from "../../components/docs/CardGroup.astro";
+import CodeGroup from "../../components/docs/CodeGroup.astro";
+import DocsLink from "../../components/docs/DocsLink.astro";
+import Frame from "../../components/docs/Frame.astro";
+import Info from "../../components/docs/Info.astro";
+import Note from "../../components/docs/Note.astro";
+import ParamField from "../../components/docs/ParamField.astro";
+import Step from "../../components/docs/Step.astro";
+import Steps from "../../components/docs/Steps.astro";
+import Tab from "../../components/docs/Tab.astro";
+import Table from "../../components/docs/Table.astro";
+import Tabs from "../../components/docs/Tabs.astro";
+import Tip from "../../components/docs/Tip.astro";
+import Warning from "../../components/docs/Warning.astro";
+import { getDocBySlug, getDocsStaticPaths } from "../../lib/docs";
+import DocsLayout from "../../layouts/DocsLayout.astro";
+
+export async function getStaticPaths() {
+	return getDocsStaticPaths();
+}
+
+const slug = Astro.params.slug ?? "introduction";
+const doc = await getDocBySlug(slug);
+
+if (!doc) {
+	throw new Error(`Doc not found for slug: ${slug}`);
+}
+
+const { Content, frontmatter, hasVisibleHeading } = doc;
+const components = {
+	a: DocsLink,
+	Accordion,
+	AccordionGroup,
+	Card,
+	CardGroup,
+	CodeGroup,
+	Frame,
+	Info,
+	Note,
+	ParamField,
+	Step,
+	Steps,
+	Tab,
+	Table,
+	Tabs,
+	Tip,
+	Warning,
+};
+---
+
+<DocsLayout
+	title={frontmatter.title ?? "Glyph Docs"}
+	description={frontmatter.description ?? "Documentation for Glyph."}
+	slug={doc.slug}
+	hasVisibleHeading={hasVisibleHeading}
+>
+	<Content components={components} />
+</DocsLayout>

@@ -1,0 +1,253 @@
+---
+title: Daily Notes
+description: Capture thoughts and logs with automatically dated notes
+---
+
+Daily notes provide a frictionless way to capture thoughts, journal entries, or daily logs. Glyph automatically creates a note for today's date with a single click.
+
+## Setting Up Daily Notes
+
+Configure daily notes in the Settings:
+
+<Steps>
+  <Step title="Open Settings">
+    Click the settings icon or press `Cmd+,` (macOS) / `Ctrl+,` (Windows/Linux).
+  </Step>
+  
+  <Step title="Go to Daily Notes">
+    Select the **Daily Notes** tab in the sidebar.
+  </Step>
+  
+  <Step title="Set folder">
+    Choose where daily notes should be created (e.g., `journal/`, `daily/`, or leave blank for root).
+  </Step>
+</Steps>
+
+<Note>
+  The folder path must be relative to your space root. It will be created automatically if it doesn't exist.
+</Note>
+
+## Creating Daily Notes
+
+Once configured, create today's note:
+
+<Tabs>
+  <Tab title="Toolbar Button">
+    Click the **Daily Note** button in the main toolbar.
+  </Tab>
+  
+  <Tab title="Keyboard Shortcut">
+    Press the daily note keyboard shortcut (customizable in settings).
+  </Tab>
+  
+  <Tab title="Command Palette">
+    Open the command palette and search for "Open Daily Note".
+  </Tab>
+</Tabs>
+
+Glyph will:
+
+1. Check if today's note already exists
+2. If it exists, open it
+3. If not, create a new note with today's date as the filename
+4. Open the note in the editor
+
+## File Naming
+
+Daily notes use ISO date format for filenames:
+
+```
+YYYY-MM-DD.md
+```
+
+**Examples:**
+- `2024-01-15.md`
+- `2024-12-31.md`
+- `2026-03-03.md`
+
+This format ensures:
+- **Chronological sorting**: Files sort naturally by date
+- **International standard**: ISO 8601 date format
+- **No ambiguity**: Year, month, and day are always clear
+
+## Default Content
+
+When Glyph creates a new daily note, it starts with:
+
+```markdown
+# YYYY-MM-DD
+```
+
+The heading matches the filename, giving you a clean starting point to add content.
+
+## Folder Organization
+
+Choose a folder structure that fits your workflow:
+
+<Tabs>
+  <Tab title="Flat Structure">
+    **Folder: `daily/`**
+    
+    All daily notes in one folder:
+    
+    ```
+    daily/
+      2024-01-01.md
+      2024-01-02.md
+      2024-01-03.md
+      ...
+    ```
+    
+    Simple and easy to browse. Works well if you search more than you browse.
+  </Tab>
+  
+  <Tab title="Year Folders">
+    **Folder: `journal/`**
+    
+    Manually organize by year:
+    
+    ```
+    journal/
+      2024/
+        2024-01-01.md
+        2024-12-31.md
+      2025/
+        2025-01-01.md
+    ```
+    
+    Better for long-term journaling. You'll need to create year folders manually.
+  </Tab>
+  
+  <Tab title="Root Level">
+    **Folder: (empty)**
+    
+    Daily notes in your space root:
+    
+    ```
+    2024-01-01.md
+    2024-01-02.md
+    Projects/
+    Reference/
+    ```
+    
+    Quick access, but can clutter your root folder over time.
+  </Tab>
+</Tabs>
+
+## Workflow Tips
+
+### Morning Routine
+
+1. Open Glyph
+2. Click the daily note button
+3. Start writing your thoughts, tasks, or goals for the day
+
+### Task Tracking
+
+Combine daily notes with task lists:
+
+```markdown
+# 2024-01-15
+
+## Tasks
+- [ ] Review project proposal
+- [ ] Call client
+- [ ] Update documentation
+
+## Notes
+- Met with design team...
+```
+
+Tasks from daily notes appear in the Tasks pane when scheduled.
+
+### Linking Daily Notes
+
+Reference other daily notes using wikilinks:
+
+```markdown
+# 2024-01-15
+
+Follow-up from [[2024-01-14]]
+
+Planning for [[2024-01-16]]
+```
+
+### Templates (Manual)
+
+Create a template note and copy its content to new daily notes:
+
+```markdown
+# YYYY-MM-DD
+
+## Morning Review
+
+## Tasks
+
+## Notes
+
+## Evening Reflection
+```
+
+<Tip>
+  Keep a `_daily-template.md` file in your daily notes folder to copy from when you want a structured format.
+</Tip>
+
+## Integration with Other Features
+
+### Search
+
+Daily notes are indexed like any other note:
+
+- Search content: Find specific entries across all dates
+- Filter by tag: Use tags in daily notes and search by them
+- Recent notes: Daily notes appear in "Recent" views
+
+### Tags
+
+Add tags to categorize daily entries:
+
+```markdown
+# 2024-01-15
+
+#journal #reflection
+
+Today I learned...
+```
+
+### Backlinks
+
+When you link to other notes from your daily notes, those notes show the backlink:
+
+```markdown
+# 2024-01-15
+
+Discussed [[Project Alpha]] with the team.
+```
+
+The "Project Alpha" note will show a backlink from your daily note.
+
+## Advanced: Custom Date Formats
+
+<Warning>
+  Glyph currently only supports ISO date format (YYYY-MM-DD) for daily notes. Custom formats are not available.
+</Warning>
+
+The ISO format is intentionally the only option because:
+
+- **Sortability**: Files sort chronologically in any file browser
+- **Consistency**: No ambiguity between date formats
+- **Compatibility**: Works across all operating systems and locales
+
+## Troubleshooting
+
+### Daily note button doesn't work
+
+**Solution**: Check that you've set a daily notes folder in Settings > Daily Notes.
+
+### Note created in wrong location
+
+**Solution**: Verify your daily notes folder path is relative (e.g., `journal/`, not `/journal/`).
+
+### Can't find old daily notes
+
+**Solution**: Use search to find notes by date or content. Search for `2024-01` to find all January 2024 notes.

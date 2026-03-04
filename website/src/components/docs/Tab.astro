@@ -1,0 +1,11 @@
+---
+interface Props {
+	title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<section class="docs-tab-panel" data-tab-panel data-title={title} role="tabpanel">
+	<slot />
+</section>

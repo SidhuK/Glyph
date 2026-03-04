@@ -1,0 +1,282 @@
+---
+title: Quickstart
+description: Get up and running with Glyph in 5 minutes. Create your first space, write a note, and explore key features.
+---
+
+# Quickstart Guide
+
+This guide will help you get started with Glyph in just a few minutes. You'll create your first space, write a note, and explore some of Glyph's most useful features.
+
+<Note>
+  **Prerequisites:** Make sure you've [installed Glyph](/installation) before starting this guide.
+</Note>
+
+## Getting Started
+
+<Steps>
+  <Step title="Launch Glyph">
+    Open Glyph for the first time. You'll see the welcome screen with an animated interface.
+    
+    The welcome screen shows three key concepts:
+    - **Open folder** - Choose your local space folder
+    - **Browse files** - Open notes from your folders
+    - **Find fast** - Use search and tags to navigate
+  </Step>
+
+  <Step title="Create or Open a Space">
+    A **space** is a folder on your computer where Glyph stores your notes.
+    
+    Choose one of these options:
+    
+    - **Create New Space** - Creates a new folder for your notes
+    - **Open Existing Folder** - Use an existing folder with markdown files
+    - **Continue Last Space** - Return to your most recent workspace
+    
+    <Info>
+      Glyph stores notes as plain markdown files. You can open any folder containing `.md` files.
+    </Info>
+    
+    When you open a space, Glyph:
+    1. Scans for markdown files
+    2. Builds a search index in `.glyph/index.db`
+    3. Watches for file changes automatically
+  </Step>
+
+  <Step title="Create Your First Note">
+    Once your space is open, create a new note:
+    
+    **Using the File Tree:**
+    - Right-click in the file tree sidebar
+    - Select "New File"
+    - Name your file (e.g., `welcome.md`)
+    
+    **Using the Command Palette:**
+    - Press `Cmd+K` (macOS) or `Ctrl+K` (Windows/Linux)
+    - Type "new file"
+    - Press Enter
+    
+    <Tip>
+      The command palette is your fastest way to navigate Glyph. Press `Cmd+K` / `Ctrl+K` anytime to access all commands.
+    </Tip>
+  </Step>
+
+  <Step title="Write with Markdown">
+    Glyph uses a powerful markdown editor. Try these features:
+    
+    ### Basic Formatting
+    
+    ```markdown
+    # Heading 1
+    ## Heading 2
+    
+    **Bold text** and *italic text*
+    
+    - Bullet list
+    - Another item
+    
+    1. Numbered list
+    2. Second item
+    
+    [Link text](https://example.com)
+    ```
+    
+    ### Slash Commands
+    
+    Type `/` in the editor to open the slash command menu:
+    - `/h1`, `/h2`, `/h3` - Insert headings
+    - `/code` - Code block
+    - `/task` - Task list
+    - `/bullet` - Bullet list
+    
+    ### Task Lists
+    
+    Create tasks with checkbox syntax:
+    
+    ```markdown
+    - [ ] Incomplete task
+    - [x] Completed task
+    - [ ] Another task to do
+    ```
+    
+    All tasks are indexed and appear in the Tasks view (`Cmd+Shift+T`).
+  </Step>
+</Steps>
+
+## Explore Key Features
+
+### Daily Notes
+
+Quickly create a note for today:
+
+<Steps>
+  <Step title="Open Today's Note">
+    - Press `Cmd+D` (macOS) or `Ctrl+D` (Windows/Linux)
+    - Or use Command Palette → "Open daily note"
+    
+    Glyph creates a new note named with today's date (e.g., `2026-03-03.md`).
+  </Step>
+  
+  <Step title="Configure Daily Notes Folder (Optional)">
+    By default, daily notes are created in your space root. To organize them:
+    
+    1. Open Settings (`Cmd+,` or `Ctrl+,`)
+    2. Go to **Daily Notes** tab
+    3. Click **Browse** to select a folder within your space
+    4. All future daily notes will be created there
+    
+    ```typescript
+    // Daily note naming format (from src/lib/dailyNotes.ts:6)
+    function formatDate(date: Date): string {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, "0");
+      const day = String(date.getDate()).padStart(2, "0");
+      return `${year}-${month}-${day}`; // e.g., "2026-03-03"
+    }
+    ```
+  </Step>
+</Steps>
+
+### Wikilinks
+
+Connect your notes with wikilinks:
+
+<CodeGroup>
+```markdown Basic Wikilink
+I'm writing about [[My Project]] and [[Ideas]].
+```
+
+```markdown With Display Text
+Read more in [[project-notes|my project notes]].
+```
+</CodeGroup>
+
+- Type `[[` to trigger autocomplete
+- Glyph will suggest existing notes
+- Click a wikilink to navigate to that note
+- Backlinks are automatically indexed
+
+<Info>
+  Wikilinks work even if the target file doesn't exist yet. Glyph will offer to create it when you click.
+</Info>
+
+### Search Everything
+
+Glyph provides fast hybrid search across all your notes:
+
+<Steps>
+  <Step title="Open Search">
+    - Press `Cmd+P` (macOS) or `Ctrl+P` (Windows/Linux)
+    - Or click the search icon in the toolbar
+  </Step>
+  
+  <Step title="Search Your Notes">
+    Search supports:
+    - **Full-text search** - Find any content
+    - **Tag search** - Use `#tag` syntax
+    - **Title search** - Match note names
+    - **Fuzzy matching** - Works with typos
+    
+    The search index is built using SQLite and updates automatically when files change.
+  </Step>
+</Steps>
+
+### AI Chat (Optional)
+
+If you want to chat with AI models:
+
+<Steps>
+  <Step title="Configure AI Provider">
+    1. Open Settings (`Cmd+,` or `Ctrl+,`)
+    2. Go to **AI** tab
+    3. Choose your provider:
+       - **OpenAI** - Requires API key
+       - **Anthropic** - Claude models
+       - **Gemini** - Google AI
+       - **Ollama** - Local models (free, no API key needed)
+    4. Enter your API key (or configure Ollama endpoint)
+    5. Select a model
+  </Step>
+  
+  <Step title="Open AI Panel">
+    - Click the AI icon in the sidebar
+    - Or press `Cmd+Shift+A` (macOS) / `Ctrl+Shift+A` (Windows/Linux)
+  </Step>
+  
+  <Step title="Start Chatting">
+    Type your message and press Enter. You can:
+    
+    - Ask questions about your notes
+    - Attach files as context using `@filename`
+    - Save AI responses as new notes
+    - View chat history
+    
+    <Tip>
+      Use **Ollama** for completely local, private AI chat. No API keys or internet required.
+    </Tip>
+  </Step>
+</Steps>
+
+## Keyboard Shortcuts
+
+Master these shortcuts to work faster:
+
+| Action | macOS | Windows/Linux |
+|--------|-------|---------------|
+| Command Palette | `Cmd+K` | `Ctrl+K` |
+| Search | `Cmd+P` | `Ctrl+P` |
+| Daily Note | `Cmd+D` | `Ctrl+D` |
+| New File | `Cmd+N` | `Ctrl+N` |
+| Settings | `Cmd+,` | `Ctrl+,` |
+| Tasks View | `Cmd+Shift+T` | `Ctrl+Shift+T` |
+| AI Panel | `Cmd+Shift+A` | `Ctrl+Shift+A` |
+| Save | `Cmd+S` | `Ctrl+S` |
+
+<Tip>
+  Press `Cmd+/` or `Ctrl+/` to see all available keyboard shortcuts.
+</Tip>
+
+## Understanding Your Space
+
+When you open a space, Glyph creates a `.glyph/` folder inside it:
+
+```
+your-space/
+├── .glyph/
+│   ├── index.db          # Search index (SQLite)
+│   ├── settings.json     # Space settings
+│   └── ...              # Other metadata
+├── 2026-03-03.md        # Your notes
+├── ideas.md
+└── projects/
+    └── project-a.md
+```
+
+<Warning>
+  Don't delete the `.glyph/` folder. It contains your search index and settings. If you do delete it, Glyph will rebuild the index automatically.
+</Warning>
+
+## What's Next?
+
+<CardGroup cols={2}>
+  <Card title="Tasks & Organization" icon="list-check">
+    Learn how to use task lists, tags, and folders to organize your notes
+  </Card>
+  
+  <Card title="AI Features" icon="sparkles">
+    Explore AI chat modes, profiles, and context management
+  </Card>
+  
+  <Card title="Customization" icon="palette">
+    Customize themes, fonts, and appearance in Settings
+  </Card>
+  
+  <Card title="Advanced Search" icon="magnifying-glass">
+    Master search syntax, filters, and the link graph
+  </Card>
+</CardGroup>
+
+---
+
+<Card title="Need help?" icon="question" href="https://github.com/SidhuK/Glyph/issues">
+  Ask questions or report issues on GitHub
+</Card>

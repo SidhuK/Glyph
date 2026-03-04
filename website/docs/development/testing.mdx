@@ -1,0 +1,471 @@
+---
+title: 'Testing Guide'
+description: 'Running tests and writing new test cases'
+---
+
+## Test Framework
+
+Glyph uses **Vitest** for frontend testing:
+
+- Fast execution (powered by Vite)
+- Jest-compatible API
+- Native TypeScript support
+- Watch mode with HMR
+
+<Note>
+Rust backend tests use Rust's built-in `cargo test` framework.
+</Note>
+
+## Running Tests
+
+### All Tests
+
+```bash
+pnpm test
+# Runs all tests once and exits
+```
+
+### Watch Mode
+
+```bash
+pnpm test:watch
+# Re-runs tests on file changes
+# Shows interactive UI
+```
+
+### Single Test File
+
+```bash
+pnpm test -- src/lib/diff.test.ts
+# Only runs tests in diff.test.ts
+```
+
+### Single Test Case
+
+```bash
+pnpm test -- -t "computes line diff"
+# Runs tests matching the name
+```
+
+### Coverage Report
+
+```bash
+pnpm test -- --coverage
+# Generates coverage report in coverage/
+```
+
+## Frontend Test Structure
+
+### Test File Naming
+
+- Place tests next to source: `utils.ts` → `utils.test.ts`
+- Use `.test.ts` or `.test.tsx` extension
+- Integration tests: `.integration.test.ts`
+
+### Example Test
+
+```typescript src/lib/diff.test.ts
+import { describe, it, expect } from 'vitest';
+import { computeLineDiff } from './diff';
+
+describe('computeLineDiff', () => {
+  it('computes line diff for simple change', () => {
+    const oldText = 'Hello\nWorld';
+    const newText = 'Hello\nGlyph';
+    
+    const diff = computeLineDiff(oldText, newText);
+    
+    expect(diff).toEqual([
+      { type: 'unchanged', value: 'Hello' },
+      { type: 'removed', value: 'World' },
+      { type: 'added', value: 'Glyph' }
+    ]);
+  });
+  
+  it('handles empty strings', () => {
+    expect(computeLineDiff('', '')).toEqual([]);
+  });
+});
+```
+
+## Testing Patterns
+
+### Utility Functions
+
+<CodeGroup>
+```typescript Pure Function Test
+import { parentDir } from './path';
+
+it('extracts parent directory', () => {
+  expect(parentDir('notes/daily/2024-03-15.md')).toBe('notes/daily');
+  expect(parentDir('notes/example.md')).toBe('notes');
+  expect(parentDir('example.md')).toBe('');
+});
+```
+
+```typescript Edge Cases
+it('handles edge cases', () => {
+  expect(parentDir('')).toBe('');
+  expect(parentDir('/')).toBe('');
+  expect(parentDir('no-slash')).toBe('');
+});
+```
+</CodeGroup>
+
+### React Hooks
+
+```typescript src/hooks/useFileTree.test.ts
+import { renderHook, waitFor } from '@testing-library/react';
+import { useFileTree } from './useFileTree';
+
+it('loads directory entries', async () => {
+  const { result } = renderHook(() => useFileTree({
+    spacePath: '/test/space',
+    // ... other deps
+  }));
+  
+  await result.current.loadDir('notes');
+  
+  await waitFor(() => {
+    expect(result.current.entries).toHaveLength(3);
+  });
+});
+```
+
+### TipTap Extensions
+
+```typescript src/components/editor/extensions/wikiLink.integration.test.ts
+import { describe, it, expect } from 'vitest';
+import { createEditor } from '@tiptap/core';
+import { WikiLink } from './wikiLink';
+
+describe('WikiLink extension', () => {
+  it('parses [[wiki links]]', () => {
+    const editor = createEditor({
+      extensions: [WikiLink],
+      content: 'See [[example-note]] for details'
+    });
+    
+    const json = editor.getJSON();
+    expect(json.content[0].content[1].type).toBe('wikiLink');
+    expect(json.content[0].content[1].attrs.target).toBe('example-note');
+  });
+});
+```
+
+### Mocking Tauri Commands
+
+```typescript src/lib/tauri.mock.ts
+import { vi } from 'vitest';
+
+// Mock the invoke function
+export const mockInvoke = vi.fn();
+
+vi.mock('@tauri-apps/api/core', () => ({
+  invoke: mockInvoke
+}));
+```
+
+```typescript Usage in test
+import { mockInvoke } from './tauri.mock';
+import { invoke } from '@/lib/tauri';
+
+it('calls space_open command', async () => {
+  mockInvoke.mockResolvedValueOnce({
+    root: '/path/to/space',
+    schema_version: 1
+  });
+  
+  const result = await invoke('space_open', { path: '/path/to/space' });
+  
+  expect(mockInvoke).toHaveBeenCalledWith('space_open', { path: '/path/to/space' });
+  expect(result.root).toBe('/path/to/space');
+});
+```
+
+## Rust Testing
+
+### Unit Tests
+
+```rust src-tauri/src/paths.rs
+#[cfg(test)]
+mod tests {
+    use super::*;
+    
+    #[test]
+    fn test_join_under_safe_path() {
+        let base = PathBuf::from("/space");
+        let result = join_under(&base, "notes/example.md");
+        assert_eq!(result.unwrap(), PathBuf::from("/space/notes/example.md"));
+    }
+    
+    #[test]
+    fn test_join_under_rejects_traversal() {
+        let base = PathBuf::from("/space");
+        let result = join_under(&base, "../../../etc/passwd");
+        assert!(result.is_err());
+    }
+}
+```
+
+Run with:
+
+```bash
+cd src-tauri
+cargo test
+```
+
+### Integration Tests
+
+```rust src-tauri/tests/space_lifecycle.rs
+use glyph_lib::space;
+
+#[test]
+fn test_create_and_open_space() {
+    let temp_dir = tempdir().unwrap();
+    let space_path = temp_dir.path().to_str().unwrap();
+    
+    // Create space
+    let info = space::space_create(space_path.to_string()).unwrap();
+    assert_eq!(info.schema_version, 1);
+    
+    // Verify structure
+    assert!(temp_dir.path().join("notes").exists());
+    assert!(temp_dir.path().join("assets").exists());
+    assert!(temp_dir.path().join("space.json").exists());
+}
+```
+
+## Test Coverage
+
+### Current Coverage
+
+Run coverage report:
+
+```bash
+pnpm test -- --coverage
+```
+
+Output:
+
+```
+---------------------|---------|----------|---------|---------|-------------------
+File                 | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s
+---------------------|---------|----------|---------|---------|-------------------
+All files            |   67.82 |    58.33 |   71.43 |   67.82 |
+src/lib/diff.ts      |     100 |      100 |     100 |     100 |
+src/lib/path.ts      |   85.71 |    66.67 |     100 |   85.71 | 12-15
+src/utils/           |   45.23 |    33.33 |   50.00 |   45.23 |
+---------------------|---------|----------|---------|---------|-------------------
+```
+
+### Coverage Goals
+
+- **Utilities**: 90%+ coverage (pure functions)
+- **Hooks**: 70%+ coverage (harder to test)
+- **Components**: 50%+ coverage (UI-heavy)
+- **Integration**: Key workflows covered
+
+## Test Organization
+
+### Tested Modules
+
+<Tabs>
+  <Tab title="Utilities">
+    - `src/lib/diff.test.ts` - Text diffing
+    - `src/lib/shortcuts.test.ts` - Keyboard shortcuts
+    - `src/lib/notePreview.test.ts` - Preview generation
+    - `src/lib/errorUtils.test.ts` - Error handling
+    - `src/utils/path.test.ts` - Path utilities
+  </Tab>
+  
+  <Tab title="Editor">
+    - `src/components/editor/extensions/wikiLink.integration.test.ts`
+    - `src/components/editor/extensions/markdownImage.integration.test.ts`
+    - `src/components/editor/extensions/table.integration.test.ts`
+    - `src/components/editor/markdown/wikiLinkCodec.test.ts`
+  </Tab>
+  
+  <Tab title="Database">
+    - `src/lib/database/config.test.ts` - Config validation
+    - `src/lib/database/board.test.ts` - Board layout
+    - `src/hooks/database/useDatabaseTable.test.ts`
+  </Tab>
+  
+  <Tab title="File Tree">
+    - `src/hooks/fileTreeHelpers.test.ts`
+    - `src/lib/canvasLayout.test.ts`
+  </Tab>
+</Tabs>
+
+## Writing New Tests
+
+### Step 1: Create Test File
+
+```bash
+# Create next to source file
+touch src/lib/myfeature.test.ts
+```
+
+### Step 2: Import Vitest
+
+```typescript
+import { describe, it, expect, beforeEach, afterEach } from 'vitest';
+```
+
+### Step 3: Group Tests
+
+```typescript
+describe('MyFeature', () => {
+  describe('basic functionality', () => {
+    it('does something', () => {
+      // Test code
+    });
+  });
+  
+  describe('edge cases', () => {
+    it('handles empty input', () => {
+      // Test code
+    });
+  });
+});
+```
+
+### Step 4: Write Assertions
+
+<CodeGroup>
+```typescript Equality
+expect(value).toBe(42);
+expect(object).toEqual({ key: 'value' });
+expect(array).toHaveLength(3);
+```
+
+```typescript Truthiness
+expect(value).toBeTruthy();
+expect(value).toBeFalsy();
+expect(value).toBeNull();
+expect(value).toBeUndefined();
+```
+
+```typescript Strings
+expect(text).toContain('substring');
+expect(text).toMatch(/regex/);
+```
+
+```typescript Arrays
+expect(array).toContain(item);
+expect(array).toContainEqual({ key: 'value' });
+```
+
+```typescript Exceptions
+expect(() => dangerousFunction()).toThrow();
+expect(() => dangerousFunction()).toThrow('Error message');
+```
+</CodeGroup>
+
+## Continuous Integration
+
+Tests run on every PR via GitHub Actions:
+
+```yaml .github/workflows/test.yml
+name: Test
+
+on: [push, pull_request]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: pnpm/action-setup@v2
+        with:
+          version: 10.28.2
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: pnpm
+      - run: pnpm install
+      - run: pnpm test
+      - run: cd src-tauri && cargo test
+```
+
+## Best Practices
+
+<Steps>
+  <Step title="Test behavior, not implementation">
+    Focus on what the function does, not how it does it.
+    
+    ```typescript Good
+    it('filters markdown files', () => {
+      const files = ['a.md', 'b.txt', 'c.md'];
+      expect(filterMarkdown(files)).toEqual(['a.md', 'c.md']);
+    });
+    ```
+    
+    ```typescript Bad
+    it('uses Array.filter internally', () => {
+      const spy = vi.spyOn(Array.prototype, 'filter');
+      filterMarkdown(['a.md']);
+      expect(spy).toHaveBeenCalled(); // Too implementation-specific
+    });
+    ```
+  </Step>
+  
+  <Step title="One assertion per test (generally)">
+    Each test should verify one thing.
+    
+    ```typescript Good
+    it('parses frontmatter title', () => {
+      expect(parseFrontmatter('---\ntitle: Hello\n---').title).toBe('Hello');
+    });
+    
+    it('parses frontmatter tags', () => {
+      expect(parseFrontmatter('---\ntags: [a, b]\n---').tags).toEqual(['a', 'b']);
+    });
+    ```
+  </Step>
+  
+  <Step title="Use descriptive test names">
+    Test name should explain what's being tested.
+    
+    ```typescript Good
+    it('rejects path traversal with ../', () => { ... });
+    ```
+    
+    ```typescript Bad
+    it('works', () => { ... });
+    ```
+  </Step>
+  
+  <Step title="Test edge cases">
+    Always test boundary conditions.
+    
+    ```typescript
+    describe('splitLines', () => {
+      it('handles empty string', () => {
+        expect(splitLines('')).toEqual([]);
+      });
+      
+      it('handles single line', () => {
+        expect(splitLines('hello')).toEqual(['hello']);
+      });
+      
+      it('handles multiple lines', () => {
+        expect(splitLines('a\nb\nc')).toEqual(['a', 'b', 'c']);
+      });
+    });
+    ```
+  </Step>
+</Steps>
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Architecture" icon="diagram-project" href="/development/architecture">
+    Understand the codebase structure
+  </Card>
+  
+  <Card title="Components" icon="react" href="/development/frontend/components">
+    Learn about React components
+  </Card>
+</CardGroup>

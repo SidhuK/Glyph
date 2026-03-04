@@ -1,0 +1,308 @@
+---
+title: Installation
+description: Download and install Glyph on macOS. Get started with the 48-hour free trial.
+---
+
+# Installation
+
+Glyph is currently available for macOS. Official release binaries include a 48-hour free trial, with optional license activation for continued use.
+
+<Note>
+  **Open Source:** Glyph's source code is public on GitHub. Development builds are free and unlimited—the trial only applies to official release binaries.
+</Note>
+
+## Download Glyph
+
+<CardGroup cols={2}>
+  <Card title="GitHub Releases" icon="github" href="https://github.com/SidhuK/Glyph/releases">
+    Download official binaries (free 48-hour trial)
+  </Card>
+  
+  <Card title="Purchase License" icon="credit-card" href="https://karatsidhu.gumroad.com/l/sqxfay">
+    Buy a lifetime license on Gumroad
+  </Card>
+</CardGroup>
+
+## Installation
+
+### macOS Installation
+
+<Steps>
+  <Step title="Download">
+    1. Visit [GitHub Releases](https://github.com/SidhuK/Glyph/releases)
+    2. Download the latest `.dmg` or `.app` file for macOS
+  </Step>
+  
+  <Step title="Install">
+    1. Open the downloaded `.dmg` file (if applicable)
+    2. Drag `Glyph.app` to your Applications folder
+  </Step>
+  
+  <Step title="Launch">
+    Open Glyph from Applications and create or open your first space.
+  </Step>
+</Steps>
+
+<Info>
+  Glyph is signed and notarized for macOS.
+</Info>
+
+## First Launch & Setup
+
+<Steps>
+  <Step title="Welcome Screen">
+    When you first open Glyph, you'll see an animated welcome screen introducing the app.
+    
+    The welcome flow shows:
+    1. **Hero** - Introduction to Glyph
+    2. **Quick Tips** - Three key concepts (open folder, browse files, find fast)
+    3. **Get Started** - Create or open your first space
+  </Step>
+  
+  <Step title="Create or Open a Space">
+    A **space** is a folder where Glyph stores your notes. Choose one:
+    
+    - **Create New Space** - Glyph creates a new folder
+    - **Open Existing Folder** - Use a folder that already contains markdown files
+    - **Continue Last Space** - Return to your most recent workspace
+    
+    <Tip>
+      You can have multiple spaces for different projects. Switch between them using the command palette (`Cmd+K` or `Ctrl+K`).
+    </Tip>
+  </Step>
+  
+  <Step title="Start Using Glyph">
+    Once your space is open, you're ready to go!
+    
+    - Create your first note
+    - Explore the file tree
+    - Try the command palette (`Cmd+K` / `Ctrl+K`)
+    
+    See the [Quickstart Guide](/quickstart) for a detailed walkthrough.
+  </Step>
+</Steps>
+
+## Trial & Licensing
+
+### 48-Hour Free Trial
+
+Official release binaries include a **48-hour free trial**:
+
+- Trial starts on first launch
+- Full access to all features during trial
+- Trial countdown shown in a banner
+- No credit card required
+
+<Info>
+  The trial timer is stored locally and tied to your installation. Development builds (built from source) have no trial or licensing.
+</Info>
+
+### After the Trial
+
+When the trial expires:
+
+1. Glyph shows a lock screen with activation options
+2. You can:
+   - **Enter a license key** (purchased from Gumroad)
+   - **Purchase a license** (opens Gumroad in browser)
+
+### License Activation
+
+<Steps>
+  <Step title="Purchase a License">
+    Buy Glyph on [Gumroad](https://karatsidhu.gumroad.com/l/sqxfay):
+    
+    - **One-time purchase**
+    - **Lifetime access**
+    - **Unlimited devices**
+    - **No subscription**
+  </Step>
+  
+  <Step title="Activate Your License">
+    After purchase, you'll receive a license key via email.
+    
+    **Option 1: During Trial**
+    - Click **Enter License Key** in the trial banner
+    - Paste your key and click **Activate**
+    
+    **Option 2: After Trial Expires**
+    - Enter your key on the lock screen
+    - Click **Activate**
+    
+    **Option 3: Settings**
+    - Open Settings (`Cmd+,` or `Ctrl+,`)
+    - Go to **General** → **License**
+    - Click **Enter License Key**
+  </Step>
+  
+  <Step title="Verification">
+    Glyph verifies your license with Gumroad:
+    
+    - **Online verification** required once
+    - **Offline use** after successful activation
+    - License stored locally (encrypted)
+    - No periodic re-checks
+    
+    <Warning>
+      Glyph needs internet access **once** to verify your license. After that, it works completely offline.
+    </Warning>
+  </Step>
+</Steps>
+
+### License Details
+
+From the official licensing documentation:
+
+<Accordion title="What's Included">
+  - **One-time purchase** - Pay once, use forever
+  - **Lifetime access** - No expiration
+  - **Unlimited devices** - Install on all your computers
+  - **No seat limits** - Use across work and personal machines
+  - **No device binding** - Transfer between devices freely
+  - **Offline use** - No periodic online re-checks after activation
+</Accordion>
+
+<Accordion title="What's NOT Licensed">
+  These remain free and unrestricted:
+  
+  - **Source code** - Always public on GitHub
+  - **Development builds** - Build from source yourself
+  - **Community builds** - Self-compiled binaries
+  
+  The license only applies to **official release binaries** distributed through GitHub Releases.
+</Accordion>
+
+## Building from Source
+
+If you prefer to build Glyph yourself (no trial, no licensing):
+
+<Steps>
+  <Step title="Prerequisites">
+    Install required tools:
+    
+    - **Node.js** 18+ and **pnpm**
+    - **Rust** (latest stable)
+    - **Tauri CLI** dependencies for your platform
+    
+    See [Tauri prerequisites](https://tauri.app/v1/guides/getting-started/prerequisites) for platform-specific setup.
+  </Step>
+  
+  <Step title="Clone & Build">
+    ```bash
+    git clone https://github.com/SidhuK/Glyph.git
+    cd Glyph
+    pnpm install
+    pnpm tauri build
+    ```
+    
+    The built app will be in `src-tauri/target/release/bundle/`.
+  </Step>
+  
+  <Step title="Development Mode">
+    For development with hot-reload:
+    
+    ```bash
+    pnpm tauri dev
+    ```
+  </Step>
+</Steps>
+
+<Note>
+  Development builds use the environment variable `GLYPH_OFFICIAL_BUILD=1` to determine if licensing should be enforced. Local builds default to unlimited use.
+</Note>
+
+## Automatic Updates
+
+Glyph includes an automatic updater powered by Tauri:
+
+- Checks for updates on launch
+- Downloads updates in the background
+- Prompts you to install when ready
+- Updates are signed and verified
+
+<Info>
+  The updater uses GitHub Releases as the update source. Both free and licensed users receive updates the same way.
+</Info>
+
+## Troubleshooting
+
+<AccordionGroup>
+  <Accordion title="Glyph won't open after download">
+    Make sure you are opening the latest release from [GitHub Releases](https://github.com/SidhuK/Glyph/releases) and that the download completed successfully. If the app still will not open, try downloading it again and replacing the previous copy in Applications.
+  </Accordion>
+  
+  <Accordion title="License activation fails">
+    Common issues:
+    
+    - **No internet connection** - Glyph needs internet for initial activation
+    - **Invalid key** - Double-check the key from your Gumroad purchase email
+    - **Already activated** - Each key can be used on unlimited devices
+    
+    If problems persist, contact support via [GitHub Issues](https://github.com/SidhuK/Glyph/issues).
+  </Accordion>
+  
+  <Accordion title="Can't create or open a space">
+    - Ensure you have write permissions to the folder
+    - Try creating a new folder in a location you own (e.g., Documents)
+    - Check that the folder path doesn't contain special characters
+  </Accordion>
+</AccordionGroup>
+
+## System Requirements
+
+### Minimum Requirements
+
+- **macOS:** 10.15 (Catalina) or later
+
+### Recommended
+
+- 4 GB RAM (8 GB+ for AI features with Ollama)
+- 500 MB free disk space
+- Internet connection for:
+  - Initial license activation
+  - AI providers (OpenAI, Anthropic, Gemini)
+  - Automatic updates
+
+<Note>
+  **Offline use:** After initial setup, Glyph works completely offline. Use Ollama for local AI with no internet required.
+</Note>
+
+## Data & Privacy
+
+Glyph is **offline-first** and **local-first**:
+
+- All notes stored as plain markdown files on your device
+- Search index stored in `.glyph/index.db` within your space
+- No cloud sync or telemetry
+- AI requests go directly to your chosen provider (if you configure one)
+- License verification requires one internet check, then works offline
+
+<Info>
+  Your data never touches Glyph's servers. The only network requests are license verification (one-time) and AI API calls (if you enable them).
+</Info>
+
+## Support & Community
+
+<CardGroup cols={2}>
+  <Card title="Quickstart Guide" icon="rocket" href="/quickstart">
+    Learn how to use Glyph in 5 minutes
+  </Card>
+  
+  <Card title="GitHub Issues" icon="github" href="https://github.com/SidhuK/Glyph/issues">
+    Report bugs or request features
+  </Card>
+  
+  <Card title="Source Code" icon="code" href="https://github.com/SidhuK/Glyph">
+    Explore the codebase
+  </Card>
+  
+  <Card title="License Support" icon="life-ring" href="https://github.com/SidhuK/Glyph/issues">
+    Get help with licensing
+  </Card>
+</CardGroup>
+
+---
+
+<Card title="Ready to start?" icon="rocket" href="/quickstart">
+  Follow the quickstart guide
+</Card>

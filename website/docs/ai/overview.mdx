@@ -1,0 +1,116 @@
+---
+title: AI Assistant Overview
+description: Integrate AI models from multiple providers into your Glyph workspace
+---
+
+Glyph includes a built-in AI assistant that brings powerful language models directly into your note-taking workflow. Connect to multiple AI providers, attach context from your notes, and interact with AI models through chat and creation modes.
+
+## Key Features
+
+### Multiple Provider Support
+
+Connect to leading AI providers:
+- **OpenAI** - GPT-4, GPT-4o, GPT-4 Turbo, and more
+- **Anthropic** - Claude 3.5 Sonnet, Claude 3 Opus, Haiku
+- **Google Gemini** - Gemini Pro, Gemini Flash
+- **OpenRouter** - Access 100+ models through a single API
+- **Ollama** - Run models locally on your machine
+- **OpenAI-compatible** - Any OpenAI-compatible endpoint
+- **Codex (ChatGPT OAuth)** - ChatGPT integration via OAuth authentication
+
+### Profile Management
+
+Create multiple AI profiles with different configurations:
+- Switch between providers and models instantly
+- Configure model-specific parameters like reasoning effort
+- Store API keys securely per-space in `.glyph/app/ai_secrets.json`
+- Set default profiles for quick access
+
+### Context Attachment
+
+Ground AI responses in your notes:
+- Attach individual files or entire folders to conversations
+- Mention files with `@filename` syntax in your prompts
+- Configure character budgets (200-250,000 chars)
+- View token estimates before sending
+- Context is stored per-conversation for repeatability
+
+### Chat vs Create Modes
+
+**Chat Mode** - Conversational interaction without tools
+- Back-and-forth dialogue with the model
+- No file system access
+- Faster responses
+- Best for questions, brainstorming, and discussion
+
+**Create Mode** (default) - AI with workspace tools
+- Access to file reading, searching, and listing tools
+- AI can explore your notes to answer questions
+- Tool usage tracked in timeline view
+- Best for research, summarization, and knowledge work
+
+### History and Audit Trail
+
+Every conversation is automatically saved:
+- History stored in `.glyph/ai_history/` as JSON
+- Review past conversations and their context
+- Tool usage events logged per conversation
+- Export conversation data for compliance or analysis
+
+## Quick Start
+
+<Steps>
+  <Step title="Choose a Provider">
+    Go to Settings → AI and select a provider from the available profiles. Each profile supports a different AI service.
+  </Step>
+  
+  <Step title="Configure Authentication">
+    Add your API key or authenticate via OAuth (for Codex). Keys are stored securely per space.
+  </Step>
+  
+  <Step title="Select a Model">
+    Choose from available models for your provider. Glyph fetches the latest model list from each API.
+  </Step>
+  
+  <Step title="Open AI Panel">
+    Click the AI icon in the sidebar or use the keyboard shortcut to open the AI panel.
+  </Step>
+  
+  <Step title="Start Chatting">
+    Type your message and press Enter. Attach context with `@` mentions or the context menu.
+  </Step>
+</Steps>
+
+## Architecture
+
+- **Frontend**: React components in `src/components/ai/`
+- **Backend**: Rust `ai_rig` module in `src-tauri/src/ai_rig/`
+- **AI Framework**: [Rig](https://github.com/0xPlaygrounds/rig) for unified provider interface
+- **Storage**: SQLite index + JSON files in `.glyph/`
+- **Tools**: Space-scoped filesystem operations (read, search, list)
+
+## Security
+
+- API keys stored encrypted in space-local `ai_secrets.json`
+- Tool operations restricted to current space (no path traversal)
+- SSRF protection for custom base URLs
+- Optional `allow_private_hosts` flag for local models
+- No hidden file access (dotfiles blocked)
+- Request/response audit trail available
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Setup" icon="gear" href="/ai/setup">
+    Configure your first AI profile
+  </Card>
+  <Card title="Providers" icon="plug" href="/ai/providers/openai">
+    Provider-specific setup guides
+  </Card>
+  <Card title="Chat Modes" icon="messages" href="/ai/chat-modes">
+    Learn about chat vs create modes
+  </Card>
+  <Card title="Context Management" icon="folder" href="/ai/context-management">
+    Attach notes and folders to conversations
+  </Card>
+</CardGroup>

@@ -1,0 +1,366 @@
+---
+title: Database Views
+description: Organize notes as structured databases with flexible table and board layouts
+---
+
+Database views transform folders, tags, or search results into structured tables and boards. Each database is a special markdown file that displays your notes as rows with customizable columns and properties.
+
+## Creating a Database
+
+Databases are markdown files with a special structure:
+
+1. Create a new note
+2. Configure the source (folder, tag, or search query)
+3. Add columns for the properties you want to track
+4. Switch between table and board views
+
+<Note>
+  Database configurations are stored in the note's frontmatter, making them version-controllable and shareable.
+</Note>
+
+## Data Sources
+
+Databases can pull notes from three types of sources:
+
+<CardGroup cols={3}>
+  <Card title="Folder" icon="folder">
+    Display all notes from a specific folder, with optional recursive subfolder inclusion.
+  </Card>
+  <Card title="Tag" icon="tag">
+    Aggregate all notes that use a specific tag across your entire space.
+  </Card>
+  <Card title="Search" icon="magnifying-glass">
+    Use advanced search queries to dynamically filter notes based on content and metadata.
+  </Card>
+</CardGroup>
+
+### Folder Sources
+
+When using folder sources:
+
+- **Folder path**: Choose any folder in your space
+- **Recursive**: Toggle to include/exclude subfolders
+- **Scope**: Non-recursive shows only direct children
+
+### Tag Sources
+
+Tag sources aggregate notes across your entire space:
+
+- All notes with the specified tag appear as rows
+- Updates automatically when you tag/untag notes
+- Great for project management and cross-cutting concerns
+
+### Search Sources
+
+Use Glyph's advanced search syntax:
+
+```
+tag:projects "roadmap"
+```
+
+Search sources update as your content changes, providing dynamic views into your knowledge base.
+
+## Table View
+
+The table layout displays notes as rows with configurable columns:
+
+<Frame>
+  <img src="/images/database-table.png" alt="Database table view showing notes with multiple columns" />
+</Frame>
+
+### Built-in Columns
+
+Every database has access to these system columns:
+
+- **Title**: Note title extracted from frontmatter or first heading
+- **Tags**: All tags associated with the note
+- **Path**: Relative path within your space
+- **Created**: Note creation timestamp
+- **Updated**: Last modification timestamp
+
+### Custom Property Columns
+
+Add columns for any frontmatter property:
+
+<Steps>
+  <Step title="Open the columns dialog">
+    Click the columns button in the database toolbar to manage your columns.
+  </Step>
+  <Step title="Add a property column">
+    Choose from existing properties or create new ones. Glyph automatically detects properties from your notes.
+  </Step>
+  <Step title="Configure the column">
+    Set the label, icon, width, and visibility for each column.
+  </Step>
+</Steps>
+
+### Property Types
+
+Glyph supports multiple property types:
+
+- **Text**: Single-line text values
+- **Boolean**: True/false checkboxes
+- **Tags**: Multi-select tag values
+- **Date**: ISO date strings (YYYY-MM-DD)
+
+### Sorting
+
+Click any column header to sort:
+
+- **First click**: Sort ascending
+- **Second click**: Sort descending  
+- **Third click**: Clear sort
+
+Only one sort is active at a time.
+
+### Inline Editing
+
+Click any cell to edit it directly:
+
+- Text fields open inline editors
+- Boolean fields toggle with a single click
+- Tags open a multi-select picker
+- Changes save automatically to the note's frontmatter
+
+## Board View
+
+Board view organizes notes into vertical lanes using a grouping column:
+
+<Frame>
+  <img src="/images/database-board.png" alt="Database board view with cards organized in lanes" />
+</Frame>
+
+### Setting Up a Board
+
+<Steps>
+  <Step title="Add a grouping column">
+    Boards require a single-value property column (text, boolean, or single tag) to group cards.
+  </Step>
+  <Step title="Switch to board view">
+    Click the board icon in the toolbar to switch layouts.
+  </Step>
+  <Step title="Select the grouping column">
+    Use the dropdown in the toolbar to choose which column groups the cards.
+  </Step>
+</Steps>
+
+### Board Lanes
+
+Each unique value in the grouping column becomes a lane:
+
+- **Status property**: "Todo", "In Progress", "Done" lanes
+- **Boolean property**: "True" and "False" lanes  
+- **Tag property**: One lane per unique tag value
+
+### Card Layout
+
+Each card displays:
+
+1. **Title**: Note title (or filename fallback)
+2. **Preview**: First 100 characters of note content
+3. **Tags**: Up to 4 tags (excluding the grouping tag)
+4. **Additional column**: First visible non-title column
+5. **Path**: Note location for reference
+
+### Drag and Drop
+
+Move cards between lanes by dragging:
+
+- Dragging updates the grouping property automatically
+- Right-click for a context menu with "Move to" options
+- Double-click a card to open the full note
+
+## Filters
+
+Narrow your database view with column filters:
+
+### Filter Operators
+
+- **Contains**: Text match (case-insensitive)
+- **Equals**: Exact match
+- **Is empty**: No value set
+- **Is not empty**: Any value present
+- **Is true**: Boolean = true
+- **Is false**: Boolean = false
+
+### Multiple Filters
+
+Add multiple filters to create precise views:
+
+- All filters use AND logic (all must match)
+- Filters apply to both table and board views
+- Filter count shows in the toolbar
+
+<CodeGroup>
+```yaml Example: Status filter
+---
+filters:
+  - column_id: "property:status"
+    operator: "equals"
+    value_text: "active"
+---
+```
+
+```yaml Example: Tag filter
+---
+filters:
+  - column_id: "tags"
+    operator: "tags_contains"
+    value_list: ["project"]
+---
+```
+</CodeGroup>
+
+## Creating New Rows
+
+Add notes directly from the database:
+
+<Steps>
+  <Step title="Click the + button">
+    The toolbar has an "Add row" button to create new notes.
+  </Step>
+  <Step title="Auto-created in target folder">
+    New notes appear in the configured "New Rows" folder with the specified title prefix.
+  </Step>
+  <Step title="Appears in database immediately">
+    If the new note matches your filters and source, it appears as a row instantly.
+  </Step>
+</Steps>
+
+### Configuring New Rows
+
+In the source dialog, configure:
+
+- **Target folder**: Where new notes are created
+- **Title prefix**: Default prefix for new note titles (e.g., "Project -")
+
+## Column Management
+
+Customize which columns appear and how they're displayed:
+
+### Column Properties
+
+- **Label**: Display name in the header
+- **Icon**: Visual indicator (from a curated set)
+- **Width**: Column width in pixels (default 180px)
+- **Visible**: Toggle visibility without deleting
+
+### Reordering Columns
+
+Drag column rows in the columns dialog to reorder them in the table.
+
+### Column Icons
+
+Choose from semantic icons:
+
+- Text properties: Document, note, text icons
+- Boolean properties: Checkbox, toggle icons  
+- Tag properties: Tag, folder, category icons
+- Date properties: Calendar, clock icons
+
+## Real-time Updates
+
+Databases stay synchronized with your notes:
+
+- **File changes**: Database reloads when source notes change
+- **Cell edits**: Updates write to frontmatter immediately
+- **New notes**: Automatically appear if they match the source
+- **Deleted notes**: Removed from database view instantly
+
+<Warning>
+  Recent local mutations are debounced to prevent reload flicker during rapid edits.
+</Warning>
+
+## Advanced Configuration
+
+Database configurations are stored in the note's frontmatter:
+
+<CodeGroup>
+```yaml Complete example
+---
+database:
+  version: 1
+  source:
+    kind: folder
+    value: projects
+    recursive: true
+  new_note:
+    folder: projects
+    title_prefix: "Project"
+  view:
+    layout: board
+    board_group_by: "property:status"
+  columns:
+    - id: title
+      type: title
+      label: Title
+      width: 300
+      visible: true
+    - id: "property:status"
+      type: property
+      label: Status
+      property_key: status
+      property_kind: text
+      icon: checkbox
+      width: 180
+      visible: true
+  sorts:
+    - column_id: updated
+      direction: desc
+  filters:
+    - column_id: "property:status"
+      operator: is_not_empty
+      value_list: []
+---
+```
+</CodeGroup>
+
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| Click header | Toggle sort |
+| Click cell | Edit value |
+| Double-click row | Open note |
+| Drag card | Move between lanes |
+| Right-click | Context menu |
+
+## Use Cases
+
+<CardGroup cols={2}>
+  <Card title="Project Management" icon="list-check">
+    Track project status, priority, and deadlines with a board view grouped by status.
+  </Card>
+  <Card title="Reading List" icon="book">
+    Maintain a table of articles with rating, tags, and read status.
+  </Card>
+  <Card title="Meeting Notes" icon="calendar">
+    Sort meetings by date with attendees, topics, and action items columns.
+  </Card>
+  <Card title="Research Database" icon="flask">
+    Aggregate papers by topic tag with custom properties for authors, year, and citations.
+  </Card>
+</CardGroup>
+
+## Best Practices
+
+1. **Start with folder sources** for simplicity, then graduate to tags or search
+2. **Use board view for workflows** (todo → doing → done)
+3. **Keep column count low** (5-7 visible columns) for readability
+4. **Leverage filters** instead of creating multiple similar databases
+5. **Name grouping properties semantically** ("status" not "column1")
+6. **Set reasonable column widths** to avoid horizontal scrolling
+
+## Limitations
+
+- Only one active sort at a time
+- Board view requires a single-value grouping column
+- Maximum 2000 rows loaded (configurable limit)
+- No nested grouping in board view
+- Filters use AND logic only (no OR)
+
+## Related Features
+
+- [Task Management](/features/task-management) - Track todos within notes
+- [Tags & Search](/features/tags-search) - Advanced search syntax for database sources
+- [Notes](/features/notes) - Understanding note properties and frontmatter

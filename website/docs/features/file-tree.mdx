@@ -1,0 +1,195 @@
+---
+title: File Tree
+description: Navigate and organize your notes with the file tree sidebar
+---
+
+The file tree provides a hierarchical view of all files and folders in your Glyph space, making it easy to navigate and organize your notes.
+
+## File Tree Overview
+
+The file tree appears on the left side of the Glyph window and displays:
+
+- **Folders**: Expandable/collapsible directory structure
+- **Files**: All files in your space (markdown and non-markdown)
+- **Active file**: Highlighted in the tree
+- **Folder depth**: Visual indentation and connecting lines
+
+## Navigation
+
+### Opening Files
+
+<Steps>
+  <Step title="Click to open">
+    Click any file in the tree to open it in the main editor pane.
+  </Step>
+  
+  <Step title="Active indicator">
+    The currently open file is highlighted with a distinct background.
+  </Step>
+  
+  <Step title="Preview mode">
+    Some file types open in preview mode, showing a read-only rendering.
+  </Step>
+</Steps>
+
+### Expanding Folders
+
+- **Click folder name**: Toggle expand/collapse
+- **Click chevron icon**: Same as clicking the folder name
+- **Nested folders**: Expand multiple levels to navigate deep structures
+
+<Tip>
+  The file tree remembers which folders you've expanded, even after closing and reopening Glyph.
+</Tip>
+
+## File Operations
+
+Right-click any file or folder to access context menu operations:
+
+### Creating Files
+
+<Tabs>
+  <Tab title="New Note">
+    Creates a new markdown note.
+    
+    1. Right-click a folder
+    2. Select **New Note**
+    3. Choose location and filename in the dialog
+    4. Glyph creates the file with a default heading
+    
+    **Default content:**
+    ```markdown
+    # Note Title
+    ```
+  </Tab>
+  
+  <Tab title="New Folder">
+    Creates a new subfolder.
+    
+    1. Right-click a folder (or empty space for root)
+    2. Select **New Folder**
+    3. Glyph creates "New Folder" (or "New Folder 2", etc.)
+    4. The folder enters rename mode automatically
+  </Tab>
+  
+  <Tab title="New Database">
+    Creates a database view file.
+    
+    1. Right-click a folder
+    2. Select **New Database**
+    3. Glyph creates a database.md file with default config
+    4. Opens the database view automatically
+  </Tab>
+</Tabs>
+
+### Renaming Files and Folders
+
+<Steps>
+  <Step title="Start rename">
+    Right-click and select **Rename**, or select the file and press `F2`.
+  </Step>
+  
+  <Step title="Enter new name">
+    Type the new name in the inline editor.
+  </Step>
+  
+  <Step title="Confirm or cancel">
+    Press `Enter` to confirm or `Esc` to cancel.
+  </Step>
+</Steps>
+
+<Note>
+  When you rename a note, Glyph automatically updates all wikilinks pointing to that note throughout your space.
+</Note>
+
+### Moving Files
+
+Drag and drop files or folders to move them:
+
+1. Click and hold on a file or folder
+2. Drag to the target folder
+3. Release to complete the move
+
+Glyph updates all internal links automatically when you move markdown files.
+
+### Deleting Files and Folders
+
+<Warning>
+  Deletion is permanent. Deleted files are not sent to the system trash.
+</Warning>
+
+<Steps>
+  <Step title="Right-click target">
+    Select the file or folder you want to delete.
+  </Step>
+  
+  <Step title="Select Delete">
+    Choose **Delete** from the context menu.
+  </Step>
+  
+  <Step title="Confirm deletion">
+    A confirmation dialog appears. Click **Delete** to confirm.
+  </Step>
+</Steps>
+
+Deleting a folder recursively deletes all files and subfolders inside it.
+
+## File Types
+
+The file tree displays all files, with special handling for different types:
+
+### Markdown Files
+
+- **Icon**: Document icon
+- **Open behavior**: Opens in the rich markdown editor
+- **Wikilink support**: Can be referenced with `[[filename]]`
+- **Search**: Indexed for full-text search
+
+### Database Files
+
+- **Icon**: Table/grid icon
+- **Open behavior**: Opens database view
+- **Format**: Markdown file with embedded database config
+
+### Other Files
+
+- **Images**: `.png`, `.jpg`, `.jpeg`, `.gif`, `.svg`, `.webp`
+- **PDFs**: `.pdf`
+- **Text files**: `.txt`, `.json`, `.csv`, etc.
+- **Binary files**: Any other file type
+
+Non-markdown files open in a preview pane when clicked.
+
+## Sorting
+
+Files and folders are automatically sorted:
+
+1. **Folders first**: All folders appear before files
+2. **Alphabetical**: Case-insensitive alphabetical order
+3. **Natural sort**: Numbers are sorted numerically (e.g., `note2` before `note10`)
+
+## Empty States
+
+When a folder is empty or your space has no files:
+
+- The file tree shows "No files found."
+- You can still right-click to create new files or folders
+- The message fades in with a subtle animation
+
+## Visual Hierarchy
+
+The file tree uses visual cues to show structure:
+
+- **Indentation**: Each level is indented 10px
+- **Connecting lines**: Vertical lines show parent-child relationships
+- **Chevron icons**: Point right when collapsed, down when expanded
+- **Hover effects**: Files and folders highlight on hover
+
+## Performance
+
+The file tree is optimized for large spaces:
+
+- **Lazy loading**: Only loads visible folders
+- **Virtual rendering**: Efficiently handles thousands of files
+- **Incremental updates**: Only re-renders changed items
+- **Debounced file watching**: Batches rapid file system changes

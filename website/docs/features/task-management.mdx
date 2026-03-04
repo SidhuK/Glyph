@@ -1,0 +1,448 @@
+---
+title: Task Management
+description: Track and organize tasks across all your notes with three focused views
+---
+
+Glyph's task management system extracts checkboxes from your markdown notes and organizes them into three views: **Inbox**, **Today**, and **Upcoming**. Tasks stay embedded in your notes while appearing in these aggregated views.
+
+## Overview
+
+Tasks are standard markdown checkboxes:
+
+```markdown
+- [ ] Review quarterly goals
+- [x] Submit expense report
+- [ ] Call vendor about renewal
+```
+
+Glyph automatically indexes these and makes them queryable across your entire space.
+
+<Frame>
+  <img src="/images/tasks-pane.png" alt="Task pane showing inbox, today, and upcoming views" />
+</Frame>
+
+## Task Views
+
+### Inbox
+
+The inbox shows **unscheduled tasks** grouped by their source note:
+
+<Steps>
+  <Step title="Groups by note">
+    Tasks are organized under their parent note with the note title and path.
+  </Step>
+  <Step title="Click to navigate">
+    Click the note header to jump to that note in your editor.
+  </Step>
+  <Step title="Triage from here">
+    Schedule tasks for today or upcoming dates directly from the inbox.
+  </Step>
+</Steps>
+
+**Use inbox for:**
+
+- Newly captured tasks without dates
+- Weekly reviews to schedule work
+- Seeing all open tasks in context
+
+### Today
+
+The today view displays a **flat list** of tasks scheduled or due today:
+
+- Tasks with `scheduled: YYYY-MM-DD` matching today
+- Tasks with `due: YYYY-MM-DD` matching today
+- Sorted by priority and note update time
+- No grouping—pure action list
+
+**Use today for:**
+
+- Daily planning sessions
+- Focused execution view
+- Clearing today's commitments
+
+### Upcoming
+
+The upcoming view shows **future tasks** sorted by their next relevant date:
+
+- Scheduled tasks appear by scheduled date
+- If no scheduled date, sorted by due date
+- Helps you plan ahead and prevent surprises
+- Flat list sorted chronologically
+
+**Use upcoming for:**
+
+- Weekly planning
+- Spotting date conflicts
+- Balancing workload across days
+
+<CardGroup cols={3}>
+  <Card title="Inbox" icon="inbox">
+    Unscheduled tasks grouped by note for triage
+  </Card>
+  <Card title="Today" icon="sun">
+    Work scheduled or due today in a focused list
+  </Card>
+  <Card title="Upcoming" icon="calendar">
+    Future tasks sorted by their next date
+  </Card>
+</CardGroup>
+
+## Task Syntax
+
+Tasks use standard markdown checkboxes with optional inline metadata:
+
+### Basic Checkbox
+
+```markdown
+- [ ] This is a task
+- [x] This task is complete
+```
+
+### Task Status
+
+Use alternate checkbox characters for custom statuses:
+
+```markdown
+- [ ] Todo
+- [x] Done
+- [-] Cancelled
+- [>] Forwarded
+- [<] Scheduled
+```
+
+Glyph tracks the status character but primarily uses checked/unchecked state.
+
+### Inline Dates
+
+Add dates with special syntax anywhere in the task text:
+
+```markdown
+- [ ] Review proposal 📅 2024-03-15
+- [ ] Call client ⏳ 2024-03-10 📅 2024-03-12
+```
+
+- `📅 YYYY-MM-DD` or `due: YYYY-MM-DD` sets the due date
+- `⏳ YYYY-MM-DD` or `scheduled: YYYY-MM-DD` sets the scheduled date
+
+<Note>
+  Both emoji and text formats work. Use what fits your workflow.
+</Note>
+
+### Priority
+
+Add priority indicators:
+
+```markdown
+- [ ] High priority task ⬆️
+- [ ] Low priority task ⬇️
+- [ ] Normal priority task
+```
+
+Priority affects sort order within the same date bucket.
+
+### Sections
+
+Tasks inherit the section (heading) they appear under:
+
+```markdown
+## Q1 Objectives
+
+- [ ] Launch new feature
+- [ ] Hire engineer
+
+## Q2 Objectives  
+
+- [ ] Expand to EMEA
+```
+
+The task object includes the section name for context.
+
+## Using the Task Pane
+
+### Opening the Pane
+
+Access tasks from:
+
+- Sidebar navigation button
+- Command palette (search "Tasks")
+- Keyboard shortcut (configurable)
+
+### Switching Views
+
+Three pills at the top switch between inbox, today, and upcoming:
+
+- Click a pill to activate that view
+- Active view is highlighted
+- Badge shows task count for current view
+
+### Task Actions
+
+<Tabs>
+  <Tab title="Check/Uncheck">
+    Click the checkbox to toggle completion state. Changes save immediately to the source note.
+  </Tab>
+  <Tab title="Schedule">
+    Click the date icon to set or change scheduled/due dates via a date picker.
+  </Tab>
+  <Tab title="Open Note">
+    Click the task text or note header to navigate to that note in the editor.
+  </Tab>
+</Tabs>
+
+### Real-time Sync
+
+Tasks update automatically:
+
+- Checking a task updates the markdown file
+- Editing a task in the note updates the pane
+- Adding new tasks shows them immediately
+- Deleting tasks removes them from the pane
+
+## Task Row Layout
+
+Each task row displays:
+
+1. **Checkbox**: Click to toggle completion
+2. **Task text**: The markdown content (without date metadata)
+3. **Date badge**: Shows scheduled or due date if set
+4. **Note path**: (Today/Upcoming only) Shows source note
+5. **Section**: Parent heading context if available
+
+### Task Row Example
+
+```
+┌─ [ ] Review quarterly goals          📅 Mar 15
+│  projects/2024/strategy.md · Q1 Planning
+└─
+```
+
+- First line: checkbox + task text + date
+- Second line: note path + section
+
+## Scheduling Tasks
+
+### From the Task Pane
+
+<Steps>
+  <Step title="Click the date icon">
+    Each task row has a calendar icon on the right.
+  </Step>
+  <Step title="Choose a date">
+    Use the date picker to select a scheduled or due date.
+  </Step>
+  <Step title="Saves to markdown">
+    Glyph updates the task's markdown line with the new date metadata.
+  </Step>
+</Steps>
+
+### In the Editor
+
+Add dates directly while writing:
+
+```markdown
+- [ ] Call vendor scheduled: 2024-03-20
+- [ ] Submit report due: 2024-03-18
+```
+
+The task pane updates immediately when you save.
+
+### Scheduled vs Due
+
+- **Scheduled date**: When you plan to work on it
+- **Due date**: External deadline
+- Tasks can have both, one, or neither
+
+**Bucketing logic:**
+
+- **Today**: Scheduled = today OR due = today
+- **Upcoming**: Scheduled > today OR (no scheduled AND due > today)
+- **Inbox**: No scheduled AND no due
+
+## Task Grouping
+
+### Inbox Grouping
+
+Inbox tasks group by their source note:
+
+```
+📄 projects/client-work.md
+   - [ ] Send proposal
+   - [ ] Schedule kickoff
+
+📄 personal/home.md
+   - [ ] Fix leaky faucet
+   - [ ] Call electrician
+```
+
+Click the note header to open that note.
+
+### Flat Views
+
+Today and Upcoming use flat lists sorted by:
+
+1. **Date** (scheduled or due)
+2. **Priority** (high → normal → low)
+3. **Note updated time** (most recent first)
+
+No grouping allows laser focus on chronological order.
+
+## Filtering Tasks
+
+Configure task sources in Settings → Tasks:
+
+### Source Modes
+
+<Tabs>
+  <Tab title="All Notes">
+    Index tasks from every note in your space.
+  </Tab>
+  <Tab title="Specific Folders">
+    Choose which folders to include. Tasks from other folders won't appear.
+  </Tab>
+</Tabs>
+
+### Example: Work/Personal Split
+
+Create two Glyph spaces:
+
+- **Work space**: All task folders enabled
+- **Personal space**: Only personal folders enabled
+
+Or use a single space with folder filtering to separate contexts.
+
+## Task Indexing
+
+Glyph uses SQLite to index tasks:
+
+- **Automatic**: New tasks appear within seconds
+- **Incremental**: Only changed notes are re-indexed
+- **Efficient**: Handles thousands of tasks across hundreds of notes
+
+### Manual Rebuild
+
+If tasks seem out of sync:
+
+1. Open Settings → General
+2. Click "Rebuild Index"
+3. Wait for completion
+
+This re-scans all notes and rebuilds the task database.
+
+## Task Properties
+
+Each task object includes:
+
+| Property | Description |
+|----------|-------------|
+| `task_id` | Unique identifier - note path + line number |
+| `note_id` | Parent note identifier |
+| `note_title` | Title of the source note |
+| `note_path` | Relative path to the note |
+| `line_start` | Line number in the markdown file |
+| `raw_text` | Full markdown line |
+| `checked` | Boolean completion state |
+| `status` | Checkbox character: space, x, -, &gt;, or &lt; |
+| `priority` | Integer: -1 low, 0 normal, 1 high |
+| `due_date` | ISO date string or null |
+| `scheduled_date` | ISO date string or null |
+| `section` | Parent heading text or null |
+| `note_updated` | Note's last modified timestamp |
+
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| Click checkbox | Toggle completion |
+| Click task text | Open source note |
+| Click date icon | Edit dates |
+| Click note header | Navigate to note |
+| Refresh button | Reload tasks |
+
+## Best Practices
+
+1. **Use inbox for capture** - Write tasks in notes, triage from inbox
+2. **Schedule daily** - Start each day by reviewing today view
+3. **Plan weekly** - Use upcoming to balance your week
+4. **Keep tasks in context** - Don't extract tasks to separate files
+5. **Leverage sections** - Use headings to add context to task groups
+6. **Set realistic dates** - Only schedule what you can complete
+7. **Review regularly** - Weekly inbox zero keeps tasks manageable
+
+## Common Workflows
+
+### Daily Planning
+
+<Steps>
+  <Step title="Review inbox">
+    Open inbox view and schedule high-priority tasks for today.
+  </Step>
+  <Step title="Check today view">
+    Confirm today's list is achievable.
+  </Step>
+  <Step title="Work through list">
+    Check off tasks as you complete them.
+  </Step>
+  <Step title="End of day review">
+    Reschedule incomplete tasks to tomorrow or upcoming.
+  </Step>
+</Steps>
+
+### Weekly Review
+
+<Steps>
+  <Step title="Clear inbox">
+    Schedule all inbox tasks or delete ones no longer relevant.
+  </Step>
+  <Step title="Review upcoming">
+    Ensure next week's tasks are realistic and prioritized.
+  </Step>
+  <Step title="Check overdue">
+    Reschedule or complete tasks with past due dates.
+  </Step>
+</Steps>
+
+### Project Management
+
+```markdown
+# Project: Website Redesign
+
+## Planning
+- [ ] Wireframe homepage scheduled: 2024-03-10
+- [ ] Review with team due: 2024-03-12
+
+## Design  
+- [ ] Create mockups scheduled: 2024-03-15
+- [ ] Get client feedback due: 2024-03-18
+
+## Development
+- [ ] Build prototype scheduled: 2024-03-20
+- [ ] Deploy to staging due: 2024-03-25
+```
+
+Tasks appear in the task pane organized by date, while remaining in the project note.
+
+## Integration with Notes
+
+Tasks stay in your notes where they belong:
+
+- **Meeting notes**: Action items from discussions
+- **Project plans**: Milestones and deliverables  
+- **Daily notes**: Today's tasks and intentions
+- **Research**: Next steps and follow-ups
+
+The task pane is a **view**, not a separate system.
+
+## Limitations
+
+- Tasks must be in markdown files (not other formats)
+- Only checkboxes at the start of list items are recognized
+- Nested tasks (sub-items) are treated as independent tasks
+- No recurring task syntax (yet)
+- Maximum 2000 tasks per view (configurable)
+
+## Related Features
+
+- [Daily Notes](/features/daily-notes) - Template for daily task planning
+- [Tags & Search](/features/tags-search) - Find tasks by content
+- [Database Views](/features/databases) - Organize notes with tasks
+- [Markdown Editor](/features/markdown-editor) - Edit tasks inline in your notes

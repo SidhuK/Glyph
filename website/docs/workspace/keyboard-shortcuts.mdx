@@ -1,0 +1,335 @@
+---
+title: Keyboard Shortcuts
+description: Complete reference of keyboard shortcuts in Glyph
+---
+
+Glyph is designed for keyboard-first workflows on macOS.
+
+## macOS Conventions
+
+In this guide:
+- `Cmd` means the Command key (⌘)
+- Modifiers are shown in this order: `Cmd` + `Alt` + `Shift` + `Key`
+
+<Note>
+This page is the current shortcut reference. Glyph does not currently expose a dedicated in-app keyboard shortcuts help dialog.
+</Note>
+
+## All Shortcuts
+
+Here's the complete reference of keyboard shortcuts in Glyph:
+
+<Table>
+  <thead>
+    <tr>
+      <th>Action</th>
+      <th>Shortcut</th>
+      <th>Context</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td colspan="3"><strong>Navigation</strong></td>
+    </tr>
+    <tr>
+      <td>Toggle Sidebar</td>
+      <td>`Cmd+B`</td>
+      <td>Always</td>
+    </tr>
+    <tr>
+      <td>Toggle Sidebar (Alt 1)</td>
+      <td>`Cmd+Shift+S`</td>
+      <td>Always</td>
+    </tr>
+    <tr>
+      <td>Toggle Sidebar (Alt 2)</td>
+      <td>`Cmd+\`</td>
+      <td>Always</td>
+    </tr>
+    <tr>
+      <td>Toggle AI Panel</td>
+      <td>`Cmd+Shift+A`</td>
+      <td>Space open</td>
+    </tr>
+    <tr>
+      <td colspan="3"><strong>File Operations</strong></td>
+    </tr>
+    <tr>
+      <td>New Note</td>
+      <td>`Cmd+N`</td>
+      <td>Space open</td>
+    </tr>
+    <tr>
+      <td>Open Daily Note</td>
+      <td>`Cmd+Shift+D`</td>
+      <td>Space open</td>
+    </tr>
+    <tr>
+      <td>Save Note</td>
+      <td>`Cmd+S`</td>
+      <td>Editor focused</td>
+    </tr>
+    <tr>
+      <td>Close Preview/Tab</td>
+      <td>`Cmd+W`</td>
+      <td>Space open</td>
+    </tr>
+    <tr>
+      <td colspan="3"><strong>Search & Command Palette</strong></td>
+    </tr>
+    <tr>
+      <td>Command Palette</td>
+      <td>`Cmd+K`</td>
+      <td>Always</td>
+    </tr>
+    <tr>
+      <td>Command Palette (Alt)</td>
+      <td>`Cmd+Shift+P`</td>
+      <td>Always</td>
+    </tr>
+    <tr>
+      <td>Search</td>
+      <td>`Cmd+F`</td>
+      <td>Always</td>
+    </tr>
+    <tr>
+      <td>Quick Open</td>
+      <td>`Cmd+P`</td>
+      <td>Space open</td>
+    </tr>
+    <tr>
+      <td colspan="3"><strong>Window & App</strong></td>
+    </tr>
+    <tr>
+      <td>Settings</td>
+      <td>`Cmd+,`</td>
+      <td>Always</td>
+    </tr>
+    <tr>
+      <td>Open Space</td>
+      <td>`Cmd+O`</td>
+      <td>Always</td>
+    </tr>
+    <tr>
+      <td colspan="3"><strong>AI Assistant</strong></td>
+    </tr>
+    <tr>
+      <td>Attach Current Note</td>
+      <td>`Cmd+Alt+A`</td>
+      <td>Note open</td>
+    </tr>
+    <tr>
+      <td>Attach All Open Notes</td>
+      <td>`Cmd+Alt+Shift+A`</td>
+      <td>Notes open</td>
+    </tr>
+  </tbody>
+</Table>
+
+## Shortcut Categories
+
+### Navigation Shortcuts
+
+Control the workspace layout and panel visibility.
+
+```typescript
+// From src/lib/shortcuts/registry.ts
+{
+  id: "toggle-sidebar",
+  shortcut: { meta: true, key: "b" },
+  label: "Toggle Sidebar",
+  description: "Show or hide the file tree sidebar",
+  category: "navigation",
+  context: "global",
+}
+```
+
+**Toggle Sidebar** (`Cmd+B`): Shows/hides the file tree
+- Has two alternative shortcuts: `Cmd+Shift+S` and `Cmd+\`
+- Works even when no space is open
+- Preserves sidebar width when re-opened
+
+**Toggle AI Panel** (`Cmd+Shift+A`): Shows/hides AI assistant
+- Only available when a space is open
+- Requires AI to be enabled in settings
+- Panel width is preserved between sessions
+
+### File Operation Shortcuts
+
+Create, save, and manage notes.
+
+**New Note** (`Cmd+N`):
+- Creates a new markdown file in the current folder
+- Opens the note in the editor immediately
+- Prompts for a filename
+
+**Open Daily Note** (`Cmd+Shift+D`):
+- Creates or opens today's daily note
+- Requires daily notes folder to be configured
+- Uses format: `YYYY-MM-DD.md`
+
+**Save Note** (`Cmd+S`):
+- Saves the currently active editor
+- Auto-saves already happen, but this forces immediate save
+- Shows save indicator in the UI
+
+**Close Preview** (`Cmd+W`):
+- Closes the active preview or tab
+- Does not delete the file
+- Returns focus to file tree
+
+### Search & Command Palette Shortcuts
+
+Quickly find files, notes, and execute commands.
+
+<Accordion title="Understanding the Command Palette">
+The command palette (`Cmd+K`) is the central hub for actions in Glyph. It has two modes:
+
+1. **Commands Mode**: Lists all available commands
+2. **Search Mode**: Full-text search across notes
+
+You can switch between modes using the tab selector or dedicated shortcuts.
+</Accordion>
+
+**Command Palette** (`Cmd+K` or `Cmd+Shift+P`):
+- Opens command picker
+- Type to filter commands
+- Enter to execute
+- Esc to close
+
+**Search** (`Cmd+F`):
+- Opens command palette in search mode
+- Searches note content, filenames, and tags
+- Uses hybrid search (keyword + semantic)
+
+**Quick Open** (`Cmd+P`):
+- File-focused search mode
+- Fuzzy matches filenames
+- Recent files appear first
+
+### Window & App Shortcuts
+
+Manage spaces and app settings.
+
+**Settings** (`Cmd+,`):
+- Opens settings window
+- Window stays open while working
+- Changes apply immediately
+
+**Open Space** (`Cmd+O`):
+- Shows folder picker
+- Can create new space or open existing
+- Closes current space first
+
+### AI Assistant Shortcuts
+
+Attach notes as context for AI conversations.
+
+**Attach Current Note** (`Cmd+Alt+A`):
+- Adds active note to AI context
+- Opens AI panel if closed
+- Appends to existing context
+
+**Attach All Open Notes** (`Cmd+Alt+Shift+A`):
+- Adds all open tabs to AI context
+- Useful for cross-referencing multiple notes
+- Deduplicates if note already attached
+
+```typescript
+// From src/components/app/AppShell.tsx
+const attachContextFiles = async (paths: string[]) => {
+  const unique = Array.from(
+    new Set(paths.map((p) => p.trim()).filter((p) => p.toLowerCase().endsWith(".md")))
+  );
+  if (!unique.length) return;
+  setAiPanelOpen(true);
+  setTimeout(() => dispatchAiContextAttach({ paths: unique }), 0);
+};
+```
+
+## Context-Sensitive Shortcuts
+
+Some shortcuts only work in specific contexts:
+
+### Global Context
+Work anywhere in the app:
+- Command Palette (`Cmd+K`)
+- Settings (`Cmd+,`)
+- Toggle Sidebar (`Cmd+B`)
+- Search (`Cmd+F`)
+
+### Space Context
+Require an open space:
+- New Note (`Cmd+N`)
+- Quick Open (`Cmd+P`)
+- Daily Note (`Cmd+Shift+D`)
+- Toggle AI Panel (`Cmd+Shift+A`)
+
+### Editor Context
+Only when editor is focused:
+- Save (`Cmd+S`)
+- Editor-specific commands
+
+## Customizing Shortcuts
+
+<Note>
+Keyboard shortcuts are currently not customizable. This feature is planned for a future release.
+</Note>
+
+Shortcuts are defined in the source code:
+
+```typescript
+// From src/lib/shortcuts/registry.ts
+export const SHORTCUTS = [
+  {
+    id: "new-note",
+    shortcut: { meta: true, key: "n" },
+    label: "New Note",
+    description: "Create a new note in the current folder",
+    category: "file",
+    context: "space",
+  },
+  // ... more shortcuts
+] as const;
+```
+
+## Shortcut Conflicts
+
+If shortcuts conflict with macOS or another app:
+
+1. macOS system shortcuts take precedence
+2. Check System Settings → Keyboard → Keyboard Shortcuts
+3. Avoid remapping common app-level shortcuts unless necessary
+
+<Accordion title="Common conflicts">
+- `Cmd+H` (Hide on macOS) - not used by Glyph
+- `Cmd+M` (Minimize on macOS) - not used by Glyph  
+- `Cmd+Tab` (App switcher) - handled by OS
+- `Cmd+Q` (Quit on macOS) - handled by OS
+</Accordion>
+
+## Tips for Efficiency
+
+1. **Learn the Command Palette**: `Cmd+K` is the fastest way to any action
+2. **Use Quick Open**: `Cmd+P` to jump between notes without the mouse
+3. **Master sidebar toggle**: `Cmd+B` gives you more editor space
+4. **Daily note ritual**: `Cmd+Shift+D` to start journaling instantly
+5. **AI context workflow**: `Cmd+Alt+Shift+A` to discuss multiple notes
+
+## macOS Key Symbols
+
+Shortcuts display with macOS-native symbols:
+
+- `⌘` Cmd (Command)
+- `⌃` Ctrl (Control)
+- `⌥` Alt (Option)
+- `⇧` Shift
+
+```typescript
+// From src/lib/shortcuts/platform.ts
+const MODIFIER_SYMBOLS = {
+  macos: { meta: "⌘", ctrl: "⌃", alt: "⌥", shift: "⇧" },
+  windows: { meta: "Win", ctrl: "Ctrl", alt: "Alt", shift: "Shift" },
+  linux: { meta: "Super", ctrl: "Ctrl", alt: "Alt", shift: "Shift" },
+};
+```

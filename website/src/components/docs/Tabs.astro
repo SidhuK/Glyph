@@ -1,0 +1,84 @@
+---
+const tabsId = `docs-tabs-${Math.random().toString(36).slice(2, 10)}`;
+---
+
+<div class="docs-tabs" data-tabs id={tabsId}>
+	<div class="docs-tabs-list" data-tabs-list role="tablist"></div>
+	<div class="docs-tabs-panels">
+		<slot />
+	</div>
+</div>
+
+<script>
+	const root = document.currentScript?.previousElementSibling;
+
+	if (root instanceof HTMLElement) {
+		const list = root.querySelector("[data-tabs-list]");
+		const panels = Array.from(root.querySelectorAll("[data-tab-panel]"));
+
+		if (list instanceof HTMLElement && panels.length > 0) {
+			const setActive = (index) => {
+				panels.forEach((panel, panelIndex) => {
+					const button = list.querySelector(`[data-tab-button="${panelIndex}"]`);
+					const selected = panelIndex === index;
+
+					panel.toggleAttribute("hidden", !selected);
+					if (button instanceof HTMLButtonElement) {
+						button.setAttribute("aria-selected", String(selected));
+						button.tabIndex = selected ? 0 : -1;
+					}
+				});
+			};
+
+			panels.forEach((panel, index) => {
+				const title = panel.getAttribute("data-title") ?? `Tab ${index + 1}`;
+				const button = document.createElement("button");
+				button.type = "button";
+				button.textContent = title;
+				button.dataset.tabButton = String(index);
+				button.setAttribute("role", "tab");
+				button.addEventListener("click", () => setActive(index));
+				list.appendChild(button);
+			});
+
+			setActive(0);
+		}
+	}
+</script>
+
+<style>
+	.docs-tabs {
+		border: 1px solid var(--border);
+		background: rgba(255, 255, 255, 0.76);
+	}
+
+	.docs-tabs-list {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.45rem;
+		padding: 0.7rem;
+		border-bottom: 1px solid var(--border);
+	}
+
+	.docs-tabs-list :global(button) {
+		appearance: none;
+		border: 1px solid transparent;
+		background: transparent;
+		padding: 0.45rem 0.7rem;
+		font: inherit;
+		font-size: 0.76rem;
+		font-weight: 600;
+		color: var(--muted);
+		cursor: pointer;
+	}
+
+	.docs-tabs-list :global(button[aria-selected="true"]) {
+		color: var(--ink);
+		border-color: var(--border);
+		background: rgba(17, 17, 17, 0.03);
+	}
+
+	.docs-tabs-panels {
+		padding: 1rem 1.05rem;
+	}
+</style>

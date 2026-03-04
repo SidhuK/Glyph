@@ -1,0 +1,523 @@
+---
+title: 'React Contexts'
+description: 'State management via React Context'
+---
+
+## Overview
+
+Glyph uses **React Context** for all global state management. No Redux, no Zustand—just plain React.
+
+<Note>
+Contexts are layered: `SpaceContext` wraps `FileTreeContext` wraps `ViewContext`, etc.
+</Note>
+
+## Context Hierarchy
+
+```typescript src/main.tsx
+function App() {
+  return (
+    <SpaceProvider>           {/* Space lifecycle */}
+      <FileTreeProvider>      {/* Files, tags, active file */}
+        <ViewProvider>        {/* Active view document */}
+          <UIProvider>        {/* Sidebar, search state */}
+            <EditorProvider>  {/* TipTap editor instance */}
+              <AppShell />
+            </EditorProvider>
+          </UIProvider>
+        </ViewProvider>
+      </FileTreeProvider>
+    </SpaceProvider>
+  );
+}
+```
+
+## SpaceContext
+
+**Location**: `src/contexts/SpaceContext.tsx`
+
+Manages space lifecycle (create, open, close).
+
+### State Shape
+
+```typescript
+interface SpaceContextValue {
+  // App metadata
+  info: AppInfo | null;             // App name, version
+  
+  // Current space
+  spacePath: string | null;         // '/Users/me/my-space'
+  spaceSchemaVersion: number | null; // 1
+  
+  // History
+  lastSpacePath: string | null;     // For "Continue" button
+  recentSpaces: string[];           // Up to 20 recent paths
+  
+  // Index state
+  isIndexing: boolean;              // Index rebuild in progress
+  
+  // Lifecycle
+  settingsLoaded: boolean;          // Settings loaded from disk
+  error: string;                    // Error message
+  setError: (error: string) => void;
+  
+  // Actions
+  onOpenSpace: () => Promise<void>;
+  onOpenSpaceAtPath: (path: string) => Promise<void>;
+  onContinueLastSpace: () => Promise<void>;
+  onCreateSpace: () => Promise<void>;
+  closeSpace: () => Promise<void>;
+  startIndexRebuild: () => Promise<void>;
+}
+```
+
+### Usage
+
+<CodeGroup>
+```typescript Opening a Space
+import { useSpace } from '@/contexts/SpaceContext';
+
+function WelcomeScreen() {
+  const { onOpenSpace, onContinueLastSpace, lastSpacePath } = useSpace();
+  
+  return (
+    <div>
+      <Button onClick={onOpenSpace}>Open Space</Button>
+      
+      {lastSpacePath && (
+        <Button onClick={onContinueLastSpace}>
+          Continue: {lastSpacePath}
+        </Button>
+      )}
+    </div>
+  );
+}
+```
+
+```typescript Checking Space State
+function Sidebar() {
+  const { spacePath, isIndexing } = useSpace();
+  
+  if (!spacePath) {
+    return <WelcomeScreen />;
+  }
+  
+  return (
+    <div>
+      {isIndexing && <IndexingSpinner />}
+      <FileTreePane />
+    </div>
+  );
+}
+```
+</CodeGroup>
+
+## FileTreeContext
+
+**Location**: `src/contexts/FileTreeContext.tsx`
+
+Manages file browser state and tag index.
+
+### State Shape
+
+```typescript
+interface FileTreeContextValue {
+  // File tree data
+  rootEntries: FsEntry[];                    // Files/dirs at root
+  childrenByDir: Record<string, FsEntry[]>;  // Cached children by dir path
+  expandedDirs: Set<string>;                 // Which dirs are expanded
+  
+  // Updaters (for hooks to modify state)
+  updateRootEntries: (next: FsEntry[] | ((prev: FsEntry[]) => FsEntry[])) => void;
+  updateChildrenByDir: (next: ...) => void;
+  updateExpandedDirs: (next: Set<string> | ((prev: Set<string>) => Set<string>)) => void;
+  
+  // Active file
+  activeFilePath: string | null;   // 'notes/example.md'
+  setActiveFilePath: (path: string | null) => void;
+  
+  // Derived state (computed from activeFilePath)
+  activeNoteId: string | null;     // Same as activeFilePath if .md
+  activeNoteTitle: string | null;  // Filename without extension
+  
+  // Tag index
+  tags: TagCount[];                // [{ tag: 'research', count: 42 }]
+  tagsError: string;
+  refreshTags: () => Promise<void>;
+}
+```
+
+### Usage
+
+<CodeGroup>
+```typescript Reading File Tree
+import { useFileTreeContext } from '@/contexts/FileTreeContext';
+
+function FileTreePane() {
+  const { rootEntries, expandedDirs } = useFileTreeContext();
+  
+  return (
+    <div>
+      {rootEntries.map(entry => (
+        <FileTreeItem
+          key={entry.rel_path}
+          entry={entry}
+          isExpanded={expandedDirs.has(entry.rel_path)}
+        />
+      ))}
+    </div>
+  );
+}
+```
+
+```typescript Updating State
+function useFileTree() {
+  const { updateExpandedDirs } = useFileTreeContext();
+  
+  const toggleDir = (dirPath: string) => {
+    updateExpandedDirs(prev => {
+      const next = new Set(prev);
+      if (next.has(dirPath)) {
+        next.delete(dirPath);
+      } else {
+        next.add(dirPath);
+      }
+      return next;
+    });
+  };
+  
+  return { toggleDir };
+}
+```
+</CodeGroup>
+
+## ViewContext
+
+**Location**: `src/contexts/ViewContext.tsx`
+
+Manages "view documents" (folder, tag, search, database views).
+
+### State Shape
+
+```typescript
+interface ViewContextValue {
+  activeViewDoc: ViewDoc | null;  // Current view (folder, tag, etc.)
+  setActiveViewDoc: (doc: ViewDoc | null) => void;
+  
+  isLoadingView: boolean;
+  viewError: string;
+}
+
+type ViewDoc =
+  | FolderViewDoc
+  | TagViewDoc
+  | SearchViewDoc
+  | DatabaseViewDoc;
+
+interface FolderViewDoc {
+  type: 'folder';
+  dir: string;
+  files: FsEntry[];
+  subfolders: FolderViewFolder[];
+  note_previews: ViewNotePreview[];
+}
+```
+
+### Usage
+
+```typescript
+import { useViewContext } from '@/contexts/ViewContext';
+
+function MainContent() {
+  const { activeViewDoc } = useViewContext();
+  
+  if (activeViewDoc?.type === 'folder') {
+    return <FolderView doc={activeViewDoc} />;
+  }
+  
+  if (activeViewDoc?.type === 'database') {
+    return <DatabasePane doc={activeViewDoc} />;
+  }
+  
+  return <MarkdownEditorPane />;
+}
+```
+
+## UIContext
+
+**Location**: `src/contexts/UIContext.tsx`
+
+Manages UI chrome state (sidebar, search, modals).
+
+### State Shape
+
+```typescript
+interface UIContextValue {
+  // Sidebar
+  activePane: 'files' | 'tags' | 'ai' | 'tasks';
+  setActivePane: (pane: 'files' | 'tags' | 'ai' | 'tasks') => void;
+  
+  isSidebarCollapsed: boolean;
+  toggleSidebar: () => void;
+  
+  // Command palette (Cmd+K)
+  isCommandPaletteOpen: boolean;
+  openCommandPalette: () => void;
+  closeCommandPalette: () => void;
+  
+  // Search
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
+  
+  // Preview pane
+  activePreviewPath: string | null;
+  setActivePreviewPath: (path: string | null) => void;
+}
+```
+
+### Usage
+
+<CodeGroup>
+```typescript Sidebar Panes
+function SidebarHeader() {
+  const { activePane, setActivePane } = useUIContext();
+  
+  return (
+    <div>
+      <IconButton
+        onClick={() => setActivePane('files')}
+        data-active={activePane === 'files'}
+      >
+        <FileIcon />
+      </IconButton>
+      
+      <IconButton
+        onClick={() => setActivePane('ai')}
+        data-active={activePane === 'ai'}
+      >
+        <SparkleIcon />
+      </IconButton>
+    </div>
+  );
+}
+```
+
+```typescript Command Palette
+function App() {
+  const { isCommandPaletteOpen, openCommandPalette } = useUIContext();
+  
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+        e.preventDefault();
+        openCommandPalette();
+      }
+    };
+    
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [openCommandPalette]);
+  
+  return (
+    <>
+      <AppShell />
+      {isCommandPaletteOpen && <CommandPalette />}
+    </>
+  );
+}
+```
+</CodeGroup>
+
+## EditorContext
+
+**Location**: `src/contexts/EditorContext.tsx`
+
+Manages TipTap editor instance.
+
+### State Shape
+
+```typescript
+import type { Editor } from '@tiptap/react';
+
+interface EditorContextValue {
+  editor: Editor | null;              // TipTap editor instance
+  setEditor: (editor: Editor | null) => void;
+  
+  isEditing: boolean;                 // Focus state
+  saveState: 'saved' | 'saving' | 'unsaved' | 'error';
+  setSaveState: (state: 'saved' | 'saving' | 'unsaved' | 'error') => void;
+}
+```
+
+### Usage
+
+<CodeGroup>
+```typescript Creating Editor
+import { useEditor } from '@tiptap/react';
+import { useEditorContext } from '@/contexts/EditorContext';
+
+function MarkdownEditorPane() {
+  const { setEditor, setSaveState } = useEditorContext();
+  
+  const editor = useEditor({
+    extensions: [/* ... */],
+    onUpdate: () => {
+      setSaveState('unsaved');
+      debouncedSave();
+    },
+    onFocus: () => setIsEditing(true),
+    onBlur: () => setIsEditing(false),
+  });
+  
+  useEffect(() => {
+    setEditor(editor);
+    return () => setEditor(null);
+  }, [editor, setEditor]);
+  
+  return <EditorContent editor={editor} />;
+}
+```
+
+```typescript Using Editor
+function EditorRibbon() {
+  const { editor } = useEditorContext();
+  
+  if (!editor) return null;
+  
+  return (
+    <div>
+      <Button onClick={() => editor.chain().focus().toggleBold().run()}>
+        <BoldIcon />
+      </Button>
+    </div>
+  );
+}
+```
+</CodeGroup>
+
+## Custom Context Pattern
+
+All contexts follow this pattern:
+
+<Steps>
+  <Step title="Define context value type">
+    ```typescript
+    interface MyContextValue {
+      data: string;
+      setData: (data: string) => void;
+    }
+    ```
+  </Step>
+  
+  <Step title="Create context with null default">
+    ```typescript
+    const MyContext = createContext<MyContextValue | null>(null);
+    ```
+  </Step>
+  
+  <Step title="Create provider component">
+    ```typescript
+    export function MyProvider({ children }: { children: ReactNode }) {
+      const [data, setData] = useState('');
+      
+      const value = useMemo<MyContextValue>(
+        () => ({ data, setData }),
+        [data]
+      );
+      
+      return (
+        <MyContext.Provider value={value}>
+          {children}
+        </MyContext.Provider>
+      );
+    }
+    ```
+  </Step>
+  
+  <Step title="Create typed hook">
+    ```typescript
+    export function useMyContext(): MyContextValue {
+      const ctx = useContext(MyContext);
+      if (!ctx) {
+        throw new Error('useMyContext must be used within MyProvider');
+      }
+      return ctx;
+    }
+    ```
+  </Step>
+</Steps>
+
+## Performance Optimization
+
+### Split Contexts
+
+Instead of one giant context:
+
+```typescript Bad
+interface AppContextValue {
+  user: User;
+  theme: Theme;
+  files: File[];
+  // ... 20 more fields
+}
+
+// Every component re-renders when ANY field changes!
+```
+
+Use multiple small contexts:
+
+```typescript Good
+<UserProvider>
+  <ThemeProvider>
+    <FileProvider>
+      {/* Components only re-render when their context changes */}
+    </FileProvider>
+  </ThemeProvider>
+</UserProvider>
+```
+
+### Memoize Context Value
+
+Always memoize the context value:
+
+```typescript
+const value = useMemo<MyContextValue>(
+  () => ({ data, setData }),
+  [data] // Only recompute when data changes
+);
+```
+
+Without `useMemo`, context consumers re-render on every provider render.
+
+### Selector Pattern
+
+For large contexts, expose selectors:
+
+```typescript
+interface FileTreeContextValue {
+  // Instead of exposing entire state:
+  // state: { rootEntries, childrenByDir, ... }
+  
+  // Expose specific selectors:
+  useRootEntries: () => FsEntry[];
+  useChildrenByDir: () => Record<string, FsEntry[]>;
+  useExpandedDirs: () => Set<string>;
+}
+
+// Components only subscribe to what they use
+function FileList() {
+  const rootEntries = useFileTreeContext().useRootEntries();
+  // Only re-renders when rootEntries changes
+}
+```
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Hooks" icon="hook" href="/development/frontend/hooks">
+    Custom React hooks
+  </Card>
+  
+  <Card title="Components" icon="react" href="/development/frontend/components">
+    Component architecture
+  </Card>
+</CardGroup>

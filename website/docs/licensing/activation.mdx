@@ -1,0 +1,120 @@
+---
+title: License Activation
+description: How to activate your Glyph license key
+---
+
+After purchasing Glyph from Gumroad, you'll receive a license key that unlocks the app on all your devices.
+
+## Activation Process
+
+<Steps>
+  <Step title="Purchase from Gumroad">
+    Buy Glyph from [Gumroad](https://karatsidhu.gumroad.com/l/sqxfay). You'll receive your license key immediately via email.
+  </Step>
+
+  <Step title="Open Glyph">
+    Launch the official Glyph binary you downloaded from [GitHub Releases](https://github.com/SidhuK/Glyph/releases).
+  </Step>
+
+  <Step title="Enter your license key">
+    You can activate through any of these methods:
+    
+    - Click **Enter License Key** in the trial banner (during trial)
+    - Use the lock screen after trial expiration
+    - Navigate to **Settings → General → License**
+    - Use command palette: `Manage license`
+  </Step>
+
+  <Step title="Verify with Gumroad">
+    Glyph sends your key to Gumroad's verification endpoint:
+    
+    ```
+    POST https://api.gumroad.com/v2/licenses/verify
+    ```
+    
+    This requires an internet connection for the first activation only.
+  </Step>
+
+  <Step title="Activation complete">
+    Once verified, Glyph stores a local activation record and unlocks permanently. You can now use Glyph offline forever on this device.
+  </Step>
+</Steps>
+
+## Verification Flow
+
+Glyph verifies license keys directly against Gumroad using the product ID configured for official builds:
+
+- **Verification endpoint**: `POST https://api.gumroad.com/v2/licenses/verify`
+- **Required fields**: `product_id` and `license_key`
+- **Success rule**: Activation succeeds only if Gumroad returns `success: true`
+
+## What Gets Stored Locally
+
+Glyph **does not** store your raw license key on disk. Instead, it stores:
+
+- **Masked license key** (e.g., `ABCD-****-****-WXYZ`) for display only
+- **Key hash** (SHA-256) for verification
+- **Activation timestamp** when you first activated
+- **Trial timestamps** (if you started a trial first)
+
+This data is stored in:
+
+```
+app_config_dir()/license.json
+```
+
+<Info>
+Your raw license key is never written to disk for security reasons.
+</Info>
+
+## Offline Behavior
+
+After Gumroad verifies your key once:
+
+1. Glyph stores a local activation record
+2. Glyph continues working **offline forever** on that installation
+3. No periodic online rechecks are required
+4. You can reinstall on unlimited devices
+
+<Warning>
+This is an honest-user licensing model, not DRM. If you modify or delete the license file, you'll need to reactivate with internet access.
+</Warning>
+
+## Multiple Devices
+
+Your Glyph license has:
+
+- **No device limits** - Install on as many computers as you need
+- **No seat counting** - Use simultaneously on multiple machines
+- **No device fingerprinting** - Hardware changes won't invalidate your license
+- **No activation caps** - Reinstall unlimited times
+
+## Activation from Settings
+
+If you're already using Glyph, you can activate from Settings:
+
+1. Open **Settings → General → License**
+2. View your current license status (Trial Active, Trial Expired, Licensed, Community Build)
+3. Enter your license key in the input field
+4. Click **Activate**
+5. Wait for Gumroad verification (requires internet)
+6. Success! Glyph is now unlocked
+
+## Removing Local Activation
+
+If you need to clear your local activation record:
+
+1. Open **Settings → General → License**
+2. Click **Remove Local Activation**
+3. Your trial state will be restored (if trial is expired, you'll see the lock screen)
+4. You can reactivate with your license key anytime
+
+<Info>
+Removing local activation does not invalidate your license key. You can always reactivate with the same key.
+</Info>
+
+## Next Steps
+
+- [Trial System](/licensing/trial) - Learn about the 48-hour trial
+- [Troubleshooting](/licensing/troubleshooting) - Common activation issues
+- [FAQ](/licensing/faq) - Frequently asked questions

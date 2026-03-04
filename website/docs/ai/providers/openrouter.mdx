@@ -1,0 +1,259 @@
+---
+title: OpenRouter Configuration
+description: Access hundreds of AI models through OpenRouter in Glyph
+---
+
+OpenRouter provides unified API access to hundreds of AI models from multiple providers including OpenAI, Anthropic, Google, Meta, and more.
+
+## Prerequisites
+
+- OpenRouter account: [openrouter.ai](https://openrouter.ai)
+- API key (free credits available)
+- Credits for paid models (or use free models)
+
+## Setup
+
+<Steps>
+  <Step title="Get API Key">
+    1. Sign up at [openrouter.ai](https://openrouter.ai)
+    2. Navigate to **Keys** in your account
+    3. Click **Create Key**
+    4. Copy the key (starts with `sk-or-`)
+    
+    <Note>
+    OpenRouter provides $1 in free credits to test models.
+    </Note>
+  </Step>
+  
+  <Step title="Open Glyph AI Settings">
+    Go to **Settings → AI** and select the **OpenRouter** profile.
+  </Step>
+  
+  <Step title="Add API Key">
+    1. Click **Set API Key** in the authentication section
+    2. Paste your OpenRouter API key
+    3. Click **Save**
+    
+    The key is stored locally in Glyph's per-space internal data.
+  </Step>
+  
+  <Step title="Select Model">
+    Click the **Model** dropdown. Glyph fetches the currently available models from OpenRouter.
+    
+    Popular models:
+    - `openai/gpt-5`
+    - `openai/gpt-5-pro`
+    - `anthropic/claude-sonnet-4`
+    - `google/gemini-2.5-pro`
+    - `meta-llama/llama-3.3-70b-instruct`
+    
+    <Note>
+    OpenRouter's catalog changes quickly. Glyph shows whatever the OpenRouter API returns for your account at the time.
+    </Note>
+  </Step>
+  
+  <Step title="Test Connection">
+    Open the AI panel and send a test message. You should receive a response from your selected model.
+  </Step>
+</Steps>
+
+## Configuration
+
+### Provider Settings
+
+- **Service**: `openrouter`
+- **Base URL**: `https://openrouter.ai/api/v1` (default)
+- **Authentication**: Bearer token (API key)
+
+### Model Routing
+
+OpenRouter automatically routes your request to the best available provider for your selected model.
+
+## Model Selection
+
+Glyph fetches the latest model list from OpenRouter's `/v1/models` endpoint.
+
+### Model Details
+
+OpenRouter provides rich model metadata:
+- **Context length** - Maximum tokens per request
+- **Pricing** - Input and output token costs
+- **Modalities** - Text, image, audio support
+- **Max output tokens** - Maximum response length
+- **Supported parameters** - Available model options
+
+Hover over the info icon in the model selector to view these details.
+
+### Recommended Models
+
+#### Free Models
+
+| Model | Provider | Use Case |
+|-------|----------|----------|
+| `meta-llama/llama-3.1-70b-instruct:free` | Meta | Strong free general-purpose option |
+| `openrouter/auto` | OpenRouter | Lets OpenRouter choose a suitable route automatically |
+
+<Note>
+Free and auto-routed options are useful for testing, but availability and limits can change frequently.
+</Note>
+
+#### Paid Models (High Performance)
+
+| Model | Why use it |
+|-------|------------|
+| `openai/gpt-5` | Current OpenAI flagship family on OpenRouter |
+| `openai/gpt-5-pro` | Higher-end GPT-5 reasoning option |
+| `anthropic/claude-sonnet-4` | Strong coding and writing balance |
+| `google/gemini-2.5-pro` | Large-context Gemini option |
+| `meta-llama/llama-3.3-70b-instruct` | Strong open-weight model |
+
+Check current pricing at [openrouter.ai/models](https://openrouter.ai/models).
+
+## Features
+
+### Chat Mode
+
+Conversational interaction:
+- Back-and-forth dialogue with any model
+- No file system access
+- Fast responses
+- Best for discussion and brainstorming
+
+### Create Mode
+
+AI with workspace tools:
+- **read_file** - Read files from your space
+- **search_notes** - Search note content
+- **list_dir** - List directory contents
+- Tool usage tracked in timeline view
+- Best for research and knowledge retrieval
+
+<Note>
+Tool support varies by model. Most current GPT-5, Claude 4, and Gemini 2.5/3 models support tool use, but OpenRouter's model metadata is the source of truth.
+</Note>
+
+### Context Attachment
+
+Attach notes for grounded responses:
+- Attach files or folders via context menu
+- Mention with `@filename` syntax
+- Configure character budget (up to 250K chars)
+- Context limits vary by model
+
+## API Usage and Billing
+
+### Credits
+
+OpenRouter uses a credit system:
+- 1 credit = $1 USD
+- Purchase credits at [openrouter.ai/credits](https://openrouter.ai/credits)
+- Free credits on signup
+
+### Cost Estimation
+
+Use the model selector to view pricing before sending:
+1. Select a model
+2. Hover over the info icon
+3. View input/output pricing
+4. Estimate cost: (input_tokens × input_price) + (output_tokens × output_price)
+
+### Rate Limits
+
+Rate limits depend on your credit balance and model:
+- Higher credit balance = higher rate limits
+- Free models have stricter limits
+- Check limits at [openrouter.ai/docs/limits](https://openrouter.ai/docs/limits)
+
+## Troubleshooting
+
+### "API key not set for this profile"
+
+**Solution**: Add your OpenRouter API key in Settings → AI.
+
+### "model list failed (401)"
+
+**Solution**: Your API key is invalid. Generate a new key from OpenRouter.
+
+### "insufficient credits"
+
+**Solution**: Add credits at [openrouter.ai/credits](https://openrouter.ai/credits) or use a free model.
+
+### "model not found"
+
+**Cause**: The model ID is incorrect or the model is no longer available.
+
+**Solution**: Refresh the model list or check [openrouter.ai/models](https://openrouter.ai/models) for valid model IDs.
+
+### Model list is very long
+
+**Solution**: Use the search/filter in the model selector. Type to filter by provider or model name.
+
+### Responses from different providers
+
+**Cause**: OpenRouter routes to the best available provider for your model. If primary provider is unavailable, it uses a fallback.
+
+**Solution**: This is expected behavior. Check OpenRouter's dashboard for routing details.
+
+## Advanced Features
+
+### Provider Preferences
+
+Some OpenRouter models allow provider selection (e.g., `anthropic/claude-3.5-sonnet:beta` vs `anthropic/claude-3.5-sonnet`).
+
+Use the full model ID from [openrouter.ai/models](https://openrouter.ai/models) to specify routing.
+
+### Custom Headers
+
+OpenRouter supports custom headers for advanced use cases:
+
+```json
+[
+  { "key": "HTTP-Referer", "value": "https://yourdomain.com" },
+  { "key": "X-Title", "value": "Glyph Integration" }
+]
+```
+
+These headers may provide better rate limits and routing.
+
+## Security Best Practices
+
+<Warning>
+- Never commit `.glyph/` secrets or app-managed data to version control
+- Rotate API keys if exposed
+- Monitor usage at [openrouter.ai/activity](https://openrouter.ai/activity)
+- Set spending limits in your OpenRouter account
+</Warning>
+
+## OpenRouter vs Direct Providers
+
+### Advantages of OpenRouter
+
+✅ Single API key for hundreds of models
+✅ Automatic provider failover
+✅ Unified billing
+✅ Model comparison and discovery
+✅ Free models available
+
+### When to Use Direct Providers
+
+- Lower latency (no routing layer)
+- Provider-specific features (e.g., Anthropic's thinking models)
+- Direct billing relationship
+- Higher rate limits with provider-native keys
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Chat Modes" icon="messages" href="/ai/chat-modes">
+    Learn about chat vs create modes
+  </Card>
+  <Card title="Context Management" icon="folder" href="/ai/context-management">
+    Attach notes to conversations
+  </Card>
+  <Card title="OpenAI" icon="brain" href="/ai/providers/openai">
+    Compare with direct OpenAI integration
+  </Card>
+  <Card title="Profiles" icon="user-group" href="/ai/profiles">
+    Manage multiple AI profiles
+  </Card>
+</CardGroup>

@@ -1,0 +1,341 @@
+---
+title: Chat vs Create Modes
+description: Understand the difference between chat and create modes in Glyph AI
+---
+
+Glyph AI supports two conversation modes: **Chat** and **Create**. Each mode offers different capabilities and use cases.
+
+## Mode Overview
+
+| Feature | Chat Mode | Create Mode |
+|---------|-----------|-------------|
+| Conversation | ✅ Yes | ✅ Yes |
+| File reading | ❌ No | ✅ Yes (`read_file`) |
+| Note search | ❌ No | ✅ Yes (`search_notes`) |
+| Directory listing | ❌ No | ✅ Yes (`list_dir`) |
+| Tool timeline | ❌ No | ✅ Yes |
+| Response speed | ⚡ Faster | 🔧 May be slower |
+| Best for | Discussion, Q&A | Research, analysis |
+
+## Chat Mode
+
+### What is Chat Mode?
+
+Chat mode provides direct conversational interaction with the AI model without any tool access.
+
+### Characteristics
+
+- **Pure conversation**: No file system access
+- **Faster responses**: No tool call overhead
+- **Simpler interactions**: Straightforward Q&A
+- **Context-only**: Can only reference attached context
+
+### When to Use Chat Mode
+
+<CardGroup cols={2}>
+  <Card title="Brainstorming" icon="lightbulb">
+    Generate ideas without needing to reference files
+  </Card>
+  <Card title="Discussion" icon="comments">
+    Have back-and-forth conversations about concepts
+  </Card>
+  <Card title="Quick Questions" icon="circle-question">
+    Get fast answers without file exploration
+  </Card>
+  <Card title="Creative Writing" icon="pen">
+    Generate content without workspace references
+  </Card>
+</CardGroup>
+
+### Example Use Cases
+
+```
+❓ User: What are the benefits of the Zettelkasten method?
+🤖 AI: [Direct response without searching files]
+
+❓ User: Help me brainstorm blog post topics about productivity.
+🤖 AI: [Generates ideas conversationally]
+
+❓ User: Explain the concept of atomic notes.
+🤖 AI: [Provides explanation from training data]
+```
+
+## Create Mode (Default)
+
+### What is Create Mode?
+
+Create mode gives the AI access to workspace tools, allowing it to read files, search notes, and explore your space.
+
+### Characteristics
+
+- **Tool access**: File reading, searching, and listing
+- **Autonomous exploration**: AI decides when to use tools
+- **Evidence-based**: Can cite specific files and content
+- **Tool discipline**: Guided to use minimal tool calls
+- **Timeline view**: See which tools were called and when
+
+### Available Tools
+
+#### `read_file`
+
+Read the contents of a file in your space.
+
+**Parameters**:
+- `path` - Relative path to file (e.g., `notes/2024-01-15.md`)
+
+**Limits**:
+- Max file size: 512 KB
+- Max characters: 12,000
+- UTF-8 text files only
+
+**Example**:
+```
+AI calls: read_file({"path": "projects/glyph/roadmap.md"})
+Returns: File contents (truncated if too large)
+```
+
+#### `search_notes`
+
+Search for files matching a query using hybrid search (SQLite FTS + similarity).
+
+**Parameters**:
+- `query` - Search query
+- `limit` - Max results (default 20, max 200)
+
+**Returns**:
+- File paths matching the query
+- Ranked by relevance
+
+**Example**:
+```
+AI calls: search_notes({"query": "AI integration", "limit": 10})
+Returns: [
+  {"path": "notes/ai-setup.md", "score": 0.95},
+  {"path": "projects/ai-features.md", "score": 0.87}
+]
+```
+
+#### `list_dir`
+
+List files and directories in a path.
+
+**Parameters**:
+- `path` - Directory path (optional, defaults to root)
+- `recursive` - Include subdirectories (optional)
+- `depth` - Max depth for recursive listing (optional)
+- `limit` - Max files to return (default 1000, max 5000)
+
+**Returns**:
+- List of files and directories
+- File metadata (size, modified time)
+
+**Example**:
+```
+AI calls: list_dir({"path": "projects", "recursive": false})
+Returns: [
+  {"name": "glyph", "type": "dir"},
+  {"name": "roadmap.md", "type": "file", "size": 2048}
+]
+```
+
+### When to Use Create Mode
+
+<CardGroup cols={2}>
+  <Card title="Research" icon="magnifying-glass">
+    Find and analyze information across multiple notes
+  </Card>
+  <Card title="Summarization" icon="file-lines">
+    Summarize content from specific files or folders
+  </Card>
+  <Card title="Knowledge Retrieval" icon="book">
+    Answer questions by referencing your notes
+  </Card>
+  <Card title="Content Analysis" icon="chart-line">
+    Analyze patterns or themes across your workspace
+  </Card>
+</CardGroup>
+
+### Example Use Cases
+
+```
+❓ User: What's in my roadmap file?
+🤖 AI: [Calls read_file("roadmap.md") and summarizes]
+
+❓ User: Find all notes about AI features.
+🤖 AI: [Calls search_notes({query: "AI features"}) and lists results]
+
+❓ User: What projects do I have?
+🤖 AI: [Calls list_dir({path: "projects"}) and summarizes]
+```
+
+### Tool Discipline
+
+To prevent excessive tool usage, Glyph adds this system prompt in create mode:
+
+```
+Tool discipline for this run: use the minimum number of tool calls needed.
+Prefer at most 1-2 search/list calls before answering.
+If a tool returns usable evidence, stop searching and summarize what you
+found with uncertainty notes rather than continuing to explore.
+```
+
+This encourages the AI to:
+- Use tools sparingly
+- Stop searching once it finds useful information
+- Acknowledge uncertainty instead of over-searching
+
+## Switching Between Modes
+
+Modes are set per conversation. To change modes:
+
+1. Start a new conversation in the AI panel
+2. Mode defaults to **Create**
+3. To use Chat mode, it must be selected when starting the conversation
+
+<Note>
+Currently, mode selection is not exposed in the UI. Create mode is the default. To use chat mode, you'll need to modify the `mode` parameter in the chat request.
+</Note>
+
+## Mode Selection in Code
+
+From `src/components/ai/hooks/useRigChat.ts`:
+
+```typescript
+const { job_id: jobId } = await invoke("ai_chat_start", {
+  request: {
+    profile_id: profileId,
+    messages: asAiMessages([...messagesRef.current, userMessage]),
+    thread_id: threadId,
+    mode: options?.body?.mode ?? "create", // Default: create
+    context: options?.body?.context || undefined,
+    context_manifest: options?.body?.context_manifest,
+    audit: options?.body?.audit ?? true,
+  },
+});
+```
+
+## Tool Timeline
+
+In create mode, the AI panel shows a tool timeline:
+
+- 🔧 **Tool called**: Which tool, with what arguments
+- ⏱️ **Timestamp**: When the tool was called
+- ✅ **Result**: Success or error
+- 📊 **Payload**: Tool arguments and response
+
+This provides transparency into how the AI is exploring your workspace.
+
+## Performance Considerations
+
+### Chat Mode Performance
+
+- ⚡ Fast responses (no tool overhead)
+- 💰 Lower token usage (no tool definitions in prompt)
+- 🔄 Immediate streaming starts
+
+### Create Mode Performance
+
+- 🔧 Tool call latency (AI must decide when to call tools)
+- 📈 Higher token usage (tool definitions + results)
+- ⏱️ Longer responses (tool execution time)
+- 🧠 More thoughtful (AI considers available tools)
+
+<Note>
+For simple questions, chat mode is faster. For questions requiring file access, create mode is necessary.
+</Note>
+
+## Security and Safety
+
+Both modes enforce security restrictions:
+
+### Path Safety
+
+- ✅ All paths restricted to current space
+- ❌ Path traversal prevented (`../` not allowed)
+- ❌ Hidden files blocked (files starting with `.`)
+- ❌ Symlinks outside space blocked
+
+### File Limits
+
+- Max file read: 512 KB
+- Max characters per file: 12,000
+- Max search results: 200
+- Max directory list: 5,000 files
+
+### Audit Trail
+
+Create mode logs all tool usage:
+- Stored in `.glyph/ai_history/<thread_id>.json`
+- Includes tool name, arguments, results, timestamps
+- Reviewable for compliance and debugging
+
+## Best Practices
+
+### Use Chat Mode For:
+
+- General knowledge questions
+- Creative tasks (writing, brainstorming)
+- Conversations that don't require file access
+- When you need fast responses
+
+### Use Create Mode For:
+
+- Questions about your specific notes
+- Research requiring file exploration
+- Summarization of workspace content
+- When you need evidence from your files
+
+### Combine with Context Attachment
+
+Even in chat mode, you can attach context:
+- Attach files or folders manually
+- Use `@mentions` to reference files
+- Context sent in system message
+- AI can reference without tool calls
+
+## Troubleshooting
+
+### Tools not being called in create mode
+
+**Possible causes**:
+- Model doesn't support function calling well (try GPT-4, Claude, or Gemini)
+- Question is answerable from training data
+- Tool discipline prompt limiting tool usage
+
+**Solution**: Ask more specific questions that clearly require file access.
+
+### Tool calls failing
+
+**Possible causes**:
+- File doesn't exist
+- File is too large (>512 KB)
+- File is binary (not UTF-8 text)
+- Path contains hidden directories
+
+**Solution**: Check tool error messages in the timeline view.
+
+### Too many tool calls
+
+**Cause**: AI is exploring extensively before answering.
+
+**Solution**: 
+- Make questions more specific
+- Attach context manually to reduce exploration
+- Use chat mode if file access isn't needed
+
+## Next Steps
+
+<CardGroup cols={2}>
+  <Card title="Context Management" icon="folder" href="/ai/context-management">
+    Learn to attach files and folders
+  </Card>
+  <Card title="AI Setup" icon="gear" href="/ai/setup">
+    Configure AI profiles and models
+  </Card>
+  <Card title="Profiles" icon="user-group" href="/ai/profiles">
+    Manage multiple AI configurations
+  </Card>
+  <Card title="History" icon="clock-rotate-left" href="/ai/context-management#history-and-audit">
+    Review conversation history and tool usage
+  </Card>
+</CardGroup>

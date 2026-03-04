@@ -1,0 +1,351 @@
+---
+title: Space System
+description: Understanding Glyph's space-based architecture
+---
+
+## What is a Space?
+
+A **space** is Glyph's fundamental organizational unit. It is just a directory on disk that Glyph opens and works inside.
+
+Glyph does **not** require a rigid top-level folder structure or a `space.json` marker file. Your markdown files can live anywhere inside the space, and Glyph creates its own `.glyph/` directory for app-managed data when needed.
+
+<Note>
+Spaces are portable. You can move a space folder anywhere, sync via Dropbox/iCloud, or manage it with Git.
+</Note>
+
+## Directory Structure
+
+```
+my-space/
+├── Projects/                 # Your folders can be named however you like
+│   └── meeting-notes.md
+├── Daily Notes/
+│   └── 2026-03-04.md
+├── assets/                   # Created when attachments are added
+│   └── a1b2c3...xyz.png
+└── .glyph/                   # App-managed data
+    ├── glyph.sqlite          # Search/index database
+    ├── cache/
+    │   ├── ai/               # AI audit logs
+    │   └── link-previews/    # Cached link preview metadata and images
+    └── Glyph/
+        ├── ai_history/       # Stored AI chat history as JSON files
+        └── ai_secrets.json   # Per-space API key storage
+```
+
+Some details from the current code:
+
+- The search database path is `.glyph/glyph.sqlite`
+- Link preview cache lives under `.glyph/cache/link-previews`
+- AI audit logs live under `.glyph/cache/ai`
+- AI chat history is stored as JSON files in `.glyph/Glyph/ai_history`
+- API keys are stored per-space in `.glyph/Glyph/ai_secrets.json`
+- AI profile definitions are **not** stored in the space; they live in the app config directory as `ai.json`
+
+<Warning>
+The `.glyph/` directory is app-managed. It is fine to treat it as generated support data rather than user-authored content.
+</Warning>
+
+## Space Lifecycle
+
+### Creating a Space
+
+<Steps>
+  <Step title="User selects directory">
+    User chooses an empty or existing folder via native file picker
+    
+    ```typescript src/contexts/SpaceContext.tsx
+    const onCreateSpace = async () => {
+      const { open } = await import('@tauri-apps/plugin-dialog');
+      const selection = await open({ directory: true });
+      await invoke('space_create', { path: selection });
+    };
+    ```
+  </Step>
+  
+  <Step title="Backend initializes structure">
+    Rust backend ensures Glyph's internal directories exist
+
+    ```rust src-tauri/src/space/commands.rs
+    pub fn create_or_open_impl(root: &Path) -> Result<SpaceInfo, String> {
+      ensure_glyph_dirs(root)?;
+      let _ = cleanup_tmp_files(root);
+      Ok(SpaceInfo {
+        root: root.to_string_lossy().to_string(),
+        schema_version: VAULT_SCHEMA_VERSION,
+      })
+    }
+    ```
+  </Step>
+  
+  <Step title="Frontend updates state">
+    SpaceContext tracks current space path
+    
+    ```typescript
+    setSpacePath(spaceInfo.root);
+    setSpaceSchemaVersion(spaceInfo.schema_version);
+    await setCurrentSpacePath(spaceInfo.root); // Persist to settings
+    ```
+  </Step>
+</Steps>
+
+### Opening a Space
+
+<Steps>
+  <Step title="Ensure internal directories exist">
+    Glyph creates `.glyph/`, `.glyph/cache/`, and `.glyph/Glyph/` if they are missing.
+  </Step>
+
+  <Step title="Initialize SQLite index">
+    Create or open `.glyph/glyph.sqlite`
+
+    ```rust src-tauri/src/index/db.rs
+    pub fn open_db(space_root: &Path) -> Result<rusqlite::Connection, String> {
+      let path = db_path(space_root)?;
+      let conn = rusqlite::Connection::open(&path)?;
+      conn.pragma_update(None, "journal_mode", "WAL")?;
+      ensure_schema(&conn)?;
+      Ok(conn)
+    }
+    ```
+  </Step>
+  
+  <Step title="Start filesystem watcher">
+    Monitor the whole space root for changes
+
+    ```rust src-tauri/src/space/watcher.rs
+    watcher.watch(&root, notify::RecursiveMode::Recursive)?;
+    ```
+  </Step>
+  
+  <Step title="Rebuild index">
+    Markdown files across the space are indexed for search
+    
+    ```typescript src/contexts/SpaceContext.tsx
+    await invoke('index_rebuild'); // Async, non-blocking
+    ```
+  </Step>
+</Steps>
+
+### Closing a Space
+
+```typescript src/contexts/SpaceContext.tsx
+const closeSpace = async () => {
+  await invoke('space_close'); // Stop watcher, close DB
+  await clearCurrentSpacePath(); // Clear from settings
+  setSpacePath(null);
+  setSpaceSchemaVersion(null);
+};
+```
+
+## Schema Version
+
+Glyph still reports a `schema_version` in `SpaceInfo`, and the current value is `1`, but there is no `space.json` marker file in the space root.
+
+Today that version is an internal compatibility value returned by the backend, not a user-visible file on disk.
+
+## Content-Addressed Storage
+
+Attachments are stored by **SHA256 hash** inside the space's `assets/` folder.
+
+<Steps>
+  <Step title="User attaches file">
+    File is selected via file picker
+    
+    ```typescript
+    const result = await invoke('note_attach_file', {
+      note_id: 'notes/example.md',
+      source_path: '/Users/me/Downloads/diagram.png'
+    });
+    // Returns: { asset_rel_path: 'assets/a1b2...xyz.png', markdown: '![](../assets/a1b2...xyz.png)' }
+    ```
+  </Step>
+  
+  <Step title="Backend computes hash">
+    SHA256 hash of file contents determines the asset filename
+    
+    ```rust src-tauri/src/notes/attachments.rs
+    let mut hasher = Sha256::new();
+    io::copy(&mut file, &mut hasher)?;
+    let hash = hex::encode(hasher.finalize());
+    let asset_name = format!("{}.{}", hash, extension);
+    ```
+  </Step>
+  
+  <Step title="Copy if not exists">
+    Only copy file if hash doesn't already exist
+    
+    ```rust
+    let dest = space_root.join("assets").join(&asset_name);
+    if !dest.exists() {
+      fs::copy(&source_path, &dest)?;
+    }
+    ```
+  </Step>
+  
+  <Step title="Return markdown link">
+    Generate relative markdown link
+    
+    ```rust
+    let rel_path = format!("../assets/{}", asset_name);
+    Ok(AttachmentResult {
+      asset_rel_path: format!("assets/{}", asset_name),
+      markdown: format!("![]({})", rel_path)
+    })
+    ```
+  </Step>
+</Steps>
+
+### Benefits
+
+- **Deduplication** - The same attachment content only needs one file on disk
+- **Stable paths** - Asset filenames are derived from content
+- **Simple portability** - Attached files stay inside the space
+
+## State Management
+
+### Backend State (`src-tauri/src/space/state.rs`)
+
+```rust
+use std::sync::Mutex;
+
+pub struct SpaceState {
+  pub current: Mutex<Option<CurrentSpace>>,
+}
+
+pub struct SpaceState {
+  pub(crate) current: Mutex<Option<PathBuf>>,
+  pub(crate) notes_watcher: Mutex<Option<notify::RecommendedWatcher>>,
+}
+```
+
+Accessed via Tauri's state management:
+
+```rust
+#[tauri::command]
+fn space_get_current(state: State<SpaceState>) -> Result<Option<String>, String> {
+  let current = state.current.lock().unwrap();
+  Ok(current.as_ref().map(|root| root.display().to_string()))
+}
+```
+
+### Frontend State (`src/contexts/SpaceContext.tsx`)
+
+<CodeGroup>
+```typescript State Shape
+interface SpaceContextValue {
+  spacePath: string | null;           // Current space root path
+  spaceSchemaVersion: number | null;  // Schema version
+  lastSpacePath: string | null;       // Last opened space (for "Continue")
+  recentSpaces: string[];             // Recent space paths (max 20)
+  isIndexing: boolean;                // Index rebuild in progress
+  settingsLoaded: boolean;            // Settings loaded from disk
+}
+```
+
+```typescript Actions
+// User-triggered actions
+onOpenSpace: () => Promise<void>;           // Show folder picker
+onOpenSpaceAtPath: (path: string) => Promise<void>; // Open specific path
+onContinueLastSpace: () => Promise<void>;   // Reopen last space
+onCreateSpace: () => Promise<void>;         // Create new space
+closeSpace: () => Promise<void>;            // Close current space
+startIndexRebuild: () => Promise<void>;     // Manual index rebuild
+```
+</CodeGroup>
+
+## Recent Spaces
+
+Glyph tracks up to 20 recently opened spaces, stored in Tauri's persistent store:
+
+```typescript src/lib/settings.ts
+import { Store } from '@tauri-apps/plugin-store';
+
+const store = new Store('settings.json');
+
+export async function setCurrentSpacePath(path: string) {
+  await store.set('currentSpacePath', path);
+  
+  // Update recent spaces
+  const recent = (await store.get<string[]>('recentSpaces')) || [];
+  const updated = [path, ...recent.filter(p => p !== path)].slice(0, 20);
+  await store.set('recentSpaces', updated);
+  await store.save();
+}
+```
+
+## Path Safety
+
+### Preventing Path Traversal
+
+All user-provided paths are validated to prevent traversal attacks:
+
+```rust src-tauri/src/paths.rs
+pub fn join_under(base: &Path, rel: &str) -> Result<PathBuf, String> {
+  let normalized = PathBuf::from(rel)
+    .components()
+    .filter(|c| !matches!(c, Component::ParentDir))
+    .collect::<PathBuf>();
+  
+  let joined = base.join(&normalized);
+  
+  if !joined.starts_with(base) {
+    return Err("Path traversal detected".to_string());
+  }
+  
+  Ok(joined)
+}
+```
+
+Usage:
+
+```rust src-tauri/src/space_fs/read_write/text.rs
+#[tauri::command]
+pub fn space_read_text(
+  path: String,
+  state: State<SpaceState>
+) -> Result<TextFileDoc, String> {
+  let current = state.current.lock().unwrap();
+  let space = current.as_ref().ok_or("No space open")?;
+  
+  // Safe path join - rejects "../../../etc/passwd"
+  let abs_path = paths::join_under(&space.root, &path)?;
+  
+  let text = fs::read_to_string(abs_path)?;
+  // ...
+}
+```
+
+## Schema Migration
+
+<Warning>
+Glyph uses a **hard cutover migration policy**. When schema version changes:
+
+- Old app versions **cannot** open new spaces
+- New app versions **cannot** open old spaces
+- Users must export data and re-import
+
+This is intentional to keep the codebase simple.
+</Warning>
+
+### Version Check
+
+```rust src-tauri/src/space/commands.rs
+const CURRENT_SCHEMA_VERSION: u32 = 1;
+
+pub fn space_open(path: String) -> Result<SpaceInfo, String> {
+  let schema_path = PathBuf::from(&path).join("space.json");
+  let schema: SpaceSchema = serde_json::from_str(&fs::read_to_string(schema_path)?)?;
+  
+  if schema.version != CURRENT_SCHEMA_VERSION {
+    return Err(format!(
+      "Space schema version {} is not compatible with app version {} (requires version {})",
+      schema.version,
+      env!("CARGO_PKG_VERSION"),
+      CURRENT_SCHEMA_VERSION
+    ));
+  }
+  
+  // Continue with space open...
+}
+```

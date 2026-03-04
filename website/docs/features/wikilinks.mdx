@@ -1,0 +1,327 @@
+---
+title: Wikilinks
+description: Link notes together with wikilinks and discover backlinks automatically
+---
+
+Wikilinks are the primary way to create connections between notes in Glyph. They're simple, autocomplete-enabled, and automatically maintain bidirectional relationships.
+
+## Wikilink Syntax
+
+Wikilinks use double square brackets:
+
+```markdown
+[[Note Name]]
+```
+
+This creates a link to the note at `Note Name.md` in your space.
+
+## Creating Wikilinks
+
+<Tabs>
+  <Tab title="Type Manually">
+    Type `[[` to start a wikilink. Glyph shows an autocomplete menu with matching notes:
+    
+    1. Type `[[`
+    2. Start typing the note name
+    3. Use arrow keys to navigate suggestions
+    4. Press `Enter` or `Tab` to select
+    5. Type `]]` to close (or it's added automatically)
+  </Tab>
+  
+  <Tab title="Autocomplete">
+    The autocomplete menu shows:
+    
+    - **Note title**: The display name
+    - **Note path**: Full path in your space
+    - **Live filtering**: Results update as you type
+    
+    Press `Esc` to dismiss the menu without inserting.
+  </Tab>
+  
+  <Tab title="Paste">
+    Paste wikilink syntax directly:
+    
+    ```markdown
+    I copied this from another note: [[Project Notes]]
+    ```
+    
+    Glyph parses and renders it automatically.
+  </Tab>
+</Tabs>
+
+## Wikilink Features
+
+### Display Names (Aliases)
+
+Show different text than the note name:
+
+```markdown
+[[Actual Note Name|Display Text]]
+```
+
+**Example:**
+```markdown
+Read more in [[2024-01-15|yesterday's note]].
+```
+
+Displays as: "Read more in yesterday's note" but links to `2024-01-15.md`.
+
+### Headings and Anchors
+
+Link to specific sections within a note:
+
+```markdown
+[[Note Name#Heading]]
+```
+
+**Example:**
+```markdown
+See [[Project Plan#Timeline]] for deadlines.
+```
+
+Clicking this link opens the note and scrolls to the "Timeline" heading.
+
+### Combining Alias and Anchor
+
+```markdown
+[[Note Name#Heading|Custom Display]]
+```
+
+**Example:**
+```markdown
+Check [[Meeting Notes 2024-01-15#Action Items|today's action items]].
+```
+
+### Block References
+
+Link to specific blocks (paragraphs) using `^`:
+
+```markdown
+[[Note Name#^block-id]]
+```
+
+Block IDs are typically user-defined anchors in the target note.
+
+## Embedded Images
+
+Use `!` prefix to embed images:
+
+```markdown
+![[diagram.png]]
+```
+
+This displays the image inline instead of showing a link. Works with:
+
+- `.png`, `.jpg`, `.jpeg`
+- `.webp`, `.gif`, `.svg`
+- `.bmp`, `.avif`
+- `.tif`, `.tiff`
+
+You can also add an alias to embedded images:
+
+```markdown
+![[screenshot.png|Architecture diagram]]
+```
+
+## Link Resolution
+
+Glyph resolves wikilinks intelligently:
+
+### By Filename
+
+```markdown
+[[Note]]
+```
+
+Finds `Note.md` anywhere in your space.
+
+### With Path
+
+```markdown
+[[folder/subfolder/Note]]
+```
+
+Links to a note at that specific path.
+
+### Ambiguity Handling
+
+If multiple notes have the same name:
+
+- Glyph prefers the note closest to the current note's folder
+- Use a path to disambiguate: `[[projects/Meeting Notes]]`
+
+<Note>
+  Wikilinks are case-insensitive. `[[Note]]`, `[[note]]`, and `[[NOTE]]` all link to `Note.md`.
+</Note>
+
+## Unresolved Links
+
+When a wikilink points to a non-existent note:
+
+- It's styled differently (typically dimmed or marked)
+- The `unresolved` attribute is set to `true`
+- Clicking it can create the note (if your workflow supports it)
+
+This lets you create links first and fill in content later.
+
+## Backlinks
+
+Backlinks are automatically discovered and displayed:
+
+### How Backlinks Work
+
+1. You create a link from Note A to Note B: `[[Note B]]`
+2. Glyph indexes this relationship
+3. When viewing Note B, Glyph shows "Linked mentions" at the bottom
+4. The backlinks section lists all notes that link to Note B
+
+### Backlinks Display
+
+Backlinks appear at the bottom of the editor:
+
+```
+Linked mentions (3)
+- Project Overview
+- Meeting Notes 2024-01-15  
+- Research Findings
+```
+
+Click any backlink to navigate to that note.
+
+<Tip>
+  Backlinks are bidirectional but only require one-way linking. You don't need to manually maintain links in both directions.
+</Tip>
+
+## Search and Autocomplete
+
+The wikilink autocomplete searches:
+
+- **Note titles**: Matches against the filename (without `.md`)
+- **Note paths**: Full relative path in your space
+- **Fuzzy matching**: `proj notes` finds "Project Notes"
+- **Limit**: Shows up to 8 results by default
+
+### Autocomplete Behavior
+
+- **Opens on `[[`**: Menu appears immediately
+- **Filters as you type**: Results narrow down
+- **Keyboard navigation**: Arrow keys to move, Enter/Tab to select
+- **Mouse selection**: Click any item to insert
+- **Dismiss**: Press `Esc` or click outside
+
+## Link Updates
+
+When you rename or move a note, Glyph automatically:
+
+1. Finds all wikilinks pointing to the old location
+2. Updates them to point to the new location
+3. Preserves aliases and anchors
+4. Re-indexes backlinks
+
+This ensures your link graph stays intact as your space evolves.
+
+## Markdown Links vs Wikilinks
+
+Glyph supports both syntaxes:
+
+<Tabs>
+  <Tab title="Wikilinks">
+    **Syntax**: `[[Note Name]]`
+    
+    **Pros:**
+    - Shorter syntax
+    - Autocomplete built-in
+    - Automatic link updates on rename
+    - Backlinks indexed
+    
+    **Use for:** Internal note-to-note links
+  </Tab>
+  
+  <Tab title="Markdown Links">
+    **Syntax**: `[Text](path/to/note.md)`
+    
+    **Pros:**
+    - Standard markdown
+    - Works in other markdown tools
+    - Can use relative paths
+    - Can link to external URLs
+    
+    **Use for:** External links, compatibility, precise paths
+  </Tab>
+</Tabs>
+
+<Note>
+  Both link types work in Glyph. Use wikilinks for internal notes and markdown links for external URLs or when you need standard markdown compatibility.
+</Note>
+
+## Working with Wikilinks
+
+### Building a Knowledge Graph
+
+Create connections as you write:
+
+```markdown
+# Project Alpha
+
+This project relates to [[Strategy 2024]] and builds on
+work from [[Previous Project]].
+
+Key stakeholders: [[Team Directory]]
+```
+
+Over time, your notes form an interconnected graph.
+
+### MOCs (Maps of Content)
+
+Create index notes with many wikilinks:
+
+```markdown
+# Web Development MOC
+
+## Frameworks
+- [[React Patterns]]
+- [[Vue Best Practices]]
+- [[Svelte Guide]]
+
+## Tools
+- [[VS Code Setup]]
+- [[Git Workflow]]
+```
+
+### Daily Note Links
+
+Reference daily notes chronologically:
+
+```markdown
+# 2024-01-15
+
+Continued from [[2024-01-14]]
+
+Planning for [[2024-01-16]]
+```
+
+## Technical Details
+
+### Link Indexing
+
+Glyph uses SQLite to index wikilinks:
+
+- **Real-time indexing**: Links are indexed as you type
+- **Fast lookups**: Backlinks load instantly
+- **Incremental updates**: Only changed notes re-index
+
+### Link Storage
+
+Wikilinks are stored as plain text in markdown files:
+
+- **Format**: `[[target]]` or `[[target|alias]]`
+- **Encoding**: UTF-8
+- **Preservation**: Original syntax is never modified (except during rename)
+
+### Performance
+
+Wikilink autocomplete is optimized for large spaces:
+
+- **Debounced queries**: Waits for typing to pause
+- **Indexed search**: Uses SQLite FTS for speed
+- **Result limiting**: Shows top 8 matches

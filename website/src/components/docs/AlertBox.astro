@@ -1,0 +1,42 @@
+---
+interface Props {
+	tone?: "note" | "info" | "warning" | "tip";
+	label?: string;
+}
+
+const { tone = "note", label = "Note" } = Astro.props;
+---
+
+<div class={`docs-alert docs-alert--${tone}`}>
+	<p class="docs-alert-label">{label}</p>
+	<div class="docs-alert-body">
+		<slot />
+	</div>
+</div>
+
+<style>
+	.docs-alert {
+		border: 1px solid var(--border);
+		border-left-width: 3px;
+		padding: 1rem 1.1rem;
+		background: rgba(255, 255, 255, 0.72);
+	}
+
+	.docs-alert--note { border-left-color: #8f8f8f; }
+	.docs-alert--info { border-left-color: #4e7396; }
+	.docs-alert--warning { border-left-color: #a86d2c; }
+	.docs-alert--tip { border-left-color: #56794d; }
+
+	.docs-alert-label {
+		font-size: 0.7rem;
+		font-weight: 600;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--faint);
+		margin-bottom: 0.45rem;
+	}
+
+	.docs-alert-body :global(*:last-child) {
+		margin-bottom: 0;
+	}
+</style>

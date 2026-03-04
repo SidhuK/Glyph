@@ -1,0 +1,391 @@
+---
+title: File Attachments
+description: Attach images and files to notes with content-addressed storage
+---
+
+Glyph allows you to attach files to your notes with a content-addressed storage system. Files are deduplicated using SHA256 hashing and stored in your space's `assets/` directory.
+
+## Overview
+
+Attachments in Glyph:
+
+- **Content-addressed**: Files are named by their SHA256 hash
+- **Deduplicated**: Identical files are stored only once
+- **Persistent**: Files remain available even if the source is deleted
+- **Portable**: All assets travel with your space
+- **Efficient**: No file size bloat from duplicates
+
+<Frame>
+  <img src="/images/attachments.png" alt="Note with image attachment" />
+</Frame>
+
+## Attaching Files
+
+### From the Editor
+
+<Steps>
+  <Step title="Open a note">
+    Navigate to the note where you want to add an attachment.
+  </Step>
+  <Step title="Use the attach command">
+    Click the attachment button in the editor toolbar or use the slash command `/attach`.
+  </Step>
+  <Step title="Select a file">
+    Choose a file from your system using the file picker.
+  </Step>
+  <Step title="File is imported">
+    Glyph copies the file to `assets/`, generates a hash-based filename, and inserts markdown.
+  </Step>
+</Steps>
+
+### Supported File Types
+
+Glyph handles all file types but provides special treatment for:
+
+**Images** (auto-embedded):
+- PNG (`.png`)
+- JPEG (`.jpg`, `.jpeg`)
+- GIF (`.gif`)
+- WebP (`.webp`)
+- SVG (`.svg`)
+
+**Other files** (linked):
+- PDFs, documents, spreadsheets, etc.
+- Generic files use standard markdown links
+
+## Content-Addressed Storage
+
+### How It Works
+
+<Steps>
+  <Step title="File is selected">
+    You choose a file to attach (e.g., `screenshot.png`).
+  </Step>
+  <Step title="SHA256 hash computed">
+    Glyph computes the file's SHA256 hash while copying it.
+  </Step>
+  <Step title="Hash becomes filename">
+    File is saved as `<hash>.<extension>` in the `assets/` directory.
+  </Step>
+  <Step title="Markdown inserted">
+    A relative link to the asset is inserted in your note.
+  </Step>
+</Steps>
+
+### Example
+
+**Original file**: `~/Downloads/diagram.png`
+
+**SHA256 hash**: `a3b5c8d9e1f2...` (64 hex characters)
+
+**Stored as**: `.glyph/assets/a3b5c8d9e1f2...png`
+
+**Markdown**: `![](../assets/a3b5c8d9e1f2...png)`
+
+### Benefits
+
+<CardGroup cols={2}>
+  <Card title="Deduplication" icon="copy">
+    Attach the same image to 10 notes, it's stored only once.
+  </Card>
+  <Card title="Integrity" icon="shield-check">
+    File corruption is detectable—hash mismatch means the file changed.
+  </Card>
+  <Card title="Portability" icon="arrows-left-right">
+    Copy your space folder anywhere, all assets come with it.
+  </Card>
+  <Card title="No name conflicts" icon="file">
+    Hash-based names eliminate filename collisions.
+  </Card>
+</CardGroup>
+
+## Markdown Syntax
+
+### Images
+
+Images use standard markdown image syntax:
+
+```markdown
+![](../assets/a3b5c8d9e1f2...png)
+```
+
+Glyph renders these inline in the editor with preview support.
+
+### Other Files
+
+Non-image files use standard link syntax:
+
+```markdown
+[document.pdf](../assets/b4c6d8e0f3a1...pdf)
+```
+
+Clicking the link opens the file in your system's default application.
+
+### Relative Paths
+
+Asset links use **relative paths**:
+
+- Notes in root: `../assets/`
+- Notes in subfolders: `../../assets/` or deeper depending on note location
+
+Glyph automatically computes the correct relative path when inserting attachments.
+
+## Storage Location
+
+All assets live in:
+
+```
+your-space/
+  .glyph/
+    assets/
+      a3b5c8d9e1f2...png
+      b4c6d8e0f3a1...pdf
+      c5d7e9f1a2b3...jpg
+```
+
+### Why `.glyph/assets/`?
+
+- **Centralized**: All assets in one place
+- **Hidden**: `.glyph` is a hidden directory (won't clutter your file browser)
+- **Protected**: Separate from your notes, less likely to be accidentally deleted
+- **Portable**: Move `.glyph` with your notes, everything stays linked
+
+## File Preview
+
+Glyph provides in-app preview for attachments:
+
+### Image Preview
+
+Images display inline in the editor:
+
+- Click to expand full-size
+- Drag to reposition (markdown syntax)
+- Alt text supported for accessibility
+
+### File Info
+
+Hover over a file link to see:
+
+- Filename (original extension preserved)
+- File size
+- MIME type
+
+### External Opening
+
+Click non-image file links to open in your system's default app:
+
+- PDFs → PDF viewer
+- Documents → Word/LibreOffice/etc.
+- Spreadsheets → Excel/Sheets/etc.
+
+## Managing Attachments
+
+### Finding Unused Assets
+
+Glyph doesn't automatically delete assets when you remove markdown links. To clean up:
+
+<Steps>
+  <Step title="Manual scan">
+    Search `.glyph/assets/` for files not referenced in any note.
+  </Step>
+  <Step title="Use a script">
+    Write a script to compare asset filenames against all markdown files.
+  </Step>
+  <Step title="Delete manually">
+    Remove unused files from the `assets/` directory.
+  </Step>
+</Steps>
+
+<Note>
+  Future versions may include automatic orphan detection and cleanup.
+</Note>
+
+### Renaming Assets
+
+Don't rename files in `assets/` manually:
+
+- Hash-based names are **computed**, not arbitrary
+- Renaming breaks all markdown references
+- Re-attach the file instead to generate a new hash
+
+### Moving Notes
+
+When moving notes between folders:
+
+- **Glyph auto-updates** relative asset paths
+- Links remain functional after the move
+- No need to manually fix `../assets/` paths
+
+### Backing Up Assets
+
+Include `.glyph/assets/` in your backup strategy:
+
+- Git: Add `.glyph/assets/` to your repository
+- Cloud sync: Ensure `.glyph` is not ignored
+- Manual backups: Copy entire space folder including `.glyph`
+
+## File Size Considerations
+
+### Storage Limits
+
+Glyph has no built-in file size limits, but consider:
+
+- **Large files slow sync**: If using Git or cloud sync, big assets increase sync time
+- **Disk space**: Assets accumulate over time
+- **Performance**: Massive image files may slow rendering
+
+### Recommendations
+
+- **Optimize images**: Use compressed formats (WebP, JPEG) over raw (PNG)
+- **Limit file sizes**: Keep individual files under 10 MB for best performance
+- **Use external hosting for large media**: Link to YouTube, Vimeo, etc. instead of embedding large videos
+
+## Advanced: Manual Attachment API
+
+Attach files programmatically using the Tauri command:
+
+```typescript
+import { invoke } from '@tauri-apps/api/core';
+
+const result = await invoke('note_attach_file', {
+  note_id: 'daily/2024-03-10',
+  source_path: '/Users/you/Downloads/diagram.png'
+});
+
+// result.asset_rel_path: "assets/a3b5c8d9e1f2...png"
+// result.markdown: "![](../assets/a3b5c8d9e1f2...png)"
+```
+
+**Returns**:
+
+- `asset_rel_path`: Path relative to space root
+- `markdown`: Ready-to-insert markdown syntax
+
+### Use Cases
+
+- Custom importers
+- Automation scripts
+- Plugin development
+- Batch attachment processing
+
+## Atomic Writes
+
+File imports use **atomic writes** for safety:
+
+<Steps>
+  <Step title="Copy to temp file">
+    File is copied to `.glyph/assets/.import.tmp.<uuid>`.
+  </Step>
+  <Step title="Compute hash">
+    SHA256 is computed during the copy.
+  </Step>
+  <Step title="Rename atomically">
+    Temp file is renamed to hash-based name in one operation.
+  </Step>
+</Steps>
+
+**Benefits**:
+
+- **Crash-safe**: Interrupted imports don't corrupt assets
+- **Deduplication-aware**: If hash already exists, temp file is discarded
+- **No partial writes**: File appears only when fully written
+
+## Deduplication Example
+
+### Scenario
+
+You have the same screenshot in two places:
+
+- `~/Desktop/bug-report.png`
+- `~/Downloads/bug-report-copy.png`
+
+Both are identical files (same bytes).
+
+### Attachment Process
+
+<Steps>
+  <Step title="Attach first file">
+    Attach `~/Desktop/bug-report.png` to `notes/project-a.md`.
+    
+    → Stored as `assets/a3b5c8d9e1f2...png`
+  </Step>
+  <Step title="Attach second file">
+    Attach `~/Downloads/bug-report-copy.png` to `notes/project-b.md`.
+    
+    → Same hash, file already exists, no new copy made
+  </Step>
+</Steps>
+
+### Result
+
+Both notes reference the same asset:
+
+**notes/project-a.md**:
+```markdown
+![](../assets/a3b5c8d9e1f2...png)
+```
+
+**notes/project-b.md**:
+```markdown
+![](../assets/a3b5c8d9e1f2...png)
+```
+
+Only **one file** stored in `assets/`, saving disk space.
+
+## Security
+
+### SHA256 Hashing
+
+- **Collision-resistant**: Virtually impossible to create two files with the same hash
+- **Integrity checking**: Verify file hasn't been tampered with
+- **Not encryption**: Files are stored unencrypted (plaintext)
+
+### SSRF Protection
+
+Glyph's attachment system is local-only:
+
+- No URL-based attachments (prevents SSRF attacks)
+- All files come from your filesystem
+- No remote fetching or automatic downloads
+
+### Permissions
+
+Attachments require:
+
+- **Read permission** on source file
+- **Write permission** on `.glyph/assets/` directory
+
+Glyph respects your OS's file permissions.
+
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| `/attach` | Open file picker |
+| Click image | Expand preview |
+| Click link | Open in default app |
+
+## Best Practices
+
+1. **Optimize before attaching** - Compress images to reduce space
+2. **Use descriptive alt text** - Helps with accessibility and searchability
+3. **Don't rename in assets/** - Always re-attach instead
+4. **Include assets in backups** - Don't ignore `.glyph/assets/`
+5. **Clean up orphans periodically** - Prevent asset bloat over time
+6. **Use external hosting for videos** - Embed YouTube/Vimeo instead of attaching large files
+7. **Test links after moving notes** - Verify relative paths still work
+
+## Limitations
+
+- No built-in orphan detection (yet)
+- No automatic thumbnail generation
+- No image editing/cropping in-app
+- No direct camera/screenshot integration (use system tools, then attach)
+- No cloud asset hosting (files are local only)
+
+## Related Features
+
+- [AI Chat](/features/ai-chat) - Attach images to AI conversations with vision models
+- [Tags & Search](/features/tags-search) - Find notes containing specific images
+- [Markdown Editor](/features/markdown-editor) - Embed images in your notes
+- [Space System](/development/space-system) - Learn about content-addressed storage

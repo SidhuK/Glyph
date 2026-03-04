@@ -1,0 +1,335 @@
+---
+title: Settings
+description: Configure Glyph's appearance, AI providers, and workspace preferences
+---
+
+Glyph's settings are organized into several categories, each accessible from the settings window (`Cmd+,` or `Ctrl+,`):
+
+- **AI Settings** - Configure AI providers and models
+- **Appearance** - Customize theme, colors, and fonts
+- **Space Settings** - Manage current workspace
+- **Daily Notes** - Configure daily note creation
+- **General** - AI assistant defaults and licensing
+- **About** - App version and updates
+
+## Opening Settings
+
+Access settings in several ways:
+- **Keyboard**: `Cmd+,` (macOS) or `Ctrl+,` (Windows/Linux)
+- **Command Palette**: `Cmd+K` → "Settings"
+- **Menu**: Application Menu → Settings
+
+The settings window opens in a separate window, allowing you to keep it open while working.
+
+## AI Settings
+
+Configure AI providers and models for the assistant panel.
+
+### AI Profiles
+
+Glyph uses **profiles** to manage different AI configurations. Each profile contains:
+- Provider (OpenAI, Anthropic, Google, etc.)
+- Model selection
+- Base URL for custom endpoints
+- Custom headers for authentication
+- Private host access permissions
+- Reasoning effort (for o1-style models)
+
+<Accordion title="Creating an AI Profile">
+1. Navigate to **Settings → AI**
+2. Click "Create Profile" to add a default profile
+3. Configure these fields:
+   - **Name**: Label for the profile (e.g., "GPT-4", "Claude Sonnet")
+   - **Provider**: Select from OpenAI, Anthropic, Google, Groq, or Custom
+   - **Model**: Choose the model or enter a custom model ID
+   - **Base URL**: Optional custom API endpoint
+   - **Headers**: Key-value pairs for authentication
+   - **Allow Private Hosts**: Enable for localhost/private network APIs
+4. Click "Save" to persist the profile
+
+The active profile is used for all AI operations in the current space.
+</Accordion>
+
+### Supported Providers
+
+- **OpenAI**: GPT-4, GPT-4 Turbo, GPT-3.5, o1 models
+- **Anthropic**: Claude 3.5 Sonnet, Claude 3 Opus/Sonnet/Haiku
+- **Google**: Gemini 1.5 Pro, Gemini 1.5 Flash
+- **Groq**: Fast inference for Llama, Mixtral models
+- **Custom**: Any OpenAI-compatible API endpoint
+
+### AI Availability
+
+Toggle AI features on/off globally:
+
+```typescript
+// From src/components/settings/AiSettingsPane.tsx
+<select
+  value={aiEnabled ? "enabled" : "disabled"}
+  onChange={(event) => updateAiEnabled(event.target.value === "enabled")}
+>
+  <option value="enabled">On</option>
+  <option value="disabled">Off</option>
+</select>
+```
+
+When disabled, AI panels and commands are hidden throughout the app.
+
+<Note>
+AI settings are stored per-profile and persist across sessions. Your API keys are stored securely in the system keychain.
+</Note>
+
+## Appearance Settings
+
+Customize Glyph's visual appearance.
+
+### Theme Mode
+
+Choose between:
+- **Light**: Bright background, dark text
+- **Dark**: Dark background, light text
+- **System**: Follows your OS preference
+
+The theme applies immediately without restart.
+
+### Accent Colors
+
+Select an accent color that appears in:
+- Selected items
+- Buttons and interactive elements
+- Active states
+- Links and highlights
+
+Available accents:
+- Neutral (default gray)
+- Cerulean (blue)
+- Tropical Teal
+- Light Yellow
+- Soft Apricot
+- Vibrant Coral
+
+```typescript
+// From src/lib/settings.ts
+export type UiAccent =
+  | "neutral"
+  | "cerulean"
+  | "tropical-teal"
+  | "light-yellow"
+  | "soft-apricot"
+  | "vibrant-coral";
+```
+
+### Typography
+
+Configure fonts and sizes:
+
+#### Font Family
+Choose the primary UI and content font. Glyph loads system fonts automatically, including:
+- System defaults (Inter, SF Pro, Segoe UI)
+- Custom installed fonts
+
+#### Monospace Font
+Select a monospace font for:
+- Code blocks
+- Inline code
+- File paths
+- Technical content
+
+Common options: JetBrains Mono, Fira Code, Monaco, Consolas
+
+#### Font Size
+Adjust the base font size:
+- **Small**: 13px
+- **Medium**: 14px (default)
+- **Large**: 15px
+- **Extra Large**: 16px
+
+All UI elements scale proportionally.
+
+<Accordion title="How fonts are loaded">
+Glyph enumerates system fonts on startup:
+
+```typescript
+// From src/components/settings/appearanceOptions.ts
+export async function loadAvailableFonts(): Promise<string[]> {
+  const fonts = await invoke("system_fonts_list");
+  return fonts.filter((font) => !isMonospaceFont(font));
+}
+
+export async function loadAvailableMonospaceFonts(): Promise<string[]> {
+  const fonts = await invoke("system_fonts_list");
+  return fonts.filter(isMonospaceFont);
+}
+```
+
+Fonts are cached per session for performance.
+</Accordion>
+
+## Space Settings
+
+Manage the current space and its metadata.
+
+### Current Space
+
+Displays:
+- Full path to the active space
+- Status indicator (Active/Inactive)
+
+### Recent Spaces
+
+View and manage recently opened spaces:
+- List shows all recent space paths
+- Click "Clear" to remove all entries
+- Paths are stored in app settings, not in the space itself
+
+### Search Index
+
+The search index powers fast full-text search across all notes.
+
+**Rebuild Index**: Click this button to:
+- Re-scan all markdown files in the space
+- Clear stale entries
+- Fix search issues
+- Update after bulk file operations
+
+<Note>
+Rebuilding is safe and non-destructive. Your notes are never modified.
+</Note>
+
+### Task Sources
+
+Configure where Glyph looks for tasks (checkboxes in markdown):
+- Enable/disable specific folders
+- Set scan depth
+- Filter by file patterns
+
+## Daily Notes Settings
+
+Configure automatic daily note creation.
+
+### Daily Notes Folder
+
+Choose where daily notes are created:
+1. Click "Browse" to select a folder within your space
+2. Must be inside the current space (not external)
+3. Use relative paths (e.g., `journal/daily`)
+
+**Shortcuts:**
+- `Cmd+Shift+D` (macOS) or `Ctrl+Shift+D` (Windows/Linux) creates/opens today's note
+
+### How It Works
+
+```typescript
+// From src/components/settings/DailyNotesSettingsPane.tsx
+const handleBrowseFolder = async () => {
+  const selected = await open({ directory: true, multiple: false });
+  if (selected && typeof selected === "string") {
+    const currentSpacePath = await invoke("space_get_current");
+    // Validates selection is within space
+    // Converts to relative path
+    await setDailyNotesFolder(relativePath || null);
+  }
+};
+```
+
+Daily notes are named using the format: `YYYY-MM-DD.md` (e.g., `2026-03-03.md`).
+
+<Accordion title="Daily note templates">
+Currently, daily notes are created as blank files. Template support is planned for a future release.
+</Accordion>
+
+## General Settings
+
+App-wide preferences and licensing.
+
+### Assistant Default View
+
+Choose how the AI panel opens:
+- **Create View**: Shows the note creation interface
+- **Chat View**: Opens directly to chat mode
+
+This preference applies when toggling the AI panel with `Cmd+Shift+A`.
+
+### License Management
+
+Manage your Glyph license:
+- View license status (trial, active, expired)
+- Enter license key
+- Purchase new license
+- Check expiration dates
+
+```typescript
+// From src/lib/license.ts
+export interface LicenseStatus {
+  status: "trial" | "active" | "expired" | "invalid";
+  purchase_url: string;
+  days_remaining?: number;
+}
+```
+
+## Settings Storage
+
+Settings are stored in two locations:
+
+### App Settings
+Stored in the system's app data folder:
+- Theme, accent, fonts
+- AI profiles and providers
+- Recent spaces list
+- License information
+
+### Space Settings
+Stored in `.glyph/Glyph/` within each space:
+- Daily notes folder
+- Task sources configuration
+- Space-specific preferences
+
+<Note>
+Deleting app settings resets to defaults. Space settings travel with the space if you move or sync it.
+</Note>
+
+## Keyboard Shortcuts in Settings
+
+<Table>
+  <thead>
+    <tr>
+      <th>Action</th>
+      <th>macOS</th>
+      <th>Windows/Linux</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Open Settings</td>
+      <td>`Cmd+,`</td>
+      <td>`Ctrl+,`</td>
+    </tr>
+    <tr>
+      <td>Close Settings</td>
+      <td>`Cmd+W`</td>
+      <td>`Ctrl+W`</td>
+    </tr>
+    <tr>
+      <td>Switch Tabs</td>
+      <td>`Cmd+1-5`</td>
+      <td>`Ctrl+1-5`</td>
+    </tr>
+  </tbody>
+</Table>
+
+## Troubleshooting
+
+### Settings not saving
+- Check file permissions in your home directory
+- Ensure you have disk space available
+- Try restarting Glyph
+
+### Fonts not appearing
+- Font enumeration happens once at startup
+- Restart Glyph after installing new fonts
+- System fonts only (not web fonts)
+
+### AI profile errors
+- Verify API keys are correct
+- Check base URL format for custom endpoints
+- Enable "Allow Private Hosts" for localhost APIs

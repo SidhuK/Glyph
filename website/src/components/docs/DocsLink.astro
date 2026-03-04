@@ -1,0 +1,21 @@
+---
+import { rewriteDocsHref } from "../../lib/docs";
+
+interface Props {
+	href?: string;
+}
+
+const { href, ...rest } = Astro.props;
+const resolvedHref = rewriteDocsHref(href);
+const isExternal =
+	resolvedHref?.startsWith("http://") || resolvedHref?.startsWith("https://");
+---
+
+<a
+	href={resolvedHref}
+	target={isExternal ? "_blank" : undefined}
+	rel={isExternal ? "noopener" : undefined}
+	{...rest}
+>
+	<slot />
+</a>

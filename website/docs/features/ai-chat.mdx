@@ -1,0 +1,442 @@
+---
+title: AI Chat Assistant
+description: Multi-provider AI chat with context attachment and conversation history
+---
+
+Glyph includes a built-in AI assistant that supports multiple providers (OpenAI, Anthropic, Google, Ollama, and more). Attach notes and folders as context to ground conversations in your knowledge base.
+
+## Overview
+
+The AI panel is a resizable sidebar that provides:
+
+- **Multi-provider support**: OpenAI, Anthropic, Gemini, Ollama, OpenRouter, and custom endpoints
+- **Context attachment**: Include notes and folders in your prompts
+- **Conversation history**: Review and restore past chats
+- **Two modes**: Chat (conversational) and Create (single-shot generation)
+- **Profile management**: Switch between API keys and models instantly
+
+<Frame>
+  <img src="/images/ai-panel.png" alt="AI chat panel with context attachments" />
+</Frame>
+
+## Getting Started
+
+<Steps>
+  <Step title="Open AI settings">
+    Go to Settings → AI to configure your first profile.
+  </Step>
+  <Step title="Create a profile">
+    Choose a provider, add your API key, and select a model.
+  </Step>
+  <Step title="Open the AI panel">
+    Click the AI icon in the sidebar or use the keyboard shortcut.
+  </Step>
+  <Step title="Start chatting">
+    Type your message and press Enter to send.
+  </Step>
+</Steps>
+
+## AI Providers
+
+Glyph supports multiple AI providers out of the box:
+
+<CardGroup cols={2}>
+  <Card title="OpenAI" icon="robot">
+    GPT-4, GPT-4 Turbo, GPT-3.5 Turbo, and o-series reasoning models with configurable reasoning effort.
+  </Card>
+  <Card title="Anthropic" icon="robot">
+    Claude 3.5 Sonnet, Opus, and Haiku models with extended context windows.
+  </Card>
+  <Card title="Google Gemini" icon="robot">
+    Gemini 1.5 Pro, Flash, and other Google AI models.
+  </Card>
+  <Card title="Ollama" icon="server">
+    Run local models like Llama, Mistral, and Phi directly on your machine.
+  </Card>
+  <Card title="OpenRouter" icon="route">
+    Access dozens of models through a single API with unified pricing.
+  </Card>
+  <Card title="Custom (OpenAI-compatible)" icon="code">
+    Connect to any OpenAI-compatible endpoint with custom base URLs and headers.
+  </Card>
+</CardGroup>
+
+### Provider Configuration
+
+Each provider requires:
+
+- **Name**: Display name for the profile (e.g., "Work GPT-4")
+- **Provider**: Select from the dropdown
+- **Model**: Choose an available model
+- **API Key**: Your provider's API key (stored securely)
+- **Base URL** (optional): Custom endpoint for compatible providers
+- **Headers** (optional): Additional HTTP headers for authentication
+
+<Note>
+  API keys are stored locally using your system's secure credential storage. They never leave your machine.
+</Note>
+
+## Chat Modes
+
+### Chat Mode
+
+**Conversational assistant** with full context awareness:
+
+- Multi-turn conversations with memory
+- Follow-up questions and clarifications
+- Context persists across messages
+- Ideal for research, brainstorming, and exploration
+
+### Create Mode
+
+**Single-shot generation** for focused tasks:
+
+- Optimized for content creation
+- Each request is independent
+- Less conversational, more generative
+- Ideal for drafting, summarizing, and transforming content
+
+Switch modes in Settings → AI → Assistant Mode.
+
+## Context Attachments
+
+Attach notes and folders to ground AI responses in your knowledge:
+
+### Adding Context
+
+<Tabs>
+  <Tab title="Type @ Mentions">
+    Type `@` in the composer to search for files and folders. Select one to attach it.
+  </Tab>
+  <Tab title="Click the + Button">
+    Click the add context button to browse and select files/folders.
+  </Tab>
+  <Tab title="Drag and Drop">
+    Drag notes from the file tree into the AI panel to attach them.
+  </Tab>
+</Tabs>
+
+### Context Types
+
+<CardGroup cols={2}>
+  <Card title="File Context" icon="file">
+    Attach a single note. Its full markdown content is included in the prompt.
+  </Card>
+  <Card title="Folder Context" icon="folder">
+    Attach an entire folder. All markdown files within are concatenated and sent.
+  </Card>
+</CardGroup>
+
+### Context Budget
+
+Glyph automatically manages context size:
+
+- **Character budget**: 100,000 characters by default
+- **Token estimation**: Displays estimated token count before sending
+- **Truncation**: If content exceeds budget, files are truncated in order
+- **Manifest**: View exactly what's included in the "Attached" section
+
+### Removing Context
+
+Click the X on any attached item to remove it. Context persists for the current conversation until manually cleared or you start a new chat.
+
+## Using the AI Panel
+
+### Panel Layout
+
+1. **Header**: Model selector, new chat button, settings, minimize
+2. **History**: Expandable list of recent conversations
+3. **Chat thread**: Messages from you and the AI
+4. **Composer**: Input area with context attachments and send button
+
+### Model Selector
+
+Click the model dropdown to:
+
+- Switch models without losing your conversation
+- View model details (context length, pricing, modalities)
+- Filter models by name or ID
+- Switch between API key profiles
+
+<Frame>
+  <img src="/images/model-selector.png" alt="Model selector showing available models with details" />
+</Frame>
+
+### Sending Messages
+
+<Steps>
+  <Step title="Attach context (optional)">
+    Use @ mentions or the + button to add relevant notes/folders.
+  </Step>
+  <Step title="Type your message">
+    Enter your prompt in the composer. Shift+Enter for new lines.
+  </Step>
+  <Step title="Send">
+    Press Enter or click the send button to submit.
+  </Step>
+  <Step title="AI responds">
+    Streaming response appears in the chat thread.
+  </Step>
+</Steps>
+
+### Message Actions
+
+<Tabs>
+  <Tab title="Copy">
+    Click the copy icon to copy AI responses to your clipboard.
+  </Tab>
+  <Tab title="Save to Note">
+    Click the save icon to append the response to a note of your choice.
+  </Tab>
+  <Tab title="Retry">
+    Click retry to regenerate the last response (uses same context).
+  </Tab>
+  <Tab title="Stop">
+    Click stop during streaming to halt the response early.
+  </Tab>
+</Tabs>
+
+## Conversation History
+
+### Viewing History
+
+Click the history toggle to expand the history panel:
+
+- Shows last 14 conversations
+- Each entry displays title, model, provider, and timestamp
+- Click any conversation to restore it
+
+### Restoring Conversations
+
+<Steps>
+  <Step title="Open history">
+    Click the history button to expand the panel.
+  </Step>
+  <Step title="Select a conversation">
+    Click any conversation to load its full message history.
+  </Step>
+  <Step title="Continue chatting">
+    Add new messages to continue where you left off.
+  </Step>
+</Steps>
+
+### Conversation Metadata
+
+Each conversation stores:
+
+- **Job ID**: Unique identifier
+- **Title**: Auto-generated from first message
+- **Provider**: Which AI service was used
+- **Model**: Specific model name
+- **Created**: Timestamp
+- **Message count**: Number of messages exchanged
+- **Preview**: First line of the conversation
+
+### Starting Fresh
+
+Click the "New Chat" button to:
+
+- Clear the current conversation
+- Reset attached context
+- Start with a blank slate
+
+<Warning>
+  New chat does not save the current conversation. Make sure to finish your current chat before starting a new one.
+</Warning>
+
+## Profile Management
+
+### Creating Profiles
+
+<Steps>
+  <Step title="Open AI settings">
+    Navigate to Settings → AI.
+  </Step>
+  <Step title="Click Add Profile">
+    Create a new profile with a descriptive name.
+  </Step>
+  <Step title="Configure provider">
+    Select your provider and enter the required details.
+  </Step>
+  <Step title="Add API key">
+    Enter your API key (stored securely on your system).
+  </Step>
+  <Step title="Select model">
+    Choose from the provider's available models.
+  </Step>
+</Steps>
+
+### Switching Profiles
+
+If you have multiple profiles configured:
+
+- Click the model selector
+- Use the "API keys" pill switcher at the top
+- Click a profile to switch instantly
+- Model list updates to show that provider's models
+
+### Use Cases for Multiple Profiles
+
+- **Work/Personal**: Separate API keys for different contexts
+- **Cost optimization**: Use cheaper models for drafts, expensive ones for final output
+- **Local/Cloud**: Switch between Ollama (free) and OpenAI (paid)
+- **Provider comparison**: Test same prompt across different providers
+
+## Advanced Features
+
+### Reasoning Effort (o-series models)
+
+For OpenAI's o-series reasoning models:
+
+- Configure reasoning effort: low, medium, high
+- Higher effort = more thinking time = better answers (and higher cost)
+- Set in profile configuration
+
+### Custom Headers
+
+Add custom HTTP headers for authentication or routing:
+
+```json
+[
+  {"key": "X-API-Version", "value": "2024-01-01"},
+  {"key": "X-Organization", "value": "your-org"}
+]
+```
+
+### Private Hosts
+
+Enable "Allow private hosts" to connect to local AI services:
+
+- Required for Ollama (http://localhost:11434)
+- Required for self-hosted endpoints on private IPs
+- Security warning: Only enable for trusted endpoints
+
+### Tool Timeline (Create Mode)
+
+When using Create mode, the AI may use tools:
+
+- **create_note**: Creates a new note in your space
+- **search_notes**: Searches your knowledge base  
+- **list_files**: Lists files in a directory
+
+The tool timeline shows:
+
+- Which tools were called
+- Tool parameters
+- Results or errors
+- Execution timing
+
+<Frame>
+  <img src="/images/ai-tools.png" alt="AI tool timeline showing create_note and search_notes calls" />
+</Frame>
+
+## Context Strategies
+
+### Minimal Context
+
+**When**: Quick questions, general knowledge
+
+**Approach**: Send prompts without attachments
+
+```
+Explain the concept of atomic notes
+```
+
+### Single Note Context
+
+**When**: Analyzing, summarizing, or transforming a specific note
+
+**Approach**: Attach the target note
+
+```
+@daily/2024-03-10.md
+
+Summarize the key points from this daily note
+```
+
+### Folder Context
+
+**When**: Cross-referencing multiple notes, finding patterns
+
+**Approach**: Attach a relevant folder
+
+```
+@projects/client-work
+
+What are the common themes across these project notes?
+```
+
+### Mixed Context
+
+**When**: Comparing specific notes against broader context
+
+**Approach**: Attach multiple files and folders
+
+```
+@projects/q1-goals.md @projects/completed
+
+How do my Q1 goals compare to what I actually completed?
+```
+
+## Best Practices
+
+1. **Be specific with prompts** - Clear instructions yield better results
+2. **Use context strategically** - More context ≠ better answers; be selective
+3. **Review token estimates** - Stay within model limits for best performance
+4. **Leverage history** - Continue conversations instead of repeating context
+5. **Try different models** - Each excels at different tasks
+6. **Use Create mode for generation** - Chat mode for back-and-forth
+7. **Save useful responses** - Click save to preserve insights in your notes
+8. **Name profiles clearly** - "Work GPT-4" vs "Personal Claude" helps when switching
+
+## Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| Enter | Send message |
+| Shift+Enter | New line in composer |
+| Escape | Minimize AI panel |
+| @ | Trigger context picker |
+| Click model | Open model selector |
+
+## Privacy & Security
+
+- **API keys**: Stored in system credential manager (Keychain on macOS, Credential Manager on Windows)
+- **Conversations**: Stored locally in your space's `.glyph` directory
+- **Context**: Only sent when explicitly attached
+- **No telemetry**: Glyph doesn't log or transmit your prompts
+- **Provider privacy**: Subject to each AI provider's privacy policy
+
+<Warning>
+  AI providers may retain conversation logs according to their policies. Do not send sensitive information unless you trust the provider.
+</Warning>
+
+## Common Issues
+
+### "No API key configured"
+
+**Solution**: Add an API key for the selected profile in Settings → AI
+
+### "Model not available"
+
+**Solution**: Check that your API key has access to the model, or select a different model
+
+### "Context too large"
+
+**Solution**: Remove some attachments or use a model with a larger context window
+
+### Streaming stops early
+
+**Possible causes**:
+- Network interruption
+- Provider rate limiting
+- Model hit token limit
+
+**Solution**: Click retry or reduce context size
+
+## Related Features
+
+- [Tags & Search](/features/tags-search) - Find notes to attach as context
+- [Daily Notes](/features/daily-notes) - Use AI to reflect on daily notes
+- [Attachments](/features/attachments) - Include images in AI conversations (vision models)
+- [AI Setup](/ai/setup) - Configure AI providers and profiles

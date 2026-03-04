@@ -1,0 +1,246 @@
+---
+title: Markdown Editor
+description: Rich markdown editing powered by TipTap
+---
+
+Glyph uses a powerful TipTap-based editor that supports real-time markdown editing with WYSIWYG formatting.
+
+## Editor Modes
+
+Glyph offers three editing modes:
+
+<Tabs>
+  <Tab title="Rich Mode">
+    **Rich editing with live preview**
+    
+    - Real-time markdown rendering as you type
+    - Formatting toolbar (bottom ribbon)
+    - Slash commands for quick formatting
+    - Wikilink autocomplete
+    - Inline images and embeds
+    
+    This is the default mode for editing notes.
+  </Tab>
+  
+  <Tab title="Plain Mode">
+    **Raw markdown editing**
+    
+    - See the raw markdown syntax
+    - Monospace font
+    - No formatting toolbar
+    - Useful for debugging or precise editing
+    
+    Switch to this mode when you need direct access to the markdown source.
+  </Tab>
+  
+  <Tab title="Preview Mode">
+    **Read-only rendered view**
+    
+    - Fully rendered markdown
+    - No editing capabilities
+    - Clean reading experience
+    - All links are clickable
+  </Tab>
+</Tabs>
+
+## Formatting Toolbar
+
+When editing in rich mode, hover near the bottom of the editor to reveal the formatting ribbon.
+
+### Format Buttons
+
+- **Bold**: `Cmd+B` / `Ctrl+B`
+- **Italic**: `Cmd+I` / `Ctrl+I`
+- **Strikethrough**: `Cmd+Shift+X` / `Ctrl+Shift+X`
+- **Code**: `Cmd+E` / `Ctrl+E` (inline code)
+- **Link**: Insert markdown links or wikilinks
+
+### Heading Buttons
+
+- **H1**: Large section heading
+- **H2**: Section heading
+- **H3**: Subsection heading
+
+### List Buttons
+
+- **Bullet list**: Unordered list items
+- **Numbered list**: Ordered list items
+- **Task list**: Checkboxes with task tracking
+
+### Block Elements
+
+- **Quote**: Blockquote
+- **Code block**: Fenced code blocks with syntax highlighting
+- **Table**: Markdown tables with header row
+- **Divider**: Horizontal rule
+
+## Slash Commands
+
+Type `/` on a new line to open the slash command menu:
+
+<Steps>
+  <Step title="Type /">
+    Start a new paragraph and type `/` to trigger the menu.
+  </Step>
+  
+  <Step title="Filter commands">
+    Continue typing to filter (e.g., `/h1`, `/table`, `/code`).
+  </Step>
+  
+  <Step title="Select command">
+    Use arrow keys to navigate, then press Enter or Tab to insert.
+  </Step>
+</Steps>
+
+### Available Commands
+
+- `/h1`, `/h2`, `/h3` - Insert headings
+- `/bullet` - Bullet list
+- `/numbered` - Numbered list
+- `/quote` - Blockquote
+- `/code` - Code block
+- `/table` - Insert 3×3 table
+- `/divider` - Horizontal rule
+
+<Tip>
+  Slash commands work by keyword too. Try typing `/block` to find blockquote, `/hr` for horizontal rule, or `/ol` for ordered list.
+</Tip>
+
+## Markdown Support
+
+Glyph supports standard markdown plus GitHub-flavored extensions:
+
+### Text Formatting
+
+```markdown
+**bold** or __bold__
+*italic* or _italic_
+~~strikethrough~~
+`inline code`
+```
+
+### Headings
+
+```markdown
+# Heading 1
+## Heading 2
+### Heading 3
+```
+
+### Lists
+
+```markdown
+- Bullet item
+- Another item
+
+1. Numbered item
+2. Second item
+
+- [ ] Task item
+- [x] Completed task
+```
+
+### Links and Images
+
+```markdown
+[Link text](https://example.com)
+[[Wikilink]]
+![Image alt](image.png)
+![[Embedded image.png]]
+```
+
+### Code Blocks
+
+````markdown
+```javascript
+const greeting = "Hello, world!";
+```
+````
+
+### Tables
+
+```markdown
+| Column 1 | Column 2 |
+|----------|----------|
+| Cell A   | Cell B   |
+```
+
+### Blockquotes
+
+```markdown
+> This is a quote
+> spanning multiple lines
+```
+
+### Callouts
+
+Glyph supports Obsidian-style callouts:
+
+```markdown
+> [!note]
+> This is a note callout
+
+> [!tip]
+> Helpful tip here
+
+> [!warning]
+> Important warning
+```
+
+Supported callout types: `note`, `tip`, `warning`, `info`, `success`, `error`
+
+## Tasks
+
+Task items have special features:
+
+### Task Scheduling
+
+When editing a task, click the 📅 icon that appears next to it to set:
+
+- **Scheduled date**: When you plan to work on it
+- **Due date**: When it must be completed
+
+Task dates are stored inline:
+
+```markdown
+- [ ] My task 📅 2024-01-20 ⏰ 2024-01-25
+```
+
+### Task Views
+
+View and manage tasks in the Tasks pane, organized by:
+
+- **Inbox**: Unscheduled tasks
+- **Today**: Tasks scheduled for today or overdue
+- **Upcoming**: Tasks scheduled for future dates
+
+## Images and Attachments
+
+Drag and drop images into the editor to automatically:
+
+1. Copy the image to your space's assets folder
+2. Insert a markdown image reference
+3. Display the image inline (in rich mode)
+
+You can also attach files to notes via the attachment commands.
+
+## Keyboard Shortcuts
+
+<Note>
+  On macOS, use `Cmd` instead of `Ctrl`.
+</Note>
+
+| Action | Shortcut |
+|--------|----------|
+| Bold | `Ctrl+B` |
+| Italic | `Ctrl+I` |
+| Strikethrough | `Ctrl+Shift+X` |
+| Inline code | `Ctrl+E` |
+| Undo | `Ctrl+Z` |
+| Redo | `Ctrl+Shift+Z` |
+| Find | `Ctrl+F` |
+| Save | Auto-save (no shortcut needed) |
+
+## Auto-Save
+
+Glyph automatically saves your changes as you type. There's no manual save button - every edit is persisted immediately to disk using atomic file writes to prevent data loss.
