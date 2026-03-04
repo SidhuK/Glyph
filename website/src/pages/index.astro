@@ -1,6 +1,12 @@
 ---
 import logoG from "../../assets/logo_g.PNG";
+import darkShowcaseAsset from "../../assets/dark.webp";
+import lightShowcaseAsset from "../../assets/light.webp";
 import Layout from "../layouts/Layout.astro";
+
+const showcaseSizes = "(max-width: 1200px) 96vw, 1100px";
+const showcaseWidth = lightShowcaseAsset.width;
+const showcaseHeight = lightShowcaseAsset.height;
 
 const features = [
 	{
@@ -65,7 +71,10 @@ const faqs = [
 ];
 ---
 
-<Layout>
+<Layout
+	preloadImage={lightShowcaseAsset.src}
+	preloadImageSizes={showcaseSizes}
+>
 	<div class="page">
 
 		<!-- ── HEADER ── -->
@@ -87,20 +96,52 @@ const faqs = [
 			<p class="label">LOCAL-FIRST · MARKDOWN · MACOS</p>
 			<h1>A quiet place for your<br />thoughts and ideas</h1>
 			<p class="hero-sub">Write in markdown. Connect ideas with links. Let AI help when you ask. Everything lives on your machine — plain files, always yours.</p>
-			<div class="hero-actions">
-				<a href="https://karatsidhu.gumroad.com/l/sqxfay" class="btn-primary" target="_blank" rel="noopener">Get Started</a>
-				<a href="https://github.com/SidhuK/Glyph" class="btn-outline" target="_blank" rel="noopener">GitHub</a>
+			<div class="hero-cta-stack">
+				<div class="hero-actions">
+					<a href="https://karatsidhu.gumroad.com/l/sqxfay" class="btn-primary" target="_blank" rel="noopener">Get Started</a>
+					<a href="https://github.com/SidhuK/Glyph" class="btn-outline" target="_blank" rel="noopener">GitHub</a>
+				</div>
+				<div class="install-strip" aria-label="Homebrew install command">
+					<div class="install-strip-bar">
+						<code class="install-strip-code" data-install-command>brew install --cask SidhuK/glyph/glyph</code>
+						<button class="install-strip-copy" type="button" data-copy-install aria-label="Copy Homebrew install command" title="Copy command">
+							<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+								<rect x="9" y="9" width="10" height="10" rx="2"></rect>
+								<path d="M5 15V7a2 2 0 0 1 2-2h8"></path>
+							</svg>
+						</button>
+					</div>
+				</div>
 			</div>
 		</section>
 
 		<!-- ── SHOWCASE ── -->
-		<section class="showcase" data-reveal>
-			<div class="showcase-wrap">
-				<img class="showcase-img showcase-light" src="/light.webp" alt="Glyph in light mode" loading="eager" />
-				<img class="showcase-img showcase-dark" src="/dark.webp" alt="Glyph in dark mode" loading="eager" />
+		<section class="showcase">
+				<div class="showcase-wrap">
+					<img
+						class="showcase-img"
+						src={lightShowcaseAsset.src}
+						sizes={showcaseSizes}
+						width={showcaseWidth}
+						height={showcaseHeight}
+						alt="Glyph in light mode"
+						loading="eager"
+						decoding="async"
+						fetchpriority="high"
+						data-light-src={lightShowcaseAsset.src}
+						data-dark-src={darkShowcaseAsset.src}
+						data-light-alt="Glyph in light mode"
+						data-dark-alt="Glyph in dark mode"
+					/>
 			</div>
 			<div class="mode-toggle-wrap">
-				<button class="mode-toggle" data-mode-toggle aria-label="Switch between light and dark preview">
+				<button
+					class="mode-toggle"
+					type="button"
+					data-mode-toggle
+					aria-label="Switch between light and dark preview"
+					aria-pressed="false"
+				>
 					<svg class="mode-icon icon-sun" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
 					<svg class="mode-icon icon-moon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
 				</button>
@@ -128,20 +169,34 @@ const faqs = [
 			<h2>Yours, completely</h2>
 			<p class="section-sub">Your notes never leave your machine. No account, no cloud, no telemetry. Open a folder and start writing.</p>
 			<div class="privacy-grid">
-				<div class="privacy-cell">
+				<div class="privacy-cell privacy-cell--tip">
 					<p class="privacy-stat">0</p>
 					<p class="privacy-label">data collected</p>
-				</div>
-				<div class="privacy-cell">
-					<p class="privacy-stat">∞</p>
-					<p class="privacy-label">offline access</p>
-				</div>
-				<div class="privacy-cell">
-					<p class="privacy-stat">.md</p>
-					<p class="privacy-label">plain files you own</p>
+					<div class="tip-card">
+						<p class="tip-title">Private by default</p>
+						<ul class="tip-list">
+							<li>No account required to use Glyph</li>
+							<li>No telemetry, tracking, or sync layer</li>
+							<li>Your notes stay available even without internet</li>
+						</ul>
+						<p class="tip-foot">Glyph works locally first, so privacy and offline access are built in from the start.</p>
+					</div>
 				</div>
 				<div class="privacy-cell privacy-cell--tip">
-					<p class="privacy-stat">&lt;35<span class="privacy-unit">MB</span></p>
+					<p class="privacy-stat">.md</p>
+					<p class="privacy-label">plain files you own</p>
+					<div class="tip-card">
+						<p class="tip-title">No lock-in</p>
+						<ul class="tip-list">
+							<li>Every note is saved as a standard markdown file</li>
+							<li>Open your folder anytime in Finder or another editor</li>
+							<li>Your notes stay yours, even if you stop using Glyph</li>
+						</ul>
+						<p class="tip-foot">Glyph organizes your notes without trapping them in a proprietary format.</p>
+					</div>
+				</div>
+				<div class="privacy-cell privacy-cell--tip">
+					<p class="privacy-stat">&lt;40<span class="privacy-unit">MB</span></p>
 					<p class="privacy-label">app size</p>
 					<div class="tip-card">
 						<p class="tip-title">Why so small?</p>
@@ -321,17 +376,14 @@ const faqs = [
 		border-radius: 6px;
 		border: 1px solid var(--ink);
 		cursor: pointer;
-		box-shadow: 0 10px 24px rgba(17, 17, 17, 0.08);
 		transition:
 			transform 0.15s ease,
-			box-shadow 0.15s ease,
 			background 0.15s ease;
 	}
 
 	.header-cta:hover {
 		transform: translateY(-1px);
 		background: #222;
-		box-shadow: 0 14px 28px rgba(17, 17, 17, 0.12);
 	}
 
 	.header-cta:focus-visible,
@@ -358,13 +410,11 @@ const faqs = [
 		cursor: pointer;
 		transition:
 			background 0.15s ease,
-			color 0.15s ease,
-			box-shadow 0.15s ease;
+			color 0.15s ease;
 	}
 
 	.btn-primary:hover {
 		background: #202020;
-		box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.06);
 	}
 
 	.btn-outline {
@@ -383,13 +433,11 @@ const faqs = [
 		cursor: pointer;
 		transition:
 			background 0.15s ease,
-			color 0.15s ease,
-			box-shadow 0.15s ease;
+			color 0.15s ease;
 	}
 
 	.btn-outline:hover {
 		background: rgba(17, 17, 17, 0.06);
-		box-shadow: inset 0 -1px 0 rgba(17, 17, 17, 0.08);
 	}
 
 	/* ── Label ── */
@@ -427,6 +475,13 @@ const faqs = [
 		margin: 0 auto 2rem;
 	}
 
+	.hero-cta-stack {
+		display: inline-flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.75rem;
+	}
+
 	.hero-actions {
 		display: inline-flex;
 		align-items: stretch;
@@ -435,10 +490,65 @@ const faqs = [
 		border-radius: 9px;
 		overflow: hidden;
 		background: rgba(255, 255, 255, 0.82);
-		box-shadow:
-			0 18px 36px rgba(17, 17, 17, 0.08),
-			inset 0 1px 0 rgba(255, 255, 255, 0.65);
 		backdrop-filter: blur(10px);
+	}
+
+	.install-strip {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		width: 100%;
+		max-width: 34rem;
+	}
+
+	.install-strip-bar {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		align-items: center;
+		gap: 0.65rem;
+		width: 100%;
+	}
+
+	.install-strip-code {
+		display: block;
+		font-family: var(--mono);
+		font-size: 0.78rem;
+		color: var(--ink);
+		line-height: 1.45;
+		min-width: 0;
+		overflow-wrap: anywhere;
+	}
+
+	.install-strip-copy {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2rem;
+		height: 2rem;
+		border: 1px solid rgba(17, 17, 17, 0.12);
+		border-radius: 0.6rem;
+		background: transparent;
+		color: var(--muted);
+		cursor: pointer;
+		transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+		justify-self: end;
+	}
+
+	.install-strip-copy.is-copied {
+		background: rgba(17, 17, 17, 0.06);
+		color: var(--ink);
+		border-color: rgba(17, 17, 17, 0.2);
+	}
+
+	.install-strip-copy:hover {
+		background: rgba(17, 17, 17, 0.05);
+		color: var(--ink);
+		border-color: rgba(17, 17, 17, 0.2);
+	}
+
+	.install-strip-copy:focus-visible {
+		outline: 2px solid rgba(17, 17, 17, 0.15);
+		outline-offset: 2px;
 	}
 
 	/* ── Showcase ── */
@@ -448,25 +558,12 @@ const faqs = [
 		margin-left: calc(-1 * (min(1100px, 96vw) - 100%) / 2);
 	}
 
-	.showcase-wrap {
-		position: relative;
-		line-height: 0;
-	}
-
 	.showcase-img {
 		width: 100%;
+		height: auto;
 		display: block;
 		transition: opacity 0.4s ease;
 	}
-
-	.showcase-dark {
-		position: absolute;
-		inset: 0;
-		opacity: 0;
-	}
-
-	.showcase.is-dark .showcase-light { opacity: 0; }
-	.showcase.is-dark .showcase-dark { opacity: 1; }
 
 	.mode-toggle-wrap {
 		display: flex;
@@ -570,22 +667,20 @@ const faqs = [
 	.privacy-grid {
 		display: flex;
 		flex-wrap: wrap;
-		justify-content: center;
 		border: 1px solid var(--border);
 		text-align: center;
 	}
 
 	.privacy-cell {
 		padding: 2rem 1rem;
-		width: calc(100% / 3);
+		width: 25%;
 		border-right: 1px solid var(--border);
-		border-bottom: 1px solid var(--border);
+		border-bottom: none;
 	}
 
-	.privacy-cell:nth-child(3) { border-right: none; }
-	.privacy-cell:nth-child(4) { border-left: none; }
-	.privacy-cell:nth-child(n+4) { border-bottom: none; }
-	.privacy-cell:last-child { border-right: none; }
+	.privacy-cell:last-child {
+		border-right: none;
+	}
 
 	.privacy-stat {
 		font-family: var(--serif);
@@ -631,7 +726,6 @@ const faqs = [
 		opacity: 0;
 		pointer-events: none;
 		transition: opacity 0.2s ease, transform 0.2s ease;
-		box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
 		z-index: 50;
 	}
 
@@ -753,9 +847,6 @@ const faqs = [
 		border-radius: 9px;
 		overflow: hidden;
 		background: rgba(255, 255, 255, 0.82);
-		box-shadow:
-			0 18px 36px rgba(17, 17, 17, 0.08),
-			inset 0 1px 0 rgba(255, 255, 255, 0.65);
 		backdrop-filter: blur(10px);
 	}
 
@@ -804,7 +895,7 @@ const faqs = [
 	}
 
 	/* ── Reveal ── */
-	:global([data-reveal]) {
+	:global(.reveal-pending) {
 		opacity: 0;
 		transform: translateY(16px);
 		transition: opacity 0.5s ease, transform 0.5s ease;
@@ -816,7 +907,7 @@ const faqs = [
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		:global([data-reveal]) {
+		:global(.reveal-pending) {
 			opacity: 1;
 			transform: none;
 			transition: none;
@@ -831,6 +922,28 @@ const faqs = [
 
 		h1 { font-size: clamp(1.8rem, 8vw, 2.4rem); }
 
+		.hero-cta-stack,
+		.hero-actions {
+			display: flex;
+			width: 100%;
+		}
+
+		.hero-cta-stack {
+			gap: 0.65rem;
+		}
+
+		.hero-actions {
+			flex-direction: column;
+		}
+
+		.install-strip {
+			max-width: none;
+		}
+
+		.install-strip-code {
+			font-size: 0.72rem;
+		}
+
 		.features-grid { grid-template-columns: 1fr; }
 		.feature-cell { border-right: none !important; }
 		.feature-cell:last-child { border-bottom: none; }
@@ -843,23 +956,91 @@ const faqs = [
 </style>
 
 <script>
-	const observer = new IntersectionObserver(
-		(entries) => {
-			entries.forEach((entry) => {
-				if (entry.isIntersecting) {
-					entry.target.classList.add('revealed');
-					observer.unobserve(entry.target);
-				}
-			});
-		},
-		{ threshold: 0.1 }
-	);
+	const defaultCopyLabel = 'Copy command';
+	const copiedCopyLabel = 'Copied';
+	const failedCopyLabel = 'Copy failed';
 
-	document.querySelectorAll('[data-reveal]').forEach((el) => observer.observe(el));
+	const revealItems = Array.from(document.querySelectorAll('[data-reveal]'));
+	const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+	if (prefersReducedMotion || !('IntersectionObserver' in window)) {
+		revealItems.forEach((el) => el.classList.add('revealed'));
+	} else {
+		const observer = new IntersectionObserver(
+			(entries) => {
+				entries.forEach((entry) => {
+					if (entry.isIntersecting) {
+						entry.target.classList.remove('reveal-pending');
+						entry.target.classList.add('revealed');
+						observer.unobserve(entry.target);
+					}
+				});
+			},
+			{ threshold: 0.1 }
+		);
+
+		revealItems.forEach((el) => {
+			const rect = el.getBoundingClientRect();
+			if (rect.top <= window.innerHeight * 0.92) {
+				el.classList.add('revealed');
+				return;
+			}
+
+			el.classList.add('reveal-pending');
+			observer.observe(el);
+		});
+	}
 
 	const toggle = document.querySelector('[data-mode-toggle]');
 	const showcase = toggle?.closest('.showcase');
+	const showcaseImage = showcase?.querySelector('.showcase-img');
+	let isDarkMode = false;
+
+	const setShowcaseMode = (darkMode) => {
+		if (!(showcaseImage instanceof HTMLImageElement)) return;
+
+		const nextSrc = darkMode ? showcaseImage.dataset.darkSrc : showcaseImage.dataset.lightSrc;
+		const nextAlt = darkMode ? showcaseImage.dataset.darkAlt : showcaseImage.dataset.lightAlt;
+
+		if (nextSrc) showcaseImage.src = nextSrc;
+		showcaseImage.removeAttribute('srcset');
+		if (nextAlt) showcaseImage.alt = nextAlt;
+
+		showcase?.classList.toggle('is-dark', darkMode);
+		toggle?.setAttribute('aria-pressed', String(darkMode));
+	};
+
 	toggle?.addEventListener('click', () => {
-		showcase?.classList.toggle('is-dark');
+		isDarkMode = !isDarkMode;
+		setShowcaseMode(isDarkMode);
+	});
+
+	const copyButton = document.querySelector('[data-copy-install]');
+	const installCommand = document.querySelector('[data-install-command]')?.textContent?.trim();
+	let copyResetTimer;
+
+	copyButton?.addEventListener('click', async () => {
+		if (!installCommand) return;
+
+		try {
+			await navigator.clipboard.writeText(installCommand);
+			copyButton.classList.add('is-copied');
+			copyButton.setAttribute('aria-label', copiedCopyLabel);
+			copyButton.setAttribute('title', copiedCopyLabel);
+			window.clearTimeout(copyResetTimer);
+			copyResetTimer = window.setTimeout(() => {
+				copyButton.classList.remove('is-copied');
+				copyButton.setAttribute('aria-label', defaultCopyLabel);
+				copyButton.setAttribute('title', defaultCopyLabel);
+			}, 1600);
+		} catch {
+			copyButton.setAttribute('aria-label', failedCopyLabel);
+			copyButton.setAttribute('title', failedCopyLabel);
+			window.clearTimeout(copyResetTimer);
+			copyResetTimer = window.setTimeout(() => {
+				copyButton.setAttribute('aria-label', defaultCopyLabel);
+				copyButton.setAttribute('title', defaultCopyLabel);
+			}, 1600);
+		}
 	});
 </script>

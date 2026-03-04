@@ -1,11 +1,28 @@
 ---
 interface Props {
 	title?: string;
+	description?: string;
+	ogImage?: string;
+	favicon?: string;
+	preloadImage?: string;
+	preloadImageSizes?: string;
+	preloadImageSrcSet?: string;
 }
 
-import logoG from "../../assets/logo_g.PNG";
-
-const { title = "Glyph — A space to think" } = Astro.props;
+const defaultDescription =
+	"Glyph is a local-first desktop notebook for writing, connecting, and exploring ideas. Markdown, wikilinks, AI. Built with Tauri and Rust.";
+const twitterHandle = "@karat_sidhu";
+const {
+	title = "Glyph — A space to think",
+	description = defaultDescription,
+	ogImage = "/og-image.png",
+	favicon = "/favicon.png",
+	preloadImage,
+	preloadImageSizes,
+	preloadImageSrcSet,
+} = Astro.props;
+const canonicalUrl = Astro.site ? new URL(Astro.url.pathname, Astro.site).toString() : undefined;
+const socialImageUrl = Astro.site ? new URL(ogImage, Astro.site).toString() : ogImage;
 ---
 
 <!doctype html>
@@ -13,23 +30,54 @@ const { title = "Glyph — A space to think" } = Astro.props;
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/png" href={logoG.src} />
-		<link rel="apple-touch-icon" href={logoG.src} />
+		<link rel="icon" type="image/png" href={favicon} />
+		<link rel="apple-touch-icon" href="/apple-touch-icon.png" />
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
-		<meta
-			name="description"
-			content="Glyph is a local-first desktop notebook for writing, connecting, and exploring ideas. Markdown, wikilinks, AI. Built with Tauri and Rust."
-		/>
+		<meta name="description" content={description} />
+		{canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+		<meta property="og:type" content="website" />
+		<meta property="og:title" content={title} />
+		<meta property="og:description" content={description} />
+		<meta property="og:site_name" content="Glyph" />
+		<meta property="og:image" content={socialImageUrl} />
+		<meta property="og:image:width" content="1200" />
+		<meta property="og:image:height" content="686" />
+		{canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:title" content={title} />
+		<meta name="twitter:description" content={description} />
+		<meta name="twitter:image" content={socialImageUrl} />
+		<meta name="twitter:creator" content={twitterHandle} />
+		<meta name="twitter:site" content={twitterHandle} />
 
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
 			href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;600&display=swap"
 			rel="stylesheet"
+			media="print"
+			onload="this.media='all'"
 		/>
+		<noscript>
+			<link
+				href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;600&display=swap"
+				rel="stylesheet"
+			/>
+		</noscript>
 
-		<link rel="preload" as="image" href="/light.webp" fetchpriority="high" />
+		{
+			preloadImage && (
+				<link
+					rel="preload"
+					as="image"
+					href={preloadImage}
+					imagesrcset={preloadImageSrcSet}
+					imagesizes={preloadImageSizes}
+					fetchpriority="high"
+				/>
+			)
+		}
 	</head>
 	<body>
 		<slot />
@@ -50,6 +98,9 @@ const { title = "Glyph — A space to think" } = Astro.props;
 
 	* { box-sizing: border-box; margin: 0; padding: 0; }
 	html { scroll-behavior: smooth; }
+	@media (prefers-reduced-motion: reduce) {
+		html { scroll-behavior: auto; }
+	}
 
 	body {
 		font-family: var(--mono);
