@@ -14,11 +14,13 @@ interface Props {
 
 const defaultDescription =
 	"Glyph is a local-first desktop notebook for writing, connecting, and exploring ideas. Markdown, wikilinks, AI. Built with Tauri and Rust.";
+const defaultSocialImageAlt =
+	"Glyph for macOS shown on a soft neutral background with the line 'A quiet place for your thoughts and ideas'.";
 const twitterHandle = "@karat_sidhu";
 const {
 	title = "Glyph — A space to think",
 	description = defaultDescription,
-	ogImage = "/og-image.png",
+	ogImage = "/og-image-v2.png",
 	favicon = "/favicon.png",
 	preloadImage,
 	preloadImageSizes,
@@ -48,13 +50,17 @@ const socialImageUrl = Astro.site
 		<meta property="og:description" content={description} />
 		<meta property="og:site_name" content="Glyph" />
 		<meta property="og:image" content={socialImageUrl} />
+		<meta property="og:image:secure_url" content={socialImageUrl} />
 		<meta property="og:image:width" content="1200" />
 		<meta property="og:image:height" content="686" />
+		<meta property="og:image:type" content="image/png" />
+		<meta property="og:image:alt" content={defaultSocialImageAlt} />
 		{canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
 		<meta name="twitter:card" content="summary_large_image" />
 		<meta name="twitter:title" content={title} />
 		<meta name="twitter:description" content={description} />
 		<meta name="twitter:image" content={socialImageUrl} />
+		<meta name="twitter:image:alt" content={defaultSocialImageAlt} />
 		<meta name="twitter:creator" content={twitterHandle} />
 		<meta name="twitter:site" content={twitterHandle} />
 
