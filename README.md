@@ -1,6 +1,16 @@
 # Glyph
 
-Glyph is an offline-first desktop notes app built with Tauri + React + TypeScript.
+<p align="center">
+  <img src="./website/assets/logo_g.PNG" alt="Glyph logo" width="140" />
+</p>
+
+<p align="center">
+  Glyph is an offline-first desktop notes app for writing, organizing, and exploring ideas in Markdown.
+  <br />
+  It combines a local-first workspace, fast search, and built-in AI tools in a Tauri desktop app powered by React, TypeScript, and Rust.
+</p>
+
+![Glyph light mode](./website/assets/light.webp)
 
 ## Licensing
 
