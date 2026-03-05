@@ -20,7 +20,7 @@ const twitterHandle = "@karat_sidhu";
 const {
 	title = "Glyph — A space to think",
 	description = defaultDescription,
-	ogImage = "/og-image-v2.png",
+	ogImage = "/og-image-twitter.jpg",
 	favicon = "/favicon.png",
 	preloadImage,
 	preloadImageSizes,
@@ -32,6 +32,11 @@ const canonicalUrl = Astro.site
 const socialImageUrl = Astro.site
 	? new URL(ogImage, Astro.site).toString()
 	: ogImage;
+const ogImagePath = ogImage.toLowerCase();
+const socialImageType =
+	ogImagePath.endsWith(".jpg") || ogImagePath.endsWith(".jpeg")
+		? "image/jpeg"
+		: "image/png";
 ---
 
 <!doctype html>
@@ -48,21 +53,24 @@ const socialImageUrl = Astro.site
 		<meta property="og:type" content="website" />
 		<meta property="og:title" content={title} />
 		<meta property="og:description" content={description} />
-		<meta property="og:site_name" content="Glyph" />
-		<meta property="og:image" content={socialImageUrl} />
-		<meta property="og:image:secure_url" content={socialImageUrl} />
-		<meta property="og:image:width" content="1200" />
-		<meta property="og:image:height" content="686" />
-		<meta property="og:image:type" content="image/png" />
-		<meta property="og:image:alt" content={defaultSocialImageAlt} />
-		{canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
-		<meta name="twitter:card" content="summary_large_image" />
-		<meta name="twitter:title" content={title} />
-		<meta name="twitter:description" content={description} />
-		<meta name="twitter:image" content={socialImageUrl} />
-		<meta name="twitter:image:alt" content={defaultSocialImageAlt} />
-		<meta name="twitter:creator" content={twitterHandle} />
-		<meta name="twitter:site" content={twitterHandle} />
+			<meta property="og:site_name" content="Glyph" />
+			<meta property="og:image:url" content={socialImageUrl} />
+			<meta property="og:image" content={socialImageUrl} />
+			<meta property="og:image:secure_url" content={socialImageUrl} />
+			<meta property="og:image:width" content="1200" />
+			<meta property="og:image:height" content="686" />
+			<meta property="og:image:type" content={socialImageType} />
+			<meta property="og:image:alt" content={defaultSocialImageAlt} />
+			{canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
+			<meta name="twitter:card" content="summary_large_image" />
+			{canonicalUrl && <meta name="twitter:url" content={canonicalUrl} />}
+			<meta name="twitter:title" content={title} />
+			<meta name="twitter:description" content={description} />
+			<meta name="twitter:image" content={socialImageUrl} />
+			<meta name="twitter:image:src" content={socialImageUrl} />
+			<meta name="twitter:image:alt" content={defaultSocialImageAlt} />
+			<meta name="twitter:creator" content={twitterHandle} />
+			<meta name="twitter:site" content={twitterHandle} />
 
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
