@@ -10,6 +10,8 @@ interface Props {
 	preloadImage?: string;
 	preloadImageSizes?: string;
 	preloadImageSrcSet?: string;
+	noIndex?: boolean;
+	jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>;
 }
 
 const defaultDescription =
@@ -25,7 +27,10 @@ const {
 	preloadImage,
 	preloadImageSizes,
 	preloadImageSrcSet,
+	noIndex = false,
+	jsonLd,
 } = Astro.props;
+const jsonLdItems = Array.isArray(jsonLd) ? jsonLd : jsonLd ? [jsonLd] : [];
 const canonicalUrl = Astro.site
 	? new URL(Astro.url.pathname, Astro.site).toString()
 	: undefined;
@@ -49,6 +54,14 @@ const socialImageType =
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
 		<meta name="description" content={description} />
+		<meta
+			name="robots"
+			content={
+				noIndex
+					? "noindex, nofollow"
+					: "index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1"
+			}
+		/>
 		{canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
 		<meta property="og:type" content="website" />
 		<meta property="og:title" content={title} />
@@ -71,6 +84,11 @@ const socialImageType =
 			<meta name="twitter:image:alt" content={defaultSocialImageAlt} />
 			<meta name="twitter:creator" content={twitterHandle} />
 			<meta name="twitter:site" content={twitterHandle} />
+			{
+				jsonLdItems.map((item) => (
+					<script type="application/ld+json" set:html={JSON.stringify(item)} />
+				))
+			}
 
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />

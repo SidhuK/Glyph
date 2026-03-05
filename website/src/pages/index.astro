@@ -7,6 +7,40 @@ import Layout from "../layouts/Layout.astro";
 const showcaseSizes = "(max-width: 1200px) 96vw, 1100px";
 const showcaseWidth = lightShowcaseAsset.width;
 const showcaseHeight = lightShowcaseAsset.height;
+const pageTitle = "Glyph: Local-First Markdown Notes App for macOS";
+const pageDescription =
+	"Learn how Glyph helps you capture ideas with markdown notes, wikilinks, tasks, and local-first AI on macOS. Private by default, fast, and built for deep work.";
+const softwareUrl = Astro.site ? new URL("/", Astro.site).toString() : "/";
+const softwareJsonLd = [
+	{
+		"@context": "https://schema.org",
+		"@type": "WebSite",
+		name: "Glyph",
+		url: softwareUrl,
+		description: pageDescription,
+		potentialAction: {
+			"@type": "SearchAction",
+			target: Astro.site
+				? `${new URL("/docs", Astro.site).toString()}?q={search_term_string}`
+				: "/docs?q={search_term_string}",
+			"query-input": "required name=search_term_string",
+		},
+	},
+	{
+		"@context": "https://schema.org",
+		"@type": "SoftwareApplication",
+		name: "Glyph",
+		applicationCategory: "ProductivityApplication",
+		operatingSystem: "macOS",
+		description: pageDescription,
+		url: softwareUrl,
+		offers: {
+			"@type": "Offer",
+			price: "0",
+			priceCurrency: "USD",
+		},
+	},
+];
 
 const features = [
 	{
@@ -76,6 +110,9 @@ const faqs = [
 ---
 
 <Layout
+	title={pageTitle}
+	description={pageDescription}
+	jsonLd={softwareJsonLd}
 	preloadImage={lightShowcaseAsset.src}
 	preloadImageSizes={showcaseSizes}
 >
