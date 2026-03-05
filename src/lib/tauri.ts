@@ -30,6 +30,13 @@ export interface AppInfo {
 	identifier: string;
 }
 
+export interface WindowSavedBounds {
+	x: number;
+	y: number;
+	width: number;
+	height: number;
+}
+
 export interface SpaceInfo {
 	root: string;
 	schema_version: number;
@@ -481,6 +488,10 @@ interface TauriCommands {
 	greet: CommandDef<{ name: string }, string>;
 	ping: CommandDef<void, string>;
 	app_info: CommandDef<void, AppInfo>;
+	window_saved_bounds_get: CommandDef<
+		{ label: string },
+		WindowSavedBounds | null
+	>;
 	system_fonts_list: CommandDef<void, string[]>;
 	system_monospace_fonts_list: CommandDef<void, string[]>;
 	license_bootstrap_status: CommandDef<void, LicenseStatus>;

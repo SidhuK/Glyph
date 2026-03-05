@@ -1,4 +1,5 @@
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
+import { invoke } from "./tauri";
 
 export type SettingsTab = "general" | "appearance" | "ai" | "space" | "about";
 
@@ -23,11 +24,16 @@ export async function openSettingsWindow(tab?: SettingsTab) {
 	}
 
 	const url = tab ? `#/settings?tab=${encodeURIComponent(tab)}` : "#/settings";
+	const savedBounds = await invoke("window_saved_bounds_get", {
+		label: "settings",
+	}).catch(() => null);
 	const win = new WebviewWindow("settings", {
 		title: "Settings",
 		url,
-		width: 760,
-		height: 640,
+		width: savedBounds?.width ?? 760,
+		height: savedBounds?.height ?? 640,
+		x: savedBounds?.x,
+		y: savedBounds?.y,
 		resizable: true,
 		decorations: false,
 		transparent: true,

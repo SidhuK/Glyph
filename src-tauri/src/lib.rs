@@ -16,12 +16,11 @@ mod system_fonts;
 pub(crate) mod utils;
 
 use serde::{Deserialize, Serialize};
-use std::time::Duration;
 use tauri::menu::{
     Menu, MenuItem, PredefinedMenuItem, Submenu, HELP_SUBMENU_ID, WINDOW_SUBMENU_ID,
 };
 use tauri::{Emitter, Manager, RunEvent, WindowEvent};
-use tauri_plugin_store::StoreExt;
+use tauri_plugin_store::{resolve_store_path, StoreExt};
 use tracing::warn;
 
 #[cfg(target_os = "macos")]
@@ -32,6 +31,8 @@ use tauri::{PhysicalPosition, PhysicalSize, Position, Size};
 const WINDOW_STATE_STORE_PATH: &str = "window-state.json";
 const MIN_WINDOW_WIDTH: u32 = 360;
 const MIN_WINDOW_HEIGHT: u32 = 240;
+const FALLBACK_MONITOR_WIDTH: u32 = 10_000;
+const FALLBACK_MONITOR_HEIGHT: u32 = 10_000;
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 struct SavedWindowBounds {
@@ -49,7 +50,7 @@ fn ensure_window_state_store<R: tauri::Runtime>(
     app: &tauri::AppHandle<R>,
 ) -> Option<std::sync::Arc<tauri_plugin_store::Store<R>>> {
     app.store_builder(WINDOW_STATE_STORE_PATH)
-        .auto_save(Duration::from_millis(500))
+        .disable_auto_save()
         .build()
         .ok()
 }
@@ -101,6 +102,21 @@ fn persist_window_bounds<R: tauri::Runtime>(window: &tauri::Window<R>) {
     store.set(window_bounds_key(window.label()), serialized);
 }
 
+fn flush_window_state_store_atomic<R: tauri::Runtime>(
+    app: &tauri::AppHandle<R>,
+) -> Result<(), String> {
+    let Some(store) = ensure_window_state_store(app) else {
+        return Ok(());
+    };
+    let path = resolve_store_path(app, WINDOW_STATE_STORE_PATH).map_err(|e| e.to_string())?;
+    let entries = store
+        .entries()
+        .into_iter()
+        .collect::<std::collections::HashMap<String, serde_json::Value>>();
+    let bytes = serde_json::to_vec_pretty(&entries).map_err(|e| e.to_string())?;
+    io_atomic::write_atomic(&path, &bytes).map_err(|e| e.to_string())
+}
+
 fn clamp_bounds_to_monitor(
     bounds: SavedWindowBounds,
     monitor_pos: PhysicalPosition<i32>,
@@ -128,17 +144,51 @@ fn clamp_bounds_to_monitor(
     }
 }
 
+fn monitor_bounds_from_window_or_fallback<R: tauri::Runtime>(
+    window: &tauri::Window<R>,
+) -> (PhysicalPosition<i32>, PhysicalSize<u32>) {
+    if let Ok(Some(monitor)) = window.current_monitor() {
+        return (*monitor.position(), *monitor.size());
+    }
+    if let Ok(Some(monitor)) = window.primary_monitor() {
+        return (*monitor.position(), *monitor.size());
+    }
+    if let Ok(monitors) = window.available_monitors() {
+        if let Some(monitor) = monitors.first() {
+            return (*monitor.position(), *monitor.size());
+        }
+    }
+    (
+        PhysicalPosition::new(0, 0),
+        PhysicalSize::new(FALLBACK_MONITOR_WIDTH, FALLBACK_MONITOR_HEIGHT),
+    )
+}
+
+fn monitor_bounds_from_app_or_fallback<R: tauri::Runtime>(
+    app: &tauri::AppHandle<R>,
+) -> (PhysicalPosition<i32>, PhysicalSize<u32>) {
+    if let Ok(Some(monitor)) = app.primary_monitor() {
+        return (*monitor.position(), *monitor.size());
+    }
+    if let Ok(monitors) = app.available_monitors() {
+        if let Some(monitor) = monitors.first() {
+            return (*monitor.position(), *monitor.size());
+        }
+    }
+    (
+        PhysicalPosition::new(0, 0),
+        PhysicalSize::new(FALLBACK_MONITOR_WIDTH, FALLBACK_MONITOR_HEIGHT),
+    )
+}
+
 fn apply_saved_or_default_bounds<R: tauri::Runtime>(window: &tauri::Window<R>) {
     let app = window.app_handle();
     let label = window.label().to_string();
     let _ = window.unmaximize();
 
     if let Some(saved) = load_saved_bounds(&app, &label) {
-        let resolved = if let Ok(Some(monitor)) = window.current_monitor() {
-            clamp_bounds_to_monitor(saved, *monitor.position(), *monitor.size())
-        } else {
-            saved
-        };
+        let (monitor_pos, monitor_size) = monitor_bounds_from_window_or_fallback(window);
+        let resolved = clamp_bounds_to_monitor(saved, monitor_pos, monitor_size);
         let _ = window.set_size(Size::Physical(PhysicalSize::new(
             resolved.width,
             resolved.height,
@@ -168,6 +218,13 @@ fn apply_saved_or_default_bounds<R: tauri::Runtime>(window: &tauri::Window<R>) {
         let _ = window.set_size(Size::Physical(PhysicalSize::new(width, height)));
         let _ = window.set_position(Position::Physical(PhysicalPosition::new(x, y)));
     }
+}
+
+#[tauri::command]
+fn window_saved_bounds_get(app: tauri::AppHandle, label: String) -> Option<SavedWindowBounds> {
+    let saved = load_saved_bounds(&app, &label)?;
+    let (monitor_pos, monitor_size) = monitor_bounds_from_app_or_fallback(&app);
+    Some(clamp_bounds_to_monitor(saved, monitor_pos, monitor_size))
 }
 
 fn init_tracing() {
@@ -491,10 +548,15 @@ pub fn run() {
             if matches!(event, WindowEvent::Moved(_) | WindowEvent::Resized(_)) {
                 persist_window_bounds(window);
             }
+            if matches!(event, WindowEvent::CloseRequested { .. }) {
+                persist_window_bounds(window);
+                if let Err(e) = flush_window_state_store_atomic(&window.app_handle()) {
+                    warn!("Failed to flush window state on close: {e}");
+                }
+            }
 
             if window.label() == "settings" {
                 if let WindowEvent::CloseRequested { api, .. } = event {
-                    persist_window_bounds(window);
                     api.prevent_close();
                     let _ = window.hide();
                 }
@@ -503,7 +565,6 @@ pub fn run() {
             #[cfg(target_os = "macos")]
             if window.label() == "main" {
                 if let WindowEvent::CloseRequested { api, .. } = event {
-                    persist_window_bounds(window);
                     // Keep app alive on macOS when the last window is closed.
                     // Dock activation can then restore this window.
                     api.prevent_close();
@@ -524,6 +585,7 @@ pub fn run() {
             greet,
             ping,
             app_info,
+            window_saved_bounds_get,
             system_fonts_list,
             system_monospace_fonts_list,
             license::commands::license_bootstrap_status,
@@ -615,6 +677,11 @@ pub fn run() {
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
         .run(|app_handle, event| {
+            if matches!(event, RunEvent::Exit | RunEvent::ExitRequested { .. }) {
+                if let Err(e) = flush_window_state_store_atomic(&app_handle) {
+                    warn!("Failed to flush window state on exit: {e}");
+                }
+            }
             #[cfg(target_os = "macos")]
             if let RunEvent::Reopen { .. } = event {
                 if let Some(window) = app_handle.get_webview_window("main") {
