@@ -60,7 +60,9 @@ if (location) {
 				"@type": "ListItem",
 				position: 1,
 				name: "Docs",
-				item: Astro.site ? new URL("/docs/introduction", Astro.site).toString() : "/docs/introduction",
+				item: Astro.site
+					? new URL("/docs/introduction", Astro.site).toString()
+					: "/docs/introduction",
 			},
 			{
 				"@type": "ListItem",

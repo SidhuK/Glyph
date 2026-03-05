@@ -1,154 +1,140 @@
 {
-  "$schema": "https://mintlify.com/docs.json",
-  "name": "Glyph",
-  "theme": "almond",
-  "colors": {
-    "primary": "#7C3AED",
-    "light": "#A78BFA",
-    "dark": "#5B21B6"
-  },
-  "navbar": {
-    "primary": {
-      "type": "github",
-      "href": "https://github.com/SidhuK/Glyph"
-    }
-  },
-  "footer": {
-    "socials": {
-      "github": "https://github.com/SidhuK/Glyph"
-    }
-  },
-  "navigation": {
-    "tabs": [
-      {
-        "tab": "Documentation",
-        "groups": [
-          {
-            "group": "Get Started",
-            "pages": [
-              "introduction",
-              "quickstart",
-              "installation"
-            ]
-          },
-          {
-            "group": "Core Features",
-            "pages": [
-              "features/notes",
-              "features/markdown-editor",
-              "features/file-tree",
-              "features/daily-notes",
-              "features/wikilinks",
-              "features/tags-search"
-            ]
-          },
-          {
-            "group": "Advanced Features",
-            "pages": [
-              "features/databases",
-              "features/task-management",
-              "features/ai-chat",
-              "features/attachments"
-            ]
-          },
-          {
-            "group": "Workspace",
-            "pages": [
-              "workspace/spaces",
-              "workspace/settings",
-              "workspace/keyboard-shortcuts"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "AI Assistant",
-        "groups": [
-          {
-            "group": "Overview",
-            "pages": [
-              "ai/overview",
-              "ai/setup"
-            ]
-          },
-          {
-            "group": "Providers",
-            "pages": [
-              "ai/providers/openai",
-              "ai/providers/anthropic",
-              "ai/providers/gemini",
-              "ai/providers/ollama",
-              "ai/providers/openrouter",
-              "ai/providers/codex"
-            ]
-          },
-          {
-            "group": "Usage",
-            "pages": [
-              "ai/chat-modes",
-              "ai/context-management",
-              "ai/profiles"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "Development",
-        "groups": [
-          {
-            "group": "Architecture",
-            "pages": [
-              "development/architecture",
-              "development/tech-stack",
-              "development/space-system"
-            ]
-          },
-          {
-            "group": "Building",
-            "pages": [
-              "development/setup",
-              "development/building",
-              "development/testing"
-            ]
-          },
-          {
-            "group": "Backend",
-            "pages": [
-              "development/backend/tauri-commands",
-              "development/backend/indexing",
-              "development/backend/storage"
-            ]
-          },
-          {
-            "group": "Frontend",
-            "pages": [
-              "development/frontend/components",
-              "development/frontend/contexts",
-              "development/frontend/hooks"
-            ]
-          }
-        ]
-      },
-      {
-        "tab": "Licensing",
-        "groups": [
-          {
-            "group": "Overview",
-            "pages": [
-              "licensing/overview",
-              "licensing/activation",
-              "licensing/trial"
-            ]
-          },
-          {
-            "group": "Support",
-            "pages": [
-              "licensing/faq",
-              "licensing/troubleshooting"
-            ]
-          }
-        ]
-      }
-    ]
-  }
+	"$schema": "https://mintlify.com/docs.json",
+	"name": "Glyph",
+	"theme": "almond",
+	"colors": {
+		"primary": "#7C3AED",
+		"light": "#A78BFA",
+		"dark": "#5B21B6"
+	},
+	"navbar": {
+		"primary": {
+			"type": "github",
+			"href": "https://github.com/SidhuK/Glyph"
+		}
+	},
+	"footer": {
+		"socials": {
+			"github": "https://github.com/SidhuK/Glyph"
+		}
+	},
+	"navigation": {
+		"tabs": [
+			{
+				"tab": "Documentation",
+				"groups": [
+					{
+						"group": "Get Started",
+						"pages": ["introduction", "quickstart", "installation"]
+					},
+					{
+						"group": "Core Features",
+						"pages": [
+							"features/notes",
+							"features/markdown-editor",
+							"features/file-tree",
+							"features/daily-notes",
+							"features/wikilinks",
+							"features/tags-search"
+						]
+					},
+					{
+						"group": "Advanced Features",
+						"pages": [
+							"features/databases",
+							"features/task-management",
+							"features/ai-chat",
+							"features/attachments"
+						]
+					},
+					{
+						"group": "Workspace",
+						"pages": [
+							"workspace/spaces",
+							"workspace/settings",
+							"workspace/keyboard-shortcuts"
+						]
+					}
+				]
+			},
+			{
+				"tab": "AI Assistant",
+				"groups": [
+					{
+						"group": "Overview",
+						"pages": ["ai/overview", "ai/setup"]
+					},
+					{
+						"group": "Providers",
+						"pages": [
+							"ai/providers/openai",
+							"ai/providers/anthropic",
+							"ai/providers/gemini",
+							"ai/providers/ollama",
+							"ai/providers/openrouter",
+							"ai/providers/codex"
+						]
+					},
+					{
+						"group": "Usage",
+						"pages": ["ai/chat-modes", "ai/context-management", "ai/profiles"]
+					}
+				]
+			},
+			{
+				"tab": "Development",
+				"groups": [
+					{
+						"group": "Architecture",
+						"pages": [
+							"development/architecture",
+							"development/tech-stack",
+							"development/space-system"
+						]
+					},
+					{
+						"group": "Building",
+						"pages": [
+							"development/setup",
+							"development/building",
+							"development/testing"
+						]
+					},
+					{
+						"group": "Backend",
+						"pages": [
+							"development/backend/tauri-commands",
+							"development/backend/indexing",
+							"development/backend/storage"
+						]
+					},
+					{
+						"group": "Frontend",
+						"pages": [
+							"development/frontend/components",
+							"development/frontend/contexts",
+							"development/frontend/hooks"
+						]
+					}
+				]
+			},
+			{
+				"tab": "Licensing",
+				"groups": [
+					{
+						"group": "Overview",
+						"pages": [
+							"licensing/overview",
+							"licensing/activation",
+							"licensing/trial"
+						]
+					},
+					{
+						"group": "Support",
+						"pages": ["licensing/faq", "licensing/troubleshooting"]
+					}
+				]
+			}
+		]
+	}
 }

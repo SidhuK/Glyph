@@ -16,8 +16,8 @@ import Table from "../../components/docs/Table.astro";
 import Tabs from "../../components/docs/Tabs.astro";
 import Tip from "../../components/docs/Tip.astro";
 import Warning from "../../components/docs/Warning.astro";
-import { getDocBySlug, getDocsStaticPaths } from "../../lib/docs";
 import DocsLayout from "../../layouts/DocsLayout.astro";
+import { getDocBySlug, getDocsStaticPaths } from "../../lib/docs";
 
 export async function getStaticPaths() {
 	return getDocsStaticPaths();

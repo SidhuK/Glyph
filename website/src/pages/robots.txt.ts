@@ -1,7 +1,8 @@
 export const prerender = true;
 
 export function GET(context: { site?: URL }) {
-	const baseUrl = context.site?.toString().replace(/\/$/, "") ?? "https://glyphformac.com";
+	const baseUrl =
+		context.site?.toString().replace(/\/$/, "") ?? "https://glyphformac.com";
 	const body = `User-agent: *
 Allow: /
 

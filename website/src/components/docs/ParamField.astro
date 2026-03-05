@@ -6,12 +6,7 @@ interface Props {
 	default?: string;
 }
 
-const {
-	path,
-	type,
-	required = false,
-	default: defaultValue,
-} = Astro.props;
+const { path, type, required = false, default: defaultValue } = Astro.props;
 ---
 
 <section class="docs-param-field">

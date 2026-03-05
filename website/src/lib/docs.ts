@@ -58,7 +58,9 @@ export function getDocLocation(slug: string): DocLocation | null {
 
 	for (const [tabIndex, tab] of docsTabs.entries()) {
 		for (const [groupIndex, group] of tab.groups.entries()) {
-			const pageIndex = group.pages.findIndex((page) => page === normalizedSlug);
+			const pageIndex = group.pages.findIndex(
+				(page) => page === normalizedSlug,
+			);
 			if (pageIndex !== -1) {
 				return {
 					tab: tab.tab,
