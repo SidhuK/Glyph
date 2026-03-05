@@ -35,8 +35,5 @@ export function buildRowStyle(depth: number): CSSProperties {
 	const paddingLeft = 4 + depth * 10;
 	return {
 		paddingLeft,
-		"--tree-line-x": `${depth * 10 + 2}px`,
-		"--row-indent": `${paddingLeft}px`,
-		"--row-line-opacity": depth === 0 ? 0 : 0.85,
 	} as CSSProperties;
 }

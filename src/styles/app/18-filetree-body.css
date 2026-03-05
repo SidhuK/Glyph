@@ -76,18 +76,6 @@
 	position: relative;
 }
 
-.fileTreeList::before {
-	content: "";
-	position: absolute;
-	left: var(--tree-line-x, 6px);
-	top: 4px;
-	bottom: 4px;
-	width: 1px;
-	background: var(--border-light);
-	opacity: var(--tree-line-opacity, 0.35);
-	pointer-events: none;
-}
-
 .fileTreeItem {
 	margin: 0;
 	transition: background var(--transition-fast);
@@ -200,7 +188,7 @@
 	margin: 4px 2px;
 }
 
-/* horizontal connectors removed; keep only vertical hierarchy lines */
+/* hierarchy connector lines intentionally removed */
 
 .fileTreeRow:hover {
 	background: transparent;

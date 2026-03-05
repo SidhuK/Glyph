@@ -1,5 +1,4 @@
 import { m } from "motion/react";
-import type { CSSProperties } from "react";
 import { memo, useCallback, useState } from "react";
 import type { FsEntry } from "../../lib/tauri";
 import { parentDir } from "../../utils/path";
@@ -71,15 +70,9 @@ function TreeEntries({
 	onCancelRename,
 }: TreeEntriesProps) {
 	if (entries.length === 0) return null;
-	const listDepth = parentDepth + 1;
-	const listStyle = {
-		"--tree-depth": listDepth,
-		"--tree-line-x": `${listDepth * 10 + 6}px`,
-		"--tree-line-opacity": listDepth === 0 ? 0 : 0.85,
-	} as CSSProperties;
 
 	return (
-		<ul className="fileTreeList" style={listStyle}>
+		<ul className="fileTreeList">
 			{entries.map((e) => {
 				const isDir = e.kind === "dir";
 				const depth = parentDepth + 1;
