@@ -53,10 +53,7 @@ pub async fn verify_license_key(license_key: &str) -> Result<(), LicenseServiceE
 
     let response = client
         .post(GUMROAD_VERIFY_URL)
-        .form(&[
-            ("product_id", product_id),
-            ("license_key", license_key),
-        ])
+        .form(&[("product_id", product_id), ("license_key", license_key)])
         .send()
         .await
         .map_err(|e| {
@@ -67,8 +64,7 @@ pub async fn verify_license_key(license_key: &str) -> Result<(), LicenseServiceE
                 "gumroad license verification request failed"
             );
             let message = if e.is_timeout() {
-                "License verification timed out. Check your connection and try again."
-                    .to_string()
+                "License verification timed out. Check your connection and try again.".to_string()
             } else {
                 "Could not reach Gumroad to verify this license key.".to_string()
             };

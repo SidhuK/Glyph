@@ -103,7 +103,14 @@ pub async fn space_rename_path(
         }
         let is_dir = from_abs.is_dir();
         std::fs::rename(&from_abs, &to_abs).map_err(|e| e.to_string())?;
-        reindex_after_rename(&root, &from_path, &to_path, &to_abs, is_dir, &recent_local_changes);
+        reindex_after_rename(
+            &root,
+            &from_path,
+            &to_path,
+            &to_abs,
+            is_dir,
+            &recent_local_changes,
+        );
         Ok(())
     })
     .await
@@ -173,13 +180,7 @@ pub async fn space_delete_path(
         deny_hidden_rel_path(&rel)?;
         let abs = paths::join_under(&root, &rel)?;
         let meta = std::fs::metadata(&abs).map_err(|e| e.to_string())?;
-        remove_markdown_notes_from_index(
-            &root,
-            &path,
-            &abs,
-            &recent_local_changes,
-            meta.is_dir(),
-        );
+        remove_markdown_notes_from_index(&root, &path, &abs, &recent_local_changes, meta.is_dir());
         if meta.is_dir() {
             if recursive.unwrap_or(false) {
                 move_path_to_trash(&abs)

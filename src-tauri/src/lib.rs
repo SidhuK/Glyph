@@ -5,8 +5,8 @@ mod glyph_fs;
 mod glyph_paths;
 mod index;
 mod io_atomic;
-mod links;
 mod license;
+mod links;
 mod net;
 mod notes;
 mod paths;
@@ -15,18 +15,160 @@ mod space_fs;
 mod system_fonts;
 pub(crate) mod utils;
 
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
+use std::time::Duration;
 use tauri::menu::{
     Menu, MenuItem, PredefinedMenuItem, Submenu, HELP_SUBMENU_ID, WINDOW_SUBMENU_ID,
 };
 use tauri::{Emitter, Manager, RunEvent, WindowEvent};
+use tauri_plugin_store::StoreExt;
 use tracing::warn;
 
 #[cfg(target_os = "macos")]
 use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
 
-#[cfg(not(target_os = "macos"))]
 use tauri::{PhysicalPosition, PhysicalSize, Position, Size};
+
+const WINDOW_STATE_STORE_PATH: &str = "window-state.json";
+const MIN_WINDOW_WIDTH: u32 = 360;
+const MIN_WINDOW_HEIGHT: u32 = 240;
+
+#[derive(Debug, Clone, Serialize, Deserialize)]
+struct SavedWindowBounds {
+    x: i32,
+    y: i32,
+    width: u32,
+    height: u32,
+}
+
+fn window_bounds_key(label: &str) -> String {
+    format!("windows.{label}.bounds")
+}
+
+fn ensure_window_state_store<R: tauri::Runtime>(
+    app: &tauri::AppHandle<R>,
+) -> Option<std::sync::Arc<tauri_plugin_store::Store<R>>> {
+    app.store_builder(WINDOW_STATE_STORE_PATH)
+        .auto_save(Duration::from_millis(500))
+        .build()
+        .ok()
+}
+
+fn load_saved_bounds<R: tauri::Runtime>(
+    app: &tauri::AppHandle<R>,
+    label: &str,
+) -> Option<SavedWindowBounds> {
+    let store = ensure_window_state_store(app)?;
+    store
+        .get(window_bounds_key(label))
+        .and_then(|value| serde_json::from_value(value).ok())
+}
+
+fn persist_window_bounds<R: tauri::Runtime>(window: &tauri::Window<R>) {
+    if window.is_maximized().unwrap_or(false) || window.is_fullscreen().unwrap_or(false) {
+        return;
+    }
+    if window.is_minimized().unwrap_or(false) {
+        return;
+    }
+
+    let Ok(size) = window.outer_size() else {
+        return;
+    };
+    let Ok(position) = window.outer_position() else {
+        return;
+    };
+
+    if size.width < MIN_WINDOW_WIDTH || size.height < MIN_WINDOW_HEIGHT {
+        return;
+    }
+
+    let bounds = SavedWindowBounds {
+        x: position.x,
+        y: position.y,
+        width: size.width,
+        height: size.height,
+    };
+
+    let app = window.app_handle();
+    let Some(store) = ensure_window_state_store(&app) else {
+        return;
+    };
+    let Ok(serialized) = serde_json::to_value(bounds) else {
+        return;
+    };
+
+    store.set(window_bounds_key(window.label()), serialized);
+}
+
+fn clamp_bounds_to_monitor(
+    bounds: SavedWindowBounds,
+    monitor_pos: PhysicalPosition<i32>,
+    monitor_size: PhysicalSize<u32>,
+) -> SavedWindowBounds {
+    let monitor_width_i32 = monitor_size.width as i32;
+    let monitor_height_i32 = monitor_size.height as i32;
+
+    let clamped_width = bounds
+        .width
+        .clamp(MIN_WINDOW_WIDTH, monitor_size.width.max(MIN_WINDOW_WIDTH));
+    let clamped_height = bounds.height.clamp(
+        MIN_WINDOW_HEIGHT,
+        monitor_size.height.max(MIN_WINDOW_HEIGHT),
+    );
+
+    let max_x = monitor_pos.x + (monitor_width_i32 - clamped_width as i32).max(0);
+    let max_y = monitor_pos.y + (monitor_height_i32 - clamped_height as i32).max(0);
+
+    SavedWindowBounds {
+        x: bounds.x.clamp(monitor_pos.x, max_x),
+        y: bounds.y.clamp(monitor_pos.y, max_y),
+        width: clamped_width,
+        height: clamped_height,
+    }
+}
+
+fn apply_saved_or_default_bounds<R: tauri::Runtime>(window: &tauri::Window<R>) {
+    let app = window.app_handle();
+    let label = window.label().to_string();
+    let _ = window.unmaximize();
+
+    if let Some(saved) = load_saved_bounds(&app, &label) {
+        let resolved = if let Ok(Some(monitor)) = window.current_monitor() {
+            clamp_bounds_to_monitor(saved, *monitor.position(), *monitor.size())
+        } else {
+            saved
+        };
+        let _ = window.set_size(Size::Physical(PhysicalSize::new(
+            resolved.width,
+            resolved.height,
+        )));
+        let _ = window.set_position(Position::Physical(PhysicalPosition::new(
+            resolved.x, resolved.y,
+        )));
+        return;
+    }
+
+    if label != "main" {
+        return;
+    }
+
+    if let Ok(Some(monitor)) = window.current_monitor() {
+        let monitor_size = monitor.size();
+        let monitor_pos = monitor.position();
+        let width = ((monitor_size.width as f64) * 0.8).round() as u32;
+        let height = ((monitor_size.height as f64) * 0.8).round() as u32;
+        let width = width.clamp(MIN_WINDOW_WIDTH, monitor_size.width.max(MIN_WINDOW_WIDTH));
+        let height = height.clamp(
+            MIN_WINDOW_HEIGHT,
+            monitor_size.height.max(MIN_WINDOW_HEIGHT),
+        );
+        let x = monitor_pos.x + ((monitor_size.width as i32 - width as i32) / 2);
+        let y = monitor_pos.y + ((monitor_size.height as i32 - height as i32) / 2);
+        let _ = window.set_size(Size::Physical(PhysicalSize::new(width, height)));
+        let _ = window.set_position(Position::Physical(PhysicalPosition::new(x, y)));
+    }
+}
 
 fn init_tracing() {
     let filter = tracing_subscriber::EnvFilter::try_from_default_env()
@@ -108,13 +250,8 @@ pub fn run() {
                 ],
             )?;
 
-            let open_space = MenuItem::with_id(
-                app,
-                "space.open",
-                "Open Space…",
-                true,
-                Some("CmdOrCtrl+O"),
-            )?;
+            let open_space =
+                MenuItem::with_id(app, "space.open", "Open Space…", true, Some("CmdOrCtrl+O"))?;
             let create_space = MenuItem::with_id(
                 app,
                 "space.create",
@@ -131,20 +268,10 @@ pub fn run() {
                 true,
                 None::<&str>,
             )?;
-            let open_space_settings = MenuItem::with_id(
-                app,
-                "space.settings",
-                "Space Settings…",
-                true,
-                None::<&str>,
-            )?;
-            let new_note = MenuItem::with_id(
-                app,
-                "file.new_note",
-                "New Note",
-                true,
-                Some("CmdOrCtrl+N"),
-            )?;
+            let open_space_settings =
+                MenuItem::with_id(app, "space.settings", "Space Settings…", true, None::<&str>)?;
+            let new_note =
+                MenuItem::with_id(app, "file.new_note", "New Note", true, Some("CmdOrCtrl+N"))?;
             let open_daily_note = MenuItem::with_id(
                 app,
                 "file.open_daily_note",
@@ -152,13 +279,8 @@ pub fn run() {
                 true,
                 Some("CmdOrCtrl+Shift+D"),
             )?;
-            let save_note = MenuItem::with_id(
-                app,
-                "file.save_note",
-                "Save",
-                true,
-                Some("CmdOrCtrl+S"),
-            )?;
+            let save_note =
+                MenuItem::with_id(app, "file.save_note", "Save", true, Some("CmdOrCtrl+S"))?;
             let close_tab = MenuItem::with_id(
                 app,
                 "file.close_tab",
@@ -173,8 +295,7 @@ pub fn run() {
                 true,
                 Some("CmdOrCtrl+Shift+A"),
             )?;
-            let close_ai =
-                MenuItem::with_id(app, "ai.close", "Close AI Pane", true, None::<&str>)?;
+            let close_ai = MenuItem::with_id(app, "ai.close", "Close AI Pane", true, None::<&str>)?;
             let attach_current_note = MenuItem::with_id(
                 app,
                 "ai.attach_current_note",
@@ -189,13 +310,8 @@ pub fn run() {
                 true,
                 Some("CmdOrCtrl+Alt+Shift+A"),
             )?;
-            let open_ai_settings = MenuItem::with_id(
-                app,
-                "ai.settings",
-                "AI Settings…",
-                true,
-                None::<&str>,
-            )?;
+            let open_ai_settings =
+                MenuItem::with_id(app, "ai.settings", "AI Settings…", true, None::<&str>)?;
 
             let file_menu = Submenu::with_items(
                 app,
@@ -345,25 +461,16 @@ pub fn run() {
         .setup(|app| {
             ai_rig::commands::refresh_provider_support_on_startup(app.handle().clone());
 
-            if let Some(window) = app.get_webview_window("main") {
-                #[cfg(target_os = "macos")]
-                {
-                    let _ = window.maximize();
-                }
+            let app_handle = app.handle().clone();
+            let _ = ensure_window_state_store(&app_handle);
 
-                #[cfg(not(target_os = "macos"))]
-                {
-                    if let Ok(Some(monitor)) = window.current_monitor() {
-                        let monitor_size = monitor.size();
-                        let monitor_pos = monitor.position();
-                        let width = ((monitor_size.width as f64) * 0.7).round() as u32;
-                        let height = ((monitor_size.height as f64) * 0.7).round() as u32;
-                        let _ = window.set_size(Size::Physical(PhysicalSize::new(width, height)));
-                        let x = monitor_pos.x + ((monitor_size.width as i32 - width as i32) / 2);
-                        let y = monitor_pos.y + ((monitor_size.height as i32 - height as i32) / 2);
-                        let _ = window.set_position(Position::Physical(PhysicalPosition::new(x, y)));
-                    }
-                }
+            if let Some(main_webview_window) = app.get_webview_window("main") {
+                let main_window = main_webview_window.as_ref().window();
+                apply_saved_or_default_bounds(&main_window);
+            }
+            if let Some(settings_webview_window) = app.get_webview_window("settings") {
+                let settings_window = settings_webview_window.as_ref().window();
+                apply_saved_or_default_bounds(&settings_window);
             }
 
             #[cfg(target_os = "macos")]
@@ -381,8 +488,13 @@ pub fn run() {
             Ok(())
         })
         .on_window_event(|window, event| {
+            if matches!(event, WindowEvent::Moved(_) | WindowEvent::Resized(_)) {
+                persist_window_bounds(window);
+            }
+
             if window.label() == "settings" {
                 if let WindowEvent::CloseRequested { api, .. } = event {
+                    persist_window_bounds(window);
                     api.prevent_close();
                     let _ = window.hide();
                 }
@@ -391,6 +503,7 @@ pub fn run() {
             #[cfg(target_os = "macos")]
             if window.label() == "main" {
                 if let WindowEvent::CloseRequested { api, .. } = event {
+                    persist_window_bounds(window);
                     // Keep app alive on macOS when the last window is closed.
                     // Dock activation can then restore this window.
                     api.prevent_close();

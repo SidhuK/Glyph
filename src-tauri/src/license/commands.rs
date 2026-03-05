@@ -1,13 +1,13 @@
 use tauri::AppHandle;
 use tracing::error;
 
+use super::is_official_build;
 use super::service::verify_license_key;
 use super::store::{license_path, read_record, write_record};
 use super::types::{
     build_status, ensure_trial_window, ensure_trial_window_from_activation, hash_license_key,
     mask_license_key, normalize_license_key, LicenseActivateResult,
 };
-use super::is_official_build;
 
 fn now_ms() -> u64 {
     std::time::SystemTime::now()
