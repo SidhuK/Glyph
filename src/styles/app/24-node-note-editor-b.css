@@ -570,7 +570,7 @@
 .tiptapContentInline h4,
 .tiptapContentInline h5,
 .tiptapContentInline h6 {
-	margin: var(--space-3) 0 var(--space-1);
+	margin: var(--space-3) 0 var(--space-2);
 	font-weight: var(--font-semibold);
 	line-height: 1.25;
 }
@@ -610,6 +610,7 @@
 		var(--heading-rail-width) +
 		var(--heading-rail-gap)
 	);
+	padding-bottom: var(--editor-bottom-ribbon-clearance, 88px);
 }
 
 .tiptapHostInline:not(.is-preview) .tiptapContentInline::before {

@@ -192,7 +192,7 @@ button.ribbonBtn.active {
 .editorBody .tiptap h4,
 .editorBody .tiptap h5,
 .editorBody .tiptap h6 {
-	margin: var(--space-4) 0 var(--space-2) 0;
+	margin: var(--space-4) 0 var(--space-3) 0;
 	letter-spacing: -0.01em;
 }
 

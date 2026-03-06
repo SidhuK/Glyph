@@ -86,6 +86,7 @@
 }
 
 .rfNodeNoteEditor {
+	--editor-bottom-ribbon-clearance: 88px;
 	flex: 1;
 	min-height: 0;
 	display: flex;
@@ -211,7 +212,7 @@
 }
 
 .rfNodeNoteEditor.hasRibbon .rfNodeNoteEditorBody {
-	padding-bottom: 50px;
+	padding-bottom: var(--editor-bottom-ribbon-clearance);
 }
 
 .rfNodeNoteEditorLoading {

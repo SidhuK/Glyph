@@ -36,11 +36,13 @@
 }
 
 .sidebarContentRoot {
+	--sidebar-footer-overlay-height: 56px;
 	display: flex;
 	flex: 1;
 	flex-direction: column;
 	min-height: 0;
 	overflow: hidden;
+	position: relative;
 }
 
 .sidebarHeader {
@@ -167,14 +169,32 @@
 }
 
 .sidebarFooter {
-	margin-top: auto;
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 2;
+	min-height: var(--sidebar-footer-overlay-height);
 	padding: var(--space-2) var(--space-3);
 	border-top: none;
+	background: transparent;
 	-webkit-app-region: no-drag;
 }
 
 .sidebarFooter * {
 	-webkit-app-region: no-drag;
+}
+
+.sidebarFooterIconButton {
+	background: color-mix(in srgb, var(--bg-primary) 78%, transparent);
+	border: 1px solid color-mix(in srgb, var(--border-light) 26%, transparent);
+	box-shadow: 0 1px 2px
+		color-mix(in srgb, var(--shadow-color, #000) 6%, transparent);
+}
+
+.sidebarFooterIconButton:hover {
+	background: color-mix(in srgb, var(--bg-hover) 88%, transparent);
+	border-color: color-mix(in srgb, var(--border-light) 34%, transparent);
 }
 
 .sidebarUpdateBadge {

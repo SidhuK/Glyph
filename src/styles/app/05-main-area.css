@@ -781,13 +781,12 @@
 	align-items: center;
 	gap: var(--space-2);
 	padding: 0 var(--space-3);
-	border-bottom: 1px solid
-		color-mix(in srgb, var(--border-light) 88%, transparent);
-	background: linear-gradient(
-		180deg,
-		color-mix(in srgb, var(--bg-secondary) 52%, var(--bg-primary)) 0%,
-		color-mix(in srgb, var(--bg-secondary) 34%, var(--bg-primary)) 100%
-	);
+	border-bottom: 0;
+	background: var(--bg-primary);
+}
+
+.mainTabsBar[data-empty-state="true"] {
+	background: var(--chrome-bg);
 }
 
 .mainTabsBreadcrumb {
@@ -852,11 +851,11 @@
 	min-width: 0;
 	display: flex;
 	align-items: center;
-	gap: 2px;
-	padding: 3px;
+	gap: 6px;
+	padding: 3px 0;
 	border-radius: var(--radius-3xl);
 	border: 0;
-	background: var(--bg-hover);
+	background: transparent;
 	overflow: hidden;
 }
 
@@ -877,7 +876,7 @@
 	gap: 7px;
 	padding: 0 26px 0 10px;
 	border-radius: var(--radius-2xl);
-	border: 1px solid transparent;
+	border: 1px solid color-mix(in srgb, var(--border-light) 28%, transparent);
 	background: transparent;
 	color: var(--text-tertiary);
 	cursor: pointer;

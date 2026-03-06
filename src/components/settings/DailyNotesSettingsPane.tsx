@@ -103,7 +103,7 @@ export function DailyNotesSettingsPane() {
 					</div>
 
 					<div className="dailyNotesFolderField">
-						<div className="dailyNotesFolderPath mono">
+						<div className="dailyNotesFolderPath">
 							{isLoading ? "Loading..." : folderDisplay}
 						</div>
 						{error && (

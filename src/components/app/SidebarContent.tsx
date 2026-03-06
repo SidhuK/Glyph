@@ -208,6 +208,7 @@ export const SidebarContent = memo(function SidebarContent({
 					type="button"
 					variant="ghost"
 					size="icon-sm"
+					className="sidebarFooterIconButton"
 					onClick={() => void openSettingsWindow()}
 					title="Settings"
 				>
@@ -232,6 +233,7 @@ export const SidebarContent = memo(function SidebarContent({
 									type="button"
 									variant="ghost"
 									size="icon-sm"
+									className="sidebarFooterIconButton"
 									title={`Add in ${targetDir || "space root"}`}
 								>
 									<Plus size={14} />

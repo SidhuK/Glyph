@@ -63,7 +63,8 @@
 .fileTreeScroll {
 	flex: 1;
 	min-height: 0;
-	padding: var(--space-2) var(--space-2);
+	padding: var(--space-2) var(--space-2)
+		calc(var(--sidebar-footer-overlay-height) + var(--space-2));
 	overflow-x: hidden;
 	overflow-y: auto;
 	-webkit-overflow-scrolling: touch;

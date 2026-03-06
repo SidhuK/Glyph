@@ -7,6 +7,7 @@ interface TabBarProps {
 	activeTabPath: string | null;
 	dirtyByPath: Record<string, boolean>;
 	dragTabPath: string | null;
+	useWindowBackground?: boolean;
 	onOpenBlankTab: () => void;
 	onSelectTab: (path: string) => void;
 	onCloseTab: (path: string) => void;
@@ -20,6 +21,7 @@ export function TabBar({
 	activeTabPath,
 	dirtyByPath,
 	dragTabPath,
+	useWindowBackground = false,
 	onOpenBlankTab,
 	onSelectTab,
 	onCloseTab,
@@ -55,7 +57,10 @@ export function TabBar({
 			onPointerEnter={() => setHovered(true)}
 			onPointerLeave={() => setHovered(false)}
 		>
-			<div className="mainTabsBar">
+			<div
+				className="mainTabsBar"
+				data-empty-state={useWindowBackground ? "true" : "false"}
+			>
 				<div className="mainTabsSide" />
 				<div className="mainTabsCenter">
 					<div className="mainTabsStrip">

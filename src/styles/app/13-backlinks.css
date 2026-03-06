@@ -5,7 +5,8 @@
 	display: flex;
 	flex-direction: column;
 	height: 100%;
-	padding: var(--space-2);
+	padding: var(--space-2) var(--space-2)
+		calc(var(--sidebar-footer-overlay-height) + var(--space-2));
 }
 
 .sidebarSectionContent .tagsPane {
