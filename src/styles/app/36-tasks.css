@@ -436,8 +436,8 @@
 	display: grid;
 	grid-template-columns: auto 1fr;
 	align-items: start;
-	gap: 10px;
-	padding: 11px 12px;
+	gap: 8px;
+	padding: 8px 10px;
 	border-radius: var(--radius-lg);
 	border: 1px solid color-mix(in srgb, transparent 100%, transparent);
 	background: color-mix(in srgb, var(--bg-primary) 86%, transparent);
@@ -484,14 +484,25 @@
 	min-width: 0;
 	display: flex;
 	flex-direction: column;
-	gap: 8px;
+	gap: 3px;
+}
+
+.tasksRowMain {
+	display: flex;
+	align-items: flex-start;
+	gap: 6px;
+	min-width: 0;
 }
 
 .tasksRowText {
+	flex: 1 1 auto;
+	min-width: 0;
 	font-size: 0.92rem;
-	line-height: 1.45;
+	line-height: 1.3;
 	color: var(--text-primary);
-	word-break: break-word;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 	transition: opacity 180ms ease;
 }
 
@@ -499,7 +510,7 @@
 	display: flex;
 	align-items: center;
 	flex-wrap: wrap;
-	gap: 8px;
+	gap: 6px;
 }
 
 .tasksMetaTag {
@@ -513,6 +524,14 @@
 	font-size: 0.68rem;
 	font-weight: var(--font-medium);
 	color: var(--text-secondary);
+}
+
+.tasksMetaTagInline {
+	flex: 0 0 auto;
+	max-width: min(32%, 180px);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .tasksMetaBadge {
@@ -534,27 +553,9 @@
 	);
 }
 
-.tasksRowPath {
-	margin-left: auto;
-	border: none;
-	background: transparent;
-	padding: 0;
-	max-width: min(50%, 360px);
-	font-size: var(--text-xs);
-	color: var(--text-secondary);
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
-	cursor: pointer;
-}
-
-.tasksRowPath:hover {
-	color: var(--text-primary);
-	text-decoration: underline;
-}
-
 .tasksScheduleBtn {
 	height: 22px;
+	flex: 0 0 auto;
 	padding-inline: 8px;
 	border-radius: var(--radius-full);
 	color: var(--text-secondary);
@@ -569,7 +570,6 @@
 .tasksBucketPill:focus-visible,
 .tasksNoteHeader:focus-visible,
 .tasksCheckbox:focus-visible,
-.tasksRowPath:focus-visible,
 .tasksScheduleBtn:focus-visible {
 	outline: 2px solid
 		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
@@ -638,10 +638,5 @@
 	.tasksBucketPill {
 		flex: 1 1 0;
 		padding-inline: 10px;
-	}
-
-	.tasksRowPath {
-		margin-left: 0;
-		max-width: 100%;
 	}
 }

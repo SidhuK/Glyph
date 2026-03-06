@@ -16,9 +16,8 @@ import {
 } from "../../lib/tasks";
 import { type TaskBucket, type TaskItem, invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
-import { FileText, RefreshCw } from "../Icons";
+import { FileText } from "../Icons";
 import { springPresets } from "../ui/animations";
-import { Button } from "../ui/shadcn/button";
 import { TaskRow } from "./TaskRow";
 
 interface TasksPaneProps {
@@ -112,7 +111,6 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 	const showGroupedInbox = bucket === "inbox";
 	const activeBucketMeta =
 		BUCKETS.find((item) => item.id === bucket) ?? BUCKETS[0];
-	const taskCountLabel = `${tasks.length} task${tasks.length === 1 ? "" : "s"}`;
 
 	const openTaskFile = useCallback(
 		async (notePath: string) => {
@@ -159,35 +157,6 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 
 	return (
 		<section className="tasksPane">
-			<header className="tasksPaneToolbar">
-				<div className="tasksPaneToolbarPrimary">
-					<div className="tasksPaneToolbarTitleRow">
-						<h2 className="tasksPaneToolbarTitle">Tasks</h2>
-						<span className="tasksPaneToolbarBadge">{taskCountLabel}</span>
-					</div>
-					<p className="tasksPaneToolbarSubtitle">
-						{activeBucketMeta.description}
-					</p>
-				</div>
-				<div className="tasksPaneToolbarActions">
-					<span
-						className="tasksPaneScopeChip"
-						data-bucket={activeBucketMeta.id}
-					>
-						<HugeiconsIcon icon={activeBucketMeta.icon} size={14} />
-						{activeBucketMeta.label}
-					</span>
-					<Button
-						type="button"
-						variant="ghost"
-						size="icon-sm"
-						onClick={() => void loadTasks()}
-						title="Refresh tasks"
-					>
-						<RefreshCw size={14} />
-					</Button>
-				</div>
-			</header>
 			<div className="tasksPaneBody">
 				<div className="tasksPaneFilters">
 					<div className="tasksBucketPills">
@@ -275,10 +244,8 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 										<TaskRow
 											key={task.task_id}
 											task={task}
-											withPath={false}
 											onToggle={toggleTask}
 											onSchedule={scheduleDates}
-											onOpenFile={(p) => void openTaskFile(p)}
 										/>
 									))}
 								</div>
@@ -291,10 +258,8 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 							<TaskRow
 								key={task.task_id}
 								task={task}
-								withPath={true}
 								onToggle={toggleTask}
 								onSchedule={scheduleDates}
-								onOpenFile={(p) => void openTaskFile(p)}
 							/>
 						))}
 					</div>

@@ -1,8 +1,5 @@
 import { useCallback, useState } from "react";
-import {
-	folderBreadcrumbFromNotePath,
-	todayIsoDateLocal,
-} from "../../lib/tasks";
+import { todayIsoDateLocal } from "../../lib/tasks";
 import type { TaskItem } from "../../lib/tauri";
 import { Calendar } from "../Icons";
 import { Badge } from "../ui/shadcn/badge";
@@ -12,27 +9,18 @@ import { TaskCheckbox } from "./TaskCheckbox";
 
 interface TaskRowProps {
 	task: TaskItem;
-	withPath: boolean;
 	onToggle: (task: TaskItem, checked: boolean) => void;
 	onSchedule: (
 		taskId: string,
 		scheduled: string | null,
 		due: string | null,
 	) => Promise<void>;
-	onOpenFile: (notePath: string) => void;
 }
 
-export function TaskRow({
-	task,
-	withPath,
-	onToggle,
-	onSchedule,
-	onOpenFile,
-}: TaskRowProps) {
+export function TaskRow({ task, onToggle, onSchedule }: TaskRowProps) {
 	const [open, setOpen] = useState(false);
 	const [scheduledDate, setScheduledDate] = useState(task.scheduled_date ?? "");
 	const [dueDate, setDueDate] = useState(task.due_date ?? "");
-	const folderBreadcrumb = folderBreadcrumbFromNotePath(task.note_path);
 
 	const applyDates = useCallback(async () => {
 		await onSchedule(task.task_id, scheduledDate || null, dueDate || null);
@@ -53,25 +41,12 @@ export function TaskRow({
 				onChange={(c) => onToggle(task, c)}
 			/>
 			<div className="tasksRowContent">
-				<div className="tasksRowText">{task.raw_text}</div>
-				<div className="tasksRowMeta">
+				<div className="tasksRowMain">
+					<div className="tasksRowText">{task.raw_text}</div>
 					{task.section ? (
-						<span className="tasksMetaTag">{task.section}</span>
-					) : null}
-					{task.scheduled_date ? (
-						<Badge variant="outline" className="tasksMetaBadge">
-							<Calendar size={11} />
-							Scheduled {task.scheduled_date}
-						</Badge>
-					) : null}
-					{task.due_date ? (
-						<Badge
-							variant="outline"
-							className="tasksMetaBadge tasksMetaBadgeDue"
-						>
-							<Calendar size={11} />
-							Due {task.due_date}
-						</Badge>
+						<span className="tasksMetaTag tasksMetaTagInline">
+							{task.section}
+						</span>
 					) : null}
 					<Popover
 						open={open}
@@ -164,15 +139,22 @@ export function TaskRow({
 							</div>
 						</PopoverContent>
 					</Popover>
-					{withPath ? (
-						<button
-							type="button"
-							className="tasksRowPath"
-							onClick={() => onOpenFile(task.note_path)}
-							title={task.note_path}
+				</div>
+				<div className="tasksRowMeta">
+					{task.scheduled_date ? (
+						<Badge variant="outline" className="tasksMetaBadge">
+							<Calendar size={11} />
+							Scheduled {task.scheduled_date}
+						</Badge>
+					) : null}
+					{task.due_date ? (
+						<Badge
+							variant="outline"
+							className="tasksMetaBadge tasksMetaBadgeDue"
 						>
-							{folderBreadcrumb}
-						</button>
+							<Calendar size={11} />
+							Due {task.due_date}
+						</Badge>
 					) : null}
 				</div>
 			</div>
