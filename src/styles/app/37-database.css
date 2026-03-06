@@ -149,7 +149,6 @@
 .databaseTableShell {
 	flex: 1;
 	min-height: 0;
-	padding: 14px 18px 18px;
 	overflow: auto;
 }
 
@@ -187,20 +186,23 @@
 
 .databaseBoardScroller {
 	display: grid;
+	flex: 1;
 	grid-auto-flow: column;
 	grid-auto-columns: minmax(320px, 380px);
 	gap: var(--space-4);
 	min-height: 0;
+	height: 100%;
 	overflow: auto;
 	padding-bottom: var(--space-2);
-	align-items: start;
+	align-items: stretch;
 }
 
 .databaseBoardLane {
 	display: flex;
+	flex: 1;
 	flex-direction: column;
 	min-height: 0;
-	max-height: 100%;
+	height: 100%;
 	border: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
 	border-radius: var(--radius-lg);
 	background: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary));
@@ -251,10 +253,11 @@
 
 .databaseBoardLaneBody {
 	display: flex;
+	flex: 1;
 	flex-direction: column;
 	gap: var(--space-2);
 	padding: var(--space-2);
-	min-height: 220px;
+	min-height: 0;
 	overflow: auto;
 }
 
@@ -457,6 +460,10 @@
 	text-align: left;
 }
 
+.databaseHeadCell:first-child {
+	padding-left: 14px;
+}
+
 .databaseHeaderButton,
 .databaseCellButton {
 	width: 100%;
@@ -471,15 +478,17 @@
 	font-weight: 600;
 	display: flex;
 	align-items: center;
+	justify-content: flex-start;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
 .databaseHeaderLabel {
-	display: inline-flex;
+	display: flex;
 	align-items: center;
 	gap: 8px;
+	width: 100%;
 	min-width: 0;
 }
 
@@ -502,6 +511,10 @@
 .databaseBodyCell {
 	vertical-align: top;
 	text-align: left;
+}
+
+.databaseBodyCell:first-child {
+	padding-left: 14px;
 }
 
 .databaseCellInput,
@@ -1213,7 +1226,7 @@
 	}
 
 	.databaseTableShell {
-		padding: 12px;
+		padding: 0;
 	}
 
 	.databaseBoardShell {
