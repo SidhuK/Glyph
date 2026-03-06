@@ -163,7 +163,7 @@ impl Tool for ListDirTool {
         let mut out = Vec::new();
         let mut stack = vec![(PathBuf::from(dir.clone()), 0usize)];
         while let Some((rel, d)) = stack.pop() {
-            let abs = safe_join(&self.root, &rel.to_string_lossy())?;
+            let abs = safe_join(&self.root, &utils::to_slash(&rel))?;
             let entries = match fs::read_dir(abs) {
                 Ok(v) => v,
                 Err(_) => continue,
@@ -262,7 +262,7 @@ impl Tool for SearchTool {
         let mut out = Vec::new();
         let mut stack = vec![PathBuf::from(dir)];
         while let Some(rel_dir) = stack.pop() {
-            let abs_dir = safe_join(&self.root, &rel_dir.to_string_lossy())?;
+            let abs_dir = safe_join(&self.root, &utils::to_slash(&rel_dir))?;
             let entries = match fs::read_dir(abs_dir) {
                 Ok(v) => v,
                 Err(_) => continue,
