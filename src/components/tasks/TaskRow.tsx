@@ -21,6 +21,7 @@ export function TaskRow({ task, onToggle, onSchedule }: TaskRowProps) {
 	const [open, setOpen] = useState(false);
 	const [scheduledDate, setScheduledDate] = useState(task.scheduled_date ?? "");
 	const [dueDate, setDueDate] = useState(task.due_date ?? "");
+	const hasDateMeta = Boolean(task.scheduled_date || task.due_date);
 
 	const applyDates = useCallback(async () => {
 		await onSchedule(task.task_id, scheduledDate || null, dueDate || null);
@@ -140,23 +141,25 @@ export function TaskRow({ task, onToggle, onSchedule }: TaskRowProps) {
 						</PopoverContent>
 					</Popover>
 				</div>
-				<div className="tasksRowMeta">
-					{task.scheduled_date ? (
-						<Badge variant="outline" className="tasksMetaBadge">
-							<Calendar size={11} />
-							Scheduled {task.scheduled_date}
-						</Badge>
-					) : null}
-					{task.due_date ? (
-						<Badge
-							variant="outline"
-							className="tasksMetaBadge tasksMetaBadgeDue"
-						>
-							<Calendar size={11} />
-							Due {task.due_date}
-						</Badge>
-					) : null}
-				</div>
+				{hasDateMeta ? (
+					<div className="tasksRowMeta">
+						{task.scheduled_date ? (
+							<Badge variant="outline" className="tasksMetaBadge">
+								<Calendar size={11} />
+								Scheduled {task.scheduled_date}
+							</Badge>
+						) : null}
+						{task.due_date ? (
+							<Badge
+								variant="outline"
+								className="tasksMetaBadge tasksMetaBadgeDue"
+							>
+								<Calendar size={11} />
+								Due {task.due_date}
+							</Badge>
+						) : null}
+					</div>
+				) : null}
 			</div>
 		</div>
 	);

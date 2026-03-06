@@ -1,4 +1,5 @@
 import { Extension } from "@tiptap/core";
+import Link from "@tiptap/extension-link";
 import {
 	Table,
 	TableCell,
@@ -253,6 +254,14 @@ const TableEnterNavigation = Extension.create({
 	},
 });
 
+const EditorLink = Link.extend({
+	inclusive: false,
+}).configure({
+	openOnClick: false,
+	autolink: true,
+	defaultProtocol: "https",
+});
+
 interface CreateEditorExtensionsOptions {
 	enableSlashCommand?: boolean;
 	enableWikiLinks?: boolean;
@@ -273,13 +282,10 @@ export function createEditorExtensions(
 		StarterKit.configure({
 			bulletList: { keepMarks: true, keepAttributes: false },
 			orderedList: { keepMarks: true, keepAttributes: false },
-			link: {
-				openOnClick: false,
-				autolink: true,
-				defaultProtocol: "https",
-			},
+			link: false,
 			underline: {},
 		}),
+		EditorLink,
 		TaskList,
 		TaskItem.configure({ nested: true }),
 		TaskListMarkdownShortcut,
