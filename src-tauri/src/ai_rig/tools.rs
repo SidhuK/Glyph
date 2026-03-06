@@ -180,7 +180,7 @@ impl Tool for ListDirTool {
                 };
                 out.push(json!({
                     "name": name,
-                    "rel_path": child_rel.to_string_lossy().to_string(),
+                    "rel_path": utils::to_slash(&child_rel),
                     "kind": if meta.is_dir() { "dir" } else { "file" },
                     "is_markdown": meta.is_file() && utils::is_markdown_path(&child_rel),
                     "size_bytes": if meta.is_file() { meta.len() } else { 0 },
@@ -307,7 +307,7 @@ impl Tool for SearchTool {
                     let start = i.saturating_sub(80);
                     let end = (i + 220).min(text.len());
                     let snippet = text.get(start..end).unwrap_or("").replace('\n', " ");
-                    out.push(json!({"rel_path": rel.to_string_lossy().to_string(), "snippet": snippet.trim()}));
+                    out.push(json!({"rel_path": utils::to_slash(&rel), "snippet": snippet.trim()}));
                     if out.len() >= limit {
                         return Ok(ok(
                             json!({"results": out, "truncated": true, "source": "fs"}),

@@ -2,7 +2,7 @@ use std::{ffi::OsStr, io::Write, path::PathBuf};
 use tauri::State;
 
 use crate::space::state::mark_recent_local_change;
-use crate::{index, io_atomic, paths, space::SpaceState};
+use crate::{index, io_atomic, paths, space::SpaceState, utils};
 
 use super::super::helpers::{deny_hidden_rel_path, etag_for, file_mtime_ms};
 use super::super::types::{
@@ -23,7 +23,7 @@ pub async fn space_read_text(
         let text =
             String::from_utf8(bytes.clone()).map_err(|_| "file is not valid UTF-8".to_string())?;
         Ok(TextFileDoc {
-            rel_path: rel.to_string_lossy().to_string(),
+            rel_path: utils::to_slash(&rel),
             etag: etag_for(&bytes),
             mtime_ms: file_mtime_ms(&abs),
             text,
@@ -50,7 +50,7 @@ pub async fn space_read_texts_batch(
                 let text = String::from_utf8(bytes.clone())
                     .map_err(|_| "file is not valid UTF-8".to_string())?;
                 Ok(TextFileDocBatch {
-                    rel_path: rel.to_string_lossy().to_string(),
+                    rel_path: utils::to_slash(&rel),
                     text: Some(text),
                     etag: Some(etag_for(&bytes)),
                     mtime_ms: file_mtime_ms(&abs),
@@ -97,7 +97,7 @@ pub async fn space_write_text(
             std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
         }
 
-        let rel_path = rel.to_string_lossy().to_string();
+        let rel_path = utils::to_slash(&rel);
         let should_index = rel.extension() == Some(OsStr::new("md"));
         let bytes = text.into_bytes();
         if should_index {

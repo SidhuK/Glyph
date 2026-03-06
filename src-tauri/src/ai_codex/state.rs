@@ -83,23 +83,48 @@ impl Default for CodexState {
 impl CodexState {
     fn candidate_codex_paths() -> Vec<PathBuf> {
         let mut candidates: Vec<PathBuf> = Vec::new();
+
+        let bin_name = if cfg!(windows) { "codex.exe" } else { "codex" };
+
         if let Some(explicit) = std::env::var_os("CODEX_CLI_PATH") {
             candidates.push(PathBuf::from(explicit));
         }
         if let Some(path_var) = std::env::var_os("PATH") {
             for dir in std::env::split_paths(&path_var) {
-                candidates.push(dir.join("codex"));
+                candidates.push(dir.join(bin_name));
             }
         }
-        if let Some(home) = std::env::var_os("HOME") {
-            let home = PathBuf::from(home);
-            candidates.push(home.join(".bun/bin/codex"));
-            candidates.push(home.join(".npm-global/bin/codex"));
-            candidates.push(home.join(".local/bin/codex"));
+
+        #[cfg(unix)]
+        {
+            if let Some(home) = std::env::var_os("HOME") {
+                let home = PathBuf::from(home);
+                candidates.push(home.join(".bun/bin/codex"));
+                candidates.push(home.join(".npm-global/bin/codex"));
+                candidates.push(home.join(".local/bin/codex"));
+            }
+            candidates.push(PathBuf::from("/opt/homebrew/bin/codex"));
+            candidates.push(PathBuf::from("/usr/local/bin/codex"));
+            candidates.push(PathBuf::from("/usr/bin/codex"));
         }
-        candidates.push(PathBuf::from("/opt/homebrew/bin/codex"));
-        candidates.push(PathBuf::from("/usr/local/bin/codex"));
-        candidates.push(PathBuf::from("/usr/bin/codex"));
+
+        #[cfg(windows)]
+        {
+            // On Windows, HOME may not be set; try USERPROFILE instead.
+            let home = std::env::var_os("USERPROFILE")
+                .or_else(|| std::env::var_os("HOME"))
+                .map(PathBuf::from);
+            if let Some(home) = home {
+                candidates.push(home.join(".bun\\bin\\codex.exe"));
+                candidates.push(home.join(".npm-global\\codex.exe"));
+            }
+            if let Some(appdata) = std::env::var_os("APPDATA") {
+                let appdata = PathBuf::from(appdata);
+                candidates.push(appdata.join("npm\\codex.exe"));
+                candidates.push(appdata.join("npm\\codex.cmd"));
+            }
+        }
+
         candidates
     }
 
@@ -116,7 +141,18 @@ impl CodexState {
             }
             false
         }
-        #[cfg(not(unix))]
+        #[cfg(windows)]
+        {
+            // On Windows, check for common executable extensions.
+            match path.extension().and_then(|e| e.to_str()) {
+                Some(ext) => matches!(
+                    ext.to_ascii_lowercase().as_str(),
+                    "exe" | "cmd" | "bat" | "com"
+                ),
+                None => false,
+            }
+        }
+        #[cfg(not(any(unix, windows)))]
         {
             true
         }

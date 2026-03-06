@@ -45,7 +45,7 @@
 		"active": true,
 		"createUpdaterArtifacts": true,
 		"targets": "all",
-		"icon": ["icons/icon.icns"]
+		"icon": ["icons/icon.icns", "icons/icon.ico", "icons/icon.png"]
 	},
 	"plugins": {
 		"updater": {

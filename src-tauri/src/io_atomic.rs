@@ -6,8 +6,16 @@ use std::{
 };
 
 fn fsync_dir(path: &Path) -> io::Result<()> {
-    let dir = File::open(path)?;
-    dir.sync_all()
+    #[cfg(unix)]
+    {
+        let dir = File::open(path)?;
+        dir.sync_all()
+    }
+    #[cfg(not(unix))]
+    {
+        let _ = path;
+        Ok(())
+    }
 }
 
 fn unique_tmp_path(dest: &Path) -> io::Result<PathBuf> {

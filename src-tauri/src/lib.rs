@@ -25,6 +25,9 @@ use tracing::warn;
 #[cfg(target_os = "macos")]
 use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
 
+#[cfg(target_os = "windows")]
+use window_vibrancy::apply_mica;
+
 use tauri::{PhysicalPosition, PhysicalSize, Position, Size};
 
 fn init_tracing() {
@@ -123,10 +126,15 @@ pub fn run() {
             )?;
             let close_space =
                 MenuItem::with_id(app, "space.close", "Close Space", true, None::<&str>)?;
+            let reveal_label = if cfg!(target_os = "macos") {
+                "Show Space in Finder"
+            } else {
+                "Show Space in Explorer"
+            };
             let reveal_space = MenuItem::with_id(
                 app,
                 "space.reveal",
-                "Show Space in Finder",
+                reveal_label,
                 true,
                 None::<&str>,
             )?;
@@ -367,6 +375,15 @@ pub fn run() {
                     }
                 } else {
                     warn!("Main window not found during setup");
+                }
+            }
+
+            #[cfg(target_os = "windows")]
+            {
+                if let Some(window) = app.get_webview_window("main") {
+                    if let Err(e) = apply_mica(&window, None) {
+                        warn!("Failed to apply Mica to main window: {e}");
+                    }
                 }
             }
             Ok(())
