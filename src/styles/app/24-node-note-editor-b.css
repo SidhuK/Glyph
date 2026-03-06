@@ -941,12 +941,14 @@
 .tiptapContentInline ul[data-type="taskList"] > li > div > p,
 .tiptapContentInline li[data-checked] > div > p {
 	margin: 0;
-	display: inline;
+	display: inline-block;
+	min-width: 1px;
 }
 
 .tiptapContentInline li[data-type="taskItem"] p {
 	margin: 0;
-	display: inline;
+	display: inline-block;
+	min-width: 1px;
 }
 
 .tiptapHostInline {
