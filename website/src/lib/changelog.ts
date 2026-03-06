@@ -32,11 +32,15 @@ const FIELD_SEPARATOR = "\u001f";
 const LINE_SEPARATOR = "\u001e";
 
 function runGit(command: string): string {
-	return execFileSync("sh", ["-lc", command], {
-		cwd: REPO_ROOT,
-		encoding: "utf8",
-		stdio: ["ignore", "pipe", "ignore"],
-	}).trim();
+	try {
+		return execFileSync("sh", ["-lc", command], {
+			cwd: REPO_ROOT,
+			encoding: "utf8",
+			stdio: ["ignore", "pipe", "ignore"],
+		}).trim();
+	} catch {
+		return "";
+	}
 }
 
 function categorizeCommit(message: string): string {
