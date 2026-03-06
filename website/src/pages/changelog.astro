@@ -1,0 +1,506 @@
+---
+import logoG from "../../assets/logo_g.PNG";
+import { getChangelogPageData } from "../lib/changelog";
+import Layout from "../layouts/Layout.astro";
+
+const changelog = getChangelogPageData(10);
+const pageTitle = "Glyph Changelog";
+const pageDescription =
+	"Track what shipped in Glyph, what changed between releases, and what is currently in progress.";
+const repositoryUrl = changelog.repositoryUrl;
+
+function getCommitHref(hash: string): string | undefined {
+	return repositoryUrl ? `${repositoryUrl}/commit/${hash}` : undefined;
+}
+
+function getTagHref(tag: string): string | undefined {
+	return repositoryUrl ? `${repositoryUrl}/releases/tag/${tag}` : undefined;
+}
+---
+
+<Layout title={pageTitle} description={pageDescription}>
+	<div class="page">
+		<header class="header">
+			<a href="/" class="logo">
+				<img src={logoG.src} alt="" class="logo-icon" />
+				<span>GLYPH</span>
+				<span class="logo-version">CHANGELOG</span>
+			</a>
+			<nav class="nav">
+				<a href="/">Home</a>
+				<a href="/docs/introduction">Docs</a>
+				<a href="https://github.com/SidhuK/Glyph" target="_blank" rel="noopener">GitHub</a>
+			</nav>
+			<a href="https://karatsidhu.gumroad.com/l/sqxfay" class="header-cta" target="_blank" rel="noopener">Get Glyph</a>
+		</header>
+
+		<section class="hero">
+			<p class="label">CHANGELOG</p>
+			<h1>What’s new in Glyph,<br />and what’s coming next</h1>
+			<p class="hero-sub">
+				Follow recent improvements, fixes, and polish as Glyph keeps getting
+				faster, cleaner, and more capable.
+			</p>
+		</section>
+
+		<section class="section section-current">
+			<div class="section-head">
+				<div>
+					<p class="label">CURRENT PROGRESS</p>
+					<h2>
+						{changelog.latestTag
+							? `In progress since ${changelog.latestTag}`
+							: "In progress"}
+					</h2>
+				</div>
+				<p class="section-note">
+					{changelog.unreleasedEntries.length} recent change{changelog.unreleasedEntries.length === 1 ? "" : "s"}
+				</p>
+			</div>
+			{changelog.unreleasedEntries.length > 0 ? (
+				<ul class="entry-list">
+					{changelog.unreleasedEntries.map((entry) => {
+						const href = getCommitHref(entry.hash);
+						return (
+							<li class="entry-card">
+								<div class="entry-meta">
+									<span class="entry-badge">{entry.category}</span>
+									<span>{entry.date}</span>
+								</div>
+								<p class="entry-message">{entry.message}</p>
+								{href ? (
+									<a href={href} class="entry-link" target="_blank" rel="noopener">
+										View commit #{entry.shortHash}
+									</a>
+								) : (
+									<p class="entry-hash">#{entry.shortHash}</p>
+								)}
+							</li>
+						);
+					})}
+				</ul>
+			) : (
+				<div class="empty-state">
+					No unreleased commits right now. The working tree is aligned with the
+					latest tagged version.
+				</div>
+			)}
+		</section>
+
+		<section class="section section-history">
+			<div class="section-head">
+				<div>
+					<p class="label">RELEASE HISTORY</p>
+					<h2>Past updates</h2>
+				</div>
+				<p class="section-note">
+					{changelog.releaseHistory.length} tagged release{changelog.releaseHistory.length === 1 ? "" : "s"}
+				</p>
+			</div>
+			<div class="release-stack">
+				{changelog.releaseHistory.map((release) => {
+					const tagHref = getTagHref(release.tag);
+					return (
+						<section class="release-block">
+							<div class="release-head">
+								<div>
+									<p class="release-kicker">
+										{release.previousTag ? `${release.previousTag} to ${release.tag}` : release.tag}
+									</p>
+									<h3>
+										{tagHref ? (
+											<a href={tagHref} target="_blank" rel="noopener">
+												{release.tag}
+											</a>
+										) : (
+											release.tag
+										)}
+									</h3>
+								</div>
+								<p class="release-count">
+									{release.entries.length} commit{release.entries.length === 1 ? "" : "s"}
+								</p>
+							</div>
+
+							{release.entries.length > 0 ? (
+								<ul class="release-list">
+									{release.entries.map((entry) => {
+										const href = getCommitHref(entry.hash);
+										return (
+											<li class="release-item">
+												<div class="entry-meta">
+													<span class="entry-badge">{entry.category}</span>
+													<span>{entry.date}</span>
+												</div>
+												<p class="entry-message">{entry.message}</p>
+												{href ? (
+													<a href={href} class="entry-link" target="_blank" rel="noopener">
+														#{entry.shortHash}
+													</a>
+												) : (
+													<p class="entry-hash">#{entry.shortHash}</p>
+												)}
+											</li>
+										);
+									})}
+								</ul>
+							) : (
+								<div class="empty-state">
+									There is no comparable prior tag for this release yet.
+								</div>
+							)}
+						</section>
+					);
+				})}
+			</div>
+		</section>
+
+		<footer class="footer">
+			<div class="footer-inner">
+				<div class="footer-col">
+					<a href="/" class="logo">
+						<img src={logoG.src} alt="" class="logo-icon" />
+						<span>GLYPH</span>
+					</a>
+				</div>
+				<div class="footer-col">
+					<p class="footer-heading">PRODUCT</p>
+					<a href="/docs/introduction">Docs</a>
+					<a href="/changelog">Changelog</a>
+					<a href="https://github.com/SidhuK/Glyph" target="_blank" rel="noopener">GitHub</a>
+				</div>
+				<div class="footer-col">
+					<p class="footer-heading">PURCHASE</p>
+					<a href="https://karatsidhu.gumroad.com/l/sqxfay" target="_blank" rel="noopener">Download</a>
+				</div>
+				<div class="footer-col">
+					<p class="footer-heading">LEGAL</p>
+					<a href="/terms">Terms</a>
+					<a href="/privacy">Privacy</a>
+					<a href="/legal">Legal</a>
+				</div>
+			</div>
+			<p class="footer-copy">© 2026 Glyph. All rights reserved.</p>
+		</footer>
+	</div>
+</Layout>
+
+<style>
+	.page {
+		width: min(760px, 92vw);
+		margin-inline: auto;
+	}
+
+	.header {
+		position: sticky;
+		top: 0;
+		z-index: 100;
+		display: flex;
+		align-items: center;
+		padding: 0.75rem 0;
+		background: transparent;
+	}
+
+	.logo {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.45rem;
+		font-size: 0.75rem;
+		font-weight: 600;
+		letter-spacing: 0.14em;
+	}
+
+	.logo-icon {
+		width: 1.25rem;
+		height: 1.25rem;
+		border-radius: 4px;
+	}
+
+	.logo-version {
+		padding-left: 0.4rem;
+		font-size: 0.62rem;
+		letter-spacing: 0.12em;
+		color: var(--faint);
+	}
+
+	.nav {
+		display: flex;
+		gap: 0.2rem;
+		margin-left: auto;
+	}
+
+	.nav a {
+		padding: 0.4rem 0.7rem;
+		font-size: 0.72rem;
+		font-weight: 500;
+		letter-spacing: 0.06em;
+		text-transform: uppercase;
+		color: var(--muted);
+	}
+
+	.nav a:hover {
+		color: var(--ink);
+	}
+
+	.header-cta {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		margin-left: 0.4rem;
+		min-height: 2.4rem;
+		padding: 0.5rem 1.02rem;
+		background:
+			linear-gradient(180deg, rgba(28, 28, 28, 0.96), rgba(17, 17, 17, 0.98)),
+			linear-gradient(135deg, rgba(255, 255, 255, 0.12), transparent 55%);
+		color: var(--bg);
+		font-size: 0.7rem;
+		font-weight: 600;
+		letter-spacing: 0.05em;
+		border-radius: 0.72rem;
+		border: 1px solid rgba(17, 17, 17, 0.92);
+	}
+
+	.hero,
+	.section {
+		padding: 3.8rem 0 0;
+	}
+
+	.label {
+		font-size: 0.68rem;
+		font-weight: 600;
+		letter-spacing: 0.16em;
+		color: var(--faint);
+		margin-bottom: 0.85rem;
+	}
+
+	.hero h1,
+	.section h2 {
+		font-family: var(--font-serif);
+		font-size: clamp(2.1rem, 7vw, 4rem);
+		line-height: 0.95;
+		letter-spacing: -0.05em;
+	}
+
+	.hero-sub {
+		max-width: 36rem;
+		margin-top: 1rem;
+		font-size: 0.95rem;
+		line-height: 1.65;
+		color: var(--muted);
+	}
+
+	.section-head {
+		display: flex;
+		align-items: end;
+		justify-content: space-between;
+		gap: 1.5rem;
+		margin-bottom: 1.6rem;
+	}
+
+	.section-note,
+	.release-count {
+		font-size: 0.74rem;
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--faint);
+	}
+
+	.entry-list,
+	.release-list {
+		list-style: none;
+	}
+
+	.entry-card,
+	.release-block {
+		border: 1px solid var(--border);
+	}
+
+	.entry-card + .entry-card,
+	.release-block + .release-block {
+		margin-top: 0.85rem;
+	}
+
+	.entry-card,
+	.release-item {
+		padding: 0.78rem 0.92rem 0.8rem;
+	}
+
+	.release-head {
+		display: flex;
+		align-items: end;
+		justify-content: space-between;
+		gap: 1rem;
+		padding: 0.82rem 0.92rem 0.78rem;
+		border-bottom: 1px solid var(--border);
+		background: color-mix(in srgb, var(--bg) 86%, var(--ink) 14%);
+	}
+
+	.release-kicker {
+		font-size: 0.66rem;
+		font-weight: 600;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: var(--faint);
+		margin-bottom: 0.45rem;
+	}
+
+	.release-head h3,
+	.section-head h2 {
+		font-family: var(--font-serif);
+		font-size: clamp(1.36rem, 3vw, 2.1rem);
+		line-height: 1;
+		letter-spacing: -0.04em;
+	}
+
+	.release-head h3 {
+		font-weight: 600;
+	}
+
+	.release-head h3 a {
+		text-decoration: none;
+	}
+
+	.release-list {
+		list-style: none;
+	}
+
+	.release-item + .release-item {
+		border-top: 1px solid var(--border);
+	}
+
+	.entry-meta {
+		display: flex;
+		align-items: center;
+		flex-wrap: wrap;
+		gap: 0.55rem;
+		margin-bottom: 0.38rem;
+		font-size: 0.63rem;
+		letter-spacing: 0.05em;
+		color: var(--faint);
+	}
+
+	.entry-badge {
+		display: inline-flex;
+		align-items: center;
+		padding: 0.16rem 0.38rem;
+		border: 1px solid var(--border);
+		border-radius: 999px;
+		font-size: 0.54rem;
+		font-weight: 700;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: var(--muted);
+	}
+
+	.entry-message {
+		font-size: 0.8rem;
+		line-height: 1.45;
+		color: var(--ink);
+	}
+
+	.entry-link,
+	.entry-hash {
+		display: inline-flex;
+		margin-top: 0.42rem;
+		font-size: 0.66rem;
+		letter-spacing: 0.05em;
+		color: var(--faint);
+	}
+
+	.entry-link:hover {
+		color: var(--ink);
+	}
+
+	.release-stack {
+		display: grid;
+		gap: 1rem;
+	}
+
+	.empty-state {
+		padding: 0.9rem 0.92rem;
+		border: 1px solid var(--border);
+		font-size: 0.77rem;
+		line-height: 1.55;
+		color: var(--muted);
+	}
+
+	.footer {
+		padding: 5rem 0 2.5rem;
+	}
+
+	.footer-inner {
+		display: grid;
+		grid-template-columns: 1.6fr repeat(3, 1fr);
+		gap: 1.5rem;
+		padding-top: 1.1rem;
+		border-top: 1px solid var(--border);
+	}
+
+	.footer-col {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.footer-heading {
+		margin-bottom: 0.28rem;
+		font-size: 0.68rem;
+		font-weight: 600;
+		letter-spacing: 0.14em;
+		color: var(--faint);
+	}
+
+	.footer-col a {
+		font-size: 0.82rem;
+		color: var(--muted);
+	}
+
+	.footer-col a:hover {
+		color: var(--ink);
+	}
+
+	.footer-copy {
+		margin-top: 1.7rem;
+		font-size: 0.72rem;
+		color: var(--faint);
+	}
+
+	@media (max-width: 720px) {
+		.header {
+			flex-wrap: wrap;
+			gap: 0.75rem;
+		}
+
+		.nav {
+			order: 3;
+			width: 100%;
+			margin-left: 0;
+			overflow-x: auto;
+		}
+
+		.header-cta {
+			margin-left: auto;
+		}
+
+		.section-head,
+		.release-head {
+			flex-direction: column;
+			align-items: start;
+		}
+
+		.footer-inner {
+			grid-template-columns: 1fr 1fr;
+		}
+	}
+
+	@media (max-width: 560px) {
+		.page {
+			width: min(720px, 94vw);
+		}
+
+		.footer-inner {
+			grid-template-columns: 1fr;
+		}
+	}
+</style>
