@@ -69,6 +69,10 @@ fn read_windows_font_families(monospace_only: bool) -> Result<Vec<String>, Strin
     use std::os::windows::ffi::OsStringExt;
 
     // --- winreg helpers (raw FFI so we don't need an extra crate) -----------
+    // SAFETY: These extern functions are Windows Registry API calls from advapi32.dll.
+    // We ensure: (1) all wide-string pointers reference null-terminated buffers that
+    // outlive the call, (2) RegCloseKey is always called to release the opened key
+    // handle, and (3) buffer lengths are correctly sized before each call.
 
     #[link(name = "advapi32")]
     extern "system" {

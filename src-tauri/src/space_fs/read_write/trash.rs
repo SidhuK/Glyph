@@ -60,17 +60,19 @@ fn unique_trash_dest(trash_dir: &Path, src: &Path) -> Result<PathBuf, String> {
 pub(super) fn move_path_to_trash(src: &Path) -> Result<(), String> {
     use std::os::windows::ffi::OsStrExt;
 
+    /// Win32 SHFILEOPSTRUCTW – describes a shell file operation.
+    /// See: https://learn.microsoft.com/en-us/windows/win32/api/shellapi/ns-shellapi-shfileopstructw
     #[allow(non_snake_case)]
     #[repr(C)]
     struct SHFILEOPSTRUCTW {
-        hwnd: isize,
-        wFunc: u32,
-        pFrom: *const u16,
-        pTo: *const u16,
-        fFlags: u16,
-        fAnyOperationsAborted: i32,
-        hNameMappings: *mut std::ffi::c_void,
-        lpszProgressTitle: *const u16,
+        hwnd: isize,                         // parent window handle (0 = no UI)
+        wFunc: u32,                          // operation: FO_DELETE = 0x0003
+        pFrom: *const u16,                   // double-null-terminated source path(s)
+        pTo: *const u16,                     // destination (unused for delete)
+        fFlags: u16,                         // operation flags (see FOF_* constants below)
+        fAnyOperationsAborted: i32,          // out: non-zero if user aborted
+        hNameMappings: *mut std::ffi::c_void, // out: name mapping object (unused)
+        lpszProgressTitle: *const u16,       // progress dialog title (unused)
     }
 
     extern "system" {

@@ -115,13 +115,13 @@ impl CodexState {
                 .or_else(|| std::env::var_os("HOME"))
                 .map(PathBuf::from);
             if let Some(home) = home {
-                candidates.push(home.join(".bun\\bin\\codex.exe"));
-                candidates.push(home.join(".npm-global\\codex.exe"));
+                candidates.push(home.join(".bun").join("bin").join("codex.exe"));
+                candidates.push(home.join(".npm-global").join("codex.exe"));
             }
             if let Some(appdata) = std::env::var_os("APPDATA") {
                 let appdata = PathBuf::from(appdata);
-                candidates.push(appdata.join("npm\\codex.exe"));
-                candidates.push(appdata.join("npm\\codex.cmd"));
+                candidates.push(appdata.join("npm").join("codex.exe"));
+                candidates.push(appdata.join("npm").join("codex.cmd"));
             }
         }
 
