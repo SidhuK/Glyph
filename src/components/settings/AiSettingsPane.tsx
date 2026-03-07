@@ -2,6 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { resolveActiveProfileId } from "../../lib/aiProfiles";
 import { loadSettings, setAiEnabled } from "../../lib/settings";
 import { type AiProfile, invoke } from "../../lib/tauri";
+import {
+	SettingsRow,
+	SettingsSection,
+	SettingsToggle,
+} from "./SettingsScaffold";
 import { AiProfileSections } from "./ai/AiProfileSections";
 import { errMessage } from "./ai/utils";
 
@@ -129,35 +134,21 @@ export function AiSettingsPane() {
 					onSaveProfile={saveProfile}
 				/>
 
-				<section className="settingsCard">
-					<div className="settingsCardHeader">
-						<div>
-							<div className="settingsCardTitle">AI Availability</div>
-							<div className="settingsCardHint">
-								Turn AI tools on or off across Glyph.
-							</div>
-						</div>
-					</div>
-
-					<div className="settingsField">
-						<div>
-							<div className="settingsLabel">AI Features</div>
-						</div>
-						<select
-							aria-label="AI Features"
-							value={aiEnabled ? "enabled" : "disabled"}
-							onChange={(event) =>
-								void updateAiEnabled(event.target.value === "enabled")
-							}
-						>
-							<option value="enabled">On</option>
-							<option value="disabled">Off</option>
-						</select>
-					</div>
-					<p className="settingsHint settingsHintWarn">
-						When off, AI panels and AI command-palette actions stay hidden.
-					</p>
-				</section>
+				<SettingsSection
+					title="Availability"
+					description="Turn AI tools on or off across Glyph."
+				>
+					<SettingsRow
+						label="AI features"
+						description="When off, AI panels and AI command-palette actions stay hidden."
+					>
+						<SettingsToggle
+							ariaLabel="AI features"
+							checked={aiEnabled}
+							onCheckedChange={(checked) => void updateAiEnabled(checked)}
+						/>
+					</SettingsRow>
+				</SettingsSection>
 			</div>
 		</div>
 	);
