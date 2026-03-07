@@ -9,10 +9,11 @@ pub const DEFAULT_SUPPORT_URL: &str = "https://github.com/SidhuK/Glyph/issues";
 pub const TRIAL_DURATION_MS: u64 = 48 * 60 * 60 * 1000;
 
 pub fn is_official_build() -> bool {
-    matches!(
-        option_env!("GLYPH_OFFICIAL_BUILD"),
-        Some("1") | Some("true") | Some("TRUE") | Some("yes") | Some("YES")
-    )
+    !cfg!(debug_assertions)
+        && matches!(
+            option_env!("GLYPH_OFFICIAL_BUILD"),
+            Some("1") | Some("true") | Some("TRUE") | Some("yes") | Some("YES")
+        )
 }
 
 pub fn gumroad_product_id() -> &'static str {

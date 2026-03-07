@@ -22,6 +22,16 @@ button {
 	user-select: none;
 }
 
+/* ─────────────────────────────────────────────────────────────────────────────
+   GLOBAL DRAG FIX - Override Windows 11 WebView2 Latency
+   ───────────────────────────────────────────────────────────────────────────── */
+.dragging-in-progress,
+.dragging-in-progress *,
+body.dragging-in-progress {
+	cursor: move !important;
+	cursor: -webkit-grabbing !important;
+}
+
 button:hover {
 	background: var(--bg-hover);
 	color: var(--text-primary);

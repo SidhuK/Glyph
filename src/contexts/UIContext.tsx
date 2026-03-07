@@ -1,4 +1,3 @@
-import { getCurrentWindow } from "@tauri-apps/api/window";
 import {
 	type Dispatch,
 	type ReactNode,
@@ -98,12 +97,12 @@ type UIAction =
 	| { type: "setAiAssistantMode"; value: AiAssistantMode }
 	| { type: "onSpacePathChanged"; hasSpace: boolean }
 	| {
-			type: "hydrateSettings";
-			aiEnabled: boolean;
-			aiPanelWidth?: number;
-			aiAssistantMode: AiAssistantMode;
-			dailyNotesFolder: string | null;
-	  };
+		type: "hydrateSettings";
+		aiEnabled: boolean;
+		aiPanelWidth?: number;
+		aiAssistantMode: AiAssistantMode;
+		dailyNotesFolder: string | null;
+	};
 
 const initialUIState: UIState = {
 	sidebarCollapsed: true,
@@ -246,9 +245,9 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		};
 
 		void loadAndApplySettings();
-		const win = getCurrentWindow();
-		const unlisten = win.onFocusChanged(({ payload: focused }) => {
-			if (!focused || cancelled) return;
+
+		const onFocus = () => {
+			if (cancelled) return;
 			void (async () => {
 				try {
 					await reloadFromDisk();
@@ -258,11 +257,12 @@ export function UIProvider({ children }: { children: ReactNode }) {
 					// best-effort refresh
 				}
 			})();
-		});
+		};
+		window.addEventListener("focus", onFocus);
 
 		return () => {
 			cancelled = true;
-			unlisten.then((fn) => fn()).catch(() => {});
+			window.removeEventListener("focus", onFocus);
 		};
 	}, []);
 

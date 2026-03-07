@@ -25,7 +25,6 @@ import { GeneralSettingsPane } from "./components/settings/GeneralSettingsPane";
 import { SpaceSettingsPane } from "./components/settings/SpaceSettingsPane";
 import { Button } from "./components/ui/shadcn/button";
 import { useTauriEvent } from "./lib/tauriEvents";
-import { onWindowDragMouseDown } from "./utils/window";
 
 type SettingsTab = "general" | "appearance" | "ai" | "space" | "about";
 type SettingsTabMeta = {
@@ -163,7 +162,6 @@ export default function SettingsApp() {
 					aria-hidden="true"
 					className="settingsDragStrip"
 					data-tauri-drag-region
-					onMouseDown={onWindowDragMouseDown}
 				/>
 				<Button
 					type="button"

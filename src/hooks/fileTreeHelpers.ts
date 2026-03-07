@@ -1,5 +1,13 @@
 import type { FsEntry } from "../lib/tauri";
 
+export interface FileTreeMoveOptions {
+	index?: number;
+}
+
+export type FileTreeOrderByDir = Record<string, string[]>;
+
+export const ROOT_FILE_TREE_ORDER_KEY = "__root__";
+
 export function compareEntries(a: FsEntry, b: FsEntry): number {
 	if (a.kind === "dir" && b.kind === "file") return -1;
 	if (a.kind === "file" && b.kind === "dir") return 1;
@@ -48,6 +56,113 @@ export function normalizeEntries(entries: FsEntry[]): FsEntry[] {
 		byPath.set(normalized.rel_path, normalized);
 	}
 	return [...byPath.values()].sort(compareEntries);
+}
+
+export function getFileTreeOrderKey(dirPath: string): string {
+	const normalized = normalizeRelPath(dirPath);
+	return normalized || ROOT_FILE_TREE_ORDER_KEY;
+}
+
+export function applyEntryOrder(
+	entries: FsEntry[],
+	dirPath: string,
+	orderByDir: FileTreeOrderByDir,
+): FsEntry[] {
+	if (entries.length <= 1) return entries;
+	const storedOrder = orderByDir[getFileTreeOrderKey(dirPath)] ?? [];
+	if (storedOrder.length === 0) return entries;
+	const indexByPath = new Map(
+		storedOrder.map((path, index) => [normalizeRelPath(path), index]),
+	);
+	return [...entries].sort((left, right) => {
+		const leftIndex = indexByPath.get(left.rel_path);
+		const rightIndex = indexByPath.get(right.rel_path);
+		if (leftIndex !== undefined && rightIndex !== undefined) {
+			return leftIndex - rightIndex;
+		}
+		if (leftIndex !== undefined) return -1;
+		if (rightIndex !== undefined) return 1;
+		return compareEntries(left, right);
+	});
+}
+
+export function clampInsertionIndex(index: number | undefined, length: number): number {
+	if (typeof index !== "number" || !Number.isFinite(index)) return length;
+	return Math.max(0, Math.min(length, Math.trunc(index)));
+}
+
+export function insertPathAtIndex(
+	paths: string[],
+	path: string,
+	index: number | undefined,
+): string[] {
+	const normalizedPath = normalizeRelPath(path);
+	const filtered = Array.from(
+		new Set(paths.map((entry) => normalizeRelPath(entry)).filter(Boolean)),
+	).filter((entry) => entry !== normalizedPath);
+	if (!normalizedPath) return filtered;
+	const targetIndex = clampInsertionIndex(index, filtered.length);
+	return [
+		...filtered.slice(0, targetIndex),
+		normalizedPath,
+		...filtered.slice(targetIndex),
+	];
+}
+
+export function rewriteFileTreeOrderPaths(
+	orderByDir: FileTreeOrderByDir,
+	fromPath: string,
+	toPath: string,
+): FileTreeOrderByDir {
+	const from = normalizeRelPath(fromPath);
+	const to = normalizeRelPath(toPath);
+	if (!from || !to || from === to) return { ...orderByDir };
+
+	const rewrite = (path: string) => {
+		if (path === from) return to;
+		if (path.startsWith(`${from}/`)) return `${to}${path.slice(from.length)}`;
+		return path;
+	};
+
+	const next: FileTreeOrderByDir = {};
+	for (const [rawDirKey, rawPaths] of Object.entries(orderByDir)) {
+		const nextDirKey =
+			rawDirKey === ROOT_FILE_TREE_ORDER_KEY
+				? ROOT_FILE_TREE_ORDER_KEY
+				: getFileTreeOrderKey(rewrite(rawDirKey));
+		const nextPaths = Array.from(
+			new Set(rawPaths.map((path) => rewrite(normalizeRelPath(path))).filter(Boolean)),
+		);
+		if (nextPaths.length > 0) {
+			next[nextDirKey] = [...(next[nextDirKey] ?? []), ...nextPaths].filter(
+				(path, index, all) => all.indexOf(path) === index,
+			);
+		}
+	}
+	return next;
+}
+
+export function removeFileTreeOrderPaths(
+	orderByDir: FileTreeOrderByDir,
+	targetPath: string,
+): FileTreeOrderByDir {
+	const target = normalizeRelPath(targetPath);
+	if (!target) return { ...orderByDir };
+
+	const next: FileTreeOrderByDir = {};
+	for (const [rawDirKey, rawPaths] of Object.entries(orderByDir)) {
+		if (
+			rawDirKey !== ROOT_FILE_TREE_ORDER_KEY &&
+			(rawDirKey === target || rawDirKey.startsWith(`${target}/`))
+		) {
+			continue;
+		}
+		const nextPaths = rawPaths.filter(
+			(path) => path !== target && !path.startsWith(`${target}/`),
+		);
+		if (nextPaths.length > 0) next[rawDirKey] = nextPaths;
+	}
+	return next;
 }
 
 export function areEntriesEqual(

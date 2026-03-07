@@ -1,10 +1,12 @@
 use std::path::{Path, PathBuf};
 
 /// Unix errno for EXDEV (cross-device link).
+#[allow(dead_code)]
 #[cfg(unix)]
 const CROSS_DEVICE_RENAME_ERRNO: i32 = 18;
 
 /// Windows error code for ERROR_NOT_SAME_DEVICE.
+#[allow(dead_code)]
 #[cfg(windows)]
 const CROSS_DEVICE_RENAME_ERRNO: i32 = 17;
 
@@ -25,6 +27,7 @@ fn resolve_trash_dir() -> Result<PathBuf, String> {
     Ok(home_dir()?.join(".local/share/Trash/files"))
 }
 
+#[allow(dead_code)]
 fn unique_trash_dest(trash_dir: &Path, src: &Path) -> Result<PathBuf, String> {
     let file_name = src
         .file_name()
@@ -143,6 +146,7 @@ pub(super) fn move_path_to_trash(src: &Path) -> Result<(), String> {
     }
 }
 
+#[allow(dead_code)]
 fn copy_path_recursive(src: &Path, dest: &Path) -> Result<(), String> {
     if src.is_dir() {
         std::fs::create_dir_all(dest).map_err(|e| e.to_string())?;

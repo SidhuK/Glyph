@@ -1,5 +1,8 @@
 import { Fragment, useMemo } from "react";
-import { formatShortcut, formatShortcutParts } from "../../lib/shortcuts";
+import {
+	formatShortcutForPlatform,
+	formatShortcutPartsForPlatform,
+} from "../../lib/shortcuts/platform";
 import type { Command } from "./commandPaletteHelpers";
 
 interface CommandListProps {
@@ -72,9 +75,9 @@ export function CommandList({
 							{command.shortcut ? (
 								<span
 									className="commandPaletteShortcut"
-									aria-label={formatShortcut(command.shortcut)}
+									aria-label={formatShortcutForPlatform(command.shortcut)}
 								>
-									{formatShortcutParts(command.shortcut).map((part) => (
+									{formatShortcutPartsForPlatform(command.shortcut).map((part) => (
 										<kbd key={part}>{part}</kbd>
 									))}
 								</span>

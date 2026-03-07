@@ -1,5 +1,4 @@
-import { m } from "motion/react";
-import type { MouseEvent } from "react";
+import type { DragEvent, MouseEvent } from "react";
 import { memo, useEffect, useRef, useState } from "react";
 import type { FsEntry } from "../../lib/tauri";
 import { FolderPlus, Plus, Trash2 } from "../Icons";
@@ -12,9 +11,8 @@ import {
 } from "../ui/shadcn/context-menu";
 import {
 	buildRowStyle,
-	rowVariants,
+	type FileTreeMoveOptions,
 	splitEditableFileName,
-	springTransition,
 } from "./fileTreeItemHelpers";
 import { basename, getFileTypeInfo } from "./fileTypeUtils";
 
@@ -31,7 +29,13 @@ interface FileTreeFileItemProps {
 	onCommitRename: (path: string, nextName: string) => Promise<void> | void;
 	onCancelRename: () => void;
 	parentDirPath: string;
+	siblingIndex: number;
 	onDeletePath: (path: string, kind: "dir" | "file") => void;
+	onMovePath: (
+		fromPath: string,
+		toDirPath: string,
+		options?: FileTreeMoveOptions,
+	) => Promise<string | null>;
 }
 
 export const FileTreeFileItem = memo(function FileTreeFileItem({
@@ -47,7 +51,9 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 	onCommitRename,
 	onCancelRename,
 	parentDirPath,
+	siblingIndex,
 	onDeletePath,
+	onMovePath,
 }: FileTreeFileItemProps) {
 	const rowStyle = buildRowStyle(depth);
 	const { label } = getFileTypeInfo(entry.rel_path, entry.is_markdown);
@@ -63,6 +69,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 	const inputRef = useRef<HTMLInputElement | null>(null);
 	const renameSubmittedRef = useRef(false);
 	const [draftName, setDraftName] = useState(fileStem || entry.name);
+	const [dropIndicator, setDropIndicator] = useState<"top" | "bottom" | null>(null);
 
 	useEffect(() => {
 		if (!isRenaming) return;
@@ -87,8 +94,64 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 		await onCommitRename(entry.rel_path, nextName);
 	};
 
+	const handleDragStart = (event: DragEvent<HTMLButtonElement>) => {
+		event.dataTransfer.effectAllowed = "copyMove";
+		event.dataTransfer.setData("text/glyph-filetree-path", entry.rel_path);
+		event.dataTransfer.setData("text/glyph-filetree-kind", "file");
+		event.dataTransfer.setData("text/plain", entry.rel_path);
+
+		// Force the cursor change immediately on Windows
+		document.body.classList.add("dragging-in-progress");
+	};
+
+	const handleDragEnd = () => {
+		document.body.classList.remove("dragging-in-progress");
+		setDropIndicator(null);
+	};
+
+	const handleDragOver = (e: DragEvent<HTMLLIElement>) => {
+		e.preventDefault();
+		e.stopPropagation();
+		e.dataTransfer.dropEffect = "move";
+
+		const rect = e.currentTarget.getBoundingClientRect();
+		const y = e.clientY - rect.top;
+		if (y < rect.height / 2) {
+			setDropIndicator("top");
+		} else {
+			setDropIndicator("bottom");
+		}
+	};
+
+	const handleDragLeave = (e: DragEvent<HTMLLIElement>) => {
+		e.stopPropagation();
+		setDropIndicator(null);
+	};
+
+	const handleDrop = async (e: DragEvent<HTMLLIElement>) => {
+		e.preventDefault();
+		e.stopPropagation();
+		setDropIndicator(null);
+
+		const fromPath = e.dataTransfer.getData("text/glyph-filetree-path")?.trim();
+		if (!fromPath || fromPath === entry.rel_path) return;
+
+		const index = dropIndicator === "top" ? siblingIndex : siblingIndex + 1;
+		await onMovePath(fromPath, parentDirPath, { index });
+	};
+
+	let liClassName = isActive ? "fileTreeItem active" : "fileTreeItem";
+	if (dropIndicator === "top") liClassName += " drop-indicator-top";
+	if (dropIndicator === "bottom") liClassName += " drop-indicator-bottom";
+
 	return (
-		<li className={isActive ? "fileTreeItem active" : "fileTreeItem"}>
+		<li
+			className={liClassName}
+			onDragOver={handleDragOver}
+			onDragEnter={handleDragOver}
+			onDragLeave={handleDragLeave}
+			onDrop={(e) => void handleDrop(e)}
+		>
 			<div className="fileTreeRowShell">
 				{isRenaming ? (
 					<div className="fileTreeRow fileTreeRowEditing" style={rowStyle}>
@@ -119,24 +182,22 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 				) : (
 					<ContextMenu>
 						<ContextMenuTrigger asChild>
-							<m.button
+							<button
 								type="button"
-								className="fileTreeRow"
+								className={`fileTreeRow${isActive ? " is-active" : ""}`}
 								onClick={() => onOpenFile(entry.rel_path)}
 								style={rowStyle}
 								title={`${entry.rel_path} (${label})`}
-								variants={rowVariants}
-								whileHover="hover"
-								whileTap="tap"
-								animate={isActive ? "active" : "idle"}
-								transition={springTransition}
+								draggable
+								onDragStart={handleDragStart}
+								onDragEnd={handleDragEnd}
 							>
 								<span className="fileTreeLeadingSpacer" aria-hidden="true" />
 								<span className="fileTreeName">{displayStem}</span>
 								{extBadge && (
 									<span className="fileTreeExtBadge">{extBadge}</span>
 								)}
-							</m.button>
+							</button>
 						</ContextMenuTrigger>
 						<ContextMenuContent className="fileTreeCreateMenu">
 							<ContextMenuItem

@@ -17,14 +17,11 @@
 	position: relative;
 }
 
-.sidebarDragLayer {
-	position: absolute;
-	inset: 0;
-	z-index: 0;
-	pointer-events: none;
+.appShell.windowsCustomChrome .sidebar {
+	--sidebar-traffic-light-pad: 12px;
 }
 
-.sidebar > *:not(.sidebarDragLayer) {
+.sidebar>* {
 	position: relative;
 	z-index: 1;
 }
@@ -59,6 +56,17 @@
 	-webkit-app-region: drag;
 }
 
+.appShell.windowsCustomChrome .sidebarHeader {
+	height: var(--header-height);
+	padding-top: var(--space-2);
+	padding-left: var(--space-3);
+	align-items: center;
+	border-bottom: 1px solid color-mix(in srgb, var(--border-light) 55%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 58%, transparent);
+	backdrop-filter: blur(8px);
+	-webkit-backdrop-filter: blur(8px);
+}
+
 .sidebarBrand {
 	display: flex;
 	align-items: center;
@@ -82,6 +90,11 @@
 	align-items: center;
 	gap: 6px;
 	margin-top: 2px;
+}
+
+.appShell.windowsCustomChrome .sidebarActions {
+	margin-top: 0;
+	margin-left: auto;
 }
 
 .sidebarSection {
@@ -239,8 +252,7 @@
 
 .sidebarSectionToggle [data-slot="tabs-trigger"]:focus-visible,
 .sidebarFooterBtn:focus-visible {
-	outline: 2px solid
-		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	outline: 2px solid color-mix(in srgb, var(--interactive-accent) 42%, transparent);
 	outline-offset: 2px;
 }
 
@@ -280,6 +292,7 @@
 	font-size: var(--text-xs);
 	color: var(--text-tertiary);
 }
+
 /* ─────────────────────────────────────────────────────────────────────────────
    SIDEBAR RESIZE HANDLE
    ───────────────────────────────────────────────────────────────────────────── */

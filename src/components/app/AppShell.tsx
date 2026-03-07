@@ -21,10 +21,10 @@ import { dispatchPathRemoved } from "../../lib/appEvents";
 import { getLicenseStatus } from "../../lib/license";
 import type { Shortcut } from "../../lib/shortcuts";
 import { getShortcutTooltip } from "../../lib/shortcuts";
+import { isWindows } from "../../lib/shortcuts/platform";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { openSettingsWindow } from "../../lib/windows";
-import { onWindowDragMouseDown } from "../../utils/window";
 import { PanelLeftOpen } from "../Icons";
 import { AIFloatingHost } from "../ai/AIFloatingHost";
 import { dispatchAiContextAttach } from "../ai/aiContextEvents";
@@ -41,14 +41,18 @@ import { type Command, CommandPalette } from "./CommandPalette";
 import { KeyboardShortcutsHelp } from "./KeyboardShortcutsHelp";
 import { MainContent } from "./MainContent";
 import { Sidebar } from "./Sidebar";
+import { WindowTitleBar } from "./WindowTitleBar";
 import { normalizeRelPath, parentDir } from "./appShellHelpers";
 
 export function AppShell() {
+	const windowsCustomChrome = isWindows();
 	const space = useSpace();
 	const { spacePath, error, setError, onOpenSpace, onCreateSpace, closeSpace } =
 		space;
 	const fileTreeCtx = useFileTreeContext();
 	const {
+		rootEntries,
+		childrenByDir,
 		expandedDirs,
 		activeFilePath,
 		updateRootEntries,
@@ -116,8 +120,10 @@ export function AppShell() {
 
 	const fileTree = useFileTree({
 		spacePath,
+		childrenByDir,
 		updateChildrenByDir,
 		updateExpandedDirs,
+		rootEntries,
 		updateRootEntries,
 		setActiveFilePath,
 		setActivePreviewPath,
@@ -464,31 +470,31 @@ export function AppShell() {
 		}
 		const aiCommands: Command[] = aiEnabled
 			? [
-					{
-						id: "toggle-ai",
-						label: "Toggle AI",
-						category: "AI",
-						shortcut: { meta: true, shift: true, key: "a" },
-						enabled: Boolean(spacePath),
-						action: () => setAiPanelOpen((v) => !v),
-					},
-					{
-						id: "ai-attach-current-note",
-						label: "AI: Attach current note",
-						category: "AI",
-						shortcut: { meta: true, alt: true, key: "a" },
-						enabled: Boolean(activeMarkdownTabPath),
-						action: () => void attachCurrentNoteToAi(),
-					},
-					{
-						id: "ai-attach-all-open-notes",
-						label: "AI: Attach all open notes",
-						category: "AI",
-						shortcut: { meta: true, alt: true, shift: true, key: "a" },
-						enabled: openMarkdownTabs.length > 0,
-						action: () => void attachAllOpenNotesToAi(),
-					},
-				]
+				{
+					id: "toggle-ai",
+					label: "Toggle AI",
+					category: "AI",
+					shortcut: { meta: true, shift: true, key: "a" },
+					enabled: Boolean(spacePath),
+					action: () => setAiPanelOpen((v) => !v),
+				},
+				{
+					id: "ai-attach-current-note",
+					label: "AI: Attach current note",
+					category: "AI",
+					shortcut: { meta: true, alt: true, key: "a" },
+					enabled: Boolean(activeMarkdownTabPath),
+					action: () => void attachCurrentNoteToAi(),
+				},
+				{
+					id: "ai-attach-all-open-notes",
+					label: "AI: Attach all open notes",
+					category: "AI",
+					shortcut: { meta: true, alt: true, shift: true, key: "a" },
+					enabled: openMarkdownTabs.length > 0,
+					action: () => void attachAllOpenNotesToAi(),
+				},
+			]
 			: [];
 
 		return [
@@ -663,17 +669,33 @@ export function AppShell() {
 		<div
 			className={cn(
 				"appShell",
+				windowsCustomChrome && "windowsCustomChrome",
 				sidebarCollapsed && "appShellSidebarCollapsed",
 				aiEnabled && aiPanelOpen && "appShellAiOpen",
 			)}
 		>
-			<div
-				aria-hidden="true"
-				className="windowDragStrip"
-				data-tauri-drag-region
-				onMouseDown={onWindowDragMouseDown}
-			/>
-			{sidebarCollapsed && (
+			{windowsCustomChrome ? (
+				<WindowTitleBar
+					sidebarCollapsed={sidebarCollapsed}
+					onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+					spacePath={spacePath}
+					onOpenCommandPalette={openCommandPalette}
+					onOpenSpace={onOpenSpace}
+					onCreateSpace={onCreateSpace}
+					onOpenSettings={() => void openSettingsWindow()}
+					onOpenAiSettings={() => void openSettingsWindow("ai")}
+					aiEnabled={aiEnabled && Boolean(spacePath)}
+					aiPanelOpen={aiPanelOpen}
+					onToggleAiPanel={() => setAiPanelOpen((v) => !v)}
+				/>
+			) : (
+				<div
+					aria-hidden="true"
+					className="windowDragStrip"
+					data-tauri-drag-region
+				/>
+			)}
+			{!windowsCustomChrome && sidebarCollapsed && (
 				<div className="sidebarCollapsedToggle">
 					<Button
 						data-sidebar="trigger"
@@ -720,6 +742,9 @@ export function AppShell() {
 				onNewFolderInDir={(p) => fileTree.onNewFolderInDir(p)}
 				onRenameDir={(p, name) => fileTree.onRenameDir(p, name)}
 				onDeletePath={(p, kind) => fileTree.onDeletePath(p, kind)}
+				onMovePath={(fromPath, toDirPath, options) =>
+					fileTree.onMovePath(fromPath, toDirPath, options)
+				}
 				onToggleDir={fileTree.toggleDir}
 				onSelectTag={(t) => openTagSearchPalette(t)}
 				onOpenCommandPalette={openCommandPalette}
