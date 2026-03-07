@@ -11,6 +11,7 @@ import {
 	applyEntryOrder,
 	areEntriesEqual,
 	normalizeEntries,
+	type FileTreeOrderByDir,
 	type FileTreeMoveOptions,
 } from "./fileTreeHelpers";
 import { useFileTreeCRUD } from "./useFileTreeCRUD";
@@ -102,7 +103,10 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 				dirPath ? { dir: dirPath } : {},
 			);
 			const normalizedEntries = normalizeEntries(entries);
-			const orderByDir = await getFileTreeOrder(spacePath);
+			let orderByDir: FileTreeOrderByDir = {};
+			try {
+				orderByDir = await getFileTreeOrder(spacePath);
+			} catch { }
 			const orderedEntries = applyEntryOrder(
 				normalizedEntries,
 				dirPath,

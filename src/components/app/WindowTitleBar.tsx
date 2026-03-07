@@ -104,16 +104,13 @@ export function WindowTitleBar({
     const closeMenuTimeoutRef = useRef<number | null>(null);
     const currentWindow = useMemo<ReturnType<typeof getCurrentWindow> | null>(() => {
         try {
-            if (typeof window !== "undefined") {
-                const tauriWindow = window as Window & { __TAURI__?: unknown };
-                if (tauriWindow.__TAURI__) {
-                    return getCurrentWindow();
-                }
-            }
+            return getCurrentWindow();
+            // used for minimize, maximize, and close to work instead of silently doing nothing.
+            // so that titlebar always resolves the current Tauri window directly, while still falling back safely during plain browser rendering.
         } catch {
             // Return null if Tauri is unavailable during browser-only rendering.
+            return null;
         }
-        return null;
     }, []);
     const spaceLabel = useMemo(() => getSpaceLabel(spacePath), [spacePath]);
     const revealSpaceLabel = useMemo(
@@ -386,6 +383,7 @@ export function WindowTitleBar({
                         type="button"
                         className="windowTitleBarSidebarToggle"
                         onClick={onToggleSidebar}
+                        onDoubleClick={(event) => event.stopPropagation()}
                         aria-label={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
                         title={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
                         data-window-drag-ignore
@@ -550,7 +548,6 @@ export function WindowTitleBar({
                                 className="windowTitleBarDropdown"
                                 onPointerEnter={clearMenuTimeouts}
                                 onPointerLeave={scheduleMenuClose}
-                                onCloseAutoFocus={(event) => event.preventDefault()}
                             >
                                 {menu.items.map((item, index) =>
                                     "separator" in item ? (

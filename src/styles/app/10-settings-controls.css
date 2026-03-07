@@ -205,7 +205,7 @@
 	outline-offset: 2px;
 }
 
-.settingsPane input,
+.settingsPane input:not([type="checkbox"]),
 .settingsPane select {
 	-webkit-appearance: none;
 	appearance: none;
@@ -232,20 +232,20 @@
 	background-size: 5px 5px, 5px 5px;
 }
 
-.settingsPane input,
+.settingsPane input:not([type="checkbox"]),
 .settingsPane textarea {
 	border: 1px solid color-mix(in srgb, var(--border-default) 88%, transparent);
 	border-radius: var(--radius-md);
 	color: var(--text-primary);
 }
 
-.settingsPane input::placeholder,
+.settingsPane input:not([type="checkbox"])::placeholder,
 .settingsPane textarea::placeholder {
 	color: var(--text-placeholder);
 }
 
-.settingsPane input:focus,
-.settingsPane input:focus-visible,
+.settingsPane input:not([type="checkbox"]):focus,
+.settingsPane input:not([type="checkbox"]):focus-visible,
 .settingsPane textarea:focus,
 .settingsPane textarea:focus-visible,
 .settingsPane select:focus,
