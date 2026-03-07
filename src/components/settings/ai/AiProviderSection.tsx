@@ -35,6 +35,7 @@ export function AiProviderSection({
 		>
 			<SettingsRow
 				label="Service"
+				htmlFor="aiProvider"
 				description="Pick the provider backing this profile."
 			>
 				<select
@@ -64,6 +65,7 @@ export function AiProviderSection({
 
 			<SettingsRow
 				label="Model"
+				htmlFor="aiModel"
 				description="Glyph fetches available models for the selected provider when credentials allow it."
 			>
 				<AiModelCombobox
@@ -98,6 +100,7 @@ export function AiProviderSection({
 			{shouldShowReasoningSelect ? (
 				<SettingsRow
 					label="Reasoning level"
+					htmlFor="aiReasoningEffort"
 					description="Available for Codex profiles when the current model exposes effort levels."
 				>
 					{(reasoningOptions?.length ?? 0) > 0 ? (
@@ -125,7 +128,7 @@ export function AiProviderSection({
 							))}
 						</select>
 					) : (
-						<div className="settingsFieldControl settingsFieldControlStacked">
+						<div>
 							<Input
 								id="aiReasoningEffort"
 								value={profileDraft.reasoning_effort ?? ""}
@@ -155,6 +158,7 @@ export function AiProviderSection({
 			{profileDraft.provider === "openai_compat" ? (
 				<SettingsRow
 					label="Base URL"
+					htmlFor="aiBaseUrl"
 					description="Only needed for custom OpenAI-compatible providers."
 				>
 					<Input

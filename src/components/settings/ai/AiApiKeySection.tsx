@@ -38,6 +38,7 @@ export function AiApiKeySection({
 		>
 			<SettingsRow
 				label={secretConfigured ? "Update key" : "Set key"}
+				htmlFor="aiApiKeyInput"
 				description="Paste a provider key, save it locally, or clear the current stored secret."
 				stacked
 			>

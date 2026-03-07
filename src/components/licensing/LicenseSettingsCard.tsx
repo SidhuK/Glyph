@@ -150,6 +150,7 @@ export function LicenseSettingsCard() {
 			{status?.is_official_build ? (
 				<SettingsRow
 					label="Activate Glyph"
+					htmlFor="settings-license-key"
 					description="Enter your license key to unlock Glyph permanently on this device."
 					stacked
 					className="licenseSettingsField"

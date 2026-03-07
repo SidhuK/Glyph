@@ -37,6 +37,7 @@ export function AppearanceTypographyCard({
 		>
 			<SettingsRow
 				label="Interface font"
+				htmlFor="settingsFontFamily"
 				description="Used for most UI copy across Glyph."
 			>
 				<select
@@ -54,6 +55,7 @@ export function AppearanceTypographyCard({
 
 			<SettingsRow
 				label="Monospace font"
+				htmlFor="settingsMonoFontFamily"
 				description="Used anywhere Glyph needs fixed-width text."
 			>
 				<select
@@ -71,6 +73,7 @@ export function AppearanceTypographyCard({
 
 			<SettingsRow
 				label="Font size"
+				htmlFor="settingsFontSize"
 				description="Adjust the base interface text size used throughout the app."
 			>
 				<div className="settingsRange">

@@ -23,6 +23,7 @@ export function AiActiveProfileSection({
 			>
 				<SettingsRow
 					label="Active profile"
+					htmlFor="aiProfileSel"
 					description="Switching profiles updates the provider, model, and auth settings below."
 				>
 					<select

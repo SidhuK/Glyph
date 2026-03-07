@@ -12,6 +12,7 @@ interface SettingsSectionProps {
 
 interface SettingsRowProps {
 	label: ReactNode;
+	htmlFor?: string;
 	description?: ReactNode;
 	children: ReactNode;
 	className?: string;
@@ -64,11 +65,14 @@ export function SettingsSection({
 
 export function SettingsRow({
 	label,
+	htmlFor,
 	description,
 	children,
 	className,
 	stacked = false,
 }: SettingsRowProps) {
+	const CopyTag = htmlFor ? "label" : "div";
+
 	return (
 		<div
 			className={cn(
@@ -77,10 +81,10 @@ export function SettingsRow({
 				className,
 			)}
 		>
-			<div className="settingsFieldCopy">
+			<CopyTag className="settingsFieldCopy" htmlFor={htmlFor}>
 				<div className="settingsLabel">{label}</div>
 				{description ? <div className="settingsHelp">{description}</div> : null}
-			</div>
+			</CopyTag>
 			<div
 				className={cn(
 					"settingsFieldControl",

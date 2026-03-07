@@ -44,13 +44,52 @@ async function getPreferredSettingsWindowSize() {
 
 async function showSettingsWindow(window: WebviewWindow) {
 	await window.show();
-	await window.unminimize();
-	await window.setFocus();
+	try {
+		await window.unminimize();
+	} catch {
+		// Some platforms reject this when the window was never minimized.
+	}
+	try {
+		await window.setFocus();
+	} catch {
+		// Keep the reopened window visible even if focus cannot be stolen.
+	}
 }
 
 async function navigateSettingsWindow(tab: SettingsTab | undefined) {
 	if (!tab) return;
 	await emitTo("settings", "settings:navigate", { tab });
+}
+
+async function resizeSettingsWindowIfNeeded(window: WebviewWindow) {
+	try {
+		if (await window.isVisible()) return;
+
+		const [currentSize, scaleFactor] = await Promise.all([
+			window.innerSize(),
+			window.scaleFactor(),
+		]);
+		const logicalSize = currentSize.toLogical(scaleFactor);
+		const isDefaultSize =
+			Math.round(logicalSize.width) === SETTINGS_MIN_WIDTH &&
+			Math.round(logicalSize.height) === SETTINGS_MIN_HEIGHT;
+
+		if (!isDefaultSize) return;
+
+		const preferredSize = await getPreferredSettingsWindowSize();
+		if (
+			preferredSize.width === Math.round(logicalSize.width) &&
+			preferredSize.height === Math.round(logicalSize.height)
+		) {
+			return;
+		}
+
+		await window.setSize(
+			new LogicalSize(preferredSize.width, preferredSize.height),
+		);
+	} catch {
+		// Preserve the current window size if we cannot safely inspect or resize it.
+	}
 }
 
 export async function openSettingsWindow(tab?: SettingsTab) {
@@ -59,6 +98,7 @@ export async function openSettingsWindow(tab?: SettingsTab) {
 		let didShow = false;
 
 		try {
+			await resizeSettingsWindowIfNeeded(existing);
 			await showSettingsWindow(existing);
 			didShow = true;
 		} catch {
@@ -66,13 +106,6 @@ export async function openSettingsWindow(tab?: SettingsTab) {
 		}
 
 		if (didShow) {
-			try {
-				const size = await getPreferredSettingsWindowSize();
-				await existing.setSize(new LogicalSize(size.width, size.height));
-			} catch {
-				// Best-effort resize only. Showing the existing settings window matters more.
-			}
-
 			try {
 				await navigateSettingsWindow(tab);
 			} catch {

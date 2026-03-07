@@ -117,12 +117,18 @@ export function useTauriEvent<K extends keyof TauriEventMap>(
 		let cancelled = false;
 		let unlisten: (() => void) | null = null;
 		let didUnlisten = false;
+		let pendingTeardown = false;
 
 		const cleanup = () => {
 			if (didUnlisten) return;
-			didUnlisten = true;
-			runUnlisten(unlisten);
-			unlisten = null;
+			if (unlisten) {
+				runUnlisten(unlisten);
+				unlisten = null;
+				didUnlisten = true;
+				pendingTeardown = false;
+				return;
+			}
+			pendingTeardown = true;
 		};
 
 		void (async () => {
@@ -140,6 +146,12 @@ export function useTauriEvent<K extends keyof TauriEventMap>(
 				return;
 			}
 			unlisten = stop;
+			if (pendingTeardown && !didUnlisten) {
+				runUnlisten(unlisten);
+				unlisten = null;
+				didUnlisten = true;
+				pendingTeardown = false;
+			}
 		})();
 
 		return () => {

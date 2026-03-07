@@ -7,6 +7,7 @@ import {
 	useDeferredValue,
 	useEffect,
 	useMemo,
+	useRef,
 	useState,
 } from "react";
 import { X } from "./components/Icons";
@@ -40,6 +41,7 @@ export default function SettingsApp() {
 		parseTabFromHash(window.location.hash),
 	);
 	const [searchQuery, setSearchQuery] = useState("");
+	const ignoreAutoSwitchRef = useRef(false);
 	const deferredSearchQuery = useDeferredValue(searchQuery);
 	const trimmedSearchQuery = deferredSearchQuery.trim();
 	const activeTabMeta = useMemo(
@@ -84,10 +86,15 @@ export default function SettingsApp() {
 
 	useTauriEvent("settings:navigate", ({ tab }) => {
 		if (!isSettingsTab(tab)) return;
+		ignoreAutoSwitchRef.current = true;
 		switchTab(tab);
 	});
 
 	useEffect(() => {
+		if (ignoreAutoSwitchRef.current) {
+			ignoreAutoSwitchRef.current = false;
+			return;
+		}
 		if (!trimmedSearchQuery) return;
 		if (visibleTabs.some((tab) => tab.id === activeTab)) return;
 		const firstVisibleTab = visibleTabs[0]?.id;
@@ -138,21 +145,20 @@ export default function SettingsApp() {
 				</div>
 			</div>
 		);
-	} else if (activeTab === "general") {
-		tabContent = (
-			<>
-				<GeneralSettingsPane />
-				<DailyNotesSettingsPane />
-			</>
-		);
-	} else if (activeTab === "appearance") {
-		tabContent = <AppearanceSettingsPane />;
-	} else if (activeTab === "ai") {
-		tabContent = <AiSettingsPane />;
-	} else if (activeTab === "about") {
-		tabContent = <AboutSettingsPane />;
 	} else {
-		tabContent = <SpaceSettingsPane />;
+		const tabContentByTab: Record<SettingsTab, ReactNode> = {
+			general: (
+				<>
+					<GeneralSettingsPane />
+					<DailyNotesSettingsPane />
+				</>
+			),
+			appearance: <AppearanceSettingsPane />,
+			ai: <AiSettingsPane />,
+			space: <SpaceSettingsPane />,
+			about: <AboutSettingsPane />,
+		};
+		tabContent = tabContentByTab[activeTab];
 	}
 
 	return (
