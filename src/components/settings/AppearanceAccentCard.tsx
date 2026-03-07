@@ -1,4 +1,5 @@
 import type { UiAccent } from "../../lib/settings";
+import { SettingsRow, SettingsSection } from "./SettingsScaffold";
 import { ACCENT_OPTIONS } from "./accentOptions";
 
 interface AppearanceAccentCardProps {
@@ -14,21 +15,14 @@ export function AppearanceAccentCard({
 		ACCENT_OPTIONS.find((option) => option.id === accent) ?? ACCENT_OPTIONS[0];
 
 	return (
-		<section className="settingsCard">
-			<div className="settingsCardHeader">
-				<div>
-					<div className="settingsCardTitle">Accent</div>
-					<div className="settingsCardHint">
-						Choose the color used for highlights and focus.
-					</div>
-				</div>
-			</div>
-			<div className="settingsField">
-				<div>
-					<label className="settingsLabel" htmlFor="settingsAccent">
-						Palette
-					</label>
-				</div>
+		<SettingsSection
+			title="Accent"
+			description="Choose the accent used for highlights, focus rings, and emphasis."
+		>
+			<SettingsRow
+				label="Palette"
+				description="Preview and select the accent that feels best for your workspace."
+			>
 				<div className="settingsAccentSelector">
 					<div className="settingsAccentPreview" aria-hidden="true">
 						<span
@@ -59,7 +53,7 @@ export function AppearanceAccentCard({
 						))}
 					</div>
 				</div>
-			</div>
-		</section>
+			</SettingsRow>
+		</SettingsSection>
 	);
 }

@@ -1,4 +1,15 @@
-import * as Icons from "@hugeicons/core-free-icons";
+import {
+	AnalysisTextLinkIcon,
+	Calendar03Icon,
+	CheckmarkCircle02Icon,
+	HashtagIcon,
+	InputTextIcon,
+	LeftToRightListBulletIcon,
+	SourceCodeIcon,
+	Tag01Icon,
+} from "@hugeicons/core-free-icons";
+import type { HugeiconsIcon } from "@hugeicons/react";
+import type { ComponentProps } from "react";
 
 export const PROPERTY_KINDS = [
 	"text",
@@ -16,17 +27,17 @@ export type PropertyKind = (typeof PROPERTY_KINDS)[number];
 
 export const PROPERTY_KIND_ICONS: Record<
 	PropertyKind,
-	(typeof Icons)[keyof typeof Icons]
+	ComponentProps<typeof HugeiconsIcon>["icon"]
 > = {
-	text: Icons.InputTextIcon,
-	url: Icons.AnalysisTextLinkIcon,
-	number: Icons.HashtagIcon,
-	date: Icons.Calendar03Icon,
-	datetime: Icons.Calendar03Icon,
-	checkbox: Icons.CheckmarkCircle02Icon,
-	list: Icons.LeftToRightListBulletIcon,
-	tags: Icons.Tag01Icon,
-	yaml: Icons.SourceCodeIcon,
+	text: InputTextIcon,
+	url: AnalysisTextLinkIcon,
+	number: HashtagIcon,
+	date: Calendar03Icon,
+	datetime: Calendar03Icon,
+	checkbox: CheckmarkCircle02Icon,
+	list: LeftToRightListBulletIcon,
+	tags: Tag01Icon,
+	yaml: SourceCodeIcon,
 };
 
 export const PROPERTY_KIND_LABELS: Record<PropertyKind, string> = {

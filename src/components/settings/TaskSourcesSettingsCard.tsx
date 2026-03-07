@@ -7,6 +7,11 @@ import {
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { DatabaseFolderPicker } from "../database/DatabaseFolderPicker";
 import { Button } from "../ui/shadcn/button";
+import {
+	SettingsRow,
+	SettingsSection,
+	SettingsSegmented,
+} from "./SettingsScaffold";
 
 interface TaskSourcesSettingsCardProps {
 	currentSpacePath: string | null;
@@ -77,93 +82,129 @@ export function TaskSourcesSettingsCard({
 	const hasSpace = Boolean(currentSpacePath);
 
 	return (
-		<section className="settingsCard settingsSpan">
-			<div className="settingsCardHeader">
-				<div>
-					<div className="settingsCardTitle">Task Sources</div>
-				</div>
-				<select
-					aria-label="Task source scope"
+		<SettingsSection
+			title="Task Sources"
+			description="Choose whether the Tasks pane reads from the whole space or only selected folders."
+		>
+			{error ? <div className="settingsError">{error}</div> : null}
+			<SettingsRow
+				label="Scope"
+				description="Whole space scans every note. Selected folders keeps the Tasks pane focused."
+			>
+				<SettingsSegmented<TaskSourceSetting["mode"]>
+					ariaLabel="Task source scope"
 					value={source.mode}
 					disabled={!hasSpace || saving}
-					onChange={(event) =>
+					onChange={(value) =>
 						void persist({
-							mode: event.target.value === "folders" ? "folders" : "space",
+							mode: value,
 							folders: source.folders,
 						})
 					}
-				>
-					<option value="space">Whole space</option>
-					<option value="folders">Selected folders</option>
-				</select>
-			</div>
-			{error ? <div className="settingsError">{error}</div> : null}
+					options={[
+						{ label: "Whole space", value: "space" },
+						{ label: "Selected folders", value: "folders" },
+					]}
+				/>
+			</SettingsRow>
 			{!hasSpace ? (
-				<div className="settingsEmpty">
-					Open a space first to choose which folders feed the Tasks pane.
-				</div>
-			) : null}
-			{source.mode === "folders" ? (
-				<div className="settingsTaskSourceFolders">
-					<div className="settingsTaskSourcePicker">
-						<DatabaseFolderPicker
-							value={draftFolder}
-							label="Task Folder"
-							description="Pick a folder to include in the Tasks pane."
-							placeholder="Choose a folder"
-							onChange={setDraftFolder}
-						/>
-						<Button
-							type="button"
-							variant="outline"
-							size="sm"
-							disabled={
-								!draftFolder || source.folders.includes(draftFolder) || saving
-							}
-							onClick={() => {
-								const next = [...source.folders, draftFolder].sort((a, b) =>
-									a.localeCompare(b),
-								);
-								void persist({ mode: "folders", folders: next });
-								setDraftFolder("");
-							}}
-						>
-							Add folder
-						</Button>
+				<SettingsRow
+					label="Availability"
+					description="Open a space first to choose which folders feed the Tasks pane."
+					stacked
+				>
+					<div className="settingsEmpty">
+						Open a space first to choose which folders feed the Tasks pane.
 					</div>
-					{source.folders.length > 0 ? (
-						<div className="settingsTaskSourceChipList">
-							{source.folders.map((folder) => (
-								<button
-									key={folder}
-									type="button"
-									className="settingsPill settingsTaskSourceChip"
-									disabled={saving}
-									onClick={() =>
-										void persist({
-											mode: "folders",
-											folders: source.folders.filter(
-												(entry) => entry !== folder,
-											),
-										})
-									}
-									title={`Remove ${folder}`}
-								>
-									{folderName(folder)}
-									<span className="settingsTaskSourceChipX" aria-hidden="true">
-										×
-									</span>
-								</button>
-							))}
-						</div>
-					) : (
-						<div className="settingsEmpty">
-							No folders selected yet. Add at least one folder or switch back to
-							whole space.
-						</div>
-					)}
-				</div>
+				</SettingsRow>
 			) : null}
-		</section>
+			{source.mode === "folders" && hasSpace ? (
+				<>
+					<SettingsRow
+						label="Add folder"
+						description="Pick a folder to include in the Tasks pane."
+						stacked
+					>
+						<div className="settingsTaskSourcePicker">
+							<DatabaseFolderPicker
+								value={draftFolder}
+								label="Task Folder"
+								description="Pick a folder to include in the Tasks pane."
+								placeholder="Choose a folder"
+								onChange={setDraftFolder}
+							/>
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								disabled={
+									!draftFolder || source.folders.includes(draftFolder) || saving
+								}
+								onClick={() => {
+									const next = [...source.folders, draftFolder].sort((a, b) =>
+										a.localeCompare(b),
+									);
+									void persist({ mode: "folders", folders: next });
+									setDraftFolder("");
+								}}
+							>
+								Add folder
+							</Button>
+						</div>
+					</SettingsRow>
+					<SettingsRow
+						label="Selected folders"
+						description="Remove any folder chip to stop pulling tasks from it."
+						stacked
+					>
+						{source.folders.length > 0 ? (
+							<div className="settingsTaskSourceChipList">
+								{source.folders.map((folder) => (
+									<button
+										key={folder}
+										type="button"
+										className="settingsPill settingsTaskSourceChip"
+										disabled={saving}
+										onClick={() =>
+											void persist({
+												mode: "folders",
+												folders: source.folders.filter(
+													(entry) => entry !== folder,
+												),
+											})
+										}
+										title={`Remove ${folder}`}
+									>
+										{folderName(folder)}
+										<span
+											className="settingsTaskSourceChipX"
+											aria-hidden="true"
+										>
+											×
+										</span>
+									</button>
+								))}
+							</div>
+						) : (
+							<div className="settingsEmpty">
+								No folders selected yet. Add at least one folder or switch back
+								to whole space.
+							</div>
+						)}
+					</SettingsRow>
+				</>
+			) : null}
+			{source.mode === "space" && hasSpace ? (
+				<SettingsRow
+					label="Coverage"
+					description="Glyph will read task items from every eligible note in the current space."
+					stacked
+				>
+					<div className="settingsEmpty">
+						All folders in the current space are included.
+					</div>
+				</SettingsRow>
+			) : null}
+		</SettingsSection>
 	);
 }

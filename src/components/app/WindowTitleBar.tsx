@@ -104,14 +104,11 @@ export function WindowTitleBar({
     const closeMenuTimeoutRef = useRef<number | null>(null);
     const currentWindow = useMemo(() => {
         try {
-            if (typeof window !== "undefined" && (window as any).__TAURI__) {
-                return getCurrentWindow();
-            }
+            return getCurrentWindow();
         } catch {
-            // Tauri not available or getCurrentWindow threw
+            // Return null if Tauri is unavailable during browser-only rendering.
+            return null;
         }
-        // Return null if Tauri unavailable; component will skip window ops
-        return null as any;
     }, []);
     const spaceLabel = useMemo(() => getSpaceLabel(spacePath), [spacePath]);
     const revealSpaceLabel = useMemo(

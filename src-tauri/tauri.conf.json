@@ -30,8 +30,8 @@
 			{
 				"label": "settings",
 				"title": "Settings",
-				"width": 760,
-				"height": 640,
+				"width": 980,
+				"height": 760,
 				"decorations": false,
 				"dragDropEnabled": false,
 				"transparent": true,

@@ -1,4 +1,8 @@
-import * as Icons from "@hugeicons/core-free-icons";
+import {
+	NoteDoneIcon,
+	Settings05Icon,
+	Tag01Icon,
+} from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, m } from "motion/react";
 import { memo, useCallback } from "react";
@@ -127,7 +131,7 @@ export const SidebarContent = memo(function SidebarContent({
 						onClick={onOpenTasks}
 						title="Open Tasks"
 					>
-						<HugeiconsIcon icon={Icons.NoteDoneIcon} size={14} />
+						<HugeiconsIcon icon={NoteDoneIcon} size={14} />
 						<span className="dailyNotesLabel">Tasks</span>
 					</button>
 					<button
@@ -154,7 +158,7 @@ export const SidebarContent = memo(function SidebarContent({
 								<Files size={14} />
 							</TabsTrigger>
 							<TabsTrigger value="tags" title="Tags">
-								<HugeiconsIcon icon={Icons.Tag01Icon} size={14} />
+								<HugeiconsIcon icon={Tag01Icon} size={14} />
 							</TabsTrigger>
 						</TabsList>
 					</Tabs>
@@ -220,7 +224,7 @@ export const SidebarContent = memo(function SidebarContent({
 					onClick={() => void openSettingsWindow()}
 					title="Settings"
 				>
-					<HugeiconsIcon icon={Icons.Settings05Icon} size={14} />
+					<HugeiconsIcon icon={Settings05Icon} size={14} />
 				</Button>
 				{updateReady && (
 					<button

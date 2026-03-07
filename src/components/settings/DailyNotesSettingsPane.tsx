@@ -3,6 +3,7 @@ import { getDailyNotesFolder, setDailyNotesFolder } from "../../lib/settings";
 import { invoke } from "../../lib/tauri";
 import { FolderOpen } from "../Icons/NavigationIcons";
 import { Button } from "../ui/shadcn/button";
+import { SettingsRow, SettingsSection } from "./SettingsScaffold";
 
 export function DailyNotesSettingsPane() {
 	const [currentFolder, setCurrentFolder] = useState<string | null>(null);
@@ -69,14 +70,28 @@ export function DailyNotesSettingsPane() {
 	return (
 		<div className="settingsPane">
 			<div className="settingsGrid">
-				<section className="settingsCard">
-					<div className="settingsCardHeader">
-						<div>
-							<div className="settingsCardTitle">Daily Notes Folder</div>
-							<div className="settingsCardHint">
-								New daily notes will be created here.
+				<SettingsSection
+					title="Daily Notes"
+					description="Choose where new daily notes should be created within the current space."
+				>
+					<SettingsRow
+						label="Folder"
+						description="Glyph stores daily notes relative to the active space."
+						stacked
+					>
+						<div className="dailyNotesFolderField">
+							<div className="dailyNotesFolderPath">
+								{isLoading ? "Loading..." : folderDisplay}
 							</div>
+							{error ? (
+								<div className="settingsError dailyNotesError">{error}</div>
+							) : null}
 						</div>
+					</SettingsRow>
+					<SettingsRow
+						label="Actions"
+						description="Browse for a folder or clear the current daily notes location."
+					>
 						<div className="settingsActions dailyNotesActions">
 							<Button
 								type="button"
@@ -100,17 +115,8 @@ export function DailyNotesSettingsPane() {
 								</Button>
 							)}
 						</div>
-					</div>
-
-					<div className="dailyNotesFolderField">
-						<div className="dailyNotesFolderPath">
-							{isLoading ? "Loading..." : folderDisplay}
-						</div>
-						{error && (
-							<div className="settingsError dailyNotesError">{error}</div>
-						)}
-					</div>
-				</section>
+					</SettingsRow>
+				</SettingsSection>
 			</div>
 		</div>
 	);

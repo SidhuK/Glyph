@@ -1,4 +1,6 @@
 import type { AiProfile } from "../../../lib/tauri";
+import { Button } from "../../ui/shadcn/button";
+import { SettingsRow, SettingsSection } from "../SettingsScaffold";
 
 interface AiActiveProfileSectionProps {
 	profiles: AiProfile[];
@@ -15,11 +17,15 @@ export function AiActiveProfileSection({
 }: AiActiveProfileSectionProps) {
 	if (profiles.length > 1) {
 		return (
-			<section className="settingsCard">
-				<div className="settingsCardHeader">
-					<div>
-						<div className="settingsCardTitle">Active Profile</div>
-					</div>
+			<SettingsSection
+				title="Profiles"
+				description="Choose which AI profile Glyph should use right now."
+			>
+				<SettingsRow
+					label="Active profile"
+					htmlFor="aiProfileSel"
+					description="Switching profiles updates the provider, model, and auth settings below."
+				>
 					<select
 						id="aiProfileSel"
 						aria-label="Active profile"
@@ -34,28 +40,26 @@ export function AiActiveProfileSection({
 							</option>
 						))}
 					</select>
-				</div>
-			</section>
+				</SettingsRow>
+			</SettingsSection>
 		);
 	}
 
 	if (profiles.length === 0) {
 		return (
-			<section className="settingsCard">
-				<div className="settingsCardHeader">
-					<div>
-						<div className="settingsCardTitle">Get Started</div>
-						<div className="settingsCardHint">
-							Create your first provider profile.
-						</div>
-					</div>
-				</div>
-				<div className="settingsRow">
-					<button type="button" onClick={onCreateProfile}>
+			<SettingsSection
+				title="Profiles"
+				description="Create your first provider profile to enable model configuration."
+			>
+				<SettingsRow
+					label="Get started"
+					description="Profiles let you save provider credentials and model choices."
+				>
+					<Button type="button" size="sm" onClick={onCreateProfile}>
 						Create Profile
-					</button>
-				</div>
-			</section>
+					</Button>
+				</SettingsRow>
+			</SettingsSection>
 		);
 	}
 

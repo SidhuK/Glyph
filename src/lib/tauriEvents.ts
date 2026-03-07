@@ -94,6 +94,19 @@ export async function listenTauriEvent<K extends keyof TauriEventMap>(
 	});
 }
 
+function runUnlisten(unlisten: (() => void) | null): void {
+	if (!unlisten) return;
+
+	try {
+		const result = unlisten() as unknown;
+		void Promise.resolve(result).catch(() => {
+			// Tauri may already have cleaned up the listener during window teardown.
+		});
+	} catch {
+		// Ignore teardown races from Tauri listener cleanup.
+	}
+}
+
 export function useTauriEvent<K extends keyof TauriEventMap>(
 	event: K,
 	handler: TauriEventHandler<K>,
@@ -104,6 +117,20 @@ export function useTauriEvent<K extends keyof TauriEventMap>(
 	useEffect(() => {
 		let cancelled = false;
 		let unlisten: (() => void) | null = null;
+		let didUnlisten = false;
+		let pendingTeardown = false;
+
+		const cleanup = () => {
+			if (didUnlisten) return;
+			if (unlisten) {
+				runUnlisten(unlisten);
+				unlisten = null;
+				didUnlisten = true;
+				pendingTeardown = false;
+				return;
+			}
+			pendingTeardown = true;
+		};
 
 		void (async () => {
 			const stop = await listen<TauriEventMap[K]>(event, (evt) => {
@@ -115,15 +142,22 @@ export function useTauriEvent<K extends keyof TauriEventMap>(
 				(handlerRef.current as (value: TauriEventMap[K]) => void)(payload);
 			});
 			if (cancelled) {
-				stop();
+				unlisten = stop;
+				cleanup();
 				return;
 			}
 			unlisten = stop;
+			if (pendingTeardown && !didUnlisten) {
+				runUnlisten(unlisten);
+				unlisten = null;
+				didUnlisten = true;
+				pendingTeardown = false;
+			}
 		})();
 
 		return () => {
 			cancelled = true;
-			unlisten?.();
+			cleanup();
 		};
 	}, [event]);
 }

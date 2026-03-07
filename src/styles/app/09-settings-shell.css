@@ -7,7 +7,11 @@
 	width: 100%;
 	display: flex;
 	flex-direction: column;
-	background: var(--bg-primary);
+	background: radial-gradient(
+			120% 120% at 0% 0%,
+			color-mix(in srgb, var(--bg-secondary) 58%, transparent) 0%,
+			transparent 42%
+		), var(--bg-primary);
 	border-radius: var(--radius-md);
 	overflow: hidden;
 }
@@ -15,8 +19,17 @@
 .settingsBackdrop {
 	position: absolute;
 	inset: 0;
-	background: none;
-	opacity: 0;
+	background: radial-gradient(
+			90% 90% at 100% 0%,
+			color-mix(in srgb, var(--bg-secondary) 44%, transparent) 0%,
+			transparent 55%
+		),
+		linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--bg-primary) 86%, transparent) 0%,
+			transparent 28%
+		);
+	opacity: 1;
 	pointer-events: none;
 }
 
@@ -38,36 +51,10 @@
 	-webkit-app-region: no-drag;
 }
 
-.settingsHeader {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	height: var(--header-height);
-	padding: 0 var(--space-4);
-	border-bottom: 1px solid var(--border-light);
-	background: color-mix(in srgb, var(--bg-secondary) 25%, var(--bg-primary));
-	z-index: 2;
-	-webkit-app-region: drag;
-}
-
-.settingsHeader button,
-.settingsHeader input {
-	-webkit-app-region: no-drag;
-}
-
-.settingsHeaderTitle {
-	display: inline-flex;
-	align-items: center;
-	gap: var(--space-2);
-	font-weight: var(--font-semibold);
-	color: var(--text-primary);
-}
-
 .settingsMain {
 	flex: 1;
 	min-height: 0;
 	overflow: hidden;
-	padding: 0;
 	display: flex;
 	align-items: stretch;
 	justify-content: center;
@@ -79,9 +66,7 @@
 	width: 100%;
 	height: 100%;
 	display: grid;
-	grid-template-columns: 188px minmax(0, 1fr);
-	border-radius: 0;
-	border: none;
+	grid-template-columns: 236px minmax(0, 1fr);
 	background: transparent;
 	overflow: hidden;
 }
@@ -89,59 +74,68 @@
 .settingsTabs {
 	display: flex;
 	flex-direction: column;
-	gap: 4px;
-	padding: 44px 10px 12px;
-	background: color-mix(in srgb, var(--bg-secondary) 46%, var(--bg-primary));
+	gap: 10px;
+	padding: 44px 12px 14px;
+	background: color-mix(in srgb, var(--bg-secondary) 76%, var(--bg-primary));
 	border-right: 1px solid
-		color-mix(in srgb, var(--border-light) 85%, transparent);
+		color-mix(in srgb, var(--border-light) 92%, transparent);
 }
 
 .settingsNavHeader {
 	display: flex;
 	flex-direction: column;
-	gap: 2px;
-	padding: 0 10px 10px;
-}
-
-.settingsNavEyebrow {
-	font-size: 10px;
-	font-weight: var(--font-semibold);
-	letter-spacing: 0.14em;
-	text-transform: uppercase;
-	color: var(--text-tertiary);
+	gap: 8px;
+	padding: 0 8px 4px;
 }
 
 .settingsNavTitle {
-	font-size: 17px;
+	font-size: 18px;
 	font-weight: var(--font-semibold);
-	letter-spacing: -0.01em;
+	letter-spacing: -0.018em;
 	color: var(--text-primary);
-	line-height: 1.15;
+	line-height: 1.1;
 }
 
 .settingsNavMeta {
-	font-size: 10px;
-	font-weight: var(--font-medium);
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-	color: var(--text-tertiary);
+	font-size: 11px;
+	line-height: 1.35;
+	color: var(--text-secondary);
 }
 
-.settingsNavEarlyAccessBadge {
-	margin-top: 6px;
-	width: max-content;
+.settingsNavSearch {
+	position: relative;
+}
+
+.settingsNavSearchIcon {
+	position: absolute;
+	top: 50%;
+	left: 11px;
+	transform: translateY(-50%);
+	color: var(--text-tertiary);
+	pointer-events: none;
+}
+
+.settingsNavSearchInput {
+	height: 34px;
+	padding-left: 34px;
+	background: color-mix(in srgb, var(--bg-primary) 82%, transparent);
+	border-color: color-mix(in srgb, var(--border-light) 88%, transparent);
+	font-size: 12px;
+}
+
+.settingsNavSearchInput:focus-visible {
+	background: var(--bg-primary);
 }
 
 .settingsTabButton {
 	position: relative;
 	display: inline-flex;
-	flex-direction: row;
 	align-items: center;
 	justify-content: flex-start;
 	gap: 10px;
-	min-height: 40px;
-	padding: 0 11px;
-	border-radius: var(--radius-md);
+	min-height: 38px;
+	padding: 0 12px;
+	border-radius: calc(var(--radius-lg) + 1px);
 	border: 1px solid transparent;
 	color: var(--text-secondary);
 	background: transparent;
@@ -149,8 +143,19 @@
 	font-weight: var(--font-medium);
 	line-height: 1;
 	transition: background var(--transition-base), border-color
-		var(--transition-base), color var(--transition-base), transform
-		var(--transition-base);
+		var(--transition-base), color var(--transition-base);
+}
+
+.settingsTabButton::before {
+	content: "";
+	position: absolute;
+	left: -7px;
+	top: 8px;
+	bottom: 8px;
+	width: 3px;
+	border-radius: var(--radius-full);
+	background: transparent;
+	transition: background var(--transition-base);
 }
 
 .settingsTabIcon {
@@ -160,47 +165,67 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	background: color-mix(in srgb, var(--bg-secondary) 46%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 54%, transparent);
 	color: var(--text-tertiary);
+	flex: 0 0 auto;
 	transition: color var(--transition-base), background var(--transition-base);
 }
 
-.settingsTabButton::before {
-	content: "";
-	position: absolute;
-	left: -8px;
-	top: 8px;
-	bottom: 8px;
-	width: 3px;
+.settingsTabLabel {
+	min-width: 0;
+	flex: 1;
+	text-align: left;
+}
+
+.settingsTabCount {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 20px;
+	height: 20px;
+	padding: 0 6px;
 	border-radius: var(--radius-full);
-	background: transparent;
-	transition: background var(--transition-base);
+	background: color-mix(in srgb, var(--bg-primary) 86%, transparent);
+	border: 1px solid color-mix(in srgb, var(--border-light) 88%, transparent);
+	font-size: 10px;
+	color: var(--text-tertiary);
 }
 
 .settingsTabButton:hover {
 	color: var(--text-primary);
-	background: color-mix(in srgb, var(--bg-secondary) 54%, transparent);
-	border-color: color-mix(in srgb, var(--border-light) 58%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 56%, transparent);
+	border-color: color-mix(in srgb, var(--border-light) 62%, transparent);
 }
 
 .settingsTabButton:hover .settingsTabIcon {
-	background: color-mix(in srgb, var(--bg-secondary) 60%, transparent);
 	color: var(--text-secondary);
+	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
 }
 
 .settingsTabButton.active {
 	color: var(--text-primary);
-	background: color-mix(in srgb, var(--bg-secondary) 64%, transparent);
-	border-color: color-mix(in srgb, var(--border-default) 45%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
+	border-color: color-mix(in srgb, var(--border-default) 46%, transparent);
 }
 
 .settingsTabButton.active::before {
-	background: color-mix(in srgb, var(--border-default) 65%, transparent);
+	background: color-mix(in srgb, var(--interactive-accent) 70%, transparent);
 }
 
 .settingsTabButton.active .settingsTabIcon {
-	background: color-mix(in srgb, var(--bg-secondary) 72%, transparent);
 	color: var(--text-primary);
+	background: color-mix(in srgb, var(--bg-primary) 100%, transparent);
+}
+
+.settingsTabButton.active .settingsTabCount {
+	color: var(--text-primary);
+	border-color: color-mix(in srgb, var(--border-default) 68%, transparent);
+}
+
+.settingsNavNoResults {
+	padding: 8px 12px;
+	font-size: 12px;
+	color: var(--text-tertiary);
 }
 
 .settingsTabPanel {
@@ -210,38 +235,22 @@
 	overflow-y: auto;
 	display: flex;
 	flex-direction: column;
-	gap: 12px;
-	padding: 44px 20px 20px;
+	gap: 16px;
+	padding: 44px 24px 24px;
 	background: color-mix(in srgb, var(--bg-primary) 96%, var(--bg-secondary));
-	--settings-divider-core: color-mix(
-		in srgb,
-		var(--border-light) 72%,
-		transparent
-	);
-	--settings-divider-soft: color-mix(
-		in srgb,
-		var(--border-light) 30%,
-		transparent
-	);
-	--settings-divider-gradient: linear-gradient(
-		90deg,
-		transparent 0%,
-		var(--settings-divider-soft) 10%,
-		var(--settings-divider-core) 24%,
-		var(--settings-divider-core) 76%,
-		var(--settings-divider-soft) 90%,
-		transparent 100%
-	);
 }
 
 .settingsPanelHeader {
-	position: relative;
+	position: sticky;
+	top: 0;
+	z-index: 1;
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
-	padding: 0 2px 12px;
-	border: 0;
-	background: transparent;
+	padding: 0 0 14px;
+	background: color-mix(in srgb, var(--bg-primary) 94%, transparent);
+	backdrop-filter: blur(14px);
+	-webkit-backdrop-filter: blur(14px);
 }
 
 .settingsPanelHeader::after {
@@ -251,187 +260,89 @@
 	right: 0;
 	bottom: 0;
 	height: 1px;
-	background: var(--settings-divider-gradient);
-}
-
-.settingsPanelEyebrow {
-	margin: 0;
-	font-size: 10px;
-	font-weight: var(--font-semibold);
-	letter-spacing: 0.14em;
-	text-transform: uppercase;
-	color: var(--text-tertiary);
+	background: linear-gradient(
+		90deg,
+		transparent 0%,
+		color-mix(in srgb, var(--border-light) 44%, transparent) 10%,
+		color-mix(in srgb, var(--border-default) 56%, transparent) 50%,
+		color-mix(in srgb, var(--border-light) 44%, transparent) 90%,
+		transparent 100%
+	);
 }
 
 .settingsPanelTitle {
 	margin: 0;
-	font-size: 18px;
+	font-size: 21px;
 	font-weight: var(--font-semibold);
-	letter-spacing: -0.012em;
+	letter-spacing: -0.02em;
 	color: var(--text-primary);
-	line-height: 1.3;
+	line-height: 1.2;
 }
 
 .settingsPanelSubtitle {
 	margin: 0;
+	max-width: 62ch;
 	font-size: 12px;
-	line-height: 1.35;
+	line-height: 1.45;
 	color: var(--text-secondary);
 }
 
 .settingsPane {
 	width: 100%;
-	max-width: 980px;
+	max-width: 920px;
 	margin: 0 auto;
-}
-
-.settingsPane h2 {
-	margin: 0;
-	padding: 0 0 12px;
-	font-size: 16px;
-	font-weight: var(--font-semibold);
-	color: var(--text-primary);
-}
-
-.settingsHero {
-	display: flex;
-	align-items: flex-start;
-	justify-content: space-between;
-	gap: var(--space-4);
-	margin-bottom: var(--space-4);
-}
-
-.settingsHint {
-	font-size: var(--text-sm);
-	line-height: 1.4;
-	color: var(--text-secondary);
-	white-space: normal;
-}
-
-.settingsHintWarn {
-	color: var(--text-primary);
-	font-weight: 500;
-}
-
-.settingsBadge {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	padding: 4px 10px;
-	border-radius: var(--radius-sm);
-	background: color-mix(in srgb, var(--bg-secondary) 75%, transparent);
-	border: 1px solid var(--border-light);
-	font-size: 10px;
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-	color: var(--text-tertiary);
-}
-
-.settingsLabelRow {
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
 }
 
 .settingsGrid {
 	display: flex;
 	flex-direction: column;
-	gap: 0;
-	padding-top: 0;
+	gap: 12px;
 }
 
-.settingsCard {
-	background: transparent;
-	border: 0;
-	border-radius: 0;
-	padding: 14px 2px;
+.settingsSearchEmpty {
 	display: flex;
 	flex-direction: column;
-	gap: 10px;
+	gap: 6px;
+	padding: 22px 18px;
+	border-radius: calc(var(--radius-lg) + 2px);
+	border: 1px solid color-mix(in srgb, var(--border-light) 88%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 50%, transparent);
 }
 
-.settingsCard + .settingsCard {
-	position: relative;
-}
-
-.settingsCard + .settingsCard::before {
-	content: "";
-	position: absolute;
-	left: 0;
-	right: 0;
-	top: 0;
-	height: 1px;
-	background: var(--settings-divider-gradient);
-}
-
-.settingsSpan {
-	grid-column: 1 / -1;
-}
-
-.settingsCardHeader {
-	display: flex;
-	align-items: flex-start;
-	justify-content: space-between;
-	gap: var(--space-2);
-	padding: 0;
-}
-
-.settingsCardTitle {
-	font-size: 12px;
+.settingsSearchEmptyTitle {
+	font-size: 14px;
 	font-weight: var(--font-semibold);
-	letter-spacing: 0.02em;
-	text-transform: uppercase;
-	color: color-mix(in srgb, var(--text-secondary) 88%, var(--text-primary));
-	line-height: 1.35;
+	color: var(--text-primary);
 }
 
-.settingsCardHint {
-	font-size: var(--text-xs);
-	line-height: 1.4;
-	color: var(--text-tertiary);
+.settingsSearchEmptyCopy {
+	margin: 0;
+	font-size: 12px;
+	line-height: 1.45;
+	color: var(--text-secondary);
 }
 
-@media (max-width: 860px) {
+@media (max-width: 900px) {
 	.settingsFrame {
-		grid-template-columns: 170px minmax(0, 1fr);
+		grid-template-columns: 214px minmax(0, 1fr);
 	}
 
 	.settingsTabPanel {
-		padding: 44px 16px 16px;
+		padding: 44px 18px 18px;
 	}
 }
 
 @media (max-width: 720px) {
-	.settingsMain {
-		padding: 0;
-	}
-
 	.settingsFrame {
 		grid-template-columns: 1fr;
 		grid-template-rows: auto 1fr;
-		border-radius: 0;
 	}
 
 	.settingsTabs {
-		flex-direction: row;
-		flex-wrap: wrap;
-		align-items: stretch;
-		padding: 44px 10px 8px;
+		padding: 44px 10px 10px;
 		border-right: 0;
 		border-bottom: 1px solid
-			color-mix(in srgb, var(--border-light) 82%, transparent);
-	}
-
-	.settingsNavHeader {
-		width: 100%;
-		padding: 0 2px 6px;
-	}
-
-	.settingsTabButton {
-		min-height: 34px;
-		padding: 0 10px;
-		gap: 8px;
-		flex: 1 1 calc(50% - 6px);
+			color-mix(in srgb, var(--border-light) 88%, transparent);
 	}
 
 	.settingsTabButton::before {
@@ -440,15 +351,10 @@
 
 	.settingsTabPanel {
 		padding: 12px;
-		gap: 12px;
 	}
 
 	.settingsPanelHeader {
-		padding: 11px 12px;
-	}
-
-	.settingsPane {
-		max-width: none;
+		position: relative;
 	}
 }
 
@@ -457,18 +363,7 @@
 	.settingsTabButton,
 	.settingsTabIcon,
 	.settingsTabButton::before,
-	.settingsCard,
-	.settingsBackdrop {
+	.settingsTabCount {
 		transition: none;
-		animation: none;
-	}
-}
-
-@keyframes settings-backdrop-drift {
-	0% {
-		background-position: 0% 0%;
-	}
-	100% {
-		background-position: 100% 100%;
 	}
 }

@@ -986,100 +986,208 @@
 	gap: 6px;
 }
 
-.aiModeMiniToggle {
-	position: relative;
-	display: flex;
+.aiComposerLeftControls {
+	display: inline-flex;
 	align-items: center;
-	flex: 1 1 50%;
+	gap: 6px;
+	flex: 0 0 auto;
 	min-width: 0;
-	gap: 0;
-	padding: 2px;
-	height: 26px;
-	border-radius: var(--radius-md);
-	border: none;
-	background: color-mix(in srgb, var(--bg-secondary) 88%, transparent);
-	backdrop-filter: none;
-	-webkit-backdrop-filter: none;
-	box-shadow: none;
 }
 
-.aiModeMiniOption {
-	--ai-mode-mini-radius: var(--radius-sm);
-	position: relative;
-	flex: 1;
-	display: flex;
+.aiModeDropdownTrigger {
+	--ai-mode-current: var(--text-secondary);
+	width: fit-content;
+	min-width: 0;
+	max-width: 100%;
+	height: 30px;
+	padding: 0 8px 0 6px;
+	justify-self: end;
+	border-radius: var(--radius-md);
+	border: 1px solid color-mix(in srgb, var(--border-light) 74%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 78%, var(--bg-primary));
+	color: var(--text-primary);
+	display: inline-flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 6px;
+	box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 10%, transparent);
+	transition: border-color var(--transition-fast), background
+		var(--transition-fast), box-shadow var(--transition-fast), transform
+		var(--transition-fast);
+}
+
+.aiModeDropdownTrigger-chat {
+	--ai-mode-current: var(--ai-accent-chat);
+}
+
+.aiModeDropdownTrigger-create {
+	--ai-mode-current: var(--ai-accent-create);
+}
+
+.aiModeDropdownTrigger:hover {
+	background: color-mix(
+		in srgb,
+		var(--bg-secondary) 60%,
+		color-mix(in srgb, var(--ai-mode-current) 10%, var(--bg-primary))
+	);
+	border-color: color-mix(in srgb, var(--ai-mode-current) 22%, transparent);
+}
+
+.aiModeDropdownTrigger[data-state="open"] {
+	background: color-mix(
+		in srgb,
+		var(--bg-secondary) 44%,
+		color-mix(in srgb, var(--ai-mode-current) 16%, var(--bg-primary))
+	);
+	border-color: color-mix(in srgb, var(--ai-mode-current) 28%, transparent);
+	box-shadow: inset 0 1px 1px color-mix(in srgb, #000 10%, transparent), 0 0 0
+		1px color-mix(in srgb, var(--ai-mode-current) 10%, transparent);
+}
+
+.aiModeDropdownTrigger:disabled {
+	opacity: 0.5;
+}
+
+.aiModeDropdownTriggerMain {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	min-width: 0;
+}
+
+.aiModeDropdownTriggerIcon {
+	width: 16px;
+	height: 16px;
+	border-radius: var(--radius-sm);
+	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	height: 100%;
-	padding: 0 6px;
-	border-radius: var(--ai-mode-mini-radius);
-	border: 0;
-	background: transparent;
-	color: var(--text-secondary);
-	font-size: 10px;
-	line-height: 1.35;
-	font-weight: var(--font-semibold);
-	transition: color 220ms cubic-bezier(0.22, 1, 0.36, 1);
+	flex-shrink: 0;
+	background: color-mix(in srgb, var(--ai-mode-current) 14%, transparent);
+	color: var(--ai-mode-current);
 }
 
-.aiModeMiniOption.active {
+.aiModeDropdownTriggerText {
+	display: inline-flex;
+	align-items: center;
+	min-width: 0;
+}
+
+.aiModeDropdownTriggerLabel {
+	font-size: 11px;
+	font-weight: var(--font-semibold);
+	color: var(--ai-mode-current);
+	white-space: nowrap;
+}
+
+.aiModeDropdownTriggerChevron {
+	flex-shrink: 0;
+	color: var(--text-tertiary);
+	transition: transform var(--transition-fast), color var(--transition-fast);
+}
+
+.aiModeDropdownTrigger[data-state="open"] .aiModeDropdownTriggerChevron {
+	transform: translateY(1px);
+	color: var(--ai-mode-current);
+}
+
+.aiModeDropdownMenu {
+	width: max-content;
+	min-width: 214px;
+	max-width: min(360px, calc(100vw - 24px));
+	padding: 4px;
+	border-radius: var(--radius-lg);
+	border-color: color-mix(in srgb, var(--border-light) 82%, transparent);
+	background: color-mix(in srgb, var(--bg-sidebar) 94%, transparent);
+	backdrop-filter: blur(12px);
+	-webkit-backdrop-filter: blur(12px);
+}
+
+.aiModeDropdownItem {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	width: 100%;
+	min-height: 34px;
+	padding: 6px 7px;
+	border-radius: var(--radius-md);
+}
+
+.aiModeDropdownItem[data-highlighted] {
+	background: color-mix(in srgb, var(--bg-hover) 88%, transparent);
 	color: var(--text-primary);
 }
 
-.aiModeMiniOption-chat.active {
-	color: var(--ai-accent-chat);
+.aiModeDropdownItem.active.aiModeDropdownItem-chat {
+	background: color-mix(in srgb, var(--ai-accent-chat) 12%, var(--bg-hover));
 }
 
-.aiModeMiniOption-create.active {
-	color: var(--ai-accent-create);
+.aiModeDropdownItem.active.aiModeDropdownItem-create {
+	background: color-mix(in srgb, var(--ai-accent-create) 12%, var(--bg-hover));
 }
 
-.dark .aiModeMiniOption-chat.active {
-	color: var(--ai-accent-chat);
-}
-
-.dark .aiModeMiniOption-create.active {
-	color: var(--ai-accent-create);
-}
-
-.aiModeMiniOption:disabled {
-	opacity: 0.45;
-}
-
-.aiModeMiniActive {
-	position: absolute;
-	inset: 0;
-	border-radius: var(--ai-mode-mini-radius);
-	z-index: 0;
-}
-
-.aiModeMiniActive-chat {
-	background: color-mix(in srgb, var(--ai-accent-chat) 30%, transparent);
-	box-shadow: 0 0 0 1px
-		color-mix(in srgb, var(--ai-accent-chat) 18%, transparent), 0 6px 18px
-		color-mix(in srgb, var(--ai-accent-chat) 18%, transparent);
-}
-
-.aiModeMiniActive-create {
-	background: color-mix(in srgb, var(--ai-accent-create) 28%, transparent);
-	box-shadow: 0 0 0 1px
-		color-mix(in srgb, var(--ai-accent-create) 16%, transparent), 0 6px 18px
-		color-mix(in srgb, var(--ai-accent-create) 16%, transparent);
-}
-
-.aiModeMiniText {
+.aiModeDropdownItemIcon {
+	width: 18px;
+	height: 18px;
+	border-radius: var(--radius-sm);
 	display: inline-flex;
 	align-items: center;
-	gap: 4px;
-	position: relative;
-	z-index: 1;
+	justify-content: center;
+	flex-shrink: 0;
+	background: color-mix(in srgb, var(--bg-primary) 82%, transparent);
+	color: var(--text-secondary);
+}
+
+.aiModeDropdownItem-chat .aiModeDropdownItemIcon {
+	color: var(--ai-accent-chat);
+}
+
+.aiModeDropdownItem-create .aiModeDropdownItemIcon {
+	color: var(--ai-accent-create);
+}
+
+.aiModeDropdownItemBody {
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr);
+	align-items: baseline;
+	gap: 6px;
+	min-width: 0;
+	flex: 1;
+}
+
+.aiModeDropdownItemLabel {
+	font-size: 11px;
+	font-weight: var(--font-semibold);
+	color: var(--text-primary);
+	white-space: nowrap;
+}
+
+.aiModeDropdownItemHint {
+	font-size: 10px;
+	line-height: 1.2;
+	color: var(--text-secondary);
+	min-width: 0;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.aiModeDropdownItemStatus {
+	flex-shrink: 0;
+	align-self: center;
+	font-size: 9px;
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--text-tertiary);
 }
 
 .aiComposerRight {
-	flex: 1 1 50%;
+	flex: 1 1 auto;
 	min-width: 0;
 	display: flex;
-	align-items: center;
+	align-items: stretch;
 }
 
 .aiComposerSend {

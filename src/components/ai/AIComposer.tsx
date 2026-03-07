@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import {
+	ArrowDown01Icon,
 	AtIcon,
 	Chat01Icon,
 	Navigation03Icon,
@@ -7,12 +8,17 @@ import {
 	StopIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { m, useReducedMotion } from "motion/react";
 import type { Dispatch, SetStateAction } from "react";
 import { useAISidebarContext } from "../../contexts";
 import { APP_TAGLINE } from "../../lib/copy";
 import { X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuItem,
+	DropdownMenuTrigger,
+} from "../ui/shadcn/dropdown-menu";
 import { ModelSelector } from "./ModelSelector";
 import { AI_MODES } from "./aiPanelConstants";
 import type { useAiContext } from "./useAiContext";
@@ -48,6 +54,10 @@ function truncateLabel(text: string, max = 28): string {
 	return `${text.slice(0, max - 1)}…`;
 }
 
+function iconForMode(mode: "chat" | "create") {
+	return mode === "create" ? PaintBrush04Icon : Chat01Icon;
+}
+
 export function AIComposer({
 	input,
 	setInput,
@@ -68,7 +78,8 @@ export function AIComposer({
 	onRemoveContext,
 }: AIComposerProps) {
 	const { aiAssistantMode, setAiAssistantMode } = useAISidebarContext();
-	const shouldReduceMotion = useReducedMotion();
+	const activeMode =
+		AI_MODES.find((mode) => mode.value === aiAssistantMode) ?? AI_MODES[0];
 
 	const handleInsertMentionTrigger = () => {
 		if (isAwaitingResponse) return;
@@ -131,20 +142,8 @@ export function AIComposer({
 
 			<div className="aiComposer">
 				<div className="aiComposerInputShell">
-					<div className="aiComposerAttachmentRow">
-						<Button
-							type="button"
-							variant="ghost"
-							size="icon-sm"
-							className="aiComposerMentionButton"
-							aria-label="Add note with @"
-							title="Add note with @"
-							onClick={handleInsertMentionTrigger}
-							disabled={isAwaitingResponse}
-						>
-							<HugeiconsIcon icon={AtIcon} size={13} />
-						</Button>
-						{context.attachedFolders.length > 0 ? (
+					{context.attachedFolders.length > 0 ? (
+						<div className="aiComposerAttachmentRow">
 							<div
 								className="aiComposerContextStrip"
 								aria-label="Attached context"
@@ -168,8 +167,8 @@ export function AIComposer({
 									</button>
 								))}
 							</div>
-						) : null}
-					</div>
+						</div>
+					) : null}
 					<textarea
 						ref={composerInputRef}
 						className="aiComposerInput"
@@ -195,61 +194,92 @@ export function AIComposer({
 					/>
 					<div className="aiComposerBar">
 						<div className="aiComposerControls">
-							<div
-								className="aiModeMiniToggle"
-								role="tablist"
-								aria-label="AI mode"
-							>
-								{AI_MODES.map((mode) => {
-									const active = mode.value === aiAssistantMode;
-									return (
+							<div className="aiComposerLeftControls">
+								<Button
+									type="button"
+									variant="ghost"
+									size="icon-sm"
+									className="aiComposerMentionButton"
+									aria-label="Add note with @"
+									title="Add note with @"
+									onClick={handleInsertMentionTrigger}
+									disabled={isAwaitingResponse}
+								>
+									<HugeiconsIcon icon={AtIcon} size={13} />
+								</Button>
+								<DropdownMenu>
+									<DropdownMenuTrigger asChild>
 										<button
-											key={mode.value}
 											type="button"
-											role="tab"
-											aria-selected={active}
 											className={cn(
-												"aiModeMiniOption",
-												`aiModeMiniOption-${mode.value}`,
-												active && "active",
+												"aiModeDropdownTrigger",
+												`aiModeDropdownTrigger-${activeMode.value}`,
 											)}
-											title={mode.hint}
-											onClick={() => setAiAssistantMode(mode.value)}
+											aria-label={`AI mode: ${activeMode.label}`}
+											title={activeMode.hint}
 											disabled={isAwaitingResponse}
 										>
-											{active ? (
-												<m.span
-													layoutId="ai-mode-active"
-													className={cn(
-														"aiModeMiniActive",
-														`aiModeMiniActive-${mode.value}`,
-													)}
-													transition={
-														shouldReduceMotion
-															? { duration: 0 }
-															: {
-																	type: "spring",
-																	stiffness: 260,
-																	damping: 30,
-																	mass: 0.9,
-																}
-													}
-												/>
-											) : null}
-											<span className="aiModeMiniText">
-												<HugeiconsIcon
-													icon={
-														mode.value === "create"
-															? PaintBrush04Icon
-															: Chat01Icon
-													}
-													size={11}
-												/>
-												{mode.label}
+											<span className="aiModeDropdownTriggerMain">
+												<span className="aiModeDropdownTriggerIcon">
+													<HugeiconsIcon
+														icon={iconForMode(activeMode.value)}
+														size={12}
+													/>
+												</span>
+												<span className="aiModeDropdownTriggerText">
+													<span className="aiModeDropdownTriggerLabel">
+														{activeMode.label}
+													</span>
+												</span>
 											</span>
+											<HugeiconsIcon
+												icon={ArrowDown01Icon}
+												size={12}
+												className="aiModeDropdownTriggerChevron"
+											/>
 										</button>
-									);
-								})}
+									</DropdownMenuTrigger>
+									<DropdownMenuContent
+										align="start"
+										side="top"
+										className="aiModeDropdownMenu"
+									>
+										{AI_MODES.map((mode) => {
+											const active = mode.value === aiAssistantMode;
+											return (
+												<DropdownMenuItem
+													key={mode.value}
+													className={cn(
+														"aiModeDropdownItem",
+														`aiModeDropdownItem-${mode.value}`,
+														active && "active",
+													)}
+													onSelect={() => setAiAssistantMode(mode.value)}
+												>
+													<span className="aiModeDropdownItemIcon">
+														<HugeiconsIcon
+															icon={iconForMode(mode.value)}
+															size={13}
+														/>
+													</span>
+													<span className="aiModeDropdownItemBody">
+														<span className="aiModeDropdownItemLabel">
+															{mode.label}
+														</span>
+														<span className="aiModeDropdownItemHint">
+															{mode.hint}
+														</span>
+													</span>
+													{active ? (
+														<span className="aiModeDropdownItemStatus">
+															Current
+														</span>
+													) : null}
+												</DropdownMenuItem>
+											);
+										})}
+									</DropdownMenuContent>
+								</DropdownMenu>
 							</div>
 							<div className="aiComposerRight">
 								<ModelSelector
