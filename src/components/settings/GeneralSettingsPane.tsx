@@ -5,6 +5,11 @@ import {
 	setAiAssistantMode,
 } from "../../lib/settings";
 import { LicenseSettingsCard } from "../licensing/LicenseSettingsCard";
+import {
+	SettingsRow,
+	SettingsSection,
+	SettingsSegmented,
+} from "./SettingsScaffold";
 
 export function GeneralSettingsPane() {
 	const [aiAssistantMode, setAiAssistantModeState] =
@@ -44,29 +49,25 @@ export function GeneralSettingsPane() {
 			{error ? <div className="settingsError">{error}</div> : null}
 
 			<div className="settingsGrid">
-				<section className="settingsCard">
-					<div className="settingsCardHeader">
-						<div>
-							<div className="settingsCardTitle">Assistant Default View</div>
-						</div>
-					</div>
-
-					<div className="settingsField">
-						<div>
-							<div className="settingsLabel">Open Assistant In</div>
-						</div>
-						<select
-							aria-label="Open Assistant In"
+				<SettingsSection
+					title="Assistant"
+					description="Choose how Glyph opens your assistant workspace by default."
+				>
+					<SettingsRow
+						label="Default view"
+						description="Switch between Create and Chat without changing any assistant behavior."
+					>
+						<SettingsSegmented<AiAssistantMode>
+							ariaLabel="Assistant default view"
 							value={aiAssistantMode}
-							onChange={(event) =>
-								void updateAssistantMode(event.target.value as AiAssistantMode)
-							}
-						>
-							<option value="create">Create View</option>
-							<option value="chat">Chat View</option>
-						</select>
-					</div>
-				</section>
+							onChange={(value) => void updateAssistantMode(value)}
+							options={[
+								{ label: "Create", value: "create" },
+								{ label: "Chat", value: "chat" },
+							]}
+						/>
+					</SettingsRow>
+				</SettingsSection>
 				<LicenseSettingsCard />
 			</div>
 		</div>

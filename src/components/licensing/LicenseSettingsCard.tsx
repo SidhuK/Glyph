@@ -8,7 +8,9 @@ import {
 	useLicenseStatus,
 } from "../../lib/license";
 import type { LicenseStatus } from "../../lib/tauri";
+import { SettingsRow, SettingsSection } from "../settings/SettingsScaffold";
 import { Button } from "../ui/shadcn/button";
+import { Input } from "../ui/shadcn/input";
 
 function statusPillClassName(status: LicenseStatus | null): string {
 	if (!status) return "settingsPill";
@@ -98,19 +100,15 @@ export function LicenseSettingsCard() {
 	};
 
 	return (
-		<section className="settingsCard">
-			<div className="settingsCardHeader">
-				<div>
-					<div className="settingsCardTitle">License</div>
-					<div className="settingsCardHint">
-						Manage your trial and activate your license.
-					</div>
-				</div>
+		<SettingsSection
+			title="License"
+			description="Manage your trial, activate Glyph, and open purchase or support links."
+			aside={
 				<span className={statusPillClassName(status)}>
 					{statusLabel(status)}
 				</span>
-			</div>
-
+			}
+		>
 			{error ? <div className="settingsError">{error}</div> : null}
 			{actionError ? <div className="settingsError">{actionError}</div> : null}
 			{successMessage ? (
@@ -118,47 +116,46 @@ export function LicenseSettingsCard() {
 			) : null}
 
 			{status?.mode === "trial_active" || status?.mode === "trial_expired" ? (
-				<div className="settingsField">
-					<div>
-						<div className="settingsLabel">Trial Status</div>
-						<div className="settingsValue">
-							{formatTrialRemaining(status.trial_remaining_seconds)}
-						</div>
+				<SettingsRow
+					label="Trial status"
+					description="Remaining time on the current trial for this device."
+				>
+					<div className="settingsValue">
+						{formatTrialRemaining(status.trial_remaining_seconds)}
 					</div>
-				</div>
+				</SettingsRow>
 			) : null}
 
 			{status?.mode === "licensed" ? (
 				<>
-					<div className="settingsField">
-						<div>
-							<div className="settingsLabel">Activated</div>
-							<div className="settingsValue">
-								{formatLicenseDate(status.activated_at_ms)}
-							</div>
+					<SettingsRow
+						label="Activated"
+						description="Date this device was successfully activated."
+					>
+						<div className="settingsValue">
+							{formatLicenseDate(status.activated_at_ms)}
 						</div>
-					</div>
-					<div className="settingsField">
-						<div>
-							<div className="settingsLabel">License Key</div>
-							<div className="settingsValue">
-								{status.license_key_masked ?? "Stored locally"}
-							</div>
+					</SettingsRow>
+					<SettingsRow
+						label="License key"
+						description="Masked locally stored key for this device."
+					>
+						<div className="settingsValue">
+							{status.license_key_masked ?? "Stored locally"}
 						</div>
-					</div>
+					</SettingsRow>
 				</>
 			) : null}
 
 			{status?.is_official_build ? (
-				<div className="settingsField licenseSettingsField">
-					<div>
-						<div className="settingsLabel">Activate Glyph</div>
-						<div className="settingsCardHint">
-							Enter your license key to unlock Glyph forever on this device.
-						</div>
-					</div>
+				<SettingsRow
+					label="Activate Glyph"
+					description="Enter your license key to unlock Glyph permanently on this device."
+					stacked
+					className="licenseSettingsField"
+				>
 					<div className="licenseSettingsInputWrap">
-						<input
+						<Input
 							id="settings-license-key"
 							type="text"
 							autoComplete="off"
@@ -193,16 +190,13 @@ export function LicenseSettingsCard() {
 							</Button>
 						</div>
 					</div>
-				</div>
+				</SettingsRow>
 			) : null}
 
-			<div className="settingsField">
-				<div>
-					<div className="settingsLabel">Help</div>
-					<div className="settingsCardHint">
-						Questions about licensing, lost keys, or purchase issues.
-					</div>
-				</div>
+			<SettingsRow
+				label="Help"
+				description="Questions about licensing, lost keys, or purchase issues."
+			>
 				<div className="settingsActions">
 					<Button
 						type="button"
@@ -224,7 +218,7 @@ export function LicenseSettingsCard() {
 						</Button>
 					) : null}
 				</div>
-			</div>
-		</section>
+			</SettingsRow>
+		</SettingsSection>
 	);
 }

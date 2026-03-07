@@ -1,3 +1,5 @@
+import { Button } from "../../ui/shadcn/button";
+import { SettingsRow, SettingsSection } from "../SettingsScaffold";
 import {
 	clampPercent,
 	formatResetMessage,
@@ -36,35 +38,39 @@ export function AiCodexAccountSection({
 	onRefresh,
 }: AiCodexAccountSectionProps) {
 	return (
-		<section className="settingsCard">
-			<div className="settingsCardHeader">
-				<div>
-					<div className="settingsCardTitle">ChatGPT Account</div>
-					<div className="settingsCardHint">
-						Check connection status and usage limits.
-					</div>
-				</div>
+		<SettingsSection
+			title="ChatGPT Account"
+			description="Check connection status, sign in, and review Codex usage limits."
+			aside={
 				<div
 					className={`settingsPill ${toneForCodexStatus(codexState.status)}`}
 				>
 					{labelForCodexStatus(codexState.status)}
 				</div>
-			</div>
-			<div className="settingsField">
-				<div className="settingsLabel">Identity</div>
+			}
+		>
+			<SettingsRow
+				label="Identity"
+				description="The connected account Glyph is currently using for Codex."
+			>
 				<div className="settingsHint">
 					{codexState.displayName || codexState.email || "Not connected"}
 				</div>
-			</div>
+			</SettingsRow>
 			{codexState.authMode ? (
-				<div className="settingsField">
-					<div className="settingsLabel">Authentication</div>
+				<SettingsRow
+					label="Authentication"
+					description="How this ChatGPT session is currently authenticated."
+				>
 					<div className="settingsHint">{codexState.authMode}</div>
-				</div>
+				</SettingsRow>
 			) : null}
 			{codexState.rateLimits.length > 0 ? (
-				<div className="settingsField">
-					<div className="settingsLabel">Rate Limits</div>
+				<SettingsRow
+					label="Rate limits"
+					description="These counters show the remaining capacity for the connected account."
+					stacked
+				>
 					<div className="codexRateLimitList">
 						{codexState.rateLimits.map((item) => {
 							const remainingPercent = clampPercent(100 - item.usedPercent);
@@ -119,37 +125,47 @@ export function AiCodexAccountSection({
 							);
 						})}
 					</div>
-				</div>
+				</SettingsRow>
 			) : null}
-			<div className="settingsInline">
-				{codexState.status === "connected" ? (
-					<button
+			<SettingsRow
+				label="Actions"
+				description="Sign in, disconnect, or refresh the latest account status."
+			>
+				<div className="settingsInline">
+					{codexState.status === "connected" ? (
+						<Button
+							type="button"
+							size="sm"
+							variant="outline"
+							onClick={() => void onDisconnect()}
+							disabled={codexState.loading}
+						>
+							Disconnect
+						</Button>
+					) : (
+						<Button
+							type="button"
+							size="sm"
+							onClick={() => void onConnect()}
+							disabled={codexState.loading}
+						>
+							Sign In with ChatGPT
+						</Button>
+					)}
+					<Button
 						type="button"
-						onClick={() => void onDisconnect()}
+						size="sm"
+						variant="ghost"
+						onClick={() => void onRefresh()}
 						disabled={codexState.loading}
 					>
-						Disconnect
-					</button>
-				) : (
-					<button
-						type="button"
-						onClick={() => void onConnect()}
-						disabled={codexState.loading}
-					>
-						Sign In with ChatGPT
-					</button>
-				)}
-				<button
-					type="button"
-					onClick={() => void onRefresh()}
-					disabled={codexState.loading}
-				>
-					Refresh Status
-				</button>
-			</div>
+						Refresh Status
+					</Button>
+				</div>
+			</SettingsRow>
 			{codexState.error ? (
 				<div className="settingsError">{codexState.error}</div>
 			) : null}
-		</section>
+		</SettingsSection>
 	);
 }

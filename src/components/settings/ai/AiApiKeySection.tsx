@@ -1,3 +1,6 @@
+import { Button } from "../../ui/shadcn/button";
+import { Input } from "../../ui/shadcn/input";
+import { SettingsRow, SettingsSection } from "../SettingsScaffold";
 import { toneForSecretConfigured } from "./aiProfileSectionUtils";
 
 interface AiApiKeySectionProps {
@@ -18,14 +21,10 @@ export function AiApiKeySection({
 	onClearKey,
 }: AiApiKeySectionProps) {
 	return (
-		<section className="settingsCard">
-			<div className="settingsCardHeader">
-				<div>
-					<div className="settingsCardTitle">API Key</div>
-					<div className="settingsCardHint">
-						Stored locally in the secure secret store.
-					</div>
-				</div>
+		<SettingsSection
+			title="API Key"
+			description="Stored locally in the secure secret store used by Glyph."
+			aside={
 				<div
 					className={`settingsPill ${toneForSecretConfigured(secretConfigured)}`}
 				>
@@ -35,34 +34,41 @@ export function AiApiKeySection({
 							? "Active"
 							: "Missing"}
 				</div>
-			</div>
-
-			<div className="settingsField">
-				<div>
-					<label className="settingsLabel" htmlFor="aiApiKeyInput">
-						{secretConfigured ? "Update key" : "Set key"}
-					</label>
-				</div>
-				<div className="settingsInline">
-					<input
+			}
+		>
+			<SettingsRow
+				label={secretConfigured ? "Update key" : "Set key"}
+				description="Paste a provider key, save it locally, or clear the current stored secret."
+				stacked
+			>
+				<div className="settingsInline settingsInlineWide">
+					<Input
 						id="aiApiKeyInput"
 						type="password"
 						placeholder="Paste key..."
 						value={apiKeyDraft}
 						onChange={(event) => onApiKeyDraftChange(event.target.value)}
 					/>
-					<button type="button" onClick={() => void onSaveKey()}>
-						Save
-					</button>
-					{secretConfigured ? (
-						<button type="button" onClick={() => void onClearKey()}>
-							Clear
-						</button>
-					) : null}
+					<div className="settingsActions">
+						<Button type="button" size="sm" onClick={() => void onSaveKey()}>
+							Save
+						</Button>
+						{secretConfigured ? (
+							<Button
+								type="button"
+								variant="ghost"
+								size="sm"
+								onClick={() => void onClearKey()}
+							>
+								Clear
+							</Button>
+						) : null}
+					</div>
 				</div>
-			</div>
-
-			{keySaved ? <div className="settingsKeySaved">API key saved</div> : null}
-		</section>
+				{keySaved ? (
+					<div className="settingsKeySaved">API key saved</div>
+				) : null}
+			</SettingsRow>
+		</SettingsSection>
 	);
 }

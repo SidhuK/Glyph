@@ -1,4 +1,7 @@
 import type { AiModel, AiProfile } from "../../../lib/tauri";
+import { Button } from "../../ui/shadcn/button";
+import { Input } from "../../ui/shadcn/input";
+import { SettingsRow, SettingsSection } from "../SettingsScaffold";
 import { AiModelCombobox } from "./AiModelCombobox";
 
 interface AiProviderSectionProps {
@@ -26,23 +29,14 @@ export function AiProviderSection({
 	const shouldShowReasoningSelect = profileDraft.provider === "codex_chatgpt";
 
 	return (
-		<section className="settingsCard settingsSpan">
-			<div className="settingsCardHeader">
-				<div>
-					<div className="settingsCardTitle">Provider</div>
-					<div className="settingsCardHint">
-						Choose service, model, and advanced options. Service and model
-						changes save automatically; manual fields save on blur.
-					</div>
-				</div>
-			</div>
-
-			<div className="settingsField">
-				<div>
-					<label className="settingsLabel" htmlFor="aiProvider">
-						Service
-					</label>
-				</div>
+		<SettingsSection
+			title="Provider"
+			description="Choose the service, model, and advanced connection fields. Service and model changes save automatically; text fields save on blur."
+		>
+			<SettingsRow
+				label="Service"
+				description="Pick the provider backing this profile."
+			>
 				<select
 					id="aiProvider"
 					value={profileDraft.provider}
@@ -66,14 +60,12 @@ export function AiProviderSection({
 					<option value="ollama">Ollama</option>
 					<option value="openai_compat">OpenAI-compatible</option>
 				</select>
-			</div>
+			</SettingsRow>
 
-			<div className="settingsField">
-				<div>
-					<label className="settingsLabel" htmlFor="aiModel">
-						Model
-					</label>
-				</div>
+			<SettingsRow
+				label="Model"
+				description="Glyph fetches available models for the selected provider when credentials allow it."
+			>
 				<AiModelCombobox
 					key={`${profileDraft.id}:${profileDraft.provider}`}
 					profileId={profileDraft.id}
@@ -101,15 +93,13 @@ export function AiProviderSection({
 					}}
 					onModelsChange={onModelsChange}
 				/>
-			</div>
+			</SettingsRow>
 
 			{shouldShowReasoningSelect ? (
-				<div className="settingsField">
-					<div>
-						<label className="settingsLabel" htmlFor="aiReasoningEffort">
-							Reasoning level
-						</label>
-					</div>
+				<SettingsRow
+					label="Reasoning level"
+					description="Available for Codex profiles when the current model exposes effort levels."
+				>
 					{(reasoningOptions?.length ?? 0) > 0 ? (
 						<select
 							id="aiReasoningEffort"
@@ -135,8 +125,8 @@ export function AiProviderSection({
 							))}
 						</select>
 					) : (
-						<>
-							<input
+						<div className="settingsFieldControl settingsFieldControlStacked">
+							<Input
 								id="aiReasoningEffort"
 								value={profileDraft.reasoning_effort ?? ""}
 								placeholder="e.g. low, medium, high"
@@ -157,19 +147,17 @@ export function AiProviderSection({
 								This model did not publish reasoning options; enter effort
 								manually.
 							</div>
-						</>
+						</div>
 					)}
-				</div>
+				</SettingsRow>
 			) : null}
 
 			{profileDraft.provider === "openai_compat" ? (
-				<div className="settingsField">
-					<div>
-						<label className="settingsLabel" htmlFor="aiBaseUrl">
-							Base URL
-						</label>
-					</div>
-					<input
+				<SettingsRow
+					label="Base URL"
+					description="Only needed for custom OpenAI-compatible providers."
+				>
+					<Input
 						id="aiBaseUrl"
 						placeholder="https://api.example.com/v1"
 						value={profileDraft.base_url ?? ""}
@@ -186,14 +174,22 @@ export function AiProviderSection({
 							}))
 						}
 					/>
-				</div>
+				</SettingsRow>
 			) : null}
 
-			<div className="settingsRow">
-				<button type="button" onClick={() => void onSave()}>
+			<SettingsRow
+				label="Profile"
+				description="Save the current draft if you want to force a refresh after manual edits."
+			>
+				<Button
+					type="button"
+					variant="outline"
+					size="sm"
+					onClick={() => void onSave()}
+				>
 					Save Profile
-				</button>
-			</div>
-		</section>
+				</Button>
+			</SettingsRow>
+		</SettingsSection>
 	);
 }

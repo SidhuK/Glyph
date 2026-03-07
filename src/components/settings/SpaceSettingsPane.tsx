@@ -2,6 +2,8 @@ import { useCallback, useEffect, useState } from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { clearRecentSpaces, loadSettings } from "../../lib/settings";
 import { invoke } from "../../lib/tauri";
+import { Button } from "../ui/shadcn/button";
+import { SettingsRow, SettingsSection } from "./SettingsScaffold";
 import { TaskSourcesSettingsCard } from "./TaskSourcesSettingsCard";
 
 export function SpaceSettingsPane() {
@@ -48,25 +50,36 @@ export function SpaceSettingsPane() {
 			{error ? <div className="settingsError">{error}</div> : null}
 
 			<div className="settingsGrid">
-				<section className="settingsCard">
-					<div className="settingsCardHeader">
-						<div>
-							<div className="settingsCardTitle">Current Space</div>
-							<div className="settingsCardHint mono">
-								{currentSpacePath ?? "(none selected)"}
-							</div>
+				<SettingsSection
+					title="Current Space"
+					description="Review the active workspace path currently open in Glyph."
+					aside={
+						currentSpacePath ? (
+							<div className="settingsPill settingsPillOk">Active</div>
+						) : (
+							<div className="settingsPill settingsPillInfo">Inactive</div>
+						)
+					}
+				>
+					<SettingsRow
+						label="Path"
+						description="Glyph stores notes, indexes, and task configuration relative to this space."
+						stacked
+					>
+						<div className="settingsValue mono">
+							{currentSpacePath ?? "(none selected)"}
 						</div>
-						<div className="settingsPill settingsPillOk">Active</div>
-					</div>
-				</section>
+					</SettingsRow>
+				</SettingsSection>
 
-				<section className="settingsCard settingsSpan">
-					<div className="settingsCardHeader">
-						<div>
-							<div className="settingsCardTitle">Recent Spaces</div>
-						</div>
-						<button
+				<SettingsSection
+					title="Recent Spaces"
+					description="See where you’ve worked recently and clear that history when needed."
+					aside={
+						<Button
 							type="button"
+							variant="ghost"
+							size="xs"
 							aria-label="Clear recent spaces"
 							onClick={async () => {
 								await clearRecentSpaces();
@@ -74,9 +87,10 @@ export function SpaceSettingsPane() {
 							}}
 						>
 							Clear
-						</button>
-					</div>
-					{recentSpaces.length ? (
+						</Button>
+					}
+				>
+					{recentSpaces.length > 0 ? (
 						<ul className="settingsList">
 							{recentSpaces.map((p) => (
 								<li key={p} className="mono">
@@ -87,33 +101,34 @@ export function SpaceSettingsPane() {
 					) : (
 						<div className="settingsEmpty">No recent spaces.</div>
 					)}
-				</section>
+				</SettingsSection>
 
-				<section className="settingsCard settingsSpan">
-					<div className="settingsCardHeader">
-						<div>
-							<div className="settingsCardTitle">Search Index</div>
-							<div className="settingsCardHint">
-								Rebuild if search results are incomplete or outdated.
-							</div>
-						</div>
-						<button
+				<SettingsSection
+					title="Search Index"
+					description="Rebuild the index if search results are incomplete, stale, or missing."
+					aside={
+						<Button
 							type="button"
+							size="xs"
 							onClick={() => {
 								void onRebuildIndex();
 							}}
 							disabled={!currentSpacePath || isIndexing}
 						>
-							{isIndexing ? "Rebuilding..." : "Rebuild Index"}
-						</button>
-					</div>
-					<div className="settingsEmpty">
-						Use this when search results look stale or missing.
-					</div>
-					{reindexStatus ? (
-						<div className="settingsEmpty">{reindexStatus}</div>
-					) : null}
-				</section>
+							{isIndexing ? "Rebuilding..." : "Rebuild"}
+						</Button>
+					}
+				>
+					<SettingsRow
+						label="Status"
+						description="Use this when search results look outdated after large note or file changes."
+						stacked
+					>
+						<div className="settingsEmpty">
+							{reindexStatus || "Index is ready."}
+						</div>
+					</SettingsRow>
+				</SettingsSection>
 
 				<TaskSourcesSettingsCard currentSpacePath={currentSpacePath} />
 			</div>

@@ -2,7 +2,7 @@
 	padding: 4px 10px;
 	border-radius: var(--radius-sm);
 	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
-	background: color-mix(in srgb, var(--bg-secondary) 74%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 68%, transparent);
 	font-size: 9px;
 	font-weight: var(--font-semibold);
 	letter-spacing: 0.12em;
@@ -48,68 +48,134 @@
 	background: color-mix(in srgb, var(--early-access-color) 16%, transparent);
 }
 
+.settingsCard {
+	background: color-mix(in srgb, var(--bg-primary) 84%, var(--bg-secondary));
+	border: 1px solid color-mix(in srgb, var(--border-light) 88%, transparent);
+	border-radius: calc(var(--radius-lg) + 2px);
+	padding: 0;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+
+.settingsCardHeader {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 16px 16px 12px;
+	border-bottom: 1px solid
+		color-mix(in srgb, var(--border-light) 62%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 72%, transparent);
+}
+
+.settingsCardActions {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+.settingsCardTitle {
+	font-size: 13px;
+	font-weight: var(--font-semibold);
+	letter-spacing: -0.01em;
+	color: var(--text-primary);
+	line-height: 1.3;
+}
+
+.settingsCardHint {
+	margin-top: 4px;
+	font-size: 12px;
+	line-height: 1.45;
+	color: var(--text-secondary);
+}
+
+.settingsSectionBody {
+	display: flex;
+	flex-direction: column;
+}
+
 .settingsField {
 	position: relative;
 	display: flex;
-	align-items: center;
+	align-items: flex-start;
 	justify-content: space-between;
 	flex-wrap: wrap;
-	gap: 12px;
-	min-height: 40px;
-	padding: 9px 0;
-	border-radius: 0;
+	gap: 14px;
+	min-height: 56px;
+	padding: 14px 16px;
 	border: 0;
 	background: transparent;
-	transition: border-color var(--transition-base), background
-		var(--transition-base);
+	transition: background var(--transition-base);
 }
 
 .settingsField::after {
 	content: "";
 	position: absolute;
-	left: 0;
-	right: 0;
+	left: 16px;
+	right: 16px;
 	bottom: 0;
 	height: 1px;
-	background: linear-gradient(
-		90deg,
-		transparent 0%,
-		color-mix(in srgb, var(--border-light) 30%, transparent) 10%,
-		color-mix(in srgb, var(--border-light) 72%, transparent) 24%,
-		color-mix(in srgb, var(--border-light) 72%, transparent) 76%,
-		color-mix(in srgb, var(--border-light) 30%, transparent) 90%,
-		transparent 100%
-	);
+	background: color-mix(in srgb, var(--border-light) 72%, transparent);
 }
 
 .settingsCard .settingsField:last-of-type::after {
 	display: none;
 }
 
-.settingsField > div:first-child {
+.settingsField:hover {
+	background: color-mix(in srgb, var(--bg-secondary) 36%, transparent);
+}
+
+.settingsFieldCopy {
 	display: flex;
 	flex-direction: column;
-	flex: 1 1 180px;
+	flex: 1 1 200px;
 	gap: 4px;
 	min-width: 0;
 }
 
-.settingsField > input,
-.settingsField > select,
-.settingsField > textarea,
-.settingsField .settingsInline > input,
-.settingsField .settingsInline > select,
-.settingsField .settingsInline > textarea {
+.settingsFieldControl {
+	display: inline-flex;
+	align-items: center;
+	justify-content: flex-end;
+	flex: 1 1 260px;
+	min-width: 0;
+	max-width: 360px;
+	width: 100%;
+}
+
+.settingsFieldControlStacked {
+	flex-direction: column;
+	align-items: stretch;
+	justify-content: flex-start;
+	max-width: none;
+}
+
+.settingsFieldStacked {
+	align-items: flex-start;
+}
+
+.settingsFieldControl > input,
+.settingsFieldControl > select,
+.settingsFieldControl > textarea,
+.settingsFieldControl .settingsInline > input,
+.settingsFieldControl .settingsInline > select,
+.settingsFieldControl .settingsInline > textarea {
 	flex: 1 1 220px;
 	min-width: 0;
-	max-width: 320px;
+	max-width: 360px;
 	width: 100%;
 	min-height: 34px;
 }
 
 .settingsField input,
 .settingsField select,
-.settingsField textarea {
+.settingsField textarea,
+.settingsFieldControl input,
+.settingsFieldControl select,
+.settingsFieldControl textarea {
 	background: color-mix(in srgb, var(--bg-primary) 90%, var(--bg-secondary));
 	border-color: color-mix(in srgb, var(--border-default) 90%, transparent);
 }
@@ -126,6 +192,7 @@
 	outline-offset: 2px;
 }
 
+.settingsPane input,
 .settingsPane select {
 	-webkit-appearance: none;
 	appearance: none;
@@ -160,6 +227,22 @@
 	background-size: 5px 5px, 5px 5px;
 }
 
+.settingsPane input,
+.settingsPane textarea {
+	border: 1px solid color-mix(in srgb, var(--border-default) 88%, transparent);
+	border-radius: var(--radius-md);
+	color: var(--text-primary);
+}
+
+.settingsPane input::placeholder,
+.settingsPane textarea::placeholder {
+	color: var(--text-placeholder);
+}
+
+.settingsPane input:focus,
+.settingsPane input:focus-visible,
+.settingsPane textarea:focus,
+.settingsPane textarea:focus-visible,
 .settingsPane select:focus,
 .settingsPane select:focus-visible,
 .settingsPane select:active {
@@ -175,9 +258,9 @@
 }
 
 .settingsHelp {
-	font-size: 10px;
-	line-height: 1.35;
-	color: var(--text-tertiary);
+	font-size: 12px;
+	line-height: 1.45;
+	color: var(--text-secondary);
 	white-space: normal;
 }
 
@@ -186,6 +269,11 @@
 	align-items: center;
 	gap: var(--space-2);
 	flex-wrap: wrap;
+	width: 100%;
+}
+
+.settingsInlineWide {
+	align-items: stretch;
 }
 
 .settingsActions {
@@ -196,11 +284,10 @@
 }
 
 .settingsLabel {
-	font-size: 11px;
+	font-size: 12px;
 	font-weight: var(--font-semibold);
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-	color: color-mix(in srgb, var(--text-secondary) 86%, var(--text-primary));
+	letter-spacing: -0.01em;
+	color: var(--text-primary);
 }
 
 .settingsValue {
@@ -231,13 +318,14 @@
 
 .settingsList {
 	margin: 0;
-	padding-left: 18px;
+	padding: 0 16px 16px 32px;
 	font-size: 12px;
 	line-height: 1.55;
 	color: var(--text-secondary);
 }
 
 .settingsEmpty {
+	padding: 0;
 	font-size: 12px;
 	line-height: 1.45;
 	color: var(--text-tertiary);
@@ -534,6 +622,11 @@
 	color: var(--text-secondary);
 }
 
+.settingsSegmented button:disabled {
+	opacity: 0.45;
+	cursor: not-allowed;
+}
+
 .settingsSegmented button.active {
 	background: color-mix(in srgb, var(--bg-primary) 90%, transparent);
 	color: var(--text-primary);
@@ -676,20 +769,27 @@
 @media (max-width: 760px) {
 	.settingsField {
 		gap: 10px;
-		padding: 7px 8px;
+		padding: 12px;
 	}
 
-	.settingsField > div:first-child {
-		min-width: 102px;
+	.settingsFieldCopy,
+	.settingsFieldControl {
+		flex-basis: 100%;
+		max-width: none;
 	}
 
-	.settingsField > input,
-	.settingsField > select,
-	.settingsField > textarea,
-	.settingsField .settingsInline > input,
-	.settingsField .settingsInline > select,
-	.settingsField .settingsInline > textarea {
-		min-width: 146px;
+	.settingsField::after {
+		left: 12px;
+		right: 12px;
+	}
+
+	.settingsAccentSelector {
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.settingsAccentRow {
+		flex-wrap: wrap;
 	}
 }
 

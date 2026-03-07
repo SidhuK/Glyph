@@ -45,37 +45,30 @@
 }
 
 .aboutPane {
-	height: 100%;
-	display: flex;
-	align-items: stretch;
 	padding: 0;
 }
 
-.aboutContent {
+.aboutIdentity {
+	display: flex;
+	align-items: center;
+	gap: 14px;
+}
+
+.aboutIdentityCopy {
 	display: flex;
 	flex-direction: column;
-	justify-content: flex-end;
-	align-items: flex-end;
-	flex: 1;
-	padding: 24px 28px 28px;
+	gap: 8px;
+	min-width: 0;
 }
 
 .aboutLogoWrap {
-	width: 56px;
-	height: 56px;
+	width: 52px;
+	height: 52px;
 	flex-shrink: 0;
 	display: flex;
 	align-items: center;
 	justify-content: center;
 	animation: about-logo-breath 8s ease-in-out infinite;
-}
-
-.aboutFooter {
-	display: flex;
-	flex-direction: column;
-	align-items: flex-end;
-	gap: 10px;
-	text-align: right;
 }
 
 .aboutLogo {
@@ -91,14 +84,14 @@
 }
 
 .aboutAppName {
-	font-size: 28px;
+	font-size: 24px;
 	font-weight: 700;
 	letter-spacing: -0.02em;
 	color: var(--text-primary);
 }
 
 .aboutVersion {
-	font-size: 15px;
+	font-size: 14px;
 	color: var(--text-secondary);
 }
 
@@ -127,45 +120,22 @@
 	color: color-mix(in srgb, var(--text-secondary) 86%, var(--text-primary));
 }
 
-.aboutLinksGrid {
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
-	align-items: flex-end;
-	margin-top: 4px;
-}
-
-.aboutLinksGrid button {
-	display: flex;
-	align-items: center;
-	font-size: 11px;
-	font-weight: var(--font-medium);
-	color: var(--text-secondary);
-	height: 26px;
-	padding: 0 8px;
-	border-radius: var(--radius-sm);
-	border: 0;
-	background: transparent;
-	transition: background var(--transition-base), color var(--transition-base);
-}
-
-.aboutLinksGrid button:hover {
-	color: var(--text-primary);
-	background: color-mix(in srgb, var(--bg-secondary) 64%, transparent);
+.aboutActions {
+	justify-content: flex-end;
 }
 
 .settingsTaskSourceFolders {
 	display: flex;
 	flex-direction: column;
 	gap: 10px;
-	padding: 4px 0;
 }
 
 .settingsTaskSourcePicker {
 	display: flex;
-	align-items: center;
+	align-items: stretch;
 	gap: 8px;
 	flex-wrap: wrap;
+	width: 100%;
 }
 
 .settingsTaskSourceChipList {
@@ -201,17 +171,12 @@
 }
 
 @media (max-width: 760px) {
-	.aboutContent {
-		padding: 18px 14px;
+	.aboutIdentity {
+		align-items: flex-start;
 	}
 
-	.aboutStatusRow {
-		gap: 8px;
-	}
-
-	.settingsTaskSourcePicker {
-		width: 100%;
-		justify-content: stretch;
+	.aboutTitleRow {
+		flex-wrap: wrap;
 	}
 }
 

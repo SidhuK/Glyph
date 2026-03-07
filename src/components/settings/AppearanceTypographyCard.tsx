@@ -1,4 +1,5 @@
 import type { UiFontFamily, UiFontSize } from "../../lib/settings";
+import { SettingsRow, SettingsSection } from "./SettingsScaffold";
 
 interface AppearanceTypographyCardProps {
 	fontFamily: UiFontFamily;
@@ -30,21 +31,14 @@ export function AppearanceTypographyCard({
 	};
 
 	return (
-		<section className="settingsCard">
-			<div className="settingsCardHeader">
-				<div>
-					<div className="settingsCardTitle">Typography</div>
-					<div className="settingsCardHint">
-						Tune fonts and base UI scale for readability.
-					</div>
-				</div>
-			</div>
-			<div className="settingsField">
-				<div>
-					<label className="settingsLabel" htmlFor="settingsFontFamily">
-						Font
-					</label>
-				</div>
+		<SettingsSection
+			title="Typography"
+			description="Tune interface type and overall scale for comfort and readability."
+		>
+			<SettingsRow
+				label="Interface font"
+				description="Used for most UI copy across Glyph."
+			>
 				<select
 					id="settingsFontFamily"
 					value={fontFamily}
@@ -56,14 +50,12 @@ export function AppearanceTypographyCard({
 						</option>
 					))}
 				</select>
-			</div>
+			</SettingsRow>
 
-			<div className="settingsField">
-				<div>
-					<label className="settingsLabel" htmlFor="settingsMonoFontFamily">
-						Mono Font
-					</label>
-				</div>
+			<SettingsRow
+				label="Monospace font"
+				description="Used anywhere Glyph needs fixed-width text."
+			>
 				<select
 					id="settingsMonoFontFamily"
 					value={monoFontFamily}
@@ -75,14 +67,12 @@ export function AppearanceTypographyCard({
 						</option>
 					))}
 				</select>
-			</div>
+			</SettingsRow>
 
-			<div className="settingsField">
-				<div>
-					<label className="settingsLabel" htmlFor="settingsFontSize">
-						Font Size
-					</label>
-				</div>
+			<SettingsRow
+				label="Font size"
+				description="Adjust the base interface text size used throughout the app."
+			>
 				<div className="settingsRange">
 					<input
 						id="settingsFontSize"
@@ -111,7 +101,7 @@ export function AppearanceTypographyCard({
 						aria-label="Font size value"
 					/>
 				</div>
-			</div>
-		</section>
+			</SettingsRow>
+		</SettingsSection>
 	);
 }

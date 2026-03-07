@@ -16,6 +16,11 @@ import {
 import { AppearanceAccentCard } from "./AppearanceAccentCard";
 import { AppearanceTypographyCard } from "./AppearanceTypographyCard";
 import {
+	SettingsRow,
+	SettingsSection,
+	SettingsSegmented,
+} from "./SettingsScaffold";
+import {
 	DEFAULT_FONT_FAMILY,
 	FONT_SIZE_OPTIONS,
 	loadAvailableFonts,
@@ -153,24 +158,26 @@ export function AppearanceSettingsPane() {
 		<div className="settingsPane">
 			{error ? <div className="settingsError">{error}</div> : null}
 			<div className="settingsGrid">
-				<section className="settingsCard">
-					<div className="settingsCardHeader">
-						<div>
-							<div className="settingsCardTitle">Theme</div>
-						</div>
-						<select
-							aria-label="Theme mode"
+				<SettingsSection
+					title="Theme"
+					description="Choose the overall mode Glyph should follow."
+				>
+					<SettingsRow
+						label="Color mode"
+						description="Light and dark are fixed. System follows your OS preference."
+					>
+						<SettingsSegmented<ThemeMode>
+							ariaLabel="Theme mode"
 							value={themeMode}
-							onChange={(event) =>
-								void onThemeModeChange(event.target.value as ThemeMode)
-							}
-						>
-							<option value="light">Light</option>
-							<option value="dark">Dark</option>
-							<option value="system">System</option>
-						</select>
-					</div>
-				</section>
+							onChange={(value) => void onThemeModeChange(value)}
+							options={[
+								{ label: "Light", value: "light" },
+								{ label: "Dark", value: "dark" },
+								{ label: "System", value: "system" },
+							]}
+						/>
+					</SettingsRow>
+				</SettingsSection>
 				<AppearanceAccentCard accent={accent} onAccentChange={onAccentChange} />
 				<AppearanceTypographyCard
 					fontFamily={fontFamily}
