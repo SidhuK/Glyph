@@ -18,6 +18,7 @@ pub(crate) mod utils;
 use serde::Serialize;
 use tauri::menu::Menu;
 use tauri::{Emitter, Manager, WindowEvent};
+#[cfg(target_os = "macos")]
 use tracing::warn;
 
 #[cfg(target_os = "macos")]
