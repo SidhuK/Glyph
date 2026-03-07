@@ -390,8 +390,7 @@ export function AppShell() {
 	);
 
 	useEffect(() => {
-		const sourcePath = movePickerSourcePath ?? activeFilePath;
-		if (!spacePath || !paletteOpen || !sourcePath) {
+		if (!spacePath || !paletteOpen || !movePickerSourcePath) {
 			setMoveTargetDirs([]);
 			return;
 		}
@@ -411,7 +410,7 @@ export function AppShell() {
 				}
 			}
 			if (!cancelled) {
-				const fromDir = parentDir(sourcePath);
+				const fromDir = parentDir(movePickerSourcePath);
 				setMoveTargetDirs(
 					out.filter((d) => d !== fromDir).sort((a, b) => a.localeCompare(b)),
 				);
@@ -422,7 +421,7 @@ export function AppShell() {
 		return () => {
 			cancelled = true;
 		};
-	}, [activeFilePath, movePickerSourcePath, paletteOpen, spacePath]);
+	}, [movePickerSourcePath, paletteOpen, spacePath]);
 
 	useEffect(() => {
 		if (!paletteOpen) setMovePickerSourcePath(null);

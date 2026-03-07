@@ -613,6 +613,10 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			const from = normalizeRelPath(fromPath);
 			const toDir = normalizeRelPath(toDirPath);
 			if (!from) return null;
+			const movedEntry = getEntriesForDir(parentDir(from)).find(
+				(entry) => entry.rel_path === from,
+			);
+			const movedKind = movedEntry?.kind;
 
 			// Prevent moving a folder into itself or its own children
 			if (toDir === from || toDir.startsWith(`${from}/`)) return null;
@@ -679,27 +683,72 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 					);
 				}
 				const nextName = nextPath.split("/").pop() ?? fileName;
-				updateChildrenByDir((prev) => {
-					const next: Record<string, FsEntry[] | undefined> = {};
-					for (const [k, v] of Object.entries(prev)) {
-						next[k] = v?.map((e) =>
+				if (movedKind === "dir") {
+					updateChildrenByDir((prev) => {
+						const next: Record<string, FsEntry[] | undefined> = {};
+						for (const [key, entries] of Object.entries(prev)) {
+							next[rewritePrefix(key, from, nextPath)] = entries?.map((entry) => {
+								const relPath = rewritePrefix(entry.rel_path, from, nextPath);
+								return entry.rel_path === from
+									? { ...entry, name: nextName, rel_path: relPath }
+									: { ...entry, rel_path: relPath };
+							});
+						}
+						return next;
+					});
+					updateRootEntries((prev) =>
+						prev.map((entry) => {
+							const relPath = rewritePrefix(entry.rel_path, from, nextPath);
+							return entry.rel_path === from
+								? { ...entry, name: nextName, rel_path: relPath }
+								: { ...entry, rel_path: relPath };
+						}),
+					);
+					updateExpandedDirs((prev) => {
+						const next = new Set<string>();
+						for (const expanded of prev) {
+							next.add(rewritePrefix(expanded, from, nextPath));
+						}
+						return next;
+					});
+					loadedDirsRef.current = new Set(
+						[...loadedDirsRef.current].map((dir) => rewritePrefix(dir, from, nextPath)),
+					);
+					if (activeFilePathRef.current?.startsWith(`${from}/`)) {
+						setActiveFilePath(rewritePrefix(activeFilePathRef.current, from, nextPath));
+					} else if (activeFilePathRef.current === from) {
+						setActiveFilePath(nextPath);
+					}
+					if (activePreviewPathRef.current?.startsWith(`${from}/`)) {
+						setActivePreviewPath(
+							rewritePrefix(activePreviewPathRef.current, from, nextPath),
+						);
+					} else if (activePreviewPathRef.current === from) {
+						setActivePreviewPath(nextPath);
+					}
+				} else {
+					updateChildrenByDir((prev) => {
+						const next: Record<string, FsEntry[] | undefined> = {};
+						for (const [k, v] of Object.entries(prev)) {
+							next[k] = v?.map((e) =>
+								e.rel_path === from
+									? { ...e, name: nextName, rel_path: nextPath }
+									: e,
+							);
+						}
+						return next;
+					});
+					updateRootEntries((prev) =>
+						prev.map((e) =>
 							e.rel_path === from
 								? { ...e, name: nextName, rel_path: nextPath }
 								: e,
-						);
-					}
-					return next;
-				});
-				updateRootEntries((prev) =>
-					prev.map((e) =>
-						e.rel_path === from
-							? { ...e, name: nextName, rel_path: nextPath }
-							: e,
-					),
-				);
-				if (activeFilePathRef.current === from) setActiveFilePath(nextPath);
-				if (activePreviewPathRef.current === from)
-					setActivePreviewPath(nextPath);
+						),
+					);
+					if (activeFilePathRef.current === from) setActiveFilePath(nextPath);
+					if (activePreviewPathRef.current === from)
+						setActivePreviewPath(nextPath);
+				}
 				await Promise.all([
 					loadDir(fromParent, true),
 					loadDir(toParent, true),
@@ -714,7 +763,9 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 		},
 		[
 			buildNextOrderState,
+			getEntriesForDir,
 			loadDir,
+			loadedDirsRef,
 			reorderEntriesForPath,
 			refreshActiveFolderViewAfterPathChange,
 			spacePath,
@@ -722,6 +773,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			setActivePreviewPath,
 			updateChildrenByDir,
 			setError,
+			updateExpandedDirs,
 			updateRootEntries,
 		],
 	);

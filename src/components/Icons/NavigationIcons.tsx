@@ -58,7 +58,6 @@ export const ControlKey = ({
 
 	return (
 		<span
-			aria-hidden="true"
 			className={className}
 			title={title}
 			style={{

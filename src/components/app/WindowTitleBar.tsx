@@ -102,13 +102,18 @@ export function WindowTitleBar({
     const activeMenuLabelRef = useRef<string | null>(null);
     const openMenuTimeoutRef = useRef<number | null>(null);
     const closeMenuTimeoutRef = useRef<number | null>(null);
-    const currentWindow = useMemo(() => {
+    const currentWindow = useMemo<ReturnType<typeof getCurrentWindow> | null>(() => {
         try {
-            return getCurrentWindow();
+            if (typeof window !== "undefined") {
+                const tauriWindow = window as Window & { __TAURI__?: unknown };
+                if (tauriWindow.__TAURI__) {
+                    return getCurrentWindow();
+                }
+            }
         } catch {
             // Return null if Tauri is unavailable during browser-only rendering.
-            return null;
         }
+        return null;
     }, []);
     const spaceLabel = useMemo(() => getSpaceLabel(spacePath), [spacePath]);
     const revealSpaceLabel = useMemo(
@@ -244,12 +249,6 @@ export function WindowTitleBar({
             {
                 label: "Glyph",
                 items: [
-                    {
-                        label: "Command palette",
-                        shortcut: { key: "k", meta: true },
-                        action: onOpenCommandPalette,
-                        icon: Command,
-                    },
                     { label: "Settings", action: onOpenSettings, icon: Settings },
                     { label: "About Glyph", action: onOpenAbout, icon: CircleHelp },
                 ],

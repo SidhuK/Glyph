@@ -1,6 +1,9 @@
 #[cfg(any(target_os = "macos", target_os = "windows"))]
 use std::collections::BTreeSet;
 
+#[cfg(target_os = "windows")]
+use tracing::warn;
+
 #[cfg(target_os = "macos")]
 use core_text::{
     font::new_from_name, font_collection::get_family_names, font_descriptor::SymbolicTraitAccessors,
@@ -108,7 +111,7 @@ fn read_windows_font_families(monospace_only: bool) -> Result<Vec<String>, Strin
         .collect();
 
     let mono_keywords: &[&str] = &[
-        "mono", "consola", "courier", "fixed", "terminal", "code", "hack", "fira",
+        "consola", "courier", "fixed", "terminal", "code", "hack", "fira",
         "menlo", "inconsolata", "source code", "jetbrains", "iosevka", "cascadia",
         "ubuntu mono", "droid sans mono", "dejavu sans mono", "noto sans mono",
         "liberation mono", "lucida console", "lucida sans typewriter", "roboto mono",
@@ -136,13 +139,6 @@ fn read_windows_font_families(monospace_only: bool) -> Result<Vec<String>, Strin
             "regular",
             "oblique",
             "italic",
-            "medium",
-            "light",
-            "heavy",
-            "black",
-            "book",
-            "bold",
-            "thin",
         ];
 
         let mut family = base.trim().to_string();
@@ -154,8 +150,20 @@ fn read_windows_font_families(monospace_only: bool) -> Result<Vec<String>, Strin
             for suffix in suffixes {
                 if trimmed_lower.ends_with(suffix) {
                     let next_len = trimmed.len().saturating_sub(suffix.len());
-                    family.truncate(next_len);
-                    family = family.trim_end().to_string();
+                    let prefix = &trimmed[..next_len];
+                    let last_char = prefix.chars().last();
+                    if !matches!(last_char, Some(character) if character.is_whitespace() || matches!(character, '(' | '[' | '-')) {
+                        continue;
+                    }
+                    let stripped = prefix
+                        .trim_end_matches(|character: char| {
+                            character.is_whitespace() || matches!(character, '(' | '[' | '-')
+                        })
+                        .trim_end();
+                    if stripped.is_empty() {
+                        continue;
+                    }
+                    family = stripped.to_string();
                     changed = true;
                     break;
                 }
@@ -176,6 +184,7 @@ fn read_windows_font_families(monospace_only: bool) -> Result<Vec<String>, Strin
         let mut hkey: isize = 0;
         let ret = unsafe { RegOpenKeyExW(registry_root, sub_key.as_ptr(), 0, KEY_READ, &mut hkey) };
         if ret != ERROR_SUCCESS {
+            warn!(registry_root, error_code = ret, "failed to open Windows Fonts registry key");
             continue;
         }
 
@@ -215,7 +224,12 @@ fn read_windows_font_families(monospace_only: bool) -> Result<Vec<String>, Strin
 
             if monospace_only {
                 let lower = family.to_ascii_lowercase();
-                if !mono_keywords.iter().any(|keyword| lower.contains(keyword)) {
+                let has_mono_token = lower
+                    .split(|character: char| !character.is_ascii_alphanumeric())
+                    .any(|token| token == "mono");
+                if !has_mono_token
+                    && !mono_keywords.iter().any(|keyword| lower.contains(keyword))
+                {
                     idx += 1;
                     continue;
                 }
@@ -229,7 +243,7 @@ fn read_windows_font_families(monospace_only: bool) -> Result<Vec<String>, Strin
     }
 
     if !opened_any {
-        return Ok(Vec::new());
+        return Err("failed to open Windows Fonts registry keys".to_string());
     }
 
     Ok(families.into_iter().collect())

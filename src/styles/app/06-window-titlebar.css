@@ -1,5 +1,6 @@
 .windowTitleBar {
     --window-titlebar-subtitle-max-width: 200px;
+
     position: absolute;
     top: 0;
     left: 0;
@@ -363,12 +364,12 @@
     display: inline-block;
     position: relative;
     flex-shrink: 0;
-    color: currentColor;
+    color: currentcolor;
 }
 
 .windowChromeGlyphMinimize {
     width: 10px;
-    border-top: 1.5px solid currentColor;
+    border-top: 1.5px solid currentcolor;
     transform: translateY(1px);
     opacity: 0.95;
 }
@@ -376,7 +377,7 @@
 .windowChromeGlyphMaximize {
     width: 10px;
     height: 10px;
-    border: 1.5px solid currentColor;
+    border: 1.5px solid currentcolor;
     border-radius: 2px;
     background: transparent;
     box-sizing: border-box;
@@ -395,7 +396,7 @@
     top: -4px;
     width: 10px;
     height: 10px;
-    border: 1.5px solid currentColor;
+    border: 1.5px solid currentcolor;
     border-radius: 2px;
     box-sizing: border-box;
     background: transparent;

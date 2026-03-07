@@ -1,3 +1,6 @@
+#[cfg(target_os = "linux")]
+use crate::io_atomic;
+
 use std::path::{Path, PathBuf};
 
 /// Unix errno for EXDEV (cross-device link).
@@ -77,7 +80,8 @@ fn cleanup_path(path: &Path) -> Result<(), String> {
         return Ok(());
     }
 
-    if path.is_dir() {
+    let metadata = std::fs::symlink_metadata(path).map_err(|e| e.to_string())?;
+    if metadata.file_type().is_dir() && !metadata.file_type().is_symlink() {
         std::fs::remove_dir_all(path).map_err(|e| e.to_string())
     } else {
         std::fs::remove_file(path).map_err(|e| e.to_string())
@@ -171,7 +175,7 @@ fn write_trash_info_file(info_dir: &Path, trashed_path: &Path, original_path: &P
         encode_trash_info_path(original_path),
         trash_info_deletion_date(),
     );
-    std::fs::write(info_path, contents).map_err(|e| e.to_string())
+    io_atomic::write_atomic(&info_path, contents.as_bytes()).map_err(|e| e.to_string())
 }
 
 /// Move a path to the system Recycle Bin on Windows using the Shell API.
@@ -289,15 +293,10 @@ pub(super) fn move_path_to_trash(src: &Path) -> Result<(), String> {
                 }
 
                 if let Err(rename_error) = std::fs::rename(&temp_dest, &dest) {
-                    let cleanup_error = cleanup_path(&temp_dest).err();
-                    return Err(match cleanup_error {
-                        Some(cleanup_error) => format!(
-                            "failed to finalize Trash move after copying: {rename_error}; cleanup attempted but also failed: {cleanup_error}"
-                        ),
-                        None => format!(
-                            "failed to finalize Trash move after copying: {rename_error}; cleanup attempted"
-                        ),
-                    });
+                    return Err(format!(
+                        "failed to finalize Trash move after copying: {rename_error}; preserved copied item at {}",
+                        temp_dest.display(),
+                    ));
                 }
 
                 Ok(())
@@ -310,15 +309,10 @@ pub(super) fn move_path_to_trash(src: &Path) -> Result<(), String> {
         #[cfg(target_os = "linux")]
         {
             if let Err(write_error) = write_trash_info_file(&info_dir, &dest, &original_path) {
-                let cleanup_error = cleanup_path(&dest).err();
-                return Err(match cleanup_error {
-                    Some(cleanup_error) => format!(
-                        "failed to write Trash metadata: {write_error}; cleanup attempted but also failed: {cleanup_error}"
-                    ),
-                    None => format!(
-                        "failed to write Trash metadata: {write_error}; cleanup attempted"
-                    ),
-                });
+                return Err(format!(
+                    "failed to write Trash metadata: {write_error}; preserved trashed item at {}",
+                    dest.display(),
+                ));
             }
         }
 
@@ -328,7 +322,15 @@ pub(super) fn move_path_to_trash(src: &Path) -> Result<(), String> {
 
 #[allow(dead_code)]
 fn copy_path_recursive(src: &Path, dest: &Path) -> Result<(), String> {
-    if src.is_dir() {
+    let metadata = std::fs::symlink_metadata(src).map_err(|e| e.to_string())?;
+    let file_type = metadata.file_type();
+
+    if file_type.is_symlink() {
+        copy_symlink(src, dest)?;
+        return Ok(());
+    }
+
+    if file_type.is_dir() {
         std::fs::create_dir_all(dest).map_err(|e| e.to_string())?;
         for entry in std::fs::read_dir(src).map_err(|e| e.to_string())? {
             let entry = entry.map_err(|e| e.to_string())?;
@@ -344,4 +346,31 @@ fn copy_path_recursive(src: &Path, dest: &Path) -> Result<(), String> {
     }
     std::fs::copy(src, dest).map_err(|e| e.to_string())?;
     Ok(())
+}
+
+#[cfg(unix)]
+fn copy_symlink(src: &Path, dest: &Path) -> Result<(), String> {
+    use std::os::unix::fs::symlink;
+
+    if let Some(parent) = dest.parent() {
+        std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+    }
+    let target = std::fs::read_link(src).map_err(|e| e.to_string())?;
+    symlink(&target, dest).map_err(|e| e.to_string())
+}
+
+#[cfg(windows)]
+fn copy_symlink(src: &Path, dest: &Path) -> Result<(), String> {
+    use std::os::windows::fs::{symlink_dir, symlink_file};
+
+    if let Some(parent) = dest.parent() {
+        std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+    }
+    let target = std::fs::read_link(src).map_err(|e| e.to_string())?;
+    let is_dir = std::fs::metadata(src).map(|metadata| metadata.is_dir()).unwrap_or(false);
+    if is_dir {
+        symlink_dir(&target, dest).map_err(|e| e.to_string())
+    } else {
+        symlink_file(&target, dest).map_err(|e| e.to_string())
+    }
 }
