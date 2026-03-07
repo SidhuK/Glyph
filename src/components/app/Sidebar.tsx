@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import { memo } from "react";
 import { useSpace, useUILayoutContext } from "../../contexts";
+import type { FileTreeMoveOptions } from "../filetree/fileTreeItemHelpers";
 import { SidebarContent } from "./SidebarContent";
 import { SidebarHeader } from "./SidebarHeader";
 
@@ -14,6 +15,11 @@ interface SidebarProps {
 	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
 	onRenameDir: (dirPath: string, nextName: string) => Promise<string | null>;
 	onDeletePath: (path: string, kind: "dir" | "file") => Promise<boolean>;
+	onMovePath: (
+		fromPath: string,
+		toDirPath: string,
+		options?: FileTreeMoveOptions,
+	) => Promise<string | null>;
 	onSelectTag: (tag: string) => void;
 	onOpenCommandPalette: () => void;
 	sidebarCollapsed: boolean;
@@ -35,6 +41,7 @@ export const Sidebar = memo(function Sidebar({
 	onNewFolderInDir,
 	onRenameDir,
 	onDeletePath,
+	onMovePath,
 	onSelectTag,
 	onOpenCommandPalette,
 	sidebarCollapsed,
@@ -95,6 +102,7 @@ export const Sidebar = memo(function Sidebar({
 							onNewFolderInDir={onNewFolderInDir}
 							onRenameDir={onRenameDir}
 							onDeletePath={onDeletePath}
+							onMovePath={onMovePath}
 							onSelectTag={onSelectTag}
 							onOpenDailyNote={onOpenDailyNote}
 							isDailyNoteCreating={isDailyNoteCreating}

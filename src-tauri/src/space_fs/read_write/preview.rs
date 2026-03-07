@@ -2,7 +2,7 @@ use base64::Engine;
 use std::{io::Read, path::PathBuf};
 use tauri::State;
 
-use crate::{paths, space::SpaceState};
+use crate::{paths, space::SpaceState, utils};
 
 use super::super::helpers::{deny_hidden_rel_path, file_mtime_ms};
 use super::super::types::{BinaryFilePreviewDoc, TextFilePreviewDoc};
@@ -61,7 +61,7 @@ pub async fn space_read_text_preview(
         }
 
         Ok(TextFilePreviewDoc {
-            rel_path: rel.to_string_lossy().to_string(),
+            rel_path: utils::to_slash(&rel),
             text: String::from_utf8_lossy(&bytes).into_owned(),
             mtime_ms: file_mtime_ms(&abs),
             truncated,
@@ -117,7 +117,7 @@ pub async fn space_read_binary_preview(
 
         let encoded = base64::engine::general_purpose::STANDARD.encode(&bytes);
         Ok(BinaryFilePreviewDoc {
-            rel_path: rel.to_string_lossy().to_string(),
+            rel_path: utils::to_slash(&rel),
             mime: mime.to_string(),
             data_url: format!("data:{};base64,{}", mime, encoded),
             truncated,

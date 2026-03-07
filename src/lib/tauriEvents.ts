@@ -52,18 +52,19 @@ type TauriEventMap = {
 		ui?: {
 			theme?: string;
 			accent?:
-				| "neutral"
-				| "cerulean"
-				| "tropical-teal"
-				| "light-yellow"
-				| "soft-apricot"
-				| "vibrant-coral";
+			| "neutral"
+			| "cerulean"
+			| "tropical-teal"
+			| "light-yellow"
+			| "soft-apricot"
+			| "vibrant-coral";
 			fontFamily?: string;
 			monoFontFamily?: string;
 			fontSize?: number;
 			aiEnabled?: boolean;
 			aiAssistantMode?: "chat" | "create";
 			aiSidebarWidth?: number | null;
+			showWindowsMenuBar?: boolean;
 		};
 		dailyNotes?: {
 			folder?: string | null;
@@ -76,8 +77,8 @@ type TauriEventMap = {
 
 type TauriEventHandler<K extends keyof TauriEventMap> =
 	TauriEventMap[K] extends undefined
-		? () => void
-		: (payload: TauriEventMap[K]) => void;
+	? () => void
+	: (payload: TauriEventMap[K]) => void;
 
 export async function listenTauriEvent<K extends keyof TauriEventMap>(
 	event: K,

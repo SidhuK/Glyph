@@ -27,7 +27,6 @@ import { searchSettingsIndex } from "./components/settings/settingsSearch";
 import { Button } from "./components/ui/shadcn/button";
 import { Input } from "./components/ui/shadcn/input";
 import { useTauriEvent } from "./lib/tauriEvents";
-import { onWindowDragMouseDown } from "./utils/window";
 
 function parseTabFromHash(hash: string): SettingsTab {
 	const query = hash.split("?")[1] ?? "";
@@ -169,7 +168,6 @@ export default function SettingsApp() {
 					aria-hidden="true"
 					className="settingsDragStrip"
 					data-tauri-drag-region
-					onMouseDown={onWindowDragMouseDown}
 				/>
 				<Button
 					type="button"

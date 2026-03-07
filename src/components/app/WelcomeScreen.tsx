@@ -1,6 +1,6 @@
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import { useCallback, useState } from "react";
-import { onWindowDragMouseDown } from "../../utils/window";
+
 import { StepHero } from "./welcome/StepHero";
 import { StepQuickStart } from "./welcome/StepQuickStart";
 import { StepReady } from "./welcome/StepReady";
@@ -46,7 +46,6 @@ export function WelcomeScreen({
 					aria-hidden="true"
 					className="mainToolbarDragLayer"
 					data-tauri-drag-region
-					onMouseDown={onWindowDragMouseDown}
 				/>
 				<div className="mainToolbarLeft">
 					<span className="canvasTitle">Launch</span>

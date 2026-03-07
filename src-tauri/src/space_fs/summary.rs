@@ -1,7 +1,7 @@
 use std::{cmp::Reverse, collections::BinaryHeap, ffi::OsStr, path::PathBuf};
 use tauri::State;
 
-use crate::{paths, space::SpaceState};
+use crate::{paths, space::SpaceState, utils};
 
 use super::helpers::{deny_hidden_rel_path, file_mtime_ms, should_hide};
 use super::types::{DirChildSummary, RecentEntry, RecentMarkdown};
@@ -112,7 +112,7 @@ pub async fn space_dir_children_summary(
                             Err(_) => continue,
                         };
                         let mtime = file_mtime_ms(&abs_file);
-                        let rel_s = child_rel2.to_string_lossy().to_string();
+                        let rel_s = utils::to_slash(&child_rel2);
                         let item = (mtime, rel_s, child_name);
                         if heap.len() < limit {
                             heap.push(Reverse(item));
@@ -145,7 +145,7 @@ pub async fn space_dir_children_summary(
             });
 
             out.push(DirChildSummary {
-                dir_rel_path: child_rel.to_string_lossy().to_string(),
+                dir_rel_path: utils::to_slash(&child_rel),
                 name,
                 total_files_recursive: total_files,
                 total_markdown_recursive: total_markdown,
@@ -216,7 +216,7 @@ pub async fn space_dir_recent_entries(
 
             heap.push(Reverse((
                 mtime_ms,
-                child_rel.to_string_lossy().to_string(),
+                utils::to_slash(&child_rel),
                 name,
                 is_markdown,
             )));

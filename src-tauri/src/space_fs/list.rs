@@ -57,7 +57,7 @@ pub async fn space_list_dirs(
                 let child_rel = rel_dir.join(&name);
                 out.push(FsEntry {
                     name,
-                    rel_path: child_rel.to_string_lossy().to_string(),
+                    rel_path: utils::to_slash(&child_rel),
                     kind: "dir".to_string(),
                     is_markdown: false,
                 });
@@ -120,7 +120,7 @@ pub async fn space_list_markdown_files(
                 let rel_path = start_rel.join(&name);
                 out.push(FsEntry {
                     name,
-                    rel_path: rel_path.to_string_lossy().to_string(),
+                    rel_path: utils::to_slash(&rel_path),
                     kind: "file".to_string(),
                     is_markdown: true,
                 });
@@ -162,7 +162,7 @@ pub async fn space_list_markdown_files(
                     }
                     out.push(FsEntry {
                         name,
-                        rel_path: child_rel.to_string_lossy().to_string(),
+                        rel_path: utils::to_slash(&child_rel),
                         kind: "file".to_string(),
                         is_markdown: true,
                     });
@@ -223,7 +223,7 @@ pub async fn space_list_files(
                 let is_markdown = utils::is_markdown_path(&rel_path);
                 out.push(FsEntry {
                     name,
-                    rel_path: rel_path.to_string_lossy().to_string(),
+                    rel_path: utils::to_slash(&rel_path),
                     kind: "file".to_string(),
                     is_markdown,
                 });
@@ -263,7 +263,7 @@ pub async fn space_list_files(
                     let is_markdown = utils::is_markdown_path(Path::new(&name));
                     out.push(FsEntry {
                         name,
-                        rel_path: child_rel.to_string_lossy().to_string(),
+                        rel_path: utils::to_slash(&child_rel),
                         kind: "file".to_string(),
                         is_markdown,
                     });
@@ -319,7 +319,7 @@ pub async fn space_list_dir(
             let is_markdown = utils::is_markdown_path(&rel_path);
             entries.push(FsEntry {
                 name,
-                rel_path: rel_path.to_string_lossy().to_string(),
+                rel_path: utils::to_slash(&rel_path),
                 kind: kind.to_string(),
                 is_markdown,
             });

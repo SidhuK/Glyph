@@ -1,4 +1,3 @@
-import { getCurrentWindow } from "@tauri-apps/api/window";
 import {
 	type Dispatch,
 	type ReactNode,
@@ -38,6 +37,7 @@ export interface UILayoutContextValue {
 	activeMarkdownTabPath: string | null;
 	setActiveMarkdownTabPath: (path: string | null) => void;
 	dailyNotesFolder: string | null;
+	showWindowsMenuBar: boolean;
 }
 
 export interface AISidebarContextValue {
@@ -77,6 +77,7 @@ type UIState = {
 	openMarkdownTabs: string[];
 	activeMarkdownTabPath: string | null;
 	dailyNotesFolder: string | null;
+	showWindowsMenuBar: boolean;
 	aiEnabled: boolean;
 	aiPanelOpen: boolean;
 	aiPanelWidth: number;
@@ -92,18 +93,20 @@ type UIAction =
 	| { type: "setOpenMarkdownTabs"; value: SetStateAction<string[]> }
 	| { type: "setActiveMarkdownTabPath"; value: string | null }
 	| { type: "setDailyNotesFolder"; value: string | null }
+	| { type: "setShowWindowsMenuBar"; value: boolean }
 	| { type: "setAiEnabled"; value: boolean }
 	| { type: "setAiPanelOpen"; value: SetStateAction<boolean> }
 	| { type: "setAiPanelWidth"; value: number }
 	| { type: "setAiAssistantMode"; value: AiAssistantMode }
 	| { type: "onSpacePathChanged"; hasSpace: boolean }
 	| {
-			type: "hydrateSettings";
-			aiEnabled: boolean;
-			aiPanelWidth?: number;
-			aiAssistantMode: AiAssistantMode;
-			dailyNotesFolder: string | null;
-	  };
+		type: "hydrateSettings";
+		aiEnabled: boolean;
+		showWindowsMenuBar: boolean;
+		aiPanelWidth?: number;
+		aiAssistantMode: AiAssistantMode;
+		dailyNotesFolder: string | null;
+	};
 
 const initialUIState: UIState = {
 	sidebarCollapsed: true,
@@ -114,6 +117,7 @@ const initialUIState: UIState = {
 	openMarkdownTabs: [],
 	activeMarkdownTabPath: null,
 	dailyNotesFolder: null,
+	showWindowsMenuBar: false,
 	aiEnabled: true,
 	aiPanelOpen: false,
 	aiPanelWidth: 380,
@@ -144,6 +148,8 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 			return { ...state, activeMarkdownTabPath: action.value };
 		case "setDailyNotesFolder":
 			return { ...state, dailyNotesFolder: action.value };
+		case "setShowWindowsMenuBar":
+			return { ...state, showWindowsMenuBar: action.value };
 		case "setAiEnabled":
 			return {
 				...state,
@@ -170,6 +176,7 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 		case "hydrateSettings":
 			return {
 				...state,
+				showWindowsMenuBar: action.showWindowsMenuBar,
 				aiEnabled: action.aiEnabled,
 				aiPanelOpen: action.aiEnabled ? state.aiPanelOpen : false,
 				aiPanelWidth: action.aiPanelWidth ?? state.aiPanelWidth,
@@ -193,6 +200,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		openMarkdownTabs,
 		activeMarkdownTabPath,
 		dailyNotesFolder,
+		showWindowsMenuBar,
 		aiEnabled,
 		aiPanelOpen,
 		aiPanelWidth,
@@ -222,6 +230,12 @@ export function UIProvider({ children }: { children: ReactNode }) {
 				value: payload.dailyNotes.folder ?? null,
 			});
 		}
+		if (typeof payload.ui?.showWindowsMenuBar === "boolean") {
+			dispatch({
+				type: "setShowWindowsMenuBar",
+				value: payload.ui.showWindowsMenuBar,
+			});
+		}
 	});
 
 	useEffect(() => {
@@ -233,6 +247,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 				dispatch({
 					type: "hydrateSettings",
 					aiEnabled: s.ui.aiEnabled,
+					showWindowsMenuBar: Boolean(s.ui.showWindowsMenuBar),
 					aiPanelWidth:
 						typeof s.ui.aiSidebarWidth === "number"
 							? s.ui.aiSidebarWidth
@@ -246,9 +261,9 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		};
 
 		void loadAndApplySettings();
-		const win = getCurrentWindow();
-		const unlisten = win.onFocusChanged(({ payload: focused }) => {
-			if (!focused || cancelled) return;
+
+		const onFocus = () => {
+			if (cancelled) return;
 			void (async () => {
 				try {
 					await reloadFromDisk();
@@ -258,11 +273,12 @@ export function UIProvider({ children }: { children: ReactNode }) {
 					// best-effort refresh
 				}
 			})();
-		});
+		};
+		window.addEventListener("focus", onFocus);
 
 		return () => {
 			cancelled = true;
-			unlisten.then((fn) => fn()).catch(() => {});
+			window.removeEventListener("focus", onFocus);
 		};
 	}, []);
 
@@ -373,6 +389,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			activeMarkdownTabPath,
 			setActiveMarkdownTabPath,
 			dailyNotesFolder,
+			showWindowsMenuBar,
 		}),
 		[
 			sidebarCollapsed,
@@ -390,6 +407,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			activeMarkdownTabPath,
 			setActiveMarkdownTabPath,
 			dailyNotesFolder,
+			showWindowsMenuBar,
 		],
 	);
 

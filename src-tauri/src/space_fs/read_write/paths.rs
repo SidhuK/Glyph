@@ -218,7 +218,7 @@ pub async fn space_relativize_path(
         let rel = abs
             .strip_prefix(&root)
             .map_err(|_| "path is not inside the current space".to_string())?;
-        Ok(rel.to_string_lossy().to_string())
+        Ok(crate::utils::to_slash(rel))
     })
     .await
     .map_err(|e| e.to_string())?

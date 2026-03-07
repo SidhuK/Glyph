@@ -8,8 +8,10 @@ import {
 	useState,
 } from "react";
 import { extractErrorMessage } from "../lib/errorUtils";
+import { getFileTreeOrder } from "../lib/settings";
 import type { FsEntry, TagCount } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
+import { applyEntryOrder, normalizeEntries } from "../hooks/fileTreeHelpers";
 import { useSpace } from "./SpaceContext";
 
 export interface FileTreeContextValue {
@@ -22,8 +24,8 @@ export interface FileTreeContextValue {
 		next:
 			| Record<string, FsEntry[] | undefined>
 			| ((
-					prev: Record<string, FsEntry[] | undefined>,
-			  ) => Record<string, FsEntry[] | undefined>),
+				prev: Record<string, FsEntry[] | undefined>,
+			) => Record<string, FsEntry[] | undefined>),
 	) => void;
 	expandedDirs: Set<string>;
 	updateExpandedDirs: (
@@ -77,7 +79,18 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 		(async () => {
 			try {
 				const entries = await invoke("space_list_dir", {});
-				if (!cancelled) setRootEntries(entries);
+				const normalizedEntries = normalizeEntries(entries);
+				let orderedEntries = normalizedEntries;
+				try {
+					orderedEntries = applyEntryOrder(
+						normalizedEntries,
+						"",
+						await getFileTreeOrder(spacePath),
+					);
+				} catch {
+					orderedEntries = normalizedEntries;
+				}
+				if (!cancelled) setRootEntries(orderedEntries);
 				void startIndexRebuild();
 				void refreshTags();
 			} catch {
@@ -116,10 +129,10 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 		setChildrenByDir((prev) =>
 			typeof next === "function"
 				? (
-						next as (
-							value: Record<string, FsEntry[] | undefined>,
-						) => Record<string, FsEntry[] | undefined>
-					)(prev)
+					next as (
+						value: Record<string, FsEntry[] | undefined>,
+					) => Record<string, FsEntry[] | undefined>
+				)(prev)
 				: next,
 		);
 	}, []);

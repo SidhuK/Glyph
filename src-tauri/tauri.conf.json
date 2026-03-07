@@ -18,6 +18,7 @@
 				"width": 800,
 				"height": 600,
 				"decorations": true,
+				"dragDropEnabled": false,
 				"titleBarStyle": "Overlay",
 				"trafficLightPosition": {
 					"x": 14,
@@ -32,6 +33,7 @@
 				"width": 980,
 				"height": 760,
 				"decorations": false,
+				"dragDropEnabled": false,
 				"transparent": true,
 				"visible": false,
 				"url": "#/settings?tab=general"
@@ -45,7 +47,11 @@
 		"active": true,
 		"createUpdaterArtifacts": true,
 		"targets": "all",
-		"icon": ["icons/icon.icns"]
+		"icon": [
+			"icons/icon.icns",
+			"icons/icon.ico",
+			"icons/icon.png"
+		]
 	},
 	"plugins": {
 		"updater": {

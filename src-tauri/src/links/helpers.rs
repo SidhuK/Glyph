@@ -40,7 +40,10 @@ pub fn image_rel_path(image_url: &Url) -> PathBuf {
             }
         }
     }
-    PathBuf::from(".glyph/cache/link-previews").join(format!(
+    PathBuf::from(".glyph")
+        .join("cache")
+        .join("link-previews")
+        .join(format!(
         "{}{}",
         sha256_hex(image_url.as_str()),
         ext

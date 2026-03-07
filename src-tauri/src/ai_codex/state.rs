@@ -83,23 +83,79 @@ impl Default for CodexState {
 impl CodexState {
     fn candidate_codex_paths() -> Vec<PathBuf> {
         let mut candidates: Vec<PathBuf> = Vec::new();
+
+        let bin_names: Vec<String> = if cfg!(windows) {
+            let mut names = vec![
+                "codex.exe".to_string(),
+                "codex.cmd".to_string(),
+                "codex.bat".to_string(),
+                "codex.com".to_string(),
+            ];
+            if let Some(path_ext) = std::env::var_os("PATHEXT") {
+                let path_ext = path_ext.to_string_lossy();
+                for extension in path_ext.split(';') {
+                    let extension = extension.trim();
+                    if extension.is_empty() {
+                        continue;
+                    }
+                    let extension = if extension.starts_with('.') {
+                        extension.to_ascii_lowercase()
+                    } else {
+                        format!(".{}", extension.to_ascii_lowercase())
+                    };
+                    let candidate = format!("codex{extension}");
+                    if !names.iter().any(|existing| existing.eq_ignore_ascii_case(&candidate)) {
+                        names.push(candidate);
+                    }
+                }
+            }
+            names
+        } else {
+            vec!["codex".to_string()]
+        };
+
         if let Some(explicit) = std::env::var_os("CODEX_CLI_PATH") {
             candidates.push(PathBuf::from(explicit));
         }
         if let Some(path_var) = std::env::var_os("PATH") {
             for dir in std::env::split_paths(&path_var) {
-                candidates.push(dir.join("codex"));
+                for bin_name in &bin_names {
+                    candidates.push(dir.join(bin_name));
+                }
             }
         }
-        if let Some(home) = std::env::var_os("HOME") {
-            let home = PathBuf::from(home);
-            candidates.push(home.join(".bun/bin/codex"));
-            candidates.push(home.join(".npm-global/bin/codex"));
-            candidates.push(home.join(".local/bin/codex"));
+
+        #[cfg(unix)]
+        {
+            if let Some(home) = std::env::var_os("HOME") {
+                let home = PathBuf::from(home);
+                candidates.push(home.join(".bun/bin/codex"));
+                candidates.push(home.join(".npm-global/bin/codex"));
+                candidates.push(home.join(".local/bin/codex"));
+            }
+            candidates.push(PathBuf::from("/opt/homebrew/bin/codex"));
+            candidates.push(PathBuf::from("/usr/local/bin/codex"));
+            candidates.push(PathBuf::from("/usr/bin/codex"));
         }
-        candidates.push(PathBuf::from("/opt/homebrew/bin/codex"));
-        candidates.push(PathBuf::from("/usr/local/bin/codex"));
-        candidates.push(PathBuf::from("/usr/bin/codex"));
+
+        #[cfg(windows)]
+        {
+            // On Windows, HOME may not be set; try USERPROFILE instead.
+            let home = std::env::var_os("USERPROFILE")
+                .or_else(|| std::env::var_os("HOME"))
+                .map(PathBuf::from);
+            if let Some(home) = home {
+                candidates.push(home.join(".bun").join("bin").join("codex.exe"));
+                candidates.push(home.join(".npm-global").join("codex.exe"));
+                candidates.push(home.join(".npm-global").join("codex.cmd"));
+            }
+            if let Some(appdata) = std::env::var_os("APPDATA") {
+                let appdata = PathBuf::from(appdata);
+                candidates.push(appdata.join("npm").join("codex.exe"));
+                candidates.push(appdata.join("npm").join("codex.cmd"));
+            }
+        }
+
         candidates
     }
 
@@ -116,7 +172,18 @@ impl CodexState {
             }
             false
         }
-        #[cfg(not(unix))]
+        #[cfg(windows)]
+        {
+            // On Windows, check for common executable extensions.
+            match path.extension().and_then(|e| e.to_str()) {
+                Some(ext) => matches!(
+                    ext.to_ascii_lowercase().as_str(),
+                    "exe" | "cmd" | "bat" | "com"
+                ),
+                None => false,
+            }
+        }
+        #[cfg(not(any(unix, windows)))]
         {
             true
         }

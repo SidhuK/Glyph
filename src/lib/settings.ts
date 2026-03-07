@@ -43,6 +43,7 @@ const MIN_UI_FONT_SIZE = 7;
 const MAX_UI_FONT_SIZE = 40;
 const DEFAULT_UI_FONT_SIZE = 14;
 const DEFAULT_AI_ENABLED = true;
+const DEFAULT_SHOW_WINDOWS_MENU_BAR = false;
 export type UiFontFamily = string;
 export type UiFontSize = number;
 const AI_ASSISTANT_MODES = new Set<AiAssistantMode>(["chat", "create"]);
@@ -109,6 +110,7 @@ async function emitSettingsUpdated(payload: {
 		aiAssistantMode?: AiAssistantMode;
 		aiEnabled?: boolean;
 		aiSidebarWidth?: number | null;
+		showWindowsMenuBar?: boolean;
 	};
 	dailyNotes?: {
 		folder?: string | null;
@@ -137,6 +139,7 @@ interface AppSettings {
 	ui: {
 		aiEnabled: boolean;
 		aiSidebarWidth: number | null;
+		showWindowsMenuBar: boolean;
 		theme: ThemeMode;
 		accent: UiAccent;
 		fontFamily: UiFontFamily;
@@ -156,7 +159,9 @@ const KEYS = {
 	currentSpacePath: "space.currentPath",
 	recentSpaces: "space.recent",
 	recentFiles: "files.recent",
+	fileTreeOrderBySpace: "fileTree.orderBySpace",
 	aiEnabled: "ui.aiEnabled",
+	showWindowsMenuBar: "ui.showWindowsMenuBar",
 	aiSidebarWidth: "ui.aiSidebarWidth",
 	aiAssistantMode: "ui.aiAssistantMode",
 	theme: "ui.theme",
@@ -167,6 +172,47 @@ const KEYS = {
 	dailyNotesFolder: "dailyNotes.folder",
 	taskSource: "tasks.source",
 } as const;
+
+const ROOT_FILE_TREE_ORDER_KEY = "__root__";
+
+function normalizeStoredFileTreeOrderByDir(
+	value: unknown,
+): Record<string, string[]> {
+	if (typeof value !== "object" || value === null) return {};
+	const next: Record<string, string[]> = {};
+	for (const [rawKey, rawValue] of Object.entries(value)) {
+		const key =
+			rawKey === ROOT_FILE_TREE_ORDER_KEY
+				? ROOT_FILE_TREE_ORDER_KEY
+				: normalizeRelPath(rawKey);
+		if (!key) continue;
+		if (!Array.isArray(rawValue)) continue;
+		const paths = Array.from(
+			new Set(
+				rawValue
+					.filter((entry): entry is string => typeof entry === "string")
+					.map((entry) => normalizeRelPath(entry))
+					.filter(Boolean),
+			),
+		);
+		if (paths.length > 0) next[key] = paths;
+	}
+	return next;
+}
+
+function normalizeStoredFileTreeOrderBySpace(
+	value: unknown,
+): Record<string, Record<string, string[]>> {
+	if (typeof value !== "object" || value === null) return {};
+	const next: Record<string, Record<string, string[]>> = {};
+	for (const [rawSpacePath, rawOrder] of Object.entries(value)) {
+		const spacePath = rawSpacePath.trim();
+		if (!spacePath) continue;
+		const normalized = normalizeStoredFileTreeOrderByDir(rawOrder);
+		if (Object.keys(normalized).length > 0) next[spacePath] = normalized;
+	}
+	return next;
+}
 
 function normalizeTaskSourceSetting(value: unknown): TaskSourceSetting {
 	const rawMode =
@@ -180,13 +226,13 @@ function normalizeTaskSourceSetting(value: unknown): TaskSourceSetting {
 			: [];
 	const folders = Array.isArray(rawFolders)
 		? Array.from(
-				new Set(
-					rawFolders
-						.filter((entry): entry is string => typeof entry === "string")
-						.map((entry) => normalizeRelPath(entry))
-						.filter(Boolean),
-				),
-			).slice(0, 50)
+			new Set(
+				rawFolders
+					.filter((entry): entry is string => typeof entry === "string")
+					.map((entry) => normalizeRelPath(entry))
+					.filter(Boolean),
+			),
+		).slice(0, 50)
 		: [];
 	return {
 		mode,
@@ -238,6 +284,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		recentSpacesRaw,
 		rawRecentFiles,
 		rawAiEnabled,
+		rawShowWindowsMenuBar,
 		aiSidebarWidthRaw,
 		rawAiAssistantMode,
 		rawTheme,
@@ -252,6 +299,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<string[] | null>(KEYS.recentSpaces),
 		store.get<unknown>(KEYS.recentFiles),
 		store.get<boolean | null>(KEYS.aiEnabled),
+		store.get<boolean | null>(KEYS.showWindowsMenuBar),
 		store.get<number | null>(KEYS.aiSidebarWidth),
 		store.get<unknown>(KEYS.aiAssistantMode),
 		store.get<unknown>(KEYS.theme),
@@ -267,6 +315,10 @@ export async function loadSettings(): Promise<AppSettings> {
 	const recentFiles = isRecentFileArray(rawRecentFiles) ? rawRecentFiles : [];
 	const aiEnabled =
 		typeof rawAiEnabled === "boolean" ? rawAiEnabled : DEFAULT_AI_ENABLED;
+	const showWindowsMenuBar =
+		typeof rawShowWindowsMenuBar === "boolean"
+			? rawShowWindowsMenuBar
+			: DEFAULT_SHOW_WINDOWS_MENU_BAR;
 	const aiSidebarWidth = aiSidebarWidthRaw ?? null;
 	const aiAssistantMode = asAiAssistantMode(rawAiAssistantMode);
 	const theme = asThemeMode(rawTheme);
@@ -288,6 +340,7 @@ export async function loadSettings(): Promise<AppSettings> {
 				typeof aiSidebarWidth === "number" && Number.isFinite(aiSidebarWidth)
 					? aiSidebarWidth
 					: null,
+			showWindowsMenuBar,
 			theme,
 			accent,
 			fontFamily,
@@ -332,6 +385,13 @@ export async function setAiSidebarWidth(width: number): Promise<void> {
 	await store.set(KEYS.aiSidebarWidth, next);
 	await store.save();
 	void emitSettingsUpdated({ ui: { aiSidebarWidth: next } });
+}
+
+export async function setShowWindowsMenuBar(show: boolean): Promise<void> {
+	const store = await getStore();
+	await store.set(KEYS.showWindowsMenuBar, show);
+	await store.save();
+	void emitSettingsUpdated({ ui: { showWindowsMenuBar: show } });
 }
 
 export async function setAiAssistantMode(mode: AiAssistantMode): Promise<void> {
@@ -419,6 +479,39 @@ export async function getRecentFiles(): Promise<RecentFile[]> {
 	const store = await getStore();
 	const raw = await store.get<unknown>(KEYS.recentFiles);
 	return isRecentFileArray(raw) ? raw : [];
+}
+
+export async function getFileTreeOrder(
+	spacePath: string | null,
+): Promise<Record<string, string[]>> {
+	if (!spacePath) return {};
+	const store = await getStore();
+	const raw = await store.get<unknown>(KEYS.fileTreeOrderBySpace);
+	const all = normalizeStoredFileTreeOrderBySpace(raw);
+	return all[spacePath] ?? {};
+}
+
+export async function updateFileTreeOrder(
+	spacePath: string | null,
+	updater: (
+		current: Record<string, string[]>,
+	) => Record<string, string[]>,
+): Promise<Record<string, string[]>> {
+	if (!spacePath) return {};
+	const store = await getStore();
+	const raw = await store.get<unknown>(KEYS.fileTreeOrderBySpace);
+	const all = normalizeStoredFileTreeOrderBySpace(raw);
+	const nextForSpace = normalizeStoredFileTreeOrderByDir(
+		updater(all[spacePath] ?? {}),
+	);
+	if (Object.keys(nextForSpace).length === 0) {
+		delete all[spacePath];
+	} else {
+		all[spacePath] = nextForSpace;
+	}
+	await store.set(KEYS.fileTreeOrderBySpace, all);
+	await store.save();
+	return nextForSpace;
 }
 
 export async function addRecentFile(

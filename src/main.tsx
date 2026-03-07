@@ -1,4 +1,3 @@
-import { getCurrentWindow } from "@tauri-apps/api/window";
 import { ThemeProvider } from "next-themes";
 import { useTheme } from "next-themes";
 import React from "react";
@@ -64,24 +63,15 @@ function ThemeAndTypographyBridge() {
 
 		void applyFromSettings(false);
 
-		let cleanup: (() => void) | null = null;
-		try {
-			const win = getCurrentWindow();
-			void win
-				.onFocusChanged(({ payload: focused }) => {
-					if (!focused || cancelled) return;
-					void applyFromSettings(true);
-				})
-				.then((unlisten) => {
-					cleanup = unlisten;
-				});
-		} catch {
-			// not running inside tauri window context
-		}
+		const onFocus = () => {
+			if (cancelled) return;
+			void applyFromSettings(true);
+		};
+		window.addEventListener("focus", onFocus);
 
 		return () => {
 			cancelled = true;
-			cleanup?.();
+			window.removeEventListener("focus", onFocus);
 		};
 	}, [setTheme]);
 

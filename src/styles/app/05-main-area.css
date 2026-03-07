@@ -60,8 +60,16 @@
 	transition: margin-left var(--transition-base);
 }
 
+.appShell.windowsCustomChrome .mainToolbarLeft {
+	margin-left: 0;
+}
+
 .appShell.appShellSidebarCollapsed .mainToolbarLeft {
 	margin-left: 110px;
+}
+
+.appShell.windowsCustomChrome.appShellSidebarCollapsed .mainToolbarLeft {
+	margin-left: 0;
 }
 
 .mainToolbarRight {
@@ -87,16 +95,12 @@
 	padding: var(--space-5);
 	overflow: auto;
 	position: relative;
-	background: radial-gradient(
-			1200px 460px at 90% -20%,
+	background: radial-gradient(1200px 460px at 90% -20%,
 			color-mix(in srgb, var(--accent-color) 14%, transparent),
-			transparent 70%
-		),
-		radial-gradient(
-			900px 320px at -15% 110%,
+			transparent 70%),
+		radial-gradient(900px 320px at -15% 110%,
 			color-mix(in srgb, var(--bg-tertiary) 85%, transparent),
-			transparent 70%
-		), var(--bg-primary);
+			transparent 70%), var(--bg-primary);
 }
 
 .welcomeAmbient {
@@ -284,8 +288,7 @@
 	background: color-mix(in srgb, var(--bg-secondary) 90%, transparent);
 	color: var(--text-primary);
 	text-align: left;
-	transition: background var(--transition-fast), border-color
-		var(--transition-fast);
+	transition: background var(--transition-fast), border-color var(--transition-fast);
 }
 
 .welcomeRecentItem:hover {
@@ -880,9 +883,7 @@
 	background: transparent;
 	color: var(--text-tertiary);
 	cursor: pointer;
-	transition: background var(--transition-fast), border-color
-		var(--transition-fast), color var(--transition-fast), box-shadow
-		var(--transition-fast);
+	transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .mainTab:hover {
@@ -897,8 +898,7 @@
 	background: var(--bg-primary);
 	border-color: color-mix(in srgb, var(--border-light) 60%, transparent);
 	color: var(--text-primary);
-	box-shadow: 0 1px 2px
-		color-mix(in srgb, var(--shadow-color, #000) 8%, transparent);
+	box-shadow: 0 1px 2px color-mix(in srgb, var(--shadow-color, #000) 8%, transparent);
 }
 
 .mainTabText {
@@ -939,13 +939,11 @@
 	border: 1px solid transparent;
 	color: var(--text-secondary);
 	opacity: 0.52;
-	transition: background var(--transition-fast), border-color
-		var(--transition-fast), color var(--transition-fast), opacity
-		var(--transition-fast);
+	transition: background var(--transition-fast), border-color var(--transition-fast), color var(--transition-fast), opacity var(--transition-fast);
 }
 
 .mainTabWrap:hover .mainTabClose,
-.mainTab.is-active + .mainTabClose {
+.mainTab.is-active+.mainTabClose {
 	opacity: 0.9;
 	color: var(--text-primary);
 }
@@ -996,12 +994,12 @@
 .mainTab:focus-visible,
 .mainTabClose:focus-visible,
 .mainTabAdd:focus-visible {
-	outline: 2px solid
-		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	outline: 2px solid color-mix(in srgb, var(--interactive-accent) 42%, transparent);
 	outline-offset: 1px;
 }
 
 @media (prefers-reduced-motion: reduce) {
+
 	.mainTab,
 	.mainTab::before,
 	.mainTabClose,
@@ -1072,11 +1070,9 @@
 }
 
 .mainEmptyShortcutInline:hover kbd {
-	border-color: color-mix(
-		in srgb,
-		var(--accent-color) 38%,
-		var(--border-default)
-	);
+	border-color: color-mix(in srgb,
+			var(--accent-color) 38%,
+			var(--border-default));
 	color: var(--text-primary);
 }
 
@@ -1125,8 +1121,7 @@
 	background: transparent;
 	color: var(--text-primary);
 	cursor: pointer;
-	transition: background var(--transition-fast), border-color
-		var(--transition-fast);
+	transition: background var(--transition-fast), border-color var(--transition-fast);
 	text-align: left;
 	width: 100%;
 }
