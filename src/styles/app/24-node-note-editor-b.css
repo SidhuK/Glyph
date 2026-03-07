@@ -100,10 +100,10 @@
 
 .notePropertyRow {
 	display: grid;
-	grid-template-columns: minmax(180px, 0.9fr) minmax(0, 1.45fr) auto;
+	grid-template-columns: minmax(164px, 0.86fr) minmax(0, 1.45fr) auto;
 	align-items: start;
-	gap: 10px;
-	padding: 8px 0;
+	gap: 8px;
+	padding: 6px 0;
 	border-top: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
 	transition: border-color var(--transition-fast), background
 		var(--transition-fast);
@@ -121,14 +121,14 @@
 .notePropertyIdentity {
 	display: flex;
 	align-items: center;
-	gap: 8px;
+	gap: 6px;
 	min-width: 0;
 }
 
 .notePropertyKeyInput,
 .notePropertyFieldInput,
 .notePropertyValue input {
-	height: 34px;
+	height: 30px;
 	width: 100%;
 	border-color: color-mix(in srgb, var(--border-light) 78%, transparent);
 	background: color-mix(in srgb, var(--bg-primary) 54%, transparent);
@@ -153,9 +153,8 @@
 .notePropertyValue {
 	display: flex;
 	flex-direction: column;
-	gap: 6px;
+	gap: 4px;
 	min-width: 0;
-	padding-top: 1px;
 }
 
 .notePropertyValueStatic {
@@ -169,15 +168,15 @@
 .notePropertyKindBadge {
 	display: inline-flex;
 	align-items: center;
-	gap: 6px;
+	gap: 5px;
 	flex: 0 0 auto;
-	padding: 0 10px;
-	height: 30px;
+	padding: 0 8px;
+	height: 28px;
 	border-radius: var(--radius-full);
 	border: 1px solid color-mix(in srgb, var(--border-default) 68%, transparent);
 	background: color-mix(in srgb, var(--bg-primary) 72%, transparent);
 	color: var(--text-secondary);
-	font-size: 10px;
+	font-size: 9px;
 	font-weight: var(--font-semibold);
 	line-height: 1;
 	text-transform: uppercase;
@@ -189,8 +188,8 @@
 }
 
 .notePropertyKindTrigger {
-	min-height: 30px;
-	padding: 0 10px;
+	min-height: 28px;
+	padding: 0 8px;
 	justify-content: flex-start;
 	background: color-mix(in srgb, var(--bg-primary) 72%, transparent);
 }
@@ -249,31 +248,32 @@
 .notePropertyPills {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 5px;
+	gap: 4px;
 }
 
 .notePropertyPill {
 	display: inline-flex;
 	align-items: center;
-	padding: 2px 6px;
+	padding: 1px 5px;
 	border-radius: var(--radius-md);
 	background: color-mix(in srgb, var(--interactive-accent) 12%, transparent);
 	color: var(--interactive-accent);
-	font-size: 10px;
+	font-size: 9px;
 	line-height: 1.2;
 }
 
 .notePropertyToken {
 	display: inline-flex;
 	align-items: center;
-	gap: 4px;
-	padding: 2px 6px;
+	gap: 3px;
+	max-width: 100%;
+	padding: 1px 5px;
 	border: 1px solid
 		color-mix(in srgb, var(--interactive-accent) 14%, var(--border-light));
 	border-radius: var(--radius-md);
 	background: color-mix(in srgb, var(--interactive-accent) 10%, transparent);
 	color: var(--interactive-accent);
-	font-size: 10px;
+	font-size: 9px;
 	line-height: 1.2;
 	cursor: pointer;
 }
@@ -283,18 +283,26 @@
 	background: color-mix(in srgb, var(--interactive-accent) 14%, transparent);
 }
 
+.notePropertyToken > span {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
 .notePropertyToken svg {
 	color: color-mix(in srgb, var(--interactive-accent) 72%, var(--text-tertiary));
+	flex-shrink: 0;
 }
 
 .notePropertyTagField {
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
-	gap: 4px;
-	min-height: 34px;
+	gap: 3px;
+	min-height: 30px;
 	width: 100%;
-	padding: 3px 6px;
+	padding: 2px 5px;
 	border: 1px solid color-mix(in srgb, var(--border-light) 78%, transparent);
 	border-radius: var(--radius-md);
 	background: color-mix(in srgb, var(--bg-primary) 54%, transparent);
@@ -309,15 +317,15 @@
 }
 
 .notePropertyTagInput {
-	flex: 1 1 96px;
-	min-width: 96px;
-	height: 20px;
+	flex: 1 1 72px;
+	min-width: 72px;
+	height: 18px;
 	padding: 0;
 	border: 0;
 	background: transparent;
 	color: var(--text-primary);
 	font: inherit;
-	font-size: 12px;
+	font-size: 11px;
 	line-height: 1.4;
 	outline: none;
 	box-shadow: none;
@@ -417,6 +425,10 @@
 	opacity: 0.68;
 	align-self: center;
 	margin-top: 0;
+	width: 26px;
+	height: 26px;
+	min-width: 26px;
+	padding: 0;
 }
 
 .notePropertyRemoveButton:hover,
