@@ -2,11 +2,17 @@ import { join } from "@tauri-apps/api/path";
 import { openPath, openUrl } from "@tauri-apps/plugin-opener";
 import { useCallback, useEffect, useRef } from "react";
 import { extractErrorMessage } from "../lib/errorUtils";
+import { getFileTreeOrder } from "../lib/settings";
 import type { FsEntry } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
 import { isInAppPreviewable } from "../utils/filePreview";
 import { isMarkdownPath, parentDir } from "../utils/path";
-import { areEntriesEqual, normalizeEntries } from "./fileTreeHelpers";
+import {
+	applyEntryOrder,
+	areEntriesEqual,
+	normalizeEntries,
+	type FileTreeMoveOptions,
+} from "./fileTreeHelpers";
 import { useFileTreeCRUD } from "./useFileTreeCRUD";
 
 export interface UseFileTreeResult {
@@ -25,7 +31,11 @@ export interface UseFileTreeResult {
 		kind?: "dir" | "file",
 	) => Promise<string | null>;
 	onDeletePath: (path: string, kind: "dir" | "file") => Promise<boolean>;
-	onMovePath: (fromPath: string, toDirPath: string) => Promise<string | null>;
+	onMovePath: (
+		fromPath: string,
+		toDirPath: string,
+		options?: FileTreeMoveOptions,
+	) => Promise<string | null>;
 }
 
 export interface UseFileTreeDeps {
@@ -34,15 +44,17 @@ export interface UseFileTreeDeps {
 		next:
 			| Record<string, FsEntry[] | undefined>
 			| ((
-					prev: Record<string, FsEntry[] | undefined>,
-			  ) => Record<string, FsEntry[] | undefined>),
+				prev: Record<string, FsEntry[] | undefined>,
+			) => Record<string, FsEntry[] | undefined>),
 	) => void;
+	childrenByDir: Record<string, FsEntry[] | undefined>;
 	updateExpandedDirs: (
 		next: Set<string> | ((prev: Set<string>) => Set<string>),
 	) => void;
 	updateRootEntries: (
 		next: FsEntry[] | ((prev: FsEntry[]) => FsEntry[]),
 	) => void;
+	rootEntries: FsEntry[];
 	setActiveFilePath: (path: string | null) => void;
 	setActivePreviewPath: (path: string | null) => void;
 	activeFilePath: string | null;
@@ -55,8 +67,10 @@ export interface UseFileTreeDeps {
 export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 	const {
 		spacePath,
+		childrenByDir,
 		updateChildrenByDir,
 		updateExpandedDirs,
+		rootEntries,
 		updateRootEntries,
 		setActiveFilePath,
 		setActivePreviewPath,
@@ -88,16 +102,22 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 				dirPath ? { dir: dirPath } : {},
 			);
 			const normalizedEntries = normalizeEntries(entries);
+			const orderByDir = await getFileTreeOrder(spacePath);
+			const orderedEntries = applyEntryOrder(
+				normalizedEntries,
+				dirPath,
+				orderByDir,
+			);
 			if (loadRequestVersionRef.current.get(dirPath) !== nextVersion) return;
 			if (dirPath) {
 				updateChildrenByDir((prev) => {
 					const c = prev[dirPath];
-					if (areEntriesEqual(c, normalizedEntries)) return prev;
-					return { ...prev, [dirPath]: normalizedEntries };
+					if (areEntriesEqual(c, orderedEntries)) return prev;
+					return { ...prev, [dirPath]: orderedEntries };
 				});
 			} else {
 				updateRootEntries((prev) =>
-					areEntriesEqual(prev, normalizedEntries) ? prev : normalizedEntries,
+					areEntriesEqual(prev, orderedEntries) ? prev : orderedEntries,
 				);
 			}
 			loadedDirsRef.current.add(dirPath);
@@ -174,8 +194,10 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 
 	const crud = useFileTreeCRUD({
 		spacePath,
+		childrenByDir,
 		updateChildrenByDir,
 		updateExpandedDirs,
+		rootEntries,
 		updateRootEntries,
 		setActiveFilePath,
 		setActivePreviewPath,

@@ -1,0 +1,428 @@
+.windowTitleBar {
+    --window-titlebar-subtitle-max-width: 200px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: var(--windows-titlebar-height, 44px);
+    display: flex;
+    flex-direction: column;
+    border-bottom: 1px solid color-mix(in srgb, var(--border-light) 78%, transparent);
+    background:
+        linear-gradient(180deg,
+            color-mix(in srgb, var(--chrome-bg) 92%, white 8%),
+            color-mix(in srgb, var(--chrome-bg) 98%, transparent)),
+        radial-gradient(560px 120px at 20% 0%,
+            color-mix(in srgb, var(--accent-color) 12%, transparent),
+            transparent 60%);
+    backdrop-filter: blur(18px) saturate(1.08);
+    -webkit-backdrop-filter: blur(18px) saturate(1.08);
+    z-index: 5;
+}
+
+.windowTitleBarMainRow {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-3);
+    min-height: 44px;
+    padding: 0 var(--space-2) 0 var(--space-3);
+}
+
+.windowTitleBar.has-menu-bar .windowTitleBarMainRow {
+    min-height: 42px;
+}
+
+.windowTitleBarDragSurface {
+    height: 100%;
+    min-width: 0;
+    app-region: drag;
+    -webkit-app-region: drag;
+}
+
+.windowTitleBarLeading {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
+}
+
+.windowTitleBarSidebarToggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 38px;
+    border: 1px solid color-mix(in srgb, var(--border-light) 40%, transparent);
+    border-radius: var(--radius-md);
+    background: color-mix(in srgb, var(--bg-secondary) 82%, transparent);
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast),
+        border-color var(--transition-fast);
+    -webkit-app-region: no-drag;
+}
+
+.windowTitleBarSidebarToggle:hover {
+    background: color-mix(in srgb, var(--bg-hover) 84%, var(--bg-secondary));
+    border-color: color-mix(in srgb, var(--border-light) 65%, transparent);
+    color: var(--text-primary);
+}
+
+.windowTitleBarSidebarToggle:focus-visible {
+    outline: 2px solid var(--border-focus);
+    outline-offset: 2px;
+    background: color-mix(in srgb, var(--bg-hover) 84%, var(--bg-secondary));
+    border-color: color-mix(in srgb, var(--border-light) 65%, transparent);
+    color: var(--text-primary);
+}
+
+.windowTitleBarSidebarToggle>svg,
+.windowChromeButton.windowChromeButtonMenu>svg,
+.windowTitleBarMenuItem>svg,
+.windowChromeButton.windowChromeButtonClose>svg {
+    width: 16px;
+    height: 16px;
+    display: block;
+    flex-shrink: 0;
+}
+
+.windowTitleBarSidebarToggle>svg path {
+    stroke-width: 2px !important;
+}
+
+.windowTitleBarBrand {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    min-width: 0;
+}
+
+.windowTitleBarLogo {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: var(--radius-8);
+    background: linear-gradient(135deg,
+            color-mix(in srgb, var(--accent-color) 80%, white 20%),
+            color-mix(in srgb, var(--accent-color) 46%, black 14%));
+    color: white;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    box-shadow: inset 0 1px 0 color-mix(in srgb, white 36%, transparent);
+    flex-shrink: 0;
+}
+
+.windowTitleBarMeta {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    line-height: 1.1;
+}
+
+.windowTitleBarName {
+    font-size: var(--text-sm);
+    font-weight: var(--font-semibold);
+    color: var(--text-primary);
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+}
+
+.windowTitleBarSubtitle {
+    font-size: 11px;
+    color: var(--text-tertiary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: var(--window-titlebar-subtitle-max-width);
+}
+
+.windowTitleBarCenter {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 0;
+    padding: 0 var(--space-2);
+    overflow: hidden;
+}
+
+.windowTitleBarChip {
+    width: fit-content;
+    max-width: min(640px, 100%);
+    padding: 6px 12px;
+    border: 1px solid color-mix(in srgb, var(--border-light) 44%, transparent);
+    border-radius: var(--radius-full);
+    background: color-mix(in srgb, var(--bg-secondary) 62%, transparent);
+    color: var(--text-secondary);
+    font-size: 11px;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    box-shadow: inset 0 1px 0 color-mix(in srgb, white 18%, transparent);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+}
+
+.windowTitleBarControls {
+    display: inline-flex;
+    align-items: stretch;
+    gap: 2px;
+    margin-left: auto;
+    -webkit-app-region: no-drag;
+}
+
+.windowChromeButtonMenu {
+    width: auto;
+    padding: 0 12px;
+    gap: 8px;
+    border: 1px solid color-mix(in srgb, var(--border-light) 35%, transparent);
+    background: color-mix(in srgb, var(--bg-secondary) 72%, transparent);
+}
+
+.windowChromeButton {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 38px;
+    height: 30px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--text-secondary);
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast);
+    -webkit-app-region: no-drag;
+}
+
+.windowChromeButton:hover {
+    background: color-mix(in srgb, var(--bg-hover) 88%, transparent);
+    color: var(--text-primary);
+}
+
+.windowChromeButton:focus-visible {
+    outline: 2px solid var(--border-focus);
+    outline-offset: 2px;
+    background: color-mix(in srgb, var(--bg-hover) 88%, transparent);
+    color: var(--text-primary);
+}
+
+.windowChromeButtonClose:hover {
+    background: var(--color-danger, #d83b49);
+    color: white;
+}
+
+.windowTitleBarMenu {
+    width: 220px;
+    padding: 8px;
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+}
+
+.windowTitleBarMenuSection {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.windowTitleBarMenuDivider {
+    height: 1px;
+    margin: 8px 0;
+    background: color-mix(in srgb, var(--border-light) 78%, transparent);
+}
+
+.windowTitleBarMenuBar {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    min-height: 34px;
+    padding: 0 var(--space-2) 6px var(--space-2);
+    border-top: 1px solid color-mix(in srgb, var(--border-light) 30%, transparent);
+    background:
+        linear-gradient(180deg,
+            color-mix(in srgb, var(--bg-secondary) 36%, transparent),
+            color-mix(in srgb, var(--chrome-bg) 18%, transparent));
+    -webkit-app-region: no-drag;
+}
+
+.windowTitleBarMenuBarTrigger {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 54px;
+    height: 26px;
+    padding: 0 12px;
+    border: 1px solid transparent;
+    border-radius: var(--radius-full);
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.01em;
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast),
+        border-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.windowTitleBarMenuBarTrigger:hover,
+.windowTitleBarMenuBarTrigger[data-state="open"] {
+    background: color-mix(in srgb, var(--bg-hover) 90%, var(--bg-secondary));
+    border-color: color-mix(in srgb, var(--border-light) 55%, transparent);
+    color: var(--text-primary);
+}
+
+.windowTitleBarMenuBarTrigger[data-state="open"] {
+    transform: translateY(1px);
+}
+
+.windowTitleBarDropdown {
+    min-width: 220px;
+    padding: 8px;
+    border-radius: 14px;
+    border: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
+    background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
+    backdrop-filter: blur(18px) saturate(1.08);
+    -webkit-backdrop-filter: blur(18px) saturate(1.08);
+    box-shadow: 0 14px 36px color-mix(in srgb, black 18%, transparent);
+}
+
+.windowTitleBarDropdownItem {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 34px;
+    border-radius: 10px;
+}
+
+.windowTitleBarDropdownItem>span:first-of-type {
+    flex: 1;
+}
+
+.windowTitleBarDropdownShortcut {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    margin-left: 12px;
+    letter-spacing: normal;
+}
+
+.windowTitleBarShortcutKey {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 20px;
+    padding: 0 6px;
+    border: 1px solid color-mix(in srgb, var(--border-light) 70%, transparent);
+    border-radius: 6px;
+    background: color-mix(in srgb, var(--bg-secondary) 80%, transparent);
+    color: var(--text-tertiary);
+    font-size: 10px;
+    font-weight: 600;
+    line-height: 1;
+    box-shadow: inset 0 1px 0 color-mix(in srgb, white 24%, transparent);
+}
+
+.windowTitleBarMenuItem {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    height: 34px;
+    padding: 0 10px;
+    border: 0;
+    border-radius: 10px;
+    background: transparent;
+    color: var(--text-secondary);
+    font-size: var(--text-sm);
+    text-align: left;
+    cursor: pointer;
+    transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.windowTitleBarMenuItem:hover {
+    background: color-mix(in srgb, var(--bg-hover) 84%, transparent);
+    color: var(--text-primary);
+}
+
+.windowTitleBarMenuItem:focus,
+.windowTitleBarMenuItem:focus-visible {
+    outline: 2px solid var(--border-focus);
+    outline-offset: 2px;
+    background: color-mix(in srgb, var(--bg-hover) 84%, transparent);
+    color: var(--text-primary);
+}
+
+.windowChromeGlyph {
+    display: inline-block;
+    position: relative;
+    flex-shrink: 0;
+    color: currentColor;
+}
+
+.windowChromeGlyphMinimize {
+    width: 10px;
+    border-top: 1.5px solid currentColor;
+    transform: translateY(1px);
+    opacity: 0.95;
+}
+
+.windowChromeGlyphMaximize {
+    width: 10px;
+    height: 10px;
+    border: 1.5px solid currentColor;
+    border-radius: 2px;
+    background: transparent;
+    box-sizing: border-box;
+    transition: transform var(--transition-fast);
+}
+
+.windowChromeGlyphMaximize.is-maximized {
+    transform: translate(-1px, 1px);
+    background: var(--chrome-bg);
+}
+
+.windowChromeGlyphMaximize.is-maximized::before {
+    content: "";
+    position: absolute;
+    left: 3px;
+    top: -4px;
+    width: 10px;
+    height: 10px;
+    border: 1.5px solid currentColor;
+    border-radius: 2px;
+    box-sizing: border-box;
+    background: transparent;
+}
+
+@media (max-width: 760px) {
+    .windowTitleBarChip {
+        display: none;
+    }
+
+    .windowTitleBarMenuBar {
+        padding-left: var(--space-3);
+    }
+}
+
+@media (max-width: 720px) {
+    .windowTitleBarSubtitle {
+        display: none;
+    }
+
+    .windowTitleBarMenuBar {
+        overflow-x: auto;
+        padding-bottom: 4px;
+        scrollbar-width: none;
+    }
+
+    .windowTitleBarMenuBar::-webkit-scrollbar {
+        display: none;
+    }
+}

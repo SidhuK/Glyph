@@ -24,6 +24,7 @@ import {
 } from "../ui/shadcn/dropdown-menu";
 import { ScrollArea } from "../ui/shadcn/scroll-area";
 import { Tabs, TabsList, TabsTrigger } from "../ui/shadcn/tabs";
+import type { FileTreeMoveOptions } from "../filetree/fileTreeItemHelpers";
 
 interface SidebarContentProps {
 	onToggleDir: (dirPath: string) => void;
@@ -34,6 +35,11 @@ interface SidebarContentProps {
 	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
 	onRenameDir: (dirPath: string, nextName: string) => Promise<string | null>;
 	onDeletePath: (path: string, kind: "dir" | "file") => Promise<boolean>;
+	onMovePath: (
+		fromPath: string,
+		toDirPath: string,
+		options?: FileTreeMoveOptions,
+	) => Promise<string | null>;
 	onSelectTag: (tag: string) => void;
 	onOpenDailyNote: () => void;
 	isDailyNoteCreating: boolean;
@@ -60,6 +66,7 @@ export const SidebarContent = memo(function SidebarContent({
 	onNewFolderInDir,
 	onRenameDir,
 	onDeletePath,
+	onMovePath,
 	onSelectTag,
 	onOpenDailyNote,
 	isDailyNoteCreating,
@@ -177,6 +184,7 @@ export const SidebarContent = memo(function SidebarContent({
 								onNewFolderInDir={onNewFolderInDir}
 								onRenameDir={onRenameDir}
 								onDeletePath={onDeletePath}
+								onMovePath={onMovePath}
 							/>
 						</m.div>
 					)}

@@ -1,9 +1,21 @@
 import type { CSSProperties } from "react";
+import type { FileTreeMoveOptions } from "../../hooks/fileTreeHelpers";
+
+const INDENT_STEP = 18;
+const BASE_PADDING = 10;
 
 export const springTransition = {
 	type: "spring",
 	stiffness: 400,
 	damping: 25,
+} as const;
+
+// Export for convenience so consumers don't need two imports
+export type { FileTreeMoveOptions };
+
+export const rowTransition = {
+	duration: 0.11,
+	ease: "easeOut",
 } as const;
 
 export const rowVariants = {
@@ -32,8 +44,12 @@ export function splitEditableFileName(name: string): {
 }
 
 export function buildRowStyle(depth: number): CSSProperties {
-	const paddingLeft = 4 + depth * 10;
+	const indentStep = INDENT_STEP;
+	const paddingLeft = BASE_PADDING + depth * indentStep;
 	return {
+		"--file-tree-depth": depth,
+		"--file-tree-indent-step": `${indentStep}px`,
+		"--file-tree-connector-opacity": depth > 0 ? 1 : 0,
 		paddingLeft,
 	} as CSSProperties;
 }

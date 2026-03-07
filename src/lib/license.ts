@@ -1,4 +1,3 @@
-import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
 	type LicenseActivateResult,
@@ -76,7 +75,6 @@ export function useLicenseStatus(reloadOnWindowFocus = true): {
 	const [status, setStatus] = useState<LicenseStatus | null>(null);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState("");
-	const focusUnlistenRef = useRef<(() => void) | null>(null);
 	const statusRef = useRef<LicenseStatus | null>(null);
 
 	useEffect(() => {
@@ -125,31 +123,8 @@ export function useLicenseStatus(reloadOnWindowFocus = true): {
 
 		window.addEventListener("focus", onFocus);
 
-		let disposed = false;
-		try {
-			void getCurrentWindow()
-				.onFocusChanged(({ payload }) => {
-					if (payload) void reload();
-				})
-				.then((unlisten) => {
-					if (disposed) {
-						unlisten();
-						return;
-					}
-					focusUnlistenRef.current = unlisten;
-				})
-				.catch(() => {
-					// best-effort desktop refresh only
-				});
-		} catch {
-			// best-effort desktop refresh only
-		}
-
 		return () => {
-			disposed = true;
 			window.removeEventListener("focus", onFocus);
-			focusUnlistenRef.current?.();
-			focusUnlistenRef.current = null;
 		};
 	}, [reload, reloadOnWindowFocus]);
 

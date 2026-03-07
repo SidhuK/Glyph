@@ -6,8 +6,16 @@ use std::{
 };
 
 fn fsync_dir(path: &Path) -> io::Result<()> {
-    let dir = File::open(path)?;
-    dir.sync_all()
+    #[cfg(unix)]
+    {
+        let dir = File::open(path)?;
+        dir.sync_all()
+    }
+    #[cfg(not(unix))]
+    {
+        let _ = path;
+        Ok(())
+    }
 }
 
 fn unique_tmp_path(dest: &Path) -> io::Result<PathBuf> {
@@ -36,15 +44,33 @@ pub fn write_atomic(dest: &Path, bytes: &[u8]) -> io::Result<()> {
     std::fs::create_dir_all(parent)?;
 
     let tmp = unique_tmp_path(dest)?;
+    let write_result = (|| {
+        {
+            let mut f = File::create(&tmp)?;
+            f.write_all(bytes)?;
+            f.sync_all()?;
+        }
 
-    {
-        let mut f = File::create(&tmp)?;
-        f.write_all(bytes)?;
-        f.sync_all()?;
+        // On Windows, rename fails if destination exists. Use replace instead.
+        #[cfg(windows)]
+        {
+            std::fs::remove_file(dest).ok(); // Ignore error if dest doesn't exist
+            std::fs::rename(&tmp, dest)?;
+        }
+        #[cfg(not(windows))]
+        {
+            std::fs::rename(&tmp, dest)?;
+        }
+
+        fsync_dir(parent)?;
+
+        Ok(())
+    })();
+
+    if let Err(error) = write_result {
+        let _ = std::fs::remove_file(&tmp);
+        return Err(error);
     }
-
-    std::fs::rename(&tmp, dest)?;
-    fsync_dir(parent)?;
 
     Ok(())
 }

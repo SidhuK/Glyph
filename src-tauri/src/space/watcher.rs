@@ -99,29 +99,35 @@ pub fn set_notes_watcher(
                 continue;
             }
 
-            if utils::is_markdown_path(&path) {
-	                if !has_recent_local_change(&recent_local_changes, &rel_s) {
-	                    let _ = idx_tx.send((rel_s.clone(), is_remove));
+            let is_markdown = utils::is_markdown_path(&path);
+            let is_recent_local_markdown_change =
+                is_markdown && has_recent_local_change(&recent_local_changes, &rel_s);
 
-	                    let _ = app2.emit(
-	                        "notes:external_changed",
-	                        ExternalChangeEvent {
-	                            rel_path: rel_s.clone(),
-	                            removed: is_remove,
-	                        },
-	                    );
-	                }
-	            }
+            if is_markdown && !is_recent_local_markdown_change {
+                let _ = idx_tx.send((rel_s.clone(), is_remove));
 
-	            let _ = app2.emit(
-	                "space:fs_changed",
-	                ExternalChangeEvent {
-	                    rel_path: rel_s,
-	                    removed: is_remove,
-	                },
-	            );
-	        }
-	    })
+                let _ = app2.emit(
+                    "notes:external_changed",
+                    ExternalChangeEvent {
+                        rel_path: rel_s.clone(),
+                        removed: is_remove,
+                    },
+                );
+            }
+
+            if is_recent_local_markdown_change {
+                continue;
+            }
+
+            let _ = app2.emit(
+                "space:fs_changed",
+                ExternalChangeEvent {
+                    rel_path: rel_s,
+                    removed: is_remove,
+                },
+            );
+        }
+    })
     .map_err(|e| e.to_string())?;
 
     let mut watcher = watcher;

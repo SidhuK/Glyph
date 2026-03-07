@@ -163,7 +163,7 @@ impl Tool for ListDirTool {
         let mut out = Vec::new();
         let mut stack = vec![(PathBuf::from(dir.clone()), 0usize)];
         while let Some((rel, d)) = stack.pop() {
-            let abs = safe_join(&self.root, &rel.to_string_lossy())?;
+            let abs = safe_join(&self.root, &utils::to_slash(&rel))?;
             let entries = match fs::read_dir(abs) {
                 Ok(v) => v,
                 Err(_) => continue,
@@ -180,7 +180,7 @@ impl Tool for ListDirTool {
                 };
                 out.push(json!({
                     "name": name,
-                    "rel_path": child_rel.to_string_lossy().to_string(),
+                    "rel_path": utils::to_slash(&child_rel),
                     "kind": if meta.is_dir() { "dir" } else { "file" },
                     "is_markdown": meta.is_file() && utils::is_markdown_path(&child_rel),
                     "size_bytes": if meta.is_file() { meta.len() } else { 0 },
@@ -262,7 +262,7 @@ impl Tool for SearchTool {
         let mut out = Vec::new();
         let mut stack = vec![PathBuf::from(dir)];
         while let Some(rel_dir) = stack.pop() {
-            let abs_dir = safe_join(&self.root, &rel_dir.to_string_lossy())?;
+            let abs_dir = safe_join(&self.root, &utils::to_slash(&rel_dir))?;
             let entries = match fs::read_dir(abs_dir) {
                 Ok(v) => v,
                 Err(_) => continue,
@@ -307,7 +307,7 @@ impl Tool for SearchTool {
                     let start = i.saturating_sub(80);
                     let end = (i + 220).min(text.len());
                     let snippet = text.get(start..end).unwrap_or("").replace('\n', " ");
-                    out.push(json!({"rel_path": rel.to_string_lossy().to_string(), "snippet": snippet.trim()}));
+                    out.push(json!({"rel_path": utils::to_slash(&rel), "snippet": snippet.trim()}));
                     if out.len() >= limit {
                         return Ok(ok(
                             json!({"results": out, "truncated": true, "source": "fs"}),

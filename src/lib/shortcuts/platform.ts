@@ -19,7 +19,7 @@ export function getPlatform(): "macos" | "windows" | "linux" {
 			cachedPlatform = "macos";
 			return "macos";
 		}
-		if (/windows/i.test(ua)) {
+		if (ua.includes("windows")) {
 			cachedPlatform = "windows";
 			return "windows";
 		}
@@ -109,7 +109,7 @@ export function formatShortcutPartsForPlatform(shortcut: Shortcut): string[] {
 
 	// Order: meta/ctrl, alt, shift, then key
 	if (shortcut.meta) {
-		parts.push(symbols.meta);
+		parts.push(p === "macos" ? symbols.meta : symbols.ctrl);
 	}
 	if (shortcut.ctrl && !shortcut.meta) {
 		// Don't show ctrl on macOS if meta is also pressed
@@ -136,5 +136,5 @@ export function formatShortcutPartsForPlatform(shortcut: Shortcut): string[] {
  */
 export function getModifierDisplay(): string {
 	const p = getPlatform();
-	return MODIFIER_SYMBOLS[p].meta;
+	return p === "macos" ? MODIFIER_SYMBOLS[p].meta : MODIFIER_SYMBOLS[p].ctrl;
 }

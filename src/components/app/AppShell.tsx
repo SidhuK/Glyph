@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { openPath, openUrl } from "@tauri-apps/plugin-opener";
 import { AnimatePresence } from "motion/react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { toast } from "sonner";
 import {
 	useAISidebarContext,
@@ -21,10 +21,10 @@ import { dispatchPathRemoved } from "../../lib/appEvents";
 import { getLicenseStatus } from "../../lib/license";
 import type { Shortcut } from "../../lib/shortcuts";
 import { getShortcutTooltip } from "../../lib/shortcuts";
+import { isWindows } from "../../lib/shortcuts/platform";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { openSettingsWindow } from "../../lib/windows";
-import { onWindowDragMouseDown } from "../../utils/window";
 import { PanelLeftOpen } from "../Icons";
 import { AIFloatingHost } from "../ai/AIFloatingHost";
 import { dispatchAiContextAttach } from "../ai/aiContextEvents";
@@ -41,14 +41,18 @@ import { type Command, CommandPalette } from "./CommandPalette";
 import { KeyboardShortcutsHelp } from "./KeyboardShortcutsHelp";
 import { MainContent } from "./MainContent";
 import { Sidebar } from "./Sidebar";
+import { WindowTitleBar } from "./WindowTitleBar";
 import { normalizeRelPath, parentDir } from "./appShellHelpers";
 
 export function AppShell() {
+	const windowsCustomChrome = isWindows();
 	const space = useSpace();
 	const { spacePath, error, setError, onOpenSpace, onCreateSpace, closeSpace } =
 		space;
 	const fileTreeCtx = useFileTreeContext();
 	const {
+		rootEntries,
+		childrenByDir,
 		expandedDirs,
 		activeFilePath,
 		updateRootEntries,
@@ -68,6 +72,7 @@ export function AppShell() {
 		openMarkdownTabs,
 		activeMarkdownTabPath,
 		dailyNotesFolder,
+		showWindowsMenuBar,
 		sidebarWidth,
 		setSidebarWidth,
 	} = useUILayoutContext();
@@ -91,6 +96,17 @@ export function AppShell() {
 	const [moveTargetDirs, setMoveTargetDirs] = useState<string[]>([]);
 	const [shortcutsHelpOpen, setShortcutsHelpOpen] = useState(false);
 	const autoUpdater = useAutoUpdater();
+	const windowsTitleBarStyle = useMemo<CSSProperties | undefined>(
+		() =>
+			windowsCustomChrome
+				? ({
+					["--windows-titlebar-height" as const]: showWindowsMenuBar
+						? "78px"
+						: "44px",
+				} as CSSProperties)
+				: undefined,
+		[showWindowsMenuBar, windowsCustomChrome],
+	);
 
 	const sidebarResize = useResizablePanel({
 		min: 220,
@@ -116,8 +132,10 @@ export function AppShell() {
 
 	const fileTree = useFileTree({
 		spacePath,
+		childrenByDir,
 		updateChildrenByDir,
 		updateExpandedDirs,
+		rootEntries,
 		updateRootEntries,
 		setActiveFilePath,
 		setActivePreviewPath,
@@ -285,6 +303,10 @@ export function AppShell() {
 		void saveCurrentEditor();
 	}, [saveCurrentEditor, spacePath]);
 
+	const handleCloseTabFromMenu = useCallback(() => {
+		window.dispatchEvent(new Event("glyph:close-active-tab"));
+	}, []);
+
 	const handleRevealSpaceFromMenu = useCallback(() => {
 		if (!spacePath) return;
 		void openPath(spacePath);
@@ -319,9 +341,7 @@ export function AppShell() {
 		onNewNote: handleNewNoteFromMenu,
 		onOpenDailyNote: handleOpenDailyNoteFromMenu,
 		onSaveNote: handleSaveNoteFromMenu,
-		onCloseTab: () => {
-			window.dispatchEvent(new Event("glyph:close-active-tab"));
-		},
+		onCloseTab: handleCloseTabFromMenu,
 		onOpenSpace,
 		onCreateSpace,
 		closeSpace,
@@ -464,31 +484,31 @@ export function AppShell() {
 		}
 		const aiCommands: Command[] = aiEnabled
 			? [
-					{
-						id: "toggle-ai",
-						label: "Toggle AI",
-						category: "AI",
-						shortcut: { meta: true, shift: true, key: "a" },
-						enabled: Boolean(spacePath),
-						action: () => setAiPanelOpen((v) => !v),
-					},
-					{
-						id: "ai-attach-current-note",
-						label: "AI: Attach current note",
-						category: "AI",
-						shortcut: { meta: true, alt: true, key: "a" },
-						enabled: Boolean(activeMarkdownTabPath),
-						action: () => void attachCurrentNoteToAi(),
-					},
-					{
-						id: "ai-attach-all-open-notes",
-						label: "AI: Attach all open notes",
-						category: "AI",
-						shortcut: { meta: true, alt: true, shift: true, key: "a" },
-						enabled: openMarkdownTabs.length > 0,
-						action: () => void attachAllOpenNotesToAi(),
-					},
-				]
+				{
+					id: "toggle-ai",
+					label: "Toggle AI",
+					category: "AI",
+					shortcut: { meta: true, shift: true, key: "a" },
+					enabled: Boolean(spacePath),
+					action: () => setAiPanelOpen((v) => !v),
+				},
+				{
+					id: "ai-attach-current-note",
+					label: "AI: Attach current note",
+					category: "AI",
+					shortcut: { meta: true, alt: true, key: "a" },
+					enabled: Boolean(activeMarkdownTabPath),
+					action: () => void attachCurrentNoteToAi(),
+				},
+				{
+					id: "ai-attach-all-open-notes",
+					label: "AI: Attach all open notes",
+					category: "AI",
+					shortcut: { meta: true, alt: true, shift: true, key: "a" },
+					enabled: openMarkdownTabs.length > 0,
+					action: () => void attachAllOpenNotesToAi(),
+				},
+			]
 			: [];
 
 		return [
@@ -663,17 +683,45 @@ export function AppShell() {
 		<div
 			className={cn(
 				"appShell",
+				windowsCustomChrome && "windowsCustomChrome",
+				windowsCustomChrome &&
+				showWindowsMenuBar &&
+				"appShellWindowsMenuBarVisible",
 				sidebarCollapsed && "appShellSidebarCollapsed",
 				aiEnabled && aiPanelOpen && "appShellAiOpen",
 			)}
+			style={windowsTitleBarStyle}
 		>
-			<div
-				aria-hidden="true"
-				className="windowDragStrip"
-				data-tauri-drag-region
-				onMouseDown={onWindowDragMouseDown}
-			/>
-			{sidebarCollapsed && (
+			{windowsCustomChrome ? (
+				<WindowTitleBar
+					sidebarCollapsed={sidebarCollapsed}
+					onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+					spacePath={spacePath}
+					onOpenCommandPalette={openCommandPalette}
+					onNewNote={handleNewNoteFromMenu}
+					onOpenDailyNote={handleOpenDailyNoteFromMenu}
+					onSaveNote={handleSaveNoteFromMenu}
+					onCloseTab={handleCloseTabFromMenu}
+					onOpenSpace={onOpenSpace}
+					onCreateSpace={onCreateSpace}
+					onRevealSpace={handleRevealSpaceFromMenu}
+					onOpenSpaceSettings={handleOpenSpaceSettings}
+					onOpenSettings={() => void openSettingsWindow()}
+					onOpenAbout={() => void openSettingsWindow("about")}
+					onOpenAiSettings={() => void openSettingsWindow("ai")}
+					aiEnabled={aiEnabled && Boolean(spacePath)}
+					aiPanelOpen={aiPanelOpen}
+					onToggleAiPanel={() => setAiPanelOpen((v) => !v)}
+					showWindowsMenuBar={showWindowsMenuBar}
+				/>
+			) : (
+				<div
+					aria-hidden="true"
+					className="windowDragStrip"
+					data-tauri-drag-region
+				/>
+			)}
+			{!windowsCustomChrome && sidebarCollapsed && (
 				<div className="sidebarCollapsedToggle">
 					<Button
 						data-sidebar="trigger"
@@ -720,6 +768,9 @@ export function AppShell() {
 				onNewFolderInDir={(p) => fileTree.onNewFolderInDir(p)}
 				onRenameDir={(p, name) => fileTree.onRenameDir(p, name)}
 				onDeletePath={(p, kind) => fileTree.onDeletePath(p, kind)}
+				onMovePath={(fromPath, toDirPath, options) =>
+					fileTree.onMovePath(fromPath, toDirPath, options)
+				}
 				onToggleDir={fileTree.toggleDir}
 				onSelectTag={(t) => openTagSearchPalette(t)}
 				onOpenCommandPalette={openCommandPalette}

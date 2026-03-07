@@ -3,13 +3,17 @@ import {
 	type AiAssistantMode,
 	loadSettings,
 	setAiAssistantMode,
+	setShowWindowsMenuBar,
 } from "../../lib/settings";
+import { isWindows } from "../../lib/shortcuts/platform";
 import { LicenseSettingsCard } from "../licensing/LicenseSettingsCard";
 
 export function GeneralSettingsPane() {
 	const [aiAssistantMode, setAiAssistantModeState] =
 		useState<AiAssistantMode>("create");
+	const [showWindowsMenuBar, setShowWindowsMenuBarState] = useState(false);
 	const [error, setError] = useState("");
+	const windows = isWindows();
 
 	useEffect(() => {
 		let cancelled = false;
@@ -18,6 +22,7 @@ export function GeneralSettingsPane() {
 				const settings = await loadSettings();
 				if (cancelled) return;
 				setAiAssistantModeState(settings.ui.aiAssistantMode);
+				setShowWindowsMenuBarState(Boolean(settings.ui.showWindowsMenuBar));
 			} catch (e) {
 				if (!cancelled) {
 					setError(e instanceof Error ? e.message : "Failed to load settings");
@@ -38,6 +43,18 @@ export function GeneralSettingsPane() {
 			setError(e instanceof Error ? e.message : "Failed to save settings");
 		}
 	}, []);
+
+	const updateWindowsMenuBar = useCallback(async (next: boolean) => {
+		const previous = showWindowsMenuBar;
+		setError("");
+		setShowWindowsMenuBarState(next);
+		try {
+			await setShowWindowsMenuBar(next);
+		} catch (e) {
+			setShowWindowsMenuBarState(previous);
+			setError(e instanceof Error ? e.message : "Failed to save settings");
+		}
+	}, [showWindowsMenuBar]);
 
 	return (
 		<div className="settingsPane">
@@ -67,6 +84,37 @@ export function GeneralSettingsPane() {
 						</select>
 					</div>
 				</section>
+				{windows ? (
+					<section className="settingsCard">
+						<div className="settingsCardHeader">
+							<div>
+								<div className="settingsCardTitle">Windows Menu Bar</div>
+							</div>
+						</div>
+
+						<div className="settingsField settingsFieldCheckbox">
+							<div>
+								<label
+									className="settingsLabel"
+									htmlFor="show-windows-menu-bar"
+								>
+									Show mac-style menu bar
+								</label>
+								<div className="settingsHint">
+									Adds a clean File, Space, AI, View, and Help menu under the Windows title bar.
+								</div>
+							</div>
+							<input
+								id="show-windows-menu-bar"
+								type="checkbox"
+								checked={showWindowsMenuBar}
+								onChange={(event) =>
+									void updateWindowsMenuBar(event.target.checked)
+								}
+							/>
+						</div>
+					</section>
+				) : null}
 				<LicenseSettingsCard />
 			</div>
 		</div>

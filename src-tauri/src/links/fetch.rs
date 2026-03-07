@@ -3,7 +3,7 @@ use serde::Deserialize;
 use std::{fs, io::Read, path::Path};
 use url::Url;
 
-use crate::{io_atomic, net, paths};
+use crate::{io_atomic, net, paths, utils};
 
 use super::helpers::{image_rel_path, now_ms, MAX_HTML_BYTES, MAX_IMAGE_BYTES};
 use super::types::LinkPreview;
@@ -123,7 +123,7 @@ pub fn download_image(
     let rel = image_rel_path(image_url);
     let abs = paths::join_under(space_root, &rel)?;
     if abs.exists() {
-        return Ok(Some(rel.to_string_lossy().to_string()));
+        return Ok(Some(utils::to_slash(&rel)));
     }
     if let Some(parent) = abs.parent() {
         fs::create_dir_all(parent).map_err(|e| e.to_string())?;
@@ -146,7 +146,7 @@ pub fn download_image(
         return Ok(None);
     }
     io_atomic::write_atomic(&abs, &buf).map_err(|e| e.to_string())?;
-    Ok(Some(rel.to_string_lossy().to_string()))
+    Ok(Some(utils::to_slash(&rel)))
 }
 
 pub fn build_preview(

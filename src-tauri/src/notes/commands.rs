@@ -2,7 +2,7 @@ use std::{ffi::OsStr, path::Path};
 use tauri::State;
 
 use crate::space::state::mark_recent_local_change;
-use crate::{index, io_atomic, paths, space::SpaceState};
+use crate::{index, io_atomic, paths, space::SpaceState, utils};
 
 use super::frontmatter::{
     normalize_frontmatter_mapping, now_rfc3339, parse_frontmatter, parse_frontmatter_mapping,
@@ -55,7 +55,7 @@ pub async fn note_create(state: State<'_, SpaceState>, title: String) -> Result<
         let id = uuid::Uuid::new_v4().to_string();
         let rel = note_rel_path(&id)?;
         let path = paths::join_under(&root, &rel)?;
-        let rel_path = rel.to_string_lossy().to_string();
+        let rel_path = utils::to_slash(&rel);
 
         let now = now_rfc3339();
         let mut fm = serde_yaml::Mapping::new();
@@ -154,7 +154,7 @@ pub async fn note_write(
         let fm = normalize_frontmatter_mapping(fm, &id, None, preserve_created.as_deref());
         let yaml = render_frontmatter_mapping_yaml(&fm)?;
         let normalized = format!("---\n{yaml}---\n\n{}", body.trim_start_matches('\n'));
-        let rel_path = note_rel_path(&id)?.to_string_lossy().to_string();
+        let rel_path = utils::to_slash(&note_rel_path(&id)?);
         mark_recent_local_change(&recent_local_changes, &rel_path);
         io_atomic::write_atomic(&path, normalized.as_bytes()).map_err(|e| e.to_string())?;
         let _ = index::index_note(&root, &id, &normalized);
@@ -175,7 +175,7 @@ pub async fn note_delete(state: State<'_, SpaceState>, id: String) -> Result<(),
     let recent_local_changes = state.recent_local_changes();
     tauri::async_runtime::spawn_blocking(move || -> Result<(), String> {
         let path = note_abs_path(&root, &id)?;
-        let rel_path = note_rel_path(&id)?.to_string_lossy().to_string();
+        let rel_path = utils::to_slash(&note_rel_path(&id)?);
         mark_recent_local_change(&recent_local_changes, &rel_path);
         std::fs::remove_file(&path).map_err(|e| e.to_string())?;
         let _ = index::remove_note(&root, &id);

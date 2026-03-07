@@ -5,6 +5,7 @@ import { parentDir } from "../../utils/path";
 import { springPresets } from "../ui/animations";
 import { FileTreeDirItem } from "./FileTreeDirItem";
 import { FileTreeFileItem } from "./FileTreeFileItem";
+import type { FileTreeMoveOptions } from "./fileTreeItemHelpers";
 
 interface FileTreePaneProps {
 	rootEntries: FsEntry[];
@@ -24,6 +25,11 @@ interface FileTreePaneProps {
 		kind?: "dir" | "file",
 	) => Promise<string | null>;
 	onDeletePath: (path: string, kind: "dir" | "file") => Promise<boolean>;
+	onMovePath: (
+		fromPath: string,
+		toDirPath: string,
+		options?: FileTreeMoveOptions,
+	) => Promise<string | null>;
 }
 
 const springTransition = springPresets.bouncy;
@@ -43,6 +49,11 @@ interface TreeEntriesProps {
 	onNewDatabaseInDir: (dirPath: string) => Promise<string | null>;
 	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
 	onDeletePath: (path: string, kind: "dir" | "file") => Promise<void>;
+	onMovePath: (
+		fromPath: string,
+		toDirPath: string,
+		options?: FileTreeMoveOptions,
+	) => Promise<string | null>;
 	onStartRename: (path: string) => void;
 	onCommitDirRename: (dirPath: string, nextName: string) => Promise<void>;
 	onCommitFileRename: (path: string, nextName: string) => Promise<void>;
@@ -64,6 +75,7 @@ function TreeEntries({
 	onNewDatabaseInDir,
 	onNewFolderInDir,
 	onDeletePath,
+	onMovePath,
 	onStartRename,
 	onCommitDirRename,
 	onCommitFileRename,
@@ -73,7 +85,7 @@ function TreeEntries({
 
 	return (
 		<ul className="fileTreeList">
-			{entries.map((e) => {
+			{entries.map((e, index) => {
 				const isDir = e.kind === "dir";
 				const depth = parentDepth + 1;
 				const rowKey =
@@ -88,6 +100,8 @@ function TreeEntries({
 							key={rowKey}
 							entry={e}
 							depth={depth}
+							siblingIndex={index}
+							childCount={children?.length ?? 0}
 							isExpanded={isExpanded}
 							isActive={e.rel_path === activeDirPath}
 							isRenaming={renamingPath === e.rel_path}
@@ -97,6 +111,7 @@ function TreeEntries({
 							onNewDatabaseInDir={onNewDatabaseInDir}
 							onNewFolderInDir={onNewFolderInDir}
 							onDeletePath={onDeletePath}
+							onMovePath={onMovePath}
 							onStartRename={() => onStartRename(e.rel_path)}
 							onCommitRename={onCommitDirRename}
 							onCancelRename={onCancelRename}
@@ -117,6 +132,7 @@ function TreeEntries({
 									onNewDatabaseInDir={onNewDatabaseInDir}
 									onNewFolderInDir={onNewFolderInDir}
 									onDeletePath={onDeletePath}
+									onMovePath={onMovePath}
 									onStartRename={onStartRename}
 									onCommitDirRename={onCommitDirRename}
 									onCommitFileRename={onCommitFileRename}
@@ -132,6 +148,7 @@ function TreeEntries({
 						key={rowKey}
 						entry={e}
 						depth={depth}
+						siblingIndex={index}
 						isActive={e.rel_path === activeFilePath}
 						onOpenFile={onOpenFile}
 						onNewFileInDir={onNewFileInDir}
@@ -143,6 +160,7 @@ function TreeEntries({
 						onCancelRename={onCancelRename}
 						parentDirPath={parentDir(e.rel_path)}
 						onDeletePath={onDeletePath}
+						onMovePath={onMovePath}
 					/>
 				);
 			})}
@@ -164,6 +182,7 @@ export const FileTreePane = memo(function FileTreePane({
 	onNewFolderInDir,
 	onRenameDir,
 	onDeletePath,
+	onMovePath,
 }: FileTreePaneProps) {
 	const [renamingPath, setRenamingPath] = useState<string | null>(null);
 
@@ -219,6 +238,32 @@ export const FileTreePane = memo(function FileTreePane({
 			initial={{ y: 10 }}
 			animate={{ y: 0 }}
 			transition={springTransition}
+			onDragOver={(e) => {
+				e.preventDefault();
+				// Don't stop propagation, we are the root
+				e.dataTransfer.dropEffect = "move";
+			}}
+			onDragEnter={(e) => {
+				e.preventDefault();
+				e.dataTransfer.dropEffect = "move";
+			}}
+			onDrop={async (e) => {
+				e.preventDefault();
+				e.stopPropagation();
+				const fromPath = e.dataTransfer.getData("text/glyph-filetree-path")?.trim();
+				if (!fromPath) return;
+
+				// Root is represented as "" for moving
+				const toDir = "";
+				// If the item is already in root, don't do anything
+				if (fromPath.indexOf("/") === -1) return;
+
+				try {
+					await onMovePath(fromPath, toDir, { index: rootEntries.length });
+				} catch (error) {
+					console.error("Failed to move item to the root directory", error);
+				}
+			}}
 		>
 			{rootEntries.length ? (
 				<div className="fileTreeScroll">
@@ -237,6 +282,7 @@ export const FileTreePane = memo(function FileTreePane({
 						onNewDatabaseInDir={onNewDatabaseInDir}
 						onNewFolderInDir={handleCreateFolder}
 						onDeletePath={handleDeletePath}
+						onMovePath={onMovePath}
 						onStartRename={setRenamingPath}
 						onCommitDirRename={handleCommitDirRename}
 						onCommitFileRename={handleCommitFileRename}

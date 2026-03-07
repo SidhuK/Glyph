@@ -39,8 +39,7 @@
 	--early-access-color: var(--interactive-accent);
 	padding: 3px 8px;
 	border-radius: var(--radius-sm);
-	border: 1px solid
-		color-mix(in srgb, var(--early-access-color) 52%, transparent);
+	border: 1px solid color-mix(in srgb, var(--early-access-color) 52%, transparent);
 	font-size: 8px;
 	letter-spacing: 0.1em;
 	line-height: 1;
@@ -60,8 +59,7 @@
 	border-radius: 0;
 	border: 0;
 	background: transparent;
-	transition: border-color var(--transition-base), background
-		var(--transition-base);
+	transition: border-color var(--transition-base), background var(--transition-base);
 }
 
 .settingsField::after {
@@ -71,22 +69,20 @@
 	right: 0;
 	bottom: 0;
 	height: 1px;
-	background: linear-gradient(
-		90deg,
-		transparent 0%,
-		color-mix(in srgb, var(--border-light) 30%, transparent) 10%,
-		color-mix(in srgb, var(--border-light) 72%, transparent) 24%,
-		color-mix(in srgb, var(--border-light) 72%, transparent) 76%,
-		color-mix(in srgb, var(--border-light) 30%, transparent) 90%,
-		transparent 100%
-	);
+	background: linear-gradient(90deg,
+			transparent 0%,
+			color-mix(in srgb, var(--border-light) 30%, transparent) 10%,
+			color-mix(in srgb, var(--border-light) 72%, transparent) 24%,
+			color-mix(in srgb, var(--border-light) 72%, transparent) 76%,
+			color-mix(in srgb, var(--border-light) 30%, transparent) 90%,
+			transparent 100%);
 }
 
 .settingsCard .settingsField:last-of-type::after {
 	display: none;
 }
 
-.settingsField > div:first-child {
+.settingsField>div:first-child {
 	display: flex;
 	flex-direction: column;
 	flex: 1 1 180px;
@@ -94,12 +90,12 @@
 	min-width: 0;
 }
 
-.settingsField > input,
-.settingsField > select,
-.settingsField > textarea,
-.settingsField .settingsInline > input,
-.settingsField .settingsInline > select,
-.settingsField .settingsInline > textarea {
+.settingsField>input,
+.settingsField>select,
+.settingsField>textarea,
+.settingsField .settingsInline>input,
+.settingsField .settingsInline>select,
+.settingsField .settingsInline>textarea {
 	flex: 1 1 220px;
 	min-width: 0;
 	max-width: 320px;
@@ -114,6 +110,22 @@
 	border-color: color-mix(in srgb, var(--border-default) 90%, transparent);
 }
 
+.settingsFieldCheckbox {
+	align-items: center;
+}
+
+.settingsFieldCheckbox>input[type="checkbox"] {
+	flex: 0 0 auto;
+	width: 18px;
+	height: 18px;
+	max-width: none;
+	min-height: 18px;
+	margin: 0;
+	accent-color: var(--interactive-accent);
+	border-radius: 6px;
+	cursor: pointer;
+}
+
 .settingsField input:focus-visible,
 .settingsField select:focus-visible,
 .settingsField textarea:focus-visible,
@@ -121,40 +133,31 @@
 .settingsSegmented button:focus-visible,
 .settingsSwatch:focus-visible,
 .settingsAccentDot:focus-visible {
-	outline: 2px solid
-		color-mix(in srgb, var(--interactive-accent) 44%, transparent);
+	outline: 2px solid color-mix(in srgb, var(--interactive-accent) 44%, transparent);
 	outline-offset: 2px;
 }
 
 .settingsPane select {
 	-webkit-appearance: none;
 	appearance: none;
-	--settings-select-chevron-color: color-mix(
-		in srgb,
-		var(--text-tertiary) 88%,
-		transparent
-	);
+	--settings-select-chevron-color: color-mix(in srgb,
+			var(--text-tertiary) 88%,
+			transparent);
 
-	background-color: color-mix(
-		in srgb,
-		var(--bg-primary) 90%,
-		var(--bg-secondary)
-	);
+	background-color: color-mix(in srgb,
+			var(--bg-primary) 90%,
+			var(--bg-secondary));
 	border: 1px solid color-mix(in srgb, var(--border-default) 88%, transparent);
 	border-radius: var(--radius-md);
 	color: var(--text-primary);
 	padding: 0 32px 0 10px;
 	height: 32px;
-	background-image: linear-gradient(
-			45deg,
+	background-image: linear-gradient(45deg,
 			transparent 50%,
-			var(--settings-select-chevron-color) 50%
-		),
-		linear-gradient(
-			135deg,
+			var(--settings-select-chevron-color) 50%),
+		linear-gradient(135deg,
 			var(--settings-select-chevron-color) 50%,
-			transparent 50%
-		);
+			transparent 50%);
 	background-repeat: no-repeat;
 	background-position: calc(100% - 13px) 13px, calc(100% - 8px) 13px;
 	background-size: 5px 5px, 5px 5px;
@@ -164,14 +167,11 @@
 .settingsPane select:focus-visible,
 .settingsPane select:active {
 	outline: none;
-	box-shadow: 0 0 0 3px
-		color-mix(in srgb, var(--interactive-accent) 14%, transparent);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--interactive-accent) 14%, transparent);
 	border-color: color-mix(in srgb, var(--interactive-accent) 34%, transparent);
-	--settings-select-chevron-color: color-mix(
-		in srgb,
-		var(--interactive-accent) 72%,
-		var(--text-primary)
-	);
+	--settings-select-chevron-color: color-mix(in srgb,
+			var(--interactive-accent) 72%,
+			var(--text-primary));
 }
 
 .settingsHelp {
@@ -287,8 +287,16 @@
 	width: 16px;
 	border-radius: var(--radius-sm);
 	background: var(--interactive-accent);
-	box-shadow: 0 0 0 3px
-		color-mix(in srgb, var(--interactive-accent) 20%, transparent);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--interactive-accent) 20%, transparent);
+	border: 2px solid var(--bg-primary);
+}
+
+.settingsRange input[type="range"]::-moz-range-thumb {
+	height: 16px;
+	width: 16px;
+	border-radius: var(--radius-sm);
+	background: var(--interactive-accent);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--interactive-accent) 20%, transparent);
 	border: 2px solid var(--bg-primary);
 }
 
@@ -328,21 +336,14 @@
 	flex: 0 0 clamp(188px, 46%, 228px);
 	padding: 12px;
 	border-radius: var(--radius-8);
-	border: 1px solid
-		color-mix(in srgb, var(--codex-tone) 30%, var(--border-light));
-	background: radial-gradient(
-			120% 140% at 100% -40%,
+	border: 1px solid color-mix(in srgb, var(--codex-tone) 30%, var(--border-light));
+	background: radial-gradient(120% 140% at 100% -40%,
 			color-mix(in srgb, var(--codex-tone) 16%, transparent) 0%,
-			transparent 48%
-		),
-		linear-gradient(
-			180deg,
+			transparent 48%),
+		linear-gradient(180deg,
 			color-mix(in srgb, var(--bg-secondary) 72%, transparent) 0%,
-			color-mix(in srgb, var(--bg-primary) 62%, transparent) 100%
-		);
-	box-shadow: inset 0 1px 0
-		color-mix(in srgb, var(--bg-primary) 55%, transparent), 0 14px 32px -28px
-		color-mix(in srgb, var(--codex-tone) 70%, transparent);
+			color-mix(in srgb, var(--bg-primary) 62%, transparent) 100%);
+	box-shadow: inset 0 1px 0 color-mix(in srgb, var(--bg-primary) 55%, transparent), 0 14px 32px -28px color-mix(in srgb, var(--codex-tone) 70%, transparent);
 	scroll-snap-align: start;
 }
 
@@ -395,8 +396,7 @@
 	display: grid;
 	grid-template-columns: repeat(12, minmax(0, 1fr));
 	gap: 2px;
-	border: 1px solid
-		color-mix(in srgb, var(--codex-tone) 34%, var(--border-light));
+	border: 1px solid color-mix(in srgb, var(--codex-tone) 34%, var(--border-light));
 	background: color-mix(in srgb, var(--bg-secondary) 88%, var(--bg-primary));
 }
 
@@ -448,8 +448,7 @@
 	align-items: center;
 	padding: 3px 7px;
 	border-radius: var(--radius-sm);
-	border: 1px solid
-		color-mix(in srgb, var(--codex-tone) 28%, var(--border-light));
+	border: 1px solid color-mix(in srgb, var(--codex-tone) 28%, var(--border-light));
 	background: color-mix(in srgb, var(--codex-tone) 9%, transparent);
 	color: color-mix(in srgb, var(--codex-tone) 35%, var(--text-secondary));
 	font-size: 10px;
@@ -489,8 +488,7 @@
 	background: color-mix(in srgb, var(--bg-tertiary) 80%, transparent);
 	border: 1px solid var(--border-light);
 	position: relative;
-	transition: background var(--transition-base), border-color
-		var(--transition-base);
+	transition: background var(--transition-base), border-color var(--transition-base);
 }
 
 .settingsToggle span::after {
@@ -502,16 +500,15 @@
 	border-radius: var(--radius-sm);
 	background: var(--bg-primary);
 	box-shadow: var(--shadow-sm);
-	transition: transform var(--transition-base), background
-		var(--transition-base);
+	transition: transform var(--transition-base), background var(--transition-base);
 }
 
-.settingsToggle input:checked + span {
+.settingsToggle input:checked+span {
 	background: color-mix(in srgb, var(--interactive-accent) 25%, transparent);
 	border-color: color-mix(in srgb, var(--interactive-accent) 30%, transparent);
 }
 
-.settingsToggle input:checked + span::after {
+.settingsToggle input:checked+span::after {
 	transform: translateX(18px);
 	background: var(--interactive-accent);
 }
@@ -568,8 +565,7 @@
 
 .settingsSwatch.active {
 	border-color: color-mix(in srgb, var(--interactive-accent) 40%, transparent);
-	box-shadow: 0 0 0 2px
-		color-mix(in srgb, var(--interactive-accent) 15%, transparent);
+	box-shadow: 0 0 0 2px color-mix(in srgb, var(--interactive-accent) 15%, transparent);
 }
 
 .settingsSwatch[data-swatch="graphite"] span {
@@ -616,8 +612,7 @@
 	height: 18px;
 	border-radius: 999px;
 	flex: 0 0 auto;
-	box-shadow: inset 0 0 0 1px
-		color-mix(in srgb, var(--text-primary) 12%, transparent);
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text-primary) 12%, transparent);
 }
 
 .settingsAccentPreviewLabel {
@@ -647,9 +642,7 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	transition: border-color var(--transition-base), transform
-		var(--transition-base), box-shadow var(--transition-base), background
-		var(--transition-base);
+	transition: border-color var(--transition-base), transform var(--transition-base), box-shadow var(--transition-base), background var(--transition-base);
 }
 
 .settingsAccentDot span {
@@ -657,8 +650,7 @@
 	width: 18px;
 	border-radius: 999px;
 	border: 1px solid color-mix(in srgb, var(--border-default) 28%, transparent);
-	box-shadow: inset 0 0 0 1px
-		color-mix(in srgb, var(--text-primary) 8%, transparent);
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--text-primary) 8%, transparent);
 }
 
 .settingsAccentDot:hover {
@@ -679,21 +671,22 @@
 		padding: 7px 8px;
 	}
 
-	.settingsField > div:first-child {
+	.settingsField>div:first-child {
 		min-width: 102px;
 	}
 
-	.settingsField > input,
-	.settingsField > select,
-	.settingsField > textarea,
-	.settingsField .settingsInline > input,
-	.settingsField .settingsInline > select,
-	.settingsField .settingsInline > textarea {
+	.settingsField>input,
+	.settingsField>select,
+	.settingsField>textarea,
+	.settingsField .settingsInline>input,
+	.settingsField .settingsInline>select,
+	.settingsField .settingsInline>textarea {
 		min-width: 146px;
 	}
 }
 
 @media (prefers-reduced-motion: reduce) {
+
 	.settingsField,
 	.settingsToggle span,
 	.settingsToggle span::after,
@@ -713,6 +706,7 @@
 		opacity: 0;
 		transform: translateY(2px);
 	}
+
 	100% {
 		opacity: 1;
 		transform: translateY(0);

@@ -16,14 +16,21 @@ mod system_fonts;
 pub(crate) mod utils;
 
 use serde::Serialize;
-use tauri::menu::{
-    Menu, MenuItem, PredefinedMenuItem, Submenu, HELP_SUBMENU_ID, WINDOW_SUBMENU_ID,
-};
-use tauri::{Emitter, Manager, RunEvent, WindowEvent};
+use tauri::menu::Menu;
+use tauri::{Emitter, Manager, WindowEvent};
+#[cfg(target_os = "macos")]
 use tracing::warn;
 
 #[cfg(target_os = "macos")]
+use tauri::menu::{
+    MenuItem, PredefinedMenuItem, Submenu, HELP_SUBMENU_ID, WINDOW_SUBMENU_ID,
+};
+
+#[cfg(target_os = "macos")]
 use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
+
+#[cfg(target_os = "windows")]
+use window_vibrancy::apply_mica;
 
 use tauri::{PhysicalPosition, PhysicalSize, Position, Size};
 
@@ -81,6 +88,13 @@ pub fn run() {
 
     tauri::Builder::default()
         .menu(|app| {
+            #[cfg(not(target_os = "macos"))]
+            {
+                return Menu::with_items(app, &[]);
+            }
+
+            #[cfg(target_os = "macos")]
+            {
             #[cfg(target_os = "macos")]
             let app_about = MenuItem::with_id(
                 app,
@@ -292,6 +306,7 @@ pub fn run() {
                     &help_menu,
                 ],
             )
+            }
         })
         .on_menu_event(|app, event| match event.id().as_ref() {
             "file.new_note" => {
@@ -367,6 +382,16 @@ pub fn run() {
                     }
                 } else {
                     warn!("Main window not found during setup");
+                }
+            }
+
+            #[cfg(target_os = "windows")]
+            {
+                if let Some(window) = app.get_webview_window("main") {
+                    let _ = window.set_decorations(false);
+                    if let Err(e) = apply_mica(&window, None) {
+                        warn!("Failed to apply Mica to main window: {e}");
+                    }
                 }
             }
             Ok(())
@@ -492,10 +517,10 @@ pub fn run() {
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")
-        .run(|app_handle, event| {
+        .run(|_app_handle, _event| {
             #[cfg(target_os = "macos")]
-            if let RunEvent::Reopen { .. } = event {
-                if let Some(window) = app_handle.get_webview_window("main") {
+            if let tauri::RunEvent::Reopen { .. } = _event {
+                if let Some(window) = _app_handle.get_webview_window("main") {
                     let _ = window.show();
                     let _ = window.unminimize();
                     let _ = window.set_focus();

@@ -7,14 +7,22 @@ import {
 	createStarterDatabaseMarkdown,
 } from "../lib/database/config";
 import { extractErrorMessage } from "../lib/errorUtils";
+import { updateFileTreeOrder } from "../lib/settings";
 import type { FsEntry } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
 import { isMarkdownPath, parentDir } from "../utils/path";
 import {
+	clampInsertionIndex,
 	compareEntries,
 	fileTitleFromRelPath,
+	getFileTreeOrderKey,
+	insertPathAtIndex,
 	normalizeEntry,
+	type FileTreeMoveOptions,
+	type FileTreeOrderByDir,
 	normalizeRelPath,
+	removeFileTreeOrderPaths,
+	rewriteFileTreeOrderPaths,
 	rewritePrefix,
 	shouldRefreshActiveFolderView,
 	withInsertedEntry,
@@ -26,15 +34,17 @@ export interface UseFileTreeCRUDDeps {
 		next:
 			| Record<string, FsEntry[] | undefined>
 			| ((
-					prev: Record<string, FsEntry[] | undefined>,
-			  ) => Record<string, FsEntry[] | undefined>),
+				prev: Record<string, FsEntry[] | undefined>,
+			) => Record<string, FsEntry[] | undefined>),
 	) => void;
+	childrenByDir: Record<string, FsEntry[] | undefined>;
 	updateExpandedDirs: (
 		next: Set<string> | ((prev: Set<string>) => Set<string>),
 	) => void;
 	updateRootEntries: (
 		next: FsEntry[] | ((prev: FsEntry[]) => FsEntry[]),
 	) => void;
+	rootEntries: FsEntry[];
 	setActiveFilePath: (path: string | null) => void;
 	setActivePreviewPath: (path: string | null) => void;
 	activeFilePath: string | null;
@@ -50,8 +60,10 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 	const {
 		spacePath,
 		updateChildrenByDir,
+		childrenByDir,
 		updateExpandedDirs,
 		updateRootEntries,
+		rootEntries,
 		setActiveFilePath,
 		setActivePreviewPath,
 		activeFilePath,
@@ -72,6 +84,114 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 	useEffect(() => {
 		activePreviewPathRef.current = activePreviewPath;
 	}, [activePreviewPath]);
+
+	const getEntriesForDir = useCallback(
+		(dirPath: string) => (dirPath ? (childrenByDir[dirPath] ?? []) : rootEntries),
+		[childrenByDir, rootEntries],
+	);
+
+	const reorderEntriesForPath = useCallback(
+		(
+			entries: FsEntry[],
+			targetPath: string,
+			requestedIndex: number | undefined,
+		) => {
+			if (entries.length <= 1) return entries;
+			const currentIndex = entries.findIndex(
+				(entry) => normalizeRelPath(entry.rel_path) === targetPath,
+			);
+			if (currentIndex === -1) return entries;
+
+			const entry = entries[currentIndex];
+			if (!entry) return entries;
+
+			const remaining = entries.filter((_, index) => index !== currentIndex);
+			let insertionIndex =
+				typeof requestedIndex === "number" && Number.isFinite(requestedIndex)
+					? Math.trunc(requestedIndex)
+					: remaining.length;
+			if (insertionIndex > currentIndex) {
+				insertionIndex = Math.max(currentIndex, insertionIndex - 1);
+			}
+			insertionIndex = clampInsertionIndex(insertionIndex, remaining.length);
+
+			return [
+				...remaining.slice(0, insertionIndex),
+				entry,
+				...remaining.slice(insertionIndex),
+			];
+		},
+		[],
+	);
+
+	const buildNextOrderState = useCallback(
+		(
+			current: FileTreeOrderByDir,
+			from: string,
+			nextPath: string,
+			fromParent: string,
+			toParent: string,
+			requestedIndex: number | undefined,
+		) => {
+			const next =
+				nextPath === from
+					? { ...current }
+					: rewriteFileTreeOrderPaths(current, from, nextPath);
+			const sourceCurrentPaths = (() => {
+				const entries = getEntriesForDir(fromParent);
+				return entries.length > 0
+					? entries.map((entry) => entry.rel_path)
+					: [...(next[getFileTreeOrderKey(fromParent)] ?? [])];
+			})();
+			const destCurrentPaths = (() => {
+				if (fromParent === toParent) return sourceCurrentPaths;
+				const entries = getEntriesForDir(toParent);
+				return entries.length > 0
+					? entries.map((entry) => entry.rel_path)
+					: [...(next[getFileTreeOrderKey(toParent)] ?? [])];
+			})();
+
+			const sourceWithoutMoved = sourceCurrentPaths.filter(
+				(path) => path !== from && path !== nextPath,
+			);
+			const destWithoutMoved =
+				fromParent === toParent
+					? sourceWithoutMoved
+					: destCurrentPaths.filter((path) => path !== from && path !== nextPath);
+
+			const sourceIndex = sourceCurrentPaths.findIndex((path) => path === from);
+			let insertionIndex =
+				typeof requestedIndex === "number" && Number.isFinite(requestedIndex)
+					? Math.trunc(requestedIndex)
+					: destWithoutMoved.length;
+			if (
+				fromParent === toParent &&
+				sourceIndex !== -1 &&
+				insertionIndex > sourceIndex
+			) {
+				insertionIndex = Math.max(sourceIndex, insertionIndex - 1);
+			}
+			insertionIndex = clampInsertionIndex(insertionIndex, destWithoutMoved.length);
+
+			const reorderedDestPaths = insertPathAtIndex(
+				destWithoutMoved,
+				nextPath,
+				insertionIndex,
+			);
+			if (fromParent === toParent) {
+				next[getFileTreeOrderKey(toParent)] = reorderedDestPaths;
+				return next;
+			}
+
+			const sourceKey = getFileTreeOrderKey(fromParent);
+			const destKey = getFileTreeOrderKey(toParent);
+			if (sourceWithoutMoved.length > 0) next[sourceKey] = sourceWithoutMoved;
+			else delete next[sourceKey];
+			next[destKey] = reorderedDestPaths;
+			return next;
+		},
+		[getEntriesForDir],
+	);
 
 	const refreshAfterCreate = useCallback(
 		async (targetDir: string) => {
@@ -314,6 +434,11 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 					from_path: dirPath,
 					to_path: nextPath,
 				});
+				if (spacePath) {
+					await updateFileTreeOrder(spacePath, (current) =>
+						rewriteFileTreeOrderPaths(current, dirPath, nextPath),
+					);
+				}
 				updateExpandedDirs((prev) => {
 					const next = new Set<string>();
 					for (const expanded of prev)
@@ -382,6 +507,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			loadDir,
 			loadedDirsRef,
 			refreshAfterCreate,
+			spacePath,
 			updateChildrenByDir,
 			setError,
 			updateExpandedDirs,
@@ -399,6 +525,11 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 					path: target,
 					recursive: kind === "dir",
 				});
+				if (spacePath) {
+					await updateFileTreeOrder(spacePath, (current) =>
+						removeFileTreeOrderPaths(current, target),
+					);
+				}
 				const parent = parentDir(target);
 				updateExpandedDirs((prev) => {
 					if (kind !== "dir") return prev;
@@ -463,6 +594,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			loadDir,
 			loadedDirsRef,
 			refreshActiveFolderViewAfterPathChange,
+			spacePath,
 			setActiveFilePath,
 			setActivePreviewPath,
 			updateChildrenByDir,
@@ -473,22 +605,79 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 	);
 
 	const onMovePath = useCallback(
-		async (fromPath: string, toDirPath: string) => {
+		async (
+			fromPath: string,
+			toDirPath: string,
+			options?: FileTreeMoveOptions,
+		) => {
 			const from = normalizeRelPath(fromPath);
 			const toDir = normalizeRelPath(toDirPath);
 			if (!from) return null;
+
+			// Prevent moving a folder into itself or its own children
+			if (toDir === from || toDir.startsWith(`${from}/`)) return null;
+
 			const fileName = from.split("/").pop() ?? "";
 			if (!fileName) return null;
 			const nextPath = toDir ? `${toDir}/${fileName}` : fileName;
-			if (nextPath === from) return nextPath;
+			const fromParent = parentDir(from);
+			const toParent = toDir;
+
+			if (nextPath === from && options?.index === undefined) return nextPath;
 			setError("");
 			try {
+				if (nextPath === from) {
+					if (fromParent) {
+						updateChildrenByDir((prev) => {
+							const currentEntries = prev[fromParent];
+							if (!currentEntries) return prev;
+							return {
+								...prev,
+								[fromParent]: reorderEntriesForPath(
+									currentEntries,
+									from,
+									options?.index,
+								),
+							};
+						});
+					} else {
+						updateRootEntries((prev) =>
+							reorderEntriesForPath(prev, from, options?.index),
+						);
+					}
+
+					if (spacePath) {
+						await updateFileTreeOrder(spacePath, (current) =>
+							buildNextOrderState(
+								current,
+								from,
+								nextPath,
+								fromParent,
+								toParent,
+								options?.index,
+							),
+						);
+					}
+					await refreshActiveFolderViewAfterPathChange(fromParent);
+					return nextPath;
+				}
+
 				await invoke("space_rename_path", {
 					from_path: from,
 					to_path: nextPath,
 				});
-				const fromParent = parentDir(from);
-				const toParent = parentDir(nextPath);
+				if (spacePath) {
+					await updateFileTreeOrder(spacePath, (current) =>
+						buildNextOrderState(
+							current,
+							from,
+							nextPath,
+							fromParent,
+							toParent,
+							options?.index,
+						),
+					);
+				}
 				const nextName = nextPath.split("/").pop() ?? fileName;
 				updateChildrenByDir((prev) => {
 					const next: Record<string, FsEntry[] | undefined> = {};
@@ -524,8 +713,11 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			}
 		},
 		[
+			buildNextOrderState,
 			loadDir,
+			reorderEntriesForPath,
 			refreshActiveFolderViewAfterPathChange,
+			spacePath,
 			setActiveFilePath,
 			setActivePreviewPath,
 			updateChildrenByDir,
