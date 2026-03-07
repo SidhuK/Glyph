@@ -131,7 +131,7 @@ function getRepositoryUrl(): string | null {
 }
 
 function getLog(range: string, limit = 8): ChangelogEntry[] {
-	const pretty = `%H%x1f%ad%x1f%s%x1e`;
+	const pretty = "%H%x1f%ad%x1f%s%x1e";
 	const output = runGit(
 		`git log ${range} --no-merges --date=short --pretty=format:'${pretty}' -n ${limit}`,
 	);
@@ -153,7 +153,9 @@ export function getChangelogData(): ChangelogData {
 	return {
 		latestTag,
 		previousTag,
-		releasedEntries: previousTag ? getLog(`${previousTag}..${latestTag}`, 10) : [],
+		releasedEntries: previousTag
+			? getLog(`${previousTag}..${latestTag}`, 10)
+			: [],
 		unreleasedEntries: getLog(`${latestTag}..HEAD`, 8),
 	};
 }

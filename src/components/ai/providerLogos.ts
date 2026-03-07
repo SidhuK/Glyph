@@ -15,7 +15,7 @@ export const providerLogoMeta: Record<
 	anthropic: { src: anthropicLogoUrl, label: "Anthropic" },
 	gemini: { src: geminiLogoUrl, label: "Google Gemini" },
 	ollama: { src: ollamaLogoUrl, label: "Ollama" },
-	codex_chatgpt: { src: openaiLogoUrl, label: "Codex (ChatGPT OAuth)" },
+	codex_chatgpt: { src: openaiLogoUrl, label: "Codex (ChatGPT)" },
 };
 
 export const providerLogoMap: Record<AiProviderKind, string> = {

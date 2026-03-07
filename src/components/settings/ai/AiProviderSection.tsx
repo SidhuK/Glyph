@@ -58,7 +58,7 @@ export function AiProviderSection({
 						});
 					}}
 				>
-					<option value="codex_chatgpt">Codex (ChatGPT OAuth)</option>
+					<option value="codex_chatgpt">Codex (ChatGPT)</option>
 					<option value="openai">OpenAI</option>
 					<option value="openrouter">OpenRouter</option>
 					<option value="anthropic">Anthropic</option>

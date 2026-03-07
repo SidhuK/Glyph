@@ -18,10 +18,7 @@
 		"astro-critters": "^2.2.1"
 	},
 	"pnpm": {
-		"onlyBuiltDependencies": [
-			"esbuild",
-			"sharp"
-		],
+		"onlyBuiltDependencies": ["esbuild", "sharp"],
 		"overrides": {
 			"svgo": "^4.0.1"
 		}
