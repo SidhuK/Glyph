@@ -93,6 +93,19 @@ export async function listenTauriEvent<K extends keyof TauriEventMap>(
 	});
 }
 
+function runUnlisten(unlisten: (() => void) | null): void {
+	if (!unlisten) return;
+
+	try {
+		const result = unlisten() as unknown;
+		void Promise.resolve(result).catch(() => {
+			// Tauri may already have cleaned up the listener during window teardown.
+		});
+	} catch {
+		// Ignore teardown races from Tauri listener cleanup.
+	}
+}
+
 export function useTauriEvent<K extends keyof TauriEventMap>(
 	event: K,
 	handler: TauriEventHandler<K>,
@@ -103,6 +116,14 @@ export function useTauriEvent<K extends keyof TauriEventMap>(
 	useEffect(() => {
 		let cancelled = false;
 		let unlisten: (() => void) | null = null;
+		let didUnlisten = false;
+
+		const cleanup = () => {
+			if (didUnlisten) return;
+			didUnlisten = true;
+			runUnlisten(unlisten);
+			unlisten = null;
+		};
 
 		void (async () => {
 			const stop = await listen<TauriEventMap[K]>(event, (evt) => {
@@ -114,7 +135,8 @@ export function useTauriEvent<K extends keyof TauriEventMap>(
 				(handlerRef.current as (value: TauriEventMap[K]) => void)(payload);
 			});
 			if (cancelled) {
-				stop();
+				unlisten = stop;
+				cleanup();
 				return;
 			}
 			unlisten = stop;
@@ -122,7 +144,7 @@ export function useTauriEvent<K extends keyof TauriEventMap>(
 
 		return () => {
 			cancelled = true;
-			unlisten?.();
+			cleanup();
 		};
 	}, [event]);
 }

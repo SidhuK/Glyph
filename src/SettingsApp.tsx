@@ -77,7 +77,7 @@ export default function SettingsApp() {
 		window.history.replaceState(null, "", nextHash);
 	}, []);
 	const closeWindow = useCallback(() => {
-		void getCurrentWindow().close();
+		void getCurrentWindow().hide();
 	}, []);
 
 	useTauriEvent("settings:navigate", ({ tab }) => {

@@ -1,3 +1,4 @@
+import { emitTo } from "@tauri-apps/api/event";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { LogicalSize } from "@tauri-apps/api/window";
 
@@ -41,29 +42,44 @@ async function getPreferredSettingsWindowSize() {
 	}
 }
 
+async function showSettingsWindow(window: WebviewWindow) {
+	await window.show();
+	await window.unminimize();
+	await window.setFocus();
+}
+
+async function navigateSettingsWindow(tab: SettingsTab | undefined) {
+	if (!tab) return;
+	await emitTo("settings", "settings:navigate", { tab });
+}
+
 export async function openSettingsWindow(tab?: SettingsTab) {
 	const existing = await WebviewWindow.getByLabel("settings");
 	if (existing) {
+		let didShow = false;
+
 		try {
-			await existing.show();
-			await existing.setFocus();
+			await showSettingsWindow(existing);
+			didShow = true;
 		} catch {
-			// If the handle is stale (e.g., window was closed/destroyed), fall through
-			// and recreate it.
+			// If the existing handle cannot be shown, fall through and recreate it.
 		}
-		try {
-			const size = await getPreferredSettingsWindowSize();
-			await existing.setSize(new LogicalSize(size.width, size.height));
-		} catch {
-			// Best-effort resize only. Showing the existing settings window matters more.
-		}
-		try {
-			if (tab) {
-				await existing.emit("settings:navigate", { tab });
+
+		if (didShow) {
+			try {
+				const size = await getPreferredSettingsWindowSize();
+				await existing.setSize(new LogicalSize(size.width, size.height));
+			} catch {
+				// Best-effort resize only. Showing the existing settings window matters more.
 			}
+
+			try {
+				await navigateSettingsWindow(tab);
+			} catch {
+				// If the window has not finished loading yet, keep the window open anyway.
+			}
+
 			return;
-		} catch {
-			// If the existing handle is stale, fall through and recreate it.
 		}
 	}
 
@@ -80,7 +96,14 @@ export async function openSettingsWindow(tab?: SettingsTab) {
 	});
 
 	win.once("tauri://created", () => {
-		console.debug("settings window created");
+		void (async () => {
+			try {
+				await showSettingsWindow(win);
+				await navigateSettingsWindow(tab);
+			} catch (error) {
+				console.error("failed to initialize settings window", error);
+			}
+		})();
 	});
 	win.once("tauri://error", (event) => {
 		console.error("failed to create settings window", event);
