@@ -125,7 +125,8 @@ export function SpaceSettingsPane() {
 						stacked
 					>
 						<div className="settingsEmpty">
-							{reindexStatus || "Index is ready."}
+							{reindexStatus ||
+								(!currentSpacePath ? "No space selected." : "Index is ready.")}
 						</div>
 					</SettingsRow>
 				</SettingsSection>

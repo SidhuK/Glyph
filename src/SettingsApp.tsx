@@ -196,11 +196,6 @@ export default function SettingsApp() {
 										className="settingsNavSearchInput"
 									/>
 								</div>
-								<div className="settingsNavSearchMeta">
-									{trimmedSearchQuery
-										? `${searchResults.length} match${searchResults.length === 1 ? "" : "es"}`
-										: `${SETTINGS_TABS.length} sections`}
-								</div>
 							</header>
 							{visibleTabs.map((tab) => (
 								<button
@@ -229,11 +224,17 @@ export default function SettingsApp() {
 						</nav>
 						<div className="settingsTabPanel">
 							<header className="settingsPanelHeader">
-								<h2 className="settingsPanelTitle">{activeTabMeta.label}</h2>
+								<h2 className="settingsPanelTitle">
+									{noSearchMatches
+										? "No matching settings"
+										: activeTabMeta.label}
+								</h2>
 								<p className="settingsPanelSubtitle">
-									{trimmedSearchQuery
-										? `${activeTabMeta.subtitle}. ${searchCounts.get(activeTabMeta.id) ?? 0} match${(searchCounts.get(activeTabMeta.id) ?? 0) === 1 ? "" : "es"} in this section.`
-										: activeTabMeta.subtitle}
+									{noSearchMatches
+										? "Try a broader search or switch to a different keyword to surface matching settings."
+										: trimmedSearchQuery
+											? `${activeTabMeta.subtitle}. ${searchCounts.get(activeTabMeta.id) ?? 0} match${(searchCounts.get(activeTabMeta.id) ?? 0) === 1 ? "" : "es"} in this section.`
+											: activeTabMeta.subtitle}
 								</p>
 							</header>
 							{tabContent}

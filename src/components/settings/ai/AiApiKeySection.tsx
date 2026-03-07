@@ -66,7 +66,9 @@ export function AiApiKeySection({
 					</div>
 				</div>
 				{keySaved ? (
-					<div className="settingsKeySaved">API key saved</div>
+					<output className="settingsKeySaved" aria-live="polite">
+						API key saved
+					</output>
 				) : null}
 			</SettingsRow>
 		</SettingsSection>

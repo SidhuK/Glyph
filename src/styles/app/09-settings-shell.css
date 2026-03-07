@@ -127,13 +127,6 @@
 	background: var(--bg-primary);
 }
 
-.settingsNavSearchMeta {
-	font-size: 10px;
-	letter-spacing: 0.04em;
-	text-transform: uppercase;
-	color: var(--text-tertiary);
-}
-
 .settingsTabButton {
 	position: relative;
 	display: inline-flex;

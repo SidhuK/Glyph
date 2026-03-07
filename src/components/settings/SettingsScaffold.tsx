@@ -101,7 +101,8 @@ export function SettingsSegmented<T extends string>({
 	disabled,
 }: SettingsSegmentedProps<T>) {
 	return (
-		<div className="settingsSegmented" role="radiogroup" aria-label={ariaLabel}>
+		<fieldset className="settingsSegmented">
+			<legend className="sr-only">{ariaLabel}</legend>
 			{options.map((option) => (
 				<button
 					key={option.value}
@@ -114,7 +115,7 @@ export function SettingsSegmented<T extends string>({
 					{option.label}
 				</button>
 			))}
-		</div>
+		</fieldset>
 	);
 }
 
