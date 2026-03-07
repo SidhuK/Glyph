@@ -96,7 +96,9 @@ fn read_windows_font_families(monospace_only: bool) -> Result<Vec<String>, Strin
         ) -> i32;
     }
 
-    const HKEY_LOCAL_MACHINE: isize = -2_147_483_646; // 0x80000002
+    const HKEY_CLASSES_ROOT: isize = -2_147_483_648; // 0x80000000
+    const HKEY_CURRENT_USER: isize = HKEY_CLASSES_ROOT + 1; // 0x80000001
+    const HKEY_LOCAL_MACHINE: isize = HKEY_CLASSES_ROOT + 2; // 0x80000002
     const KEY_READ: u32 = 0x20019;
     const ERROR_SUCCESS: i32 = 0;
     const ERROR_NO_MORE_ITEMS: i32 = 259;
@@ -105,87 +107,131 @@ fn read_windows_font_families(monospace_only: bool) -> Result<Vec<String>, Strin
         .encode_utf16()
         .collect();
 
-    let mut hkey: isize = 0;
-    let ret =
-        unsafe { RegOpenKeyExW(HKEY_LOCAL_MACHINE, sub_key.as_ptr(), 0, KEY_READ, &mut hkey) };
-    if ret != ERROR_SUCCESS {
-        return Ok(Vec::new());
-    }
-
     let mono_keywords: &[&str] = &[
         "mono", "consola", "courier", "fixed", "terminal", "code", "hack", "fira",
         "menlo", "inconsolata", "source code", "jetbrains", "iosevka", "cascadia",
         "ubuntu mono", "droid sans mono", "dejavu sans mono", "noto sans mono",
-        "liberation mono",
+        "liberation mono", "lucida console", "lucida sans typewriter", "roboto mono",
+        "anonymous pro", "bitstream vera sans mono", "pt mono",
     ];
 
-    let mut families = BTreeSet::new();
-    let mut idx: u32 = 0;
-    loop {
-        let mut name_buf = [0u16; 512];
-        let mut name_len: u32 = name_buf.len() as u32;
-        let ret = unsafe {
-            RegEnumValueW(
-                hkey,
-                idx,
-                name_buf.as_mut_ptr(),
-                &mut name_len,
-                std::ptr::null_mut(),
-                std::ptr::null_mut(),
-                std::ptr::null_mut(),
-                std::ptr::null_mut(),
-            )
-        };
-        if ret == ERROR_NO_MORE_ITEMS {
-            break;
-        }
-        if ret != ERROR_SUCCESS {
-            idx += 1;
-            continue;
-        }
-        let os_name = std::ffi::OsString::from_wide(&name_buf[..name_len as usize]);
-        let name = os_name.to_string_lossy();
-
-        // Strip trailing type descriptor such as " (TrueType)" or " (OpenType)".
-        let family = if let Some(pos) = name.rfind(" (") {
+    let normalize_family = |name: &str| {
+        let base = if let Some(pos) = name.rfind(" (") {
             name[..pos].trim()
         } else {
             name.trim()
         };
 
-        // Strip style suffixes like " Bold", " Italic", " Bold Italic", " Light".
-        let family = family
-            .trim_end_matches(" Bold Italic")
-            .trim_end_matches(" Bold")
-            .trim_end_matches(" Italic")
-            .trim_end_matches(" Light")
-            .trim_end_matches(" Thin")
-            .trim_end_matches(" Medium")
-            .trim_end_matches(" SemiBold")
-            .trim_end_matches(" ExtraBold")
-            .trim_end_matches(" Black")
-            .trim_end_matches(" ExtraLight")
-            .trim_end_matches(" Regular")
-            .trim();
+        let suffixes = [
+            "bold italic",
+            "extra light",
+            "extralight",
+            "extra bold",
+            "extrabold",
+            "semi bold",
+            "semibold",
+            "demi bold",
+            "demibold",
+            "condensed",
+            "regular",
+            "oblique",
+            "italic",
+            "medium",
+            "light",
+            "heavy",
+            "black",
+            "book",
+            "bold",
+            "thin",
+        ];
 
-        if family.is_empty() {
-            idx += 1;
-            continue;
-        }
+        let mut family = base.trim().to_string();
+        loop {
+            let trimmed = family.trim_end();
+            let trimmed_lower = trimmed.to_ascii_lowercase();
+            let mut changed = false;
 
-        if monospace_only {
-            let lower = family.to_ascii_lowercase();
-            if !mono_keywords.iter().any(|kw| lower.contains(kw)) {
-                idx += 1;
-                continue;
+            for suffix in suffixes {
+                if trimmed_lower.ends_with(suffix) {
+                    let next_len = trimmed.len().saturating_sub(suffix.len());
+                    family.truncate(next_len);
+                    family = family.trim_end().to_string();
+                    changed = true;
+                    break;
+                }
+            }
+
+            if !changed {
+                break;
             }
         }
 
-        families.insert(family.to_string());
-        idx += 1;
+        family.trim().to_string()
+    };
+
+    let mut opened_any = false;
+    let mut families = BTreeSet::new();
+
+    for registry_root in [HKEY_LOCAL_MACHINE, HKEY_CURRENT_USER] {
+        let mut hkey: isize = 0;
+        let ret = unsafe { RegOpenKeyExW(registry_root, sub_key.as_ptr(), 0, KEY_READ, &mut hkey) };
+        if ret != ERROR_SUCCESS {
+            continue;
+        }
+
+        opened_any = true;
+        let mut idx: u32 = 0;
+        loop {
+            let mut name_buf = [0u16; 512];
+            let mut name_len: u32 = name_buf.len() as u32;
+            let ret = unsafe {
+                RegEnumValueW(
+                    hkey,
+                    idx,
+                    name_buf.as_mut_ptr(),
+                    &mut name_len,
+                    std::ptr::null_mut(),
+                    std::ptr::null_mut(),
+                    std::ptr::null_mut(),
+                    std::ptr::null_mut(),
+                )
+            };
+            if ret == ERROR_NO_MORE_ITEMS {
+                break;
+            }
+            if ret != ERROR_SUCCESS {
+                idx += 1;
+                continue;
+            }
+
+            let os_name = std::ffi::OsString::from_wide(&name_buf[..name_len as usize]);
+            let name = os_name.to_string_lossy();
+            let family = normalize_family(&name);
+
+            if family.is_empty() {
+                idx += 1;
+                continue;
+            }
+
+            if monospace_only {
+                let lower = family.to_ascii_lowercase();
+                if !mono_keywords.iter().any(|keyword| lower.contains(keyword)) {
+                    idx += 1;
+                    continue;
+                }
+            }
+
+            families.insert(family);
+            idx += 1;
+        }
+
+        unsafe { RegCloseKey(hkey) };
     }
 
-    unsafe { RegCloseKey(hkey) };
+    if !opened_any {
+        return Ok(Vec::new());
+    }
+
     Ok(families.into_iter().collect())
 }
 

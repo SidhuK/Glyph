@@ -30,6 +30,7 @@ button {
 body.dragging-in-progress {
 	cursor: move !important;
 	cursor: -webkit-grabbing !important;
+	cursor: grabbing !important;
 }
 
 button:hover {

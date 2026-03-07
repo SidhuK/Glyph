@@ -303,6 +303,10 @@ export function AppShell() {
 		void saveCurrentEditor();
 	}, [saveCurrentEditor, spacePath]);
 
+	const handleCloseTabFromMenu = useCallback(() => {
+		window.dispatchEvent(new Event("glyph:close-active-tab"));
+	}, []);
+
 	const handleRevealSpaceFromMenu = useCallback(() => {
 		if (!spacePath) return;
 		void openPath(spacePath);
@@ -337,9 +341,7 @@ export function AppShell() {
 		onNewNote: handleNewNoteFromMenu,
 		onOpenDailyNote: handleOpenDailyNoteFromMenu,
 		onSaveNote: handleSaveNoteFromMenu,
-		onCloseTab: () => {
-			window.dispatchEvent(new Event("glyph:close-active-tab"));
-		},
+		onCloseTab: handleCloseTabFromMenu,
 		onOpenSpace,
 		onCreateSpace,
 		closeSpace,
@@ -682,7 +684,9 @@ export function AppShell() {
 			className={cn(
 				"appShell",
 				windowsCustomChrome && "windowsCustomChrome",
-				showWindowsMenuBar && "appShellWindowsMenuBarVisible",
+				windowsCustomChrome &&
+				showWindowsMenuBar &&
+				"appShellWindowsMenuBarVisible",
 				sidebarCollapsed && "appShellSidebarCollapsed",
 				aiEnabled && aiPanelOpen && "appShellAiOpen",
 			)}
@@ -697,7 +701,7 @@ export function AppShell() {
 					onNewNote={handleNewNoteFromMenu}
 					onOpenDailyNote={handleOpenDailyNoteFromMenu}
 					onSaveNote={handleSaveNoteFromMenu}
-					onCloseTab={() => window.dispatchEvent(new Event("glyph:close-active-tab"))}
+					onCloseTab={handleCloseTabFromMenu}
 					onOpenSpace={onOpenSpace}
 					onCreateSpace={onCreateSpace}
 					onRevealSpace={handleRevealSpaceFromMenu}

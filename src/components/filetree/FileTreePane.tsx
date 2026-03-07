@@ -258,7 +258,11 @@ export const FileTreePane = memo(function FileTreePane({
 				// If the item is already in root, don't do anything
 				if (fromPath.indexOf("/") === -1) return;
 
-				await onMovePath(fromPath, toDir, { index: rootEntries.length });
+				try {
+					await onMovePath(fromPath, toDir, { index: rootEntries.length });
+				} catch (error) {
+					console.error("Failed to move item to the root directory", error);
+				}
 			}}
 		>
 			{rootEntries.length ? (

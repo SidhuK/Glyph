@@ -1,7 +1,10 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { Shortcut } from "../../lib/shortcuts";
-import { formatShortcutPartsForPlatform } from "../../lib/shortcuts/platform";
+import {
+    formatShortcutPartsForPlatform,
+    isMacOS,
+} from "../../lib/shortcuts/platform";
 import {
     CircleHelp,
     Command,
@@ -101,6 +104,10 @@ export function WindowTitleBar({
     const closeMenuTimeoutRef = useRef<number | null>(null);
     const currentWindow = useMemo(() => getCurrentWindow(), []);
     const spaceLabel = useMemo(() => getSpaceLabel(spacePath), [spacePath]);
+    const revealSpaceLabel = useMemo(
+        () => (isMacOS() ? "Reveal in Finder" : "Reveal in Explorer"),
+        [],
+    );
 
     const setActiveMenu = useCallback((label: string | null) => {
         if (activeMenuLabelRef.current === label) return;
@@ -151,17 +158,23 @@ export function WindowTitleBar({
 
         syncMaximized();
 
+        let isMounted = true;
         let unlisten: (() => void) | undefined;
         void currentWindow
             .onResized(syncMaximized)
             .then((dispose) => {
-                unlisten = dispose;
+                if (isMounted) {
+                    unlisten = dispose;
+                    return;
+                }
+                dispose();
             })
             .catch(() => { });
 
         window.addEventListener("resize", syncMaximized);
 
         return () => {
+            isMounted = false;
             window.removeEventListener("resize", syncMaximized);
             unlisten?.();
             clearMenuTimeouts();
@@ -186,7 +199,9 @@ export function WindowTitleBar({
     }, [currentWindow]);
 
     const handleClose = useCallback(() => {
-        void currentWindow.close().catch(() => { });
+        void currentWindow.close().catch((error) => {
+            console.error("Failed to close window", error);
+        });
     }, [currentWindow]);
 
     const runMenuAction = useCallback((action: () => void) => {
@@ -203,9 +218,7 @@ export function WindowTitleBar({
             return;
         }
         if (activeMenuLabelRef.current !== label) return;
-        if (!open) {
-            scheduleMenuClose();
-        }
+        scheduleMenuClose();
     }, [clearMenuTimeouts, scheduleMenuClose, setActiveMenu]);
 
     const handleMenuTriggerPointerEnter = useCallback((label: string) => {
@@ -276,7 +289,7 @@ export function WindowTitleBar({
                     },
                     MENU_SEPARATOR,
                     {
-                        label: "Reveal in Explorer",
+                        label: revealSpaceLabel,
                         action: onRevealSpace,
                         icon: FolderOpen,
                     },
@@ -342,6 +355,7 @@ export function WindowTitleBar({
             onOpenSpace,
             onOpenSpaceSettings,
             onRevealSpace,
+            revealSpaceLabel,
             onSaveNote,
             onToggleAiPanel,
             onToggleSidebar,
@@ -540,8 +554,11 @@ export function WindowTitleBar({
                                             <span>{item.label}</span>
                                             {item.shortcut ? (
                                                 <DropdownMenuShortcut className="windowTitleBarDropdownShortcut">
-                                                    {formatShortcutPartsForPlatform(item.shortcut).map((part) => (
-                                                        <span key={`${item.label}-${part}`} className="windowTitleBarShortcutKey">
+                                                    {formatShortcutPartsForPlatform(item.shortcut).map((part, partIndex) => (
+                                                        <span
+                                                            key={`${item.label}-${part}-${partIndex}`}
+                                                            className="windowTitleBarShortcutKey"
+                                                        >
                                                             {part}
                                                         </span>
                                                     ))}

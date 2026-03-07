@@ -44,15 +44,23 @@ pub fn write_atomic(dest: &Path, bytes: &[u8]) -> io::Result<()> {
     std::fs::create_dir_all(parent)?;
 
     let tmp = unique_tmp_path(dest)?;
+    let write_result = (|| {
+        {
+            let mut f = File::create(&tmp)?;
+            f.write_all(bytes)?;
+            f.sync_all()?;
+        }
 
-    {
-        let mut f = File::create(&tmp)?;
-        f.write_all(bytes)?;
-        f.sync_all()?;
+        std::fs::rename(&tmp, dest)?;
+        fsync_dir(parent)?;
+
+        Ok(())
+    })();
+
+    if let Err(error) = write_result {
+        let _ = std::fs::remove_file(&tmp);
+        return Err(error);
     }
-
-    std::fs::rename(&tmp, dest)?;
-    fsync_dir(parent)?;
 
     Ok(())
 }

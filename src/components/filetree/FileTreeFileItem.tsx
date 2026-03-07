@@ -1,5 +1,5 @@
 import type { DragEvent, MouseEvent } from "react";
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import type { FsEntry } from "../../lib/tauri";
 import { FolderPlus, Plus, Trash2 } from "../Icons";
 import {
@@ -104,10 +104,18 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 		document.body.classList.add("dragging-in-progress");
 	};
 
-	const handleDragEnd = () => {
+	const handleDragEnd = useCallback(() => {
 		document.body.classList.remove("dragging-in-progress");
 		setDropIndicator(null);
-	};
+	}, []);
+
+	useEffect(() => {
+		window.addEventListener("dragend", handleDragEnd);
+		return () => {
+			window.removeEventListener("dragend", handleDragEnd);
+			handleDragEnd();
+		};
+	}, [handleDragEnd]);
 
 	const handleDragOver = (e: DragEvent<HTMLLIElement>) => {
 		e.preventDefault();
@@ -131,12 +139,13 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 	const handleDrop = async (e: DragEvent<HTMLLIElement>) => {
 		e.preventDefault();
 		e.stopPropagation();
+		const currentIndicator = dropIndicator;
 		setDropIndicator(null);
 
 		const fromPath = e.dataTransfer.getData("text/glyph-filetree-path")?.trim();
 		if (!fromPath || fromPath === entry.rel_path) return;
 
-		const index = dropIndicator === "top" ? siblingIndex : siblingIndex + 1;
+		const index = currentIndicator === "top" ? siblingIndex : siblingIndex + 1;
 		await onMovePath(fromPath, parentDirPath, { index });
 	};
 

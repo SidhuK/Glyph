@@ -45,14 +45,16 @@ export function GeneralSettingsPane() {
 	}, []);
 
 	const updateWindowsMenuBar = useCallback(async (next: boolean) => {
+		const previous = showWindowsMenuBar;
 		setError("");
 		setShowWindowsMenuBarState(next);
 		try {
 			await setShowWindowsMenuBar(next);
 		} catch (e) {
+			setShowWindowsMenuBarState(previous);
 			setError(e instanceof Error ? e.message : "Failed to save settings");
 		}
-	}, []);
+	}, [showWindowsMenuBar]);
 
 	return (
 		<div className="settingsPane">
@@ -92,12 +94,18 @@ export function GeneralSettingsPane() {
 
 						<div className="settingsField settingsFieldCheckbox">
 							<div>
-								<div className="settingsLabel">Show mac-style menu bar</div>
+								<label
+									className="settingsLabel"
+									htmlFor="show-windows-menu-bar"
+								>
+									Show mac-style menu bar
+								</label>
 								<div className="settingsHint">
 									Adds a clean File, Space, AI, View, and Help menu under the Windows title bar.
 								</div>
 							</div>
 							<input
+								id="show-windows-menu-bar"
 								type="checkbox"
 								checked={showWindowsMenuBar}
 								onChange={(event) =>

@@ -134,8 +134,8 @@ export function rewriteFileTreeOrderPaths(
 			new Set(rawPaths.map((path) => rewrite(normalizeRelPath(path))).filter(Boolean)),
 		);
 		if (nextPaths.length > 0) {
-			next[nextDirKey] = [...(next[nextDirKey] ?? []), ...nextPaths].filter(
-				(path, index, all) => all.indexOf(path) === index,
+			next[nextDirKey] = Array.from(
+				new Set([...(next[nextDirKey] ?? []), ...nextPaths]),
 			);
 		}
 	}

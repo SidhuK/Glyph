@@ -166,8 +166,7 @@
 	z-index: 1;
 }
 
-.fileTreeRow,
-.fileTreeRow * {
+.fileTreeRow {
 	cursor: pointer;
 }
 
@@ -350,6 +349,7 @@
 .fileTreeRenameInput {
 	flex: 1;
 	min-width: 0;
+	cursor: text;
 	border: 1px solid var(--border-default);
 	border-radius: var(--radius-sm);
 	background: color-mix(in srgb, var(--bg-primary) 96%, transparent);

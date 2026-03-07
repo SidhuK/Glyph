@@ -22,6 +22,8 @@ export function SidebarHeader({
 					type="button"
 					variant="ghost"
 					size="icon-sm"
+					aria-label="Open space"
+					data-window-drag-ignore
 					onClick={onOpenSpace}
 					title="Open space"
 				>
@@ -31,6 +33,8 @@ export function SidebarHeader({
 					type="button"
 					variant="ghost"
 					size="icon-sm"
+					aria-label="Open command palette"
+					data-window-drag-ignore
 					onClick={onOpenCommandPalette}
 					title={`Command palette (${getShortcutTooltip({ meta: true, key: "k" })})`}
 				>

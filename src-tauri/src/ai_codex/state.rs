@@ -117,6 +117,7 @@ impl CodexState {
             if let Some(home) = home {
                 candidates.push(home.join(".bun").join("bin").join("codex.exe"));
                 candidates.push(home.join(".npm-global").join("codex.exe"));
+                candidates.push(home.join(".npm-global").join("codex.cmd"));
             }
             if let Some(appdata) = std::env::var_os("APPDATA") {
                 let appdata = PathBuf::from(appdata);

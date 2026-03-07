@@ -1,4 +1,5 @@
 .windowTitleBar {
+    --window-titlebar-subtitle-max-width: 200px;
     position: absolute;
     top: 0;
     left: 0;
@@ -68,6 +69,14 @@
     color: var(--text-primary);
 }
 
+.windowTitleBarSidebarToggle:focus-visible {
+    outline: 2px solid var(--border-focus);
+    outline-offset: 2px;
+    background: color-mix(in srgb, var(--bg-hover) 84%, var(--bg-secondary));
+    border-color: color-mix(in srgb, var(--border-light) 65%, transparent);
+    color: var(--text-primary);
+}
+
 .windowTitleBarSidebarToggle>svg,
 .windowChromeButton.windowChromeButtonMenu>svg,
 .windowTitleBarMenuItem>svg,
@@ -85,7 +94,7 @@
 .windowTitleBarBrand {
     display: flex;
     align-items: center;
-    gap: 10px;
+    gap: var(--space-2);
     min-width: 0;
 }
 
@@ -95,7 +104,7 @@
     justify-content: center;
     width: 24px;
     height: 24px;
-    border-radius: 8px;
+    border-radius: var(--radius-8);
     background: linear-gradient(135deg,
             color-mix(in srgb, var(--accent-color) 80%, white 20%),
             color-mix(in srgb, var(--accent-color) 46%, black 14%));
@@ -128,7 +137,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
-    max-width: 200px;
+    max-width: var(--window-titlebar-subtitle-max-width);
 }
 
 .windowTitleBarCenter {
@@ -195,8 +204,15 @@
     color: var(--text-primary);
 }
 
+.windowChromeButton:focus-visible {
+    outline: 2px solid var(--border-focus);
+    outline-offset: 2px;
+    background: color-mix(in srgb, var(--bg-hover) 88%, transparent);
+    color: var(--text-primary);
+}
+
 .windowChromeButtonClose:hover {
-    background: #d83b49;
+    background: var(--color-danger, #d83b49);
     color: white;
 }
 
@@ -243,7 +259,7 @@
     height: 26px;
     padding: 0 12px;
     border: 1px solid transparent;
-    border-radius: 999px;
+    border-radius: var(--radius-full);
     background: transparent;
     color: var(--text-secondary);
     font-size: 12px;
@@ -269,7 +285,7 @@
     min-width: 220px;
     padding: 8px;
     border-radius: 14px;
-    border-color: color-mix(in srgb, var(--border-light) 76%, transparent);
+    border: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
     background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
     backdrop-filter: blur(18px) saturate(1.08);
     -webkit-backdrop-filter: blur(18px) saturate(1.08);
@@ -277,6 +293,8 @@
 }
 
 .windowTitleBarDropdownItem {
+    display: flex;
+    align-items: center;
     gap: 10px;
     min-height: 34px;
     border-radius: 10px;
@@ -312,7 +330,7 @@
 }
 
 .windowTitleBarMenuItem {
-    display: inline-flex;
+    display: flex;
     align-items: center;
     gap: 10px;
     width: 100%;
@@ -329,6 +347,14 @@
 }
 
 .windowTitleBarMenuItem:hover {
+    background: color-mix(in srgb, var(--bg-hover) 84%, transparent);
+    color: var(--text-primary);
+}
+
+.windowTitleBarMenuItem:focus,
+.windowTitleBarMenuItem:focus-visible {
+    outline: 2px solid var(--border-focus);
+    outline-offset: 2px;
     background: color-mix(in srgb, var(--bg-hover) 84%, transparent);
     color: var(--text-primary);
 }
@@ -359,7 +385,7 @@
 
 .windowChromeGlyphMaximize.is-maximized {
     transform: translate(-1px, 1px);
-    background: color-mix(in srgb, var(--chrome-bg) 100%, transparent);
+    background: var(--chrome-bg);
 }
 
 .windowChromeGlyphMaximize.is-maximized::before {

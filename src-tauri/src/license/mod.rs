@@ -10,10 +10,13 @@ pub const TRIAL_DURATION_MS: u64 = 48 * 60 * 60 * 1000;
 
 pub fn is_official_build() -> bool {
     !cfg!(debug_assertions)
-        && matches!(
-            option_env!("GLYPH_OFFICIAL_BUILD"),
-            Some("1") | Some("true") | Some("TRUE") | Some("yes") | Some("YES")
-        )
+        && option_env!("GLYPH_OFFICIAL_BUILD")
+            .map(str::trim)
+            .is_some_and(|value| {
+                value == "1"
+                    || value.eq_ignore_ascii_case("true")
+                    || value.eq_ignore_ascii_case("yes")
+            })
 }
 
 pub fn gumroad_product_id() -> &'static str {

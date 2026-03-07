@@ -90,6 +90,40 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 		[childrenByDir, rootEntries],
 	);
 
+	const reorderEntriesForPath = useCallback(
+		(
+			entries: FsEntry[],
+			targetPath: string,
+			requestedIndex: number | undefined,
+		) => {
+			if (entries.length <= 1) return entries;
+			const currentIndex = entries.findIndex(
+				(entry) => normalizeRelPath(entry.rel_path) === targetPath,
+			);
+			if (currentIndex === -1) return entries;
+
+			const entry = entries[currentIndex];
+			if (!entry) return entries;
+
+			const remaining = entries.filter((_, index) => index !== currentIndex);
+			let insertionIndex =
+				typeof requestedIndex === "number" && Number.isFinite(requestedIndex)
+					? Math.trunc(requestedIndex)
+					: remaining.length;
+			if (insertionIndex > currentIndex) {
+				insertionIndex = Math.max(currentIndex, insertionIndex - 1);
+			}
+			insertionIndex = clampInsertionIndex(insertionIndex, remaining.length);
+
+			return [
+				...remaining.slice(0, insertionIndex),
+				entry,
+				...remaining.slice(insertionIndex),
+			];
+		},
+		[],
+	);
+
 	const buildNextOrderState = useCallback(
 		(
 			current: FileTreeOrderByDir,
@@ -593,6 +627,25 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			setError("");
 			try {
 				if (nextPath === from) {
+					if (fromParent) {
+						updateChildrenByDir((prev) => {
+							const currentEntries = prev[fromParent];
+							if (!currentEntries) return prev;
+							return {
+								...prev,
+								[fromParent]: reorderEntriesForPath(
+									currentEntries,
+									from,
+									options?.index,
+								),
+							};
+						});
+					} else {
+						updateRootEntries((prev) =>
+							reorderEntriesForPath(prev, from, options?.index),
+						);
+					}
+
 					if (spacePath) {
 						await updateFileTreeOrder(spacePath, (current) =>
 							buildNextOrderState(
@@ -605,10 +658,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 							),
 						);
 					}
-					await Promise.all([
-						loadDir(fromParent, true),
-						refreshActiveFolderViewAfterPathChange(fromParent),
-					]);
+					await refreshActiveFolderViewAfterPathChange(fromParent);
 					return nextPath;
 				}
 
@@ -665,6 +715,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 		[
 			buildNextOrderState,
 			loadDir,
+			reorderEntriesForPath,
 			refreshActiveFolderViewAfterPathChange,
 			spacePath,
 			setActiveFilePath,

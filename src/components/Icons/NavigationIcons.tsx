@@ -12,7 +12,14 @@ interface ControlKeyProps {
 }
 
 function toNumericSize(size: number | string | undefined, fallback: number): number {
-	return typeof size === "number" ? size : fallback;
+	if (typeof size === "number") {
+		return Number.isFinite(size) ? size : fallback;
+	}
+	if (typeof size === "string") {
+		const parsed = Number.parseFloat(size);
+		return Number.isFinite(parsed) ? parsed : fallback;
+	}
+	return fallback;
 }
 
 export const Search = (props: IconProps) => (

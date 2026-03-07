@@ -136,15 +136,10 @@ pub fn run() {
             )?;
             let close_space =
                 MenuItem::with_id(app, "space.close", "Close Space", true, None::<&str>)?;
-            let reveal_label = if cfg!(target_os = "macos") {
-                "Show Space in Finder"
-            } else {
-                "Show Space in Explorer"
-            };
             let reveal_space = MenuItem::with_id(
                 app,
                 "space.reveal",
-                reveal_label,
+                "Show Space in Finder",
                 true,
                 None::<&str>,
             )?;

@@ -110,9 +110,11 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 		if (fromPath === entry.rel_path) return;
 
 		if (targetIndicator === "top" || targetIndicator === "bottom") {
+			if (parentDirPath.startsWith(`${fromPath}/`)) return;
 			const index = targetIndicator === "top" ? siblingIndex : siblingIndex + 1;
 			await onMovePath(fromPath, parentDirPath, { index });
 		} else {
+			if (entry.rel_path.startsWith(`${fromPath}/`)) return;
 			await onMovePath(fromPath, entry.rel_path, { index: childCount });
 		}
 	};
