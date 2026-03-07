@@ -1,4 +1,4 @@
-import * as Icons from "@hugeicons/core-free-icons";
+import { Document, Tag01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { SearchAdvancedRequest } from "../../lib/tauri";
 import { buildSearchQuery } from "./commandPaletteHelpers";
@@ -31,7 +31,7 @@ export function CommandSearchFilters({
 					)
 				}
 			>
-				<HugeiconsIcon icon={Icons.Document} size={14} />
+				<HugeiconsIcon icon={Document} size={14} />
 				Title only
 			</button>
 			<button
@@ -42,7 +42,7 @@ export function CommandSearchFilters({
 					onChangeQuery(withUpdated(request, { tag_only: !request.tag_only }))
 				}
 			>
-				<HugeiconsIcon icon={Icons.Tag01Icon} size={14} />
+				<HugeiconsIcon icon={Tag01Icon} size={14} />
 				Tag
 			</button>
 		</div>

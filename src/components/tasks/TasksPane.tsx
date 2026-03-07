@@ -1,4 +1,9 @@
-import * as Icons from "@hugeicons/core-free-icons";
+import {
+	CalendarCheckOut02Icon,
+	CheckListIcon,
+	InboxIcon,
+	SunriseIcon,
+} from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { m } from "motion/react";
 import {
@@ -34,20 +39,20 @@ const BUCKETS: Array<{
 	{
 		id: "today",
 		label: "Today",
-		icon: Icons.SunriseIcon,
+		icon: SunriseIcon,
 		description:
 			"Work scheduled or due for today, laid out as a focused action list.",
 	},
 	{
 		id: "upcoming",
 		label: "Upcoming",
-		icon: Icons.CalendarCheckOut02Icon,
+		icon: CalendarCheckOut02Icon,
 		description: "Forward-looking tasks sorted by their next relevant date.",
 	},
 	{
 		id: "inbox",
 		label: "Inbox",
-		icon: Icons.InboxIcon,
+		icon: InboxIcon,
 		description:
 			"Unscheduled tasks grouped by note so triage stays close to source material.",
 	},
@@ -197,7 +202,7 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 				{!loading && tasks.length === 0 ? (
 					<div className="tasksPaneEmptyState">
 						<HugeiconsIcon
-							icon={Icons.CheckListIcon}
+							icon={CheckListIcon}
 							size={32}
 							className="tasksPaneEmptyIcon"
 						/>
