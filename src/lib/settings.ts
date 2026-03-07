@@ -43,6 +43,7 @@ const MIN_UI_FONT_SIZE = 7;
 const MAX_UI_FONT_SIZE = 40;
 const DEFAULT_UI_FONT_SIZE = 14;
 const DEFAULT_AI_ENABLED = true;
+const DEFAULT_SHOW_WINDOWS_MENU_BAR = false;
 export type UiFontFamily = string;
 export type UiFontSize = number;
 const AI_ASSISTANT_MODES = new Set<AiAssistantMode>(["chat", "create"]);
@@ -109,6 +110,7 @@ async function emitSettingsUpdated(payload: {
 		aiAssistantMode?: AiAssistantMode;
 		aiEnabled?: boolean;
 		aiSidebarWidth?: number | null;
+		showWindowsMenuBar?: boolean;
 	};
 	dailyNotes?: {
 		folder?: string | null;
@@ -137,6 +139,7 @@ interface AppSettings {
 	ui: {
 		aiEnabled: boolean;
 		aiSidebarWidth: number | null;
+		showWindowsMenuBar: boolean;
 		theme: ThemeMode;
 		accent: UiAccent;
 		fontFamily: UiFontFamily;
@@ -158,6 +161,7 @@ const KEYS = {
 	recentFiles: "files.recent",
 	fileTreeOrderBySpace: "fileTree.orderBySpace",
 	aiEnabled: "ui.aiEnabled",
+	showWindowsMenuBar: "ui.showWindowsMenuBar",
 	aiSidebarWidth: "ui.aiSidebarWidth",
 	aiAssistantMode: "ui.aiAssistantMode",
 	theme: "ui.theme",
@@ -280,6 +284,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		recentSpacesRaw,
 		rawRecentFiles,
 		rawAiEnabled,
+		rawShowWindowsMenuBar,
 		aiSidebarWidthRaw,
 		rawAiAssistantMode,
 		rawTheme,
@@ -294,6 +299,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<string[] | null>(KEYS.recentSpaces),
 		store.get<unknown>(KEYS.recentFiles),
 		store.get<boolean | null>(KEYS.aiEnabled),
+		store.get<boolean | null>(KEYS.showWindowsMenuBar),
 		store.get<number | null>(KEYS.aiSidebarWidth),
 		store.get<unknown>(KEYS.aiAssistantMode),
 		store.get<unknown>(KEYS.theme),
@@ -309,6 +315,10 @@ export async function loadSettings(): Promise<AppSettings> {
 	const recentFiles = isRecentFileArray(rawRecentFiles) ? rawRecentFiles : [];
 	const aiEnabled =
 		typeof rawAiEnabled === "boolean" ? rawAiEnabled : DEFAULT_AI_ENABLED;
+	const showWindowsMenuBar =
+		typeof rawShowWindowsMenuBar === "boolean"
+			? rawShowWindowsMenuBar
+			: DEFAULT_SHOW_WINDOWS_MENU_BAR;
 	const aiSidebarWidth = aiSidebarWidthRaw ?? null;
 	const aiAssistantMode = asAiAssistantMode(rawAiAssistantMode);
 	const theme = asThemeMode(rawTheme);
@@ -330,6 +340,7 @@ export async function loadSettings(): Promise<AppSettings> {
 				typeof aiSidebarWidth === "number" && Number.isFinite(aiSidebarWidth)
 					? aiSidebarWidth
 					: null,
+			showWindowsMenuBar,
 			theme,
 			accent,
 			fontFamily,
@@ -374,6 +385,13 @@ export async function setAiSidebarWidth(width: number): Promise<void> {
 	await store.set(KEYS.aiSidebarWidth, next);
 	await store.save();
 	void emitSettingsUpdated({ ui: { aiSidebarWidth: next } });
+}
+
+export async function setShowWindowsMenuBar(show: boolean): Promise<void> {
+	const store = await getStore();
+	await store.set(KEYS.showWindowsMenuBar, show);
+	await store.save();
+	void emitSettingsUpdated({ ui: { showWindowsMenuBar: show } });
 }
 
 export async function setAiAssistantMode(mode: AiAssistantMode): Promise<void> {

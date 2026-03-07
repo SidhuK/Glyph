@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { openPath, openUrl } from "@tauri-apps/plugin-opener";
 import { AnimatePresence } from "motion/react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from "react";
 import { toast } from "sonner";
 import {
 	useAISidebarContext,
@@ -72,6 +72,7 @@ export function AppShell() {
 		openMarkdownTabs,
 		activeMarkdownTabPath,
 		dailyNotesFolder,
+		showWindowsMenuBar,
 		sidebarWidth,
 		setSidebarWidth,
 	} = useUILayoutContext();
@@ -95,6 +96,17 @@ export function AppShell() {
 	const [moveTargetDirs, setMoveTargetDirs] = useState<string[]>([]);
 	const [shortcutsHelpOpen, setShortcutsHelpOpen] = useState(false);
 	const autoUpdater = useAutoUpdater();
+	const windowsTitleBarStyle = useMemo<CSSProperties | undefined>(
+		() =>
+			windowsCustomChrome
+				? ({
+					["--windows-titlebar-height" as const]: showWindowsMenuBar
+						? "78px"
+						: "44px",
+				} as CSSProperties)
+				: undefined,
+		[showWindowsMenuBar, windowsCustomChrome],
+	);
 
 	const sidebarResize = useResizablePanel({
 		min: 220,
@@ -670,9 +682,11 @@ export function AppShell() {
 			className={cn(
 				"appShell",
 				windowsCustomChrome && "windowsCustomChrome",
+				showWindowsMenuBar && "appShellWindowsMenuBarVisible",
 				sidebarCollapsed && "appShellSidebarCollapsed",
 				aiEnabled && aiPanelOpen && "appShellAiOpen",
 			)}
+			style={windowsTitleBarStyle}
 		>
 			{windowsCustomChrome ? (
 				<WindowTitleBar
@@ -680,13 +694,21 @@ export function AppShell() {
 					onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
 					spacePath={spacePath}
 					onOpenCommandPalette={openCommandPalette}
+					onNewNote={handleNewNoteFromMenu}
+					onOpenDailyNote={handleOpenDailyNoteFromMenu}
+					onSaveNote={handleSaveNoteFromMenu}
+					onCloseTab={() => window.dispatchEvent(new Event("glyph:close-active-tab"))}
 					onOpenSpace={onOpenSpace}
 					onCreateSpace={onCreateSpace}
+					onRevealSpace={handleRevealSpaceFromMenu}
+					onOpenSpaceSettings={handleOpenSpaceSettings}
 					onOpenSettings={() => void openSettingsWindow()}
+					onOpenAbout={() => void openSettingsWindow("about")}
 					onOpenAiSettings={() => void openSettingsWindow("ai")}
 					aiEnabled={aiEnabled && Boolean(spacePath)}
 					aiPanelOpen={aiPanelOpen}
 					onToggleAiPanel={() => setAiPanelOpen((v) => !v)}
+					showWindowsMenuBar={showWindowsMenuBar}
 				/>
 			) : (
 				<div

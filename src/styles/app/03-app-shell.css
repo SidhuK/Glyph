@@ -16,7 +16,7 @@
 }
 
 .appShell.windowsCustomChrome {
-	padding-top: 44px;
+	padding-top: var(--windows-titlebar-height, 44px);
 	align-items: stretch;
 	box-sizing: border-box;
 }
