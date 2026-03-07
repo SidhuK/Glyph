@@ -194,6 +194,7 @@ pub(super) fn move_path_to_trash(src: &Path) -> Result<(), String> {
         lpszProgressTitle: *const u16,       // progress dialog title (unused)
     }
 
+    #[link(name = "shell32")]
     extern "system" {
         fn SHFileOperationW(lpFileOp: *mut SHFILEOPSTRUCTW) -> i32;
     }

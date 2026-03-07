@@ -102,7 +102,17 @@ export function WindowTitleBar({
     const activeMenuLabelRef = useRef<string | null>(null);
     const openMenuTimeoutRef = useRef<number | null>(null);
     const closeMenuTimeoutRef = useRef<number | null>(null);
-    const currentWindow = useMemo(() => getCurrentWindow(), []);
+    const currentWindow = useMemo(() => {
+        try {
+            if (typeof window !== "undefined" && (window as any).__TAURI__) {
+                return getCurrentWindow();
+            }
+        } catch {
+            // Tauri not available or getCurrentWindow threw
+        }
+        // Return null if Tauri unavailable; component will skip window ops
+        return null as any;
+    }, []);
     const spaceLabel = useMemo(() => getSpaceLabel(spacePath), [spacePath]);
     const revealSpaceLabel = useMemo(
         () => (isMacOS() ? "Reveal in Finder" : "Reveal in Explorer"),
@@ -152,6 +162,8 @@ export function WindowTitleBar({
     }, [clearMenuTimeouts, setActiveMenu]);
 
     useEffect(() => {
+        if (!currentWindow) return; // Skip if Tauri not available
+
         const syncMaximized = () => {
             void currentWindow.isMaximized().then(setIsMaximized).catch(() => { });
         };
@@ -162,7 +174,7 @@ export function WindowTitleBar({
         let unlisten: (() => void) | undefined;
         void currentWindow
             .onResized(syncMaximized)
-            .then((dispose) => {
+            .then((dispose: () => void) => {
                 if (isMounted) {
                     unlisten = dispose;
                     return;
@@ -182,24 +194,27 @@ export function WindowTitleBar({
     }, [clearMenuTimeouts, currentWindow]);
 
     const handleMinimize = useCallback(() => {
-        void currentWindow.minimize().catch((error) => {
+        if (!currentWindow) return;
+        void currentWindow.minimize().catch((error: Error) => {
             console.error("Failed to minimize window", error);
         });
     }, [currentWindow]);
 
     const handleToggleMaximize = useCallback(() => {
+        if (!currentWindow) return;
         void currentWindow
             .isMaximized()
-            .then((maximized) =>
+            .then((maximized: boolean) =>
                 maximized ? currentWindow.unmaximize() : currentWindow.maximize(),
             )
-            .catch((error) => {
+            .catch((error: Error) => {
                 console.error("Failed to toggle maximize state", error);
             });
     }, [currentWindow]);
 
     const handleClose = useCallback(() => {
-        void currentWindow.close().catch((error) => {
+        if (!currentWindow) return;
+        void currentWindow.close().catch((error: Error) => {
             console.error("Failed to close window", error);
         });
     }, [currentWindow]);

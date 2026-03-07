@@ -1,8 +1,5 @@
 import type { CSSProperties } from "react";
-
-export interface FileTreeMoveOptions {
-	index?: number;
-}
+import type { FileTreeMoveOptions } from "../../hooks/fileTreeHelpers";
 
 const INDENT_STEP = 18;
 const BASE_PADDING = 10;
@@ -12,6 +9,9 @@ export const springTransition = {
 	stiffness: 400,
 	damping: 25,
 } as const;
+
+// Export for convenience so consumers don't need two imports
+export type { FileTreeMoveOptions };
 
 export const rowTransition = {
 	duration: 0.11,

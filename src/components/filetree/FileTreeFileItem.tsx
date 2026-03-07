@@ -109,14 +109,6 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 		setDropIndicator(null);
 	}, []);
 
-	useEffect(() => {
-		window.addEventListener("dragend", handleDragEnd);
-		return () => {
-			window.removeEventListener("dragend", handleDragEnd);
-			handleDragEnd();
-		};
-	}, [handleDragEnd]);
-
 	const handleDragOver = (e: DragEvent<HTMLLIElement>) => {
 		e.preventDefault();
 		e.stopPropagation();

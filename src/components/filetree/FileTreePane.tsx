@@ -85,7 +85,7 @@ function TreeEntries({
 
 	return (
 		<ul className="fileTreeList">
-			{entries.map((e) => {
+			{entries.map((e, index) => {
 				const isDir = e.kind === "dir";
 				const depth = parentDepth + 1;
 				const rowKey =
@@ -100,7 +100,7 @@ function TreeEntries({
 							key={rowKey}
 							entry={e}
 							depth={depth}
-							siblingIndex={entries.indexOf(e)}
+							siblingIndex={index}
 							childCount={children?.length ?? 0}
 							isExpanded={isExpanded}
 							isActive={e.rel_path === activeDirPath}
@@ -148,7 +148,7 @@ function TreeEntries({
 						key={rowKey}
 						entry={e}
 						depth={depth}
-						siblingIndex={entries.indexOf(e)}
+						siblingIndex={index}
 						isActive={e.rel_path === activeFilePath}
 						onOpenFile={onOpenFile}
 						onNewFileInDir={onNewFileInDir}
