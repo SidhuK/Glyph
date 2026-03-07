@@ -84,14 +84,44 @@ impl CodexState {
     fn candidate_codex_paths() -> Vec<PathBuf> {
         let mut candidates: Vec<PathBuf> = Vec::new();
 
-        let bin_name = if cfg!(windows) { "codex.exe" } else { "codex" };
+        let bin_names: Vec<String> = if cfg!(windows) {
+            let mut names = vec![
+                "codex.exe".to_string(),
+                "codex.cmd".to_string(),
+                "codex.bat".to_string(),
+                "codex.com".to_string(),
+            ];
+            if let Some(path_ext) = std::env::var_os("PATHEXT") {
+                let path_ext = path_ext.to_string_lossy();
+                for extension in path_ext.split(';') {
+                    let extension = extension.trim();
+                    if extension.is_empty() {
+                        continue;
+                    }
+                    let extension = if extension.starts_with('.') {
+                        extension.to_ascii_lowercase()
+                    } else {
+                        format!(".{}", extension.to_ascii_lowercase())
+                    };
+                    let candidate = format!("codex{extension}");
+                    if !names.iter().any(|existing| existing.eq_ignore_ascii_case(&candidate)) {
+                        names.push(candidate);
+                    }
+                }
+            }
+            names
+        } else {
+            vec!["codex".to_string()]
+        };
 
         if let Some(explicit) = std::env::var_os("CODEX_CLI_PATH") {
             candidates.push(PathBuf::from(explicit));
         }
         if let Some(path_var) = std::env::var_os("PATH") {
             for dir in std::env::split_paths(&path_var) {
-                candidates.push(dir.join(bin_name));
+                for bin_name in &bin_names {
+                    candidates.push(dir.join(bin_name));
+                }
             }
         }
 

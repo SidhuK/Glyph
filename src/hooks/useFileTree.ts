@@ -122,7 +122,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 			}
 			loadedDirsRef.current.add(dirPath);
 		},
-		[updateChildrenByDir, updateRootEntries],
+		[spacePath, updateChildrenByDir, updateRootEntries],
 	);
 
 	const toggleDir = useCallback(

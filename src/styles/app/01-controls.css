@@ -29,7 +29,6 @@ button {
 .dragging-in-progress *,
 body.dragging-in-progress {
 	cursor: move !important;
-	cursor: -webkit-grabbing !important;
 	cursor: grabbing !important;
 }
 

@@ -60,7 +60,7 @@ pub async fn space_read_texts_batch(
             match result {
                 Ok(doc) => results.push(doc),
                 Err(error) => results.push(TextFileDocBatch {
-                    rel_path: path,
+                    rel_path: utils::to_slash(&rel),
                     text: None,
                     etag: None,
                     mtime_ms: 0,

@@ -560,7 +560,7 @@ export function WindowTitleBar({
                                         <DropdownMenuItem
                                             key={`${menu.label}-${item.label}`}
                                             className="windowTitleBarDropdownItem"
-                                            onClick={item.action}
+                                            onSelect={() => runMenuAction(item.action)}
                                         >
                                             <item.icon size={14} />
                                             <span>{item.label}</span>

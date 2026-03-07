@@ -80,11 +80,16 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 			try {
 				const entries = await invoke("space_list_dir", {});
 				const normalizedEntries = normalizeEntries(entries);
-				const orderedEntries = applyEntryOrder(
-					normalizedEntries,
-					"",
-					await getFileTreeOrder(spacePath),
-				);
+				let orderedEntries = normalizedEntries;
+				try {
+					orderedEntries = applyEntryOrder(
+						normalizedEntries,
+						"",
+						await getFileTreeOrder(spacePath),
+					);
+				} catch {
+					orderedEntries = normalizedEntries;
+				}
 				if (!cancelled) setRootEntries(orderedEntries);
 				void startIndexRebuild();
 				void refreshTags();

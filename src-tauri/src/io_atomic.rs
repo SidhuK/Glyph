@@ -51,16 +51,7 @@ pub fn write_atomic(dest: &Path, bytes: &[u8]) -> io::Result<()> {
             f.sync_all()?;
         }
 
-        // On Windows, rename fails if destination exists. Use replace instead.
-        #[cfg(windows)]
-        {
-            std::fs::remove_file(dest).ok(); // Ignore error if dest doesn't exist
-            std::fs::rename(&tmp, dest)?;
-        }
-        #[cfg(not(windows))]
-        {
-            std::fs::rename(&tmp, dest)?;
-        }
+        std::fs::rename(&tmp, dest)?;
 
         fsync_dir(parent)?;
 
