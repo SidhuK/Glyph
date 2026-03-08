@@ -5,6 +5,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { getPendingPathMoveTarget } from "../../lib/appEvents";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import {
 	type DatabaseCellValue,
@@ -88,6 +89,7 @@ export function useDatabaseNote(
 			setData(next);
 		} catch (error) {
 			if (requestVersionRef.current !== version) return;
+			if (getPendingPathMoveTarget(relPath)) return;
 			setData(null);
 			setError(extractErrorMessage(error));
 		} finally {
@@ -118,9 +120,9 @@ export function useDatabaseNote(
 				setData((current) =>
 					current
 						? {
-								...current,
-								config: saved,
-							}
+							...current,
+							config: saved,
+						}
 						: current,
 				);
 			});

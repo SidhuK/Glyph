@@ -195,6 +195,20 @@ export function withInsertedEntry(
 	return [...entries, entry].sort(compareEntries);
 }
 
+export function withInsertedEntryAtIndex(
+	entries: FsEntry[],
+	entry: FsEntry,
+	index: number | undefined,
+): FsEntry[] {
+	const filtered = entries.filter((existing) => existing.rel_path !== entry.rel_path);
+	const targetIndex = clampInsertionIndex(index, filtered.length);
+	return [
+		...filtered.slice(0, targetIndex),
+		entry,
+		...filtered.slice(targetIndex),
+	];
+}
+
 export function rewritePrefix(path: string, from: string, to: string): string {
 	if (path === from) return to;
 	if (path.startsWith(`${from}/`)) return `${to}${path.slice(from.length)}`;

@@ -66,8 +66,8 @@ interface TitleBarMenuSection {
 }
 
 const MENU_SEPARATOR = { separator: true } as const;
+const MENU_CLOSE_DELAY_MS = 250;
 const MENU_OPEN_DELAY_MS = 65;
-const MENU_CLOSE_DELAY_MS = 55;
 
 function getSpaceLabel(spacePath: string | null): string {
     if (!spacePath) return "Offline-first notes";
@@ -99,6 +99,7 @@ export function WindowTitleBar({
     const [isMaximized, setIsMaximized] = useState(false);
     const [menuOpen, setMenuOpen] = useState(false);
     const [activeMenuLabel, setActiveMenuLabel] = useState<string | null>(null);
+    const [suppressMenuAnimation, setSuppressMenuAnimation] = useState(false);
     const activeMenuLabelRef = useRef<string | null>(null);
     const openMenuTimeoutRef = useRef<number | null>(null);
     const closeMenuTimeoutRef = useRef<number | null>(null);
@@ -147,6 +148,7 @@ export function WindowTitleBar({
         clearOpenMenuTimeout();
         if (activeMenuLabelRef.current === label) return;
         openMenuTimeoutRef.current = window.setTimeout(() => {
+            setSuppressMenuAnimation(true);
             setActiveMenu(label);
             openMenuTimeoutRef.current = null;
         }, MENU_OPEN_DELAY_MS);
@@ -155,6 +157,7 @@ export function WindowTitleBar({
     const scheduleMenuClose = useCallback(() => {
         clearMenuTimeouts();
         closeMenuTimeoutRef.current = window.setTimeout(() => {
+            setSuppressMenuAnimation(false);
             setActiveMenu(null);
             closeMenuTimeoutRef.current = null;
         }, MENU_CLOSE_DELAY_MS);
@@ -221,6 +224,7 @@ export function WindowTitleBar({
     const runMenuAction = useCallback((action: () => void) => {
         clearMenuTimeouts();
         setMenuOpen(false);
+        setSuppressMenuAnimation(false);
         setActiveMenu(null);
         action();
     }, [clearMenuTimeouts, setActiveMenu]);
@@ -228,6 +232,7 @@ export function WindowTitleBar({
     const setMenuOpenState = useCallback((label: string, open: boolean) => {
         clearMenuTimeouts();
         if (open) {
+            setSuppressMenuAnimation(false);
             setActiveMenu(label);
             return;
         }
@@ -545,9 +550,10 @@ export function WindowTitleBar({
                             <DropdownMenuContent
                                 align="start"
                                 sideOffset={10}
-                                className="windowTitleBarDropdown"
+                                className={`windowTitleBarDropdown${suppressMenuAnimation ? " windowTitleBarDropdownInstant" : ""}`}
                                 onPointerEnter={clearMenuTimeouts}
                                 onPointerLeave={scheduleMenuClose}
+                                onCloseAutoFocus={(event) => event.preventDefault()}
                             >
                                 {menu.items.map((item, index) =>
                                     "separator" in item ? (

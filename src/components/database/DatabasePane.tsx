@@ -8,6 +8,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { getPendingPathMoveTarget } from "../../lib/appEvents";
 import { useDatabaseNote } from "../../hooks/database/useDatabaseNote";
 import { useDatabaseTable } from "../../hooks/database/useDatabaseTable";
 import { getBoardGroupColumns } from "../../lib/database/board";
@@ -80,6 +81,7 @@ export function DatabasePane({
 			const isDatabase = isDatabaseNote(doc.text);
 			setNoteKind(isDatabase ? "database" : "markdown");
 		} catch (error) {
+			if (getPendingPathMoveTarget(relPath)) return;
 			setDetectError(extractErrorMessage(error));
 			setNoteKind("markdown");
 		}

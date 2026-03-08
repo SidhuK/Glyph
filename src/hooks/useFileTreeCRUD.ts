@@ -1,6 +1,10 @@
 import { join } from "@tauri-apps/api/path";
 import { useCallback, useEffect, useRef } from "react";
-import { dispatchPathRemoved } from "../lib/appEvents";
+import {
+	dispatchPathMoved,
+	dispatchPathRemoved,
+	markPendingPathMove,
+} from "../lib/appEvents";
 import {
 	createDatabaseNotePath,
 	createDefaultDatabaseConfig,
@@ -25,6 +29,7 @@ import {
 	rewriteFileTreeOrderPaths,
 	rewritePrefix,
 	shouldRefreshActiveFolderView,
+	withInsertedEntryAtIndex,
 	withInsertedEntry,
 } from "./fileTreeHelpers";
 
@@ -193,6 +198,18 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 		[getEntriesForDir],
 	);
 
+	const persistFileTreeOrder = useCallback(
+		async (updater: (current: FileTreeOrderByDir) => FileTreeOrderByDir) => {
+			if (!spacePath) return;
+			try {
+				await updateFileTreeOrder(spacePath, updater);
+			} catch (error) {
+				console.error("Failed to persist file tree order", error);
+			}
+		},
+		[spacePath],
+	);
+
 	const refreshAfterCreate = useCallback(
 		async (targetDir: string) => {
 			await loadDir(targetDir, true);
@@ -217,11 +234,38 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			const activeDir = getActiveFolderDir();
 			if (activeDir === null) return;
 			if (
+				activeDir === "" ||
 				activeDir === changedPath ||
 				activeDir.startsWith(`${changedPath}/`) ||
 				changedPath.startsWith(`${activeDir}/`)
 			)
 				await loadAndBuildFolderView(activeDir);
+		},
+		[getActiveFolderDir, loadAndBuildFolderView],
+	);
+
+	const refreshActiveFolderViewAfterMove = useCallback(
+		async (fromPath: string, nextPath: string, fromParent: string, toParent: string) => {
+			const activeDir = getActiveFolderDir();
+			if (activeDir === null) return;
+
+			if (activeDir === fromPath || activeDir.startsWith(`${fromPath}/`)) {
+				await loadAndBuildFolderView(rewritePrefix(activeDir, fromPath, nextPath));
+				return;
+			}
+
+			const affectedParents = new Set([fromParent, toParent]);
+			for (const parent of affectedParents) {
+				if (
+					activeDir === "" ||
+					activeDir === parent ||
+					activeDir.startsWith(`${parent}/`) ||
+					parent.startsWith(`${activeDir}/`)
+				) {
+					await loadAndBuildFolderView(activeDir);
+					return;
+				}
+			}
 		},
 		[getActiveFolderDir, loadAndBuildFolderView],
 	);
@@ -430,15 +474,39 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			if (nextPath === dirPath) return nextPath;
 			setError("");
 			try {
+				markPendingPathMove(dirPath, nextPath);
 				await invoke("space_rename_path", {
 					from_path: dirPath,
 					to_path: nextPath,
 				});
-				if (spacePath) {
-					await updateFileTreeOrder(spacePath, (current) =>
-						rewriteFileTreeOrderPaths(current, dirPath, nextPath),
-					);
+				// Fire move event immediately so tabs are rewritten before any
+				// async loads can trigger re-renders with stale paths.
+				dispatchPathMoved({
+					fromPath: dirPath,
+					toPath: nextPath,
+					recursive: kind === "dir",
+				});
+				if (kind === "dir") {
+					if (activeFilePathRef.current?.startsWith(`${dirPath}/`)) {
+						setActiveFilePath(rewritePrefix(activeFilePathRef.current, dirPath, nextPath));
+					} else if (activeFilePathRef.current === dirPath) {
+						setActiveFilePath(nextPath);
+					}
+					if (activePreviewPathRef.current?.startsWith(`${dirPath}/`)) {
+						setActivePreviewPath(
+							rewritePrefix(activePreviewPathRef.current, dirPath, nextPath),
+						);
+					} else if (activePreviewPathRef.current === dirPath) {
+						setActivePreviewPath(nextPath);
+					}
+				} else {
+					if (activeFilePathRef.current === dirPath) setActiveFilePath(nextPath);
+					if (activePreviewPathRef.current === dirPath)
+						setActivePreviewPath(nextPath);
 				}
+				await persistFileTreeOrder((current) =>
+					rewriteFileTreeOrderPaths(current, dirPath, nextPath),
+				);
 				updateExpandedDirs((prev) => {
 					const next = new Set<string>();
 					for (const expanded of prev)
@@ -506,8 +574,10 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 		[
 			loadDir,
 			loadedDirsRef,
+			persistFileTreeOrder,
 			refreshAfterCreate,
-			spacePath,
+			setActiveFilePath,
+			setActivePreviewPath,
 			updateChildrenByDir,
 			setError,
 			updateExpandedDirs,
@@ -525,11 +595,9 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 					path: target,
 					recursive: kind === "dir",
 				});
-				if (spacePath) {
-					await updateFileTreeOrder(spacePath, (current) =>
-						removeFileTreeOrderPaths(current, target),
-					);
-				}
+				await persistFileTreeOrder((current) =>
+					removeFileTreeOrderPaths(current, target),
+				);
 				const parent = parentDir(target);
 				updateExpandedDirs((prev) => {
 					if (kind !== "dir") return prev;
@@ -593,8 +661,8 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 		[
 			loadDir,
 			loadedDirsRef,
+			persistFileTreeOrder,
 			refreshActiveFolderViewAfterPathChange,
-			spacePath,
 			setActiveFilePath,
 			setActivePreviewPath,
 			updateChildrenByDir,
@@ -650,28 +718,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 						);
 					}
 
-					if (spacePath) {
-						await updateFileTreeOrder(spacePath, (current) =>
-							buildNextOrderState(
-								current,
-								from,
-								nextPath,
-								fromParent,
-								toParent,
-								options?.index,
-							),
-						);
-					}
-					await refreshActiveFolderViewAfterPathChange(fromParent);
-					return nextPath;
-				}
-
-				await invoke("space_rename_path", {
-					from_path: from,
-					to_path: nextPath,
-				});
-				if (spacePath) {
-					await updateFileTreeOrder(spacePath, (current) =>
+					await persistFileTreeOrder((current) =>
 						buildNextOrderState(
 							current,
 							from,
@@ -681,39 +728,25 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 							options?.index,
 						),
 					);
+					await refreshActiveFolderViewAfterPathChange(fromParent);
+					return nextPath;
 				}
-				const nextName = nextPath.split("/").pop() ?? fileName;
+
+				markPendingPathMove(from, nextPath);
+				await invoke("space_rename_path", {
+					from_path: from,
+					to_path: nextPath,
+				});
+				// Fire move event immediately so tabs are rewritten before any
+				// async loads or state updates can trigger re-renders with stale paths.
+				// Then update activeFilePath/activePreviewPath in the same synchronous
+				// block so React batches everything into one commit (no stale-path flash).
+				dispatchPathMoved({
+					fromPath: from,
+					toPath: nextPath,
+					recursive: movedKind === "dir",
+				});
 				if (movedKind === "dir") {
-					updateChildrenByDir((prev) => {
-						const next: Record<string, FsEntry[] | undefined> = {};
-						for (const [key, entries] of Object.entries(prev)) {
-							next[rewritePrefix(key, from, nextPath)] = entries?.map((entry) => {
-								const relPath = rewritePrefix(entry.rel_path, from, nextPath);
-								return entry.rel_path === from
-									? { ...entry, name: nextName, rel_path: relPath }
-									: { ...entry, rel_path: relPath };
-							});
-						}
-						return next;
-					});
-					updateRootEntries((prev) =>
-						prev.map((entry) => {
-							const relPath = rewritePrefix(entry.rel_path, from, nextPath);
-							return entry.rel_path === from
-								? { ...entry, name: nextName, rel_path: relPath }
-								: { ...entry, rel_path: relPath };
-						}),
-					);
-					updateExpandedDirs((prev) => {
-						const next = new Set<string>();
-						for (const expanded of prev) {
-							next.add(rewritePrefix(expanded, from, nextPath));
-						}
-						return next;
-					});
-					loadedDirsRef.current = new Set(
-						[...loadedDirsRef.current].map((dir) => rewritePrefix(dir, from, nextPath)),
-					);
 					if (activeFilePathRef.current?.startsWith(`${from}/`)) {
 						setActiveFilePath(rewritePrefix(activeFilePathRef.current, from, nextPath));
 					} else if (activeFilePathRef.current === from) {
@@ -727,6 +760,77 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 						setActivePreviewPath(nextPath);
 					}
 				} else {
+					if (activeFilePathRef.current === from) setActiveFilePath(nextPath);
+					if (activePreviewPathRef.current === from)
+						setActivePreviewPath(nextPath);
+				}
+				await persistFileTreeOrder((current) =>
+					buildNextOrderState(
+						current,
+						from,
+						nextPath,
+						fromParent,
+						toParent,
+						options?.index,
+					),
+				);
+				const nextName = nextPath.split("/").pop() ?? fileName;
+				if (movedKind === "dir") {
+					updateChildrenByDir((prev) => {
+						const next: Record<string, FsEntry[] | undefined> = {};
+						for (const [key, entries] of Object.entries(prev)) {
+							next[rewritePrefix(key, from, nextPath)] = entries?.map((entry) => {
+								const relPath = rewritePrefix(entry.rel_path, from, nextPath);
+								return entry.rel_path === from
+									? { ...entry, name: nextName, rel_path: relPath }
+									: { ...entry, rel_path: relPath };
+							});
+						}
+						if (fromParent && fromParent !== toParent) {
+							next[fromParent] = next[fromParent]?.filter(
+								(entry) => entry.rel_path !== nextPath,
+							);
+						}
+						if (toParent && fromParent !== toParent) {
+							if (movedEntry) {
+								next[toParent] = withInsertedEntryAtIndex(next[toParent] ?? [], {
+									...movedEntry,
+									name: nextName,
+									rel_path: nextPath,
+								}, options?.index);
+							}
+						}
+						return next;
+					});
+					updateRootEntries((prev) => {
+						const rewritten = prev.map((entry) => {
+							const relPath = rewritePrefix(entry.rel_path, from, nextPath);
+							return entry.rel_path === from
+								? { ...entry, name: nextName, rel_path: relPath }
+								: { ...entry, rel_path: relPath };
+						});
+						if (fromParent === toParent) return rewritten;
+						if (fromParent) return rewritten;
+						const withoutMoved = rewritten.filter((entry) => entry.rel_path !== nextPath);
+						if (toParent) return withoutMoved;
+						if (!movedEntry) return withoutMoved;
+						return withInsertedEntryAtIndex(withoutMoved, {
+							...movedEntry,
+							name: nextName,
+							rel_path: nextPath,
+						}, options?.index);
+					});
+					updateExpandedDirs((prev) => {
+						const next = new Set<string>();
+						for (const expanded of prev) {
+							next.add(rewritePrefix(expanded, from, nextPath));
+						}
+						return next;
+					});
+					loadedDirsRef.current = new Set(
+						[...loadedDirsRef.current].map((dir) => rewritePrefix(dir, from, nextPath)),
+					);
+				} else {
 					updateChildrenByDir((prev) => {
 						const next: Record<string, FsEntry[] | undefined> = {};
 						for (const [k, v] of Object.entries(prev)) {
@@ -736,24 +840,44 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 									: e,
 							);
 						}
+						if (fromParent && fromParent !== toParent) {
+							next[fromParent] = next[fromParent]?.filter(
+								(entry) => entry.rel_path !== nextPath,
+							);
+						}
+						if (toParent && fromParent !== toParent) {
+							if (movedEntry) {
+								next[toParent] = withInsertedEntryAtIndex(next[toParent] ?? [], {
+									...movedEntry,
+									name: nextName,
+									rel_path: nextPath,
+								}, options?.index);
+							}
+						}
 						return next;
 					});
-					updateRootEntries((prev) =>
-						prev.map((e) =>
-							e.rel_path === from
-								? { ...e, name: nextName, rel_path: nextPath }
-								: e,
-						),
-					);
-					if (activeFilePathRef.current === from) setActiveFilePath(nextPath);
-					if (activePreviewPathRef.current === from)
-						setActivePreviewPath(nextPath);
+					updateRootEntries((prev) => {
+						const rewritten = prev.map((entry) =>
+							entry.rel_path === from
+								? { ...entry, name: nextName, rel_path: nextPath }
+								: entry,
+						);
+						if (fromParent === toParent) return rewritten;
+						if (fromParent) return rewritten;
+						const withoutMoved = rewritten.filter((entry) => entry.rel_path !== nextPath);
+						if (toParent) return withoutMoved;
+						if (!movedEntry) return withoutMoved;
+						return withInsertedEntryAtIndex(withoutMoved, {
+							...movedEntry,
+							name: nextName,
+							rel_path: nextPath,
+						}, options?.index);
+					});
 				}
 				await Promise.all([
 					loadDir(fromParent, true),
 					loadDir(toParent, true),
-					refreshActiveFolderViewAfterPathChange(from),
-					refreshActiveFolderViewAfterPathChange(toParent),
+					refreshActiveFolderViewAfterMove(from, nextPath, fromParent, toParent),
 				]);
 				return nextPath;
 			} catch (e) {
@@ -766,9 +890,10 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			getEntriesForDir,
 			loadDir,
 			loadedDirsRef,
+			persistFileTreeOrder,
 			reorderEntriesForPath,
+			refreshActiveFolderViewAfterMove,
 			refreshActiveFolderViewAfterPathChange,
-			spacePath,
 			setActiveFilePath,
 			setActivePreviewPath,
 			updateChildrenByDir,

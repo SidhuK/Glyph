@@ -8,6 +8,17 @@ import { useRecentFiles } from "../../hooks/useRecentFiles";
 import { TASKS_TAB_ID } from "../../lib/tasks";
 import { isInAppPreviewable } from "../../utils/filePreview";
 
+function rewriteMovedTabPath(
+	path: string,
+	fromPath: string,
+	toPath: string,
+	recursive: boolean,
+): string {
+	if (path === fromPath) return toPath;
+	if (!recursive || !path.startsWith(`${fromPath}/`)) return path;
+	return `${toPath}${path.slice(fromPath.length)}`;
+}
+
 export function useTabManager(spacePath: string | null) {
 	const { canvasLoadingMessage } = useViewContext();
 	const { activeFilePath, setActiveFilePath } = useFileTreeContext();
@@ -148,6 +159,51 @@ export function useTabManager(spacePath: string | null) {
 		[],
 	);
 
+	const rewriteTabsForPathMove = useCallback(
+		(fromPath: string, toPath: string, recursive = false) => {
+			setOpenTabs((prev) => {
+				let changed = false;
+				const seen = new Set<string>();
+				const next: string[] = [];
+				for (const tabPath of prev) {
+					const rewritten =
+						tabPath === TASKS_TAB_ID
+							? tabPath
+							: rewriteMovedTabPath(tabPath, fromPath, toPath, recursive);
+					if (rewritten !== tabPath) changed = true;
+					if (seen.has(rewritten)) {
+						changed = true;
+						continue;
+					}
+					seen.add(rewritten);
+					next.push(rewritten);
+				}
+				if (!changed) return prev;
+				setActiveTabPath((current) => {
+					if (!current || current === TASKS_TAB_ID) return current;
+					return rewriteMovedTabPath(current, fromPath, toPath, recursive);
+				});
+				return next;
+			});
+			setDirtyByPath((prev) => {
+				let changed = false;
+				const next: Record<string, boolean> = {};
+				for (const [tabPath, dirty] of Object.entries(prev)) {
+					const rewritten = rewriteMovedTabPath(
+						tabPath,
+						fromPath,
+						toPath,
+						recursive,
+					);
+					if (rewritten !== tabPath) changed = true;
+					next[rewritten] = next[rewritten] || dirty;
+				}
+				return changed ? next : prev;
+			});
+		},
+		[],
+	);
+
 	const reorderTabs = useCallback((fromPath: string, toPath: string) => {
 		if (!fromPath || !toPath || fromPath === toPath) return;
 		setOpenTabs((prev) => {
@@ -216,6 +272,7 @@ export function useTabManager(spacePath: string | null) {
 		closeTab,
 		closeActiveTab,
 		closeTabsForPathRemoval,
+		rewriteTabsForPathMove,
 		reorderTabs,
 		openSpecialTab,
 		recentFiles,

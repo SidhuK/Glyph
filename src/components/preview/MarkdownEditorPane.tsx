@@ -6,6 +6,7 @@ import {
 	useEditorRegistration,
 	useSpace,
 } from "../../contexts";
+import { getPendingPathMoveTarget } from "../../lib/appEvents";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { splitYamlFrontmatter } from "../../lib/notePreview";
 import { invoke } from "../../lib/tauri";
@@ -167,7 +168,15 @@ export function MarkdownEditorPane({
 			setLastSavedMtimeMs(doc.mtime_ms);
 			hasUserEditsRef.current = false;
 		} catch (e) {
-			setError(extractErrorMessage(e));
+			const message = extractErrorMessage(e);
+			if (getPendingPathMoveTarget(relPath)) {
+				console.debug("Suppressed markdown load error during pending move", {
+					relPath,
+					message,
+				});
+				return;
+			}
+			setError(message);
 		}
 	}, [relPath]);
 
@@ -186,7 +195,18 @@ export function MarkdownEditorPane({
 			setLastSavedMtimeMs(doc.mtime_ms);
 			hasUserEditsRef.current = false;
 		} catch (e) {
-			setError(extractErrorMessage(e));
+			const message = extractErrorMessage(e);
+			if (getPendingPathMoveTarget(relPath)) {
+				console.debug(
+					"Suppressed markdown external reload error during pending move",
+					{
+						relPath,
+						message,
+					},
+				);
+				return;
+			}
+			setError(message);
 		}
 	}, [relPath]);
 

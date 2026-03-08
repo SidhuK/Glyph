@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { getPendingPathMoveTarget } from "../../lib/appEvents";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { type TextFilePreviewDoc, invoke } from "../../lib/tauri";
 import { getInAppPreviewKind } from "../../utils/filePreview";
@@ -55,6 +56,7 @@ export function FilePreviewPane({
 			}
 			throw new Error("Unsupported preview type");
 		} catch (e) {
+			if (getPendingPathMoveTarget(relPath)) return;
 			setError(extractErrorMessage(e));
 		} finally {
 			setLoading(false);

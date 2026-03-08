@@ -31,13 +31,21 @@ interface ControlKeyProps {
 	title?: string;
 }
 
-function toNumericSize(size: number | string | undefined, fallback: number): number {
+function toCssSize(
+	size: number | string | undefined,
+	fallback: number,
+): number | string {
 	if (typeof size === "number") {
 		return Number.isFinite(size) ? size : fallback;
 	}
 	if (typeof size === "string") {
-		const parsed = Number.parseFloat(size);
-		return Number.isFinite(parsed) ? parsed : fallback;
+		const trimmed = size.trim();
+		if (!trimmed) return fallback;
+		if (/^-?(?:\d+|\d*\.\d+)$/.test(trimmed)) {
+			const parsed = Number.parseFloat(trimmed);
+			return Number.isFinite(parsed) ? parsed : fallback;
+		}
+		return trimmed;
 	}
 	return fallback;
 }
@@ -54,7 +62,7 @@ export const ControlKey = ({
 	style,
 	title,
 }: ControlKeyProps) => {
-	const numericSize = toNumericSize(size, 16);
+	const cssSize = toCssSize(size, 16);
 
 	return (
 		<span
@@ -64,12 +72,17 @@ export const ControlKey = ({
 				display: "inline-flex",
 				alignItems: "center",
 				justifyContent: "center",
-				minWidth: numericSize * 1.8,
-				height: numericSize,
+				minWidth:
+					typeof cssSize === "number" ? cssSize * 1.8 : `calc(${cssSize} * 1.8)`,
+				height: cssSize,
 				padding: "0 0.32em",
 				border: "1.5px solid currentColor",
-				borderRadius: Math.max(4, numericSize * 0.3),
-				fontSize: numericSize * 0.52,
+				borderRadius:
+					typeof cssSize === "number"
+						? Math.max(4, cssSize * 0.3)
+						: `max(4px, calc(${cssSize} * 0.3))`,
+				fontSize:
+					typeof cssSize === "number" ? cssSize * 0.52 : `calc(${cssSize} * 0.52)`,
 				fontWeight: 700,
 				lineHeight: 1,
 				letterSpacing: "0.01em",

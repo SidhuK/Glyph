@@ -1,7 +1,9 @@
 import { Suspense, lazy, memo, useEffect, useMemo } from "react";
 import { useSpace } from "../../contexts";
 import {
+	PATH_MOVED_EVENT,
 	PATH_REMOVED_EVENT,
+	type PathMovedDetail,
 	type PathRemovedDetail,
 } from "../../lib/appEvents";
 import { APP_TAGLINE } from "../../lib/copy";
@@ -57,6 +59,7 @@ export const MainContent = memo(function MainContent({
 		closeTab,
 		closeActiveTab,
 		closeTabsForPathRemoval,
+		rewriteTabsForPathMove,
 		reorderTabs,
 		openSpecialTab,
 		canvasLoadingMessage,
@@ -76,16 +79,27 @@ export const MainContent = memo(function MainContent({
 			if (!detail?.path) return;
 			closeTabsForPathRemoval(detail.path, detail.recursive);
 		};
+		const handlePathMoved = (event: Event) => {
+			const detail = (event as CustomEvent<PathMovedDetail>).detail;
+			if (!detail?.fromPath || !detail?.toPath) return;
+			rewriteTabsForPathMove(
+				detail.fromPath,
+				detail.toPath,
+				detail.recursive,
+			);
+		};
 		window.addEventListener("glyph:close-active-tab", handleCloseActiveTab);
+		window.addEventListener(PATH_MOVED_EVENT, handlePathMoved);
 		window.addEventListener(PATH_REMOVED_EVENT, handlePathRemoved);
 		return () => {
 			window.removeEventListener(
 				"glyph:close-active-tab",
 				handleCloseActiveTab,
 			);
+			window.removeEventListener(PATH_MOVED_EVENT, handlePathMoved);
 			window.removeEventListener(PATH_REMOVED_EVENT, handlePathRemoved);
 		};
-	}, [closeActiveTab, closeTabsForPathRemoval]);
+	}, [closeActiveTab, closeTabsForPathRemoval, rewriteTabsForPathMove]);
 
 	const viewerPath = activeTabPath;
 	const commandShortcutParts = useMemo(

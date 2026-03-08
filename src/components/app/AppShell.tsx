@@ -17,7 +17,10 @@ import { useDailyNote } from "../../hooks/useDailyNote";
 import { useFileTree } from "../../hooks/useFileTree";
 import { useMenuListeners } from "../../hooks/useMenuListeners";
 import { useResizablePanel } from "../../hooks/useResizablePanel";
-import { dispatchPathRemoved } from "../../lib/appEvents";
+import {
+	dispatchPathRemoved,
+	hasPendingPathMoveFor,
+} from "../../lib/appEvents";
 import { getLicenseStatus } from "../../lib/license";
 import type { Shortcut } from "../../lib/shortcuts";
 import { getShortcutTooltip } from "../../lib/shortcuts";
@@ -73,6 +76,7 @@ export function AppShell() {
 		activeMarkdownTabPath,
 		dailyNotesFolder,
 		showWindowsMenuBar,
+		settingsHydrated,
 		sidebarWidth,
 		setSidebarWidth,
 	} = useUILayoutContext();
@@ -98,14 +102,14 @@ export function AppShell() {
 	const autoUpdater = useAutoUpdater();
 	const windowsTitleBarStyle = useMemo<CSSProperties | undefined>(
 		() =>
-			windowsCustomChrome
+			windowsCustomChrome && settingsHydrated
 				? ({
 					["--windows-titlebar-height" as const]: showWindowsMenuBar
 						? "78px"
 						: "44px",
 				} as CSSProperties)
 				: undefined,
-		[showWindowsMenuBar, windowsCustomChrome],
+		[settingsHydrated, showWindowsMenuBar, windowsCustomChrome],
 	);
 
 	const sidebarResize = useResizablePanel({
@@ -360,7 +364,9 @@ export function AppShell() {
 			const changedPath = normalizeRelPath(payload.rel_path);
 			if (!changedPath) return;
 			if (payload.removed) {
-				dispatchPathRemoved({ path: changedPath, recursive: true });
+				if (!hasPendingPathMoveFor(changedPath)) {
+					dispatchPathRemoved({ path: changedPath, recursive: true });
+				}
 			}
 			fsRefreshQueueRef.current.add(changedPath);
 			if (fsRefreshTimerRef.current !== null) return;
@@ -463,7 +469,7 @@ export function AppShell() {
 						const n = await fileTree.onMovePath(movePickerSourcePath, "");
 						if (n) {
 							setMovePickerSourcePath(null);
-							await fileTree.openFile(n);
+							setPaletteOpen(false);
 						}
 					},
 				},
@@ -475,7 +481,7 @@ export function AppShell() {
 						const n = await fileTree.onMovePath(movePickerSourcePath, dir);
 						if (n) {
 							setMovePickerSourcePath(null);
-							await fileTree.openFile(n);
+							setPaletteOpen(false);
 						}
 					},
 				})),

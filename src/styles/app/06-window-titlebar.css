@@ -241,7 +241,7 @@
 .windowTitleBarMenuBar {
     display: flex;
     align-items: center;
-    gap: 2px;
+    /* gap: 2px; */
     min-height: 34px;
     padding: 0 var(--space-2) 6px var(--space-2);
     border-top: 1px solid color-mix(in srgb, var(--border-light) 30%, transparent);
@@ -293,12 +293,18 @@
     box-shadow: 0 14px 36px color-mix(in srgb, black 18%, transparent);
 }
 
+.windowTitleBarDropdownInstant {
+    animation: none !important;
+    transition: none !important;
+}
+
 .windowTitleBarDropdownItem {
     display: flex;
     align-items: center;
     gap: 10px;
     min-height: 34px;
     border-radius: 10px;
+    padding: 0 7px;
 }
 
 .windowTitleBarDropdownItem>span:first-of-type {

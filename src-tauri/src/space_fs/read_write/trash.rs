@@ -1,6 +1,8 @@
 #[cfg(target_os = "linux")]
 use crate::io_atomic;
 
+#[cfg(not(target_os = "windows"))]
+use std::ffi::OsString;
 use std::path::{Path, PathBuf};
 
 /// Unix errno for EXDEV (cross-device link).
@@ -95,15 +97,16 @@ fn unique_temp_trash_dest(dest: &Path) -> Result<PathBuf, String> {
         .ok_or_else(|| "invalid Trash destination: missing parent directory".to_string())?;
     let file_name = dest
         .file_name()
-        .and_then(|value| value.to_str())
         .ok_or_else(|| "invalid Trash destination: missing file name".to_string())?;
 
     for index in 0..10_000 {
-        let candidate_name = if index == 0 {
-            format!(".{file_name}.glyph-trash-tmp")
-        } else {
-            format!(".{file_name}.glyph-trash-tmp-{index}")
-        };
+        let mut candidate_name = OsString::from(".");
+        candidate_name.push(file_name);
+        candidate_name.push(".glyph-trash-tmp");
+        if index != 0 {
+            candidate_name.push("-");
+            candidate_name.push(index.to_string());
+        }
         let candidate = parent.join(candidate_name);
         if !candidate.exists() {
             return Ok(candidate);
@@ -115,10 +118,6 @@ fn unique_temp_trash_dest(dest: &Path) -> Result<PathBuf, String> {
 
 #[cfg(target_os = "linux")]
 fn absolute_original_path(src: &Path) -> PathBuf {
-    if let Ok(path) = std::fs::canonicalize(src) {
-        return path;
-    }
-
     if src.is_absolute() {
         return src.to_path_buf();
     }
@@ -167,9 +166,10 @@ fn trash_info_deletion_date() -> String {
 fn write_trash_info_file(info_dir: &Path, trashed_path: &Path, original_path: &Path) -> Result<(), String> {
     let file_name = trashed_path
         .file_name()
-        .and_then(|value| value.to_str())
         .ok_or_else(|| "invalid Trash destination: missing file name".to_string())?;
-    let info_path = info_dir.join(format!("{file_name}.trashinfo"));
+    let mut info_name = OsString::from(file_name);
+    info_name.push(".trashinfo");
+    let info_path = info_dir.join(info_name);
     let contents = format!(
         "[Trash Info]\nPath={}\nDeletionDate={}\n",
         encode_trash_info_path(original_path),
@@ -182,6 +182,17 @@ fn write_trash_info_file(info_dir: &Path, trashed_path: &Path, original_path: &P
 #[cfg(target_os = "windows")]
 pub(super) fn move_path_to_trash(src: &Path) -> Result<(), String> {
     use std::os::windows::ffi::OsStrExt;
+
+    fn shell_compatible_path(path: &Path) -> std::path::PathBuf {
+        let raw = path.to_string_lossy();
+        if let Some(stripped) = raw.strip_prefix(r"\\?\UNC\") {
+            return std::path::PathBuf::from(format!(r"\\{stripped}"));
+        }
+        if let Some(stripped) = raw.strip_prefix(r"\\?\") {
+            return std::path::PathBuf::from(stripped);
+        }
+        path.to_path_buf()
+    }
 
     /// Win32 SHFILEOPSTRUCTW – describes a shell file operation.
     /// See: https://learn.microsoft.com/en-us/windows/win32/api/shellapi/ns-shellapi-shfileopstructw
@@ -209,8 +220,10 @@ pub(super) fn move_path_to_trash(src: &Path) -> Result<(), String> {
     const FOF_NOERRORUI: u16 = 0x0400;
     const FOF_SILENT: u16 = 0x0004;
 
+    let shell_path = shell_compatible_path(src);
+
     // SHFileOperationW requires a double-null-terminated wide string.
-    let wide: Vec<u16> = src
+    let wide: Vec<u16> = shell_path
         .as_os_str()
         .encode_wide()
         .chain(std::iter::once(0))

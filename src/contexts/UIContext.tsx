@@ -38,6 +38,7 @@ export interface UILayoutContextValue {
 	setActiveMarkdownTabPath: (path: string | null) => void;
 	dailyNotesFolder: string | null;
 	showWindowsMenuBar: boolean;
+	settingsHydrated: boolean;
 }
 
 export interface AISidebarContextValue {
@@ -78,6 +79,7 @@ type UIState = {
 	activeMarkdownTabPath: string | null;
 	dailyNotesFolder: string | null;
 	showWindowsMenuBar: boolean;
+	settingsHydrated: boolean;
 	aiEnabled: boolean;
 	aiPanelOpen: boolean;
 	aiPanelWidth: number;
@@ -94,6 +96,7 @@ type UIAction =
 	| { type: "setActiveMarkdownTabPath"; value: string | null }
 	| { type: "setDailyNotesFolder"; value: string | null }
 	| { type: "setShowWindowsMenuBar"; value: boolean }
+	| { type: "setSettingsHydrated"; value: boolean }
 	| { type: "setAiEnabled"; value: boolean }
 	| { type: "setAiPanelOpen"; value: SetStateAction<boolean> }
 	| { type: "setAiPanelWidth"; value: number }
@@ -118,6 +121,7 @@ const initialUIState: UIState = {
 	activeMarkdownTabPath: null,
 	dailyNotesFolder: null,
 	showWindowsMenuBar: false,
+	settingsHydrated: false,
 	aiEnabled: true,
 	aiPanelOpen: false,
 	aiPanelWidth: 380,
@@ -150,6 +154,8 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 			return { ...state, dailyNotesFolder: action.value };
 		case "setShowWindowsMenuBar":
 			return { ...state, showWindowsMenuBar: action.value };
+		case "setSettingsHydrated":
+			return { ...state, settingsHydrated: action.value };
 		case "setAiEnabled":
 			return {
 				...state,
@@ -177,6 +183,7 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 			return {
 				...state,
 				showWindowsMenuBar: action.showWindowsMenuBar,
+				settingsHydrated: true,
 				aiEnabled: action.aiEnabled,
 				aiPanelOpen: action.aiEnabled ? state.aiPanelOpen : false,
 				aiPanelWidth: action.aiPanelWidth ?? state.aiPanelWidth,
@@ -201,6 +208,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		activeMarkdownTabPath,
 		dailyNotesFolder,
 		showWindowsMenuBar,
+		settingsHydrated,
 		aiEnabled,
 		aiPanelOpen,
 		aiPanelWidth,
@@ -257,6 +265,10 @@ export function UIProvider({ children }: { children: ReactNode }) {
 				});
 			} catch {
 				// best-effort settings hydration
+			} finally {
+				if (!cancelled) {
+					dispatch({ type: "setSettingsHydrated", value: true });
+				}
 			}
 		};
 
@@ -390,6 +402,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			setActiveMarkdownTabPath,
 			dailyNotesFolder,
 			showWindowsMenuBar,
+			settingsHydrated,
 		}),
 		[
 			sidebarCollapsed,
@@ -408,6 +421,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			setActiveMarkdownTabPath,
 			dailyNotesFolder,
 			showWindowsMenuBar,
+			settingsHydrated,
 		],
 	);
 

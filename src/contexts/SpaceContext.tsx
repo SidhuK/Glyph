@@ -9,6 +9,7 @@ import {
 	useState,
 } from "react";
 import { clearInlineImageHydrationCache } from "../components/editor/hooks/useHydrateInlineImages";
+import { hasPendingPathMove } from "../lib/appEvents";
 import {
 	clearCurrentSpacePath,
 	loadSettings,
@@ -43,9 +44,20 @@ const extractError = (err: unknown): string =>
 			? err.message
 			: String(err);
 
+function isTransientMovePathError(message: string): boolean {
+	const normalized = message.toLowerCase();
+	return (
+		hasPendingPathMove() &&
+		(normalized.includes("cannot find the file specified") ||
+			normalized.includes("cannot find the path specified") ||
+			normalized.includes("os error 2") ||
+			normalized.includes("os error 3"))
+	);
+}
+
 export function SpaceProvider({ children }: { children: ReactNode }) {
 	const [info, setInfo] = useState<AppInfo | null>(null);
-	const [error, setError] = useState("");
+	const [error, setErrorState] = useState("");
 	const [spacePath, setSpacePath] = useState<string | null>(null);
 	const [lastSpacePath, setLastSpacePath] = useState<string | null>(null);
 	const [spaceSchemaVersion, setSpaceSchemaVersion] = useState<number | null>(
@@ -55,6 +67,18 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 	const [isIndexing, setIsIndexing] = useState(false);
 	const [settingsLoaded, setSettingsLoaded] = useState(false);
 	const isOpeningSpaceRef = useRef(false);
+
+	const setError = useCallback((nextError: string) => {
+		if (!nextError) {
+			setErrorState("");
+			return;
+		}
+		if (isTransientMovePathError(nextError)) {
+			setErrorState("");
+			return;
+		}
+		setErrorState(nextError);
+	}, []);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -69,7 +93,7 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 		return () => {
 			cancelled = true;
 		};
-	}, []);
+	}, [setError]);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -89,7 +113,9 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 							setSpacePath(spaceInfo.root);
 							setSpaceSchemaVersion(spaceInfo.schema_version);
 						}
-					} catch {}
+					} catch (err) {
+						if (!cancelled) setError(extractError(err));
+					}
 				}
 			} catch (err) {
 				if (!cancelled) {
@@ -102,7 +128,7 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 		return () => {
 			cancelled = true;
 		};
-	}, []);
+	}, [setError]);
 
 	const startIndexRebuild = useCallback(async (): Promise<void> => {
 		setIsIndexing(true);
