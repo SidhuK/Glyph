@@ -47,6 +47,21 @@ export type UiFontFamily = string;
 export type UiFontSize = number;
 const AI_ASSISTANT_MODES = new Set<AiAssistantMode>(["chat", "create"]);
 export type TaskSourceMode = "space" | "folders";
+export interface OnboardingSettings {
+	launcherSeen: boolean;
+	starterDismissed: boolean;
+	createdFirstNote: boolean;
+	usedCommandPalette: boolean;
+	openedDailyNote: boolean;
+}
+
+export const DEFAULT_ONBOARDING_SETTINGS: OnboardingSettings = {
+	launcherSeen: false,
+	starterDismissed: false,
+	createdFirstNote: false,
+	usedCommandPalette: false,
+	openedDailyNote: false,
+};
 
 export interface TaskSourceSetting {
 	mode: TaskSourceMode;
@@ -116,6 +131,7 @@ async function emitSettingsUpdated(payload: {
 	tasks?: {
 		source?: TaskSourceSetting;
 	};
+	onboarding?: Partial<OnboardingSettings>;
 }): Promise<void> {
 	try {
 		await emit("settings:updated", payload);
@@ -134,6 +150,7 @@ interface AppSettings {
 	currentSpacePath: string | null;
 	recentSpaces: string[];
 	recentFiles: RecentFile[];
+	onboarding: OnboardingSettings;
 	ui: {
 		aiEnabled: boolean;
 		aiSidebarWidth: number | null;
@@ -166,7 +183,20 @@ const KEYS = {
 	fontSize: "ui.fontSize",
 	dailyNotesFolder: "dailyNotes.folder",
 	taskSource: "tasks.source",
+	onboardingLauncherSeen: "onboarding.launcherSeen",
+	onboardingStarterDismissed: "onboarding.starterDismissed",
+	onboardingCreatedFirstNote: "onboarding.createdFirstNote",
+	onboardingUsedCommandPalette: "onboarding.usedCommandPalette",
+	onboardingOpenedDailyNote: "onboarding.openedDailyNote",
 } as const;
+
+const ONBOARDING_KEYS = {
+	launcherSeen: KEYS.onboardingLauncherSeen,
+	starterDismissed: KEYS.onboardingStarterDismissed,
+	createdFirstNote: KEYS.onboardingCreatedFirstNote,
+	usedCommandPalette: KEYS.onboardingUsedCommandPalette,
+	openedDailyNote: KEYS.onboardingOpenedDailyNote,
+} as const satisfies Record<keyof OnboardingSettings, string>;
 
 function normalizeTaskSourceSetting(value: unknown): TaskSourceSetting {
 	const rawMode =
@@ -237,6 +267,11 @@ export async function loadSettings(): Promise<AppSettings> {
 		currentSpacePathRaw,
 		recentSpacesRaw,
 		rawRecentFiles,
+		rawOnboardingLauncherSeen,
+		rawOnboardingStarterDismissed,
+		rawOnboardingCreatedFirstNote,
+		rawOnboardingUsedCommandPalette,
+		rawOnboardingOpenedDailyNote,
 		rawAiEnabled,
 		aiSidebarWidthRaw,
 		rawAiAssistantMode,
@@ -251,6 +286,11 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<string | null>(KEYS.currentSpacePath),
 		store.get<string[] | null>(KEYS.recentSpaces),
 		store.get<unknown>(KEYS.recentFiles),
+		store.get<boolean | null>(KEYS.onboardingLauncherSeen),
+		store.get<boolean | null>(KEYS.onboardingStarterDismissed),
+		store.get<boolean | null>(KEYS.onboardingCreatedFirstNote),
+		store.get<boolean | null>(KEYS.onboardingUsedCommandPalette),
+		store.get<boolean | null>(KEYS.onboardingOpenedDailyNote),
 		store.get<boolean | null>(KEYS.aiEnabled),
 		store.get<number | null>(KEYS.aiSidebarWidth),
 		store.get<unknown>(KEYS.aiAssistantMode),
@@ -265,6 +305,13 @@ export async function loadSettings(): Promise<AppSettings> {
 	const currentSpacePath = currentSpacePathRaw ?? null;
 	const recentSpaces = recentSpacesRaw ?? [];
 	const recentFiles = isRecentFileArray(rawRecentFiles) ? rawRecentFiles : [];
+	const onboarding: OnboardingSettings = {
+		launcherSeen: rawOnboardingLauncherSeen ?? false,
+		starterDismissed: rawOnboardingStarterDismissed ?? false,
+		createdFirstNote: rawOnboardingCreatedFirstNote ?? false,
+		usedCommandPalette: rawOnboardingUsedCommandPalette ?? false,
+		openedDailyNote: rawOnboardingOpenedDailyNote ?? false,
+	};
 	const aiEnabled =
 		typeof rawAiEnabled === "boolean" ? rawAiEnabled : DEFAULT_AI_ENABLED;
 	const aiSidebarWidth = aiSidebarWidthRaw ?? null;
@@ -282,6 +329,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		currentSpacePath,
 		recentSpaces: Array.isArray(recentSpaces) ? recentSpaces : [],
 		recentFiles,
+		onboarding,
 		ui: {
 			aiEnabled,
 			aiSidebarWidth:
@@ -323,6 +371,24 @@ export async function clearRecentSpaces(): Promise<void> {
 	const store = await getStore();
 	await store.set(KEYS.recentSpaces, []);
 	await store.save();
+}
+
+export async function updateOnboardingSettings(
+	patch: Partial<OnboardingSettings>,
+): Promise<void> {
+	const entries = Object.entries(patch).filter(
+		(entry): entry is [keyof OnboardingSettings, boolean] =>
+			typeof entry[1] === "boolean",
+	);
+	if (!entries.length) return;
+	const store = await getStore();
+	for (const [key, value] of entries) {
+		await store.set(ONBOARDING_KEYS[key], value);
+	}
+	await store.save();
+	void emitSettingsUpdated({
+		onboarding: Object.fromEntries(entries) as Partial<OnboardingSettings>,
+	});
 }
 
 export async function setAiSidebarWidth(width: number): Promise<void> {

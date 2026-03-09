@@ -27,40 +27,34 @@
 		width: 100%;
 	}
 
-	.welcomeContentGrid {
+	.welcomeLauncher {
 		grid-template-columns: 1fr;
-	}
-
-	.welcomeActions {
-		display: grid;
-		grid-template-columns: 1fr;
-	}
-
-	.welcomeOnboardingList {
-		display: flex;
-		flex-direction: column;
-		padding-top: 0;
 	}
 
 	.welcomeRecentPath {
 		word-break: break-all;
 	}
 
-	.welcomeTipsGrid {
-		grid-template-columns: 1fr;
+	.welcomeActionList button,
+	.welcomeRecentItem {
+		width: 100%;
 	}
 
-	.welcomeReadyActions {
+	.starterPane {
+		padding: var(--space-3);
+	}
+
+	.starterAction {
+		grid-template-columns: auto minmax(0, 1fr);
+	}
+
+	.starterShortcut {
+		grid-column: 2;
+	}
+
+	.starterPaneFooter {
+		align-items: flex-start;
 		flex-direction: column;
-		width: 100%;
-	}
-
-	.welcomeReadyActions button {
-		width: 100%;
-	}
-
-	.welcomeHeroTitle {
-		font-size: 2rem;
 	}
 
 	.mainEmptyActions {

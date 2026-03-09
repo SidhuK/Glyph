@@ -71,6 +71,13 @@ type TauriEventMap = {
 		tasks?: {
 			source?: { mode?: "space" | "folders"; folders?: string[] };
 		};
+		onboarding?: {
+			launcherSeen?: boolean;
+			starterDismissed?: boolean;
+			createdFirstNote?: boolean;
+			usedCommandPalette?: boolean;
+			openedDailyNote?: boolean;
+		};
 	};
 };
 
