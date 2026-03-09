@@ -7,6 +7,7 @@ import {
 	createStarterDatabaseMarkdown,
 } from "../lib/database/config";
 import { extractErrorMessage } from "../lib/errorUtils";
+import { updateOnboardingSettings } from "../lib/settings";
 import type { FsEntry } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
 import { isMarkdownPath, parentDir } from "../utils/path";
@@ -128,7 +129,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 
 	const onNewFileInDir = useCallback(
 		async (dirPath: string) => {
-			if (!spacePath) return;
+			if (!spacePath) return null;
 			setError("");
 			try {
 				const { save } = await import("@tauri-apps/plugin-dialog");
@@ -143,7 +144,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 				const absPath = Array.isArray(selection)
 					? (selection[0] ?? null)
 					: selection;
-				if (!absPath) return;
+				if (!absPath) return null;
 				const rel = await invoke("space_relativize_path", {
 					abs_path: absPath,
 				});
@@ -152,7 +153,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 				const fileTitle = fileTitleFromRelPath(markdownRel);
 				if (dirPath && !markdownRel.startsWith(`${dirPath}/`)) {
 					setError(`Choose a file path inside "${dirPath}"`);
-					return;
+					return null;
 				}
 				await invoke("space_write_text", {
 					path: markdownRel,
@@ -175,8 +176,11 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 				const createdInDir = parentDir(markdownRel);
 				await refreshAfterCreate(createdInDir);
 				await refreshActiveFolderViewAfterCreate(createdInDir);
+				void updateOnboardingSettings({ createdFirstNote: true });
+				return markdownRel;
 			} catch (e) {
 				setError(extractErrorMessage(e));
+				return null;
 			}
 		},
 		[
@@ -190,7 +194,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 	);
 
 	const onNewFile = useCallback(async () => {
-		await onNewFileInDir("");
+		return onNewFileInDir("");
 	}, [onNewFileInDir]);
 
 	const onNewDatabaseInDir = useCallback(

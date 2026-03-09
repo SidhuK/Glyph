@@ -13,6 +13,7 @@ import {
 	clearCurrentSpacePath,
 	loadSettings,
 	setCurrentSpacePath,
+	updateOnboardingSettings,
 } from "../lib/settings";
 import { type AppInfo, TauriInvokeError, invoke } from "../lib/tauri";
 
@@ -139,6 +140,7 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 						20,
 					),
 				);
+				void updateOnboardingSettings({ launcherSeen: true });
 				setLastSpacePath(spaceInfo.root);
 				setSpacePath(spaceInfo.root);
 				setSpaceSchemaVersion(spaceInfo.schema_version);

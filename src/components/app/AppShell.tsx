@@ -19,6 +19,7 @@ import { useMenuListeners } from "../../hooks/useMenuListeners";
 import { useResizablePanel } from "../../hooks/useResizablePanel";
 import { dispatchPathRemoved } from "../../lib/appEvents";
 import { getLicenseStatus } from "../../lib/license";
+import { updateOnboardingSettings } from "../../lib/settings";
 import type { Shortcut } from "../../lib/shortcuts";
 import { getShortcutTooltip } from "../../lib/shortcuts";
 import { invoke } from "../../lib/tauri";
@@ -85,6 +86,7 @@ export function AppShell() {
 	>("commands");
 	const [paletteInitialQuery, setPaletteInitialQuery] = useState("");
 	const [openTasksRequest, setOpenTasksRequest] = useState(0);
+	const [showGettingStartedRequest, setShowGettingStartedRequest] = useState(0);
 	const [movePickerSourcePath, setMovePickerSourcePath] = useState<
 		string | null
 	>(null);
@@ -423,15 +425,28 @@ export function AppShell() {
 		setPaletteInitialTab("commands");
 		setPaletteInitialQuery("");
 		setPaletteOpen(true);
+		void updateOnboardingSettings({ usedCommandPalette: true });
 	}, [setPaletteOpen]);
 	const openSearchPalette = useCallback(() => {
 		setPaletteInitialTab("search");
 		setPaletteInitialQuery("");
 		setPaletteOpen(true);
+		void updateOnboardingSettings({ usedCommandPalette: true });
 	}, [setPaletteOpen]);
 	const openTasksTab = useCallback(() => {
 		setOpenTasksRequest((prev) => prev + 1);
 	}, []);
+	const openGettingStarted = useCallback(() => {
+		setShowGettingStartedRequest((prev) => prev + 1);
+	}, []);
+
+	const handleCreateNoteFromStarter = useCallback(async () => {
+		if (!spacePath) return;
+		const createdPath = await fileTree.onNewFile();
+		if (createdPath) {
+			await fileTree.openFile(createdPath);
+		}
+	}, [fileTree, spacePath]);
 
 	const commands = useMemo<Command[]>(() => {
 		if (movePickerSourcePath) {
@@ -610,6 +625,13 @@ export function AppShell() {
 				action: openTasksTab,
 			},
 			{
+				id: "show-getting-started",
+				label: "Show getting started",
+				category: "Help",
+				enabled: Boolean(spacePath),
+				action: openGettingStarted,
+			},
+			{
 				id: "move-active-file",
 				label: "Move to…",
 				category: "File Operations",
@@ -643,6 +665,7 @@ export function AppShell() {
 		spacePath,
 		openSearchPalette,
 		openTasksTab,
+		openGettingStarted,
 		moveTargetDirs,
 		movePickerSourcePath,
 		getActiveFolderDir,
@@ -744,7 +767,11 @@ export function AppShell() {
 			<MainContent
 				fileTree={fileTree}
 				onOpenCommandPalette={openCommandPalette}
+				onCreateNote={handleCreateNoteFromStarter}
+				onOpenDailyNote={handleOpenDailyNote}
+				onOpenTasks={openTasksTab}
 				openTasksRequest={openTasksRequest}
+				showGettingStartedRequest={showGettingStartedRequest}
 			/>
 			{spacePath && aiEnabled && aiPanelOpen && (
 				<div
