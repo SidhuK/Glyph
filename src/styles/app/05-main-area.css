@@ -187,7 +187,7 @@
 	font-size: var(--text-xs);
 	color: var(--text-secondary);
 	line-height: var(--leading-relaxed, 1.6);
-	word-break: break-word;
+	overflow-wrap: break-word;
 }
 
 .welcomeBulletList {
@@ -240,7 +240,7 @@
 .welcomeRecentPath {
 	font-size: var(--text-xs);
 	color: var(--text-tertiary);
-	word-break: break-word;
+	overflow-wrap: break-word;
 }
 
 .welcomeEmptyText {

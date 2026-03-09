@@ -1,4 +1,4 @@
-import { Calendar, Command, FileText, Search, X } from "../Icons";
+import { Calendar, Command, FileText, X } from "../Icons";
 
 interface GettingStartedPaneProps {
 	commandShortcutParts: string[];
@@ -55,38 +55,31 @@ export function GettingStartedPane({
 			</div>
 
 			<div className="starterActionList">
-				<button type="button" className="starterAction" onClick={onCreateNote}>
-					<div className="starterActionIcon">
-						<FileText size={16} strokeWidth={1.7} />
-					</div>
-					<div className="starterActionText">
-						<div className="starterActionTitle">{starterActions[0].title}</div>
-						<div className="starterActionBody">
-							{starterActions[0].description}
+				{starterActions.map((action) => (
+					<button
+						key={action.key}
+						type="button"
+						className="starterAction"
+						onClick={
+							action.key === "note" ? onCreateNote : onOpenCommandPalette
+						}
+					>
+						<div className="starterActionIcon">
+							<action.icon size={16} strokeWidth={1.7} />
 						</div>
-					</div>
-				</button>
-
-				<button
-					type="button"
-					className="starterAction"
-					onClick={onOpenCommandPalette}
-				>
-					<div className="starterActionIcon">
-						<Search size={16} strokeWidth={1.7} />
-					</div>
-					<div className="starterActionText">
-						<div className="starterActionTitle">{starterActions[1].title}</div>
-						<div className="starterActionBody">
-							{starterActions[1].description}
+						<div className="starterActionText">
+							<div className="starterActionTitle">{action.title}</div>
+							<div className="starterActionBody">{action.description}</div>
 						</div>
-					</div>
-					<div className="starterShortcut">
-						{commandShortcutParts.map((part) => (
-							<kbd key={part}>{part}</kbd>
-						))}
-					</div>
-				</button>
+						{action.key === "command" && (
+							<div className="starterShortcut">
+								{commandShortcutParts.map((part) => (
+									<kbd key={part}>{part}</kbd>
+								))}
+							</div>
+						)}
+					</button>
+				))}
 
 				{showDailyNoteAction && (
 					<button

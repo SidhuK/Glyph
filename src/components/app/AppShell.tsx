@@ -431,7 +431,6 @@ export function AppShell() {
 		setPaletteInitialTab("search");
 		setPaletteInitialQuery("");
 		setPaletteOpen(true);
-		void updateOnboardingSettings({ usedCommandPalette: true });
 	}, [setPaletteOpen]);
 	const openTasksTab = useCallback(() => {
 		setOpenTasksRequest((prev) => prev + 1);
