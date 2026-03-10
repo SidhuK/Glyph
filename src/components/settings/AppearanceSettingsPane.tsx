@@ -26,6 +26,8 @@ import {
 	GLYPH_DEFAULT_DARK_THEME_ID,
 	GLYPH_DEFAULT_LIGHT_THEME_ID,
 	LIGHT_THEME_OPTIONS,
+	asUiDarkThemeId,
+	asUiLightThemeId,
 	isGlyphDefaultDarkTheme,
 	isGlyphDefaultLightTheme,
 } from "../../lib/uiThemes";
@@ -130,31 +132,41 @@ export function AppearanceSettingsPane() {
 	);
 
 	const onLightThemeChange = useCallback(
-		async (next: UiLightThemeId) => {
+		async (next: UiLightThemeId | string) => {
 			setError("");
-			setLightThemeIdState(next);
-			applyUiThemeSelection(next, darkThemeId);
+			const previousLight = lightThemeId;
+			const previousDark = darkThemeId;
+			const normalizedNext = asUiLightThemeId(next);
+			setLightThemeIdState(normalizedNext);
+			applyUiThemeSelection(normalizedNext, previousDark);
 			try {
-				await setUiLightThemeId(next);
+				await setUiLightThemeId(normalizedNext);
 			} catch (e) {
+				setLightThemeIdState(previousLight);
+				applyUiThemeSelection(previousLight, previousDark);
 				setError(e instanceof Error ? e.message : "Failed to save settings");
 			}
 		},
-		[darkThemeId],
+		[darkThemeId, lightThemeId],
 	);
 
 	const onDarkThemeChange = useCallback(
-		async (next: UiDarkThemeId) => {
+		async (next: UiDarkThemeId | string) => {
 			setError("");
-			setDarkThemeIdState(next);
-			applyUiThemeSelection(lightThemeId, next);
+			const previousLight = lightThemeId;
+			const previousDark = darkThemeId;
+			const normalizedNext = asUiDarkThemeId(next);
+			setDarkThemeIdState(normalizedNext);
+			applyUiThemeSelection(previousLight, normalizedNext);
 			try {
-				await setUiDarkThemeId(next);
+				await setUiDarkThemeId(normalizedNext);
 			} catch (e) {
+				setDarkThemeIdState(previousDark);
+				applyUiThemeSelection(previousLight, previousDark);
 				setError(e instanceof Error ? e.message : "Failed to save settings");
 			}
 		},
-		[lightThemeId],
+		[darkThemeId, lightThemeId],
 	);
 
 	const onFontFamilyChange = useCallback(
@@ -252,9 +264,7 @@ export function AppearanceSettingsPane() {
 						<select
 							id="settingsLightTheme"
 							value={lightThemeId}
-							onChange={(event) =>
-								void onLightThemeChange(event.target.value as UiLightThemeId)
-							}
+							onChange={(event) => void onLightThemeChange(event.target.value)}
 						>
 							{LIGHT_THEME_OPTIONS.map((option) => (
 								<option key={option.id} value={option.id}>
@@ -271,9 +281,7 @@ export function AppearanceSettingsPane() {
 						<select
 							id="settingsDarkTheme"
 							value={darkThemeId}
-							onChange={(event) =>
-								void onDarkThemeChange(event.target.value as UiDarkThemeId)
-							}
+							onChange={(event) => void onDarkThemeChange(event.target.value)}
 						>
 							{DARK_THEME_OPTIONS.map((option) => (
 								<option key={option.id} value={option.id}>

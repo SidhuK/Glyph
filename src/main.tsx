@@ -15,12 +15,7 @@ import {
 import type { UiAccent, UiDarkThemeId, UiLightThemeId } from "./lib/settings";
 import { loadSettings, reloadFromDisk } from "./lib/settings";
 import { useTauriEvent } from "./lib/tauriEvents";
-import {
-	DEFAULT_UI_DARK_THEME_ID,
-	DEFAULT_UI_LIGHT_THEME_ID,
-	isUiDarkThemeId,
-	isUiLightThemeId,
-} from "./lib/uiThemes";
+import { isUiDarkThemeId, isUiLightThemeId } from "./lib/uiThemes";
 
 function isSettingsRoute(hash: string): boolean {
 	return hash.startsWith("#/settings");
@@ -46,11 +41,11 @@ function Root() {
 function ThemeAndTypographyBridge() {
 	const { setTheme } = useTheme();
 	const [accent, setAccent] = React.useState<UiAccent | null>(null);
-	const [lightThemeId, setLightThemeId] = React.useState<UiLightThemeId>(
-		DEFAULT_UI_LIGHT_THEME_ID,
+	const [lightThemeId, setLightThemeId] = React.useState<UiLightThemeId | null>(
+		null,
 	);
-	const [darkThemeId, setDarkThemeId] = React.useState<UiDarkThemeId>(
-		DEFAULT_UI_DARK_THEME_ID,
+	const [darkThemeId, setDarkThemeId] = React.useState<UiDarkThemeId | null>(
+		null,
 	);
 	const [fontFamily, setFontFamily] = React.useState<string | null>(null);
 	const [monoFontFamily, setMonoFontFamily] = React.useState<string | null>(
@@ -153,6 +148,7 @@ function ThemeAndTypographyBridge() {
 	}, [accent]);
 
 	React.useEffect(() => {
+		if (!lightThemeId || !darkThemeId) return;
 		applyUiThemeSelection(lightThemeId, darkThemeId);
 	}, [darkThemeId, lightThemeId]);
 

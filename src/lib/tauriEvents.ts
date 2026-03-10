@@ -1,5 +1,6 @@
 import { listen } from "@tauri-apps/api/event";
 import { useEffect, useRef } from "react";
+import type { UiDarkThemeId, UiLightThemeId } from "./uiThemes";
 
 type TauriEventMap = {
 	"menu:new_note": undefined;
@@ -51,23 +52,8 @@ type TauriEventMap = {
 	"settings:updated": {
 		ui?: {
 			theme?: string;
-			lightThemeId?:
-				| "glyph-default"
-				| "notion"
-				| "paper"
-				| "solarized-light"
-				| "github-light"
-				| "slate-light"
-				| "nord-light";
-			darkThemeId?:
-				| "glyph-default-dark"
-				| "obsidian"
-				| "graphite"
-				| "solarized-dark"
-				| "github-dark"
-				| "nord-dark"
-				| "tokyo-night"
-				| "dracula";
+			lightThemeId?: UiLightThemeId;
+			darkThemeId?: UiDarkThemeId;
 			accent?:
 				| "neutral"
 				| "cerulean"

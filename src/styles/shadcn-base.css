@@ -41,6 +41,13 @@
 	--color-sidebar: var(--bg-sidebar);
 }
 
+:root {
+	--popover: color-mix(in srgb, var(--bg-primary) 96%, var(--bg-secondary));
+	--popover-foreground: var(--text-primary);
+	--border: var(--border-default);
+	--radius: var(--radius-md);
+}
+
 @layer base {
 	* {
 		@apply border-border outline-ring/50;

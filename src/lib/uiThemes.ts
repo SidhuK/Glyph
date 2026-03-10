@@ -88,8 +88,6 @@ export const DARK_THEME_OPTIONS = [
 export type UiLightThemeId = (typeof LIGHT_THEME_OPTIONS)[number]["id"];
 export type UiDarkThemeId = (typeof DARK_THEME_OPTIONS)[number]["id"];
 
-export const DEFAULT_UI_LIGHT_THEME_ID: UiLightThemeId = "glyph-default";
-export const DEFAULT_UI_DARK_THEME_ID: UiDarkThemeId = "glyph-default-dark";
 export const GLYPH_DEFAULT_LIGHT_THEME_ID: UiLightThemeId = "glyph-default";
 export const GLYPH_DEFAULT_DARK_THEME_ID: UiDarkThemeId = "glyph-default-dark";
 
@@ -104,13 +102,13 @@ export function asUiLightThemeId(value: unknown): UiLightThemeId {
 	return typeof value === "string" &&
 		LIGHT_THEME_IDS.has(value as UiLightThemeId)
 		? (value as UiLightThemeId)
-		: DEFAULT_UI_LIGHT_THEME_ID;
+		: GLYPH_DEFAULT_LIGHT_THEME_ID;
 }
 
 export function asUiDarkThemeId(value: unknown): UiDarkThemeId {
 	return typeof value === "string" && DARK_THEME_IDS.has(value as UiDarkThemeId)
 		? (value as UiDarkThemeId)
-		: DEFAULT_UI_DARK_THEME_ID;
+		: GLYPH_DEFAULT_DARK_THEME_ID;
 }
 
 export function isUiLightThemeId(value: unknown): value is UiLightThemeId {
