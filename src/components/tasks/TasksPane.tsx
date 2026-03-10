@@ -416,7 +416,11 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 	);
 
 	const scheduleDates = useCallback(
-		async (taskId: string, scheduled: string | null, due: string | null) => {
+		async (
+			taskId: string,
+			scheduled: string | null,
+			due: string | null,
+		): Promise<boolean> => {
 			try {
 				setError("");
 				await invoke("task_set_dates", {
@@ -425,8 +429,10 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 					due_date: due,
 				});
 				await loadTasks();
+				return true;
 			} catch (e) {
 				setError(e instanceof Error ? e.message : String(e));
+				return false;
 			}
 		},
 		[loadTasks],
@@ -535,7 +541,10 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 				{loading ? (
 					<div className="tasksPaneLoading">Loading tasks…</div>
 				) : null}
-				{!loading && filteredTasks.length === 0 ? (
+				{!loading &&
+				!error &&
+				filterMode === "all" &&
+				filteredTasks.length === 0 ? (
 					<div className="tasksPaneEmptyState">
 						<HugeiconsIcon
 							icon={CheckListIcon}
@@ -549,6 +558,25 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 							<span>
 								Tasks from your notes will appear here as soon as they match
 								this view.
+							</span>
+						</div>
+					</div>
+				) : null}
+				{!loading &&
+				!error &&
+				filterMode !== "all" &&
+				filteredTasks.length === 0 ? (
+					<div className="tasksPaneEmptyState">
+						<HugeiconsIcon
+							icon={CheckListIcon}
+							size={32}
+							className="tasksPaneEmptyIcon"
+						/>
+						<div className="tasksPaneEmptyCopy">
+							<strong>No tasks match this filter.</strong>
+							<span>
+								Try switching the filter or clearing it to see the full bucket
+								again.
 							</span>
 						</div>
 					</div>

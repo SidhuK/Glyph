@@ -21,7 +21,7 @@ interface TaskRowProps {
 		taskId: string,
 		scheduled: string | null,
 		due: string | null,
-	) => Promise<void>;
+	) => Promise<boolean>;
 	onOpenNote?: (notePath: string) => void | Promise<void>;
 }
 
@@ -47,8 +47,14 @@ export function TaskRow({
 	);
 
 	const applyDates = useCallback(async () => {
-		await onSchedule(task.task_id, scheduledDate || null, dueDate || null);
-		setOpen(false);
+		const applied = await onSchedule(
+			task.task_id,
+			scheduledDate || null,
+			dueDate || null,
+		);
+		if (applied) {
+			setOpen(false);
+		}
 	}, [dueDate, onSchedule, scheduledDate, task.task_id]);
 
 	const setQuickDate = useCallback((offsetDays: number) => {
@@ -63,16 +69,24 @@ export function TaskRow({
 			const d = new Date();
 			d.setDate(d.getDate() + offsetDays);
 			const iso = todayIsoDateLocal(d);
-			await onSchedule(task.task_id, iso, task.due_date);
+			const newDue =
+				task.due_date && iso <= task.due_date ? task.due_date : null;
+			const applied = await onSchedule(task.task_id, iso, newDue);
+			if (applied) {
+				setScheduledDate(iso);
+				setDueDate(newDue ?? "");
+			}
 		},
 		[onSchedule, task.due_date, task.task_id],
 	);
 
 	const clearDates = useCallback(async () => {
-		await onSchedule(task.task_id, null, null);
-		setScheduledDate("");
-		setDueDate("");
-		setOpen(false);
+		const cleared = await onSchedule(task.task_id, null, null);
+		if (cleared) {
+			setScheduledDate("");
+			setDueDate("");
+			setOpen(false);
+		}
 	}, [onSchedule, task.task_id]);
 
 	return (
