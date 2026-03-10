@@ -13,9 +13,7 @@ export function AboutSettingsPane() {
 	const [appInfo, setAppInfo] = useState<AppInfo | null>(null);
 	const [error, setError] = useState("");
 	const [copyLabel, setCopyLabel] = useState("Copy Diagnostics");
-	const copyResetTimerRef = useRef<
-		ReturnType<typeof window.setTimeout> | undefined
-	>(undefined);
+	const copyResetTimerRef = useRef<number | null>(null);
 	const [updateStatus, setUpdateStatus] = useState("");
 	const [checkingUpdates, setCheckingUpdates] = useState(false);
 
@@ -44,20 +42,20 @@ export function AboutSettingsPane() {
 
 	useEffect(() => {
 		return () => {
-			if (copyResetTimerRef.current !== undefined) {
+			if (copyResetTimerRef.current !== null) {
 				window.clearTimeout(copyResetTimerRef.current);
-				copyResetTimerRef.current = undefined;
+				copyResetTimerRef.current = null;
 			}
 		};
 	}, []);
 
 	const scheduleCopyLabelReset = () => {
-		if (copyResetTimerRef.current !== undefined) {
+		if (copyResetTimerRef.current !== null) {
 			window.clearTimeout(copyResetTimerRef.current);
 		}
 		copyResetTimerRef.current = window.setTimeout(() => {
 			setCopyLabel("Copy Diagnostics");
-			copyResetTimerRef.current = undefined;
+			copyResetTimerRef.current = null;
 		}, 1800);
 	};
 

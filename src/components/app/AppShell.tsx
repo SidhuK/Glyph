@@ -19,6 +19,7 @@ import { useMenuListeners } from "../../hooks/useMenuListeners";
 import { useResizablePanel } from "../../hooks/useResizablePanel";
 import {
 	dispatchPathRemoved,
+	getPendingPathMoveTarget,
 	hasPendingPathMoveFor,
 } from "../../lib/appEvents";
 import { getLicenseStatus } from "../../lib/license";
@@ -363,23 +364,28 @@ export function AppShell() {
 			if (!spacePath) return;
 			const changedPath = normalizeRelPath(payload.rel_path);
 			if (!changedPath) return;
+			const pendingMoveTarget = payload.removed
+				? getPendingPathMoveTarget(changedPath)
+				: null;
 			if (payload.removed) {
-				if (!hasPendingPathMoveFor(changedPath)) {
+				if (!hasPendingPathMoveFor(changedPath) && !pendingMoveTarget) {
 					dispatchPathRemoved({ path: changedPath, recursive: true });
 				}
+				fsRefreshQueueRef.current.add(parentDir(changedPath));
+				if (pendingMoveTarget) {
+					fsRefreshQueueRef.current.add(parentDir(pendingMoveTarget));
+				}
+			} else {
+				fsRefreshQueueRef.current.add(parentDir(changedPath));
+				if (expandedDirs.has(changedPath)) {
+					fsRefreshQueueRef.current.add(changedPath);
+				}
 			}
-			fsRefreshQueueRef.current.add(changedPath);
 			if (fsRefreshTimerRef.current !== null) return;
 			fsRefreshTimerRef.current = window.setTimeout(() => {
 				fsRefreshTimerRef.current = null;
-				const changed = [...fsRefreshQueueRef.current];
+				const dirs = new Set<string>([...fsRefreshQueueRef.current, ""]);
 				fsRefreshQueueRef.current.clear();
-				if (!changed.length) return;
-				const dirs = new Set<string>([""]);
-				for (const rel of changed) {
-					dirs.add(parentDir(rel));
-					if (expandedDirs.has(rel)) dirs.add(rel);
-				}
 				for (const dir of dirs) void fileTree.loadDir(dir, true);
 			}, 150);
 		},
