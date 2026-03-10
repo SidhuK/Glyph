@@ -69,7 +69,7 @@ export function CommandPaletteMarkdownPreview({
 				if (requestId !== requestIdRef.current) return;
 				const parsed = parseNotePreview(relPath, doc.text);
 				const cachedDoc = {
-					title: parsed.title || fallbackTitle || titleForFile(relPath),
+					title: parsed.title || "",
 					markdown: doc.text,
 				};
 				setCachedPreview(relPath, cachedDoc);
@@ -87,7 +87,7 @@ export function CommandPaletteMarkdownPreview({
 				if (requestId !== requestIdRef.current) return;
 				setLoading(false);
 			});
-	}, [fallbackTitle, relPath]);
+	}, [relPath]);
 
 	const displayTitle = useMemo(() => {
 		if (!relPath) return "";

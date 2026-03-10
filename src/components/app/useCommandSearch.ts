@@ -47,8 +47,8 @@ export function useCommandSearch(
 		setIsSearching(true);
 		debounceRef.current = setTimeout(() => {
 			void (async () => {
-				const parsed = parseSearchQuery(trimmed);
 				try {
+					const parsed = parseSearchQuery(trimmed);
 					let results: SearchResult[];
 					try {
 						results = await invoke("search_parse_and_run", {
@@ -65,8 +65,9 @@ export function useCommandSearch(
 					}
 					if (requestIdRef.current !== requestId) return;
 					setSearchResults(results);
-				} catch {
+				} catch (error) {
 					if (requestIdRef.current !== requestId) return;
+					console.error("Command palette search failed", error);
 					setSearchResults([]);
 				} finally {
 					if (requestIdRef.current === requestId) {

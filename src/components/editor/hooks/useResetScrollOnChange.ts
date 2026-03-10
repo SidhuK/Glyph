@@ -5,9 +5,9 @@ export function useResetScrollOnChange(
 	selector: string | null,
 	deps: readonly unknown[],
 ) {
-	const root = rootRef.current;
-
 	useEffect(() => {
+		const root = rootRef.current;
+
 		const resetScroll = () => {
 			if (root) root.scrollTop = 0;
 			if (!selector) return;
@@ -20,5 +20,5 @@ export function useResetScrollOnChange(
 		resetScroll();
 		const frame = window.requestAnimationFrame(resetScroll);
 		return () => window.cancelAnimationFrame(frame);
-	}, [root, selector, ...deps]);
+	}, [rootRef, selector, ...deps]);
 }
