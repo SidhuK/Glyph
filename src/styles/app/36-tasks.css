@@ -557,6 +557,7 @@
 }
 
 .tasksRow {
+	container-type: inline-size;
 	display: flex;
 	align-items: center;
 	gap: 6px;
@@ -690,11 +691,14 @@
 
 .tasksMetaBadge {
 	height: 22px;
+	max-width: 160px;
 	padding-inline: 8px;
 	border-radius: var(--radius-full);
 	border-color: color-mix(in srgb, var(--border-light) 76%, transparent);
 	background: color-mix(in srgb, var(--bg-secondary) 72%, transparent);
 	color: var(--text-secondary);
+	overflow: hidden;
+	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
@@ -732,6 +736,7 @@
 
 .tasksQuickActions {
 	display: inline-flex;
+	flex: 0 0 auto;
 	align-items: center;
 	gap: 2px;
 	opacity: 0;
@@ -761,6 +766,7 @@
 .tasksScheduleBtn {
 	height: 20px;
 	flex: 0 0 auto;
+	margin-left: auto;
 	padding-inline: 6px;
 	border-radius: var(--radius-md);
 	font-size: 0.72rem;
@@ -816,6 +822,29 @@
 	display: flex;
 	justify-content: flex-end;
 	gap: var(--space-2);
+}
+
+@container (max-width: 980px) {
+	.tasksQuickActions {
+		display: none;
+	}
+}
+
+@container (max-width: 820px) {
+	.tasksMetaLink,
+	.tasksMetaTagInline {
+		display: none;
+	}
+
+	.tasksMetaBadge {
+		max-width: 132px;
+	}
+}
+
+@container (max-width: 680px) {
+	.tasksRowMeta {
+		display: none;
+	}
 }
 
 @media (max-width: 900px) {

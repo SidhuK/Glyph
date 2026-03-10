@@ -311,8 +311,35 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 	const [sortMode, setSortMode] = useState<TaskSortMode>("smart");
 	const [groupMode, setGroupMode] = useState<TaskGroupMode>("smart");
 	const [filterMode, setFilterMode] = useState<TaskFilterMode>("all");
+	const [today, setToday] = useState(() => todayIsoDateLocal());
 	const requestVersionRef = useRef(0);
-	const today = useMemo(() => todayIsoDateLocal(), []);
+
+	useEffect(() => {
+		let timeoutId = 0;
+
+		const refreshToday = () => {
+			setToday(todayIsoDateLocal());
+		};
+
+		const scheduleNextRefresh = () => {
+			const now = new Date();
+			const nextMidnight = new Date(now);
+			nextMidnight.setHours(24, 0, 0, 0);
+			const timeoutMs =
+				Math.max(nextMidnight.getTime() - now.getTime(), 0) + 50;
+			timeoutId = window.setTimeout(() => {
+				refreshToday();
+				scheduleNextRefresh();
+			}, timeoutMs);
+		};
+
+		scheduleNextRefresh();
+		window.addEventListener("focus", refreshToday);
+		return () => {
+			window.clearTimeout(timeoutId);
+			window.removeEventListener("focus", refreshToday);
+		};
+	}, []);
 
 	const loadTasks = useCallback(async () => {
 		const requestVersion = requestVersionRef.current + 1;
