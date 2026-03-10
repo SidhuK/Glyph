@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRecentFiles } from "../../hooks/useRecentFiles";
-import type { SearchResult } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
+import type { SearchResult } from "../../lib/tauri";
+import { isMarkdownPath } from "../../utils/path";
 import { type Tab, parseSearchQuery } from "./commandPaletteHelpers";
 
 export function useCommandSearch(
@@ -13,7 +14,12 @@ export function useCommandSearch(
 	const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
 	const [isSearching, setIsSearching] = useState(false);
 	const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+	const requestIdRef = useRef(0);
 	const { recentFiles, refreshRecentFiles } = useRecentFiles(spacePath, 8);
+	const recentMarkdownFiles = useMemo(
+		() => recentFiles.filter((file) => isMarkdownPath(file.path)),
+		[recentFiles],
+	);
 
 	useEffect(() => {
 		if (!open || !spacePath) return;
@@ -23,6 +29,7 @@ export function useCommandSearch(
 	useEffect(() => {
 		if (activeTab !== "search") return;
 		if (!spacePath) {
+			requestIdRef.current += 1;
 			setSearchResults([]);
 			setIsSearching(false);
 			return;
@@ -30,10 +37,13 @@ export function useCommandSearch(
 		if (debounceRef.current) clearTimeout(debounceRef.current);
 		const trimmed = query.trim();
 		if (!trimmed) {
+			requestIdRef.current += 1;
 			setSearchResults([]);
 			setIsSearching(false);
 			return;
 		}
+		const requestId = requestIdRef.current + 1;
+		requestIdRef.current = requestId;
 		setIsSearching(true);
 		debounceRef.current = setTimeout(() => {
 			const parsed = parseSearchQuery(trimmed);
@@ -50,12 +60,15 @@ export function useCommandSearch(
 					}),
 				)
 				.then((results) => {
+					if (requestIdRef.current !== requestId) return;
 					setSearchResults(results);
 				})
 				.finally(() => {
+					if (requestIdRef.current !== requestId) return;
 					setIsSearching(false);
 				})
 				.catch(() => {
+					if (requestIdRef.current !== requestId) return;
 					setSearchResults([]);
 				});
 		}, 200);
@@ -85,13 +98,14 @@ export function useCommandSearch(
 	}, [searchResults, query, activeTab]);
 
 	const reset = useCallback(() => {
+		requestIdRef.current += 1;
 		setSearchResults([]);
 		setIsSearching(false);
 	}, []);
 
 	return {
 		searchResults,
-		recentFiles,
+		recentFiles: recentMarkdownFiles,
 		isSearching,
 		titleMatches,
 		contentMatches,

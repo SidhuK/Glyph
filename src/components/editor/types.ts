@@ -8,6 +8,8 @@ export interface CanvasNoteInlineEditorProps {
 	mode: CanvasInlineEditorMode;
 	onModeChange: (mode: CanvasInlineEditorMode) => void;
 	onChange: (nextMarkdown: string) => void;
+	interactive?: boolean;
+	showBacklinks?: boolean;
 	onRegisterCalloutInserter?:
 		| ((inserter: ((type: string) => void) | null) => void)
 		| undefined;
