@@ -2,8 +2,15 @@ import { emit } from "@tauri-apps/api/event";
 import { LazyStore } from "@tauri-apps/plugin-store";
 import { normalizeRelPath } from "../utils/path";
 import type { AiAssistantMode } from "./tauri";
+import {
+	type UiDarkThemeId,
+	type UiLightThemeId,
+	asUiDarkThemeId,
+	asUiLightThemeId,
+} from "./uiThemes";
 
 export type { AiAssistantMode } from "./tauri";
+export type { UiDarkThemeId, UiLightThemeId } from "./uiThemes";
 
 let storeInstance: LazyStore | null = null;
 let storeInitPromise: Promise<void> | null = null;
@@ -117,6 +124,8 @@ function asUiFontSize(value: unknown): UiFontSize {
 async function emitSettingsUpdated(payload: {
 	ui?: {
 		theme?: ThemeMode;
+		lightThemeId?: UiLightThemeId;
+		darkThemeId?: UiDarkThemeId;
 		accent?: UiAccent;
 		fontFamily?: UiFontFamily;
 		monoFontFamily?: UiFontFamily;
@@ -155,6 +164,8 @@ interface AppSettings {
 		aiEnabled: boolean;
 		aiSidebarWidth: number | null;
 		theme: ThemeMode;
+		lightThemeId: UiLightThemeId;
+		darkThemeId: UiDarkThemeId;
 		accent: UiAccent;
 		fontFamily: UiFontFamily;
 		monoFontFamily: UiFontFamily;
@@ -177,6 +188,8 @@ const KEYS = {
 	aiSidebarWidth: "ui.aiSidebarWidth",
 	aiAssistantMode: "ui.aiAssistantMode",
 	theme: "ui.theme",
+	lightThemeId: "ui.lightThemeId",
+	darkThemeId: "ui.darkThemeId",
 	accent: "ui.accent",
 	fontFamily: "ui.fontFamily",
 	monoFontFamily: "ui.monoFontFamily",
@@ -276,6 +289,8 @@ export async function loadSettings(): Promise<AppSettings> {
 		aiSidebarWidthRaw,
 		rawAiAssistantMode,
 		rawTheme,
+		rawLightThemeId,
+		rawDarkThemeId,
 		rawAccent,
 		rawFontFamily,
 		rawMonoFontFamily,
@@ -295,6 +310,8 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<number | null>(KEYS.aiSidebarWidth),
 		store.get<unknown>(KEYS.aiAssistantMode),
 		store.get<unknown>(KEYS.theme),
+		store.get<unknown>(KEYS.lightThemeId),
+		store.get<unknown>(KEYS.darkThemeId),
 		store.get<unknown>(KEYS.accent),
 		store.get<unknown>(KEYS.fontFamily),
 		store.get<unknown>(KEYS.monoFontFamily),
@@ -317,6 +334,8 @@ export async function loadSettings(): Promise<AppSettings> {
 	const aiSidebarWidth = aiSidebarWidthRaw ?? null;
 	const aiAssistantMode = asAiAssistantMode(rawAiAssistantMode);
 	const theme = asThemeMode(rawTheme);
+	const lightThemeId = asUiLightThemeId(rawLightThemeId);
+	const darkThemeId = asUiDarkThemeId(rawDarkThemeId);
 	const accent = asUiAccent(rawAccent);
 	const fontFamily = asUiFontFamily(rawFontFamily);
 	const monoFontFamily = asUiMonoFontFamily(rawMonoFontFamily);
@@ -337,6 +356,8 @@ export async function loadSettings(): Promise<AppSettings> {
 					? aiSidebarWidth
 					: null,
 			theme,
+			lightThemeId,
+			darkThemeId,
 			accent,
 			fontFamily,
 			monoFontFamily,
@@ -419,6 +440,26 @@ export async function setThemeMode(theme: ThemeMode): Promise<void> {
 	await store.set(KEYS.theme, theme);
 	await store.save();
 	void emitSettingsUpdated({ ui: { theme } });
+}
+
+export async function setUiLightThemeId(
+	lightThemeId: UiLightThemeId,
+): Promise<void> {
+	const store = await getStore();
+	const next = asUiLightThemeId(lightThemeId);
+	await store.set(KEYS.lightThemeId, next);
+	await store.save();
+	void emitSettingsUpdated({ ui: { lightThemeId: next } });
+}
+
+export async function setUiDarkThemeId(
+	darkThemeId: UiDarkThemeId,
+): Promise<void> {
+	const store = await getStore();
+	const next = asUiDarkThemeId(darkThemeId);
+	await store.set(KEYS.darkThemeId, next);
+	await store.save();
+	void emitSettingsUpdated({ ui: { darkThemeId: next } });
 }
 
 export async function setUiAccent(accent: UiAccent): Promise<void> {

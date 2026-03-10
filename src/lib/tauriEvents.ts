@@ -51,6 +51,23 @@ type TauriEventMap = {
 	"settings:updated": {
 		ui?: {
 			theme?: string;
+			lightThemeId?:
+				| "glyph-default"
+				| "notion"
+				| "paper"
+				| "solarized-light"
+				| "github-light"
+				| "slate-light"
+				| "nord-light";
+			darkThemeId?:
+				| "glyph-default-dark"
+				| "obsidian"
+				| "graphite"
+				| "solarized-dark"
+				| "github-dark"
+				| "nord-dark"
+				| "tokyo-night"
+				| "dracula";
 			accent?:
 				| "neutral"
 				| "cerulean"

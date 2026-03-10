@@ -1,0 +1,113 @@
+/* Shared primitives and foundational tokens used across every theme family. */
+:root {
+	--color-white: #ffffff;
+	--color-gray-25: #fbfbfa;
+	--color-gray-50: #f7f6f3;
+	--color-gray-100: #f1f1ef;
+	--color-gray-150: #e9e9e7;
+	--color-gray-200: #e3e2e0;
+	--color-gray-300: #d3d2cf;
+	--color-gray-400: #9b9a97;
+	--color-gray-500: #787774;
+	--color-gray-600: #5f5e5b;
+	--color-gray-700: #454441;
+	--color-gray-800: #37352f;
+	--color-gray-900: #1f1f1f;
+	--color-gray-950: #191919;
+
+	--color-blue-50: #e8f4fc;
+	--color-blue-100: #d3ebfa;
+	--color-blue-200: #a8d8f5;
+	--color-blue-300: #6ab9eb;
+	--color-blue-400: #3b9bdc;
+	--color-blue-500: #2383c6;
+	--color-blue-600: #1a6ba4;
+	--color-blue-700: #155580;
+
+	--color-red-100: #fce8e8;
+	--color-red-500: #e03e3e;
+	--color-red-600: #c73838;
+	--color-green-100: #e6f6e9;
+	--color-green-500: #0f7b0f;
+	--color-yellow-100: #fbf3db;
+	--color-yellow-500: #dfab01;
+	--color-blue-dark-400: #4aa3ff;
+	--color-green-dark-400: #62d49a;
+	--color-green-dark-500: #3ccf8e;
+	--color-yellow-dark-400: #f0c240;
+	--color-orange-dark-400: #f0a030;
+	--color-red-dark-300: #ff6b6b;
+	--color-red-dark-400: #ff7a74;
+
+	--font-sans: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+	--font-mono: "JetBrains Mono", ui-monospace, monospace;
+
+	--text-xs: 11px;
+	--text-sm: 12px;
+	--text-base: 14px;
+	--text-md: 16px;
+	--text-lg: 18px;
+	--text-xl: 20px;
+	--text-2xl: 24px;
+	--text-3xl: 30px;
+
+	--leading-tight: 1.2;
+	--leading-snug: 1.35;
+	--leading-normal: 1.5;
+	--leading-relaxed: 1.625;
+
+	--font-normal: 400;
+	--font-medium: 500;
+	--font-semibold: 600;
+	--font-bold: 700;
+
+	--space-0: 0;
+	--space-1: 4px;
+	--space-2: 8px;
+	--space-3: 12px;
+	--space-4: 16px;
+	--space-5: 20px;
+	--space-6: 24px;
+	--space-8: 32px;
+	--space-10: 40px;
+	--space-12: 48px;
+
+	--radius-2: 2px;
+	--radius-3: 3px;
+	--radius-4: 4px;
+	--radius-5: 5px;
+	--radius-6: 6px;
+	--radius-7: 7px;
+	--radius-8: 8px;
+	--radius-10: 10px;
+	--radius-12: 12px;
+	--radius-14: 14px;
+	--radius-15: 15px;
+	--radius-18: 18px;
+	--radius-24: 24px;
+	--radius-round: 9999px;
+
+	--radius-2xs: var(--radius-2);
+	--radius-xs: var(--radius-3);
+	--radius-sm: var(--radius-4);
+	--radius-md: var(--radius-6);
+	--radius-lg: var(--radius-10);
+	--radius-xl: var(--radius-14);
+	--radius-2xl: var(--radius-18);
+	--radius-3xl: var(--radius-24);
+	--radius-full: var(--radius-round);
+
+	--shadow-sm: none;
+	--shadow-md: none;
+	--shadow-lg: none;
+	--shadow-xl: none;
+	--shadow-float: none;
+
+	--transition-fast: 100ms cubic-bezier(0.4, 0, 0.2, 1);
+	--transition-base: 150ms cubic-bezier(0.4, 0, 0.2, 1);
+	--transition-slow: 250ms cubic-bezier(0.4, 0, 0.2, 1);
+	--transition-spring: 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+
+	--glyph-user-accent: initial;
+	--glyph-user-accent-hover: initial;
+}
