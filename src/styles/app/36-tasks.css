@@ -718,6 +718,12 @@
 	);
 }
 
+.tasksMetaBadge-pastScheduled {
+	border-color: color-mix(in srgb, var(--border-light) 72%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 72%, transparent);
+	color: var(--text-secondary);
+}
+
 .tasksMetaBadge-overdue {
 	border-color: color-mix(in srgb, var(--status-danger-border) 76%, transparent);
 	background: color-mix(in srgb, var(--status-danger-bg) 86%, transparent);

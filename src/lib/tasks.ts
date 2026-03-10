@@ -99,7 +99,12 @@ export function folderBreadcrumbFromNotePath(notePath: string): string {
 	return normalized.slice(0, lastSlash + 1);
 }
 
-export type TaskDateTone = "default" | "today" | "upcoming" | "overdue";
+export type TaskDateTone =
+	| "default"
+	| "today"
+	| "upcoming"
+	| "overdue"
+	| "pastScheduled";
 
 export interface TaskDateBadge {
 	kind: "due" | "scheduled";
@@ -111,6 +116,7 @@ export interface TaskDateBadge {
 export interface TaskTimingSummary {
 	badges: TaskDateBadge[];
 	isOverdue: boolean;
+	isPastScheduled: boolean;
 	hasDueDate: boolean;
 	hasScheduledDate: boolean;
 	nextDate: string | null;
@@ -180,7 +186,7 @@ export function getTaskTimingSummary(
 			badges.push({
 				kind: "scheduled",
 				label: `Started ${Math.abs(scheduledDiff)}d ago`,
-				tone: "overdue",
+				tone: "pastScheduled",
 				date: scheduledDate,
 			});
 		} else if (scheduledDiff === 0) {
@@ -218,7 +224,12 @@ export function getTaskTimingSummary(
 
 	return {
 		badges,
-		isOverdue: badges.some((badge) => badge.tone === "overdue"),
+		isOverdue: badges.some(
+			(badge) => badge.tone === "overdue" && badge.kind === "due",
+		),
+		isPastScheduled: badges.some(
+			(badge) => badge.tone === "pastScheduled" && badge.kind === "scheduled",
+		),
 		hasDueDate: dueDiff !== null,
 		hasScheduledDate: scheduledDiff !== null,
 		nextDate:
@@ -255,7 +266,11 @@ export function getTaskTimeGroup(
 	const futureDiffs = [dueDiff, scheduledDiff]
 		.filter((value): value is number => value !== null && value > 0)
 		.sort((left, right) => left - right);
-	const nextDiff = futureDiffs[0] ?? 0;
+	const nextDiff = futureDiffs[0] ?? null;
+
+	if (nextDiff === null) {
+		return { key: "later", label: "Later", order: 2 };
+	}
 
 	if (nextDiff === 1) {
 		return { key: "tomorrow", label: "Tomorrow", order: 0 };

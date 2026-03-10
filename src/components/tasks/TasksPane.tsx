@@ -312,7 +312,7 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 	const [groupMode, setGroupMode] = useState<TaskGroupMode>("smart");
 	const [filterMode, setFilterMode] = useState<TaskFilterMode>("all");
 	const requestVersionRef = useRef(0);
-	const today = todayIsoDateLocal();
+	const today = useMemo(() => todayIsoDateLocal(), []);
 
 	const loadTasks = useCallback(async () => {
 		const requestVersion = requestVersionRef.current + 1;

@@ -69,12 +69,10 @@ export function TaskRow({
 			const d = new Date();
 			d.setDate(d.getDate() + offsetDays);
 			const iso = todayIsoDateLocal(d);
-			const newDue =
-				task.due_date && iso <= task.due_date ? task.due_date : null;
-			const applied = await onSchedule(task.task_id, iso, newDue);
+			const applied = await onSchedule(task.task_id, iso, task.due_date);
 			if (applied) {
 				setScheduledDate(iso);
-				setDueDate(newDue ?? "");
+				setDueDate(task.due_date ?? "");
 			}
 		},
 		[onSchedule, task.due_date, task.task_id],
