@@ -5,6 +5,7 @@ export function useResetScrollOnChange(
 	selector: string | null,
 	deps: readonly unknown[],
 ) {
+	// biome-ignore lint/correctness/useExhaustiveDependencies: rootRef.current is read inside the effect after commit; the ref object identity is stable.
 	useEffect(() => {
 		const root = rootRef.current;
 
@@ -20,5 +21,5 @@ export function useResetScrollOnChange(
 		resetScroll();
 		const frame = window.requestAnimationFrame(resetScroll);
 		return () => window.cancelAnimationFrame(frame);
-	}, [rootRef, selector, ...deps]);
+	}, [selector, ...deps]);
 }
