@@ -276,7 +276,7 @@
 	padding-inline: clamp(14px, 2vw, 22px);
 	box-sizing: border-box;
 	overflow-wrap: anywhere;
-	word-break: break-word;
+	word-break: normal;
 }
 
 .commandPalettePreviewBody .frontmatterPreview,
@@ -289,7 +289,16 @@
 .commandPalettePreviewBody pre,
 .commandPalettePreviewBody code {
 	white-space: pre-wrap;
-	word-break: break-word;
+	overflow-wrap: break-word;
+}
+
+.commandPalettePreviewMeta {
+	padding: var(--space-6);
+	color: var(--text-secondary);
+}
+
+.commandPalettePreviewHint {
+	font-size: var(--text-sm);
 }
 
 .commandPalettePreviewEmpty {

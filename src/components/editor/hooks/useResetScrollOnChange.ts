@@ -1,0 +1,24 @@
+import { type RefObject, useEffect } from "react";
+
+export function useResetScrollOnChange(
+	rootRef: RefObject<HTMLElement | null>,
+	selector: string | null,
+	deps: readonly unknown[],
+) {
+	const root = rootRef.current;
+
+	useEffect(() => {
+		const resetScroll = () => {
+			if (root) root.scrollTop = 0;
+			if (!selector) return;
+			const nested =
+				(root?.closest(selector) as HTMLElement | null) ??
+				(root?.querySelector(selector) as HTMLElement | null);
+			if (nested) nested.scrollTop = 0;
+		};
+
+		resetScroll();
+		const frame = window.requestAnimationFrame(resetScroll);
+		return () => window.cancelAnimationFrame(frame);
+	}, [root, selector, ...deps]);
+}

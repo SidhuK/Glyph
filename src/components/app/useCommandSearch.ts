@@ -46,31 +46,34 @@ export function useCommandSearch(
 		requestIdRef.current = requestId;
 		setIsSearching(true);
 		debounceRef.current = setTimeout(() => {
-			const parsed = parseSearchQuery(trimmed);
-			invoke("search_parse_and_run", {
-				raw_query: trimmed,
-				limit: 1500,
-			})
-				.catch(() =>
-					invoke("search_advanced", {
-						request: {
-							...parsed.request,
+			void (async () => {
+				const parsed = parseSearchQuery(trimmed);
+				try {
+					let results: SearchResult[];
+					try {
+						results = await invoke("search_parse_and_run", {
+							raw_query: trimmed,
 							limit: 1500,
-						},
-					}),
-				)
-				.then((results) => {
+						});
+					} catch {
+						results = await invoke("search_advanced", {
+							request: {
+								...parsed.request,
+								limit: 1500,
+							},
+						});
+					}
 					if (requestIdRef.current !== requestId) return;
 					setSearchResults(results);
-				})
-				.finally(() => {
-					if (requestIdRef.current !== requestId) return;
-					setIsSearching(false);
-				})
-				.catch(() => {
+				} catch {
 					if (requestIdRef.current !== requestId) return;
 					setSearchResults([]);
-				});
+				} finally {
+					if (requestIdRef.current === requestId) {
+						setIsSearching(false);
+					}
+				}
+			})();
 		}, 200);
 		return () => {
 			if (debounceRef.current) clearTimeout(debounceRef.current);

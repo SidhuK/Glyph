@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { parseNotePreview, titleForFile } from "../../lib/notePreview";
 import { type TextFileDoc, invoke } from "../../lib/tauri";
 import { CanvasNoteInlineEditor } from "../editor/CanvasNoteInlineEditor";
+import { useResetScrollOnChange } from "../editor/hooks/useResetScrollOnChange";
 
 interface CommandPaletteMarkdownPreviewProps {
 	relPath: string | null;
@@ -13,7 +14,18 @@ interface CachedPreviewDoc {
 	markdown: string;
 }
 
+const MAX_CACHE_SIZE = 24;
 const previewDocCache = new Map<string, CachedPreviewDoc>();
+
+function setCachedPreview(path: string, doc: CachedPreviewDoc) {
+	if (previewDocCache.has(path)) {
+		previewDocCache.delete(path);
+	} else if (previewDocCache.size >= MAX_CACHE_SIZE) {
+		const oldestKey = previewDocCache.keys().next().value;
+		if (oldestKey) previewDocCache.delete(oldestKey);
+	}
+	previewDocCache.set(path, doc);
+}
 
 export function CommandPaletteMarkdownPreview({
 	relPath,
@@ -26,19 +38,7 @@ export function CommandPaletteMarkdownPreview({
 	const [markdown, setMarkdown] = useState("");
 	const [resolvedTitle, setResolvedTitle] = useState("");
 
-	useEffect(() => {
-		if (!relPath && !markdown) return;
-		const resetScroll = () => {
-			if (bodyRef.current) bodyRef.current.scrollTop = 0;
-			const editorBody = bodyRef.current?.querySelector(
-				".rfNodeNoteEditorBody",
-			) as HTMLElement | null;
-			if (editorBody) editorBody.scrollTop = 0;
-		};
-		resetScroll();
-		const frame = window.requestAnimationFrame(resetScroll);
-		return () => window.cancelAnimationFrame(frame);
-	}, [relPath, markdown]);
+	useResetScrollOnChange(bodyRef, ".rfNodeNoteEditorBody", [relPath, markdown]);
 
 	useEffect(() => {
 		if (!relPath) {
@@ -72,12 +72,13 @@ export function CommandPaletteMarkdownPreview({
 					title: parsed.title || fallbackTitle || titleForFile(relPath),
 					markdown: doc.text,
 				};
-				previewDocCache.set(relPath, cachedDoc);
+				setCachedPreview(relPath, cachedDoc);
 				setMarkdown(cachedDoc.markdown);
 				setResolvedTitle(cachedDoc.title);
 			})
 			.catch((nextError) => {
 				if (requestId !== requestIdRef.current) return;
+				console.error("Preview fetch error", { requestId, relPath, nextError });
 				setError(
 					nextError instanceof Error ? nextError.message : String(nextError),
 				);
@@ -94,7 +95,7 @@ export function CommandPaletteMarkdownPreview({
 	}, [fallbackTitle, relPath, resolvedTitle]);
 
 	return (
-		<section className="commandPalettePreviewPane" aria-live="polite">
+		<section className="commandPalettePreviewPane">
 			<div className="commandPalettePreviewHeader">
 				{relPath ? (
 					<>
@@ -119,8 +120,8 @@ export function CommandPaletteMarkdownPreview({
 			) : null}
 
 			{relPath && !loading && error ? (
-				<div className="filePreviewMeta">
-					<div className="filePreviewHint">{error}</div>
+				<div className="commandPalettePreviewMeta" aria-live="polite">
+					<div className="commandPalettePreviewHint">{error}</div>
 				</div>
 			) : null}
 

@@ -8,6 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 import { EditorRibbon } from "./EditorRibbon";
 import { NotePropertiesPanel } from "./NotePropertiesPanel";
 import { useNoteEditor } from "./hooks/useNoteEditor";
+import { useResetScrollOnChange } from "./hooks/useResetScrollOnChange";
 import {
 	dispatchMarkdownLinkClick,
 	dispatchWikiLinkClick,
@@ -113,21 +114,14 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		if (mode !== "rich") setShowBottomRibbon(false);
 	}, [mode]);
 
-	useEffect(() => {
-		if (mode !== "preview" || (!relPath && !markdown)) return;
-		const resetScroll = () => {
-			const editorBody = tiptapHostRef.current?.closest(
-				".rfNodeNoteEditorBody",
-			) as HTMLElement | null;
-			if (editorBody) editorBody.scrollTop = 0;
-		};
-		resetScroll();
-		const frame = window.requestAnimationFrame(resetScroll);
-		return () => window.cancelAnimationFrame(frame);
-	}, [markdown, mode, relPath]);
+	useResetScrollOnChange(tiptapHostRef, ".rfNodeNoteEditorBody", [
+		markdown,
+		mode,
+		relPath,
+	]);
 
 	useEffect(() => {
-		if (!relPath) {
+		if (!relPath || !showBacklinks) {
 			setBacklinks([]);
 			return;
 		}
@@ -143,7 +137,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		return () => {
 			cancelled = true;
 		};
-	}, [relPath]);
+	}, [relPath, showBacklinks]);
 
 	const canEdit = mode === "rich" && Boolean(editor?.isEditable);
 
