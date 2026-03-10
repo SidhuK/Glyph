@@ -4,21 +4,20 @@ import { ACCENT_OPTIONS } from "./accentOptions";
 
 interface AppearanceAccentCardProps {
 	accent: UiAccent;
+	description: string;
 	onAccentChange: (accent: UiAccent) => Promise<void>;
 }
 
 export function AppearanceAccentCard({
 	accent,
+	description,
 	onAccentChange,
 }: AppearanceAccentCardProps) {
 	const selectedAccent =
 		ACCENT_OPTIONS.find((option) => option.id === accent) ?? ACCENT_OPTIONS[0];
 
 	return (
-		<SettingsSection
-			title="Accent"
-			description="Choose the accent used for highlights, focus rings, and emphasis."
-		>
+		<SettingsSection title="Accent" description={description}>
 			<SettingsRow
 				label="Palette"
 				description="Preview and select the accent that feels best for your workspace."
