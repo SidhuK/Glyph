@@ -6,7 +6,7 @@ export interface FileTreeMoveOptions {
 
 export type FileTreeOrderByDir = Record<string, string[]>;
 
-export const ROOT_FILE_TREE_ORDER_KEY = "__root__";
+export const ROOT_FILE_TREE_ORDER_KEY = "\u0000root";
 
 export function compareEntries(a: FsEntry, b: FsEntry): number {
 	if (a.kind === "dir" && b.kind === "file") return -1;

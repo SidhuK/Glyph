@@ -129,17 +129,14 @@ fn absolute_original_path(src: &Path) -> PathBuf {
 
 #[cfg(target_os = "linux")]
 fn encode_trash_info_path(path: &Path) -> String {
-    use std::fmt::Write as _;
+    use std::{fmt::Write as _, os::unix::ffi::OsStrExt as _};
 
-    let raw = path.to_string_lossy();
+    let raw = path.as_os_str().as_bytes();
     let mut encoded = String::with_capacity(raw.len());
 
-    for byte in raw.as_bytes() {
-        let character = *byte as char;
-        if character.is_ascii_alphanumeric()
-            || matches!(character, '/' | '-' | '_' | '.' | '~')
-        {
-            encoded.push(character);
+    for byte in raw {
+        if byte.is_ascii_alphanumeric() || matches!(byte, b'/' | b'-' | b'_' | b'.' | b'~') {
+            encoded.push(*byte as char);
         } else {
             let _ = write!(&mut encoded, "%{byte:02X}");
         }
@@ -287,22 +284,21 @@ pub(super) fn move_path_to_trash(src: &Path) -> Result<(), String> {
                     ));
                 }
 
-                let remove_original = if src.is_dir() {
+                let metadata = std::fs::symlink_metadata(src).map_err(|e| e.to_string())?;
+
+                let remove_original = if metadata.file_type().is_symlink() {
+                    std::fs::remove_file(src)
+                } else if metadata.is_dir() {
                     std::fs::remove_dir_all(src)
                 } else {
                     std::fs::remove_file(src)
                 };
 
                 if let Err(remove_error) = remove_original {
-                    let cleanup_error = cleanup_path(&temp_dest).err();
-                    return Err(match cleanup_error {
-                        Some(cleanup_error) => format!(
-                            "failed to remove original after copying to Trash: {remove_error}; cleanup attempted but also failed: {cleanup_error}"
-                        ),
-                        None => format!(
-                            "failed to remove original after copying to Trash: {remove_error}; cleanup attempted"
-                        ),
-                    });
+                    return Err(format!(
+                        "failed to remove original after copying to Trash: {remove_error}; preserved copied item at {}",
+                        temp_dest.display(),
+                    ));
                 }
 
                 if let Err(rename_error) = std::fs::rename(&temp_dest, &dest) {

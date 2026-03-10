@@ -24,12 +24,40 @@ import type { ComponentProps, CSSProperties } from "react";
 import glyphIconUrl from "../../assets/glyph.svg?url";
 
 export type IconProps = Omit<ComponentProps<typeof HugeiconsIcon>, "icon">;
+type CssLengthUnit =
+	| "px"
+	| "em"
+	| "rem"
+	| "%"
+	| "vh"
+	| "vw"
+	| "vmin"
+	| "vmax"
+	| "ch"
+	| "ex"
+	| "cm"
+	| "mm"
+	| "in"
+	| "pt"
+	| "pc";
+type CssLengthString = `${number}` | `${number}${CssLengthUnit}`;
+
 interface ControlKeyProps {
-	size?: number | string;
+	size?: number | CssLengthString;
 	className?: string;
 	style?: CSSProperties;
 	title?: string;
 }
+
+const CSS_LENGTH_PATTERN =
+	/^\s*-?(?:\d+|\d*\.\d+)(?:px|em|rem|%|vh|vw|vmin|vmax|ch|ex|cm|mm|in|pt|pc)?\s*$/;
+const DISALLOWED_CSS_SIZE_KEYWORDS = new Set([
+	"inherit",
+	"auto",
+	"initial",
+	"unset",
+	"revert",
+]);
 
 function toCssSize(
 	size: number | string | undefined,
@@ -41,11 +69,14 @@ function toCssSize(
 	if (typeof size === "string") {
 		const trimmed = size.trim();
 		if (!trimmed) return fallback;
+		if (DISALLOWED_CSS_SIZE_KEYWORDS.has(trimmed.toLowerCase())) {
+			return fallback;
+		}
 		if (/^-?(?:\d+|\d*\.\d+)$/.test(trimmed)) {
 			const parsed = Number.parseFloat(trimmed);
 			return Number.isFinite(parsed) ? parsed : fallback;
 		}
-		return trimmed;
+		return CSS_LENGTH_PATTERN.test(trimmed) ? trimmed : fallback;
 	}
 	return fallback;
 }

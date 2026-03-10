@@ -164,7 +164,11 @@ export function WindowTitleBar({
     }, [clearMenuTimeouts, setActiveMenu]);
 
     useEffect(() => {
-        if (!currentWindow) return; // Skip if Tauri not available
+        if (!currentWindow) {
+            return () => {
+                clearMenuTimeouts();
+            };
+        }
 
         const syncMaximized = () => {
             void currentWindow.isMaximized().then(setIsMaximized).catch(() => { });

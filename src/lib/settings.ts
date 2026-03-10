@@ -173,7 +173,7 @@ const KEYS = {
 	taskSource: "tasks.source",
 } as const;
 
-const ROOT_FILE_TREE_ORDER_KEY = "__root__";
+const ROOT_FILE_TREE_ORDER_KEY = "\u0000root";
 
 function normalizeStoredFileTreeOrderByDir(
 	value: unknown,

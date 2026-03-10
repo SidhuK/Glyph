@@ -241,7 +241,6 @@
 .windowTitleBarMenuBar {
     display: flex;
     align-items: center;
-    /* gap: 2px; */
     min-height: 34px;
     padding: 0 var(--space-2) 6px var(--space-2);
     border-top: 1px solid color-mix(in srgb, var(--border-light) 30%, transparent);

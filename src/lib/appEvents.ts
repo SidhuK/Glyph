@@ -1,3 +1,5 @@
+import { normalizeRelPath } from "../utils/path";
+
 export const PATH_REMOVED_EVENT = "glyph:path-removed";
 export const PATH_MOVED_EVENT = "glyph:path-moved";
 
@@ -34,32 +36,41 @@ export function markPendingPathMove(
 	toPath: string,
 	ttlMs = 3000,
 ) {
-	pendingMovedPaths.set(fromPath, {
-		toPath,
+	const normalizedFromPath = normalizeRelPath(fromPath);
+	const normalizedToPath = normalizeRelPath(toPath);
+	if (!normalizedFromPath || !normalizedToPath) return;
+	pendingMovedPaths.set(normalizedFromPath, {
+		toPath: normalizedToPath,
 		expiresAt: Date.now() + ttlMs,
 	});
 }
 
 export function hasPendingPathMoveFor(fromPath: string): boolean {
-	const pending = pendingMovedPaths.get(fromPath);
+	const normalizedFromPath = normalizeRelPath(fromPath);
+	if (!normalizedFromPath) return false;
+	const pending = pendingMovedPaths.get(normalizedFromPath);
 	if (!pending) return false;
 	if (pending.expiresAt <= Date.now()) {
-		pendingMovedPaths.delete(fromPath);
+		pendingMovedPaths.delete(normalizedFromPath);
 		return false;
 	}
 	return true;
 }
 
 export function getPendingPathMoveTarget(path: string): string | null {
+	const normalizedPath = normalizeRelPath(path);
+	if (!normalizedPath) return null;
 	const now = Date.now();
-	for (const [fromPath, pending] of pendingMovedPaths.entries()) {
+	for (const [rawFromPath, pending] of pendingMovedPaths.entries()) {
+		const fromPath = normalizeRelPath(rawFromPath);
 		if (pending.expiresAt <= now) {
-			pendingMovedPaths.delete(fromPath);
+			pendingMovedPaths.delete(rawFromPath);
 			continue;
 		}
-		if (path === fromPath) return pending.toPath;
-		if (path.startsWith(`${fromPath}/`)) {
-			return `${pending.toPath}${path.slice(fromPath.length)}`;
+		if (!fromPath) continue;
+		if (normalizedPath === fromPath) return pending.toPath;
+		if (normalizedPath.startsWith(`${fromPath}/`)) {
+			return `${pending.toPath}${normalizedPath.slice(fromPath.length)}`;
 		}
 	}
 	return null;

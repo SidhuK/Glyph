@@ -11,6 +11,8 @@ import type { UiAccent } from "./lib/settings";
 import { loadSettings, reloadFromDisk } from "./lib/settings";
 import { useTauriEvent } from "./lib/tauriEvents";
 
+const APP_REFRESH_SETTINGS_EVENT = "app:refresh-settings";
+
 function isSettingsRoute(hash: string): boolean {
 	return hash.startsWith("#/settings");
 }
@@ -65,6 +67,7 @@ function ThemeAndTypographyBridge() {
 
 		const onFocus = () => {
 			if (cancelled) return;
+			window.dispatchEvent(new Event(APP_REFRESH_SETTINGS_EVENT));
 			void applyFromSettings(true);
 		};
 		window.addEventListener("focus", onFocus);

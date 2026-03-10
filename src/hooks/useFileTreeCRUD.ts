@@ -11,7 +11,7 @@ import {
 	createStarterDatabaseMarkdown,
 } from "../lib/database/config";
 import { extractErrorMessage } from "../lib/errorUtils";
-import { updateFileTreeOrder } from "../lib/settings";
+import { getFileTreeOrder, updateFileTreeOrder } from "../lib/settings";
 import type { FsEntry } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
 import { isMarkdownPath, parentDir } from "../utils/path";
@@ -22,6 +22,7 @@ import {
 	getFileTreeOrderKey,
 	insertPathAtIndex,
 	normalizeEntry,
+	normalizeEntries,
 	type FileTreeMoveOptions,
 	type FileTreeOrderByDir,
 	normalizeRelPath,
@@ -137,7 +138,10 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			fromParent: string,
 			toParent: string,
 			requestedIndex: number | undefined,
+			resolvedDestPaths?: string[],
 		) => {
+			const hasLoadedDestEntries =
+				toParent === "" || Object.prototype.hasOwnProperty.call(childrenByDir, toParent);
 			const next =
 				nextPath === from
 					? { ...current }
@@ -150,10 +154,13 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			})();
 			const destCurrentPaths = (() => {
 				if (fromParent === toParent) return sourceCurrentPaths;
+				if (resolvedDestPaths) return resolvedDestPaths;
 				const entries = getEntriesForDir(toParent);
-				return entries.length > 0
+				return hasLoadedDestEntries
 					? entries.map((entry) => entry.rel_path)
-					: [...(next[getFileTreeOrderKey(toParent)] ?? [])];
+					: next[getFileTreeOrderKey(toParent)]
+						? [...(next[getFileTreeOrderKey(toParent)] ?? [])]
+						: null;
 			})();
 
 			const sourceWithoutMoved = sourceCurrentPaths.filter(
@@ -162,7 +169,9 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			const destWithoutMoved =
 				fromParent === toParent
 					? sourceWithoutMoved
-					: destCurrentPaths.filter((path) => path !== from && path !== nextPath);
+					: (destCurrentPaths ?? []).filter(
+						(path) => path !== from && path !== nextPath,
+					);
 
 			const sourceIndex = sourceCurrentPaths.findIndex((path) => path === from);
 			let insertionIndex =
@@ -192,10 +201,10 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			const destKey = getFileTreeOrderKey(toParent);
 			if (sourceWithoutMoved.length > 0) next[sourceKey] = sourceWithoutMoved;
 			else delete next[sourceKey];
-			next[destKey] = reorderedDestPaths;
+			if (destCurrentPaths !== null) next[destKey] = reorderedDestPaths;
 			return next;
 		},
-		[getEntriesForDir],
+		[childrenByDir, getEntriesForDir],
 	);
 
 	const persistFileTreeOrder = useCallback(
@@ -698,6 +707,20 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			if (nextPath === from && options?.index === undefined) return nextPath;
 			setError("");
 			try {
+				const existingOrder = await getFileTreeOrder(spacePath);
+				const destKey = getFileTreeOrderKey(toParent);
+				const hasLoadedDestEntries =
+					toParent === "" ||
+					Object.prototype.hasOwnProperty.call(childrenByDir, toParent);
+				const hasPersistedDestOrder = Object.prototype.hasOwnProperty.call(
+					existingOrder,
+					destKey,
+				);
+				const needsDestOrderReconcile =
+					fromParent !== toParent &&
+					!hasLoadedDestEntries &&
+					!hasPersistedDestOrder;
+
 				if (nextPath === from) {
 					if (fromParent) {
 						updateChildrenByDir((prev) => {
@@ -810,7 +833,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 								: { ...entry, rel_path: relPath };
 						});
 						if (fromParent === toParent) return rewritten;
-						if (fromParent) return rewritten;
+						if (fromParent && toParent) return rewritten;
 						const withoutMoved = rewritten.filter((entry) => entry.rel_path !== nextPath);
 						if (toParent) return withoutMoved;
 						if (!movedEntry) return withoutMoved;
@@ -863,7 +886,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 								: entry,
 						);
 						if (fromParent === toParent) return rewritten;
-						if (fromParent) return rewritten;
+						if (fromParent && toParent) return rewritten;
 						const withoutMoved = rewritten.filter((entry) => entry.rel_path !== nextPath);
 						if (toParent) return withoutMoved;
 						if (!movedEntry) return withoutMoved;
@@ -879,6 +902,22 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 					loadDir(toParent, true),
 					refreshActiveFolderViewAfterMove(from, nextPath, fromParent, toParent),
 				]);
+				if (needsDestOrderReconcile) {
+					const destEntries = normalizeEntries(
+						await invoke("space_list_dir", toParent ? { dir: toParent } : {}),
+					).map((entry) => entry.rel_path);
+					await persistFileTreeOrder((current) =>
+						buildNextOrderState(
+							current,
+							from,
+							nextPath,
+							fromParent,
+							toParent,
+							options?.index,
+							destEntries,
+						),
+					);
+				}
 				return nextPath;
 			} catch (e) {
 				setError(extractErrorMessage(e));

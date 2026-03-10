@@ -50,6 +50,9 @@ function isTransientMovePathError(message: string): boolean {
 		hasPendingPathMove() &&
 		(normalized.includes("cannot find the file specified") ||
 			normalized.includes("cannot find the path specified") ||
+			normalized.includes("no such file or directory") ||
+			normalized.includes("no such file") ||
+			normalized.includes("not a directory") ||
 			normalized.includes("os error 2") ||
 			normalized.includes("os error 3"))
 	);

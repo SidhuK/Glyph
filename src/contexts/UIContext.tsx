@@ -21,6 +21,8 @@ import type { SearchResult } from "../lib/tauri";
 import { useTauriEvent } from "../lib/tauriEvents";
 import { useSpace } from "./SpaceContext";
 
+const APP_REFRESH_SETTINGS_EVENT = "app:refresh-settings";
+
 export interface UILayoutContextValue {
 	sidebarCollapsed: boolean;
 	setSidebarCollapsed: (collapsed: boolean) => void;
@@ -274,7 +276,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 
 		void loadAndApplySettings();
 
-		const onFocus = () => {
+		const onRefreshSettings = () => {
 			if (cancelled) return;
 			void (async () => {
 				try {
@@ -286,11 +288,14 @@ export function UIProvider({ children }: { children: ReactNode }) {
 				}
 			})();
 		};
-		window.addEventListener("focus", onFocus);
+		window.addEventListener(APP_REFRESH_SETTINGS_EVENT, onRefreshSettings);
 
 		return () => {
 			cancelled = true;
-			window.removeEventListener("focus", onFocus);
+			window.removeEventListener(
+				APP_REFRESH_SETTINGS_EVENT,
+				onRefreshSettings,
+			);
 		};
 	}, []);
 
