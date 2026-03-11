@@ -96,6 +96,7 @@ export function NotePropertiesPanel({
 		() => properties.length > 0 || !rawDraft.trim(),
 		[properties.length, rawDraft],
 	);
+	const hasExistingProperties = properties.length > 0;
 
 	const commitProperties = (
 		nextProperties: NoteProperty[],
@@ -222,24 +223,33 @@ export function NotePropertiesPanel({
 						);
 					})}
 					{!readOnly ? (
-						<Button
-							type="button"
-							variant="ghost"
-							size="sm"
-							className="notePropertyAddButton"
-							onClick={() =>
-								commitProperties(
-									[...properties, emptyProperty()],
-									[
-										...propertyRowIds,
-										`property-row-${propertyRowIdCounterRef.current++}`,
-									],
-								)
-							}
+						<div
+							className={[
+								"notePropertyAddWrap",
+								hasExistingProperties ? "hasDivider" : "",
+							]
+								.filter(Boolean)
+								.join(" ")}
 						>
-							<Plus size={14} />
-							Add property
-						</Button>
+							<Button
+								type="button"
+								variant="ghost"
+								size="xs"
+								className="notePropertyAddButton"
+								onClick={() =>
+									commitProperties(
+										[...properties, emptyProperty()],
+										[
+											...propertyRowIds,
+											`property-row-${propertyRowIdCounterRef.current++}`,
+										],
+									)
+								}
+							>
+								<Plus size={12} />
+								Add property
+							</Button>
+						</div>
 					) : null}
 				</div>
 			)}

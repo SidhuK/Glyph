@@ -1,5 +1,9 @@
-import { useCallback, useState } from "react";
-import { todayIsoDateLocal } from "../../lib/tasks";
+import { useCallback, useMemo, useState } from "react";
+import {
+	getTaskTimingSummary,
+	stripTaskScheduleTokens,
+	todayIsoDateLocal,
+} from "../../lib/tasks";
 import type { TaskItem } from "../../lib/tauri";
 import { Calendar } from "../Icons";
 import { Badge } from "../ui/shadcn/badge";
@@ -9,23 +13,48 @@ import { TaskCheckbox } from "./TaskCheckbox";
 
 interface TaskRowProps {
 	task: TaskItem;
+	today: string;
+	showNoteContext?: boolean;
+	showSectionTag?: boolean;
 	onToggle: (task: TaskItem, checked: boolean) => void;
 	onSchedule: (
 		taskId: string,
 		scheduled: string | null,
 		due: string | null,
-	) => Promise<void>;
+	) => Promise<boolean>;
+	onOpenNote?: (notePath: string) => void | Promise<void>;
 }
 
-export function TaskRow({ task, onToggle, onSchedule }: TaskRowProps) {
+export function TaskRow({
+	task,
+	today,
+	showNoteContext = false,
+	showSectionTag = true,
+	onToggle,
+	onSchedule,
+	onOpenNote,
+}: TaskRowProps) {
 	const [open, setOpen] = useState(false);
 	const [scheduledDate, setScheduledDate] = useState(task.scheduled_date ?? "");
 	const [dueDate, setDueDate] = useState(task.due_date ?? "");
-	const hasDateMeta = Boolean(task.scheduled_date || task.due_date);
+	const displayText = useMemo(
+		() => stripTaskScheduleTokens(task.raw_text),
+		[task.raw_text],
+	);
+	const timing = useMemo(
+		() => getTaskTimingSummary(task, today),
+		[task, today],
+	);
 
 	const applyDates = useCallback(async () => {
-		await onSchedule(task.task_id, scheduledDate || null, dueDate || null);
-		setOpen(false);
+		const applied = await onSchedule(
+			task.task_id,
+			scheduledDate || null,
+			dueDate || null,
+		);
+		if (applied) {
+			setOpen(false);
+		}
 	}, [dueDate, onSchedule, scheduledDate, task.task_id]);
 
 	const setQuickDate = useCallback((offsetDays: number) => {
@@ -35,20 +64,103 @@ export function TaskRow({ task, onToggle, onSchedule }: TaskRowProps) {
 		setScheduledDate(iso);
 	}, []);
 
+	const applyQuickSchedule = useCallback(
+		async (offsetDays: number) => {
+			const d = new Date();
+			d.setDate(d.getDate() + offsetDays);
+			const iso = todayIsoDateLocal(d);
+			const nextDueDate = dueDate || null;
+			const applied = await onSchedule(task.task_id, iso, nextDueDate);
+			if (applied) {
+				setScheduledDate(iso);
+				setDueDate(nextDueDate ?? "");
+				setOpen(false);
+			}
+		},
+		[dueDate, onSchedule, task.task_id],
+	);
+
+	const clearDates = useCallback(async () => {
+		const cleared = await onSchedule(task.task_id, null, null);
+		if (cleared) {
+			setScheduledDate("");
+			setDueDate("");
+			setOpen(false);
+		}
+	}, [onSchedule, task.task_id]);
+
 	return (
-		<div className="tasksRow" data-checked={task.checked}>
+		<div
+			className="tasksRow"
+			data-checked={task.checked}
+			data-overdue={timing.isOverdue}
+		>
 			<TaskCheckbox
 				checked={task.checked}
 				onChange={(c) => onToggle(task, c)}
 			/>
 			<div className="tasksRowContent">
 				<div className="tasksRowMain">
-					<div className="tasksRowText">{task.raw_text}</div>
-					{task.section ? (
+					<div className="tasksRowText" title={displayText}>
+						{displayText}
+					</div>
+					{showNoteContext ? (
+						<button
+							type="button"
+							className="tasksMetaLink"
+							title={task.note_path}
+							onClick={() => void onOpenNote?.(task.note_path)}
+						>
+							{task.note_title || task.note_path}
+						</button>
+					) : null}
+					{showSectionTag && task.section ? (
 						<span className="tasksMetaTag tasksMetaTagInline">
 							{task.section}
 						</span>
 					) : null}
+					<div className="tasksRowMeta">
+						{timing.badges.map((badge) => (
+							<Badge
+								key={`${task.task_id}-${badge.kind}-${badge.date}`}
+								variant="outline"
+								className={`tasksMetaBadge tasksMetaBadge-${badge.tone}`}
+								title={`${badge.kind === "due" ? "Due" : "Scheduled"} ${badge.date}`}
+							>
+								<Calendar size={11} />
+								{badge.label}
+							</Badge>
+						))}
+					</div>
+					<div className="tasksQuickActions">
+						<Button
+							type="button"
+							variant="ghost"
+							size="xs"
+							className="tasksQuickActionBtn"
+							onClick={() => void applyQuickSchedule(0)}
+						>
+							Today
+						</Button>
+						<Button
+							type="button"
+							variant="ghost"
+							size="xs"
+							className="tasksQuickActionBtn"
+							onClick={() => void applyQuickSchedule(1)}
+						>
+							Tomorrow
+						</Button>
+						<Button
+							type="button"
+							variant="ghost"
+							size="xs"
+							className="tasksQuickActionBtn"
+							onClick={() => void applyQuickSchedule(7)}
+						>
+							Next week
+						</Button>
+					</div>
 					<Popover
 						open={open}
 						onOpenChange={(o) => {
@@ -101,6 +213,14 @@ export function TaskRow({ task, onToggle, onSchedule }: TaskRowProps) {
 								>
 									Tomorrow
 								</Button>
+								<Button
+									type="button"
+									variant="outline"
+									size="xs"
+									onClick={() => setQuickDate(7)}
+								>
+									Next week
+								</Button>
 							</div>
 							<label>
 								Due
@@ -123,10 +243,7 @@ export function TaskRow({ task, onToggle, onSchedule }: TaskRowProps) {
 									type="button"
 									variant="outline"
 									size="xs"
-									onClick={() => {
-										setScheduledDate("");
-										setDueDate("");
-									}}
+									onClick={() => void clearDates()}
 								>
 									Clear
 								</Button>
@@ -141,25 +258,6 @@ export function TaskRow({ task, onToggle, onSchedule }: TaskRowProps) {
 						</PopoverContent>
 					</Popover>
 				</div>
-				{hasDateMeta ? (
-					<div className="tasksRowMeta">
-						{task.scheduled_date ? (
-							<Badge variant="outline" className="tasksMetaBadge">
-								<Calendar size={11} />
-								Scheduled {task.scheduled_date}
-							</Badge>
-						) : null}
-						{task.due_date ? (
-							<Badge
-								variant="outline"
-								className="tasksMetaBadge tasksMetaBadgeDue"
-							>
-								<Calendar size={11} />
-								Due {task.due_date}
-							</Badge>
-						) : null}
-					</div>
-				) : null}
 			</div>
 		</div>
 	);

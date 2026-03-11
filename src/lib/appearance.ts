@@ -1,4 +1,10 @@
 import type { UiAccent, UiFontFamily, UiFontSize } from "./settings";
+import {
+	type UiDarkThemeId,
+	type UiLightThemeId,
+	asUiDarkThemeId,
+	asUiLightThemeId,
+} from "./uiThemes";
 
 const BASE_TEXT_SIZES = {
 	xs: 11,
@@ -74,15 +80,23 @@ export function applyUiAccent(accent: UiAccent): void {
 	const root = document.documentElement;
 	if (accent === "neutral") {
 		root.style.removeProperty("--accent-color");
-		root.style.removeProperty("--interactive-accent");
-		root.style.removeProperty("--interactive-accent-hover");
+		root.style.removeProperty("--glyph-user-accent");
+		root.style.removeProperty("--glyph-user-accent-hover");
 		return;
 	}
 	const accentColor = UI_ACCENT_COLORS[accent] ?? UI_ACCENT_COLORS.cerulean;
-	root.style.setProperty("--accent-color", accentColor);
-	root.style.setProperty("--interactive-accent", accentColor);
+	root.style.setProperty("--glyph-user-accent", accentColor);
 	root.style.setProperty(
-		"--interactive-accent-hover",
+		"--glyph-user-accent-hover",
 		shiftHexColor(accentColor, -18),
 	);
+}
+
+export function applyUiThemeSelection(
+	lightThemeId: UiLightThemeId | string | null | undefined,
+	darkThemeId: UiDarkThemeId | string | null | undefined,
+): void {
+	const root = document.documentElement;
+	root.dataset.lightTheme = asUiLightThemeId(lightThemeId);
+	root.dataset.darkTheme = asUiDarkThemeId(darkThemeId);
 }

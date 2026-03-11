@@ -88,212 +88,155 @@
 .welcomeScreen {
 	flex: 1;
 	display: flex;
-	flex-direction: column;
-	align-items: center;
+	align-items: stretch;
 	justify-content: center;
-	gap: var(--space-4);
 	padding: var(--space-5);
 	overflow: auto;
-	position: relative;
-	background: radial-gradient(1200px 460px at 90% -20%,
-			color-mix(in srgb, var(--accent-color) 14%, transparent),
-			transparent 70%),
-		radial-gradient(900px 320px at -15% 110%,
-			color-mix(in srgb, var(--bg-tertiary) 85%, transparent),
-			transparent 70%), var(--bg-primary);
-}
-
-.welcomeAmbient {
-	pointer-events: none;
-	position: absolute;
-	inset: 0;
-	overflow: hidden;
-}
-
-.welcomeOrb {
-	position: absolute;
-	border-radius: var(--radius-full);
-	filter: blur(2px);
-	opacity: 0.75;
-}
-
-.welcomeOrbA {
-	width: 300px;
-	height: 300px;
-	right: -120px;
-	top: -90px;
-	background: color-mix(in srgb, var(--accent-color) 24%, transparent);
-}
-
-.welcomeOrbB {
-	width: 240px;
-	height: 240px;
-	left: -90px;
-	bottom: -120px;
-	background: color-mix(in srgb, var(--bg-tertiary) 78%, transparent);
+	background: var(--bg-primary);
 }
 
 .welcomeSurface {
-	position: relative;
-	z-index: 1;
-	width: min(760px, 100%);
-	display: flex;
-	flex-direction: column;
-	align-items: center;
+	width: min(920px, 100%);
+	margin: 0 auto;
+	display: block;
+}
+
+.welcomeLauncher {
+	display: grid;
+	grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
 	gap: var(--space-4);
 }
 
-.welcomeHero {
+.welcomePanel {
 	display: flex;
 	flex-direction: column;
-	gap: var(--space-2);
-	align-items: center;
-	text-align: center;
-}
-
-.welcomeTitle {
-	font-size: var(--text-3xl);
-	font-weight: var(--font-semibold);
-	color: var(--text-primary);
-	letter-spacing: -0.02em;
-}
-
-.welcomeBrand {
-	display: inline-flex;
-	align-items: center;
-	gap: var(--space-2);
-}
-
-.welcomeBrandIcon {
-	width: 40px;
-	height: 40px;
-	border-radius: var(--radius-md);
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	background: color-mix(in srgb, var(--bg-secondary) 92%, transparent);
-	border: 1px solid color-mix(in srgb, var(--border-light) 85%, transparent);
-	box-shadow: var(--shadow-md);
-}
-
-.welcomeSubtitle {
-	font-size: var(--text-base);
-	color: var(--text-secondary);
-	max-width: 420px;
-}
-
-.welcomeContentGrid {
-	display: grid;
-	grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr);
 	gap: var(--space-3);
-	width: 100%;
-}
-
-.welcomeLaunchPanel {
-	display: flex;
-	flex-direction: column;
-	gap: var(--space-2);
 	padding: var(--space-4);
-	border-radius: var(--radius-xl);
 	border: 1px solid var(--border-light);
-	background: color-mix(in srgb, var(--bg-secondary) 82%, transparent);
-	box-shadow: var(--shadow-md);
-	backdrop-filter: blur(6px);
-	-webkit-backdrop-filter: blur(6px);
-	margin-top: auto;
-	width: 100%;
-	max-width: 760px;
-}
-
-.welcomeOnboarding {
-	width: 100%;
-}
-
-.welcomeOnboardingList {
-	display: grid;
-	grid-template-columns: repeat(3, minmax(0, 1fr));
-	gap: var(--space-2);
-}
-
-.welcomeOnboardingCard {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	text-align: center;
-	gap: var(--space-2);
-	padding: var(--space-4) var(--space-3);
 	border-radius: var(--radius-lg);
-	border: 1px solid var(--border-light);
-	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
+	background: var(--bg-secondary);
 }
 
-.welcomeOnboardingIcon {
-	color: var(--text-accent, var(--interactive-accent));
-	display: flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.welcomeOnboardingTitle {
+.welcomeSectionTitle {
 	font-size: var(--text-sm);
 	font-weight: var(--font-semibold);
 	color: var(--text-primary);
 }
 
-.welcomeOnboardingBody {
-	font-size: var(--text-xs);
-	line-height: var(--leading-snug);
+.welcomeSectionTitleCompact {
+	margin-top: var(--space-2);
+}
+
+.welcomeSectionBody {
+	margin: 0;
+	font-size: var(--text-sm);
 	color: var(--text-secondary);
+	line-height: var(--leading-relaxed, 1.6);
 }
 
-.welcomeActions {
-	display: flex;
-	justify-content: center;
-	gap: var(--space-2);
-	flex-wrap: wrap;
-}
-
-.welcomeRecents {
+.welcomeActionList {
 	display: flex;
 	flex-direction: column;
 	gap: var(--space-2);
-	padding: var(--space-4);
-	border-radius: var(--radius-xl);
-	border: 1px solid var(--border-light);
-	background: color-mix(in srgb, var(--bg-secondary) 74%, transparent);
-	min-height: 0;
+}
+
+.welcomeActionButton {
+	display: flex;
+	align-items: stretch;
+	justify-content: flex-start;
 	width: 100%;
+	height: auto;
+	min-height: 64px;
+	padding: var(--space-3);
+	border-radius: var(--radius-md);
+	border: 1px solid var(--border-light);
+	background: var(--bg-primary);
+	color: var(--text-primary);
+	text-align: left;
+	white-space: normal;
+	line-height: 1.4;
+	gap: 0;
+	transition: background var(--transition-fast), border-color
+		var(--transition-fast);
+}
+
+.welcomeActionButton:hover {
+	background: var(--bg-hover);
+	border-color: var(--border-default);
+}
+
+.welcomeActionButtonPrimary {
+	background: color-mix(in srgb, var(--accent-color) 14%, var(--bg-primary));
+	border-color: color-mix(
+		in srgb,
+		var(--accent-color) 36%,
+		var(--border-default)
+	);
+}
+
+.welcomeActionContent {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	min-width: 0;
+	width: 100%;
+}
+
+.welcomeActionLabel {
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+	font-size: var(--text-sm);
+	font-weight: var(--font-semibold);
+	color: var(--text-primary);
+}
+
+.welcomeActionHint {
+	font-size: var(--text-xs);
+	color: var(--text-secondary);
+	line-height: var(--leading-relaxed, 1.6);
+	overflow-wrap: break-word;
+}
+
+.welcomeBulletList {
+	margin: 0;
+	padding-left: 18px;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	font-size: var(--text-sm);
+	color: var(--text-secondary);
 }
 
 .welcomeRecentList {
 	display: flex;
 	flex-direction: column;
 	gap: var(--space-2);
-	max-height: 220px;
-	overflow: auto;
-	padding-right: var(--space-1);
 }
 
 .welcomeRecentItem {
 	width: 100%;
 	height: auto;
-	min-height: var(--button-height);
+	min-height: 56px;
 	align-items: flex-start;
-	justify-content: center;
+	justify-content: flex-start;
 	flex-direction: column;
 	gap: 4px;
 	padding: var(--space-3);
-	border-radius: var(--radius-lg);
+	border-radius: var(--radius-md);
 	border: 1px solid var(--border-light);
-	background: color-mix(in srgb, var(--bg-secondary) 90%, transparent);
+	background: var(--bg-primary);
 	color: var(--text-primary);
 	text-align: left;
-	transition: background var(--transition-fast), border-color var(--transition-fast);
+	white-space: normal;
+	line-height: 1.4;
+	transition: background var(--transition-fast), border-color
+		var(--transition-fast);
 }
 
 .welcomeRecentItem:hover {
-	background: color-mix(in srgb, var(--bg-hover) 82%, var(--bg-secondary));
-	border-color: color-mix(in srgb, var(--accent-color) 35%, var(--border-light));
+	background: var(--bg-hover);
+	border-color: var(--border-default);
 	color: var(--text-primary);
 }
 
@@ -305,314 +248,14 @@
 .welcomeRecentPath {
 	font-size: var(--text-xs);
 	color: var(--text-tertiary);
+	overflow-wrap: break-word;
 }
 
-.welcomeEmpty {
+.welcomeEmptyText {
+	margin: 0;
 	font-size: var(--text-sm);
 	color: var(--text-tertiary);
-	text-align: center;
-}
-
-.welcomeLastSpace {
-	font-size: var(--text-xs);
-	color: var(--text-tertiary);
-	text-align: center;
-	width: 100%;
-}
-
-/* Step transition wrapper */
-.welcomeStepContent {
-	width: 100%;
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: var(--space-4);
-}
-
-/* Navigation dots */
-.welcomeDots {
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	gap: var(--space-2);
-	padding-top: var(--space-3);
-}
-
-.welcomeDot {
-	width: 8px;
-	height: 8px;
-	border-radius: var(--radius-full);
-	background: var(--border-default);
-	border: none;
-	padding: 0;
-	cursor: pointer;
-	transition: background 0.2s ease;
-}
-
-.welcomeDot:hover {
-	background: var(--text-tertiary);
-}
-
-.welcomeDotActive {
-	width: 24px;
-	background: var(--interactive-accent);
-}
-
-.welcomeDotActive:hover {
-	background: var(--interactive-accent-hover);
-}
-
-/* Hero step */
-.welcomeStepHero {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	text-align: center;
-	gap: var(--space-4);
-	padding: var(--space-5) 0;
-}
-
-.welcomeHeroTitle {
-	font-size: clamp(2rem, 5vw, 3rem);
-	font-weight: var(--font-semibold);
-	color: var(--text-primary);
-	letter-spacing: -0.03em;
-	line-height: 1.1;
-}
-
-.welcomeHeroSubtitle {
-	font-size: var(--text-lg, 1.125rem);
-	color: var(--text-secondary);
-	max-width: 380px;
-	line-height: var(--leading-relaxed, 1.625);
-}
-
-.welcomeGetStarted {
-	height: 44px;
-	padding: 0 var(--space-5);
-	border-radius: var(--radius-xl);
-	background: var(--interactive-accent);
-	color: var(--text-inverse);
-	font-size: var(--text-base);
-	font-weight: var(--font-semibold);
-	display: inline-flex;
-	align-items: center;
-	gap: var(--space-2);
-	margin-top: var(--space-2);
-	border: none;
-	cursor: pointer;
-}
-
-.welcomeGetStarted:hover {
-	background: var(--interactive-accent-hover);
-	color: var(--text-inverse);
-}
-
-/* Space step (unused, kept for reference) */
-
-.welcomeStepTitle {
-	font-size: var(--text-xl, 1.25rem);
-	font-weight: var(--font-semibold);
-	color: var(--text-primary);
-	text-align: center;
-	letter-spacing: -0.01em;
-}
-
-.welcomeStepSubtitle {
-	font-size: var(--text-sm);
-	color: var(--text-secondary);
-	text-align: center;
-	max-width: 340px;
-	line-height: var(--leading-relaxed, 1.625);
-	margin-top: calc(-1 * var(--space-2));
-}
-
-/* Tips step */
-.welcomeStepQuickStart {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: var(--space-4);
-	width: 100%;
-}
-
-.welcomeTipsGrid {
-	display: grid;
-	grid-template-columns: repeat(3, minmax(0, 1fr));
-	gap: var(--space-3);
-	width: 100%;
-}
-
-.welcomeTipCard {
-	display: flex;
-	flex-direction: column;
-	gap: var(--space-2);
-	padding: var(--space-4);
-	border-radius: var(--radius-lg);
-	border: 1px solid var(--border-light);
-	background: color-mix(in srgb, var(--bg-primary) 90%, transparent);
-	backdrop-filter: blur(4px);
-	-webkit-backdrop-filter: blur(4px);
-}
-
-.welcomeTipIndex {
-	font-size: 11px;
-	font-weight: var(--font-semibold);
-	color: var(--text-tertiary);
-	letter-spacing: 0.08em;
-}
-
-.welcomeTipTitle {
-	display: flex;
-	align-items: center;
-	gap: var(--space-2);
-	font-size: var(--text-sm);
-	font-weight: var(--font-semibold);
-	color: var(--text-primary);
-}
-
-.welcomeTipBody {
-	font-size: var(--text-xs);
-	line-height: var(--leading-snug);
-	color: var(--text-secondary);
-}
-
-.welcomeNextBtn {
-	height: 38px;
-	padding: 0 var(--space-4);
-	border-radius: var(--radius-lg);
-	background: var(--interactive-accent);
-	color: var(--text-inverse);
-	font-weight: var(--font-semibold);
-	display: inline-flex;
-	align-items: center;
-	gap: var(--space-2);
-	border: none;
-	cursor: pointer;
-	font-size: var(--text-sm);
-}
-
-.welcomeNextBtn:hover {
-	background: var(--interactive-accent-hover);
-	color: var(--text-inverse);
-}
-
-/* Ready step */
-.welcomeStepReady {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: var(--space-4);
-	width: 100%;
-	max-width: 480px;
-}
-
-.welcomeSpacePath {
-	font-size: var(--text-xs);
-	color: var(--text-tertiary);
-	text-align: center;
-	word-break: break-all;
-}
-
-.welcomeReadyActions {
-	display: flex;
-	gap: var(--space-2);
-	flex-wrap: wrap;
-	justify-content: center;
-}
-
-.welcomeReadyRecents {
-	display: flex;
-	flex-direction: column;
-	gap: var(--space-2);
-	width: 100%;
-	padding: var(--space-3);
-	border-radius: var(--radius-xl);
-	border: 1px solid var(--border-light);
-	background: color-mix(in srgb, var(--bg-secondary) 74%, transparent);
-	max-height: 200px;
-	overflow-y: auto;
-}
-
-.welcomeReadyRecentItem {
-	width: 100%;
-	display: flex;
-	flex-direction: column;
-	align-items: flex-start;
-	justify-content: center;
-	gap: 2px;
-	padding: var(--space-2) var(--space-3);
-	border-radius: var(--radius-md);
-	border: 1px solid var(--border-light);
-	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
-	cursor: pointer;
-	text-align: left;
-}
-
-.welcomeReadyRecentItem:hover {
-	border-color: var(--border-default);
-	background: var(--bg-hover);
-}
-
-.welcomeReadyRecentName {
-	font-size: var(--text-sm);
-	font-weight: var(--font-medium);
-	color: var(--text-primary);
-}
-
-.welcomeReadyRecentPath {
-	font-size: 11px;
-	color: var(--text-tertiary);
-	word-break: break-all;
-}
-
-.welcomeBackBtn {
-	height: 38px;
-	padding: 0 var(--space-4);
-	border-radius: var(--radius-lg);
-	border: 1px solid var(--border-default);
-	background: color-mix(in srgb, var(--bg-primary) 82%, transparent);
-	color: var(--text-primary);
-	font-weight: var(--font-medium);
-	display: inline-flex;
-	align-items: center;
-	gap: var(--space-2);
-	cursor: pointer;
-	font-size: var(--text-sm);
-}
-
-.welcomeBackBtn:hover {
-	border-color: var(--border-strong);
-	background: var(--bg-hover);
-}
-
-.welcomeLaunchPrimary,
-.welcomeLaunchSecondary {
-	height: 36px;
-	border-radius: var(--radius-lg);
-	padding: 0 var(--space-4);
-}
-
-.welcomeLaunchPrimary {
-	background: var(--interactive-accent);
-	color: var(--text-inverse);
-}
-
-.welcomeLaunchPrimary:hover {
-	background: var(--interactive-accent-hover);
-	color: var(--text-inverse);
-}
-
-.welcomeLaunchSecondary {
-	border: 1px solid var(--border-default);
-	background: color-mix(in srgb, var(--bg-primary) 82%, transparent);
-	color: var(--text-primary);
-}
-
-.welcomeLaunchSecondary:hover {
-	border-color: var(--border-strong);
-	background: var(--bg-hover);
-	color: var(--text-primary);
+	line-height: var(--leading-relaxed, 1.6);
 }
 
 .folderShelf {
@@ -1022,6 +665,168 @@
 	justify-content: center;
 	padding: var(--space-5);
 	overflow-y: auto;
+}
+
+.starterPane {
+	width: min(640px, 100%);
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-4);
+	padding: var(--space-4);
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-lg);
+	background: var(--bg-secondary);
+}
+
+.starterPaneHeader {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: var(--space-3);
+}
+
+.starterPaneTitle {
+	font-size: var(--text-sm);
+	font-weight: var(--font-semibold);
+	color: var(--text-primary);
+}
+
+.starterPaneBody {
+	margin: 6px 0 0;
+	font-size: var(--text-sm);
+	color: var(--text-secondary);
+	line-height: var(--leading-relaxed, 1.6);
+}
+
+.starterDismissButton {
+	width: 28px;
+	height: 28px;
+	min-height: 28px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-sm);
+	background: var(--bg-primary);
+	color: var(--text-secondary);
+}
+
+.starterDismissButton:hover {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}
+
+.starterActionList {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-2);
+}
+
+.starterAction {
+	width: 100%;
+	display: grid;
+	grid-template-columns: auto minmax(0, 1fr) auto;
+	align-items: center;
+	justify-content: stretch;
+	gap: var(--space-3);
+	height: auto;
+	min-height: 72px;
+	padding: var(--space-3);
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-md);
+	background: var(--bg-primary);
+	color: var(--text-primary);
+	text-align: left;
+	white-space: normal;
+	line-height: 1.4;
+	transition: background var(--transition-fast), border-color
+		var(--transition-fast);
+}
+
+.starterAction:hover {
+	background: var(--bg-hover);
+	border-color: var(--border-default);
+}
+
+.starterActionIcon {
+	width: 28px;
+	height: 28px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--text-secondary);
+}
+
+.starterActionText {
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.starterActionTitle {
+	font-size: var(--text-sm);
+	font-weight: var(--font-semibold);
+	color: var(--text-primary);
+}
+
+.starterActionBody {
+	font-size: var(--text-xs);
+	color: var(--text-secondary);
+	line-height: var(--leading-relaxed, 1.6);
+}
+
+.starterShortcut {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.starterShortcut kbd {
+	min-width: 26px;
+	height: 24px;
+	padding: 0 7px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: var(--text-xs);
+	font-weight: var(--font-semibold);
+	border-radius: var(--radius-sm);
+	border: 1px solid var(--border-default);
+	background: transparent;
+	color: var(--text-secondary);
+}
+
+.starterPaneFooter {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--space-3);
+	flex-wrap: wrap;
+}
+
+.starterInlineButton {
+	display: inline-flex;
+	align-items: center;
+	justify-content: flex-start;
+	height: auto;
+	min-height: 0;
+	padding: 0;
+	border: 0;
+	background: transparent;
+	font-size: var(--text-sm);
+	font-weight: var(--font-medium);
+	color: var(--text-primary);
+	white-space: normal;
+}
+
+.starterInlineButton:hover {
+	color: var(--interactive-accent-hover);
+}
+
+.starterFooterText {
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
 }
 
 .mainEmptyPrompt {

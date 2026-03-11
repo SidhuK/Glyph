@@ -64,16 +64,10 @@
 	color: color-mix(in srgb, var(--text-secondary) 92%, var(--text-primary));
 }
 
-.tasksPaneToolbarSubtitle {
-	margin: 0;
-	max-width: 720px;
-	font-size: 0.76rem;
-	line-height: 1.45;
-	color: color-mix(in srgb, var(--text-secondary) 84%, transparent);
-}
-
 .tasksPaneToolbarActions {
 	flex-shrink: 0;
+	flex-wrap: wrap;
+	justify-content: flex-end;
 }
 
 .tasksPaneScopeChip {
@@ -134,6 +128,105 @@
 		var(--bg-primary)
 	);
 	color: color-mix(in srgb, var(--task-bucket-inbox) 72%, var(--text-primary));
+}
+
+.tasksPaneMenuButton {
+	height: 28px;
+	padding-inline: 8px;
+	border-radius: var(--radius-md);
+	border: 1px solid color-mix(in srgb, var(--border-light) 78%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
+	color: var(--text-secondary);
+	gap: 7px;
+	box-shadow: none;
+}
+
+.tasksPaneMenuButton:hover,
+.tasksPaneMenuButton:focus-visible {
+	border-color: var(--border-default);
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}
+
+.tasksPaneMenuButton[data-active="true"],
+.tasksPaneMenuButton[data-open="true"] {
+	border-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 28%,
+		var(--border-default)
+	);
+	background: color-mix(in srgb, var(--interactive-accent) 8%, var(--bg-hover));
+	color: var(--text-primary);
+}
+
+.tasksPaneMenuKey {
+	font-size: 0.68rem;
+	font-weight: var(--font-medium);
+	color: var(--text-tertiary);
+	letter-spacing: 0.01em;
+}
+
+.tasksPaneMenuButton[data-active="true"] .tasksPaneMenuKey,
+.tasksPaneMenuButton[data-open="true"] .tasksPaneMenuKey,
+.tasksPaneMenuButton:hover .tasksPaneMenuKey,
+.tasksPaneMenuButton:focus-visible .tasksPaneMenuKey {
+	color: var(--text-secondary);
+}
+
+.tasksPaneMenuDivider {
+	width: 1px;
+	height: 12px;
+	background: color-mix(in srgb, var(--border-light) 82%, transparent);
+	flex: 0 0 auto;
+}
+
+.tasksPaneMenuButton[data-active="true"] .tasksPaneMenuDivider,
+.tasksPaneMenuButton[data-open="true"] .tasksPaneMenuDivider {
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 24%,
+		var(--border-default)
+	);
+}
+
+.tasksPaneMenuValue {
+	font-size: 0.75rem;
+	font-weight: var(--font-medium);
+	color: var(--text-primary);
+}
+
+.tasksPaneMenuContent {
+	min-width: 180px;
+	padding: 4px;
+	border-color: color-mix(in srgb, var(--border-default) 62%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 96%, var(--bg-secondary));
+	box-shadow: 0 8px 20px
+		color-mix(in srgb, var(--shadow-color, #000) 12%, transparent);
+}
+
+.tasksPaneMenuHeader {
+	padding: 6px 8px 5px;
+	font-size: 0.68rem;
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--text-tertiary);
+}
+
+.tasksPaneMenuItem {
+	min-height: 28px;
+	border-radius: var(--radius-sm);
+	color: var(--text-secondary);
+	padding-left: 8px;
+}
+
+.tasksPaneMenuItem > span:first-child {
+	display: none;
+}
+
+.tasksPaneMenuItem[data-state="checked"] {
+	background: color-mix(in srgb, var(--bg-hover) 88%, var(--bg-secondary));
+	color: var(--text-primary);
 }
 
 .tasksPaneBody {
@@ -293,6 +386,12 @@
 	color: var(--text-secondary);
 }
 
+.tasksPaneToolbarBadge[data-tone="danger"] {
+	border-color: color-mix(in srgb, var(--status-danger-border) 78%, transparent);
+	background: color-mix(in srgb, var(--status-danger-bg) 86%, transparent);
+	color: var(--status-danger-fg);
+}
+
 .tasksPaneEmptyState {
 	min-height: 220px;
 	display: flex;
@@ -328,6 +427,7 @@
 	color: var(--text-secondary);
 }
 
+.tasksSections,
 .tasksGroups,
 .tasksList {
 	display: flex;
@@ -335,6 +435,7 @@
 	gap: 12px;
 }
 
+.tasksSection,
 .tasksNoteGroup {
 	display: flex;
 	flex-direction: column;
@@ -342,6 +443,28 @@
 	border-radius: var(--radius-lg);
 	background: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary));
 	overflow: hidden;
+}
+
+.tasksSectionHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 11px 14px 9px;
+	border-bottom: 1px solid
+		color-mix(in srgb, var(--border-subtle) 72%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 46%, transparent);
+}
+
+.tasksSectionHeaderLabel {
+	font-size: var(--text-sm);
+	font-weight: var(--font-semibold);
+	color: var(--text-primary);
+}
+
+.tasksSectionHeaderCount {
+	font-size: var(--text-xs);
+	color: var(--text-secondary);
 }
 
 .tasksNoteHeader {
@@ -421,7 +544,8 @@
 	flex: 0 0 auto;
 }
 
-.tasksNoteGroupList {
+.tasksNoteGroupList,
+.tasksSectionList {
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
@@ -433,19 +557,20 @@
 }
 
 .tasksRow {
-	display: grid;
-	grid-template-columns: auto 1fr;
+	container-type: inline-size;
+	display: flex;
 	align-items: center;
 	gap: 6px;
-	padding: 5px 8px;
+	padding: 6px 8px;
 	border-radius: var(--radius-lg);
 	border: 1px solid color-mix(in srgb, transparent 100%, transparent);
 	background: color-mix(in srgb, var(--bg-primary) 86%, transparent);
 	transition: background-color var(--transition-fast), border-color
-		var(--transition-fast), transform var(--transition-fast);
+		var(--transition-fast);
 }
 
-.tasksListFlat .tasksRow {
+.tasksListFlat .tasksRow,
+.tasksSectionList .tasksRow {
 	border-color: color-mix(in srgb, var(--border-light) 80%, transparent);
 	background: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary));
 }
@@ -453,6 +578,10 @@
 .tasksRow:hover {
 	background: color-mix(in srgb, var(--bg-hover) 88%, var(--bg-primary));
 	border-color: color-mix(in srgb, var(--border-default) 62%, transparent);
+}
+
+.tasksRow[data-overdue="true"] {
+	border-color: color-mix(in srgb, var(--status-danger-border) 46%, transparent);
 }
 
 .tasksRow[data-checked="true"] .tasksRowText {
@@ -482,11 +611,8 @@
 }
 
 .tasksRowContent {
+	flex: 1;
 	min-width: 0;
-	display: flex;
-	flex-direction: column;
-	gap: 2px;
-	justify-content: center;
 }
 
 .tasksRowMain {
@@ -494,13 +620,15 @@
 	align-items: center;
 	gap: 6px;
 	min-width: 0;
+	width: 100%;
+	overflow: hidden;
 }
 
 .tasksRowText {
 	flex: 1 1 auto;
 	min-width: 0;
 	font-size: 0.92rem;
-	line-height: 1.15;
+	line-height: 1.25;
 	color: var(--text-primary);
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -511,14 +639,16 @@
 .tasksRowMeta {
 	display: flex;
 	align-items: center;
-	flex-wrap: wrap;
+	flex-wrap: nowrap;
 	gap: 6px;
+	min-width: 0;
+	flex: 0 1 auto;
 }
 
 .tasksMetaTag {
 	display: inline-flex;
 	align-items: center;
-	height: 18px;
+	height: 20px;
 	padding: 0 7px;
 	border-radius: var(--radius-full);
 	border: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
@@ -530,22 +660,59 @@
 
 .tasksMetaTagInline {
 	flex: 0 0 auto;
-	max-width: min(28%, 160px);
+	max-width: 160px;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
+.tasksMetaLink {
+	flex: 0 1 140px;
+	min-width: 0;
+	height: 20px;
+	padding: 0 7px;
+	border: 0;
+	border-radius: var(--radius-full);
+	background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
+	color: var(--text-secondary);
+	font-size: 0.66rem;
+	font-weight: var(--font-medium);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	cursor: pointer;
+}
+
+.tasksMetaLink:hover,
+.tasksMetaLink:focus-visible {
+	background: color-mix(in srgb, var(--bg-hover) 82%, var(--bg-secondary));
+	color: var(--text-primary);
+}
+
 .tasksMetaBadge {
 	height: 22px;
+	max-width: 160px;
 	padding-inline: 8px;
 	border-radius: var(--radius-full);
 	border-color: color-mix(in srgb, var(--border-light) 76%, transparent);
 	background: color-mix(in srgb, var(--bg-secondary) 72%, transparent);
 	color: var(--text-secondary);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
-.tasksMetaBadgeDue {
+.tasksMetaBadge-default {
+	color: var(--text-secondary);
+}
+
+.tasksMetaBadge-today {
+	border-color: color-mix(in srgb, var(--task-bucket-today) 32%, transparent);
+	background: color-mix(in srgb, var(--task-bucket-today) 12%, transparent);
+	color: color-mix(in srgb, var(--task-bucket-today) 78%, var(--text-primary));
+}
+
+.tasksMetaBadge-upcoming {
 	border-color: color-mix(in srgb, var(--task-bucket-upcoming) 28%, transparent);
 	background: color-mix(in srgb, var(--task-bucket-upcoming) 10%, transparent);
 	color: color-mix(
@@ -555,11 +722,53 @@
 	);
 }
 
-.tasksScheduleBtn {
-	height: 18px;
+.tasksMetaBadge-pastScheduled {
+	border-color: color-mix(in srgb, var(--border-light) 72%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 72%, transparent);
+	color: var(--text-secondary);
+}
+
+.tasksMetaBadge-overdue {
+	border-color: color-mix(in srgb, var(--status-danger-border) 76%, transparent);
+	background: color-mix(in srgb, var(--status-danger-bg) 86%, transparent);
+	color: var(--status-danger-fg);
+}
+
+.tasksQuickActions {
+	display: inline-flex;
 	flex: 0 0 auto;
+	align-items: center;
+	gap: 2px;
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 120ms ease;
+}
+
+.tasksRow:hover .tasksQuickActions,
+.tasksRow:focus-within .tasksQuickActions {
+	opacity: 1;
+	pointer-events: auto;
+}
+
+.tasksQuickActionBtn {
+	height: 20px;
 	padding-inline: 6px;
-	border-radius: var(--radius-full);
+	border-radius: var(--radius-md);
+	color: var(--text-secondary);
+}
+
+.tasksQuickActionBtn:hover,
+.tasksQuickActionBtn:focus-visible {
+	color: var(--text-primary);
+	background: color-mix(in srgb, var(--bg-hover) 84%, var(--bg-secondary));
+}
+
+.tasksScheduleBtn {
+	height: 20px;
+	flex: 0 0 auto;
+	margin-left: auto;
+	padding-inline: 6px;
+	border-radius: var(--radius-md);
 	font-size: 0.72rem;
 	line-height: 1;
 	color: var(--text-secondary);
@@ -574,7 +783,8 @@
 .tasksBucketPill:focus-visible,
 .tasksNoteHeader:focus-visible,
 .tasksCheckbox:focus-visible,
-.tasksScheduleBtn:focus-visible {
+.tasksScheduleBtn:focus-visible,
+.tasksMetaLink:focus-visible {
 	outline: 2px solid
 		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
 	outline-offset: 2px;
@@ -614,6 +824,29 @@
 	gap: var(--space-2);
 }
 
+@container (max-width: 980px) {
+	.tasksQuickActions {
+		display: none;
+	}
+}
+
+@container (max-width: 820px) {
+	.tasksMetaLink,
+	.tasksMetaTagInline {
+		display: none;
+	}
+
+	.tasksMetaBadge {
+		max-width: 132px;
+	}
+}
+
+@container (max-width: 680px) {
+	.tasksRowMeta {
+		display: none;
+	}
+}
+
 @media (max-width: 900px) {
 	.tasksPaneToolbar {
 		flex-direction: column;
@@ -621,7 +854,7 @@
 	}
 
 	.tasksPaneToolbarActions {
-		justify-content: space-between;
+		justify-content: flex-start;
 	}
 }
 
@@ -642,5 +875,24 @@
 	.tasksBucketPill {
 		flex: 1 1 0;
 		padding-inline: 10px;
+	}
+
+	.tasksPaneToolbarTitleRow {
+		gap: 6px;
+	}
+
+	.tasksPaneToolbarBadge {
+		letter-spacing: 0.04em;
+	}
+
+	.tasksPaneMenuKey,
+	.tasksPaneMenuDivider {
+		display: none;
+	}
+
+	.tasksQuickActions,
+	.tasksMetaTagInline,
+	.tasksMetaLink {
+		display: none;
 	}
 }

@@ -1,18 +1,36 @@
 import { useTheme } from "next-themes";
 import { useCallback, useEffect, useState } from "react";
-import { applyUiAccent, applyUiTypography } from "../../lib/appearance";
+import {
+	applyUiAccent,
+	applyUiThemeSelection,
+	applyUiTypography,
+} from "../../lib/appearance";
 import {
 	type ThemeMode,
 	type UiAccent,
+	type UiDarkThemeId,
 	type UiFontFamily,
 	type UiFontSize,
+	type UiLightThemeId,
 	loadSettings,
 	setThemeMode,
 	setUiAccent,
+	setUiDarkThemeId,
 	setUiFontFamily,
 	setUiFontSize,
+	setUiLightThemeId,
 	setUiMonoFontFamily,
 } from "../../lib/settings";
+import {
+	DARK_THEME_OPTIONS,
+	GLYPH_DEFAULT_DARK_THEME_ID,
+	GLYPH_DEFAULT_LIGHT_THEME_ID,
+	LIGHT_THEME_OPTIONS,
+	asUiDarkThemeId,
+	asUiLightThemeId,
+	isGlyphDefaultDarkTheme,
+	isGlyphDefaultLightTheme,
+} from "../../lib/uiThemes";
 import { AppearanceAccentCard } from "./AppearanceAccentCard";
 import { AppearanceTypographyCard } from "./AppearanceTypographyCard";
 import {
@@ -30,6 +48,12 @@ import {
 export function AppearanceSettingsPane() {
 	const { setTheme } = useTheme();
 	const [themeMode, setThemeModeState] = useState<ThemeMode>("system");
+	const [lightThemeId, setLightThemeIdState] = useState<UiLightThemeId>(
+		GLYPH_DEFAULT_LIGHT_THEME_ID,
+	);
+	const [darkThemeId, setDarkThemeIdState] = useState<UiDarkThemeId>(
+		GLYPH_DEFAULT_DARK_THEME_ID,
+	);
 	const [accent, setAccentState] = useState<UiAccent>("neutral");
 	const [fontFamily, setFontFamilyState] =
 		useState<UiFontFamily>(DEFAULT_FONT_FAMILY);
@@ -55,6 +79,8 @@ export function AppearanceSettingsPane() {
 				]);
 				if (cancelled) return;
 				setThemeModeState(settings.ui.theme);
+				setLightThemeIdState(settings.ui.lightThemeId);
+				setDarkThemeIdState(settings.ui.darkThemeId);
 				setAccentState(settings.ui.accent);
 				setFontFamilyState(settings.ui.fontFamily);
 				setMonoFontFamilyState(settings.ui.monoFontFamily);
@@ -70,6 +96,10 @@ export function AppearanceSettingsPane() {
 						: [settings.ui.monoFontFamily, ...monoFonts],
 				);
 				setTheme(settings.ui.theme);
+				applyUiThemeSelection(
+					settings.ui.lightThemeId,
+					settings.ui.darkThemeId,
+				);
 				applyUiAccent(settings.ui.accent);
 				applyUiTypography(
 					settings.ui.fontFamily,
@@ -99,6 +129,44 @@ export function AppearanceSettingsPane() {
 			}
 		},
 		[setTheme],
+	);
+
+	const onLightThemeChange = useCallback(
+		async (next: UiLightThemeId | string) => {
+			setError("");
+			const previousLight = lightThemeId;
+			const previousDark = darkThemeId;
+			const normalizedNext = asUiLightThemeId(next);
+			setLightThemeIdState(normalizedNext);
+			applyUiThemeSelection(normalizedNext, previousDark);
+			try {
+				await setUiLightThemeId(normalizedNext);
+			} catch (e) {
+				setLightThemeIdState(previousLight);
+				applyUiThemeSelection(previousLight, previousDark);
+				setError(e instanceof Error ? e.message : "Failed to save settings");
+			}
+		},
+		[darkThemeId, lightThemeId],
+	);
+
+	const onDarkThemeChange = useCallback(
+		async (next: UiDarkThemeId | string) => {
+			setError("");
+			const previousLight = lightThemeId;
+			const previousDark = darkThemeId;
+			const normalizedNext = asUiDarkThemeId(next);
+			setDarkThemeIdState(normalizedNext);
+			applyUiThemeSelection(previousLight, normalizedNext);
+			try {
+				await setUiDarkThemeId(normalizedNext);
+			} catch (e) {
+				setDarkThemeIdState(previousDark);
+				applyUiThemeSelection(previousLight, previousDark);
+				setError(e instanceof Error ? e.message : "Failed to save settings");
+			}
+		},
+		[darkThemeId, lightThemeId],
 	);
 
 	const onFontFamilyChange = useCallback(
@@ -154,6 +222,17 @@ export function AppearanceSettingsPane() {
 		}
 	}, []);
 
+	const showAccentCard =
+		isGlyphDefaultLightTheme(lightThemeId) ||
+		isGlyphDefaultDarkTheme(darkThemeId);
+	const accentDescription =
+		isGlyphDefaultLightTheme(lightThemeId) &&
+		isGlyphDefaultDarkTheme(darkThemeId)
+			? "Choose the accent used for highlights, focus rings, and emphasis in the default light and dark themes."
+			: isGlyphDefaultLightTheme(lightThemeId)
+				? "Choose the accent used for highlights, focus rings, and emphasis in the default light theme."
+				: "Choose the accent used for highlights, focus rings, and emphasis in the default dark theme.";
+
 	return (
 		<div className="settingsPane">
 			{error ? <div className="settingsError">{error}</div> : null}
@@ -177,8 +256,48 @@ export function AppearanceSettingsPane() {
 							]}
 						/>
 					</SettingsRow>
+					<SettingsRow
+						label="Light theme"
+						htmlFor="settingsLightTheme"
+						description="Choose the theme family Glyph should use whenever the app resolves to light mode."
+					>
+						<select
+							id="settingsLightTheme"
+							value={lightThemeId}
+							onChange={(event) => void onLightThemeChange(event.target.value)}
+						>
+							{LIGHT_THEME_OPTIONS.map((option) => (
+								<option key={option.id} value={option.id}>
+									{option.label}
+								</option>
+							))}
+						</select>
+					</SettingsRow>
+					<SettingsRow
+						label="Dark theme"
+						htmlFor="settingsDarkTheme"
+						description="Choose the theme family Glyph should use whenever the app resolves to dark mode."
+					>
+						<select
+							id="settingsDarkTheme"
+							value={darkThemeId}
+							onChange={(event) => void onDarkThemeChange(event.target.value)}
+						>
+							{DARK_THEME_OPTIONS.map((option) => (
+								<option key={option.id} value={option.id}>
+									{option.label}
+								</option>
+							))}
+						</select>
+					</SettingsRow>
 				</SettingsSection>
-				<AppearanceAccentCard accent={accent} onAccentChange={onAccentChange} />
+				{showAccentCard ? (
+					<AppearanceAccentCard
+						accent={accent}
+						description={accentDescription}
+						onAccentChange={onAccentChange}
+					/>
+				) : null}
 				<AppearanceTypographyCard
 					fontFamily={fontFamily}
 					monoFontFamily={monoFontFamily}

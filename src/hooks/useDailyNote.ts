@@ -4,6 +4,7 @@ import {
 	getDailyNotePath,
 	getTodayDateString,
 } from "../lib/dailyNotes";
+import { updateOnboardingSettings } from "../lib/settings";
 import { invoke } from "../lib/tauri";
 
 export interface UseDailyNoteOptions {
@@ -35,6 +36,7 @@ export function useDailyNote(options: UseDailyNoteOptions): UseDailyNoteReturn {
 					text: content,
 				});
 				await onOpenFile(notePath);
+				void updateOnboardingSettings({ openedDailyNote: true });
 				return notePath;
 			} catch (err) {
 				const message =

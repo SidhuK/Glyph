@@ -26,13 +26,22 @@ interface UseNoteEditorOptions {
 	markdown: string;
 	mode: CanvasInlineEditorMode;
 	relPath?: string;
+	interactive?: boolean;
 	onChange: (nextMarkdown: string) => void;
 }
 
-function handleEditorClick(event: MouseEvent, relPath: string): boolean {
+function handleEditorClick(
+	event: MouseEvent,
+	relPath: string,
+	interactive: boolean,
+): boolean {
 	const target = event.target instanceof Element ? event.target : null;
 	const tagToken = target?.closest(".tagToken") as HTMLElement | null;
 	if (tagToken) {
+		if (!interactive) {
+			event.preventDefault();
+			return true;
+		}
 		event.preventDefault();
 		const rawTag =
 			tagToken.getAttribute("data-tag") ?? tagToken.textContent ?? "";
@@ -46,6 +55,10 @@ function handleEditorClick(event: MouseEvent, relPath: string): boolean {
 		'[data-wikilink="true"]',
 	) as HTMLElement | null;
 	if (wikiLink) {
+		if (!interactive) {
+			event.preventDefault();
+			return true;
+		}
 		event.preventDefault();
 		dispatchWikiLinkClick({
 			raw: wikiLink.textContent ?? "",
@@ -65,6 +78,10 @@ function handleEditorClick(event: MouseEvent, relPath: string): boolean {
 	const link = target?.closest("a") as HTMLAnchorElement | null;
 	const href = link?.getAttribute("href") ?? "";
 	if (!href) return false;
+	if (!interactive) {
+		event.preventDefault();
+		return true;
+	}
 	if (href.startsWith("http://") || href.startsWith("https://")) {
 		event.preventDefault();
 		void openUrl(href);
@@ -83,6 +100,7 @@ export function useNoteEditor({
 	markdown,
 	mode,
 	relPath = "",
+	interactive = true,
 	onChange,
 }: UseNoteEditorOptions) {
 	const { frontmatter, body } = splitYamlFrontmatter(markdown);
@@ -118,7 +136,7 @@ export function useNoteEditor({
 			handleDOMEvents: {
 				click: (_view, event) => {
 					if (!(event instanceof MouseEvent)) return false;
-					return handleEditorClick(event, relPath);
+					return handleEditorClick(event, relPath, interactive);
 				},
 			},
 		},

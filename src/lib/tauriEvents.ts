@@ -1,5 +1,6 @@
 import { listen } from "@tauri-apps/api/event";
 import { useEffect, useRef } from "react";
+import type { UiDarkThemeId, UiLightThemeId } from "./uiThemes";
 
 type TauriEventMap = {
 	"menu:new_note": undefined;
@@ -51,6 +52,8 @@ type TauriEventMap = {
 	"settings:updated": {
 		ui?: {
 			theme?: string;
+			lightThemeId?: UiLightThemeId;
+			darkThemeId?: UiDarkThemeId;
 			accent?:
 			| "neutral"
 			| "cerulean"
@@ -71,6 +74,13 @@ type TauriEventMap = {
 		};
 		tasks?: {
 			source?: { mode?: "space" | "folders"; folders?: string[] };
+		};
+		onboarding?: {
+			launcherSeen?: boolean;
+			starterDismissed?: boolean;
+			createdFirstNote?: boolean;
+			usedCommandPalette?: boolean;
+			openedDailyNote?: boolean;
 		};
 	};
 };

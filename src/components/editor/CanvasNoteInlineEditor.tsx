@@ -8,6 +8,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 import { EditorRibbon } from "./EditorRibbon";
 import { NotePropertiesPanel } from "./NotePropertiesPanel";
 import { useNoteEditor } from "./hooks/useNoteEditor";
+import { useResetScrollOnChange } from "./hooks/useResetScrollOnChange";
 import {
 	dispatchMarkdownLinkClick,
 	dispatchWikiLinkClick,
@@ -69,6 +70,8 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	markdown,
 	relPath,
 	mode,
+	interactive = true,
+	showBacklinks = true,
 	onRegisterCalloutInserter,
 	onChange,
 }: CanvasNoteInlineEditorProps) {
@@ -78,7 +81,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		frontmatterRef,
 		lastAppliedBodyRef,
 		lastEmittedMarkdownRef,
-	} = useNoteEditor({ markdown, mode, relPath, onChange });
+	} = useNoteEditor({ markdown, mode, relPath, interactive, onChange });
 
 	const [frontmatterDraft, setFrontmatterDraft] = useState(frontmatter ?? "");
 	const lastFrontmatterRef = useRef(frontmatter);
@@ -111,8 +114,14 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		if (mode !== "rich") setShowBottomRibbon(false);
 	}, [mode]);
 
+	useResetScrollOnChange(tiptapHostRef, ".rfNodeNoteEditorBody", [
+		markdown,
+		mode,
+		relPath,
+	]);
+
 	useEffect(() => {
-		if (!relPath) {
+		if (!relPath || !showBacklinks) {
 			setBacklinks([]);
 			return;
 		}
@@ -128,7 +137,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		return () => {
 			cancelled = true;
 		};
-	}, [relPath]);
+	}, [relPath, showBacklinks]);
 
 	const canEdit = mode === "rich" && Boolean(editor?.isEditable);
 
@@ -194,37 +203,44 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 			if (token.kind === "wiki") {
 				const parsed = parseWikiLink(token.raw);
 				nodes.push(
-					<button
-						key={`fm-${token.start}-${token.end}`}
-						type="button"
-						className="frontmatterInlineLink"
-						onClick={() => {
-							if (!parsed) return;
-							dispatchWikiLinkClick({
-								raw: parsed.raw,
-								target: parsed.target,
-								alias: parsed.alias,
-								anchorKind: parsed.anchorKind,
-								anchor: parsed.anchor,
-								unresolved: parsed.unresolved,
-							});
-						}}
-					>
-						{token.raw}
-					</button>,
+					interactive && parsed ? (
+						<button
+							key={`fm-${token.start}-${token.end}`}
+							type="button"
+							className="frontmatterInlineLink"
+							onClick={() => {
+								dispatchWikiLinkClick({
+									raw: parsed.raw,
+									target: parsed.target,
+									alias: parsed.alias,
+									anchorKind: parsed.anchorKind,
+									anchor: parsed.anchor,
+									unresolved: parsed.unresolved,
+								});
+							}}
+						>
+							{token.raw}
+						</button>
+					) : (
+						token.raw
+					),
 				);
 			} else {
 				nodes.push(
-					<button
-						key={`fm-${token.start}-${token.end}`}
-						type="button"
-						className="frontmatterInlineLink"
-						onClick={() => {
-							void openFrontmatterHref(token.href, relPath ?? "");
-						}}
-					>
-						{token.raw}
-					</button>,
+					interactive ? (
+						<button
+							key={`fm-${token.start}-${token.end}`}
+							type="button"
+							className="frontmatterInlineLink"
+							onClick={() => {
+								void openFrontmatterHref(token.href, relPath ?? "");
+							}}
+						>
+							{token.raw}
+						</button>
+					) : (
+						token.raw
+					),
 				);
 			}
 			cursor = token.end;
@@ -374,34 +390,6 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 						<pre>{renderFrontmatterWithLinks(frontmatter.trimEnd())}</pre>
 					</div>
 				) : null}
-				{mode !== "plain" && backlinks.length > 0 ? (
-					<div className="editorBacklinks" aria-label="Backlinks">
-						<div className="editorBacklinksLabel">
-							Linked mentions ({backlinks.length})
-						</div>
-						<div className="editorBacklinksList">
-							{backlinks.map((item) => (
-								<button
-									key={item.id}
-									type="button"
-									className="editorBacklink"
-									onClick={() =>
-										dispatchWikiLinkClick({
-											raw: `[[${item.id}]]`,
-											target: item.id,
-											alias: null,
-											anchorKind: "none",
-											anchor: null,
-											unresolved: false,
-										})
-									}
-								>
-									{item.title || item.id}
-								</button>
-							))}
-						</div>
-					</div>
-				) : null}
 				{mode !== "plain" ? (
 					<div
 						ref={tiptapHostRef}
@@ -492,6 +480,35 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 									</div>
 								</PopoverContent>
 							</Popover>
+						) : null}
+						{showBacklinks && backlinks.length > 0 ? (
+							<div className="editorBacklinks" aria-label="Backlinks">
+								<div className="editorBacklinksDivider" aria-hidden="true" />
+								<div className="editorBacklinksLabel">
+									Linked mentions ({backlinks.length})
+								</div>
+								<div className="editorBacklinksList">
+									{backlinks.map((item) => (
+										<button
+											key={item.id}
+											type="button"
+											className="editorBacklink"
+											onClick={() =>
+												dispatchWikiLinkClick({
+													raw: `[[${item.id}]]`,
+													target: item.id,
+													alias: null,
+													anchorKind: "none",
+													anchor: null,
+													unresolved: false,
+												})
+											}
+										>
+											{item.title || item.id}
+										</button>
+									))}
+								</div>
+							</div>
 						) : null}
 					</div>
 				) : null}

@@ -1,5 +1,5 @@
-import { Suspense, lazy, memo, useEffect, useMemo } from "react";
-import { useSpace } from "../../contexts";
+import { Suspense, lazy, memo, useEffect, useMemo, useState } from "react";
+import { useSpace, useUILayoutContext } from "../../contexts";
 import {
 	PATH_MOVED_EVENT,
 	PATH_REMOVED_EVENT,
@@ -7,11 +7,19 @@ import {
 	type PathRemovedDetail,
 } from "../../lib/appEvents";
 import { APP_TAGLINE } from "../../lib/copy";
+import {
+	DEFAULT_ONBOARDING_SETTINGS,
+	type OnboardingSettings,
+	loadSettings,
+	updateOnboardingSettings,
+} from "../../lib/settings";
 import { formatShortcutPartsForPlatform } from "../../lib/shortcuts/platform";
 import { TASKS_TAB_ID } from "../../lib/tasks";
+import { useTauriEvent } from "../../lib/tauriEvents";
 import { isInAppPreviewable } from "../../utils/filePreview";
 import { FilePreviewPane } from "../preview/FilePreviewPane";
 import { TasksPane } from "../tasks/TasksPane";
+import { GettingStartedPane } from "./GettingStartedPane";
 import { TabBar } from "./TabBar";
 import { WelcomeScreen } from "./WelcomeScreen";
 import { useTabManager } from "./useTabManager";
@@ -28,13 +36,21 @@ interface MainContentProps {
 		openNonMarkdownExternally: (relPath: string) => Promise<void>;
 	};
 	onOpenCommandPalette: () => void;
+	onCreateNote: () => void;
+	onOpenDailyNote: () => void;
+	onOpenTasks: () => void;
 	openTasksRequest: number;
+	showGettingStartedRequest: number;
 }
 
 export const MainContent = memo(function MainContent({
 	fileTree,
 	onOpenCommandPalette,
+	onCreateNote,
+	onOpenDailyNote,
+	onOpenTasks,
 	openTasksRequest,
+	showGettingStartedRequest,
 }: MainContentProps) {
 	const {
 		info,
@@ -47,6 +63,12 @@ export const MainContent = memo(function MainContent({
 		onContinueLastSpace,
 		onCreateSpace,
 	} = useSpace();
+	const { dailyNotesFolder } = useUILayoutContext();
+	const [onboarding, setOnboarding] = useState<OnboardingSettings>(
+		DEFAULT_ONBOARDING_SETTINGS,
+	);
+	const [onboardingLoaded, setOnboardingLoaded] = useState(false);
+	const [starterOverrideVisible, setStarterOverrideVisible] = useState(false);
 
 	const {
 		openTabs,
@@ -69,6 +91,12 @@ export const MainContent = memo(function MainContent({
 		if (!spacePath || openTasksRequest === 0) return;
 		openSpecialTab(TASKS_TAB_ID);
 	}, [openSpecialTab, openTasksRequest, spacePath]);
+
+	useEffect(() => {
+		if (!spacePath || showGettingStartedRequest === 0) return;
+		setStarterOverrideVisible(true);
+		setActiveTabPath(null);
+	}, [setActiveTabPath, showGettingStartedRequest, spacePath]);
 
 	useEffect(() => {
 		const handleCloseActiveTab = () => {
@@ -106,6 +134,46 @@ export const MainContent = memo(function MainContent({
 		() => formatShortcutPartsForPlatform({ meta: true, key: "k" }),
 		[],
 	);
+	const hasStarterCompletion =
+		onboarding.createdFirstNote ||
+		onboarding.usedCommandPalette ||
+		onboarding.openedDailyNote;
+	const showStarterByDefault =
+		onboardingLoaded &&
+		!onboarding.starterDismissed &&
+		!hasStarterCompletion &&
+		openTabs.length === 0 &&
+		!activeTabPath;
+	const showStarterPane =
+		Boolean(spacePath) &&
+		(showStarterByDefault || (starterOverrideVisible && !activeTabPath));
+
+	useEffect(() => {
+		let cancelled = false;
+		void (async () => {
+			try {
+				const settings = await loadSettings();
+				if (cancelled) return;
+				setOnboarding(settings.onboarding);
+			} finally {
+				if (!cancelled) setOnboardingLoaded(true);
+			}
+		})();
+		return () => {
+			cancelled = true;
+		};
+	}, []);
+
+	useTauriEvent("settings:updated", (payload) => {
+		if (!payload.onboarding) return;
+		setOnboarding((prev) => ({ ...prev, ...payload.onboarding }));
+	});
+
+	useEffect(() => {
+		if (activeTabPath) {
+			setStarterOverrideVisible(false);
+		}
+	}, [activeTabPath]);
 
 	const content = useMemo(() => {
 		if (!viewerPath) return null;
@@ -189,21 +257,38 @@ export const MainContent = memo(function MainContent({
 					)}
 					{content ?? (
 						<div className="mainEmptyState">
-							<p className="mainEmptyPrompt">
-								Press{" "}
-								<button
-									type="button"
-									className="mainEmptyShortcutInline"
-									onClick={onOpenCommandPalette}
-									title="Open command palette"
-								>
-									{commandShortcutParts.map((part) => (
-										<kbd key={part}>{part}</kbd>
-									))}
-								</button>{" "}
-								to get started
-							</p>
-							<div className="mainEmptyTagline">{APP_TAGLINE}</div>
+							{showStarterPane ? (
+								<GettingStartedPane
+									commandShortcutParts={commandShortcutParts}
+									showDailyNoteAction={Boolean(dailyNotesFolder)}
+									onCreateNote={onCreateNote}
+									onOpenCommandPalette={onOpenCommandPalette}
+									onOpenDailyNote={onOpenDailyNote}
+									onOpenTasks={onOpenTasks}
+									onDismiss={() => {
+										setStarterOverrideVisible(false);
+										void updateOnboardingSettings({ starterDismissed: true });
+									}}
+								/>
+							) : (
+								<>
+									<p className="mainEmptyPrompt">
+										Press{" "}
+										<button
+											type="button"
+											className="mainEmptyShortcutInline"
+											onClick={onOpenCommandPalette}
+											title="Open command palette"
+										>
+											{commandShortcutParts.map((part) => (
+												<kbd key={part}>{part}</kbd>
+											))}
+										</button>{" "}
+										to get started
+									</p>
+									<div className="mainEmptyTagline">{APP_TAGLINE}</div>
+								</>
+							)}
 						</div>
 					)}
 				</div>

@@ -2,8 +2,15 @@ import { emit } from "@tauri-apps/api/event";
 import { LazyStore } from "@tauri-apps/plugin-store";
 import { normalizeRelPath } from "../utils/path";
 import type { AiAssistantMode } from "./tauri";
+import {
+	type UiDarkThemeId,
+	type UiLightThemeId,
+	asUiDarkThemeId,
+	asUiLightThemeId,
+} from "./uiThemes";
 
 export type { AiAssistantMode } from "./tauri";
+export type { UiDarkThemeId, UiLightThemeId } from "./uiThemes";
 
 let storeInstance: LazyStore | null = null;
 let storeInitPromise: Promise<void> | null = null;
@@ -48,6 +55,21 @@ export type UiFontFamily = string;
 export type UiFontSize = number;
 const AI_ASSISTANT_MODES = new Set<AiAssistantMode>(["chat", "create"]);
 export type TaskSourceMode = "space" | "folders";
+export interface OnboardingSettings {
+	launcherSeen: boolean;
+	starterDismissed: boolean;
+	createdFirstNote: boolean;
+	usedCommandPalette: boolean;
+	openedDailyNote: boolean;
+}
+
+export const DEFAULT_ONBOARDING_SETTINGS: OnboardingSettings = {
+	launcherSeen: false,
+	starterDismissed: false,
+	createdFirstNote: false,
+	usedCommandPalette: false,
+	openedDailyNote: false,
+};
 
 export interface TaskSourceSetting {
 	mode: TaskSourceMode;
@@ -103,6 +125,8 @@ function asUiFontSize(value: unknown): UiFontSize {
 async function emitSettingsUpdated(payload: {
 	ui?: {
 		theme?: ThemeMode;
+		lightThemeId?: UiLightThemeId;
+		darkThemeId?: UiDarkThemeId;
 		accent?: UiAccent;
 		fontFamily?: UiFontFamily;
 		monoFontFamily?: UiFontFamily;
@@ -118,6 +142,7 @@ async function emitSettingsUpdated(payload: {
 	tasks?: {
 		source?: TaskSourceSetting;
 	};
+	onboarding?: Partial<OnboardingSettings>;
 }): Promise<void> {
 	try {
 		await emit("settings:updated", payload);
@@ -136,11 +161,14 @@ interface AppSettings {
 	currentSpacePath: string | null;
 	recentSpaces: string[];
 	recentFiles: RecentFile[];
+	onboarding: OnboardingSettings;
 	ui: {
 		aiEnabled: boolean;
 		aiSidebarWidth: number | null;
 		showWindowsMenuBar: boolean;
 		theme: ThemeMode;
+		lightThemeId: UiLightThemeId;
+		darkThemeId: UiDarkThemeId;
 		accent: UiAccent;
 		fontFamily: UiFontFamily;
 		monoFontFamily: UiFontFamily;
@@ -165,12 +193,19 @@ const KEYS = {
 	aiSidebarWidth: "ui.aiSidebarWidth",
 	aiAssistantMode: "ui.aiAssistantMode",
 	theme: "ui.theme",
+	lightThemeId: "ui.lightThemeId",
+	darkThemeId: "ui.darkThemeId",
 	accent: "ui.accent",
 	fontFamily: "ui.fontFamily",
 	monoFontFamily: "ui.monoFontFamily",
 	fontSize: "ui.fontSize",
 	dailyNotesFolder: "dailyNotes.folder",
 	taskSource: "tasks.source",
+	onboardingLauncherSeen: "onboarding.launcherSeen",
+	onboardingStarterDismissed: "onboarding.starterDismissed",
+	onboardingCreatedFirstNote: "onboarding.createdFirstNote",
+	onboardingUsedCommandPalette: "onboarding.usedCommandPalette",
+	onboardingOpenedDailyNote: "onboarding.openedDailyNote",
 } as const;
 
 const ROOT_FILE_TREE_ORDER_KEY = "\u0000root";
@@ -199,6 +234,14 @@ function normalizeStoredFileTreeOrderByDir(
 	}
 	return next;
 }
+
+const ONBOARDING_KEYS = {
+	launcherSeen: KEYS.onboardingLauncherSeen,
+	starterDismissed: KEYS.onboardingStarterDismissed,
+	createdFirstNote: KEYS.onboardingCreatedFirstNote,
+	usedCommandPalette: KEYS.onboardingUsedCommandPalette,
+	openedDailyNote: KEYS.onboardingOpenedDailyNote,
+} as const satisfies Record<keyof OnboardingSettings, string>;
 
 function normalizeStoredFileTreeOrderBySpace(
 	value: unknown,
@@ -283,11 +326,18 @@ export async function loadSettings(): Promise<AppSettings> {
 		currentSpacePathRaw,
 		recentSpacesRaw,
 		rawRecentFiles,
+		rawOnboardingLauncherSeen,
+		rawOnboardingStarterDismissed,
+		rawOnboardingCreatedFirstNote,
+		rawOnboardingUsedCommandPalette,
+		rawOnboardingOpenedDailyNote,
 		rawAiEnabled,
 		rawShowWindowsMenuBar,
 		aiSidebarWidthRaw,
 		rawAiAssistantMode,
 		rawTheme,
+		rawLightThemeId,
+		rawDarkThemeId,
 		rawAccent,
 		rawFontFamily,
 		rawMonoFontFamily,
@@ -298,11 +348,18 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<string | null>(KEYS.currentSpacePath),
 		store.get<string[] | null>(KEYS.recentSpaces),
 		store.get<unknown>(KEYS.recentFiles),
+		store.get<boolean | null>(KEYS.onboardingLauncherSeen),
+		store.get<boolean | null>(KEYS.onboardingStarterDismissed),
+		store.get<boolean | null>(KEYS.onboardingCreatedFirstNote),
+		store.get<boolean | null>(KEYS.onboardingUsedCommandPalette),
+		store.get<boolean | null>(KEYS.onboardingOpenedDailyNote),
 		store.get<boolean | null>(KEYS.aiEnabled),
 		store.get<boolean | null>(KEYS.showWindowsMenuBar),
 		store.get<number | null>(KEYS.aiSidebarWidth),
 		store.get<unknown>(KEYS.aiAssistantMode),
 		store.get<unknown>(KEYS.theme),
+		store.get<unknown>(KEYS.lightThemeId),
+		store.get<unknown>(KEYS.darkThemeId),
 		store.get<unknown>(KEYS.accent),
 		store.get<unknown>(KEYS.fontFamily),
 		store.get<unknown>(KEYS.monoFontFamily),
@@ -313,6 +370,13 @@ export async function loadSettings(): Promise<AppSettings> {
 	const currentSpacePath = currentSpacePathRaw ?? null;
 	const recentSpaces = recentSpacesRaw ?? [];
 	const recentFiles = isRecentFileArray(rawRecentFiles) ? rawRecentFiles : [];
+	const onboarding: OnboardingSettings = {
+		launcherSeen: rawOnboardingLauncherSeen ?? false,
+		starterDismissed: rawOnboardingStarterDismissed ?? false,
+		createdFirstNote: rawOnboardingCreatedFirstNote ?? false,
+		usedCommandPalette: rawOnboardingUsedCommandPalette ?? false,
+		openedDailyNote: rawOnboardingOpenedDailyNote ?? false,
+	};
 	const aiEnabled =
 		typeof rawAiEnabled === "boolean" ? rawAiEnabled : DEFAULT_AI_ENABLED;
 	const showWindowsMenuBar =
@@ -322,6 +386,8 @@ export async function loadSettings(): Promise<AppSettings> {
 	const aiSidebarWidth = aiSidebarWidthRaw ?? null;
 	const aiAssistantMode = asAiAssistantMode(rawAiAssistantMode);
 	const theme = asThemeMode(rawTheme);
+	const lightThemeId = asUiLightThemeId(rawLightThemeId);
+	const darkThemeId = asUiDarkThemeId(rawDarkThemeId);
 	const accent = asUiAccent(rawAccent);
 	const fontFamily = asUiFontFamily(rawFontFamily);
 	const monoFontFamily = asUiMonoFontFamily(rawMonoFontFamily);
@@ -334,6 +400,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		currentSpacePath,
 		recentSpaces: Array.isArray(recentSpaces) ? recentSpaces : [],
 		recentFiles,
+		onboarding,
 		ui: {
 			aiEnabled,
 			aiSidebarWidth:
@@ -342,6 +409,8 @@ export async function loadSettings(): Promise<AppSettings> {
 					: null,
 			showWindowsMenuBar,
 			theme,
+			lightThemeId,
+			darkThemeId,
 			accent,
 			fontFamily,
 			monoFontFamily,
@@ -376,6 +445,24 @@ export async function clearRecentSpaces(): Promise<void> {
 	const store = await getStore();
 	await store.set(KEYS.recentSpaces, []);
 	await store.save();
+}
+
+export async function updateOnboardingSettings(
+	patch: Partial<OnboardingSettings>,
+): Promise<void> {
+	const entries = Object.entries(patch).filter(
+		(entry): entry is [keyof OnboardingSettings, boolean] =>
+			typeof entry[1] === "boolean",
+	);
+	if (!entries.length) return;
+	const store = await getStore();
+	for (const [key, value] of entries) {
+		await store.set(ONBOARDING_KEYS[key], value);
+	}
+	await store.save();
+	void emitSettingsUpdated({
+		onboarding: Object.fromEntries(entries) as Partial<OnboardingSettings>,
+	});
 }
 
 export async function setAiSidebarWidth(width: number): Promise<void> {
@@ -413,6 +500,26 @@ export async function setThemeMode(theme: ThemeMode): Promise<void> {
 	await store.set(KEYS.theme, theme);
 	await store.save();
 	void emitSettingsUpdated({ ui: { theme } });
+}
+
+export async function setUiLightThemeId(
+	lightThemeId: UiLightThemeId,
+): Promise<void> {
+	const store = await getStore();
+	const next = asUiLightThemeId(lightThemeId);
+	await store.set(KEYS.lightThemeId, next);
+	await store.save();
+	void emitSettingsUpdated({ ui: { lightThemeId: next } });
+}
+
+export async function setUiDarkThemeId(
+	darkThemeId: UiDarkThemeId,
+): Promise<void> {
+	const store = await getStore();
+	const next = asUiDarkThemeId(darkThemeId);
+	await store.set(KEYS.darkThemeId, next);
+	await store.save();
+	void emitSettingsUpdated({ ui: { darkThemeId: next } });
 }
 
 export async function setUiAccent(accent: UiAccent): Promise<void> {

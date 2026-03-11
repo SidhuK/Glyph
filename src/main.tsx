@@ -6,10 +6,15 @@ import App from "./App";
 import SettingsApp from "./SettingsApp";
 import { LicenseGate } from "./components/licensing/LicenseGate";
 import { Toaster } from "./components/ui/shadcn/sonner";
-import { applyUiAccent, applyUiTypography } from "./lib/appearance";
-import type { UiAccent } from "./lib/settings";
+import {
+	applyUiAccent,
+	applyUiThemeSelection,
+	applyUiTypography,
+} from "./lib/appearance";
+import type { UiAccent, UiDarkThemeId, UiLightThemeId } from "./lib/settings";
 import { loadSettings, reloadFromDisk } from "./lib/settings";
 import { useTauriEvent } from "./lib/tauriEvents";
+import { isUiDarkThemeId, isUiLightThemeId } from "./lib/uiThemes";
 
 const APP_REFRESH_SETTINGS_EVENT = "app:refresh-settings";
 
@@ -37,6 +42,12 @@ function Root() {
 function ThemeAndTypographyBridge() {
 	const { setTheme } = useTheme();
 	const [accent, setAccent] = React.useState<UiAccent | null>(null);
+	const [lightThemeId, setLightThemeId] = React.useState<UiLightThemeId | null>(
+		null,
+	);
+	const [darkThemeId, setDarkThemeId] = React.useState<UiDarkThemeId | null>(
+		null,
+	);
 	const [fontFamily, setFontFamily] = React.useState<string | null>(null);
 	const [monoFontFamily, setMonoFontFamily] = React.useState<string | null>(
 		null,
@@ -54,6 +65,8 @@ function ThemeAndTypographyBridge() {
 				const settings = await loadSettings();
 				if (cancelled) return;
 				setTheme(settings.ui.theme);
+				setLightThemeId(settings.ui.lightThemeId);
+				setDarkThemeId(settings.ui.darkThemeId);
 				setAccent(settings.ui.accent);
 				setFontFamily(settings.ui.fontFamily);
 				setMonoFontFamily(settings.ui.monoFontFamily);
@@ -86,6 +99,12 @@ function ThemeAndTypographyBridge() {
 			nextTheme === "system"
 		) {
 			setTheme(nextTheme);
+		}
+		if (isUiLightThemeId(payload.ui?.lightThemeId)) {
+			setLightThemeId(payload.ui.lightThemeId);
+		}
+		if (isUiDarkThemeId(payload.ui?.darkThemeId)) {
+			setDarkThemeId(payload.ui.darkThemeId);
 		}
 		if (
 			payload.ui?.accent === "neutral" ||
@@ -120,6 +139,11 @@ function ThemeAndTypographyBridge() {
 		if (!accent) return;
 		applyUiAccent(accent);
 	}, [accent]);
+
+	React.useEffect(() => {
+		if (!lightThemeId || !darkThemeId) return;
+		applyUiThemeSelection(lightThemeId, darkThemeId);
+	}, [darkThemeId, lightThemeId]);
 
 	return null;
 }
