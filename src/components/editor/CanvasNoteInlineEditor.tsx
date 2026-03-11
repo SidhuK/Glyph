@@ -114,8 +114,9 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		if (mode !== "rich") setShowBottomRibbon(false);
 	}, [mode]);
 
+	// Reset when the editor context changes, but not on every content update.
+	// Including `markdown` here causes the viewport to jump to the top while typing.
 	useResetScrollOnChange(tiptapHostRef, ".rfNodeNoteEditorBody", [
-		markdown,
 		mode,
 		relPath,
 	]);
