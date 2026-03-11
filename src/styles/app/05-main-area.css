@@ -156,8 +156,7 @@
 	white-space: normal;
 	line-height: 1.4;
 	gap: 0;
-	transition: background var(--transition-fast), border-color
-		var(--transition-fast);
+	transition: background var(--transition-fast), border-color var(--transition-fast);
 }
 
 .welcomeActionButton:hover {
@@ -167,11 +166,9 @@
 
 .welcomeActionButtonPrimary {
 	background: color-mix(in srgb, var(--accent-color) 14%, var(--bg-primary));
-	border-color: color-mix(
-		in srgb,
-		var(--accent-color) 36%,
-		var(--border-default)
-	);
+	border-color: color-mix(in srgb,
+			var(--accent-color) 36%,
+			var(--border-default));
 }
 
 .welcomeActionContent {
@@ -230,8 +227,7 @@
 	text-align: left;
 	white-space: normal;
 	line-height: 1.4;
-	transition: background var(--transition-fast), border-color
-		var(--transition-fast);
+	transition: background var(--transition-fast), border-color var(--transition-fast);
 }
 
 .welcomeRecentItem:hover {
@@ -739,8 +735,7 @@
 	text-align: left;
 	white-space: normal;
 	line-height: 1.4;
-	transition: background var(--transition-fast), border-color
-		var(--transition-fast);
+	transition: background var(--transition-fast), border-color var(--transition-fast);
 }
 
 .starterAction:hover {
