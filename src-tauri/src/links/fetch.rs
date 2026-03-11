@@ -3,9 +3,9 @@ use serde::Deserialize;
 use std::{fs, io::Read, path::Path};
 use url::Url;
 
-use crate::{io_atomic, net, paths};
+use crate::{io_atomic, net};
 
-use super::helpers::{image_rel_path, now_ms, MAX_HTML_BYTES, MAX_IMAGE_BYTES};
+use super::helpers::{image_cache_path, now_ms, MAX_HTML_BYTES, MAX_IMAGE_BYTES};
 use super::types::LinkPreview;
 
 pub fn extract_meta(html: &str, key: &str) -> Option<String> {
@@ -120,10 +120,9 @@ pub fn download_image(
     image_url: &Url,
 ) -> Result<Option<String>, String> {
     net::validate_url_host(image_url, false)?;
-    let rel = image_rel_path(image_url);
-    let abs = paths::join_under(space_root, &rel)?;
+    let abs = image_cache_path(space_root, image_url)?;
     if abs.exists() {
-        return Ok(Some(rel.to_string_lossy().to_string()));
+        return Ok(Some(abs.to_string_lossy().to_string()));
     }
     if let Some(parent) = abs.parent() {
         fs::create_dir_all(parent).map_err(|e| e.to_string())?;
@@ -146,7 +145,7 @@ pub fn download_image(
         return Ok(None);
     }
     io_atomic::write_atomic(&abs, &buf).map_err(|e| e.to_string())?;
-    Ok(Some(rel.to_string_lossy().to_string()))
+    Ok(Some(abs.to_string_lossy().to_string()))
 }
 
 pub fn build_preview(
@@ -175,7 +174,7 @@ pub fn build_preview(
         ok = true;
     }
 
-    let (image_url, image_cache_rel_path) = match image_url
+    let (image_url, image_cache_path) = match image_url
         .as_deref()
         .and_then(|raw| resolve_image_url_fn(normalized, raw))
     {
@@ -192,7 +191,7 @@ pub fn build_preview(
         title,
         description,
         image_url,
-        image_cache_rel_path,
+        image_cache_path,
         fetched_at_ms: now_ms(),
         ok,
     }

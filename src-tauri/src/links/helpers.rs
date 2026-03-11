@@ -27,7 +27,7 @@ pub fn cache_path(space_root: &Path, normalized_url: &str) -> Result<PathBuf, St
     Ok(dir.join(format!("{}.json", sha256_hex(normalized_url))))
 }
 
-pub fn image_rel_path(image_url: &Url) -> PathBuf {
+pub fn image_cache_file_name(image_url: &Url) -> String {
     let mut ext = ".img";
     if let Some(seg) = image_url.path().rsplit('/').next() {
         if let Some(dot) = seg.rfind('.') {
@@ -40,11 +40,11 @@ pub fn image_rel_path(image_url: &Url) -> PathBuf {
             }
         }
     }
-    PathBuf::from(".glyph/cache/link-previews").join(format!(
-        "{}{}",
-        sha256_hex(image_url.as_str()),
-        ext
-    ))
+    format!("{}{}", sha256_hex(image_url.as_str()), ext)
+}
+
+pub fn image_cache_path(space_root: &Path, image_url: &Url) -> Result<PathBuf, String> {
+    Ok(cache_dir(space_root)?.join(image_cache_file_name(image_url)))
 }
 
 pub fn normalize_url(raw: &str) -> Result<Url, String> {

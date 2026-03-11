@@ -6,6 +6,7 @@ use crate::space::state::mark_recent_local_change;
 use crate::space::SpaceState;
 
 use super::db::open_db;
+use super::frontmatter::preview_from_markdown;
 use super::indexer::index_note;
 use super::indexer::rebuild;
 use super::search_advanced::{run_search_advanced, SearchAdvancedRequest};
@@ -157,25 +158,18 @@ fn rewrite_task_dates(body: &str, scheduled_date: &str, due_date: &str) -> Strin
 }
 
 fn fetch_previews_by_ids(
-    conn: &rusqlite::Connection,
+    root: &Path,
     ids: &[String],
 ) -> Result<std::collections::HashMap<String, String>, String> {
     if ids.is_empty() {
         return Ok(std::collections::HashMap::new());
     }
-    let placeholders = std::iter::repeat_n("?", ids.len())
-        .collect::<Vec<_>>()
-        .join(", ");
-    let sql = format!("SELECT id, preview FROM notes WHERE id IN ({placeholders})");
-    let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;
-    let params = rusqlite::params_from_iter(ids.iter());
-    let mut rows = stmt.query(params).map_err(|e| e.to_string())?;
     let mut map = std::collections::HashMap::<String, String>::new();
-    while let Some(row) = rows.next().map_err(|e| e.to_string())? {
-        map.insert(
-            row.get::<_, String>(0).map_err(|e| e.to_string())?,
-            row.get::<_, String>(1).map_err(|e| e.to_string())?,
-        );
+    for id in ids {
+        let abs = root.join(id);
+        if let Ok(markdown) = std::fs::read_to_string(&abs) {
+            map.insert(id.clone(), preview_from_markdown(id, &markdown));
+        }
     }
     Ok(map)
 }
@@ -206,7 +200,7 @@ pub async fn search(
     let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<SearchResult>, String> {
         let conn = open_db(&root)?;
-        hybrid_search(&conn, &query, &[], 50)
+        hybrid_search(&conn, &root, &query, &[], 50)
     })
     .await
     .map_err(|e| e.to_string())?
@@ -220,7 +214,7 @@ pub async fn search_advanced(
     let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<SearchResult>, String> {
         let conn = open_db(&root)?;
-        run_search_advanced(&conn, request)
+        run_search_advanced(&root, &conn, request)
     })
     .await
     .map_err(|e| e.to_string())?
@@ -236,7 +230,7 @@ pub async fn search_parse_and_run(
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<SearchResult>, String> {
         let req = parse_raw_search_query(&raw_query, limit);
         let conn = open_db(&root)?;
-        run_search_advanced(&conn, req)
+        run_search_advanced(&root, &conn, req)
     })
     .await
     .map_err(|e| e.to_string())?
@@ -252,13 +246,13 @@ pub async fn search_view_data(
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<ViewNotePreview>, String> {
         let lim = limit.unwrap_or(200).clamp(1, 2_000) as usize;
         let conn = open_db(&root)?;
-        let results = hybrid_search(&conn, &query, &[], lim as i64)?;
+        let results = hybrid_search(&conn, &root, &query, &[], lim as i64)?;
         let ids = results
             .iter()
             .map(|r| r.id.clone())
             .filter(|id| !id.trim().is_empty())
             .collect::<Vec<_>>();
-        let preview_by_id = fetch_previews_by_ids(&conn, &ids)?;
+        let preview_by_id = fetch_previews_by_ids(&root, &ids)?;
         Ok(results
             .into_iter()
             .take(lim)
@@ -301,7 +295,7 @@ pub async fn search_with_tags(
 
         if q.is_empty() {
             let mut sql = String::from(
-                "SELECT n.id, n.title, n.preview AS snippet, 0.0 AS score
+                "SELECT n.id, n.title, n.path AS snippet, 0.0 AS score
                  FROM notes n ",
             );
             for i in 0..norm_tags.len() {
@@ -332,7 +326,7 @@ pub async fn search_with_tags(
             }
             return Ok(out);
         }
-        hybrid_search(&conn, &q, &norm_tags, lim)
+        hybrid_search(&conn, &root, &q, &norm_tags, lim)
     })
     .await
     .map_err(|e| e.to_string())?
@@ -349,7 +343,7 @@ pub async fn recent_notes(
         let conn = open_db(&root)?;
         let mut stmt = conn
             .prepare(
-                "SELECT id, title, preview AS snippet, 0.0 AS score
+                "SELECT id, title, path AS snippet, 0.0 AS score
                  FROM notes
                  ORDER BY updated DESC
                  LIMIT ?",
@@ -417,7 +411,7 @@ pub async fn tag_notes(
             let limit = raw_limit.min(100_000) as i64;
             let mut stmt = conn
                 .prepare(
-                    "SELECT n.id, n.title, '' AS snippet, 0.0 AS score
+                    "SELECT n.id, n.title, n.path AS snippet, 0.0 AS score
                      FROM tags t
                      JOIN notes n ON n.id = t.note_id
                      WHERE t.tag = ?
@@ -441,7 +435,7 @@ pub async fn tag_notes(
         } else {
             let mut stmt = conn
                 .prepare(
-                    "SELECT n.id, n.title, '' AS snippet, 0.0 AS score
+                    "SELECT n.id, n.title, n.path AS snippet, 0.0 AS score
                      FROM tags t
                      JOIN notes n ON n.id = t.note_id
                      WHERE t.tag = ?
@@ -480,7 +474,7 @@ pub async fn tag_view_data(
         let conn = open_db(&root)?;
         let mut stmt = conn
             .prepare(
-                "SELECT n.id, n.title, n.preview AS snippet, 0.0 AS score
+                "SELECT n.id, n.title
                  FROM tags t
                  JOIN notes n ON n.id = t.note_id
                  WHERE t.tag = ?
@@ -491,14 +485,22 @@ pub async fn tag_view_data(
         let mut rows = stmt
             .query(rusqlite::params![t, lim as i64])
             .map_err(|e| e.to_string())?;
-        let mut out: Vec<ViewNotePreview> = Vec::new();
+        let mut ids = Vec::<String>::new();
+        let mut titles = std::collections::HashMap::<String, String>::new();
         while let Some(row) = rows.next().map_err(|e| e.to_string())? {
-            out.push(ViewNotePreview {
-                id: row.get(0).map_err(|e| e.to_string())?,
-                title: row.get(1).map_err(|e| e.to_string())?,
-                content: row.get(2).map_err(|e| e.to_string())?,
-            });
+            let id: String = row.get(0).map_err(|e| e.to_string())?;
+            ids.push(id.clone());
+            titles.insert(id, row.get(1).map_err(|e| e.to_string())?);
         }
+        let previews = fetch_previews_by_ids(&root, &ids)?;
+        let out = ids
+            .into_iter()
+            .map(|id| ViewNotePreview {
+                title: titles.remove(&id).unwrap_or_default(),
+                content: previews.get(&id).cloned().unwrap_or_default(),
+                id,
+            })
+            .collect();
         Ok(out)
     })
     .await

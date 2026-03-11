@@ -1,8 +1,10 @@
+use std::path::Path;
+
 use serde::Deserialize;
 
 use rusqlite::Connection;
 
-use super::search_hybrid::hybrid_search;
+use super::search_hybrid::{hybrid_search, metadata_search};
 use super::tags::normalize_tag;
 use super::types::SearchResult;
 
@@ -21,6 +23,7 @@ pub struct SearchAdvancedRequest {
 }
 
 pub fn run_search_advanced(
+    space_root: &Path,
     conn: &Connection,
     req: SearchAdvancedRequest,
 ) -> Result<Vec<SearchResult>, String> {
@@ -43,75 +46,22 @@ pub fn run_search_advanced(
     let mut out = if !query_text.is_empty() && !req.title_only {
         hybrid_search(
             conn,
+            space_root,
             &query_text,
             &tags,
             (limit as i64 * 8).clamp(200, 5_000),
         )?
     } else {
-        select_candidates(
+        metadata_search(
             conn,
             &query_text,
-            req.title_only,
             &tags,
             (limit as i64 * 8).clamp(200, 5_000),
         )?
-        .into_iter()
-        .map(|item| item.result)
-        .collect()
     };
 
     if out.len() > limit {
         out.truncate(limit);
-    }
-    Ok(out)
-}
-
-struct Candidate {
-    result: SearchResult,
-}
-
-fn select_candidates(
-    conn: &Connection,
-    text: &str,
-    title_only: bool,
-    tags: &[String],
-    limit: i64,
-) -> Result<Vec<Candidate>, String> {
-    let mut sql = String::from("SELECT n.id, n.title, n.preview FROM notes n ");
-    for i in 0..tags.len() {
-        sql.push_str(&format!(
-            "JOIN tags t{idx} ON t{idx}.note_id = n.id AND t{idx}.tag = ? ",
-            idx = i
-        ));
-    }
-    let mut params: Vec<rusqlite::types::Value> = tags
-        .iter()
-        .map(|t| rusqlite::types::Value::from(t.clone()))
-        .collect();
-    if title_only && !text.is_empty() {
-        sql.push_str("WHERE lower(n.title) LIKE ? ");
-        params.push(rusqlite::types::Value::from(format!(
-            "%{}%",
-            text.to_lowercase()
-        )));
-    }
-    sql.push_str("ORDER BY n.updated DESC LIMIT ?");
-    params.push(rusqlite::types::Value::from(limit));
-
-    let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;
-    let mut rows = stmt
-        .query(rusqlite::params_from_iter(params.iter()))
-        .map_err(|e| e.to_string())?;
-    let mut out = Vec::new();
-    while let Some(row) = rows.next().map_err(|e| e.to_string())? {
-        out.push(Candidate {
-            result: SearchResult {
-                id: row.get(0).map_err(|e| e.to_string())?,
-                title: row.get(1).map_err(|e| e.to_string())?,
-                snippet: row.get(2).map_err(|e| e.to_string())?,
-                score: 0.0,
-            },
-        });
     }
     Ok(out)
 }

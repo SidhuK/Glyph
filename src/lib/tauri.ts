@@ -336,7 +336,7 @@ export interface LinkPreview {
 	title: string;
 	description: string;
 	image_url: string | null;
-	image_cache_rel_path: string | null;
+	image_cache_path: string | null;
 	fetched_at_ms: number;
 	ok: boolean;
 }

@@ -6,7 +6,9 @@ use std::{
 };
 use tauri::State;
 
-use crate::{index::open_db, paths, space::SpaceState, utils};
+use crate::{
+    index::frontmatter::preview_from_markdown, index::open_db, paths, space::SpaceState, utils,
+};
 
 use super::{
     helpers::{deny_hidden_rel_path, should_hide},
@@ -160,17 +162,22 @@ pub async fn space_folder_view_data(
             let placeholders = std::iter::repeat_n("?", ids.len())
                 .collect::<Vec<_>>()
                 .join(", ");
-            let sql = format!("SELECT id, title, preview FROM notes WHERE id IN ({placeholders})");
+            let sql = format!("SELECT id, title FROM notes WHERE id IN ({placeholders})");
             let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;
             let mut rows = stmt
                 .query(rusqlite::params_from_iter(ids.iter()))
                 .map_err(|e| e.to_string())?;
             let mut out = Vec::new();
             while let Some(row) = rows.next().map_err(|e| e.to_string())? {
+                let id: String = row.get(0).map_err(|e| e.to_string())?;
+                let abs = root.join(&id);
+                let content = std::fs::read_to_string(&abs)
+                    .map(|markdown| preview_from_markdown(&id, &markdown))
+                    .unwrap_or_default();
                 out.push(FolderViewNotePreview {
-                    id: row.get(0).map_err(|e| e.to_string())?,
                     title: row.get(1).map_err(|e| e.to_string())?,
-                    content: row.get(2).map_err(|e| e.to_string())?,
+                    id,
+                    content,
                 });
             }
             out

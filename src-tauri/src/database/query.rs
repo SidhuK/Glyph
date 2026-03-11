@@ -4,6 +4,7 @@ use std::path::{Path, PathBuf};
 use rusqlite::{params, Connection};
 
 use crate::index::commands::parse_raw_search_query;
+use crate::index::frontmatter::preview_from_markdown;
 use crate::index::open_db;
 use crate::index::search_advanced::run_search_advanced;
 use crate::notes::frontmatter::split_frontmatter;
@@ -123,15 +124,21 @@ fn tag_source_ids(conn: &Connection, tag: &str, limit: usize) -> Result<Vec<Stri
     Ok(out)
 }
 
-fn search_source_ids(conn: &Connection, query: &str, limit: usize) -> Result<Vec<String>, String> {
+fn search_source_ids(
+    root: &Path,
+    conn: &Connection,
+    query: &str,
+    limit: usize,
+) -> Result<Vec<String>, String> {
     let request = parse_raw_search_query(query, Some(limit as u32));
-    Ok(run_search_advanced(conn, request)?
+    Ok(run_search_advanced(root, conn, request)?
         .into_iter()
         .map(|result| result.id)
         .collect())
 }
 
 fn source_ids(
+    root: &Path,
     conn: &Connection,
     kind: &str,
     value: &str,
@@ -141,12 +148,13 @@ fn source_ids(
     match kind {
         "folder" => folder_source_ids(conn, value.trim_matches('/'), recursive, limit),
         "tag" => tag_source_ids(conn, value, limit),
-        "search" => search_source_ids(conn, value, limit),
+        "search" => search_source_ids(root, conn, value, limit),
         other => Err(format!("unsupported database source kind '{other}'")),
     }
 }
 
 pub(crate) fn hydrate_rows_by_paths(
+    root: &Path,
     conn: &Connection,
     note_paths: &[String],
 ) -> Result<Vec<DatabaseRow>, String> {
@@ -160,7 +168,7 @@ pub(crate) fn hydrate_rows_by_paths(
 
     let mut stmt = conn
         .prepare(&format!(
-            "SELECT id, title, created, updated, preview FROM notes WHERE id IN ({placeholders})"
+            "SELECT id, title, created, updated FROM notes WHERE id IN ({placeholders})"
         ))
         .map_err(|e| e.to_string())?;
     let mut rows = stmt
@@ -177,7 +185,7 @@ pub(crate) fn hydrate_rows_by_paths(
                 title: row.get(1).map_err(|e| e.to_string())?,
                 created: row.get(2).map_err(|e| e.to_string())?,
                 updated: row.get(3).map_err(|e| e.to_string())?,
-                preview: row.get(4).map_err(|e| e.to_string())?,
+                preview: String::new(),
                 tags: Vec::new(),
                 properties: BTreeMap::new(),
             },
@@ -226,10 +234,17 @@ pub(crate) fn hydrate_rows_by_paths(
         }
     }
 
-    Ok(note_paths
+    let mut rows = note_paths
         .iter()
         .filter_map(|path| row_map.remove(path))
-        .collect::<Vec<_>>())
+        .collect::<Vec<_>>();
+    for row in &mut rows {
+        let abs = paths::join_under(root, Path::new(&row.note_path))?;
+        if let Ok(markdown) = std::fs::read_to_string(&abs) {
+            row.preview = preview_from_markdown(&row.note_path, &markdown);
+        }
+    }
+    Ok(rows)
 }
 
 fn collect_available_properties(rows: &[DatabaseRow]) -> Vec<DatabasePropertyOption> {
@@ -270,6 +285,7 @@ pub fn load_database(
         .unwrap_or(HARD_LIMIT as u32)
         .clamp(1, HARD_LIMIT as u32) as usize;
     let mut ids = source_ids(
+        root,
         &conn,
         &config.source.kind,
         &config.source.value,
@@ -281,7 +297,7 @@ pub fn load_database(
     if truncated {
         ids.truncate(effective_limit);
     }
-    let rows = hydrate_rows_by_paths(&conn, &ids)?;
+    let rows = hydrate_rows_by_paths(root, &conn, &ids)?;
     let available_properties = collect_available_properties(&rows);
     Ok(DatabaseLoadResult {
         config,

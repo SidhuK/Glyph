@@ -1,7 +1,8 @@
 use std::path::PathBuf;
 use tauri::State;
 
-use crate::index::db::reset_schema_cache;
+use crate::index::db::{index_ready, reset_schema_cache};
+use crate::index::rebuild;
 
 use super::helpers::{canonicalize_dir, create_or_open_impl, SpaceInfo};
 use super::state::SpaceState;
@@ -30,6 +31,7 @@ pub async fn space_create(
     *guard = Some(PathBuf::from(&info.root));
     drop(guard);
     let _ = set_notes_watcher(&state, app, PathBuf::from(&info.root));
+    maybe_queue_initial_rebuild(PathBuf::from(&info.root));
     Ok(info)
 }
 
@@ -55,7 +57,18 @@ pub async fn space_open(
     *guard = Some(PathBuf::from(&info.root));
     drop(guard);
     let _ = set_notes_watcher(&state, app, PathBuf::from(&info.root));
+    maybe_queue_initial_rebuild(PathBuf::from(&info.root));
     Ok(info)
+}
+
+fn maybe_queue_initial_rebuild(root: PathBuf) {
+    let needs_rebuild = index_ready(&root).map(|ready| !ready).unwrap_or(true);
+    if !needs_rebuild {
+        return;
+    }
+    tauri::async_runtime::spawn_blocking(move || {
+        let _ = rebuild(&root);
+    });
 }
 
 #[tauri::command]

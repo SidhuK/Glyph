@@ -5,8 +5,8 @@ mod glyph_fs;
 mod glyph_paths;
 mod index;
 mod io_atomic;
-mod links;
 mod license;
+mod links;
 mod net;
 mod notes;
 mod paths;
@@ -107,13 +107,8 @@ pub fn run() {
                 ],
             )?;
 
-            let open_space = MenuItem::with_id(
-                app,
-                "space.open",
-                "Open Space…",
-                true,
-                Some("CmdOrCtrl+O"),
-            )?;
+            let open_space =
+                MenuItem::with_id(app, "space.open", "Open Space…", true, Some("CmdOrCtrl+O"))?;
             let create_space = MenuItem::with_id(
                 app,
                 "space.create",
@@ -130,20 +125,10 @@ pub fn run() {
                 true,
                 None::<&str>,
             )?;
-            let open_space_settings = MenuItem::with_id(
-                app,
-                "space.settings",
-                "Space Settings…",
-                true,
-                None::<&str>,
-            )?;
-            let new_note = MenuItem::with_id(
-                app,
-                "file.new_note",
-                "New Note",
-                true,
-                Some("CmdOrCtrl+N"),
-            )?;
+            let open_space_settings =
+                MenuItem::with_id(app, "space.settings", "Space Settings…", true, None::<&str>)?;
+            let new_note =
+                MenuItem::with_id(app, "file.new_note", "New Note", true, Some("CmdOrCtrl+N"))?;
             let open_daily_note = MenuItem::with_id(
                 app,
                 "file.open_daily_note",
@@ -151,13 +136,8 @@ pub fn run() {
                 true,
                 Some("CmdOrCtrl+Shift+D"),
             )?;
-            let save_note = MenuItem::with_id(
-                app,
-                "file.save_note",
-                "Save",
-                true,
-                Some("CmdOrCtrl+S"),
-            )?;
+            let save_note =
+                MenuItem::with_id(app, "file.save_note", "Save", true, Some("CmdOrCtrl+S"))?;
             let close_tab = MenuItem::with_id(
                 app,
                 "file.close_tab",
@@ -172,8 +152,7 @@ pub fn run() {
                 true,
                 Some("CmdOrCtrl+Shift+A"),
             )?;
-            let close_ai =
-                MenuItem::with_id(app, "ai.close", "Close AI Pane", true, None::<&str>)?;
+            let close_ai = MenuItem::with_id(app, "ai.close", "Close AI Pane", true, None::<&str>)?;
             let attach_current_note = MenuItem::with_id(
                 app,
                 "ai.attach_current_note",
@@ -188,13 +167,8 @@ pub fn run() {
                 true,
                 Some("CmdOrCtrl+Alt+Shift+A"),
             )?;
-            let open_ai_settings = MenuItem::with_id(
-                app,
-                "ai.settings",
-                "AI Settings…",
-                true,
-                None::<&str>,
-            )?;
+            let open_ai_settings =
+                MenuItem::with_id(app, "ai.settings", "AI Settings…", true, None::<&str>)?;
 
             let file_menu = Submenu::with_items(
                 app,
@@ -342,6 +316,7 @@ pub fn run() {
             _ => {}
         })
         .setup(|app| {
+            glyph_paths::init_app_local_root(&app.handle())?;
             ai_rig::commands::refresh_provider_support_on_startup(app.handle().clone());
 
             if let Some(window) = app.get_webview_window("main") {

@@ -9,12 +9,21 @@ CREATE TABLE IF NOT EXISTS notes (
   created TEXT NOT NULL,
   updated TEXT NOT NULL,
   path TEXT NOT NULL,
-  etag TEXT NOT NULL,
-  preview TEXT NOT NULL DEFAULT ''
+  etag TEXT NOT NULL
 );
 
 CREATE INDEX IF NOT EXISTS notes_title_idx ON notes(title);
 CREATE INDEX IF NOT EXISTS notes_title_nocase_idx ON notes(title COLLATE NOCASE);
+CREATE INDEX IF NOT EXISTS notes_path_nocase_idx ON notes(path COLLATE NOCASE);
+CREATE INDEX IF NOT EXISTS notes_updated_idx ON notes(updated DESC);
+
+CREATE TABLE IF NOT EXISTS index_state (
+  singleton INTEGER PRIMARY KEY CHECK (singleton = 1),
+  schema_version INTEGER NOT NULL,
+  status TEXT NOT NULL CHECK (status IN ('building', 'ready')),
+  last_rebuild_started_at TEXT,
+  last_rebuild_completed_at TEXT
+);
 
 CREATE TABLE IF NOT EXISTS links (
   from_id TEXT NOT NULL,
@@ -46,13 +55,6 @@ CREATE TABLE IF NOT EXISTS note_properties (
 
 CREATE INDEX IF NOT EXISTS note_properties_key_idx ON note_properties(key);
 CREATE INDEX IF NOT EXISTS note_properties_lookup_idx ON note_properties(key, value_text);
-
-CREATE VIRTUAL TABLE IF NOT EXISTS notes_fts USING fts5(
-  id UNINDEXED,
-  title,
-  body,
-  tokenize = 'porter'
-);
 
 CREATE TABLE IF NOT EXISTS tasks (
   task_id TEXT PRIMARY KEY,
@@ -91,13 +93,13 @@ CREATE INDEX IF NOT EXISTS tasks_note_idx ON tasks(note_id);
 CREATE INDEX IF NOT EXISTS tasks_schedule_idx ON tasks(scheduled_date);
 CREATE INDEX IF NOT EXISTS tasks_due_idx ON tasks(due_date);
 
-CREATE VIRTUAL TABLE IF NOT EXISTS tasks_fts USING fts5(
-  task_id UNINDEXED,
-  text,
-  tags,
-  project,
-  tokenize = 'porter'
-);
+INSERT OR IGNORE INTO index_state(
+  singleton,
+  schema_version,
+  status,
+  last_rebuild_started_at,
+  last_rebuild_completed_at
+) VALUES (1, 2, 'ready', NULL, NULL);
 "#,
     )
     .map_err(|e| e.to_string())

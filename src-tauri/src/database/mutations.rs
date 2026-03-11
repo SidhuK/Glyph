@@ -173,7 +173,7 @@ fn create_new_row_markdown(note_path: &str, title: &str) -> Result<String, Strin
 
 fn row_by_path(root: &Path, note_path: &str) -> Result<DatabaseRow, String> {
     let conn = open_db(root)?;
-    let mut rows = hydrate_rows_by_paths(&conn, &[note_path.to_string()])?;
+    let mut rows = hydrate_rows_by_paths(root, &conn, &[note_path.to_string()])?;
     rows.pop()
         .ok_or_else(|| "note row not found after update".to_string())
 }

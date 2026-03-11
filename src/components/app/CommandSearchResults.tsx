@@ -69,8 +69,7 @@ export function SearchResultItem({
 interface SearchResultsListProps {
 	query: string;
 	isSearching: boolean;
-	titleMatches: SearchResult[];
-	contentMatches: SearchResult[];
+	searchResults: SearchResult[];
 	recentFiles: RecentFile[];
 	selectedIndex: number;
 	onSetSelectedIndex: (index: number) => void;
@@ -93,8 +92,7 @@ function recentDisplayFolder(relPath: string): string {
 export function SearchResultsList({
 	query,
 	isSearching,
-	titleMatches,
-	contentMatches,
+	searchResults,
 	recentFiles,
 	selectedIndex,
 	onSetSelectedIndex,
@@ -146,49 +144,22 @@ export function SearchResultsList({
 
 	return (
 		<>
-			{titleMatches.length > 0 && (
-				<>
-					<div className="commandPaletteGroupLabel">
-						{trimmed.startsWith("#") ? "Tagged Notes" : "Notes"}
-					</div>
-					{titleMatches.map((r, index) => (
-						<SearchResultItem
-							key={r.id}
-							result={r}
-							index={index}
-							isSelected={index === selectedIndex}
-							onMouseEnter={() => onSetSelectedIndex(index)}
-							onSelect={() => onSelectResult(index)}
-						/>
-					))}
-				</>
+			{searchResults.map((result, index) => (
+				<SearchResultItem
+					key={result.id}
+					result={result}
+					index={index}
+					isSelected={index === selectedIndex}
+					onMouseEnter={() => onSetSelectedIndex(index)}
+					onSelect={() => onSelectResult(index)}
+				/>
+			))}
+			{searchResults.length === 0 && !isSearching && (
+				<div className="commandPaletteEmpty">No results</div>
 			)}
-			{contentMatches.length > 0 && (
-				<>
-					<div className="commandPaletteGroupLabel">Content</div>
-					{contentMatches.map((r, index) => {
-						const globalIndex = titleMatches.length + index;
-						return (
-							<SearchResultItem
-								key={r.id}
-								result={r}
-								index={globalIndex}
-								isSelected={globalIndex === selectedIndex}
-								onMouseEnter={() => onSetSelectedIndex(globalIndex)}
-								onSelect={() => onSelectResult(globalIndex)}
-							/>
-						);
-					})}
-				</>
+			{isSearching && searchResults.length === 0 && (
+				<div className="commandPaletteEmpty">Searching…</div>
 			)}
-			{titleMatches.length === 0 &&
-				contentMatches.length === 0 &&
-				!isSearching && <div className="commandPaletteEmpty">No results</div>}
-			{isSearching &&
-				titleMatches.length === 0 &&
-				contentMatches.length === 0 && (
-					<div className="commandPaletteEmpty">Searching…</div>
-				)}
 		</>
 	);
 }

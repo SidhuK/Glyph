@@ -1,6 +1,6 @@
 pub mod commands;
 pub(crate) mod db;
-mod frontmatter;
+pub(crate) mod frontmatter;
 mod helpers;
 mod indexer;
 mod links;
@@ -13,4 +13,4 @@ mod tasks;
 mod types;
 
 pub use db::open_db;
-pub use indexer::{index_note, remove_note};
+pub use indexer::{index_note, rebuild, remove_note};

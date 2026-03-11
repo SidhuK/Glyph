@@ -81,26 +81,6 @@ export function useCommandSearch(
 		};
 	}, [query, activeTab, spacePath]);
 
-	const { titleMatches, contentMatches } = useMemo(() => {
-		if (activeTab !== "search" || !query.trim())
-			return { titleMatches: [], contentMatches: [] };
-		const parsed = parseSearchQuery(query.trim());
-		const q = parsed.text.toLowerCase();
-		if (parsed.request.tag_only) {
-			return { titleMatches: searchResults, contentMatches: [] };
-		}
-		const title: SearchResult[] = [];
-		const content: SearchResult[] = [];
-		for (const r of searchResults) {
-			if (!q || r.title.toLowerCase().includes(q)) {
-				title.push(r);
-			} else {
-				content.push(r);
-			}
-		}
-		return { titleMatches: title, contentMatches: content };
-	}, [searchResults, query, activeTab]);
-
 	const reset = useCallback(() => {
 		requestIdRef.current += 1;
 		setSearchResults([]);
@@ -111,8 +91,6 @@ export function useCommandSearch(
 		searchResults,
 		recentFiles: recentMarkdownFiles,
 		isSearching,
-		titleMatches,
-		contentMatches,
 		reset,
 	};
 }

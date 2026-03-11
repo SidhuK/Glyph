@@ -21,11 +21,6 @@ fn like_prefix_pattern(folder: &str) -> String {
 }
 
 pub fn delete_note_tasks(conn: &rusqlite::Connection, note_id: &str) -> Result<(), String> {
-    conn.execute(
-        "DELETE FROM tasks_fts WHERE task_id IN (SELECT task_id FROM tasks WHERE note_id = ?)",
-        [note_id],
-    )
-    .map_err(|e| e.to_string())?;
     conn.execute("DELETE FROM tasks WHERE note_id = ?", [note_id])
         .map_err(|e| e.to_string())?;
     Ok(())
@@ -74,12 +69,6 @@ fn insert_task(
     )
     .map_err(|e| e.to_string())?;
 
-    conn.execute(
-        "INSERT OR REPLACE INTO tasks_fts(task_id, text, tags, project) VALUES(?, ?, ?, '')",
-        rusqlite::params![task_id, task.text_norm, task.tags.join(" ")],
-    )
-    .map_err(|e| e.to_string())?;
-
     Ok(())
 }
 
@@ -91,11 +80,6 @@ pub fn reindex_note_tasks(
     note_etag: &str,
     markdown: &str,
 ) -> Result<(), String> {
-    conn.execute(
-        "DELETE FROM tasks_fts WHERE task_id IN (SELECT task_id FROM tasks WHERE note_id = ?)",
-        [note_id],
-    )
-    .map_err(|e| e.to_string())?;
     conn.execute("DELETE FROM tasks WHERE note_id = ?", [note_id])
         .map_err(|e| e.to_string())?;
     for task in parse_tasks(markdown) {

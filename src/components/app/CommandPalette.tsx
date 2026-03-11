@@ -52,8 +52,12 @@ export function CommandPalette({
 	const selectedSearchPathRef = useRef<string | null>(null);
 	const [previewPath, setPreviewPath] = useState<string | null>(null);
 
-	const { recentFiles, isSearching, titleMatches, contentMatches, reset } =
-		useCommandSearch(open, activeTab, query, spacePath);
+	const { searchResults, recentFiles, isSearching, reset } = useCommandSearch(
+		open,
+		activeTab,
+		query,
+		spacePath,
+	);
 
 	const filtered = useMemo(() => {
 		if (activeTab !== "commands") return [];
@@ -75,13 +79,13 @@ export function CommandPalette({
 		activeTab === "commands"
 			? filtered.length
 			: query.trim()
-				? titleMatches.length + contentMatches.length
+				? searchResults.length
 				: recentFiles.length;
 	const parsedSearch = useMemo(() => parseSearchQuery(query), [query]);
 	const searchEntries = useMemo(
 		() =>
 			query.trim()
-				? [...titleMatches, ...contentMatches].map((result) => ({
+				? searchResults.map((result) => ({
 						path: result.id,
 						title: result.title,
 					}))
@@ -89,7 +93,7 @@ export function CommandPalette({
 						path: file.path,
 						title: null,
 					})),
-		[contentMatches, query, recentFiles, titleMatches],
+		[query, recentFiles, searchResults],
 	);
 	const selectedSearchEntry =
 		activeTab === "search" ? (searchEntries[selectedIndex] ?? null) : null;
@@ -196,20 +200,13 @@ export function CommandPalette({
 	const selectSearchResult = useCallback(
 		(index: number) => {
 			const resultId = query.trim()
-				? [...titleMatches, ...contentMatches][index]?.id
+				? searchResults[index]?.id
 				: recentFiles[index]?.path;
 			if (!resultId) return;
 			onClose();
 			onSelectSearchResult(resultId);
 		},
-		[
-			titleMatches,
-			contentMatches,
-			recentFiles,
-			query,
-			onClose,
-			onSelectSearchResult,
-		],
+		[searchResults, recentFiles, query, onClose, onSelectSearchResult],
 	);
 
 	const handleSelect = useCallback(
@@ -379,14 +376,13 @@ export function CommandPalette({
 											>
 												{isSearching
 													? "Searching..."
-													: `${(titleMatches.length + contentMatches.length).toLocaleString()} results`}
+													: `${searchResults.length.toLocaleString()} results`}
 											</div>
 										) : null}
 										<SearchResultsList
 											query={query}
 											isSearching={isSearching}
-											titleMatches={titleMatches}
-											contentMatches={contentMatches}
+											searchResults={searchResults}
 											recentFiles={recentFiles}
 											selectedIndex={selectedIndex}
 											onSetSelectedIndex={(index) =>
