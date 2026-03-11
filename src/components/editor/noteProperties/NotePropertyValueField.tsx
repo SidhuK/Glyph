@@ -155,28 +155,16 @@ export function NotePropertyValueField({
 
 	if (property.kind === "list") {
 		return (
-			<>
-				<Input
-					className="notePropertyFieldInput"
-					value={listText(property)}
-					placeholder="item1, item2"
-					onChange={(event) =>
-						onUpdate(index, {
-							value_list: fromListText(event.target.value),
-						})
-					}
-				/>
-				<div className="notePropertyPills">
-					{property.value_list.map((value, valueIndex) => (
-						<span
-							key={`${property.key || rowId}-${valueIndex}-${value}`}
-							className="notePropertyPill"
-						>
-							{value}
-						</span>
-					))}
-				</div>
-			</>
+			<Input
+				className="notePropertyFieldInput"
+				value={listText(property)}
+				placeholder="item1, item2"
+				onChange={(event) =>
+					onUpdate(index, {
+						value_list: fromListText(event.target.value),
+					})
+				}
+			/>
 		);
 	}
 

@@ -390,34 +390,6 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 						<pre>{renderFrontmatterWithLinks(frontmatter.trimEnd())}</pre>
 					</div>
 				) : null}
-				{mode !== "plain" && showBacklinks && backlinks.length > 0 ? (
-					<div className="editorBacklinks" aria-label="Backlinks">
-						<div className="editorBacklinksLabel">
-							Linked mentions ({backlinks.length})
-						</div>
-						<div className="editorBacklinksList">
-							{backlinks.map((item) => (
-								<button
-									key={item.id}
-									type="button"
-									className="editorBacklink"
-									onClick={() =>
-										dispatchWikiLinkClick({
-											raw: `[[${item.id}]]`,
-											target: item.id,
-											alias: null,
-											anchorKind: "none",
-											anchor: null,
-											unresolved: false,
-										})
-									}
-								>
-									{item.title || item.id}
-								</button>
-							))}
-						</div>
-					</div>
-				) : null}
 				{mode !== "plain" ? (
 					<div
 						ref={tiptapHostRef}
@@ -508,6 +480,35 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 									</div>
 								</PopoverContent>
 							</Popover>
+						) : null}
+						{showBacklinks && backlinks.length > 0 ? (
+							<div className="editorBacklinks" aria-label="Backlinks">
+								<div className="editorBacklinksDivider" aria-hidden="true" />
+								<div className="editorBacklinksLabel">
+									Linked mentions ({backlinks.length})
+								</div>
+								<div className="editorBacklinksList">
+									{backlinks.map((item) => (
+										<button
+											key={item.id}
+											type="button"
+											className="editorBacklink"
+											onClick={() =>
+												dispatchWikiLinkClick({
+													raw: `[[${item.id}]]`,
+													target: item.id,
+													alias: null,
+													anchorKind: "none",
+													anchor: null,
+													unresolved: false,
+												})
+											}
+										>
+											{item.title || item.id}
+										</button>
+									))}
+								</div>
+							</div>
 						) : null}
 					</div>
 				) : null}

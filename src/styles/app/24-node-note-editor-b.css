@@ -98,24 +98,36 @@
 	gap: 0;
 }
 
+.notePropertyAddWrap {
+	display: flex;
+	justify-content: center;
+	padding-top: 6px;
+}
+
+.notePropertyAddWrap.hasDivider {
+	position: relative;
+	margin-top: 8px;
+	padding-top: 0;
+}
+
+.notePropertyAddWrap.hasDivider::before {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: 50%;
+	height: 1px;
+	background: color-mix(in srgb, var(--border-light) 76%, transparent);
+	transform: translateY(-50%);
+}
+
 .notePropertyRow {
 	display: grid;
 	grid-template-columns: minmax(164px, 0.86fr) minmax(0, 1.45fr) auto;
 	align-items: start;
 	gap: 8px;
 	padding: 6px 0;
-	border-top: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
-	transition: border-color var(--transition-fast), background
-		var(--transition-fast);
-}
-
-.notePropertyRow:first-child {
-	border-top: 0;
-	padding-top: 0;
-}
-
-.notePropertyRow:hover {
-	border-color: color-mix(in srgb, var(--interactive-accent) 20%, transparent);
+	transition: background var(--transition-fast);
 }
 
 .notePropertyIdentity {
@@ -130,13 +142,49 @@
 .notePropertyValue input {
 	height: 30px;
 	width: 100%;
-	border-color: color-mix(in srgb, var(--border-light) 78%, transparent);
-	background: color-mix(in srgb, var(--bg-primary) 54%, transparent);
+	border-color: transparent;
+	background: transparent;
 	box-shadow: none;
+	border-radius: calc(var(--radius-md) - 2px);
+	padding-inline: 0;
+	font-family: var(--font-sans);
+	font-size: 13px;
+	line-height: 1.45;
 }
 
 .notePropertyKeyInput {
 	flex: 1 1 auto;
+	font-weight: var(--font-semibold);
+	color: var(--text-primary);
+}
+
+.notePropertyFieldInput,
+.notePropertyValue input {
+	font-weight: var(--font-normal);
+	color: var(--text-secondary);
+}
+
+.notePropertyKeyInput::placeholder,
+.notePropertyFieldInput::placeholder,
+.notePropertyValue input::placeholder {
+	color: color-mix(in srgb, var(--text-tertiary) 88%, transparent);
+}
+
+.notePropertyKeyInput:hover,
+.notePropertyFieldInput:hover,
+.notePropertyValue input:hover {
+	background: color-mix(in srgb, var(--bg-secondary) 36%, transparent);
+}
+
+.notePropertyKeyInput:focus-visible,
+.notePropertyFieldInput:focus-visible,
+.notePropertyValue input:focus-visible {
+	background: color-mix(in srgb, var(--interactive-accent) 5%, transparent);
+	border-color: transparent;
+	box-shadow: none;
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 18%, transparent);
+	outline-offset: 1px;
 }
 
 .notePropertyKeyStatic {
@@ -170,11 +218,11 @@
 	align-items: center;
 	gap: 5px;
 	flex: 0 0 auto;
-	padding: 0 8px;
+	padding: 0 6px 0 2px;
 	height: 28px;
-	border-radius: var(--radius-full);
-	border: 1px solid color-mix(in srgb, var(--border-default) 68%, transparent);
-	background: color-mix(in srgb, var(--bg-primary) 72%, transparent);
+	border-radius: calc(var(--radius-md) - 1px);
+	border: 1px solid transparent;
+	background: transparent;
 	color: var(--text-secondary);
 	font-size: 9px;
 	font-weight: var(--font-semibold);
@@ -189,23 +237,28 @@
 
 .notePropertyKindTrigger {
 	min-height: 28px;
-	padding: 0 8px;
+	padding: 0 6px 0 2px;
 	justify-content: flex-start;
-	background: color-mix(in srgb, var(--bg-primary) 72%, transparent);
+	background: transparent;
+	box-shadow: none;
 }
 
 .notePropertyKindTrigger:hover,
 .notePropertyKindTrigger:focus-visible {
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 8%,
-		var(--bg-primary)
-	);
+	background: color-mix(in srgb, var(--interactive-accent) 6%, transparent);
 	color: var(--text-primary);
+	border-color: transparent;
+	box-shadow: none;
 }
 
 .notePropertyKindTrigger > :last-child {
 	color: var(--text-tertiary);
+}
+
+.notePropertyKindTrigger:focus-visible {
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 18%, transparent);
+	outline-offset: 1px;
 }
 
 .notePropertyKindMenu {
@@ -248,18 +301,17 @@
 .notePropertyPills {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 4px;
+	gap: 6px;
 }
 
 .notePropertyPill {
-	display: inline-flex;
-	align-items: center;
-	padding: 1px 5px;
-	border-radius: var(--radius-md);
-	background: color-mix(in srgb, var(--interactive-accent) 12%, transparent);
-	color: var(--interactive-accent);
-	font-size: 9px;
-	line-height: 1.2;
+	display: inline;
+	padding: 0;
+	border-radius: 0;
+	background: transparent;
+	color: var(--text-secondary);
+	font-size: 11px;
+	line-height: 1.4;
 }
 
 .notePropertyToken {
@@ -268,10 +320,9 @@
 	gap: 3px;
 	max-width: 100%;
 	padding: 1px 5px;
-	border: 1px solid
-		color-mix(in srgb, var(--interactive-accent) 14%, var(--border-light));
+	border: 1px solid transparent;
 	border-radius: var(--radius-md);
-	background: color-mix(in srgb, var(--interactive-accent) 10%, transparent);
+	background: color-mix(in srgb, var(--interactive-accent) 7%, transparent);
 	color: var(--interactive-accent);
 	font-size: 9px;
 	line-height: 1.2;
@@ -303,14 +354,14 @@
 	min-height: 30px;
 	width: 100%;
 	padding: 2px 5px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 78%, transparent);
+	border: 1px solid transparent;
 	border-radius: var(--radius-md);
-	background: color-mix(in srgb, var(--bg-primary) 54%, transparent);
+	background: transparent;
 	cursor: text;
 }
 
 .notePropertyTagField:focus-within {
-	border-color: color-mix(in srgb, var(--interactive-accent) 28%, transparent);
+	border-color: transparent;
 	outline: 2px solid
 		color-mix(in srgb, var(--interactive-accent) 18%, transparent);
 	outline-offset: 1px;
@@ -361,9 +412,9 @@
 	align-items: center;
 	gap: 5px;
 	padding: 3px 6px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
+	border: 1px solid transparent;
 	border-radius: var(--radius-md);
-	background: color-mix(in srgb, var(--bg-primary) 64%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 44%, transparent);
 	color: var(--text-secondary);
 	font-size: 10px;
 	line-height: 1.2;
@@ -414,27 +465,48 @@
 }
 
 .notePropertyAddButton {
-	align-self: flex-start;
-	gap: 8px;
-	margin-top: 10px;
-	padding-inline: 6px;
-	border-radius: var(--radius-lg);
+	position: relative;
+	z-index: 1;
+	align-self: center;
+	gap: 4px;
+	min-height: 18px;
+	padding: 0 6px;
+	border-radius: var(--radius-full);
+	background: var(--bg-primary);
+	color: var(--text-tertiary);
+	font-size: 9px;
+	letter-spacing: 0.02em;
+}
+
+.notePropertyAddButton:hover,
+.notePropertyAddButton:focus-visible {
+	background: color-mix(in srgb, var(--bg-primary) 78%, var(--bg-hover));
+	color: var(--text-primary);
 }
 
 .notePropertyRemoveButton {
-	opacity: 0.68;
+	opacity: 0;
 	align-self: center;
 	margin-top: 0;
-	width: 26px;
-	height: 26px;
-	min-width: 26px;
+	width: 18px;
+	height: 18px;
+	min-width: 18px;
 	padding: 0;
+	color: var(--text-tertiary);
+	transition: opacity 140ms ease, background-color 140ms ease, color 140ms ease;
+	pointer-events: none;
+}
+
+.notePropertyRow:hover .notePropertyRemoveButton,
+.notePropertyRow:focus-within .notePropertyRemoveButton {
+	opacity: 0.78;
+	pointer-events: auto;
 }
 
 .notePropertyRemoveButton:hover,
 .notePropertyRemoveButton:focus-visible {
 	opacity: 1;
-	background: color-mix(in srgb, var(--status-danger-bg) 44%, transparent);
+	background: color-mix(in srgb, var(--status-danger-bg) 26%, transparent);
 	color: var(--status-danger-fg);
 }
 
@@ -476,20 +548,30 @@
 		)
 	);
 	margin: 0 auto var(--space-2);
+	padding: var(--space-4) var(--readable-content-gutter-compact) 0;
 	font-size: 11px;
 	color: var(--text-tertiary);
+	box-sizing: border-box;
+}
+
+.editorBacklinksDivider {
+	height: 1px;
+	margin-bottom: var(--space-3);
+	background: color-mix(in srgb, var(--border-light) 92%, transparent);
 }
 
 .editorBacklinksLabel {
-	margin-bottom: 6px;
+	margin-bottom: 8px;
 	text-transform: uppercase;
+	font-size: 10px;
+	font-weight: var(--font-semibold);
 	letter-spacing: 0.06em;
 }
 
 .editorBacklinksList {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 6px;
+	gap: 8px;
 }
 
 .editorBacklink {
@@ -499,13 +581,22 @@
 	color: var(--text-tertiary);
 	font-size: 11px;
 	line-height: 1.2;
-	padding: 4px 8px;
+	padding: 5px 9px;
 	cursor: pointer;
+	transition: color 180ms ease, border-color 180ms ease, background-color 180ms
+		ease;
 }
 
-.editorBacklink:hover {
+.editorBacklink:hover,
+.editorBacklink:focus-visible {
 	border-color: var(--border-default);
 	color: var(--text-secondary);
+	background: color-mix(in srgb, var(--bg-secondary) 72%, var(--bg-hover));
+	outline: none;
+}
+
+.editorBacklink:active {
+	transform: translateY(0.5px);
 }
 
 .tiptapContentInline a {
@@ -564,7 +655,7 @@
 }
 
 .tiptapContentInline p {
-	margin: 0 0 var(--space-3);
+	margin: 0 0 var(--space-4);
 }
 
 .tiptapContentInline p:last-child {
@@ -582,9 +673,20 @@
 .tiptapContentInline h4,
 .tiptapContentInline h5,
 .tiptapContentInline h6 {
-	margin: var(--space-3) 0 var(--space-2);
+	margin: var(--space-5) 0 var(--space-3);
 	font-weight: var(--font-semibold);
 	line-height: 1.25;
+	text-wrap: balance;
+}
+
+.tiptapContentInline > :first-child:is(h1, h2, h3, h4, h5, h6) {
+	margin-top: 0;
+}
+
+.tiptapContentInline
+	:is(p, ul, ol, blockquote, pre, table)
+	+ :is(h1, h2, h3, h4, h5, h6) {
+	margin-top: var(--space-6);
 }
 
 .tiptapContentInline h1 {

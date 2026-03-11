@@ -100,7 +100,7 @@ export function NotePropertyRow({
 						onClick={() => onRemove(index)}
 						aria-label={`Remove ${property.key || "property"}`}
 					>
-						<X size={14} />
+						<X size={10} />
 					</Button>
 				</>
 			)}
