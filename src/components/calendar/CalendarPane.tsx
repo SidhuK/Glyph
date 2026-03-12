@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSpace, useUILayoutContext } from "../../contexts";
 import { useDailyNote } from "../../hooks/useDailyNote";
 import {
@@ -106,6 +106,7 @@ export function CalendarPane({ onOpenFile, onClosePane }: CalendarPaneProps) {
 	>("space");
 	const [tasksFolder, setTasksFolder] = useState("");
 	const [tasksRecursive, setTasksRecursive] = useState(true);
+	const requestIdRef = useRef(0);
 
 	const monthDates = useMemo(
 		() => buildMonthGridDates(currentMonth),
@@ -165,6 +166,7 @@ export function CalendarPane({ onOpenFile, onClosePane }: CalendarPaneProps) {
 	const canOpenDailyNotes = Boolean(dailyNotesFolder);
 
 	const loadCalendar = useCallback(async () => {
+		const requestId = ++requestIdRef.current;
 		setLoading(true);
 		setLocalError("");
 		try {
@@ -181,6 +183,7 @@ export function CalendarPane({ onOpenFile, onClosePane }: CalendarPaneProps) {
 					daily_notes_folder: dailyNotesFolder,
 				},
 			});
+			if (requestId !== requestIdRef.current) return;
 			setItems(result.items);
 			setNoteDateProperties(result.note_date_properties);
 			if (mode === "notes") {
@@ -202,13 +205,16 @@ export function CalendarPane({ onOpenFile, onClosePane }: CalendarPaneProps) {
 				}
 			}
 		} catch (cause) {
+			if (requestId !== requestIdRef.current) return;
 			setItems([]);
 			setNoteDateProperties([]);
 			setLocalError(
 				cause instanceof Error ? cause.message : "Failed to load calendar",
 			);
 		} finally {
-			setLoading(false);
+			if (requestId === requestIdRef.current) {
+				setLoading(false);
+			}
 		}
 	}, [
 		dailyNotesFolder,
