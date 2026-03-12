@@ -80,8 +80,7 @@ export function CalendarMonthAdapter({
 								className="calCellSurface"
 								aria-pressed={isSelected}
 								onClick={() => onSelectDate(iso)}
-							/>
-							<div className="calCellContent">
+							>
 								<div className="calCellHeader">
 									<span
 										className={cn(
@@ -93,52 +92,52 @@ export function CalendarMonthAdapter({
 										{date.getDate()}
 									</span>
 								</div>
-								<div
-									className={cn(
-										"calCellEvents",
-										visibleItems.length === 0 && "is-empty",
-									)}
-								>
-									{visibleItems.length > 0 ? (
-										<>
-											{stackedItems.map((item) => (
+							</button>
+							<div
+								className={cn(
+									"calCellEvents",
+									visibleItems.length === 0 && "is-empty",
+								)}
+							>
+								{visibleItems.length > 0 ? (
+									<>
+										{stackedItems.map((item) => (
+											<button
+												key={item.id}
+												type="button"
+												className={cn("calEventChip", `is-${itemTone(item)}`)}
+												onClick={(e) => {
+													e.stopPropagation();
+													onOpenItem(item);
+												}}
+												title={item.title}
+											>
+												{item.title}
+											</button>
+										))}
+										{inlineItem ? (
+											<div className="calCellOverflowRow">
 												<button
-													key={item.id}
 													type="button"
-													className={cn("calEventChip", `is-${itemTone(item)}`)}
+													className={cn(
+														"calEventChip is-inline-overflow",
+														`is-${itemTone(inlineItem)}`,
+													)}
 													onClick={(e) => {
 														e.stopPropagation();
-														onOpenItem(item);
+														onOpenItem(inlineItem);
 													}}
-													title={item.title}
+													title={inlineItem.title}
 												>
-													{item.title}
+													{inlineItem.title}
 												</button>
-											))}
-											{inlineItem ? (
-												<div className="calCellOverflowRow">
-													<button
-														type="button"
-														className={cn(
-															"calEventChip is-inline-overflow",
-															`is-${itemTone(inlineItem)}`,
-														)}
-														onClick={(e) => {
-															e.stopPropagation();
-															onOpenItem(inlineItem);
-														}}
-														title={inlineItem.title}
-													>
-														{inlineItem.title}
-													</button>
-													<span className="calCellMore">
-														+{overflowCount} more
-													</span>
-												</div>
-											) : null}
-										</>
-									) : null}
-								</div>
+												<span className="calCellMore">
+													+{overflowCount} more
+												</span>
+											</div>
+										) : null}
+									</>
+								) : null}
 							</div>
 						</div>
 					);
