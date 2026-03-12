@@ -7,7 +7,10 @@ use crate::space::SpaceState;
 
 use super::db::open_db;
 use super::tasks::parse::{is_valid_date, strip_schedule_tokens};
-use super::types::{CalendarItem, CalendarLoadResult, CalendarNoteDateProperty};
+use super::types::{
+    CalendarItem, CalendarItemKind, CalendarLoadResult, CalendarNoteDateKind,
+    CalendarNoteDateProperty,
+};
 
 const SYSTEM_CREATED_PROPERTY_KEY: &str = "__note_created";
 
@@ -68,7 +71,11 @@ fn normalize_rel_path(raw: &str) -> Result<String, String> {
 }
 
 fn folder_like_pattern(folder: &str) -> String {
-    format!("{folder}/%")
+    let escaped = folder
+        .replace('\\', "\\\\")
+        .replace('%', "\\%")
+        .replace('_', "\\_");
+    format!("{escaped}/%")
 }
 
 fn direct_folder_clause(field: &str, dir: &str) -> (String, Vec<String>) {
@@ -78,7 +85,7 @@ fn direct_folder_clause(field: &str, dir: &str) -> (String, Vec<String>) {
 
     let dir_char_len = dir.chars().count();
     (
-        format!("{field} LIKE ? AND instr(substr({field}, ?), '/') = 0"),
+        format!("{field} LIKE ? ESCAPE '\\' AND instr(substr({field}, ?), '/') = 0"),
         vec![folder_like_pattern(dir), (dir_char_len + 2).to_string()],
     )
 }
@@ -87,7 +94,18 @@ fn recursive_folder_clause(field: &str, dir: &str) -> (String, Vec<String>) {
     if dir.is_empty() {
         return ("1 = 1".to_string(), Vec::new());
     }
-    (format!("{field} LIKE ?"), vec![folder_like_pattern(dir)])
+    (
+        format!("{field} LIKE ? ESCAPE '\\'"),
+        vec![folder_like_pattern(dir)],
+    )
+}
+
+fn parse_calendar_note_date_kind(raw: &str) -> Result<CalendarNoteDateKind, String> {
+    match raw {
+        "date" => Ok(CalendarNoteDateKind::Date),
+        "datetime" => Ok(CalendarNoteDateKind::DateTime),
+        other => Err(format!("unsupported calendar note date kind '{other}'")),
+    }
 }
 
 fn source_clause(
@@ -179,7 +197,7 @@ fn note_date_properties(
     while let Some(row) = rows.next().map_err(|e| e.to_string())? {
         out.push(CalendarNoteDateProperty {
             key: row.get(0).map_err(|e| e.to_string())?,
-            kind: row.get(1).map_err(|e| e.to_string())?,
+            kind: parse_calendar_note_date_kind(&row.get::<_, String>(1).map_err(|e| e.to_string())?)?,
             count: row.get::<_, i64>(2).map_err(|e| e.to_string())? as u32,
         });
     }
@@ -194,7 +212,7 @@ fn note_date_properties(
     if note_count > 0 {
         out.insert(0, CalendarNoteDateProperty {
             key: SYSTEM_CREATED_PROPERTY_KEY.to_string(),
-            kind: "datetime".to_string(),
+            kind: CalendarNoteDateKind::DateTime,
             count: note_count,
         });
     }
@@ -277,7 +295,7 @@ fn note_items(
         };
         out.push(CalendarItem {
             id: format!("note:{rel_path}:{property_key}:{date}"),
-            kind: "note".to_string(),
+            kind: CalendarItemKind::Note,
             date,
             title: row.get(1).map_err(|e| e.to_string())?,
             rel_path: Some(rel_path),
@@ -334,7 +352,7 @@ fn note_items_from_created(
         }
         out.push(CalendarItem {
             id: format!("note:{rel_path}:{SYSTEM_CREATED_PROPERTY_KEY}:{date}"),
-            kind: "note".to_string(),
+            kind: CalendarItemKind::Note,
             date,
             title: row.get(1).map_err(|e| e.to_string())?,
             rel_path: Some(rel_path),
@@ -397,7 +415,7 @@ fn daily_note_items(
         let title = row.get::<_, String>(1).map_err(|e| e.to_string())?;
         out.push(CalendarItem {
             id: format!("daily-note:{rel_path}"),
-            kind: "daily_note".to_string(),
+            kind: CalendarItemKind::DailyNote,
             date: date.clone(),
             title: if title.trim().is_empty() { date } else { title },
             rel_path: Some(rel_path),
@@ -462,7 +480,7 @@ fn task_items(
             if let Some(date) = scheduled_date.clone() {
                 out.push(CalendarItem {
                     id: format!("task:{task_id}:combined:{date}"),
-                    kind: "task".to_string(),
+                    kind: CalendarItemKind::Task,
                     date,
                     title: title.clone(),
                     rel_path: Some(note_path.clone()),
@@ -476,7 +494,7 @@ fn task_items(
         if let Some(date) = scheduled_date.filter(|_| scheduled_in_range) {
             out.push(CalendarItem {
                 id: format!("task:{task_id}:scheduled:{date}"),
-                kind: "task".to_string(),
+                kind: CalendarItemKind::Task,
                 date,
                 title: title.clone(),
                 rel_path: Some(note_path.clone()),
@@ -488,7 +506,7 @@ fn task_items(
         if let Some(date) = due_date.filter(|_| due_in_range) {
             out.push(CalendarItem {
                 id: format!("task:{task_id}:due:{date}"),
-                kind: "task".to_string(),
+                kind: CalendarItemKind::Task,
                 date,
                 title: title.clone(),
                 rel_path: Some(note_path.clone()),
@@ -678,6 +696,37 @@ mod tests {
             .any(|property| property.key == SYSTEM_CREATED_PROPERTY_KEY && property.count == 1));
         assert_eq!(result.items.len(), 1);
         assert_eq!(result.items[0].rel_path.as_deref(), Some("café/deux.md"));
+    }
+
+    #[test]
+    fn notes_mode_filters_folder_names_with_sql_wildcards_literally() {
+        let conn = Connection::open_in_memory().unwrap();
+        ensure_schema(&conn).unwrap();
+        insert_note(&conn, "100%_real/one.md", "Literal folder", "Preview one");
+        insert_note(&conn, "100percentxreal/two.md", "Wildcard sibling", "Preview two");
+        insert_property(&conn, "100%_real/one.md", "date", "date", "2026-03-12");
+        insert_property(&conn, "100percentxreal/two.md", "date", "date", "2026-03-13");
+
+        let result = load_calendar(
+            &conn,
+            &CalendarQueryRequest {
+                mode: CalendarMode::Notes,
+                source: CalendarSource {
+                    kind: CalendarSourceKind::Folder,
+                    path: Some("100%_real".to_string()),
+                    recursive: Some(true),
+                },
+                start_date: "2026-03-01".to_string(),
+                end_date: "2026-03-31".to_string(),
+                note_date_property_key: Some("date".to_string()),
+                note_date_property_kind: Some("date".to_string()),
+                daily_notes_folder: None,
+            },
+        )
+        .unwrap();
+
+        assert_eq!(result.items.len(), 1);
+        assert_eq!(result.items[0].rel_path.as_deref(), Some("100%_real/one.md"));
     }
 
     #[test]

@@ -54,26 +54,30 @@ fn infer_string_kind(value: &str) -> &'static str {
 pub(crate) fn backfill_inferred_string_property_kinds(
     conn: &rusqlite::Connection,
 ) -> Result<usize, String> {
-    let mut stmt = conn
-        .prepare(
-            "SELECT note_id, key, value_text
-             FROM note_properties
-             WHERE value_type = 'text'",
-        )
-        .map_err(|e| e.to_string())?;
-    let mut rows = stmt.query([]).map_err(|e| e.to_string())?;
-    let mut updates = Vec::<(String, String, &'static str)>::new();
+    let updates = {
+        let mut stmt = conn
+            .prepare(
+                "SELECT note_id, key, value_text
+                 FROM note_properties
+                 WHERE value_type = 'text'",
+            )
+            .map_err(|e| e.to_string())?;
+        let mut rows = stmt.query([]).map_err(|e| e.to_string())?;
+        let mut updates = Vec::<(String, String, &'static str)>::new();
 
-    while let Some(row) = rows.next().map_err(|e| e.to_string())? {
-        let note_id = row.get::<_, String>(0).map_err(|e| e.to_string())?;
-        let key = row.get::<_, String>(1).map_err(|e| e.to_string())?;
-        let value_text = row.get::<_, String>(2).map_err(|e| e.to_string())?;
-        let next_kind = infer_string_kind(&value_text);
-        if next_kind == "text" {
-            continue;
+        while let Some(row) = rows.next().map_err(|e| e.to_string())? {
+            let note_id = row.get::<_, String>(0).map_err(|e| e.to_string())?;
+            let key = row.get::<_, String>(1).map_err(|e| e.to_string())?;
+            let value_text = row.get::<_, String>(2).map_err(|e| e.to_string())?;
+            let next_kind = infer_string_kind(&value_text);
+            if next_kind == "text" {
+                continue;
+            }
+            updates.push((note_id, key, next_kind));
         }
-        updates.push((note_id, key, next_kind));
-    }
+
+        updates
+    };
 
     if updates.is_empty() {
         return Ok(0);

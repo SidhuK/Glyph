@@ -230,9 +230,9 @@ export interface CalendarItem {
 	kind: "note" | "daily_note" | "task";
 	date: string;
 	title: string;
-	rel_path?: string | null;
-	preview?: string | null;
-	badges?: string[];
+	rel_path: string | null;
+	preview: string | null;
+	badges: string[];
 }
 
 export interface CalendarNoteDateProperty {

@@ -38,18 +38,27 @@ describe("calendar helpers", () => {
 				kind: "note",
 				date: "2026-03-12",
 				title: "Bravo",
+				rel_path: "bravo.md",
+				preview: "Preview bravo",
+				badges: [],
 			},
 			{
 				id: "a",
 				kind: "note",
 				date: "2026-03-12",
 				title: "Alpha",
+				rel_path: "alpha.md",
+				preview: "Preview alpha",
+				badges: [],
 			},
 			{
 				id: "c",
 				kind: "task",
 				date: "2026-03-13",
 				title: "Charlie",
+				rel_path: "charlie.md",
+				preview: "Preview charlie",
+				badges: ["Due"],
 			},
 		];
 		const grouped = groupCalendarItemsByDate(items);
