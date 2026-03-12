@@ -5,6 +5,7 @@ import type {
 } from "./tauri";
 
 export const CALENDAR_TAB_ID = "__glyph_calendar__";
+export const CALENDAR_SYSTEM_CREATED_KEY = "__note_created";
 
 const MONTH_LABEL_FORMATTER = new Intl.DateTimeFormat(undefined, {
 	month: "long",

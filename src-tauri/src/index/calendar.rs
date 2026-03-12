@@ -9,6 +9,8 @@ use super::db::open_db;
 use super::tasks::parse::{is_valid_date, strip_schedule_tokens};
 use super::types::{CalendarItem, CalendarLoadResult, CalendarNoteDateProperty};
 
+const SYSTEM_CREATED_PROPERTY_KEY: &str = "__note_created";
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum CalendarSourceKind {
@@ -181,6 +183,21 @@ fn note_date_properties(
             count: row.get::<_, i64>(2).map_err(|e| e.to_string())? as u32,
         });
     }
+
+    let note_count: u32 = conn
+        .query_row(
+            &format!("SELECT COUNT(*) FROM notes n WHERE {source_sql}"),
+            params_from_iter(params.iter()),
+            |row| row.get::<_, i64>(0),
+        )
+        .map_err(|e| e.to_string())? as u32;
+    if note_count > 0 {
+        out.insert(0, CalendarNoteDateProperty {
+            key: SYSTEM_CREATED_PROPERTY_KEY.to_string(),
+            kind: "datetime".to_string(),
+            count: note_count,
+        });
+    }
     Ok(out)
 }
 
@@ -193,6 +210,9 @@ fn note_items(
     let Some(property_key) = request.note_date_property_key.as_deref() else {
         return Ok(Vec::new());
     };
+    if property_key == SYSTEM_CREATED_PROPERTY_KEY {
+        return note_items_from_created(conn, request, start, end);
+    }
     let property_kind = request.note_date_property_kind.as_deref().unwrap_or("date");
 
     let (source_sql, source_params) = source_clause(
@@ -263,6 +283,63 @@ fn note_items(
             rel_path: Some(rel_path),
             preview: Some(row.get::<_, String>(2).map_err(|e| e.to_string())?),
             badges: Vec::new(),
+        });
+    }
+
+    Ok(out)
+}
+
+fn created_value_to_calendar_date(value: &str) -> Option<String> {
+    if let Some(date) = parse_iso_date(value) {
+        return Some(date.format("%F").to_string());
+    }
+    datetime_to_local_date(value)
+}
+
+fn note_items_from_created(
+    conn: &Connection,
+    request: &CalendarQueryRequest,
+    start: NaiveDate,
+    end: NaiveDate,
+) -> Result<Vec<CalendarItem>, String> {
+    let (source_sql, source_params) = source_clause(
+        "n.id",
+        &request.source,
+        request.daily_notes_folder.as_deref(),
+    )?;
+    let sql = format!(
+        "SELECT n.id, n.title, n.preview, n.created
+         FROM notes n
+         WHERE {source_sql}
+         ORDER BY n.created ASC, n.updated DESC"
+    );
+    let params: Vec<rusqlite::types::Value> = source_params
+        .into_iter()
+        .map(rusqlite::types::Value::from)
+        .collect();
+    let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;
+    let mut rows = stmt
+        .query(params_from_iter(params.iter()))
+        .map_err(|e| e.to_string())?;
+    let mut out = Vec::new();
+
+    while let Some(row) = rows.next().map_err(|e| e.to_string())? {
+        let rel_path = row.get::<_, String>(0).map_err(|e| e.to_string())?;
+        let raw_created = row.get::<_, String>(3).map_err(|e| e.to_string())?;
+        let Some(date) = created_value_to_calendar_date(&raw_created) else {
+            continue;
+        };
+        if !date_in_range(&date, start, end) {
+            continue;
+        }
+        out.push(CalendarItem {
+            id: format!("note:{rel_path}:{SYSTEM_CREATED_PROPERTY_KEY}:{date}"),
+            kind: "note".to_string(),
+            date,
+            title: row.get(1).map_err(|e| e.to_string())?,
+            rel_path: Some(rel_path),
+            preview: Some(row.get::<_, String>(2).map_err(|e| e.to_string())?),
+            badges: vec!["Created".to_string()],
         });
     }
 
@@ -488,8 +565,9 @@ mod tests {
     use crate::index::schema::ensure_schema;
 
     use super::{
-        daily_note_items, load_calendar, parse_daily_note_date, CalendarMode,
-        CalendarQueryRequest, CalendarSource, CalendarSourceKind,
+        daily_note_items, load_calendar, note_date_properties, parse_daily_note_date,
+        CalendarMode, CalendarQueryRequest, CalendarSource, CalendarSourceKind,
+        SYSTEM_CREATED_PROPERTY_KEY,
     };
 
     fn insert_note(conn: &Connection, id: &str, title: &str, preview: &str) {
@@ -543,8 +621,15 @@ mod tests {
         };
 
         let result = load_calendar(&conn, &request).unwrap();
-        assert_eq!(result.note_date_properties.len(), 1);
-        assert_eq!(result.note_date_properties[0].count, 2);
+        assert_eq!(result.note_date_properties.len(), 2);
+        assert!(result
+            .note_date_properties
+            .iter()
+            .any(|property| property.key == "date" && property.count == 2));
+        assert!(result
+            .note_date_properties
+            .iter()
+            .any(|property| property.key == SYSTEM_CREATED_PROPERTY_KEY && property.count == 2));
         assert_eq!(result.items.len(), 2);
         assert!(result.items.iter().all(|item| {
             item.rel_path
@@ -582,10 +667,71 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!(result.note_date_properties.len(), 1);
-        assert_eq!(result.note_date_properties[0].count, 1);
+        assert_eq!(result.note_date_properties.len(), 2);
+        assert!(result
+            .note_date_properties
+            .iter()
+            .any(|property| property.key == "date" && property.count == 1));
+        assert!(result
+            .note_date_properties
+            .iter()
+            .any(|property| property.key == SYSTEM_CREATED_PROPERTY_KEY && property.count == 1));
         assert_eq!(result.items.len(), 1);
         assert_eq!(result.items[0].rel_path.as_deref(), Some("café/deux.md"));
+    }
+
+    #[test]
+    fn notes_mode_can_fall_back_to_note_created_metadata() {
+        let conn = Connection::open_in_memory().unwrap();
+        ensure_schema(&conn).unwrap();
+        conn.execute(
+            "INSERT INTO notes(id, title, created, updated, path, etag, preview)
+             VALUES
+             ('fallback/one.md', 'One', '2026-03-12T08:30:00Z', '2026-03-12T08:30:00Z', 'fallback/one.md', 'etag-1', 'Preview one'),
+             ('fallback/two.md', 'Two', '2026-03-14T08:30:00Z', '2026-03-14T08:30:00Z', 'fallback/two.md', 'etag-2', 'Preview two')",
+            [],
+        )
+        .unwrap();
+
+        let result = load_calendar(
+            &conn,
+            &CalendarQueryRequest {
+                mode: CalendarMode::Notes,
+                source: CalendarSource {
+                    kind: CalendarSourceKind::Folder,
+                    path: Some("fallback".to_string()),
+                    recursive: Some(true),
+                },
+                start_date: "2026-03-01".to_string(),
+                end_date: "2026-03-31".to_string(),
+                note_date_property_key: Some(SYSTEM_CREATED_PROPERTY_KEY.to_string()),
+                note_date_property_kind: Some("datetime".to_string()),
+                daily_notes_folder: None,
+            },
+        )
+        .unwrap();
+
+        assert_eq!(result.items.len(), 2);
+        assert!(result
+            .items
+            .iter()
+            .all(|item| item.badges == vec!["Created"]));
+        assert_eq!(result.items[0].date, "2026-03-12");
+        assert_eq!(result.items[1].date, "2026-03-14");
+
+        let properties = note_date_properties(
+            &conn,
+            &CalendarSource {
+                kind: CalendarSourceKind::Folder,
+                path: Some("fallback".to_string()),
+                recursive: Some(true),
+            },
+            None,
+        )
+        .unwrap();
+        assert!(properties
+            .iter()
+            .any(|property| property.key == SYSTEM_CREATED_PROPERTY_KEY));
     }
 
     #[test]

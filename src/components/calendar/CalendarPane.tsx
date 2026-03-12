@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { useSpace, useUILayoutContext } from "../../contexts";
 import { useDailyNote } from "../../hooks/useDailyNote";
 import {
+	CALENDAR_SYSTEM_CREATED_KEY,
 	buildMonthGridDates,
 	endOfMonthGrid,
 	formatMonthLabel,
@@ -66,6 +67,13 @@ function parseNotePropertySelection(
 			(property) => property.key === key && property.kind === kind,
 		) ?? null
 	);
+}
+
+function notePropertyLabel(property: CalendarNoteDateProperty): string {
+	if (property.key === CALENDAR_SYSTEM_CREATED_KEY) {
+		return "Created";
+	}
+	return property.key;
 }
 
 export function CalendarPane({ onOpenFile, onClosePane }: CalendarPaneProps) {
@@ -340,7 +348,7 @@ export function CalendarPane({ onOpenFile, onClosePane }: CalendarPaneProps) {
 											key={`${property.key}:${property.kind}`}
 											value={notePropertyValue(property)}
 										>
-											{property.key} ({property.kind}) · {property.count}
+											{notePropertyLabel(property)}
 										</option>
 									))}
 								</select>
