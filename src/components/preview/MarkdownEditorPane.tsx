@@ -335,10 +335,12 @@ export function MarkdownEditorPane({
 	// Register editor state for keyboard shortcuts
 	const editorState = useMemo(
 		() => ({
+			relPath,
 			isDirty,
 			save: onSave,
+			getMarkdown: () => textRef.current,
 		}),
-		[isDirty, onSave],
+		[isDirty, onSave, relPath],
 	);
 	useEditorRegistration(editorState);
 

@@ -79,7 +79,7 @@ export function AppShell() {
 		aiPanelWidth,
 		setAiPanelWidth,
 	} = useAISidebarContext();
-	const { saveCurrentEditor } = useEditorContext();
+	const { getCurrentMarkdown, saveCurrentEditor } = useEditorContext();
 
 	const [paletteInitialTab, setPaletteInitialTab] = useState<
 		"commands" | "search"
@@ -447,6 +447,30 @@ export function AppShell() {
 		}
 	}, [fileTree, spacePath]);
 
+	const handleCopyOpenNoteAsMarkdown = useCallback(async () => {
+		if (!activeMarkdownTabPath) return;
+
+		try {
+			const editorMarkdown = getCurrentMarkdown(activeMarkdownTabPath);
+			const markdown =
+				editorMarkdown ??
+				(
+					await invoke("space_read_text", {
+						path: activeMarkdownTabPath,
+					})
+				).text;
+
+			await navigator.clipboard.writeText(markdown);
+			toast.success("Copied note as Markdown.");
+		} catch (error) {
+			console.error("Failed to copy note as markdown", error);
+			toast.error("Could not copy note as Markdown", {
+				description:
+					error instanceof Error ? error.message : "Try again in a moment.",
+			});
+		}
+	}, [activeMarkdownTabPath, getCurrentMarkdown]);
+
 	const commands = useMemo<Command[]>(() => {
 		if (movePickerSourcePath) {
 			return [
@@ -598,7 +622,17 @@ export function AppShell() {
 				category: "File Operations",
 				shortcut: { meta: true, key: "s" },
 				enabled: Boolean(spacePath),
+				allowInEditable: true,
 				action: () => void saveCurrentEditor(),
+			},
+			{
+				id: "copy-note-markdown",
+				label: "Copy note as Markdown",
+				category: "File Operations",
+				shortcut: { meta: true, shift: true, key: "c" },
+				enabled: Boolean(activeMarkdownTabPath),
+				allowInEditable: true,
+				action: () => void handleCopyOpenNoteAsMarkdown(),
 			},
 			{
 				id: "close-preview",
@@ -650,6 +684,7 @@ export function AppShell() {
 		aiEnabled,
 		attachAllOpenNotesToAi,
 		attachCurrentNoteToAi,
+		handleCopyOpenNoteAsMarkdown,
 		dailyNotesFolder,
 		fileTree,
 		handleOpenDailyNote,

@@ -58,18 +58,18 @@ export function useCommandShortcuts({
 					t.isContentEditable);
 			if (inEditableField) {
 				if (!paletteOpenRef.current) {
-					const saveCommand = commandsRef.current.find(
-						(command) =>
-							command.id === "save-note" &&
-							command.enabled !== false &&
-							Boolean(command.shortcut),
-					);
-					if (
-						saveCommand?.shortcut &&
-						isShortcutMatch(e, saveCommand.shortcut)
-					) {
+					for (const command of commandsRef.current) {
+						if (
+							command.allowInEditable !== true ||
+							command.enabled === false ||
+							!command.shortcut
+						) {
+							continue;
+						}
+						if (!isShortcutMatch(e, command.shortcut)) continue;
 						e.preventDefault();
-						void saveCommand.action();
+						void command.action();
+						return;
 					}
 				}
 				return;

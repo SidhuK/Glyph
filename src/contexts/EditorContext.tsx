@@ -11,10 +11,14 @@ import {
  * Interface for editor save functionality
  */
 export interface EditorSaveState {
+	/** Relative path for the editor's current document */
+	relPath: string;
 	/** Whether the current editor has unsaved changes */
 	isDirty: boolean;
 	/** Function to save the current editor content */
 	save: () => Promise<void>;
+	/** Function to get the current editor content as markdown */
+	getMarkdown?: () => string | null;
 }
 
 /**
@@ -29,6 +33,8 @@ interface EditorContextValue {
 	saveCurrentEditor: () => Promise<boolean>;
 	/** Check if current editor has unsaved changes */
 	hasUnsavedChanges: () => boolean;
+	/** Get the current editor content as markdown for a specific note */
+	getCurrentMarkdown: (relPath: string) => string | null;
 }
 
 const EditorContext = createContext<EditorContextValue | null>(null);
@@ -59,6 +65,12 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 		return editorStateRef.current?.isDirty ?? false;
 	}, []);
 
+	const getCurrentMarkdown = useCallback((relPath: string) => {
+		const state = editorStateRef.current;
+		if (!state || state.relPath !== relPath) return null;
+		return state.getMarkdown?.() ?? null;
+	}, []);
+
 	return (
 		<EditorContext.Provider
 			value={{
@@ -66,6 +78,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 				getEditorState,
 				saveCurrentEditor,
 				hasUnsavedChanges,
+				getCurrentMarkdown,
 			}}
 		>
 			{children}

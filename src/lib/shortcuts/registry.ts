@@ -109,6 +109,14 @@ export const SHORTCUTS = [
 		context: "editor",
 	},
 	{
+		id: "copy-note-markdown",
+		shortcut: { meta: true, shift: true, key: "c" },
+		label: "Copy Note as Markdown",
+		description: "Copy the entire open note as markdown",
+		category: "file",
+		context: "editor",
+	},
+	{
 		id: "close-preview",
 		shortcut: { meta: true, key: "w" },
 		label: "Close Preview",

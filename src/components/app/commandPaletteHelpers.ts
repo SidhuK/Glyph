@@ -9,6 +9,7 @@ export interface Command {
 	shortcut?: Shortcut;
 	action: () => void | Promise<void>;
 	enabled?: boolean;
+	allowInEditable?: boolean;
 }
 
 export type Tab = "commands" | "search";
