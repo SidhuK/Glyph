@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from "react";
+import { parseIsoDate } from "../lib/calendar";
 import {
 	getDailyNoteContent,
 	getDailyNotePath,
@@ -14,6 +15,10 @@ export interface UseDailyNoteOptions {
 
 export interface UseDailyNoteReturn {
 	openOrCreateDailyNote: (folder: string) => Promise<string | null>;
+	openOrCreateDailyNoteAtDate: (
+		folder: string,
+		date: string,
+	) => Promise<string | null>;
 	isCreating: boolean;
 }
 
@@ -22,15 +27,17 @@ export function useDailyNote(options: UseDailyNoteOptions): UseDailyNoteReturn {
 	const [isCreating, setIsCreating] = useState(false);
 	const lockRef = useRef(false);
 
-	const openOrCreateDailyNote = useCallback(
-		async (folder: string): Promise<string | null> => {
+	const openOrCreateDailyNoteAtDate = useCallback(
+		async (folder: string, date: string): Promise<string | null> => {
+			if (!parseIsoDate(date)) {
+				return null;
+			}
 			if (lockRef.current) return null;
 			lockRef.current = true;
 			setIsCreating(true);
 			try {
-				const todayDate = getTodayDateString();
-				const notePath = getDailyNotePath(folder, todayDate);
-				const content = getDailyNoteContent(todayDate);
+				const notePath = getDailyNotePath(folder, date);
+				const content = getDailyNoteContent(date);
 				await invoke("space_open_or_create_text", {
 					path: notePath,
 					text: content,
@@ -51,5 +58,13 @@ export function useDailyNote(options: UseDailyNoteOptions): UseDailyNoteReturn {
 		[onOpenFile, setError],
 	);
 
-	return { openOrCreateDailyNote, isCreating };
+	const openOrCreateDailyNote = useCallback(
+		async (folder: string) => {
+			const todayDate = getTodayDateString();
+			return openOrCreateDailyNoteAtDate(folder, todayDate);
+		},
+		[openOrCreateDailyNoteAtDate],
+	);
+
+	return { openOrCreateDailyNote, openOrCreateDailyNoteAtDate, isCreating };
 }

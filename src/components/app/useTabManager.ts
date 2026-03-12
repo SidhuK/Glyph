@@ -5,6 +5,7 @@ import {
 	useViewContext,
 } from "../../contexts";
 import { useRecentFiles } from "../../hooks/useRecentFiles";
+import { CALENDAR_TAB_ID } from "../../lib/calendar";
 import { TASKS_TAB_ID } from "../../lib/tasks";
 import { isInAppPreviewable } from "../../utils/filePreview";
 
@@ -23,6 +24,10 @@ export function useTabManager(spacePath: string | null) {
 	const [activeTabPath, setActiveTabPath] = useState<string | null>(null);
 	const [dragTabPath, setDragTabPath] = useState<string | null>(null);
 	const [dirtyByPath, setDirtyByPath] = useState<Record<string, boolean>>({});
+	const isSpecialTab = useCallback(
+		(path: string) => path === TASKS_TAB_ID || path === CALENDAR_TAB_ID,
+		[],
+	);
 
 	const canOpenInMainPane = useCallback(
 		(path: string) =>
@@ -43,7 +48,7 @@ export function useTabManager(spacePath: string | null) {
 			setActiveFilePath(null);
 			return;
 		}
-		if (activeTabPath === TASKS_TAB_ID) {
+		if (isSpecialTab(activeTabPath)) {
 			setActivePreviewPath(null);
 			setActiveFilePath(null);
 			return;
@@ -58,7 +63,7 @@ export function useTabManager(spacePath: string | null) {
 			return;
 		}
 		setActivePreviewPath(null);
-	}, [activeTabPath, setActiveFilePath, setActivePreviewPath]);
+	}, [activeTabPath, isSpecialTab, setActiveFilePath, setActivePreviewPath]);
 
 	useEffect(() => {
 		const markdownTabs = openTabs.filter((p) =>
@@ -73,9 +78,10 @@ export function useTabManager(spacePath: string | null) {
 
 	useEffect(() => {
 		if (activeTabPath && spacePath) {
+			if (isSpecialTab(activeTabPath)) return;
 			void addRecentFile(activeTabPath, spacePath);
 		}
-	}, [activeTabPath, spacePath, addRecentFile]);
+	}, [activeTabPath, isSpecialTab, spacePath, addRecentFile]);
 
 	const closeTab = useCallback((path: string) => {
 		setOpenTabs((prev) => {
@@ -111,7 +117,7 @@ export function useTabManager(spacePath: string | null) {
 		(path: string, recursive = false) => {
 			setOpenTabs((prev) => {
 				const next = prev.filter((tabPath) => {
-					if (tabPath === TASKS_TAB_ID) return true;
+					if (isSpecialTab(tabPath)) return true;
 					if (tabPath === path) return false;
 					return !(recursive && tabPath.startsWith(`${path}/`));
 				});
@@ -145,7 +151,7 @@ export function useTabManager(spacePath: string | null) {
 				return changed ? next : prev;
 			});
 		},
-		[],
+		[isSpecialTab],
 	);
 
 	const reorderTabs = useCallback((fromPath: string, toPath: string) => {

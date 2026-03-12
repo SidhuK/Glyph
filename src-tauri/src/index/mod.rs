@@ -1,3 +1,4 @@
+pub mod calendar;
 pub mod commands;
 pub(crate) mod db;
 mod frontmatter;

@@ -3,11 +3,35 @@ use std::collections::HashSet;
 use std::path::{Path, PathBuf};
 use std::sync::{Mutex, OnceLock};
 
+use super::properties::backfill_inferred_string_property_kinds;
 use super::schema::ensure_schema;
+
+const INDEX_DB_VERSION: i32 = 1;
 
 fn schema_cache() -> &'static Mutex<HashSet<PathBuf>> {
     static CACHE: OnceLock<Mutex<HashSet<PathBuf>>> = OnceLock::new();
     CACHE.get_or_init(|| Mutex::new(HashSet::new()))
+}
+
+fn migrate_if_needed(conn: &rusqlite::Connection) -> Result<(), String> {
+    let current_version: i32 = conn
+        .pragma_query_value(None, "user_version", |row| row.get(0))
+        .map_err(|e| e.to_string())?;
+
+    if current_version >= INDEX_DB_VERSION {
+        return Ok(());
+    }
+
+    let backfilled = backfill_inferred_string_property_kinds(conn)?;
+    if backfilled > 0 {
+        tracing::info!(backfilled, "Backfilled legacy note property kinds");
+    }
+    // Write the version stamp only after the backfill succeeds so a
+    // mid-migration crash safely retries on the next launch.
+    conn.pragma_update(None, "user_version", INDEX_DB_VERSION)
+        .map_err(|e| e.to_string())?;
+
+    Ok(())
 }
 
 pub fn db_path(space_root: &Path) -> Result<PathBuf, String> {
@@ -26,6 +50,7 @@ pub fn open_db(space_root: &Path) -> Result<rusqlite::Connection, String> {
     let mut cache = schema_cache().lock().unwrap_or_else(|p| p.into_inner());
     if !cache.contains(&path) {
         ensure_schema(&conn)?;
+        migrate_if_needed(&conn)?;
         cache.insert(path);
     }
 

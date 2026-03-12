@@ -1,4 +1,5 @@
 import {
+	CalendarAdd01Icon,
 	NoteDoneIcon,
 	Settings05Icon,
 	Tag01Icon,
@@ -42,6 +43,7 @@ interface SidebarContentProps {
 	onOpenDailyNote: () => void;
 	isDailyNoteCreating: boolean;
 	onOpenTasks: () => void;
+	onOpenCalendar: () => void;
 	updateReady: boolean;
 	updateVersion: string | null;
 	onInstallUpdate: () => void;
@@ -68,6 +70,7 @@ export const SidebarContent = memo(function SidebarContent({
 	onOpenDailyNote,
 	isDailyNoteCreating,
 	onOpenTasks,
+	onOpenCalendar,
 	updateReady,
 	updateVersion,
 	onInstallUpdate,
@@ -130,11 +133,20 @@ export const SidebarContent = memo(function SidebarContent({
 					<button
 						type="button"
 						className="sidebarDailyNotesBtn"
+						onClick={onOpenCalendar}
+						title="Open Calendar"
+					>
+						<Calendar size={14} />
+						<span className="dailyNotesLabel">Calendar</span>
+					</button>
+					<button
+						type="button"
+						className="sidebarDailyNotesBtn"
 						onClick={handleDailyNoteClick}
 						disabled={isDailyNoteCreating}
 						title="Open today's daily note"
 					>
-						<Calendar size={14} />
+						<HugeiconsIcon icon={CalendarAdd01Icon} size={14} />
 						<span className="dailyNotesLabel">Daily Note</span>
 					</button>
 				</div>

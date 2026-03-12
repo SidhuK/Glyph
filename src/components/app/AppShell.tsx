@@ -86,6 +86,7 @@ export function AppShell() {
 	>("commands");
 	const [paletteInitialQuery, setPaletteInitialQuery] = useState("");
 	const [openTasksRequest, setOpenTasksRequest] = useState(0);
+	const [openCalendarRequest, setOpenCalendarRequest] = useState(0);
 	const [showGettingStartedRequest, setShowGettingStartedRequest] = useState(0);
 	const [movePickerSourcePath, setMovePickerSourcePath] = useState<
 		string | null
@@ -435,6 +436,10 @@ export function AppShell() {
 	const openTasksTab = useCallback(() => {
 		setOpenTasksRequest((prev) => prev + 1);
 	}, []);
+
+	const openCalendarTab = useCallback(() => {
+		setOpenCalendarRequest((prev) => prev + 1);
+	}, []);
 	const openGettingStarted = useCallback(() => {
 		setShowGettingStartedRequest((prev) => prev + 1);
 	}, []);
@@ -658,6 +663,13 @@ export function AppShell() {
 				action: openTasksTab,
 			},
 			{
+				id: "open-calendar",
+				label: "Open calendar",
+				category: "Navigation",
+				enabled: Boolean(spacePath),
+				action: openCalendarTab,
+			},
+			{
 				id: "show-getting-started",
 				label: "Show getting started",
 				category: "Help",
@@ -699,6 +711,7 @@ export function AppShell() {
 		spacePath,
 		openSearchPalette,
 		openTasksTab,
+		openCalendarTab,
 		openGettingStarted,
 		moveTargetDirs,
 		movePickerSourcePath,
@@ -785,6 +798,7 @@ export function AppShell() {
 				onOpenDailyNote={handleOpenDailyNote}
 				isDailyNoteCreating={isDailyNoteCreating}
 				onOpenTasks={openTasksTab}
+				onOpenCalendar={openCalendarTab}
 				updateReady={autoUpdater.updateReady}
 				updateVersion={autoUpdater.updateVersion}
 				onInstallUpdate={autoUpdater.installAndRelaunch}
@@ -805,6 +819,7 @@ export function AppShell() {
 				onOpenDailyNote={handleOpenDailyNote}
 				onOpenTasks={openTasksTab}
 				openTasksRequest={openTasksRequest}
+				openCalendarRequest={openCalendarRequest}
 				showGettingStartedRequest={showGettingStartedRequest}
 			/>
 			{spacePath && aiEnabled && aiPanelOpen && (
