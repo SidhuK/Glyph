@@ -13,8 +13,22 @@ describe("calendar helpers", () => {
 		const month = new Date(2026, 2, 8);
 		const dates = buildMonthGridDates(month);
 		expect(dates).toHaveLength(35);
+		expect(dates[0]?.getTime()).toBe(startOfMonthGrid(month).getTime());
+		expect(dates[dates.length - 1]?.getTime()).toBe(
+			endOfMonthGrid(month).getTime(),
+		);
 		expect(startOfMonthGrid(month).getDay()).toBe(0);
 		expect(endOfMonthGrid(month).getDay()).toBe(6);
+	});
+
+	it("builds a six-row grid for long months", () => {
+		const month = new Date(2026, 7, 4);
+		const dates = buildMonthGridDates(month);
+		expect(dates).toHaveLength(42);
+		expect(dates[0]?.getTime()).toBe(startOfMonthGrid(month).getTime());
+		expect(dates[dates.length - 1]?.getTime()).toBe(
+			endOfMonthGrid(month).getTime(),
+		);
 	});
 
 	it("groups calendar items by date", () => {

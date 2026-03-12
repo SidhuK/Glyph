@@ -1,3 +1,4 @@
+use chrono::{DateTime, NaiveDate};
 use serde_yaml::Value;
 
 use super::frontmatter::split_frontmatter;
@@ -35,82 +36,19 @@ fn property_kind(key: &str, value: &Value) -> &'static str {
 
 fn infer_string_kind(value: &str) -> &'static str {
     let trimmed = value.trim();
-    if trimmed.len() == 10
-        && trimmed.chars().enumerate().all(|(index, ch)| {
-            if index == 4 || index == 7 {
-                ch == '-'
-            } else {
-                ch.is_ascii_digit()
-            }
-        })
+    if trimmed != value {
+        return "text";
+    }
+    if NaiveDate::parse_from_str(trimmed, "%Y-%m-%d")
+        .ok()
+        .is_some_and(|parsed| parsed.format("%F").to_string() == trimmed)
     {
         return "date";
     }
-    if is_iso8601_datetime(trimmed) {
+    if DateTime::parse_from_rfc3339(trimmed).is_ok() {
         return "datetime";
     }
     "text"
-}
-
-fn is_iso8601_datetime(value: &str) -> bool {
-    let bytes = value.as_bytes();
-    if bytes.len() < 20 {
-        return false;
-    }
-    let is_digit = |index: usize| bytes.get(index).is_some_and(u8::is_ascii_digit);
-    if !(is_digit(0)
-        && is_digit(1)
-        && is_digit(2)
-        && is_digit(3)
-        && bytes.get(4) == Some(&b'-')
-        && is_digit(5)
-        && is_digit(6)
-        && bytes.get(7) == Some(&b'-')
-        && is_digit(8)
-        && is_digit(9)
-        && bytes.get(10) == Some(&b'T')
-        && is_digit(11)
-        && is_digit(12)
-        && bytes.get(13) == Some(&b':')
-        && is_digit(14)
-        && is_digit(15)
-        && bytes.get(16) == Some(&b':')
-        && is_digit(17)
-        && is_digit(18))
-    {
-        return false;
-    }
-
-    let mut index = 19;
-    if bytes.get(index) == Some(&b'.') {
-        index += 1;
-        let fraction_start = index;
-        while bytes.get(index).is_some_and(u8::is_ascii_digit) {
-            index += 1;
-        }
-        if index == fraction_start {
-            return false;
-        }
-    }
-
-    match bytes.get(index) {
-        Some(b'Z') => index += 1,
-        Some(b'+') | Some(b'-') => {
-            index += 1;
-            if !(is_digit(index)
-                && is_digit(index + 1)
-                && bytes.get(index + 2) == Some(&b':')
-                && is_digit(index + 3)
-                && is_digit(index + 4))
-            {
-                return false;
-            }
-            index += 5;
-        }
-        _ => return false,
-    }
-
-    index == bytes.len()
 }
 
 pub(crate) fn backfill_inferred_string_property_kinds(
@@ -226,6 +164,14 @@ mod tests {
         );
         assert_eq!(
             property_kind("status", &Value::String("In Progress".to_string())),
+            "text"
+        );
+        assert_eq!(
+            property_kind("published", &Value::String(" 2026-03-12 ".to_string())),
+            "text"
+        );
+        assert_eq!(
+            property_kind("published", &Value::String("2026-13-12".to_string())),
             "text"
         );
     }

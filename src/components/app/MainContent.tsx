@@ -1,4 +1,12 @@
-import { Suspense, lazy, memo, useEffect, useMemo, useState } from "react";
+import {
+	Suspense,
+	lazy,
+	memo,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { useSpace, useUILayoutContext } from "../../contexts";
 import {
 	PATH_REMOVED_EVENT,
@@ -71,6 +79,7 @@ export const MainContent = memo(function MainContent({
 	);
 	const [onboardingLoaded, setOnboardingLoaded] = useState(false);
 	const [starterOverrideVisible, setStarterOverrideVisible] = useState(false);
+	const lastHandledOpenCalendarRequest = useRef(0);
 
 	const {
 		openTabs,
@@ -94,7 +103,14 @@ export const MainContent = memo(function MainContent({
 	}, [openSpecialTab, openTasksRequest, spacePath]);
 
 	useEffect(() => {
-		if (!spacePath || openCalendarRequest === 0) return;
+		if (
+			!spacePath ||
+			openCalendarRequest === 0 ||
+			openCalendarRequest === lastHandledOpenCalendarRequest.current
+		) {
+			return;
+		}
+		lastHandledOpenCalendarRequest.current = openCalendarRequest;
 		openSpecialTab(CALENDAR_TAB_ID);
 	}, [openCalendarRequest, openSpecialTab, spacePath]);
 

@@ -34,8 +34,19 @@ pub struct CalendarQueryRequest {
     pub daily_notes_folder: Option<String>,
 }
 
-fn normalize_rel_path(raw: &str) -> String {
-    raw.trim().trim_matches('/').replace('\\', "/")
+fn normalize_rel_path(raw: &str) -> Result<String, String> {
+    let normalized = raw.trim().trim_matches('/').replace('\\', "/");
+    if normalized.is_empty() {
+        return Ok(String::new());
+    }
+
+    for component in normalized.split('/') {
+        if component.is_empty() || component == ".." {
+            return Err(format!("invalid relative path component '{component}'"));
+        }
+    }
+
+    Ok(normalized)
 }
 
 fn folder_like_pattern(folder: &str) -> String {
@@ -47,9 +58,10 @@ fn direct_folder_clause(field: &str, dir: &str) -> (String, Vec<String>) {
         return (format!("instr({field}, '/') = 0"), Vec::new());
     }
 
+    let dir_char_len = dir.chars().count();
     (
         format!("{field} LIKE ? AND instr(substr({field}, ?), '/') = 0"),
-        vec![folder_like_pattern(dir), (dir.len() + 2).to_string()],
+        vec![folder_like_pattern(dir), (dir_char_len + 2).to_string()],
     )
 }
 
@@ -68,7 +80,7 @@ fn source_clause(
     match source.kind.as_str() {
         "space" => Ok(("1 = 1".to_string(), Vec::new())),
         "folder" => {
-            let path = normalize_rel_path(source.path.as_deref().unwrap_or_default());
+            let path = normalize_rel_path(source.path.as_deref().unwrap_or_default())?;
             let recursive = source.recursive.unwrap_or(true);
             Ok(if recursive {
                 recursive_folder_clause(field, &path)
@@ -78,8 +90,8 @@ fn source_clause(
         }
         "daily_notes" => {
             let folder = daily_notes_folder
-                .map(normalize_rel_path)
-                .ok_or_else(|| "daily notes folder is not configured".to_string())?;
+                .ok_or_else(|| "daily notes folder is not configured".to_string())
+                .and_then(normalize_rel_path)?;
             Ok(recursive_folder_clause(field, &folder))
         }
         other => Err(format!("unsupported calendar source kind '{other}'")),
@@ -509,6 +521,41 @@ mod tests {
                 .as_deref()
                 .is_some_and(|path| path.starts_with("work/"))
         }));
+    }
+
+    #[test]
+    fn notes_mode_direct_folder_filter_supports_unicode_folder_names() {
+        let conn = Connection::open_in_memory().unwrap();
+        ensure_schema(&conn).unwrap();
+        insert_note(&conn, "cafe/one.md", "ASCII sibling", "Preview one");
+        insert_note(&conn, "café/deux.md", "Unicode child", "Preview two");
+        insert_note(&conn, "café/nested/trois.md", "Nested unicode child", "Preview three");
+        insert_property(&conn, "cafe/one.md", "date", "date", "2026-03-11");
+        insert_property(&conn, "café/deux.md", "date", "date", "2026-03-12");
+        insert_property(&conn, "café/nested/trois.md", "date", "date", "2026-03-13");
+
+        let result = load_calendar(
+            &conn,
+            &CalendarQueryRequest {
+                mode: "notes".to_string(),
+                source: CalendarSource {
+                    kind: "folder".to_string(),
+                    path: Some("café".to_string()),
+                    recursive: Some(false),
+                },
+                start_date: "2026-03-01".to_string(),
+                end_date: "2026-03-31".to_string(),
+                note_date_property_key: Some("date".to_string()),
+                note_date_property_kind: Some("date".to_string()),
+                daily_notes_folder: None,
+            },
+        )
+        .unwrap();
+
+        assert_eq!(result.note_date_properties.len(), 1);
+        assert_eq!(result.note_date_properties[0].count, 1);
+        assert_eq!(result.items.len(), 1);
+        assert_eq!(result.items[0].rel_path.as_deref(), Some("café/deux.md"));
     }
 
     #[test]

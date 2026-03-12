@@ -57,12 +57,13 @@ export function startOfMonth(date: Date): Date {
 	return next;
 }
 
-export function startOfMonthGrid(month: Date): Date {
+export function startOfMonthGrid(month: Date, weekStartsOn = 0): Date {
 	const firstOfMonth = startOfMonth(month);
-	return addDays(firstOfMonth, -firstOfMonth.getDay());
+	const offset = (firstOfMonth.getDay() - weekStartsOn + 7) % 7;
+	return addDays(firstOfMonth, -offset);
 }
 
-export function endOfMonthGrid(month: Date): Date {
+export function endOfMonthGrid(month: Date, weekStartsOn = 0): Date {
 	const firstOfMonth = startOfMonth(month);
 	const lastOfMonth = new Date(
 		firstOfMonth.getFullYear(),
@@ -70,13 +71,14 @@ export function endOfMonthGrid(month: Date): Date {
 		0,
 	);
 	lastOfMonth.setHours(0, 0, 0, 0);
-	return addDays(lastOfMonth, 6 - lastOfMonth.getDay());
+	const offset = (weekStartsOn + 6 - lastOfMonth.getDay() + 7) % 7;
+	return addDays(lastOfMonth, offset);
 }
 
-export function buildMonthGridDates(month: Date): Date[] {
+export function buildMonthGridDates(month: Date, weekStartsOn = 0): Date[] {
 	const dates: Date[] = [];
-	const cursor = startOfMonthGrid(month);
-	const end = endOfMonthGrid(month);
+	const cursor = startOfMonthGrid(month, weekStartsOn);
+	const end = endOfMonthGrid(month, weekStartsOn);
 	while (cursor <= end) {
 		dates.push(new Date(cursor));
 		cursor.setDate(cursor.getDate() + 1);
@@ -88,7 +90,8 @@ export function formatMonthLabel(month: Date): string {
 	return MONTH_LABEL_FORMATTER.format(month);
 }
 
-export function getWeekdayLabels(seed = new Date(2026, 2, 1)): string[] {
+export function getWeekdayLabels(weekStart = 0): string[] {
+	const seed = addDays(new Date(2026, 2, 1), weekStart);
 	return Array.from({ length: 7 }, (_, index) =>
 		WEEKDAY_FORMATTER.format(addDays(seed, index)),
 	);

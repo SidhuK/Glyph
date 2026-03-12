@@ -1,4 +1,5 @@
 import { useCallback, useRef, useState } from "react";
+import { parseIsoDate } from "../lib/calendar";
 import {
 	getDailyNoteContent,
 	getDailyNotePath,
@@ -28,6 +29,9 @@ export function useDailyNote(options: UseDailyNoteOptions): UseDailyNoteReturn {
 
 	const openOrCreateDailyNoteAtDate = useCallback(
 		async (folder: string, date: string): Promise<string | null> => {
+			if (!parseIsoDate(date)) {
+				return null;
+			}
 			if (lockRef.current) return null;
 			lockRef.current = true;
 			setIsCreating(true);

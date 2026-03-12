@@ -73,7 +73,7 @@ export function CalendarPane({ onOpenFile, onClosePane }: CalendarPaneProps) {
 	const { dailyNotesFolder } = useUILayoutContext();
 	const { openOrCreateDailyNoteAtDate, isCreating } = useDailyNote({
 		onOpenFile: async (path) => {
-			await Promise.resolve(onOpenFile(path));
+			await onOpenFile(path);
 		},
 		setError,
 	});
@@ -241,8 +241,9 @@ export function CalendarPane({ onOpenFile, onClosePane }: CalendarPaneProps) {
 	const openItem = useCallback(
 		async (item: CalendarItem) => {
 			if (!item.rel_path) return;
-			await Promise.resolve(onOpenFile(item.rel_path));
+			await onOpenFile(item.rel_path);
 			if (onClosePane) {
+				// Let file-open side effects settle before closing the special pane.
 				window.setTimeout(() => onClosePane(), 0);
 			}
 		},
@@ -531,10 +532,8 @@ export function CalendarPane({ onOpenFile, onClosePane }: CalendarPaneProps) {
 									) : null}
 								</button>
 							))
-						) : (
-							<span className="calAgendaEmpty">
-								{hasItems ? "No items on this day." : "Nothing this month."}
-							</span>
+						) : hasItems ? null : (
+							<span className="calAgendaEmpty">Nothing this month.</span>
 						)}
 					</div>
 				</div>

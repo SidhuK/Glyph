@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import type { KeyboardEvent } from "react";
+import { isoDateFromLocalDate } from "../../lib/calendar";
 import type { CalendarItem } from "../../lib/tauri";
 
 interface CalendarMonthAdapterProps {
@@ -12,15 +12,6 @@ interface CalendarMonthAdapterProps {
 	onOpenItem: (item: CalendarItem) => void;
 }
 
-function isoDateFromDate(date: Date): string {
-	const year = date.getFullYear();
-	const month = String(date.getMonth() + 1).padStart(2, "0");
-	const day = String(date.getDate()).padStart(2, "0");
-	return `${year}-${month}-${day}`;
-}
-
-const TODAY_ISO = isoDateFromDate(new Date());
-
 function itemTone(item: CalendarItem) {
 	if (item.kind === "daily_note") return "daily-note";
 	if (item.kind === "task") {
@@ -30,18 +21,6 @@ function itemTone(item: CalendarItem) {
 		if (item.badges?.includes("Scheduled")) return "task-scheduled";
 	}
 	return "note";
-}
-
-function handleCellKeyDown(
-	event: KeyboardEvent<HTMLDivElement>,
-	onSelectDate: (date: string) => void,
-	date: string,
-) {
-	if (event.key !== "Enter" && event.key !== " ") {
-		return;
-	}
-	event.preventDefault();
-	onSelectDate(date);
 }
 
 export function CalendarMonthAdapter({
@@ -54,6 +33,7 @@ export function CalendarMonthAdapter({
 	onOpenItem,
 }: CalendarMonthAdapterProps) {
 	const weekCount = Math.max(1, Math.ceil(dates.length / 7));
+	const todayIso = isoDateFromLocalDate(new Date());
 
 	return (
 		<div className="calMonthShell">
@@ -72,13 +52,13 @@ export function CalendarMonthAdapter({
 				}}
 			>
 				{dates.map((date) => {
-					const iso = isoDateFromDate(date);
+					const iso = isoDateFromLocalDate(date);
 					const items = itemsByDate.get(iso) ?? [];
 					const isCurrentMonth =
 						date.getMonth() === month.getMonth() &&
 						date.getFullYear() === month.getFullYear();
 					const isSelected = selectedDate === iso;
-					const isToday = iso === TODAY_ISO;
+					const isToday = iso === todayIso;
 					const visibleItems = items.slice(0, 3);
 					const overflowCount = Math.max(items.length - visibleItems.length, 0);
 					const stackedItems =
@@ -87,20 +67,16 @@ export function CalendarMonthAdapter({
 						overflowCount > 0 ? visibleItems[visibleItems.length - 1] : null;
 
 					return (
-						<div
+						<button
 							key={iso}
+							type="button"
 							className={cn(
 								"calCell",
 								!isCurrentMonth && "is-outside",
 								isSelected && "is-selected",
 							)}
-							role="button"
-							tabIndex={0}
 							aria-pressed={isSelected}
 							onClick={() => onSelectDate(iso)}
-							onKeyDown={(event) =>
-								handleCellKeyDown(event, onSelectDate, iso)
-							}
 						>
 							<div className="calCellHeader">
 								<span
@@ -159,7 +135,7 @@ export function CalendarMonthAdapter({
 									</>
 								) : null}
 							</div>
-						</div>
+						</button>
 					);
 				})}
 			</div>
