@@ -2,7 +2,7 @@
 
 ## Summary
 
-Glyph will use Gumroad directly as the only online license verifier. Official GitHub release binaries will start a 48-hour trial on first launch, then hard-lock until the user enters a valid Gumroad license key. On successful activation, Glyph will persist a local activation record and allow offline use forever on unlimited devices.
+Glyph will use Gumroad directly as the only online license verifier. Official GitHub release binaries will start a 7-day trial on first launch, then hard-lock until the user enters a valid Gumroad license key. On successful activation, Glyph will persist a local activation record and allow offline use forever on unlimited devices.
 
 This plan intentionally chooses simplicity over stronger offline cryptographic proof. Because Glyph is open source and official binaries remain publicly downloadable from GitHub, the licensing model is an honest-user runtime gate for official builds, not DRM.
 
@@ -12,7 +12,7 @@ This plan intentionally chooses simplicity over stronger offline cryptographic p
 - Official GitHub release binaries are licensed.
 - Local/community builds are not blocked by default.
 - Gumroad is the only license authority.
-- Trial length is exactly 48 hours from first launch of an official build.
+- Trial length is exactly 7 days from first launch of an official build.
 - Trial expiry behavior is a hard lock.
 - License is one-time, lifetime, unlimited devices, unlimited reinstalls.
 - No seat counting, no device fingerprinting, no activation caps.
@@ -98,7 +98,7 @@ Schema:
 {
   "version": 1,
   "trial_started_at": "2026-03-01T08:00:00Z",
-  "trial_expires_at": "2026-03-03T08:00:00Z",
+  "trial_expires_at": "2026-03-08T08:00:00Z",
   "licensed": true,
   "activated_at": "2026-03-01T09:00:00Z",
   "license_key_masked": "ABCD-****-****-WXYZ",
@@ -183,7 +183,7 @@ Bootstrap logic for official builds:
 2. If `licensed=true`, return `licensed`.
 3. If no trial timestamps exist, set:
    - `trial_started_at = now`
-   - `trial_expires_at = now + 48h`
+   - `trial_expires_at = now + 7d`
 4. If now is before expiry, return `trial_active`.
 5. Otherwise return `trial_expired`.
 
@@ -279,7 +279,7 @@ Keep all release assets public.
 
 Add release copy noting:
 
-- official binaries require a license after the 48-hour trial
+- official binaries require a license after the 7-day trial
 - source code remains open
 - self-builds are separate from official licensed binaries
 
@@ -316,7 +316,7 @@ Add:
 
 Document clearly:
 
-- 48-hour trial
+- 7-day trial
 - lifetime key
 - unlimited devices
 - offline forever after first successful activation
@@ -368,9 +368,9 @@ New frontend helper module:
 
 ### Rust unit tests
 
-- official build with no state starts a 48-hour trial
+- official build with no state starts a 7-day trial
 - trial remains active before expiry
-- trial expires correctly after 48 hours
+- trial expires correctly after 7 days
 - licensed state bypasses trial
 - activation success writes masked key, hash, timestamps, and `licensed=true`
 - activation failure does not destroy trial state
@@ -413,7 +413,7 @@ New frontend helper module:
 
 ## Acceptance Criteria
 
-- Official GitHub binaries start a 48-hour trial on first launch.
+- Official GitHub binaries start a 7-day trial on first launch.
 - Official binaries hard-lock after the trial expires.
 - A valid Gumroad key unlocks Glyph.
 - Activated users can keep using Glyph offline forever.

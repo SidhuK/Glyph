@@ -6,7 +6,7 @@ Glyph is open source, but official release binaries are licensed.
 
 - The source code remains public on GitHub.
 - Official binaries published through the GitHub release workflow include:
-  - a 48-hour free trial
+  - a 7-day free trial
   - Gumroad license-key activation
   - offline use after one successful activation
 
@@ -32,7 +32,7 @@ The app decides this using the `GLYPH_OFFICIAL_BUILD=1` release-build flag.
 There are three entry points:
 
 1. Trial banner
-   - During the 48-hour trial, Glyph shows a banner with:
+   - During the 7-day trial, Glyph shows a banner with:
      - remaining trial time
      - `Enter License Key`
      - `Buy on Gumroad`

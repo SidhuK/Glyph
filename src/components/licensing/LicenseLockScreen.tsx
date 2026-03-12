@@ -42,7 +42,7 @@ export function LicenseLockScreen({
 				<div className="licenseLockEyebrow">Official Release</div>
 				<h1 className="licenseLockTitle">Glyph requires a license key</h1>
 				<p className="licenseLockBody">
-					This official build includes a 48-hour free trial. After that, a
+					This official build includes a 7-day free trial. After that, a
 					lifetime Gumroad license unlocks Glyph forever on all of your devices.
 				</p>
 				{status?.mode === "trial_expired" ? (

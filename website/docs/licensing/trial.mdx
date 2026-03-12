@@ -1,9 +1,9 @@
 ---
 title: Trial System
-description: Understanding Glyph's 48-hour free trial
+description: Understanding Glyph's 7-day free trial
 ---
 
-Official Glyph binaries include a **48-hour free trial** that starts automatically on first launch.
+Official Glyph binaries include a **7-day free trial** that starts automatically on first launch.
 
 ## How the Trial Works
 
@@ -11,7 +11,7 @@ When you launch an official Glyph binary for the first time:
 
 <Steps>
   <Step title="Trial starts automatically">
-    Glyph detects it's the first launch and starts a 48-hour timer.
+    Glyph detects it's the first launch and starts a 7-day timer.
   </Step>
 
   <Step title="Full access during trial">
@@ -22,17 +22,17 @@ When you launch an official Glyph binary for the first time:
     A banner at the top shows your remaining trial time with options to enter a license key or purchase.
   </Step>
 
-  <Step title="Trial expires after 48 hours">
+  <Step title="Trial expires after 7 days">
     When the trial ends, Glyph shows a lock screen requiring license activation.
   </Step>
 </Steps>
 
 ## Trial Duration
 
-The trial is exactly **48 hours** (2 days) from the moment you first launch an official build.
+The trial is exactly **7 days** from the moment you first launch an official build.
 
 - **Start time**: Recorded on first launch
-- **Expiry time**: Exactly 48 hours later
+- **Expiry time**: Exactly 7 days later
 - **Clock**: Based on your system time
 
 <Warning>
@@ -58,7 +58,7 @@ The banner displays:
 
 ## What Happens When Trial Expires
 
-After 48 hours, the trial expires and:
+After 7 days, the trial expires and:
 
 1. **Lock screen appears** - Glyph shows a full-screen activation view
 2. **App shell is blocked** - You cannot access notes or features
@@ -74,7 +74,7 @@ Official Release
 
 Glyph requires a license key
 
-This official build includes a 48-hour free trial. After that,
+This official build includes a 7-day free trial. After that,
 a lifetime Gumroad license unlocks Glyph forever on all of your devices.
 
 🔴 Trial Ended | Trial expired [time ago]
@@ -113,13 +113,13 @@ The file contains:
 {
   "version": 1,
   "trial_started_at": "2026-03-01T08:00:00Z",
-  "trial_expires_at": "2026-03-03T08:00:00Z",
+  "trial_expires_at": "2026-03-08T08:00:00Z",
   "licensed": false
 }
 ```
 
 <Warning>
-Deleting or modifying this file may reset your trial state, but you won't get an additional 48 hours. The trial period is tied to the original start time.
+Deleting or modifying this file may reset your trial state, but you won't get additional trial time. The trial period is tied to the original start time.
 </Warning>
 
 ## Community Builds vs Official Builds
@@ -128,7 +128,7 @@ Only **official binaries** from GitHub Releases enforce the trial:
 
 | Build Type | Trial | License Required |
 |------------|-------|------------------|
-| Official Release | Yes (48 hours) | Yes, after trial |
+| Official Release | Yes (7 days) | Yes, after trial |
 | Community Build | No | No |
 | Development Build | No | No |
 | Self-Built | No | No |
@@ -168,7 +168,7 @@ If your trial expires while offline:
 
 If you reinstall Glyph or move to a new device:
 
-- **First install**: New 48-hour trial starts
+- **First install**: New 7-day trial starts
 - **With license key**: Activate immediately to skip trial
 - **Multiple devices**: Each device gets its own trial, but one license key works everywhere
 

@@ -2,13 +2,13 @@
 
 Use this copy in GitHub release notes for official Glyph binaries:
 
-> Official Glyph binaries now include a 48-hour free trial.  
+> Official Glyph binaries now include a 7-day free trial.  
 > After the trial ends, enter your Gumroad license key inside Glyph to keep using the official build.  
 > Glyph remains open source, and self-built/community builds are unchanged.
 
 ## Short version
 
-> 48-hour free trial in official binaries. Gumroad key required afterward. Source remains open.
+> 7-day free trial in official binaries. Gumroad key required afterward. Source remains open.
 
 ## Links to include
 

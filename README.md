@@ -14,7 +14,7 @@
 
 ## Licensing
 
-Glyph is open source, but official release binaries use a 48-hour trial plus Gumroad license activation.
+Glyph is open source, but official release binaries use a 7-day trial plus Gumroad license activation.
 
 - Official releases: [GitHub Releases](https://github.com/SidhuK/Glyph/releases)
 - Purchase: [Gumroad](https://karatsidhu.gumroad.com/l/sqxfay)

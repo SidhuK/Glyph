@@ -6,7 +6,7 @@ pub mod types;
 pub const DEFAULT_GUMROAD_PRODUCT_ID: &str = "jfc0rwnuPw7VuqCyw5ctTw==";
 pub const DEFAULT_GUMROAD_PRODUCT_URL: &str = "https://karatsidhu.gumroad.com/l/sqxfay";
 pub const DEFAULT_SUPPORT_URL: &str = "https://github.com/SidhuK/Glyph/issues";
-pub const TRIAL_DURATION_MS: u64 = 48 * 60 * 60 * 1000;
+pub const TRIAL_DURATION_MS: u64 = 7 * 24 * 60 * 60 * 1000;
 
 pub fn is_official_build() -> bool {
     matches!(
