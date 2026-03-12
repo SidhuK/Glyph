@@ -24,7 +24,6 @@ import { formatShortcutPartsForPlatform } from "../../lib/shortcuts/platform";
 import { TASKS_TAB_ID } from "../../lib/tasks";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { isInAppPreviewable } from "../../utils/filePreview";
-import { CalendarPane } from "../calendar/CalendarPane";
 import { FilePreviewPane } from "../preview/FilePreviewPane";
 import { TasksPane } from "../tasks/TasksPane";
 import { GettingStartedPane } from "./GettingStartedPane";
@@ -35,6 +34,12 @@ import { useTabManager } from "./useTabManager";
 const LazyDatabasePane = lazy(() =>
 	import("../database/DatabasePane").then((module) => ({
 		default: module.DatabasePane,
+	})),
+);
+
+const LazyCalendarPane = lazy(() =>
+	import("../calendar/CalendarPane").then((module) => ({
+		default: module.CalendarPane,
 	})),
 );
 
@@ -198,10 +203,14 @@ export const MainContent = memo(function MainContent({
 		}
 		if (viewerPath === CALENDAR_TAB_ID) {
 			return (
-				<CalendarPane
-					onOpenFile={(relPath) => void fileTree.openFile(relPath)}
-					onClosePane={() => closeTab(CALENDAR_TAB_ID)}
-				/>
+				<Suspense
+					fallback={<div className="mainEmptyState">Loading calendar…</div>}
+				>
+					<LazyCalendarPane
+						onOpenFile={(relPath) => void fileTree.openFile(relPath)}
+						onClosePane={() => closeTab(CALENDAR_TAB_ID)}
+					/>
+				</Suspense>
 			);
 		}
 		if (viewerPath.toLowerCase().endsWith(".md")) {

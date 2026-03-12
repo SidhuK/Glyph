@@ -192,14 +192,31 @@ mod tests {
             params!["work/one.md", "status", "hello"],
         )
         .unwrap();
+        conn.execute(
+            "INSERT INTO note_properties(note_id, key, value_type, value_text, value_json, ordinal)
+             VALUES(?, ?, 'text', ?, '\"2026-03-12T12:34:56Z\"', 2)",
+            params![
+                "work/one.md",
+                "published_at_rfc3339",
+                "2026-03-12T12:34:56Z"
+            ],
+        )
+        .unwrap();
 
         let updated = backfill_inferred_string_property_kinds(&conn).unwrap();
 
-        assert_eq!(updated, 1);
+        assert_eq!(updated, 2);
         let published_kind: String = conn
             .query_row(
                 "SELECT value_type FROM note_properties WHERE note_id = ? AND key = ?",
                 params!["work/one.md", "published"],
+                |row| row.get(0),
+            )
+            .unwrap();
+        let published_at_rfc3339_kind: String = conn
+            .query_row(
+                "SELECT value_type FROM note_properties WHERE note_id = ? AND key = ?",
+                params!["work/one.md", "published_at_rfc3339"],
                 |row| row.get(0),
             )
             .unwrap();
@@ -211,6 +228,7 @@ mod tests {
             )
             .unwrap();
         assert_eq!(published_kind, "date");
+        assert_eq!(published_at_rfc3339_kind, "datetime");
         assert_eq!(status_kind, "text");
     }
 }

@@ -9,10 +9,26 @@ use super::db::open_db;
 use super::tasks::parse::{is_valid_date, strip_schedule_tokens};
 use super::types::{CalendarItem, CalendarLoadResult, CalendarNoteDateProperty};
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum CalendarSourceKind {
+    Space,
+    Folder,
+    DailyNotes,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum CalendarMode {
+    Notes,
+    DailyNotes,
+    Tasks,
+}
+
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub struct CalendarSource {
-    pub kind: String,
+    pub kind: CalendarSourceKind,
     #[serde(default)]
     pub path: Option<String>,
     #[serde(default)]
@@ -22,7 +38,7 @@ pub struct CalendarSource {
 #[derive(Debug, Clone, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub struct CalendarQueryRequest {
-    pub mode: String,
+    pub mode: CalendarMode,
     pub source: CalendarSource,
     pub start_date: String,
     pub end_date: String,
@@ -77,9 +93,9 @@ fn source_clause(
     source: &CalendarSource,
     daily_notes_folder: Option<&str>,
 ) -> Result<(String, Vec<String>), String> {
-    match source.kind.as_str() {
-        "space" => Ok(("1 = 1".to_string(), Vec::new())),
-        "folder" => {
+    match source.kind {
+        CalendarSourceKind::Space => Ok(("1 = 1".to_string(), Vec::new())),
+        CalendarSourceKind::Folder => {
             let path = normalize_rel_path(source.path.as_deref().unwrap_or_default())?;
             let recursive = source.recursive.unwrap_or(true);
             Ok(if recursive {
@@ -88,13 +104,12 @@ fn source_clause(
                 direct_folder_clause(field, &path)
             })
         }
-        "daily_notes" => {
+        CalendarSourceKind::DailyNotes => {
             let folder = daily_notes_folder
                 .ok_or_else(|| "daily notes folder is not configured".to_string())
                 .and_then(normalize_rel_path)?;
             Ok(recursive_folder_clause(field, &folder))
         }
-        other => Err(format!("unsupported calendar source kind '{other}'")),
     }
 }
 
@@ -262,16 +277,32 @@ fn daily_note_items(
     end: NaiveDate,
 ) -> Result<Vec<CalendarItem>, String> {
     let (source_sql, source_params) = source_clause("n.id", source, daily_notes_folder)?;
+    let folder = daily_notes_folder
+        .ok_or_else(|| "daily notes folder is not configured".to_string())
+        .and_then(normalize_rel_path)?;
+    let start_bound = if folder.is_empty() {
+        format!("{}.md", start.format("%F"))
+    } else {
+        format!("{folder}/{}.md", start.format("%F"))
+    };
+    let end_bound = if folder.is_empty() {
+        format!("{}.md", end.format("%F"))
+    } else {
+        format!("{folder}/{}.md", end.format("%F"))
+    };
     let sql = format!(
         "SELECT n.id, n.title, n.preview
          FROM notes n
          WHERE {source_sql}
+           AND n.id >= ? AND n.id <= ?
          ORDER BY n.id ASC"
     );
-    let params: Vec<rusqlite::types::Value> = source_params
+    let mut params: Vec<rusqlite::types::Value> = source_params
         .into_iter()
         .map(rusqlite::types::Value::from)
         .collect();
+    params.push(rusqlite::types::Value::from(start_bound));
+    params.push(rusqlite::types::Value::from(end_bound));
     let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;
     let mut rows = stmt
         .query(params_from_iter(params.iter()))
@@ -398,29 +429,28 @@ fn load_calendar(
     request: &CalendarQueryRequest,
 ) -> Result<CalendarLoadResult, String> {
     let (start, end) = normalize_date_range(&request.start_date, &request.end_date)?;
-    let note_date_properties = if request.mode == "notes" {
+    let note_date_properties = if request.mode == CalendarMode::Notes {
         note_date_properties(conn, &request.source, request.daily_notes_folder.as_deref())?
     } else {
         Vec::new()
     };
 
-    let mut items = match request.mode.as_str() {
-        "notes" => note_items(conn, request, start, end)?,
-        "daily_notes" => daily_note_items(
+    let mut items = match request.mode {
+        CalendarMode::Notes => note_items(conn, request, start, end)?,
+        CalendarMode::DailyNotes => daily_note_items(
             conn,
             &request.source,
             request.daily_notes_folder.as_deref(),
             start,
             end,
         )?,
-        "tasks" => task_items(
+        CalendarMode::Tasks => task_items(
             conn,
             &request.source,
             request.daily_notes_folder.as_deref(),
             &request.start_date,
             &request.end_date,
         )?,
-        other => return Err(format!("unsupported calendar mode '{other}'")),
     };
 
     items.sort_by(|left, right| {
@@ -458,8 +488,8 @@ mod tests {
     use crate::index::schema::ensure_schema;
 
     use super::{
-        daily_note_items, load_calendar, parse_daily_note_date, CalendarQueryRequest,
-        CalendarSource,
+        daily_note_items, load_calendar, parse_daily_note_date, CalendarMode,
+        CalendarQueryRequest, CalendarSource, CalendarSourceKind,
     };
 
     fn insert_note(conn: &Connection, id: &str, title: &str, preview: &str) {
@@ -499,9 +529,9 @@ mod tests {
         insert_property(&conn, "personal/three.md", "date", "date", "2026-03-12");
 
         let request = CalendarQueryRequest {
-            mode: "notes".to_string(),
+            mode: CalendarMode::Notes,
             source: CalendarSource {
-                kind: "folder".to_string(),
+                kind: CalendarSourceKind::Folder,
                 path: Some("work".to_string()),
                 recursive: Some(true),
             },
@@ -537,9 +567,9 @@ mod tests {
         let result = load_calendar(
             &conn,
             &CalendarQueryRequest {
-                mode: "notes".to_string(),
+                mode: CalendarMode::Notes,
                 source: CalendarSource {
-                    kind: "folder".to_string(),
+                    kind: CalendarSourceKind::Folder,
                     path: Some("café".to_string()),
                     recursive: Some(false),
                 },
@@ -568,7 +598,7 @@ mod tests {
         let items = daily_note_items(
             &conn,
             &CalendarSource {
-                kind: "daily_notes".to_string(),
+                kind: CalendarSourceKind::DailyNotes,
                 path: None,
                 recursive: None,
             },
@@ -599,9 +629,9 @@ mod tests {
         let result = load_calendar(
             &conn,
             &CalendarQueryRequest {
-                mode: "tasks".to_string(),
+                mode: CalendarMode::Tasks,
                 source: CalendarSource {
-                    kind: "space".to_string(),
+                    kind: CalendarSourceKind::Space,
                     path: None,
                     recursive: None,
                 },

@@ -26,6 +26,8 @@ fn migrate_if_needed(conn: &rusqlite::Connection) -> Result<(), String> {
     if backfilled > 0 {
         tracing::info!(backfilled, "Backfilled legacy note property kinds");
     }
+    // Write the version stamp only after the backfill succeeds so a
+    // mid-migration crash safely retries on the next launch.
     conn.pragma_update(None, "user_version", INDEX_DB_VERSION)
         .map_err(|e| e.to_string())?;
 

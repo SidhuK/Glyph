@@ -67,75 +67,80 @@ export function CalendarMonthAdapter({
 						overflowCount > 0 ? visibleItems[visibleItems.length - 1] : null;
 
 					return (
-						<button
+						<div
 							key={iso}
-							type="button"
 							className={cn(
 								"calCell",
 								!isCurrentMonth && "is-outside",
 								isSelected && "is-selected",
 							)}
-							aria-pressed={isSelected}
-							onClick={() => onSelectDate(iso)}
 						>
-							<div className="calCellHeader">
-								<span
+							<button
+								type="button"
+								className="calCellSurface"
+								aria-pressed={isSelected}
+								onClick={() => onSelectDate(iso)}
+							/>
+							<div className="calCellContent">
+								<div className="calCellHeader">
+									<span
+										className={cn(
+											"calCellDay",
+											isToday && "is-today",
+											isSelected && "is-active",
+										)}
+									>
+										{date.getDate()}
+									</span>
+								</div>
+								<div
 									className={cn(
-										"calCellDay",
-										isToday && "is-today",
-										isSelected && "is-active",
+										"calCellEvents",
+										visibleItems.length === 0 && "is-empty",
 									)}
 								>
-									{date.getDate()}
-								</span>
-							</div>
-							<div
-								className={cn(
-									"calCellEvents",
-									visibleItems.length === 0 && "is-empty",
-								)}
-							>
-								{visibleItems.length > 0 ? (
-									<>
-										{stackedItems.map((item) => (
-											<button
-												key={item.id}
-												type="button"
-												className={cn("calEventChip", `is-${itemTone(item)}`)}
-												onClick={(e) => {
-													e.stopPropagation();
-													onOpenItem(item);
-												}}
-												title={item.title}
-											>
-												{item.title}
-											</button>
-										))}
-										{inlineItem ? (
-											<div className="calCellOverflowRow">
+									{visibleItems.length > 0 ? (
+										<>
+											{stackedItems.map((item) => (
 												<button
+													key={item.id}
 													type="button"
-													className={cn(
-														"calEventChip is-inline-overflow",
-														`is-${itemTone(inlineItem)}`,
-													)}
+													className={cn("calEventChip", `is-${itemTone(item)}`)}
 													onClick={(e) => {
 														e.stopPropagation();
-														onOpenItem(inlineItem);
+														onOpenItem(item);
 													}}
-													title={inlineItem.title}
+													title={item.title}
 												>
-													{inlineItem.title}
+													{item.title}
 												</button>
-												<span className="calCellMore">
-													+{overflowCount} more
-												</span>
-											</div>
-										) : null}
-									</>
-								) : null}
+											))}
+											{inlineItem ? (
+												<div className="calCellOverflowRow">
+													<button
+														type="button"
+														className={cn(
+															"calEventChip is-inline-overflow",
+															`is-${itemTone(inlineItem)}`,
+														)}
+														onClick={(e) => {
+															e.stopPropagation();
+															onOpenItem(inlineItem);
+														}}
+														title={inlineItem.title}
+													>
+														{inlineItem.title}
+													</button>
+													<span className="calCellMore">
+														+{overflowCount} more
+													</span>
+												</div>
+											) : null}
+										</>
+									) : null}
+								</div>
 							</div>
-						</button>
+						</div>
 					);
 				})}
 			</div>

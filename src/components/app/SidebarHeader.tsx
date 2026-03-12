@@ -27,24 +27,6 @@ export function SidebarHeader({
 			<div className="sidebarHeader" data-tauri-drag-region>
 				<div className="sidebarActions">
 					<Button
-						type="button"
-						variant="ghost"
-						size="icon-sm"
-						onClick={onOpenSpace}
-						title="Open space"
-					>
-						<FolderOpen size={14} />
-					</Button>
-					<Button
-						type="button"
-						variant="ghost"
-						size="icon-sm"
-						onClick={onOpenCommandPalette}
-						title={`Command palette (${getShortcutTooltip({ meta: true, key: "k" })})`}
-					>
-						<Command size={14} />
-					</Button>
-					<Button
 						data-sidebar="trigger"
 						type="button"
 						variant="ghost"
@@ -62,6 +44,24 @@ export function SidebarHeader({
 						) : (
 							<PanelLeftClose size={14} />
 						)}
+					</Button>
+					<Button
+						type="button"
+						variant="ghost"
+						size="icon-sm"
+						onClick={onOpenCommandPalette}
+						title={`Command palette (${getShortcutTooltip({ meta: true, key: "k" })})`}
+					>
+						<Command size={14} />
+					</Button>
+					<Button
+						type="button"
+						variant="ghost"
+						size="icon-sm"
+						onClick={onOpenSpace}
+						title="Open space"
+					>
+						<FolderOpen size={14} />
 					</Button>
 				</div>
 			</div>
