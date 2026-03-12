@@ -2,6 +2,7 @@
 import logoG from "../../assets/logo_g.PNG";
 import Layout from "../layouts/Layout.astro";
 import { getChangelogPageData } from "../lib/changelog";
+import { downloadUrl } from "../lib/site";
 
 const changelog = getChangelogPageData(10);
 const pageTitle = "Glyph Changelog";
@@ -31,7 +32,7 @@ function getTagHref(tag: string): string | undefined {
 				<a href="/docs/introduction">Docs</a>
 				<a href="https://github.com/SidhuK/Glyph" target="_blank" rel="noopener">GitHub</a>
 			</nav>
-			<a href="https://github.com/SidhuK/Glyph/releases/download/v0.1.37/Glyph_0.1.37_aarch64.dmg" class="header-cta" target="_blank" rel="noopener">Get Glyph</a>
+			<a href={downloadUrl} class="header-cta" target="_blank" rel="noopener">Get Glyph</a>
 		</header>
 
 		<section class="hero">

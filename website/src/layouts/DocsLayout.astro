@@ -6,6 +6,7 @@ import {
 	getDocNeighbors,
 	getDocUrl,
 } from "../lib/docs";
+import { downloadUrl } from "../lib/site";
 import Layout from "./Layout.astro";
 
 interface Props {
@@ -92,7 +93,7 @@ if (location) {
 				<a href="https://github.com/SidhuK/Glyph" target="_blank" rel="noopener">GitHub</a>
 				<a href="/changelog">Changelog</a>
 			</nav>
-			<a href="https://github.com/SidhuK/Glyph/releases/download/v0.1.37/Glyph_0.1.37_aarch64.dmg" class="docs-header-cta" target="_blank" rel="noopener">Get Glyph</a>
+			<a href={downloadUrl} class="docs-header-cta" target="_blank" rel="noopener">Get Glyph</a>
 		</header>
 
 		<div class="docs-status-note" role="note" aria-label="Documentation warning">
