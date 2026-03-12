@@ -28,8 +28,132 @@ fn property_kind(key: &str, value: &Value) -> &'static str {
         Value::Sequence(_) if key.eq_ignore_ascii_case("tags") => "tags",
         Value::Sequence(_) => "list",
         Value::Mapping(_) => "yaml",
+        Value::String(text) => infer_string_kind(text),
         _ => "text",
     }
+}
+
+fn infer_string_kind(value: &str) -> &'static str {
+    let trimmed = value.trim();
+    if trimmed.len() == 10
+        && trimmed.chars().enumerate().all(|(index, ch)| {
+            if index == 4 || index == 7 {
+                ch == '-'
+            } else {
+                ch.is_ascii_digit()
+            }
+        })
+    {
+        return "date";
+    }
+    if is_iso8601_datetime(trimmed) {
+        return "datetime";
+    }
+    "text"
+}
+
+fn is_iso8601_datetime(value: &str) -> bool {
+    let bytes = value.as_bytes();
+    if bytes.len() < 20 {
+        return false;
+    }
+    let is_digit = |index: usize| bytes.get(index).is_some_and(u8::is_ascii_digit);
+    if !(is_digit(0)
+        && is_digit(1)
+        && is_digit(2)
+        && is_digit(3)
+        && bytes.get(4) == Some(&b'-')
+        && is_digit(5)
+        && is_digit(6)
+        && bytes.get(7) == Some(&b'-')
+        && is_digit(8)
+        && is_digit(9)
+        && bytes.get(10) == Some(&b'T')
+        && is_digit(11)
+        && is_digit(12)
+        && bytes.get(13) == Some(&b':')
+        && is_digit(14)
+        && is_digit(15)
+        && bytes.get(16) == Some(&b':')
+        && is_digit(17)
+        && is_digit(18))
+    {
+        return false;
+    }
+
+    let mut index = 19;
+    if bytes.get(index) == Some(&b'.') {
+        index += 1;
+        let fraction_start = index;
+        while bytes.get(index).is_some_and(u8::is_ascii_digit) {
+            index += 1;
+        }
+        if index == fraction_start {
+            return false;
+        }
+    }
+
+    match bytes.get(index) {
+        Some(b'Z') => index += 1,
+        Some(b'+') | Some(b'-') => {
+            index += 1;
+            if !(is_digit(index)
+                && is_digit(index + 1)
+                && bytes.get(index + 2) == Some(&b':')
+                && is_digit(index + 3)
+                && is_digit(index + 4))
+            {
+                return false;
+            }
+            index += 5;
+        }
+        _ => return false,
+    }
+
+    index == bytes.len()
+}
+
+pub(crate) fn backfill_inferred_string_property_kinds(
+    conn: &rusqlite::Connection,
+) -> Result<usize, String> {
+    let mut stmt = conn
+        .prepare(
+            "SELECT note_id, key, value_text
+             FROM note_properties
+             WHERE value_type = 'text'",
+        )
+        .map_err(|e| e.to_string())?;
+    let mut rows = stmt.query([]).map_err(|e| e.to_string())?;
+    let mut updates = Vec::<(String, String, &'static str)>::new();
+
+    while let Some(row) = rows.next().map_err(|e| e.to_string())? {
+        let note_id = row.get::<_, String>(0).map_err(|e| e.to_string())?;
+        let key = row.get::<_, String>(1).map_err(|e| e.to_string())?;
+        let value_text = row.get::<_, String>(2).map_err(|e| e.to_string())?;
+        let next_kind = infer_string_kind(&value_text);
+        if next_kind == "text" {
+            continue;
+        }
+        updates.push((note_id, key, next_kind));
+    }
+
+    if updates.is_empty() {
+        return Ok(0);
+    }
+
+    let tx = conn.unchecked_transaction().map_err(|e| e.to_string())?;
+    for (note_id, key, next_kind) in &updates {
+        tx.execute(
+            "UPDATE note_properties
+             SET value_type = ?
+             WHERE note_id = ? AND key = ?",
+            rusqlite::params![next_kind, note_id, key],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+    tx.commit().map_err(|e| e.to_string())?;
+
+    Ok(updates.len())
 }
 
 pub fn reindex_note_properties(
@@ -76,4 +200,71 @@ pub fn delete_note_properties(tx: &rusqlite::Transaction<'_>, note_id: &str) -> 
     tx.execute("DELETE FROM note_properties WHERE note_id = ?", [note_id])
         .map_err(|e| e.to_string())?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use rusqlite::{params, Connection};
+    use serde_yaml::Value;
+
+    use crate::index::schema::ensure_schema;
+
+    use super::{backfill_inferred_string_property_kinds, property_kind};
+
+    #[test]
+    fn infers_date_and_datetime_string_kinds() {
+        assert_eq!(
+            property_kind("published", &Value::String("2026-03-12".to_string())),
+            "date"
+        );
+        assert_eq!(
+            property_kind(
+                "starts_at",
+                &Value::String("2026-03-12T09:30:00+05:30".to_string()),
+            ),
+            "datetime"
+        );
+        assert_eq!(
+            property_kind("status", &Value::String("In Progress".to_string())),
+            "text"
+        );
+    }
+
+    #[test]
+    fn backfills_existing_text_rows_with_date_kinds() {
+        let conn = Connection::open_in_memory().unwrap();
+        ensure_schema(&conn).unwrap();
+        conn.execute(
+            "INSERT INTO note_properties(note_id, key, value_type, value_text, value_json, ordinal)
+             VALUES(?, ?, 'text', ?, '\"2026-03-12\"', 0)",
+            params!["work/one.md", "published", "2026-03-12"],
+        )
+        .unwrap();
+        conn.execute(
+            "INSERT INTO note_properties(note_id, key, value_type, value_text, value_json, ordinal)
+             VALUES(?, ?, 'text', ?, '\"hello\"', 1)",
+            params!["work/one.md", "status", "hello"],
+        )
+        .unwrap();
+
+        let updated = backfill_inferred_string_property_kinds(&conn).unwrap();
+
+        assert_eq!(updated, 1);
+        let published_kind: String = conn
+            .query_row(
+                "SELECT value_type FROM note_properties WHERE note_id = ? AND key = ?",
+                params!["work/one.md", "published"],
+                |row| row.get(0),
+            )
+            .unwrap();
+        let status_kind: String = conn
+            .query_row(
+                "SELECT value_type FROM note_properties WHERE note_id = ? AND key = ?",
+                params!["work/one.md", "status"],
+                |row| row.get(0),
+            )
+            .unwrap();
+        assert_eq!(published_kind, "date");
+        assert_eq!(status_kind, "text");
+    }
 }

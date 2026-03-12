@@ -1,0 +1,61 @@
+import { describe, expect, it } from "vitest";
+import {
+	buildMonthGridDates,
+	endOfMonthGrid,
+	groupCalendarItemsByDate,
+	pickDefaultNoteDateProperty,
+	startOfMonthGrid,
+} from "./calendar";
+import type { CalendarItem, CalendarNoteDateProperty } from "./tauri";
+
+describe("calendar helpers", () => {
+	it("builds a full month grid including leading and trailing days", () => {
+		const month = new Date(2026, 2, 8);
+		const dates = buildMonthGridDates(month);
+		expect(dates).toHaveLength(35);
+		expect(startOfMonthGrid(month).getDay()).toBe(0);
+		expect(endOfMonthGrid(month).getDay()).toBe(6);
+	});
+
+	it("groups calendar items by date", () => {
+		const items: CalendarItem[] = [
+			{
+				id: "b",
+				kind: "note",
+				date: "2026-03-12",
+				title: "Bravo",
+			},
+			{
+				id: "a",
+				kind: "note",
+				date: "2026-03-12",
+				title: "Alpha",
+			},
+			{
+				id: "c",
+				kind: "task",
+				date: "2026-03-13",
+				title: "Charlie",
+			},
+		];
+		const grouped = groupCalendarItemsByDate(items);
+		expect(grouped.get("2026-03-12")?.map((item) => item.title)).toEqual([
+			"Alpha",
+			"Bravo",
+		]);
+		expect(grouped.get("2026-03-13")).toHaveLength(1);
+	});
+
+	it("picks the existing selected note property when possible", () => {
+		const properties: CalendarNoteDateProperty[] = [
+			{ key: "publish_date", kind: "date", count: 4 },
+			{ key: "starts_at", kind: "datetime", count: 2 },
+		];
+		expect(
+			pickDefaultNoteDateProperty(properties, "starts_at", "datetime"),
+		).toEqual(properties[1]);
+		expect(pickDefaultNoteDateProperty(properties, "missing", "date")).toEqual(
+			properties[0],
+		);
+	});
+});

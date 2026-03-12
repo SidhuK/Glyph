@@ -4,6 +4,7 @@ import {
 	PATH_REMOVED_EVENT,
 	type PathRemovedDetail,
 } from "../../lib/appEvents";
+import { CALENDAR_TAB_ID } from "../../lib/calendar";
 import { APP_TAGLINE } from "../../lib/copy";
 import {
 	DEFAULT_ONBOARDING_SETTINGS,
@@ -15,6 +16,7 @@ import { formatShortcutPartsForPlatform } from "../../lib/shortcuts/platform";
 import { TASKS_TAB_ID } from "../../lib/tasks";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { isInAppPreviewable } from "../../utils/filePreview";
+import { CalendarPane } from "../calendar/CalendarPane";
 import { FilePreviewPane } from "../preview/FilePreviewPane";
 import { TasksPane } from "../tasks/TasksPane";
 import { GettingStartedPane } from "./GettingStartedPane";
@@ -38,6 +40,7 @@ interface MainContentProps {
 	onOpenDailyNote: () => void;
 	onOpenTasks: () => void;
 	openTasksRequest: number;
+	openCalendarRequest: number;
 	showGettingStartedRequest: number;
 }
 
@@ -48,6 +51,7 @@ export const MainContent = memo(function MainContent({
 	onOpenDailyNote,
 	onOpenTasks,
 	openTasksRequest,
+	openCalendarRequest,
 	showGettingStartedRequest,
 }: MainContentProps) {
 	const {
@@ -88,6 +92,11 @@ export const MainContent = memo(function MainContent({
 		if (!spacePath || openTasksRequest === 0) return;
 		openSpecialTab(TASKS_TAB_ID);
 	}, [openSpecialTab, openTasksRequest, spacePath]);
+
+	useEffect(() => {
+		if (!spacePath || openCalendarRequest === 0) return;
+		openSpecialTab(CALENDAR_TAB_ID);
+	}, [openCalendarRequest, openSpecialTab, spacePath]);
 
 	useEffect(() => {
 		if (!spacePath || showGettingStartedRequest === 0) return;
@@ -168,6 +177,14 @@ export const MainContent = memo(function MainContent({
 				<TasksPane
 					onOpenFile={(relPath) => void fileTree.openFile(relPath)}
 					onClosePane={() => closeTab(TASKS_TAB_ID)}
+				/>
+			);
+		}
+		if (viewerPath === CALENDAR_TAB_ID) {
+			return (
+				<CalendarPane
+					onOpenFile={(relPath) => void fileTree.openFile(relPath)}
+					onClosePane={() => closeTab(CALENDAR_TAB_ID)}
 				/>
 			);
 		}
