@@ -842,7 +842,6 @@ export function AppShell() {
 				onDeletePath={(p, kind) => fileTree.onDeletePath(p, kind)}
 				onToggleDir={fileTree.toggleDir}
 				onSelectTag={(t) => openTagSearchPalette(t)}
-				onOpenCommandPalette={openCommandPalette}
 				sidebarCollapsed={sidebarCollapsed}
 				onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
 				onOpenDailyNote={handleOpenDailyNote}

@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import { memo } from "react";
-import { useSpace, useUILayoutContext } from "../../contexts";
+import { useUILayoutContext } from "../../contexts";
 import { SidebarContent } from "./SidebarContent";
 import { SidebarHeader } from "./SidebarHeader";
 
@@ -15,7 +15,6 @@ interface SidebarProps {
 	onRenameDir: (dirPath: string, nextName: string) => Promise<string | null>;
 	onDeletePath: (path: string, kind: "dir" | "file") => Promise<boolean>;
 	onSelectTag: (tag: string) => void;
-	onOpenCommandPalette: () => void;
 	sidebarCollapsed: boolean;
 	onToggleSidebar: () => void;
 	onOpenDailyNote: () => void;
@@ -37,7 +36,6 @@ export const Sidebar = memo(function Sidebar({
 	onRenameDir,
 	onDeletePath,
 	onSelectTag,
-	onOpenCommandPalette,
 	sidebarCollapsed,
 	onToggleSidebar,
 	onOpenDailyNote,
@@ -48,8 +46,6 @@ export const Sidebar = memo(function Sidebar({
 	updateVersion,
 	onInstallUpdate,
 }: SidebarProps) {
-	// Contexts
-	const { onOpenSpace } = useSpace();
 	const { sidebarWidth } = useUILayoutContext();
 	const shouldReduceMotion = useReducedMotion();
 	const sidebarState = sidebarCollapsed ? "collapsed" : "expanded";
@@ -83,8 +79,6 @@ export const Sidebar = memo(function Sidebar({
 						}
 					>
 						<SidebarHeader
-							onOpenSpace={onOpenSpace}
-							onOpenCommandPalette={onOpenCommandPalette}
 							sidebarCollapsed={sidebarCollapsed}
 							onToggleSidebar={onToggleSidebar}
 						/>

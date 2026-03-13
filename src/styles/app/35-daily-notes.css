@@ -30,6 +30,22 @@
 	font-size: 13px;
 }
 
+.sidebarDailyNotesBtn > svg {
+	flex: 0 0 auto;
+}
+
+.sidebarDailyNotesBtn[data-kind="tasks"] > svg {
+	color: oklch(0.74 0.16 88);
+}
+
+.sidebarDailyNotesBtn[data-kind="daily-notes"] > svg {
+	color: oklch(0.66 0.13 242);
+}
+
+.sidebarDailyNotesBtn[data-kind="calendar"] > svg {
+	color: oklch(0.72 0.16 18);
+}
+
 .dailyNotesFolderField {
 	padding-top: var(--space-2);
 	display: flex;

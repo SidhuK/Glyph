@@ -124,29 +124,36 @@ export const SidebarContent = memo(function SidebarContent({
 					<button
 						type="button"
 						className="sidebarDailyNotesBtn"
+						data-kind="tasks"
 						onClick={onOpenTasks}
 						title="Open Tasks"
 					>
-						<HugeiconsIcon icon={NoteDoneIcon} size={14} />
+						<HugeiconsIcon icon={NoteDoneIcon} size={14} strokeWidth={1.8} />
 						<span className="dailyNotesLabel">Tasks</span>
 					</button>
 					<button
 						type="button"
 						className="sidebarDailyNotesBtn"
+						data-kind="calendar"
 						onClick={onOpenCalendar}
 						title="Open Calendar"
 					>
-						<Calendar size={14} />
+						<Calendar size={14} strokeWidth={1.8} />
 						<span className="dailyNotesLabel">Calendar</span>
 					</button>
 					<button
 						type="button"
 						className="sidebarDailyNotesBtn"
+						data-kind="daily-notes"
 						onClick={handleDailyNoteClick}
 						disabled={isDailyNoteCreating}
 						title="Open today's daily note"
 					>
-						<HugeiconsIcon icon={CalendarAdd01Icon} size={14} />
+						<HugeiconsIcon
+							icon={CalendarAdd01Icon}
+							size={14}
+							strokeWidth={1.8}
+						/>
 						<span className="dailyNotesLabel">Daily Note</span>
 					</button>
 				</div>

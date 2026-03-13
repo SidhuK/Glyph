@@ -1,18 +1,14 @@
 import { getShortcutTooltip } from "../../lib/shortcuts";
 import { onWindowDragMouseDown } from "../../utils/window";
-import { Command, FolderOpen, PanelLeftClose, PanelLeftOpen } from "../Icons";
+import { PanelLeftClose, PanelLeftOpen } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 
 interface SidebarHeaderProps {
-	onOpenSpace: () => void;
-	onOpenCommandPalette: () => void;
 	sidebarCollapsed: boolean;
 	onToggleSidebar: () => void;
 }
 
 export function SidebarHeader({
-	onOpenSpace,
-	onOpenCommandPalette,
 	sidebarCollapsed,
 	onToggleSidebar,
 }: SidebarHeaderProps) {
@@ -44,24 +40,6 @@ export function SidebarHeader({
 						) : (
 							<PanelLeftClose size={14} />
 						)}
-					</Button>
-					<Button
-						type="button"
-						variant="ghost"
-						size="icon-sm"
-						onClick={onOpenCommandPalette}
-						title={`Command palette (${getShortcutTooltip({ meta: true, key: "k" })})`}
-					>
-						<Command size={14} />
-					</Button>
-					<Button
-						type="button"
-						variant="ghost"
-						size="icon-sm"
-						onClick={onOpenSpace}
-						title="Open space"
-					>
-						<FolderOpen size={14} />
 					</Button>
 				</div>
 			</div>
