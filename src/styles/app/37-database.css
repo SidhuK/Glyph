@@ -80,12 +80,18 @@
 	border-color: color-mix(in srgb, var(--border-light) 78%, transparent);
 	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
 	color: var(--text-secondary);
+	transition:
+		transform 180ms ease,
+		border-color 180ms ease,
+		background-color 180ms ease,
+		color 180ms ease;
 }
 
 .databaseToolbarChip:hover {
 	border-color: var(--border-default);
 	background: var(--bg-hover);
 	color: var(--text-primary);
+	transform: translateY(-1px);
 }
 
 .databaseToolbarChip.is-active {
@@ -95,8 +101,8 @@
 }
 
 .databaseToolbarChip.is-accent {
-	border-color: color-mix(in srgb, var(--border-default) 82%, transparent);
-	background: color-mix(in srgb, var(--bg-secondary) 82%, transparent);
+	border-color: color-mix(in srgb, var(--interactive-accent) 24%, transparent);
+	background: color-mix(in srgb, var(--interactive-accent) 12%, var(--bg-hover));
 	color: var(--text-primary);
 }
 
@@ -128,12 +134,15 @@
 	background-repeat: no-repeat;
 	background-position: right 6px center;
 	cursor: pointer;
+	transition: transform 180ms ease, border-color 180ms ease, background-color
+		180ms ease, color 180ms ease;
 }
 
 .databaseToolbarGroupBySelect:hover {
 	border-color: var(--border-default);
 	background-color: var(--bg-hover);
 	color: var(--text-primary);
+	transform: translateY(-1px);
 }
 
 .databaseToolbarGroupBySelect:focus,
@@ -150,6 +159,7 @@
 	flex: 1;
 	min-height: 0;
 	overflow: auto;
+	padding: 14px 18px 18px;
 }
 
 .databaseBoardShell {
@@ -205,9 +215,15 @@
 	height: 100%;
 	border: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
 	border-radius: var(--radius-lg);
-	background: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary));
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--bg-primary) 97%, transparent) 0%,
+		color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary)) 100%
+	);
+	box-shadow: 0 18px 34px
+		color-mix(in srgb, var(--shadow-color, #000) 4%, transparent);
 	transition: border-color var(--transition-base), background-color
-		var(--transition-base);
+		var(--transition-base), box-shadow 180ms ease, transform 180ms ease;
 }
 
 .databaseBoardLane[data-active="true"] {
@@ -217,6 +233,9 @@
 		var(--interactive-accent) 5%,
 		var(--bg-primary)
 	);
+	box-shadow: 0 22px 40px
+		color-mix(in srgb, var(--shadow-color, #000) 7%, transparent);
+	transform: translateY(-1px);
 }
 
 .databaseBoardLaneHeader {
@@ -227,6 +246,7 @@
 	padding: var(--space-3) var(--space-3) var(--space-2);
 	border-bottom: 1px solid
 		color-mix(in srgb, var(--border-subtle) 72%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 46%, transparent);
 }
 
 .databaseBoardLaneTitle {
@@ -249,6 +269,8 @@
 	font-weight: var(--font-medium);
 	line-height: 1.15;
 	color: var(--text-secondary);
+	box-shadow: 0 8px 16px
+		color-mix(in srgb, var(--shadow-color, #000) 4%, transparent);
 }
 
 .databaseBoardLaneBody {
@@ -273,12 +295,18 @@
 	padding: 12px;
 	border: 1px solid color-mix(in srgb, var(--border-light) 84%, transparent);
 	border-radius: var(--radius-md);
-	background: color-mix(in srgb, var(--bg-primary) 96%, var(--bg-secondary));
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--bg-primary) 98%, transparent) 0%,
+		color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary)) 100%
+	);
 	cursor: pointer;
 	text-align: left;
 	white-space: normal;
+	box-shadow: 0 12px 24px
+		color-mix(in srgb, var(--shadow-color, #000) 4%, transparent);
 	transition: border-color var(--transition-base), background-color
-		var(--transition-base);
+		var(--transition-base), box-shadow 180ms ease, transform 180ms ease;
 	overflow: hidden;
 }
 
@@ -294,6 +322,9 @@
 .databaseBoardCard:hover {
 	border-color: color-mix(in srgb, var(--border-default) 88%, transparent);
 	background: var(--bg-hover);
+	box-shadow: 0 18px 34px
+		color-mix(in srgb, var(--shadow-color, #000) 7%, transparent);
+	transform: translateY(-2px);
 }
 
 .databaseBoardCard[data-state="selected"] {
@@ -303,6 +334,8 @@
 		var(--interactive-accent) 7%,
 		var(--bg-primary)
 	);
+	box-shadow: 0 18px 36px
+		color-mix(in srgb, var(--interactive-accent) 10%, transparent);
 }
 
 .databaseBoardCardTitle {
@@ -364,6 +397,8 @@
 	line-height: 1.2;
 	color: var(--text-secondary);
 	white-space: nowrap;
+	box-shadow: 0 8px 14px
+		color-mix(in srgb, var(--shadow-color, #000) 3%, transparent);
 }
 
 .databaseBoardCardDetails {
@@ -392,6 +427,7 @@
 	background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
 	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
 	color: var(--text-tertiary);
+	box-shadow: inset 0 1px 0 color-mix(in srgb, white 45%, transparent);
 }
 
 .databaseBoardCardDetailValue {
@@ -425,6 +461,15 @@
 	gap: 6px;
 	padding: 24px;
 	text-align: center;
+	border: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
+	border-radius: var(--radius-xl);
+	background: radial-gradient(
+			circle at top,
+			color-mix(in srgb, var(--interactive-accent) 10%, transparent) 0%,
+			transparent 46%
+		), color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary));
+	box-shadow: 0 18px 36px
+		color-mix(in srgb, var(--shadow-color, #000) 5%, transparent);
 }
 
 .databaseBoardEmptyActions {
@@ -446,18 +491,30 @@
 	border-spacing: 0;
 	min-width: 100%;
 	table-layout: fixed;
-	background: var(--bg-primary);
-	border: 1px solid var(--border-light);
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--bg-primary) 98%, transparent) 0%,
+		color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary)) 100%
+	);
+	border: 1px solid color-mix(in srgb, var(--border-light) 86%, transparent);
 	border-radius: var(--radius-lg);
 	overflow: hidden;
+	box-shadow: 0 18px 36px
+		color-mix(in srgb, var(--shadow-color, #000) 5%, transparent);
 }
 
 .databaseHeadCell {
 	position: sticky;
 	top: 0;
 	z-index: 1;
-	background: color-mix(in srgb, var(--bg-secondary) 48%, var(--bg-primary));
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--bg-secondary) 58%, var(--bg-primary)) 0%,
+		color-mix(in srgb, var(--bg-secondary) 42%, var(--bg-primary)) 100%
+	);
 	text-align: left;
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
 }
 
 .databaseHeadCell:first-child {
@@ -482,6 +539,12 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+	transition: color 180ms ease, transform 180ms ease;
+}
+
+.databaseHeaderButton:hover {
+	color: var(--text-primary);
+	transform: translateY(-1px);
 }
 
 .databaseHeaderLabel {
@@ -511,6 +574,8 @@
 .databaseBodyCell {
 	vertical-align: top;
 	text-align: left;
+	border-top: 1px solid
+		color-mix(in srgb, var(--border-subtle) 64%, transparent);
 }
 
 .databaseBodyCell:first-child {
@@ -591,6 +656,8 @@
 	background: color-mix(in srgb, var(--bg-secondary) 74%, transparent);
 	font-size: 0.78rem;
 	color: var(--text-secondary);
+	box-shadow: 0 8px 14px
+		color-mix(in srgb, var(--shadow-color, #000) 3%, transparent);
 }
 
 .databaseCellYaml {
@@ -621,11 +688,12 @@
 
 .databaseRow {
 	cursor: default;
-	transition: background-color var(--transition-base);
+	transition: background-color var(--transition-base), box-shadow 180ms ease;
 }
 
 .databaseRow:hover {
 	background: var(--bg-hover);
+	box-shadow: inset 0 1px 0 color-mix(in srgb, white 20%, transparent);
 }
 
 .databaseRow[data-state="selected"] {
@@ -634,6 +702,8 @@
 		var(--interactive-accent) 12%,
 		var(--bg-primary)
 	);
+	box-shadow: inset 3px 0 0
+		color-mix(in srgb, var(--interactive-accent) 54%, transparent);
 }
 
 .databaseRow[data-state="selected"]:hover {
@@ -644,6 +714,20 @@
 .databaseNotice,
 .databaseFooter {
 	padding: 14px 18px;
+}
+
+.databaseLoadingState,
+.databaseNotice {
+	margin: 14px 18px 0;
+	border-radius: var(--radius-lg);
+	border: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
+	background: linear-gradient(
+		135deg,
+		color-mix(in srgb, var(--interactive-accent) 6%, var(--bg-primary)) 0%,
+		color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary)) 100%
+	);
+	box-shadow: 0 16px 32px
+		color-mix(in srgb, var(--shadow-color, #000) 4%, transparent);
 }
 
 .databaseNotice {
@@ -659,6 +743,13 @@
 	justify-content: space-between;
 	border-top: 1px solid var(--border-light);
 	background: color-mix(in srgb, var(--bg-secondary) 32%, var(--bg-primary));
+}
+
+.databaseEmptyCell {
+	padding: 28px 18px;
+	font-size: var(--text-sm);
+	color: var(--text-secondary);
+	text-align: center;
 }
 
 .databaseDialog {

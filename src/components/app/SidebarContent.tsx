@@ -124,6 +124,21 @@ export const SidebarContent = memo(function SidebarContent({
 					<button
 						type="button"
 						className="sidebarDailyNotesBtn"
+						data-kind="daily-notes"
+						onClick={handleDailyNoteClick}
+						disabled={isDailyNoteCreating}
+						title="Open today's daily note"
+					>
+						<HugeiconsIcon
+							icon={CalendarAdd01Icon}
+							size={14}
+							strokeWidth={1.8}
+						/>
+						<span className="dailyNotesLabel">Daily Note</span>
+					</button>
+					<button
+						type="button"
+						className="sidebarDailyNotesBtn"
 						data-kind="tasks"
 						onClick={onOpenTasks}
 						title="Open Tasks"
@@ -140,21 +155,6 @@ export const SidebarContent = memo(function SidebarContent({
 					>
 						<Calendar size={14} strokeWidth={1.8} />
 						<span className="dailyNotesLabel">Calendar</span>
-					</button>
-					<button
-						type="button"
-						className="sidebarDailyNotesBtn"
-						data-kind="daily-notes"
-						onClick={handleDailyNoteClick}
-						disabled={isDailyNoteCreating}
-						title="Open today's daily note"
-					>
-						<HugeiconsIcon
-							icon={CalendarAdd01Icon}
-							size={14}
-							strokeWidth={1.8}
-						/>
-						<span className="dailyNotesLabel">Daily Note</span>
 					</button>
 				</div>
 				<div className="sidebarSectionHeader">
@@ -227,29 +227,8 @@ export const SidebarContent = memo(function SidebarContent({
 				</AnimatePresence>
 			</div>
 			<div className="sidebarFooter" style={SIDEBAR_FOOTER_STYLE}>
-				<Button
-					type="button"
-					variant="ghost"
-					size="icon-sm"
-					className="sidebarFooterIconButton"
-					onClick={() => void openSettingsWindow()}
-					title="Settings"
-				>
-					<HugeiconsIcon icon={Settings05Icon} size={14} />
-				</Button>
-				{updateReady && (
-					<button
-						type="button"
-						className="sidebarUpdateBadge"
-						onClick={onInstallUpdate}
-						title={`Update to ${updateVersion}`}
-					>
-						<RefreshCw size={12} />
-						<span>Update available</span>
-					</button>
-				)}
-				<div style={ACTIONS_STYLE}>
-					{sidebarViewMode === "files" && (
+				<div>
+					{sidebarViewMode === "files" ? (
 						<DropdownMenu>
 							<DropdownMenuTrigger asChild>
 								<Button
@@ -263,7 +242,7 @@ export const SidebarContent = memo(function SidebarContent({
 								</Button>
 							</DropdownMenuTrigger>
 							<DropdownMenuContent
-								align="end"
+								align="start"
 								side="top"
 								className="fileTreeCreateMenu"
 							>
@@ -292,7 +271,30 @@ export const SidebarContent = memo(function SidebarContent({
 								</DropdownMenuItem>
 							</DropdownMenuContent>
 						</DropdownMenu>
-					)}
+					) : null}
+				</div>
+				{updateReady && (
+					<button
+						type="button"
+						className="sidebarUpdateBadge"
+						onClick={onInstallUpdate}
+						title={`Update to ${updateVersion}`}
+					>
+						<RefreshCw size={12} />
+						<span>Update available</span>
+					</button>
+				)}
+				<div style={ACTIONS_STYLE}>
+					<Button
+						type="button"
+						variant="ghost"
+						size="icon-sm"
+						className="sidebarFooterIconButton"
+						onClick={() => void openSettingsWindow()}
+						title="Settings"
+					>
+						<HugeiconsIcon icon={Settings05Icon} size={14} />
+					</Button>
 				</div>
 			</div>
 		</>

@@ -8,6 +8,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { m, useReducedMotion } from "motion/react";
 import { useDatabaseNote } from "../../hooks/database/useDatabaseNote";
 import { useDatabaseTable } from "../../hooks/database/useDatabaseTable";
 import { getBoardGroupColumns } from "../../lib/database/board";
@@ -27,6 +28,7 @@ import { DatabaseColumnDialog } from "./DatabaseColumnDialog";
 import { DatabaseSourceDialog } from "./DatabaseSourceDialog";
 import { DatabaseTable } from "./DatabaseTable";
 import { DatabaseToolbar } from "./DatabaseToolbar";
+import { springPresets } from "../ui/animations";
 
 const LazyMarkdownEditorPane = lazy(() =>
 	import("../preview/MarkdownEditorPane").then((module) => ({
@@ -46,6 +48,7 @@ export function DatabasePane({
 	onDirtyChange,
 }: DatabasePaneProps) {
 	const localMutationTimestampsRef = useRef(new Map<string, number>());
+	const shouldReduceMotion = useReducedMotion();
 	const [noteKind, setNoteKind] = useState<"loading" | "markdown" | "database">(
 		"loading",
 	);
@@ -292,7 +295,16 @@ export function DatabasePane({
 	}, [currentConfig, handleBoardGroupByChange, handleSaveConfig]);
 
 	if (noteKind === "loading") {
-		return <div className="databaseLoadingState">Loading note…</div>;
+		return (
+			<m.div
+				className="databaseLoadingState"
+				initial={shouldReduceMotion ? false : { opacity: 0, y: 8 }}
+				animate={{ opacity: 1, y: 0 }}
+				transition={shouldReduceMotion ? { duration: 0 } : springPresets.snappy}
+			>
+				Loading note…
+			</m.div>
+		);
 	}
 
 	if (noteKind === "markdown") {
@@ -316,7 +328,7 @@ export function DatabasePane({
 	}
 
 	return (
-		<div className="databaseHostPane">
+		<div className="databaseHostPane" data-view={databaseView}>
 			{currentConfig ? (
 				<>
 					<DatabaseToolbar
@@ -343,12 +355,28 @@ export function DatabasePane({
 						onOpenColumns={() => setColumnsOpen(true)}
 					/>
 					{actionError || error ? (
-						<div className="databaseNotice databaseNoticeError">
+						<m.div
+							className="databaseNotice databaseNoticeError"
+							initial={shouldReduceMotion ? false : { opacity: 0, y: 6 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={
+								shouldReduceMotion ? { duration: 0 } : springPresets.snappy
+							}
+						>
 							{actionError || error}
-						</div>
+						</m.div>
 					) : null}
 					{loading ? (
-						<div className="databaseLoadingState">Loading database…</div>
+						<m.div
+							className="databaseLoadingState"
+							initial={shouldReduceMotion ? false : { opacity: 0, y: 8 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={
+								shouldReduceMotion ? { duration: 0 } : springPresets.snappy
+							}
+						>
+							Loading database…
+						</m.div>
 					) : databaseView === "table" ? (
 						<DatabaseTable
 							rows={tableState.rows}

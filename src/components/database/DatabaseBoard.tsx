@@ -1,3 +1,4 @@
+import { m, useReducedMotion } from "motion/react";
 import { useMemo, useState } from "react";
 import { useDatabaseBoard } from "../../hooks/database/useDatabaseBoard";
 import {
@@ -17,6 +18,7 @@ import {
 	ContextMenuSeparator,
 	ContextMenuTrigger,
 } from "../ui/shadcn/context-menu";
+import { springPresets } from "../ui/animations";
 import { DatabaseColumnIcon } from "./DatabaseColumnIcon";
 
 interface DatabaseBoardProps {
@@ -84,6 +86,7 @@ export function DatabaseBoard({
 	onGroupColumnIdChange,
 	onSaveCell,
 }: DatabaseBoardProps) {
+	const shouldReduceMotion = useReducedMotion();
 	const { groupColumn, groupColumns, lanes } = useDatabaseBoard({
 		rows,
 		columns,
@@ -136,9 +139,27 @@ export function DatabaseBoard({
 
 	return (
 		<div className="databaseBoardShell">
-			{moveError ? <div className="databaseBoardError">{moveError}</div> : null}
+			{moveError ? (
+				<m.div
+					className="databaseBoardError"
+					initial={shouldReduceMotion ? false : { opacity: 0, y: 6 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={
+						shouldReduceMotion ? { duration: 0 } : springPresets.snappy
+					}
+				>
+					{moveError}
+				</m.div>
+			) : null}
 			{groupColumns.length === 0 ? (
-				<div className="databaseBoardEmptyState">
+				<m.div
+					className="databaseBoardEmptyState"
+					initial={shouldReduceMotion ? false : { opacity: 0, y: 10 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={
+						shouldReduceMotion ? { duration: 0 } : springPresets.snappy
+					}
+				>
 					<div className="databaseBoardEmptyTitle">
 						Board view needs a grouping field
 					</div>
@@ -159,14 +180,24 @@ export function DatabaseBoard({
 							Open columns
 						</Button>
 					</div>
-				</div>
+				</m.div>
 			) : (
 				<div className="databaseBoardScroller">
-					{lanes.map((lane) => (
-						<div
+					{lanes.map((lane, laneIndex) => (
+						<m.div
 							key={lane.id}
 							className="databaseBoardLane"
 							data-active={dropLaneId === lane.id ? "true" : "false"}
+							initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={
+								shouldReduceMotion
+									? { duration: 0 }
+									: {
+											...springPresets.snappy,
+											delay: Math.min(laneIndex * 0.04, 0.18),
+										}
+							}
 							onDragOver={(event) => {
 								event.preventDefault();
 								event.dataTransfer.dropEffect = "move";
@@ -354,7 +385,7 @@ export function DatabaseBoard({
 									</div>
 								)}
 							</div>
-						</div>
+						</m.div>
 					))}
 				</div>
 			)}
