@@ -9,7 +9,13 @@ import { invoke } from "../../lib/tauri";
 import { Button } from "../ui/shadcn/button";
 import { SettingsRow, SettingsSection } from "./SettingsScaffold";
 
-export function AboutSettingsPane() {
+interface AboutSettingsPaneProps {
+	visibleSections?: Set<string> | null;
+}
+
+export function AboutSettingsPane({
+	visibleSections = null,
+}: AboutSettingsPaneProps) {
 	const [appInfo, setAppInfo] = useState<AppInfo | null>(null);
 	const [error, setError] = useState("");
 	const [copyLabel, setCopyLabel] = useState("Copy Diagnostics");
@@ -97,123 +103,135 @@ export function AboutSettingsPane() {
 			setCheckingUpdates(false);
 		}
 	};
+	const showSection = (title: string) =>
+		!visibleSections || visibleSections.has(title);
 
 	return (
 		<div className="settingsPane aboutPane">
 			{error ? <div className="settingsError">{error}</div> : null}
 
 			<div className="settingsGrid">
-				<SettingsSection
-					title="Glyph"
-					description="Build details and quick project information."
-				>
-					<div className="aboutIdentity">
-						<div className="aboutLogoWrap">
-							<img
-								src={`/glyph-app-icon.png?v=${appInfo?.version ?? "dev"}`}
-								alt=""
-								className="aboutLogo"
-								aria-hidden="true"
-							/>
-						</div>
-						<div className="aboutIdentityCopy">
-							<div className="aboutTitleRow">
-								<span className="aboutAppName">{appInfo?.name ?? "Glyph"}</span>
-								<span className="aboutVersion">{versionLabel}</span>
-							</div>
-							<div className="aboutStatusRow">
-								<span className="settingsPill aboutEarlyAccessBadge earlyAccessBadge">
-									Early Access
-								</span>
-								<span
-									className="aboutOpenSourceMark"
-									title="Open Source project"
-								>
-									<HugeiconsIcon icon={CodesandboxIcon} size={12} />
-									<span>Open Source</span>
-								</span>
-							</div>
-						</div>
-					</div>
-					<SettingsRow
-						label="Identifier"
-						description="Useful when debugging builds, updates, or diagnostics."
+				{showSection("Glyph") ? (
+					<SettingsSection
+						title="Glyph"
+						description="Build details and quick project information."
 					>
-						<div className="settingsValue mono">
-							{appInfo?.identifier ?? "Loading…"}
+						<div className="aboutIdentity">
+							<div className="aboutLogoWrap">
+								<img
+									src={`/glyph-app-icon.png?v=${appInfo?.version ?? "dev"}`}
+									alt=""
+									className="aboutLogo"
+									aria-hidden="true"
+								/>
+							</div>
+							<div className="aboutIdentityCopy">
+								<div className="aboutTitleRow">
+									<span className="aboutAppName">
+										{appInfo?.name ?? "Glyph"}
+									</span>
+									<span className="aboutVersion">{versionLabel}</span>
+								</div>
+								<div className="aboutStatusRow">
+									<span className="settingsPill aboutEarlyAccessBadge earlyAccessBadge">
+										Early Access
+									</span>
+									<span
+										className="aboutOpenSourceMark"
+										title="Open Source project"
+									>
+										<HugeiconsIcon icon={CodesandboxIcon} size={12} />
+										<span>Open Source</span>
+									</span>
+								</div>
+							</div>
 						</div>
-					</SettingsRow>
-				</SettingsSection>
-
-				<SettingsSection
-					title="Updates"
-					description="Check for new releases and install them without leaving Glyph."
-				>
-					<SettingsRow
-						label="App updates"
-						description="Download and install the latest published version."
-					>
-						<Button
-							type="button"
-							size="sm"
-							disabled={checkingUpdates}
-							onClick={() => void handleCheckForUpdates()}
-						>
-							{checkingUpdates ? "Checking…" : "Check for Updates"}
-						</Button>
-					</SettingsRow>
-					{updateStatus ? (
 						<SettingsRow
-							label="Status"
-							description="Latest updater activity from this window."
-							stacked
+							label="Identifier"
+							description="Useful when debugging builds, updates, or diagnostics."
+							interactive={false}
 						>
-							<p className="settingsHint">{updateStatus}</p>
+							<div className="settingsValue mono">
+								{appInfo?.identifier ?? "Loading…"}
+							</div>
 						</SettingsRow>
-					) : null}
-				</SettingsSection>
+					</SettingsSection>
+				) : null}
 
-				<SettingsSection
-					title="Support"
-					description="Project links and diagnostics that help with support requests."
-				>
-					<SettingsRow
-						label="Links"
-						description="Open the author and project pages in your browser."
+				{showSection("Updates") ? (
+					<SettingsSection
+						title="Updates"
+						description="Check for new releases and install them without leaving Glyph."
 					>
-						<div className="settingsActions aboutActions">
-							<Button
-								type="button"
-								size="sm"
-								variant="outline"
-								onClick={() => void openUrl("https://x.com/karat_sidhu")}
-							>
-								X
-							</Button>
-							<Button
-								type="button"
-								size="sm"
-								variant="outline"
-								onClick={() => void openUrl("https://github.com/SidhuK")}
-							>
-								GitHub
-							</Button>
-						</div>
-					</SettingsRow>
-					<SettingsRow
-						label="Diagnostics"
-						description="Copy app metadata so you can paste it into bug reports or support threads."
-					>
-						<Button
-							type="button"
-							size="sm"
-							variant="ghost"
-							onClick={() => void handleCopyDebugInfo()}
+						<SettingsRow
+							label="App updates"
+							description="Download and install the latest published version."
 						>
-							{copyLabel}
-						</Button>
-					</SettingsRow>
-				</SettingsSection>
+							<Button
+								type="button"
+								size="sm"
+								disabled={checkingUpdates}
+								onClick={() => void handleCheckForUpdates()}
+							>
+								{checkingUpdates ? "Checking…" : "Check for Updates"}
+							</Button>
+						</SettingsRow>
+						{updateStatus ? (
+							<SettingsRow
+								label="Status"
+								description="Latest updater activity from this window."
+								stacked
+								interactive={false}
+							>
+								<p className="settingsHint">{updateStatus}</p>
+							</SettingsRow>
+						) : null}
+					</SettingsSection>
+				) : null}
+
+				{showSection("Support") ? (
+					<SettingsSection
+						title="Support"
+						description="Project links and diagnostics that help with support requests."
+					>
+						<SettingsRow
+							label="Links"
+							description="Open the author and project pages in your browser."
+						>
+							<div className="settingsActions aboutActions">
+								<Button
+									type="button"
+									size="sm"
+									variant="outline"
+									onClick={() => void openUrl("https://x.com/karat_sidhu")}
+								>
+									X
+								</Button>
+								<Button
+									type="button"
+									size="sm"
+									variant="outline"
+									onClick={() => void openUrl("https://github.com/SidhuK")}
+								>
+									GitHub
+								</Button>
+							</div>
+						</SettingsRow>
+						<SettingsRow
+							label="Diagnostics"
+							description="Copy app metadata so you can paste it into bug reports or support threads."
+						>
+							<Button
+								type="button"
+								size="sm"
+								variant="ghost"
+								onClick={() => void handleCopyDebugInfo()}
+							>
+								{copyLabel}
+							</Button>
+						</SettingsRow>
+					</SettingsSection>
+				) : null}
 			</div>
 		</div>
 	);

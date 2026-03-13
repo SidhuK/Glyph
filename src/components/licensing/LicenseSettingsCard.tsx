@@ -119,6 +119,7 @@ export function LicenseSettingsCard() {
 				<SettingsRow
 					label="Trial status"
 					description="Remaining time on the current trial for this device."
+					interactive={false}
 				>
 					<div className="settingsValue">
 						{formatTrialRemaining(status.trial_remaining_seconds)}
@@ -131,6 +132,7 @@ export function LicenseSettingsCard() {
 					<SettingsRow
 						label="Activated"
 						description="Date this device was successfully activated."
+						interactive={false}
 					>
 						<div className="settingsValue">
 							{formatLicenseDate(status.activated_at_ms)}
@@ -139,6 +141,7 @@ export function LicenseSettingsCard() {
 					<SettingsRow
 						label="License key"
 						description="Masked locally stored key for this device."
+						interactive={false}
 					>
 						<div className="settingsValue">
 							{status.license_key_masked ?? "Stored locally"}

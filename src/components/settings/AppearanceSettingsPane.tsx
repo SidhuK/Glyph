@@ -45,7 +45,13 @@ import {
 	loadAvailableMonospaceFonts,
 } from "./appearanceOptions";
 
-export function AppearanceSettingsPane() {
+interface AppearanceSettingsPaneProps {
+	visibleSections?: Set<string> | null;
+}
+
+export function AppearanceSettingsPane({
+	visibleSections = null,
+}: AppearanceSettingsPaneProps) {
 	const { setTheme } = useTheme();
 	const [themeMode, setThemeModeState] = useState<ThemeMode>("system");
 	const [lightThemeId, setLightThemeIdState] = useState<UiLightThemeId>(
@@ -232,83 +238,91 @@ export function AppearanceSettingsPane() {
 			: isGlyphDefaultLightTheme(lightThemeId)
 				? "Choose the accent used for highlights, focus rings, and emphasis in the default light theme."
 				: "Choose the accent used for highlights, focus rings, and emphasis in the default dark theme.";
+	const showSection = (title: string) =>
+		!visibleSections || visibleSections.has(title);
 
 	return (
 		<div className="settingsPane">
 			{error ? <div className="settingsError">{error}</div> : null}
 			<div className="settingsGrid">
-				<SettingsSection
-					title="Theme"
-					description="Choose the overall mode Glyph should follow."
-				>
-					<SettingsRow
-						label="Color mode"
-						description="Light and dark are fixed. System follows your OS preference."
+				{showSection("Theme") ? (
+					<SettingsSection
+						title="Theme"
+						description="Choose the overall mode Glyph should follow."
 					>
-						<SettingsSegmented<ThemeMode>
-							ariaLabel="Theme mode"
-							value={themeMode}
-							onChange={(value) => void onThemeModeChange(value)}
-							options={[
-								{ label: "Light", value: "light" },
-								{ label: "Dark", value: "dark" },
-								{ label: "System", value: "system" },
-							]}
-						/>
-					</SettingsRow>
-					<SettingsRow
-						label="Light theme"
-						htmlFor="settingsLightTheme"
-						description="Choose the theme family Glyph should use whenever the app resolves to light mode."
-					>
-						<select
-							id="settingsLightTheme"
-							value={lightThemeId}
-							onChange={(event) => void onLightThemeChange(event.target.value)}
+						<SettingsRow
+							label="Color mode"
+							description="Light and dark are fixed. System follows your OS preference."
 						>
-							{LIGHT_THEME_OPTIONS.map((option) => (
-								<option key={option.id} value={option.id}>
-									{option.label}
-								</option>
-							))}
-						</select>
-					</SettingsRow>
-					<SettingsRow
-						label="Dark theme"
-						htmlFor="settingsDarkTheme"
-						description="Choose the theme family Glyph should use whenever the app resolves to dark mode."
-					>
-						<select
-							id="settingsDarkTheme"
-							value={darkThemeId}
-							onChange={(event) => void onDarkThemeChange(event.target.value)}
+							<SettingsSegmented<ThemeMode>
+								ariaLabel="Theme mode"
+								value={themeMode}
+								onChange={(value) => void onThemeModeChange(value)}
+								options={[
+									{ label: "Light", value: "light" },
+									{ label: "Dark", value: "dark" },
+									{ label: "System", value: "system" },
+								]}
+							/>
+						</SettingsRow>
+						<SettingsRow
+							label="Light theme"
+							htmlFor="settingsLightTheme"
+							description="Choose the theme family Glyph should use whenever the app resolves to light mode."
 						>
-							{DARK_THEME_OPTIONS.map((option) => (
-								<option key={option.id} value={option.id}>
-									{option.label}
-								</option>
-							))}
-						</select>
-					</SettingsRow>
-				</SettingsSection>
-				{showAccentCard ? (
+							<select
+								id="settingsLightTheme"
+								value={lightThemeId}
+								onChange={(event) =>
+									void onLightThemeChange(event.target.value)
+								}
+							>
+								{LIGHT_THEME_OPTIONS.map((option) => (
+									<option key={option.id} value={option.id}>
+										{option.label}
+									</option>
+								))}
+							</select>
+						</SettingsRow>
+						<SettingsRow
+							label="Dark theme"
+							htmlFor="settingsDarkTheme"
+							description="Choose the theme family Glyph should use whenever the app resolves to dark mode."
+						>
+							<select
+								id="settingsDarkTheme"
+								value={darkThemeId}
+								onChange={(event) => void onDarkThemeChange(event.target.value)}
+							>
+								{DARK_THEME_OPTIONS.map((option) => (
+									<option key={option.id} value={option.id}>
+										{option.label}
+									</option>
+								))}
+							</select>
+						</SettingsRow>
+					</SettingsSection>
+				) : null}
+				{showSection("Accent") && showAccentCard ? (
 					<AppearanceAccentCard
 						accent={accent}
 						description={accentDescription}
 						onAccentChange={onAccentChange}
 					/>
 				) : null}
-				<AppearanceTypographyCard
-					fontFamily={fontFamily}
-					monoFontFamily={monoFontFamily}
-					fontSize={fontSize}
-					availableFonts={availableFonts}
-					availableMonospaceFonts={availableMonospaceFonts}
-					fontSizeOptions={FONT_SIZE_OPTIONS}
-					onFontFamilyChange={onFontFamilyChange}
-					onMonoFontFamilyChange={onMonoFontFamilyChange}
-					onFontSizeChange={onFontSizeChange}
-				/>
+				{showSection("Typography") ? (
+					<AppearanceTypographyCard
+						fontFamily={fontFamily}
+						monoFontFamily={monoFontFamily}
+						fontSize={fontSize}
+						availableFonts={availableFonts}
+						availableMonospaceFonts={availableMonospaceFonts}
+						fontSizeOptions={FONT_SIZE_OPTIONS}
+						onFontFamilyChange={onFontFamilyChange}
+						onMonoFontFamilyChange={onMonoFontFamilyChange}
+						onFontSizeChange={onFontSizeChange}
+					/>
+				) : null}
 			</div>
 		</div>
 	);

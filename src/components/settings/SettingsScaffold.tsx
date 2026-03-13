@@ -17,6 +17,7 @@ interface SettingsRowProps {
 	children: ReactNode;
 	className?: string;
 	stacked?: boolean;
+	interactive?: boolean;
 }
 
 interface SettingsSegmentedOption<T extends string> {
@@ -70,6 +71,7 @@ export function SettingsRow({
 	children,
 	className,
 	stacked = false,
+	interactive = true,
 }: SettingsRowProps) {
 	const CopyTag = htmlFor ? "label" : "div";
 
@@ -77,6 +79,7 @@ export function SettingsRow({
 		<div
 			className={cn(
 				"settingsField",
+				interactive && "settingsFieldInteractive",
 				stacked && "settingsFieldStacked",
 				className,
 			)}

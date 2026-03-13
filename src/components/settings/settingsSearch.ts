@@ -159,7 +159,7 @@ export const SETTINGS_SEARCH_INDEX: SettingsSearchRecord[] = [
 	{
 		id: "ai-api-key",
 		tab: "ai",
-		section: "Authentication",
+		section: "API Key",
 		label: "API Key",
 		description: "Store or clear the provider API key in the secret store.",
 		keywords: ["api key", "secret", "token", "auth"],
@@ -167,7 +167,7 @@ export const SETTINGS_SEARCH_INDEX: SettingsSearchRecord[] = [
 	{
 		id: "ai-chatgpt-account",
 		tab: "ai",
-		section: "Authentication",
+		section: "ChatGPT Account",
 		label: "ChatGPT Account",
 		description: "Sign in with ChatGPT and review Codex account status.",
 		keywords: ["chatgpt", "codex", "account", "sign in", "rate limits"],
@@ -215,7 +215,7 @@ export const SETTINGS_SEARCH_INDEX: SettingsSearchRecord[] = [
 	{
 		id: "about-version",
 		tab: "about",
-		section: "App",
+		section: "Glyph",
 		label: "Version",
 		description: "See the current Glyph version and build information.",
 		keywords: ["version", "build", "identifier", "app info"],
@@ -223,7 +223,7 @@ export const SETTINGS_SEARCH_INDEX: SettingsSearchRecord[] = [
 	{
 		id: "about-updates",
 		tab: "about",
-		section: "App",
+		section: "Updates",
 		label: "Updates",
 		description: "Check for updates and install the latest release.",
 		keywords: ["updates", "install", "download", "relaunch"],

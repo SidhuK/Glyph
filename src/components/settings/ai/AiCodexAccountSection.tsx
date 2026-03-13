@@ -52,6 +52,7 @@ export function AiCodexAccountSection({
 			<SettingsRow
 				label="Identity"
 				description="The connected account Glyph is currently using for Codex."
+				interactive={false}
 			>
 				<div className="settingsHint">
 					{codexState.displayName || codexState.email || "Not connected"}
@@ -61,6 +62,7 @@ export function AiCodexAccountSection({
 				<SettingsRow
 					label="Authentication"
 					description="How this ChatGPT session is currently authenticated."
+					interactive={false}
 				>
 					<div className="settingsHint">{codexState.authMode}</div>
 				</SettingsRow>
@@ -70,6 +72,7 @@ export function AiCodexAccountSection({
 					label="Rate limits"
 					description="These counters show the remaining capacity for the connected account."
 					stacked
+					interactive={false}
 				>
 					<div className="codexRateLimitList">
 						{codexState.rateLimits.map((item) => {

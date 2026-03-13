@@ -112,6 +112,7 @@ export function TaskSourcesSettingsCard({
 					label="Availability"
 					description="Open a space first to choose which folders feed the Tasks pane."
 					stacked
+					interactive={false}
 				>
 					<div className="settingsEmpty">
 						Open a space first to choose which folders feed the Tasks pane.
@@ -199,6 +200,7 @@ export function TaskSourcesSettingsCard({
 					label="Coverage"
 					description="Glyph will read task items from every eligible note in the current space."
 					stacked
+					interactive={false}
 				>
 					<div className="settingsEmpty">
 						All folders in the current space are included.

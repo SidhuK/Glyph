@@ -124,7 +124,7 @@
 	display: none;
 }
 
-.settingsField:hover {
+.settingsFieldInteractive:hover {
 	background: color-mix(in srgb, var(--bg-secondary) 36%, transparent);
 }
 

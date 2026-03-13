@@ -7,7 +7,6 @@ import {
 	useDeferredValue,
 	useEffect,
 	useMemo,
-	useRef,
 	useState,
 } from "react";
 import { X } from "./components/Icons";
@@ -15,7 +14,6 @@ import { Search } from "./components/Icons/NavigationIcons";
 import { AboutSettingsPane } from "./components/settings/AboutSettingsPane";
 import { AiSettingsPane } from "./components/settings/AiSettingsPane";
 import { AppearanceSettingsPane } from "./components/settings/AppearanceSettingsPane";
-import { DailyNotesSettingsPane } from "./components/settings/DailyNotesSettingsPane";
 import { GeneralSettingsPane } from "./components/settings/GeneralSettingsPane";
 import { SpaceSettingsPane } from "./components/settings/SpaceSettingsPane";
 import {
@@ -41,7 +39,6 @@ export default function SettingsApp() {
 		parseTabFromHash(window.location.hash),
 	);
 	const [searchQuery, setSearchQuery] = useState("");
-	const ignoreAutoSwitchRef = useRef(false);
 	const deferredSearchQuery = useDeferredValue(searchQuery);
 	const trimmedSearchQuery = deferredSearchQuery.trim();
 	const activeTabMeta = useMemo(
@@ -59,12 +56,20 @@ export default function SettingsApp() {
 		}
 		return counts;
 	}, [searchResults]);
-	const visibleTabs = useMemo(() => {
-		if (!trimmedSearchQuery) return SETTINGS_TABS;
-		return SETTINGS_TABS.filter((tab) => searchCounts.has(tab.id));
-	}, [searchCounts, trimmedSearchQuery]);
+	const activeTabMatches = useMemo(
+		() => searchResults.filter((result) => result.tab === activeTab),
+		[activeTab, searchResults],
+	);
+	const matchedSections = useMemo(() => {
+		if (!trimmedSearchQuery) return null;
+		return new Set(activeTabMatches.map((result) => result.section));
+	}, [activeTabMatches, trimmedSearchQuery]);
 	const noSearchMatches =
-		Boolean(trimmedSearchQuery) && visibleTabs.length === 0;
+		Boolean(trimmedSearchQuery) && searchResults.length === 0;
+	const noMatchesInActiveTab =
+		Boolean(trimmedSearchQuery) &&
+		!noSearchMatches &&
+		activeTabMatches.length === 0;
 
 	useEffect(() => {
 		const onHashChange = () =>
@@ -86,22 +91,8 @@ export default function SettingsApp() {
 
 	useTauriEvent("settings:navigate", ({ tab }) => {
 		if (!isSettingsTab(tab)) return;
-		ignoreAutoSwitchRef.current = true;
 		switchTab(tab);
 	});
-
-	useEffect(() => {
-		if (ignoreAutoSwitchRef.current) {
-			ignoreAutoSwitchRef.current = false;
-			return;
-		}
-		if (!trimmedSearchQuery) return;
-		if (visibleTabs.some((tab) => tab.id === activeTab)) return;
-		const firstVisibleTab = visibleTabs[0]?.id;
-		if (firstVisibleTab) {
-			switchTab(firstVisibleTab);
-		}
-	}, [activeTab, switchTab, trimmedSearchQuery, visibleTabs]);
 
 	useEffect(() => {
 		const onKeyDown = (event: KeyboardEvent) => {
@@ -145,18 +136,26 @@ export default function SettingsApp() {
 				</div>
 			</div>
 		);
+	} else if (noMatchesInActiveTab) {
+		tabContent = (
+			<div className="settingsPane">
+				<div className="settingsSearchEmpty">
+					<div className="settingsSearchEmptyTitle">
+						No matches in {activeTabMeta.label}.
+					</div>
+					<p className="settingsSearchEmptyCopy">
+						Try a different keyword or switch sections to see matching settings.
+					</p>
+				</div>
+			</div>
+		);
 	} else {
 		const tabContentByTab: Record<SettingsTab, ReactNode> = {
-			general: (
-				<>
-					<GeneralSettingsPane />
-					<DailyNotesSettingsPane />
-				</>
-			),
-			appearance: <AppearanceSettingsPane />,
-			ai: <AiSettingsPane />,
-			space: <SpaceSettingsPane />,
-			about: <AboutSettingsPane />,
+			general: <GeneralSettingsPane visibleSections={matchedSections} />,
+			appearance: <AppearanceSettingsPane visibleSections={matchedSections} />,
+			ai: <AiSettingsPane visibleSections={matchedSections} />,
+			space: <SpaceSettingsPane visibleSections={matchedSections} />,
+			about: <AboutSettingsPane visibleSections={matchedSections} />,
 		};
 		tabContent = tabContentByTab[activeTab];
 	}
@@ -205,7 +204,7 @@ export default function SettingsApp() {
 									/>
 								</div>
 							</header>
-							{visibleTabs.map((tab) => (
+							{SETTINGS_TABS.map((tab) => (
 								<button
 									key={tab.id}
 									type="button"
@@ -240,9 +239,11 @@ export default function SettingsApp() {
 								<p className="settingsPanelSubtitle">
 									{noSearchMatches
 										? "Try a broader search or switch to a different keyword to surface matching settings."
-										: trimmedSearchQuery
-											? `${activeTabMeta.subtitle}. ${searchCounts.get(activeTabMeta.id) ?? 0} match${(searchCounts.get(activeTabMeta.id) ?? 0) === 1 ? "" : "es"} in this section.`
-											: activeTabMeta.subtitle}
+										: noMatchesInActiveTab
+											? `${activeTabMeta.subtitle}. No results in this section yet.`
+											: trimmedSearchQuery
+												? `${activeTabMeta.subtitle}. ${activeTabMatches.length} match${activeTabMatches.length === 1 ? "" : "es"} across ${matchedSections?.size ?? 0} section${(matchedSections?.size ?? 0) === 1 ? "" : "s"}.`
+												: activeTabMeta.subtitle}
 								</p>
 							</header>
 							{tabContent}
