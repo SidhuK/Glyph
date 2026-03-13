@@ -1,6 +1,6 @@
 import {
 	CalendarAdd01Icon,
-	NoteDoneIcon,
+	CheckListIcon,
 	Settings05Icon,
 	Tag01Icon,
 } from "@hugeicons/core-free-icons";
@@ -135,7 +135,7 @@ export const SidebarContent = memo(function SidebarContent({
 						onClick={onOpenTasks}
 						title="Open Tasks"
 					>
-						<HugeiconsIcon icon={NoteDoneIcon} size={14} strokeWidth={1.8} />
+						<HugeiconsIcon icon={CheckListIcon} size={14} strokeWidth={1.8} />
 						<span className="dailyNotesLabel">Tasks</span>
 					</button>
 					<button
