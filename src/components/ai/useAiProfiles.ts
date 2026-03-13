@@ -3,11 +3,60 @@ import { resolveActiveProfileId } from "../../lib/aiProfiles";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { type AiProfile, invoke } from "../../lib/tauri";
 
+type AiProfilesBootstrap = {
+	profiles: AiProfile[];
+	activeProfileId: string | null;
+	secretConfigured: boolean | null;
+};
+
+let aiProfilesBootstrapCache: AiProfilesBootstrap | null = null;
+let aiProfilesBootstrapPromise: Promise<AiProfilesBootstrap> | null = null;
+
+async function fetchAiProfilesBootstrap(): Promise<AiProfilesBootstrap> {
+	const [list, active] = await Promise.all([
+		invoke("ai_profiles_list"),
+		invoke("ai_active_profile_get"),
+	]);
+	const nextActive = resolveActiveProfileId(list, active);
+	if (active !== nextActive && nextActive) {
+		await invoke("ai_active_profile_set", { id: nextActive });
+	}
+	const secretConfigured = nextActive
+		? await invoke("ai_secret_status", { profile_id: nextActive }).catch(
+				() => null,
+			)
+		: null;
+	return {
+		profiles: list,
+		activeProfileId: nextActive,
+		secretConfigured,
+	};
+}
+
+export async function preloadAiProfilesData(): Promise<AiProfilesBootstrap> {
+	if (aiProfilesBootstrapCache) return aiProfilesBootstrapCache;
+	if (!aiProfilesBootstrapPromise) {
+		aiProfilesBootstrapPromise = fetchAiProfilesBootstrap()
+			.then((data) => {
+				aiProfilesBootstrapCache = data;
+				return data;
+			})
+			.finally(() => {
+				aiProfilesBootstrapPromise = null;
+			});
+	}
+	return aiProfilesBootstrapPromise;
+}
+
 export function useAiProfiles() {
-	const [profiles, setProfiles] = useState<AiProfile[]>([]);
-	const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
+	const [profiles, setProfiles] = useState<AiProfile[]>(
+		() => aiProfilesBootstrapCache?.profiles ?? [],
+	);
+	const [activeProfileId, setActiveProfileId] = useState<string | null>(
+		() => aiProfilesBootstrapCache?.activeProfileId ?? null,
+	);
 	const [secretConfigured, setSecretConfigured] = useState<boolean | null>(
-		null,
+		() => aiProfilesBootstrapCache?.secretConfigured ?? null,
 	);
 	const [error, setError] = useState("");
 	const lastSetRequestIdRef = useRef(0);
@@ -17,17 +66,11 @@ export function useAiProfiles() {
 		(async () => {
 			setError("");
 			try {
-				const [list, active] = await Promise.all([
-					invoke("ai_profiles_list"),
-					invoke("ai_active_profile_get"),
-				]);
+				const data = await preloadAiProfilesData();
 				if (cancelled) return;
-				setProfiles(list);
-				const nextActive = resolveActiveProfileId(list, active);
-				setActiveProfileId(nextActive);
-				if (active !== nextActive && nextActive) {
-					await invoke("ai_active_profile_set", { id: nextActive });
-				}
+				setProfiles(data.profiles);
+				setActiveProfileId(data.activeProfileId);
+				setSecretConfigured(data.secretConfigured);
 			} catch (e) {
 				if (!cancelled) setError(extractErrorMessage(e));
 			}
@@ -42,13 +85,24 @@ export function useAiProfiles() {
 			setSecretConfigured(null);
 			return;
 		}
+		if (aiProfilesBootstrapCache?.activeProfileId === activeProfileId) {
+			setSecretConfigured(aiProfilesBootstrapCache.secretConfigured);
+			return;
+		}
 		let cancelled = false;
 		(async () => {
 			try {
 				const configured = await invoke("ai_secret_status", {
 					profile_id: activeProfileId,
 				});
-				if (!cancelled) setSecretConfigured(configured);
+				if (!cancelled) {
+					setSecretConfigured(configured);
+					aiProfilesBootstrapCache = {
+						profiles,
+						activeProfileId,
+						secretConfigured: configured,
+					};
+				}
 			} catch {
 				if (!cancelled) setSecretConfigured(null);
 			}
@@ -56,7 +110,7 @@ export function useAiProfiles() {
 		return () => {
 			cancelled = true;
 		};
-	}, [activeProfileId]);
+	}, [activeProfileId, profiles]);
 
 	const activeProfile = useMemo(() => {
 		if (!activeProfileId) return null;
@@ -71,6 +125,14 @@ export function useAiProfiles() {
 			setError("");
 			try {
 				await invoke("ai_active_profile_set", { id });
+				aiProfilesBootstrapCache = {
+					profiles,
+					activeProfileId: id,
+					secretConfigured:
+						aiProfilesBootstrapCache?.activeProfileId === id
+							? aiProfilesBootstrapCache.secretConfigured
+							: null,
+				};
 			} catch (e) {
 				if (requestId !== lastSetRequestIdRef.current) return;
 				setActiveProfileId(previous);
@@ -90,12 +152,20 @@ export function useAiProfiles() {
 				const saved = await invoke("ai_profile_upsert", {
 					profile: updated,
 				});
-				setProfiles((prev) => prev.map((p) => (p.id === saved.id ? saved : p)));
+				setProfiles((prev) => {
+					const next = prev.map((p) => (p.id === saved.id ? saved : p));
+					aiProfilesBootstrapCache = {
+						profiles: next,
+						activeProfileId,
+						secretConfigured,
+					};
+					return next;
+				});
 			} catch (e) {
 				setError(extractErrorMessage(e));
 			}
 		},
-		[activeProfileId, profiles],
+		[activeProfileId, profiles, secretConfigured],
 	);
 
 	return {

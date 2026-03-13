@@ -22,15 +22,23 @@ import { parseAddTrigger } from "./aiPanelConstants";
 import { useAiActions } from "./hooks/useAiActions";
 import { useAiToolEvents } from "./hooks/useAiToolEvents";
 import { useRigChat } from "./hooks/useRigChat";
-import { useAiContext } from "./useAiContext";
-import { useAiHistory } from "./useAiHistory";
-import { useAiProfiles } from "./useAiProfiles";
+import { preloadAiContextIndex, useAiContext } from "./useAiContext";
+import { preloadAiHistorySummaries, useAiHistory } from "./useAiHistory";
+import { preloadAiProfilesData, useAiProfiles } from "./useAiProfiles";
 
 interface AIPanelProps {
 	isOpen: boolean;
 	activeFolderPath: string | null;
 	onClose: () => void;
 	width?: number;
+}
+
+export async function prefetchAIPanelData(): Promise<void> {
+	await Promise.all([
+		preloadAiProfilesData(),
+		preloadAiHistorySummaries(14),
+		preloadAiContextIndex(),
+	]);
 }
 
 export function AIPanel({ isOpen, activeFolderPath, onClose }: AIPanelProps) {

@@ -1,7 +1,15 @@
 import { cn } from "@/lib/utils";
 import { openPath, openUrl } from "@tauri-apps/plugin-opener";
 import { AnimatePresence } from "motion/react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+	Suspense,
+	lazy,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { toast } from "sonner";
 import {
 	useAISidebarContext,
@@ -38,11 +46,23 @@ import {
 	type WikiLinkClickDetail,
 } from "../editor/markdown/editorEvents";
 import { Button } from "../ui/shadcn/button";
-import { type Command, CommandPalette } from "./CommandPalette";
-import { KeyboardShortcutsHelp } from "./KeyboardShortcutsHelp";
+import type { Command } from "./CommandPalette";
 import { MainContent } from "./MainContent";
 import { Sidebar } from "./Sidebar";
 import { normalizeRelPath, parentDir } from "./appShellHelpers";
+
+const loadCommandPalette = () =>
+	import("./CommandPalette").then((module) => ({
+		default: module.CommandPalette,
+	}));
+
+const loadKeyboardShortcutsHelp = () =>
+	import("./KeyboardShortcutsHelp").then((module) => ({
+		default: module.KeyboardShortcutsHelp,
+	}));
+
+const LazyCommandPalette = lazy(loadCommandPalette);
+const LazyKeyboardShortcutsHelp = lazy(loadKeyboardShortcutsHelp);
 
 export function AppShell() {
 	const space = useSpace();
@@ -93,6 +113,8 @@ export function AppShell() {
 	>(null);
 	const [moveTargetDirs, setMoveTargetDirs] = useState<string[]>([]);
 	const [shortcutsHelpOpen, setShortcutsHelpOpen] = useState(false);
+	const [commandPaletteMounted, setCommandPaletteMounted] = useState(false);
+	const [shortcutsHelpMounted, setShortcutsHelpMounted] = useState(false);
 	const autoUpdater = useAutoUpdater();
 
 	const sidebarResize = useResizablePanel({
@@ -111,6 +133,34 @@ export function AppShell() {
 		onResize: setAiPanelWidth,
 		currentWidth: aiPanelWidth,
 	});
+
+	useEffect(() => {
+		let cancelled = false;
+		const idle = window.setTimeout(() => {
+			void loadCommandPalette().then(() => {
+				if (!cancelled) setCommandPaletteMounted(true);
+			});
+			void loadKeyboardShortcutsHelp().then(() => {
+				if (!cancelled) setShortcutsHelpMounted(true);
+			});
+		}, 500);
+		return () => {
+			cancelled = true;
+			window.clearTimeout(idle);
+		};
+	}, []);
+
+	useEffect(() => {
+		if (!paletteOpen) return;
+		setCommandPaletteMounted(true);
+		void loadCommandPalette();
+	}, [paletteOpen]);
+
+	useEffect(() => {
+		if (!shortcutsHelpOpen) return;
+		setShortcutsHelpMounted(true);
+		void loadKeyboardShortcutsHelp();
+	}, [shortcutsHelpOpen]);
 
 	const getActiveFolderDir = useCallback(() => {
 		const current = activeViewDocRef.current;
@@ -847,20 +897,28 @@ export function AppShell() {
 			<AnimatePresence>
 				{error && <div className="appError">{error}</div>}
 			</AnimatePresence>
-			<CommandPalette
-				key={`${paletteInitialTab}:${paletteInitialQuery}`}
-				open={paletteOpen}
-				initialTab={paletteInitialTab}
-				initialQuery={paletteInitialQuery}
-				commands={commands}
-				onClose={() => setPaletteOpen(false)}
-				spacePath={spacePath}
-				onSelectSearchResult={(id) => void fileTree.openFile(id)}
-			/>
-			<KeyboardShortcutsHelp
-				open={shortcutsHelpOpen}
-				onClose={() => setShortcutsHelpOpen(false)}
-			/>
+			{commandPaletteMounted ? (
+				<Suspense fallback={null}>
+					<LazyCommandPalette
+						key={`${paletteInitialTab}:${paletteInitialQuery}`}
+						open={paletteOpen}
+						initialTab={paletteInitialTab}
+						initialQuery={paletteInitialQuery}
+						commands={commands}
+						onClose={() => setPaletteOpen(false)}
+						spacePath={spacePath}
+						onSelectSearchResult={(id) => void fileTree.openFile(id)}
+					/>
+				</Suspense>
+			) : null}
+			{shortcutsHelpMounted ? (
+				<Suspense fallback={null}>
+					<LazyKeyboardShortcutsHelp
+						open={shortcutsHelpOpen}
+						onClose={() => setShortcutsHelpOpen(false)}
+					/>
+				</Suspense>
+			) : null}
 		</div>
 	);
 }

@@ -30,9 +30,17 @@ type ContextEntry = {
 	label: string;
 };
 
+type AiContextIndexData = {
+	folders: FolderEntry[];
+	files: FolderEntry[];
+};
+
 const DEFAULT_CHAR_BUDGET = 12_000;
 const MAX_VISIBLE_FOLDERS = 120;
 const MENTION_RE = /(^|\s)@([^\s@]+)/g;
+
+let aiContextIndexCache: AiContextIndexData | null = null;
+let aiContextIndexPromise: Promise<AiContextIndexData> | null = null;
 
 function folderLabel(path: string): string {
 	return path || "Space";
@@ -46,6 +54,25 @@ function contextKey(kind: ContextEntryKind, path: string): string {
 	return `${kind}:${path}`;
 }
 
+export async function preloadAiContextIndex(): Promise<AiContextIndexData> {
+	if (aiContextIndexCache) return aiContextIndexCache;
+	if (!aiContextIndexPromise) {
+		aiContextIndexPromise = invoke("ai_context_index")
+			.then((index) => {
+				const data = {
+					folders: index.folders,
+					files: index.files,
+				};
+				aiContextIndexCache = data;
+				return data;
+			})
+			.finally(() => {
+				aiContextIndexPromise = null;
+			});
+	}
+	return aiContextIndexPromise;
+}
+
 export function useAiContext({
 	activeFolderPath: _activeFolderPath,
 }: {
@@ -53,8 +80,12 @@ export function useAiContext({
 }) {
 	const [attachedContext, setAttachedContext] = useState<ContextEntry[]>([]);
 	const [contextSearch, setContextSearch] = useState("");
-	const [folderIndex, setFolderIndex] = useState<FolderEntry[]>([]);
-	const [fileIndex, setFileIndex] = useState<FolderEntry[]>([]);
+	const [folderIndex, setFolderIndex] = useState<FolderEntry[]>(
+		() => aiContextIndexCache?.folders ?? [],
+	);
+	const [fileIndex, setFileIndex] = useState<FolderEntry[]>(
+		() => aiContextIndexCache?.files ?? [],
+	);
 	const [folderIndexError, setFolderIndexError] = useState("");
 	const [payloadPreview, setPayloadPreview] = useState("");
 	const [payloadManifest, setPayloadManifest] =
@@ -101,7 +132,7 @@ export function useAiContext({
 		setFolderIndexError("");
 		void (async () => {
 			try {
-				const index = await invoke("ai_context_index");
+				const index = await preloadAiContextIndex();
 				if (cancelled) return;
 				setFolderIndex(index.folders);
 				setFileIndex(index.files);

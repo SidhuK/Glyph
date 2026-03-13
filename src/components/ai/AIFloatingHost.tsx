@@ -1,9 +1,16 @@
 import { AiBrain04Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
+import { Suspense, lazy, useEffect } from "react";
 import { useAISidebarContext } from "../../contexts";
 import { getShortcutTooltip } from "../../lib/shortcuts";
-import { AIPanel } from "./AIPanel";
+
+const loadAIPanel = () =>
+	import("./AIPanel").then((module) => ({
+		default: (void module.prefetchAIPanelData(), module.AIPanel),
+	}));
+
+const LazyAIPanel = lazy(loadAIPanel);
 
 interface AIFloatingHostProps {
 	isOpen: boolean;
@@ -19,6 +26,19 @@ export function AIFloatingHost({
 	const { aiPanelWidth } = useAISidebarContext();
 	const panelWidth = aiPanelWidth || 380;
 	const shouldReduceMotion = useReducedMotion();
+
+	useEffect(() => {
+		if (!isOpen) return;
+		void loadAIPanel();
+	}, [isOpen]);
+
+	useEffect(() => {
+		if (isOpen) return;
+		const timer = window.setTimeout(() => {
+			void loadAIPanel();
+		}, 800);
+		return () => window.clearTimeout(timer);
+	}, [isOpen]);
 
 	return (
 		<>
@@ -45,12 +65,14 @@ export function AIFloatingHost({
 								shouldReduceMotion ? { duration: 0 } : { duration: 0.15 }
 							}
 						>
-							<AIPanel
-								isOpen={isOpen}
-								activeFolderPath={activeFolderPath}
-								onClose={onToggle}
-								width={panelWidth}
-							/>
+							<Suspense fallback={<div className="aiSidebarPanelInner" />}>
+								<LazyAIPanel
+									isOpen={isOpen}
+									activeFolderPath={activeFolderPath}
+									onClose={onToggle}
+									width={panelWidth}
+								/>
+							</Suspense>
 						</m.div>
 					)}
 				</AnimatePresence>

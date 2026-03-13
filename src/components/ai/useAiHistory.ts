@@ -8,6 +8,12 @@ import {
 } from "../../lib/tauri";
 import type { UIMessage } from "./hooks/useRigChat";
 
+const aiHistorySummaryCache = new Map<number, AiChatHistorySummary[]>();
+const aiHistorySummaryPromiseCache = new Map<
+	number,
+	Promise<AiChatHistorySummary[]>
+>();
+
 function toUIMessages(
 	jobId: string,
 	messages: AiChatHistoryDetail["messages"],
@@ -30,8 +36,29 @@ export interface LoadedAiChat {
 	toolEvents: AiStoredToolEvent[];
 }
 
+export async function preloadAiHistorySummaries(
+	limit = 20,
+): Promise<AiChatHistorySummary[]> {
+	const cached = aiHistorySummaryCache.get(limit);
+	if (cached) return cached;
+	const inFlight = aiHistorySummaryPromiseCache.get(limit);
+	if (inFlight) return inFlight;
+	const request = invoke("ai_chat_history_list", { limit })
+		.then((list) => {
+			aiHistorySummaryCache.set(limit, list);
+			return list;
+		})
+		.finally(() => {
+			aiHistorySummaryPromiseCache.delete(limit);
+		});
+	aiHistorySummaryPromiseCache.set(limit, request);
+	return request;
+}
+
 export function useAiHistory(limit = 20) {
-	const [summaries, setSummaries] = useState<AiChatHistorySummary[]>([]);
+	const [summaries, setSummaries] = useState<AiChatHistorySummary[]>(
+		() => aiHistorySummaryCache.get(limit) ?? [],
+	);
 	const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
 	const [listLoading, setListLoading] = useState(false);
 	const [loadingJobId, setLoadingJobId] = useState<string | null>(null);
@@ -41,7 +68,7 @@ export function useAiHistory(limit = 20) {
 		setListLoading(true);
 		setError("");
 		try {
-			const list = await invoke("ai_chat_history_list", { limit });
+			const list = await preloadAiHistorySummaries(limit);
 			setSummaries(list);
 			setSelectedJobId((prev) =>
 				prev && !list.some((item) => item.job_id === prev) ? null : prev,
