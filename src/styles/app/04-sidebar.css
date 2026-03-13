@@ -86,13 +86,21 @@
 }
 
 .windowChromeSidebarToggle {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
 	width: 24px;
 	height: 24px;
 	padding: 0;
+	border: none;
 	border-radius: 0;
 	background: transparent;
 	box-shadow: none;
 	color: var(--text-secondary);
+	appearance: none;
+	-webkit-appearance: none;
+	cursor: pointer;
+	-webkit-app-region: no-drag;
 }
 
 .windowChromeSidebarToggle:hover,

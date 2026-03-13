@@ -45,10 +45,10 @@ import {
 	WIKI_LINK_CLICK_EVENT,
 	type WikiLinkClickDetail,
 } from "../editor/markdown/editorEvents";
-import { Button } from "../ui/shadcn/button";
 import type { Command } from "./CommandPalette";
 import { MainContent } from "./MainContent";
 import { Sidebar } from "./Sidebar";
+import { WindowChromeIconButton } from "./WindowChromeIconButton";
 import { WindowChromeUpdateButton } from "./WindowChromeUpdateButton";
 import { normalizeRelPath, parentDir } from "./appShellHelpers";
 
@@ -796,20 +796,14 @@ export function AppShell() {
 			/>
 			{sidebarCollapsed && (
 				<div className="sidebarCollapsedToggle">
-					<Button
-						data-sidebar="trigger"
-						type="button"
-						variant="ghost"
-						size="icon-sm"
-						className="windowChromeSidebarToggle"
-						aria-label="Expand sidebar"
-						aria-pressed={false}
-						data-window-drag-ignore
+					<WindowChromeIconButton
+						ariaLabel="Expand sidebar"
+						ariaPressed={false}
 						onClick={() => setSidebarCollapsed(false)}
 						title={`Expand sidebar (${getShortcutTooltip({ meta: true, key: "b" })})`}
 					>
 						<LayoutAlignLeft size={14} />
-					</Button>
+					</WindowChromeIconButton>
 					<WindowChromeUpdateButton
 						updateReady={autoUpdater.updateReady}
 						updateVersion={autoUpdater.updateVersion}

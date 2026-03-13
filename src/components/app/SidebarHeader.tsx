@@ -1,7 +1,7 @@
 import { getShortcutTooltip } from "../../lib/shortcuts";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { LayoutAlignLeft } from "../Icons";
-import { Button } from "../ui/shadcn/button";
+import { WindowChromeIconButton } from "./WindowChromeIconButton";
 import { WindowChromeUpdateButton } from "./WindowChromeUpdateButton";
 
 interface SidebarHeaderProps {
@@ -29,22 +29,14 @@ export function SidebarHeader({
 			/>
 			<div className="sidebarHeader" data-tauri-drag-region>
 				<div className="sidebarActions">
-					<Button
-						data-sidebar="trigger"
-						type="button"
-						variant="ghost"
-						size="icon-sm"
-						className="windowChromeSidebarToggle"
-						aria-label={
-							sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"
-						}
-						aria-pressed={!sidebarCollapsed}
-						data-window-drag-ignore
+					<WindowChromeIconButton
+						ariaLabel={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
+						ariaPressed={!sidebarCollapsed}
 						onClick={onToggleSidebar}
 						title={`${sidebarCollapsed ? "Expand" : "Collapse"} sidebar (${getShortcutTooltip({ meta: true, key: "b" })})`}
 					>
 						<LayoutAlignLeft size={14} />
-					</Button>
+					</WindowChromeIconButton>
 					<WindowChromeUpdateButton
 						updateReady={updateReady}
 						updateVersion={updateVersion}
