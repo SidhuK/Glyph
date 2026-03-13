@@ -24,6 +24,19 @@ export function TaskCheckbox({ checked, onChange }: TaskCheckboxProps) {
 				<m.circle
 					cx="9"
 					cy="9"
+					r="8.25"
+					strokeWidth="1"
+					className="tasksCheckboxPulse"
+					initial={false}
+					animate={{
+						opacity: checked ? 0.7 : 0,
+						scale: checked ? 1 : 0.72,
+					}}
+					transition={springPresets.snappy}
+				/>
+				<m.circle
+					cx="9"
+					cy="9"
 					r="7.5"
 					strokeWidth="1.5"
 					className="tasksCheckboxCircle"

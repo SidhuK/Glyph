@@ -6,7 +6,16 @@
 	flex-direction: column;
 	min-height: 0;
 	height: 100%;
-	background: var(--bg-primary);
+	background: radial-gradient(
+			circle at top left,
+			color-mix(in srgb, var(--task-bucket-today) 11%, transparent) 0%,
+			transparent 32%
+		),
+		linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--bg-secondary) 36%, var(--bg-primary)) 0%,
+			var(--bg-primary) 42%
+		);
 }
 
 .tasksPaneToolbar {
@@ -16,7 +25,12 @@
 	gap: 12px;
 	padding: 14px 18px;
 	border-bottom: 1px solid var(--border-light);
-	background: color-mix(in srgb, var(--bg-secondary) 32%, var(--bg-primary));
+	background: linear-gradient(
+		135deg,
+		color-mix(in srgb, var(--task-bucket-today) 9%, var(--bg-secondary)) 0%,
+		color-mix(in srgb, var(--bg-secondary) 42%, var(--bg-primary)) 46%,
+		color-mix(in srgb, var(--interactive-accent) 5%, var(--bg-primary)) 100%
+	);
 }
 
 .tasksPaneToolbarPrimary,
@@ -138,7 +152,10 @@
 	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
 	color: var(--text-secondary);
 	gap: 7px;
-	box-shadow: none;
+	box-shadow: 0 8px 16px
+		color-mix(in srgb, var(--shadow-color, #000) 4%, transparent);
+	transition: transform 180ms ease, border-color 180ms ease, background-color
+		180ms ease, color 180ms ease;
 }
 
 .tasksPaneMenuButton:hover,
@@ -146,6 +163,7 @@
 	border-color: var(--border-default);
 	background: var(--bg-hover);
 	color: var(--text-primary);
+	transform: translateY(-1px);
 }
 
 .tasksPaneMenuButton[data-active="true"],
@@ -253,6 +271,8 @@
 	border-radius: var(--radius-xl);
 	border: 1px solid color-mix(in srgb, var(--border-light) 82%, transparent);
 	background: color-mix(in srgb, var(--bg-secondary) 72%, var(--bg-primary));
+	box-shadow: 0 10px 24px
+		color-mix(in srgb, var(--shadow-color, #000) 5%, transparent);
 }
 
 .tasksBucketPill {
@@ -271,7 +291,7 @@
 	line-height: 1;
 	font-weight: var(--font-semibold);
 	cursor: pointer;
-	transition: color 180ms ease;
+	transition: color 180ms ease, transform 180ms ease;
 }
 
 .tasksBucketPillBg {
@@ -301,6 +321,7 @@
 
 .tasksBucketPill:hover {
 	color: var(--text-primary);
+	transform: translateY(-1px);
 }
 
 .tasksBucketPill[data-active="true"] {
@@ -370,6 +391,8 @@
 	border-radius: var(--radius-lg);
 	border: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
 	background: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary));
+	box-shadow: 0 16px 34px
+		color-mix(in srgb, var(--shadow-color, #000) 5%, transparent);
 }
 
 .tasksPaneError {
@@ -384,6 +407,11 @@
 	padding: 18px;
 	font-size: var(--text-sm);
 	color: var(--text-secondary);
+	background: linear-gradient(
+		135deg,
+		color-mix(in srgb, var(--task-bucket-upcoming) 8%, var(--bg-primary)) 0%,
+		color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary)) 100%
+	);
 }
 
 .tasksPaneToolbarBadge[data-tone="danger"] {
@@ -402,10 +430,18 @@
 	padding: 24px;
 	color: var(--text-tertiary);
 	text-align: center;
+	background: radial-gradient(
+			circle at top,
+			color-mix(in srgb, var(--task-bucket-today) 10%, transparent) 0%,
+			transparent 48%
+		), color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary));
 }
 
 .tasksPaneEmptyIcon {
 	opacity: 0.42;
+	filter: drop-shadow(
+		0 10px 20px color-mix(in srgb, var(--task-bucket-today) 16%, transparent)
+	);
 }
 
 .tasksPaneEmptyCopy {
@@ -441,8 +477,14 @@
 	flex-direction: column;
 	border: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
 	border-radius: var(--radius-lg);
-	background: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary));
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--bg-primary) 97%, transparent) 0%,
+		color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary)) 100%
+	);
 	overflow: hidden;
+	box-shadow: 0 16px 34px
+		color-mix(in srgb, var(--shadow-color, #000) 4%, transparent);
 }
 
 .tasksSectionHeader {
@@ -457,9 +499,23 @@
 }
 
 .tasksSectionHeaderLabel {
+	position: relative;
+	padding-left: 10px;
 	font-size: var(--text-sm);
 	font-weight: var(--font-semibold);
 	color: var(--text-primary);
+}
+
+.tasksSectionHeaderLabel::before {
+	content: "";
+	position: absolute;
+	left: 0;
+	top: 50%;
+	width: 5px;
+	height: 5px;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--task-bucket-today) 68%, white);
+	transform: translateY(-50%);
 }
 
 .tasksSectionHeaderCount {
@@ -480,11 +536,12 @@
 	cursor: pointer;
 	border-bottom: 1px solid
 		color-mix(in srgb, var(--border-subtle) 72%, transparent);
-	transition: background-color var(--transition-fast);
+	transition: background-color var(--transition-fast), transform 180ms ease;
 }
 
 .tasksNoteHeader:hover {
 	background: color-mix(in srgb, var(--bg-hover) 70%, transparent);
+	transform: translateY(-1px);
 }
 
 .tasksNoteHeaderLead {
@@ -565,8 +622,10 @@
 	border-radius: var(--radius-lg);
 	border: 1px solid color-mix(in srgb, transparent 100%, transparent);
 	background: color-mix(in srgb, var(--bg-primary) 86%, transparent);
+	box-shadow: 0 10px 20px
+		color-mix(in srgb, var(--shadow-color, #000) 0%, transparent);
 	transition: background-color var(--transition-fast), border-color
-		var(--transition-fast);
+		var(--transition-fast), box-shadow 180ms ease, transform 180ms ease;
 }
 
 .tasksListFlat .tasksRow,
@@ -578,10 +637,24 @@
 .tasksRow:hover {
 	background: color-mix(in srgb, var(--bg-hover) 88%, var(--bg-primary));
 	border-color: color-mix(in srgb, var(--border-default) 62%, transparent);
+	box-shadow: 0 14px 30px
+		color-mix(in srgb, var(--shadow-color, #000) 7%, transparent);
+	transform: translateY(-1px);
 }
 
 .tasksRow[data-overdue="true"] {
 	border-color: color-mix(in srgb, var(--status-danger-border) 46%, transparent);
+	box-shadow: inset 3px 0 0
+		color-mix(in srgb, var(--status-danger-border) 64%, transparent);
+}
+
+.tasksRow[data-checked="true"] {
+	background: color-mix(in srgb, var(--task-bucket-inbox) 7%, var(--bg-primary));
+	border-color: color-mix(
+		in srgb,
+		var(--task-bucket-inbox) 16%,
+		var(--border-light)
+	);
 }
 
 .tasksRow[data-checked="true"] .tasksRowText {
@@ -600,6 +673,11 @@
 	justify-content: center;
 	flex-shrink: 0;
 	align-self: center;
+}
+
+.tasksCheckboxPulse {
+	stroke: color-mix(in srgb, var(--interactive-accent) 48%, transparent);
+	transform-origin: center;
 }
 
 .tasksCheckboxCircle {
@@ -740,13 +818,15 @@
 	align-items: center;
 	gap: 2px;
 	opacity: 0;
+	transform: translateX(-4px);
 	pointer-events: none;
-	transition: opacity 120ms ease;
+	transition: opacity 120ms ease, transform 160ms ease;
 }
 
 .tasksRow:hover .tasksQuickActions,
 .tasksRow:focus-within .tasksQuickActions {
 	opacity: 1;
+	transform: translateX(0);
 	pointer-events: auto;
 }
 
@@ -755,12 +835,15 @@
 	padding-inline: 6px;
 	border-radius: var(--radius-md);
 	color: var(--text-secondary);
+	transition: transform 160ms ease, background-color 160ms ease, color 160ms
+		ease;
 }
 
 .tasksQuickActionBtn:hover,
 .tasksQuickActionBtn:focus-visible {
 	color: var(--text-primary);
 	background: color-mix(in srgb, var(--bg-hover) 84%, var(--bg-secondary));
+	transform: translateY(-1px);
 }
 
 .tasksScheduleBtn {
@@ -772,12 +855,15 @@
 	font-size: 0.72rem;
 	line-height: 1;
 	color: var(--text-secondary);
+	transition: transform 160ms ease, background-color 160ms ease, color 160ms
+		ease;
 }
 
 .tasksScheduleBtn:hover,
 .tasksScheduleBtn:focus-visible {
 	color: var(--text-primary);
 	background: color-mix(in srgb, var(--bg-hover) 86%, var(--bg-secondary));
+	transform: translateY(-1px);
 }
 
 .tasksBucketPill:focus-visible,

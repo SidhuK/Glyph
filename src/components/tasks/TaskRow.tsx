@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from "react";
+import { m, useReducedMotion } from "motion/react";
 import {
 	getTaskTimingSummary,
 	stripTaskScheduleTokens,
@@ -6,6 +7,7 @@ import {
 } from "../../lib/tasks";
 import type { TaskItem } from "../../lib/tauri";
 import { Calendar } from "../Icons";
+import { springPresets } from "../ui/animations";
 import { Badge } from "../ui/shadcn/badge";
 import { Button } from "../ui/shadcn/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
@@ -37,6 +39,7 @@ export function TaskRow({
 	const [open, setOpen] = useState(false);
 	const [scheduledDate, setScheduledDate] = useState(task.scheduled_date ?? "");
 	const [dueDate, setDueDate] = useState(task.due_date ?? "");
+	const shouldReduceMotion = useReducedMotion();
 	const displayText = useMemo(
 		() => stripTaskScheduleTokens(task.raw_text),
 		[task.raw_text],
@@ -90,10 +93,24 @@ export function TaskRow({
 	}, [onSchedule, task.task_id]);
 
 	return (
-		<div
+		<m.div
 			className="tasksRow"
 			data-checked={task.checked}
 			data-overdue={timing.isOverdue}
+			initial={shouldReduceMotion ? false : { opacity: 0, y: 6 }}
+			animate={{
+				opacity: task.checked ? 0.78 : 1,
+				y: 0,
+				scale: task.checked ? 0.992 : 1,
+			}}
+			transition={
+				shouldReduceMotion
+					? { duration: 0 }
+					: {
+							...springPresets.snappy,
+							opacity: { duration: 0.18, ease: "easeOut" },
+						}
+			}
 		>
 			<TaskCheckbox
 				checked={task.checked}
@@ -259,6 +276,6 @@ export function TaskRow({
 					</Popover>
 				</div>
 			</div>
-		</div>
+		</m.div>
 	);
 }

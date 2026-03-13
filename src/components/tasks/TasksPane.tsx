@@ -5,7 +5,7 @@ import {
 	SunriseIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { m } from "motion/react";
+import { m, useReducedMotion } from "motion/react";
 import {
 	type ComponentProps,
 	useCallback,
@@ -313,6 +313,7 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 	const [filterMode, setFilterMode] = useState<TaskFilterMode>("all");
 	const [today, setToday] = useState(() => todayIsoDateLocal());
 	const requestVersionRef = useRef(0);
+	const shouldReduceMotion = useReducedMotion();
 
 	useEffect(() => {
 		let timeoutId = 0;
@@ -466,7 +467,7 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 	);
 
 	return (
-		<section className="tasksPane">
+		<section className="tasksPane" data-bucket={bucket}>
 			<div className="tasksPaneToolbar">
 				<div className="tasksPaneToolbarPrimary">
 					<div className="tasksPaneToolbarTitleRow">
@@ -564,15 +565,42 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 					</div>
 				</div>
 
-				{error ? <div className="tasksPaneError">{error}</div> : null}
+				{error ? (
+					<m.div
+						className="tasksPaneError"
+						initial={shouldReduceMotion ? false : { opacity: 0, y: 6 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={
+							shouldReduceMotion ? { duration: 0 } : springPresets.snappy
+						}
+					>
+						{error}
+					</m.div>
+				) : null}
 				{loading ? (
-					<div className="tasksPaneLoading">Loading tasks…</div>
+					<m.div
+						className="tasksPaneLoading"
+						initial={shouldReduceMotion ? false : { opacity: 0, y: 6 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={
+							shouldReduceMotion ? { duration: 0 } : springPresets.snappy
+						}
+					>
+						Loading tasks…
+					</m.div>
 				) : null}
 				{!loading &&
 				!error &&
 				filterMode === "all" &&
 				filteredTasks.length === 0 ? (
-					<div className="tasksPaneEmptyState">
+					<m.div
+						className="tasksPaneEmptyState"
+						initial={shouldReduceMotion ? false : { opacity: 0, y: 8 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={
+							shouldReduceMotion ? { duration: 0 } : springPresets.snappy
+						}
+					>
 						<HugeiconsIcon
 							icon={CheckListIcon}
 							size={32}
@@ -587,13 +615,20 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 								this view.
 							</span>
 						</div>
-					</div>
+					</m.div>
 				) : null}
 				{!loading &&
 				!error &&
 				filterMode !== "all" &&
 				filteredTasks.length === 0 ? (
-					<div className="tasksPaneEmptyState">
+					<m.div
+						className="tasksPaneEmptyState"
+						initial={shouldReduceMotion ? false : { opacity: 0, y: 8 }}
+						animate={{ opacity: 1, y: 0 }}
+						transition={
+							shouldReduceMotion ? { duration: 0 } : springPresets.snappy
+						}
+					>
 						<HugeiconsIcon
 							icon={CheckListIcon}
 							size={32}
@@ -606,13 +641,26 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 								again.
 							</span>
 						</div>
-					</div>
+					</m.div>
 				) : null}
 
 				{!loading && filteredTasks.length > 0 ? (
 					<div className="tasksSections">
-						{sections.map((section) => (
-							<section key={section.key} className="tasksSection">
+						{sections.map((section, index) => (
+							<m.section
+								key={section.key}
+								className="tasksSection"
+								initial={shouldReduceMotion ? false : { opacity: 0, y: 10 }}
+								animate={{ opacity: 1, y: 0 }}
+								transition={
+									shouldReduceMotion
+										? { duration: 0 }
+										: {
+												...springPresets.snappy,
+												delay: Math.min(index * 0.03, 0.16),
+											}
+								}
+							>
 								{section.notePath ? (
 									<button
 										type="button"
@@ -667,7 +715,7 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 										/>
 									))}
 								</div>
-							</section>
+							</m.section>
 						))}
 					</div>
 				) : null}
