@@ -12,6 +12,7 @@ interface Props {
 	preloadImageSrcSet?: string;
 	noIndex?: boolean;
 	jsonLd?: Record<string, unknown> | Array<Record<string, unknown>>;
+	bodyClass?: string;
 }
 
 const defaultDescription =
@@ -29,6 +30,7 @@ const {
 	preloadImageSrcSet,
 	noIndex = false,
 	jsonLd,
+	bodyClass,
 } = Astro.props;
 const jsonLdItems = Array.isArray(jsonLd) ? jsonLd : jsonLd ? [jsonLd] : [];
 const canonicalUrl = Astro.site
@@ -93,14 +95,14 @@ const socialImageType =
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
-			href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;600&display=swap"
+			href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;600&display=swap"
 			rel="stylesheet"
 			media="print"
 			onload="this.media='all'"
 		/>
 		<noscript>
 			<link
-				href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;600&display=swap"
+				href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&family=Space+Grotesk:wght@400;500;600&display=swap"
 				rel="stylesheet"
 			/>
 		</noscript>
@@ -118,7 +120,7 @@ const socialImageType =
 			)
 		}
 	</head>
-	<body>
+	<body class={bodyClass}>
 		<slot />
 		<Analytics />
 		<SpeedInsights />
@@ -127,13 +129,14 @@ const socialImageType =
 
 <style is:global>
 	:root {
-		--bg: #fafafa;
+		--bg: #f5f2ed;
 		--ink: #111;
 		--muted: #666;
 		--faint: #999;
 		--border: #e0e0e0;
-		--dot: #d4d4d4;
+		--dot: #d4d0c8;
 		--serif: 'Instrument Serif', 'Times New Roman', serif;
+		--sans: 'DM Sans', 'Helvetica Neue', sans-serif;
 		--mono: 'Space Grotesk', 'Helvetica Neue', sans-serif;
 	}
 
@@ -144,14 +147,22 @@ const socialImageType =
 	}
 
 	body {
-		font-family: var(--mono);
+		font-family: var(--sans);
 		font-size: 13px;
 		color: var(--ink);
 		background-color: var(--bg);
-		background-image: radial-gradient(circle, var(--dot) 1px, transparent 1px);
-		background-size: 22px 22px;
 		-webkit-font-smoothing: antialiased;
 		-moz-osx-font-smoothing: grayscale;
+	}
+
+	body.has-dot-grid {
+		background-image: radial-gradient(circle, var(--dot) 1px, transparent 1px);
+		background-size: 22px 22px;
+	}
+
+	::selection {
+		background: #FF9F0A;
+		color: #fff;
 	}
 
 	a { color: inherit; text-decoration: none; }

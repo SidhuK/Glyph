@@ -1,7 +1,9 @@
 ---
 import darkShowcaseAsset from "../../assets/dark.webp";
 import lightShowcaseAsset from "../../assets/light.webp";
+import claudeAiLogo from "../../assets/claude-ai.svg";
 import logoG from "../../assets/logo_g.PNG";
+import mdNativeImg from "../../assets/md_native.png";
 import Layout from "../layouts/Layout.astro";
 import { downloadUrl } from "../lib/site";
 
@@ -131,29 +133,22 @@ const faqs = [
 				<a href="https://github.com/SidhuK/Glyph" target="_blank" rel="noopener">GitHub</a>
 				<a href="/changelog">Changelog</a>
 			</nav>
-			<a href={downloadUrl} class="header-cta" target="_blank" rel="noopener">Get Glyph</a>
+			<a href={downloadUrl} class="header-cta" target="_blank" rel="noopener">Download</a>
 		</header>
 
 		<!-- ── HERO ── -->
 		<section class="hero">
-			<p class="label">LOCAL-FIRST · MARKDOWN · MACOS</p>
-			<h1>A quiet place for your<br />thoughts and ideas</h1>
+			<h1>A quiet place for your<br />thoughts and ideas.<br /><span class="hero-accent">Always yours.</span></h1>
 			<p class="hero-sub">Write in markdown. Connect ideas with links. Let AI help when you ask. Everything lives on your machine — plain files, always yours.</p>
+			<p class="label">LOCAL-FIRST · MARKDOWN · MACOS</p>
 			<div class="hero-cta-stack">
 				<div class="hero-actions">
-					<a href={downloadUrl} class="btn-primary" target="_blank" rel="noopener">Get Started</a>
-					<a href="https://github.com/SidhuK/Glyph" class="btn-github" target="_blank" rel="noopener">
-						<svg class="btn-github-mark" viewBox="0 0 438.549 438.549" aria-hidden="true">
-							<path d="M409.132 114.573c-19.608-33.596-46.205-60.194-79.798-79.8-33.598-19.607-70.277-29.408-110.063-29.408-39.781 0-76.472 9.804-110.063 29.408-33.596 19.605-60.192 46.204-79.8 79.8C9.803 148.168 0 184.854 0 224.63c0 47.78 13.94 90.745 41.827 128.906 27.884 38.164 63.906 64.572 108.063 79.227 5.14.954 8.945.283 11.419-1.996 2.475-2.282 3.711-5.14 3.711-8.562 0-.571-.049-5.708-.144-15.417a2549.81 2549.81 0 01-.144-25.406l-6.567 1.136c-4.187.767-9.469 1.092-15.846 1-6.374-.089-12.991-.757-19.842-1.999-6.854-1.231-13.229-4.086-19.13-8.559-5.898-4.473-10.085-10.328-12.56-17.556l-2.855-6.57c-1.903-4.374-4.899-9.233-8.992-14.559-4.093-5.331-8.232-8.945-12.419-10.848l-1.999-1.431c-1.332-.951-2.568-2.098-3.711-3.429-1.142-1.331-1.997-2.663-2.568-3.997-.572-1.335-.098-2.43 1.427-3.289 1.525-.859 4.281-1.276 8.28-1.276l5.708.853c3.807.763 8.516 3.042 14.133 6.851 5.614 3.806 10.229 8.754 13.846 14.842 4.38 7.806 9.657 13.754 15.846 17.847 6.184 4.093 12.419 6.136 18.699 6.136 6.28 0 11.704-.476 16.274-1.423 4.565-.952 8.848-2.383 12.847-4.285 1.713-12.758 6.377-22.559 13.988-29.41-10.848-1.14-20.601-2.857-29.264-5.14-8.658-2.286-17.605-5.996-26.835-11.14-9.235-5.137-16.896-11.516-22.985-19.126-6.09-7.614-11.088-17.61-14.987-29.979-3.901-12.374-5.852-26.648-5.852-42.826 0-23.035 7.52-42.637 22.557-58.817-7.044-17.318-6.379-36.732 1.997-58.24 5.52-1.715 13.706-.428 24.554 3.853 10.85 4.283 18.794 7.952 23.84 10.994 5.046 3.041 9.089 5.618 12.135 7.708 17.705-4.947 35.976-7.421 54.818-7.421s37.117 2.474 54.823 7.421l10.849-6.849c7.419-4.57 16.18-8.758 26.262-12.565 10.088-3.805 17.802-4.853 23.134-3.138 8.562 21.509 9.325 40.922 2.279 58.24 15.036 16.18 22.559 35.787 22.559 58.817 0 16.178-1.958 30.497-5.853 42.966-3.9 12.471-8.941 22.457-15.125 29.979-6.191 7.521-13.901 13.85-23.131 18.986-9.232 5.14-18.182 8.85-26.84 11.136-8.662 2.286-18.415 4.004-29.263 5.146 9.894 8.562 14.842 22.077 14.842 40.539v60.237c0 3.422 1.19 6.279 3.572 8.562 2.379 2.279 6.136 2.95 11.276 1.995 44.163-14.653 80.185-41.062 108.068-79.226 27.88-38.161 41.825-81.126 41.825-128.906-.01-39.771-9.818-76.454-29.414-110.049z"></path>
-						</svg>
-						<span>Star on GitHub</span>
-						<span class="btn-github-stars" aria-hidden="true">
-							<svg class="btn-github-star" viewBox="0 0 24 24">
-								<path d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.006 5.404.434c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.434 2.082-5.005Z"></path>
-							</svg>
-						</span>
+					<a href={downloadUrl} class="btn-primary" target="_blank" rel="noopener">
+						<svg class="apple-logo" width="16" height="20" viewBox="0 0 814 1000" fill="currentColor" aria-hidden="true"><path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76.5 0-103.7 40.8-165.9 40.8s-105.6-57.8-155.5-127.4c-58.8-82-107.5-209.3-107.5-329.9 0-194.2 126.1-297.3 250.5-297.3 65.7 0 120.8 43.5 162 43.5 39.3 0 100.6-46 175.3-46 28.3 0 130.1 2.6 197.3 97.6zm-271.6-89.1c31.2-37 53.5-88.4 53.5-139.8 0-7.1-.6-14.3-1.9-20.1-51 1.9-111.6 33.9-148.4 76.5-26.4 30-55.9 81.3-55.9 133.4 0 7.8.6 15.6 1.3 18.2 2.6.6 6.4 1.3 10.2 1.3 45.8 0 103.8-30.6 141.2-69.5z"/></svg>
+						Download for Free
 					</a>
 				</div>
+				<p class="hero-trial">Free 7-day trial · No credit card required</p>
 				<div class="install-strip" aria-label="Homebrew install command" data-install-strip>
 					<div class="install-strip-bar">
 						<code class="install-strip-code" data-install-command>brew install --cask SidhuK/glyph/glyph</code>
@@ -164,8 +159,9 @@ const faqs = [
 							</svg>
 						</button>
 					</div>
-					<p class="install-strip-status" data-install-status aria-live="polite">Ready for Terminal.</p>
+	
 				</div>
+				<p class="hero-pricing">or buy now · <span class="hero-pricing-original">$15</span> <strong>$9.99</strong> with code <code class="hero-pricing-code">EARLYACCESS</code></p>
 			</div>
 		</section>
 
@@ -203,17 +199,176 @@ const faqs = [
 		</section>
 
 		<!-- ── FEATURES ── -->
-		<section class="section" data-reveal>
-			<p class="label">FEATURES</p>
-			<h2>Not your average<br />notes app</h2>
-			<div class="features-grid">
-				{features.map((f) => (
-					<div class="feature-cell">
-						<p class="feature-label"><span class="feature-num">{f.num}</span> {f.cat}</p>
-						<h3 class="feature-title">{f.title}</h3>
-						<p class="feature-desc">{f.desc}</p>
+		<section class="features-section" data-reveal>
+			<div class="feature-card feature-card--wide feature-card--has-img">
+				<div class="feature-card-text">
+					<p class="feature-eyebrow">✏️ Editor</p>
+					<h3 class="feature-heading">Markdown-native. Write without friction.</h3>
+					<p class="feature-body">A distraction-free editor with a floating toolbar, slash commands, and live preview. Every note is a plain .md file you own forever.</p>
+				</div>
+				<div class="feature-card-img">
+					<img src={mdNativeImg.src} alt="Glyph markdown editor with slash commands" loading="lazy" decoding="async" />
+				</div>
+			</div>
+			<div class="feature-card-row">
+				<div class="feature-card feature-card--has-img feature-card--stacked">
+					<div class="feature-card-text">
+						<p class="feature-eyebrow">🔗 Connections</p>
+						<h3 class="feature-heading">Wikilinks & backlinks. Ideas stay connected.</h3>
+						<p class="feature-body">Connect any idea to any other with [[wikilinks]]. See what links back. Your notes stay linked together — no folders, no silos.</p>
 					</div>
-				))}
+						<div class="feature-card-img">
+							<div class="feature-links-mini" aria-hidden="true">
+								<svg class="feature-links-mini__lines" viewBox="0 0 240 170" preserveAspectRatio="none">
+									<path d="M120 84 C101 68 82 52 60 39" />
+									<path d="M120 84 C142 67 160 55 182 45" />
+									<path d="M120 84 C102 102 84 117 66 131" />
+									<path d="M120 84 C143 101 164 112 186 124" />
+								</svg>
+								<div class="feature-links-mini__node feature-links-mini__node--center">
+									<span>Project Plan</span>
+								</div>
+							<div class="feature-links-mini__node feature-links-mini__node--top-left">
+								<span>Daily Note</span>
+							</div>
+							<div class="feature-links-mini__node feature-links-mini__node--top-right">
+								<span>Research</span>
+							</div>
+							<div class="feature-links-mini__node feature-links-mini__node--bottom-left">
+								<span>Ideas</span>
+							</div>
+							<div class="feature-links-mini__node feature-links-mini__node--bottom-right">
+								<span>Backlinks</span>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="feature-card feature-card--has-img feature-card--stacked">
+					<div class="feature-card-text">
+						<p class="feature-eyebrow">🧠 Intelligence</p>
+						<h3 class="feature-heading">AI that knows your notes.</h3>
+						<p class="feature-body">Ask questions about your own notes. Summarize, compare, or draft — powered by your existing ChatGPT subscription, Anthropic, or a local model.</p>
+						</div>
+						<div class="feature-card-img">
+								<div class="feature-ai-mini" aria-hidden="true">
+									<div class="feature-ai-mini__message feature-ai-mini__message--user">
+										Compare my last three project notes and draft a short update I can send.
+									</div>
+									<div class="feature-ai-mini__message feature-ai-mini__message--assistant">
+										<span class="feature-ai-mini__logo">
+											<img src={claudeAiLogo.src} alt="" loading="lazy" decoding="async" />
+										</span>
+										<span class="feature-ai-mini__response">
+											<strong>Claude</strong>
+											<span>Across your recent notes, three themes keep resurfacing: launch scope, onboarding friction, and unresolved pricing. Draft update: We are aligned on direction, but onboarding and pricing still need decisions before launch.</span>
+										</span>
+									</div>
+								</div>
+						</div>
+				</div>
+			</div>
+			<div class="feature-card feature-card--wide feature-card--has-img">
+				<div class="feature-card-text">
+					<p class="feature-eyebrow">✅ Productivity</p>
+					<h3 class="feature-heading">Tasks, tables & boards. All in one place.</h3>
+					<p class="feature-body">Drop a checkbox in any note. Organize with tables and kanban boards. Glyph pulls tasks into Inbox, Today, and Upcoming — no separate app needed.</p>
+				</div>
+				<div class="feature-card-img">
+					<div class="feature-sidebar-mini" aria-hidden="true">
+						<div class="feature-sidebar-mini__item" data-kind="daily-note">
+							<span class="feature-sidebar-mini__icon">
+								<svg viewBox="0 0 16 16" aria-hidden="true">
+									<path d="M4.5 2.75v2.5M11.5 2.75v2.5M2.75 6h10.5M3.75 4.25h8.5a1 1 0 0 1 1 1v6a1.5 1.5 0 0 1-1.5 1.5h-7.5a1.5 1.5 0 0 1-1.5-1.5v-6a1 1 0 0 1 1-1ZM8 7.5v3M6.5 9h3" />
+								</svg>
+							</span>
+							<span>Daily Note</span>
+						</div>
+						<div class="feature-sidebar-mini__item" data-kind="tasks">
+							<span class="feature-sidebar-mini__icon">
+								<svg viewBox="0 0 16 16" aria-hidden="true">
+									<path d="M3 4.25h7.25M3 8h7.25M3 11.75h7.25M11.5 4.5l1 1 2-2M11.5 8.25l1 1 2-2" />
+								</svg>
+							</span>
+							<span>Tasks</span>
+						</div>
+						<div class="feature-sidebar-mini__item" data-kind="calendar">
+							<span class="feature-sidebar-mini__icon">
+								<svg viewBox="0 0 16 16" aria-hidden="true">
+									<path d="M4.5 2.75v2.5M11.5 2.75v2.5M2.75 6h10.5M3.75 4.25h8.5a1 1 0 0 1 1 1v6a1.5 1.5 0 0 1-1.5 1.5h-7.5a1.5 1.5 0 0 1-1.5-1.5v-6a1 1 0 0 1 1-1Z" />
+								</svg>
+							</span>
+							<span>Calendar</span>
+						</div>
+					</div>
+				</div>
+			</div>
+			<div class="feature-card-row">
+				<div class="feature-card">
+					<div class="feature-card-text">
+						<p class="feature-eyebrow">🔍 Search</p>
+						<h3 class="feature-heading">Find anything, instantly.</h3>
+						<p class="feature-body">Hit ⌘P and find anything — by tag, folder, or full-text. Results appear before you finish typing.</p>
+						<div class="feature-command-mini" aria-hidden="true">
+							<div class="feature-command-mini__input">
+								<span class="feature-command-mini__search-icon">
+									<svg viewBox="0 0 16 16" aria-hidden="true">
+										<circle cx="7" cy="7" r="3.5" />
+										<path d="M10 10l3 3" />
+									</svg>
+								</span>
+								<span class="feature-command-mini__query">meeting notes</span>
+								<span class="feature-command-mini__shortcut">⌘P</span>
+							</div>
+							<div class="feature-command-mini__results">
+								<div class="feature-command-mini__label">Notes</div>
+								<div class="feature-command-mini__item is-active">
+									<strong>Weekly Review</strong>
+									<small>work/meetings</small>
+								</div>
+								<div class="feature-command-mini__item">
+									<strong>Meeting Notes</strong>
+									<small>inbox</small>
+								</div>
+								<div class="feature-command-mini__item">
+									<strong>#planning</strong>
+									<small>tag match</small>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="feature-card">
+					<div class="feature-card-text">
+						<p class="feature-eyebrow">🎨 Customization</p>
+						<h3 class="feature-heading">Make it yours.</h3>
+						<p class="feature-body">Accent colors, custom fonts, daily notes, and shortcuts — bend Glyph to match how you think.</p>
+						<div class="feature-customize-mini" aria-hidden="true">
+							<div class="feature-customize-mini__themes">
+								<span class="is-active">Paper</span>
+								<span>Graphite</span>
+								<span>Tokyo Night</span>
+								<span>Nord</span>
+								<span>Solarized</span>
+								<span>Dracula</span>
+								<span>GitHub</span>
+							</div>
+							<div class="feature-customize-mini__swatches">
+								<span style="background:#0081a7"></span>
+								<span style="background:#00afb9"></span>
+								<span style="background:#fdfcdc"></span>
+								<span style="background:#fed9b7"></span>
+								<span style="background:#f07167"></span>
+							</div>
+							<div class="feature-customize-mini__type">
+								<div class="feature-customize-mini__sample">
+									<span class="feature-customize-mini__title">Today</span>
+									<span class="feature-customize-mini__meta">Avenir Next · 14px</span>
+								</div>
+								<div class="feature-customize-mini__shortcut">⌘⇧J</div>
+							</div>
+						</div>
+					</div>
+				</div>
 			</div>
 		</section>
 
@@ -347,7 +502,7 @@ const faqs = [
 				</div>
 				<div class="footer-col">
 					<p class="footer-heading">PURCHASE</p>
-					<a href="https://karatsidhu.gumroad.com/l/sqxfay" target="_blank" rel="noopener">Download</a>
+					<a href={downloadUrl} target="_blank" rel="noopener">Download</a>
 				</div>
 				<div class="footer-col">
 					<p class="footer-heading">LEGAL</p>
@@ -372,12 +527,19 @@ const faqs = [
 	/* ── Header ── */
 	.header {
 		position: sticky;
-		top: 0;
+		top: 1rem;
 		z-index: 100;
 		display: flex;
 		align-items: center;
-		padding: 0.75rem 0;
-		background: transparent;
+		gap: 0.4rem;
+		width: fit-content;
+		margin: 0 auto;
+		padding: 0.45rem 0.45rem 0.45rem 0.8rem;
+		background: rgba(255, 255, 255, 0.92);
+		backdrop-filter: blur(12px);
+		border-radius: 100px;
+		box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06), 0 4px 12px rgba(0, 0, 0, 0.04);
+		border: 1px solid rgba(0, 0, 0, 0.06);
 	}
 
 	.logo {
@@ -387,11 +549,12 @@ const faqs = [
 		font-size: 0.75rem;
 		font-weight: 600;
 		letter-spacing: 0.14em;
+		margin-right: 0.4rem;
 	}
 
 	.logo-icon {
-		width: 1.25rem;
-		height: 1.25rem;
+		width: 2.3rem;
+		height: 2.3rem;
 		border-radius: 4px;
 	}
 
@@ -405,25 +568,26 @@ const faqs = [
 		border-radius: 3px;
 		line-height: 1;
 		margin-left: 0.1rem;
+		display: none;
 	}
 
 	.nav {
 		display: flex;
 		align-items: center;
-		gap: 0.2rem;
-		margin-left: auto;
+		gap: 0;
 	}
 
 	.nav a {
 		display: flex;
 		align-items: center;
-		padding: 0.4rem 0.7rem;
-		font-size: 0.72rem;
-		font-weight: 500;
-		letter-spacing: 0.06em;
-		text-transform: uppercase;
+		padding: 0.35rem 0.65rem;
+		font-family: var(--serif);
+		font-size: 0.85rem;
+		font-weight: 400;
+		letter-spacing: 0;
+		text-transform: none;
 		color: var(--muted);
-		border-radius: 4px;
+		border-radius: 100px;
 		transition: color 0.15s;
 	}
 
@@ -435,39 +599,25 @@ const faqs = [
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		margin-left: 0.6rem;
-		min-height: 2.4rem;
+		min-height: 2.1rem;
 		gap: 0.45rem;
-		padding: 0.5rem 1.02rem;
-		background:
-			linear-gradient(180deg, rgba(28, 28, 28, 0.96), rgba(17, 17, 17, 0.98)),
-			linear-gradient(135deg, rgba(255, 255, 255, 0.12), transparent 55%);
+		padding: 0.4rem 1rem;
+		background: var(--ink);
 		color: var(--bg);
-		font-family: var(--mono);
-		font-size: 0.7rem;
+		font-family: var(--sans);
+		font-size: 0.72rem;
 		font-weight: 600;
-		letter-spacing: 0.05em;
-		border-radius: 0.72rem;
-		border: 1px solid rgba(17, 17, 17, 0.92);
-		box-shadow:
-			inset 0 1px 0 rgba(255, 255, 255, 0.08),
-			0 8px 18px rgba(17, 17, 17, 0.08);
+		letter-spacing: 0.02em;
+		border-radius: 100px;
+		border: none;
 		cursor: pointer;
 		transition:
 			transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
-			box-shadow 0.25s ease,
-			border-color 0.2s ease,
 			background 0.2s ease;
 	}
 
 	.header-cta:hover {
-		transform: translateY(-1px);
-		background:
-			linear-gradient(180deg, rgba(34, 34, 34, 0.96), rgba(20, 20, 20, 0.98)),
-			linear-gradient(135deg, rgba(255, 255, 255, 0.16), transparent 55%);
-		box-shadow:
-			inset 0 1px 0 rgba(255, 255, 255, 0.1),
-			0 12px 24px rgba(17, 17, 17, 0.12);
+		background: #222;
 	}
 
 	.header-cta:focus-visible,
@@ -477,55 +627,57 @@ const faqs = [
 		outline-offset: 2px;
 	}
 
+	.apple-logo {
+		flex-shrink: 0;
+	}
+
 	.btn-primary {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		min-height: 3rem;
-		padding: 0.76rem 1.34rem;
-		background:
-			linear-gradient(180deg, rgba(28, 28, 28, 0.98), rgba(17, 17, 17, 1)),
-			linear-gradient(135deg, rgba(255, 255, 255, 0.14), transparent 55%);
+		gap: 0.6rem;
+		min-height: 3.4rem;
+		padding: 0.9rem 2.4rem;
+		background: linear-gradient(180deg, #333 0%, #111 100%);
 		color: var(--bg);
-		font-family: var(--mono);
-		font-size: 0.75rem;
+		font-family: var(--sans);
+		font-size: 0.82rem;
 		font-weight: 600;
-		letter-spacing: 0.05em;
+		letter-spacing: 0.04em;
 		border: none;
-		border-radius: 0.72rem;
-		box-shadow:
-			inset 0 1px 0 rgba(255, 255, 255, 0.08),
-			0 10px 22px rgba(17, 17, 17, 0.1);
+		border-radius: 0.85rem;
+		box-shadow: 0 4px 16px rgba(17, 17, 17, 0.12);
 		cursor: pointer;
 		transition:
 			background 0.2s ease,
-			color 0.15s ease,
 			transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
 			box-shadow 0.25s ease;
 	}
 
 	.btn-primary:hover {
-		background:
-			linear-gradient(180deg, rgba(34, 34, 34, 0.98), rgba(20, 20, 20, 1)),
-			linear-gradient(135deg, rgba(255, 255, 255, 0.16), transparent 55%);
-		box-shadow:
-			inset 0 1px 0 rgba(255, 255, 255, 0.1),
-			0 14px 28px rgba(17, 17, 17, 0.14);
+		background: linear-gradient(180deg, #3a3a3a 0%, #181818 100%);
+		transform: translateY(-1px);
+		box-shadow: 0 8px 24px rgba(17, 17, 17, 0.18);
+	}
+
+	.btn-primary:active {
+		transform: translateY(0);
 	}
 
 	.btn-outline {
 		display: inline-flex;
 		align-items: center;
 		justify-content: center;
-		min-height: 3rem;
-		padding: 0.72rem 1.3rem;
+		min-height: 3.4rem;
+		padding: 0.9rem 2rem;
 		background: rgba(255, 255, 255, 0.68);
 		color: var(--ink);
-		font-family: var(--mono);
-		font-size: 0.75rem;
+		font-family: var(--sans);
+		font-size: 0.78rem;
 		font-weight: 600;
 		letter-spacing: 0.03em;
-		border: none;
+		border: 1px solid rgba(17, 17, 17, 0.08);
+		border-radius: 100px;
 		cursor: pointer;
 		transition:
 			background 0.15s ease,
@@ -541,52 +693,31 @@ const faqs = [
 		display: inline-flex;
 		align-items: center;
 		gap: 0.55rem;
-		min-height: 3rem;
-		padding: 0;
-		border-radius: 0.72rem;
-		background: transparent;
+		min-height: 3.4rem;
+		padding: 0.9rem 1.6rem;
+		border-radius: 100px;
+		background: rgba(255, 255, 255, 0.7);
 		color: var(--ink);
+		font-family: var(--sans);
+		font-size: 0.78rem;
+		font-weight: 600;
+		letter-spacing: 0.03em;
+		border: 1px solid rgba(17, 17, 17, 0.08);
 		overflow: hidden;
 		transition:
 			transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
+			background 0.2s ease,
 			box-shadow 0.25s ease;
 	}
 
-	.btn-github::before {
-		content: '';
-		position: absolute;
-		inset: auto 18% -24% 18%;
-		height: 36%;
-		background: linear-gradient(90deg, rgba(188, 170, 135, 0.05), rgba(188, 170, 135, 0.32), rgba(188, 170, 135, 0.05));
-		filter: blur(14px);
-		opacity: 0;
-		transition: opacity 0.25s ease;
-		pointer-events: none;
-	}
-
 	.btn-github:hover {
-		transform: translateY(-1px) scale(1.01);
-		box-shadow: 0 12px 26px rgba(17, 17, 17, 0.08);
-	}
-
-	.btn-github:hover::before {
-		opacity: 1;
+		transform: translateY(-1px);
+		background: rgba(255, 255, 255, 0.9);
+		box-shadow: 0 8px 20px rgba(17, 17, 17, 0.08);
 	}
 
 	.btn-github:active {
-		transform: translateY(0) scale(0.985);
-	}
-
-	.btn-github {
-		padding: 0.62rem 1rem;
-		font-family: var(--mono);
-		font-size: 0.72rem;
-		font-weight: 600;
-		letter-spacing: 0.03em;
-		background: rgba(255, 255, 255, 0.96);
-		box-shadow:
-			inset 0 0 0 1px rgba(17, 17, 17, 0.08),
-			inset 0 -1px 0 rgba(17, 17, 17, 0.03);
+		transform: translateY(0);
 	}
 
 	.btn-github-stars {
@@ -629,68 +760,110 @@ const faqs = [
 		letter-spacing: 0.18em;
 		color: var(--faint);
 		text-align: center;
-		margin-bottom: 0.8rem;
+		margin-bottom: 0;
 	}
 
 	/* ── Hero ── */
 	.hero {
 		text-align: center;
-		padding: 5rem 0 3.5rem;
+		padding: 3rem 0 4rem;
+		max-width: 800px;
+		margin-inline: auto;
 	}
 
 	h1 {
 		font-family: var(--serif);
-		font-size: clamp(2.4rem, 6vw, 3rem);
+		font-size: clamp(3.2rem, 8.5vw, 5.4rem);
 		font-weight: 400;
-		line-height: 1.18;
-		font-style: italic;
+		line-height: 1.15;
+		font-style: normal;
+		letter-spacing: -0.02em;
 		color: var(--ink);
-		margin-bottom: 1.2rem;
+		margin-bottom: 2rem;
+	}
+
+	.hero-accent {
+		color: #bbb;
 	}
 
 	.hero-sub {
-		font-size: 0.85rem;
+		font-family: var(--sans);
+		font-size: 1rem;
 		color: var(--muted);
-		line-height: 1.7;
-		max-width: 460px;
-		margin: 0 auto 2rem;
+		line-height: 1.75;
+		max-width: 520px;
+		margin: 0 auto 0.5rem;
 	}
 
 	.hero-cta-stack {
 		display: inline-flex;
 		flex-direction: column;
 		align-items: center;
-		gap: 0.75rem;
+		gap: 0.35rem;
+		margin-top: 1.6rem;
 	}
 
 	.hero-actions {
 		display: inline-flex;
 		align-items: stretch;
 		justify-content: center;
-		gap: 0.28rem;
+		gap: 0.65rem;
+	}
+
+	.hero-trial {
+		font-family: var(--sans);
+		font-size: 0.75rem;
+		color: #bbb;
+		letter-spacing: 0.02em;
+	}
+
+	.hero-pricing {
+		font-family: var(--sans);
+		font-size: 0.78rem;
+		color: var(--muted);
+		letter-spacing: 0.01em;
+	}
+
+	.hero-pricing-original {
+		text-decoration: line-through;
+		color: #bbb;
+	}
+
+	.hero-pricing strong {
+		font-weight: 600;
+		color: var(--ink);
+	}
+
+	.hero-pricing-code {
+		font-family: var(--mono);
+		font-size: 0.72rem;
+		font-weight: 600;
+		letter-spacing: 0.04em;
+		background: rgba(17, 17, 17, 0.06);
+		padding: 0.15rem 0.4rem;
+		border-radius: 4px;
+		color: var(--ink);
 	}
 
 	.install-strip {
 		display: flex;
 		flex-direction: column;
-		align-items: flex-start;
+		align-items: center;
 		width: 100%;
 		max-width: 34rem;
 	}
 
 	.install-strip-bar {
-		display: grid;
-		grid-template-columns: minmax(0, 1fr) auto;
+		display: inline-flex;
 		align-items: center;
 		gap: 0.65rem;
-		width: 100%;
 	}
 
 	.install-strip-code {
 		display: block;
 		font-family: var(--mono);
-		font-size: 0.78rem;
-		color: var(--ink);
+		font-size: 0.75rem;
+		color: var(--muted);
 		line-height: 1.45;
 		min-width: 0;
 		overflow-wrap: anywhere;
@@ -712,8 +885,8 @@ const faqs = [
 		justify-content: center;
 		width: 2rem;
 		height: 2rem;
-		border: 1px solid rgba(17, 17, 17, 0.12);
-		border-radius: 0.6rem;
+		border: 1px solid rgba(17, 17, 17, 0.1);
+		border-radius: 100px;
 		background: transparent;
 		color: var(--muted);
 		cursor: pointer;
@@ -748,6 +921,7 @@ const faqs = [
 		font-size: 0.68rem;
 		color: var(--faint);
 		letter-spacing: 0.03em;
+		text-align: center;
 		transition:
 			color 0.2s ease,
 			opacity 0.2s ease,
@@ -827,49 +1001,513 @@ const faqs = [
 		margin: 0 auto 2.5rem;
 	}
 
-	/* ── Feature grid (3-col windowpane) ── */
-	.features-grid {
+	/* ── Feature cards (Dot-style) ── */
+	.features-section {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+		padding: 4rem 0;
+		width: min(960px, 94vw);
+		margin-inline: auto;
+		margin-left: calc(-1 * (min(960px, 94vw) - 100%) / 2);
+	}
+
+	.feature-card-row {
 		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		border: 1px solid var(--border);
-		margin-top: 2.5rem;
+		grid-template-columns: 1fr 1fr;
+		gap: 1rem;
+	}
+
+	.feature-card {
+		background: rgba(255, 255, 255, 0.7);
+		border-radius: 1.2rem;
+		padding: 2.2rem 2.4rem;
 		text-align: left;
+		overflow: hidden;
 	}
 
-	.feature-cell {
-		padding: 1.5rem;
-		border-bottom: 1px solid var(--border);
-		border-right: 1px solid var(--border);
+	.feature-card--wide {
+		width: 100%;
 	}
 
-	.feature-cell:nth-child(3n) { border-right: none; }
-	.feature-cell:nth-last-child(-n+3) { border-bottom: none; }
+	.feature-card--wide.feature-card--has-img {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 1.5rem;
+		align-items: center;
+		padding-right: 0;
+	}
 
-	.feature-label {
-		font-family: var(--mono);
-		font-size: 0.65rem;
+	.feature-card--stacked {
+		display: flex;
+		flex-direction: column;
+		padding-bottom: 0;
+	}
+
+	.feature-card-text {
+		max-width: 520px;
+	}
+
+	.feature-card-img {
+		display: flex;
+		align-items: flex-end;
+		justify-content: flex-end;
+		overflow: hidden;
+	}
+
+	.feature-card-img img {
+		display: block;
+		width: 100%;
+		height: auto;
+		border-radius: 0.6rem 0 0 0;
+		box-shadow: -4px -4px 20px rgba(0, 0, 0, 0.04);
+	}
+
+	.feature-card--stacked .feature-card-img {
+		margin-top: 1.5rem;
+		flex: 1;
+		align-items: flex-end;
+	}
+
+	.feature-card--stacked .feature-card-img img {
+		border-radius: 0.6rem 0.6rem 0 0;
+		box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.04);
+	}
+
+	.feature-links-mini {
+		position: relative;
+		width: min(100%, 19rem);
+		height: 10.75rem;
+		margin: 0 auto;
+		border-radius: 1.1rem;
+		background:
+			radial-gradient(circle at 50% 48%, rgba(198, 172, 112, 0.12), transparent 28%),
+			radial-gradient(circle at 20% 24%, rgba(17, 17, 17, 0.04), transparent 20%),
+			radial-gradient(circle at 84% 76%, rgba(17, 17, 17, 0.04), transparent 22%);
+	}
+
+	.feature-links-mini__lines {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		overflow: visible;
+	}
+
+	.feature-links-mini__lines path {
+		fill: none;
+		stroke: rgba(140, 118, 77, 0.34);
+		stroke-width: 1.55;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.feature-links-mini__node {
+		position: absolute;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-width: 5.15rem;
+		padding: 0.46rem 0.76rem;
+		border-radius: 0.95rem;
+		background: rgba(255, 255, 255, 0.88);
+		box-shadow:
+			inset 0 0 0 1px rgba(17, 17, 17, 0.06),
+			0 6px 18px rgba(17, 17, 17, 0.04);
+		font-family: var(--sans);
+		font-size: 0.72rem;
 		font-weight: 500;
-		letter-spacing: 0.12em;
-		color: var(--faint);
-		margin-bottom: 0.6rem;
+		letter-spacing: -0.01em;
+		color: rgba(17, 17, 17, 0.72);
+		white-space: nowrap;
 	}
 
-	.feature-num {
-		color: var(--muted);
+	.feature-links-mini__node--center {
+		left: 50%;
+		top: 50%;
+		transform: translate(-50%, -50%);
+		padding: 0.54rem 0.9rem;
+		border-radius: 1rem;
+		background:
+			linear-gradient(180deg, rgba(29, 28, 26, 0.96), rgba(17, 17, 17, 0.94));
+		color: rgba(255, 255, 255, 0.94);
+		box-shadow:
+			0 14px 28px rgba(17, 17, 17, 0.1),
+			inset 0 1px 0 rgba(255, 255, 255, 0.06);
+		z-index: 2;
 	}
 
-	.feature-title {
-		font-family: var(--mono);
-		font-size: 0.9rem;
-		font-weight: 600;
-		margin-bottom: 0.6rem;
-		color: var(--ink);
+	.feature-links-mini__node--top-left {
+		left: 0.55rem;
+		top: 0.9rem;
+		transform: rotate(-7deg);
 	}
 
-	.feature-desc {
+	.feature-links-mini__node--top-right {
+		right: 0.35rem;
+		top: 1rem;
+		transform: rotate(6deg);
+	}
+
+	.feature-links-mini__node--bottom-left {
+		left: 0.8rem;
+		bottom: 0.95rem;
+		transform: rotate(4deg);
+	}
+
+	.feature-links-mini__node--bottom-right {
+		right: 0.35rem;
+		bottom: 1rem;
+		transform: rotate(-5deg);
+	}
+
+	.feature-ai-mini {
+		width: min(100%, 18rem);
+		margin: 0 auto;
+		display: flex;
+		flex-direction: column;
+		gap: 0.65rem;
+	}
+
+	.feature-ai-mini__message {
+		display: flex;
+		align-items: flex-start;
+		gap: 0.6rem;
+		padding: 0.78rem 0.9rem;
+		border-radius: 1.05rem;
+		font-family: var(--sans);
 		font-size: 0.78rem;
+		line-height: 1.45;
+	}
+
+	.feature-ai-mini__message--user {
+		margin-left: auto;
+		max-width: 86%;
+		background:
+			linear-gradient(180deg, rgba(30, 29, 27, 0.96), rgba(17, 17, 17, 0.94));
+		color: rgba(255, 255, 255, 0.94);
+		box-shadow:
+			0 10px 22px rgba(17, 17, 17, 0.08),
+			inset 0 1px 0 rgba(255, 255, 255, 0.04);
+	}
+
+	.feature-ai-mini__message--assistant {
+		max-width: 100%;
+		background: rgba(255, 255, 255, 0.78);
+		box-shadow:
+			inset 0 0 0 1px rgba(17, 17, 17, 0.08),
+			0 8px 22px rgba(17, 17, 17, 0.04);
+		color: rgba(17, 17, 17, 0.8);
+	}
+
+	.feature-ai-mini__logo {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 1.35rem;
+		height: 1.35rem;
+		flex: none;
+		border-radius: 0.45rem;
+		background: rgba(240, 136, 84, 0.12);
+		margin-top: 0.02rem;
+	}
+
+	.feature-ai-mini__logo img {
+		width: 100%;
+		height: 100%;
+		display: block;
+	}
+
+	.feature-ai-mini__response {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+	}
+
+	.feature-ai-mini__response strong {
+		font-size: 0.68rem;
+		font-weight: 600;
+		letter-spacing: 0.04em;
+		text-transform: uppercase;
+		color: rgba(17, 17, 17, 0.48);
+		margin-bottom: 0.14rem;
+	}
+
+	.feature-ai-mini__response span {
+		display: block;
+	}
+
+	.feature-img--xs {
+		max-width: 40%;
+		margin: 0 auto;
+		border-radius: 1rem !important;
+	}
+
+	.feature-sidebar-mini {
+		width: min(100%, 12rem);
+		margin: 0 auto;
+		padding: 0;
+	}
+
+	.feature-sidebar-mini__item {
+		display: flex;
+		align-items: center;
+		gap: 0.75rem;
+		font-family: var(--sans);
+		font-size: 0.9rem;
+		font-weight: 500;
+		color: #3f3c38;
+	}
+
+	.feature-sidebar-mini__item + .feature-sidebar-mini__item {
+		margin-top: 1rem;
+	}
+
+	.feature-sidebar-mini__icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 1.1rem;
+		height: 1.1rem;
+		flex: none;
+	}
+
+	.feature-sidebar-mini__icon svg {
+		width: 100%;
+		height: 100%;
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 1.4;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.feature-sidebar-mini__item[data-kind="daily-note"] .feature-sidebar-mini__icon {
+		color: #4f9cf4;
+	}
+
+	.feature-sidebar-mini__item[data-kind="tasks"] .feature-sidebar-mini__icon {
+		color: #e2b109;
+	}
+
+	.feature-sidebar-mini__item[data-kind="calendar"] .feature-sidebar-mini__icon {
+		color: #f27f88;
+	}
+
+	.feature-command-mini {
+		margin-top: 1.2rem;
+		border: 1px solid rgba(17, 17, 17, 0.08);
+		border-radius: 0.9rem;
+		overflow: hidden;
+		background: rgba(255, 255, 255, 0.62);
+	}
+
+	.feature-command-mini__input {
+		display: flex;
+		align-items: center;
+		gap: 0.55rem;
+		padding: 0.72rem 0.85rem;
+		border-bottom: 1px solid rgba(17, 17, 17, 0.06);
+	}
+
+	.feature-command-mini__search-icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 0.95rem;
+		height: 0.95rem;
+		color: rgba(17, 17, 17, 0.42);
+		flex: none;
+	}
+
+	.feature-command-mini__search-icon svg {
+		width: 100%;
+		height: 100%;
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 1.4;
+		stroke-linecap: round;
+		stroke-linejoin: round;
+	}
+
+	.feature-command-mini__query {
+		flex: 1;
+		min-width: 0;
+		font-family: var(--sans);
+		font-size: 0.8rem;
+		color: rgba(17, 17, 17, 0.82);
+	}
+
+	.feature-command-mini__shortcut {
+		display: inline-flex;
+		align-items: center;
+		padding: 0.16rem 0.38rem;
+		border-radius: 999px;
+		background: rgba(17, 17, 17, 0.05);
+		font-family: var(--mono);
+		font-size: 0.62rem;
+		color: rgba(17, 17, 17, 0.5);
+	}
+
+	.feature-command-mini__results {
+		padding: 0.55rem;
+	}
+
+	.feature-command-mini__label {
+		padding: 0 0.3rem 0.35rem;
+		font-family: var(--mono);
+		font-size: 0.58rem;
+		letter-spacing: 0.1em;
+		text-transform: uppercase;
+		color: rgba(17, 17, 17, 0.4);
+	}
+
+	.feature-command-mini__item {
+		padding: 0.52rem 0.6rem;
+		border-radius: 0.65rem;
+	}
+
+	.feature-command-mini__item.is-active {
+		background: rgba(17, 17, 17, 0.05);
+	}
+
+	.feature-command-mini__item strong {
+		display: block;
+		font-family: var(--sans);
+		font-size: 0.76rem;
+		font-weight: 600;
+		line-height: 1.3;
+		color: rgba(17, 17, 17, 0.82);
+	}
+
+	.feature-command-mini__item small {
+		display: block;
+		margin-top: 0.08rem;
+		font-family: var(--mono);
+		font-size: 0.62rem;
+		color: rgba(17, 17, 17, 0.42);
+	}
+
+	.feature-customize-mini {
+		margin-top: 1.2rem;
+		display: flex;
+		flex-direction: column;
+		gap: 0.8rem;
+	}
+
+	.feature-customize-mini__themes {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		flex-wrap: wrap;
+	}
+
+	.feature-customize-mini__themes span {
+		display: inline-flex;
+		align-items: center;
+		padding: 0.28rem 0.62rem;
+		border-radius: 999px;
+		background: rgba(17, 17, 17, 0.05);
+		font-family: var(--sans);
+		font-size: 0.68rem;
+		color: rgba(17, 17, 17, 0.56);
+	}
+
+	.feature-customize-mini__themes .is-active {
+		background: rgba(17, 17, 17, 0.92);
+		color: rgba(255, 255, 255, 0.94);
+	}
+
+	.feature-customize-mini__swatches {
+		display: flex;
+		align-items: center;
+		gap: 0.45rem;
+	}
+
+	.feature-customize-mini__swatches span {
+		display: inline-flex;
+		width: 1rem;
+		height: 1rem;
+		border-radius: 999px;
+		box-shadow: inset 0 0 0 1px rgba(17, 17, 17, 0.08);
+	}
+
+	.feature-customize-mini__type {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.8rem;
+		padding: 0.8rem 0.9rem;
+		border: 1px solid rgba(17, 17, 17, 0.08);
+		border-radius: 0.9rem;
+		background: rgba(255, 255, 255, 0.56);
+	}
+
+	.feature-customize-mini__sample {
+		display: flex;
+		flex-direction: column;
+		min-width: 0;
+	}
+
+	.feature-customize-mini__title {
+		font-family: "Avenir Next", "Helvetica Neue", sans-serif;
+		font-size: 0.92rem;
+		font-weight: 600;
+		line-height: 1.2;
+		color: rgba(17, 17, 17, 0.84);
+	}
+
+	.feature-customize-mini__meta {
+		margin-top: 0.14rem;
+		font-family: var(--mono);
+		font-size: 0.62rem;
+		color: rgba(17, 17, 17, 0.42);
+	}
+
+	.feature-customize-mini__shortcut {
+		display: inline-flex;
+		align-items: center;
+		padding: 0.2rem 0.42rem;
+		border-radius: 999px;
+		background: rgba(17, 17, 17, 0.05);
+		font-family: var(--mono);
+		font-size: 0.62rem;
+		color: rgba(17, 17, 17, 0.48);
+		white-space: nowrap;
+	}
+
+	.feature-eyebrow {
+		font-family: var(--sans);
+		font-size: 0.82rem;
+		font-weight: 400;
 		color: var(--muted);
-		line-height: 1.65;
+		margin-bottom: 0.7rem;
+	}
+
+	.feature-heading {
+		font-family: var(--serif);
+		font-size: clamp(1.3rem, 3vw, 1.7rem);
+		font-weight: 400;
+		line-height: 1.25;
+		color: var(--ink);
+		margin-bottom: 0.8rem;
+	}
+
+	.feature-body {
+		font-family: var(--sans);
+		font-size: 0.88rem;
+		color: var(--muted);
+		line-height: 1.7;
+	}
+
+	@media (max-width: 640px) {
+		.feature-card-row {
+			grid-template-columns: 1fr;
+		}
+		.feature-card--wide.feature-card--has-img {
+			grid-template-columns: 1fr;
+			padding-right: 2.4rem;
+		}
 	}
 
 	/* ── Privacy grid ── */

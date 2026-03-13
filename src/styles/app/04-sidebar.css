@@ -81,7 +81,7 @@
 	gap: 6px;
 	position: absolute;
 	top: 50%;
-	left: var(--window-control-toggle-offset);
+	right: var(--space-3);
 	transform: translateY(-50%);
 }
 
