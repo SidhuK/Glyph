@@ -3,8 +3,6 @@ import { ThemeProvider } from "next-themes";
 import { useTheme } from "next-themes";
 import React from "react";
 import ReactDOM from "react-dom/client";
-import App from "./App";
-import SettingsApp from "./SettingsApp";
 import { LicenseGate } from "./components/licensing/LicenseGate";
 import { Toaster } from "./components/ui/shadcn/sonner";
 import {
@@ -21,6 +19,13 @@ function isSettingsRoute(hash: string): boolean {
 	return hash.startsWith("#/settings");
 }
 
+const App = React.lazy(() => import("./App"));
+const SettingsApp = React.lazy(() => import("./SettingsApp"));
+
+function RouteLoadingFallback() {
+	return <main style={{ height: "100%" }} aria-busy="true" />;
+}
+
 function Root() {
 	const [hash, setHash] = React.useState(() => window.location.hash);
 	React.useEffect(() => {
@@ -30,11 +35,15 @@ function Root() {
 	}, []);
 
 	return isSettingsRoute(hash) ? (
-		<SettingsApp />
+		<React.Suspense fallback={<RouteLoadingFallback />}>
+			<SettingsApp />
+		</React.Suspense>
 	) : (
-		<LicenseGate>
-			<App />
-		</LicenseGate>
+		<React.Suspense fallback={<RouteLoadingFallback />}>
+			<LicenseGate>
+				<App />
+			</LicenseGate>
+		</React.Suspense>
 	);
 }
 
