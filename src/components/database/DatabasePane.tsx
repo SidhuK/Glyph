@@ -1,3 +1,4 @@
+import { m, useReducedMotion } from "motion/react";
 import {
 	Suspense,
 	lazy,
@@ -8,7 +9,6 @@ import {
 	useRef,
 	useState,
 } from "react";
-import { m, useReducedMotion } from "motion/react";
 import { useDatabaseNote } from "../../hooks/database/useDatabaseNote";
 import { useDatabaseTable } from "../../hooks/database/useDatabaseTable";
 import { getBoardGroupColumns } from "../../lib/database/board";
@@ -23,12 +23,12 @@ import { extractErrorMessage } from "../../lib/errorUtils";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { isMarkdownPath, normalizeRelPath, parentDir } from "../../utils/path";
+import { springPresets } from "../ui/animations";
 import { DatabaseBoard } from "./DatabaseBoard";
 import { DatabaseColumnDialog } from "./DatabaseColumnDialog";
 import { DatabaseSourceDialog } from "./DatabaseSourceDialog";
 import { DatabaseTable } from "./DatabaseTable";
 import { DatabaseToolbar } from "./DatabaseToolbar";
-import { springPresets } from "../ui/animations";
 
 const LazyMarkdownEditorPane = lazy(() =>
 	import("../preview/MarkdownEditorPane").then((module) => ({

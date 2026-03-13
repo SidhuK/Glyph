@@ -6,9 +6,10 @@ import { useAISidebarContext } from "../../contexts";
 import { getShortcutTooltip } from "../../lib/shortcuts";
 
 const loadAIPanel = () =>
-	import("./AIPanel").then((module) => ({
-		default: (void module.prefetchAIPanelData(), module.AIPanel),
-	}));
+	import("./AIPanel").then((module) => {
+		module.prefetchAIPanelData();
+		return { default: module.AIPanel };
+	});
 
 const LazyAIPanel = lazy(loadAIPanel);
 

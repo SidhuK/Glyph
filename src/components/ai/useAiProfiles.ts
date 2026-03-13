@@ -139,7 +139,7 @@ export function useAiProfiles() {
 				setError(extractErrorMessage(e));
 			}
 		},
-		[activeProfileId],
+		[activeProfileId, profiles],
 	);
 
 	const setModel = useCallback(

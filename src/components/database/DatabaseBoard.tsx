@@ -10,6 +10,7 @@ import { databaseCellValueFromRow } from "../../lib/database/config";
 import type { DatabaseColumn, DatabaseRow } from "../../lib/database/types";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { formatTagLabel } from "../editor/noteProperties/utils";
+import { springPresets } from "../ui/animations";
 import { Button } from "../ui/shadcn/button";
 import {
 	ContextMenu,
@@ -18,7 +19,6 @@ import {
 	ContextMenuSeparator,
 	ContextMenuTrigger,
 } from "../ui/shadcn/context-menu";
-import { springPresets } from "../ui/animations";
 import { DatabaseColumnIcon } from "./DatabaseColumnIcon";
 
 interface DatabaseBoardProps {

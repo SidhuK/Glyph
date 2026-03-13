@@ -15,12 +15,12 @@ import { AboutSettingsPane } from "./components/settings/AboutSettingsPane";
 import { AiSettingsPane } from "./components/settings/AiSettingsPane";
 import { AppearanceSettingsPane } from "./components/settings/AppearanceSettingsPane";
 import { GeneralSettingsPane } from "./components/settings/GeneralSettingsPane";
+import { SpaceSettingsPane } from "./components/settings/SpaceSettingsPane";
 import {
 	SETTINGS_TABS,
 	type SettingsTab,
 	isSettingsTab,
 } from "./components/settings/settingsConfig";
-import { SpaceSettingsPane } from "./components/settings/SpaceSettingsPane";
 import { searchSettingsIndex } from "./components/settings/settingsSearch";
 import { Button } from "./components/ui/shadcn/button";
 import { Input } from "./components/ui/shadcn/input";
