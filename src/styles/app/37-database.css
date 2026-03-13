@@ -80,11 +80,8 @@
 	border-color: color-mix(in srgb, var(--border-light) 78%, transparent);
 	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
 	color: var(--text-secondary);
-	transition:
-		transform 180ms ease,
-		border-color 180ms ease,
-		background-color 180ms ease,
-		color 180ms ease;
+	transition: transform 180ms ease, border-color 180ms ease, background-color
+		180ms ease, color 180ms ease;
 }
 
 .databaseToolbarChip:hover {

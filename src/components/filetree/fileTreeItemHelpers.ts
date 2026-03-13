@@ -32,7 +32,7 @@ export function splitEditableFileName(name: string): {
 }
 
 export function buildRowStyle(depth: number): CSSProperties {
-	const paddingLeft = 4 + depth * 10;
+	const paddingLeft = 8 + depth * 10;
 	return {
 		paddingLeft,
 	} as CSSProperties;

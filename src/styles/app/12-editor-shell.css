@@ -44,16 +44,16 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 2px;
-	padding: 2px;
-	border: 1px solid var(--border-light);
-	border-radius: var(--radius-lg);
-	background: var(--bg-primary);
+	padding: 2px 3px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 82%, transparent);
+	border-radius: var(--radius-full);
+	background: color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary));
 }
 
 .ribbonDivider {
 	width: 1px;
 	height: 22px;
-	background: var(--border-light);
+	background: color-mix(in srgb, var(--border-light) 72%, transparent);
 }
 
 button.ribbonBtn {
@@ -62,17 +62,25 @@ button.ribbonBtn {
 	padding: 0;
 	border-radius: var(--radius-md);
 	color: var(--text-secondary);
+	transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms
+		ease;
 }
 
 button.ribbonBtn:hover {
 	transform: none;
-	background: var(--bg-hover);
+	background: color-mix(in srgb, var(--bg-hover) 84%, var(--bg-secondary));
 	color: var(--text-primary);
 }
 
 button.ribbonBtn.active {
-	background: var(--selection-bg-muted);
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 10%,
+		var(--selection-bg-muted)
+	);
 	color: var(--interactive-accent);
+	box-shadow: inset 0 0 0 1px
+		color-mix(in srgb, var(--interactive-accent) 14%, transparent);
 }
 
 .ribbonWarning {
@@ -118,7 +126,7 @@ button.ribbonBtn.active {
 	overflow-y: auto;
 	overflow-x: hidden;
 	padding: var(--space-6) 0 var(--space-6);
-	background: color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary));
+	background: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary));
 	display: flex;
 	flex-direction: column;
 }
@@ -131,12 +139,13 @@ button.ribbonBtn.active {
 	min-height: 100%;
 	max-width: var(--readable-content-max-width);
 	margin: 0 auto;
-	padding: 0 var(--readable-content-gutter) var(--space-6);
+	padding: var(--space-2) var(--readable-content-gutter) var(--space-7);
 	font-size: 16px;
 	letter-spacing: 0;
-	line-height: 1.6;
+	line-height: 1.68;
 	outline: none;
 	caret-color: var(--text-primary);
+	color: color-mix(in srgb, var(--text-primary) 96%, var(--text-secondary));
 }
 
 /* Back-compat if the host ends up being the ProseMirror element */
@@ -144,12 +153,26 @@ button.ribbonBtn.active {
 	min-height: 100%;
 	max-width: var(--readable-content-max-width);
 	margin: 0 auto;
-	padding: var(--space-6) var(--readable-content-gutter) var(--space-6);
+	padding: var(--space-7) var(--readable-content-gutter);
 	overflow: visible;
 	letter-spacing: 0;
-	line-height: 1.6;
+	line-height: 1.68;
 	outline: none;
 	caret-color: var(--text-primary);
+	color: color-mix(in srgb, var(--text-primary) 96%, var(--text-secondary));
+}
+
+.editorBody .tiptapContent::selection,
+.editorBody .tiptapContent *::selection,
+.editorBody .tiptap::selection,
+.editorBody .tiptap *::selection,
+.mdRawEditor::selection,
+.mdRawEditor *::selection {
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 20%,
+		var(--selection-bg-muted)
+	);
 }
 
 .editorBody .tiptapContent > *:first-child,
@@ -193,25 +216,25 @@ button.ribbonBtn.active {
 .editorBody .tiptap h5,
 .editorBody .tiptap h6 {
 	margin: var(--space-4) 0 var(--space-3) 0;
-	letter-spacing: -0.01em;
+	letter-spacing: -0.018em;
 }
 
 .editorBody .tiptapContent h1,
 .editorBody .tiptap h1 {
-	font-size: 1.5rem;
-	line-height: 1.25;
+	font-size: 1.58rem;
+	line-height: 1.22;
 }
 
 .editorBody .tiptapContent h2,
 .editorBody .tiptap h2 {
-	font-size: 1.25rem;
-	line-height: 1.3;
+	font-size: 1.28rem;
+	line-height: 1.24;
 }
 
 .editorBody .tiptapContent h3,
 .editorBody .tiptap h3 {
-	font-size: 1.1rem;
-	line-height: 1.35;
+	font-size: 1.08rem;
+	line-height: 1.3;
 }
 
 .editorBody .tiptapContent h4,
@@ -239,8 +262,8 @@ button.ribbonBtn.active {
 	padding: var(--space-3) var(--space-4);
 	border-left: 3px solid
 		color-mix(in srgb, var(--interactive-accent) 60%, var(--border-default));
-	background: var(--bg-secondary);
-	border-radius: var(--radius-lg);
+	background: color-mix(in srgb, var(--bg-secondary) 72%, var(--bg-primary));
+	border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
 }
 
 .editorBody .tiptapContent hr,
@@ -254,18 +277,28 @@ button.ribbonBtn.active {
 .editorBody .tiptap code {
 	font-family: var(--font-mono);
 	font-size: 0.9em;
-	background: var(--bg-secondary);
-	padding: 0 0.25em;
+	background: color-mix(in srgb, var(--bg-secondary) 82%, var(--bg-primary));
+	padding: 0 0.3em;
 	border-radius: var(--radius-sm);
+	border: 1px solid color-mix(in srgb, var(--border-light) 68%, transparent);
 }
 
 .editorBody .tiptapContent pre,
 .editorBody .tiptap pre {
 	font-family: var(--font-mono);
-	background: var(--bg-secondary);
+	background: color-mix(in srgb, var(--bg-secondary) 82%, var(--bg-primary));
 	padding: var(--space-3);
 	border-radius: var(--radius-lg);
+	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
 	overflow: auto;
+}
+
+.editorBody .tiptapContent pre code,
+.editorBody .tiptap pre code {
+	background: transparent;
+	padding: 0;
+	border: none;
+	border-radius: 0;
 }
 
 .editorBody .tiptapContent a,

@@ -186,7 +186,7 @@
 }
 
 .sidebarFooterIconButton {
-	background: color-mix(in srgb, var(--bg-sidebar) 92%, transparent);
+	background: transparent;
 	border: 1px solid color-mix(in srgb, var(--border-light) 18%, transparent);
 	box-shadow: none;
 }

@@ -1,4 +1,4 @@
-import { ArrowDown01Icon, ArrowRight01Icon } from "@hugeicons/core-free-icons";
+import { Folder01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, m } from "motion/react";
 import type { MouseEvent, ReactNode } from "react";
@@ -127,7 +127,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 								title={entry.rel_path || entry.name || "Folder"}
 							>
 								<HugeiconsIcon
-									icon={isExpanded ? ArrowDown01Icon : ArrowRight01Icon}
+									icon={Folder01Icon}
 									size={12}
 									className="fileTreeChevron"
 								/>

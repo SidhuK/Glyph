@@ -6,7 +6,6 @@ import { TASKS_TAB_ID } from "../../lib/tasks";
 interface TabBarProps {
 	openTabs: string[];
 	activeTabPath: string | null;
-	dirtyByPath: Record<string, boolean>;
 	dragTabPath: string | null;
 	useWindowBackground?: boolean;
 	onOpenBlankTab: () => void;
@@ -20,7 +19,6 @@ interface TabBarProps {
 export function TabBar({
 	openTabs,
 	activeTabPath,
-	dirtyByPath,
 	dragTabPath,
 	useWindowBackground = false,
 	onOpenBlankTab,
@@ -76,7 +74,6 @@ export function TabBar({
 									path={path}
 									fileName={fileName(path)}
 									isActive={path === activeTabPath}
-									isDirty={Boolean(dirtyByPath[path])}
 									dragTabPath={dragTabPath}
 									onSelectTab={onSelectTab}
 									onCloseTab={onCloseTab}
@@ -132,7 +129,6 @@ const TabItem = memo(function TabItem({
 	path,
 	fileName,
 	isActive,
-	isDirty,
 	dragTabPath,
 	onSelectTab,
 	onCloseTab,
@@ -143,7 +139,6 @@ const TabItem = memo(function TabItem({
 	path: string;
 	fileName: string;
 	isActive: boolean;
-	isDirty: boolean;
 	dragTabPath: string | null;
 	onSelectTab: (path: string) => void;
 	onCloseTab: (path: string) => void;
@@ -193,7 +188,6 @@ const TabItem = memo(function TabItem({
 				onDragOver={handleDragOver}
 				onDrop={handleDrop}
 			>
-				{isDirty ? <span className="mainTabDirty" aria-hidden /> : null}
 				<span className="mainTabText">
 					<span className="mainTabLabel">{fileName}</span>
 				</span>

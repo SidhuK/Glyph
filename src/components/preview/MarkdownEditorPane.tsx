@@ -1,5 +1,10 @@
-import { MenuCircleIcon, SourceCodeIcon } from "@hugeicons/core-free-icons";
+import {
+	MenuCircleIcon,
+	Save as SaveIcon,
+	SourceCodeIcon,
+} from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
 	useAISidebarContext,
@@ -33,6 +38,7 @@ interface MarkdownEditorPaneProps {
 }
 
 type StatsLayout = "full" | "collapsed" | "hidden";
+type SyncPulse = "saved" | "reloaded" | null;
 
 const markdownDocCache = new Map<string, string>();
 
@@ -65,9 +71,11 @@ export function MarkdownEditorPane({
 	);
 	const [mode, setMode] = useState<CanvasInlineEditorMode>("rich");
 	const [saving, setSaving] = useState(false);
+	const [autosaveBusy, setAutosaveBusy] = useState(false);
 	const [error, setError] = useState("");
 	const [actionsOpen, setActionsOpen] = useState(false);
 	const [lastSavedMtimeMs, setLastSavedMtimeMs] = useState<number | null>(null);
+	const [syncPulse, setSyncPulse] = useState<SyncPulse>(null);
 	const calloutInserterRef = useRef<((type: string) => void) | null>(null);
 	const savedTextRef = useRef(savedText);
 	const textRef = useRef(text);
@@ -76,11 +84,13 @@ export function MarkdownEditorPane({
 	const autosaveQueuedRef = useRef(false);
 	const hasUserEditsRef = useRef(false);
 	const externalSyncTimerRef = useRef<number | null>(null);
+	const syncPulseTimerRef = useRef<number | null>(null);
 	const pendingExternalReloadRef = useRef(false);
 	const paneRef = useRef<HTMLElement | null>(null);
 	const statsDockRef = useRef<HTMLDivElement | null>(null);
 	const { spacePath } = useSpace();
 	const { aiEnabled, aiPanelOpen } = useAISidebarContext();
+	const shouldReduceMotion = useReducedMotion();
 
 	const isDirty = text !== savedText;
 	const [statsLayout, setStatsLayout] = useState<StatsLayout>("full");
@@ -96,6 +106,53 @@ export function MarkdownEditorPane({
 			readingTime: formatReadingTime(words),
 		};
 	}, [text]);
+
+	const flashSyncPulse = useCallback((next: Exclude<SyncPulse, null>) => {
+		if (syncPulseTimerRef.current !== null) {
+			window.clearTimeout(syncPulseTimerRef.current);
+		}
+		setSyncPulse(next);
+		syncPulseTimerRef.current = window.setTimeout(() => {
+			syncPulseTimerRef.current = null;
+			setSyncPulse(null);
+		}, 1400);
+	}, []);
+
+	const saveSignal = useMemo(() => {
+		if (saving || autosaveBusy) {
+			return {
+				state: "saving",
+				label: "Saving",
+				description: "Writing changes to disk",
+			} as const;
+		}
+		if (isDirty) {
+			return {
+				state: "dirty",
+				label: "Edited",
+				description: "Unsaved changes",
+			} as const;
+		}
+		if (syncPulse === "reloaded") {
+			return {
+				state: "reloaded",
+				label: "Fresh",
+				description: "Content reloaded",
+			} as const;
+		}
+		if (syncPulse === "saved") {
+			return {
+				state: "saved-fresh",
+				label: "Saved",
+				description: "Changes saved",
+			} as const;
+		}
+		return {
+			state: lastSavedMtimeMs ? "saved" : "ready",
+			label: lastSavedMtimeMs ? "Saved" : "Ready",
+			description: lastSavedMtimeMs ? "All changes saved" : "Editor ready",
+		} as const;
+	}, [autosaveBusy, isDirty, lastSavedMtimeMs, saving, syncPulse]);
 
 	const syncStatsLayout = useCallback(() => {
 		if (mode === "preview") {
@@ -145,6 +202,7 @@ export function MarkdownEditorPane({
 		setText(cached);
 		setSavedText(cached);
 		setLastSavedMtimeMs(null);
+		setSyncPulse(null);
 		hasUserEditsRef.current = false;
 		setActionsOpen(false);
 	}, [relPath]);
@@ -157,19 +215,25 @@ export function MarkdownEditorPane({
 		markdownDocCache.clear();
 	}, [spacePath]);
 
-	const loadDoc = useCallback(async () => {
-		setError("");
-		try {
-			const doc = await invoke("space_read_text", { path: relPath });
-			markdownDocCache.set(relPath, doc.text);
-			setText((prev) => (prev === savedTextRef.current ? doc.text : prev));
-			setSavedText(doc.text);
-			setLastSavedMtimeMs(doc.mtime_ms);
-			hasUserEditsRef.current = false;
-		} catch (e) {
-			setError(extractErrorMessage(e));
-		}
-	}, [relPath]);
+	const loadDoc = useCallback(
+		async (showRefreshFeedback = false) => {
+			setError("");
+			try {
+				const doc = await invoke("space_read_text", { path: relPath });
+				markdownDocCache.set(relPath, doc.text);
+				setText((prev) => (prev === savedTextRef.current ? doc.text : prev));
+				setSavedText(doc.text);
+				setLastSavedMtimeMs(doc.mtime_ms);
+				hasUserEditsRef.current = false;
+				if (showRefreshFeedback) {
+					flashSyncPulse("reloaded");
+				}
+			} catch (e) {
+				setError(extractErrorMessage(e));
+			}
+		},
+		[flashSyncPulse, relPath],
+	);
 
 	const loadDocFromExternalChange = useCallback(async () => {
 		setError("");
@@ -202,6 +266,7 @@ export function MarkdownEditorPane({
 				setSavedText(saved);
 				setLastSavedMtimeMs(mtimeMs);
 				hasUserEditsRef.current = false;
+				flashSyncPulse("saved");
 			};
 
 			setError("");
@@ -243,7 +308,7 @@ export function MarkdownEditorPane({
 				}
 			}
 		},
-		[relPath],
+		[flashSyncPulse, relPath],
 	);
 
 	const onSave = useCallback(async () => {
@@ -266,8 +331,10 @@ export function MarkdownEditorPane({
 		if (snapshot === savedTextRef.current) return;
 
 		autosaveInFlightRef.current = true;
+		setAutosaveBusy(true);
 		void persistDoc(path, snapshot).then((ok) => {
 			autosaveInFlightRef.current = false;
+			setAutosaveBusy(false);
 			if (autosaveQueuedRef.current) {
 				autosaveQueuedRef.current = false;
 				runAutosave();
@@ -327,6 +394,9 @@ export function MarkdownEditorPane({
 		() => () => {
 			if (externalSyncTimerRef.current !== null) {
 				window.clearTimeout(externalSyncTimerRef.current);
+			}
+			if (syncPulseTimerRef.current !== null) {
+				window.clearTimeout(syncPulseTimerRef.current);
 			}
 		},
 		[],
@@ -406,6 +476,8 @@ export function MarkdownEditorPane({
 						variant="outline"
 						size="icon-sm"
 						className="markdownEditorMenuTrigger"
+						data-open={actionsOpen ? "true" : "false"}
+						data-save-state={saveSignal.state}
 						onClick={() => setActionsOpen((prev) => !prev)}
 						aria-label={
 							actionsOpen ? "Close editor actions" : "Open editor actions"
@@ -415,111 +487,135 @@ export function MarkdownEditorPane({
 					>
 						<HugeiconsIcon icon={MenuCircleIcon} size={14} />
 					</Button>
-					{actionsOpen ? (
-						<div className="markdownEditorActionsPanel">
-							<Button
-								type="button"
-								variant="ghost"
-								size="xs"
-								className="markdownEditorActionItem"
-								data-active={mode === "rich"}
-								onClick={() => {
-									setMode("rich");
-									setActionsOpen(false);
-								}}
+					<AnimatePresence initial={false}>
+						{actionsOpen ? (
+							<m.div
+								className="markdownEditorActionsPanel"
+								initial={
+									shouldReduceMotion
+										? false
+										: { opacity: 0, y: -6, scale: 0.98 }
+								}
+								animate={{ opacity: 1, y: 0, scale: 1 }}
+								exit={
+									shouldReduceMotion
+										? { opacity: 0 }
+										: { opacity: 0, y: -4, scale: 0.985 }
+								}
+								transition={
+									shouldReduceMotion
+										? { duration: 0 }
+										: {
+												type: "spring",
+												stiffness: 420,
+												damping: 34,
+											}
+								}
 							>
-								<Edit size={12} />
-								Edit
-							</Button>
-							<Button
-								type="button"
-								variant="ghost"
-								size="xs"
-								className="markdownEditorActionItem"
-								data-active={mode === "preview"}
-								onClick={() => {
-									setMode("preview");
-									setActionsOpen(false);
-								}}
-							>
-								<Eye size={12} />
-								Preview
-							</Button>
-							<Button
-								type="button"
-								variant="ghost"
-								size="xs"
-								className="markdownEditorActionItem"
-								data-active={mode === "plain"}
-								onClick={() => {
-									setMode("plain");
-									setActionsOpen(false);
-								}}
-							>
-								<HugeiconsIcon icon={SourceCodeIcon} size={12} />
-								Raw
-							</Button>
-							{canInsertCallouts ? (
-								<>
-									<div className="markdownEditorActionDivider" />
-									<div className="markdownEditorCalloutSection">
-										<div className="markdownEditorCalloutLabel">Callouts</div>
-										<div className="markdownEditorCalloutRow">
-											{CALLOUT_TYPES.map((type) => (
-												<Button
-													key={type}
-													type="button"
-													variant="ghost"
-													size="xs"
-													className="markdownEditorCalloutChip"
-													onClick={() => {
-														calloutInserterRef.current?.(type);
-														setActionsOpen(false);
-													}}
-													title={`Insert ${type === "Warn" ? "Warning" : type} callout`}
-												>
-													{type}
-												</Button>
-											))}
+								<Button
+									type="button"
+									variant="ghost"
+									size="xs"
+									className="markdownEditorActionItem"
+									data-active={mode === "rich"}
+									onClick={() => {
+										setMode("rich");
+										setActionsOpen(false);
+									}}
+								>
+									<Edit size={12} />
+									Edit
+								</Button>
+								<Button
+									type="button"
+									variant="ghost"
+									size="xs"
+									className="markdownEditorActionItem"
+									data-active={mode === "preview"}
+									onClick={() => {
+										setMode("preview");
+										setActionsOpen(false);
+									}}
+								>
+									<Eye size={12} />
+									Preview
+								</Button>
+								<Button
+									type="button"
+									variant="ghost"
+									size="xs"
+									className="markdownEditorActionItem"
+									data-active={mode === "plain"}
+									onClick={() => {
+										setMode("plain");
+										setActionsOpen(false);
+									}}
+								>
+									<HugeiconsIcon icon={SourceCodeIcon} size={12} />
+									Raw
+								</Button>
+								{canInsertCallouts ? (
+									<>
+										<div className="markdownEditorActionDivider" />
+										<div className="markdownEditorCalloutSection">
+											<div className="markdownEditorCalloutLabel">Callouts</div>
+											<div className="markdownEditorCalloutRow">
+												{CALLOUT_TYPES.map((type) => (
+													<Button
+														key={type}
+														type="button"
+														variant="ghost"
+														size="xs"
+														className="markdownEditorCalloutChip"
+														onClick={() => {
+															calloutInserterRef.current?.(type);
+															setActionsOpen(false);
+														}}
+														title={`Insert ${type === "Warn" ? "Warning" : type} callout`}
+													>
+														{type}
+													</Button>
+												))}
+											</div>
 										</div>
-									</div>
-									<div className="markdownEditorActionDivider" />
-								</>
-							) : null}
-							<Button
-								type="button"
-								variant="ghost"
-								size="xs"
-								className="markdownEditorActionItem"
-								onClick={() => {
-									void loadDoc();
-									setActionsOpen(false);
-								}}
-								disabled={saving}
-							>
-								<RefreshCw size={12} />
-								Reload
-							</Button>
-							<Button
-								type="button"
-								variant="ghost"
-								size="xs"
-								className="markdownEditorActionItem"
-								onClick={() => {
-									void onSave();
-									setActionsOpen(false);
-								}}
-								disabled={saving}
-							>
-								<Save size={12} />
-								{saving ? "Saving" : "Save"}
-							</Button>
-						</div>
-					) : null}
+										<div className="markdownEditorActionDivider" />
+									</>
+								) : null}
+								<Button
+									type="button"
+									variant="ghost"
+									size="xs"
+									className="markdownEditorActionItem"
+									onClick={() => {
+										void loadDoc(true);
+										setActionsOpen(false);
+									}}
+									disabled={saving}
+								>
+									<RefreshCw size={12} />
+									Reload
+								</Button>
+								<Button
+									type="button"
+									variant="ghost"
+									size="xs"
+									className="markdownEditorActionItem"
+									onClick={() => {
+										void onSave();
+										setActionsOpen(false);
+									}}
+									disabled={saving}
+								>
+									<Save size={12} />
+									{saving ? "Saving" : "Save"}
+								</Button>
+							</m.div>
+						) : null}
+					</AnimatePresence>
 				</div>
 			</div>
 			{mode !== "preview" ? (
-				<div
+				<m.div
 					ref={statsDockRef}
 					className={[
 						"markdownEditorStatsDock",
@@ -529,9 +625,19 @@ export function MarkdownEditorPane({
 					]
 						.filter(Boolean)
 						.join(" ")}
+					initial={shouldReduceMotion ? false : { opacity: 0, y: 8 }}
+					animate={{ opacity: 1, y: 0 }}
+					transition={
+						shouldReduceMotion
+							? { duration: 0 }
+							: { type: "spring", stiffness: 380, damping: 32 }
+					}
 					aria-label="Editor statistics"
 				>
-					<div className="markdownEditorStatsPill">
+					<div
+						className="markdownEditorStatsPill"
+						data-save-state={saveSignal.state}
+					>
 						<div
 							className="markdownEditorStatsItem"
 							data-metric="words"
@@ -568,8 +674,22 @@ export function MarkdownEditorPane({
 							<Calendar size={13} aria-hidden />
 							<span>{stats.readingTime}</span>
 						</div>
+						<div
+							className="markdownEditorStatsItem markdownEditorSaveState"
+							data-state={saveSignal.state}
+							title={saveSignal.description}
+							aria-label={saveSignal.description}
+						>
+							<span className="markdownEditorSaveDot" aria-hidden />
+							<HugeiconsIcon
+								icon={SaveIcon}
+								size={11}
+								className="markdownEditorSaveGlyph"
+								aria-hidden
+							/>
+						</div>
 					</div>
-				</div>
+				</m.div>
 			) : null}
 
 			{error ? (

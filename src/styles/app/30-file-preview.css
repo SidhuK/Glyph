@@ -107,16 +107,16 @@
 
 .markdownEditorFloatActions {
 	position: absolute;
-	top: 8px;
-	right: 12px;
+	top: 10px;
+	right: 14px;
 	z-index: 6;
 	display: inline-block;
 }
 
 .markdownEditorStatsDock {
 	position: absolute;
-	right: 12px;
-	bottom: 12px;
+	right: 14px;
+	bottom: 14px;
 	z-index: 18;
 	max-width: min(56vw, 560px);
 	overflow-x: auto;
@@ -124,10 +124,11 @@
 	-webkit-overflow-scrolling: touch;
 	scrollbar-width: thin;
 	pointer-events: auto;
+	transition: opacity 180ms ease, transform 180ms ease;
 }
 
 .markdownEditorStatsDock.withAiFab {
-	right: 82px;
+	right: 88px;
 	max-width: min(48vw, 500px);
 }
 
@@ -139,23 +140,26 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 0;
-	min-height: 30px;
+	min-height: 31px;
 	padding: 2px;
-	border-radius: var(--radius-md);
-	border: 1px solid color-mix(in srgb, var(--border-light) 84%, transparent);
-	background: color-mix(in srgb, var(--bg-primary) 88%, var(--bg-secondary));
+	border-radius: 999px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 86%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 90%, var(--bg-secondary));
+	backdrop-filter: blur(14px);
+	-webkit-backdrop-filter: blur(14px);
 }
 
 .markdownEditorStatsItem {
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
-	padding: 0 10px;
-	min-height: 24px;
-	font-size: 11px;
+	padding: 0 11px;
+	min-height: 25px;
+	font-size: 10.5px;
 	line-height: 1;
 	color: var(--text-secondary);
 	cursor: help;
+	transition: color 180ms ease, background-color 180ms ease;
 }
 
 .markdownEditorStatsItem + .markdownEditorStatsItem {
@@ -164,7 +168,11 @@
 }
 
 .markdownEditorStatsItem svg {
-	opacity: 0.9;
+	opacity: 0.78;
+}
+
+.markdownEditorStatsItem:hover {
+	color: var(--text-primary);
 }
 
 .markdownEditorStatsDock.is-collapsed .markdownEditorStatsPill {
@@ -185,27 +193,100 @@
 	display: none;
 }
 
+.markdownEditorSaveState {
+	gap: 6px;
+	cursor: default;
+}
+
+.markdownEditorSaveDot {
+	width: 6px;
+	height: 6px;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--text-tertiary) 78%, transparent);
+	transition: background-color 180ms ease, transform 180ms ease, opacity 180ms
+		ease;
+}
+
+.markdownEditorSaveState[data-state="dirty"] .markdownEditorSaveDot {
+	background: color-mix(in srgb, oklch(0.72 0.14 82) 88%, transparent);
+}
+
+.markdownEditorSaveState[data-state="saving"] .markdownEditorSaveDot {
+	background: color-mix(in srgb, var(--interactive-accent) 88%, transparent);
+	animation: markdownEditorSavePulse 1.2s ease-in-out infinite;
+}
+
+.markdownEditorSaveState[data-state="saved-fresh"] .markdownEditorSaveDot,
+.markdownEditorSaveState[data-state="reloaded"] .markdownEditorSaveDot {
+	background: color-mix(in srgb, var(--interactive-accent) 80%, white 8%);
+	transform: scale(1.18);
+}
+
+.markdownEditorSaveState[data-state="saved"] .markdownEditorSaveDot {
+	background: color-mix(in srgb, var(--interactive-accent) 58%, transparent);
+}
+
+.markdownEditorSaveGlyph {
+	opacity: 0.82;
+}
+
+.markdownEditorStatsDock.is-collapsed .markdownEditorSaveState {
+	padding-inline: 9px;
+}
+
 .markdownEditorActionsMenu {
 	position: relative;
 }
 
 .markdownEditorMenuTrigger {
-	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
+	position: relative;
+	border-color: color-mix(in srgb, var(--border-light) 84%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 90%, var(--bg-secondary));
+	backdrop-filter: blur(14px);
+	-webkit-backdrop-filter: blur(14px);
+	color: var(--text-secondary);
+	transition: transform 180ms ease, border-color 180ms ease, background-color
+		180ms ease, color 180ms ease;
+}
+
+.markdownEditorMenuTrigger:hover,
+.markdownEditorMenuTrigger:focus-visible,
+.markdownEditorMenuTrigger[data-open="true"] {
+	transform: translateY(-1px);
+	border-color: color-mix(in srgb, var(--border-default) 74%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-hover));
+	color: var(--text-primary);
+}
+
+.markdownEditorMenuTrigger[data-save-state="dirty"] {
+	border-color: color-mix(in srgb, oklch(0.72 0.14 82) 24%, var(--border-light));
+}
+
+.markdownEditorMenuTrigger[data-save-state="saved-fresh"],
+.markdownEditorMenuTrigger[data-save-state="reloaded"] {
+	border-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 26%,
+		var(--border-light)
+	);
 }
 
 .markdownEditorActionsPanel {
 	position: absolute;
 	top: calc(100% + 6px);
 	right: 0;
-	min-width: 128px;
+	min-width: 138px;
 	display: flex;
 	flex-direction: column;
 	gap: 2px;
-	padding: 4px;
-	border-radius: var(--radius-md);
-	border: 1px solid var(--border-light);
-	background: color-mix(in srgb, var(--bg-primary) 96%, transparent);
-	box-shadow: var(--shadow-md);
+	padding: 5px;
+	border-radius: calc(var(--radius-md) + 2px);
+	border: 1px solid color-mix(in srgb, var(--border-light) 86%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 96%, var(--bg-secondary));
+	backdrop-filter: blur(16px);
+	-webkit-backdrop-filter: blur(16px);
+	box-shadow: 0 16px 36px
+		color-mix(in srgb, var(--shadow-color, #000) 8%, transparent);
 }
 
 .markdownEditorActionItem {
@@ -213,10 +294,22 @@
 	justify-content: flex-start;
 	font-size: 11px;
 	color: var(--text-secondary);
+	border-radius: var(--radius-md);
+	transition: transform 160ms ease, background-color 160ms ease, color 160ms
+		ease;
+}
+
+.markdownEditorActionItem:hover:not(:disabled) {
+	transform: translateY(-1px);
+	color: var(--text-primary);
 }
 
 .markdownEditorActionItem[data-active="true"] {
-	background: var(--bg-secondary);
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 8%,
+		var(--bg-secondary)
+	);
 	color: var(--text-primary);
 }
 
@@ -254,9 +347,12 @@
 	line-height: 1;
 	border-radius: var(--radius-full);
 	color: var(--text-secondary);
+	transition: transform 160ms ease, background-color 160ms ease, color 160ms
+		ease;
 }
 
 .markdownEditorCalloutChip:hover:not(:disabled) {
+	transform: translateY(-1px);
 	color: var(--text-primary);
 	background: var(--bg-hover);
 }
@@ -273,13 +369,17 @@
 
 .markdownEditorPane .rfNodeNoteEditor {
 	border: none;
-	border-radius: 0;
+	border-radius: 18px;
 	background: transparent;
+}
+
+.markdownEditorPane .rfNodeNoteEditor:focus-within {
+	box-shadow: none;
 }
 
 .markdownEditorPane .tiptapContentInline {
 	max-width: var(--readable-content-max-width);
-	padding: 12px var(--readable-content-gutter);
+	padding: 18px var(--readable-content-gutter) 28px;
 }
 
 .markdownEditorPane .frontmatterPreview {
@@ -312,6 +412,19 @@
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
+	}
+}
+
+@keyframes markdownEditorSavePulse {
+	0%,
+	100% {
+		opacity: 0.75;
+		transform: scale(1);
+	}
+
+	50% {
+		opacity: 1;
+		transform: scale(1.2);
 	}
 }
 

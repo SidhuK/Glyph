@@ -36,6 +36,7 @@ const RibbonButtonList = memo(function RibbonButtonList({
 			disabled={!canEdit}
 			onMouseDown={onPreventMouseDown}
 			onClick={() => canEdit && btn.onClick()}
+			whileHover={canEdit ? { y: -1 } : undefined}
 			whileTap={{ scale: 0.92 }}
 			transition={springPresets.snappy}
 		>

@@ -664,7 +664,20 @@
 
 .tiptapContentInline {
 	letter-spacing: 0;
-	line-height: 1.6;
+	line-height: 1.68;
+	color: color-mix(in srgb, var(--text-primary) 96%, var(--text-secondary));
+	text-rendering: optimizeLegibility;
+}
+
+.tiptapContentInline::selection,
+.tiptapContentInline *::selection,
+.rfNodeNoteEditorRaw::selection,
+.rfNodeNoteEditorRaw *::selection {
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 20%,
+		var(--selection-bg-muted)
+	);
 }
 
 .tiptapContentInline h1,
@@ -673,9 +686,10 @@
 .tiptapContentInline h4,
 .tiptapContentInline h5,
 .tiptapContentInline h6 {
-	margin: var(--space-5) 0 var(--space-3);
+	margin: calc(var(--space-5) + 2px) 0 var(--space-3);
 	font-weight: var(--font-semibold);
-	line-height: 1.25;
+	line-height: 1.22;
+	letter-spacing: -0.018em;
 	text-wrap: balance;
 }
 
@@ -686,19 +700,19 @@
 .tiptapContentInline
 	:is(p, ul, ol, blockquote, pre, table)
 	+ :is(h1, h2, h3, h4, h5, h6) {
-	margin-top: var(--space-6);
+	margin-top: calc(var(--space-6) + 2px);
 }
 
 .tiptapContentInline h1 {
-	font-size: 1.25rem;
+	font-size: 1.4rem;
 }
 
 .tiptapContentInline h2 {
-	font-size: 1.1rem;
+	font-size: 1.18rem;
 }
 
 .tiptapContentInline h3 {
-	font-size: 1rem;
+	font-size: 1.04rem;
 }
 
 .tiptapContentInline h4 {
@@ -782,9 +796,11 @@
 
 .tiptapContentInline blockquote {
 	margin: var(--space-3) 0;
-	padding: var(--space-2) var(--space-3);
-	border-left: 3px solid var(--border-default);
-	background: var(--bg-secondary);
+	padding: calc(var(--space-2) + 1px) var(--space-3);
+	border-left: 3px solid
+		color-mix(in srgb, var(--interactive-accent) 48%, var(--border-default));
+	border-radius: 0 var(--radius-lg) var(--radius-lg) 0;
+	background: color-mix(in srgb, var(--bg-secondary) 72%, var(--bg-primary));
 	color: var(--text-secondary);
 }
 
@@ -848,16 +864,25 @@
 }
 
 .tiptapContentInline code {
-	background: var(--bg-secondary);
-	padding: 2px 4px;
+	background: color-mix(in srgb, var(--bg-secondary) 82%, var(--bg-primary));
+	padding: 2px 5px;
 	border-radius: var(--radius-sm);
+	border: 1px solid color-mix(in srgb, var(--border-light) 68%, transparent);
 }
 
 .tiptapContentInline pre {
-	background: var(--bg-secondary);
+	background: color-mix(in srgb, var(--bg-secondary) 82%, var(--bg-primary));
 	padding: var(--space-3);
 	border-radius: var(--radius-lg);
+	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
 	overflow: auto;
+}
+
+.tiptapContentInline pre code {
+	background: transparent;
+	padding: 0;
+	border: none;
+	border-radius: 0;
 }
 
 .tiptapContentInline hr {

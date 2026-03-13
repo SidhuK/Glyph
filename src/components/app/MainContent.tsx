@@ -92,7 +92,6 @@ export const MainContent = memo(function MainContent({
 		setActiveTabPath,
 		dragTabPath,
 		setDragTabPath,
-		dirtyByPath,
 		setDirtyByPath,
 		closeTab,
 		closeActiveTab,
@@ -272,7 +271,6 @@ export const MainContent = memo(function MainContent({
 						<TabBar
 							openTabs={openTabs}
 							activeTabPath={activeTabPath}
-							dirtyByPath={dirtyByPath}
 							dragTabPath={dragTabPath}
 							useWindowBackground={!content}
 							onOpenBlankTab={() => setActiveTabPath(null)}
