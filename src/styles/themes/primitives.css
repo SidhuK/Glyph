@@ -50,6 +50,15 @@
 	--text-xl: 20px;
 	--text-2xl: 24px;
 	--text-3xl: 30px;
+	--editor-font-size: 16px;
+	--editor-inline-font-size: 13px;
+	--editor-raw-font-size: 12px;
+	--editor-h1-font-size: 25.28px;
+	--editor-h2-font-size: 20.48px;
+	--editor-h3-font-size: 17.28px;
+	--editor-h4-font-size: 16px;
+	--editor-h5-font-size: 14.8px;
+	--editor-h6-font-size: 13.6px;
 
 	--leading-tight: 1.2;
 	--leading-snug: 1.35;

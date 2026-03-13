@@ -23,8 +23,21 @@
 	position: absolute;
 	inset: 0;
 	background: var(--chrome-bg);
+	backdrop-filter: blur(var(--chrome-blur));
+	-webkit-backdrop-filter: blur(var(--chrome-blur));
 	z-index: 0;
 	pointer-events: none;
+}
+
+:root[data-translucent-app-frame="false"] .appShell {
+	background: var(--bg-primary);
+	border-color: var(--border-light);
+}
+
+:root[data-translucent-app-frame="false"] .appShell::before {
+	background: var(--bg-primary);
+	backdrop-filter: none;
+	-webkit-backdrop-filter: none;
 }
 
 .appShell > * {

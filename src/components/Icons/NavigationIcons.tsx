@@ -5,6 +5,7 @@ import {
 	ArrowUp,
 	Calendar03Icon,
 	CommandIcon,
+	ComputerIcon,
 	FolderLibraryIcon,
 	FolderPlus as FolderPlusIcon,
 	Globe as GlobeIcon,
@@ -18,6 +19,8 @@ import {
 	Settings05Icon,
 	SidebarLeftIcon,
 	SidebarRightIcon,
+	Sun01Icon,
+	Moon02Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { ComponentProps } from "react";
@@ -84,6 +87,15 @@ export const InformationCircle = (props: IconProps) => (
 );
 export const Calendar = (props: IconProps) => (
 	<HugeiconsIcon icon={Calendar03Icon} {...props} />
+);
+export const Sun = (props: IconProps) => (
+	<HugeiconsIcon icon={Sun01Icon} {...props} />
+);
+export const Moon = (props: IconProps) => (
+	<HugeiconsIcon icon={Moon02Icon} {...props} />
+);
+export const Computer = (props: IconProps) => (
+	<HugeiconsIcon icon={ComputerIcon} {...props} />
 );
 export const AiGlyph = ({
 	size = 16,

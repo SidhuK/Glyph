@@ -7,29 +7,13 @@
 	width: 100%;
 	display: flex;
 	flex-direction: column;
-	background: radial-gradient(
-			120% 120% at 0% 0%,
-			color-mix(in srgb, var(--bg-secondary) 58%, transparent) 0%,
-			transparent 42%
-		), var(--bg-primary);
-	border-radius: var(--radius-md);
+	background: var(--bg-primary);
+	border-radius: 0;
 	overflow: hidden;
 }
 
 .settingsBackdrop {
-	position: absolute;
-	inset: 0;
-	background: radial-gradient(
-			90% 90% at 100% 0%,
-			color-mix(in srgb, var(--bg-secondary) 44%, transparent) 0%,
-			transparent 55%
-		),
-		linear-gradient(
-			180deg,
-			color-mix(in srgb, var(--bg-primary) 86%, transparent) 0%,
-			transparent 28%
-		);
-	opacity: 1;
+	display: none;
 	pointer-events: none;
 }
 
@@ -57,7 +41,7 @@
 	overflow: hidden;
 	display: flex;
 	align-items: stretch;
-	justify-content: center;
+	justify-content: flex-start;
 	position: relative;
 	z-index: 1;
 }
@@ -67,25 +51,24 @@
 	height: 100%;
 	display: grid;
 	grid-template-columns: 236px minmax(0, 1fr);
-	background: transparent;
+	background: var(--bg-primary);
 	overflow: hidden;
 }
 
 .settingsTabs {
 	display: flex;
 	flex-direction: column;
-	gap: 10px;
-	padding: 44px 12px 14px;
-	background: color-mix(in srgb, var(--bg-secondary) 76%, var(--bg-primary));
-	border-right: 1px solid
-		color-mix(in srgb, var(--border-light) 92%, transparent);
+	gap: 8px;
+	padding: 44px 14px 14px;
+	background: var(--bg-secondary);
+	border-right: 1px solid var(--border-light);
 }
 
 .settingsNavHeader {
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
-	padding: 0 8px 4px;
+	padding: 0 4px 6px;
 }
 
 .settingsNavTitle {
@@ -97,7 +80,7 @@
 }
 
 .settingsNavMeta {
-	font-size: 11px;
+	font-size: 12px;
 	line-height: 1.35;
 	color: var(--text-secondary);
 }
@@ -133,9 +116,9 @@
 	align-items: center;
 	justify-content: flex-start;
 	gap: 10px;
-	min-height: 38px;
-	padding: 0 12px;
-	border-radius: calc(var(--radius-lg) + 1px);
+	min-height: 36px;
+	padding: 0 10px;
+	border-radius: var(--radius-md);
 	border: 1px solid transparent;
 	color: var(--text-secondary);
 	background: transparent;
@@ -149,26 +132,24 @@
 .settingsTabButton::before {
 	content: "";
 	position: absolute;
-	left: -7px;
-	top: 8px;
-	bottom: 8px;
-	width: 3px;
-	border-radius: var(--radius-full);
+	left: -10px;
+	top: 7px;
+	bottom: 7px;
+	width: 2px;
+	border-radius: var(--radius-sm);
 	background: transparent;
 	transition: background var(--transition-base);
 }
 
 .settingsTabIcon {
-	height: 20px;
-	width: 20px;
-	border-radius: var(--radius-full);
+	height: 18px;
+	width: 18px;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	background: color-mix(in srgb, var(--bg-primary) 54%, transparent);
 	color: var(--text-tertiary);
 	flex: 0 0 auto;
-	transition: color var(--transition-base), background var(--transition-base);
+	transition: color var(--transition-base);
 }
 
 .settingsTabLabel {
@@ -182,39 +163,33 @@
 	align-items: center;
 	justify-content: center;
 	min-width: 20px;
-	height: 20px;
+	height: 18px;
 	padding: 0 6px;
-	border-radius: var(--radius-full);
-	background: color-mix(in srgb, var(--bg-primary) 86%, transparent);
-	border: 1px solid color-mix(in srgb, var(--border-light) 88%, transparent);
+	border-radius: var(--radius-sm);
+	background: var(--bg-primary);
+	border: 1px solid var(--border-light);
 	font-size: 10px;
 	color: var(--text-tertiary);
 }
 
 .settingsTabButton:hover {
 	color: var(--text-primary);
-	background: color-mix(in srgb, var(--bg-primary) 56%, transparent);
-	border-color: color-mix(in srgb, var(--border-light) 62%, transparent);
-}
-
-.settingsTabButton:hover .settingsTabIcon {
-	color: var(--text-secondary);
-	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
+	background: var(--bg-primary);
+	border-color: var(--border-light);
 }
 
 .settingsTabButton.active {
 	color: var(--text-primary);
-	background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
-	border-color: color-mix(in srgb, var(--border-default) 46%, transparent);
+	background: var(--bg-primary);
+	border-color: var(--border-default);
 }
 
 .settingsTabButton.active::before {
-	background: color-mix(in srgb, var(--interactive-accent) 70%, transparent);
+	background: var(--interactive-accent);
 }
 
 .settingsTabButton.active .settingsTabIcon {
 	color: var(--text-primary);
-	background: color-mix(in srgb, var(--bg-primary) 100%, transparent);
 }
 
 .settingsTabButton.active .settingsTabCount {
@@ -235,22 +210,18 @@
 	overflow-y: auto;
 	display: flex;
 	flex-direction: column;
-	gap: 16px;
-	padding: 44px 24px 24px;
-	background: color-mix(in srgb, var(--bg-primary) 96%, var(--bg-secondary));
+	gap: 14px;
+	padding: 36px 24px 24px;
+	background: var(--bg-primary);
 }
 
 .settingsPanelHeader {
-	position: sticky;
-	top: 0;
-	z-index: 1;
+	position: relative;
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
-	padding: 0 0 14px;
-	background: color-mix(in srgb, var(--bg-primary) 94%, transparent);
-	backdrop-filter: blur(14px);
-	-webkit-backdrop-filter: blur(14px);
+	padding: 0 0 16px;
+	background: transparent;
 }
 
 .settingsPanelHeader::after {
@@ -260,14 +231,7 @@
 	right: 0;
 	bottom: 0;
 	height: 1px;
-	background: linear-gradient(
-		90deg,
-		transparent 0%,
-		color-mix(in srgb, var(--border-light) 44%, transparent) 10%,
-		color-mix(in srgb, var(--border-default) 56%, transparent) 50%,
-		color-mix(in srgb, var(--border-light) 44%, transparent) 90%,
-		transparent 100%
-	);
+	background: var(--border-light);
 }
 
 .settingsPanelTitle {
@@ -296,7 +260,7 @@
 .settingsGrid {
 	display: flex;
 	flex-direction: column;
-	gap: 12px;
+	gap: 10px;
 }
 
 .settingsSearchEmpty {
@@ -304,9 +268,9 @@
 	flex-direction: column;
 	gap: 6px;
 	padding: 22px 18px;
-	border-radius: calc(var(--radius-lg) + 2px);
-	border: 1px solid color-mix(in srgb, var(--border-light) 88%, transparent);
-	background: color-mix(in srgb, var(--bg-secondary) 50%, transparent);
+	border-radius: var(--radius-lg);
+	border: 1px solid var(--border-light);
+	background: var(--bg-primary);
 }
 
 .settingsSearchEmptyTitle {
@@ -341,8 +305,7 @@
 	.settingsTabs {
 		padding: 44px 10px 10px;
 		border-right: 0;
-		border-bottom: 1px solid
-			color-mix(in srgb, var(--border-light) 88%, transparent);
+		border-bottom: 1px solid var(--border-light);
 	}
 
 	.settingsTabButton::before {

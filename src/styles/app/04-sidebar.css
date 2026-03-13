@@ -43,6 +43,17 @@
 	min-height: 0;
 	overflow: hidden;
 	position: relative;
+	background: transparent;
+	backdrop-filter: none;
+	-webkit-backdrop-filter: none;
+	border-right: 1px solid transparent;
+}
+
+:root[data-translucent-sidebar="false"] .sidebarContentRoot {
+	background: var(--bg-sidebar);
+	backdrop-filter: none;
+	-webkit-backdrop-filter: none;
+	border-right-color: var(--border-light);
 }
 
 .sidebarHeader {

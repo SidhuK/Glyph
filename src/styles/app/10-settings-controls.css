@@ -1,13 +1,11 @@
 .settingsPill {
-	padding: 4px 10px;
+	padding: 3px 8px;
 	border-radius: var(--radius-sm);
-	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
-	background: color-mix(in srgb, var(--bg-secondary) 68%, transparent);
-	font-size: 9px;
-	font-weight: var(--font-semibold);
-	letter-spacing: 0.12em;
-	text-transform: uppercase;
-	color: var(--text-tertiary);
+	border: 1px solid color-mix(in srgb, var(--border-light) 84%, transparent);
+	background: var(--bg-secondary);
+	font-size: 10px;
+	font-weight: var(--font-medium);
+	color: var(--text-secondary);
 	line-height: 1;
 }
 
@@ -41,17 +39,21 @@
 	border-radius: var(--radius-sm);
 	border: 1px solid
 		color-mix(in srgb, var(--early-access-color) 52%, transparent);
-	font-size: 8px;
-	letter-spacing: 0.1em;
+	font-size: 10px;
+	font-weight: var(--font-medium);
 	line-height: 1;
 	color: color-mix(in srgb, var(--early-access-color) 40%, var(--text-primary));
-	background: color-mix(in srgb, var(--early-access-color) 16%, transparent);
+	background: color-mix(
+		in srgb,
+		var(--early-access-color) 10%,
+		var(--bg-primary)
+	);
 }
 
 .settingsCard {
-	background: color-mix(in srgb, var(--bg-primary) 84%, var(--bg-secondary));
-	border: 1px solid color-mix(in srgb, var(--border-light) 88%, transparent);
-	border-radius: calc(var(--radius-lg) + 2px);
+	background: var(--bg-primary);
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-lg);
 	padding: 0;
 	display: flex;
 	flex-direction: column;
@@ -64,9 +66,8 @@
 	justify-content: space-between;
 	gap: 12px;
 	padding: 16px 16px 12px;
-	border-bottom: 1px solid
-		color-mix(in srgb, var(--border-light) 62%, transparent);
-	background: color-mix(in srgb, var(--bg-primary) 72%, transparent);
+	border-bottom: 1px solid var(--border-light);
+	background: transparent;
 }
 
 .settingsCardActions {
@@ -125,7 +126,7 @@
 }
 
 .settingsFieldInteractive:hover {
-	background: color-mix(in srgb, var(--bg-secondary) 36%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 52%, transparent);
 }
 
 .settingsFieldCopy {
@@ -403,6 +404,422 @@
 	white-space: nowrap;
 }
 
+.appearanceThemeStage {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 8px;
+	padding: 0 16px 12px;
+}
+
+.appearanceThemeShowcase,
+.appearanceThemeDropdownTrigger,
+.appearanceThemeDropdownOption,
+.appearanceThemeMiniPreview {
+	--theme-preview-accent: var(--interactive-accent);
+	--theme-preview-surface: var(--bg-secondary);
+	--theme-preview-surface-alt: var(--bg-tertiary);
+	--theme-preview-text: var(--text-primary);
+	--theme-preview-badge-bg: var(--bg-primary);
+	--theme-preview-badge-border: var(--border-default);
+	--theme-preview-badge-text: var(--interactive-accent);
+	--theme-preview-border: var(--border-default);
+}
+
+.appearanceThemeShowcase {
+	position: relative;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	padding: 9px;
+	border-radius: var(--radius-lg);
+	border: 1px solid var(--border-light);
+	background: var(--bg-primary);
+}
+
+.appearanceThemeShowcase.is-active {
+	border-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 34%,
+		var(--border-default)
+	);
+	box-shadow: inset 0 0 0 1px
+		color-mix(in srgb, var(--interactive-accent) 12%, transparent);
+}
+
+.appearanceThemeShowcaseHeader {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 6px;
+}
+
+.appearanceThemeShowcaseLabel {
+	font-size: 10px;
+	color: var(--text-secondary);
+}
+
+.appearanceThemeShowcaseTitle {
+	margin-top: 1px;
+	font-size: 12px;
+	font-weight: var(--font-semibold);
+	color: var(--text-primary);
+}
+
+.appearanceThemeShowcaseCanvas {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.appearanceThemeShowcaseWindow {
+	display: grid;
+	grid-template-columns: 32px minmax(0, 1fr);
+	min-height: 54px;
+	overflow: hidden;
+	border-radius: var(--radius-md);
+	border: 1px solid var(--theme-preview-border);
+	background: var(--theme-preview-surface);
+}
+
+.appearanceThemeShowcaseSidebar {
+	background: var(--theme-preview-surface-alt);
+	border-right: 1px solid
+		color-mix(in srgb, var(--theme-preview-text) 14%, transparent);
+}
+
+.appearanceThemeShowcaseEditor {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 5px;
+	padding: 9px 10px;
+}
+
+.appearanceThemeShowcaseLine {
+	height: 4px;
+	border-radius: var(--radius-sm);
+	background: color-mix(in srgb, var(--theme-preview-text) 18%, transparent);
+}
+
+.appearanceThemeShowcaseLine.is-accent {
+	width: 72%;
+	background: color-mix(
+		in srgb,
+		var(--theme-preview-accent) 72%,
+		var(--theme-preview-surface)
+	);
+}
+
+.appearanceThemeShowcaseLine.is-short {
+	width: 54%;
+}
+
+.appearanceThemeShowcaseMeta {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+}
+
+.appearanceThemeShowcaseDescription {
+	margin: 0;
+	font-size: 10px;
+	line-height: 1.45;
+	color: var(--text-secondary);
+}
+
+.appearanceThemeDropdownTrigger {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	width: 100%;
+	padding: 7px 9px;
+	text-align: left;
+	border-radius: var(--radius-md);
+	border: 1px solid var(--theme-preview-border);
+	background: var(--theme-preview-surface);
+	color: var(--theme-preview-text);
+	transition: border-color var(--transition-base), background
+		var(--transition-base), box-shadow var(--transition-base);
+}
+
+.appearanceThemeDropdownTrigger:hover {
+	border-color: color-mix(
+		in srgb,
+		var(--theme-preview-accent) 34%,
+		var(--theme-preview-border)
+	);
+	background: color-mix(
+		in srgb,
+		var(--theme-preview-surface) 84%,
+		var(--theme-preview-surface-alt)
+	);
+	color: var(--theme-preview-text);
+	box-shadow: inset 0 0 0 1px
+		color-mix(in srgb, var(--theme-preview-accent) 12%, transparent);
+}
+
+.appearanceThemeDropdownTitle,
+.appearanceThemeDropdownOptionTitle {
+	font-size: 11px;
+	font-weight: var(--font-semibold);
+	color: currentcolor;
+}
+
+.appearanceThemeDropdownDescription,
+.appearanceThemeDropdownOptionDescription {
+	margin-top: 1px;
+	font-size: 9px;
+	line-height: 1.25;
+	color: color-mix(
+		in srgb,
+		var(--theme-preview-text) 72%,
+		var(--theme-preview-surface)
+	);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.appearanceThemeDropdownChevron {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: color-mix(
+		in srgb,
+		var(--theme-preview-text) 56%,
+		var(--theme-preview-surface)
+	);
+	transition: transform var(--transition-base), color var(--transition-base);
+}
+
+.appearanceThemeDropdownChevron.is-open {
+	transform: rotate(180deg);
+	color: var(--theme-preview-text);
+}
+
+.appearanceThemeDropdownContent {
+	width: min(420px, calc(100vw - 24px));
+	padding: 8px;
+	border-radius: var(--radius-lg);
+	border: 1px solid var(--border-light);
+	background: var(--bg-primary);
+	box-shadow: none;
+}
+
+.appearanceThemeDropdownOption {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 10px;
+	width: 100%;
+	padding: 7px 8px;
+	text-align: left;
+	border-radius: var(--radius-md);
+	border: 1px solid
+		color-mix(in srgb, var(--theme-preview-border) 84%, transparent);
+	background: var(--theme-preview-surface);
+	color: var(--theme-preview-text);
+	transition: border-color var(--transition-base), background
+		var(--transition-base), box-shadow var(--transition-base);
+}
+
+.appearanceThemeDropdownOption:hover {
+	border-color: color-mix(
+		in srgb,
+		var(--theme-preview-accent) 34%,
+		var(--theme-preview-border)
+	);
+	background: color-mix(
+		in srgb,
+		var(--theme-preview-surface) 84%,
+		var(--theme-preview-surface-alt)
+	);
+	color: var(--theme-preview-text);
+	box-shadow: inset 0 0 0 1px
+		color-mix(in srgb, var(--theme-preview-accent) 10%, transparent);
+}
+
+.appearanceThemeDropdownOption.is-selected {
+	border-color: color-mix(
+		in srgb,
+		var(--theme-preview-accent) 42%,
+		var(--theme-preview-border)
+	);
+	background: color-mix(
+		in srgb,
+		var(--theme-preview-surface) 74%,
+		var(--theme-preview-surface-alt)
+	);
+	color: var(--theme-preview-text);
+	box-shadow: inset 0 0 0 1px
+		color-mix(in srgb, var(--theme-preview-accent) 16%, transparent);
+}
+
+.appearanceThemeDropdownLeading,
+.appearanceThemeDropdownOptionLead {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	min-width: 0;
+}
+
+.appearanceThemeBadge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 28px;
+	height: 28px;
+	padding: 0 6px;
+	border-radius: var(--radius-md);
+	border: 1px solid var(--theme-preview-badge-border);
+	background: var(--theme-preview-badge-bg);
+	color: var(--theme-preview-badge-text);
+	font-size: 12px;
+	font-weight: var(--font-semibold);
+	letter-spacing: -0.03em;
+}
+
+.appearanceThemeDropdownCopy,
+.appearanceThemeDropdownOptionCopy {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.appearanceThemeDropdownMeta,
+.appearanceThemeDropdownOptionMeta {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex: 0 0 auto;
+}
+
+.appearanceThemeDropdownHeader {
+	padding: 4px 4px 8px;
+}
+
+.appearanceThemeDropdownHeaderTitle {
+	font-size: 11px;
+	font-weight: var(--font-semibold);
+	color: var(--text-primary);
+}
+
+.appearanceThemeDropdownHeaderHint {
+	margin-top: 3px;
+	font-size: 10px;
+	line-height: 1.35;
+	color: var(--text-secondary);
+}
+
+.appearanceThemeDropdownList {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	max-height: min(54vh, 500px);
+	overflow: auto;
+	padding: 1px 1px 3px;
+}
+
+.appearanceThemeMiniPreview {
+	display: grid;
+	grid-template-columns: 14px minmax(0, 1fr);
+	width: 46px;
+	height: 26px;
+	overflow: hidden;
+	border-radius: var(--radius-md);
+	border: 1px solid var(--theme-preview-border);
+	background: var(--theme-preview-surface);
+}
+
+.appearanceThemeMiniSidebar {
+	background: var(--theme-preview-surface-alt);
+	border-right: 1px solid
+		color-mix(in srgb, var(--theme-preview-text) 14%, transparent);
+}
+
+.appearanceThemeMiniCanvas {
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	gap: 3px;
+	padding: 5px 5px 5px 4px;
+}
+
+.appearanceThemeMiniLine {
+	height: 2px;
+	border-radius: var(--radius-sm);
+	background: color-mix(in srgb, var(--theme-preview-text) 20%, transparent);
+}
+
+.appearanceThemeMiniLine.is-accent {
+	width: 78%;
+	background: color-mix(
+		in srgb,
+		var(--theme-preview-accent) 76%,
+		var(--theme-preview-surface)
+	);
+}
+
+.appearanceThemeMiniLine.is-short {
+	width: 56%;
+}
+
+.appearanceThemeSwatches {
+	display: inline-flex;
+	align-items: center;
+	gap: 3px;
+}
+
+.appearanceThemeSwatches span {
+	width: 6px;
+	height: 6px;
+	border-radius: var(--radius-full);
+	border: 1px solid
+		color-mix(in srgb, var(--theme-preview-text) 14%, transparent);
+}
+
+.appearanceThemeSwatches span:nth-child(1) {
+	background: var(--theme-preview-accent);
+}
+
+.appearanceThemeSwatches span:nth-child(2) {
+	background: var(--theme-preview-surface);
+}
+
+.appearanceThemeSwatches span:nth-child(3) {
+	background: var(--theme-preview-surface-alt);
+}
+
+@media (max-width: 920px) {
+	.appearanceThemeStage {
+		grid-template-columns: 1fr;
+	}
+}
+
+@media (max-width: 680px) {
+	.appearanceThemeDropdownTrigger,
+	.appearanceThemeDropdownOption {
+		align-items: flex-start;
+	}
+
+	.appearanceThemeDropdownMeta,
+	.appearanceThemeDropdownOptionMeta {
+		flex-direction: column;
+		align-items: flex-end;
+	}
+
+	.appearanceThemeDropdownDescription,
+	.appearanceThemeDropdownOptionDescription {
+		white-space: normal;
+	}
+
+	.appearanceThemeDropdownContent {
+		width: min(100vw - 16px, 460px);
+	}
+}
+
 .codexRateLimitList {
 	width: 100%;
 	display: flex;
@@ -420,19 +837,8 @@
 	border-radius: var(--radius-8);
 	border: 1px solid
 		color-mix(in srgb, var(--codex-tone) 30%, var(--border-light));
-	background: radial-gradient(
-			120% 140% at 100% -40%,
-			color-mix(in srgb, var(--codex-tone) 16%, transparent) 0%,
-			transparent 48%
-		),
-		linear-gradient(
-			180deg,
-			color-mix(in srgb, var(--bg-secondary) 72%, transparent) 0%,
-			color-mix(in srgb, var(--bg-primary) 62%, transparent) 100%
-		);
-	box-shadow: inset 0 1px 0
-		color-mix(in srgb, var(--bg-primary) 55%, transparent), 0 14px 32px -28px
-		color-mix(in srgb, var(--codex-tone) 70%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 84%, var(--bg-secondary));
+	box-shadow: none;
 	scroll-snap-align: start;
 }
 
@@ -458,8 +864,6 @@
 
 .codexRateLimitWindow {
 	font-size: 11px;
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
 	color: color-mix(in srgb, var(--text-secondary) 88%, var(--text-primary));
 }
 
@@ -552,78 +956,46 @@
 	width: 100%;
 }
 
-.settingsToggle {
-	position: relative;
-	width: 46px;
-	height: 28px;
-	min-width: 34px;
-	min-height: 34px;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-}
-
-.settingsToggle input {
-	position: absolute;
-	opacity: 0;
-	width: 0;
-	height: 0;
-}
-
-.settingsToggle span {
-	display: inline-flex;
-	align-items: center;
-	width: 100%;
-	height: 100%;
-	border-radius: var(--radius-md);
-	background: color-mix(in srgb, var(--bg-tertiary) 80%, transparent);
-	border: 1px solid var(--border-light);
-	position: relative;
-	transition: background var(--transition-base), border-color
-		var(--transition-base);
-}
-
-.settingsToggle span::after {
-	content: "";
-	position: absolute;
-	height: 20px;
-	width: 20px;
-	left: 3px;
-	border-radius: var(--radius-sm);
-	background: var(--bg-primary);
-	box-shadow: var(--shadow-sm);
-	transition: transform var(--transition-base), background
-		var(--transition-base);
-}
-
-.settingsToggle input:checked + span {
-	background: color-mix(in srgb, var(--interactive-accent) 25%, transparent);
-	border-color: color-mix(in srgb, var(--interactive-accent) 30%, transparent);
-}
-
-.settingsToggle input:checked + span::after {
-	transform: translateX(18px);
-	background: var(--interactive-accent);
-}
-
 .settingsSegmented {
 	display: inline-flex;
 	align-items: center;
 	margin: 0;
 	min-inline-size: 0;
-	padding: 2px;
+	padding: 0;
 	border-radius: var(--radius-md);
-	border: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
-	background: color-mix(in srgb, var(--bg-secondary) 45%, transparent);
-	gap: 2px;
+	border: 1px solid var(--border-light);
+	background: var(--bg-primary);
+	gap: 0;
+	overflow: hidden;
 }
 
 .settingsSegmented button {
-	min-height: 28px;
-	padding: 0 10px;
-	border-radius: var(--radius-sm);
+	min-height: 30px;
+	padding: 0 12px;
+	border-radius: 0;
+	border-left: 1px solid var(--border-light);
+	display: inline-flex;
+	align-items: center;
+	gap: 7px;
 	font-size: 11px;
 	color: var(--text-secondary);
+}
+
+.settingsSegmentedIcon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: currentcolor;
+	flex: 0 0 auto;
+}
+
+.settingsSegmented button:first-of-type {
+	border-left: 0;
+}
+
+.settingsSegmented button:hover:not(:disabled) {
+	background: color-mix(in srgb, var(--bg-secondary) 58%, transparent);
+	color: var(--text-primary);
 }
 
 .settingsSegmented button:disabled {
@@ -632,7 +1004,7 @@
 }
 
 .settingsSegmented button.active {
-	background: color-mix(in srgb, var(--bg-primary) 90%, transparent);
+	background: var(--bg-secondary);
 	color: var(--text-primary);
 }
 
@@ -729,9 +1101,9 @@
 	align-items: center;
 	gap: 10px;
 	flex-wrap: nowrap;
-	padding: 2px;
-	border-radius: 999px;
-	background: color-mix(in srgb, var(--bg-primary) 64%, transparent);
+	padding: 0;
+	border-radius: 0;
+	background: transparent;
 }
 
 .settingsAccentDot {
@@ -744,9 +1116,8 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	transition: border-color var(--transition-base), transform
-		var(--transition-base), box-shadow var(--transition-base), background
-		var(--transition-base);
+	transition: border-color var(--transition-base), box-shadow
+		var(--transition-base), background var(--transition-base);
 }
 
 .settingsAccentDot span {
@@ -759,15 +1130,14 @@
 }
 
 .settingsAccentDot:hover {
-	transform: translateY(-1px) scale(1.03);
 	background: color-mix(in srgb, var(--bg-hover) 74%, transparent);
 }
 
 .settingsAccentDot.active {
 	background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
 	border-color: color-mix(in srgb, var(--border-light) 72%, transparent);
-	box-shadow: 0 0 0 3px color-mix(in srgb, var(--bg-primary) 94%, transparent),
-		0 0 0 4px color-mix(in srgb, var(--interactive-accent) 26%, transparent);
+	box-shadow: 0 0 0 2px
+		color-mix(in srgb, var(--interactive-accent) 24%, transparent);
 }
 
 @media (max-width: 760px) {
@@ -799,8 +1169,6 @@
 
 @media (prefers-reduced-motion: reduce) {
 	.settingsField,
-	.settingsToggle span,
-	.settingsToggle span::after,
 	.settingsAccentDot,
 	.settingsKeySaved {
 		transition: none;

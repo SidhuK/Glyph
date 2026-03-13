@@ -1,14 +1,14 @@
 /* ─────────────────────────────────────────────────────────────────────────────
-   FLOATING AI PANEL - Glass morphism style
+   FLOATING AI PANEL
    ───────────────────────────────────────────────────────────────────────────── */
 .floatingPanel {
 	position: absolute;
-	background: var(--glass-bg);
-	backdrop-filter: blur(var(--glass-blur));
-	-webkit-backdrop-filter: blur(var(--glass-blur));
-	border: 1px solid var(--glass-border);
-	border-radius: var(--radius-3xl);
-	box-shadow: var(--shadow-xl);
+	background: var(--bg-primary);
+	backdrop-filter: none;
+	-webkit-backdrop-filter: none;
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-lg);
+	box-shadow: none;
 	overflow: hidden;
 	z-index: 100;
 }
@@ -68,7 +68,6 @@
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	animation: about-logo-breath 8s ease-in-out infinite;
 }
 
 .aboutLogo {
@@ -112,12 +111,11 @@
 	gap: 4px;
 	padding: 3px 8px;
 	border-radius: var(--radius-md);
-	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
-	background: color-mix(in srgb, var(--bg-secondary) 42%, transparent);
+	border: 1px solid var(--border-light);
+	background: var(--bg-secondary);
 	font-size: 10px;
-	font-weight: var(--font-semibold);
-	letter-spacing: 0.04em;
-	color: color-mix(in srgb, var(--text-secondary) 86%, var(--text-primary));
+	font-weight: var(--font-medium);
+	color: var(--text-secondary);
 }
 
 .aboutActions {
@@ -177,21 +175,5 @@
 
 	.aboutTitleRow {
 		flex-wrap: wrap;
-	}
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.aboutLogoWrap {
-		animation: none;
-	}
-}
-
-@keyframes about-logo-breath {
-	0%,
-	100% {
-		transform: translateY(0);
-	}
-	50% {
-		transform: translateY(-2px);
 	}
 }

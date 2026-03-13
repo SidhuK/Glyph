@@ -13,12 +13,12 @@ export function LicenseGate({ children }: LicenseGateProps) {
 
 	if (loading) {
 		return (
-			<div className="licenseLoadingScreen">
-				<div className="licenseLoadingPanel">
-					<h1>Loading Glyph</h1>
-					<p>Checking your trial and license status.</p>
-				</div>
-			</div>
+			<div
+				className="licenseLoadingScreen"
+				aria-busy="true"
+				aria-label="Loading Glyph"
+				role="status"
+			/>
 		);
 	}
 

@@ -25,11 +25,9 @@ import type {
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { Calendar as CalendarIcon, ChevronRight, RefreshCw } from "../Icons";
+import { Toggle } from "../base/toggle/toggle";
 import { DatabaseFolderPicker } from "../database/DatabaseFolderPicker";
-import {
-	SettingsSegmented,
-	SettingsToggle,
-} from "../settings/SettingsScaffold";
+import { SettingsSegmented } from "../settings/SettingsScaffold";
 import { Button } from "../ui/shadcn/button";
 import { CalendarMonthAdapter } from "./CalendarMonthAdapter";
 
@@ -474,9 +472,10 @@ export function CalendarPane({ onOpenFile, onClosePane }: CalendarPaneProps) {
 
 							{showRecursiveToggle ? (
 								<div className="calendarFilterToggle">
-									<span className="calendarFilterToggleLabel">Subfolders</span>
-									<SettingsToggle
-										ariaLabel="Include subfolders"
+									<Toggle
+										slim
+										size="sm"
+										label="Subfolders"
 										checked={mode === "notes" ? notesRecursive : tasksRecursive}
 										onCheckedChange={(checked) => {
 											if (mode === "notes") {

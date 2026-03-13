@@ -7,6 +7,7 @@ import { LicenseGate } from "./components/licensing/LicenseGate";
 import { Toaster } from "./components/ui/shadcn/sonner";
 import {
 	applyUiAccent,
+	applyUiSurfacePreferences,
 	applyUiThemeSelection,
 	applyUiTypography,
 } from "./lib/appearance";
@@ -60,7 +61,13 @@ function ThemeAndTypographyBridge() {
 	const [monoFontFamily, setMonoFontFamily] = React.useState<string | null>(
 		null,
 	);
-	const [fontSize, setFontSize] = React.useState<number | null>(null);
+	const [uiFontSize, setUiFontSize] = React.useState<number | null>(null);
+	const [editorFontSize, setEditorFontSize] = React.useState<number | null>(
+		null,
+	);
+	const [translucentApp, setTranslucentApp] = React.useState<boolean | null>(
+		null,
+	);
 
 	React.useEffect(() => {
 		let cancelled = false;
@@ -78,7 +85,9 @@ function ThemeAndTypographyBridge() {
 				setAccent(settings.ui.accent);
 				setFontFamily(settings.ui.fontFamily);
 				setMonoFontFamily(settings.ui.monoFontFamily);
-				setFontSize(settings.ui.fontSize);
+				setUiFontSize(settings.ui.fontSize);
+				setEditorFontSize(settings.ui.editorFontSize);
+				setTranslucentApp(settings.ui.translucentApp);
 			} catch {
 				// best-effort hydration
 			}
@@ -142,14 +151,30 @@ function ThemeAndTypographyBridge() {
 			typeof payload.ui?.fontSize === "number" &&
 			Number.isFinite(payload.ui.fontSize)
 		) {
-			setFontSize(payload.ui.fontSize);
+			setUiFontSize(payload.ui.fontSize);
+		}
+		if (
+			typeof payload.ui?.editorFontSize === "number" &&
+			Number.isFinite(payload.ui.editorFontSize)
+		) {
+			setEditorFontSize(payload.ui.editorFontSize);
+		}
+		if (typeof payload.ui?.translucentApp === "boolean") {
+			setTranslucentApp(payload.ui.translucentApp);
 		}
 	});
 
 	React.useEffect(() => {
-		if (!fontFamily || !monoFontFamily || typeof fontSize !== "number") return;
-		applyUiTypography(fontFamily, monoFontFamily, fontSize);
-	}, [fontFamily, monoFontFamily, fontSize]);
+		if (
+			!fontFamily ||
+			!monoFontFamily ||
+			typeof uiFontSize !== "number" ||
+			typeof editorFontSize !== "number"
+		) {
+			return;
+		}
+		applyUiTypography(fontFamily, monoFontFamily, uiFontSize, editorFontSize);
+	}, [editorFontSize, fontFamily, monoFontFamily, uiFontSize]);
 
 	React.useEffect(() => {
 		if (!accent) return;
@@ -160,6 +185,11 @@ function ThemeAndTypographyBridge() {
 		if (!lightThemeId || !darkThemeId) return;
 		applyUiThemeSelection(lightThemeId, darkThemeId);
 	}, [darkThemeId, lightThemeId]);
+
+	React.useEffect(() => {
+		if (typeof translucentApp !== "boolean") return;
+		applyUiSurfacePreferences({ translucentApp });
+	}, [translucentApp]);
 
 	return null;
 }

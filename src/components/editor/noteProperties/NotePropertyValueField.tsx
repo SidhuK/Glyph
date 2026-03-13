@@ -1,4 +1,5 @@
 import type { NoteProperty, TagCount } from "../../../lib/tauri";
+import { Toggle } from "../../base/toggle/toggle";
 import { X } from "../../Icons";
 import { Input } from "../../ui/shadcn/input";
 import {
@@ -60,16 +61,14 @@ export function NotePropertyValueField({
 
 	if (property.kind === "checkbox") {
 		return (
-			<label className="settingsToggle notePropertyToggle">
-				<input
-					type="checkbox"
-					checked={Boolean(property.value_bool)}
-					onChange={(event) =>
-						onUpdate(index, { value_bool: event.target.checked })
-					}
-				/>
-				<span aria-hidden />
-			</label>
+			<Toggle
+				slim
+				size="sm"
+				className="notePropertyToggle"
+				ariaLabel={property.key || "Checkbox property"}
+				checked={Boolean(property.value_bool)}
+				onCheckedChange={(checked) => onUpdate(index, { value_bool: checked })}
+			/>
 		);
 	}
 
