@@ -12,14 +12,7 @@ export function LicenseGate({ children }: LicenseGateProps) {
 	const [trialBannerDismissed, setTrialBannerDismissed] = useState(false);
 
 	if (loading) {
-		return (
-			<div className="licenseLoadingScreen">
-				<div className="licenseLoadingPanel">
-					<h1>Loading Glyph</h1>
-					<p>Checking your trial and license status.</p>
-				</div>
-			</div>
-		);
+		return <div className="licenseLoadingScreen" aria-busy="true" />;
 	}
 
 	if (!status || !status.can_use_app) {

@@ -947,17 +947,11 @@
 .databaseDialogToggle {
 	display: inline-flex;
 	align-items: center;
-	gap: 6px;
-	font-size: 0.82rem;
-	color: var(--text-secondary);
+	justify-content: flex-end;
 }
 
 .databaseToggleBlock {
-	min-height: 36px;
-	padding: 0 10px;
-	border-radius: var(--radius-md);
-	border: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
-	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
+	width: 100%;
 }
 
 .databaseEmptyCell {

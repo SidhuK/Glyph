@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
+import { Toggle } from "../base/toggle/toggle";
 
 interface SettingsSectionProps {
 	title: string;
@@ -23,6 +24,7 @@ interface SettingsRowProps {
 interface SettingsSegmentedOption<T extends string> {
 	label: string;
 	value: T;
+	icon?: ReactNode;
 }
 
 interface SettingsSegmentedProps<T extends string> {
@@ -119,6 +121,11 @@ export function SettingsSegmented<T extends string>({
 					disabled={disabled}
 					onClick={() => onChange(option.value)}
 				>
+					{option.icon ? (
+						<span className="settingsSegmentedIcon" aria-hidden="true">
+							{option.icon}
+						</span>
+					) : null}
 					{option.label}
 				</button>
 			))}
@@ -133,15 +140,13 @@ export function SettingsToggle({
 	disabled,
 }: SettingsToggleProps) {
 	return (
-		<label className="settingsToggle">
-			<input
-				type="checkbox"
-				checked={checked}
-				onChange={(event) => onCheckedChange(event.target.checked)}
-				aria-label={ariaLabel}
-				disabled={disabled}
-			/>
-			<span aria-hidden="true" />
-		</label>
+		<Toggle
+			slim
+			size="sm"
+			checked={checked}
+			onCheckedChange={onCheckedChange}
+			ariaLabel={ariaLabel}
+			disabled={disabled}
+		/>
 	);
 }

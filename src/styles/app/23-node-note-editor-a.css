@@ -283,7 +283,7 @@
 
 .rfNodeNoteEditorRaw .cm-scroller {
 	font-family: var(--font-mono);
-	font-size: 12px;
+	font-size: var(--editor-raw-font-size);
 	line-height: 1.5;
 }
 
@@ -298,7 +298,7 @@
 	max-width: var(--readable-content-max-width);
 	margin: 0 auto;
 	padding: 12px var(--readable-content-gutter-compact);
-	font-size: 13px;
+	font-size: var(--editor-inline-font-size);
 	line-height: 1.5;
 	color: var(--text-primary);
 }

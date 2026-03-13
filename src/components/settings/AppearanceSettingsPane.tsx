@@ -2,6 +2,7 @@ import { useTheme } from "next-themes";
 import { useCallback, useEffect, useState } from "react";
 import {
 	applyUiAccent,
+	applyUiSurfacePreferences,
 	applyUiThemeSelection,
 	applyUiTypography,
 } from "../../lib/appearance";
@@ -16,10 +17,12 @@ import {
 	setThemeMode,
 	setUiAccent,
 	setUiDarkThemeId,
+	setUiEditorFontSize,
 	setUiFontFamily,
 	setUiFontSize,
 	setUiLightThemeId,
 	setUiMonoFontFamily,
+	setUiTranslucentApp,
 } from "../../lib/settings";
 import {
 	DARK_THEME_OPTIONS,
@@ -28,19 +31,18 @@ import {
 	LIGHT_THEME_OPTIONS,
 	asUiDarkThemeId,
 	asUiLightThemeId,
+	getUiDarkThemeOption,
+	getUiLightThemeOption,
 	isGlyphDefaultDarkTheme,
 	isGlyphDefaultLightTheme,
 } from "../../lib/uiThemes";
 import { AppearanceAccentCard } from "./AppearanceAccentCard";
+import { AppearanceThemeCard } from "./AppearanceThemeCard";
 import { AppearanceTypographyCard } from "./AppearanceTypographyCard";
 import {
-	SettingsRow,
-	SettingsSection,
-	SettingsSegmented,
-} from "./SettingsScaffold";
-import {
 	DEFAULT_FONT_FAMILY,
-	FONT_SIZE_OPTIONS,
+	EDITOR_FONT_SIZE_OPTIONS,
+	UI_FONT_SIZE_OPTIONS,
 	loadAvailableFonts,
 	loadAvailableMonospaceFonts,
 } from "./appearanceOptions";
@@ -65,7 +67,9 @@ export function AppearanceSettingsPane({
 		useState<UiFontFamily>(DEFAULT_FONT_FAMILY);
 	const [monoFontFamily, setMonoFontFamilyState] =
 		useState<UiFontFamily>("JetBrains Mono");
-	const [fontSize, setFontSizeState] = useState<UiFontSize>(14);
+	const [uiFontSize, setUiFontSizeState] = useState<UiFontSize>(14);
+	const [editorFontSize, setEditorFontSizeState] = useState<UiFontSize>(16);
+	const [translucentApp, setTranslucentAppState] = useState(true);
 	const [availableFonts, setAvailableFonts] = useState<string[]>([
 		DEFAULT_FONT_FAMILY,
 	]);
@@ -90,7 +94,9 @@ export function AppearanceSettingsPane({
 				setAccentState(settings.ui.accent);
 				setFontFamilyState(settings.ui.fontFamily);
 				setMonoFontFamilyState(settings.ui.monoFontFamily);
-				setFontSizeState(settings.ui.fontSize);
+				setUiFontSizeState(settings.ui.fontSize);
+				setEditorFontSizeState(settings.ui.editorFontSize);
+				setTranslucentAppState(settings.ui.translucentApp);
 				setAvailableFonts(
 					fonts.includes(settings.ui.fontFamily)
 						? fonts
@@ -107,10 +113,14 @@ export function AppearanceSettingsPane({
 					settings.ui.darkThemeId,
 				);
 				applyUiAccent(settings.ui.accent);
+				applyUiSurfacePreferences({
+					translucentApp: settings.ui.translucentApp,
+				});
 				applyUiTypography(
 					settings.ui.fontFamily,
 					settings.ui.monoFontFamily,
 					settings.ui.fontSize,
+					settings.ui.editorFontSize,
 				);
 			} catch (e) {
 				if (!cancelled) {
@@ -179,42 +189,56 @@ export function AppearanceSettingsPane({
 		async (next: UiFontFamily) => {
 			setError("");
 			setFontFamilyState(next);
-			applyUiTypography(next, monoFontFamily, fontSize);
+			applyUiTypography(next, monoFontFamily, uiFontSize, editorFontSize);
 			try {
 				await setUiFontFamily(next);
 			} catch (e) {
 				setError(e instanceof Error ? e.message : "Failed to save settings");
 			}
 		},
-		[fontSize, monoFontFamily],
+		[editorFontSize, monoFontFamily, uiFontSize],
 	);
 
 	const onMonoFontFamilyChange = useCallback(
 		async (next: UiFontFamily) => {
 			setError("");
 			setMonoFontFamilyState(next);
-			applyUiTypography(fontFamily, next, fontSize);
+			applyUiTypography(fontFamily, next, uiFontSize, editorFontSize);
 			try {
 				await setUiMonoFontFamily(next);
 			} catch (e) {
 				setError(e instanceof Error ? e.message : "Failed to save settings");
 			}
 		},
-		[fontFamily, fontSize],
+		[editorFontSize, fontFamily, uiFontSize],
 	);
 
-	const onFontSizeChange = useCallback(
+	const onUiFontSizeChange = useCallback(
 		async (next: UiFontSize) => {
 			setError("");
-			setFontSizeState(next);
-			applyUiTypography(fontFamily, monoFontFamily, next);
+			setUiFontSizeState(next);
+			applyUiTypography(fontFamily, monoFontFamily, next, editorFontSize);
 			try {
 				await setUiFontSize(next);
 			} catch (e) {
 				setError(e instanceof Error ? e.message : "Failed to save settings");
 			}
 		},
-		[fontFamily, monoFontFamily],
+		[editorFontSize, fontFamily, monoFontFamily],
+	);
+
+	const onEditorFontSizeChange = useCallback(
+		async (next: UiFontSize) => {
+			setError("");
+			setEditorFontSizeState(next);
+			applyUiTypography(fontFamily, monoFontFamily, uiFontSize, next);
+			try {
+				await setUiEditorFontSize(next);
+			} catch (e) {
+				setError(e instanceof Error ? e.message : "Failed to save settings");
+			}
+		},
+		[fontFamily, monoFontFamily, uiFontSize],
 	);
 
 	const onAccentChange = useCallback(async (next: UiAccent) => {
@@ -223,6 +247,17 @@ export function AppearanceSettingsPane({
 		applyUiAccent(next);
 		try {
 			await setUiAccent(next);
+		} catch (e) {
+			setError(e instanceof Error ? e.message : "Failed to save settings");
+		}
+	}, []);
+
+	const onTranslucentAppChange = useCallback(async (next: boolean) => {
+		setError("");
+		setTranslucentAppState(next);
+		applyUiSurfacePreferences({ translucentApp: next });
+		try {
+			await setUiTranslucentApp(next);
 		} catch (e) {
 			setError(e instanceof Error ? e.message : "Failed to save settings");
 		}
@@ -240,68 +275,27 @@ export function AppearanceSettingsPane({
 				: "Choose the accent used for highlights, focus rings, and emphasis in the default dark theme.";
 	const showSection = (title: string) =>
 		!visibleSections || visibleSections.has(title);
+	const lightTheme = getUiLightThemeOption(lightThemeId);
+	const darkTheme = getUiDarkThemeOption(darkThemeId);
 
 	return (
 		<div className="settingsPane">
 			{error ? <div className="settingsError">{error}</div> : null}
 			<div className="settingsGrid">
 				{showSection("Theme") ? (
-					<SettingsSection
-						title="Theme"
-						description="Choose the overall mode Glyph should follow."
-					>
-						<SettingsRow
-							label="Color mode"
-							description="Light and dark are fixed. System follows your OS preference."
-						>
-							<SettingsSegmented<ThemeMode>
-								ariaLabel="Theme mode"
-								value={themeMode}
-								onChange={(value) => void onThemeModeChange(value)}
-								options={[
-									{ label: "Light", value: "light" },
-									{ label: "Dark", value: "dark" },
-									{ label: "System", value: "system" },
-								]}
-							/>
-						</SettingsRow>
-						<SettingsRow
-							label="Light theme"
-							htmlFor="settingsLightTheme"
-							description="Choose the theme family Glyph should use whenever the app resolves to light mode."
-						>
-							<select
-								id="settingsLightTheme"
-								value={lightThemeId}
-								onChange={(event) =>
-									void onLightThemeChange(event.target.value)
-								}
-							>
-								{LIGHT_THEME_OPTIONS.map((option) => (
-									<option key={option.id} value={option.id}>
-										{option.label}
-									</option>
-								))}
-							</select>
-						</SettingsRow>
-						<SettingsRow
-							label="Dark theme"
-							htmlFor="settingsDarkTheme"
-							description="Choose the theme family Glyph should use whenever the app resolves to dark mode."
-						>
-							<select
-								id="settingsDarkTheme"
-								value={darkThemeId}
-								onChange={(event) => void onDarkThemeChange(event.target.value)}
-							>
-								{DARK_THEME_OPTIONS.map((option) => (
-									<option key={option.id} value={option.id}>
-										{option.label}
-									</option>
-								))}
-							</select>
-						</SettingsRow>
-					</SettingsSection>
+					<AppearanceThemeCard
+						themeMode={themeMode}
+						accent={accent}
+						lightTheme={lightTheme}
+						darkTheme={darkTheme}
+						lightOptions={LIGHT_THEME_OPTIONS}
+						darkOptions={DARK_THEME_OPTIONS}
+						translucentApp={translucentApp}
+						onThemeModeChange={onThemeModeChange}
+						onLightThemeChange={onLightThemeChange}
+						onDarkThemeChange={onDarkThemeChange}
+						onTranslucentAppChange={onTranslucentAppChange}
+					/>
 				) : null}
 				{showSection("Accent") && showAccentCard ? (
 					<AppearanceAccentCard
@@ -314,13 +308,16 @@ export function AppearanceSettingsPane({
 					<AppearanceTypographyCard
 						fontFamily={fontFamily}
 						monoFontFamily={monoFontFamily}
-						fontSize={fontSize}
+						uiFontSize={uiFontSize}
+						editorFontSize={editorFontSize}
 						availableFonts={availableFonts}
 						availableMonospaceFonts={availableMonospaceFonts}
-						fontSizeOptions={FONT_SIZE_OPTIONS}
+						uiFontSizeOptions={UI_FONT_SIZE_OPTIONS}
+						editorFontSizeOptions={EDITOR_FONT_SIZE_OPTIONS}
 						onFontFamilyChange={onFontFamilyChange}
 						onMonoFontFamilyChange={onMonoFontFamilyChange}
-						onFontSizeChange={onFontSizeChange}
+						onUiFontSizeChange={onUiFontSizeChange}
+						onEditorFontSizeChange={onEditorFontSizeChange}
 					/>
 				) : null}
 			</div>

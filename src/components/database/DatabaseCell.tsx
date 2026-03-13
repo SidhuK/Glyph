@@ -7,6 +7,7 @@ import {
 } from "../../lib/database/config";
 import type { DatabaseColumn, DatabaseRow } from "../../lib/database/types";
 import { extractErrorMessage } from "../../lib/errorUtils";
+import { Toggle } from "../base/toggle/toggle";
 import { X } from "../Icons";
 import {
 	buildTagSuggestions,
@@ -151,26 +152,26 @@ export function DatabaseCell({
 	if (column.type === "property" && column.property_kind === "checkbox") {
 		return (
 			<div
-				className="settingsToggle notePropertyToggle databaseCheckboxCell"
+				className="notePropertyToggle databaseCheckboxCell"
 				onClick={(event) => {
 					handleSelectRow();
 					event.stopPropagation();
 				}}
 				onKeyDown={(event) => event.stopPropagation()}
 			>
-				<input
-					type="checkbox"
+				<Toggle
+					slim
+					size="sm"
+					ariaLabel={column.label}
 					checked={Boolean(cellValue.value_bool)}
-					onFocus={handleSelectRow}
-					onChange={(event) =>
+					onCheckedChange={(checked) =>
 						void onSave(row.note_path, column, {
 							kind: "checkbox",
-							value_bool: event.target.checked,
+							value_bool: checked,
 							value_list: [],
 						})
 					}
 				/>
-				<span aria-hidden />
 			</div>
 		);
 	}

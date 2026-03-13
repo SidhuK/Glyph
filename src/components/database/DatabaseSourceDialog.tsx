@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { DatabaseConfig, DatabaseFilter } from "../../lib/database/types";
 import { extractErrorMessage } from "../../lib/errorUtils";
+import { Toggle } from "../base/toggle/toggle";
 import { Button } from "../ui/shadcn/button";
 import {
 	Dialog,
@@ -161,19 +162,19 @@ export function DatabaseSourceDialog({
 							<div>
 								<div className="settingsLabel">Folder Scope</div>
 							</div>
-							<label className="databaseDialogToggle databaseToggleBlock">
-								<input
-									type="checkbox"
-									checked={config.source.recursive}
-									disabled={config.source.kind !== "folder"}
-									onChange={(event) =>
-										void handleSave({
-											recursive: event.target.checked,
-										})
-									}
-								/>
-								<span>Include subfolders</span>
-							</label>
+							<Toggle
+								slim
+								size="sm"
+								label="Include subfolders"
+								className="databaseDialogToggle databaseToggleBlock"
+								checked={config.source.recursive}
+								disabled={config.source.kind !== "folder"}
+								onCheckedChange={(checked) =>
+									void handleSave({
+										recursive: checked,
+									})
+								}
+							/>
 						</div>
 					</section>
 					<section className="settingsCard databaseSettingsCard">

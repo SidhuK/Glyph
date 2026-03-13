@@ -4,41 +4,102 @@ import { SettingsRow, SettingsSection } from "./SettingsScaffold";
 interface AppearanceTypographyCardProps {
 	fontFamily: UiFontFamily;
 	monoFontFamily: UiFontFamily;
-	fontSize: UiFontSize;
+	uiFontSize: UiFontSize;
+	editorFontSize: UiFontSize;
 	availableFonts: string[];
 	availableMonospaceFonts: string[];
-	fontSizeOptions: number[];
+	uiFontSizeOptions: number[];
+	editorFontSizeOptions: number[];
 	onFontFamilyChange: (font: UiFontFamily) => Promise<void>;
 	onMonoFontFamilyChange: (font: UiFontFamily) => Promise<void>;
-	onFontSizeChange: (size: UiFontSize) => Promise<void>;
+	onUiFontSizeChange: (size: UiFontSize) => Promise<void>;
+	onEditorFontSizeChange: (size: UiFontSize) => Promise<void>;
+}
+
+interface FontSizeControlProps {
+	id: string;
+	label: string;
+	description: string;
+	value: UiFontSize;
+	min: number;
+	max: number;
+	onChange: (size: UiFontSize) => Promise<void>;
+}
+
+function clampFontSize(value: number, min: number, max: number): UiFontSize {
+	return Math.min(max, Math.max(min, value));
+}
+
+function FontSizeControl({
+	id,
+	label,
+	description,
+	value,
+	min,
+	max,
+	onChange,
+}: FontSizeControlProps) {
+	return (
+		<SettingsRow label={label} htmlFor={id} description={description}>
+			<div className="settingsRange">
+				<input
+					id={id}
+					type="range"
+					min={min}
+					max={max}
+					step={1}
+					value={value}
+					onChange={(event) => void onChange(Number(event.target.value))}
+					aria-label={label}
+				/>
+				<input
+					type="number"
+					className="settingsRangeNumber"
+					min={min}
+					max={max}
+					step={1}
+					value={value}
+					onChange={(event) => {
+						const next = Number(event.target.value);
+						if (!Number.isFinite(next)) return;
+						void onChange(clampFontSize(next, min, max));
+					}}
+					aria-label={`${label} value`}
+				/>
+			</div>
+		</SettingsRow>
+	);
 }
 
 export function AppearanceTypographyCard({
 	fontFamily,
 	monoFontFamily,
-	fontSize,
+	uiFontSize,
+	editorFontSize,
 	availableFonts,
 	availableMonospaceFonts,
-	fontSizeOptions,
+	uiFontSizeOptions,
+	editorFontSizeOptions,
 	onFontFamilyChange,
 	onMonoFontFamilyChange,
-	onFontSizeChange,
+	onUiFontSizeChange,
+	onEditorFontSizeChange,
 }: AppearanceTypographyCardProps) {
-	const minFontSize = fontSizeOptions[0] ?? 7;
-	const maxFontSize = fontSizeOptions[fontSizeOptions.length - 1] ?? 40;
-	const clampFontSize = (value: number): UiFontSize => {
-		return Math.min(maxFontSize, Math.max(minFontSize, value));
-	};
+	const minUiFontSize = uiFontSizeOptions[0] ?? 7;
+	const maxUiFontSize = uiFontSizeOptions[uiFontSizeOptions.length - 1] ?? 40;
+	const minEditorFontSize = editorFontSizeOptions[0] ?? 10;
+	const maxEditorFontSize =
+		editorFontSizeOptions[editorFontSizeOptions.length - 1] ?? 40;
 
 	return (
 		<SettingsSection
 			title="Typography"
-			description="Tune interface type and overall scale for comfort and readability."
+			description="Tune interface type, code styling, and reading scale independently."
 		>
 			<SettingsRow
 				label="Interface font"
 				htmlFor="settingsFontFamily"
-				description="Used for most UI copy across Glyph."
+				description="Used for navigation, settings, and most UI copy across Glyph."
 			>
 				<select
 					id="settingsFontFamily"
@@ -56,7 +117,7 @@ export function AppearanceTypographyCard({
 			<SettingsRow
 				label="Monospace font"
 				htmlFor="settingsMonoFontFamily"
-				description="Used anywhere Glyph needs fixed-width text."
+				description="Used for markdown source, inline code, and developer-oriented surfaces."
 			>
 				<select
 					id="settingsMonoFontFamily"
@@ -71,40 +132,25 @@ export function AppearanceTypographyCard({
 				</select>
 			</SettingsRow>
 
-			<SettingsRow
-				label="Font size"
-				htmlFor="settingsFontSize"
-				description="Adjust the base interface text size used throughout the app."
-			>
-				<div className="settingsRange">
-					<input
-						id="settingsFontSize"
-						type="range"
-						min={minFontSize}
-						max={maxFontSize}
-						step={1}
-						value={fontSize}
-						onChange={(event) =>
-							void onFontSizeChange(Number(event.target.value))
-						}
-						aria-label="Font size"
-					/>
-					<input
-						type="number"
-						className="settingsRangeNumber"
-						min={minFontSize}
-						max={maxFontSize}
-						step={1}
-						value={fontSize}
-						onChange={(event) => {
-							const next = Number(event.target.value);
-							if (!Number.isFinite(next)) return;
-							void onFontSizeChange(clampFontSize(next));
-						}}
-						aria-label="Font size value"
-					/>
-				</div>
-			</SettingsRow>
+			<FontSizeControl
+				id="settingsUiFontSize"
+				label="UI font size"
+				description="Adjust the base size used by menus, panes, controls, and settings."
+				value={uiFontSize}
+				min={minUiFontSize}
+				max={maxUiFontSize}
+				onChange={onUiFontSizeChange}
+			/>
+
+			<FontSizeControl
+				id="settingsEditorFontSize"
+				label="Editor font size"
+				description="Adjust the reading size for the note editor, markdown preview, and raw text editing."
+				value={editorFontSize}
+				min={minEditorFontSize}
+				max={maxEditorFontSize}
+				onChange={onEditorFontSizeChange}
+			/>
 		</SettingsSection>
 	);
 }

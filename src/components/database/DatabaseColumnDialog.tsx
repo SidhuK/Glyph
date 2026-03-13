@@ -7,6 +7,7 @@ import type {
 	DatabasePropertyOption,
 } from "../../lib/database/types";
 import { ChevronDown, ChevronUp, Minus, Plus, Trash2 } from "../Icons";
+import { Toggle } from "../base/toggle/toggle";
 import { Button } from "../ui/shadcn/button";
 import {
 	Dialog,
@@ -164,25 +165,25 @@ export function DatabaseColumnDialog({
 											) : null}
 										</div>
 									</div>
-									<label className="databaseDialogToggle">
-										<input
-											type="checkbox"
-											checked={column.visible}
-											onChange={(event) =>
-												void updateColumns((columns) =>
-													columns.map((entry) =>
-														entry.id === column.id
-															? {
-																	...entry,
-																	visible: event.target.checked,
-																}
-															: entry,
-													),
-												)
-											}
-										/>
-										<span>Visible</span>
-									</label>
+									<Toggle
+										slim
+										size="sm"
+										label="Visible"
+										className="databaseDialogToggle"
+										checked={column.visible}
+										onCheckedChange={(checked) =>
+											void updateColumns((columns) =>
+												columns.map((entry) =>
+													entry.id === column.id
+														? {
+																...entry,
+																visible: checked,
+															}
+														: entry,
+												),
+											)
+										}
+									/>
 									<div className="databaseDialogRowActions">
 										<div className="databaseColumnWidthControl">
 											<Button

@@ -1,11 +1,19 @@
 import { invoke } from "../../lib/tauri";
+import {
+	MAX_EDITOR_FONT_SIZE,
+	MIN_EDITOR_FONT_SIZE,
+	MAX_UI_FONT_SIZE,
+	MIN_UI_FONT_SIZE,
+} from "../../lib/settings";
 
 export const DEFAULT_FONT_FAMILY = "Inter";
-export const MIN_FONT_SIZE = 7;
-export const MAX_FONT_SIZE = 40;
-export const FONT_SIZE_OPTIONS = Array.from(
-	{ length: MAX_FONT_SIZE - MIN_FONT_SIZE + 1 },
-	(_, idx) => MIN_FONT_SIZE + idx,
+export const UI_FONT_SIZE_OPTIONS = Array.from(
+	{ length: MAX_UI_FONT_SIZE - MIN_UI_FONT_SIZE + 1 },
+	(_, idx) => MIN_UI_FONT_SIZE + idx,
+);
+export const EDITOR_FONT_SIZE_OPTIONS = Array.from(
+	{ length: MAX_EDITOR_FONT_SIZE - MIN_EDITOR_FONT_SIZE + 1 },
+	(_, idx) => MIN_EDITOR_FONT_SIZE + idx,
 );
 
 export async function loadAvailableFonts(): Promise<string[]> {

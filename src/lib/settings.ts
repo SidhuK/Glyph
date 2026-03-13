@@ -46,9 +46,12 @@ const UI_ACCENTS = new Set<UiAccent>([
 const DEFAULT_UI_ACCENT: UiAccent = "neutral";
 const DEFAULT_UI_FONT_FAMILY = "Inter";
 const DEFAULT_UI_MONO_FONT_FAMILY = "JetBrains Mono";
-const MIN_UI_FONT_SIZE = 7;
-const MAX_UI_FONT_SIZE = 40;
-const DEFAULT_UI_FONT_SIZE = 14;
+export const MIN_UI_FONT_SIZE = 7;
+export const MAX_UI_FONT_SIZE = 40;
+export const DEFAULT_UI_FONT_SIZE = 14;
+export const MIN_EDITOR_FONT_SIZE = 10;
+export const MAX_EDITOR_FONT_SIZE = 40;
+export const DEFAULT_EDITOR_FONT_SIZE = 16;
 const DEFAULT_AI_ENABLED = true;
 export type UiFontFamily = string;
 export type UiFontSize = number;
@@ -121,6 +124,16 @@ function asUiFontSize(value: unknown): UiFontSize {
 	return DEFAULT_UI_FONT_SIZE;
 }
 
+function asUiEditorFontSize(value: unknown): UiFontSize {
+	if (typeof value === "number" && Number.isFinite(value)) {
+		return Math.max(
+			MIN_EDITOR_FONT_SIZE,
+			Math.min(MAX_EDITOR_FONT_SIZE, Math.round(value)),
+		);
+	}
+	return DEFAULT_EDITOR_FONT_SIZE;
+}
+
 async function emitSettingsUpdated(payload: {
 	ui?: {
 		theme?: ThemeMode;
@@ -130,6 +143,8 @@ async function emitSettingsUpdated(payload: {
 		fontFamily?: UiFontFamily;
 		monoFontFamily?: UiFontFamily;
 		fontSize?: UiFontSize;
+		editorFontSize?: UiFontSize;
+		translucentApp?: boolean;
 		aiAssistantMode?: AiAssistantMode;
 		aiEnabled?: boolean;
 		aiSidebarWidth?: number | null;
@@ -170,6 +185,8 @@ interface AppSettings {
 		fontFamily: UiFontFamily;
 		monoFontFamily: UiFontFamily;
 		fontSize: UiFontSize;
+		editorFontSize: UiFontSize;
+		translucentApp: boolean;
 		aiAssistantMode: AiAssistantMode;
 	};
 	dailyNotes: {
@@ -194,6 +211,8 @@ const KEYS = {
 	fontFamily: "ui.fontFamily",
 	monoFontFamily: "ui.monoFontFamily",
 	fontSize: "ui.fontSize",
+	editorFontSize: "ui.editorFontSize",
+	translucentApp: "ui.translucentApp",
 	dailyNotesFolder: "dailyNotes.folder",
 	taskSource: "tasks.source",
 	onboardingLauncherSeen: "onboarding.launcherSeen",
@@ -295,6 +314,8 @@ export async function loadSettings(): Promise<AppSettings> {
 		rawFontFamily,
 		rawMonoFontFamily,
 		rawFontSize,
+		rawEditorFontSize,
+		rawTranslucentApp,
 		dailyNotesFolderRaw,
 		taskSourceRaw,
 	] = await Promise.all([
@@ -316,6 +337,8 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<unknown>(KEYS.fontFamily),
 		store.get<unknown>(KEYS.monoFontFamily),
 		store.get<unknown>(KEYS.fontSize),
+		store.get<unknown>(KEYS.editorFontSize),
+		store.get<boolean | null>(KEYS.translucentApp),
 		store.get<string | null>(KEYS.dailyNotesFolder),
 		store.get<unknown>(KEYS.taskSource),
 	]);
@@ -340,6 +363,12 @@ export async function loadSettings(): Promise<AppSettings> {
 	const fontFamily = asUiFontFamily(rawFontFamily);
 	const monoFontFamily = asUiMonoFontFamily(rawMonoFontFamily);
 	const fontSize = asUiFontSize(rawFontSize);
+	const editorFontSize =
+		rawEditorFontSize === undefined || rawEditorFontSize === null
+			? DEFAULT_EDITOR_FONT_SIZE
+			: asUiEditorFontSize(rawEditorFontSize);
+	const translucentApp =
+		typeof rawTranslucentApp === "boolean" ? rawTranslucentApp : true;
 	const dailyNotesFolder = dailyNotesFolderRaw ?? null;
 	const taskSource =
 		normalizeLegacyTaskSourceSetting(taskSourceRaw) ??
@@ -362,6 +391,8 @@ export async function loadSettings(): Promise<AppSettings> {
 			fontFamily,
 			monoFontFamily,
 			fontSize,
+			editorFontSize,
+			translucentApp,
 			aiAssistantMode,
 		},
 		dailyNotes: {
@@ -494,6 +525,21 @@ export async function setUiFontSize(fontSize: UiFontSize): Promise<void> {
 	await store.set(KEYS.fontSize, next);
 	await store.save();
 	void emitSettingsUpdated({ ui: { fontSize: next } });
+}
+
+export async function setUiEditorFontSize(fontSize: UiFontSize): Promise<void> {
+	const store = await getStore();
+	const next = asUiEditorFontSize(fontSize);
+	await store.set(KEYS.editorFontSize, next);
+	await store.save();
+	void emitSettingsUpdated({ ui: { editorFontSize: next } });
+}
+
+export async function setUiTranslucentApp(enabled: boolean): Promise<void> {
+	const store = await getStore();
+	await store.set(KEYS.translucentApp, enabled);
+	await store.save();
+	void emitSettingsUpdated({ ui: { translucentApp: enabled } });
 }
 
 export async function getDailyNotesFolder(): Promise<string | null> {
