@@ -4,6 +4,7 @@
 .appShell {
 	--app-frame: var(--space-1);
 	--app-radius: var(--radius-15);
+	--window-control-toggle-offset: 90px;
 	isolation: isolate;
 	display: flex;
 	position: relative;
@@ -42,9 +43,13 @@
 
 .sidebarCollapsedToggle {
 	position: absolute;
-	top: var(--space-1);
-	left: 78px;
+	top: calc((var(--header-height) - 4px) / 2);
+	left: var(--window-control-toggle-offset);
+	transform: translateY(-50%);
 	z-index: 3;
+	display: flex;
+	align-items: center;
+	gap: 6px;
 }
 
 .appShell.appShellSidebarCollapsed .mainArea {

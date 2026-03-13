@@ -9,6 +9,7 @@ import {
 	FolderPlus as FolderPlusIcon,
 	Globe as GlobeIcon,
 	InformationCircleIcon,
+	LayoutAlignLeftIcon,
 	Layout as LayoutIcon,
 	Maximize,
 	Minimize,
@@ -62,6 +63,9 @@ export const PanelLeftClose = (props: IconProps) => (
 );
 export const Layout = (props: IconProps) => (
 	<HugeiconsIcon icon={LayoutIcon} {...props} />
+);
+export const LayoutAlignLeft = (props: IconProps) => (
+	<HugeiconsIcon icon={LayoutAlignLeftIcon} {...props} />
 );
 export const Globe = (props: IconProps) => (
 	<HugeiconsIcon icon={GlobeIcon} {...props} />

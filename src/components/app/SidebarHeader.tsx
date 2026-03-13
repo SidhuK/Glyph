@@ -1,16 +1,23 @@
 import { getShortcutTooltip } from "../../lib/shortcuts";
 import { onWindowDragMouseDown } from "../../utils/window";
-import { PanelLeftClose, PanelLeftOpen } from "../Icons";
+import { LayoutAlignLeft } from "../Icons";
 import { Button } from "../ui/shadcn/button";
+import { WindowChromeUpdateButton } from "./WindowChromeUpdateButton";
 
 interface SidebarHeaderProps {
 	sidebarCollapsed: boolean;
 	onToggleSidebar: () => void;
+	updateReady: boolean;
+	updateVersion: string | null;
+	onInstallUpdate: () => void;
 }
 
 export function SidebarHeader({
 	sidebarCollapsed,
 	onToggleSidebar,
+	updateReady,
+	updateVersion,
+	onInstallUpdate,
 }: SidebarHeaderProps) {
 	return (
 		<>
@@ -27,6 +34,7 @@ export function SidebarHeader({
 						type="button"
 						variant="ghost"
 						size="icon-sm"
+						className="windowChromeSidebarToggle"
 						aria-label={
 							sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"
 						}
@@ -35,12 +43,13 @@ export function SidebarHeader({
 						onClick={onToggleSidebar}
 						title={`${sidebarCollapsed ? "Expand" : "Collapse"} sidebar (${getShortcutTooltip({ meta: true, key: "b" })})`}
 					>
-						{sidebarCollapsed ? (
-							<PanelLeftOpen size={14} />
-						) : (
-							<PanelLeftClose size={14} />
-						)}
+						<LayoutAlignLeft size={14} />
 					</Button>
+					<WindowChromeUpdateButton
+						updateReady={updateReady}
+						updateVersion={updateVersion}
+						onInstallUpdate={onInstallUpdate}
+					/>
 				</div>
 			</div>
 		</>

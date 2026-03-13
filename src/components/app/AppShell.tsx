@@ -34,7 +34,7 @@ import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { openSettingsWindow } from "../../lib/windows";
 import { onWindowDragMouseDown } from "../../utils/window";
-import { PanelLeftOpen } from "../Icons";
+import { LayoutAlignLeft } from "../Icons";
 import { AIFloatingHost } from "../ai/AIFloatingHost";
 import { dispatchAiContextAttach } from "../ai/aiContextEvents";
 import {
@@ -49,6 +49,7 @@ import { Button } from "../ui/shadcn/button";
 import type { Command } from "./CommandPalette";
 import { MainContent } from "./MainContent";
 import { Sidebar } from "./Sidebar";
+import { WindowChromeUpdateButton } from "./WindowChromeUpdateButton";
 import { normalizeRelPath, parentDir } from "./appShellHelpers";
 
 const loadCommandPalette = () =>
@@ -800,14 +801,20 @@ export function AppShell() {
 						type="button"
 						variant="ghost"
 						size="icon-sm"
+						className="windowChromeSidebarToggle"
 						aria-label="Expand sidebar"
 						aria-pressed={false}
 						data-window-drag-ignore
 						onClick={() => setSidebarCollapsed(false)}
 						title={`Expand sidebar (${getShortcutTooltip({ meta: true, key: "b" })})`}
 					>
-						<PanelLeftOpen size={14} />
+						<LayoutAlignLeft size={14} />
 					</Button>
+					<WindowChromeUpdateButton
+						updateReady={autoUpdater.updateReady}
+						updateVersion={autoUpdater.updateVersion}
+						onInstallUpdate={autoUpdater.installAndRelaunch}
+					/>
 				</div>
 			)}
 			<Sidebar

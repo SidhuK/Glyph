@@ -17,7 +17,7 @@ import { useViewContext } from "../../contexts";
 import { openSettingsWindow } from "../../lib/windows";
 import { parentDir } from "../../utils/path";
 import { FileTreePane } from "../FileTreePane";
-import { Calendar, Files, FolderPlus, Plus, RefreshCw } from "../Icons";
+import { Calendar, Files, FolderPlus, Plus } from "../Icons";
 import { TagsPane } from "../TagsPane";
 import { Button } from "../ui/shadcn/button";
 import {
@@ -44,18 +44,13 @@ interface SidebarContentProps {
 	isDailyNoteCreating: boolean;
 	onOpenTasks: () => void;
 	onOpenCalendar: () => void;
-	updateReady: boolean;
-	updateVersion: string | null;
-	onInstallUpdate: () => void;
 }
 
 const SIDEBAR_FOOTER_STYLE = {
-	display: "grid",
-	gridTemplateColumns: "auto 1fr auto",
+	display: "flex",
 	alignItems: "center",
+	justifyContent: "space-between",
 } as const;
-
-const ACTIONS_STYLE = { justifySelf: "end" } as const;
 
 export const SidebarContent = memo(function SidebarContent({
 	onToggleDir,
@@ -71,9 +66,6 @@ export const SidebarContent = memo(function SidebarContent({
 	isDailyNoteCreating,
 	onOpenTasks,
 	onOpenCalendar,
-	updateReady,
-	updateVersion,
-	onInstallUpdate,
 }: SidebarContentProps) {
 	// Contexts
 	const { spacePath } = useSpace();
@@ -273,18 +265,7 @@ export const SidebarContent = memo(function SidebarContent({
 						</DropdownMenu>
 					) : null}
 				</div>
-				{updateReady && (
-					<button
-						type="button"
-						className="sidebarUpdateBadge"
-						onClick={onInstallUpdate}
-						title={`Update to ${updateVersion}`}
-					>
-						<RefreshCw size={12} />
-						<span>Update available</span>
-					</button>
-				)}
-				<div style={ACTIONS_STYLE}>
+				<div>
 					<Button
 						type="button"
 						variant="ghost"

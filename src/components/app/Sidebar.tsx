@@ -81,6 +81,9 @@ export const Sidebar = memo(function Sidebar({
 						<SidebarHeader
 							sidebarCollapsed={sidebarCollapsed}
 							onToggleSidebar={onToggleSidebar}
+							updateReady={updateReady}
+							updateVersion={updateVersion}
+							onInstallUpdate={onInstallUpdate}
 						/>
 						<SidebarContent
 							onToggleDir={onToggleDir}
@@ -96,9 +99,6 @@ export const Sidebar = memo(function Sidebar({
 							isDailyNoteCreating={isDailyNoteCreating}
 							onOpenTasks={onOpenTasks}
 							onOpenCalendar={onOpenCalendar}
-							updateReady={updateReady}
-							updateVersion={updateVersion}
-							onInstallUpdate={onInstallUpdate}
 						/>
 					</m.div>
 				)}
