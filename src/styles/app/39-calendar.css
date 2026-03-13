@@ -8,7 +8,16 @@
 	height: 100%;
 	min-height: 0;
 	padding: 0;
-	background: var(--bg-primary);
+	background: radial-gradient(
+			circle at top left,
+			color-mix(in srgb, var(--primary) 10%, transparent),
+			transparent 34%
+		),
+		linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--bg-secondary) 54%, var(--bg-primary)),
+			var(--bg-primary) 24%
+		);
 }
 
 .calendarShell {
@@ -23,6 +32,11 @@
 .calendarHeader {
 	display: grid;
 	min-width: 0;
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--bg-primary) 66%, transparent),
+		color-mix(in srgb, var(--bg-primary) 92%, transparent)
+	);
 }
 
 /* Prevent any child from blowing out the grid width */
@@ -38,19 +52,65 @@
 	align-items: center;
 	flex-wrap: nowrap;
 	gap: 10px;
-	padding: 8px 16px;
+	padding: 12px 16px 10px;
 	border-bottom: 1px solid var(--border);
 	min-height: 44px;
 }
 
+.calendarTitleBlock {
+	display: grid;
+	gap: 4px;
+	min-width: 0;
+	flex-shrink: 0;
+}
+
+.calendarTitleRow {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	min-width: 0;
+}
+
 .calendarTitle {
 	margin: 0;
-	font-size: 16px;
+	font-size: 17px;
 	font-weight: 700;
 	letter-spacing: -0.02em;
 	line-height: 1.2;
 	white-space: nowrap;
 	flex-shrink: 0;
+}
+
+.calendarMonthBadge {
+	display: inline-flex;
+	align-items: baseline;
+	gap: 5px;
+	padding: 4px 9px;
+	border: 1px solid color-mix(in srgb, var(--border) 74%, transparent);
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--bg-primary) 78%, var(--bg-secondary));
+	color: var(--muted-foreground);
+	box-shadow: 0 8px 24px -22px
+		color-mix(in srgb, var(--foreground) 28%, transparent);
+}
+
+.calendarMonthBadgeCount {
+	color: var(--foreground);
+	font-size: 12px;
+	font-weight: 700;
+}
+
+.calendarMonthBadgeLabel {
+	font-size: 11px;
+	font-weight: 600;
+}
+
+.calendarSubtitle {
+	color: var(--muted-foreground);
+	font-size: 11.5px;
+	font-weight: 500;
+	max-width: 28ch;
+	line-height: 1.45;
 }
 
 /* Filter controls — centered stretch */
@@ -196,6 +256,12 @@
 	overflow: auto;
 }
 
+.calendarMonthStage {
+	display: flex;
+	flex: 1 1 auto;
+	min-height: 0;
+}
+
 .calMonthShell {
 	display: grid;
 	grid-template-rows: auto 1fr;
@@ -246,9 +312,10 @@
 	border-radius: 0;
 	border-right: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
 	border-bottom: 1px solid color-mix(in srgb, var(--border) 50%, transparent);
-	background: transparent;
+	background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
 	overflow: hidden;
-	transition: background-color 100ms ease;
+	transition: background-color 140ms ease, box-shadow 140ms ease, transform
+		140ms ease;
 }
 
 .calCellSurface {
@@ -270,8 +337,10 @@
 }
 
 .calCell:hover {
-	background: color-mix(in srgb, var(--muted) 30%, transparent);
-	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border) 90%, transparent);
+	background: color-mix(in srgb, var(--muted) 36%, transparent);
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border) 90%, transparent),
+		0 12px 22px -24px color-mix(in srgb, var(--foreground) 45%, transparent);
+	transform: translateY(-1px);
 }
 
 .calCellSurface:focus-visible {
@@ -282,9 +351,14 @@
 /* Selected day — visible border ring */
 
 .calCell.is-selected {
-	background: color-mix(in srgb, var(--primary) 4%, transparent);
+	background: linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--primary) 10%, transparent),
+			color-mix(in srgb, var(--primary) 3%, transparent)
+		), color-mix(in srgb, var(--bg-primary) 92%, transparent);
 	box-shadow: inset 0 0 0 1.5px
-		color-mix(in srgb, var(--primary) 50%, transparent);
+		color-mix(in srgb, var(--primary) 50%, transparent), 0 18px 30px -28px
+		color-mix(in srgb, var(--primary) 40%, transparent);
 }
 
 .calCell.is-outside {
@@ -294,10 +368,29 @@
 .calCellHeader {
 	display: flex;
 	align-items: flex-start;
-	justify-content: flex-start;
+	justify-content: space-between;
 	width: 100%;
 	min-width: 0;
-	padding: 3px 6px 0;
+	padding: 7px 8px 0;
+	gap: 8px;
+}
+
+.calCellAura {
+	position: absolute;
+	inset: 0;
+	background: radial-gradient(
+		circle at top right,
+		color-mix(in srgb, var(--primary) 8%, transparent),
+		transparent 42%
+	);
+	opacity: 0;
+	transition: opacity 180ms ease;
+	pointer-events: none;
+}
+
+.calCell:hover .calCellAura,
+.calCell.is-selected .calCellAura {
+	opacity: 1;
 }
 
 /* Day number — left-aligned */
@@ -310,25 +403,31 @@
 	align-self: start;
 	width: auto;
 	height: auto;
-	padding: 0;
-	border-radius: 6px;
+	padding: 3px 5px;
+	border-radius: 999px;
 	font-size: 12px;
-	font-weight: 500;
+	font-weight: 600;
 	line-height: 1;
 }
 
 .calCellDay.is-today {
-	padding: 5px 7px;
+	padding: 5px 9px;
 	background: var(--primary);
 	color: var(--primary-foreground);
 	font-weight: 700;
+	box-shadow: 0 10px 18px -14px
+		color-mix(in srgb, var(--primary) 72%, transparent);
 }
 
 .calCellDay.is-active:not(.is-today) {
-	padding: 5px 7px;
+	padding: 5px 9px;
 	background: color-mix(in srgb, var(--primary) 14%, transparent);
 	color: var(--primary);
 	font-weight: 700;
+}
+
+.calCellMeta {
+	display: none;
 }
 
 /* Events inside a cell */
@@ -342,7 +441,7 @@
 	width: 100%;
 	gap: 2px;
 	min-width: 0;
-	padding: 29px 6px 4px;
+	padding: 30px 6px 5px;
 	overflow: hidden;
 	pointer-events: none;
 }
@@ -365,11 +464,11 @@
 	display: block;
 	width: 100%;
 	min-width: 0;
-	padding: 1px 4px 1px 6px;
+	padding: 2px 5px 2px 7px;
 	border: 0;
 	border-left: 2px solid var(--muted-foreground);
-	border-radius: 4px;
-	background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
+	border-radius: 7px;
+	background: color-mix(in srgb, var(--bg-primary) 88%, var(--bg-secondary));
 	appearance: none;
 	box-shadow: none;
 	position: relative;
@@ -384,7 +483,10 @@
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	color: var(--foreground);
-	transition: background-color 80ms ease;
+	box-shadow: 0 8px 18px -22px
+		color-mix(in srgb, var(--foreground) 40%, transparent);
+	transition: background-color 100ms ease, transform 100ms ease, box-shadow
+		100ms ease;
 }
 
 .calEventChip.is-inline-overflow {
@@ -392,7 +494,10 @@
 }
 
 .calEventChip:hover {
-	background: color-mix(in srgb, var(--muted) 50%, transparent);
+	background: color-mix(in srgb, var(--muted) 56%, transparent);
+	transform: translateY(-1px);
+	box-shadow: 0 12px 18px -20px
+		color-mix(in srgb, var(--foreground) 42%, transparent);
 }
 
 /* Event tone colors — left border */
@@ -432,28 +537,62 @@
 	min-width: 0;
 	overflow: hidden;
 	border-top: 1px solid var(--border);
-	background: var(--bg-primary);
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--bg-secondary) 30%, transparent),
+		var(--bg-primary)
+	);
 }
 
 .calAgendaHeader {
 	display: flex;
-	align-items: baseline;
-	gap: 10px;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 14px;
 	flex-shrink: 0;
-	padding: 10px 16px 0;
+	padding: 12px 16px 0;
+}
+
+.calAgendaHeaderCopy {
+	display: grid;
+	gap: 2px;
 }
 
 .calAgendaDate {
-	font-size: 12px;
-	font-weight: 600;
+	font-size: 13px;
+	font-weight: 700;
 	white-space: nowrap;
 }
 
-.calAgendaCount {
-	color: var(--text-tertiary);
-	font-size: 11px;
-	font-weight: 500;
-	white-space: nowrap;
+.calAgendaBadgeRow {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: flex-end;
+	gap: 6px;
+}
+
+.calAgendaBadge {
+	display: inline-flex;
+	align-items: center;
+	padding: 4px 8px;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--bg-primary) 82%, var(--bg-secondary));
+	border: 1px solid color-mix(in srgb, var(--border) 70%, transparent);
+	font-size: 10px;
+	font-weight: 700;
+	letter-spacing: 0.02em;
+}
+
+.calAgendaBadge.is-note {
+	color: oklch(0.48 0.14 255);
+}
+
+.calAgendaBadge.is-daily-note {
+	color: oklch(0.45 0.11 158);
+}
+
+.calAgendaBadge.is-task {
+	color: oklch(0.55 0.14 28);
 }
 
 /* Horizontally scrolling card strip */
@@ -495,18 +634,28 @@
 	padding: 12px;
 	border: 1px solid color-mix(in srgb, var(--border-light) 84%, transparent);
 	border-radius: var(--radius-md);
-	background: color-mix(in srgb, var(--bg-primary) 96%, var(--bg-secondary));
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--bg-primary) 96%, transparent),
+		color-mix(in srgb, var(--bg-secondary) 72%, transparent)
+	);
 	cursor: pointer;
 	text-align: left;
 	white-space: normal;
 	overflow: hidden;
+	box-shadow: 0 14px 24px -26px
+		color-mix(in srgb, var(--foreground) 35%, transparent);
 	transition: border-color var(--transition-base), background-color
+		var(--transition-base), transform var(--transition-base), box-shadow
 		var(--transition-base);
 }
 
 .calAgendaCard:hover {
 	border-color: color-mix(in srgb, var(--border-default) 88%, transparent);
 	background: var(--bg-hover);
+	transform: translateY(-2px);
+	box-shadow: 0 18px 28px -24px
+		color-mix(in srgb, var(--foreground) 34%, transparent);
 }
 
 .calAgendaCardTitle {
@@ -548,10 +697,24 @@
 
 .calAgendaEmpty {
 	display: flex;
-	align-items: center;
-	color: var(--muted-foreground);
-	font-size: 12px;
+	flex-direction: column;
+	align-items: flex-start;
+	justify-content: center;
+	gap: 4px;
 	padding: 2px 0;
+}
+
+.calAgendaEmptyTitle {
+	color: var(--foreground);
+	font-size: 12px;
+	font-weight: 700;
+}
+
+.calAgendaEmptyBody {
+	max-width: 42ch;
+	color: var(--muted-foreground);
+	font-size: 11.5px;
+	line-height: 1.5;
 }
 
 .calAgendaCardPath {
@@ -567,6 +730,14 @@
 	min-height: 160px;
 	padding: 24px;
 	text-align: center;
+}
+
+.calendarEmptyEyebrow {
+	color: color-mix(in srgb, var(--primary) 52%, var(--muted-foreground));
+	font-size: 10px;
+	font-weight: 700;
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
 }
 
 .calendarEmptyTitle {
@@ -602,14 +773,20 @@
 		gap: 6px;
 	}
 
+	.calendarTitleRow {
+		flex-wrap: wrap;
+	}
+
 	.calCell {
 		min-height: 64px;
 		padding: 3px 4px;
 	}
 
+	.calCellHeader {
+		padding: 6px 6px 0;
+	}
+
 	.calCellDay {
-		width: 20px;
-		height: 20px;
 		font-size: 11px;
 	}
 
@@ -621,6 +798,10 @@
 
 	.calAgendaHeader {
 		padding: 6px 12px 2px;
+	}
+
+	.calAgendaBadgeRow {
+		display: none;
 	}
 
 	.calAgendaScroller {

@@ -81,6 +81,7 @@ export function CalendarMonthAdapter({
 								aria-pressed={isSelected}
 								onClick={() => onSelectDate(iso)}
 							>
+								<div className="calCellAura" aria-hidden="true" />
 								<div className="calCellHeader">
 									<span
 										className={cn(

@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSpace, useUILayoutContext } from "../../contexts";
 import { useDailyNote } from "../../hooks/useDailyNote";
@@ -44,6 +45,11 @@ const FULL_DATE_FORMATTER = new Intl.DateTimeFormat(undefined, {
 	year: "numeric",
 });
 
+const MONTH_TRANSITION = {
+	duration: 0.22,
+	ease: [0.22, 1, 0.36, 1] as const,
+};
+
 function todayIsoDate() {
 	return isoDateFromLocalDate(new Date());
 }
@@ -74,6 +80,64 @@ function notePropertyLabel(property: CalendarNoteDateProperty): string {
 		return "Created";
 	}
 	return property.key;
+}
+
+function calendarModeCopy(mode: CalendarMode) {
+	if (mode === "daily_notes") {
+		return {
+			eyebrow: "Daily rhythm",
+			description: "A gentle map of your day-by-day writing cadence.",
+			loading: "Gathering daily notes…",
+			emptyTitle: "Daily notes are not configured",
+			emptyBody: "Set a daily notes folder in Settings before using this mode.",
+			agendaEmpty: "Nothing landed on this day yet.",
+		};
+	}
+	if (mode === "tasks") {
+		return {
+			eyebrow: "Plans in motion",
+			description: "Deadlines, starts, and open loops in one calmer view.",
+			loading: "Sorting due dates and scheduled work…",
+			emptyTitle: "",
+			emptyBody: "",
+			agendaEmpty: "No tasks are scheduled for this day.",
+		};
+	}
+	return {
+		eyebrow: "Notes in time",
+		description: "Trace ideas across the month and reopen threads at a glance.",
+		loading: "Placing notes on the calendar…",
+		emptyTitle: "No note date fields yet",
+		emptyBody:
+			"Add a frontmatter property with a YYYY-MM-DD value or an ISO datetime to start placing notes on the calendar.",
+		agendaEmpty: "No notes are pinned to this day yet.",
+	};
+}
+
+function summarizeItems(items: CalendarItem[]) {
+	let notes = 0;
+	let dailyNotes = 0;
+	let tasks = 0;
+	const activeDays = new Set<string>();
+	for (const item of items) {
+		activeDays.add(item.date);
+		if (item.kind === "task") {
+			tasks += 1;
+			continue;
+		}
+		if (item.kind === "daily_note") {
+			dailyNotes += 1;
+			continue;
+		}
+		notes += 1;
+	}
+	return {
+		notes,
+		dailyNotes,
+		tasks,
+		total: items.length,
+		activeDays: activeDays.size,
+	};
 }
 
 export function CalendarPane({ onOpenFile, onClosePane }: CalendarPaneProps) {
@@ -107,6 +171,7 @@ export function CalendarPane({ onOpenFile, onClosePane }: CalendarPaneProps) {
 	const [tasksFolder, setTasksFolder] = useState("");
 	const [tasksRecursive, setTasksRecursive] = useState(true);
 	const requestIdRef = useRef(0);
+	const shouldReduceMotion = useReducedMotion();
 
 	const monthDates = useMemo(
 		() => buildMonthGridDates(currentMonth),
@@ -127,6 +192,16 @@ export function CalendarPane({ onOpenFile, onClosePane }: CalendarPaneProps) {
 		const parsed = parseIsoDate(selectedDate);
 		return parsed ? FULL_DATE_FORMATTER.format(parsed) : selectedDate;
 	}, [selectedDate]);
+	const calendarCopy = useMemo(() => calendarModeCopy(mode), [mode]);
+	const monthSummary = useMemo(() => summarizeItems(items), [items]);
+	const selectedDateSummary = useMemo(
+		() => summarizeItems(selectedDayItems),
+		[selectedDayItems],
+	);
+	const monthKey = useMemo(
+		() => `${currentMonth.getFullYear()}-${currentMonth.getMonth()}`,
+		[currentMonth],
+	);
 
 	const source = useMemo<CalendarSource>(() => {
 		if (mode === "daily_notes") {
@@ -296,7 +371,28 @@ export function CalendarPane({ onOpenFile, onClosePane }: CalendarPaneProps) {
 				<div className="calendarHeader">
 					{/* ── Toolbar — title + filters + nav in one row ─ */}
 					<div className="calendarToolbar">
-						<h2 className="calendarTitle">{formatMonthLabel(currentMonth)}</h2>
+						<div className="calendarTitleBlock">
+							<div className="calendarTitleRow">
+								<h2 className="calendarTitle">
+									{formatMonthLabel(currentMonth)}
+								</h2>
+								<span className="calendarMonthBadge">
+									<span className="calendarMonthBadgeCount">
+										{monthSummary.total}
+									</span>
+									<span className="calendarMonthBadgeLabel">
+										{monthSummary.total === 1 ? "moment" : "moments"}
+									</span>
+								</span>
+							</div>
+							<div className="calendarSubtitle">
+								{monthSummary.total > 0
+									? `${monthSummary.activeDays} active ${
+											monthSummary.activeDays === 1 ? "day" : "days"
+										} this month.`
+									: calendarCopy.description}
+							</div>
+						</div>
 
 						<div className="calendarFilters">
 							<SettingsSegmented<CalendarMode>
@@ -464,54 +560,101 @@ export function CalendarPane({ onOpenFile, onClosePane }: CalendarPaneProps) {
 				{/* ── Month grid ──────────────────────────────── */}
 				<div className="calendarPaneMain">
 					{loading ? (
-						<div className="calendarEmptyState">Loading calendar…</div>
+						<div className="calendarEmptyState">
+							<div className="calendarEmptyEyebrow">{calendarCopy.eyebrow}</div>
+							<div className="calendarEmptyTitle">{calendarCopy.loading}</div>
+							<div className="calendarEmptyBody">
+								{calendarCopy.description}
+							</div>
+						</div>
 					) : mode === "notes" && noteDateProperties.length === 0 ? (
 						<div className="calendarEmptyState">
-							<div className="calendarEmptyTitle">No note date fields yet</div>
-							<div className="calendarEmptyBody">
-								Add a frontmatter property with a `YYYY-MM-DD` value or an ISO
-								datetime to start placing notes on the calendar.
+							<div className="calendarEmptyEyebrow">{calendarCopy.eyebrow}</div>
+							<div className="calendarEmptyTitle">
+								{calendarCopy.emptyTitle}
 							</div>
+							<div className="calendarEmptyBody">{calendarCopy.emptyBody}</div>
 						</div>
 					) : mode === "daily_notes" && !canOpenDailyNotes ? (
 						<div className="calendarEmptyState">
+							<div className="calendarEmptyEyebrow">{calendarCopy.eyebrow}</div>
 							<div className="calendarEmptyTitle">
-								Daily notes are not configured
+								{calendarCopy.emptyTitle}
 							</div>
-							<div className="calendarEmptyBody">
-								Set a daily notes folder in Settings before using this mode.
-							</div>
+							<div className="calendarEmptyBody">{calendarCopy.emptyBody}</div>
 						</div>
 					) : (
-						<CalendarMonthAdapter
-							dates={monthDates}
-							month={currentMonth}
-							selectedDate={selectedDate}
-							itemsByDate={itemsByDate}
-							weekdayLabels={weekdayLabels}
-							onSelectDate={setSelectedDate}
-							onOpenItem={(item) => void openItem(item)}
-						/>
+						<AnimatePresence mode="wait" initial={false}>
+							<m.div
+								key={monthKey}
+								className="calendarMonthStage"
+								initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
+								animate={{ opacity: 1, y: 0 }}
+								exit={shouldReduceMotion ? {} : { opacity: 0, y: -10 }}
+								transition={
+									shouldReduceMotion ? { duration: 0 } : MONTH_TRANSITION
+								}
+							>
+								<CalendarMonthAdapter
+									dates={monthDates}
+									month={currentMonth}
+									selectedDate={selectedDate}
+									itemsByDate={itemsByDate}
+									weekdayLabels={weekdayLabels}
+									onSelectDate={setSelectedDate}
+									onOpenItem={(item) => void openItem(item)}
+								/>
+							</m.div>
+						</AnimatePresence>
 					)}
 				</div>
 
 				{/* ── Day details / Agenda ────────────────────── */}
 				<div className="calAgenda">
 					<div className="calAgendaHeader">
-						<span className="calAgendaDate">{selectedDateLabel}</span>
-						<span className="calAgendaCount">
-							{selectedDayItems.length}{" "}
-							{selectedDayItems.length === 1 ? "item" : "items"}
-						</span>
+						<div className="calAgendaHeaderCopy">
+							<span className="calAgendaDate">{selectedDateLabel}</span>
+						</div>
+						{selectedDayItems.length > 0 ? (
+							<div className="calAgendaBadgeRow">
+								{selectedDateSummary.notes > 0 ? (
+									<span className="calAgendaBadge is-note">
+										{selectedDateSummary.notes} note
+										{selectedDateSummary.notes === 1 ? "" : "s"}
+									</span>
+								) : null}
+								{selectedDateSummary.dailyNotes > 0 ? (
+									<span className="calAgendaBadge is-daily-note">
+										{selectedDateSummary.dailyNotes} daily
+									</span>
+								) : null}
+								{selectedDateSummary.tasks > 0 ? (
+									<span className="calAgendaBadge is-task">
+										{selectedDateSummary.tasks} task
+										{selectedDateSummary.tasks === 1 ? "" : "s"}
+									</span>
+								) : null}
+							</div>
+						) : null}
 					</div>
 					<div className="calAgendaScroller">
 						{selectedDayItems.length > 0 ? (
-							selectedDayItems.map((item) => (
-								<button
+							selectedDayItems.map((item, index) => (
+								<m.button
 									key={item.id}
 									type="button"
 									className="calAgendaCard databaseBoardCard"
 									onClick={() => void openItem(item)}
+									initial={shouldReduceMotion ? false : { opacity: 0, y: 10 }}
+									animate={{ opacity: 1, y: 0 }}
+									transition={
+										shouldReduceMotion
+											? { duration: 0 }
+											: {
+													...MONTH_TRANSITION,
+													delay: Math.min(index * 0.025, 0.14),
+												}
+									}
 								>
 									<span className="calAgendaCardHead databaseBoardCardHead">
 										<span className="calAgendaCardTitle databaseBoardCardTitle">
@@ -544,10 +687,21 @@ export function CalendarPane({ onOpenFile, onClosePane }: CalendarPaneProps) {
 											{item.rel_path}
 										</span>
 									) : null}
-								</button>
+								</m.button>
 							))
-						) : hasItems ? null : (
-							<span className="calAgendaEmpty">Nothing this month.</span>
+						) : (
+							<div className="calAgendaEmpty">
+								<span className="calAgendaEmptyTitle">
+									{hasItems
+										? calendarCopy.agendaEmpty
+										: "Nothing this month yet"}
+								</span>
+								<span className="calAgendaEmptyBody">
+									{hasItems
+										? "Select another day or keep going. The calendar will gather more texture as your space grows."
+										: "Try another mode, another folder, or let the month fill in as you write."}
+								</span>
+							</div>
 						)}
 					</div>
 				</div>
