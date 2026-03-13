@@ -767,6 +767,70 @@
 	--chrome-border: rgba(127, 132, 156, 0.16);
 }
 
+:root.dark[data-dark-theme="night-owl"],
+:root.dark[data-dark-theme="one-dark"],
+:root.dark[data-dark-theme="rose-pine-moon"],
+:root.dark[data-dark-theme="sentry"],
+:root.dark[data-dark-theme="temple-dark"] {
+	--text-error: var(--status-danger-fg);
+	--feedback-error-bg: color-mix(
+		in srgb,
+		var(--status-danger-fg) 18%,
+		transparent
+	);
+	--feedback-success-bg: color-mix(
+		in srgb,
+		var(--status-success-fg) 18%,
+		transparent
+	);
+	--status-info-bg: color-mix(in srgb, var(--status-info-fg) 18%, transparent);
+	--status-info-border: color-mix(
+		in srgb,
+		var(--status-info-fg) 38%,
+		transparent
+	);
+	--status-success-bg: color-mix(
+		in srgb,
+		var(--status-success-fg) 18%,
+		transparent
+	);
+	--status-success-border: color-mix(
+		in srgb,
+		var(--status-success-fg) 38%,
+		transparent
+	);
+	--status-warning-bg: color-mix(
+		in srgb,
+		var(--status-warning-fg) 20%,
+		transparent
+	);
+	--status-warning-border: color-mix(
+		in srgb,
+		var(--status-warning-fg) 40%,
+		transparent
+	);
+	--status-danger-bg: color-mix(
+		in srgb,
+		var(--status-danger-fg) 20%,
+		transparent
+	);
+	--status-danger-border: color-mix(
+		in srgb,
+		var(--status-danger-fg) 40%,
+		transparent
+	);
+	--ai-accent-chat: var(--interactive-accent);
+	--ai-accent-create: var(--accent-color);
+	--task-bucket-inbox: var(--interactive-accent);
+	--task-bucket-today: var(--status-warning-fg);
+	--task-bucket-upcoming: var(--accent-color);
+	--callout-info: var(--status-info-fg);
+	--callout-tip: var(--status-success-fg);
+	--callout-warning: var(--status-warning-fg);
+	--callout-error: var(--status-danger-fg);
+	--glass-border: color-mix(in srgb, var(--text-primary) 8%, transparent);
+}
+
 :root.dark[data-dark-theme="gruvbox-dark"] {
 	--bg-primary: #282828;
 	--bg-secondary: #1d2021;

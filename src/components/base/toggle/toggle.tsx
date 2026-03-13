@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import type { ReactNode } from "react";
+import type { FocusEventHandler, ReactNode } from "react";
 import "./toggle.css";
 
 interface ToggleProps {
@@ -15,6 +15,18 @@ interface ToggleProps {
 	className?: string;
 	name?: string;
 	id?: string;
+	onFocus?: FocusEventHandler<HTMLInputElement>;
+}
+
+function getAriaText(value: ReactNode): string | undefined {
+	if (typeof value === "string") {
+		const trimmed = value.trim();
+		return trimmed || undefined;
+	}
+	if (typeof value === "number") {
+		return String(value);
+	}
+	return undefined;
 }
 
 export function Toggle({
@@ -30,8 +42,17 @@ export function Toggle({
 	className,
 	name,
 	id,
+	onFocus,
 }: ToggleProps) {
 	const hasCopy = Boolean(label || hint);
+	const computedAriaLabel =
+		ariaLabel ?? getAriaText(label) ?? getAriaText(hint) ?? name ?? id;
+
+	if (import.meta.env.DEV && !computedAriaLabel) {
+		console.warn(
+			"Toggle rendered without an accessible label. Pass ariaLabel, label, hint, name, or id.",
+		);
+	}
 
 	return (
 		<label
@@ -50,7 +71,8 @@ export function Toggle({
 				checked={checked}
 				defaultChecked={defaultChecked}
 				onChange={(event) => onCheckedChange?.(event.target.checked)}
-				aria-label={ariaLabel}
+				onFocus={onFocus}
+				aria-label={computedAriaLabel}
 				disabled={disabled}
 			/>
 			{hasCopy ? (

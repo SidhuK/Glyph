@@ -164,6 +164,7 @@ export function DatabaseCell({
 					size="sm"
 					ariaLabel={column.label}
 					checked={Boolean(cellValue.value_bool)}
+					onFocus={handleSelectRow}
 					onCheckedChange={(checked) =>
 						void onSave(row.note_path, column, {
 							kind: "checkbox",

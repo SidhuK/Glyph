@@ -1,4 +1,11 @@
-import type { UiFontFamily, UiFontSize } from "../../lib/settings";
+import {
+	MAX_EDITOR_FONT_SIZE,
+	MAX_UI_FONT_SIZE,
+	MIN_EDITOR_FONT_SIZE,
+	MIN_UI_FONT_SIZE,
+	type UiFontFamily,
+	type UiFontSize,
+} from "../../lib/settings";
 import { SettingsRow, SettingsSection } from "./SettingsScaffold";
 
 interface AppearanceTypographyCardProps {
@@ -85,11 +92,13 @@ export function AppearanceTypographyCard({
 	onUiFontSizeChange,
 	onEditorFontSizeChange,
 }: AppearanceTypographyCardProps) {
-	const minUiFontSize = uiFontSizeOptions[0] ?? 7;
-	const maxUiFontSize = uiFontSizeOptions[uiFontSizeOptions.length - 1] ?? 40;
-	const minEditorFontSize = editorFontSizeOptions[0] ?? 10;
+	const minUiFontSize = uiFontSizeOptions[0] ?? MIN_UI_FONT_SIZE;
+	const maxUiFontSize =
+		uiFontSizeOptions[uiFontSizeOptions.length - 1] ?? MAX_UI_FONT_SIZE;
+	const minEditorFontSize = editorFontSizeOptions[0] ?? MIN_EDITOR_FONT_SIZE;
 	const maxEditorFontSize =
-		editorFontSizeOptions[editorFontSizeOptions.length - 1] ?? 40;
+		editorFontSizeOptions[editorFontSizeOptions.length - 1] ??
+		MAX_EDITOR_FONT_SIZE;
 
 	return (
 		<SettingsSection

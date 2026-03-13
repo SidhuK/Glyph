@@ -51,6 +51,9 @@ function resolvePreview<T extends string>(
 function sortThemeOptions<T extends string>(
 	options: readonly UiThemeOption<T>[],
 ): UiThemeOption<T>[] {
+	// sortThemeOptions assumes callers provide UiThemeOption<T>[] with the
+	// default theme already in the first slot, so we preserve that entry and
+	// alphabetize only the remaining choices for the dropdown.
 	if (options.length <= 1) return [...options];
 	const [defaultOption, ...rest] = options;
 	return [

@@ -1,34 +1,48 @@
 import type { UiAccent } from "../../lib/settings";
 
+const ACCENT_COLOR_MAP: Record<Exclude<UiAccent, "neutral">, string> = {
+	cerulean: "#0081a7",
+	"tropical-teal": "#00afb9",
+	"light-yellow": "#fdfcdc",
+	"soft-apricot": "#fed9b7",
+	"vibrant-coral": "#f07167",
+};
+
 export const ACCENT_OPTIONS: Array<{
 	id: UiAccent;
 	label: string;
 	color: string;
 }> = [
 	{ id: "neutral", label: "Neutral", color: "var(--text-primary)" },
-	{ id: "cerulean", label: "Cerulean", color: "#0081a7" },
-	{ id: "tropical-teal", label: "Tropical Teal", color: "#00afb9" },
-	{ id: "light-yellow", label: "Light Yellow", color: "#fdfcdc" },
-	{ id: "soft-apricot", label: "Soft Apricot", color: "#fed9b7" },
-	{ id: "vibrant-coral", label: "Vibrant Coral", color: "#f07167" },
+	{ id: "cerulean", label: "Cerulean", color: ACCENT_COLOR_MAP.cerulean },
+	{
+		id: "tropical-teal",
+		label: "Tropical Teal",
+		color: ACCENT_COLOR_MAP["tropical-teal"],
+	},
+	{
+		id: "light-yellow",
+		label: "Light Yellow",
+		color: ACCENT_COLOR_MAP["light-yellow"],
+	},
+	{
+		id: "soft-apricot",
+		label: "Soft Apricot",
+		color: ACCENT_COLOR_MAP["soft-apricot"],
+	},
+	{
+		id: "vibrant-coral",
+		label: "Vibrant Coral",
+		color: ACCENT_COLOR_MAP["vibrant-coral"],
+	},
 ];
 
 export function getAccentPreviewColor(
 	accent: UiAccent,
 	mode: "light" | "dark",
 ): string {
-	switch (accent) {
-		case "cerulean":
-			return "#0081a7";
-		case "tropical-teal":
-			return "#00afb9";
-		case "light-yellow":
-			return "#fdfcdc";
-		case "soft-apricot":
-			return "#fed9b7";
-		case "vibrant-coral":
-			return "#f07167";
-		default:
-			return mode === "dark" ? "rgba(255, 255, 255, 0.92)" : "#37352f";
-	}
+	return (
+		ACCENT_COLOR_MAP[accent as Exclude<UiAccent, "neutral">] ??
+		(mode === "dark" ? "rgba(255, 255, 255, 0.92)" : "#37352f")
+	);
 }

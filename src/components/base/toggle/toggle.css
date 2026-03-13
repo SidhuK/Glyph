@@ -4,6 +4,7 @@
 	--ui-toggle-thumb-size: 16px;
 	--ui-toggle-thumb-offset: 2px;
 	--ui-toggle-thumb-translate: 16px;
+
 	display: inline-flex;
 	align-items: flex-start;
 	gap: 10px;
@@ -28,6 +29,18 @@
 .uiToggle[data-disabled="true"] {
 	cursor: not-allowed;
 	opacity: 0.55;
+}
+
+.uiToggle[data-slim="true"][data-has-copy="true"] {
+	display: grid;
+	grid-template-columns: minmax(0, 1fr) auto;
+	align-items: start;
+	column-gap: 12px;
+	width: 100%;
+}
+
+.uiToggle[data-slim="true"][data-has-copy="true"] .uiToggleCopy {
+	padding-top: 1px;
 }
 
 .uiToggleInput {
