@@ -7,8 +7,8 @@ import {
 } from "../../lib/database/config";
 import type { DatabaseColumn, DatabaseRow } from "../../lib/database/types";
 import { extractErrorMessage } from "../../lib/errorUtils";
-import { Toggle } from "../base/toggle/toggle";
 import { X } from "../Icons";
+import { Toggle } from "../base/toggle/toggle";
 import {
 	buildTagSuggestions,
 	formatTagLabel,

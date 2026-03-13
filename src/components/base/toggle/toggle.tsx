@@ -68,6 +68,7 @@ export function Toggle({
 				className="uiToggleInput"
 				type="checkbox"
 				role="switch"
+				aria-checked={checked ?? defaultChecked ?? false}
 				checked={checked}
 				defaultChecked={defaultChecked}
 				onChange={(event) => onCheckedChange?.(event.target.checked)}

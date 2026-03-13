@@ -1,6 +1,6 @@
 import type { NoteProperty, TagCount } from "../../../lib/tauri";
-import { Toggle } from "../../base/toggle/toggle";
 import { X } from "../../Icons";
+import { Toggle } from "../../base/toggle/toggle";
 import { Input } from "../../ui/shadcn/input";
 import {
 	buildTagSuggestions,
