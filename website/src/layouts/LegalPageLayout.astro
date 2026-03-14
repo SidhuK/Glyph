@@ -87,8 +87,9 @@ const { title, description, summary } = Astro.props;
 	h1 {
 		font-family: var(--serif);
 		font-size: clamp(2.3rem, 5vw, 3rem);
-		font-style: italic;
+		font-style: normal;
 		font-weight: 400;
+		letter-spacing: -0.02em;
 		line-height: 1.1;
 		margin-bottom: 1rem;
 	}
@@ -112,7 +113,7 @@ const { title, description, summary } = Astro.props;
 	}
 
 	:global(.legal-section h2) {
-		font-family: var(--mono);
+		font-family: var(--sans);
 		font-size: 0.78rem;
 		font-weight: 600;
 		letter-spacing: 0.12em;

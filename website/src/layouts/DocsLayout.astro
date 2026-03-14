@@ -91,7 +91,6 @@ if (location) {
 			<nav class="docs-header-nav">
 				<a href="/docs/introduction">Docs</a>
 				<a href="https://github.com/SidhuK/Glyph" target="_blank" rel="noopener">GitHub</a>
-				<a href="/changelog">Changelog</a>
 			</nav>
 			<a href={downloadUrl} class="docs-header-cta" target="_blank" rel="noopener">Download</a>
 		</header>
@@ -166,7 +165,6 @@ if (location) {
 				<div class="docs-footer-col">
 					<p class="docs-footer-heading">PRODUCT</p>
 					<a href="/docs/introduction">Docs</a>
-					<a href="/changelog">Changelog</a>
 					<a href="https://github.com/SidhuK/Glyph" target="_blank" rel="noopener">GitHub</a>
 				</div>
 				<div class="docs-footer-col">
@@ -234,13 +232,14 @@ if (location) {
 		display: flex;
 		align-items: center;
 		padding: 0.35rem 0.65rem;
-		font-family: var(--serif);
+		font-family: var(--sans);
 		font-size: 0.85rem;
-		font-weight: 400;
-		letter-spacing: 0;
+		font-weight: 500;
+		letter-spacing: 0.01em;
 		text-transform: none;
 		color: var(--muted);
 		border-radius: 100px;
+		white-space: nowrap;
 		transition: color 0.15s;
 	}
 
@@ -272,6 +271,7 @@ if (location) {
 		font-size: 0.72rem;
 		font-weight: 600;
 		letter-spacing: 0.02em;
+		white-space: nowrap;
 		border-radius: 100px;
 		border: none;
 		cursor: pointer;
@@ -367,8 +367,9 @@ if (location) {
 	.docs-prose :global(h1) {
 		font-family: var(--serif);
 		font-size: clamp(2.2rem, 4vw, 3.1rem);
-		font-style: italic;
+		font-style: normal;
 		font-weight: 400;
+		letter-spacing: -0.02em;
 		line-height: 1.08;
 		margin-bottom: 1rem;
 	}
@@ -389,8 +390,9 @@ if (location) {
 	.docs-prose :global(h2) {
 		font-family: var(--serif);
 		font-size: 1.8rem;
-		font-style: italic;
+		font-style: normal;
 		font-weight: 400;
+		letter-spacing: -0.02em;
 		line-height: 1.15;
 		margin: 1.2rem 0 0.6rem;
 	}
@@ -437,12 +439,13 @@ if (location) {
 		padding: 1rem 1.05rem;
 		border: 1px solid var(--border);
 		background: #f4f4f2;
+		font-family: var(--sans) !important;
 		font-size: 0.77rem;
 		line-height: 1.7;
 	}
 
 	.docs-prose :global(code) {
-		font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+		font-family: var(--sans) !important;
 		font-size: 0.82em;
 	}
 
@@ -559,13 +562,45 @@ if (location) {
 		}
 
 		.docs-header {
-			flex-wrap: wrap;
+			width: 100%;
+			max-width: 100%;
+			box-sizing: border-box;
+			justify-content: space-between;
+			gap: 0.3rem;
+			padding: 0.35rem 0.4rem 0.35rem 0.55rem;
 		}
 
 		.docs-header-nav {
-			order: 3;
-			margin-left: 0;
-			width: 100%;
+			margin-left: auto;
+			flex: 1 1 auto;
+			min-width: 0;
+			justify-content: flex-end;
+			flex-wrap: nowrap;
+		}
+
+		.docs-logo {
+			margin-right: 0;
+			gap: 0.32rem;
+			font-size: 0.66rem;
+			letter-spacing: 0.1em;
+			flex-shrink: 0;
+		}
+
+		.docs-logo-icon {
+			width: 1.85rem;
+			height: 1.85rem;
+		}
+
+		.docs-header-nav a {
+			padding: 0.3rem 0.42rem;
+			font-size: 0.64rem;
+		}
+
+		.docs-header-cta {
+			min-height: 1.9rem;
+			padding: 0.35rem 0.62rem;
+			font-size: 0.64rem;
+			flex-shrink: 0;
 		}
 
 		.docs-sidebar {

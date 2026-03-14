@@ -4,6 +4,10 @@ import darkShowcaseAsset from "../../assets/dark.webp";
 import lightShowcaseAsset from "../../assets/light.webp";
 import logoG from "../../assets/logo_g.PNG";
 import mdNativeImg from "../../assets/md_native.png";
+import privacyFilesIcon from "../../assets/privacy-files.svg";
+import privacyKeyIcon from "../../assets/privacy-key.svg";
+import privacyLightweightIcon from "../../assets/privacy-lightweight.svg";
+import privacyPrivateIcon from "../../assets/privacy-private.svg";
 import Layout from "../layouts/Layout.astro";
 import { downloadUrl } from "../lib/site";
 
@@ -110,6 +114,8 @@ const faqs = [
 		a: "Eventually, yes. Glyph is built with cross-platform technology, so Windows and Linux are absolutely possible. Right now, all my energy goes into making the Mac experience exceptional.",
 	},
 ];
+
+const footerTrimMarks = Array.from({ length: 30 });
 ---
 
 <Layout
@@ -131,7 +137,6 @@ const faqs = [
 			<nav class="nav">
 				<a href="/docs/introduction">Docs</a>
 				<a href="https://github.com/SidhuK/Glyph" target="_blank" rel="noopener">GitHub</a>
-				<a href="/changelog">Changelog</a>
 			</nav>
 			<a href={downloadUrl} class="header-cta" target="_blank" rel="noopener">Download</a>
 		</header>
@@ -200,7 +205,7 @@ const faqs = [
 
 		<!-- ── FEATURES ── -->
 		<section class="features-section" data-reveal>
-			<div class="feature-card feature-card--wide feature-card--has-img">
+			<div class="feature-card feature-card--sand feature-card--wide feature-card--has-img">
 				<div class="feature-card-text">
 					<p class="feature-eyebrow">✏️ Editor</p>
 					<h3 class="feature-heading">Markdown-native. Write without friction.</h3>
@@ -211,7 +216,7 @@ const faqs = [
 				</div>
 			</div>
 			<div class="feature-card-row">
-				<div class="feature-card feature-card--has-img feature-card--stacked">
+				<div class="feature-card feature-card--sage feature-card--has-img feature-card--stacked">
 					<div class="feature-card-text">
 						<p class="feature-eyebrow">🔗 Connections</p>
 						<h3 class="feature-heading">Wikilinks & backlinks. Ideas stay connected.</h3>
@@ -243,7 +248,7 @@ const faqs = [
 						</div>
 					</div>
 				</div>
-				<div class="feature-card feature-card--has-img feature-card--stacked">
+				<div class="feature-card feature-card--peach feature-card--has-img feature-card--stacked">
 					<div class="feature-card-text">
 						<p class="feature-eyebrow">🧠 Intelligence</p>
 						<h3 class="feature-heading">AI that knows your notes.</h3>
@@ -267,7 +272,7 @@ const faqs = [
 						</div>
 				</div>
 			</div>
-			<div class="feature-card feature-card--wide feature-card--has-img">
+			<div class="feature-card feature-card--sky feature-card--wide feature-card--has-img">
 				<div class="feature-card-text">
 					<p class="feature-eyebrow">✅ Productivity</p>
 					<h3 class="feature-heading">Tasks, tables & boards. All in one place.</h3>
@@ -303,7 +308,7 @@ const faqs = [
 				</div>
 			</div>
 			<div class="feature-card-row">
-				<div class="feature-card">
+				<div class="feature-card feature-card--butter">
 					<div class="feature-card-text">
 						<p class="feature-eyebrow">🔍 Search</p>
 						<h3 class="feature-heading">Find anything, instantly.</h3>
@@ -337,7 +342,7 @@ const faqs = [
 						</div>
 					</div>
 				</div>
-				<div class="feature-card">
+				<div class="feature-card feature-card--rose">
 					<div class="feature-card-text">
 						<p class="feature-eyebrow">🎨 Customization</p>
 						<h3 class="feature-heading">Make it yours.</h3>
@@ -362,7 +367,7 @@ const faqs = [
 							<div class="feature-customize-mini__type">
 								<div class="feature-customize-mini__sample">
 									<span class="feature-customize-mini__title">Today</span>
-									<span class="feature-customize-mini__meta">Avenir Next · 14px</span>
+										<span class="feature-customize-mini__meta">DM Sans · 14px</span>
 								</div>
 								<div class="feature-customize-mini__shortcut">⌘⇧J</div>
 							</div>
@@ -373,65 +378,109 @@ const faqs = [
 		</section>
 
 		<!-- ── LOCAL-FIRST ── -->
-		<section class="section" data-reveal>
+		<section class="section privacy-section" data-reveal>
 			<p class="label">PRIVACY</p>
 			<h2>Yours, completely</h2>
 			<p class="section-sub">Your notes never leave your machine. No account, no cloud, no telemetry. Open a folder and start writing.</p>
-			<div class="privacy-grid">
-				<div class="privacy-cell privacy-cell--tip">
-					<p class="privacy-stat">0</p>
-					<p class="privacy-label">data collected</p>
-					<div class="tip-card">
-						<p class="tip-title">Private by default</p>
-						<ul class="tip-list">
-							<li>No account required to use Glyph</li>
-							<li>No telemetry, tracking, or sync layer</li>
-							<li>Your notes stay available even without internet</li>
-						</ul>
-						<p class="tip-foot">Glyph works locally first, so privacy and offline access are built in from the start.</p>
+			<div class="privacy-shell">
+				<div class="privacy-shell__intro">
+					<div class="privacy-shell__copy">
+						<p class="privacy-shell__eyebrow">Local-first by design</p>
+						<h3 class="privacy-shell__title">Everything stays in your hands</h3>
+						<p class="privacy-shell__body">Glyph keeps your notes, search index, and workspace data on your machine. AI is opt-in, file formats stay open, and nothing quietly leaves your Mac in the background.</p>
+						<p class="privacy-shell__signal"><span aria-hidden="true"></span>Stored on your Mac, not on someone else&apos;s server</p>
+					</div>
+					<div class="privacy-shell__chips" aria-label="Privacy highlights">
+						<span>No login</span>
+						<span>Plain markdown</span>
+						<span>Offline-ready</span>
+						<span>BYOK AI</span>
 					</div>
 				</div>
-				<div class="privacy-cell privacy-cell--tip">
-					<p class="privacy-stat">.md</p>
-					<p class="privacy-label">plain files you own</p>
-					<div class="tip-card">
-						<p class="tip-title">No lock-in</p>
-						<ul class="tip-list">
-							<li>Every note is saved as a standard markdown file</li>
-							<li>Open your folder anytime in Finder or another editor</li>
-							<li>Your notes stay yours, even if you stop using Glyph</li>
-						</ul>
-						<p class="tip-foot">Glyph organizes your notes without trapping them in a proprietary format.</p>
+				<div class="privacy-grid">
+					<div class="privacy-cell privacy-cell--private privacy-cell--feature">
+						<div class="privacy-cell__icon">
+							<img src={privacyPrivateIcon.src} alt="" loading="lazy" decoding="async" />
+						</div>
+						<h4 class="privacy-card-title">Private by default</h4>
+						<p class="privacy-card-subtitle">Nothing gets uploaded behind your back.</p>
+						<div class="privacy-preview privacy-preview--stack">
+							<div class="privacy-preview__metric">
+								<span class="privacy-stat">0</span>
+								<span class="privacy-label">data collected</span>
+							</div>
+							<div class="privacy-preview__list">
+								<span>No telemetry</span>
+								<span>No account required</span>
+								<span>Offline-ready workspace</span>
+							</div>
+						</div>
+						<div class="privacy-meta">
+							<span>No login</span>
+							<span>Local storage</span>
+						</div>
+					</div>
+					<div class="privacy-cell privacy-cell--files privacy-cell--wide">
+						<div class="privacy-cell__icon">
+							<img src={privacyFilesIcon.src} alt="" loading="lazy" decoding="async" />
+						</div>
+						<h4 class="privacy-card-title">Open markdown files</h4>
+						<p class="privacy-card-subtitle">Your notes stay portable forever.</p>
+						<div class="privacy-preview privacy-preview--file">
+							<div class="privacy-preview__row">
+								<span class="privacy-preview__mono">Notes/weekly-review.md</span>
+								<span class="privacy-preview__tag">.md</span>
+							</div>
+							<div class="privacy-preview__row privacy-preview__row--muted">
+								<span>Readable in Finder, Obsidian, VS Code, or plain text.</span>
+							</div>
+						</div>
+						<div class="privacy-meta">
+							<span>Finder-friendly</span>
+							<span>No export step</span>
+						</div>
+					</div>
+					<div class="privacy-cell privacy-cell--light privacy-cell--compact">
+						<div class="privacy-cell__icon">
+							<img src={privacyLightweightIcon.src} alt="" loading="lazy" decoding="async" />
+						</div>
+						<h4 class="privacy-card-title">Lean native app</h4>
+						<p class="privacy-card-subtitle">Fast launch, light footprint, and battery-friendly.</p>
+						<div class="privacy-preview privacy-preview--stats">
+							<div class="privacy-preview__stat-row">
+								<span>App size</span>
+								<strong>&lt;40 MB</strong>
+							</div>
+							<div class="privacy-preview__stat-row">
+								<span>Stack</span>
+								<strong>Tauri + Rust</strong>
+							</div>
+						</div>
+						<div class="privacy-meta">
+							<span>No Electron</span>
+							<span>Low memory use</span>
+						</div>
+					</div>
+					<div class="privacy-cell privacy-cell--key privacy-cell--compact">
+						<div class="privacy-cell__icon">
+							<img src={privacyKeyIcon.src} alt="" loading="lazy" decoding="async" />
+						</div>
+						<h4 class="privacy-card-title">Bring your own AI</h4>
+						<p class="privacy-card-subtitle">Use your own account, API key, or local model when you want help.</p>
+						<div class="privacy-preview privacy-preview--providers">
+							<span>ChatGPT</span>
+							<span>Claude</span>
+							<span>Gemini</span>
+							<span>OpenRouter</span>
+							<span>Ollama</span>
+						</div>
+						<div class="privacy-meta">
+							<span>No proxying</span>
+							<span>Local models too</span>
+						</div>
 					</div>
 				</div>
-				<div class="privacy-cell privacy-cell--tip">
-					<p class="privacy-stat">&lt;40<span class="privacy-unit">MB</span></p>
-					<p class="privacy-label">app size</p>
-					<div class="tip-card">
-						<p class="tip-title">Why so small?</p>
-						<ul class="tip-list">
-							<li>Built natively with Tauri &amp; Rust</li>
-							<li>No Electron, no bundled browser</li>
-							<li>Uses under 250 MB of memory</li>
-						</ul>
-						<p class="tip-foot">A lean, fast app that respects your disk and your battery.</p>
-					</div>
-				</div>
-				<div class="privacy-cell privacy-cell--tip">
-					<p class="privacy-stat">BYOK</p>
-					<p class="privacy-label">bring your own AI key</p>
-					<div class="tip-card">
-						<p class="tip-title">Supported providers</p>
-						<ul class="tip-list">
-							<li>OpenAI / ChatGPT (Plus, Team, Pro)</li>
-							<li>Anthropic (Claude)</li>
-							<li>Google Gemini</li>
-							<li>OpenRouter</li>
-							<li>Local models (Ollama, LM Studio)</li>
-						</ul>
-						<p class="tip-foot">Use your own API key — I never store or proxy it.</p>
-					</div>
-				</div>
+				<p class="privacy-shell__note">Private by default, portable by design, and still ready for AI when you choose it.</p>
 			</div>
 		</section>
 
@@ -440,6 +489,69 @@ const faqs = [
 			<p class="label">DESIGN</p>
 			<h2>Obsessively crafted</h2>
 			<p class="section-sub">A native macOS app built by a solo developer who sweats the details. Every pixel, every shortcut, every transition.</p>
+		</section>
+
+		<!-- ── CTA ── -->
+		<section class="section cta" data-reveal>
+			<p class="label">YOUR NEXT STEP</p>
+			<h2>Start writing with<br />Glyph today</h2>
+			<div class="cta-receipt">
+				<div class="cta-receipt__perforation cta-receipt__perforation--top" aria-hidden="true"></div>
+				<div class="cta-receipt__body">
+					<div class="cta-receipt__brand">
+						<div class="cta-receipt__brand-lockup">
+							<span class="cta-receipt__brand-icon">
+								<img src={logoG.src} alt="" loading="lazy" decoding="async" />
+							</span>
+							<div class="cta-receipt__brand-copy">
+								<p class="cta-receipt__brand-name">Glyph</p>
+								<p class="cta-receipt__brand-meta">Personal license for macOS</p>
+							</div>
+						</div>
+						<span class="cta-receipt__badge">EARLY ACCESS</span>
+					</div>
+					<div class="cta-receipt__rows">
+						<div class="cta-receipt__row">
+							<span>License</span>
+							<span>Personal</span>
+						</div>
+						<div class="cta-receipt__row">
+							<span>Payment</span>
+							<span>One-time</span>
+						</div>
+						<div class="cta-receipt__row">
+							<span>Subscription</span>
+							<span>None</span>
+						</div>
+						<div class="cta-receipt__row">
+							<span>Trial</span>
+							<span>7 days free</span>
+						</div>
+					</div>
+					<div class="cta-receipt__pricing">
+						<div class="cta-receipt__pricing-copy">
+							<p class="cta-receipt__pricing-label">Total today</p>
+							<p class="cta-receipt__pricing-save">You save $5</p>
+							<p class="cta-receipt__pricing-note">Lifetime access, no recurring fees, no credit card required for the trial.</p>
+						</div>
+						<div class="cta-receipt__pricing-amount">
+							<span class="cta-receipt__special">Early Access Pricing</span>
+							<p class="cta-receipt__price-line">
+								<span class="cta-receipt__price-old">$15</span>
+								<span class="cta-receipt__price-new">$9.99</span>
+							</p>
+							<p class="cta-receipt__code">Use code <span>EARLYACCESS</span> at checkout</p>
+						</div>
+					</div>
+					<a href={downloadUrl} class="cta-receipt__button" target="_blank" rel="noopener">Get Glyph</a>
+					<div class="cta-receipt__footer">
+						<p>Free 7-day trial</p>
+						<p>No credit card required</p>
+						<p>Plain markdown files</p>
+					</div>
+				</div>
+				<div class="cta-receipt__perforation cta-receipt__perforation--bottom" aria-hidden="true"></div>
+			</div>
 		</section>
 
 		<!-- ── FAQ ── -->
@@ -459,26 +571,6 @@ const faqs = [
 			</div>
 		</section>
 
-		<!-- ── CTA ── -->
-		<section class="section cta" data-reveal>
-			<p class="label">YOUR NEXT STEP</p>
-			<h2>Start writing with<br />Glyph today</h2>
-			<div class="cta-actions">
-				<a href={downloadUrl} class="btn-primary" target="_blank" rel="noopener">Get Glyph</a>
-				<a href="https://github.com/SidhuK/Glyph" class="btn-github" target="_blank" rel="noopener">
-					<svg class="btn-github-mark" viewBox="0 0 438.549 438.549" aria-hidden="true">
-						<path d="M409.132 114.573c-19.608-33.596-46.205-60.194-79.798-79.8-33.598-19.607-70.277-29.408-110.063-29.408-39.781 0-76.472 9.804-110.063 29.408-33.596 19.605-60.192 46.204-79.8 79.8C9.803 148.168 0 184.854 0 224.63c0 47.78 13.94 90.745 41.827 128.906 27.884 38.164 63.906 64.572 108.063 79.227 5.14.954 8.945.283 11.419-1.996 2.475-2.282 3.711-5.14 3.711-8.562 0-.571-.049-5.708-.144-15.417a2549.81 2549.81 0 01-.144-25.406l-6.567 1.136c-4.187.767-9.469 1.092-15.846 1-6.374-.089-12.991-.757-19.842-1.999-6.854-1.231-13.229-4.086-19.13-8.559-5.898-4.473-10.085-10.328-12.56-17.556l-2.855-6.57c-1.903-4.374-4.899-9.233-8.992-14.559-4.093-5.331-8.232-8.945-12.419-10.848l-1.999-1.431c-1.332-.951-2.568-2.098-3.711-3.429-1.142-1.331-1.997-2.663-2.568-3.997-.572-1.335-.098-2.43 1.427-3.289 1.525-.859 4.281-1.276 8.28-1.276l5.708.853c3.807.763 8.516 3.042 14.133 6.851 5.614 3.806 10.229 8.754 13.846 14.842 4.38 7.806 9.657 13.754 15.846 17.847 6.184 4.093 12.419 6.136 18.699 6.136 6.28 0 11.704-.476 16.274-1.423 4.565-.952 8.848-2.383 12.847-4.285 1.713-12.758 6.377-22.559 13.988-29.41-10.848-1.14-20.601-2.857-29.264-5.14-8.658-2.286-17.605-5.996-26.835-11.14-9.235-5.137-16.896-11.516-22.985-19.126-6.09-7.614-11.088-17.61-14.987-29.979-3.901-12.374-5.852-26.648-5.852-42.826 0-23.035 7.52-42.637 22.557-58.817-7.044-17.318-6.379-36.732 1.997-58.24 5.52-1.715 13.706-.428 24.554 3.853 10.85 4.283 18.794 7.952 23.84 10.994 5.046 3.041 9.089 5.618 12.135 7.708 17.705-4.947 35.976-7.421 54.818-7.421s37.117 2.474 54.823 7.421l10.849-6.849c7.419-4.57 16.18-8.758 26.262-12.565 10.088-3.805 17.802-4.853 23.134-3.138 8.562 21.509 9.325 40.922 2.279 58.24 15.036 16.18 22.559 35.787 22.559 58.817 0 16.178-1.958 30.497-5.853 42.966-3.9 12.471-8.941 22.457-15.125 29.979-6.191 7.521-13.901 13.85-23.131 18.986-9.232 5.14-18.182 8.85-26.84 11.136-8.662 2.286-18.415 4.004-29.263 5.146 9.894 8.562 14.842 22.077 14.842 40.539v60.237c0 3.422 1.19 6.279 3.572 8.562 2.379 2.279 6.136 2.95 11.276 1.995 44.163-14.653 80.185-41.062 108.068-79.226 27.88-38.161 41.825-81.126 41.825-128.906-.01-39.771-9.818-76.454-29.414-110.049z"></path>
-					</svg>
-					<span>Star on GitHub</span>
-					<span class="btn-github-stars" aria-hidden="true">
-						<svg class="btn-github-star" viewBox="0 0 24 24">
-							<path d="M10.788 3.21c.448-1.077 1.976-1.077 2.424 0l2.082 5.006 5.404.434c1.164.093 1.636 1.545.749 2.305l-4.117 3.527 1.257 5.273c.271 1.136-.964 2.033-1.96 1.425L12 18.354 7.373 21.18c-.996.608-2.231-.29-1.96-1.425l1.257-5.273-4.117-3.527c-.887-.76-.415-2.212.749-2.305l5.404-.434 2.082-5.005Z"></path>
-						</svg>
-					</span>
-				</a>
-			</div>
-		</section>
-
 		<section class="early-access-note" data-reveal>
 			<p class="label">EARLY ACCESS</p>
 			<h2>Still early. Actively evolving.</h2>
@@ -487,31 +579,43 @@ const faqs = [
 
 		<!-- ── FOOTER ── -->
 		<footer class="footer">
-			<div class="footer-inner">
-				<div class="footer-col">
-					<a href="/" class="logo">
-						<img src={logoG.src} alt="" class="logo-icon" />
-						<span>GLYPH</span>
-					</a>
+			<div class="footer-shell">
+				<div class="footer-top">
+					<div class="footer-brand">
+						<a href="/" class="footer-logo">
+							<img src={logoG.src} alt="" class="logo-icon" />
+							<span>GLYPH</span>
+						</a>
+						<p class="footer-tagline">Local-first notes for macOS. Private, calm, and built around your own files.</p>
+					</div>
+					<nav class="footer-links" aria-label="Footer">
+						<a href="/docs/introduction">Docs</a>
+						<a href={downloadUrl} target="_blank" rel="noopener">Download</a>
+						<a href="https://github.com/SidhuK/Glyph" target="_blank" rel="noopener">GitHub</a>
+						<a href="/terms">Terms</a>
+						<a href="/privacy">Privacy</a>
+						<a href="/legal">Legal</a>
+					</nav>
 				</div>
-				<div class="footer-col">
-					<p class="footer-heading">PRODUCT</p>
-					<a href="/docs/introduction">Docs</a>
-					<a href="/changelog">Changelog</a>
-					<a href="https://github.com/SidhuK/Glyph" target="_blank" rel="noopener">GitHub</a>
+				<div class="footer-meta">
+					<p class="footer-copy">© 2026 Glyph</p>
+					<p class="footer-credit">Made for quiet work and notes you keep forever.</p>
 				</div>
-				<div class="footer-col">
-					<p class="footer-heading">PURCHASE</p>
-					<a href={downloadUrl} target="_blank" rel="noopener">Download</a>
-				</div>
-				<div class="footer-col">
-					<p class="footer-heading">LEGAL</p>
-					<a href="/terms">Terms</a>
-					<a href="/privacy">Privacy</a>
-					<a href="/legal">Legal</a>
+				<div class="footer-showpiece">
+					<div class="footer-trim" aria-hidden="true">
+						{footerTrimMarks.map((_, index) => (
+							<span
+								class:list={[
+									"footer-trim__mark",
+									index % 3 === 1 && "is-warm",
+									index % 3 === 2 && "is-soft",
+								]}
+							/>
+						))}
+					</div>
+					<p class="footer-wordmark" aria-hidden="true">Glyph</p>
 				</div>
 			</div>
-			<p class="footer-copy">© 2026 Glyph. All rights reserved.</p>
 		</footer>
 
 	</div>
@@ -581,13 +685,14 @@ const faqs = [
 		display: flex;
 		align-items: center;
 		padding: 0.35rem 0.65rem;
-		font-family: var(--serif);
+		font-family: var(--sans);
 		font-size: 0.85rem;
-		font-weight: 400;
-		letter-spacing: 0;
+		font-weight: 500;
+		letter-spacing: 0.01em;
 		text-transform: none;
 		color: var(--muted);
 		border-radius: 100px;
+		white-space: nowrap;
 		transition: color 0.15s;
 	}
 
@@ -608,6 +713,7 @@ const faqs = [
 		font-size: 0.72rem;
 		font-weight: 600;
 		letter-spacing: 0.02em;
+		white-space: nowrap;
 		border-radius: 100px;
 		border: none;
 		cursor: pointer;
@@ -688,75 +794,11 @@ const faqs = [
 		background: rgba(17, 17, 17, 0.06);
 	}
 
-	.btn-github {
-		position: relative;
-		display: inline-flex;
-		align-items: center;
-		gap: 0.55rem;
-		min-height: 3.4rem;
-		padding: 0.9rem 1.6rem;
-		border-radius: 100px;
-		background: rgba(255, 255, 255, 0.7);
-		color: var(--ink);
-		font-family: var(--sans);
-		font-size: 0.78rem;
-		font-weight: 600;
-		letter-spacing: 0.03em;
-		border: 1px solid rgba(17, 17, 17, 0.08);
-		overflow: hidden;
-		transition:
-			transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
-			background 0.2s ease,
-			box-shadow 0.25s ease;
-	}
-
-	.btn-github:hover {
-		transform: translateY(-1px);
-		background: rgba(255, 255, 255, 0.9);
-		box-shadow: 0 8px 20px rgba(17, 17, 17, 0.08);
-	}
-
-	.btn-github:active {
-		transform: translateY(0);
-	}
-
-	.btn-github-stars {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.32rem;
-		margin-left: 0.08rem;
-		color: var(--muted);
-	}
-
-	.btn-github-mark,
-	.btn-github-star {
-		flex: none;
-		display: block;
-	}
-
-	.btn-github-mark {
-		width: 0.88rem;
-		height: 0.88rem;
-		fill: currentColor;
-	}
-
-	.btn-github-star {
-		width: 0.82rem;
-		height: 0.82rem;
-		fill: #b38a2f;
-		transition: transform 0.22s cubic-bezier(0.22, 1, 0.36, 1), fill 0.2s ease;
-	}
-
-	.btn-github:hover .btn-github-star {
-		transform: rotate(12deg) scale(1.08);
-		fill: #c9a247;
-	}
-
 	/* ── Label ── */
 	.label {
-		font-family: var(--mono);
+		font-family: var(--sans);
 		font-size: 0.68rem;
-		font-weight: 500;
+		font-weight: 600;
 		letter-spacing: 0.18em;
 		color: var(--faint);
 		text-align: center;
@@ -822,6 +864,8 @@ const faqs = [
 		font-size: 0.78rem;
 		color: var(--muted);
 		letter-spacing: 0.01em;
+		line-height: 1.55;
+		text-wrap: balance;
 	}
 
 	.hero-pricing-original {
@@ -835,7 +879,7 @@ const faqs = [
 	}
 
 	.hero-pricing-code {
-		font-family: var(--mono);
+		font-family: var(--sans);
 		font-size: 0.72rem;
 		font-weight: 600;
 		letter-spacing: 0.04em;
@@ -861,8 +905,10 @@ const faqs = [
 
 	.install-strip-code {
 		display: block;
-		font-family: var(--mono);
+		font-family: var(--sans);
 		font-size: 0.75rem;
+		font-weight: 500;
+		letter-spacing: 0.01em;
 		color: var(--muted);
 		line-height: 1.45;
 		min-width: 0;
@@ -987,7 +1033,8 @@ const faqs = [
 		font-family: var(--serif);
 		font-size: clamp(1.8rem, 5vw, 2.4rem);
 		font-weight: 400;
-		font-style: italic;
+		font-style: normal;
+		letter-spacing: -0.02em;
 		line-height: 1.2;
 		color: var(--ink);
 		margin-bottom: 1rem;
@@ -1019,11 +1066,50 @@ const faqs = [
 	}
 
 	.feature-card {
-		background: rgba(255, 255, 255, 0.7);
-		border-radius: 1.2rem;
+		--feature-card-bg: rgba(255, 255, 255, 0.76);
+		--feature-card-border: rgba(17, 17, 17, 0.07);
+		position: relative;
+		isolation: isolate;
+		background: var(--feature-card-bg);
+		border: 1px solid var(--feature-card-border);
+		border-radius: 0.9rem;
 		padding: 2.2rem 2.4rem;
 		text-align: left;
 		overflow: hidden;
+	}
+
+	.feature-card::before {
+		content: none;
+	}
+
+	.feature-card--sand {
+		--feature-card-bg: rgba(244, 238, 229, 0.92);
+		--feature-card-border: rgba(163, 141, 108, 0.14);
+	}
+
+	.feature-card--sage {
+		--feature-card-bg: rgba(234, 241, 233, 0.92);
+		--feature-card-border: rgba(118, 149, 122, 0.14);
+	}
+
+	.feature-card--peach {
+		--feature-card-bg: rgba(246, 235, 226, 0.92);
+		--feature-card-border: rgba(184, 133, 104, 0.15);
+	}
+
+	.feature-card--sky {
+		--feature-card-bg: rgba(231, 238, 245, 0.92);
+		--feature-card-border: rgba(106, 136, 171, 0.15);
+	}
+
+	.feature-card--butter {
+		--feature-card-bg: rgba(245, 240, 226, 0.92);
+		--feature-card-border: rgba(171, 152, 95, 0.15);
+	}
+
+	.feature-card--rose {
+		--feature-card-bg: rgba(242, 233, 234, 0.92);
+		--feature-card-border: rgba(164, 119, 126, 0.14);
 	}
 
 	.feature-card--wide {
@@ -1059,8 +1145,7 @@ const faqs = [
 		display: block;
 		width: 100%;
 		height: auto;
-		border-radius: 0.6rem 0 0 0;
-		box-shadow: -4px -4px 20px rgba(0, 0, 0, 0.04);
+		border-radius: 0.45rem 0 0 0;
 	}
 
 	.feature-card--stacked .feature-card-img {
@@ -1070,8 +1155,7 @@ const faqs = [
 	}
 
 	.feature-card--stacked .feature-card-img img {
-		border-radius: 0.6rem 0.6rem 0 0;
-		box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.04);
+		border-radius: 0.45rem 0.45rem 0 0;
 	}
 
 	.feature-links-mini {
@@ -1079,11 +1163,9 @@ const faqs = [
 		width: min(100%, 19rem);
 		height: 10.75rem;
 		margin: 0 auto;
-		border-radius: 1.1rem;
-		background:
-			radial-gradient(circle at 50% 48%, rgba(198, 172, 112, 0.12), transparent 28%),
-			radial-gradient(circle at 20% 24%, rgba(17, 17, 17, 0.04), transparent 20%),
-			radial-gradient(circle at 84% 76%, rgba(17, 17, 17, 0.04), transparent 22%);
+		border: 1px solid rgba(140, 118, 77, 0.16);
+		border-radius: 0.7rem;
+		background: rgba(255, 252, 247, 0.58);
 	}
 
 	.feature-links-mini__lines {
@@ -1096,8 +1178,8 @@ const faqs = [
 
 	.feature-links-mini__lines path {
 		fill: none;
-		stroke: rgba(140, 118, 77, 0.34);
-		stroke-width: 1.55;
+		stroke: rgba(140, 118, 77, 0.28);
+		stroke-width: 1.3;
 		stroke-linecap: round;
 		stroke-linejoin: round;
 	}
@@ -1108,12 +1190,10 @@ const faqs = [
 		align-items: center;
 		justify-content: center;
 		min-width: 5.15rem;
-		padding: 0.46rem 0.76rem;
-		border-radius: 0.95rem;
-		background: rgba(255, 255, 255, 0.88);
-		box-shadow:
-			inset 0 0 0 1px rgba(17, 17, 17, 0.06),
-			0 6px 18px rgba(17, 17, 17, 0.04);
+		padding: 0.42rem 0.7rem;
+		border-radius: 0.45rem;
+		border: 1px solid rgba(17, 17, 17, 0.08);
+		background: rgba(255, 255, 255, 0.9);
 		font-family: var(--sans);
 		font-size: 0.72rem;
 		font-weight: 500;
@@ -1126,39 +1206,32 @@ const faqs = [
 		left: 50%;
 		top: 50%;
 		transform: translate(-50%, -50%);
-		padding: 0.54rem 0.9rem;
-		border-radius: 1rem;
-		background:
-			linear-gradient(180deg, rgba(29, 28, 26, 0.96), rgba(17, 17, 17, 0.94));
+		padding: 0.48rem 0.82rem;
+		border-radius: 0.5rem;
+		border-color: rgba(17, 17, 17, 0.2);
+		background: rgba(29, 28, 26, 0.96);
 		color: rgba(255, 255, 255, 0.94);
-		box-shadow:
-			0 14px 28px rgba(17, 17, 17, 0.1),
-			inset 0 1px 0 rgba(255, 255, 255, 0.06);
 		z-index: 2;
 	}
 
 	.feature-links-mini__node--top-left {
 		left: 0.55rem;
 		top: 0.9rem;
-		transform: rotate(-7deg);
 	}
 
 	.feature-links-mini__node--top-right {
 		right: 0.35rem;
 		top: 1rem;
-		transform: rotate(6deg);
 	}
 
 	.feature-links-mini__node--bottom-left {
 		left: 0.8rem;
 		bottom: 0.95rem;
-		transform: rotate(4deg);
 	}
 
 	.feature-links-mini__node--bottom-right {
 		right: 0.35rem;
 		bottom: 1rem;
-		transform: rotate(-5deg);
 	}
 
 	.feature-ai-mini {
@@ -1174,7 +1247,7 @@ const faqs = [
 		align-items: flex-start;
 		gap: 0.6rem;
 		padding: 0.78rem 0.9rem;
-		border-radius: 1.05rem;
+		border-radius: 0.65rem;
 		font-family: var(--sans);
 		font-size: 0.78rem;
 		line-height: 1.45;
@@ -1183,20 +1256,14 @@ const faqs = [
 	.feature-ai-mini__message--user {
 		margin-left: auto;
 		max-width: 86%;
-		background:
-			linear-gradient(180deg, rgba(30, 29, 27, 0.96), rgba(17, 17, 17, 0.94));
+		background: rgba(30, 29, 27, 0.96);
 		color: rgba(255, 255, 255, 0.94);
-		box-shadow:
-			0 10px 22px rgba(17, 17, 17, 0.08),
-			inset 0 1px 0 rgba(255, 255, 255, 0.04);
 	}
 
 	.feature-ai-mini__message--assistant {
 		max-width: 100%;
+		border: 1px solid rgba(17, 17, 17, 0.08);
 		background: rgba(255, 255, 255, 0.78);
-		box-shadow:
-			inset 0 0 0 1px rgba(17, 17, 17, 0.08),
-			0 8px 22px rgba(17, 17, 17, 0.04);
 		color: rgba(17, 17, 17, 0.8);
 	}
 
@@ -1207,7 +1274,7 @@ const faqs = [
 		width: 1.35rem;
 		height: 1.35rem;
 		flex: none;
-		border-radius: 0.45rem;
+		border-radius: 0.3rem;
 		background: rgba(240, 136, 84, 0.12);
 		margin-top: 0.02rem;
 	}
@@ -1297,7 +1364,7 @@ const faqs = [
 	.feature-command-mini {
 		margin-top: 1.2rem;
 		border: 1px solid rgba(17, 17, 17, 0.08);
-		border-radius: 0.9rem;
+		border-radius: 0.65rem;
 		overflow: hidden;
 		background: rgba(255, 255, 255, 0.62);
 	}
@@ -1341,11 +1408,14 @@ const faqs = [
 	.feature-command-mini__shortcut {
 		display: inline-flex;
 		align-items: center;
-		padding: 0.16rem 0.38rem;
-		border-radius: 999px;
-		background: rgba(17, 17, 17, 0.05);
-		font-family: var(--mono);
+		padding: 0.14rem 0.34rem;
+		border-radius: 0.28rem;
+		border: 1px solid rgba(17, 17, 17, 0.08);
+		background: rgba(255, 255, 255, 0.54);
+		font-family: var(--sans);
 		font-size: 0.62rem;
+		font-weight: 600;
+		letter-spacing: 0.04em;
 		color: rgba(17, 17, 17, 0.5);
 	}
 
@@ -1355,20 +1425,21 @@ const faqs = [
 
 	.feature-command-mini__label {
 		padding: 0 0.3rem 0.35rem;
-		font-family: var(--mono);
-		font-size: 0.58rem;
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
-		color: rgba(17, 17, 17, 0.4);
+		font-family: var(--sans);
+		font-size: 0.64rem;
+		font-weight: 600;
+		letter-spacing: 0.01em;
+		text-transform: none;
+		color: rgba(17, 17, 17, 0.5);
 	}
 
 	.feature-command-mini__item {
 		padding: 0.52rem 0.6rem;
-		border-radius: 0.65rem;
+		border-radius: 0.45rem;
 	}
 
 	.feature-command-mini__item.is-active {
-		background: rgba(17, 17, 17, 0.05);
+		background: rgba(17, 17, 17, 0.04);
 	}
 
 	.feature-command-mini__item strong {
@@ -1383,8 +1454,9 @@ const faqs = [
 	.feature-command-mini__item small {
 		display: block;
 		margin-top: 0.08rem;
-		font-family: var(--mono);
+		font-family: var(--sans);
 		font-size: 0.62rem;
+		letter-spacing: 0.03em;
 		color: rgba(17, 17, 17, 0.42);
 	}
 
@@ -1396,25 +1468,30 @@ const faqs = [
 	}
 
 	.feature-customize-mini__themes {
-		display: inline-flex;
-		align-items: center;
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
 		gap: 0.35rem;
-		flex-wrap: wrap;
+		width: 100%;
 	}
 
 	.feature-customize-mini__themes span {
 		display: inline-flex;
 		align-items: center;
-		padding: 0.28rem 0.62rem;
-		border-radius: 999px;
-		background: rgba(17, 17, 17, 0.05);
+		justify-content: center;
+		padding: 0.34rem 0.5rem;
+		border: 1px solid rgba(17, 17, 17, 0.08);
+		border-radius: 0.38rem;
+		background: rgba(255, 255, 255, 0.42);
 		font-family: var(--sans);
 		font-size: 0.68rem;
 		color: rgba(17, 17, 17, 0.56);
+		text-align: center;
+		line-height: 1.25;
 	}
 
 	.feature-customize-mini__themes .is-active {
-		background: rgba(17, 17, 17, 0.92);
+		border-color: rgba(17, 17, 17, 0.16);
+		background: rgba(17, 17, 17, 0.9);
 		color: rgba(255, 255, 255, 0.94);
 	}
 
@@ -1428,7 +1505,7 @@ const faqs = [
 		display: inline-flex;
 		width: 1rem;
 		height: 1rem;
-		border-radius: 999px;
+		border-radius: 0.28rem;
 		box-shadow: inset 0 0 0 1px rgba(17, 17, 17, 0.08);
 	}
 
@@ -1439,7 +1516,7 @@ const faqs = [
 		gap: 0.8rem;
 		padding: 0.8rem 0.9rem;
 		border: 1px solid rgba(17, 17, 17, 0.08);
-		border-radius: 0.9rem;
+		border-radius: 0.6rem;
 		background: rgba(255, 255, 255, 0.56);
 	}
 
@@ -1450,7 +1527,7 @@ const faqs = [
 	}
 
 	.feature-customize-mini__title {
-		font-family: "Avenir Next", "Helvetica Neue", sans-serif;
+		font-family: var(--sans);
 		font-size: 0.92rem;
 		font-weight: 600;
 		line-height: 1.2;
@@ -1459,8 +1536,9 @@ const faqs = [
 
 	.feature-customize-mini__meta {
 		margin-top: 0.14rem;
-		font-family: var(--mono);
+		font-family: var(--sans);
 		font-size: 0.62rem;
+		letter-spacing: 0.04em;
 		color: rgba(17, 17, 17, 0.42);
 	}
 
@@ -1468,20 +1546,23 @@ const faqs = [
 		display: inline-flex;
 		align-items: center;
 		padding: 0.2rem 0.42rem;
-		border-radius: 999px;
-		background: rgba(17, 17, 17, 0.05);
-		font-family: var(--mono);
+		border-radius: 0.28rem;
+		border: 1px solid rgba(17, 17, 17, 0.08);
+		background: rgba(255, 255, 255, 0.54);
+		font-family: var(--sans);
 		font-size: 0.62rem;
+		font-weight: 600;
+		letter-spacing: 0.04em;
 		color: rgba(17, 17, 17, 0.48);
 		white-space: nowrap;
 	}
 
 	.feature-eyebrow {
 		font-family: var(--sans);
-		font-size: 0.82rem;
-		font-weight: 400;
-		color: var(--muted);
-		margin-bottom: 0.7rem;
+		font-size: 0.78rem;
+		font-weight: 500;
+		color: rgba(70, 63, 56, 0.7);
+		margin-bottom: 0.6rem;
 	}
 
 	.feature-heading {
@@ -1511,124 +1592,467 @@ const faqs = [
 	}
 
 	/* ── Privacy grid ── */
-	.privacy-grid {
+	.privacy-section .label {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.45rem;
+		width: fit-content;
+		margin-inline: auto;
+		color: rgba(166, 97, 17, 0.82);
+	}
+
+	.privacy-section .label::before {
+		content: "";
+		width: 0.42rem;
+		height: 0.42rem;
+		border-radius: 999px;
+		background: var(--accent);
+		box-shadow: 0 0 0 0.22rem rgba(255, 159, 10, 0.14);
+	}
+
+	.privacy-section .section-sub {
+		max-width: 34rem;
+	}
+
+	.privacy-shell {
+		width: min(1040px, 96vw);
+		margin: 1rem auto 0;
+		position: relative;
+		left: 50%;
+		transform: translateX(-50%);
+		border: 1px solid rgba(123, 103, 79, 0.14);
+		border-radius: 1.65rem;
+		background: rgba(249, 245, 238, 0.98);
+		content-visibility: auto;
+		contain-intrinsic-size: 860px;
+		overflow: hidden;
+	}
+
+	.privacy-shell__intro {
+		display: grid;
+		grid-template-columns: minmax(0, 1.6fr) minmax(16rem, 0.9fr);
+		gap: 1.4rem;
+		align-items: end;
+		padding: 1.55rem 1.65rem 1.45rem;
+		border-bottom: 1px solid rgba(123, 103, 79, 0.12);
+	}
+
+	.privacy-shell__copy {
+		max-width: 38rem;
+	}
+
+	.privacy-shell__eyebrow {
+		font-size: 0.7rem;
+		font-weight: 600;
+		letter-spacing: 0.12em;
+		text-transform: uppercase;
+		color: rgba(93, 81, 69, 0.52);
+		margin-bottom: 0.5rem;
+	}
+
+	.privacy-shell__title {
+		font-family: var(--serif);
+		font-size: clamp(1.55rem, 3vw, 2.1rem);
+		font-weight: 400;
+		line-height: 1.05;
+		letter-spacing: -0.03em;
+		color: var(--ink);
+	}
+
+	.privacy-shell__body {
+		margin-top: 0.65rem;
+		font-size: 0.9rem;
+		line-height: 1.75;
+		color: rgba(93, 81, 69, 0.82);
+	}
+
+	.privacy-shell__signal {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5rem;
+		margin-top: 0.9rem;
+		padding: 0.38rem 0.72rem 0.38rem 0.46rem;
+		border: 1px solid rgba(255, 159, 10, 0.16);
+		border-radius: 999px;
+		background: rgba(255, 249, 241, 0.92);
+		font-size: 0.71rem;
+		font-weight: 600;
+		letter-spacing: 0.02em;
+		color: rgba(124, 77, 17, 0.82);
+	}
+
+	.privacy-shell__signal span {
+		width: 0.46rem;
+		height: 0.46rem;
+		border-radius: 999px;
+		background: var(--accent);
+		flex: none;
+	}
+
+	.privacy-shell__chips {
 		display: flex;
 		flex-wrap: wrap;
-		border: 1px solid var(--border);
-		text-align: center;
+		gap: 0.5rem;
+		justify-content: flex-end;
+	}
+
+	.privacy-shell__chips span {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.42rem;
+		padding: 0.42rem 0.72rem;
+		border-radius: 999px;
+		border: 1px solid rgba(123, 103, 79, 0.12);
+		background: rgba(255, 255, 255, 0.62);
+		font-size: 0.7rem;
+		font-weight: 600;
+		letter-spacing: 0.05em;
+		color: rgba(80, 69, 57, 0.72);
+	}
+
+	.privacy-shell__chips span::before {
+		content: "";
+		width: 0.34rem;
+		height: 0.34rem;
+		border-radius: 999px;
+		background: rgba(123, 103, 79, 0.34);
+		flex: none;
+	}
+
+	.privacy-shell__chips span:nth-child(1)::before { background: var(--accent); }
+	.privacy-shell__chips span:nth-child(2)::before { background: #5d7a62; }
+	.privacy-shell__chips span:nth-child(3)::before { background: #6883a4; }
+	.privacy-shell__chips span:nth-child(4)::before { background: #936373; }
+
+	.privacy-grid {
+		display: grid;
+		grid-template-columns: minmax(0, 1.4fr) minmax(0, 0.95fr) minmax(0, 0.95fr);
+		grid-template-areas:
+			"private files files"
+			"private light key";
+		gap: 0.85rem;
+		padding: 0.85rem;
+		contain: layout paint;
 	}
 
 	.privacy-cell {
-		padding: 2rem 1rem;
-		width: 25%;
-		border-right: 1px solid var(--border);
-		border-bottom: none;
+		--privacy-card-bg: rgba(249, 245, 238, 0.98);
+		--privacy-card-icon-bg: rgba(255, 255, 255, 0.72);
+		--privacy-card-icon-color: rgba(92, 77, 60, 0.88);
+		--privacy-card-border: rgba(123, 103, 79, 0.1);
+		--privacy-card-preview-border: rgba(123, 103, 79, 0.08);
+		--privacy-card-preview-bg: rgba(255, 255, 255, 0.52);
+		--privacy-card-pill-bg: rgba(255, 255, 255, 0.64);
+		--privacy-card-pill-color: rgba(73, 64, 55, 0.72);
+		--privacy-card-accent: rgba(123, 103, 79, 0.52);
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		min-height: 15rem;
+		padding: 1.45rem 1.45rem 1.3rem;
+		text-align: left;
+		border: 1px solid var(--privacy-card-border);
+		border-radius: 1.15rem;
+		background: var(--privacy-card-bg);
+		contain: layout paint;
 	}
 
-	.privacy-cell:last-child {
-		border-right: none;
+	.privacy-cell::after {
+		content: "";
+		position: absolute;
+		top: 1rem;
+		right: 1rem;
+		width: 3rem;
+		height: 0.65rem;
+		border-top: 1px dashed var(--privacy-card-accent);
+		border-bottom: 1px solid transparent;
+		opacity: 0.58;
+		pointer-events: none;
+	}
+
+	.privacy-cell--feature {
+		grid-area: private;
+		min-height: 100%;
+	}
+
+	.privacy-cell--wide {
+		grid-area: files;
+	}
+
+	.privacy-cell--light { grid-area: light; }
+
+	.privacy-cell--key { grid-area: key; }
+
+	.privacy-cell--compact {
+		min-height: 13.5rem;
+	}
+
+	.privacy-cell--private {
+		--privacy-card-bg: rgba(255, 246, 237, 0.96);
+		--privacy-card-border: rgba(199, 151, 95, 0.18);
+		--privacy-card-preview-border: rgba(199, 151, 95, 0.18);
+		--privacy-card-preview-bg: rgba(255, 251, 245, 0.88);
+		--privacy-card-pill-bg: rgba(255, 250, 245, 0.86);
+		--privacy-card-pill-color: rgba(116, 78, 30, 0.78);
+		--privacy-card-accent: rgba(184, 123, 44, 0.62);
+		--privacy-card-icon-bg: rgba(238, 230, 218, 0.92);
+		--privacy-card-icon-color: #675543;
+	}
+
+	.privacy-cell--files {
+		--privacy-card-bg: rgba(241, 247, 241, 0.96);
+		--privacy-card-border: rgba(116, 147, 122, 0.18);
+		--privacy-card-preview-border: rgba(116, 147, 122, 0.18);
+		--privacy-card-preview-bg: rgba(250, 253, 250, 0.9);
+		--privacy-card-pill-bg: rgba(248, 252, 248, 0.88);
+		--privacy-card-pill-color: rgba(73, 99, 78, 0.78);
+		--privacy-card-accent: rgba(91, 129, 98, 0.58);
+		--privacy-card-icon-bg: rgba(228, 238, 228, 0.94);
+		--privacy-card-icon-color: #4a6650;
+	}
+
+	.privacy-cell--light {
+		--privacy-card-bg: rgba(240, 245, 251, 0.96);
+		--privacy-card-border: rgba(119, 145, 181, 0.18);
+		--privacy-card-preview-border: rgba(119, 145, 181, 0.18);
+		--privacy-card-preview-bg: rgba(250, 252, 255, 0.9);
+		--privacy-card-pill-bg: rgba(248, 251, 255, 0.9);
+		--privacy-card-pill-color: rgba(74, 96, 129, 0.8);
+		--privacy-card-accent: rgba(95, 124, 163, 0.56);
+		--privacy-card-icon-bg: rgba(228, 234, 242, 0.94);
+		--privacy-card-icon-color: #4d6481;
+	}
+
+	.privacy-cell--key {
+		--privacy-card-bg: rgba(247, 241, 243, 0.96);
+		--privacy-card-border: rgba(155, 118, 132, 0.18);
+		--privacy-card-preview-border: rgba(155, 118, 132, 0.18);
+		--privacy-card-preview-bg: rgba(253, 249, 250, 0.9);
+		--privacy-card-pill-bg: rgba(251, 247, 248, 0.9);
+		--privacy-card-pill-color: rgba(117, 81, 95, 0.8);
+		--privacy-card-accent: rgba(146, 99, 117, 0.56);
+		--privacy-card-icon-bg: rgba(239, 229, 231, 0.94);
+		--privacy-card-icon-color: #7b5360;
+	}
+
+	.privacy-cell__icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 3.05rem;
+		height: 3.05rem;
+		border-radius: 1rem;
+		background: var(--privacy-card-icon-bg);
+		color: var(--privacy-card-icon-color);
+		box-shadow: inset 0 0 0 1px var(--privacy-card-preview-border);
+	}
+
+	.privacy-cell__icon img {
+		width: 1.35rem;
+		height: 1.35rem;
+		display: block;
+	}
+
+	.privacy-card-title {
+		margin-top: 1.05rem;
+		font-size: 1.1rem;
+		font-weight: 600;
+		letter-spacing: -0.02em;
+		color: rgba(33, 29, 25, 0.96);
+	}
+
+	.privacy-card-subtitle {
+		margin-top: 0.45rem;
+		max-width: 28rem;
+		font-size: 0.92rem;
+		line-height: 1.55;
+		color: rgba(93, 81, 69, 0.78);
+	}
+
+	.privacy-preview {
+		position: relative;
+		width: 100%;
+		margin-top: 1.4rem;
+		padding: 1rem 1.05rem;
+		border-radius: 1rem;
+		border: 1px solid var(--privacy-card-preview-border);
+		background: var(--privacy-card-preview-bg);
+		contain: paint;
+	}
+
+	.privacy-preview::before {
+		content: "";
+		position: absolute;
+		left: 0;
+		top: 0.8rem;
+		bottom: 0.8rem;
+		width: 0.2rem;
+		border-radius: 999px;
+		background: var(--privacy-card-accent);
+		opacity: 0.82;
+	}
+
+	.privacy-preview--stack {
+		display: flex;
+		flex-direction: column;
+		gap: 0.9rem;
+	}
+
+	.privacy-preview__metric {
+		display: flex;
+		align-items: end;
+		gap: 0.55rem;
 	}
 
 	.privacy-stat {
 		font-family: var(--serif);
-		font-size: 2.4rem;
+		font-size: clamp(2.15rem, 5vw, 2.9rem);
 		font-weight: 400;
-		font-style: italic;
-		color: var(--ink);
-		line-height: 1;
-		margin-bottom: 0.5rem;
-	}
-
-	.privacy-unit {
-		font-size: 1.2rem;
-		font-style: normal;
-		margin-left: 0.15rem;
+		letter-spacing: -0.04em;
+		line-height: 0.9;
+		color: rgba(145, 90, 20, 0.96);
 	}
 
 	.privacy-label {
 		font-size: 0.72rem;
-		font-weight: 500;
+		font-weight: 600;
 		letter-spacing: 0.08em;
 		text-transform: uppercase;
-		color: var(--faint);
+		color: rgba(93, 81, 69, 0.58);
+		padding-bottom: 0.25rem;
 	}
 
-	/* ── Tooltip card ── */
-	.privacy-cell--tip {
-		position: relative;
-		cursor: default;
-	}
-
-	.tip-card {
-		position: absolute;
-		top: calc(100% + 10px);
-		left: 50%;
-		transform: translateX(-50%) translateY(-6px);
-		width: 240px;
-		padding: 1rem 1.1rem;
-		background: var(--bg);
-		border: 1px solid var(--border);
-		border-radius: 6px;
-		text-align: left;
-		opacity: 0;
-		pointer-events: none;
-		transition: opacity 0.2s ease, transform 0.2s ease;
-		z-index: 50;
-	}
-
-	.tip-card::after {
-		content: '';
-		position: absolute;
-		bottom: 100%;
-		left: 50%;
-		transform: translateX(-50%);
-		border: 6px solid transparent;
-		border-bottom-color: var(--border);
-	}
-
-	.privacy-cell--tip:hover .tip-card {
-		opacity: 1;
-		pointer-events: auto;
-		transform: translateX(-50%) translateY(0);
-	}
-
-	.tip-title {
-		font-family: var(--mono);
-		font-size: 0.65rem;
-		font-weight: 600;
-		letter-spacing: 0.1em;
-		text-transform: uppercase;
-		color: var(--faint);
-		margin-bottom: 0.5rem;
-	}
-
-	.tip-list {
-		list-style: none;
+	.privacy-preview__list {
 		display: flex;
 		flex-direction: column;
-		gap: 0.3rem;
-		margin-bottom: 0.6rem;
+		gap: 0.5rem;
+		font-size: 0.82rem;
+		color: rgba(73, 64, 55, 0.74);
 	}
 
-	.tip-list li {
-		font-size: 0.75rem;
-		color: var(--ink);
-		line-height: 1.4;
+	.privacy-preview__row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 0.9rem;
+		font-size: 0.82rem;
+		color: rgba(73, 64, 55, 0.82);
 	}
 
-	.tip-list li::before {
-		content: '·';
-		color: var(--faint);
-		margin-right: 0.4rem;
+	.privacy-preview__row--muted {
+		margin-top: 0.7rem;
+		justify-content: flex-start;
+		color: rgba(93, 81, 69, 0.62);
+		line-height: 1.55;
+	}
+
+	.privacy-preview__mono {
+		font-size: 0.78rem;
+		letter-spacing: 0.02em;
+		color: rgba(44, 38, 32, 0.78);
+		overflow-wrap: anywhere;
+	}
+
+	.privacy-preview__tag {
+		display: inline-flex;
+		align-items: center;
+		padding: 0.24rem 0.48rem;
+		border-radius: 999px;
+		background: var(--privacy-card-pill-bg);
+		font-size: 0.66rem;
 		font-weight: 700;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--privacy-card-pill-color);
 	}
 
-	.tip-foot {
+	.privacy-preview--stats {
+		display: grid;
+		gap: 0.8rem;
+	}
+
+	.privacy-preview__stat-row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		font-size: 0.82rem;
+		color: rgba(93, 81, 69, 0.68);
+	}
+
+	.privacy-preview__stat-row strong {
+		font-size: 0.84rem;
+		font-weight: 600;
+		color: rgba(37, 32, 28, 0.88);
+	}
+
+	.privacy-preview--providers {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem;
+	}
+
+	.privacy-preview--providers span {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.38rem;
+		padding: 0.32rem 0.56rem;
+		border-radius: 999px;
+		background: var(--privacy-card-pill-bg);
+		border: 1px solid var(--privacy-card-preview-border);
+		font-size: 0.74rem;
+		font-weight: 500;
+		color: var(--privacy-card-pill-color);
+	}
+
+	.privacy-preview--providers span::before {
+		content: "";
+		width: 0.34rem;
+		height: 0.34rem;
+		border-radius: 999px;
+		background: currentColor;
+		opacity: 0.7;
+		flex: none;
+	}
+
+	.privacy-meta {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.45rem;
+		margin-top: auto;
+		padding-top: 1.15rem;
+	}
+
+	.privacy-meta span {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.35rem;
+		padding: 0.34rem 0.58rem;
+		border-radius: 999px;
+		background: var(--privacy-card-pill-bg);
+		border: 1px solid var(--privacy-card-preview-border);
 		font-size: 0.68rem;
-		color: var(--faint);
-		line-height: 1.5;
-		border-top: 1px solid var(--border);
-		padding-top: 0.5rem;
+		font-weight: 500;
+		color: var(--privacy-card-pill-color);
+	}
+
+	.privacy-meta span::before {
+		content: "";
+		width: 0.28rem;
+		height: 0.28rem;
+		border-radius: 999px;
+		background: var(--privacy-card-accent);
+		flex: none;
+	}
+
+	.privacy-shell__note {
+		padding: 1rem 1.45rem 1.1rem;
+		border-top: 1px solid rgba(123, 103, 79, 0.11);
+		font-size: 0.8rem;
+		line-height: 1.6;
+		color: rgba(93, 81, 69, 0.66);
+		background: rgba(255, 255, 255, 0.34);
 	}
 
 	/* ── FAQ ── */
@@ -1662,10 +2086,10 @@ const faqs = [
 	.faq-q {
 		font-size: 0.85rem;
 		font-weight: 500;
+		line-height: 1.55;
 	}
 
 	.faq-plus {
-		font-family: var(--mono);
 		font-size: 1rem;
 		color: var(--faint);
 		transition: transform 0.2s;
@@ -1680,17 +2104,272 @@ const faqs = [
 		font-size: 0.82rem;
 		color: var(--muted);
 		line-height: 1.7;
+		overflow-wrap: anywhere;
 	}
 
 	/* ── CTA ── */
-	.cta { padding: 5rem 0; }
+	.cta {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		padding: 5rem 0;
+	}
 
-	.cta-actions {
-		display: inline-flex;
-		align-items: stretch;
+	.cta .label,
+	.cta h2 {
+		width: 100%;
+	}
+
+	.cta-receipt {
+		position: relative;
+		align-self: center;
+		width: min(31rem, calc(100vw - 2rem));
+		max-width: 100%;
+		margin: 1.8rem auto 0;
+		margin-inline: auto;
+		border: 1px solid rgba(213, 203, 188, 0.9);
+		border-radius: 0.55rem;
+		background: rgba(255, 253, 248, 0.98);
+		overflow: hidden;
+	}
+
+	.cta-receipt__body {
+		padding: 1.55rem 1.3rem 1.25rem;
+	}
+
+	.cta-receipt__perforation {
+		height: 0.82rem;
+		background:
+			radial-gradient(circle at 0.42rem 50%, rgba(239, 235, 228, 0.98) 0.22rem, transparent 0.24rem)
+			left center / 1.15rem 100% repeat-x;
+	}
+
+	.cta-receipt__brand {
+		display: flex;
+		align-items: center;
 		justify-content: center;
-		margin-top: 1.5rem;
-		gap: 0.28rem;
+		gap: 0.75rem;
+		padding-bottom: 1rem;
+		border-bottom: 1px dashed rgba(189, 177, 160, 0.5);
+	}
+
+	.cta-receipt__brand-lockup {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 0.5rem;
+		text-align: center;
+	}
+
+	.cta-receipt__brand-copy {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+	}
+
+	.cta-receipt__brand-icon {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2.5rem;
+		height: 2.5rem;
+		border-radius: 0.45rem;
+		background: transparent;
+		border: none;
+		flex: none;
+	}
+
+	.cta-receipt__brand-icon img {
+		width: 2.5rem;
+		height: 2.5rem;
+		display: block;
+		border-radius: 0.35rem;
+	}
+
+	.cta-receipt__brand-name {
+		font-family: var(--serif);
+		font-size: 1.2rem;
+		line-height: 0.95;
+		letter-spacing: -0.03em;
+		color: var(--ink);
+	}
+
+	.cta-receipt__brand-meta {
+		margin-top: 0.24rem;
+		font-size: 0.66rem;
+		font-weight: 500;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: rgba(110, 96, 79, 0.72);
+	}
+
+	.cta-receipt__badge {
+		display: none;
+	}
+
+	.cta-receipt__rows {
+		display: grid;
+		gap: 0.72rem;
+		padding: 1rem 0 0.95rem;
+		border-bottom: 1px dashed rgba(189, 177, 160, 0.5);
+	}
+
+	.cta-receipt__row {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		font-size: 0.79rem;
+		line-height: 1.4;
+		color: rgba(94, 80, 63, 0.84);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.cta-receipt__row span:last-child {
+		font-weight: 500;
+		color: rgba(90, 77, 62, 0.76);
+	}
+
+	.cta-receipt__pricing {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		gap: 0.85rem;
+		align-items: end;
+		justify-content: center;
+		padding: 1.1rem 0 1rem;
+		border-bottom: 1px dashed rgba(189, 177, 160, 0.5);
+	}
+
+	.cta-receipt__pricing-copy {
+		text-align: left;
+	}
+
+	.cta-receipt__pricing-label {
+		font-size: 0.84rem;
+		font-weight: 500;
+		color: rgba(65, 55, 42, 0.9);
+	}
+
+	.cta-receipt__pricing-save {
+		margin-top: 0.2rem;
+		font-size: 0.7rem;
+		color: #159647;
+	}
+
+	.cta-receipt__pricing-note {
+		margin-top: 0.55rem;
+		max-width: 11rem;
+		font-size: 0.72rem;
+		line-height: 1.55;
+		color: rgba(112, 97, 79, 0.66);
+	}
+
+	.cta-receipt__pricing-amount {
+		text-align: right;
+	}
+
+	.cta-receipt__special {
+		display: inline-flex;
+		align-items: center;
+		padding: 0.22rem 0.48rem;
+		border-radius: 0.22rem;
+		background: var(--accent);
+		color: rgba(255, 251, 244, 0.98);
+		font-size: 0.58rem;
+		font-weight: 600;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		transform: rotate(-6deg);
+		transform-origin: center;
+	}
+
+	.cta-receipt__price-line {
+		display: flex;
+		align-items: flex-end;
+		justify-content: flex-end;
+		gap: 0.45rem;
+		margin-top: 0.42rem;
+	}
+
+	.cta-receipt__price-old {
+		font-size: 0.95rem;
+		line-height: 1;
+		color: rgba(130, 117, 101, 0.64);
+		text-decoration: line-through;
+		font-variant-numeric: tabular-nums;
+	}
+
+	.cta-receipt__price-new {
+		font-family: var(--serif);
+		font-size: clamp(2.25rem, 8vw, 3.35rem);
+		line-height: 0.88;
+		letter-spacing: -0.045em;
+		color: var(--ink);
+		font-variant-numeric: tabular-nums;
+	}
+
+	.cta-receipt__code {
+		margin-top: 0.38rem;
+		font-size: 0.7rem;
+		color: rgba(93, 81, 69, 0.72);
+	}
+
+	.cta-receipt__code span {
+		display: inline-flex;
+		align-items: center;
+		margin-left: 0.28rem;
+		padding: 0.18rem 0.44rem;
+		border-radius: 0.35rem;
+		background: rgba(17, 17, 17, 0.06);
+		border: 1px solid rgba(17, 17, 17, 0.08);
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		color: var(--ink);
+	}
+
+	.cta-receipt__button {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 100%;
+		min-height: 3.3rem;
+		margin-top: 1.1rem;
+		padding: 0.85rem 1.1rem;
+		border-radius: 0.72rem;
+		border: 1px solid rgba(39, 31, 22, 0.18);
+		background: linear-gradient(180deg, #3b342d 0%, #27211c 100%);
+		color: rgba(249, 244, 236, 0.98);
+		font-size: 0.9rem;
+		font-weight: 600;
+		letter-spacing: 0.02em;
+		transition:
+			background 0.18s ease,
+			border-color 0.18s ease;
+	}
+
+	.cta-receipt__button:hover {
+		background: #27211c;
+		border-color: rgba(39, 31, 22, 0.26);
+	}
+
+	.cta-receipt__button:focus-visible {
+		outline: 2px solid rgba(17, 17, 17, 0.15);
+		outline-offset: 3px;
+	}
+
+	.cta-receipt__footer {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: center;
+		gap: 0.4rem 1rem;
+		padding-top: 0.95rem;
+		margin-top: 0.9rem;
+		border-top: 1px dashed rgba(189, 177, 160, 0.5);
+		font-size: 0.74rem;
+		font-weight: 600;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		color: rgba(160, 145, 126, 0.92);
 	}
 
 	.early-access-note {
@@ -1706,45 +2385,144 @@ const faqs = [
 	/* ── Footer ── */
 	.footer {
 		border-top: none;
-		padding: 3rem 0 2rem;
+		position: relative;
+		left: 50%;
+		width: 100vw;
+		margin-left: -50vw;
+		padding: 3rem 0 0;
 	}
 
-	.footer-inner {
-		display: grid;
-		grid-template-columns: 1.5fr repeat(3, 1fr);
-		gap: 2rem;
-		padding-bottom: 2rem;
-		border-bottom: 1px solid var(--border);
+	.footer-shell {
+		background: transparent;
+		border: none;
+		border-top: 1px solid rgba(149, 129, 102, 0.18);
+		border-radius: 0;
+		padding: 1.4rem clamp(1.5rem, 4vw, 2.75rem) 0;
+		overflow: hidden;
+		box-shadow: none;
 	}
 
-	.footer-col {
+	.footer-top {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 1rem 1.5rem;
+		padding-bottom: 1rem;
+		border-bottom: 1px solid rgba(149, 129, 102, 0.12);
+	}
+
+	.footer-brand {
 		display: flex;
 		flex-direction: column;
+		gap: 0.45rem;
+		max-width: 18rem;
+	}
+
+	.footer-logo {
+		display: inline-flex;
+		align-items: center;
 		gap: 0.5rem;
-	}
-
-	.footer-heading {
-		font-size: 0.65rem;
+		font-size: 0.8rem;
 		font-weight: 600;
-		letter-spacing: 0.12em;
-		color: var(--faint);
-		margin-bottom: 0.2rem;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+		width: fit-content;
 	}
 
-	.footer-col a {
+	.footer-tagline {
 		font-size: 0.82rem;
-		color: var(--muted);
-		transition: color 0.15s;
+		line-height: 1.5;
+		color: rgba(96, 80, 60, 0.72);
 	}
 
-	.footer-col a:hover { color: var(--ink); }
+	.footer-links {
+		display: flex;
+		flex-wrap: wrap;
+		justify-content: flex-end;
+		gap: 0.4rem 0.55rem;
+		max-width: 22rem;
+	}
+
+	.footer-links a {
+		font-size: 0.74rem;
+		color: rgba(69, 58, 43, 0.82);
+		padding: 0.42rem 0.7rem;
+		border-radius: 999px;
+		border: 1px solid rgba(149, 129, 102, 0.12);
+		background: rgba(255, 255, 255, 0.58);
+		transition: border-color 0.15s, color 0.15s, background-color 0.15s;
+	}
+
+	.footer-links a:hover {
+		color: var(--ink);
+		border-color: rgba(149, 129, 102, 0.24);
+		background: rgba(255, 255, 255, 0.78);
+	}
+
+	.footer-meta {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: 1rem;
+		margin-top: 0.85rem;
+		padding-top: 0.85rem;
+		border-top: 1px solid rgba(149, 129, 102, 0.12);
+	}
 
 	.footer-copy {
-		margin-top: 1.5rem;
-		font-size: 0.7rem;
-		color: var(--faint);
-		letter-spacing: 0.02em;
+		font-size: 0.76rem;
+		color: rgba(69, 58, 43, 0.82);
+		letter-spacing: 0.03em;
+		white-space: nowrap;
+	}
+
+	.footer-credit {
+		font-size: 0.74rem;
+		color: rgba(132, 112, 86, 0.72);
+		text-align: right;
+	}
+
+	.footer-showpiece {
+		margin-top: 1rem;
+		overflow: hidden;
+	}
+
+	.footer-trim {
+		display: grid;
+		grid-template-columns: repeat(30, minmax(0, 1fr));
+		gap: 0.3rem;
+		width: min(46rem, 100%);
+		margin: 0 auto;
+		position: relative;
+		z-index: 2;
+	}
+
+	.footer-wordmark {
+		display: block;
+		width: 100%;
+		margin-top: -0.06em;
+		margin-bottom: -0.42em;
+		font-family: var(--serif);
+		font-size: clamp(10rem, 34vw, 32rem);
+		line-height: 0.7;
+		letter-spacing: -0.09em;
 		text-align: center;
+		color: rgba(132, 112, 86, 0.2);
+	}
+
+	.footer-trim__mark {
+		display: block;
+		height: 0.46rem;
+		border-radius: 999px;
+		background: #e7dacf;
+	}
+
+	.footer-trim__mark.is-warm {
+		background: #eed9cf;
+	}
+
+	.footer-trim__mark.is-soft {
+		background: #dbe3d6;
 	}
 
 	/* ── Reveal ── */
@@ -1770,42 +2548,178 @@ const faqs = [
 	/* ── Responsive ── */
 	@media (max-width: 900px) {
 		.header {
-			flex-wrap: wrap;
-			align-items: flex-start;
-			gap: 0.7rem 1rem;
+			width: 100%;
+			max-width: 100%;
+			box-sizing: border-box;
+			justify-content: space-between;
+			gap: 0.35rem;
+			padding: 0.4rem 0.45rem 0.4rem 0.65rem;
 		}
 
 		.logo {
-			width: 100%;
+			width: auto;
+			margin-right: 0;
+			flex-shrink: 0;
 		}
 
 		.nav {
-			margin-left: 0;
-			flex: 1 1 0;
-			flex-wrap: wrap;
+			margin-left: auto;
+			flex: 1 1 auto;
+			min-width: 0;
+			justify-content: flex-end;
+			flex-wrap: nowrap;
 		}
 
 		.header-cta {
 			margin-left: 0;
+			flex-shrink: 0;
+		}
+
+		.privacy-shell__intro {
+			grid-template-columns: 1fr;
+		}
+
+		.privacy-shell__chips {
+			justify-content: flex-start;
+		}
+
+		.cta-receipt__pricing {
+			grid-template-columns: 1fr;
+			align-items: start;
+		}
+
+		.cta-receipt__pricing-amount {
+			text-align: left;
+		}
+
+		.cta-receipt__price-line {
+			justify-content: flex-start;
+		}
+	}
+
+	@media (max-width: 820px) {
+		.feature-card-row,
+		.feature-card--wide.feature-card--has-img,
+		.privacy-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.feature-card,
+		.feature-card--wide.feature-card--has-img {
+			padding: 1.9rem;
+		}
+
+		.feature-card--wide.feature-card--has-img {
+			padding-right: 1.9rem;
+		}
+
+		.feature-card-text {
+			max-width: none;
+		}
+
+		.feature-card--stacked .feature-card-img,
+		.feature-card--wide .feature-card-img {
+			margin-top: 1.35rem;
+			justify-content: center;
+		}
+
+		.privacy-grid > .privacy-cell {
+			min-height: auto;
+		}
+
+		.privacy-grid {
+			grid-template-areas:
+				"private"
+				"files"
+				"light"
+				"key";
+			gap: 0.75rem;
+			padding: 0.75rem;
+		}
+
+		.cta-receipt__brand,
+		.cta-receipt__pricing {
+			grid-template-columns: 1fr;
+			align-items: flex-start;
+		}
+
+		.cta-receipt__brand {
+			flex-direction: column;
+		}
+
+		.cta-receipt__pricing-amount {
+			text-align: left;
+		}
+
+		.cta-receipt__price-line {
+			justify-content: flex-start;
+		}
+
+		.footer-top,
+		.footer-meta {
+			flex-direction: column;
+			align-items: flex-start;
+		}
+
+		.footer-links {
+			justify-content: flex-start;
+			max-width: none;
+		}
+	}
+
+	@media (max-width: 720px) {
+		.install-strip-bar {
+			display: grid;
+			grid-template-columns: minmax(0, 1fr) auto;
+			width: 100%;
+			align-items: start;
+		}
+
+		.hero-pricing {
+			max-width: 20rem;
+			margin-inline: auto;
+		}
+
+		.privacy-preview__row,
+		.cta-receipt__row,
+		.faq-summary {
+			align-items: flex-start;
+		}
+
+		.feature-customize-mini__themes {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+
+		.privacy-preview__row {
+			flex-wrap: wrap;
 		}
 	}
 
 	@media (max-width: 640px) {
 		.header {
-			gap: 0.6rem;
+			gap: 0.2rem;
+			padding: 0.35rem;
+			padding-left: 0.5rem;
 		}
 
 		.logo {
-			flex-wrap: wrap;
+			gap: 0.32rem;
+			font-size: 0.66rem;
+			letter-spacing: 0.1em;
+		}
+
+		.logo-icon {
+			width: 1.85rem;
+			height: 1.85rem;
 		}
 
 		.nav {
-			width: 100%;
-			gap: 0.05rem;
+			width: auto;
+			gap: 0;
 		}
 
-		.nav a { padding: 0.35rem 0.5rem; font-size: 0.65rem; }
-		.header-cta { padding: 0.35rem 0.7rem; font-size: 0.65rem; }
+		.nav a { padding: 0.3rem 0.42rem; font-size: 0.64rem; }
+		.header-cta { min-height: 1.9rem; padding: 0.35rem 0.62rem; font-size: 0.64rem; }
 
 		h1 { font-size: clamp(1.8rem, 8vw, 2.4rem); }
 
@@ -1831,14 +2745,104 @@ const faqs = [
 			font-size: 0.72rem;
 		}
 
-		.features-grid { grid-template-columns: 1fr; }
-		.feature-cell { border-right: none !important; }
-		.feature-cell:last-child { border-bottom: none; }
+		.privacy-shell {
+			border-radius: 1.25rem;
+		}
 
-		.privacy-cell { width: 100% !important; border-right: none !important; border-bottom: 1px solid var(--border) !important; }
-		.privacy-cell:last-child { border-bottom: none !important; }
+		.privacy-shell__intro {
+			padding: 1.2rem 1.15rem 1.1rem;
+		}
 
-		.footer-inner { grid-template-columns: 1fr 1fr; }
+		.privacy-shell__title {
+			font-size: 1.45rem;
+		}
+
+		.privacy-grid > .privacy-cell {
+			padding: 1.15rem;
+		}
+
+		.privacy-shell__note {
+			padding: 0.95rem 1.15rem 1.05rem;
+		}
+
+		.cta-receipt {
+			border-radius: 1.1rem;
+		}
+
+		.cta-receipt__body {
+			padding: 1.35rem 1rem 1.1rem;
+		}
+
+		.cta-receipt__brand {
+			flex-direction: column;
+			align-items: flex-start;
+		}
+
+		.cta-receipt__brand-lockup,
+		.cta-receipt__brand-copy {
+			align-items: flex-start;
+			text-align: left;
+		}
+
+		.cta-receipt__brand-name {
+			font-size: 1.7rem;
+		}
+
+		.cta-receipt__badge {
+			transform: none;
+		}
+
+		.cta-receipt__row {
+			font-size: 0.87rem;
+		}
+
+		.cta-receipt__price-old {
+			font-size: 1.2rem;
+		}
+
+		.cta-receipt__price-new {
+			font-size: 3rem;
+		}
+
+		.cta-receipt__footer {
+			flex-direction: column;
+			align-items: center;
+			gap: 0.5rem;
+			letter-spacing: 0.08em;
+		}
+
+		.footer-shell {
+			padding: 1.15rem 1rem 0.95rem;
+		}
+
+		.footer-links a {
+			font-size: 0.72rem;
+			padding: 0.38rem 0.62rem;
+		}
+
+		.footer-showpiece {
+			margin-top: 0.9rem;
+			overflow: visible;
+		}
+
+		.footer-wordmark {
+			font-size: clamp(4.75rem, 24vw, 8rem);
+			text-align: left;
+			margin-top: 0.45rem;
+			margin-bottom: -0.14em;
+		}
+
+		.footer-copy,
+		.footer-credit {
+			white-space: normal;
+			text-align: left;
+		}
+
+		.footer-trim {
+			grid-template-columns: repeat(15, minmax(0, 1fr));
+			row-gap: 0.38rem;
+			width: 100%;
+		}
 	}
 </style>
 
