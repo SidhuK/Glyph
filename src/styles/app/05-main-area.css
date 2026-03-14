@@ -13,10 +13,14 @@
 	margin: var(--app-frame-block) 0 var(--app-frame-block) 0;
 	border-radius: var(--main-shell-radius);
 	border-top-left-radius: calc(
-		var(--app-radius) - var(--app-frame-inline) + 2px
+		var(--app-radius) -
+		var(--app-frame-inline) +
+		2px
 	);
 	border-bottom-left-radius: calc(
-		var(--app-radius) - var(--app-frame-inline) + 2px
+		var(--app-radius) -
+		var(--app-frame-inline) +
+		2px
 	);
 	border: 1px solid color-mix(in srgb, var(--border-light) 62%, transparent);
 	box-sizing: border-box;
@@ -26,10 +30,14 @@
 .appShell.appShellAiOpen .mainArea {
 	margin-right: 0;
 	border-top-right-radius: calc(
-		var(--app-radius) - var(--app-frame-inline) + 2px
+		var(--app-radius) -
+		var(--app-frame-inline) +
+		2px
 	);
 	border-bottom-right-radius: calc(
-		var(--app-radius) - var(--app-frame-inline) + 2px
+		var(--app-radius) -
+		var(--app-frame-inline) +
+		2px
 	);
 }
 
