@@ -1,12 +1,17 @@
 import { type Editor, Extension } from "@tiptap/core";
 import type { EditorState } from "@tiptap/pm/state";
-import Suggestion, { type SuggestionProps } from "@tiptap/suggestion";
+import Suggestion, {
+	exitSuggestion,
+	type SuggestionKeyDownProps,
+	type SuggestionProps,
+} from "@tiptap/suggestion";
 import type { SlashCommandItem } from "./types";
 
-interface SlashKeyDownProps {
-	event: KeyboardEvent;
-	items: SlashCommandItem[];
-	command: (item: SlashCommandItem) => void;
+export function clampSlashCommandIndex(index: number, itemCount: number) {
+	if (itemCount <= 0) return 0;
+	if (index < 0) return itemCount - 1;
+	if (index >= itemCount) return 0;
+	return index;
 }
 
 export const SLASH_COMMANDS: SlashCommandItem[] = [
@@ -137,14 +142,19 @@ export const SlashCommand = Extension.create({
 				render: () => {
 					let menu: HTMLDivElement | null = null;
 					let selectedIndex = 0;
+					let currentProps: SuggestionProps<SlashCommandItem> | null = null;
 
 					const updateSelection = (items: SlashCommandItem[]) => {
 						if (!menu) return;
+						selectedIndex = clampSlashCommandIndex(selectedIndex, items.length);
 						const children = Array.from(menu.children);
 						children.forEach((child, index) => {
 							child.classList.toggle("active", index === selectedIndex);
 						});
-						if (items.length === 0) selectedIndex = 0;
+						const activeItem = children[selectedIndex];
+						if (activeItem instanceof HTMLElement) {
+							activeItem.scrollIntoView({ block: "nearest" });
+						}
 					};
 
 					const createMenu = (props: SuggestionProps<SlashCommandItem>) => {
@@ -157,6 +167,11 @@ export const SlashCommand = Extension.create({
 
 					const updateMenu = (props: SuggestionProps<SlashCommandItem>) => {
 						if (!menu) return;
+						currentProps = props;
+						selectedIndex = clampSlashCommandIndex(
+							selectedIndex,
+							props.items.length,
+						);
 						menu.innerHTML = "";
 						if (!props.items.length) return;
 						for (const [index, item] of props.items.entries()) {
@@ -189,30 +204,38 @@ export const SlashCommand = Extension.create({
 					return {
 						onStart: (props: SuggestionProps<SlashCommandItem>) => {
 							selectedIndex = 0;
+							currentProps = props;
 							createMenu(props);
 						},
 						onUpdate: (props: SuggestionProps<SlashCommandItem>) => {
 							if (!menu) createMenu(props);
 							updateMenu(props);
 						},
-						onKeyDown: (props: SlashKeyDownProps) => {
-							if (!props.items.length) return false;
+						onKeyDown: (props: SuggestionKeyDownProps) => {
+							const items = currentProps?.items ?? [];
+							if (!items.length) return false;
 							if (props.event.key === "ArrowDown") {
-								selectedIndex = (selectedIndex + 1) % props.items.length;
-								updateSelection(props.items);
+								selectedIndex = clampSlashCommandIndex(
+									selectedIndex + 1,
+									items.length,
+								);
+								updateSelection(items);
 								return true;
 							}
 							if (props.event.key === "ArrowUp") {
-								selectedIndex =
-									(selectedIndex - 1 + props.items.length) % props.items.length;
-								updateSelection(props.items);
+								selectedIndex = clampSlashCommandIndex(
+									selectedIndex - 1,
+									items.length,
+								);
+								updateSelection(items);
 								return true;
 							}
-							if (props.event.key === "Enter") {
-								props.command(props.items[selectedIndex]);
+							if (props.event.key === "Enter" || props.event.key === "Tab") {
+								currentProps?.command(items[selectedIndex]);
 								return true;
 							}
 							if (props.event.key === "Escape") {
+								exitSuggestion(props.view);
 								return true;
 							}
 							return false;
@@ -220,6 +243,7 @@ export const SlashCommand = Extension.create({
 						onExit: () => {
 							if (menu) menu.remove();
 							menu = null;
+							currentProps = null;
 						},
 					};
 				},
