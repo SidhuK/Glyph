@@ -13,7 +13,6 @@ import {
 	useSpace,
 	useUILayoutContext,
 } from "../../contexts";
-import { useViewContext } from "../../contexts";
 import { openSettingsWindow } from "../../lib/windows";
 import { parentDir } from "../../utils/path";
 import { FileTreePane } from "../FileTreePane";
@@ -69,11 +68,11 @@ export const SidebarContent = memo(function SidebarContent({
 }: SidebarContentProps) {
 	// Contexts
 	const { spacePath } = useSpace();
-	const { activeViewDoc } = useViewContext();
 	const {
 		rootEntries,
 		childrenByDir,
 		expandedDirs,
+		activeDirPath,
 		activeFilePath,
 		tags,
 		tagsError,
@@ -81,6 +80,8 @@ export const SidebarContent = memo(function SidebarContent({
 	} = useFileTreeContext();
 	const { sidebarViewMode, setSidebarViewMode, dailyNotesFolder } =
 		useUILayoutContext();
+	const targetDir =
+		activeDirPath ?? (activeFilePath ? parentDir(activeFilePath) : "");
 
 	const handleDailyNoteClick = useCallback(() => {
 		if (!dailyNotesFolder) {
@@ -91,10 +92,6 @@ export const SidebarContent = memo(function SidebarContent({
 		}
 		onOpenDailyNote();
 	}, [dailyNotesFolder, onOpenDailyNote]);
-
-	const targetDir = activeFilePath ? parentDir(activeFilePath) : "";
-	const activeDirPath =
-		activeViewDoc?.kind === "folder" ? (activeViewDoc.selector ?? "") : null;
 
 	if (!spacePath) {
 		return (

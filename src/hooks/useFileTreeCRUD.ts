@@ -17,7 +17,6 @@ import {
 	normalizeEntry,
 	normalizeRelPath,
 	rewritePrefix,
-	shouldRefreshActiveFolderView,
 	withInsertedEntry,
 } from "./fileTreeHelpers";
 
@@ -42,8 +41,6 @@ export interface UseFileTreeCRUDDeps {
 	activePreviewPath: string | null;
 	setError: (error: string) => void;
 	loadDir: (dirPath: string, force?: boolean) => Promise<void>;
-	loadAndBuildFolderView: (dir: string) => Promise<void>;
-	getActiveFolderDir: () => string | null;
 	loadedDirsRef: React.RefObject<Set<string>>;
 }
 
@@ -59,8 +56,6 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 		activePreviewPath,
 		setError,
 		loadDir,
-		loadAndBuildFolderView,
-		getActiveFolderDir,
 		loadedDirsRef,
 	} = deps;
 	const activeFilePathRef = useRef(activeFilePath);
@@ -81,30 +76,6 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			if (parent !== targetDir) await loadDir(parent, true);
 		},
 		[loadDir],
-	);
-
-	const refreshActiveFolderViewAfterCreate = useCallback(
-		async (createdInDir: string) => {
-			const activeDir = getActiveFolderDir();
-			if (activeDir === null) return;
-			if (!shouldRefreshActiveFolderView(activeDir, createdInDir)) return;
-			await loadAndBuildFolderView(activeDir);
-		},
-		[getActiveFolderDir, loadAndBuildFolderView],
-	);
-
-	const refreshActiveFolderViewAfterPathChange = useCallback(
-		async (changedPath: string) => {
-			const activeDir = getActiveFolderDir();
-			if (activeDir === null) return;
-			if (
-				activeDir === changedPath ||
-				activeDir.startsWith(`${changedPath}/`) ||
-				changedPath.startsWith(`${activeDir}/`)
-			)
-				await loadAndBuildFolderView(activeDir);
-		},
-		[getActiveFolderDir, loadAndBuildFolderView],
 	);
 
 	const insertEntryOptimistic = useCallback(
@@ -173,23 +144,21 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 						next.add(dirPath);
 						return next;
 					});
-				const createdInDir = parentDir(markdownRel);
-				await refreshAfterCreate(createdInDir);
-				await refreshActiveFolderViewAfterCreate(createdInDir);
-				void updateOnboardingSettings({ createdFirstNote: true });
-				return markdownRel;
+					const createdInDir = parentDir(markdownRel);
+					await refreshAfterCreate(createdInDir);
+					void updateOnboardingSettings({ createdFirstNote: true });
+					return markdownRel;
 			} catch (e) {
 				setError(extractErrorMessage(e));
 				return null;
 			}
 		},
-		[
-			insertEntryOptimistic,
-			refreshAfterCreate,
-			refreshActiveFolderViewAfterCreate,
-			setError,
-			updateExpandedDirs,
-			spacePath,
+			[
+				insertEntryOptimistic,
+				refreshAfterCreate,
+				setError,
+				updateExpandedDirs,
+				spacePath,
 		],
 	);
 
@@ -225,27 +194,25 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 					path: nextPath,
 					text: markdown,
 					base_mtime_ms: null,
-				});
-				insertEntryOptimistic(parentDir(nextPath), {
+					});
+					insertEntryOptimistic(parentDir(nextPath), {
 					name: nextPath.split("/").pop() ?? "New Database.md",
 					rel_path: nextPath,
 					kind: "file",
 					is_markdown: true,
-				});
-				await refreshAfterCreate(parentDir(nextPath));
-				await refreshActiveFolderViewAfterCreate(parentDir(nextPath));
-				return nextPath;
+					});
+					await refreshAfterCreate(parentDir(nextPath));
+					return nextPath;
 			} catch (e) {
 				setError(extractErrorMessage(e));
 				return null;
 			}
 		},
-		[
-			insertEntryOptimistic,
-			refreshActiveFolderViewAfterCreate,
-			refreshAfterCreate,
-			setError,
-			spacePath,
+			[
+				insertEntryOptimistic,
+				refreshAfterCreate,
+				setError,
+				spacePath,
 		],
 	);
 
@@ -281,22 +248,20 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 					const next = new Set(prev);
 					if (dirPath) next.add(dirPath);
 					return next;
-				});
-				await refreshAfterCreate(dirPath);
-				await refreshActiveFolderViewAfterCreate(dirPath);
-				return path;
+					});
+					await refreshAfterCreate(dirPath);
+					return path;
 			} catch (e) {
 				setError(extractErrorMessage(e));
 			}
 			return null;
 		},
-		[
-			insertEntryOptimistic,
-			refreshAfterCreate,
-			refreshActiveFolderViewAfterCreate,
-			setError,
-			updateExpandedDirs,
-			spacePath,
+			[
+				insertEntryOptimistic,
+				refreshAfterCreate,
+				setError,
+				updateExpandedDirs,
+				spacePath,
 		],
 	);
 
@@ -451,25 +416,23 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 					(kind === "dir" && Boolean(activePreview?.startsWith(`${target}/`)))
 				)
 					setActivePreviewPath(null);
-				dispatchPathRemoved({
-					path: target,
-					recursive: kind === "dir",
-				});
-				await loadDir(parent, true);
-				await refreshActiveFolderViewAfterPathChange(target);
-				return true;
+					dispatchPathRemoved({
+						path: target,
+						recursive: kind === "dir",
+					});
+					await loadDir(parent, true);
+					return true;
 			} catch (e) {
 				setError(extractErrorMessage(e));
 				return false;
 			}
 		},
-		[
-			loadDir,
-			loadedDirsRef,
-			refreshActiveFolderViewAfterPathChange,
-			setActiveFilePath,
-			setActivePreviewPath,
-			updateChildrenByDir,
+			[
+				loadDir,
+				loadedDirsRef,
+				setActiveFilePath,
+				setActivePreviewPath,
+				updateChildrenByDir,
 			setError,
 			updateExpandedDirs,
 			updateRootEntries,
@@ -513,26 +476,23 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 					),
 				);
 				if (activeFilePathRef.current === from) setActiveFilePath(nextPath);
-				if (activePreviewPathRef.current === from)
-					setActivePreviewPath(nextPath);
-				await Promise.all([
-					loadDir(fromParent, true),
-					loadDir(toParent, true),
-					refreshActiveFolderViewAfterPathChange(from),
-					refreshActiveFolderViewAfterPathChange(toParent),
-				]);
-				return nextPath;
+					if (activePreviewPathRef.current === from)
+						setActivePreviewPath(nextPath);
+					await Promise.all([
+						loadDir(fromParent, true),
+						loadDir(toParent, true),
+					]);
+					return nextPath;
 			} catch (e) {
 				setError(extractErrorMessage(e));
 				return null;
 			}
 		},
-		[
-			loadDir,
-			refreshActiveFolderViewAfterPathChange,
-			setActiveFilePath,
-			setActivePreviewPath,
-			updateChildrenByDir,
+			[
+				loadDir,
+				setActiveFilePath,
+				setActivePreviewPath,
+				updateChildrenByDir,
 			setError,
 			updateRootEntries,
 		],

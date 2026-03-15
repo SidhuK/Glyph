@@ -33,14 +33,6 @@ pub struct TaskDateInfo {
     pub due_date: String,
 }
 
-#[derive(Serialize)]
-#[serde(rename_all = "snake_case")]
-pub struct ViewNotePreview {
-    pub id: String,
-    pub title: String,
-    pub content: String,
-}
-
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq)]
 #[serde(rename_all = "snake_case")]
 pub enum CalendarNoteDateKind {

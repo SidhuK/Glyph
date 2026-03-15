@@ -1,7 +1,6 @@
 mod ai_codex;
 mod ai_rig;
 mod database;
-mod glyph_fs;
 mod glyph_paths;
 mod index;
 mod io_atomic;
@@ -416,12 +415,10 @@ pub fn run() {
             index::commands::search,
             index::commands::search_advanced,
             index::commands::search_parse_and_run,
-            index::commands::search_view_data,
             index::commands::search_with_tags,
             index::commands::recent_notes,
             index::commands::tags_list,
             index::commands::tag_notes,
-            index::commands::tag_view_data,
             index::commands::tasks_query,
             index::commands::task_set_checked,
             index::commands::task_set_dates,
@@ -438,7 +435,6 @@ pub fn run() {
             space_fs::link_ops::space_suggest_links,
             space_fs::summary::space_dir_children_summary,
             space_fs::summary::space_dir_recent_entries,
-            space_fs::view_data::space_folder_view_data,
             space_fs::read_write::text::space_read_text,
             space_fs::read_write::text::space_read_texts_batch,
             space_fs::read_write::preview::space_read_text_preview,
@@ -450,8 +446,6 @@ pub fn run() {
             space_fs::read_write::paths::space_delete_path,
             space_fs::read_write::paths::space_resolve_abs_path,
             space_fs::read_write::paths::space_relativize_path,
-            glyph_fs::glyph_read_text,
-            glyph_fs::glyph_write_text,
             notes::commands::notes_list,
             notes::commands::note_create,
             notes::commands::note_read,

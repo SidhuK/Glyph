@@ -1,7 +1,6 @@
 import { join } from "@tauri-apps/api/path";
 import { openPath, openUrl } from "@tauri-apps/plugin-opener";
 import { useCallback, useEffect, useRef } from "react";
-import { extractErrorMessage } from "../lib/errorUtils";
 import type { FsEntry } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
 import { isInAppPreviewable } from "../utils/filePreview";
@@ -44,12 +43,11 @@ export interface UseFileTreeDeps {
 		next: FsEntry[] | ((prev: FsEntry[]) => FsEntry[]),
 	) => void;
 	setActiveFilePath: (path: string | null) => void;
+	setActiveDirPath: (path: string | null) => void;
 	setActivePreviewPath: (path: string | null) => void;
 	activeFilePath: string | null;
 	activePreviewPath: string | null;
 	setError: (error: string) => void;
-	loadAndBuildFolderView: (dir: string) => Promise<void>;
-	getActiveFolderDir: () => string | null;
 }
 
 export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
@@ -59,10 +57,9 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		updateExpandedDirs,
 		updateRootEntries,
 		setActiveFilePath,
+		setActiveDirPath,
 		setActivePreviewPath,
 		setError,
-		loadAndBuildFolderView,
-		getActiveFolderDir,
 		activeFilePath,
 		activePreviewPath,
 	} = deps;
@@ -125,13 +122,9 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 			setError("");
 			setActivePreviewPath(null);
 			setActiveFilePath(relPath);
-			try {
-				await loadAndBuildFolderView(parentDir(relPath));
-			} catch (e) {
-				setError(extractErrorMessage(e));
-			}
+			setActiveDirPath(parentDir(relPath));
 		},
-		[loadAndBuildFolderView, setActiveFilePath, setActivePreviewPath, setError],
+		[setActiveDirPath, setActiveFilePath, setActivePreviewPath, setError],
 	);
 
 	const openNonMarkdownExternally = useCallback(
@@ -157,6 +150,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 				return;
 			}
 			setActiveFilePath(relPath);
+			setActiveDirPath(parentDir(relPath));
 			if (isInAppPreviewable(relPath)) {
 				setActivePreviewPath(relPath);
 				return;
@@ -168,6 +162,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 			openMarkdownFile,
 			openNonMarkdownExternally,
 			setActiveFilePath,
+			setActiveDirPath,
 			setActivePreviewPath,
 		],
 	);
@@ -183,8 +178,6 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		activePreviewPath,
 		setError,
 		loadDir,
-		loadAndBuildFolderView,
-		getActiveFolderDir,
 		loadedDirsRef,
 	});
 

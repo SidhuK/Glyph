@@ -3,11 +3,9 @@ import { EditorProvider } from "./EditorContext";
 import { FileTreeProvider } from "./FileTreeContext";
 import { SpaceProvider } from "./SpaceContext";
 import { UIProvider } from "./UIContext";
-import { ViewProvider } from "./ViewContext";
 
 export { useSpace } from "./SpaceContext";
 export { useFileTreeContext } from "./FileTreeContext";
-export { useViewContext } from "./ViewContext";
 export { useUIContext } from "./UIContext";
 export {
 	useAISidebarContext,
@@ -18,7 +16,6 @@ export { useEditorContext, useEditorRegistration } from "./EditorContext";
 
 export type { SpaceContextValue } from "./SpaceContext";
 export type { FileTreeContextValue } from "./FileTreeContext";
-export type { ViewContextValue } from "./ViewContext";
 export type { UIContextValue } from "./UIContext";
 export type {
 	AISidebarContextValue,
@@ -65,11 +62,9 @@ export function AppProviders({ children }: { children: ReactNode }) {
 		<ProvidersErrorBoundary>
 			<SpaceProvider>
 				<FileTreeProvider>
-					<ViewProvider>
-						<UIProvider>
-							<EditorProvider>{children}</EditorProvider>
-						</UIProvider>
-					</ViewProvider>
+					<UIProvider>
+						<EditorProvider>{children}</EditorProvider>
+					</UIProvider>
 				</FileTreeProvider>
 			</SpaceProvider>
 		</ProvidersErrorBoundary>

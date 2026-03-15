@@ -276,12 +276,6 @@ export interface IndexRebuildResult {
 	indexed: number;
 }
 
-export interface ViewNotePreview {
-	id: string;
-	title: string;
-	content: string;
-}
-
 export interface TaskDateInfo {
 	scheduled_date: string;
 	due_date: string;
@@ -327,17 +321,6 @@ export interface AiContextBuildResponse {
 	payload: string;
 	manifest: AiContextManifestResponse;
 	resolved_paths: string[];
-}
-
-export interface FolderViewFolder {
-	dir_rel_path: string;
-	name: string;
-}
-
-export interface FolderViewData {
-	files: FsEntry[];
-	subfolders: FolderViewFolder[];
-	note_previews: ViewNotePreview[];
 }
 
 export type TaskBucket = "inbox" | "today" | "upcoming";
@@ -579,17 +562,7 @@ interface TauriCommands {
 		},
 		LinkSuggestionItem[]
 	>;
-	space_folder_view_data: CommandDef<
-		{
-			dir?: string | null;
-			limit?: number | null;
-			recent_limit?: number | null;
-		},
-		FolderViewData
-	>;
-	glyph_read_text: CommandDef<{ path: string }, string>;
-	glyph_write_text: CommandDef<{ path: string; text: string }, void>;
-	notes_list: CommandDef<void, NoteMeta[]>;
+		notes_list: CommandDef<void, NoteMeta[]>;
 	note_create: CommandDef<{ title: string }, NoteMeta>;
 	note_read: CommandDef<{ id: string }, NoteDoc>;
 	note_write: CommandDef<
@@ -654,22 +627,14 @@ interface TauriCommands {
 		{ raw_query: string; limit?: number | null },
 		SearchResult[]
 	>;
-	search_view_data: CommandDef<
-		{ query: string; limit?: number | null },
-		ViewNotePreview[]
-	>;
-	search_with_tags: CommandDef<
+		search_with_tags: CommandDef<
 		{ tags: string[]; query?: string | null; limit?: number | null },
 		SearchResult[]
 	>;
 	recent_notes: CommandDef<{ limit?: number | null }, SearchResult[]>;
 	tags_list: CommandDef<{ limit?: number | null }, TagCount[]>;
 	tag_notes: CommandDef<{ tag: string; limit?: number | null }, SearchResult[]>;
-	tag_view_data: CommandDef<
-		{ tag: string; limit?: number | null },
-		ViewNotePreview[]
-	>;
-	tasks_query: CommandDef<
+		tasks_query: CommandDef<
 		{
 			bucket: TaskBucket;
 			today: string;

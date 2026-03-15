@@ -85,10 +85,3 @@ export function rewritePrefix(path: string, from: string, to: string): string {
 	if (path.startsWith(`${from}/`)) return `${to}${path.slice(from.length)}`;
 	return path;
 }
-
-export function shouldRefreshActiveFolderView(
-	activeFolderDir: string | null,
-	createdInDir: string,
-): boolean {
-	return activeFolderDir !== null && activeFolderDir === createdInDir;
-}

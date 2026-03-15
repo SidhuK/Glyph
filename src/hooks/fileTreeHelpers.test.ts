@@ -7,7 +7,6 @@ import {
 	normalizeEntries,
 	normalizeEntry,
 	normalizeRelPath,
-	shouldRefreshActiveFolderView,
 	withInsertedEntry,
 } from "./fileTreeHelpers";
 
@@ -149,12 +148,5 @@ describe("fileTreeHelpers", () => {
 			}),
 		);
 		expect(duplicate).toHaveLength(next.length);
-	});
-
-	it("refreshes active folder view only for matching folder", () => {
-		expect(shouldRefreshActiveFolderView("", "")).toBe(true);
-		expect(shouldRefreshActiveFolderView("projects", "projects")).toBe(true);
-		expect(shouldRefreshActiveFolderView("projects", "notes")).toBe(false);
-		expect(shouldRefreshActiveFolderView(null, "projects")).toBe(false);
 	});
 });

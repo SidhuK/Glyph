@@ -17,7 +17,6 @@ import {
 	useFileTreeContext,
 	useSpace,
 	useUILayoutContext,
-	useViewContext,
 } from "../../contexts";
 import { useAutoUpdater } from "../../hooks/useAutoUpdater";
 import { useCommandShortcuts } from "../../hooks/useCommandShortcuts";
@@ -72,14 +71,14 @@ export function AppShell() {
 	const fileTreeCtx = useFileTreeContext();
 	const {
 		expandedDirs,
+		activeDirPath,
+		setActiveDirPath,
 		activeFilePath,
 		updateRootEntries,
 		updateChildrenByDir,
 		updateExpandedDirs,
 		setActiveFilePath,
 	} = fileTreeCtx;
-	const { activeViewDoc, activeViewDocRef, loadAndBuildFolderView } =
-		useViewContext();
 	const {
 		sidebarCollapsed,
 		setSidebarCollapsed,
@@ -163,23 +162,17 @@ export function AppShell() {
 		void loadKeyboardShortcutsHelp();
 	}, [shortcutsHelpOpen]);
 
-	const getActiveFolderDir = useCallback(() => {
-		const current = activeViewDocRef.current;
-		return current?.kind === "folder" ? current.selector || "" : null;
-	}, [activeViewDocRef]);
-
 	const fileTree = useFileTree({
 		spacePath,
 		updateChildrenByDir,
 		updateExpandedDirs,
 		updateRootEntries,
 		setActiveFilePath,
+		setActiveDirPath,
 		setActivePreviewPath,
 		activeFilePath,
 		activePreviewPath,
 		setError,
-		loadAndBuildFolderView,
-		getActiveFolderDir,
 	});
 
 	const { openOrCreateDailyNote, isCreating: isDailyNoteCreating } =
@@ -272,13 +265,6 @@ export function AppShell() {
 		};
 	}, [fileTree, setError, setPaletteOpen]);
 
-	const openFolderView = useCallback(
-		async (dir: string) => {
-			setActivePreviewPath(null);
-			await loadAndBuildFolderView(dir);
-		},
-		[loadAndBuildFolderView, setActivePreviewPath],
-	);
 	const openTagSearchPalette = useCallback(
 		(tag: string) => {
 			setPaletteInitialTab("search");
@@ -647,9 +633,10 @@ export function AppShell() {
 				category: "File Operations",
 				enabled: Boolean(spacePath),
 				action: async () => {
-					try {
-						const dir = getActiveFolderDir() ?? "";
-						const path = await fileTree.onNewDatabaseInDir(dir);
+						try {
+							const dir =
+								activeDirPath ?? (activeFilePath ? parentDir(activeFilePath) : "");
+							const path = await fileTree.onNewDatabaseInDir(dir);
 						if (path) {
 							await fileTree.openFile(path);
 						}
@@ -764,11 +751,10 @@ export function AppShell() {
 		openTasksTab,
 		openCalendarTab,
 		openGettingStarted,
-		moveTargetDirs,
-		movePickerSourcePath,
-		getActiveFolderDir,
-		setError,
-	]);
+			moveTargetDirs,
+			movePickerSourcePath,
+			setError,
+		]);
 
 	useCommandShortcuts({
 		commands,
@@ -811,9 +797,9 @@ export function AppShell() {
 					/>
 				</div>
 			)}
-			<Sidebar
-				onSelectDir={(p) => void openFolderView(p)}
-				onOpenFile={(p) => void fileTree.openFile(p)}
+				<Sidebar
+					onSelectDir={setActiveDirPath}
+					onOpenFile={(p) => void fileTree.openFile(p)}
 				onNewFileInDir={(p) => void fileTree.onNewFileInDir(p)}
 				onNewDatabaseInDir={(p) =>
 					fileTree
@@ -883,17 +869,13 @@ export function AppShell() {
 					style={{ cursor: "col-resize" }}
 				/>
 			)}
-			{spacePath && aiEnabled && (
-				<AIFloatingHost
-					isOpen={aiPanelOpen}
-					onToggle={() => setAiPanelOpen((v) => !v)}
-					activeFolderPath={
-						activeViewDoc?.kind === "folder"
-							? activeViewDoc.selector || ""
-							: null
-					}
-				/>
-			)}
+				{spacePath && aiEnabled && (
+					<AIFloatingHost
+						isOpen={aiPanelOpen}
+						onToggle={() => setAiPanelOpen((v) => !v)}
+						activeFolderPath={activeDirPath}
+					/>
+				)}
 			<AnimatePresence>
 				{error && <div className="appError">{error}</div>}
 			</AnimatePresence>

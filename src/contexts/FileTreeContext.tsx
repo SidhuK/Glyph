@@ -29,6 +29,8 @@ export interface FileTreeContextValue {
 	updateExpandedDirs: (
 		next: Set<string> | ((prev: Set<string>) => Set<string>),
 	) => void;
+	activeDirPath: string | null;
+	setActiveDirPath: (path: string | null) => void;
 	activeFilePath: string | null;
 	setActiveFilePath: (path: string | null) => void;
 	activeNoteId: string | null;
@@ -50,6 +52,7 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 	const [expandedDirs, setExpandedDirs] = useState<Set<string>>(
 		() => new Set(),
 	);
+	const [activeDirPath, setActiveDirPath] = useState<string | null>(null);
 	const [activeFilePath, setActiveFilePath] = useState<string | null>(null);
 	const [tags, setTags] = useState<TagCount[]>([]);
 	const [tagsError, setTagsError] = useState("");
@@ -68,6 +71,7 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 		setRootEntries([]);
 		setChildrenByDir({});
 		setExpandedDirs(new Set());
+		setActiveDirPath(null);
 		setActiveFilePath(null);
 		setTags([]);
 		setTagsError("");
@@ -142,6 +146,8 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 			updateChildrenByDir,
 			expandedDirs,
 			updateExpandedDirs,
+			activeDirPath,
+			setActiveDirPath,
 			activeFilePath,
 			setActiveFilePath,
 			activeNoteId,
@@ -157,6 +163,7 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 			updateChildrenByDir,
 			expandedDirs,
 			updateExpandedDirs,
+			activeDirPath,
 			activeFilePath,
 			activeNoteId,
 			activeNoteTitle,

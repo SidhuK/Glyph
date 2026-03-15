@@ -14,9 +14,7 @@ use super::tags::normalize_tag;
 use super::tasks::{
     mutate_task_line, note_abs_path, query_tasks, write_note, IndexedTask, TaskBucket,
 };
-use super::types::{
-    BacklinkItem, IndexRebuildResult, SearchResult, TagCount, TaskDateInfo, ViewNotePreview,
-};
+use super::types::{BacklinkItem, IndexRebuildResult, SearchResult, TagCount, TaskDateInfo};
 
 fn tokenize_search_query(raw: &str) -> Vec<String> {
     let mut out: Vec<String> = Vec::new();
@@ -156,30 +154,6 @@ fn rewrite_task_dates(body: &str, scheduled_date: &str, due_date: &str) -> Strin
     out.trim().to_string()
 }
 
-fn fetch_previews_by_ids(
-    conn: &rusqlite::Connection,
-    ids: &[String],
-) -> Result<std::collections::HashMap<String, String>, String> {
-    if ids.is_empty() {
-        return Ok(std::collections::HashMap::new());
-    }
-    let placeholders = std::iter::repeat_n("?", ids.len())
-        .collect::<Vec<_>>()
-        .join(", ");
-    let sql = format!("SELECT id, preview FROM notes WHERE id IN ({placeholders})");
-    let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;
-    let params = rusqlite::params_from_iter(ids.iter());
-    let mut rows = stmt.query(params).map_err(|e| e.to_string())?;
-    let mut map = std::collections::HashMap::<String, String>::new();
-    while let Some(row) = rows.next().map_err(|e| e.to_string())? {
-        map.insert(
-            row.get::<_, String>(0).map_err(|e| e.to_string())?,
-            row.get::<_, String>(1).map_err(|e| e.to_string())?,
-        );
-    }
-    Ok(map)
-}
-
 #[tauri::command]
 pub async fn index_rebuild(
     app: AppHandle,
@@ -237,37 +211,6 @@ pub async fn search_parse_and_run(
         let req = parse_raw_search_query(&raw_query, limit);
         let conn = open_db(&root)?;
         run_search_advanced(&conn, req)
-    })
-    .await
-    .map_err(|e| e.to_string())?
-}
-
-#[tauri::command]
-pub async fn search_view_data(
-    state: State<'_, SpaceState>,
-    query: String,
-    limit: Option<u32>,
-) -> Result<Vec<ViewNotePreview>, String> {
-    let root = state.current_root()?;
-    tauri::async_runtime::spawn_blocking(move || -> Result<Vec<ViewNotePreview>, String> {
-        let lim = limit.unwrap_or(200).clamp(1, 2_000) as usize;
-        let conn = open_db(&root)?;
-        let results = hybrid_search(&conn, &query, &[], lim as i64)?;
-        let ids = results
-            .iter()
-            .map(|r| r.id.clone())
-            .filter(|id| !id.trim().is_empty())
-            .collect::<Vec<_>>();
-        let preview_by_id = fetch_previews_by_ids(&conn, &ids)?;
-        Ok(results
-            .into_iter()
-            .take(lim)
-            .map(|r| ViewNotePreview {
-                id: r.id.clone(),
-                title: r.title,
-                content: preview_by_id.get(&r.id).cloned().unwrap_or(r.snippet),
-            })
-            .collect())
     })
     .await
     .map_err(|e| e.to_string())?
@@ -462,44 +405,6 @@ pub async fn tag_notes(
             }
             Ok(out)
         }
-    })
-    .await
-    .map_err(|e| e.to_string())?
-}
-
-#[tauri::command]
-pub async fn tag_view_data(
-    state: State<'_, SpaceState>,
-    tag: String,
-    limit: Option<u32>,
-) -> Result<Vec<ViewNotePreview>, String> {
-    let root = state.current_root()?;
-    tauri::async_runtime::spawn_blocking(move || -> Result<Vec<ViewNotePreview>, String> {
-        let lim = limit.unwrap_or(500).clamp(1, 2_000) as usize;
-        let t = normalize_tag(&tag).ok_or_else(|| "invalid tag".to_string())?;
-        let conn = open_db(&root)?;
-        let mut stmt = conn
-            .prepare(
-                "SELECT n.id, n.title, n.preview AS snippet, 0.0 AS score
-                 FROM tags t
-                 JOIN notes n ON n.id = t.note_id
-                 WHERE t.tag = ?
-                 ORDER BY n.updated DESC
-                 LIMIT ?",
-            )
-            .map_err(|e| e.to_string())?;
-        let mut rows = stmt
-            .query(rusqlite::params![t, lim as i64])
-            .map_err(|e| e.to_string())?;
-        let mut out: Vec<ViewNotePreview> = Vec::new();
-        while let Some(row) = rows.next().map_err(|e| e.to_string())? {
-            out.push(ViewNotePreview {
-                id: row.get(0).map_err(|e| e.to_string())?,
-                title: row.get(1).map_err(|e| e.to_string())?,
-                content: row.get(2).map_err(|e| e.to_string())?,
-            });
-        }
-        Ok(out)
     })
     .await
     .map_err(|e| e.to_string())?

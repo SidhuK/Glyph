@@ -1,16 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
-import {
-	useFileTreeContext,
-	useUILayoutContext,
-	useViewContext,
-} from "../../contexts";
+import { useFileTreeContext, useUILayoutContext } from "../../contexts";
 import { useRecentFiles } from "../../hooks/useRecentFiles";
 import { CALENDAR_TAB_ID } from "../../lib/calendar";
 import { TASKS_TAB_ID } from "../../lib/tasks";
 import { isInAppPreviewable } from "../../utils/filePreview";
 
 export function useTabManager(spacePath: string | null) {
-	const { canvasLoadingMessage } = useViewContext();
 	const { activeFilePath, setActiveFilePath } = useFileTreeContext();
 	const { recentFiles, addRecentFile } = useRecentFiles(spacePath, 7);
 	const {
@@ -225,6 +220,5 @@ export function useTabManager(spacePath: string | null) {
 		reorderTabs,
 		openSpecialTab,
 		recentFiles,
-		canvasLoadingMessage,
 	};
 }

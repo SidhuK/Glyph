@@ -98,7 +98,6 @@ export const MainContent = memo(function MainContent({
 		closeTabsForPathRemoval,
 		reorderTabs,
 		openSpecialTab,
-		canvasLoadingMessage,
 	} = useTabManager(spacePath);
 
 	useEffect(() => {
@@ -240,11 +239,8 @@ export const MainContent = memo(function MainContent({
 				/>
 			);
 		}
-		if (canvasLoadingMessage) {
-			return <div className="canvasEmpty">{canvasLoadingMessage}</div>;
-		}
 		return null;
-	}, [canvasLoadingMessage, closeTab, fileTree, viewerPath, setDirtyByPath]);
+	}, [closeTab, fileTree, viewerPath, setDirtyByPath]);
 
 	if (!spacePath) {
 		if (!settingsLoaded) return <main className="mainArea" />;
