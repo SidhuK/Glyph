@@ -537,7 +537,7 @@
 .appearanceThemeDropdownTrigger {
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
+	justify-content: flex-start;
 	gap: 10px;
 	width: 100%;
 	padding: 7px 9px;
@@ -606,7 +606,7 @@
 }
 
 .appearanceThemeDropdownContent {
-	width: min(420px, calc(100vw - 24px));
+	width: min(360px, calc(100vw - 24px));
 	padding: 8px;
 	border-radius: var(--radius-lg);
 	border: 1px solid var(--border-light);
@@ -617,7 +617,7 @@
 .appearanceThemeDropdownOption {
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
+	justify-content: flex-start;
 	gap: 10px;
 	width: 100%;
 	padding: 7px 8px;
@@ -669,6 +669,7 @@
 	align-items: center;
 	gap: 8px;
 	min-width: 0;
+	flex: 1 1 auto;
 }
 
 .appearanceThemeBadge {
@@ -692,14 +693,6 @@
 	display: flex;
 	flex-direction: column;
 	min-width: 0;
-}
-
-.appearanceThemeDropdownMeta,
-.appearanceThemeDropdownOptionMeta {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	flex: 0 0 auto;
 }
 
 .appearanceThemeDropdownHeader {
@@ -726,50 +719,6 @@
 	max-height: min(54vh, 500px);
 	overflow: auto;
 	padding: 1px 1px 3px;
-}
-
-.appearanceThemeMiniPreview {
-	display: grid;
-	grid-template-columns: 14px minmax(0, 1fr);
-	width: 46px;
-	height: 26px;
-	overflow: hidden;
-	border-radius: var(--radius-md);
-	border: 1px solid var(--theme-preview-border);
-	background: var(--theme-preview-surface);
-}
-
-.appearanceThemeMiniSidebar {
-	background: var(--theme-preview-surface-alt);
-	border-right: 1px solid
-		color-mix(in srgb, var(--theme-preview-text) 14%, transparent);
-}
-
-.appearanceThemeMiniCanvas {
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	gap: 3px;
-	padding: 5px 5px 5px 4px;
-}
-
-.appearanceThemeMiniLine {
-	height: 2px;
-	border-radius: var(--radius-sm);
-	background: color-mix(in srgb, var(--theme-preview-text) 20%, transparent);
-}
-
-.appearanceThemeMiniLine.is-accent {
-	width: 78%;
-	background: color-mix(
-		in srgb,
-		var(--theme-preview-accent) 76%,
-		var(--theme-preview-surface)
-	);
-}
-
-.appearanceThemeMiniLine.is-short {
-	width: 56%;
 }
 
 .appearanceThemeSwatches {
@@ -812,8 +761,7 @@
 
 	.appearanceThemeDropdownMeta,
 	.appearanceThemeDropdownOptionMeta {
-		flex-direction: column;
-		align-items: flex-end;
+		align-items: center;
 	}
 
 	.appearanceThemeDropdownDescription,

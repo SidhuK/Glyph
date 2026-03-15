@@ -118,23 +118,6 @@ function ThemeShowcase({
 	);
 }
 
-function ThemeMiniPreview({ preview }: { preview: UiThemePreview }) {
-	return (
-		<span
-			className="appearanceThemeMiniPreview"
-			aria-hidden="true"
-			style={getPreviewStyle(preview)}
-		>
-			<span className="appearanceThemeMiniSidebar" />
-			<span className="appearanceThemeMiniCanvas">
-				<span className="appearanceThemeMiniLine is-accent" />
-				<span className="appearanceThemeMiniLine" />
-				<span className="appearanceThemeMiniLine is-short" />
-			</span>
-		</span>
-	);
-}
-
 function ThemeSelector<T extends string>({
 	label,
 	description,
@@ -183,16 +166,13 @@ function ThemeSelector<T extends string>({
 								</span>
 							</span>
 						</span>
-						<span className="appearanceThemeDropdownMeta">
-							<ThemeMiniPreview preview={resolvedSelected.preview} />
-							<span
-								className={cn(
-									"appearanceThemeDropdownChevron",
-									open && "is-open",
-								)}
-							>
-								<ChevronDown size={14} />
-							</span>
+						<span
+							className={cn(
+								"appearanceThemeDropdownChevron",
+								open && "is-open",
+							)}
+						>
+							<ChevronDown size={14} />
 						</span>
 					</button>
 				</PopoverTrigger>
@@ -241,14 +221,6 @@ function ThemeSelector<T extends string>({
 												{option.description}
 											</span>
 										</span>
-									</span>
-									<span className="appearanceThemeDropdownOptionMeta">
-										<ThemeMiniPreview preview={resolved.preview} />
-										<div className="appearanceThemeSwatches">
-											<span />
-											<span />
-											<span />
-										</div>
 									</span>
 								</button>
 							);
