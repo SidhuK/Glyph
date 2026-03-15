@@ -59,11 +59,11 @@ export function Toggle({
 			className={cn(
 				"uiToggle",
 				size === "md" && "uiToggle--md",
-				hasCopy ? "uiToggle--withCopy" : "uiToggle--bare",
+				hasCopy && "uiToggle--withCopy",
 				slim && hasCopy && "uiToggle--slim",
-				disabled && "uiToggle--disabled",
 				className,
 			)}
+			aria-disabled={disabled || undefined}
 		>
 			<input
 				id={id}

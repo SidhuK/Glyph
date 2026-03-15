@@ -7,8 +7,7 @@
 
 	display: inline-flex;
 	align-items: center;
-	gap: 10px;
-	color: var(--text-primary);
+	gap: 0;
 	cursor: pointer;
 	user-select: none;
 }
@@ -23,13 +22,10 @@
 
 .uiToggle--withCopy {
 	align-items: flex-start;
+	gap: 10px;
 }
 
-.uiToggle--bare {
-	gap: 0;
-}
-
-.uiToggle--disabled {
+.uiToggle[aria-disabled="true"] {
 	cursor: not-allowed;
 	opacity: 0.55;
 }
@@ -49,24 +45,19 @@
 .uiToggleInput {
 	-webkit-appearance: none;
 	appearance: none;
-	box-sizing: border-box;
 	position: absolute;
-	inset: auto;
 	margin: 0;
 	padding: 0;
 	border: 0;
 	border-radius: 0;
 	background: transparent;
 	box-shadow: none;
-	font: inherit;
-	line-height: 1;
 	opacity: 0;
 	width: 1px;
 	height: 1px;
 	pointer-events: none;
 	overflow: hidden;
 	clip-path: inset(50%);
-	white-space: nowrap;
 }
 
 .uiToggleCopy {
