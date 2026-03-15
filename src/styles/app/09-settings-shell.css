@@ -2,13 +2,14 @@
    SETTINGS WINDOW
    ───────────────────────────────────────────────────────────────────────────── */
 .settingsShell {
+	--app-radius: var(--radius-15);
 	position: relative;
 	height: 100%;
 	width: 100%;
 	display: flex;
 	flex-direction: column;
 	background: var(--bg-primary);
-	border-radius: 0;
+	border-radius: var(--app-radius);
 	overflow: hidden;
 }
 
