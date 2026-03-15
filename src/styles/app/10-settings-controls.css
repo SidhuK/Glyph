@@ -1059,16 +1059,24 @@
 	width: 28px;
 	padding: 0;
 	border-radius: 999px;
-	border: 1px solid transparent;
+	border: 1px solid color-mix(in srgb, var(--border-default) 28%, transparent);
 	background: transparent;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
+	cursor: pointer;
+	position: relative;
 	transition: border-color var(--transition-base), box-shadow
 		var(--transition-base), background var(--transition-base);
 }
 
-.settingsAccentDot span {
+.settingsAccentInput {
+	position: absolute;
+	opacity: 0;
+	pointer-events: none;
+}
+
+.settingsAccentDotInner {
 	height: 18px;
 	width: 18px;
 	border-radius: 999px;
@@ -1076,6 +1084,8 @@
 	border: 1px solid color-mix(in srgb, var(--border-default) 28%, transparent);
 	box-shadow: inset 0 0 0 1px
 		color-mix(in srgb, var(--text-primary) 8%, transparent);
+	transition: transform var(--transition-base), box-shadow
+		var(--transition-base);
 }
 
 .settingsAccentDot:hover {
@@ -1087,6 +1097,16 @@
 	border-color: color-mix(in srgb, var(--border-light) 72%, transparent);
 	box-shadow: 0 0 0 2px
 		color-mix(in srgb, var(--interactive-accent) 24%, transparent);
+}
+
+.settingsAccentDot.is-active .settingsAccentDotInner {
+	transform: scale(1.02);
+}
+
+.settingsAccentInput:focus-visible + .settingsAccentDotInner {
+	box-shadow: inset 0 0 0 1px
+		color-mix(in srgb, var(--text-primary) 8%, transparent), 0 0 0 3px
+		color-mix(in srgb, var(--interactive-accent) 18%, transparent);
 }
 
 @media (max-width: 760px) {

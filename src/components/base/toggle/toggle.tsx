@@ -75,6 +75,7 @@ export function Toggle({
 				defaultChecked={defaultChecked}
 				onChange={(event) => onCheckedChange?.(event.target.checked)}
 				onFocus={onFocus}
+				aria-checked={checked ?? defaultChecked ?? false}
 				aria-label={computedAriaLabel}
 				disabled={disabled}
 			/>

@@ -106,117 +106,115 @@ export function AboutSettingsPane() {
 					title="Glyph"
 					description="Build details and quick project information."
 				>
-						<div className="aboutIdentity">
-							<div className="aboutLogoWrap">
-								<img
-									src={`/glyph-app-icon.png?v=${appInfo?.version ?? "dev"}`}
-									alt=""
-									className="aboutLogo"
-									aria-hidden="true"
-								/>
+					<div className="aboutIdentity">
+						<div className="aboutLogoWrap">
+							<img
+								src={`/glyph-app-icon.png?v=${appInfo?.version ?? "dev"}`}
+								alt=""
+								className="aboutLogo"
+								aria-hidden="true"
+							/>
+						</div>
+						<div className="aboutIdentityCopy">
+							<div className="aboutTitleRow">
+								<span className="aboutAppName">{appInfo?.name ?? "Glyph"}</span>
+								<span className="aboutVersion">{versionLabel}</span>
 							</div>
-							<div className="aboutIdentityCopy">
-								<div className="aboutTitleRow">
-									<span className="aboutAppName">
-										{appInfo?.name ?? "Glyph"}
-									</span>
-									<span className="aboutVersion">{versionLabel}</span>
-								</div>
-								<div className="aboutStatusRow">
-									<span className="settingsPill aboutEarlyAccessBadge earlyAccessBadge">
-										Early Access
-									</span>
-									<span
-										className="aboutOpenSourceMark"
-										title="Open Source project"
-									>
-										<HugeiconsIcon icon={CodesandboxIcon} size={12} />
-										<span>Open Source</span>
-									</span>
-								</div>
+							<div className="aboutStatusRow">
+								<span className="settingsPill aboutEarlyAccessBadge earlyAccessBadge">
+									Early Access
+								</span>
+								<span
+									className="aboutOpenSourceMark"
+									title="Open Source project"
+								>
+									<HugeiconsIcon icon={CodesandboxIcon} size={12} />
+									<span>Open Source</span>
+								</span>
 							</div>
 						</div>
-						<SettingsRow
-							label="Identifier"
-							description="Useful when debugging builds, updates, or diagnostics."
-							interactive={false}
-						>
-							<div className="settingsValue mono">
-								{appInfo?.identifier ?? "Loading…"}
-							</div>
-						</SettingsRow>
+					</div>
+					<SettingsRow
+						label="Identifier"
+						description="Useful when debugging builds, updates, or diagnostics."
+						interactive={false}
+					>
+						<div className="settingsValue mono">
+							{appInfo?.identifier ?? "Loading…"}
+						</div>
+					</SettingsRow>
 				</SettingsSection>
 
 				<SettingsSection
 					title="Updates"
 					description="Check for new releases and install them without leaving Glyph."
 				>
-						<SettingsRow
-							label="App updates"
-							description="Download and install the latest published version."
+					<SettingsRow
+						label="App updates"
+						description="Download and install the latest published version."
+					>
+						<Button
+							type="button"
+							size="sm"
+							disabled={checkingUpdates}
+							onClick={() => void handleCheckForUpdates()}
 						>
-							<Button
-								type="button"
-								size="sm"
-								disabled={checkingUpdates}
-								onClick={() => void handleCheckForUpdates()}
-							>
-								{checkingUpdates ? "Checking…" : "Check for Updates"}
-							</Button>
+							{checkingUpdates ? "Checking…" : "Check for Updates"}
+						</Button>
+					</SettingsRow>
+					{updateStatus ? (
+						<SettingsRow
+							label="Status"
+							description="Latest updater activity from this window."
+							stacked
+							interactive={false}
+						>
+							<p className="settingsHint">{updateStatus}</p>
 						</SettingsRow>
-						{updateStatus ? (
-							<SettingsRow
-								label="Status"
-								description="Latest updater activity from this window."
-								stacked
-								interactive={false}
-							>
-								<p className="settingsHint">{updateStatus}</p>
-							</SettingsRow>
-						) : null}
+					) : null}
 				</SettingsSection>
 
 				<SettingsSection
 					title="Support"
 					description="Project links and diagnostics that help with support requests."
 				>
-						<SettingsRow
-							label="Links"
-							description="Open the author and project pages in your browser."
-						>
-							<div className="settingsActions aboutActions">
-								<Button
-									type="button"
-									size="sm"
-									variant="outline"
-									onClick={() => void openUrl("https://x.com/karat_sidhu")}
-								>
-									X
-								</Button>
-								<Button
-									type="button"
-									size="sm"
-									variant="outline"
-									onClick={() => void openUrl("https://github.com/SidhuK")}
-								>
-									GitHub
-								</Button>
-							</div>
-						</SettingsRow>
-						<SettingsRow
-							label="Diagnostics"
-							description="Copy app metadata so you can paste it into bug reports or support threads."
-						>
+					<SettingsRow
+						label="Links"
+						description="Open the author and project pages in your browser."
+					>
+						<div className="settingsActions aboutActions">
 							<Button
 								type="button"
 								size="sm"
 								variant="outline"
-								className="min-w-36 rounded-md border-border bg-background justify-center shadow-none"
-								onClick={() => void handleCopyDebugInfo()}
+								onClick={() => void openUrl("https://x.com/karat_sidhu")}
 							>
-								{copyLabel}
+								X
 							</Button>
-						</SettingsRow>
+							<Button
+								type="button"
+								size="sm"
+								variant="outline"
+								onClick={() => void openUrl("https://github.com/SidhuK")}
+							>
+								GitHub
+							</Button>
+						</div>
+					</SettingsRow>
+					<SettingsRow
+						label="Diagnostics"
+						description="Copy app metadata so you can paste it into bug reports or support threads."
+					>
+						<Button
+							type="button"
+							size="sm"
+							variant="outline"
+							className="min-w-36 rounded-md border-border bg-background justify-center shadow-none"
+							onClick={() => void handleCopyDebugInfo()}
+						>
+							{copyLabel}
+						</Button>
+					</SettingsRow>
 				</SettingsSection>
 			</div>
 		</div>

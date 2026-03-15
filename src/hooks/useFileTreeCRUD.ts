@@ -144,21 +144,21 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 						next.add(dirPath);
 						return next;
 					});
-					const createdInDir = parentDir(markdownRel);
-					await refreshAfterCreate(createdInDir);
-					void updateOnboardingSettings({ createdFirstNote: true });
-					return markdownRel;
+				const createdInDir = parentDir(markdownRel);
+				await refreshAfterCreate(createdInDir);
+				void updateOnboardingSettings({ createdFirstNote: true });
+				return markdownRel;
 			} catch (e) {
 				setError(extractErrorMessage(e));
 				return null;
 			}
 		},
-			[
-				insertEntryOptimistic,
-				refreshAfterCreate,
-				setError,
-				updateExpandedDirs,
-				spacePath,
+		[
+			insertEntryOptimistic,
+			refreshAfterCreate,
+			setError,
+			updateExpandedDirs,
+			spacePath,
 		],
 	);
 
@@ -194,26 +194,21 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 					path: nextPath,
 					text: markdown,
 					base_mtime_ms: null,
-					});
-					insertEntryOptimistic(parentDir(nextPath), {
+				});
+				insertEntryOptimistic(parentDir(nextPath), {
 					name: nextPath.split("/").pop() ?? "New Database.md",
 					rel_path: nextPath,
 					kind: "file",
 					is_markdown: true,
-					});
-					await refreshAfterCreate(parentDir(nextPath));
-					return nextPath;
+				});
+				await refreshAfterCreate(parentDir(nextPath));
+				return nextPath;
 			} catch (e) {
 				setError(extractErrorMessage(e));
 				return null;
 			}
 		},
-			[
-				insertEntryOptimistic,
-				refreshAfterCreate,
-				setError,
-				spacePath,
-		],
+		[insertEntryOptimistic, refreshAfterCreate, setError, spacePath],
 	);
 
 	const onNewFolderInDir = useCallback(
@@ -248,20 +243,20 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 					const next = new Set(prev);
 					if (dirPath) next.add(dirPath);
 					return next;
-					});
-					await refreshAfterCreate(dirPath);
-					return path;
+				});
+				await refreshAfterCreate(dirPath);
+				return path;
 			} catch (e) {
 				setError(extractErrorMessage(e));
 			}
 			return null;
 		},
-			[
-				insertEntryOptimistic,
-				refreshAfterCreate,
-				setError,
-				updateExpandedDirs,
-				spacePath,
+		[
+			insertEntryOptimistic,
+			refreshAfterCreate,
+			setError,
+			updateExpandedDirs,
+			spacePath,
 		],
 	);
 
@@ -416,23 +411,23 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 					(kind === "dir" && Boolean(activePreview?.startsWith(`${target}/`)))
 				)
 					setActivePreviewPath(null);
-					dispatchPathRemoved({
-						path: target,
-						recursive: kind === "dir",
-					});
-					await loadDir(parent, true);
-					return true;
+				dispatchPathRemoved({
+					path: target,
+					recursive: kind === "dir",
+				});
+				await loadDir(parent, true);
+				return true;
 			} catch (e) {
 				setError(extractErrorMessage(e));
 				return false;
 			}
 		},
-			[
-				loadDir,
-				loadedDirsRef,
-				setActiveFilePath,
-				setActivePreviewPath,
-				updateChildrenByDir,
+		[
+			loadDir,
+			loadedDirsRef,
+			setActiveFilePath,
+			setActivePreviewPath,
+			updateChildrenByDir,
 			setError,
 			updateExpandedDirs,
 			updateRootEntries,
@@ -476,23 +471,20 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 					),
 				);
 				if (activeFilePathRef.current === from) setActiveFilePath(nextPath);
-					if (activePreviewPathRef.current === from)
-						setActivePreviewPath(nextPath);
-					await Promise.all([
-						loadDir(fromParent, true),
-						loadDir(toParent, true),
-					]);
-					return nextPath;
+				if (activePreviewPathRef.current === from)
+					setActivePreviewPath(nextPath);
+				await Promise.all([loadDir(fromParent, true), loadDir(toParent, true)]);
+				return nextPath;
 			} catch (e) {
 				setError(extractErrorMessage(e));
 				return null;
 			}
 		},
-			[
-				loadDir,
-				setActiveFilePath,
-				setActivePreviewPath,
-				updateChildrenByDir,
+		[
+			loadDir,
+			setActiveFilePath,
+			setActivePreviewPath,
+			updateChildrenByDir,
 			setError,
 			updateRootEntries,
 		],

@@ -1,29 +1,5 @@
 import { invoke as tauriInvoke } from "@tauri-apps/api/core";
 
-export type {
-	CanvasEdge,
-	CanvasNode,
-	FileCanvasNode,
-	FileNodeData,
-	FolderCanvasNode,
-	FolderNodeData,
-	FrameCanvasNode,
-	FrameNodeData,
-	LinkCanvasNode,
-	LinkNodeData,
-	NoteCanvasNode,
-	NoteNodeData,
-	TextCanvasNode,
-	TextNodeData,
-} from "./canvasFlowTypes";
-export {
-	isFolderNode,
-	isFrameNode,
-	isLinkNode,
-	isNoteNode,
-	isTextNode,
-} from "./canvasFlowTypes";
-
 export interface AppInfo {
 	name: string;
 	version: string;
@@ -562,7 +538,7 @@ interface TauriCommands {
 		},
 		LinkSuggestionItem[]
 	>;
-		notes_list: CommandDef<void, NoteMeta[]>;
+	notes_list: CommandDef<void, NoteMeta[]>;
 	note_create: CommandDef<{ title: string }, NoteMeta>;
 	note_read: CommandDef<{ id: string }, NoteDoc>;
 	note_write: CommandDef<
@@ -627,14 +603,14 @@ interface TauriCommands {
 		{ raw_query: string; limit?: number | null },
 		SearchResult[]
 	>;
-		search_with_tags: CommandDef<
+	search_with_tags: CommandDef<
 		{ tags: string[]; query?: string | null; limit?: number | null },
 		SearchResult[]
 	>;
 	recent_notes: CommandDef<{ limit?: number | null }, SearchResult[]>;
 	tags_list: CommandDef<{ limit?: number | null }, TagCount[]>;
 	tag_notes: CommandDef<{ tag: string; limit?: number | null }, SearchResult[]>;
-		tasks_query: CommandDef<
+	tasks_query: CommandDef<
 		{
 			bucket: TaskBucket;
 			today: string;

@@ -32,26 +32,33 @@ export function AppearanceAccentCard({
 						/>
 						<span className="settingsAccentName">{selectedAccent.label}</span>
 					</div>
-					<div className="settingsAccentOptions" role="radiogroup" aria-label="Accent color">
+					<div
+						className="settingsAccentOptions"
+						role="radiogroup"
+						aria-label="Accent color"
+					>
 						{ACCENT_OPTIONS.map((option) => (
-							<button
+							<label
 								key={option.id}
-								type="button"
-								role="radio"
-								aria-checked={accent === option.id}
-								onClick={() => void onAccentChange(option.id)}
 								className={cn(
 									"settingsAccentDot",
 									accent === option.id && "is-active",
 								)}
-								aria-label={option.label}
 								title={option.label}
 								style={
 									{ "--settings-accent-swatch": option.color } as CSSProperties
 								}
 							>
-								<span />
-							</button>
+								<input
+									type="radio"
+									name="settings-accent"
+									checked={accent === option.id}
+									onChange={() => void onAccentChange(option.id)}
+									className="settingsAccentInput"
+									aria-label={option.label}
+								/>
+								<span className="settingsAccentDotInner" aria-hidden="true" />
+							</label>
 						))}
 					</div>
 				</div>

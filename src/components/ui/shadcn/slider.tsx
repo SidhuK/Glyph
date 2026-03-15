@@ -11,8 +11,8 @@ function Slider({
 	max = 100,
 	...props
 }: React.ComponentProps<typeof SliderPrimitive.Root>) {
-	const values =
-		value ?? defaultValue ?? [min, max > min ? Math.min(min + 1, max) : min];
+	const values = value ??
+		defaultValue ?? [min, max > min ? Math.min(min + 1, max) : min];
 
 	return (
 		<SliderPrimitive.Root

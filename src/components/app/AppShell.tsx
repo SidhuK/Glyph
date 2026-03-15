@@ -633,10 +633,11 @@ export function AppShell() {
 				category: "File Operations",
 				enabled: Boolean(spacePath),
 				action: async () => {
-						try {
-							const dir =
-								activeDirPath ?? (activeFilePath ? parentDir(activeFilePath) : "");
-							const path = await fileTree.onNewDatabaseInDir(dir);
+					try {
+						const dir =
+							activeDirPath ??
+							(activeFilePath ? parentDir(activeFilePath) : "");
+						const path = await fileTree.onNewDatabaseInDir(dir);
 						if (path) {
 							await fileTree.openFile(path);
 						}
@@ -734,6 +735,7 @@ export function AppShell() {
 		aiEnabled,
 		attachAllOpenNotesToAi,
 		attachCurrentNoteToAi,
+		activeDirPath,
 		handleCopyOpenNoteAsMarkdown,
 		dailyNotesFolder,
 		fileTree,
@@ -751,10 +753,10 @@ export function AppShell() {
 		openTasksTab,
 		openCalendarTab,
 		openGettingStarted,
-			moveTargetDirs,
-			movePickerSourcePath,
-			setError,
-		]);
+		moveTargetDirs,
+		movePickerSourcePath,
+		setError,
+	]);
 
 	useCommandShortcuts({
 		commands,
@@ -797,9 +799,9 @@ export function AppShell() {
 					/>
 				</div>
 			)}
-				<Sidebar
-					onSelectDir={setActiveDirPath}
-					onOpenFile={(p) => void fileTree.openFile(p)}
+			<Sidebar
+				onSelectDir={setActiveDirPath}
+				onOpenFile={(p) => void fileTree.openFile(p)}
 				onNewFileInDir={(p) => void fileTree.onNewFileInDir(p)}
 				onNewDatabaseInDir={(p) =>
 					fileTree
@@ -869,13 +871,13 @@ export function AppShell() {
 					style={{ cursor: "col-resize" }}
 				/>
 			)}
-				{spacePath && aiEnabled && (
-					<AIFloatingHost
-						isOpen={aiPanelOpen}
-						onToggle={() => setAiPanelOpen((v) => !v)}
-						activeFolderPath={activeDirPath}
-					/>
-				)}
+			{spacePath && aiEnabled && (
+				<AIFloatingHost
+					isOpen={aiPanelOpen}
+					onToggle={() => setAiPanelOpen((v) => !v)}
+					activeFolderPath={activeDirPath}
+				/>
+			)}
 			<AnimatePresence>
 				{error && <div className="appError">{error}</div>}
 			</AnimatePresence>

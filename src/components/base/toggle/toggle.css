@@ -102,8 +102,8 @@
 	height: var(--ui-toggle-thumb-size);
 	border-radius: 999px;
 	background: var(--color-white);
-	transition: transform var(--transition-base),
-		background-color var(--transition-base);
+	transition: transform var(--transition-base), background-color
+		var(--transition-base);
 }
 
 .uiToggleInput:focus-visible ~ .uiToggleControl {

@@ -111,19 +111,19 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 				) : (
 					<ContextMenu>
 						<ContextMenuTrigger asChild>
-								<m.button
-									type="button"
-									className="fileTreeRow"
-									onClick={() => {
-										onSelectDir(entry.rel_path);
-										onToggleDir(entry.rel_path);
-									}}
-									style={rowStyle}
-									variants={rowVariants}
-									whileHover="hover"
-									whileTap="tap"
-									animate={isActive ? "active" : "idle"}
-									transition={springTransition}
+							<m.button
+								type="button"
+								className="fileTreeRow"
+								onClick={() => {
+									onSelectDir(entry.rel_path);
+									onToggleDir(entry.rel_path);
+								}}
+								style={rowStyle}
+								variants={rowVariants}
+								whileHover="hover"
+								whileTap="tap"
+								animate={isActive ? "active" : "idle"}
+								transition={springTransition}
 								title={entry.rel_path || entry.name || "Folder"}
 							>
 								<HugeiconsIcon

@@ -198,7 +198,6 @@
 	gap: 10px;
 }
 
-
 @media (max-width: 900px) {
 	.settingsFrame {
 		grid-template-columns: 214px minmax(0, 1fr);

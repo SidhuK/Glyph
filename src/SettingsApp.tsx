@@ -1,7 +1,13 @@
 import "./SettingsApp.css";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { LazyMotion, domAnimation } from "motion/react";
-import { type ReactNode, useCallback, useMemo, useEffect, useState } from "react";
+import {
+	type ReactNode,
+	useCallback,
+	useEffect,
+	useMemo,
+	useState,
+} from "react";
 import { X } from "./components/Icons";
 import { AboutSettingsPane } from "./components/settings/AboutSettingsPane";
 import { AiSettingsPane } from "./components/settings/AiSettingsPane";
@@ -83,7 +89,6 @@ export default function SettingsApp() {
 		return () => window.removeEventListener("keydown", onKeyDown);
 	}, [closeWindow]);
 
-	let tabContent: ReactNode;
 	const tabContentByTab: Record<SettingsTab, ReactNode> = {
 		general: <GeneralSettingsPane />,
 		appearance: <AppearanceSettingsPane />,
@@ -91,7 +96,7 @@ export default function SettingsApp() {
 		space: <SpaceSettingsPane />,
 		about: <AboutSettingsPane />,
 	};
-	tabContent = tabContentByTab[activeTab];
+	const tabContent = tabContentByTab[activeTab];
 
 	return (
 		<LazyMotion features={domAnimation}>
@@ -142,7 +147,9 @@ export default function SettingsApp() {
 						<div className="settingsTabPanel">
 							<header className="settingsPanelHeader">
 								<h2 className="settingsPanelTitle">{activeTabMeta.label}</h2>
-								<p className="settingsPanelSubtitle">{activeTabMeta.subtitle}</p>
+								<p className="settingsPanelSubtitle">
+									{activeTabMeta.subtitle}
+								</p>
 							</header>
 							{tabContent}
 						</div>

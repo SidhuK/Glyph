@@ -67,6 +67,7 @@ Repo extras: the public Astro marketing site is stored in `website/`. Internal p
 - Use `paths::join_under()` for space paths (prevent traversal). Never log secrets.
 - Use `net.rs` SSRF checks for user-supplied URLs. Version durable documents (`version: 1`).
 - New Tauri commands: implement in `src-tauri/src/`, register in `lib.rs`, add types to `TauriCommands` in `src/lib/tauri.ts`.
+- Make sure we dont over-engineer CSS and use default components as much as possible unless explicitly stated.
 
 ## Migration Policy
 - Use a hard cutover approach and never implement backward compatibility.
