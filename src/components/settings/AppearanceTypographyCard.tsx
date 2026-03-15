@@ -6,6 +6,8 @@ import {
 	type UiFontFamily,
 	type UiFontSize,
 } from "../../lib/settings";
+import { Input } from "../ui/shadcn/input";
+import { Slider } from "../ui/shadcn/slider";
 import { SettingsRow, SettingsSection } from "./SettingsScaffold";
 
 interface AppearanceTypographyCardProps {
@@ -48,20 +50,24 @@ function FontSizeControl({
 }: FontSizeControlProps) {
 	return (
 		<SettingsRow label={label} htmlFor={id} description={description}>
-			<div className="settingsRange">
-				<input
+			<div className="flex w-full items-center gap-3">
+				<Slider
 					id={id}
-					type="range"
+					className="flex-1"
 					min={min}
 					max={max}
 					step={1}
-					value={value}
-					onChange={(event) => void onChange(Number(event.target.value))}
+					value={[value]}
+					onValueChange={(nextValues: number[]) => {
+						const [next] = nextValues;
+						if (typeof next !== "number") return;
+						void onChange(next);
+					}}
 					aria-label={label}
 				/>
-				<input
+				<Input
 					type="number"
-					className="settingsRangeNumber"
+					className="w-20 min-w-20 text-right [font-variant-numeric:tabular-nums]"
 					min={min}
 					max={max}
 					step={1}

@@ -1,3 +1,4 @@
+import { cn } from "@/lib/utils";
 import type { UiAccent } from "../../lib/settings";
 import { SettingsRow, SettingsSection } from "./SettingsScaffold";
 import { ACCENT_OPTIONS } from "./accentOptions";
@@ -22,32 +23,31 @@ export function AppearanceAccentCard({
 				label="Palette"
 				description="Preview and select the accent that feels best for your workspace."
 			>
-				<div className="settingsAccentSelector">
-					<div className="settingsAccentPreview" aria-hidden="true">
+				<div className="settingsAccentPicker">
+					<div className="settingsAccentCurrent" aria-hidden="true">
 						<span
-							className="settingsAccentPreviewSwatch"
+							className="settingsAccentSwatch"
 							style={{ background: selectedAccent.color }}
 						/>
-						<span className="settingsAccentPreviewLabel">
-							{selectedAccent.label}
-						</span>
+						<span className="settingsAccentName">{selectedAccent.label}</span>
 					</div>
-					<div
-						className="settingsAccentRow"
-						role="radiogroup"
-						aria-label="Accent color"
-					>
+					<div className="settingsAccentOptions" role="radiogroup" aria-label="Accent color">
 						{ACCENT_OPTIONS.map((option) => (
 							<button
 								key={option.id}
 								type="button"
-								className={`settingsAccentDot ${accent === option.id ? "active" : ""}`}
+								role="radio"
+								aria-checked={accent === option.id}
 								onClick={() => void onAccentChange(option.id)}
-								aria-pressed={accent === option.id}
+								className={cn(
+									"settingsAccentDot",
+									accent === option.id && "is-active",
+								)}
 								aria-label={option.label}
 								title={option.label}
+								style={{ "--settings-accent-swatch": option.color } as React.CSSProperties}
 							>
-								<span style={{ background: option.color }} />
+								<span />
 							</button>
 						))}
 					</div>
