@@ -178,7 +178,10 @@ function ThemeSelector<T extends string>({
 				</PopoverTrigger>
 				<PopoverContent
 					align="end"
+					side="bottom"
 					sideOffset={8}
+					avoidCollisions={false}
+					collisionPadding={16}
 					className="appearanceThemeDropdownContent"
 				>
 					<div className="appearanceThemeDropdownHeader">
