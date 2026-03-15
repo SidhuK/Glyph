@@ -6,14 +6,14 @@
 	--ui-toggle-thumb-translate: 16px;
 
 	display: inline-flex;
-	align-items: flex-start;
+	align-items: center;
 	gap: 10px;
 	color: var(--text-primary);
 	cursor: pointer;
 	user-select: none;
 }
 
-.uiToggle[data-size="md"] {
+.uiToggle--md {
 	--ui-toggle-track-width: 44px;
 	--ui-toggle-track-height: 24px;
 	--ui-toggle-thumb-size: 20px;
@@ -21,17 +21,20 @@
 	--ui-toggle-thumb-translate: 20px;
 }
 
-.uiToggle[data-has-copy="false"] {
-	align-items: center;
+.uiToggle--withCopy {
+	align-items: flex-start;
+}
+
+.uiToggle--bare {
 	gap: 0;
 }
 
-.uiToggle[data-disabled="true"] {
+.uiToggle--disabled {
 	cursor: not-allowed;
 	opacity: 0.55;
 }
 
-.uiToggle[data-slim="true"][data-has-copy="true"] {
+.uiToggle--slim {
 	display: grid;
 	grid-template-columns: minmax(0, 1fr) auto;
 	align-items: start;
@@ -39,16 +42,31 @@
 	width: 100%;
 }
 
-.uiToggle[data-slim="true"][data-has-copy="true"] .uiToggleCopy {
+.uiToggle--slim .uiToggleCopy {
 	padding-top: 1px;
 }
 
 .uiToggleInput {
+	-webkit-appearance: none;
+	appearance: none;
+	box-sizing: border-box;
 	position: absolute;
+	inset: auto;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	border-radius: 0;
+	background: transparent;
+	box-shadow: none;
+	font: inherit;
+	line-height: 1;
 	opacity: 0;
 	width: 1px;
 	height: 1px;
 	pointer-events: none;
+	overflow: hidden;
+	clip-path: inset(50%);
+	white-space: nowrap;
 }
 
 .uiToggleCopy {
@@ -77,10 +95,12 @@
 	width: var(--ui-toggle-track-width);
 	height: var(--ui-toggle-track-height);
 	border-radius: 999px;
-	border: 1px solid color-mix(in srgb, var(--border-default) 88%, transparent);
-	background: color-mix(in srgb, var(--bg-secondary) 82%, var(--bg-primary));
-	transition: background-color var(--transition-base), border-color
-		var(--transition-base), box-shadow var(--transition-base);
+	background: color-mix(in srgb, var(--bg-tertiary) 78%, var(--bg-secondary));
+	transition: background-color var(--transition-base);
+}
+
+.uiToggle--withCopy .uiToggleControl {
+	margin-top: 1px;
 }
 
 .uiToggleThumb {
@@ -90,15 +110,9 @@
 	width: var(--ui-toggle-thumb-size);
 	height: var(--ui-toggle-thumb-size);
 	border-radius: 999px;
-	background: var(--bg-primary);
-	border: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
-	box-shadow: 0 1px 2px color-mix(in srgb, #000 12%, transparent);
-	transition: transform var(--transition-base), background-color
-		var(--transition-base), border-color var(--transition-base);
-}
-
-.uiToggle:hover .uiToggleControl {
-	border-color: color-mix(in srgb, var(--border-default) 100%, transparent);
+	background: var(--color-white);
+	transition: transform var(--transition-base),
+		background-color var(--transition-base);
 }
 
 .uiToggleInput:focus-visible ~ .uiToggleControl {
@@ -108,18 +122,16 @@
 }
 
 .uiToggleInput:checked ~ .uiToggleControl {
-	background: var(--interactive-accent);
-	border-color: color-mix(in srgb, var(--interactive-accent) 70%, transparent);
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 72%,
+		var(--bg-tertiary)
+	);
 }
 
 .uiToggleInput:checked ~ .uiToggleControl .uiToggleThumb {
 	transform: translateX(var(--ui-toggle-thumb-translate));
-	background: var(--color-white);
-	border-color: color-mix(in srgb, var(--interactive-accent) 48%, transparent);
-}
-
-.uiToggleInput:disabled ~ .uiToggleControl {
-	box-shadow: none;
+	background: var(--text-inverse);
 }
 
 @media (prefers-reduced-motion: reduce) {

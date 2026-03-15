@@ -56,11 +56,14 @@ export function Toggle({
 
 	return (
 		<label
-			className={cn("uiToggle", className)}
-			data-size={size}
-			data-slim={slim}
-			data-has-copy={hasCopy}
-			data-disabled={disabled}
+			className={cn(
+				"uiToggle",
+				size === "md" && "uiToggle--md",
+				hasCopy ? "uiToggle--withCopy" : "uiToggle--bare",
+				slim && hasCopy && "uiToggle--slim",
+				disabled && "uiToggle--disabled",
+				className,
+			)}
 		>
 			<input
 				id={id}
@@ -68,7 +71,6 @@ export function Toggle({
 				className="uiToggleInput"
 				type="checkbox"
 				role="switch"
-				aria-checked={checked ?? defaultChecked ?? false}
 				checked={checked}
 				defaultChecked={defaultChecked}
 				onChange={(event) => onCheckedChange?.(event.target.checked)}
