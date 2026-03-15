@@ -120,7 +120,7 @@ export function useNoteEditor({
 	const extensions = useMemo(
 		() =>
 			createEditorExtensions({
-				currentPath: relPath,
+				currentPath: "",
 				currentPathResolver: () => relPathRef.current,
 				enableMarkdownLinkAutocomplete,
 			}),
@@ -148,17 +148,17 @@ export function useNoteEditor({
 				class: "tiptapContentInline",
 				spellcheck: "true",
 			},
-				handleDOMEvents: {
-					click: (_view, event) => {
-						if (!(event instanceof MouseEvent)) return false;
-						return handleEditorClick(
-							event,
-							relPathRef.current,
-							interactiveRef.current,
-						);
-					},
+			handleDOMEvents: {
+				click: (_view, event) => {
+					if (!(event instanceof MouseEvent)) return false;
+					return handleEditorClick(
+						event,
+						relPathRef.current,
+						interactiveRef.current,
+					);
 				},
 			},
+		},
 		onTransaction: ({ editor: instance, transaction }) => {
 			if (!transaction.docChanged) return;
 			if (suppressUpdateRef.current) {

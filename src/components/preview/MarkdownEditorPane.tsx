@@ -5,13 +5,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
-import {
-	useCallback,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
 	useAISidebarContext,
 	useEditorRegistration,
@@ -36,8 +30,8 @@ import {
 import { CanvasNoteInlineEditor } from "../editor/CanvasNoteInlineEditor";
 import { CALLOUT_TYPES } from "../editor/ribbonButtonConfigs";
 import type { CanvasInlineEditorMode } from "../editor/types";
-import { InstantMarkdownPreview } from "./InstantMarkdownPreview";
 import { Button } from "../ui/shadcn/button";
+import { InstantMarkdownPreview } from "./InstantMarkdownPreview";
 
 interface MarkdownEditorPaneProps {
 	relPath: string;
@@ -756,33 +750,33 @@ export function MarkdownEditorPane({
 				</div>
 			) : null}
 
-				{!error ? (
-					<div className="filePreviewTextWrap markdownEditorContent">
-						<div className="markdownEditorCenter">
-							{shouldRenderInstantPreview ? (
-								<div
-									onPointerDown={() => setEditorHydrated(true)}
-									onFocusCapture={() => setEditorHydrated(true)}
-								>
-									<InstantMarkdownPreview markdown={text} />
-								</div>
-							) : (
-								<CanvasNoteInlineEditor
-									markdown={text}
-									relPath={relPath}
-									mode={mode}
-									onModeChange={setMode}
-									onChange={(nextText) => {
-										hasUserEditsRef.current = true;
-										setText(nextText);
-									}}
-									deferHeavyFeatures={!editorHydrated}
-									onRegisterCalloutInserter={registerCalloutInserter}
-								/>
-							)}
-						</div>
+			{!error ? (
+				<div className="filePreviewTextWrap markdownEditorContent">
+					<div className="markdownEditorCenter">
+						{shouldRenderInstantPreview ? (
+							<div
+								onPointerDown={() => setEditorHydrated(true)}
+								onFocusCapture={() => setEditorHydrated(true)}
+							>
+								<InstantMarkdownPreview markdown={text} />
+							</div>
+						) : (
+							<CanvasNoteInlineEditor
+								markdown={text}
+								relPath={relPath}
+								mode={mode}
+								onModeChange={setMode}
+								onChange={(nextText) => {
+									hasUserEditsRef.current = true;
+									setText(nextText);
+								}}
+								deferHeavyFeatures={!editorHydrated}
+								onRegisterCalloutInserter={registerCalloutInserter}
+							/>
+						)}
 					</div>
-				) : null}
-			</section>
+				</div>
+			) : null}
+		</section>
 	);
 }

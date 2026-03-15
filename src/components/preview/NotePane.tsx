@@ -1,9 +1,9 @@
 import { useEffect, useRef, useState } from "react";
 import { useSpace } from "../../contexts";
-import { DatabasePane } from "../database/DatabasePane";
 import { isDatabaseNote } from "../../lib/database/isDatabaseNote";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { type TextFileDoc, invoke } from "../../lib/tauri";
+import { DatabasePane } from "../database/DatabasePane";
 import { MarkdownEditorPane } from "./MarkdownEditorPane";
 
 interface NotePaneProps {

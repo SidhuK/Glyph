@@ -1,4 +1,4 @@
-import { Fragment, memo, type ReactNode } from "react";
+import { Fragment, type ReactNode, memo } from "react";
 import { splitYamlFrontmatter } from "../../lib/notePreview";
 
 interface InstantMarkdownPreviewProps {
@@ -10,16 +10,14 @@ function parseInline(text: string): ReactNode[] {
 	const pattern =
 		/`([^`]+)`|\[([^\]]+)\]\(([^)]+)\)|(https?:\/\/[^\s<]+)|\[\[([^[\]\n|#]+)(?:\|([^[\]\n]+))?\]\]/g;
 	let lastIndex = 0;
-	let match: RegExpExecArray | null = null;
+	let match = pattern.exec(text);
 
-	while ((match = pattern.exec(text)) !== null) {
+	while (match !== null) {
 		if (match.index > lastIndex) {
 			nodes.push(text.slice(lastIndex, match.index));
 		}
 		if (match[1]) {
-			nodes.push(
-				<code key={`code-${match.index}`}>{match[1]}</code>,
-			);
+			nodes.push(<code key={`code-${match.index}`}>{match[1]}</code>);
 		} else if (match[2] && match[3]) {
 			nodes.push(
 				<a
@@ -49,11 +47,12 @@ function parseInline(text: string): ReactNode[] {
 					className="instantMarkdownWikiLink"
 					data-wikilink="true"
 				>
-					{match[5] ? match[6] ?? match[5] : match[0]}
+					{match[5] ? (match[6] ?? match[5]) : match[0]}
 				</span>,
 			);
 		}
 		lastIndex = pattern.lastIndex;
+		match = pattern.exec(text);
 	}
 
 	if (lastIndex < text.length) {
@@ -74,9 +73,7 @@ function renderList(
 ): { node: React.ReactNode; nextIndex: number } {
 	const items: ReactNode[] = [];
 	let index = startIndex;
-	const pattern = ordered
-		? /^\d+\.\s+(.*)$/
-		: /^[-*+]\s+(.*)$/;
+	const pattern = ordered ? /^\d+\.\s+(.*)$/ : /^[-*+]\s+(.*)$/;
 
 	while (index < lines.length) {
 		const line = lines[index].trim();
@@ -87,7 +84,11 @@ function renderList(
 	}
 
 	return {
-		node: ordered ? <ol key={`list-${startIndex}`}>{items}</ol> : <ul key={`list-${startIndex}`}>{items}</ul>,
+		node: ordered ? (
+			<ol key={`list-${startIndex}`}>{items}</ol>
+		) : (
+			<ul key={`list-${startIndex}`}>{items}</ul>
+		),
 		nextIndex: index,
 	};
 }
@@ -168,9 +169,9 @@ function renderBlocks(body: string): ReactNode[] {
 			}
 			blocks.push(
 				<blockquote key={`quote-${index}`}>
-					{quoteLines.map((quoteLine, quoteIndex) => (
-						<Fragment key={`quote-line-${quoteIndex}`}>
-							{quoteIndex > 0 ? <br /> : null}
+					{quoteLines.map((quoteLine) => (
+						<Fragment key={`quote-line-${quoteLine}`}>
+							{quoteLines[0] !== quoteLine ? <br /> : null}
 							{parseInline(quoteLine)}
 						</Fragment>
 					))}
