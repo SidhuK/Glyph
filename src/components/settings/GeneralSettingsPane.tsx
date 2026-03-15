@@ -180,8 +180,9 @@ export function GeneralSettingsPane({
 							<div className="settingsActions dailyNotesActions">
 								<Button
 									type="button"
-									variant="default"
+									variant="outline"
 									size="sm"
+									className="min-w-24 rounded-md border-border bg-background justify-center shadow-none"
 									onClick={handleBrowseFolder}
 									disabled={dailyNotesLoading}
 								>
@@ -191,8 +192,9 @@ export function GeneralSettingsPane({
 								{dailyNotesFolder ? (
 									<Button
 										type="button"
-										variant="ghost"
+										variant="outline"
 										size="sm"
+										className="min-w-20 rounded-md border-border bg-background justify-center shadow-none"
 										onClick={handleClearFolder}
 										disabled={dailyNotesLoading}
 									>

@@ -224,7 +224,8 @@ export function AboutSettingsPane({
 							<Button
 								type="button"
 								size="sm"
-								variant="ghost"
+								variant="outline"
+								className="min-w-36 rounded-md border-border bg-background justify-center shadow-none"
 								onClick={() => void handleCopyDebugInfo()}
 							>
 								{copyLabel}

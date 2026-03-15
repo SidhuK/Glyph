@@ -206,6 +206,7 @@ export function LicenseSettingsCard() {
 						type="button"
 						size="sm"
 						variant="outline"
+						className="min-w-32 rounded-md border-border bg-background justify-center shadow-none"
 						onClick={() => status && void openUrl(status.support_url)}
 					>
 						Open Support

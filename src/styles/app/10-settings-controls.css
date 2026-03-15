@@ -279,8 +279,64 @@
 .settingsActions {
 	display: inline-flex;
 	align-items: center;
+	justify-content: flex-end;
 	gap: 8px;
 	flex-wrap: wrap;
+	width: 100%;
+}
+
+.settingsFieldControl > [data-slot="button"],
+.settingsActions > [data-slot="button"] {
+	min-height: 32px;
+	border-radius: var(--radius-md);
+	border: 1px solid transparent;
+	box-shadow: none;
+}
+
+.settingsFieldControl > [data-slot="button"][data-variant="default"],
+.settingsActions > [data-slot="button"][data-variant="default"] {
+	background: var(--text-primary);
+	border-color: var(--text-primary);
+	color: var(--bg-primary);
+}
+
+.settingsFieldControl
+	> [data-slot="button"][data-variant="default"]:hover:not(:disabled),
+.settingsActions
+	> [data-slot="button"][data-variant="default"]:hover:not(:disabled) {
+	background: color-mix(in srgb, var(--text-primary) 88%, var(--bg-primary));
+	border-color: color-mix(in srgb, var(--text-primary) 88%, var(--bg-primary));
+	color: var(--bg-primary);
+}
+
+.settingsFieldControl > [data-slot="button"][data-variant="outline"],
+.settingsActions > [data-slot="button"][data-variant="outline"] {
+	background: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary));
+	border-color: color-mix(in srgb, var(--border-default) 88%, transparent);
+	color: var(--text-primary);
+}
+
+.settingsFieldControl
+	> [data-slot="button"][data-variant="outline"]:hover:not(:disabled),
+.settingsActions
+	> [data-slot="button"][data-variant="outline"]:hover:not(:disabled) {
+	background: color-mix(in srgb, var(--bg-secondary) 72%, var(--bg-primary));
+	border-color: color-mix(in srgb, var(--border-strong) 88%, transparent);
+	color: var(--text-primary);
+}
+
+.settingsFieldControl > [data-slot="button"][data-variant="ghost"],
+.settingsActions > [data-slot="button"][data-variant="ghost"] {
+	background: transparent;
+	color: var(--text-secondary);
+}
+
+.settingsFieldControl
+	> [data-slot="button"][data-variant="ghost"]:hover:not(:disabled),
+.settingsActions
+	> [data-slot="button"][data-variant="ghost"]:hover:not(:disabled) {
+	background: color-mix(in srgb, var(--bg-secondary) 58%, transparent);
+	color: var(--text-primary);
 }
 
 .settingsLabel {

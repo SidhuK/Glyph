@@ -130,18 +130,6 @@
 		var(--transition-base), color var(--transition-base);
 }
 
-.settingsTabButton::before {
-	content: "";
-	position: absolute;
-	left: -10px;
-	top: 7px;
-	bottom: 7px;
-	width: 2px;
-	border-radius: var(--radius-sm);
-	background: transparent;
-	transition: background var(--transition-base);
-}
-
 .settingsTabIcon {
 	height: 18px;
 	width: 18px;
@@ -183,10 +171,6 @@
 	color: var(--text-primary);
 	background: var(--bg-primary);
 	border-color: var(--border-default);
-}
-
-.settingsTabButton.active::before {
-	background: var(--interactive-accent);
 }
 
 .settingsTabButton.active .settingsTabIcon {
