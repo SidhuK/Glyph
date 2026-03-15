@@ -86,31 +86,6 @@
 	color: var(--text-secondary);
 }
 
-.settingsNavSearch {
-	position: relative;
-}
-
-.settingsNavSearchIcon {
-	position: absolute;
-	top: 50%;
-	left: 11px;
-	transform: translateY(-50%);
-	color: var(--text-tertiary);
-	pointer-events: none;
-}
-
-.settingsNavSearchInput {
-	height: 34px;
-	padding-left: 34px;
-	background: color-mix(in srgb, var(--bg-primary) 82%, transparent);
-	border-color: color-mix(in srgb, var(--border-light) 88%, transparent);
-	font-size: 12px;
-}
-
-.settingsNavSearchInput:focus-visible {
-	background: var(--bg-primary);
-}
-
 .settingsTabButton {
 	position: relative;
 	display: inline-flex;
@@ -147,20 +122,6 @@
 	text-align: left;
 }
 
-.settingsTabCount {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	min-width: 20px;
-	height: 18px;
-	padding: 0 6px;
-	border-radius: var(--radius-sm);
-	background: var(--bg-primary);
-	border: 1px solid var(--border-light);
-	font-size: 10px;
-	color: var(--text-tertiary);
-}
-
 .settingsTabButton:hover {
 	color: var(--text-primary);
 	background: var(--bg-primary);
@@ -175,17 +136,6 @@
 
 .settingsTabButton.active .settingsTabIcon {
 	color: var(--text-primary);
-}
-
-.settingsTabButton.active .settingsTabCount {
-	color: var(--text-primary);
-	border-color: color-mix(in srgb, var(--border-default) 68%, transparent);
-}
-
-.settingsNavNoResults {
-	padding: 8px 12px;
-	font-size: 12px;
-	color: var(--text-tertiary);
 }
 
 .settingsTabPanel {
@@ -248,28 +198,6 @@
 	gap: 10px;
 }
 
-.settingsSearchEmpty {
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-	padding: 22px 18px;
-	border-radius: var(--radius-lg);
-	border: 1px solid var(--border-light);
-	background: var(--bg-primary);
-}
-
-.settingsSearchEmptyTitle {
-	font-size: 14px;
-	font-weight: var(--font-semibold);
-	color: var(--text-primary);
-}
-
-.settingsSearchEmptyCopy {
-	margin: 0;
-	font-size: 12px;
-	line-height: 1.45;
-	color: var(--text-secondary);
-}
 
 @media (max-width: 900px) {
 	.settingsFrame {
@@ -293,10 +221,6 @@
 		border-bottom: 1px solid var(--border-light);
 	}
 
-	.settingsTabButton::before {
-		display: none;
-	}
-
 	.settingsTabPanel {
 		padding: 12px;
 	}
@@ -309,9 +233,7 @@
 @media (prefers-reduced-motion: reduce) {
 	.settingsWindowClose,
 	.settingsTabButton,
-	.settingsTabIcon,
-	.settingsTabButton::before,
-	.settingsTabCount {
+	.settingsTabIcon {
 		transition: none;
 	}
 }

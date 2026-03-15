@@ -16,13 +16,7 @@ import {
 	SettingsSegmented,
 } from "./SettingsScaffold";
 
-interface GeneralSettingsPaneProps {
-	visibleSections?: Set<string> | null;
-}
-
-export function GeneralSettingsPane({
-	visibleSections = null,
-}: GeneralSettingsPaneProps) {
+export function GeneralSettingsPane() {
 	const [aiAssistantMode, setAiAssistantModeState] =
 		useState<AiAssistantMode>("create");
 	const [dailyNotesFolder, setDailyNotesFolderState] = useState<string | null>(
@@ -31,9 +25,6 @@ export function GeneralSettingsPane({
 	const [dailyNotesLoading, setDailyNotesLoading] = useState(true);
 	const [dailyNotesError, setDailyNotesError] = useState<string | null>(null);
 	const [error, setError] = useState("");
-
-	const showSection = (title: string) =>
-		!visibleSections || visibleSections.has(title);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -127,86 +118,82 @@ export function GeneralSettingsPane({
 			{error ? <div className="settingsError">{error}</div> : null}
 
 			<div className="settingsGrid">
-				{showSection("Assistant") ? (
-					<SettingsSection
-						title="Assistant"
-						description="Choose how Glyph opens your assistant workspace by default."
+				<SettingsSection
+					title="Assistant"
+					description="Choose how Glyph opens your assistant workspace by default."
+				>
+					<SettingsRow
+						label="Default view"
+						description="Switch between Create and Chat without changing any assistant behavior."
 					>
-						<SettingsRow
-							label="Default view"
-							description="Switch between Create and Chat without changing any assistant behavior."
-						>
-							<SettingsSegmented<AiAssistantMode>
-								ariaLabel="Assistant default view"
-								value={aiAssistantMode}
-								onChange={(value) => void updateAssistantMode(value)}
-								options={[
-									{ label: "Create", value: "create" },
-									{ label: "Chat", value: "chat" },
-								]}
-							/>
-						</SettingsRow>
-					</SettingsSection>
-				) : null}
+						<SettingsSegmented<AiAssistantMode>
+							ariaLabel="Assistant default view"
+							value={aiAssistantMode}
+							onChange={(value) => void updateAssistantMode(value)}
+							options={[
+								{ label: "Create", value: "create" },
+								{ label: "Chat", value: "chat" },
+							]}
+						/>
+					</SettingsRow>
+				</SettingsSection>
 
-				{showSection("Daily Notes") ? (
-					<SettingsSection
-						title="Daily Notes"
-						description="Choose where new daily notes should be created within the current space."
+				<SettingsSection
+					title="Daily Notes"
+					description="Choose where new daily notes should be created within the current space."
+				>
+					<SettingsRow
+						label="Folder"
+						description="Glyph stores daily notes relative to the active space."
+						stacked
+						interactive={false}
 					>
-						<SettingsRow
-							label="Folder"
-							description="Glyph stores daily notes relative to the active space."
-							stacked
-							interactive={false}
-						>
-							<div className="dailyNotesFolderField">
-								<div className="dailyNotesFolderPath">
-									{dailyNotesLoading
-										? "Loading..."
-										: (dailyNotesFolder ?? "Not configured")}
-								</div>
-								{dailyNotesError ? (
-									<div className="settingsError dailyNotesError">
-										{dailyNotesError}
-									</div>
-								) : null}
+						<div className="dailyNotesFolderField">
+							<div className="dailyNotesFolderPath">
+								{dailyNotesLoading
+									? "Loading..."
+									: (dailyNotesFolder ?? "Not configured")}
 							</div>
-						</SettingsRow>
-						<SettingsRow
-							label="Actions"
-							description="Browse for a folder or clear the current daily notes location."
-						>
-							<div className="settingsActions dailyNotesActions">
+							{dailyNotesError ? (
+								<div className="settingsError dailyNotesError">
+									{dailyNotesError}
+								</div>
+							) : null}
+						</div>
+					</SettingsRow>
+					<SettingsRow
+						label="Actions"
+						description="Browse for a folder or clear the current daily notes location."
+					>
+						<div className="settingsActions dailyNotesActions">
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								className="min-w-24 rounded-md border-border bg-background justify-center shadow-none"
+								onClick={handleBrowseFolder}
+								disabled={dailyNotesLoading}
+							>
+								<FolderOpen size={14} />
+								Browse
+							</Button>
+							{dailyNotesFolder ? (
 								<Button
 									type="button"
 									variant="outline"
 									size="sm"
-									className="min-w-24 rounded-md border-border bg-background justify-center shadow-none"
-									onClick={handleBrowseFolder}
+									className="min-w-20 rounded-md border-border bg-background justify-center shadow-none"
+									onClick={handleClearFolder}
 									disabled={dailyNotesLoading}
 								>
-									<FolderOpen size={14} />
-									Browse
+									Clear
 								</Button>
-								{dailyNotesFolder ? (
-									<Button
-										type="button"
-										variant="outline"
-										size="sm"
-										className="min-w-20 rounded-md border-border bg-background justify-center shadow-none"
-										onClick={handleClearFolder}
-										disabled={dailyNotesLoading}
-									>
-										Clear
-									</Button>
-								) : null}
-							</div>
-						</SettingsRow>
-					</SettingsSection>
-				) : null}
+							) : null}
+						</div>
+					</SettingsRow>
+				</SettingsSection>
 
-				{showSection("License") ? <LicenseSettingsCard /> : null}
+				<LicenseSettingsCard />
 			</div>
 		</div>
 	);

@@ -14,7 +14,6 @@ interface AiProfileSectionsProps {
 	onActiveProfileChange: (id: string | null) => Promise<void>;
 	onCreateProfile: () => void;
 	onSaveProfile: (draft: AiProfile) => Promise<void>;
-	visibleSections?: Set<string> | null;
 }
 
 export function AiProfileSections({
@@ -24,7 +23,6 @@ export function AiProfileSections({
 	onActiveProfileChange,
 	onCreateProfile,
 	onSaveProfile,
-	visibleSections = null,
 }: AiProfileSectionsProps) {
 	const [profileDraft, setProfileDraft] = useState<AiProfile | null>(
 		activeProfile ? structuredClone(activeProfile) : null,
@@ -48,9 +46,6 @@ export function AiProfileSections({
 		() => profileDraft?.provider !== "codex_chatgpt",
 		[profileDraft?.provider],
 	);
-	const showSection = (title: string) =>
-		!visibleSections || visibleSections.has(title);
-
 	const updateDraft = useCallback((updater: (prev: AiProfile) => AiProfile) => {
 		setProfileDraft((prev) => (prev ? updater(prev) : prev));
 	}, []);
@@ -74,16 +69,14 @@ export function AiProfileSections({
 
 	return (
 		<>
-			{showSection("Profiles") ? (
-				<AiActiveProfileSection
-					profiles={profiles}
-					activeProfileId={activeProfileId}
-					onActiveProfileChange={onActiveProfileChange}
-					onCreateProfile={onCreateProfile}
-				/>
-			) : null}
+			<AiActiveProfileSection
+				profiles={profiles}
+				activeProfileId={activeProfileId}
+				onActiveProfileChange={onActiveProfileChange}
+				onCreateProfile={onCreateProfile}
+			/>
 
-			{profileDraft && showSection("Provider") ? (
+			{profileDraft ? (
 				<AiProviderSection
 					profileDraft={profileDraft}
 					availableModels={availableModels}
@@ -99,8 +92,7 @@ export function AiProfileSections({
 				<div className="settingsError">{apiState.error}</div>
 			) : null}
 
-			{profileDraft?.provider === "codex_chatgpt" &&
-			showSection("ChatGPT Account") ? (
+			{profileDraft?.provider === "codex_chatgpt" ? (
 				<AiCodexAccountSection
 					codexState={codexState}
 					nowMs={nowMs}
@@ -110,7 +102,7 @@ export function AiProfileSections({
 				/>
 			) : null}
 
-			{profileDraft && providerUsesApiKey && showSection("API Key") ? (
+			{profileDraft && providerUsesApiKey ? (
 				<AiApiKeySection
 					apiKeyDraft={apiState.apiKeyDraft}
 					secretConfigured={apiState.secretConfigured}

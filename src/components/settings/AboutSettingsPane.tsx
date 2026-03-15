@@ -9,13 +9,7 @@ import { invoke } from "../../lib/tauri";
 import { Button } from "../ui/shadcn/button";
 import { SettingsRow, SettingsSection } from "./SettingsScaffold";
 
-interface AboutSettingsPaneProps {
-	visibleSections?: Set<string> | null;
-}
-
-export function AboutSettingsPane({
-	visibleSections = null,
-}: AboutSettingsPaneProps) {
+export function AboutSettingsPane() {
 	const [appInfo, setAppInfo] = useState<AppInfo | null>(null);
 	const [error, setError] = useState("");
 	const [copyLabel, setCopyLabel] = useState("Copy Diagnostics");
@@ -103,19 +97,15 @@ export function AboutSettingsPane({
 			setCheckingUpdates(false);
 		}
 	};
-	const showSection = (title: string) =>
-		!visibleSections || visibleSections.has(title);
-
 	return (
 		<div className="settingsPane aboutPane">
 			{error ? <div className="settingsError">{error}</div> : null}
 
 			<div className="settingsGrid">
-				{showSection("Glyph") ? (
-					<SettingsSection
-						title="Glyph"
-						description="Build details and quick project information."
-					>
+				<SettingsSection
+					title="Glyph"
+					description="Build details and quick project information."
+				>
 						<div className="aboutIdentity">
 							<div className="aboutLogoWrap">
 								<img
@@ -155,14 +145,12 @@ export function AboutSettingsPane({
 								{appInfo?.identifier ?? "Loading…"}
 							</div>
 						</SettingsRow>
-					</SettingsSection>
-				) : null}
+				</SettingsSection>
 
-				{showSection("Updates") ? (
-					<SettingsSection
-						title="Updates"
-						description="Check for new releases and install them without leaving Glyph."
-					>
+				<SettingsSection
+					title="Updates"
+					description="Check for new releases and install them without leaving Glyph."
+				>
 						<SettingsRow
 							label="App updates"
 							description="Download and install the latest published version."
@@ -186,14 +174,12 @@ export function AboutSettingsPane({
 								<p className="settingsHint">{updateStatus}</p>
 							</SettingsRow>
 						) : null}
-					</SettingsSection>
-				) : null}
+				</SettingsSection>
 
-				{showSection("Support") ? (
-					<SettingsSection
-						title="Support"
-						description="Project links and diagnostics that help with support requests."
-					>
+				<SettingsSection
+					title="Support"
+					description="Project links and diagnostics that help with support requests."
+				>
 						<SettingsRow
 							label="Links"
 							description="Open the author and project pages in your browser."
@@ -231,8 +217,7 @@ export function AboutSettingsPane({
 								{copyLabel}
 							</Button>
 						</SettingsRow>
-					</SettingsSection>
-				) : null}
+				</SettingsSection>
 			</div>
 		</div>
 	);

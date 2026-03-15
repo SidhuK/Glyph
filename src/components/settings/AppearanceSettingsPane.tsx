@@ -47,13 +47,7 @@ import {
 	loadAvailableMonospaceFonts,
 } from "./appearanceOptions";
 
-interface AppearanceSettingsPaneProps {
-	visibleSections?: Set<string> | null;
-}
-
-export function AppearanceSettingsPane({
-	visibleSections = null,
-}: AppearanceSettingsPaneProps) {
+export function AppearanceSettingsPane() {
 	const { setTheme } = useTheme();
 	const [themeMode, setThemeModeState] = useState<ThemeMode>("system");
 	const [lightThemeId, setLightThemeIdState] = useState<UiLightThemeId>(
@@ -273,8 +267,6 @@ export function AppearanceSettingsPane({
 			: isGlyphDefaultLightTheme(lightThemeId)
 				? "Choose the accent used for highlights, focus rings, and emphasis in the default light theme."
 				: "Choose the accent used for highlights, focus rings, and emphasis in the default dark theme.";
-	const showSection = (title: string) =>
-		!visibleSections || visibleSections.has(title);
 	const lightTheme = getUiLightThemeOption(lightThemeId);
 	const darkTheme = getUiDarkThemeOption(darkThemeId);
 
@@ -282,44 +274,40 @@ export function AppearanceSettingsPane({
 		<div className="settingsPane">
 			{error ? <div className="settingsError">{error}</div> : null}
 			<div className="settingsGrid">
-				{showSection("Theme") ? (
-					<AppearanceThemeCard
-						themeMode={themeMode}
-						accent={accent}
-						lightTheme={lightTheme}
-						darkTheme={darkTheme}
-						lightOptions={LIGHT_THEME_OPTIONS}
-						darkOptions={DARK_THEME_OPTIONS}
-						translucentApp={translucentApp}
-						onThemeModeChange={onThemeModeChange}
-						onLightThemeChange={onLightThemeChange}
-						onDarkThemeChange={onDarkThemeChange}
-						onTranslucentAppChange={onTranslucentAppChange}
-					/>
-				) : null}
-				{showSection("Accent") && showAccentCard ? (
+				<AppearanceThemeCard
+					themeMode={themeMode}
+					accent={accent}
+					lightTheme={lightTheme}
+					darkTheme={darkTheme}
+					lightOptions={LIGHT_THEME_OPTIONS}
+					darkOptions={DARK_THEME_OPTIONS}
+					translucentApp={translucentApp}
+					onThemeModeChange={onThemeModeChange}
+					onLightThemeChange={onLightThemeChange}
+					onDarkThemeChange={onDarkThemeChange}
+					onTranslucentAppChange={onTranslucentAppChange}
+				/>
+				{showAccentCard ? (
 					<AppearanceAccentCard
 						accent={accent}
 						description={accentDescription}
 						onAccentChange={onAccentChange}
 					/>
 				) : null}
-				{showSection("Typography") ? (
-					<AppearanceTypographyCard
-						fontFamily={fontFamily}
-						monoFontFamily={monoFontFamily}
-						uiFontSize={uiFontSize}
-						editorFontSize={editorFontSize}
-						availableFonts={availableFonts}
-						availableMonospaceFonts={availableMonospaceFonts}
-						uiFontSizeOptions={UI_FONT_SIZE_OPTIONS}
-						editorFontSizeOptions={EDITOR_FONT_SIZE_OPTIONS}
-						onFontFamilyChange={onFontFamilyChange}
-						onMonoFontFamilyChange={onMonoFontFamilyChange}
-						onUiFontSizeChange={onUiFontSizeChange}
-						onEditorFontSizeChange={onEditorFontSizeChange}
-					/>
-				) : null}
+				<AppearanceTypographyCard
+					fontFamily={fontFamily}
+					monoFontFamily={monoFontFamily}
+					uiFontSize={uiFontSize}
+					editorFontSize={editorFontSize}
+					availableFonts={availableFonts}
+					availableMonospaceFonts={availableMonospaceFonts}
+					uiFontSizeOptions={UI_FONT_SIZE_OPTIONS}
+					editorFontSizeOptions={EDITOR_FONT_SIZE_OPTIONS}
+					onFontFamilyChange={onFontFamilyChange}
+					onMonoFontFamilyChange={onMonoFontFamilyChange}
+					onUiFontSizeChange={onUiFontSizeChange}
+					onEditorFontSizeChange={onEditorFontSizeChange}
+				/>
 			</div>
 		</div>
 	);

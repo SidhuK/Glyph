@@ -10,13 +10,7 @@ import {
 import { AiProfileSections } from "./ai/AiProfileSections";
 import { errMessage } from "./ai/utils";
 
-interface AiSettingsPaneProps {
-	visibleSections?: Set<string> | null;
-}
-
-export function AiSettingsPane({
-	visibleSections = null,
-}: AiSettingsPaneProps) {
+export function AiSettingsPane() {
 	const [aiEnabled, setAiEnabledState] = useState(true);
 	const [profiles, setProfiles] = useState<AiProfile[]>([]);
 	const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
@@ -125,44 +119,38 @@ export function AiSettingsPane({
 		[activeProfileId],
 	);
 
-	const showSection = (title: string) =>
-		!visibleSections || visibleSections.has(title);
-	const showAvailabilitySection = showSection("Availability") || !aiEnabled;
-
 	return (
 		<div className="settingsPane">
 			{error ? <div className="settingsError">{error}</div> : null}
 
 			<div className="settingsGrid">
-				{showAvailabilitySection ? (
-					<SettingsSection
-						title="Availability"
-						description="Turn AI tools on or off across Glyph."
+				<SettingsSection
+					title="Availability"
+					description="Turn AI tools on or off across Glyph."
+				>
+					<SettingsRow
+						label="AI features"
+						description="When off, AI panels and AI command-palette actions stay hidden."
 					>
+						<SettingsToggle
+							ariaLabel="AI features"
+							checked={aiEnabled}
+							onCheckedChange={(checked) => void updateAiEnabled(checked)}
+						/>
+					</SettingsRow>
+					{!aiEnabled ? (
 						<SettingsRow
-							label="AI features"
-							description="When off, AI panels and AI command-palette actions stay hidden."
+							label="Configuration"
+							description="Turn AI back on to manage profiles, providers, and account access."
+							stacked
+							interactive={false}
 						>
-							<SettingsToggle
-								ariaLabel="AI features"
-								checked={aiEnabled}
-								onCheckedChange={(checked) => void updateAiEnabled(checked)}
-							/>
+							<div className="settingsEmpty">
+								AI configuration stays hidden until AI features are enabled.
+							</div>
 						</SettingsRow>
-						{!aiEnabled ? (
-							<SettingsRow
-								label="Configuration"
-								description="Turn AI back on to manage profiles, providers, and account access."
-								stacked
-								interactive={false}
-							>
-								<div className="settingsEmpty">
-									AI configuration stays hidden until AI features are enabled.
-								</div>
-							</SettingsRow>
-						) : null}
-					</SettingsSection>
-				) : null}
+					) : null}
+				</SettingsSection>
 
 				{aiEnabled ? (
 					<AiProfileSections
@@ -173,7 +161,6 @@ export function AiSettingsPane({
 						onActiveProfileChange={onActiveProfileChange}
 						onCreateProfile={() => void createDefaultProfile()}
 						onSaveProfile={saveProfile}
-						visibleSections={visibleSections}
 					/>
 				) : null}
 			</div>
