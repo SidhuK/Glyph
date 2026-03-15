@@ -25,17 +25,12 @@ import { TASKS_TAB_ID } from "../../lib/tasks";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { isInAppPreviewable } from "../../utils/filePreview";
 import { FilePreviewPane } from "../preview/FilePreviewPane";
+import { NotePane } from "../preview/NotePane";
 import { TasksPane } from "../tasks/TasksPane";
 import { GettingStartedPane } from "./GettingStartedPane";
 import { TabBar } from "./TabBar";
 import { WelcomeScreen } from "./WelcomeScreen";
 import { useTabManager } from "./useTabManager";
-
-const LazyDatabasePane = lazy(() =>
-	import("../database/DatabasePane").then((module) => ({
-		default: module.DatabasePane,
-	})),
-);
 
 const LazyCalendarPane = lazy(() =>
 	import("../calendar/CalendarPane").then((module) => ({
@@ -213,21 +208,17 @@ export const MainContent = memo(function MainContent({
 		}
 		if (viewerPath.toLowerCase().endsWith(".md")) {
 			return (
-				<Suspense
-					fallback={<div className="mainEmptyState">Loading note…</div>}
-				>
-					<LazyDatabasePane
-						relPath={viewerPath}
-						onOpenFile={(relPath) => fileTree.openFile(relPath)}
-						onDirtyChange={(dirty) =>
-							setDirtyByPath((prev) =>
-								prev[viewerPath] === dirty
-									? prev
-									: { ...prev, [viewerPath]: dirty },
-							)
-						}
-					/>
-				</Suspense>
+				<NotePane
+					relPath={viewerPath}
+					onOpenFile={(relPath) => fileTree.openFile(relPath)}
+					onDirtyChange={(dirty) =>
+						setDirtyByPath((prev) =>
+							prev[viewerPath] === dirty
+								? prev
+								: { ...prev, [viewerPath]: dirty },
+						)
+					}
+				/>
 			);
 		}
 		if (isInAppPreviewable(viewerPath)) {

@@ -10,6 +10,7 @@ export interface CanvasNoteInlineEditorProps {
 	onChange: (nextMarkdown: string) => void;
 	interactive?: boolean;
 	showBacklinks?: boolean;
+	deferHeavyFeatures?: boolean;
 	onRegisterCalloutInserter?:
 		| ((inserter: ((type: string) => void) | null) => void)
 		| undefined;

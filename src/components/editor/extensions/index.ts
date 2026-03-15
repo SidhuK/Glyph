@@ -267,6 +267,7 @@ interface CreateEditorExtensionsOptions {
 	enableWikiLinks?: boolean;
 	enableMarkdownLinkAutocomplete?: boolean;
 	currentPath?: string;
+	currentPathResolver?: (() => string) | null;
 }
 
 export function createEditorExtensions(
@@ -277,6 +278,7 @@ export function createEditorExtensions(
 		enableWikiLinks = true,
 		enableMarkdownLinkAutocomplete = true,
 		currentPath = "",
+		currentPathResolver = null,
 	} = options ?? {};
 	return [
 		StarterKit.configure({
@@ -308,6 +310,7 @@ export function createEditorExtensions(
 			? [
 					MarkdownLinkAutocomplete.configure({
 						currentPath,
+						getCurrentPath: currentPathResolver,
 					}),
 				]
 			: []),

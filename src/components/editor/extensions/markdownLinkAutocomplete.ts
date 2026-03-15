@@ -17,14 +17,19 @@ export const MarkdownLinkAutocomplete = Extension.create({
 		return {
 			suggestionLimit: 10,
 			currentPath: "",
+			getCurrentPath: null as (() => string) | null,
 		};
 	},
 	addProseMirrorPlugins() {
 		const getItems = async (query: string): Promise<LinkSuggestionItem[]> => {
+			const currentPath =
+				typeof this.options.getCurrentPath === "function"
+					? this.options.getCurrentPath()
+					: this.options.currentPath;
 			const results = await invoke("space_suggest_links", {
 				request: {
 					query,
-					source_path: this.options.currentPath || null,
+					source_path: currentPath || null,
 					markdown_only: false,
 					strip_markdown_ext: false,
 					relative_to_source: true,

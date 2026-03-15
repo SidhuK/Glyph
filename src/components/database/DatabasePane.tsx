@@ -1,7 +1,5 @@
 import { m, useReducedMotion } from "motion/react";
 import {
-	Suspense,
-	lazy,
 	startTransition,
 	useCallback,
 	useEffect,
@@ -23,18 +21,13 @@ import { extractErrorMessage } from "../../lib/errorUtils";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { isMarkdownPath, normalizeRelPath, parentDir } from "../../utils/path";
+import { MarkdownEditorPane } from "../preview/MarkdownEditorPane";
 import { springPresets } from "../ui/animations";
 import { DatabaseBoard } from "./DatabaseBoard";
 import { DatabaseColumnDialog } from "./DatabaseColumnDialog";
 import { DatabaseSourceDialog } from "./DatabaseSourceDialog";
 import { DatabaseTable } from "./DatabaseTable";
 import { DatabaseToolbar } from "./DatabaseToolbar";
-
-const LazyMarkdownEditorPane = lazy(() =>
-	import("../preview/MarkdownEditorPane").then((module) => ({
-		default: module.MarkdownEditorPane,
-	})),
-);
 
 interface DatabasePaneProps {
 	relPath: string;
@@ -315,14 +308,7 @@ export function DatabasePane({
 						{detectError}
 					</div>
 				) : null}
-				<Suspense
-					fallback={<div className="databaseLoadingState">Loading note…</div>}
-				>
-					<LazyMarkdownEditorPane
-						relPath={relPath}
-						onDirtyChange={onDirtyChange}
-					/>
-				</Suspense>
+				<MarkdownEditorPane relPath={relPath} onDirtyChange={onDirtyChange} />
 			</div>
 		);
 	}

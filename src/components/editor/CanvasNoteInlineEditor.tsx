@@ -72,6 +72,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	mode,
 	interactive = true,
 	showBacklinks = true,
+	deferHeavyFeatures = false,
 	onRegisterCalloutInserter,
 	onChange,
 }: CanvasNoteInlineEditorProps) {
@@ -81,7 +82,15 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		frontmatterRef,
 		lastAppliedBodyRef,
 		lastEmittedMarkdownRef,
-	} = useNoteEditor({ markdown, mode, relPath, interactive, onChange });
+	} = useNoteEditor({
+		markdown,
+		mode,
+		relPath,
+		interactive,
+		enableHydrateInlineImages: !deferHeavyFeatures,
+		enableMarkdownLinkAutocomplete: !deferHeavyFeatures,
+		onChange,
+	});
 
 	const [frontmatterDraft, setFrontmatterDraft] = useState(frontmatter ?? "");
 	const lastFrontmatterRef = useRef(frontmatter);
@@ -122,7 +131,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	]);
 
 	useEffect(() => {
-		if (!relPath || !showBacklinks) {
+		if (!relPath || !showBacklinks || deferHeavyFeatures) {
 			setBacklinks([]);
 			return;
 		}
@@ -138,7 +147,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		return () => {
 			cancelled = true;
 		};
-	}, [relPath, showBacklinks]);
+	}, [deferHeavyFeatures, relPath, showBacklinks]);
 
 	const canEdit = mode === "rich" && Boolean(editor?.isEditable);
 
@@ -251,7 +260,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	};
 
 	useEffect(() => {
-		if (!editor || mode !== "rich") {
+		if (!editor || mode !== "rich" || deferHeavyFeatures) {
 			setTaskAnchors([]);
 			setSelectedTaskOrdinal(null);
 			setScheduleAnchor(null);
@@ -311,7 +320,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 			document.removeEventListener("selectionchange", syncSelectedTask);
 			editor.off("selectionUpdate", syncSelectedTask);
 		};
-	}, [editor, mode]);
+	}, [deferHeavyFeatures, editor, mode]);
 
 	const selectedTaskAnchor =
 		selectedTaskOrdinal == null

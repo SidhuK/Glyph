@@ -5,7 +5,13 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import {
 	useAISidebarContext,
 	useEditorRegistration,
@@ -13,7 +19,7 @@ import {
 } from "../../contexts";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { splitYamlFrontmatter } from "../../lib/notePreview";
-import { invoke } from "../../lib/tauri";
+import { type TextFileDoc, invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { countLines, countWords, formatReadingTime } from "../../lib/textStats";
 import { normalizeRelPath } from "../../utils/path";
@@ -30,11 +36,14 @@ import {
 import { CanvasNoteInlineEditor } from "../editor/CanvasNoteInlineEditor";
 import { CALLOUT_TYPES } from "../editor/ribbonButtonConfigs";
 import type { CanvasInlineEditorMode } from "../editor/types";
+import { InstantMarkdownPreview } from "./InstantMarkdownPreview";
 import { Button } from "../ui/shadcn/button";
 
 interface MarkdownEditorPaneProps {
 	relPath: string;
 	onDirtyChange?: (dirty: boolean) => void;
+	initialDoc?: TextFileDoc | null;
+	initialError?: string;
 }
 
 type StatsLayout = "full" | "collapsed" | "hidden";
@@ -64,18 +73,25 @@ function rectsOverlap(a: DOMRect, b: DOMRect, padding = 0): boolean {
 export function MarkdownEditorPane({
 	relPath,
 	onDirtyChange,
+	initialDoc = null,
+	initialError = "",
 }: MarkdownEditorPaneProps) {
-	const [text, setText] = useState(() => markdownDocCache.get(relPath) ?? "");
+	const [text, setText] = useState(
+		() => initialDoc?.text ?? markdownDocCache.get(relPath) ?? "",
+	);
 	const [savedText, setSavedText] = useState(
-		() => markdownDocCache.get(relPath) ?? "",
+		() => initialDoc?.text ?? markdownDocCache.get(relPath) ?? "",
 	);
 	const [mode, setMode] = useState<CanvasInlineEditorMode>("rich");
 	const [saving, setSaving] = useState(false);
 	const [autosaveBusy, setAutosaveBusy] = useState(false);
-	const [error, setError] = useState("");
+	const [error, setError] = useState(initialError);
 	const [actionsOpen, setActionsOpen] = useState(false);
-	const [lastSavedMtimeMs, setLastSavedMtimeMs] = useState<number | null>(null);
+	const [lastSavedMtimeMs, setLastSavedMtimeMs] = useState<number | null>(
+		initialDoc?.mtime_ms ?? null,
+	);
 	const [syncPulse, setSyncPulse] = useState<SyncPulse>(null);
+	const [editorHydrated, setEditorHydrated] = useState(false);
 	const calloutInserterRef = useRef<((type: string) => void) | null>(null);
 	const savedTextRef = useRef(savedText);
 	const textRef = useRef(text);
@@ -89,6 +105,7 @@ export function MarkdownEditorPane({
 	const paneRef = useRef<HTMLElement | null>(null);
 	const statsDockRef = useRef<HTMLDivElement | null>(null);
 	const { spacePath } = useSpace();
+	const previousSpacePathRef = useRef<string | null>(spacePath);
 	const { aiEnabled, aiPanelOpen } = useAISidebarContext();
 	const shouldReduceMotion = useReducedMotion();
 
@@ -198,22 +215,60 @@ export function MarkdownEditorPane({
 	}, [lastSavedMtimeMs]);
 
 	useEffect(() => {
-		const cached = markdownDocCache.get(relPath) ?? "";
+		const cached = initialDoc?.text ?? markdownDocCache.get(relPath) ?? "";
 		setText(cached);
 		setSavedText(cached);
-		setLastSavedMtimeMs(null);
+		setLastSavedMtimeMs(initialDoc?.mtime_ms ?? null);
 		setSyncPulse(null);
+		setEditorHydrated((prev) => prev && cached.length > 0);
 		hasUserEditsRef.current = false;
+		setError(initialError);
 		setActionsOpen(false);
-	}, [relPath]);
+		if (initialDoc) {
+			markdownDocCache.set(relPath, initialDoc.text);
+		}
+	}, [initialDoc, initialError, relPath]);
 
 	useEffect(() => {
+		if (previousSpacePathRef.current === spacePath) return;
+		previousSpacePathRef.current = spacePath;
 		if (spacePath === null) {
 			markdownDocCache.clear();
 			return;
 		}
 		markdownDocCache.clear();
 	}, [spacePath]);
+
+	useEffect(() => {
+		if (mode === "plain" || !text || error) return;
+		if (editorHydrated) return;
+
+		let cancelled = false;
+		let timer: number | null = null;
+		const hydrate = () => {
+			if (!cancelled) {
+				setEditorHydrated(true);
+			}
+		};
+		const requestIdle = window.requestIdleCallback;
+		const cancelIdle = window.cancelIdleCallback;
+
+		if (typeof requestIdle === "function" && typeof cancelIdle === "function") {
+			const idleId = requestIdle(hydrate, { timeout: 120 });
+			return () => {
+				cancelled = true;
+				cancelIdle(idleId);
+			};
+		}
+
+		timer = window.setTimeout(hydrate, 32);
+		return () => {
+			cancelled = true;
+			if (timer !== null) {
+				window.clearTimeout(timer);
+			}
+		};
+	}, [editorHydrated, error, mode, text]);
 
 	const loadDoc = useCallback(
 		async (showRefreshFeedback = false) => {
@@ -255,8 +310,9 @@ export function MarkdownEditorPane({
 	}, [relPath]);
 
 	useEffect(() => {
+		if (initialDoc) return;
 		void loadDoc();
-	}, [loadDoc]);
+	}, [initialDoc, loadDoc]);
 
 	const persistDoc = useCallback(
 		async (path: string, nextText: string): Promise<boolean> => {
@@ -460,6 +516,8 @@ export function MarkdownEditorPane({
 	}, [mode, syncStatsLayout]);
 
 	const canInsertCallouts = mode === "rich";
+	const shouldRenderInstantPreview =
+		!editorHydrated && mode !== "plain" && Boolean(text) && !error;
 	const registerCalloutInserter = useCallback(
 		(inserter: ((type: string) => void) | null) => {
 			calloutInserterRef.current = inserter;
@@ -698,24 +756,33 @@ export function MarkdownEditorPane({
 				</div>
 			) : null}
 
-			{!error ? (
-				<div className="filePreviewTextWrap markdownEditorContent">
-					<div className="markdownEditorCenter">
-						<CanvasNoteInlineEditor
-							key={relPath}
-							markdown={text}
-							relPath={relPath}
-							mode={mode}
-							onModeChange={setMode}
-							onChange={(nextText) => {
-								hasUserEditsRef.current = true;
-								setText(nextText);
-							}}
-							onRegisterCalloutInserter={registerCalloutInserter}
-						/>
+				{!error ? (
+					<div className="filePreviewTextWrap markdownEditorContent">
+						<div className="markdownEditorCenter">
+							{shouldRenderInstantPreview ? (
+								<div
+									onPointerDown={() => setEditorHydrated(true)}
+									onFocusCapture={() => setEditorHydrated(true)}
+								>
+									<InstantMarkdownPreview markdown={text} />
+								</div>
+							) : (
+								<CanvasNoteInlineEditor
+									markdown={text}
+									relPath={relPath}
+									mode={mode}
+									onModeChange={setMode}
+									onChange={(nextText) => {
+										hasUserEditsRef.current = true;
+										setText(nextText);
+									}}
+									deferHeavyFeatures={!editorHydrated}
+									onRegisterCalloutInserter={registerCalloutInserter}
+								/>
+							)}
+						</div>
 					</div>
-				</div>
-			) : null}
-		</section>
+				) : null}
+			</section>
 	);
 }

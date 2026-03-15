@@ -27,6 +27,8 @@ interface UseNoteEditorOptions {
 	mode: CanvasInlineEditorMode;
 	relPath?: string;
 	interactive?: boolean;
+	enableHydrateInlineImages?: boolean;
+	enableMarkdownLinkAutocomplete?: boolean;
 	onChange: (nextMarkdown: string) => void;
 }
 
@@ -101,6 +103,8 @@ export function useNoteEditor({
 	mode,
 	relPath = "",
 	interactive = true,
+	enableHydrateInlineImages = true,
+	enableMarkdownLinkAutocomplete = true,
 	onChange,
 }: UseNoteEditorOptions) {
 	const { frontmatter, body } = splitYamlFrontmatter(markdown);
@@ -111,18 +115,29 @@ export function useNoteEditor({
 	const lastEmittedMarkdownRef = useRef(markdown);
 	const ignoreNextUpdateRef = useRef(false);
 	const suppressUpdateRef = useRef(false);
+	const relPathRef = useRef(relPath);
+	const interactiveRef = useRef(interactive);
 	const extensions = useMemo(
 		() =>
 			createEditorExtensions({
 				currentPath: relPath,
-				enableMarkdownLinkAutocomplete: true,
+				currentPathResolver: () => relPathRef.current,
+				enableMarkdownLinkAutocomplete,
 			}),
-		[relPath],
+		[enableMarkdownLinkAutocomplete],
 	);
 
 	useEffect(() => {
 		frontmatterRef.current = frontmatter;
 	}, [frontmatter]);
+
+	useEffect(() => {
+		relPathRef.current = relPath;
+	}, [relPath]);
+
+	useEffect(() => {
+		interactiveRef.current = interactive;
+	}, [interactive]);
 
 	const editor = useEditor({
 		extensions,
@@ -133,13 +148,17 @@ export function useNoteEditor({
 				class: "tiptapContentInline",
 				spellcheck: "true",
 			},
-			handleDOMEvents: {
-				click: (_view, event) => {
-					if (!(event instanceof MouseEvent)) return false;
-					return handleEditorClick(event, relPath, interactive);
+				handleDOMEvents: {
+					click: (_view, event) => {
+						if (!(event instanceof MouseEvent)) return false;
+						return handleEditorClick(
+							event,
+							relPathRef.current,
+							interactiveRef.current,
+						);
+					},
 				},
 			},
-		},
 		onTransaction: ({ editor: instance, transaction }) => {
 			if (!transaction.docChanged) return;
 			if (suppressUpdateRef.current) {
@@ -181,7 +200,7 @@ export function useNoteEditor({
 		lastEmittedMarkdownRef.current = markdown;
 	}, [editor, editorBody, markdown]);
 
-	useHydrateInlineImages(editor, relPath);
+	useHydrateInlineImages(editor, enableHydrateInlineImages ? relPath : "");
 
 	return {
 		editor,
