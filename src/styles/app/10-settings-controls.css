@@ -1011,52 +1011,46 @@
 	background: #b83280;
 }
 
-.settingsAccentSelector {
+.settingsAccentPicker {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	gap: 16px;
 	width: 100%;
-	padding: 8px 10px 8px 12px;
-	border-radius: calc(var(--radius-lg) + 2px);
-	border: 0;
-	background: transparent;
 }
 
-.settingsAccentPreview {
+.settingsAccentCurrent {
 	display: inline-flex;
 	align-items: center;
-	gap: 10px;
+	gap: 12px;
 	min-width: 0;
 }
 
-.settingsAccentPreviewSwatch {
+.settingsAccentSwatch {
 	width: 18px;
 	height: 18px;
-	border-radius: 999px;
 	flex: 0 0 auto;
+	border-radius: 999px;
 	box-shadow: inset 0 0 0 1px
 		color-mix(in srgb, var(--text-primary) 12%, transparent);
 }
 
-.settingsAccentPreviewLabel {
+.settingsAccentName {
 	font-size: var(--text-sm);
 	font-weight: var(--font-medium);
 	color: var(--text-primary);
 	white-space: nowrap;
 }
 
-.settingsAccentRow {
+.settingsAccentOptions {
 	display: inline-flex;
 	align-items: center;
 	gap: 10px;
-	flex-wrap: nowrap;
-	padding: 0;
-	border-radius: 0;
-	background: transparent;
+	flex-shrink: 0;
 }
 
 .settingsAccentDot {
+	--settings-accent-swatch: var(--text-primary);
 	height: 28px;
 	width: 28px;
 	padding: 0;
@@ -1074,6 +1068,7 @@
 	height: 18px;
 	width: 18px;
 	border-radius: 999px;
+	background: var(--settings-accent-swatch);
 	border: 1px solid color-mix(in srgb, var(--border-default) 28%, transparent);
 	box-shadow: inset 0 0 0 1px
 		color-mix(in srgb, var(--text-primary) 8%, transparent);
@@ -1083,7 +1078,7 @@
 	background: color-mix(in srgb, var(--bg-hover) 74%, transparent);
 }
 
-.settingsAccentDot.active {
+.settingsAccentDot.is-active {
 	background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
 	border-color: color-mix(in srgb, var(--border-light) 72%, transparent);
 	box-shadow: 0 0 0 2px
@@ -1107,12 +1102,12 @@
 		right: 12px;
 	}
 
-	.settingsAccentSelector {
+	.settingsAccentPicker {
 		flex-direction: column;
 		align-items: flex-start;
 	}
 
-	.settingsAccentRow {
+	.settingsAccentOptions {
 		flex-wrap: wrap;
 	}
 }

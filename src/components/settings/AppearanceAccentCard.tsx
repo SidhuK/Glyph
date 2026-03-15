@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import type { CSSProperties } from "react";
 import type { UiAccent } from "../../lib/settings";
 import { SettingsRow, SettingsSection } from "./SettingsScaffold";
 import { ACCENT_OPTIONS } from "./accentOptions";
@@ -45,7 +46,9 @@ export function AppearanceAccentCard({
 								)}
 								aria-label={option.label}
 								title={option.label}
-								style={{ "--settings-accent-swatch": option.color } as React.CSSProperties}
+								style={
+									{ "--settings-accent-swatch": option.color } as CSSProperties
+								}
 							>
 								<span />
 							</button>
