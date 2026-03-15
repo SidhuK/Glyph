@@ -414,7 +414,7 @@
 	display: grid;
 	grid-template-columns: repeat(2, minmax(0, 1fr));
 	gap: 8px;
-	padding: 0 16px 12px;
+	padding: 0 12px 8px;
 }
 
 .appearanceThemeShowcase,
@@ -435,8 +435,8 @@
 	position: relative;
 	display: flex;
 	flex-direction: column;
-	gap: 8px;
-	padding: 9px;
+	gap: 6px;
+	padding: 7px;
 	border-radius: var(--radius-lg);
 	border: 1px solid var(--border-light);
 	background: var(--bg-primary);
@@ -456,17 +456,17 @@
 	display: flex;
 	align-items: flex-start;
 	justify-content: space-between;
-	gap: 6px;
+	gap: 4px;
 }
 
 .appearanceThemeShowcaseLabel {
-	font-size: 10px;
+	font-size: 9px;
 	color: var(--text-secondary);
 }
 
 .appearanceThemeShowcaseTitle {
 	margin-top: 1px;
-	font-size: 12px;
+	font-size: 10px;
 	font-weight: var(--font-semibold);
 	color: var(--text-primary);
 }
@@ -474,13 +474,13 @@
 .appearanceThemeShowcaseCanvas {
 	display: flex;
 	flex-direction: column;
-	gap: 6px;
+	gap: 4px;
 }
 
 .appearanceThemeShowcaseWindow {
 	display: grid;
-	grid-template-columns: 32px minmax(0, 1fr);
-	min-height: 54px;
+	grid-template-columns: 20px minmax(0, 1fr);
+	min-height: 34px;
 	overflow: hidden;
 	border-radius: var(--radius-md);
 	border: 1px solid var(--theme-preview-border);
@@ -497,12 +497,12 @@
 	display: flex;
 	flex-direction: column;
 	justify-content: center;
-	gap: 5px;
-	padding: 9px 10px;
+	gap: 4px;
+	padding: 6px 7px;
 }
 
 .appearanceThemeShowcaseLine {
-	height: 4px;
+	height: 3px;
 	border-radius: var(--radius-sm);
 	background: color-mix(in srgb, var(--theme-preview-text) 18%, transparent);
 }
@@ -524,13 +524,13 @@
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	gap: 8px;
+	gap: 6px;
 }
 
 .appearanceThemeShowcaseDescription {
 	margin: 0;
-	font-size: 10px;
-	line-height: 1.45;
+	font-size: 9px;
+	line-height: 1.35;
 	color: var(--text-secondary);
 }
 
@@ -676,14 +676,14 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	min-width: 28px;
-	height: 28px;
-	padding: 0 6px;
+	min-width: 20px;
+	height: 20px;
+	padding: 0 4px;
 	border-radius: var(--radius-md);
 	border: 1px solid var(--theme-preview-badge-border);
 	background: var(--theme-preview-badge-bg);
 	color: var(--theme-preview-badge-text);
-	font-size: 12px;
+	font-size: 9px;
 	font-weight: var(--font-semibold);
 	letter-spacing: -0.03em;
 }
@@ -728,8 +728,8 @@
 }
 
 .appearanceThemeSwatches span {
-	width: 6px;
-	height: 6px;
+	width: 5px;
+	height: 5px;
 	border-radius: var(--radius-full);
 	border: 1px solid
 		color-mix(in srgb, var(--theme-preview-text) 14%, transparent);
