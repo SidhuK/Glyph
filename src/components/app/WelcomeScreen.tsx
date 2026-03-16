@@ -1,5 +1,15 @@
+import { m, useReducedMotion } from "motion/react";
+import { useMemo } from "react";
 import { onWindowDragMouseDown } from "../../utils/window";
-import { FolderOpen, FolderPlus } from "../Icons";
+import {
+	Computer,
+	FileText,
+	FolderClosed,
+	FolderOpen,
+	FolderPlus,
+	Sparkles,
+} from "../Icons";
+import { springPresets } from "../ui/animations";
 
 interface WelcomeScreenProps {
 	appName: string | null;
@@ -11,6 +21,15 @@ interface WelcomeScreenProps {
 	onSelectRecentSpace: (path: string) => Promise<void>;
 }
 
+const STAGGER = 0.08;
+const BRAND_DELAY = 0.15;
+
+function shortenPath(fullPath: string): string {
+	const segments = fullPath.split("/").filter(Boolean);
+	if (segments.length <= 3) return fullPath;
+	return `~/${segments.slice(-2).join("/")}`;
+}
+
 export function WelcomeScreen({
 	appName,
 	lastSpacePath,
@@ -20,8 +39,76 @@ export function WelcomeScreen({
 	onContinueLastSpace,
 	onSelectRecentSpace,
 }: WelcomeScreenProps) {
+	const shouldReduceMotion = useReducedMotion();
 	const lastSpaceName = lastSpacePath?.split("/").pop() ?? null;
 	const otherRecents = recentSpaces.filter((path) => path !== lastSpacePath);
+
+	const skip = shouldReduceMotion ?? false;
+	const spring = skip
+		? { type: "tween" as const, duration: 0 }
+		: springPresets.gentle;
+	const bouncySpring = skip
+		? { type: "tween" as const, duration: 0 }
+		: springPresets.bouncy;
+
+	const features = useMemo(
+		() => [
+			{ icon: <Computer size={14} strokeWidth={1.8} />, label: "Local files" },
+			{
+				icon: <FileText size={14} strokeWidth={1.8} />,
+				label: "Markdown notes",
+			},
+			{ icon: <Sparkles size={14} strokeWidth={1.8} />, label: "Optional AI" },
+		],
+		[],
+	);
+
+	const actionCards = useMemo(() => {
+		const cards: Array<{
+			key: string;
+			primary?: boolean;
+			icon: React.ReactNode;
+			label: string;
+			hint: string;
+			onClick: () => void;
+		}> = [];
+
+		if (lastSpacePath) {
+			cards.push({
+				key: "continue",
+				primary: true,
+				icon: <FolderOpen size={16} strokeWidth={1.8} />,
+				label: `Continue ${lastSpaceName}`,
+				hint: shortenPath(lastSpacePath),
+				onClick: () => void onContinueLastSpace(),
+			});
+		}
+
+		cards.push(
+			{
+				key: "open",
+				icon: <FolderOpen size={16} strokeWidth={1.8} />,
+				label: "Open folder",
+				hint: "Work with notes you already have.",
+				onClick: onOpenSpace,
+			},
+			{
+				key: "create",
+				icon: <FolderPlus size={16} strokeWidth={1.8} />,
+				label: "Create space",
+				hint: "Start a new folder and keep everything local.",
+				onClick: onCreateSpace,
+			},
+		);
+
+		return cards;
+	}, [
+		lastSpacePath,
+		lastSpaceName,
+		onContinueLastSpace,
+		onOpenSpace,
+		onCreateSpace,
+	]);
 
 	return (
 		<>
@@ -36,102 +123,201 @@ export function WelcomeScreen({
 					<span className="canvasTitle">{appName ?? "Glyph"}</span>
 				</div>
 			</div>
-			<div className="welcomeScreen">
+			<m.div
+				className="welcomeScreen"
+				initial={{ opacity: 0 }}
+				animate={{ opacity: 1 }}
+				transition={{ duration: skip ? 0 : 0.35 }}
+			>
 				<div className="welcomeSurface">
 					<div className="welcomeLauncher">
-						<section className="welcomePanel">
-							<div className="welcomeSectionTitle">Open a folder</div>
-							<p className="welcomeSectionBody">
-								Use an existing folder of markdown files or create a new one for
-								this space.
-							</p>
+						<m.section
+							className="welcomePanel"
+							initial={{ opacity: 0, y: 18 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{ ...spring, delay: skip ? 0 : BRAND_DELAY }}
+						>
+							<div className="welcomeBrandRow">
+								<m.img
+									src="/glyph-app-icon.png"
+									alt=""
+									className="welcomeBrandIcon"
+									aria-hidden
+									initial={{ opacity: 0, scale: 0.5, rotate: -20 }}
+									animate={{ opacity: 1, scale: 1, rotate: 0 }}
+									transition={{
+										...bouncySpring,
+										delay: skip ? 0 : BRAND_DELAY + 0.05,
+									}}
+								/>
+								<m.h1
+									className="welcomeBrandName"
+									initial={{ opacity: 0, x: -8 }}
+									animate={{ opacity: 1, x: 0 }}
+									transition={{
+										...spring,
+										delay: skip ? 0 : BRAND_DELAY + 0.12,
+									}}
+								>
+									{appName ?? "Glyph"}
+								</m.h1>
+							</div>
+
+							<m.p
+								className="welcomeSubtitle"
+								initial={{ opacity: 0 }}
+								animate={{ opacity: 1 }}
+								transition={{
+									duration: skip ? 0 : 0.5,
+									delay: skip ? 0 : BRAND_DELAY + 0.22,
+								}}
+							>
+								Your notes, your files, your machine. Pick a folder and start
+								writing.
+							</m.p>
+
 							<div className="welcomeActionList">
-								{lastSpacePath && (
-									<button
-										type="button"
-										className="welcomeActionButton welcomeActionButtonPrimary"
-										onClick={() => void onContinueLastSpace()}
-									>
-										<div className="welcomeActionContent">
-											<div className="welcomeActionLabel">
-												<FolderOpen size={16} strokeWidth={1.8} />
-												<span>Continue {lastSpaceName}</span>
+								{actionCards.map((card, i) => {
+									const cardDelay = skip ? 0 : BRAND_DELAY + 0.3 + STAGGER * i;
+									return (
+										<m.button
+											key={card.key}
+											type="button"
+											className={`welcomeActionButton${card.primary ? " welcomeActionButtonPrimary" : ""}`}
+											onClick={card.onClick}
+											initial={{ opacity: 0, y: 14, scale: 0.97 }}
+											animate={{ opacity: 1, y: 0, scale: 1 }}
+											transition={{ ...spring, delay: cardDelay }}
+											whileHover={skip ? undefined : { y: -2, scale: 1.01 }}
+											whileTap={skip ? undefined : { scale: 0.97 }}
+										>
+											<m.div
+												className="welcomeActionIcon"
+												initial={{ opacity: 0, scale: 0.6 }}
+												animate={{ opacity: 1, scale: 1 }}
+												transition={{
+													...bouncySpring,
+													delay: skip ? 0 : cardDelay + 0.06,
+												}}
+											>
+												{card.icon}
+											</m.div>
+											<div className="welcomeActionContent">
+												<div className="welcomeActionLabel">
+													<span>{card.label}</span>
+												</div>
+												<div className="welcomeActionHint">{card.hint}</div>
 											</div>
-											<div className="welcomeActionHint">{lastSpacePath}</div>
-										</div>
-									</button>
-								)}
-								<button
-									type="button"
-									className="welcomeActionButton"
-									onClick={onOpenSpace}
-								>
-									<div className="welcomeActionContent">
-										<div className="welcomeActionLabel">
-											<FolderOpen size={16} strokeWidth={1.8} />
-											<span>Open folder</span>
-										</div>
-										<div className="welcomeActionHint">
-											Work with notes you already have.
-										</div>
-									</div>
-								</button>
-								<button
-									type="button"
-									className="welcomeActionButton"
-									onClick={onCreateSpace}
-								>
-									<div className="welcomeActionContent">
-										<div className="welcomeActionLabel">
-											<FolderPlus size={16} strokeWidth={1.8} />
-											<span>Create space</span>
-										</div>
-										<div className="welcomeActionHint">
-											Start a new folder and keep everything local.
-										</div>
-									</div>
-								</button>
+										</m.button>
+									);
+								})}
 							</div>
-						</section>
 
-						<section className="welcomePanel">
-							<div className="welcomeSectionTitle">What Glyph uses</div>
-							<ul className="welcomeBulletList">
-								<li>Local folders on your computer</li>
-								<li>Plain markdown files for notes</li>
-								<li>
-									Search, daily notes, and optional AI once a space is open
-								</li>
-							</ul>
+							<m.div
+								className="welcomeFeatureRow"
+								initial={{ opacity: 0 }}
+								animate={{ opacity: 1 }}
+								transition={{
+									duration: skip ? 0 : 0.3,
+									delay: skip
+										? 0
+										: BRAND_DELAY + 0.3 + STAGGER * actionCards.length + 0.1,
+								}}
+							>
+								{features.map((f, i) => (
+									<m.span
+										key={f.label}
+										className="welcomeFeatureChip"
+										initial={{ opacity: 0, y: 6 }}
+										animate={{ opacity: 1, y: 0 }}
+										transition={{
+											...spring,
+											delay: skip
+												? 0
+												: BRAND_DELAY +
+													0.3 +
+													STAGGER * actionCards.length +
+													0.15 +
+													STAGGER * i,
+										}}
+									>
+										{f.icon}
+										{f.label}
+									</m.span>
+								))}
+							</m.div>
+						</m.section>
 
-							<div className="welcomeSectionTitle welcomeSectionTitleCompact">
+						<m.section
+							className="welcomePanel"
+							initial={{ opacity: 0, y: 18 }}
+							animate={{ opacity: 1, y: 0 }}
+							transition={{
+								...spring,
+								delay: skip ? 0 : BRAND_DELAY + 0.2,
+							}}
+						>
+							<m.div
+								className="welcomeSectionTitle"
+								initial={{ opacity: 0 }}
+								animate={{ opacity: 1 }}
+								transition={{
+									duration: skip ? 0 : 0.3,
+									delay: skip ? 0 : BRAND_DELAY + 0.35,
+								}}
+							>
 								Recent spaces
-							</div>
+							</m.div>
 							{otherRecents.length > 0 ? (
 								<div className="welcomeRecentList">
-									{otherRecents.slice(0, 6).map((path) => (
-										<button
+									{otherRecents.slice(0, 6).map((path, i) => (
+										<m.button
 											key={path}
 											type="button"
 											className="welcomeRecentItem"
 											onClick={() => void onSelectRecentSpace(path)}
+											initial={{ opacity: 0, x: 10 }}
+											animate={{ opacity: 1, x: 0 }}
+											transition={{
+												...spring,
+												delay: skip ? 0 : BRAND_DELAY + 0.4 + STAGGER * i,
+											}}
+											whileHover={skip ? undefined : { x: 3, scale: 1.01 }}
+											whileTap={skip ? undefined : { scale: 0.98 }}
 										>
 											<span className="welcomeRecentName">
 												{path.split("/").pop() ?? path}
 											</span>
-											<span className="welcomeRecentPath mono">{path}</span>
-										</button>
+											<span className="welcomeRecentPath mono">
+												{shortenPath(path)}
+											</span>
+										</m.button>
 									))}
 								</div>
 							) : (
-								<p className="welcomeEmptyText">
-									Your recent spaces will show up here.
-								</p>
+								<m.div
+									className="welcomeEmptyState"
+									initial={{ opacity: 0 }}
+									animate={{ opacity: 1 }}
+									transition={{
+										duration: skip ? 0 : 0.4,
+										delay: skip ? 0 : BRAND_DELAY + 0.45,
+									}}
+								>
+									<FolderClosed
+										size={20}
+										strokeWidth={1.5}
+										className="welcomeEmptyIcon"
+									/>
+									<p className="welcomeEmptyText">
+										Spaces you open will appear here.
+									</p>
+								</m.div>
 							)}
-						</section>
+						</m.section>
 					</div>
 				</div>
-			</div>
+			</m.div>
 		</>
 	);
 }
