@@ -1,6 +1,5 @@
-import { useCallback, useMemo, useRef, useState } from "react";
-import type { AiModel, AiProfile } from "../../../lib/tauri";
-import { AiActiveProfileSection } from "./AiActiveProfileSection";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import type { AiModel, AiProfile, AiProviderKind } from "../../../lib/tauri";
 import { AiApiKeySection } from "./AiApiKeySection";
 import { AiCodexAccountSection } from "./AiCodexAccountSection";
 import { AiProviderSection } from "./AiProviderSection";
@@ -12,7 +11,6 @@ interface AiProfileSectionsProps {
 	activeProfileId: string | null;
 	activeProfile: AiProfile | null;
 	onActiveProfileChange: (id: string | null) => Promise<void>;
-	onCreateProfile: () => void;
 	onSaveProfile: (draft: AiProfile) => Promise<void>;
 }
 
@@ -21,7 +19,6 @@ export function AiProfileSections({
 	activeProfileId,
 	activeProfile,
 	onActiveProfileChange,
-	onCreateProfile,
 	onSaveProfile,
 }: AiProfileSectionsProps) {
 	const [profileDraft, setProfileDraft] = useState<AiProfile | null>(
@@ -46,6 +43,12 @@ export function AiProfileSections({
 		() => profileDraft?.provider !== "codex_chatgpt",
 		[profileDraft?.provider],
 	);
+
+	useEffect(() => {
+		setProfileDraft(activeProfile ? structuredClone(activeProfile) : null);
+		setAvailableModels(null);
+	}, [activeProfile]);
+
 	const updateDraft = useCallback((updater: (prev: AiProfile) => AiProfile) => {
 		setProfileDraft((prev) => (prev ? updater(prev) : prev));
 	}, []);
@@ -62,29 +65,27 @@ export function AiProfileSections({
 		[onSaveProfile],
 	);
 
-	const handleSave = useCallback(async () => {
-		if (!profileDraft) return;
-		await onSaveProfile(profileDraft);
-	}, [profileDraft, onSaveProfile]);
+	const handleProviderChange = useCallback(
+		async (provider: AiProviderKind) => {
+			const nextProfile =
+				profiles.find((profile) => profile.provider === provider) ?? null;
+			if (!nextProfile || nextProfile.id === activeProfileId) return;
+			await onActiveProfileChange(nextProfile.id);
+		},
+		[activeProfileId, onActiveProfileChange, profiles],
+	);
 
 	return (
 		<>
-			<AiActiveProfileSection
-				profiles={profiles}
-				activeProfileId={activeProfileId}
-				onActiveProfileChange={onActiveProfileChange}
-				onCreateProfile={onCreateProfile}
-			/>
-
 			{profileDraft ? (
 				<AiProviderSection
 					profileDraft={profileDraft}
 					availableModels={availableModels}
 					secretConfigured={apiState.secretConfigured}
 					onModelsChange={setAvailableModels}
+					onProviderChange={handleProviderChange}
 					onUpdateDraft={updateDraft}
 					onPersistDraft={persistDraft}
-					onSave={handleSave}
 				/>
 			) : null}
 

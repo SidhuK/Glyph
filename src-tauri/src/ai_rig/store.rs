@@ -1,5 +1,6 @@
 use crate::io_atomic;
 use serde::{Deserialize, Serialize};
+use std::collections::HashMap;
 use std::{path::Path, path::PathBuf};
 use tauri::{AppHandle, Manager};
 
@@ -29,43 +30,63 @@ pub fn write_store(path: &Path, store: &AiStore) -> Result<(), String> {
 }
 
 pub fn ensure_default_profiles(store: &mut AiStore) {
-    if !store.profiles.is_empty() {
-        return;
-    }
-    let mut add = |name: &str,
-                   provider: AiProviderKind,
-                   model: &str,
-                   base_url: Option<&str>,
-                   allow_private_hosts: bool| {
-        store.profiles.push(AiProfile {
-            id: uuid::Uuid::new_v4().to_string(),
-            name: name.to_string(),
-            provider,
-            model: model.to_string(),
-            base_url: base_url.map(str::to_string),
-            headers: Vec::new(),
-            allow_private_hosts,
-            reasoning_effort: None,
+    let active_provider = store
+        .active_profile_id
+        .as_deref()
+        .and_then(|active_id| {
+            store
+                .profiles
+                .iter()
+                .find(|profile| profile.id == active_id)
+                .map(|profile| profile.provider.clone())
         });
-    };
 
-    add("OpenAI", AiProviderKind::Openai, "", None, false);
-    add(
-        "OpenAI-compatible",
-        AiProviderKind::OpenaiCompat,
-        "",
-        None,
-        false,
-    );
-    add("OpenRouter", AiProviderKind::Openrouter, "", None, false);
-    add("Anthropic", AiProviderKind::Anthropic, "", None, false);
-    add("Gemini", AiProviderKind::Gemini, "", None, false);
-    add("Ollama", AiProviderKind::Ollama, "", None, true);
-    add(
-        "Codex (ChatGPT OAuth)",
-        AiProviderKind::CodexChatgpt,
-        "codex",
-        None,
-        false,
-    );
+    let mut by_provider: HashMap<&'static str, AiProfile> = HashMap::new();
+    for profile in store.profiles.drain(..) {
+        by_provider
+            .entry(profile.provider.key())
+            .or_insert_with(|| profile);
+    }
+
+    let defaults = [
+        (AiProviderKind::Openai, "", None, false),
+        (AiProviderKind::OpenaiCompat, "", None, false),
+        (AiProviderKind::Openrouter, "", None, false),
+        (AiProviderKind::Anthropic, "", None, false),
+        (AiProviderKind::Gemini, "", None, false),
+        (AiProviderKind::Ollama, "", None, true),
+        (AiProviderKind::CodexChatgpt, "codex", None, false),
+    ];
+
+    store.profiles = defaults
+        .into_iter()
+        .map(|(provider, model, base_url, allow_private_hosts)| {
+            let mut profile = by_provider.remove(provider.key()).unwrap_or(AiProfile {
+                id: provider.key().to_string(),
+                name: provider.display_name().to_string(),
+                provider: provider.clone(),
+                model: model.to_string(),
+                base_url: base_url.map(str::to_string),
+                headers: Vec::new(),
+                allow_private_hosts,
+                reasoning_effort: None,
+            });
+            profile.id = provider.key().to_string();
+            profile.name = provider.display_name().to_string();
+            profile.provider = provider.clone();
+            if profile.model.trim().is_empty() && !model.is_empty() {
+                profile.model = model.to_string();
+            }
+            if profile.base_url.is_none() {
+                profile.base_url = base_url.map(str::to_string);
+            }
+            profile.allow_private_hosts = allow_private_hosts;
+            profile
+        })
+        .collect();
+
+    store.active_profile_id = active_provider
+        .as_ref()
+        .map(|provider| provider.key().to_string())
+        .or_else(|| store.profiles.first().map(|profile| profile.id.clone()));
 }

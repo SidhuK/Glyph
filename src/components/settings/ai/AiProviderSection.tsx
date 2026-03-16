@@ -1,5 +1,4 @@
-import type { AiModel, AiProfile } from "../../../lib/tauri";
-import { Button } from "../../ui/shadcn/button";
+import type { AiModel, AiProfile, AiProviderKind } from "../../../lib/tauri";
 import { Input } from "../../ui/shadcn/input";
 import { SettingsRow, SettingsSection } from "../SettingsScaffold";
 import { AiModelCombobox } from "./AiModelCombobox";
@@ -9,9 +8,9 @@ interface AiProviderSectionProps {
 	availableModels: AiModel[] | null;
 	secretConfigured: boolean | null;
 	onModelsChange: (models: AiModel[] | null) => void;
+	onProviderChange: (provider: AiProviderKind) => Promise<void>;
 	onUpdateDraft: (updater: (prev: AiProfile) => AiProfile) => void;
 	onPersistDraft: (draft: AiProfile) => Promise<void>;
-	onSave: () => Promise<void>;
 }
 
 export function AiProviderSection({
@@ -19,9 +18,9 @@ export function AiProviderSection({
 	availableModels,
 	secretConfigured,
 	onModelsChange,
+	onProviderChange,
 	onUpdateDraft,
 	onPersistDraft,
-	onSave,
 }: AiProviderSectionProps) {
 	const selectedModel =
 		availableModels?.find((model) => model.id === profileDraft.model) ?? null;
@@ -31,27 +30,19 @@ export function AiProviderSection({
 	return (
 		<SettingsSection
 			title="Provider"
-			description="Choose the service, model, and advanced connection fields. Service and model changes save automatically; text fields save on blur."
+			description="Choose the service, model, and advanced connection fields. Provider changes switch to that provider's saved setup; other edits save automatically."
 		>
 			<SettingsRow
 				label="Service"
 				htmlFor="aiProvider"
-				description="Pick the provider backing this profile."
+				description="Switch between provider configurations."
 			>
 				<select
 					id="aiProvider"
 					value={profileDraft.provider}
-					onChange={(event) => {
-						const nextProvider = event.target.value as AiProfile["provider"];
-						void onPersistDraft({
-							...profileDraft,
-							provider: nextProvider,
-							reasoning_effort:
-								nextProvider === "codex_chatgpt"
-									? (profileDraft.reasoning_effort ?? null)
-									: null,
-						});
-					}}
+					onChange={(event) =>
+						void onProviderChange(event.target.value as AiProviderKind)
+					}
 				>
 					<option value="codex_chatgpt">Codex (ChatGPT)</option>
 					<option value="openai">OpenAI</option>
@@ -101,7 +92,7 @@ export function AiProviderSection({
 				<SettingsRow
 					label="Reasoning level"
 					htmlFor="aiReasoningEffort"
-					description="Available for Codex profiles when the current model exposes effort levels."
+					description="Available for Codex when the current model exposes effort levels."
 				>
 					{(reasoningOptions?.length ?? 0) > 0 ? (
 						<select
@@ -180,20 +171,6 @@ export function AiProviderSection({
 					/>
 				</SettingsRow>
 			) : null}
-
-			<SettingsRow
-				label="Profile"
-				description="Save the current draft if you want to force a refresh after manual edits."
-			>
-				<Button
-					type="button"
-					variant="outline"
-					size="sm"
-					onClick={() => void onSave()}
-				>
-					Save Profile
-				</Button>
-			</SettingsRow>
 		</SettingsSection>
 	);
 }

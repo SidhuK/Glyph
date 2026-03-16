@@ -54,8 +54,41 @@ export function AiCodexAccountSection({
 				description="The connected account Glyph is currently using for Codex."
 				interactive={false}
 			>
-				<div className="settingsHint">
-					{codexState.displayName || codexState.email || "Not connected"}
+				<div className="settingsInline">
+					<div className="settingsHint">
+						{codexState.displayName || codexState.email || "Not connected"}
+					</div>
+					{codexState.status === "connected" ? (
+						<>
+							<Button
+								type="button"
+								size="sm"
+								variant="outline"
+								onClick={() => void onDisconnect()}
+								disabled={codexState.loading}
+							>
+								Disconnect
+							</Button>
+							<Button
+								type="button"
+								size="sm"
+								variant="ghost"
+								onClick={() => void onRefresh()}
+								disabled={codexState.loading}
+							>
+								Refresh Status
+							</Button>
+						</>
+					) : (
+						<Button
+							type="button"
+							size="sm"
+							onClick={() => void onConnect()}
+							disabled={codexState.loading}
+						>
+							Sign In with ChatGPT
+						</Button>
+					)}
 				</div>
 			</SettingsRow>
 			{codexState.authMode ? (
@@ -130,42 +163,6 @@ export function AiCodexAccountSection({
 					</div>
 				</SettingsRow>
 			) : null}
-			<SettingsRow
-				label="Actions"
-				description="Sign in, disconnect, or refresh the latest account status."
-			>
-				<div className="settingsInline">
-					{codexState.status === "connected" ? (
-						<Button
-							type="button"
-							size="sm"
-							variant="outline"
-							onClick={() => void onDisconnect()}
-							disabled={codexState.loading}
-						>
-							Disconnect
-						</Button>
-					) : (
-						<Button
-							type="button"
-							size="sm"
-							onClick={() => void onConnect()}
-							disabled={codexState.loading}
-						>
-							Sign In with ChatGPT
-						</Button>
-					)}
-					<Button
-						type="button"
-						size="sm"
-						variant="ghost"
-						onClick={() => void onRefresh()}
-						disabled={codexState.loading}
-					>
-						Refresh Status
-					</Button>
-				</div>
-			</SettingsRow>
 			{codexState.error ? (
 				<div className="settingsError">{codexState.error}</div>
 			) : null}

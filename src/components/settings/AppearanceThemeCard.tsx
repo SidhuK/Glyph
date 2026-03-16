@@ -128,7 +128,7 @@ function ThemeSelector<T extends string>({
 	onSelect,
 }: {
 	label: string;
-	description: string;
+	description?: string;
 	mode: "light" | "dark";
 	selected: UiThemeOption<T>;
 	options: readonly UiThemeOption<T>[];

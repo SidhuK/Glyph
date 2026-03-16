@@ -10,7 +10,7 @@ use super::history;
 use super::local_secrets;
 use super::runtime;
 use super::state::AiState;
-use super::store::{ensure_default_profiles, read_store, store_path, write_store};
+use super::store::{ensure_default_profiles, read_store, store_path, write_store, AiStore};
 use super::types::{
     AiAssistantMode, AiChatRequest, AiChatStartResult, AiDoneEvent, AiErrorEvent, AiMessage,
     AiProfile, AiStoredToolEvent,
@@ -93,21 +93,49 @@ pub fn refresh_provider_support_on_startup(app: AppHandle) {
     });
 }
 
-#[tauri::command]
-pub async fn ai_profiles_list(app: AppHandle) -> Result<Vec<AiProfile>, String> {
-    let path = store_path(&app)?;
+fn legacy_secret_aliases(store: &AiStore) -> Vec<(String, String)> {
+    store
+        .profiles
+        .iter()
+        .filter_map(|profile| {
+            let canonical = profile.provider.key().to_string();
+            if profile.id == canonical {
+                None
+            } else {
+                Some((profile.id.clone(), canonical))
+            }
+        })
+        .collect()
+}
+
+fn normalized_store(app: &AppHandle) -> Result<AiStore, String> {
+    let path = store_path(app)?;
     let mut store = read_store(&path);
     ensure_default_profiles(&mut store);
     let _ = write_store(&path, &store);
+    Ok(store)
+}
+
+fn normalized_store_for_space(app: &AppHandle, space_root: Option<&std::path::Path>) -> Result<AiStore, String> {
+    let path = store_path(app)?;
+    let mut store = read_store(&path);
+    if let Some(root) = space_root {
+        let _ = local_secrets::migrate_ids(root, &legacy_secret_aliases(&store));
+    }
+    ensure_default_profiles(&mut store);
+    let _ = write_store(&path, &store);
+    Ok(store)
+}
+
+#[tauri::command]
+pub async fn ai_profiles_list(app: AppHandle) -> Result<Vec<AiProfile>, String> {
+    let store = normalized_store(&app)?;
     Ok(store.profiles)
 }
 
 #[tauri::command]
 pub async fn ai_active_profile_get(app: AppHandle) -> Result<Option<String>, String> {
-    let path = store_path(&app)?;
-    let mut store = read_store(&path);
-    ensure_default_profiles(&mut store);
-    let _ = write_store(&path, &store);
+    let store = normalized_store(&app)?;
     Ok(store
         .active_profile_id
         .or_else(|| store.profiles.first().map(|p| p.id.clone())))
@@ -116,31 +144,30 @@ pub async fn ai_active_profile_get(app: AppHandle) -> Result<Option<String>, Str
 #[tauri::command]
 pub async fn ai_active_profile_set(app: AppHandle, id: Option<String>) -> Result<(), String> {
     let path = store_path(&app)?;
-    let mut store = read_store(&path);
-    ensure_default_profiles(&mut store);
-    store.active_profile_id = id;
+    let mut store = normalized_store(&app)?;
+    store.active_profile_id = id.filter(|candidate| {
+        store
+            .profiles
+            .iter()
+            .any(|profile| profile.id == *candidate)
+    });
     write_store(&path, &store)
 }
 
 #[tauri::command]
 pub async fn ai_profile_upsert(app: AppHandle, profile: AiProfile) -> Result<AiProfile, String> {
     let path = store_path(&app)?;
-    let mut store = read_store(&path);
-    ensure_default_profiles(&mut store);
+    let mut store = normalized_store(&app)?;
 
     let mut next = profile;
-    if next.id.trim().is_empty() {
-        next.id = uuid::Uuid::new_v4().to_string();
-    }
-    if next.name.trim().is_empty() {
-        next.name = "AI Profile".to_string();
-    }
+    next.id = next.provider.key().to_string();
+    next.name = next.provider.display_name().to_string();
 
     let _ = parse_base_url(&next)?;
 
     let mut replaced = false;
     for p in &mut store.profiles {
-        if p.id == next.id {
+        if p.provider.key() == next.provider.key() {
             *p = next.clone();
             replaced = true;
             break;
@@ -163,19 +190,24 @@ pub async fn ai_profile_delete(
     id: String,
 ) -> Result<(), String> {
     let path = store_path(&app)?;
-    let mut store = read_store(&path);
-    store.profiles.retain(|p| p.id != id);
+    let mut store = normalized_store_for_space(&app, space_state.current_root().ok().as_deref())?;
     if let Ok(root) = space_state.current_root() {
         let _ = local_secrets::secret_clear(&root, &id);
     }
-    if store.active_profile_id.as_deref() == Some(&id) {
-        store.active_profile_id = store.profiles.first().map(|p| p.id.clone());
+    if let Some(profile) = store.profiles.iter_mut().find(|profile| profile.id == id) {
+        profile.model.clear();
+        profile.base_url = None;
+        profile.headers.clear();
+        profile.reasoning_effort = None;
+        profile.allow_private_hosts = matches!(profile.provider, super::types::AiProviderKind::Ollama);
     }
+    ensure_default_profiles(&mut store);
     write_store(&path, &store)
 }
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn ai_secret_set(
+    app: AppHandle,
     space_state: State<'_, SpaceState>,
     profile_id: String,
     api_key: String,
@@ -183,22 +215,26 @@ pub async fn ai_secret_set(
     let root = space_state
         .current_root()
         .map_err(|_| "Open a space to store API keys locally".to_string())?;
+    let _ = normalized_store_for_space(&app, Some(&root))?;
     local_secrets::secret_set(&root, &profile_id, api_key.trim())
 }
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn ai_secret_clear(
+    app: AppHandle,
     space_state: State<'_, SpaceState>,
     profile_id: String,
 ) -> Result<(), String> {
     let root = space_state
         .current_root()
         .map_err(|_| "Open a space to manage API keys".to_string())?;
+    let _ = normalized_store_for_space(&app, Some(&root))?;
     local_secrets::secret_clear(&root, &profile_id)
 }
 
 #[tauri::command(rename_all = "snake_case")]
 pub async fn ai_secret_status(
+    app: AppHandle,
     space_state: State<'_, SpaceState>,
     profile_id: String,
 ) -> Result<bool, String> {
@@ -206,14 +242,19 @@ pub async fn ai_secret_status(
         Ok(root) => root,
         Err(_) => return Ok(false),
     };
+    let _ = normalized_store_for_space(&app, Some(&root))?;
     local_secrets::secret_status(&root, &profile_id)
 }
 
 #[tauri::command]
-pub async fn ai_secret_list(space_state: State<'_, SpaceState>) -> Result<Vec<String>, String> {
+pub async fn ai_secret_list(
+    app: AppHandle,
+    space_state: State<'_, SpaceState>,
+) -> Result<Vec<String>, String> {
     let root = space_state
         .current_root()
         .map_err(|_| "Open a space to manage API keys".to_string())?;
+    let _ = normalized_store_for_space(&app, Some(&root))?;
     local_secrets::secret_ids(&root)
 }
 
@@ -288,11 +329,8 @@ pub async fn ai_chat_start(
         request.audit = true;
     }
 
-    let store_path = store_path(&app)?;
-    let mut store = read_store(&store_path);
-    ensure_default_profiles(&mut store);
     let space_root = space_state.current_root().ok();
-    let _ = write_store(&store_path, &store);
+    let store = normalized_store_for_space(&app, space_root.as_deref())?;
 
     let profile = store
         .profiles

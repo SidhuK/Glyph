@@ -80,29 +80,6 @@ export function AiSettingsPane() {
 		}
 	}, []);
 
-	const createDefaultProfile = useCallback(async () => {
-		setError("");
-		try {
-			const created = await invoke("ai_profile_upsert", {
-				profile: {
-					id: "",
-					name: "Default",
-					provider: "openai",
-					model: "",
-					base_url: null,
-					headers: [],
-					allow_private_hosts: false,
-					reasoning_effort: null,
-				},
-			});
-			setProfiles((prev) => [...prev, created]);
-			setActiveProfileId(created.id);
-			await invoke("ai_active_profile_set", { id: created.id });
-		} catch (e) {
-			setError(errMessage(e));
-		}
-	}, []);
-
 	const saveProfile = useCallback(async (draft: AiProfile) => {
 		const requestId = ++saveProfileRequestIdRef.current;
 		setError("");
@@ -160,7 +137,7 @@ export function AiSettingsPane() {
 					{!aiEnabled ? (
 						<SettingsRow
 							label="Configuration"
-							description="Turn AI back on to manage profiles, providers, and account access."
+							description="Turn AI back on to manage providers, models, and account access."
 							stacked
 							interactive={false}
 						>
@@ -198,7 +175,6 @@ export function AiSettingsPane() {
 						activeProfileId={activeProfileId}
 						activeProfile={activeProfile}
 						onActiveProfileChange={onActiveProfileChange}
-						onCreateProfile={() => void createDefaultProfile()}
 						onSaveProfile={saveProfile}
 					/>
 				) : null}

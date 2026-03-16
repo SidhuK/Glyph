@@ -287,9 +287,6 @@ export function AIComposer({
 									profileId={profiles.activeProfileId}
 									value={profiles.activeProfile?.model ?? ""}
 									provider={profiles.activeProfile?.provider ?? null}
-									profiles={profiles.profiles}
-									activeProfileId={profiles.activeProfileId}
-									onProfileChange={(id) => void profiles.setActive(id)}
 									onChange={(modelId) => void profiles.setModel(modelId)}
 								/>
 							</div>

@@ -12,6 +12,32 @@ pub enum AiProviderKind {
     CodexChatgpt,
 }
 
+impl AiProviderKind {
+    pub fn key(&self) -> &'static str {
+        match self {
+            Self::Openai => "openai",
+            Self::OpenaiCompat => "openai_compat",
+            Self::Openrouter => "openrouter",
+            Self::Anthropic => "anthropic",
+            Self::Gemini => "gemini",
+            Self::Ollama => "ollama",
+            Self::CodexChatgpt => "codex_chatgpt",
+        }
+    }
+
+    pub fn display_name(&self) -> &'static str {
+        match self {
+            Self::Openai => "OpenAI",
+            Self::OpenaiCompat => "OpenAI-compatible",
+            Self::Openrouter => "OpenRouter",
+            Self::Anthropic => "Anthropic",
+            Self::Gemini => "Gemini",
+            Self::Ollama => "Ollama",
+            Self::CodexChatgpt => "Codex (ChatGPT)",
+        }
+    }
+}
+
 #[derive(Serialize, Deserialize, Clone, Debug)]
 pub struct AiHeader {
     pub key: String,
