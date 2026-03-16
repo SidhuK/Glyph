@@ -1,9 +1,6 @@
-import { AiBrain04Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import { Suspense, lazy, useEffect } from "react";
 import { useAISidebarContext } from "../../contexts";
-import { getShortcutTooltip } from "../../lib/shortcuts";
 
 const loadAIPanel = () =>
 	import("./AIPanel").then((module) => {
@@ -78,17 +75,6 @@ export function AIFloatingHost({
 					)}
 				</AnimatePresence>
 			</m.div>
-			{!isOpen && (
-				<button
-					type="button"
-					className="aiFab"
-					onClick={onToggle}
-					aria-label="Open AI panel"
-					title={`Open AI panel (${getShortcutTooltip({ meta: true, shift: true, key: "a" })})`}
-				>
-					<HugeiconsIcon icon={AiBrain04Icon} size={34} />
-				</button>
-			)}
 		</>
 	);
 }

@@ -472,7 +472,7 @@
 	min-height: 18px;
 	padding: 0 6px;
 	border-radius: var(--radius-full);
-	background: var(--bg-primary);
+	background: transparent;
 	color: var(--text-tertiary);
 	font-size: 9px;
 	letter-spacing: 0.02em;
@@ -480,8 +480,10 @@
 
 .notePropertyAddButton:hover,
 .notePropertyAddButton:focus-visible {
-	background: color-mix(in srgb, var(--bg-primary) 78%, var(--bg-hover));
+	background: transparent;
 	color: var(--text-primary);
+	box-shadow: none;
+	outline: none;
 }
 
 .notePropertyRemoveButton {

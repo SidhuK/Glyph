@@ -7,7 +7,11 @@ import {
 	useRef,
 	useState,
 } from "react";
-import { useSpace, useUILayoutContext } from "../../contexts";
+import {
+	useAISidebarContext,
+	useSpace,
+	useUILayoutContext,
+} from "../../contexts";
 import {
 	PATH_REMOVED_EVENT,
 	type PathRemovedDetail,
@@ -74,6 +78,7 @@ export const MainContent = memo(function MainContent({
 		onCreateSpace,
 	} = useSpace();
 	const { dailyNotesFolder } = useUILayoutContext();
+	const { aiEnabled, aiPanelOpen, setAiPanelOpen } = useAISidebarContext();
 	const [onboarding, setOnboarding] = useState<OnboardingSettings>(
 		DEFAULT_ONBOARDING_SETTINGS,
 	);
@@ -156,6 +161,7 @@ export const MainContent = memo(function MainContent({
 	const showStarterPane =
 		Boolean(spacePath) &&
 		(showStarterByDefault || (starterOverrideVisible && !activeTabPath));
+	const showTabBar = openTabs.length > 0 || aiEnabled;
 
 	useEffect(() => {
 		let cancelled = false;
@@ -254,13 +260,16 @@ export const MainContent = memo(function MainContent({
 		<main className="mainArea">
 			<div className="canvasWrapper">
 				<div className="canvasPaneHost">
-					{openTabs.length > 0 && (
+					{showTabBar && (
 						<TabBar
 							openTabs={openTabs}
 							activeTabPath={activeTabPath}
 							dragTabPath={dragTabPath}
 							useWindowBackground={!content}
+							showAiToggle={aiEnabled}
+							aiPanelOpen={aiPanelOpen}
 							onOpenBlankTab={() => setActiveTabPath(null)}
+							onToggleAiPanel={() => setAiPanelOpen((open) => !open)}
 							onSelectTab={setActiveTabPath}
 							onCloseTab={closeTab}
 							onDragStart={setDragTabPath}
