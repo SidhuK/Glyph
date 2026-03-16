@@ -44,19 +44,6 @@
 		padding: var(--space-3);
 	}
 
-	.starterAction {
-		grid-template-columns: auto minmax(0, 1fr);
-	}
-
-	.starterShortcut {
-		grid-column: 2;
-	}
-
-	.starterPaneFooter {
-		align-items: flex-start;
-		flex-direction: column;
-	}
-
 	.mainEmptyActions {
 		max-width: 420px;
 		gap: var(--space-2);

@@ -1,3 +1,4 @@
+import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import {
 	Suspense,
 	lazy,
@@ -28,9 +29,11 @@ import { formatShortcutPartsForPlatform } from "../../lib/shortcuts/platform";
 import { TASKS_TAB_ID } from "../../lib/tasks";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { isInAppPreviewable } from "../../utils/filePreview";
+import { Calendar, FileText } from "../Icons";
 import { FilePreviewPane } from "../preview/FilePreviewPane";
 import { NotePane } from "../preview/NotePane";
 import { TasksPane } from "../tasks/TasksPane";
+import { springPresets } from "../ui/animations";
 import { GettingStartedPane } from "./GettingStartedPane";
 import { TabBar } from "./TabBar";
 import { WelcomeScreen } from "./WelcomeScreen";
@@ -41,6 +44,152 @@ const LazyCalendarPane = lazy(() =>
 		default: module.CalendarPane,
 	})),
 );
+
+interface EmptyTip {
+	key: string;
+	icon: React.ReactNode;
+	text: string;
+	action: string;
+	onClick: () => void;
+}
+
+function ContextualEmptyState({
+	onboarding,
+	commandShortcutParts,
+	showDailyNoteAction,
+	onCreateNote,
+	onOpenCommandPalette,
+	onOpenDailyNote,
+}: {
+	onboarding: OnboardingSettings;
+	commandShortcutParts: string[];
+	showDailyNoteAction: boolean;
+	onCreateNote: () => void;
+	onOpenCommandPalette: () => void;
+	onOpenDailyNote: () => void;
+}) {
+	const reduced = useReducedMotion() ?? false;
+
+	const tips = useMemo(() => {
+		const t: EmptyTip[] = [];
+		if (!onboarding.createdFirstNote) {
+			t.push({
+				key: "note",
+				icon: <FileText size={16} strokeWidth={1.7} />,
+				text: "Create your first note",
+				action: "New note",
+				onClick: onCreateNote,
+			});
+		}
+		if (!onboarding.openedDailyNote && showDailyNoteAction) {
+			t.push({
+				key: "daily",
+				icon: <Calendar size={16} strokeWidth={1.7} />,
+				text: "Try a daily note — saved to your daily notes folder",
+				action: "Open daily note",
+				onClick: onOpenDailyNote,
+			});
+		}
+		if (!onboarding.usedCommandPalette) {
+			t.push({
+				key: "palette",
+				icon: null,
+				text: "Open the command palette",
+				action: "Open",
+				onClick: onOpenCommandPalette,
+			});
+		}
+		return t;
+	}, [
+		onboarding,
+		showDailyNoteAction,
+		onCreateNote,
+		onOpenDailyNote,
+		onOpenCommandPalette,
+	]);
+
+	const [tipIndex, setTipIndex] = useState(0);
+
+	useEffect(() => {
+		if (tips.length <= 1) return;
+		const interval = setInterval(() => {
+			setTipIndex((i) => i + 1);
+		}, 5000);
+		return () => clearInterval(interval);
+	}, [tips.length]);
+
+	if (tips.length === 0) {
+		return (
+			<>
+				<p className="mainEmptyPrompt">
+					Press{" "}
+					<button
+						type="button"
+						className="mainEmptyShortcutInline"
+						onClick={onOpenCommandPalette}
+						title="Open command palette"
+					>
+						{commandShortcutParts.map((part) => (
+							<kbd key={part}>{part}</kbd>
+						))}
+					</button>{" "}
+					to get started
+				</p>
+				<div className="mainEmptyTagline">{APP_TAGLINE}</div>
+			</>
+		);
+	}
+
+	const activeTip = tips[tipIndex % tips.length];
+	const transition = reduced ? { duration: 0 } : springPresets.gentle;
+
+	return (
+		<div className="mainEmptyContextual">
+			<AnimatePresence mode="wait">
+				<m.div
+					key={activeTip.key}
+					className="mainEmptyTip"
+					initial={{ opacity: 0, y: 8 }}
+					animate={{ opacity: 1, y: 0 }}
+					exit={{ opacity: 0, y: -8 }}
+					transition={transition}
+				>
+					{activeTip.icon && (
+						<span className="mainEmptyTipIcon">{activeTip.icon}</span>
+					)}
+					{activeTip.key === "palette" && (
+						<span className="mainEmptyTipIcon">
+							{commandShortcutParts.map((part) => (
+								<kbd key={part} className="mainEmptyTipKbd">
+									{part}
+								</kbd>
+							))}
+						</span>
+					)}
+					<span className="mainEmptyTipText">{activeTip.text}</span>
+					<button
+						type="button"
+						className="mainEmptyTipAction"
+						onClick={activeTip.onClick}
+					>
+						{activeTip.action}
+					</button>
+				</m.div>
+			</AnimatePresence>
+			<div className="mainEmptyTagline">{APP_TAGLINE}</div>
+			{tips.length > 1 && (
+				<div className="mainEmptyTipDots">
+					{tips.map((tip, i) => (
+						<span
+							key={tip.key}
+							className={`mainEmptyTipDot${i === tipIndex % tips.length ? " mainEmptyTipDotActive" : ""}`}
+						/>
+					))}
+				</div>
+			)}
+		</div>
+	);
+}
 
 interface MainContentProps {
 	fileTree: {
@@ -242,7 +391,17 @@ export const MainContent = memo(function MainContent({
 	if (!spacePath) {
 		if (!settingsLoaded) return <main className="mainArea" />;
 		return (
-			<main className="mainArea mainAreaWelcome">
+			<m.main
+				className="mainArea mainAreaWelcome"
+				initial={{ opacity: 0, scale: 0.98 }}
+				animate={{ opacity: 1, scale: 1 }}
+				transition={{
+					type: "spring",
+					stiffness: 260,
+					damping: 24,
+					duration: 0.4,
+				}}
+			>
 				<WelcomeScreen
 					appName={info?.name ?? null}
 					lastSpacePath={lastSpacePath}
@@ -252,7 +411,7 @@ export const MainContent = memo(function MainContent({
 					onContinueLastSpace={onContinueLastSpace}
 					onSelectRecentSpace={onOpenSpaceAtPath}
 				/>
-			</main>
+			</m.main>
 		);
 	}
 
@@ -293,23 +452,14 @@ export const MainContent = memo(function MainContent({
 									}}
 								/>
 							) : (
-								<>
-									<p className="mainEmptyPrompt">
-										Press{" "}
-										<button
-											type="button"
-											className="mainEmptyShortcutInline"
-											onClick={onOpenCommandPalette}
-											title="Open command palette"
-										>
-											{commandShortcutParts.map((part) => (
-												<kbd key={part}>{part}</kbd>
-											))}
-										</button>{" "}
-										to get started
-									</p>
-									<div className="mainEmptyTagline">{APP_TAGLINE}</div>
-								</>
+								<ContextualEmptyState
+									onboarding={onboarding}
+									commandShortcutParts={commandShortcutParts}
+									showDailyNoteAction={Boolean(dailyNotesFolder)}
+									onCreateNote={onCreateNote}
+									onOpenCommandPalette={onOpenCommandPalette}
+									onOpenDailyNote={onOpenDailyNote}
+								/>
 							)}
 						</div>
 					)}

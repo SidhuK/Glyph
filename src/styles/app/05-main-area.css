@@ -96,23 +96,24 @@
 .welcomeScreen {
 	flex: 1;
 	display: flex;
-	align-items: stretch;
+	align-items: center;
 	justify-content: center;
-	padding: var(--space-5);
+	padding: var(--space-6) var(--space-5);
 	overflow: auto;
 	background: var(--bg-primary);
 }
 
 .welcomeSurface {
-	width: min(920px, 100%);
+	width: min(780px, 100%);
 	margin: 0 auto;
 	display: block;
 }
 
 .welcomeLauncher {
 	display: grid;
-	grid-template-columns: minmax(0, 1.2fr) minmax(280px, 0.8fr);
-	gap: var(--space-4);
+	grid-template-columns: minmax(0, 1.3fr) minmax(220px, 0.7fr);
+	gap: var(--space-3);
+	align-items: start;
 }
 
 .welcomePanel {
@@ -123,23 +124,16 @@
 	border: 1px solid var(--border-light);
 	border-radius: var(--radius-lg);
 	background: var(--bg-secondary);
+	min-width: 0;
+	overflow: hidden;
 }
 
 .welcomeSectionTitle {
-	font-size: var(--text-sm);
+	font-size: var(--text-xs);
 	font-weight: var(--font-semibold);
-	color: var(--text-primary);
-}
-
-.welcomeSectionTitleCompact {
-	margin-top: var(--space-2);
-}
-
-.welcomeSectionBody {
-	margin: 0;
-	font-size: var(--text-sm);
 	color: var(--text-secondary);
-	line-height: var(--leading-relaxed, 1.6);
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
 }
 
 .welcomeActionList {
@@ -150,11 +144,10 @@
 
 .welcomeActionButton {
 	display: flex;
-	align-items: stretch;
+	align-items: center;
 	justify-content: flex-start;
 	width: 100%;
 	height: auto;
-	min-height: 64px;
 	padding: var(--space-3);
 	border-radius: var(--radius-md);
 	border: 1px solid var(--border-light);
@@ -163,14 +156,15 @@
 	text-align: left;
 	white-space: normal;
 	line-height: 1.4;
-	gap: 0;
+	gap: var(--space-3);
 	transition: background var(--transition-fast), border-color
-		var(--transition-fast);
+		var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .welcomeActionButton:hover {
 	background: var(--bg-hover);
 	border-color: var(--border-default);
+	box-shadow: 0 1px 4px color-mix(in srgb, var(--text-primary) 6%, transparent);
 }
 
 .welcomeActionButtonPrimary {
@@ -182,10 +176,20 @@
 	);
 }
 
+.welcomeActionButtonPrimary:hover {
+	background: color-mix(in srgb, var(--accent-color) 20%, var(--bg-primary));
+	border-color: color-mix(
+		in srgb,
+		var(--accent-color) 50%,
+		var(--border-default)
+	);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent-color) 10%, transparent);
+}
+
 .welcomeActionContent {
 	display: flex;
 	flex-direction: column;
-	gap: 6px;
+	gap: 2px;
 	min-width: 0;
 	width: 100%;
 }
@@ -195,8 +199,25 @@
 	align-items: center;
 	gap: var(--space-2);
 	font-size: var(--text-sm);
-	font-weight: var(--font-semibold);
+	font-weight: var(--font-medium);
 	color: var(--text-primary);
+}
+
+.welcomeActionIcon {
+	width: 26px;
+	height: 26px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: var(--radius-sm);
+	background: var(--bg-hover);
+	color: var(--text-secondary);
+	flex-shrink: 0;
+}
+
+.welcomeActionButtonPrimary .welcomeActionIcon {
+	background: color-mix(in srgb, var(--accent-color) 14%, transparent);
+	color: var(--interactive-accent);
 }
 
 .welcomeActionHint {
@@ -206,57 +227,116 @@
 	overflow-wrap: break-word;
 }
 
-.welcomeBulletList {
-	margin: 0;
-	padding-left: 18px;
+.welcomeBrandRow {
 	display: flex;
-	flex-direction: column;
-	gap: 6px;
+	align-items: center;
+	gap: 8px;
+}
+
+.welcomeBrandIcon {
+	width: 28px;
+	height: 28px;
+	border-radius: 6px;
+	box-shadow: 0 1px 2px color-mix(in srgb, var(--text-primary) 8%, transparent);
+	flex-shrink: 0;
+}
+
+.welcomeBrandName {
+	margin: 0;
+	font-size: var(--text-base, 16px);
+	font-weight: var(--font-semibold);
+	color: var(--text-primary);
+	letter-spacing: -0.01em;
+}
+
+.welcomeSubtitle {
+	margin: 0;
 	font-size: var(--text-sm);
 	color: var(--text-secondary);
+	line-height: var(--leading-relaxed, 1.6);
+	max-width: 340px;
+}
+
+.welcomeFeatureRow {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	flex-wrap: wrap;
+	padding-top: var(--space-2);
+	border-top: 1px solid var(--border-light);
+}
+
+.welcomeFeatureChip {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	padding: 3px 8px;
+	font-size: 11px;
+	color: var(--text-tertiary);
+	border-radius: var(--radius-sm);
+	background: color-mix(in srgb, var(--bg-hover) 50%, transparent);
 }
 
 .welcomeRecentList {
 	display: flex;
 	flex-direction: column;
-	gap: var(--space-2);
+	gap: 2px;
+	min-width: 0;
 }
 
 .welcomeRecentItem {
 	width: 100%;
+	min-width: 0;
 	height: auto;
-	min-height: 56px;
-	align-items: flex-start;
-	justify-content: flex-start;
+	display: flex;
 	flex-direction: column;
-	gap: 4px;
-	padding: var(--space-3);
+	gap: 2px;
+	padding: 8px 10px;
 	border-radius: var(--radius-md);
-	border: 1px solid var(--border-light);
-	background: var(--bg-primary);
+	border: 1px solid transparent;
+	background: transparent;
 	color: var(--text-primary);
 	text-align: left;
-	white-space: normal;
-	line-height: 1.4;
+	line-height: 1.35;
+	cursor: pointer;
+	overflow: hidden;
 	transition: background var(--transition-fast), border-color
 		var(--transition-fast);
 }
 
 .welcomeRecentItem:hover {
 	background: var(--bg-hover);
-	border-color: var(--border-default);
-	color: var(--text-primary);
+	border-color: var(--border-light);
 }
 
 .welcomeRecentName {
-	font-size: var(--text-sm);
-	font-weight: var(--font-semibold);
+	font-size: var(--text-xs);
+	font-weight: var(--font-medium);
+	color: var(--text-primary);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .welcomeRecentPath {
-	font-size: var(--text-xs);
+	font-size: 11px;
 	color: var(--text-tertiary);
-	overflow-wrap: break-word;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.welcomeEmptyState {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: var(--space-2);
+	padding: var(--space-5) var(--space-3);
+	text-align: center;
+}
+
+.welcomeEmptyIcon {
+	color: var(--text-placeholder);
 }
 
 .welcomeEmptyText {
@@ -749,13 +829,6 @@
 	color: var(--text-primary);
 }
 
-.starterPaneBody {
-	margin: 6px 0 0;
-	font-size: var(--text-sm);
-	color: var(--text-secondary);
-	line-height: var(--leading-relaxed, 1.6);
-}
-
 .starterDismissButton {
 	width: 28px;
 	height: 28px;
@@ -774,64 +847,45 @@
 	color: var(--text-primary);
 }
 
-.starterActionList {
+.starterStepCard {
 	display: flex;
 	flex-direction: column;
-	gap: var(--space-2);
-}
-
-.starterAction {
-	width: 100%;
-	display: grid;
-	grid-template-columns: auto minmax(0, 1fr) auto;
-	align-items: center;
-	justify-content: stretch;
 	gap: var(--space-3);
-	height: auto;
-	min-height: 72px;
-	padding: var(--space-3);
+	padding: var(--space-4);
 	border: 1px solid var(--border-light);
 	border-radius: var(--radius-md);
 	background: var(--bg-primary);
-	color: var(--text-primary);
-	text-align: left;
-	white-space: normal;
-	line-height: 1.4;
-	transition: background var(--transition-fast), border-color
-		var(--transition-fast);
 }
 
-.starterAction:hover {
-	background: var(--bg-hover);
-	border-color: var(--border-default);
-}
-
-.starterActionIcon {
-	width: 28px;
-	height: 28px;
+.starterStepIcon {
+	width: 36px;
+	height: 36px;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	color: var(--text-secondary);
+	border-radius: var(--radius-sm);
+	background: var(--bg-hover);
+	color: var(--interactive-accent);
 }
 
-.starterActionText {
-	min-width: 0;
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
-}
-
-.starterActionTitle {
+.starterStepTitle {
 	font-size: var(--text-sm);
 	font-weight: var(--font-semibold);
 	color: var(--text-primary);
 }
 
-.starterActionBody {
+.starterStepBody {
+	margin-top: 4px;
 	font-size: var(--text-xs);
 	color: var(--text-secondary);
 	line-height: var(--leading-relaxed, 1.6);
+}
+
+.starterStepActions {
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+	margin-top: var(--space-1);
 }
 
 .starterShortcut {
@@ -855,36 +909,48 @@
 	color: var(--text-secondary);
 }
 
-.starterPaneFooter {
+.starterDots {
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
-	gap: var(--space-3);
-	flex-wrap: wrap;
+	justify-content: center;
+	gap: 6px;
 }
 
-.starterInlineButton {
-	display: inline-flex;
+.starterDot {
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: var(--border-default);
+}
+
+.starterDotActive {
+	background: var(--interactive-accent);
+}
+
+.starterProgressRing {
+	position: relative;
+	width: 40px;
+	height: 40px;
+	display: flex;
 	align-items: center;
-	justify-content: flex-start;
-	height: auto;
-	min-height: 0;
-	padding: 0;
-	border: 0;
-	background: transparent;
-	font-size: var(--text-sm);
-	font-weight: var(--font-medium);
-	color: var(--text-primary);
-	white-space: normal;
+	justify-content: center;
 }
 
-.starterInlineButton:hover {
-	color: var(--interactive-accent-hover);
+.starterProgressRingCheck {
+	position: absolute;
+	inset: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 }
 
-.starterFooterText {
-	font-size: var(--text-xs);
-	color: var(--text-tertiary);
+.starterCompletion {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: var(--space-3);
+	padding: var(--space-6) var(--space-4);
+	text-align: center;
 }
 
 .mainEmptyPrompt {
@@ -953,6 +1019,94 @@
 	color: var(--text-placeholder);
 	letter-spacing: 0.02em;
 	text-align: center;
+}
+
+.mainEmptyContextual {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: var(--space-2);
+	width: 100%;
+}
+
+.mainEmptyTip {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: var(--space-2);
+	flex-wrap: wrap;
+	width: 100%;
+	margin: 0;
+	font-size: var(--text-sm);
+	color: var(--text-secondary);
+	text-align: center;
+}
+
+.mainEmptyTipIcon {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	color: var(--text-tertiary);
+}
+
+.mainEmptyTipText {
+	color: var(--text-secondary);
+}
+
+.mainEmptyTipKbd {
+	min-width: 22px;
+	height: 20px;
+	padding: 0 5px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 11px;
+	font-weight: var(--font-semibold);
+	border-radius: var(--radius-sm);
+	border: 1px solid var(--border-default);
+	background: transparent;
+	color: var(--text-tertiary);
+}
+
+.mainEmptyTipAction {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 4px 12px;
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-md);
+	background: var(--bg-secondary);
+	font-size: var(--text-xs);
+	font-weight: var(--font-medium);
+	color: var(--text-primary);
+	cursor: pointer;
+	transition: background var(--transition-fast), border-color
+		var(--transition-fast);
+}
+
+.mainEmptyTipAction:hover {
+	background: var(--bg-hover);
+	border-color: var(--border-default);
+}
+
+.mainEmptyTipDots {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 5px;
+	margin-top: var(--space-1);
+}
+
+.mainEmptyTipDot {
+	width: 5px;
+	height: 5px;
+	border-radius: 50%;
+	background: var(--border-default);
+	transition: background var(--transition-fast);
+}
+
+.mainEmptyTipDotActive {
+	background: var(--text-secondary);
 }
 
 .mainRecentFiles {
