@@ -267,88 +267,90 @@ export function CommandPalette({
 			>
 				<DialogTitle className="sr-only">Command Palette</DialogTitle>
 
-				<div className="commandPaletteTabs">
-					<div className="commandPaletteTabGroup">
-						{TABS.map((tab) => {
-							const isActive = activeTab === tab.id;
-							const isDisabled = tab.id === "search" && !spacePath;
-							return (
-								<button
-									key={tab.id}
-									type="button"
-									className="commandPaletteTab"
-									data-active={isActive}
-									disabled={isDisabled}
-									onClick={() => switchTab(tab.id)}
-								>
-									{isActive && (
-										<m.span
-											className="commandPaletteTabPill"
-											layoutId="paletteTabPill"
-											transition={springTransition}
-										/>
-									)}
-									<span className="commandPaletteTabLabel">{tab.label}</span>
-								</button>
-							);
-						})}
+				<div className="commandPaletteHeader">
+					<div className="commandPaletteTabs">
+						<div className="commandPaletteTabGroup">
+							{TABS.map((tab) => {
+								const isActive = activeTab === tab.id;
+								const isDisabled = tab.id === "search" && !spacePath;
+								return (
+									<button
+										key={tab.id}
+										type="button"
+										className="commandPaletteTab"
+										data-active={isActive}
+										disabled={isDisabled}
+										onClick={() => switchTab(tab.id)}
+									>
+										{isActive && (
+											<m.span
+												className="commandPaletteTabPill"
+												layoutId="paletteTabPill"
+												transition={springTransition}
+											/>
+										)}
+										<span className="commandPaletteTabLabel">{tab.label}</span>
+									</button>
+								);
+							})}
+						</div>
 					</div>
-				</div>
 
-				<div className="commandPaletteInputWrapper">
-					<AnimatePresence mode="wait">
-						{activeTab === "search" && (
-							<m.span
-								key="search-icon"
-								className="commandPaletteSearchIcon"
-								initial={{ opacity: 0, scale: 0.8 }}
-								animate={{ opacity: 1, scale: 1 }}
-								exit={{ opacity: 0, scale: 0.8 }}
-								transition={{ duration: 0.12 }}
-							>
-								<Search size={15} />
-							</m.span>
-						)}
-					</AnimatePresence>
-					<input
-						ref={inputRef}
-						className="commandPaletteInput"
-						placeholder={
-							activeTab === "commands" ? "Search Commands" : "Search notes…"
-						}
-						value={query}
-						onChange={(e) =>
-							setState((curr) => ({
-								...curr,
-								query: e.target.value,
-								selectedIndex: 0,
-							}))
-						}
-						autoCorrect="off"
-						autoCapitalize="off"
-						spellCheck={false}
-					/>
+					<div className="commandPaletteInputWrapper">
+						<AnimatePresence mode="wait">
+							{activeTab === "search" && (
+								<m.span
+									key="search-icon"
+									className="commandPaletteSearchIcon"
+									initial={{ opacity: 0, scale: 0.8 }}
+									animate={{ opacity: 1, scale: 1 }}
+									exit={{ opacity: 0, scale: 0.8 }}
+									transition={{ duration: 0.12 }}
+								>
+									<Search size={15} />
+								</m.span>
+							)}
+						</AnimatePresence>
+						<input
+							ref={inputRef}
+							className="commandPaletteInput"
+							placeholder={
+								activeTab === "commands" ? "Search Commands" : "Search notes…"
+							}
+							value={query}
+							onChange={(e) =>
+								setState((curr) => ({
+									...curr,
+									query: e.target.value,
+									selectedIndex: 0,
+								}))
+							}
+							autoCorrect="off"
+							autoCapitalize="off"
+							spellCheck={false}
+						/>
+					</div>
+					{activeTab === "search" ? (
+						<CommandSearchFilters
+							request={parsedSearch.request}
+							onChangeQuery={(nextQuery) =>
+								setState((curr) => ({
+									...curr,
+									query: nextQuery,
+									selectedIndex: 0,
+								}))
+							}
+						/>
+					) : null}
 				</div>
-				{activeTab === "search" ? (
-					<CommandSearchFilters
-						request={parsedSearch.request}
-						onChangeQuery={(nextQuery) =>
-							setState((curr) => ({
-								...curr,
-								query: nextQuery,
-								selectedIndex: 0,
-							}))
-						}
-					/>
-				) : null}
 
 				<AnimatePresence mode="wait">
 					<m.div
 						key={activeTab}
 						className={
 							activeTab === "search"
-								? "commandPaletteSplitBody"
-								: "commandPaletteScene"
+								? "commandPaletteBody commandPaletteSplitBody"
+								: "commandPaletteBody commandPaletteScene"
 						}
 						initial={{ opacity: 0, y: 4 }}
 						animate={{ opacity: 1, y: 0 }}
