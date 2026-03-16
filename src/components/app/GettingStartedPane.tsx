@@ -59,22 +59,37 @@ function buildSteps(showDailyNote: boolean): Step[] {
 
 function ProgressRing({
 	progress,
+	currentValue,
+	totalValue,
 	complete,
 	reduced,
-}: { progress: number; complete: boolean; reduced: boolean }) {
+}: {
+	progress: number;
+	currentValue: number;
+	totalValue: number;
+	complete: boolean;
+	reduced: boolean;
+}) {
 	const transition = reduced
 		? { duration: 0 }
 		: { ...springPresets.gentle, duration: 0.6 };
 
 	return (
-		<div className="starterProgressRing">
+		<div
+			className="starterProgressRing"
+			role="progressbar"
+			aria-label="Getting started progress"
+			aria-valuemin={0}
+			aria-valuemax={totalValue}
+			aria-valuenow={currentValue}
+			tabIndex={0}
+		>
 			<svg
 				width={RING_SIZE}
 				height={RING_SIZE}
 				viewBox={`0 0 ${RING_SIZE} ${RING_SIZE}`}
-				role="img"
-				aria-label="Progress"
 			>
+				<title>Getting started progress ring</title>
 				<circle
 					cx={RING_SIZE / 2}
 					cy={RING_SIZE / 2}
@@ -168,6 +183,8 @@ export function GettingStartedPane({
 				<div style={{ display: "flex", alignItems: "center", gap: 8 }}>
 					<ProgressRing
 						progress={progress}
+						currentValue={Math.min(currentStep, steps.length)}
+						totalValue={steps.length}
 						complete={complete}
 						reduced={reduced}
 					/>

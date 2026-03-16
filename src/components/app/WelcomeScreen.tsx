@@ -24,8 +24,13 @@ interface WelcomeScreenProps {
 const STAGGER = 0.08;
 const BRAND_DELAY = 0.15;
 
+function normalizePathSeparators(fullPath: string): string {
+	return fullPath.replace(/\\/g, "/");
+}
+
 function shortenPath(fullPath: string): string {
-	const segments = fullPath.split("/").filter(Boolean);
+	const normalizedPath = normalizePathSeparators(fullPath);
+	const segments = normalizedPath.split("/").filter(Boolean);
 	if (segments.length <= 3) return fullPath;
 	return `~/${segments.slice(-2).join("/")}`;
 }
@@ -40,7 +45,9 @@ export function WelcomeScreen({
 	onSelectRecentSpace,
 }: WelcomeScreenProps) {
 	const shouldReduceMotion = useReducedMotion();
-	const lastSpaceName = lastSpacePath?.split("/").pop() ?? null;
+	const lastSpaceName = lastSpacePath?.length
+		? (normalizePathSeparators(lastSpacePath).split("/").pop() ?? lastSpacePath)
+		: null;
 	const otherRecents = recentSpaces.filter((path) => path !== lastSpacePath);
 
 	const skip = shouldReduceMotion ?? false;
@@ -286,7 +293,7 @@ export function WelcomeScreen({
 											whileTap={skip ? undefined : { scale: 0.98 }}
 										>
 											<span className="welcomeRecentName">
-												{path.split("/").pop() ?? path}
+												{normalizePathSeparators(path).split("/").pop() ?? path}
 											</span>
 											<span className="welcomeRecentPath mono">
 												{shortenPath(path)}
