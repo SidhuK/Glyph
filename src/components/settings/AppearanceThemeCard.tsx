@@ -264,7 +264,6 @@ export function AppearanceThemeCard({
 		>
 			<SettingsRow
 				label="Color mode"
-				description="Light and dark are fixed. System follows your OS preference."
 			>
 				<SettingsSegmented<ThemeMode>
 					ariaLabel="Theme mode"
@@ -305,7 +304,6 @@ export function AppearanceThemeCard({
 
 			<ThemeSelector
 				label="Light theme"
-				description="Used whenever Glyph resolves to light mode."
 				mode="light"
 				selected={lightTheme}
 				options={lightOptions}
@@ -315,7 +313,6 @@ export function AppearanceThemeCard({
 
 			<ThemeSelector
 				label="Dark theme"
-				description="Used whenever Glyph resolves to dark mode."
 				mode="dark"
 				selected={darkTheme}
 				options={darkOptions}
@@ -323,10 +320,7 @@ export function AppearanceThemeCard({
 				onSelect={onDarkThemeChange}
 			/>
 
-			<SettingsRow
-				label="Translucent app"
-				description="Use the translucent treatment across the app frame, sidebar, and AI panel."
-			>
+			<SettingsRow label="Translucent app">
 				<SettingsToggle
 					ariaLabel="Translucent app"
 					checked={translucentApp}

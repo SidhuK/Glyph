@@ -44,24 +44,20 @@ interface SettingsToggleProps {
 
 export function SettingsSection({
 	title,
-	description,
 	children,
 	className,
 	id,
 	aside,
 }: SettingsSectionProps) {
 	return (
-		<section id={id} className={cn("settingsCard", className)}>
-			<div className="settingsCardHeader">
-				<div>
-					<div className="settingsCardTitle">{title}</div>
-					{description ? (
-						<div className="settingsCardHint">{description}</div>
-					) : null}
-				</div>
+		<section id={id} className={cn("settingsSection", className)}>
+			<div className="settingsSectionHeader">
+				<div className="settingsCardTitle">{title}</div>
 				{aside ? <div className="settingsCardActions">{aside}</div> : null}
 			</div>
-			<div className="settingsSectionBody">{children}</div>
+			<div className="settingsCard">
+				<div className="settingsSectionBody">{children}</div>
+			</div>
 		</section>
 	);
 }

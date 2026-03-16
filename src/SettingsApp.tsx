@@ -147,9 +147,6 @@ export default function SettingsApp() {
 						<div className="settingsTabPanel">
 							<header className="settingsPanelHeader">
 								<h2 className="settingsPanelTitle">{activeTabMeta.label}</h2>
-								<p className="settingsPanelSubtitle">
-									{activeTabMeta.subtitle}
-								</p>
 							</header>
 							{tabContent}
 						</div>

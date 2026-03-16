@@ -195,7 +195,7 @@
 .settingsGrid {
 	display: flex;
 	flex-direction: column;
-	gap: 10px;
+	gap: 34px;
 }
 
 @media (max-width: 900px) {

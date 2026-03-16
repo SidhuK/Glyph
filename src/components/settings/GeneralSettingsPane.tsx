@@ -1,24 +1,19 @@
 import { useCallback, useEffect, useState } from "react";
 import {
-	type AiAssistantMode,
 	getDailyNotesFolder,
-	loadSettings,
-	setAiAssistantMode,
 	setDailyNotesFolder,
 } from "../../lib/settings";
 import { invoke } from "../../lib/tauri";
+import { Trash2 } from "../Icons";
 import { FolderOpen } from "../Icons/NavigationIcons";
 import { LicenseSettingsCard } from "../licensing/LicenseSettingsCard";
 import { Button } from "../ui/shadcn/button";
 import {
 	SettingsRow,
 	SettingsSection,
-	SettingsSegmented,
 } from "./SettingsScaffold";
 
 export function GeneralSettingsPane() {
-	const [aiAssistantMode, setAiAssistantModeState] =
-		useState<AiAssistantMode>("create");
 	const [dailyNotesFolder, setDailyNotesFolderState] = useState<string | null>(
 		null,
 	);
@@ -30,12 +25,8 @@ export function GeneralSettingsPane() {
 		let cancelled = false;
 		void (async () => {
 			try {
-				const [settings, folder] = await Promise.all([
-					loadSettings(),
-					getDailyNotesFolder(),
-				]);
+				const folder = await getDailyNotesFolder();
 				if (cancelled) return;
-				setAiAssistantModeState(settings.ui.aiAssistantMode);
 				setDailyNotesFolderState(folder);
 			} catch (cause) {
 				if (!cancelled) {
@@ -52,18 +43,6 @@ export function GeneralSettingsPane() {
 		return () => {
 			cancelled = true;
 		};
-	}, []);
-
-	const updateAssistantMode = useCallback(async (mode: AiAssistantMode) => {
-		setError("");
-		setAiAssistantModeState(mode);
-		try {
-			await setAiAssistantMode(mode);
-		} catch (cause) {
-			setError(
-				cause instanceof Error ? cause.message : "Failed to save settings",
-			);
-		}
 	}, []);
 
 	const handleBrowseFolder = useCallback(async () => {
@@ -119,26 +98,6 @@ export function GeneralSettingsPane() {
 
 			<div className="settingsGrid">
 				<SettingsSection
-					title="Assistant"
-					description="Choose how Glyph opens your assistant workspace by default."
-				>
-					<SettingsRow
-						label="Default view"
-						description="Switch between Create and Chat without changing any assistant behavior."
-					>
-						<SettingsSegmented<AiAssistantMode>
-							ariaLabel="Assistant default view"
-							value={aiAssistantMode}
-							onChange={(value) => void updateAssistantMode(value)}
-							options={[
-								{ label: "Create", value: "create" },
-								{ label: "Chat", value: "chat" },
-							]}
-						/>
-					</SettingsRow>
-				</SettingsSection>
-
-				<SettingsSection
 					title="Daily Notes"
 					description="Choose where new daily notes should be created within the current space."
 				>
@@ -149,45 +108,44 @@ export function GeneralSettingsPane() {
 						interactive={false}
 					>
 						<div className="dailyNotesFolderField">
-							<div className="dailyNotesFolderPath">
-								{dailyNotesLoading
-									? "Loading..."
-									: (dailyNotesFolder ?? "Not configured")}
+							<div className="dailyNotesFolderRow">
+								<div className="dailyNotesFolderPath">
+									{dailyNotesLoading
+										? "Loading..."
+										: (dailyNotesFolder ?? "Not configured")}
+								</div>
+								<div className="settingsActions dailyNotesActions">
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										className="min-w-24 rounded-md border-border bg-background justify-center shadow-none"
+										onClick={handleBrowseFolder}
+										disabled={dailyNotesLoading}
+									>
+										<FolderOpen size={14} />
+										Browse
+									</Button>
+									{dailyNotesFolder ? (
+										<Button
+											type="button"
+											variant="outline"
+											size="icon-sm"
+											className="rounded-md border-border bg-background justify-center shadow-none"
+											onClick={handleClearFolder}
+											disabled={dailyNotesLoading}
+											aria-label="Clear daily notes folder"
+											title="Clear daily notes folder"
+										>
+											<Trash2 size={14} />
+										</Button>
+									) : null}
+								</div>
 							</div>
 							{dailyNotesError ? (
 								<div className="settingsError dailyNotesError">
 									{dailyNotesError}
 								</div>
-							) : null}
-						</div>
-					</SettingsRow>
-					<SettingsRow
-						label="Actions"
-						description="Browse for a folder or clear the current daily notes location."
-					>
-						<div className="settingsActions dailyNotesActions">
-							<Button
-								type="button"
-								variant="outline"
-								size="sm"
-								className="min-w-24 rounded-md border-border bg-background justify-center shadow-none"
-								onClick={handleBrowseFolder}
-								disabled={dailyNotesLoading}
-							>
-								<FolderOpen size={14} />
-								Browse
-							</Button>
-							{dailyNotesFolder ? (
-								<Button
-									type="button"
-									variant="outline"
-									size="sm"
-									className="min-w-20 rounded-md border-border bg-background justify-center shadow-none"
-									onClick={handleClearFolder}
-									disabled={dailyNotesLoading}
-								>
-									Clear
-								</Button>
 							) : null}
 						</div>
 					</SettingsRow>
