@@ -550,7 +550,7 @@
 		)
 	);
 	margin: 0 auto var(--space-2);
-	padding: var(--space-3) var(--readable-content-gutter-compact) 0;
+	padding: var(--space-3) var(--readable-content-gutter-compact) var(--space-5);
 	font-size: 11px;
 	color: var(--text-tertiary);
 	box-sizing: border-box;
