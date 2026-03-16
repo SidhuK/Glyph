@@ -493,16 +493,15 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 						) : null}
 						{showBacklinks && backlinks.length > 0 ? (
 							<div className="editorBacklinks" aria-label="Backlinks">
-								<div className="editorBacklinksDivider" aria-hidden="true" />
-								<div className="editorBacklinksLabel">
-									Linked mentions ({backlinks.length})
-								</div>
-								<div className="editorBacklinksList">
+								<div className="editorBacklinksRow">
+									<div className="editorBacklinksLabel">
+										Linked mentions ({backlinks.length})
+									</div>
 									{backlinks.map((item) => (
 										<button
 											key={item.id}
 											type="button"
-											className="editorBacklink"
+											className="editorBacklinkInline"
 											onClick={() =>
 												dispatchWikiLinkClick({
 													raw: `[[${item.id}]]`,

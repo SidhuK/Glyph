@@ -550,55 +550,49 @@
 		)
 	);
 	margin: 0 auto var(--space-2);
-	padding: var(--space-4) var(--readable-content-gutter-compact) 0;
+	padding: var(--space-3) var(--readable-content-gutter-compact) 0;
 	font-size: 11px;
 	color: var(--text-tertiary);
 	box-sizing: border-box;
 }
 
-.editorBacklinksDivider {
-	height: 1px;
-	margin-bottom: var(--space-3);
-	background: color-mix(in srgb, var(--border-light) 92%, transparent);
-}
-
 .editorBacklinksLabel {
-	margin-bottom: 8px;
 	text-transform: uppercase;
 	font-size: 10px;
 	font-weight: var(--font-semibold);
 	letter-spacing: 0.06em;
+	flex: 0 0 auto;
 }
 
-.editorBacklinksList {
+.editorBacklinksRow {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 8px;
+	align-items: center;
+	gap: 6px 8px;
 }
 
-.editorBacklink {
-	border: 1px solid var(--border-light);
-	border-radius: var(--radius-full);
-	background: var(--bg-secondary);
-	color: var(--text-tertiary);
+.editorBacklinkInline {
+	color: var(--interactive-accent);
 	font-size: 11px;
 	line-height: 1.2;
-	padding: 5px 9px;
+	padding: 1px 4px;
+	border: none;
+	border-radius: var(--radius-xs);
+	background: color-mix(in srgb, var(--interactive-accent) 8%, transparent);
+	font-weight: var(--font-medium);
 	cursor: pointer;
-	transition: color 180ms ease, border-color 180ms ease, background-color 180ms
-		ease;
+	transition: background 120ms ease, color 120ms ease;
 }
 
-.editorBacklink:hover,
-.editorBacklink:focus-visible {
-	border-color: var(--border-default);
-	color: var(--text-secondary);
-	background: color-mix(in srgb, var(--bg-secondary) 72%, var(--bg-hover));
+.editorBacklinkInline:hover,
+.editorBacklinkInline:focus-visible {
+	background: color-mix(in srgb, var(--interactive-accent) 16%, transparent);
+	color: var(--interactive-accent);
 	outline: none;
 }
 
-.editorBacklink:active {
-	transform: translateY(0.5px);
+.editorBacklinkInline:active {
+	transform: none;
 }
 
 .tiptapContentInline a {
