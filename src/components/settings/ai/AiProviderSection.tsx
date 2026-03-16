@@ -59,7 +59,7 @@ export function AiProviderSection({
 						<option value="openai_compat">OpenAI-compatible</option>
 					</select>
 					{showRestartPrompt ? (
-						<div className="settingsRestartNotice" role="status" aria-live="polite">
+						<output className="settingsRestartNotice" aria-live="polite">
 							<div className="settingsRestartNoticeCopy">
 								<TriangleAlert size={14} />
 								<span>Restart the app to fully apply the new provider.</span>
@@ -74,7 +74,7 @@ export function AiProviderSection({
 									Restart app
 								</Button>
 							</div>
-						</div>
+						</output>
 					) : null}
 				</div>
 			</SettingsRow>

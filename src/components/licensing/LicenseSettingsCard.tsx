@@ -128,18 +128,12 @@ export function LicenseSettingsCard() {
 
 			{status?.mode === "licensed" ? (
 				<>
-					<SettingsRow
-						label="Activated"
-						interactive={false}
-					>
+					<SettingsRow label="Activated" interactive={false}>
 						<div className="settingsValue">
 							{formatLicenseDate(status.activated_at_ms)}
 						</div>
 					</SettingsRow>
-					<SettingsRow
-						label="License key"
-						interactive={false}
-					>
+					<SettingsRow label="License key" interactive={false}>
 						<div className="settingsValue">
 							{status.license_key_masked ?? "Stored locally"}
 						</div>

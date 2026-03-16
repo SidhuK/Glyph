@@ -262,9 +262,7 @@ export function AppearanceThemeCard({
 			title="Theme"
 			description="Mix and match light and dark theme families with quick visual previews."
 		>
-			<SettingsRow
-				label="Color mode"
-			>
+			<SettingsRow label="Color mode">
 				<SettingsSegmented<ThemeMode>
 					ariaLabel="Theme mode"
 					value={themeMode}

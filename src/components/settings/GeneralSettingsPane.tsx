@@ -1,17 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
-import {
-	getDailyNotesFolder,
-	setDailyNotesFolder,
-} from "../../lib/settings";
+import { getDailyNotesFolder, setDailyNotesFolder } from "../../lib/settings";
 import { invoke } from "../../lib/tauri";
 import { Trash2 } from "../Icons";
 import { FolderOpen } from "../Icons/NavigationIcons";
 import { LicenseSettingsCard } from "../licensing/LicenseSettingsCard";
 import { Button } from "../ui/shadcn/button";
-import {
-	SettingsRow,
-	SettingsSection,
-} from "./SettingsScaffold";
+import { SettingsRow, SettingsSection } from "./SettingsScaffold";
 
 export function GeneralSettingsPane() {
 	const [dailyNotesFolder, setDailyNotesFolderState] = useState<string | null>(

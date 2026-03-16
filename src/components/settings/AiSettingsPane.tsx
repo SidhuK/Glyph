@@ -89,24 +89,27 @@ export function AiSettingsPane() {
 		}
 	}, []);
 
-	const saveProfile = useCallback(async (draft: AiProfile) => {
-		const requestId = ++saveProfileRequestIdRef.current;
-		setError("");
-		try {
-			const saved = await invoke("ai_profile_upsert", {
-				profile: draft,
-			});
-			if (requestId !== saveProfileRequestIdRef.current) return;
-			await invoke("ai_active_profile_set", { id: saved.id });
-			if (requestId !== saveProfileRequestIdRef.current) return;
-			setProfiles((prev) => prev.map((p) => (p.id === saved.id ? saved : p)));
-			setActiveProfileId(saved.id);
-			await notifyAiProfilesUpdated();
-		} catch (e) {
-			if (requestId !== saveProfileRequestIdRef.current) return;
-			setError(errMessage(e));
-		}
-	}, [notifyAiProfilesUpdated]);
+	const saveProfile = useCallback(
+		async (draft: AiProfile) => {
+			const requestId = ++saveProfileRequestIdRef.current;
+			setError("");
+			try {
+				const saved = await invoke("ai_profile_upsert", {
+					profile: draft,
+				});
+				if (requestId !== saveProfileRequestIdRef.current) return;
+				await invoke("ai_active_profile_set", { id: saved.id });
+				if (requestId !== saveProfileRequestIdRef.current) return;
+				setProfiles((prev) => prev.map((p) => (p.id === saved.id ? saved : p)));
+				setActiveProfileId(saved.id);
+				await notifyAiProfilesUpdated();
+			} catch (e) {
+				if (requestId !== saveProfileRequestIdRef.current) return;
+				setError(errMessage(e));
+			}
+		},
+		[notifyAiProfilesUpdated],
+	);
 
 	const onActiveProfileChange = useCallback(
 		async (id: string | null) => {

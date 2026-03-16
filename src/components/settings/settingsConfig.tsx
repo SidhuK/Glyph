@@ -1,6 +1,6 @@
 import {
-	Archive02Icon,
 	AiBrain04Icon,
+	Archive02Icon,
 	Settings01Icon,
 	Sun03Icon,
 } from "@hugeicons/core-free-icons";
