@@ -194,34 +194,6 @@ export interface DatabaseCreateRowResult {
 	row: DatabaseRow;
 }
 
-export type CalendarMode = "notes" | "daily_notes" | "tasks";
-
-export type CalendarSource =
-	| { kind: "space" }
-	| { kind: "folder"; path: string; recursive: boolean }
-	| { kind: "daily_notes" };
-
-export interface CalendarItem {
-	id: string;
-	kind: "note" | "daily_note" | "task";
-	date: string;
-	title: string;
-	rel_path: string | null;
-	preview: string | null;
-	badges: string[];
-}
-
-export interface CalendarNoteDateProperty {
-	key: string;
-	kind: "date" | "datetime";
-	count: number;
-}
-
-export interface CalendarLoadResult {
-	items: CalendarItem[];
-	note_date_properties: CalendarNoteDateProperty[];
-}
-
 export interface SearchResult {
 	id: string;
 	title: string;
@@ -578,21 +550,6 @@ interface TauriCommands {
 		{ database_path: string; title?: string | null },
 		DatabaseCreateRowResult
 	>;
-	calendar_query: CommandDef<
-		{
-			request: {
-				mode: CalendarMode;
-				source: CalendarSource;
-				start_date: string;
-				end_date: string;
-				note_date_property_key?: string | null;
-				note_date_property_kind?: "date" | "datetime" | null;
-				daily_notes_folder?: string | null;
-			};
-		},
-		CalendarLoadResult
-	>;
-
 	index_rebuild: CommandDef<void, IndexRebuildResult>;
 	search: CommandDef<{ query: string }, SearchResult[]>;
 	search_advanced: CommandDef<

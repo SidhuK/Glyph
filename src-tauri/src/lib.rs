@@ -88,6 +88,9 @@ pub fn run() {
                 true,
                 None::<&str>,
             )?;
+            #[cfg(target_os = "macos")]
+            let app_settings =
+                MenuItem::with_id(app, "app.settings", "Settings…", true, Some("CmdOrCtrl+,"))?;
 
             #[cfg(target_os = "macos")]
             let app_menu = Submenu::with_items(
@@ -96,6 +99,7 @@ pub fn run() {
                 true,
                 &[
                     &app_about,
+                    &app_settings,
                     &PredefinedMenuItem::separator(app)?,
                     &PredefinedMenuItem::services(app, None)?,
                     &PredefinedMenuItem::separator(app)?,
@@ -297,6 +301,9 @@ pub fn run() {
             "app.about" => {
                 let _ = app.emit("menu:open_about", ());
             }
+            "app.settings" => {
+                let _ = app.emit("menu:open_settings", ());
+            }
             "ai.toggle" => {
                 let _ = app.emit("menu:toggle_ai", ());
             }
@@ -411,7 +418,6 @@ pub fn run() {
             database::mutations::database_update_cell,
             database::mutations::database_create_row,
             index::commands::index_rebuild,
-            index::calendar::calendar_query,
             index::commands::search,
             index::commands::search_advanced,
             index::commands::search_parse_and_run,

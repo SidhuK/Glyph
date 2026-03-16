@@ -1,13 +1,5 @@
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
-import {
-	Suspense,
-	lazy,
-	memo,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import { memo, useEffect, useMemo, useState } from "react";
 import {
 	useAISidebarContext,
 	useSpace,
@@ -17,7 +9,6 @@ import {
 	PATH_REMOVED_EVENT,
 	type PathRemovedDetail,
 } from "../../lib/appEvents";
-import { CALENDAR_TAB_ID } from "../../lib/calendar";
 import { APP_TAGLINE } from "../../lib/copy";
 import {
 	DEFAULT_ONBOARDING_SETTINGS,
@@ -39,12 +30,6 @@ import { GettingStartedPane } from "./GettingStartedPane";
 import { TabBar } from "./TabBar";
 import { WelcomeScreen } from "./WelcomeScreen";
 import { useTabManager } from "./useTabManager";
-
-const LazyCalendarPane = lazy(() =>
-	import("../calendar/CalendarPane").then((module) => ({
-		default: module.CalendarPane,
-	})),
-);
 
 interface EmptyTip {
 	key: string;
@@ -202,7 +187,6 @@ interface MainContentProps {
 	onOpenDailyNote: () => void;
 	onOpenTasks: () => void;
 	openTasksRequest: number;
-	openCalendarRequest: number;
 	showGettingStartedRequest: number;
 	dailyNoteSetupNoticeRequest: number;
 	onOpenDailyNotesSettings: () => void;
@@ -282,7 +266,6 @@ export const MainContent = memo(function MainContent({
 	onOpenDailyNote,
 	onOpenTasks,
 	openTasksRequest,
-	openCalendarRequest,
 	showGettingStartedRequest,
 	dailyNoteSetupNoticeRequest,
 	onOpenDailyNotesSettings,
@@ -307,7 +290,6 @@ export const MainContent = memo(function MainContent({
 	const [starterOverrideVisible, setStarterOverrideVisible] = useState(false);
 	const [dailyNoteSetupToastVisible, setDailyNoteSetupToastVisible] =
 		useState(false);
-	const lastHandledOpenCalendarRequest = useRef(0);
 
 	const {
 		openTabs,
@@ -327,18 +309,6 @@ export const MainContent = memo(function MainContent({
 		if (!spacePath || openTasksRequest === 0) return;
 		openSpecialTab(TASKS_TAB_ID);
 	}, [openSpecialTab, openTasksRequest, spacePath]);
-
-	useEffect(() => {
-		if (
-			!spacePath ||
-			openCalendarRequest === 0 ||
-			openCalendarRequest === lastHandledOpenCalendarRequest.current
-		) {
-			return;
-		}
-		lastHandledOpenCalendarRequest.current = openCalendarRequest;
-		openSpecialTab(CALENDAR_TAB_ID);
-	}, [openCalendarRequest, openSpecialTab, spacePath]);
 
 	useEffect(() => {
 		if (!spacePath || showGettingStartedRequest === 0) return;
@@ -430,18 +400,6 @@ export const MainContent = memo(function MainContent({
 					onOpenFile={(relPath) => void fileTree.openFile(relPath)}
 					onClosePane={() => closeTab(TASKS_TAB_ID)}
 				/>
-			);
-		}
-		if (viewerPath === CALENDAR_TAB_ID) {
-			return (
-				<Suspense
-					fallback={<div className="mainEmptyState">Loading calendar…</div>}
-				>
-					<LazyCalendarPane
-						onOpenFile={(relPath) => void fileTree.openFile(relPath)}
-						onClosePane={() => closeTab(CALENDAR_TAB_ID)}
-					/>
-				</Suspense>
 			);
 		}
 		if (viewerPath.toLowerCase().endsWith(".md")) {

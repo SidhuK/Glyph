@@ -68,7 +68,12 @@ export function CommandList({
 								onRunCommand(index);
 							}}
 						>
-							<span>{command.label}</span>
+							<span className="commandPaletteItemMain">
+								{command.icon ? (
+									<span className="commandPaletteItemIcon">{command.icon}</span>
+								) : null}
+								<span>{command.label}</span>
+							</span>
 							{command.shortcut ? (
 								<span
 									className="commandPaletteShortcut"

@@ -129,7 +129,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 								<HugeiconsIcon
 									icon={Folder01Icon}
 									size={12}
-									className="fileTreeChevron"
+									className="fileTreeChevron fileTreeFolderIcon"
 								/>
 								<span className="fileTreeName">{displayDirName}</span>
 							</m.button>

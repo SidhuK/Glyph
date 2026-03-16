@@ -223,6 +223,10 @@
 	background: var(--bg-active);
 }
 
+.fileTreeFolderIcon {
+	color: currentcolor;
+}
+
 .fileTreeIcon {
 	display: inline-flex;
 	width: 16px;

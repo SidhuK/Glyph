@@ -1,9 +1,9 @@
 import { useCallback, useRef, useState } from "react";
-import { parseIsoDate } from "../lib/calendar";
 import {
 	getDailyNoteContent,
 	getDailyNotePath,
 	getTodayDateString,
+	parseIsoDate,
 } from "../lib/dailyNotes";
 import { updateOnboardingSettings } from "../lib/settings";
 import { invoke } from "../lib/tauri";

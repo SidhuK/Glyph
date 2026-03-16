@@ -1,7 +1,7 @@
 import {
 	CalendarAdd01Icon,
 	CheckListIcon,
-	Settings05Icon,
+	NoteIcon,
 	Tag01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -12,19 +12,9 @@ import {
 	useSpace,
 	useUILayoutContext,
 } from "../../contexts";
-import { openSettingsWindow } from "../../lib/windows";
-import { parentDir } from "../../utils/path";
 import { FileTreePane } from "../FileTreePane";
-import { Calendar, Files, FolderPlus, Plus } from "../Icons";
+import { Files } from "../Icons";
 import { TagsPane } from "../TagsPane";
-import { Button } from "../ui/shadcn/button";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuSeparator,
-	DropdownMenuTrigger,
-} from "../ui/shadcn/dropdown-menu";
 import { ScrollArea } from "../ui/shadcn/scroll-area";
 import { Tabs, TabsList, TabsTrigger } from "../ui/shadcn/tabs";
 
@@ -32,6 +22,7 @@ interface SidebarContentProps {
 	onToggleDir: (dirPath: string) => void;
 	onSelectDir: (dirPath: string) => void;
 	onOpenFile: (relPath: string) => void;
+	onNewNote: () => void;
 	onNewFileInDir: (dirPath: string) => void;
 	onNewDatabaseInDir: (dirPath: string) => Promise<string | null>;
 	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
@@ -41,19 +32,13 @@ interface SidebarContentProps {
 	onOpenDailyNote: () => void;
 	isDailyNoteCreating: boolean;
 	onOpenTasks: () => void;
-	onOpenCalendar: () => void;
 }
-
-const SIDEBAR_FOOTER_STYLE = {
-	display: "flex",
-	alignItems: "center",
-	justifyContent: "space-between",
-} as const;
 
 export const SidebarContent = memo(function SidebarContent({
 	onToggleDir,
 	onSelectDir,
 	onOpenFile,
+	onNewNote,
 	onNewFileInDir,
 	onNewDatabaseInDir,
 	onNewFolderInDir,
@@ -63,7 +48,6 @@ export const SidebarContent = memo(function SidebarContent({
 	onOpenDailyNote,
 	isDailyNoteCreating,
 	onOpenTasks,
-	onOpenCalendar,
 }: SidebarContentProps) {
 	// Contexts
 	const { spacePath } = useSpace();
@@ -78,8 +62,6 @@ export const SidebarContent = memo(function SidebarContent({
 		refreshTags,
 	} = useFileTreeContext();
 	const { sidebarViewMode, setSidebarViewMode } = useUILayoutContext();
-	const targetDir =
-		activeDirPath ?? (activeFilePath ? parentDir(activeFilePath) : "");
 
 	if (!spacePath) {
 		return (
@@ -98,6 +80,16 @@ export const SidebarContent = memo(function SidebarContent({
 		<>
 			<div className="sidebarSection sidebarSectionGrow">
 				<div className="sidebarQuickActions">
+					<button
+						type="button"
+						className="sidebarDailyNotesBtn"
+						data-kind="new-note"
+						onClick={onNewNote}
+						title="Create a new note"
+					>
+						<HugeiconsIcon icon={NoteIcon} size={14} strokeWidth={1.8} />
+						<span className="dailyNotesLabel">New note</span>
+					</button>
 					<button
 						type="button"
 						className="sidebarDailyNotesBtn"
@@ -122,16 +114,6 @@ export const SidebarContent = memo(function SidebarContent({
 					>
 						<HugeiconsIcon icon={CheckListIcon} size={14} strokeWidth={1.8} />
 						<span className="dailyNotesLabel">Tasks</span>
-					</button>
-					<button
-						type="button"
-						className="sidebarDailyNotesBtn"
-						data-kind="calendar"
-						onClick={onOpenCalendar}
-						title="Open Calendar"
-					>
-						<Calendar size={14} strokeWidth={1.8} />
-						<span className="dailyNotesLabel">Calendar</span>
 					</button>
 				</div>
 				<div className="sidebarSectionHeader">
@@ -202,66 +184,6 @@ export const SidebarContent = memo(function SidebarContent({
 						</m.div>
 					)}
 				</AnimatePresence>
-			</div>
-			<div className="sidebarFooter" style={SIDEBAR_FOOTER_STYLE}>
-				<div>
-					{sidebarViewMode === "files" ? (
-						<DropdownMenu>
-							<DropdownMenuTrigger asChild>
-								<Button
-									type="button"
-									variant="ghost"
-									size="icon-sm"
-									className="sidebarFooterIconButton"
-									title={`Add in ${targetDir || "space root"}`}
-								>
-									<Plus size={14} />
-								</Button>
-							</DropdownMenuTrigger>
-							<DropdownMenuContent
-								align="start"
-								side="top"
-								className="fileTreeCreateMenu"
-							>
-								<DropdownMenuItem
-									className="fileTreeCreateMenuItem"
-									onSelect={() => void onNewFileInDir(targetDir)}
-								>
-									<Plus size={14} />
-									Add file
-								</DropdownMenuItem>
-								<DropdownMenuSeparator className="fileTreeCreateMenuSeparator" />
-								<DropdownMenuItem
-									className="fileTreeCreateMenuItem"
-									onSelect={() => void onNewDatabaseInDir(targetDir)}
-								>
-									<Plus size={14} />
-									Add database
-								</DropdownMenuItem>
-								<DropdownMenuSeparator className="fileTreeCreateMenuSeparator" />
-								<DropdownMenuItem
-									className="fileTreeCreateMenuItem"
-									onSelect={() => void onNewFolderInDir(targetDir)}
-								>
-									<FolderPlus size={14} />
-									Add folder
-								</DropdownMenuItem>
-							</DropdownMenuContent>
-						</DropdownMenu>
-					) : null}
-				</div>
-				<div>
-					<Button
-						type="button"
-						variant="ghost"
-						size="icon-sm"
-						className="sidebarFooterIconButton"
-						onClick={() => void openSettingsWindow()}
-						title="Settings"
-					>
-						<HugeiconsIcon icon={Settings05Icon} size={14} />
-					</Button>
-				</div>
 			</div>
 		</>
 	);
