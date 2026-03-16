@@ -1,7 +1,8 @@
 import {
+	Alert02Icon,
 	MenuCircleIcon,
-	Save as SaveIcon,
 	SourceCodeIcon,
+	TimeQuarter02Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
@@ -15,18 +16,9 @@ import { extractErrorMessage } from "../../lib/errorUtils";
 import { splitYamlFrontmatter } from "../../lib/notePreview";
 import { type TextFileDoc, invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
-import { countLines, countWords, formatReadingTime } from "../../lib/textStats";
+import { countWords, formatReadingTime } from "../../lib/textStats";
 import { normalizeRelPath } from "../../utils/path";
-import {
-	Calendar,
-	Edit,
-	Eye,
-	FileText,
-	List,
-	RefreshCw,
-	Save,
-	Type,
-} from "../Icons";
+import { Edit, Eye, FileText, RefreshCw, Save, Type } from "../Icons";
 import { CanvasNoteInlineEditor } from "../editor/CanvasNoteInlineEditor";
 import { CALLOUT_TYPES } from "../editor/ribbonButtonConfigs";
 import type { CanvasInlineEditorMode } from "../editor/types";
@@ -109,11 +101,9 @@ export function MarkdownEditorPane({
 		const { body } = splitYamlFrontmatter(text);
 		const words = countWords(body);
 		const characters = body.length;
-		const lines = countLines(body);
 		return {
 			words,
 			characters,
-			lines,
 			readingTime: formatReadingTime(words),
 		};
 	}, [text]);
@@ -529,7 +519,6 @@ export function MarkdownEditorPane({
 						size="icon-sm"
 						className="markdownEditorMenuTrigger"
 						data-open={actionsOpen ? "true" : "false"}
-						data-save-state={saveSignal.state}
 						onClick={() => setActionsOpen((prev) => !prev)}
 						aria-label={
 							actionsOpen ? "Close editor actions" : "Open editor actions"
@@ -710,36 +699,28 @@ export function MarkdownEditorPane({
 						</div>
 						<div
 							className="markdownEditorStatsItem"
-							data-metric="lines"
-							title={`Lines: ${stats.lines.toLocaleString()}`}
-							aria-label={`Lines: ${stats.lines.toLocaleString()}`}
-						>
-							<List size={13} aria-hidden />
-							<span>{stats.lines.toLocaleString()}</span>
-						</div>
-						<div
-							className="markdownEditorStatsItem"
 							data-metric="reading-time"
 							title={`Reading time: ${stats.readingTime}`}
 							aria-label={`Reading time: ${stats.readingTime}`}
 						>
-							<Calendar size={13} aria-hidden />
+							<HugeiconsIcon icon={TimeQuarter02Icon} size={13} aria-hidden />
 							<span>{stats.readingTime}</span>
 						</div>
-						<div
-							className="markdownEditorStatsItem markdownEditorSaveState"
-							data-state={saveSignal.state}
-							title={saveSignal.description}
-							aria-label={saveSignal.description}
-						>
-							<span className="markdownEditorSaveDot" aria-hidden />
-							<HugeiconsIcon
-								icon={SaveIcon}
-								size={11}
-								className="markdownEditorSaveGlyph"
-								aria-hidden
-							/>
-						</div>
+						{saveSignal.state === "dirty" ? (
+							<div
+								className="markdownEditorStatsItem markdownEditorSaveState"
+								data-state={saveSignal.state}
+								title={saveSignal.description}
+								aria-label={saveSignal.description}
+							>
+								<HugeiconsIcon
+									icon={Alert02Icon}
+									size={11}
+									className="markdownEditorSaveGlyph"
+									aria-hidden
+								/>
+							</div>
+						) : null}
 					</div>
 				</m.div>
 			) : null}

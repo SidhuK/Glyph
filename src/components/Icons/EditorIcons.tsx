@@ -3,6 +3,7 @@ import {
 	AlignLeft as AlignLeftIcon,
 	AlignRight as AlignRightIcon,
 	Bold as BoldIcon,
+	Code as CodeIcon,
 	Edit as EditIcon,
 	Eye as EyeIcon,
 	Frame as FrameIcon,

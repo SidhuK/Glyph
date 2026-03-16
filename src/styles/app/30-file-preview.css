@@ -187,47 +187,32 @@
 }
 
 .markdownEditorStatsDock.is-collapsed
-	.markdownEditorStatsItem[data-metric="characters"],
-.markdownEditorStatsDock.is-collapsed
-	.markdownEditorStatsItem[data-metric="lines"] {
+	.markdownEditorStatsItem[data-metric="characters"] {
 	display: none;
 }
 
 .markdownEditorSaveState {
-	gap: 6px;
+	gap: 0;
 	cursor: default;
-}
-
-.markdownEditorSaveDot {
-	width: 6px;
-	height: 6px;
-	border-radius: 999px;
-	background: color-mix(in srgb, var(--text-tertiary) 78%, transparent);
-	transition: background-color 180ms ease, transform 180ms ease, opacity 180ms
-		ease;
-}
-
-.markdownEditorSaveState[data-state="dirty"] .markdownEditorSaveDot {
-	background: color-mix(in srgb, oklch(0.72 0.14 82) 88%, transparent);
-}
-
-.markdownEditorSaveState[data-state="saving"] .markdownEditorSaveDot {
-	background: color-mix(in srgb, var(--interactive-accent) 88%, transparent);
-	animation: markdownEditorSavePulse 1.2s ease-in-out infinite;
-}
-
-.markdownEditorSaveState[data-state="saved-fresh"] .markdownEditorSaveDot,
-.markdownEditorSaveState[data-state="reloaded"] .markdownEditorSaveDot {
-	background: color-mix(in srgb, var(--interactive-accent) 80%, white 8%);
-	transform: scale(1.18);
-}
-
-.markdownEditorSaveState[data-state="saved"] .markdownEditorSaveDot {
-	background: color-mix(in srgb, var(--interactive-accent) 58%, transparent);
 }
 
 .markdownEditorSaveGlyph {
 	opacity: 0.82;
+}
+
+.markdownEditorSaveState[data-state="dirty"] .markdownEditorSaveGlyph {
+	opacity: 0.9;
+}
+
+.markdownEditorSaveState[data-state="saving"] .markdownEditorSaveGlyph {
+	opacity: 1;
+	animation: markdownEditorSavePulse 1.2s ease-in-out infinite;
+}
+
+.markdownEditorSaveState[data-state="saved-fresh"] .markdownEditorSaveGlyph,
+.markdownEditorSaveState[data-state="reloaded"] .markdownEditorSaveGlyph {
+	opacity: 1;
+	transform: scale(1.08);
 }
 
 .markdownEditorStatsDock.is-collapsed .markdownEditorSaveState {
@@ -256,19 +241,6 @@
 	border-color: color-mix(in srgb, var(--border-default) 74%, transparent);
 	background: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-hover));
 	color: var(--text-primary);
-}
-
-.markdownEditorMenuTrigger[data-save-state="dirty"] {
-	border-color: color-mix(in srgb, oklch(0.72 0.14 82) 24%, var(--border-light));
-}
-
-.markdownEditorMenuTrigger[data-save-state="saved-fresh"],
-.markdownEditorMenuTrigger[data-save-state="reloaded"] {
-	border-color: color-mix(
-		in srgb,
-		var(--interactive-accent) 26%,
-		var(--border-light)
-	);
 }
 
 .markdownEditorActionsPanel {
