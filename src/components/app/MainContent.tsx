@@ -29,11 +29,12 @@ import { formatShortcutPartsForPlatform } from "../../lib/shortcuts/platform";
 import { TASKS_TAB_ID } from "../../lib/tasks";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { isInAppPreviewable } from "../../utils/filePreview";
-import { Calendar, FileText } from "../Icons";
+import { Calendar, FileText, Settings } from "../Icons";
 import { FilePreviewPane } from "../preview/FilePreviewPane";
 import { NotePane } from "../preview/NotePane";
 import { TasksPane } from "../tasks/TasksPane";
 import { springPresets } from "../ui/animations";
+import { Button } from "../ui/shadcn/button";
 import { GettingStartedPane } from "./GettingStartedPane";
 import { TabBar } from "./TabBar";
 import { WelcomeScreen } from "./WelcomeScreen";
@@ -203,6 +204,75 @@ interface MainContentProps {
 	openTasksRequest: number;
 	openCalendarRequest: number;
 	showGettingStartedRequest: number;
+	dailyNoteSetupNoticeRequest: number;
+	onOpenDailyNotesSettings: () => void;
+}
+
+function DailyNotesSetupToast({
+	visible,
+	onOpenSettings,
+	onDismiss,
+}: {
+	visible: boolean;
+	onOpenSettings: () => void;
+	onDismiss: () => void;
+}) {
+	const reduced = useReducedMotion() ?? false;
+
+	return (
+		<AnimatePresence>
+			{visible ? (
+				<m.div
+					className="dailyNotesSetupToastLayer"
+					initial={reduced ? false : { opacity: 0, scale: 0.96, y: 18 }}
+					animate={{ opacity: 1, scale: 1, y: 0 }}
+					exit={reduced ? { opacity: 0 } : { opacity: 0, scale: 0.98, y: 12 }}
+					transition={
+						reduced
+							? { duration: 0.16 }
+							: { duration: 0.28, ease: [0.22, 1, 0.36, 1] }
+					}
+				>
+					<output className="dailyNotesSetupToast" aria-live="polite">
+						<div className="dailyNotesSetupToastHeader">
+							<div className="dailyNotesSetupToastIcon">
+								<Calendar size={16} strokeWidth={1.8} />
+							</div>
+							<div className="dailyNotesSetupToastTitleBlock">
+								<div className="dailyNotesSetupToastEyebrow">Daily notes</div>
+								<h2 className="dailyNotesSetupToastTitle">
+									Set a folder to use daily notes
+								</h2>
+							</div>
+						</div>
+						<p className="dailyNotesSetupToastText">
+							Glyph will create each day&apos;s note there automatically.
+						</p>
+						<div className="dailyNotesSetupToastActions">
+							<Button
+								type="button"
+								size="sm"
+								variant="ghost"
+								className="dailyNotesSetupToastSecondary"
+								onClick={onDismiss}
+							>
+								Not now
+							</Button>
+							<Button
+								type="button"
+								size="sm"
+								className="dailyNotesSetupToastPrimary"
+								onClick={onOpenSettings}
+							>
+								<Settings size={14} strokeWidth={1.8} />
+								<span>Open settings</span>
+							</Button>
+						</div>
+					</output>
+				</m.div>
+			) : null}
+		</AnimatePresence>
+	);
 }
 
 export const MainContent = memo(function MainContent({
@@ -214,6 +284,8 @@ export const MainContent = memo(function MainContent({
 	openTasksRequest,
 	openCalendarRequest,
 	showGettingStartedRequest,
+	dailyNoteSetupNoticeRequest,
+	onOpenDailyNotesSettings,
 }: MainContentProps) {
 	const {
 		info,
@@ -233,6 +305,8 @@ export const MainContent = memo(function MainContent({
 	);
 	const [onboardingLoaded, setOnboardingLoaded] = useState(false);
 	const [starterOverrideVisible, setStarterOverrideVisible] = useState(false);
+	const [dailyNoteSetupToastVisible, setDailyNoteSetupToastVisible] =
+		useState(false);
 	const lastHandledOpenCalendarRequest = useRef(0);
 
 	const {
@@ -339,6 +413,15 @@ export const MainContent = memo(function MainContent({
 		}
 	}, [activeTabPath]);
 
+	useEffect(() => {
+		if (!spacePath || dailyNoteSetupNoticeRequest === 0) return;
+		setDailyNoteSetupToastVisible(true);
+		const timeout = window.setTimeout(() => {
+			setDailyNoteSetupToastVisible(false);
+		}, 5200);
+		return () => window.clearTimeout(timeout);
+	}, [dailyNoteSetupNoticeRequest, spacePath]);
+
 	const content = useMemo(() => {
 		if (!viewerPath) return null;
 		if (viewerPath === TASKS_TAB_ID) {
@@ -419,6 +502,14 @@ export const MainContent = memo(function MainContent({
 		<main className="mainArea">
 			<div className="canvasWrapper">
 				<div className="canvasPaneHost">
+					<DailyNotesSetupToast
+						visible={dailyNoteSetupToastVisible}
+						onDismiss={() => setDailyNoteSetupToastVisible(false)}
+						onOpenSettings={() => {
+							setDailyNoteSetupToastVisible(false);
+							onOpenDailyNotesSettings();
+						}}
+					/>
 					{showTabBar && (
 						<TabBar
 							openTabs={openTabs}

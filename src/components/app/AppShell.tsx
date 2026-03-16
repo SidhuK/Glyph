@@ -108,6 +108,8 @@ export function AppShell() {
 	const [openTasksRequest, setOpenTasksRequest] = useState(0);
 	const [openCalendarRequest, setOpenCalendarRequest] = useState(0);
 	const [showGettingStartedRequest, setShowGettingStartedRequest] = useState(0);
+	const [dailyNoteSetupNoticeRequest, setDailyNoteSetupNoticeRequest] =
+		useState(0);
 	const [movePickerSourcePath, setMovePickerSourcePath] = useState<
 		string | null
 	>(null);
@@ -188,6 +190,15 @@ export function AppShell() {
 			);
 		}
 	}, [dailyNotesFolder, openOrCreateDailyNote, setError]);
+
+	const requestOpenDailyNote = useCallback(() => {
+		if (!spacePath) return;
+		if (!dailyNotesFolder) {
+			setDailyNoteSetupNoticeRequest((value) => value + 1);
+			return;
+		}
+		void handleOpenDailyNote();
+	}, [dailyNotesFolder, handleOpenDailyNote, spacePath]);
 
 	const fsRefreshQueueRef = useRef<Set<string>>(new Set());
 	const fsRefreshTimerRef = useRef<number | null>(null);
@@ -316,9 +327,8 @@ export function AppShell() {
 	}, [fileTree, spacePath]);
 
 	const handleOpenDailyNoteFromMenu = useCallback(() => {
-		if (!spacePath || !dailyNotesFolder) return;
-		void handleOpenDailyNote();
-	}, [dailyNotesFolder, handleOpenDailyNote, spacePath]);
+		requestOpenDailyNote();
+	}, [requestOpenDailyNote]);
 
 	const handleSaveNoteFromMenu = useCallback(() => {
 		if (!spacePath) return;
@@ -657,8 +667,8 @@ export function AppShell() {
 				label: "Open daily note (today)",
 				category: "File Operations",
 				shortcut: { meta: true, shift: true, key: "d" },
-				enabled: Boolean(spacePath) && Boolean(dailyNotesFolder),
-				action: () => void handleOpenDailyNote(),
+				enabled: Boolean(spacePath),
+				action: requestOpenDailyNote,
 			},
 			{
 				id: "save-note",
@@ -737,11 +747,10 @@ export function AppShell() {
 		attachCurrentNoteToAi,
 		activeDirPath,
 		handleCopyOpenNoteAsMarkdown,
-		dailyNotesFolder,
 		fileTree,
-		handleOpenDailyNote,
 		onOpenSpace,
 		openMarkdownTabs.length,
+		requestOpenDailyNote,
 		saveCurrentEditor,
 		setAiPanelOpen,
 		setPaletteOpen,
@@ -833,7 +842,7 @@ export function AppShell() {
 				onSelectTag={(t) => openTagSearchPalette(t)}
 				sidebarCollapsed={sidebarCollapsed}
 				onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
-				onOpenDailyNote={handleOpenDailyNote}
+				onOpenDailyNote={requestOpenDailyNote}
 				isDailyNoteCreating={isDailyNoteCreating}
 				onOpenTasks={openTasksTab}
 				onOpenCalendar={openCalendarTab}
@@ -854,11 +863,13 @@ export function AppShell() {
 				fileTree={fileTree}
 				onOpenCommandPalette={openCommandPalette}
 				onCreateNote={handleCreateNoteFromStarter}
-				onOpenDailyNote={handleOpenDailyNote}
+				onOpenDailyNote={requestOpenDailyNote}
 				onOpenTasks={openTasksTab}
 				openTasksRequest={openTasksRequest}
 				openCalendarRequest={openCalendarRequest}
 				showGettingStartedRequest={showGettingStartedRequest}
+				dailyNoteSetupNoticeRequest={dailyNoteSetupNoticeRequest}
+				onOpenDailyNotesSettings={() => void openSettingsWindow("general")}
 			/>
 			{spacePath && aiEnabled && aiPanelOpen && (
 				<div

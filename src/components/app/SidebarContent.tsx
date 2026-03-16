@@ -6,8 +6,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, m } from "motion/react";
-import { memo, useCallback } from "react";
-import { toast } from "sonner";
+import { memo } from "react";
 import {
 	useFileTreeContext,
 	useSpace,
@@ -78,20 +77,9 @@ export const SidebarContent = memo(function SidebarContent({
 		tagsError,
 		refreshTags,
 	} = useFileTreeContext();
-	const { sidebarViewMode, setSidebarViewMode, dailyNotesFolder } =
-		useUILayoutContext();
+	const { sidebarViewMode, setSidebarViewMode } = useUILayoutContext();
 	const targetDir =
 		activeDirPath ?? (activeFilePath ? parentDir(activeFilePath) : "");
-
-	const handleDailyNoteClick = useCallback(() => {
-		if (!dailyNotesFolder) {
-			toast.error("Daily Notes folder not configured", {
-				description: "Go to Settings to configure a folder for daily notes.",
-			});
-			return;
-		}
-		onOpenDailyNote();
-	}, [dailyNotesFolder, onOpenDailyNote]);
 
 	if (!spacePath) {
 		return (
@@ -114,7 +102,7 @@ export const SidebarContent = memo(function SidebarContent({
 						type="button"
 						className="sidebarDailyNotesBtn"
 						data-kind="daily-notes"
-						onClick={handleDailyNoteClick}
+						onClick={onOpenDailyNote}
 						disabled={isDailyNoteCreating}
 						title="Open today's daily note"
 					>
