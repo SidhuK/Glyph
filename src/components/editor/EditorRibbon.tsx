@@ -36,8 +36,7 @@ const RibbonButtonList = memo(function RibbonButtonList({
 			disabled={!canEdit}
 			onMouseDown={onPreventMouseDown}
 			onClick={() => canEdit && btn.onClick()}
-			whileHover={canEdit ? { y: -1 } : undefined}
-			whileTap={{ scale: 0.92 }}
+			whileTap={canEdit ? { scale: 0.97 } : undefined}
 			transition={springPresets.snappy}
 		>
 			{btn.icon}
@@ -69,15 +68,12 @@ export const EditorRibbon = memo(function EditorRibbon({
 
 	return (
 		<div className="rfNodeNoteEditorRibbon rfNodeNoteEditorRibbonBottom nodrag nopan nowheel">
-			<div className="ribbonGroup">
+			<div className="ribbonGroup ribbonGroupUnified">
 				<RibbonButtonList
 					buttons={getFormatButtons(editor, runCommand, focusChain)}
 					canEdit={canEdit}
 					onPreventMouseDown={preventMouseDown}
 				/>
-			</div>
-			<span className="ribbonDivider" />
-			<div className="ribbonGroup">
 				<RibbonLinkPopover
 					editor={editor}
 					canEdit={canEdit}
@@ -85,25 +81,16 @@ export const EditorRibbon = memo(function EditorRibbon({
 					focusChain={focusChain}
 					preventMouseDown={preventMouseDown}
 				/>
-			</div>
-			<span className="ribbonDivider" />
-			<div className="ribbonGroup">
 				<RibbonButtonList
 					buttons={getHeadingButtons(editor, runCommand, focusChain)}
 					canEdit={canEdit}
 					onPreventMouseDown={preventMouseDown}
 				/>
-			</div>
-			<span className="ribbonDivider" />
-			<div className="ribbonGroup">
 				<RibbonButtonList
 					buttons={getListButtons(editor, runCommand, focusChain)}
 					canEdit={canEdit}
 					onPreventMouseDown={preventMouseDown}
 				/>
-			</div>
-			<span className="ribbonDivider" />
-			<div className="ribbonGroup">
 				<RibbonButtonList
 					buttons={getBlockButtons(editor, runCommand, focusChain)}
 					canEdit={canEdit}

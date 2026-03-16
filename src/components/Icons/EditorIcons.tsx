@@ -3,7 +3,6 @@ import {
 	AlignLeft as AlignLeftIcon,
 	AlignRight as AlignRightIcon,
 	Bold as BoldIcon,
-	Code as CodeIcon,
 	Edit as EditIcon,
 	Eye as EyeIcon,
 	Frame as FrameIcon,
@@ -12,16 +11,18 @@ import {
 	Heading2 as Heading2Icon,
 	Heading3 as Heading3Icon,
 	Italic as ItalicIcon,
+	LeftToRightListBulletIcon,
 	Link2 as Link2Icon,
 	Link as LinkIcon,
 	ListChecks as ListChecksIcon,
-	List as ListIcon,
 	ListOrdered as ListOrderedIcon,
 	Quote as QuoteIcon,
 	Redo as RedoIcon,
+	SourceCodeIcon,
 	StickyNote as StickyNoteIcon,
 	Strikethrough as StrikethroughIcon,
 	Text as TextIcon,
+	TextUnderlineIcon,
 	Undo as UndoIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -33,17 +34,20 @@ export const Bold = (props: IconProps) => (
 export const Italic = (props: IconProps) => (
 	<HugeiconsIcon icon={ItalicIcon} {...props} />
 );
+export const Underline = (props: IconProps) => (
+	<HugeiconsIcon icon={TextUnderlineIcon} {...props} />
+);
 export const Strikethrough = (props: IconProps) => (
 	<HugeiconsIcon icon={StrikethroughIcon} {...props} />
 );
 export const Code = (props: IconProps) => (
-	<HugeiconsIcon icon={CodeIcon} {...props} />
+	<HugeiconsIcon icon={SourceCodeIcon} {...props} />
 );
 export const Quote = (props: IconProps) => (
 	<HugeiconsIcon icon={QuoteIcon} {...props} />
 );
 export const List = (props: IconProps) => (
-	<HugeiconsIcon icon={ListIcon} {...props} />
+	<HugeiconsIcon icon={LeftToRightListBulletIcon} {...props} />
 );
 export const ListOrdered = (props: IconProps) => (
 	<HugeiconsIcon icon={ListOrderedIcon} {...props} />

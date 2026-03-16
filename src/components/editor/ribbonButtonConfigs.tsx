@@ -12,6 +12,7 @@ import {
 	ListOrdered,
 	Quote,
 	Strikethrough,
+	Underline,
 } from "../Icons";
 
 export interface RibbonButtonConfig {
@@ -46,7 +47,7 @@ export function getFormatButtons(
 			title: "Underline",
 			isActive: () => editor.isActive("underline"),
 			onClick: () => runCommand(() => focusChain().toggleUnderline().run()),
-			icon: <span className="ribbonText">U</span>,
+			icon: <Underline size={14} />,
 		},
 		{
 			title: "Strikethrough",

@@ -87,7 +87,7 @@ export function RibbonLinkPopover({
 					disabled={!canEdit}
 					onMouseDown={preventMouseDown}
 					onClick={() => canEdit && setLinkOpen(true)}
-					whileTap={{ scale: 0.92 }}
+					whileTap={canEdit ? { scale: 0.97 } : undefined}
 					transition={springPresets.snappy}
 				>
 					<Link2 size={14} />
