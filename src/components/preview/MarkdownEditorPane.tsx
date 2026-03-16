@@ -1,5 +1,4 @@
 import {
-	Alert02Icon,
 	MenuCircleIcon,
 	SourceCodeIcon,
 	TimeQuarter02Icon,
@@ -706,21 +705,6 @@ export function MarkdownEditorPane({
 							<HugeiconsIcon icon={TimeQuarter02Icon} size={13} aria-hidden />
 							<span>{stats.readingTime}</span>
 						</div>
-						{saveSignal.state === "dirty" ? (
-							<div
-								className="markdownEditorStatsItem markdownEditorSaveState"
-								data-state={saveSignal.state}
-								title={saveSignal.description}
-								aria-label={saveSignal.description}
-							>
-								<HugeiconsIcon
-									icon={Alert02Icon}
-									size={11}
-									className="markdownEditorSaveGlyph"
-									aria-hidden
-								/>
-							</div>
-						) : null}
 					</div>
 				</m.div>
 			) : null}

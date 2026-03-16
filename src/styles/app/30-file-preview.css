@@ -191,34 +191,6 @@
 	display: none;
 }
 
-.markdownEditorSaveState {
-	gap: 0;
-	cursor: default;
-}
-
-.markdownEditorSaveGlyph {
-	opacity: 0.82;
-}
-
-.markdownEditorSaveState[data-state="dirty"] .markdownEditorSaveGlyph {
-	opacity: 0.9;
-}
-
-.markdownEditorSaveState[data-state="saving"] .markdownEditorSaveGlyph {
-	opacity: 1;
-	animation: markdownEditorSavePulse 1.2s ease-in-out infinite;
-}
-
-.markdownEditorSaveState[data-state="saved-fresh"] .markdownEditorSaveGlyph,
-.markdownEditorSaveState[data-state="reloaded"] .markdownEditorSaveGlyph {
-	opacity: 1;
-	transform: scale(1.08);
-}
-
-.markdownEditorStatsDock.is-collapsed .markdownEditorSaveState {
-	padding-inline: 9px;
-}
-
 .markdownEditorActionsMenu {
 	position: relative;
 }
