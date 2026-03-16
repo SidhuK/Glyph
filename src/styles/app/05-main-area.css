@@ -534,7 +534,7 @@
 	display: flex;
 	align-items: center;
 	gap: 7px;
-	padding: 0 26px 0 10px;
+	padding: 0 10px 0 26px;
 	border-radius: var(--radius-2xl);
 	border: 1px solid color-mix(in srgb, var(--border-light) 28%, transparent);
 	background: transparent;
@@ -587,7 +587,8 @@
 .mainTabClose {
 	position: absolute;
 	top: 50%;
-	right: 6px;
+	left: 6px;
+	z-index: 1;
 	transform: translateY(-50%);
 	flex: 0 0 auto;
 	display: inline-flex;
@@ -595,17 +596,16 @@
 	justify-content: center;
 	width: 18px;
 	height: 18px;
-	border-radius: var(--radius-sm);
+	border-radius: var(--radius-2xl);
 	border: 1px solid transparent;
 	color: var(--text-secondary);
-	opacity: 0.52;
+	opacity: 0;
 	transition: background var(--transition-fast), border-color
 		var(--transition-fast), color var(--transition-fast), opacity
 		var(--transition-fast);
 }
 
-.mainTabWrap:hover .mainTabClose,
-.mainTab.is-active + .mainTabClose {
+.mainTabWrap:hover .mainTabClose {
 	opacity: 0.9;
 	color: var(--text-primary);
 }

@@ -92,15 +92,17 @@ export function TabBar({
 								/>
 							);
 						})}
-						<button
-							type="button"
-							className="mainTabAdd"
-							onClick={onOpenBlankTab}
-							title="Open blank tab"
-							aria-label="Open blank tab"
-						>
-							+
-						</button>
+						{openTabs.length > 0 ? (
+							<button
+								type="button"
+								className="mainTabAdd"
+								onClick={onOpenBlankTab}
+								title="Open blank tab"
+								aria-label="Open blank tab"
+							>
+								+
+							</button>
+						) : null}
 					</div>
 				</div>
 				<div className="mainTabsSide mainTabsSideEnd">
@@ -198,6 +200,16 @@ const TabItem = memo(function TabItem({
 		<div className="mainTabWrap">
 			<button
 				type="button"
+				className="mainTabClose"
+				onClick={handleClose}
+				aria-label={`Close ${fileName}`}
+			>
+				<span className="mainTabCloseGlyph" aria-hidden>
+					×
+				</span>
+			</button>
+			<button
+				type="button"
 				className={`mainTab ${isActive ? "is-active" : ""}`}
 				onClick={handleSelect}
 				title={
@@ -211,16 +223,6 @@ const TabItem = memo(function TabItem({
 			>
 				<span className="mainTabText">
 					<span className="mainTabLabel">{fileName}</span>
-				</span>
-			</button>
-			<button
-				type="button"
-				className="mainTabClose"
-				onClick={handleClose}
-				aria-label={`Close ${fileName}`}
-			>
-				<span className="mainTabCloseGlyph" aria-hidden>
-					×
 				</span>
 			</button>
 		</div>

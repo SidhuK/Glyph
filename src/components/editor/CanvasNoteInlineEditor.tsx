@@ -368,6 +368,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		<div
 			className={[
 				"rfNodeNoteEditor",
+				"rfNodeNoteEditorFlatEdges",
 				"nodrag",
 				"nopan",
 				editor && mode === "rich" ? "hasRibbon" : "",

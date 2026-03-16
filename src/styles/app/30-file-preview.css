@@ -317,6 +317,10 @@
 	background: transparent;
 }
 
+.markdownEditorPane .rfNodeNoteEditor.rfNodeNoteEditorFlatEdges {
+	border-radius: 0;
+}
+
 .markdownEditorPane .rfNodeNoteEditor:focus-within {
 	box-shadow: none;
 }
