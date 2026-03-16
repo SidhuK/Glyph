@@ -20,7 +20,6 @@ import {
 	FileXml,
 	Film,
 	Hash,
-	Image,
 	Music,
 	Palette,
 } from "../Icons";

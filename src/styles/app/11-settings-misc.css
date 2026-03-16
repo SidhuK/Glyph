@@ -48,22 +48,31 @@
 	padding: 0;
 }
 
+.aboutHeroCard {
+	display: flex;
+	justify-content: flex-end;
+	padding: 20px 24px;
+}
+
 .aboutIdentity {
 	display: flex;
 	align-items: center;
-	gap: 14px;
+	gap: 18px;
+	padding: 2px 0 6px;
+	max-width: fit-content;
 }
 
 .aboutIdentityCopy {
 	display: flex;
 	flex-direction: column;
-	gap: 8px;
+	justify-content: center;
+	gap: 10px;
 	min-width: 0;
 }
 
 .aboutLogoWrap {
-	width: 52px;
-	height: 52px;
+	width: 56px;
+	height: 56px;
 	flex-shrink: 0;
 	display: flex;
 	align-items: center;
@@ -79,19 +88,22 @@
 .aboutTitleRow {
 	display: inline-flex;
 	align-items: baseline;
-	gap: 8px;
+	gap: 10px;
+	flex-wrap: wrap;
 }
 
 .aboutAppName {
-	font-size: 24px;
-	font-weight: 700;
-	letter-spacing: -0.02em;
+	font-size: 28px;
+	font-weight: 750;
+	letter-spacing: -0.03em;
 	color: var(--text-primary);
+	line-height: 1;
 }
 
 .aboutVersion {
-	font-size: 14px;
-	color: var(--text-secondary);
+	font-size: 16px;
+	font-weight: 500;
+	color: color-mix(in srgb, var(--text-secondary) 86%, var(--text-primary));
 }
 
 .aboutEarlyAccessBadge {
@@ -103,6 +115,7 @@
 	align-items: center;
 	flex-wrap: wrap;
 	gap: 8px;
+	align-self: flex-start;
 }
 
 .aboutOpenSourceMark {

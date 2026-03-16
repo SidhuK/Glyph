@@ -1,3 +1,4 @@
+import { emit } from "@tauri-apps/api/event";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { resolveActiveProfileId } from "../../lib/aiProfiles";
 import {
@@ -25,6 +26,14 @@ export function AiSettingsPane() {
 	const [error, setError] = useState("");
 	const saveProfileRequestIdRef = useRef(0);
 	const activeProfileChangeRequestIdRef = useRef(0);
+
+	const notifyAiProfilesUpdated = useCallback(async () => {
+		try {
+			await emit("ai:profiles-updated");
+		} catch {
+			// best-effort cross-window sync
+		}
+	}, []);
 
 	const activeProfile = useMemo(() => {
 		if (!activeProfileId) return null;
@@ -92,11 +101,12 @@ export function AiSettingsPane() {
 			if (requestId !== saveProfileRequestIdRef.current) return;
 			setProfiles((prev) => prev.map((p) => (p.id === saved.id ? saved : p)));
 			setActiveProfileId(saved.id);
+			await notifyAiProfilesUpdated();
 		} catch (e) {
 			if (requestId !== saveProfileRequestIdRef.current) return;
 			setError(errMessage(e));
 		}
-	}, []);
+	}, [notifyAiProfilesUpdated]);
 
 	const onActiveProfileChange = useCallback(
 		async (id: string | null) => {
@@ -106,13 +116,14 @@ export function AiSettingsPane() {
 			setError("");
 			try {
 				await invoke("ai_active_profile_set", { id });
+				await notifyAiProfilesUpdated();
 			} catch (e) {
 				if (requestId !== activeProfileChangeRequestIdRef.current) return;
 				setActiveProfileId(previous);
 				setError(errMessage(e));
 			}
 		},
-		[activeProfileId],
+		[activeProfileId, notifyAiProfilesUpdated],
 	);
 
 	return (
@@ -170,7 +181,6 @@ export function AiSettingsPane() {
 
 				{aiEnabled ? (
 					<AiProfileSections
-						key={activeProfileId ?? "none"}
 						profiles={profiles}
 						activeProfileId={activeProfileId}
 						activeProfile={activeProfile}

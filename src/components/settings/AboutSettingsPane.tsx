@@ -102,10 +102,7 @@ export function AboutSettingsPane() {
 			{error ? <div className="settingsError">{error}</div> : null}
 
 			<div className="settingsGrid">
-				<SettingsSection
-					title="Glyph"
-					description="Build details and quick project information."
-				>
+				<section className="settingsCard aboutHeroCard">
 					<div className="aboutIdentity">
 						<div className="aboutLogoWrap">
 							<img
@@ -134,16 +131,7 @@ export function AboutSettingsPane() {
 							</div>
 						</div>
 					</div>
-					<SettingsRow
-						label="Identifier"
-						description="Useful when debugging builds, updates, or diagnostics."
-						interactive={false}
-					>
-						<div className="settingsValue mono">
-							{appInfo?.identifier ?? "Loading…"}
-						</div>
-					</SettingsRow>
-				</SettingsSection>
+				</section>
 
 				<SettingsSection
 					title="Updates"

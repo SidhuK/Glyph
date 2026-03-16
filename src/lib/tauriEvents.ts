@@ -26,6 +26,7 @@ type TauriEventMap = {
 	"ai:status": { job_id: string; status: string; detail?: string };
 	"ai:done": { job_id: string; cancelled: boolean };
 	"ai:error": { job_id: string; message: string };
+	"ai:profiles-updated": undefined;
 	"codex:chunk": { job_id: string; delta: string };
 	"codex:status": { job_id: string; status: string; detail?: string };
 	"codex:done": { job_id: string; cancelled: boolean };

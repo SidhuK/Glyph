@@ -316,23 +316,25 @@ function matchesTaskBucket(
 ): boolean {
 	if (task.checked) return false;
 
-	const hasScheduledDate = Boolean(task.scheduled_date);
-	const hasDueDate = Boolean(task.due_date);
+	const scheduledDate = task.scheduled_date;
+	const dueDate = task.due_date;
+	const hasScheduledDate = Boolean(scheduledDate);
+	const hasDueDate = Boolean(dueDate);
 
 	if (bucket === "inbox") {
 		return !hasScheduledDate && !hasDueDate;
 	}
 
 	const matchesToday =
-		(hasScheduledDate && task.scheduled_date <= today) ||
-		(hasDueDate && task.due_date <= today);
+		(scheduledDate != null && scheduledDate <= today) ||
+		(dueDate != null && dueDate <= today);
 	if (bucket === "today") {
 		return matchesToday;
 	}
 
 	return (
-		(hasScheduledDate && task.scheduled_date > today) ||
-		(hasDueDate && task.due_date > today)
+		(scheduledDate != null && scheduledDate > today) ||
+		(dueDate != null && dueDate > today)
 	);
 }
 

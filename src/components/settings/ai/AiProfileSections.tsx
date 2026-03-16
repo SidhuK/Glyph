@@ -27,6 +27,7 @@ export function AiProfileSections({
 	const [availableModels, setAvailableModels] = useState<AiModel[] | null>(
 		null,
 	);
+	const [showRestartPrompt, setShowRestartPrompt] = useState(false);
 	const lastSavePromiseRef = useRef<Promise<void>>(Promise.resolve());
 
 	const { apiState, setApiKeyDraft, handleSetApiKey, handleClearApiKey } =
@@ -70,6 +71,7 @@ export function AiProfileSections({
 			const nextProfile =
 				profiles.find((profile) => profile.provider === provider) ?? null;
 			if (!nextProfile || nextProfile.id === activeProfileId) return;
+			setShowRestartPrompt(true);
 			await onActiveProfileChange(nextProfile.id);
 		},
 		[activeProfileId, onActiveProfileChange, profiles],
@@ -83,6 +85,7 @@ export function AiProfileSections({
 					availableModels={availableModels}
 					secretConfigured={apiState.secretConfigured}
 					onModelsChange={setAvailableModels}
+					showRestartPrompt={showRestartPrompt}
 					onProviderChange={handleProviderChange}
 					onUpdateDraft={updateDraft}
 					onPersistDraft={persistDraft}

@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { resolveActiveProfileId } from "../../lib/aiProfiles";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { type AiProfile, invoke } from "../../lib/tauri";
+import { useTauriEvent } from "../../lib/tauriEvents";
 
 type AiProfilesBootstrap = {
 	profiles: AiProfile[];
@@ -61,6 +62,19 @@ export function useAiProfiles() {
 	const [error, setError] = useState("");
 	const lastSetRequestIdRef = useRef(0);
 
+	const reloadProfiles = useCallback(async () => {
+		setError("");
+		try {
+			const data = await fetchAiProfilesBootstrap();
+			setProfiles(data.profiles);
+			setActiveProfileId(data.activeProfileId);
+			setSecretConfigured(data.secretConfigured);
+			aiProfilesBootstrapCache = data;
+		} catch (e) {
+			setError(extractErrorMessage(e));
+		}
+	}, []);
+
 	useEffect(() => {
 		let cancelled = false;
 		(async () => {
@@ -79,6 +93,10 @@ export function useAiProfiles() {
 			cancelled = true;
 		};
 	}, []);
+
+	useTauriEvent("ai:profiles-updated", () => {
+		void reloadProfiles();
+	});
 
 	useEffect(() => {
 		if (!activeProfileId) {

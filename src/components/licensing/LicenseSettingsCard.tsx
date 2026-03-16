@@ -102,7 +102,6 @@ export function LicenseSettingsCard() {
 	return (
 		<SettingsSection
 			title="License"
-			description="Manage your trial, activate Glyph, and open purchase or support links."
 			aside={
 				<span className={statusPillClassName(status)}>
 					{statusLabel(status)}
@@ -131,7 +130,6 @@ export function LicenseSettingsCard() {
 				<>
 					<SettingsRow
 						label="Activated"
-						description="Date this device was successfully activated."
 						interactive={false}
 					>
 						<div className="settingsValue">
@@ -140,7 +138,6 @@ export function LicenseSettingsCard() {
 					</SettingsRow>
 					<SettingsRow
 						label="License key"
-						description="Masked locally stored key for this device."
 						interactive={false}
 					>
 						<div className="settingsValue">
