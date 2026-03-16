@@ -62,6 +62,12 @@ interface TaskSection {
 	helperText?: string;
 }
 
+interface TaskSubsection {
+	key: string;
+	label: string;
+	tasks: TaskItem[];
+}
+
 const BUCKETS: Array<{
 	id: TaskBucket;
 	label: string;
@@ -303,6 +309,54 @@ function getShowSectionTag(groupMode: TaskGroupMode): boolean {
 	return groupMode !== "section";
 }
 
+function matchesTaskBucket(
+	task: Pick<TaskItem, "checked" | "due_date" | "scheduled_date">,
+	bucket: TaskBucket,
+	today: string,
+): boolean {
+	if (task.checked) return false;
+
+	const hasScheduledDate = Boolean(task.scheduled_date);
+	const hasDueDate = Boolean(task.due_date);
+
+	if (bucket === "inbox") {
+		return !hasScheduledDate && !hasDueDate;
+	}
+
+	const matchesToday =
+		(hasScheduledDate && task.scheduled_date <= today) ||
+		(hasDueDate && task.due_date <= today);
+	if (bucket === "today") {
+		return matchesToday;
+	}
+
+	return (
+		(hasScheduledDate && task.scheduled_date > today) ||
+		(hasDueDate && task.due_date > today)
+	);
+}
+
+function buildTaskSubsections(tasks: TaskItem[]): TaskSubsection[] {
+	const groups = new Map<string, TaskSubsection>();
+
+	for (const task of tasks) {
+		const label = task.section?.trim() || "Tasks";
+		const key = label.toLowerCase();
+		const existing = groups.get(key);
+		if (existing) {
+			existing.tasks.push(task);
+			continue;
+		}
+		groups.set(key, {
+			key,
+			label,
+			tasks: [task],
+		});
+	}
+
+	return [...groups.values()];
+}
+
 export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 	const [bucket, setBucket] = useState<TaskBucket>("inbox");
 	const [tasks, setTasks] = useState<TaskItem[]>([]);
@@ -427,6 +481,25 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 		[onClosePane, onOpenFile],
 	);
 
+	const applyTaskUpdate = useCallback(
+		(taskId: string, updater: (task: TaskItem) => TaskItem) => {
+			setTasks((current) => {
+				const taskIndex = current.findIndex((task) => task.task_id === taskId);
+				if (taskIndex === -1) return current;
+
+				const nextTask = updater(current[taskIndex]);
+				if (!matchesTaskBucket(nextTask, bucket, today)) {
+					return current.filter((task) => task.task_id !== taskId);
+				}
+
+				const nextTasks = [...current];
+				nextTasks[taskIndex] = nextTask;
+				return nextTasks;
+			});
+		},
+		[bucket, today],
+	);
+
 	const toggleTask = useCallback(
 		async (task: TaskItem, checked: boolean) => {
 			try {
@@ -435,35 +508,46 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 					task_id: task.task_id,
 					checked,
 				});
-				await loadTasks();
+				applyTaskUpdate(task.task_id, (currentTask) => ({
+					...currentTask,
+					checked,
+					note_updated: new Date().toISOString(),
+				}));
 			} catch (e) {
 				setError(e instanceof Error ? e.message : String(e));
+				void loadTasks();
 			}
 		},
-		[loadTasks],
+		[applyTaskUpdate, loadTasks],
 	);
 
 	const scheduleDates = useCallback(
 		async (
-			taskId: string,
+			task: TaskItem,
 			scheduled: string | null,
 			due: string | null,
 		): Promise<boolean> => {
 			try {
 				setError("");
 				await invoke("task_set_dates", {
-					task_id: taskId,
+					task_id: task.task_id,
 					scheduled_date: scheduled,
 					due_date: due,
 				});
-				await loadTasks();
+				applyTaskUpdate(task.task_id, (currentTask) => ({
+					...currentTask,
+					scheduled_date: scheduled,
+					due_date: due,
+					note_updated: new Date().toISOString(),
+				}));
 				return true;
 			} catch (e) {
 				setError(e instanceof Error ? e.message : String(e));
+				void loadTasks();
 				return false;
 			}
 		},
-		[loadTasks],
+		[applyTaskUpdate, loadTasks],
 	);
 
 	return (
@@ -563,6 +647,11 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 							);
 						})}
 					</div>
+					<div className="tasksPaneFiltersMeta">
+						<span className="tasksPaneFiltersCount">
+							{sections.length} {sections.length === 1 ? "group" : "groups"}
+						</span>
+					</div>
 				</div>
 
 				{error ? (
@@ -649,7 +738,11 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 						{sections.map((section, index) => (
 							<m.section
 								key={section.key}
-								className="tasksSection"
+								className={
+									section.notePath
+										? "tasksSection tasksSectionNote"
+										: "tasksSection"
+								}
 								initial={shouldReduceMotion ? false : { opacity: 0, y: 10 }}
 								animate={{ opacity: 1, y: 0 }}
 								transition={
@@ -662,35 +755,71 @@ export function TasksPane({ onOpenFile, onClosePane }: TasksPaneProps) {
 								}
 							>
 								{section.notePath ? (
-									<button
-										type="button"
-										className="tasksNoteHeader"
-										onClick={() => {
-											if (section.notePath) {
-												void openTaskFile(section.notePath);
-											}
-										}}
-									>
-										<span className="tasksNoteHeaderLead">
-											<span className="tasksNoteHeaderIcon" aria-hidden="true">
-												<FileText size={14} />
-											</span>
-											<span className="tasksNoteHeaderMeta">
-												<span className="tasksNoteHeaderTitle">
-													{section.label}
+									<>
+										<button
+											type="button"
+											className="tasksNoteHeader"
+											onClick={() => {
+												if (section.notePath) {
+													void openTaskFile(section.notePath);
+												}
+											}}
+										>
+											<span className="tasksNoteHeaderLead">
+												<span
+													className="tasksNoteHeaderIcon"
+													aria-hidden="true"
+												>
+													<FileText size={14} />
 												</span>
-												{section.helperText ? (
-													<span className="tasksNoteHeaderPath">
-														{section.helperText}
+												<span className="tasksNoteHeaderMeta">
+													<span className="tasksNoteHeaderTitle">
+														{section.label}
 													</span>
-												) : null}
+													{section.helperText ? (
+														<span className="tasksNoteHeaderPath">
+															{section.helperText}
+														</span>
+													) : null}
+												</span>
 											</span>
-										</span>
-										<span className="tasksNoteHeaderCount">
-											{section.tasks.length} item
-											{section.tasks.length === 1 ? "" : "s"}
-										</span>
-									</button>
+											<span className="tasksNoteHeaderCount">
+												{section.tasks.length} item
+												{section.tasks.length === 1 ? "" : "s"}
+											</span>
+										</button>
+										<div className="tasksNoteSubsections">
+											{buildTaskSubsections(section.tasks).map((subsection) => (
+												<div
+													key={`${section.key}:${subsection.key}`}
+													className="tasksNoteSubsection"
+												>
+													<div className="tasksSubsectionHeader">
+														<div className="tasksSubsectionLabel">
+															{subsection.label}
+														</div>
+														<div className="tasksSubsectionCount">
+															{subsection.tasks.length}
+														</div>
+													</div>
+													<div className="tasksSectionList">
+														{subsection.tasks.map((task) => (
+															<TaskRow
+																key={task.task_id}
+																task={task}
+																today={today}
+																showNoteContext={false}
+																showSectionTag={false}
+																onToggle={toggleTask}
+																onSchedule={scheduleDates}
+																onOpenNote={openTaskFile}
+															/>
+														))}
+													</div>
+												</div>
+											))}
+										</div>
+									</>
 								) : (
 									<div className="tasksSectionHeader">
 										<div className="tasksSectionHeaderLabel">

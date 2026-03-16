@@ -1,6 +1,7 @@
 import { m, useReducedMotion } from "motion/react";
 import { useCallback, useMemo, useState } from "react";
 import {
+	formatTaskCalendarDate,
 	getTaskTimingSummary,
 	stripTaskScheduleTokens,
 	todayIsoDateLocal,
@@ -20,7 +21,7 @@ interface TaskRowProps {
 	showSectionTag?: boolean;
 	onToggle: (task: TaskItem, checked: boolean) => void;
 	onSchedule: (
-		taskId: string,
+		task: TaskItem,
 		scheduled: string | null,
 		due: string | null,
 	) => Promise<boolean>;
@@ -51,14 +52,14 @@ export function TaskRow({
 
 	const applyDates = useCallback(async () => {
 		const applied = await onSchedule(
-			task.task_id,
+			task,
 			scheduledDate || null,
 			dueDate || null,
 		);
 		if (applied) {
 			setOpen(false);
 		}
-	}, [dueDate, onSchedule, scheduledDate, task.task_id]);
+	}, [dueDate, onSchedule, scheduledDate, task]);
 
 	const setQuickDate = useCallback((offsetDays: number) => {
 		const d = new Date();
@@ -73,24 +74,45 @@ export function TaskRow({
 			d.setDate(d.getDate() + offsetDays);
 			const iso = todayIsoDateLocal(d);
 			const nextDueDate = dueDate || null;
-			const applied = await onSchedule(task.task_id, iso, nextDueDate);
+			const applied = await onSchedule(task, iso, nextDueDate);
 			if (applied) {
 				setScheduledDate(iso);
 				setDueDate(nextDueDate ?? "");
 				setOpen(false);
 			}
 		},
-		[dueDate, onSchedule, task.task_id],
+		[dueDate, onSchedule, task],
 	);
 
 	const clearDates = useCallback(async () => {
-		const cleared = await onSchedule(task.task_id, null, null);
+		const cleared = await onSchedule(task, null, null);
 		if (cleared) {
 			setScheduledDate("");
 			setDueDate("");
 			setOpen(false);
 		}
-	}, [onSchedule, task.task_id]);
+	}, [onSchedule, task]);
+
+	const scheduleButtonLabel = useMemo(() => {
+		const scheduledLabel = formatTaskCalendarDate(task.scheduled_date);
+		if (scheduledLabel) return `Starts ${scheduledLabel}`;
+		const dueLabel = formatTaskCalendarDate(task.due_date);
+		if (dueLabel) return `Due ${dueLabel}`;
+		return "Schedule";
+	}, [task.due_date, task.scheduled_date]);
+
+	const scheduleButtonTitle = useMemo(() => {
+		if (task.scheduled_date && task.due_date) {
+			return `Scheduled ${task.scheduled_date}, due ${task.due_date}`;
+		}
+		if (task.scheduled_date) {
+			return `Scheduled ${task.scheduled_date}`;
+		}
+		if (task.due_date) {
+			return `Due ${task.due_date}`;
+		}
+		return "Set a scheduled or due date";
+	}, [task.due_date, task.scheduled_date]);
 
 	return (
 		<m.div
@@ -194,9 +216,10 @@ export function TaskRow({
 								variant="ghost"
 								size="xs"
 								className="tasksScheduleBtn"
+								title={scheduleButtonTitle}
 							>
 								<Calendar size={12} />
-								Schedule
+								{scheduleButtonLabel}
 							</Button>
 						</PopoverTrigger>
 						<PopoverContent
