@@ -7,8 +7,10 @@ import {
 	File,
 	FileCode,
 	FileCss,
+	FileCsv,
 	FileDoc,
 	FileHtml,
+	FileImage,
 	FileJson,
 	FilePdf,
 	FilePpt,
@@ -38,8 +40,20 @@ export function getFileTypeInfo(
 	if (isMarkdown) {
 		return { Icon: FileText, color: "var(--text-accent)", label: "markdown" };
 	}
-	if (["png", "jpg", "jpeg", "gif", "webp", "svg", "ico"].includes(ext)) {
-		return { Icon: Image, color: "var(--color-green-500)", label: "image" };
+	if (
+		[
+			"png",
+			"jpg",
+			"jpeg",
+			"gif",
+			"webp",
+			"svg",
+			"ico",
+			"avif",
+			"heic",
+		].includes(ext)
+	) {
+		return { Icon: FileImage, color: "var(--color-green-500)", label: ext };
 	}
 	if (["mp4", "avi", "mov", "webm", "mkv"].includes(ext)) {
 		return { Icon: Film, color: "var(--color-purple-500)", label: "video" };
@@ -60,7 +74,14 @@ export function getFileTypeInfo(
 	if (["json"].includes(ext)) {
 		return { Icon: FileJson, color: "var(--text-tertiary)", label: "json" };
 	}
-	if (["csv", "xlsx", "xls"].includes(ext)) {
+	if (["csv"].includes(ext)) {
+		return {
+			Icon: FileCsv,
+			color: "var(--color-green-500)",
+			label: "csv",
+		};
+	}
+	if (["xlsx", "xls"].includes(ext)) {
 		return {
 			Icon: FileSpreadsheet,
 			color: "var(--color-green-500)",
@@ -102,13 +123,17 @@ export function getFileTypeInfo(
 		return { Icon: FileJson, color: "var(--text-tertiary)", label: "config" };
 	}
 	if (["txt", "log", "readme"].includes(ext)) {
-		return { Icon: FileTxt, color: "var(--text-secondary)", label: "text" };
+		return {
+			Icon: FileTxt,
+			color: "var(--text-secondary)",
+			label: ext || "text",
+		};
 	}
 	if (["pdf"].includes(ext)) {
 		return { Icon: FilePdf, color: "var(--text-error)", label: "pdf" };
 	}
 	if (["doc", "docx", "rtf"].includes(ext)) {
-		return { Icon: FileDoc, color: "var(--color-blue-500)", label: "document" };
+		return { Icon: FileDoc, color: "var(--color-blue-500)", label: ext };
 	}
 	return { Icon: File, color: "var(--text-tertiary)", label: "file" };
 }

@@ -50,7 +50,10 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 	onDeletePath,
 }: FileTreeFileItemProps) {
 	const rowStyle = buildRowStyle(depth);
-	const { label } = getFileTypeInfo(entry.rel_path, entry.is_markdown);
+	const { Icon, color, label } = getFileTypeInfo(
+		entry.rel_path,
+		entry.is_markdown,
+	);
 	const { stem: fileStem, ext: fileExt } = splitEditableFileName(entry.name);
 	const isMd = fileExt.toLowerCase() === ".md";
 	const displayStem =
@@ -132,6 +135,12 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 								transition={springTransition}
 							>
 								<span className="fileTreeLeadingSpacer" aria-hidden="true" />
+								<Icon
+									size={14}
+									className="fileTreeIcon"
+									style={{ color }}
+									aria-hidden="true"
+								/>
 								<span className="fileTreeName">{displayStem}</span>
 								{extBadge && (
 									<span className="fileTreeExtBadge">{extBadge}</span>

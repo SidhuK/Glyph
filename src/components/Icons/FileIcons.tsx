@@ -2,6 +2,7 @@ import {
 	Archive as ArchiveIcon,
 	Cpu as CpuIcon,
 	CssFile01Icon,
+	Csv01Icon,
 	Database as DatabaseIcon,
 	Doc01Icon,
 	Document,
@@ -55,6 +56,9 @@ export const FileArchive = (props: IconProps) => (
 );
 export const FileSpreadsheet = (props: IconProps) => (
 	<HugeiconsIcon icon={Xls01Icon} {...props} />
+);
+export const FileCsv = (props: IconProps) => (
+	<HugeiconsIcon icon={Csv01Icon} {...props} />
 );
 export const FileBox = (props: IconProps) => (
 	<HugeiconsIcon icon={FileXIcon} {...props} />

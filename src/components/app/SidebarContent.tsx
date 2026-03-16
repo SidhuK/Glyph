@@ -88,7 +88,7 @@ export const SidebarContent = memo(function SidebarContent({
 						title="Create a new note"
 					>
 						<HugeiconsIcon icon={NoteIcon} size={14} strokeWidth={1.8} />
-						<span className="dailyNotesLabel">New note</span>
+						<span className="dailyNotesLabel">New Note</span>
 					</button>
 					<button
 						type="button"
