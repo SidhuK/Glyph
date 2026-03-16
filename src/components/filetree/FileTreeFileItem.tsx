@@ -134,7 +134,6 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 								animate={isActive ? "active" : "idle"}
 								transition={springTransition}
 							>
-								<span className="fileTreeLeadingSpacer" aria-hidden="true" />
 								<Icon
 									size={14}
 									className="fileTreeIcon"
