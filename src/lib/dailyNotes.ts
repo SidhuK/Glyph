@@ -10,6 +10,28 @@ export function formatDate(date: Date): string {
 	return `${year}-${month}-${day}`;
 }
 
+export function parseIsoDate(iso: string): Date | null {
+	if (!/^\d{4}-\d{2}-\d{2}$/.test(iso)) return null;
+	const [year, month, day] = iso.split("-").map(Number);
+	if (
+		!Number.isInteger(year) ||
+		!Number.isInteger(month) ||
+		!Number.isInteger(day)
+	) {
+		return null;
+	}
+	const value = new Date(year, month - 1, day);
+	if (
+		value.getFullYear() !== year ||
+		value.getMonth() !== month - 1 ||
+		value.getDate() !== day
+	) {
+		return null;
+	}
+	value.setHours(0, 0, 0, 0);
+	return value;
+}
+
 export function getDailyNoteFilename(date?: string): string {
 	const d = date ?? getTodayDateString();
 	return `${d}.md`;

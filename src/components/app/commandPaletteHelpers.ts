@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import type { Shortcut } from "../../lib/shortcuts";
 import type { SearchAdvancedRequest } from "../../lib/tauri";
 import { springPresets } from "../ui/animations";
@@ -5,6 +6,7 @@ import { springPresets } from "../ui/animations";
 export interface Command {
 	id: string;
 	label: string;
+	icon?: ReactNode;
 	category?: string;
 	shortcut?: Shortcut;
 	action: () => void | Promise<void>;

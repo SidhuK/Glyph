@@ -1173,12 +1173,30 @@
 	position: absolute;
 	min-width: 220px;
 	max-width: 280px;
+	max-height: min(212px, 60vh);
+	overflow-y: auto;
+	scrollbar-width: thin;
+	scrollbar-color: color-mix(in srgb, var(--text-tertiary) 60%, transparent)
+		transparent;
 	background: var(--bg-primary);
 	border: 1px solid var(--border-light);
 	border-radius: var(--radius-lg);
 	box-shadow: var(--shadow-lg);
 	padding: 6px;
 	z-index: 2000;
+}
+
+.slashCommandMenu::-webkit-scrollbar {
+	width: 8px;
+}
+
+.slashCommandMenu::-webkit-scrollbar-thumb {
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--text-tertiary) 48%, transparent);
+}
+
+.slashCommandMenu::-webkit-scrollbar-track {
+	background: transparent;
 }
 
 .slashCommandItem {

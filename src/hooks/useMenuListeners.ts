@@ -65,6 +65,9 @@ export function useMenuListeners({
 	const handleOpenAbout = useCallback(() => {
 		void openSettingsWindow("about");
 	}, []);
+	const handleOpenSettings = useCallback(() => {
+		void openSettingsWindow();
+	}, []);
 	const handleToggleAi = useCallback(() => {
 		onToggleAiPane();
 	}, [onToggleAiPane]);
@@ -91,6 +94,7 @@ export function useMenuListeners({
 	useTauriEvent("menu:reveal_space", handleRevealSpace);
 	useTauriEvent("menu:open_space_settings", handleOpenSpaceSettings);
 	useTauriEvent("menu:open_about", handleOpenAbout);
+	useTauriEvent("menu:open_settings", handleOpenSettings);
 	useTauriEvent("menu:toggle_ai", handleToggleAi);
 	useTauriEvent("menu:close_ai", handleCloseAi);
 	useTauriEvent("menu:ai_attach_current_note", handleAttachCurrentNote);

@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { useFileTreeContext, useUILayoutContext } from "../../contexts";
 import { useRecentFiles } from "../../hooks/useRecentFiles";
-import { CALENDAR_TAB_ID } from "../../lib/calendar";
 import { TASKS_TAB_ID } from "../../lib/tasks";
 import { isInAppPreviewable } from "../../utils/filePreview";
 
@@ -19,10 +18,7 @@ export function useTabManager(spacePath: string | null) {
 	const [activeTabPath, setActiveTabPath] = useState<string | null>(null);
 	const [dragTabPath, setDragTabPath] = useState<string | null>(null);
 	const [dirtyByPath, setDirtyByPath] = useState<Record<string, boolean>>({});
-	const isSpecialTab = useCallback(
-		(path: string) => path === TASKS_TAB_ID || path === CALENDAR_TAB_ID,
-		[],
-	);
+	const isSpecialTab = useCallback((path: string) => path === TASKS_TAB_ID, []);
 
 	const canOpenInMainPane = useCallback(
 		(path: string) =>

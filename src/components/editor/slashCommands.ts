@@ -71,6 +71,14 @@ export const SLASH_COMMANDS: SlashCommandItem[] = [
 			editor.chain().focus().deleteRange(range).toggleOrderedList().run(),
 	},
 	{
+		icon: "✓",
+		title: "To-do list",
+		description: "Start a task list",
+		keywords: ["todo", "task", "checklist", "list"],
+		command: ({ editor, range }) =>
+			editor.chain().focus().deleteRange(range).toggleTaskList().run(),
+	},
+	{
 		icon: "❝",
 		title: "Quote",
 		description: "Insert a blockquote",
@@ -107,6 +115,116 @@ export const SLASH_COMMANDS: SlashCommandItem[] = [
 		command: ({ editor, range }) =>
 			editor.chain().focus().deleteRange(range).setHorizontalRule().run(),
 	},
+	{
+		icon: "i",
+		title: "Info callout",
+		description: "Insert an info callout",
+		keywords: ["callout", "info", "admonition"],
+		command: ({ editor, range }) =>
+			editor
+				.chain()
+				.focus()
+				.deleteRange(range)
+				.insertContent({
+					type: "blockquote",
+					content: [
+						{
+							type: "paragraph",
+							content: [{ type: "text", text: "[!info]" }],
+						},
+						{ type: "paragraph" },
+					],
+				})
+				.run(),
+	},
+	{
+		icon: "!",
+		title: "Warning callout",
+		description: "Insert a warning callout",
+		keywords: ["callout", "warning", "warn", "admonition"],
+		command: ({ editor, range }) =>
+			editor
+				.chain()
+				.focus()
+				.deleteRange(range)
+				.insertContent({
+					type: "blockquote",
+					content: [
+						{
+							type: "paragraph",
+							content: [{ type: "text", text: "[!warning]" }],
+						},
+						{ type: "paragraph" },
+					],
+				})
+				.run(),
+	},
+	{
+		icon: "×",
+		title: "Error callout",
+		description: "Insert an error callout",
+		keywords: ["callout", "error", "danger", "admonition"],
+		command: ({ editor, range }) =>
+			editor
+				.chain()
+				.focus()
+				.deleteRange(range)
+				.insertContent({
+					type: "blockquote",
+					content: [
+						{
+							type: "paragraph",
+							content: [{ type: "text", text: "[!error]" }],
+						},
+						{ type: "paragraph" },
+					],
+				})
+				.run(),
+	},
+	{
+		icon: "+",
+		title: "Success callout",
+		description: "Insert a success callout",
+		keywords: ["callout", "success", "done", "admonition"],
+		command: ({ editor, range }) =>
+			editor
+				.chain()
+				.focus()
+				.deleteRange(range)
+				.insertContent({
+					type: "blockquote",
+					content: [
+						{
+							type: "paragraph",
+							content: [{ type: "text", text: "[!success]" }],
+						},
+						{ type: "paragraph" },
+					],
+				})
+				.run(),
+	},
+	{
+		icon: "?",
+		title: "Tip callout",
+		description: "Insert a tip callout",
+		keywords: ["callout", "tip", "hint", "admonition"],
+		command: ({ editor, range }) =>
+			editor
+				.chain()
+				.focus()
+				.deleteRange(range)
+				.insertContent({
+					type: "blockquote",
+					content: [
+						{
+							type: "paragraph",
+							content: [{ type: "text", text: "[!tip]" }],
+						},
+						{ type: "paragraph" },
+					],
+				})
+				.run(),
+	},
 ];
 
 export const SlashCommand = Extension.create({
@@ -126,7 +244,7 @@ export const SlashCommand = Extension.create({
 						if (!normalized) return true;
 						if (item.title.toLowerCase().includes(normalized)) return true;
 						return item.keywords.some((k) => k.includes(normalized));
-					}).slice(0, 8);
+					}).slice(0, 20);
 				},
 				command: ({
 					editor,

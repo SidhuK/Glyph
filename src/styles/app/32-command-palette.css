@@ -352,6 +352,23 @@
 	transition: background var(--transition-fast);
 }
 
+.commandPaletteItemMain {
+	min-width: 0;
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.commandPaletteItemIcon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 16px;
+	height: 16px;
+	flex: 0 0 auto;
+	color: var(--text-secondary);
+}
+
 .commandPaletteItem[data-selected="true"] {
 	background: color-mix(in srgb, var(--interactive-accent) 12%, var(--bg-hover));
 	border: 1px solid

@@ -13,6 +13,7 @@ type TauriEventMap = {
 	"menu:reveal_space": undefined;
 	"menu:open_space_settings": undefined;
 	"menu:open_about": undefined;
+	"menu:open_settings": undefined;
 	"menu:toggle_ai": undefined;
 	"menu:close_ai": undefined;
 	"menu:ai_attach_current_note": undefined;

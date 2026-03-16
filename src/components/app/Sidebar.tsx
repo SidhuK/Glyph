@@ -9,6 +9,7 @@ interface SidebarProps {
 	onToggleDir: (dirPath: string) => void;
 	onSelectDir: (dirPath: string) => void;
 	onOpenFile: (relPath: string) => void;
+	onNewNote: () => void;
 	onNewFileInDir: (dirPath: string) => void;
 	onNewDatabaseInDir: (dirPath: string) => Promise<string | null>;
 	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
@@ -20,7 +21,6 @@ interface SidebarProps {
 	onOpenDailyNote: () => void;
 	isDailyNoteCreating: boolean;
 	onOpenTasks: () => void;
-	onOpenCalendar: () => void;
 	updateReady: boolean;
 	updateVersion: string | null;
 	onInstallUpdate: () => void;
@@ -30,6 +30,7 @@ export const Sidebar = memo(function Sidebar({
 	onToggleDir,
 	onSelectDir,
 	onOpenFile,
+	onNewNote,
 	onNewFileInDir,
 	onNewDatabaseInDir,
 	onNewFolderInDir,
@@ -41,7 +42,6 @@ export const Sidebar = memo(function Sidebar({
 	onOpenDailyNote,
 	isDailyNoteCreating,
 	onOpenTasks,
-	onOpenCalendar,
 	updateReady,
 	updateVersion,
 	onInstallUpdate,
@@ -89,6 +89,7 @@ export const Sidebar = memo(function Sidebar({
 							onToggleDir={onToggleDir}
 							onSelectDir={onSelectDir}
 							onOpenFile={onOpenFile}
+							onNewNote={onNewNote}
 							onNewFileInDir={onNewFileInDir}
 							onNewDatabaseInDir={onNewDatabaseInDir}
 							onNewFolderInDir={onNewFolderInDir}
@@ -98,7 +99,6 @@ export const Sidebar = memo(function Sidebar({
 							onOpenDailyNote={onOpenDailyNote}
 							isDailyNoteCreating={isDailyNoteCreating}
 							onOpenTasks={onOpenTasks}
-							onOpenCalendar={onOpenCalendar}
 						/>
 					</m.div>
 				)}
