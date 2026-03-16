@@ -1015,6 +1015,28 @@
 	animation: task-check-in 180ms ease;
 }
 
+.tiptapContentInline ul[data-type="taskList"] > li[data-checked="true"] > div,
+.tiptapContentInline li[data-checked="true"] > div {
+	color: color-mix(in srgb, var(--text-secondary) 88%, var(--bg-primary));
+}
+
+.tiptapContentInline
+	ul[data-type="taskList"]
+	> li[data-checked="true"]
+	> div
+	:is(p, li, blockquote, code, span, a),
+.tiptapContentInline li[data-checked="true"] > div :is(p, li, blockquote, code, span, a) {
+	text-decoration-line: line-through;
+	text-decoration-style: dashed;
+	text-decoration-thickness: 1px;
+	text-decoration-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 26%,
+		var(--text-secondary)
+	);
+	text-decoration-skip-ink: none;
+}
+
 .tiptapHostInline.is-preview
 	.tiptapContentInline
 	ul[data-type="taskList"]
