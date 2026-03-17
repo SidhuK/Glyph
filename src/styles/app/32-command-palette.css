@@ -423,8 +423,6 @@
 
 .commandPaletteItem[data-selected="true"] {
 	background: color-mix(in srgb, var(--interactive-accent) 12%, var(--bg-hover));
-	border: 1px solid
-		color-mix(in srgb, var(--interactive-accent) 24%, transparent);
 }
 
 /* ── Search result layout ── */
