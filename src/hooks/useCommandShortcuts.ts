@@ -50,6 +50,12 @@ export function useCommandShortcuts({
 				return;
 			}
 
+			if (openPaletteShortcutsRef.current.some((s) => isShortcutMatch(e, s))) {
+				e.preventDefault();
+				openPaletteRef.current();
+				return;
+			}
+
 			const t = e.target;
 			const inEditableField =
 				t instanceof HTMLElement &&
@@ -75,12 +81,6 @@ export function useCommandShortcuts({
 				return;
 			}
 
-			if (openPaletteShortcutsRef.current.some((s) => isShortcutMatch(e, s))) {
-				e.preventDefault();
-				openPaletteRef.current();
-				return;
-			}
-
 			if (paletteOpenRef.current && e.key === "Escape") {
 				e.preventDefault();
 				closePaletteRef.current();
@@ -97,7 +97,8 @@ export function useCommandShortcuts({
 			}
 		};
 
-		window.addEventListener("keydown", handler);
-		return () => window.removeEventListener("keydown", handler);
+		window.addEventListener("keydown", handler, { capture: true });
+		return () =>
+			window.removeEventListener("keydown", handler, { capture: true });
 	}, []);
 }

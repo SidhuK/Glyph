@@ -3,6 +3,7 @@ import {
 	AiBrain04Icon,
 	CalendarAdd01Icon,
 	CheckListIcon,
+	CursorInWindowIcon,
 	Folder01Icon,
 	FolderOpenIcon,
 	InformationCircleIcon,
@@ -129,6 +130,7 @@ export function AppShell() {
 	const [showGettingStartedRequest, setShowGettingStartedRequest] = useState(0);
 	const [dailyNoteSetupNoticeRequest, setDailyNoteSetupNoticeRequest] =
 		useState(0);
+	const [openBlankTabRequest, setOpenBlankTabRequest] = useState(0);
 	const [movePickerSourcePath, setMovePickerSourcePath] = useState<
 		string | null
 	>(null);
@@ -650,7 +652,7 @@ export function AppShell() {
 				label: "Toggle sidebar",
 				icon: <HugeiconsIcon icon={SidebarLeftIcon} size={16} />,
 				category: "Workspace",
-				shortcut: { meta: true, key: "b" },
+				shortcut: { meta: true, shift: true, key: "b" },
 				action: () => setSidebarCollapsed(!sidebarCollapsed),
 			},
 			...aiCommands,
@@ -662,6 +664,16 @@ export function AppShell() {
 				shortcut: { meta: true, key: "n" },
 				enabled: Boolean(spacePath),
 				action: () => void fileTree.onNewFile(),
+			},
+			{
+				id: "new-tab",
+				label: "New tab",
+				icon: <HugeiconsIcon icon={CursorInWindowIcon} size={16} />,
+				category: "Navigation",
+				shortcut: { meta: true, key: "t" },
+				enabled: Boolean(spacePath),
+				allowInEditable: true,
+				action: () => setOpenBlankTabRequest((prev) => prev + 1),
 			},
 			{
 				id: "new-database",
@@ -757,6 +769,7 @@ export function AppShell() {
 				category: "Navigation",
 				shortcut: { meta: true, key: "p" },
 				enabled: Boolean(spacePath),
+				allowInEditable: true,
 				action: openSearchPalette,
 			},
 			{
@@ -847,7 +860,7 @@ export function AppShell() {
 						ariaLabel="Expand sidebar"
 						ariaPressed={false}
 						onClick={() => setSidebarCollapsed(false)}
-						title={`Expand sidebar (${getShortcutTooltip({ meta: true, key: "b" })})`}
+						title={`Expand sidebar (${getShortcutTooltip({ meta: true, shift: true, key: "b" })})`}
 					>
 						<LayoutAlignLeft size={14} />
 					</WindowChromeIconButton>
@@ -916,6 +929,7 @@ export function AppShell() {
 				onOpenDailyNote={requestOpenDailyNote}
 				onOpenTasks={openTasksTab}
 				openTasksRequest={openTasksRequest}
+				openBlankTabRequest={openBlankTabRequest}
 				showGettingStartedRequest={showGettingStartedRequest}
 				dailyNoteSetupNoticeRequest={dailyNoteSetupNoticeRequest}
 				onOpenDailyNotesSettings={() => void openSettingsWindow("general")}

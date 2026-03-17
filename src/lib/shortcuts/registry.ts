@@ -50,7 +50,7 @@ export const SHORTCUTS = [
 	// ─────────────────────────────────────────────────────────────────────────
 	{
 		id: "toggle-sidebar",
-		shortcut: { meta: true, key: "b" },
+		shortcut: { meta: true, shift: true, key: "b" },
 		label: "Toggle Sidebar",
 		description: "Show or hide the file tree sidebar",
 		category: "navigation",
@@ -90,6 +90,14 @@ export const SHORTCUTS = [
 		label: "New Note",
 		description: "Create a new note in the current folder",
 		category: "file",
+		context: "space",
+	},
+	{
+		id: "new-tab",
+		shortcut: { meta: true, key: "t" },
+		label: "New Tab",
+		description: "Open a blank tab so you can switch to another note there",
+		category: "navigation",
 		context: "space",
 	},
 	{

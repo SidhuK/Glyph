@@ -187,6 +187,7 @@ interface MainContentProps {
 	onOpenDailyNote: () => void;
 	onOpenTasks: () => void;
 	openTasksRequest: number;
+	openBlankTabRequest: number;
 	showGettingStartedRequest: number;
 	dailyNoteSetupNoticeRequest: number;
 	onOpenDailyNotesSettings: () => void;
@@ -266,6 +267,7 @@ export const MainContent = memo(function MainContent({
 	onOpenDailyNote,
 	onOpenTasks,
 	openTasksRequest,
+	openBlankTabRequest,
 	showGettingStartedRequest,
 	dailyNoteSetupNoticeRequest,
 	onOpenDailyNotesSettings,
@@ -309,6 +311,11 @@ export const MainContent = memo(function MainContent({
 		if (!spacePath || openTasksRequest === 0) return;
 		openSpecialTab(TASKS_TAB_ID);
 	}, [openSpecialTab, openTasksRequest, spacePath]);
+
+	useEffect(() => {
+		if (!spacePath || openBlankTabRequest === 0) return;
+		setActiveTabPath(null);
+	}, [openBlankTabRequest, setActiveTabPath, spacePath]);
 
 	useEffect(() => {
 		if (!spacePath || showGettingStartedRequest === 0) return;

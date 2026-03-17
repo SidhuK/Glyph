@@ -256,6 +256,11 @@ const TableEnterNavigation = Extension.create({
 
 const EditorLink = Link.extend({
 	inclusive: false,
+	addKeyboardShortcuts() {
+		return {
+			"Mod-k": () => true,
+		};
+	},
 }).configure({
 	openOnClick: false,
 	autolink: true,

@@ -93,7 +93,7 @@ export function TabBar({
 								type="button"
 								className="mainTabAdd"
 								onClick={onOpenBlankTab}
-								title="Open blank tab"
+								title={`Open blank tab (${getShortcutTooltip({ meta: true, key: "t" })})`}
 								aria-label="Open blank tab"
 							>
 								+

@@ -33,7 +33,7 @@ export function SidebarHeader({
 						ariaLabel={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
 						ariaPressed={!sidebarCollapsed}
 						onClick={onToggleSidebar}
-						title={`${sidebarCollapsed ? "Expand" : "Collapse"} sidebar (${getShortcutTooltip({ meta: true, key: "b" })})`}
+						title={`${sidebarCollapsed ? "Expand" : "Collapse"} sidebar (${getShortcutTooltip({ meta: true, shift: true, key: "b" })})`}
 					>
 						<LayoutAlignLeft size={14} />
 					</WindowChromeIconButton>
