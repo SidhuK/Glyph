@@ -26,7 +26,7 @@ lowlight.register({
 	yaml,
 });
 
-lowlight.registerAlias({
+const CODE_BLOCK_LANGUAGE_ALIASES = {
 	bash: ["shell", "sh", "zsh"],
 	javascript: ["cjs", "js", "jsx", "mjs"],
 	markdown: ["md"],
@@ -35,7 +35,9 @@ lowlight.registerAlias({
 	typescript: ["ts", "tsx"],
 	xml: ["html", "svg"],
 	yaml: ["yml"],
-});
+} as const;
+
+lowlight.registerAlias(CODE_BLOCK_LANGUAGE_ALIASES);
 
 export const SUPPORTED_CODE_BLOCK_LANGUAGES = [
 	"plaintext",
@@ -69,48 +71,40 @@ export const CODE_BLOCK_LANGUAGE_OPTIONS: ReadonlyArray<{
 	{ label: "YAML", value: "yaml" },
 ] as const;
 
+const PLAIN_TEXT_LANGUAGE_ALIASES = new Set(["plaintext", "text", "txt"]);
+const NORMALIZED_LANGUAGE_BY_ALIAS = new Map<string, SupportedCodeBlockLanguage>(
+	SUPPORTED_CODE_BLOCK_LANGUAGES.map((language) => [language, language]),
+);
+
+for (const [language, aliases] of Object.entries(CODE_BLOCK_LANGUAGE_ALIASES)) {
+	for (const alias of aliases) {
+		NORMALIZED_LANGUAGE_BY_ALIAS.set(alias, language as SupportedCodeBlockLanguage);
+	}
+}
+
 export function normalizeCodeBlockLanguage(
 	language: string | null | undefined,
 ): SupportedCodeBlockLanguage {
-	switch ((language ?? "").toLowerCase()) {
-		case "bash":
-		case "shell":
-		case "sh":
-		case "zsh":
-			return "bash";
-		case "javascript":
-		case "cjs":
-		case "js":
-		case "jsx":
-		case "mjs":
-			return "javascript";
-		case "json":
-			return "json";
-		case "markdown":
-		case "md":
-			return "markdown";
-		case "python":
-		case "py":
-			return "python";
-		case "rust":
-			return "rust";
-		case "typescript":
-		case "ts":
-		case "tsx":
-			return "typescript";
-		case "html":
-		case "svg":
-		case "xml":
-			return "xml";
-		case "yaml":
-		case "yml":
-			return "yaml";
-		case "plaintext":
-		case "text":
-		case "txt":
-		default:
-			return "plaintext";
+	return NORMALIZED_LANGUAGE_BY_ALIAS.get((language ?? "").toLowerCase()) ?? "plaintext";
+}
+
+export function getCodeBlockLanguageLabel(
+	language: string | null | undefined,
+): string {
+	if (!language) return "Plain text";
+	const raw = language.trim();
+	const normalized = normalizeCodeBlockLanguage(raw);
+	if (
+		normalized === "plaintext" &&
+		raw.length > 0 &&
+		!PLAIN_TEXT_LANGUAGE_ALIASES.has(raw.toLowerCase())
+	) {
+		return raw;
 	}
+	return (
+		CODE_BLOCK_LANGUAGE_OPTIONS.find((option) => option.value === normalized)
+			?.label ?? raw
+	);
 }
 
 export const SyntaxHighlightedCodeBlock = CodeBlockLowlight.configure({

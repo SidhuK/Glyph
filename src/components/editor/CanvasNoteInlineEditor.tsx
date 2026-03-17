@@ -11,7 +11,9 @@ import { EditorRibbon } from "./EditorRibbon";
 import { NotePropertiesPanel } from "./NotePropertiesPanel";
 import {
 	CODE_BLOCK_LANGUAGE_OPTIONS,
+	getCodeBlockLanguageLabel,
 	normalizeCodeBlockLanguage,
+	type SupportedCodeBlockLanguage,
 } from "./extensions/codeBlockHighlighting";
 import { useNoteEditor } from "./hooks/useNoteEditor";
 import { useResetScrollOnChange } from "./hooks/useResetScrollOnChange";
@@ -347,6 +349,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 			const selection = window.getSelection();
 			if (!selection?.anchorNode) {
 				setSelectedCodeBlock(null);
+				setCodeBlockPickerOpen(false);
 				return;
 			}
 			const anchorElement =
@@ -355,28 +358,47 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 					: selection.anchorNode.parentElement;
 			if (!anchorElement || !host.contains(anchorElement)) {
 				setSelectedCodeBlock(null);
+				setCodeBlockPickerOpen(false);
 				return;
 			}
 
 			const codeElement = anchorElement.closest("pre") as HTMLElement | null;
 			if (!codeElement || !host.contains(codeElement)) {
 				setSelectedCodeBlock(null);
+				setCodeBlockPickerOpen(false);
 				return;
 			}
 
 			const parentNode = editor.state.selection.$from.parent;
 			if (parentNode.type.name !== "codeBlock") {
 				setSelectedCodeBlock(null);
+				setCodeBlockPickerOpen(false);
 				return;
 			}
 
-			setSelectedCodeBlock({
-				top: codeElement.offsetTop + 8,
-				left: codeElement.offsetLeft + 10,
-				language:
-					typeof parentNode.attrs.language === "string"
-						? parentNode.attrs.language
-						: null,
+			const hostRect = host.getBoundingClientRect();
+			const codeRect = codeElement.getBoundingClientRect();
+			const nextTop = codeRect.top - hostRect.top + 8;
+			const nextLeft = codeRect.left - hostRect.left + 10;
+			const nextLanguage =
+				typeof parentNode.attrs.language === "string"
+					? parentNode.attrs.language
+					: null;
+
+			setSelectedCodeBlock((prev) => {
+				if (
+					prev &&
+					prev.top === nextTop &&
+					prev.left === nextLeft &&
+					prev.language === nextLanguage
+				) {
+					return prev;
+				}
+				return {
+					top: nextTop,
+					left: nextLeft,
+					language: nextLanguage,
+				};
 			});
 		};
 
@@ -386,7 +408,6 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 			childList: true,
 			subtree: true,
 			characterData: true,
-			attributes: true,
 		});
 		const scrollHost = host.closest(".rfNodeNoteEditorBody");
 		scrollHost?.addEventListener("scroll", syncSelectedCodeBlock, {
@@ -415,10 +436,9 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		() => normalizeCodeBlockLanguage(selectedCodeBlock?.language),
 		[selectedCodeBlock?.language],
 	);
-	const selectedCodeBlockLanguageLabel =
-		CODE_BLOCK_LANGUAGE_OPTIONS.find(
-			(option) => option.value === selectedCodeBlockLanguage,
-		)?.label ?? "Plain text";
+	const selectedCodeBlockLanguageLabel = getCodeBlockLanguageLabel(
+		selectedCodeBlock?.language,
+	);
 
 	const openTaskPopover = async (anchor: { ordinal: number; top: number }) => {
 		setScheduleAnchor(anchor);
@@ -447,7 +467,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		setScheduleAnchor(null);
 	};
 
-	const applyCodeBlockLanguage = (language: string) => {
+	const applyCodeBlockLanguage = (language: SupportedCodeBlockLanguage) => {
 		if (!editor) return;
 		editor
 			.chain()
