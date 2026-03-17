@@ -1133,6 +1133,65 @@
 	padding: 0;
 }
 
+.codeBlockLanguageBtn {
+	position: absolute;
+	height: 18px;
+	padding: 0 5px;
+	border: none;
+	border-radius: var(--radius-sm);
+	background: color-mix(in srgb, var(--bg-primary) 72%, transparent);
+	color: color-mix(in srgb, var(--text-tertiary) 88%, transparent);
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	font-size: 10px;
+	font-weight: var(--font-normal);
+	backdrop-filter: blur(4px);
+	z-index: 15;
+}
+
+.codeBlockLanguageBtn:hover {
+	background: color-mix(in srgb, var(--bg-primary) 88%, var(--bg-hover));
+	color: var(--text-primary);
+}
+
+.codeBlockLanguageBtnIcon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 auto;
+}
+
+.codeBlockLanguageBtnLabel {
+	min-width: 0;
+	white-space: nowrap;
+}
+
+.codeBlockLanguagePopover {
+	width: 176px;
+	padding: 8px;
+}
+
+.codeBlockLanguagePopoverHeader {
+	padding: 2px 4px 8px;
+	font-size: 11px;
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--text-tertiary);
+}
+
+.codeBlockLanguageOptions {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 4px;
+}
+
+.codeBlockLanguageOption {
+	justify-content: flex-start;
+	width: 100%;
+}
+
 .taskInlineDateBtn:hover {
 	color: var(--text-primary);
 	background: transparent;

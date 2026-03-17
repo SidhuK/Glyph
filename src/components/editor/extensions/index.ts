@@ -12,6 +12,7 @@ import { Markdown } from "@tiptap/markdown";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import StarterKit from "@tiptap/starter-kit";
+import { SyntaxHighlightedCodeBlock } from "./codeBlockHighlighting";
 import { SlashCommand } from "../slashCommands";
 import { MarkdownImage } from "./markdownImage";
 import { MarkdownLinkAutocomplete } from "./markdownLinkAutocomplete";
@@ -288,10 +289,12 @@ export function createEditorExtensions(
 	return [
 		StarterKit.configure({
 			bulletList: { keepMarks: true, keepAttributes: false },
+			codeBlock: false,
 			orderedList: { keepMarks: true, keepAttributes: false },
 			link: false,
 			underline: {},
 		}),
+		SyntaxHighlightedCodeBlock,
 		EditorLink,
 		TaskList,
 		TaskItem.configure({ nested: true }),
