@@ -1,5 +1,5 @@
 import type { Editor } from "@tiptap/react";
-import { memo, useState } from "react";
+import { memo, useId, useState } from "react";
 import { useTableOfContents } from "./hooks/useTableOfContents";
 
 const MIN_HEADINGS = 2;
@@ -32,6 +32,7 @@ export const FloatingTOC = memo(function FloatingTOC({
 	const { headings, activeId, scrollToHeading } =
 		useTableOfContents(editor);
 	const [expanded, setExpanded] = useState(false);
+	const panelId = useId();
 
 	if (headings.length < MIN_HEADINGS) return null;
 
@@ -42,35 +43,52 @@ export const FloatingTOC = memo(function FloatingTOC({
 			onMouseEnter={() => setExpanded(true)}
 			onMouseLeave={() => setExpanded(false)}
 		>
-			<div className="floatingTocCollapsed">
-				{headings.map((h) => (
-					<div
-						key={h.id}
-						className="floatingTocDash"
-						data-active={h.id === activeId ? "true" : undefined}
-						style={{ width: DASH_WIDTHS[h.level] ?? 6 }}
-					/>
-				))}
-			</div>
-
-			<div className="floatingTocExpanded">
-				<div className="floatingTocItems">
+			<button
+				type="button"
+				className="floatingTocTrigger"
+				onClick={() => setExpanded((prev) => !prev)}
+				onKeyDown={(e) => {
+					if (e.key === "Escape" && expanded) {
+						e.preventDefault();
+						setExpanded(false);
+					}
+				}}
+				aria-expanded={expanded}
+				aria-controls={panelId}
+				aria-label="Table of contents"
+			>
+				<div className="floatingTocCollapsed">
 					{headings.map((h) => (
-						<button
+						<div
 							key={h.id}
-							type="button"
-							className="floatingTocItem"
+							className="floatingTocDash"
 							data-active={h.id === activeId ? "true" : undefined}
-							data-level={h.level}
-							style={{ paddingLeft: INDENT[h.level] ?? 0 }}
-							onClick={() => scrollToHeading(h)}
-							title={h.text}
-						>
-							{h.text}
-						</button>
+							style={{ width: DASH_WIDTHS[h.level] ?? 6 }}
+						/>
 					))}
 				</div>
-			</div>
+			</button>
+
+			{expanded ? (
+				<div className="floatingTocExpanded" id={panelId} role="navigation" aria-label="Table of contents">
+					<div className="floatingTocItems">
+						{headings.map((h) => (
+							<button
+								key={h.id}
+								type="button"
+								className="floatingTocItem"
+								data-active={h.id === activeId ? "true" : undefined}
+								data-level={h.level}
+								style={{ paddingLeft: INDENT[h.level] ?? 0 }}
+								onClick={() => scrollToHeading(h)}
+								title={h.text}
+							>
+								{h.text}
+							</button>
+						))}
+					</div>
+				</div>
+			) : null}
 		</div>
 	);
 });

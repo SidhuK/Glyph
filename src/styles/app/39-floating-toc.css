@@ -10,6 +10,13 @@
 	pointer-events: auto;
 }
 
+/* ── Trigger button (wraps collapsed dashes) ─────────────────────────────── */
+.floatingTocTrigger {
+	all: unset;
+	cursor: pointer;
+	display: block;
+}
+
 /* ── Collapsed: minimap dashes ───────────────────────────────────────────── */
 .floatingTocCollapsed {
 	display: flex;
@@ -22,13 +29,11 @@
 	backdrop-filter: blur(10px);
 	-webkit-backdrop-filter: blur(10px);
 	border: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
-	opacity: 1;
 	transition: opacity 140ms ease;
 }
 
 .floatingToc[data-expanded="true"] .floatingTocCollapsed {
 	opacity: 0;
-	pointer-events: none;
 }
 
 .floatingTocDash {
@@ -61,14 +66,6 @@
 	-webkit-backdrop-filter: blur(16px);
 	box-shadow: 0 16px 36px
 		color-mix(in srgb, var(--shadow-color, #000) 8%, transparent);
-	opacity: 0;
-	pointer-events: none;
-	transition: opacity 140ms ease;
-}
-
-.floatingToc[data-expanded="true"] .floatingTocExpanded {
-	opacity: 1;
-	pointer-events: auto;
 }
 
 .floatingTocItems {

@@ -50,7 +50,17 @@ export function useTableOfContents(editor: Editor | null) {
 				}
 			}
 		});
-		setHeadings(next);
+		setHeadings((prev) => {
+			const same =
+				prev.length === next.length &&
+				prev.every(
+					(h, i) =>
+						h.pos === next[i].pos &&
+						h.level === next[i].level &&
+						h.text === next[i].text,
+				);
+			return same ? prev : next;
+		});
 	}, [editor]);
 
 	useEffect(() => {
@@ -90,6 +100,8 @@ export function useTableOfContents(editor: Editor | null) {
 				if (visibleIds.size > 0) {
 					const first = headings.find((h) => visibleIds.has(h.id));
 					if (first) setActiveId(first.id);
+				} else {
+					setActiveId(null);
 				}
 			},
 			{
@@ -145,9 +157,8 @@ export function useTableOfContents(editor: Editor | null) {
 				} else {
 					el.scrollIntoView({ behavior: "smooth", block: "start" });
 				}
+				setActiveId(heading.id);
 			}
-
-			setActiveId(heading.id);
 		},
 		[editor],
 	);

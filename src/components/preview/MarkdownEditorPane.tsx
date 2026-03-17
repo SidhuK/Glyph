@@ -703,7 +703,9 @@ export function MarkdownEditorPane({
 				</div>
 			) : null}
 
-			{showToc && tocEditor ? <FloatingTOC editor={tocEditor} /> : null}
+			{showToc && mode === "rich" && !error && tocEditor ? (
+				<FloatingTOC editor={tocEditor} />
+			) : null}
 		</section>
 	);
 }
