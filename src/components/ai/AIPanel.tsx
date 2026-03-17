@@ -19,6 +19,12 @@ import {
 	type AiContextAttachDetail,
 } from "./aiContextEvents";
 import { parseAddTrigger } from "./aiPanelConstants";
+import {
+	AI_PRESETS,
+	DEFAULT_AI_PRESET_ID,
+	getAiPresetById,
+	parsePresetSlashCommand,
+} from "./aiPresets";
 import { useAiActions } from "./hooks/useAiActions";
 import { useAiToolEvents } from "./hooks/useAiToolEvents";
 import { useRigChat } from "./hooks/useRigChat";
@@ -41,21 +47,96 @@ export async function prefetchAIPanelData(): Promise<void> {
 	]);
 }
 
+const AI_PRESET_BY_MODE_STORAGE_KEY = "glyph.ai.presetByMode.v1";
+
+type PresetMode = "chat" | "create";
+type PresetByMode = Partial<Record<PresetMode, string>>;
+
+function getFallbackPresetIdForMode(mode: PresetMode): string {
+	return (
+		AI_PRESETS.find((preset) => preset.defaultMode === mode)?.id ??
+		DEFAULT_AI_PRESET_ID
+	);
+}
+
+function readPresetByMode(): PresetByMode {
+	if (typeof window === "undefined") return {};
+	try {
+		const raw = window.localStorage.getItem(AI_PRESET_BY_MODE_STORAGE_KEY);
+		if (!raw) return {};
+		const parsed = JSON.parse(raw) as unknown;
+		if (!parsed || typeof parsed !== "object") return {};
+		return parsed as PresetByMode;
+	} catch {
+		return {};
+	}
+}
+
+function getStoredPresetIdForMode(mode: PresetMode): string | null {
+	const presetId = readPresetByMode()[mode];
+	if (typeof presetId !== "string" || !presetId.trim()) return null;
+	return getAiPresetById(presetId).id;
+}
+
+function setStoredPresetIdForMode(mode: PresetMode, presetId: string): void {
+	if (typeof window === "undefined") return;
+	try {
+		const next: PresetByMode = {
+			...readPresetByMode(),
+			[mode]: getAiPresetById(presetId).id,
+		};
+		window.localStorage.setItem(
+			AI_PRESET_BY_MODE_STORAGE_KEY,
+			JSON.stringify(next),
+		);
+	} catch {
+		// best-effort preference persistence
+	}
+}
+
 export function AIPanel({ isOpen, activeFolderPath, onClose }: AIPanelProps) {
 	const chat = useRigChat();
-	const { aiAssistantMode } = useAISidebarContext();
+	const { aiAssistantMode, setAiAssistantMode } = useAISidebarContext();
 	const isChatMode = aiAssistantMode === "chat";
 
 	const [input, setInput] = useState("");
 	const [addPanelOpen, setAddPanelOpen] = useState(false);
 	const [addPanelQuery, setAddPanelQuery] = useState("");
 	const [historyExpanded, setHistoryExpanded] = useState(false);
+	const [activePresetId, setActivePresetId] = useState(() => {
+		return (
+			getStoredPresetIdForMode(aiAssistantMode) ??
+			getFallbackPresetIdForMode(aiAssistantMode)
+		);
+	});
 
 	const profiles = useAiProfiles();
 	const context = useAiContext({ activeFolderPath });
 	const history = useAiHistory(14);
 	const toolEvents = useAiToolEvents({ isChatMode, chatStatus: chat.status });
 	const actions = useAiActions(chat);
+	const activePreset = useMemo(
+		() => getAiPresetById(activePresetId),
+		[activePresetId],
+	);
+
+	useEffect(() => {
+		const storedPresetId = getStoredPresetIdForMode(aiAssistantMode);
+		const nextPresetId =
+			storedPresetId ??
+			(activePreset.defaultMode === aiAssistantMode
+				? activePreset.id
+				: getFallbackPresetIdForMode(aiAssistantMode));
+		if (nextPresetId !== activePresetId) {
+			setActivePresetId(nextPresetId);
+		}
+		setStoredPresetIdForMode(aiAssistantMode, nextPresetId);
+	}, [
+		activePreset.defaultMode,
+		activePreset.id,
+		activePresetId,
+		aiAssistantMode,
+	]);
 
 	const trigger = parseAddTrigger(input);
 	const showAddPanel = addPanelOpen || Boolean(trigger);
@@ -123,6 +204,7 @@ export function AIPanel({ isOpen, activeFolderPath, onClose }: AIPanelProps) {
 						profile_id: profiles.activeProfileId ?? undefined,
 						provider: activeProvider,
 						mode: aiAssistantMode,
+						system_prompt: activePreset.systemPrompt,
 						context: built.payload || undefined,
 						context_manifest: built.manifest ?? undefined,
 						audit: true,
@@ -133,6 +215,7 @@ export function AIPanel({ isOpen, activeFolderPath, onClose }: AIPanelProps) {
 		},
 		[
 			activeProvider,
+			activePreset.systemPrompt,
 			aiAssistantMode,
 			chat,
 			context,
@@ -143,8 +226,26 @@ export function AIPanel({ isOpen, activeFolderPath, onClose }: AIPanelProps) {
 
 	const handleSend = useCallback(async () => {
 		if (!canSend) return;
-		const text = context.resolveMentionsFromInput(input);
-		if (!text) return;
+		const slashSelection = parsePresetSlashCommand(input);
+		if (slashSelection) {
+			setActivePresetId(slashSelection.preset.id);
+			setStoredPresetIdForMode(
+				slashSelection.preset.defaultMode,
+				slashSelection.preset.id,
+			);
+			if (slashSelection.preset.defaultMode !== aiAssistantMode) {
+				setAiAssistantMode(slashSelection.preset.defaultMode);
+			}
+		}
+		const rawInput = slashSelection ? slashSelection.remainder : input;
+		const text = context.resolveMentionsFromInput(rawInput);
+		if (!text) {
+			if (slashSelection) {
+				setInput("");
+				scheduleResize();
+			}
+			return;
+		}
 		toolEvents.clearFinalizingTimer();
 		toolEvents.setShowSlowStart(false);
 		toolEvents.setResponsePhase("submitted");
@@ -164,7 +265,9 @@ export function AIPanel({ isOpen, activeFolderPath, onClose }: AIPanelProps) {
 				body: {
 					profile_id: profiles.activeProfileId ?? undefined,
 					provider: activeProvider,
-					mode: aiAssistantMode,
+					mode: slashSelection?.preset.defaultMode ?? aiAssistantMode,
+					system_prompt:
+						slashSelection?.preset.systemPrompt ?? activePreset.systemPrompt,
 					context: built.payload || undefined,
 					context_manifest: built.manifest ?? undefined,
 					audit: true,
@@ -172,6 +275,7 @@ export function AIPanel({ isOpen, activeFolderPath, onClose }: AIPanelProps) {
 			},
 		);
 	}, [
+		activePreset.systemPrompt,
 		aiAssistantMode,
 		canSend,
 		chat,
@@ -180,6 +284,7 @@ export function AIPanel({ isOpen, activeFolderPath, onClose }: AIPanelProps) {
 		profiles.activeProfileId,
 		activeProvider,
 		scheduleResize,
+		setAiAssistantMode,
 		toolEvents,
 	]);
 
@@ -253,6 +358,18 @@ export function AIPanel({ isOpen, activeFolderPath, onClose }: AIPanelProps) {
 		chat.clearError();
 	}, [actions, chat, scheduleResize, toolEvents]);
 
+	const handleSelectPreset = useCallback(
+		(presetId: string) => {
+			const preset = getAiPresetById(presetId);
+			setActivePresetId(preset.id);
+			setStoredPresetIdForMode(preset.defaultMode, preset.id);
+			if (preset.defaultMode !== aiAssistantMode) {
+				setAiAssistantMode(preset.defaultMode);
+			}
+		},
+		[aiAssistantMode, setAiAssistantMode],
+	);
+
 	const threadRef = useRef<HTMLDivElement>(null);
 	const msgCount = chat.messages.length;
 	// biome-ignore lint/correctness/useExhaustiveDependencies: scroll on new messages
@@ -275,6 +392,7 @@ export function AIPanel({ isOpen, activeFolderPath, onClose }: AIPanelProps) {
 			className="aiPanel"
 			data-open={isOpen}
 			data-ai-mode={aiAssistantMode}
+			data-ai-preset={activePreset.id}
 			data-window-drag-ignore
 		>
 			<div className="aiPanelHeader">
@@ -335,6 +453,15 @@ export function AIPanel({ isOpen, activeFolderPath, onClose }: AIPanelProps) {
 						phaseStatusText={toolEvents.phaseStatusText}
 						toolTimeline={toolEvents.toolTimeline}
 						lastUserMessageIndex={lastUserMessageIndex}
+						activePreset={activePreset}
+						onSelectPreset={handleSelectPreset}
+						onUseStarterPrompt={(prompt) => {
+							setInput(prompt);
+							scheduleResize();
+							window.requestAnimationFrame(() =>
+								composerInputRef.current?.focus(),
+							);
+						}}
 						onCopy={(t) => void actions.handleCopyAssistantResponse(t)}
 						onSave={(t) => void actions.handleSaveAssistantResponse(t)}
 						onRetry={(i) => void handleRetry(i)}
@@ -395,6 +522,8 @@ export function AIPanel({ isOpen, activeFolderPath, onClose }: AIPanelProps) {
 					addPanelOpen={addPanelOpen}
 					setAddPanelOpen={setAddPanelOpen}
 					setAddPanelQuery={setAddPanelQuery}
+					activePreset={activePreset}
+					onSelectPreset={handleSelectPreset}
 					onAddContext={handleAddContext}
 					onRemoveContext={handleRemoveContext}
 				/>

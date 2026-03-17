@@ -1,17 +1,11 @@
 import { emit } from "@tauri-apps/api/event";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { resolveActiveProfileId } from "../../lib/aiProfiles";
-import {
-	type AiAssistantMode,
-	loadSettings,
-	setAiAssistantMode,
-	setAiEnabled,
-} from "../../lib/settings";
+import { loadSettings, setAiEnabled } from "../../lib/settings";
 import { type AiProfile, invoke } from "../../lib/tauri";
 import {
 	SettingsRow,
 	SettingsSection,
-	SettingsSegmented,
 	SettingsToggle,
 } from "./SettingsScaffold";
 import { AiProfileSections } from "./ai/AiProfileSections";
@@ -19,8 +13,6 @@ import { errMessage } from "./ai/utils";
 
 export function AiSettingsPane() {
 	const [aiEnabled, setAiEnabledState] = useState(true);
-	const [aiAssistantMode, setAiAssistantModeState] =
-		useState<AiAssistantMode>("create");
 	const [profiles, setProfiles] = useState<AiProfile[]>([]);
 	const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
 	const [error, setError] = useState("");
@@ -48,7 +40,6 @@ export function AiSettingsPane() {
 				const settings = await loadSettings();
 				if (cancelled) return;
 				setAiEnabledState(settings.ui.aiEnabled);
-				setAiAssistantModeState(settings.ui.aiAssistantMode);
 				const [list, active] = await Promise.all([
 					invoke("ai_profiles_list"),
 					invoke("ai_active_profile_get"),
@@ -67,16 +58,6 @@ export function AiSettingsPane() {
 		return () => {
 			cancelled = true;
 		};
-	}, []);
-
-	const updateAssistantMode = useCallback(async (mode: AiAssistantMode) => {
-		setError("");
-		setAiAssistantModeState(mode);
-		try {
-			await setAiAssistantMode(mode);
-		} catch (e) {
-			setError(errMessage(e));
-		}
 	}, []);
 
 	const updateAiEnabled = useCallback(async (enabled: boolean) => {
@@ -160,26 +141,6 @@ export function AiSettingsPane() {
 							</div>
 						</SettingsRow>
 					) : null}
-				</SettingsSection>
-
-				<SettingsSection
-					title="Assistant"
-					description="Choose how Glyph opens your assistant workspace by default."
-				>
-					<SettingsRow
-						label="Default view"
-						description="Switch between Create and Chat without changing any assistant behavior."
-					>
-						<SettingsSegmented<AiAssistantMode>
-							ariaLabel="Assistant default view"
-							value={aiAssistantMode}
-							onChange={(value) => void updateAssistantMode(value)}
-							options={[
-								{ label: "Create", value: "create" },
-								{ label: "Chat", value: "chat" },
-							]}
-						/>
-					</SettingsRow>
 				</SettingsSection>
 
 				{aiEnabled ? (

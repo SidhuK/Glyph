@@ -23,8 +23,8 @@
 	},
 	"dependencies": {
 		"@hookform/resolvers": "^5.2.2",
-		"@hugeicons/core-free-icons": "^3.1.1",
-		"@hugeicons/react": "^1.1.4",
+		"@hugeicons/core-free-icons": "^4.0.0",
+		"@hugeicons/react": "^1.1.6",
 		"@tanstack/react-table": "^8.21.3",
 		"@tauri-apps/api": "^2.10.1",
 		"@tauri-apps/plugin-dialog": "^2",
