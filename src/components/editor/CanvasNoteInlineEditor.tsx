@@ -1,12 +1,18 @@
+import { SourceCodeIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { EditorContent } from "@tiptap/react";
-import { memo, useEffect, useRef, useState } from "react";
+import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { joinYamlFrontmatter } from "../../lib/notePreview";
 import { type BacklinkItem, invoke } from "../../lib/tauri";
 import { Button } from "../ui/shadcn/button";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 import { EditorRibbon } from "./EditorRibbon";
 import { NotePropertiesPanel } from "./NotePropertiesPanel";
+import {
+	CODE_BLOCK_LANGUAGE_OPTIONS,
+	normalizeCodeBlockLanguage,
+} from "./extensions/codeBlockHighlighting";
 import { useNoteEditor } from "./hooks/useNoteEditor";
 import { useResetScrollOnChange } from "./hooks/useResetScrollOnChange";
 import {
@@ -112,6 +118,12 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	const [scheduledDate, setScheduledDate] = useState("");
 	const [dueDate, setDueDate] = useState("");
 	const [showBottomRibbon, setShowBottomRibbon] = useState(false);
+	const [codeBlockPickerOpen, setCodeBlockPickerOpen] = useState(false);
+	const [selectedCodeBlock, setSelectedCodeBlock] = useState<{
+		top: number;
+		left: number;
+		language: string | null;
+	} | null>(null);
 
 	useEffect(() => {
 		if (frontmatter === lastFrontmatterRef.current) return;
@@ -322,11 +334,91 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		};
 	}, [deferHeavyFeatures, editor, mode]);
 
+	useEffect(() => {
+		if (!editor || mode !== "rich") {
+			setSelectedCodeBlock(null);
+			setCodeBlockPickerOpen(false);
+			return;
+		}
+		const host = tiptapHostRef.current;
+		if (!host) return;
+
+		const syncSelectedCodeBlock = () => {
+			const selection = window.getSelection();
+			if (!selection?.anchorNode) {
+				setSelectedCodeBlock(null);
+				return;
+			}
+			const anchorElement =
+				selection.anchorNode instanceof HTMLElement
+					? selection.anchorNode
+					: selection.anchorNode.parentElement;
+			if (!anchorElement || !host.contains(anchorElement)) {
+				setSelectedCodeBlock(null);
+				return;
+			}
+
+			const codeElement = anchorElement.closest("pre") as HTMLElement | null;
+			if (!codeElement || !host.contains(codeElement)) {
+				setSelectedCodeBlock(null);
+				return;
+			}
+
+			const parentNode = editor.state.selection.$from.parent;
+			if (parentNode.type.name !== "codeBlock") {
+				setSelectedCodeBlock(null);
+				return;
+			}
+
+			setSelectedCodeBlock({
+				top: codeElement.offsetTop + 8,
+				left: codeElement.offsetLeft + 10,
+				language:
+					typeof parentNode.attrs.language === "string"
+						? parentNode.attrs.language
+						: null,
+			});
+		};
+
+		syncSelectedCodeBlock();
+		const observer = new MutationObserver(syncSelectedCodeBlock);
+		observer.observe(host, {
+			childList: true,
+			subtree: true,
+			characterData: true,
+			attributes: true,
+		});
+		const scrollHost = host.closest(".rfNodeNoteEditorBody");
+		scrollHost?.addEventListener("scroll", syncSelectedCodeBlock, {
+			passive: true,
+		});
+		window.addEventListener("resize", syncSelectedCodeBlock);
+		document.addEventListener("selectionchange", syncSelectedCodeBlock);
+		editor.on("selectionUpdate", syncSelectedCodeBlock);
+		editor.on("transaction", syncSelectedCodeBlock);
+		return () => {
+			observer.disconnect();
+			scrollHost?.removeEventListener("scroll", syncSelectedCodeBlock);
+			window.removeEventListener("resize", syncSelectedCodeBlock);
+			document.removeEventListener("selectionchange", syncSelectedCodeBlock);
+			editor.off("selectionUpdate", syncSelectedCodeBlock);
+			editor.off("transaction", syncSelectedCodeBlock);
+		};
+	}, [editor, mode]);
+
 	const selectedTaskAnchor =
 		selectedTaskOrdinal == null
 			? null
 			: (taskAnchors.find((anchor) => anchor.ordinal === selectedTaskOrdinal) ??
 				null);
+	const selectedCodeBlockLanguage = useMemo(
+		() => normalizeCodeBlockLanguage(selectedCodeBlock?.language),
+		[selectedCodeBlock?.language],
+	);
+	const selectedCodeBlockLanguageLabel =
+		CODE_BLOCK_LANGUAGE_OPTIONS.find(
+			(option) => option.value === selectedCodeBlockLanguage,
+		)?.label ?? "Plain text";
 
 	const openTaskPopover = async (anchor: { ordinal: number; top: number }) => {
 		setScheduleAnchor(anchor);
@@ -353,6 +445,23 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		if (!next) return;
 		onChange(next);
 		setScheduleAnchor(null);
+	};
+
+	const applyCodeBlockLanguage = (language: string) => {
+		if (!editor) return;
+		editor
+			.chain()
+			.focus(undefined, { scrollIntoView: false })
+			.updateAttributes("codeBlock", {
+				language: language === "plaintext" ? null : language,
+			})
+			.run();
+		setCodeBlockPickerOpen(false);
+	};
+	const preventCodeBlockPickerMouseDown = (
+		event: React.MouseEvent<HTMLElement>,
+	) => {
+		event.preventDefault();
 	};
 
 	const updateRibbonVisibility = (
@@ -415,6 +524,59 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 							.join(" ")}
 					>
 						<EditorContent editor={editor} />
+						{canEdit && selectedCodeBlock ? (
+							<Popover
+								open={codeBlockPickerOpen}
+								onOpenChange={setCodeBlockPickerOpen}
+							>
+								<PopoverTrigger asChild>
+									<button
+										type="button"
+										className="codeBlockLanguageBtn"
+										style={{
+											top: `${selectedCodeBlock.top}px`,
+											left: `${selectedCodeBlock.left}px`,
+										}}
+										onMouseDown={preventCodeBlockPickerMouseDown}
+										title="Set code block language"
+									>
+										<span className="codeBlockLanguageBtnIcon" aria-hidden>
+											<HugeiconsIcon icon={SourceCodeIcon} size={12} />
+										</span>
+										<span className="codeBlockLanguageBtnLabel mono">
+											{selectedCodeBlockLanguageLabel}
+										</span>
+									</button>
+								</PopoverTrigger>
+								<PopoverContent
+									className="codeBlockLanguagePopover"
+									align="start"
+								>
+									<div className="codeBlockLanguagePopoverHeader">
+										Code block language
+									</div>
+									<div className="codeBlockLanguageOptions">
+										{CODE_BLOCK_LANGUAGE_OPTIONS.map((option) => (
+											<Button
+												key={option.value}
+												type="button"
+												size="xs"
+												variant={
+													option.value === selectedCodeBlockLanguage
+														? "secondary"
+														: "ghost"
+												}
+												className="codeBlockLanguageOption"
+												onMouseDown={preventCodeBlockPickerMouseDown}
+												onClick={() => applyCodeBlockLanguage(option.value)}
+											>
+												{option.label}
+											</Button>
+										))}
+									</div>
+								</PopoverContent>
+							</Popover>
+						) : null}
 						{canEdit && selectedTaskAnchor ? (
 							<Popover
 								open={scheduleAnchor?.ordinal === selectedTaskAnchor.ordinal}

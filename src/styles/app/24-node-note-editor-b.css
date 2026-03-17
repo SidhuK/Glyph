@@ -875,6 +875,17 @@
 	padding: var(--space-3);
 	border-radius: var(--radius-lg);
 	overflow: auto;
+	--code-token-comment: var(--text-tertiary);
+	--code-token-keyword: var(--interactive-accent);
+	--code-token-string: var(--color-green-500);
+	--code-token-number: var(--color-yellow-500);
+	--code-token-title: var(--color-blue-600);
+	--code-token-meta: color-mix(
+		in srgb,
+		var(--text-secondary) 84%,
+		var(--interactive-accent)
+	);
+	--code-token-variable: var(--color-red-500);
 }
 
 .tiptapContentInline pre code {
@@ -882,6 +893,55 @@
 	padding: 0;
 	border: none;
 	border-radius: 0;
+}
+
+.tiptapContentInline pre .hljs-comment,
+.tiptapContentInline pre .hljs-quote {
+	color: var(--code-token-comment);
+}
+
+.tiptapContentInline pre .hljs-keyword,
+.tiptapContentInline pre .hljs-selector-tag,
+.tiptapContentInline pre .hljs-literal,
+.tiptapContentInline pre .hljs-built_in {
+	color: var(--code-token-keyword);
+}
+
+.tiptapContentInline pre .hljs-string,
+.tiptapContentInline pre .hljs-regexp,
+.tiptapContentInline pre .hljs-addition {
+	color: var(--code-token-string);
+}
+
+.tiptapContentInline pre .hljs-number,
+.tiptapContentInline pre .hljs-symbol,
+.tiptapContentInline pre .hljs-bullet {
+	color: var(--code-token-number);
+}
+
+.tiptapContentInline pre .hljs-title,
+.tiptapContentInline pre .hljs-section,
+.tiptapContentInline pre .hljs-type,
+.tiptapContentInline pre .hljs-attr {
+	color: var(--code-token-title);
+}
+
+.tiptapContentInline pre .hljs-meta,
+.tiptapContentInline pre .hljs-operator {
+	color: var(--code-token-meta);
+}
+
+.tiptapContentInline pre .hljs-variable,
+.tiptapContentInline pre .hljs-template-variable,
+.tiptapContentInline pre .hljs-deletion {
+	color: var(--code-token-variable);
+}
+
+:root.dark .tiptapContentInline pre {
+	--code-token-string: var(--color-green-dark-400);
+	--code-token-number: var(--color-yellow-dark-400);
+	--code-token-title: var(--color-blue-dark-400);
+	--code-token-variable: var(--color-red-dark-300);
 }
 
 .tiptapContentInline hr {
@@ -1131,6 +1191,65 @@
 	align-items: center;
 	justify-content: center;
 	padding: 0;
+}
+
+.codeBlockLanguageBtn {
+	position: absolute;
+	height: 18px;
+	padding: 0 5px;
+	border: none;
+	border-radius: var(--radius-sm);
+	background: color-mix(in srgb, var(--bg-primary) 72%, transparent);
+	color: color-mix(in srgb, var(--text-tertiary) 88%, transparent);
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	font-size: 10px;
+	font-weight: var(--font-normal);
+	backdrop-filter: blur(4px);
+	z-index: 15;
+}
+
+.codeBlockLanguageBtn:hover {
+	background: color-mix(in srgb, var(--bg-primary) 88%, var(--bg-hover));
+	color: var(--text-primary);
+}
+
+.codeBlockLanguageBtnIcon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 auto;
+}
+
+.codeBlockLanguageBtnLabel {
+	min-width: 0;
+	white-space: nowrap;
+}
+
+.codeBlockLanguagePopover {
+	width: 176px;
+	padding: 8px;
+}
+
+.codeBlockLanguagePopoverHeader {
+	padding: 2px 4px 8px;
+	font-size: 11px;
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--text-tertiary);
+}
+
+.codeBlockLanguageOptions {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 4px;
+}
+
+.codeBlockLanguageOption {
+	justify-content: flex-start;
+	width: 100%;
 }
 
 .taskInlineDateBtn:hover {
