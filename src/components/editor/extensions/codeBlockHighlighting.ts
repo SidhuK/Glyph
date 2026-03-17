@@ -71,13 +71,17 @@ export const CODE_BLOCK_LANGUAGE_OPTIONS: ReadonlyArray<{
 	{ label: "YAML", value: "yaml" },
 ] as const;
 
-const NORMALIZED_LANGUAGE_BY_ALIAS = new Map<string, SupportedCodeBlockLanguage>(
-	SUPPORTED_CODE_BLOCK_LANGUAGES.map((language) => [language, language]),
-);
+const NORMALIZED_LANGUAGE_BY_ALIAS = new Map<
+	string,
+	SupportedCodeBlockLanguage
+>(SUPPORTED_CODE_BLOCK_LANGUAGES.map((language) => [language, language]));
 
 for (const [language, aliases] of Object.entries(CODE_BLOCK_LANGUAGE_ALIASES)) {
 	for (const alias of aliases) {
-		NORMALIZED_LANGUAGE_BY_ALIAS.set(alias, language as SupportedCodeBlockLanguage);
+		NORMALIZED_LANGUAGE_BY_ALIAS.set(
+			alias,
+			language as SupportedCodeBlockLanguage,
+		);
 	}
 }
 
@@ -100,8 +104,7 @@ export function getCodeBlockLanguageLabel(
 	return (
 		CODE_BLOCK_LANGUAGE_OPTIONS.find(
 			(option) => option.value === (normalized ?? "plaintext"),
-		)
-			?.label ?? raw
+		)?.label ?? raw
 	);
 }
 

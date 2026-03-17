@@ -149,10 +149,7 @@ export function useTableOfContents(editor: Editor | null) {
 					const containerRect = scrollContainer.getBoundingClientRect();
 					const elRect = el.getBoundingClientRect();
 					const offset =
-						elRect.top -
-						containerRect.top +
-						scrollContainer.scrollTop -
-						20;
+						elRect.top - containerRect.top + scrollContainer.scrollTop - 20;
 					scrollContainer.scrollTo({ top: offset, behavior: "smooth" });
 				} else {
 					el.scrollIntoView({ behavior: "smooth", block: "start" });

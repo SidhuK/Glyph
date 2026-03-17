@@ -2,15 +2,19 @@ import { useCallback, useEffect, useState } from "react";
 import {
 	getDailyNotesFolder,
 	loadSettings,
-	setDailyNotesFolder,
 	setShowToc as saveShowToc,
+	setDailyNotesFolder,
 } from "../../lib/settings";
 import { invoke } from "../../lib/tauri";
 import { Trash2 } from "../Icons";
 import { FolderOpen } from "../Icons/NavigationIcons";
 import { LicenseSettingsCard } from "../licensing/LicenseSettingsCard";
 import { Button } from "../ui/shadcn/button";
-import { SettingsRow, SettingsSection, SettingsToggle } from "./SettingsScaffold";
+import {
+	SettingsRow,
+	SettingsSection,
+	SettingsToggle,
+} from "./SettingsScaffold";
 
 export function GeneralSettingsPane() {
 	const [showToc, setShowTocState] = useState(true);

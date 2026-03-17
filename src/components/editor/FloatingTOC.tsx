@@ -29,8 +29,7 @@ interface FloatingTOCProps {
 export const FloatingTOC = memo(function FloatingTOC({
 	editor,
 }: FloatingTOCProps) {
-	const { headings, activeId, scrollToHeading } =
-		useTableOfContents(editor);
+	const { headings, activeId, scrollToHeading } = useTableOfContents(editor);
 	const [expanded, setExpanded] = useState(false);
 	const panelId = useId();
 
@@ -70,7 +69,11 @@ export const FloatingTOC = memo(function FloatingTOC({
 			</button>
 
 			{expanded ? (
-				<div className="floatingTocExpanded" id={panelId} role="navigation" aria-label="Table of contents">
+				<nav
+					className="floatingTocExpanded"
+					id={panelId}
+					aria-label="Table of contents"
+				>
 					<div className="floatingTocItems">
 						{headings.map((h) => (
 							<button
@@ -87,7 +90,7 @@ export const FloatingTOC = memo(function FloatingTOC({
 							</button>
 						))}
 					</div>
-				</div>
+				</nav>
 			) : null}
 		</div>
 	);

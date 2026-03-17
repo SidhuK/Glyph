@@ -11,9 +11,9 @@ import { EditorRibbon } from "./EditorRibbon";
 import { NotePropertiesPanel } from "./NotePropertiesPanel";
 import {
 	CODE_BLOCK_LANGUAGE_OPTIONS,
+	type SupportedCodeBlockLanguage,
 	getCodeBlockLanguageLabel,
 	normalizeCodeBlockLanguage,
-	type SupportedCodeBlockLanguage,
 } from "./extensions/codeBlockHighlighting";
 import { useNoteEditor } from "./hooks/useNoteEditor";
 import { useResetScrollOnChange } from "./hooks/useResetScrollOnChange";
