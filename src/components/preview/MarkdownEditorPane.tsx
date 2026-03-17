@@ -4,12 +4,14 @@ import {
 	TimeQuarter02Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import type { Editor } from "@tiptap/react";
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
 	useAISidebarContext,
 	useEditorRegistration,
 	useSpace,
+	useUILayoutContext,
 } from "../../contexts";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { splitYamlFrontmatter } from "../../lib/notePreview";
@@ -19,6 +21,7 @@ import { countWords, formatReadingTime } from "../../lib/textStats";
 import { normalizeRelPath } from "../../utils/path";
 import { Edit, Eye, FileText, RefreshCw, Save, Type } from "../Icons";
 import { CanvasNoteInlineEditor } from "../editor/CanvasNoteInlineEditor";
+import { FloatingTOC } from "../editor/FloatingTOC";
 import { CALLOUT_TYPES } from "../editor/ribbonButtonConfigs";
 import type { CanvasInlineEditorMode } from "../editor/types";
 import { Button } from "../ui/shadcn/button";
@@ -89,6 +92,8 @@ export function MarkdownEditorPane({
 	const statsDockRef = useRef<HTMLDivElement | null>(null);
 	const { spacePath } = useSpace();
 	const previousSpacePathRef = useRef<string | null>(spacePath);
+	const [tocEditor, setTocEditor] = useState<Editor | null>(null);
+	const { showToc } = useUILayoutContext();
 	const { aiEnabled, aiPanelOpen } = useAISidebarContext();
 	const shouldReduceMotion = useReducedMotion();
 
@@ -692,9 +697,14 @@ export function MarkdownEditorPane({
 								setText(nextText);
 							}}
 							onRegisterCalloutInserter={registerCalloutInserter}
+							onEditorReady={setTocEditor}
 						/>
 					</div>
 				</div>
+			) : null}
+
+			{showToc && mode === "rich" && !error && tocEditor ? (
+				<FloatingTOC editor={tocEditor} />
 			) : null}
 		</section>
 	);

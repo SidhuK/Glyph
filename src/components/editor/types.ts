@@ -14,6 +14,7 @@ export interface CanvasNoteInlineEditorProps {
 	onRegisterCalloutInserter?:
 		| ((inserter: ((type: string) => void) | null) => void)
 		| undefined;
+	onEditorReady?: ((editor: Editor | null) => void) | undefined;
 }
 
 export interface SlashCommandItem {

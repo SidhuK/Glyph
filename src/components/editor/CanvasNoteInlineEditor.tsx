@@ -82,6 +82,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	showBacklinks = true,
 	deferHeavyFeatures = false,
 	onRegisterCalloutInserter,
+	onEditorReady,
 	onChange,
 }: CanvasNoteInlineEditorProps) {
 	const {
@@ -126,6 +127,11 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		left: number;
 		language: string | null;
 	} | null>(null);
+
+	useEffect(() => {
+		onEditorReady?.(editor ?? null);
+		return () => onEditorReady?.(null);
+	}, [editor, onEditorReady]);
 
 	useEffect(() => {
 		if (frontmatter === lastFrontmatterRef.current) return;

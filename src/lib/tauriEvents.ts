@@ -68,6 +68,7 @@ type TauriEventMap = {
 			fontSize?: number;
 			editorFontSize?: number;
 			translucentApp?: boolean;
+			showToc?: boolean;
 			aiEnabled?: boolean;
 			aiAssistantMode?: "chat" | "create";
 			aiSidebarWidth?: number | null;
