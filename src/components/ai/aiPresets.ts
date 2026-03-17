@@ -15,7 +15,6 @@ export interface AiPreset {
 	description: string;
 	shortDescription: string;
 	defaultMode: AiAssistantMode;
-	accentVar: string;
 	icon: typeof Brain02Icon;
 	systemPrompt: string;
 	starterPrompts: string[];
@@ -29,7 +28,6 @@ export const AI_PRESETS: AiPreset[] = [
 		description: "Explore ideas, patterns, and connections across your notes.",
 		shortDescription: "Idea generation",
 		defaultMode: "chat",
-		accentVar: "--ai-preset-brainstorm",
 		icon: Brain02Icon,
 		systemPrompt:
 			"You are Glyph's brainstorming assistant. Be expansive, generative, and connective. Surface multiple ideas, patterns, angles, or structures from the user's notes. Prefer synthesis, clustering, reframing, and next-step options over final answers. Stay grounded in the provided workspace context and explicitly call out promising directions.",
@@ -47,7 +45,6 @@ export const AI_PRESETS: AiPreset[] = [
 			"Draft, restructure, and create artifacts with minimal tool use.",
 		shortDescription: "Draft and create",
 		defaultMode: "create",
-		accentVar: "--ai-preset-builder",
 		icon: ToolCaseIcon,
 		systemPrompt:
 			"You are Glyph's builder assistant. Take action when useful, but stay disciplined. Create drafts, restructure notes, propose concrete outputs, and use the minimum number of tool calls needed. When editing or creating, optimize for clean, usable results that fit the user's workspace.",
@@ -64,7 +61,6 @@ export const AI_PRESETS: AiPreset[] = [
 		description: "Extract next steps, plans, and actionable checklists.",
 		shortDescription: "Plan next steps",
 		defaultMode: "chat",
-		accentVar: "--ai-preset-tasks",
 		icon: CheckListIcon,
 		systemPrompt:
 			"You are Glyph's task manager assistant. Convert notes into concrete next actions, checklists, milestones, and project plans. Prefer clear sequencing, owners/placeholders, and manageable steps. Highlight blockers, dependencies, and what should happen now versus later.",
@@ -81,7 +77,6 @@ export const AI_PRESETS: AiPreset[] = [
 		description: "Rewrite, clarify, summarize, title, and tighten documents.",
 		shortDescription: "Refine writing",
 		defaultMode: "chat",
-		accentVar: "--ai-preset-editor",
 		icon: NoteIcon,
 		systemPrompt:
 			"You are Glyph's editor assistant. Improve clarity, structure, flow, and tone without bloating the writing. Rewrite with strong judgment, preserve intent, and offer cleaner titles, sections, summaries, or frontmatter suggestions when helpful.",
@@ -99,7 +94,6 @@ export const AI_PRESETS: AiPreset[] = [
 			"Search attached context deeply and compare findings with citations.",
 		shortDescription: "Search and compare",
 		defaultMode: "chat",
-		accentVar: "--ai-preset-research",
 		icon: TestTubeIcon,
 		systemPrompt:
 			"You are Glyph's research assistant. Search the user's approved context carefully, gather evidence, compare options, and cite the most relevant files or excerpts. Be precise about uncertainty, missing data, and tradeoffs. Favor well-supported conclusions over speculation.",
@@ -117,7 +111,6 @@ export const AI_PRESETS: AiPreset[] = [
 			"Reflect, review, carry forward tasks, and shape a daily plan.",
 		shortDescription: "Review the day",
 		defaultMode: "chat",
-		accentVar: "--ai-preset-daily",
 		icon: Calendar03Icon,
 		systemPrompt:
 			"You are Glyph's daily notes assistant. Help the user review the day, capture wins and loose ends, carry forward unfinished tasks, and shape a calm, practical agenda. Keep outputs grounded, supportive, and easy to act on.",

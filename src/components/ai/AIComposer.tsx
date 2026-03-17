@@ -228,6 +228,15 @@ export function AIComposer({
 						}}
 						onKeyDown={(e) => {
 							if (presetSlashMatches.length > 0) {
+								if (e.key === "Escape") {
+									e.preventDefault();
+									setInput((prev) =>
+										prev.startsWith("/") ? prev.slice(1) : prev,
+									);
+									setActivePresetSlashIndex(0);
+									scheduleComposerInputResize();
+									return;
+								}
 								if (e.key === "ArrowDown") {
 									e.preventDefault();
 									setActivePresetSlashIndex((prev) =>

@@ -164,7 +164,13 @@ export function AIPanel({ isOpen, activeFolderPath, onClose }: AIPanelProps) {
 		}
 		const rawInput = slashSelection ? slashSelection.remainder : input;
 		const text = context.resolveMentionsFromInput(rawInput);
-		if (!text) return;
+		if (!text) {
+			if (slashSelection) {
+				setInput("");
+				scheduleResize();
+			}
+			return;
+		}
 		toolEvents.clearFinalizingTimer();
 		toolEvents.setShowSlowStart(false);
 		toolEvents.setResponsePhase("submitted");
