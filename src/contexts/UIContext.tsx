@@ -17,6 +17,7 @@ import {
 	reloadFromDisk,
 	setAiAssistantMode as saveAiAssistantMode,
 	setAiSidebarWidth as saveAiSidebarWidth,
+	setShowToc as saveShowToc,
 } from "../lib/settings";
 import type { SearchResult } from "../lib/tauri";
 import { useTauriEvent } from "../lib/tauriEvents";
@@ -38,6 +39,8 @@ export interface UILayoutContextValue {
 	activeMarkdownTabPath: string | null;
 	setActiveMarkdownTabPath: (path: string | null) => void;
 	dailyNotesFolder: string | null;
+	showToc: boolean;
+	setShowToc: (show: boolean) => void;
 }
 
 export interface AISidebarContextValue {
@@ -77,6 +80,7 @@ type UIState = {
 	openMarkdownTabs: string[];
 	activeMarkdownTabPath: string | null;
 	dailyNotesFolder: string | null;
+	showToc: boolean;
 	aiEnabled: boolean;
 	aiPanelOpen: boolean;
 	aiPanelWidth: number;
@@ -92,6 +96,7 @@ type UIAction =
 	| { type: "setOpenMarkdownTabs"; value: SetStateAction<string[]> }
 	| { type: "setActiveMarkdownTabPath"; value: string | null }
 	| { type: "setDailyNotesFolder"; value: string | null }
+	| { type: "setShowToc"; value: boolean }
 	| { type: "setAiEnabled"; value: boolean }
 	| { type: "setAiPanelOpen"; value: SetStateAction<boolean> }
 	| { type: "setAiPanelWidth"; value: number }
@@ -103,6 +108,7 @@ type UIAction =
 			aiPanelWidth?: number;
 			aiAssistantMode: AiAssistantMode;
 			dailyNotesFolder: string | null;
+			showToc: boolean;
 	  };
 
 const initialUIState: UIState = {
@@ -114,6 +120,7 @@ const initialUIState: UIState = {
 	openMarkdownTabs: [],
 	activeMarkdownTabPath: null,
 	dailyNotesFolder: null,
+	showToc: true,
 	aiEnabled: true,
 	aiPanelOpen: false,
 	aiPanelWidth: 380,
@@ -144,6 +151,8 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 			return { ...state, activeMarkdownTabPath: action.value };
 		case "setDailyNotesFolder":
 			return { ...state, dailyNotesFolder: action.value };
+		case "setShowToc":
+			return { ...state, showToc: action.value };
 		case "setAiEnabled":
 			return {
 				...state,
@@ -175,6 +184,7 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 				aiPanelWidth: action.aiPanelWidth ?? state.aiPanelWidth,
 				aiAssistantMode: action.aiAssistantMode,
 				dailyNotesFolder: action.dailyNotesFolder,
+				showToc: action.showToc,
 			};
 		default:
 			return state;
@@ -193,6 +203,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		openMarkdownTabs,
 		activeMarkdownTabPath,
 		dailyNotesFolder,
+		showToc,
 		aiEnabled,
 		aiPanelOpen,
 		aiPanelWidth,
@@ -215,6 +226,10 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		const nextWidth = payload.ui?.aiSidebarWidth;
 		if (typeof nextWidth === "number" && Number.isFinite(nextWidth)) {
 			dispatch({ type: "setAiPanelWidth", value: nextWidth });
+		}
+		const nextShowToc = payload.ui?.showToc;
+		if (typeof nextShowToc === "boolean") {
+			dispatch({ type: "setShowToc", value: nextShowToc });
 		}
 		if (payload.dailyNotes && "folder" in payload.dailyNotes) {
 			dispatch({
@@ -239,6 +254,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 							: undefined,
 					aiAssistantMode: s.ui.aiAssistantMode,
 					dailyNotesFolder: s.dailyNotes?.folder ?? null,
+					showToc: s.ui.showToc,
 				});
 			} catch {
 				// best-effort settings hydration
@@ -296,6 +312,11 @@ export function UIProvider({ children }: { children: ReactNode }) {
 	const setAiAssistantMode = useCallback((mode: AiAssistantMode) => {
 		dispatch({ type: "setAiAssistantMode", value: mode });
 		void saveAiAssistantMode(mode);
+	}, []);
+
+	const setShowToc = useCallback((show: boolean) => {
+		dispatch({ type: "setShowToc", value: show });
+		void saveShowToc(show);
 	}, []);
 
 	const setSidebarCollapsed = useCallback(
@@ -373,6 +394,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			activeMarkdownTabPath,
 			setActiveMarkdownTabPath,
 			dailyNotesFolder,
+			showToc,
+			setShowToc,
 		}),
 		[
 			sidebarCollapsed,
@@ -390,6 +413,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			activeMarkdownTabPath,
 			setActiveMarkdownTabPath,
 			dailyNotesFolder,
+			showToc,
+			setShowToc,
 		],
 	);
 

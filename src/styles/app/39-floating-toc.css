@@ -1,0 +1,115 @@
+/* ─────────────────────────────────────────────────────────────────────────────
+   FLOATING TABLE OF CONTENTS
+   ───────────────────────────────────────────────────────────────────────────── */
+.floatingToc {
+	position: fixed;
+	right: 18px;
+	top: 50%;
+	transform: translateY(-50%);
+	z-index: 14;
+	pointer-events: auto;
+}
+
+/* ── Collapsed: minimap dashes ───────────────────────────────────────────── */
+.floatingTocCollapsed {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-end;
+	gap: 4px;
+	padding: 6px 4px;
+	border-radius: var(--radius-lg);
+	background: color-mix(in srgb, var(--bg-primary) 80%, transparent);
+	backdrop-filter: blur(10px);
+	-webkit-backdrop-filter: blur(10px);
+	border: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
+	opacity: 1;
+	transition: opacity 140ms ease;
+}
+
+.floatingToc[data-expanded="true"] .floatingTocCollapsed {
+	opacity: 0;
+	pointer-events: none;
+}
+
+.floatingTocDash {
+	height: 2px;
+	border-radius: 1px;
+	background: color-mix(in srgb, var(--text-tertiary) 50%, transparent);
+	transition: background-color 180ms ease;
+}
+
+.floatingTocDash[data-active="true"] {
+	background: var(--interactive-accent);
+}
+
+/* ── Expanded: full heading list ─────────────────────────────────────────── */
+.floatingTocExpanded {
+	position: absolute;
+	right: 0;
+	top: 50%;
+	transform: translateY(-50%);
+	max-width: 220px;
+	max-height: 60vh;
+	overflow-y: auto;
+	overflow-x: hidden;
+	scrollbar-width: thin;
+	padding: 8px 10px;
+	border-radius: calc(var(--radius-md) + 2px);
+	border: 1px solid color-mix(in srgb, var(--border-light) 86%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 96%, var(--bg-secondary));
+	backdrop-filter: blur(16px);
+	-webkit-backdrop-filter: blur(16px);
+	box-shadow: 0 16px 36px
+		color-mix(in srgb, var(--shadow-color, #000) 8%, transparent);
+	opacity: 0;
+	pointer-events: none;
+	transition: opacity 140ms ease;
+}
+
+.floatingToc[data-expanded="true"] .floatingTocExpanded {
+	opacity: 1;
+	pointer-events: auto;
+}
+
+.floatingTocItems {
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+}
+
+.floatingTocItem {
+	all: unset;
+	cursor: pointer;
+	display: block;
+	padding: 3px 6px;
+	font-size: 11px;
+	line-height: 1.35;
+	color: var(--text-secondary);
+	border-radius: var(--radius-sm);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	transition: background-color 140ms ease, color 140ms ease;
+}
+
+.floatingTocItem:hover {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}
+
+.floatingTocItem[data-active="true"] {
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 10%,
+		var(--bg-secondary)
+	);
+	color: var(--text-primary);
+	font-weight: 500;
+}
+
+/* ── Responsive ──────────────────────────────────────────────────────────── */
+@media (max-width: 860px) {
+	.floatingToc {
+		display: none;
+	}
+}

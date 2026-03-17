@@ -145,6 +145,7 @@ async function emitSettingsUpdated(payload: {
 		fontSize?: UiFontSize;
 		editorFontSize?: UiFontSize;
 		translucentApp?: boolean;
+		showToc?: boolean;
 		aiAssistantMode?: AiAssistantMode;
 		aiEnabled?: boolean;
 		aiSidebarWidth?: number | null;
@@ -187,6 +188,7 @@ interface AppSettings {
 		fontSize: UiFontSize;
 		editorFontSize: UiFontSize;
 		translucentApp: boolean;
+		showToc: boolean;
 		aiAssistantMode: AiAssistantMode;
 	};
 	dailyNotes: {
@@ -213,6 +215,7 @@ const KEYS = {
 	fontSize: "ui.fontSize",
 	editorFontSize: "ui.editorFontSize",
 	translucentApp: "ui.translucentApp",
+	showToc: "ui.showToc",
 	dailyNotesFolder: "dailyNotes.folder",
 	taskSource: "tasks.source",
 	onboardingLauncherSeen: "onboarding.launcherSeen",
@@ -316,6 +319,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		rawFontSize,
 		rawEditorFontSize,
 		rawTranslucentApp,
+		rawShowToc,
 		dailyNotesFolderRaw,
 		taskSourceRaw,
 	] = await Promise.all([
@@ -339,6 +343,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<unknown>(KEYS.fontSize),
 		store.get<unknown>(KEYS.editorFontSize),
 		store.get<boolean | null>(KEYS.translucentApp),
+		store.get<boolean | null>(KEYS.showToc),
 		store.get<string | null>(KEYS.dailyNotesFolder),
 		store.get<unknown>(KEYS.taskSource),
 	]);
@@ -369,6 +374,7 @@ export async function loadSettings(): Promise<AppSettings> {
 			: asUiEditorFontSize(rawEditorFontSize);
 	const translucentApp =
 		typeof rawTranslucentApp === "boolean" ? rawTranslucentApp : true;
+	const showToc = typeof rawShowToc === "boolean" ? rawShowToc : true;
 	const dailyNotesFolder = dailyNotesFolderRaw ?? null;
 	const taskSource =
 		normalizeLegacyTaskSourceSetting(taskSourceRaw) ??
@@ -393,6 +399,7 @@ export async function loadSettings(): Promise<AppSettings> {
 			fontSize,
 			editorFontSize,
 			translucentApp,
+			showToc,
 			aiAssistantMode,
 		},
 		dailyNotes: {
@@ -540,6 +547,13 @@ export async function setUiTranslucentApp(enabled: boolean): Promise<void> {
 	await store.set(KEYS.translucentApp, enabled);
 	await store.save();
 	void emitSettingsUpdated({ ui: { translucentApp: enabled } });
+}
+
+export async function setShowToc(enabled: boolean): Promise<void> {
+	const store = await getStore();
+	await store.set(KEYS.showToc, enabled);
+	await store.save();
+	void emitSettingsUpdated({ ui: { showToc: enabled } });
 }
 
 export async function getDailyNotesFolder(): Promise<string | null> {

@@ -31,6 +31,7 @@
 @import "./styles/app/37-database-pickers.css";
 @import "./styles/app/37-database.css";
 @import "./styles/app/38-licensing.css";
+@import "./styles/app/39-floating-toc.css";
 
 /* Flatten elevation utilities globally; keep focus rings intact via ring classes. */
 .shadow,

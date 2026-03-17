@@ -1,13 +1,19 @@
 import { useCallback, useEffect, useState } from "react";
-import { getDailyNotesFolder, setDailyNotesFolder } from "../../lib/settings";
+import {
+	getDailyNotesFolder,
+	loadSettings,
+	setDailyNotesFolder,
+	setShowToc as saveShowToc,
+} from "../../lib/settings";
 import { invoke } from "../../lib/tauri";
 import { Trash2 } from "../Icons";
 import { FolderOpen } from "../Icons/NavigationIcons";
 import { LicenseSettingsCard } from "../licensing/LicenseSettingsCard";
 import { Button } from "../ui/shadcn/button";
-import { SettingsRow, SettingsSection } from "./SettingsScaffold";
+import { SettingsRow, SettingsSection, SettingsToggle } from "./SettingsScaffold";
 
 export function GeneralSettingsPane() {
+	const [showToc, setShowTocState] = useState(true);
 	const [dailyNotesFolder, setDailyNotesFolderState] = useState<string | null>(
 		null,
 	);
@@ -19,9 +25,13 @@ export function GeneralSettingsPane() {
 		let cancelled = false;
 		void (async () => {
 			try {
-				const folder = await getDailyNotesFolder();
+				const [folder, settings] = await Promise.all([
+					getDailyNotesFolder(),
+					loadSettings(),
+				]);
 				if (cancelled) return;
 				setDailyNotesFolderState(folder);
+				setShowTocState(settings.ui.showToc);
 			} catch (cause) {
 				if (!cancelled) {
 					setError(
@@ -37,6 +47,11 @@ export function GeneralSettingsPane() {
 		return () => {
 			cancelled = true;
 		};
+	}, []);
+
+	const handleShowTocChange = useCallback((checked: boolean) => {
+		setShowTocState(checked);
+		void saveShowToc(checked);
 	}, []);
 
 	const handleBrowseFolder = useCallback(async () => {
@@ -142,6 +157,19 @@ export function GeneralSettingsPane() {
 								</div>
 							) : null}
 						</div>
+					</SettingsRow>
+				</SettingsSection>
+
+				<SettingsSection title="Editor">
+					<SettingsRow
+						label="Table of contents"
+						description="Show a floating table of contents for each note."
+					>
+						<SettingsToggle
+							ariaLabel="Table of contents"
+							checked={showToc}
+							onCheckedChange={handleShowTocChange}
+						/>
 					</SettingsRow>
 				</SettingsSection>
 
