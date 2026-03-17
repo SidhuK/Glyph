@@ -50,9 +50,7 @@
 	gap: 2px;
 	padding: 4px;
 	border-radius: 999px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 78%, transparent);
-	background: color-mix(in srgb, var(--bg-secondary) 84%, var(--bg-primary));
-	backdrop-filter: blur(10px);
+	background: color-mix(in srgb, var(--bg-secondary) 92%, var(--bg-primary));
 }
 
 .commandPaletteTab {
@@ -91,12 +89,8 @@
 	inset: 0;
 	border-radius: 999px;
 	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
-	background: linear-gradient(
-		180deg,
-		color-mix(in srgb, white 88%, var(--bg-primary)) 0%,
-		color-mix(in srgb, var(--bg-primary) 92%, white 8%) 100%
-	);
-	box-shadow: 0 1px 0 color-mix(in srgb, white 72%, transparent) inset;
+	background: color-mix(in srgb, var(--bg-primary) 84%, var(--bg-tertiary));
+	box-shadow: 0 1px 2px color-mix(in srgb, black 10%, transparent);
 	z-index: -1;
 }
 
