@@ -71,7 +71,6 @@ export const CODE_BLOCK_LANGUAGE_OPTIONS: ReadonlyArray<{
 	{ label: "YAML", value: "yaml" },
 ] as const;
 
-const PLAIN_TEXT_LANGUAGE_ALIASES = new Set(["plaintext", "text", "txt"]);
 const NORMALIZED_LANGUAGE_BY_ALIAS = new Map<string, SupportedCodeBlockLanguage>(
 	SUPPORTED_CODE_BLOCK_LANGUAGES.map((language) => [language, language]),
 );
@@ -84,8 +83,9 @@ for (const [language, aliases] of Object.entries(CODE_BLOCK_LANGUAGE_ALIASES)) {
 
 export function normalizeCodeBlockLanguage(
 	language: string | null | undefined,
-): SupportedCodeBlockLanguage {
-	return NORMALIZED_LANGUAGE_BY_ALIAS.get((language ?? "").toLowerCase()) ?? "plaintext";
+): SupportedCodeBlockLanguage | null {
+	if (!language) return "plaintext";
+	return NORMALIZED_LANGUAGE_BY_ALIAS.get(language.toLowerCase()) ?? null;
 }
 
 export function getCodeBlockLanguageLabel(
@@ -94,15 +94,13 @@ export function getCodeBlockLanguageLabel(
 	if (!language) return "Plain text";
 	const raw = language.trim();
 	const normalized = normalizeCodeBlockLanguage(raw);
-	if (
-		normalized === "plaintext" &&
-		raw.length > 0 &&
-		!PLAIN_TEXT_LANGUAGE_ALIASES.has(raw.toLowerCase())
-	) {
+	if (!normalized && raw.length > 0) {
 		return raw;
 	}
 	return (
-		CODE_BLOCK_LANGUAGE_OPTIONS.find((option) => option.value === normalized)
+		CODE_BLOCK_LANGUAGE_OPTIONS.find(
+			(option) => option.value === (normalized ?? "plaintext"),
+		)
 			?.label ?? raw
 	);
 }
