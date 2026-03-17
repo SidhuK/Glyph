@@ -1,4 +1,3 @@
-import type { AiAssistantMode } from "../../lib/tauri";
 import { normalizeRelPath } from "../../utils/path";
 import type { UIMessage } from "./hooks/useRigChat";
 import { providerLogoMap } from "./providerLogos";
@@ -48,23 +47,6 @@ export function formatToolName(tool: string): string {
 }
 
 export { providerLogoMap };
-
-export const AI_MODES: Array<{
-	value: AiAssistantMode;
-	label: string;
-	hint: string;
-}> = [
-	{
-		value: "chat",
-		label: "Chat",
-		hint: "Read-only answers from attached/current context.",
-	},
-	{
-		value: "create",
-		label: "Create",
-		hint: "Agentic mode with tools and file actions.",
-	},
-];
 
 export const SLOW_START_MS = 3000;
 export const FINALIZING_MS = 280;

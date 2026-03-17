@@ -83,6 +83,30 @@
 	);
 }
 
+.aiPanel[data-ai-preset="brainstorm"] {
+	--ai-preset-accent: oklch(0.68 0.16 220);
+}
+
+.aiPanel[data-ai-preset="builder"] {
+	--ai-preset-accent: oklch(0.7 0.16 45);
+}
+
+.aiPanel[data-ai-preset="tasks"] {
+	--ai-preset-accent: oklch(0.74 0.16 88);
+}
+
+.aiPanel[data-ai-preset="editor"] {
+	--ai-preset-accent: oklch(0.66 0.11 18);
+}
+
+.aiPanel[data-ai-preset="research"] {
+	--ai-preset-accent: oklch(0.66 0.14 255);
+}
+
+.aiPanel[data-ai-preset="daily"] {
+	--ai-preset-accent: oklch(0.66 0.13 242);
+}
+
 .dark .aiPanel[data-ai-mode="chat"] {
 	--ai-mode-accent: var(--ai-accent-chat);
 	--ai-mode-accent-soft: color-mix(
@@ -273,20 +297,253 @@
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	padding: 32px 16px;
+	padding: 34px 12px 22px;
 	text-align: center;
 }
 
+.aiChatEmptyArt {
+	position: relative;
+	width: 104px;
+	height: 104px;
+	margin-bottom: 10px;
+	display: grid;
+	place-items: center;
+}
+
+.aiChatEmptyArt::before,
+.aiChatEmptyArt::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	border-radius: 30px;
+}
+
+.aiChatEmptyArt::before {
+	background: radial-gradient(
+		circle at center,
+		color-mix(
+				in srgb,
+				var(--ai-preset-accent, var(--ai-mode-accent)) 22%,
+				transparent
+			)
+			0%,
+		color-mix(
+				in srgb,
+				var(--ai-preset-accent, var(--ai-mode-accent)) 12%,
+				transparent
+			)
+			38%,
+		transparent 72%
+	);
+	transform: none;
+}
+
+.aiChatEmptyArt::after {
+	inset: 10px;
+	border: 1px solid
+		color-mix(
+			in srgb,
+			var(--ai-preset-accent, var(--ai-mode-accent)) 26%,
+			transparent
+		);
+	background: color-mix(in srgb, var(--bg-secondary) 65%, transparent);
+	backdrop-filter: blur(8px);
+	-webkit-backdrop-filter: blur(8px);
+	transform: rotate(-8deg);
+}
+
+.aiChatEmptyArtIcon {
+	position: relative;
+	z-index: 1;
+	width: 66px;
+	height: 66px;
+	border-radius: 22px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--ai-preset-accent, var(--ai-mode-accent));
+	background: color-mix(in srgb, var(--bg-primary) 84%, transparent);
+	border: 1px solid
+		color-mix(
+			in srgb,
+			var(--ai-preset-accent, var(--ai-mode-accent)) 18%,
+			transparent
+		);
+	box-shadow: 0 16px 30px
+		color-mix(
+			in srgb,
+			var(--ai-preset-accent, var(--ai-mode-accent)) 12%,
+			transparent
+		);
+}
+
+.aiChatEmptyEyebrow {
+	font-size: 10px;
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.12em;
+	text-transform: uppercase;
+	color: var(--ai-preset-accent, var(--ai-mode-accent));
+}
+
 .aiChatEmptyTitle {
+	margin-top: 8px;
 	font-size: var(--text-sm);
 	color: var(--text-primary);
 	font-weight: var(--font-medium);
+	max-width: 280px;
 }
 
 .aiChatEmptyMeta {
-	margin-top: 4px;
+	margin-top: 6px;
 	font-size: var(--text-xs);
 	color: var(--text-tertiary);
+	max-width: 300px;
+	line-height: 1.45;
+}
+
+.aiChatEmptyMeta-secondary {
+	margin-top: 10px;
+}
+
+.aiPresetGrid {
+	width: 100%;
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 8px;
+	margin-top: 16px;
+	padding: 0;
+	list-style: none;
+}
+
+.aiPresetCard {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	padding: 10px;
+	border-radius: 18px;
+	border: 1px solid transparent;
+	background: transparent;
+	text-align: left;
+	transition: border-color var(--transition-fast), background
+		var(--transition-fast), transform var(--transition-fast);
+}
+
+.aiPresetCard:hover {
+	transform: translateY(-1px);
+	border-color: transparent;
+	background: transparent;
+}
+
+.aiPresetCard.active {
+	border-color: transparent;
+	background: transparent;
+}
+
+.aiPresetCardIcon {
+	width: 30px;
+	height: 30px;
+	border-radius: 10px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--ai-preset-accent, var(--ai-mode-accent));
+	background: color-mix(
+		in srgb,
+		var(--ai-preset-accent, var(--ai-mode-accent)) 12%,
+		transparent
+	);
+	flex-shrink: 0;
+}
+
+.aiPresetCardBody {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	min-width: 0;
+}
+
+.aiPresetCardLabel {
+	font-size: 11px;
+	font-weight: var(--font-semibold);
+	color: var(--text-primary);
+}
+
+.aiPresetCardHint {
+	font-size: 10px;
+	line-height: 1.3;
+	color: var(--text-secondary);
+}
+
+.aiChatEmptyTips {
+	width: 100%;
+	margin-top: 14px;
+	position: relative;
+}
+
+.aiChatEmptyTipsViewport {
+	--ai-starter-step: 48px;
+	position: relative;
+	overflow: hidden;
+	mask-image: linear-gradient(
+		to top,
+		transparent,
+		black 14%,
+		black 86%,
+		transparent
+	);
+	-webkit-mask-image: linear-gradient(
+		to top,
+		transparent,
+		black 14%,
+		black 86%,
+		transparent
+	);
+	height: var(--ai-starter-step);
+}
+
+.aiChatEmptyTipsTrack {
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: 8px;
+	width: 100%;
+	animation: aiStarterCarouselVertical 12s cubic-bezier(0.2, 0.8, 0.2, 1)
+		infinite;
+}
+
+.aiChatEmptyTip {
+	flex: 0 0 auto;
+	width: min(100%, 420px);
+	min-height: 40px;
+	padding: 6px 10px;
+	border-radius: var(--radius-full);
+	border: 1px solid transparent;
+	background: transparent;
+	color: var(--text-secondary);
+	font-size: 10px;
+	line-height: 1.3;
+}
+
+.aiChatEmptyTip:hover {
+	color: var(--text-primary);
+}
+
+@keyframes aiStarterCarouselVertical {
+	0%,
+	24% {
+		transform: translateY(0);
+	}
+	33%,
+	57% {
+		transform: translateY(calc(-1 * var(--ai-starter-step)));
+	}
+	66%,
+	90% {
+		transform: translateY(calc(-2 * var(--ai-starter-step)));
+	}
+	100% {
+		transform: translateY(calc(-3 * var(--ai-starter-step)));
+	}
 }
 
 .aiChatMsg {
@@ -826,6 +1083,95 @@
 	position: relative;
 }
 
+.aiPresetSlashPanel {
+	margin: 0 12px 6px;
+	padding: 8px;
+	width: min(320px, calc(100% - 24px));
+	border-radius: var(--radius-lg);
+	border: 1px solid
+		color-mix(
+			in srgb,
+			var(--ai-preset-accent, var(--ai-mode-accent)) 18%,
+			transparent
+		);
+	background: color-mix(in srgb, var(--bg-secondary) 72%, transparent);
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.aiPresetSlashHeader {
+	font-size: 10px;
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--text-tertiary);
+	padding: 0 2px;
+}
+
+.aiPresetSlashList {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	align-items: stretch;
+}
+
+.aiPresetSlashItem {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	width: 100%;
+	justify-content: flex-start;
+	padding: 6px 8px;
+	border-radius: var(--radius-md);
+	text-align: left;
+	background: transparent;
+	border: 0;
+}
+
+.aiPresetSlashItem:hover,
+.aiPresetSlashItem-active {
+	background: color-mix(in srgb, var(--bg-hover) 82%, transparent);
+}
+
+.aiPresetSlashItemIcon {
+	width: 24px;
+	height: 24px;
+	border-radius: 8px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--ai-preset-accent, var(--ai-mode-accent));
+	background: color-mix(
+		in srgb,
+		var(--ai-preset-accent, var(--ai-mode-accent)) 12%,
+		transparent
+	);
+	flex-shrink: 0;
+}
+
+.aiPresetSlashItemBody {
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+	min-width: 0;
+	align-items: flex-start;
+	text-align: left;
+}
+
+.aiPresetSlashItemLabel {
+	font-size: 11px;
+	font-weight: var(--font-semibold);
+	color: var(--text-primary);
+	text-align: left;
+}
+
+.aiPresetSlashItemHint {
+	font-size: 10px;
+	color: var(--text-secondary);
+	text-align: left;
+}
+
 .aiAddPanelInput {
 	width: 100%;
 	height: 28px;
@@ -891,10 +1237,19 @@
 	position: relative;
 	border-radius: var(--radius-lg);
 	padding: 0;
-	border: 1px solid color-mix(in srgb, var(--ai-mode-accent) 16%, transparent);
+	border: 1px solid
+		color-mix(
+			in srgb,
+			var(--ai-preset-accent, var(--ai-mode-accent)) 16%,
+			transparent
+		);
 	background: var(--bg-primary);
 	box-shadow: 0 8px 24px
-		color-mix(in srgb, var(--ai-mode-accent) 8%, transparent);
+		color-mix(
+			in srgb,
+			var(--ai-preset-accent, var(--ai-mode-accent)) 8%,
+			transparent
+		);
 	transition: border-color var(--transition-base), box-shadow
 		var(--transition-base);
 }
@@ -914,13 +1269,21 @@
 	height: 26px;
 	border-radius: var(--radius-8);
 	flex: 0 0 auto;
-	color: color-mix(in srgb, var(--ai-mode-accent) 70%, var(--text-secondary));
+	color: color-mix(
+		in srgb,
+		var(--ai-preset-accent, var(--ai-mode-accent)) 70%,
+		var(--text-secondary)
+	);
 	background: color-mix(in srgb, var(--bg-secondary) 82%, transparent);
 }
 
 .aiComposerMentionButton:hover:not(:disabled) {
-	color: var(--ai-mode-accent);
-	background: color-mix(in srgb, var(--ai-mode-accent) 12%, var(--bg-secondary));
+	color: var(--ai-preset-accent, var(--ai-mode-accent));
+	background: color-mix(
+		in srgb,
+		var(--ai-preset-accent, var(--ai-mode-accent)) 12%,
+		var(--bg-secondary)
+	);
 }
 
 .aiComposerMentionButton:disabled {
@@ -971,10 +1334,22 @@
 }
 
 .aiComposerInputShell:focus-within {
-	border-color: color-mix(in srgb, var(--ai-mode-accent) 30%, transparent);
+	border-color: color-mix(
+		in srgb,
+		var(--ai-preset-accent, var(--ai-mode-accent)) 30%,
+		transparent
+	);
 	box-shadow: 0 0 0 1px
-		color-mix(in srgb, var(--ai-mode-accent) 18%, transparent), 0 14px 34px
-		color-mix(in srgb, var(--ai-mode-accent) 16%, transparent);
+		color-mix(
+			in srgb,
+			var(--ai-preset-accent, var(--ai-mode-accent)) 18%,
+			transparent
+		), 0 14px 34px
+		color-mix(
+			in srgb,
+			var(--ai-preset-accent, var(--ai-mode-accent)) 16%,
+			transparent
+		);
 }
 
 .aiComposerBar {
@@ -1027,14 +1402,6 @@
 		var(--transition-fast);
 }
 
-.aiModeDropdownTrigger-chat {
-	--ai-mode-current: var(--ai-accent-chat);
-}
-
-.aiModeDropdownTrigger-create {
-	--ai-mode-current: var(--ai-accent-create);
-}
-
 .aiModeDropdownTrigger:hover {
 	background: color-mix(
 		in srgb,
@@ -1042,6 +1409,10 @@
 		color-mix(in srgb, var(--ai-mode-current) 10%, var(--bg-primary))
 	);
 	border-color: color-mix(in srgb, var(--ai-mode-current) 22%, transparent);
+}
+
+.aiPresetDropdownTrigger {
+	--ai-mode-current: var(--ai-preset-accent, var(--ai-mode-accent));
 }
 
 .aiModeDropdownTrigger[data-state="open"] {
@@ -1130,12 +1501,12 @@
 	color: var(--text-primary);
 }
 
-.aiModeDropdownItem.active.aiModeDropdownItem-chat {
-	background: color-mix(in srgb, var(--ai-accent-chat) 12%, var(--bg-hover));
-}
-
-.aiModeDropdownItem.active.aiModeDropdownItem-create {
-	background: color-mix(in srgb, var(--ai-accent-create) 12%, var(--bg-hover));
+.aiPresetDropdownItem.active {
+	background: color-mix(
+		in srgb,
+		var(--ai-preset-accent, var(--ai-mode-accent)) 12%,
+		var(--bg-hover)
+	);
 }
 
 .aiModeDropdownItemIcon {
@@ -1146,16 +1517,12 @@
 	align-items: center;
 	justify-content: center;
 	flex-shrink: 0;
-	background: color-mix(in srgb, var(--bg-primary) 82%, transparent);
+	background: transparent;
 	color: var(--text-secondary);
 }
 
-.aiModeDropdownItem-chat .aiModeDropdownItemIcon {
-	color: var(--ai-accent-chat);
-}
-
-.aiModeDropdownItem-create .aiModeDropdownItemIcon {
-	color: var(--ai-accent-create);
+.aiPresetDropdownItemIcon {
+	color: var(--ai-preset-accent, var(--ai-mode-accent));
 }
 
 .aiModeDropdownItemBody {
@@ -1231,7 +1598,8 @@
 	.aiPendingDot,
 	.aiPendingLine,
 	.aiPendingDots span,
-	.aiToolStatusDot {
+	.aiToolStatusDot,
+	.aiChatEmptyTipsTrack {
 		animation: none !important;
 	}
 }

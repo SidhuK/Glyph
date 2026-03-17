@@ -23,6 +23,7 @@ type SendMessageOptions = {
 		provider?: AiProviderKind;
 		thread_id?: string;
 		mode?: AiAssistantMode;
+		system_prompt?: string;
 		context?: string;
 		context_manifest?: unknown;
 		audit?: boolean;
@@ -137,10 +138,21 @@ export function useRigChat() {
 				const threadId =
 					requestedThreadId || activeThreadIdRef.current || crypto.randomUUID();
 				activeThreadIdRef.current = threadId;
+				const systemPrompt = options?.body?.system_prompt?.trim() ?? "";
+				const requestMessages = asAiMessages([
+					...messagesRef.current,
+					userMessage,
+				]);
+				if (systemPrompt) {
+					requestMessages.unshift({
+						role: "system",
+						content: systemPrompt,
+					});
+				}
 				const { job_id: jobId } = await invoke("ai_chat_start", {
 					request: {
 						profile_id: profileId,
-						messages: asAiMessages([...messagesRef.current, userMessage]),
+						messages: requestMessages,
 						thread_id: threadId,
 						mode: options?.body?.mode ?? "create",
 						context: options?.body?.context || undefined,

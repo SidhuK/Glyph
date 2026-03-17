@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { m, useReducedMotion } from "motion/react";
 import { Fragment, Suspense, lazy, useState } from "react";
 import { ChevronDown, Files, RefreshCw, Save } from "../Icons";
@@ -6,6 +7,7 @@ import { dispatchMarkdownLinkClick } from "../editor/markdown/editorEvents";
 import { Button } from "../ui/shadcn/button";
 import { AIToolTimeline, type ToolTimelineEvent } from "./AIToolTimeline";
 import { messageText } from "./aiPanelConstants";
+import { AI_PRESETS, type AiPreset } from "./aiPresets";
 import type { UIMessage } from "./hooks/useRigChat";
 
 const AIMessageMarkdown = lazy(async () => {
@@ -21,6 +23,9 @@ interface AIChatThreadProps {
 	phaseStatusText: string;
 	toolTimeline: ToolTimelineEvent[];
 	lastUserMessageIndex: number;
+	activePreset: AiPreset;
+	onSelectPreset: (presetId: string) => void;
+	onUseStarterPrompt: (prompt: string) => void;
 	onCopy: (text: string) => void;
 	onSave: (text: string) => void;
 	onRetry: (index: number) => void;
@@ -125,6 +130,9 @@ export function AIChatThread({
 	phaseStatusText,
 	toolTimeline,
 	lastUserMessageIndex: _lastUserMessageIndex,
+	activePreset,
+	onSelectPreset,
+	onUseStarterPrompt,
 	onCopy,
 	onSave,
 	onRetry,
@@ -146,9 +154,59 @@ export function AIChatThread({
 		<>
 			{messages.length === 0 ? (
 				<div className="aiChatEmpty">
+					<div className="aiChatEmptyArt" aria-hidden="true">
+						<div className="aiChatEmptyArtIcon">
+							<HugeiconsIcon icon={activePreset.icon} size={52} />
+						</div>
+					</div>
+					<div className="aiChatEmptyEyebrow">{activePreset.label}</div>
 					<div className="aiChatEmptyTitle">Ask anything about your notes</div>
-					<div className="aiChatEmptyMeta">
-						Use @ to mention files or folders
+					<div className="aiChatEmptyMeta">{activePreset.description}</div>
+					<ul className="aiPresetGrid" aria-label="AI presets">
+						{AI_PRESETS.map((preset) => {
+							const active = preset.id === activePreset.id;
+							return (
+								<li key={preset.id}>
+									<button
+										type="button"
+										className={cn("aiPresetCard", active && "active")}
+										onClick={() => onSelectPreset(preset.id)}
+									>
+										<span className="aiPresetCardIcon">
+											<HugeiconsIcon icon={preset.icon} size={16} />
+										</span>
+										<span className="aiPresetCardBody">
+											<span className="aiPresetCardLabel">{preset.label}</span>
+											<span className="aiPresetCardHint">
+												{preset.shortDescription}
+											</span>
+										</span>
+									</button>
+								</li>
+							);
+						})}
+					</ul>
+					<div className="aiChatEmptyTips" aria-label="Starter prompts">
+						<div className="aiChatEmptyTipsViewport">
+							<div className="aiChatEmptyTipsTrack">
+								{[0, 1].flatMap((copyIndex) =>
+									activePreset.starterPrompts.map((prompt) => (
+										<button
+											key={`${activePreset.id}-${copyIndex}-${prompt}`}
+											type="button"
+											className="aiChatEmptyTip"
+											onClick={() => onUseStarterPrompt(prompt)}
+										>
+											{prompt}
+										</button>
+									)),
+								)}
+							</div>
+						</div>
+					</div>
+					<div className="aiChatEmptyMeta aiChatEmptyMeta-secondary">
+						Type `/{activePreset.id}` to switch quickly, or use `@` to attach
+						files
 					</div>
 				</div>
 			) : null}
