@@ -1,4 +1,4 @@
-import { ChevronRight, Circle, Tick01Icon } from "@hugeicons/core-free-icons";
+import { ArrowRight, Circle, Tick01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { ContextMenu as ContextMenuPrimitive } from "radix-ui";
 import type * as React from "react";
@@ -71,7 +71,7 @@ function ContextMenuSubTrigger({
 			{...props}
 		>
 			{children}
-			<HugeiconsIcon icon={ChevronRight} className="ml-auto" />
+			<HugeiconsIcon icon={ArrowRight} className="ml-auto" />
 		</ContextMenuPrimitive.SubTrigger>
 	);
 }

@@ -190,23 +190,33 @@ export function AIChatThread({
 						<div className="aiChatEmptyTipsViewport">
 							<div className="aiChatEmptyTipsTrack">
 								{[0, 1].flatMap((copyIndex) =>
-									activePreset.starterPrompts.map((prompt) => (
-										<button
-											key={`${activePreset.id}-${copyIndex}-${prompt}`}
-											type="button"
-											className="aiChatEmptyTip"
-											onClick={() => onUseStarterPrompt(prompt)}
-										>
-											{prompt}
-										</button>
-									)),
+									activePreset.starterPrompts.map((prompt) =>
+										copyIndex === 0 ? (
+											<button
+												key={`${activePreset.id}-${copyIndex}-${prompt}`}
+												type="button"
+												className="aiChatEmptyTip"
+												onClick={() => onUseStarterPrompt(prompt)}
+											>
+												{prompt}
+											</button>
+										) : (
+											<span
+												key={`${activePreset.id}-${copyIndex}-${prompt}`}
+												className="aiChatEmptyTip"
+												aria-hidden="true"
+											>
+												{prompt}
+											</span>
+										),
+									),
 								)}
 							</div>
 						</div>
 					</div>
 					<div className="aiChatEmptyMeta aiChatEmptyMeta-secondary">
-						Type `/{activePreset.id}` to switch quickly, or use `@` to attach
-						files
+						Type `{activePreset.command}` to switch quickly, or use `@` to
+						attach files
 					</div>
 				</div>
 			) : null}

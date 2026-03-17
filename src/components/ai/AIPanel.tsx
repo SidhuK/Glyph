@@ -20,6 +20,7 @@ import {
 } from "./aiContextEvents";
 import { parseAddTrigger } from "./aiPanelConstants";
 import {
+	AI_PRESETS,
 	DEFAULT_AI_PRESET_ID,
 	getAiPresetById,
 	parsePresetSlashCommand,
@@ -46,6 +47,53 @@ export async function prefetchAIPanelData(): Promise<void> {
 	]);
 }
 
+const AI_PRESET_BY_MODE_STORAGE_KEY = "glyph.ai.presetByMode.v1";
+
+type PresetMode = "chat" | "create";
+type PresetByMode = Partial<Record<PresetMode, string>>;
+
+function getFallbackPresetIdForMode(mode: PresetMode): string {
+	return (
+		AI_PRESETS.find((preset) => preset.defaultMode === mode)?.id ??
+		DEFAULT_AI_PRESET_ID
+	);
+}
+
+function readPresetByMode(): PresetByMode {
+	if (typeof window === "undefined") return {};
+	try {
+		const raw = window.localStorage.getItem(AI_PRESET_BY_MODE_STORAGE_KEY);
+		if (!raw) return {};
+		const parsed = JSON.parse(raw) as unknown;
+		if (!parsed || typeof parsed !== "object") return {};
+		return parsed as PresetByMode;
+	} catch {
+		return {};
+	}
+}
+
+function getStoredPresetIdForMode(mode: PresetMode): string | null {
+	const presetId = readPresetByMode()[mode];
+	if (typeof presetId !== "string" || !presetId.trim()) return null;
+	return getAiPresetById(presetId).id;
+}
+
+function setStoredPresetIdForMode(mode: PresetMode, presetId: string): void {
+	if (typeof window === "undefined") return;
+	try {
+		const next: PresetByMode = {
+			...readPresetByMode(),
+			[mode]: getAiPresetById(presetId).id,
+		};
+		window.localStorage.setItem(
+			AI_PRESET_BY_MODE_STORAGE_KEY,
+			JSON.stringify(next),
+		);
+	} catch {
+		// best-effort preference persistence
+	}
+}
+
 export function AIPanel({ isOpen, activeFolderPath, onClose }: AIPanelProps) {
 	const chat = useRigChat();
 	const { aiAssistantMode, setAiAssistantMode } = useAISidebarContext();
@@ -55,7 +103,12 @@ export function AIPanel({ isOpen, activeFolderPath, onClose }: AIPanelProps) {
 	const [addPanelOpen, setAddPanelOpen] = useState(false);
 	const [addPanelQuery, setAddPanelQuery] = useState("");
 	const [historyExpanded, setHistoryExpanded] = useState(false);
-	const [activePresetId, setActivePresetId] = useState(DEFAULT_AI_PRESET_ID);
+	const [activePresetId, setActivePresetId] = useState(() => {
+		return (
+			getStoredPresetIdForMode(aiAssistantMode) ??
+			getFallbackPresetIdForMode(aiAssistantMode)
+		);
+	});
 
 	const profiles = useAiProfiles();
 	const context = useAiContext({ activeFolderPath });
@@ -66,6 +119,24 @@ export function AIPanel({ isOpen, activeFolderPath, onClose }: AIPanelProps) {
 		() => getAiPresetById(activePresetId),
 		[activePresetId],
 	);
+
+	useEffect(() => {
+		const storedPresetId = getStoredPresetIdForMode(aiAssistantMode);
+		const nextPresetId =
+			storedPresetId ??
+			(activePreset.defaultMode === aiAssistantMode
+				? activePreset.id
+				: getFallbackPresetIdForMode(aiAssistantMode));
+		if (nextPresetId !== activePresetId) {
+			setActivePresetId(nextPresetId);
+		}
+		setStoredPresetIdForMode(aiAssistantMode, nextPresetId);
+	}, [
+		activePreset.defaultMode,
+		activePreset.id,
+		activePresetId,
+		aiAssistantMode,
+	]);
 
 	const trigger = parseAddTrigger(input);
 	const showAddPanel = addPanelOpen || Boolean(trigger);
@@ -158,6 +229,10 @@ export function AIPanel({ isOpen, activeFolderPath, onClose }: AIPanelProps) {
 		const slashSelection = parsePresetSlashCommand(input);
 		if (slashSelection) {
 			setActivePresetId(slashSelection.preset.id);
+			setStoredPresetIdForMode(
+				slashSelection.preset.defaultMode,
+				slashSelection.preset.id,
+			);
 			if (slashSelection.preset.defaultMode !== aiAssistantMode) {
 				setAiAssistantMode(slashSelection.preset.defaultMode);
 			}
@@ -287,6 +362,7 @@ export function AIPanel({ isOpen, activeFolderPath, onClose }: AIPanelProps) {
 		(presetId: string) => {
 			const preset = getAiPresetById(presetId);
 			setActivePresetId(preset.id);
+			setStoredPresetIdForMode(preset.defaultMode, preset.id);
 			if (preset.defaultMode !== aiAssistantMode) {
 				setAiAssistantMode(preset.defaultMode);
 			}

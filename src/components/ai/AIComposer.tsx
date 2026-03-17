@@ -84,7 +84,7 @@ export function AIComposer({
 
 	const applyPresetSlashSelection = (preset: AiPreset) => {
 		onSelectPreset(preset.id);
-		setInput((prev) => prev.replace(/^\/[a-z-]+\s*/i, ""));
+		setInput((prev) => prev.replace(/^\s*\/[a-z-]+\s*/i, ""));
 		scheduleComposerInputResize();
 		window.requestAnimationFrame(() => composerInputRef.current?.focus());
 	};

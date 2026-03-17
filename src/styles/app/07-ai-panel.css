@@ -484,6 +484,7 @@
 	--ai-starter-step: 48px;
 	position: relative;
 	overflow: hidden;
+	height: var(--ai-starter-step);
 	mask-image: linear-gradient(
 		to top,
 		transparent,
@@ -498,7 +499,6 @@
 		black 86%,
 		transparent
 	);
-	height: var(--ai-starter-step);
 }
 
 .aiChatEmptyTipsTrack {
@@ -507,7 +507,7 @@
 	align-items: center;
 	gap: 8px;
 	width: 100%;
-	animation: aiStarterCarouselVertical 12s cubic-bezier(0.2, 0.8, 0.2, 1)
+	animation: ai-starter-carousel-vertical 12s cubic-bezier(0.2, 0.8, 0.2, 1)
 		infinite;
 }
 
@@ -528,7 +528,7 @@
 	color: var(--text-primary);
 }
 
-@keyframes aiStarterCarouselVertical {
+@keyframes ai-starter-carousel-vertical {
 	0%,
 	24% {
 		transform: translateY(0);
