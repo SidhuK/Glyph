@@ -3,9 +3,7 @@ import { titleForFile } from "./notePreview";
 function normalizeExportPath(path: string): string {
 	const normalized = path.trim();
 	if (!normalized) return normalized;
-	return normalized.toLowerCase().endsWith(".html")
-		? normalized
-		: `${normalized}.html`;
+	return /\.(html|htm)$/i.test(normalized) ? normalized : `${normalized}.html`;
 }
 
 export async function promptNoteExportPath(

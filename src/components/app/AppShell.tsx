@@ -704,6 +704,13 @@ export function AppShell() {
 			});
 			return;
 		}
+		if (htmlExportRequest !== null || htmlExportResolversRef.current.size > 0) {
+			toast.message("HTML export already in progress.", {
+				description:
+					"Wait for the current export to finish before starting another.",
+			});
+			return;
+		}
 
 		void (async () => {
 			try {
@@ -745,7 +752,13 @@ export function AppShell() {
 				});
 			}
 		})();
-	}, [activeMarkdownTabPath, getCurrentMarkdown, saveCurrentEditor, setError]);
+	}, [
+		activeMarkdownTabPath,
+		getCurrentMarkdown,
+		htmlExportRequest,
+		saveCurrentEditor,
+		setError,
+	]);
 
 	useMenuListeners({
 		onNewNote: handleNewNoteFromMenu,

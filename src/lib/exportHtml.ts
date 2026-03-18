@@ -28,7 +28,7 @@ export function buildStandaloneExportHtml(
 		exportCss,
 		"</style>",
 		"</head>",
-		`<body class="noteExportStandalone" data-export-kind="${kind}">`,
+		`<body class="noteExportStandalone" data-export-kind="${escapeHtml(kind)}">`,
 		bodyHtml,
 		"</body>",
 		"</html>",

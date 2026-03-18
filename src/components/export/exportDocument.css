@@ -151,6 +151,5 @@ html:has(body.noteExportStandalone) {
 	.noteExportBody table,
 	.noteExportBody img {
 		break-inside: avoid;
-		page-break-inside: avoid;
 	}
 }

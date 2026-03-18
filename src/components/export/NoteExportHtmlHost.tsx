@@ -17,6 +17,9 @@ interface NoteExportHtmlHostProps {
 	onError: (result: { id: string; message: string }) => void;
 }
 
+const IMAGE_SETTLE_TIMEOUT_MS = 5_000;
+const HARD_TIMEOUT_MS = 30_000;
+
 function isDirectImageUrl(src: string): boolean {
 	return /^(https?:|data:|blob:|asset:|tauri:|file:|\/\/)/i.test(src);
 }
@@ -32,6 +35,9 @@ export function NoteExportHtmlHost({
 
 	useEffect(() => {
 		if (!request) return;
+
+		setReady(false);
+		startedRef.current = null;
 
 		const startedAt = Date.now();
 		let cancelled = false;
@@ -56,13 +62,13 @@ export function NoteExportHtmlHost({
 				const src = image.getAttribute("src")?.trim() ?? "";
 				return Boolean(src) && !isDirectImageUrl(src);
 			});
-			if (unresolvedLocal && Date.now() - startedAt < 5000) {
+			if (unresolvedLocal && Date.now() - startedAt < IMAGE_SETTLE_TIMEOUT_MS) {
 				return false;
 			}
 			const incomplete = images.some(
 				(image) => !(image instanceof HTMLImageElement) || !image.complete,
 			);
-			if (incomplete && Date.now() - startedAt < 5000) {
+			if (incomplete && Date.now() - startedAt < IMAGE_SETTLE_TIMEOUT_MS) {
 				return false;
 			}
 			return true;
@@ -71,6 +77,13 @@ export function NoteExportHtmlHost({
 		const runCheck = () => {
 			clearTimer();
 			if (cancelled) return;
+			if (Date.now() - startedAt > HARD_TIMEOUT_MS) {
+				onError({
+					id: request.id,
+					message: "Export timed out waiting for the note to render.",
+				});
+				return;
+			}
 			if (isSettled()) {
 				setReady(true);
 				return;
@@ -98,7 +111,7 @@ export function NoteExportHtmlHost({
 			clearTimer();
 			observer.disconnect();
 		};
-	}, [request]);
+	}, [onError, request]);
 
 	useEffect(() => {
 		if (!request || !ready) return;
