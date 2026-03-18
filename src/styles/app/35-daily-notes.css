@@ -41,3 +41,7 @@
 .sidebarDailyNotesBtn[data-kind="daily-notes"] > svg {
 	color: oklch(0.66 0.13 242);
 }
+
+.sidebarDailyNotesBtn[data-kind="template"] > svg {
+	color: oklch(0.72 0.15 168);
+}

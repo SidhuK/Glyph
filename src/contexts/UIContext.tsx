@@ -39,6 +39,8 @@ export interface UILayoutContextValue {
 	activeMarkdownTabPath: string | null;
 	setActiveMarkdownTabPath: (path: string | null) => void;
 	dailyNotesFolder: string | null;
+	templateFolder: string | null;
+	dailyNoteTemplatePath: string | null;
 	showToc: boolean;
 	setShowToc: (show: boolean) => void;
 }
@@ -80,6 +82,8 @@ type UIState = {
 	openMarkdownTabs: string[];
 	activeMarkdownTabPath: string | null;
 	dailyNotesFolder: string | null;
+	templateFolder: string | null;
+	dailyNoteTemplatePath: string | null;
 	showToc: boolean;
 	aiEnabled: boolean;
 	aiPanelOpen: boolean;
@@ -96,6 +100,8 @@ type UIAction =
 	| { type: "setOpenMarkdownTabs"; value: SetStateAction<string[]> }
 	| { type: "setActiveMarkdownTabPath"; value: string | null }
 	| { type: "setDailyNotesFolder"; value: string | null }
+	| { type: "setTemplateFolder"; value: string | null }
+	| { type: "setDailyNoteTemplatePath"; value: string | null }
 	| { type: "setShowToc"; value: boolean }
 	| { type: "setAiEnabled"; value: boolean }
 	| { type: "setAiPanelOpen"; value: SetStateAction<boolean> }
@@ -108,6 +114,8 @@ type UIAction =
 			aiPanelWidth?: number;
 			aiAssistantMode: AiAssistantMode;
 			dailyNotesFolder: string | null;
+			templateFolder: string | null;
+			dailyNoteTemplatePath: string | null;
 			showToc: boolean;
 	  };
 
@@ -120,6 +128,8 @@ const initialUIState: UIState = {
 	openMarkdownTabs: [],
 	activeMarkdownTabPath: null,
 	dailyNotesFolder: null,
+	templateFolder: null,
+	dailyNoteTemplatePath: null,
 	showToc: true,
 	aiEnabled: true,
 	aiPanelOpen: false,
@@ -151,6 +161,10 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 			return { ...state, activeMarkdownTabPath: action.value };
 		case "setDailyNotesFolder":
 			return { ...state, dailyNotesFolder: action.value };
+		case "setTemplateFolder":
+			return { ...state, templateFolder: action.value };
+		case "setDailyNoteTemplatePath":
+			return { ...state, dailyNoteTemplatePath: action.value };
 		case "setShowToc":
 			return { ...state, showToc: action.value };
 		case "setAiEnabled":
@@ -184,6 +198,8 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 				aiPanelWidth: action.aiPanelWidth ?? state.aiPanelWidth,
 				aiAssistantMode: action.aiAssistantMode,
 				dailyNotesFolder: action.dailyNotesFolder,
+				templateFolder: action.templateFolder,
+				dailyNoteTemplatePath: action.dailyNoteTemplatePath,
 				showToc: action.showToc,
 			};
 		default:
@@ -203,6 +219,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		openMarkdownTabs,
 		activeMarkdownTabPath,
 		dailyNotesFolder,
+		templateFolder,
+		dailyNoteTemplatePath,
 		showToc,
 		aiEnabled,
 		aiPanelOpen,
@@ -237,6 +255,18 @@ export function UIProvider({ children }: { children: ReactNode }) {
 				value: payload.dailyNotes.folder ?? null,
 			});
 		}
+		if (payload.templates && "folder" in payload.templates) {
+			dispatch({
+				type: "setTemplateFolder",
+				value: payload.templates.folder ?? null,
+			});
+		}
+		if (payload.templates && "dailyNoteTemplate" in payload.templates) {
+			dispatch({
+				type: "setDailyNoteTemplatePath",
+				value: payload.templates.dailyNoteTemplate ?? null,
+			});
+		}
 	});
 
 	useEffect(() => {
@@ -254,6 +284,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 							: undefined,
 					aiAssistantMode: s.ui.aiAssistantMode,
 					dailyNotesFolder: s.dailyNotes?.folder ?? null,
+					templateFolder: s.templates?.folder ?? null,
+					dailyNoteTemplatePath: s.templates?.dailyNoteTemplate ?? null,
 					showToc: s.ui.showToc,
 				});
 			} catch {
@@ -294,6 +326,14 @@ export function UIProvider({ children }: { children: ReactNode }) {
 				dispatch({
 					type: "setDailyNotesFolder",
 					value: s.dailyNotes?.folder ?? null,
+				});
+				dispatch({
+					type: "setTemplateFolder",
+					value: s.templates?.folder ?? null,
+				});
+				dispatch({
+					type: "setDailyNoteTemplatePath",
+					value: s.templates?.dailyNoteTemplate ?? null,
 				});
 			} catch {
 				// best-effort settings refresh
@@ -394,6 +434,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			activeMarkdownTabPath,
 			setActiveMarkdownTabPath,
 			dailyNotesFolder,
+			templateFolder,
+			dailyNoteTemplatePath,
 			showToc,
 			setShowToc,
 		}),
@@ -413,6 +455,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			activeMarkdownTabPath,
 			setActiveMarkdownTabPath,
 			dailyNotesFolder,
+			templateFolder,
+			dailyNoteTemplatePath,
 			showToc,
 			setShowToc,
 		],

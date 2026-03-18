@@ -3,6 +3,7 @@ import {
 	AiBrain04Icon,
 	CalendarAdd01Icon,
 	CheckListIcon,
+	ColorsIcon,
 	CursorInWindowIcon,
 	Folder01Icon,
 	FolderOpenIcon,
@@ -17,6 +18,7 @@ import {
 	TableIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { join } from "@tauri-apps/api/path";
 import { openPath, openUrl } from "@tauri-apps/plugin-opener";
 import { AnimatePresence } from "motion/react";
 import {
@@ -49,6 +51,7 @@ import type { Shortcut } from "../../lib/shortcuts";
 import { getShortcutTooltip } from "../../lib/shortcuts";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
+import { listTemplates, renderTemplate } from "../../lib/templates";
 import { openSettingsWindow } from "../../lib/windows";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { LayoutAlignLeft } from "../Icons";
@@ -65,6 +68,10 @@ import {
 import type { Command } from "./CommandPalette";
 import { MainContent } from "./MainContent";
 import { Sidebar } from "./Sidebar";
+import {
+	TemplatePickerDialog,
+	type TemplatePickerItem,
+} from "./TemplatePickerDialog";
 import { WindowChromeIconButton } from "./WindowChromeIconButton";
 import { WindowChromeUpdateButton } from "./WindowChromeUpdateButton";
 import { normalizeRelPath, parentDir } from "./appShellHelpers";
@@ -110,6 +117,8 @@ export function AppShell() {
 		openMarkdownTabs,
 		activeMarkdownTabPath,
 		dailyNotesFolder,
+		templateFolder,
+		dailyNoteTemplatePath,
 		sidebarWidth,
 		setSidebarWidth,
 	} = useUILayoutContext();
@@ -138,6 +147,11 @@ export function AppShell() {
 	const [shortcutsHelpOpen, setShortcutsHelpOpen] = useState(false);
 	const [commandPaletteMounted, setCommandPaletteMounted] = useState(false);
 	const [shortcutsHelpMounted, setShortcutsHelpMounted] = useState(false);
+	const [templatePickerOpen, setTemplatePickerOpen] = useState(false);
+	const [templatePickerDirPath, setTemplatePickerDirPath] = useState("");
+	const [templatePickerItems, setTemplatePickerItems] = useState<
+		TemplatePickerItem[]
+	>([]);
 	const autoUpdater = useAutoUpdater();
 
 	const sidebarResize = useResizablePanel({
@@ -199,7 +213,112 @@ export function AppShell() {
 	});
 
 	const { openOrCreateDailyNote, isCreating: isDailyNoteCreating } =
-		useDailyNote({ onOpenFile: (path) => fileTree.openFile(path), setError });
+		useDailyNote({
+			onOpenFile: (path) => fileTree.openFile(path),
+			setError,
+			spacePath,
+			templatePath: dailyNoteTemplatePath,
+		});
+
+	const openTemplatesSettings = useCallback(() => {
+		void openSettingsWindow("general");
+	}, []);
+
+	const openTemplatePicker = useCallback(
+		async (dirPath?: string) => {
+			if (!spacePath) return;
+			if (templateFolder === null) {
+				setError("Set a template folder in Settings -> General first.");
+				openTemplatesSettings();
+				return;
+			}
+			try {
+				const templates = await listTemplates(templateFolder);
+				if (!templates.length) {
+					setError("No markdown templates were found in the template folder.");
+					openTemplatesSettings();
+					return;
+				}
+				setTemplatePickerItems(
+					templates.map((template) => ({
+						relPath: template.relPath,
+						label: template.relPath.startsWith(`${templateFolder}/`)
+							? template.relPath.slice(templateFolder.length + 1)
+							: template.relPath,
+					})),
+				);
+				setTemplatePickerDirPath(dirPath ?? "");
+				setTemplatePickerOpen(true);
+			} catch (cause) {
+				setError(
+					cause instanceof Error
+						? cause.message
+						: "Failed to load the template library.",
+				);
+			}
+		},
+		[openTemplatesSettings, setError, spacePath, templateFolder],
+	);
+
+	const handlePickTemplate = useCallback(
+		async (template: TemplatePickerItem) => {
+			if (!spacePath) return;
+			setTemplatePickerOpen(false);
+			try {
+				const { save } = await import("@tauri-apps/plugin-dialog");
+				const suggestedFileName =
+					template.relPath.split("/").pop()?.trim() || "Untitled.md";
+				const defaultPath = templatePickerDirPath
+					? await join(spacePath, templatePickerDirPath, suggestedFileName)
+					: await join(spacePath, suggestedFileName);
+				const selection = await save({
+					title: "Create note from template",
+					defaultPath,
+					filters: [{ name: "Markdown", extensions: ["md"] }],
+				});
+				const absPath = Array.isArray(selection)
+					? (selection[0] ?? null)
+					: selection;
+				if (!absPath) return;
+				const relPath = await invoke("space_relativize_path", {
+					abs_path: absPath,
+				});
+				const normalizedRelPath = relPath.toLowerCase().endsWith(".md")
+					? relPath
+					: `${relPath}.md`;
+				if (
+					templatePickerDirPath &&
+					normalizedRelPath !== templatePickerDirPath &&
+					!normalizedRelPath.startsWith(`${templatePickerDirPath}/`)
+				) {
+					setError(`Choose a file path inside "${templatePickerDirPath}"`);
+					return;
+				}
+				const templateDoc = await invoke("space_read_text", {
+					path: template.relPath,
+				});
+				const rendered = renderTemplate(templateDoc.text, {
+					destinationPath: normalizedRelPath,
+					spaceRootPath: spacePath,
+				});
+				const createdPath = await fileTree.createMarkdownFileAtPath({
+					path: normalizedRelPath,
+					text: rendered,
+					openParentDir: templatePickerDirPath,
+				});
+				if (createdPath) {
+					await fileTree.openFile(createdPath);
+				}
+			} catch (cause) {
+				setError(
+					cause instanceof Error
+						? cause.message
+						: "Failed to create the note from template.",
+				);
+			}
+		},
+		[fileTree, setError, spacePath, templatePickerDirPath],
+	);
 
 	const handleOpenDailyNote = useCallback(async () => {
 		if (!dailyNotesFolder) return;
@@ -347,6 +466,13 @@ export function AppShell() {
 		void fileTree.onNewFile();
 	}, [fileTree, spacePath]);
 
+	const handleCreateFromTemplateFromMenu = useCallback(() => {
+		if (!spacePath) return;
+		const dir =
+			activeDirPath ?? (activeFilePath ? parentDir(activeFilePath) : "");
+		void openTemplatePicker(dir);
+	}, [activeDirPath, activeFilePath, openTemplatePicker, spacePath]);
+
 	const handleOpenDailyNoteFromMenu = useCallback(() => {
 		requestOpenDailyNote();
 	}, [requestOpenDailyNote]);
@@ -388,6 +514,7 @@ export function AppShell() {
 
 	useMenuListeners({
 		onNewNote: handleNewNoteFromMenu,
+		onCreateFromTemplate: handleCreateFromTemplateFromMenu,
 		onOpenDailyNote: handleOpenDailyNoteFromMenu,
 		onSaveNote: handleSaveNoteFromMenu,
 		onCloseTab: () => {
@@ -666,6 +793,15 @@ export function AppShell() {
 				action: () => void fileTree.onNewFile(),
 			},
 			{
+				id: "create-from-template",
+				label: "Create from template",
+				icon: <HugeiconsIcon icon={ColorsIcon} size={16} />,
+				category: "File Operations",
+				shortcut: { meta: true, shift: true, key: "m" },
+				enabled: Boolean(spacePath),
+				action: handleCreateFromTemplateFromMenu,
+			},
+			{
 				id: "new-tab",
 				label: "New tab",
 				icon: <HugeiconsIcon icon={CursorInWindowIcon} size={16} />,
@@ -816,6 +952,7 @@ export function AppShell() {
 		openMarkdownTabs.length,
 		requestOpenDailyNote,
 		saveCurrentEditor,
+		handleCreateFromTemplateFromMenu,
 		setAiPanelOpen,
 		setPaletteOpen,
 		setActivePreviewPath,
@@ -876,6 +1013,7 @@ export function AppShell() {
 				onOpenFile={(p) => void fileTree.openFile(p)}
 				onNewNote={() => void fileTree.onNewFile()}
 				onNewFileInDir={(p) => void fileTree.onNewFileInDir(p)}
+				onCreateFromTemplateInDir={(p) => void openTemplatePicker(p)}
 				onNewDatabaseInDir={(p) =>
 					fileTree
 						.onNewDatabaseInDir(p)
@@ -977,6 +1115,13 @@ export function AppShell() {
 					/>
 				</Suspense>
 			) : null}
+			<TemplatePickerDialog
+				open={templatePickerOpen}
+				templates={templatePickerItems}
+				onClose={() => setTemplatePickerOpen(false)}
+				onPick={(template) => void handlePickTemplate(template)}
+				onOpenSettings={openTemplatesSettings}
+			/>
 		</div>
 	);
 }

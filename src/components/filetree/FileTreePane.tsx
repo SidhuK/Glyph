@@ -16,6 +16,7 @@ interface FileTreePaneProps {
 	onSelectDir: (dirPath: string) => void;
 	onOpenFile: (filePath: string) => void;
 	onNewFileInDir: (dirPath: string) => void;
+	onCreateFromTemplateInDir: (dirPath: string) => void;
 	onNewDatabaseInDir: (dirPath: string) => Promise<string | null>;
 	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
 	onRenameDir: (
@@ -40,6 +41,7 @@ interface TreeEntriesProps {
 	onSelectDir: (dirPath: string) => void;
 	onOpenFile: (filePath: string) => void;
 	onNewFileInDir: (dirPath: string) => void;
+	onCreateFromTemplateInDir: (dirPath: string) => void;
 	onNewDatabaseInDir: (dirPath: string) => Promise<string | null>;
 	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
 	onDeletePath: (path: string, kind: "dir" | "file") => Promise<void>;
@@ -61,6 +63,7 @@ function TreeEntries({
 	onSelectDir,
 	onOpenFile,
 	onNewFileInDir,
+	onCreateFromTemplateInDir,
 	onNewDatabaseInDir,
 	onNewFolderInDir,
 	onDeletePath,
@@ -94,6 +97,7 @@ function TreeEntries({
 							onToggleDir={onToggleDir}
 							onSelectDir={onSelectDir}
 							onNewFileInDir={onNewFileInDir}
+							onCreateFromTemplateInDir={onCreateFromTemplateInDir}
 							onNewDatabaseInDir={onNewDatabaseInDir}
 							onNewFolderInDir={onNewFolderInDir}
 							onDeletePath={onDeletePath}
@@ -114,6 +118,7 @@ function TreeEntries({
 									onSelectDir={onSelectDir}
 									onOpenFile={onOpenFile}
 									onNewFileInDir={onNewFileInDir}
+									onCreateFromTemplateInDir={onCreateFromTemplateInDir}
 									onNewDatabaseInDir={onNewDatabaseInDir}
 									onNewFolderInDir={onNewFolderInDir}
 									onDeletePath={onDeletePath}
@@ -135,6 +140,7 @@ function TreeEntries({
 						isActive={e.rel_path === activeFilePath}
 						onOpenFile={onOpenFile}
 						onNewFileInDir={onNewFileInDir}
+						onCreateFromTemplateInDir={onCreateFromTemplateInDir}
 						onNewDatabaseInDir={onNewDatabaseInDir}
 						onNewFolderInDir={onNewFolderInDir}
 						isRenaming={renamingPath === e.rel_path}
@@ -160,6 +166,7 @@ export const FileTreePane = memo(function FileTreePane({
 	onSelectDir,
 	onOpenFile,
 	onNewFileInDir,
+	onCreateFromTemplateInDir,
 	onNewDatabaseInDir,
 	onNewFolderInDir,
 	onRenameDir,
@@ -234,6 +241,7 @@ export const FileTreePane = memo(function FileTreePane({
 						onSelectDir={onSelectDir}
 						onOpenFile={onOpenFile}
 						onNewFileInDir={onNewFileInDir}
+						onCreateFromTemplateInDir={onCreateFromTemplateInDir}
 						onNewDatabaseInDir={onNewDatabaseInDir}
 						onNewFolderInDir={handleCreateFolder}
 						onDeletePath={handleDeletePath}
