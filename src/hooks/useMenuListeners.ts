@@ -7,6 +7,7 @@ export interface UseMenuListenersProps {
 	onCreateFromTemplate: () => void;
 	onOpenDailyNote: () => void;
 	onSaveNote: () => void;
+	onExportHtml: () => void;
 	onCloseTab: () => void;
 	onOpenSpace: () => void;
 	onCreateSpace: () => void;
@@ -25,6 +26,7 @@ export function useMenuListeners({
 	onCreateFromTemplate,
 	onOpenDailyNote,
 	onSaveNote,
+	onExportHtml,
 	onCloseTab,
 	onOpenSpace,
 	onCreateSpace,
@@ -49,6 +51,9 @@ export function useMenuListeners({
 	const handleSaveNote = useCallback(() => {
 		onSaveNote();
 	}, [onSaveNote]);
+	const handleExportHtml = useCallback(() => {
+		onExportHtml();
+	}, [onExportHtml]);
 	const handleCloseTab = useCallback(() => {
 		onCloseTab();
 	}, [onCloseTab]);
@@ -93,6 +98,7 @@ export function useMenuListeners({
 	useTauriEvent("menu:create_from_template", handleCreateFromTemplate);
 	useTauriEvent("menu:open_daily_note", handleOpenDailyNote);
 	useTauriEvent("menu:save_note", handleSaveNote);
+	useTauriEvent("menu:export_html", handleExportHtml);
 	useTauriEvent("menu:close_tab", handleCloseTab);
 	useTauriEvent("menu:open_space", handleOpenSpace);
 	useTauriEvent("menu:create_space", handleCreateSpace);

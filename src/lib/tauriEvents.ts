@@ -7,6 +7,7 @@ type TauriEventMap = {
 	"menu:create_from_template": undefined;
 	"menu:open_daily_note": undefined;
 	"menu:save_note": undefined;
+	"menu:export_html": undefined;
 	"menu:close_tab": undefined;
 	"menu:open_space": undefined;
 	"menu:create_space": undefined;

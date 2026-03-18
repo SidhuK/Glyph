@@ -105,7 +105,10 @@ pub fn ensure_trial_window(record: &mut LicenseRecord, started_at_ms: u64) -> bo
     true
 }
 
-pub fn ensure_trial_window_from_activation(record: &mut LicenseRecord, fallback_now_ms: u64) -> bool {
+pub fn ensure_trial_window_from_activation(
+    record: &mut LicenseRecord,
+    fallback_now_ms: u64,
+) -> bool {
     let base = record.activated_at_ms.unwrap_or(fallback_now_ms);
     ensure_trial_window(record, base)
 }
@@ -187,8 +190,7 @@ mod tests {
 
     #[test]
     fn normalizes_license_keys() {
-        let normalized =
-            normalize_license_key(" 38b1a8b4-9ae64752-ae8c53e8-08ba26eb \n").unwrap();
+        let normalized = normalize_license_key(" 38b1a8b4-9ae64752-ae8c53e8-08ba26eb \n").unwrap();
         assert_eq!(normalized, "38B1A8B4-9AE64752-AE8C53E8-08BA26EB");
     }
 
@@ -238,7 +240,10 @@ mod tests {
         assert!(status.can_use_app);
         assert_eq!(status.trial_started_at_ms, Some(1_000));
         assert_eq!(status.trial_expires_at_ms, Some(1_000 + TRIAL_DURATION_MS));
-        assert_eq!(status.trial_remaining_seconds, Some((TRIAL_DURATION_MS - 1_000 + 999) / 1000));
+        assert_eq!(
+            status.trial_remaining_seconds,
+            Some((TRIAL_DURATION_MS - 1_000 + 999) / 1000)
+        );
     }
 
     #[test]

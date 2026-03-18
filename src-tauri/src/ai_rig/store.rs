@@ -30,16 +30,13 @@ pub fn write_store(path: &Path, store: &AiStore) -> Result<(), String> {
 }
 
 pub fn ensure_default_profiles(store: &mut AiStore) {
-    let active_provider = store
-        .active_profile_id
-        .as_deref()
-        .and_then(|active_id| {
-            store
-                .profiles
-                .iter()
-                .find(|profile| profile.id == active_id)
-                .map(|profile| profile.provider.clone())
-        });
+    let active_provider = store.active_profile_id.as_deref().and_then(|active_id| {
+        store
+            .profiles
+            .iter()
+            .find(|profile| profile.id == active_id)
+            .map(|profile| profile.provider.clone())
+    });
 
     let mut by_provider: HashMap<&'static str, AiProfile> = HashMap::new();
     for profile in store.profiles.drain(..) {
