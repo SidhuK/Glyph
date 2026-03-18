@@ -105,7 +105,7 @@ export function TemplateSettingsSections() {
 	}, [templatesFolder]);
 
 	useEffect(() => {
-		if (templatesLoading || templatesError) return;
+		if (loading || templatesLoading || templatesError) return;
 		if (!dailyNoteTemplatePath) return;
 		if (
 			templates.some((template) => template.value === dailyNoteTemplatePath)
@@ -130,7 +130,13 @@ export function TemplateSettingsSections() {
 		return () => {
 			cancelled = true;
 		};
-	}, [dailyNoteTemplatePath, templates, templatesError, templatesLoading]);
+	}, [
+		dailyNoteTemplatePath,
+		loading,
+		templates,
+		templatesError,
+		templatesLoading,
+	]);
 
 	const handleBrowseFolder = useCallback(async () => {
 		setError(null);

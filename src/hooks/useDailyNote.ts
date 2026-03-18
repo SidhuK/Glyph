@@ -5,17 +5,10 @@ import {
 	getTodayDateString,
 	parseIsoDate,
 } from "../lib/dailyNotes";
+import { isMissingFileError } from "../lib/fsErrors";
 import { updateOnboardingSettings } from "../lib/settings";
-import { TauriInvokeError, invoke } from "../lib/tauri";
+import { invoke } from "../lib/tauri";
 import { renderTemplate } from "../lib/templates";
-
-function isMissingFileError(error: unknown): boolean {
-	const message =
-		error instanceof TauriInvokeError || error instanceof Error
-			? error.message
-			: String(error);
-	return /no such file|not found|os error 2/i.test(message);
-}
 
 export interface UseDailyNoteOptions {
 	onOpenFile: (path: string) => Promise<void>;

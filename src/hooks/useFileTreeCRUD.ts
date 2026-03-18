@@ -7,9 +7,10 @@ import {
 	createStarterDatabaseMarkdown,
 } from "../lib/database/config";
 import { extractErrorMessage } from "../lib/errorUtils";
+import { isMissingFileError } from "../lib/fsErrors";
 import { updateOnboardingSettings } from "../lib/settings";
 import type { FsEntry } from "../lib/tauri";
-import { TauriInvokeError, invoke } from "../lib/tauri";
+import { invoke } from "../lib/tauri";
 import { isMarkdownPath, parentDir } from "../utils/path";
 import {
 	compareEntries,
@@ -66,14 +67,6 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 	} = deps;
 	const activeFilePathRef = useRef(activeFilePath);
 	const activePreviewPathRef = useRef(activePreviewPath);
-
-	const isMissingFileError = useCallback((error: unknown) => {
-		const message =
-			error instanceof TauriInvokeError || error instanceof Error
-				? error.message
-				: String(error);
-		return /no such file|not found|os error 2/i.test(message);
-	}, []);
 
 	useEffect(() => {
 		activeFilePathRef.current = activeFilePath;
@@ -157,13 +150,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 				return null;
 			}
 		},
-		[
-			insertEntryOptimistic,
-			isMissingFileError,
-			refreshAfterCreate,
-			setError,
-			updateExpandedDirs,
-		],
+		[insertEntryOptimistic, refreshAfterCreate, setError, updateExpandedDirs],
 	);
 
 	const onNewFileInDir = useCallback(
