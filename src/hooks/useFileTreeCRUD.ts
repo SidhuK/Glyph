@@ -9,7 +9,7 @@ import {
 import { extractErrorMessage } from "../lib/errorUtils";
 import { updateOnboardingSettings } from "../lib/settings";
 import type { FsEntry } from "../lib/tauri";
-import { invoke } from "../lib/tauri";
+import { TauriInvokeError, invoke } from "../lib/tauri";
 import { isMarkdownPath, parentDir } from "../utils/path";
 import {
 	compareEntries,
@@ -67,6 +67,14 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 	const activeFilePathRef = useRef(activeFilePath);
 	const activePreviewPathRef = useRef(activePreviewPath);
 
+	const isMissingFileError = useCallback((error: unknown) => {
+		const message =
+			error instanceof TauriInvokeError || error instanceof Error
+				? error.message
+				: String(error);
+		return /no such file|not found|os error 2/i.test(message);
+	}, []);
+
 	useEffect(() => {
 		activeFilePathRef.current = activeFilePath;
 	}, [activeFilePath]);
@@ -110,6 +118,14 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			try {
 				const markdownRel = isMarkdownPath(path) ? path : `${path}.md`;
 				const fileName = markdownRel.split("/").pop()?.trim() || "Untitled.md";
+				try {
+					await invoke("space_read_text", { path: markdownRel });
+					throw new Error(`File already exists: ${markdownRel}`);
+				} catch (error) {
+					if (!isMissingFileError(error)) {
+						throw error;
+					}
+				}
 				await invoke("space_write_text", {
 					path: markdownRel,
 					text,
@@ -141,7 +157,13 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 				return null;
 			}
 		},
-		[insertEntryOptimistic, refreshAfterCreate, setError, updateExpandedDirs],
+		[
+			insertEntryOptimistic,
+			isMissingFileError,
+			refreshAfterCreate,
+			setError,
+			updateExpandedDirs,
+		],
 	);
 
 	const onNewFileInDir = useCallback(

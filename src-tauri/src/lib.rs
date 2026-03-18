@@ -137,7 +137,7 @@ pub fn run() {
                 "file.create_from_template",
                 "Create From Template",
                 true,
-                Some("CmdOrCtrl+Shift+N"),
+                Some("CmdOrCtrl+Shift+M"),
             )?;
             let open_daily_note = MenuItem::with_id(
                 app,

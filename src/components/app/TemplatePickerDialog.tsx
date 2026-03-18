@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Button } from "../ui/shadcn/button";
 import {
 	Dialog,
@@ -18,7 +18,6 @@ export interface TemplatePickerItem {
 interface TemplatePickerDialogProps {
 	open: boolean;
 	templates: TemplatePickerItem[];
-	loading: boolean;
 	onClose: () => void;
 	onPick: (template: TemplatePickerItem) => void;
 	onOpenSettings: () => void;
@@ -27,12 +26,21 @@ interface TemplatePickerDialogProps {
 export function TemplatePickerDialog({
 	open,
 	templates,
-	loading,
 	onClose,
 	onPick,
 	onOpenSettings,
 }: TemplatePickerDialogProps) {
 	const [query, setQuery] = useState("");
+
+	useEffect(() => {
+		if (!open) {
+			setQuery("");
+		}
+	}, [open]);
+
+	const handleClose = () => {
+		onClose();
+	};
 
 	const filteredTemplates = useMemo(() => {
 		const normalized = query.trim().toLowerCase();
@@ -43,7 +51,7 @@ export function TemplatePickerDialog({
 	}, [query, templates]);
 
 	return (
-		<Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && onClose()}>
+		<Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && handleClose()}>
 			<DialogContent className="templatePickerDialog sm:max-w-2xl">
 				<DialogHeader className="templatePickerHeader">
 					<DialogTitle>Create From Template</DialogTitle>
@@ -62,9 +70,7 @@ export function TemplatePickerDialog({
 				</div>
 				<ScrollArea className="templatePickerListWrap">
 					<div className="templatePickerList">
-						{loading ? (
-							<div className="templatePickerEmpty">Loading templates...</div>
-						) : filteredTemplates.length ? (
+						{filteredTemplates.length ? (
 							filteredTemplates.map((template) => (
 								<button
 									key={template.relPath}
@@ -87,7 +93,7 @@ export function TemplatePickerDialog({
 					<Button type="button" variant="outline" onClick={onOpenSettings}>
 						Open Template Settings
 					</Button>
-					<Button type="button" variant="ghost" onClick={onClose}>
+					<Button type="button" variant="ghost" onClick={handleClose}>
 						Cancel
 					</Button>
 				</div>

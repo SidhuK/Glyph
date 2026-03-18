@@ -94,7 +94,7 @@ export const SHORTCUTS = [
 	},
 	{
 		id: "create-from-template",
-		shortcut: { meta: true, shift: true, key: "n" },
+		shortcut: { meta: true, shift: true, key: "m" },
 		label: "Create From Template",
 		description: "Create a new note from a template",
 		category: "file",

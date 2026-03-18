@@ -152,7 +152,6 @@ export function AppShell() {
 	const [templatePickerItems, setTemplatePickerItems] = useState<
 		TemplatePickerItem[]
 	>([]);
-	const [templatePickerLoading, setTemplatePickerLoading] = useState(false);
 	const autoUpdater = useAutoUpdater();
 
 	const sidebarResize = useResizablePanel({
@@ -229,11 +228,10 @@ export function AppShell() {
 		async (dirPath?: string) => {
 			if (!spacePath) return;
 			if (!templateFolder) {
-				setError("Set a template folder in Settings -> Templates first.");
+				setError("Set a template folder in Settings -> General first.");
 				openTemplatesSettings();
 				return;
 			}
-			setTemplatePickerLoading(true);
 			try {
 				const templates = await listTemplates(templateFolder);
 				if (!templates.length) {
@@ -259,8 +257,6 @@ export function AppShell() {
 						? cause.message
 						: "Failed to load the template library.",
 				);
-			} finally {
-				setTemplatePickerLoading(false);
 			}
 		},
 		[openTemplatesSettings, setError, spacePath, templateFolder],
@@ -800,7 +796,7 @@ export function AppShell() {
 				label: "Create from template",
 				icon: <HugeiconsIcon icon={ColorsIcon} size={16} />,
 				category: "File Operations",
-				shortcut: { meta: true, shift: true, key: "n" },
+				shortcut: { meta: true, shift: true, key: "m" },
 				enabled: Boolean(spacePath),
 				action: () => {
 					const dir =
@@ -1125,7 +1121,6 @@ export function AppShell() {
 			<TemplatePickerDialog
 				open={templatePickerOpen}
 				templates={templatePickerItems}
-				loading={templatePickerLoading}
 				onClose={() => setTemplatePickerOpen(false)}
 				onPick={(template) => void handlePickTemplate(template)}
 				onOpenSettings={openTemplatesSettings}

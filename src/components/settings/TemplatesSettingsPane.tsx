@@ -104,17 +104,23 @@ export function TemplateSettingsSections() {
 	}, [templatesFolder]);
 
 	useEffect(() => {
+		if (templatesLoading || templatesError) return;
 		if (!dailyNoteTemplatePath) return;
 		if (
 			templates.some((template) => template.value === dailyNoteTemplatePath)
 		) {
 			return;
 		}
+		let cancelled = false;
 		void (async () => {
 			await setDailyNoteTemplate(null);
+			if (cancelled) return;
 			setDailyNoteTemplatePathState(null);
 		})();
-	}, [dailyNoteTemplatePath, templates]);
+		return () => {
+			cancelled = true;
+		};
+	}, [dailyNoteTemplatePath, templates, templatesError, templatesLoading]);
 
 	const handleBrowseFolder = useCallback(async () => {
 		setError(null);
@@ -155,9 +161,17 @@ export function TemplateSettingsSections() {
 
 	const handleClearFolder = useCallback(async () => {
 		setError(null);
-		await setTemplatesFolder(null);
-		setTemplatesFolderState(null);
-		setDailyNoteTemplatePathState(null);
+		try {
+			await setTemplatesFolder(null);
+			setTemplatesFolderState(null);
+			setDailyNoteTemplatePathState(null);
+		} catch (cause) {
+			setError(
+				cause instanceof Error
+					? cause.message
+					: "Failed to clear template folder",
+			);
+		}
 	}, []);
 
 	const handleDailyTemplateChange = useCallback(async (value: string) => {

@@ -6,8 +6,16 @@ import {
 	parseIsoDate,
 } from "../lib/dailyNotes";
 import { updateOnboardingSettings } from "../lib/settings";
-import { invoke } from "../lib/tauri";
+import { TauriInvokeError, invoke } from "../lib/tauri";
 import { renderTemplate } from "../lib/templates";
+
+function isMissingFileError(error: unknown): boolean {
+	const message =
+		error instanceof TauriInvokeError || error instanceof Error
+			? error.message
+			: String(error);
+	return /no such file|not found|os error 2/i.test(message);
+}
 
 export interface UseDailyNoteOptions {
 	onOpenFile: (path: string) => Promise<void>;
@@ -45,7 +53,10 @@ export function useDailyNote(options: UseDailyNoteOptions): UseDailyNoteReturn {
 					await onOpenFile(notePath);
 					void updateOnboardingSettings({ openedDailyNote: true });
 					return notePath;
-				} catch {
+				} catch (error) {
+					if (!isMissingFileError(error)) {
+						throw error;
+					}
 					// Create below when the note does not exist yet.
 				}
 				let content = getDailyNoteContent(date);
