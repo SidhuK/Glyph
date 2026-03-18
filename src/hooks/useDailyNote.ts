@@ -54,15 +54,21 @@ export function useDailyNote(options: UseDailyNoteOptions): UseDailyNoteReturn {
 				}
 				let content = getDailyNoteContent(date);
 				if (templatePath) {
-					const templateDoc = await invoke("space_read_text", {
-						path: templatePath,
-					});
-					const dateValue = parseIsoDate(date) ?? new Date();
-					content = renderTemplate(templateDoc.text, {
-						destinationPath: notePath,
-						spaceRootPath: spacePath,
-						date: dateValue,
-					});
+					try {
+						const templateDoc = await invoke("space_read_text", {
+							path: templatePath,
+						});
+						const dateValue = parseIsoDate(date) ?? new Date();
+						content = renderTemplate(templateDoc.text, {
+							destinationPath: notePath,
+							spaceRootPath: spacePath,
+							date: dateValue,
+						});
+					} catch (error) {
+						if (!isMissingFileError(error)) {
+							throw error;
+						}
+					}
 				}
 				await invoke("space_open_or_create_text", {
 					path: notePath,
