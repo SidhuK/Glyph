@@ -7,6 +7,7 @@ mod io_atomic;
 mod license;
 mod links;
 mod net;
+mod note_export;
 mod notes;
 mod paths;
 mod space;
@@ -148,6 +149,13 @@ pub fn run() {
             )?;
             let save_note =
                 MenuItem::with_id(app, "file.save_note", "Save", true, Some("CmdOrCtrl+S"))?;
+            let export_html = MenuItem::with_id(
+                app,
+                "file.export_html",
+                "Export as HTML…",
+                true,
+                None::<&str>,
+            )?;
             let close_tab = MenuItem::with_id(
                 app,
                 "file.close_tab",
@@ -190,6 +198,7 @@ pub fn run() {
                     &open_daily_note,
                     &PredefinedMenuItem::separator(app)?,
                     &save_note,
+                    &export_html,
                     &close_tab,
                 ],
             )?;
@@ -290,6 +299,9 @@ pub fn run() {
             }
             "file.save_note" => {
                 let _ = app.emit("menu:save_note", ());
+            }
+            "file.export_html" => {
+                let _ = app.emit("menu:export_html", ());
             }
             "file.close_tab" => {
                 let _ = app.emit("menu:close_tab", ());
@@ -468,6 +480,7 @@ pub fn run() {
             notes::commands::note_read,
             notes::commands::note_write,
             notes::commands::note_delete,
+            note_export::commands::export_write_text,
             notes::properties::note_frontmatter_parse_properties,
             notes::properties::note_frontmatter_render_properties,
             notes::attachments::note_attach_file,

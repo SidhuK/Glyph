@@ -116,7 +116,10 @@ fn normalized_store(app: &AppHandle) -> Result<AiStore, String> {
     Ok(store)
 }
 
-fn normalized_store_for_space(app: &AppHandle, space_root: Option<&std::path::Path>) -> Result<AiStore, String> {
+fn normalized_store_for_space(
+    app: &AppHandle,
+    space_root: Option<&std::path::Path>,
+) -> Result<AiStore, String> {
     let path = store_path(app)?;
     let mut store = read_store(&path);
     if let Some(root) = space_root {
@@ -199,7 +202,8 @@ pub async fn ai_profile_delete(
         profile.base_url = None;
         profile.headers.clear();
         profile.reasoning_effort = None;
-        profile.allow_private_hosts = matches!(profile.provider, super::types::AiProviderKind::Ollama);
+        profile.allow_private_hosts =
+            matches!(profile.provider, super::types::AiProviderKind::Ollama);
     }
     ensure_default_profiles(&mut store);
     write_store(&path, &store)

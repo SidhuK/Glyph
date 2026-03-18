@@ -102,7 +102,8 @@ fn index_note_with_conn(
 
     let tx = conn.unchecked_transaction().map_err(|e| e.to_string())?;
 
-    let (mut title, created, updated) = parse_frontmatter_title_created_updated(markdown, file_path);
+    let (mut title, created, updated) =
+        parse_frontmatter_title_created_updated(markdown, file_path);
     if title == "Untitled" {
         if let Some(stem) = Path::new(note_id)
             .file_stem()
@@ -229,7 +230,8 @@ pub fn rebuild(space_root: &Path) -> Result<IndexRebuildResult, String> {
     for (rel, path) in &note_paths {
         let markdown = std::fs::read_to_string(path).map_err(|e| e.to_string())?;
 
-        let (mut title, created, updated) = parse_frontmatter_title_created_updated(&markdown, path);
+        let (mut title, created, updated) =
+            parse_frontmatter_title_created_updated(&markdown, path);
         if title == "Untitled" {
             if let Some(stem) = Path::new(rel)
                 .file_stem()

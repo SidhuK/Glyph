@@ -449,6 +449,7 @@ interface TauriCommands {
 	space_open: CommandDef<{ path: string }, SpaceInfo>;
 	space_get_current: CommandDef<void, string | null>;
 	space_close: CommandDef<void, void>;
+	export_write_text: CommandDef<{ abs_path: string; text: string }, void>;
 	space_list_dirs: CommandDef<
 		{ dir?: string | null; limit?: number | null },
 		FsEntry[]

@@ -45,6 +45,7 @@ import { useFileTree } from "../../hooks/useFileTree";
 import { useMenuListeners } from "../../hooks/useMenuListeners";
 import { useResizablePanel } from "../../hooks/useResizablePanel";
 import { dispatchPathRemoved } from "../../lib/appEvents";
+import { promptNoteExportPath } from "../../lib/export";
 import { getLicenseStatus } from "../../lib/license";
 import { updateOnboardingSettings } from "../../lib/settings";
 import type { Shortcut } from "../../lib/shortcuts";
@@ -54,7 +55,7 @@ import { useTauriEvent } from "../../lib/tauriEvents";
 import { listTemplates, renderTemplate } from "../../lib/templates";
 import { openSettingsWindow } from "../../lib/windows";
 import { onWindowDragMouseDown } from "../../utils/window";
-import { LayoutAlignLeft } from "../Icons";
+import { FileHtml, LayoutAlignLeft } from "../Icons";
 import { AIFloatingHost } from "../ai/AIFloatingHost";
 import { dispatchAiContextAttach } from "../ai/aiContextEvents";
 import {
@@ -65,6 +66,7 @@ import {
 	WIKI_LINK_CLICK_EVENT,
 	type WikiLinkClickDetail,
 } from "../editor/markdown/editorEvents";
+import { NoteExportHtmlHost } from "../export/NoteExportHtmlHost";
 import type { Command } from "./CommandPalette";
 import { MainContent } from "./MainContent";
 import { Sidebar } from "./Sidebar";
@@ -152,6 +154,22 @@ export function AppShell() {
 	const [templatePickerItems, setTemplatePickerItems] = useState<
 		TemplatePickerItem[]
 	>([]);
+	const [htmlExportRequest, setHtmlExportRequest] = useState<{
+		id: string;
+		relPath: string;
+		markdown: string;
+		outputPath: string;
+	} | null>(null);
+	const htmlExportResolversRef = useRef(
+		new Map<
+			string,
+			{
+				outputPath: string;
+				resolve: () => void;
+				reject: (reason?: unknown) => void;
+			}
+		>(),
+	);
 	const autoUpdater = useAutoUpdater();
 
 	const sidebarResize = useResizablePanel({
@@ -512,26 +530,6 @@ export function AppShell() {
 		void openSettingsWindow("ai");
 	}, []);
 
-	useMenuListeners({
-		onNewNote: handleNewNoteFromMenu,
-		onCreateFromTemplate: handleCreateFromTemplateFromMenu,
-		onOpenDailyNote: handleOpenDailyNoteFromMenu,
-		onSaveNote: handleSaveNoteFromMenu,
-		onCloseTab: () => {
-			window.dispatchEvent(new Event("glyph:close-active-tab"));
-		},
-		onOpenSpace,
-		onCreateSpace,
-		closeSpace,
-		onRevealSpace: handleRevealSpaceFromMenu,
-		onOpenSpaceSettings: handleOpenSpaceSettings,
-		onToggleAiPane: handleToggleAiPaneFromMenu,
-		onCloseAiPane: handleCloseAiPaneFromMenu,
-		onAttachCurrentNoteToAi: handleAttachCurrentNoteFromMenu,
-		onAttachAllOpenNotesToAi: handleAttachAllOpenNotesFromMenu,
-		onOpenAiSettings: handleOpenAiSettings,
-	});
-
 	const handleSpaceFsChanged = useCallback(
 		(payload: { rel_path: string; removed: boolean }) => {
 			if (!spacePath) return;
@@ -666,6 +664,122 @@ export function AppShell() {
 			});
 		}
 	}, [activeMarkdownTabPath, getCurrentMarkdown]);
+
+	const handleHtmlExportComplete = useCallback(
+		async ({ id, html }: { id: string; html: string }) => {
+			const pending = htmlExportResolversRef.current.get(id);
+			if (!pending) return;
+			htmlExportResolversRef.current.delete(id);
+			setHtmlExportRequest((current) => (current?.id === id ? null : current));
+			try {
+				await invoke("export_write_text", {
+					abs_path: pending.outputPath,
+					text: html,
+				});
+				pending.resolve();
+			} catch (error) {
+				pending.reject(error);
+			}
+		},
+		[],
+	);
+
+	const handleHtmlExportError = useCallback(
+		({ id, message }: { id: string; message: string }) => {
+			const pending = htmlExportResolversRef.current.get(id);
+			if (!pending) return;
+			htmlExportResolversRef.current.delete(id);
+			setHtmlExportRequest((current) => (current?.id === id ? null : current));
+			pending.reject(new Error(message));
+		},
+		[],
+	);
+
+	const handleExportHtml = useCallback(() => {
+		if (!activeMarkdownTabPath) {
+			const message = "Open a markdown note before exporting.";
+			setError(message);
+			toast.error("Could not export as HTML", {
+				description: message,
+			});
+			return;
+		}
+		if (htmlExportRequest !== null || htmlExportResolversRef.current.size > 0) {
+			toast.message("HTML export already in progress.", {
+				description:
+					"Wait for the current export to finish before starting another.",
+			});
+			return;
+		}
+
+		void (async () => {
+			try {
+				const outputPath = await promptNoteExportPath(activeMarkdownTabPath);
+				if (!outputPath) return;
+				await saveCurrentEditor();
+				const markdown =
+					getCurrentMarkdown(activeMarkdownTabPath) ??
+					(
+						await invoke("space_read_text", {
+							path: activeMarkdownTabPath,
+						})
+					).text;
+				const requestId = crypto.randomUUID();
+				const exportPromise = new Promise<void>((resolve, reject) => {
+					htmlExportResolversRef.current.set(requestId, {
+						outputPath,
+						resolve,
+						reject,
+					});
+				});
+				setHtmlExportRequest({
+					id: requestId,
+					relPath: activeMarkdownTabPath,
+					markdown,
+					outputPath,
+				});
+				await exportPromise;
+				toast.success("Exported note as HTML.", {
+					description: outputPath,
+				});
+			} catch (error) {
+				const message =
+					error instanceof Error ? error.message : "Failed to export note.";
+				console.error("Failed to export note as HTML", error);
+				setError(message);
+				toast.error("Could not export as HTML", {
+					description: message,
+				});
+			}
+		})();
+	}, [
+		activeMarkdownTabPath,
+		getCurrentMarkdown,
+		htmlExportRequest,
+		saveCurrentEditor,
+		setError,
+	]);
+
+	useMenuListeners({
+		onNewNote: handleNewNoteFromMenu,
+		onCreateFromTemplate: handleCreateFromTemplateFromMenu,
+		onOpenDailyNote: handleOpenDailyNoteFromMenu,
+		onSaveNote: handleSaveNoteFromMenu,
+		onExportHtml: handleExportHtml,
+		onCloseTab: () => {
+			window.dispatchEvent(new Event("glyph:close-active-tab"));
+		},
+		onOpenSpace,
+		onCreateSpace,
+		closeSpace,
+		onRevealSpace: handleRevealSpaceFromMenu,
+		onOpenSpaceSettings: handleOpenSpaceSettings,
+		onToggleAiPane: handleToggleAiPaneFromMenu,
+		onCloseAiPane: handleCloseAiPaneFromMenu,
+		onAttachCurrentNoteToAi: handleAttachCurrentNoteFromMenu,
+		onAttachAllOpenNotesToAi: handleAttachAllOpenNotesFromMenu,
+		onOpenAiSettings: handleOpenAiSettings,
+	});
 
 	const commands = useMemo<Command[]>(() => {
 		if (movePickerSourcePath) {
@@ -890,6 +1004,14 @@ export function AppShell() {
 				action: () => void handleCopyOpenNoteAsMarkdown(),
 			},
 			{
+				id: "export-note-html",
+				label: "Export note as HTML",
+				icon: <FileHtml size={16} />,
+				category: "File Operations",
+				enabled: Boolean(activeMarkdownTabPath),
+				action: handleExportHtml,
+			},
+			{
 				id: "close-preview",
 				label: "Close preview",
 				icon: <HugeiconsIcon icon={InformationCircleIcon} size={16} />,
@@ -947,6 +1069,7 @@ export function AppShell() {
 		attachCurrentNoteToAi,
 		activeDirPath,
 		handleCopyOpenNoteAsMarkdown,
+		handleExportHtml,
 		fileTree,
 		onOpenSpace,
 		openMarkdownTabs.length,
@@ -1121,6 +1244,14 @@ export function AppShell() {
 				onClose={() => setTemplatePickerOpen(false)}
 				onPick={(template) => void handlePickTemplate(template)}
 				onOpenSettings={openTemplatesSettings}
+			/>
+			<NoteExportHtmlHost
+				key={htmlExportRequest?.id ?? "idle"}
+				request={htmlExportRequest}
+				onComplete={({ id, html }) => {
+					void handleHtmlExportComplete({ id, html });
+				}}
+				onError={handleHtmlExportError}
 			/>
 		</div>
 	);
