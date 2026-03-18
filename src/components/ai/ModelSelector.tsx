@@ -273,33 +273,41 @@ export function ModelSelector({
 										const handleInfoToggle = () =>
 											setDetailModelId((prev) => (prev === m.id ? null : m.id));
 										const handleInfoMouseDown = (
-											e: ReactMouseEvent<HTMLSpanElement>,
+											e: ReactMouseEvent<HTMLButtonElement>,
+										) => {
+											e.preventDefault();
+											e.stopPropagation();
+										};
+										const handleInfoClick = (
+											e: ReactMouseEvent<HTMLButtonElement>,
 										) => {
 											e.preventDefault();
 											e.stopPropagation();
 											handleInfoToggle();
 										};
 										return (
-											<button
-												type="button"
-												key={m.id}
-												className={`${styles.modelItem} ${m.id === value ? styles.modelItemActive : ""}`}
-												onClick={() => {
-													onChange(m.id);
-													setOpen(false);
-													setDetailModelId(null);
-												}}
-											>
-												<span
-													className={styles.modelItemText}
-													title={m.name.length > 30 ? m.name : undefined}
+											<div className={styles.modelItemRow} key={m.id}>
+												<button
+													type="button"
+													className={`${styles.modelItem} ${m.id === value ? styles.modelItemActive : ""}`}
+													onClick={() => {
+														onChange(m.id);
+														setOpen(false);
+														setDetailModelId(null);
+													}}
 												>
-													{truncateLabel(m.name)}
-												</span>
+													<span
+														className={styles.modelItemText}
+														title={m.name.length > 30 ? m.name : undefined}
+													>
+														{truncateLabel(m.name)}
+													</span>
+												</button>
 												{detailAvailable && (
 													<button
 														type="button"
 														onMouseDown={handleInfoMouseDown}
+														onClick={handleInfoClick}
 														className={`${styles.infoInline} ${infoActive ? styles.infoInlineActive : ""}`}
 														title="Model info"
 														aria-label="Model info"
@@ -307,7 +315,7 @@ export function ModelSelector({
 														<InformationCircle size={14} strokeWidth={1.8} />
 													</button>
 												)}
-											</button>
+											</div>
 										);
 									})}
 							</div>

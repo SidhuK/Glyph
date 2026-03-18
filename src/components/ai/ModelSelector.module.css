@@ -272,6 +272,15 @@
 	cursor: pointer;
 	transition: background var(--transition-base), border-color
 		var(--transition-base);
+	flex: 1;
+	min-width: 0;
+}
+
+.modelItemRow {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+	width: 100%;
 }
 
 .modelItem:hover {

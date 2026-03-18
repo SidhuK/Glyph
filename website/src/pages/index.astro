@@ -2498,25 +2498,18 @@ const footerTrimMarks = Array.from({ length: 30 });
 	.footer-links {
 		display: flex;
 		flex-wrap: wrap;
-		justify-content: flex-end;
-		gap: 0.4rem 0.55rem;
-		max-width: 22rem;
+		align-items: center;
+		gap: 0.15rem 0.6rem;
 	}
 
 	.footer-links a {
 		font-size: 0.74rem;
 		color: rgba(69, 58, 43, 0.82);
-		padding: 0.42rem 0.7rem;
-		border-radius: 999px;
-		border: 1px solid rgba(149, 129, 102, 0.12);
-		background: rgba(255, 255, 255, 0.58);
-		transition: border-color 0.15s, color 0.15s, background-color 0.15s;
+		transition: color 0.15s;
 	}
 
 	.footer-links a:hover {
 		color: var(--ink);
-		border-color: rgba(149, 129, 102, 0.24);
-		background: rgba(255, 255, 255, 0.78);
 	}
 
 	.footer-meta {
@@ -2732,7 +2725,6 @@ const footerTrimMarks = Array.from({ length: 30 });
 
 		.footer-links {
 			justify-content: flex-start;
-			max-width: none;
 		}
 	}
 
@@ -2887,7 +2879,6 @@ const footerTrimMarks = Array.from({ length: 30 });
 
 		.footer-links a {
 			font-size: 0.72rem;
-			padding: 0.38rem 0.62rem;
 		}
 
 		.footer-showpiece {

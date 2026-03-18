@@ -21,7 +21,7 @@ interface WelcomeScreenProps {
 	onSelectRecentSpace: (path: string) => Promise<void>;
 }
 
-const STAGGER = 0.08;
+const STAGGER = 0.05;
 const BRAND_DELAY = 0.15;
 
 function normalizePathSeparators(fullPath: string): string {
@@ -134,7 +134,7 @@ export function WelcomeScreen({
 				className="welcomeScreen"
 				initial={{ opacity: 0 }}
 				animate={{ opacity: 1 }}
-				transition={{ duration: skip ? 0 : 0.35 }}
+				transition={{ duration: skip ? 0 : 0.24 }}
 			>
 				<div className="welcomeSurface">
 					<div className="welcomeLauncher">
@@ -175,7 +175,7 @@ export function WelcomeScreen({
 								initial={{ opacity: 0 }}
 								animate={{ opacity: 1 }}
 								transition={{
-									duration: skip ? 0 : 0.5,
+									duration: skip ? 0 : 0.28,
 									delay: skip ? 0 : BRAND_DELAY + 0.22,
 								}}
 							>
@@ -307,7 +307,7 @@ export function WelcomeScreen({
 									initial={{ opacity: 0 }}
 									animate={{ opacity: 1 }}
 									transition={{
-										duration: skip ? 0 : 0.4,
+										duration: skip ? 0 : 0.24,
 										delay: skip ? 0 : BRAND_DELAY + 0.45,
 									}}
 								>

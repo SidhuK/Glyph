@@ -172,7 +172,7 @@ export function GettingStartedPane({
 
 	const stepTransition = reduced
 		? { duration: 0 }
-		: { ...springPresets.snappy, duration: 0.3 };
+		: { ...springPresets.snappy, duration: 0.15 };
 
 	return (
 		<div className="starterPane">
