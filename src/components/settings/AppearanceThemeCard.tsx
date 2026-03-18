@@ -6,9 +6,17 @@ import type {
 	UiAccent,
 	UiDarkThemeId,
 	UiLightThemeId,
+	UiTabLayout,
 } from "../../lib/settings";
 import type { UiThemeOption, UiThemePreview } from "../../lib/uiThemes";
-import { ChevronDown, Computer, Moon, Sun } from "../Icons";
+import {
+	ChevronDown,
+	Computer,
+	Layout,
+	LayoutAlignLeft,
+	Moon,
+	Sun,
+} from "../Icons";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 import {
 	SettingsRow,
@@ -26,10 +34,12 @@ interface AppearanceThemeCardProps {
 	lightOptions: readonly UiThemeOption<UiLightThemeId>[];
 	darkOptions: readonly UiThemeOption<UiDarkThemeId>[];
 	translucentApp: boolean;
+	tabLayout: UiTabLayout;
 	onThemeModeChange: (mode: ThemeMode) => Promise<void>;
 	onLightThemeChange: (themeId: UiLightThemeId) => Promise<void>;
 	onDarkThemeChange: (themeId: UiDarkThemeId) => Promise<void>;
 	onTranslucentAppChange: (enabled: boolean) => Promise<void>;
+	onTabLayoutChange: (layout: UiTabLayout) => Promise<void>;
 }
 
 function resolvePreview<T extends string>(
@@ -243,10 +253,12 @@ export function AppearanceThemeCard({
 	lightOptions,
 	darkOptions,
 	translucentApp,
+	tabLayout,
 	onThemeModeChange,
 	onLightThemeChange,
 	onDarkThemeChange,
 	onTranslucentAppChange,
+	onTabLayoutChange,
 }: AppearanceThemeCardProps) {
 	const resolvedLightTheme = {
 		...lightTheme,
@@ -323,6 +335,29 @@ export function AppearanceThemeCard({
 					ariaLabel="Translucent app"
 					checked={translucentApp}
 					onCheckedChange={(checked) => void onTranslucentAppChange(checked)}
+				/>
+			</SettingsRow>
+
+			<SettingsRow
+				label="Tab layout"
+				description="Choose whether note tabs appear across the top or in a left-side rail."
+			>
+				<SettingsSegmented<UiTabLayout>
+					ariaLabel="Tab layout"
+					value={tabLayout}
+					onChange={(value) => void onTabLayoutChange(value)}
+					options={[
+						{
+							label: "Horizontal",
+							value: "horizontal",
+							icon: <Layout size={16} strokeWidth={1.7} />,
+						},
+						{
+							label: "Vertical",
+							value: "vertical",
+							icon: <LayoutAlignLeft size={16} strokeWidth={1.7} />,
+						},
+					]}
 				/>
 			</SettingsRow>
 		</SettingsSection>

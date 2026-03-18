@@ -283,7 +283,7 @@ export const MainContent = memo(function MainContent({
 		onContinueLastSpace,
 		onCreateSpace,
 	} = useSpace();
-	const { dailyNotesFolder } = useUILayoutContext();
+	const { dailyNotesFolder, tabLayout } = useUILayoutContext();
 	const { aiEnabled, aiPanelOpen, setAiPanelOpen } = useAISidebarContext();
 	const [onboarding, setOnboarding] = useState<OnboardingSettings>(
 		DEFAULT_ONBOARDING_SETTINGS,
@@ -466,7 +466,7 @@ export const MainContent = memo(function MainContent({
 	return (
 		<main className="mainArea">
 			<div className="canvasWrapper">
-				<div className="canvasPaneHost">
+				<div className="canvasPaneHost" data-tab-layout={tabLayout}>
 					<DailyNotesSetupToast
 						visible={dailyNoteSetupToastVisible}
 						onDismiss={() => setDailyNoteSetupToastVisible(false)}
@@ -477,6 +477,7 @@ export const MainContent = memo(function MainContent({
 					/>
 					{showTabBar && (
 						<TabBar
+							layout={tabLayout}
 							openTabs={openTabs}
 							activeTabPath={activeTabPath}
 							dragTabPath={dragTabPath}
@@ -492,33 +493,35 @@ export const MainContent = memo(function MainContent({
 							onReorder={reorderTabs}
 						/>
 					)}
-					{content ?? (
-						<div className="mainEmptyState">
-							{showStarterPane ? (
-								<GettingStartedPane
-									commandShortcutParts={commandShortcutParts}
-									showDailyNoteAction={Boolean(dailyNotesFolder)}
-									onCreateNote={onCreateNote}
-									onOpenCommandPalette={onOpenCommandPalette}
-									onOpenDailyNote={onOpenDailyNote}
-									onOpenTasks={onOpenTasks}
-									onDismiss={() => {
-										setStarterOverrideVisible(false);
-										void updateOnboardingSettings({ starterDismissed: true });
-									}}
-								/>
-							) : (
-								<ContextualEmptyState
-									onboarding={onboarding}
-									commandShortcutParts={commandShortcutParts}
-									showDailyNoteAction={Boolean(dailyNotesFolder)}
-									onCreateNote={onCreateNote}
-									onOpenCommandPalette={onOpenCommandPalette}
-									onOpenDailyNote={onOpenDailyNote}
-								/>
-							)}
-						</div>
-					)}
+					<div className="canvasContentHost">
+						{content ?? (
+							<div className="mainEmptyState">
+								{showStarterPane ? (
+									<GettingStartedPane
+										commandShortcutParts={commandShortcutParts}
+										showDailyNoteAction={Boolean(dailyNotesFolder)}
+										onCreateNote={onCreateNote}
+										onOpenCommandPalette={onOpenCommandPalette}
+										onOpenDailyNote={onOpenDailyNote}
+										onOpenTasks={onOpenTasks}
+										onDismiss={() => {
+											setStarterOverrideVisible(false);
+											void updateOnboardingSettings({ starterDismissed: true });
+										}}
+									/>
+								) : (
+									<ContextualEmptyState
+										onboarding={onboarding}
+										commandShortcutParts={commandShortcutParts}
+										showDailyNoteAction={Boolean(dailyNotesFolder)}
+										onCreateNote={onCreateNote}
+										onOpenCommandPalette={onOpenCommandPalette}
+										onOpenDailyNote={onOpenDailyNote}
+									/>
+								)}
+							</div>
+						)}
+					</div>
 				</div>
 			</div>
 		</main>

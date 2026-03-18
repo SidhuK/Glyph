@@ -28,6 +28,8 @@ async function getStore(): Promise<LazyStore> {
 
 export type ThemeMode = "system" | "light" | "dark";
 const THEME_MODES = new Set<ThemeMode>(["system", "light", "dark"]);
+export type UiTabLayout = "horizontal" | "vertical";
+const UI_TAB_LAYOUTS = new Set<UiTabLayout>(["horizontal", "vertical"]);
 export type UiAccent =
 	| "neutral"
 	| "cerulean"
@@ -44,6 +46,7 @@ const UI_ACCENTS = new Set<UiAccent>([
 	"vibrant-coral",
 ]);
 const DEFAULT_UI_ACCENT: UiAccent = "neutral";
+const DEFAULT_UI_TAB_LAYOUT: UiTabLayout = "horizontal";
 const DEFAULT_UI_FONT_FAMILY = "Inter";
 const DEFAULT_UI_MONO_FONT_FAMILY = "JetBrains Mono";
 export const MIN_UI_FONT_SIZE = 7;
@@ -97,6 +100,12 @@ function asUiAccent(value: unknown): UiAccent {
 		: DEFAULT_UI_ACCENT;
 }
 
+function asUiTabLayout(value: unknown): UiTabLayout {
+	return typeof value === "string" && UI_TAB_LAYOUTS.has(value as UiTabLayout)
+		? (value as UiTabLayout)
+		: DEFAULT_UI_TAB_LAYOUT;
+}
+
 function asUiFontFamily(value: unknown): UiFontFamily {
 	if (typeof value !== "string") return DEFAULT_UI_FONT_FAMILY;
 	const trimmed = value.trim();
@@ -140,6 +149,7 @@ async function emitSettingsUpdated(payload: {
 		lightThemeId?: UiLightThemeId;
 		darkThemeId?: UiDarkThemeId;
 		accent?: UiAccent;
+		tabLayout?: UiTabLayout;
 		fontFamily?: UiFontFamily;
 		monoFontFamily?: UiFontFamily;
 		fontSize?: UiFontSize;
@@ -187,6 +197,7 @@ interface AppSettings {
 		lightThemeId: UiLightThemeId;
 		darkThemeId: UiDarkThemeId;
 		accent: UiAccent;
+		tabLayout: UiTabLayout;
 		fontFamily: UiFontFamily;
 		monoFontFamily: UiFontFamily;
 		fontSize: UiFontSize;
@@ -218,6 +229,7 @@ const KEYS = {
 	lightThemeId: "ui.lightThemeId",
 	darkThemeId: "ui.darkThemeId",
 	accent: "ui.accent",
+	tabLayout: "ui.tabLayout",
 	fontFamily: "ui.fontFamily",
 	monoFontFamily: "ui.monoFontFamily",
 	fontSize: "ui.fontSize",
@@ -324,6 +336,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		rawLightThemeId,
 		rawDarkThemeId,
 		rawAccent,
+		rawTabLayout,
 		rawFontFamily,
 		rawMonoFontFamily,
 		rawFontSize,
@@ -350,6 +363,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<unknown>(KEYS.lightThemeId),
 		store.get<unknown>(KEYS.darkThemeId),
 		store.get<unknown>(KEYS.accent),
+		store.get<unknown>(KEYS.tabLayout),
 		store.get<unknown>(KEYS.fontFamily),
 		store.get<unknown>(KEYS.monoFontFamily),
 		store.get<unknown>(KEYS.fontSize),
@@ -379,6 +393,7 @@ export async function loadSettings(): Promise<AppSettings> {
 	const lightThemeId = asUiLightThemeId(rawLightThemeId);
 	const darkThemeId = asUiDarkThemeId(rawDarkThemeId);
 	const accent = asUiAccent(rawAccent);
+	const tabLayout = asUiTabLayout(rawTabLayout);
 	const fontFamily = asUiFontFamily(rawFontFamily);
 	const monoFontFamily = asUiMonoFontFamily(rawMonoFontFamily);
 	const fontSize = asUiFontSize(rawFontSize);
@@ -419,6 +434,7 @@ export async function loadSettings(): Promise<AppSettings> {
 			lightThemeId,
 			darkThemeId,
 			accent,
+			tabLayout,
 			fontFamily,
 			monoFontFamily,
 			fontSize,
@@ -535,6 +551,14 @@ export async function setUiAccent(accent: UiAccent): Promise<void> {
 	await store.set(KEYS.accent, next);
 	await store.save();
 	void emitSettingsUpdated({ ui: { accent: next } });
+}
+
+export async function setUiTabLayout(tabLayout: UiTabLayout): Promise<void> {
+	const store = await getStore();
+	const next = asUiTabLayout(tabLayout);
+	await store.set(KEYS.tabLayout, next);
+	await store.save();
+	void emitSettingsUpdated({ ui: { tabLayout: next } });
 }
 
 export async function setUiFontFamily(fontFamily: UiFontFamily): Promise<void> {

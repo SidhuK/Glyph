@@ -64,6 +64,7 @@ type TauriEventMap = {
 				| "light-yellow"
 				| "soft-apricot"
 				| "vibrant-coral";
+			tabLayout?: "horizontal" | "vertical";
 			fontFamily?: string;
 			monoFontFamily?: string;
 			fontSize?: number;

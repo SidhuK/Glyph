@@ -506,8 +506,28 @@
 	position: relative;
 }
 
+.canvasPaneHost[data-tab-layout="vertical"] {
+	flex-direction: row;
+}
+
+.canvasContentHost {
+	flex: 1;
+	min-width: 0;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+}
+
 .mainTabsBarWrap {
 	flex-shrink: 0;
+}
+
+.canvasPaneHost[data-tab-layout="vertical"] .mainTabsBarWrap {
+	width: 220px;
+	min-width: 220px;
+	min-height: 0;
+	border-right: 1px solid
+		color-mix(in srgb, var(--border-light) 54%, transparent);
 }
 
 .mainTabsBar {
@@ -518,6 +538,14 @@
 	padding: 0 var(--space-3);
 	border-bottom: 0;
 	background: var(--bg-primary);
+}
+
+.mainTabsBar[data-layout="vertical"] {
+	height: 100%;
+	flex-direction: column;
+	align-items: stretch;
+	gap: var(--space-3);
+	padding: var(--space-3);
 }
 
 .mainTabsBar[data-empty-state="true"] {
@@ -574,10 +602,22 @@
 	min-width: 0;
 }
 
+.mainTabsBar[data-layout="vertical"] .mainTabsSide {
+	display: none;
+}
+
 .mainTabsSideEnd {
 	display: flex;
 	align-items: center;
 	justify-content: flex-end;
+}
+
+.mainTabsBar[data-layout="vertical"] .mainTabsSideEnd {
+	display: flex;
+	flex: 0 0 auto;
+	flex-direction: column;
+	align-items: stretch;
+	gap: 8px;
 }
 
 .mainTabsCenter {
@@ -585,6 +625,11 @@
 	min-width: 0;
 	display: flex;
 	align-items: center;
+}
+
+.mainTabsBar[data-layout="vertical"] .mainTabsCenter {
+	flex: 1 1 auto;
+	align-items: stretch;
 }
 
 .mainTabsStrip {
@@ -600,10 +645,24 @@
 	overflow: hidden;
 }
 
+.mainTabsBar[data-layout="vertical"] .mainTabsStrip {
+	flex-direction: column;
+	align-items: stretch;
+	gap: 8px;
+	padding: 0;
+	overflow-x: hidden;
+	overflow-y: auto;
+}
+
 .mainTabWrap {
 	position: relative;
 	min-width: 78px;
 	flex: 1 1 0%;
+}
+
+.mainTabsBar[data-layout="vertical"] .mainTabWrap {
+	min-width: 0;
+	flex: 0 0 auto;
 }
 
 .mainTab {
@@ -624,6 +683,12 @@
 	transition: background var(--transition-fast), border-color
 		var(--transition-fast), color var(--transition-fast), box-shadow
 		var(--transition-fast);
+}
+
+.mainTabsBar[data-layout="vertical"] .mainTab {
+	height: 36px;
+	justify-content: flex-start;
+	padding-right: 12px;
 }
 
 .mainTab:hover {
@@ -726,6 +791,13 @@
 	transition: background var(--transition-fast), color var(--transition-fast);
 }
 
+.mainTabsBar[data-layout="vertical"] .mainTabAdd,
+.mainTabsBar[data-layout="vertical"] .mainTabsAiToggle {
+	height: 32px;
+	width: 100%;
+	border-radius: var(--radius-xl);
+}
+
 .mainTabAdd:hover {
 	color: var(--text-primary);
 }
@@ -778,6 +850,70 @@
 	outline: 2px solid
 		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
 	outline-offset: 1px;
+}
+
+@media (max-width: 960px) {
+	.canvasPaneHost[data-tab-layout="vertical"] {
+		flex-direction: column;
+	}
+
+	.canvasPaneHost[data-tab-layout="vertical"] .mainTabsBarWrap {
+		width: auto;
+		min-width: 0;
+		min-height: auto;
+		border-right: 0;
+	}
+
+	.canvasPaneHost[data-tab-layout="vertical"] .mainTabsBar {
+		height: 44px;
+		flex-direction: row;
+		align-items: center;
+		gap: var(--space-2);
+		padding: 0 var(--space-3);
+	}
+
+	.canvasPaneHost[data-tab-layout="vertical"] .mainTabsSide {
+		display: block;
+	}
+
+	.canvasPaneHost[data-tab-layout="vertical"] .mainTabsSideEnd {
+		flex-direction: row;
+		align-items: center;
+		justify-content: flex-end;
+		gap: 0;
+	}
+
+	.canvasPaneHost[data-tab-layout="vertical"] .mainTabsCenter {
+		flex: 0 1 1120px;
+		align-items: center;
+	}
+
+	.canvasPaneHost[data-tab-layout="vertical"] .mainTabsStrip {
+		flex-direction: row;
+		align-items: center;
+		gap: 6px;
+		padding: 3px 0;
+		overflow-x: auto;
+		overflow-y: hidden;
+	}
+
+	.canvasPaneHost[data-tab-layout="vertical"] .mainTabWrap {
+		min-width: 78px;
+		flex: 1 1 0%;
+	}
+
+	.canvasPaneHost[data-tab-layout="vertical"] .mainTab {
+		height: 28px;
+		justify-content: center;
+		padding-right: 10px;
+	}
+
+	.canvasPaneHost[data-tab-layout="vertical"] .mainTabAdd,
+	.canvasPaneHost[data-tab-layout="vertical"] .mainTabsAiToggle {
+		height: 28px;
+		width: 28px;
+		border-radius: var(--radius-md);
+	}
 }
 
 @media (prefers-reduced-motion: reduce) {

@@ -13,6 +13,7 @@ import {
 import { useSearch } from "../hooks/useSearch";
 import {
 	type AiAssistantMode,
+	type UiTabLayout,
 	loadSettings,
 	reloadFromDisk,
 	setAiAssistantMode as saveAiAssistantMode,
@@ -42,6 +43,7 @@ export interface UILayoutContextValue {
 	templateFolder: string | null;
 	dailyNoteTemplatePath: string | null;
 	showToc: boolean;
+	tabLayout: UiTabLayout;
 	setShowToc: (show: boolean) => void;
 }
 
@@ -85,6 +87,7 @@ type UIState = {
 	templateFolder: string | null;
 	dailyNoteTemplatePath: string | null;
 	showToc: boolean;
+	tabLayout: UiTabLayout;
 	aiEnabled: boolean;
 	aiPanelOpen: boolean;
 	aiPanelWidth: number;
@@ -103,6 +106,7 @@ type UIAction =
 	| { type: "setTemplateFolder"; value: string | null }
 	| { type: "setDailyNoteTemplatePath"; value: string | null }
 	| { type: "setShowToc"; value: boolean }
+	| { type: "setTabLayout"; value: UiTabLayout }
 	| { type: "setAiEnabled"; value: boolean }
 	| { type: "setAiPanelOpen"; value: SetStateAction<boolean> }
 	| { type: "setAiPanelWidth"; value: number }
@@ -117,6 +121,7 @@ type UIAction =
 			templateFolder: string | null;
 			dailyNoteTemplatePath: string | null;
 			showToc: boolean;
+			tabLayout: UiTabLayout;
 	  };
 
 const initialUIState: UIState = {
@@ -131,6 +136,7 @@ const initialUIState: UIState = {
 	templateFolder: null,
 	dailyNoteTemplatePath: null,
 	showToc: true,
+	tabLayout: "horizontal",
 	aiEnabled: true,
 	aiPanelOpen: false,
 	aiPanelWidth: 380,
@@ -167,6 +173,8 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 			return { ...state, dailyNoteTemplatePath: action.value };
 		case "setShowToc":
 			return { ...state, showToc: action.value };
+		case "setTabLayout":
+			return { ...state, tabLayout: action.value };
 		case "setAiEnabled":
 			return {
 				...state,
@@ -201,6 +209,7 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 				templateFolder: action.templateFolder,
 				dailyNoteTemplatePath: action.dailyNoteTemplatePath,
 				showToc: action.showToc,
+				tabLayout: action.tabLayout,
 			};
 		default:
 			return state;
@@ -222,6 +231,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		templateFolder,
 		dailyNoteTemplatePath,
 		showToc,
+		tabLayout,
 		aiEnabled,
 		aiPanelOpen,
 		aiPanelWidth,
@@ -248,6 +258,10 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		const nextShowToc = payload.ui?.showToc;
 		if (typeof nextShowToc === "boolean") {
 			dispatch({ type: "setShowToc", value: nextShowToc });
+		}
+		const nextTabLayout = payload.ui?.tabLayout;
+		if (nextTabLayout === "horizontal" || nextTabLayout === "vertical") {
+			dispatch({ type: "setTabLayout", value: nextTabLayout });
 		}
 		if (payload.dailyNotes && "folder" in payload.dailyNotes) {
 			dispatch({
@@ -287,6 +301,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 					templateFolder: s.templates?.folder ?? null,
 					dailyNoteTemplatePath: s.templates?.dailyNoteTemplate ?? null,
 					showToc: s.ui.showToc,
+					tabLayout: s.ui.tabLayout,
 				});
 			} catch {
 				// best-effort settings hydration
@@ -437,6 +452,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			templateFolder,
 			dailyNoteTemplatePath,
 			showToc,
+			tabLayout,
 			setShowToc,
 		}),
 		[
@@ -458,6 +474,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			templateFolder,
 			dailyNoteTemplatePath,
 			showToc,
+			tabLayout,
 			setShowToc,
 		],
 	);

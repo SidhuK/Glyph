@@ -6,6 +6,7 @@ import { getShortcutTooltip } from "../../lib/shortcuts";
 import { TASKS_TAB_ID } from "../../lib/tasks";
 
 interface TabBarProps {
+	layout: "horizontal" | "vertical";
 	openTabs: string[];
 	activeTabPath: string | null;
 	dragTabPath: string | null;
@@ -22,6 +23,7 @@ interface TabBarProps {
 }
 
 export function TabBar({
+	layout,
 	openTabs,
 	activeTabPath,
 	dragTabPath,
@@ -62,11 +64,13 @@ export function TabBar({
 	return (
 		<div
 			className="mainTabsBarWrap"
+			data-layout={layout}
 			onPointerEnter={() => setHovered(true)}
 			onPointerLeave={() => setHovered(false)}
 		>
 			<div
 				className="mainTabsBar"
+				data-layout={layout}
 				data-empty-state={useWindowBackground ? "true" : "false"}
 			>
 				<div className="mainTabsSide" />
@@ -115,7 +119,7 @@ export function TabBar({
 					) : null}
 				</div>
 			</div>
-			{breadcrumbSegments.length > 0 && (
+			{layout === "horizontal" && breadcrumbSegments.length > 0 && (
 				<div className={`mainTabsBreadcrumb ${hovered ? "is-visible" : ""}`}>
 					{breadcrumbSegments.map((segment, i, arr) => (
 						// biome-ignore lint/suspicious/noArrayIndexKey: breadcrumb segments are derived from a static path split and never reorder

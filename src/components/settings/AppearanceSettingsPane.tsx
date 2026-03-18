@@ -13,6 +13,7 @@ import {
 	type UiFontFamily,
 	type UiFontSize,
 	type UiLightThemeId,
+	type UiTabLayout,
 	loadSettings,
 	setThemeMode,
 	setUiAccent,
@@ -22,6 +23,7 @@ import {
 	setUiFontSize,
 	setUiLightThemeId,
 	setUiMonoFontFamily,
+	setUiTabLayout,
 	setUiTranslucentApp,
 } from "../../lib/settings";
 import {
@@ -57,6 +59,7 @@ export function AppearanceSettingsPane() {
 		GLYPH_DEFAULT_DARK_THEME_ID,
 	);
 	const [accent, setAccentState] = useState<UiAccent>("neutral");
+	const [tabLayout, setTabLayoutState] = useState<UiTabLayout>("horizontal");
 	const [fontFamily, setFontFamilyState] =
 		useState<UiFontFamily>(DEFAULT_FONT_FAMILY);
 	const [monoFontFamily, setMonoFontFamilyState] =
@@ -86,6 +89,7 @@ export function AppearanceSettingsPane() {
 				setLightThemeIdState(settings.ui.lightThemeId);
 				setDarkThemeIdState(settings.ui.darkThemeId);
 				setAccentState(settings.ui.accent);
+				setTabLayoutState(settings.ui.tabLayout);
 				setFontFamilyState(settings.ui.fontFamily);
 				setMonoFontFamilyState(settings.ui.monoFontFamily);
 				setUiFontSizeState(settings.ui.fontSize);
@@ -246,6 +250,16 @@ export function AppearanceSettingsPane() {
 		}
 	}, []);
 
+	const onTabLayoutChange = useCallback(async (next: UiTabLayout) => {
+		setError("");
+		setTabLayoutState(next);
+		try {
+			await setUiTabLayout(next);
+		} catch (e) {
+			setError(e instanceof Error ? e.message : "Failed to save settings");
+		}
+	}, []);
+
 	const onTranslucentAppChange = useCallback(async (next: boolean) => {
 		setError("");
 		setTranslucentAppState(next);
@@ -282,10 +296,12 @@ export function AppearanceSettingsPane() {
 					lightOptions={LIGHT_THEME_OPTIONS}
 					darkOptions={DARK_THEME_OPTIONS}
 					translucentApp={translucentApp}
+					tabLayout={tabLayout}
 					onThemeModeChange={onThemeModeChange}
 					onLightThemeChange={onLightThemeChange}
 					onDarkThemeChange={onDarkThemeChange}
 					onTranslucentAppChange={onTranslucentAppChange}
+					onTabLayoutChange={onTabLayoutChange}
 				/>
 				{showAccentCard ? (
 					<AppearanceAccentCard
