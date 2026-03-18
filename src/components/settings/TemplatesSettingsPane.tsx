@@ -68,8 +68,9 @@ export function TemplateSettingsSections() {
 	}, []);
 
 	useEffect(() => {
-		if (!templatesFolder) {
+		if (templatesFolder === null) {
 			setTemplates([]);
+			setTemplatesLoading(false);
 			setTemplatesError(null);
 			return;
 		}
@@ -155,9 +156,9 @@ export function TemplateSettingsSections() {
 			const relativePath = normSelected
 				.slice(normSpace.length)
 				.replace(/^\/+/, "");
-			await setTemplatesFolder(relativePath || null);
+			await setTemplatesFolder(relativePath);
 			await setDailyNoteTemplate(null);
-			setTemplatesFolderState(relativePath || null);
+			setTemplatesFolderState(relativePath);
 			setDailyNoteTemplatePathState(null);
 		} catch (cause) {
 			setError(
@@ -199,7 +200,7 @@ export function TemplateSettingsSections() {
 	}, []);
 
 	const summary = useMemo(() => {
-		if (!templatesFolder) return "Not configured";
+		if (templatesFolder === null) return "Not configured";
 		if (templatesLoading) return "Loading templates...";
 		return `${templates.length} template${templates.length === 1 ? "" : "s"} found`;
 	}, [templates.length, templatesFolder, templatesLoading]);
@@ -218,7 +219,11 @@ export function TemplateSettingsSections() {
 					<div className="dailyNotesFolderField">
 						<div className="dailyNotesFolderRow">
 							<div className="dailyNotesFolderPath">
-								{loading ? "Loading..." : (templatesFolder ?? "Not configured")}
+								{loading
+									? "Loading..."
+									: templatesFolder === null
+										? "Not configured"
+										: templatesFolder || "/"}
 							</div>
 							<div className="settingsActions dailyNotesActions">
 								<Button
@@ -232,7 +237,7 @@ export function TemplateSettingsSections() {
 									<FolderOpen size={14} />
 									Browse
 								</Button>
-								{templatesFolder ? (
+								{templatesFolder !== null ? (
 									<Button
 										type="button"
 										variant="outline"
@@ -263,7 +268,9 @@ export function TemplateSettingsSections() {
 						onChange={(event) =>
 							void handleDailyTemplateChange(event.target.value)
 						}
-						disabled={!templatesFolder || templatesLoading || !templates.length}
+						disabled={
+							templatesFolder === null || templatesLoading || !templates.length
+						}
 					>
 						<option value="">None</option>
 						{templates.map((template) => (

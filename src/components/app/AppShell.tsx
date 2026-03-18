@@ -227,7 +227,7 @@ export function AppShell() {
 	const openTemplatePicker = useCallback(
 		async (dirPath?: string) => {
 			if (!spacePath) return;
-			if (!templateFolder) {
+			if (templateFolder === null) {
 				setError("Set a template folder in Settings -> General first.");
 				openTemplatesSettings();
 				return;
@@ -242,11 +242,9 @@ export function AppShell() {
 				setTemplatePickerItems(
 					templates.map((template) => ({
 						relPath: template.relPath,
-						label:
-							templateFolder &&
-							template.relPath.startsWith(`${templateFolder}/`)
-								? template.relPath.slice(templateFolder.length + 1)
-								: template.relPath,
+						label: template.relPath.startsWith(`${templateFolder}/`)
+							? template.relPath.slice(templateFolder.length + 1)
+							: template.relPath,
 					})),
 				);
 				setTemplatePickerDirPath(dirPath ?? "");
@@ -801,11 +799,7 @@ export function AppShell() {
 				category: "File Operations",
 				shortcut: { meta: true, shift: true, key: "m" },
 				enabled: Boolean(spacePath),
-				action: () => {
-					const dir =
-						activeDirPath ?? (activeFilePath ? parentDir(activeFilePath) : "");
-					void openTemplatePicker(dir);
-				},
+				action: handleCreateFromTemplateFromMenu,
 			},
 			{
 				id: "new-tab",
@@ -958,6 +952,7 @@ export function AppShell() {
 		openMarkdownTabs.length,
 		requestOpenDailyNote,
 		saveCurrentEditor,
+		handleCreateFromTemplateFromMenu,
 		setAiPanelOpen,
 		setPaletteOpen,
 		setActivePreviewPath,
@@ -967,7 +962,6 @@ export function AppShell() {
 		openSearchPalette,
 		openTasksTab,
 		openGettingStarted,
-		openTemplatePicker,
 		moveTargetDirs,
 		movePickerSourcePath,
 		setError,

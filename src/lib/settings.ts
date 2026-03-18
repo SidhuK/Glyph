@@ -395,7 +395,7 @@ export async function loadSettings(): Promise<AppSettings> {
 			: null;
 	const templatesFolder =
 		typeof templatesFolderRaw === "string"
-			? normalizeRelPath(templatesFolderRaw) || null
+			? normalizeRelPath(templatesFolderRaw)
 			: null;
 	const templatesDailyNoteTemplate =
 		typeof templatesDailyNoteTemplateRaw === "string"
@@ -613,7 +613,7 @@ export async function getTemplatesFolder(): Promise<string | null> {
 export async function setTemplatesFolder(folder: string | null): Promise<void> {
 	const store = await getStore();
 	const nextFolder =
-		typeof folder === "string" ? normalizeRelPath(folder) || null : null;
+		typeof folder === "string" ? normalizeRelPath(folder) : null;
 	if (nextFolder === null) {
 		await store.delete(KEYS.templatesFolder);
 		await store.delete(KEYS.templatesDailyNoteTemplate);
