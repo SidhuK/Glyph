@@ -2,8 +2,8 @@
    FLOATING TABLE OF CONTENTS
    ───────────────────────────────────────────────────────────────────────────── */
 .floatingToc {
-	position: fixed;
-	right: 18px;
+	position: absolute;
+	right: 14px;
 	top: 50%;
 	transform: translateY(-50%);
 	z-index: 14;
