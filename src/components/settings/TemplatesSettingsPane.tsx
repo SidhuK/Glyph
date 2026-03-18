@@ -113,9 +113,18 @@ export function TemplateSettingsSections() {
 		}
 		let cancelled = false;
 		void (async () => {
-			await setDailyNoteTemplate(null);
-			if (cancelled) return;
-			setDailyNoteTemplatePathState(null);
+			try {
+				await setDailyNoteTemplate(null);
+				if (cancelled) return;
+				setDailyNoteTemplatePathState(null);
+			} catch (cause) {
+				if (cancelled) return;
+				setError(
+					cause instanceof Error
+						? cause.message
+						: "Failed to clear daily note template",
+				);
+			}
 		})();
 		return () => {
 			cancelled = true;
@@ -176,8 +185,17 @@ export function TemplateSettingsSections() {
 
 	const handleDailyTemplateChange = useCallback(async (value: string) => {
 		const next = value.trim() ? value : null;
-		await setDailyNoteTemplate(next);
-		setDailyNoteTemplatePathState(next);
+		setError(null);
+		try {
+			await setDailyNoteTemplate(next);
+			setDailyNoteTemplatePathState(next);
+		} catch (cause) {
+			setError(
+				cause instanceof Error
+					? cause.message
+					: "Failed to update daily note template",
+			);
+		}
 	}, []);
 
 	const summary = useMemo(() => {

@@ -285,10 +285,13 @@ export function AppShell() {
 				const relPath = await invoke("space_relativize_path", {
 					abs_path: absPath,
 				});
+				const normalizedRelPath = relPath.toLowerCase().endsWith(".md")
+					? relPath
+					: `${relPath}.md`;
 				if (
 					templatePickerDirPath &&
-					relPath !== templatePickerDirPath &&
-					!relPath.startsWith(`${templatePickerDirPath}/`)
+					normalizedRelPath !== templatePickerDirPath &&
+					!normalizedRelPath.startsWith(`${templatePickerDirPath}/`)
 				) {
 					setError(`Choose a file path inside "${templatePickerDirPath}"`);
 					return;
@@ -297,11 +300,11 @@ export function AppShell() {
 					path: template.relPath,
 				});
 				const rendered = renderTemplate(templateDoc.text, {
-					destinationPath: relPath,
+					destinationPath: normalizedRelPath,
 					spaceRootPath: spacePath,
 				});
 				const createdPath = await fileTree.createMarkdownFileAtPath({
-					path: relPath,
+					path: normalizedRelPath,
 					text: rendered,
 					openParentDir: templatePickerDirPath,
 				});
