@@ -153,6 +153,10 @@ async function emitSettingsUpdated(payload: {
 	dailyNotes?: {
 		folder?: string | null;
 	};
+	templates?: {
+		folder?: string | null;
+		dailyNoteTemplate?: string | null;
+	};
 	tasks?: {
 		source?: TaskSourceSetting;
 	};
@@ -194,6 +198,10 @@ interface AppSettings {
 	dailyNotes: {
 		folder: string | null;
 	};
+	templates: {
+		folder: string | null;
+		dailyNoteTemplate: string | null;
+	};
 	tasks: {
 		source: TaskSourceSetting;
 	};
@@ -217,6 +225,8 @@ const KEYS = {
 	translucentApp: "ui.translucentApp",
 	showToc: "ui.showToc",
 	dailyNotesFolder: "dailyNotes.folder",
+	templatesFolder: "templates.folder",
+	templatesDailyNoteTemplate: "templates.dailyNoteTemplate",
 	taskSource: "tasks.source",
 	onboardingLauncherSeen: "onboarding.launcherSeen",
 	onboardingStarterDismissed: "onboarding.starterDismissed",
@@ -321,6 +331,8 @@ export async function loadSettings(): Promise<AppSettings> {
 		rawTranslucentApp,
 		rawShowToc,
 		dailyNotesFolderRaw,
+		templatesFolderRaw,
+		templatesDailyNoteTemplateRaw,
 		taskSourceRaw,
 	] = await Promise.all([
 		store.get<string | null>(KEYS.currentSpacePath),
@@ -345,6 +357,8 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<boolean | null>(KEYS.translucentApp),
 		store.get<boolean | null>(KEYS.showToc),
 		store.get<string | null>(KEYS.dailyNotesFolder),
+		store.get<string | null>(KEYS.templatesFolder),
+		store.get<string | null>(KEYS.templatesDailyNoteTemplate),
 		store.get<unknown>(KEYS.taskSource),
 	]);
 	const currentSpacePath = currentSpacePathRaw ?? null;
@@ -375,7 +389,18 @@ export async function loadSettings(): Promise<AppSettings> {
 	const translucentApp =
 		typeof rawTranslucentApp === "boolean" ? rawTranslucentApp : true;
 	const showToc = typeof rawShowToc === "boolean" ? rawShowToc : true;
-	const dailyNotesFolder = dailyNotesFolderRaw ?? null;
+	const dailyNotesFolder =
+		typeof dailyNotesFolderRaw === "string"
+			? normalizeRelPath(dailyNotesFolderRaw) || null
+			: null;
+	const templatesFolder =
+		typeof templatesFolderRaw === "string"
+			? normalizeRelPath(templatesFolderRaw) || null
+			: null;
+	const templatesDailyNoteTemplate =
+		typeof templatesDailyNoteTemplateRaw === "string"
+			? normalizeRelPath(templatesDailyNoteTemplateRaw) || null
+			: null;
 	const taskSource =
 		normalizeLegacyTaskSourceSetting(taskSourceRaw) ??
 		normalizeTaskSourceSetting(taskSourceRaw);
@@ -404,6 +429,10 @@ export async function loadSettings(): Promise<AppSettings> {
 		},
 		dailyNotes: {
 			folder: dailyNotesFolder,
+		},
+		templates: {
+			folder: templatesFolder,
+			dailyNoteTemplate: templatesDailyNoteTemplate,
 		},
 		tasks: {
 			source: taskSource,
@@ -565,13 +594,65 @@ export async function setDailyNotesFolder(
 	folder: string | null,
 ): Promise<void> {
 	const store = await getStore();
-	if (folder === null) {
+	const nextFolder =
+		typeof folder === "string" ? normalizeRelPath(folder) || null : null;
+	if (nextFolder === null) {
 		await store.delete(KEYS.dailyNotesFolder);
 	} else {
-		await store.set(KEYS.dailyNotesFolder, folder);
+		await store.set(KEYS.dailyNotesFolder, nextFolder);
 	}
 	await store.save();
-	void emitSettingsUpdated({ dailyNotes: { folder } });
+	void emitSettingsUpdated({ dailyNotes: { folder: nextFolder } });
+}
+
+export async function getTemplatesFolder(): Promise<string | null> {
+	const store = await getStore();
+	return (await store.get<string | null>(KEYS.templatesFolder)) ?? null;
+}
+
+export async function setTemplatesFolder(folder: string | null): Promise<void> {
+	const store = await getStore();
+	const nextFolder =
+		typeof folder === "string" ? normalizeRelPath(folder) || null : null;
+	if (nextFolder === null) {
+		await store.delete(KEYS.templatesFolder);
+		await store.delete(KEYS.templatesDailyNoteTemplate);
+	} else {
+		await store.set(KEYS.templatesFolder, nextFolder);
+	}
+	await store.save();
+	void emitSettingsUpdated({
+		templates: {
+			folder: nextFolder,
+			dailyNoteTemplate: nextFolder === null ? null : undefined,
+		},
+	});
+}
+
+export async function getDailyNoteTemplate(): Promise<string | null> {
+	const store = await getStore();
+	return (
+		(await store.get<string | null>(KEYS.templatesDailyNoteTemplate)) ?? null
+	);
+}
+
+export async function setDailyNoteTemplate(
+	templatePath: string | null,
+): Promise<void> {
+	const store = await getStore();
+	const nextPath =
+		typeof templatePath === "string"
+			? normalizeRelPath(templatePath) || null
+			: null;
+	if (nextPath === null) {
+		await store.delete(KEYS.templatesDailyNoteTemplate);
+	} else {
+		await store.set(KEYS.templatesDailyNoteTemplate, nextPath);
+	}
+	await store.save();
+	void emitSettingsUpdated({
+		templates: { dailyNoteTemplate: nextPath },
+	});
 }
 
 export async function setTaskSource(source: TaskSourceSetting): Promise<void> {

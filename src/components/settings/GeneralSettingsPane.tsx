@@ -15,6 +15,7 @@ import {
 	SettingsSection,
 	SettingsToggle,
 } from "./SettingsScaffold";
+import { TemplateSettingsSections } from "./TemplatesSettingsPane";
 
 export function GeneralSettingsPane() {
 	const [showToc, setShowTocState] = useState(true);
@@ -163,6 +164,8 @@ export function GeneralSettingsPane() {
 						</div>
 					</SettingsRow>
 				</SettingsSection>
+
+				<TemplateSettingsSections />
 
 				<SettingsSection title="Editor">
 					<SettingsRow

@@ -93,6 +93,14 @@ export const SHORTCUTS = [
 		context: "space",
 	},
 	{
+		id: "create-from-template",
+		shortcut: { meta: true, shift: true, key: "n" },
+		label: "Create From Template",
+		description: "Create a new note from a template",
+		category: "file",
+		context: "space",
+	},
+	{
 		id: "new-tab",
 		shortcut: { meta: true, key: "t" },
 		label: "New Tab",

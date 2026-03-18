@@ -44,6 +44,12 @@ export interface UseFileTreeCRUDDeps {
 	loadedDirsRef: React.RefObject<Set<string>>;
 }
 
+export interface CreateMarkdownFileOptions {
+	path: string;
+	text: string;
+	openParentDir?: string | null;
+}
+
 export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 	const {
 		spacePath,
@@ -98,6 +104,46 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 		[updateChildrenByDir, updateRootEntries],
 	);
 
+	const createMarkdownFileAtPath = useCallback(
+		async ({ path, text, openParentDir }: CreateMarkdownFileOptions) => {
+			setError("");
+			try {
+				const markdownRel = isMarkdownPath(path) ? path : `${path}.md`;
+				const fileName = markdownRel.split("/").pop()?.trim() || "Untitled.md";
+				await invoke("space_write_text", {
+					path: markdownRel,
+					text,
+					base_mtime_ms: null,
+				});
+				insertEntryOptimistic(parentDir(markdownRel), {
+					name: fileName,
+					rel_path: markdownRel,
+					kind: "file",
+					is_markdown: true,
+				});
+				const nextOpenParentDir =
+					typeof openParentDir === "string"
+						? openParentDir
+						: parentDir(markdownRel);
+				if (nextOpenParentDir) {
+					updateExpandedDirs((prev) => {
+						if (prev.has(nextOpenParentDir)) return prev;
+						const next = new Set(prev);
+						next.add(nextOpenParentDir);
+						return next;
+					});
+				}
+				await refreshAfterCreate(parentDir(markdownRel));
+				void updateOnboardingSettings({ createdFirstNote: true });
+				return markdownRel;
+			} catch (e) {
+				setError(extractErrorMessage(e));
+				return null;
+			}
+		},
+		[insertEntryOptimistic, refreshAfterCreate, setError, updateExpandedDirs],
+	);
+
 	const onNewFileInDir = useCallback(
 		async (dirPath: string) => {
 			if (!spacePath) return null;
@@ -120,46 +166,22 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 					abs_path: absPath,
 				});
 				const markdownRel = isMarkdownPath(rel) ? rel : `${rel}.md`;
-				const fileName = markdownRel.split("/").pop()?.trim() || "Untitled.md";
 				const fileTitle = fileTitleFromRelPath(markdownRel);
 				if (dirPath && !markdownRel.startsWith(`${dirPath}/`)) {
 					setError(`Choose a file path inside "${dirPath}"`);
 					return null;
 				}
-				await invoke("space_write_text", {
+				return createMarkdownFileAtPath({
 					path: markdownRel,
 					text: `# ${fileTitle}\n`,
-					base_mtime_ms: null,
+					openParentDir: dirPath,
 				});
-				insertEntryOptimistic(parentDir(markdownRel), {
-					name: fileName,
-					rel_path: markdownRel,
-					kind: "file",
-					is_markdown: true,
-				});
-				if (dirPath)
-					updateExpandedDirs((prev) => {
-						if (prev.has(dirPath)) return prev;
-						const next = new Set(prev);
-						next.add(dirPath);
-						return next;
-					});
-				const createdInDir = parentDir(markdownRel);
-				await refreshAfterCreate(createdInDir);
-				void updateOnboardingSettings({ createdFirstNote: true });
-				return markdownRel;
 			} catch (e) {
 				setError(extractErrorMessage(e));
 				return null;
 			}
 		},
-		[
-			insertEntryOptimistic,
-			refreshAfterCreate,
-			setError,
-			updateExpandedDirs,
-			spacePath,
-		],
+		[createMarkdownFileAtPath, setError, spacePath],
 	);
 
 	const onNewFile = useCallback(async () => {
@@ -491,6 +513,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 	);
 
 	return {
+		createMarkdownFileAtPath,
 		onNewFile,
 		onNewFileInDir,
 		onNewDatabaseInDir,

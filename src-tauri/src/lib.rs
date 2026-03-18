@@ -132,6 +132,13 @@ pub fn run() {
                 MenuItem::with_id(app, "space.settings", "Space Settings…", true, None::<&str>)?;
             let new_note =
                 MenuItem::with_id(app, "file.new_note", "New Note", true, Some("CmdOrCtrl+N"))?;
+            let create_from_template = MenuItem::with_id(
+                app,
+                "file.create_from_template",
+                "Create From Template",
+                true,
+                Some("CmdOrCtrl+Shift+N"),
+            )?;
             let open_daily_note = MenuItem::with_id(
                 app,
                 "file.open_daily_note",
@@ -179,6 +186,7 @@ pub fn run() {
                 true,
                 &[
                     &new_note,
+                    &create_from_template,
                     &open_daily_note,
                     &PredefinedMenuItem::separator(app)?,
                     &save_note,
@@ -273,6 +281,9 @@ pub fn run() {
         .on_menu_event(|app, event| match event.id().as_ref() {
             "file.new_note" => {
                 let _ = app.emit("menu:new_note", ());
+            }
+            "file.create_from_template" => {
+                let _ = app.emit("menu:create_from_template", ());
             }
             "file.open_daily_note" => {
                 let _ = app.emit("menu:open_daily_note", ());

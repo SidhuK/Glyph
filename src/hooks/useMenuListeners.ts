@@ -4,6 +4,7 @@ import { openSettingsWindow } from "../lib/windows";
 
 export interface UseMenuListenersProps {
 	onNewNote: () => void;
+	onCreateFromTemplate: () => void;
 	onOpenDailyNote: () => void;
 	onSaveNote: () => void;
 	onCloseTab: () => void;
@@ -21,6 +22,7 @@ export interface UseMenuListenersProps {
 
 export function useMenuListeners({
 	onNewNote,
+	onCreateFromTemplate,
 	onOpenDailyNote,
 	onSaveNote,
 	onCloseTab,
@@ -38,6 +40,9 @@ export function useMenuListeners({
 	const handleNewNote = useCallback(() => {
 		onNewNote();
 	}, [onNewNote]);
+	const handleCreateFromTemplate = useCallback(() => {
+		onCreateFromTemplate();
+	}, [onCreateFromTemplate]);
 	const handleOpenDailyNote = useCallback(() => {
 		onOpenDailyNote();
 	}, [onOpenDailyNote]);
@@ -85,6 +90,7 @@ export function useMenuListeners({
 	}, [onOpenAiSettings]);
 
 	useTauriEvent("menu:new_note", handleNewNote);
+	useTauriEvent("menu:create_from_template", handleCreateFromTemplate);
 	useTauriEvent("menu:open_daily_note", handleOpenDailyNote);
 	useTauriEvent("menu:save_note", handleSaveNote);
 	useTauriEvent("menu:close_tab", handleCloseTab);

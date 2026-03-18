@@ -7,10 +7,13 @@ import {
 } from "../lib/dailyNotes";
 import { updateOnboardingSettings } from "../lib/settings";
 import { invoke } from "../lib/tauri";
+import { renderTemplate } from "../lib/templates";
 
 export interface UseDailyNoteOptions {
 	onOpenFile: (path: string) => Promise<void>;
 	setError: (error: string) => void;
+	spacePath: string | null;
+	templatePath?: string | null;
 }
 
 export interface UseDailyNoteReturn {
@@ -23,7 +26,7 @@ export interface UseDailyNoteReturn {
 }
 
 export function useDailyNote(options: UseDailyNoteOptions): UseDailyNoteReturn {
-	const { onOpenFile, setError } = options;
+	const { onOpenFile, setError, spacePath, templatePath } = options;
 	const [isCreating, setIsCreating] = useState(false);
 	const lockRef = useRef(false);
 
@@ -37,7 +40,26 @@ export function useDailyNote(options: UseDailyNoteOptions): UseDailyNoteReturn {
 			setIsCreating(true);
 			try {
 				const notePath = getDailyNotePath(folder, date);
-				const content = getDailyNoteContent(date);
+				try {
+					await invoke("space_read_text", { path: notePath });
+					await onOpenFile(notePath);
+					void updateOnboardingSettings({ openedDailyNote: true });
+					return notePath;
+				} catch {
+					// Create below when the note does not exist yet.
+				}
+				let content = getDailyNoteContent(date);
+				if (templatePath) {
+					const templateDoc = await invoke("space_read_text", {
+						path: templatePath,
+					});
+					const dateValue = parseIsoDate(date) ?? new Date();
+					content = renderTemplate(templateDoc.text, {
+						destinationPath: notePath,
+						spaceRootPath: spacePath,
+						date: dateValue,
+					});
+				}
 				await invoke("space_open_or_create_text", {
 					path: notePath,
 					text: content,
@@ -55,7 +77,7 @@ export function useDailyNote(options: UseDailyNoteOptions): UseDailyNoteReturn {
 				setIsCreating(false);
 			}
 		},
-		[onOpenFile, setError],
+		[onOpenFile, setError, spacePath, templatePath],
 	);
 
 	const openOrCreateDailyNote = useCallback(

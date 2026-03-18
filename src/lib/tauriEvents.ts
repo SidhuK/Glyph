@@ -4,6 +4,7 @@ import type { UiDarkThemeId, UiLightThemeId } from "./uiThemes";
 
 type TauriEventMap = {
 	"menu:new_note": undefined;
+	"menu:create_from_template": undefined;
 	"menu:open_daily_note": undefined;
 	"menu:save_note": undefined;
 	"menu:close_tab": undefined;
@@ -75,6 +76,10 @@ type TauriEventMap = {
 		};
 		dailyNotes?: {
 			folder?: string | null;
+		};
+		templates?: {
+			folder?: string | null;
+			dailyNoteTemplate?: string | null;
 		};
 		tasks?: {
 			source?: { mode?: "space" | "folders"; folders?: string[] };

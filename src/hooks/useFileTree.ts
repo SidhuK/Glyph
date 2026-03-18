@@ -7,6 +7,7 @@ import { isInAppPreviewable } from "../utils/filePreview";
 import { isMarkdownPath, parentDir } from "../utils/path";
 import { areEntriesEqual, normalizeEntries } from "./fileTreeHelpers";
 import { useFileTreeCRUD } from "./useFileTreeCRUD";
+import type { CreateMarkdownFileOptions } from "./useFileTreeCRUD";
 
 export interface UseFileTreeResult {
 	loadDir: (dirPath: string, force?: boolean) => Promise<void>;
@@ -14,6 +15,9 @@ export interface UseFileTreeResult {
 	openFile: (relPath: string) => Promise<void>;
 	openMarkdownFile: (relPath: string) => Promise<void>;
 	openNonMarkdownExternally: (relPath: string) => Promise<void>;
+	createMarkdownFileAtPath: (
+		options: CreateMarkdownFileOptions,
+	) => Promise<string | null>;
 	onNewFile: () => Promise<string | null>;
 	onNewFileInDir: (dirPath: string) => Promise<string | null>;
 	onNewDatabaseInDir: (dirPath: string) => Promise<string | null>;
