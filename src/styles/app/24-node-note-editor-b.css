@@ -310,22 +310,26 @@
 	border-radius: 0;
 	background: transparent;
 	color: var(--text-secondary);
-	font-size: 11px;
+	font-family: var(--font-sans);
+	font-size: 10px;
+	font-weight: var(--font-normal);
 	line-height: 1.4;
 }
 
 .notePropertyToken {
 	display: inline-flex;
 	align-items: center;
-	gap: 3px;
+	gap: 2px;
 	max-width: 100%;
-	padding: 1px 5px;
+	padding: 0 4px;
 	border: 1px solid transparent;
 	border-radius: var(--radius-md);
 	background: color-mix(in srgb, var(--interactive-accent) 7%, transparent);
 	color: var(--interactive-accent);
-	font-size: 9px;
-	line-height: 1.2;
+	font-family: var(--font-sans);
+	font-size: 10px;
+	font-weight: var(--font-normal);
+	line-height: 1.1;
 	cursor: pointer;
 }
 
@@ -350,10 +354,10 @@
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
-	gap: 3px;
-	min-height: 30px;
+	gap: 2px;
+	min-height: 24px;
 	width: 100%;
-	padding: 2px 5px;
+	padding: 1px 3px;
 	border: 1px solid transparent;
 	border-radius: var(--radius-md);
 	background: transparent;
@@ -370,13 +374,14 @@
 .notePropertyTagInput {
 	flex: 1 1 72px;
 	min-width: 72px;
-	height: 18px;
+	height: 16px;
 	padding: 0;
 	border: 0;
 	background: transparent;
 	color: var(--text-primary);
-	font: inherit;
-	font-size: 11px;
+	font-family: var(--font-sans);
+	font-size: 10px;
+	font-weight: var(--font-normal);
 	line-height: 1.4;
 	outline: none;
 	box-shadow: none;
@@ -417,6 +422,8 @@
 	background: color-mix(in srgb, var(--bg-primary) 44%, transparent);
 	color: var(--text-secondary);
 	font-size: 10px;
+	font-family: var(--font-sans);
+	font-weight: var(--font-normal);
 	line-height: 1.2;
 	cursor: pointer;
 }
@@ -439,6 +446,8 @@
 	background: color-mix(in srgb, var(--bg-secondary) 82%, transparent);
 	color: var(--text-tertiary);
 	font-size: 9px;
+	font-family: var(--font-sans);
+	font-weight: var(--font-normal);
 }
 
 .notePropertyYamlInput {

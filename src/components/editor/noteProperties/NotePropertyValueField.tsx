@@ -140,9 +140,7 @@ export function NotePropertyValueField({
 									}}
 								>
 									<span>{formatTagLabel(tag)}</span>
-									<span className="notePropertySuggestionCount mono">
-										{count}
-									</span>
+									<span className="notePropertySuggestionCount">{count}</span>
 								</button>
 							))}
 						</div>
