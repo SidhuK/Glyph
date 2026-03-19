@@ -142,7 +142,7 @@
 	gap: 0;
 	min-height: 31px;
 	padding: 2px;
-	border-radius: 999px;
+	border-radius: var(--radius-full);
 	border: 1px solid color-mix(in srgb, var(--border-light) 86%, transparent);
 	background: color-mix(in srgb, var(--bg-primary) 90%, var(--bg-secondary));
 	backdrop-filter: blur(14px);
@@ -192,7 +192,7 @@
 }
 
 .markdownEditorSaveState[data-save-state="dirty"] {
-	color: color-mix(in srgb, var(--warning, #f59e0b) 76%, var(--text-primary));
+	color: color-mix(in srgb, var(--status-warning-fg) 76%, var(--text-primary));
 }
 
 .markdownEditorSaveState[data-save-state="saving"] {
@@ -202,7 +202,7 @@
 .markdownEditorSaveState[data-save-state="saved"],
 .markdownEditorSaveState[data-save-state="saved-fresh"],
 .markdownEditorSaveState[data-save-state="reloaded"] {
-	color: color-mix(in srgb, var(--success, #16a34a) 74%, var(--text-primary));
+	color: color-mix(in srgb, var(--status-success-fg) 74%, var(--text-primary));
 }
 
 .markdownEditorStatsDock.is-collapsed .markdownEditorStatsPill {
@@ -274,8 +274,8 @@
 	font-size: 11px;
 	color: var(--text-secondary);
 	border-radius: var(--radius-md);
-	transition: transform 160ms ease, background-color 160ms ease, color 160ms
-		ease;
+	transition: transform var(--transition-base), background-color
+		var(--transition-base), color var(--transition-base);
 }
 
 .markdownEditorActionItem:hover:not(:disabled) {
@@ -307,7 +307,7 @@
 
 .markdownEditorCalloutLabel {
 	font-size: 10px;
-	font-weight: 600;
+	font-weight: var(--font-semibold);
 	color: var(--text-tertiary);
 	padding: 0 4px;
 }
@@ -326,8 +326,8 @@
 	line-height: 1;
 	border-radius: var(--radius-full);
 	color: var(--text-secondary);
-	transition: transform 160ms ease, background-color 160ms ease, color 160ms
-		ease;
+	transition: transform var(--transition-base), background-color
+		var(--transition-base), color var(--transition-base);
 }
 
 .markdownEditorCalloutChip:hover:not(:disabled) {

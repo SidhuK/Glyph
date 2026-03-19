@@ -13,7 +13,6 @@ interface GettingStartedPaneProps {
 	onCreateNote: () => void;
 	onOpenCommandPalette: () => void;
 	onOpenDailyNote: () => void;
-	onOpenTasks: () => void;
 	onDismiss: () => void;
 }
 
@@ -143,7 +142,6 @@ export function GettingStartedPane({
 	onCreateNote,
 	onOpenCommandPalette,
 	onOpenDailyNote,
-	onOpenTasks: _onOpenTasks,
 	onDismiss,
 }: GettingStartedPaneProps) {
 	const steps = useMemo(
@@ -180,7 +178,7 @@ export function GettingStartedPane({
 				<div>
 					<div className="starterPaneTitle">Getting started</div>
 				</div>
-				<div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+				<div className="starterPaneHeaderRight">
 					<ProgressRing
 						progress={progress}
 						currentValue={Math.min(currentStep, steps.length)}
@@ -235,7 +233,7 @@ export function GettingStartedPane({
 								{steps[currentStep].description}
 							</div>
 							{steps[currentStep].key === "command" && (
-								<div className="starterShortcut" style={{ marginTop: 8 }}>
+								<div className="starterShortcut starterShortcutRow">
 									{commandShortcutParts.map((part) => (
 										<kbd key={part}>{part}</kbd>
 									))}

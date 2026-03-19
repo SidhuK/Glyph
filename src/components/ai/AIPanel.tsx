@@ -34,7 +34,6 @@ import { preloadAiProfilesData, useAiProfiles } from "./useAiProfiles";
 
 interface AIPanelProps {
 	isOpen: boolean;
-	activeFolderPath: string | null;
 	onClose: () => void;
 	width?: number;
 }
@@ -94,7 +93,7 @@ function setStoredPresetIdForMode(mode: PresetMode, presetId: string): void {
 	}
 }
 
-export function AIPanel({ isOpen, activeFolderPath, onClose }: AIPanelProps) {
+export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 	const chat = useRigChat();
 	const { aiAssistantMode, setAiAssistantMode } = useAISidebarContext();
 	const isChatMode = aiAssistantMode === "chat";
@@ -111,7 +110,7 @@ export function AIPanel({ isOpen, activeFolderPath, onClose }: AIPanelProps) {
 	});
 
 	const profiles = useAiProfiles();
-	const context = useAiContext({ activeFolderPath });
+	const context = useAiContext();
 	const history = useAiHistory(14);
 	const toolEvents = useAiToolEvents({ isChatMode, chatStatus: chat.status });
 	const actions = useAiActions(chat);
@@ -177,13 +176,6 @@ export function AIPanel({ isOpen, activeFolderPath, onClose }: AIPanelProps) {
 		Boolean(input.trim()) &&
 		Boolean(profiles.activeProfileId);
 	const activeProvider = profiles.activeProfile?.provider;
-	const lastUserMessageIndex = useMemo(() => {
-		for (let i = chat.messages.length - 1; i >= 0; i--) {
-			if (chat.messages[i]?.role === "user") return i;
-		}
-		return -1;
-	}, [chat.messages]);
-
 	const sendWithCurrentContext = useCallback(
 		async (text: string) => {
 			const trimmed = text.trim();
@@ -452,16 +444,8 @@ export function AIPanel({ isOpen, activeFolderPath, onClose }: AIPanelProps) {
 						chatStatus={chat.status}
 						phaseStatusText={toolEvents.phaseStatusText}
 						toolTimeline={toolEvents.toolTimeline}
-						lastUserMessageIndex={lastUserMessageIndex}
 						activePreset={activePreset}
 						onSelectPreset={handleSelectPreset}
-						onUseStarterPrompt={(prompt) => {
-							setInput(prompt);
-							scheduleResize();
-							window.requestAnimationFrame(() =>
-								composerInputRef.current?.focus(),
-							);
-						}}
 						onCopy={(t) => void actions.handleCopyAssistantResponse(t)}
 						onSave={(t) => void actions.handleSaveAssistantResponse(t)}
 						onRetry={(i) => void handleRetry(i)}

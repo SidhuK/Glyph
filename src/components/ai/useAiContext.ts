@@ -73,11 +73,7 @@ export async function preloadAiContextIndex(): Promise<AiContextIndexData> {
 	return aiContextIndexPromise;
 }
 
-export function useAiContext({
-	activeFolderPath: _activeFolderPath,
-}: {
-	activeFolderPath: string | null;
-}) {
+export function useAiContext() {
 	const [attachedContext, setAttachedContext] = useState<ContextEntry[]>([]);
 	const [contextSearch, setContextSearch] = useState("");
 	const [folderIndex, setFolderIndex] = useState<FolderEntry[]>(

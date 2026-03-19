@@ -94,7 +94,7 @@
 }
 
 .fileTreeItem.active > .fileTreeRowShell > .fileTreeRow .fileTreeName {
-	font-weight: 500;
+	font-weight: var(--font-medium);
 	color: var(--text-primary);
 }
 
@@ -292,7 +292,7 @@
 
 /* Directory names slightly bolder */
 .fileTreeItem .fileTreeChevron + .fileTreeName {
-	font-weight: 500;
+	font-weight: var(--font-medium);
 }
 
 .fileTreeEmpty {

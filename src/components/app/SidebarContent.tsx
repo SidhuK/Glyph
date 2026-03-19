@@ -15,6 +15,7 @@ import {
 import { FileTreePane } from "../FileTreePane";
 import { Files } from "../Icons";
 import { TagsPane } from "../TagsPane";
+import { directionVariants } from "../ui/animations";
 import { ScrollArea } from "../ui/shadcn/scroll-area";
 import { Tabs, TabsList, TabsTrigger } from "../ui/shadcn/tabs";
 
@@ -84,17 +85,17 @@ export const SidebarContent = memo(function SidebarContent({
 				<div className="sidebarQuickActions">
 					<button
 						type="button"
-						className="sidebarDailyNotesBtn"
+						className="sidebarQuickActionBtn"
 						data-kind="new-note"
 						onClick={onNewNote}
 						title="Create a new note"
 					>
 						<HugeiconsIcon icon={NoteIcon} size={14} strokeWidth={1.8} />
-						<span className="dailyNotesLabel">New Note</span>
+						<span className="sidebarQuickActionLabel">New Note</span>
 					</button>
 					<button
 						type="button"
-						className="sidebarDailyNotesBtn"
+						className="sidebarQuickActionBtn"
 						data-kind="daily-notes"
 						onClick={onOpenDailyNote}
 						disabled={isDailyNoteCreating}
@@ -105,17 +106,17 @@ export const SidebarContent = memo(function SidebarContent({
 							size={14}
 							strokeWidth={1.8}
 						/>
-						<span className="dailyNotesLabel">Daily Note</span>
+						<span className="sidebarQuickActionLabel">Daily Note</span>
 					</button>
 					<button
 						type="button"
-						className="sidebarDailyNotesBtn"
+						className="sidebarQuickActionBtn"
 						data-kind="tasks"
 						onClick={onOpenTasks}
 						title="Open Tasks"
 					>
 						<HugeiconsIcon icon={CheckListIcon} size={14} strokeWidth={1.8} />
-						<span className="dailyNotesLabel">Tasks</span>
+						<span className="sidebarQuickActionLabel">Tasks</span>
 					</button>
 				</div>
 				<div className="sidebarSectionHeader">
@@ -141,9 +142,7 @@ export const SidebarContent = memo(function SidebarContent({
 					{sidebarViewMode === "files" && (
 						<m.div
 							key="files"
-							initial={{ x: -20 }}
-							animate={{ x: 0 }}
-							exit={{ x: -20 }}
+							{...directionVariants.left}
 							transition={{ duration: 0.2 }}
 							className="sidebarSectionContent"
 						>
@@ -168,9 +167,7 @@ export const SidebarContent = memo(function SidebarContent({
 					{sidebarViewMode === "tags" && (
 						<m.div
 							key="tags"
-							initial={{ x: 20 }}
-							animate={{ x: 0 }}
-							exit={{ x: 20 }}
+							{...directionVariants.right}
 							transition={{ duration: 0.2 }}
 							className="sidebarSectionContent"
 						>

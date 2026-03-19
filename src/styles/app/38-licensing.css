@@ -28,7 +28,8 @@
 		color-mix(in srgb, var(--bg-secondary) 74%, transparent),
 		color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary))
 	);
-	box-shadow: 0 20px 70px color-mix(in srgb, #000 26%, transparent);
+	box-shadow: 0 20px 70px
+		color-mix(in srgb, var(--text-primary) 26%, transparent);
 }
 
 .licenseLoadingPanel h1,
@@ -143,7 +144,8 @@
 	border: 1px solid color-mix(in srgb, var(--color-yellow-500) 28%, transparent);
 	background: color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary));
 	backdrop-filter: blur(18px);
-	box-shadow: 0 10px 40px color-mix(in srgb, #000 18%, transparent);
+	box-shadow: 0 10px 40px
+		color-mix(in srgb, var(--text-primary) 18%, transparent);
 }
 
 .licenseTrialBannerCopy {

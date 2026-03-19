@@ -694,7 +694,7 @@
 .mainTabCloseGlyph {
 	font-size: 12px;
 	line-height: 1;
-	font-weight: 600;
+	font-weight: var(--font-semibold);
 }
 
 .mainTabClose:hover {
@@ -940,6 +940,16 @@
 	align-items: flex-start;
 	justify-content: space-between;
 	gap: var(--space-3);
+}
+
+.starterPaneHeaderRight {
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+}
+
+.starterShortcutRow {
+	margin-top: var(--space-2);
 }
 
 .starterPaneTitle {

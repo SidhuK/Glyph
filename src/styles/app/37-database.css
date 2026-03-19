@@ -41,7 +41,7 @@
 .databaseToolbarTitle,
 .databaseFooterTitle {
 	font-size: 0.96rem;
-	font-weight: 600;
+	font-weight: var(--font-semibold);
 }
 
 .databaseToolbarSubtitle,
@@ -178,7 +178,7 @@
 .databaseBoardError,
 .databaseCellError,
 .databaseDialogInlineError {
-	color: var(--text-danger, #b54a3f);
+	color: var(--text-error);
 }
 
 .databaseCellError,
@@ -242,7 +242,7 @@
 	gap: var(--space-2);
 	padding: var(--space-3) var(--space-3) var(--space-2);
 	border-bottom: 1px solid
-		color-mix(in srgb, var(--border-subtle) 72%, transparent);
+		color-mix(in srgb, var(--border-light) 72%, transparent);
 	background: color-mix(in srgb, var(--bg-secondary) 46%, transparent);
 }
 
@@ -439,8 +439,7 @@
 .databaseBoardCardPath {
 	margin-top: auto;
 	padding-top: 6px;
-	border-top: 1px solid
-		color-mix(in srgb, var(--border-subtle) 60%, transparent);
+	border-top: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
 	font-size: 0.68rem;
 	line-height: 1.35;
 	color: var(--text-tertiary);
@@ -479,7 +478,7 @@
 
 .databaseBoardEmptyTitle {
 	font-size: 0.94rem;
-	font-weight: 600;
+	font-weight: var(--font-semibold);
 	color: var(--text-primary);
 }
 
@@ -529,7 +528,7 @@
 }
 
 .databaseHeaderButton {
-	font-weight: 600;
+	font-weight: var(--font-semibold);
 	display: flex;
 	align-items: center;
 	justify-content: flex-start;
@@ -571,8 +570,7 @@
 .databaseBodyCell {
 	vertical-align: top;
 	text-align: left;
-	border-top: 1px solid
-		color-mix(in srgb, var(--border-subtle) 64%, transparent);
+	border-top: 1px solid color-mix(in srgb, var(--border-light) 64%, transparent);
 }
 
 .databaseBodyCell:first-child {
@@ -672,7 +670,7 @@
 }
 
 .databaseCellButton.is-title {
-	font-weight: 600;
+	font-weight: var(--font-semibold);
 }
 
 .databaseCellText,
@@ -728,11 +726,11 @@
 }
 
 .databaseNotice {
-	border-bottom: 1px solid var(--border-subtle);
+	border-bottom: 1px solid var(--border-light);
 }
 
 .databaseNoticeError {
-	color: var(--text-danger, #b54a3f);
+	color: var(--text-error);
 	background: color-mix(in srgb, #f6d8d1 20%, var(--bg-primary));
 }
 
@@ -797,7 +795,7 @@
 
 .databaseDialogSectionTitle {
 	font-size: 0.84rem;
-	font-weight: 600;
+	font-weight: var(--font-semibold);
 	color: var(--text-secondary);
 }
 
@@ -875,7 +873,7 @@
 }
 
 .databaseDialogRowTitle {
-	font-weight: 600;
+	font-weight: var(--font-semibold);
 	line-height: 1.2;
 }
 

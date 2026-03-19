@@ -42,7 +42,7 @@
 	text-overflow: ellipsis;
 	white-space: nowrap;
 	font-size: 0.88rem;
-	font-weight: 600;
+	font-weight: var(--font-semibold);
 	color: var(--text-primary);
 }
 
@@ -79,7 +79,7 @@
 	align-items: center;
 	gap: 6px;
 	font-size: 0.68rem;
-	font-weight: 700;
+	font-weight: var(--font-bold);
 	letter-spacing: 0.12em;
 	text-transform: uppercase;
 	color: var(--text-tertiary);
@@ -221,7 +221,7 @@
 }
 
 .databasePickerOptionLabel {
-	font-weight: 600;
+	font-weight: var(--font-semibold);
 }
 
 .databasePickerOptionMeta,
@@ -249,7 +249,7 @@
 	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
 	background: color-mix(in srgb, var(--bg-secondary) 72%, transparent);
 	font-size: 0.72rem;
-	font-weight: 600;
+	font-weight: var(--font-semibold);
 	color: var(--text-secondary);
 	flex: 0 0 auto;
 }

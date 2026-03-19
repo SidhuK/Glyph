@@ -102,7 +102,7 @@
 
 .aboutVersion {
 	font-size: 16px;
-	font-weight: 500;
+	font-weight: var(--font-medium);
 	color: color-mix(in srgb, var(--text-secondary) 86%, var(--text-primary));
 }
 

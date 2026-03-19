@@ -62,8 +62,8 @@ button.ribbonBtn {
 	padding: 0;
 	border-radius: var(--radius-md);
 	color: var(--text-secondary);
-	transition: background-color 160ms ease, color 160ms ease, box-shadow 160ms
-		ease;
+	transition: background-color var(--transition-base), color
+		var(--transition-base), box-shadow var(--transition-base);
 }
 
 button.ribbonBtn:hover {

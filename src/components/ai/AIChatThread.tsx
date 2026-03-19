@@ -22,10 +22,8 @@ interface AIChatThreadProps {
 	chatStatus: string;
 	phaseStatusText: string;
 	toolTimeline: ToolTimelineEvent[];
-	lastUserMessageIndex: number;
 	activePreset: AiPreset;
 	onSelectPreset: (presetId: string) => void;
-	onUseStarterPrompt: (prompt: string) => void;
 	onCopy: (text: string) => void;
 	onSave: (text: string) => void;
 	onRetry: (index: number) => void;
@@ -129,10 +127,8 @@ export function AIChatThread({
 	chatStatus,
 	phaseStatusText,
 	toolTimeline,
-	lastUserMessageIndex: _lastUserMessageIndex,
 	activePreset,
 	onSelectPreset,
-	onUseStarterPrompt,
 	onCopy,
 	onSave,
 	onRetry,

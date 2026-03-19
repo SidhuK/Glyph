@@ -185,7 +185,6 @@ interface MainContentProps {
 	onOpenCommandPalette: () => void;
 	onCreateNote: () => void;
 	onOpenDailyNote: () => void;
-	onOpenTasks: () => void;
 	openTasksRequest: number;
 	openBlankTabRequest: number;
 	showGettingStartedRequest: number;
@@ -265,7 +264,6 @@ export const MainContent = memo(function MainContent({
 	onOpenCommandPalette,
 	onCreateNote,
 	onOpenDailyNote,
-	onOpenTasks,
 	openTasksRequest,
 	openBlankTabRequest,
 	showGettingStartedRequest,
@@ -501,7 +499,6 @@ export const MainContent = memo(function MainContent({
 									onCreateNote={onCreateNote}
 									onOpenCommandPalette={onOpenCommandPalette}
 									onOpenDailyNote={onOpenDailyNote}
-									onOpenTasks={onOpenTasks}
 									onDismiss={() => {
 										setStarterOverrideVisible(false);
 										void updateOnboardingSettings({ starterDismissed: true });

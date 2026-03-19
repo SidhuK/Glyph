@@ -1,7 +1,4 @@
 .tasksPane {
-	--task-bucket-today: oklch(0.66 0.17 85);
-	--task-bucket-upcoming: oklch(0.62 0.14 240);
-	--task-bucket-inbox: oklch(0.63 0.12 165);
 	display: flex;
 	flex-direction: column;
 	min-height: 0;
@@ -13,8 +10,8 @@
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	gap: 16px;
-	padding: 16px 20px 12px;
+	gap: var(--space-4);
+	padding: var(--space-4) var(--space-5) var(--space-3);
 	border-bottom: 1px solid var(--border-light);
 	background: var(--bg-primary);
 }
@@ -36,14 +33,14 @@
 	display: flex;
 	align-items: center;
 	flex-wrap: wrap;
-	gap: 8px;
+	gap: var(--space-2);
 	min-width: 0;
 }
 
 .tasksPaneToolbarTitle {
 	margin: 0;
 	font-size: 1.05rem;
-	font-weight: 600;
+	font-weight: var(--font-semibold);
 	color: var(--text-primary);
 }
 
@@ -51,12 +48,12 @@
 	display: inline-flex;
 	align-items: center;
 	height: 20px;
-	padding: 0 8px;
-	border-radius: 7px;
+	padding: 0 var(--space-2);
+	border-radius: var(--radius-7);
 	border: 1px solid color-mix(in srgb, var(--border-light) 74%, transparent);
 	background: var(--bg-secondary);
 	font-size: 0.68rem;
-	font-weight: 500;
+	font-weight: var(--font-medium);
 	color: var(--text-secondary);
 }
 
@@ -64,7 +61,7 @@
 	flex-shrink: 0;
 	flex-wrap: wrap;
 	justify-content: flex-end;
-	gap: 8px;
+	gap: var(--space-2);
 }
 
 .tasksPaneScopeChip {
@@ -72,12 +69,12 @@
 	align-items: center;
 	gap: 6px;
 	height: 22px;
-	padding: 0 8px;
-	border-radius: 7px;
+	padding: 0 var(--space-2);
+	border-radius: var(--radius-7);
 	border: 1px solid color-mix(in srgb, var(--border-light) 78%, transparent);
 	background: var(--bg-secondary);
 	font-size: 0.72rem;
-	font-weight: 500;
+	font-weight: var(--font-medium);
 	color: var(--text-secondary);
 }
 
@@ -129,14 +126,14 @@
 
 .tasksPaneMenuButton {
 	height: 30px;
-	padding-inline: 8px;
-	border-radius: 8px;
+	padding-inline: var(--space-2);
+	border-radius: var(--radius-8);
 	border: 1px solid color-mix(in srgb, var(--border-light) 78%, transparent);
 	background: var(--bg-primary);
 	color: var(--text-secondary);
 	gap: 7px;
-	transition: border-color 160ms ease, background-color 160ms ease, color 160ms
-		ease;
+	transition: border-color var(--transition-base), background-color
+		var(--transition-base), color var(--transition-base);
 }
 
 .tasksPaneMenuButton:hover,
@@ -195,7 +192,7 @@
 
 .tasksPaneMenuContent {
 	min-width: 180px;
-	padding: 4px;
+	padding: var(--space-1);
 	border-color: color-mix(in srgb, var(--border-default) 62%, transparent);
 	background: color-mix(in srgb, var(--bg-primary) 96%, var(--bg-secondary));
 	box-shadow: 0 8px 20px
@@ -215,7 +212,7 @@
 	min-height: 28px;
 	border-radius: var(--radius-sm);
 	color: var(--text-secondary);
-	padding-left: 8px;
+	padding-left: var(--space-2);
 }
 
 .tasksPaneMenuItem > span:first-child {
@@ -233,25 +230,25 @@
 	overflow: auto;
 	display: flex;
 	flex-direction: column;
-	gap: 16px;
-	padding: 16px 20px 20px;
+	gap: var(--space-4);
+	padding: var(--space-4) var(--space-5) var(--space-5);
 }
 
 .tasksPaneFilters {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	gap: 12px;
+	gap: var(--space-3);
 	padding: 0;
 }
 
 .tasksBucketPills {
 	display: inline-flex;
 	align-items: center;
-	gap: 4px;
-	padding: 4px;
+	gap: var(--space-1);
+	padding: var(--space-1);
 	border: 1px solid color-mix(in srgb, var(--border-light) 78%, transparent);
-	border-radius: 10px;
+	border-radius: var(--radius-10);
 	background: color-mix(in srgb, var(--bg-secondary) 84%, var(--bg-primary));
 }
 
@@ -266,13 +263,13 @@
 	gap: 6px;
 	height: 30px;
 	padding: 0 10px;
-	border-radius: 8px;
+	border-radius: var(--radius-8);
 	font-size: 0.82rem;
 	line-height: 1;
 	font-weight: var(--font-medium);
 	cursor: pointer;
-	transition: color 160ms ease, border-color 160ms ease, background-color 160ms
-		ease;
+	transition: color var(--transition-base), border-color var(--transition-base),
+		background-color var(--transition-base);
 }
 
 .tasksBucketPillBg {
@@ -282,7 +279,7 @@
 .tasksPaneFiltersMeta {
 	display: inline-flex;
 	align-items: center;
-	gap: 8px;
+	gap: var(--space-2);
 	color: var(--text-secondary);
 }
 
@@ -336,7 +333,7 @@
 .tasksPaneError,
 .tasksPaneLoading,
 .tasksPaneEmptyState {
-	border-radius: 10px;
+	border-radius: var(--radius-10);
 	border: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
 	background: var(--bg-primary);
 }
@@ -372,8 +369,8 @@
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	gap: 12px;
-	padding: 24px;
+	gap: var(--space-3);
+	padding: var(--space-6);
 	color: var(--text-tertiary);
 	text-align: center;
 	background: radial-gradient(
@@ -411,7 +408,7 @@
 
 .tasksSections {
 	column-count: 2;
-	column-gap: 20px;
+	column-gap: var(--space-5);
 }
 
 .tasksSection,
@@ -419,11 +416,11 @@
 	display: flex;
 	flex-direction: column;
 	border: 1px solid var(--border-light);
-	border-radius: 10px;
+	border-radius: var(--radius-10);
 	background: var(--bg-primary);
 	overflow: hidden;
 	break-inside: avoid;
-	margin: 0 0 20px;
+	margin: 0 0 var(--space-5);
 	width: 100%;
 }
 
@@ -431,10 +428,10 @@
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	gap: 12px;
+	gap: var(--space-3);
 	padding: 14px 16px 12px;
 	border-bottom: 1px solid
-		color-mix(in srgb, var(--border-subtle) 72%, transparent);
+		color-mix(in srgb, var(--border-light) 72%, transparent);
 	background: var(--bg-primary);
 }
 
@@ -442,7 +439,7 @@
 	position: relative;
 	padding-left: 10px;
 	font-size: 0.9rem;
-	font-weight: 600;
+	font-weight: var(--font-semibold);
 	color: var(--text-primary);
 }
 
@@ -453,7 +450,7 @@
 	top: 50%;
 	width: 5px;
 	height: 5px;
-	border-radius: 999px;
+	border-radius: var(--radius-full);
 	background: color-mix(in srgb, var(--task-bucket-today) 68%, white);
 	transform: translateY(-50%);
 }
@@ -473,14 +470,14 @@
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	gap: 12px;
+	gap: var(--space-3);
 	background: transparent;
 	border: none;
 	padding: 14px 16px 12px;
 	text-align: left;
 	cursor: pointer;
 	border-bottom: 1px solid
-		color-mix(in srgb, var(--border-subtle) 72%, transparent);
+		color-mix(in srgb, var(--border-light) 72%, transparent);
 	transition: background-color var(--transition-fast);
 }
 
@@ -514,7 +511,7 @@
 
 .tasksNoteHeaderTitle {
 	font-size: 0.92rem;
-	font-weight: 600;
+	font-weight: var(--font-semibold);
 	color: var(--text-primary);
 }
 
@@ -531,7 +528,7 @@
 	display: inline-flex;
 	align-items: center;
 	font-size: 0.72rem;
-	font-weight: 500;
+	font-weight: var(--font-medium);
 	color: var(--text-secondary);
 	flex: 0 0 auto;
 }
@@ -549,14 +546,14 @@
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	gap: 12px;
+	gap: var(--space-3);
 	padding: 12px 16px 10px;
 	background: color-mix(in srgb, var(--bg-secondary) 28%, transparent);
 }
 
 .tasksSubsectionLabel {
 	font-size: 0.84rem;
-	font-weight: 600;
+	font-weight: var(--font-semibold);
 	color: var(--text-primary);
 }
 
@@ -574,7 +571,7 @@
 }
 
 .tasksListFlat {
-	gap: 8px;
+	gap: var(--space-2);
 }
 
 .tasksRow {
@@ -668,7 +665,7 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	transition: opacity 180ms ease;
+	transition: opacity var(--transition-base);
 }
 
 .tasksRowMeta {
@@ -685,7 +682,7 @@
 	align-items: center;
 	height: 20px;
 	padding: 0 7px;
-	border-radius: 7px;
+	border-radius: var(--radius-7);
 	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
 	background: var(--bg-primary);
 	font-size: 0.62rem;
@@ -707,7 +704,7 @@
 	height: 20px;
 	padding: 0 7px;
 	border: 0;
-	border-radius: 7px;
+	border-radius: var(--radius-7);
 	background: var(--bg-secondary);
 	color: var(--text-secondary);
 	font-size: 0.62rem;
@@ -728,7 +725,7 @@
 	height: 20px;
 	max-width: 160px;
 	padding-inline: 7px;
-	border-radius: 7px;
+	border-radius: var(--radius-7);
 	border-color: color-mix(in srgb, var(--border-light) 76%, transparent);
 	background: var(--bg-primary);
 	color: var(--text-secondary);
@@ -778,7 +775,7 @@
 	opacity: 0;
 	transform: translateX(-4px);
 	pointer-events: none;
-	transition: opacity 120ms ease, transform 160ms ease;
+	transition: opacity var(--transition-fast), transform var(--transition-base);
 }
 
 .tasksRow:hover .tasksQuickActions,
@@ -791,10 +788,10 @@
 .tasksQuickActionBtn {
 	height: 18px;
 	padding-inline: 6px;
-	border-radius: 7px;
+	border-radius: var(--radius-7);
 	color: var(--text-secondary);
-	transition: transform 160ms ease, background-color 160ms ease, color 160ms
-		ease;
+	transition: transform var(--transition-base), background-color
+		var(--transition-base), color var(--transition-base);
 }
 
 .tasksQuickActionBtn:hover,
@@ -807,14 +804,15 @@
 	height: 22px;
 	flex: 0 0 auto;
 	margin-left: auto;
-	padding-inline: 8px;
-	border-radius: 7px;
+	padding-inline: var(--space-2);
+	border-radius: var(--radius-7);
 	font-size: 0.68rem;
 	line-height: 1;
 	color: var(--text-secondary);
 	border: 1px solid transparent;
-	transition: transform 160ms ease, background-color 160ms ease, color 160ms
-		ease, border-color 160ms ease;
+	transition: transform var(--transition-base), background-color
+		var(--transition-base), color var(--transition-base), border-color
+		var(--transition-base);
 }
 
 .tasksScheduleBtn:hover,
@@ -844,7 +842,7 @@
 .tasksDatePopover label {
 	display: flex;
 	flex-direction: column;
-	gap: 4px;
+	gap: var(--space-1);
 	font-size: var(--text-xs);
 	color: var(--text-secondary);
 }

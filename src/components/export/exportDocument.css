@@ -48,7 +48,7 @@ html:has(body.noteExportStandalone) {
 
 .noteExportCard {
 	width: min(100%, 860px);
-	border: 1px solid color-mix(in srgb, var(--border-subtle) 82%, transparent);
+	border: 1px solid color-mix(in srgb, var(--border-light) 82%, transparent);
 	border-radius: 28px;
 	padding: 40px 48px 48px;
 	background: color-mix(in srgb, var(--surface-panel) 94%, white 6%);
@@ -109,7 +109,7 @@ html:has(body.noteExportStandalone) {
 	padding: 14px 18px;
 	background: color-mix(in srgb, var(--surface-panel) 90%, white 10%);
 	border-bottom: 1px solid
-		color-mix(in srgb, var(--border-subtle) 82%, transparent);
+		color-mix(in srgb, var(--border-light) 82%, transparent);
 	backdrop-filter: blur(18px);
 }
 

@@ -1350,7 +1350,8 @@
 	align-items: center;
 	justify-content: space-between;
 	gap: 6px;
-	box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 10%, transparent);
+	box-shadow: inset 0 1px 0
+		color-mix(in srgb, var(--color-white) 10%, transparent);
 	transition: border-color var(--transition-fast), background
 		var(--transition-fast), box-shadow var(--transition-fast), transform
 		var(--transition-fast);
@@ -1376,8 +1377,9 @@
 		color-mix(in srgb, var(--ai-mode-current) 16%, var(--bg-primary))
 	);
 	border-color: color-mix(in srgb, var(--ai-mode-current) 28%, transparent);
-	box-shadow: inset 0 1px 1px color-mix(in srgb, #000 10%, transparent), 0 0 0
-		1px color-mix(in srgb, var(--ai-mode-current) 10%, transparent);
+	box-shadow: inset 0 1px 1px
+		color-mix(in srgb, var(--text-primary) 10%, transparent), 0 0 0 1px
+		color-mix(in srgb, var(--ai-mode-current) 10%, transparent);
 }
 
 .aiModeDropdownTrigger:disabled {
@@ -1522,12 +1524,12 @@
 	align-items: stretch;
 }
 
-.aiComposerSend {
-	color: var(--interactive-accent) !important;
+button.aiComposerSend {
+	color: var(--interactive-accent);
 }
 
-.aiComposerSend:disabled {
-	opacity: 0.3 !important;
+button.aiComposerSend:disabled {
+	opacity: 0.3;
 }
 
 .aiComposerStop {

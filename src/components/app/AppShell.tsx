@@ -1204,7 +1204,6 @@ export function AppShell() {
 				onOpenCommandPalette={openCommandPalette}
 				onCreateNote={handleCreateNoteFromStarter}
 				onOpenDailyNote={requestOpenDailyNote}
-				onOpenTasks={openTasksTab}
 				openTasksRequest={openTasksRequest}
 				openBlankTabRequest={openBlankTabRequest}
 				showGettingStartedRequest={showGettingStartedRequest}
@@ -1226,7 +1225,6 @@ export function AppShell() {
 				<AIFloatingHost
 					isOpen={aiPanelOpen}
 					onToggle={() => setAiPanelOpen((v) => !v)}
-					activeFolderPath={activeDirPath}
 				/>
 			)}
 			<AnimatePresence>

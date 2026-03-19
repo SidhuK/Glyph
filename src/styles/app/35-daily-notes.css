@@ -1,4 +1,4 @@
-.sidebarDailyNotesBtn {
+.sidebarQuickActionBtn {
 	width: 100%;
 	display: flex;
 	align-items: center;
@@ -15,33 +15,33 @@
 	transition: background var(--transition-fast), color var(--transition-fast);
 }
 
-.sidebarDailyNotesBtn:hover {
+.sidebarQuickActionBtn:hover {
 	background: var(--bg-hover);
 	color: var(--text-primary);
 }
 
-.sidebarDailyNotesBtn:disabled {
+.sidebarQuickActionBtn:disabled {
 	opacity: 0.5;
 	pointer-events: none;
 }
 
-.sidebarDailyNotesBtn .dailyNotesLabel {
+.sidebarQuickActionBtn .sidebarQuickActionLabel {
 	font-weight: var(--font-medium);
 	font-size: 13px;
 }
 
-.sidebarDailyNotesBtn > svg {
+.sidebarQuickActionBtn > svg {
 	flex: 0 0 auto;
 }
 
-.sidebarDailyNotesBtn[data-kind="tasks"] > svg {
+.sidebarQuickActionBtn[data-kind="tasks"] > svg {
 	color: oklch(0.74 0.16 88);
 }
 
-.sidebarDailyNotesBtn[data-kind="daily-notes"] > svg {
+.sidebarQuickActionBtn[data-kind="daily-notes"] > svg {
 	color: oklch(0.66 0.13 242);
 }
 
-.sidebarDailyNotesBtn[data-kind="template"] > svg {
+.sidebarQuickActionBtn[data-kind="template"] > svg {
 	color: oklch(0.72 0.15 168);
 }

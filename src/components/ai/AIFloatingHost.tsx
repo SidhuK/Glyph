@@ -13,14 +13,9 @@ const LazyAIPanel = lazy(loadAIPanel);
 interface AIFloatingHostProps {
 	isOpen: boolean;
 	onToggle: () => void;
-	activeFolderPath: string | null;
 }
 
-export function AIFloatingHost({
-	isOpen,
-	onToggle,
-	activeFolderPath,
-}: AIFloatingHostProps) {
+export function AIFloatingHost({ isOpen, onToggle }: AIFloatingHostProps) {
 	const { aiPanelWidth } = useAISidebarContext();
 	const panelWidth = aiPanelWidth || 380;
 	const shouldReduceMotion = useReducedMotion();
@@ -66,7 +61,6 @@ export function AIFloatingHost({
 							<Suspense fallback={<div className="aiSidebarPanelInner" />}>
 								<LazyAIPanel
 									isOpen={isOpen}
-									activeFolderPath={activeFolderPath}
 									onClose={onToggle}
 									width={panelWidth}
 								/>

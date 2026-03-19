@@ -49,7 +49,7 @@
 	align-items: center;
 	gap: 2px;
 	padding: 4px;
-	border-radius: 999px;
+	border-radius: var(--radius-full);
 	background: color-mix(in srgb, var(--bg-secondary) 92%, var(--bg-primary));
 }
 
@@ -58,7 +58,7 @@
 	height: 30px;
 	padding: 0 14px;
 	border: 0;
-	border-radius: 999px;
+	border-radius: var(--radius-full);
 	font-size: var(--text-xs);
 	font-weight: var(--font-semibold);
 	letter-spacing: 0.01em;
@@ -87,7 +87,7 @@
 .commandPaletteTabPill {
 	position: absolute;
 	inset: 0;
-	border-radius: 999px;
+	border-radius: var(--radius-full);
 	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
 	background: color-mix(in srgb, var(--bg-primary) 84%, var(--bg-tertiary));
 	box-shadow: 0 1px 2px color-mix(in srgb, black 10%, transparent);
@@ -200,7 +200,7 @@
 
 .commandPaletteList::-webkit-scrollbar-thumb {
 	border: 2px solid transparent;
-	border-radius: 999px;
+	border-radius: var(--radius-full);
 	background: color-mix(in srgb, var(--text-tertiary) 28%, transparent);
 	background-clip: padding-box;
 }
