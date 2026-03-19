@@ -139,6 +139,12 @@ jobs:
           sed -i.bak -E "0,/^version = \"[^\"]+\"/s//version = \"${NEXT_VERSION}\"/" src-tauri/Cargo.toml
           rm -f src-tauri/Cargo.toml.bak
 
+      - name: Generate release notes
+        env:
+          LATEST_TAG: ${{ steps.version.outputs.latest_tag }}
+          NEXT_TAG: ${{ steps.version.outputs.next_tag }}
+        run: node scripts/generate-release-notes.mjs
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -153,41 +159,8 @@ jobs:
 
       - name: Build changelog
         id: changelog
-        env:
-          LATEST_TAG: ${{ steps.version.outputs.latest_tag }}
-          NEXT_TAG: ${{ steps.version.outputs.next_tag }}
         run: |
           set -euo pipefail
-
-          if [ -n "${LATEST_TAG}" ]; then
-            {
-              echo "## Changes in ${NEXT_TAG}"
-              echo
-              git log "${LATEST_TAG}..HEAD" --no-merges --pretty=format:'- %s (%h)'
-            } > RELEASE_NOTES.md
-          else
-            {
-              echo "## Changes in ${NEXT_TAG}"
-              echo
-              git log --no-merges --pretty=format:'- %s (%h)'
-            } > RELEASE_NOTES.md
-          fi
-
-          if [ ! -s RELEASE_NOTES.md ] || [ "$(wc -l < RELEASE_NOTES.md)" -lt 2 ]; then
-            {
-              echo "## Changes in ${NEXT_TAG}"
-              echo
-              echo "- Maintenance release"
-            } > RELEASE_NOTES.md
-          fi
-
-          {
-            echo
-            echo "## Licensing"
-            echo
-            sed -n '/^> Official Glyph binaries/,/^$/p' docs/release-notes-licensed-binaries.md \
-              | sed 's/^> //'
-          } >> RELEASE_NOTES.md
 
           delimiter="RELEASE_NOTES_$(date +%s)_$RANDOM"
           {

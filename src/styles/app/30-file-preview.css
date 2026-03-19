@@ -175,6 +175,40 @@
 	color: var(--text-primary);
 }
 
+.markdownEditorSaveState {
+	justify-content: center;
+	padding: 0 8px;
+	min-width: 31px;
+	color: var(--text-secondary);
+}
+
+.markdownEditorSaveState svg {
+	opacity: 0.95;
+	transition: color 180ms ease, opacity 180ms ease;
+}
+
+.markdownEditorSaveState[data-save-state="ready"] {
+	color: var(--text-secondary);
+}
+
+.markdownEditorSaveState[data-save-state="dirty"] {
+	color: color-mix(in srgb, var(--warning, #f59e0b) 76%, var(--text-primary));
+}
+
+.markdownEditorSaveState[data-save-state="saving"] {
+	color: color-mix(
+		in srgb,
+		var(--interactive-accent) 78%,
+		var(--text-primary)
+	);
+}
+
+.markdownEditorSaveState[data-save-state="saved"],
+.markdownEditorSaveState[data-save-state="saved-fresh"],
+.markdownEditorSaveState[data-save-state="reloaded"] {
+	color: color-mix(in srgb, var(--success, #16a34a) 74%, var(--text-primary));
+}
+
 .markdownEditorStatsDock.is-collapsed .markdownEditorStatsPill {
 	min-height: 28px;
 	padding: 1px;
@@ -184,6 +218,11 @@
 	padding: 0 7px;
 	gap: 4px;
 	font-size: 10px;
+}
+
+.markdownEditorStatsDock.is-collapsed .markdownEditorSaveState {
+	padding: 0 7px;
+	min-width: 28px;
 }
 
 .markdownEditorStatsDock.is-collapsed

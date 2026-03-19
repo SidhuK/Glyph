@@ -1,0 +1,103 @@
+.whatsNewDialog {
+	width: min(620px, calc(100vw - 48px));
+	max-height: min(82vh, 760px);
+}
+
+.whatsNewHeader {
+	padding: 16px 16px 14px;
+	border-bottom: 1px solid var(--border-light);
+}
+
+.whatsNewHeadingRow {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 16px;
+}
+
+.whatsNewTitleRow {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+
+.whatsNewTitle {
+	margin: 0;
+	font-size: 20px;
+	line-height: 1.1;
+	font-weight: var(--font-semibold);
+	letter-spacing: -0.02em;
+	color: var(--text-primary);
+}
+
+.whatsNewMeta {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	color: var(--text-tertiary);
+	font-size: var(--text-xs);
+	white-space: nowrap;
+}
+
+.whatsNewSummary {
+	margin: 10px 0 0;
+	color: var(--text-secondary);
+	font-size: var(--text-sm);
+	line-height: 1.45;
+}
+
+.whatsNewBody {
+	flex: 1;
+	min-height: 0;
+}
+
+.whatsNewList {
+	padding-top: 8px;
+	padding-bottom: 10px;
+}
+
+.whatsNewSection + .whatsNewSection {
+	margin-top: 4px;
+}
+
+.whatsNewItem {
+	cursor: default;
+	border-radius: var(--radius-lg);
+}
+
+.whatsNewItem:hover,
+.whatsNewItem:focus-visible {
+	background: color-mix(in srgb, var(--interactive-accent) 10%, var(--bg-hover));
+}
+
+.whatsNewItem .commandPaletteResultTitle {
+	white-space: normal;
+	line-height: 1.45;
+}
+
+.whatsNewFooter {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 14px 16px 16px;
+	border-top: 1px solid var(--border-light);
+	background: color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary));
+}
+
+@media (max-width: 640px) {
+	.whatsNewDialog {
+		width: min(100vw - 24px, 620px);
+	}
+
+	.whatsNewHeadingRow,
+	.whatsNewFooter {
+		flex-direction: column;
+		align-items: stretch;
+	}
+
+	.whatsNewMeta {
+		white-space: normal;
+	}
+}

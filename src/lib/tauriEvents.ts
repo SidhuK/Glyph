@@ -85,6 +85,9 @@ type TauriEventMap = {
 		tasks?: {
 			source?: { mode?: "space" | "folders"; folders?: string[] };
 		};
+		changelog?: {
+			lastAcknowledgedVersion?: string | null;
+		};
 		onboarding?: {
 			launcherSeen?: boolean;
 			starterDismissed?: boolean;

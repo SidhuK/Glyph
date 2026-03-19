@@ -202,9 +202,16 @@ export function MarkdownEditorPane({
 
 	useEffect(() => {
 		const cached = initialDoc?.text ?? markdownDocCache.get(relPath) ?? "";
+		textRef.current = cached;
+		savedTextRef.current = cached;
+		mtimeRef.current = initialDoc?.mtime_ms ?? null;
+		autosaveInFlightRef.current = false;
+		autosaveQueuedRef.current = false;
 		setText(cached);
 		setSavedText(cached);
 		setLastSavedMtimeMs(initialDoc?.mtime_ms ?? null);
+		setSaving(false);
+		setAutosaveBusy(false);
 		setSyncPulse(null);
 		hasUserEditsRef.current = false;
 		setError(initialError);
@@ -229,8 +236,15 @@ export function MarkdownEditorPane({
 			setError("");
 			try {
 				const doc = await invoke("space_read_text", { path: relPath });
+				const shouldReplaceText =
+					textRef.current === savedTextRef.current;
 				markdownDocCache.set(relPath, doc.text);
-				setText((prev) => (prev === savedTextRef.current ? doc.text : prev));
+				if (shouldReplaceText) {
+					textRef.current = doc.text;
+					setText(doc.text);
+				}
+				savedTextRef.current = doc.text;
+				mtimeRef.current = doc.mtime_ms;
 				setSavedText(doc.text);
 				setLastSavedMtimeMs(doc.mtime_ms);
 				hasUserEditsRef.current = false;
@@ -254,6 +268,9 @@ export function MarkdownEditorPane({
 			)
 				return;
 			markdownDocCache.set(relPath, doc.text);
+			textRef.current = doc.text;
+			savedTextRef.current = doc.text;
+			mtimeRef.current = doc.mtime_ms;
 			setText(doc.text);
 			setSavedText(doc.text);
 			setLastSavedMtimeMs(doc.mtime_ms);
@@ -273,6 +290,8 @@ export function MarkdownEditorPane({
 			const applySaveState = (saved: string, mtimeMs: number) => {
 				if (path !== relPath) return;
 				markdownDocCache.set(path, saved);
+				savedTextRef.current = saved;
+				mtimeRef.current = mtimeMs;
 				setSavedText(saved);
 				setLastSavedMtimeMs(mtimeMs);
 				hasUserEditsRef.current = false;
@@ -305,6 +324,8 @@ export function MarkdownEditorPane({
 						applySaveState(nextText, latest.mtime_ms);
 						return true;
 					}
+					savedTextRef.current = latest.text;
+					mtimeRef.current = latest.mtime_ms;
 					const retry = await invoke("space_write_text", {
 						path,
 						text: nextText,
@@ -324,11 +345,11 @@ export function MarkdownEditorPane({
 	const onSave = useCallback(async () => {
 		setSaving(true);
 		try {
-			await persistDoc(relPath, text);
+			await persistDoc(relPath, textRef.current);
 		} finally {
 			setSaving(false);
 		}
-	}, [persistDoc, relPath, text]);
+	}, [persistDoc, relPath]);
 
 	const runAutosave = useCallback(() => {
 		if (autosaveInFlightRef.current) {
@@ -674,6 +695,15 @@ export function MarkdownEditorPane({
 							<HugeiconsIcon icon={TimeQuarter02Icon} size={13} aria-hidden />
 							<span>{stats.readingTime}</span>
 						</div>
+						<div
+							className="markdownEditorStatsItem markdownEditorSaveState"
+							data-metric="save-state"
+							data-save-state={saveSignal.state}
+							title={saveSignal.description}
+							aria-label={`Save status: ${saveSignal.label}`}
+						>
+							<Save size={13} aria-hidden />
+						</div>
 					</div>
 				</m.div>
 			) : null}
@@ -694,6 +724,7 @@ export function MarkdownEditorPane({
 							onModeChange={setMode}
 							onChange={(nextText) => {
 								hasUserEditsRef.current = true;
+								textRef.current = nextText;
 								setText(nextText);
 							}}
 							onRegisterCalloutInserter={registerCalloutInserter}
