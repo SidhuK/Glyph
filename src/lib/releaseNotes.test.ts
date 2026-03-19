@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
 	buildReleaseManifest,
+	collectFallbackReleaseEntries,
+	collectReleaseEntries,
 	collectReleaseNoteEntries,
 	extractReleaseNoteEntries,
 	formatReleaseNotesMarkdown,
@@ -96,6 +98,81 @@ Release-note: Fixed the template reset race.`),
 				},
 			]),
 		).toEqual([]);
+	});
+
+	it("falls back to commit subjects when no release-note trailers exist", () => {
+		expect(
+			collectReleaseEntries([
+				{
+					hash: "abc123",
+					body: "Add HTML export for markdown notes",
+				},
+				{
+					hash: "def456",
+					body: "Fix startup race in note switching",
+				},
+			]),
+		).toEqual([
+			{
+				hash: "abc123",
+				category: "Added",
+				text: "Add HTML export for markdown notes",
+			},
+			{
+				hash: "def456",
+				category: "Fixed",
+				text: "Fix startup race in note switching",
+			},
+		]);
+	});
+
+	it("prefers curated release-note trailers over commit-subject fallback", () => {
+		expect(
+			collectReleaseEntries([
+				{
+					hash: "abc123",
+					body: `Add HTML export for markdown notes
+
+Release-category: Added
+Release-note: Added HTML export for markdown notes.`,
+				},
+				{
+					hash: "def456",
+					body: "Fix startup race in note switching",
+				},
+			]),
+		).toEqual([
+			{
+				hash: "abc123",
+				category: "Added",
+				text: "Added HTML export for markdown notes.",
+			},
+		]);
+	});
+
+	it("uses non-release commit subjects first and deduplicates fallback entries", () => {
+		expect(
+			collectFallbackReleaseEntries([
+				{
+					hash: "abc123",
+					body: "[Release] Improved release notes formatting",
+				},
+				{
+					hash: "def456",
+					body: "Add HTML export for markdown notes",
+				},
+				{
+					hash: "ghi789",
+					body: "Add HTML export for markdown notes",
+				},
+			]),
+		).toEqual([
+			{
+				hash: "def456",
+				category: "Added",
+				text: "Add HTML export for markdown notes",
+			},
+		]);
 	});
 
 	it("emits sections in stable category order with maintenance fallback", () => {

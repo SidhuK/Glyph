@@ -30,6 +30,14 @@ export function collectReleaseNoteEntries(
 	commits: ReleaseNoteCommit[],
 ): ReleaseNoteEntry[];
 
+export function collectFallbackReleaseEntries(
+	commits: ReleaseNoteCommit[],
+): ReleaseNoteEntry[];
+
+export function collectReleaseEntries(
+	commits: ReleaseNoteCommit[],
+): ReleaseNoteEntry[];
+
 export function buildReleaseManifest(args: {
 	version: string;
 	publishedAt?: string | null;

@@ -65,6 +65,52 @@ function normalizeCategory(value) {
 	return null;
 }
 
+function extractCommitSubject(commitBody) {
+	return String(commitBody ?? "")
+		.split(/\r?\n/)
+		.map((line) => line.trim())
+		.find(Boolean);
+}
+
+function normalizeCommitSubject(subject) {
+	return String(subject ?? "")
+		.trim()
+		.replace(/^(?:\[[^\]]+\]\s*)+/, "")
+		.trim();
+}
+
+function inferCategoryFromSubject(subject) {
+	const normalizedSubject = normalizeCommitSubject(subject).toLowerCase();
+
+	if (
+		normalizedSubject.startsWith("add ") ||
+		normalizedSubject.startsWith("adds ") ||
+		normalizedSubject.startsWith("added ")
+	) {
+		return "Added";
+	}
+
+	if (
+		normalizedSubject.startsWith("fix ") ||
+		normalizedSubject.startsWith("fixes ") ||
+		normalizedSubject.startsWith("fixed ")
+	) {
+		return "Fixed";
+	}
+
+	if (
+		normalizedSubject.startsWith("remove ") ||
+		normalizedSubject.startsWith("removes ") ||
+		normalizedSubject.startsWith("removed ") ||
+		normalizedSubject.startsWith("deprecate ") ||
+		normalizedSubject.startsWith("deprecated ")
+	) {
+		return "Removed";
+	}
+
+	return "Improved";
+}
+
 export function extractReleaseNoteEntries(commitBody) {
 	const items = [];
 	let category = DEFAULT_CATEGORY;
@@ -137,6 +183,45 @@ export function collectReleaseNoteEntries(commits) {
 	}
 
 	return entries;
+}
+
+export function collectFallbackReleaseEntries(commits) {
+	const entries = [];
+	const seenTexts = new Set();
+	const nonReleaseCommits = commits.filter((commit) => {
+		const subject = normalizeCommitSubject(extractCommitSubject(commit.body));
+		return (
+			subject &&
+			!/^\[release\]/i.test(
+				String(extractCommitSubject(commit.body) ?? "").trim(),
+			)
+		);
+	});
+	const sourceCommits =
+		nonReleaseCommits.length > 0 ? nonReleaseCommits : commits;
+
+	for (const commit of sourceCommits) {
+		const subject = normalizeCommitSubject(extractCommitSubject(commit.body));
+		if (!subject || seenTexts.has(subject)) {
+			continue;
+		}
+
+		seenTexts.add(subject);
+		entries.push({
+			hash: commit.hash,
+			category: inferCategoryFromSubject(subject),
+			text: subject,
+		});
+	}
+
+	return entries;
+}
+
+export function collectReleaseEntries(commits) {
+	const trailerEntries = collectReleaseNoteEntries(commits);
+	return trailerEntries.length > 0
+		? trailerEntries
+		: collectFallbackReleaseEntries(commits);
 }
 
 export function buildReleaseManifest({ version, publishedAt = null, entries }) {
@@ -314,7 +399,7 @@ export function generateReleaseNotesArtifacts({
 
 	const range = latestTag ? `${latestTag}..HEAD` : "HEAD";
 	const commits = parseGitLogOutput(runGitLog(range, repoRoot));
-	const entries = collectReleaseNoteEntries(commits);
+	const entries = collectReleaseEntries(commits);
 	const manifest = buildReleaseManifest({
 		version,
 		publishedAt,
