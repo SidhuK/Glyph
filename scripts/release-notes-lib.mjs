@@ -56,7 +56,7 @@ function normalizeCategory(value) {
 	) {
 		return "Removed";
 	}
-	return DEFAULT_CATEGORY;
+	return null;
 }
 
 export function extractReleaseNoteEntries(commitBody) {
@@ -71,14 +71,17 @@ export function extractReleaseNoteEntries(commitBody) {
 
 		const categoryMatch = /^Release-category:\s*(.+)$/i.exec(trimmed);
 		if (categoryMatch) {
-			category = normalizeCategory(categoryMatch[1]);
-			if (pendingNoteIndexes.length > 0) {
-				for (const index of pendingNoteIndexes) {
-					items[index].category = category;
+			const normalizedCategory = normalizeCategory(categoryMatch[1]);
+			if (normalizedCategory) {
+				category = normalizedCategory;
+				if (pendingNoteIndexes.length > 0) {
+					for (const index of pendingNoteIndexes) {
+						items[index].category = category;
+					}
+					pendingNoteIndexes = [];
 				}
-				pendingNoteIndexes = [];
+				categoryPinned = true;
 			}
-			categoryPinned = true;
 			continue;
 		}
 
@@ -187,7 +190,12 @@ function extractLicensingMarkdown(docText) {
 	const startIndex = lines.findIndex((line) =>
 		/^\s*> Official Glyph binaries/.test(line),
 	);
-	if (startIndex < 0) return "";
+	if (startIndex < 0) {
+		console.warn(
+			"Release notes licensing block not found; continuing without licensing copy.",
+		);
+		return "";
+	}
 
 	const collected = [];
 	for (let index = startIndex; index < lines.length; index += 1) {
@@ -200,7 +208,13 @@ function extractLicensingMarkdown(docText) {
 		collected.push(line.replace(/^\s*>\s?/, ""));
 	}
 
-	return collected.join("\n").trim();
+	const markdown = collected.join("\n").trim();
+	if (!markdown) {
+		console.warn(
+			"Release notes licensing block was empty; continuing without licensing copy.",
+		);
+	}
+	return markdown;
 }
 
 function runGitLog(range, repoRoot) {

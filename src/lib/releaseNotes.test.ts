@@ -51,6 +51,21 @@ Release-category: Polished`),
 		]);
 	});
 
+	it("ignores unknown categories instead of overwriting the current category", () => {
+		expect(
+			extractReleaseNoteEntries(`Mixed release copy
+
+Release-category: Fixed
+Release-category: Addded
+Release-note: Fixed the startup crash.`),
+		).toEqual([
+			{
+				category: "Fixed",
+				text: "Fixed the startup crash.",
+			},
+		]);
+	});
+
 	it("applies categories to notes in sequence instead of collapsing to the last one", () => {
 		expect(
 			extractReleaseNoteEntries(`Mixed release copy

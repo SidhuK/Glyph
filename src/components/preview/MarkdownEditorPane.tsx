@@ -204,6 +204,7 @@ export function MarkdownEditorPane({
 	}, [lastSavedMtimeMs]);
 
 	useEffect(() => {
+		mountedRef.current = true;
 		return () => {
 			mountedRef.current = false;
 			documentSessionRef.current += 1;
@@ -246,12 +247,25 @@ export function MarkdownEditorPane({
 	useEffect(() => {
 		if (previousSpacePathRef.current === spacePath) return;
 		previousSpacePathRef.current = spacePath;
+		documentSessionRef.current += 1;
 		saveRequestTokenRef.current += 1;
 		if (externalSyncTimerRef.current !== null) {
 			window.clearTimeout(externalSyncTimerRef.current);
 			externalSyncTimerRef.current = null;
 		}
 		pendingExternalReloadRef.current = false;
+		textRef.current = "";
+		savedTextRef.current = "";
+		mtimeRef.current = null;
+		autosaveInFlightRef.current = false;
+		autosaveQueuedRef.current = false;
+		hasUserEditsRef.current = false;
+		setText("");
+		setSavedText("");
+		setLastSavedMtimeMs(null);
+		setSaving(false);
+		setAutosaveBusy(false);
+		setSyncPulse(null);
 		if (spacePath === null) {
 			markdownDocCache.clear();
 			return;
