@@ -354,13 +354,7 @@ export function writeReleaseManifestTs(manifest, outputPath) {
 	const importPath = relativeImportPath.startsWith(".")
 		? relativeImportPath
 		: `./${relativeImportPath}`;
-	const serialized = serializeTsLiteral(manifest);
-	const source = [
-		`import type { ReleaseNotesManifest } from "${importPath}";`,
-		"",
-		`export const currentReleaseNotes = ${serialized} satisfies ReleaseNotesManifest;`,
-		"",
-	].join("\n");
+	const source = renderReleaseManifestTs(manifest, importPath);
 	const formattedSource = existsSync(BIOME_BINARY_PATH)
 		? execFileSync(
 				BIOME_BINARY_PATH,
@@ -373,4 +367,14 @@ export function writeReleaseManifestTs(manifest, outputPath) {
 			)
 		: source;
 	writeFileSync(outputPath, formattedSource, "utf8");
+}
+
+export function renderReleaseManifestTs(manifest, importPath) {
+	const serialized = serializeTsLiteral(manifest);
+	return [
+		`import type { ReleaseNotesManifest } from "${importPath}";`,
+		"",
+		`export const currentReleaseNotes = ${serialized} satisfies ReleaseNotesManifest;`,
+		"",
+	].join("\n");
 }

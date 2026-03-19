@@ -55,3 +55,8 @@ export function writeReleaseManifestTs(
 	manifest: ReleaseNotesManifestData,
 	outputPath: string,
 ): void;
+
+export function renderReleaseManifestTs(
+	manifest: ReleaseNotesManifestData,
+	importPath: string,
+): string;
