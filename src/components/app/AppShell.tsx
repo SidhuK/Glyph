@@ -44,6 +44,7 @@ import { useDailyNote } from "../../hooks/useDailyNote";
 import { useFileTree } from "../../hooks/useFileTree";
 import { useMenuListeners } from "../../hooks/useMenuListeners";
 import { useResizablePanel } from "../../hooks/useResizablePanel";
+import { useWhatsNew } from "../../hooks/useWhatsNew";
 import { dispatchPathRemoved } from "../../lib/appEvents";
 import { promptNoteExportPath } from "../../lib/export";
 import { getLicenseStatus } from "../../lib/license";
@@ -74,6 +75,7 @@ import {
 	TemplatePickerDialog,
 	type TemplatePickerItem,
 } from "./TemplatePickerDialog";
+import { WhatsNewDialog } from "./WhatsNewDialog";
 import { WindowChromeIconButton } from "./WindowChromeIconButton";
 import { WindowChromeUpdateButton } from "./WindowChromeUpdateButton";
 import { normalizeRelPath, parentDir } from "./appShellHelpers";
@@ -171,6 +173,7 @@ export function AppShell() {
 		>(),
 	);
 	const autoUpdater = useAutoUpdater();
+	const whatsNew = useWhatsNew(space.info?.version ?? null);
 
 	const sidebarResize = useResizablePanel({
 		min: SIDEBAR_MIN_WIDTH,
@@ -632,6 +635,9 @@ export function AppShell() {
 	const openGettingStarted = useCallback(() => {
 		setShowGettingStartedRequest((prev) => prev + 1);
 	}, []);
+	const openWhatsNew = useCallback(() => {
+		whatsNew.openDialog();
+	}, [whatsNew]);
 
 	const handleCreateNoteFromStarter = useCallback(async () => {
 		if (!spacePath) return;
@@ -1047,6 +1053,14 @@ export function AppShell() {
 				action: openGettingStarted,
 			},
 			{
+				id: "show-whats-new",
+				label: "What's New",
+				icon: <HugeiconsIcon icon={InformationCircleIcon} size={16} />,
+				category: "Help",
+				enabled: whatsNew.available,
+				action: openWhatsNew,
+			},
+			{
 				id: "move-active-file",
 				label: "Move to…",
 				icon: <HugeiconsIcon icon={MoveIcon} size={16} />,
@@ -1085,9 +1099,11 @@ export function AppShell() {
 		openSearchPalette,
 		openTasksTab,
 		openGettingStarted,
+		openWhatsNew,
 		moveTargetDirs,
 		movePickerSourcePath,
 		setError,
+		whatsNew.available,
 	]);
 
 	useCommandShortcuts({
@@ -1244,6 +1260,12 @@ export function AppShell() {
 				onClose={() => setTemplatePickerOpen(false)}
 				onPick={(template) => void handlePickTemplate(template)}
 				onOpenSettings={openTemplatesSettings}
+			/>
+			<WhatsNewDialog
+				open={whatsNew.open}
+				releaseNotes={whatsNew.releaseNotes}
+				publicChangelogUrl={whatsNew.publicChangelogUrl}
+				onClose={whatsNew.closeDialog}
 			/>
 			<NoteExportHtmlHost
 				key={htmlExportRequest?.id ?? "idle"}

@@ -65,12 +65,20 @@ export interface OnboardingSettings {
 	openedDailyNote: boolean;
 }
 
+export interface ChangelogSettings {
+	lastAcknowledgedVersion: string | null;
+}
+
 export const DEFAULT_ONBOARDING_SETTINGS: OnboardingSettings = {
 	launcherSeen: false,
 	starterDismissed: false,
 	createdFirstNote: false,
 	usedCommandPalette: false,
 	openedDailyNote: false,
+};
+
+export const DEFAULT_CHANGELOG_SETTINGS: ChangelogSettings = {
+	lastAcknowledgedVersion: null,
 };
 
 export interface TaskSourceSetting {
@@ -160,6 +168,9 @@ async function emitSettingsUpdated(payload: {
 	tasks?: {
 		source?: TaskSourceSetting;
 	};
+	changelog?: {
+		lastAcknowledgedVersion?: string | null;
+	};
 	onboarding?: Partial<OnboardingSettings>;
 }): Promise<void> {
 	try {
@@ -179,6 +190,7 @@ interface AppSettings {
 	currentSpacePath: string | null;
 	recentSpaces: string[];
 	recentFiles: RecentFile[];
+	changelog: ChangelogSettings;
 	onboarding: OnboardingSettings;
 	ui: {
 		aiEnabled: boolean;
@@ -228,6 +240,7 @@ const KEYS = {
 	templatesFolder: "templates.folder",
 	templatesDailyNoteTemplate: "templates.dailyNoteTemplate",
 	taskSource: "tasks.source",
+	changelogLastAcknowledgedVersion: "changelog.lastAcknowledgedVersion",
 	onboardingLauncherSeen: "onboarding.launcherSeen",
 	onboardingStarterDismissed: "onboarding.starterDismissed",
 	onboardingCreatedFirstNote: "onboarding.createdFirstNote",
@@ -334,6 +347,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		templatesFolderRaw,
 		templatesDailyNoteTemplateRaw,
 		taskSourceRaw,
+		rawChangelogLastAcknowledgedVersion,
 	] = await Promise.all([
 		store.get<string | null>(KEYS.currentSpacePath),
 		store.get<string[] | null>(KEYS.recentSpaces),
@@ -360,6 +374,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<string | null>(KEYS.templatesFolder),
 		store.get<string | null>(KEYS.templatesDailyNoteTemplate),
 		store.get<unknown>(KEYS.taskSource),
+		store.get<string | null>(KEYS.changelogLastAcknowledgedVersion),
 	]);
 	const currentSpacePath = currentSpacePathRaw ?? null;
 	const recentSpaces = recentSpacesRaw ?? [];
@@ -404,10 +419,18 @@ export async function loadSettings(): Promise<AppSettings> {
 	const taskSource =
 		normalizeLegacyTaskSourceSetting(taskSourceRaw) ??
 		normalizeTaskSourceSetting(taskSourceRaw);
+	const changelog: ChangelogSettings = {
+		lastAcknowledgedVersion:
+			typeof rawChangelogLastAcknowledgedVersion === "string" &&
+			rawChangelogLastAcknowledgedVersion.trim()
+				? rawChangelogLastAcknowledgedVersion.trim()
+				: null,
+	};
 	return {
 		currentSpacePath,
 		recentSpaces: Array.isArray(recentSpaces) ? recentSpaces : [],
 		recentFiles,
+		changelog,
 		onboarding,
 		ui: {
 			aiEnabled,
@@ -476,6 +499,19 @@ export async function updateOnboardingSettings(
 	await store.save();
 	void emitSettingsUpdated({
 		onboarding: Object.fromEntries(entries) as Partial<OnboardingSettings>,
+	});
+}
+
+export async function setLastAcknowledgedChangelogVersion(
+	version: string | null,
+): Promise<void> {
+	const store = await getStore();
+	const next =
+		typeof version === "string" && version.trim() ? version.trim() : null;
+	await store.set(KEYS.changelogLastAcknowledgedVersion, next);
+	await store.save();
+	void emitSettingsUpdated({
+		changelog: { lastAcknowledgedVersion: next },
 	});
 }
 

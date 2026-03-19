@@ -82,6 +82,9 @@ export function MarkdownEditorPane({
 	const savedTextRef = useRef(savedText);
 	const textRef = useRef(text);
 	const mtimeRef = useRef<number | null>(lastSavedMtimeMs);
+	const documentSessionRef = useRef(0);
+	const mountedRef = useRef(true);
+	const saveRequestTokenRef = useRef(0);
 	const autosaveInFlightRef = useRef(false);
 	const autosaveQueuedRef = useRef(false);
 	const hasUserEditsRef = useRef(false);
@@ -201,10 +204,37 @@ export function MarkdownEditorPane({
 	}, [lastSavedMtimeMs]);
 
 	useEffect(() => {
+		mountedRef.current = true;
+		return () => {
+			mountedRef.current = false;
+			documentSessionRef.current += 1;
+		};
+	}, []);
+
+	const isCurrentSession = useCallback((sessionId: number) => {
+		return mountedRef.current && documentSessionRef.current === sessionId;
+	}, []);
+
+	useEffect(() => {
+		const sessionId = documentSessionRef.current + 1;
+		documentSessionRef.current = sessionId;
+		saveRequestTokenRef.current += 1;
 		const cached = initialDoc?.text ?? markdownDocCache.get(relPath) ?? "";
+		textRef.current = cached;
+		savedTextRef.current = cached;
+		mtimeRef.current = initialDoc?.mtime_ms ?? null;
+		autosaveInFlightRef.current = false;
+		autosaveQueuedRef.current = false;
+		if (externalSyncTimerRef.current !== null) {
+			window.clearTimeout(externalSyncTimerRef.current);
+			externalSyncTimerRef.current = null;
+		}
+		pendingExternalReloadRef.current = false;
 		setText(cached);
 		setSavedText(cached);
 		setLastSavedMtimeMs(initialDoc?.mtime_ms ?? null);
+		setSaving(false);
+		setAutosaveBusy(false);
 		setSyncPulse(null);
 		hasUserEditsRef.current = false;
 		setError(initialError);
@@ -217,6 +247,25 @@ export function MarkdownEditorPane({
 	useEffect(() => {
 		if (previousSpacePathRef.current === spacePath) return;
 		previousSpacePathRef.current = spacePath;
+		documentSessionRef.current += 1;
+		saveRequestTokenRef.current += 1;
+		if (externalSyncTimerRef.current !== null) {
+			window.clearTimeout(externalSyncTimerRef.current);
+			externalSyncTimerRef.current = null;
+		}
+		pendingExternalReloadRef.current = false;
+		textRef.current = "";
+		savedTextRef.current = "";
+		mtimeRef.current = null;
+		autosaveInFlightRef.current = false;
+		autosaveQueuedRef.current = false;
+		hasUserEditsRef.current = false;
+		setText("");
+		setSavedText("");
+		setLastSavedMtimeMs(null);
+		setSaving(false);
+		setAutosaveBusy(false);
+		setSyncPulse(null);
 		if (spacePath === null) {
 			markdownDocCache.clear();
 			return;
@@ -226,11 +275,19 @@ export function MarkdownEditorPane({
 
 	const loadDoc = useCallback(
 		async (showRefreshFeedback = false) => {
+			const sessionId = documentSessionRef.current;
 			setError("");
 			try {
 				const doc = await invoke("space_read_text", { path: relPath });
+				if (!isCurrentSession(sessionId)) return;
+				const shouldReplaceText = textRef.current === savedTextRef.current;
 				markdownDocCache.set(relPath, doc.text);
-				setText((prev) => (prev === savedTextRef.current ? doc.text : prev));
+				if (shouldReplaceText) {
+					textRef.current = doc.text;
+					setText(doc.text);
+				}
+				savedTextRef.current = doc.text;
+				mtimeRef.current = doc.mtime_ms;
 				setSavedText(doc.text);
 				setLastSavedMtimeMs(doc.mtime_ms);
 				hasUserEditsRef.current = false;
@@ -238,30 +295,37 @@ export function MarkdownEditorPane({
 					flashSyncPulse("reloaded");
 				}
 			} catch (e) {
+				if (!isCurrentSession(sessionId)) return;
 				setError(extractErrorMessage(e));
 			}
 		},
-		[flashSyncPulse, relPath],
+		[flashSyncPulse, isCurrentSession, relPath],
 	);
 
 	const loadDocFromExternalChange = useCallback(async () => {
+		const sessionId = documentSessionRef.current;
 		setError("");
 		try {
 			const doc = await invoke("space_read_text", { path: relPath });
+			if (!isCurrentSession(sessionId)) return;
 			if (
 				doc.mtime_ms === mtimeRef.current &&
 				doc.text === savedTextRef.current
 			)
 				return;
 			markdownDocCache.set(relPath, doc.text);
+			textRef.current = doc.text;
+			savedTextRef.current = doc.text;
+			mtimeRef.current = doc.mtime_ms;
 			setText(doc.text);
 			setSavedText(doc.text);
 			setLastSavedMtimeMs(doc.mtime_ms);
 			hasUserEditsRef.current = false;
 		} catch (e) {
+			if (!isCurrentSession(sessionId)) return;
 			setError(extractErrorMessage(e));
 		}
-	}, [relPath]);
+	}, [isCurrentSession, relPath]);
 
 	useEffect(() => {
 		if (initialDoc) return;
@@ -269,10 +333,16 @@ export function MarkdownEditorPane({
 	}, [initialDoc, loadDoc]);
 
 	const persistDoc = useCallback(
-		async (path: string, nextText: string): Promise<boolean> => {
+		async (
+			path: string,
+			nextText: string,
+			sessionId = documentSessionRef.current,
+		): Promise<boolean> => {
 			const applySaveState = (saved: string, mtimeMs: number) => {
-				if (path !== relPath) return;
+				if (path !== relPath || !isCurrentSession(sessionId)) return;
 				markdownDocCache.set(path, saved);
+				savedTextRef.current = saved;
+				mtimeRef.current = mtimeMs;
 				setSavedText(saved);
 				setLastSavedMtimeMs(mtimeMs);
 				hasUserEditsRef.current = false;
@@ -289,6 +359,7 @@ export function MarkdownEditorPane({
 				applySaveState(nextText, result.mtime_ms);
 				return true;
 			} catch (e) {
+				if (!isCurrentSession(sessionId)) return false;
 				const message = extractErrorMessage(e);
 				const isConflict = message.includes(
 					"conflict: on-disk file changed since it was opened",
@@ -301,10 +372,13 @@ export function MarkdownEditorPane({
 				// Conflict recovery: refresh latest mtime/content and retry save once.
 				try {
 					const latest = await invoke("space_read_text", { path });
+					if (!isCurrentSession(sessionId)) return false;
 					if (latest.text === nextText) {
 						applySaveState(nextText, latest.mtime_ms);
 						return true;
 					}
+					savedTextRef.current = latest.text;
+					mtimeRef.current = latest.mtime_ms;
 					const retry = await invoke("space_write_text", {
 						path,
 						text: nextText,
@@ -313,48 +387,58 @@ export function MarkdownEditorPane({
 					applySaveState(nextText, retry.mtime_ms);
 					return true;
 				} catch (retryError) {
+					if (!isCurrentSession(sessionId)) return false;
 					setError(extractErrorMessage(retryError));
 					return false;
 				}
 			}
 		},
-		[flashSyncPulse, relPath],
+		[flashSyncPulse, isCurrentSession, relPath],
 	);
 
 	const onSave = useCallback(async () => {
+		const sessionId = documentSessionRef.current;
+		const saveToken = saveRequestTokenRef.current + 1;
+		saveRequestTokenRef.current = saveToken;
 		setSaving(true);
 		try {
-			await persistDoc(relPath, text);
+			await persistDoc(relPath, textRef.current, sessionId);
 		} finally {
-			setSaving(false);
+			if (
+				saveRequestTokenRef.current === saveToken &&
+				isCurrentSession(sessionId)
+			) {
+				setSaving(false);
+			}
 		}
-	}, [persistDoc, relPath, text]);
+	}, [isCurrentSession, persistDoc, relPath]);
 
-	const runAutosave = useCallback(() => {
+	const runAutosave = useCallback(async () => {
+		const sessionId = documentSessionRef.current;
 		if (autosaveInFlightRef.current) {
 			autosaveQueuedRef.current = true;
-			return;
+			return false;
 		}
 
 		const path = relPath;
 		const snapshot = textRef.current;
-		if (snapshot === savedTextRef.current) return;
+		if (snapshot === savedTextRef.current) return false;
 
 		autosaveInFlightRef.current = true;
 		setAutosaveBusy(true);
-		void persistDoc(path, snapshot).then((ok) => {
-			autosaveInFlightRef.current = false;
-			setAutosaveBusy(false);
-			if (autosaveQueuedRef.current) {
-				autosaveQueuedRef.current = false;
-				runAutosave();
-				return;
-			}
-			if (ok && textRef.current !== savedTextRef.current) {
-				runAutosave();
-			}
-		});
-	}, [persistDoc, relPath]);
+		const ok = await persistDoc(path, snapshot, sessionId);
+		if (!isCurrentSession(sessionId)) return ok;
+		autosaveInFlightRef.current = false;
+		setAutosaveBusy(false);
+		if (autosaveQueuedRef.current) {
+			autosaveQueuedRef.current = false;
+			return runAutosave();
+		}
+		if (ok && textRef.current !== savedTextRef.current) {
+			return runAutosave();
+		}
+		return ok;
+	}, [isCurrentSession, persistDoc, relPath]);
 
 	useEffect(() => {
 		if (!isDirty || !hasUserEditsRef.current) return;
@@ -674,6 +758,15 @@ export function MarkdownEditorPane({
 							<HugeiconsIcon icon={TimeQuarter02Icon} size={13} aria-hidden />
 							<span>{stats.readingTime}</span>
 						</div>
+						<div
+							className="markdownEditorStatsItem markdownEditorSaveState"
+							data-metric="save-state"
+							data-save-state={saveSignal.state}
+							title={saveSignal.description}
+							aria-label={`Save status: ${saveSignal.label}`}
+						>
+							<Save size={13} aria-hidden />
+						</div>
 					</div>
 				</m.div>
 			) : null}
@@ -694,6 +787,7 @@ export function MarkdownEditorPane({
 							onModeChange={setMode}
 							onChange={(nextText) => {
 								hasUserEditsRef.current = true;
+								textRef.current = nextText;
 								setText(nextText);
 							}}
 							onRegisterCalloutInserter={registerCalloutInserter}

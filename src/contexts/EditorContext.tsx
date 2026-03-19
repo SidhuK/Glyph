@@ -103,11 +103,8 @@ export function useEditorContext(): EditorContextValue {
 export function useEditorRegistration(state: EditorSaveState | null): void {
 	const { registerEditor } = useEditorContext();
 
-	const stateRef = useRef(state);
-	stateRef.current = state;
-
 	useEffect(() => {
-		registerEditor(stateRef.current);
+		registerEditor(state);
 		return () => registerEditor(null);
-	}, [registerEditor]);
+	}, [registerEditor, state]);
 }

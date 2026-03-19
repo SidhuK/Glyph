@@ -113,7 +113,6 @@ export function useNoteEditor({
 	const frontmatterRef = useRef(frontmatter);
 	const lastAppliedBodyRef = useRef(editorBody);
 	const lastEmittedMarkdownRef = useRef(markdown);
-	const ignoreNextUpdateRef = useRef(false);
 	const suppressUpdateRef = useRef(false);
 	const relPathRef = useRef(relPath);
 	const interactiveRef = useRef(interactive);
@@ -165,10 +164,6 @@ export function useNoteEditor({
 				suppressUpdateRef.current = false;
 				return;
 			}
-			if (ignoreNextUpdateRef.current) {
-				ignoreNextUpdateRef.current = false;
-				return;
-			}
 			if (mode !== "rich" || !instance.isEditable) return;
 			const nextBody = postprocessMarkdownFromEditor(instance.getMarkdown());
 			lastAppliedBodyRef.current = preprocessMarkdownForEditor(nextBody);
@@ -185,9 +180,6 @@ export function useNoteEditor({
 	useEffect(() => {
 		if (!editor) return;
 		editor.setEditable(mode === "rich");
-		if (mode === "rich") {
-			ignoreNextUpdateRef.current = true;
-		}
 	}, [editor, mode]);
 
 	useEffect(() => {

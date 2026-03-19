@@ -33,6 +33,7 @@
 @import "./styles/app/38-licensing.css";
 @import "./styles/app/39-floating-toc.css";
 @import "./styles/app/40-template-picker.css";
+@import "./styles/app/41-whats-new.css";
 
 /* Flatten elevation utilities globally; keep focus rings intact via ring classes. */
 .shadow,
