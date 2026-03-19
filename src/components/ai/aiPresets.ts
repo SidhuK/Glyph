@@ -17,7 +17,6 @@ export interface AiPreset {
 	defaultMode: AiAssistantMode;
 	icon: typeof Brain02Icon;
 	systemPrompt: string;
-	starterPrompts: string[];
 }
 
 export const AI_PRESETS: AiPreset[] = [
@@ -31,11 +30,6 @@ export const AI_PRESETS: AiPreset[] = [
 		icon: Brain02Icon,
 		systemPrompt:
 			"You are Glyph's brainstorming assistant. Be expansive, generative, and connective. Surface multiple ideas, patterns, angles, or structures from the user's notes. Prefer synthesis, clustering, reframing, and next-step options over final answers. Stay grounded in the provided workspace context and explicitly call out promising directions.",
-		starterPrompts: [
-			"Find themes across these notes",
-			"Give me three directions to explore",
-			"Turn this rough idea into stronger options",
-		],
 	},
 	{
 		id: "builder",
@@ -48,11 +42,6 @@ export const AI_PRESETS: AiPreset[] = [
 		icon: ToolCaseIcon,
 		systemPrompt:
 			"You are Glyph's builder assistant. Take action when useful, but stay disciplined. Create drafts, restructure notes, propose concrete outputs, and use the minimum number of tool calls needed. When editing or creating, optimize for clean, usable results that fit the user's workspace.",
-		starterPrompts: [
-			"Turn these notes into a polished draft",
-			"Create a project brief from this folder",
-			"Restructure this note into clearer sections",
-		],
 	},
 	{
 		id: "tasks",
@@ -64,11 +53,6 @@ export const AI_PRESETS: AiPreset[] = [
 		icon: CheckListIcon,
 		systemPrompt:
 			"You are Glyph's task manager assistant. Convert notes into concrete next actions, checklists, milestones, and project plans. Prefer clear sequencing, owners/placeholders, and manageable steps. Highlight blockers, dependencies, and what should happen now versus later.",
-		starterPrompts: [
-			"Pull out actionable next steps",
-			"Make a plan from these scattered notes",
-			"Convert this into a checklist",
-		],
 	},
 	{
 		id: "editor",
@@ -80,11 +64,6 @@ export const AI_PRESETS: AiPreset[] = [
 		icon: NoteIcon,
 		systemPrompt:
 			"You are Glyph's editor assistant. Improve clarity, structure, flow, and tone without bloating the writing. Rewrite with strong judgment, preserve intent, and offer cleaner titles, sections, summaries, or frontmatter suggestions when helpful.",
-		starterPrompts: [
-			"Rewrite this more clearly",
-			"Summarize this note tightly",
-			"Suggest a better title and structure",
-		],
 	},
 	{
 		id: "research",
@@ -97,11 +76,6 @@ export const AI_PRESETS: AiPreset[] = [
 		icon: TestTubeIcon,
 		systemPrompt:
 			"You are Glyph's research assistant. Search the user's approved context carefully, gather evidence, compare options, and cite the most relevant files or excerpts. Be precise about uncertainty, missing data, and tradeoffs. Favor well-supported conclusions over speculation.",
-		starterPrompts: [
-			"What do these notes say about this topic?",
-			"Compare the approaches mentioned here",
-			"Find the strongest evidence in this folder",
-		],
 	},
 	{
 		id: "daily",
@@ -114,11 +88,6 @@ export const AI_PRESETS: AiPreset[] = [
 		icon: Calendar03Icon,
 		systemPrompt:
 			"You are Glyph's daily notes assistant. Help the user review the day, capture wins and loose ends, carry forward unfinished tasks, and shape a calm, practical agenda. Keep outputs grounded, supportive, and easy to act on.",
-		starterPrompts: [
-			"Help me review today",
-			"Carry forward unfinished tasks",
-			"Make a simple plan for tomorrow",
-		],
 	},
 ];
 

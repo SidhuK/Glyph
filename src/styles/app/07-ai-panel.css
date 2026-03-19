@@ -319,37 +319,11 @@
 }
 
 .aiChatEmptyArt::before {
-	background: radial-gradient(
-		circle at center,
-		color-mix(
-				in srgb,
-				var(--ai-preset-accent, var(--ai-mode-accent)) 22%,
-				transparent
-			)
-			0%,
-		color-mix(
-				in srgb,
-				var(--ai-preset-accent, var(--ai-mode-accent)) 12%,
-				transparent
-			)
-			38%,
-		transparent 72%
-	);
-	transform: none;
+	display: none;
 }
 
 .aiChatEmptyArt::after {
-	inset: 10px;
-	border: 1px solid
-		color-mix(
-			in srgb,
-			var(--ai-preset-accent, var(--ai-mode-accent)) 26%,
-			transparent
-		);
-	background: color-mix(in srgb, var(--bg-secondary) 65%, transparent);
-	backdrop-filter: blur(8px);
-	-webkit-backdrop-filter: blur(8px);
-	transform: rotate(-8deg);
+	display: none;
 }
 
 .aiChatEmptyArtIcon {
@@ -362,19 +336,7 @@
 	align-items: center;
 	justify-content: center;
 	color: var(--ai-preset-accent, var(--ai-mode-accent));
-	background: color-mix(in srgb, var(--bg-primary) 84%, transparent);
-	border: 1px solid
-		color-mix(
-			in srgb,
-			var(--ai-preset-accent, var(--ai-mode-accent)) 18%,
-			transparent
-		);
-	box-shadow: 0 16px 30px
-		color-mix(
-			in srgb,
-			var(--ai-preset-accent, var(--ai-mode-accent)) 12%,
-			transparent
-		);
+	background: transparent;
 }
 
 .aiChatEmptyEyebrow {
@@ -447,11 +409,7 @@
 	align-items: center;
 	justify-content: center;
 	color: var(--ai-preset-accent, var(--ai-mode-accent));
-	background: color-mix(
-		in srgb,
-		var(--ai-preset-accent, var(--ai-mode-accent)) 12%,
-		transparent
-	);
+	background: transparent;
 	flex-shrink: 0;
 }
 
@@ -1142,11 +1100,7 @@
 	align-items: center;
 	justify-content: center;
 	color: var(--ai-preset-accent, var(--ai-mode-accent));
-	background: color-mix(
-		in srgb,
-		var(--ai-preset-accent, var(--ai-mode-accent)) 12%,
-		transparent
-	);
+	background: transparent;
 	flex-shrink: 0;
 }
 
@@ -1445,7 +1399,7 @@
 	align-items: center;
 	justify-content: center;
 	flex-shrink: 0;
-	background: color-mix(in srgb, var(--ai-mode-current) 14%, transparent);
+	background: transparent;
 	color: var(--ai-mode-current);
 }
 

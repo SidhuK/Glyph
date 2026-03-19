@@ -186,34 +186,6 @@ export function AIChatThread({
 							);
 						})}
 					</ul>
-					<div className="aiChatEmptyTips" aria-label="Starter prompts">
-						<div className="aiChatEmptyTipsViewport">
-							<div className="aiChatEmptyTipsTrack">
-								{[0, 1].flatMap((copyIndex) =>
-									activePreset.starterPrompts.map((prompt) =>
-										copyIndex === 0 ? (
-											<button
-												key={`${activePreset.id}-${copyIndex}-${prompt}`}
-												type="button"
-												className="aiChatEmptyTip"
-												onClick={() => onUseStarterPrompt(prompt)}
-											>
-												{prompt}
-											</button>
-										) : (
-											<span
-												key={`${activePreset.id}-${copyIndex}-${prompt}`}
-												className="aiChatEmptyTip"
-												aria-hidden="true"
-											>
-												{prompt}
-											</span>
-										),
-									),
-								)}
-							</div>
-						</div>
-					</div>
 					<div className="aiChatEmptyMeta aiChatEmptyMeta-secondary">
 						Type `{activePreset.command}` to switch quickly, or use `@` to
 						attach files
