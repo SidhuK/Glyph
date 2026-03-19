@@ -84,6 +84,7 @@ export function MarkdownEditorPane({
 	const mtimeRef = useRef<number | null>(lastSavedMtimeMs);
 	const documentSessionRef = useRef(0);
 	const mountedRef = useRef(true);
+	const saveRequestTokenRef = useRef(0);
 	const autosaveInFlightRef = useRef(false);
 	const autosaveQueuedRef = useRef(false);
 	const hasUserEditsRef = useRef(false);
@@ -216,12 +217,18 @@ export function MarkdownEditorPane({
 	useEffect(() => {
 		const sessionId = documentSessionRef.current + 1;
 		documentSessionRef.current = sessionId;
+		saveRequestTokenRef.current += 1;
 		const cached = initialDoc?.text ?? markdownDocCache.get(relPath) ?? "";
 		textRef.current = cached;
 		savedTextRef.current = cached;
 		mtimeRef.current = initialDoc?.mtime_ms ?? null;
 		autosaveInFlightRef.current = false;
 		autosaveQueuedRef.current = false;
+		if (externalSyncTimerRef.current !== null) {
+			window.clearTimeout(externalSyncTimerRef.current);
+			externalSyncTimerRef.current = null;
+		}
+		pendingExternalReloadRef.current = false;
 		setText(cached);
 		setSavedText(cached);
 		setLastSavedMtimeMs(initialDoc?.mtime_ms ?? null);
@@ -239,6 +246,12 @@ export function MarkdownEditorPane({
 	useEffect(() => {
 		if (previousSpacePathRef.current === spacePath) return;
 		previousSpacePathRef.current = spacePath;
+		saveRequestTokenRef.current += 1;
+		if (externalSyncTimerRef.current !== null) {
+			window.clearTimeout(externalSyncTimerRef.current);
+			externalSyncTimerRef.current = null;
+		}
+		pendingExternalReloadRef.current = false;
 		if (spacePath === null) {
 			markdownDocCache.clear();
 			return;
@@ -370,13 +383,21 @@ export function MarkdownEditorPane({
 	);
 
 	const onSave = useCallback(async () => {
+		const sessionId = documentSessionRef.current;
+		const saveToken = saveRequestTokenRef.current + 1;
+		saveRequestTokenRef.current = saveToken;
 		setSaving(true);
 		try {
-			await persistDoc(relPath, textRef.current);
+			await persistDoc(relPath, textRef.current, sessionId);
 		} finally {
-			setSaving(false);
+			if (
+				saveRequestTokenRef.current === saveToken &&
+				isCurrentSession(sessionId)
+			) {
+				setSaving(false);
+			}
 		}
-	}, [persistDoc, relPath]);
+	}, [isCurrentSession, persistDoc, relPath]);
 
 	const runAutosave = useCallback(async () => {
 		const sessionId = documentSessionRef.current;

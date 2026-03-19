@@ -75,24 +75,29 @@ export function WhatsNewDialog({
 
 				<div className="commandPaletteBody whatsNewBody">
 					<div className="commandPaletteList whatsNewList">
-						{releaseNotes.sections.map((section) => (
-							<div key={section.category} className="whatsNewSection">
-								<div className="commandPaletteSectionLabel">
-									{section.category}
-								</div>
-								{section.items.map((item, index) => (
-									<div
-										key={`${section.category}:${item}:${index}`}
-										className="commandPaletteItem commandPaletteResultItem whatsNewItem"
-										data-selected="false"
-									>
-										<div className="commandPaletteResultContent">
-											<div className="commandPaletteResultTitle">{item}</div>
-										</div>
+						{releaseNotes.sections
+							.filter(
+								(section) =>
+									Array.isArray(section.items) && section.items.length > 0,
+							)
+							.map((section) => (
+								<div key={section.category} className="whatsNewSection">
+									<div className="commandPaletteSectionLabel">
+										{section.category}
 									</div>
-								))}
-							</div>
-						))}
+									{section.items.map((item, index) => (
+										<div
+											key={`${section.category}:${item}:${index}`}
+											className="commandPaletteItem commandPaletteResultItem whatsNewItem"
+											data-selected="false"
+										>
+											<div className="commandPaletteResultContent">
+												<div className="commandPaletteResultTitle">{item}</div>
+											</div>
+										</div>
+									))}
+								</div>
+							))}
 					</div>
 				</div>
 

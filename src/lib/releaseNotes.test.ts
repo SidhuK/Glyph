@@ -4,6 +4,7 @@ import {
 	collectReleaseNoteEntries,
 	extractReleaseNoteEntries,
 	formatReleaseNotesMarkdown,
+	generateReleaseNotesArtifacts,
 } from "../../scripts/release-notes-lib.mjs";
 import { resolveWhatsNewState } from "./releaseNotes";
 
@@ -148,6 +149,14 @@ Release-note: Fixed the template reset race.`),
 				"Official build licensing copy.",
 			),
 		).toContain("## Licensing");
+	});
+
+	it("fails fast when nextTag is missing", () => {
+		expect(() =>
+			generateReleaseNotesArtifacts({
+				nextTag: "",
+			}),
+		).toThrowError("nextTag is required to generate release artifacts");
 	});
 });
 

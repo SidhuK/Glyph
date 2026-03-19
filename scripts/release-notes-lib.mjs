@@ -1,5 +1,6 @@
 import { execFileSync } from "node:child_process";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
+import path from "node:path";
 import { fileURLToPath } from "node:url";
 
 export const RELEASE_NOTE_CATEGORY_ORDER = [
@@ -25,10 +26,6 @@ function toVersionString(value) {
 function toVersionLabel(value) {
 	const version = toVersionString(value);
 	return version ? `v${version}` : "v0.0.0";
-}
-
-function shellEscape(value) {
-	return `'${String(value).replace(/'/g, `'\\''`)}'`;
 }
 
 function normalizeCategory(value) {
@@ -188,7 +185,7 @@ export function formatReleaseNotesMarkdown(manifest, licensingMarkdown = "") {
 function extractLicensingMarkdown(docText) {
 	const lines = String(docText ?? "").split(/\r?\n/);
 	const startIndex = lines.findIndex((line) =>
-		line.startsWith("> Official Glyph binaries"),
+		/^\s*> Official Glyph binaries/.test(line),
 	);
 	if (startIndex < 0) return "";
 
@@ -196,11 +193,11 @@ function extractLicensingMarkdown(docText) {
 	for (let index = startIndex; index < lines.length; index += 1) {
 		const line = lines[index];
 		if (line.trim() === "" && collected.length > 0) break;
-		if (!line.startsWith(">")) {
+		if (!/^\s*>/.test(line)) {
 			if (collected.length > 0) break;
 			continue;
 		}
-		collected.push(line.replace(/^>\s?/, ""));
+		collected.push(line.replace(/^\s*>\s?/, ""));
 	}
 
 	return collected.join("\n").trim();
@@ -208,21 +205,33 @@ function extractLicensingMarkdown(docText) {
 
 function runGitLog(range, repoRoot) {
 	const pretty = "%H%x00%B%x1e";
-	const args = ["-c"];
-	const command =
-		range && range !== "HEAD"
-			? `git log ${shellEscape(range)} --no-merges --pretty=format:${shellEscape(pretty)}`
-			: `git log --no-merges --pretty=format:${shellEscape(pretty)}`;
-	args.push(command);
+	const args = ["log"];
+	if (range && range !== "HEAD") {
+		args.push(range);
+	}
+	args.push("--no-merges", `--pretty=format:${pretty}`);
 
 	try {
-		return execFileSync("sh", args, {
+		return execFileSync("git", args, {
 			cwd: repoRoot,
 			encoding: "utf8",
-			stdio: ["ignore", "pipe", "ignore"],
+			stdio: ["ignore", "pipe", "pipe"],
 		});
-	} catch {
-		return "";
+	} catch (error) {
+		const stderr =
+			error && typeof error === "object" && "stderr" in error
+				? String(error.stderr ?? "").trim()
+				: "";
+		const stdout =
+			error && typeof error === "object" && "stdout" in error
+				? String(error.stdout ?? "").trim()
+				: "";
+		const details = [stderr, stdout].filter(Boolean).join("\n");
+		throw new Error(
+			details
+				? `Failed to read git history for release notes:\n${details}`
+				: "Failed to read git history for release notes.",
+		);
 	}
 }
 
@@ -232,11 +241,16 @@ export function generateReleaseNotesArtifacts({
 	nextTag,
 	publishedAt = new Date().toISOString(),
 }) {
+	const version = toVersionString(nextTag);
+	if (!version) {
+		throw new Error("nextTag is required to generate release artifacts");
+	}
+
 	const range = latestTag ? `${latestTag}..HEAD` : "HEAD";
 	const commits = parseGitLogOutput(runGitLog(range, repoRoot));
 	const entries = collectReleaseNoteEntries(commits);
 	const manifest = buildReleaseManifest({
-		version: toVersionString(nextTag),
+		version,
 		publishedAt,
 		entries,
 	});
@@ -261,9 +275,22 @@ export function generateReleaseNotesArtifacts({
 }
 
 export function writeReleaseManifestTs(manifest, outputPath) {
+	const releaseNotesPath = path.join(
+		DEFAULT_REPO_ROOT,
+		"src",
+		"lib",
+		"releaseNotes.ts",
+	);
+	const relativeImportPath = path
+		.relative(path.dirname(outputPath), releaseNotesPath)
+		.replaceAll(path.sep, "/")
+		.replace(/\.ts$/, "");
+	const importPath = relativeImportPath.startsWith(".")
+		? relativeImportPath
+		: `./${relativeImportPath}`;
 	const serialized = JSON.stringify(manifest, null, "\t");
 	const source = [
-		'import type { ReleaseNotesManifest } from "../lib/releaseNotes";',
+		`import type { ReleaseNotesManifest } from "${importPath}";`,
 		"",
 		`export const currentReleaseNotes = ${serialized} satisfies ReleaseNotesManifest;`,
 		"",
