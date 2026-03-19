@@ -22,10 +22,13 @@ export function useWhatsNew(appVersion: string | null): UseWhatsNewResult {
 	const [open, setOpen] = useState(false);
 	const [available, setAvailable] = useState(false);
 
-	const releaseNotes = useMemo(() => currentReleaseNotes, []);
+	const releaseNotes = currentReleaseNotes;
 	const previewMode = useMemo(() => {
 		if (typeof window === "undefined") return false;
-		return new URLSearchParams(window.location.search).get("preview-whats-new") === "1";
+		return (
+			new URLSearchParams(window.location.search).get("preview-whats-new") ===
+			"1"
+		);
 	}, []);
 
 	useEffect(() => {
@@ -84,7 +87,16 @@ export function useWhatsNew(appVersion: string | null): UseWhatsNewResult {
 		setOpen(false);
 		if (previewMode) return;
 		if (!appVersion || !available) return;
-		void setLastAcknowledgedChangelogVersion(appVersion);
+		void (async () => {
+			try {
+				await setLastAcknowledgedChangelogVersion(appVersion);
+			} catch (error) {
+				console.error(
+					"Failed to persist acknowledged changelog version",
+					error,
+				);
+			}
+		})();
 	}, [appVersion, available, previewMode]);
 
 	return {

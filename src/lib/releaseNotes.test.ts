@@ -22,6 +22,20 @@ Release-category: Fixed`),
 		]);
 	});
 
+	it("supports category lines before the note trailers too", () => {
+		expect(
+			extractReleaseNoteEntries(`Fix template path normalization
+
+Release-category: Fixed
+Release-note: Daily note templates now handle nested template folders correctly.`),
+		).toEqual([
+			{
+				category: "Fixed",
+				text: "Daily note templates now handle nested template folders correctly.",
+			},
+		]);
+	});
+
 	it("defaults unknown categories to Improved", () => {
 		expect(
 			extractReleaseNoteEntries(`Refactor things
@@ -32,6 +46,26 @@ Release-category: Polished`),
 			{
 				category: "Improved",
 				text: "The command palette feels cleaner and more consistent.",
+			},
+		]);
+	});
+
+	it("applies categories to notes in sequence instead of collapsing to the last one", () => {
+		expect(
+			extractReleaseNoteEntries(`Mixed release copy
+
+Release-category: Added
+Release-note: Added note templates.
+Release-category: Fixed
+Release-note: Fixed the template reset race.`),
+		).toEqual([
+			{
+				category: "Added",
+				text: "Added note templates.",
+			},
+			{
+				category: "Fixed",
+				text: "Fixed the template reset race.",
 			},
 		]);
 	});

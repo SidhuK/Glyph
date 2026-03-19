@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 
-import { act, type ButtonHTMLAttributes } from "react";
-import { createRoot, type Root } from "react-dom/client";
+import { type ButtonHTMLAttributes, act } from "react";
+import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MarkdownEditorPane } from "./MarkdownEditorPane";
 
@@ -90,6 +90,31 @@ describe("MarkdownEditorPane", () => {
 	let container: HTMLDivElement;
 	let root: Root;
 
+	type ReadTextArgs = { path: string };
+	type WriteTextArgs = {
+		path: string;
+		text: string;
+		base_mtime_ms?: number | null;
+	};
+
+	function mockInvoke(
+		...args:
+			| [command: "space_read_text", params: ReadTextArgs]
+			| [command: "space_write_text", params: WriteTextArgs]
+	) {
+		const [command, params] = args;
+		if (command === "space_write_text") {
+			return Promise.resolve({
+				etag: `${params.path}-saved`,
+				mtime_ms: 2,
+			});
+		}
+		if (command === "space_read_text") {
+			return Promise.resolve(makeDoc(params.path, "", 1));
+		}
+		throw new Error(`Unexpected command: ${command satisfies never}`);
+	}
+
 	const makeDoc = (relPath: string, text: string, mtimeMs = 1) => ({
 		rel_path: relPath,
 		text,
@@ -105,18 +130,7 @@ describe("MarkdownEditorPane", () => {
 			unobserve() {}
 		} as typeof ResizeObserver;
 		invokeMock.mockReset();
-		invokeMock.mockImplementation(async (command: string, args: { path: string }) => {
-			if (command === "space_write_text") {
-				return {
-					etag: `${args.path}-saved`,
-					mtime_ms: 2,
-				};
-			}
-			if (command === "space_read_text") {
-				return makeDoc(args.path, "", 1);
-			}
-			throw new Error(`Unexpected command: ${command}`);
-		});
+		invokeMock.mockImplementation(mockInvoke);
 
 		container = document.createElement("div");
 		document.body.appendChild(container);
@@ -135,7 +149,6 @@ describe("MarkdownEditorPane", () => {
 		await act(async () => {
 			root.render(
 				<MarkdownEditorPane
-					key="notes/first.md"
 					relPath="notes/first.md"
 					initialDoc={makeDoc("notes/first.md", "initial text")}
 				/>,
@@ -154,7 +167,6 @@ describe("MarkdownEditorPane", () => {
 		await act(async () => {
 			root.render(
 				<MarkdownEditorPane
-					key="notes/second.md"
 					relPath="notes/second.md"
 					initialDoc={makeDoc("notes/second.md", "other note")}
 				/>,
@@ -172,14 +184,15 @@ describe("MarkdownEditorPane", () => {
 		let resolveWrite:
 			| ((value: { etag: string; mtime_ms: number }) => void)
 			| null = null;
-		invokeMock.mockImplementation((command: string, args: { path: string }) => {
+		invokeMock.mockImplementation((...args: Parameters<typeof mockInvoke>) => {
+			const [command, params] = args;
 			if (command === "space_write_text") {
 				return new Promise((resolve) => {
 					resolveWrite = resolve;
 				});
 			}
 			if (command === "space_read_text") {
-				return Promise.resolve(makeDoc(args.path, "", 1));
+				return Promise.resolve(makeDoc(params.path, "", 1));
 			}
 			throw new Error(`Unexpected command: ${command}`);
 		});

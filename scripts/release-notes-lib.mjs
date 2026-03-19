@@ -1,5 +1,5 @@
 import { execFileSync } from "node:child_process";
-import { readFileSync, writeFileSync } from "node:fs";
+import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 
 export const RELEASE_NOTE_CATEGORY_ORDER = [
@@ -65,28 +65,43 @@ function normalizeCategory(value) {
 export function extractReleaseNoteEntries(commitBody) {
 	const items = [];
 	let category = DEFAULT_CATEGORY;
+	let categoryPinned = false;
+	let pendingNoteIndexes = [];
 
 	for (const line of String(commitBody ?? "").split(/\r?\n/)) {
 		const trimmed = line.trim();
 		if (!trimmed) continue;
 
-		const noteMatch = /^Release-note:\s*(.+)$/i.exec(trimmed);
-		if (noteMatch) {
-			const text = noteMatch[1].trim();
-			if (text) items.push(text);
-			continue;
-		}
-
 		const categoryMatch = /^Release-category:\s*(.+)$/i.exec(trimmed);
 		if (categoryMatch) {
 			category = normalizeCategory(categoryMatch[1]);
+			if (pendingNoteIndexes.length > 0) {
+				for (const index of pendingNoteIndexes) {
+					items[index].category = category;
+				}
+				pendingNoteIndexes = [];
+			}
+			categoryPinned = true;
+			continue;
+		}
+
+		const noteMatch = /^Release-note:\s*(.+)$/i.exec(trimmed);
+		if (noteMatch) {
+			const text = noteMatch[1].trim();
+			if (text) {
+				const entry = {
+					category,
+					text,
+				};
+				items.push(entry);
+				if (!categoryPinned) {
+					pendingNoteIndexes.push(items.length - 1);
+				}
+			}
 		}
 	}
 
-	return items.map((text) => ({
-		category,
-		text,
-	}));
+	return items;
 }
 
 export function parseGitLogOutput(output) {
@@ -193,7 +208,7 @@ function extractLicensingMarkdown(docText) {
 
 function runGitLog(range, repoRoot) {
 	const pretty = "%H%x00%B%x1e";
-	const args = ["-lc"];
+	const args = ["-c"];
 	const command =
 		range && range !== "HEAD"
 			? `git log ${shellEscape(range)} --no-merges --pretty=format:${shellEscape(pretty)}`
@@ -225,10 +240,15 @@ export function generateReleaseNotesArtifacts({
 		publishedAt,
 		entries,
 	});
-	const licensingDoc = readFileSync(
-		`${repoRoot}/docs/release-notes-licensed-binaries.md`,
-		"utf8",
-	);
+	const licensingDocPath = `${repoRoot}/docs/release-notes-licensed-binaries.md`;
+	let licensingDoc = "";
+	if (existsSync(licensingDocPath)) {
+		licensingDoc = readFileSync(licensingDocPath, "utf8");
+	} else {
+		console.warn(
+			`Release notes licensing doc not found at ${licensingDocPath}; continuing without licensing copy.`,
+		);
+	}
 	const markdown = formatReleaseNotesMarkdown(
 		manifest,
 		extractLicensingMarkdown(licensingDoc),

@@ -80,9 +80,9 @@ export function WhatsNewDialog({
 								<div className="commandPaletteSectionLabel">
 									{section.category}
 								</div>
-								{section.items.map((item) => (
+								{section.items.map((item, index) => (
 									<div
-										key={`${section.category}:${item}`}
+										key={`${section.category}:${item}:${index}`}
 										className="commandPaletteItem commandPaletteResultItem whatsNewItem"
 										data-selected="false"
 									>
