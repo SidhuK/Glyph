@@ -1,35 +1,31 @@
 // @vitest-environment jsdom
 
 import { act } from "react";
-import { createRoot, type Root } from "react-dom/client";
+import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useNoteEditor } from "./useNoteEditor";
 
-const {
-	mockEditor,
-	setEditorOptions,
-	getEditorOptions,
-	openUrlMock,
-} = vi.hoisted(() => {
-	let editorOptions: Record<string, unknown> | null = null;
-	const mockEditor = {
-		isEditable: true,
-		setEditable: vi.fn(),
-		getMarkdown: vi.fn(),
-		commands: {
-			setContent: vi.fn(),
-		},
-	};
+const { mockEditor, setEditorOptions, getEditorOptions, openUrlMock } =
+	vi.hoisted(() => {
+		let editorOptions: Record<string, unknown> | null = null;
+		const mockEditor = {
+			isEditable: true,
+			setEditable: vi.fn(),
+			getMarkdown: vi.fn(),
+			commands: {
+				setContent: vi.fn(),
+			},
+		};
 
-	return {
-		mockEditor,
-		setEditorOptions: (options: Record<string, unknown>) => {
-			editorOptions = options;
-		},
-		getEditorOptions: () => editorOptions,
-		openUrlMock: vi.fn(),
-	};
-});
+		return {
+			mockEditor,
+			setEditorOptions: (options: Record<string, unknown>) => {
+				editorOptions = options;
+			},
+			getEditorOptions: () => editorOptions,
+			openUrlMock: vi.fn(),
+		};
+	});
 
 // React 19 expects tests to opt into act-aware scheduling.
 (
@@ -97,14 +93,12 @@ describe("useNoteEditor", () => {
 			root.render(<Harness onChange={onChange} />);
 		});
 
-		const options = getEditorOptions() as
-			| {
-					onTransaction?: (payload: {
-						editor: typeof mockEditor;
-						transaction: { docChanged: boolean };
-					}) => void;
-			  }
-			| null;
+		const options = getEditorOptions() as {
+			onTransaction?: (payload: {
+				editor: typeof mockEditor;
+				transaction: { docChanged: boolean };
+			}) => void;
+		} | null;
 
 		expect(options?.onTransaction).toBeTypeOf("function");
 
