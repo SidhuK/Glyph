@@ -24,7 +24,6 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { ComponentProps } from "react";
-import glyphIconUrl from "../../assets/glyph.svg?url";
 
 export type IconProps = Omit<ComponentProps<typeof HugeiconsIcon>, "icon">;
 
@@ -96,20 +95,4 @@ export const Moon = (props: IconProps) => (
 );
 export const Computer = (props: IconProps) => (
 	<HugeiconsIcon icon={ComputerIcon} {...props} />
-);
-export const AiGlyph = ({
-	size = 16,
-	alt = "",
-	style,
-	...props
-}: Omit<ComponentProps<"img">, "src"> & { size?: number | string }) => (
-	<img
-		src={glyphIconUrl}
-		alt={alt}
-		width={size}
-		height={size}
-		style={{ display: "block", border: 0, ...style }}
-		aria-hidden={alt ? undefined : true}
-		{...props}
-	/>
 );
