@@ -149,7 +149,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Format updated version files
-        run: pnpm exec biome format --write package.json src-tauri/tauri.conf.json
+        run: pnpm exec biome format --write package.json src-tauri/tauri.conf.json src/generated/currentReleaseNotes.ts
 
       - name: Validate
         run: |

@@ -223,6 +223,52 @@ function extractLicensingMarkdown(docText) {
 	return markdown;
 }
 
+function serializeTsString(value) {
+	return JSON.stringify(String(value));
+}
+
+function serializeTsLiteral(value, indentLevel = 0) {
+	const indent = "\t".repeat(indentLevel);
+	const nextIndent = "\t".repeat(indentLevel + 1);
+
+	if (value === null) {
+		return "null";
+	}
+
+	if (typeof value === "string") {
+		return serializeTsString(value);
+	}
+
+	if (typeof value === "number" || typeof value === "boolean") {
+		return String(value);
+	}
+
+	if (Array.isArray(value)) {
+		if (value.length === 0) {
+			return "[]";
+		}
+
+		const items = value.map(
+			(item) => `${nextIndent}${serializeTsLiteral(item, indentLevel + 1)}`,
+		);
+		return `[\n${items.join(",\n")},\n${indent}]`;
+	}
+
+	const entries = Object.entries(value);
+	if (entries.length === 0) {
+		return "{}";
+	}
+
+	const lines = entries.map(([key, entryValue]) => {
+		const propertyName = /^[A-Za-z_$][\w$]*$/.test(key)
+			? key
+			: serializeTsString(key);
+		return `${nextIndent}${propertyName}: ${serializeTsLiteral(entryValue, indentLevel + 1)}`;
+	});
+
+	return `{\n${lines.join(",\n")},\n${indent}}`;
+}
+
 function runGitLog(range, repoRoot) {
 	const pretty = "%H%x00%B%x1e";
 	const args = ["log"];
@@ -308,7 +354,7 @@ export function writeReleaseManifestTs(manifest, outputPath) {
 	const importPath = relativeImportPath.startsWith(".")
 		? relativeImportPath
 		: `./${relativeImportPath}`;
-	const serialized = JSON.stringify(manifest, null, "\t");
+	const serialized = serializeTsLiteral(manifest);
 	const source = [
 		`import type { ReleaseNotesManifest } from "${importPath}";`,
 		"",
