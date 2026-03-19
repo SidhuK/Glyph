@@ -16,6 +16,12 @@ const DEFAULT_MAINTENANCE_NOTE = "Maintenance and polish release.";
 const FIELD_SEPARATOR = "\u0000";
 const RECORD_SEPARATOR = "\u001e";
 const DEFAULT_REPO_ROOT = fileURLToPath(new URL("../", import.meta.url));
+const BIOME_BINARY_PATH = path.join(
+	DEFAULT_REPO_ROOT,
+	"node_modules",
+	".bin",
+	process.platform === "win32" ? "biome.cmd" : "biome",
+);
 
 function toVersionString(value) {
 	return String(value ?? "")
@@ -309,5 +315,16 @@ export function writeReleaseManifestTs(manifest, outputPath) {
 		`export const currentReleaseNotes = ${serialized} satisfies ReleaseNotesManifest;`,
 		"",
 	].join("\n");
-	writeFileSync(outputPath, source, "utf8");
+	const formattedSource = existsSync(BIOME_BINARY_PATH)
+		? execFileSync(
+				BIOME_BINARY_PATH,
+				["format", "--stdin-file-path", outputPath],
+				{
+					cwd: DEFAULT_REPO_ROOT,
+					input: source,
+					encoding: "utf8",
+				},
+			)
+		: source;
+	writeFileSync(outputPath, formattedSource, "utf8");
 }

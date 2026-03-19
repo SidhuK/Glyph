@@ -1,3 +1,6 @@
+import { mkdtempSync, readFileSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
+import path from "node:path";
 import { describe, expect, it } from "vitest";
 import {
 	buildReleaseManifest,
@@ -5,6 +8,7 @@ import {
 	extractReleaseNoteEntries,
 	formatReleaseNotesMarkdown,
 	generateReleaseNotesArtifacts,
+	writeReleaseManifestTs,
 } from "../../scripts/release-notes-lib.mjs";
 import { resolveWhatsNewState } from "./releaseNotes";
 
@@ -172,6 +176,32 @@ Release-note: Fixed the template reset race.`),
 				nextTag: "",
 			}),
 		).toThrowError("nextTag is required to generate release artifacts");
+	});
+
+	it("writes a biome-formatted TypeScript manifest", () => {
+		const tempDir = mkdtempSync(path.join(tmpdir(), "glyph-release-notes-"));
+		const outputPath = path.join(tempDir, "currentReleaseNotes.ts");
+
+		try {
+			writeReleaseManifestTs(
+				{
+					version: "0.2.0",
+					publishedAt: "2026-03-19T04:19:28.156Z",
+					sections: [
+						{
+							category: "Improved",
+							items: ["Maintenance and polish release."],
+						},
+					],
+				},
+				outputPath,
+			);
+
+			expect(readFileSync(outputPath, "utf8")).toContain('version: "0.2.0"');
+			expect(readFileSync(outputPath, "utf8")).not.toContain('"version":');
+		} finally {
+			rmSync(tempDir, { recursive: true, force: true });
+		}
 	});
 });
 
