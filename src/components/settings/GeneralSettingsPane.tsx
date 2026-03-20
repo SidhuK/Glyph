@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import {
+	type AutoUpdateCheckInterval,
 	getDailyNotesFolder,
 	loadSettings,
+	setAutoUpdateCheckInterval as saveAutoUpdateCheckInterval,
 	setShowToc as saveShowToc,
 	setDailyNotesFolder,
 } from "../../lib/settings";
@@ -19,6 +21,8 @@ import { TemplateSettingsSections } from "./TemplatesSettingsPane";
 
 export function GeneralSettingsPane() {
 	const [showToc, setShowTocState] = useState(true);
+	const [autoUpdateCheckInterval, setAutoUpdateCheckIntervalState] =
+		useState<AutoUpdateCheckInterval>("launch");
 	const [dailyNotesFolder, setDailyNotesFolderState] = useState<string | null>(
 		null,
 	);
@@ -37,6 +41,7 @@ export function GeneralSettingsPane() {
 				if (cancelled) return;
 				setDailyNotesFolderState(folder);
 				setShowTocState(settings.ui.showToc);
+				setAutoUpdateCheckIntervalState(settings.ui.autoUpdateCheckInterval);
 			} catch (cause) {
 				if (!cancelled) {
 					setError(
@@ -57,6 +62,12 @@ export function GeneralSettingsPane() {
 	const handleShowTocChange = useCallback((checked: boolean) => {
 		setShowTocState(checked);
 		void saveShowToc(checked);
+	}, []);
+
+	const handleAutoUpdateToggleChange = useCallback((checked: boolean) => {
+		const next: AutoUpdateCheckInterval = checked ? "12h" : "launch";
+		setAutoUpdateCheckIntervalState(next);
+		void saveAutoUpdateCheckInterval(next);
 	}, []);
 
 	const handleBrowseFolder = useCallback(async () => {
@@ -166,6 +177,19 @@ export function GeneralSettingsPane() {
 				</SettingsSection>
 
 				<TemplateSettingsSections />
+
+				<SettingsSection title="Updates">
+					<SettingsRow
+						label="Automatic update checks"
+						description="Automatically check for updates every 12 hours while Glyph is open."
+					>
+						<SettingsToggle
+							ariaLabel="Automatic update checks every 12 hours"
+							checked={autoUpdateCheckInterval === "12h"}
+							onCheckedChange={handleAutoUpdateToggleChange}
+						/>
+					</SettingsRow>
+				</SettingsSection>
 
 				<SettingsSection title="Editor">
 					<SettingsRow

@@ -4,6 +4,7 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 import { relaunch } from "@tauri-apps/plugin-process";
 import { check } from "@tauri-apps/plugin-updater";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { setAutoUpdateLastCheckedAt } from "../../lib/settings";
 import type { AppInfo } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 import { Button } from "../ui/shadcn/button";
@@ -79,6 +80,7 @@ export function AboutSettingsPane() {
 		setUpdateStatus("");
 		try {
 			const update = await check();
+			await setAutoUpdateLastCheckedAt(Date.now());
 			if (!update) {
 				setUpdateStatus("You're already on the latest version.");
 				return;

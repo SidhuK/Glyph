@@ -28,6 +28,11 @@ async function getStore(): Promise<LazyStore> {
 
 export type ThemeMode = "system" | "light" | "dark";
 const THEME_MODES = new Set<ThemeMode>(["system", "light", "dark"]);
+export type AutoUpdateCheckInterval = "launch" | "12h";
+const AUTO_UPDATE_CHECK_INTERVALS = new Set<AutoUpdateCheckInterval>([
+	"launch",
+	"12h",
+]);
 export type UiAccent =
 	| "neutral"
 	| "cerulean"
@@ -46,6 +51,8 @@ const UI_ACCENTS = new Set<UiAccent>([
 const DEFAULT_UI_ACCENT: UiAccent = "neutral";
 const DEFAULT_UI_FONT_FAMILY = "Inter";
 const DEFAULT_UI_MONO_FONT_FAMILY = "JetBrains Mono";
+export const DEFAULT_AUTO_UPDATE_CHECK_INTERVAL: AutoUpdateCheckInterval =
+	"launch";
 export const MIN_UI_FONT_SIZE = 7;
 export const MAX_UI_FONT_SIZE = 40;
 export const DEFAULT_UI_FONT_SIZE = 14;
@@ -90,6 +97,13 @@ function asThemeMode(value: unknown): ThemeMode {
 	return typeof value === "string" && THEME_MODES.has(value as ThemeMode)
 		? (value as ThemeMode)
 		: "system";
+}
+
+function asAutoUpdateCheckInterval(value: unknown): AutoUpdateCheckInterval {
+	return typeof value === "string" &&
+		AUTO_UPDATE_CHECK_INTERVALS.has(value as AutoUpdateCheckInterval)
+		? (value as AutoUpdateCheckInterval)
+		: DEFAULT_AUTO_UPDATE_CHECK_INTERVAL;
 }
 
 function asAiAssistantMode(value: unknown): AiAssistantMode {
@@ -145,6 +159,7 @@ function asUiEditorFontSize(value: unknown): UiFontSize {
 async function emitSettingsUpdated(payload: {
 	ui?: {
 		theme?: ThemeMode;
+		autoUpdateCheckInterval?: AutoUpdateCheckInterval;
 		lightThemeId?: UiLightThemeId;
 		darkThemeId?: UiDarkThemeId;
 		accent?: UiAccent;
@@ -196,6 +211,7 @@ interface AppSettings {
 		aiEnabled: boolean;
 		aiSidebarWidth: number | null;
 		theme: ThemeMode;
+		autoUpdateCheckInterval: AutoUpdateCheckInterval;
 		lightThemeId: UiLightThemeId;
 		darkThemeId: UiDarkThemeId;
 		accent: UiAccent;
@@ -227,6 +243,7 @@ const KEYS = {
 	aiSidebarWidth: "ui.aiSidebarWidth",
 	aiAssistantMode: "ui.aiAssistantMode",
 	theme: "ui.theme",
+	autoUpdateCheckInterval: "ui.autoUpdateCheckInterval",
 	lightThemeId: "ui.lightThemeId",
 	darkThemeId: "ui.darkThemeId",
 	accent: "ui.accent",
@@ -236,6 +253,7 @@ const KEYS = {
 	editorFontSize: "ui.editorFontSize",
 	translucentApp: "ui.translucentApp",
 	showToc: "ui.showToc",
+	autoUpdateLastCheckedAt: "updates.lastCheckedAt",
 	dailyNotesFolder: "dailyNotes.folder",
 	templatesFolder: "templates.folder",
 	templatesDailyNoteTemplate: "templates.dailyNoteTemplate",
@@ -334,6 +352,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		aiSidebarWidthRaw,
 		rawAiAssistantMode,
 		rawTheme,
+		rawAutoUpdateCheckInterval,
 		rawLightThemeId,
 		rawDarkThemeId,
 		rawAccent,
@@ -361,6 +380,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<number | null>(KEYS.aiSidebarWidth),
 		store.get<unknown>(KEYS.aiAssistantMode),
 		store.get<unknown>(KEYS.theme),
+		store.get<unknown>(KEYS.autoUpdateCheckInterval),
 		store.get<unknown>(KEYS.lightThemeId),
 		store.get<unknown>(KEYS.darkThemeId),
 		store.get<unknown>(KEYS.accent),
@@ -391,6 +411,9 @@ export async function loadSettings(): Promise<AppSettings> {
 	const aiSidebarWidth = aiSidebarWidthRaw ?? null;
 	const aiAssistantMode = asAiAssistantMode(rawAiAssistantMode);
 	const theme = asThemeMode(rawTheme);
+	const autoUpdateCheckInterval = asAutoUpdateCheckInterval(
+		rawAutoUpdateCheckInterval,
+	);
 	const lightThemeId = asUiLightThemeId(rawLightThemeId);
 	const darkThemeId = asUiDarkThemeId(rawDarkThemeId);
 	const accent = asUiAccent(rawAccent);
@@ -439,6 +462,7 @@ export async function loadSettings(): Promise<AppSettings> {
 					? aiSidebarWidth
 					: null,
 			theme,
+			autoUpdateCheckInterval,
 			lightThemeId,
 			darkThemeId,
 			accent,
@@ -543,6 +567,16 @@ export async function setThemeMode(theme: ThemeMode): Promise<void> {
 	await store.set(KEYS.theme, theme);
 	await store.save();
 	void emitSettingsUpdated({ ui: { theme } });
+}
+
+export async function setAutoUpdateCheckInterval(
+	interval: AutoUpdateCheckInterval,
+): Promise<void> {
+	const store = await getStore();
+	const next = asAutoUpdateCheckInterval(interval);
+	await store.set(KEYS.autoUpdateCheckInterval, next);
+	await store.save();
+	void emitSettingsUpdated({ ui: { autoUpdateCheckInterval: next } });
 }
 
 export async function setUiLightThemeId(
@@ -697,6 +731,30 @@ export async function setTaskSource(source: TaskSourceSetting): Promise<void> {
 	await store.set(KEYS.taskSource, next);
 	await store.save();
 	void emitSettingsUpdated({ tasks: { source: next } });
+}
+
+export async function getAutoUpdateLastCheckedAt(): Promise<number | null> {
+	const store = await getStore();
+	const raw = await store.get<unknown>(KEYS.autoUpdateLastCheckedAt);
+	return typeof raw === "number" && Number.isFinite(raw) && raw > 0
+		? raw
+		: null;
+}
+
+export async function setAutoUpdateLastCheckedAt(
+	timestamp: number | null,
+): Promise<void> {
+	const store = await getStore();
+	if (
+		typeof timestamp !== "number" ||
+		!Number.isFinite(timestamp) ||
+		timestamp <= 0
+	) {
+		await store.delete(KEYS.autoUpdateLastCheckedAt);
+	} else {
+		await store.set(KEYS.autoUpdateLastCheckedAt, Math.floor(timestamp));
+	}
+	await store.save();
 }
 
 export async function getRecentFiles(): Promise<RecentFile[]> {

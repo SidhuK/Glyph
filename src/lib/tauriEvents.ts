@@ -1,5 +1,6 @@
 import { listen } from "@tauri-apps/api/event";
 import { useEffect, useRef } from "react";
+import type { AutoUpdateCheckInterval } from "./settings";
 import type { UiDarkThemeId, UiLightThemeId } from "./uiThemes";
 
 type TauriEventMap = {
@@ -56,6 +57,7 @@ type TauriEventMap = {
 	"settings:updated": {
 		ui?: {
 			theme?: string;
+			autoUpdateCheckInterval?: AutoUpdateCheckInterval;
 			lightThemeId?: UiLightThemeId;
 			darkThemeId?: UiDarkThemeId;
 			accent?:
