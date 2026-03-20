@@ -401,43 +401,42 @@ export function DatabasesPane({
 		const nextName = `View ${document.database.views.length + 1}`;
 		const now = new Date().toISOString();
 		const nextViewId = crypto.randomUUID();
-		try {
-			await saveDatabase({
-				...document.database,
-				views: [
-					...document.database.views,
-					{
-						id: nextViewId,
-						name: nextName,
-						layout: "table",
-						icon: null,
-						color: null,
-						columns: document.database.views[0]?.columns ?? [
-							{
-								id: "title",
+		const saved = await saveDatabase({
+			...document.database,
+			views: [
+				...document.database.views,
+				{
+					id: nextViewId,
+					name: nextName,
+					layout: "table",
+					icon: null,
+					color: null,
+					columns: document.database.views[0]?.columns ?? [
+						{
+							id: "title",
+							type: "title",
+							label: "Title",
+							icon: defaultDatabaseColumnIconName({
 								type: "title",
-								label: "Title",
-								icon: defaultDatabaseColumnIconName({
-									type: "title",
-									property_kind: null,
-								}),
-								width: 320,
-								visible: true,
-							},
-						],
-						sorts: [],
-						filters: [],
-						grouping: null,
-						created_at: now,
-						updated_at: now,
-					},
-				],
-			});
-			setError("");
-			setSelectedViewId(nextViewId);
-		} catch (cause) {
-			setError(extractErrorMessage(cause));
+								property_kind: null,
+							}),
+							width: 320,
+							visible: true,
+						},
+					],
+					sorts: [],
+					filters: [],
+					grouping: null,
+					created_at: now,
+					updated_at: now,
+				},
+			],
+		});
+		if (!saved) {
+			return;
 		}
+		setError("");
+		setSelectedViewId(nextViewId);
 	}, [document, saveDatabase]);
 
 	const commitDatabaseRename = useCallback(() => {
@@ -479,12 +478,15 @@ export function DatabasesPane({
 	}, [document, renamingViewId, saveDatabase, viewNameDraft]);
 
 	const handleDeleteView = useCallback(
-		(viewId: string) => {
+		async (viewId: string) => {
 			if (!document || document.database.views.length <= 1) return;
-			void saveDatabase({
+			const saved = await saveDatabase({
 				...document.database,
 				views: document.database.views.filter((v) => v.id !== viewId),
 			});
+			if (!saved) {
+				return;
+			}
 			if (selectedViewId === viewId) {
 				const remaining = document.database.views.filter(
 					(v) => v.id !== viewId,
@@ -552,6 +554,7 @@ export function DatabasesPane({
 							<Input
 								value={nameDraft}
 								className="databasesInlineNameInput"
+								aria-label="Database name"
 								onChange={(event) => setNameDraft(event.target.value)}
 								onBlur={commitDatabaseRename}
 								onKeyDown={(event) => {
@@ -626,6 +629,7 @@ export function DatabasesPane({
 												type="text"
 												className="databasesViewTabRenameInput"
 												value={viewNameDraft}
+												aria-label="View name"
 												onChange={(event) =>
 													setViewNameDraft(event.target.value)
 												}
@@ -686,7 +690,7 @@ export function DatabasesPane({
 															<DropdownMenuSeparator />
 															<DropdownMenuItem
 																disabled={document.database.views.length <= 1}
-																onSelect={() => handleDeleteView(view.id)}
+																onSelect={() => void handleDeleteView(view.id)}
 																className="databasesDropdownItem databasesDropdownItemDanger"
 															>
 																<Trash2 size={13} />

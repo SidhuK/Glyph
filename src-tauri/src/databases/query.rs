@@ -265,9 +265,10 @@ fn row_matches_filters(
                 if filter_text.is_empty() {
                     return true;
                 }
+                let normalized = normalize_tag_text(&filter_text);
                 cell.value_list
                     .iter()
-                    .any(|tag| normalize_tag_text(tag).contains(&filter_text))
+                    .any(|tag| normalize_tag_text(tag) == normalized)
             }
             "is_empty" => text_values.is_empty() && cell.value_bool.is_none(),
             "is_not_empty" => !text_values.is_empty() || cell.value_bool.is_some(),
@@ -399,9 +400,10 @@ fn direct_folder_clause(dir: &str) -> (String, Vec<String>) {
     if dir.is_empty() {
         return ("instr(id, '/') = 0".to_string(), Vec::new());
     }
+    let char_len = dir.chars().count();
     (
         "id LIKE ? AND instr(substr(id, ?), '/') = 0".to_string(),
-        vec![format!("{dir}/%"), (dir.len() + 2).to_string()],
+        vec![format!("{dir}/%"), (char_len + 2).to_string()],
     )
 }
 
@@ -651,17 +653,19 @@ pub fn query_database_rows(
     let mut rows = hydrate_rows_by_paths(&conn, &ids)?;
     let catalog = field_catalog(database, view);
     rows.retain(|row| row_matches_filters(row, &catalog, &view.filters));
-    rows.sort_by(|left, right| left.note_path.cmp(&right.note_path));
-    for sort in view.sorts.iter().rev() {
-        if let Some(column) = catalog.iter().find(|entry| entry.id == sort.column_id) {
-            rows.sort_by(|left, right| {
-                let ordering = compare_rows(left, right, column);
-                if sort.direction == "desc" {
-                    ordering.reverse()
-                } else {
-                    ordering
-                }
-            });
+    if !view.sorts.is_empty() {
+        rows.sort_by(|left, right| left.note_path.cmp(&right.note_path));
+        for sort in view.sorts.iter().rev() {
+            if let Some(column) = catalog.iter().find(|entry| entry.id == sort.column_id) {
+                rows.sort_by(|left, right| {
+                    let ordering = compare_rows(left, right, column);
+                    if sort.direction == "desc" {
+                        ordering.reverse()
+                    } else {
+                        ordering
+                    }
+                });
+            }
         }
     }
     let total_count = rows.len() as u32;
