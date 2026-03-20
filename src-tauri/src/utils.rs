@@ -2,6 +2,22 @@ use sha2::{Digest, Sha256};
 use std::path::Path;
 use std::time::{SystemTime, UNIX_EPOCH};
 
+fn timestamp_strings_from_metadata(metadata: &std::fs::Metadata) -> (String, String) {
+    let fallback = system_time_to_rfc3339(SystemTime::now())
+        .unwrap_or_else(|| "1970-01-01T00:00:00Z".to_string());
+    let updated = metadata
+        .modified()
+        .ok()
+        .and_then(system_time_to_rfc3339)
+        .unwrap_or_else(|| fallback.clone());
+    let created = metadata
+        .created()
+        .ok()
+        .and_then(system_time_to_rfc3339)
+        .unwrap_or_else(|| updated.clone());
+    (created, updated)
+}
+
 pub fn system_time_to_rfc3339(time: SystemTime) -> Option<String> {
     let dt = time::OffsetDateTime::from(time);
     dt.format(&time::format_description::well_known::Rfc3339)
@@ -9,23 +25,21 @@ pub fn system_time_to_rfc3339(time: SystemTime) -> Option<String> {
 }
 
 pub fn file_timestamp_strings(path: &Path) -> (String, String) {
-    let fallback = system_time_to_rfc3339(SystemTime::now())
-        .unwrap_or_else(|| "1970-01-01T00:00:00Z".to_string());
     let metadata = match std::fs::metadata(path) {
         Ok(metadata) => metadata,
-        Err(_) => return (fallback.clone(), fallback),
+        Err(_) => {
+            let fallback = system_time_to_rfc3339(SystemTime::now())
+                .unwrap_or_else(|| "1970-01-01T00:00:00Z".to_string());
+            return (fallback.clone(), fallback);
+        }
     };
-    let created = metadata
-        .created()
+    timestamp_strings_from_metadata(&metadata)
+}
+
+pub fn file_timestamp_strings_if_exists(path: &Path) -> Option<(String, String)> {
+    std::fs::metadata(path)
         .ok()
-        .and_then(system_time_to_rfc3339)
-        .unwrap_or_else(|| fallback.clone());
-    let updated = metadata
-        .modified()
-        .ok()
-        .and_then(system_time_to_rfc3339)
-        .unwrap_or_else(|| fallback.clone());
-    (created, updated)
+        .map(|metadata| timestamp_strings_from_metadata(&metadata))
 }
 
 pub fn is_markdown_path(path: &Path) -> bool {

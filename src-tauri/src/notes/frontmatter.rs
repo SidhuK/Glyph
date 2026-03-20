@@ -5,8 +5,6 @@ use serde_yaml::{Mapping, Value};
 pub struct Frontmatter {
     pub id: Option<String>,
     pub title: Option<String>,
-    pub created: Option<String>,
-    pub updated: Option<String>,
     pub tags: Option<Vec<String>>,
 
     #[serde(flatten)]
