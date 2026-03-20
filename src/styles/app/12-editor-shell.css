@@ -287,7 +287,7 @@ button.ribbonBtn.active {
 .editorBody .tiptap pre {
 	font-family: var(--font-mono);
 	background: color-mix(in srgb, var(--bg-secondary) 82%, var(--bg-primary));
-	padding: var(--space-3);
+	padding: calc(var(--space-3) + 22px) var(--space-3) var(--space-3);
 	border-radius: var(--radius-lg);
 	overflow: auto;
 }
