@@ -1,4 +1,10 @@
 import {
+	EDITOR_TEXT_COLOR_BRIDGE_CLOSE_TOKEN,
+	getEditorTextColorBridgeOpenToken,
+	getEditorTextColorMarkdownOpenTag,
+	isEditorTextColor,
+} from "../textColors";
+import {
 	findWikiLinkSpans,
 	parseWikiLink,
 	wikiLinkAttrsToMarkdown,
@@ -21,10 +27,42 @@ function canonicalizeWikiLinks(input: string): string {
 	return out;
 }
 
+const GLYPH_COLOR_HTML_RE =
+	/<span\s+data-glyph-color=(?:"([^"]+)"|'([^']+)')\s+style=(?:"[^"]*"|'[^']*')\s*>([\s\S]*?)<\/span>/gi;
+
+const GLYPH_COLOR_BRIDGE_RE =
+	/\{\{glyph-color:([a-z]+)\}\}([\s\S]*?)\{\{\/glyph-color\}\}/gi;
+
+function preprocessColoredText(input: string): string {
+	return input.replace(
+		GLYPH_COLOR_HTML_RE,
+		(
+			_match,
+			dqColor: string | undefined,
+			sqColor: string | undefined,
+			text: string,
+		) => {
+			const color = (dqColor ?? sqColor ?? "").trim().toLowerCase();
+			if (!isEditorTextColor(color)) return text;
+			return `${getEditorTextColorBridgeOpenToken(color)}${text}${EDITOR_TEXT_COLOR_BRIDGE_CLOSE_TOKEN}`;
+		},
+	);
+}
+
+function postprocessColoredText(input: string): string {
+	return input.replace(
+		GLYPH_COLOR_BRIDGE_RE,
+		(_match, rawColor: string, text: string) => {
+			if (!isEditorTextColor(rawColor)) return text;
+			return `${getEditorTextColorMarkdownOpenTag(rawColor)}${text}</span>`;
+		},
+	);
+}
+
 export function preprocessMarkdownForEditor(markdown: string): string {
-	return canonicalizeWikiLinks(markdown);
+	return preprocessColoredText(canonicalizeWikiLinks(markdown));
 }
 
 export function postprocessMarkdownFromEditor(markdown: string): string {
-	return canonicalizeWikiLinks(markdown);
+	return postprocessColoredText(canonicalizeWikiLinks(markdown));
 }

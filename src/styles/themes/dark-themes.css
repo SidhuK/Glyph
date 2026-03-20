@@ -81,6 +81,14 @@
 	--callout-tip: var(--color-green-dark-400);
 	--callout-warning: var(--color-yellow-dark-400);
 	--callout-error: var(--color-red-dark-400);
+	--glyph-inline-color-gray: #b3b0ab;
+	--glyph-inline-color-brown: #c89b74;
+	--glyph-inline-color-orange: #ffb357;
+	--glyph-inline-color-yellow: #f0c240;
+	--glyph-inline-color-green: #62d49a;
+	--glyph-inline-color-blue: #7cc4ff;
+	--glyph-inline-color-purple: #c39bff;
+	--glyph-inline-color-red: #ff8a84;
 	--scrollbar-thumb: rgba(255, 255, 255, 0.16);
 	--scrollbar-thumb-hover: rgba(255, 255, 255, 0.24);
 	--glass-bg: rgba(30, 30, 30, 0.55);
