@@ -4,7 +4,6 @@ import { type Update, check } from "@tauri-apps/plugin-updater";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
 	type AutoUpdateCheckInterval,
-	DEFAULT_AUTO_UPDATE_CHECK_INTERVAL,
 	getAutoUpdateLastCheckedAt,
 	loadSettings,
 	setAutoUpdateLastCheckedAt,
@@ -58,16 +57,15 @@ export interface AutoUpdaterState {
 
 export function useAutoUpdater(): AutoUpdaterState {
 	const [update, setUpdate] = useState<Update | null>(cachedUpdate);
-	const [interval, setInterval] = useState<AutoUpdateCheckInterval>(
-		DEFAULT_AUTO_UPDATE_CHECK_INTERVAL,
-	);
+	const [checkInterval, setCheckInterval] =
+		useState<AutoUpdateCheckInterval | null>(null);
 	const launchAttemptedRef = useRef(false);
 
 	useEffect(() => {
 		let cancelled = false;
 		void loadSettings().then((settings) => {
 			if (!cancelled) {
-				setInterval(settings.ui.autoUpdateCheckInterval);
+				setCheckInterval(settings.ui.autoUpdateCheckInterval);
 			}
 		});
 		return () => {
@@ -78,10 +76,11 @@ export function useAutoUpdater(): AutoUpdaterState {
 	useTauriEvent("settings:updated", (payload) => {
 		const nextInterval = payload.ui?.autoUpdateCheckInterval;
 		if (!nextInterval) return;
-		setInterval(nextInterval);
+		setCheckInterval(nextInterval);
 	});
 
 	useEffect(() => {
+		if (checkInterval === null) return;
 		if (cachedUpdate) {
 			setUpdate(cachedUpdate);
 			return;
@@ -107,13 +106,13 @@ export function useAutoUpdater(): AutoUpdaterState {
 				setUpdate(nextUpdate);
 				return;
 			}
-			if (interval === "12h") {
+			if (checkInterval === "12h") {
 				scheduleNext(TWELVE_HOURS_MS);
 			}
 		};
 
 		void (async () => {
-			if (interval === "launch") {
+			if (checkInterval === "launch") {
 				if (launchAttemptedRef.current) return;
 				launchAttemptedRef.current = true;
 				await runCheckAndReschedule();
@@ -142,7 +141,7 @@ export function useAutoUpdater(): AutoUpdaterState {
 				window.clearTimeout(timerId);
 			}
 		};
-	}, [interval]);
+	}, [checkInterval]);
 
 	const installAndRelaunch = useCallback(() => {
 		if (!update) return;

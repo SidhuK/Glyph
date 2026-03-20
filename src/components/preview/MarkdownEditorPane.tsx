@@ -524,17 +524,34 @@ export function MarkdownEditorPane({
 		};
 
 		const resizeObserver = new ResizeObserver(schedule);
+		const observedTargets = new Set<Element>();
+		const observeIfPresent = (element: Element | null) => {
+			if (!element || observedTargets.has(element)) return;
+			resizeObserver.observe(element);
+			observedTargets.add(element);
+		};
 		resizeObserver.observe(pane);
+		observedTargets.add(pane);
 		const editorRoot = pane.querySelector(
 			".rfNodeNoteEditor",
 		) as HTMLElement | null;
-		const ribbon = pane.querySelector(
+		const floatingRibbon = pane.querySelector(
 			".rfNodeNoteEditorRibbonFloating",
 		) as HTMLElement | null;
-		if (editorRoot) resizeObserver.observe(editorRoot);
-		if (ribbon) resizeObserver.observe(ribbon);
+		observeIfPresent(editorRoot);
+		observeIfPresent(floatingRibbon);
 
-		const mutationObserver = new MutationObserver(schedule);
+		const mutationObserver = new MutationObserver(() => {
+			observeIfPresent(
+				pane.querySelector(".rfNodeNoteEditor") as HTMLElement | null,
+			);
+			observeIfPresent(
+				pane.querySelector(
+					".rfNodeNoteEditorRibbonFloating",
+				) as HTMLElement | null,
+			);
+			schedule();
+		});
 		mutationObserver.observe(pane, {
 			attributes: true,
 			childList: true,
