@@ -261,6 +261,14 @@ fn row_matches_filters(
             "not_contains" => filter_text.is_empty() || text_values.iter().all(|value| !value.contains(&filter_text)),
             "starts_with" => filter_text.is_empty() || text_values.iter().any(|value| value.starts_with(&filter_text)),
             "ends_with" => filter_text.is_empty() || text_values.iter().any(|value| value.ends_with(&filter_text)),
+            "tags_contains" => {
+                if filter_text.is_empty() {
+                    return true;
+                }
+                cell.value_list
+                    .iter()
+                    .any(|tag| normalize_tag_text(tag).contains(&filter_text))
+            }
             "is_empty" => text_values.is_empty() && cell.value_bool.is_none(),
             "is_not_empty" => !text_values.is_empty() || cell.value_bool.is_some(),
             "is_true" => cell.value_bool == Some(true),

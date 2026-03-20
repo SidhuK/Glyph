@@ -645,6 +645,22 @@ export function AppShell() {
 			databaseId: databaseId ?? null,
 		}));
 	}, []);
+	const createDatabaseAndOpen = useCallback(async () => {
+		try {
+			const created = await invoke("databases_create", {
+				name: "New Database",
+			});
+			openDatabasesTab(created.database.id);
+			return created.database.id;
+		} catch (error) {
+			const message = error instanceof Error ? error.message : String(error);
+			setError(message);
+			toast.error("Could not create database", {
+				description: message,
+			});
+			return null;
+		}
+	}, [openDatabasesTab, setError]);
 	const openGettingStarted = useCallback(() => {
 		setShowGettingStartedRequest((prev) => prev + 1);
 	}, []);
@@ -950,7 +966,7 @@ export function AppShell() {
 				icon: <HugeiconsIcon icon={TableIcon} size={16} />,
 				category: "File Operations",
 				enabled: Boolean(spacePath),
-				action: openDatabasesTab,
+				action: () => void createDatabaseAndOpen(),
 			},
 			{
 				id: "new-folder",
@@ -1082,7 +1098,7 @@ export function AppShell() {
 		fileTree,
 		onOpenSpace,
 		openMarkdownTabs.length,
-		openDatabasesTab,
+		createDatabaseAndOpen,
 		requestOpenDailyNote,
 		saveCurrentEditor,
 		handleCreateFromTemplateFromMenu,
@@ -1149,10 +1165,7 @@ export function AppShell() {
 				onNewNote={() => void fileTree.onNewFile()}
 				onNewFileInDir={(p) => void fileTree.onNewFileInDir(p)}
 				onCreateFromTemplateInDir={(p) => void openTemplatePicker(p)}
-				onNewDatabaseInDir={async () => {
-					openDatabasesTab();
-					return null;
-				}}
+				onNewDatabaseInDir={async () => createDatabaseAndOpen()}
 				onNewFolderInDir={(p) => fileTree.onNewFolderInDir(p)}
 				onRenameDir={(p, name) => fileTree.onRenameDir(p, name)}
 				onDeletePath={(p, kind) => fileTree.onDeletePath(p, kind)}

@@ -273,34 +273,49 @@ export function DatabasesPane({
 	);
 
 	const handleCreateDatabase = useCallback(async () => {
-		const created = await invoke("databases_create", {
-			name: nextDatabaseName(summaries),
-		});
-		setSelectedDatabaseId(created.database.id);
-		setDocument(created);
-		setSelectedViewId(created.database.views[0]?.id ?? null);
-		setNameDraft(created.database.name);
-		await loadSummaries();
+		try {
+			const created = await invoke("databases_create", {
+				name: nextDatabaseName(summaries),
+			});
+			setError("");
+			setSelectedDatabaseId(created.database.id);
+			setDocument(created);
+			setSelectedViewId(created.database.views[0]?.id ?? null);
+			setNameDraft(created.database.name);
+			await loadSummaries();
+		} catch (cause) {
+			setError(extractErrorMessage(cause));
+		}
 	}, [loadSummaries, summaries]);
 
 	const handleDeleteDatabase = useCallback(async () => {
 		if (!document || document.database.is_system) return;
-		await invoke("databases_delete", { database_id: document.database.id });
-		setDocument(null);
-		setRows([]);
-		await loadSummaries();
+		try {
+			await invoke("databases_delete", { database_id: document.database.id });
+			setError("");
+			setDocument(null);
+			setRows([]);
+			await loadSummaries();
+		} catch (cause) {
+			setError(extractErrorMessage(cause));
+		}
 	}, [document, loadSummaries]);
 
 	const handleDuplicateDatabase = useCallback(async () => {
 		if (!document) return;
-		const duplicated = await invoke("databases_duplicate", {
-			database_id: document.database.id,
-		});
-		setSelectedDatabaseId(duplicated.database.id);
-		setDocument(duplicated);
-		setSelectedViewId(duplicated.database.views[0]?.id ?? null);
-		setNameDraft(duplicated.database.name);
-		await loadSummaries();
+		try {
+			const duplicated = await invoke("databases_duplicate", {
+				database_id: document.database.id,
+			});
+			setError("");
+			setSelectedDatabaseId(duplicated.database.id);
+			setDocument(duplicated);
+			setSelectedViewId(duplicated.database.views[0]?.id ?? null);
+			setNameDraft(duplicated.database.name);
+			await loadSummaries();
+		} catch (cause) {
+			setError(extractErrorMessage(cause));
+		}
 	}, [document, loadSummaries]);
 
 	const handleUpdateCell = useCallback(
@@ -314,27 +329,33 @@ export function DatabasesPane({
 				value_list: string[];
 			},
 		) => {
-			await invoke("databases_update_cell", {
-				note_path: notePath,
-				column,
-				value,
-			});
-			await loadRows();
+			try {
+				await invoke("databases_update_cell", {
+					note_path: notePath,
+					column,
+					value,
+				});
+				setError("");
+				await loadRows();
+			} catch (cause) {
+				setError(extractErrorMessage(cause));
+			}
 		},
 		[loadRows],
 	);
 
-	const handleCreateDefaultGroupField = useCallback(async () => {
-		// TODO: implement default board group field creation for workspace databases.
-	}, []);
-
 	const handleCreateRow = useCallback(async () => {
 		if (!document) return;
-		const created = await invoke("databases_create_row", {
-			database_id: document.database.id,
-		});
-		setSelectedRowPath(created.note_path);
-		await loadRows();
+		try {
+			const created = await invoke("databases_create_row", {
+				database_id: document.database.id,
+			});
+			setError("");
+			setSelectedRowPath(created.note_path);
+			await loadRows();
+		} catch (cause) {
+			setError(extractErrorMessage(cause));
+		}
 	}, [document, loadRows]);
 
 	const handleCreateView = useCallback(async () => {
@@ -342,38 +363,43 @@ export function DatabasesPane({
 		const nextName = `View ${document.database.views.length + 1}`;
 		const now = new Date().toISOString();
 		const nextViewId = crypto.randomUUID();
-		await saveDatabase({
-			...document.database,
-			views: [
-				...document.database.views,
-				{
-					id: nextViewId,
-					name: nextName,
-					layout: "table",
-					icon: null,
-					color: null,
-					columns: document.database.views[0]?.columns ?? [
-						{
-							id: "title",
-							type: "title",
-							label: "Title",
-							icon: defaultDatabaseColumnIconName({
+		try {
+			await saveDatabase({
+				...document.database,
+				views: [
+					...document.database.views,
+					{
+						id: nextViewId,
+						name: nextName,
+						layout: "table",
+						icon: null,
+						color: null,
+						columns: document.database.views[0]?.columns ?? [
+							{
+								id: "title",
 								type: "title",
-								property_kind: null,
-							}),
-							width: 320,
-							visible: true,
-						},
-					],
-					sorts: [],
-					filters: [],
-					grouping: null,
-					created_at: now,
-					updated_at: now,
-				},
-			],
-		});
-		setSelectedViewId(nextViewId);
+								label: "Title",
+								icon: defaultDatabaseColumnIconName({
+									type: "title",
+									property_kind: null,
+								}),
+								width: 320,
+								visible: true,
+							},
+						],
+						sorts: [],
+						filters: [],
+						grouping: null,
+						created_at: now,
+						updated_at: now,
+					},
+				],
+			});
+			setError("");
+			setSelectedViewId(nextViewId);
+		} catch (cause) {
+			setError(extractErrorMessage(cause));
+		}
 	}, [document, saveDatabase]);
 
 	const commitDatabaseRename = useCallback(() => {
@@ -519,7 +545,16 @@ export function DatabasesPane({
 							type="button"
 							variant="ghost"
 							size="icon-sm"
-							onClick={() => void handleDeleteDatabase()}
+							onClick={() => {
+								if (
+									!window.confirm(
+										`Delete database "${document.database.name}"? This cannot be undone.`,
+									)
+								) {
+									return;
+								}
+								void handleDeleteDatabase();
+							}}
 							disabled={document.database.is_system}
 							title="Delete database"
 						>
@@ -663,7 +698,7 @@ export function DatabasesPane({
 							onSelectRow={setSelectedRowPath}
 							onOpenRow={(notePath) => void onOpenFile(notePath)}
 							onOpenColumns={() => setColumnsOpen(true)}
-							onCreateDefaultGroupField={handleCreateDefaultGroupField}
+							onCreateDefaultGroupField={null}
 							onGroupColumnIdChange={(groupColumnId) =>
 								void handleSaveConfig({
 									...activeConfig,

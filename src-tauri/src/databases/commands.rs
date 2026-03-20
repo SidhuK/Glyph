@@ -1,3 +1,4 @@
+use std::io::Write;
 use std::path::{Path, PathBuf};
 
 use serde_yaml::{Mapping, Number, Value};
@@ -46,6 +47,45 @@ fn slugify_title(title: &str) -> String {
         "Untitled".to_string()
     } else {
         slug
+    }
+}
+
+fn normalize_database_name(name: &str) -> Result<String, String> {
+    let normalized = name.trim();
+    if normalized.is_empty() {
+        return Err("database name cannot be empty".to_string());
+    }
+    Ok(normalized.to_string())
+}
+
+fn database_name_exists(
+    databases: &[DatabaseDefinition],
+    candidate: &str,
+    exclude_id: Option<&str>,
+) -> bool {
+    databases.iter().any(|entry| {
+        exclude_id.is_none_or(|id| entry.id != id) && entry.name.eq_ignore_ascii_case(candidate)
+    })
+}
+
+fn next_duplicate_database_name(databases: &[DatabaseDefinition], source_name: &str) -> String {
+    let normalized = source_name.trim();
+    let base = if normalized.is_empty() {
+        "Untitled".to_string()
+    } else {
+        normalized.to_string()
+    };
+    let first = format!("{base} Copy");
+    if !database_name_exists(databases, &first, None) {
+        return first;
+    }
+    let mut index = 2;
+    loop {
+        let candidate = format!("{base} Copy {index}");
+        if !database_name_exists(databases, &candidate, None) {
+            return candidate;
+        }
+        index += 1;
     }
 }
 
@@ -149,11 +189,33 @@ fn write_markdown_note(
     Ok(())
 }
 
-fn note_exists(root: &Path, rel_path: &str) -> Result<bool, String> {
+fn write_new_markdown_note(
+    root: &Path,
+    recent_local_changes: &RecentLocalChanges,
+    rel_path: &str,
+    markdown: &str,
+) -> Result<bool, String> {
     let rel = PathBuf::from(rel_path);
     deny_hidden_rel_path(&rel)?;
     let abs = paths::join_under(root, &rel)?;
-    Ok(abs.exists())
+    if let Some(parent) = abs.parent() {
+        std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
+    }
+    let mut file = match std::fs::OpenOptions::new()
+        .write(true)
+        .create_new(true)
+        .open(&abs)
+    {
+        Ok(file) => file,
+        Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => return Ok(false),
+        Err(error) => return Err(error.to_string()),
+    };
+    file.write_all(markdown.as_bytes())
+        .and_then(|_| file.flush())
+        .map_err(|e| e.to_string())?;
+    mark_recent_local_change(recent_local_changes, rel_path);
+    index_note(root, rel_path, markdown)?;
+    Ok(true)
 }
 
 fn create_new_row_markdown(note_path: &str, title: &str) -> Result<String, String> {
@@ -245,18 +307,15 @@ pub async fn databases_create(
         let _guard = db_store_mutex
             .lock()
             .map_err(|_| "database store mutex poisoned".to_string())?;
+        let normalized_name = normalize_database_name(&name)?;
         let mut store = bootstrap_defaults(load_store(&root)?);
-        if store
-            .databases
-            .iter()
-            .any(|entry| entry.name.eq_ignore_ascii_case(name.trim()))
-        {
+        if database_name_exists(&store.databases, &normalized_name, None) {
             return Err("database name already exists".to_string());
         }
         let now = chrono::Utc::now().to_rfc3339();
         let database = super::types::DatabaseDefinition {
             id: Uuid::new_v4().to_string(),
-            name: name.trim().to_string(),
+            name: normalized_name,
             icon: None,
             color: None,
             is_system: false,
@@ -299,17 +358,15 @@ pub async fn databases_update(
             .iter()
             .position(|entry| entry.id == database.id)
             .ok_or_else(|| "database not found".to_string())?;
-        if store.databases[index].is_system && database.name != store.databases[index].name {
+        let normalized_name = normalize_database_name(&database.name)?;
+        if store.databases[index].is_system && normalized_name != store.databases[index].name {
             return Err("system databases cannot be renamed".to_string());
         }
-        if store
-            .databases
-            .iter()
-            .any(|entry| entry.id != database.id && entry.name.eq_ignore_ascii_case(&database.name))
-        {
+        if database_name_exists(&store.databases, &normalized_name, Some(&database.id)) {
             return Err("database name already exists".to_string());
         }
         let mut next = database.clone();
+        next.name = normalized_name;
         next.updated_at = chrono::Utc::now().to_rfc3339();
         store.databases[index] = next.clone();
         save_store(&root, &store)?;
@@ -367,7 +424,7 @@ pub async fn databases_duplicate(
         let mut copy = source.clone();
         copy.id = Uuid::new_v4().to_string();
         copy.is_system = false;
-        copy.name = format!("{} Copy", source.name);
+        copy.name = next_duplicate_database_name(&store.databases, &source.name);
         copy.created_at = chrono::Utc::now().to_rfc3339();
         copy.updated_at = copy.created_at.clone();
         for view in &mut copy.views {
@@ -447,8 +504,12 @@ pub async fn databases_create_row(
     title: Option<String>,
 ) -> Result<DatabaseCreateRowResult, String> {
     let root = state.current_root()?;
+    let db_store_mutex = state.db_store_mutex();
     let recent_local_changes = state.recent_local_changes();
     tauri::async_runtime::spawn_blocking(move || {
+        let _guard = db_store_mutex
+            .lock()
+            .map_err(|_| "database store mutex poisoned".to_string())?;
         let store = bootstrap_defaults(load_store(&root)?);
         let database = store
             .databases
@@ -475,7 +536,11 @@ pub async fn databases_create_row(
             format!("{folder}/{slug}.md")
         };
         let mut index = 2;
-        while note_exists(&root, &candidate)? {
+        loop {
+            let next = create_new_row_markdown(&candidate, &title)?;
+            if write_new_markdown_note(&root, &recent_local_changes, &candidate, &next)? {
+                break;
+            }
             if index > MAX_ROW_CREATE_COLLISION_INDEX {
                 return Err(format!(
                     "reached note name collision limit for slug '{slug}' in folder '{folder}'"
@@ -488,8 +553,6 @@ pub async fn databases_create_row(
             };
             index += 1;
         }
-        let next = create_new_row_markdown(&candidate, &title)?;
-        write_markdown_note(&root, &recent_local_changes, &candidate, &next)?;
         let row = row_by_path(&root, &candidate)?;
         Ok(DatabaseCreateRowResult {
             note_path: candidate,

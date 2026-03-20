@@ -459,8 +459,8 @@
 	display: flex;
 	flex: 1;
 	flex-direction: column;
-	gap: 1px;
-	padding: 0 6px 6px;
+	gap: 8px;
+	padding: 4px 8px 10px;
 	min-height: 0;
 	overflow: auto;
 }
@@ -470,7 +470,7 @@
 	align-items: center;
 	width: 100%;
 	min-width: 0;
-	padding: 7px 8px;
+	padding: 10px 12px;
 	border: none;
 	border-radius: var(--radius-sm);
 	background: var(--bg-primary);

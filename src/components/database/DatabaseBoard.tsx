@@ -22,7 +22,7 @@ interface DatabaseBoardProps {
 	onSelectRow: (notePath: string) => void;
 	onOpenRow: (notePath: string) => void;
 	onOpenColumns: () => void;
-	onCreateDefaultGroupField: () => void;
+	onCreateDefaultGroupField?: (() => void) | null;
 	onGroupColumnIdChange: (groupColumnId: string | null) => void;
 	onSaveCell: (
 		notePath: string,
@@ -133,9 +133,15 @@ export function DatabaseBoard({
 						property like status, stage, or done.
 					</div>
 					<div className="databaseBoardEmptyActions">
-						<Button type="button" size="sm" onClick={onCreateDefaultGroupField}>
-							Add status field
-						</Button>
+						{onCreateDefaultGroupField ? (
+							<Button
+								type="button"
+								size="sm"
+								onClick={onCreateDefaultGroupField}
+							>
+								Add status field
+							</Button>
+						) : null}
 						<Button
 							type="button"
 							variant="ghost"
