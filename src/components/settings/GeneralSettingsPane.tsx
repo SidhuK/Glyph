@@ -15,18 +15,9 @@ import { Button } from "../ui/shadcn/button";
 import {
 	SettingsRow,
 	SettingsSection,
-	SettingsSegmented,
 	SettingsToggle,
 } from "./SettingsScaffold";
 import { TemplateSettingsSections } from "./TemplatesSettingsPane";
-
-const AUTO_UPDATE_INTERVAL_OPTIONS: {
-	label: string;
-	value: AutoUpdateCheckInterval;
-}[] = [
-	{ label: "On Launch", value: "launch" },
-	{ label: "Every 12h", value: "12h" },
-];
 
 export function GeneralSettingsPane() {
 	const [showToc, setShowTocState] = useState(true);
@@ -73,13 +64,11 @@ export function GeneralSettingsPane() {
 		void saveShowToc(checked);
 	}, []);
 
-	const handleAutoUpdateIntervalChange = useCallback(
-		(next: AutoUpdateCheckInterval) => {
-			setAutoUpdateCheckIntervalState(next);
-			void saveAutoUpdateCheckInterval(next);
-		},
-		[],
-	);
+	const handleAutoUpdateToggleChange = useCallback((checked: boolean) => {
+		const next: AutoUpdateCheckInterval = checked ? "12h" : "launch";
+		setAutoUpdateCheckIntervalState(next);
+		void saveAutoUpdateCheckInterval(next);
+	}, []);
 
 	const handleBrowseFolder = useCallback(async () => {
 		setDailyNotesError(null);
@@ -189,18 +178,20 @@ export function GeneralSettingsPane() {
 
 				<TemplateSettingsSections />
 
-				<SettingsSection title="Editor">
+				<SettingsSection title="Updates">
 					<SettingsRow
 						label="Automatic update checks"
-						description="Choose whether Glyph checks on launch or keeps checking every 12 hours while the app is open."
+						description="Automatically check for updates every 12 hours while Glyph is open."
 					>
-						<SettingsSegmented<AutoUpdateCheckInterval>
-							value={autoUpdateCheckInterval}
-							options={AUTO_UPDATE_INTERVAL_OPTIONS}
-							onChange={handleAutoUpdateIntervalChange}
-							ariaLabel="Automatic update checks"
+						<SettingsToggle
+							ariaLabel="Automatic update checks every 12 hours"
+							checked={autoUpdateCheckInterval === "12h"}
+							onCheckedChange={handleAutoUpdateToggleChange}
 						/>
 					</SettingsRow>
+				</SettingsSection>
+
+				<SettingsSection title="Editor">
 					<SettingsRow
 						label="Table of contents"
 						description="Show a floating table of contents for each note."
