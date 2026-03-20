@@ -221,7 +221,7 @@ fn date_matches_shortcut(value: &str, shortcut: &str) -> bool {
     let Ok(parsed) = chrono::DateTime::parse_from_rfc3339(value) else {
         return false;
     };
-    let date = parsed.date_naive();
+    let date = parsed.with_timezone(&chrono::Local).date_naive();
     let today = chrono::Local::now().date_naive();
     match normalize_text(shortcut).as_str() {
         "today" => date == today,
@@ -339,9 +339,48 @@ fn string_cell(cell: &DatabaseCellValue) -> String {
 fn compare_rows(left: &DatabaseRow, right: &DatabaseRow, column: &DatabaseColumn) -> std::cmp::Ordering {
     let left_cell = cell_value_from_row(left, column);
     let right_cell = cell_value_from_row(right, column);
-    string_cell(&left_cell)
-        .to_lowercase()
-        .cmp(&string_cell(&right_cell).to_lowercase())
+    match left_cell.kind.as_str() {
+        "number" => {
+            let left_number = left_cell
+                .value_text
+                .as_deref()
+                .and_then(|value| value.trim().parse::<f64>().ok());
+            let right_number = right_cell
+                .value_text
+                .as_deref()
+                .and_then(|value| value.trim().parse::<f64>().ok());
+            match (left_number, right_number) {
+                (Some(left_number), Some(right_number)) => left_number
+                    .partial_cmp(&right_number)
+                    .unwrap_or(std::cmp::Ordering::Equal),
+                (Some(_), None) => std::cmp::Ordering::Greater,
+                (None, Some(_)) => std::cmp::Ordering::Less,
+                (None, None) => std::cmp::Ordering::Equal,
+            }
+        }
+        "date" | "datetime" => {
+            let left_date = left_cell
+                .value_text
+                .as_deref()
+                .and_then(|value| chrono::DateTime::parse_from_rfc3339(value).ok())
+                .map(|value| value.with_timezone(&chrono::Local));
+            let right_date = right_cell
+                .value_text
+                .as_deref()
+                .and_then(|value| chrono::DateTime::parse_from_rfc3339(value).ok())
+                .map(|value| value.with_timezone(&chrono::Local));
+            match (left_date, right_date) {
+                (Some(left_date), Some(right_date)) => left_date.cmp(&right_date),
+                (Some(_), None) => std::cmp::Ordering::Greater,
+                (None, Some(_)) => std::cmp::Ordering::Less,
+                (None, None) => std::cmp::Ordering::Equal,
+            }
+        }
+        "checkbox" => left_cell.value_bool.cmp(&right_cell.value_bool),
+        _ => string_cell(&left_cell)
+            .to_lowercase()
+            .cmp(&string_cell(&right_cell).to_lowercase()),
+    }
 }
 
 fn all_notes_source_ids(conn: &Connection, limit: usize) -> Result<Vec<String>, String> {
@@ -612,19 +651,15 @@ pub fn query_database_rows(
     let mut rows = hydrate_rows_by_paths(&conn, &ids)?;
     let catalog = field_catalog(database, view);
     rows.retain(|row| row_matches_filters(row, &catalog, &view.filters));
+    rows.sort_by(|left, right| left.note_path.cmp(&right.note_path));
     for sort in view.sorts.iter().rev() {
         if let Some(column) = catalog.iter().find(|entry| entry.id == sort.column_id) {
             rows.sort_by(|left, right| {
                 let ordering = compare_rows(left, right, column);
-                let primary = if sort.direction == "desc" {
+                if sort.direction == "desc" {
                     ordering.reverse()
                 } else {
                     ordering
-                };
-                if primary == std::cmp::Ordering::Equal {
-                    left.note_path.cmp(&right.note_path)
-                } else {
-                    primary
                 }
             });
         }

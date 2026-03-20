@@ -213,9 +213,38 @@ fn write_new_markdown_note(
     file.write_all(markdown.as_bytes())
         .and_then(|_| file.sync_all())
         .map_err(|e| e.to_string())?;
+    if let Some(parent) = abs.parent() {
+        std::fs::File::open(parent)
+            .and_then(|dir| dir.sync_all())
+            .map_err(|e| e.to_string())?;
+    }
     mark_recent_local_change(recent_local_changes, rel_path);
     index_note(root, rel_path, markdown)?;
     Ok(true)
+}
+
+fn validate_editable_column(row: &DatabaseRow, column: &DatabaseColumn) -> Result<(), String> {
+    match column.column_type.as_str() {
+        "title" | "tags" => Ok(()),
+        "property" => {
+            let property_key = column
+                .property_key
+                .as_deref()
+                .ok_or_else(|| "property column is missing property_key".to_string())?;
+            if column.property_kind.as_deref() == Some("yaml") {
+                return Err("yaml properties are read-only".to_string());
+            }
+            if row.properties.contains_key(property_key) || column.property_kind.is_some() {
+                Ok(())
+            } else {
+                Err("unknown property column".to_string())
+            }
+        }
+        "path" | "folder" | "created" | "updated" | "linked_notes" => {
+            Err(format!("{} columns are read-only", column.column_type))
+        }
+        other => Err(format!("unsupported column type '{other}'")),
+    }
 }
 
 fn create_new_row_markdown(note_path: &str, title: &str) -> Result<String, String> {
@@ -484,6 +513,8 @@ pub async fn databases_update_cell(
     let root = state.current_root()?;
     let recent_local_changes = state.recent_local_changes();
     tauri::async_runtime::spawn_blocking(move || {
+        let existing_row = row_by_path(&root, &note_path)?;
+        validate_editable_column(&existing_row, &column)?;
         let rel = PathBuf::from(&note_path);
         deny_hidden_rel_path(&rel)?;
         let abs = paths::join_under(&root, &rel)?;

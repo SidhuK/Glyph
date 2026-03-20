@@ -1,4 +1,7 @@
-import { DashboardSquare03Icon } from "@hugeicons/core-free-icons";
+import {
+	DashboardSquare03Icon,
+	MoreVerticalIcon,
+} from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { defaultDatabaseColumnIconName } from "../../lib/database/columnIcons";
@@ -13,15 +16,7 @@ import {
 	type WorkspaceDatabaseSummary,
 	invoke,
 } from "../../lib/tauri";
-import {
-	ChevronDown,
-	Edit,
-	Kanban,
-	MoreHorizontal,
-	Plus,
-	Table,
-	Trash2,
-} from "../Icons";
+import { ChevronDown, Edit, Kanban, Plus, Table, Trash2 } from "../Icons";
 import { DatabaseBoard } from "../database/DatabaseBoard";
 import { DatabaseColumnDialog } from "../database/DatabaseColumnDialog";
 import { DatabaseSourceDialog } from "../database/DatabaseSourceDialog";
@@ -122,6 +117,8 @@ export function DatabasesPane({
 		null,
 	);
 	const [rows, setRows] = useState<DatabaseRow[]>([]);
+	const [totalCount, setTotalCount] = useState(0);
+	const [isTruncated, setIsTruncated] = useState(false);
 	const [loading, setLoading] = useState(true);
 	const [rowsLoading, setRowsLoading] = useState(false);
 	const [error, setError] = useState("");
@@ -232,6 +229,8 @@ export function DatabasesPane({
 		) {
 			if (rowRequestTokenRef.current === requestToken) {
 				setRows([]);
+				setTotalCount(0);
+				setIsTruncated(false);
 			}
 			return;
 		}
@@ -246,6 +245,8 @@ export function DatabasesPane({
 				return;
 			}
 			setRows(next.rows);
+			setTotalCount(next.total_count);
+			setIsTruncated(next.truncated);
 		} catch (cause) {
 			if (rowRequestTokenRef.current !== requestToken) {
 				return;
@@ -550,8 +551,15 @@ export function DatabasesPane({
 				{document ? (
 					<div className="databasesTopBarRight">
 						<span className="databasesHeaderSource">
-							{rows.length} row{rows.length === 1 ? "" : "s"}
+							{totalCount > rows.length
+								? `Showing ${rows.length} of ${totalCount} rows`
+								: `${rows.length} row${rows.length === 1 ? "" : "s"}`}
 						</span>
+						{isTruncated ? (
+							<span className="databasesHeaderSource">
+								Limited to the first 200 rows
+							</span>
+						) : null}
 						<Button
 							type="button"
 							variant="ghost"
@@ -634,8 +642,16 @@ export function DatabasesPane({
 																type="button"
 																className="databasesViewTabMenu"
 																title="View options"
+																aria-label={`View options for ${view.name}`}
 															>
-																<MoreHorizontal size={14} />
+																<HugeiconsIcon
+																	icon={MoreVerticalIcon}
+																	className="databasesViewTabMenuIcon"
+																	size={14}
+																	color="currentColor"
+																	strokeWidth={1.8}
+																	aria-hidden
+																/>
 															</button>
 														</DropdownMenuTrigger>
 														<DropdownMenuContent

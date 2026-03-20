@@ -1,5 +1,5 @@
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
-import { memo, useEffect, useMemo, useState } from "react";
+import { Suspense, lazy, memo, useEffect, useMemo, useState } from "react";
 import {
 	useAISidebarContext,
 	useSpace,
@@ -22,7 +22,6 @@ import { TASKS_TAB_ID } from "../../lib/tasks";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { isInAppPreviewable } from "../../utils/filePreview";
 import { Calendar, FileText, Settings } from "../Icons";
-import { DatabasesPane } from "../databases/DatabasesPane";
 import { FilePreviewPane } from "../preview/FilePreviewPane";
 import { NotePane } from "../preview/NotePane";
 import { TasksPane } from "../tasks/TasksPane";
@@ -32,6 +31,12 @@ import { GettingStartedPane } from "./GettingStartedPane";
 import { TabBar } from "./TabBar";
 import { WelcomeScreen } from "./WelcomeScreen";
 import { useTabManager } from "./useTabManager";
+
+const DatabasesPane = lazy(() =>
+	import("../databases/DatabasesPane").then((module) => ({
+		default: module.DatabasesPane,
+	})),
+);
 
 interface EmptyTip {
 	key: string;
@@ -421,11 +426,17 @@ export const MainContent = memo(function MainContent({
 		}
 		if (viewerPath === DATABASES_TAB_ID) {
 			return (
-				<DatabasesPane
-					onOpenFile={(relPath) => fileTree.openFile(relPath)}
-					initialDatabaseId={openDatabasesRequest.databaseId}
-					openRequestNonce={openDatabasesRequest.nonce}
-				/>
+				<Suspense
+					fallback={
+						<div className="databaseLoadingState">Loading databases…</div>
+					}
+				>
+					<DatabasesPane
+						onOpenFile={(relPath) => fileTree.openFile(relPath)}
+						initialDatabaseId={openDatabasesRequest.databaseId}
+						openRequestNonce={openDatabasesRequest.nonce}
+					/>
+				</Suspense>
 			);
 		}
 		if (viewerPath.toLowerCase().endsWith(".md")) {

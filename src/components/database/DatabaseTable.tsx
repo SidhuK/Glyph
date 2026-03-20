@@ -48,7 +48,7 @@ function SortIndicator({
 }: { activeSort: DatabaseSort | null; columnId: string }) {
 	if (!activeSort || activeSort.column_id !== columnId) return null;
 	return (
-		<span className="databaseHeaderSortIcon">
+		<span className="databaseHeaderSortIcon" aria-hidden="true">
 			{activeSort.direction === "desc" ? (
 				<ChevronDown size={12} />
 			) : (
@@ -123,6 +123,13 @@ export function DatabaseTable({
 										minWidth: header.getSize(),
 									}}
 									className="databaseHeadCell"
+									aria-sort={
+										activeSort?.column_id === header.column.id
+											? activeSort.direction === "desc"
+												? "descending"
+												: "ascending"
+											: "none"
+									}
 								>
 									{header.isPlaceholder
 										? null

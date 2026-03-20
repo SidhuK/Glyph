@@ -240,7 +240,7 @@ export function databaseCellValueFromRow(
 		case "folder":
 			return {
 				kind: "text",
-				value_text: row.folder ?? parentDir(row.note_path) ?? "/",
+				value_text: (row.folder ?? parentDir(row.note_path)) || "/",
 				value_list: [],
 			};
 		case "created":

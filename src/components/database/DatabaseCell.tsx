@@ -97,13 +97,8 @@ export function DatabaseCell({
 			column.property_kind === "relation" ||
 			column.property_kind === "multi_select"
 		) {
-			const listLikeKindMap = {
-				list: "list",
-				relation: "relation",
-				multi_select: "multi_select",
-			} as const;
 			await onSave(row.note_path, column, {
-				kind: listLikeKindMap[column.property_kind],
+				kind: column.property_kind,
 				value_list: draft
 					.split(",")
 					.map((value) => value.trim())

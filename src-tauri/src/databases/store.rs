@@ -21,6 +21,10 @@ fn databases_store_path(space_root: &Path) -> Result<PathBuf, String> {
     Ok(ensure_glyph_dir(space_root)?.join(DATABASES_STORE_FILE))
 }
 
+fn stable_view_id(seed: &str) -> String {
+    format!("system-view:{seed}")
+}
+
 pub(crate) fn default_view(name: &str) -> DatabaseViewDefinition {
     let now = now_iso();
     DatabaseViewDefinition {
@@ -84,6 +88,12 @@ fn recent_view() -> DatabaseViewDefinition {
 
 fn system_database(id: &str, name: &str, recent: bool) -> DatabaseDefinition {
     let now = now_iso();
+    let mut view = if recent {
+        recent_view()
+    } else {
+        default_view("Table")
+    };
+    view.id = stable_view_id(&format!("glyph://system-database/{id}/{}", view.name));
     DatabaseDefinition {
         id: id.to_string(),
         name: name.to_string(),
@@ -122,11 +132,7 @@ fn system_database(id: &str, name: &str, recent: bool) -> DatabaseDefinition {
                 relation_database_id: None,
             },
         ],
-        views: vec![if recent {
-            recent_view()
-        } else {
-            default_view("Table")
-        }],
+        views: vec![view],
         created_at: now.clone(),
         updated_at: now,
     }
@@ -148,6 +154,12 @@ pub fn load_store(space_root: &Path) -> Result<DatabaseStore, String> {
         Ok(bytes) => {
             let mut store: DatabaseStore =
                 serde_json::from_slice(&bytes).map_err(|e| e.to_string())?;
+            if store.version > DATABASES_STORE_VERSION {
+                return Err(format!(
+                    "unsupported databases store version {} (max supported {})",
+                    store.version, DATABASES_STORE_VERSION
+                ));
+            }
             if store.version == 0 {
                 store.version = DATABASES_STORE_VERSION;
             }

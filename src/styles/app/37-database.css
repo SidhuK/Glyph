@@ -168,10 +168,12 @@
 
 .databasesViewTabMenu {
 	display: inline-flex;
+	flex: 0 0 auto;
 	align-items: center;
 	justify-content: center;
 	width: 22px;
 	height: 22px;
+	padding: 0;
 	border: none;
 	border-radius: var(--radius-sm);
 	background: transparent;
@@ -184,6 +186,15 @@
 .databasesViewTabMenu:hover {
 	background: var(--bg-hover);
 	color: var(--text-primary);
+}
+
+.databasesViewTabMenuIcon {
+	display: block;
+	width: 14px;
+	height: 14px;
+	min-width: 14px;
+	min-height: 14px;
+	flex: 0 0 14px;
 }
 
 .databasesViewTabCreate {
