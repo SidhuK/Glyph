@@ -38,6 +38,10 @@
 	color: oklch(0.74 0.16 88);
 }
 
+.sidebarQuickActionBtn[data-kind="databases"] > svg {
+	color: oklch(0.72 0.13 204);
+}
+
 .sidebarQuickActionBtn[data-kind="daily-notes"] > svg {
 	color: oklch(0.66 0.13 242);
 }

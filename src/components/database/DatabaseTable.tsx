@@ -10,6 +10,7 @@ import type {
 	DatabaseRow,
 	DatabaseSort,
 } from "../../lib/database/types";
+import { ChevronDown, ChevronUp } from "../Icons";
 import {
 	Table,
 	TableBody,
@@ -41,12 +42,20 @@ interface DatabaseTableProps {
 	) => Promise<void>;
 }
 
-function sortIndicator(
-	activeSort: DatabaseSort | null,
-	columnId: string,
-): string {
-	if (!activeSort || activeSort.column_id !== columnId) return "";
-	return activeSort.direction === "desc" ? " ↓" : " ↑";
+function SortIndicator({
+	activeSort,
+	columnId,
+}: { activeSort: DatabaseSort | null; columnId: string }) {
+	if (!activeSort || activeSort.column_id !== columnId) return null;
+	return (
+		<span className="databaseHeaderSortIcon">
+			{activeSort.direction === "desc" ? (
+				<ChevronDown size={12} />
+			) : (
+				<ChevronUp size={12} />
+			)}
+		</span>
+	);
 }
 
 export function DatabaseTable({
@@ -76,9 +85,7 @@ export function DatabaseTable({
 								className="databaseHeaderIcon"
 							/>
 							<span className="databaseHeaderText">{column.label}</span>
-							<span className="databaseHeaderSort">
-								{sortIndicator(activeSort, column.id)}
-							</span>
+							<SortIndicator activeSort={activeSort} columnId={column.id} />
 						</span>
 					</button>
 				),
@@ -107,7 +114,7 @@ export function DatabaseTable({
 			<Table className="databaseTable">
 				<TableHeader>
 					{table.getHeaderGroups().map((headerGroup) => (
-						<TableRow key={headerGroup.id}>
+						<TableRow key={headerGroup.id} className="databaseHeaderRow">
 							{headerGroup.headers.map((header) => (
 								<TableHead
 									key={header.id}

@@ -46,11 +46,30 @@ const builtInColumns: DatabaseColumn[] = [
 		visible: true,
 	},
 	{
+		id: "folder",
+		type: "folder",
+		label: "Folder",
+		icon: defaultDatabaseColumnIconName({ type: "path", property_kind: null }),
+		width: 220,
+		visible: true,
+	},
+	{
 		id: "path",
 		type: "path",
 		label: "Path",
 		icon: defaultDatabaseColumnIconName({ type: "path", property_kind: null }),
 		width: 260,
+		visible: true,
+	},
+	{
+		id: "linked_notes",
+		type: "linked_notes",
+		label: "Linked Notes",
+		icon: defaultDatabaseColumnIconName({
+			type: "property",
+			property_kind: "relation",
+		}),
+		width: 220,
 		visible: true,
 	},
 	{

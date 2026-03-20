@@ -92,9 +92,18 @@ export function DatabaseCell({
 			});
 			return;
 		}
-		if (column.property_kind === "list") {
+		if (
+			column.property_kind === "list" ||
+			column.property_kind === "relation" ||
+			column.property_kind === "multi_select"
+		) {
 			await onSave(row.note_path, column, {
-				kind: "list",
+				kind:
+					column.property_kind === "relation"
+						? "relation"
+						: column.property_kind === "multi_select"
+							? "multi_select"
+							: "list",
 				value_list: draft
 					.split(",")
 					.map((value) => value.trim())
@@ -205,7 +214,7 @@ export function DatabaseCell({
 				</button>
 			);
 		}
-		if (cellValue.kind === "list") {
+		if (cellValue.kind === "list" || cellValue.kind === "relation") {
 			return (
 				<button
 					type="button"

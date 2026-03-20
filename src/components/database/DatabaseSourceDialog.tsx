@@ -120,6 +120,7 @@ export function DatabaseSourceDialog({
 									})
 								}
 							>
+								<option value="all_notes">All notes</option>
 								<option value="folder">Folder</option>
 								<option value="tag">Tag</option>
 								<option value="search">Search</option>
@@ -129,7 +130,11 @@ export function DatabaseSourceDialog({
 							<div>
 								<div className="settingsLabel">Source Value</div>
 							</div>
-							{config.source.kind === "folder" ? (
+							{config.source.kind === "all_notes" ? (
+								<div className="databaseFilterPassiveHint">
+									Use every indexed note in the workspace.
+								</div>
+							) : config.source.kind === "folder" ? (
 								<DatabaseFolderPicker
 									value={config.source.value}
 									label="Database Folder"

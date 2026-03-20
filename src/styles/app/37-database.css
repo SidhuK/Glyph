@@ -6,14 +6,224 @@
 	background: var(--bg-primary);
 }
 
+.databasesTopBar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 10px 18px;
+	border-bottom: 1px solid var(--border-light);
+}
+
+.databasesTopBarLeft {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-width: 0;
+	flex: 1;
+}
+
+.databasesTopBarRight {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex: 0 0 auto;
+}
+
+.databasesTopBarDivider {
+	width: 1px;
+	height: 18px;
+	background: var(--border-light);
+	flex: 0 0 auto;
+}
+
+.databasesDropdownTrigger {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 5px 8px;
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-md);
+	background: transparent;
+	color: var(--text-primary);
+	font-size: 0.84rem;
+	font-weight: var(--font-medium);
+	cursor: pointer;
+	transition: background-color 120ms ease, border-color 120ms ease;
+	white-space: nowrap;
+}
+
+.databasesDropdownTrigger:hover {
+	background: var(--bg-hover);
+	border-color: var(--border-default);
+}
+
+.databasesDropdownTriggerLabel {
+	max-width: 200px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.databasesDropdownContent {
+	min-width: 220px;
+	padding: 6px;
+	border-radius: var(--radius-md);
+	border: 1px solid var(--border-light);
+}
+
+.databasesDropdownItem {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	border-radius: var(--radius-sm);
+	font-size: 0.82rem;
+}
+
+.databasesDropdownItem.is-selected {
+	background: color-mix(in srgb, var(--interactive-accent) 8%, var(--bg-hover));
+}
+
+.databasesDropdownItemDanger:not([disabled]):hover,
+.databasesDropdownItemDanger:not([disabled]):focus {
+	color: var(--text-error);
+}
+
+.databasesInlineNameInput {
+	max-width: 280px;
+	height: 28px;
+	font-size: 0.9rem;
+	font-weight: var(--font-semibold);
+	background: transparent;
+	border: 1px solid transparent;
+	border-radius: var(--radius-sm);
+	padding: 0 6px;
+	box-shadow: none;
+	transition: border-color 120ms ease, background-color 120ms ease;
+}
+
+.databasesInlineNameInput:hover {
+	border-color: var(--border-light);
+}
+
+.databasesInlineNameInput:focus,
+.databasesInlineNameInput:focus-visible {
+	border-color: var(--border-default);
+	background: var(--bg-secondary);
+	box-shadow: none;
+	outline: none;
+}
+
+.databasesHeaderSource {
+	color: var(--text-tertiary);
+	font-size: 0.76rem;
+	font-weight: var(--font-medium);
+	white-space: nowrap;
+}
+
+.databasesViewBar {
+	padding: 0 18px;
+	border-bottom: 1px solid var(--border-light);
+}
+
+.databasesViewTabs {
+	display: flex;
+	align-items: center;
+	gap: 2px;
+}
+
+.databasesViewTabWrapper {
+	display: flex;
+	align-items: center;
+	position: relative;
+	border-bottom: 2px solid transparent;
+	transition: border-color 120ms ease;
+}
+
+.databasesViewTabWrapper.is-active {
+	border-bottom-color: var(--text-primary);
+}
+
+.databasesViewTab {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	padding: 8px 8px;
+	border: none;
+	border-radius: 0;
+	background: transparent;
+	color: var(--text-secondary);
+	cursor: pointer;
+	transition: color 120ms ease;
+	white-space: nowrap;
+}
+
+.databasesViewTab:hover {
+	color: var(--text-primary);
+}
+
+.databasesViewTab.is-active {
+	color: var(--text-primary);
+}
+
+.databasesViewTabMenu {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 22px;
+	height: 22px;
+	border: none;
+	border-radius: var(--radius-sm);
+	background: transparent;
+	color: var(--text-tertiary);
+	cursor: pointer;
+	transition: background-color 120ms ease, color 120ms ease;
+	margin-right: 4px;
+}
+
+.databasesViewTabMenu:hover {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}
+
+.databasesViewTabCreate {
+	gap: 0;
+	padding: 8px 8px;
+	color: var(--text-tertiary);
+	border: none;
+}
+
+.databasesViewTabCreate:hover {
+	color: var(--text-secondary);
+}
+
+.databasesViewTabName {
+	font-size: 0.82rem;
+	font-weight: var(--font-medium);
+}
+
+.databasesViewTabRenameInput {
+	width: 100px;
+	height: 28px;
+	margin: 6px 4px;
+	padding: 0 6px;
+	font-size: 0.82rem;
+	font-weight: var(--font-medium);
+	border: 1px solid var(--border-default);
+	border-radius: var(--radius-sm);
+	background: var(--bg-secondary);
+	color: var(--text-primary);
+	outline: none;
+}
+
 .databaseToolbar {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
 	gap: 12px;
-	padding: 14px 18px;
+	padding: 8px 18px;
 	border-bottom: 1px solid var(--border-light);
-	background: color-mix(in srgb, var(--bg-secondary) 32%, var(--bg-primary));
+	background: transparent;
 }
 
 .databaseToolbarPrimary,
@@ -76,9 +286,9 @@
 }
 
 .databaseToolbarChip {
-	border-radius: var(--radius-md);
-	border-color: color-mix(in srgb, var(--border-light) 78%, transparent);
-	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
+	border-radius: 8px;
+	border-color: var(--border-light);
+	background: var(--bg-primary);
 	color: var(--text-secondary);
 	transition: transform 180ms ease, border-color 180ms ease, background-color
 		180ms ease, color 180ms ease;
@@ -88,18 +298,18 @@
 	border-color: var(--border-default);
 	background: var(--bg-hover);
 	color: var(--text-primary);
-	transform: translateY(-1px);
+	transform: none;
 }
 
 .databaseToolbarChip.is-active {
-	border-color: color-mix(in srgb, var(--interactive-accent) 30%, transparent);
-	background: color-mix(in srgb, var(--interactive-accent) 8%, var(--bg-hover));
+	border-color: var(--border-strong);
+	background: var(--bg-secondary);
 	color: var(--text-primary);
 }
 
 .databaseToolbarChip.is-accent {
-	border-color: color-mix(in srgb, var(--interactive-accent) 24%, transparent);
-	background: color-mix(in srgb, var(--interactive-accent) 12%, var(--bg-hover));
+	border-color: var(--border-default);
+	background: var(--bg-secondary);
 	color: var(--text-primary);
 }
 
@@ -120,9 +330,9 @@
 .databaseToolbarGroupBySelect {
 	height: 26px;
 	padding: 0 22px 0 8px;
-	border-radius: var(--radius-md);
-	border: 1px solid color-mix(in srgb, var(--border-light) 78%, transparent);
-	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
+	border-radius: 8px;
+	border: 1px solid var(--border-light);
+	background: var(--bg-primary);
 	color: var(--text-secondary);
 	font-size: var(--text-xs);
 	line-height: 1;
@@ -139,7 +349,7 @@
 	border-color: var(--border-default);
 	background-color: var(--bg-hover);
 	color: var(--text-primary);
-	transform: translateY(-1px);
+	transform: none;
 }
 
 .databaseToolbarGroupBySelect:focus,
@@ -156,7 +366,7 @@
 	flex: 1;
 	min-height: 0;
 	overflow: auto;
-	padding: 14px 18px 18px;
+	padding: 10px 18px 18px;
 }
 
 .databaseBoardShell {
@@ -165,7 +375,7 @@
 	display: flex;
 	flex-direction: column;
 	gap: 12px;
-	padding: 14px 18px 18px;
+	padding: 10px 18px 18px;
 }
 
 .databaseBoardError,
@@ -195,8 +405,8 @@
 	display: grid;
 	flex: 1;
 	grid-auto-flow: column;
-	grid-auto-columns: minmax(320px, 380px);
-	gap: var(--space-4);
+	grid-auto-columns: minmax(260px, 340px);
+	gap: 10px;
 	min-height: 0;
 	height: 100%;
 	overflow: auto;
@@ -210,29 +420,17 @@
 	flex-direction: column;
 	min-height: 0;
 	height: 100%;
-	border: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
-	border-radius: var(--radius-lg);
-	background: linear-gradient(
-		180deg,
-		color-mix(in srgb, var(--bg-primary) 97%, transparent) 0%,
-		color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary)) 100%
-	);
-	box-shadow: 0 18px 34px
-		color-mix(in srgb, var(--shadow-color, #000) 4%, transparent);
-	transition: border-color var(--transition-base), background-color
-		var(--transition-base), box-shadow 180ms ease, transform 180ms ease;
+	border-radius: var(--radius-md);
+	background: color-mix(in srgb, var(--bg-secondary) 40%, var(--bg-primary));
+	transition: background-color 140ms ease;
 }
 
 .databaseBoardLane[data-active="true"] {
-	border-color: color-mix(in srgb, var(--interactive-accent) 32%, transparent);
 	background: color-mix(
 		in srgb,
 		var(--interactive-accent) 5%,
-		var(--bg-primary)
+		var(--bg-secondary)
 	);
-	box-shadow: 0 22px 40px
-		color-mix(in srgb, var(--shadow-color, #000) 7%, transparent);
-	transform: translateY(-1px);
 }
 
 .databaseBoardLaneHeader {
@@ -240,70 +438,45 @@
 	align-items: center;
 	justify-content: space-between;
 	gap: var(--space-2);
-	padding: var(--space-3) var(--space-3) var(--space-2);
-	border-bottom: 1px solid
-		color-mix(in srgb, var(--border-light) 72%, transparent);
-	background: color-mix(in srgb, var(--bg-secondary) 46%, transparent);
+	padding: 10px 12px 6px;
 }
 
 .databaseBoardLaneTitle {
-	font-size: var(--text-sm);
-	font-weight: var(--font-semibold);
-	color: var(--text-primary);
+	font-size: 0.8rem;
+	font-weight: var(--font-medium);
+	color: var(--text-secondary);
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
 }
 
 .databaseBoardLaneCount {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	min-width: 20px;
-	min-height: 20px;
-	padding: 2px 6px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
-	border-radius: var(--radius-sm);
-	background: color-mix(in srgb, var(--bg-secondary) 68%, transparent);
-	font-size: 0.69rem;
+	font-size: 0.72rem;
 	font-weight: var(--font-medium);
-	line-height: 1.15;
-	color: var(--text-secondary);
-	box-shadow: 0 8px 16px
-		color-mix(in srgb, var(--shadow-color, #000) 4%, transparent);
+	color: var(--text-tertiary);
 }
 
 .databaseBoardLaneBody {
 	display: flex;
 	flex: 1;
 	flex-direction: column;
-	gap: var(--space-2);
-	padding: var(--space-2);
+	gap: 1px;
+	padding: 0 6px 6px;
 	min-height: 0;
 	overflow: auto;
 }
 
 .databaseBoardCard {
 	display: flex;
-	flex-direction: column;
-	align-items: stretch;
-	justify-content: flex-start;
-	gap: var(--space-2);
+	align-items: center;
 	width: 100%;
 	min-width: 0;
-	min-height: 112px;
-	padding: 12px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 84%, transparent);
-	border-radius: var(--radius-md);
-	background: linear-gradient(
-		180deg,
-		color-mix(in srgb, var(--bg-primary) 98%, transparent) 0%,
-		color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary)) 100%
-	);
+	padding: 7px 8px;
+	border: none;
+	border-radius: var(--radius-sm);
+	background: var(--bg-primary);
 	cursor: pointer;
 	text-align: left;
-	white-space: normal;
-	box-shadow: 0 12px 24px
-		color-mix(in srgb, var(--shadow-color, #000) 4%, transparent);
-	transition: border-color var(--transition-base), background-color
-		var(--transition-base), box-shadow 180ms ease, transform 180ms ease;
+	transition: background-color 120ms ease;
 	overflow: hidden;
 }
 
@@ -317,38 +490,26 @@
 }
 
 .databaseBoardCard:hover {
-	border-color: color-mix(in srgb, var(--border-default) 88%, transparent);
 	background: var(--bg-hover);
-	box-shadow: 0 18px 34px
-		color-mix(in srgb, var(--shadow-color, #000) 7%, transparent);
-	transform: translateY(-2px);
 }
 
 .databaseBoardCard[data-state="selected"] {
-	border-color: color-mix(in srgb, var(--interactive-accent) 30%, transparent);
 	background: color-mix(
 		in srgb,
-		var(--interactive-accent) 7%,
+		var(--interactive-accent) 8%,
 		var(--bg-primary)
 	);
-	box-shadow: 0 18px 36px
-		color-mix(in srgb, var(--interactive-accent) 10%, transparent);
 }
 
 .databaseBoardCardTitle {
-	width: 100%;
 	min-width: 0;
-	font-size: var(--text-sm);
-	font-weight: var(--font-semibold);
-	line-height: 1.35;
-	letter-spacing: -0.01em;
+	font-size: 0.84rem;
+	font-weight: var(--font-medium);
+	line-height: 1.4;
 	color: var(--text-primary);
-	text-align: left;
-	display: -webkit-box;
-	-webkit-line-clamp: 2;
-	-webkit-box-orient: vertical;
 	overflow: hidden;
-	white-space: normal;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .databaseBoardCardHead {
@@ -387,15 +548,13 @@
 	align-items: center;
 	max-width: 100%;
 	padding: 2px 6px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
+	border: 1px solid var(--border-light);
 	border-radius: var(--radius-sm);
-	background: color-mix(in srgb, var(--bg-secondary) 74%, transparent);
+	background: var(--bg-secondary);
 	font-size: 0.68rem;
 	line-height: 1.2;
 	color: var(--text-secondary);
 	white-space: nowrap;
-	box-shadow: 0 8px 14px
-		color-mix(in srgb, var(--shadow-color, #000) 3%, transparent);
 }
 
 .databaseBoardCardDetails {
@@ -418,13 +577,9 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 18px;
-	height: 18px;
-	border-radius: var(--radius-sm);
-	background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
-	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
+	width: 16px;
+	height: 16px;
 	color: var(--text-tertiary);
-	box-shadow: inset 0 1px 0 color-mix(in srgb, white 45%, transparent);
 }
 
 .databaseBoardCardDetailValue {
@@ -438,9 +593,8 @@
 
 .databaseBoardCardPath {
 	margin-top: auto;
-	padding-top: 6px;
-	border-top: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
-	font-size: 0.68rem;
+	padding-top: 4px;
+	font-size: 0.66rem;
 	line-height: 1.35;
 	color: var(--text-tertiary);
 	overflow: hidden;
@@ -454,18 +608,12 @@
 	flex-direction: column;
 	align-items: center;
 	justify-content: center;
-	gap: 6px;
+	gap: 8px;
 	padding: 24px;
 	text-align: center;
-	border: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
+	border: 1px dashed var(--border-light);
 	border-radius: var(--radius-xl);
-	background: radial-gradient(
-			circle at top,
-			color-mix(in srgb, var(--interactive-accent) 10%, transparent) 0%,
-			transparent 46%
-		), color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary));
-	box-shadow: 0 18px 36px
-		color-mix(in srgb, var(--shadow-color, #000) 5%, transparent);
+	background: var(--bg-primary);
 }
 
 .databaseBoardEmptyActions {
@@ -487,30 +635,18 @@
 	border-spacing: 0;
 	min-width: 100%;
 	table-layout: fixed;
-	background: linear-gradient(
-		180deg,
-		color-mix(in srgb, var(--bg-primary) 98%, transparent) 0%,
-		color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary)) 100%
-	);
-	border: 1px solid color-mix(in srgb, var(--border-light) 86%, transparent);
-	border-radius: var(--radius-lg);
-	overflow: hidden;
-	box-shadow: 0 18px 36px
-		color-mix(in srgb, var(--shadow-color, #000) 5%, transparent);
+	background: var(--bg-primary);
 }
 
 .databaseHeadCell {
 	position: sticky;
 	top: 0;
 	z-index: 1;
-	background: linear-gradient(
-		180deg,
-		color-mix(in srgb, var(--bg-secondary) 58%, var(--bg-primary)) 0%,
-		color-mix(in srgb, var(--bg-secondary) 42%, var(--bg-primary)) 100%
-	);
+	background: var(--bg-primary);
 	text-align: left;
-	backdrop-filter: blur(10px);
-	-webkit-backdrop-filter: blur(10px);
+	border-bottom: 1px solid var(--border-light);
+	font-size: 0.78rem;
+	color: var(--text-secondary);
 }
 
 .databaseHeadCell:first-child {
@@ -528,19 +664,18 @@
 }
 
 .databaseHeaderButton {
-	font-weight: var(--font-semibold);
+	font-weight: var(--font-medium);
 	display: flex;
 	align-items: center;
 	justify-content: flex-start;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
-	transition: color 180ms ease, transform 180ms ease;
+	transition: color 140ms ease;
 }
 
 .databaseHeaderButton:hover {
 	color: var(--text-primary);
-	transform: translateY(-1px);
 }
 
 .databaseHeaderLabel {
@@ -552,7 +687,7 @@
 }
 
 .databaseHeaderIcon {
-	color: color-mix(in srgb, var(--text-secondary) 86%, var(--text-primary));
+	color: var(--text-tertiary);
 	flex: 0 0 auto;
 }
 
@@ -568,9 +703,9 @@
 }
 
 .databaseBodyCell {
-	vertical-align: top;
+	vertical-align: middle;
 	text-align: left;
-	border-top: 1px solid color-mix(in srgb, var(--border-light) 64%, transparent);
+	border-top: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
 }
 
 .databaseBodyCell:first-child {
@@ -645,14 +780,12 @@
 }
 
 .databaseCellPill {
-	padding: 3px 8px;
+	padding: 2px 7px;
 	border-radius: var(--radius-sm);
-	border: 1px solid color-mix(in srgb, var(--border-light) 74%, transparent);
-	background: color-mix(in srgb, var(--bg-secondary) 74%, transparent);
-	font-size: 0.78rem;
+	border: 1px solid var(--border-light);
+	background: var(--bg-secondary);
+	font-size: 0.76rem;
 	color: var(--text-secondary);
-	box-shadow: 0 8px 14px
-		color-mix(in srgb, var(--shadow-color, #000) 3%, transparent);
 }
 
 .databaseCellYaml {
@@ -683,26 +816,23 @@
 
 .databaseRow {
 	cursor: default;
-	transition: background-color var(--transition-base), box-shadow 180ms ease;
+	transition: background-color 120ms ease;
 }
 
 .databaseRow:hover {
 	background: var(--bg-hover);
-	box-shadow: inset 0 1px 0 color-mix(in srgb, white 20%, transparent);
 }
 
 .databaseRow[data-state="selected"] {
 	background: color-mix(
 		in srgb,
-		var(--interactive-accent) 12%,
+		var(--interactive-accent) 8%,
 		var(--bg-primary)
 	);
-	box-shadow: inset 3px 0 0
-		color-mix(in srgb, var(--interactive-accent) 54%, transparent);
 }
 
 .databaseRow[data-state="selected"]:hover {
-	background: color-mix(in srgb, var(--interactive-accent) 15%, var(--bg-hover));
+	background: color-mix(in srgb, var(--interactive-accent) 12%, var(--bg-hover));
 }
 
 .databaseLoadingState,
@@ -715,14 +845,8 @@
 .databaseNotice {
 	margin: 14px 18px 0;
 	border-radius: var(--radius-lg);
-	border: 1px solid color-mix(in srgb, var(--border-light) 80%, transparent);
-	background: linear-gradient(
-		135deg,
-		color-mix(in srgb, var(--interactive-accent) 6%, var(--bg-primary)) 0%,
-		color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary)) 100%
-	);
-	box-shadow: 0 16px 32px
-		color-mix(in srgb, var(--shadow-color, #000) 4%, transparent);
+	border: 1px solid var(--border-light);
+	background: var(--bg-secondary);
 }
 
 .databaseNotice {
@@ -1066,4 +1190,105 @@
 	font-weight: var(--font-medium);
 	color: var(--text-tertiary);
 	letter-spacing: 0.02em;
+}
+
+.databaseToolbarDivider {
+	width: 1px;
+	height: 16px;
+	background: var(--border-light);
+	flex: 0 0 auto;
+}
+
+.databaseToolbarChipLabel {
+	font-size: var(--text-xs);
+	font-weight: var(--font-medium);
+}
+
+.databaseHeaderSortIcon {
+	display: inline-flex;
+	align-items: center;
+	flex: 0 0 auto;
+	color: var(--text-tertiary);
+	transition: color 140ms ease;
+}
+
+.databaseHeaderButton:hover .databaseHeaderSortIcon {
+	color: var(--text-primary);
+}
+
+.databaseBoardLaneTitleGroup {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	min-width: 0;
+}
+
+.databaseBoardLaneDot {
+	width: 8px;
+	height: 8px;
+	border-radius: 999px;
+	background: var(--text-tertiary);
+	flex: 0 0 auto;
+	opacity: 0.6;
+}
+
+.databaseBoardLane:nth-child(5n + 1) .databaseBoardLaneDot {
+	background: #6c8eef;
+	opacity: 1;
+}
+
+.databaseBoardLane:nth-child(5n + 2) .databaseBoardLaneDot {
+	background: #e8966d;
+	opacity: 1;
+}
+
+.databaseBoardLane:nth-child(5n + 3) .databaseBoardLaneDot {
+	background: #61c488;
+	opacity: 1;
+}
+
+.databaseBoardLane:nth-child(5n + 4) .databaseBoardLaneDot {
+	background: #d4a5e5;
+	opacity: 1;
+}
+
+.databaseBoardLane:nth-child(5n + 5) .databaseBoardLaneDot {
+	background: #f2ca6b;
+	opacity: 1;
+}
+
+.databaseBoardLaneEmptyCard {
+	padding: 8px;
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
+	text-align: center;
+}
+
+.databasesEmptyState {
+	display: flex;
+	flex: 1;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	padding: 40px 24px;
+	text-align: center;
+	color: var(--text-tertiary);
+}
+
+.databasesEmptyTitle {
+	font-size: 1rem;
+	font-weight: var(--font-semibold);
+	color: var(--text-primary);
+}
+
+.databasesEmptyText {
+	font-size: 0.84rem;
+	color: var(--text-secondary);
+	max-width: 340px;
+	line-height: 1.5;
+}
+
+.databaseHeaderRow {
+	border-bottom: 1px solid var(--border-light);
 }

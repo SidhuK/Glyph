@@ -10,6 +10,7 @@ import {
 	type PathRemovedDetail,
 } from "../../lib/appEvents";
 import { APP_TAGLINE } from "../../lib/copy";
+import { DATABASES_TAB_ID } from "../../lib/databases";
 import {
 	DEFAULT_ONBOARDING_SETTINGS,
 	type OnboardingSettings,
@@ -21,6 +22,7 @@ import { TASKS_TAB_ID } from "../../lib/tasks";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { isInAppPreviewable } from "../../utils/filePreview";
 import { Calendar, FileText, Settings } from "../Icons";
+import { DatabasesPane } from "../databases/DatabasesPane";
 import { FilePreviewPane } from "../preview/FilePreviewPane";
 import { NotePane } from "../preview/NotePane";
 import { TasksPane } from "../tasks/TasksPane";
@@ -186,6 +188,10 @@ interface MainContentProps {
 	onCreateNote: () => void;
 	onOpenDailyNote: () => void;
 	openTasksRequest: number;
+	openDatabasesRequest: {
+		nonce: number;
+		databaseId: string | null;
+	};
 	openBlankTabRequest: number;
 	showGettingStartedRequest: number;
 	dailyNoteSetupNoticeRequest: number;
@@ -265,6 +271,7 @@ export const MainContent = memo(function MainContent({
 	onCreateNote,
 	onOpenDailyNote,
 	openTasksRequest,
+	openDatabasesRequest,
 	openBlankTabRequest,
 	showGettingStartedRequest,
 	dailyNoteSetupNoticeRequest,
@@ -309,6 +316,11 @@ export const MainContent = memo(function MainContent({
 		if (!spacePath || openTasksRequest === 0) return;
 		openSpecialTab(TASKS_TAB_ID);
 	}, [openSpecialTab, openTasksRequest, spacePath]);
+
+	useEffect(() => {
+		if (!spacePath || openDatabasesRequest.nonce === 0) return;
+		openSpecialTab(DATABASES_TAB_ID);
+	}, [openDatabasesRequest, openSpecialTab, spacePath]);
 
 	useEffect(() => {
 		if (!spacePath || openBlankTabRequest === 0) return;
@@ -407,6 +419,15 @@ export const MainContent = memo(function MainContent({
 				/>
 			);
 		}
+		if (viewerPath === DATABASES_TAB_ID) {
+			return (
+				<DatabasesPane
+					onOpenFile={(relPath) => fileTree.openFile(relPath)}
+					initialDatabaseId={openDatabasesRequest.databaseId}
+					openRequestNonce={openDatabasesRequest.nonce}
+				/>
+			);
+		}
 		if (viewerPath.toLowerCase().endsWith(".md")) {
 			return (
 				<NotePane
@@ -432,7 +453,14 @@ export const MainContent = memo(function MainContent({
 			);
 		}
 		return null;
-	}, [closeTab, fileTree, viewerPath, setDirtyByPath]);
+	}, [
+		closeTab,
+		fileTree,
+		openDatabasesRequest.databaseId,
+		openDatabasesRequest.nonce,
+		viewerPath,
+		setDirtyByPath,
+	]);
 
 	if (!spacePath) {
 		if (!settingsLoaded) return <main className="mainArea" />;

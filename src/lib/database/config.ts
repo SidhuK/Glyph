@@ -21,7 +21,7 @@ export function createDefaultDatabaseConfig(dirPath: string): DatabaseConfig {
 	const normalized = normalizeDir(dirPath);
 	return {
 		source: {
-			kind: "folder",
+			kind: "all_notes",
 			value: normalized,
 			recursive: true,
 		},
@@ -204,8 +204,10 @@ export function createPropertyColumn(
 export function isColumnEditable(column: DatabaseColumn): boolean {
 	if (
 		column.type === "path" ||
+		column.type === "folder" ||
 		column.type === "created" ||
-		column.type === "updated"
+		column.type === "updated" ||
+		column.type === "linked_notes"
 	) {
 		return false;
 	}
@@ -232,7 +234,13 @@ export function databaseCellValueFromRow(
 		case "path":
 			return {
 				kind: "text",
-				value_text: parentDir(row.note_path) || "/",
+				value_text: row.note_path,
+				value_list: [],
+			};
+		case "folder":
+			return {
+				kind: "text",
+				value_text: row.folder ?? parentDir(row.note_path) ?? "/",
 				value_list: [],
 			};
 		case "created":
@@ -255,6 +263,12 @@ export function databaseCellValueFromRow(
 					value_list: [],
 				}
 			);
+		case "linked_notes":
+			return {
+				kind: "relation",
+				value_text: null,
+				value_list: row.linked_notes ?? [],
+			};
 	}
 }
 
@@ -346,6 +360,8 @@ export function rowMatchesFilters(
 
 export function sourceSummary(config: DatabaseConfig): string {
 	switch (config.source.kind) {
+		case "all_notes":
+			return "All notes";
 		case "folder":
 			return config.source.value
 				? `Folder: ${config.source.value}${config.source.recursive ? " (with subfolders)" : ""}`

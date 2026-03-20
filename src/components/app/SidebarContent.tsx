@@ -1,6 +1,7 @@
 import {
 	CalendarAdd01Icon,
 	CheckListIcon,
+	Database as Database01Icon,
 	NoteIcon,
 	Tag01Icon,
 } from "@hugeicons/core-free-icons";
@@ -34,6 +35,7 @@ interface SidebarContentProps {
 	onOpenDailyNote: () => void;
 	isDailyNoteCreating: boolean;
 	onOpenTasks: () => void;
+	onOpenDatabases: (databaseId?: string | null) => void;
 }
 
 export const SidebarContent = memo(function SidebarContent({
@@ -51,6 +53,7 @@ export const SidebarContent = memo(function SidebarContent({
 	onOpenDailyNote,
 	isDailyNoteCreating,
 	onOpenTasks,
+	onOpenDatabases,
 }: SidebarContentProps) {
 	// Contexts
 	const { spacePath } = useSpace();
@@ -111,6 +114,16 @@ export const SidebarContent = memo(function SidebarContent({
 					<button
 						type="button"
 						className="sidebarQuickActionBtn"
+						data-kind="databases"
+						onClick={() => onOpenDatabases()}
+						title="Open Databases"
+					>
+						<HugeiconsIcon icon={Database01Icon} size={14} strokeWidth={1.8} />
+						<span className="sidebarQuickActionLabel">Databases</span>
+					</button>
+					<button
+						type="button"
+						className="sidebarQuickActionBtn"
 						data-kind="tasks"
 						onClick={onOpenTasks}
 						title="Open Tasks"
@@ -137,7 +150,6 @@ export const SidebarContent = memo(function SidebarContent({
 						</TabsList>
 					</Tabs>
 				</div>
-
 				<AnimatePresence mode="wait">
 					{sidebarViewMode === "files" && (
 						<m.div

@@ -68,6 +68,7 @@ export function DatabaseToolbar({
 						<Kanban size={14} />
 					</Button>
 				</div>
+				<span className="databaseToolbarDivider" />
 			</div>
 			<div className="databaseToolbarActions">
 				{databaseView === "board" && groupColumns.length > 0 ? (
@@ -91,6 +92,30 @@ export function DatabaseToolbar({
 				<Button
 					type="button"
 					variant="ghost"
+					size="sm"
+					className="databaseToolbarChip"
+					onClick={onOpenSource}
+					title="Source & Filters"
+					aria-label="Source & Filters"
+				>
+					<HugeiconsIcon icon={FilterEditIcon} size={13} />
+					<span className="databaseToolbarChipLabel">Filter</span>
+				</Button>
+				<Button
+					type="button"
+					variant="ghost"
+					size="sm"
+					className="databaseToolbarChip"
+					onClick={onOpenColumns}
+					title="Columns"
+					aria-label="Columns"
+				>
+					<HugeiconsIcon icon={EditTableIcon} size={13} />
+					<span className="databaseToolbarChipLabel">Columns</span>
+				</Button>
+				<Button
+					type="button"
+					variant="ghost"
 					size="icon-sm"
 					className="databaseToolbarChip"
 					onClick={onReload}
@@ -101,35 +126,14 @@ export function DatabaseToolbar({
 				</Button>
 				<Button
 					type="button"
-					variant="ghost"
-					size="icon-sm"
-					className="databaseToolbarChip"
-					onClick={onOpenSource}
-					title="Source & Filters"
-					aria-label="Source & Filters"
-				>
-					<HugeiconsIcon icon={FilterEditIcon} size={14} />
-				</Button>
-				<Button
-					type="button"
-					variant="ghost"
-					size="icon-sm"
-					className="databaseToolbarChip"
-					onClick={onOpenColumns}
-					title="Columns"
-					aria-label="Columns"
-				>
-					<HugeiconsIcon icon={EditTableIcon} size={14} />
-				</Button>
-				<Button
-					type="button"
-					size="icon-sm"
+					size="sm"
 					className="databaseToolbarChip is-accent"
 					onClick={onAddRow}
 					title="New row"
 					aria-label="New row"
 				>
-					<Plus size={14} />
+					<Plus size={13} />
+					<span className="databaseToolbarChipLabel">New</span>
 				</Button>
 			</div>
 		</div>

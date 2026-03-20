@@ -140,6 +140,13 @@ export function AppShell() {
 	>("commands");
 	const [paletteInitialQuery, setPaletteInitialQuery] = useState("");
 	const [openTasksRequest, setOpenTasksRequest] = useState(0);
+	const [openDatabasesRequest, setOpenDatabasesRequest] = useState<{
+		nonce: number;
+		databaseId: string | null;
+	}>({
+		nonce: 0,
+		databaseId: null,
+	});
 	const [showGettingStartedRequest, setShowGettingStartedRequest] = useState(0);
 	const [dailyNoteSetupNoticeRequest, setDailyNoteSetupNoticeRequest] =
 		useState(0);
@@ -632,6 +639,12 @@ export function AppShell() {
 	const openTasksTab = useCallback(() => {
 		setOpenTasksRequest((prev) => prev + 1);
 	}, []);
+	const openDatabasesTab = useCallback((databaseId?: string | null) => {
+		setOpenDatabasesRequest((prev) => ({
+			nonce: prev.nonce + 1,
+			databaseId: databaseId ?? null,
+		}));
+	}, []);
 	const openGettingStarted = useCallback(() => {
 		setShowGettingStartedRequest((prev) => prev + 1);
 	}, []);
@@ -937,25 +950,7 @@ export function AppShell() {
 				icon: <HugeiconsIcon icon={TableIcon} size={16} />,
 				category: "File Operations",
 				enabled: Boolean(spacePath),
-				action: async () => {
-					try {
-						const dir =
-							activeDirPath ??
-							(activeFilePath ? parentDir(activeFilePath) : "");
-						const path = await fileTree.onNewDatabaseInDir(dir);
-						if (path) {
-							await fileTree.openFile(path);
-						}
-					} catch (error) {
-						const message =
-							error instanceof Error ? error.message : String(error);
-						console.error("Failed to create database note", error);
-						setError(message);
-						toast.error("Could not create database", {
-							description: message,
-						});
-					}
-				},
+				action: openDatabasesTab,
 			},
 			{
 				id: "new-folder",
@@ -1087,6 +1082,7 @@ export function AppShell() {
 		fileTree,
 		onOpenSpace,
 		openMarkdownTabs.length,
+		openDatabasesTab,
 		requestOpenDailyNote,
 		saveCurrentEditor,
 		handleCreateFromTemplateFromMenu,
@@ -1153,28 +1149,8 @@ export function AppShell() {
 				onNewNote={() => void fileTree.onNewFile()}
 				onNewFileInDir={(p) => void fileTree.onNewFileInDir(p)}
 				onCreateFromTemplateInDir={(p) => void openTemplatePicker(p)}
-				onNewDatabaseInDir={(p) =>
-					fileTree
-						.onNewDatabaseInDir(p)
-						.then(async (path) => {
-							if (path) {
-								await fileTree.openFile(path);
-							}
-							return path;
-						})
-						.catch((error) => {
-							const message =
-								error instanceof Error ? error.message : String(error);
-							console.error(
-								"Failed to create database note in directory",
-								error,
-							);
-							setError(message);
-							toast.error("Could not create database", {
-								description: message,
-							});
-							return null;
-						})
+				onNewDatabaseInDir={() =>
+					Promise.resolve(openDatabasesTab()).then(() => null)
 				}
 				onNewFolderInDir={(p) => fileTree.onNewFolderInDir(p)}
 				onRenameDir={(p, name) => fileTree.onRenameDir(p, name)}
@@ -1186,6 +1162,7 @@ export function AppShell() {
 				onOpenDailyNote={requestOpenDailyNote}
 				isDailyNoteCreating={isDailyNoteCreating}
 				onOpenTasks={openTasksTab}
+				onOpenDatabases={(databaseId) => openDatabasesTab(databaseId)}
 				updateReady={autoUpdater.updateReady}
 				updateVersion={autoUpdater.updateVersion}
 				onInstallUpdate={autoUpdater.installAndRelaunch}
@@ -1205,6 +1182,7 @@ export function AppShell() {
 				onCreateNote={handleCreateNoteFromStarter}
 				onOpenDailyNote={requestOpenDailyNote}
 				openTasksRequest={openTasksRequest}
+				openDatabasesRequest={openDatabasesRequest}
 				openBlankTabRequest={openBlankTabRequest}
 				showGettingStartedRequest={showGettingStartedRequest}
 				dailyNoteSetupNoticeRequest={dailyNoteSetupNoticeRequest}

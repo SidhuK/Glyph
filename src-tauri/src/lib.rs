@@ -1,6 +1,6 @@
 mod ai_codex;
 mod ai_rig;
-mod database;
+mod databases;
 mod glyph_paths;
 mod index;
 mod io_atomic;
@@ -436,10 +436,16 @@ pub fn run() {
             ai_rig::context::ai_context_build,
             ai_rig::context::ai_context_resolve_paths,
             ai_rig::models::ai_models_list,
-            database::mutations::database_load,
-            database::mutations::database_save_config,
-            database::mutations::database_update_cell,
-            database::mutations::database_create_row,
+            databases::commands::databases_list,
+            databases::commands::databases_get,
+            databases::commands::databases_create,
+            databases::commands::databases_update,
+            databases::commands::databases_delete,
+            databases::commands::databases_duplicate,
+            databases::commands::databases_query_rows,
+            databases::commands::databases_update_cell,
+            databases::commands::databases_create_row,
+            databases::commands::databases_preview_context,
             index::commands::index_rebuild,
             index::commands::search,
             index::commands::search_advanced,
