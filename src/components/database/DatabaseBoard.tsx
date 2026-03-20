@@ -1,15 +1,9 @@
 import { m, useReducedMotion } from "motion/react";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { useDatabaseBoard } from "../../hooks/database/useDatabaseBoard";
-import {
-	boardDropValue,
-	boardRowHasLane,
-	formatBoardCellValue,
-} from "../../lib/database/board";
-import { databaseCellValueFromRow } from "../../lib/database/config";
+import { boardDropValue, boardRowHasLane } from "../../lib/database/board";
 import type { DatabaseColumn, DatabaseRow } from "../../lib/database/types";
 import { extractErrorMessage } from "../../lib/errorUtils";
-import { formatTagLabel } from "../editor/noteProperties/utils";
 import { springPresets } from "../ui/animations";
 import { Button } from "../ui/shadcn/button";
 import {
@@ -19,18 +13,16 @@ import {
 	ContextMenuSeparator,
 	ContextMenuTrigger,
 } from "../ui/shadcn/context-menu";
-import { DatabaseColumnIcon } from "./DatabaseColumnIcon";
 
 interface DatabaseBoardProps {
 	rows: DatabaseRow[];
 	columns: DatabaseColumn[];
-	visibleColumns: DatabaseColumn[];
 	groupColumnId?: string | null;
 	selectedRowPath: string | null;
 	onSelectRow: (notePath: string) => void;
 	onOpenRow: (notePath: string) => void;
 	onOpenColumns: () => void;
-	onCreateDefaultGroupField: () => void;
+	onCreateDefaultGroupField?: (() => void) | null;
 	onGroupColumnIdChange: (groupColumnId: string | null) => void;
 	onSaveCell: (
 		notePath: string,
@@ -63,20 +55,9 @@ function boardCardTitle(row: DatabaseRow, activeLaneLabel: string): string {
 	return indexedTitle;
 }
 
-function boardCardPreview(row: DatabaseRow, title: string): string {
-	const preview = (row.preview ?? "")
-		.replace(/\s+/g, " ")
-		.replace(/^[#>*\-\s]+/, "")
-		.trim();
-	if (!preview) return "";
-	if (preview.toLowerCase() === title.toLowerCase()) return "";
-	return preview;
-}
-
 export function DatabaseBoard({
 	rows,
 	columns,
-	visibleColumns,
 	groupColumnId: persistedGroupColumnId,
 	selectedRowPath,
 	onSelectRow,
@@ -96,22 +77,6 @@ export function DatabaseBoard({
 	const [draggingRowPath, setDraggingRowPath] = useState<string | null>(null);
 	const [dropLaneId, setDropLaneId] = useState<string | null>(null);
 	const [moveError, setMoveError] = useState("");
-	const showTags = visibleColumns.some((column) => column.id === "tags");
-
-	const cardColumns = useMemo(() => {
-		if (!groupColumn) return [];
-		return visibleColumns
-			.filter(
-				(column) =>
-					column.id !== "title" &&
-					column.id !== "tags" &&
-					column.id !== "path" &&
-					column.id !== "updated" &&
-					column.id !== "created" &&
-					column.id !== groupColumn.id,
-			)
-			.slice(0, 1);
-	}, [groupColumn, visibleColumns]);
 
 	const handleLaneDrop = async (notePath: string | null, laneId: string) => {
 		if (!notePath || !groupColumn) return;
@@ -168,9 +133,15 @@ export function DatabaseBoard({
 						property like status, stage, or done.
 					</div>
 					<div className="databaseBoardEmptyActions">
-						<Button type="button" size="sm" onClick={onCreateDefaultGroupField}>
-							Add status field
-						</Button>
+						{onCreateDefaultGroupField ? (
+							<Button
+								type="button"
+								size="sm"
+								onClick={onCreateDefaultGroupField}
+							>
+								Add status field
+							</Button>
+						) : null}
 						<Button
 							type="button"
 							variant="ghost"
@@ -220,23 +191,16 @@ export function DatabaseBoard({
 							}}
 						>
 							<div className="databaseBoardLaneHeader">
-								<div className="databaseBoardLaneTitle">{lane.label}</div>
+								<div className="databaseBoardLaneTitleGroup">
+									<span className="databaseBoardLaneDot" />
+									<div className="databaseBoardLaneTitle">{lane.label}</div>
+								</div>
 								<div className="databaseBoardLaneCount">{lane.cardCount}</div>
 							</div>
 							<div className="databaseBoardLaneBody">
 								{lane.rows.length > 0 ? (
 									lane.rows.map((row) => {
 										const title = boardCardTitle(row, lane.label);
-										const preview = boardCardPreview(row, title);
-										const tags = showTags
-											? row.tags.filter(
-													(tag) =>
-														!(
-															groupColumn?.type === "tags" &&
-															tag.toLowerCase() === lane.id.toLowerCase()
-														),
-												)
-											: [];
 										const otherLanes = lanes.filter(
 											(l) =>
 												l.id !== lane.id &&
@@ -278,72 +242,9 @@ export function DatabaseBoard({
 														onDoubleClick={() => onOpenRow(row.note_path)}
 														title="Double-click to open note"
 													>
-														<div className="databaseBoardCardHead">
-															<div className="databaseBoardCardTitle">
-																{title}
-															</div>
-															{preview ? (
-																<div className="databaseBoardCardPreview">
-																	{preview}
-																</div>
-															) : (
-																<div className="databaseBoardCardPreview is-placeholder">
-																	No preview yet
-																</div>
-															)}
-														</div>
-														{tags.length > 0 ? (
-															<div className="databaseBoardCardTags">
-																{tags.slice(0, 4).map((tag) => (
-																	<span
-																		key={`${row.note_path}:${tag}`}
-																		className="databaseBoardTag"
-																	>
-																		{formatTagLabel(tag)}
-																	</span>
-																))}
-															</div>
-														) : null}
-														{cardColumns.length > 0 ? (
-															<div className="databaseBoardCardDetails">
-																{cardColumns.map((column) => {
-																	const cell = databaseCellValueFromRow(
-																		row,
-																		column,
-																	);
-																	const value = formatBoardCellValue(cell);
-																	if (!value.trim()) return null;
-																	return (
-																		<div
-																			key={`${row.note_path}:${column.id}`}
-																			className="databaseBoardCardDetail"
-																		>
-																			<span
-																				className="databaseBoardCardDetailLabel"
-																				title={column.label}
-																			>
-																				<DatabaseColumnIcon
-																					column={column}
-																					size={11}
-																				/>
-																			</span>
-																			<span
-																				className="databaseBoardCardDetailValue"
-																				title={value}
-																			>
-																				{value}
-																			</span>
-																		</div>
-																	);
-																})}
-															</div>
-														) : null}
-														<div
-															className="databaseBoardCardPath"
-															title={row.note_path}
-														>
-															{row.note_path}
-														</div>
+														<span className="databaseBoardCardTitle">
+															{title}
+														</span>
 													</button>
 												</ContextMenuTrigger>
 												<ContextMenuContent className="fileTreeCreateMenu">
@@ -380,9 +281,7 @@ export function DatabaseBoard({
 										);
 									})
 								) : (
-									<div className="databaseBoardLaneEmpty">
-										No notes in this lane
-									</div>
+									<div className="databaseBoardLaneEmptyCard">No notes</div>
 								)}
 							</div>
 						</m.div>

@@ -5,10 +5,17 @@
 	justify-content: flex-start;
 	padding: 8px 10px;
 	gap: 10px;
-	border-radius: var(--radius-md);
+	border-radius: 0;
 	border-color: color-mix(in srgb, var(--border-light) 78%, transparent);
 	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
 	align-self: flex-start;
+}
+
+.databaseDialogCompact .databasePickerTrigger {
+	min-height: 38px;
+	padding: 6px 10px;
+	border-color: color-mix(in srgb, var(--border-light) 60%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 96%, transparent);
 }
 
 .databasePickerTrigger:hover {
@@ -22,10 +29,16 @@
 	justify-content: center;
 	width: 28px;
 	height: 28px;
-	border-radius: var(--radius-sm);
+	border-radius: 0;
 	background: color-mix(in srgb, var(--bg-secondary) 76%, transparent);
 	color: var(--text-secondary);
 	flex: 0 0 auto;
+}
+
+.databaseDialogCompact .databasePickerTriggerIcon {
+	width: 22px;
+	height: 22px;
+	background: transparent;
 }
 
 .databasePickerTriggerText {
@@ -55,13 +68,23 @@
 	color: var(--text-tertiary);
 }
 
+.databaseDialogCompact .databasePickerTriggerMeta {
+	display: none;
+}
+
 .databasePickerPopover {
 	width: min(420px, calc(100vw - 2rem));
-	border-radius: var(--radius-lg);
+	border-radius: 0;
 	border-color: var(--border-light);
 	padding: 12px;
 	background: var(--bg-primary);
 	box-shadow: var(--shadow-md);
+}
+
+.databaseDialogCompact .databasePickerPopover,
+.databaseDialogCompact .folderPickerPopover {
+	border-color: color-mix(in srgb, var(--border-light) 60%, transparent);
+	box-shadow: var(--shadow-sm);
 }
 
 .databaseColumnIconPopover {
@@ -72,6 +95,15 @@
 .databasePickerHeader {
 	gap: 4px;
 	padding: 2px 2px 6px;
+}
+
+.databaseDialogCompact .databasePickerEyebrow,
+.databaseDialogCompact .databasePickerHeader [data-slot="popover-description"] {
+	display: none;
+}
+
+.databaseDialogCompact .databasePickerHeader {
+	padding-bottom: 4px;
 }
 
 .databasePickerEyebrow {
@@ -91,7 +123,7 @@
 	gap: 8px;
 	margin-bottom: 8px;
 	padding: 7px 9px;
-	border-radius: var(--radius-md);
+	border-radius: 0;
 	border: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
 	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
 }
@@ -133,7 +165,7 @@
 	width: 100%;
 	padding: 8px 10px;
 	border: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
-	border-radius: var(--radius-md);
+	border-radius: 0;
 	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
 	text-align: left;
 	transition: border-color var(--transition-base), background-color
@@ -191,7 +223,7 @@
 	min-width: 26px;
 	height: 22px;
 	padding: 0 8px;
-	border-radius: var(--radius-sm);
+	border-radius: 0;
 	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
 	background: color-mix(in srgb, var(--bg-secondary) 72%, transparent);
 	font-size: 0.72rem;
@@ -208,7 +240,7 @@
 
 .folderPickerPopover {
 	width: min(300px, calc(100vw - 2rem));
-	border-radius: var(--radius-lg);
+	border-radius: 0;
 	border-color: var(--border-light);
 	padding: 8px;
 	background: var(--bg-primary);

@@ -103,7 +103,7 @@ export interface NoteProperty {
 }
 
 export interface DatabaseSource {
-	kind: "folder" | "tag" | "search";
+	kind: "all_notes" | "folder" | "tag" | "search";
 	value: string;
 	recursive: boolean;
 }
@@ -120,7 +120,15 @@ export interface DatabaseViewState {
 
 export interface DatabaseColumn {
 	id: string;
-	type: "title" | "tags" | "path" | "created" | "updated" | "property";
+	type:
+		| "title"
+		| "tags"
+		| "path"
+		| "folder"
+		| "created"
+		| "updated"
+		| "linked_notes"
+		| "property";
 	label: string;
 	icon?: string | null;
 	width?: number | null;
@@ -137,13 +145,20 @@ export interface DatabaseSort {
 export interface DatabaseFilter {
 	column_id: string;
 	operator:
-		| "contains"
 		| "equals"
+		| "not_equals"
+		| "contains"
+		| "not_contains"
+		| "starts_with"
+		| "ends_with"
 		| "is_empty"
 		| "is_not_empty"
 		| "is_true"
 		| "is_false"
-		| "tags_contains";
+		| "tags_contains"
+		| "any_of"
+		| "none_of"
+		| "within_last_7_days";
 	value_text?: string | null;
 	value_bool?: boolean | null;
 	value_list: string[];
@@ -168,11 +183,93 @@ export interface DatabaseCellValue {
 export interface DatabaseRow {
 	note_path: string;
 	title: string;
+	folder?: string;
 	created: string;
 	updated: string;
 	preview?: string;
 	tags: string[];
+	linked_notes?: string[];
 	properties: Record<string, DatabaseCellValue>;
+}
+
+export interface WorkspaceDatabaseGrouping {
+	column_id: string;
+	ascending: boolean;
+}
+
+export interface WorkspaceDatabaseView {
+	id: string;
+	name: string;
+	layout: "table" | "board";
+	icon?: string | null;
+	color?: string | null;
+	columns: DatabaseColumn[];
+	sorts: DatabaseSort[];
+	filters: DatabaseFilter[];
+	grouping?: WorkspaceDatabaseGrouping | null;
+	created_at: string;
+	updated_at: string;
+}
+
+export interface WorkspaceDatabaseSchemaField {
+	id: string;
+	label: string;
+	kind: string;
+	property_key?: string | null;
+	relation_database_id?: string | null;
+}
+
+export interface WorkspaceDatabaseDefinition {
+	id: string;
+	name: string;
+	icon?: string | null;
+	color?: string | null;
+	is_system?: boolean;
+	source: {
+		kind: "all_notes" | "folder" | "tag" | "search";
+		value: string;
+		recursive: boolean;
+	};
+	new_note: DatabaseNewNoteConfig;
+	schema: WorkspaceDatabaseSchemaField[];
+	views: WorkspaceDatabaseView[];
+	created_at: string;
+	updated_at: string;
+}
+
+export interface WorkspaceDatabaseSummary {
+	id: string;
+	name: string;
+	icon?: string | null;
+	color?: string | null;
+	is_system?: boolean;
+	view_count: number;
+}
+
+export interface WorkspaceDatabaseDocument {
+	database: WorkspaceDatabaseDefinition;
+	available_properties: DatabasePropertyOption[];
+}
+
+export interface WorkspaceDatabaseQueryResult {
+	rows: DatabaseRow[];
+	available_properties: DatabasePropertyOption[];
+	total_count: number;
+	next_offset?: number | null;
+	truncated: boolean;
+}
+
+export interface WorkspaceDatabasePreviewContext {
+	note_path: string;
+	title: string;
+	markdown: string;
+	created: string;
+	updated: string;
+	word_count: number;
+	character_count: number;
+	line_count: number;
+	reading_time_minutes: number;
+	backlinks: string[];
 }
 
 export interface DatabasePropertyOption {
@@ -531,15 +628,28 @@ interface TauriCommands {
 		{ note_id: string; source_path: string },
 		AttachmentResult
 	>;
-	database_load: CommandDef<
-		{ path: string; limit?: number | null },
-		DatabaseLoadResult
+	databases_list: CommandDef<void, WorkspaceDatabaseSummary[]>;
+	databases_get: CommandDef<{ database_id: string }, WorkspaceDatabaseDocument>;
+	databases_create: CommandDef<{ name: string }, WorkspaceDatabaseDocument>;
+	databases_update: CommandDef<
+		{ database: WorkspaceDatabaseDefinition },
+		WorkspaceDatabaseDocument
 	>;
-	database_save_config: CommandDef<
-		{ path: string; config: DatabaseConfig },
-		DatabaseConfig
+	databases_delete: CommandDef<{ database_id: string }, void>;
+	databases_duplicate: CommandDef<
+		{ database_id: string },
+		WorkspaceDatabaseDocument
 	>;
-	database_update_cell: CommandDef<
+	databases_query_rows: CommandDef<
+		{
+			database_id: string;
+			view_id: string;
+			offset?: number | null;
+			limit?: number | null;
+		},
+		WorkspaceDatabaseQueryResult
+	>;
+	databases_update_cell: CommandDef<
 		{
 			note_path: string;
 			column: DatabaseColumn;
@@ -547,9 +657,13 @@ interface TauriCommands {
 		},
 		DatabaseRow
 	>;
-	database_create_row: CommandDef<
-		{ database_path: string; title?: string | null },
+	databases_create_row: CommandDef<
+		{ database_id: string; title?: string | null },
 		DatabaseCreateRowResult
+	>;
+	databases_preview_context: CommandDef<
+		{ note_path: string },
+		WorkspaceDatabasePreviewContext
 	>;
 	index_rebuild: CommandDef<void, IndexRebuildResult>;
 	search: CommandDef<{ query: string }, SearchResult[]>;

@@ -6,7 +6,6 @@ import { Button } from "../ui/shadcn/button";
 import {
 	Dialog,
 	DialogContent,
-	DialogDescription,
 	DialogHeader,
 	DialogTitle,
 } from "../ui/shadcn/dialog";
@@ -89,26 +88,19 @@ export function DatabaseSourceDialog({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="databaseDialog">
-				<DialogHeader>
-					<DialogTitle>Source & Filters</DialogTitle>
-					<DialogDescription>
-						Configure the row source, filters, and note destination.
-					</DialogDescription>
+			<DialogContent className="databaseDialog databaseDialogCompact">
+				<DialogHeader className="databaseDialogHeaderCompact">
+					<DialogTitle>Source & filters</DialogTitle>
 				</DialogHeader>
 				<div className="databaseDialogBody databaseDialogBodyTight">
-					<section className="settingsCard databaseSettingsCard">
-						<div className="settingsCardHeader">
-							<div>
-								<div className="settingsCardTitle">Rows</div>
-							</div>
+					<section className="databaseDialogSection">
+						<div className="databaseDialogSectionHeader">
+							<div className="databaseDialogSectionTitle">Rows</div>
 						</div>
-						<div className="settingsField">
-							<div>
-								<label className="settingsLabel" htmlFor="databaseSourceKind">
-									Source Type
-								</label>
-							</div>
+						<div className="databaseDialogField">
+							<label className="settingsLabel" htmlFor="databaseSourceKind">
+								Source
+							</label>
 							<select
 								id="databaseSourceKind"
 								className="databaseNativeSelect"
@@ -120,20 +112,23 @@ export function DatabaseSourceDialog({
 									})
 								}
 							>
+								<option value="all_notes">All notes</option>
 								<option value="folder">Folder</option>
 								<option value="tag">Tag</option>
 								<option value="search">Search</option>
 							</select>
 						</div>
-						<div className="settingsField">
-							<div>
-								<div className="settingsLabel">Source Value</div>
-							</div>
-							{config.source.kind === "folder" ? (
+						<div className="databaseDialogField">
+							<div className="settingsLabel">Value</div>
+							{config.source.kind === "all_notes" ? (
+								<div className="databaseFilterPassiveHint">
+									All indexed notes
+								</div>
+							) : config.source.kind === "folder" ? (
 								<DatabaseFolderPicker
 									value={config.source.value}
 									label="Database Folder"
-									description="Pick the folder whose notes should appear as rows in this database."
+									description="Choose a folder for this database."
 									placeholder="Choose a folder"
 									onChange={(value) => void handleSave({ value })}
 								/>
@@ -141,7 +136,7 @@ export function DatabaseSourceDialog({
 								<DatabaseTagPicker
 									value={config.source.value}
 									label="Database Tag"
-									description="Choose a tag and this database will stay focused on notes using it."
+									description="Choose a tag for this database."
 									placeholder="Choose a tag"
 									onChange={(value) => void handleSave({ value })}
 								/>
@@ -158,30 +153,41 @@ export function DatabaseSourceDialog({
 								/>
 							)}
 						</div>
-						<div className="settingsField">
-							<div>
-								<div className="settingsLabel">Folder Scope</div>
+						{config.source.kind === "folder" ? (
+							<div className="databaseDialogField">
+								<div className="settingsLabel">Scope</div>
+								<Toggle
+									slim
+									size="sm"
+									label="Include subfolders"
+									className="databaseDialogToggle databaseToggleInline"
+									checked={config.source.recursive}
+									onCheckedChange={(checked) =>
+										void handleSave({
+											recursive: checked,
+										})
+									}
+								/>
 							</div>
-							<Toggle
-								slim
-								size="sm"
-								label="Include subfolders"
-								className="databaseDialogToggle databaseToggleBlock"
-								checked={config.source.recursive}
-								disabled={config.source.kind !== "folder"}
-								onCheckedChange={(checked) =>
-									void handleSave({
-										recursive: checked,
-									})
-								}
-							/>
-						</div>
+						) : null}
 					</section>
-					<section className="settingsCard databaseSettingsCard">
-						<div className="settingsCardHeader">
-							<div>
-								<div className="settingsCardTitle">Filters</div>
-							</div>
+
+					<section className="databaseDialogSection">
+						<div className="databaseDialogSectionHeader databaseDialogSectionHeaderRow">
+							<div className="databaseDialogSectionTitle">Filters</div>
+							<Button
+								type="button"
+								variant="ghost"
+								size="sm"
+								onClick={() =>
+									void updateFilters((filters) => [
+										...filters,
+										emptyFilter(defaultColumnId),
+									])
+								}
+							>
+								Add filter
+							</Button>
 						</div>
 						{filterError ? (
 							<div className="databaseDialogInlineError">{filterError}</div>
@@ -203,42 +209,14 @@ export function DatabaseSourceDialog({
 									return (
 										<div
 											key={`${filter.column_id}:${index}`}
-											className="databaseFilterCard"
+											className="databaseFilterCard databaseFilterCardCompact"
 										>
-											<div className="databaseFilterCardHeader">
-												<div>
-													<div className="databaseDialogRowTitle">
-														Filter {index + 1}
-													</div>
-												</div>
-												<Button
-													type="button"
-													variant="ghost"
-													size="sm"
-													onClick={() =>
-														void updateFilters((filters) =>
-															filters.filter(
-																(_, currentIndex) => currentIndex !== index,
-															),
-														)
-													}
-												>
-													Remove
-												</Button>
-											</div>
-											<div className="settingsField">
-												<div>
-													<label
-														className="settingsLabel"
-														htmlFor={`databaseFilterColumn-${index}`}
-													>
-														Column
-													</label>
-												</div>
+											<div className="databaseFilterCardFields">
 												<select
 													id={`databaseFilterColumn-${index}`}
 													className="databaseNativeSelect"
 													value={filter.column_id}
+													aria-label={`Filter ${index + 1} field`}
 													onChange={(event) =>
 														void updateFilters((filters) =>
 															filters.map((entry, currentIndex) =>
@@ -258,20 +236,11 @@ export function DatabaseSourceDialog({
 														</option>
 													))}
 												</select>
-											</div>
-											<div className="settingsField">
-												<div>
-													<label
-														className="settingsLabel"
-														htmlFor={`databaseFilterOperator-${index}`}
-													>
-														Operator
-													</label>
-												</div>
 												<select
 													id={`databaseFilterOperator-${index}`}
 													className="databaseNativeSelect"
 													value={effectiveOperator}
+													aria-label={`Filter ${index + 1} operator`}
 													onChange={(event) =>
 														void updateFilters((filters) =>
 															filters.map((entry, currentIndex) =>
@@ -293,106 +262,97 @@ export function DatabaseSourceDialog({
 													<option value="is_true">Is true</option>
 													<option value="is_false">Is false</option>
 												</select>
-											</div>
-											{showsValue ? (
-												<div className="settingsField">
-													<div>
-														<div className="settingsLabel">Value</div>
+												{showsValue ? (
+													<div className="databaseFilterValueCell">
+														{usesTagPicker ? (
+															<DatabaseTagPicker
+																value={filter.value_text ?? ""}
+																label="Filter Tag"
+																description="Choose a tag for this filter."
+																placeholder="Choose a tag"
+																onChange={(value) =>
+																	void updateFilters((filters) =>
+																		filters.map((entry, currentIndex) =>
+																			currentIndex === index
+																				? {
+																						...entry,
+																						value_text: value,
+																						value_list: [value],
+																					}
+																				: entry,
+																		),
+																	)
+																}
+															/>
+														) : (
+															<Input
+																id={`databaseFilterValue-${index}`}
+																value={filter.value_text ?? ""}
+																placeholder="Value"
+																onChange={(event) =>
+																	void updateFilters((filters) =>
+																		filters.map((entry, currentIndex) =>
+																			currentIndex === index
+																				? {
+																						...entry,
+																						value_text: event.target.value,
+																						value_list: [],
+																					}
+																				: entry,
+																		),
+																	)
+																}
+															/>
+														)}
 													</div>
-													{usesTagPicker ? (
-														<DatabaseTagPicker
-															value={filter.value_text ?? ""}
-															label="Filter Tag"
-															description="Choose a tag and only rows that carry it will stay visible."
-															placeholder="Choose a tag"
-															onChange={(value) =>
-																void updateFilters((filters) =>
-																	filters.map((entry, currentIndex) =>
-																		currentIndex === index
-																			? {
-																					...entry,
-																					value_text: value,
-																					value_list: [value],
-																				}
-																			: entry,
-																	),
-																)
-															}
-														/>
-													) : (
-														<Input
-															id={`databaseFilterValue-${index}`}
-															value={filter.value_text ?? ""}
-															placeholder="roadmap"
-															onChange={(event) =>
-																void updateFilters((filters) =>
-																	filters.map((entry, currentIndex) =>
-																		currentIndex === index
-																			? {
-																					...entry,
-																					value_text: event.target.value,
-																					value_list: [],
-																				}
-																			: entry,
-																	),
-																)
-															}
-														/>
-													)}
-												</div>
-											) : (
-												<div className="databaseFilterPassiveHint">
-													No value needed for this operator.
-												</div>
-											)}
+												) : (
+													<div className="databaseFilterPassiveHint">
+														No value
+													</div>
+												)}
+												<Button
+													type="button"
+													variant="ghost"
+													size="sm"
+													className="databaseFilterRemoveButton"
+													onClick={() =>
+														void updateFilters((filters) =>
+															filters.filter(
+																(_, currentIndex) => currentIndex !== index,
+															),
+														)
+													}
+												>
+													Remove
+												</Button>
+											</div>
 										</div>
 									);
 								})
 							) : (
-								<div className="databaseDialogEmptyState">
-									No filters yet. Add one to narrow the view.
-								</div>
+								<div className="databaseDialogEmptyState">No filters</div>
 							)}
 						</div>
-						<div className="databaseDialogActions">
-							<Button
-								type="button"
-								variant="outline"
-								onClick={() =>
-									void updateFilters((filters) => [
-										...filters,
-										emptyFilter(defaultColumnId),
-									])
-								}
-							>
-								Add filter
-							</Button>
-						</div>
 					</section>
-					<section className="settingsCard databaseSettingsCard">
-						<div className="settingsCardHeader">
-							<div>
-								<div className="settingsCardTitle">New Rows</div>
-							</div>
+
+					<section className="databaseDialogSection">
+						<div className="databaseDialogSectionHeader">
+							<div className="databaseDialogSectionTitle">New rows</div>
 						</div>
-						<div className="settingsField">
-							<div>
-								<div className="settingsLabel">Target Folder</div>
-							</div>
+						<div className="databaseDialogField">
+							<div className="settingsLabel">Target folder</div>
 							<DatabaseFolderPicker
 								value={config.new_note.folder}
 								label="New Row Folder"
-								description="Choose where new notes created from this database should be stored."
+								description="Choose where new notes should be stored."
 								placeholder="Choose a folder"
 								onChange={(value) => void handleNewNoteFolder(value)}
 							/>
 						</div>
-						<div className="settingsField">
-							<div>
-								<label className="settingsLabel" htmlFor="databaseTitlePrefix">
-									Title Prefix
-								</label>
-							</div>
+						<div className="databaseDialogField">
+							<label className="settingsLabel" htmlFor="databaseTitlePrefix">
+								Title prefix
+							</label>
 							<Input
 								id="databaseTitlePrefix"
 								value={config.new_note.title_prefix}
@@ -409,15 +369,6 @@ export function DatabaseSourceDialog({
 							/>
 						</div>
 					</section>
-				</div>
-				<div className="databaseDialogActions">
-					<Button
-						type="button"
-						variant="outline"
-						onClick={() => onOpenChange(false)}
-					>
-						Close
-					</Button>
 				</div>
 			</DialogContent>
 		</Dialog>

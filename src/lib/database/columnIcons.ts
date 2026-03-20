@@ -75,8 +75,10 @@ const BUILT_IN_DATABASE_COLUMN_ICONS: Record<
 	title: "document",
 	tags: "tag",
 	path: "route",
+	folder: "folder",
 	created: "calendar",
 	updated: "clock",
+	linked_notes: "link",
 };
 
 const PROPERTY_KIND_DATABASE_COLUMN_ICONS: Record<string, string> = {

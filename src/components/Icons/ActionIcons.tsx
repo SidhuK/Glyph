@@ -6,6 +6,7 @@ import {
 	Help,
 	MessageSquare as MessageSquareIcon,
 	Minus as MinusIcon,
+	MoreHorizontal as MoreHorizontalIcon,
 	Paperclip as PaperclipIcon,
 	Refresh,
 	Save as SaveIcon,
@@ -61,4 +62,7 @@ export const TriangleAlert = (props: IconProps) => (
 );
 export const CircleHelp = (props: IconProps) => (
 	<HugeiconsIcon icon={Help} {...props} />
+);
+export const MoreHorizontal = (props: IconProps) => (
+	<HugeiconsIcon icon={MoreHorizontalIcon} {...props} />
 );

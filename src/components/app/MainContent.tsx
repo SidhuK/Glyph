@@ -1,5 +1,5 @@
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
-import { memo, useEffect, useMemo, useState } from "react";
+import { Suspense, lazy, memo, useEffect, useMemo, useState } from "react";
 import {
 	useAISidebarContext,
 	useSpace,
@@ -10,6 +10,7 @@ import {
 	type PathRemovedDetail,
 } from "../../lib/appEvents";
 import { APP_TAGLINE } from "../../lib/copy";
+import { DATABASES_TAB_ID } from "../../lib/databases";
 import {
 	DEFAULT_ONBOARDING_SETTINGS,
 	type OnboardingSettings,
@@ -30,6 +31,12 @@ import { GettingStartedPane } from "./GettingStartedPane";
 import { TabBar } from "./TabBar";
 import { WelcomeScreen } from "./WelcomeScreen";
 import { useTabManager } from "./useTabManager";
+
+const DatabasesPane = lazy(() =>
+	import("../databases/DatabasesPane").then((module) => ({
+		default: module.DatabasesPane,
+	})),
+);
 
 interface EmptyTip {
 	key: string;
@@ -186,6 +193,10 @@ interface MainContentProps {
 	onCreateNote: () => void;
 	onOpenDailyNote: () => void;
 	openTasksRequest: number;
+	openDatabasesRequest: {
+		nonce: number;
+		databaseId: string | null;
+	};
 	openBlankTabRequest: number;
 	showGettingStartedRequest: number;
 	dailyNoteSetupNoticeRequest: number;
@@ -265,6 +276,7 @@ export const MainContent = memo(function MainContent({
 	onCreateNote,
 	onOpenDailyNote,
 	openTasksRequest,
+	openDatabasesRequest,
 	openBlankTabRequest,
 	showGettingStartedRequest,
 	dailyNoteSetupNoticeRequest,
@@ -309,6 +321,11 @@ export const MainContent = memo(function MainContent({
 		if (!spacePath || openTasksRequest === 0) return;
 		openSpecialTab(TASKS_TAB_ID);
 	}, [openSpecialTab, openTasksRequest, spacePath]);
+
+	useEffect(() => {
+		if (!spacePath || openDatabasesRequest.nonce === 0) return;
+		openSpecialTab(DATABASES_TAB_ID);
+	}, [openDatabasesRequest, openSpecialTab, spacePath]);
 
 	useEffect(() => {
 		if (!spacePath || openBlankTabRequest === 0) return;
@@ -407,11 +424,25 @@ export const MainContent = memo(function MainContent({
 				/>
 			);
 		}
+		if (viewerPath === DATABASES_TAB_ID) {
+			return (
+				<Suspense
+					fallback={
+						<div className="databaseLoadingState">Loading databases…</div>
+					}
+				>
+					<DatabasesPane
+						onOpenFile={(relPath) => fileTree.openFile(relPath)}
+						initialDatabaseId={openDatabasesRequest.databaseId}
+						openRequestNonce={openDatabasesRequest.nonce}
+					/>
+				</Suspense>
+			);
+		}
 		if (viewerPath.toLowerCase().endsWith(".md")) {
 			return (
 				<NotePane
 					relPath={viewerPath}
-					onOpenFile={(relPath) => fileTree.openFile(relPath)}
 					onDirtyChange={(dirty) =>
 						setDirtyByPath((prev) =>
 							prev[viewerPath] === dirty
@@ -432,7 +463,14 @@ export const MainContent = memo(function MainContent({
 			);
 		}
 		return null;
-	}, [closeTab, fileTree, viewerPath, setDirtyByPath]);
+	}, [
+		closeTab,
+		fileTree,
+		openDatabasesRequest.databaseId,
+		openDatabasesRequest.nonce,
+		viewerPath,
+		setDirtyByPath,
+	]);
 
 	if (!spacePath) {
 		if (!settingsLoaded) return <main className="mainArea" />;

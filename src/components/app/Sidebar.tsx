@@ -22,6 +22,7 @@ interface SidebarProps {
 	onOpenDailyNote: () => void;
 	isDailyNoteCreating: boolean;
 	onOpenTasks: () => void;
+	onOpenDatabases: (databaseId?: string | null) => void;
 	updateReady: boolean;
 	updateVersion: string | null;
 	onInstallUpdate: () => void;
@@ -44,6 +45,7 @@ export const Sidebar = memo(function Sidebar({
 	onOpenDailyNote,
 	isDailyNoteCreating,
 	onOpenTasks,
+	onOpenDatabases,
 	updateReady,
 	updateVersion,
 	onInstallUpdate,
@@ -83,6 +85,7 @@ export const Sidebar = memo(function Sidebar({
 						<SidebarHeader
 							sidebarCollapsed={sidebarCollapsed}
 							onToggleSidebar={onToggleSidebar}
+							onNewNote={onNewNote}
 							updateReady={updateReady}
 							updateVersion={updateVersion}
 							onInstallUpdate={onInstallUpdate}
@@ -91,7 +94,6 @@ export const Sidebar = memo(function Sidebar({
 							onToggleDir={onToggleDir}
 							onSelectDir={onSelectDir}
 							onOpenFile={onOpenFile}
-							onNewNote={onNewNote}
 							onNewFileInDir={onNewFileInDir}
 							onCreateFromTemplateInDir={onCreateFromTemplateInDir}
 							onNewDatabaseInDir={onNewDatabaseInDir}
@@ -102,6 +104,7 @@ export const Sidebar = memo(function Sidebar({
 							onOpenDailyNote={onOpenDailyNote}
 							isDailyNoteCreating={isDailyNoteCreating}
 							onOpenTasks={onOpenTasks}
+							onOpenDatabases={onOpenDatabases}
 						/>
 					</m.div>
 				)}

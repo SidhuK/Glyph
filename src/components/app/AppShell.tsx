@@ -11,6 +11,7 @@ import {
 	Link01Icon,
 	MoveIcon,
 	NoteIcon,
+	PencilEdit02Icon,
 	SearchIcon,
 	Settings05Icon,
 	SidebarLeftIcon,
@@ -140,6 +141,13 @@ export function AppShell() {
 	>("commands");
 	const [paletteInitialQuery, setPaletteInitialQuery] = useState("");
 	const [openTasksRequest, setOpenTasksRequest] = useState(0);
+	const [openDatabasesRequest, setOpenDatabasesRequest] = useState<{
+		nonce: number;
+		databaseId: string | null;
+	}>({
+		nonce: 0,
+		databaseId: null,
+	});
 	const [showGettingStartedRequest, setShowGettingStartedRequest] = useState(0);
 	const [dailyNoteSetupNoticeRequest, setDailyNoteSetupNoticeRequest] =
 		useState(0);
@@ -632,6 +640,40 @@ export function AppShell() {
 	const openTasksTab = useCallback(() => {
 		setOpenTasksRequest((prev) => prev + 1);
 	}, []);
+	const openDatabasesTab = useCallback((databaseId?: string | null) => {
+		setOpenDatabasesRequest((prev) => ({
+			nonce: prev.nonce + 1,
+			databaseId: databaseId ?? null,
+		}));
+	}, []);
+	const createDatabaseAndOpen = useCallback(async () => {
+		try {
+			const summaries = await invoke("databases_list");
+			const existing = new Set(
+				summaries.map((entry) => entry.name.trim().toLowerCase()),
+			);
+			let name = "New Database";
+			if (existing.has(name.toLowerCase())) {
+				let suffix = 2;
+				while (existing.has(`new database ${suffix}`)) {
+					suffix += 1;
+				}
+				name = `New Database ${suffix}`;
+			}
+			const created = await invoke("databases_create", {
+				name,
+			});
+			openDatabasesTab(created.database.id);
+			return created.database.id;
+		} catch (error) {
+			const message = error instanceof Error ? error.message : String(error);
+			setError(message);
+			toast.error("Could not create database", {
+				description: message,
+			});
+			return null;
+		}
+	}, [openDatabasesTab, setError]);
 	const openGettingStarted = useCallback(() => {
 		setShowGettingStartedRequest((prev) => prev + 1);
 	}, []);
@@ -906,7 +948,7 @@ export function AppShell() {
 			{
 				id: "new-note",
 				label: "New note",
-				icon: <HugeiconsIcon icon={NoteIcon} size={16} />,
+				icon: <HugeiconsIcon icon={PencilEdit02Icon} size={16} />,
 				category: "File Operations",
 				shortcut: { meta: true, key: "n" },
 				enabled: Boolean(spacePath),
@@ -937,25 +979,7 @@ export function AppShell() {
 				icon: <HugeiconsIcon icon={TableIcon} size={16} />,
 				category: "File Operations",
 				enabled: Boolean(spacePath),
-				action: async () => {
-					try {
-						const dir =
-							activeDirPath ??
-							(activeFilePath ? parentDir(activeFilePath) : "");
-						const path = await fileTree.onNewDatabaseInDir(dir);
-						if (path) {
-							await fileTree.openFile(path);
-						}
-					} catch (error) {
-						const message =
-							error instanceof Error ? error.message : String(error);
-						console.error("Failed to create database note", error);
-						setError(message);
-						toast.error("Could not create database", {
-							description: message,
-						});
-					}
-				},
+				action: () => void createDatabaseAndOpen(),
 			},
 			{
 				id: "new-folder",
@@ -1087,6 +1111,7 @@ export function AppShell() {
 		fileTree,
 		onOpenSpace,
 		openMarkdownTabs.length,
+		createDatabaseAndOpen,
 		requestOpenDailyNote,
 		saveCurrentEditor,
 		handleCreateFromTemplateFromMenu,
@@ -1153,29 +1178,7 @@ export function AppShell() {
 				onNewNote={() => void fileTree.onNewFile()}
 				onNewFileInDir={(p) => void fileTree.onNewFileInDir(p)}
 				onCreateFromTemplateInDir={(p) => void openTemplatePicker(p)}
-				onNewDatabaseInDir={(p) =>
-					fileTree
-						.onNewDatabaseInDir(p)
-						.then(async (path) => {
-							if (path) {
-								await fileTree.openFile(path);
-							}
-							return path;
-						})
-						.catch((error) => {
-							const message =
-								error instanceof Error ? error.message : String(error);
-							console.error(
-								"Failed to create database note in directory",
-								error,
-							);
-							setError(message);
-							toast.error("Could not create database", {
-								description: message,
-							});
-							return null;
-						})
-				}
+				onNewDatabaseInDir={async () => createDatabaseAndOpen()}
 				onNewFolderInDir={(p) => fileTree.onNewFolderInDir(p)}
 				onRenameDir={(p, name) => fileTree.onRenameDir(p, name)}
 				onDeletePath={(p, kind) => fileTree.onDeletePath(p, kind)}
@@ -1186,6 +1189,7 @@ export function AppShell() {
 				onOpenDailyNote={requestOpenDailyNote}
 				isDailyNoteCreating={isDailyNoteCreating}
 				onOpenTasks={openTasksTab}
+				onOpenDatabases={(databaseId) => openDatabasesTab(databaseId)}
 				updateReady={autoUpdater.updateReady}
 				updateVersion={autoUpdater.updateVersion}
 				onInstallUpdate={autoUpdater.installAndRelaunch}
@@ -1205,6 +1209,7 @@ export function AppShell() {
 				onCreateNote={handleCreateNoteFromStarter}
 				onOpenDailyNote={requestOpenDailyNote}
 				openTasksRequest={openTasksRequest}
+				openDatabasesRequest={openDatabasesRequest}
 				openBlankTabRequest={openBlankTabRequest}
 				showGettingStartedRequest={showGettingStartedRequest}
 				dailyNoteSetupNoticeRequest={dailyNoteSetupNoticeRequest}
