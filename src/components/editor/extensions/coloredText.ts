@@ -34,7 +34,7 @@ export const ColoredText = MarkExtension.create({
 	name: "coloredText",
 	priority: 1000,
 	inclusive: true,
-	keepOnSplit: true,
+	keepOnSplit: false,
 	excludes: "",
 	addAttributes() {
 		return {
@@ -99,15 +99,17 @@ export const ColoredText = MarkExtension.create({
 			return src.indexOf("{{glyph-color:");
 		},
 		tokenize(src, _tokens, helper) {
-			const parsed = parseGlyphColorSpan(src);
-			if (!parsed) return undefined;
-			const raw = src.match(GLYPH_COLOR_BRIDGE_RE)?.[0];
-			if (!raw) return undefined;
+			const match = src.match(GLYPH_COLOR_BRIDGE_RE);
+			if (!match) return undefined;
+			const color = (match[1] ?? "").trim().toLowerCase();
+			if (!isEditorTextColor(color)) return undefined;
+			const raw = match[0];
+			const text = match[2] ?? "";
 			return {
 				type: "coloredText",
 				raw,
-				text: parsed.text,
-				tokens: helper.inlineTokens(parsed.text),
+				text,
+				tokens: helper.inlineTokens(text),
 			};
 		},
 	},

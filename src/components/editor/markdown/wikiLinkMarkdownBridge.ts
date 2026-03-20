@@ -27,6 +27,10 @@ function canonicalizeWikiLinks(input: string): string {
 	return out;
 }
 
+// This intentionally matches only Glyph's canonical stored span format:
+// `data-glyph-color` followed by `style`, with no extra attributes in between.
+// That keeps the bridge logic narrow and predictable for our own output, but
+// manually-authored spans with a different attribute order won't be bridged.
 const GLYPH_COLOR_HTML_RE =
 	/<span\s+data-glyph-color=(?:"([^"]+)"|'([^']+)')\s+style=(?:"[^"]*"|'[^']*')\s*>([\s\S]*?)<\/span>/gi;
 

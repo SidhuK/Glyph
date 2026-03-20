@@ -29,13 +29,6 @@ export interface RibbonButtonConfig {
 	icon: ReactNode;
 }
 
-export interface RibbonColorOption {
-	id: EditorTextColor;
-	label: string;
-	cssVar: string;
-	fallbackHex: string;
-}
-
 type RunCommand = (fn: () => void) => void;
 type FocusChain = () => ReturnType<Editor["chain"]>;
 

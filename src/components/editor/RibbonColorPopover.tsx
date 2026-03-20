@@ -74,9 +74,7 @@ export function RibbonColorPopover({
 					))}
 					<button
 						type="button"
-						className={`editorColorSwatchButton editorColorClearButton ${
-							button.activeColor === null ? "active" : ""
-						}`}
+						className="editorColorSwatchButton editorColorClearButton"
 						title="Clear color"
 						aria-label="Clear color"
 						onMouseDown={preventMouseDown}
