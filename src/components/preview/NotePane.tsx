@@ -2,7 +2,6 @@ import { MarkdownEditorPane } from "./MarkdownEditorPane";
 
 interface NotePaneProps {
 	relPath: string;
-	onOpenFile: (relPath: string) => Promise<void>;
 	onDirtyChange?: (dirty: boolean) => void;
 }
 

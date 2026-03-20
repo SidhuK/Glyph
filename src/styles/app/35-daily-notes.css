@@ -39,7 +39,7 @@
 }
 
 .sidebarQuickActionBtn[data-kind="databases"] > svg {
-	color: oklch(0.72 0.13 204);
+	color: oklch(0.74 0.15 24);
 }
 
 .sidebarQuickActionBtn[data-kind="daily-notes"] > svg {

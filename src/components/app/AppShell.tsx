@@ -1149,9 +1149,10 @@ export function AppShell() {
 				onNewNote={() => void fileTree.onNewFile()}
 				onNewFileInDir={(p) => void fileTree.onNewFileInDir(p)}
 				onCreateFromTemplateInDir={(p) => void openTemplatePicker(p)}
-				onNewDatabaseInDir={() =>
-					Promise.resolve(openDatabasesTab()).then(() => null)
-				}
+				onNewDatabaseInDir={async () => {
+					openDatabasesTab();
+					return null;
+				}}
 				onNewFolderInDir={(p) => fileTree.onNewFolderInDir(p)}
 				onRenameDir={(p, name) => fileTree.onRenameDir(p, name)}
 				onDeletePath={(p, kind) => fileTree.onDeletePath(p, kind)}

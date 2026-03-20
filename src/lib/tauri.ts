@@ -145,13 +145,20 @@ export interface DatabaseSort {
 export interface DatabaseFilter {
 	column_id: string;
 	operator:
-		| "contains"
 		| "equals"
+		| "not_equals"
+		| "contains"
+		| "not_contains"
+		| "starts_with"
+		| "ends_with"
 		| "is_empty"
 		| "is_not_empty"
 		| "is_true"
 		| "is_false"
-		| "tags_contains";
+		| "tags_contains"
+		| "any_of"
+		| "none_of"
+		| "within_last_7_days";
 	value_text?: string | null;
 	value_bool?: boolean | null;
 	value_list: string[];

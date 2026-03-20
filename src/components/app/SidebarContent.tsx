@@ -1,7 +1,7 @@
 import {
 	CalendarAdd01Icon,
 	CheckListIcon,
-	Database as Database01Icon,
+	DashboardSquare03Icon,
 	NoteIcon,
 	Tag01Icon,
 } from "@hugeicons/core-free-icons";
@@ -118,7 +118,11 @@ export const SidebarContent = memo(function SidebarContent({
 						onClick={() => onOpenDatabases()}
 						title="Open Databases"
 					>
-						<HugeiconsIcon icon={Database01Icon} size={14} strokeWidth={1.8} />
+						<HugeiconsIcon
+							icon={DashboardSquare03Icon}
+							size={14}
+							strokeWidth={1.8}
+						/>
 						<span className="sidebarQuickActionLabel">Databases</span>
 					</button>
 					<button

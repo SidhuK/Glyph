@@ -432,7 +432,6 @@ export const MainContent = memo(function MainContent({
 			return (
 				<NotePane
 					relPath={viewerPath}
-					onOpenFile={(relPath) => fileTree.openFile(relPath)}
 					onDirtyChange={(dirty) =>
 						setDirtyByPath((prev) =>
 							prev[viewerPath] === dirty

@@ -15,6 +15,7 @@ use super::types::{
 };
 
 const SOURCE_SCAN_LIMIT: usize = 2_000;
+const SQLITE_BATCH_SIZE: usize = 500;
 
 fn built_in_columns() -> Vec<DatabaseColumn> {
     vec![
@@ -270,6 +271,9 @@ fn row_matches_filters(
                 } else {
                     filter.value_list.clone()
                 };
+                if filter_values.is_empty() {
+                    return true;
+                }
                 filter_values.iter().any(|value| {
                     let normalized = if column.column_type == "tags" {
                         normalize_tag_text(value)
@@ -460,92 +464,93 @@ fn hydrate_rows_by_paths(conn: &Connection, note_paths: &[String]) -> Result<Vec
     if note_paths.is_empty() {
         return Ok(Vec::new());
     }
-    let placeholders = std::iter::repeat_n("?", note_paths.len())
-        .collect::<Vec<_>>()
-        .join(", ");
-    let mut stmt = conn
-        .prepare(&format!(
-            "SELECT id, title, created, updated, preview FROM notes WHERE id IN ({placeholders})"
-        ))
-        .map_err(|e| e.to_string())?;
-    let mut rows = stmt
-        .query(rusqlite::params_from_iter(note_paths.iter()))
-        .map_err(|e| e.to_string())?;
-
     let mut row_map = HashMap::<String, DatabaseRow>::new();
-    while let Some(row) = rows.next().map_err(|e| e.to_string())? {
-        let note_path = row.get::<_, String>(0).map_err(|e| e.to_string())?;
-        row_map.insert(
-            note_path.clone(),
-            DatabaseRow {
-                folder: parent_dir(&note_path),
-                note_path,
-                title: row.get(1).map_err(|e| e.to_string())?,
-                created: row.get(2).map_err(|e| e.to_string())?,
-                updated: row.get(3).map_err(|e| e.to_string())?,
-                preview: row.get(4).map_err(|e| e.to_string())?,
-                tags: Vec::new(),
-                linked_notes: Vec::new(),
-                properties: BTreeMap::new(),
-            },
-        );
-    }
-
-    let mut tag_stmt = conn
-        .prepare(&format!(
-            "SELECT note_id, tag FROM tags WHERE note_id IN ({placeholders}) ORDER BY tag ASC"
-        ))
-        .map_err(|e| e.to_string())?;
-    let mut tag_rows = tag_stmt
-        .query(rusqlite::params_from_iter(note_paths.iter()))
-        .map_err(|e| e.to_string())?;
-    while let Some(row) = tag_rows.next().map_err(|e| e.to_string())? {
-        let note_id = row.get::<_, String>(0).map_err(|e| e.to_string())?;
-        let tag = row.get::<_, String>(1).map_err(|e| e.to_string())?;
-        if let Some(entry) = row_map.get_mut(&note_id) {
-            entry.tags.push(tag);
-        }
-    }
-
-    let mut link_stmt = conn
-        .prepare(&format!(
-            "SELECT from_id, to_id FROM links WHERE from_id IN ({placeholders}) AND to_id IS NOT NULL"
-        ))
-        .map_err(|e| e.to_string())?;
-    let mut link_rows = link_stmt
-        .query(rusqlite::params_from_iter(note_paths.iter()))
-        .map_err(|e| e.to_string())?;
-    while let Some(row) = link_rows.next().map_err(|e| e.to_string())? {
-        let note_id = row.get::<_, String>(0).map_err(|e| e.to_string())?;
-        let target = row.get::<_, String>(1).map_err(|e| e.to_string())?;
-        if let Some(entry) = row_map.get_mut(&note_id) {
-            entry.linked_notes.push(target);
-        }
-    }
-
-    let mut prop_stmt = conn
-        .prepare(&format!(
-            "SELECT note_id, key, value_type, value_text, value_json
-             FROM note_properties
-             WHERE note_id IN ({placeholders})
-             ORDER BY ordinal ASC"
-        ))
-        .map_err(|e| e.to_string())?;
-    let mut prop_rows = prop_stmt
-        .query(rusqlite::params_from_iter(note_paths.iter()))
-        .map_err(|e| e.to_string())?;
-    while let Some(row) = prop_rows.next().map_err(|e| e.to_string())? {
-        let note_id = row.get::<_, String>(0).map_err(|e| e.to_string())?;
-        let key = row.get::<_, String>(1).map_err(|e| e.to_string())?;
-        if let Some(entry) = row_map.get_mut(&note_id) {
-            entry.properties.insert(
-                key,
-                property_value_from_index(
-                    &row.get::<_, String>(2).map_err(|e| e.to_string())?,
-                    row.get::<_, String>(3).map_err(|e| e.to_string())?,
-                    row.get::<_, String>(4).map_err(|e| e.to_string())?,
-                ),
+    for chunk in note_paths.chunks(SQLITE_BATCH_SIZE) {
+        let placeholders = std::iter::repeat_n("?", chunk.len())
+            .collect::<Vec<_>>()
+            .join(", ");
+        let mut stmt = conn
+            .prepare(&format!(
+                "SELECT id, title, created, updated, preview FROM notes WHERE id IN ({placeholders})"
+            ))
+            .map_err(|e| e.to_string())?;
+        let mut rows = stmt
+            .query(rusqlite::params_from_iter(chunk.iter()))
+            .map_err(|e| e.to_string())?;
+        while let Some(row) = rows.next().map_err(|e| e.to_string())? {
+            let note_path = row.get::<_, String>(0).map_err(|e| e.to_string())?;
+            row_map.insert(
+                note_path.clone(),
+                DatabaseRow {
+                    folder: parent_dir(&note_path),
+                    note_path,
+                    title: row.get(1).map_err(|e| e.to_string())?,
+                    created: row.get(2).map_err(|e| e.to_string())?,
+                    updated: row.get(3).map_err(|e| e.to_string())?,
+                    preview: row.get(4).map_err(|e| e.to_string())?,
+                    tags: Vec::new(),
+                    linked_notes: Vec::new(),
+                    properties: BTreeMap::new(),
+                },
             );
+        }
+
+        let mut tag_stmt = conn
+            .prepare(&format!(
+                "SELECT note_id, tag FROM tags WHERE note_id IN ({placeholders}) ORDER BY tag ASC"
+            ))
+            .map_err(|e| e.to_string())?;
+        let mut tag_rows = tag_stmt
+            .query(rusqlite::params_from_iter(chunk.iter()))
+            .map_err(|e| e.to_string())?;
+        while let Some(row) = tag_rows.next().map_err(|e| e.to_string())? {
+            let note_id = row.get::<_, String>(0).map_err(|e| e.to_string())?;
+            let tag = row.get::<_, String>(1).map_err(|e| e.to_string())?;
+            if let Some(entry) = row_map.get_mut(&note_id) {
+                entry.tags.push(tag);
+            }
+        }
+
+        let mut link_stmt = conn
+            .prepare(&format!(
+                "SELECT from_id, to_id FROM links WHERE from_id IN ({placeholders}) AND to_id IS NOT NULL"
+            ))
+            .map_err(|e| e.to_string())?;
+        let mut link_rows = link_stmt
+            .query(rusqlite::params_from_iter(chunk.iter()))
+            .map_err(|e| e.to_string())?;
+        while let Some(row) = link_rows.next().map_err(|e| e.to_string())? {
+            let note_id = row.get::<_, String>(0).map_err(|e| e.to_string())?;
+            let target = row.get::<_, String>(1).map_err(|e| e.to_string())?;
+            if let Some(entry) = row_map.get_mut(&note_id) {
+                entry.linked_notes.push(target);
+            }
+        }
+
+        let mut prop_stmt = conn
+            .prepare(&format!(
+                "SELECT note_id, key, value_type, value_text, value_json
+                 FROM note_properties
+                 WHERE note_id IN ({placeholders})
+                 ORDER BY ordinal ASC"
+            ))
+            .map_err(|e| e.to_string())?;
+        let mut prop_rows = prop_stmt
+            .query(rusqlite::params_from_iter(chunk.iter()))
+            .map_err(|e| e.to_string())?;
+        while let Some(row) = prop_rows.next().map_err(|e| e.to_string())? {
+            let note_id = row.get::<_, String>(0).map_err(|e| e.to_string())?;
+            let key = row.get::<_, String>(1).map_err(|e| e.to_string())?;
+            if let Some(entry) = row_map.get_mut(&note_id) {
+                entry.properties.insert(
+                    key,
+                    property_value_from_index(
+                        &row.get::<_, String>(2).map_err(|e| e.to_string())?,
+                        row.get::<_, String>(3).map_err(|e| e.to_string())?,
+                        row.get::<_, String>(4).map_err(|e| e.to_string())?,
+                    ),
+                );
+            }
         }
     }
 
@@ -603,15 +608,19 @@ pub fn query_database_rows(
         if let Some(column) = catalog.iter().find(|entry| entry.id == sort.column_id) {
             rows.sort_by(|left, right| {
                 let ordering = compare_rows(left, right, column);
-                if sort.direction == "desc" {
+                let primary = if sort.direction == "desc" {
                     ordering.reverse()
                 } else {
                     ordering
+                };
+                if primary == std::cmp::Ordering::Equal {
+                    left.note_path.cmp(&right.note_path)
+                } else {
+                    primary
                 }
             });
         }
     }
-    rows.sort_by(|left, right| left.note_path.cmp(&right.note_path));
     let total_count = rows.len() as u32;
     let sliced = rows
         .iter()

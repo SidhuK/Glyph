@@ -1,7 +1,6 @@
-import { Database as Database01Icon } from "@hugeicons/core-free-icons";
+import { DashboardSquare03Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { dispatchDatabasesUpdated } from "../../lib/appEvents";
 import { defaultDatabaseColumnIconName } from "../../lib/database/columnIcons";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import {
@@ -257,7 +256,6 @@ export function DatabasesPane({
 			});
 			setDocument(saved);
 			setNameDraft(saved.database.name);
-			dispatchDatabasesUpdated();
 			await loadSummaries();
 			await loadRows();
 		},
@@ -282,7 +280,6 @@ export function DatabasesPane({
 		setDocument(created);
 		setSelectedViewId(created.database.views[0]?.id ?? null);
 		setNameDraft(created.database.name);
-		dispatchDatabasesUpdated();
 		await loadSummaries();
 	}, [loadSummaries, summaries]);
 
@@ -291,7 +288,6 @@ export function DatabasesPane({
 		await invoke("databases_delete", { database_id: document.database.id });
 		setDocument(null);
 		setRows([]);
-		dispatchDatabasesUpdated();
 		await loadSummaries();
 	}, [document, loadSummaries]);
 
@@ -304,7 +300,6 @@ export function DatabasesPane({
 		setDocument(duplicated);
 		setSelectedViewId(duplicated.database.views[0]?.id ?? null);
 		setNameDraft(duplicated.database.name);
-		dispatchDatabasesUpdated();
 		await loadSummaries();
 	}, [document, loadSummaries]);
 
@@ -319,18 +314,19 @@ export function DatabasesPane({
 				value_list: string[];
 			},
 		) => {
-			const row = await invoke("databases_update_cell", {
+			await invoke("databases_update_cell", {
 				note_path: notePath,
 				column,
 				value,
 			});
-			setRows((current) =>
-				current.map((entry) => (entry.note_path === notePath ? row : entry)),
-			);
 			await loadRows();
 		},
 		[loadRows],
 	);
+
+	const handleCreateDefaultGroupField = useCallback(async () => {
+		// TODO: implement default board group field creation for workspace databases.
+	}, []);
 
 	const handleCreateRow = useCallback(async () => {
 		if (!document) return;
@@ -447,7 +443,7 @@ export function DatabasesPane({
 						<DropdownMenuTrigger asChild>
 							<button type="button" className="databasesDropdownTrigger">
 								<HugeiconsIcon
-									icon={Database01Icon}
+									icon={DashboardSquare03Icon}
 									size={14}
 									strokeWidth={1.8}
 								/>
@@ -468,7 +464,7 @@ export function DatabasesPane({
 									onSelect={() => setSelectedDatabaseId(summary.id)}
 								>
 									<HugeiconsIcon
-										icon={Database01Icon}
+										icon={DashboardSquare03Icon}
 										size={13}
 										strokeWidth={1.8}
 									/>
@@ -667,7 +663,7 @@ export function DatabasesPane({
 							onSelectRow={setSelectedRowPath}
 							onOpenRow={(notePath) => void onOpenFile(notePath)}
 							onOpenColumns={() => setColumnsOpen(true)}
-							onCreateDefaultGroupField={async () => {}}
+							onCreateDefaultGroupField={handleCreateDefaultGroupField}
 							onGroupColumnIdChange={(groupColumnId) =>
 								void handleSaveConfig({
 									...activeConfig,
@@ -719,7 +715,11 @@ export function DatabasesPane({
 				</>
 			) : (
 				<div className="databasesEmptyState">
-					<HugeiconsIcon icon={Database01Icon} size={32} strokeWidth={1.2} />
+					<HugeiconsIcon
+						icon={DashboardSquare03Icon}
+						size={32}
+						strokeWidth={1.2}
+					/>
 					<div className="databasesEmptyTitle">
 						{summaries.length === 0
 							? "Create your first database"

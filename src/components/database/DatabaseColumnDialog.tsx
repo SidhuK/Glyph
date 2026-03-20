@@ -49,7 +49,10 @@ const builtInColumns: DatabaseColumn[] = [
 		id: "folder",
 		type: "folder",
 		label: "Folder",
-		icon: defaultDatabaseColumnIconName({ type: "path", property_kind: null }),
+		icon: defaultDatabaseColumnIconName({
+			type: "folder",
+			property_kind: null,
+		}),
 		width: 220,
 		visible: true,
 	},

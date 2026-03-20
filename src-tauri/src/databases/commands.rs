@@ -5,6 +5,7 @@ use tauri::State;
 use uuid::Uuid;
 
 use crate::index::index_note;
+use crate::index::open_db;
 use crate::io_atomic;
 use crate::notes::frontmatter::{
     normalize_frontmatter_mapping, now_rfc3339, parse_frontmatter_mapping,
@@ -16,7 +17,7 @@ use crate::space::SpaceState;
 use crate::space_fs::helpers::deny_hidden_rel_path;
 
 use super::query::{load_database_document, query_database_rows, read_note_markdown, row_by_path};
-use super::store::{bootstrap_defaults, list_summaries, load_store, save_store};
+use super::store::{bootstrap_defaults, default_view, list_summaries, load_store, save_store};
 use super::types::{
     DatabaseCellValue, DatabaseColumn, DatabaseCreateRowResult, DatabaseDefinition, DatabaseDocument,
     DatabasePreviewContext, DatabaseRow, DatabaseSummary,
@@ -169,10 +170,43 @@ fn word_count(markdown: &str) -> u32 {
     markdown.split_whitespace().count() as u32
 }
 
+const MAX_ROW_CREATE_COLLISION_INDEX: usize = 1_000;
+
+fn backlink_note_paths(root: &Path, note_path: &str) -> Result<Vec<String>, String> {
+    let conn = open_db(root)?;
+    let stem = Path::new(note_path)
+        .file_stem()
+        .and_then(|value| value.to_str())
+        .unwrap_or("")
+        .to_string();
+    let mut stmt = conn
+        .prepare(
+            "SELECT n.id
+             FROM links l
+             JOIN notes n ON n.id = l.from_id
+             WHERE l.to_id = ? OR (l.to_title IS NOT NULL AND l.to_title = ?)
+             ORDER BY n.updated DESC
+             LIMIT 100",
+        )
+        .map_err(|e| e.to_string())?;
+    let mut rows = stmt
+        .query(rusqlite::params![note_path, stem])
+        .map_err(|e| e.to_string())?;
+    let mut out = Vec::new();
+    while let Some(row) = rows.next().map_err(|e| e.to_string())? {
+        out.push(row.get::<_, String>(0).map_err(|e| e.to_string())?);
+    }
+    Ok(out)
+}
+
 #[tauri::command(rename_all = "snake_case")]
 pub async fn databases_list(state: State<'_, SpaceState>) -> Result<Vec<DatabaseSummary>, String> {
     let root = state.current_root()?;
+    let db_store_mutex = state.db_store_mutex();
     tauri::async_runtime::spawn_blocking(move || {
+        let _guard = db_store_mutex
+            .lock()
+            .map_err(|_| "database store mutex poisoned".to_string())?;
         let store = bootstrap_defaults(load_store(&root)?);
         save_store(&root, &store)?;
         Ok(list_summaries(&store))
@@ -206,7 +240,11 @@ pub async fn databases_create(
     name: String,
 ) -> Result<DatabaseDocument, String> {
     let root = state.current_root()?;
+    let db_store_mutex = state.db_store_mutex();
     tauri::async_runtime::spawn_blocking(move || {
+        let _guard = db_store_mutex
+            .lock()
+            .map_err(|_| "database store mutex poisoned".to_string())?;
         let mut store = bootstrap_defaults(load_store(&root)?);
         if store
             .databases
@@ -232,27 +270,7 @@ pub async fn databases_create(
                 title_prefix: "Untitled".to_string(),
             },
             schema: Vec::new(),
-            views: vec![super::store::bootstrap_defaults(super::types::DatabaseStore {
-                version: 1,
-                databases: Vec::new(),
-            })
-            .databases
-            .first()
-            .and_then(|db| db.views.first())
-            .cloned()
-            .unwrap_or_else(|| super::types::DatabaseViewDefinition {
-                id: Uuid::new_v4().to_string(),
-                name: "Table".to_string(),
-                layout: "table".to_string(),
-                icon: None,
-                color: None,
-                columns: Vec::new(),
-                sorts: Vec::new(),
-                filters: Vec::new(),
-                grouping: None,
-                created_at: now.clone(),
-                updated_at: now.clone(),
-            })],
+            views: vec![default_view("Table")],
             created_at: now.clone(),
             updated_at: now,
         };
@@ -270,7 +288,11 @@ pub async fn databases_update(
     database: DatabaseDefinition,
 ) -> Result<DatabaseDocument, String> {
     let root = state.current_root()?;
+    let db_store_mutex = state.db_store_mutex();
     tauri::async_runtime::spawn_blocking(move || {
+        let _guard = db_store_mutex
+            .lock()
+            .map_err(|_| "database store mutex poisoned".to_string())?;
         let mut store = bootstrap_defaults(load_store(&root)?);
         let index = store
             .databases
@@ -303,7 +325,11 @@ pub async fn databases_delete(
     database_id: String,
 ) -> Result<(), String> {
     let root = state.current_root()?;
+    let db_store_mutex = state.db_store_mutex();
     tauri::async_runtime::spawn_blocking(move || {
+        let _guard = db_store_mutex
+            .lock()
+            .map_err(|_| "database store mutex poisoned".to_string())?;
         let mut store = bootstrap_defaults(load_store(&root)?);
         if store
             .databases
@@ -326,7 +352,11 @@ pub async fn databases_duplicate(
     database_id: String,
 ) -> Result<DatabaseDocument, String> {
     let root = state.current_root()?;
+    let db_store_mutex = state.db_store_mutex();
     tauri::async_runtime::spawn_blocking(move || {
+        let _guard = db_store_mutex
+            .lock()
+            .map_err(|_| "database store mutex poisoned".to_string())?;
         let mut store = bootstrap_defaults(load_store(&root)?);
         let source = store
             .databases
@@ -446,6 +476,11 @@ pub async fn databases_create_row(
         };
         let mut index = 2;
         while note_exists(&root, &candidate)? {
+            if index > MAX_ROW_CREATE_COLLISION_INDEX {
+                return Err(format!(
+                    "reached note name collision limit for slug '{slug}' in folder '{folder}'"
+                ));
+            }
             candidate = if folder.is_empty() {
                 format!("{slug} {index}.md")
             } else {
@@ -474,6 +509,7 @@ pub async fn databases_preview_context(
     tauri::async_runtime::spawn_blocking(move || {
         let markdown = read_note_markdown(&root, &note_path)?;
         let row = row_by_path(&root, &note_path)?;
+        let backlinks = backlink_note_paths(&root, &note_path)?;
         let line_count = markdown.lines().count() as u32;
         let word_count = word_count(&markdown);
         let character_count = markdown.chars().count() as u32;
@@ -488,7 +524,7 @@ pub async fn databases_preview_context(
             character_count,
             line_count,
             reading_time_minutes,
-            backlinks: Vec::new(),
+            backlinks,
         })
     })
     .await

@@ -21,7 +21,7 @@ fn databases_store_path(space_root: &Path) -> Result<PathBuf, String> {
     Ok(ensure_glyph_dir(space_root)?.join(DATABASES_STORE_FILE))
 }
 
-fn default_view(name: &str) -> DatabaseViewDefinition {
+pub(crate) fn default_view(name: &str) -> DatabaseViewDefinition {
     let now = now_iso();
     DatabaseViewDefinition {
         id: Uuid::new_v4().to_string(),

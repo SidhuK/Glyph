@@ -192,11 +192,6 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 		return onNewFileInDir("");
 	}, [onNewFileInDir]);
 
-	const onNewDatabaseInDir = useCallback(async (dirPath: string) => {
-		void dirPath;
-		return null;
-	}, []);
-
 	const onNewFolderInDir = useCallback(
 		async (dirPath: string) => {
 			if (!spacePath) return null;
@@ -480,7 +475,6 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 		createMarkdownFileAtPath,
 		onNewFile,
 		onNewFileInDir,
-		onNewDatabaseInDir,
 		onNewFolderInDir,
 		onRenameDir,
 		onDeletePath,
