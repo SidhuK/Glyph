@@ -14,6 +14,12 @@ import {
 	Strikethrough,
 	Underline,
 } from "../Icons";
+import {
+	EDITOR_TEXT_COLORS,
+	type EditorTextColor,
+	getEditorTextColorOption,
+	isEditorTextColor,
+} from "./textColors";
 
 export interface RibbonButtonConfig {
 	title: string;
@@ -56,6 +62,35 @@ export function getFormatButtons(
 			icon: <Strikethrough size={14} />,
 		},
 	];
+}
+
+export function getTextColorButton(
+	editor: Editor,
+	runCommand: RunCommand,
+	focusChain: FocusChain,
+) {
+	const activeColor = editor.getAttributes("coloredText").color as
+		| EditorTextColor
+		| undefined;
+	const activeOption =
+		activeColor && isEditorTextColor(activeColor)
+			? getEditorTextColorOption(activeColor)
+			: null;
+
+	return {
+		title: "Text color",
+		isActive: () => editor.isActive("coloredText"),
+		activeColor: activeOption?.id ?? null,
+		options: EDITOR_TEXT_COLORS.map((option) => ({
+			id: option.id,
+			label: option.label,
+			cssVar: option.cssVar,
+			fallbackHex: option.fallbackHex,
+			onSelect: () =>
+				runCommand(() => focusChain().setTextColor(option.id).run()),
+		})),
+		onClear: () => runCommand(() => focusChain().unsetTextColor().run()),
+	};
 }
 
 export function getHeadingButtons(

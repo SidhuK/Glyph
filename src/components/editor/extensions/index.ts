@@ -14,6 +14,7 @@ import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import StarterKit from "@tiptap/starter-kit";
 import { SlashCommand } from "../slashCommands";
 import { SyntaxHighlightedCodeBlock } from "./codeBlockHighlighting";
+import { ColoredText } from "./coloredText";
 import { MarkdownImage } from "./markdownImage";
 import { MarkdownLinkAutocomplete } from "./markdownLinkAutocomplete";
 import { TagDecorations } from "./tagDecorations";
@@ -294,6 +295,7 @@ export function createEditorExtensions(
 			link: false,
 			underline: {},
 		}),
+		ColoredText,
 		SyntaxHighlightedCodeBlock,
 		EditorLink,
 		TaskList,

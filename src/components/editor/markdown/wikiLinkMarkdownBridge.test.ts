@@ -18,6 +18,16 @@ describe("wikiLinkMarkdownBridge", () => {
 		);
 	});
 
+	it("bridges supported colored spans to internal editor tokens and back", () => {
+		const md =
+			'Use <span data-glyph-color="blue" style="color: var(--glyph-inline-color-blue, #1a6ba4)">**focus**</span> here';
+		const preprocessed = preprocessMarkdownForEditor(md);
+		expect(preprocessed).toBe(
+			"Use {{glyph-color:blue}}**focus**{{/glyph-color}} here",
+		);
+		expect(postprocessMarkdownFromEditor(preprocessed)).toBe(md);
+	});
+
 	it("preserves malformed wikilink-like text", () => {
 		const md = "Bad [[#Heading]] input";
 		expect(postprocessMarkdownFromEditor(md)).toBe(md);

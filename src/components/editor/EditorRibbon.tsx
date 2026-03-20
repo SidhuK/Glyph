@@ -2,6 +2,7 @@ import type { Editor } from "@tiptap/core";
 import { m } from "motion/react";
 import { memo } from "react";
 import { springPresets } from "../ui/animations";
+import { RibbonColorPopover } from "./RibbonColorPopover";
 import { RibbonLinkPopover } from "./RibbonLinkPopover";
 import {
 	type RibbonButtonConfig,
@@ -73,6 +74,13 @@ export const EditorRibbon = memo(function EditorRibbon({
 					buttons={getFormatButtons(editor, runCommand, focusChain)}
 					canEdit={canEdit}
 					onPreventMouseDown={preventMouseDown}
+				/>
+				<RibbonColorPopover
+					editor={editor}
+					canEdit={canEdit}
+					runCommand={runCommand}
+					focusChain={focusChain}
+					preventMouseDown={preventMouseDown}
 				/>
 				<RibbonLinkPopover
 					editor={editor}

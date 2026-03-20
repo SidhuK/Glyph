@@ -1,3 +1,14 @@
+:root.dark {
+	--glyph-inline-color-gray: #b3b0ab;
+	--glyph-inline-color-brown: #c89b74;
+	--glyph-inline-color-orange: #ffb357;
+	--glyph-inline-color-yellow: #f0c240;
+	--glyph-inline-color-green: #62d49a;
+	--glyph-inline-color-blue: #7cc4ff;
+	--glyph-inline-color-purple: #c39bff;
+	--glyph-inline-color-red: #ff8a84;
+}
+
 :root.dark:not([data-dark-theme]),
 :root.dark[data-dark-theme="glyph-default-dark"] {
 	--bg-primary: #1e1e1e;

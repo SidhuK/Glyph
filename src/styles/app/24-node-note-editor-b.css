@@ -883,6 +883,38 @@
 	border: 1px solid color-mix(in srgb, var(--border-light) 68%, transparent);
 }
 
+.tiptapContentInline span[data-glyph-color="gray"] {
+	color: var(--glyph-inline-color-gray, #5f5e5b);
+}
+
+.tiptapContentInline span[data-glyph-color="brown"] {
+	color: var(--glyph-inline-color-brown, #8b5e3c);
+}
+
+.tiptapContentInline span[data-glyph-color="orange"] {
+	color: var(--glyph-inline-color-orange, #c76b1a);
+}
+
+.tiptapContentInline span[data-glyph-color="yellow"] {
+	color: var(--glyph-inline-color-yellow, #a26a00);
+}
+
+.tiptapContentInline span[data-glyph-color="green"] {
+	color: var(--glyph-inline-color-green, #0f7b0f);
+}
+
+.tiptapContentInline span[data-glyph-color="blue"] {
+	color: var(--glyph-inline-color-blue, #1a6ba4);
+}
+
+.tiptapContentInline span[data-glyph-color="purple"] {
+	color: var(--glyph-inline-color-purple, #7a4bc2);
+}
+
+.tiptapContentInline span[data-glyph-color="red"] {
+	color: var(--glyph-inline-color-red, #c73838);
+}
+
 .tiptapContentInline pre {
 	background: color-mix(in srgb, var(--bg-secondary) 82%, var(--bg-primary));
 	padding: calc(var(--space-3) + 22px) var(--space-3) var(--space-3);
@@ -1125,6 +1157,74 @@
 	margin: 0;
 	display: inline-block;
 	min-width: 1px;
+}
+
+.editorColorDropdown {
+	min-width: auto;
+	padding: 6px;
+}
+
+.editorColorGrid {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 4px;
+}
+
+.editorColorSwatchButton {
+	appearance: none;
+	-webkit-appearance: none;
+	width: 28px;
+	height: 28px;
+	padding: 0;
+	border: 1px solid transparent;
+	border-radius: var(--radius-md);
+	background: transparent;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--text-secondary);
+	outline: none;
+	box-shadow: none;
+	transition: background-color var(--transition-fast), border-color
+		var(--transition-fast), color var(--transition-fast), transform
+		var(--transition-fast);
+}
+
+.editorColorSwatchButton:hover {
+	background: var(--interactive-hover);
+	color: var(--text-primary);
+}
+
+.editorColorSwatchButton.active {
+	background: color-mix(in srgb, var(--interactive-accent) 14%, transparent);
+	border-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 44%,
+		var(--border-default)
+	);
+	color: var(--interactive-accent);
+}
+
+.editorColorSwatchButton:focus-visible {
+	border-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 38%,
+		var(--border-default)
+	);
+	background: var(--interactive-hover);
+}
+
+.editorColorSwatch {
+	width: 14px;
+	height: 14px;
+	border-radius: var(--radius-round);
+	border: 1px solid color-mix(in srgb, currentcolor 18%, var(--border-default));
+	flex: 0 0 auto;
+}
+
+.editorColorClearButton {
+	border-color: var(--border-light);
+	background: color-mix(in srgb, var(--bg-secondary) 82%, var(--bg-primary));
 }
 
 .tiptapHostInline {
