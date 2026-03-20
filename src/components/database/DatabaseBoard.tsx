@@ -2,6 +2,7 @@ import { m, useReducedMotion } from "motion/react";
 import { useMemo, useState } from "react";
 import { useDatabaseBoard } from "../../hooks/database/useDatabaseBoard";
 import { boardDropValue, boardRowHasLane } from "../../lib/database/board";
+import { databaseValueToneStyle } from "../../lib/database/palette";
 import {
 	databaseCellValueFromRow,
 	formatDatabaseDateTime,
@@ -157,7 +158,6 @@ export function DatabaseBoard({
 			cardCandidateColumns(columns, groupColumn?.id ?? persistedGroupColumnId),
 		[columns, groupColumn?.id, persistedGroupColumnId],
 	);
-
 	const handleLaneDrop = async (notePath: string | null, laneId: string) => {
 		if (!notePath || !groupColumn) return;
 		const row = rows.find((entry) => entry.note_path === notePath);
@@ -238,6 +238,7 @@ export function DatabaseBoard({
 						<m.div
 							key={lane.id}
 							className="databaseBoardLane"
+							style={databaseValueToneStyle(lane.id)}
 							data-active={dropLaneId === lane.id ? "true" : "false"}
 							initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
 							animate={{ opacity: 1, y: 0 }}
@@ -358,13 +359,16 @@ export function DatabaseBoard({
 																	<span
 																		key={`${row.note_path}:${tag}`}
 																		className="databaseBoardTag"
+																		style={databaseValueToneStyle(tag)}
 																		title={formatTagLabel(tag)}
 																	>
 																		{formatTagLabel(tag)}
 																	</span>
 																))}
 																{extraTagCount > 0 ? (
-																	<span className="databaseBoardTag is-muted">
+																	<span
+																		className="databaseBoardTag is-muted"
+																	>
 																		+{extraTagCount}
 																	</span>
 																) : null}

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useFileTreeContext } from "../../contexts";
+import { databaseValueToneStyle } from "../../lib/database/palette";
 import {
 	databaseCellValueFromRow,
 	formatDatabaseDateTime,
@@ -203,6 +204,7 @@ export function DatabaseCell({
 									<span
 										key={`${column.id}:${value}`}
 										className="databaseCellPill"
+										style={databaseValueToneStyle(value)}
 										title={formatTagLabel(value)}
 									>
 										{formatTagLabel(value)}
@@ -238,6 +240,7 @@ export function DatabaseCell({
 									<span
 										key={`${column.id}:${value}`}
 										className="databaseCellPill"
+										style={databaseValueToneStyle(value)}
 										title={value}
 									>
 										{value}
@@ -308,6 +311,7 @@ export function DatabaseCell({
 							key={`${column.id}:${valueIndex}:${value}`}
 							type="button"
 							className="notePropertyToken"
+							style={databaseValueToneStyle(value)}
 							onMouseDown={(event) => event.preventDefault()}
 							onClick={() => void removeTag(value)}
 							title={`Remove ${formatTagLabel(value)}`}

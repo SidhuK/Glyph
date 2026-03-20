@@ -152,11 +152,19 @@ export function DatabaseColumnDialog({
 					<DialogTitle>Columns</DialogTitle>
 				</DialogHeader>
 				<div className="databaseDialogBody databaseDialogBodyColumns">
-					<section className="databaseDialogSection">
+					<section className="databaseDialogSection databaseDialogSectionPrimary">
 						<div className="databaseDialogSectionHeader">
-							<div className="databaseDialogSectionTitle">Visible columns</div>
+							<div className="databaseDialogSectionTitleRow">
+								<div className="databaseDialogSectionTitle">Visible columns</div>
+								<div className="databaseDialogSectionCount">
+									{config.columns.length}
+								</div>
+							</div>
+							<div className="databaseDialogSectionHint">
+								Reorder, resize, or hide fields for this view.
+							</div>
 						</div>
-						<div className="databaseDialogList">
+						<div className="databaseDialogList databaseDialogListColumns">
 							{config.columns.map((column, index) => (
 								<div key={column.id} className="databaseDialogRow">
 									<div className="databaseDialogRowLead">
@@ -298,8 +306,17 @@ export function DatabaseColumnDialog({
 					<div className="databaseDialogSidebar">
 						<section className="databaseDialogSection">
 							<div className="databaseDialogSectionHeader">
-								<div className="databaseDialogSectionTitle">
-									Built-in fields
+								<div className="databaseDialogSectionTitleRow">
+									<div className="databaseDialogSectionTitle">
+										Built-in fields
+									</div>
+									<div className="databaseDialogSectionCount">
+										{
+											builtInColumns.filter(
+												(column) => !addedColumnIds.has(column.id),
+											).length
+										}
+									</div>
 								</div>
 							</div>
 							<div className="databaseDialogChipList">
@@ -323,7 +340,17 @@ export function DatabaseColumnDialog({
 						</section>
 						<section className="databaseDialogSection">
 							<div className="databaseDialogSectionHeader">
-								<div className="databaseDialogSectionTitle">Properties</div>
+								<div className="databaseDialogSectionTitleRow">
+									<div className="databaseDialogSectionTitle">Properties</div>
+									<div className="databaseDialogSectionCount">
+										{
+											availableProperties.filter(
+												(property) =>
+													!addedColumnIds.has(`property:${property.key}`),
+											).length
+										}
+									</div>
+								</div>
 							</div>
 							<div className="databaseDialogChipList">
 								{availableProperties
