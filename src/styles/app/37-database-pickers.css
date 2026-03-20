@@ -5,7 +5,7 @@
 	justify-content: flex-start;
 	padding: 8px 10px;
 	gap: 10px;
-	border-radius: 0;
+	border-radius: var(--radius-lg);
 	border-color: color-mix(in srgb, var(--border-light) 78%, transparent);
 	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
 	align-self: flex-start;
@@ -29,7 +29,7 @@
 	justify-content: center;
 	width: 28px;
 	height: 28px;
-	border-radius: 0;
+	border-radius: var(--radius-md);
 	background: color-mix(in srgb, var(--bg-secondary) 76%, transparent);
 	color: var(--text-secondary);
 	flex: 0 0 auto;
@@ -74,7 +74,7 @@
 
 .databasePickerPopover {
 	width: min(420px, calc(100vw - 2rem));
-	border-radius: 0;
+	border-radius: var(--radius-lg);
 	border-color: var(--border-light);
 	padding: 12px;
 	background: var(--bg-primary);
@@ -123,7 +123,7 @@
 	gap: 8px;
 	margin-bottom: 8px;
 	padding: 7px 9px;
-	border-radius: 0;
+	border-radius: var(--radius-md);
 	border: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
 	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
 }
@@ -165,7 +165,7 @@
 	width: 100%;
 	padding: 8px 10px;
 	border: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
-	border-radius: 0;
+	border-radius: var(--radius-md);
 	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
 	text-align: left;
 	transition: border-color var(--transition-base), background-color
@@ -223,7 +223,7 @@
 	min-width: 26px;
 	height: 22px;
 	padding: 0 8px;
-	border-radius: 0;
+	border-radius: var(--radius-sm);
 	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
 	background: color-mix(in srgb, var(--bg-secondary) 72%, transparent);
 	font-size: 0.72rem;
@@ -240,7 +240,7 @@
 
 .folderPickerPopover {
 	width: min(300px, calc(100vw - 2rem));
-	border-radius: 0;
+	border-radius: var(--radius-lg);
 	border-color: var(--border-light);
 	padding: 8px;
 	background: var(--bg-primary);
