@@ -12,7 +12,6 @@ import { Button } from "../ui/shadcn/button";
 import {
 	Dialog,
 	DialogContent,
-	DialogDescription,
 	DialogHeader,
 	DialogTitle,
 } from "../ui/shadcn/dialog";
@@ -148,19 +147,14 @@ export function DatabaseColumnDialog({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="databaseDialog">
-				<DialogHeader>
+			<DialogContent className="databaseDialog databaseDialogCompact">
+				<DialogHeader className="databaseDialogHeaderCompact">
 					<DialogTitle>Columns</DialogTitle>
-					<DialogDescription>
-						Show, hide, reorder, and add fields.
-					</DialogDescription>
 				</DialogHeader>
 				<div className="databaseDialogBody databaseDialogBodyColumns">
-					<section className="settingsCard databaseSettingsCard">
-						<div className="settingsCardHeader">
-							<div>
-								<div className="settingsCardTitle">Visible Columns</div>
-							</div>
+					<section className="databaseDialogSection">
+						<div className="databaseDialogSectionHeader">
+							<div className="databaseDialogSectionTitle">Visible columns</div>
 						</div>
 						<div className="databaseDialogList">
 							{config.columns.map((column, index) => (
@@ -302,10 +296,10 @@ export function DatabaseColumnDialog({
 						</div>
 					</section>
 					<div className="databaseDialogSidebar">
-						<section className="settingsCard databaseSettingsCard">
-							<div className="settingsCardHeader">
-								<div>
-									<div className="settingsCardTitle">Add Built-In</div>
+						<section className="databaseDialogSection">
+							<div className="databaseDialogSectionHeader">
+								<div className="databaseDialogSectionTitle">
+									Built-in fields
 								</div>
 							</div>
 							<div className="databaseDialogChipList">
@@ -327,11 +321,9 @@ export function DatabaseColumnDialog({
 									))}
 							</div>
 						</section>
-						<section className="settingsCard databaseSettingsCard">
-							<div className="settingsCardHeader">
-								<div>
-									<div className="settingsCardTitle">Add Property</div>
-								</div>
+						<section className="databaseDialogSection">
+							<div className="databaseDialogSectionHeader">
+								<div className="databaseDialogSectionTitle">Properties</div>
 							</div>
 							<div className="databaseDialogChipList">
 								{availableProperties
@@ -360,15 +352,8 @@ export function DatabaseColumnDialog({
 										);
 									})}
 							</div>
-							<div className="settingsField">
-								<div>
-									<label
-										className="settingsLabel"
-										htmlFor="databaseManualProperty"
-									>
-										Manual
-									</label>
-								</div>
+							<div className="databaseDialogField databaseDialogFieldStack">
+								<div className="settingsLabel">Manual property</div>
 								<div className="databaseManualProperty">
 									<Input
 										id="databaseManualProperty"

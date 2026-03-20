@@ -43,7 +43,7 @@
 	gap: 6px;
 	padding: 5px 8px;
 	border: 1px solid var(--border-light);
-	border-radius: var(--radius-md);
+	border-radius: 0;
 	background: transparent;
 	color: var(--text-primary);
 	font-size: 0.84rem;
@@ -68,7 +68,7 @@
 .databasesDropdownContent {
 	min-width: 220px;
 	padding: 6px;
-	border-radius: var(--radius-md);
+	border-radius: 0;
 	border: 1px solid var(--border-light);
 }
 
@@ -76,7 +76,7 @@
 	display: flex;
 	align-items: center;
 	gap: 8px;
-	border-radius: var(--radius-sm);
+	border-radius: 0;
 	font-size: 0.82rem;
 }
 
@@ -96,7 +96,7 @@
 	font-weight: var(--font-semibold);
 	background: transparent;
 	border: 1px solid transparent;
-	border-radius: var(--radius-sm);
+	border-radius: 0;
 	padding: 0 6px;
 	box-shadow: none;
 	transition: border-color 120ms ease, background-color 120ms ease;
@@ -175,7 +175,7 @@
 	height: 22px;
 	padding: 0;
 	border: none;
-	border-radius: var(--radius-sm);
+	border-radius: 0;
 	background: transparent;
 	color: var(--text-tertiary);
 	cursor: pointer;
@@ -221,7 +221,7 @@
 	font-size: 0.82rem;
 	font-weight: var(--font-medium);
 	border: 1px solid var(--border-default);
-	border-radius: var(--radius-sm);
+	border-radius: 0;
 	background: var(--bg-secondary);
 	color: var(--text-primary);
 	outline: none;
@@ -297,7 +297,7 @@
 }
 
 .databaseToolbarChip {
-	border-radius: 8px;
+	border-radius: 0;
 	border-color: var(--border-light);
 	background: var(--bg-primary);
 	color: var(--text-secondary);
@@ -341,7 +341,7 @@
 .databaseToolbarGroupBySelect {
 	height: 26px;
 	padding: 0 22px 0 8px;
-	border-radius: 8px;
+	border-radius: 0;
 	border: 1px solid var(--border-light);
 	background: var(--bg-primary);
 	color: var(--text-secondary);
@@ -431,7 +431,7 @@
 	flex-direction: column;
 	min-height: 0;
 	height: 100%;
-	border-radius: var(--radius-md);
+	border-radius: 0;
 	background: color-mix(in srgb, var(--bg-secondary) 40%, var(--bg-primary));
 	transition: background-color 140ms ease;
 }
@@ -483,7 +483,7 @@
 	min-width: 0;
 	padding: 10px 12px;
 	border: none;
-	border-radius: var(--radius-sm);
+	border-radius: 0;
 	background: var(--bg-primary);
 	cursor: pointer;
 	text-align: left;
@@ -669,9 +669,21 @@
 	width: 100%;
 	border: 0;
 	background: transparent;
+	border-radius: 0;
 	text-align: left;
 	padding: 0;
 	color: inherit;
+}
+
+.databaseCellButton:hover,
+.databaseCellButton:active,
+.databaseCellButton:focus-visible,
+.databaseHeaderButton:hover,
+.databaseHeaderButton:active,
+.databaseHeaderButton:focus-visible {
+	background: transparent;
+	border-radius: 0;
+	box-shadow: none;
 }
 
 .databaseHeaderButton {
@@ -770,9 +782,12 @@
 
 .databaseCellPills {
 	display: flex;
-	flex-wrap: wrap;
+	flex-wrap: nowrap;
 	gap: 6px;
 	min-height: 0;
+	min-width: 0;
+	overflow: hidden;
+	align-items: center;
 }
 
 .databaseTagEditor {
@@ -791,12 +806,18 @@
 }
 
 .databaseCellPill {
+	display: inline-block;
+	max-width: 100%;
 	padding: 2px 7px;
-	border-radius: var(--radius-sm);
+	border-radius: 0;
 	border: 1px solid var(--border-light);
 	background: var(--bg-secondary);
 	font-size: 0.76rem;
 	color: var(--text-secondary);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	flex: 0 1 auto;
 }
 
 .databaseCellYaml {
@@ -811,6 +832,11 @@
 	min-width: 0;
 	min-height: 24px;
 	cursor: default;
+}
+
+.databaseCellButton.is-pill-list {
+	width: 100%;
+	overflow: hidden;
 }
 
 .databaseCellButton.is-title {
@@ -884,29 +910,39 @@
 
 .databaseDialog {
 	max-width: min(900px, calc(100vw - 2rem));
-	padding: 1.1rem;
-	gap: 0.75rem;
-	border-radius: var(--radius-lg);
+	padding: 1rem;
+	gap: 0.65rem;
+	border-radius: 0;
 	border-color: var(--border-light);
 	background: var(--bg-primary);
 	box-shadow: var(--shadow-md);
+}
+
+.databaseDialogCompact {
+	max-width: min(760px, calc(100vw - 2rem));
+	padding: 0.85rem 0.95rem 0.95rem;
+	gap: 0.45rem;
 }
 
 .databaseDialog [data-slot="dialog-header"] {
 	padding-inline: 0.3rem;
 }
 
+.databaseDialogHeaderCompact {
+	padding-bottom: 0.1rem;
+}
+
 .databaseDialogBody {
 	display: flex;
 	flex-direction: column;
-	gap: 2px;
+	gap: 14px;
 	max-height: min(68vh, 700px);
 	overflow: auto;
-	padding: 0.1rem 0.2rem 0.05rem;
+	padding: 0.15rem 0.2rem 0.05rem;
 }
 
 .databaseDialogBodyTight {
-	gap: 0;
+	gap: 14px;
 }
 
 .databaseDialogBodyColumns {
@@ -919,43 +955,55 @@
 .databaseDialogSidebar {
 	display: flex;
 	flex-direction: column;
-	gap: 6px;
+	gap: 14px;
 }
 
 .databaseDialogSection {
 	display: flex;
 	flex-direction: column;
 	gap: 10px;
+	padding: 0 0 0.15rem;
+	border-bottom: 1px solid
+		color-mix(in srgb, var(--border-light) 72%, transparent);
+}
+
+.databaseDialogSection:last-child {
+	padding-bottom: 0;
+	border-bottom: none;
+}
+
+.databaseDialogSectionHeader {
+	display: flex;
+	flex-direction: column;
+	gap: 3px;
+}
+
+.databaseDialogSectionHeaderRow {
+	flex-direction: row;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 12px;
 }
 
 .databaseDialogSectionTitle {
-	font-size: 0.84rem;
+	font-size: 0.86rem;
 	font-weight: var(--font-semibold);
+	color: var(--text-primary);
+}
+
+.databaseDialogSectionHint {
+	max-width: 58ch;
+	font-size: 0.76rem;
+	line-height: 1.35;
 	color: var(--text-secondary);
 }
 
 .databaseDialogList {
 	display: flex;
 	flex-direction: column;
-	gap: 8px;
+	gap: 6px;
 	max-height: 340px;
 	overflow: auto;
-}
-
-.databaseSettingsCard {
-	padding: 8px 0;
-}
-
-.databaseSettingsCard .settingsCardTitle {
-	letter-spacing: 0.08em;
-}
-
-.databaseSettingsCard .settingsCardHint {
-	max-width: 58ch;
-}
-
-.databaseSettingsCard .settingsCardHeader {
-	margin-bottom: 2px;
 }
 
 .databaseDialogRow,
@@ -963,10 +1011,10 @@
 .databaseFilterCard {
 	display: grid;
 	gap: 8px;
-	padding: 8px 10px;
-	border-radius: var(--radius-md);
-	border: 1px solid color-mix(in srgb, var(--border-light) 78%, transparent);
-	background: color-mix(in srgb, var(--bg-secondary) 36%, transparent);
+	padding: 7px 10px;
+	border-radius: 0;
+	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 94%, transparent);
 }
 
 .databaseDialogRow {
@@ -985,7 +1033,7 @@
 .databaseFilterCard {
 	display: flex;
 	flex-direction: column;
-	gap: 2px;
+	gap: 8px;
 }
 
 .databaseFilterCardHeader {
@@ -994,6 +1042,20 @@
 	justify-content: space-between;
 	gap: 10px;
 	padding-bottom: 2px;
+}
+
+.databaseFilterCardCompact {
+	padding: 10px;
+}
+
+.databaseFilterCardFields {
+	display: grid;
+	grid-template-columns: minmax(150px, 1.1fr) minmax(140px, 0.8fr) minmax(
+			0,
+			1.35fr
+		) auto;
+	gap: 8px;
+	align-items: end;
 }
 
 .databaseDialogRowMeta {
@@ -1048,7 +1110,7 @@
 }
 
 .databaseColumnIconButton {
-	border-radius: var(--radius-md);
+	border-radius: 0;
 	border: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
 	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
 	color: var(--text-secondary);
@@ -1062,6 +1124,67 @@
 
 .databaseDialogActions {
 	padding: 0.3rem 0.35rem 0;
+}
+
+.databaseDialogCompact .databaseDialogSection {
+	gap: 8px;
+	padding-bottom: 0.35rem;
+	border-bottom-color: color-mix(in srgb, var(--border-light) 56%, transparent);
+}
+
+.databaseDialogCompact .databaseDialogSectionHeader {
+	gap: 0;
+}
+
+.databaseDialogCompact .databaseDialogSectionTitle {
+	font-size: 0.84rem;
+}
+
+.databaseDialogCompact .databaseDialogRow,
+.databaseDialogCompact .databaseFilterCard {
+	border-color: color-mix(in srgb, var(--border-light) 56%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 98%, transparent);
+	box-shadow: none;
+}
+
+.databaseDialogCompact .databaseDialogChipList {
+	flex-direction: column;
+	align-items: stretch;
+	gap: 4px;
+}
+
+.databaseDialogCompact .databaseDialogChipList > button {
+	justify-content: flex-start;
+	width: 100%;
+	padding-inline: 10px;
+	border-radius: var(--radius-md);
+}
+
+.databaseDialogCompact .databaseDialogActions {
+	padding-top: 0;
+}
+
+.databaseDialogField,
+.databaseDialogFieldSlim {
+	display: grid;
+	grid-template-columns: minmax(112px, 132px) minmax(0, 1fr);
+	gap: 10px;
+	align-items: center;
+}
+
+.databaseDialogFieldStack {
+	grid-template-columns: 1fr;
+	align-items: stretch;
+}
+
+.databaseDialogFieldSlim {
+	grid-template-columns: 1fr;
+	gap: 5px;
+	align-items: stretch;
+}
+
+.databaseDialogFieldSlimGrow {
+	min-width: 0;
 }
 
 .databaseManualProperty {
@@ -1080,12 +1203,15 @@
 .databaseDialogToggle {
 	display: flex;
 	align-items: center;
-	justify-content: flex-end;
 	width: 100%;
 }
 
 .databaseToggleBlock {
 	width: 100%;
+}
+
+.databaseToggleInline {
+	justify-content: flex-start;
 }
 
 .databaseEmptyCell {
@@ -1111,6 +1237,14 @@
 	color: var(--text-secondary);
 }
 
+.databaseFilterRemoveButton {
+	align-self: end;
+}
+
+.databaseFilterValueCell {
+	min-width: 0;
+}
+
 .databaseColumnIconGrid {
 	display: grid;
 	grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -1128,7 +1262,7 @@
 	gap: 6px;
 	min-height: 74px;
 	padding: 10px 8px;
-	border-radius: var(--radius-md);
+	border-radius: 0;
 	border: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
 	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
 	text-align: center;
@@ -1155,7 +1289,7 @@
 	justify-content: center;
 	width: 28px;
 	height: 28px;
-	border-radius: var(--radius-sm);
+	border-radius: 0;
 	background: color-mix(in srgb, var(--bg-secondary) 72%, transparent);
 	color: var(--text-primary);
 }
@@ -1179,6 +1313,18 @@
 	.databaseDialogRow {
 		flex-wrap: wrap;
 		grid-template-columns: 1fr;
+	}
+
+	.databaseDialogField,
+	.databaseFilterCardFields,
+	.databaseDialogSectionHeaderRow {
+		grid-template-columns: 1fr;
+	}
+
+	.databaseDialogSectionHeaderRow {
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
 	}
 
 	.databaseTableShell {

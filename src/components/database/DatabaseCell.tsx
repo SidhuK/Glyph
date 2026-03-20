@@ -183,16 +183,19 @@ export function DatabaseCell({
 
 	if (!editing || !editable) {
 		if (cellValue.kind === "tags") {
+			const fullValue = cellValue.value_list
+				.map((value) => formatTagLabel(value))
+				.join(", ");
 			return (
 				<button
 					type="button"
-					className="databaseCellButton"
+					className="databaseCellButton is-pill-list"
 					onDoubleClick={() => setEditing(true)}
 					onClick={(event) => {
 						handleSelectRow();
 						event.stopPropagation();
 					}}
-					title="Double-click to edit tags"
+					title={fullValue || "Double-click to edit tags"}
 				>
 					<div className="databaseCellPills">
 						{cellValue.value_list.length > 0
@@ -200,6 +203,7 @@ export function DatabaseCell({
 									<span
 										key={`${column.id}:${value}`}
 										className="databaseCellPill"
+										title={formatTagLabel(value)}
 									>
 										{formatTagLabel(value)}
 									</span>
@@ -214,10 +218,11 @@ export function DatabaseCell({
 			cellValue.kind === "relation" ||
 			cellValue.kind === "multi_select"
 		) {
+			const fullValue = cellValue.value_list.join(", ");
 			return (
 				<button
 					type="button"
-					className="databaseCellButton"
+					className="databaseCellButton is-pill-list"
 					onDoubleClick={() => {
 						if (editable) setEditing(true);
 					}}
@@ -225,7 +230,7 @@ export function DatabaseCell({
 						handleSelectRow();
 						event.stopPropagation();
 					}}
-					title="Double-click to edit"
+					title={fullValue || "Double-click to edit"}
 				>
 					<div className="databaseCellPills">
 						{cellValue.value_list.length > 0
@@ -233,6 +238,7 @@ export function DatabaseCell({
 									<span
 										key={`${column.id}:${value}`}
 										className="databaseCellPill"
+										title={value}
 									>
 										{value}
 									</span>
