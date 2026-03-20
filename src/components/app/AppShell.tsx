@@ -647,8 +647,20 @@ export function AppShell() {
 	}, []);
 	const createDatabaseAndOpen = useCallback(async () => {
 		try {
+			const summaries = await invoke("databases_list");
+			const existing = new Set(
+				summaries.map((entry) => entry.name.trim().toLowerCase()),
+			);
+			let name = "New Database";
+			if (existing.has(name.toLowerCase())) {
+				let suffix = 2;
+				while (existing.has(`new database ${suffix}`)) {
+					suffix += 1;
+				}
+				name = `New Database ${suffix}`;
+			}
 			const created = await invoke("databases_create", {
-				name: "New Database",
+				name,
 			});
 			openDatabasesTab(created.database.id);
 			return created.database.id;

@@ -211,7 +211,7 @@ fn write_new_markdown_note(
         Err(error) => return Err(error.to_string()),
     };
     file.write_all(markdown.as_bytes())
-        .and_then(|_| file.flush())
+        .and_then(|_| file.sync_all())
         .map_err(|e| e.to_string())?;
     mark_recent_local_change(recent_local_changes, rel_path);
     index_note(root, rel_path, markdown)?;
@@ -269,8 +269,7 @@ pub async fn databases_list(state: State<'_, SpaceState>) -> Result<Vec<Database
         let _guard = db_store_mutex
             .lock()
             .map_err(|_| "database store mutex poisoned".to_string())?;
-        let store = bootstrap_defaults(load_store(&root)?);
-        save_store(&root, &store)?;
+        let store = load_store(&root)?;
         Ok(list_summaries(&store))
     })
     .await

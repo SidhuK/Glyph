@@ -132,6 +132,7 @@ export function DatabasesPane({
 	const [renamingViewId, setRenamingViewId] = useState<string | null>(null);
 	const [viewNameDraft, setViewNameDraft] = useState("");
 	const viewNameInputRef = useRef<HTMLInputElement | null>(null);
+	const rowRequestTokenRef = useRef(0);
 
 	const loadSummaries = useCallback(async () => {
 		const next = await invoke("databases_list");
@@ -220,6 +221,8 @@ export function DatabasesPane({
 	);
 
 	const loadRows = useCallback(async () => {
+		const requestToken = rowRequestTokenRef.current + 1;
+		rowRequestTokenRef.current = requestToken;
 		if (
 			!selectedDatabaseId ||
 			!selectedViewId ||
@@ -227,7 +230,9 @@ export function DatabasesPane({
 			document.database.id !== selectedDatabaseId ||
 			!document.database.views.some((view) => view.id === selectedViewId)
 		) {
-			setRows([]);
+			if (rowRequestTokenRef.current === requestToken) {
+				setRows([]);
+			}
 			return;
 		}
 		setRowsLoading(true);
@@ -237,11 +242,19 @@ export function DatabasesPane({
 				view_id: selectedViewId,
 				limit: 200,
 			});
+			if (rowRequestTokenRef.current !== requestToken) {
+				return;
+			}
 			setRows(next.rows);
 		} catch (cause) {
+			if (rowRequestTokenRef.current !== requestToken) {
+				return;
+			}
 			setError(extractErrorMessage(cause));
 		} finally {
-			setRowsLoading(false);
+			if (rowRequestTokenRef.current === requestToken) {
+				setRowsLoading(false);
+			}
 		}
 	}, [document, selectedDatabaseId, selectedViewId]);
 
@@ -251,15 +264,21 @@ export function DatabasesPane({
 
 	const saveDatabase = useCallback(
 		async (nextDatabase: WorkspaceDatabaseDefinition) => {
-			const saved = await invoke("databases_update", {
-				database: nextDatabase,
-			});
-			setDocument(saved);
-			setNameDraft(saved.database.name);
-			await loadSummaries();
-			await loadRows();
+			try {
+				const saved = await invoke("databases_update", {
+					database: nextDatabase,
+				});
+				setError("");
+				setDocument(saved);
+				setNameDraft(saved.database.name);
+				await loadSummaries();
+				return saved;
+			} catch (cause) {
+				setError(extractErrorMessage(cause));
+				return null;
+			}
 		},
-		[loadRows, loadSummaries],
+		[loadSummaries],
 	);
 
 	const handleSaveConfig = useCallback(
