@@ -76,6 +76,8 @@ pub async fn note_create(state: State<'_, SpaceState>, title: String) -> Result<
         mark_recent_local_change(&recent_local_changes, &rel_path);
         io_atomic::write_atomic(&path, markdown.as_bytes()).map_err(|e| e.to_string())?;
         let _ = index::index_note(&root, &id, &markdown);
+        // extract_meta reads filesystem timestamps, so this relies on write_atomic
+        // returning only after the final path has been durably replaced.
         extract_meta(&id, &markdown, &path)
     })
     .await

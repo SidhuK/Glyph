@@ -430,6 +430,7 @@
 
 .databaseBoardLane {
 	--database-tone: var(--color-blue-500);
+
 	display: flex;
 	flex: 1;
 	flex-direction: column;
@@ -625,6 +626,7 @@
 
 .databaseBoardTag {
 	--database-tone: var(--color-blue-500);
+
 	display: inline-flex;
 	align-items: center;
 	max-width: 100%;
@@ -922,6 +924,7 @@
 
 .databaseCellPill {
 	--database-tone: var(--color-blue-500);
+
 	display: inline-block;
 	max-width: 100%;
 	padding: 2px 7px;

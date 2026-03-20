@@ -211,17 +211,16 @@ export function DatabasesPane({
 
 	const loadSummaries = useCallback(async () => {
 		const next = await invoke("databases_list");
+		const storedDatabaseId = readStoredSelectedDatabaseId();
 		setSummaries(next);
 		setSelectedDatabaseId((current) =>
 			current && next.some((entry) => entry.id === current)
 				? current
 				: initialDatabaseId && next.some((entry) => entry.id === initialDatabaseId)
 					? initialDatabaseId
-					: readStoredSelectedDatabaseId() &&
-							  next.some(
-									(entry) => entry.id === readStoredSelectedDatabaseId(),
-							  )
-						? readStoredSelectedDatabaseId()
+					: storedDatabaseId &&
+							  next.some((entry) => entry.id === storedDatabaseId)
+						? storedDatabaseId
 						: (next[0]?.id ?? null),
 		);
 	}, [initialDatabaseId]);
@@ -258,6 +257,9 @@ export function DatabasesPane({
 				if (cancelled) return;
 				setDocument(next);
 				setNameDraft(next.database.name);
+				if (next.database.views.length === 0) {
+					return;
+				}
 				const storedViewId = readStoredSelectedViewId(next.database.id);
 				setSelectedViewId((current) => {
 					if (current && next.database.views.some((view) => view.id === current)) {
@@ -286,8 +288,18 @@ export function DatabasesPane({
 	}, [selectedDatabaseId]);
 
 	useEffect(() => {
+		if (
+			!selectedDatabaseId ||
+			!selectedViewId ||
+			!document ||
+			document.database.id !== selectedDatabaseId ||
+			document.database.views.length === 0 ||
+			!document.database.views.some((view) => view.id === selectedViewId)
+		) {
+			return;
+		}
 		writeStoredSelectedViewId(selectedDatabaseId, selectedViewId);
-	}, [selectedDatabaseId, selectedViewId]);
+	}, [document, selectedDatabaseId, selectedViewId]);
 
 	const activeConfig = useMemo(
 		() =>

@@ -1,4 +1,3 @@
-import type { DatabaseColumn } from "./types";
 import type { CSSProperties } from "react";
 
 const DATABASE_TONES = [
@@ -31,18 +30,4 @@ export function databaseToneStyle(seed: string): CSSProperties {
 
 export function databaseValueToneStyle(value: string): CSSProperties {
 	return databaseToneStyle(value);
-}
-
-export function databaseColumnToneStyle(column: Pick<
-	DatabaseColumn,
-	"id" | "type" | "property_key" | "property_kind" | "label"
->): CSSProperties {
-	const seed = [
-		column.id,
-		column.type,
-		column.property_key ?? "",
-		column.property_kind ?? "",
-		column.label,
-	].join(":");
-	return databaseToneStyle(seed);
 }

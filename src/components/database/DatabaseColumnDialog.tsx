@@ -111,6 +111,10 @@ export function DatabaseColumnDialog({
 }: DatabaseColumnDialogProps) {
 	const [manualKey, setManualKey] = useState("");
 	const [manualKind, setManualKind] = useState("text");
+	const visibleColumnCount = useMemo(
+		() => config.columns.filter((column) => column.visible).length,
+		[config.columns],
+	);
 	const addedColumnIds = useMemo(
 		() => new Set(config.columns.map((column) => column.id)),
 		[config.columns],
@@ -157,7 +161,7 @@ export function DatabaseColumnDialog({
 							<div className="databaseDialogSectionTitleRow">
 								<div className="databaseDialogSectionTitle">Visible columns</div>
 								<div className="databaseDialogSectionCount">
-									{config.columns.length}
+									{visibleColumnCount}
 								</div>
 							</div>
 							<div className="databaseDialogSectionHint">
