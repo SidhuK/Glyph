@@ -1,23 +1,14 @@
 use serde::{Deserialize, Serialize};
 use serde_yaml::{Mapping, Value};
-use time::format_description::well_known::Rfc3339;
 
 #[derive(Default, Deserialize, Serialize)]
 pub struct Frontmatter {
     pub id: Option<String>,
     pub title: Option<String>,
-    pub created: Option<String>,
-    pub updated: Option<String>,
     pub tags: Option<Vec<String>>,
 
     #[serde(flatten)]
     pub extra: std::collections::BTreeMap<String, serde_yaml::Value>,
-}
-
-pub fn now_rfc3339() -> String {
-    time::OffsetDateTime::now_utc()
-        .format(&Rfc3339)
-        .unwrap_or_else(|_| "1970-01-01T00:00:00Z".to_string())
 }
 
 pub fn split_frontmatter(markdown: &str) -> (Option<&str>, &str) {
@@ -87,7 +78,6 @@ pub fn normalize_frontmatter_mapping(
     mut mapping: Mapping,
     note_id: &str,
     default_title: Option<&str>,
-    preserve_created: Option<&str>,
 ) -> Mapping {
     set_value(&mut mapping, "id", Value::String(note_id.to_string()));
 
@@ -103,19 +93,8 @@ pub fn normalize_frontmatter_mapping(
         );
     }
 
-    if get_string(&mapping, "created").is_none() {
-        set_value(
-            &mut mapping,
-            "created",
-            Value::String(
-                preserve_created
-                    .map(str::to_string)
-                    .unwrap_or_else(now_rfc3339),
-            ),
-        );
-    }
-
-    set_value(&mut mapping, "updated", Value::String(now_rfc3339()));
+    mapping.remove(key("created"));
+    mapping.remove(key("updated"));
 
     if !mapping.contains_key(key("tags")) {
         set_value(&mut mapping, "tags", Value::Sequence(Vec::new()));

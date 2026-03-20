@@ -10,8 +10,8 @@ use crate::paths;
 use crate::space_fs::helpers::deny_hidden_rel_path;
 
 use super::types::{
-    DatabaseCellValue, DatabaseColumn, DatabaseDefinition, DatabaseDocument, DatabasePropertyOption,
-    DatabaseQueryResult, DatabaseRow, DatabaseViewDefinition,
+    DatabaseCellValue, DatabaseColumn, DatabaseDefinition, DatabaseDocument,
+    DatabasePropertyOption, DatabaseQueryResult, DatabaseRow, DatabaseViewDefinition,
 };
 
 const SOURCE_SCAN_LIMIT: usize = 2_000;
@@ -92,7 +92,10 @@ fn built_in_columns() -> Vec<DatabaseColumn> {
     ]
 }
 
-fn field_catalog(database: &DatabaseDefinition, view: &DatabaseViewDefinition) -> Vec<DatabaseColumn> {
+fn field_catalog(
+    database: &DatabaseDefinition,
+    view: &DatabaseViewDefinition,
+) -> Vec<DatabaseColumn> {
     let mut out = built_in_columns();
     for field in &database.schema {
         if out.iter().any(|entry| entry.id == field.id) {
@@ -183,7 +186,10 @@ fn cell_value_from_row(row: &DatabaseRow, column: &DatabaseColumn) -> DatabaseCe
             .get(column.property_key.as_deref().unwrap_or_default())
             .cloned()
             .unwrap_or(DatabaseCellValue {
-                kind: column.property_kind.clone().unwrap_or_else(|| "text".to_string()),
+                kind: column
+                    .property_kind
+                    .clone()
+                    .unwrap_or_else(|| "text".to_string()),
                 value_text: None,
                 value_bool: None,
                 value_list: Vec::new(),
@@ -246,7 +252,10 @@ fn row_matches_filters(
             let Some(value) = cell.value_text.as_deref() else {
                 return false;
             };
-            return date_matches_shortcut(value, filter.value_text.as_deref().unwrap_or("Last 7 Days"));
+            return date_matches_shortcut(
+                value,
+                filter.value_text.as_deref().unwrap_or("Last 7 Days"),
+            );
         }
         let Some(column) = columns.iter().find(|entry| entry.id == filter.column_id) else {
             return true;
@@ -255,12 +264,34 @@ fn row_matches_filters(
         let filter_text = normalize_text(filter.value_text.as_deref().unwrap_or_default());
         let text_values = cell_text_values(&cell);
         match filter.operator.as_str() {
-            "equals" => !filter_text.is_empty() && text_values.iter().any(|value| value == &filter_text),
-            "not_equals" => filter_text.is_empty() || text_values.iter().all(|value| value != &filter_text),
-            "contains" => filter_text.is_empty() || text_values.iter().any(|value| value.contains(&filter_text)),
-            "not_contains" => filter_text.is_empty() || text_values.iter().all(|value| !value.contains(&filter_text)),
-            "starts_with" => filter_text.is_empty() || text_values.iter().any(|value| value.starts_with(&filter_text)),
-            "ends_with" => filter_text.is_empty() || text_values.iter().any(|value| value.ends_with(&filter_text)),
+            "equals" => {
+                !filter_text.is_empty() && text_values.iter().any(|value| value == &filter_text)
+            }
+            "not_equals" => {
+                filter_text.is_empty() || text_values.iter().all(|value| value != &filter_text)
+            }
+            "contains" => {
+                filter_text.is_empty()
+                    || text_values.iter().any(|value| value.contains(&filter_text))
+            }
+            "not_contains" => {
+                filter_text.is_empty()
+                    || text_values
+                        .iter()
+                        .all(|value| !value.contains(&filter_text))
+            }
+            "starts_with" => {
+                filter_text.is_empty()
+                    || text_values
+                        .iter()
+                        .any(|value| value.starts_with(&filter_text))
+            }
+            "ends_with" => {
+                filter_text.is_empty()
+                    || text_values
+                        .iter()
+                        .any(|value| value.ends_with(&filter_text))
+            }
             "tags_contains" => {
                 if filter_text.is_empty() {
                     return true;
@@ -276,7 +307,11 @@ fn row_matches_filters(
             "is_false" => cell.value_bool == Some(false),
             "any_of" => {
                 let filter_values = if filter.value_list.is_empty() {
-                    filter.value_text.clone().map(|value| vec![value]).unwrap_or_default()
+                    filter
+                        .value_text
+                        .clone()
+                        .map(|value| vec![value])
+                        .unwrap_or_default()
                 } else {
                     filter.value_list.clone()
                 };
@@ -300,7 +335,11 @@ fn row_matches_filters(
             }
             "none_of" => {
                 let filter_values = if filter.value_list.is_empty() {
-                    filter.value_text.clone().map(|value| vec![value]).unwrap_or_default()
+                    filter
+                        .value_text
+                        .clone()
+                        .map(|value| vec![value])
+                        .unwrap_or_default()
                 } else {
                     filter.value_list.clone()
                 };
@@ -337,7 +376,11 @@ fn string_cell(cell: &DatabaseCellValue) -> String {
     String::new()
 }
 
-fn compare_rows(left: &DatabaseRow, right: &DatabaseRow, column: &DatabaseColumn) -> std::cmp::Ordering {
+fn compare_rows(
+    left: &DatabaseRow,
+    right: &DatabaseRow,
+    column: &DatabaseColumn,
+) -> std::cmp::Ordering {
     let left_cell = cell_value_from_row(left, column);
     let right_cell = cell_value_from_row(right, column);
     match left_cell.kind.as_str() {
@@ -414,7 +457,12 @@ fn recursive_folder_clause(dir: &str) -> (String, Vec<String>) {
     ("id LIKE ?".to_string(), vec![format!("{dir}/%")])
 }
 
-fn folder_source_ids(conn: &Connection, dir: &str, recursive: bool, limit: usize) -> Result<Vec<String>, String> {
+fn folder_source_ids(
+    conn: &Connection,
+    dir: &str,
+    recursive: bool,
+    limit: usize,
+) -> Result<Vec<String>, String> {
     let (where_sql, bind_values) = if recursive {
         recursive_folder_clause(dir)
     } else {
@@ -471,7 +519,11 @@ fn search_source_ids(conn: &Connection, query: &str, limit: usize) -> Result<Vec
         .collect())
 }
 
-fn source_ids(conn: &Connection, database: &DatabaseDefinition, limit: usize) -> Result<Vec<String>, String> {
+fn source_ids(
+    conn: &Connection,
+    database: &DatabaseDefinition,
+    limit: usize,
+) -> Result<Vec<String>, String> {
     match database.source.kind.as_str() {
         "all_notes" => all_notes_source_ids(conn, limit),
         "folder" => folder_source_ids(
@@ -486,7 +538,11 @@ fn source_ids(conn: &Connection, database: &DatabaseDefinition, limit: usize) ->
     }
 }
 
-fn property_value_from_index(value_type: &str, value_text: String, value_json: String) -> DatabaseCellValue {
+fn property_value_from_index(
+    value_type: &str,
+    value_text: String,
+    value_json: String,
+) -> DatabaseCellValue {
     match value_type {
         "checkbox" => DatabaseCellValue {
             kind: value_type.to_string(),
@@ -509,7 +565,10 @@ fn property_value_from_index(value_type: &str, value_text: String, value_json: S
     }
 }
 
-fn hydrate_rows_by_paths(conn: &Connection, note_paths: &[String]) -> Result<Vec<DatabaseRow>, String> {
+fn hydrate_rows_by_paths(
+    conn: &Connection,
+    note_paths: &[String],
+) -> Result<Vec<DatabaseRow>, String> {
     if note_paths.is_empty() {
         return Ok(Vec::new());
     }
@@ -613,7 +672,10 @@ fn collect_available_properties(rows: &[DatabaseRow]) -> Vec<DatabasePropertyOpt
     let mut counts = BTreeMap::<String, (String, u32)>::new();
     for row in rows {
         for (key, value) in &row.properties {
-            if matches!(key.as_str(), "title" | "created" | "updated" | "tags" | "glyph") {
+            if matches!(
+                key.as_str(),
+                "title" | "created" | "updated" | "tags" | "glyph"
+            ) {
                 continue;
             }
             let entry = counts

@@ -3,7 +3,7 @@ use std::{
     path::{Path, PathBuf},
 };
 
-use crate::utils;
+use crate::utils::{self, file_timestamp_strings_if_exists};
 
 use super::db::{open_db, resolve_title_to_id};
 use super::frontmatter::{
@@ -97,6 +97,7 @@ fn index_note_with_conn(
         )
         .ok();
     if existing_etag.as_deref() == Some(etag.as_str()) {
+        refresh_indexed_timestamps_if_needed(conn, note_id, file_path)?;
         return Ok(());
     }
 
@@ -179,6 +180,46 @@ fn index_note_with_conn(
         .map_err(|e| e.to_string())?;
     }
 
+    tx.commit().map_err(|e| e.to_string())?;
+    Ok(())
+}
+
+fn refresh_indexed_timestamps_if_needed(
+    conn: &rusqlite::Connection,
+    note_id: &str,
+    file_path: &Path,
+) -> Result<(), String> {
+    let Some((created, updated)) = file_timestamp_strings_if_exists(file_path) else {
+        return Ok(());
+    };
+
+    let existing: Option<(String, String)> = conn
+        .query_row(
+            "SELECT created, updated FROM notes WHERE id = ? LIMIT 1",
+            [note_id],
+            |row| Ok((row.get(0)?, row.get(1)?)),
+        )
+        .ok();
+
+    let Some((existing_created, existing_updated)) = existing else {
+        return Ok(());
+    };
+
+    if existing_created == created && existing_updated == updated {
+        return Ok(());
+    }
+
+    let tx = conn.unchecked_transaction().map_err(|e| e.to_string())?;
+    tx.execute(
+        "UPDATE notes SET created = ?, updated = ? WHERE id = ?",
+        rusqlite::params![created, updated, note_id],
+    )
+    .map_err(|e| e.to_string())?;
+    tx.execute(
+        "UPDATE tasks SET note_updated = ? WHERE note_id = ?",
+        rusqlite::params![updated, note_id],
+    )
+    .map_err(|e| e.to_string())?;
     tx.commit().map_err(|e| e.to_string())?;
     Ok(())
 }
@@ -338,11 +379,15 @@ mod tests {
     }
 
     #[test]
-    fn skips_reindex_when_etag_matches_existing_note() {
+    fn refreshes_indexed_timestamps_when_mtime_changes_without_content_changes() {
         let temp_space = TempSpace::new();
         let root = temp_space.path();
         let note_id = "Projects/Idle Churn.md";
         let markdown = "- [ ] Keep index stable\n";
+        let note_path = root.join(note_id);
+        let note_dir = note_path.parent().expect("note path should have parent");
+        std::fs::create_dir_all(note_dir).expect("note dir should be created");
+        std::fs::write(&note_path, markdown).expect("note file should be written");
 
         index_note(root, note_id, markdown).expect("first index should succeed");
 
@@ -362,6 +407,7 @@ mod tests {
         drop(conn);
 
         thread::sleep(Duration::from_millis(1100));
+        std::fs::write(&note_path, markdown).expect("note file should be rewritten");
         index_note(root, note_id, markdown).expect("second index should succeed");
 
         let conn = open_db(root).expect("db should reopen");
@@ -378,7 +424,15 @@ mod tests {
             )
             .expect("task row should still exist");
 
-        assert_eq!(second_updated, first_updated);
+        assert_ne!(second_updated, first_updated);
         assert_eq!(second_indexed_at, first_indexed_at);
+        let second_task_updated: String = conn
+            .query_row(
+                "SELECT note_updated FROM tasks WHERE note_id = ? LIMIT 1",
+                [note_id],
+                |row| row.get(0),
+            )
+            .expect("task row should still exist");
+        assert_eq!(second_task_updated, second_updated);
     }
 }

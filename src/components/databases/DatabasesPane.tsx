@@ -38,6 +38,84 @@ interface DatabasesPaneProps {
 	openRequestNonce?: number;
 }
 
+const DATABASES_SELECTED_DATABASE_STORAGE_KEY =
+	"glyph.databases.selectedDatabaseId";
+const DATABASES_SELECTED_VIEWS_STORAGE_KEY = "glyph.databases.selectedViews";
+
+function readStoredSelectedDatabaseId(): string | null {
+	if (typeof window === "undefined") return null;
+	try {
+		const raw = window.localStorage.getItem(
+			DATABASES_SELECTED_DATABASE_STORAGE_KEY,
+		);
+		return raw?.trim() ? raw : null;
+	} catch {
+		return null;
+	}
+}
+
+function writeStoredSelectedDatabaseId(databaseId: string | null) {
+	if (typeof window === "undefined") return;
+	try {
+		if (databaseId) {
+			window.localStorage.setItem(
+				DATABASES_SELECTED_DATABASE_STORAGE_KEY,
+				databaseId,
+			);
+			return;
+		}
+		window.localStorage.removeItem(DATABASES_SELECTED_DATABASE_STORAGE_KEY);
+	} catch {
+		// Best-effort UI persistence.
+	}
+}
+
+function readStoredSelectedViews(): Record<string, string> {
+	if (typeof window === "undefined") return {};
+	try {
+		const raw = window.localStorage.getItem(DATABASES_SELECTED_VIEWS_STORAGE_KEY);
+		if (!raw) return {};
+		const parsed = JSON.parse(raw);
+		if (!parsed || typeof parsed !== "object") return {};
+		const next: Record<string, string> = {};
+		for (const [databaseId, viewId] of Object.entries(parsed)) {
+			if (typeof viewId === "string") {
+				next[databaseId] = viewId;
+			}
+		}
+		return next;
+	} catch {
+		return {};
+	}
+}
+
+function readStoredSelectedViewId(databaseId: string | null): string | null {
+	if (!databaseId) return null;
+	const selectedViews = readStoredSelectedViews();
+	return selectedViews[databaseId] ?? null;
+}
+
+function writeStoredSelectedViewId(
+	databaseId: string | null,
+	viewId: string | null,
+) {
+	if (typeof window === "undefined" || !databaseId) return;
+	try {
+		const selectedViews = readStoredSelectedViews();
+		if (viewId) {
+			selectedViews[databaseId] = viewId;
+		} else {
+			delete selectedViews[databaseId];
+		}
+		window.localStorage.setItem(
+			DATABASES_SELECTED_VIEWS_STORAGE_KEY,
+			JSON.stringify(selectedViews),
+		);
+	} catch {
+		// Best-effort UI persistence.
+	}
+}
+
 function currentConfig(
 	database: WorkspaceDatabaseDefinition,
 	viewId: string,
@@ -110,7 +188,7 @@ export function DatabasesPane({
 }: DatabasesPaneProps) {
 	const [summaries, setSummaries] = useState<WorkspaceDatabaseSummary[]>([]);
 	const [selectedDatabaseId, setSelectedDatabaseId] = useState<string | null>(
-		null,
+		() => initialDatabaseId ?? readStoredSelectedDatabaseId(),
 	);
 	const [selectedViewId, setSelectedViewId] = useState<string | null>(null);
 	const [document, setDocument] = useState<WorkspaceDatabaseDocument | null>(
@@ -133,13 +211,19 @@ export function DatabasesPane({
 
 	const loadSummaries = useCallback(async () => {
 		const next = await invoke("databases_list");
+		const storedDatabaseId = readStoredSelectedDatabaseId();
 		setSummaries(next);
 		setSelectedDatabaseId((current) =>
 			current && next.some((entry) => entry.id === current)
 				? current
-				: (next[0]?.id ?? null),
+				: initialDatabaseId && next.some((entry) => entry.id === initialDatabaseId)
+					? initialDatabaseId
+					: storedDatabaseId &&
+							  next.some((entry) => entry.id === storedDatabaseId)
+						? storedDatabaseId
+						: (next[0]?.id ?? null),
 		);
-	}, []);
+	}, [initialDatabaseId]);
 
 	useEffect(() => {
 		void loadSummaries().catch((cause) => setError(extractErrorMessage(cause)));
@@ -153,6 +237,10 @@ export function DatabasesPane({
 	}, [initialDatabaseId, openRequestNonce]);
 
 	useEffect(() => {
+		writeStoredSelectedDatabaseId(selectedDatabaseId);
+	}, [selectedDatabaseId]);
+
+	useEffect(() => {
 		if (!selectedDatabaseId) {
 			setDocument(null);
 			setSelectedViewId(null);
@@ -163,18 +251,28 @@ export function DatabasesPane({
 		let cancelled = false;
 		setLoading(true);
 		setError("");
-		setSelectedViewId(null);
 		setRows([]);
 		void invoke("databases_get", { database_id: selectedDatabaseId })
 			.then((next) => {
 				if (cancelled) return;
 				setDocument(next);
 				setNameDraft(next.database.name);
-				setSelectedViewId((current) =>
-					current && next.database.views.some((view) => view.id === current)
-						? current
-						: (next.database.views[0]?.id ?? null),
-				);
+				if (next.database.views.length === 0) {
+					return;
+				}
+				const storedViewId = readStoredSelectedViewId(next.database.id);
+				setSelectedViewId((current) => {
+					if (current && next.database.views.some((view) => view.id === current)) {
+						return current;
+					}
+					if (
+						storedViewId &&
+						next.database.views.some((view) => view.id === storedViewId)
+					) {
+						return storedViewId;
+					}
+					return next.database.views[0]?.id ?? null;
+				});
 			})
 			.catch((cause) => {
 				if (cancelled) return;
@@ -188,6 +286,20 @@ export function DatabasesPane({
 			cancelled = true;
 		};
 	}, [selectedDatabaseId]);
+
+	useEffect(() => {
+		if (
+			!selectedDatabaseId ||
+			!selectedViewId ||
+			!document ||
+			document.database.id !== selectedDatabaseId ||
+			document.database.views.length === 0 ||
+			!document.database.views.some((view) => view.id === selectedViewId)
+		) {
+			return;
+		}
+		writeStoredSelectedViewId(selectedDatabaseId, selectedViewId);
+	}, [document, selectedDatabaseId, selectedViewId]);
 
 	const activeConfig = useMemo(
 		() =>
