@@ -1,12 +1,12 @@
-use std::{ffi::OsStr, path::Path};
+use std::ffi::OsStr;
 use tauri::State;
 
 use crate::space::state::mark_recent_local_change;
 use crate::{index, io_atomic, paths, space::SpaceState};
 
 use super::frontmatter::{
-    normalize_frontmatter_mapping, now_rfc3339, parse_frontmatter, parse_frontmatter_mapping,
-    render_frontmatter_mapping_yaml, split_frontmatter,
+    normalize_frontmatter_mapping, parse_frontmatter_mapping, render_frontmatter_mapping_yaml,
+    split_frontmatter,
 };
 use super::helpers::{
     etag_for, extract_meta, file_mtime_ms, note_abs_path, note_rel_path, notes_dir, read_to_string,
@@ -37,7 +37,7 @@ pub async fn notes_list(state: State<'_, SpaceState>) -> Result<Vec<NoteMeta>, S
                 continue;
             }
             let markdown = read_to_string(&path)?;
-            out.push(extract_meta(file_stem, &markdown)?);
+            out.push(extract_meta(file_stem, &markdown, &path)?);
         }
 
         out.sort_by(|a, b| b.updated.cmp(&a.updated));
@@ -57,7 +57,6 @@ pub async fn note_create(state: State<'_, SpaceState>, title: String) -> Result<
         let path = paths::join_under(&root, &rel)?;
         let rel_path = rel.to_string_lossy().to_string();
 
-        let now = now_rfc3339();
         let mut fm = serde_yaml::Mapping::new();
         fm.insert(
             serde_yaml::Value::String("id".to_string()),
@@ -66,14 +65,6 @@ pub async fn note_create(state: State<'_, SpaceState>, title: String) -> Result<
         fm.insert(
             serde_yaml::Value::String("title".to_string()),
             serde_yaml::Value::String(title.clone()),
-        );
-        fm.insert(
-            serde_yaml::Value::String("created".to_string()),
-            serde_yaml::Value::String(now.clone()),
-        );
-        fm.insert(
-            serde_yaml::Value::String("updated".to_string()),
-            serde_yaml::Value::String(now.clone()),
         );
         fm.insert(
             serde_yaml::Value::String("tags".to_string()),
@@ -85,13 +76,7 @@ pub async fn note_create(state: State<'_, SpaceState>, title: String) -> Result<
         mark_recent_local_change(&recent_local_changes, &rel_path);
         io_atomic::write_atomic(&path, markdown.as_bytes()).map_err(|e| e.to_string())?;
         let _ = index::index_note(&root, &id, &markdown);
-
-        Ok(NoteMeta {
-            id,
-            title,
-            created: now.clone(),
-            updated: now,
-        })
+        extract_meta(&id, &markdown, &path)
     })
     .await
     .map_err(|e| e.to_string())?
@@ -103,7 +88,7 @@ pub async fn note_read(state: State<'_, SpaceState>, id: String) -> Result<NoteD
     tauri::async_runtime::spawn_blocking(move || -> Result<NoteDoc, String> {
         let path = note_abs_path(&root, &id)?;
         let markdown = read_to_string(&path)?;
-        let meta = extract_meta(&id, &markdown)?;
+        let meta = extract_meta(&id, &markdown, &path)?;
         Ok(NoteDoc {
             meta,
             etag: etag_for(&markdown),
@@ -113,19 +98,6 @@ pub async fn note_read(state: State<'_, SpaceState>, id: String) -> Result<NoteD
     })
     .await
     .map_err(|e| e.to_string())?
-}
-
-fn read_existing_created(path: &Path) -> Option<String> {
-    let markdown = std::fs::read_to_string(path).ok()?;
-    let (yaml, _body) = split_frontmatter(&markdown);
-    let fm = parse_frontmatter(yaml).ok()?;
-    fm.created
-}
-
-fn created_from_markdown(markdown: &str) -> Option<String> {
-    let (yaml, _body) = split_frontmatter(markdown);
-    let fm = parse_frontmatter(yaml).ok()?;
-    fm.created
 }
 
 #[tauri::command(rename_all = "snake_case")]
@@ -147,18 +119,16 @@ pub async fn note_write(
             }
         }
 
-        let preserve_created =
-            created_from_markdown(&current).or_else(|| read_existing_created(&path));
         let (yaml, body) = split_frontmatter(&markdown);
         let fm = parse_frontmatter_mapping(yaml)?;
-        let fm = normalize_frontmatter_mapping(fm, &id, None, preserve_created.as_deref());
+        let fm = normalize_frontmatter_mapping(fm, &id, None);
         let yaml = render_frontmatter_mapping_yaml(&fm)?;
         let normalized = format!("---\n{yaml}---\n\n{}", body.trim_start_matches('\n'));
         let rel_path = note_rel_path(&id)?.to_string_lossy().to_string();
         mark_recent_local_change(&recent_local_changes, &rel_path);
         io_atomic::write_atomic(&path, normalized.as_bytes()).map_err(|e| e.to_string())?;
         let _ = index::index_note(&root, &id, &normalized);
-        let meta = extract_meta(&id, &normalized)?;
+        let meta = extract_meta(&id, &normalized, &path)?;
         Ok(NoteWriteResult {
             meta,
             etag: etag_for(&normalized),

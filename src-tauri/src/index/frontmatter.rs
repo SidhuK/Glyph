@@ -1,30 +1,7 @@
 use serde::Deserialize;
 use std::path::Path;
 
-use super::helpers::now_sqlite_compatible_iso8601;
-
-fn format_system_time(t: std::time::SystemTime) -> String {
-    let dt = time::OffsetDateTime::from(t);
-    dt.format(&time::format_description::well_known::Rfc3339)
-        .unwrap_or_else(|_| now_sqlite_compatible_iso8601())
-}
-
-fn file_timestamps(path: &Path) -> (String, String) {
-    let now = now_sqlite_compatible_iso8601();
-    let meta = match std::fs::metadata(path) {
-        Ok(m) => m,
-        Err(_) => return (now.clone(), now),
-    };
-    let created = meta
-        .created()
-        .map(|t| format_system_time(t))
-        .unwrap_or_else(|_| now.clone());
-    let updated = meta
-        .modified()
-        .map(|t| format_system_time(t))
-        .unwrap_or_else(|_| now.clone());
-    (created, updated)
-}
+use crate::utils::file_timestamp_strings;
 
 pub fn split_frontmatter(markdown: &str) -> (&str, &str) {
     if let Some(rest) = markdown.strip_prefix("---\n") {
@@ -57,8 +34,6 @@ pub fn split_frontmatter(markdown: &str) -> (&str, &str) {
 #[derive(Default, Deserialize)]
 struct Frontmatter {
     title: Option<String>,
-    created: Option<String>,
-    updated: Option<String>,
 }
 
 pub fn parse_frontmatter_title_created_updated(
@@ -66,7 +41,7 @@ pub fn parse_frontmatter_title_created_updated(
     file_path: &Path,
 ) -> (String, String, String) {
     let (yaml, _body) = split_frontmatter(markdown);
-    let fs_fallback = || file_timestamps(file_path);
+    let fs_fallback = || file_timestamp_strings(file_path);
 
     if yaml.is_empty() {
         let (created, updated) = fs_fallback();
@@ -75,11 +50,11 @@ pub fn parse_frontmatter_title_created_updated(
     let fm: Result<Frontmatter, _> = serde_yaml::from_str(yaml);
     match fm {
         Ok(fm) => {
-            let (fs_created, fs_updated) = fs_fallback();
+            let (created, updated) = fs_fallback();
             (
                 fm.title.unwrap_or_else(|| "Untitled".to_string()),
-                fm.created.unwrap_or(fs_created),
-                fm.updated.unwrap_or(fs_updated),
+                created,
+                updated,
             )
         }
         Err(_) => {

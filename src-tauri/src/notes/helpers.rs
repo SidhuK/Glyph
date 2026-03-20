@@ -1,8 +1,9 @@
 use std::path::{Path, PathBuf};
 
 use crate::paths;
+use crate::utils::file_timestamp_strings;
 
-use super::frontmatter::{now_rfc3339, parse_frontmatter, split_frontmatter};
+use super::frontmatter::{parse_frontmatter, split_frontmatter};
 use super::types::NoteMeta;
 
 pub use crate::utils::file_mtime_ms;
@@ -33,11 +34,10 @@ pub fn etag_for(markdown: &str) -> String {
     crate::utils::sha256_hex(markdown.as_bytes())
 }
 
-pub fn extract_meta(note_id: &str, markdown: &str) -> Result<NoteMeta, String> {
+pub fn extract_meta(note_id: &str, markdown: &str, path: &Path) -> Result<NoteMeta, String> {
     let (yaml, _body) = split_frontmatter(markdown);
     let fm = parse_frontmatter(yaml)?;
-    let created = fm.created.clone().unwrap_or_else(now_rfc3339);
-    let updated = fm.updated.clone().unwrap_or_else(now_rfc3339);
+    let (created, updated) = file_timestamp_strings(path);
     Ok(NoteMeta {
         id: note_id.to_string(),
         title: fm.title.unwrap_or_else(|| "Untitled".to_string()),

@@ -9,8 +9,8 @@ use crate::index::index_note;
 use crate::index::open_db;
 use crate::io_atomic;
 use crate::notes::frontmatter::{
-    normalize_frontmatter_mapping, now_rfc3339, parse_frontmatter_mapping,
-    render_frontmatter_mapping_yaml, split_frontmatter,
+    normalize_frontmatter_mapping, parse_frontmatter_mapping, render_frontmatter_mapping_yaml,
+    split_frontmatter,
 };
 use crate::paths;
 use crate::space::state::{mark_recent_local_change, RecentLocalChanges};
@@ -20,8 +20,8 @@ use crate::space_fs::helpers::deny_hidden_rel_path;
 use super::query::{load_database_document, query_database_rows, read_note_markdown, row_by_path};
 use super::store::{bootstrap_defaults, default_view, list_summaries, load_store, save_store};
 use super::types::{
-    DatabaseCellValue, DatabaseColumn, DatabaseCreateRowResult, DatabaseDefinition, DatabaseDocument,
-    DatabasePreviewContext, DatabaseRow, DatabaseSummary,
+    DatabaseCellValue, DatabaseColumn, DatabaseCreateRowResult, DatabaseDefinition,
+    DatabaseDocument, DatabasePreviewContext, DatabaseRow, DatabaseSummary,
 };
 
 fn key(name: &str) -> Value {
@@ -91,7 +91,7 @@ fn next_duplicate_database_name(databases: &[DatabaseDefinition], source_name: &
 
 fn render_note_markdown(path: &str, markdown: &str, mapping: Mapping) -> Result<String, String> {
     let (_yaml, body) = split_frontmatter(markdown);
-    let normalized = normalize_frontmatter_mapping(mapping, path, None, None);
+    let normalized = normalize_frontmatter_mapping(mapping, path, None);
     let rendered_yaml = render_frontmatter_mapping_yaml(&normalized)?;
     Ok(format!(
         "---\n{rendered_yaml}---\n\n{}",
@@ -99,7 +99,10 @@ fn render_note_markdown(path: &str, markdown: &str, mapping: Mapping) -> Result<
     ))
 }
 
-fn yaml_value_from_cell(column: &DatabaseColumn, value: &DatabaseCellValue) -> Result<Value, String> {
+fn yaml_value_from_cell(
+    column: &DatabaseColumn,
+    value: &DatabaseCellValue,
+) -> Result<Value, String> {
     match column.column_type.as_str() {
         "title" => Ok(Value::String(value.value_text.clone().unwrap_or_default())),
         "tags" => Ok(Value::Sequence(
@@ -248,11 +251,8 @@ fn validate_editable_column(row: &DatabaseRow, column: &DatabaseColumn) -> Resul
 }
 
 fn create_new_row_markdown(note_path: &str, title: &str) -> Result<String, String> {
-    let now = now_rfc3339();
     let mut mapping = Mapping::new();
     mapping.insert(key("title"), Value::String(title.to_string()));
-    mapping.insert(key("created"), Value::String(now.clone()));
-    mapping.insert(key("updated"), Value::String(now));
     mapping.insert(key("tags"), Value::Sequence(Vec::new()));
     render_note_markdown(note_path, "", mapping)
 }
