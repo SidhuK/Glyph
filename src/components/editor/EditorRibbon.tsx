@@ -72,51 +72,56 @@ export const EditorRibbon = memo(function EditorRibbon({
 	};
 
 	return (
-		<div
-			className={[
-				"rfNodeNoteEditorRibbon rfNodeNoteEditorRibbonFloating nodrag nopan nowheel",
-				className,
-			]
-				.filter(Boolean)
-				.join(" ")}
-			style={style}
-		>
-			<div className="ribbonGroup ribbonGroupUnified">
-				<RibbonButtonList
-					buttons={getFormatButtons(editor, runCommand, focusChain)}
-					canEdit={canEdit}
-					onPreventMouseDown={preventMouseDown}
-				/>
-				<RibbonColorPopover
-					editor={editor}
-					canEdit={canEdit}
-					runCommand={runCommand}
-					focusChain={focusChain}
-					preventMouseDown={preventMouseDown}
-				/>
-				<RibbonLinkPopover
-					editor={editor}
-					canEdit={canEdit}
-					runCommand={runCommand}
-					focusChain={focusChain}
-					preventMouseDown={preventMouseDown}
-				/>
-				<RibbonButtonList
-					buttons={getHeadingButtons(editor, runCommand, focusChain)}
-					canEdit={canEdit}
-					onPreventMouseDown={preventMouseDown}
-				/>
-				<RibbonButtonList
-					buttons={getListButtons(editor, runCommand, focusChain)}
-					canEdit={canEdit}
-					onPreventMouseDown={preventMouseDown}
-				/>
-				<RibbonButtonList
-					buttons={getBlockButtons(editor, runCommand, focusChain)}
-					canEdit={canEdit}
-					onPreventMouseDown={preventMouseDown}
-				/>
-			</div>
+		<div className="rfNodeNoteEditorRibbonAnchor" style={style}>
+			<m.div
+				className={[
+					"rfNodeNoteEditorRibbon rfNodeNoteEditorRibbonFloating nodrag nopan nowheel",
+					className,
+				]
+					.filter(Boolean)
+					.join(" ")}
+				initial={{ opacity: 0, scale: 0.96, y: 4, filter: "blur(2px)" }}
+				animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
+				exit={{ opacity: 0, scale: 0.98, y: 3, filter: "blur(1px)" }}
+				transition={springPresets.gentle}
+			>
+				<div className="ribbonGroup ribbonGroupUnified">
+					<RibbonButtonList
+						buttons={getFormatButtons(editor, runCommand, focusChain)}
+						canEdit={canEdit}
+						onPreventMouseDown={preventMouseDown}
+					/>
+					<RibbonColorPopover
+						editor={editor}
+						canEdit={canEdit}
+						runCommand={runCommand}
+						focusChain={focusChain}
+						preventMouseDown={preventMouseDown}
+					/>
+					<RibbonLinkPopover
+						editor={editor}
+						canEdit={canEdit}
+						runCommand={runCommand}
+						focusChain={focusChain}
+						preventMouseDown={preventMouseDown}
+					/>
+					<RibbonButtonList
+						buttons={getHeadingButtons(editor, runCommand, focusChain)}
+						canEdit={canEdit}
+						onPreventMouseDown={preventMouseDown}
+					/>
+					<RibbonButtonList
+						buttons={getListButtons(editor, runCommand, focusChain)}
+						canEdit={canEdit}
+						onPreventMouseDown={preventMouseDown}
+					/>
+					<RibbonButtonList
+						buttons={getBlockButtons(editor, runCommand, focusChain)}
+						canEdit={canEdit}
+						onPreventMouseDown={preventMouseDown}
+					/>
+				</div>
+			</m.div>
 		</div>
 	);
 });

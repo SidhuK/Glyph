@@ -2,6 +2,7 @@ import { SourceCodeIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { EditorContent } from "@tiptap/react";
+import { AnimatePresence } from "motion/react";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { joinYamlFrontmatter } from "../../lib/notePreview";
 import { type BacklinkItem, invoke } from "../../lib/tauri";
@@ -36,7 +37,9 @@ const FRONTMATTER_LINK_PATTERN =
 	/!?\[\[[^\]\n]+\]\]|\[[^\]\n]+\]\((?:\\.|[^)\n])+\)|https?:\/\/[^\s<>"')\]]+/g;
 const SELECTION_RIBBON_MARGIN_PX = 12;
 const SELECTION_RIBBON_HEIGHT_PX = 40;
-const SELECTION_RIBBON_EDGE_PADDING_PX = 12;
+const SELECTION_RIBBON_EDGE_PADDING_PX = 18;
+const SELECTION_RIBBON_ESTIMATED_HALF_WIDTH_PX = 176;
+const SELECTION_RIBBON_HIDE_DELAY_MS = 110;
 
 type SelectionRibbonPlacement = "above" | "below";
 
@@ -93,23 +96,36 @@ function getSelectionRibbonPosition(
 	if (range.collapsed) return null;
 	if (!host.contains(range.commonAncestorContainer)) return null;
 
-	const selectionRect = range.getBoundingClientRect();
-	if (selectionRect.width === 0 && selectionRect.height === 0) return null;
+	const lineRects = Array.from(range.getClientRects()).filter(
+		(rect) => rect.width > 0 || rect.height > 0,
+	);
+	if (lineRects.length === 0) return null;
 
 	const hostRect = host.getBoundingClientRect();
-	const topWithinHost = selectionRect.top - hostRect.top;
-	const bottomWithinHost = selectionRect.bottom - hostRect.top;
-	const placeAbove = topWithinHost >= SELECTION_RIBBON_HEIGHT_PX;
+	const firstLineRect = lineRects[0];
+	const lastLineRect = lineRects[lineRects.length - 1];
+	const firstLineTopWithinHost = firstLineRect.top - hostRect.top;
+	const lastLineBottomWithinHost = lastLineRect.bottom - hostRect.top;
+	const placeAbove =
+		firstLineTopWithinHost >=
+		SELECTION_RIBBON_HEIGHT_PX + SELECTION_RIBBON_MARGIN_PX;
 	const placement: SelectionRibbonPlacement = placeAbove ? "above" : "below";
+	const anchorRect = placement === "above" ? firstLineRect : lastLineRect;
 	const top =
 		placement === "above"
-			? topWithinHost - SELECTION_RIBBON_MARGIN_PX
-			: bottomWithinHost + SELECTION_RIBBON_MARGIN_PX;
-	const left = selectionRect.left - hostRect.left + selectionRect.width / 2;
-	const minLeft = SELECTION_RIBBON_EDGE_PADDING_PX;
+			? firstLineTopWithinHost - SELECTION_RIBBON_MARGIN_PX
+			: lastLineBottomWithinHost + SELECTION_RIBBON_MARGIN_PX;
+	const left = anchorRect.left - hostRect.left + anchorRect.width / 2;
+	const centerFallback = host.clientWidth / 2;
+	const minLeft = Math.min(
+		centerFallback,
+		SELECTION_RIBBON_EDGE_PADDING_PX + SELECTION_RIBBON_ESTIMATED_HALF_WIDTH_PX,
+	);
 	const maxLeft = Math.max(
-		SELECTION_RIBBON_EDGE_PADDING_PX,
-		host.clientWidth - SELECTION_RIBBON_EDGE_PADDING_PX,
+		centerFallback,
+		host.clientWidth -
+			SELECTION_RIBBON_EDGE_PADDING_PX -
+			SELECTION_RIBBON_ESTIMATED_HALF_WIDTH_PX,
 	);
 
 	return {
@@ -167,6 +183,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	const [dueDate, setDueDate] = useState("");
 	const [selectionRibbon, setSelectionRibbon] =
 		useState<SelectionRibbonPosition | null>(null);
+	const selectionRibbonHideTimerRef = useRef<number | null>(null);
 	const [codeBlockPickerOpen, setCodeBlockPickerOpen] = useState(false);
 	const [selectedCodeBlock, setSelectedCodeBlock] = useState<{
 		top: number;
@@ -215,6 +232,10 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 
 	useEffect(() => {
 		if (!editor || mode !== "rich" || !canEdit) {
+			if (selectionRibbonHideTimerRef.current !== null) {
+				window.clearTimeout(selectionRibbonHideTimerRef.current);
+				selectionRibbonHideTimerRef.current = null;
+			}
 			setSelectionRibbon(null);
 			return;
 		}
@@ -228,10 +249,31 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 				raf = 0;
 				const selection = window.getSelection();
 				if (!selection) {
-					setSelectionRibbon(null);
+					if (selectionRibbonHideTimerRef.current !== null) {
+						window.clearTimeout(selectionRibbonHideTimerRef.current);
+					}
+					selectionRibbonHideTimerRef.current = window.setTimeout(() => {
+						selectionRibbonHideTimerRef.current = null;
+						setSelectionRibbon(null);
+					}, SELECTION_RIBBON_HIDE_DELAY_MS);
 					return;
 				}
 				const next = getSelectionRibbonPosition(host, selection);
+				if (next) {
+					if (selectionRibbonHideTimerRef.current !== null) {
+						window.clearTimeout(selectionRibbonHideTimerRef.current);
+						selectionRibbonHideTimerRef.current = null;
+					}
+				} else {
+					if (selectionRibbonHideTimerRef.current !== null) {
+						window.clearTimeout(selectionRibbonHideTimerRef.current);
+					}
+					selectionRibbonHideTimerRef.current = window.setTimeout(() => {
+						selectionRibbonHideTimerRef.current = null;
+						setSelectionRibbon(null);
+					}, SELECTION_RIBBON_HIDE_DELAY_MS);
+					return;
+				}
 				setSelectionRibbon((current) => {
 					if (
 						current &&
@@ -253,6 +295,10 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		window.addEventListener("resize", syncSelectionRibbon);
 		return () => {
 			if (raf) window.cancelAnimationFrame(raf);
+			if (selectionRibbonHideTimerRef.current !== null) {
+				window.clearTimeout(selectionRibbonHideTimerRef.current);
+				selectionRibbonHideTimerRef.current = null;
+			}
 			document.removeEventListener("selectionchange", syncSelectionRibbon);
 			editor.off("selectionUpdate", syncSelectionRibbon);
 			window.removeEventListener("resize", syncSelectionRibbon);
@@ -624,20 +670,22 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 							.join(" ")}
 					>
 						<EditorContent editor={editor} />
-						{canEdit && selectionRibbon ? (
-							<EditorRibbon
-								editor={editor}
-								canEdit={canEdit}
-								style={{
-									top: `${selectionRibbon.top}px`,
-									left: `${selectionRibbon.left}px`,
-									transform:
-										selectionRibbon.placement === "above"
-											? "translate(-50%, -100%)"
-											: "translate(-50%, 0)",
-								}}
-							/>
-						) : null}
+						<AnimatePresence initial={false}>
+							{canEdit && selectionRibbon ? (
+								<EditorRibbon
+									editor={editor}
+									canEdit={canEdit}
+									style={{
+										top: `${selectionRibbon.top}px`,
+										left: `${selectionRibbon.left}px`,
+										transform:
+											selectionRibbon.placement === "above"
+												? "translate(-50%, -100%)"
+												: "translate(-50%, 0)",
+									}}
+								/>
+							) : null}
+						</AnimatePresence>
 						{canEdit && selectedCodeBlock ? (
 							<Popover
 								open={codeBlockPickerOpen}
