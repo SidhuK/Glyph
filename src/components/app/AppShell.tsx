@@ -11,6 +11,7 @@ import {
 	Link01Icon,
 	MoveIcon,
 	NoteIcon,
+	PencilEdit02Icon,
 	SearchIcon,
 	Settings05Icon,
 	SidebarLeftIcon,
@@ -947,7 +948,7 @@ export function AppShell() {
 			{
 				id: "new-note",
 				label: "New note",
-				icon: <HugeiconsIcon icon={NoteIcon} size={16} />,
+				icon: <HugeiconsIcon icon={PencilEdit02Icon} size={16} />,
 				category: "File Operations",
 				shortcut: { meta: true, key: "n" },
 				enabled: Boolean(spacePath),

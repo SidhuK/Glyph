@@ -85,6 +85,7 @@ export const Sidebar = memo(function Sidebar({
 						<SidebarHeader
 							sidebarCollapsed={sidebarCollapsed}
 							onToggleSidebar={onToggleSidebar}
+							onNewNote={onNewNote}
 							updateReady={updateReady}
 							updateVersion={updateVersion}
 							onInstallUpdate={onInstallUpdate}
@@ -93,7 +94,6 @@ export const Sidebar = memo(function Sidebar({
 							onToggleDir={onToggleDir}
 							onSelectDir={onSelectDir}
 							onOpenFile={onOpenFile}
-							onNewNote={onNewNote}
 							onNewFileInDir={onNewFileInDir}
 							onCreateFromTemplateInDir={onCreateFromTemplateInDir}
 							onNewDatabaseInDir={onNewDatabaseInDir}

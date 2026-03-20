@@ -1,3 +1,5 @@
+import { PencilEdit02Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { getShortcutTooltip } from "../../lib/shortcuts";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { LayoutAlignLeft } from "../Icons";
@@ -7,6 +9,7 @@ import { WindowChromeUpdateButton } from "./WindowChromeUpdateButton";
 interface SidebarHeaderProps {
 	sidebarCollapsed: boolean;
 	onToggleSidebar: () => void;
+	onNewNote: () => void;
 	updateReady: boolean;
 	updateVersion: string | null;
 	onInstallUpdate: () => void;
@@ -15,6 +18,7 @@ interface SidebarHeaderProps {
 export function SidebarHeader({
 	sidebarCollapsed,
 	onToggleSidebar,
+	onNewNote,
 	updateReady,
 	updateVersion,
 	onInstallUpdate,
@@ -29,6 +33,13 @@ export function SidebarHeader({
 			/>
 			<div className="sidebarHeader" data-tauri-drag-region>
 				<div className="sidebarActions">
+					<WindowChromeIconButton
+						ariaLabel="Create a new note"
+						onClick={onNewNote}
+						title={`New note (${getShortcutTooltip({ meta: true, key: "n" })})`}
+					>
+						<HugeiconsIcon icon={PencilEdit02Icon} size={14} />
+					</WindowChromeIconButton>
 					<WindowChromeIconButton
 						ariaLabel={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
 						ariaPressed={!sidebarCollapsed}

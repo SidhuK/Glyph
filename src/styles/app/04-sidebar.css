@@ -100,11 +100,11 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 24px;
-	height: 24px;
+	width: 26px;
+	height: 26px;
 	padding: 0;
 	border: none;
-	border-radius: 0;
+	border-radius: var(--radius-md);
 	background: transparent;
 	box-shadow: none;
 	color: var(--text-secondary);
@@ -112,11 +112,13 @@
 	-webkit-appearance: none;
 	cursor: pointer;
 	-webkit-app-region: no-drag;
+	transition: background-color 120ms ease, color 120ms ease;
 }
 
 .windowChromeSidebarToggle:hover,
 .windowChromeSidebarToggle:focus-visible,
 .windowChromeSidebarToggle[data-state="open"] {
+	background: var(--bg-hover);
 	color: var(--text-primary);
 }
 

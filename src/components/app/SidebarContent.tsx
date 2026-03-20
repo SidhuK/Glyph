@@ -2,7 +2,6 @@ import {
 	CalendarAdd01Icon,
 	CheckListIcon,
 	DashboardSquare03Icon,
-	NoteIcon,
 	Tag01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -24,7 +23,6 @@ interface SidebarContentProps {
 	onToggleDir: (dirPath: string) => void;
 	onSelectDir: (dirPath: string) => void;
 	onOpenFile: (relPath: string) => void;
-	onNewNote: () => void;
 	onNewFileInDir: (dirPath: string) => void;
 	onCreateFromTemplateInDir: (dirPath: string) => void;
 	onNewDatabaseInDir: (dirPath: string) => Promise<string | null>;
@@ -42,7 +40,6 @@ export const SidebarContent = memo(function SidebarContent({
 	onToggleDir,
 	onSelectDir,
 	onOpenFile,
-	onNewNote,
 	onNewFileInDir,
 	onCreateFromTemplateInDir,
 	onNewDatabaseInDir,
@@ -89,26 +86,12 @@ export const SidebarContent = memo(function SidebarContent({
 					<button
 						type="button"
 						className="sidebarQuickActionBtn"
-						data-kind="new-note"
-						onClick={onNewNote}
-						title="Create a new note"
-					>
-						<HugeiconsIcon icon={NoteIcon} size={14} strokeWidth={1.8} />
-						<span className="sidebarQuickActionLabel">New Note</span>
-					</button>
-					<button
-						type="button"
-						className="sidebarQuickActionBtn"
 						data-kind="daily-notes"
 						onClick={onOpenDailyNote}
 						disabled={isDailyNoteCreating}
 						title="Open today's daily note"
 					>
-						<HugeiconsIcon
-							icon={CalendarAdd01Icon}
-							size={14}
-							strokeWidth={1.8}
-						/>
+						<HugeiconsIcon icon={CalendarAdd01Icon} size={14} />
 						<span className="sidebarQuickActionLabel">Daily Note</span>
 					</button>
 					<button
@@ -118,11 +101,7 @@ export const SidebarContent = memo(function SidebarContent({
 						onClick={() => onOpenDatabases()}
 						title="Open Databases"
 					>
-						<HugeiconsIcon
-							icon={DashboardSquare03Icon}
-							size={14}
-							strokeWidth={1.8}
-						/>
+						<HugeiconsIcon icon={DashboardSquare03Icon} size={14} />
 						<span className="sidebarQuickActionLabel">Databases</span>
 					</button>
 					<button
@@ -132,7 +111,7 @@ export const SidebarContent = memo(function SidebarContent({
 						onClick={onOpenTasks}
 						title="Open Tasks"
 					>
-						<HugeiconsIcon icon={CheckListIcon} size={14} strokeWidth={1.8} />
+						<HugeiconsIcon icon={CheckListIcon} size={14} />
 						<span className="sidebarQuickActionLabel">Tasks</span>
 					</button>
 				</div>
