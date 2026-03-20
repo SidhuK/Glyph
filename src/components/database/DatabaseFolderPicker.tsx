@@ -4,14 +4,7 @@ import { type FsEntry, invoke } from "../../lib/tauri";
 import { ChevronRight, FolderClosed, Search } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { Input } from "../ui/shadcn/input";
-import {
-	Popover,
-	PopoverContent,
-	PopoverDescription,
-	PopoverHeader,
-	PopoverTitle,
-	PopoverTrigger,
-} from "../ui/shadcn/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 import { ScrollArea } from "../ui/shadcn/scroll-area";
 
 interface DatabaseFolderPickerProps {
@@ -41,8 +34,6 @@ function folderBreadcrumb(path: string): string {
 export function DatabaseFolderPicker({
 	value,
 	onChange,
-	label,
-	description,
 	placeholder = "Choose a folder",
 }: DatabaseFolderPickerProps) {
 	const [open, setOpen] = useState(false);
@@ -117,102 +108,72 @@ export function DatabaseFolderPicker({
 					</span>
 				</Button>
 			</PopoverTrigger>
-			<PopoverContent className="databasePickerPopover" align="start">
-				<PopoverHeader className="databasePickerHeader">
-					<div className="databasePickerEyebrow">
-						<FolderClosed size={13} />
-						<span>Folder</span>
-					</div>
-					<PopoverTitle>{label}</PopoverTitle>
-					<PopoverDescription>{description}</PopoverDescription>
-				</PopoverHeader>
-				<div className="databaseFolderBreadcrumbs">
+			<PopoverContent className="folderPickerPopover" align="start">
+				<div className="folderPickerBreadcrumbs">
 					<button
 						type="button"
-						className="databaseFolderCrumb"
+						className="folderPickerCrumb"
 						data-active={browserPath === "" ? "true" : undefined}
 						onClick={() => setBrowserPath("")}
 					>
-						Space root
+						Root
 					</button>
 					{browserParts.map((part, index) => {
 						const nextPath = browserParts.slice(0, index + 1).join("/");
 						return (
-							<div key={nextPath} className="databaseFolderCrumbSegment">
-								<ChevronRight size={12} />
+							<span key={nextPath} className="folderPickerCrumbSegment">
+								<ChevronRight size={10} />
 								<button
 									type="button"
-									className="databaseFolderCrumb"
+									className="folderPickerCrumb"
 									data-active={browserPath === nextPath ? "true" : undefined}
 									onClick={() => setBrowserPath(nextPath)}
 								>
 									{part}
 								</button>
-							</div>
+							</span>
 						);
 					})}
 				</div>
-				<div className="databasePickerSearch">
-					<Search size={13} />
+				<div className="folderPickerSearch">
+					<Search size={12} />
 					<Input
 						value={query}
-						placeholder="Filter this folder"
+						placeholder="Filter…"
 						onChange={(event) => setQuery(event.target.value)}
 					/>
 				</div>
-				<div className="databaseFolderCurrent">
-					<div className="databaseFolderCurrentMeta">
-						<div className="databasePickerOptionLabel">
-							{folderName(browserPath)}
-						</div>
-						<div className="databasePickerOptionMeta">
-							{browserPath || "Space root"}
-						</div>
-					</div>
-					<Button
-						type="button"
-						size="xs"
-						onClick={() => {
-							onChange(browserPath);
-							setOpen(false);
-						}}
-					>
-						Choose
-					</Button>
-				</div>
-				<ScrollArea className="databasePickerResults">
-					<div className="databasePickerList">
+				<ScrollArea className="folderPickerResults">
+					<div className="folderPickerList">
+						<button
+							type="button"
+							className="folderPickerSelect"
+							onClick={() => {
+								onChange(browserPath);
+								setOpen(false);
+							}}
+						>
+							<FolderClosed size={12} />
+							<span>{folderName(browserPath)}</span>
+						</button>
 						{loading ? (
-							<div className="databasePickerEmpty">Loading folders…</div>
+							<div className="folderPickerEmpty">Loading…</div>
 						) : error ? (
-							<div className="databasePickerEmpty">{error}</div>
+							<div className="folderPickerEmpty">{error}</div>
 						) : filteredEntries.length > 0 ? (
-							filteredEntries.map((entry) => {
-								const active = entry.rel_path === value;
-								return (
-									<button
-										key={entry.rel_path}
-										type="button"
-										className="databasePickerOption"
-										data-active={active ? "true" : undefined}
-										onClick={() => setBrowserPath(entry.rel_path)}
-									>
-										<span className="databasePickerOptionMain">
-											<span className="databasePickerOptionLabel">
-												{entry.name}
-											</span>
-											<span className="databasePickerOptionMeta">
-												Open folder
-											</span>
-										</span>
-										<ChevronRight size={14} />
-									</button>
-								);
-							})
+							filteredEntries.map((entry) => (
+								<button
+									key={entry.rel_path}
+									type="button"
+									className="folderPickerRow"
+									onClick={() => setBrowserPath(entry.rel_path)}
+								>
+									<span className="folderPickerRowName">{entry.name}</span>
+									<ChevronRight size={12} />
+								</button>
+							))
 						) : (
-							<div className="databasePickerEmpty">
-								No folders inside this location.
-							</div>
+							<div className="folderPickerEmpty">No subfolders.</div>
 						)}
 					</div>
 				</ScrollArea>

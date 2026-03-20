@@ -114,60 +114,6 @@
 	box-shadow: none;
 }
 
-.databaseFolderBreadcrumbs {
-	display: flex;
-	align-items: center;
-	flex-wrap: wrap;
-	gap: 4px;
-	margin-bottom: 8px;
-	padding: 0 2px;
-}
-
-.databaseFolderCrumbSegment {
-	display: inline-flex;
-	align-items: center;
-	gap: 4px;
-}
-
-.databaseFolderCrumb,
-.databaseFolderCurrent {
-	border-radius: var(--radius-sm);
-}
-
-.databaseFolderCrumb {
-	padding: 3px 8px;
-	font-size: 0.75rem;
-	color: var(--text-secondary);
-	background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
-}
-
-.databaseFolderCrumb[data-active="true"] {
-	color: var(--text-primary);
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 10%,
-		var(--bg-primary)
-	);
-}
-
-.databaseFolderCurrent {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 10px;
-	margin-bottom: 8px;
-	padding: 8px 10px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
-	background: color-mix(in srgb, var(--bg-secondary) 38%, transparent);
-}
-
-.databaseFolderCurrentMeta {
-	min-width: 0;
-	display: flex;
-	flex-direction: column;
-	gap: 2px;
-}
-
 .databasePickerResults {
 	height: min(240px, 38vh);
 }
@@ -256,4 +202,142 @@
 
 .databasePickerEmpty {
 	padding: 8px 4px 2px;
+}
+
+/* ── Lean folder picker ── */
+
+.folderPickerPopover {
+	width: min(300px, calc(100vw - 2rem));
+	border-radius: var(--radius-lg);
+	border-color: var(--border-light);
+	padding: 8px;
+	background: var(--bg-primary);
+	box-shadow: var(--shadow-md);
+}
+
+.folderPickerBreadcrumbs {
+	display: flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 2px;
+	padding: 2px 4px 6px;
+}
+
+.folderPickerCrumbSegment {
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
+	color: var(--text-quaternary);
+}
+
+.folderPickerCrumb {
+	padding: 2px 5px;
+	border-radius: var(--radius-xs);
+	font-size: 0.72rem;
+	color: var(--text-tertiary);
+}
+
+.folderPickerCrumb:hover {
+	color: var(--text-secondary);
+	background: var(--bg-hover);
+}
+
+.folderPickerCrumb[data-active="true"] {
+	color: var(--text-primary);
+	font-weight: var(--font-medium);
+}
+
+.folderPickerSearch {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	margin-bottom: 4px;
+	padding: 4px 8px;
+	border-radius: var(--radius-sm);
+	border: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
+}
+
+.folderPickerSearch svg {
+	color: var(--text-quaternary);
+	flex: 0 0 auto;
+}
+
+.folderPickerSearch input {
+	border: 0;
+	box-shadow: none;
+	padding: 0;
+	height: 22px;
+	font-size: 0.78rem;
+	background: transparent;
+}
+
+.folderPickerSearch input:focus-visible {
+	outline: none;
+	box-shadow: none;
+}
+
+.folderPickerResults {
+	height: min(200px, 34vh);
+}
+
+.folderPickerList {
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+	padding: 2px;
+}
+
+.folderPickerSelect {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	width: 100%;
+	padding: 5px 8px;
+	border-radius: var(--radius-sm);
+	font-size: 0.78rem;
+	font-weight: var(--font-medium);
+	color: var(--interactive-accent);
+	text-align: left;
+}
+
+.folderPickerSelect:hover {
+	background: color-mix(in srgb, var(--interactive-accent) 8%, transparent);
+}
+
+.folderPickerSelect svg {
+	flex: 0 0 auto;
+	opacity: 0.7;
+}
+
+.folderPickerRow {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	width: 100%;
+	padding: 5px 8px;
+	border-radius: var(--radius-sm);
+	text-align: left;
+}
+
+.folderPickerRow:hover {
+	background: var(--bg-hover);
+}
+
+.folderPickerRowName {
+	font-size: 0.78rem;
+	color: var(--text-primary);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.folderPickerRow svg {
+	color: var(--text-quaternary);
+	flex: 0 0 auto;
+}
+
+.folderPickerEmpty {
+	padding: 6px 8px;
+	font-size: 0.76rem;
+	color: var(--text-tertiary);
 }
