@@ -747,7 +747,6 @@
 		var(--heading-rail-width) +
 		var(--heading-rail-gap)
 	);
-	padding-bottom: var(--editor-bottom-ribbon-clearance, 88px);
 }
 
 .tiptapHostInline:not(.is-preview) .tiptapContentInline::before {

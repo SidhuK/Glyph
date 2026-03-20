@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import {
+	type AutoUpdateCheckInterval,
 	getDailyNotesFolder,
 	loadSettings,
+	setAutoUpdateCheckInterval as saveAutoUpdateCheckInterval,
 	setShowToc as saveShowToc,
 	setDailyNotesFolder,
 } from "../../lib/settings";
@@ -13,12 +15,23 @@ import { Button } from "../ui/shadcn/button";
 import {
 	SettingsRow,
 	SettingsSection,
+	SettingsSegmented,
 	SettingsToggle,
 } from "./SettingsScaffold";
 import { TemplateSettingsSections } from "./TemplatesSettingsPane";
 
+const AUTO_UPDATE_INTERVAL_OPTIONS: {
+	label: string;
+	value: AutoUpdateCheckInterval;
+}[] = [
+	{ label: "On Launch", value: "launch" },
+	{ label: "Every 12h", value: "12h" },
+];
+
 export function GeneralSettingsPane() {
 	const [showToc, setShowTocState] = useState(true);
+	const [autoUpdateCheckInterval, setAutoUpdateCheckIntervalState] =
+		useState<AutoUpdateCheckInterval>("launch");
 	const [dailyNotesFolder, setDailyNotesFolderState] = useState<string | null>(
 		null,
 	);
@@ -37,6 +50,7 @@ export function GeneralSettingsPane() {
 				if (cancelled) return;
 				setDailyNotesFolderState(folder);
 				setShowTocState(settings.ui.showToc);
+				setAutoUpdateCheckIntervalState(settings.ui.autoUpdateCheckInterval);
 			} catch (cause) {
 				if (!cancelled) {
 					setError(
@@ -58,6 +72,14 @@ export function GeneralSettingsPane() {
 		setShowTocState(checked);
 		void saveShowToc(checked);
 	}, []);
+
+	const handleAutoUpdateIntervalChange = useCallback(
+		(next: AutoUpdateCheckInterval) => {
+			setAutoUpdateCheckIntervalState(next);
+			void saveAutoUpdateCheckInterval(next);
+		},
+		[],
+	);
 
 	const handleBrowseFolder = useCallback(async () => {
 		setDailyNotesError(null);
@@ -168,6 +190,17 @@ export function GeneralSettingsPane() {
 				<TemplateSettingsSections />
 
 				<SettingsSection title="Editor">
+					<SettingsRow
+						label="Automatic update checks"
+						description="Choose whether Glyph checks on launch or keeps checking every 12 hours while the app is open."
+					>
+						<SettingsSegmented<AutoUpdateCheckInterval>
+							value={autoUpdateCheckInterval}
+							options={AUTO_UPDATE_INTERVAL_OPTIONS}
+							onChange={handleAutoUpdateIntervalChange}
+							ariaLabel="Automatic update checks"
+						/>
+					</SettingsRow>
 					<SettingsRow
 						label="Table of contents"
 						description="Show a floating table of contents for each note."

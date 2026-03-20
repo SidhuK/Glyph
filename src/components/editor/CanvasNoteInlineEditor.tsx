@@ -34,7 +34,17 @@ type FrontmatterLinkToken =
 
 const FRONTMATTER_LINK_PATTERN =
 	/!?\[\[[^\]\n]+\]\]|\[[^\]\n]+\]\((?:\\.|[^)\n])+\)|https?:\/\/[^\s<>"')\]]+/g;
-const RIBBON_HOVER_ZONE_PX = 72;
+const SELECTION_RIBBON_MARGIN_PX = 12;
+const SELECTION_RIBBON_HEIGHT_PX = 40;
+const SELECTION_RIBBON_EDGE_PADDING_PX = 12;
+
+type SelectionRibbonPlacement = "above" | "below";
+
+interface SelectionRibbonPosition {
+	top: number;
+	left: number;
+	placement: SelectionRibbonPlacement;
+}
 
 function markdownHrefFromToken(raw: string): string | null {
 	const match = raw.match(/^\[[^\]\n]+\]\(([^)\s]+)(?:\s+"[^"]*")?\)$/);
@@ -72,6 +82,41 @@ async function openFrontmatterHref(
 	}
 	if (href.startsWith("#")) return;
 	dispatchMarkdownLinkClick({ href, sourcePath });
+}
+
+function getSelectionRibbonPosition(
+	host: HTMLElement,
+	selection: Selection,
+): SelectionRibbonPosition | null {
+	if (selection.rangeCount === 0 || selection.isCollapsed) return null;
+	const range = selection.getRangeAt(0);
+	if (range.collapsed) return null;
+	if (!host.contains(range.commonAncestorContainer)) return null;
+
+	const selectionRect = range.getBoundingClientRect();
+	if (selectionRect.width === 0 && selectionRect.height === 0) return null;
+
+	const hostRect = host.getBoundingClientRect();
+	const topWithinHost = selectionRect.top - hostRect.top;
+	const bottomWithinHost = selectionRect.bottom - hostRect.top;
+	const placeAbove = topWithinHost >= SELECTION_RIBBON_HEIGHT_PX;
+	const placement: SelectionRibbonPlacement = placeAbove ? "above" : "below";
+	const top =
+		placement === "above"
+			? topWithinHost - SELECTION_RIBBON_MARGIN_PX
+			: bottomWithinHost + SELECTION_RIBBON_MARGIN_PX;
+	const left = selectionRect.left - hostRect.left + selectionRect.width / 2;
+	const minLeft = SELECTION_RIBBON_EDGE_PADDING_PX;
+	const maxLeft = Math.max(
+		SELECTION_RIBBON_EDGE_PADDING_PX,
+		host.clientWidth - SELECTION_RIBBON_EDGE_PADDING_PX,
+	);
+
+	return {
+		top: Math.max(0, top),
+		left: Math.min(Math.max(left, minLeft), maxLeft),
+		placement,
+	};
 }
 
 export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
@@ -120,7 +165,8 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	} | null>(null);
 	const [scheduledDate, setScheduledDate] = useState("");
 	const [dueDate, setDueDate] = useState("");
-	const [showBottomRibbon, setShowBottomRibbon] = useState(false);
+	const [selectionRibbon, setSelectionRibbon] =
+		useState<SelectionRibbonPosition | null>(null);
 	const [codeBlockPickerOpen, setCodeBlockPickerOpen] = useState(false);
 	const [selectedCodeBlock, setSelectedCodeBlock] = useState<{
 		top: number;
@@ -138,10 +184,6 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		lastFrontmatterRef.current = frontmatter;
 		setFrontmatterDraft(frontmatter ?? "");
 	}, [frontmatter]);
-
-	useEffect(() => {
-		if (mode !== "rich") setShowBottomRibbon(false);
-	}, [mode]);
 
 	// Reset when the editor context changes, but not on every content update.
 	// Including `markdown` here causes the viewport to jump to the top while typing.
@@ -170,6 +212,52 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	}, [deferHeavyFeatures, relPath, showBacklinks]);
 
 	const canEdit = mode === "rich" && Boolean(editor?.isEditable);
+
+	useEffect(() => {
+		if (!editor || mode !== "rich" || !canEdit) {
+			setSelectionRibbon(null);
+			return;
+		}
+		const host = tiptapHostRef.current;
+		if (!host) return;
+		let raf = 0;
+
+		const syncSelectionRibbon = () => {
+			if (raf) window.cancelAnimationFrame(raf);
+			raf = window.requestAnimationFrame(() => {
+				raf = 0;
+				const selection = window.getSelection();
+				if (!selection) {
+					setSelectionRibbon(null);
+					return;
+				}
+				const next = getSelectionRibbonPosition(host, selection);
+				setSelectionRibbon((current) => {
+					if (
+						current &&
+						next &&
+						current.top === next.top &&
+						current.left === next.left &&
+						current.placement === next.placement
+					) {
+						return current;
+					}
+					return next;
+				});
+			});
+		};
+
+		syncSelectionRibbon();
+		document.addEventListener("selectionchange", syncSelectionRibbon);
+		editor.on("selectionUpdate", syncSelectionRibbon);
+		window.addEventListener("resize", syncSelectionRibbon);
+		return () => {
+			if (raf) window.cancelAnimationFrame(raf);
+			document.removeEventListener("selectionchange", syncSelectionRibbon);
+			editor.off("selectionUpdate", syncSelectionRibbon);
+			window.removeEventListener("resize", syncSelectionRibbon);
+		};
+	}, [canEdit, editor, mode]);
 
 	useEffect(() => {
 		if (!onRegisterCalloutInserter) return;
@@ -490,15 +578,6 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		event.preventDefault();
 	};
 
-	const updateRibbonVisibility = (
-		event: React.PointerEvent<HTMLDivElement>,
-	) => {
-		if (mode !== "rich") return;
-		const bounds = event.currentTarget.getBoundingClientRect();
-		const shouldShow = bounds.bottom - event.clientY <= RIBBON_HOVER_ZONE_PX;
-		setShowBottomRibbon((prev) => (prev === shouldShow ? prev : shouldShow));
-	};
-
 	return (
 		<div
 			className={[
@@ -506,14 +585,9 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 				"rfNodeNoteEditorFlatEdges",
 				"nodrag",
 				"nopan",
-				editor && mode === "rich" ? "hasRibbon" : "",
-				showBottomRibbon ? "showRibbon" : "",
 			]
 				.filter(Boolean)
 				.join(" ")}
-			onPointerEnter={updateRibbonVisibility}
-			onPointerMove={updateRibbonVisibility}
-			onPointerLeave={() => setShowBottomRibbon(false)}
 		>
 			<div className="rfNodeNoteEditorBody nodrag nopan nowheel">
 				{mode === "plain" ? (
@@ -550,6 +624,20 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 							.join(" ")}
 					>
 						<EditorContent editor={editor} />
+						{canEdit && selectionRibbon ? (
+							<EditorRibbon
+								editor={editor}
+								canEdit={canEdit}
+								style={{
+									top: `${selectionRibbon.top}px`,
+									left: `${selectionRibbon.left}px`,
+									transform:
+										selectionRibbon.placement === "above"
+											? "translate(-50%, -100%)"
+											: "translate(-50%, 0)",
+								}}
+							/>
+						) : null}
 						{canEdit && selectedCodeBlock ? (
 							<Popover
 								open={codeBlockPickerOpen}
@@ -711,9 +799,6 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 					</div>
 				) : null}
 			</div>
-			{editor && mode === "rich" ? (
-				<EditorRibbon editor={editor} canEdit={canEdit} />
-			) : null}
 		</div>
 	);
 });

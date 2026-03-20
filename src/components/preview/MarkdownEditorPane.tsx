@@ -171,7 +171,7 @@ export function MarkdownEditorPane({
 
 		const width = pane.clientWidth;
 		const ribbon = pane.querySelector(
-			".rfNodeNoteEditorRibbonBottom",
+			".rfNodeNoteEditorRibbonFloating",
 		) as HTMLElement | null;
 		const ribbonVisible = isVisibleElement(ribbon);
 
@@ -529,7 +529,7 @@ export function MarkdownEditorPane({
 			".rfNodeNoteEditor",
 		) as HTMLElement | null;
 		const ribbon = pane.querySelector(
-			".rfNodeNoteEditorRibbonBottom",
+			".rfNodeNoteEditorRibbonFloating",
 		) as HTMLElement | null;
 		if (editorRoot) resizeObserver.observe(editorRoot);
 		if (ribbon) resizeObserver.observe(ribbon);
