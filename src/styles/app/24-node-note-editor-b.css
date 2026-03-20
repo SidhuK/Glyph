@@ -1218,7 +1218,7 @@
 	width: 14px;
 	height: 14px;
 	border-radius: var(--radius-round);
-	border: 1px solid color-mix(in srgb, currentColor 18%, var(--border-default));
+	border: 1px solid color-mix(in srgb, currentcolor 18%, var(--border-default));
 	flex: 0 0 auto;
 }
 

@@ -10,7 +10,6 @@ import {
 	List,
 	ListChecks,
 	ListOrdered,
-	Palette,
 	Quote,
 	Strikethrough,
 	Underline,
@@ -81,7 +80,6 @@ export function getTextColorButton(
 	return {
 		title: "Text color",
 		isActive: () => editor.isActive("coloredText"),
-		icon: <Palette size={14} />,
 		activeColor: activeOption?.id ?? null,
 		options: EDITOR_TEXT_COLORS.map((option) => ({
 			id: option.id,

@@ -42,8 +42,7 @@ export const ColoredText = MarkExtension.create({
 				default: null,
 				parseHTML: (element) => {
 					if (!(element instanceof HTMLElement)) return null;
-					const color = element.getAttribute("data-glyph-color")?.trim() ?? "";
-					return isEditorTextColor(color) ? color : null;
+					return element.getAttribute("data-glyph-color")?.trim() ?? null;
 				},
 				renderHTML: (attributes) => {
 					const color = attributes.color;
