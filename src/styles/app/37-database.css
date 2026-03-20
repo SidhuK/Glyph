@@ -419,12 +419,12 @@
 	display: grid;
 	flex: 1;
 	grid-auto-flow: column;
-	grid-auto-columns: minmax(260px, 340px);
-	gap: 10px;
+	grid-auto-columns: minmax(360px, 440px);
+	gap: 18px;
 	min-height: 0;
 	height: 100%;
 	overflow: auto;
-	padding-bottom: var(--space-2);
+	padding: 10px 6px 12px;
 	align-items: stretch;
 }
 
@@ -435,16 +435,30 @@
 	min-height: 0;
 	height: 100%;
 	border-radius: var(--database-radius-lg);
-	background: color-mix(in srgb, var(--bg-secondary) 40%, var(--bg-primary));
-	transition: background-color 140ms ease;
+	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--bg-secondary) 92%, var(--bg-primary)) 0%,
+		color-mix(in srgb, var(--bg-secondary) 62%, var(--bg-primary)) 100%
+	);
+	box-shadow: var(--shadow-sm);
+	transition: background-color 140ms ease, border-color 140ms ease, box-shadow
+		140ms ease, transform 140ms ease;
 }
 
 .databaseBoardLane[data-active="true"] {
-	background: color-mix(
+	border-color: color-mix(
 		in srgb,
-		var(--interactive-accent) 5%,
-		var(--bg-secondary)
+		var(--interactive-accent) 28%,
+		var(--border-default)
 	);
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--interactive-accent) 8%, var(--bg-secondary)) 0%,
+		color-mix(in srgb, var(--interactive-accent) 4%, var(--bg-primary)) 100%
+	);
+	box-shadow: var(--shadow-md);
+	transform: translateY(-1px);
 }
 
 .databaseBoardLaneHeader {
@@ -452,45 +466,68 @@
 	align-items: center;
 	justify-content: space-between;
 	gap: var(--space-2);
-	padding: 10px 12px 6px;
+	padding: 14px 14px 10px;
+	border-bottom: 1px solid
+		color-mix(in srgb, var(--border-light) 60%, transparent);
 }
 
 .databaseBoardLaneTitle {
-	font-size: 0.8rem;
-	font-weight: var(--font-medium);
-	color: var(--text-secondary);
-	text-transform: uppercase;
-	letter-spacing: 0.04em;
+	font-size: 0.82rem;
+	font-weight: var(--font-semibold);
+	color: var(--text-primary);
+	letter-spacing: 0.01em;
 }
 
 .databaseBoardLaneCount {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-width: 28px;
+	height: 24px;
+	padding: 0 8px;
+	border-radius: var(--radius-full);
+	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
+	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
 	font-size: 0.72rem;
-	font-weight: var(--font-medium);
-	color: var(--text-tertiary);
+	font-weight: var(--font-semibold);
+	color: var(--text-secondary);
 }
 
 .databaseBoardLaneBody {
 	display: flex;
 	flex: 1;
 	flex-direction: column;
-	gap: 8px;
-	padding: 4px 8px 10px;
+	gap: 14px;
+	padding: 14px;
 	min-height: 0;
 	overflow: auto;
 }
 
 .databaseBoardCard {
 	display: flex;
-	align-items: center;
+	flex-direction: column;
+	align-items: stretch;
 	width: 100%;
 	min-width: 0;
-	padding: 10px 12px;
-	border: none;
+	height: auto;
+	min-height: 176px;
+	gap: 8px;
+	padding: 10px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 70%, transparent);
 	border-radius: var(--database-radius-md);
-	background: var(--bg-primary);
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--bg-primary) 98%, transparent) 0%,
+		color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary)) 100%
+	);
+	box-shadow: 0 8px 20px rgba(15, 23, 42, 0.04);
 	cursor: pointer;
 	text-align: left;
-	transition: background-color 120ms ease;
+	justify-content: flex-start;
+	white-space: normal;
+	line-height: normal;
+	transition: background-color 120ms ease, border-color 120ms ease, box-shadow
+		120ms ease, transform 120ms ease;
 	overflow: hidden;
 }
 
@@ -504,22 +541,36 @@
 }
 
 .databaseBoardCard:hover {
-	background: var(--bg-hover);
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--bg-hover) 94%, var(--bg-primary)) 0%,
+		color-mix(in srgb, var(--bg-hover) 82%, var(--bg-secondary)) 100%
+	);
+	border-color: color-mix(in srgb, var(--border-default) 78%, transparent);
+	box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+	transform: translateY(-1px);
 }
 
 .databaseBoardCard[data-state="selected"] {
-	background: color-mix(
+	border-color: color-mix(
 		in srgb,
-		var(--interactive-accent) 8%,
-		var(--bg-primary)
+		var(--interactive-accent) 34%,
+		var(--border-default)
 	);
+	background: linear-gradient(
+		180deg,
+		color-mix(in srgb, var(--interactive-accent) 8%, var(--bg-primary)) 0%,
+		color-mix(in srgb, var(--interactive-accent) 4%, var(--bg-secondary)) 100%
+	);
+	box-shadow: 0 16px 32px rgba(15, 23, 42, 0.1);
 }
 
 .databaseBoardCardTitle {
 	min-width: 0;
-	font-size: 0.84rem;
-	font-weight: var(--font-medium);
-	line-height: 1.4;
+	display: block;
+	font-size: 0.88rem;
+	font-weight: var(--font-semibold);
+	line-height: 1.2;
 	color: var(--text-primary);
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -529,17 +580,44 @@
 .databaseBoardCardHead {
 	display: flex;
 	flex-direction: column;
-	gap: 5px;
+	gap: 8px;
 	min-width: 0;
+}
+
+.databaseBoardCardHeaderRow {
+	display: flex;
+	align-items: flex-start;
+	justify-content: space-between;
+	gap: 10px;
+	padding-bottom: 8px;
+	border-bottom: 1px solid
+		color-mix(in srgb, var(--border-light) 60%, transparent);
+}
+
+.databaseBoardCardOpenHint {
+	flex: 0 0 auto;
+	padding-top: 1px;
+	font-size: 0.68rem;
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: var(--text-tertiary);
+	opacity: 0;
+	transition: opacity 120ms ease;
+}
+
+.databaseBoardCard:hover .databaseBoardCardOpenHint,
+.databaseBoardCard[data-state="selected"] .databaseBoardCardOpenHint {
+	opacity: 1;
 }
 
 .databaseBoardCardPreview {
 	display: -webkit-box;
-	-webkit-line-clamp: 3;
+	-webkit-line-clamp: 2;
 	-webkit-box-orient: vertical;
 	overflow: hidden;
-	font-size: var(--text-xs);
-	line-height: 1.45;
+	font-size: 0.76rem;
+	line-height: 1.42;
 	color: var(--text-secondary);
 	white-space: normal;
 	overflow-wrap: anywhere;
@@ -552,38 +630,46 @@
 
 .databaseBoardCardTags {
 	display: flex;
-	flex-wrap: wrap;
+	flex-wrap: nowrap;
 	gap: 5px;
 	min-width: 0;
+	overflow: hidden;
+	flex: 0 0 auto;
 }
 
 .databaseBoardTag {
 	display: inline-flex;
 	align-items: center;
 	max-width: 100%;
-	padding: 2px 6px;
-	border: 1px solid var(--border-light);
-	border-radius: var(--radius-sm);
-	background: var(--bg-secondary);
-	font-size: 0.68rem;
+	flex: 0 0 auto;
+	padding: 3px 7px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
+	border-radius: var(--radius-full);
+	background: color-mix(in srgb, var(--bg-secondary) 88%, transparent);
+	font-size: 0.7rem;
 	line-height: 1.2;
 	color: var(--text-secondary);
 	white-space: nowrap;
 }
 
+.databaseBoardTag.is-muted {
+	color: var(--text-tertiary);
+}
+
 .databaseBoardCardDetails {
 	display: flex;
 	flex-direction: column;
-	gap: 5px;
+	gap: 3px;
 	min-width: 0;
-	padding-top: 2px;
+	padding-top: 0;
+	flex: 0 0 auto;
 }
 
 .databaseBoardCardDetail {
 	display: grid;
 	grid-template-columns: auto minmax(0, 1fr);
 	align-items: center;
-	gap: 7px;
+	gap: 8px;
 	min-width: 0;
 }
 
@@ -591,29 +677,51 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 16px;
-	height: 16px;
+	width: 20px;
+	height: 20px;
+	border-radius: var(--radius-sm);
+	background: color-mix(in srgb, var(--bg-secondary) 90%, transparent);
 	color: var(--text-tertiary);
 }
 
 .databaseBoardCardDetailValue {
 	min-width: 0;
-	font-size: var(--text-xs);
+	display: -webkit-box;
+	-webkit-line-clamp: 1;
+	-webkit-box-orient: vertical;
+	font-size: 0.7rem;
+	line-height: 1.25;
 	color: var(--text-secondary);
+	overflow: hidden;
+	white-space: normal;
+}
+
+.databaseBoardCardFooter {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 8px;
+	margin-top: auto;
+	min-height: 18px;
+	padding-top: 2px;
+	flex: 0 0 auto;
+}
+
+.databaseBoardCardPath {
+	min-width: 0;
+	font-size: 0.68rem;
+	line-height: 1.2;
+	color: var(--text-tertiary);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
-.databaseBoardCardPath {
-	margin-top: auto;
-	padding-top: 4px;
+.databaseBoardCardTimestamp {
+	flex: 0 0 auto;
 	font-size: 0.66rem;
-	line-height: 1.35;
-	color: var(--text-tertiary);
-	overflow: hidden;
-	text-overflow: ellipsis;
-	white-space: nowrap;
+	line-height: 1.2;
+	color: var(--text-quaternary);
 }
 
 .databaseBoardEmptyState {
@@ -1418,7 +1526,10 @@
 }
 
 .databaseBoardLaneEmptyCard {
-	padding: 8px;
+	padding: 18px 12px;
+	border: 1px dashed color-mix(in srgb, var(--border-light) 72%, transparent);
+	border-radius: var(--radius-md);
+	background: color-mix(in srgb, var(--bg-primary) 72%, transparent);
 	font-size: var(--text-xs);
 	color: var(--text-tertiary);
 	text-align: center;

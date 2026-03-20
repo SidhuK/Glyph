@@ -1,9 +1,15 @@
 import { m, useReducedMotion } from "motion/react";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useDatabaseBoard } from "../../hooks/database/useDatabaseBoard";
 import { boardDropValue, boardRowHasLane } from "../../lib/database/board";
+import {
+	databaseCellValueFromRow,
+	formatDatabaseDateTime,
+} from "../../lib/database/config";
 import type { DatabaseColumn, DatabaseRow } from "../../lib/database/types";
 import { extractErrorMessage } from "../../lib/errorUtils";
+import { parentDir } from "../../utils/path";
+import { formatTagLabel } from "../editor/noteProperties/utils";
 import { springPresets } from "../ui/animations";
 import { Button } from "../ui/shadcn/button";
 import {
@@ -13,6 +19,7 @@ import {
 	ContextMenuSeparator,
 	ContextMenuTrigger,
 } from "../ui/shadcn/context-menu";
+import { DatabaseColumnIcon } from "./DatabaseColumnIcon";
 
 interface DatabaseBoardProps {
 	rows: DatabaseRow[];
@@ -55,6 +62,74 @@ function boardCardTitle(row: DatabaseRow, activeLaneLabel: string): string {
 	return indexedTitle;
 }
 
+function normalizePreview(preview?: string): string {
+	return (preview ?? "").replace(/\s+/g, " ").trim();
+}
+
+function normalizeComparableText(value: string): string {
+	return value
+		.toLowerCase()
+		.replace(/^#+\s*/g, "")
+		.replace(/[*_`~[\]()]/g, "")
+		.replace(/\s+/g, " ")
+		.trim();
+}
+
+function cardPreviewText(row: DatabaseRow, title: string): string {
+	const preview = normalizePreview(row.preview);
+	if (!preview) return "";
+	const normalizedTitle = normalizeComparableText(title);
+	const normalizedPreview = normalizeComparableText(preview);
+	if (!normalizedTitle || !normalizedPreview.startsWith(normalizedTitle)) {
+		return preview;
+	}
+	const withoutMarkdownHeading = preview.replace(/^#+\s*/, "").trim();
+	const titleIndex = withoutMarkdownHeading
+		.toLowerCase()
+		.indexOf(title.toLowerCase());
+	if (titleIndex !== 0) return preview;
+	const remainder = withoutMarkdownHeading
+		.slice(title.length)
+		.replace(/^[-:.\s]+/, "")
+		.trim();
+	return remainder;
+}
+
+function cardCandidateColumns(
+	columns: DatabaseColumn[],
+	groupColumnId?: string | null,
+): DatabaseColumn[] {
+	return columns.filter((column) => {
+		if (!column.visible) return false;
+		if (column.id === groupColumnId) return false;
+		return column.type !== "title" && column.type !== "path";
+	});
+}
+
+function hasCardValue(row: DatabaseRow, column: DatabaseColumn): boolean {
+	const cell = databaseCellValueFromRow(row, column);
+	return Boolean(
+		cell.value_text?.trim() ||
+			cell.value_list.length > 0 ||
+			typeof cell.value_bool === "boolean",
+	);
+}
+
+function formatCardValue(row: DatabaseRow, column: DatabaseColumn): string {
+	const cell = databaseCellValueFromRow(row, column);
+	if (cell.kind === "checkbox") {
+		if (typeof cell.value_bool !== "boolean") return "";
+		return cell.value_bool ? "Checked" : "Unchecked";
+	}
+	if (cell.kind === "datetime") {
+		return formatDatabaseDateTime(cell.value_text);
+	}
+	if (cell.value_list.length > 0) {
+		return cell.value_list.join(", ");
+	}
+	return cell.value_text?.trim() ?? "";
+}
+
 export function DatabaseBoard({
 	rows,
 	columns,
@@ -77,6 +152,11 @@ export function DatabaseBoard({
 	const [draggingRowPath, setDraggingRowPath] = useState<string | null>(null);
 	const [dropLaneId, setDropLaneId] = useState<string | null>(null);
 	const [moveError, setMoveError] = useState("");
+	const boardCardColumns = useMemo(
+		() =>
+			cardCandidateColumns(columns, groupColumn?.id ?? persistedGroupColumnId),
+		[columns, groupColumn?.id, persistedGroupColumnId],
+	);
 
 	const handleLaneDrop = async (notePath: string | null, laneId: string) => {
 		if (!notePath || !groupColumn) return;
@@ -201,6 +281,21 @@ export function DatabaseBoard({
 								{lane.rows.length > 0 ? (
 									lane.rows.map((row) => {
 										const title = boardCardTitle(row, lane.label);
+										const preview = cardPreviewText(row, title);
+										const maxVisibleTags = 2;
+										const visibleTags = row.tags.slice(0, maxVisibleTags);
+										const extraTagCount = Math.max(
+											row.tags.length - maxVisibleTags,
+											0,
+										);
+										const cardDetails = boardCardColumns
+											.filter(
+												(column) =>
+													column.type !== "tags" && hasCardValue(row, column),
+											)
+											.slice(0, 1);
+										const folderLabel =
+											row.folder?.trim() || parentDir(row.note_path) || "/";
 										const otherLanes = lanes.filter(
 											(l) =>
 												l.id !== lane.id &&
@@ -242,9 +337,76 @@ export function DatabaseBoard({
 														onDoubleClick={() => onOpenRow(row.note_path)}
 														title="Double-click to open note"
 													>
-														<span className="databaseBoardCardTitle">
-															{title}
-														</span>
+														<div className="databaseBoardCardHead">
+															<div className="databaseBoardCardHeaderRow">
+																<span className="databaseBoardCardTitle">
+																	{title}
+																</span>
+																<span className="databaseBoardCardOpenHint">
+																	Open
+																</span>
+															</div>
+															{preview ? (
+																<div className="databaseBoardCardPreview">
+																	{preview}
+																</div>
+															) : null}
+														</div>
+														{visibleTags.length > 0 ? (
+															<div className="databaseBoardCardTags">
+																{visibleTags.map((tag) => (
+																	<span
+																		key={`${row.note_path}:${tag}`}
+																		className="databaseBoardTag"
+																		title={formatTagLabel(tag)}
+																	>
+																		{formatTagLabel(tag)}
+																	</span>
+																))}
+																{extraTagCount > 0 ? (
+																	<span className="databaseBoardTag is-muted">
+																		+{extraTagCount}
+																	</span>
+																) : null}
+															</div>
+														) : null}
+														{cardDetails.length > 0 ? (
+															<div className="databaseBoardCardDetails">
+																{cardDetails.map((column) => (
+																	<div
+																		key={`${row.note_path}:${column.id}`}
+																		className="databaseBoardCardDetail"
+																	>
+																		<span
+																			className="databaseBoardCardDetailLabel"
+																			title={column.label}
+																		>
+																			<DatabaseColumnIcon
+																				column={column}
+																				size={12}
+																			/>
+																		</span>
+																		<span
+																			className="databaseBoardCardDetailValue"
+																			title={`${column.label}: ${formatCardValue(row, column)}`}
+																		>
+																			{formatCardValue(row, column)}
+																		</span>
+																	</div>
+																))}
+															</div>
+														) : null}
+														<div className="databaseBoardCardFooter">
+															<span
+																className="databaseBoardCardPath"
+																title={folderLabel}
+															>
+																{folderLabel}
+															</span>
+															<span className="databaseBoardCardTimestamp">
+																{formatDatabaseDateTime(row.updated)}
+															</span>
+														</div>
 													</button>
 												</ContextMenuTrigger>
 												<ContextMenuContent className="fileTreeCreateMenu">
