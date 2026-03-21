@@ -1094,8 +1094,8 @@
 
 .databaseDialog {
 	max-width: min(900px, calc(100vw - 2rem));
-	padding: 0.8rem;
-	gap: 0.45rem;
+	padding: 0.6rem;
+	gap: 0.3rem;
 	border-radius: var(--radius-lg);
 	border-color: var(--border-light);
 	background: var(--bg-primary);
@@ -1103,11 +1103,12 @@
 }
 
 .databaseDialogCompact {
-	width: min(1080px, calc(100vw - 2rem));
-	max-width: min(1080px, calc(100vw - 2rem));
-	height: min(82vh, 860px);
-	padding: 0.72rem 0.72rem 0.68rem;
-	gap: 0.35rem;
+	width: min(720px, calc(100vw - 2rem));
+	max-width: min(720px, calc(100vw - 2rem));
+	height: auto;
+	max-height: min(72vh, 680px);
+	padding: 0.5rem 0.6rem 0.5rem;
+	gap: 0.2rem;
 	overflow: hidden;
 }
 
@@ -1116,13 +1117,13 @@
 }
 
 .databaseDialogHeaderCompact {
-	padding-bottom: 0.18rem;
+	padding-bottom: 0;
 }
 
 .databaseDialogBody {
 	display: flex;
 	flex-direction: column;
-	gap: 10px;
+	gap: 6px;
 	flex: 1;
 	min-height: 0;
 	overflow: hidden;
@@ -1130,13 +1131,15 @@
 }
 
 .databaseDialogBodyTight {
-	gap: 10px;
+	gap: 4px;
+	flex: 0 1 auto;
+	overflow: auto;
 }
 
 .databaseDialogBodyColumns {
 	display: grid;
-	grid-template-columns: minmax(0, 1.45fr) minmax(280px, 0.95fr);
-	gap: 12px;
+	grid-template-columns: minmax(0, 1.5fr) minmax(220px, 0.85fr);
+	gap: 8px;
 	align-items: stretch;
 	min-height: 0;
 }
@@ -1144,7 +1147,7 @@
 .databaseDialogSidebar {
 	display: flex;
 	flex-direction: column;
-	gap: 12px;
+	gap: 6px;
 	min-height: 0;
 	overflow: auto;
 	padding-right: 2px;
@@ -1153,11 +1156,11 @@
 .databaseDialogSection {
 	display: flex;
 	flex-direction: column;
-	gap: 8px;
+	gap: 4px;
 	min-height: 0;
-	padding: 0 0 0.12rem;
+	padding: 0 0 0.1rem;
 	border-bottom: 1px solid
-		color-mix(in srgb, var(--border-light) 56%, transparent);
+		color-mix(in srgb, var(--border-light) 40%, transparent);
 }
 
 .databaseDialogSection:last-child {
@@ -1168,21 +1171,21 @@
 .databaseDialogSectionHeader {
 	display: flex;
 	flex-direction: column;
-	gap: 4px;
+	gap: 2px;
 }
 
 .databaseDialogSectionTitleRow {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	gap: 10px;
+	gap: 8px;
 }
 
 .databaseDialogSectionHeaderRow {
 	flex-direction: row;
-	align-items: flex-start;
+	align-items: center;
 	justify-content: space-between;
-	gap: 10px;
+	gap: 6px;
 }
 
 .databaseDialogSectionTitle {
@@ -1196,28 +1199,20 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	min-width: 28px;
-	height: 20px;
-	padding: 0 7px;
+	min-width: 22px;
+	height: 18px;
+	padding: 0 5px;
 	border-radius: 999px;
-	background: color-mix(in srgb, var(--bg-secondary) 82%, transparent);
-	border: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
-	font-size: 0.68rem;
+	background: color-mix(in srgb, var(--bg-secondary) 72%, transparent);
+	font-size: 0.66rem;
 	font-weight: var(--font-semibold);
-	color: var(--text-secondary);
-}
-
-.databaseDialogSectionHint {
-	max-width: 58ch;
-	font-size: 0.7rem;
-	line-height: 1.35;
 	color: var(--text-secondary);
 }
 
 .databaseDialogList {
 	display: flex;
 	flex-direction: column;
-	gap: 3px;
+	gap: 1px;
 	min-height: 0;
 	overflow: auto;
 	padding-right: 2px;
@@ -1235,11 +1230,11 @@
 .databaseFilterRow,
 .databaseFilterCard {
 	display: grid;
-	gap: 8px;
-	padding: 8px 10px;
-	border-radius: var(--radius-md);
-	border: 1px solid color-mix(in srgb, var(--border-light) 46%, transparent);
-	background: color-mix(in srgb, var(--bg-primary) 99%, var(--bg-secondary));
+	gap: 6px;
+	padding: 4px 6px;
+	border-radius: var(--radius-sm);
+	border: none;
+	background: transparent;
 }
 
 .databaseDialogRow {
@@ -1270,17 +1265,17 @@
 }
 
 .databaseFilterCardCompact {
-	padding: 8px 10px;
+	padding: 4px 6px;
 }
 
 .databaseFilterCardFields {
 	display: grid;
-	grid-template-columns: minmax(150px, 1.1fr) minmax(140px, 0.8fr) minmax(
+	grid-template-columns: minmax(120px, 1fr) minmax(110px, 0.75fr) minmax(
 			0,
-			1.35fr
+			1.2fr
 		) auto;
-	gap: 6px;
-	align-items: end;
+	gap: 4px;
+	align-items: center;
 }
 
 .databaseDialogRowMeta {
@@ -1290,14 +1285,14 @@
 .databaseDialogRowLead {
 	display: flex;
 	align-items: center;
-	gap: 10px;
+	gap: 8px;
 	min-width: 0;
 }
 
 .databaseDialogRowTitle {
-	font-weight: var(--font-semibold);
+	font-weight: var(--font-medium);
 	line-height: 1.2;
-	font-size: 0.92rem;
+	font-size: 0.82rem;
 }
 
 .databaseDialogRowSubtitle {
@@ -1313,13 +1308,13 @@
 .databaseDialogActions {
 	display: flex;
 	flex-wrap: wrap;
-	gap: 6px;
+	gap: 4px;
 	align-items: center;
 }
 
 .databaseDialogRowActions {
 	flex-wrap: nowrap;
-	gap: 4px;
+	gap: 2px;
 	justify-content: flex-end;
 }
 
@@ -1359,41 +1354,50 @@
 }
 
 .databaseDialogCompact .databaseDialogSection {
-	gap: 8px;
-	padding-bottom: 0.3rem;
-	border-bottom-color: color-mix(in srgb, var(--border-light) 48%, transparent);
+	gap: 3px;
+	padding-bottom: 0.15rem;
+	border-bottom-color: color-mix(in srgb, var(--border-light) 30%, transparent);
 }
 
 .databaseDialogCompact .databaseDialogSectionHeader {
-	gap: 4px;
+	gap: 2px;
 }
 
 .databaseDialogCompact .databaseDialogSectionTitle {
-	font-size: 0.78rem;
+	font-size: 0.74rem;
 }
 
 .databaseDialogCompact .databaseDialogRow,
 .databaseDialogCompact .databaseFilterCard {
-	border-color: color-mix(in srgb, var(--border-light) 44%, transparent);
-	background: color-mix(in srgb, var(--bg-primary) 99%, var(--bg-secondary));
+	border: none;
+	background: transparent;
 	box-shadow: none;
+}
+
+.databaseDialogCompact .databaseDialogRow:hover,
+.databaseDialogCompact .databaseFilterCard:hover {
+	background: color-mix(in srgb, var(--bg-secondary) 46%, transparent);
 }
 
 .databaseDialogCompact .databaseDialogChipList {
 	flex-direction: column;
 	align-items: stretch;
-	gap: 4px;
+	gap: 1px;
 }
 
 .databaseDialogCompact .databaseDialogChipList > button {
 	justify-content: flex-start;
 	width: 100%;
-	min-height: 34px;
-	padding-inline: 10px;
-	border-radius: var(--radius-md);
-	border: 1px solid color-mix(in srgb, var(--border-light) 44%, transparent);
-	background: color-mix(in srgb, var(--bg-primary) 94%, transparent);
-	font-size: 0.86rem;
+	min-height: 30px;
+	padding-inline: 8px;
+	border-radius: var(--radius-sm);
+	border: none;
+	background: transparent;
+	font-size: 0.8rem;
+}
+
+.databaseDialogCompact .databaseDialogChipList > button:hover {
+	background: color-mix(in srgb, var(--bg-secondary) 60%, transparent);
 }
 
 .databaseDialogCompact .databaseDialogActions {
@@ -1403,8 +1407,8 @@
 .databaseDialogField,
 .databaseDialogFieldSlim {
 	display: grid;
-	grid-template-columns: minmax(112px, 132px) minmax(0, 1fr);
-	gap: 8px;
+	grid-template-columns: minmax(80px, 100px) minmax(0, 1fr);
+	gap: 6px;
 	align-items: center;
 }
 
@@ -1459,8 +1463,8 @@
 }
 
 .databaseDialogEmptyState {
-	padding: 12px 2px;
-	font-size: 0.76rem;
+	padding: 6px 2px;
+	font-size: 0.72rem;
 	color: var(--text-secondary);
 }
 
@@ -1567,7 +1571,7 @@
 	}
 
 	.databaseDialogCompact {
-		height: min(88vh, 920px);
+		height: min(82vh, 760px);
 	}
 
 	.databaseDialogSidebar {

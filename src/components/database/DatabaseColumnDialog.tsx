@@ -6,7 +6,7 @@ import type {
 	DatabaseConfig,
 	DatabasePropertyOption,
 } from "../../lib/database/types";
-import { ChevronDown, ChevronUp, Minus, Plus, Trash2 } from "../Icons";
+import { ChevronDown, ChevronUp, Trash2 } from "../Icons";
 import { Toggle } from "../base/toggle/toggle";
 import { Button } from "../ui/shadcn/button";
 import {
@@ -98,10 +98,6 @@ const builtInColumns: DatabaseColumn[] = [
 	},
 ];
 
-const MIN_COLUMN_WIDTH = 120;
-const MAX_COLUMN_WIDTH = 520;
-const COLUMN_WIDTH_STEP = 40;
-
 export function DatabaseColumnDialog({
 	open,
 	config,
@@ -111,10 +107,6 @@ export function DatabaseColumnDialog({
 }: DatabaseColumnDialogProps) {
 	const [manualKey, setManualKey] = useState("");
 	const [manualKind, setManualKind] = useState("text");
-	const visibleColumnCount = useMemo(
-		() => config.columns.filter((column) => column.visible).length,
-		[config.columns],
-	);
 	const addedColumnIds = useMemo(
 		() => new Set(config.columns.map((column) => column.id)),
 		[config.columns],
@@ -129,26 +121,6 @@ export function DatabaseColumnDialog({
 		});
 	};
 
-	const updateColumnWidth = async (
-		columnId: string,
-		nextWidth: number | null | undefined,
-	) => {
-		const width =
-			typeof nextWidth === "number"
-				? Math.max(MIN_COLUMN_WIDTH, Math.min(MAX_COLUMN_WIDTH, nextWidth))
-				: undefined;
-		await updateColumns((columns) =>
-			columns.map((entry) =>
-				entry.id === columnId
-					? {
-							...entry,
-							width,
-						}
-					: entry,
-			),
-		);
-	};
-
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
 			<DialogContent className="databaseDialog databaseDialogCompact">
@@ -157,17 +129,6 @@ export function DatabaseColumnDialog({
 				</DialogHeader>
 				<div className="databaseDialogBody databaseDialogBodyColumns">
 					<section className="databaseDialogSection databaseDialogSectionPrimary">
-						<div className="databaseDialogSectionHeader">
-							<div className="databaseDialogSectionTitleRow">
-								<div className="databaseDialogSectionTitle">Visible columns</div>
-								<div className="databaseDialogSectionCount">
-									{visibleColumnCount}
-								</div>
-							</div>
-							<div className="databaseDialogSectionHint">
-								Reorder, resize, or hide fields for this view.
-							</div>
-						</div>
 						<div className="databaseDialogList databaseDialogListColumns">
 							{config.columns.map((column, index) => (
 								<div key={column.id} className="databaseDialogRow">
@@ -196,7 +157,7 @@ export function DatabaseColumnDialog({
 									<Toggle
 										slim
 										size="sm"
-										label="Visible"
+										ariaLabel="Toggle visibility"
 										className="databaseDialogToggle"
 										checked={column.visible}
 										onCheckedChange={(checked) =>
@@ -213,41 +174,6 @@ export function DatabaseColumnDialog({
 										}
 									/>
 									<div className="databaseDialogRowActions">
-										<div className="databaseColumnWidthControl">
-											<Button
-												type="button"
-												variant="ghost"
-												size="icon-xs"
-												onClick={() =>
-													void updateColumnWidth(
-														column.id,
-														(column.width ?? 180) - COLUMN_WIDTH_STEP,
-													)
-												}
-												title="Decrease column width"
-												aria-label="Decrease column width"
-											>
-												<Minus size={12} />
-											</Button>
-											<span className="databaseColumnWidthValue">
-												{column.width ?? 180}px
-											</span>
-											<Button
-												type="button"
-												variant="ghost"
-												size="icon-xs"
-												onClick={() =>
-													void updateColumnWidth(
-														column.id,
-														(column.width ?? 180) + COLUMN_WIDTH_STEP,
-													)
-												}
-												title="Increase column width"
-												aria-label="Increase column width"
-											>
-												<Plus size={12} />
-											</Button>
-										</div>
 										<Button
 											type="button"
 											variant="ghost"
@@ -310,17 +236,8 @@ export function DatabaseColumnDialog({
 					<div className="databaseDialogSidebar">
 						<section className="databaseDialogSection">
 							<div className="databaseDialogSectionHeader">
-								<div className="databaseDialogSectionTitleRow">
-									<div className="databaseDialogSectionTitle">
-										Built-in fields
-									</div>
-									<div className="databaseDialogSectionCount">
-										{
-											builtInColumns.filter(
-												(column) => !addedColumnIds.has(column.id),
-											).length
-										}
-									</div>
+								<div className="databaseDialogSectionTitle">
+									Built-in fields
 								</div>
 							</div>
 							<div className="databaseDialogChipList">
@@ -344,17 +261,7 @@ export function DatabaseColumnDialog({
 						</section>
 						<section className="databaseDialogSection">
 							<div className="databaseDialogSectionHeader">
-								<div className="databaseDialogSectionTitleRow">
-									<div className="databaseDialogSectionTitle">Properties</div>
-									<div className="databaseDialogSectionCount">
-										{
-											availableProperties.filter(
-												(property) =>
-													!addedColumnIds.has(`property:${property.key}`),
-											).length
-										}
-									</div>
-								</div>
+								<div className="databaseDialogSectionTitle">Properties</div>
 							</div>
 							<div className="databaseDialogChipList">
 								{availableProperties
@@ -383,65 +290,62 @@ export function DatabaseColumnDialog({
 										);
 									})}
 							</div>
-							<div className="databaseDialogField databaseDialogFieldStack">
-								<div className="settingsLabel">Manual property</div>
-								<div className="databaseManualProperty">
-									<Input
-										id="databaseManualProperty"
-										value={manualKey}
-										placeholder="status"
-										onChange={(event) => setManualKey(event.target.value)}
-									/>
-									<select
-										className="databaseNativeSelect"
-										value={manualKind}
-										onChange={(event) => setManualKind(event.target.value)}
-									>
-										<option value="text">Text</option>
-										<option value="url">URL</option>
-										<option value="number">Number</option>
-										<option value="date">Date</option>
-										<option value="datetime">Date/time</option>
-										<option value="checkbox">Checkbox</option>
-										<option value="list">List</option>
-										<option value="tags">Tags</option>
-										<option value="yaml">YAML</option>
-									</select>
-									<Button
-										type="button"
-										size="xs"
-										disabled={!manualKey.trim()}
-										onClick={() => {
-											const property = manualKey.trim();
-											if (!property) return;
-											void updateColumns((columns) => {
-												const nextId = `property:${property}`;
-												if (columns.some((column) => column.id === nextId)) {
-													return columns;
-												}
-												return [
-													...columns,
-													{
-														id: nextId,
+							<div className="databaseManualProperty">
+								<Input
+									id="databaseManualProperty"
+									value={manualKey}
+									placeholder="Add property…"
+									onChange={(event) => setManualKey(event.target.value)}
+								/>
+								<select
+									className="databaseNativeSelect"
+									value={manualKind}
+									onChange={(event) => setManualKind(event.target.value)}
+								>
+									<option value="text">Text</option>
+									<option value="url">URL</option>
+									<option value="number">Number</option>
+									<option value="date">Date</option>
+									<option value="datetime">Date/time</option>
+									<option value="checkbox">Checkbox</option>
+									<option value="list">List</option>
+									<option value="tags">Tags</option>
+									<option value="yaml">YAML</option>
+								</select>
+								<Button
+									type="button"
+									size="xs"
+									disabled={!manualKey.trim()}
+									onClick={() => {
+										const property = manualKey.trim();
+										if (!property) return;
+										void updateColumns((columns) => {
+											const nextId = `property:${property}`;
+											if (columns.some((column) => column.id === nextId)) {
+												return columns;
+											}
+											return [
+												...columns,
+												{
+													id: nextId,
+													type: "property",
+													label: property,
+													icon: defaultDatabaseColumnIconName({
 														type: "property",
-														label: property,
-														icon: defaultDatabaseColumnIconName({
-															type: "property",
-															property_kind: manualKind,
-														}),
-														width: 180,
-														visible: true,
-														property_key: property,
 														property_kind: manualKind,
-													},
-												];
-											});
-											setManualKey("");
-										}}
-									>
-										Add
-									</Button>
-								</div>
+													}),
+													width: 180,
+													visible: true,
+													property_key: property,
+													property_kind: manualKind,
+												},
+											];
+										});
+										setManualKey("");
+									}}
+								>
+									Add
+								</Button>
 							</div>
 						</section>
 					</div>
