@@ -694,6 +694,36 @@ export function DatabasesPane({
 									}
 								}}
 							/>
+							<DatabaseToolbar
+								className="databaseToolbarInline"
+								databaseView={activeConfig?.view.layout ?? "table"}
+								groupColumns={groupColumns}
+								groupColumnId={activeConfig?.view.board_group_by ?? null}
+								onGroupColumnIdChange={(groupColumnId) => {
+									if (!activeConfig) return;
+									void handleSaveConfig({
+										...activeConfig,
+										view: {
+											...activeConfig.view,
+											board_group_by: groupColumnId,
+										},
+									});
+								}}
+								onDatabaseViewChange={(view) => {
+									if (!activeConfig) return;
+									void handleSaveConfig({
+										...activeConfig,
+										view: {
+											...activeConfig.view,
+											layout: view,
+										},
+									});
+								}}
+								onAddRow={() => void handleCreateRow()}
+								onReload={() => void loadRows()}
+								onOpenSource={() => setSourceOpen(true)}
+								onOpenColumns={() => setColumnsOpen(true)}
+							/>
 						</>
 					) : null}
 				</div>
@@ -843,33 +873,6 @@ export function DatabasesPane({
 							</button>
 						</div>
 					</div>
-					<DatabaseToolbar
-						databaseView={activeConfig.view.layout}
-						groupColumns={groupColumns}
-						groupColumnId={activeConfig.view.board_group_by ?? null}
-						onGroupColumnIdChange={(groupColumnId) =>
-							void handleSaveConfig({
-								...activeConfig,
-								view: {
-									...activeConfig.view,
-									board_group_by: groupColumnId,
-								},
-							})
-						}
-						onDatabaseViewChange={(view) =>
-							void handleSaveConfig({
-								...activeConfig,
-								view: {
-									...activeConfig.view,
-									layout: view,
-								},
-							})
-						}
-						onAddRow={() => void handleCreateRow()}
-						onReload={() => void loadRows()}
-						onOpenSource={() => setSourceOpen(true)}
-						onOpenColumns={() => setColumnsOpen(true)}
-					/>
 					{error ? (
 						<div className="databaseNotice databaseNoticeError">{error}</div>
 					) : null}

@@ -24,6 +24,7 @@
 	gap: 10px;
 	min-width: 0;
 	flex: 1;
+	flex-wrap: wrap;
 }
 
 .databasesTopBarRight {
@@ -238,6 +239,23 @@
 	padding: 8px 18px;
 	border-bottom: 1px solid var(--border-light);
 	background: transparent;
+}
+
+.databaseToolbarInline {
+	flex: 1 1 auto;
+	justify-content: space-between;
+	padding: 0;
+	border-bottom: none;
+	min-width: 0;
+}
+
+.databaseToolbarInline .databaseToolbarActions {
+	flex-wrap: wrap;
+	justify-content: flex-end;
+}
+
+.databaseToolbarInline .databaseToolbarPrimary {
+	flex: 0 0 auto;
 }
 
 .databaseToolbarPrimary,
