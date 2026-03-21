@@ -60,14 +60,15 @@ export function useDatabaseBoard({
 			const rawLanes = createBoardLanes(rows, groupColumn);
 			if (!groupColumn) return rawLanes;
 			const previousLaneIds = laneOrderByGroupRef.current[groupColumn.id] ?? [];
-			const orderedLanes = orderBoardLanes(rawLanes, previousLaneIds);
-			laneOrderByGroupRef.current[groupColumn.id] = orderedLanes.map(
-				(lane) => lane.id,
-			);
-			return orderedLanes;
+			return orderBoardLanes(rawLanes, previousLaneIds);
 		},
 		[rows, groupColumn],
 	);
+
+	useEffect(() => {
+		if (!groupColumn) return;
+		laneOrderByGroupRef.current[groupColumn.id] = lanes.map((lane) => lane.id);
+	}, [groupColumn, lanes]);
 
 	return {
 		groupColumns,

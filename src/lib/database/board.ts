@@ -56,6 +56,13 @@ function normalizeBoardTagValue(value: string): string | null {
 function rawLaneValues(row: DatabaseRow, column: DatabaseColumn): string[] {
 	const cell = databaseCellValueFromRow(row, column);
 	if (isMultiValueBoardColumn(column)) {
+		if (column.type === "tags" || column.property_kind === "tags") {
+			return uniqueLaneValues(
+				cell.value_list.map(
+					(value) => normalizeBoardTagValue(value) ?? value.trim(),
+				),
+			);
+		}
 		return uniqueLaneValues(cell.value_list);
 	}
 	if (cell.kind === "checkbox") {

@@ -331,7 +331,7 @@ export function DatabasesPane({
 		[activeConfig?.columns],
 	);
 
-	const loadRows = useCallback(async () => {
+	const loadRows = useCallback(async (options?: { background?: boolean }) => {
 		const requestToken = rowRequestTokenRef.current + 1;
 		rowRequestTokenRef.current = requestToken;
 		if (
@@ -348,7 +348,10 @@ export function DatabasesPane({
 			}
 			return;
 		}
-		setRowsLoading(true);
+		const shouldShowLoading = !options?.background;
+		if (shouldShowLoading) {
+			setRowsLoading(true);
+		}
 		try {
 			let offset = 0;
 			let totalCount = 0;
@@ -385,7 +388,7 @@ export function DatabasesPane({
 			}
 			setError(extractErrorMessage(cause));
 		} finally {
-			if (rowRequestTokenRef.current === requestToken) {
+			if (shouldShowLoading && rowRequestTokenRef.current === requestToken) {
 				setRowsLoading(false);
 			}
 		}
@@ -499,7 +502,7 @@ export function DatabasesPane({
 					next[existingIndex] = updatedRow;
 					return next;
 				});
-				void loadRows();
+				void loadRows({ background: true });
 			} catch (cause) {
 				setError(extractErrorMessage(cause));
 				throw cause;

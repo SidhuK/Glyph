@@ -1,5 +1,5 @@
 import { m, useReducedMotion } from "motion/react";
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDatabaseBoard } from "../../hooks/database/useDatabaseBoard";
 import { boardDropValue, boardRowHasLane } from "../../lib/database/board";
 import {
@@ -173,6 +173,15 @@ export function DatabaseBoard({
 	const draggingLaneIdRef = useRef<string | null>(null);
 	const dragActiveRef = useRef(false);
 	const suppressClickRef = useRef(false);
+	const dragPreviewRef = useRef<{
+		notePath: string;
+		sourceLaneId: string;
+		title: string;
+		x: number;
+		y: number;
+		width: number;
+	} | null>(null);
+	const dropLaneIdRef = useRef<string | null>(null);
 	const dragStartRef = useRef<{
 		notePath: string;
 		sourceLaneId: string;
@@ -196,43 +205,57 @@ export function DatabaseBoard({
 			cardCandidateColumns(columns, groupColumn?.id ?? persistedGroupColumnId),
 		[columns, groupColumn?.id, persistedGroupColumnId],
 	);
-	const handleLaneDrop = async (
-		notePath: string | null,
-		targetLaneId: string,
-		sourceLaneId?: string | null,
-	) => {
-		if (!notePath || !groupColumn) return;
-		const row = rows.find((entry) => entry.note_path === notePath);
-		if (!row) return;
-		if (
-			targetLaneId !== sourceLaneId &&
-			boardRowHasLane(row, groupColumn, targetLaneId)
-		) {
-			draggingRowPathRef.current = null;
-			draggingLaneIdRef.current = null;
-			dragActiveRef.current = false;
-			setDraggingRowPath(null);
-			setDropLaneId(null);
-			return;
-		}
-		try {
-			setMoveError("");
-			await onSaveCell(
-				row.note_path,
-				groupColumn,
-				boardDropValue(row, groupColumn, targetLaneId, sourceLaneId),
-			);
-		} catch (error) {
-			setMoveError(extractErrorMessage(error));
-		} finally {
-			draggingRowPathRef.current = null;
-			draggingLaneIdRef.current = null;
-			dragActiveRef.current = false;
-			setDraggingRowPath(null);
-			setDropLaneId(null);
-			setDragPreview(null);
-		}
-	};
+	const clearDragState = useCallback(() => {
+		draggingRowPathRef.current = null;
+		draggingLaneIdRef.current = null;
+		dragActiveRef.current = false;
+		dragPreviewRef.current = null;
+		dropLaneIdRef.current = null;
+		setDraggingRowPath(null);
+		setDropLaneId(null);
+		setDragPreview(null);
+	}, []);
+
+	const handleLaneDrop = useCallback(
+		async (
+			notePath: string | null,
+			targetLaneId: string,
+			sourceLaneId?: string | null,
+		) => {
+			if (!notePath || !groupColumn) return;
+			const row = rows.find((entry) => entry.note_path === notePath);
+			if (!row) return;
+			if (targetLaneId === sourceLaneId) {
+				clearDragState();
+				return;
+			}
+			if (boardRowHasLane(row, groupColumn, targetLaneId)) {
+				clearDragState();
+				return;
+			}
+			try {
+				setMoveError("");
+				await onSaveCell(
+					row.note_path,
+					groupColumn,
+					boardDropValue(row, groupColumn, targetLaneId, sourceLaneId),
+				);
+			} catch (error) {
+				setMoveError(extractErrorMessage(error));
+			} finally {
+				clearDragState();
+			}
+		},
+		[clearDragState, groupColumn, onSaveCell, rows],
+	);
+
+	useEffect(() => {
+		dragPreviewRef.current = dragPreview;
+	}, [dragPreview]);
+
+	useEffect(() => {
+		dropLaneIdRef.current = dropLaneId;
+	}, [dropLaneId]);
 
 	useEffect(() => {
 		const handlePointerMove = (event: PointerEvent) => {
@@ -242,40 +265,42 @@ export function DatabaseBoard({
 			const deltaY = event.clientY - dragStart.startY;
 			const hasExceededThreshold =
 				Math.abs(deltaX) > 2 || Math.abs(deltaY) > 2;
-			if (!hasExceededThreshold && !dragPreview) return;
+			if (!hasExceededThreshold && !dragPreviewRef.current) return;
 
-			if (!dragPreview) {
+			if (!dragPreviewRef.current) {
 				dragActiveRef.current = true;
 				draggingRowPathRef.current = dragStart.notePath;
 				draggingLaneIdRef.current = dragStart.sourceLaneId;
-				setDraggingRowPath(dragStart.notePath);
-				setDragPreview({
+				const nextPreview = {
 					notePath: dragStart.notePath,
 					sourceLaneId: dragStart.sourceLaneId,
 					title: dragStart.title,
 					x: event.clientX - dragStart.offsetX,
 					y: event.clientY - dragStart.offsetY,
 					width: dragStart.width,
-				});
+				};
+				dragPreviewRef.current = nextPreview;
+				setDraggingRowPath(dragStart.notePath);
+				setDragPreview(nextPreview);
 			} else {
-				setDragPreview((current) =>
-					current
-						? {
-								...current,
-								x: event.clientX - dragStart.offsetX,
-								y: event.clientY - dragStart.offsetY,
-							}
-						: current,
-				);
+				const nextPreview = {
+					...dragPreviewRef.current,
+					x: event.clientX - dragStart.offsetX,
+					y: event.clientY - dragStart.offsetY,
+				};
+				dragPreviewRef.current = nextPreview;
+				setDragPreview(nextPreview);
 			}
 
 			const laneElement = document
 				.elementFromPoint(event.clientX, event.clientY)
 				?.closest<HTMLElement>("[data-board-lane-id]");
-			setDropLaneId(laneElement?.dataset.boardLaneId ?? null);
+			const nextDropLaneId = laneElement?.dataset.boardLaneId ?? null;
+			dropLaneIdRef.current = nextDropLaneId;
+			setDropLaneId(nextDropLaneId);
 		};
 
-			const handlePointerUp = (event: PointerEvent) => {
+		const handlePointerUp = (event: PointerEvent) => {
 			const dragStart = dragStartRef.current;
 			dragStartRef.current = null;
 			if (!dragStart) return;
@@ -292,7 +317,7 @@ export function DatabaseBoard({
 				.elementFromPoint(event.clientX, event.clientY)
 				?.closest<HTMLElement>("[data-board-lane-id]");
 			const targetLaneId =
-				laneElement?.dataset.boardLaneId ?? dropLaneId ?? null;
+				laneElement?.dataset.boardLaneId ?? dropLaneIdRef.current ?? null;
 			if (targetLaneId) {
 				void handleLaneDrop(
 					dragStart.notePath,
@@ -317,7 +342,7 @@ export function DatabaseBoard({
 			window.removeEventListener("pointerup", handlePointerUp);
 			window.removeEventListener("pointercancel", handlePointerUp);
 		};
-	}, [dragPreview, dropLaneId, handleLaneDrop]);
+	}, [clearDragState, handleLaneDrop]);
 
 	return (
 		<div className="databaseBoardShell">

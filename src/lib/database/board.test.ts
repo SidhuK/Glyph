@@ -157,15 +157,12 @@ describe("database board helpers", () => {
 
 		const tagLanes = createBoardLanes(rows, tagsColumn);
 		expect(tagLanes.map((lane) => lane.label)).toEqual([
-			"#swift",
-			"#ios",
+			"swift",
+			"ios",
 			"No value",
 		]);
-		expect(boardLaneIdsForRow(secondRow, tagsColumn)).toEqual([
-			"#swift",
-			"#ios",
-		]);
-		expect(boardLaneIdForRow(secondRow, tagsColumn)).toBe("#swift");
+		expect(boardLaneIdsForRow(secondRow, tagsColumn)).toEqual(["swift", "ios"]);
+		expect(boardLaneIdForRow(secondRow, tagsColumn)).toBe("swift");
 	});
 
 	it("creates stable checkbox lanes including blank values", () => {
@@ -253,5 +250,30 @@ describe("database board helpers", () => {
 			kind: "tags",
 			value_list: ["daily-notes"],
 		});
+	});
+
+	it("normalizes mixed raw and normalized tag lanes on read", () => {
+		const mixedTagRows: DatabaseRow[] = [
+			{
+				...secondRow,
+				note_path: "Projects/Four.md",
+				tags: ["#swift", "ios"],
+			},
+			{
+				...thirdRow,
+				note_path: "Projects/Five.md",
+				tags: ["swift"],
+			},
+		];
+
+		const lanes = createBoardLanes(mixedTagRows, tagsColumn);
+		expect(lanes.map((lane) => lane.id)).toEqual([
+			"swift",
+			"ios",
+			DATABASE_BOARD_EMPTY_LANE_ID,
+		]);
+		expect(lanes[0]?.cardCount).toBe(2);
+		expect(boardRowHasLane(mixedTagRows[0]!, tagsColumn, "swift")).toBe(true);
+		expect(boardRowHasLane(mixedTagRows[0]!, tagsColumn, "#swift")).toBe(false);
 	});
 });
