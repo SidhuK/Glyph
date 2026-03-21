@@ -222,6 +222,7 @@ export function boardDropValue(
 	row: DatabaseRow,
 	column: DatabaseColumn,
 	laneId: string,
+	// Kept for move semantics if multi-value board drops later remove source membership.
 	_sourceLaneId?: string | null,
 ): DatabaseCellValue {
 	if (isMultiValueBoardColumn(column)) {
@@ -233,14 +234,14 @@ export function boardDropValue(
 			};
 		}
 		if (column.type === "tags" || column.property_kind === "tags") {
-			const normalizedLaneId = normalizeBoardTagValue(laneId);
+			const normalizedLaneId = normalizeBoardTagValue(laneId) ?? laneId;
 			return {
 				kind: cell.kind,
 				value_list: uniqueLaneValues([
 					...cell.value_list.map(
 						(value) => normalizeBoardTagValue(value) ?? value.trim(),
 					),
-					...(normalizedLaneId ? [normalizedLaneId] : []),
+					normalizedLaneId,
 				]),
 			};
 		}

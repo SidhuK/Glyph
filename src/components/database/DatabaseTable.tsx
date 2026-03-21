@@ -5,7 +5,10 @@ import {
 	useReactTable,
 } from "@tanstack/react-table";
 import { useMemo } from "react";
-import type { EditorTextColor } from "../editor/textColors";
+import {
+	type EditorTextColor,
+	isEditorTextColor,
+} from "../editor/textColors";
 import type {
 	DatabaseColumn,
 	DatabaseRow,
@@ -71,6 +74,19 @@ export function DatabaseTable({
 	laneColors = {},
 	onSaveCell,
 }: DatabaseTableProps) {
+	const safeLaneColors = useMemo<Record<string, EditorTextColor>>(
+		() => {
+			const next: Record<string, EditorTextColor> = {};
+			for (const [laneId, color] of Object.entries(laneColors)) {
+				if (isEditorTextColor(color)) {
+					next[laneId] = color;
+				}
+			}
+			return next;
+		},
+		[laneColors],
+	);
+
 	const tableColumns = useMemo<ColumnDef<DatabaseRow>[]>(
 		() =>
 			columns.map((column) => ({
@@ -96,7 +112,7 @@ export function DatabaseTable({
 					<DatabaseCell
 						row={row.original}
 						column={column}
-						laneColors={laneColors as Record<string, EditorTextColor>}
+						laneColors={safeLaneColors}
 						onOpenNote={onOpenRow}
 						onSelectRow={onSelectRow}
 						onSave={onSaveCell}
@@ -104,7 +120,15 @@ export function DatabaseTable({
 				),
 				size: column.width ?? 180,
 			})),
-		[activeSort, columns, onOpenRow, onSaveCell, onSelectRow, onToggleSort],
+		[
+			activeSort,
+			columns,
+			onOpenRow,
+			onSaveCell,
+			onSelectRow,
+			onToggleSort,
+			safeLaneColors,
+		],
 	);
 
 	const table = useReactTable({

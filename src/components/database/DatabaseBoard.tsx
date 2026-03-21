@@ -16,6 +16,7 @@ import { parentDir } from "../../utils/path";
 import {
 	EDITOR_TEXT_COLORS,
 	type EditorTextColor,
+	isEditorTextColor,
 } from "../editor/textColors";
 import { formatTagLabel } from "../editor/noteProperties/utils";
 import { springPresets } from "../ui/animations";
@@ -56,6 +57,14 @@ interface DatabaseBoardProps {
 			value_list: string[];
 		},
 	) => Promise<void>;
+}
+
+function getLaneColor(
+	laneColors: Record<string, string>,
+	laneId: string,
+): EditorTextColor | null {
+	const color = laneColors[laneId];
+	return color && isEditorTextColor(color) ? color : null;
 }
 
 function fileTitleFromPath(notePath: string): string {
@@ -206,6 +215,7 @@ export function DatabaseBoard({
 		[columns, groupColumn?.id, persistedGroupColumnId],
 	);
 	const clearDragState = useCallback(() => {
+		dragStartRef.current = null;
 		draggingRowPathRef.current = null;
 		draggingLaneIdRef.current = null;
 		dragActiveRef.current = false;
@@ -326,12 +336,7 @@ export function DatabaseBoard({
 				);
 				return;
 			}
-			draggingRowPathRef.current = null;
-			draggingLaneIdRef.current = null;
-			dragActiveRef.current = false;
-			setDraggingRowPath(null);
-			setDropLaneId(null);
-			setDragPreview(null);
+			clearDragState();
 		};
 
 		window.addEventListener("pointermove", handlePointerMove);
@@ -404,7 +409,7 @@ export function DatabaseBoard({
 								data-board-lane-id={lane.id}
 								style={databaseValueToneStyleForColor(
 									lane.id,
-									(laneColors[lane.id] as EditorTextColor | undefined) ?? null,
+									getLaneColor(laneColors, lane.id),
 								)}
 								data-active={dropLaneId === lane.id ? "true" : "false"}
 								initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
@@ -538,9 +543,12 @@ export function DatabaseBoard({
 														}}
 														onDoubleClick={() => onOpenRow(row.note_path)}
 														onKeyDown={(event) => {
-															if (event.key === "Enter" || event.key === " ") {
+															if (event.key === "Enter") {
 																event.preventDefault();
 																onOpenRow(row.note_path);
+															} else if (event.key === " ") {
+																event.preventDefault();
+																onSelectRow(row.note_path);
 															}
 														}}
 														title="Double-click to open note"

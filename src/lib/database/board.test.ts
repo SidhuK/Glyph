@@ -250,6 +250,10 @@ describe("database board helpers", () => {
 			kind: "tags",
 			value_list: ["daily-notes"],
 		});
+		expect(boardDropValue(thirdRow, tagsColumn, "日本語")).toEqual({
+			kind: "tags",
+			value_list: ["日本語"],
+		});
 	});
 
 	it("normalizes mixed raw and normalized tag lanes on read", () => {
