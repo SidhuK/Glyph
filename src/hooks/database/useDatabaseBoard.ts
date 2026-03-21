@@ -55,15 +55,12 @@ export function useDatabaseBoard({
 		[groupColumnId, groupColumns],
 	);
 
-	const lanes = useMemo(
-		() => {
-			const rawLanes = createBoardLanes(rows, groupColumn);
-			if (!groupColumn) return rawLanes;
-			const previousLaneIds = laneOrderByGroupRef.current[groupColumn.id] ?? [];
-			return orderBoardLanes(rawLanes, previousLaneIds);
-		},
-		[rows, groupColumn],
-	);
+	const lanes = useMemo(() => {
+		const rawLanes = createBoardLanes(rows, groupColumn);
+		if (!groupColumn) return rawLanes;
+		const previousLaneIds = laneOrderByGroupRef.current[groupColumn.id] ?? [];
+		return orderBoardLanes(rawLanes, previousLaneIds);
+	}, [rows, groupColumn]);
 
 	useEffect(() => {
 		if (!groupColumn) return;

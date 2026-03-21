@@ -5,16 +5,13 @@ import {
 	useReactTable,
 } from "@tanstack/react-table";
 import { useMemo } from "react";
-import {
-	type EditorTextColor,
-	isEditorTextColor,
-} from "../editor/textColors";
 import type {
 	DatabaseColumn,
 	DatabaseRow,
 	DatabaseSort,
 } from "../../lib/database/types";
 import { ChevronDown, ChevronUp } from "../Icons";
+import { type EditorTextColor, isEditorTextColor } from "../editor/textColors";
 import {
 	Table,
 	TableBody,
@@ -74,18 +71,15 @@ export function DatabaseTable({
 	laneColors = {},
 	onSaveCell,
 }: DatabaseTableProps) {
-	const safeLaneColors = useMemo<Record<string, EditorTextColor>>(
-		() => {
-			const next: Record<string, EditorTextColor> = {};
-			for (const [laneId, color] of Object.entries(laneColors)) {
-				if (isEditorTextColor(color)) {
-					next[laneId] = color;
-				}
+	const safeLaneColors = useMemo<Record<string, EditorTextColor>>(() => {
+		const next: Record<string, EditorTextColor> = {};
+		for (const [laneId, color] of Object.entries(laneColors)) {
+			if (isEditorTextColor(color)) {
+				next[laneId] = color;
 			}
-			return next;
-		},
-		[laneColors],
-	);
+		}
+		return next;
+	}, [laneColors]);
 
 	const tableColumns = useMemo<ColumnDef<DatabaseRow>[]>(
 		() =>

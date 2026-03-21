@@ -34,7 +34,8 @@ function normalizeToneSeed(seed: string): string {
 }
 
 export function databaseToneStyle(seed: string): CSSProperties {
-	const tone = DATABASE_TONES[hashSeed(normalizeToneSeed(seed)) % DATABASE_TONES.length];
+	const tone =
+		DATABASE_TONES[hashSeed(normalizeToneSeed(seed)) % DATABASE_TONES.length];
 	return {
 		"--database-tone": tone,
 	} as CSSProperties;

@@ -73,7 +73,9 @@ function writeStoredSelectedDatabaseId(databaseId: string | null) {
 function readStoredSelectedViews(): Record<string, string> {
 	if (typeof window === "undefined") return {};
 	try {
-		const raw = window.localStorage.getItem(DATABASES_SELECTED_VIEWS_STORAGE_KEY);
+		const raw = window.localStorage.getItem(
+			DATABASES_SELECTED_VIEWS_STORAGE_KEY,
+		);
 		if (!raw) return {};
 		const parsed = JSON.parse(raw);
 		if (!parsed || typeof parsed !== "object") return {};
@@ -218,10 +220,11 @@ export function DatabasesPane({
 		setSelectedDatabaseId((current) =>
 			current && next.some((entry) => entry.id === current)
 				? current
-				: initialDatabaseId && next.some((entry) => entry.id === initialDatabaseId)
+				: initialDatabaseId &&
+						next.some((entry) => entry.id === initialDatabaseId)
 					? initialDatabaseId
 					: storedDatabaseId &&
-							  next.some((entry) => entry.id === storedDatabaseId)
+							next.some((entry) => entry.id === storedDatabaseId)
 						? storedDatabaseId
 						: (next[0]?.id ?? null),
 		);
@@ -264,7 +267,10 @@ export function DatabasesPane({
 				}
 				const storedViewId = readStoredSelectedViewId(next.database.id);
 				setSelectedViewId((current) => {
-					if (current && next.database.views.some((view) => view.id === current)) {
+					if (
+						current &&
+						next.database.views.some((view) => view.id === current)
+					) {
 						return current;
 					}
 					if (
@@ -331,68 +337,71 @@ export function DatabasesPane({
 		[activeConfig?.columns],
 	);
 
-	const loadRows = useCallback(async (options?: { background?: boolean }) => {
-		const requestToken = rowRequestTokenRef.current + 1;
-		rowRequestTokenRef.current = requestToken;
-		if (
-			!selectedDatabaseId ||
-			!selectedViewId ||
-			!document ||
-			document.database.id !== selectedDatabaseId ||
-			!document.database.views.some((view) => view.id === selectedViewId)
-		) {
-			if (rowRequestTokenRef.current === requestToken) {
-				setRows([]);
-				setTotalCount(0);
-				setIsTruncated(false);
+	const loadRows = useCallback(
+		async (options?: { background?: boolean }) => {
+			const requestToken = rowRequestTokenRef.current + 1;
+			rowRequestTokenRef.current = requestToken;
+			if (
+				!selectedDatabaseId ||
+				!selectedViewId ||
+				!document ||
+				document.database.id !== selectedDatabaseId ||
+				!document.database.views.some((view) => view.id === selectedViewId)
+			) {
+				if (rowRequestTokenRef.current === requestToken) {
+					setRows([]);
+					setTotalCount(0);
+					setIsTruncated(false);
+				}
+				return;
 			}
-			return;
-		}
-		const shouldShowLoading = !options?.background;
-		if (shouldShowLoading) {
-			setRowsLoading(true);
-		}
-		try {
-			let offset = 0;
-			let totalCount = 0;
-			let isTruncated = false;
-			const allRows: DatabaseRow[] = [];
+			const shouldShowLoading = !options?.background;
+			if (shouldShowLoading) {
+				setRowsLoading(true);
+			}
+			try {
+				let offset = 0;
+				let totalCount = 0;
+				let isTruncated = false;
+				const allRows: DatabaseRow[] = [];
 
-			while (true) {
-				const next = await invoke("databases_query_rows", {
-					database_id: selectedDatabaseId,
-					view_id: selectedViewId,
-					offset,
-					limit: 200,
-				});
+				while (true) {
+					const next = await invoke("databases_query_rows", {
+						database_id: selectedDatabaseId,
+						view_id: selectedViewId,
+						offset,
+						limit: 200,
+					});
+					if (rowRequestTokenRef.current !== requestToken) {
+						return;
+					}
+					allRows.push(...next.rows);
+					totalCount = next.total_count;
+					isTruncated = next.truncated;
+					if (next.next_offset == null) {
+						break;
+					}
+					offset = next.next_offset;
+				}
 				if (rowRequestTokenRef.current !== requestToken) {
 					return;
 				}
-				allRows.push(...next.rows);
-				totalCount = next.total_count;
-				isTruncated = next.truncated;
-				if (next.next_offset == null) {
-					break;
+				setRows(allRows);
+				setTotalCount(totalCount);
+				setIsTruncated(isTruncated);
+			} catch (cause) {
+				if (rowRequestTokenRef.current !== requestToken) {
+					return;
 				}
-				offset = next.next_offset;
+				setError(extractErrorMessage(cause));
+			} finally {
+				if (shouldShowLoading && rowRequestTokenRef.current === requestToken) {
+					setRowsLoading(false);
+				}
 			}
-			if (rowRequestTokenRef.current !== requestToken) {
-				return;
-			}
-			setRows(allRows);
-			setTotalCount(totalCount);
-			setIsTruncated(isTruncated);
-		} catch (cause) {
-			if (rowRequestTokenRef.current !== requestToken) {
-				return;
-			}
-			setError(extractErrorMessage(cause));
-		} finally {
-			if (shouldShowLoading && rowRequestTokenRef.current === requestToken) {
-				setRowsLoading(false);
-			}
-		}
-	}, [document, selectedDatabaseId, selectedViewId]);
+		},
+		[document, selectedDatabaseId, selectedViewId],
+	);
 
 	useEffect(() => {
 		void loadRows();

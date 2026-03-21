@@ -1,14 +1,13 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useFileTreeContext } from "../../contexts";
-import { databaseValueToneStyleForColor } from "../../lib/database/palette";
 import {
 	databaseCellValueFromRow,
 	formatDatabaseDateTime,
 	isColumnEditable,
 } from "../../lib/database/config";
+import { databaseValueToneStyleForColor } from "../../lib/database/palette";
 import type { DatabaseColumn, DatabaseRow } from "../../lib/database/types";
 import { extractErrorMessage } from "../../lib/errorUtils";
-import type { EditorTextColor } from "../editor/textColors";
 import { X } from "../Icons";
 import { Toggle } from "../base/toggle/toggle";
 import {
@@ -16,6 +15,7 @@ import {
 	formatTagLabel,
 	normalizeTagToken,
 } from "../editor/noteProperties/utils";
+import type { EditorTextColor } from "../editor/textColors";
 import { Input } from "../ui/shadcn/input";
 
 interface DatabaseCellProps {

@@ -276,8 +276,13 @@ describe("database board helpers", () => {
 			"ios",
 			DATABASE_BOARD_EMPTY_LANE_ID,
 		]);
+		const mixedTagRow = mixedTagRows[0];
+		expect(mixedTagRow).toBeDefined();
 		expect(lanes[0]?.cardCount).toBe(2);
-		expect(boardRowHasLane(mixedTagRows[0]!, tagsColumn, "swift")).toBe(true);
-		expect(boardRowHasLane(mixedTagRows[0]!, tagsColumn, "#swift")).toBe(false);
+		if (!mixedTagRow) {
+			throw new Error("Expected mixed tag row");
+		}
+		expect(boardRowHasLane(mixedTagRow, tagsColumn, "swift")).toBe(true);
+		expect(boardRowHasLane(mixedTagRow, tagsColumn, "#swift")).toBe(false);
 	});
 });
