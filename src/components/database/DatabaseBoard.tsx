@@ -395,86 +395,87 @@ export function DatabaseBoard({
 					</div>
 				</m.div>
 			) : (
-				<div className="databaseBoardScroller">
-					{lanes.map((lane, laneIndex) => (
-						<m.div
-							key={lane.id}
-							className="databaseBoardLane"
-							data-board-lane-id={lane.id}
-							style={databaseValueToneStyleForColor(
-								lane.id,
-								(laneColors[lane.id] as EditorTextColor | undefined) ?? null,
-							)}
-							data-active={dropLaneId === lane.id ? "true" : "false"}
-							initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={
-								shouldReduceMotion
-									? { duration: 0 }
-									: {
-											...springPresets.snappy,
-											delay: Math.min(laneIndex * 0.04, 0.18),
-										}
-							}
-						>
-							<div className="databaseBoardLaneHeader">
-								{onLaneColorChange ? (
-									<DropdownMenu>
-										<DropdownMenuTrigger asChild>
-											<button
-												type="button"
-												className="databaseBoardLaneTitleGroup databaseBoardLaneTitleButton"
-												aria-label={`Set color for ${lane.label}`}
-												title={`Set color for ${lane.label}`}
-											>
-												<span className="databaseBoardLaneDot" />
-												<div className="databaseBoardLaneTitle">{lane.label}</div>
-											</button>
-										</DropdownMenuTrigger>
-										<DropdownMenuContent
-											align="start"
-											className="databaseBoardColorMenu"
-										>
-											<div className="databaseBoardColorRibbon">
-												{EDITOR_TEXT_COLORS.map((color) => (
-													<button
-														key={color.id}
-														type="button"
-														className="databaseBoardColorRibbonSwatch"
-														style={databaseValueToneStyleForColor(
-															color.id,
-															color.id,
-														)}
-														onClick={() => onLaneColorChange(lane.id, color.id)}
-														title={color.label}
-														aria-label={`Set ${lane.label} color to ${color.label}`}
-													/>
-												))}
+				<div className="databaseBoardHorizontal">
+					<div className="databaseBoardScroller">
+						{lanes.map((lane, laneIndex) => (
+							<m.div
+								key={lane.id}
+								className="databaseBoardLane"
+								data-board-lane-id={lane.id}
+								style={databaseValueToneStyleForColor(
+									lane.id,
+									(laneColors[lane.id] as EditorTextColor | undefined) ?? null,
+								)}
+								data-active={dropLaneId === lane.id ? "true" : "false"}
+								initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
+								animate={{ opacity: 1, y: 0 }}
+								transition={
+									shouldReduceMotion
+										? { duration: 0 }
+										: {
+												...springPresets.snappy,
+												delay: Math.min(laneIndex * 0.04, 0.18),
+											}
+								}
+							>
+								<div className="databaseBoardLaneHeader">
+									{onLaneColorChange ? (
+										<DropdownMenu>
+											<DropdownMenuTrigger asChild>
 												<button
 													type="button"
-													className="databaseBoardColorRibbonClear"
-													onClick={() => onLaneColorChange(lane.id, null)}
-													title="Clear color"
-													aria-label={`Clear color for ${lane.label}`}
+													className="databaseBoardLaneTitleGroup databaseBoardLaneTitleButton"
+													aria-label={`Set color for ${lane.label}`}
+													title={`Set color for ${lane.label}`}
 												>
-													<span />
+													<span className="databaseBoardLaneDot" />
+													<div className="databaseBoardLaneTitle">{lane.label}</div>
 												</button>
-											</div>
-										</DropdownMenuContent>
-									</DropdownMenu>
-								) : (
-									<div className="databaseBoardLaneTitleGroup">
-										<span className="databaseBoardLaneDot" />
-										<div className="databaseBoardLaneTitle">{lane.label}</div>
+											</DropdownMenuTrigger>
+											<DropdownMenuContent
+												align="start"
+												className="databaseBoardColorMenu"
+											>
+												<div className="databaseBoardColorRibbon">
+													{EDITOR_TEXT_COLORS.map((color) => (
+														<button
+															key={color.id}
+															type="button"
+															className="databaseBoardColorRibbonSwatch"
+															style={databaseValueToneStyleForColor(
+																color.id,
+																color.id,
+															)}
+															onClick={() => onLaneColorChange(lane.id, color.id)}
+															title={color.label}
+															aria-label={`Set ${lane.label} color to ${color.label}`}
+														/>
+													))}
+													<button
+														type="button"
+														className="databaseBoardColorRibbonClear"
+														onClick={() => onLaneColorChange(lane.id, null)}
+														title="Clear color"
+														aria-label={`Clear color for ${lane.label}`}
+													>
+														<span />
+													</button>
+												</div>
+											</DropdownMenuContent>
+										</DropdownMenu>
+									) : (
+										<div className="databaseBoardLaneTitleGroup">
+											<span className="databaseBoardLaneDot" />
+											<div className="databaseBoardLaneTitle">{lane.label}</div>
+										</div>
+									)}
+									<div className="databaseBoardLaneHeaderActions">
+										<div className="databaseBoardLaneCount">{lane.cardCount}</div>
 									</div>
-								)}
-								<div className="databaseBoardLaneHeaderActions">
-									<div className="databaseBoardLaneCount">{lane.cardCount}</div>
 								</div>
-							</div>
-							<div className="databaseBoardLaneBody">
-								{lane.rows.length > 0 ? (
-									lane.rows.map((row) => {
+								<div className="databaseBoardLaneBody">
+									{lane.rows.length > 0 ? (
+										lane.rows.map((row) => {
 										const title = boardCardTitle(row, lane.label);
 										const preview = cardPreviewText(row, title);
 										const maxVisibleTags = 2;
@@ -498,8 +499,8 @@ export function DatabaseBoard({
 												!boardRowHasLane(row, groupColumn, l.id),
 										);
 
-										return (
-											<ContextMenu key={row.note_path}>
+											return (
+												<ContextMenu key={row.note_path}>
 												<ContextMenuTrigger asChild>
 													<div
 														role="button"
@@ -658,15 +659,16 @@ export function DatabaseBoard({
 														</>
 													) : null}
 												</ContextMenuContent>
-											</ContextMenu>
-										);
-									})
-								) : (
-									<div className="databaseBoardLaneEmptyCard">No notes</div>
-								)}
-							</div>
-						</m.div>
-					))}
+												</ContextMenu>
+											);
+										})
+									) : (
+										<div className="databaseBoardLaneEmptyCard">No notes</div>
+									)}
+								</div>
+							</m.div>
+						))}
+					</div>
 				</div>
 			)}
 			{dragPreview ? (

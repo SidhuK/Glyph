@@ -408,6 +408,16 @@
 	flex-direction: column;
 	gap: 12px;
 	padding: 10px 18px 18px;
+	overflow-y: auto;
+	overflow-x: hidden;
+}
+
+.databaseBoardHorizontal {
+	flex: 0 0 auto;
+	min-width: 0;
+	overflow-x: auto;
+	overflow-y: visible;
+	padding: 10px 6px 12px;
 }
 
 .databaseBoardError,
@@ -435,15 +445,13 @@
 
 .databaseBoardScroller {
 	display: grid;
-	flex: 1;
 	grid-auto-flow: column;
-	grid-auto-columns: minmax(360px, 440px);
+	grid-auto-columns: minmax(320px, 360px);
+	width: max-content;
 	gap: 18px;
-	min-height: 0;
-	height: 100%;
-	overflow: auto;
-	padding: 10px 6px 12px;
-	align-items: stretch;
+	min-height: min-content;
+	height: auto;
+	align-items: start;
 }
 
 .databaseBoardLane {
@@ -453,7 +461,7 @@
 	flex: 1;
 	flex-direction: column;
 	min-height: 0;
-	height: 100%;
+	height: auto;
 	border-radius: 18px;
 	border: none;
 	background:
@@ -549,12 +557,12 @@
 
 .databaseBoardLaneBody {
 	display: flex;
-	flex: 1;
+	flex: 0 0 auto;
 	flex-direction: column;
 	gap: 12px;
 	padding: 8px 12px 12px;
-	min-height: 0;
-	overflow: auto;
+	min-height: auto;
+	overflow: visible;
 }
 
 .databaseBoardCard {
