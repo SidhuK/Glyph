@@ -32,6 +32,7 @@ export function createDefaultDatabaseConfig(dirPath: string): DatabaseConfig {
 		view: {
 			layout: "table",
 			board_group_by: null,
+			board_lane_colors: {},
 		},
 		columns: [
 			{
@@ -165,6 +166,16 @@ export function createStarterDatabaseMarkdown(
 		`      layout: ${config.view.layout}`,
 		...(config.view.board_group_by
 			? [`      board_group_by: ${yamlString(config.view.board_group_by)}`]
+			: []),
+		...(config.view.board_lane_colors &&
+		Object.keys(config.view.board_lane_colors).length > 0
+			? [
+					"      board_lane_colors:",
+					...Object.entries(config.view.board_lane_colors).map(
+						([laneId, color]) =>
+							`        ${yamlString(laneId)}: ${yamlString(color)}`,
+					),
+				]
 			: []),
 		"    columns:",
 		columnsYaml,

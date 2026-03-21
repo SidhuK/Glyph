@@ -95,6 +95,8 @@ pub struct DatabaseViewDefinition {
     pub filters: Vec<DatabaseFilter>,
     #[serde(default)]
     pub grouping: Option<DatabaseViewGrouping>,
+    #[serde(default)]
+    pub board_lane_colors: BTreeMap<String, String>,
     pub created_at: String,
     pub updated_at: String,
 }

@@ -1,8 +1,9 @@
-import { startTransition, useEffect, useMemo, useState } from "react";
+import { startTransition, useEffect, useMemo, useRef, useState } from "react";
 import {
 	createBoardLanes,
 	defaultBoardGroupColumnId,
 	getBoardGroupColumns,
+	orderBoardLanes,
 } from "../../lib/database/board";
 import type { DatabaseColumn, DatabaseRow } from "../../lib/database/types";
 
@@ -20,6 +21,7 @@ export function useDatabaseBoard({
 	onGroupColumnIdChange,
 }: UseDatabaseBoardParams) {
 	const groupColumns = useMemo(() => getBoardGroupColumns(columns), [columns]);
+	const laneOrderByGroupRef = useRef<Record<string, string[]>>({});
 	const [groupColumnId, setGroupColumnId] = useState<string | null>(
 		() => initialGroupColumnId ?? defaultBoardGroupColumnId(columns),
 	);
@@ -54,9 +56,19 @@ export function useDatabaseBoard({
 	);
 
 	const lanes = useMemo(
-		() => createBoardLanes(rows, groupColumn),
+		() => {
+			const rawLanes = createBoardLanes(rows, groupColumn);
+			if (!groupColumn) return rawLanes;
+			const previousLaneIds = laneOrderByGroupRef.current[groupColumn.id] ?? [];
+			return orderBoardLanes(rawLanes, previousLaneIds);
+		},
 		[rows, groupColumn],
 	);
+
+	useEffect(() => {
+		if (!groupColumn) return;
+		laneOrderByGroupRef.current[groupColumn.id] = lanes.map((lane) => lane.id);
+	}, [groupColumn, lanes]);
 
 	return {
 		groupColumns,

@@ -14,6 +14,7 @@ interface DatabaseToolbarProps {
 	onReload: () => void;
 	onOpenSource: () => void;
 	onOpenColumns: () => void;
+	className?: string;
 }
 
 export function DatabaseToolbar({
@@ -26,9 +27,10 @@ export function DatabaseToolbar({
 	onReload,
 	onOpenSource,
 	onOpenColumns,
+	className,
 }: DatabaseToolbarProps) {
 	return (
-		<div className="databaseToolbar">
+		<div className={["databaseToolbar", className].filter(Boolean).join(" ")}>
 			<div className="databaseToolbarPrimary">
 				<div
 					className="databaseModeSwitch"

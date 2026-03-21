@@ -128,6 +128,7 @@ function currentConfig(
 		view: {
 			layout: view.layout,
 			board_group_by: view.grouping?.column_id ?? null,
+			board_lane_colors: view.board_lane_colors ?? {},
 		},
 		columns: view.columns,
 		sorts: view.sorts,
@@ -155,6 +156,7 @@ function replaceCurrentView(
 									ascending: true,
 								}
 							: null,
+						board_lane_colors: config.view.board_lane_colors ?? {},
 						columns: config.columns,
 						sorts: config.sorts,
 						filters: config.filters,
@@ -329,7 +331,7 @@ export function DatabasesPane({
 		[activeConfig?.columns],
 	);
 
-	const loadRows = useCallback(async () => {
+	const loadRows = useCallback(async (options?: { background?: boolean }) => {
 		const requestToken = rowRequestTokenRef.current + 1;
 		rowRequestTokenRef.current = requestToken;
 		if (
@@ -346,7 +348,10 @@ export function DatabasesPane({
 			}
 			return;
 		}
-		setRowsLoading(true);
+		const shouldShowLoading = !options?.background;
+		if (shouldShowLoading) {
+			setRowsLoading(true);
+		}
 		try {
 			let offset = 0;
 			let totalCount = 0;
@@ -383,7 +388,7 @@ export function DatabasesPane({
 			}
 			setError(extractErrorMessage(cause));
 		} finally {
-			if (rowRequestTokenRef.current === requestToken) {
+			if (shouldShowLoading && rowRequestTokenRef.current === requestToken) {
 				setRowsLoading(false);
 			}
 		}
@@ -480,15 +485,27 @@ export function DatabasesPane({
 			},
 		) => {
 			try {
-				await invoke("databases_update_cell", {
+				const updatedRow = await invoke("databases_update_cell", {
 					note_path: notePath,
 					column,
 					value,
 				});
 				setError("");
-				await loadRows();
+				setRows((current) => {
+					const existingIndex = current.findIndex(
+						(row) => row.note_path === notePath,
+					);
+					if (existingIndex === -1) {
+						return [...current, updatedRow];
+					}
+					const next = [...current];
+					next[existingIndex] = updatedRow;
+					return next;
+				});
+				void loadRows({ background: true });
 			} catch (cause) {
 				setError(extractErrorMessage(cause));
+				throw cause;
 			}
 		},
 		[loadRows],
@@ -677,6 +694,36 @@ export function DatabasesPane({
 									}
 								}}
 							/>
+							<DatabaseToolbar
+								className="databaseToolbarInline"
+								databaseView={activeConfig?.view.layout ?? "table"}
+								groupColumns={groupColumns}
+								groupColumnId={activeConfig?.view.board_group_by ?? null}
+								onGroupColumnIdChange={(groupColumnId) => {
+									if (!activeConfig) return;
+									void handleSaveConfig({
+										...activeConfig,
+										view: {
+											...activeConfig.view,
+											board_group_by: groupColumnId,
+										},
+									});
+								}}
+								onDatabaseViewChange={(view) => {
+									if (!activeConfig) return;
+									void handleSaveConfig({
+										...activeConfig,
+										view: {
+											...activeConfig.view,
+											layout: view,
+										},
+									});
+								}}
+								onAddRow={() => void handleCreateRow()}
+								onReload={() => void loadRows()}
+								onOpenSource={() => setSourceOpen(true)}
+								onOpenColumns={() => setColumnsOpen(true)}
+							/>
 						</>
 					) : null}
 				</div>
@@ -826,33 +873,6 @@ export function DatabasesPane({
 							</button>
 						</div>
 					</div>
-					<DatabaseToolbar
-						databaseView={activeConfig.view.layout}
-						groupColumns={groupColumns}
-						groupColumnId={activeConfig.view.board_group_by ?? null}
-						onGroupColumnIdChange={(groupColumnId) =>
-							void handleSaveConfig({
-								...activeConfig,
-								view: {
-									...activeConfig.view,
-									board_group_by: groupColumnId,
-								},
-							})
-						}
-						onDatabaseViewChange={(view) =>
-							void handleSaveConfig({
-								...activeConfig,
-								view: {
-									...activeConfig.view,
-									layout: view,
-								},
-							})
-						}
-						onAddRow={() => void handleCreateRow()}
-						onReload={() => void loadRows()}
-						onOpenSource={() => setSourceOpen(true)}
-						onOpenColumns={() => setColumnsOpen(true)}
-					/>
 					{error ? (
 						<div className="databaseNotice databaseNoticeError">{error}</div>
 					) : null}
@@ -863,6 +883,7 @@ export function DatabasesPane({
 							rows={rows}
 							columns={activeConfig.columns}
 							groupColumnId={activeConfig.view.board_group_by ?? null}
+							laneColors={activeConfig.view.board_lane_colors ?? {}}
 							selectedRowPath={selectedRowPath}
 							onSelectRow={setSelectedRowPath}
 							onOpenRow={(notePath) => void onOpenFile(notePath)}
@@ -877,12 +898,31 @@ export function DatabasesPane({
 									},
 								})
 							}
+							onLaneColorChange={(laneId, color) =>
+								void handleSaveConfig({
+									...activeConfig,
+									view: {
+										...activeConfig.view,
+										board_lane_colors: color
+											? {
+													...(activeConfig.view.board_lane_colors ?? {}),
+													[laneId]: color,
+												}
+											: Object.fromEntries(
+													Object.entries(
+														activeConfig.view.board_lane_colors ?? {},
+													).filter(([entryLaneId]) => entryLaneId !== laneId),
+												),
+									},
+								})
+							}
 							onSaveCell={handleUpdateCell}
 						/>
 					) : (
 						<DatabaseTable
 							rows={rows}
 							columns={visibleColumns}
+							laneColors={activeConfig.view.board_lane_colors ?? {}}
 							selectedRowPath={selectedRowPath}
 							activeSort={
 								(activeConfig.sorts[0] as DatabaseSort | null) ?? null

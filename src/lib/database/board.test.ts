@@ -9,6 +9,7 @@ import {
 	createBoardLanes,
 	defaultBoardGroupColumnId,
 	getBoardGroupColumns,
+	orderBoardLanes,
 } from "./board";
 import type { DatabaseColumn, DatabaseRow } from "./types";
 
@@ -156,15 +157,12 @@ describe("database board helpers", () => {
 
 		const tagLanes = createBoardLanes(rows, tagsColumn);
 		expect(tagLanes.map((lane) => lane.label)).toEqual([
-			"#swift",
-			"#ios",
+			"swift",
+			"ios",
 			"No value",
 		]);
-		expect(boardLaneIdsForRow(secondRow, tagsColumn)).toEqual([
-			"#swift",
-			"#ios",
-		]);
-		expect(boardLaneIdForRow(secondRow, tagsColumn)).toBe("#swift");
+		expect(boardLaneIdsForRow(secondRow, tagsColumn)).toEqual(["swift", "ios"]);
+		expect(boardLaneIdForRow(secondRow, tagsColumn)).toBe("swift");
 	});
 
 	it("creates stable checkbox lanes including blank values", () => {
@@ -175,6 +173,24 @@ describe("database board helpers", () => {
 			"No value",
 		]);
 		expect(lanes[1]?.rows[0]?.title).toBe("Two");
+	});
+
+	it("preserves existing lane order when rows refresh", () => {
+		const unordered = [
+			{ id: "done", label: "Done", cardCount: 1, rows: [firstRow] },
+			{ id: "backlog", label: "Backlog", cardCount: 2, rows: [secondRow] },
+			{
+				id: DATABASE_BOARD_EMPTY_LANE_ID,
+				label: "No value",
+				cardCount: 0,
+				rows: [],
+			},
+			{ id: "review", label: "Review", cardCount: 1, rows: [thirdRow] },
+		];
+
+		expect(
+			orderBoardLanes(unordered, ["backlog", "done"]).map((lane) => lane.id),
+		).toEqual(["backlog", "done", "review", DATABASE_BOARD_EMPTY_LANE_ID]);
 	});
 
 	it("creates update payloads for the target lane", () => {
@@ -190,6 +206,12 @@ describe("database board helpers", () => {
 			value_list: [],
 		});
 		expect(boardDropValue(firstRow, priorityColumn, "Urgent")).toEqual({
+			kind: "list",
+			value_list: ["Medium Priority", "Client Work", "Urgent"],
+		});
+		expect(
+			boardDropValue(firstRow, priorityColumn, "Urgent", "Medium Priority"),
+		).toEqual({
 			kind: "list",
 			value_list: ["Medium Priority", "Client Work", "Urgent"],
 		});
@@ -212,11 +234,50 @@ describe("database board helpers", () => {
 		});
 		expect(boardDropValue(thirdRow, tagsColumn, "#project")).toEqual({
 			kind: "tags",
-			value_list: ["#project"],
+			value_list: ["project"],
 		});
 		expect(boardDropValue(secondRow, tagsColumn, "#project")).toEqual({
 			kind: "tags",
-			value_list: ["#swift", "#ios", "#project"],
+			value_list: ["swift", "ios", "project"],
 		});
+		expect(boardDropValue(secondRow, tagsColumn, "#project", "#swift")).toEqual(
+			{
+				kind: "tags",
+				value_list: ["swift", "ios", "project"],
+			},
+		);
+		expect(boardDropValue(thirdRow, tagsColumn, "#Daily Notes")).toEqual({
+			kind: "tags",
+			value_list: ["daily-notes"],
+		});
+		expect(boardDropValue(thirdRow, tagsColumn, "日本語")).toEqual({
+			kind: "tags",
+			value_list: ["日本語"],
+		});
+	});
+
+	it("normalizes mixed raw and normalized tag lanes on read", () => {
+		const mixedTagRows: DatabaseRow[] = [
+			{
+				...secondRow,
+				note_path: "Projects/Four.md",
+				tags: ["#swift", "ios"],
+			},
+			{
+				...thirdRow,
+				note_path: "Projects/Five.md",
+				tags: ["swift"],
+			},
+		];
+
+		const lanes = createBoardLanes(mixedTagRows, tagsColumn);
+		expect(lanes.map((lane) => lane.id)).toEqual([
+			"swift",
+			"ios",
+			DATABASE_BOARD_EMPTY_LANE_ID,
+		]);
+		expect(lanes[0]?.cardCount).toBe(2);
+		expect(boardRowHasLane(mixedTagRows[0]!, tagsColumn, "swift")).toBe(true);
+		expect(boardRowHasLane(mixedTagRows[0]!, tagsColumn, "#swift")).toBe(false);
 	});
 });
