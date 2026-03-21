@@ -1,5 +1,5 @@
 import { m, useReducedMotion } from "motion/react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useDatabaseBoard } from "../../hooks/database/useDatabaseBoard";
 import { boardDropValue, boardRowHasLane } from "../../lib/database/board";
 import { databaseValueToneStyle } from "../../lib/database/palette";
@@ -153,16 +153,48 @@ export function DatabaseBoard({
 	const [draggingRowPath, setDraggingRowPath] = useState<string | null>(null);
 	const [dropLaneId, setDropLaneId] = useState<string | null>(null);
 	const [moveError, setMoveError] = useState("");
+	const draggingRowPathRef = useRef<string | null>(null);
+	const draggingLaneIdRef = useRef<string | null>(null);
+	const dragActiveRef = useRef(false);
+	const suppressClickRef = useRef(false);
+	const dragStartRef = useRef<{
+		notePath: string;
+		sourceLaneId: string;
+		startX: number;
+		startY: number;
+		offsetX: number;
+		offsetY: number;
+		width: number;
+		title: string;
+	} | null>(null);
+	const [dragPreview, setDragPreview] = useState<{
+		notePath: string;
+		sourceLaneId: string;
+		title: string;
+		x: number;
+		y: number;
+		width: number;
+	} | null>(null);
 	const boardCardColumns = useMemo(
 		() =>
 			cardCandidateColumns(columns, groupColumn?.id ?? persistedGroupColumnId),
 		[columns, groupColumn?.id, persistedGroupColumnId],
 	);
-	const handleLaneDrop = async (notePath: string | null, laneId: string) => {
+	const handleLaneDrop = async (
+		notePath: string | null,
+		targetLaneId: string,
+		sourceLaneId?: string | null,
+	) => {
 		if (!notePath || !groupColumn) return;
 		const row = rows.find((entry) => entry.note_path === notePath);
 		if (!row) return;
-		if (boardRowHasLane(row, groupColumn, laneId)) {
+		if (
+			targetLaneId !== sourceLaneId &&
+			boardRowHasLane(row, groupColumn, targetLaneId)
+		) {
+			draggingRowPathRef.current = null;
+			draggingLaneIdRef.current = null;
+			dragActiveRef.current = false;
 			setDraggingRowPath(null);
 			setDropLaneId(null);
 			return;
@@ -172,15 +204,104 @@ export function DatabaseBoard({
 			await onSaveCell(
 				row.note_path,
 				groupColumn,
-				boardDropValue(row, groupColumn, laneId),
+				boardDropValue(row, groupColumn, targetLaneId, sourceLaneId),
 			);
 		} catch (error) {
 			setMoveError(extractErrorMessage(error));
 		} finally {
+			draggingRowPathRef.current = null;
+			draggingLaneIdRef.current = null;
+			dragActiveRef.current = false;
 			setDraggingRowPath(null);
 			setDropLaneId(null);
+			setDragPreview(null);
 		}
 	};
+
+	useEffect(() => {
+		const handlePointerMove = (event: PointerEvent) => {
+			const dragStart = dragStartRef.current;
+			if (!dragStart) return;
+			const deltaX = event.clientX - dragStart.startX;
+			const deltaY = event.clientY - dragStart.startY;
+			const hasExceededThreshold =
+				Math.abs(deltaX) > 2 || Math.abs(deltaY) > 2;
+			if (!hasExceededThreshold && !dragPreview) return;
+
+			if (!dragPreview) {
+				dragActiveRef.current = true;
+				draggingRowPathRef.current = dragStart.notePath;
+				draggingLaneIdRef.current = dragStart.sourceLaneId;
+				setDraggingRowPath(dragStart.notePath);
+				setDragPreview({
+					notePath: dragStart.notePath,
+					sourceLaneId: dragStart.sourceLaneId,
+					title: dragStart.title,
+					x: event.clientX - dragStart.offsetX,
+					y: event.clientY - dragStart.offsetY,
+					width: dragStart.width,
+				});
+			} else {
+				setDragPreview((current) =>
+					current
+						? {
+								...current,
+								x: event.clientX - dragStart.offsetX,
+								y: event.clientY - dragStart.offsetY,
+							}
+						: current,
+				);
+			}
+
+			const laneElement = document
+				.elementFromPoint(event.clientX, event.clientY)
+				?.closest<HTMLElement>("[data-board-lane-id]");
+			setDropLaneId(laneElement?.dataset.boardLaneId ?? null);
+		};
+
+			const handlePointerUp = (event: PointerEvent) => {
+			const dragStart = dragStartRef.current;
+			dragStartRef.current = null;
+			if (!dragStart) return;
+			if (!dragActiveRef.current) {
+				setDropLaneId(null);
+				return;
+			}
+			dragActiveRef.current = false;
+			suppressClickRef.current = true;
+			window.setTimeout(() => {
+				suppressClickRef.current = false;
+			}, 0);
+			const laneElement = document
+				.elementFromPoint(event.clientX, event.clientY)
+				?.closest<HTMLElement>("[data-board-lane-id]");
+			const targetLaneId =
+				laneElement?.dataset.boardLaneId ?? dropLaneId ?? null;
+			if (targetLaneId) {
+				void handleLaneDrop(
+					dragStart.notePath,
+					targetLaneId,
+					dragStart.sourceLaneId,
+				);
+				return;
+			}
+			draggingRowPathRef.current = null;
+			draggingLaneIdRef.current = null;
+			dragActiveRef.current = false;
+			setDraggingRowPath(null);
+			setDropLaneId(null);
+			setDragPreview(null);
+		};
+
+		window.addEventListener("pointermove", handlePointerMove);
+		window.addEventListener("pointerup", handlePointerUp);
+		window.addEventListener("pointercancel", handlePointerUp);
+		return () => {
+			window.removeEventListener("pointermove", handlePointerMove);
+			window.removeEventListener("pointerup", handlePointerUp);
+			window.removeEventListener("pointercancel", handlePointerUp);
+		};
+	}, [dragPreview, dropLaneId, handleLaneDrop]);
 
 	return (
 		<div className="databaseBoardShell">
@@ -238,6 +359,7 @@ export function DatabaseBoard({
 						<m.div
 							key={lane.id}
 							className="databaseBoardLane"
+							data-board-lane-id={lane.id}
 							style={databaseValueToneStyle(lane.id)}
 							data-active={dropLaneId === lane.id ? "true" : "false"}
 							initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
@@ -250,26 +372,6 @@ export function DatabaseBoard({
 											delay: Math.min(laneIndex * 0.04, 0.18),
 										}
 							}
-							onDragOver={(event) => {
-								event.preventDefault();
-								event.dataTransfer.dropEffect = "move";
-								if (draggingRowPath) {
-									setDropLaneId(lane.id);
-								}
-							}}
-							onDragLeave={() => {
-								setDropLaneId((current) =>
-									current === lane.id ? null : current,
-								);
-							}}
-							onDrop={(event) => {
-								event.preventDefault();
-								const notePath =
-									draggingRowPath ||
-									event.dataTransfer.getData("text/plain") ||
-									null;
-								void handleLaneDrop(notePath, lane.id);
-							}}
 						>
 							<div className="databaseBoardLaneHeader">
 								<div className="databaseBoardLaneTitleGroup">
@@ -307,8 +409,9 @@ export function DatabaseBoard({
 										return (
 											<ContextMenu key={row.note_path}>
 												<ContextMenuTrigger asChild>
-													<button
-														type="button"
+													<div
+														role="button"
+														tabIndex={0}
 														className="databaseBoardCard"
 														data-state={
 															row.note_path === selectedRowPath
@@ -320,22 +423,33 @@ export function DatabaseBoard({
 																? "true"
 																: undefined
 														}
-														draggable
-														onDragStart={(event) => {
-															event.dataTransfer.effectAllowed = "move";
-															event.dataTransfer.setData(
-																"text/plain",
-																row.note_path,
-															);
-															setDraggingRowPath(row.note_path);
-															setDropLaneId(null);
+														onPointerDown={(event) => {
+															if (event.button !== 0) return;
+															dragActiveRef.current = false;
+															const rect =
+																event.currentTarget.getBoundingClientRect();
+															dragStartRef.current = {
+																notePath: row.note_path,
+																sourceLaneId: lane.id,
+																startX: event.clientX,
+																startY: event.clientY,
+																offsetX: event.clientX - rect.left,
+																offsetY: event.clientY - rect.top,
+																width: rect.width,
+																title,
+															};
 														}}
-														onDragEnd={() => {
-															setDraggingRowPath(null);
-															setDropLaneId(null);
+														onClick={() => {
+															if (suppressClickRef.current) return;
+															onSelectRow(row.note_path);
 														}}
-														onClick={() => onSelectRow(row.note_path)}
 														onDoubleClick={() => onOpenRow(row.note_path)}
+														onKeyDown={(event) => {
+															if (event.key === "Enter" || event.key === " ") {
+																event.preventDefault();
+																onOpenRow(row.note_path);
+															}
+														}}
 														title="Double-click to open note"
 													>
 														<div className="databaseBoardCardHead">
@@ -411,9 +525,9 @@ export function DatabaseBoard({
 																{formatDatabaseDateTime(row.updated)}
 															</span>
 														</div>
-													</button>
+													</div>
 												</ContextMenuTrigger>
-												<ContextMenuContent className="fileTreeCreateMenu">
+												<ContextMenuContent className="fileTreeCreateMenu databaseBoardContextMenu">
 													<ContextMenuItem
 														className="fileTreeCreateMenuItem"
 														onSelect={() => onOpenRow(row.note_path)}
@@ -434,6 +548,7 @@ export function DatabaseBoard({
 																		void handleLaneDrop(
 																			row.note_path,
 																			targetLane.id,
+																			lane.id,
 																		)
 																	}
 																>
@@ -454,6 +569,17 @@ export function DatabaseBoard({
 					))}
 				</div>
 			)}
+			{dragPreview ? (
+				<div
+					className="databaseBoardDragGhost"
+					style={{
+						width: dragPreview.width,
+						transform: `translate3d(${dragPreview.x}px, ${dragPreview.y}px, 0)`,
+					}}
+				>
+					{dragPreview.title}
+				</div>
+			) : null}
 		</div>
 	);
 }

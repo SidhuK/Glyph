@@ -43,6 +43,16 @@ function uniqueLaneValues(values: string[]): string[] {
 	return [...new Set(values.map((value) => value.trim()).filter(Boolean))];
 }
 
+function normalizeBoardTagValue(value: string): string | null {
+	const normalized = value
+		.trim()
+		.replace(/^#+/, "")
+		.toLowerCase()
+		.replace(/\s+/g, "-")
+		.replace(/[^a-z0-9_/-]/g, "");
+	return normalized || null;
+}
+
 function rawLaneValues(row: DatabaseRow, column: DatabaseColumn): string[] {
 	const cell = databaseCellValueFromRow(row, column);
 	if (isMultiValueBoardColumn(column)) {
@@ -153,6 +163,33 @@ export function createBoardLanes(
 	];
 }
 
+export function orderBoardLanes(
+	lanes: DatabaseBoardLane[],
+	previousLaneIds: string[],
+): DatabaseBoardLane[] {
+	if (lanes.length === 0) return [];
+	const laneMap = new Map(lanes.map((lane) => [lane.id, lane]));
+	const nextLaneIds = [
+		...previousLaneIds.filter(
+			(laneId) =>
+				laneId !== DATABASE_BOARD_EMPTY_LANE_ID && laneMap.has(laneId),
+		),
+		...lanes
+			.map((lane) => lane.id)
+			.filter(
+				(laneId) =>
+					laneId !== DATABASE_BOARD_EMPTY_LANE_ID &&
+					!previousLaneIds.includes(laneId),
+			),
+	];
+	if (laneMap.has(DATABASE_BOARD_EMPTY_LANE_ID)) {
+		nextLaneIds.push(DATABASE_BOARD_EMPTY_LANE_ID);
+	}
+	return nextLaneIds
+		.map((laneId) => laneMap.get(laneId))
+		.filter((lane): lane is DatabaseBoardLane => lane != null);
+}
+
 export function boardLaneValue(
 	column: DatabaseColumn,
 	laneId: string,
@@ -178,6 +215,7 @@ export function boardDropValue(
 	row: DatabaseRow,
 	column: DatabaseColumn,
 	laneId: string,
+	_sourceLaneId?: string | null,
 ): DatabaseCellValue {
 	if (isMultiValueBoardColumn(column)) {
 		const cell = databaseCellValueFromRow(row, column);
@@ -185,6 +223,18 @@ export function boardDropValue(
 			return {
 				kind: cell.kind,
 				value_list: [],
+			};
+		}
+		if (column.type === "tags" || column.property_kind === "tags") {
+			const normalizedLaneId = normalizeBoardTagValue(laneId);
+			return {
+				kind: cell.kind,
+				value_list: uniqueLaneValues([
+					...cell.value_list.map(
+						(value) => normalizeBoardTagValue(value) ?? value.trim(),
+					),
+					...(normalizedLaneId ? [normalizedLaneId] : []),
+				]),
 			};
 		}
 		return {

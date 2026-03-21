@@ -480,15 +480,27 @@ export function DatabasesPane({
 			},
 		) => {
 			try {
-				await invoke("databases_update_cell", {
+				const updatedRow = await invoke("databases_update_cell", {
 					note_path: notePath,
 					column,
 					value,
 				});
 				setError("");
-				await loadRows();
+				setRows((current) => {
+					const existingIndex = current.findIndex(
+						(row) => row.note_path === notePath,
+					);
+					if (existingIndex === -1) {
+						return [...current, updatedRow];
+					}
+					const next = [...current];
+					next[existingIndex] = updatedRow;
+					return next;
+				});
+				void loadRows();
 			} catch (cause) {
 				setError(extractErrorMessage(cause));
+				throw cause;
 			}
 		},
 		[loadRows],

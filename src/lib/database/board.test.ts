@@ -9,6 +9,7 @@ import {
 	createBoardLanes,
 	defaultBoardGroupColumnId,
 	getBoardGroupColumns,
+	orderBoardLanes,
 } from "./board";
 import type { DatabaseColumn, DatabaseRow } from "./types";
 
@@ -177,6 +178,24 @@ describe("database board helpers", () => {
 		expect(lanes[1]?.rows[0]?.title).toBe("Two");
 	});
 
+	it("preserves existing lane order when rows refresh", () => {
+		const unordered = [
+			{ id: "done", label: "Done", cardCount: 1, rows: [firstRow] },
+			{ id: "backlog", label: "Backlog", cardCount: 2, rows: [secondRow] },
+			{
+				id: DATABASE_BOARD_EMPTY_LANE_ID,
+				label: "No value",
+				cardCount: 0,
+				rows: [],
+			},
+			{ id: "review", label: "Review", cardCount: 1, rows: [thirdRow] },
+		];
+
+		expect(
+			orderBoardLanes(unordered, ["backlog", "done"]).map((lane) => lane.id),
+		).toEqual(["backlog", "done", "review", DATABASE_BOARD_EMPTY_LANE_ID]);
+	});
+
 	it("creates update payloads for the target lane", () => {
 		expect(boardLaneValue(statusColumn, "Review")).toEqual({
 			kind: "text",
@@ -190,6 +209,12 @@ describe("database board helpers", () => {
 			value_list: [],
 		});
 		expect(boardDropValue(firstRow, priorityColumn, "Urgent")).toEqual({
+			kind: "list",
+			value_list: ["Medium Priority", "Client Work", "Urgent"],
+		});
+		expect(
+			boardDropValue(firstRow, priorityColumn, "Urgent", "Medium Priority"),
+		).toEqual({
 			kind: "list",
 			value_list: ["Medium Priority", "Client Work", "Urgent"],
 		});
@@ -212,11 +237,21 @@ describe("database board helpers", () => {
 		});
 		expect(boardDropValue(thirdRow, tagsColumn, "#project")).toEqual({
 			kind: "tags",
-			value_list: ["#project"],
+			value_list: ["project"],
 		});
 		expect(boardDropValue(secondRow, tagsColumn, "#project")).toEqual({
 			kind: "tags",
-			value_list: ["#swift", "#ios", "#project"],
+			value_list: ["swift", "ios", "project"],
+		});
+		expect(boardDropValue(secondRow, tagsColumn, "#project", "#swift")).toEqual(
+			{
+				kind: "tags",
+				value_list: ["swift", "ios", "project"],
+			},
+		);
+		expect(boardDropValue(thirdRow, tagsColumn, "#Daily Notes")).toEqual({
+			kind: "tags",
+			value_list: ["daily-notes"],
 		});
 	});
 });
