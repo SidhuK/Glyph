@@ -436,19 +436,28 @@
 	flex-direction: column;
 	min-height: 0;
 	height: 100%;
-	border-radius: var(--database-radius-lg);
+	border-radius: 18px;
 	border: none;
-	background: color-mix(in srgb, var(--database-tone) 1.35%, var(--bg-secondary));
-	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--database-tone) 4%, transparent);
+	background:
+		linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--database-tone) 8%, var(--bg-secondary)),
+			color-mix(in srgb, var(--database-tone) 5.5%, var(--bg-secondary))
+		);
+	box-shadow: none;
 	transition: background-color 140ms ease, box-shadow 140ms ease,
 		transform 140ms ease;
 }
 
 .databaseBoardLane[data-active="true"] {
-	background: color-mix(in srgb, var(--database-tone) 2.25%, var(--bg-secondary));
+	background:
+		linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--database-tone) 10.5%, var(--bg-secondary)),
+			color-mix(in srgb, var(--database-tone) 7.5%, var(--bg-secondary))
+		);
 	box-shadow:
-		inset 0 0 0 1px color-mix(in srgb, var(--database-tone) 8%, transparent),
-		0 8px 18px color-mix(in srgb, var(--database-tone) 5%, transparent);
+		0 8px 18px color-mix(in srgb, var(--database-tone) 8%, transparent);
 	transform: translateY(-1px);
 }
 
@@ -461,11 +470,17 @@
 	border-bottom: none;
 }
 
+.databaseBoardLaneHeaderActions {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
 .databaseBoardLaneTitle {
 	font-size: 0.7rem;
 	font-weight: var(--font-semibold);
-	color: color-mix(in srgb, white 88%, var(--text-primary));
-	letter-spacing: 0.06em;
+	color: color-mix(in srgb, white 92%, var(--text-primary));
+	letter-spacing: 0.045em;
 	text-transform: uppercase;
 	line-height: 1;
 }
@@ -481,7 +496,37 @@
 	font-size: 0.76rem;
 	font-weight: var(--font-semibold);
 	line-height: 1;
-	color: color-mix(in srgb, var(--database-tone) 56%, var(--text-primary));
+	color: color-mix(in srgb, var(--database-tone) 76%, var(--text-primary));
+}
+
+.databaseBoardLaneTitleButton {
+	display: inline-flex;
+	align-items: center;
+	justify-content: flex-start;
+	gap: 6px;
+	width: auto;
+	height: auto;
+	min-height: 0;
+	max-width: 100%;
+	padding: 3px 10px 3px 8px;
+	border-radius: 8px;
+	border: none;
+	cursor: pointer;
+	font-size: inherit;
+	font-weight: inherit;
+	line-height: 1;
+	color: inherit;
+	white-space: nowrap;
+	background: color-mix(in srgb, var(--database-tone) 91%, var(--bg-primary));
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 18%, transparent),
+		0 1px 2px color-mix(in srgb, var(--database-tone) 14%, transparent);
+	transition: transform 140ms ease, filter 140ms ease;
+}
+
+.databaseBoardLaneTitleButton:hover {
+	filter: brightness(1.02);
+	transform: translateY(-1px);
 }
 
 .databaseBoardLaneBody {
@@ -636,8 +681,6 @@
 	max-width: 100%;
 	flex: 0 0 auto;
 	padding: 3px 7px;
-	border: 1px solid
-		color-mix(in srgb, var(--database-tone) 22%, var(--border-light));
 	border-radius: var(--radius-full);
 	background: color-mix(in srgb, var(--database-tone) 12%, var(--bg-secondary));
 	font-size: 0.7rem;
@@ -908,7 +951,7 @@
 
 .databaseTagField .notePropertyToken {
 	--database-tone: var(--color-blue-500);
-	border-color: color-mix(in srgb, var(--database-tone) 18%, transparent);
+	border-color: transparent;
 	background: color-mix(in srgb, var(--database-tone) 10%, transparent);
 	color: color-mix(in srgb, var(--database-tone) 56%, var(--text-primary));
 }
@@ -933,8 +976,7 @@
 	max-width: 100%;
 	padding: 2px 7px;
 	border-radius: var(--database-radius-sm);
-	border: 1px solid
-		color-mix(in srgb, var(--database-tone) 20%, var(--border-light));
+	border: none;
 	background: color-mix(in srgb, var(--database-tone) 10%, var(--bg-secondary));
 	font-size: 0.76rem;
 	color: color-mix(in srgb, var(--database-tone) 52%, var(--text-primary));
@@ -1548,6 +1590,65 @@
 	padding: 6px;
 }
 
+.databaseBoardColorMenu {
+	min-width: 0;
+	padding: 8px;
+}
+
+.databaseBoardColorRibbon {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+}
+
+.databaseBoardColorSwatch {
+	display: inline-flex;
+	width: 12px;
+	height: 12px;
+	border-radius: 999px;
+	background: var(--database-tone);
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, white 28%, transparent);
+	flex: 0 0 auto;
+}
+
+.databaseBoardColorRibbonSwatch,
+.databaseBoardColorRibbonClear {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 18px;
+	height: 18px;
+	padding: 0;
+	border: 1px solid color-mix(in srgb, var(--border-default) 72%, transparent);
+	border-radius: 999px;
+	background: var(--database-tone);
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, white 24%, transparent);
+	cursor: pointer;
+	transition: transform 120ms ease, border-color 120ms ease,
+		box-shadow 120ms ease;
+}
+
+.databaseBoardColorRibbonSwatch:hover,
+.databaseBoardColorRibbonClear:hover {
+	transform: translateY(-1px) scale(1.03);
+	border-color: var(--border-default);
+}
+
+.databaseBoardColorRibbonClear {
+	position: relative;
+	background: transparent;
+	box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--border-default) 76%, transparent);
+}
+
+.databaseBoardColorRibbonClear > span {
+	position: absolute;
+	width: 11px;
+	height: 1.5px;
+	background: color-mix(in srgb, var(--text-secondary) 90%, transparent);
+	transform: rotate(-45deg);
+	border-radius: 999px;
+}
+
 .databaseBoardDragGhost {
 	position: fixed;
 	top: 0;
@@ -1597,21 +1698,23 @@
 .databaseBoardLaneTitleGroup {
 	display: flex;
 	align-items: center;
-	gap: 7px;
+	gap: 6px;
 	min-width: 0;
-	padding: 4px 11px 4px 9px;
-	border-radius: 999px;
-	background: color-mix(in srgb, var(--database-tone) 84%, var(--bg-primary));
-	box-shadow: none;
+	padding: 3px 10px 3px 8px;
+	border-radius: 8px;
+	background: color-mix(in srgb, var(--database-tone) 91%, var(--bg-primary));
+	box-shadow:
+		inset 0 1px 0 color-mix(in srgb, white 18%, transparent),
+		0 1px 2px color-mix(in srgb, var(--database-tone) 14%, transparent);
 }
 
 .databaseBoardLaneDot {
-	width: 14px;
-	height: 14px;
+	width: 13px;
+	height: 13px;
 	border-radius: 999px;
 	background: transparent;
-	border: 2px solid color-mix(in srgb, white 90%, var(--database-tone));
-	box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--database-tone) 80%, white);
+	border: 2px solid color-mix(in srgb, white 93%, var(--database-tone));
+	box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--database-tone) 78%, white);
 	flex: 0 0 auto;
 	opacity: 1;
 }

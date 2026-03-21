@@ -128,6 +128,7 @@ function currentConfig(
 		view: {
 			layout: view.layout,
 			board_group_by: view.grouping?.column_id ?? null,
+			board_lane_colors: view.board_lane_colors ?? {},
 		},
 		columns: view.columns,
 		sorts: view.sorts,
@@ -155,6 +156,7 @@ function replaceCurrentView(
 									ascending: true,
 								}
 							: null,
+						board_lane_colors: config.view.board_lane_colors ?? {},
 						columns: config.columns,
 						sorts: config.sorts,
 						filters: config.filters,
@@ -875,6 +877,7 @@ export function DatabasesPane({
 							rows={rows}
 							columns={activeConfig.columns}
 							groupColumnId={activeConfig.view.board_group_by ?? null}
+							laneColors={activeConfig.view.board_lane_colors ?? {}}
 							selectedRowPath={selectedRowPath}
 							onSelectRow={setSelectedRowPath}
 							onOpenRow={(notePath) => void onOpenFile(notePath)}
@@ -889,12 +892,31 @@ export function DatabasesPane({
 									},
 								})
 							}
+							onLaneColorChange={(laneId, color) =>
+								void handleSaveConfig({
+									...activeConfig,
+									view: {
+										...activeConfig.view,
+										board_lane_colors: color
+											? {
+													...(activeConfig.view.board_lane_colors ?? {}),
+													[laneId]: color,
+												}
+											: Object.fromEntries(
+													Object.entries(
+														activeConfig.view.board_lane_colors ?? {},
+													).filter(([entryLaneId]) => entryLaneId !== laneId),
+												),
+									},
+								})
+							}
 							onSaveCell={handleUpdateCell}
 						/>
 					) : (
 						<DatabaseTable
 							rows={rows}
 							columns={visibleColumns}
+							laneColors={activeConfig.view.board_lane_colors ?? {}}
 							selectedRowPath={selectedRowPath}
 							activeSort={
 								(activeConfig.sorts[0] as DatabaseSort | null) ?? null

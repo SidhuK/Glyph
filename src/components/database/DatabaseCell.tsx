@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useFileTreeContext } from "../../contexts";
-import { databaseValueToneStyle } from "../../lib/database/palette";
+import { databaseValueToneStyleForColor } from "../../lib/database/palette";
 import {
 	databaseCellValueFromRow,
 	formatDatabaseDateTime,
@@ -8,6 +8,7 @@ import {
 } from "../../lib/database/config";
 import type { DatabaseColumn, DatabaseRow } from "../../lib/database/types";
 import { extractErrorMessage } from "../../lib/errorUtils";
+import type { EditorTextColor } from "../editor/textColors";
 import { X } from "../Icons";
 import { Toggle } from "../base/toggle/toggle";
 import {
@@ -20,6 +21,7 @@ import { Input } from "../ui/shadcn/input";
 interface DatabaseCellProps {
 	row: DatabaseRow;
 	column: DatabaseColumn;
+	laneColors?: Record<string, EditorTextColor>;
 	onOpenNote?: (notePath: string) => void;
 	onSelectRow?: (notePath: string) => void;
 	onSave: (
@@ -37,6 +39,7 @@ function listDraft(row: DatabaseRow, column: DatabaseColumn): string {
 export function DatabaseCell({
 	row,
 	column,
+	laneColors = {},
 	onOpenNote,
 	onSelectRow,
 	onSave,
@@ -58,6 +61,8 @@ export function DatabaseCell({
 	const [saveError, setSaveError] = useState("");
 	const isTagsColumn =
 		column.type === "tags" || column.property_kind === "tags";
+	const toneStyleForValue = (value: string) =>
+		databaseValueToneStyleForColor(value, laneColors[value] ?? null);
 	const tagSuggestions = useMemo(
 		() => buildTagSuggestions(availableTags, cellValue.value_list, tagDraft),
 		[availableTags, cellValue.value_list, tagDraft],
@@ -204,7 +209,7 @@ export function DatabaseCell({
 									<span
 										key={`${column.id}:${value}`}
 										className="databaseCellPill"
-										style={databaseValueToneStyle(value)}
+										style={toneStyleForValue(value)}
 										title={formatTagLabel(value)}
 									>
 										{formatTagLabel(value)}
@@ -240,7 +245,7 @@ export function DatabaseCell({
 									<span
 										key={`${column.id}:${value}`}
 										className="databaseCellPill"
-										style={databaseValueToneStyle(value)}
+										style={toneStyleForValue(value)}
 										title={value}
 									>
 										{value}
@@ -311,7 +316,7 @@ export function DatabaseCell({
 							key={`${column.id}:${valueIndex}:${value}`}
 							type="button"
 							className="notePropertyToken"
-							style={databaseValueToneStyle(value)}
+							style={toneStyleForValue(value)}
 							onMouseDown={(event) => event.preventDefault()}
 							onClick={() => void removeTag(value)}
 							title={`Remove ${formatTagLabel(value)}`}

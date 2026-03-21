@@ -5,6 +5,7 @@ import {
 	useReactTable,
 } from "@tanstack/react-table";
 import { useMemo } from "react";
+import type { EditorTextColor } from "../editor/textColors";
 import type {
 	DatabaseColumn,
 	DatabaseRow,
@@ -30,6 +31,7 @@ interface DatabaseTableProps {
 	onSelectRow: (notePath: string) => void;
 	onOpenRow: (notePath: string) => void;
 	onToggleSort: (column: DatabaseColumn) => void;
+	laneColors?: Record<string, string>;
 	onSaveCell: (
 		notePath: string,
 		column: DatabaseColumn,
@@ -66,6 +68,7 @@ export function DatabaseTable({
 	onSelectRow,
 	onOpenRow,
 	onToggleSort,
+	laneColors = {},
 	onSaveCell,
 }: DatabaseTableProps) {
 	const tableColumns = useMemo<ColumnDef<DatabaseRow>[]>(
@@ -93,6 +96,7 @@ export function DatabaseTable({
 					<DatabaseCell
 						row={row.original}
 						column={column}
+						laneColors={laneColors as Record<string, EditorTextColor>}
 						onOpenNote={onOpenRow}
 						onSelectRow={onSelectRow}
 						onSave={onSaveCell}

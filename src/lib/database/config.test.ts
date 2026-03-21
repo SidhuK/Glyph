@@ -122,6 +122,7 @@ describe("database config helpers", () => {
 		expect(config.view).toEqual({
 			layout: "table",
 			board_group_by: null,
+			board_lane_colors: {},
 		});
 	});
 

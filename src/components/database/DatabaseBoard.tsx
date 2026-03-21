@@ -2,7 +2,10 @@ import { m, useReducedMotion } from "motion/react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { useDatabaseBoard } from "../../hooks/database/useDatabaseBoard";
 import { boardDropValue, boardRowHasLane } from "../../lib/database/board";
-import { databaseValueToneStyle } from "../../lib/database/palette";
+import {
+	databaseValueToneStyle,
+	databaseValueToneStyleForColor,
+} from "../../lib/database/palette";
 import {
 	databaseCellValueFromRow,
 	formatDatabaseDateTime,
@@ -10,9 +13,18 @@ import {
 import type { DatabaseColumn, DatabaseRow } from "../../lib/database/types";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { parentDir } from "../../utils/path";
+import {
+	EDITOR_TEXT_COLORS,
+	type EditorTextColor,
+} from "../editor/textColors";
 import { formatTagLabel } from "../editor/noteProperties/utils";
 import { springPresets } from "../ui/animations";
 import { Button } from "../ui/shadcn/button";
+import {
+	DropdownMenu,
+	DropdownMenuContent,
+	DropdownMenuTrigger,
+} from "../ui/shadcn/dropdown-menu";
 import {
 	ContextMenu,
 	ContextMenuContent,
@@ -32,6 +44,8 @@ interface DatabaseBoardProps {
 	onOpenColumns: () => void;
 	onCreateDefaultGroupField?: (() => void) | null;
 	onGroupColumnIdChange: (groupColumnId: string | null) => void;
+	laneColors?: Record<string, string>;
+	onLaneColorChange?: ((laneId: string, color: EditorTextColor | null) => void) | null;
 	onSaveCell: (
 		notePath: string,
 		column: DatabaseColumn,
@@ -141,6 +155,8 @@ export function DatabaseBoard({
 	onOpenColumns,
 	onCreateDefaultGroupField,
 	onGroupColumnIdChange,
+	laneColors = {},
+	onLaneColorChange,
 	onSaveCell,
 }: DatabaseBoardProps) {
 	const shouldReduceMotion = useReducedMotion();
@@ -360,7 +376,10 @@ export function DatabaseBoard({
 							key={lane.id}
 							className="databaseBoardLane"
 							data-board-lane-id={lane.id}
-							style={databaseValueToneStyle(lane.id)}
+							style={databaseValueToneStyleForColor(
+								lane.id,
+								(laneColors[lane.id] as EditorTextColor | undefined) ?? null,
+							)}
 							data-active={dropLaneId === lane.id ? "true" : "false"}
 							initial={shouldReduceMotion ? false : { opacity: 0, y: 12 }}
 							animate={{ opacity: 1, y: 0 }}
@@ -374,11 +393,59 @@ export function DatabaseBoard({
 							}
 						>
 							<div className="databaseBoardLaneHeader">
-								<div className="databaseBoardLaneTitleGroup">
-									<span className="databaseBoardLaneDot" />
-									<div className="databaseBoardLaneTitle">{lane.label}</div>
+								{onLaneColorChange ? (
+									<DropdownMenu>
+										<DropdownMenuTrigger asChild>
+											<button
+												type="button"
+												className="databaseBoardLaneTitleGroup databaseBoardLaneTitleButton"
+												aria-label={`Set color for ${lane.label}`}
+												title={`Set color for ${lane.label}`}
+											>
+												<span className="databaseBoardLaneDot" />
+												<div className="databaseBoardLaneTitle">{lane.label}</div>
+											</button>
+										</DropdownMenuTrigger>
+										<DropdownMenuContent
+											align="start"
+											className="databaseBoardColorMenu"
+										>
+											<div className="databaseBoardColorRibbon">
+												{EDITOR_TEXT_COLORS.map((color) => (
+													<button
+														key={color.id}
+														type="button"
+														className="databaseBoardColorRibbonSwatch"
+														style={databaseValueToneStyleForColor(
+															color.id,
+															color.id,
+														)}
+														onClick={() => onLaneColorChange(lane.id, color.id)}
+														title={color.label}
+														aria-label={`Set ${lane.label} color to ${color.label}`}
+													/>
+												))}
+												<button
+													type="button"
+													className="databaseBoardColorRibbonClear"
+													onClick={() => onLaneColorChange(lane.id, null)}
+													title="Clear color"
+													aria-label={`Clear color for ${lane.label}`}
+												>
+													<span />
+												</button>
+											</div>
+										</DropdownMenuContent>
+									</DropdownMenu>
+								) : (
+									<div className="databaseBoardLaneTitleGroup">
+										<span className="databaseBoardLaneDot" />
+										<div className="databaseBoardLaneTitle">{lane.label}</div>
+									</div>
+								)}
+								<div className="databaseBoardLaneHeaderActions">
+									<div className="databaseBoardLaneCount">{lane.cardCount}</div>
 								</div>
-								<div className="databaseBoardLaneCount">{lane.cardCount}</div>
 							</div>
 							<div className="databaseBoardLaneBody">
 								{lane.rows.length > 0 ? (
@@ -473,7 +540,15 @@ export function DatabaseBoard({
 																	<span
 																		key={`${row.note_path}:${tag}`}
 																		className="databaseBoardTag"
-																		style={databaseValueToneStyle(tag)}
+																		style={
+																			groupColumn?.id === "tags"
+																				? databaseValueToneStyleForColor(
+																						tag,
+																						(laneColors[tag] as EditorTextColor | undefined) ??
+																							null,
+																					)
+																				: databaseValueToneStyle(tag)
+																		}
 																		title={formatTagLabel(tag)}
 																	>
 																		{formatTagLabel(tag)}
