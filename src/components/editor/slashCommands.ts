@@ -96,6 +96,28 @@ export const SLASH_COMMANDS: SlashCommandItem[] = [
 			editor.chain().focus().deleteRange(range).toggleCodeBlock().run(),
 	},
 	{
+		icon: "M",
+		title: "Mermaid chart",
+		description: "Insert a Mermaid diagram block",
+		keywords: ["mermaid", "diagram", "flowchart", "graph"],
+		command: ({ editor, range }) =>
+			editor
+				.chain()
+				.focus()
+				.deleteRange(range)
+				.insertContent({
+					type: "codeBlock",
+					attrs: { language: "mermaid" },
+					content: [
+						{
+							type: "text",
+							text: "flowchart TD\n  A[Start] --> B[End]",
+						},
+					],
+				})
+				.run(),
+	},
+	{
 		icon: "▦",
 		title: "Table",
 		description: "Insert a markdown table",
