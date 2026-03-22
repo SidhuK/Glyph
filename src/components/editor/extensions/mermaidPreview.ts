@@ -41,8 +41,14 @@ function buildMermaidPreviewWidget(
 		try {
 			const svg = await renderMermaidDiagram(source);
 			if (!container.isConnected) return;
+			const doc = new DOMParser().parseFromString(svg, "image/svg+xml");
+			const svgElement = doc.documentElement;
+			if (svgElement.tagName.toLowerCase() !== "svg") {
+				throw new Error("Unable to render Mermaid diagram.");
+			}
 			container.dataset.state = "ready";
-			canvas.innerHTML = svg;
+			canvas.replaceChildren();
+			canvas.append(svgElement);
 		} catch (error) {
 			if (!container.isConnected) return;
 			container.dataset.state = "error";
@@ -206,13 +212,11 @@ export const MermaidPreview = Extension.create({
 								return;
 							}
 
-							if (!editable) {
-								decorations.push(
-									Decoration.node(pos, pos + node.nodeSize, {
-										class: "mermaidCodeBlockHiddenInPreview",
-									}),
-								);
-							}
+							decorations.push(
+								Decoration.node(pos, pos + node.nodeSize, {
+									class: "mermaidCodeBlockHiddenInPreview",
+								}),
+							);
 
 							decorations.push(
 								Decoration.widget(
