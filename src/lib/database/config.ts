@@ -283,6 +283,20 @@ export function databaseCellValueFromRow(
 	}
 }
 
+function ordinalSuffix(day: number): string {
+	if (day >= 11 && day <= 13) return "th";
+	switch (day % 10) {
+		case 1:
+			return "st";
+		case 2:
+			return "nd";
+		case 3:
+			return "rd";
+		default:
+			return "th";
+	}
+}
+
 export function formatDatabaseDateTime(
 	value: string | null | undefined,
 ): string {
@@ -290,14 +304,15 @@ export function formatDatabaseDateTime(
 	const date = new Date(value);
 	if (Number.isNaN(date.getTime())) return value;
 
+	const month = date.toLocaleString("en-US", { month: "long" });
+	const day = date.getDate();
 	const year = date.getFullYear();
-	const month = String(date.getMonth() + 1).padStart(2, "0");
-	const day = String(date.getDate()).padStart(2, "0");
-	const hours = String(date.getHours()).padStart(2, "0");
-	const minutes = String(date.getMinutes()).padStart(2, "0");
-	const seconds = String(date.getSeconds()).padStart(2, "0");
+	const time = date
+		.toLocaleString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })
+		.toLowerCase()
+		.replace(" ", " ");
 
-	return `${year}-${month}-${day} ${hours}:${minutes}:${seconds}`;
+	return `${month} ${day}${ordinalSuffix(day)}, ${year}, ${time}`;
 }
 
 function normalizeText(value: string | null | undefined): string {
