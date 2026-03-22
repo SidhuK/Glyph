@@ -92,7 +92,7 @@ export function DatabaseFolderPicker({
 	const selectedMeta = folderBreadcrumb(value);
 
 	return (
-		<Popover open={open} onOpenChange={setOpen}>
+		<Popover open={open} onOpenChange={setOpen} modal={false}>
 			<PopoverTrigger asChild>
 				<Button
 					type="button"

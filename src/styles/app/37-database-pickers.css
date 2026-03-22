@@ -79,6 +79,7 @@
 	padding: 12px;
 	background: var(--bg-primary);
 	box-shadow: var(--shadow-md);
+	pointer-events: auto;
 }
 
 .databaseDialogCompact .databasePickerPopover,
@@ -90,6 +91,7 @@
 .databaseColumnIconPopover {
 	width: min(380px, calc(100vw - 2rem));
 	padding-bottom: 10px;
+	pointer-events: auto;
 }
 
 .databasePickerHeader {
@@ -245,6 +247,7 @@
 	padding: 8px;
 	background: var(--bg-primary);
 	box-shadow: var(--shadow-md);
+	pointer-events: auto;
 }
 
 .folderPickerBreadcrumbs {

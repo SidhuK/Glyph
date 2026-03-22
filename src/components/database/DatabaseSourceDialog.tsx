@@ -88,7 +88,21 @@ export function DatabaseSourceDialog({
 
 	return (
 		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent className="databaseDialog databaseDialogCompact">
+			<DialogContent
+				className="databaseDialog databaseDialogCompact"
+				onInteractOutside={(event) => {
+					const target = event.target as HTMLElement | null;
+					if (target?.closest("[data-slot='popover-content']")) {
+						event.preventDefault();
+					}
+				}}
+				onPointerDownOutside={(event) => {
+					const target = event.target as HTMLElement | null;
+					if (target?.closest("[data-slot='popover-content']")) {
+						event.preventDefault();
+					}
+				}}
+			>
 				<DialogHeader className="databaseDialogHeaderCompact">
 					<DialogTitle>Source & filters</DialogTitle>
 				</DialogHeader>

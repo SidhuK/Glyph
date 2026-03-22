@@ -30,6 +30,7 @@ export function DatabaseColumnIconPicker({
 	return (
 		<Popover
 			open={open}
+			modal={false}
 			onOpenChange={(nextOpen) => {
 				setOpen(nextOpen);
 				if (!nextOpen) setQuery("");

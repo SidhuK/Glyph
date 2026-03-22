@@ -261,8 +261,22 @@ fn row_matches_filters(
             return true;
         };
         let cell = cell_value_from_row(row, column);
-        let filter_text = normalize_text(filter.value_text.as_deref().unwrap_or_default());
-        let text_values = cell_text_values(&cell);
+        let is_tags_column = column.column_type == "tags"
+            || column.property_kind.as_deref() == Some("tags");
+        let filter_text = if is_tags_column {
+            normalize_tag_text(filter.value_text.as_deref().unwrap_or_default())
+        } else {
+            normalize_text(filter.value_text.as_deref().unwrap_or_default())
+        };
+        let text_values: Vec<String> = if is_tags_column {
+            cell.value_list
+                .iter()
+                .map(|v| normalize_tag_text(v))
+                .filter(|v| !v.is_empty())
+                .collect()
+        } else {
+            cell_text_values(&cell)
+        };
         match filter.operator.as_str() {
             "equals" => {
                 !filter_text.is_empty() && text_values.iter().any(|value| value == &filter_text)
@@ -486,11 +500,7 @@ fn folder_source_ids(
 }
 
 fn tag_source_ids(conn: &Connection, tag: &str, limit: usize) -> Result<Vec<String>, String> {
-    let normalized = if tag.starts_with('#') {
-        tag.to_string()
-    } else {
-        format!("#{tag}")
-    };
+    let normalized = tag.trim().trim_start_matches('#').to_lowercase();
     let mut stmt = conn
         .prepare(
             "SELECT n.id
