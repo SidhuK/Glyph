@@ -18,6 +18,7 @@ lowlight.register({
 	javascript,
 	json,
 	markdown,
+	mermaid: plaintext,
 	plaintext,
 	python,
 	rust,

@@ -246,19 +246,11 @@ function MermaidPreviewPanel({
 		const svgElement = doc.documentElement;
 		if (svgElement.tagName.toLowerCase() !== "svg") {
 			setError("Unable to render Mermaid diagram.");
+			setSvg("");
 			return;
 		}
-		host.append(svgElement);
-
-		const panel = panelRef.current;
-		if (!panel) return;
-		const raf = window.requestAnimationFrame(() => {
-			onHeightChange(
-				Math.ceil(Math.max(panel.offsetHeight, panel.scrollHeight)),
-			);
-		});
-		return () => window.cancelAnimationFrame(raf);
-	}, [onHeightChange, svg]);
+		host.append(document.importNode(svgElement, true));
+	}, [svg]);
 
 	return (
 		<div className="mermaidPreviewPanel" style={style} ref={panelRef}>

@@ -46,9 +46,10 @@ function buildMermaidPreviewWidget(
 			if (svgElement.tagName.toLowerCase() !== "svg") {
 				throw new Error("Unable to render Mermaid diagram.");
 			}
+			const nextSvg = document.importNode(svgElement, true);
+			if (!container.isConnected) return;
 			container.dataset.state = "ready";
-			canvas.replaceChildren();
-			canvas.append(svgElement);
+			canvas.replaceChildren(nextSvg);
 		} catch (error) {
 			if (!container.isConnected) return;
 			container.dataset.state = "error";
@@ -151,24 +152,55 @@ export const MermaidPreview = Extension.create({
 						richPreviewHeight: 0,
 					}),
 					apply(transaction, value) {
+						const mappedActivePreviewPos =
+							value.activePreviewPos == null
+								? null
+								: (() => {
+										const mapped = transaction.mapping.map(
+											value.activePreviewPos,
+										);
+										const { deleted } = transaction.mapping.mapResult(
+											value.activePreviewPos,
+										);
+										if (deleted) return null;
+										if (mapped < 0 || mapped > transaction.doc.content.size) {
+											return null;
+										}
+										const node = transaction.doc.nodeAt(mapped);
+										const language =
+											typeof node?.attrs.language === "string"
+												? node.attrs.language
+												: null;
+										if (
+											node?.type.name !== "codeBlock" ||
+											!isMermaidCodeBlockLanguage(language)
+										) {
+											return null;
+										}
+										return mapped;
+									})();
+						const nextValue = {
+							...value,
+							activePreviewPos: mappedActivePreviewPos,
+						};
 						const meta = transaction.getMeta(mermaidPreviewPluginKey) as
 							| MermaidPreviewMeta
 							| undefined;
-						if (!meta) return value;
+						if (!meta) return nextValue;
 						if (meta.type === "set-active") {
 							return {
-								...value,
+								...nextValue,
 								activePreviewPos: meta.pos,
 							};
 						}
 						if (meta.type === "set-rich-height") {
 							return {
-								...value,
+								...nextValue,
 								richPreviewHeight: meta.height,
 							};
 						}
 						return {
-							...value,
+							...nextValue,
 							refreshKey: value.refreshKey + 1,
 						};
 					},
@@ -206,6 +238,7 @@ export const MermaidPreview = Extension.create({
 										{
 											side: 1,
 											ignoreSelection: true,
+											key: `mermaid-preview-spacer-${pos}`,
 										},
 									),
 								);
@@ -230,6 +263,7 @@ export const MermaidPreview = Extension.create({
 									{
 										side: 1,
 										ignoreSelection: true,
+										key: `mermaid-preview-widget-${pos}-${pluginState.refreshKey}`,
 									},
 								),
 							);

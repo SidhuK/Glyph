@@ -47,12 +47,17 @@ async function getConfiguredMermaid(
 ): Promise<MermaidModule> {
 	const mermaid = await loadMermaid();
 	if (initializedTheme !== theme) {
-		mermaid.initialize({
-			startOnLoad: false,
-			securityLevel: "strict",
-			theme,
-		});
-		initializedTheme = theme;
+		try {
+			mermaid.initialize({
+				startOnLoad: false,
+				securityLevel: "strict",
+				theme,
+			});
+			initializedTheme = theme;
+		} catch (error) {
+			initializedTheme = null;
+			throw error;
+		}
 	}
 	return mermaid;
 }
