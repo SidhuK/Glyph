@@ -103,17 +103,12 @@ function getOffsetWithinAncestor(
 	element: HTMLElement,
 	ancestor: HTMLElement,
 ): { left: number; top: number } {
-	let left = 0;
-	let top = 0;
-	let current: HTMLElement | null = element;
-
-	while (current && current !== ancestor) {
-		left += current.offsetLeft;
-		top += current.offsetTop;
-		current = current.offsetParent as HTMLElement | null;
-	}
-
-	return { left, top };
+	const elementRect = element.getBoundingClientRect();
+	const ancestorRect = ancestor.getBoundingClientRect();
+	return {
+		left: elementRect.left - ancestorRect.left,
+		top: elementRect.top - ancestorRect.top,
+	};
 }
 
 async function openFrontmatterHref(
@@ -219,20 +214,23 @@ function MermaidPreviewPanel({
 
 	useEffect(() => {
 		let cancelled = false;
-		setSvg("");
 		setError("");
-		void (async () => {
-			try {
-				const nextSvg = await renderMermaidDiagram(source);
-				if (cancelled) return;
-				setSvg(nextSvg);
-			} catch (nextError) {
-				if (cancelled) return;
-				setError(extractMermaidErrorMessage(nextError));
-			}
-		})();
+		const timeout = window.setTimeout(() => {
+			void (async () => {
+				try {
+					const nextSvg = await renderMermaidDiagram(source);
+					if (cancelled) return;
+					setSvg(nextSvg);
+				} catch (nextError) {
+					if (cancelled) return;
+					setSvg("");
+					setError(extractMermaidErrorMessage(nextError));
+				}
+			})();
+		}, 320);
 		return () => {
 			cancelled = true;
+			window.clearTimeout(timeout);
 		};
 	}, [source, themeKey]);
 

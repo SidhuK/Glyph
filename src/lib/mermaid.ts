@@ -75,9 +75,10 @@ export async function renderMermaidDiagram(source: string): Promise<string> {
 	const renderHost = document.createElement("div");
 	renderHost.style.position = "absolute";
 	renderHost.style.left = "-10000px";
-	renderHost.style.top = "-10000px";
-	renderHost.style.width = "0";
-	renderHost.style.height = "0";
+	renderHost.style.top = "0";
+	renderHost.style.width = "800px";
+	renderHost.style.visibility = "hidden";
+	renderHost.style.pointerEvents = "none";
 	renderHost.setAttribute("aria-hidden", "true");
 	document.body.append(renderHost);
 

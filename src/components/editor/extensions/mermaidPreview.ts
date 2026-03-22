@@ -13,6 +13,9 @@ interface MermaidPreviewPluginState {
 	richPreviewHeight: number;
 }
 
+const MERMAID_RENDER_DELAY_MS = 240;
+const MERMAID_PREVIEW_SPACER_PADDING = 28;
+
 const mermaidPreviewPluginKey = new PluginKey<MermaidPreviewPluginState>(
 	"mermaid-preview",
 );
@@ -69,9 +72,10 @@ function buildMermaidPreviewWidget(
 		}
 	};
 
+	// Delay rendering slightly so the widget can mount before Mermaid measures it.
 	window.setTimeout(() => {
 		void run();
-	}, 240);
+	}, MERMAID_RENDER_DELAY_MS);
 
 	return container;
 }
@@ -233,7 +237,8 @@ export const MermaidPreview = Extension.create({
 										pos + node.nodeSize,
 										() =>
 											buildMermaidPreviewSpacer(
-												pluginState.richPreviewHeight + 28,
+												pluginState.richPreviewHeight +
+													MERMAID_PREVIEW_SPACER_PADDING,
 											),
 										{
 											side: 1,
