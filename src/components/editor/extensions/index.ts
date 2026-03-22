@@ -17,6 +17,7 @@ import { SyntaxHighlightedCodeBlock } from "./codeBlockHighlighting";
 import { ColoredText } from "./coloredText";
 import { MarkdownImage } from "./markdownImage";
 import { MarkdownLinkAutocomplete } from "./markdownLinkAutocomplete";
+import { MermaidPreview } from "./mermaidPreview";
 import { TagDecorations } from "./tagDecorations";
 import { WikiLink } from "./wikiLink";
 
@@ -309,6 +310,7 @@ export function createEditorExtensions(
 		MarkdownImage.configure({
 			allowBase64: true,
 		}),
+		MermaidPreview,
 		Markdown.configure({
 			markedOptions: {
 				gfm: true,

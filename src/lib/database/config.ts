@@ -308,7 +308,11 @@ export function formatDatabaseDateTime(
 	const day = date.getDate();
 	const year = date.getFullYear();
 	const time = date
-		.toLocaleString("en-US", { hour: "numeric", minute: "2-digit", hour12: true })
+		.toLocaleString("en-US", {
+			hour: "numeric",
+			minute: "2-digit",
+			hour12: true,
+		})
 		.toLowerCase()
 		.replace(" ", " ");
 

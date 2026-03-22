@@ -4,6 +4,12 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 import { EditorContent } from "@tiptap/react";
 import { AnimatePresence } from "motion/react";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { flushSync } from "react-dom";
+import {
+	MERMAID_CODE_BLOCK_LANGUAGE,
+	extractMermaidErrorMessage,
+	renderMermaidDiagram,
+} from "../../lib/mermaid";
 import { joinYamlFrontmatter } from "../../lib/notePreview";
 import { type BacklinkItem, invoke } from "../../lib/tauri";
 import { Button } from "../ui/shadcn/button";
@@ -49,6 +55,17 @@ interface SelectionRibbonPosition {
 	placement: SelectionRibbonPlacement;
 }
 
+interface SelectedCodeBlockState {
+	top: number;
+	controlsLeft: number;
+	previewLeft: number;
+	width: number;
+	previewTop: number;
+	pos: number;
+	language: string | null;
+	source: string;
+}
+
 function markdownHrefFromToken(raw: string): string | null {
 	const match = raw.match(/^\[[^\]\n]+\]\(([^)\s]+)(?:\s+"[^"]*")?\)$/);
 	return match?.[1] ?? null;
@@ -73,6 +90,25 @@ function extractFrontmatterLinkTokens(text: string): FrontmatterLinkToken[] {
 		tokens.push({ kind: "href", raw, href: raw, start, end });
 	}
 	return tokens;
+}
+
+function getMountedEditorContentRoot(
+	host: HTMLElement | null,
+): HTMLElement | null {
+	if (!host) return null;
+	return host.querySelector(".ProseMirror");
+}
+
+function getOffsetWithinAncestor(
+	element: HTMLElement,
+	ancestor: HTMLElement,
+): { left: number; top: number } {
+	const elementRect = element.getBoundingClientRect();
+	const ancestorRect = ancestor.getBoundingClientRect();
+	return {
+		left: elementRect.left - ancestorRect.left,
+		top: elementRect.top - ancestorRect.top,
+	};
 }
 
 async function openFrontmatterHref(
@@ -135,6 +171,100 @@ function getSelectionRibbonPosition(
 	};
 }
 
+function MermaidPreviewPanel({
+	source,
+	themeKey,
+	style,
+	onHeightChange,
+}: {
+	source: string;
+	themeKey: number;
+	style: React.CSSProperties;
+	onHeightChange: (height: number) => void;
+}) {
+	const [svg, setSvg] = useState("");
+	const [error, setError] = useState("");
+	const panelRef = useRef<HTMLDivElement | null>(null);
+	const svgHostRef = useRef<HTMLDivElement | null>(null);
+
+	useEffect(() => {
+		const panel = panelRef.current;
+		if (!panel) return;
+
+		let raf = 0;
+		const reportHeight = () => {
+			raf = 0;
+			const nextHeight = Math.ceil(
+				Math.max(panel.offsetHeight, panel.scrollHeight),
+			);
+			onHeightChange(nextHeight);
+		};
+
+		reportHeight();
+		const observer = new ResizeObserver(() => {
+			if (raf) window.cancelAnimationFrame(raf);
+			raf = window.requestAnimationFrame(reportHeight);
+		});
+		observer.observe(panel);
+		return () => {
+			if (raf) window.cancelAnimationFrame(raf);
+			observer.disconnect();
+		};
+	}, [onHeightChange]);
+
+	useEffect(() => {
+		let cancelled = false;
+		setError("");
+		const timeout = window.setTimeout(() => {
+			void (async () => {
+				try {
+					const nextSvg = await renderMermaidDiagram(source);
+					if (cancelled) return;
+					setSvg(nextSvg);
+				} catch (nextError) {
+					if (cancelled) return;
+					setSvg("");
+					setError(extractMermaidErrorMessage(nextError));
+				}
+			})();
+		}, 320);
+		return () => {
+			cancelled = true;
+			window.clearTimeout(timeout);
+		};
+	}, [source, themeKey]);
+
+	useEffect(() => {
+		const host = svgHostRef.current;
+		if (!host) return;
+		host.replaceChildren();
+		if (!svg) return;
+
+		const doc = new DOMParser().parseFromString(svg, "image/svg+xml");
+		const svgElement = doc.documentElement;
+		if (svgElement.tagName.toLowerCase() !== "svg") {
+			setError("Unable to render Mermaid diagram.");
+			setSvg("");
+			return;
+		}
+		host.append(document.importNode(svgElement, true));
+	}, [svg]);
+
+	return (
+		<div className="mermaidPreviewPanel" style={style} ref={panelRef}>
+			<div className="mermaidPreviewCanvas">
+				{error ? <div className="mermaidPreviewError">{error}</div> : null}
+				{svg ? <div className="mermaidPreviewSvg" ref={svgHostRef} /> : null}
+				{svg || error ? null : (
+					<div className="mermaidPreviewLoading">
+						Rendering Mermaid preview…
+					</div>
+				)}
+			</div>
+		</div>
+	);
+}
+
 export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	markdown,
 	relPath,
@@ -185,11 +315,14 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		useState<SelectionRibbonPosition | null>(null);
 	const selectionRibbonHideTimerRef = useRef<number | null>(null);
 	const [codeBlockPickerOpen, setCodeBlockPickerOpen] = useState(false);
-	const [selectedCodeBlock, setSelectedCodeBlock] = useState<{
-		top: number;
-		left: number;
-		language: string | null;
-	} | null>(null);
+	const [selectedCodeBlock, setSelectedCodeBlock] =
+		useState<SelectedCodeBlockState | null>(null);
+	const [activeMermaidPreviewPos, setActiveMermaidPreviewPos] = useState<
+		number | null
+	>(null);
+	const [activeMermaidPreviewHeight, setActiveMermaidPreviewHeight] =
+		useState(0);
+	const [mermaidThemeKey, setMermaidThemeKey] = useState(0);
 
 	useEffect(() => {
 		onEditorReady?.(editor ?? null);
@@ -240,7 +373,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 			return;
 		}
 		const host = tiptapHostRef.current;
-		if (!host) return;
+		if (!host || !getMountedEditorContentRoot(host)) return;
 		let raf = 0;
 
 		const syncSelectionRibbon = () => {
@@ -314,7 +447,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		onRegisterCalloutInserter((type: string) => {
 			const normalizedType =
 				type.toLowerCase() === "warn" ? "warning" : type.toLowerCase();
-			const host = editor.view.dom.closest(
+			const host = tiptapHostRef.current?.closest(
 				".rfNodeNoteEditorBody",
 			) as HTMLElement | null;
 			const scrollTop = host?.scrollTop ?? 0;
@@ -421,15 +554,32 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 			return;
 		}
 		const host = tiptapHostRef.current;
-		if (!host) return;
+		const contentRoot = getMountedEditorContentRoot(host);
+		if (!host || !contentRoot) return;
 
 		const syncAnchors = () => {
 			const items = Array.from(
-				host.querySelectorAll("li[data-type='taskItem'], li[data-checked]"),
+				contentRoot.querySelectorAll(
+					"li[data-type='taskItem'], li[data-checked]",
+				),
 			) as HTMLElement[];
-			setTaskAnchors(
-				items.map((item, ordinal) => ({ ordinal, top: item.offsetTop + 2 })),
-			);
+			const nextAnchors = items.map((item, ordinal) => ({
+				ordinal,
+				top: item.offsetTop + 2,
+			}));
+			setTaskAnchors((current) => {
+				if (
+					current.length === nextAnchors.length &&
+					current.every(
+						(anchor, index) =>
+							anchor.ordinal === nextAnchors[index]?.ordinal &&
+							anchor.top === nextAnchors[index]?.top,
+					)
+				) {
+					return current;
+				}
+				return nextAnchors;
+			});
 		};
 		const syncSelectedTask = () => {
 			const selection = window.getSelection();
@@ -441,7 +591,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 				selection.anchorNode instanceof HTMLElement
 					? selection.anchorNode
 					: selection.anchorNode.parentElement;
-			if (!anchorElement || !host.contains(anchorElement)) {
+			if (!anchorElement || !contentRoot.contains(anchorElement)) {
 				setSelectedTaskOrdinal(null);
 				return;
 			}
@@ -453,16 +603,21 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 				return;
 			}
 			const items = Array.from(
-				host.querySelectorAll("li[data-type='taskItem'], li[data-checked]"),
+				contentRoot.querySelectorAll(
+					"li[data-type='taskItem'], li[data-checked]",
+				),
 			) as HTMLElement[];
 			const ordinal = items.indexOf(taskEl);
-			setSelectedTaskOrdinal(ordinal >= 0 ? ordinal : null);
+			setSelectedTaskOrdinal((current) => {
+				const nextOrdinal = ordinal >= 0 ? ordinal : null;
+				return current === nextOrdinal ? current : nextOrdinal;
+			});
 		};
 
 		syncAnchors();
 		syncSelectedTask();
 		const observer = new MutationObserver(() => syncAnchors());
-		observer.observe(host, {
+		observer.observe(contentRoot, {
 			childList: true,
 			subtree: true,
 			characterData: true,
@@ -483,7 +638,8 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 			return;
 		}
 		const host = tiptapHostRef.current;
-		if (!host) return;
+		const contentRoot = getMountedEditorContentRoot(host);
+		if (!host || !contentRoot) return;
 
 		const syncSelectedCodeBlock = () => {
 			const selection = window.getSelection();
@@ -516,39 +672,47 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 				return;
 			}
 
-			const hostRect = host.getBoundingClientRect();
-			const codeRect = codeElement.getBoundingClientRect();
-			const nextTop = codeRect.top - hostRect.top + 8;
-			const nextLeft = codeRect.left - hostRect.left + 10;
+			const codeOffset = getOffsetWithinAncestor(codeElement, host);
+			const nextTop = codeOffset.top + 8;
+			const nextControlsLeft = codeOffset.left + 10;
+			const nextPreviewLeft = codeOffset.left;
+			const nextWidth = Math.max(220, codeElement.offsetWidth);
+			const nextPreviewTop = codeOffset.top + codeElement.offsetHeight + 12;
 			const nextLanguage =
 				typeof parentNode.attrs.language === "string"
 					? parentNode.attrs.language
 					: null;
+			const nextPos = editor.state.selection.$from.before();
+			const nextSource = parentNode.textContent ?? "";
 
 			setSelectedCodeBlock((prev) => {
 				if (
 					prev &&
 					prev.top === nextTop &&
-					prev.left === nextLeft &&
-					prev.language === nextLanguage
+					prev.controlsLeft === nextControlsLeft &&
+					prev.previewLeft === nextPreviewLeft &&
+					prev.width === nextWidth &&
+					prev.previewTop === nextPreviewTop &&
+					prev.pos === nextPos &&
+					prev.language === nextLanguage &&
+					prev.source === nextSource
 				) {
 					return prev;
 				}
 				return {
 					top: nextTop,
-					left: nextLeft,
+					controlsLeft: nextControlsLeft,
+					previewLeft: nextPreviewLeft,
+					width: nextWidth,
+					previewTop: nextPreviewTop,
+					pos: nextPos,
 					language: nextLanguage,
+					source: nextSource,
 				};
 			});
 		};
 
 		syncSelectedCodeBlock();
-		const observer = new MutationObserver(syncSelectedCodeBlock);
-		observer.observe(host, {
-			childList: true,
-			subtree: true,
-			characterData: true,
-		});
 		const scrollHost = host.closest(".rfNodeNoteEditorBody");
 		scrollHost?.addEventListener("scroll", syncSelectedCodeBlock, {
 			passive: true,
@@ -558,7 +722,6 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		editor.on("selectionUpdate", syncSelectedCodeBlock);
 		editor.on("transaction", syncSelectedCodeBlock);
 		return () => {
-			observer.disconnect();
 			scrollHost?.removeEventListener("scroll", syncSelectedCodeBlock);
 			window.removeEventListener("resize", syncSelectedCodeBlock);
 			document.removeEventListener("selectionchange", syncSelectedCodeBlock);
@@ -579,6 +742,11 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	const selectedCodeBlockLanguageLabel = getCodeBlockLanguageLabel(
 		selectedCodeBlock?.language,
 	);
+	const isSelectedMermaidCodeBlock =
+		selectedCodeBlockLanguage === MERMAID_CODE_BLOCK_LANGUAGE;
+	const isSelectedMermaidPreviewActive =
+		isSelectedMermaidCodeBlock &&
+		selectedCodeBlock?.pos === activeMermaidPreviewPos;
 
 	const openTaskPopover = async (anchor: { ordinal: number; top: number }) => {
 		setScheduleAnchor(anchor);
@@ -616,6 +784,9 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 				language: language === "plaintext" ? null : language,
 			})
 			.run();
+		if (language !== MERMAID_CODE_BLOCK_LANGUAGE) {
+			setActiveMermaidPreviewPos(null);
+		}
 		setCodeBlockPickerOpen(false);
 	};
 	const preventCodeBlockPickerMouseDown = (
@@ -623,6 +794,74 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	) => {
 		event.preventDefault();
 	};
+	const handleEditorPointerDownCapture = (
+		event: React.PointerEvent<HTMLDivElement>,
+	) => {
+		if (!canEdit || activeMermaidPreviewPos === null) return;
+		const target = event.target instanceof HTMLElement ? event.target : null;
+		if (
+			target?.closest(".codeBlockPreviewBtn") ||
+			target?.closest(".codeBlockLanguageBtn") ||
+			target?.closest(".codeBlockLanguagePopover")
+		) {
+			return;
+		}
+		flushSync(() => {
+			setActiveMermaidPreviewPos(null);
+			setActiveMermaidPreviewHeight(0);
+		});
+	};
+	const toggleSelectedMermaidPreview = () => {
+		if (!selectedCodeBlock || !isSelectedMermaidCodeBlock) return;
+		setActiveMermaidPreviewPos((prev) =>
+			prev === selectedCodeBlock.pos ? null : selectedCodeBlock.pos,
+		);
+	};
+
+	useEffect(() => {
+		if (!selectedCodeBlock || !isSelectedMermaidCodeBlock) {
+			setActiveMermaidPreviewPos(null);
+			setActiveMermaidPreviewHeight(0);
+		}
+	}, [isSelectedMermaidCodeBlock, selectedCodeBlock]);
+
+	useEffect(() => {
+		if (!editor) return;
+		editor.commands.setActiveMermaidPreview(
+			isSelectedMermaidPreviewActive ? activeMermaidPreviewPos : null,
+		);
+	}, [activeMermaidPreviewPos, editor, isSelectedMermaidPreviewActive]);
+
+	useEffect(() => {
+		if (!editor) return;
+		editor.commands.setRichMermaidPreviewHeight(
+			isSelectedMermaidPreviewActive ? activeMermaidPreviewHeight : 0,
+		);
+	}, [activeMermaidPreviewHeight, editor, isSelectedMermaidPreviewActive]);
+
+	useEffect(() => {
+		if (!editor) return;
+		if (mode === "preview") {
+			editor.commands.refreshMermaidPreviews();
+		}
+	}, [editor, mode]);
+
+	useEffect(() => {
+		if (!editor) return;
+		const root = document.documentElement;
+		const refresh = () => {
+			setMermaidThemeKey((prev) => prev + 1);
+			if (mode === "preview") {
+				editor.commands.refreshMermaidPreviews();
+			}
+		};
+		const observer = new MutationObserver(refresh);
+		observer.observe(root, {
+			attributes: true,
+			attributeFilter: ["class", "data-theme"],
+		});
+		return () => observer.disconnect();
+	}, [editor, mode]);
 
 	return (
 		<div
@@ -668,6 +907,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 						]
 							.filter(Boolean)
 							.join(" ")}
+						onPointerDownCapture={handleEditorPointerDownCapture}
 					>
 						<EditorContent editor={editor} />
 						<AnimatePresence initial={false}>
@@ -687,57 +927,90 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 							) : null}
 						</AnimatePresence>
 						{canEdit && selectedCodeBlock ? (
-							<Popover
-								open={codeBlockPickerOpen}
-								onOpenChange={setCodeBlockPickerOpen}
+							<div
+								className="codeBlockInlineControls"
+								style={{
+									top: `${selectedCodeBlock.top}px`,
+									left: `${selectedCodeBlock.controlsLeft}px`,
+								}}
 							>
-								<PopoverTrigger asChild>
+								<Popover
+									open={codeBlockPickerOpen}
+									onOpenChange={setCodeBlockPickerOpen}
+								>
+									<PopoverTrigger asChild>
+										<button
+											type="button"
+											className="codeBlockLanguageBtn"
+											onMouseDown={preventCodeBlockPickerMouseDown}
+											title="Set code block language"
+										>
+											<span className="codeBlockLanguageBtnIcon" aria-hidden>
+												<HugeiconsIcon icon={SourceCodeIcon} size={12} />
+											</span>
+											<span className="codeBlockLanguageBtnLabel mono">
+												{selectedCodeBlockLanguageLabel}
+											</span>
+										</button>
+									</PopoverTrigger>
+									<PopoverContent
+										className="codeBlockLanguagePopover"
+										align="start"
+									>
+										<div className="codeBlockLanguagePopoverHeader">
+											Code block language
+										</div>
+										<div className="codeBlockLanguageOptions">
+											{CODE_BLOCK_LANGUAGE_OPTIONS.map((option) => (
+												<Button
+													key={option.value}
+													type="button"
+													size="xs"
+													variant={
+														option.value === selectedCodeBlockLanguage
+															? "secondary"
+															: "ghost"
+													}
+													className="codeBlockLanguageOption"
+													onMouseDown={preventCodeBlockPickerMouseDown}
+													onClick={() => applyCodeBlockLanguage(option.value)}
+												>
+													{option.label}
+												</Button>
+											))}
+										</div>
+									</PopoverContent>
+								</Popover>
+								{isSelectedMermaidCodeBlock ? (
 									<button
 										type="button"
-										className="codeBlockLanguageBtn"
-										style={{
-											top: `${selectedCodeBlock.top}px`,
-											left: `${selectedCodeBlock.left}px`,
-										}}
+										className="codeBlockPreviewBtn"
 										onMouseDown={preventCodeBlockPickerMouseDown}
-										title="Set code block language"
+										onClick={toggleSelectedMermaidPreview}
+										title={
+											isSelectedMermaidPreviewActive
+												? "Stop Mermaid preview"
+												: "Play Mermaid preview"
+										}
 									>
-										<span className="codeBlockLanguageBtnIcon" aria-hidden>
-											<HugeiconsIcon icon={SourceCodeIcon} size={12} />
-										</span>
-										<span className="codeBlockLanguageBtnLabel mono">
-											{selectedCodeBlockLanguageLabel}
+										<span className="codeBlockPreviewBtnLabel mono">
+											{isSelectedMermaidPreviewActive ? "Stop" : "Play"}
 										</span>
 									</button>
-								</PopoverTrigger>
-								<PopoverContent
-									className="codeBlockLanguagePopover"
-									align="start"
-								>
-									<div className="codeBlockLanguagePopoverHeader">
-										Code block language
-									</div>
-									<div className="codeBlockLanguageOptions">
-										{CODE_BLOCK_LANGUAGE_OPTIONS.map((option) => (
-											<Button
-												key={option.value}
-												type="button"
-												size="xs"
-												variant={
-													option.value === selectedCodeBlockLanguage
-														? "secondary"
-														: "ghost"
-												}
-												className="codeBlockLanguageOption"
-												onMouseDown={preventCodeBlockPickerMouseDown}
-												onClick={() => applyCodeBlockLanguage(option.value)}
-											>
-												{option.label}
-											</Button>
-										))}
-									</div>
-								</PopoverContent>
-							</Popover>
+								) : null}
+							</div>
+						) : null}
+						{canEdit && selectedCodeBlock && isSelectedMermaidPreviewActive ? (
+							<MermaidPreviewPanel
+								source={selectedCodeBlock.source}
+								themeKey={mermaidThemeKey}
+								style={{
+									top: `${selectedCodeBlock.previewTop}px`,
+									left: `${selectedCodeBlock.previewLeft}px`,
+									width: `${selectedCodeBlock.width}px`,
+								}}
+								onHeightChange={setActiveMermaidPreviewHeight}
+							/>
 						) : null}
 						{canEdit && selectedTaskAnchor ? (
 							<Popover

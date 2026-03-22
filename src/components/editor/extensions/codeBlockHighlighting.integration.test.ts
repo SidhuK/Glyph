@@ -48,4 +48,33 @@ describe("Code block highlighting markdown integration", () => {
 		expect(output).toContain("```\nplain text block\n```");
 		expect(output).not.toContain("```plaintext");
 	});
+
+	it("round-trips Mermaid fences without rewriting the language", () => {
+		const manager = new MarkdownManager({
+			extensions: createEditorExtensions({
+				enableSlashCommand: false,
+				enableWikiLinks: false,
+			}),
+			markedOptions: {
+				gfm: true,
+				breaks: false,
+			},
+		});
+
+		const input = [
+			"```mermaid",
+			"flowchart TD",
+			"  A[Start] --> B[End]",
+			"```",
+		].join("\n");
+
+		const json = manager.parse(input);
+		expect(json.content?.[0]?.type).toBe("codeBlock");
+		expect(json.content?.[0]?.attrs?.language).toBe("mermaid");
+
+		const output = manager.serialize(json);
+		expect(output).toContain("```mermaid");
+		expect(output).toContain("flowchart TD");
+		expect(output).toContain("A[Start] --> B[End]");
+	});
 });
