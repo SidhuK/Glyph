@@ -55,6 +55,7 @@ pub struct SpaceState {
     pub(crate) notes_watcher: Mutex<Option<notify::RecommendedWatcher>>,
     recent_local_changes: RecentLocalChanges,
     db_store_mutex: Arc<Mutex<()>>,
+    file_tree_appearance_mutex: Arc<Mutex<()>>,
 }
 
 impl Default for SpaceState {
@@ -64,6 +65,7 @@ impl Default for SpaceState {
             notes_watcher: Mutex::new(None),
             recent_local_changes: Arc::new(Mutex::new(HashMap::new())),
             db_store_mutex: Arc::new(Mutex::new(())),
+            file_tree_appearance_mutex: Arc::new(Mutex::new(())),
         }
     }
 }
@@ -75,6 +77,10 @@ impl SpaceState {
 
     pub(crate) fn db_store_mutex(&self) -> Arc<Mutex<()>> {
         Arc::clone(&self.db_store_mutex)
+    }
+
+    pub(crate) fn file_tree_appearance_mutex(&self) -> Arc<Mutex<()>> {
+        Arc::clone(&self.file_tree_appearance_mutex)
     }
 
     pub fn current_root(&self) -> Result<PathBuf, String> {

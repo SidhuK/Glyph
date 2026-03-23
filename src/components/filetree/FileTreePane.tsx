@@ -1,6 +1,8 @@
 import { m } from "motion/react";
 import { memo, useCallback, useState } from "react";
-import { useFileTreeContext } from "../../contexts";
+import { toast } from "sonner";
+import { useFileTreeContext, useSpace } from "../../contexts";
+import { extractErrorMessage } from "../../lib/errorUtils";
 import type { FileTreeAppearance, FsEntry } from "../../lib/tauri";
 import { parentDir } from "../../utils/path";
 import { springPresets } from "../ui/animations";
@@ -191,6 +193,7 @@ export const FileTreePane = memo(function FileTreePane({
 	onDeletePath,
 }: FileTreePaneProps) {
 	const { itemAppearance, setItemAppearance } = useFileTreeContext();
+	const { setError } = useSpace();
 	const [renamingPath, setRenamingPath] = useState<string | null>(null);
 
 	const handleCreateFolder = useCallback(
@@ -239,6 +242,21 @@ export const FileTreePane = memo(function FileTreePane({
 		[onDeletePath],
 	);
 
+	const handleChangeAppearance = useCallback(
+		async (entry: FsEntry, appearance: FileTreeAppearance) => {
+			try {
+				await setItemAppearance(entry.rel_path, appearance);
+			} catch (error) {
+				const message = extractErrorMessage(error);
+				setError(message);
+				toast.error("Could not update file tree appearance", {
+					description: message,
+				});
+			}
+		},
+		[setError, setItemAppearance],
+	);
+
 	return (
 		<m.aside
 			className="fileTreePane"
@@ -269,9 +287,7 @@ export const FileTreePane = memo(function FileTreePane({
 						onCommitFileRename={handleCommitFileRename}
 						onCancelRename={() => setRenamingPath(null)}
 						itemAppearance={itemAppearance}
-						onChangeAppearance={(entry, appearance) =>
-							setItemAppearance(entry.rel_path, appearance)
-						}
+						onChangeAppearance={handleChangeAppearance}
 					/>
 				</div>
 			) : (

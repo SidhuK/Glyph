@@ -46,7 +46,7 @@ export function buildRowStyle(
 	return {
 		paddingLeft,
 		...toneStyle,
-		...(color
+		...(toneSeed && color
 			? {
 					"--file-tree-row-icon-color": "var(--database-tone)",
 					"--file-tree-row-name-color":

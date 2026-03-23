@@ -51,16 +51,6 @@ pub fn save_store(space_root: &Path, store: &FileTreeAppearanceStore) -> Result<
     io_atomic::write_atomic(&path, &bytes).map_err(|error| error.to_string())
 }
 
-pub fn bootstrap(mut store: FileTreeAppearanceStore) -> FileTreeAppearanceStore {
-    store.version = FILE_TREE_APPEARANCE_STORE_VERSION;
-    store.entries = store
-        .entries
-        .into_iter()
-        .filter_map(|(path, appearance)| appearance.normalized().map(|item| (path, item)))
-        .collect();
-    store
-}
-
 pub fn rewrite_entry_path(path: &str, from_path: &str, to_path: &str) -> Option<String> {
     if path == from_path {
         return Some(to_path.to_string());

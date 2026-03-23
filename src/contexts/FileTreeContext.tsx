@@ -5,6 +5,7 @@ import {
 	useContext,
 	useEffect,
 	useMemo,
+	useRef,
 	useState,
 } from "react";
 import { extractErrorMessage } from "../lib/errorUtils";
@@ -66,6 +67,11 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 	>({});
 	const [tags, setTags] = useState<TagCount[]>([]);
 	const [tagsError, setTagsError] = useState("");
+	const currentSpacePathRef = useRef<string | null>(spacePath);
+
+	useEffect(() => {
+		currentSpacePathRef.current = spacePath;
+	}, [spacePath]);
 
 	const refreshTags = useCallback(async () => {
 		try {
@@ -92,15 +98,21 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 		(async () => {
 			try {
 				const entries = await invoke("space_list_dir", {});
-				const appearance = await invoke("file_tree_appearance_list");
 				if (!cancelled) {
 					setRootEntries(entries);
-					setItemAppearanceState(appearance);
 				}
-				void startIndexRebuild();
-				void refreshTags();
 			} catch {
 				/* ignore initial load errors */
+			}
+			void startIndexRebuild();
+			void refreshTags();
+			try {
+				const appearance = await invoke("file_tree_appearance_list");
+				if (!cancelled) {
+					setItemAppearanceState(appearance);
+				}
+			} catch {
+				/* ignore appearance load errors */
 			}
 		})();
 		return () => {
@@ -121,59 +133,74 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 
 	const setItemAppearance = useCallback<
 		FileTreeContextValue["setItemAppearance"]
-	>(async (path, appearance) => {
-		const next = await invoke("file_tree_appearance_set", {
-			path,
-			color: appearance.color ?? null,
-			icon: appearance.icon ?? null,
-		});
-		setItemAppearanceState((prev) => {
-			if (next) return { ...prev, [path]: next };
-			if (!(path in prev)) return prev;
-			const nextMap = { ...prev };
-			delete nextMap[path];
-			return nextMap;
-		});
-	}, []);
+	>(
+		async (path, appearance) => {
+			const currentSpacePath = spacePath;
+			const next = await invoke("file_tree_appearance_set", {
+				path,
+				color: appearance.color ?? null,
+				icon: appearance.icon ?? null,
+			});
+			if (currentSpacePathRef.current !== currentSpacePath) return;
+			setItemAppearanceState((prev) => {
+				if (next) return { ...prev, [path]: next };
+				if (!(path in prev)) return prev;
+				const nextMap = { ...prev };
+				delete nextMap[path];
+				return nextMap;
+			});
+		},
+		[spacePath],
+	);
 
 	const renameItemAppearance = useCallback<
 		FileTreeContextValue["renameItemAppearance"]
-	>(async (fromPath, toPath) => {
-		await invoke("file_tree_appearance_rename_path", {
-			from_path: fromPath,
-			to_path: toPath,
-		});
-		setItemAppearanceState((prev) => {
-			const next: Record<string, FileTreeAppearance> = {};
-			for (const [path, appearance] of Object.entries(prev)) {
-				if (path === fromPath) {
-					next[toPath] = appearance;
-					continue;
+	>(
+		async (fromPath, toPath) => {
+			const currentSpacePath = spacePath;
+			await invoke("file_tree_appearance_rename_path", {
+				from_path: fromPath,
+				to_path: toPath,
+			});
+			if (currentSpacePathRef.current !== currentSpacePath) return;
+			setItemAppearanceState((prev) => {
+				const next: Record<string, FileTreeAppearance> = {};
+				for (const [path, appearance] of Object.entries(prev)) {
+					if (path === fromPath) {
+						next[toPath] = appearance;
+						continue;
+					}
+					const prefix = `${fromPath}/`;
+					if (path.startsWith(prefix)) {
+						next[`${toPath}/${path.slice(prefix.length)}`] = appearance;
+						continue;
+					}
+					next[path] = appearance;
 				}
-				const prefix = `${fromPath}/`;
-				if (path.startsWith(prefix)) {
-					next[`${toPath}/${path.slice(prefix.length)}`] = appearance;
-					continue;
-				}
-				next[path] = appearance;
-			}
-			return next;
-		});
-	}, []);
+				return next;
+			});
+		},
+		[spacePath],
+	);
 
 	const deleteItemAppearance = useCallback<
 		FileTreeContextValue["deleteItemAppearance"]
-	>(async (path) => {
-		await invoke("file_tree_appearance_delete_path", { path });
-		setItemAppearanceState((prev) =>
-			Object.fromEntries(
-				Object.entries(prev).filter(
-					([entryPath]) =>
-						entryPath !== path && !entryPath.startsWith(`${path}/`),
+	>(
+		async (path) => {
+			const currentSpacePath = spacePath;
+			await invoke("file_tree_appearance_delete_path", { path });
+			if (currentSpacePathRef.current !== currentSpacePath) return;
+			setItemAppearanceState((prev) =>
+				Object.fromEntries(
+					Object.entries(prev).filter(
+						([entryPath]) =>
+							entryPath !== path && !entryPath.startsWith(`${path}/`),
+					),
 				),
-			),
-		);
-	}, []);
+			);
+		},
+		[spacePath],
+	);
 
 	const updateRootEntries = useCallback<
 		FileTreeContextValue["updateRootEntries"]
