@@ -474,6 +474,10 @@
 		140ms ease;
 }
 
+.databaseBoardLane[data-show-column-color="false"] {
+	background: transparent;
+}
+
 .databaseBoardLane[data-active="true"] {
 	background: linear-gradient(
 		180deg,
@@ -483,6 +487,12 @@
 	box-shadow: 0 8px 18px
 		color-mix(in srgb, var(--database-tone) 8%, transparent);
 	transform: translateY(-1px);
+}
+
+.databaseBoardLane[data-show-column-color="false"][data-active="true"] {
+	background: transparent;
+	box-shadow: 0 8px 18px
+		color-mix(in srgb, var(--border-light) 18%, transparent);
 }
 
 .databaseBoardLaneHeader {
@@ -829,6 +839,7 @@
 	z-index: 1;
 	background: var(--bg-primary);
 	text-align: left;
+	padding-right: 10px;
 	border-bottom: 1px solid var(--border-light);
 	font-size: 0.78rem;
 	color: var(--text-secondary);
@@ -836,6 +847,10 @@
 
 .databaseHeadCell:first-child {
 	padding-left: 14px;
+}
+
+.databaseHeadCell:last-child {
+	padding-right: 14px;
 }
 
 .databaseHeaderButton,
@@ -900,13 +915,52 @@
 }
 
 .databaseBodyCell {
+	position: relative;
 	vertical-align: middle;
 	text-align: left;
+	padding-right: 10px;
 	border-top: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
 }
 
 .databaseBodyCell:first-child {
 	padding-left: 14px;
+}
+
+.databaseBodyCell:last-child {
+	padding-right: 14px;
+}
+
+.databaseHeadCell:not(:last-child)::after,
+.databaseBodyCell:not(:last-child)::after {
+	content: "";
+	position: absolute;
+	top: 8px;
+	right: 0;
+	bottom: 8px;
+	width: 1px;
+	background: color-mix(in srgb, var(--border-light) 72%, transparent);
+}
+
+.databaseHeadCell:not(:last-child)::before {
+	content: "";
+	position: absolute;
+	right: -1.5px;
+	bottom: -2px;
+	width: 4px;
+	height: 4px;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--border-default) 78%, transparent);
+}
+
+.databaseBodyCell:not(:last-child)::before {
+	content: "";
+	position: absolute;
+	right: -1.5px;
+	top: -2px;
+	width: 4px;
+	height: 4px;
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--border-default) 78%, transparent);
 }
 
 .databaseCellInput,

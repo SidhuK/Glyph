@@ -6,6 +6,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { defaultDatabaseColumnIconName } from "../../lib/database/columnIcons";
 import { extractErrorMessage } from "../../lib/errorUtils";
+import { loadSettings } from "../../lib/settings";
 import {
 	type DatabaseColumn,
 	type DatabaseConfig,
@@ -16,6 +17,7 @@ import {
 	type WorkspaceDatabaseSummary,
 	invoke,
 } from "../../lib/tauri";
+import { useTauriEvent } from "../../lib/tauriEvents";
 import { ChevronDown, Edit, Kanban, Plus, Table, Trash2 } from "../Icons";
 import { DatabaseBoard } from "../database/DatabaseBoard";
 import { DatabaseTable } from "../database/DatabaseTable";
@@ -208,6 +210,7 @@ export function DatabasesPane({
 	const [viewNameDraft, setViewNameDraft] = useState("");
 	const viewNameInputRef = useRef<HTMLInputElement | null>(null);
 	const rowRequestTokenRef = useRef(0);
+	const [showDatabaseColumnColor, setShowDatabaseColumnColor] = useState(true);
 
 	const loadSummaries = useCallback(async () => {
 		const next = await invoke("databases_list");
@@ -229,6 +232,28 @@ export function DatabasesPane({
 	useEffect(() => {
 		void loadSummaries().catch((cause) => setError(extractErrorMessage(cause)));
 	}, [loadSummaries]);
+
+	useEffect(() => {
+		let cancelled = false;
+		void loadSettings()
+			.then((settings) => {
+				if (!cancelled) {
+					setShowDatabaseColumnColor(settings.database.showColumnColor);
+				}
+			})
+			.catch(() => {
+				// Preserve the existing default if settings cannot be loaded.
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, []);
+
+	useTauriEvent("settings:updated", (payload) => {
+		if (typeof payload.database?.showColumnColor === "boolean") {
+			setShowDatabaseColumnColor(payload.database.showColumnColor);
+		}
+	});
 
 	useEffect(() => {
 		if (openRequestNonce === 0) return;
@@ -890,6 +915,7 @@ export function DatabasesPane({
 							columns={activeConfig.columns}
 							groupColumnId={activeConfig.view.board_group_by ?? null}
 							laneColors={activeConfig.view.board_lane_colors ?? {}}
+							showColumnColor={showDatabaseColumnColor}
 							selectedRowPath={selectedRowPath}
 							onSelectRow={setSelectedRowPath}
 							onOpenRow={(notePath) => void onOpenFile(notePath)}

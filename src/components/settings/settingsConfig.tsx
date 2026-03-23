@@ -3,12 +3,19 @@ import {
 	Archive02Icon,
 	Settings01Icon,
 	Sun03Icon,
+	ToolsIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { ReactElement } from "react";
 import { FolderOpen } from "../Icons/NavigationIcons";
 
-export type SettingsTab = "general" | "appearance" | "ai" | "space" | "about";
+export type SettingsTab =
+	| "general"
+	| "appearance"
+	| "ai"
+	| "space"
+	| "advanced"
+	| "about";
 
 export interface SettingsTabMeta {
 	id: SettingsTab;
@@ -36,6 +43,11 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 		id: "space",
 		label: "Space",
 		renderIcon: () => <FolderOpen size={14} />,
+	},
+	{
+		id: "advanced",
+		label: "Advanced",
+		renderIcon: () => <HugeiconsIcon icon={ToolsIcon} size={14} />,
 	},
 	{
 		id: "about",

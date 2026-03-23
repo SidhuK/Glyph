@@ -93,6 +93,14 @@ export interface TaskSourceSetting {
 	folders: string[];
 }
 
+export interface DatabaseSettings {
+	showColumnColor: boolean;
+}
+
+export const DEFAULT_DATABASE_SETTINGS: DatabaseSettings = {
+	showColumnColor: true,
+};
+
 function asThemeMode(value: unknown): ThemeMode {
 	return typeof value === "string" && THEME_MODES.has(value as ThemeMode)
 		? (value as ThemeMode)
@@ -183,6 +191,9 @@ async function emitSettingsUpdated(payload: {
 	tasks?: {
 		source?: TaskSourceSetting;
 	};
+	database?: {
+		showColumnColor?: boolean;
+	};
 	changelog?: {
 		lastAcknowledgedVersion?: string | null;
 	};
@@ -233,6 +244,7 @@ interface AppSettings {
 	tasks: {
 		source: TaskSourceSetting;
 	};
+	database: DatabaseSettings;
 }
 
 const KEYS = {
@@ -258,6 +270,7 @@ const KEYS = {
 	templatesFolder: "templates.folder",
 	templatesDailyNoteTemplate: "templates.dailyNoteTemplate",
 	taskSource: "tasks.source",
+	databaseShowColumnColor: "database.showColumnColor",
 	changelogLastAcknowledgedVersion: "changelog.lastAcknowledgedVersion",
 	onboardingLauncherSeen: "onboarding.launcherSeen",
 	onboardingStarterDismissed: "onboarding.starterDismissed",
@@ -366,6 +379,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		templatesFolderRaw,
 		templatesDailyNoteTemplateRaw,
 		taskSourceRaw,
+		rawDatabaseShowColumnColor,
 		rawChangelogLastAcknowledgedVersion,
 	] = await Promise.all([
 		store.get<string | null>(KEYS.currentSpacePath),
@@ -394,6 +408,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<string | null>(KEYS.templatesFolder),
 		store.get<string | null>(KEYS.templatesDailyNoteTemplate),
 		store.get<unknown>(KEYS.taskSource),
+		store.get<boolean | null>(KEYS.databaseShowColumnColor),
 		store.get<string | null>(KEYS.changelogLastAcknowledgedVersion),
 	]);
 	const currentSpacePath = currentSpacePathRaw ?? null;
@@ -442,6 +457,12 @@ export async function loadSettings(): Promise<AppSettings> {
 	const taskSource =
 		normalizeLegacyTaskSourceSetting(taskSourceRaw) ??
 		normalizeTaskSourceSetting(taskSourceRaw);
+	const database: DatabaseSettings = {
+		showColumnColor:
+			typeof rawDatabaseShowColumnColor === "boolean"
+				? rawDatabaseShowColumnColor
+				: DEFAULT_DATABASE_SETTINGS.showColumnColor,
+	};
 	const changelog: ChangelogSettings = {
 		lastAcknowledgedVersion:
 			typeof rawChangelogLastAcknowledgedVersion === "string" &&
@@ -484,6 +505,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		tasks: {
 			source: taskSource,
 		},
+		database,
 	};
 }
 
@@ -731,6 +753,15 @@ export async function setTaskSource(source: TaskSourceSetting): Promise<void> {
 	await store.set(KEYS.taskSource, next);
 	await store.save();
 	void emitSettingsUpdated({ tasks: { source: next } });
+}
+
+export async function setDatabaseShowColumnColor(
+	enabled: boolean,
+): Promise<void> {
+	const store = await getStore();
+	await store.set(KEYS.databaseShowColumnColor, enabled);
+	await store.save();
+	void emitSettingsUpdated({ database: { showColumnColor: enabled } });
 }
 
 export async function getAutoUpdateLastCheckedAt(): Promise<number | null> {

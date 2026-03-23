@@ -23,7 +23,7 @@ type TauriEventMap = {
 	"menu:ai_attach_all_open_notes": undefined;
 	"menu:open_ai_settings": undefined;
 	"settings:navigate": {
-		tab: "general" | "appearance" | "ai" | "space" | "about";
+		tab: "general" | "appearance" | "ai" | "space" | "advanced" | "about";
 	};
 	"ai:chunk": { job_id: string; delta: string };
 	"ai:status": { job_id: string; status: string; detail?: string };
@@ -86,6 +86,9 @@ type TauriEventMap = {
 		};
 		tasks?: {
 			source?: { mode?: "space" | "folders"; folders?: string[] };
+		};
+		database?: {
+			showColumnColor?: boolean;
 		};
 		changelog?: {
 			lastAcknowledgedVersion?: string | null;
