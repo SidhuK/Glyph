@@ -9,6 +9,7 @@ import {
 	PATH_REMOVED_EVENT,
 	type PathRemovedDetail,
 } from "../../lib/appEvents";
+import { CALENDAR_TAB_ID } from "../../lib/calendar";
 import { APP_TAGLINE } from "../../lib/copy";
 import { DATABASES_TAB_ID } from "../../lib/databases";
 import {
@@ -18,13 +19,11 @@ import {
 	updateOnboardingSettings,
 } from "../../lib/settings";
 import { formatShortcutPartsForPlatform } from "../../lib/shortcuts/platform";
-import { TASKS_TAB_ID } from "../../lib/tasks";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { isInAppPreviewable } from "../../utils/filePreview";
 import { Calendar, FileText, Settings } from "../Icons";
 import { FilePreviewPane } from "../preview/FilePreviewPane";
 import { NotePane } from "../preview/NotePane";
-import { TasksPane } from "../tasks/TasksPane";
 import { springPresets } from "../ui/animations";
 import { Button } from "../ui/shadcn/button";
 import { GettingStartedPane } from "./GettingStartedPane";
@@ -35,6 +34,12 @@ import { useTabManager } from "./useTabManager";
 const DatabasesPane = lazy(() =>
 	import("../databases/DatabasesPane").then((module) => ({
 		default: module.DatabasesPane,
+	})),
+);
+
+const CalendarPane = lazy(() =>
+	import("../calendar/CalendarPane").then((module) => ({
+		default: module.CalendarPane,
 	})),
 );
 
@@ -192,7 +197,7 @@ interface MainContentProps {
 	onOpenCommandPalette: () => void;
 	onCreateNote: () => void;
 	onOpenDailyNote: () => void;
-	openTasksRequest: number;
+	openCalendarRequest: number;
 	openDatabasesRequest: {
 		nonce: number;
 		databaseId: string | null;
@@ -275,7 +280,7 @@ export const MainContent = memo(function MainContent({
 	onOpenCommandPalette,
 	onCreateNote,
 	onOpenDailyNote,
-	openTasksRequest,
+	openCalendarRequest,
 	openDatabasesRequest,
 	openBlankTabRequest,
 	showGettingStartedRequest,
@@ -318,9 +323,9 @@ export const MainContent = memo(function MainContent({
 	} = useTabManager(spacePath);
 
 	useEffect(() => {
-		if (!spacePath || openTasksRequest === 0) return;
-		openSpecialTab(TASKS_TAB_ID);
-	}, [openSpecialTab, openTasksRequest, spacePath]);
+		if (!spacePath || openCalendarRequest === 0) return;
+		openSpecialTab(CALENDAR_TAB_ID);
+	}, [openCalendarRequest, openSpecialTab, spacePath]);
 
 	useEffect(() => {
 		if (!spacePath || openDatabasesRequest.nonce === 0) return;
@@ -416,12 +421,18 @@ export const MainContent = memo(function MainContent({
 
 	const content = useMemo(() => {
 		if (!viewerPath) return null;
-		if (viewerPath === TASKS_TAB_ID) {
+		if (viewerPath === CALENDAR_TAB_ID) {
 			return (
-				<TasksPane
-					onOpenFile={(relPath) => void fileTree.openFile(relPath)}
-					onClosePane={() => closeTab(TASKS_TAB_ID)}
-				/>
+				<Suspense
+					fallback={
+						<div className="databaseLoadingState">Loading calendar…</div>
+					}
+				>
+					<CalendarPane
+						onOpenFile={(relPath) => fileTree.openFile(relPath)}
+						onOpenDailyNotesSettings={onOpenDailyNotesSettings}
+					/>
+				</Suspense>
 			);
 		}
 		if (viewerPath === DATABASES_TAB_ID) {
@@ -466,6 +477,7 @@ export const MainContent = memo(function MainContent({
 	}, [
 		closeTab,
 		fileTree,
+		onOpenDailyNotesSettings,
 		openDatabasesRequest.databaseId,
 		openDatabasesRequest.nonce,
 		viewerPath,

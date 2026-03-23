@@ -1,4 +1,8 @@
+use std::collections::{HashMap, HashSet};
 use std::path::Path;
+
+use chrono::{Duration, NaiveDate};
+use serde::Serialize;
 use tauri::{AppHandle, State};
 use tauri_plugin_notification::NotificationExt;
 
@@ -15,6 +19,49 @@ use super::tasks::{
     mutate_task_line, note_abs_path, query_tasks, write_note, IndexedTask, TaskBucket,
 };
 use super::types::{BacklinkItem, IndexRebuildResult, SearchResult, TagCount, TaskDateInfo};
+
+#[derive(Serialize)]
+pub struct CalendarDaySummary {
+    pub date: String,
+    pub task_count: u32,
+    pub note_activity_count: u32,
+    pub has_daily_note: bool,
+    pub needs_daily_note_setup: bool,
+}
+
+#[derive(Serialize)]
+pub struct CalendarNoteActivityItem {
+    pub note_id: String,
+    pub note_path: String,
+    pub title: String,
+    pub created: String,
+    pub updated: String,
+    pub created_on_day: bool,
+    pub edited_on_day: bool,
+}
+
+#[derive(Serialize)]
+pub struct CalendarDayDetail {
+    pub selected_date: String,
+    pub note_activity: Vec<CalendarNoteActivityItem>,
+    pub daily_note_path: Option<String>,
+    pub has_daily_note: bool,
+    pub daily_note_configured: bool,
+}
+
+#[derive(Serialize)]
+pub struct CalendarTaskGroups {
+    pub overdue: Vec<IndexedTask>,
+    pub for_day: Vec<IndexedTask>,
+    pub ongoing: Vec<IndexedTask>,
+}
+
+#[derive(Serialize)]
+pub struct CalendarRangeResponse {
+    pub days: Vec<CalendarDaySummary>,
+    pub detail: CalendarDayDetail,
+    pub tasks: CalendarTaskGroups,
+}
 
 fn tokenize_search_query(raw: &str) -> Vec<String> {
     let mut out: Vec<String> = Vec::new();
@@ -121,6 +168,40 @@ fn parse_task_dates(body: &str) -> (String, String) {
         }
     }
     (scheduled_date, due_date)
+}
+
+fn parse_calendar_date(date: &str) -> Result<NaiveDate, String> {
+    NaiveDate::parse_from_str(date, "%Y-%m-%d")
+        .map_err(|_| format!("invalid calendar date: {date}"))
+}
+
+fn format_calendar_date(date: NaiveDate) -> String {
+    date.format("%Y-%m-%d").to_string()
+}
+
+fn daily_note_path_for(folder: Option<&str>, date: &str) -> Option<String> {
+    let folder = folder?.trim().trim_matches('/').replace('\\', "/");
+    if folder.is_empty() {
+        return Some(format!("{date}.md"));
+    }
+    Some(format!("{folder}/{date}.md"))
+}
+
+fn sort_calendar_tasks(tasks: &mut [IndexedTask]) {
+    tasks.sort_by(|left, right| {
+        left.scheduled_date
+            .as_deref()
+            .unwrap_or(left.due_date.as_deref().unwrap_or("9999-12-31"))
+            .cmp(
+                &right
+                    .scheduled_date
+                    .as_deref()
+                    .unwrap_or(right.due_date.as_deref().unwrap_or("9999-12-31")),
+            )
+            .then_with(|| left.due_date.cmp(&right.due_date))
+            .then_with(|| left.note_title.cmp(&right.note_title))
+            .then_with(|| left.line_start.cmp(&right.line_start))
+    });
 }
 
 fn rewrite_task_dates(body: &str, scheduled_date: &str, due_date: &str) -> String {
@@ -309,6 +390,276 @@ pub async fn recent_notes(
             });
         }
         Ok(out)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command(rename_all = "snake_case")]
+pub async fn calendar_query_range(
+    state: State<'_, SpaceState>,
+    start_date: String,
+    end_date: String,
+    selected_date: String,
+    daily_notes_folder: Option<String>,
+) -> Result<CalendarRangeResponse, String> {
+    let root = state.current_root()?;
+    let start = parse_calendar_date(&start_date)?;
+    let end = parse_calendar_date(&end_date)?;
+    let selected = parse_calendar_date(&selected_date)?;
+    if end < start {
+        return Err("end_date must be on or after start_date".to_string());
+    }
+    if selected < start || selected > end {
+        return Err("selected_date must be inside the requested range".to_string());
+    }
+    let normalized_daily_notes_folder = daily_notes_folder
+        .map(|folder| folder.trim().trim_matches('/').replace('\\', "/"))
+        .filter(|folder| !folder.is_empty());
+
+    tauri::async_runtime::spawn_blocking(move || -> Result<CalendarRangeResponse, String> {
+        let conn = open_db(&root)?;
+
+        let mut days = Vec::new();
+        let mut task_counts = HashMap::<String, u32>::new();
+        let mut note_activity_sets = HashMap::<String, HashSet<String>>::new();
+        let mut current = start;
+        while current <= end {
+            days.push(format_calendar_date(current));
+            current += Duration::days(1);
+        }
+
+        let mut task_stmt = conn
+            .prepare(
+                "SELECT t.task_id, t.note_id, n.title, t.note_path, t.line_start, t.raw_text, t.checked,
+                        t.status, t.priority, t.due_date, t.scheduled_date, t.section, t.note_updated
+                 FROM tasks t
+                 JOIN notes n ON n.id = t.note_id
+                 WHERE t.checked = 0
+                   AND (t.scheduled_date IS NOT NULL OR t.due_date IS NOT NULL)
+                   AND (
+                        (
+                            COALESCE(t.scheduled_date, t.due_date) <= ?3
+                            AND COALESCE(t.due_date, t.scheduled_date) >= ?1
+                        )
+                        OR COALESCE(t.due_date, t.scheduled_date) < ?2
+                   )",
+            )
+            .map_err(|e| e.to_string())?;
+        let mut task_rows = task_stmt
+            .query([start_date.as_str(), selected_date.as_str(), end_date.as_str()])
+            .map_err(|e| e.to_string())?;
+        let mut all_tasks = Vec::<IndexedTask>::new();
+        while let Some(row) = task_rows.next().map_err(|e| e.to_string())? {
+            all_tasks.push(IndexedTask {
+                task_id: row.get(0).map_err(|e| e.to_string())?,
+                note_id: row.get(1).map_err(|e| e.to_string())?,
+                note_title: row.get(2).map_err(|e| e.to_string())?,
+                note_path: row.get(3).map_err(|e| e.to_string())?,
+                line_start: row.get(4).map_err(|e| e.to_string())?,
+                raw_text: row.get(5).map_err(|e| e.to_string())?,
+                checked: row.get::<_, i64>(6).map_err(|e| e.to_string())? == 1,
+                status: row.get(7).map_err(|e| e.to_string())?,
+                priority: row.get(8).map_err(|e| e.to_string())?,
+                due_date: row.get(9).map_err(|e| e.to_string())?,
+                scheduled_date: row.get(10).map_err(|e| e.to_string())?,
+                section: row.get(11).map_err(|e| e.to_string())?,
+                note_updated: row.get(12).map_err(|e| e.to_string())?,
+            });
+        }
+
+        for task in &all_tasks {
+            let Some(start_bound) = task
+                .scheduled_date
+                .as_deref()
+                .or(task.due_date.as_deref())
+                .and_then(|date| parse_calendar_date(date).ok())
+            else {
+                continue;
+            };
+            let end_bound = task
+                .due_date
+                .as_deref()
+                .or(task.scheduled_date.as_deref())
+                .and_then(|date| parse_calendar_date(date).ok())
+                .unwrap_or(start_bound);
+            let overlap_start = start_bound.max(start);
+            let overlap_end = end_bound.min(end);
+            if overlap_start > overlap_end {
+                continue;
+            }
+            let mut day = overlap_start;
+            while day <= overlap_end {
+                *task_counts.entry(format_calendar_date(day)).or_insert(0) += 1;
+                day += Duration::days(1);
+            }
+        }
+
+        let mut note_stmt = conn
+            .prepare(
+                "SELECT id, title, path, created, updated
+                 FROM notes
+                 WHERE substr(created, 1, 10) BETWEEN ? AND ?
+                    OR substr(updated, 1, 10) BETWEEN ? AND ?",
+            )
+            .map_err(|e| e.to_string())?;
+        let mut note_rows = note_stmt
+            .query([
+                start_date.as_str(),
+                end_date.as_str(),
+                start_date.as_str(),
+                end_date.as_str(),
+            ])
+            .map_err(|e| e.to_string())?;
+
+        let mut note_activity = Vec::<CalendarNoteActivityItem>::new();
+        while let Some(row) = note_rows.next().map_err(|e| e.to_string())? {
+            let note_id: String = row.get(0).map_err(|e| e.to_string())?;
+            let title: String = row.get(1).map_err(|e| e.to_string())?;
+            let note_path: String = row.get(2).map_err(|e| e.to_string())?;
+            let created: String = row.get(3).map_err(|e| e.to_string())?;
+            let updated: String = row.get(4).map_err(|e| e.to_string())?;
+            let created_day = created.get(0..10).unwrap_or_default().to_string();
+            let updated_day = updated.get(0..10).unwrap_or_default().to_string();
+            let is_created_daily_note = daily_note_path_for(
+                normalized_daily_notes_folder.as_deref(),
+                &created_day,
+            )
+            .as_deref()
+                == Some(note_path.as_str());
+            let is_updated_daily_note = daily_note_path_for(
+                normalized_daily_notes_folder.as_deref(),
+                &updated_day,
+            )
+            .as_deref()
+                == Some(note_path.as_str());
+
+            if created_day >= start_date && created_day <= end_date && !is_created_daily_note {
+                note_activity_sets
+                    .entry(created_day.clone())
+                    .or_default()
+                    .insert(note_id.clone());
+            }
+            if updated_day >= start_date && updated_day <= end_date && !is_updated_daily_note {
+                note_activity_sets
+                    .entry(updated_day.clone())
+                    .or_default()
+                    .insert(note_id.clone());
+            }
+
+            let created_on_day = created_day == selected_date;
+            let edited_on_day = updated_day == selected_date;
+            if !created_on_day && !edited_on_day {
+                continue;
+            }
+            note_activity.push(CalendarNoteActivityItem {
+                note_id,
+                note_path,
+                title,
+                created,
+                updated,
+                created_on_day,
+                edited_on_day,
+            });
+        }
+
+        let mut daily_note_exists_by_date = HashMap::<String, bool>::new();
+        if normalized_daily_notes_folder.is_some() {
+            for date in &days {
+                let Some(path) = daily_note_path_for(normalized_daily_notes_folder.as_deref(), date) else {
+                    continue;
+                };
+                let exists = conn
+                    .query_row("SELECT 1 FROM notes WHERE id = ? LIMIT 1", [path.as_str()], |row| {
+                        row.get::<_, i64>(0)
+                    })
+                    .map(|_| true)
+                    .unwrap_or(false);
+                daily_note_exists_by_date.insert(date.clone(), exists);
+            }
+        }
+
+        let selected_daily_note_path =
+            daily_note_path_for(normalized_daily_notes_folder.as_deref(), &selected_date);
+        if let Some(daily_note_path) = selected_daily_note_path.as_ref() {
+            note_activity.retain(|item| item.note_path != *daily_note_path);
+        }
+        note_activity.sort_by(|left, right| {
+            let left_sort = if left.edited_on_day {
+                left.updated.as_str()
+            } else {
+                left.created.as_str()
+            };
+            let right_sort = if right.edited_on_day {
+                right.updated.as_str()
+            } else {
+                right.created.as_str()
+            };
+            right_sort
+                .cmp(left_sort)
+                .then_with(|| left.title.cmp(&right.title))
+        });
+
+        let mut overdue = Vec::new();
+        let mut for_day = Vec::new();
+        let mut ongoing = Vec::new();
+        for task in all_tasks {
+            let scheduled = task.scheduled_date.as_deref();
+            let due = task.due_date.as_deref();
+            let is_overdue = due.is_some_and(|date| date < selected_date.as_str());
+            let is_for_day = scheduled == Some(selected_date.as_str()) || due == Some(selected_date.as_str());
+            let is_ongoing = scheduled.is_some_and(|date| date < selected_date.as_str())
+                && !is_for_day
+                && !is_overdue
+                && due.is_none_or(|date| date > selected_date.as_str());
+            if is_overdue {
+                overdue.push(task);
+                continue;
+            }
+            if is_for_day {
+                for_day.push(task);
+                continue;
+            }
+            if is_ongoing {
+                ongoing.push(task);
+            }
+        }
+        sort_calendar_tasks(&mut overdue);
+        sort_calendar_tasks(&mut for_day);
+        sort_calendar_tasks(&mut ongoing);
+
+        let summaries = days
+            .into_iter()
+            .map(|date| CalendarDaySummary {
+                task_count: task_counts.get(&date).copied().unwrap_or(0),
+                note_activity_count: note_activity_sets
+                    .get(&date)
+                    .map(|entries| entries.len() as u32)
+                    .unwrap_or(0),
+                has_daily_note: daily_note_exists_by_date.get(&date).copied().unwrap_or(false),
+                needs_daily_note_setup: normalized_daily_notes_folder.is_none(),
+                date,
+            })
+            .collect::<Vec<_>>();
+
+        Ok(CalendarRangeResponse {
+            days: summaries,
+            detail: CalendarDayDetail {
+                selected_date: selected_date.clone(),
+                note_activity,
+                daily_note_path: selected_daily_note_path,
+                has_daily_note: daily_note_exists_by_date
+                    .get(&selected_date)
+                    .copied()
+                    .unwrap_or(false),
+                daily_note_configured: normalized_daily_notes_folder.is_some(),
+            },
+            tasks: CalendarTaskGroups {
+                overdue,
+                for_day,
+                ongoing,
+            },
+        })
     })
     .await
     .map_err(|e| e.to_string())?

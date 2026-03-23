@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
 import { useFileTreeContext, useUILayoutContext } from "../../contexts";
 import { useRecentFiles } from "../../hooks/useRecentFiles";
+import { CALENDAR_TAB_ID } from "../../lib/calendar";
 import { DATABASES_TAB_ID } from "../../lib/databases";
-import { TASKS_TAB_ID } from "../../lib/tasks";
 import { isInAppPreviewable } from "../../utils/filePreview";
 
 export function useTabManager(spacePath: string | null) {
@@ -20,7 +20,7 @@ export function useTabManager(spacePath: string | null) {
 	const [dragTabPath, setDragTabPath] = useState<string | null>(null);
 	const [dirtyByPath, setDirtyByPath] = useState<Record<string, boolean>>({});
 	const isSpecialTab = useCallback(
-		(path: string) => path === TASKS_TAB_ID || path === DATABASES_TAB_ID,
+		(path: string) => path === CALENDAR_TAB_ID || path === DATABASES_TAB_ID,
 		[],
 	);
 

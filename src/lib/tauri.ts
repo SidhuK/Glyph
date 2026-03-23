@@ -393,6 +393,44 @@ export interface TaskItem {
 	note_updated: string;
 }
 
+export interface CalendarDaySummary {
+	date: string;
+	task_count: number;
+	note_activity_count: number;
+	has_daily_note: boolean;
+	needs_daily_note_setup: boolean;
+}
+
+export interface CalendarNoteActivityItem {
+	note_id: string;
+	note_path: string;
+	title: string;
+	created: string;
+	updated: string;
+	created_on_day: boolean;
+	edited_on_day: boolean;
+}
+
+export interface CalendarDayDetail {
+	selected_date: string;
+	note_activity: CalendarNoteActivityItem[];
+	daily_note_path: string | null;
+	has_daily_note: boolean;
+	daily_note_configured: boolean;
+}
+
+export interface CalendarTaskGroups {
+	overdue: TaskItem[];
+	for_day: TaskItem[];
+	ongoing: TaskItem[];
+}
+
+export interface CalendarRangeResponse {
+	days: CalendarDaySummary[];
+	detail: CalendarDayDetail;
+	tasks: CalendarTaskGroups;
+}
+
 export interface LinkPreview {
 	url: string;
 	hostname: string;
@@ -700,6 +738,15 @@ interface TauriCommands {
 		SearchResult[]
 	>;
 	recent_notes: CommandDef<{ limit?: number | null }, SearchResult[]>;
+	calendar_query_range: CommandDef<
+		{
+			start_date: string;
+			end_date: string;
+			selected_date: string;
+			daily_notes_folder?: string | null;
+		},
+		CalendarRangeResponse
+	>;
 	tags_list: CommandDef<{ limit?: number | null }, TagCount[]>;
 	tag_notes: CommandDef<{ tag: string; limit?: number | null }, SearchResult[]>;
 	tasks_query: CommandDef<

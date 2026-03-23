@@ -19,9 +19,7 @@ interface SidebarProps {
 	onSelectTag: (tag: string) => void;
 	sidebarCollapsed: boolean;
 	onToggleSidebar: () => void;
-	onOpenDailyNote: () => void;
-	isDailyNoteCreating: boolean;
-	onOpenTasks: () => void;
+	onOpenCalendar: () => void;
 	onOpenDatabases: (databaseId?: string | null) => void;
 	updateReady: boolean;
 	updateVersion: string | null;
@@ -42,9 +40,7 @@ export const Sidebar = memo(function Sidebar({
 	onSelectTag,
 	sidebarCollapsed,
 	onToggleSidebar,
-	onOpenDailyNote,
-	isDailyNoteCreating,
-	onOpenTasks,
+	onOpenCalendar,
 	onOpenDatabases,
 	updateReady,
 	updateVersion,
@@ -101,9 +97,7 @@ export const Sidebar = memo(function Sidebar({
 							onRenameDir={onRenameDir}
 							onDeletePath={onDeletePath}
 							onSelectTag={onSelectTag}
-							onOpenDailyNote={onOpenDailyNote}
-							isDailyNoteCreating={isDailyNoteCreating}
-							onOpenTasks={onOpenTasks}
+							onOpenCalendar={onOpenCalendar}
 							onOpenDatabases={onOpenDatabases}
 						/>
 					</m.div>

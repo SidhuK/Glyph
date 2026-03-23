@@ -738,10 +738,14 @@
 }
 
 /* Edit-mode heading rail (H1/H2/...) */
+.tiptapHostInline:not(.is-preview),
 .tiptapHostInline:not(.is-preview) .tiptapContentInline {
 	--heading-toggle-rail-width: 12px;
 	--heading-level-rail-width: 18px;
 	--heading-rail-gap: 6px;
+}
+
+.tiptapHostInline:not(.is-preview) .tiptapContentInline {
 	position: relative;
 	padding-left: calc(
 		var(--readable-content-gutter-compact) +
@@ -1460,56 +1464,37 @@
 
 .taskInlineDateBtn {
 	position: absolute;
-	left: 20px;
+	left: calc(
+		var(--readable-content-gutter-compact) +
+		var(--heading-toggle-rail-width) +
+		var(--heading-rail-gap) -
+		1px
+	);
 	z-index: 15;
-	width: 14px;
-	height: 14px;
+	width: 18px;
+	height: 18px;
 	border: none;
 	background: transparent;
-	color: var(--text-secondary);
+	color: color-mix(in srgb, var(--text-tertiary) 88%, transparent);
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	padding: 0;
+	border-radius: var(--radius-sm);
+	transform: translateY(-1px);
 }
 
 .taskInlineDateBtn:hover {
 	color: var(--text-primary);
-	background: transparent;
-}
-
-.taskInlineDateGlyph {
-	font-size: 11px;
-	line-height: 1;
+	background: color-mix(in srgb, var(--bg-secondary) 52%, transparent);
 }
 
 .taskInlineDatePopover {
-	width: 220px;
-	display: flex;
-	flex-direction: column;
-	gap: var(--space-2);
-}
-
-.taskInlineDatePopover label {
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
-	font-size: var(--text-xs);
-	color: var(--text-secondary);
-}
-
-.taskInlineDatePopover input[type="date"] {
-	border: 1px solid var(--border-light);
-	border-radius: var(--radius-md);
-	background: var(--bg-primary);
-	padding: 6px 8px;
-	font-size: var(--text-xs);
+	width: 286px;
 }
 
 .taskInlineDateActions {
-	display: flex;
-	justify-content: flex-end;
-	gap: var(--space-2);
+	margin-top: 0;
 }
 
 .slashCommandMenu {

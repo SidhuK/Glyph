@@ -579,7 +579,7 @@
 	display: flex;
 	align-items: center;
 	gap: 10px;
-	padding: 10px 14px;
+	padding: 8px 14px;
 	border-radius: 0;
 	border: 0;
 	border-bottom: 1px solid
@@ -650,7 +650,7 @@
 .tasksRowMain {
 	display: flex;
 	align-items: center;
-	gap: 10px;
+	gap: 8px;
 	min-width: 0;
 	width: 100%;
 	overflow: hidden;
@@ -660,7 +660,7 @@
 	flex: 1 1 auto;
 	min-width: 0;
 	font-size: 0.9rem;
-	line-height: 1.2;
+	line-height: 1.15;
 	color: var(--text-primary);
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -801,15 +801,16 @@
 }
 
 .tasksScheduleBtn {
-	height: 22px;
+	height: 24px;
 	flex: 0 0 auto;
 	margin-left: auto;
-	padding-inline: var(--space-2);
+	padding-inline: 9px;
 	border-radius: var(--radius-7);
 	font-size: 0.68rem;
 	line-height: 1;
 	color: var(--text-secondary);
-	border: 1px solid transparent;
+	border: 1px solid color-mix(in srgb, var(--border-light) 78%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 88%, var(--bg-secondary));
 	transition: transform var(--transition-base), background-color
 		var(--transition-base), color var(--transition-base), border-color
 		var(--transition-base);
@@ -833,37 +834,253 @@
 }
 
 .tasksDatePopover {
-	width: 240px;
+	width: 286px;
 	display: flex;
 	flex-direction: column;
-	gap: var(--space-2);
+	gap: 12px;
+	padding: 12px;
+	border-radius: 22px;
+	border-color: color-mix(in srgb, var(--border-light) 82%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 96%, white 4%);
+	box-shadow: 0 18px 40px color-mix(in srgb, black 9%, transparent), 0 2px 10px
+		color-mix(in srgb, var(--interactive-accent) 8%, transparent);
+	overflow: hidden;
 }
 
-.tasksDatePopover label {
+.tasksDatePickerFields {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 6px;
+}
+
+.tasksDateFieldCard {
 	display: flex;
 	flex-direction: column;
-	gap: var(--space-1);
-	font-size: var(--text-xs);
+	align-items: flex-start;
+	gap: 3px;
+	padding: 8px 10px;
+	border-radius: 16px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 74%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 72%, var(--bg-primary));
+	text-align: left;
+	transition: border-color var(--transition-fast), background-color
+		var(--transition-fast), transform var(--transition-base), box-shadow
+		var(--transition-base);
+}
+
+.tasksDateFieldCard:hover {
+	background: color-mix(in srgb, var(--bg-hover) 72%, var(--bg-primary));
+}
+
+.tasksDateFieldCard[data-active="true"] {
+	border-color: color-mix(in srgb, var(--interactive-accent) 28%, transparent);
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 8%,
+		var(--bg-primary)
+	);
+	box-shadow: inset 0 0 0 1px
+		color-mix(in srgb, var(--interactive-accent) 12%, transparent);
+}
+
+.tasksDateFieldLabel {
+	font-size: 0.6rem;
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
 	color: var(--text-secondary);
 }
 
-.tasksDatePopover input[type="date"] {
-	border: 1px solid var(--border-light);
-	border-radius: var(--radius-md);
+.tasksDateFieldValue {
+	font-size: 0.76rem;
+	font-weight: var(--font-semibold);
+	line-height: 1.2;
+	color: var(--text-primary);
+}
+
+.tasksDateFieldValue[data-empty="true"] {
+	color: var(--text-secondary);
+}
+
+.tasksDatePickerShell {
+	border-radius: 20px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 68%, transparent);
 	background: var(--bg-primary);
-	padding: 6px 8px;
-	font-size: var(--text-xs);
+	padding: 10px 6px 8px;
+}
+
+.tasksDateCalendar {
+	--cell-size: 33px;
+
+	width: 100%;
+}
+
+.glyphCalendar {
+	width: 100%;
+	padding: 0;
+	background: transparent;
+}
+
+.glyphCalendarRoot,
+.glyphCalendarMonth,
+.glyphCalendarTable {
+	width: auto;
+	margin-inline: auto;
+}
+
+.glyphCalendarMonths {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+}
+
+.glyphCalendarCaption {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 30px;
+	width: fit-content;
+	margin-inline: auto;
+	column-gap: 10px;
+	margin-bottom: 6px;
+}
+
+.glyphCalendarCaptionLabel {
+	font-size: 0.95rem;
+	font-weight: var(--font-semibold);
+	letter-spacing: -0.02em;
+	color: var(--text-primary);
+}
+
+.glyphCalendarNav {
+	display: none;
+}
+
+.glyphCalendarNavButton {
+	width: 26px;
+	height: 26px;
+	padding: 0;
+	border-radius: 999px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 68%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 92%, white 8%);
+	color: var(--text-secondary);
+	box-shadow: 0 1px 2px color-mix(in srgb, black 5%, transparent);
+}
+
+.glyphCalendarNavButton:hover,
+.glyphCalendarNavButton:focus-visible {
+	background: color-mix(in srgb, var(--bg-hover) 82%, var(--bg-primary));
+	color: var(--text-primary);
+}
+
+.glyphCalendarWeekdays,
+.glyphCalendarWeek {
+	display: grid;
+	grid-template-columns: repeat(7, minmax(0, 1fr));
+}
+
+.glyphCalendarWeekdays,
+.glyphCalendarWeek,
+.glyphCalendarTable {
+	max-width: calc(var(--cell-size) * 7 + 12px);
+}
+
+.glyphCalendarWeekdays {
+	margin-bottom: 4px;
+}
+
+.glyphCalendarWeekday {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	height: 24px;
+	font-size: 0.68rem;
+	font-weight: var(--font-medium);
+	letter-spacing: 0.03em;
+	color: var(--text-secondary);
+}
+
+.glyphCalendarDay {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 0;
+}
+
+.glyphCalendarDayButton {
+	width: var(--cell-size);
+	height: var(--cell-size);
+	border-radius: 10px;
+	font-size: 0.88rem;
+	font-weight: var(--font-medium);
+	color: var(--text-primary);
+}
+
+.glyphCalendarDayButton:hover,
+.glyphCalendarDayButton:focus-visible {
+	background: color-mix(in srgb, var(--bg-hover) 82%, var(--bg-primary));
+}
+
+.glyphCalendarDayButton[data-today="true"] {
+	box-shadow: inset 0 0 0 1px
+		color-mix(in srgb, var(--interactive-accent) 26%, transparent);
+}
+
+.glyphCalendarDayButton[data-selected="true"] {
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 14%,
+		var(--bg-primary)
+	);
+	color: color-mix(in srgb, var(--interactive-accent) 78%, var(--text-primary));
+	box-shadow: inset 0 0 0 1px
+		color-mix(in srgb, var(--interactive-accent) 24%, transparent), 0 4px 8px
+		color-mix(in srgb, var(--interactive-accent) 7%, transparent);
+}
+
+.glyphCalendarOutside .glyphCalendarDayButton,
+.glyphCalendarDayButton[data-outside="true"] {
+	color: color-mix(in srgb, var(--text-secondary) 78%, transparent);
+}
+
+.glyphCalendarDisabled .glyphCalendarDayButton {
+	opacity: 0.45;
+	pointer-events: none;
 }
 
 .tasksQuickDates {
-	display: flex;
-	gap: var(--space-1);
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 6px;
+}
+
+.tasksQuickDates [data-slot="button"] {
+	justify-content: center;
+	border-radius: 10px;
+}
+
+.tasksQuickDates [data-variant="outline"] {
+	border-color: color-mix(in srgb, var(--border-light) 74%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 66%, var(--bg-primary));
+}
+
+.tasksQuickDates [data-variant="ghost"] {
+	color: var(--text-secondary);
+	background: transparent;
 }
 
 .tasksDateActions {
 	display: flex;
-	justify-content: flex-end;
-	gap: var(--space-2);
+	justify-content: center;
+	align-items: center;
+	gap: 6px;
+	padding-top: 2px;
+	border-top: 1px solid color-mix(in srgb, var(--border-light) 52%, transparent);
+}
+
+.tasksDateActions [data-slot="button"] {
+	border-radius: 999px;
 }
 
 @container (max-width: 980px) {
