@@ -91,6 +91,9 @@ type TauriEventMap = {
 			showColumnColor?: boolean;
 			showNoteCount?: boolean;
 		};
+		editor?: {
+			showCollapsibleHeadings?: boolean;
+		};
 		changelog?: {
 			lastAcknowledgedVersion?: string | null;
 		};

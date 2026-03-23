@@ -30,9 +30,6 @@ export const Trash2 = (props: IconProps) => (
 export const RefreshCw = (props: IconProps) => (
 	<HugeiconsIcon icon={ArrowReloadHorizontalIcon} {...props} />
 );
-export const RotateCcw = (props: IconProps) => (
-	<HugeiconsIcon icon={ArrowReloadHorizontalIcon} {...props} />
-);
 export const Save = (props: IconProps) => (
 	<HugeiconsIcon icon={SaveIcon} {...props} />
 );

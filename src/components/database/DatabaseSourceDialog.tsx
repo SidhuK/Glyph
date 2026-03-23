@@ -16,10 +16,22 @@ interface DatabaseSourceDropdownProps {
 	onChangeConfig: (config: DatabaseConfig) => Promise<void>;
 }
 
-function emptyFilter(columnId: string): DatabaseFilter {
+function isTagFilterColumn(column?: DatabaseConfig["columns"][number] | null): boolean {
+	return column?.type === "tags" || column?.property_kind === "tags";
+}
+
+function defaultOperatorForColumn(
+	column?: DatabaseConfig["columns"][number] | null,
+): DatabaseFilter["operator"] {
+	return isTagFilterColumn(column) ? "tags_contains" : "contains";
+}
+
+function emptyFilter(
+	column?: DatabaseConfig["columns"][number] | null,
+): DatabaseFilter {
 	return {
-		column_id: columnId,
-		operator: "contains",
+		column_id: column?.id ?? "title",
+		operator: defaultOperatorForColumn(column),
 		value_list: [],
 	};
 }
@@ -30,10 +42,61 @@ function operatorNeedsValue(operator: DatabaseFilter["operator"]): boolean {
 	);
 }
 
-function normalizedOperator(
-	operator: DatabaseFilter["operator"],
-): Exclude<DatabaseFilter["operator"], "tags_contains"> {
-	return operator === "tags_contains" ? "contains" : operator;
+function operatorLabel(operator: string): string {
+	switch (operator) {
+		case "equals":
+			return "Equals";
+		case "not_equals":
+			return "Not equals";
+		case "contains":
+		case "tags_contains":
+			return "Contains";
+		case "not_contains":
+			return "Does not contain";
+		case "starts_with":
+			return "Starts with";
+		case "ends_with":
+			return "Ends with";
+		case "is_empty":
+			return "Is empty";
+		case "is_not_empty":
+			return "Is not empty";
+		case "is_true":
+			return "Is true";
+		case "is_false":
+			return "Is false";
+		case "any_of":
+			return "Any of";
+		case "none_of":
+			return "None of";
+		case "within_last_7_days":
+			return "Within last 7 days";
+		default:
+			return operator
+				.split("_")
+				.map((part) => part.slice(0, 1).toUpperCase() + part.slice(1))
+				.join(" ");
+	}
+}
+
+function operatorOptions(
+	column: DatabaseConfig["columns"][number] | null,
+	currentOperator: DatabaseFilter["operator"],
+): Array<{ value: DatabaseFilter["operator"]; label: string }> {
+	const baseOptions: Array<{ value: DatabaseFilter["operator"]; label: string }> = [
+		{ value: defaultOperatorForColumn(column), label: "Contains" },
+		{ value: "equals", label: "Equals" },
+		{ value: "is_empty", label: "Is empty" },
+		{ value: "is_not_empty", label: "Is not empty" },
+		{ value: "is_true", label: "Is true" },
+		{ value: "is_false", label: "Is false" },
+	];
+
+	if (baseOptions.some((option) => option.value === currentOperator)) {
+		return baseOptions;
+	}
+
+	return [...baseOptions, { value: currentOperator, label: operatorLabel(currentOperator) }];
 }
 
 export function DatabaseSourceDropdown({
@@ -78,11 +141,11 @@ export function DatabaseSourceDropdown({
 		}
 	};
 
-	const defaultColumnId = config.columns[0]?.id ?? "title";
+	const defaultColumn = config.columns[0] ?? null;
 
 	return (
 		<DropdownMenuContent
-			className="w-56 max-h-80 overflow-y-auto"
+			className="databasePickerMenu w-56 max-h-80 overflow-y-auto"
 			align="end"
 			onCloseAutoFocus={(e) => e.preventDefault()}
 		>
@@ -184,7 +247,7 @@ export function DatabaseSourceDropdown({
 					onClick={() =>
 						void updateFilters((filters) => [
 							...filters,
-							emptyFilter(defaultColumnId),
+							emptyFilter(defaultColumn),
 						])
 					}
 				>
@@ -203,12 +266,14 @@ export function DatabaseSourceDropdown({
 						const selectedColumn =
 							config.columns.find((column) => column.id === filter.column_id) ??
 							null;
-						const effectiveOperator = normalizedOperator(filter.operator);
-						const showsValue = operatorNeedsValue(effectiveOperator);
+						const showsValue = operatorNeedsValue(filter.operator);
 						const usesTagPicker =
 							showsValue &&
-							(selectedColumn?.type === "tags" ||
-								selectedColumn?.property_kind === "tags");
+							isTagFilterColumn(selectedColumn);
+						const availableOperators = operatorOptions(
+							selectedColumn,
+							filter.operator,
+						);
 
 						return (
 							<div
@@ -238,7 +303,7 @@ export function DatabaseSourceDropdown({
 									</select>
 									<select
 										className="databaseNativeSelect flex-1 min-w-0 text-xs"
-										value={effectiveOperator}
+										value={filter.operator}
 										aria-label={`Filter ${index + 1} operator`}
 										onChange={(event) =>
 											void updateFilters((filters) =>
@@ -254,12 +319,11 @@ export function DatabaseSourceDropdown({
 											)
 										}
 									>
-										<option value="contains">Contains</option>
-										<option value="equals">Equals</option>
-										<option value="is_empty">Is empty</option>
-										<option value="is_not_empty">Is not empty</option>
-										<option value="is_true">Is true</option>
-										<option value="is_false">Is false</option>
+										{availableOperators.map((option) => (
+											<option key={option.value} value={option.value}>
+												{option.label}
+											</option>
+										))}
 									</select>
 									<button
 										type="button"

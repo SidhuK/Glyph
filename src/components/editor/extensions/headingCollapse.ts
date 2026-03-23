@@ -11,6 +11,7 @@ interface HeadingRange {
 }
 
 interface HeadingCollapseState {
+	enabled: boolean;
 	collapsedPositions: Set<number>;
 	decorations: DecorationSet;
 	headings: HeadingRange[];
@@ -18,7 +19,8 @@ interface HeadingCollapseState {
 
 type HeadingCollapseMeta =
 	| { type: "toggle"; pos: number }
-	| { type: "expand-ancestors"; pos: number };
+	| { type: "expand-ancestors"; pos: number }
+	| { type: "set-enabled"; enabled: boolean };
 
 export const headingCollapsePluginKey = new PluginKey<HeadingCollapseState>(
 	"heading-collapse",
@@ -123,9 +125,13 @@ function createToggleButton(
 
 function buildDecorations(
 	doc: ProseMirrorNode,
+	enabled: boolean,
 	collapsedPositions: Set<number>,
 	headings: HeadingRange[],
 ): DecorationSet {
+	if (!enabled) {
+		return DecorationSet.empty;
+	}
 	const decorations: Decoration[] = [];
 
 	for (const heading of headings) {
@@ -203,6 +209,7 @@ declare module "@tiptap/core" {
 		headingCollapse: {
 			toggleHeadingCollapse: (pos: number) => ReturnType;
 			expandHeadingAncestors: (pos: number) => ReturnType;
+			setHeadingCollapseEnabled: (enabled: boolean) => ReturnType;
 		};
 	}
 }
@@ -233,6 +240,17 @@ export const HeadingCollapse = Extension.create({
 					);
 					return true;
 				},
+			setHeadingCollapseEnabled:
+				(enabled: boolean) =>
+				({ state, dispatch }) => {
+					dispatch?.(
+						state.tr.setMeta(headingCollapsePluginKey, {
+							type: "set-enabled",
+							enabled,
+						} satisfies HeadingCollapseMeta),
+					);
+					return true;
+				},
 		};
 	},
 	addProseMirrorPlugins() {
@@ -244,10 +262,12 @@ export const HeadingCollapse = Extension.create({
 						const headings = extractHeadingRanges(state.doc);
 						const collapsedPositions = new Set<number>();
 						return {
+							enabled: false,
 							collapsedPositions,
 							headings,
 							decorations: buildDecorations(
 								state.doc,
+								false,
 								collapsedPositions,
 								headings,
 							),
@@ -256,6 +276,7 @@ export const HeadingCollapse = Extension.create({
 					apply: (transaction, pluginState, _oldState, newState) => {
 						const headings = extractHeadingRanges(newState.doc);
 						const headingPositions = new Set(headings.map((heading) => heading.pos));
+						let enabled = pluginState.enabled;
 						let collapsedPositions = applyMappedPositions(
 							pluginState.collapsedPositions,
 							transaction,
@@ -283,12 +304,17 @@ export const HeadingCollapse = Extension.create({
 								meta.pos,
 							);
 						}
+						if (meta?.type === "set-enabled") {
+							enabled = meta.enabled;
+						}
 
 						return {
+							enabled,
 							collapsedPositions,
 							headings,
 							decorations: buildDecorations(
 								newState.doc,
+								enabled,
 								collapsedPositions,
 								headings,
 							),

@@ -26,6 +26,8 @@ interface DatabaseToolbarProps {
 	onAddRow: () => void;
 	onReload: () => void;
 	onChangeConfig: (config: DatabaseConfig) => Promise<void>;
+	columnsMenuOpen?: boolean;
+	onColumnsMenuOpenChange?: (open: boolean) => void;
 	className?: string;
 }
 
@@ -40,6 +42,8 @@ export function DatabaseToolbar({
 	onAddRow,
 	onReload,
 	onChangeConfig,
+	columnsMenuOpen,
+	onColumnsMenuOpenChange,
 	className,
 }: DatabaseToolbarProps) {
 	return (
@@ -122,7 +126,10 @@ export function DatabaseToolbar({
 						onChangeConfig={onChangeConfig}
 					/>
 				</DropdownMenu>
-				<DropdownMenu>
+				<DropdownMenu
+					open={columnsMenuOpen}
+					onOpenChange={onColumnsMenuOpenChange}
+				>
 					<DropdownMenuTrigger asChild>
 						<Button
 							type="button"

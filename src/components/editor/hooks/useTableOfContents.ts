@@ -135,16 +135,16 @@ export function useTableOfContents(editor: Editor | null) {
 		(heading: TOCHeading) => {
 			if (!editor) return;
 			editor.commands.expandHeadingAncestors(heading.pos);
+			window.requestAnimationFrame(() => {
+				let el: HTMLElement | null = null;
+				try {
+					const dom = editor.view.nodeDOM(heading.pos);
+					el = dom instanceof HTMLElement ? dom : null;
+				} catch {
+					// pos may be stale
+				}
 
-			let el: HTMLElement | null = null;
-			try {
-				const dom = editor.view.nodeDOM(heading.pos);
-				el = dom instanceof HTMLElement ? dom : null;
-			} catch {
-				// pos may be stale
-			}
-
-			if (el) {
+				if (!el) return;
 				const scrollContainer = findScrollParent(el);
 				if (scrollContainer) {
 					const containerRect = scrollContainer.getBoundingClientRect();
@@ -156,7 +156,7 @@ export function useTableOfContents(editor: Editor | null) {
 					el.scrollIntoView({ behavior: "smooth", block: "start" });
 				}
 				setActiveId(heading.id);
-			}
+			});
 		},
 		[editor],
 	);

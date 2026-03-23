@@ -210,6 +210,7 @@ export function DatabasesPane({
 	const [renamingViewId, setRenamingViewId] = useState<string | null>(null);
 	const [viewNameDraft, setViewNameDraft] = useState("");
 	const viewNameInputRef = useRef<HTMLInputElement | null>(null);
+	const [columnsMenuOpen, setColumnsMenuOpen] = useState(false);
 	const rowRequestTokenRef = useRef(0);
 	const [showDatabaseColumnColor, setShowDatabaseColumnColor] = useState(true);
 	const [showDatabaseNoteCount, setShowDatabaseNoteCount] = useState(false);
@@ -446,8 +447,9 @@ export function DatabasesPane({
 				await loadSummaries();
 				return saved;
 			} catch (cause) {
-				setError(extractErrorMessage(cause));
-				return null;
+				const message = extractErrorMessage(cause);
+				setError(message);
+				throw cause instanceof Error ? cause : new Error(message);
 			}
 		},
 		[loadSummaries],
@@ -763,6 +765,8 @@ export function DatabasesPane({
 								onAddRow={() => void handleCreateRow()}
 								onReload={() => void loadRows()}
 								onChangeConfig={handleSaveConfig}
+								columnsMenuOpen={columnsMenuOpen}
+								onColumnsMenuOpenChange={setColumnsMenuOpen}
 							/>
 						</>
 					) : null}
@@ -934,7 +938,7 @@ export function DatabasesPane({
 							selectedRowPath={selectedRowPath}
 							onSelectRow={setSelectedRowPath}
 							onOpenRow={(notePath) => void onOpenFile(notePath)}
-							onOpenColumns={() => {}}
+							onOpenColumns={() => setColumnsMenuOpen(true)}
 							onCreateDefaultGroupField={null}
 							onGroupColumnIdChange={(groupColumnId) =>
 								void handleSaveConfig({

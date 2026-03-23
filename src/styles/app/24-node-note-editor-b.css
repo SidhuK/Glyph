@@ -844,8 +844,8 @@
 .tiptapContentInline .headingCollapseChevron {
 	width: 6px;
 	height: 6px;
-	border-right: 1.35px solid currentColor;
-	border-bottom: 1.35px solid currentColor;
+	border-right: 1.35px solid currentcolor;
+	border-bottom: 1.35px solid currentcolor;
 	transform: rotate(45deg) translateY(-1px);
 	transform-origin: 50% 50%;
 	transition: transform 140ms ease;

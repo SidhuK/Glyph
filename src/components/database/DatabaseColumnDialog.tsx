@@ -99,8 +99,8 @@ export function DatabaseColumnDropdown({
 	availableProperties,
 	onChangeConfig,
 }: DatabaseColumnDropdownProps) {
-	const addedColumnIds = useMemo(
-		() => new Set(config.columns.map((column) => column.id)),
+	const columnsById = useMemo(
+		() => new Map(config.columns.map((column) => [column.id, column])),
 		[config.columns],
 	);
 
@@ -113,9 +113,27 @@ export function DatabaseColumnDropdown({
 		});
 	};
 
+	const toggleColumnVisibility = async (columnId: string, visible: boolean) => {
+		await updateColumns((columns) =>
+			columns.map((column) =>
+				column.id === columnId ? { ...column, visible } : column,
+			),
+		);
+	};
+
+	const canAddBuiltInColumn = (column: DatabaseColumn) => {
+		const existing = columnsById.get(column.id);
+		return !existing || existing.visible === false;
+	};
+
+	const canAddPropertyColumn = (property: DatabasePropertyOption) => {
+		const existing = columnsById.get(`property:${property.key}`);
+		return !existing || existing.visible === false;
+	};
+
 	return (
 		<DropdownMenuContent
-			className="w-44 max-h-80 overflow-y-auto"
+			className="databasePickerMenu w-44 max-h-80 overflow-y-auto"
 			align="end"
 			onCloseAutoFocus={(e) => e.preventDefault()}
 		>
@@ -127,32 +145,54 @@ export function DatabaseColumnDropdown({
 						key={column.id}
 						onSelect={(e) => {
 							e.preventDefault();
-							void updateColumns((columns) =>
-								columns.filter((entry) => entry.id !== column.id),
-							);
+							void toggleColumnVisibility(column.id, column.visible === false);
 						}}
+						className="databaseColumnDropdownItem"
 					>
 						<DatabaseColumnIcon column={column} strokeWidth={1.5} />
 						{column.label}
-						<DropdownMenuShortcut className="opacity-0 [[data-highlighted]>&]:opacity-100 transition-opacity">
-							<Trash2 />
+						<DropdownMenuShortcut className="databaseColumnDropdownShortcut">
+							<button
+								type="button"
+								className="databaseColumnDropdownDelete"
+								aria-label={`Remove ${column.label} column`}
+								title={`Remove ${column.label} column`}
+								onMouseDown={(event) => {
+									event.preventDefault();
+									event.stopPropagation();
+								}}
+								onClick={(event) => {
+									event.preventDefault();
+									event.stopPropagation();
+									void updateColumns((columns) =>
+										columns.filter((entry) => entry.id !== column.id),
+									);
+								}}
+							>
+								<Trash2 size={12} />
+							</button>
 						</DropdownMenuShortcut>
 					</DropdownMenuItem>
 				))}
 			</DropdownMenuGroup>
 
-			{builtInColumns.filter((c) => !addedColumnIds.has(c.id)).length > 0 && (
+			{builtInColumns.filter(canAddBuiltInColumn).length > 0 && (
 				<>
 					<DropdownMenuSeparator />
 					<DropdownMenuLabel>Add column</DropdownMenuLabel>
 					<DropdownMenuGroup>
 						{builtInColumns
-							.filter((column) => !addedColumnIds.has(column.id))
+							.filter(canAddBuiltInColumn)
 							.map((column) => (
 								<DropdownMenuItem
 									key={column.id}
 									onSelect={(e) => {
 										e.preventDefault();
+										const existing = columnsById.get(column.id);
+										if (existing) {
+											void toggleColumnVisibility(column.id, true);
+											return;
+										}
 										void updateColumns((columns) => [...columns, column]);
 									}}
 								>
@@ -164,18 +204,13 @@ export function DatabaseColumnDropdown({
 				</>
 			)}
 
-			{availableProperties.filter(
-				(p) => !addedColumnIds.has(`property:${p.key}`),
-			).length > 0 && (
+			{availableProperties.filter(canAddPropertyColumn).length > 0 && (
 				<>
 					<DropdownMenuSeparator />
 					<DropdownMenuLabel>Properties</DropdownMenuLabel>
 					<DropdownMenuGroup>
 						{availableProperties
-							.filter(
-								(property) =>
-									!addedColumnIds.has(`property:${property.key}`),
-							)
+							.filter(canAddPropertyColumn)
 							.map((property) => {
 								const nextColumn = createPropertyColumn(property);
 								return (
@@ -183,6 +218,13 @@ export function DatabaseColumnDropdown({
 										key={property.key}
 										onSelect={(e) => {
 											e.preventDefault();
+											const existing = columnsById.get(
+												`property:${property.key}`,
+											);
+											if (existing) {
+												void toggleColumnVisibility(existing.id, true);
+												return;
+											}
 											void updateColumns((columns) => [
 												...columns,
 												nextColumn,

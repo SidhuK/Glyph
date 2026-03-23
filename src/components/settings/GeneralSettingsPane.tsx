@@ -4,7 +4,6 @@ import {
 	getDailyNotesFolder,
 	loadSettings,
 	setAutoUpdateCheckInterval as saveAutoUpdateCheckInterval,
-	setShowToc as saveShowToc,
 	setDailyNotesFolder,
 } from "../../lib/settings";
 import { invoke } from "../../lib/tauri";
@@ -20,7 +19,6 @@ import {
 import { TemplateSettingsSections } from "./TemplatesSettingsPane";
 
 export function GeneralSettingsPane() {
-	const [showToc, setShowTocState] = useState(true);
 	const [autoUpdateCheckInterval, setAutoUpdateCheckIntervalState] =
 		useState<AutoUpdateCheckInterval>("launch");
 	const [dailyNotesFolder, setDailyNotesFolderState] = useState<string | null>(
@@ -40,7 +38,6 @@ export function GeneralSettingsPane() {
 				]);
 				if (cancelled) return;
 				setDailyNotesFolderState(folder);
-				setShowTocState(settings.ui.showToc);
 				setAutoUpdateCheckIntervalState(settings.ui.autoUpdateCheckInterval);
 			} catch (cause) {
 				if (!cancelled) {
@@ -57,11 +54,6 @@ export function GeneralSettingsPane() {
 		return () => {
 			cancelled = true;
 		};
-	}, []);
-
-	const handleShowTocChange = useCallback((checked: boolean) => {
-		setShowTocState(checked);
-		void saveShowToc(checked);
 	}, []);
 
 	const handleAutoUpdateToggleChange = useCallback((checked: boolean) => {
@@ -190,20 +182,6 @@ export function GeneralSettingsPane() {
 						/>
 					</SettingsRow>
 				</SettingsSection>
-
-				<SettingsSection title="Editor">
-					<SettingsRow
-						label="Table of contents"
-						description="Show a floating table of contents for each note."
-					>
-						<SettingsToggle
-							ariaLabel="Table of contents"
-							checked={showToc}
-							onCheckedChange={handleShowTocChange}
-						/>
-					</SettingsRow>
-				</SettingsSection>
-
 				<LicenseSettingsCard />
 			</div>
 		</div>

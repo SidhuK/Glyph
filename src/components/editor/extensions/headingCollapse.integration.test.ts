@@ -18,6 +18,7 @@ function createEditor(markdown: string) {
 		contentType: "markdown",
 		element,
 	});
+	editor.commands.setHeadingCollapseEnabled(true);
 
 	return {
 		editor,

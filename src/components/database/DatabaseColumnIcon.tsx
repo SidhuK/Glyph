@@ -134,7 +134,7 @@ function iconDefinition(iconName: string) {
 export function DatabaseColumnIcon({
 	column,
 	iconName,
-	size,
+	size = 14,
 	strokeWidth,
 	className,
 }: DatabaseColumnIconProps) {
@@ -143,7 +143,7 @@ export function DatabaseColumnIcon({
 	return (
 		<HugeiconsIcon
 			icon={iconDefinition(resolvedIconName)}
-			{...(size != null ? { size } : {})}
+			size={size}
 			{...(strokeWidth != null ? { strokeWidth } : {})}
 			className={className}
 		/>

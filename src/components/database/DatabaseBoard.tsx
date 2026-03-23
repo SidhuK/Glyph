@@ -13,7 +13,6 @@ import {
 import type { DatabaseColumn, DatabaseRow } from "../../lib/database/types";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { parentDir } from "../../utils/path";
-import { formatTagLabel } from "../editor/noteProperties/utils";
 import {
 	EDITOR_TEXT_COLORS,
 	type EditorTextColor,
@@ -34,6 +33,7 @@ import {
 	DropdownMenuTrigger,
 } from "../ui/shadcn/dropdown-menu";
 import { DatabaseColumnIcon } from "./DatabaseColumnIcon";
+import { formatDatabaseTagLabel } from "./databaseTagLabel";
 
 interface DatabaseBoardProps {
 	rows: DatabaseRow[];
@@ -120,10 +120,6 @@ function cardPreviewText(row: DatabaseRow, title: string): string {
 		.replace(/^[-:.\s]+/, "")
 		.trim();
 	return remainder;
-}
-
-function formatDatabaseTagLabel(tag: string): string {
-	return formatTagLabel(tag).replace(/^#/, "");
 }
 
 function cardCandidateColumns(

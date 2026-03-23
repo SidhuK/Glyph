@@ -14,6 +14,7 @@ const { mockEditor, setEditorOptions, getEditorOptions, openUrlMock } =
 			getMarkdown: vi.fn(),
 			commands: {
 				setContent: vi.fn(),
+				setHeadingCollapseEnabled: vi.fn(),
 			},
 		};
 
@@ -49,6 +50,17 @@ vi.mock("../extensions", () => ({
 	createEditorExtensions: () => [],
 }));
 
+vi.mock("../../../lib/settings", () => ({
+	loadSettings: () =>
+		Promise.resolve({
+			editor: { showCollapsibleHeadings: false },
+		}),
+}));
+
+vi.mock("../../../lib/tauriEvents", () => ({
+	useTauriEvent: () => {},
+}));
+
 vi.mock("./useHydrateInlineImages", () => ({
 	useHydrateInlineImages: () => {},
 }));
@@ -71,6 +83,7 @@ describe("useNoteEditor", () => {
 		mockEditor.setEditable.mockReset();
 		mockEditor.getMarkdown.mockReset();
 		mockEditor.commands.setContent.mockReset();
+		mockEditor.commands.setHeadingCollapseEnabled.mockReset();
 		openUrlMock.mockReset();
 
 		container = document.createElement("div");

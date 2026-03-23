@@ -98,9 +98,17 @@ export interface DatabaseSettings {
 	showNoteCount: boolean;
 }
 
+export interface EditorSettings {
+	showCollapsibleHeadings: boolean;
+}
+
 export const DEFAULT_DATABASE_SETTINGS: DatabaseSettings = {
 	showColumnColor: true,
 	showNoteCount: false,
+};
+
+export const DEFAULT_EDITOR_SETTINGS: EditorSettings = {
+	showCollapsibleHeadings: false,
 };
 
 function asThemeMode(value: unknown): ThemeMode {
@@ -197,6 +205,9 @@ async function emitSettingsUpdated(payload: {
 		showColumnColor?: boolean;
 		showNoteCount?: boolean;
 	};
+	editor?: {
+		showCollapsibleHeadings?: boolean;
+	};
 	changelog?: {
 		lastAcknowledgedVersion?: string | null;
 	};
@@ -247,6 +258,7 @@ interface AppSettings {
 	tasks: {
 		source: TaskSourceSetting;
 	};
+	editor: EditorSettings;
 	database: DatabaseSettings;
 }
 
@@ -268,6 +280,7 @@ const KEYS = {
 	editorFontSize: "ui.editorFontSize",
 	translucentApp: "ui.translucentApp",
 	showToc: "ui.showToc",
+	editorShowCollapsibleHeadings: "editor.showCollapsibleHeadings",
 	autoUpdateLastCheckedAt: "updates.lastCheckedAt",
 	dailyNotesFolder: "dailyNotes.folder",
 	templatesFolder: "templates.folder",
@@ -383,6 +396,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		templatesFolderRaw,
 		templatesDailyNoteTemplateRaw,
 		taskSourceRaw,
+		rawEditorShowCollapsibleHeadings,
 		rawDatabaseShowColumnColor,
 		rawDatabaseShowNoteCount,
 		rawChangelogLastAcknowledgedVersion,
@@ -413,6 +427,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<string | null>(KEYS.templatesFolder),
 		store.get<string | null>(KEYS.templatesDailyNoteTemplate),
 		store.get<unknown>(KEYS.taskSource),
+		store.get<boolean | null>(KEYS.editorShowCollapsibleHeadings),
 		store.get<boolean | null>(KEYS.databaseShowColumnColor),
 		store.get<boolean | null>(KEYS.databaseShowNoteCount),
 		store.get<string | null>(KEYS.changelogLastAcknowledgedVersion),
@@ -463,6 +478,12 @@ export async function loadSettings(): Promise<AppSettings> {
 	const taskSource =
 		normalizeLegacyTaskSourceSetting(taskSourceRaw) ??
 		normalizeTaskSourceSetting(taskSourceRaw);
+	const editor: EditorSettings = {
+		showCollapsibleHeadings:
+			typeof rawEditorShowCollapsibleHeadings === "boolean"
+				? rawEditorShowCollapsibleHeadings
+				: DEFAULT_EDITOR_SETTINGS.showCollapsibleHeadings,
+	};
 	const database: DatabaseSettings = {
 		showColumnColor:
 			typeof rawDatabaseShowColumnColor === "boolean"
@@ -515,6 +536,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		tasks: {
 			source: taskSource,
 		},
+		editor,
 		database,
 	};
 }
@@ -685,6 +707,17 @@ export async function setShowToc(enabled: boolean): Promise<void> {
 	await store.set(KEYS.showToc, enabled);
 	await store.save();
 	void emitSettingsUpdated({ ui: { showToc: enabled } });
+}
+
+export async function setEditorShowCollapsibleHeadings(
+	enabled: boolean,
+): Promise<void> {
+	const store = await getStore();
+	await store.set(KEYS.editorShowCollapsibleHeadings, enabled);
+	await store.save();
+	void emitSettingsUpdated({
+		editor: { showCollapsibleHeadings: enabled },
+	});
 }
 
 export async function getDailyNotesFolder(): Promise<string | null> {

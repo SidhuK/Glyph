@@ -2,8 +2,10 @@ import { useCallback, useEffect, useState } from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import {
 	loadSettings,
+	setEditorShowCollapsibleHeadings,
 	setDatabaseShowColumnColor,
 	setDatabaseShowNoteCount,
+	setShowToc,
 } from "../../lib/settings";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import {
@@ -13,15 +15,25 @@ import {
 } from "./SettingsScaffold";
 
 export function AdvancedSettingsPane() {
+	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
+	const [showToc, setShowTocState] = useState(true);
 	const [showDatabaseColumnColor, setShowDatabaseColumnColor] = useState(true);
 	const [showDatabaseNoteCount, setShowDatabaseNoteCount] = useState(false);
 	const [error, setError] = useState("");
-	const [isSaving, setIsSaving] = useState(false);
+	const [isSavingShowToc, setIsSavingShowToc] = useState(false);
+	const [isSavingShowCollapsibleHeadings, setIsSavingShowCollapsibleHeadings] =
+		useState(false);
+	const [isSavingDatabaseColumnColor, setIsSavingDatabaseColumnColor] =
+		useState(false);
+	const [isSavingDatabaseNoteCount, setIsSavingDatabaseNoteCount] =
+		useState(false);
 
 	const refresh = useCallback(async () => {
 		setError("");
 		try {
 			const settings = await loadSettings();
+			setShowCollapsibleHeadings(settings.editor.showCollapsibleHeadings);
+			setShowTocState(settings.ui.showToc);
 			setShowDatabaseColumnColor(settings.database.showColumnColor);
 			setShowDatabaseNoteCount(settings.database.showNoteCount);
 		} catch (cause) {
@@ -34,6 +46,12 @@ export function AdvancedSettingsPane() {
 	}, [refresh]);
 
 	useTauriEvent("settings:updated", (payload) => {
+		if (typeof payload.editor?.showCollapsibleHeadings === "boolean") {
+			setShowCollapsibleHeadings(payload.editor.showCollapsibleHeadings);
+		}
+		if (typeof payload.ui?.showToc === "boolean") {
+			setShowTocState(payload.ui.showToc);
+		}
 		if (typeof payload.database?.showColumnColor === "boolean") {
 			setShowDatabaseColumnColor(payload.database.showColumnColor);
 		}
@@ -48,6 +66,59 @@ export function AdvancedSettingsPane() {
 
 			<div className="settingsGrid">
 				<SettingsSection
+					title="Editor"
+					description="Controls for editing behavior and note structure inside Glyph."
+				>
+					<SettingsRow
+						label="Table of contents"
+						description="Show a floating table of contents for each note."
+					>
+						<SettingsToggle
+							checked={showToc}
+							disabled={isSavingShowToc}
+							ariaLabel="Table of contents"
+							onCheckedChange={(checked) => {
+								const previous = showToc;
+								setError("");
+								setShowTocState(checked);
+								setIsSavingShowToc(true);
+								void setShowToc(checked)
+									.catch((cause) => {
+										setShowTocState(previous);
+										setError(extractErrorMessage(cause));
+									})
+									.finally(() => {
+										setIsSavingShowToc(false);
+									});
+							}}
+						/>
+					</SettingsRow>
+					<SettingsRow
+						label="Collapsible headings"
+						description="Show collapse toggles on note headings in editor and preview."
+					>
+						<SettingsToggle
+							checked={showCollapsibleHeadings}
+							disabled={isSavingShowCollapsibleHeadings}
+							ariaLabel="Collapsible headings"
+							onCheckedChange={(checked) => {
+								const previous = showCollapsibleHeadings;
+								setError("");
+								setShowCollapsibleHeadings(checked);
+								setIsSavingShowCollapsibleHeadings(true);
+								void setEditorShowCollapsibleHeadings(checked)
+									.catch((cause) => {
+										setShowCollapsibleHeadings(previous);
+										setError(extractErrorMessage(cause));
+									})
+									.finally(() => {
+										setIsSavingShowCollapsibleHeadings(false);
+									});
+							}}
+						/>
+					</SettingsRow>
+				</SettingsSection>
+				<SettingsSection
 					title="Database"
 					description="Global controls for how databases are presented across Glyph."
 				>
@@ -57,20 +128,20 @@ export function AdvancedSettingsPane() {
 					>
 						<SettingsToggle
 							checked={showDatabaseColumnColor}
-							disabled={isSaving}
+							disabled={isSavingDatabaseColumnColor}
 							ariaLabel="Show database column color"
 							onCheckedChange={(checked) => {
 								const previous = showDatabaseColumnColor;
 								setError("");
 								setShowDatabaseColumnColor(checked);
-								setIsSaving(true);
+								setIsSavingDatabaseColumnColor(true);
 								void setDatabaseShowColumnColor(checked)
 									.catch((cause) => {
 										setShowDatabaseColumnColor(previous);
 										setError(extractErrorMessage(cause));
 									})
 									.finally(() => {
-										setIsSaving(false);
+										setIsSavingDatabaseColumnColor(false);
 									});
 							}}
 						/>
@@ -81,20 +152,20 @@ export function AdvancedSettingsPane() {
 					>
 						<SettingsToggle
 							checked={showDatabaseNoteCount}
-							disabled={isSaving}
+							disabled={isSavingDatabaseNoteCount}
 							ariaLabel="Show note count"
 							onCheckedChange={(checked) => {
 								const previous = showDatabaseNoteCount;
 								setError("");
 								setShowDatabaseNoteCount(checked);
-								setIsSaving(true);
+								setIsSavingDatabaseNoteCount(true);
 								void setDatabaseShowNoteCount(checked)
 									.catch((cause) => {
 										setShowDatabaseNoteCount(previous);
 										setError(extractErrorMessage(cause));
 									})
 									.finally(() => {
-										setIsSaving(false);
+										setIsSavingDatabaseNoteCount(false);
 									});
 							}}
 						/>

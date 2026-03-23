@@ -12,11 +12,11 @@ import { X } from "../Icons";
 import { Toggle } from "../base/toggle/toggle";
 import {
 	buildTagSuggestions,
-	formatTagLabel,
 	normalizeTagToken,
 } from "../editor/noteProperties/utils";
 import type { EditorTextColor } from "../editor/textColors";
 import { Input } from "../ui/shadcn/input";
+import { formatDatabaseTagLabel } from "./databaseTagLabel";
 
 interface DatabaseCellProps {
 	row: DatabaseRow;
@@ -29,10 +29,6 @@ interface DatabaseCellProps {
 		column: DatabaseColumn,
 		nextValue: ReturnType<typeof databaseCellValueFromRow>,
 	) => Promise<void>;
-}
-
-function formatDatabaseTagLabel(tag: string): string {
-	return formatTagLabel(tag).replace(/^#/, "");
 }
 
 function listDraft(row: DatabaseRow, column: DatabaseColumn): string {
