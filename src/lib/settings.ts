@@ -95,10 +95,12 @@ export interface TaskSourceSetting {
 
 export interface DatabaseSettings {
 	showColumnColor: boolean;
+	showNoteCount: boolean;
 }
 
 export const DEFAULT_DATABASE_SETTINGS: DatabaseSettings = {
 	showColumnColor: true,
+	showNoteCount: false,
 };
 
 function asThemeMode(value: unknown): ThemeMode {
@@ -193,6 +195,7 @@ async function emitSettingsUpdated(payload: {
 	};
 	database?: {
 		showColumnColor?: boolean;
+		showNoteCount?: boolean;
 	};
 	changelog?: {
 		lastAcknowledgedVersion?: string | null;
@@ -271,6 +274,7 @@ const KEYS = {
 	templatesDailyNoteTemplate: "templates.dailyNoteTemplate",
 	taskSource: "tasks.source",
 	databaseShowColumnColor: "database.showColumnColor",
+	databaseShowNoteCount: "database.showNoteCount",
 	changelogLastAcknowledgedVersion: "changelog.lastAcknowledgedVersion",
 	onboardingLauncherSeen: "onboarding.launcherSeen",
 	onboardingStarterDismissed: "onboarding.starterDismissed",
@@ -380,6 +384,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		templatesDailyNoteTemplateRaw,
 		taskSourceRaw,
 		rawDatabaseShowColumnColor,
+		rawDatabaseShowNoteCount,
 		rawChangelogLastAcknowledgedVersion,
 	] = await Promise.all([
 		store.get<string | null>(KEYS.currentSpacePath),
@@ -409,6 +414,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<string | null>(KEYS.templatesDailyNoteTemplate),
 		store.get<unknown>(KEYS.taskSource),
 		store.get<boolean | null>(KEYS.databaseShowColumnColor),
+		store.get<boolean | null>(KEYS.databaseShowNoteCount),
 		store.get<string | null>(KEYS.changelogLastAcknowledgedVersion),
 	]);
 	const currentSpacePath = currentSpacePathRaw ?? null;
@@ -462,6 +468,10 @@ export async function loadSettings(): Promise<AppSettings> {
 			typeof rawDatabaseShowColumnColor === "boolean"
 				? rawDatabaseShowColumnColor
 				: DEFAULT_DATABASE_SETTINGS.showColumnColor,
+		showNoteCount:
+			typeof rawDatabaseShowNoteCount === "boolean"
+				? rawDatabaseShowNoteCount
+				: DEFAULT_DATABASE_SETTINGS.showNoteCount,
 	};
 	const changelog: ChangelogSettings = {
 		lastAcknowledgedVersion:
@@ -762,6 +772,15 @@ export async function setDatabaseShowColumnColor(
 	await store.set(KEYS.databaseShowColumnColor, enabled);
 	await store.save();
 	void emitSettingsUpdated({ database: { showColumnColor: enabled } });
+}
+
+export async function setDatabaseShowNoteCount(
+	enabled: boolean,
+): Promise<void> {
+	const store = await getStore();
+	await store.set(KEYS.databaseShowNoteCount, enabled);
+	await store.save();
+	void emitSettingsUpdated({ database: { showNoteCount: enabled } });
 }
 
 export async function getAutoUpdateLastCheckedAt(): Promise<number | null> {

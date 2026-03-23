@@ -1,11 +1,15 @@
-import { EditTableIcon, FilterEditIcon } from "@hugeicons/core-free-icons";
+import {
+	FilterMailIcon,
+	PencilEdit02Icon,
+	SlidersVerticalIcon,
+} from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import type {
 	DatabaseColumn,
 	DatabaseConfig,
 	DatabasePropertyOption,
 } from "../../lib/database/types";
-import { Kanban, Plus, RefreshCw, Table } from "../Icons";
+import { Kanban, RefreshCw, Table } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { DropdownMenu, DropdownMenuTrigger } from "../ui/shadcn/dropdown-menu";
 import { DatabaseColumnDropdown } from "./DatabaseColumnDialog";
@@ -105,13 +109,12 @@ export function DatabaseToolbar({
 						<Button
 							type="button"
 							variant="ghost"
-							size="sm"
+							size="icon-sm"
 							className="databaseToolbarChip"
 							title="Source & Filters"
 							aria-label="Source & Filters"
 						>
-							<HugeiconsIcon icon={FilterEditIcon} size={13} />
-							<span className="databaseToolbarChipLabel">Filter</span>
+							<HugeiconsIcon icon={FilterMailIcon} size={13} />
 						</Button>
 					</DropdownMenuTrigger>
 					<DatabaseSourceDropdown
@@ -124,13 +127,12 @@ export function DatabaseToolbar({
 						<Button
 							type="button"
 							variant="ghost"
-							size="sm"
+							size="icon-sm"
 							className="databaseToolbarChip"
 							title="Columns"
 							aria-label="Columns"
 						>
-							<HugeiconsIcon icon={EditTableIcon} size={13} />
-							<span className="databaseToolbarChipLabel">Columns</span>
+							<HugeiconsIcon icon={SlidersVerticalIcon} size={13} />
 						</Button>
 					</DropdownMenuTrigger>
 					<DatabaseColumnDropdown
@@ -152,14 +154,14 @@ export function DatabaseToolbar({
 				</Button>
 				<Button
 					type="button"
-					size="sm"
+					variant="ghost"
+					size="icon-sm"
 					className="databaseToolbarChip is-accent"
 					onClick={onAddRow}
-					title="New row"
-					aria-label="New row"
+					title="New note"
+					aria-label="New note"
 				>
-					<Plus size={13} />
-					<span className="databaseToolbarChipLabel">New</span>
+					<HugeiconsIcon icon={PencilEdit02Icon} size={14} />
 				</Button>
 			</div>
 		</div>

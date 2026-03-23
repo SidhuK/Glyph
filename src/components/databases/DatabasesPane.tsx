@@ -1,4 +1,5 @@
 import {
+	ClipboardIcon,
 	DashboardSquare03Icon,
 	MoreVerticalIcon,
 } from "@hugeicons/core-free-icons";
@@ -211,6 +212,7 @@ export function DatabasesPane({
 	const viewNameInputRef = useRef<HTMLInputElement | null>(null);
 	const rowRequestTokenRef = useRef(0);
 	const [showDatabaseColumnColor, setShowDatabaseColumnColor] = useState(true);
+	const [showDatabaseNoteCount, setShowDatabaseNoteCount] = useState(false);
 
 	const loadSummaries = useCallback(async () => {
 		const next = await invoke("databases_list");
@@ -239,6 +241,7 @@ export function DatabasesPane({
 			.then((settings) => {
 				if (!cancelled) {
 					setShowDatabaseColumnColor(settings.database.showColumnColor);
+					setShowDatabaseNoteCount(settings.database.showNoteCount);
 				}
 			})
 			.catch(() => {
@@ -252,6 +255,9 @@ export function DatabasesPane({
 	useTauriEvent("settings:updated", (payload) => {
 		if (typeof payload.database?.showColumnColor === "boolean") {
 			setShowDatabaseColumnColor(payload.database.showColumnColor);
+		}
+		if (typeof payload.database?.showNoteCount === "boolean") {
+			setShowDatabaseNoteCount(payload.database.showNoteCount);
 		}
 	});
 
@@ -764,28 +770,34 @@ export function DatabasesPane({
 
 				{document ? (
 					<div className="databasesTopBarRight">
-						<span className="databasesHeaderSource">
-							{totalCount > rows.length
-								? `Showing ${rows.length} of ${totalCount} rows`
-								: `${rows.length} row${rows.length === 1 ? "" : "s"}`}
-						</span>
+						{showDatabaseNoteCount ? (
+							<span className="databasesHeaderSource">
+								{totalCount > rows.length
+									? `Showing ${rows.length} of ${totalCount} notes`
+									: `${rows.length} note${rows.length === 1 ? "" : "s"}`}
+							</span>
+						) : null}
 						{isTruncated ? (
 							<span className="databasesHeaderSource">
-								Limited to the first 200 rows
+								Limited to the first 200 notes
 							</span>
 						) : null}
 						<Button
 							type="button"
 							variant="ghost"
-							size="sm"
+							size="icon-sm"
+							className="databasesTopActionButton"
 							onClick={() => void handleDuplicateDatabase()}
+							title="Duplicate database"
+							aria-label="Duplicate database"
 						>
-							Duplicate
+							<HugeiconsIcon icon={ClipboardIcon} size={14} />
 						</Button>
 						<Button
 							type="button"
 							variant="ghost"
 							size="icon-sm"
+							className="databasesTopActionButton databasesTopActionButtonDanger"
 							onClick={() => {
 								if (
 									!window.confirm(

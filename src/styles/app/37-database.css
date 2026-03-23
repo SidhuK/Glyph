@@ -34,6 +34,19 @@
 	flex: 0 0 auto;
 }
 
+.databasesTopActionButton {
+	color: var(--text-tertiary);
+}
+
+.databasesTopActionButton:hover {
+	color: var(--text-primary);
+}
+
+.databasesTopActionButtonDanger:hover:not(:disabled),
+.databasesTopActionButtonDanger:focus-visible:not(:disabled) {
+	color: var(--text-error);
+}
+
 .databasesTopBarDivider {
 	width: 1px;
 	height: 18px;
@@ -140,12 +153,8 @@
 	display: flex;
 	align-items: center;
 	position: relative;
-	border-bottom: 2px solid transparent;
-	transition: border-color 120ms ease;
-}
-
-.databasesViewTabWrapper.is-active {
-	border-bottom-color: var(--text-primary);
+	border-radius: var(--database-radius-md);
+	transition: background-color 120ms ease, border-color 120ms ease;
 }
 
 .databasesViewTab {
@@ -153,21 +162,26 @@
 	align-items: center;
 	gap: 6px;
 	padding: 8px 8px;
-	border: none;
+	border: 1px solid transparent;
 	border-radius: var(--database-radius-md);
 	background: transparent;
 	color: var(--text-secondary);
 	cursor: pointer;
-	transition: color 120ms ease;
+	transition: color 120ms ease, background-color 120ms ease, border-color 120ms
+		ease;
 	white-space: nowrap;
 }
 
 .databasesViewTab:hover {
 	color: var(--text-primary);
+	background: var(--bg-hover);
+	border-color: var(--border-light);
 }
 
-.databasesViewTab.is-active {
+.databasesViewTabWrapper.is-active .databasesViewTab {
 	color: var(--text-primary);
+	background: var(--bg-primary);
+	border-color: var(--border-default);
 }
 
 .databasesViewTabMenu {
@@ -185,6 +199,10 @@
 	cursor: pointer;
 	transition: background-color 120ms ease, color 120ms ease;
 	margin-right: 4px;
+}
+
+.databasesViewTabWrapper.is-active .databasesViewTabMenu {
+	color: var(--text-primary);
 }
 
 .databasesViewTabMenu:hover {
@@ -271,6 +289,10 @@
 .databaseToolbarPrimary,
 .databaseToolbarMeta {
 	min-width: 0;
+}
+
+.databaseToolbarActions {
+	gap: 3px;
 }
 
 .databaseToolbarMeta {

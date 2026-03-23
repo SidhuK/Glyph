@@ -134,6 +134,7 @@ export function useTableOfContents(editor: Editor | null) {
 	const scrollToHeading = useCallback(
 		(heading: TOCHeading) => {
 			if (!editor) return;
+			editor.commands.expandHeadingAncestors(heading.pos);
 
 			let el: HTMLElement | null = null;
 			try {

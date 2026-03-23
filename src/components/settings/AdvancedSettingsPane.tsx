@@ -1,6 +1,10 @@
 import { useCallback, useEffect, useState } from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
-import { loadSettings, setDatabaseShowColumnColor } from "../../lib/settings";
+import {
+	loadSettings,
+	setDatabaseShowColumnColor,
+	setDatabaseShowNoteCount,
+} from "../../lib/settings";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import {
 	SettingsRow,
@@ -10,6 +14,7 @@ import {
 
 export function AdvancedSettingsPane() {
 	const [showDatabaseColumnColor, setShowDatabaseColumnColor] = useState(true);
+	const [showDatabaseNoteCount, setShowDatabaseNoteCount] = useState(false);
 	const [error, setError] = useState("");
 	const [isSaving, setIsSaving] = useState(false);
 
@@ -18,6 +23,7 @@ export function AdvancedSettingsPane() {
 		try {
 			const settings = await loadSettings();
 			setShowDatabaseColumnColor(settings.database.showColumnColor);
+			setShowDatabaseNoteCount(settings.database.showNoteCount);
 		} catch (cause) {
 			setError(extractErrorMessage(cause));
 		}
@@ -30,6 +36,9 @@ export function AdvancedSettingsPane() {
 	useTauriEvent("settings:updated", (payload) => {
 		if (typeof payload.database?.showColumnColor === "boolean") {
 			setShowDatabaseColumnColor(payload.database.showColumnColor);
+		}
+		if (typeof payload.database?.showNoteCount === "boolean") {
+			setShowDatabaseNoteCount(payload.database.showNoteCount);
 		}
 	});
 
@@ -58,6 +67,30 @@ export function AdvancedSettingsPane() {
 								void setDatabaseShowColumnColor(checked)
 									.catch((cause) => {
 										setShowDatabaseColumnColor(previous);
+										setError(extractErrorMessage(cause));
+									})
+									.finally(() => {
+										setIsSaving(false);
+									});
+							}}
+						/>
+					</SettingsRow>
+					<SettingsRow
+						label="Show note count"
+						description="Show the total number of notes in the database header."
+					>
+						<SettingsToggle
+							checked={showDatabaseNoteCount}
+							disabled={isSaving}
+							ariaLabel="Show note count"
+							onCheckedChange={(checked) => {
+								const previous = showDatabaseNoteCount;
+								setError("");
+								setShowDatabaseNoteCount(checked);
+								setIsSaving(true);
+								void setDatabaseShowNoteCount(checked)
+									.catch((cause) => {
+										setShowDatabaseNoteCount(previous);
 										setError(extractErrorMessage(cause));
 									})
 									.finally(() => {

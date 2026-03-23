@@ -89,6 +89,7 @@ type TauriEventMap = {
 		};
 		database?: {
 			showColumnColor?: boolean;
+			showNoteCount?: boolean;
 		};
 		changelog?: {
 			lastAcknowledgedVersion?: string | null;
