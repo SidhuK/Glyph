@@ -18,8 +18,6 @@ import {
 } from "../../lib/tauri";
 import { ChevronDown, Edit, Kanban, Plus, Table, Trash2 } from "../Icons";
 import { DatabaseBoard } from "../database/DatabaseBoard";
-import { DatabaseColumnDialog } from "../database/DatabaseColumnDialog";
-import { DatabaseSourceDialog } from "../database/DatabaseSourceDialog";
 import { DatabaseTable } from "../database/DatabaseTable";
 import { DatabaseToolbar } from "../database/DatabaseToolbar";
 import { Button } from "../ui/shadcn/button";
@@ -205,8 +203,6 @@ export function DatabasesPane({
 	const [rowsLoading, setRowsLoading] = useState(false);
 	const [error, setError] = useState("");
 	const [selectedRowPath, setSelectedRowPath] = useState<string | null>(null);
-	const [columnsOpen, setColumnsOpen] = useState(false);
-	const [sourceOpen, setSourceOpen] = useState(false);
 	const [nameDraft, setNameDraft] = useState("");
 	const [renamingViewId, setRenamingViewId] = useState<string | null>(null);
 	const [viewNameDraft, setViewNameDraft] = useState("");
@@ -686,7 +682,7 @@ export function DatabasesPane({
 						</DropdownMenuContent>
 					</DropdownMenu>
 
-					{document ? (
+					{document && activeConfig ? (
 						<>
 							<span className="databasesTopBarDivider" />
 							<Input
@@ -705,9 +701,11 @@ export function DatabasesPane({
 							/>
 							<DatabaseToolbar
 								className="databaseToolbarInline"
-								databaseView={activeConfig?.view.layout ?? "table"}
+								databaseView={activeConfig.view.layout}
 								groupColumns={groupColumns}
-								groupColumnId={activeConfig?.view.board_group_by ?? null}
+								groupColumnId={activeConfig.view.board_group_by ?? null}
+								config={activeConfig}
+								availableProperties={document.available_properties}
 								onGroupColumnIdChange={(groupColumnId) => {
 									if (!activeConfig) return;
 									void handleSaveConfig({
@@ -730,8 +728,7 @@ export function DatabasesPane({
 								}}
 								onAddRow={() => void handleCreateRow()}
 								onReload={() => void loadRows()}
-								onOpenSource={() => setSourceOpen(true)}
-								onOpenColumns={() => setColumnsOpen(true)}
+								onChangeConfig={handleSaveConfig}
 							/>
 						</>
 					) : null}
@@ -896,7 +893,7 @@ export function DatabasesPane({
 							selectedRowPath={selectedRowPath}
 							onSelectRow={setSelectedRowPath}
 							onOpenRow={(notePath) => void onOpenFile(notePath)}
-							onOpenColumns={() => setColumnsOpen(true)}
+							onOpenColumns={() => {}}
 							onCreateDefaultGroupField={null}
 							onGroupColumnIdChange={(groupColumnId) =>
 								void handleSaveConfig({
@@ -952,19 +949,6 @@ export function DatabasesPane({
 							onSaveCell={handleUpdateCell}
 						/>
 					)}
-					<DatabaseColumnDialog
-						open={columnsOpen}
-						config={activeConfig}
-						availableProperties={document.available_properties}
-						onOpenChange={setColumnsOpen}
-						onChangeConfig={handleSaveConfig}
-					/>
-					<DatabaseSourceDialog
-						open={sourceOpen}
-						config={activeConfig}
-						onOpenChange={setSourceOpen}
-						onChangeConfig={handleSaveConfig}
-					/>
 				</>
 			) : (
 				<div className="databasesEmptyState">

@@ -1,19 +1,27 @@
 import { EditTableIcon, FilterEditIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import type { DatabaseColumn } from "../../lib/database/types";
+import type {
+	DatabaseColumn,
+	DatabaseConfig,
+	DatabasePropertyOption,
+} from "../../lib/database/types";
 import { Kanban, Plus, RefreshCw, Table } from "../Icons";
 import { Button } from "../ui/shadcn/button";
+import { DropdownMenu, DropdownMenuTrigger } from "../ui/shadcn/dropdown-menu";
+import { DatabaseColumnDropdown } from "./DatabaseColumnDialog";
+import { DatabaseSourceDropdown } from "./DatabaseSourceDialog";
 
 interface DatabaseToolbarProps {
 	databaseView: "table" | "board";
 	groupColumns: DatabaseColumn[];
 	groupColumnId: string | null;
+	config: DatabaseConfig;
+	availableProperties: DatabasePropertyOption[];
 	onGroupColumnIdChange: (groupColumnId: string | null) => void;
 	onDatabaseViewChange: (view: "table" | "board") => void;
 	onAddRow: () => void;
 	onReload: () => void;
-	onOpenSource: () => void;
-	onOpenColumns: () => void;
+	onChangeConfig: (config: DatabaseConfig) => Promise<void>;
 	className?: string;
 }
 
@@ -21,12 +29,13 @@ export function DatabaseToolbar({
 	databaseView,
 	groupColumns,
 	groupColumnId,
+	config,
+	availableProperties,
 	onGroupColumnIdChange,
 	onDatabaseViewChange,
 	onAddRow,
 	onReload,
-	onOpenSource,
-	onOpenColumns,
+	onChangeConfig,
 	className,
 }: DatabaseToolbarProps) {
 	return (
@@ -91,30 +100,45 @@ export function DatabaseToolbar({
 						</select>
 					</label>
 				) : null}
-				<Button
-					type="button"
-					variant="ghost"
-					size="sm"
-					className="databaseToolbarChip"
-					onClick={onOpenSource}
-					title="Source & Filters"
-					aria-label="Source & Filters"
-				>
-					<HugeiconsIcon icon={FilterEditIcon} size={13} />
-					<span className="databaseToolbarChipLabel">Filter</span>
-				</Button>
-				<Button
-					type="button"
-					variant="ghost"
-					size="sm"
-					className="databaseToolbarChip"
-					onClick={onOpenColumns}
-					title="Columns"
-					aria-label="Columns"
-				>
-					<HugeiconsIcon icon={EditTableIcon} size={13} />
-					<span className="databaseToolbarChipLabel">Columns</span>
-				</Button>
+				<DropdownMenu>
+					<DropdownMenuTrigger asChild>
+						<Button
+							type="button"
+							variant="ghost"
+							size="sm"
+							className="databaseToolbarChip"
+							title="Source & Filters"
+							aria-label="Source & Filters"
+						>
+							<HugeiconsIcon icon={FilterEditIcon} size={13} />
+							<span className="databaseToolbarChipLabel">Filter</span>
+						</Button>
+					</DropdownMenuTrigger>
+					<DatabaseSourceDropdown
+						config={config}
+						onChangeConfig={onChangeConfig}
+					/>
+				</DropdownMenu>
+				<DropdownMenu>
+					<DropdownMenuTrigger asChild>
+						<Button
+							type="button"
+							variant="ghost"
+							size="sm"
+							className="databaseToolbarChip"
+							title="Columns"
+							aria-label="Columns"
+						>
+							<HugeiconsIcon icon={EditTableIcon} size={13} />
+							<span className="databaseToolbarChipLabel">Columns</span>
+						</Button>
+					</DropdownMenuTrigger>
+					<DatabaseColumnDropdown
+						config={config}
+						availableProperties={availableProperties}
+						onChangeConfig={onChangeConfig}
+					/>
+				</DropdownMenu>
 				<Button
 					type="button"
 					variant="ghost"

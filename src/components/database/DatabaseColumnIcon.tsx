@@ -62,7 +62,8 @@ import type { DatabaseColumn } from "../../lib/database/types";
 interface DatabaseColumnIconProps {
 	column?: Pick<DatabaseColumn, "type" | "property_kind" | "icon">;
 	iconName?: string | null;
-	size?: number;
+	size?: number | undefined;
+	strokeWidth?: number;
 	className?: string;
 }
 
@@ -133,7 +134,8 @@ function iconDefinition(iconName: string) {
 export function DatabaseColumnIcon({
 	column,
 	iconName,
-	size = 14,
+	size,
+	strokeWidth,
 	className,
 }: DatabaseColumnIconProps) {
 	const resolvedIconName =
@@ -141,7 +143,8 @@ export function DatabaseColumnIcon({
 	return (
 		<HugeiconsIcon
 			icon={iconDefinition(resolvedIconName)}
-			size={size}
+			{...(size != null ? { size } : {})}
+			{...(strokeWidth != null ? { strokeWidth } : {})}
 			className={className}
 		/>
 	);
