@@ -122,6 +122,10 @@ function cardPreviewText(row: DatabaseRow, title: string): string {
 	return remainder;
 }
 
+function formatDatabaseTagLabel(tag: string): string {
+	return formatTagLabel(tag).replace(/^#/, "");
+}
+
 function cardCandidateColumns(
 	columns: DatabaseColumn[],
 	groupColumnId?: string | null,
@@ -593,9 +597,9 @@ export function DatabaseBoard({
 																						)
 																					: databaseValueToneStyle(tag)
 																			}
-																			title={formatTagLabel(tag)}
+																			title={formatDatabaseTagLabel(tag)}
 																		>
-																			{formatTagLabel(tag)}
+																			{formatDatabaseTagLabel(tag)}
 																		</span>
 																	))}
 																	{extraTagCount > 0 ? (

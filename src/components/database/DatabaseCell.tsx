@@ -31,6 +31,10 @@ interface DatabaseCellProps {
 	) => Promise<void>;
 }
 
+function formatDatabaseTagLabel(tag: string): string {
+	return formatTagLabel(tag).replace(/^#/, "");
+}
+
 function listDraft(row: DatabaseRow, column: DatabaseColumn): string {
 	const value = databaseCellValueFromRow(row, column);
 	return value.value_list.join(", ");
@@ -190,7 +194,7 @@ export function DatabaseCell({
 	if (!editing || !editable) {
 		if (cellValue.kind === "tags") {
 			const fullValue = cellValue.value_list
-				.map((value) => formatTagLabel(value))
+				.map((value) => formatDatabaseTagLabel(value))
 				.join(", ");
 			return (
 				<button
@@ -210,9 +214,9 @@ export function DatabaseCell({
 										key={`${column.id}:${value}`}
 										className="databaseCellPill"
 										style={toneStyleForValue(value)}
-										title={formatTagLabel(value)}
+										title={formatDatabaseTagLabel(value)}
 									>
-										{formatTagLabel(value)}
+										{formatDatabaseTagLabel(value)}
 									</span>
 								))
 							: null}
@@ -319,9 +323,9 @@ export function DatabaseCell({
 							style={toneStyleForValue(value)}
 							onMouseDown={(event) => event.preventDefault()}
 							onClick={() => void removeTag(value)}
-							title={`Remove ${formatTagLabel(value)}`}
+							title={`Remove ${formatDatabaseTagLabel(value)}`}
 						>
-							<span>{formatTagLabel(value)}</span>
+							<span>{formatDatabaseTagLabel(value)}</span>
 							<X size={10} />
 						</button>
 					))}
@@ -405,7 +409,7 @@ export function DatabaseCell({
 										}
 									}}
 								>
-									<span>{formatTagLabel(tag)}</span>
+									<span>{formatDatabaseTagLabel(tag)}</span>
 									<span className="notePropertySuggestionCount mono">
 										{count}
 									</span>
