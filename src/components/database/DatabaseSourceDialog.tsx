@@ -16,7 +16,9 @@ interface DatabaseSourceDropdownProps {
 	onChangeConfig: (config: DatabaseConfig) => Promise<void>;
 }
 
-function isTagFilterColumn(column?: DatabaseConfig["columns"][number] | null): boolean {
+function isTagFilterColumn(
+	column?: DatabaseConfig["columns"][number] | null,
+): boolean {
 	return column?.type === "tags" || column?.property_kind === "tags";
 }
 
@@ -83,7 +85,10 @@ function operatorOptions(
 	column: DatabaseConfig["columns"][number] | null,
 	currentOperator: DatabaseFilter["operator"],
 ): Array<{ value: DatabaseFilter["operator"]; label: string }> {
-	const baseOptions: Array<{ value: DatabaseFilter["operator"]; label: string }> = [
+	const baseOptions: Array<{
+		value: DatabaseFilter["operator"];
+		label: string;
+	}> = [
 		{ value: defaultOperatorForColumn(column), label: "Contains" },
 		{ value: "equals", label: "Equals" },
 		{ value: "is_empty", label: "Is empty" },
@@ -96,7 +101,10 @@ function operatorOptions(
 		return baseOptions;
 	}
 
-	return [...baseOptions, { value: currentOperator, label: operatorLabel(currentOperator) }];
+	return [
+		...baseOptions,
+		{ value: currentOperator, label: operatorLabel(currentOperator) },
+	];
 }
 
 export function DatabaseSourceDropdown({
@@ -268,8 +276,7 @@ export function DatabaseSourceDropdown({
 							null;
 						const showsValue = operatorNeedsValue(filter.operator);
 						const usesTagPicker =
-							showsValue &&
-							isTagFilterColumn(selectedColumn);
+							showsValue && isTagFilterColumn(selectedColumn);
 						const availableOperators = operatorOptions(
 							selectedColumn,
 							filter.operator,

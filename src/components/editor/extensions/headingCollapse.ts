@@ -42,7 +42,11 @@ function extractHeadingRanges(doc: ProseMirrorNode): HeadingRange[] {
 
 	for (let index = 0; index < headings.length; index += 1) {
 		const current = headings[index];
-		for (let nextIndex = index + 1; nextIndex < headings.length; nextIndex += 1) {
+		for (
+			let nextIndex = index + 1;
+			nextIndex < headings.length;
+			nextIndex += 1
+		) {
 			const next = headings[nextIndex];
 			if (next.level <= current.level) {
 				current.end = next.pos;
@@ -275,14 +279,18 @@ export const HeadingCollapse = Extension.create({
 					},
 					apply: (transaction, pluginState, _oldState, newState) => {
 						const headings = extractHeadingRanges(newState.doc);
-						const headingPositions = new Set(headings.map((heading) => heading.pos));
+						const headingPositions = new Set(
+							headings.map((heading) => heading.pos),
+						);
 						let enabled = pluginState.enabled;
 						let collapsedPositions = applyMappedPositions(
 							pluginState.collapsedPositions,
 							transaction,
 						);
 						collapsedPositions = new Set(
-							[...collapsedPositions].filter((pos) => headingPositions.has(pos)),
+							[...collapsedPositions].filter((pos) =>
+								headingPositions.has(pos),
+							),
 						);
 
 						const meta = transaction.getMeta(

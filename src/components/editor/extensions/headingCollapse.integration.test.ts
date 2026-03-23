@@ -2,8 +2,8 @@
 
 import { Editor } from "@tiptap/core";
 import { describe, expect, it } from "vitest";
-import { createEditorExtensions } from "./index";
 import { headingCollapsePluginKey } from "./headingCollapse";
+import { createEditorExtensions } from "./index";
 
 function createEditor(markdown: string) {
 	const element = document.createElement("div");
@@ -51,23 +51,25 @@ function findBlockByText(element: HTMLElement, text: string) {
 
 describe("Heading collapse integration", () => {
 	it("collapses nested content until the next same-or-higher heading", () => {
-		const harness = createEditor([
-			"# Alpha",
-			"",
-			"Alpha body",
-			"",
-			"## Beta",
-			"",
-			"Beta body",
-			"",
-			"### Gamma",
-			"",
-			"Gamma body",
-			"",
-			"## Delta",
-			"",
-			"Delta body",
-		].join("\n"));
+		const harness = createEditor(
+			[
+				"# Alpha",
+				"",
+				"Alpha body",
+				"",
+				"## Beta",
+				"",
+				"Beta body",
+				"",
+				"### Gamma",
+				"",
+				"Gamma body",
+				"",
+				"## Delta",
+				"",
+				"Delta body",
+			].join("\n"),
+		);
 
 		try {
 			const [alpha, beta] = getHeadingPositions(harness.editor);
@@ -76,102 +78,96 @@ describe("Heading collapse integration", () => {
 			expect(findBlockByText(harness.element, "Beta")?.className).not.toContain(
 				"headingCollapseHidden",
 			);
-			expect(findBlockByText(harness.element, "Gamma body")?.className).toContain(
-				"headingCollapseHidden",
-			);
-			expect(findBlockByText(harness.element, "Delta body")?.className).not.toContain(
-				"headingCollapseHidden",
-			);
+			expect(
+				findBlockByText(harness.element, "Gamma body")?.className,
+			).toContain("headingCollapseHidden");
+			expect(
+				findBlockByText(harness.element, "Delta body")?.className,
+			).not.toContain("headingCollapseHidden");
 
 			harness.editor.commands.toggleHeadingCollapse(alpha.pos);
-			expect(findBlockByText(harness.element, "Alpha body")?.className).toContain(
-				"headingCollapseHidden",
-			);
-			expect(findBlockByText(harness.element, "Delta body")?.className).toContain(
-				"headingCollapseHidden",
-			);
+			expect(
+				findBlockByText(harness.element, "Alpha body")?.className,
+			).toContain("headingCollapseHidden");
+			expect(
+				findBlockByText(harness.element, "Delta body")?.className,
+			).toContain("headingCollapseHidden");
 		} finally {
 			harness.destroy();
 		}
 	});
 
 	it("keeps collapsed sections stable while editing heading content", () => {
-		const harness = createEditor([
-			"# Alpha",
-			"",
-			"Alpha body",
-			"",
-			"## Beta",
-			"",
-			"Beta body",
-		].join("\n"));
+		const harness = createEditor(
+			["# Alpha", "", "Alpha body", "", "## Beta", "", "Beta body"].join("\n"),
+		);
 
 		try {
 			const [alpha] = getHeadingPositions(harness.editor);
 			harness.editor.commands.toggleHeadingCollapse(alpha.pos);
-			expect(findBlockByText(harness.element, "Alpha body")?.className).toContain(
-				"headingCollapseHidden",
-			);
+			expect(
+				findBlockByText(harness.element, "Alpha body")?.className,
+			).toContain("headingCollapseHidden");
 
 			harness.editor.commands.insertContentAt(alpha.pos + 1, "Updated ");
 
-			const pluginState = headingCollapsePluginKey.getState(harness.editor.state);
+			const pluginState = headingCollapsePluginKey.getState(
+				harness.editor.state,
+			);
 			expect(pluginState?.collapsedPositions.size).toBe(1);
 			expect(findBlockByText(harness.element, "Updated Alpha")).toBeTruthy();
-			expect(findBlockByText(harness.element, "Alpha body")?.className).toContain(
-				"headingCollapseHidden",
-			);
+			expect(
+				findBlockByText(harness.element, "Alpha body")?.className,
+			).toContain("headingCollapseHidden");
 		} finally {
 			harness.destroy();
 		}
 	});
 
 	it("expands collapsed ancestors before navigating to a nested heading", () => {
-		const harness = createEditor([
-			"# Alpha",
-			"",
-			"Alpha body",
-			"",
-			"## Beta",
-			"",
-			"Beta body",
-			"",
-			"### Gamma",
-			"",
-			"Gamma body",
-		].join("\n"));
+		const harness = createEditor(
+			[
+				"# Alpha",
+				"",
+				"Alpha body",
+				"",
+				"## Beta",
+				"",
+				"Beta body",
+				"",
+				"### Gamma",
+				"",
+				"Gamma body",
+			].join("\n"),
+		);
 
 		try {
 			const [alpha, beta, gamma] = getHeadingPositions(harness.editor);
 
 			harness.editor.commands.toggleHeadingCollapse(alpha.pos);
 			harness.editor.commands.toggleHeadingCollapse(beta.pos);
-			expect(findBlockByText(harness.element, "Gamma body")?.className).toContain(
-				"headingCollapseHidden",
-			);
+			expect(
+				findBlockByText(harness.element, "Gamma body")?.className,
+			).toContain("headingCollapseHidden");
 
 			harness.editor.commands.expandHeadingAncestors(gamma.pos);
 
-			const pluginState = headingCollapsePluginKey.getState(harness.editor.state);
-			expect(pluginState?.collapsedPositions.size).toBe(0);
-			expect(findBlockByText(harness.element, "Gamma body")?.className).not.toContain(
-				"headingCollapseHidden",
+			const pluginState = headingCollapsePluginKey.getState(
+				harness.editor.state,
 			);
+			expect(pluginState?.collapsedPositions.size).toBe(0);
+			expect(
+				findBlockByText(harness.element, "Gamma body")?.className,
+			).not.toContain("headingCollapseHidden");
 		} finally {
 			harness.destroy();
 		}
 	});
 
 	it("still renders and toggles sections in read-only preview mode", () => {
-		const harness = createEditor([
-			"# Alpha",
-			"",
-			"Alpha body",
-			"",
-			"## Beta",
-			"",
-			"Beta body",
-		].join("\n"));
+		const harness = createEditor(
+			["# Alpha", "", "Alpha body", "", "## Beta", "", "Beta body"].join("\n"),
+		);
 
 		try {
 			harness.editor.setEditable(false);
@@ -184,9 +180,9 @@ describe("Heading collapse integration", () => {
 			toggle?.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
 			toggle?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 
-			expect(findBlockByText(harness.element, "Alpha body")?.className).toContain(
-				"headingCollapseHidden",
-			);
+			expect(
+				findBlockByText(harness.element, "Alpha body")?.className,
+			).toContain("headingCollapseHidden");
 		} finally {
 			harness.destroy();
 		}

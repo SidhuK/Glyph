@@ -2,9 +2,9 @@ import { useCallback, useEffect, useState } from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import {
 	loadSettings,
-	setEditorShowCollapsibleHeadings,
 	setDatabaseShowColumnColor,
 	setDatabaseShowNoteCount,
+	setEditorShowCollapsibleHeadings,
 	setShowToc,
 } from "../../lib/settings";
 import { useTauriEvent } from "../../lib/tauriEvents";

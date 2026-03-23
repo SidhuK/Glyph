@@ -772,7 +772,11 @@
 .tiptapHostInline:not(.is-preview) .tiptapContentInline h6::before {
 	position: absolute;
 	bottom: 0;
-	left: calc(-1 * (var(--heading-level-rail-width) + var(--heading-rail-gap)) + 2px);
+	left: calc(
+		-1 *
+		(var(--heading-level-rail-width) + var(--heading-rail-gap)) +
+		2px
+	);
 	font-size: 11px;
 	font-weight: var(--font-medium);
 	letter-spacing: 0.025em;
@@ -825,10 +829,8 @@
 	color: color-mix(in srgb, var(--text-tertiary) 84%, transparent);
 	cursor: pointer;
 	transform: translateY(-50%);
-	transition:
-		color 140ms ease,
-		background-color 140ms ease,
-		transform 140ms ease;
+	transition: color 140ms ease, background-color 140ms ease, transform 140ms
+		ease;
 }
 
 .tiptapContentInline .headingCollapseToggle:hover {
@@ -864,11 +866,12 @@
 .tiptapHostInline:not(.is-preview) .tiptapContentInline .headingCollapseToggle {
 	left: calc(
 		-1 *
-			(
-				var(--heading-toggle-rail-width) +
-				var(--heading-level-rail-width) +
-				(var(--heading-rail-gap) * 2)
-			) + 1px
+		(
+			var(--heading-toggle-rail-width) +
+			var(--heading-level-rail-width) +
+			(var(--heading-rail-gap) * 2)
+		) +
+		1px
 	);
 }
 

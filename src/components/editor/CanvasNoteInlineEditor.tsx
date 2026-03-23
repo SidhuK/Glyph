@@ -173,12 +173,10 @@ function getSelectionRibbonPosition(
 
 function MermaidPreviewPanel({
 	source,
-	themeKey,
 	style,
 	onHeightChange,
 }: {
 	source: string;
-	themeKey: number;
 	style: React.CSSProperties;
 	onHeightChange: (height: number) => void;
 }) {
@@ -232,7 +230,7 @@ function MermaidPreviewPanel({
 			cancelled = true;
 			window.clearTimeout(timeout);
 		};
-	}, [source, themeKey]);
+	}, [source]);
 
 	useEffect(() => {
 		const host = svgHostRef.current;
@@ -322,7 +320,6 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	>(null);
 	const [activeMermaidPreviewHeight, setActiveMermaidPreviewHeight] =
 		useState(0);
-	const [mermaidThemeKey, setMermaidThemeKey] = useState(0);
 
 	useEffect(() => {
 		onEditorReady?.(editor ?? null);
@@ -850,7 +847,6 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		if (!editor) return;
 		const root = document.documentElement;
 		const refresh = () => {
-			setMermaidThemeKey((prev) => prev + 1);
 			if (mode === "preview") {
 				editor.commands.refreshMermaidPreviews();
 			}
@@ -1003,7 +999,6 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 						{canEdit && selectedCodeBlock && isSelectedMermaidPreviewActive ? (
 							<MermaidPreviewPanel
 								source={selectedCodeBlock.source}
-								themeKey={mermaidThemeKey}
 								style={{
 									top: `${selectedCodeBlock.previewTop}px`,
 									left: `${selectedCodeBlock.previewLeft}px`,

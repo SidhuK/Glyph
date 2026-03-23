@@ -181,25 +181,23 @@ export function DatabaseColumnDropdown({
 					<DropdownMenuSeparator />
 					<DropdownMenuLabel>Add column</DropdownMenuLabel>
 					<DropdownMenuGroup>
-						{builtInColumns
-							.filter(canAddBuiltInColumn)
-							.map((column) => (
-								<DropdownMenuItem
-									key={column.id}
-									onSelect={(e) => {
-										e.preventDefault();
-										const existing = columnsById.get(column.id);
-										if (existing) {
-											void toggleColumnVisibility(column.id, true);
-											return;
-										}
-										void updateColumns((columns) => [...columns, column]);
-									}}
-								>
-									<DatabaseColumnIcon column={column} strokeWidth={1.5} />
-									{column.label}
-								</DropdownMenuItem>
-							))}
+						{builtInColumns.filter(canAddBuiltInColumn).map((column) => (
+							<DropdownMenuItem
+								key={column.id}
+								onSelect={(e) => {
+									e.preventDefault();
+									const existing = columnsById.get(column.id);
+									if (existing) {
+										void toggleColumnVisibility(column.id, true);
+										return;
+									}
+									void updateColumns((columns) => [...columns, column]);
+								}}
+							>
+								<DatabaseColumnIcon column={column} strokeWidth={1.5} />
+								{column.label}
+							</DropdownMenuItem>
+						))}
 					</DropdownMenuGroup>
 				</>
 			)}
@@ -225,16 +223,10 @@ export function DatabaseColumnDropdown({
 												void toggleColumnVisibility(existing.id, true);
 												return;
 											}
-											void updateColumns((columns) => [
-												...columns,
-												nextColumn,
-											]);
+											void updateColumns((columns) => [...columns, nextColumn]);
 										}}
 									>
-										<DatabaseColumnIcon
-											column={nextColumn}
-											strokeWidth={1.5}
-										/>
+										<DatabaseColumnIcon column={nextColumn} strokeWidth={1.5} />
 										{property.key}
 									</DropdownMenuItem>
 								);
