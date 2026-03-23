@@ -2,7 +2,13 @@ import { emitTo } from "@tauri-apps/api/event";
 import { WebviewWindow } from "@tauri-apps/api/webviewWindow";
 import { LogicalSize } from "@tauri-apps/api/window";
 
-export type SettingsTab = "general" | "appearance" | "ai" | "space" | "about";
+export type SettingsTab =
+	| "general"
+	| "appearance"
+	| "ai"
+	| "space"
+	| "advanced"
+	| "about";
 
 const SETTINGS_WINDOW_RATIO = 0.7;
 const SETTINGS_MIN_WIDTH = 980;

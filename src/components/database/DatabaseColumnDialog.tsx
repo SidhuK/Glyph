@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo } from "react";
 import { defaultDatabaseColumnIconName } from "../../lib/database/columnIcons";
 import { createPropertyColumn } from "../../lib/database/config";
 import type {
@@ -6,24 +6,20 @@ import type {
 	DatabaseConfig,
 	DatabasePropertyOption,
 } from "../../lib/database/types";
-import { ChevronDown, ChevronUp, Trash2 } from "../Icons";
-import { Toggle } from "../base/toggle/toggle";
-import { Button } from "../ui/shadcn/button";
+import { Trash2 } from "../Icons";
 import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from "../ui/shadcn/dialog";
-import { Input } from "../ui/shadcn/input";
+	DropdownMenuContent,
+	DropdownMenuGroup,
+	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+	DropdownMenuShortcut,
+} from "../ui/shadcn/dropdown-menu";
 import { DatabaseColumnIcon } from "./DatabaseColumnIcon";
-import { DatabaseColumnIconPicker } from "./DatabaseColumnIconPicker";
 
-interface DatabaseColumnDialogProps {
-	open: boolean;
+interface DatabaseColumnDropdownProps {
 	config: DatabaseConfig;
 	availableProperties: DatabasePropertyOption[];
-	onOpenChange: (open: boolean) => void;
 	onChangeConfig: (config: DatabaseConfig) => Promise<void>;
 }
 
@@ -98,17 +94,13 @@ const builtInColumns: DatabaseColumn[] = [
 	},
 ];
 
-export function DatabaseColumnDialog({
-	open,
+export function DatabaseColumnDropdown({
 	config,
 	availableProperties,
-	onOpenChange,
 	onChangeConfig,
-}: DatabaseColumnDialogProps) {
-	const [manualKey, setManualKey] = useState("");
-	const [manualKind, setManualKind] = useState("text");
-	const addedColumnIds = useMemo(
-		() => new Set(config.columns.map((column) => column.id)),
+}: DatabaseColumnDropdownProps) {
+	const columnsById = useMemo(
+		() => new Map(config.columns.map((column) => [column.id, column])),
 		[config.columns],
 	);
 
@@ -121,250 +113,135 @@ export function DatabaseColumnDialog({
 		});
 	};
 
+	const toggleColumnVisibility = async (columnId: string, visible: boolean) => {
+		await updateColumns((columns) =>
+			columns.map((column) =>
+				column.id === columnId ? { ...column, visible } : column,
+			),
+		);
+	};
+
+	const canAddBuiltInColumn = (column: DatabaseColumn) => {
+		const existing = columnsById.get(column.id);
+		return !existing || existing.visible === false;
+	};
+
+	const canAddPropertyColumn = (property: DatabasePropertyOption) => {
+		const existing = columnsById.get(`property:${property.key}`);
+		return !existing || existing.visible === false;
+	};
+
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent
-				className="databaseDialog databaseDialogCompact"
-				onInteractOutside={(event) => {
-					const target = event.target as HTMLElement | null;
-					if (target?.closest("[data-slot='popover-content']")) {
-						event.preventDefault();
-					}
-				}}
-				onPointerDownOutside={(event) => {
-					const target = event.target as HTMLElement | null;
-					if (target?.closest("[data-slot='popover-content']")) {
-						event.preventDefault();
-					}
-				}}
-			>
-				<DialogHeader className="databaseDialogHeaderCompact">
-					<DialogTitle>Columns</DialogTitle>
-				</DialogHeader>
-				<div className="databaseDialogBody databaseDialogBodyColumns">
-					<section className="databaseDialogSection databaseDialogSectionPrimary">
-						<div className="databaseDialogList databaseDialogListColumns">
-							{config.columns.map((column, index) => (
-								<div key={column.id} className="databaseDialogRow">
-									<div className="databaseDialogRowLead">
-										<DatabaseColumnIconPicker
-											column={column}
-											onSelectIcon={(icon) =>
-												void updateColumns((columns) =>
-													columns.map((entry) =>
-														entry.id === column.id ? { ...entry, icon } : entry,
-													),
-												)
-											}
-										/>
-										<div className="databaseDialogRowMeta">
-											<div className="databaseDialogRowTitle">
-												{column.label}
-											</div>
-											{column.type === "property" ? (
-												<div className="databaseDialogRowSubtitle">
-													{`${column.property_key} • ${column.property_kind}`}
-												</div>
-											) : null}
-										</div>
-									</div>
-									<Toggle
-										slim
-										size="sm"
-										ariaLabel="Toggle visibility"
-										className="databaseDialogToggle"
-										checked={column.visible}
-										onCheckedChange={(checked) =>
-											void updateColumns((columns) =>
-												columns.map((entry) =>
-													entry.id === column.id
-														? {
-																...entry,
-																visible: checked,
-															}
-														: entry,
-												),
-											)
+		<DropdownMenuContent
+			className="databasePickerMenu w-44 max-h-80 overflow-y-auto"
+			align="end"
+			onCloseAutoFocus={(e) => e.preventDefault()}
+		>
+			<DropdownMenuLabel>Columns</DropdownMenuLabel>
+			<DropdownMenuSeparator />
+			<DropdownMenuGroup>
+				{config.columns.map((column) => (
+					<DropdownMenuItem
+						key={column.id}
+						onSelect={(e) => {
+							e.preventDefault();
+							void toggleColumnVisibility(column.id, column.visible === false);
+						}}
+						className="databaseColumnDropdownItem"
+					>
+						<DatabaseColumnIcon column={column} strokeWidth={1.5} />
+						{column.label}
+						<DropdownMenuShortcut className="databaseColumnDropdownShortcut">
+							<button
+								type="button"
+								className="databaseColumnDropdownDelete"
+								aria-label={`Remove ${column.label} column`}
+								title={`Remove ${column.label} column`}
+								onMouseDown={(event) => {
+									event.preventDefault();
+									event.stopPropagation();
+								}}
+								onClick={(event) => {
+									event.preventDefault();
+									event.stopPropagation();
+									void updateColumns((columns) =>
+										columns.filter((entry) => entry.id !== column.id),
+									);
+								}}
+							>
+								<Trash2 size={12} />
+							</button>
+						</DropdownMenuShortcut>
+					</DropdownMenuItem>
+				))}
+			</DropdownMenuGroup>
+
+			{builtInColumns.filter(canAddBuiltInColumn).length > 0 && (
+				<>
+					<DropdownMenuSeparator />
+					<DropdownMenuLabel>Add column</DropdownMenuLabel>
+					<DropdownMenuGroup>
+						{builtInColumns
+							.filter(canAddBuiltInColumn)
+							.map((column) => (
+								<DropdownMenuItem
+									key={column.id}
+									onSelect={(e) => {
+										e.preventDefault();
+										const existing = columnsById.get(column.id);
+										if (existing) {
+											void toggleColumnVisibility(column.id, true);
+											return;
 										}
-									/>
-									<div className="databaseDialogRowActions">
-										<Button
-											type="button"
-											variant="ghost"
-											size="icon-xs"
-											disabled={index === 0}
-											onClick={() =>
-												void updateColumns((columns) => {
-													const next = [...columns];
-													[next[index - 1], next[index]] = [
-														next[index],
-														next[index - 1],
-													];
-													return next;
-												})
-											}
-											title="Move up"
-											aria-label="Move column up"
-										>
-											<ChevronUp size={12} />
-										</Button>
-										<Button
-											type="button"
-											variant="ghost"
-											size="icon-xs"
-											disabled={index === config.columns.length - 1}
-											onClick={() =>
-												void updateColumns((columns) => {
-													const next = [...columns];
-													[next[index + 1], next[index]] = [
-														next[index],
-														next[index + 1],
-													];
-													return next;
-												})
-											}
-											title="Move down"
-											aria-label="Move column down"
-										>
-											<ChevronDown size={12} />
-										</Button>
-										<Button
-											type="button"
-											variant="ghost"
-											size="icon-xs"
-											onClick={() =>
-												void updateColumns((columns) =>
-													columns.filter((entry) => entry.id !== column.id),
-												)
-											}
-											title="Remove column"
-											aria-label="Remove column"
-										>
-											<Trash2 size={12} />
-										</Button>
-									</div>
-								</div>
-							))}
-						</div>
-					</section>
-					<div className="databaseDialogSidebar">
-						<section className="databaseDialogSection">
-							<div className="databaseDialogSectionHeader">
-								<div className="databaseDialogSectionTitle">
-									Built-in fields
-								</div>
-							</div>
-							<div className="databaseDialogChipList">
-								{builtInColumns
-									.filter((column) => !addedColumnIds.has(column.id))
-									.map((column) => (
-										<Button
-											key={column.id}
-											type="button"
-											variant="ghost"
-											size="xs"
-											onClick={() =>
-												void updateColumns((columns) => [...columns, column])
-											}
-										>
-											<DatabaseColumnIcon column={column} size={12} />
-											{column.label}
-										</Button>
-									))}
-							</div>
-						</section>
-						<section className="databaseDialogSection">
-							<div className="databaseDialogSectionHeader">
-								<div className="databaseDialogSectionTitle">Properties</div>
-							</div>
-							<div className="databaseDialogChipList">
-								{availableProperties
-									.filter(
-										(property) =>
-											!addedColumnIds.has(`property:${property.key}`),
-									)
-									.map((property) => {
-										const nextColumn = createPropertyColumn(property);
-										return (
-											<Button
-												key={property.key}
-												type="button"
-												variant="ghost"
-												size="xs"
-												onClick={() =>
-													void updateColumns((columns) => [
-														...columns,
-														nextColumn,
-													])
-												}
-											>
-												<DatabaseColumnIcon column={nextColumn} size={12} />
-												{property.key}
-											</Button>
-										);
-									})}
-							</div>
-							<div className="databaseManualProperty">
-								<Input
-									id="databaseManualProperty"
-									value={manualKey}
-									placeholder="Add property…"
-									onChange={(event) => setManualKey(event.target.value)}
-								/>
-								<select
-									className="databaseNativeSelect"
-									value={manualKind}
-									onChange={(event) => setManualKind(event.target.value)}
-								>
-									<option value="text">Text</option>
-									<option value="url">URL</option>
-									<option value="number">Number</option>
-									<option value="date">Date</option>
-									<option value="datetime">Date/time</option>
-									<option value="checkbox">Checkbox</option>
-									<option value="list">List</option>
-									<option value="tags">Tags</option>
-									<option value="yaml">YAML</option>
-								</select>
-								<Button
-									type="button"
-									size="xs"
-									disabled={!manualKey.trim()}
-									onClick={() => {
-										const property = manualKey.trim();
-										if (!property) return;
-										void updateColumns((columns) => {
-											const nextId = `property:${property}`;
-											if (columns.some((column) => column.id === nextId)) {
-												return columns;
-											}
-											return [
-												...columns,
-												{
-													id: nextId,
-													type: "property",
-													label: property,
-													icon: defaultDatabaseColumnIconName({
-														type: "property",
-														property_kind: manualKind,
-													}),
-													width: 180,
-													visible: true,
-													property_key: property,
-													property_kind: manualKind,
-												},
-											];
-										});
-										setManualKey("");
+										void updateColumns((columns) => [...columns, column]);
 									}}
 								>
-									Add
-								</Button>
-							</div>
-						</section>
-					</div>
-				</div>
-			</DialogContent>
-		</Dialog>
+									<DatabaseColumnIcon column={column} strokeWidth={1.5} />
+									{column.label}
+								</DropdownMenuItem>
+							))}
+					</DropdownMenuGroup>
+				</>
+			)}
+
+			{availableProperties.filter(canAddPropertyColumn).length > 0 && (
+				<>
+					<DropdownMenuSeparator />
+					<DropdownMenuLabel>Properties</DropdownMenuLabel>
+					<DropdownMenuGroup>
+						{availableProperties
+							.filter(canAddPropertyColumn)
+							.map((property) => {
+								const nextColumn = createPropertyColumn(property);
+								return (
+									<DropdownMenuItem
+										key={property.key}
+										onSelect={(e) => {
+											e.preventDefault();
+											const existing = columnsById.get(
+												`property:${property.key}`,
+											);
+											if (existing) {
+												void toggleColumnVisibility(existing.id, true);
+												return;
+											}
+											void updateColumns((columns) => [
+												...columns,
+												nextColumn,
+											]);
+										}}
+									>
+										<DatabaseColumnIcon
+											column={nextColumn}
+											strokeWidth={1.5}
+										/>
+										{property.key}
+									</DropdownMenuItem>
+								);
+							})}
+					</DropdownMenuGroup>
+				</>
+			)}
+		</DropdownMenuContent>
 	);
 }

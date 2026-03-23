@@ -1,29 +1,37 @@
 import { useState } from "react";
 import type { DatabaseConfig, DatabaseFilter } from "../../lib/database/types";
 import { extractErrorMessage } from "../../lib/errorUtils";
-import { Toggle } from "../base/toggle/toggle";
 import { Button } from "../ui/shadcn/button";
 import {
-	Dialog,
-	DialogContent,
-	DialogHeader,
-	DialogTitle,
-} from "../ui/shadcn/dialog";
+	DropdownMenuContent,
+	DropdownMenuLabel,
+	DropdownMenuSeparator,
+} from "../ui/shadcn/dropdown-menu";
 import { Input } from "../ui/shadcn/input";
 import { DatabaseFolderPicker } from "./DatabaseFolderPicker";
 import { DatabaseTagPicker } from "./DatabaseTagPicker";
 
-interface DatabaseSourceDialogProps {
-	open: boolean;
+interface DatabaseSourceDropdownProps {
 	config: DatabaseConfig;
-	onOpenChange: (open: boolean) => void;
 	onChangeConfig: (config: DatabaseConfig) => Promise<void>;
 }
 
-function emptyFilter(columnId: string): DatabaseFilter {
+function isTagFilterColumn(column?: DatabaseConfig["columns"][number] | null): boolean {
+	return column?.type === "tags" || column?.property_kind === "tags";
+}
+
+function defaultOperatorForColumn(
+	column?: DatabaseConfig["columns"][number] | null,
+): DatabaseFilter["operator"] {
+	return isTagFilterColumn(column) ? "tags_contains" : "contains";
+}
+
+function emptyFilter(
+	column?: DatabaseConfig["columns"][number] | null,
+): DatabaseFilter {
 	return {
-		column_id: columnId,
-		operator: "contains",
+		column_id: column?.id ?? "title",
+		operator: defaultOperatorForColumn(column),
 		value_list: [],
 	};
 }
@@ -34,18 +42,67 @@ function operatorNeedsValue(operator: DatabaseFilter["operator"]): boolean {
 	);
 }
 
-function normalizedOperator(
-	operator: DatabaseFilter["operator"],
-): Exclude<DatabaseFilter["operator"], "tags_contains"> {
-	return operator === "tags_contains" ? "contains" : operator;
+function operatorLabel(operator: string): string {
+	switch (operator) {
+		case "equals":
+			return "Equals";
+		case "not_equals":
+			return "Not equals";
+		case "contains":
+		case "tags_contains":
+			return "Contains";
+		case "not_contains":
+			return "Does not contain";
+		case "starts_with":
+			return "Starts with";
+		case "ends_with":
+			return "Ends with";
+		case "is_empty":
+			return "Is empty";
+		case "is_not_empty":
+			return "Is not empty";
+		case "is_true":
+			return "Is true";
+		case "is_false":
+			return "Is false";
+		case "any_of":
+			return "Any of";
+		case "none_of":
+			return "None of";
+		case "within_last_7_days":
+			return "Within last 7 days";
+		default:
+			return operator
+				.split("_")
+				.map((part) => part.slice(0, 1).toUpperCase() + part.slice(1))
+				.join(" ");
+	}
 }
 
-export function DatabaseSourceDialog({
-	open,
+function operatorOptions(
+	column: DatabaseConfig["columns"][number] | null,
+	currentOperator: DatabaseFilter["operator"],
+): Array<{ value: DatabaseFilter["operator"]; label: string }> {
+	const baseOptions: Array<{ value: DatabaseFilter["operator"]; label: string }> = [
+		{ value: defaultOperatorForColumn(column), label: "Contains" },
+		{ value: "equals", label: "Equals" },
+		{ value: "is_empty", label: "Is empty" },
+		{ value: "is_not_empty", label: "Is not empty" },
+		{ value: "is_true", label: "Is true" },
+		{ value: "is_false", label: "Is false" },
+	];
+
+	if (baseOptions.some((option) => option.value === currentOperator)) {
+		return baseOptions;
+	}
+
+	return [...baseOptions, { value: currentOperator, label: operatorLabel(currentOperator) }];
+}
+
+export function DatabaseSourceDropdown({
 	config,
-	onOpenChange,
 	onChangeConfig,
-}: DatabaseSourceDialogProps) {
+}: DatabaseSourceDropdownProps) {
 	const [filterError, setFilterError] = useState("");
 
 	const handleSave = async (patch: Partial<DatabaseConfig["source"]>) => {
@@ -84,300 +141,296 @@ export function DatabaseSourceDialog({
 		}
 	};
 
-	const defaultColumnId = config.columns[0]?.id ?? "title";
+	const defaultColumn = config.columns[0] ?? null;
 
 	return (
-		<Dialog open={open} onOpenChange={onOpenChange}>
-			<DialogContent
-				className="databaseDialog databaseDialogCompact"
-				onInteractOutside={(event) => {
-					const target = event.target as HTMLElement | null;
-					if (target?.closest("[data-slot='popover-content']")) {
-						event.preventDefault();
-					}
-				}}
-				onPointerDownOutside={(event) => {
-					const target = event.target as HTMLElement | null;
-					if (target?.closest("[data-slot='popover-content']")) {
-						event.preventDefault();
-					}
-				}}
+		<DropdownMenuContent
+			className="databasePickerMenu w-56 max-h-80 overflow-y-auto"
+			align="end"
+			onCloseAutoFocus={(e) => e.preventDefault()}
+		>
+			<DropdownMenuLabel>Source & filters</DropdownMenuLabel>
+			<DropdownMenuSeparator />
+
+			<div
+				className="flex flex-col gap-2 px-2 py-1.5"
+				onKeyDown={(e) => e.stopPropagation()}
 			>
-				<DialogHeader className="databaseDialogHeaderCompact">
-					<DialogTitle>Source & filters</DialogTitle>
-				</DialogHeader>
-				<div className="databaseDialogBody databaseDialogBodyTight">
-					<section className="databaseDialogSection databaseSourceSection">
-						<div className="databaseDialogField">
-							<label className="settingsLabel" htmlFor="databaseSourceKind">
-								Source
-							</label>
-							<select
-								id="databaseSourceKind"
-								className="databaseNativeSelect"
-								value={config.source.kind}
-								onChange={(event) =>
-									void handleSave({
-										kind: event.target
-											.value as DatabaseConfig["source"]["kind"],
-									})
-								}
-							>
-								<option value="all_notes">All notes</option>
-								<option value="folder">Folder</option>
-								<option value="tag">Tag</option>
-								<option value="search">Search</option>
-							</select>
-						</div>
-						{config.source.kind === "folder" ? (
-							<>
-								<div className="databaseDialogField">
-									<div className="settingsLabel">Folder</div>
-									<DatabaseFolderPicker
-										value={config.source.value}
-										label="Database Folder"
-										description="Choose a folder for this database."
-										placeholder="Choose a folder"
-										onChange={(value) => void handleSave({ value })}
-									/>
-								</div>
-								<div className="databaseDialogField">
-									<div className="settingsLabel" />
-									<Toggle
-										slim
-										size="sm"
-										label="Include subfolders"
-										className="databaseDialogToggle databaseToggleInline"
-										checked={config.source.recursive}
-										onCheckedChange={(checked) =>
-											void handleSave({
-												recursive: checked,
-											})
-										}
-									/>
-								</div>
-							</>
-						) : config.source.kind === "tag" ? (
-							<div className="databaseDialogField">
-								<div className="settingsLabel">Tag</div>
-								<DatabaseTagPicker
-									value={config.source.value}
-									label="Database Tag"
-									description="Choose a tag for this database."
-									placeholder="Choose a tag"
-									onChange={(value) => void handleSave({ value })}
-								/>
-							</div>
-						) : config.source.kind === "search" ? (
-							<div className="databaseDialogField">
-								<div className="settingsLabel">Query</div>
-								<Input
-									id="databaseSourceValue"
-									value={config.source.value}
-									placeholder={'tag:projects "roadmap"'}
-									onChange={(event) =>
-										void handleSave({
-											value: event.target.value,
-										})
-									}
-								/>
-							</div>
-						) : null}
-					</section>
-
-					<section className="databaseDialogSection">
-						<div className="databaseDialogSectionHeader databaseDialogSectionHeaderRow">
-							<div className="databaseDialogSectionTitle">Filters</div>
-							<Button
-								type="button"
-								variant="ghost"
-								size="sm"
-								onClick={() =>
-									void updateFilters((filters) => [
-										...filters,
-										emptyFilter(defaultColumnId),
-									])
-								}
-							>
-								Add filter
-							</Button>
-						</div>
-						{filterError ? (
-							<div className="databaseDialogInlineError">{filterError}</div>
-						) : null}
-						{config.filters.length > 0 ? (
-							<div className="databaseDialogList">
-								{config.filters.map((filter, index) => {
-									const selectedColumn =
-										config.columns.find(
-											(column) => column.id === filter.column_id,
-										) ?? null;
-									const effectiveOperator = normalizedOperator(filter.operator);
-									const showsValue = operatorNeedsValue(effectiveOperator);
-									const usesTagPicker =
-										showsValue &&
-										(selectedColumn?.type === "tags" ||
-											selectedColumn?.property_kind === "tags");
-
-									return (
-										<div
-											key={`${filter.column_id}:${index}`}
-											className="databaseFilterCardFields"
-										>
-											<select
-												id={`databaseFilterColumn-${index}`}
-												className="databaseNativeSelect"
-												value={filter.column_id}
-												aria-label={`Filter ${index + 1} field`}
-												onChange={(event) =>
-													void updateFilters((filters) =>
-														filters.map((entry, currentIndex) =>
-															currentIndex === index
-																? {
-																		...entry,
-																		column_id: event.target.value,
-																	}
-																: entry,
-														),
-													)
-												}
-											>
-												{config.columns.map((column) => (
-													<option key={column.id} value={column.id}>
-														{column.label}
-													</option>
-												))}
-											</select>
-											<select
-												id={`databaseFilterOperator-${index}`}
-												className="databaseNativeSelect"
-												value={effectiveOperator}
-												aria-label={`Filter ${index + 1} operator`}
-												onChange={(event) =>
-													void updateFilters((filters) =>
-														filters.map((entry, currentIndex) =>
-															currentIndex === index
-																? {
-																		...entry,
-																		operator: event.target
-																			.value as DatabaseFilter["operator"],
-																	}
-																: entry,
-														),
-													)
-												}
-											>
-												<option value="contains">Contains</option>
-												<option value="equals">Equals</option>
-												<option value="is_empty">Is empty</option>
-												<option value="is_not_empty">Is not empty</option>
-												<option value="is_true">Is true</option>
-												<option value="is_false">Is false</option>
-											</select>
-											{showsValue ? (
-												<div className="databaseFilterValueCell">
-													{usesTagPicker ? (
-														<DatabaseTagPicker
-															value={filter.value_text ?? ""}
-															label="Filter Tag"
-															description="Choose a tag for this filter."
-															placeholder="Choose a tag"
-															onChange={(value) =>
-																void updateFilters((filters) =>
-																	filters.map((entry, currentIndex) =>
-																		currentIndex === index
-																			? {
-																					...entry,
-																					value_text: value,
-																					value_list: [value],
-																				}
-																			: entry,
-																	),
-																)
-															}
-														/>
-													) : (
-														<Input
-															id={`databaseFilterValue-${index}`}
-															value={filter.value_text ?? ""}
-															placeholder="Value"
-															onChange={(event) =>
-																void updateFilters((filters) =>
-																	filters.map((entry, currentIndex) =>
-																		currentIndex === index
-																			? {
-																					...entry,
-																					value_text: event.target.value,
-																					value_list: [],
-																				}
-																			: entry,
-																	),
-																)
-															}
-														/>
-													)}
-												</div>
-											) : (
-												<div className="databaseFilterPassiveHint">
-													No value
-												</div>
-											)}
-											<Button
-												type="button"
-												variant="ghost"
-												size="icon-xs"
-												onClick={() =>
-													void updateFilters((filters) =>
-														filters.filter(
-															(_, currentIndex) => currentIndex !== index,
-														),
-													)
-												}
-												title="Remove filter"
-												aria-label="Remove filter"
-											>
-												<span style={{ fontSize: "0.72rem" }}>✕</span>
-											</Button>
-										</div>
-									);
-								})}
-							</div>
-						) : null}
-					</section>
-
-					<section className="databaseDialogSection">
-						<div className="databaseDialogField">
-							<div className="settingsLabel">Target folder</div>
-							<DatabaseFolderPicker
-								value={config.new_note.folder}
-								label="New Row Folder"
-								description="Choose where new notes should be stored."
-								placeholder="Choose a folder"
-								onChange={(value) => void handleNewNoteFolder(value)}
-							/>
-						</div>
-						<div className="databaseDialogField">
-							<label className="settingsLabel" htmlFor="databaseTitlePrefix">
-								Title prefix
-							</label>
-							<Input
-								id="databaseTitlePrefix"
-								value={config.new_note.title_prefix}
-								placeholder="Untitled"
-								onChange={(event) =>
-									void onChangeConfig({
-										...config,
-										new_note: {
-											...config.new_note,
-											title_prefix: event.target.value,
-										},
-									})
-								}
-							/>
-						</div>
-					</section>
+				<div className="flex flex-col gap-1">
+					<label
+						className="text-xs font-medium text-muted-foreground"
+						htmlFor="databaseSourceKind"
+					>
+						Source
+					</label>
+					<select
+						id="databaseSourceKind"
+						className="databaseNativeSelect text-sm"
+						value={config.source.kind}
+						onChange={(event) =>
+							void handleSave({
+								kind: event.target.value as DatabaseConfig["source"]["kind"],
+							})
+						}
+					>
+						<option value="all_notes">All notes</option>
+						<option value="folder">Folder</option>
+						<option value="tag">Tag</option>
+						<option value="search">Search</option>
+					</select>
 				</div>
-			</DialogContent>
-		</Dialog>
+				{config.source.kind === "folder" ? (
+					<>
+						<div className="flex flex-col gap-1">
+							<span className="text-xs font-medium text-muted-foreground">
+								Folder
+							</span>
+							<DatabaseFolderPicker
+								value={config.source.value}
+								label="Database Folder"
+								description="Choose a folder for this database."
+								placeholder="Choose a folder"
+								onChange={(value) => void handleSave({ value })}
+							/>
+						</div>
+						<label className="flex items-center gap-2 text-sm">
+							<input
+								type="checkbox"
+								className="accent-[var(--interactive-accent)]"
+								checked={config.source.recursive}
+								onChange={(e) =>
+									void handleSave({ recursive: e.target.checked })
+								}
+							/>
+							Include subfolders
+						</label>
+					</>
+				) : config.source.kind === "tag" ? (
+					<div className="flex flex-col gap-1">
+						<span className="text-xs font-medium text-muted-foreground">
+							Tag
+						</span>
+						<DatabaseTagPicker
+							value={config.source.value}
+							label="Database Tag"
+							description="Choose a tag for this database."
+							placeholder="Choose a tag"
+							onChange={(value) => void handleSave({ value })}
+						/>
+					</div>
+				) : config.source.kind === "search" ? (
+					<div className="flex flex-col gap-1">
+						<span className="text-xs font-medium text-muted-foreground">
+							Query
+						</span>
+						<Input
+							id="databaseSourceValue"
+							className="h-7 text-sm"
+							value={config.source.value}
+							placeholder={'tag:projects "roadmap"'}
+							onChange={(event) =>
+								void handleSave({ value: event.target.value })
+							}
+						/>
+					</div>
+				) : null}
+			</div>
+
+			<DropdownMenuSeparator />
+
+			<div className="flex items-center justify-between px-2 py-1">
+				<DropdownMenuLabel className="p-0">Filters</DropdownMenuLabel>
+				<Button
+					type="button"
+					variant="ghost"
+					size="xs"
+					onClick={() =>
+						void updateFilters((filters) => [
+							...filters,
+							emptyFilter(defaultColumn),
+						])
+					}
+				>
+					Add
+				</Button>
+			</div>
+			{filterError ? (
+				<div className="px-2 pb-1 text-xs text-destructive">{filterError}</div>
+			) : null}
+			{config.filters.length > 0 ? (
+				<div
+					className="flex flex-col gap-1.5 px-2 pb-1.5"
+					onKeyDown={(e) => e.stopPropagation()}
+				>
+					{config.filters.map((filter, index) => {
+						const selectedColumn =
+							config.columns.find((column) => column.id === filter.column_id) ??
+							null;
+						const showsValue = operatorNeedsValue(filter.operator);
+						const usesTagPicker =
+							showsValue &&
+							isTagFilterColumn(selectedColumn);
+						const availableOperators = operatorOptions(
+							selectedColumn,
+							filter.operator,
+						);
+
+						return (
+							<div
+								key={`${filter.column_id}:${index}`}
+								className="flex flex-col gap-1 rounded-md border border-border p-1.5"
+							>
+								<div className="flex items-center gap-1">
+									<select
+										className="databaseNativeSelect flex-1 min-w-0 text-xs"
+										value={filter.column_id}
+										aria-label={`Filter ${index + 1} field`}
+										onChange={(event) =>
+											void updateFilters((filters) =>
+												filters.map((entry, i) =>
+													i === index
+														? { ...entry, column_id: event.target.value }
+														: entry,
+												),
+											)
+										}
+									>
+										{config.columns.map((column) => (
+											<option key={column.id} value={column.id}>
+												{column.label}
+											</option>
+										))}
+									</select>
+									<select
+										className="databaseNativeSelect flex-1 min-w-0 text-xs"
+										value={filter.operator}
+										aria-label={`Filter ${index + 1} operator`}
+										onChange={(event) =>
+											void updateFilters((filters) =>
+												filters.map((entry, i) =>
+													i === index
+														? {
+																...entry,
+																operator: event.target
+																	.value as DatabaseFilter["operator"],
+															}
+														: entry,
+												),
+											)
+										}
+									>
+										{availableOperators.map((option) => (
+											<option key={option.value} value={option.value}>
+												{option.label}
+											</option>
+										))}
+									</select>
+									<button
+										type="button"
+										className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:text-destructive"
+										onClick={() =>
+											void updateFilters((filters) =>
+												filters.filter((_, i) => i !== index),
+											)
+										}
+										title="Remove filter"
+										aria-label="Remove filter"
+									>
+										<span className="text-xs">✕</span>
+									</button>
+								</div>
+								{showsValue ? (
+									<div>
+										{usesTagPicker ? (
+											<DatabaseTagPicker
+												value={filter.value_text ?? ""}
+												label="Filter Tag"
+												description="Choose a tag for this filter."
+												placeholder="Choose a tag"
+												onChange={(value) =>
+													void updateFilters((filters) =>
+														filters.map((entry, i) =>
+															i === index
+																? {
+																		...entry,
+																		value_text: value,
+																		value_list: [value],
+																	}
+																: entry,
+														),
+													)
+												}
+											/>
+										) : (
+											<Input
+												className="h-7 text-xs"
+												value={filter.value_text ?? ""}
+												placeholder="Value"
+												onChange={(event) =>
+													void updateFilters((filters) =>
+														filters.map((entry, i) =>
+															i === index
+																? {
+																		...entry,
+																		value_text: event.target.value,
+																		value_list: [],
+																	}
+																: entry,
+														),
+													)
+												}
+											/>
+										)}
+									</div>
+								) : null}
+							</div>
+						);
+					})}
+				</div>
+			) : null}
+
+			<DropdownMenuSeparator />
+
+			<div
+				className="flex flex-col gap-2 px-2 py-1.5"
+				onKeyDown={(e) => e.stopPropagation()}
+			>
+				<div className="flex flex-col gap-1">
+					<span className="text-xs font-medium text-muted-foreground">
+						Save new files in
+					</span>
+					<DatabaseFolderPicker
+						value={config.new_note.folder}
+						label="New Row Folder"
+						description="Choose where new notes should be stored."
+						placeholder="Choose a folder"
+						onChange={(value) => void handleNewNoteFolder(value)}
+					/>
+				</div>
+				<div className="flex flex-col gap-1">
+					<label
+						className="text-xs font-medium text-muted-foreground"
+						htmlFor="databaseTitlePrefix"
+					>
+						Title prefix
+					</label>
+					<Input
+						id="databaseTitlePrefix"
+						className="h-7 text-sm"
+						value={config.new_note.title_prefix}
+						placeholder="Untitled"
+						onChange={(event) =>
+							void onChangeConfig({
+								...config,
+								new_note: {
+									...config.new_note,
+									title_prefix: event.target.value,
+								},
+							})
+						}
+					/>
+				</div>
+			</div>
+		</DropdownMenuContent>
 	);
 }

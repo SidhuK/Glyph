@@ -15,6 +15,7 @@ import StarterKit from "@tiptap/starter-kit";
 import { SlashCommand } from "../slashCommands";
 import { SyntaxHighlightedCodeBlock } from "./codeBlockHighlighting";
 import { ColoredText } from "./coloredText";
+import { HeadingCollapse } from "./headingCollapse";
 import { MarkdownImage } from "./markdownImage";
 import { MarkdownLinkAutocomplete } from "./markdownLinkAutocomplete";
 import { MermaidPreview } from "./mermaidPreview";
@@ -311,6 +312,7 @@ export function createEditorExtensions(
 			allowBase64: true,
 		}),
 		MermaidPreview,
+		HeadingCollapse,
 		Markdown.configure({
 			markedOptions: {
 				gfm: true,

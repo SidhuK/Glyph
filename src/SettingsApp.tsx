@@ -10,6 +10,7 @@ import {
 } from "react";
 import { X } from "./components/Icons";
 import { AboutSettingsPane } from "./components/settings/AboutSettingsPane";
+import { AdvancedSettingsPane } from "./components/settings/AdvancedSettingsPane";
 import { AiSettingsPane } from "./components/settings/AiSettingsPane";
 import { AppearanceSettingsPane } from "./components/settings/AppearanceSettingsPane";
 import { GeneralSettingsPane } from "./components/settings/GeneralSettingsPane";
@@ -94,6 +95,7 @@ export default function SettingsApp() {
 		appearance: <AppearanceSettingsPane />,
 		ai: <AiSettingsPane />,
 		space: <SpaceSettingsPane />,
+		advanced: <AdvancedSettingsPane />,
 		about: <AboutSettingsPane />,
 	};
 	const tabContent = tabContentByTab[activeTab];

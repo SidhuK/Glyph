@@ -1,5 +1,6 @@
 import {
 	Add,
+	ArrowReloadHorizontalIcon,
 	Bot as BotIcon,
 	Close,
 	Delete,
@@ -8,7 +9,6 @@ import {
 	Minus as MinusIcon,
 	MoreHorizontal as MoreHorizontalIcon,
 	Paperclip as PaperclipIcon,
-	Refresh,
 	Save as SaveIcon,
 	Send as SendIcon,
 	Sparkles as SparklesIcon,
@@ -28,10 +28,7 @@ export const Trash2 = (props: IconProps) => (
 	<HugeiconsIcon icon={Delete} {...props} />
 );
 export const RefreshCw = (props: IconProps) => (
-	<HugeiconsIcon icon={Refresh} {...props} />
-);
-export const RotateCcw = (props: IconProps) => (
-	<HugeiconsIcon icon={Refresh} {...props} />
+	<HugeiconsIcon icon={ArrowReloadHorizontalIcon} {...props} />
 );
 export const Save = (props: IconProps) => (
 	<HugeiconsIcon icon={SaveIcon} {...props} />

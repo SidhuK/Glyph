@@ -376,3 +376,117 @@
 	font-size: 0.76rem;
 	color: var(--text-tertiary);
 }
+
+/* Compact picker overrides inside database dropdown menus */
+[data-slot="dropdown-menu-content"].databasePickerMenu .databasePickerTrigger {
+	min-height: 28px;
+	padding: 4px 8px;
+	gap: 6px;
+	border-radius: var(--radius-sm);
+	font-size: 0.8rem;
+}
+
+[data-slot="dropdown-menu-content"].databasePickerMenu .databasePickerTriggerIcon {
+	width: 18px;
+	height: 18px;
+	background: transparent;
+}
+
+[data-slot="dropdown-menu-content"].databasePickerMenu .databasePickerTriggerLabel {
+	font-size: 0.8rem;
+	font-weight: var(--font-medium);
+}
+
+[data-slot="dropdown-menu-content"].databasePickerMenu .databasePickerTriggerMeta {
+	display: none;
+}
+
+[data-slot="dropdown-menu-content"].databasePickerMenu .databaseNativeSelect {
+	min-height: 28px;
+	padding: 0 26px 0 8px;
+	font-size: 0.8rem;
+	border-radius: var(--radius-sm);
+	background-position: calc(100% - 10px) 10px, calc(100% - 5px) 10px;
+	background-size: 5px 5px, 5px 5px;
+}
+
+/* Lighter icons inside dropdown menu items */
+[data-slot="dropdown-menu-content"].databasePickerMenu [data-slot="dropdown-menu-item"] svg,
+[data-slot="dropdown-menu-content"].databasePickerMenu [data-slot="dropdown-menu-label"] svg {
+	opacity: 0.45;
+	stroke-width: 1.5;
+}
+
+[data-slot="dropdown-menu-content"].databasePickerMenu [data-slot="dropdown-menu-item"]:is(:hover, [data-highlighted]) svg {
+	opacity: 0.7;
+}
+
+/* More breathing room between dropdown items */
+[data-slot="dropdown-menu-content"].databasePickerMenu [data-slot="dropdown-menu-item"] {
+	padding-block: 6px;
+}
+
+/* Subtler section headings */
+[data-slot="dropdown-menu-content"].databasePickerMenu [data-slot="dropdown-menu-label"] {
+	font-size: 0.7rem;
+	font-weight: 500;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: var(--text-tertiary);
+	padding-block: 4px;
+	padding-inline: 8px;
+}
+
+/* Subtler dividers */
+[data-slot="dropdown-menu-content"].databasePickerMenu [data-slot="dropdown-menu-separator"] {
+	opacity: 0.4;
+}
+
+/* Proper padding inside dropdown menus */
+[data-slot="dropdown-menu-content"].databasePickerMenu {
+	padding: 6px;
+}
+
+[data-slot="dropdown-menu-content"].databasePickerMenu [data-slot="dropdown-menu-item"] {
+	width: 100%;
+	padding-inline: 8px;
+}
+
+[data-slot="dropdown-menu-content"].databasePickerMenu [data-slot="dropdown-menu-shortcut"] {
+	margin-left: auto;
+}
+
+[data-slot="dropdown-menu-content"].databasePickerMenu .databaseColumnDropdownShortcut {
+	display: inline-flex;
+	align-items: center;
+}
+
+[data-slot="dropdown-menu-content"].databasePickerMenu .databaseColumnDropdownDelete {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 18px;
+	height: 18px;
+	padding: 0;
+	border: 0;
+	border-radius: var(--radius-xs);
+	background: transparent;
+	color: var(--text-tertiary);
+	cursor: pointer;
+	opacity: 0;
+	transition:
+		opacity 140ms ease,
+		color 140ms ease,
+		background-color 140ms ease;
+}
+
+[data-slot="dropdown-menu-content"].databasePickerMenu
+	.databaseColumnDropdownItem:is(:hover, [data-highlighted])
+	.databaseColumnDropdownDelete {
+	opacity: 1;
+}
+
+[data-slot="dropdown-menu-content"].databasePickerMenu .databaseColumnDropdownDelete:hover {
+	background: color-mix(in srgb, var(--bg-secondary) 86%, transparent);
+	color: var(--text-primary);
+}

@@ -1,4 +1,5 @@
 import {
+	ClipboardIcon,
 	DashboardSquare03Icon,
 	MoreVerticalIcon,
 } from "@hugeicons/core-free-icons";
@@ -6,6 +7,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { defaultDatabaseColumnIconName } from "../../lib/database/columnIcons";
 import { extractErrorMessage } from "../../lib/errorUtils";
+import { loadSettings } from "../../lib/settings";
 import {
 	type DatabaseColumn,
 	type DatabaseConfig,
@@ -16,10 +18,9 @@ import {
 	type WorkspaceDatabaseSummary,
 	invoke,
 } from "../../lib/tauri";
+import { useTauriEvent } from "../../lib/tauriEvents";
 import { ChevronDown, Edit, Kanban, Plus, Table, Trash2 } from "../Icons";
 import { DatabaseBoard } from "../database/DatabaseBoard";
-import { DatabaseColumnDialog } from "../database/DatabaseColumnDialog";
-import { DatabaseSourceDialog } from "../database/DatabaseSourceDialog";
 import { DatabaseTable } from "../database/DatabaseTable";
 import { DatabaseToolbar } from "../database/DatabaseToolbar";
 import { Button } from "../ui/shadcn/button";
@@ -205,13 +206,14 @@ export function DatabasesPane({
 	const [rowsLoading, setRowsLoading] = useState(false);
 	const [error, setError] = useState("");
 	const [selectedRowPath, setSelectedRowPath] = useState<string | null>(null);
-	const [columnsOpen, setColumnsOpen] = useState(false);
-	const [sourceOpen, setSourceOpen] = useState(false);
 	const [nameDraft, setNameDraft] = useState("");
 	const [renamingViewId, setRenamingViewId] = useState<string | null>(null);
 	const [viewNameDraft, setViewNameDraft] = useState("");
 	const viewNameInputRef = useRef<HTMLInputElement | null>(null);
+	const [columnsMenuOpen, setColumnsMenuOpen] = useState(false);
 	const rowRequestTokenRef = useRef(0);
+	const [showDatabaseColumnColor, setShowDatabaseColumnColor] = useState(true);
+	const [showDatabaseNoteCount, setShowDatabaseNoteCount] = useState(false);
 
 	const loadSummaries = useCallback(async () => {
 		const next = await invoke("databases_list");
@@ -233,6 +235,32 @@ export function DatabasesPane({
 	useEffect(() => {
 		void loadSummaries().catch((cause) => setError(extractErrorMessage(cause)));
 	}, [loadSummaries]);
+
+	useEffect(() => {
+		let cancelled = false;
+		void loadSettings()
+			.then((settings) => {
+				if (!cancelled) {
+					setShowDatabaseColumnColor(settings.database.showColumnColor);
+					setShowDatabaseNoteCount(settings.database.showNoteCount);
+				}
+			})
+			.catch(() => {
+				// Preserve the existing default if settings cannot be loaded.
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, []);
+
+	useTauriEvent("settings:updated", (payload) => {
+		if (typeof payload.database?.showColumnColor === "boolean") {
+			setShowDatabaseColumnColor(payload.database.showColumnColor);
+		}
+		if (typeof payload.database?.showNoteCount === "boolean") {
+			setShowDatabaseNoteCount(payload.database.showNoteCount);
+		}
+	});
 
 	useEffect(() => {
 		if (openRequestNonce === 0) return;
@@ -419,8 +447,9 @@ export function DatabasesPane({
 				await loadSummaries();
 				return saved;
 			} catch (cause) {
-				setError(extractErrorMessage(cause));
-				return null;
+				const message = extractErrorMessage(cause);
+				setError(message);
+				throw cause instanceof Error ? cause : new Error(message);
 			}
 		},
 		[loadSummaries],
@@ -659,7 +688,7 @@ export function DatabasesPane({
 						</DropdownMenuTrigger>
 						<DropdownMenuContent
 							align="start"
-							className="databasesDropdownContent"
+							className="databasesDropdownContent databasePickerMenu"
 						>
 							{summaries.map((summary) => (
 								<DropdownMenuItem
@@ -686,13 +715,16 @@ export function DatabasesPane({
 						</DropdownMenuContent>
 					</DropdownMenu>
 
-					{document ? (
+					{document && activeConfig ? (
 						<>
 							<span className="databasesTopBarDivider" />
 							<Input
 								value={nameDraft}
 								className="databasesInlineNameInput"
 								aria-label="Database name"
+								style={{
+									width: `${Math.min(Math.max(nameDraft.trim().length + 2, 10), 24)}ch`,
+								}}
 								onChange={(event) => setNameDraft(event.target.value)}
 								onBlur={commitDatabaseRename}
 								onKeyDown={(event) => {
@@ -705,9 +737,11 @@ export function DatabasesPane({
 							/>
 							<DatabaseToolbar
 								className="databaseToolbarInline"
-								databaseView={activeConfig?.view.layout ?? "table"}
+								databaseView={activeConfig.view.layout}
 								groupColumns={groupColumns}
-								groupColumnId={activeConfig?.view.board_group_by ?? null}
+								groupColumnId={activeConfig.view.board_group_by ?? null}
+								config={activeConfig}
+								availableProperties={document.available_properties}
 								onGroupColumnIdChange={(groupColumnId) => {
 									if (!activeConfig) return;
 									void handleSaveConfig({
@@ -730,8 +764,9 @@ export function DatabasesPane({
 								}}
 								onAddRow={() => void handleCreateRow()}
 								onReload={() => void loadRows()}
-								onOpenSource={() => setSourceOpen(true)}
-								onOpenColumns={() => setColumnsOpen(true)}
+								onChangeConfig={handleSaveConfig}
+								columnsMenuOpen={columnsMenuOpen}
+								onColumnsMenuOpenChange={setColumnsMenuOpen}
 							/>
 						</>
 					) : null}
@@ -739,28 +774,34 @@ export function DatabasesPane({
 
 				{document ? (
 					<div className="databasesTopBarRight">
-						<span className="databasesHeaderSource">
-							{totalCount > rows.length
-								? `Showing ${rows.length} of ${totalCount} rows`
-								: `${rows.length} row${rows.length === 1 ? "" : "s"}`}
-						</span>
+						{showDatabaseNoteCount ? (
+							<span className="databasesHeaderSource">
+								{totalCount > rows.length
+									? `Showing ${rows.length} of ${totalCount} notes`
+									: `${rows.length} note${rows.length === 1 ? "" : "s"}`}
+							</span>
+						) : null}
 						{isTruncated ? (
 							<span className="databasesHeaderSource">
-								Limited to the first 200 rows
+								Limited to the first 200 notes
 							</span>
 						) : null}
 						<Button
 							type="button"
 							variant="ghost"
-							size="sm"
+							size="icon-sm"
+							className="databasesTopActionButton"
 							onClick={() => void handleDuplicateDatabase()}
+							title="Duplicate database"
+							aria-label="Duplicate database"
 						>
-							Duplicate
+							<HugeiconsIcon icon={ClipboardIcon} size={14} />
 						</Button>
 						<Button
 							type="button"
 							variant="ghost"
 							size="icon-sm"
+							className="databasesTopActionButton databasesTopActionButtonDanger"
 							onClick={() => {
 								if (
 									!window.confirm(
@@ -846,7 +887,7 @@ export function DatabasesPane({
 														</DropdownMenuTrigger>
 														<DropdownMenuContent
 															align="start"
-															className="databasesDropdownContent"
+															className="databasesDropdownContent databasePickerMenu"
 														>
 															<DropdownMenuItem
 																onSelect={() => startViewRename(view.id)}
@@ -893,10 +934,11 @@ export function DatabasesPane({
 							columns={activeConfig.columns}
 							groupColumnId={activeConfig.view.board_group_by ?? null}
 							laneColors={activeConfig.view.board_lane_colors ?? {}}
+							showColumnColor={showDatabaseColumnColor}
 							selectedRowPath={selectedRowPath}
 							onSelectRow={setSelectedRowPath}
 							onOpenRow={(notePath) => void onOpenFile(notePath)}
-							onOpenColumns={() => setColumnsOpen(true)}
+							onOpenColumns={() => setColumnsMenuOpen(true)}
 							onCreateDefaultGroupField={null}
 							onGroupColumnIdChange={(groupColumnId) =>
 								void handleSaveConfig({
@@ -952,19 +994,6 @@ export function DatabasesPane({
 							onSaveCell={handleUpdateCell}
 						/>
 					)}
-					<DatabaseColumnDialog
-						open={columnsOpen}
-						config={activeConfig}
-						availableProperties={document.available_properties}
-						onOpenChange={setColumnsOpen}
-						onChangeConfig={handleSaveConfig}
-					/>
-					<DatabaseSourceDialog
-						open={sourceOpen}
-						config={activeConfig}
-						onOpenChange={setSourceOpen}
-						onChangeConfig={handleSaveConfig}
-					/>
 				</>
 			) : (
 				<div className="databasesEmptyState">

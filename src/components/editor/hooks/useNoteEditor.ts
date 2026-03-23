@@ -1,10 +1,13 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { useEditor } from "@tiptap/react";
 import { useEffect, useMemo, useRef } from "react";
+import { useState } from "react";
 import {
 	joinYamlFrontmatter,
 	splitYamlFrontmatter,
 } from "../../../lib/notePreview";
+import { loadSettings } from "../../../lib/settings";
+import { useTauriEvent } from "../../../lib/tauriEvents";
 import { createEditorExtensions } from "../extensions";
 import {
 	dispatchMarkdownLinkClick,
@@ -116,6 +119,7 @@ export function useNoteEditor({
 	const suppressUpdateRef = useRef(false);
 	const relPathRef = useRef(relPath);
 	const interactiveRef = useRef(interactive);
+	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
 	const extensions = useMemo(
 		() =>
 			createEditorExtensions({
@@ -125,6 +129,28 @@ export function useNoteEditor({
 			}),
 		[enableMarkdownLinkAutocomplete],
 	);
+
+	useEffect(() => {
+		let cancelled = false;
+		void loadSettings()
+			.then((settings) => {
+				if (cancelled) return;
+				setShowCollapsibleHeadings(settings.editor.showCollapsibleHeadings);
+			})
+			.catch(() => {
+				if (cancelled) return;
+				setShowCollapsibleHeadings(false);
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, []);
+
+	useTauriEvent("settings:updated", (payload) => {
+		if (typeof payload.editor?.showCollapsibleHeadings === "boolean") {
+			setShowCollapsibleHeadings(payload.editor.showCollapsibleHeadings);
+		}
+	});
 
 	useEffect(() => {
 		frontmatterRef.current = frontmatter;
@@ -181,6 +207,11 @@ export function useNoteEditor({
 		if (!editor) return;
 		editor.setEditable(mode === "rich");
 	}, [editor, mode]);
+
+	useEffect(() => {
+		if (!editor) return;
+		editor.commands.setHeadingCollapseEnabled(showCollapsibleHeadings);
+	}, [editor, showCollapsibleHeadings]);
 
 	useEffect(() => {
 		if (!editor) return;

@@ -12,11 +12,11 @@ import { X } from "../Icons";
 import { Toggle } from "../base/toggle/toggle";
 import {
 	buildTagSuggestions,
-	formatTagLabel,
 	normalizeTagToken,
 } from "../editor/noteProperties/utils";
 import type { EditorTextColor } from "../editor/textColors";
 import { Input } from "../ui/shadcn/input";
+import { formatDatabaseTagLabel } from "./databaseTagLabel";
 
 interface DatabaseCellProps {
 	row: DatabaseRow;
@@ -190,7 +190,7 @@ export function DatabaseCell({
 	if (!editing || !editable) {
 		if (cellValue.kind === "tags") {
 			const fullValue = cellValue.value_list
-				.map((value) => formatTagLabel(value))
+				.map((value) => formatDatabaseTagLabel(value))
 				.join(", ");
 			return (
 				<button
@@ -210,9 +210,9 @@ export function DatabaseCell({
 										key={`${column.id}:${value}`}
 										className="databaseCellPill"
 										style={toneStyleForValue(value)}
-										title={formatTagLabel(value)}
+										title={formatDatabaseTagLabel(value)}
 									>
-										{formatTagLabel(value)}
+										{formatDatabaseTagLabel(value)}
 									</span>
 								))
 							: null}
@@ -319,9 +319,9 @@ export function DatabaseCell({
 							style={toneStyleForValue(value)}
 							onMouseDown={(event) => event.preventDefault()}
 							onClick={() => void removeTag(value)}
-							title={`Remove ${formatTagLabel(value)}`}
+							title={`Remove ${formatDatabaseTagLabel(value)}`}
 						>
-							<span>{formatTagLabel(value)}</span>
+							<span>{formatDatabaseTagLabel(value)}</span>
 							<X size={10} />
 						</button>
 					))}
@@ -405,7 +405,7 @@ export function DatabaseCell({
 										}
 									}}
 								>
-									<span>{formatTagLabel(tag)}</span>
+									<span>{formatDatabaseTagLabel(tag)}</span>
 									<span className="notePropertySuggestionCount mono">
 										{count}
 									</span>

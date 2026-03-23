@@ -1,19 +1,33 @@
-import { EditTableIcon, FilterEditIcon } from "@hugeicons/core-free-icons";
+import {
+	FilterMailIcon,
+	PencilEdit02Icon,
+	SlidersVerticalIcon,
+} from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import type { DatabaseColumn } from "../../lib/database/types";
-import { Kanban, Plus, RefreshCw, Table } from "../Icons";
+import type {
+	DatabaseColumn,
+	DatabaseConfig,
+	DatabasePropertyOption,
+} from "../../lib/database/types";
+import { Kanban, RefreshCw, Table } from "../Icons";
 import { Button } from "../ui/shadcn/button";
+import { DropdownMenu, DropdownMenuTrigger } from "../ui/shadcn/dropdown-menu";
+import { DatabaseColumnDropdown } from "./DatabaseColumnDialog";
+import { DatabaseSourceDropdown } from "./DatabaseSourceDialog";
 
 interface DatabaseToolbarProps {
 	databaseView: "table" | "board";
 	groupColumns: DatabaseColumn[];
 	groupColumnId: string | null;
+	config: DatabaseConfig;
+	availableProperties: DatabasePropertyOption[];
 	onGroupColumnIdChange: (groupColumnId: string | null) => void;
 	onDatabaseViewChange: (view: "table" | "board") => void;
 	onAddRow: () => void;
 	onReload: () => void;
-	onOpenSource: () => void;
-	onOpenColumns: () => void;
+	onChangeConfig: (config: DatabaseConfig) => Promise<void>;
+	columnsMenuOpen?: boolean;
+	onColumnsMenuOpenChange?: (open: boolean) => void;
 	className?: string;
 }
 
@@ -21,12 +35,15 @@ export function DatabaseToolbar({
 	databaseView,
 	groupColumns,
 	groupColumnId,
+	config,
+	availableProperties,
 	onGroupColumnIdChange,
 	onDatabaseViewChange,
 	onAddRow,
 	onReload,
-	onOpenSource,
-	onOpenColumns,
+	onChangeConfig,
+	columnsMenuOpen,
+	onColumnsMenuOpenChange,
 	className,
 }: DatabaseToolbarProps) {
 	return (
@@ -91,30 +108,46 @@ export function DatabaseToolbar({
 						</select>
 					</label>
 				) : null}
-				<Button
-					type="button"
-					variant="ghost"
-					size="sm"
-					className="databaseToolbarChip"
-					onClick={onOpenSource}
-					title="Source & Filters"
-					aria-label="Source & Filters"
+				<DropdownMenu>
+					<DropdownMenuTrigger asChild>
+						<Button
+							type="button"
+							variant="ghost"
+							size="icon-sm"
+							className="databaseToolbarChip"
+							title="Source & Filters"
+							aria-label="Source & Filters"
+						>
+							<HugeiconsIcon icon={FilterMailIcon} size={13} />
+						</Button>
+					</DropdownMenuTrigger>
+					<DatabaseSourceDropdown
+						config={config}
+						onChangeConfig={onChangeConfig}
+					/>
+				</DropdownMenu>
+				<DropdownMenu
+					open={columnsMenuOpen}
+					onOpenChange={onColumnsMenuOpenChange}
 				>
-					<HugeiconsIcon icon={FilterEditIcon} size={13} />
-					<span className="databaseToolbarChipLabel">Filter</span>
-				</Button>
-				<Button
-					type="button"
-					variant="ghost"
-					size="sm"
-					className="databaseToolbarChip"
-					onClick={onOpenColumns}
-					title="Columns"
-					aria-label="Columns"
-				>
-					<HugeiconsIcon icon={EditTableIcon} size={13} />
-					<span className="databaseToolbarChipLabel">Columns</span>
-				</Button>
+					<DropdownMenuTrigger asChild>
+						<Button
+							type="button"
+							variant="ghost"
+							size="icon-sm"
+							className="databaseToolbarChip"
+							title="Columns"
+							aria-label="Columns"
+						>
+							<HugeiconsIcon icon={SlidersVerticalIcon} size={13} />
+						</Button>
+					</DropdownMenuTrigger>
+					<DatabaseColumnDropdown
+						config={config}
+						availableProperties={availableProperties}
+						onChangeConfig={onChangeConfig}
+					/>
+				</DropdownMenu>
 				<Button
 					type="button"
 					variant="ghost"
@@ -128,14 +161,14 @@ export function DatabaseToolbar({
 				</Button>
 				<Button
 					type="button"
-					size="sm"
+					variant="ghost"
+					size="icon-sm"
 					className="databaseToolbarChip is-accent"
 					onClick={onAddRow}
-					title="New row"
-					aria-label="New row"
+					title="New note"
+					aria-label="New note"
 				>
-					<Plus size={13} />
-					<span className="databaseToolbarChipLabel">New</span>
+					<HugeiconsIcon icon={PencilEdit02Icon} size={14} />
 				</Button>
 			</div>
 		</div>

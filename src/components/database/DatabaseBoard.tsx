@@ -13,7 +13,6 @@ import {
 import type { DatabaseColumn, DatabaseRow } from "../../lib/database/types";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { parentDir } from "../../utils/path";
-import { formatTagLabel } from "../editor/noteProperties/utils";
 import {
 	EDITOR_TEXT_COLORS,
 	type EditorTextColor,
@@ -34,11 +33,13 @@ import {
 	DropdownMenuTrigger,
 } from "../ui/shadcn/dropdown-menu";
 import { DatabaseColumnIcon } from "./DatabaseColumnIcon";
+import { formatDatabaseTagLabel } from "./databaseTagLabel";
 
 interface DatabaseBoardProps {
 	rows: DatabaseRow[];
 	columns: DatabaseColumn[];
 	groupColumnId?: string | null;
+	showColumnColor?: boolean;
 	selectedRowPath: string | null;
 	onSelectRow: (notePath: string) => void;
 	onOpenRow: (notePath: string) => void;
@@ -160,6 +161,7 @@ export function DatabaseBoard({
 	rows,
 	columns,
 	groupColumnId: persistedGroupColumnId,
+	showColumnColor = true,
 	selectedRowPath,
 	onSelectRow,
 	onOpenRow,
@@ -408,6 +410,7 @@ export function DatabaseBoard({
 								key={lane.id}
 								className="databaseBoardLane"
 								data-board-lane-id={lane.id}
+								data-show-column-color={showColumnColor ? "true" : "false"}
 								style={databaseValueToneStyleForColor(
 									lane.id,
 									getLaneColor(laneColors, lane.id),
@@ -590,9 +593,9 @@ export function DatabaseBoard({
 																						)
 																					: databaseValueToneStyle(tag)
 																			}
-																			title={formatTagLabel(tag)}
+																			title={formatDatabaseTagLabel(tag)}
 																		>
-																			{formatTagLabel(tag)}
+																			{formatDatabaseTagLabel(tag)}
 																		</span>
 																	))}
 																	{extraTagCount > 0 ? (
