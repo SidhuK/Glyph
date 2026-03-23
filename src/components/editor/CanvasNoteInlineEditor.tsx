@@ -857,17 +857,6 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		setDueDate(next);
 	};
 
-	const setQuickDate = (offsetDays: number) => {
-		const d = new Date();
-		d.setDate(d.getDate() + offsetDays);
-		const iso = todayIsoDateLocal(d);
-		if (activeDateField === "scheduled") {
-			setScheduledDate(iso);
-			return;
-		}
-		setDueDate(iso);
-	};
-
 	const applyCodeBlockLanguage = (language: SupportedCodeBlockLanguage) => {
 		if (!editor) return;
 		editor
@@ -1182,8 +1171,10 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 											variant="outline"
 											size="xs"
 											onClick={() => {
+												const d = new Date();
+												d.setDate(d.getDate() + 0);
+												setScheduledDate(todayIsoDateLocal(d));
 												setActiveDateField("scheduled");
-												setQuickDate(0);
 											}}
 										>
 											Today
@@ -1193,8 +1184,10 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 											variant="outline"
 											size="xs"
 											onClick={() => {
+												const d = new Date();
+												d.setDate(d.getDate() + 1);
+												setScheduledDate(todayIsoDateLocal(d));
 												setActiveDateField("scheduled");
-												setQuickDate(1);
 											}}
 										>
 											Tomorrow
@@ -1204,8 +1197,10 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 											variant="outline"
 											size="xs"
 											onClick={() => {
+												const d = new Date();
+												d.setDate(d.getDate() + 7);
+												setScheduledDate(todayIsoDateLocal(d));
 												setActiveDateField("scheduled");
-												setQuickDate(7);
 											}}
 										>
 											Next week

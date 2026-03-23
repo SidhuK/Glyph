@@ -69,20 +69,6 @@ export function TaskRow({
 		}
 	}, [dueDate, onSchedule, scheduledDate, task]);
 
-	const setQuickDate = useCallback(
-		(offsetDays: number) => {
-			const d = new Date();
-			d.setDate(d.getDate() + offsetDays);
-			const iso = todayIsoDateLocal(d);
-			if (activeDateField === "scheduled") {
-				setScheduledDate(iso);
-				return;
-			}
-			setDueDate(iso);
-		},
-		[activeDateField],
-	);
-
 	const applyQuickSchedule = useCallback(
 		async (offsetDays: number) => {
 			const d = new Date();
@@ -347,8 +333,10 @@ export function TaskRow({
 									variant="outline"
 									size="xs"
 									onClick={() => {
+										const d = new Date();
+										d.setDate(d.getDate() + 0);
+										setScheduledDate(todayIsoDateLocal(d));
 										setActiveDateField("scheduled");
-										setQuickDate(0);
 									}}
 								>
 									Today
@@ -358,8 +346,10 @@ export function TaskRow({
 									variant="outline"
 									size="xs"
 									onClick={() => {
+										const d = new Date();
+										d.setDate(d.getDate() + 1);
+										setScheduledDate(todayIsoDateLocal(d));
 										setActiveDateField("scheduled");
-										setQuickDate(1);
 									}}
 								>
 									Tomorrow
@@ -369,8 +359,10 @@ export function TaskRow({
 									variant="outline"
 									size="xs"
 									onClick={() => {
+										const d = new Date();
+										d.setDate(d.getDate() + 7);
+										setScheduledDate(todayIsoDateLocal(d));
 										setActiveDateField("scheduled");
-										setQuickDate(7);
 									}}
 								>
 									Next week

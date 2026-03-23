@@ -497,14 +497,26 @@ pub async fn calendar_query_range(
             let updated: String = row.get(4).map_err(|e| e.to_string())?;
             let created_day = created.get(0..10).unwrap_or_default().to_string();
             let updated_day = updated.get(0..10).unwrap_or_default().to_string();
+            let is_created_daily_note = daily_note_path_for(
+                normalized_daily_notes_folder.as_deref(),
+                &created_day,
+            )
+            .as_deref()
+                == Some(note_path.as_str());
+            let is_updated_daily_note = daily_note_path_for(
+                normalized_daily_notes_folder.as_deref(),
+                &updated_day,
+            )
+            .as_deref()
+                == Some(note_path.as_str());
 
-            if created_day >= start_date && created_day <= end_date {
+            if created_day >= start_date && created_day <= end_date && !is_created_daily_note {
                 note_activity_sets
                     .entry(created_day.clone())
                     .or_default()
                     .insert(note_id.clone());
             }
-            if updated_day >= start_date && updated_day <= end_date {
+            if updated_day >= start_date && updated_day <= end_date && !is_updated_daily_note {
                 note_activity_sets
                     .entry(updated_day.clone())
                     .or_default()
