@@ -1,7 +1,13 @@
-import { SourceCodeIcon } from "@hugeicons/core-free-icons";
+import {
+	ArrowLeft,
+	ArrowRight,
+	Calendar03Icon,
+	SourceCodeIcon,
+} from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { EditorContent } from "@tiptap/react";
+import { addMonths, format, parseISO } from "date-fns";
 import { AnimatePresence } from "motion/react";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
@@ -11,8 +17,11 @@ import {
 	renderMermaidDiagram,
 } from "../../lib/mermaid";
 import { joinYamlFrontmatter } from "../../lib/notePreview";
+import { todayIsoDateLocal } from "../../lib/tasks";
 import { type BacklinkItem, invoke } from "../../lib/tauri";
+import { Save, Trash2, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
+import { Calendar as DateCalendar } from "../ui/shadcn/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 import { EditorRibbon } from "./EditorRibbon";
 import { NotePropertiesPanel } from "./NotePropertiesPanel";
@@ -296,6 +305,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	const tiptapHostRef = useRef<HTMLDivElement | null>(null);
 	const [taskAnchors, setTaskAnchors] = useState<
 		Array<{
+			left: number;
 			ordinal: number;
 			top: number;
 		}>
@@ -304,9 +314,14 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		null,
 	);
 	const [scheduleAnchor, setScheduleAnchor] = useState<{
+		left: number;
 		ordinal: number;
 		top: number;
 	} | null>(null);
+	const [activeDateField, setActiveDateField] = useState<"scheduled" | "due">(
+		"scheduled",
+	);
+	const [pickerMonth, setPickerMonth] = useState<Date>(new Date());
 	const [scheduledDate, setScheduledDate] = useState("");
 	const [dueDate, setDueDate] = useState("");
 	const [selectionRibbon, setSelectionRibbon] =
@@ -560,15 +575,22 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 					"li[data-type='taskItem'], li[data-checked]",
 				),
 			) as HTMLElement[];
-			const nextAnchors = items.map((item, ordinal) => ({
-				ordinal,
-				top: item.offsetTop + 2,
-			}));
+			const nextAnchors = items.map((item, ordinal) => {
+				const { left, top } = getOffsetWithinAncestor(item, host);
+				const nextTop =
+					top + Math.max(0, Math.round((item.offsetHeight - 18) / 2));
+				return {
+					left: Math.max(12, left - 24),
+					ordinal,
+					top: nextTop,
+				};
+			});
 			setTaskAnchors((current) => {
 				if (
 					current.length === nextAnchors.length &&
 					current.every(
 						(anchor, index) =>
+							anchor.left === nextAnchors[index]?.left &&
 							anchor.ordinal === nextAnchors[index]?.ordinal &&
 							anchor.top === nextAnchors[index]?.top,
 					)
@@ -745,7 +767,11 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		isSelectedMermaidCodeBlock &&
 		selectedCodeBlock?.pos === activeMermaidPreviewPos;
 
-	const openTaskPopover = async (anchor: { ordinal: number; top: number }) => {
+	const openTaskPopover = async (anchor: {
+		left: number;
+		ordinal: number;
+		top: number;
+	}) => {
 		setScheduleAnchor(anchor);
 		try {
 			const existing = await invoke("task_dates_by_ordinal", {
@@ -754,9 +780,24 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 			});
 			setScheduledDate(existing?.scheduled_date ?? "");
 			setDueDate(existing?.due_date ?? "");
+			const nextField = existing?.due_date ? "due" : "scheduled";
+			setActiveDateField(nextField);
+			try {
+				setPickerMonth(
+					existing?.due_date
+						? parseISO(existing.due_date)
+						: existing?.scheduled_date
+							? parseISO(existing.scheduled_date)
+							: new Date(),
+				);
+			} catch {
+				setPickerMonth(new Date());
+			}
 		} catch {
 			setScheduledDate("");
 			setDueDate("");
+			setActiveDateField("scheduled");
+			setPickerMonth(new Date());
 		}
 	};
 	const applyTaskDates = async () => {
@@ -770,6 +811,61 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		if (!next) return;
 		onChange(next);
 		setScheduleAnchor(null);
+	};
+
+	const activeDateValue =
+		activeDateField === "scheduled" ? scheduledDate : dueDate;
+
+	const activeDate = useMemo(() => {
+		if (!activeDateValue) return undefined;
+		try {
+			return parseISO(activeDateValue);
+		} catch {
+			return undefined;
+		}
+	}, [activeDateValue]);
+
+	const formatPickerValue = (value: string) => {
+		if (!value) return "Select date";
+		try {
+			return format(parseISO(value), "MMM d, yyyy");
+		} catch {
+			return value;
+		}
+	};
+
+	const focusField = (field: "scheduled" | "due") => {
+		setActiveDateField(field);
+		const nextValue = field === "scheduled" ? scheduledDate : dueDate;
+		if (!nextValue) {
+			setPickerMonth(new Date());
+			return;
+		}
+		try {
+			setPickerMonth(parseISO(nextValue));
+		} catch {
+			setPickerMonth(new Date());
+		}
+	};
+
+	const updateActiveDate = (date?: Date) => {
+		const next = date ? todayIsoDateLocal(date) : "";
+		if (activeDateField === "scheduled") {
+			setScheduledDate(next);
+			return;
+		}
+		setDueDate(next);
+	};
+
+	const setQuickDate = (offsetDays: number) => {
+		const d = new Date();
+		d.setDate(d.getDate() + offsetDays);
+		const iso = todayIsoDateLocal(d);
+		if (activeDateField === "scheduled") {
+			setScheduledDate(iso);
+			return;
+		}
+		setDueDate(iso);
 	};
 
 	const applyCodeBlockLanguage = (language: SupportedCodeBlockLanguage) => {
@@ -1018,67 +1114,169 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 									<button
 										type="button"
 										className="taskInlineDateBtn"
-										style={{ top: `${selectedTaskAnchor.top}px` }}
+										style={{
+											left: `${selectedTaskAnchor.left}px`,
+											top: `${selectedTaskAnchor.top}px`,
+										}}
 										onClick={() => {
 											void openTaskPopover(selectedTaskAnchor);
 										}}
 										title="Schedule selected task"
 									>
-										<span className="taskInlineDateGlyph" aria-hidden>
-											📅
-										</span>
+										<HugeiconsIcon
+											icon={Calendar03Icon}
+											size={13}
+											aria-hidden
+										/>
 									</button>
 								</PopoverTrigger>
 								<PopoverContent
-									className="taskInlineDatePopover"
+									className="tasksDatePopover taskInlineDatePopover"
 									align="start"
 									onInteractOutside={(event) => event.preventDefault()}
 									onPointerDownOutside={(event) => event.preventDefault()}
 								>
-									<label>
-										Scheduled
-										<input
-											type="date"
-											value={scheduledDate}
-											onChange={(event) => setScheduledDate(event.target.value)}
+									<div className="tasksDatePickerFields">
+										<button
+											type="button"
+											className="tasksDateFieldCard"
+											data-active={activeDateField === "scheduled"}
+											onClick={() => focusField("scheduled")}
+										>
+											<span className="tasksDateFieldLabel">Scheduled</span>
+											<span
+												className="tasksDateFieldValue"
+												data-empty={!scheduledDate}
+											>
+												{formatPickerValue(scheduledDate)}
+											</span>
+										</button>
+										<button
+											type="button"
+											className="tasksDateFieldCard"
+											data-active={activeDateField === "due"}
+											onClick={() => focusField("due")}
+										>
+											<span className="tasksDateFieldLabel">Due</span>
+											<span
+												className="tasksDateFieldValue"
+												data-empty={!dueDate}
+											>
+												{formatPickerValue(dueDate)}
+											</span>
+										</button>
+									</div>
+									<div className="tasksDatePickerShell">
+										<DateCalendar
+											mode="single"
+											selected={activeDate}
+											onSelect={updateActiveDate}
+											month={pickerMonth}
+											onMonthChange={setPickerMonth}
+											className="tasksDateCalendar"
 										/>
-									</label>
-									<label>
-										Due
-										<input
-											type="date"
-											value={dueDate}
-											onChange={(event) => setDueDate(event.target.value)}
-										/>
-									</label>
-									<div className="taskInlineDateActions">
+									</div>
+									<div className="tasksQuickDates">
 										<Button
 											type="button"
+											variant="outline"
 											size="xs"
-											variant="ghost"
-											onClick={() => setScheduleAnchor(null)}
+											onClick={() => {
+												setActiveDateField("scheduled");
+												setQuickDate(0);
+											}}
 										>
-											Close
+											Today
+										</Button>
+										<Button
+											type="button"
+											variant="outline"
+											size="xs"
+											onClick={() => {
+												setActiveDateField("scheduled");
+												setQuickDate(1);
+											}}
+										>
+											Tomorrow
+										</Button>
+										<Button
+											type="button"
+											variant="outline"
+											size="xs"
+											onClick={() => {
+												setActiveDateField("scheduled");
+												setQuickDate(7);
+											}}
+										>
+											Next week
 										</Button>
 										<Button
 											type="button"
 											size="xs"
+											variant="ghost"
+											onClick={() => updateActiveDate(undefined)}
+										>
+											Clear selected
+										</Button>
+									</div>
+									<div className="tasksDateActions taskInlineDateActions">
+										<Button
+											type="button"
 											variant="outline"
+											size="icon-xs"
+											title="Clear dates"
+											aria-label="Clear dates"
 											onClick={() => {
 												setScheduledDate("");
 												setDueDate("");
 											}}
 										>
-											Clear
+											<Trash2 size={13} />
 										</Button>
 										<Button
 											type="button"
-											size="xs"
+											size="icon-xs"
+											title="Apply dates"
+											aria-label="Apply dates"
 											onClick={() => {
 												void applyTaskDates();
 											}}
 										>
-											Apply
+											<Save size={13} />
+										</Button>
+										<Button
+											type="button"
+											variant="outline"
+											size="icon-xs"
+											title="Previous month"
+											aria-label="Previous month"
+											onClick={() =>
+												setPickerMonth((current) => addMonths(current, -1))
+											}
+										>
+											<HugeiconsIcon icon={ArrowLeft} size={13} />
+										</Button>
+										<Button
+											type="button"
+											variant="outline"
+											size="icon-xs"
+											title="Next month"
+											aria-label="Next month"
+											onClick={() =>
+												setPickerMonth((current) => addMonths(current, 1))
+											}
+										>
+											<HugeiconsIcon icon={ArrowRight} size={13} />
+										</Button>
+										<Button
+											type="button"
+											variant="ghost"
+											size="icon-xs"
+											title="Close"
+											aria-label="Close"
+											onClick={() => setScheduleAnchor(null)}
+										>
+											<X size={13} />
 										</Button>
 									</div>
 								</PopoverContent>

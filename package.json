@@ -54,6 +54,7 @@
 		"next-themes": "^0.4.6",
 		"radix-ui": "^1.4.3",
 		"react": "^19.1.0",
+		"react-day-picker": "^9.14.0",
 		"react-dom": "^19.1.0",
 		"react-hook-form": "^7.71.1",
 		"react-resizable-panels": "^4.6.2",

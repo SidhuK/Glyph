@@ -331,12 +331,7 @@ export function CalendarPane({
 	]);
 
 	const renderTaskGroup = useCallback(
-		(
-			label: string,
-			tasks: TaskItem[],
-			emptyCopy: string,
-			scrollClassName: string,
-		) => (
+		(label: string, tasks: TaskItem[], scrollClassName: string) => (
 			<section className="calendarSection">
 				<div className="calendarSectionHeader">
 					<h3 className="calendarSectionTitle">{label}</h3>
@@ -357,9 +352,7 @@ export function CalendarPane({
 								/>
 							))}
 						</div>
-					) : (
-						<div className="calendarEmptyText">{emptyCopy}</div>
-					)}
+					) : null}
 				</div>
 			</section>
 		),
@@ -624,19 +617,16 @@ export function CalendarPane({
 								{renderTaskGroup(
 									"Overdue",
 									selectedTasks?.overdue ?? [],
-									"Nothing overdue right now.",
 									"calendarSectionScroller-compact",
 								)}
 								{renderTaskGroup(
 									"For this day",
 									selectedTasks?.for_day ?? [],
-									"No tasks assigned to this day yet.",
 									"calendarSectionScroller-main",
 								)}
 								{renderTaskGroup(
 									"Ongoing",
 									selectedTasks?.ongoing ?? [],
-									"No ongoing tasks carrying into this day.",
 									"calendarSectionScroller-compact",
 								)}
 							</div>
