@@ -688,7 +688,7 @@ export function DatabasesPane({
 						</DropdownMenuTrigger>
 						<DropdownMenuContent
 							align="start"
-							className="databasesDropdownContent"
+							className="databasesDropdownContent databasePickerMenu"
 						>
 							{summaries.map((summary) => (
 								<DropdownMenuItem
@@ -887,7 +887,7 @@ export function DatabasesPane({
 														</DropdownMenuTrigger>
 														<DropdownMenuContent
 															align="start"
-															className="databasesDropdownContent"
+															className="databasesDropdownContent databasePickerMenu"
 														>
 															<DropdownMenuItem
 																onSelect={() => startViewRename(view.id)}
