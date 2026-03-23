@@ -1,6 +1,5 @@
 import {
-	CalendarAdd01Icon,
-	CheckListIcon,
+	Calendar03Icon,
 	DashboardSquare03Icon,
 	Tag01Icon,
 } from "@hugeicons/core-free-icons";
@@ -30,9 +29,7 @@ interface SidebarContentProps {
 	onRenameDir: (dirPath: string, nextName: string) => Promise<string | null>;
 	onDeletePath: (path: string, kind: "dir" | "file") => Promise<boolean>;
 	onSelectTag: (tag: string) => void;
-	onOpenDailyNote: () => void;
-	isDailyNoteCreating: boolean;
-	onOpenTasks: () => void;
+	onOpenCalendar: () => void;
 	onOpenDatabases: (databaseId?: string | null) => void;
 }
 
@@ -47,9 +44,7 @@ export const SidebarContent = memo(function SidebarContent({
 	onRenameDir,
 	onDeletePath,
 	onSelectTag,
-	onOpenDailyNote,
-	isDailyNoteCreating,
-	onOpenTasks,
+	onOpenCalendar,
 	onOpenDatabases,
 }: SidebarContentProps) {
 	// Contexts
@@ -86,13 +81,13 @@ export const SidebarContent = memo(function SidebarContent({
 					<button
 						type="button"
 						className="sidebarQuickActionBtn"
-						data-kind="daily-notes"
-						onClick={onOpenDailyNote}
-						disabled={isDailyNoteCreating}
-						title="Open today's daily note"
+						data-kind="calendar"
+						onClick={onOpenCalendar}
+						title="Open Calendar"
 					>
-						<HugeiconsIcon icon={CalendarAdd01Icon} size={14} />
-						<span className="sidebarQuickActionLabel">Daily Note</span>
+						<HugeiconsIcon icon={Calendar03Icon} size={14} />
+						<span className="sidebarQuickActionLabel">Calendar</span>
+						<span className="sidebarQuickActionBadge">Alpha</span>
 					</button>
 					<button
 						type="button"
@@ -103,17 +98,6 @@ export const SidebarContent = memo(function SidebarContent({
 					>
 						<HugeiconsIcon icon={DashboardSquare03Icon} size={14} />
 						<span className="sidebarQuickActionLabel">Databases</span>
-					</button>
-					<button
-						type="button"
-						className="sidebarQuickActionBtn"
-						data-kind="tasks"
-						onClick={onOpenTasks}
-						title="Open Tasks"
-					>
-						<HugeiconsIcon icon={CheckListIcon} size={14} />
-						<span className="sidebarQuickActionLabel">Tasks</span>
-						<span className="sidebarQuickActionBadge">Alpha</span>
 					</button>
 				</div>
 				<div className="sidebarSectionHeader">

@@ -1,8 +1,8 @@
 import { cn } from "@/lib/utils";
 import {
 	AiBrain04Icon,
+	Calendar03Icon,
 	CalendarAdd01Icon,
-	CheckListIcon,
 	ColorsIcon,
 	CursorInWindowIcon,
 	Folder01Icon,
@@ -142,7 +142,7 @@ export function AppShell() {
 		"commands" | "search"
 	>("commands");
 	const [paletteInitialQuery, setPaletteInitialQuery] = useState("");
-	const [openTasksRequest, setOpenTasksRequest] = useState(0);
+	const [openCalendarRequest, setOpenCalendarRequest] = useState(0);
 	const [openDatabasesRequest, setOpenDatabasesRequest] = useState<{
 		nonce: number;
 		databaseId: string | null;
@@ -245,13 +245,12 @@ export function AppShell() {
 		setError,
 	});
 
-	const { openOrCreateDailyNote, isCreating: isDailyNoteCreating } =
-		useDailyNote({
-			onOpenFile: (path) => fileTree.openFile(path),
-			setError,
-			spacePath,
-			templatePath: dailyNoteTemplatePath,
-		});
+	const { openOrCreateDailyNote } = useDailyNote({
+		onOpenFile: (path) => fileTree.openFile(path),
+		setError,
+		spacePath,
+		templatePath: dailyNoteTemplatePath,
+	});
 
 	const openTemplatesSettings = useCallback(() => {
 		void openSettingsWindow("general");
@@ -641,8 +640,8 @@ export function AppShell() {
 		setPaletteInitialQuery("");
 		setPaletteOpen(true);
 	}, [setPaletteOpen]);
-	const openTasksTab = useCallback(() => {
-		setOpenTasksRequest((prev) => prev + 1);
+	const openCalendarTab = useCallback(() => {
+		setOpenCalendarRequest((prev) => prev + 1);
 	}, []);
 	const openDatabasesTab = useCallback((databaseId?: string | null) => {
 		setOpenDatabasesRequest((prev) => ({
@@ -1065,12 +1064,12 @@ export function AppShell() {
 				action: openSearchPalette,
 			},
 			{
-				id: "open-tasks",
-				label: "Open tasks",
-				icon: <HugeiconsIcon icon={CheckListIcon} size={16} />,
+				id: "open-calendar",
+				label: "Open calendar",
+				icon: <HugeiconsIcon icon={Calendar03Icon} size={16} />,
 				category: "Navigation",
 				enabled: Boolean(spacePath),
-				action: openTasksTab,
+				action: openCalendarTab,
 			},
 			{
 				id: "show-getting-started",
@@ -1126,7 +1125,7 @@ export function AppShell() {
 		sidebarCollapsed,
 		spacePath,
 		openSearchPalette,
-		openTasksTab,
+		openCalendarTab,
 		openGettingStarted,
 		openWhatsNew,
 		moveTargetDirs,
@@ -1190,9 +1189,7 @@ export function AppShell() {
 				onSelectTag={(t) => openTagSearchPalette(t)}
 				sidebarCollapsed={sidebarCollapsed}
 				onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
-				onOpenDailyNote={requestOpenDailyNote}
-				isDailyNoteCreating={isDailyNoteCreating}
-				onOpenTasks={openTasksTab}
+				onOpenCalendar={openCalendarTab}
 				onOpenDatabases={(databaseId) => openDatabasesTab(databaseId)}
 				updateReady={autoUpdater.updateReady}
 				updateVersion={autoUpdater.updateVersion}
@@ -1212,7 +1209,7 @@ export function AppShell() {
 				onOpenCommandPalette={openCommandPalette}
 				onCreateNote={handleCreateNoteFromStarter}
 				onOpenDailyNote={requestOpenDailyNote}
-				openTasksRequest={openTasksRequest}
+				openCalendarRequest={openCalendarRequest}
 				openDatabasesRequest={openDatabasesRequest}
 				openBlankTabRequest={openBlankTabRequest}
 				showGettingStartedRequest={showGettingStartedRequest}

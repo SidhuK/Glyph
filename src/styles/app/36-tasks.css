@@ -579,7 +579,7 @@
 	display: flex;
 	align-items: center;
 	gap: 10px;
-	padding: 10px 14px;
+	padding: 8px 14px;
 	border-radius: 0;
 	border: 0;
 	border-bottom: 1px solid
@@ -650,7 +650,7 @@
 .tasksRowMain {
 	display: flex;
 	align-items: center;
-	gap: 10px;
+	gap: 8px;
 	min-width: 0;
 	width: 100%;
 	overflow: hidden;
@@ -660,7 +660,7 @@
 	flex: 1 1 auto;
 	min-width: 0;
 	font-size: 0.9rem;
-	line-height: 1.2;
+	line-height: 1.15;
 	color: var(--text-primary);
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -801,15 +801,16 @@
 }
 
 .tasksScheduleBtn {
-	height: 22px;
+	height: 24px;
 	flex: 0 0 auto;
 	margin-left: auto;
-	padding-inline: var(--space-2);
+	padding-inline: 9px;
 	border-radius: var(--radius-7);
 	font-size: 0.68rem;
 	line-height: 1;
 	color: var(--text-secondary);
-	border: 1px solid transparent;
+	border: 1px solid color-mix(in srgb, var(--border-light) 78%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 88%, var(--bg-secondary));
 	transition: transform var(--transition-base), background-color
 		var(--transition-base), color var(--transition-base), border-color
 		var(--transition-base);

@@ -2,9 +2,9 @@ import { AiBrain04Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { memo, useCallback, useState } from "react";
 import type { DragEvent, MouseEvent } from "react";
+import { CALENDAR_TAB_ID } from "../../lib/calendar";
 import { DATABASES_TAB_ID } from "../../lib/databases";
 import { getShortcutTooltip } from "../../lib/shortcuts";
-import { TASKS_TAB_ID } from "../../lib/tasks";
 
 interface TabBarProps {
 	openTabs: string[];
@@ -45,7 +45,7 @@ export function TabBar({
 
 	const fileName = useCallback(
 		(path: string) => {
-			if (path === TASKS_TAB_ID) return "Tasks";
+			if (path === CALENDAR_TAB_ID) return "Calendar";
 			if (path === DATABASES_TAB_ID) return "Databases";
 			const parts = path.split("/").filter(Boolean);
 			const rawName = parts[parts.length - 1] ?? path;
@@ -58,7 +58,7 @@ export function TabBar({
 
 	const breadcrumbSegments =
 		activeTabPath &&
-		activeTabPath !== TASKS_TAB_ID &&
+		activeTabPath !== CALENDAR_TAB_ID &&
 		activeTabPath !== DATABASES_TAB_ID
 			? activeTabPath.split("/").filter(Boolean)
 			: [];
@@ -213,7 +213,9 @@ const TabItem = memo(function TabItem({
 				className={`mainTab ${isActive ? "is-active" : ""}`}
 				onClick={handleSelect}
 				title={
-					path === TASKS_TAB_ID || path === DATABASES_TAB_ID ? fileName : path
+					path === CALENDAR_TAB_ID || path === DATABASES_TAB_ID
+						? fileName
+						: path
 				}
 				draggable
 				onDragStart={handleDragStart}

@@ -57,8 +57,8 @@
 	flex: 0 0 auto;
 }
 
-.sidebarQuickActionBtn[data-kind="tasks"] > svg {
-	color: oklch(0.74 0.16 88);
+.sidebarQuickActionBtn[data-kind="calendar"] > svg {
+	color: oklch(0.66 0.11 245);
 }
 
 .sidebarQuickActionBtn[data-kind="databases"] > svg {

@@ -1,7 +1,5 @@
 import type { TaskBucket, TaskItem } from "./tauri";
 
-export const TASKS_TAB_ID = "__glyph_tasks__";
-
 const SHORT_DATE_FORMATTER = new Intl.DateTimeFormat(undefined, {
 	month: "short",
 	day: "numeric",
