@@ -83,6 +83,28 @@ function formatActivityTime(iso: string): string {
 	}
 }
 
+function getNoteBreadcrumb(notePath: string): string {
+	const parts = notePath.split("/").filter(Boolean);
+	if (parts.length <= 1) return "";
+	return parts.slice(0, -1).join(" / ");
+}
+
+function getTaskGroupMeta(label: string): {
+	displayLabel: string;
+	tone: "danger" | "info" | "warning" | "neutral";
+} {
+	if (label === "Overdue") {
+		return { displayLabel: "Overdue", tone: "danger" };
+	}
+	if (label === "For this day") {
+		return { displayLabel: "Today", tone: "info" };
+	}
+	if (label === "Ongoing") {
+		return { displayLabel: "Ongoing", tone: "warning" };
+	}
+	return { displayLabel: label, tone: "neutral" };
+}
+
 export function CalendarPane({
 	onOpenFile,
 	onOpenDailyNotesSettings,
@@ -331,31 +353,38 @@ export function CalendarPane({
 	]);
 
 	const renderTaskGroup = useCallback(
-		(label: string, tasks: TaskItem[], scrollClassName: string) => (
-			<section className="calendarSection">
-				<div className="calendarSectionHeader">
-					<h3 className="calendarSectionTitle">{label}</h3>
-					<span className="calendarSectionCount">{tasks.length}</span>
-				</div>
-				<div className={cn("calendarSectionScroller", scrollClassName)}>
-					{tasks.length > 0 ? (
-						<div className="calendarTaskList">
-							{tasks.map((task) => (
-								<TaskRow
-									key={task.task_id}
-									task={task}
-									today={selectedDate}
-									showNoteContext
-									onToggle={toggleTask}
-									onSchedule={scheduleTask}
-									onOpenNote={(notePath) => void onOpenFile(notePath)}
-								/>
-							))}
-						</div>
-					) : null}
-				</div>
-			</section>
-		),
+		(label: string, tasks: TaskItem[], scrollClassName: string) => {
+			const { displayLabel, tone } = getTaskGroupMeta(label);
+			return (
+				<section className="calendarSection calendarTaskGroupCard">
+					<div className="calendarSectionHeader">
+						<h3 className="calendarSectionTitle">
+							<span className={cn("calendarSectionLabelPill", `is-${tone}`)}>
+								{displayLabel}
+							</span>
+						</h3>
+						<span className="calendarSectionCount">{tasks.length}</span>
+					</div>
+					<div className={cn("calendarSectionScroller", scrollClassName)}>
+						{tasks.length > 0 ? (
+							<div className="calendarTaskList">
+								{tasks.map((task) => (
+									<TaskRow
+										key={task.task_id}
+										task={task}
+										today={selectedDate}
+										showNoteContext
+										onToggle={toggleTask}
+										onSchedule={scheduleTask}
+										onOpenNote={(notePath) => void onOpenFile(notePath)}
+									/>
+								))}
+							</div>
+						) : null}
+					</div>
+				</section>
+			);
+		},
 		[onOpenFile, scheduleTask, selectedDate, toggleTask],
 	);
 
@@ -470,34 +499,50 @@ export function CalendarPane({
 										onClick={() => setSelectedDate(date)}
 									>
 										<div className="calendarMonthCellHead">
-											<span>{formatMonthDay(date)}</span>
+											{isToday ? (
+												<span className="calendarMonthCellTodayWatermark">
+													Today
+												</span>
+											) : null}
+											<span className="calendarMonthCellDayNumber">
+												{formatMonthDay(date)}
+											</span>
 											{isToday ? <span className="calendarTodayDot" /> : null}
 										</div>
 										<div className="calendarMonthCellMeta">
 											{summary?.task_count ? (
 												<span
-													className="calendarMetaStat"
+													className="calendarMonthCellStatLine"
 													aria-label={`${summary.task_count} tasks`}
 												>
 													<ListChecks size={12} />
-													<span>{summary.task_count}</span>
+													<span>
+														{summary.task_count}{" "}
+														{summary.task_count === 1 ? "task" : "tasks"}
+													</span>
 												</span>
 											) : null}
 											{summary?.note_activity_count ? (
 												<span
-													className="calendarMetaStat is-muted"
+													className="calendarMonthCellStatLine"
 													aria-label={`${summary.note_activity_count} notes`}
 												>
 													<StickyNote size={12} />
-													<span>{summary.note_activity_count}</span>
+													<span>
+														{summary.note_activity_count}{" "}
+														{summary.note_activity_count === 1
+															? "note"
+															: "notes"}
+													</span>
 												</span>
 											) : null}
 											{summary?.has_daily_note ? (
 												<span
-													className="calendarMetaStat is-success"
-													aria-label="Daily note exists"
+													className="calendarMonthCellStatLine"
+													aria-label="Daily note"
 												>
 													<FileText size={12} />
+													<span>Daily note</span>
 												</span>
 											) : null}
 										</div>
@@ -523,7 +568,7 @@ export function CalendarPane({
 											className="calendarWeekCardButton"
 											onClick={() => setSelectedDate(date)}
 										>
-											<div>
+											<div className="calendarWeekCardMain">
 												<div className="calendarWeekCardTitle">
 													{formatDayTitle(date)}
 												</div>
@@ -531,9 +576,42 @@ export function CalendarPane({
 													{relativeDayLabel(date, today) ?? formatWeekday(date)}
 												</div>
 											</div>
-											<div className="calendarWeekCardCounts">
-												<span>{summary?.task_count ?? 0} tasks</span>
-												<span>{summary?.note_activity_count ?? 0} notes</span>
+											<div className="calendarWeekCardSummary">
+												{summary?.task_count ? (
+													<span
+														className="calendarMonthCellStatLine"
+														aria-label={`${summary.task_count} tasks`}
+													>
+														<ListChecks size={12} />
+														<span>
+															{summary.task_count}{" "}
+															{summary.task_count === 1 ? "task" : "tasks"}
+														</span>
+													</span>
+												) : null}
+												{summary?.note_activity_count ? (
+													<span
+														className="calendarMonthCellStatLine"
+														aria-label={`${summary.note_activity_count} notes`}
+													>
+														<StickyNote size={12} />
+														<span>
+															{summary.note_activity_count}{" "}
+															{summary.note_activity_count === 1
+																? "note"
+																: "notes"}
+														</span>
+													</span>
+												) : null}
+												{summary?.has_daily_note ? (
+													<span
+														className="calendarMonthCellStatLine"
+														aria-label="Daily note"
+													>
+														<FileText size={12} />
+														<span>Daily note</span>
+													</span>
+												) : null}
 											</div>
 										</button>
 									</div>
@@ -567,9 +645,11 @@ export function CalendarPane({
 						</Button>
 					</div>
 					<div className="calendarDetailBody">
-						<section className="calendarSection">
+						<section className="calendarSection calendarSectionCard">
 							<div className="calendarSectionHeader">
-								<h3 className="calendarSectionTitle">Tasks</h3>
+								<h3 className="calendarSectionTitle">
+									<span className="calendarSectionLabelPill">Tasks</span>
+								</h3>
 							</div>
 							{dailyNotesFolder ? (
 								<div className="calendarTaskComposer">
@@ -632,9 +712,11 @@ export function CalendarPane({
 							</div>
 						</section>
 
-						<section className="calendarSection calendarNotesSection">
+						<section className="calendarSection calendarSectionCard calendarNotesSection">
 							<div className="calendarSectionHeader">
-								<h3 className="calendarSectionTitle">Notes</h3>
+								<h3 className="calendarSectionTitle">
+									<span className="calendarSectionLabelPill">Notes</span>
+								</h3>
 								<span className="calendarSectionCount">
 									{data?.detail.note_activity.length ?? 0}
 								</span>
@@ -650,18 +732,21 @@ export function CalendarPane({
 												onClick={() => void onOpenFile(item.note_path)}
 											>
 												<div className="calendarNoteRowMain">
-													<div className="calendarNoteTitle">{item.title}</div>
-													<div className="calendarNotePath">
-														{item.note_path}
+													<div className="calendarNoteTitleLine">
+														<div className="calendarNoteTitle">
+															{item.title}
+														</div>
+														{getNoteBreadcrumb(item.note_path) ? (
+															<div className="calendarNotePath">
+																{getNoteBreadcrumb(item.note_path)}
+															</div>
+														) : null}
 													</div>
 												</div>
 												<div className="calendarNoteBadges">
-													{item.created_on_day ? (
-														<span className="calendarMetaPill">Created</span>
-													) : null}
 													{item.edited_on_day ? (
 														<span className="calendarMetaPill is-muted">
-															Edited {formatActivityTime(item.updated)}
+															{formatActivityTime(item.updated)}
 														</span>
 													) : null}
 												</div>
@@ -676,9 +761,11 @@ export function CalendarPane({
 							</div>
 						</section>
 
-						<section className="calendarSection">
+						<section className="calendarSection calendarSectionCard">
 							<div className="calendarSectionHeader">
-								<h3 className="calendarSectionTitle">Daily note</h3>
+								<h3 className="calendarSectionTitle">
+									<span className="calendarSectionLabelPill">Daily note</span>
+								</h3>
 							</div>
 							<div className="calendarDailyNoteWrap">
 								{data?.detail.daily_note_configured ? (

@@ -171,6 +171,9 @@
 	min-height: clamp(104px, 15vh, 132px);
 	padding: 12px;
 	border-radius: 18px;
+	border: 1px solid color-mix(in srgb, var(--border-default) 58%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 96%, var(--bg-secondary));
+	box-shadow: none;
 	text-align: left;
 	transition: border-color 0.18s ease, transform 0.18s ease, background 0.18s
 		ease;
@@ -214,15 +217,43 @@
 }
 
 .calendarMonthCellHead {
-	justify-content: space-between;
-	font-size: 14px;
-	font-weight: 700;
+	justify-content: center;
+	position: relative;
+	min-height: 34px;
 	color: var(--text-primary);
+}
+
+.calendarMonthCellDayNumber {
+	position: relative;
+	z-index: 1;
+	font-size: 20px;
+	font-weight: 700;
+	line-height: 1;
+	letter-spacing: -0.03em;
+}
+
+.calendarMonthCellTodayWatermark {
+	position: absolute;
+	left: 50%;
+	top: 14px;
+	transform: translateX(-50%);
+	font-size: 28px;
+	font-weight: 700;
+	line-height: 1;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: color-mix(in srgb, var(--text-primary) 6%, transparent);
+	pointer-events: none;
+	white-space: nowrap;
+	z-index: 0;
 }
 
 .calendarTodayDot {
 	width: 8px;
 	height: 8px;
+	position: absolute;
+	top: 2px;
+	right: 2px;
 	border-radius: 999px;
 	background: var(--accent-primary);
 }
@@ -239,11 +270,24 @@
 }
 
 .calendarMonthCellMeta {
-	flex-direction: row;
-	flex-wrap: wrap;
-	align-items: center;
-	gap: 8px;
+	align-items: flex-start;
+	gap: 6px;
 	margin-top: auto;
+}
+
+.calendarMonthCellStatLine {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	font-size: 11px;
+	font-weight: 600;
+	line-height: 1.2;
+	color: var(--text-secondary);
+}
+
+.calendarMonthCellStatLine svg {
+	flex: 0 0 auto;
+	opacity: 0.86;
 }
 
 .calendarMetaPill,
@@ -304,10 +348,61 @@
 	min-width: 0;
 }
 
+.calendarSectionCard,
+.calendarTaskGroupCard {
+	padding: 14px;
+	border-radius: 22px;
+	border: 1px solid color-mix(in srgb, var(--border-default) 58%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 96%, var(--bg-secondary));
+}
+
+.calendarSectionCard {
+	gap: 12px;
+}
+
+.calendarTaskGroupCard {
+	gap: 10px;
+	padding-block: 12px;
+}
+
 .calendarSectionTitle {
 	font-size: 14px;
 	font-weight: 700;
 	color: var(--text-primary);
+}
+
+.calendarSectionLabelPill {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	min-height: 20px;
+	padding: 0 8px;
+	border-radius: var(--radius-md);
+	border: 1px solid color-mix(in srgb, var(--border-default) 72%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary));
+	color: var(--text-secondary);
+	font-size: 10px;
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.02em;
+	text-transform: uppercase;
+}
+
+.calendarSectionLabelPill.is-danger {
+	border-color: color-mix(in srgb, #dc2626 24%, var(--border-default));
+	background: color-mix(in srgb, #dc2626 10%, var(--bg-primary));
+	color: color-mix(in srgb, #b91c1c 72%, var(--text-primary));
+}
+
+.calendarSectionLabelPill.is-info {
+	border-color: color-mix(in srgb, #2563eb 24%, var(--border-default));
+	background: color-mix(in srgb, #2563eb 10%, var(--bg-primary));
+	color: color-mix(in srgb, #2563eb 72%, var(--text-primary));
+}
+
+.calendarSectionLabelPill.is-warning {
+	border-color: color-mix(in srgb, #ca8a04 24%, var(--border-default));
+	background: color-mix(in srgb, #ca8a04 12%, var(--bg-primary));
+	color: color-mix(in srgb, #a16207 72%, var(--text-primary));
 }
 
 .calendarWeekCard {
@@ -317,10 +412,28 @@
 }
 
 .calendarWeekCardButton {
-	justify-content: space-between;
+	align-items: stretch;
+	flex-direction: column;
 	width: 100%;
 	gap: 12px;
 	text-align: left;
+}
+
+.calendarWeekCardMain,
+.calendarWeekCardSummary {
+	display: flex;
+	flex-direction: column;
+	min-width: 0;
+}
+
+.calendarWeekCardMain {
+	gap: 4px;
+}
+
+.calendarWeekCardSummary {
+	align-items: flex-start;
+	gap: 6px;
+	width: 100%;
 }
 
 .calendarWeekCardTitle,
@@ -433,6 +546,13 @@
 	overflow: hidden;
 }
 
+.calendarNoteTitleLine {
+	display: flex;
+	align-items: baseline;
+	gap: 8px;
+	min-width: 0;
+}
+
 .calendarNoteBadges {
 	display: flex;
 	flex-wrap: wrap;
@@ -494,6 +614,12 @@
 .calendarNoteTitle {
 	font-size: 13px;
 	line-height: 1.3;
+	flex: 0 1 auto;
+}
+
+.calendarNotePath {
+	flex: 1 1 auto;
+	min-width: 0;
 }
 
 .calendarDailyNotePath,
