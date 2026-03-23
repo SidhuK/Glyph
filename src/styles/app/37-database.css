@@ -849,8 +849,16 @@
 	padding-left: 14px;
 }
 
+.databaseHeadCell:not(:first-child) {
+	padding-left: 12px;
+}
+
 .databaseHeadCell:last-child {
 	padding-right: 14px;
+}
+
+.databaseHeadCell:not(:last-child) {
+	border-right: 1px solid var(--border-light);
 }
 
 .databaseHeaderButton,
@@ -915,7 +923,6 @@
 }
 
 .databaseBodyCell {
-	position: relative;
 	vertical-align: middle;
 	text-align: left;
 	padding-right: 10px;
@@ -926,41 +933,17 @@
 	padding-left: 14px;
 }
 
+.databaseBodyCell:not(:first-child) {
+	padding-left: 12px;
+}
+
 .databaseBodyCell:last-child {
 	padding-right: 14px;
 }
 
-.databaseHeadCell:not(:last-child)::after,
-.databaseBodyCell:not(:last-child)::after {
-	content: "";
-	position: absolute;
-	top: 8px;
-	right: 0;
-	bottom: 8px;
-	width: 1px;
-	background: color-mix(in srgb, var(--border-light) 72%, transparent);
-}
-
-.databaseHeadCell:not(:last-child)::before {
-	content: "";
-	position: absolute;
-	right: -1.5px;
-	bottom: -2px;
-	width: 4px;
-	height: 4px;
-	border-radius: 999px;
-	background: color-mix(in srgb, var(--border-default) 78%, transparent);
-}
-
-.databaseBodyCell:not(:last-child)::before {
-	content: "";
-	position: absolute;
-	right: -1.5px;
-	top: -2px;
-	width: 4px;
-	height: 4px;
-	border-radius: 999px;
-	background: color-mix(in srgb, var(--border-default) 78%, transparent);
+.databaseBodyCell:not(:last-child) {
+	border-right: 1px solid
+		color-mix(in srgb, var(--border-light) 82%, transparent);
 }
 
 .databaseCellInput,

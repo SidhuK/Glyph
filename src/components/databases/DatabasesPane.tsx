@@ -714,6 +714,9 @@ export function DatabasesPane({
 								value={nameDraft}
 								className="databasesInlineNameInput"
 								aria-label="Database name"
+								style={{
+									width: `${Math.min(Math.max(nameDraft.trim().length + 2, 10), 24)}ch`,
+								}}
 								onChange={(event) => setNameDraft(event.target.value)}
 								onBlur={commitDatabaseRename}
 								onKeyDown={(event) => {
