@@ -8,7 +8,7 @@ import {
 	useState,
 } from "react";
 import { extractErrorMessage } from "../lib/errorUtils";
-import type { FsEntry, TagCount } from "../lib/tauri";
+import type { FileTreeAppearance, FsEntry, TagCount } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
 import { useSpace } from "./SpaceContext";
 
@@ -35,6 +35,13 @@ export interface FileTreeContextValue {
 	setActiveFilePath: (path: string | null) => void;
 	activeNoteId: string | null;
 	activeNoteTitle: string | null;
+	itemAppearance: Record<string, FileTreeAppearance>;
+	setItemAppearance: (
+		path: string,
+		appearance: FileTreeAppearance,
+	) => Promise<void>;
+	renameItemAppearance: (fromPath: string, toPath: string) => Promise<void>;
+	deleteItemAppearance: (path: string) => Promise<void>;
 	tags: TagCount[];
 	tagsError: string;
 	refreshTags: () => Promise<void>;
@@ -54,6 +61,9 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 	);
 	const [activeDirPath, setActiveDirPath] = useState<string | null>(null);
 	const [activeFilePath, setActiveFilePath] = useState<string | null>(null);
+	const [itemAppearance, setItemAppearanceState] = useState<
+		Record<string, FileTreeAppearance>
+	>({});
 	const [tags, setTags] = useState<TagCount[]>([]);
 	const [tagsError, setTagsError] = useState("");
 
@@ -73,6 +83,7 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 		setExpandedDirs(new Set());
 		setActiveDirPath(null);
 		setActiveFilePath(null);
+		setItemAppearanceState({});
 		setTags([]);
 		setTagsError("");
 		if (!spacePath) return;
@@ -81,7 +92,11 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 		(async () => {
 			try {
 				const entries = await invoke("space_list_dir", {});
-				if (!cancelled) setRootEntries(entries);
+				const appearance = await invoke("file_tree_appearance_list");
+				if (!cancelled) {
+					setRootEntries(entries);
+					setItemAppearanceState(appearance);
+				}
 				void startIndexRebuild();
 				void refreshTags();
 			} catch {
@@ -103,6 +118,62 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 	const activeNoteTitle = activeNoteId
 		? activeNoteId.split("/").pop() || activeNoteId
 		: null;
+
+	const setItemAppearance = useCallback<
+		FileTreeContextValue["setItemAppearance"]
+	>(async (path, appearance) => {
+		const next = await invoke("file_tree_appearance_set", {
+			path,
+			color: appearance.color ?? null,
+			icon: appearance.icon ?? null,
+		});
+		setItemAppearanceState((prev) => {
+			if (next) return { ...prev, [path]: next };
+			if (!(path in prev)) return prev;
+			const nextMap = { ...prev };
+			delete nextMap[path];
+			return nextMap;
+		});
+	}, []);
+
+	const renameItemAppearance = useCallback<
+		FileTreeContextValue["renameItemAppearance"]
+	>(async (fromPath, toPath) => {
+		await invoke("file_tree_appearance_rename_path", {
+			from_path: fromPath,
+			to_path: toPath,
+		});
+		setItemAppearanceState((prev) => {
+			const next: Record<string, FileTreeAppearance> = {};
+			for (const [path, appearance] of Object.entries(prev)) {
+				if (path === fromPath) {
+					next[toPath] = appearance;
+					continue;
+				}
+				const prefix = `${fromPath}/`;
+				if (path.startsWith(prefix)) {
+					next[`${toPath}/${path.slice(prefix.length)}`] = appearance;
+					continue;
+				}
+				next[path] = appearance;
+			}
+			return next;
+		});
+	}, []);
+
+	const deleteItemAppearance = useCallback<
+		FileTreeContextValue["deleteItemAppearance"]
+	>(async (path) => {
+		await invoke("file_tree_appearance_delete_path", { path });
+		setItemAppearanceState((prev) =>
+			Object.fromEntries(
+				Object.entries(prev).filter(
+					([entryPath]) =>
+						entryPath !== path && !entryPath.startsWith(`${path}/`),
+				),
+			),
+		);
+	}, []);
 
 	const updateRootEntries = useCallback<
 		FileTreeContextValue["updateRootEntries"]
@@ -152,6 +223,10 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 			setActiveFilePath,
 			activeNoteId,
 			activeNoteTitle,
+			itemAppearance,
+			setItemAppearance,
+			renameItemAppearance,
+			deleteItemAppearance,
 			tags,
 			tagsError,
 			refreshTags,
@@ -167,6 +242,10 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 			activeFilePath,
 			activeNoteId,
 			activeNoteTitle,
+			itemAppearance,
+			setItemAppearance,
+			renameItemAppearance,
+			deleteItemAppearance,
 			tags,
 			tagsError,
 			refreshTags,

@@ -1,8 +1,10 @@
 import { m } from "motion/react";
 import type { MouseEvent } from "react";
 import { memo, useEffect, useRef, useState } from "react";
-import type { FsEntry } from "../../lib/tauri";
+import type { FileTreeAppearance, FsEntry } from "../../lib/tauri";
 import { FolderPlus, Plus, Trash2 } from "../Icons";
+import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
+import { isEditorTextColor } from "../editor/textColors";
 import {
 	ContextMenu,
 	ContextMenuContent,
@@ -10,6 +12,7 @@ import {
 	ContextMenuSeparator,
 	ContextMenuTrigger,
 } from "../ui/shadcn/context-menu";
+import { FileTreeAppearanceMenu } from "./FileTreeAppearanceMenu";
 import {
 	buildRowStyle,
 	rowVariants,
@@ -33,6 +36,8 @@ interface FileTreeFileItemProps {
 	onCancelRename: () => void;
 	parentDirPath: string;
 	onDeletePath: (path: string, kind: "dir" | "file") => void;
+	appearance?: FileTreeAppearance | null;
+	onChangeAppearance: (appearance: FileTreeAppearance) => void;
 }
 
 export const FileTreeFileItem = memo(function FileTreeFileItem({
@@ -50,8 +55,14 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 	onCancelRename,
 	parentDirPath,
 	onDeletePath,
+	appearance,
+	onChangeAppearance,
 }: FileTreeFileItemProps) {
-	const rowStyle = buildRowStyle(depth);
+	const customColor =
+		appearance?.color && isEditorTextColor(appearance.color)
+			? appearance.color
+			: null;
+	const rowStyle = buildRowStyle(depth, entry.rel_path, customColor);
 	const { Icon, color, label } = getFileTypeInfo(
 		entry.rel_path,
 		entry.is_markdown,
@@ -68,6 +79,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 	const inputRef = useRef<HTMLInputElement | null>(null);
 	const renameSubmittedRef = useRef(false);
 	const [draftName, setDraftName] = useState(fileStem || entry.name);
+	const iconColor = customColor ? "var(--file-tree-row-icon-color)" : color;
 
 	useEffect(() => {
 		if (!isRenaming) return;
@@ -135,13 +147,22 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 								whileTap="tap"
 								animate={isActive ? "active" : "idle"}
 								transition={springTransition}
+								data-has-custom-color={customColor ? "true" : "false"}
 							>
-								<Icon
-									size={14}
-									className="fileTreeIcon"
-									style={{ color }}
-									aria-hidden="true"
-								/>
+								{appearance?.icon ? (
+									<DatabaseColumnIcon
+										iconName={appearance.icon}
+										size={14}
+										className="fileTreeIcon"
+									/>
+								) : (
+									<Icon
+										size={14}
+										className="fileTreeIcon"
+										style={{ color: iconColor }}
+										aria-hidden="true"
+									/>
+								)}
 								<span className="fileTreeName">{displayStem}</span>
 								{extBadge && (
 									<span className="fileTreeExtBadge">{extBadge}</span>
@@ -162,6 +183,11 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 							>
 								Rename
 							</ContextMenuItem>
+							<FileTreeAppearanceMenu
+								itemKind="file"
+								appearance={appearance}
+								onChangeAppearance={onChangeAppearance}
+							/>
 							<ContextMenuSeparator className="fileTreeCreateMenuSeparator" />
 							<ContextMenuItem
 								className="fileTreeCreateMenuItem"

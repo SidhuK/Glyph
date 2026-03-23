@@ -261,8 +261,8 @@ fn row_matches_filters(
             return true;
         };
         let cell = cell_value_from_row(row, column);
-        let is_tags_column = column.column_type == "tags"
-            || column.property_kind.as_deref() == Some("tags");
+        let is_tags_column =
+            column.column_type == "tags" || column.property_kind.as_deref() == Some("tags");
         let filter_text = if is_tags_column {
             normalize_tag_text(filter.value_text.as_deref().unwrap_or_default())
         } else {

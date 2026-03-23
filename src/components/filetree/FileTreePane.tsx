@@ -1,6 +1,7 @@
 import { m } from "motion/react";
 import { memo, useCallback, useState } from "react";
-import type { FsEntry } from "../../lib/tauri";
+import { useFileTreeContext } from "../../contexts";
+import type { FileTreeAppearance, FsEntry } from "../../lib/tauri";
 import { parentDir } from "../../utils/path";
 import { springPresets } from "../ui/animations";
 import { FileTreeDirItem } from "./FileTreeDirItem";
@@ -49,6 +50,11 @@ interface TreeEntriesProps {
 	onCommitDirRename: (dirPath: string, nextName: string) => Promise<void>;
 	onCommitFileRename: (path: string, nextName: string) => Promise<void>;
 	onCancelRename: () => void;
+	itemAppearance: Record<string, FileTreeAppearance>;
+	onChangeAppearance: (
+		entry: FsEntry,
+		appearance: FileTreeAppearance,
+	) => Promise<void> | void;
 }
 
 function TreeEntries({
@@ -71,6 +77,8 @@ function TreeEntries({
 	onCommitDirRename,
 	onCommitFileRename,
 	onCancelRename,
+	itemAppearance,
+	onChangeAppearance,
 }: TreeEntriesProps) {
 	if (entries.length === 0) return null;
 
@@ -101,6 +109,10 @@ function TreeEntries({
 							onNewDatabaseInDir={onNewDatabaseInDir}
 							onNewFolderInDir={onNewFolderInDir}
 							onDeletePath={onDeletePath}
+							appearance={itemAppearance[e.rel_path] ?? null}
+							onChangeAppearance={(appearance) =>
+								onChangeAppearance(e, appearance)
+							}
 							onStartRename={() => onStartRename(e.rel_path)}
 							onCommitRename={onCommitDirRename}
 							onCancelRename={onCancelRename}
@@ -126,6 +138,8 @@ function TreeEntries({
 									onCommitDirRename={onCommitDirRename}
 									onCommitFileRename={onCommitFileRename}
 									onCancelRename={onCancelRename}
+									itemAppearance={itemAppearance}
+									onChangeAppearance={onChangeAppearance}
 								/>
 							)}
 						</FileTreeDirItem>
@@ -149,6 +163,10 @@ function TreeEntries({
 						onCancelRename={onCancelRename}
 						parentDirPath={parentDir(e.rel_path)}
 						onDeletePath={onDeletePath}
+						appearance={itemAppearance[e.rel_path] ?? null}
+						onChangeAppearance={(appearance) =>
+							onChangeAppearance(e, appearance)
+						}
 					/>
 				);
 			})}
@@ -172,6 +190,7 @@ export const FileTreePane = memo(function FileTreePane({
 	onRenameDir,
 	onDeletePath,
 }: FileTreePaneProps) {
+	const { itemAppearance, setItemAppearance } = useFileTreeContext();
 	const [renamingPath, setRenamingPath] = useState<string | null>(null);
 
 	const handleCreateFolder = useCallback(
@@ -249,6 +268,10 @@ export const FileTreePane = memo(function FileTreePane({
 						onCommitDirRename={handleCommitDirRename}
 						onCommitFileRename={handleCommitFileRename}
 						onCancelRename={() => setRenamingPath(null)}
+						itemAppearance={itemAppearance}
+						onChangeAppearance={(entry, appearance) =>
+							setItemAppearance(entry.rel_path, appearance)
+						}
 					/>
 				</div>
 			) : (

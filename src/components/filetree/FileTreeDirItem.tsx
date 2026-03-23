@@ -3,8 +3,10 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, m } from "motion/react";
 import type { MouseEvent, ReactNode } from "react";
 import { memo, useEffect, useRef, useState } from "react";
-import type { FsEntry } from "../../lib/tauri";
+import type { FileTreeAppearance, FsEntry } from "../../lib/tauri";
 import { FolderPlus, Plus, Trash2 } from "../Icons";
+import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
+import { isEditorTextColor } from "../editor/textColors";
 import {
 	ContextMenu,
 	ContextMenuContent,
@@ -12,6 +14,7 @@ import {
 	ContextMenuSeparator,
 	ContextMenuTrigger,
 } from "../ui/shadcn/context-menu";
+import { FileTreeAppearanceMenu } from "./FileTreeAppearanceMenu";
 import {
 	buildRowStyle,
 	rowVariants,
@@ -35,6 +38,8 @@ interface FileTreeDirItemProps {
 	onNewDatabaseInDir: (dirPath: string) => unknown;
 	onNewFolderInDir: (dirPath: string) => unknown;
 	onDeletePath: (path: string, kind: "dir" | "file") => void;
+	appearance?: FileTreeAppearance | null;
+	onChangeAppearance: (appearance: FileTreeAppearance) => void;
 }
 
 export const FileTreeDirItem = memo(function FileTreeDirItem({
@@ -54,8 +59,14 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 	onNewDatabaseInDir,
 	onNewFolderInDir,
 	onDeletePath,
+	appearance,
+	onChangeAppearance,
 }: FileTreeDirItemProps) {
-	const rowStyle = buildRowStyle(depth);
+	const customColor =
+		appearance?.color && isEditorTextColor(appearance.color)
+			? appearance.color
+			: null;
+	const rowStyle = buildRowStyle(depth, entry.rel_path, customColor);
 	const inputRef = useRef<HTMLInputElement | null>(null);
 	const renameSubmittedRef = useRef(false);
 	const [draftName, setDraftName] = useState(entry.name);
@@ -127,12 +138,21 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 								animate={isActive ? "active" : "idle"}
 								transition={springTransition}
 								title={entry.rel_path || entry.name || "Folder"}
+								data-has-custom-color={customColor ? "true" : "false"}
 							>
-								<HugeiconsIcon
-									icon={isExpanded ? Folder03Icon : Folder01Icon}
-									size={12}
-									className="fileTreeChevron fileTreeFolderIcon"
-								/>
+								{appearance?.icon ? (
+									<DatabaseColumnIcon
+										iconName={appearance.icon}
+										size={14}
+										className="fileTreeChevron fileTreeFolderIcon"
+									/>
+								) : (
+									<HugeiconsIcon
+										icon={isExpanded ? Folder03Icon : Folder01Icon}
+										size={12}
+										className="fileTreeChevron fileTreeFolderIcon"
+									/>
+								)}
 								<span className="fileTreeName">{displayDirName}</span>
 							</m.button>
 						</ContextMenuTrigger>
@@ -172,6 +192,11 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 							>
 								Rename
 							</ContextMenuItem>
+							<FileTreeAppearanceMenu
+								itemKind="dir"
+								appearance={appearance}
+								onChangeAppearance={onChangeAppearance}
+							/>
 							<ContextMenuSeparator className="fileTreeCreateMenuSeparator" />
 							<ContextMenuItem
 								className="fileTreeCreateMenuItem"

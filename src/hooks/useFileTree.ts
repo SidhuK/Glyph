@@ -45,6 +45,8 @@ export interface UseFileTreeDeps {
 	updateRootEntries: (
 		next: FsEntry[] | ((prev: FsEntry[]) => FsEntry[]),
 	) => void;
+	renameItemAppearance: (fromPath: string, toPath: string) => Promise<void>;
+	deleteItemAppearance: (path: string) => Promise<void>;
 	setActiveFilePath: (path: string | null) => void;
 	setActiveDirPath: (path: string | null) => void;
 	setActivePreviewPath: (path: string | null) => void;
@@ -59,6 +61,8 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		updateChildrenByDir,
 		updateExpandedDirs,
 		updateRootEntries,
+		renameItemAppearance,
+		deleteItemAppearance,
 		setActiveFilePath,
 		setActiveDirPath,
 		setActivePreviewPath,
@@ -175,6 +179,8 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		updateChildrenByDir,
 		updateExpandedDirs,
 		updateRootEntries,
+		renameItemAppearance,
+		deleteItemAppearance,
 		setActiveFilePath,
 		setActivePreviewPath,
 		activeFilePath,
