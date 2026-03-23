@@ -1,6 +1,9 @@
 import { m } from "motion/react";
 import { memo, useCallback, useState } from "react";
-import type { FsEntry } from "../../lib/tauri";
+import { toast } from "sonner";
+import { useFileTreeContext, useSpace } from "../../contexts";
+import { extractErrorMessage } from "../../lib/errorUtils";
+import type { FileTreeAppearance, FsEntry } from "../../lib/tauri";
 import { parentDir } from "../../utils/path";
 import { springPresets } from "../ui/animations";
 import { FileTreeDirItem } from "./FileTreeDirItem";
@@ -49,6 +52,11 @@ interface TreeEntriesProps {
 	onCommitDirRename: (dirPath: string, nextName: string) => Promise<void>;
 	onCommitFileRename: (path: string, nextName: string) => Promise<void>;
 	onCancelRename: () => void;
+	itemAppearance: Record<string, FileTreeAppearance>;
+	onChangeAppearance: (
+		entry: FsEntry,
+		appearance: FileTreeAppearance,
+	) => Promise<void> | void;
 }
 
 function TreeEntries({
@@ -71,6 +79,8 @@ function TreeEntries({
 	onCommitDirRename,
 	onCommitFileRename,
 	onCancelRename,
+	itemAppearance,
+	onChangeAppearance,
 }: TreeEntriesProps) {
 	if (entries.length === 0) return null;
 
@@ -101,6 +111,10 @@ function TreeEntries({
 							onNewDatabaseInDir={onNewDatabaseInDir}
 							onNewFolderInDir={onNewFolderInDir}
 							onDeletePath={onDeletePath}
+							appearance={itemAppearance[e.rel_path] ?? null}
+							onChangeAppearance={(appearance) =>
+								onChangeAppearance(e, appearance)
+							}
 							onStartRename={() => onStartRename(e.rel_path)}
 							onCommitRename={onCommitDirRename}
 							onCancelRename={onCancelRename}
@@ -126,6 +140,8 @@ function TreeEntries({
 									onCommitDirRename={onCommitDirRename}
 									onCommitFileRename={onCommitFileRename}
 									onCancelRename={onCancelRename}
+									itemAppearance={itemAppearance}
+									onChangeAppearance={onChangeAppearance}
 								/>
 							)}
 						</FileTreeDirItem>
@@ -149,6 +165,10 @@ function TreeEntries({
 						onCancelRename={onCancelRename}
 						parentDirPath={parentDir(e.rel_path)}
 						onDeletePath={onDeletePath}
+						appearance={itemAppearance[e.rel_path] ?? null}
+						onChangeAppearance={(appearance) =>
+							onChangeAppearance(e, appearance)
+						}
 					/>
 				);
 			})}
@@ -172,6 +192,8 @@ export const FileTreePane = memo(function FileTreePane({
 	onRenameDir,
 	onDeletePath,
 }: FileTreePaneProps) {
+	const { itemAppearance, setItemAppearance } = useFileTreeContext();
+	const { setError } = useSpace();
 	const [renamingPath, setRenamingPath] = useState<string | null>(null);
 
 	const handleCreateFolder = useCallback(
@@ -220,6 +242,21 @@ export const FileTreePane = memo(function FileTreePane({
 		[onDeletePath],
 	);
 
+	const handleChangeAppearance = useCallback(
+		async (entry: FsEntry, appearance: FileTreeAppearance) => {
+			try {
+				await setItemAppearance(entry.rel_path, appearance);
+			} catch (error) {
+				const message = extractErrorMessage(error);
+				setError(message);
+				toast.error("Could not update file tree appearance", {
+					description: message,
+				});
+			}
+		},
+		[setError, setItemAppearance],
+	);
+
 	return (
 		<m.aside
 			className="fileTreePane"
@@ -249,6 +286,8 @@ export const FileTreePane = memo(function FileTreePane({
 						onCommitDirRename={handleCommitDirRename}
 						onCommitFileRename={handleCommitFileRename}
 						onCancelRename={() => setRenamingPath(null)}
+						itemAppearance={itemAppearance}
+						onChangeAppearance={handleChangeAppearance}
 					/>
 				</div>
 			) : (

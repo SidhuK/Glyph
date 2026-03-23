@@ -103,7 +103,6 @@ export const SidebarContent = memo(function SidebarContent({
 					>
 						<HugeiconsIcon icon={DashboardSquare03Icon} size={14} />
 						<span className="sidebarQuickActionLabel">Databases</span>
-						<span className="sidebarQuickActionBadge">Alpha</span>
 					</button>
 					<button
 						type="button"

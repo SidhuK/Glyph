@@ -1,6 +1,7 @@
 mod ai_codex;
 mod ai_rig;
 mod databases;
+mod file_tree_appearance;
 mod glyph_paths;
 mod index;
 mod io_atomic;
@@ -446,6 +447,10 @@ pub fn run() {
             databases::commands::databases_update_cell,
             databases::commands::databases_create_row,
             databases::commands::databases_preview_context,
+            file_tree_appearance::commands::file_tree_appearance_list,
+            file_tree_appearance::commands::file_tree_appearance_set,
+            file_tree_appearance::commands::file_tree_appearance_rename_path,
+            file_tree_appearance::commands::file_tree_appearance_delete_path,
             index::commands::index_rebuild,
             index::commands::search,
             index::commands::search_advanced,

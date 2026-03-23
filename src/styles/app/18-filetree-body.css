@@ -233,6 +233,12 @@
 	opacity: 0.7;
 }
 
+.fileTreeRow[data-has-custom-color="true"] .fileTreeChevron,
+.fileTreeRow[data-has-custom-color="true"] .fileTreeIcon {
+	color: var(--file-tree-row-icon-color);
+	opacity: 1;
+}
+
 .fileTreeName {
 	font-size: var(--text-sm);
 	color: var(--text-primary);
@@ -243,6 +249,10 @@
 	flex: 1;
 	min-width: 0;
 	max-width: 100%;
+}
+
+.fileTreeRow[data-has-custom-color="true"] .fileTreeName {
+	color: var(--file-tree-row-name-color);
 }
 
 .fileTreeCounts {
@@ -267,6 +277,11 @@
 	letter-spacing: 0.03em;
 	margin-left: auto;
 	white-space: nowrap;
+}
+
+.fileTreeRow[data-has-custom-color="true"] .fileTreeExtBadge {
+	background: color-mix(in srgb, var(--database-tone) 10%, var(--bg-hover));
+	color: color-mix(in srgb, var(--database-tone) 58%, var(--text-primary));
 }
 
 .fileTreeRenameInput {
@@ -301,6 +316,78 @@
 	font-size: var(--text-sm);
 	text-align: center;
 	font-style: italic;
+}
+
+.fileTreeAppearanceMenuPanel {
+	min-width: 220px;
+}
+
+.fileTreeAppearanceColorRibbon {
+	padding: 2px 0;
+}
+
+.fileTreeAppearanceColorRibbon [data-active="true"] {
+	box-shadow: 0 0 0 2px color-mix(in srgb, var(--bg-primary) 92%, transparent),
+		0 0 0 4px color-mix(in srgb, var(--database-tone) 30%, transparent);
+}
+
+.fileTreeAppearanceColorRibbon
+	.databaseBoardColorRibbonClear[data-active="true"] {
+	box-shadow: inset 0 0 0 1px
+		color-mix(in srgb, var(--border-default) 76%, transparent), 0 0 0 2px
+		color-mix(in srgb, var(--bg-primary) 92%, transparent), 0 0 0 4px
+		color-mix(in srgb, var(--interactive-accent) 18%, transparent);
+}
+
+.fileTreeAppearanceIconGrid {
+	display: grid;
+	grid-template-columns: repeat(6, minmax(0, 1fr));
+	gap: 6px;
+	max-height: min(220px, 34vh);
+	overflow-y: auto;
+	padding-right: 4px;
+}
+
+.fileTreeAppearanceIconPanel {
+	width: min(248px, calc(100vw - 2rem));
+}
+
+.fileTreeAppearanceIconOption {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 30px;
+	height: 30px;
+	padding: 0;
+	border-radius: 999px;
+	border: 1px solid color-mix(in srgb, var(--border-default) 72%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
+	color: var(--text-secondary);
+	transition: transform 120ms ease, border-color 120ms ease, background-color
+		120ms ease;
+	cursor: pointer;
+}
+
+.fileTreeAppearanceIconOption:hover {
+	transform: translateY(-1px);
+	border-color: var(--border-default);
+	background: var(--bg-hover);
+}
+
+.fileTreeAppearanceIconOption[data-active="true"] {
+	border-color: color-mix(in srgb, var(--interactive-accent) 50%, transparent);
+	background: color-mix(in srgb, var(--interactive-accent) 18%, var(--bg-hover));
+	color: var(--text-primary);
+	box-shadow: 0 0 0 1px
+		color-mix(in srgb, var(--interactive-accent) 18%, transparent);
+}
+
+.fileTreeAppearanceIconGlyph {
+	display: inline-flex;
+	width: 18px;
+	height: 18px;
+	align-items: center;
+	justify-content: center;
 }
 
 .notesListItem:hover .notesListDelete {

@@ -31,6 +31,8 @@ export interface UseFileTreeCRUDDeps {
 	updateRootEntries: (
 		next: FsEntry[] | ((prev: FsEntry[]) => FsEntry[]),
 	) => void;
+	renameItemAppearance: (fromPath: string, toPath: string) => Promise<void>;
+	deleteItemAppearance: (path: string) => Promise<void>;
 	setActiveFilePath: (path: string | null) => void;
 	setActivePreviewPath: (path: string | null) => void;
 	activeFilePath: string | null;
@@ -52,6 +54,8 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 		updateChildrenByDir,
 		updateExpandedDirs,
 		updateRootEntries,
+		renameItemAppearance,
+		deleteItemAppearance,
 		setActiveFilePath,
 		setActivePreviewPath,
 		activeFilePath,
@@ -317,6 +321,11 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 				}
 				await refreshAfterCreate(parent);
 				if (kind === "dir") await loadDir(nextPath, true);
+				try {
+					await renameItemAppearance(dirPath, nextPath);
+				} catch (error) {
+					console.error("Failed to sync file tree appearance rename", error);
+				}
 				return nextPath;
 			} catch (e) {
 				setError(extractErrorMessage(e));
@@ -328,6 +337,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			loadedDirsRef,
 			refreshAfterCreate,
 			updateChildrenByDir,
+			renameItemAppearance,
 			setError,
 			updateExpandedDirs,
 			updateRootEntries,
@@ -396,6 +406,11 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 					path: target,
 					recursive: kind === "dir",
 				});
+				try {
+					await deleteItemAppearance(target);
+				} catch (error) {
+					console.error("Failed to sync file tree appearance delete", error);
+				}
 				await loadDir(parent, true);
 				return true;
 			} catch (e) {
@@ -409,6 +424,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			setActiveFilePath,
 			setActivePreviewPath,
 			updateChildrenByDir,
+			deleteItemAppearance,
 			setError,
 			updateExpandedDirs,
 			updateRootEntries,
@@ -454,6 +470,11 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 				if (activeFilePathRef.current === from) setActiveFilePath(nextPath);
 				if (activePreviewPathRef.current === from)
 					setActivePreviewPath(nextPath);
+				try {
+					await renameItemAppearance(from, nextPath);
+				} catch (error) {
+					console.error("Failed to sync file tree appearance move", error);
+				}
 				await Promise.all([loadDir(fromParent, true), loadDir(toParent, true)]);
 				return nextPath;
 			} catch (e) {
@@ -463,6 +484,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 		},
 		[
 			loadDir,
+			renameItemAppearance,
 			setActiveFilePath,
 			setActivePreviewPath,
 			updateChildrenByDir,

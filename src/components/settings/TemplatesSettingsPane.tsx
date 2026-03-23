@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import {
 	getDailyNoteTemplate,
 	getTemplatesFolder,
+	loadSettings,
 	setDailyNoteTemplate,
 	setTemplatesFolder,
 } from "../../lib/settings";
@@ -22,6 +23,17 @@ function toDisplayPath(value: string, folder: string | null): string {
 	if (value === folder) return "/";
 	const prefix = `${folder}/`;
 	return value.startsWith(prefix) ? value.slice(prefix.length) : value;
+}
+
+async function ensureCurrentSpaceOpen(): Promise<string | null> {
+	const currentSpacePath = await invoke("space_get_current");
+	if (currentSpacePath) return currentSpacePath;
+	const settings = await loadSettings();
+	if (!settings.currentSpacePath) return null;
+	const opened = await invoke("space_open", {
+		path: settings.currentSpacePath,
+	});
+	return opened.root;
 }
 
 export function TemplateSettingsSections() {
@@ -76,7 +88,13 @@ export function TemplateSettingsSections() {
 		}
 		let cancelled = false;
 		setTemplatesLoading(true);
-		void listTemplates(templatesFolder)
+		void ensureCurrentSpaceOpen()
+			.then((spacePath) => {
+				if (!spacePath) {
+					throw new Error("No space is currently open.");
+				}
+				return listTemplates(templatesFolder);
+			})
 			.then((entries) => {
 				if (cancelled) return;
 				setTemplates(
@@ -147,7 +165,7 @@ export function TemplateSettingsSections() {
 				multiple: false,
 			});
 			if (!selected || typeof selected !== "string") return;
-			const currentSpacePath = await invoke("space_get_current");
+			const currentSpacePath = await ensureCurrentSpaceOpen();
 			if (!currentSpacePath) {
 				setError("No space is currently open.");
 				return;

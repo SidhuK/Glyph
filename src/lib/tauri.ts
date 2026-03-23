@@ -18,6 +18,11 @@ export interface FsEntry {
 	is_markdown: boolean;
 }
 
+export interface FileTreeAppearance {
+	color?: string | null;
+	icon?: string | null;
+}
+
 export interface RecentEntry {
 	rel_path: string;
 	name: string;
@@ -554,6 +559,19 @@ interface TauriCommands {
 		FsEntry[]
 	>;
 	space_list_dir: CommandDef<{ dir?: string | null }, FsEntry[]>;
+	file_tree_appearance_list: CommandDef<
+		void,
+		Record<string, FileTreeAppearance>
+	>;
+	file_tree_appearance_set: CommandDef<
+		{ path: string; color?: string | null; icon?: string | null },
+		FileTreeAppearance | null
+	>;
+	file_tree_appearance_rename_path: CommandDef<
+		{ from_path: string; to_path: string },
+		void
+	>;
+	file_tree_appearance_delete_path: CommandDef<{ path: string }, void>;
 	space_list_markdown_files: CommandDef<
 		{ dir?: string | null; recursive?: boolean | null; limit?: number | null },
 		FsEntry[]

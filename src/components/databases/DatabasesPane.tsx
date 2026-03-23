@@ -4,6 +4,7 @@ import {
 	MoreVerticalIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { m } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { defaultDatabaseColumnIconName } from "../../lib/database/columnIcons";
 import { extractErrorMessage } from "../../lib/errorUtils";
@@ -23,6 +24,7 @@ import { ChevronDown, Edit, Kanban, Plus, Table, Trash2 } from "../Icons";
 import { DatabaseBoard } from "../database/DatabaseBoard";
 import { DatabaseTable } from "../database/DatabaseTable";
 import { DatabaseToolbar } from "../database/DatabaseToolbar";
+import { springPresets } from "../ui/animations";
 import { Button } from "../ui/shadcn/button";
 import {
 	DropdownMenu,
@@ -858,9 +860,17 @@ export function DatabasesPane({
 											<>
 												<button
 													type="button"
-													className={`databasesViewTab${isActive ? " is-active" : ""}`}
+													className="databasesViewTab"
+													data-active={isActive}
 													onClick={() => setSelectedViewId(view.id)}
 												>
+													{isActive ? (
+														<m.span
+															className="databasesViewTabBg"
+															layoutId="databasesViewActive"
+															transition={springPresets.snappy}
+														/>
+													) : null}
 													<ViewLayoutIcon layout={view.layout} />
 													<span className="databasesViewTabName">
 														{view.name}
