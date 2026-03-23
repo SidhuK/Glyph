@@ -100,12 +100,12 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 				const entries = await invoke("space_list_dir", {});
 				if (!cancelled) {
 					setRootEntries(entries);
+					void startIndexRebuild();
+					void refreshTags();
 				}
 			} catch {
 				/* ignore initial load errors */
 			}
-			void startIndexRebuild();
-			void refreshTags();
 			try {
 				const appearance = await invoke("file_tree_appearance_list");
 				if (!cancelled) {

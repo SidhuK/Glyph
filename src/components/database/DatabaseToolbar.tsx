@@ -4,12 +4,14 @@ import {
 	SlidersVerticalIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
+import { m } from "motion/react";
 import type {
 	DatabaseColumn,
 	DatabaseConfig,
 	DatabasePropertyOption,
 } from "../../lib/database/types";
 import { Kanban, RefreshCw, Table } from "../Icons";
+import { springPresets } from "../ui/animations";
 import { Button } from "../ui/shadcn/button";
 import { DropdownMenu, DropdownMenuTrigger } from "../ui/shadcn/dropdown-menu";
 import { DatabaseColumnDropdown } from "./DatabaseColumnDialog";
@@ -54,38 +56,46 @@ export function DatabaseToolbar({
 					role="tablist"
 					aria-label="Database view"
 				>
-					<Button
+					<m.button
 						type="button"
-						variant={databaseView === "table" ? "outline" : "ghost"}
-						size="icon-sm"
-						className={[
-							"databaseToolbarChip",
-							databaseView === "table" ? "is-active" : "",
-						]
-							.filter(Boolean)
-							.join(" ")}
+						layout
+						className="databaseModePill"
+						data-active={databaseView === "table"}
 						onClick={() => onDatabaseViewChange("table")}
 						title="Table view"
 						aria-label="Table view"
+						whileTap={{ scale: 0.94 }}
+						transition={springPresets.gentle}
 					>
-						<Table size={14} />
-					</Button>
-					<Button
+						{databaseView === "table" ? (
+							<m.span
+								className="databaseModePillBg"
+								layoutId="databaseModeActive"
+								transition={springPresets.gentle}
+							/>
+						) : null}
+						<Table size={14} className="databaseModePillIcon" />
+					</m.button>
+					<m.button
 						type="button"
-						variant={databaseView === "board" ? "outline" : "ghost"}
-						size="icon-sm"
-						className={[
-							"databaseToolbarChip",
-							databaseView === "board" ? "is-active" : "",
-						]
-							.filter(Boolean)
-							.join(" ")}
+						layout
+						className="databaseModePill"
+						data-active={databaseView === "board"}
 						onClick={() => onDatabaseViewChange("board")}
 						title="Board view"
 						aria-label="Board view"
+						whileTap={{ scale: 0.94 }}
+						transition={springPresets.gentle}
 					>
-						<Kanban size={14} />
-					</Button>
+						{databaseView === "board" ? (
+							<m.span
+								className="databaseModePillBg"
+								layoutId="databaseModeActive"
+								transition={springPresets.gentle}
+							/>
+						) : null}
+						<Kanban size={14} className="databaseModePillIcon" />
+					</m.button>
 				</div>
 				<span className="databaseToolbarDivider" />
 			</div>

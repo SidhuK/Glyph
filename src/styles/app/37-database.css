@@ -9,6 +9,77 @@
 	--database-radius-lg: var(--radius-lg);
 }
 
+.databaseModeSwitch {
+	display: flex;
+	align-items: center;
+	gap: 0;
+	padding: 1px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 58%, transparent);
+	border-radius: 10px;
+	background: color-mix(in srgb, var(--bg-secondary) 82%, var(--bg-primary));
+}
+
+.databaseModePill {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 26px;
+	height: 26px;
+	padding: 0;
+	border: none;
+	border-radius: 7px;
+	background: transparent;
+	color: var(--text-secondary);
+	cursor: pointer;
+	transition:
+		color 120ms ease, background-color 120ms ease, border-color 120ms
+		ease, box-shadow 160ms ease, transform 180ms ease;
+	flex: 0 0 auto;
+	will-change: transform;
+}
+
+.databaseModePill:hover {
+	color: var(--text-primary);
+	background: color-mix(in srgb, var(--bg-hover) 86%, transparent);
+}
+
+.databaseModePill[data-active="true"] {
+	color: var(--text-primary);
+	background: color-mix(in srgb, var(--bg-primary) 94%, white 6%);
+	box-shadow: 0 0 0 1px
+		color-mix(in srgb, var(--border-default) 32%, transparent);
+}
+
+.databaseModePill[data-active="true"]:hover {
+	background: color-mix(in srgb, var(--bg-primary) 96%, white 4%);
+}
+
+.databaseModePillBg {
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	background: color-mix(in srgb, var(--bg-primary) 94%, white 6%);
+	box-shadow: 0 0 0 1px
+		color-mix(in srgb, var(--border-default) 32%, transparent);
+}
+
+.databaseModePill > *:not(.databaseModePillBg) {
+	position: relative;
+	z-index: 1;
+}
+
+.databaseModePillIcon {
+	width: 13px;
+	height: 13px;
+	flex: 0 0 13px;
+	transition: transform 180ms ease, opacity 180ms ease;
+}
+
+.databaseModePill[data-active="true"] .databaseModePillIcon {
+	transform: scale(1.04);
+}
+
 .databasesTopBar {
 	display: flex;
 	align-items: center;
@@ -146,42 +217,61 @@
 .databasesViewTabs {
 	display: flex;
 	align-items: center;
-	gap: 2px;
+	gap: 8px;
+	padding: 8px 0;
+	overflow-x: auto;
 }
 
 .databasesViewTabWrapper {
 	display: flex;
 	align-items: center;
 	position: relative;
-	border-radius: var(--database-radius-md);
-	transition: background-color 120ms ease, border-color 120ms ease;
+	gap: 4px;
 }
 
 .databasesViewTab {
-	display: inline-flex;
+	position: relative;
+	display: flex;
 	align-items: center;
 	gap: 6px;
-	padding: 8px 8px;
+	height: 30px;
+	padding: 0 10px;
 	border: 1px solid transparent;
-	border-radius: var(--database-radius-md);
+	border-radius: var(--radius-8);
 	background: transparent;
 	color: var(--text-secondary);
 	cursor: pointer;
 	transition: color 120ms ease, background-color 120ms ease, border-color 120ms
 		ease;
 	white-space: nowrap;
+	font-size: 0.82rem;
+	line-height: 1;
+	font-weight: var(--font-medium);
+	flex: 0 0 auto;
 }
 
 .databasesViewTab:hover {
 	color: var(--text-primary);
-	background: var(--bg-hover);
-	border-color: var(--border-light);
+	background: color-mix(in srgb, var(--bg-hover) 82%, transparent);
 }
 
-.databasesViewTabWrapper.is-active .databasesViewTab {
+.databasesViewTab[data-active="true"] {
 	color: var(--text-primary);
+	border-color: color-mix(in srgb, var(--border-light) 70%, transparent);
 	background: var(--bg-primary);
-	border-color: var(--border-default);
+}
+
+.databasesViewTabBg {
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	background: var(--bg-primary);
+	border: 1px solid color-mix(in srgb, var(--border-light) 70%, transparent);
+}
+
+.databasesViewTab > *:not(.databasesViewTabBg) {
+	position: relative;
+	z-index: 1;
 }
 
 .databasesViewTabMenu {
@@ -198,7 +288,6 @@
 	color: var(--text-tertiary);
 	cursor: pointer;
 	transition: background-color 120ms ease, color 120ms ease;
-	margin-right: 4px;
 }
 
 .databasesViewTabWrapper.is-active .databasesViewTabMenu {
@@ -221,13 +310,16 @@
 
 .databasesViewTabCreate {
 	gap: 0;
-	padding: 8px 8px;
+	padding: 0 10px;
+	height: 30px;
 	color: var(--text-tertiary);
 	border: none;
+	border-radius: var(--radius-8);
 }
 
 .databasesViewTabCreate:hover {
 	color: var(--text-secondary);
+	background: color-mix(in srgb, var(--bg-hover) 82%, transparent);
 }
 
 .databasesViewTabName {
@@ -279,7 +371,6 @@
 .databaseToolbarPrimary,
 .databaseToolbarActions,
 .databaseToolbarMeta,
-.databaseModeSwitch,
 .databaseFooter {
 	display: flex;
 	align-items: center;
