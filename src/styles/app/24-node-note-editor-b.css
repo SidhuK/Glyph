@@ -1513,7 +1513,7 @@
 }
 
 .slashCommandMenu {
-	position: absolute;
+	position: fixed;
 	min-width: 220px;
 	max-width: 280px;
 	max-height: min(212px, 60vh);

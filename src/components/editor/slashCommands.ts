@@ -353,8 +353,20 @@ export const SlashCommand = Extension.create({
 						}
 						const rect = props.clientRect?.();
 						if (rect && menu) {
-							menu.style.left = `${rect.left}px`;
-							menu.style.top = `${rect.bottom + 6}px`;
+							const pad = 8;
+							const gap = 6;
+							const menuRect = menu.getBoundingClientRect();
+							const placeBelowTop = rect.bottom + gap;
+							const placeAboveTop = rect.top - menuRect.height - gap;
+							const maxLeft = window.innerWidth - menuRect.width - pad;
+							const maxTop = window.innerHeight - menuRect.height - pad;
+							const nextLeft = Math.max(pad, Math.min(rect.left, maxLeft));
+							const nextTop =
+								placeBelowTop <= maxTop
+									? placeBelowTop
+									: Math.max(pad, Math.min(placeAboveTop, maxTop));
+							menu.style.left = `${nextLeft}px`;
+							menu.style.top = `${nextTop}px`;
 						}
 					};
 
