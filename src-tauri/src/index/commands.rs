@@ -435,10 +435,20 @@ pub async fn calendar_query_range(
                         t.status, t.priority, t.due_date, t.scheduled_date, t.section, t.note_updated
                  FROM tasks t
                  JOIN notes n ON n.id = t.note_id
-                 WHERE t.checked = 0 AND (t.scheduled_date IS NOT NULL OR t.due_date IS NOT NULL)",
+                 WHERE t.checked = 0
+                   AND (t.scheduled_date IS NOT NULL OR t.due_date IS NOT NULL)
+                   AND (
+                        (
+                            COALESCE(t.scheduled_date, t.due_date) <= ?3
+                            AND COALESCE(t.due_date, t.scheduled_date) >= ?1
+                        )
+                        OR COALESCE(t.due_date, t.scheduled_date) < ?2
+                   )",
             )
             .map_err(|e| e.to_string())?;
-        let mut task_rows = task_stmt.query([]).map_err(|e| e.to_string())?;
+        let mut task_rows = task_stmt
+            .query([start_date.as_str(), selected_date.as_str(), end_date.as_str()])
+            .map_err(|e| e.to_string())?;
         let mut all_tasks = Vec::<IndexedTask>::new();
         while let Some(row) = task_rows.next().map_err(|e| e.to_string())? {
             all_tasks.push(IndexedTask {
@@ -459,15 +469,29 @@ pub async fn calendar_query_range(
         }
 
         for task in &all_tasks {
-            let scheduled = task.scheduled_date.as_deref();
-            let due = task.due_date.as_deref();
-            if let Some(date) = scheduled.filter(|date| *date >= start_date.as_str() && *date <= end_date.as_str()) {
-                *task_counts.entry(date.to_string()).or_insert(0) += 1;
+            let Some(start_bound) = task
+                .scheduled_date
+                .as_deref()
+                .or(task.due_date.as_deref())
+                .and_then(|date| parse_calendar_date(date).ok())
+            else {
+                continue;
+            };
+            let end_bound = task
+                .due_date
+                .as_deref()
+                .or(task.scheduled_date.as_deref())
+                .and_then(|date| parse_calendar_date(date).ok())
+                .unwrap_or(start_bound);
+            let overlap_start = start_bound.max(start);
+            let overlap_end = end_bound.min(end);
+            if overlap_start > overlap_end {
+                continue;
             }
-            if let Some(date) = due.filter(|date| *date >= start_date.as_str() && *date <= end_date.as_str()) {
-                if scheduled != Some(date) {
-                    *task_counts.entry(date.to_string()).or_insert(0) += 1;
-                }
+            let mut day = overlap_start;
+            while day <= overlap_end {
+                *task_counts.entry(format_calendar_date(day)).or_insert(0) += 1;
+                day += Duration::days(1);
             }
         }
 

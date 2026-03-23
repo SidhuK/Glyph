@@ -180,7 +180,7 @@
 }
 
 .calendarMonthCell:hover,
-.calendarWeekCardButton:hover,
+.calendarWeekCard:hover,
 .calendarNoteRow:hover {
 	border-color: color-mix(
 		in srgb,

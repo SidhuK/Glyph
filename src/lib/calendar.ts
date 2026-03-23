@@ -100,6 +100,9 @@ export function insertTaskIntoDailyNote(
 ): string {
 	const newline = markdown.includes("\r\n") ? "\r\n" : "\n";
 	const normalizedTask = taskText.replace(/\s+/g, " ").trim();
+	if (normalizedTask === "") {
+		return markdown;
+	}
 	const taskLine = `- [ ] ${normalizedTask} ⏳ ${date}`;
 	const lines = markdown.split(/\r?\n/);
 	const tasksHeadingIndex = lines.findIndex(

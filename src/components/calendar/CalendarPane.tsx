@@ -1,7 +1,7 @@
 import { ArrowLeft, ArrowRight } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { m } from "motion/react";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSpace, useUILayoutContext } from "../../contexts";
 import { useDailyNote } from "../../hooks/useDailyNote";
 import {
@@ -122,6 +122,7 @@ export function CalendarPane({
 	const [error, setError] = useState("");
 	const [taskDraft, setTaskDraft] = useState("");
 	const [isSubmittingTask, setIsSubmittingTask] = useState(false);
+	const loadRequestIdRef = useRef(0);
 	const { dailyNotesFolder, dailyNoteTemplatePath } = useUILayoutContext();
 	const { spacePath } = useSpace();
 	const { openOrCreateDailyNoteAtDate } = useDailyNote({
@@ -140,6 +141,7 @@ export function CalendarPane({
 	);
 
 	const loadCalendar = useCallback(async () => {
+		const requestId = ++loadRequestIdRef.current;
 		setLoading(true);
 		setError("");
 		try {
@@ -149,12 +151,20 @@ export function CalendarPane({
 				selected_date: selectedDate,
 				daily_notes_folder: dailyNotesFolder,
 			});
+			if (loadRequestIdRef.current !== requestId) {
+				return;
+			}
 			setData(next);
 		} catch (cause) {
+			if (loadRequestIdRef.current !== requestId) {
+				return;
+			}
 			setError(cause instanceof Error ? cause.message : String(cause));
 			setData(null);
 		} finally {
-			setLoading(false);
+			if (loadRequestIdRef.current === requestId) {
+				setLoading(false);
+			}
 		}
 	}, [dailyNotesFolder, range.end, range.start, selectedDate]);
 
@@ -398,7 +408,6 @@ export function CalendarPane({
 				<div className="calendarToolbarActions">
 					<div
 						className="databaseModeSwitch calendarModeSwitch"
-						role="tablist"
 						aria-label="Calendar view"
 					>
 						<m.button
@@ -409,6 +418,7 @@ export function CalendarPane({
 							onClick={() => changeViewMode("month")}
 							title="Month view"
 							aria-label="Month view"
+							aria-pressed={viewMode === "month"}
 							whileTap={{ scale: 0.94 }}
 							transition={springPresets.gentle}
 						>
@@ -429,6 +439,7 @@ export function CalendarPane({
 							onClick={() => changeViewMode("week")}
 							title="Week view"
 							aria-label="Week view"
+							aria-pressed={viewMode === "week"}
 							whileTap={{ scale: 0.94 }}
 							transition={springPresets.gentle}
 						>

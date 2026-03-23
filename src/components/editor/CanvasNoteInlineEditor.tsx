@@ -7,7 +7,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { EditorContent } from "@tiptap/react";
-import { addMonths, format, parseISO } from "date-fns";
+import { addMonths, format, isValid, parseISO } from "date-fns";
 import { AnimatePresence } from "motion/react";
 import { memo, useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
@@ -39,6 +39,12 @@ import {
 } from "./markdown/editorEvents";
 import { parseWikiLink } from "./markdown/wikiLinkCodec";
 import type { CanvasNoteInlineEditorProps } from "./types";
+
+function safeParseISO(value?: string): Date | undefined {
+	if (!value) return undefined;
+	const parsed = parseISO(value);
+	return isValid(parsed) ? parsed : undefined;
+}
 
 function normalizeBody(markdown: string): string {
 	return markdown.replace(/\u00a0/g, " ").replace(/&nbsp;/g, " ");
@@ -782,17 +788,11 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 			setDueDate(existing?.due_date ?? "");
 			const nextField = existing?.due_date ? "due" : "scheduled";
 			setActiveDateField(nextField);
-			try {
-				setPickerMonth(
-					existing?.due_date
-						? parseISO(existing.due_date)
-						: existing?.scheduled_date
-							? parseISO(existing.scheduled_date)
-							: new Date(),
-				);
-			} catch {
-				setPickerMonth(new Date());
-			}
+			setPickerMonth(
+				safeParseISO(existing?.due_date) ??
+					safeParseISO(existing?.scheduled_date) ??
+					new Date(),
+			);
 		} catch {
 			setScheduledDate("");
 			setDueDate("");
@@ -817,21 +817,13 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		activeDateField === "scheduled" ? scheduledDate : dueDate;
 
 	const activeDate = useMemo(() => {
-		if (!activeDateValue) return undefined;
-		try {
-			return parseISO(activeDateValue);
-		} catch {
-			return undefined;
-		}
+		return safeParseISO(activeDateValue);
 	}, [activeDateValue]);
 
 	const formatPickerValue = (value: string) => {
 		if (!value) return "Select date";
-		try {
-			return format(parseISO(value), "MMM d, yyyy");
-		} catch {
-			return value;
-		}
+		const parsed = safeParseISO(value);
+		return parsed ? format(parsed, "MMM d, yyyy") : value;
 	};
 
 	const focusField = (field: "scheduled" | "due") => {
@@ -841,11 +833,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 			setPickerMonth(new Date());
 			return;
 		}
-		try {
-			setPickerMonth(parseISO(nextValue));
-		} catch {
-			setPickerMonth(new Date());
-		}
+		setPickerMonth(safeParseISO(nextValue) ?? new Date());
 	};
 
 	const updateActiveDate = (date?: Date) => {

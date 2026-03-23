@@ -1,6 +1,7 @@
 "use client";
 
 import { Button, buttonVariants } from "@/components/ui/shadcn/button";
+import { formatCalendarDate } from "@/lib/calendar";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, ArrowRight } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -107,7 +108,7 @@ function CalendarDayButton({
 			ref={ref}
 			variant="ghost"
 			size="icon-xs"
-			data-day={day.date.toLocaleDateString()}
+			data-day={formatCalendarDate(day.date)}
 			data-selected={modifiers.selected}
 			data-today={modifiers.today}
 			data-outside={modifiers.outside}
