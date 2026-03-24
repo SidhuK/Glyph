@@ -83,6 +83,22 @@ function formatActivityTime(iso: string): string {
 	}
 }
 
+function formatCalendarCellAriaLabel(
+	date: string,
+	isOutsideMonth: boolean,
+): string {
+	const parsed = parseIsoDate(date);
+	const baseLabel = parsed
+		? parsed.toLocaleDateString(undefined, {
+				weekday: "long",
+				month: "long",
+				day: "numeric",
+				year: "numeric",
+			})
+		: date;
+	return isOutsideMonth ? `${baseLabel}, outside current month` : baseLabel;
+}
+
 function getNoteBreadcrumb(notePath: string): string {
 	const parts = notePath.split("/").filter(Boolean);
 	if (parts.length <= 1) return "";
@@ -206,6 +222,10 @@ export function CalendarPane({
 	useEffect(() => {
 		void loadTodaySummary();
 	}, [loadTodaySummary]);
+
+	const reloadCalendarData = useCallback(async () => {
+		await Promise.all([loadCalendar(), loadTodaySummary()]);
+	}, [loadCalendar, loadTodaySummary]);
 
 	useEffect(() => {
 		writeStorage(VIEW_STORAGE_KEY, viewMode);
@@ -339,7 +359,7 @@ export function CalendarPane({
 				base_mtime_ms: noteDoc.mtime_ms,
 			});
 			setTaskDraft("");
-			await loadCalendar();
+			await reloadCalendarData();
 		} catch (cause) {
 			setError(
 				cause instanceof Error
@@ -352,8 +372,8 @@ export function CalendarPane({
 	}, [
 		dailyNotesFolder,
 		ensureDailyNoteExistsForTask,
-		loadCalendar,
 		onOpenDailyNotesSettings,
+		reloadCalendarData,
 		selectedDate,
 		taskDraft,
 	]);
@@ -366,12 +386,12 @@ export function CalendarPane({
 					task_id: task.task_id,
 					checked,
 				});
-				await loadCalendar();
+				await reloadCalendarData();
 			} catch (cause) {
 				setError(cause instanceof Error ? cause.message : String(cause));
 			}
 		},
-		[loadCalendar],
+		[reloadCalendarData],
 	);
 
 	const scheduleTask = useCallback(
@@ -387,14 +407,14 @@ export function CalendarPane({
 					scheduled_date: scheduled,
 					due_date: due,
 				});
-				await loadCalendar();
+				await reloadCalendarData();
 				return true;
 			} catch (cause) {
 				setError(cause instanceof Error ? cause.message : String(cause));
 				return false;
 			}
 		},
-		[loadCalendar],
+		[reloadCalendarData],
 	);
 
 	const openDailyNoteForDate = useCallback(
@@ -404,15 +424,13 @@ export function CalendarPane({
 				return;
 			}
 			await openOrCreateDailyNoteAtDate(dailyNotesFolder, date);
-			await loadCalendar();
-			await loadTodaySummary();
+			await reloadCalendarData();
 		},
 		[
 			dailyNotesFolder,
-			loadCalendar,
-			loadTodaySummary,
 			onOpenDailyNotesSettings,
 			openOrCreateDailyNoteAtDate,
+			reloadCalendarData,
 		],
 	);
 
@@ -569,43 +587,31 @@ export function CalendarPane({
 							<p className="calendarWelcomeSummary">
 								<span>Today includes</span>
 								{todayTaskCount > 0 ? (
-									<button
-										type="button"
-										className="calendarWelcomeItem"
-										onClick={goToToday}
-									>
+									<span className="calendarWelcomeItem">
 										<ListChecks size={14} />
 										<strong>
 											{todayTaskCount} {todayTaskCount === 1 ? "task" : "tasks"}
 										</strong>
-									</button>
+									</span>
 								) : null}
 								{todayOverdueCount > 0 ? (
-									<button
-										type="button"
-										className="calendarWelcomeItem is-overdue"
-										onClick={goToToday}
-									>
+									<span className="calendarWelcomeItem is-overdue">
 										<Calendar size={14} />
 										<strong>{todayOverdueCount} overdue</strong>
-									</button>
+									</span>
 								) : null}
 								{todayNoteCount > 0 ? (
-									<button
-										type="button"
-										className="calendarWelcomeItem"
-										onClick={goToToday}
-									>
+									<span className="calendarWelcomeItem">
 										<StickyNote size={14} />
 										<strong>
 											{todayNoteCount} {todayNoteCount === 1 ? "note" : "notes"}
 										</strong>
-									</button>
+									</span>
 								) : null}
 								{todayHasDailyNote ? (
 									<button
 										type="button"
-										className="calendarWelcomeItem"
+										className="calendarWelcomeItem calendarWelcomeLink"
 										onClick={openTodayDailyNote}
 									>
 										<FileText size={14} />
@@ -631,15 +637,22 @@ export function CalendarPane({
 								</div>
 							))}
 							{range.dates.map((date) => {
+								const isOutsideMonth = !isDateInMonth(date, anchorDate);
 								const isToday = date === today;
 								const isSelected = date === selectedDate;
 								return (
 									<button
 										key={date}
 										type="button"
+										aria-label={formatCalendarCellAriaLabel(
+											date,
+											isOutsideMonth,
+										)}
+										aria-pressed={isSelected}
+										aria-current={isToday ? "date" : undefined}
 										className={cn(
 											"calendarMonthCell",
-											!isDateInMonth(date, anchorDate) && "is-outside",
+											isOutsideMonth && "is-outside",
 											isToday && "is-today",
 											isSelected && "is-selected",
 										)}

@@ -131,17 +131,7 @@
 	color: var(--text-primary);
 	font: inherit;
 	font-size: inherit;
-	cursor: pointer;
-	transition: color 140ms ease;
-}
-
-.calendarWelcomeItem:hover {
-	color: var(--interactive-accent);
-}
-
-.calendarWelcomeItem:hover strong {
-	text-decoration: underline;
-	text-underline-offset: 2px;
+	cursor: default;
 }
 
 .calendarWelcomeItem svg {
@@ -159,6 +149,23 @@
 
 .calendarWelcomeItem strong {
 	font-weight: 700;
+}
+
+.calendarWelcomeLink {
+	padding: 1px 6px;
+	border-radius: 8px;
+	cursor: pointer;
+	transition: color 140ms ease, background 140ms ease;
+}
+
+.calendarWelcomeLink:hover {
+	background: color-mix(in srgb, var(--interactive-accent) 12%, transparent);
+	color: var(--interactive-accent);
+}
+
+.calendarWelcomeLink:hover strong {
+	text-decoration: underline;
+	text-underline-offset: 2px;
 }
 
 .calendarWelcomeEmpty {
@@ -303,6 +310,12 @@
 		var(--interactive-accent) 12%,
 		var(--bg-tertiary)
 	);
+}
+
+.calendarMonthCell.is-selected.is-today .calendarMonthCellDayNumber {
+	background: color-mix(in srgb, var(--interactive-accent) 72%, black 28%);
+	color: white;
+	box-shadow: 0 0 0 1px color-mix(in srgb, white 8%, transparent);
 }
 
 .calendarWeekCard.is-selected {
@@ -685,6 +698,7 @@
 	grid-area: today;
 	gap: 12px;
 	padding: 16px 18px;
+	align-self: start;
 }
 
 .calendarTile-overdue {
@@ -706,7 +720,8 @@
 
 .calendarNoteRow {
 	text-align: left;
-	align-items: flex-start;
+	align-items: center;
+	min-height: 44px;
 }
 
 .calendarNoteRowMain {
@@ -720,9 +735,10 @@
 
 .calendarNoteTitleLine {
 	display: flex;
-	align-items: baseline;
+	align-items: center;
 	gap: 8px;
 	min-width: 0;
+	min-height: 24px;
 }
 
 .calendarNoteBadges {
