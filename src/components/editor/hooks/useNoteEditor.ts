@@ -221,20 +221,17 @@ export function useNoteEditor({
 					if (mode !== "rich" || !relPathRef.current) return false;
 					const imageFiles = getPastedImageFiles(event);
 					if (!imageFiles.length) return false;
+					const sourcePath = relPathRef.current;
+					const targetDir = pastedMediaFolderRef.current;
 					event.preventDefault();
 					void (async () => {
-						const images: Array<{ href: string; alt: string }> = [];
 						for (const file of imageFiles) {
 							const dataUrl = await readFileAsDataUrl(file);
 							const saved = await invoke("space_save_pasted_image", {
-								source_path: relPathRef.current,
-								target_dir: pastedMediaFolderRef.current,
+								source_path: sourcePath,
+								target_dir: targetDir,
 								data_url: dataUrl,
 								alt: file.name || null,
-							});
-							images.push({
-								href: saved.href,
-								alt: file.name || "",
 							});
 							const imagePayload = {
 								type: "image",
@@ -247,7 +244,6 @@ export function useNoteEditor({
 							};
 							editor.chain().focus().insertContent(imagePayload).run();
 						}
-						if (!editor?.isEditable || !images.length) return;
 					})().catch(() => {
 						// Ignore failed clipboard saves so the editor stays responsive.
 					});

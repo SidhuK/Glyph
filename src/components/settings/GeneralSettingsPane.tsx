@@ -85,9 +85,11 @@ export function GeneralSettingsPane() {
 				const spacePrefix = normSpace.endsWith("/")
 					? normSpace
 					: `${normSpace}/`;
+				const selectedLower = normSelected.toLowerCase();
+				const spaceLower = normSpace.toLowerCase();
 				if (
-					normSelected !== normSpace &&
-					!normSelected.startsWith(spacePrefix)
+					selectedLower !== spaceLower &&
+					!selectedLower.startsWith(spacePrefix.toLowerCase())
 				) {
 					setDailyNotesError(
 						"Selected folder must be inside the current space.",
@@ -132,9 +134,11 @@ export function GeneralSettingsPane() {
 				const spacePrefix = normSpace.endsWith("/")
 					? normSpace
 					: `${normSpace}/`;
+				const selectedLower = normSelected.toLowerCase();
+				const spaceLower = normSpace.toLowerCase();
 				if (
-					normSelected !== normSpace &&
-					!normSelected.startsWith(spacePrefix)
+					selectedLower !== spaceLower &&
+					!selectedLower.startsWith(spacePrefix.toLowerCase())
 				) {
 					setPastedMediaError(
 						"Selected folder must be inside the current space.",
@@ -157,8 +161,14 @@ export function GeneralSettingsPane() {
 
 	const handleResetPastedMediaFolder = useCallback(async () => {
 		setPastedMediaError(null);
-		await setEditorPastedMediaFolder("assets");
-		setPastedMediaFolderState("assets");
+		try {
+			await setEditorPastedMediaFolder("assets");
+			setPastedMediaFolderState("assets");
+		} catch (cause) {
+			setPastedMediaError(
+				cause instanceof Error ? cause.message : "Failed to reset folder",
+			);
+		}
 	}, []);
 
 	return (
