@@ -1,5 +1,6 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { useState } from "react";
+import { useUpdaterContext } from "../../contexts/UpdaterContext";
 import { activateLicenseKey, formatTrialRemaining } from "../../lib/license";
 import type { LicenseStatus } from "../../lib/tauri";
 import { Button } from "../ui/shadcn/button";
@@ -17,6 +18,7 @@ export function LicenseLockScreen({
 	onActivated,
 	onRetry,
 }: LicenseLockScreenProps) {
+	const autoUpdater = useUpdaterContext();
 	const [licenseKey, setLicenseKey] = useState("");
 	const [submitError, setSubmitError] = useState("");
 	const [isSubmitting, setIsSubmitting] = useState(false);
@@ -81,6 +83,18 @@ export function LicenseLockScreen({
 				{error ? <div className="settingsError">{error}</div> : null}
 
 				<div className="licenseLockActions">
+					{autoUpdater.updateReady ? (
+						<Button
+							type="button"
+							variant="outline"
+							size="lg"
+							onClick={autoUpdater.installAndRelaunch}
+						>
+							{autoUpdater.updateVersion
+								? `Install ${autoUpdater.updateVersion}`
+								: "Install Update"}
+						</Button>
+					) : null}
 					<Button
 						type="button"
 						size="lg"

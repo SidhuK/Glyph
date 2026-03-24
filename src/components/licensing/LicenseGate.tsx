@@ -1,4 +1,6 @@
 import { type ReactNode, useState } from "react";
+import { UpdaterProvider } from "../../contexts/UpdaterContext";
+import { useAutoUpdater } from "../../hooks/useAutoUpdater";
 import { useLicenseStatus } from "../../lib/license";
 import { LicenseLockScreen } from "./LicenseLockScreen";
 import { TrialBanner } from "./TrialBanner";
@@ -10,6 +12,7 @@ interface LicenseGateProps {
 export function LicenseGate({ children }: LicenseGateProps) {
 	const { status, loading, error, reload } = useLicenseStatus();
 	const [trialBannerDismissed, setTrialBannerDismissed] = useState(false);
+	const autoUpdater = useAutoUpdater(status?.can_auto_update ?? false);
 
 	if (loading) {
 		return (
@@ -24,21 +27,23 @@ export function LicenseGate({ children }: LicenseGateProps) {
 
 	if (!status || !status.can_use_app) {
 		return (
-			<LicenseLockScreen
-				status={status}
-				error={error}
-				onActivated={() => {
-					void reload();
-				}}
-				onRetry={() => {
-					void reload();
-				}}
-			/>
+			<UpdaterProvider value={autoUpdater}>
+				<LicenseLockScreen
+					status={status}
+					error={error}
+					onActivated={() => {
+						void reload();
+					}}
+					onRetry={() => {
+						void reload();
+					}}
+				/>
+			</UpdaterProvider>
 		);
 	}
 
 	return (
-		<>
+		<UpdaterProvider value={autoUpdater}>
 			{status.mode === "trial_active" && !trialBannerDismissed ? (
 				<TrialBanner
 					status={status}
@@ -46,6 +51,6 @@ export function LicenseGate({ children }: LicenseGateProps) {
 				/>
 			) : null}
 			{children}
-		</>
+		</UpdaterProvider>
 	);
 }

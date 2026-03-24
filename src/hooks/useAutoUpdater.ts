@@ -55,13 +55,17 @@ export interface AutoUpdaterState {
 	installAndRelaunch: () => void;
 }
 
-export function useAutoUpdater(): AutoUpdaterState {
+export function useAutoUpdater(enabled = true): AutoUpdaterState {
 	const [update, setUpdate] = useState<Update | null>(cachedUpdate);
 	const [checkInterval, setCheckInterval] =
 		useState<AutoUpdateCheckInterval | null>(null);
 	const launchAttemptedRef = useRef(false);
 
 	useEffect(() => {
+		if (!enabled) {
+			setCheckInterval(null);
+			return;
+		}
 		let cancelled = false;
 		void loadSettings().then((settings) => {
 			if (!cancelled) {
@@ -71,15 +75,20 @@ export function useAutoUpdater(): AutoUpdaterState {
 		return () => {
 			cancelled = true;
 		};
-	}, []);
+	}, [enabled]);
 
 	useTauriEvent("settings:updated", (payload) => {
+		if (!enabled) return;
 		const nextInterval = payload.ui?.autoUpdateCheckInterval;
 		if (!nextInterval) return;
 		setCheckInterval(nextInterval);
 	});
 
 	useEffect(() => {
+		if (!enabled) {
+			setUpdate(null);
+			return;
+		}
 		if (checkInterval === null) return;
 		if (cachedUpdate) {
 			setUpdate(cachedUpdate);
@@ -141,7 +150,7 @@ export function useAutoUpdater(): AutoUpdaterState {
 				window.clearTimeout(timerId);
 			}
 		};
-	}, [checkInterval]);
+	}, [checkInterval, enabled]);
 
 	const installAndRelaunch = useCallback(() => {
 		if (!update) return;

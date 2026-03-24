@@ -36,7 +36,7 @@
 }
 
 .sidebarContentRoot {
-	--sidebar-footer-overlay-height: 56px;
+	--sidebar-footer-overlay-height: 0px;
 	display: flex;
 	flex: 1;
 	flex-direction: column;

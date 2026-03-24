@@ -27,6 +27,7 @@ import {
 	isSettingsTab,
 } from "./components/settings/settingsConfig";
 import { Button } from "./components/ui/shadcn/button";
+import { useLicenseStatus } from "./lib/license";
 import { useTauriEvent } from "./lib/tauriEvents";
 import { onWindowDragMouseDown } from "./utils/window";
 
@@ -38,6 +39,7 @@ function parseTabFromHash(hash: string): SettingsTab {
 }
 
 export default function SettingsApp() {
+	const { status: licenseStatus } = useLicenseStatus(false);
 	const [activeTab, setActiveTab] = useState<SettingsTab>(() =>
 		parseTabFromHash(window.location.hash),
 	);
@@ -151,28 +153,49 @@ export default function SettingsApp() {
 									<span className="settingsTabLabel">{tab.label}</span>
 								</button>
 							))}
-							<div className="settingsFeedbackCard">
-								<div className="settingsFeedbackEyebrow">
-									Still in Early Access
+							{licenseStatus?.mode === "community_build" ? (
+								<div className="settingsFeedbackCard settingsFeedbackCardCommunity">
+									<div className="settingsFeedbackEyebrow">Community Build</div>
+									<div className="settingsFeedbackTitle">
+										Thanks for downloading and building Glyph yourself.
+									</div>
+									<p className="settingsFeedbackBody">
+										Support the project with the official license to get
+										automatic updates and the official build.
+									</p>
+									<Button
+										type="button"
+										className="settingsFeedbackButton settingsFeedbackButtonCommunity"
+										onClick={() => void openUrl(licenseStatus.purchase_url)}
+									>
+										Buy Official License
+										<HugeiconsIcon icon={ArrowUpRight01Icon} size={14} />
+									</Button>
 								</div>
-								<div className="settingsFeedbackTitle">Help shape Glyph</div>
-								<p className="settingsFeedbackBody">
-									Glyph is actively evolving and changing, so you may run into
-									rough edges here and there. If something feels off, I’d really
-									love to hear about it.
-								</p>
-								<Button
-									type="button"
-									className="settingsFeedbackButton"
-									onClick={() =>
-										void openUrl("https://github.com/Sidhuk/Glyph/issues")
-									}
-								>
-									<HugeiconsIcon icon={BubbleChatQuestionIcon} size={15} />
-									Send Feedback
-									<HugeiconsIcon icon={ArrowUpRight01Icon} size={14} />
-								</Button>
-							</div>
+							) : (
+								<div className="settingsFeedbackCard">
+									<div className="settingsFeedbackEyebrow">
+										Still in Early Access
+									</div>
+									<div className="settingsFeedbackTitle">Help shape Glyph</div>
+									<p className="settingsFeedbackBody">
+										Glyph is actively evolving and changing, so you may run into
+										rough edges here and there. If something feels off, I’d
+										really love to hear about it.
+									</p>
+									<Button
+										type="button"
+										className="settingsFeedbackButton"
+										onClick={() =>
+											void openUrl("https://github.com/Sidhuk/Glyph/issues")
+										}
+									>
+										<HugeiconsIcon icon={BubbleChatQuestionIcon} size={15} />
+										Send Feedback
+										<HugeiconsIcon icon={ArrowUpRight01Icon} size={14} />
+									</Button>
+								</div>
+							)}
 						</nav>
 						<div className="settingsTabPanel">
 							<header className="settingsPanelHeader">

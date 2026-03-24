@@ -15,6 +15,7 @@ pub enum LicenseMode {
 pub struct LicenseStatus {
     pub mode: LicenseMode,
     pub can_use_app: bool,
+    pub can_auto_update: bool,
     pub is_official_build: bool,
     pub purchase_url: String,
     pub support_url: String,
@@ -118,6 +119,7 @@ fn build_status_for(record: &LicenseRecord, now_ms: u64, official_build: bool) -
         return LicenseStatus {
             mode: LicenseMode::CommunityBuild,
             can_use_app: true,
+            can_auto_update: false,
             is_official_build: false,
             purchase_url: gumroad_product_url().to_string(),
             support_url: support_url().to_string(),
@@ -134,6 +136,7 @@ fn build_status_for(record: &LicenseRecord, now_ms: u64, official_build: bool) -
         return LicenseStatus {
             mode: LicenseMode::Licensed,
             can_use_app: true,
+            can_auto_update: true,
             is_official_build: true,
             purchase_url: gumroad_product_url().to_string(),
             support_url: support_url().to_string(),
@@ -164,6 +167,7 @@ fn build_status_for(record: &LicenseRecord, now_ms: u64, official_build: bool) -
     LicenseStatus {
         mode,
         can_use_app: matches!(mode, LicenseMode::TrialActive),
+        can_auto_update: true,
         is_official_build: true,
         purchase_url: gumroad_product_url().to_string(),
         support_url: support_url().to_string(),
@@ -225,6 +229,7 @@ mod tests {
 
         assert_eq!(status.mode, LicenseMode::Licensed);
         assert!(status.can_use_app);
+        assert!(status.can_auto_update);
         assert_eq!(status.activated_at_ms, Some(12_000));
         assert_eq!(status.license_key_masked.as_deref(), Some("38B1-****-26EB"));
     }
@@ -238,6 +243,7 @@ mod tests {
 
         assert_eq!(status.mode, LicenseMode::TrialActive);
         assert!(status.can_use_app);
+        assert!(status.can_auto_update);
         assert_eq!(status.trial_started_at_ms, Some(1_000));
         assert_eq!(status.trial_expires_at_ms, Some(1_000 + TRIAL_DURATION_MS));
         assert_eq!(
@@ -258,6 +264,16 @@ mod tests {
 
         assert_eq!(status.mode, LicenseMode::TrialExpired);
         assert!(!status.can_use_app);
+        assert!(status.can_auto_update);
         assert_eq!(status.trial_remaining_seconds, Some(0));
+    }
+
+    #[test]
+    fn build_status_reports_community_build_without_auto_updates() {
+        let status = build_status_for(&LicenseRecord::default(), 5_000, false);
+
+        assert_eq!(status.mode, LicenseMode::CommunityBuild);
+        assert!(status.can_use_app);
+        assert!(!status.can_auto_update);
     }
 }

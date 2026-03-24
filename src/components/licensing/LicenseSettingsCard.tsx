@@ -141,6 +141,25 @@ export function LicenseSettingsCard() {
 				</>
 			) : null}
 
+			{status?.mode === "community_build" ? (
+				<SettingsRow
+					label="Official build"
+					description="Thanks for downloading and building Glyph yourself. Community builds do not include automatic updates. To get the latest version, download the source again and rebuild, or get the official licensed build to support Glyph and unlock automatic updates."
+					stacked
+					interactive={false}
+				>
+					<div className="settingsActions">
+						<Button
+							type="button"
+							size="sm"
+							onClick={() => void openUrl(status.purchase_url)}
+						>
+							Buy Official License
+						</Button>
+					</div>
+				</SettingsRow>
+			) : null}
+
 			{status?.is_official_build ? (
 				<SettingsRow
 					label="Activate Glyph"
