@@ -157,9 +157,9 @@ export default function SettingsApp() {
 								</div>
 								<div className="settingsFeedbackTitle">Help shape Glyph</div>
 								<p className="settingsFeedbackBody">
-									Glyph is still early, so you may run into rough edges here and
-									there. If something feels off, I’d really love to hear about
-									it. If you bought a license, thank you for supporting Glyph.
+									Glyph is actively evolving and changing, so you may run into
+									rough edges here and there. If something feels off, I’d really
+									love to hear about it.
 								</p>
 								<Button
 									type="button"

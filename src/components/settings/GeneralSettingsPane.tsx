@@ -28,6 +28,7 @@ export function GeneralSettingsPane() {
 	const [dailyNotesLoading, setDailyNotesLoading] = useState(true);
 	const [dailyNotesError, setDailyNotesError] = useState<string | null>(null);
 	const [pastedMediaFolder, setPastedMediaFolderState] = useState("assets");
+	const [attachmentsLoading, setAttachmentsLoading] = useState(true);
 	const [pastedMediaError, setPastedMediaError] = useState<string | null>(null);
 	const [error, setError] = useState("");
 
@@ -52,6 +53,7 @@ export function GeneralSettingsPane() {
 			} finally {
 				if (!cancelled) {
 					setDailyNotesLoading(false);
+					setAttachmentsLoading(false);
 				}
 			}
 		})();
@@ -243,7 +245,7 @@ export function GeneralSettingsPane() {
 						<div className="dailyNotesFolderField">
 							<div className="dailyNotesFolderRow">
 								<div className="dailyNotesFolderPath">
-									{dailyNotesLoading
+									{attachmentsLoading
 										? "Loading..."
 										: pastedMediaFolder || "Space root"}
 								</div>
@@ -254,7 +256,7 @@ export function GeneralSettingsPane() {
 										size="sm"
 										className="min-w-24 rounded-md border-border bg-background justify-center shadow-none"
 										onClick={handleBrowsePastedMediaFolder}
-										disabled={dailyNotesLoading}
+										disabled={attachmentsLoading}
 									>
 										<FolderOpen size={14} />
 										Browse
@@ -265,7 +267,7 @@ export function GeneralSettingsPane() {
 										size="icon-sm"
 										className="rounded-md border-border bg-background justify-center shadow-none"
 										onClick={handleResetPastedMediaFolder}
-										disabled={dailyNotesLoading}
+										disabled={attachmentsLoading}
 										aria-label="Reset attachments folder"
 										title="Reset attachments folder"
 									>
