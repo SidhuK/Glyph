@@ -849,37 +849,6 @@
 	background: color-mix(in srgb, var(--bg-hover) 60%, var(--bg-tertiary));
 }
 
-@container (max-width: 1120px) {
-	.calendarLayout,
-	.calendarLayout.is-week {
-		grid-template-columns: 1fr;
-		flex: none;
-	}
-
-	.calendarPrimary,
-	.calendarDetailPane {
-		overflow: visible;
-	}
-
-	.calendarDetailBody,
-	.calendarNotesSection {
-		flex: none;
-	}
-
-	.calendarNotesScroller,
-	.calendarSectionScroller,
-	.calendarSectionScroller-compact,
-	.calendarSectionScroller-main {
-		max-height: none;
-		overflow: visible;
-		padding-right: 0;
-	}
-
-	.calendarTaskGroups {
-		gap: 14px;
-	}
-}
-
 @container (max-width: 900px) {
 	.calendarToolbar {
 		align-items: flex-start;

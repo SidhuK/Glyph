@@ -125,11 +125,15 @@ export function CalendarPane({
 	const [anchorDate, setAnchorDate] = useState(initialAnchor);
 	const [selectedDate, setSelectedDate] = useState(initialSelected);
 	const [data, setData] = useState<CalendarRangeResponse | null>(null);
+	const [todayData, setTodayData] = useState<CalendarRangeResponse | null>(
+		null,
+	);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState("");
 	const [taskDraft, setTaskDraft] = useState("");
 	const [isSubmittingTask, setIsSubmittingTask] = useState(false);
 	const loadRequestIdRef = useRef(0);
+	const todayLoadRequestIdRef = useRef(0);
 	const { dailyNotesFolder, dailyNoteTemplatePath } = useUILayoutContext();
 	const { spacePath } = useSpace();
 	const { openOrCreateDailyNoteAtDate } = useDailyNote({
@@ -175,9 +179,33 @@ export function CalendarPane({
 		}
 	}, [dailyNotesFolder, range.end, range.start, selectedDate]);
 
+	const loadTodaySummary = useCallback(async () => {
+		const requestId = ++todayLoadRequestIdRef.current;
+		try {
+			const next = await invoke("calendar_query_range", {
+				start_date: today,
+				end_date: today,
+				selected_date: today,
+				daily_notes_folder: dailyNotesFolder,
+			});
+			if (todayLoadRequestIdRef.current !== requestId) {
+				return;
+			}
+			setTodayData(next);
+		} catch {
+			if (todayLoadRequestIdRef.current === requestId) {
+				setTodayData(null);
+			}
+		}
+	}, [dailyNotesFolder, today]);
+
 	useEffect(() => {
 		void loadCalendar();
 	}, [loadCalendar]);
+
+	useEffect(() => {
+		void loadTodaySummary();
+	}, [loadTodaySummary]);
 
 	useEffect(() => {
 		writeStorage(VIEW_STORAGE_KEY, viewMode);
@@ -200,22 +228,21 @@ export function CalendarPane({
 	);
 
 	const selectedTasks = data?.tasks;
-	const todaySummary = summaryByDate.get(today);
+	const todaySummary =
+		todayData?.days.find((summary) => summary.date === today) ??
+		(selectedDate === today ? summaryByDate.get(today) : undefined);
+	const todayTasks = todayData?.tasks;
 	const greeting = useMemo(() => getTimeGreeting(), []);
 	const todayTaskCount =
-		selectedTasks && selectedDate === today
-			? (selectedTasks.for_day.length ?? 0)
-			: (todaySummary?.task_count ?? 0);
+		todaySummary?.task_count ??
+		(todayTasks?.for_day.length ?? 0) + (todayTasks?.ongoing.length ?? 0);
 	const todayNoteCount =
-		selectedDate === today
-			? (data?.detail.note_activity.length ?? 0)
-			: (todaySummary?.note_activity_count ?? 0);
+		todayData?.detail.note_activity.length ??
+		todaySummary?.note_activity_count ??
+		0;
 	const todayHasDailyNote =
-		selectedDate === today
-			? (data?.detail.has_daily_note ?? false)
-			: (todaySummary?.has_daily_note ?? false);
-	const todayOverdueCount =
-		selectedDate === today ? (selectedTasks?.overdue.length ?? 0) : 0;
+		todayData?.detail.has_daily_note ?? todaySummary?.has_daily_note ?? false;
+	const todayOverdueCount = todayTasks?.overdue.length ?? 0;
 
 	const goToToday = useCallback(() => {
 		setAnchorDate(today);
@@ -370,20 +397,32 @@ export function CalendarPane({
 		[loadCalendar],
 	);
 
+	const openDailyNoteForDate = useCallback(
+		async (date: string) => {
+			if (!dailyNotesFolder) {
+				onOpenDailyNotesSettings();
+				return;
+			}
+			await openOrCreateDailyNoteAtDate(dailyNotesFolder, date);
+			await loadCalendar();
+			await loadTodaySummary();
+		},
+		[
+			dailyNotesFolder,
+			loadCalendar,
+			loadTodaySummary,
+			onOpenDailyNotesSettings,
+			openOrCreateDailyNoteAtDate,
+		],
+	);
+
 	const openSelectedDailyNote = useCallback(async () => {
-		if (!dailyNotesFolder) {
-			onOpenDailyNotesSettings();
-			return;
-		}
-		await openOrCreateDailyNoteAtDate(dailyNotesFolder, selectedDate);
-		await loadCalendar();
-	}, [
-		dailyNotesFolder,
-		loadCalendar,
-		onOpenDailyNotesSettings,
-		openOrCreateDailyNoteAtDate,
-		selectedDate,
-	]);
+		await openDailyNoteForDate(selectedDate);
+	}, [openDailyNoteForDate, selectedDate]);
+
+	const openTodayDailyNote = useCallback(async () => {
+		await openDailyNoteForDate(today);
+	}, [openDailyNoteForDate, today]);
 
 	const renderTaskGroup = useCallback(
 		(label: string, tasks: TaskItem[], scrollClassName: string) => {
@@ -567,7 +606,7 @@ export function CalendarPane({
 									<button
 										type="button"
 										className="calendarWelcomeItem"
-										onClick={openSelectedDailyNote}
+										onClick={openTodayDailyNote}
 									>
 										<FileText size={14} />
 										<strong>daily note ready</strong>
