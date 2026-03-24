@@ -15,7 +15,7 @@ Glyph is an offline-first desktop notes app built with React, TypeScript, Tauri,
 
 - Check existing issues before opening a new one.
 - For bugs, use the bug report form and include whether you are using an official GitHub release build, a trial/licensed build, or a self-built community build.
-- For trial, activation, or Gumroad questions, use the licensing/support issue form.
+- Use the licensing/support issue form for trial, activation, or Gumroad questions.
 - For larger features or architectural changes, open an issue before sending a PR.
 
 ## Development setup
