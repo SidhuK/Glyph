@@ -21,7 +21,8 @@ import {
 import { TemplateSettingsSections } from "./TemplatesSettingsPane";
 
 export function GeneralSettingsPane() {
-	const { status: licenseStatus } = useLicenseStatus(false);
+	const { status: licenseStatus, loading: licenseLoading } =
+		useLicenseStatus(false);
 	const [autoUpdateCheckInterval, setAutoUpdateCheckIntervalState] =
 		useState<AutoUpdateCheckInterval>("launch");
 	const [dailyNotesFolder, setDailyNotesFolderState] = useState<string | null>(
@@ -288,7 +289,7 @@ export function GeneralSettingsPane() {
 
 				<TemplateSettingsSections />
 
-				{licenseStatus?.can_auto_update ? (
+				{licenseLoading || licenseStatus?.can_auto_update ? (
 					<SettingsSection title="Updates">
 						<SettingsRow
 							label="Automatic update checks"

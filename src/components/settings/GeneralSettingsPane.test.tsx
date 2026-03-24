@@ -143,4 +143,19 @@ describe("GeneralSettingsPane", () => {
 
 		expect(container.textContent).toContain("Automatic update checks");
 	});
+
+	it("keeps the updates section visible while license status is loading", async () => {
+		useLicenseStatusMock.mockReturnValue({
+			status: undefined,
+			loading: true,
+			error: "",
+			reload: vi.fn(),
+		} as never);
+
+		await act(async () => {
+			root.render(<GeneralSettingsPane />);
+		});
+
+		expect(container.textContent).toContain("Automatic update checks");
+	});
 });

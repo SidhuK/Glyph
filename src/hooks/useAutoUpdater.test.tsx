@@ -120,6 +120,7 @@ describe("useAutoUpdater", () => {
 		});
 
 		expect(loadSettingsMock).toHaveBeenCalledTimes(1);
+		expect(checkMock).toHaveBeenCalledTimes(1);
 		expect(states).toContain(false);
 	});
 });

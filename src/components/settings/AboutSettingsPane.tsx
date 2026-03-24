@@ -144,12 +144,23 @@ export function AboutSettingsPane() {
 					description={
 						licenseLoading
 							? "Checking whether this build can use automatic updates."
-							: licenseStatus?.can_auto_update
-								? "Check for new releases and install them without leaving Glyph."
-								: "Community builds are updated manually."
+							: !licenseStatus
+								? "Glyph could not determine whether this build can use automatic updates."
+								: licenseStatus?.can_auto_update
+									? "Check for new releases and install them without leaving Glyph."
+									: "Community builds are updated manually."
 					}
 				>
-					{licenseLoading ? null : licenseStatus?.can_auto_update ? (
+					{licenseLoading ? null : !licenseStatus ? (
+						<SettingsRow
+							label="License status"
+							description="Glyph could not verify the current license state in this window, so update actions are unavailable right now."
+							stacked
+							interactive={false}
+						>
+							<p className="settingsHint">Unknown license status</p>
+						</SettingsRow>
+					) : licenseStatus.can_auto_update ? (
 						<SettingsRow
 							label="App updates"
 							description="Download and install the latest published version."
@@ -174,9 +185,7 @@ export function AboutSettingsPane() {
 								<Button
 									type="button"
 									size="sm"
-									onClick={() =>
-										licenseStatus && void openUrl(licenseStatus.purchase_url)
-									}
+									onClick={() => void openUrl(licenseStatus.purchase_url)}
 								>
 									Buy Official License
 								</Button>

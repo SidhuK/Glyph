@@ -1,6 +1,6 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { useState } from "react";
-import { useUpdaterContext } from "../../contexts/UpdaterContext";
+import { useUpdaterContext } from "../../contexts";
 import { activateLicenseKey, formatTrialRemaining } from "../../lib/license";
 import type { LicenseStatus } from "../../lib/tauri";
 import { Button } from "../ui/shadcn/button";
