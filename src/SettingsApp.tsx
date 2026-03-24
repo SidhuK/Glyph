@@ -1,5 +1,11 @@
 import "./SettingsApp.css";
+import {
+	ArrowUpRight01Icon,
+	BubbleChatQuestionIcon,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { openUrl } from "@tauri-apps/plugin-opener";
 import { LazyMotion, domAnimation } from "motion/react";
 import {
 	type ReactNode,
@@ -145,6 +151,28 @@ export default function SettingsApp() {
 									<span className="settingsTabLabel">{tab.label}</span>
 								</button>
 							))}
+							<div className="settingsFeedbackCard">
+								<div className="settingsFeedbackEyebrow">
+									Still in Early Access
+								</div>
+								<div className="settingsFeedbackTitle">Help shape Glyph</div>
+								<p className="settingsFeedbackBody">
+									Glyph is actively evolving and changing, so you may run into
+									rough edges here and there. If something feels off, I’d really
+									love to hear about it.
+								</p>
+								<Button
+									type="button"
+									className="settingsFeedbackButton"
+									onClick={() =>
+										void openUrl("https://github.com/Sidhuk/Glyph/issues")
+									}
+								>
+									<HugeiconsIcon icon={BubbleChatQuestionIcon} size={15} />
+									Send Feedback
+									<HugeiconsIcon icon={ArrowUpRight01Icon} size={14} />
+								</Button>
+							</div>
 						</nav>
 						<div className="settingsTabPanel">
 							<header className="settingsPanelHeader">

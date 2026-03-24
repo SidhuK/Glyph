@@ -5,6 +5,7 @@ import {
 	loadSettings,
 	setAutoUpdateCheckInterval as saveAutoUpdateCheckInterval,
 	setDailyNotesFolder,
+	setEditorPastedMediaFolder,
 } from "../../lib/settings";
 import { invoke } from "../../lib/tauri";
 import { Trash2 } from "../Icons";
@@ -26,6 +27,9 @@ export function GeneralSettingsPane() {
 	);
 	const [dailyNotesLoading, setDailyNotesLoading] = useState(true);
 	const [dailyNotesError, setDailyNotesError] = useState<string | null>(null);
+	const [pastedMediaFolder, setPastedMediaFolderState] = useState("assets");
+	const [attachmentsLoading, setAttachmentsLoading] = useState(true);
+	const [pastedMediaError, setPastedMediaError] = useState<string | null>(null);
 	const [error, setError] = useState("");
 
 	useEffect(() => {
@@ -39,6 +43,7 @@ export function GeneralSettingsPane() {
 				if (cancelled) return;
 				setDailyNotesFolderState(folder);
 				setAutoUpdateCheckIntervalState(settings.ui.autoUpdateCheckInterval);
+				setPastedMediaFolderState(settings.editor.pastedMediaFolder);
 			} catch (cause) {
 				if (!cancelled) {
 					setError(
@@ -48,6 +53,7 @@ export function GeneralSettingsPane() {
 			} finally {
 				if (!cancelled) {
 					setDailyNotesLoading(false);
+					setAttachmentsLoading(false);
 				}
 			}
 		})();
@@ -81,9 +87,11 @@ export function GeneralSettingsPane() {
 				const spacePrefix = normSpace.endsWith("/")
 					? normSpace
 					: `${normSpace}/`;
+				const selectedLower = normSelected.toLowerCase();
+				const spaceLower = normSpace.toLowerCase();
 				if (
-					normSelected !== normSpace &&
-					!normSelected.startsWith(spacePrefix)
+					selectedLower !== spaceLower &&
+					!selectedLower.startsWith(spacePrefix.toLowerCase())
 				) {
 					setDailyNotesError(
 						"Selected folder must be inside the current space.",
@@ -107,6 +115,62 @@ export function GeneralSettingsPane() {
 		setDailyNotesError(null);
 		await setDailyNotesFolder(null);
 		setDailyNotesFolderState(null);
+	}, []);
+
+	const handleBrowsePastedMediaFolder = useCallback(async () => {
+		setPastedMediaError(null);
+		try {
+			const { open } = await import("@tauri-apps/plugin-dialog");
+			const selected = await open({
+				directory: true,
+				multiple: false,
+			});
+			if (selected && typeof selected === "string") {
+				const currentSpacePath = await invoke("space_get_current");
+				if (!currentSpacePath) {
+					setPastedMediaError("No space is currently open.");
+					return;
+				}
+				const normSelected = selected.replace(/\\/g, "/");
+				const normSpace = currentSpacePath.replace(/\\/g, "/");
+				const spacePrefix = normSpace.endsWith("/")
+					? normSpace
+					: `${normSpace}/`;
+				const selectedLower = normSelected.toLowerCase();
+				const spaceLower = normSpace.toLowerCase();
+				if (
+					selectedLower !== spaceLower &&
+					!selectedLower.startsWith(spacePrefix.toLowerCase())
+				) {
+					setPastedMediaError(
+						"Selected folder must be inside the current space.",
+					);
+					return;
+				}
+				const relativePath = normSelected
+					.slice(normSpace.length)
+					.replace(/^\/+/, "");
+				const nextFolder = relativePath;
+				await setEditorPastedMediaFolder(nextFolder);
+				setPastedMediaFolderState(nextFolder);
+			}
+		} catch (cause) {
+			setPastedMediaError(
+				cause instanceof Error ? cause.message : "Failed to select folder",
+			);
+		}
+	}, []);
+
+	const handleResetPastedMediaFolder = useCallback(async () => {
+		setPastedMediaError(null);
+		try {
+			await setEditorPastedMediaFolder("assets");
+			setPastedMediaFolderState("assets");
+		} catch (cause) {
+			setPastedMediaError(
+				cause instanceof Error ? cause.message : "Failed to reset folder",
+			);
+		}
 	}, []);
 
 	return (
@@ -162,6 +226,58 @@ export function GeneralSettingsPane() {
 							{dailyNotesError ? (
 								<div className="settingsError dailyNotesError">
 									{dailyNotesError}
+								</div>
+							) : null}
+						</div>
+					</SettingsRow>
+				</SettingsSection>
+
+				<SettingsSection
+					title="Attachments"
+					description="Choose where note attachments are stored within the current space."
+				>
+					<SettingsRow
+						label="Folder"
+						description="Glyph saves pasted images and other note attachments here, then inserts relative Markdown paths so they still render after reopening the app."
+						stacked
+						interactive={false}
+					>
+						<div className="dailyNotesFolderField">
+							<div className="dailyNotesFolderRow">
+								<div className="dailyNotesFolderPath">
+									{attachmentsLoading
+										? "Loading..."
+										: pastedMediaFolder || "Space root"}
+								</div>
+								<div className="settingsActions dailyNotesActions">
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										className="min-w-24 rounded-md border-border bg-background justify-center shadow-none"
+										onClick={handleBrowsePastedMediaFolder}
+										disabled={attachmentsLoading}
+									>
+										<FolderOpen size={14} />
+										Browse
+									</Button>
+									<Button
+										type="button"
+										variant="outline"
+										size="icon-sm"
+										className="rounded-md border-border bg-background justify-center shadow-none"
+										onClick={handleResetPastedMediaFolder}
+										disabled={attachmentsLoading}
+										aria-label="Reset attachments folder"
+										title="Reset attachments folder"
+									>
+										<Trash2 size={14} />
+									</Button>
+								</div>
+							</div>
+							{pastedMediaError ? (
+								<div className="settingsError dailyNotesError">
+									{pastedMediaError}
 								</div>
 							) : null}
 						</div>

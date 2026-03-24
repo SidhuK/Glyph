@@ -99,6 +99,12 @@ export interface AttachmentResult {
 	markdown: string;
 }
 
+export interface SavedPastedImage {
+	asset_rel_path: string;
+	href: string;
+	markdown: string;
+}
+
 export interface NoteProperty {
 	key: string;
 	kind: string;
@@ -631,6 +637,15 @@ interface TauriCommands {
 	space_read_binary_preview: CommandDef<
 		{ path: string; max_bytes?: number | null },
 		BinaryFilePreviewDoc
+	>;
+	space_save_pasted_image: CommandDef<
+		{
+			source_path: string;
+			target_dir: string;
+			data_url: string;
+			alt?: string | null;
+		},
+		SavedPastedImage
 	>;
 	space_write_text: CommandDef<
 		{ path: string; text: string; base_mtime_ms?: number | null },

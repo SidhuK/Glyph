@@ -65,6 +65,58 @@
 	border-right: 1px solid var(--border-light);
 }
 
+.settingsFeedbackCard {
+	margin-top: auto;
+	display: flex;
+	flex-direction: column;
+	gap: 10px;
+	padding: 14px 14px 15px;
+	border-radius: calc(var(--radius-md) + 4px);
+	border: 1px solid
+		color-mix(in srgb, var(--color-yellow-500) 32%, var(--border-default));
+	background: color-mix(in srgb, var(--color-yellow-500) 10%, var(--bg-primary));
+	box-shadow: inset 0 1px 0 color-mix(in srgb, white 70%, transparent);
+}
+
+.settingsFeedbackEyebrow {
+	font-size: 10px;
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	color: color-mix(in srgb, var(--color-yellow-500) 70%, var(--text-primary));
+}
+
+.settingsFeedbackTitle {
+	font-size: 14px;
+	font-weight: var(--font-bold);
+	line-height: 1.2;
+	color: var(--text-primary);
+}
+
+.settingsFeedbackBody {
+	margin: 0;
+	font-size: 12px;
+	line-height: 1.5;
+	color: var(--text-secondary);
+}
+
+.settingsFeedbackButton {
+	width: 100%;
+	justify-content: center;
+	gap: 8px;
+	border-radius: calc(var(--radius-md) + 2px);
+	border: 1px solid
+		color-mix(in srgb, var(--color-yellow-500) 42%, var(--border-default));
+	background: color-mix(in srgb, var(--color-yellow-500) 20%, var(--bg-primary));
+	color: color-mix(in srgb, var(--color-yellow-500) 55%, var(--text-primary));
+	font-weight: var(--font-semibold);
+}
+
+.settingsFeedbackButton:hover {
+	background: color-mix(in srgb, var(--color-yellow-500) 28%, var(--bg-primary));
+	color: color-mix(in srgb, var(--color-yellow-500) 72%, var(--text-primary));
+}
+
 .settingsNavHeader {
 	display: flex;
 	flex-direction: column;

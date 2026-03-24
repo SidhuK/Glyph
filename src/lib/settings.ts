@@ -100,6 +100,7 @@ export interface DatabaseSettings {
 
 export interface EditorSettings {
 	showCollapsibleHeadings: boolean;
+	pastedMediaFolder: string;
 }
 
 export const DEFAULT_DATABASE_SETTINGS: DatabaseSettings = {
@@ -109,6 +110,7 @@ export const DEFAULT_DATABASE_SETTINGS: DatabaseSettings = {
 
 export const DEFAULT_EDITOR_SETTINGS: EditorSettings = {
 	showCollapsibleHeadings: false,
+	pastedMediaFolder: "assets",
 };
 
 function asThemeMode(value: unknown): ThemeMode {
@@ -207,6 +209,7 @@ async function emitSettingsUpdated(payload: {
 	};
 	editor?: {
 		showCollapsibleHeadings?: boolean;
+		pastedMediaFolder?: string;
 	};
 	changelog?: {
 		lastAcknowledgedVersion?: string | null;
@@ -281,6 +284,7 @@ const KEYS = {
 	translucentApp: "ui.translucentApp",
 	showToc: "ui.showToc",
 	editorShowCollapsibleHeadings: "editor.showCollapsibleHeadings",
+	editorPastedMediaFolder: "editor.pastedMediaFolder",
 	autoUpdateLastCheckedAt: "updates.lastCheckedAt",
 	dailyNotesFolder: "dailyNotes.folder",
 	templatesFolder: "templates.folder",
@@ -397,6 +401,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		templatesDailyNoteTemplateRaw,
 		taskSourceRaw,
 		rawEditorShowCollapsibleHeadings,
+		rawEditorPastedMediaFolder,
 		rawDatabaseShowColumnColor,
 		rawDatabaseShowNoteCount,
 		rawChangelogLastAcknowledgedVersion,
@@ -428,6 +433,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<string | null>(KEYS.templatesDailyNoteTemplate),
 		store.get<unknown>(KEYS.taskSource),
 		store.get<boolean | null>(KEYS.editorShowCollapsibleHeadings),
+		store.get<string | null>(KEYS.editorPastedMediaFolder),
 		store.get<boolean | null>(KEYS.databaseShowColumnColor),
 		store.get<boolean | null>(KEYS.databaseShowNoteCount),
 		store.get<string | null>(KEYS.changelogLastAcknowledgedVersion),
@@ -483,6 +489,10 @@ export async function loadSettings(): Promise<AppSettings> {
 			typeof rawEditorShowCollapsibleHeadings === "boolean"
 				? rawEditorShowCollapsibleHeadings
 				: DEFAULT_EDITOR_SETTINGS.showCollapsibleHeadings,
+		pastedMediaFolder:
+			typeof rawEditorPastedMediaFolder === "string"
+				? normalizeRelPath(rawEditorPastedMediaFolder)
+				: DEFAULT_EDITOR_SETTINGS.pastedMediaFolder,
 	};
 	const database: DatabaseSettings = {
 		showColumnColor:
@@ -717,6 +727,21 @@ export async function setEditorShowCollapsibleHeadings(
 	await store.save();
 	void emitSettingsUpdated({
 		editor: { showCollapsibleHeadings: enabled },
+	});
+}
+
+export async function setEditorPastedMediaFolder(
+	folder: string | null,
+): Promise<void> {
+	const store = await getStore();
+	const nextFolder =
+		typeof folder === "string"
+			? normalizeRelPath(folder)
+			: DEFAULT_EDITOR_SETTINGS.pastedMediaFolder;
+	await store.set(KEYS.editorPastedMediaFolder, nextFolder);
+	await store.save();
+	void emitSettingsUpdated({
+		editor: { pastedMediaFolder: nextFolder },
 	});
 }
 
