@@ -203,9 +203,9 @@ export function CalendarPane({
 	const todaySummary = summaryByDate.get(today);
 	const greeting = useMemo(() => getTimeGreeting(), []);
 	const todayTaskCount =
-		(selectedTasks && selectedDate === today
+		selectedTasks && selectedDate === today
 			? (selectedTasks.for_day.length ?? 0)
-			: (todaySummary?.task_count ?? 0));
+			: (todaySummary?.task_count ?? 0);
 	const todayNoteCount =
 		selectedDate === today
 			? (data?.detail.note_activity.length ?? 0)
@@ -537,8 +537,7 @@ export function CalendarPane({
 									>
 										<ListChecks size={14} />
 										<strong>
-											{todayTaskCount}{" "}
-											{todayTaskCount === 1 ? "task" : "tasks"}
+											{todayTaskCount} {todayTaskCount === 1 ? "task" : "tasks"}
 										</strong>
 									</button>
 								) : null}
@@ -549,9 +548,7 @@ export function CalendarPane({
 										onClick={goToToday}
 									>
 										<Calendar size={14} />
-										<strong>
-											{todayOverdueCount} overdue
-										</strong>
+										<strong>{todayOverdueCount} overdue</strong>
 									</button>
 								) : null}
 								{todayNoteCount > 0 ? (
@@ -562,8 +559,7 @@ export function CalendarPane({
 									>
 										<StickyNote size={14} />
 										<strong>
-											{todayNoteCount}{" "}
-											{todayNoteCount === 1 ? "note" : "notes"}
+											{todayNoteCount} {todayNoteCount === 1 ? "note" : "notes"}
 										</strong>
 									</button>
 								) : null}

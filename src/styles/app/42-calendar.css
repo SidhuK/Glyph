@@ -298,7 +298,11 @@
 }
 
 .calendarMonthCell.is-selected {
-	background: color-mix(in srgb, var(--interactive-accent) 12%, var(--bg-tertiary));
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 12%,
+		var(--bg-tertiary)
+	);
 }
 
 .calendarWeekCard.is-selected {
@@ -307,7 +311,11 @@
 		var(--interactive-accent) 55%,
 		var(--border-subtle)
 	);
-	background: color-mix(in srgb, var(--interactive-accent) 9%, var(--bg-tertiary));
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 9%,
+		var(--bg-tertiary)
+	);
 }
 
 .calendarMonthCell.is-outside {
@@ -462,8 +470,8 @@
 	border-radius: 8px;
 	border: none;
 	background: color-mix(in srgb, var(--calendar-tone) 91%, var(--bg-primary));
-	box-shadow: inset 0 1px 0 color-mix(in srgb, white 18%, transparent),
-		0 1px 2px color-mix(in srgb, var(--calendar-tone) 14%, transparent);
+	box-shadow: inset 0 1px 0 color-mix(in srgb, white 18%, transparent), 0 1px
+		2px color-mix(in srgb, var(--calendar-tone) 14%, transparent);
 	color: color-mix(in srgb, white 92%, var(--text-primary));
 	font-size: 0.7rem;
 	font-weight: var(--font-semibold);
@@ -488,7 +496,8 @@
 	border-radius: 10px;
 	padding: 10px 14px;
 	min-width: 0;
-	transition: background 140ms ease, border-color 140ms ease, transform 140ms ease;
+	transition: background 140ms ease, border-color 140ms ease, transform 140ms
+		ease;
 }
 
 .calendarWeekCard:hover {
@@ -556,7 +565,11 @@
 		var(--interactive-accent) 30%,
 		var(--border-subtle)
 	);
-	background: color-mix(in srgb, var(--interactive-accent) 6%, var(--bg-tertiary));
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 6%,
+		var(--bg-tertiary)
+	);
 }
 
 .calendarNoteTitle,

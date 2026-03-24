@@ -1,8 +1,4 @@
-import {
-	Calendar03Icon,
-	DashboardSquare03Icon,
-	Tag01Icon,
-} from "@hugeicons/core-free-icons";
+import { DashboardSquare02Icon, Tag01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, m } from "motion/react";
 import { memo } from "react";
@@ -12,7 +8,7 @@ import {
 	useUILayoutContext,
 } from "../../contexts";
 import { FileTreePane } from "../FileTreePane";
-import { Files } from "../Icons";
+import { Database, Files } from "../Icons";
 import { TagsPane } from "../TagsPane";
 import { directionVariants } from "../ui/animations";
 import { ScrollArea } from "../ui/shadcn/scroll-area";
@@ -81,13 +77,12 @@ export const SidebarContent = memo(function SidebarContent({
 					<button
 						type="button"
 						className="sidebarQuickActionBtn"
-						data-kind="calendar"
+						data-kind="dashboard"
 						onClick={onOpenCalendar}
-						title="Open Calendar"
+						title="Open Dashboard"
 					>
-						<HugeiconsIcon icon={Calendar03Icon} size={14} />
-						<span className="sidebarQuickActionLabel">Calendar</span>
-						<span className="sidebarQuickActionBadge">Alpha</span>
+						<HugeiconsIcon icon={DashboardSquare02Icon} size={14} />
+						<span className="sidebarQuickActionLabel">Dashboard</span>
 					</button>
 					<button
 						type="button"
@@ -96,7 +91,7 @@ export const SidebarContent = memo(function SidebarContent({
 						onClick={() => onOpenDatabases()}
 						title="Open Databases"
 					>
-						<HugeiconsIcon icon={DashboardSquare03Icon} size={14} />
+						<Database size={14} />
 						<span className="sidebarQuickActionLabel">Databases</span>
 					</button>
 				</div>
