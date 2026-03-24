@@ -36,6 +36,21 @@ function parseCalloutMarker(
 	return { kind, title };
 }
 
+function parseStandaloneMarkdownImage(
+	text: string,
+): { alt: string; src: string; title: string } | null {
+	const trimmed = text.trim();
+	const match = trimmed.match(/^!\[([^\]\n]*)\]\((.+?)(?:\s+"([^"]*)")?\)$/);
+	if (!match) return null;
+	const src = (match[2] ?? "").trim();
+	if (!src) return null;
+	return {
+		alt: (match[1] ?? "").trim(),
+		src,
+		title: (match[3] ?? "").trim(),
+	};
+}
+
 const CalloutDecorations = Extension.create({
 	name: "callout-decorations",
 	addProseMirrorPlugins() {
@@ -208,6 +223,66 @@ const TaskListMarkdownShortcut = Extension.create({
 	},
 });
 
+const MarkdownImageShortcut = Extension.create({
+	name: "markdown-image-shortcut",
+	addProseMirrorPlugins() {
+		const key = new PluginKey("markdown-image-shortcut");
+		return [
+			new Plugin({
+				key,
+				appendTransaction(transactions, _oldState, newState) {
+					if (!transactions.some((tr) => tr.docChanged)) return null;
+
+					const paragraph = newState.schema.nodes.paragraph;
+					const image = newState.schema.nodes.image;
+					if (!paragraph || !image) return null;
+
+					const replacements: Array<{
+						pos: number;
+						size: number;
+						alt: string;
+						src: string;
+						title: string;
+					}> = [];
+
+					newState.doc.descendants((node, pos) => {
+						if (node.type !== paragraph || node.childCount !== 1) return;
+						if (node.firstChild?.type.name !== "text") return;
+						const parsed = parseStandaloneMarkdownImage(node.textContent ?? "");
+						if (!parsed) return;
+						replacements.push({
+							pos,
+							size: node.nodeSize,
+							alt: parsed.alt,
+							src: parsed.src,
+							title: parsed.title,
+						});
+					});
+
+					if (!replacements.length) return null;
+
+					let tr = newState.tr;
+					for (let i = replacements.length - 1; i >= 0; i -= 1) {
+						const replacement = replacements[i];
+						tr = tr.replaceWith(
+							replacement.pos,
+							replacement.pos + replacement.size,
+							image.create({
+								src: replacement.src,
+								alt: replacement.alt,
+								title: replacement.title,
+								originSrc: replacement.src,
+							}),
+						);
+					}
+
+					return tr.docChanged ? tr : null;
+				},
+			}),
+		];
+	},
+});
+
 const TableEnterNavigation = Extension.create({
 	name: "table-enter-navigation",
 	addKeyboardShortcuts() {
@@ -303,6 +378,7 @@ export function createEditorExtensions(
 		TaskList,
 		TaskItem.configure({ nested: true }),
 		TaskListMarkdownShortcut,
+		MarkdownImageShortcut,
 		TableEnterNavigation,
 		Table.configure({ resizable: true }),
 		TableRow,
