@@ -1,0 +1,71 @@
+name: Feature request
+description: Suggest an improvement or new capability for Glyph
+title: "[Feature]: "
+labels:
+  - enhancement
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for the idea.
+
+        Glyph is currently focused on the macOS experience first. Requests whose primary goal is Windows support or Windows-specific behavior are out of scope for now.
+
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Before you file
+      options:
+        - label: I searched the existing issues first.
+          required: true
+        - label: This request is aligned with Glyph's current macOS-focused scope.
+          required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Editor
+        - File tree
+        - Tasks
+        - Database notes
+        - AI
+        - Licensing
+        - Settings
+        - Search
+        - Install / updater
+        - Design / UX
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem are you trying to solve?
+      description: Start with the user need or workflow pain point.
+      placeholder: I'm frustrated when...
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What would you like to happen?
+      placeholder: Describe the feature or change you want to see.
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives you've considered
+      placeholder: Workarounds, competing approaches, or related apps/features.
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Additional context
+      description: Screenshots, mockups, links, and examples are welcome.
+

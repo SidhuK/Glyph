@@ -1,0 +1,100 @@
+name: Licensing or purchase support
+description: Get help with trial, activation, official builds, or community-build confusion
+title: "[Licensing]: "
+labels:
+  - support
+  - licensing
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form for trial, activation, Gumroad, or official-build questions.
+
+        Please do not post full license keys, order IDs, private email addresses, or any other sensitive purchase details in a public issue.
+
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Before you file
+      options:
+        - label: I have read the licensing docs first.
+          required: true
+        - label: I will not paste my full license key or other private purchase details here.
+          required: true
+
+  - type: dropdown
+    id: request_type
+    attributes:
+      label: What do you need help with?
+      options:
+        - Trial expired unexpectedly
+        - License activation failed
+        - Gumroad purchase / access question
+        - Official build vs community build confusion
+        - Updater / release install issue
+        - Other licensing question
+    validations:
+      required: true
+
+  - type: dropdown
+    id: build_type
+    attributes:
+      label: Which build are you using?
+      description: This is the key detail we need to route the issue correctly.
+      options:
+        - Official GitHub release build
+        - Self-built community build
+        - Local development build
+        - Not sure
+    validations:
+      required: true
+
+  - type: dropdown
+    id: license_state
+    attributes:
+      label: Licensing state
+      options:
+        - Official build during 7-day trial
+        - Official build with active license
+        - Self-built community build
+        - Not sure
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Glyph version
+      placeholder: 0.1.10
+    validations:
+      required: true
+
+  - type: input
+    id: macos_version
+    attributes:
+      label: macOS version
+      placeholder: macOS 15.4
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What went wrong?
+      placeholder: Describe the licensing or purchase problem clearly.
+    validations:
+      required: true
+
+  - type: textarea
+    id: error_details
+    attributes:
+      label: Error message or UI state
+      description: Paste the exact error text if you have it. Redact anything sensitive.
+      placeholder: What message did Glyph show?
+
+  - type: textarea
+    id: context
+    attributes:
+      label: Extra context
+      description: Include anything that helps explain whether this came from an official download, a self-build, or a local dev build.
+
