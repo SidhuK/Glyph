@@ -29,6 +29,7 @@ CREATE INDEX IF NOT EXISTS links_to_id_idx ON links(to_id);
 CREATE TABLE IF NOT EXISTS tags (
   note_id TEXT NOT NULL,
   tag TEXT NOT NULL,
+  is_explicit INTEGER NOT NULL DEFAULT 0 CHECK (is_explicit IN (0,1)),
   PRIMARY KEY (note_id, tag)
 );
 

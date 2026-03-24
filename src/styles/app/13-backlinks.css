@@ -32,7 +32,7 @@
 	list-style: none;
 	display: flex;
 	flex-direction: column;
-	gap: 2px;
+	gap: 0;
 	padding: 0 var(--space-1) var(--space-2) var(--space-1);
 	max-height: 220px;
 	overflow: auto;
@@ -45,10 +45,17 @@
 
 .tagsButton {
 	width: 100%;
+	display: flex;
+	align-items: center;
 	justify-content: space-between;
-	padding: 0 var(--space-2);
-	height: 28px;
+	gap: var(--space-2);
+	padding: 1px var(--space-2);
+	min-height: 26px;
 	border-radius: var(--radius-md);
+}
+
+.tagsButton[data-explicit="false"] {
+	opacity: 0.82;
 }
 
 .tagsNameWrap {
@@ -56,6 +63,7 @@
 	align-items: center;
 	gap: 6px;
 	min-width: 0;
+	flex: 1;
 }
 
 .tagsName {

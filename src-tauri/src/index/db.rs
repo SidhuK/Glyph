@@ -7,7 +7,7 @@ use std::sync::{Mutex, OnceLock};
 use super::properties::backfill_inferred_string_property_kinds;
 use super::schema::ensure_schema;
 
-const INDEX_DB_VERSION: i32 = 1;
+const INDEX_DB_VERSION: i32 = 2;
 const WAL_SIZE_LIMIT_BYTES: i64 = 1_048_576;
 
 fn schema_cache() -> &'static Mutex<HashSet<PathBuf>> {
@@ -24,15 +24,56 @@ fn migrate_if_needed(conn: &rusqlite::Connection) -> Result<(), String> {
         return Ok(());
     }
 
-    let backfilled = backfill_inferred_string_property_kinds(conn)?;
-    if backfilled > 0 {
-        tracing::info!(backfilled, "Backfilled legacy note property kinds");
+    if current_version < 1 {
+        let backfilled = backfill_inferred_string_property_kinds(conn)?;
+        if backfilled > 0 {
+            tracing::info!(backfilled, "Backfilled legacy note property kinds");
+        }
     }
-    // Write the version stamp only after the backfill succeeds so a
-    // mid-migration crash safely retries on the next launch.
+
+    if current_version < 2 {
+        migrate_tags_table(conn)?;
+    }
+
     conn.pragma_update(None, "user_version", INDEX_DB_VERSION)
         .map_err(|e| e.to_string())?;
 
+    Ok(())
+}
+
+fn table_has_column(
+    conn: &rusqlite::Connection,
+    table_name: &str,
+    column_name: &str,
+) -> Result<bool, String> {
+    let pragma = format!("PRAGMA table_info({table_name})");
+    let mut stmt = conn.prepare(&pragma).map_err(|e| e.to_string())?;
+    let mut rows = stmt.query([]).map_err(|e| e.to_string())?;
+    while let Some(row) = rows.next().map_err(|e| e.to_string())? {
+        let name = row.get::<_, String>(1).map_err(|e| e.to_string())?;
+        if name == column_name {
+            return Ok(true);
+        }
+    }
+    Ok(false)
+}
+
+fn migrate_tags_table(conn: &rusqlite::Connection) -> Result<(), String> {
+    if !table_has_column(conn, "tags", "is_explicit")? {
+        conn.execute(
+            "ALTER TABLE tags ADD COLUMN is_explicit INTEGER NOT NULL DEFAULT 1 CHECK (is_explicit IN (0,1))",
+            [],
+        )
+        .map_err(|e| e.to_string())?;
+    }
+    conn.execute(
+        "CREATE INDEX IF NOT EXISTS tags_tag_explicit_idx ON tags(tag, is_explicit)",
+        [],
+    )
+    .map_err(|e| e.to_string())?;
+    conn.execute("DELETE FROM tags", [])
+        .map_err(|e| e.to_string())?;
+    tracing::info!("Cleared legacy tag rows; next rebuild will repopulate hierarchical tags");
     Ok(())
 }
 

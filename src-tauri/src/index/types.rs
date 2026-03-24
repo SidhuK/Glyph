@@ -23,7 +23,10 @@ pub struct BacklinkItem {
 #[derive(Serialize)]
 pub struct TagCount {
     pub tag: String,
-    pub count: u32,
+    pub direct_count: u32,
+    pub total_count: u32,
+    pub depth: u32,
+    pub is_explicit: bool,
 }
 
 #[derive(Serialize)]

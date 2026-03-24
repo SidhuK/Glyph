@@ -327,7 +327,10 @@ export interface BacklinkItem {
 
 export interface TagCount {
 	tag: string;
-	count: number;
+	direct_count: number;
+	total_count: number;
+	depth: number;
+	is_explicit: boolean;
 }
 
 export interface IndexRebuildResult {
