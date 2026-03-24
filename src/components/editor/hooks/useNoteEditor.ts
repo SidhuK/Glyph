@@ -7,6 +7,7 @@ import {
 	splitYamlFrontmatter,
 } from "../../../lib/notePreview";
 import { loadSettings } from "../../../lib/settings";
+import { invoke } from "../../../lib/tauri";
 import { useTauriEvent } from "../../../lib/tauriEvents";
 import { createEditorExtensions } from "../extensions";
 import {
@@ -23,6 +24,33 @@ import { useHydrateInlineImages } from "./useHydrateInlineImages";
 
 function normalizeBody(markdown: string): string {
 	return markdown.replace(/\u00a0/g, " ").replace(/&nbsp;/g, " ");
+}
+
+function getPastedImageFiles(event: ClipboardEvent): File[] {
+	const files: File[] = [];
+	for (const item of Array.from(event.clipboardData?.items ?? [])) {
+		if (!item.type.startsWith("image/")) continue;
+		const file = item.getAsFile();
+		if (file) files.push(file);
+	}
+	return files;
+}
+
+function readFileAsDataUrl(file: File): Promise<string> {
+	return new Promise((resolve, reject) => {
+		const reader = new FileReader();
+		reader.onload = () => {
+			if (typeof reader.result === "string") {
+				resolve(reader.result);
+				return;
+			}
+			reject(new Error("Failed to read pasted image."));
+		};
+		reader.onerror = () => {
+			reject(reader.error ?? new Error("Failed to read pasted image."));
+		};
+		reader.readAsDataURL(file);
+	});
 }
 
 interface UseNoteEditorOptions {
@@ -119,6 +147,7 @@ export function useNoteEditor({
 	const suppressUpdateRef = useRef(false);
 	const relPathRef = useRef(relPath);
 	const interactiveRef = useRef(interactive);
+	const pastedMediaFolderRef = useRef("assets");
 	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
 	const extensions = useMemo(
 		() =>
@@ -136,10 +165,12 @@ export function useNoteEditor({
 			.then((settings) => {
 				if (cancelled) return;
 				setShowCollapsibleHeadings(settings.editor.showCollapsibleHeadings);
+				pastedMediaFolderRef.current = settings.editor.pastedMediaFolder;
 			})
 			.catch(() => {
 				if (cancelled) return;
 				setShowCollapsibleHeadings(false);
+				pastedMediaFolderRef.current = "assets";
 			});
 		return () => {
 			cancelled = true;
@@ -149,6 +180,9 @@ export function useNoteEditor({
 	useTauriEvent("settings:updated", (payload) => {
 		if (typeof payload.editor?.showCollapsibleHeadings === "boolean") {
 			setShowCollapsibleHeadings(payload.editor.showCollapsibleHeadings);
+		}
+		if (typeof payload.editor?.pastedMediaFolder === "string") {
+			pastedMediaFolderRef.current = payload.editor.pastedMediaFolder;
 		}
 	});
 
@@ -181,6 +215,43 @@ export function useNoteEditor({
 						relPathRef.current,
 						interactiveRef.current,
 					);
+				},
+				paste: (_view, event) => {
+					if (!(event instanceof ClipboardEvent)) return false;
+					if (mode !== "rich" || !relPathRef.current) return false;
+					const imageFiles = getPastedImageFiles(event);
+					if (!imageFiles.length) return false;
+					event.preventDefault();
+					void (async () => {
+						const images: Array<{ href: string; alt: string }> = [];
+						for (const file of imageFiles) {
+							const dataUrl = await readFileAsDataUrl(file);
+							const saved = await invoke("space_save_pasted_image", {
+								source_path: relPathRef.current,
+								target_dir: pastedMediaFolderRef.current,
+								data_url: dataUrl,
+								alt: file.name || null,
+							});
+							images.push({
+								href: saved.href,
+								alt: file.name || "",
+							});
+							const imagePayload = {
+								type: "image",
+								attrs: {
+									src: dataUrl,
+									alt: file.name || "",
+									title: "",
+									originSrc: saved.href,
+								},
+							};
+							editor.chain().focus().insertContent(imagePayload).run();
+						}
+						if (!editor?.isEditable || !images.length) return;
+					})().catch(() => {
+						// Ignore failed clipboard saves so the editor stays responsive.
+					});
+					return true;
 				},
 			},
 		},

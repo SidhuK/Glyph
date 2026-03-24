@@ -93,6 +93,7 @@ type TauriEventMap = {
 		};
 		editor?: {
 			showCollapsibleHeadings?: boolean;
+			pastedMediaFolder?: string;
 		};
 		changelog?: {
 			lastAcknowledgedVersion?: string | null;

@@ -27,6 +27,24 @@ function canonicalizeWikiLinks(input: string): string {
 	return out;
 }
 
+const MARKDOWN_IMAGE_WITHOUT_TITLE_RE =
+	/!\[([^\]\n]*)\]\(([^)\n"]*\s[^)\n"]*)\)/g;
+
+function encodeMarkdownImageDestinations(input: string): string {
+	return input.replace(
+		MARKDOWN_IMAGE_WITHOUT_TITLE_RE,
+		(match, alt: string, rawHref: string) => {
+			const href = typeof rawHref === "string" ? rawHref.trim() : "";
+			if (!href) return match;
+			try {
+				return `![${alt}](${encodeURI(decodeURI(href))})`;
+			} catch {
+				return `![${alt}](${encodeURI(href)})`;
+			}
+		},
+	);
+}
+
 const GLYPH_COLOR_HTML_RE =
 	/<span\b(?=[^>]*\bdata-glyph-color=(?:"([^"]+)"|'([^']+)'))(?=[^>]*\bstyle=(?:"[^"]*"|'[^']*'))[^>]*>([\s\S]*?)<\/span>/gi;
 
@@ -60,7 +78,9 @@ function postprocessColoredText(input: string): string {
 }
 
 export function preprocessMarkdownForEditor(markdown: string): string {
-	return preprocessColoredText(canonicalizeWikiLinks(markdown));
+	return preprocessColoredText(
+		encodeMarkdownImageDestinations(canonicalizeWikiLinks(markdown)),
+	);
 }
 
 export function postprocessMarkdownFromEditor(markdown: string): string {
