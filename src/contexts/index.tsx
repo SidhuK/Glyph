@@ -3,6 +3,7 @@ import { EditorProvider } from "./EditorContext";
 import { FileTreeProvider } from "./FileTreeContext";
 import { SpaceProvider } from "./SpaceContext";
 import { UIProvider } from "./UIContext";
+export { useUpdaterContext } from "./UpdaterContext";
 
 export { useSpace } from "./SpaceContext";
 export { useFileTreeContext } from "./FileTreeContext";

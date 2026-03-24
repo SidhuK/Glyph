@@ -78,6 +78,19 @@
 	box-shadow: inset 0 1px 0 color-mix(in srgb, white 70%, transparent);
 }
 
+.settingsFeedbackCardCommunity {
+	border-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 26%,
+		var(--border-default)
+	);
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 10%,
+		var(--bg-primary)
+	);
+}
+
 .settingsFeedbackEyebrow {
 	font-size: 10px;
 	font-weight: var(--font-semibold);
@@ -115,6 +128,29 @@
 .settingsFeedbackButton:hover {
 	background: color-mix(in srgb, var(--color-yellow-500) 28%, var(--bg-primary));
 	color: color-mix(in srgb, var(--color-yellow-500) 72%, var(--text-primary));
+}
+
+.settingsFeedbackButtonCommunity {
+	border-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 34%,
+		var(--border-default)
+	);
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 18%,
+		var(--bg-primary)
+	);
+	color: color-mix(in srgb, var(--interactive-accent) 48%, var(--text-primary));
+}
+
+.settingsFeedbackButtonCommunity:hover {
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 24%,
+		var(--bg-primary)
+	);
+	color: color-mix(in srgb, var(--interactive-accent) 64%, var(--text-primary));
 }
 
 .settingsNavHeader {

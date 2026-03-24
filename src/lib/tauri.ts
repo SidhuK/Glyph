@@ -457,6 +457,7 @@ export type LicenseMode =
 export interface LicenseStatus {
 	mode: LicenseMode;
 	can_use_app: boolean;
+	can_auto_update: boolean;
 	is_official_build: boolean;
 	purchase_url: string;
 	support_url: string;

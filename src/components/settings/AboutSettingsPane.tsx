@@ -4,6 +4,7 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 import { relaunch } from "@tauri-apps/plugin-process";
 import { check } from "@tauri-apps/plugin-updater";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useLicenseStatus } from "../../lib/license";
 import { setAutoUpdateLastCheckedAt } from "../../lib/settings";
 import type { AppInfo } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
@@ -11,6 +12,8 @@ import { Button } from "../ui/shadcn/button";
 import { SettingsRow, SettingsSection } from "./SettingsScaffold";
 
 export function AboutSettingsPane() {
+	const { status: licenseStatus, loading: licenseLoading } =
+		useLicenseStatus(false);
 	const [appInfo, setAppInfo] = useState<AppInfo | null>(null);
 	const [error, setError] = useState("");
 	const [copyLabel, setCopyLabel] = useState("Copy Diagnostics");
@@ -75,6 +78,7 @@ export function AboutSettingsPane() {
 	};
 
 	const handleCheckForUpdates = async () => {
+		if (!licenseStatus?.can_auto_update) return;
 		if (checkingUpdates) return;
 		setCheckingUpdates(true);
 		setUpdateStatus("");
@@ -137,22 +141,58 @@ export function AboutSettingsPane() {
 
 				<SettingsSection
 					title="Updates"
-					description="Check for new releases and install them without leaving Glyph."
+					description={
+						licenseLoading
+							? "Checking whether this build can use automatic updates."
+							: !licenseStatus
+								? "Glyph could not determine whether this build can use automatic updates."
+								: licenseStatus?.can_auto_update
+									? "Check for new releases and install them without leaving Glyph."
+									: "Community builds are updated manually."
+					}
 				>
-					<SettingsRow
-						label="App updates"
-						description="Download and install the latest published version."
-					>
-						<Button
-							type="button"
-							size="sm"
-							disabled={checkingUpdates}
-							onClick={() => void handleCheckForUpdates()}
+					{licenseLoading ? null : !licenseStatus ? (
+						<SettingsRow
+							label="License status"
+							description="Glyph could not verify the current license state in this window, so update actions are unavailable right now."
+							stacked
+							interactive={false}
 						>
-							{checkingUpdates ? "Checking…" : "Check for Updates"}
-						</Button>
-					</SettingsRow>
-					{updateStatus ? (
+							<p className="settingsHint">Unknown license status</p>
+						</SettingsRow>
+					) : licenseStatus.can_auto_update ? (
+						<SettingsRow
+							label="App updates"
+							description="Download and install the latest published version."
+						>
+							<Button
+								type="button"
+								size="sm"
+								disabled={checkingUpdates}
+								onClick={() => void handleCheckForUpdates()}
+							>
+								{checkingUpdates ? "Checking…" : "Check for Updates"}
+							</Button>
+						</SettingsRow>
+					) : (
+						<SettingsRow
+							label="Community build"
+							description="Thanks for downloading and building Glyph yourself. To get updates, download the latest source and build again, or get the official licensed build to support the project and unlock automatic updates."
+							stacked
+							interactive={false}
+						>
+							<div className="settingsActions">
+								<Button
+									type="button"
+									size="sm"
+									onClick={() => void openUrl(licenseStatus.purchase_url)}
+								>
+									Buy Official License
+								</Button>
+							</div>
+						</SettingsRow>
+					)}
+					{!licenseLoading && licenseStatus?.can_auto_update && updateStatus ? (
 						<SettingsRow
 							label="Status"
 							description="Latest updater activity from this window."

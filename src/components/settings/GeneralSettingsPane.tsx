@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useLicenseStatus } from "../../lib/license";
 import {
 	type AutoUpdateCheckInterval,
 	getDailyNotesFolder,
@@ -20,6 +21,8 @@ import {
 import { TemplateSettingsSections } from "./TemplatesSettingsPane";
 
 export function GeneralSettingsPane() {
+	const { status: licenseStatus, loading: licenseLoading } =
+		useLicenseStatus(false);
 	const [autoUpdateCheckInterval, setAutoUpdateCheckIntervalState] =
 		useState<AutoUpdateCheckInterval>("launch");
 	const [dailyNotesFolder, setDailyNotesFolderState] = useState<string | null>(
@@ -286,18 +289,20 @@ export function GeneralSettingsPane() {
 
 				<TemplateSettingsSections />
 
-				<SettingsSection title="Updates">
-					<SettingsRow
-						label="Automatic update checks"
-						description="Automatically check for updates every 12 hours while Glyph is open."
-					>
-						<SettingsToggle
-							ariaLabel="Automatic update checks every 12 hours"
-							checked={autoUpdateCheckInterval === "12h"}
-							onCheckedChange={handleAutoUpdateToggleChange}
-						/>
-					</SettingsRow>
-				</SettingsSection>
+				{licenseLoading || licenseStatus?.can_auto_update ? (
+					<SettingsSection title="Updates">
+						<SettingsRow
+							label="Automatic update checks"
+							description="Automatically check for updates every 12 hours while Glyph is open."
+						>
+							<SettingsToggle
+								ariaLabel="Automatic update checks every 12 hours"
+								checked={autoUpdateCheckInterval === "12h"}
+								onCheckedChange={handleAutoUpdateToggleChange}
+							/>
+						</SettingsRow>
+					</SettingsSection>
+				) : null}
 				<LicenseSettingsCard />
 			</div>
 		</div>

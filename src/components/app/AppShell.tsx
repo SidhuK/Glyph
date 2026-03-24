@@ -38,8 +38,8 @@ import {
 	useFileTreeContext,
 	useSpace,
 	useUILayoutContext,
+	useUpdaterContext,
 } from "../../contexts";
-import { useAutoUpdater } from "../../hooks/useAutoUpdater";
 import { useCommandShortcuts } from "../../hooks/useCommandShortcuts";
 import { useDailyNote } from "../../hooks/useDailyNote";
 import { useFileTree } from "../../hooks/useFileTree";
@@ -182,7 +182,7 @@ export function AppShell() {
 			}
 		>(),
 	);
-	const autoUpdater = useAutoUpdater();
+	const autoUpdater = useUpdaterContext();
 	const whatsNew = useWhatsNew(space.info?.version ?? null);
 
 	const sidebarResize = useResizablePanel({
