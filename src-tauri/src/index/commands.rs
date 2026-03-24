@@ -14,7 +14,7 @@ use super::indexer::index_note;
 use super::indexer::rebuild;
 use super::search_advanced::{run_search_advanced, SearchAdvancedRequest};
 use super::search_hybrid::hybrid_search;
-use super::tags::normalize_tag;
+use super::tags::{normalize_tag, tag_depth};
 use super::tasks::{
     mutate_task_line, note_abs_path, query_tasks, write_note, IndexedTask, TaskBucket,
 };
@@ -674,27 +674,38 @@ pub async fn tags_list(
     let limit = limit.unwrap_or(200).min(2000) as i64;
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<TagCount>, String> {
         let conn = open_db(&root)?;
-        let mut stmt = conn
-            .prepare(
-                "SELECT tag, COUNT(*) AS c
-                 FROM tags
-                 GROUP BY tag
-                 ORDER BY c DESC, tag ASC
-                 LIMIT ?",
-            )
-            .map_err(|e| e.to_string())?;
-        let mut rows = stmt.query([limit]).map_err(|e| e.to_string())?;
-        let mut out = Vec::new();
-        while let Some(row) = rows.next().map_err(|e| e.to_string())? {
-            out.push(TagCount {
-                tag: row.get(0).map_err(|e| e.to_string())?,
-                count: row.get::<_, i64>(1).map_err(|e| e.to_string())? as u32,
-            });
-        }
-        Ok(out)
+        list_tags(&conn, limit)
     })
     .await
     .map_err(|e| e.to_string())?
+}
+
+fn list_tags(conn: &rusqlite::Connection, limit: i64) -> Result<Vec<TagCount>, String> {
+    let mut stmt = conn
+        .prepare(
+            "SELECT tag,
+                    SUM(CASE WHEN is_explicit = 1 THEN 1 ELSE 0 END) AS direct_count,
+                    COUNT(*) AS total_count,
+                    MAX(is_explicit) AS is_explicit
+             FROM tags
+             GROUP BY tag
+             ORDER BY tag ASC
+             LIMIT ?",
+        )
+        .map_err(|e| e.to_string())?;
+    let mut rows = stmt.query([limit]).map_err(|e| e.to_string())?;
+    let mut out = Vec::new();
+    while let Some(row) = rows.next().map_err(|e| e.to_string())? {
+        let tag = row.get::<_, String>(0).map_err(|e| e.to_string())?;
+        out.push(TagCount {
+            depth: tag_depth(&tag) as u32,
+            direct_count: row.get::<_, i64>(1).map_err(|e| e.to_string())? as u32,
+            total_count: row.get::<_, i64>(2).map_err(|e| e.to_string())? as u32,
+            is_explicit: row.get::<_, i64>(3).map_err(|e| e.to_string())? > 0,
+            tag,
+        });
+    }
+    Ok(out)
 }
 
 #[tauri::command]
@@ -759,6 +770,52 @@ pub async fn tag_notes(
     })
     .await
     .map_err(|e| e.to_string())?
+}
+
+#[cfg(test)]
+mod tests {
+    use rusqlite::Connection;
+
+    use crate::index::schema::ensure_schema;
+    use crate::index::tags::expand_indexed_tags;
+
+    use super::list_tags;
+
+    #[test]
+    fn list_tags_reports_direct_and_total_counts_for_virtual_parents() {
+        let conn = Connection::open_in_memory().unwrap();
+        ensure_schema(&conn).unwrap();
+
+        for tag in expand_indexed_tags(&["work/today/further".to_string()]) {
+            conn.execute(
+                "INSERT INTO tags(note_id, tag, is_explicit) VALUES(?, ?, ?)",
+                rusqlite::params!["notes/leaf.md", tag.tag, if tag.is_explicit { 1 } else { 0 }],
+            )
+            .unwrap();
+        }
+        for tag in expand_indexed_tags(&["work".to_string()]) {
+            conn.execute(
+                "INSERT INTO tags(note_id, tag, is_explicit) VALUES(?, ?, ?)",
+                rusqlite::params!["notes/root.md", tag.tag, if tag.is_explicit { 1 } else { 0 }],
+            )
+            .unwrap();
+        }
+
+        let tags = list_tags(&conn, 50).unwrap();
+        assert_eq!(tags.len(), 3);
+
+        let root = tags.iter().find(|tag| tag.tag == "work").unwrap();
+        assert_eq!(root.direct_count, 1);
+        assert_eq!(root.total_count, 2);
+        assert!(root.is_explicit);
+        assert_eq!(root.depth, 0);
+
+        let intermediate = tags.iter().find(|tag| tag.tag == "work/today").unwrap();
+        assert_eq!(intermediate.direct_count, 0);
+        assert_eq!(intermediate.total_count, 1);
+        assert!(!intermediate.is_explicit);
+        assert_eq!(intermediate.depth, 1);
+    }
 }
 
 #[tauri::command]

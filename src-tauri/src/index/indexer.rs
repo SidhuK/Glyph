@@ -12,7 +12,7 @@ use super::frontmatter::{
 use super::helpers::{path_to_slash_string, sha256_hex, should_skip_entry};
 use super::links::parse_outgoing_links;
 use super::properties::{delete_note_properties, reindex_note_properties};
-use super::tags::parse_all_tags;
+use super::tags::{expand_indexed_tags, parse_all_tags};
 use super::tasks::{delete_note_tasks, reindex_note_tasks};
 use super::types::IndexRebuildResult;
 
@@ -140,10 +140,10 @@ fn index_note_with_conn(
     tx.execute("DELETE FROM tags WHERE note_id = ?", [note_id])
         .map_err(|e| e.to_string())?;
 
-    for tag in parse_all_tags(markdown) {
+    for tag in expand_indexed_tags(&parse_all_tags(markdown)) {
         tx.execute(
-            "INSERT OR IGNORE INTO tags(note_id, tag) VALUES(?, ?)",
-            rusqlite::params![note_id, tag],
+            "INSERT OR IGNORE INTO tags(note_id, tag, is_explicit) VALUES(?, ?, ?)",
+            rusqlite::params![note_id, tag.tag, if tag.is_explicit { 1 } else { 0 }],
         )
         .map_err(|e| e.to_string())?;
     }
@@ -301,10 +301,10 @@ pub fn rebuild(space_root: &Path) -> Result<IndexRebuildResult, String> {
         )
         .map_err(|e| e.to_string())?;
 
-        for tag in parse_all_tags(&markdown) {
+        for tag in expand_indexed_tags(&parse_all_tags(&markdown)) {
             tx.execute(
-                "INSERT OR IGNORE INTO tags(note_id, tag) VALUES(?, ?)",
-                rusqlite::params![rel, tag],
+                "INSERT OR IGNORE INTO tags(note_id, tag, is_explicit) VALUES(?, ?, ?)",
+                rusqlite::params![rel, tag.tag, if tag.is_explicit { 1 } else { 0 }],
             )
             .map_err(|e| e.to_string())?;
         }

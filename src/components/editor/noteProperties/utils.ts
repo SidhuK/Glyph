@@ -1,4 +1,4 @@
-import type { NoteProperty } from "../../../lib/tauri";
+import type { NoteProperty, TagCount } from "../../../lib/tauri";
 
 export function emptyProperty(): NoteProperty {
 	return {
@@ -21,14 +21,35 @@ export function fromListText(value: string): string[] {
 		.filter(Boolean);
 }
 
-export function normalizeTagToken(value: string): string | null {
-	const normalized = value
+function sanitizeTagText(value: string): string {
+	return value
 		.trim()
 		.replace(/^#+/, "")
 		.toLowerCase()
 		.replace(/\s+/g, "-")
 		.replace(/[^a-z0-9_/-]/g, "");
-	return normalized || null;
+}
+
+export function normalizeTagToken(value: string): string | null {
+	const normalized = sanitizeTagText(value);
+	if (
+		!normalized ||
+		normalized.startsWith("/") ||
+		normalized.endsWith("/") ||
+		normalized.includes("//")
+	) {
+		return null;
+	}
+	const segments = normalized.split("/");
+	return segments.every(Boolean) ? normalized : null;
+}
+
+export function normalizeTagDraftPrefix(value: string): string {
+	const normalized = sanitizeTagText(value);
+	if (!normalized || normalized.startsWith("/")) {
+		return "";
+	}
+	return normalized;
 }
 
 export function formatTagLabel(tag: string): string {
@@ -89,18 +110,62 @@ export function normalizeForKind(property: NoteProperty): NoteProperty {
 }
 
 export function buildTagSuggestions(
-	availableTags: Array<{ tag: string; count: number }>,
+	availableTags: TagCount[],
 	selectedTags: string[],
 	draft: string,
 ): Array<{ tag: string; count: number }> {
-	const normalizedDraft = normalizeTagToken(draft);
+	const normalizedDraft = normalizeTagDraftPrefix(draft);
 	if (!normalizedDraft || normalizedDraft.length < 2) {
 		return [];
 	}
-	const selectedTagSet = new Set(selectedTags);
+	const selectedTagSet = new Set(
+		selectedTags
+			.map((tag) => normalizeTagToken(tag))
+			.filter((tag): tag is string => Boolean(tag)),
+	);
+	const descendantPrefix = normalizedDraft.endsWith("/")
+		? normalizedDraft
+		: `${normalizedDraft}/`;
 	return availableTags
 		.filter(
-			({ tag }) => !selectedTagSet.has(tag) && tag.includes(normalizedDraft),
+			({ tag, is_explicit }) =>
+				is_explicit &&
+				!selectedTagSet.has(tag) &&
+				(tag.startsWith(normalizedDraft) || tag.includes(normalizedDraft)),
 		)
+		.sort((left, right) => {
+			const leftRank = rankSuggestion(
+				left.tag,
+				normalizedDraft,
+				descendantPrefix,
+			);
+			const rightRank = rankSuggestion(
+				right.tag,
+				normalizedDraft,
+				descendantPrefix,
+			);
+			if (leftRank !== rightRank) {
+				return leftRank - rightRank;
+			}
+			return left.tag.localeCompare(right.tag);
+		})
+		.map(({ tag, direct_count }) => ({ tag, count: direct_count }))
 		.slice(0, 8);
+}
+
+function rankSuggestion(
+	tag: string,
+	normalizedDraft: string,
+	descendantPrefix: string,
+): number {
+	if (tag === normalizedDraft) {
+		return 0;
+	}
+	if (tag.startsWith(descendantPrefix)) {
+		return 1;
+	}
+	if (tag.startsWith(normalizedDraft)) {
+		return 2;
+	}
+	return 3;
 }

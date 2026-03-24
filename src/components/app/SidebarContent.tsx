@@ -1,4 +1,8 @@
-import { DashboardSquare02Icon, Tag01Icon } from "@hugeicons/core-free-icons";
+import {
+	DashboardSquare02Icon,
+	NoteIcon,
+	Tag01Icon,
+} from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, m } from "motion/react";
 import { memo } from "react";
@@ -7,6 +11,7 @@ import {
 	useSpace,
 	useUILayoutContext,
 } from "../../contexts";
+import { getShortcutTooltip } from "../../lib/shortcuts";
 import { FileTreePane } from "../FileTreePane";
 import { Database, Files } from "../Icons";
 import { TagsPane } from "../TagsPane";
@@ -18,6 +23,7 @@ interface SidebarContentProps {
 	onToggleDir: (dirPath: string) => void;
 	onSelectDir: (dirPath: string) => void;
 	onOpenFile: (relPath: string) => void;
+	onNewNote: () => void;
 	onNewFileInDir: (dirPath: string) => void;
 	onCreateFromTemplateInDir: (dirPath: string) => void;
 	onNewDatabaseInDir: (dirPath: string) => Promise<string | null>;
@@ -33,6 +39,7 @@ export const SidebarContent = memo(function SidebarContent({
 	onToggleDir,
 	onSelectDir,
 	onOpenFile,
+	onNewNote,
 	onNewFileInDir,
 	onCreateFromTemplateInDir,
 	onNewDatabaseInDir,
@@ -74,6 +81,16 @@ export const SidebarContent = memo(function SidebarContent({
 		<>
 			<div className="sidebarSection sidebarSectionGrow">
 				<div className="sidebarQuickActions">
+					<button
+						type="button"
+						className="sidebarQuickActionBtn sidebarQuickActionBtnAccent"
+						data-kind="new-note"
+						onClick={onNewNote}
+						title={`Create a new note (${getShortcutTooltip({ meta: true, key: "n" })})`}
+					>
+						<HugeiconsIcon icon={NoteIcon} size={14} />
+						<span className="sidebarQuickActionLabel">New Note</span>
+					</button>
 					<button
 						type="button"
 						className="sidebarQuickActionBtn"

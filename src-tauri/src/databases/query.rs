@@ -6,6 +6,7 @@ use rusqlite::{params, Connection};
 use crate::index::commands::parse_raw_search_query;
 use crate::index::open_db;
 use crate::index::search_advanced::run_search_advanced;
+use crate::index::tags::{normalize_tag, tag_matches_hierarchy};
 use crate::paths;
 use crate::space_fs::helpers::deny_hidden_rel_path;
 
@@ -125,8 +126,8 @@ fn normalize_text(value: &str) -> String {
     value.trim().to_lowercase()
 }
 
-fn normalize_tag_text(value: &str) -> String {
-    normalize_text(value).trim_start_matches('#').to_string()
+fn normalize_tag_text(value: &str) -> Option<String> {
+    normalize_tag(value)
 }
 
 fn parent_dir(path: &str) -> String {
@@ -263,57 +264,90 @@ fn row_matches_filters(
         let cell = cell_value_from_row(row, column);
         let is_tags_column =
             column.column_type == "tags" || column.property_kind.as_deref() == Some("tags");
+        let raw_filter_text = filter.value_text.as_deref().unwrap_or_default();
         let filter_text = if is_tags_column {
-            normalize_tag_text(filter.value_text.as_deref().unwrap_or_default())
+            String::new()
         } else {
-            normalize_text(filter.value_text.as_deref().unwrap_or_default())
+            normalize_text(raw_filter_text)
+        };
+        let normalized_filter_tag = if is_tags_column {
+            normalize_tag_text(raw_filter_text)
+        } else {
+            None
         };
         let text_values: Vec<String> = if is_tags_column {
             cell.value_list
                 .iter()
-                .map(|v| normalize_tag_text(v))
-                .filter(|v| !v.is_empty())
+                .filter_map(|v| normalize_tag_text(v))
                 .collect()
         } else {
             cell_text_values(&cell)
         };
         match filter.operator.as_str() {
             "equals" => {
-                !filter_text.is_empty() && text_values.iter().any(|value| value == &filter_text)
+                if is_tags_column {
+                    normalized_filter_tag
+                        .as_ref()
+                        .is_some_and(|tag| text_values.iter().any(|value| value == tag))
+                } else {
+                    !filter_text.is_empty()
+                        && text_values.iter().any(|value| value == &filter_text)
+                }
             }
             "not_equals" => {
-                filter_text.is_empty() || text_values.iter().all(|value| value != &filter_text)
+                if is_tags_column {
+                    normalized_filter_tag
+                        .as_ref()
+                        .is_some_and(|tag| text_values.iter().all(|value| value != tag))
+                } else {
+                    filter_text.is_empty()
+                        || text_values.iter().all(|value| value != &filter_text)
+                }
             }
             "contains" => {
-                filter_text.is_empty()
-                    || text_values.iter().any(|value| value.contains(&filter_text))
+                if is_tags_column {
+                    false
+                } else {
+                    filter_text.is_empty()
+                        || text_values.iter().any(|value| value.contains(&filter_text))
+                }
             }
             "not_contains" => {
-                filter_text.is_empty()
-                    || text_values
-                        .iter()
-                        .all(|value| !value.contains(&filter_text))
+                if is_tags_column {
+                    false
+                } else {
+                    filter_text.is_empty()
+                        || text_values
+                            .iter()
+                            .all(|value| !value.contains(&filter_text))
+                }
             }
             "starts_with" => {
-                filter_text.is_empty()
-                    || text_values
-                        .iter()
-                        .any(|value| value.starts_with(&filter_text))
+                if is_tags_column {
+                    false
+                } else {
+                    filter_text.is_empty()
+                        || text_values
+                            .iter()
+                            .any(|value| value.starts_with(&filter_text))
+                }
             }
             "ends_with" => {
-                filter_text.is_empty()
-                    || text_values
-                        .iter()
-                        .any(|value| value.ends_with(&filter_text))
+                if is_tags_column {
+                    false
+                } else {
+                    filter_text.is_empty()
+                        || text_values
+                            .iter()
+                            .any(|value| value.ends_with(&filter_text))
+                }
             }
             "tags_contains" => {
-                if filter_text.is_empty() {
-                    return true;
-                }
-                let normalized = normalize_tag_text(&filter_text);
-                cell.value_list
-                    .iter()
-                    .any(|tag| normalize_tag_text(tag) == normalized)
+                normalized_filter_tag.as_ref().is_some_and(|filter_tag| {
+                    text_values
+                        .iter()
+                        .any(|tag| tag_matches_hierarchy(filter_tag, tag))
+                })
             }
             "is_empty" => text_values.is_empty() && cell.value_bool.is_none(),
             "is_not_empty" => !text_values.is_empty() || cell.value_bool.is_some(),
@@ -332,20 +366,30 @@ fn row_matches_filters(
                 if filter_values.is_empty() {
                     return true;
                 }
-                filter_values.iter().any(|value| {
-                    let normalized = if column.column_type == "tags" {
-                        normalize_tag_text(value)
-                    } else {
-                        normalize_text(value)
+                let normalized_tag_filters = if is_tags_column {
+                    let filters = filter_values
+                        .iter()
+                        .map(|value| normalize_tag_text(value))
+                        .collect::<Option<Vec<_>>>();
+                    let Some(filters) = filters else {
+                        return false;
                     };
-                    text_values.iter().any(|cell_value| {
-                        if column.column_type == "tags" {
-                            normalize_tag_text(cell_value) == normalized
-                        } else {
-                            cell_value == &normalized
-                        }
+                    Some(filters)
+                } else {
+                    None
+                };
+                if let Some(filters) = normalized_tag_filters {
+                    filters.iter().any(|normalized| {
+                        text_values
+                            .iter()
+                            .any(|cell_value| tag_matches_hierarchy(normalized, cell_value))
                     })
-                })
+                } else {
+                    filter_values.iter().any(|value| {
+                        let normalized = normalize_text(value);
+                        text_values.iter().any(|cell_value| cell_value == &normalized)
+                    })
+                }
             }
             "none_of" => {
                 let filter_values = if filter.value_list.is_empty() {
@@ -357,20 +401,30 @@ fn row_matches_filters(
                 } else {
                     filter.value_list.clone()
                 };
-                filter_values.iter().all(|value| {
-                    let normalized = if column.column_type == "tags" {
-                        normalize_tag_text(value)
-                    } else {
-                        normalize_text(value)
+                let normalized_tag_filters = if is_tags_column {
+                    let filters = filter_values
+                        .iter()
+                        .map(|value| normalize_tag_text(value))
+                        .collect::<Option<Vec<_>>>();
+                    let Some(filters) = filters else {
+                        return false;
                     };
-                    text_values.iter().all(|cell_value| {
-                        if column.column_type == "tags" {
-                            normalize_tag_text(cell_value) != normalized
-                        } else {
-                            cell_value != &normalized
-                        }
+                    Some(filters)
+                } else {
+                    None
+                };
+                if let Some(filters) = normalized_tag_filters {
+                    filters.iter().all(|normalized| {
+                        text_values
+                            .iter()
+                            .all(|cell_value| !tag_matches_hierarchy(normalized, cell_value))
                     })
-                })
+                } else {
+                    filter_values.iter().all(|value| {
+                        let normalized = normalize_text(value);
+                        text_values.iter().all(|cell_value| cell_value != &normalized)
+                    })
+                }
             }
             _ => true,
         }
@@ -615,7 +669,10 @@ fn hydrate_rows_by_paths(
 
         let mut tag_stmt = conn
             .prepare(&format!(
-                "SELECT note_id, tag FROM tags WHERE note_id IN ({placeholders}) ORDER BY tag ASC"
+                "SELECT note_id, tag
+                 FROM tags
+                 WHERE note_id IN ({placeholders}) AND is_explicit = 1
+                 ORDER BY tag ASC"
             ))
             .map_err(|e| e.to_string())?;
         let mut tag_rows = tag_stmt
@@ -759,6 +816,138 @@ pub fn query_database_rows(
         truncated: ids.len() >= SOURCE_SCAN_LIMIT,
         rows: sliced,
     })
+}
+
+#[cfg(test)]
+mod tests {
+    use std::collections::BTreeMap;
+
+    use rusqlite::Connection;
+
+    use crate::index::schema::ensure_schema;
+
+    use super::{row_matches_filters, tag_source_ids};
+    use super::super::types::{DatabaseColumn, DatabaseFilter, DatabaseRow};
+
+    fn tags_column() -> DatabaseColumn {
+        DatabaseColumn {
+            id: "tags".to_string(),
+            column_type: "tags".to_string(),
+            label: "Tags".to_string(),
+            icon: None,
+            width: None,
+            visible: true,
+            property_key: None,
+            property_kind: None,
+        }
+    }
+
+    fn sample_row(tags: Vec<&str>) -> DatabaseRow {
+        DatabaseRow {
+            note_path: "notes/child.md".to_string(),
+            title: "Child".to_string(),
+            folder: "notes".to_string(),
+            created: "2026-03-24T10:00:00Z".to_string(),
+            updated: "2026-03-24T10:00:00Z".to_string(),
+            preview: String::new(),
+            tags: tags.into_iter().map(str::to_string).collect(),
+            linked_notes: Vec::new(),
+            properties: BTreeMap::new(),
+        }
+    }
+
+    #[test]
+    fn tag_filters_match_descendant_explicit_tags() {
+        let columns = vec![tags_column()];
+        let row = sample_row(vec!["work/today/further"]);
+        let filters = vec![DatabaseFilter {
+            column_id: "tags".to_string(),
+            operator: "tags_contains".to_string(),
+            value_text: Some("#work".to_string()),
+            value_bool: None,
+            value_list: Vec::new(),
+        }];
+
+        assert!(row_matches_filters(&row, &columns, &filters));
+
+        let non_matching_filters = vec![DatabaseFilter {
+            column_id: "tags".to_string(),
+            operator: "tags_contains".to_string(),
+            value_text: Some("#personal".to_string()),
+            value_bool: None,
+            value_list: Vec::new(),
+        }];
+        assert!(!row_matches_filters(&row, &columns, &non_matching_filters));
+    }
+
+    #[test]
+    fn malformed_tag_filters_fail_closed() {
+        let columns = vec![tags_column()];
+        let row = sample_row(vec!["work/today/further"]);
+        let filters = vec![DatabaseFilter {
+            column_id: "tags".to_string(),
+            operator: "tags_contains".to_string(),
+            value_text: Some("#work//today".to_string()),
+            value_bool: None,
+            value_list: Vec::new(),
+        }];
+
+        assert!(!row_matches_filters(&row, &columns, &filters));
+    }
+
+    #[test]
+    fn unsupported_string_operators_fail_closed_for_tag_columns() {
+        let columns = vec![tags_column()];
+        let row = sample_row(vec!["work/today/further"]);
+        let filters = vec![DatabaseFilter {
+            column_id: "tags".to_string(),
+            operator: "contains".to_string(),
+            value_text: Some("work".to_string()),
+            value_bool: None,
+            value_list: Vec::new(),
+        }];
+
+        assert!(!row_matches_filters(&row, &columns, &filters));
+    }
+
+    #[test]
+    fn database_tag_sources_include_descendants() {
+        let conn = Connection::open_in_memory().unwrap();
+        ensure_schema(&conn).unwrap();
+
+        for (id, title, updated) in [
+            ("notes/root.md", "Root", "2026-03-24T10:00:00Z"),
+            ("notes/child.md", "Child", "2026-03-24T11:00:00Z"),
+        ] {
+            conn.execute(
+                "INSERT INTO notes(id, title, created, updated, path, etag, preview)
+                 VALUES(?, ?, ?, ?, ?, 'etag', '')",
+                rusqlite::params![id, title, updated, updated, id],
+            )
+            .unwrap();
+        }
+
+        for (note_id, tag, is_explicit) in [
+            ("notes/root.md", "work", 1),
+            ("notes/child.md", "work", 0),
+            ("notes/child.md", "work/today", 1),
+        ] {
+            conn.execute(
+                "INSERT INTO tags(note_id, tag, is_explicit) VALUES(?, ?, ?)",
+                rusqlite::params![note_id, tag, is_explicit],
+            )
+            .unwrap();
+        }
+
+        assert_eq!(
+            tag_source_ids(&conn, "#work", 10).unwrap(),
+            vec!["notes/child.md".to_string(), "notes/root.md".to_string()]
+        );
+        assert_eq!(
+            tag_source_ids(&conn, "#work/today", 10).unwrap(),
+            vec!["notes/child.md".to_string()]
+        );
+    }
 }
 
 pub fn row_by_path(root: &Path, note_path: &str) -> Result<DatabaseRow, String> {

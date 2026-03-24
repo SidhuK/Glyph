@@ -1,22 +1,68 @@
 use super::frontmatter::split_frontmatter;
+use std::collections::BTreeMap;
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct IndexedTag {
+    pub tag: String,
+    pub is_explicit: bool,
+}
 
 pub fn normalize_tag(raw: &str) -> Option<String> {
-    let t = raw.trim();
-    if t.is_empty() {
+    let trimmed = raw.trim();
+    if trimmed.is_empty() {
         return None;
     }
-    let t = t.strip_prefix('#').unwrap_or(t).trim();
-    if t.is_empty() {
+    let normalized = trimmed.trim_start_matches('#').trim().to_lowercase();
+    if normalized.is_empty() || normalized.starts_with('/') || normalized.ends_with('/') {
         return None;
     }
-    let t = t.to_lowercase();
-    if t.chars()
-        .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-' || c == '/')
-    {
-        Some(t)
-    } else {
-        None
+    let mut segments = Vec::new();
+    for segment in normalized.split('/') {
+        if segment.is_empty() {
+            return None;
+        }
+        if !segment
+            .chars()
+            .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-')
+        {
+            return None;
+        }
+        segments.push(segment);
     }
+    Some(segments.join("/"))
+}
+
+pub fn tag_depth(tag: &str) -> usize {
+    tag.matches('/').count()
+}
+
+pub fn tag_matches_hierarchy(filter: &str, candidate: &str) -> bool {
+    candidate == filter
+        || candidate
+            .strip_prefix(filter)
+            .is_some_and(|suffix| suffix.starts_with('/'))
+}
+
+pub fn expand_indexed_tags(explicit_tags: &[String]) -> Vec<IndexedTag> {
+    let mut expanded = BTreeMap::<String, bool>::new();
+    for explicit_tag in explicit_tags {
+        let mut prefix = String::new();
+        for (index, segment) in explicit_tag.split('/').enumerate() {
+            if index > 0 {
+                prefix.push('/');
+            }
+            prefix.push_str(segment);
+            let is_explicit = index + 1 == explicit_tag.split('/').count();
+            expanded
+                .entry(prefix.clone())
+                .and_modify(|current| *current |= is_explicit)
+                .or_insert(is_explicit);
+        }
+    }
+    expanded
+        .into_iter()
+        .map(|(tag, is_explicit)| IndexedTag { tag, is_explicit })
+        .collect()
 }
 
 pub fn parse_frontmatter_tags(markdown: &str) -> Vec<String> {
@@ -147,4 +193,67 @@ pub fn parse_all_tags(markdown: &str) -> Vec<String> {
     out.sort();
     out.dedup();
     out
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{expand_indexed_tags, normalize_tag, parse_all_tags, tag_depth, tag_matches_hierarchy};
+
+    #[test]
+    fn normalizes_nested_tags_and_rejects_empty_segments() {
+        assert_eq!(
+            normalize_tag("#work/Today/Further"),
+            Some("work/today/further".to_string())
+        );
+        assert_eq!(normalize_tag("#work//today"), None);
+        assert_eq!(normalize_tag("#work/"), None);
+        assert_eq!(normalize_tag("#/today"), None);
+    }
+
+    #[test]
+    fn expands_explicit_tags_into_virtual_parents() {
+        let expanded = expand_indexed_tags(&["work/today/further".to_string()]);
+        assert_eq!(
+            expanded,
+            vec![
+                super::IndexedTag {
+                    tag: "work".to_string(),
+                    is_explicit: false,
+                },
+                super::IndexedTag {
+                    tag: "work/today".to_string(),
+                    is_explicit: false,
+                },
+                super::IndexedTag {
+                    tag: "work/today/further".to_string(),
+                    is_explicit: true,
+                },
+            ]
+        );
+    }
+
+    #[test]
+    fn explicit_parent_wins_when_shared_with_child() {
+        let expanded =
+            expand_indexed_tags(&["work".to_string(), "work/today/further".to_string()]);
+        assert_eq!(expanded[0].tag, "work");
+        assert!(expanded[0].is_explicit);
+    }
+
+    #[test]
+    fn matches_nested_hierarchy_by_prefix_boundary() {
+        assert!(tag_matches_hierarchy("work", "work"));
+        assert!(tag_matches_hierarchy("work", "work/today"));
+        assert!(!tag_matches_hierarchy("work", "workshop"));
+        assert_eq!(tag_depth("work/today/further"), 2);
+    }
+
+    #[test]
+    fn parses_nested_inline_tags() {
+        let markdown = "#work/today/further\n\nBody #projects/roadmap";
+        assert_eq!(
+            parse_all_tags(markdown),
+            vec!["projects/roadmap".to_string(), "work/today/further".to_string()]
+        );
+    }
 }

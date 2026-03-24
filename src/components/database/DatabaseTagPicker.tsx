@@ -4,6 +4,7 @@ import { Hash, Search, Tags } from "../Icons";
 import {
 	buildTagSuggestions,
 	formatTagLabel,
+	normalizeTagDraftPrefix,
 	normalizeTagToken,
 } from "../editor/noteProperties/utils";
 import { Button } from "../ui/shadcn/button";
@@ -31,6 +32,34 @@ function normalizedSelection(value: string): string | null {
 	return normalizeTagToken(value);
 }
 
+export function buildDatabaseTagPickerOptions(
+	tags: ReturnType<typeof useFileTreeContext>["tags"],
+	query: string,
+): Array<{ tag: string; count: number }> {
+	const trimmed = query.trim();
+	if (trimmed.length >= 2) {
+		const suggestions = buildTagSuggestions(tags, [], trimmed);
+		if (suggestions.length > 0) return suggestions;
+	}
+
+	const normalizedQuery = normalizeTagDraftPrefix(trimmed);
+	return tags
+		.filter(
+			({ tag, is_explicit }) =>
+				is_explicit &&
+				(normalizedQuery.length === 0 ||
+					tag.toLowerCase().includes(normalizedQuery)),
+		)
+		.map(({ tag, direct_count }) => ({ tag, count: direct_count }))
+		.slice(0, 40);
+}
+
+export function buildDatabaseTagPickerExplicitTags(
+	tags: ReturnType<typeof useFileTreeContext>["tags"],
+): string[] {
+	return tags.filter(({ is_explicit }) => is_explicit).map(({ tag }) => tag);
+}
+
 export function DatabaseTagPicker({
 	value,
 	onChange,
@@ -45,24 +74,17 @@ export function DatabaseTagPicker({
 
 	const selectedTag = normalizedSelection(value);
 
-	const options = useMemo(() => {
-		const trimmed = query.trim();
-		if (trimmed.length >= 2) {
-			const suggestions = buildTagSuggestions(tags, [], trimmed);
-			if (suggestions.length > 0) return suggestions;
-		}
-
-		const normalizedQuery = normalizeTagToken(trimmed) ?? "";
-		return tags
-			.filter(({ tag }) =>
-				normalizedQuery.length === 0
-					? true
-					: tag.toLowerCase().includes(normalizedQuery),
-			)
-			.slice(0, 40);
-	}, [query, tags]);
+	const options = useMemo(
+		() => buildDatabaseTagPickerOptions(tags, query),
+		[query, tags],
+	);
+	const explicitTags = useMemo(
+		() => buildDatabaseTagPickerExplicitTags(tags),
+		[tags],
+	);
 
 	const manualTag = normalizeTagToken(query);
+	const hasExactOption = explicitTags.some((tag) => tag === manualTag);
 
 	const selectedLabel = selectedTag ? formatTagLabel(selectedTag) : placeholder;
 
@@ -104,35 +126,36 @@ export function DatabaseTagPicker({
 				</div>
 				<ScrollArea className="databasePickerResults">
 					<div className="databasePickerList">
-						{options.length > 0 ? (
-							options.map(({ tag, count }) => {
-								const normalizedTag = normalizeTagToken(tag) ?? tag;
-								const active = normalizedTag === selectedTag;
-								return (
-									<button
-										key={tag}
-										type="button"
-										className="databasePickerOption"
-										data-active={active ? "true" : undefined}
-										onClick={() => {
-											onChange(formatTagLabel(normalizedTag));
-											setOpen(false);
-											setQuery("");
-										}}
-									>
-										<span className="databasePickerOptionMain">
-											<span className="databasePickerOptionLabel">
-												{formatTagLabel(normalizedTag)}
+						{options.length > 0
+							? options.map(({ tag, count }) => {
+									const normalizedTag = normalizeTagToken(tag) ?? tag;
+									const active = normalizedTag === selectedTag;
+									return (
+										<button
+											key={tag}
+											type="button"
+											className="databasePickerOption"
+											data-active={active ? "true" : undefined}
+											onClick={() => {
+												onChange(formatTagLabel(normalizedTag));
+												setOpen(false);
+												setQuery("");
+											}}
+										>
+											<span className="databasePickerOptionMain">
+												<span className="databasePickerOptionLabel">
+													{formatTagLabel(normalizedTag)}
+												</span>
+												<span className="databasePickerOptionMeta">
+													Used in {count} note{count === 1 ? "" : "s"}
+												</span>
 											</span>
-											<span className="databasePickerOptionMeta">
-												Used in {count} note{count === 1 ? "" : "s"}
-											</span>
-										</span>
-										<span className="databasePickerOptionBadge">{count}</span>
-									</button>
-								);
-							})
-						) : manualTag ? (
+											<span className="databasePickerOptionBadge">{count}</span>
+										</button>
+									);
+								})
+							: null}
+						{manualTag && !hasExactOption ? (
 							<button
 								type="button"
 								className="databasePickerOption"
@@ -152,9 +175,10 @@ export function DatabaseTagPicker({
 								</span>
 								<span className="databasePickerOptionBadge">New</span>
 							</button>
-						) : (
+						) : null}
+						{options.length === 0 && !manualTag ? (
 							<div className="databasePickerEmpty">{emptyLabel}</div>
-						)}
+						) : null}
 					</div>
 				</ScrollArea>
 			</PopoverContent>

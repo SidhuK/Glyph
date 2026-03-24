@@ -126,3 +126,76 @@ fn normalize_tags(tags: Vec<String>) -> Result<Vec<String>, String> {
     }
     Ok(out)
 }
+
+#[cfg(test)]
+mod tests {
+    use rusqlite::Connection;
+
+    use crate::index::schema::ensure_schema;
+
+    use super::{run_search_advanced, SearchAdvancedRequest};
+
+    fn seed_note(conn: &Connection, id: &str, title: &str, updated: &str) {
+        conn.execute(
+            "INSERT INTO notes(id, title, created, updated, path, etag, preview)
+             VALUES(?, ?, ?, ?, ?, 'etag', '')",
+            rusqlite::params![id, title, updated, updated, id],
+        )
+        .unwrap();
+    }
+
+    #[test]
+    fn parent_tag_search_includes_descendants_but_child_search_stays_narrow() {
+        let conn = Connection::open_in_memory().unwrap();
+        ensure_schema(&conn).unwrap();
+
+        seed_note(&conn, "notes/root.md", "Root", "2026-03-24T10:00:00Z");
+        seed_note(&conn, "notes/child.md", "Child", "2026-03-24T11:00:00Z");
+
+        for (note_id, tag, is_explicit) in [
+            ("notes/root.md", "work", 1),
+            ("notes/child.md", "work", 0),
+            ("notes/child.md", "work/today", 1),
+        ] {
+            conn.execute(
+                "INSERT INTO tags(note_id, tag, is_explicit) VALUES(?, ?, ?)",
+                rusqlite::params![note_id, tag, is_explicit],
+            )
+            .unwrap();
+        }
+
+        let parent_results = run_search_advanced(
+            &conn,
+            SearchAdvancedRequest {
+                tags: vec!["#work".to_string()],
+                limit: Some(10),
+                ..SearchAdvancedRequest::default()
+            },
+        )
+        .unwrap();
+        assert_eq!(
+            parent_results
+                .iter()
+                .map(|result| result.id.as_str())
+                .collect::<Vec<_>>(),
+            vec!["notes/child.md", "notes/root.md"]
+        );
+
+        let child_results = run_search_advanced(
+            &conn,
+            SearchAdvancedRequest {
+                tags: vec!["#work/today".to_string()],
+                limit: Some(10),
+                ..SearchAdvancedRequest::default()
+            },
+        )
+        .unwrap();
+        assert_eq!(
+            child_results
+                .iter()
+                .map(|result| result.id.as_str())
+                .collect::<Vec<_>>(),
+            vec!["notes/child.md"]
+        );
+    }
+}
