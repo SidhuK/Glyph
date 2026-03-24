@@ -141,8 +141,8 @@ body:
     attributes:
       label: Regression?
       options:
-        - Yes
-        - No
+        - "Yes"
+        - "No"
         - Not sure
     validations:
       required: true
