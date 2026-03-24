@@ -125,7 +125,7 @@
 	padding: 3px 8px;
 	border-radius: var(--radius-md);
 	border: 1px solid var(--border-light);
-	background: var(--bg-secondary);
+	background: var(--settings-surface);
 	font-size: 10px;
 	font-weight: var(--font-medium);
 	color: var(--text-secondary);
@@ -166,7 +166,7 @@
 	color: var(--text-secondary);
 	word-break: break-all;
 	border: 1px solid color-mix(in srgb, var(--border-light) 70%, transparent);
-	background: color-mix(in srgb, var(--bg-secondary) 58%, transparent);
+	background: var(--settings-surface-soft);
 	border-radius: var(--radius-lg);
 }
 

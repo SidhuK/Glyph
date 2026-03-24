@@ -2,7 +2,7 @@
 	padding: 3px 8px;
 	border-radius: var(--radius-sm);
 	border: 1px solid color-mix(in srgb, var(--border-light) 84%, transparent);
-	background: var(--bg-secondary);
+	background: var(--settings-surface);
 	font-size: 10px;
 	font-weight: var(--font-medium);
 	color: var(--text-secondary);
@@ -65,7 +65,7 @@
 }
 
 .settingsCard {
-	background: color-mix(in srgb, var(--bg-secondary) 82%, var(--bg-primary));
+	background: var(--settings-surface-muted);
 	border: 1px solid color-mix(in srgb, var(--border-default) 84%, transparent);
 	border-radius: calc(var(--radius-lg) + 2px);
 	padding: 0;
@@ -173,7 +173,7 @@
 .settingsFieldControl input,
 .settingsFieldControl select,
 .settingsFieldControl textarea {
-	background: color-mix(in srgb, var(--bg-primary) 90%, var(--bg-secondary));
+	background: var(--settings-control-surface);
 	border-color: color-mix(in srgb, var(--border-default) 90%, transparent);
 }
 
@@ -198,11 +198,7 @@
 		transparent
 	);
 
-	background-color: color-mix(
-		in srgb,
-		var(--bg-primary) 90%,
-		var(--bg-secondary)
-	);
+	background-color: var(--settings-control-surface);
 	border: 1px solid color-mix(in srgb, var(--border-default) 88%, transparent);
 	border-radius: var(--radius-md);
 	color: var(--text-primary);
@@ -329,7 +325,7 @@
 
 .settingsFieldControl > [data-slot="button"][data-variant="outline"],
 .settingsActions > [data-slot="button"][data-variant="outline"] {
-	background: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-secondary));
+	background: var(--settings-control-surface-strong);
 	border-color: color-mix(in srgb, var(--border-default) 88%, transparent);
 	color: var(--text-primary);
 }
@@ -338,7 +334,7 @@
 	> [data-slot="button"][data-variant="outline"]:hover:not(:disabled),
 .settingsActions
 	> [data-slot="button"][data-variant="outline"]:hover:not(:disabled) {
-	background: color-mix(in srgb, var(--bg-secondary) 72%, var(--bg-primary));
+	background: color-mix(in srgb, var(--settings-surface) 72%, var(--bg-primary));
 	border-color: color-mix(in srgb, var(--border-strong) 88%, transparent);
 	color: var(--text-primary);
 }
@@ -353,7 +349,7 @@
 	> [data-slot="button"][data-variant="ghost"]:hover:not(:disabled),
 .settingsActions
 	> [data-slot="button"][data-variant="ghost"]:hover:not(:disabled) {
-	background: color-mix(in srgb, var(--bg-secondary) 58%, transparent);
+	background: var(--settings-surface-soft);
 	color: var(--text-primary);
 }
 
@@ -809,7 +805,7 @@
 	border-radius: var(--radius-8);
 	border: 1px solid
 		color-mix(in srgb, var(--codex-tone) 30%, var(--border-light));
-	background: color-mix(in srgb, var(--bg-primary) 84%, var(--bg-secondary));
+	background: color-mix(in srgb, var(--bg-primary) 84%, var(--bg-tertiary));
 	box-shadow: none;
 	scroll-snap-align: start;
 }
@@ -863,7 +859,7 @@
 	gap: 2px;
 	border: 1px solid
 		color-mix(in srgb, var(--codex-tone) 34%, var(--border-light));
-	background: color-mix(in srgb, var(--bg-secondary) 88%, var(--bg-primary));
+	background: color-mix(in srgb, var(--bg-tertiary) 88%, var(--bg-primary));
 }
 
 .codexRateLimitBatteryCell {
@@ -966,7 +962,7 @@
 }
 
 .settingsSegmented button:hover:not(:disabled) {
-	background: color-mix(in srgb, var(--bg-secondary) 58%, transparent);
+	background: var(--settings-surface-soft);
 	color: var(--text-primary);
 }
 
@@ -976,7 +972,7 @@
 }
 
 .settingsSegmented button.active {
-	background: var(--bg-secondary);
+	background: var(--settings-surface);
 	color: var(--text-primary);
 }
 
@@ -994,7 +990,7 @@
 	padding: 5px 9px;
 	border-radius: var(--radius-md);
 	border: 1px solid color-mix(in srgb, var(--border-light) 74%, transparent);
-	background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
+	background: color-mix(in srgb, var(--bg-tertiary) 70%, transparent);
 	font-size: 9px;
 	text-transform: capitalize;
 }

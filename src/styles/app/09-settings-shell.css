@@ -3,6 +3,27 @@
    ───────────────────────────────────────────────────────────────────────────── */
 .settingsShell {
 	--app-radius: var(--radius-15);
+	--settings-surface: var(--bg-tertiary);
+	--settings-surface-muted: color-mix(
+		in srgb,
+		var(--bg-tertiary) 82%,
+		var(--bg-primary)
+	);
+	--settings-surface-soft: color-mix(
+		in srgb,
+		var(--bg-tertiary) 58%,
+		transparent
+	);
+	--settings-control-surface: color-mix(
+		in srgb,
+		var(--bg-primary) 90%,
+		var(--bg-tertiary)
+	);
+	--settings-control-surface-strong: color-mix(
+		in srgb,
+		var(--bg-primary) 94%,
+		var(--bg-tertiary)
+	);
 	position: relative;
 	height: 100%;
 	width: 100%;
@@ -61,7 +82,7 @@
 	flex-direction: column;
 	gap: 8px;
 	padding: 44px 14px 14px;
-	background: var(--bg-secondary);
+	background: var(--settings-surface);
 	border-right: 1px solid var(--border-light);
 }
 
