@@ -1,8 +1,4 @@
-import {
-	ClipboardIcon,
-	DashboardSquare03Icon,
-	MoreVerticalIcon,
-} from "@hugeicons/core-free-icons";
+import { ClipboardIcon, MoreVerticalIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { m } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -20,7 +16,15 @@ import {
 	invoke,
 } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
-import { ChevronDown, Edit, Kanban, Plus, Table, Trash2 } from "../Icons";
+import {
+	ChevronDown,
+	Database,
+	Edit,
+	Kanban,
+	Plus,
+	Table,
+	Trash2,
+} from "../Icons";
 import { DatabaseBoard } from "../database/DatabaseBoard";
 import { DatabaseTable } from "../database/DatabaseTable";
 import { DatabaseToolbar } from "../database/DatabaseToolbar";
@@ -677,11 +681,7 @@ export function DatabasesPane({
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
 							<button type="button" className="databasesDropdownTrigger">
-								<HugeiconsIcon
-									icon={DashboardSquare03Icon}
-									size={14}
-									strokeWidth={1.8}
-								/>
+								<Database size={14} strokeWidth={1.8} />
 								<span className="databasesDropdownTriggerLabel">
 									{document?.database.name ?? "Select database"}
 								</span>
@@ -698,11 +698,7 @@ export function DatabasesPane({
 									className={`databasesDropdownItem${summary.id === selectedDatabaseId ? " is-selected" : ""}`}
 									onSelect={() => setSelectedDatabaseId(summary.id)}
 								>
-									<HugeiconsIcon
-										icon={DashboardSquare03Icon}
-										size={13}
-										strokeWidth={1.8}
-									/>
+									<Database size={13} strokeWidth={1.8} />
 									<span>{summary.name}</span>
 								</DropdownMenuItem>
 							))}
@@ -1007,11 +1003,7 @@ export function DatabasesPane({
 				</>
 			) : (
 				<div className="databasesEmptyState">
-					<HugeiconsIcon
-						icon={DashboardSquare03Icon}
-						size={32}
-						strokeWidth={1.2}
-					/>
+					<Database size={32} strokeWidth={1.2} />
 					<div className="databasesEmptyTitle">
 						{summaries.length === 0
 							? "Create your first database"
