@@ -491,8 +491,7 @@ export async function loadSettings(): Promise<AppSettings> {
 				: DEFAULT_EDITOR_SETTINGS.showCollapsibleHeadings,
 		pastedMediaFolder:
 			typeof rawEditorPastedMediaFolder === "string"
-				? normalizeRelPath(rawEditorPastedMediaFolder) ||
-					DEFAULT_EDITOR_SETTINGS.pastedMediaFolder
+				? normalizeRelPath(rawEditorPastedMediaFolder)
 				: DEFAULT_EDITOR_SETTINGS.pastedMediaFolder,
 	};
 	const database: DatabaseSettings = {
@@ -737,7 +736,7 @@ export async function setEditorPastedMediaFolder(
 	const store = await getStore();
 	const nextFolder =
 		typeof folder === "string"
-			? normalizeRelPath(folder) || DEFAULT_EDITOR_SETTINGS.pastedMediaFolder
+			? normalizeRelPath(folder)
 			: DEFAULT_EDITOR_SETTINGS.pastedMediaFolder;
 	await store.set(KEYS.editorPastedMediaFolder, nextFolder);
 	await store.save();

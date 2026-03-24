@@ -39,6 +39,17 @@ export const MarkdownImage = Image.extend({
 					return originSrc ? { "data-glyph-origin-src": originSrc } : {};
 				},
 			},
+			uploadId: {
+				default: null,
+				parseHTML: (element) => element.getAttribute("data-glyph-upload-id"),
+				renderHTML: (attributes) => {
+					const uploadId =
+						typeof attributes.uploadId === "string"
+							? attributes.uploadId.trim()
+							: "";
+					return uploadId ? { "data-glyph-upload-id": uploadId } : {};
+				},
+			},
 		};
 	},
 
@@ -59,11 +70,14 @@ export const MarkdownImage = Image.extend({
 	},
 
 	renderMarkdown(node) {
+		const uploadId = ((node.attrs?.uploadId as string) ?? "").trim();
+		const originSrc = ((node.attrs?.originSrc as string) ?? "").trim();
 		const src = (
 			(node.attrs?.originSrc as string) ??
 			(node.attrs?.src as string) ??
 			""
 		).trim();
+		if (uploadId && !originSrc) return "";
 		if (!src) return "";
 		const alt = ((node.attrs?.alt as string) ?? "").trim();
 		const title = ((node.attrs?.title as string) ?? "").trim();

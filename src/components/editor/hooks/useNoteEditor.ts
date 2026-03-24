@@ -22,6 +22,8 @@ import {
 import type { CanvasInlineEditorMode } from "../types";
 import { useHydrateInlineImages } from "./useHydrateInlineImages";
 
+const PASTE_FAILURE_PREFIX = "Image paste failed";
+
 function normalizeBody(markdown: string): string {
 	return markdown.replace(/\u00a0/g, " ").replace(/&nbsp;/g, " ");
 }
@@ -51,6 +53,57 @@ function readFileAsDataUrl(file: File): Promise<string> {
 		};
 		reader.readAsDataURL(file);
 	});
+}
+
+function replacePlaceholderWithImage(
+	editor: NonNullable<ReturnType<typeof useEditor>>,
+	uploadId: string,
+	nextAttrs: Record<string, unknown>,
+): boolean {
+	const tr = editor.state.tr;
+	let changed = false;
+	editor.state.doc.descendants((node, pos) => {
+		if (node.type.name !== "image") return;
+		if ((node.attrs.uploadId as string | null) !== uploadId) return;
+		tr.setNodeMarkup(pos, undefined, {
+			...node.attrs,
+			...nextAttrs,
+			uploadId: null,
+		});
+		changed = true;
+	});
+	if (!changed) return false;
+	editor.view.dispatch(tr);
+	return true;
+}
+
+function replacePlaceholderWithFallbackText(
+	editor: NonNullable<ReturnType<typeof useEditor>>,
+	uploadId: string,
+	label: string,
+): boolean {
+	const tr = editor.state.tr;
+	const paragraph = editor.state.schema.nodes.paragraph;
+	const textNode = editor.state.schema.text;
+	let changed = false;
+	editor.state.doc.descendants((node, pos) => {
+		if (changed || node.type.name !== "image") return;
+		if ((node.attrs.uploadId as string | null) !== uploadId) return;
+		const fallbackText = `[${PASTE_FAILURE_PREFIX}: ${label}]`;
+		if (paragraph) {
+			tr.replaceWith(
+				pos,
+				pos + node.nodeSize,
+				paragraph.create(null, fallbackText ? textNode(fallbackText) : null),
+			);
+		} else {
+			tr.delete(pos, pos + node.nodeSize);
+		}
+		changed = true;
+	});
+	if (!changed) return false;
+	editor.view.dispatch(tr);
+	return true;
 }
 
 interface UseNoteEditorOptions {
@@ -221,31 +274,62 @@ export function useNoteEditor({
 					if (mode !== "rich" || !relPathRef.current) return false;
 					const imageFiles = getPastedImageFiles(event);
 					if (!imageFiles.length) return false;
+					if (!editor) return false;
 					const sourcePath = relPathRef.current;
 					const targetDir = pastedMediaFolderRef.current;
+					const selectionRange = {
+						from: editor.state.selection.from,
+						to: editor.state.selection.to,
+					};
 					event.preventDefault();
+					const placeholders = imageFiles.map((file, index) => ({
+						file,
+						uploadId: `paste-${Date.now()}-${index}-${crypto.randomUUID()}`,
+						objectUrl: URL.createObjectURL(file),
+					}));
+					editor
+						.chain()
+						.focus()
+						.insertContentAt(
+							selectionRange,
+							placeholders.map((item) => ({
+								type: "image",
+								attrs: {
+									src: item.objectUrl,
+									alt: item.file.name || "",
+									title: "",
+									originSrc: "",
+									uploadId: item.uploadId,
+								},
+							})),
+						)
+						.run();
 					void (async () => {
-						for (const file of imageFiles) {
-							const dataUrl = await readFileAsDataUrl(file);
+						for (const item of placeholders) {
+							const dataUrl = await readFileAsDataUrl(item.file);
 							const saved = await invoke("space_save_pasted_image", {
 								source_path: sourcePath,
 								target_dir: targetDir,
 								data_url: dataUrl,
-								alt: file.name || null,
+								alt: item.file.name || null,
 							});
-							const imagePayload = {
-								type: "image",
-								attrs: {
-									src: dataUrl,
-									alt: file.name || "",
-									title: "",
-									originSrc: saved.href,
-								},
-							};
-							editor.chain().focus().insertContent(imagePayload).run();
+							replacePlaceholderWithImage(editor, item.uploadId, {
+								src: dataUrl,
+								alt: item.file.name || "",
+								title: "",
+								originSrc: saved.href,
+							});
+							URL.revokeObjectURL(item.objectUrl);
 						}
 					})().catch(() => {
-						// Ignore failed clipboard saves so the editor stays responsive.
+						for (const item of placeholders) {
+							replacePlaceholderWithFallbackText(
+								editor,
+								item.uploadId,
+								item.file.name || "image",
+							);
+							URL.revokeObjectURL(item.objectUrl);
+						}
 					});
 					return true;
 				},

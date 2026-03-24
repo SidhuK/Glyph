@@ -148,7 +148,7 @@ export function GeneralSettingsPane() {
 				const relativePath = normSelected
 					.slice(normSpace.length)
 					.replace(/^\/+/, "");
-				const nextFolder = relativePath || "assets";
+				const nextFolder = relativePath;
 				await setEditorPastedMediaFolder(nextFolder);
 				setPastedMediaFolderState(nextFolder);
 			}
@@ -243,7 +243,9 @@ export function GeneralSettingsPane() {
 						<div className="dailyNotesFolderField">
 							<div className="dailyNotesFolderRow">
 								<div className="dailyNotesFolderPath">
-									{dailyNotesLoading ? "Loading..." : pastedMediaFolder}
+									{dailyNotesLoading
+										? "Loading..."
+										: pastedMediaFolder || "Space root"}
 								</div>
 								<div className="settingsActions dailyNotesActions">
 									<Button

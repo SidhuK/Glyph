@@ -1,10 +1,10 @@
 use base64::Engine;
 use serde::Serialize;
 use sha2::{Digest, Sha256};
+use std::io::{ErrorKind, Write};
 use std::path::PathBuf;
 use tauri::State;
 
-use crate::io_atomic;
 use crate::paths;
 use crate::space::SpaceState;
 
@@ -124,8 +124,16 @@ pub async fn space_save_pasted_image(
         if let Some(parent) = asset_abs.parent() {
             std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
         }
-        if !asset_abs.exists() {
-            io_atomic::write_atomic(&asset_abs, &bytes).map_err(|e| e.to_string())?;
+        match std::fs::OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&asset_abs)
+        {
+            Ok(mut file) => {
+                file.write_all(&bytes).map_err(|e| e.to_string())?;
+            }
+            Err(error) if error.kind() == ErrorKind::AlreadyExists => {}
+            Err(error) => return Err(error.to_string()),
         }
 
         let asset_rel_string = asset_rel.to_string_lossy().replace('\\', "/");

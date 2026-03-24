@@ -250,6 +250,11 @@ const MarkdownImageShortcut = Extension.create({
 						if (node.firstChild?.type.name !== "text") return;
 						const parsed = parseStandaloneMarkdownImage(node.textContent ?? "");
 						if (!parsed) return;
+						const $pos = newState.doc.resolve(pos);
+						const parent = $pos.parent;
+						if (parent.type.name === "listItem") return;
+						const index = $pos.index();
+						if (!parent.canReplaceWith(index, index + 1, image)) return;
 						replacements.push({
 							pos,
 							size: node.nodeSize,
