@@ -1,0 +1,156 @@
+name: Bug report
+description: Report a reproducible problem in Glyph
+title: "[Bug]: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to file a bug.
+
+        Glyph is currently maintained as a macOS-first desktop app. Windows-specific reports are out of scope right now, and we are not accepting Windows support requests or Windows-focused fixes through GitHub Issues.
+
+  - type: checkboxes
+    id: preflight
+    attributes:
+      label: Before you file
+      options:
+        - label: I searched the existing issues first.
+          required: true
+        - label: I can reproduce this on macOS.
+          required: true
+        - label: This is not a Windows-only issue or Windows support request.
+          required: true
+
+  - type: dropdown
+    id: build_type
+    attributes:
+      label: Which build are you using?
+      description: This helps us separate official licensed builds from self-built community builds.
+      options:
+        - Official GitHub release build
+        - Self-built community build
+        - Local development build
+        - Not sure
+    validations:
+      required: true
+
+  - type: dropdown
+    id: license_state
+    attributes:
+      label: Licensing state
+      description: Pick the closest match for the build you are running.
+      options:
+        - Official build during 7-day trial
+        - Official build with active license
+        - Self-built community build
+        - Not sure
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Glyph version
+      description: Example: 0.1.10
+      placeholder: 0.1.10
+    validations:
+      required: true
+
+  - type: dropdown
+    id: mac_model
+    attributes:
+      label: Mac hardware
+      options:
+        - Apple Silicon
+        - Intel Mac
+        - Not sure
+    validations:
+      required: true
+
+  - type: input
+    id: macos_version
+    attributes:
+      label: macOS version
+      description: Example: macOS 15.4
+      placeholder: macOS 15.4
+    validations:
+      required: true
+
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - Editor
+        - File tree
+        - Tasks
+        - Database notes
+        - AI
+        - Licensing
+        - Settings
+        - Search
+        - Sync / file watching
+        - Install / updater
+        - Performance
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: What happened?
+      description: A short summary of the bug.
+      placeholder: Tell us what broke.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      description: Please include a minimal, reliable repro.
+      placeholder: |
+        1. Open Glyph
+        2. Open note...
+        3. Click...
+        4. Observe...
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What did you expect to happen?
+      placeholder: Tell us the expected behavior.
+    validations:
+      required: true
+
+  - type: textarea
+    id: actual
+    attributes:
+      label: What actually happened?
+      placeholder: Tell us the actual behavior, including error messages if you saw any.
+    validations:
+      required: true
+
+  - type: dropdown
+    id: regression
+    attributes:
+      label: Regression?
+      options:
+        - Yes
+        - No
+        - Not sure
+    validations:
+      required: true
+
+  - type: textarea
+    id: attachments
+    attributes:
+      label: Logs, screenshots, or extra context
+      description: Paste anything useful here, but please do not include license keys, secrets, or personal data.
+      render: shell
+

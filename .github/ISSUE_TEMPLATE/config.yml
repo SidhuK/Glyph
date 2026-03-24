@@ -1,0 +1,9 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Licensing documentation
+    url: https://github.com/SidhuK/Glyph/blob/main/docs/licensing.md
+    about: Read this first for official-build, trial, and Gumroad activation details.
+  - name: macOS install guide
+    url: https://github.com/SidhuK/Glyph/blob/main/docs/macos-unsigned-install.md
+    about: Start here if the app is blocked by macOS Gatekeeper or first-run install prompts.
+
