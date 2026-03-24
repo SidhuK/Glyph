@@ -629,6 +629,10 @@
 	align-self: center;
 }
 
+.tasksCheckbox:hover .tasksCheckboxCircle {
+	stroke: var(--interactive-accent);
+}
+
 .tasksCheckboxPulse {
 	stroke: color-mix(in srgb, var(--interactive-accent) 48%, transparent);
 	transform-origin: center;
@@ -636,6 +640,7 @@
 
 .tasksCheckboxCircle {
 	stroke: var(--border-strong);
+	transition: stroke 140ms ease;
 }
 
 .tasksCheckboxCheck {

@@ -35,10 +35,8 @@ import { cn } from "../../lib/utils";
 import {
 	Calendar,
 	FileText,
-	ListChecks,
 	Plus,
 	Settings,
-	StickyNote,
 } from "../Icons";
 import { TaskRow } from "../tasks/TaskRow";
 import { springPresets } from "../ui/animations";
@@ -97,7 +95,7 @@ function getTaskGroupMeta(label: string): {
 		return { displayLabel: "Overdue", tone: "danger" };
 	}
 	if (label === "For this day") {
-		return { displayLabel: "Today", tone: "info" };
+		return { displayLabel: "Agenda", tone: "info" };
 	}
 	if (label === "Ongoing") {
 		return { displayLabel: "Ongoing", tone: "warning" };
@@ -365,8 +363,19 @@ export function CalendarPane({
 	const renderTaskGroup = useCallback(
 		(label: string, tasks: TaskItem[], scrollClassName: string) => {
 			const { displayLabel, tone } = getTaskGroupMeta(label);
+			const tileClassName =
+				label === "Overdue"
+					? "calendarTile-overdue"
+					: label === "For this day"
+						? "calendarTile-agenda"
+						: "calendarTile-ongoing";
 			return (
-				<section className="calendarSection calendarTaskGroupCard">
+				<section
+					className={cn(
+						"calendarSection calendarTaskGroupCard calendarBentoCard",
+						tileClassName,
+					)}
+				>
 					<div className="calendarSectionHeader">
 						<h3 className="calendarSectionTitle">
 							<span className={cn("calendarSectionLabelPill", `is-${tone}`)}>
@@ -402,8 +411,12 @@ export function CalendarPane({
 		<section className="calendarPane">
 			<div className="calendarToolbar">
 				<div className="calendarTitleRow">
-					<Calendar size={27} />
-					<h2 className="calendarTitle">{formatMonthTitle(anchorDate)}</h2>
+					<div className="calendarTitleBlock">
+						<div className="calendarTitleRow">
+							<Calendar size={27} />
+							<h2 className="calendarTitle">{formatMonthTitle(anchorDate)}</h2>
+						</div>
+					</div>
 				</div>
 				<div className="calendarToolbarActions">
 					<div
@@ -485,7 +498,7 @@ export function CalendarPane({
 			{error ? <div className="calendarError">{error}</div> : null}
 
 			<div className={cn("calendarLayout", viewMode === "week" && "is-week")}>
-				<div className="calendarPrimary">
+				<section className="calendarPrimary calendarBentoCard calendarTile-calendar">
 					{viewMode === "month" ? (
 						<div className="calendarMonthGrid">
 							{["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
@@ -494,7 +507,6 @@ export function CalendarPane({
 								</div>
 							))}
 							{range.dates.map((date) => {
-								const summary = summaryByDate.get(date);
 								const isToday = date === today;
 								const isSelected = date === selectedDate;
 								return (
@@ -509,54 +521,9 @@ export function CalendarPane({
 										)}
 										onClick={() => setSelectedDate(date)}
 									>
-										<div className="calendarMonthCellHead">
-											{isToday ? (
-												<span className="calendarMonthCellTodayWatermark">
-													Today
-												</span>
-											) : null}
-											<span className="calendarMonthCellDayNumber">
-												{formatMonthDay(date)}
-											</span>
-											{isToday ? <span className="calendarTodayDot" /> : null}
-										</div>
-										<div className="calendarMonthCellMeta">
-											{summary?.task_count ? (
-												<span
-													className="calendarMonthCellStatLine"
-													aria-label={`${summary.task_count} tasks`}
-												>
-													<ListChecks size={12} />
-													<span>
-														{summary.task_count}{" "}
-														{summary.task_count === 1 ? "task" : "tasks"}
-													</span>
-												</span>
-											) : null}
-											{summary?.note_activity_count ? (
-												<span
-													className="calendarMonthCellStatLine"
-													aria-label={`${summary.note_activity_count} notes`}
-												>
-													<StickyNote size={12} />
-													<span>
-														{summary.note_activity_count}{" "}
-														{summary.note_activity_count === 1
-															? "note"
-															: "notes"}
-													</span>
-												</span>
-											) : null}
-											{summary?.has_daily_note ? (
-												<span
-													className="calendarMonthCellStatLine"
-													aria-label="Daily note"
-												>
-													<FileText size={12} />
-													<span>Daily note</span>
-												</span>
-											) : null}
-										</div>
+										<span className="calendarMonthCellDayNumber">
+											{formatMonthDay(date)}
+										</span>
 									</button>
 								);
 							})}
@@ -566,12 +533,14 @@ export function CalendarPane({
 							{range.dates.map((date) => {
 								const summary = summaryByDate.get(date);
 								const isSelected = date === selectedDate;
+								const isDateToday = date === today;
 								return (
 									<div
 										key={date}
 										className={cn(
 											"calendarWeekCard",
 											isSelected && "is-selected",
+											isDateToday && "is-today",
 										)}
 									>
 										<button
@@ -582,45 +551,32 @@ export function CalendarPane({
 											<div className="calendarWeekCardMain">
 												<div className="calendarWeekCardTitle">
 													{formatDayTitle(date)}
+													{isDateToday ? (
+														<span className="calendarWeekTodayBadge">
+															Today
+														</span>
+													) : null}
 												</div>
 												<div className="calendarWeekCardSubtext">
-													{relativeDayLabel(date, today) ?? formatWeekday(date)}
+													{!isDateToday
+														? (relativeDayLabel(date, today) ??
+															formatWeekday(date))
+														: formatWeekday(date)}
 												</div>
 											</div>
-											<div className="calendarWeekCardSummary">
+											<div className="calendarWeekCardCounts">
 												{summary?.task_count ? (
-													<span
-														className="calendarMonthCellStatLine"
-														aria-label={`${summary.task_count} tasks`}
-													>
-														<ListChecks size={12} />
-														<span>
-															{summary.task_count}{" "}
-															{summary.task_count === 1 ? "task" : "tasks"}
-														</span>
+													<span>
+														{summary.task_count}{" "}
+														{summary.task_count === 1 ? "task" : "tasks"}
 													</span>
 												) : null}
 												{summary?.note_activity_count ? (
-													<span
-														className="calendarMonthCellStatLine"
-														aria-label={`${summary.note_activity_count} notes`}
-													>
-														<StickyNote size={12} />
-														<span>
-															{summary.note_activity_count}{" "}
-															{summary.note_activity_count === 1
-																? "note"
-																: "notes"}
-														</span>
-													</span>
-												) : null}
-												{summary?.has_daily_note ? (
-													<span
-														className="calendarMonthCellStatLine"
-														aria-label="Daily note"
-													>
-														<FileText size={12} />
-														<span>Daily note</span>
+													<span>
+														{summary.note_activity_count}{" "}
+														{summary.note_activity_count === 1
+															? "note"
+															: "notes"}
 													</span>
 												) : null}
 											</div>
@@ -630,9 +586,9 @@ export function CalendarPane({
 							})}
 						</div>
 					)}
-				</div>
+				</section>
 
-				<aside className="calendarDetailPane">
+				<section className="calendarSection calendarSectionCard calendarBentoCard calendarTile-today">
 					<div className="calendarDetailHeader">
 						<div className="calendarDetailHeading">
 							<h3 className="calendarDetailTitle">
@@ -655,179 +611,112 @@ export function CalendarPane({
 								: "Create daily note"}
 						</Button>
 					</div>
-					<div className="calendarDetailBody">
-						<section className="calendarSection calendarSectionCard">
-							<div className="calendarSectionHeader">
-								<h3 className="calendarSectionTitle">
-									<span className="calendarSectionLabelPill">Tasks</span>
-								</h3>
+					{dailyNotesFolder ? (
+						<div className="calendarTaskComposer">
+							<Input
+								value={taskDraft}
+								onChange={(event) => setTaskDraft(event.target.value)}
+								placeholder={`Add a task for ${formatMonthDay(selectedDate)}`}
+								onKeyDown={(event) => {
+									if (event.key === "Enter" && !event.shiftKey) {
+										event.preventDefault();
+										void submitTask();
+									}
+								}}
+							/>
+							<Button
+								type="button"
+								size="sm"
+								variant="ghost"
+								className="calendarTaskAddIcon"
+								onClick={() => void submitTask()}
+								disabled={isSubmittingTask || !taskDraft.trim()}
+								aria-label="Add task"
+							>
+								<Plus size={16} />
+							</Button>
+						</div>
+					) : (
+						<div className="calendarInlineSetup">
+							<div>
+								Set a daily notes folder to create tasks directly from the
+								calendar.
 							</div>
-							{dailyNotesFolder ? (
-								<div className="calendarTaskComposer">
-									<Input
-										value={taskDraft}
-										onChange={(event) => setTaskDraft(event.target.value)}
-										placeholder={`Add a task for ${formatDayTitle(selectedDate)}`}
-										onKeyDown={(event) => {
-											if (event.key === "Enter" && !event.shiftKey) {
-												event.preventDefault();
-												void submitTask();
-											}
-										}}
-									/>
-									<Button
-										type="button"
-										size="sm"
-										variant="ghost"
-										className="calendarTaskAddIcon"
-										onClick={() => void submitTask()}
-										disabled={isSubmittingTask || !taskDraft.trim()}
-										aria-label="Add task"
-									>
-										<Plus size={16} />
-									</Button>
-								</div>
-							) : (
-								<div className="calendarInlineSetup">
-									<div>
-										Set a daily notes folder to create tasks directly from the
-										calendar.
-									</div>
-									<Button
-										type="button"
-										variant="outline"
-										size="sm"
-										onClick={onOpenDailyNotesSettings}
-									>
-										<Settings size={14} />
-										Set daily notes folder
-									</Button>
-								</div>
-							)}
-							<div className="calendarTaskGroups">
-								{renderTaskGroup(
-									"Overdue",
-									selectedTasks?.overdue ?? [],
-									"calendarSectionScroller-compact",
-								)}
-								{renderTaskGroup(
-									"For this day",
-									selectedTasks?.for_day ?? [],
-									"calendarSectionScroller-main",
-								)}
-								{renderTaskGroup(
-									"Ongoing",
-									selectedTasks?.ongoing ?? [],
-									"calendarSectionScroller-compact",
-								)}
-							</div>
-						</section>
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								onClick={onOpenDailyNotesSettings}
+							>
+								<Settings size={14} />
+								Set daily notes folder
+							</Button>
+						</div>
+					)}
+				</section>
 
-						<section className="calendarSection calendarSectionCard calendarNotesSection">
-							<div className="calendarSectionHeader">
-								<h3 className="calendarSectionTitle">
-									<span className="calendarSectionLabelPill">Notes</span>
-								</h3>
-								<span className="calendarSectionCount">
-									{data?.detail.note_activity.length ?? 0}
-								</span>
-							</div>
-							<div className="calendarNotesScroller">
-								{data?.detail.note_activity.length ? (
-									<div className="calendarNotesList">
-										{data.detail.note_activity.map((item) => (
-											<button
-												key={item.note_id}
-												type="button"
-												className="calendarNoteRow"
-												onClick={() => void onOpenFile(item.note_path)}
-											>
-												<div className="calendarNoteRowMain">
-													<div className="calendarNoteTitleLine">
-														<div className="calendarNoteTitle">
-															{item.title}
-														</div>
-														{getNoteBreadcrumb(item.note_path) ? (
-															<div className="calendarNotePath">
-																{getNoteBreadcrumb(item.note_path)}
-															</div>
-														) : null}
-													</div>
-												</div>
-												<div className="calendarNoteBadges">
-													{item.edited_on_day ? (
-														<span className="calendarMetaPill is-muted">
-															{formatActivityTime(item.updated)}
-														</span>
-													) : null}
-												</div>
-											</button>
-										))}
-									</div>
-								) : (
-									<div className="calendarEmptyText">
-										No note activity recorded for this day.
-									</div>
-								)}
-							</div>
-						</section>
+				{renderTaskGroup(
+					"For this day",
+					selectedTasks?.for_day ?? [],
+					"calendarSectionScroller-main calendarTaskGroupScroller",
+				)}
+				{renderTaskGroup(
+					"Overdue",
+					selectedTasks?.overdue ?? [],
+					"calendarSectionScroller-compact calendarTaskGroupScroller",
+				)}
+				{renderTaskGroup(
+					"Ongoing",
+					selectedTasks?.ongoing ?? [],
+					"calendarSectionScroller-compact calendarTaskGroupScroller",
+				)}
 
-						<section className="calendarSection calendarSectionCard">
-							<div className="calendarSectionHeader">
-								<h3 className="calendarSectionTitle">
-									<span className="calendarSectionLabelPill">Daily note</span>
-								</h3>
-							</div>
-							<div className="calendarDailyNoteWrap">
-								{data?.detail.daily_note_configured ? (
-									<div className="calendarDailyNoteCard calendarDailyNoteCardCompact">
-										<div>
-											<div className="calendarDailyNoteTitle">
-												{data.detail.has_daily_note
-													? "Daily note"
-													: "Create daily note"}
-											</div>
-											<div className="calendarDailyNotePath">
-												{data.detail.daily_note_path ??
-													getDailyNotePath(
-														dailyNotesFolder ?? "",
-														selectedDate,
-													)}
-											</div>
-										</div>
-										<Button
-											type="button"
-											size="sm"
-											variant={
-												data.detail.has_daily_note ? "outline" : "default"
-											}
-											onClick={openSelectedDailyNote}
-										>
-											{data.detail.has_daily_note
-												? "Open daily note"
-												: "Create daily note"}
-										</Button>
-									</div>
-								) : (
-									<div className="calendarInlineSetup">
-										<div>
-											Daily notes are not configured for this space yet.
-										</div>
-										<Button
-											type="button"
-											variant="outline"
-											size="sm"
-											onClick={onOpenDailyNotesSettings}
-										>
-											<Settings size={14} />
-											Set daily notes folder
-										</Button>
-									</div>
-								)}
-							</div>
-						</section>
+				<section className="calendarSection calendarSectionCard calendarBentoCard calendarTile-notes">
+					<div className="calendarSectionHeader">
+						<h3 className="calendarSectionTitle">
+							<span className="calendarSectionLabelPill">Notes</span>
+						</h3>
+						<span className="calendarSectionCount">
+							{data?.detail.note_activity.length ?? 0}
+						</span>
 					</div>
-				</aside>
+					<div className="calendarNotesScroller">
+						{data?.detail.note_activity.length ? (
+							<div className="calendarNotesList">
+								{data.detail.note_activity.map((item) => (
+									<button
+										key={item.note_id}
+										type="button"
+										className="calendarNoteRow"
+										onClick={() => void onOpenFile(item.note_path)}
+									>
+										<div className="calendarNoteRowMain">
+											<div className="calendarNoteTitleLine">
+												<div className="calendarNoteTitle">{item.title}</div>
+												{getNoteBreadcrumb(item.note_path) ? (
+													<div className="calendarNotePath">
+														{getNoteBreadcrumb(item.note_path)}
+													</div>
+												) : null}
+											</div>
+										</div>
+										<div className="calendarNoteBadges">
+											{item.edited_on_day ? (
+												<span className="calendarMetaPill is-muted">
+													{formatActivityTime(item.updated)}
+												</span>
+											) : null}
+										</div>
+									</button>
+								))}
+							</div>
+						) : (
+							<div className="calendarEmptyText">
+								No note activity recorded for this day.
+							</div>
+						)}
+					</div>
+				</section>
 			</div>
 
 			{loading ? (
