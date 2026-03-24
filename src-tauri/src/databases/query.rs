@@ -126,8 +126,8 @@ fn normalize_text(value: &str) -> String {
     value.trim().to_lowercase()
 }
 
-fn normalize_tag_text(value: &str) -> String {
-    normalize_tag(value).unwrap_or_default()
+fn normalize_tag_text(value: &str) -> Option<String> {
+    normalize_tag(value)
 }
 
 fn parent_dir(path: &str) -> String {
@@ -264,26 +264,45 @@ fn row_matches_filters(
         let cell = cell_value_from_row(row, column);
         let is_tags_column =
             column.column_type == "tags" || column.property_kind.as_deref() == Some("tags");
+        let raw_filter_text = filter.value_text.as_deref().unwrap_or_default();
         let filter_text = if is_tags_column {
-            normalize_tag_text(filter.value_text.as_deref().unwrap_or_default())
+            String::new()
         } else {
-            normalize_text(filter.value_text.as_deref().unwrap_or_default())
+            normalize_text(raw_filter_text)
+        };
+        let normalized_filter_tag = if is_tags_column {
+            normalize_tag_text(raw_filter_text)
+        } else {
+            None
         };
         let text_values: Vec<String> = if is_tags_column {
             cell.value_list
                 .iter()
-                .map(|v| normalize_tag_text(v))
-                .filter(|v| !v.is_empty())
+                .filter_map(|v| normalize_tag_text(v))
                 .collect()
         } else {
             cell_text_values(&cell)
         };
         match filter.operator.as_str() {
             "equals" => {
-                !filter_text.is_empty() && text_values.iter().any(|value| value == &filter_text)
+                if is_tags_column {
+                    normalized_filter_tag
+                        .as_ref()
+                        .is_some_and(|tag| text_values.iter().any(|value| value == tag))
+                } else {
+                    !filter_text.is_empty()
+                        && text_values.iter().any(|value| value == &filter_text)
+                }
             }
             "not_equals" => {
-                filter_text.is_empty() || text_values.iter().all(|value| value != &filter_text)
+                if is_tags_column {
+                    normalized_filter_tag
+                        .as_ref()
+                        .is_some_and(|tag| text_values.iter().all(|value| value != tag))
+                } else {
+                    filter_text.is_empty()
+                        || text_values.iter().all(|value| value != &filter_text)
+                }
             }
             "contains" => {
                 filter_text.is_empty()
@@ -308,13 +327,11 @@ fn row_matches_filters(
                         .any(|value| value.ends_with(&filter_text))
             }
             "tags_contains" => {
-                if filter_text.is_empty() {
-                    return true;
-                }
-                cell.value_list
-                    .iter()
-                    .map(|tag| normalize_tag_text(tag))
-                    .any(|tag| !tag.is_empty() && tag_matches_hierarchy(&filter_text, &tag))
+                normalized_filter_tag.as_ref().is_some_and(|filter_tag| {
+                    text_values
+                        .iter()
+                        .any(|tag| tag_matches_hierarchy(filter_tag, tag))
+                })
             }
             "is_empty" => text_values.is_empty() && cell.value_bool.is_none(),
             "is_not_empty" => !text_values.is_empty() || cell.value_bool.is_some(),
@@ -333,21 +350,30 @@ fn row_matches_filters(
                 if filter_values.is_empty() {
                     return true;
                 }
-                filter_values.iter().any(|value| {
-                    let normalized = if is_tags_column {
-                        normalize_tag_text(value)
-                    } else {
-                        normalize_text(value)
+                let normalized_tag_filters = if is_tags_column {
+                    let filters = filter_values
+                        .iter()
+                        .map(|value| normalize_tag_text(value))
+                        .collect::<Option<Vec<_>>>();
+                    let Some(filters) = filters else {
+                        return false;
                     };
-                    text_values.iter().any(|cell_value| {
-                        if is_tags_column {
-                            !normalized.is_empty()
-                                && tag_matches_hierarchy(&normalized, cell_value)
-                        } else {
-                            cell_value == &normalized
-                        }
+                    Some(filters)
+                } else {
+                    None
+                };
+                if let Some(filters) = normalized_tag_filters {
+                    filters.iter().any(|normalized| {
+                        text_values
+                            .iter()
+                            .any(|cell_value| tag_matches_hierarchy(normalized, cell_value))
                     })
-                })
+                } else {
+                    filter_values.iter().any(|value| {
+                        let normalized = normalize_text(value);
+                        text_values.iter().any(|cell_value| cell_value == &normalized)
+                    })
+                }
             }
             "none_of" => {
                 let filter_values = if filter.value_list.is_empty() {
@@ -359,21 +385,30 @@ fn row_matches_filters(
                 } else {
                     filter.value_list.clone()
                 };
-                filter_values.iter().all(|value| {
-                    let normalized = if is_tags_column {
-                        normalize_tag_text(value)
-                    } else {
-                        normalize_text(value)
+                let normalized_tag_filters = if is_tags_column {
+                    let filters = filter_values
+                        .iter()
+                        .map(|value| normalize_tag_text(value))
+                        .collect::<Option<Vec<_>>>();
+                    let Some(filters) = filters else {
+                        return false;
                     };
-                    text_values.iter().all(|cell_value| {
-                        if is_tags_column {
-                            normalized.is_empty()
-                                || !tag_matches_hierarchy(&normalized, cell_value)
-                        } else {
-                            cell_value != &normalized
-                        }
+                    Some(filters)
+                } else {
+                    None
+                };
+                if let Some(filters) = normalized_tag_filters {
+                    filters.iter().all(|normalized| {
+                        text_values
+                            .iter()
+                            .all(|cell_value| !tag_matches_hierarchy(normalized, cell_value))
                     })
-                })
+                } else {
+                    filter_values.iter().all(|value| {
+                        let normalized = normalize_text(value);
+                        text_values.iter().all(|cell_value| cell_value != &normalized)
+                    })
+                }
             }
             _ => true,
         }
@@ -827,6 +862,21 @@ mod tests {
             value_list: Vec::new(),
         }];
         assert!(!row_matches_filters(&row, &columns, &non_matching_filters));
+    }
+
+    #[test]
+    fn malformed_tag_filters_fail_closed() {
+        let columns = vec![tags_column()];
+        let row = sample_row(vec!["work/today/further"]);
+        let filters = vec![DatabaseFilter {
+            column_id: "tags".to_string(),
+            operator: "tags_contains".to_string(),
+            value_text: Some("#work//today".to_string()),
+            value_bool: None,
+            value_list: Vec::new(),
+        }];
+
+        assert!(!row_matches_filters(&row, &columns, &filters));
     }
 
     #[test]

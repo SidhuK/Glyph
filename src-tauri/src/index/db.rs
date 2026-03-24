@@ -61,7 +61,7 @@ fn table_has_column(
 fn migrate_tags_table(conn: &rusqlite::Connection) -> Result<(), String> {
     if !table_has_column(conn, "tags", "is_explicit")? {
         conn.execute(
-            "ALTER TABLE tags ADD COLUMN is_explicit INTEGER NOT NULL DEFAULT 1 CHECK (is_explicit IN (0,1))",
+            "ALTER TABLE tags ADD COLUMN is_explicit INTEGER NOT NULL DEFAULT 0 CHECK (is_explicit IN (0,1))",
             [],
         )
         .map_err(|e| e.to_string())?;

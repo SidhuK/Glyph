@@ -32,6 +32,28 @@ function normalizedSelection(value: string): string | null {
 	return normalizeTagToken(value);
 }
 
+export function buildDatabaseTagPickerOptions(
+	tags: ReturnType<typeof useFileTreeContext>["tags"],
+	query: string,
+): Array<{ tag: string; count: number }> {
+	const trimmed = query.trim();
+	if (trimmed.length >= 2) {
+		const suggestions = buildTagSuggestions(tags, [], trimmed);
+		if (suggestions.length > 0) return suggestions;
+	}
+
+	const normalizedQuery = normalizeTagDraftPrefix(trimmed);
+	return tags
+		.filter(
+			({ tag, is_explicit }) =>
+				is_explicit &&
+				(normalizedQuery.length === 0 ||
+					tag.toLowerCase().includes(normalizedQuery)),
+		)
+		.map(({ tag, direct_count }) => ({ tag, count: direct_count }))
+		.slice(0, 40);
+}
+
 export function DatabaseTagPicker({
 	value,
 	onChange,
@@ -46,23 +68,10 @@ export function DatabaseTagPicker({
 
 	const selectedTag = normalizedSelection(value);
 
-	const options = useMemo(() => {
-		const trimmed = query.trim();
-		if (trimmed.length >= 2) {
-			const suggestions = buildTagSuggestions(tags, [], trimmed);
-			if (suggestions.length > 0) return suggestions;
-		}
-
-		const normalizedQuery = normalizeTagDraftPrefix(trimmed);
-		return tags
-			.filter(({ tag, is_explicit }) =>
-				is_explicit && normalizedQuery.length === 0
-					? true
-					: tag.toLowerCase().includes(normalizedQuery),
-			)
-			.map(({ tag, direct_count }) => ({ tag, count: direct_count }))
-			.slice(0, 40);
-	}, [query, tags]);
+	const options = useMemo(
+		() => buildDatabaseTagPickerOptions(tags, query),
+		[query, tags],
+	);
 
 	const manualTag = normalizeTagToken(query);
 	const hasExactOption = options.some(({ tag }) => tag === manualTag);
