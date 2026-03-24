@@ -54,6 +54,12 @@ export function buildDatabaseTagPickerOptions(
 		.slice(0, 40);
 }
 
+export function buildDatabaseTagPickerExplicitTags(
+	tags: ReturnType<typeof useFileTreeContext>["tags"],
+): string[] {
+	return tags.filter(({ is_explicit }) => is_explicit).map(({ tag }) => tag);
+}
+
 export function DatabaseTagPicker({
 	value,
 	onChange,
@@ -72,9 +78,13 @@ export function DatabaseTagPicker({
 		() => buildDatabaseTagPickerOptions(tags, query),
 		[query, tags],
 	);
+	const explicitTags = useMemo(
+		() => buildDatabaseTagPickerExplicitTags(tags),
+		[tags],
+	);
 
 	const manualTag = normalizeTagToken(query);
-	const hasExactOption = options.some(({ tag }) => tag === manualTag);
+	const hasExactOption = explicitTags.some((tag) => tag === manualTag);
 
 	const selectedLabel = selectedTag ? formatTagLabel(selectedTag) : placeholder;
 

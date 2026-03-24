@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { buildDatabaseTagPickerOptions } from "./DatabaseTagPicker";
+import {
+	buildDatabaseTagPickerExplicitTags,
+	buildDatabaseTagPickerOptions,
+} from "./DatabaseTagPicker";
 
 const availableTags = [
 	{
@@ -35,5 +38,19 @@ describe("DatabaseTagPicker", () => {
 
 	it("excludes virtual tags when a query matches them", () => {
 		expect(buildDatabaseTagPickerOptions(availableTags, "virtual")).toEqual([]);
+	});
+
+	it("treats leading slash queries like an empty prefix", () => {
+		expect(buildDatabaseTagPickerOptions(availableTags, "/work")).toEqual([
+			{ tag: "work", count: 3 },
+			{ tag: "personal", count: 1 },
+		]);
+	});
+
+	it("checks exact matches against the full explicit tag set", () => {
+		expect(buildDatabaseTagPickerExplicitTags(availableTags)).toEqual([
+			"work",
+			"personal",
+		]);
 	});
 });

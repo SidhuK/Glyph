@@ -305,26 +305,42 @@ fn row_matches_filters(
                 }
             }
             "contains" => {
-                filter_text.is_empty()
-                    || text_values.iter().any(|value| value.contains(&filter_text))
+                if is_tags_column {
+                    false
+                } else {
+                    filter_text.is_empty()
+                        || text_values.iter().any(|value| value.contains(&filter_text))
+                }
             }
             "not_contains" => {
-                filter_text.is_empty()
-                    || text_values
-                        .iter()
-                        .all(|value| !value.contains(&filter_text))
+                if is_tags_column {
+                    false
+                } else {
+                    filter_text.is_empty()
+                        || text_values
+                            .iter()
+                            .all(|value| !value.contains(&filter_text))
+                }
             }
             "starts_with" => {
-                filter_text.is_empty()
-                    || text_values
-                        .iter()
-                        .any(|value| value.starts_with(&filter_text))
+                if is_tags_column {
+                    false
+                } else {
+                    filter_text.is_empty()
+                        || text_values
+                            .iter()
+                            .any(|value| value.starts_with(&filter_text))
+                }
             }
             "ends_with" => {
-                filter_text.is_empty()
-                    || text_values
-                        .iter()
-                        .any(|value| value.ends_with(&filter_text))
+                if is_tags_column {
+                    false
+                } else {
+                    filter_text.is_empty()
+                        || text_values
+                            .iter()
+                            .any(|value| value.ends_with(&filter_text))
+                }
             }
             "tags_contains" => {
                 normalized_filter_tag.as_ref().is_some_and(|filter_tag| {
@@ -872,6 +888,21 @@ mod tests {
             column_id: "tags".to_string(),
             operator: "tags_contains".to_string(),
             value_text: Some("#work//today".to_string()),
+            value_bool: None,
+            value_list: Vec::new(),
+        }];
+
+        assert!(!row_matches_filters(&row, &columns, &filters));
+    }
+
+    #[test]
+    fn unsupported_string_operators_fail_closed_for_tag_columns() {
+        let columns = vec![tags_column()];
+        let row = sample_row(vec!["work/today/further"]);
+        let filters = vec![DatabaseFilter {
+            column_id: "tags".to_string(),
+            operator: "contains".to_string(),
+            value_text: Some("work".to_string()),
             value_bool: None,
             value_list: Vec::new(),
         }];
