@@ -94,6 +94,78 @@
 	font-size: 21px;
 }
 
+.calendarWelcome {
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	padding: 0 2px;
+}
+
+.calendarWelcomeGreeting {
+	font-size: 1.1rem;
+	font-weight: 700;
+	letter-spacing: -0.02em;
+	color: var(--text-primary);
+	margin: 0;
+}
+
+.calendarWelcomeSummary {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 4px 6px;
+	font-size: 0.84rem;
+	line-height: 1.6;
+	color: var(--text-secondary);
+	margin: 0;
+}
+
+.calendarWelcomeItem {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	padding: 0;
+	border: none;
+	border-radius: 0;
+	background: transparent;
+	color: var(--text-primary);
+	font: inherit;
+	font-size: inherit;
+	cursor: pointer;
+	transition: color 140ms ease;
+}
+
+.calendarWelcomeItem:hover {
+	color: var(--interactive-accent);
+}
+
+.calendarWelcomeItem:hover strong {
+	text-decoration: underline;
+	text-underline-offset: 2px;
+}
+
+.calendarWelcomeItem svg {
+	flex: 0 0 auto;
+	opacity: 0.7;
+}
+
+.calendarWelcomeItem.is-overdue {
+	color: #b91c1c;
+}
+
+.calendarWelcomeItem.is-overdue:hover {
+	color: #dc2626;
+}
+
+.calendarWelcomeItem strong {
+	font-weight: 700;
+}
+
+.calendarWelcomeEmpty {
+	font-style: italic;
+	color: var(--text-secondary);
+}
+
 .calendarToolbarActions,
 .calendarToolbarNav,
 .calendarSegmented,

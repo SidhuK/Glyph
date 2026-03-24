@@ -35,8 +35,10 @@ import { cn } from "../../lib/utils";
 import {
 	Calendar,
 	FileText,
+	ListChecks,
 	Plus,
 	Settings,
+	StickyNote,
 } from "../Icons";
 import { TaskRow } from "../tasks/TaskRow";
 import { springPresets } from "../ui/animations";
@@ -85,6 +87,13 @@ function getNoteBreadcrumb(notePath: string): string {
 	const parts = notePath.split("/").filter(Boolean);
 	if (parts.length <= 1) return "";
 	return parts.slice(0, -1).join(" / ");
+}
+
+function getTimeGreeting(): string {
+	const hour = new Date().getHours();
+	if (hour < 12) return "Good morning";
+	if (hour < 17) return "Good afternoon";
+	return "Good evening";
 }
 
 function getTaskGroupMeta(label: string): {
@@ -191,6 +200,22 @@ export function CalendarPane({
 	);
 
 	const selectedTasks = data?.tasks;
+	const todaySummary = summaryByDate.get(today);
+	const greeting = useMemo(() => getTimeGreeting(), []);
+	const todayTaskCount =
+		(selectedTasks && selectedDate === today
+			? (selectedTasks.for_day.length ?? 0)
+			: (todaySummary?.task_count ?? 0));
+	const todayNoteCount =
+		selectedDate === today
+			? (data?.detail.note_activity.length ?? 0)
+			: (todaySummary?.note_activity_count ?? 0);
+	const todayHasDailyNote =
+		selectedDate === today
+			? (data?.detail.has_daily_note ?? false)
+			: (todaySummary?.has_daily_note ?? false);
+	const todayOverdueCount =
+		selectedDate === today ? (selectedTasks?.overdue.length ?? 0) : 0;
 
 	const goToToday = useCallback(() => {
 		setAnchorDate(today);
@@ -499,6 +524,70 @@ export function CalendarPane({
 
 			<div className={cn("calendarLayout", viewMode === "week" && "is-week")}>
 				<section className="calendarPrimary calendarBentoCard calendarTile-calendar">
+					{data ? (
+						<div className="calendarWelcome">
+							<p className="calendarWelcomeGreeting">{greeting}!</p>
+							<p className="calendarWelcomeSummary">
+								<span>Today includes</span>
+								{todayTaskCount > 0 ? (
+									<button
+										type="button"
+										className="calendarWelcomeItem"
+										onClick={goToToday}
+									>
+										<ListChecks size={14} />
+										<strong>
+											{todayTaskCount}{" "}
+											{todayTaskCount === 1 ? "task" : "tasks"}
+										</strong>
+									</button>
+								) : null}
+								{todayOverdueCount > 0 ? (
+									<button
+										type="button"
+										className="calendarWelcomeItem is-overdue"
+										onClick={goToToday}
+									>
+										<Calendar size={14} />
+										<strong>
+											{todayOverdueCount} overdue
+										</strong>
+									</button>
+								) : null}
+								{todayNoteCount > 0 ? (
+									<button
+										type="button"
+										className="calendarWelcomeItem"
+										onClick={goToToday}
+									>
+										<StickyNote size={14} />
+										<strong>
+											{todayNoteCount}{" "}
+											{todayNoteCount === 1 ? "note" : "notes"}
+										</strong>
+									</button>
+								) : null}
+								{todayHasDailyNote ? (
+									<button
+										type="button"
+										className="calendarWelcomeItem"
+										onClick={openSelectedDailyNote}
+									>
+										<FileText size={14} />
+										<strong>daily note ready</strong>
+									</button>
+								) : null}
+								{!todayTaskCount &&
+								!todayNoteCount &&
+								!todayOverdueCount &&
+								!todayHasDailyNote ? (
+									<span className="calendarWelcomeEmpty">
+										a clean slate — nothing scheduled yet.
+									</span>
+								) : null}
+							</p>
+						</div>
+					) : null}
 					{viewMode === "month" ? (
 						<div className="calendarMonthGrid">
 							{["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day) => (
