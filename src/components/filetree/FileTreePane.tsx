@@ -1,9 +1,16 @@
 import { m } from "motion/react";
-import { memo, useCallback, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useFileTreeContext, useSpace } from "../../contexts";
 import { extractErrorMessage } from "../../lib/errorUtils";
-import type { FileTreeAppearance, FsEntry } from "../../lib/tauri";
+import { loadSettings } from "../../lib/settings";
+import type {
+	DirChildSummary,
+	FileTreeAppearance,
+	FsEntry,
+} from "../../lib/tauri";
+import { invoke } from "../../lib/tauri";
+import { useTauriEvent } from "../../lib/tauriEvents";
 import { parentDir } from "../../utils/path";
 import { springPresets } from "../ui/animations";
 import { FileTreeDirItem } from "./FileTreeDirItem";
@@ -53,6 +60,8 @@ interface TreeEntriesProps {
 	onCommitFileRename: (path: string, nextName: string) => Promise<void>;
 	onCancelRename: () => void;
 	itemAppearance: Record<string, FileTreeAppearance>;
+	folderFileCounts: Record<string, number>;
+	showFolderFileCounts: boolean;
 	onChangeAppearance: (
 		entry: FsEntry,
 		appearance: FileTreeAppearance,
@@ -80,6 +89,8 @@ function TreeEntries({
 	onCommitFileRename,
 	onCancelRename,
 	itemAppearance,
+	folderFileCounts,
+	showFolderFileCounts,
 	onChangeAppearance,
 }: TreeEntriesProps) {
 	if (entries.length === 0) return null;
@@ -112,6 +123,11 @@ function TreeEntries({
 							onNewFolderInDir={onNewFolderInDir}
 							onDeletePath={onDeletePath}
 							appearance={itemAppearance[e.rel_path] ?? null}
+							fileCount={
+								showFolderFileCounts
+									? (folderFileCounts[e.rel_path] ?? null)
+									: null
+							}
 							onChangeAppearance={(appearance) =>
 								onChangeAppearance(e, appearance)
 							}
@@ -141,6 +157,8 @@ function TreeEntries({
 									onCommitFileRename={onCommitFileRename}
 									onCancelRename={onCancelRename}
 									itemAppearance={itemAppearance}
+									folderFileCounts={folderFileCounts}
+									showFolderFileCounts={showFolderFileCounts}
 									onChangeAppearance={onChangeAppearance}
 								/>
 							)}
@@ -193,8 +211,74 @@ export const FileTreePane = memo(function FileTreePane({
 	onDeletePath,
 }: FileTreePaneProps) {
 	const { itemAppearance, setItemAppearance } = useFileTreeContext();
-	const { setError } = useSpace();
+	const { spacePath, setError } = useSpace();
 	const [renamingPath, setRenamingPath] = useState<string | null>(null);
+	const [showFolderFileCounts, setShowFolderFileCounts] = useState(false);
+	const [folderFileCounts, setFolderFileCounts] = useState<
+		Record<string, number>
+	>({});
+
+	useEffect(() => {
+		let cancelled = false;
+		void loadSettings().then((settings) => {
+			if (!cancelled) {
+				setShowFolderFileCounts(settings.ui.showFileTreeFolderCounts);
+			}
+		});
+		return () => {
+			cancelled = true;
+		};
+	}, []);
+
+	useTauriEvent("settings:updated", (payload) => {
+		if (typeof payload.ui?.showFileTreeFolderCounts === "boolean") {
+			setShowFolderFileCounts(payload.ui.showFileTreeFolderCounts);
+		}
+	});
+
+	const summaryParentDirs = useMemo(() => {
+		const parents = new Set<string>([""]);
+		for (const dirPath of expandedDirs) {
+			parents.add(dirPath);
+		}
+		return [...parents].sort();
+	}, [expandedDirs]);
+
+	useEffect(() => {
+		if (!spacePath || !showFolderFileCounts) {
+			setFolderFileCounts({});
+			return;
+		}
+
+		let cancelled = false;
+
+		void Promise.all(
+			summaryParentDirs.map((dirPath) =>
+				invoke("space_dir_children_summary", dirPath ? { dir: dirPath } : {}),
+			),
+		)
+			.then((resultSets) => {
+				if (cancelled) return;
+				const nextCounts = Object.fromEntries(
+					resultSets.flatMap((summaries) =>
+						(summaries as DirChildSummary[]).map((summary) => [
+							summary.dir_rel_path,
+							summary.total_files_recursive,
+						]),
+					),
+				);
+				setFolderFileCounts(nextCounts);
+			})
+			.catch(() => {
+				if (!cancelled) {
+					setFolderFileCounts({});
+				}
+			});
+
+		return () => {
+			cancelled = true;
+		};
+	}, [spacePath, showFolderFileCounts, summaryParentDirs]);
 
 	const handleCreateFolder = useCallback(
 		async (dirPath: string) => {
@@ -287,6 +371,8 @@ export const FileTreePane = memo(function FileTreePane({
 						onCommitFileRename={handleCommitFileRename}
 						onCancelRename={() => setRenamingPath(null)}
 						itemAppearance={itemAppearance}
+						folderFileCounts={folderFileCounts}
+						showFolderFileCounts={showFolderFileCounts}
 						onChangeAppearance={handleChangeAppearance}
 					/>
 				</div>

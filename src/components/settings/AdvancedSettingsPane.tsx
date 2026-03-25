@@ -5,6 +5,7 @@ import {
 	setDatabaseShowColumnColor,
 	setDatabaseShowNoteCount,
 	setEditorShowCollapsibleHeadings,
+	setShowFileTreeFolderCounts,
 	setShowToc,
 } from "../../lib/settings";
 import { useTauriEvent } from "../../lib/tauriEvents";
@@ -17,12 +18,18 @@ import {
 export function AdvancedSettingsPane() {
 	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
 	const [showToc, setShowTocState] = useState(true);
+	const [showFileTreeFolderCounts, setShowFileTreeFolderCountsState] =
+		useState(false);
 	const [showDatabaseColumnColor, setShowDatabaseColumnColor] = useState(true);
 	const [showDatabaseNoteCount, setShowDatabaseNoteCount] = useState(false);
 	const [error, setError] = useState("");
 	const [isSavingShowToc, setIsSavingShowToc] = useState(false);
 	const [isSavingShowCollapsibleHeadings, setIsSavingShowCollapsibleHeadings] =
 		useState(false);
+	const [
+		isSavingShowFileTreeFolderCounts,
+		setIsSavingShowFileTreeFolderCounts,
+	] = useState(false);
 	const [isSavingDatabaseColumnColor, setIsSavingDatabaseColumnColor] =
 		useState(false);
 	const [isSavingDatabaseNoteCount, setIsSavingDatabaseNoteCount] =
@@ -34,6 +41,7 @@ export function AdvancedSettingsPane() {
 			const settings = await loadSettings();
 			setShowCollapsibleHeadings(settings.editor.showCollapsibleHeadings);
 			setShowTocState(settings.ui.showToc);
+			setShowFileTreeFolderCountsState(settings.ui.showFileTreeFolderCounts);
 			setShowDatabaseColumnColor(settings.database.showColumnColor);
 			setShowDatabaseNoteCount(settings.database.showNoteCount);
 		} catch (cause) {
@@ -51,6 +59,9 @@ export function AdvancedSettingsPane() {
 		}
 		if (typeof payload.ui?.showToc === "boolean") {
 			setShowTocState(payload.ui.showToc);
+		}
+		if (typeof payload.ui?.showFileTreeFolderCounts === "boolean") {
+			setShowFileTreeFolderCountsState(payload.ui.showFileTreeFolderCounts);
 		}
 		if (typeof payload.database?.showColumnColor === "boolean") {
 			setShowDatabaseColumnColor(payload.database.showColumnColor);
@@ -113,6 +124,35 @@ export function AdvancedSettingsPane() {
 									})
 									.finally(() => {
 										setIsSavingShowCollapsibleHeadings(false);
+									});
+							}}
+						/>
+					</SettingsRow>
+				</SettingsSection>
+				<SettingsSection
+					title="App"
+					description="Global app-level controls for the sidebar and workspace UI."
+				>
+					<SettingsRow
+						label="Show folder file counts"
+						description="Show a recursive file total at the end of each folder row in the file tree."
+					>
+						<SettingsToggle
+							checked={showFileTreeFolderCounts}
+							disabled={isSavingShowFileTreeFolderCounts}
+							ariaLabel="Show folder file counts"
+							onCheckedChange={(checked) => {
+								const previous = showFileTreeFolderCounts;
+								setError("");
+								setShowFileTreeFolderCountsState(checked);
+								setIsSavingShowFileTreeFolderCounts(true);
+								void setShowFileTreeFolderCounts(checked)
+									.catch((cause) => {
+										setShowFileTreeFolderCountsState(previous);
+										setError(extractErrorMessage(cause));
+									})
+									.finally(() => {
+										setIsSavingShowFileTreeFolderCounts(false);
 									});
 							}}
 						/>
