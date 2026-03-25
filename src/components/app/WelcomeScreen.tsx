@@ -96,14 +96,14 @@ export function WelcomeScreen({
 				key: "open",
 				icon: <FolderOpen size={16} strokeWidth={1.8} />,
 				label: "Open folder",
-				hint: "Work with notes you already have.",
+				hint: "Best for existing folders with Markdown notes.",
 				onClick: onOpenSpace,
 			},
 			{
 				key: "create",
 				icon: <FolderPlus size={16} strokeWidth={1.8} />,
 				label: "Create space",
-				hint: "Start a new folder and keep everything local.",
+				hint: "Start fresh if you do not already have notes.",
 				onClick: onCreateSpace,
 			},
 		);
@@ -179,8 +179,9 @@ export function WelcomeScreen({
 									delay: skip ? 0 : BRAND_DELAY + 0.22,
 								}}
 							>
-								Your notes, your files, your machine. Pick a folder and start
-								writing.
+								Your notes, your files, your machine. Glyph works best with
+								your existing folders of Markdown notes, or a new folder if
+								you want a clean start.
 							</m.p>
 
 							<div className="welcomeActionList">
