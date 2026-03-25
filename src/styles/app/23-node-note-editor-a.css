@@ -122,13 +122,10 @@
 	align-items: center;
 	justify-content: center;
 	gap: 6px;
-	padding: 4px 6px;
-	background: color-mix(in srgb, var(--bg-primary) 68%, transparent);
-	border: 1px solid color-mix(in srgb, var(--border-light) 56%, transparent);
-	border-radius: var(--radius-full);
-	backdrop-filter: blur(16px) saturate(1.08);
-	-webkit-backdrop-filter: blur(16px) saturate(1.08);
-	border-bottom: none;
+	padding: 4px 12px;
+	background: var(--bg-primary);
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-xl);
 	flex-shrink: 0;
 	overflow-x: auto;
 	overflow-y: hidden;
@@ -143,8 +140,8 @@
 
 .rfNodeNoteEditorRibbonFloating {
 	transform-origin: center bottom;
-	box-shadow: 0 10px 26px color-mix(in srgb, var(--bg-primary) 24%, transparent),
-		0 2px 10px color-mix(in srgb, var(--bg-primary) 14%, transparent);
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(0, 0, 0, 0.06),
+		0 1px 3px rgba(0, 0, 0, 0.1);
 }
 
 .rfNodeNoteEditorHeaderBar {
@@ -167,7 +164,7 @@
 	gap: 2px;
 	padding: 1px 2px;
 	border: 1px solid transparent;
-	border-radius: var(--radius-full);
+	border-radius: var(--radius-xl);
 	background: transparent;
 	flex: 0 0 auto;
 }

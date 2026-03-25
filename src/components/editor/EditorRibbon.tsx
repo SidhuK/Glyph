@@ -91,6 +91,7 @@ export const EditorRibbon = memo(function EditorRibbon({
 						canEdit={canEdit}
 						onPreventMouseDown={preventMouseDown}
 					/>
+					<span className="ribbonDivider" />
 					<RibbonColorPopover
 						editor={editor}
 						canEdit={canEdit}
@@ -105,11 +106,13 @@ export const EditorRibbon = memo(function EditorRibbon({
 						focusChain={focusChain}
 						preventMouseDown={preventMouseDown}
 					/>
+					<span className="ribbonDivider" />
 					<RibbonButtonList
 						buttons={getHeadingButtons(editor, runCommand, focusChain)}
 						canEdit={canEdit}
 						onPreventMouseDown={preventMouseDown}
 					/>
+					<span className="ribbonDivider" />
 					<RibbonButtonList
 						buttons={getListButtons(editor, runCommand, focusChain)}
 						canEdit={canEdit}
