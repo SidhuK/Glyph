@@ -1,6 +1,7 @@
 # AGENTS.md
 
 ## Commands
+
 ```bash
 pnpm dev            # Vite dev server (frontend only)
 pnpm tauri dev      # Full Tauri app in dev mode
@@ -15,14 +16,17 @@ cd website && pnpm build    # Astro marketing site production build
 cd src-tauri && cargo check    # Typecheck Rust backend
 cd src-tauri && cargo clippy   # Lint Rust
 ```
+
 **Pre-push:** `pnpm check && pnpm build && cd src-tauri && cargo check`
 
 ## Architecture
+
 **Glyph** — offline-first desktop note-taking app. Frontend: React 19 + TypeScript + Vite + Tailwind 4 (`src/`). Backend: Tauri 2 + Rust (`src-tauri/`). Editor: TipTap + Markdown. AI: Rig-backed multi-provider chat plus Codex/ChatGPT account integration. UI: shadcn/ui + Radix + Motion. Storage: SQLite + filesystem in `.glyph/` folder.
 
 Repo extras: the public Astro marketing site is stored in `website/`. Internal product and engineering docs live in `docs/`.
 
 ## Frontend Overview (`src/`)
+
 - `main.tsx` / `App.tsx` — Entry point, wraps `<AppShell>` in `<AppProviders>` (all contexts)
 - `SettingsApp.tsx` — Separate settings window entry
 - **`contexts/`** — App state via React Context: `SpaceContext`, `FileTreeContext`, `ViewContext`, `UIContext`, `EditorContext`, composed in `AppProviders`
@@ -43,6 +47,7 @@ Repo extras: the public Astro marketing site is stored in `website/`. Internal p
 - **`styles/`** — `shadcn-theme.css`, `shadcn-base.css`, numbered CSS files in `styles/app/`; shared design tokens live in `src/design-tokens.css`
 
 ## Backend Overview (`src-tauri/src/`)
+
 - `lib.rs` / `main.rs` — Tauri setup, command registration
 - **`space/`** — Space lifecycle: open/close/create, file `watcher.rs`, `state.rs`
 - **`space_fs/`** — Filesystem ops: listing, summaries, view data, link ops, and `read_write/` for text/preview/path/trash operations
@@ -60,6 +65,7 @@ Repo extras: the public Astro marketing site is stored in `website/`. Internal p
 - `system_fonts.rs` — System font enumeration
 
 ## Code Style & Safety
+
 - TypeScript strict mode, no `any` (use `unknown` + narrowing). Biome handles formatting/imports.
 - Functional React components, hooks, lazy-load heavy components. State via Context (no prop drilling).
 - Rust: serde for serialization, tracing for logs, atomic writes via `io_atomic::write_atomic()`.
@@ -70,4 +76,5 @@ Repo extras: the public Astro marketing site is stored in `website/`. Internal p
 - Make sure we dont over-engineer CSS and use default components as much as possible unless explicitly stated.
 
 ## Migration Policy
-- Use a hard cutover approach and never implement backward compatibility.
+
+- Use a hard cutover approach and never implement backward compatibility. However ask before you decided to do a hard cutover.
