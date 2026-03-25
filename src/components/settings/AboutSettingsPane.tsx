@@ -222,6 +222,7 @@ export function AboutSettingsPane() {
 								size="icon-sm"
 								variant="outline"
 								onClick={() => void openUrl("https://x.com/karat_sidhu")}
+								aria-label="X (Twitter)"
 								title="X (Twitter)"
 							>
 								<HugeiconsIcon icon={NewTwitterIcon} size={16} />
@@ -231,6 +232,7 @@ export function AboutSettingsPane() {
 								size="icon-sm"
 								variant="outline"
 								onClick={() => void openUrl("https://github.com/SidhuK/Glyph/issues/new/choose")}
+								aria-label="GitHub"
 								title="GitHub"
 							>
 								<HugeiconsIcon icon={GithubIcon} size={16} />

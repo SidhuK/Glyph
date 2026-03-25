@@ -50,6 +50,7 @@ export const RecentFilesPane = memo(function RecentFilesPane({
 					variant="ghost"
 					size="icon-sm"
 					onClick={onRefresh}
+					aria-label="Refresh recent files"
 					title="Refresh recent files"
 				>
 					<m.span whileHover={{ rotate: 180 }} transition={{ duration: 0.3 }}>

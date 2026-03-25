@@ -244,6 +244,20 @@ export const FileTreePane = memo(function FileTreePane({
 		return [...parents].sort();
 	}, [expandedDirs]);
 
+	const folderCountTreeRevision = useMemo(() => {
+		const serializeEntries = (entries: FsEntry[] | undefined) =>
+			(entries ?? [])
+				.map((entry) => `${entry.kind}:${entry.rel_path}`)
+				.join("|");
+		return summaryParentDirs
+			.map((dirPath) =>
+				dirPath
+					? `${dirPath}=>${serializeEntries(childrenByDir[dirPath])}`
+					: `root=>${serializeEntries(rootEntries)}`,
+			)
+			.join("||");
+	}, [childrenByDir, rootEntries, summaryParentDirs]);
+
 	useEffect(() => {
 		if (!spacePath || !showFolderFileCounts) {
 			setFolderFileCounts({});
@@ -251,34 +265,50 @@ export const FileTreePane = memo(function FileTreePane({
 		}
 
 		let cancelled = false;
-
-		void Promise.all(
+		const summaryRequests: Array<Promise<DirChildSummary[]>> =
 			summaryParentDirs.map((dirPath) =>
-				invoke("space_dir_children_summary", dirPath ? { dir: dirPath } : {}),
-			),
-		)
-			.then((resultSets) => {
+				invoke(
+					"space_dir_children_summary",
+					dirPath ? { dir: dirPath } : {},
+				),
+			);
+
+		void Promise.allSettled(summaryRequests)
+			.then((results) => {
 				if (cancelled) return;
-				const nextCounts = Object.fromEntries(
-					resultSets.flatMap((summaries) =>
-						(summaries as DirChildSummary[]).map((summary) => [
-							summary.dir_rel_path,
-							summary.total_files_recursive,
-						]),
-					),
-				);
-				setFolderFileCounts(nextCounts);
-			})
-			.catch(() => {
-				if (!cancelled) {
-					setFolderFileCounts({});
+				const nextCounts: Record<string, number> = {};
+				let hasSuccessfulResult = false;
+
+				for (const result of results) {
+					if (result.status !== "fulfilled") {
+						console.warn(
+							"Failed to load folder file counts for part of the tree",
+							result.reason,
+						);
+						continue;
+					}
+					hasSuccessfulResult = true;
+					for (const summary of result.value) {
+						nextCounts[summary.dir_rel_path] = summary.total_files_recursive;
+					}
 				}
+
+				if (!hasSuccessfulResult) return;
+				setFolderFileCounts((prev) => ({
+					...prev,
+					...nextCounts,
+				}));
 			});
 
 		return () => {
 			cancelled = true;
 		};
-	}, [spacePath, showFolderFileCounts, summaryParentDirs]);
+	}, [
+		spacePath,
+		showFolderFileCounts,
+		summaryParentDirs,
+		folderCountTreeRevision,
+	]);
 
 	const handleCreateFolder = useCallback(
 		async (dirPath: string) => {

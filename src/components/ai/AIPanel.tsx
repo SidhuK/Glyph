@@ -281,6 +281,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 						type="button"
 						variant="ghost"
 						size="icon-sm"
+						data-action="new-chat"
 						aria-label="New chat"
 						onClick={handleNewChat}
 						title="New chat"
@@ -293,6 +294,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 						type="button"
 						variant="ghost"
 						size="icon-sm"
+						data-action="settings"
 						aria-label="Settings"
 						onClick={() => void openSettingsWindow("ai")}
 						title="Settings"
@@ -304,6 +306,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 						type="button"
 						variant="ghost"
 						size="icon-sm"
+						data-action="minimize"
 						aria-label="Minimize"
 						onClick={onClose}
 						title="Minimize"

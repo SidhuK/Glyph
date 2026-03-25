@@ -1,6 +1,6 @@
 import { AtIcon, Navigation03Icon, StopIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { type Dispatch, type SetStateAction } from "react";
+import { type Dispatch, type RefObject, type SetStateAction } from "react";
 import { APP_TAGLINE } from "../../lib/copy";
 import { X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
@@ -15,7 +15,7 @@ interface AIComposerProps {
 	canSend: boolean;
 	onSend: () => void;
 	onStop: () => void;
-	composerInputRef: React.RefObject<HTMLTextAreaElement | null>;
+	composerInputRef: RefObject<HTMLTextAreaElement | null>;
 	scheduleComposerInputResize: () => void;
 	profiles: ReturnType<typeof useAiProfiles>;
 	context: ReturnType<typeof useAiContext>;

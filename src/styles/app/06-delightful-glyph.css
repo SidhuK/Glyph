@@ -90,11 +90,11 @@
 	filter: drop-shadow(0 1px 1px var(--delightful-glyph-shadow));
 }
 
-:root[data-delightful-glyph="true"] .aiPanelHeaderRight button:nth-of-type(1) svg {
+:root[data-delightful-glyph="true"] .aiPanelHeaderRight [data-action="new-chat"] svg {
 	color: var(--delightful-glyph-mint);
 }
 
-:root[data-delightful-glyph="true"] .aiPanelHeaderRight button:nth-of-type(2) svg {
+:root[data-delightful-glyph="true"] .aiPanelHeaderRight [data-action="settings"] svg {
 	color: var(--delightful-glyph-apricot);
 }
 
@@ -146,11 +146,11 @@
 	color: var(--delightful-glyph-blue);
 }
 
-:root[data-delightful-glyph="true"] .commandSearchFilterBtn:first-of-type svg {
+:root[data-delightful-glyph="true"] .commandSearchFilterBtn[data-kind="title-only"] svg {
 	color: var(--delightful-glyph-apricot);
 }
 
-:root[data-delightful-glyph="true"] .commandSearchFilterBtn:last-of-type svg {
+:root[data-delightful-glyph="true"] .commandSearchFilterBtn[data-kind="tag-only"] svg {
 	color: var(--delightful-glyph-rose);
 }
 

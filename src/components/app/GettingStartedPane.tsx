@@ -34,7 +34,7 @@ function buildSteps(showDailyNote: boolean): Step[] {
 			key: "note",
 			title: "Create your first note",
 			description:
-				"Open an existing folder of Markdown notes or start fresh. Either way, your files stay as plain .md in your folder.",
+				"Start writing here, and when you're ready you can also point Glyph at an existing folder of Markdown notes. Your files stay as plain .md in your folder.",
 			icon: FileText,
 		},
 		{

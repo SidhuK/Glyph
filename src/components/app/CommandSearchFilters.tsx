@@ -24,6 +24,7 @@ export function CommandSearchFilters({
 			<button
 				type="button"
 				className="commandSearchFilterBtn"
+				data-kind="title-only"
 				data-active={request.title_only ? "true" : "false"}
 				onClick={() =>
 					onChangeQuery(
@@ -37,6 +38,7 @@ export function CommandSearchFilters({
 			<button
 				type="button"
 				className="commandSearchFilterBtn"
+				data-kind="tag-only"
 				data-active={request.tag_only ? "true" : "false"}
 				onClick={() =>
 					onChangeQuery(withUpdated(request, { tag_only: !request.tag_only }))
