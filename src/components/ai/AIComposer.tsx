@@ -1,23 +1,10 @@
-import { cn } from "@/lib/utils";
-import {
-	ArrowDown01Icon,
-	AtIcon,
-	Navigation03Icon,
-	StopIcon,
-} from "@hugeicons/core-free-icons";
+import { AtIcon, Navigation03Icon, StopIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { type Dispatch, type SetStateAction, useMemo, useState } from "react";
+import { type Dispatch, type SetStateAction } from "react";
 import { APP_TAGLINE } from "../../lib/copy";
 import { X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
-import {
-	DropdownMenu,
-	DropdownMenuContent,
-	DropdownMenuItem,
-	DropdownMenuTrigger,
-} from "../ui/shadcn/dropdown-menu";
 import { ModelSelector } from "./ModelSelector";
-import { AI_PRESETS, type AiPreset, searchAiPresetCommands } from "./aiPresets";
 import type { useAiContext } from "./useAiContext";
 import type { useAiProfiles } from "./useAiProfiles";
 
@@ -37,8 +24,6 @@ interface AIComposerProps {
 	addPanelOpen: boolean;
 	setAddPanelOpen: (open: boolean) => void;
 	setAddPanelQuery: (query: string) => void;
-	activePreset: AiPreset;
-	onSelectPreset: (presetId: string) => void;
 	onAddContext: (kind: "folder" | "file", path: string) => void;
 	onRemoveContext: (kind: "folder" | "file", path: string) => void;
 }
@@ -69,26 +54,9 @@ export function AIComposer({
 	addPanelOpen,
 	setAddPanelOpen,
 	setAddPanelQuery,
-	activePreset,
-	onSelectPreset,
 	onAddContext,
 	onRemoveContext,
 }: AIComposerProps) {
-	const presetSlashMatches =
-		!showAddPanel && !isAwaitingResponse ? searchAiPresetCommands(input) : [];
-	const [activePresetSlashIndex, setActivePresetSlashIndex] = useState(0);
-	const activePresetSlashItem = useMemo(
-		() => presetSlashMatches[activePresetSlashIndex] ?? null,
-		[presetSlashMatches, activePresetSlashIndex],
-	);
-
-	const applyPresetSlashSelection = (preset: AiPreset) => {
-		onSelectPreset(preset.id);
-		setInput((prev) => prev.replace(/^\s*\/[a-z-]+\s*/i, ""));
-		scheduleComposerInputResize();
-		window.requestAnimationFrame(() => composerInputRef.current?.focus());
-	};
-
 	const handleInsertMentionTrigger = () => {
 		if (isAwaitingResponse) return;
 		setInput((prev) => {
@@ -147,45 +115,6 @@ export function AIComposer({
 					</button>
 				</div>
 			) : null}
-			{presetSlashMatches.length > 0 ? (
-				<div className="aiPresetSlashPanel">
-					<div className="aiPresetSlashHeader">Presets</div>
-					<div className="aiPresetSlashList">
-						{presetSlashMatches.map((preset) => (
-							<button
-								key={preset.id}
-								type="button"
-								className={cn(
-									"aiPresetSlashItem",
-									preset.id === activePresetSlashItem?.id &&
-										"aiPresetSlashItem-active",
-								)}
-								onMouseEnter={() =>
-									setActivePresetSlashIndex(
-										presetSlashMatches.findIndex(
-											(item) => item.id === preset.id,
-										),
-									)
-								}
-								onClick={() => applyPresetSlashSelection(preset)}
-							>
-								<span className="aiPresetSlashItemIcon">
-									<HugeiconsIcon icon={preset.icon} size={13} />
-								</span>
-								<span className="aiPresetSlashItemBody">
-									<span className="aiPresetSlashItemLabel">
-										{preset.command}
-									</span>
-									<span className="aiPresetSlashItemHint">
-										{preset.shortDescription}
-									</span>
-								</span>
-							</button>
-						))}
-					</div>
-				</div>
-			) : null}
-
 			<div className="aiComposer">
 				<div className="aiComposerInputShell">
 					{context.attachedFolders.length > 0 ? (
@@ -223,44 +152,9 @@ export function AIComposer({
 						disabled={isAwaitingResponse}
 						onChange={(e) => {
 							setInput(e.target.value);
-							setActivePresetSlashIndex(0);
 							scheduleComposerInputResize();
 						}}
 						onKeyDown={(e) => {
-							if (presetSlashMatches.length > 0) {
-								if (e.key === "Escape") {
-									e.preventDefault();
-									setInput((prev) =>
-										prev.startsWith("/") ? prev.slice(1) : prev,
-									);
-									setActivePresetSlashIndex(0);
-									scheduleComposerInputResize();
-									return;
-								}
-								if (e.key === "ArrowDown") {
-									e.preventDefault();
-									setActivePresetSlashIndex((prev) =>
-										Math.min(prev + 1, presetSlashMatches.length - 1),
-									);
-									return;
-								}
-								if (e.key === "ArrowUp") {
-									e.preventDefault();
-									setActivePresetSlashIndex((prev) => Math.max(prev - 1, 0));
-									return;
-								}
-								if (
-									e.key === "Enter" &&
-									!e.shiftKey &&
-									!e.metaKey &&
-									!e.ctrlKey &&
-									activePresetSlashItem
-								) {
-									e.preventDefault();
-									applyPresetSlashSelection(activePresetSlashItem);
-									return;
-								}
-							}
 							if (
 								e.key === "Enter" &&
 								!e.shiftKey &&
@@ -288,73 +182,6 @@ export function AIComposer({
 								>
 									<HugeiconsIcon icon={AtIcon} size={13} />
 								</Button>
-								<DropdownMenu>
-									<DropdownMenuTrigger asChild>
-										<button
-											type="button"
-											className={cn(
-												"aiModeDropdownTrigger",
-												"aiPresetDropdownTrigger",
-											)}
-											aria-label={`AI preset: ${activePreset.label}`}
-											title={activePreset.description}
-											disabled={isAwaitingResponse}
-										>
-											<span className="aiModeDropdownTriggerMain">
-												<span className="aiModeDropdownTriggerIcon aiPresetDropdownTriggerIcon">
-													<HugeiconsIcon icon={activePreset.icon} size={12} />
-												</span>
-												<span className="aiModeDropdownTriggerText">
-													<span className="aiModeDropdownTriggerLabel aiPresetDropdownTriggerLabel">
-														{activePreset.label}
-													</span>
-												</span>
-											</span>
-											<HugeiconsIcon
-												icon={ArrowDown01Icon}
-												size={12}
-												className="aiModeDropdownTriggerChevron"
-											/>
-										</button>
-									</DropdownMenuTrigger>
-									<DropdownMenuContent
-										align="start"
-										side="top"
-										className="aiModeDropdownMenu"
-									>
-										{AI_PRESETS.map((preset) => {
-											const active = preset.id === activePreset.id;
-											return (
-												<DropdownMenuItem
-													key={preset.id}
-													className={cn(
-														"aiModeDropdownItem",
-														"aiPresetDropdownItem",
-														active && "active",
-													)}
-													onSelect={() => onSelectPreset(preset.id)}
-												>
-													<span className="aiModeDropdownItemIcon aiPresetDropdownItemIcon">
-														<HugeiconsIcon icon={preset.icon} size={13} />
-													</span>
-													<span className="aiModeDropdownItemBody">
-														<span className="aiModeDropdownItemLabel">
-															{preset.label}
-														</span>
-														<span className="aiModeDropdownItemHint">
-															{preset.shortDescription}
-														</span>
-													</span>
-													{active ? (
-														<span className="aiModeDropdownItemStatus">
-															Current
-														</span>
-													) : null}
-												</DropdownMenuItem>
-											);
-										})}
-									</DropdownMenuContent>
-								</DropdownMenu>
 							</div>
 							<div className="aiComposerRight">
 								<ModelSelector

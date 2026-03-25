@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useState } from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import {
+	type AiAssistantMode,
 	loadSettings,
+	setAiAssistantMode,
 	setDatabaseShowColumnColor,
 	setDatabaseShowNoteCount,
 	setEditorShowCollapsibleHeadings,
@@ -18,6 +20,8 @@ import {
 export function AdvancedSettingsPane() {
 	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
 	const [showToc, setShowTocState] = useState(true);
+	const [aiAssistantMode, setAiAssistantModeState] =
+		useState<AiAssistantMode>("create");
 	const [showFileTreeFolderCounts, setShowFileTreeFolderCountsState] =
 		useState(false);
 	const [showDatabaseColumnColor, setShowDatabaseColumnColor] = useState(true);
@@ -26,6 +30,7 @@ export function AdvancedSettingsPane() {
 	const [isSavingShowToc, setIsSavingShowToc] = useState(false);
 	const [isSavingShowCollapsibleHeadings, setIsSavingShowCollapsibleHeadings] =
 		useState(false);
+	const [isSavingAiAssistantMode, setIsSavingAiAssistantMode] = useState(false);
 	const [
 		isSavingShowFileTreeFolderCounts,
 		setIsSavingShowFileTreeFolderCounts,
@@ -41,6 +46,7 @@ export function AdvancedSettingsPane() {
 			const settings = await loadSettings();
 			setShowCollapsibleHeadings(settings.editor.showCollapsibleHeadings);
 			setShowTocState(settings.ui.showToc);
+			setAiAssistantModeState(settings.ui.aiAssistantMode);
 			setShowFileTreeFolderCountsState(settings.ui.showFileTreeFolderCounts);
 			setShowDatabaseColumnColor(settings.database.showColumnColor);
 			setShowDatabaseNoteCount(settings.database.showNoteCount);
@@ -59,6 +65,12 @@ export function AdvancedSettingsPane() {
 		}
 		if (typeof payload.ui?.showToc === "boolean") {
 			setShowTocState(payload.ui.showToc);
+		}
+		if (
+			payload.ui?.aiAssistantMode === "chat" ||
+			payload.ui?.aiAssistantMode === "create"
+		) {
+			setAiAssistantModeState(payload.ui.aiAssistantMode);
 		}
 		if (typeof payload.ui?.showFileTreeFolderCounts === "boolean") {
 			setShowFileTreeFolderCountsState(payload.ui.showFileTreeFolderCounts);
@@ -124,6 +136,36 @@ export function AdvancedSettingsPane() {
 									})
 									.finally(() => {
 										setIsSavingShowCollapsibleHeadings(false);
+									});
+							}}
+						/>
+					</SettingsRow>
+				</SettingsSection>
+				<SettingsSection
+					title="AI"
+					description="Controls for how the AI assistant behaves by default."
+				>
+					<SettingsRow
+						label="AI chat has access to tools"
+						description="When on, AI can use tools to create and take actions. When off, it stays in chat-only mode."
+					>
+						<SettingsToggle
+							checked={aiAssistantMode === "create"}
+							disabled={isSavingAiAssistantMode}
+							ariaLabel="AI chat has access to tools"
+							onCheckedChange={(checked) => {
+								const previous = aiAssistantMode;
+								const nextMode: AiAssistantMode = checked ? "create" : "chat";
+								setError("");
+								setAiAssistantModeState(nextMode);
+								setIsSavingAiAssistantMode(true);
+								void setAiAssistantMode(nextMode)
+									.catch((cause) => {
+										setAiAssistantModeState(previous);
+										setError(extractErrorMessage(cause));
+									})
+									.finally(() => {
+										setIsSavingAiAssistantMode(false);
 									});
 							}}
 						/>
