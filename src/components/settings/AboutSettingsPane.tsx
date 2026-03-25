@@ -1,4 +1,8 @@
-import { CodesandboxIcon } from "@hugeicons/core-free-icons";
+import {
+	CodesandboxIcon,
+	GithubIcon,
+	NewTwitterIcon,
+} from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { openUrl } from "@tauri-apps/plugin-opener";
 import { relaunch } from "@tauri-apps/plugin-process";
@@ -215,19 +219,21 @@ export function AboutSettingsPane() {
 						<div className="settingsActions aboutActions">
 							<Button
 								type="button"
-								size="sm"
+								size="icon-sm"
 								variant="outline"
 								onClick={() => void openUrl("https://x.com/karat_sidhu")}
+								title="X (Twitter)"
 							>
-								X
+								<HugeiconsIcon icon={NewTwitterIcon} size={16} />
 							</Button>
 							<Button
 								type="button"
-								size="sm"
+								size="icon-sm"
 								variant="outline"
 								onClick={() => void openUrl("https://github.com/SidhuK")}
+								title="GitHub"
 							>
-								GitHub
+								<HugeiconsIcon icon={GithubIcon} size={16} />
 							</Button>
 						</div>
 					</SettingsRow>
