@@ -231,7 +231,11 @@ export function AboutSettingsPane() {
 								type="button"
 								size="icon-sm"
 								variant="outline"
-								onClick={() => void openUrl("https://github.com/SidhuK/Glyph/issues/new/choose")}
+								onClick={() =>
+									void openUrl(
+										"https://github.com/SidhuK/Glyph/issues/new/choose",
+									)
+								}
 								aria-label="GitHub"
 								title="GitHub"
 							>

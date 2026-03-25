@@ -45,7 +45,10 @@ export function CommandList({
 	}
 
 	const categoryToDataValue = (category: string) =>
-		category.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+		category
+			.toLowerCase()
+			.replace(/[^a-z0-9]+/g, "-")
+			.replace(/^-+|-+$/g, "");
 
 	const showSectionLabels =
 		sections.length > 1 ||

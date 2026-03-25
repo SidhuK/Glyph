@@ -33,8 +33,7 @@ export function AdvancedSettingsPane() {
 	const [isSavingShowCollapsibleHeadings, setIsSavingShowCollapsibleHeadings] =
 		useState(false);
 	const [isSavingAiAssistantMode, setIsSavingAiAssistantMode] = useState(false);
-	const [isSavingDelightfulGlyph, setIsSavingDelightfulGlyph] =
-		useState(false);
+	const [isSavingDelightfulGlyph, setIsSavingDelightfulGlyph] = useState(false);
 	const [
 		isSavingShowFileTreeFolderCounts,
 		setIsSavingShowFileTreeFolderCounts,

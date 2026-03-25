@@ -1,6 +1,6 @@
 import { AtIcon, Navigation03Icon, StopIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { type Dispatch, type RefObject, type SetStateAction } from "react";
+import type { Dispatch, RefObject, SetStateAction } from "react";
 import { APP_TAGLINE } from "../../lib/copy";
 import { X } from "../Icons";
 import { Button } from "../ui/shadcn/button";

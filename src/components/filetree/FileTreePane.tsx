@@ -249,6 +249,7 @@ export const FileTreePane = memo(function FileTreePane({
 			(entries ?? [])
 				.map((entry) => `${entry.kind}:${entry.rel_path}`)
 				.join("|");
+
 		return summaryParentDirs
 			.map((dirPath) =>
 				dirPath
@@ -264,41 +265,43 @@ export const FileTreePane = memo(function FileTreePane({
 			return;
 		}
 
+		const requestRevision = folderCountTreeRevision;
+		if (!requestRevision) {
+			setFolderFileCounts({});
+			return;
+		}
+
 		let cancelled = false;
 		const summaryRequests: Array<Promise<DirChildSummary[]>> =
 			summaryParentDirs.map((dirPath) =>
-				invoke(
-					"space_dir_children_summary",
-					dirPath ? { dir: dirPath } : {},
-				),
+				invoke("space_dir_children_summary", dirPath ? { dir: dirPath } : {}),
 			);
 
-		void Promise.allSettled(summaryRequests)
-			.then((results) => {
-				if (cancelled) return;
-				const nextCounts: Record<string, number> = {};
-				let hasSuccessfulResult = false;
+		void Promise.allSettled(summaryRequests).then((results) => {
+			if (cancelled) return;
+			const nextCounts: Record<string, number> = {};
+			let hasSuccessfulResult = false;
 
-				for (const result of results) {
-					if (result.status !== "fulfilled") {
-						console.warn(
-							"Failed to load folder file counts for part of the tree",
-							result.reason,
-						);
-						continue;
-					}
-					hasSuccessfulResult = true;
-					for (const summary of result.value) {
-						nextCounts[summary.dir_rel_path] = summary.total_files_recursive;
-					}
+			for (const result of results) {
+				if (result.status !== "fulfilled") {
+					console.warn(
+						"Failed to load folder file counts for part of the tree",
+						result.reason,
+					);
+					continue;
 				}
+				hasSuccessfulResult = true;
+				for (const summary of result.value) {
+					nextCounts[summary.dir_rel_path] = summary.total_files_recursive;
+				}
+			}
 
-				if (!hasSuccessfulResult) return;
-				setFolderFileCounts((prev) => ({
-					...prev,
-					...nextCounts,
-				}));
-			});
+			if (!hasSuccessfulResult) return;
+			setFolderFileCounts((prev) => ({
+				...prev,
+				...nextCounts,
+			}));
+		});
 
 		return () => {
 			cancelled = true;

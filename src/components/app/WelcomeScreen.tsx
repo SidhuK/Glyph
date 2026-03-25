@@ -179,9 +179,9 @@ export function WelcomeScreen({
 									delay: skip ? 0 : BRAND_DELAY + 0.22,
 								}}
 							>
-								Your notes, your files, your machine. Glyph works best with
-								your existing folders of Markdown notes, or a new folder if
-								you want a clean start.
+								Your notes, your files, your machine. Glyph works best with your
+								existing folders of Markdown notes, or a new folder if you want
+								a clean start.
 							</m.p>
 
 							<div className="welcomeActionList">

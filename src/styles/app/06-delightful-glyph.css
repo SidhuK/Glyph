@@ -30,30 +30,48 @@
 	);
 }
 
-:root[data-delightful-glyph="true"] .sidebarQuickActionBtn[data-kind="new-note"] > svg,
-:root[data-delightful-glyph="true"] .sidebarQuickActionBtn[data-kind="new-note"] .sidebarQuickActionLabel {
+:root[data-delightful-glyph="true"]
+	.sidebarQuickActionBtn[data-kind="new-note"]
+	> svg,
+:root[data-delightful-glyph="true"]
+	.sidebarQuickActionBtn[data-kind="new-note"]
+	.sidebarQuickActionLabel {
 	color: var(--delightful-glyph-mint);
 }
 
-:root[data-delightful-glyph="true"] .sidebarQuickActionBtn[data-kind="dashboard"] > svg,
-:root[data-delightful-glyph="true"] .sidebarQuickActionBtn[data-kind="dashboard"] .sidebarQuickActionLabel {
+:root[data-delightful-glyph="true"]
+	.sidebarQuickActionBtn[data-kind="dashboard"]
+	> svg,
+:root[data-delightful-glyph="true"]
+	.sidebarQuickActionBtn[data-kind="dashboard"]
+	.sidebarQuickActionLabel {
 	color: var(--delightful-glyph-cyan);
 }
 
-:root[data-delightful-glyph="true"] .sidebarQuickActionBtn[data-kind="databases"] > svg,
-:root[data-delightful-glyph="true"] .sidebarQuickActionBtn[data-kind="databases"] .sidebarQuickActionLabel {
+:root[data-delightful-glyph="true"]
+	.sidebarQuickActionBtn[data-kind="databases"]
+	> svg,
+:root[data-delightful-glyph="true"]
+	.sidebarQuickActionBtn[data-kind="databases"]
+	.sidebarQuickActionLabel {
 	color: var(--delightful-glyph-gold);
 }
 
-:root[data-delightful-glyph="true"] .sidebarSectionToggle [data-slot="tabs-trigger"][data-kind="files"] {
+:root[data-delightful-glyph="true"]
+	.sidebarSectionToggle
+	[data-slot="tabs-trigger"][data-kind="files"] {
 	color: var(--delightful-glyph-blue);
 }
 
-:root[data-delightful-glyph="true"] .sidebarSectionToggle [data-slot="tabs-trigger"][data-kind="tags"] {
+:root[data-delightful-glyph="true"]
+	.sidebarSectionToggle
+	[data-slot="tabs-trigger"][data-kind="tags"] {
 	color: var(--delightful-glyph-rose);
 }
 
-:root[data-delightful-glyph="true"] .sidebarSectionToggle [data-slot="tabs-trigger"][data-kind="recent"] {
+:root[data-delightful-glyph="true"]
+	.sidebarSectionToggle
+	[data-slot="tabs-trigger"][data-kind="recent"] {
 	color: var(--delightful-glyph-violet);
 }
 
@@ -62,11 +80,15 @@
 	color: var(--delightful-glyph-apricot);
 }
 
-:root[data-delightful-glyph="true"] .fileTreeRow:not([data-has-custom-color="true"]) .fileTreeIcon {
+:root[data-delightful-glyph="true"]
+	.fileTreeRow:not([data-has-custom-color="true"])
+	.fileTreeIcon {
 	color: var(--delightful-glyph-apricot) !important;
 }
 
-:root[data-delightful-glyph="true"] .fileTreeRow[data-has-custom-color="true"] .fileTreeIcon {
+:root[data-delightful-glyph="true"]
+	.fileTreeRow[data-has-custom-color="true"]
+	.fileTreeIcon {
 	color: var(--file-tree-row-icon-color) !important;
 }
 
@@ -90,11 +112,17 @@
 	filter: drop-shadow(0 1px 1px var(--delightful-glyph-shadow));
 }
 
-:root[data-delightful-glyph="true"] .aiPanelHeaderRight [data-action="new-chat"] svg {
+:root[data-delightful-glyph="true"]
+	.aiPanelHeaderRight
+	[data-action="new-chat"]
+	svg {
 	color: var(--delightful-glyph-mint);
 }
 
-:root[data-delightful-glyph="true"] .aiPanelHeaderRight [data-action="settings"] svg {
+:root[data-delightful-glyph="true"]
+	.aiPanelHeaderRight
+	[data-action="settings"]
+	svg {
 	color: var(--delightful-glyph-apricot);
 }
 
@@ -110,27 +138,39 @@
 	color: var(--delightful-glyph-cyan);
 }
 
-:root[data-delightful-glyph="true"] .settingsTabButton[data-tab="general"] .settingsTabIcon {
+:root[data-delightful-glyph="true"]
+	.settingsTabButton[data-tab="general"]
+	.settingsTabIcon {
 	color: var(--delightful-glyph-blue);
 }
 
-:root[data-delightful-glyph="true"] .settingsTabButton[data-tab="appearance"] .settingsTabIcon {
+:root[data-delightful-glyph="true"]
+	.settingsTabButton[data-tab="appearance"]
+	.settingsTabIcon {
 	color: var(--delightful-glyph-gold);
 }
 
-:root[data-delightful-glyph="true"] .settingsTabButton[data-tab="ai"] .settingsTabIcon {
+:root[data-delightful-glyph="true"]
+	.settingsTabButton[data-tab="ai"]
+	.settingsTabIcon {
 	color: var(--delightful-glyph-violet);
 }
 
-:root[data-delightful-glyph="true"] .settingsTabButton[data-tab="space"] .settingsTabIcon {
+:root[data-delightful-glyph="true"]
+	.settingsTabButton[data-tab="space"]
+	.settingsTabIcon {
 	color: var(--delightful-glyph-mint);
 }
 
-:root[data-delightful-glyph="true"] .settingsTabButton[data-tab="advanced"] .settingsTabIcon {
+:root[data-delightful-glyph="true"]
+	.settingsTabButton[data-tab="advanced"]
+	.settingsTabIcon {
 	color: var(--delightful-glyph-apricot);
 }
 
-:root[data-delightful-glyph="true"] .settingsTabButton[data-tab="about"] .settingsTabIcon {
+:root[data-delightful-glyph="true"]
+	.settingsTabButton[data-tab="about"]
+	.settingsTabIcon {
 	color: var(--delightful-glyph-rose);
 }
 
@@ -146,39 +186,60 @@
 	color: var(--delightful-glyph-blue);
 }
 
-:root[data-delightful-glyph="true"] .commandSearchFilterBtn[data-kind="title-only"] svg {
+:root[data-delightful-glyph="true"]
+	.commandSearchFilterBtn[data-kind="title-only"]
+	svg {
 	color: var(--delightful-glyph-apricot);
 }
 
-:root[data-delightful-glyph="true"] .commandSearchFilterBtn[data-kind="tag-only"] svg {
+:root[data-delightful-glyph="true"]
+	.commandSearchFilterBtn[data-kind="tag-only"]
+	svg {
 	color: var(--delightful-glyph-rose);
 }
 
-:root[data-delightful-glyph="true"] .tagsPane[data-sidebar-list="tags"] .tagsNameWrap > svg {
+:root[data-delightful-glyph="true"]
+	.tagsPane[data-sidebar-list="tags"]
+	.tagsNameWrap
+	> svg {
 	color: var(--delightful-glyph-rose);
 }
 
-:root[data-delightful-glyph="true"] .tagsPane[data-sidebar-list="recent"] .sidebarRecentFileIcon {
+:root[data-delightful-glyph="true"]
+	.tagsPane[data-sidebar-list="recent"]
+	.sidebarRecentFileIcon {
 	color: var(--delightful-glyph-blue) !important;
 }
 
-:root[data-delightful-glyph="true"] .commandPaletteItem[data-command-category="workspace"] .commandPaletteItemIcon {
+:root[data-delightful-glyph="true"]
+	.commandPaletteItem[data-command-category="workspace"]
+	.commandPaletteItemIcon {
 	color: var(--delightful-glyph-blue);
 }
 
-:root[data-delightful-glyph="true"] .commandPaletteItem[data-command-category="ai"] .commandPaletteItemIcon {
+:root[data-delightful-glyph="true"]
+	.commandPaletteItem[data-command-category="ai"]
+	.commandPaletteItemIcon {
 	color: var(--delightful-glyph-violet);
 }
 
-:root[data-delightful-glyph="true"] .commandPaletteItem[data-command-category="file-operations"] .commandPaletteItemIcon,
-:root[data-delightful-glyph="true"] .commandPaletteItem[data-command-category="move-destination"] .commandPaletteItemIcon {
+:root[data-delightful-glyph="true"]
+	.commandPaletteItem[data-command-category="file-operations"]
+	.commandPaletteItemIcon,
+:root[data-delightful-glyph="true"]
+	.commandPaletteItem[data-command-category="move-destination"]
+	.commandPaletteItemIcon {
 	color: var(--delightful-glyph-apricot);
 }
 
-:root[data-delightful-glyph="true"] .commandPaletteItem[data-command-category="navigation"] .commandPaletteItemIcon {
+:root[data-delightful-glyph="true"]
+	.commandPaletteItem[data-command-category="navigation"]
+	.commandPaletteItemIcon {
 	color: var(--delightful-glyph-mint);
 }
 
-:root[data-delightful-glyph="true"] .commandPaletteItem[data-command-category="help"] .commandPaletteItemIcon {
+:root[data-delightful-glyph="true"]
+	.commandPaletteItem[data-command-category="help"]
+	.commandPaletteItemIcon {
 	color: var(--delightful-glyph-rose);
 }
