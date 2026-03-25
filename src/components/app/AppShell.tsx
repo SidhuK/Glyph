@@ -4,6 +4,7 @@ import {
 	Calendar03Icon,
 	CalendarAdd01Icon,
 	ColorsIcon,
+	DashboardSquare02Icon,
 	CursorInWindowIcon,
 	Folder01Icon,
 	FolderOpenIcon,
@@ -57,7 +58,7 @@ import { useTauriEvent } from "../../lib/tauriEvents";
 import { listTemplates, renderTemplate } from "../../lib/templates";
 import { openSettingsWindow } from "../../lib/windows";
 import { onWindowDragMouseDown } from "../../utils/window";
-import { FileHtml, LayoutAlignLeft } from "../Icons";
+import { Database, FileHtml, LayoutAlignLeft } from "../Icons";
 import { AIFloatingHost } from "../ai/AIFloatingHost";
 import { dispatchAiContextAttach } from "../ai/aiContextEvents";
 import {
@@ -1072,6 +1073,22 @@ export function AppShell() {
 				action: openCalendarTab,
 			},
 			{
+				id: "open-dashboard",
+				label: "Open dashboard",
+				icon: <HugeiconsIcon icon={DashboardSquare02Icon} size={16} />,
+				category: "Navigation",
+				enabled: Boolean(spacePath),
+				action: openCalendarTab,
+			},
+			{
+				id: "open-databases",
+				label: "Open databases",
+				icon: <Database size={16} />,
+				category: "Navigation",
+				enabled: Boolean(spacePath),
+				action: () => openDatabasesTab(),
+			},
+			{
 				id: "show-getting-started",
 				label: "Show getting started",
 				icon: <HugeiconsIcon icon={InformationCircleIcon} size={16} />,
@@ -1126,6 +1143,7 @@ export function AppShell() {
 		spacePath,
 		openSearchPalette,
 		openCalendarTab,
+		openDatabasesTab,
 		openGettingStarted,
 		openWhatsNew,
 		moveTargetDirs,
