@@ -43,6 +43,11 @@
 	max-height: none;
 }
 
+.tagsItem {
+	min-width: 0;
+	overflow: hidden;
+}
+
 .tagsButton {
 	width: 100%;
 	display: flex;
@@ -59,11 +64,16 @@
 }
 
 .tagsNameWrap {
-	display: inline-flex;
+	display: flex;
 	align-items: center;
 	gap: 6px;
 	min-width: 0;
-	flex: 1;
+	flex: 1 1 0%;
+	overflow: hidden;
+}
+
+.tagsNameWrap > :first-child {
+	flex-shrink: 0;
 }
 
 .tagsName {
@@ -75,6 +85,8 @@
 .tagsCount {
 	color: var(--text-tertiary);
 	font-size: var(--text-xs);
+	flex-shrink: 0;
+	white-space: nowrap;
 }
 
 .tagsEmpty {

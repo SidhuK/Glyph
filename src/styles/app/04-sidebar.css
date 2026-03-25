@@ -262,6 +262,11 @@
 	-webkit-app-region: no-drag;
 }
 
+.sidebarSectionContent [data-slot="scroll-area-viewport"] > div {
+	display: block !important;
+	min-width: 0 !important;
+}
+
 .sidebarSectionToggle [data-slot="tabs-trigger"]:focus-visible,
 .sidebarSectionContent button:focus-visible {
 	outline: 2px solid

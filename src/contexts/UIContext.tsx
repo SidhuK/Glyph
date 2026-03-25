@@ -26,8 +26,8 @@ import { useSpace } from "./SpaceContext";
 export interface UILayoutContextValue {
 	sidebarCollapsed: boolean;
 	setSidebarCollapsed: (collapsed: boolean) => void;
-	sidebarViewMode: "files" | "tags";
-	setSidebarViewMode: (mode: "files" | "tags") => void;
+	sidebarViewMode: "files" | "tags" | "recent";
+	setSidebarViewMode: (mode: "files" | "tags" | "recent") => void;
 	sidebarWidth: number;
 	setSidebarWidth: (width: number) => void;
 	paletteOpen: boolean;
@@ -75,7 +75,7 @@ const SearchUIContext = createContext<SearchUIContextValue | null>(null);
 
 type UIState = {
 	sidebarCollapsed: boolean;
-	sidebarViewMode: "files" | "tags";
+	sidebarViewMode: "files" | "tags" | "recent";
 	sidebarWidth: number;
 	paletteOpen: boolean;
 	activePreviewPath: string | null;
@@ -93,7 +93,7 @@ type UIState = {
 
 type UIAction =
 	| { type: "setSidebarCollapsed"; value: boolean }
-	| { type: "setSidebarViewMode"; value: "files" | "tags" }
+	| { type: "setSidebarViewMode"; value: "files" | "tags" | "recent" }
 	| { type: "setSidebarWidth"; value: number }
 	| { type: "setPaletteOpen"; value: boolean }
 	| { type: "setActivePreviewPath"; value: string | null }
@@ -365,7 +365,7 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		[],
 	);
 	const setSidebarViewMode = useCallback(
-		(mode: "files" | "tags") =>
+		(mode: "files" | "tags" | "recent") =>
 			dispatch({ type: "setSidebarViewMode", value: mode }),
 		[],
 	);

@@ -1,4 +1,5 @@
 import {
+	Clock01Icon,
 	DashboardSquare02Icon,
 	NoteIcon,
 	Tag01Icon,
@@ -11,9 +12,11 @@ import {
 	useSpace,
 	useUILayoutContext,
 } from "../../contexts";
+import { useRecentFiles } from "../../hooks/useRecentFiles";
 import { getShortcutTooltip } from "../../lib/shortcuts";
 import { FileTreePane } from "../FileTreePane";
 import { Database, Files } from "../Icons";
+import { RecentFilesPane } from "../RecentFilesPane";
 import { TagsPane } from "../TagsPane";
 import { directionVariants } from "../ui/animations";
 import { ScrollArea } from "../ui/shadcn/scroll-area";
@@ -63,6 +66,7 @@ export const SidebarContent = memo(function SidebarContent({
 		refreshTags,
 	} = useFileTreeContext();
 	const { sidebarViewMode, setSidebarViewMode } = useUILayoutContext();
+	const { recentFiles, refreshRecentFiles } = useRecentFiles(spacePath, 15);
 
 	if (!spacePath) {
 		return (
@@ -116,7 +120,7 @@ export const SidebarContent = memo(function SidebarContent({
 					<Tabs
 						value={sidebarViewMode}
 						onValueChange={(value) =>
-							setSidebarViewMode(value as "files" | "tags")
+							setSidebarViewMode(value as "files" | "tags" | "recent")
 						}
 						className="sidebarSectionToggle"
 					>
@@ -126,6 +130,9 @@ export const SidebarContent = memo(function SidebarContent({
 							</TabsTrigger>
 							<TabsTrigger value="tags" title="Tags">
 								<HugeiconsIcon icon={Tag01Icon} size={14} />
+							</TabsTrigger>
+							<TabsTrigger value="recent" title="Recent">
+								<HugeiconsIcon icon={Clock01Icon} size={14} />
 							</TabsTrigger>
 						</TabsList>
 					</Tabs>
@@ -171,6 +178,23 @@ export const SidebarContent = memo(function SidebarContent({
 									tags={tags}
 									onSelectTag={onSelectTag}
 									onRefresh={() => void refreshTags()}
+								/>
+							</ScrollArea>
+						</m.div>
+					)}
+					{sidebarViewMode === "recent" && (
+						<m.div
+							key="recent"
+							{...directionVariants.right}
+							transition={{ duration: 0.2 }}
+							className="sidebarSectionContent"
+						>
+							<ScrollArea className="h-full">
+								<RecentFilesPane
+									recentFiles={recentFiles}
+									activeFilePath={activeFilePath}
+									onOpenFile={onOpenFile}
+									onRefresh={() => void refreshRecentFiles()}
 								/>
 							</ScrollArea>
 						</m.div>
