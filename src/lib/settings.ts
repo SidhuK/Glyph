@@ -196,6 +196,7 @@ async function emitSettingsUpdated(payload: {
 		fontSize?: UiFontSize;
 		editorFontSize?: UiFontSize;
 		translucentApp?: boolean;
+		delightfulGlyph?: boolean;
 		showToc?: boolean;
 		showFileTreeFolderCounts?: boolean;
 		aiAssistantMode?: AiAssistantMode;
@@ -257,6 +258,7 @@ interface AppSettings {
 		fontSize: UiFontSize;
 		editorFontSize: UiFontSize;
 		translucentApp: boolean;
+		delightfulGlyph: boolean;
 		showToc: boolean;
 		showFileTreeFolderCounts: boolean;
 		aiAssistantMode: AiAssistantMode;
@@ -292,6 +294,7 @@ const KEYS = {
 	fontSize: "ui.fontSize",
 	editorFontSize: "ui.editorFontSize",
 	translucentApp: "ui.translucentApp",
+	delightfulGlyph: "ui.delightfulGlyph",
 	showToc: "ui.showToc",
 	showFileTreeFolderCounts: "ui.fileTree.showFolderFileCounts",
 	editorShowCollapsibleHeadings: "editor.showCollapsibleHeadings",
@@ -406,6 +409,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		rawFontSize,
 		rawEditorFontSize,
 		rawTranslucentApp,
+		rawDelightfulGlyph,
 		rawShowToc,
 		rawShowFileTreeFolderCounts,
 		dailyNotesFolderRaw,
@@ -439,6 +443,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<unknown>(KEYS.fontSize),
 		store.get<unknown>(KEYS.editorFontSize),
 		store.get<boolean | null>(KEYS.translucentApp),
+		store.get<boolean | null>(KEYS.delightfulGlyph),
 		store.get<boolean | null>(KEYS.showToc),
 		store.get<boolean | null>(KEYS.showFileTreeFolderCounts),
 		store.get<string | null>(KEYS.dailyNotesFolder),
@@ -481,6 +486,8 @@ export async function loadSettings(): Promise<AppSettings> {
 			: asUiEditorFontSize(rawEditorFontSize);
 	const translucentApp =
 		typeof rawTranslucentApp === "boolean" ? rawTranslucentApp : true;
+	const delightfulGlyph =
+		typeof rawDelightfulGlyph === "boolean" ? rawDelightfulGlyph : false;
 	const showToc = typeof rawShowToc === "boolean" ? rawShowToc : true;
 	const showFileTreeFolderCounts =
 		typeof rawShowFileTreeFolderCounts === "boolean"
@@ -550,6 +557,7 @@ export async function loadSettings(): Promise<AppSettings> {
 			fontSize,
 			editorFontSize,
 			translucentApp,
+			delightfulGlyph,
 			showToc,
 			showFileTreeFolderCounts,
 			aiAssistantMode,
@@ -728,6 +736,13 @@ export async function setUiTranslucentApp(enabled: boolean): Promise<void> {
 	await store.set(KEYS.translucentApp, enabled);
 	await store.save();
 	void emitSettingsUpdated({ ui: { translucentApp: enabled } });
+}
+
+export async function setDelightfulGlyph(enabled: boolean): Promise<void> {
+	const store = await getStore();
+	await store.set(KEYS.delightfulGlyph, enabled);
+	await store.save();
+	void emitSettingsUpdated({ ui: { delightfulGlyph: enabled } });
 }
 
 export async function setShowToc(enabled: boolean): Promise<void> {

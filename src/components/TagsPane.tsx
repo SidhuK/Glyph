@@ -48,6 +48,7 @@ export const TagsPane = memo(function TagsPane({
 	return (
 		<m.section
 			className="tagsPane"
+			data-sidebar-list="tags"
 			initial={{ y: 10 }}
 			animate={{ y: 0 }}
 			transition={springTransition}

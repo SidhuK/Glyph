@@ -38,6 +38,7 @@ export const RecentFilesPane = memo(function RecentFilesPane({
 	return (
 		<m.section
 			className="tagsPane"
+			data-sidebar-list="recent"
 			initial={{ y: 10 }}
 			animate={{ y: 0 }}
 			transition={springTransition}
@@ -82,7 +83,11 @@ export const RecentFilesPane = memo(function RecentFilesPane({
 									transition={springTransition}
 								>
 									<span className="tagsNameWrap">
-										<Icon size={12} style={{ color }} />
+										<Icon
+											size={12}
+											style={{ color }}
+											className="sidebarRecentFileIcon"
+										/>
 										<span className="tagsName">{name}</span>
 									</span>
 									<span className="tagsCount mono">

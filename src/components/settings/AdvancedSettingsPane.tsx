@@ -6,6 +6,7 @@ import {
 	setAiAssistantMode,
 	setDatabaseShowColumnColor,
 	setDatabaseShowNoteCount,
+	setDelightfulGlyph,
 	setEditorShowCollapsibleHeadings,
 	setShowFileTreeFolderCounts,
 	setShowToc,
@@ -22,6 +23,7 @@ export function AdvancedSettingsPane() {
 	const [showToc, setShowTocState] = useState(true);
 	const [aiAssistantMode, setAiAssistantModeState] =
 		useState<AiAssistantMode>("create");
+	const [delightfulGlyph, setDelightfulGlyphState] = useState(false);
 	const [showFileTreeFolderCounts, setShowFileTreeFolderCountsState] =
 		useState(false);
 	const [showDatabaseColumnColor, setShowDatabaseColumnColor] = useState(true);
@@ -31,6 +33,8 @@ export function AdvancedSettingsPane() {
 	const [isSavingShowCollapsibleHeadings, setIsSavingShowCollapsibleHeadings] =
 		useState(false);
 	const [isSavingAiAssistantMode, setIsSavingAiAssistantMode] = useState(false);
+	const [isSavingDelightfulGlyph, setIsSavingDelightfulGlyph] =
+		useState(false);
 	const [
 		isSavingShowFileTreeFolderCounts,
 		setIsSavingShowFileTreeFolderCounts,
@@ -47,6 +51,7 @@ export function AdvancedSettingsPane() {
 			setShowCollapsibleHeadings(settings.editor.showCollapsibleHeadings);
 			setShowTocState(settings.ui.showToc);
 			setAiAssistantModeState(settings.ui.aiAssistantMode);
+			setDelightfulGlyphState(settings.ui.delightfulGlyph);
 			setShowFileTreeFolderCountsState(settings.ui.showFileTreeFolderCounts);
 			setShowDatabaseColumnColor(settings.database.showColumnColor);
 			setShowDatabaseNoteCount(settings.database.showNoteCount);
@@ -71,6 +76,9 @@ export function AdvancedSettingsPane() {
 			payload.ui?.aiAssistantMode === "create"
 		) {
 			setAiAssistantModeState(payload.ui.aiAssistantMode);
+		}
+		if (typeof payload.ui?.delightfulGlyph === "boolean") {
+			setDelightfulGlyphState(payload.ui.delightfulGlyph);
 		}
 		if (typeof payload.ui?.showFileTreeFolderCounts === "boolean") {
 			setShowFileTreeFolderCountsState(payload.ui.showFileTreeFolderCounts);
@@ -175,6 +183,30 @@ export function AdvancedSettingsPane() {
 					title="App"
 					description="Global app-level controls for the sidebar and workspace UI."
 				>
+					<SettingsRow
+						label="delightful-glyph"
+						description="Enable me for a surprise."
+					>
+						<SettingsToggle
+							checked={delightfulGlyph}
+							disabled={isSavingDelightfulGlyph}
+							ariaLabel="delightful-glyph"
+							onCheckedChange={(checked) => {
+								const previous = delightfulGlyph;
+								setError("");
+								setDelightfulGlyphState(checked);
+								setIsSavingDelightfulGlyph(true);
+								void setDelightfulGlyph(checked)
+									.catch((cause) => {
+										setDelightfulGlyphState(previous);
+										setError(extractErrorMessage(cause));
+									})
+									.finally(() => {
+										setIsSavingDelightfulGlyph(false);
+									});
+							}}
+						/>
+					</SettingsRow>
 					<SettingsRow
 						label="Show folder file counts"
 						description="Show a recursive file total at the end of each folder row in the file tree."

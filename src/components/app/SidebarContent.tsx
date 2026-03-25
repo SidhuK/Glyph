@@ -124,17 +124,17 @@ export const SidebarContent = memo(function SidebarContent({
 						}
 						className="sidebarSectionToggle"
 					>
-						<TabsList className="w-full rounded-full bg-transparent">
-							<TabsTrigger value="files" title="Files">
-								<Files size={14} />
-							</TabsTrigger>
-							<TabsTrigger value="tags" title="Tags">
-								<HugeiconsIcon icon={Tag01Icon} size={14} />
-							</TabsTrigger>
-							<TabsTrigger value="recent" title="Recent">
-								<HugeiconsIcon icon={Clock01Icon} size={14} />
-							</TabsTrigger>
-						</TabsList>
+							<TabsList className="w-full rounded-full bg-transparent">
+								<TabsTrigger value="files" title="Files" data-kind="files">
+									<Files size={14} />
+								</TabsTrigger>
+								<TabsTrigger value="tags" title="Tags" data-kind="tags">
+									<HugeiconsIcon icon={Tag01Icon} size={14} />
+								</TabsTrigger>
+								<TabsTrigger value="recent" title="Recent" data-kind="recent">
+									<HugeiconsIcon icon={Clock01Icon} size={14} />
+								</TabsTrigger>
+							</TabsList>
 					</Tabs>
 				</div>
 				<AnimatePresence mode="wait">
