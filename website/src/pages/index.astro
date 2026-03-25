@@ -2,10 +2,7 @@
 import darkShowcaseAsset from "../../assets/dark.jpeg";
 import lightShowcaseAsset from "../../assets/light.jpeg";
 import logoG from "../../assets/logo_g.PNG";
-import privacyFilesIcon from "../../assets/privacy-files.svg";
-import privacyKeyIcon from "../../assets/privacy-key.svg";
-import privacyLightweightIcon from "../../assets/privacy-lightweight.svg";
-import privacyPrivateIcon from "../../assets/privacy-private.svg";
+
 import Layout from "../layouts/Layout.astro";
 import { downloadUrl } from "../lib/site";
 
@@ -147,7 +144,7 @@ const footerTrimMarks = Array.from({ length: 30 });
 			<div class="hero-cta-stack">
 				<div class="hero-actions">
 					<a href={downloadUrl} class="btn-primary" target="_blank" rel="noopener">
-						<svg class="apple-logo" width="16" height="20" viewBox="0 0 814 1000" fill="currentColor" aria-hidden="true"><path d="M788.1 340.9c-5.8 4.5-108.2 62.2-108.2 190.5 0 148.4 130.3 200.9 134.2 202.2-.6 3.2-20.7 71.9-68.7 141.9-42.8 61.6-87.5 123.1-155.5 123.1s-85.5-39.5-164-39.5c-76.5 0-103.7 40.8-165.9 40.8s-105.6-57.8-155.5-127.4c-58.8-82-107.5-209.3-107.5-329.9 0-194.2 126.1-297.3 250.5-297.3 65.7 0 120.8 43.5 162 43.5 39.3 0 100.6-46 175.3-46 28.3 0 130.1 2.6 197.3 97.6zm-271.6-89.1c31.2-37 53.5-88.4 53.5-139.8 0-7.1-.6-14.3-1.9-20.1-51 1.9-111.6 33.9-148.4 76.5-26.4 30-55.9 81.3-55.9 133.4 0 7.8.6 15.6 1.3 18.2 2.6.6 6.4 1.3 10.2 1.3 45.8 0 103.8-30.6 141.2-69.5z"/></svg>
+						<svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true"><path d="M11.182.008C11.148-.03 9.923.023 8.857 1.18c-1.066 1.156-.902 2.482-.878 2.516s1.52.087 2.475-1.258.762-2.391.728-2.43m3.314 11.733c-.048-.096-2.325-1.234-2.113-3.422s1.675-2.789 1.698-2.854-.597-.79-1.254-1.157a3.7 3.7 0 0 0-1.563-.434c-.108-.003-.483-.095-1.254.116-.508.139-1.653.589-1.968.607-.316.018-1.256-.522-2.267-.665-.647-.125-1.333.131-1.824.328-.49.196-1.422.754-2.074 2.237-.652 1.482-.311 3.83-.067 4.56s.625 1.924 1.273 2.796c.576.984 1.34 1.667 1.659 1.899s1.219.386 1.843.067c.502-.308 1.408-.485 1.766-.472.357.013 1.061.154 1.782.539.571.197 1.111.115 1.652-.105.541-.221 1.324-1.059 2.238-2.758q.52-1.185.473-1.282"/></svg>
 						Download for Free
 					</a>
 				</div>
@@ -833,111 +830,90 @@ const footerTrimMarks = Array.from({ length: 30 });
 					</div>
 				</div>
 			</div>
-		</section>
-
-		<!-- ── LOCAL-FIRST ── -->
-		<section class="section privacy-section" data-reveal>
-			<p class="label">PRIVACY</p>
-			<h2>Yours, completely</h2>
-			<p class="section-sub">Your notes never leave your machine. No account, no cloud, no telemetry. Open a folder and start writing.</p>
-			<div class="privacy-shell">
-				<div class="privacy-grid">
-					<div class="privacy-cell privacy-cell--private privacy-cell--feature">
-						<div class="privacy-cell__icon">
-							<img src={privacyPrivateIcon.src} alt="" loading="lazy" decoding="async" />
-						</div>
-						<h4 class="privacy-card-title">Private by default</h4>
-						<p class="privacy-card-subtitle">Nothing gets uploaded behind your back.</p>
-						<div class="privacy-preview privacy-preview--stack">
-							<div class="privacy-preview__metric">
-								<span class="privacy-stat">0</span>
-								<span class="privacy-label">data collected</span>
-							</div>
-							<div class="privacy-preview__list">
-								<span>No telemetry</span>
-								<span>No account required</span>
-								<span>Offline-ready workspace</span>
-							</div>
-						</div>
-						<div class="privacy-meta">
-							<span>No login</span>
-							<span>Local storage</span>
-						</div>
+			<div class="bento-grid">
+				<div class="feature-card feature-card--sand feature-card--compact bento-card-privacy">
+					<div class="bento-card-content">
+						<p class="feature-eyebrow">🔒 Privacy</p>
+						<h3 class="feature-heading">Private by default.</h3>
+						<p class="feature-body">Nothing gets uploaded behind your back.</p>
+						<ul class="feature-list">
+							<li>No telemetry</li>
+							<li>No account required</li>
+							<li>Offline-ready workspace</li>
+						</ul>
 					</div>
-					<div class="privacy-cell privacy-cell--files privacy-cell--wide">
-						<div class="privacy-cell__icon">
-							<img src={privacyFilesIcon.src} alt="" loading="lazy" decoding="async" />
-						</div>
-						<h4 class="privacy-card-title">Open markdown files</h4>
-						<p class="privacy-card-subtitle">Your notes stay portable forever.</p>
-						<div class="privacy-preview privacy-preview--file">
-							<div class="privacy-preview__row">
-								<span class="privacy-preview__mono">Notes/weekly-review.md</span>
-								<span class="privacy-preview__tag">.md</span>
-							</div>
-							<div class="privacy-preview__row privacy-preview__row--muted">
-								<span>Readable in Finder, Obsidian, VS Code, or plain text.</span>
-							</div>
-						</div>
-						<div class="privacy-meta">
-							<span>Finder-friendly</span>
-							<span>No export step</span>
-						</div>
-					</div>
-					<div class="privacy-cell privacy-cell--light privacy-cell--compact">
-						<div class="privacy-cell__icon">
-							<img src={privacyLightweightIcon.src} alt="" loading="lazy" decoding="async" />
-						</div>
-						<h4 class="privacy-card-title">Lean native app</h4>
-						<p class="privacy-card-subtitle">Fast launch, light footprint, and battery-friendly.</p>
-						<div class="privacy-preview privacy-preview--stats">
-							<div class="privacy-preview__stat-row">
-								<span>App size</span>
-								<strong>&lt;40 MB</strong>
-							</div>
-							<div class="privacy-preview__stat-row">
-								<span>Stack</span>
-								<strong>Tauri + Rust</strong>
-							</div>
-						</div>
-						<div class="privacy-meta">
-							<span>No Electron</span>
-							<span>Low memory use</span>
-						</div>
-					</div>
-					<div class="privacy-cell privacy-cell--key privacy-cell--compact">
-						<div class="privacy-cell__icon">
-							<img src={privacyKeyIcon.src} alt="" loading="lazy" decoding="async" />
-						</div>
-						<h4 class="privacy-card-title">Bring your own AI</h4>
-						<p class="privacy-card-subtitle">Use your own account, API key, or local model when you want help.</p>
-						<div class="privacy-preview privacy-preview--providers">
-							<span>ChatGPT</span>
-							<span>Claude</span>
-							<span>Gemini</span>
-							<span>OpenRouter</span>
-							<span>Ollama</span>
-						</div>
-						<div class="privacy-meta">
-							<span>No proxying</span>
-							<span>Local models too</span>
-						</div>
+					<div class="bento-visual-wrapper">
+						<svg class="svg-privacy" viewBox="0 0 100 100" aria-hidden="true">
+							<path class="shield-bg" d="M 50 20 L 80 30 L 80 55 C 80 75 50 90 50 90 C 50 90 20 75 20 55 L 20 30 Z" fill="#f0e9d8" stroke="#d0c4ad" stroke-width="3" stroke-linejoin="round"/>
+							<path class="lock-shackle" d="M 40 48 V 40 C 40 34 60 34 60 40 V 48" fill="none" stroke="#a39882" stroke-width="4" stroke-linecap="round"/>
+							<rect x="34" y="48" width="32" height="22" rx="4" fill="#a39882"/>
+							<circle cx="50" cy="59" r="3.5" fill="#f0e9d8"/>
+						</svg>
 					</div>
 				</div>
-				<div class="privacy-shell__footer">
-					<div class="privacy-shell__footer-brand">
-						<span class="privacy-shell__footer-icon">
-							<img src={privacyPrivateIcon.src} alt="" loading="lazy" decoding="async" />
-						</span>
-						<div class="privacy-shell__footer-copy">
-							<strong>Private by design</strong>
-							<span>Everything stays on your Mac</span>
+				<div class="feature-card feature-card--sage feature-card--compact bento-card-format">
+					<div class="bento-card-content">
+						<p class="feature-eyebrow">📄 Format</p>
+						<h3 class="feature-heading">Open markdown files.</h3>
+						<p class="feature-body">Your notes stay portable forever. Readable in Finder, Obsidian, VS Code, or plain text.</p>
+						<div class="feature-badge-row">
+							<span class="feature-badge">.md</span>
+							<span class="feature-badge">Standard</span>
 						</div>
 					</div>
-					<div class="privacy-shell__footer-meta" aria-label="Privacy guarantees">
-						<span>No account</span>
-						<span>Plain markdown</span>
-						<span>AI opt-in</span>
+					<div class="bento-visual-wrapper">
+						<svg class="svg-format" viewBox="0 0 100 100" aria-hidden="true">
+							<rect class="doc-back" x="30" y="20" width="50" height="65" rx="4" fill="#d8e8dc" stroke="#a7c4ae" stroke-width="2"/>
+							<rect class="doc-front" x="15" y="30" width="50" height="65" rx="4" fill="#f4f9f5" stroke="#a7c4ae" stroke-width="2"/>
+							<path class="line line-1" d="M 25 50 H 55" stroke="#a7c4ae" stroke-width="3" stroke-linecap="round"/>
+							<path class="line line-2" d="M 25 60 H 45" stroke="#a7c4ae" stroke-width="3" stroke-linecap="round"/>
+							<path class="line line-3" d="M 25 70 H 50" stroke="#a7c4ae" stroke-width="3" stroke-linecap="round"/>
+							<text class="md-mark" x="35" y="40" font-family="monospace" font-weight="bold" font-size="16" fill="#88a892">{}</text>
+						</svg>
+					</div>
+				</div>
+				<div class="feature-card feature-card--sky feature-card--compact bento-card-perf">
+					<div class="bento-card-content">
+						<p class="feature-eyebrow">⚡ Performance</p>
+						<h3 class="feature-heading">Lean native app.</h3>
+						<p class="feature-body">Fast launch, light footprint, and battery-friendly.</p>
+						<ul class="feature-list">
+							<li>&lt;40 MB app size</li>
+							<li>Tauri + Rust</li>
+							<li>No Electron</li>
+						</ul>
+					</div>
+					<div class="bento-visual-wrapper">
+						<svg class="svg-perf" viewBox="0 0 100 100" aria-hidden="true">
+							<path d="M 20 75 A 35 35 0 1 1 80 75" fill="none" stroke="#d5e3f0" stroke-width="6" stroke-linecap="round"/>
+							<path class="gauge-fill" d="M 20 75 A 35 35 0 1 1 80 75" fill="none" stroke="#a6c4e0" stroke-width="6" stroke-linecap="round" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100"/>
+							<path class="bolt" d="M 54 38 L 44 54 H 56 L 46 72 L 62 50 H 50 Z" fill="#a6c4e0"/>
+						</svg>
+					</div>
+				</div>
+				<div class="feature-card feature-card--rose feature-card--compact bento-card-ai">
+					<div class="bento-card-content">
+						<p class="feature-eyebrow">🤖 AI</p>
+						<h3 class="feature-heading">Bring your own AI.</h3>
+						<p class="feature-body">Use your own account, API key, or local model when you want help.</p>
+						<div class="feature-tag-cloud">
+							<span class="feature-tag">ChatGPT</span>
+							<span class="feature-tag">Claude</span>
+							<span class="feature-tag">Gemini</span>
+							<span class="feature-tag">Ollama</span>
+						</div>
+					</div>
+					<div class="bento-visual-wrapper">
+						<svg class="svg-ai" viewBox="0 0 100 100" aria-hidden="true">
+							<path class="connection" d="M 50 50 L 25 35 M 50 50 L 75 30 M 50 50 L 65 75 M 50 50 L 30 70" stroke="#e8d0d8" stroke-width="2" stroke-linecap="round"/>
+							<circle class="node" cx="25" cy="35" r="5" fill="#d1a7b6"/>
+							<circle class="node" cx="75" cy="30" r="4" fill="#d1a7b6"/>
+							<circle class="node" cx="65" cy="75" r="6" fill="#d1a7b6"/>
+							<circle class="node" cx="30" cy="70" r="4" fill="#d1a7b6"/>
+							<circle class="node center-node" cx="50" cy="50" r="8" fill="#c48f9f"/>
+							<path class="sparkle s1" d="M 85 55 C 85 55 87 61 93 62 C 87 63 85 69 85 69 C 85 69 83 63 77 62 C 83 61 85 55 85 55 Z" fill="#d1a7b6"/>
+							<path class="sparkle s2" d="M 20 60 C 20 60 21 64 25 65 C 21 66 20 70 20 70 C 20 70 19 66 15 65 C 19 64 20 60 20 60 Z" fill="#d1a7b6"/>
+						</svg>
 					</div>
 				</div>
 			</div>
@@ -1190,10 +1166,6 @@ const footerTrimMarks = Array.from({ length: 30 });
 	.btn-outline:focus-visible {
 		outline: 2px solid rgba(17, 17, 17, 0.15);
 		outline-offset: 2px;
-	}
-
-	.apple-logo {
-		flex-shrink: 0;
 	}
 
 	.btn-primary {
@@ -1726,394 +1698,262 @@ const footerTrimMarks = Array.from({ length: 30 });
 		}
 	}
 
-	/* ── Privacy grid ── */
-	.privacy-section .label {
-		display: inline-flex;
-		align-items: center;
-		gap: 0.45rem;
-		width: fit-content;
-		margin-inline: auto;
-		color: rgba(166, 97, 17, 0.82);
-	}
-
-	.privacy-section .label::before {
-		content: "";
-		width: 0.42rem;
-		height: 0.42rem;
-		border-radius: 999px;
-		background: var(--accent);
-		box-shadow: 0 0 0 0.22rem rgba(255, 159, 10, 0.14);
-	}
-
-	.privacy-section .section-sub {
-		max-width: 34rem;
-	}
-
-	.privacy-shell {
-		width: min(1040px, 96vw);
-		margin: 1rem auto 0;
-		position: relative;
-		left: 50%;
-		transform: translateX(-50%);
-		border: 1px solid rgba(123, 103, 79, 0.14);
-		border-radius: 1.65rem;
-		background: rgba(249, 245, 238, 0.98);
-		content-visibility: auto;
-		contain-intrinsic-size: 860px;
-		overflow: hidden;
-	}
-
-	.privacy-grid {
+	/* ── Bento grid ── */
+	.bento-grid {
 		display: grid;
-		grid-template-columns: repeat(2, minmax(0, 1fr));
-		contain: layout paint;
-	}
-
-	.privacy-cell {
-		--privacy-card-preview-border: rgba(123, 103, 79, 0.08);
-		--privacy-card-preview-bg: rgba(255, 255, 255, 0.45);
-		--privacy-card-pill-bg: rgba(255, 255, 255, 0.6);
-		--privacy-card-pill-color: rgba(73, 64, 55, 0.72);
-		--privacy-card-accent: rgba(123, 103, 79, 0.38);
-		position: relative;
-		display: flex;
-		flex-direction: column;
-		align-items: flex-start;
-		min-height: 13rem;
-		padding: 1.35rem 1.5rem 1.3rem;
-		text-align: left;
-		background: transparent;
-		contain: layout paint;
-	}
-
-	.privacy-cell:nth-child(odd) {
-		border-right: 1px solid rgba(123, 103, 79, 0.12);
-	}
-
-	.privacy-cell:nth-child(-n + 2) {
-		border-bottom: 1px solid rgba(123, 103, 79, 0.12);
-	}
-
-	.privacy-cell--private {
-		--privacy-card-preview-border: rgba(199, 151, 95, 0.14);
-		--privacy-card-preview-bg: rgba(255, 252, 247, 0.84);
-		--privacy-card-pill-bg: rgba(255, 250, 244, 0.86);
-		--privacy-card-pill-color: rgba(116, 78, 30, 0.78);
-		--privacy-card-accent: rgba(184, 123, 44, 0.58);
-	}
-
-	.privacy-cell--files {
-		--privacy-card-preview-border: rgba(116, 147, 122, 0.14);
-		--privacy-card-preview-bg: rgba(250, 253, 250, 0.84);
-		--privacy-card-pill-bg: rgba(248, 252, 248, 0.88);
-		--privacy-card-pill-color: rgba(73, 99, 78, 0.78);
-		--privacy-card-accent: rgba(91, 129, 98, 0.58);
-	}
-
-	.privacy-cell--light {
-		--privacy-card-preview-border: rgba(119, 145, 181, 0.14);
-		--privacy-card-preview-bg: rgba(250, 252, 255, 0.84);
-		--privacy-card-pill-bg: rgba(248, 251, 255, 0.9);
-		--privacy-card-pill-color: rgba(74, 96, 129, 0.8);
-		--privacy-card-accent: rgba(95, 124, 163, 0.56);
-	}
-
-	.privacy-cell--key {
-		--privacy-card-preview-border: rgba(155, 118, 132, 0.14);
-		--privacy-card-preview-bg: rgba(253, 249, 250, 0.84);
-		--privacy-card-pill-bg: rgba(251, 247, 248, 0.9);
-		--privacy-card-pill-color: rgba(117, 81, 95, 0.8);
-		--privacy-card-accent: rgba(146, 99, 117, 0.56);
-	}
-
-	.privacy-cell__icon {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 2.35rem;
-		height: 2.35rem;
-		border-radius: 0.6rem;
-		background: rgba(255, 255, 255, 0.72);
-		box-shadow: inset 0 0 0 1px var(--privacy-card-preview-border);
-	}
-
-	.privacy-cell__icon img {
-		width: 1.05rem;
-		height: 1.05rem;
-		display: block;
-	}
-
-	.privacy-card-title {
-		margin-top: 0.9rem;
-		font-size: 1.18rem;
-		font-weight: 600;
-		letter-spacing: -0.02em;
-		color: rgba(33, 29, 25, 0.96);
-	}
-
-	.privacy-card-subtitle {
-		margin-top: 0.4rem;
-		max-width: 32rem;
-		font-size: 0.9rem;
-		line-height: 1.52;
-		color: rgba(93, 81, 69, 0.74);
-	}
-
-	.privacy-preview {
-		position: relative;
-		width: 100%;
-		margin-top: 1.25rem;
-		padding: 0.95rem 1rem;
-		border-radius: 0.6rem;
-		border: 1px solid var(--privacy-card-preview-border);
-		background: var(--privacy-card-preview-bg);
-		contain: paint;
-	}
-
-	.privacy-preview::before {
-		content: "";
-		position: absolute;
-		left: 0.85rem;
-		top: 0;
-		right: 0.85rem;
-		height: 0.18rem;
-		border-radius: 999px;
-		background: var(--privacy-card-accent);
-		opacity: 0.7;
-	}
-
-	.privacy-preview--stack {
-		display: flex;
-		flex-direction: column;
-		gap: 0.9rem;
-	}
-
-	.privacy-preview__metric {
-		display: flex;
-		align-items: end;
-		gap: 0.55rem;
-	}
-
-	.privacy-stat {
-		font-family: var(--sans);
-		font-size: clamp(2rem, 5vw, 2.5rem);
-		font-weight: 400;
-		letter-spacing: -0.05em;
-		line-height: 0.9;
-		color: rgba(145, 90, 20, 0.96);
-	}
-
-	.privacy-label {
-		font-size: 0.72rem;
-		font-weight: 600;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-		color: rgba(93, 81, 69, 0.58);
-		padding-bottom: 0.25rem;
-	}
-
-	.privacy-preview__list {
-		display: flex;
-		flex-direction: column;
-		gap: 0.5rem;
-		font-size: 0.82rem;
-		color: rgba(73, 64, 55, 0.74);
-	}
-
-	.privacy-preview__row {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 0.9rem;
-		font-size: 0.82rem;
-		color: rgba(73, 64, 55, 0.82);
-	}
-
-	.privacy-preview__row--muted {
-		margin-top: 0.7rem;
-		justify-content: flex-start;
-		color: rgba(93, 81, 69, 0.62);
-		line-height: 1.55;
-	}
-
-	.privacy-preview__mono {
-		font-size: 0.78rem;
-		letter-spacing: 0.02em;
-		color: rgba(44, 38, 32, 0.78);
-		overflow-wrap: anywhere;
-	}
-
-	.privacy-preview__tag {
-		display: inline-flex;
-		align-items: center;
-		padding: 0.24rem 0.48rem;
-		border-radius: 0.35rem;
-		border: 1px solid var(--privacy-card-preview-border);
-		background: var(--privacy-card-pill-bg);
-		font-size: 0.66rem;
-		font-weight: 700;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-		color: var(--privacy-card-pill-color);
-	}
-
-	.privacy-preview--stats {
-		display: grid;
-		gap: 0.8rem;
-	}
-
-	.privacy-preview__stat-row {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
+		grid-template-columns: repeat(12, 1fr);
 		gap: 1rem;
+	}
+
+	.bento-card-privacy { grid-column: span 7; }
+	.bento-card-format { grid-column: span 5; }
+	.bento-card-perf { grid-column: span 5; }
+	.bento-card-ai { grid-column: span 7; }
+
+	.bento-card-content {
+		position: relative;
+		z-index: 3;
+		display: flex;
+		flex-direction: column;
+		height: 100%;
+	}
+
+	.bento-card-privacy .bento-card-content,
+	.bento-card-ai .bento-card-content {
+		max-width: 60%;
+	}
+
+	.bento-visual-wrapper {
+		position: absolute;
+		bottom: 24px;
+		right: 24px;
+		width: 160px;
+		height: 160px;
+		z-index: 2;
+		pointer-events: none;
+	}
+
+	.bento-visual-wrapper svg {
+		width: 100%;
+		height: 100%;
+		overflow: visible;
+	}
+
+	.bento-card-format .bento-visual-wrapper,
+	.bento-card-perf .bento-visual-wrapper {
+		width: 130px;
+		height: 130px;
+		bottom: -10px;
+		right: -10px;
+		opacity: 0.85;
+	}
+
+	/* Privacy hover */
+	.svg-privacy .lock-shackle {
+		transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+		transform-origin: bottom center;
+	}
+	.svg-privacy .shield-bg {
+		transition: fill 0.5s ease;
+	}
+	.bento-card-privacy:hover .svg-privacy .lock-shackle {
+		transform: translateY(6px);
+	}
+	.bento-card-privacy:hover .svg-privacy .shield-bg {
+		fill: #ebdcc0;
+	}
+
+	/* Format hover */
+	.svg-format .doc-front {
+		transition: transform 0.5s ease;
+		transform-origin: center;
+	}
+	.svg-format .doc-back {
+		transition: transform 0.5s ease;
+	}
+	.svg-format .line {
+		transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+	}
+	.svg-format .md-mark {
+		transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), fill 0.3s ease;
+		transform-origin: 35px 40px;
+	}
+	.bento-card-format:hover .svg-format .doc-front {
+		transform: translate(-3px, -3px) rotate(-1.5deg);
+	}
+	.bento-card-format:hover .svg-format .doc-back {
+		transform: translate(3px, 3px) rotate(1.5deg);
+	}
+	.bento-card-format:hover .svg-format .line-1 { transform: translateX(4px); }
+	.bento-card-format:hover .svg-format .line-2 { transform: translateX(6px); transition-delay: 0.05s; }
+	.bento-card-format:hover .svg-format .line-3 { transform: translateX(2px); transition-delay: 0.1s; }
+	.bento-card-format:hover .svg-format .md-mark {
+		transform: scale(1.15) rotate(8deg);
+		fill: #618A6D;
+	}
+
+	/* Perf hover */
+	.svg-perf .gauge-fill {
+		transition: stroke-dashoffset 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+	}
+	.svg-perf .bolt {
+		transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1), fill 0.4s ease;
+		transform-origin: 50px 50px;
+	}
+	.bento-card-perf:hover .svg-perf .gauge-fill {
+		stroke-dashoffset: 30;
+	}
+	.bento-card-perf:hover .svg-perf .bolt {
+		transform: scale(1.2) translateY(-2px);
+		fill: #5b8bc0;
+	}
+
+	/* AI hover */
+	.svg-ai .node {
+		transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), fill 0.3s ease;
+		transform-origin: center;
+	}
+	.svg-ai .connection {
+		transition: stroke-width 0.4s ease, stroke 0.4s ease;
+	}
+	.svg-ai .sparkle {
+		transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.6s ease;
+		transform-origin: center;
+		opacity: 0;
+		transform: scale(0) rotate(-45deg);
+	}
+	.bento-card-ai:hover .svg-ai .node {
+		transform: scale(1.25);
+		fill: #b3788b;
+	}
+	.bento-card-ai:hover .svg-ai .connection {
+		stroke-width: 3;
+		stroke: #d5aebd;
+	}
+	.bento-card-ai:hover .svg-ai .sparkle {
+		opacity: 1;
+		transform: scale(1) rotate(0deg);
+	}
+	.bento-card-ai:hover .svg-ai .s1 { transition-delay: 0s; transform-origin: 85px 55px; }
+	.bento-card-ai:hover .svg-ai .s2 { transition-delay: 0.1s; transform-origin: 20px 60px; }
+
+	/* Bento hover tag lift */
+	.feature-card--compact:hover .feature-tag {
+		background: rgba(255, 255, 255, 0.95);
+		transform: translateY(-2px);
+		box-shadow: 0 4px 8px rgba(0,0,0,0.04);
+	}
+
+	.feature-card--compact:hover .feature-list li::before {
+		background: #888;
+		transform: scale(1.2);
+	}
+
+	@media (max-width: 960px) {
+		.bento-card-privacy, .bento-card-format,
+		.bento-card-perf, .bento-card-ai {
+			grid-column: span 6;
+		}
+		.bento-card-privacy .bento-card-content,
+		.bento-card-ai .bento-card-content {
+			max-width: 100%;
+		}
+		.bento-visual-wrapper {
+			opacity: 0.3;
+		}
+		.feature-card--compact:hover .bento-visual-wrapper {
+			opacity: 0.6;
+		}
+	}
+
+	@media (max-width: 640px) {
+		.bento-grid {
+			display: flex;
+			flex-direction: column;
+		}
+		.bento-visual-wrapper {
+			width: 100px;
+			height: 100px;
+			bottom: 10px;
+			right: 10px;
+		}
+	}
+
+	/* ── Compact feature cards ── */
+	.feature-card--compact {
+		padding: 1.6rem 1.8rem;
+	}
+
+	.feature-card--compact .feature-heading {
+		font-size: clamp(1.1rem, 2.5vw, 1.3rem);
+		margin-bottom: 0.5rem;
+	}
+
+	.feature-card--compact .feature-body {
 		font-size: 0.82rem;
-		color: rgba(93, 81, 69, 0.68);
 	}
 
-	.privacy-preview__stat-row strong {
-		font-size: 0.84rem;
-		font-weight: 600;
-		color: rgba(37, 32, 28, 0.88);
+	.feature-list {
+		display: flex;
+		flex-direction: column;
+		gap: 0.4rem;
+		list-style: none;
+		padding: 0;
+		margin: 1rem 0 0;
 	}
 
-	.privacy-preview--providers {
+	.feature-list li {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+		font-size: 0.82rem;
+		font-weight: 500;
+		color: var(--muted);
+	}
+
+	.feature-list li::before {
+		content: "";
+		width: 0.3rem;
+		height: 0.3rem;
+		border-radius: 50%;
+		background: var(--muted);
+		opacity: 0.5;
+		flex-shrink: 0;
+	}
+
+	.feature-badge-row,
+	.feature-tag-cloud {
 		display: flex;
 		flex-wrap: wrap;
 		gap: 0.5rem;
+		margin-top: 1rem;
 	}
 
-	.privacy-preview--providers span {
+	.feature-badge {
 		display: inline-flex;
 		align-items: center;
-		gap: 0.38rem;
-		padding: 0.32rem 0.5rem;
-		border-radius: 0.36rem;
-		background: var(--privacy-card-pill-bg);
-		border: 1px solid var(--privacy-card-preview-border);
-		font-size: 0.74rem;
+		padding: 0.3rem 0.6rem;
+		border-radius: 0.4rem;
+		font-size: 0.75rem;
 		font-weight: 500;
-		color: var(--privacy-card-pill-color);
+		background: rgba(241, 245, 249, 0.8);
+		color: #475569;
+		border: 1px solid rgba(0,0,0,0.04);
+		font-family: var(--mono);
 	}
 
-	.privacy-preview--providers span::before {
-		content: "";
-		width: 0.34rem;
-		height: 0.34rem;
-		border-radius: 999px;
-		background: currentColor;
-		opacity: 0.7;
-		flex: none;
-	}
-
-	.privacy-meta {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 0.45rem;
-		margin-top: auto;
-		padding-top: 1.15rem;
-	}
-
-	.privacy-meta span {
+	.feature-tag {
 		display: inline-flex;
 		align-items: center;
-		gap: 0.35rem;
-		padding: 0.32rem 0.5rem;
-		border-radius: 0.35rem;
-		background: var(--privacy-card-pill-bg);
-		border: 1px solid var(--privacy-card-preview-border);
-		font-size: 0.68rem;
+		padding: 0.3rem 0.6rem;
+		border-radius: 0.4rem;
+		font-size: 0.75rem;
 		font-weight: 500;
-		color: var(--privacy-card-pill-color);
+		background: rgba(255, 255, 255, 0.8);
+		border: 1px solid rgba(0,0,0,0.08);
+		color: #334155;
 	}
 
-	.privacy-meta span::before {
-		content: "";
-		width: 0.28rem;
-		height: 0.28rem;
-		border-radius: 999px;
-		background: var(--privacy-card-accent);
-		flex: none;
-	}
-
-	.privacy-shell__footer {
-		display: flex;
-		align-items: center;
-		justify-content: space-between;
-		gap: 1rem 1.5rem;
-		padding: 1rem 1.45rem 1.05rem;
-		background: rgba(29, 27, 24, 0.98);
-		color: rgba(251, 247, 240, 0.94);
-	}
-
-	.privacy-shell__footer-brand {
-		display: flex;
-		align-items: center;
-		gap: 0.85rem;
-		min-width: 0;
-	}
-
-	.privacy-shell__footer-icon {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		width: 2.9rem;
-		height: 2.9rem;
-		border-radius: 0.8rem;
-		background: rgba(255, 255, 255, 0.1);
-		flex: none;
-	}
-
-	.privacy-shell__footer-icon img {
-		width: 1.2rem;
-		height: 1.2rem;
-		display: block;
-		filter: brightness(0) invert(1);
-		opacity: 0.96;
-	}
-
-	.privacy-shell__footer-copy {
-		display: flex;
-		flex-direction: column;
-		gap: 0.1rem;
-		min-width: 0;
-	}
-
-	.privacy-shell__footer-copy strong {
-		font-size: 1rem;
-		font-weight: 600;
-		letter-spacing: -0.02em;
-	}
-
-	.privacy-shell__footer-copy span {
-		font-size: 0.82rem;
-		color: rgba(231, 222, 208, 0.76);
-	}
-
-	.privacy-shell__footer-meta {
-		display: flex;
-		flex-wrap: wrap;
-		justify-content: flex-end;
-		gap: 0.75rem 1.15rem;
-		font-size: 0.82rem;
-		color: rgba(231, 222, 208, 0.76);
-	}
-
-	.privacy-shell__footer-meta span {
-		position: relative;
-	}
-
-	.privacy-shell__footer-meta span + span::before {
-		content: "";
-		position: absolute;
-		left: -0.62rem;
-		top: 50%;
-		width: 0.18rem;
-		height: 0.18rem;
-		border-radius: 999px;
-		background: rgba(231, 222, 208, 0.42);
-		transform: translateY(-50%);
-	}
 
 	/* ── FAQ ── */
 	.faq-list {
