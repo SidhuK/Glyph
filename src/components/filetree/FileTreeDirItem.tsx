@@ -40,6 +40,7 @@ interface FileTreeDirItemProps {
 	onDeletePath: (path: string, kind: "dir" | "file") => void;
 	appearance?: FileTreeAppearance | null;
 	onChangeAppearance: (appearance: FileTreeAppearance) => void;
+	fileCount?: number | null;
 }
 
 export const FileTreeDirItem = memo(function FileTreeDirItem({
@@ -61,6 +62,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 	onDeletePath,
 	appearance,
 	onChangeAppearance,
+	fileCount,
 }: FileTreeDirItemProps) {
 	const customColor =
 		appearance?.color && isEditorTextColor(appearance.color)
@@ -154,6 +156,9 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 									/>
 								)}
 								<span className="fileTreeName">{displayDirName}</span>
+								{typeof fileCount === "number" ? (
+									<span className="fileTreeCounts">{fileCount}</span>
+								) : null}
 							</m.button>
 						</ContextMenuTrigger>
 						<ContextMenuContent className="fileTreeCreateMenu">

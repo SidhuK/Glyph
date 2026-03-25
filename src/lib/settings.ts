@@ -103,6 +103,10 @@ export interface EditorSettings {
 	pastedMediaFolder: string;
 }
 
+export interface FileTreeSettings {
+	showFolderFileCounts: boolean;
+}
+
 export const DEFAULT_DATABASE_SETTINGS: DatabaseSettings = {
 	showColumnColor: true,
 	showNoteCount: false,
@@ -111,6 +115,10 @@ export const DEFAULT_DATABASE_SETTINGS: DatabaseSettings = {
 export const DEFAULT_EDITOR_SETTINGS: EditorSettings = {
 	showCollapsibleHeadings: false,
 	pastedMediaFolder: "assets",
+};
+
+export const DEFAULT_FILE_TREE_SETTINGS: FileTreeSettings = {
+	showFolderFileCounts: false,
 };
 
 function asThemeMode(value: unknown): ThemeMode {
@@ -188,7 +196,9 @@ async function emitSettingsUpdated(payload: {
 		fontSize?: UiFontSize;
 		editorFontSize?: UiFontSize;
 		translucentApp?: boolean;
+		delightfulGlyph?: boolean;
 		showToc?: boolean;
+		showFileTreeFolderCounts?: boolean;
 		aiAssistantMode?: AiAssistantMode;
 		aiEnabled?: boolean;
 		aiSidebarWidth?: number | null;
@@ -248,7 +258,9 @@ interface AppSettings {
 		fontSize: UiFontSize;
 		editorFontSize: UiFontSize;
 		translucentApp: boolean;
+		delightfulGlyph: boolean;
 		showToc: boolean;
+		showFileTreeFolderCounts: boolean;
 		aiAssistantMode: AiAssistantMode;
 	};
 	dailyNotes: {
@@ -282,7 +294,9 @@ const KEYS = {
 	fontSize: "ui.fontSize",
 	editorFontSize: "ui.editorFontSize",
 	translucentApp: "ui.translucentApp",
+	delightfulGlyph: "ui.delightfulGlyph",
 	showToc: "ui.showToc",
+	showFileTreeFolderCounts: "ui.fileTree.showFolderFileCounts",
 	editorShowCollapsibleHeadings: "editor.showCollapsibleHeadings",
 	editorPastedMediaFolder: "editor.pastedMediaFolder",
 	autoUpdateLastCheckedAt: "updates.lastCheckedAt",
@@ -395,7 +409,9 @@ export async function loadSettings(): Promise<AppSettings> {
 		rawFontSize,
 		rawEditorFontSize,
 		rawTranslucentApp,
+		rawDelightfulGlyph,
 		rawShowToc,
+		rawShowFileTreeFolderCounts,
 		dailyNotesFolderRaw,
 		templatesFolderRaw,
 		templatesDailyNoteTemplateRaw,
@@ -427,7 +443,9 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<unknown>(KEYS.fontSize),
 		store.get<unknown>(KEYS.editorFontSize),
 		store.get<boolean | null>(KEYS.translucentApp),
+		store.get<boolean | null>(KEYS.delightfulGlyph),
 		store.get<boolean | null>(KEYS.showToc),
+		store.get<boolean | null>(KEYS.showFileTreeFolderCounts),
 		store.get<string | null>(KEYS.dailyNotesFolder),
 		store.get<string | null>(KEYS.templatesFolder),
 		store.get<string | null>(KEYS.templatesDailyNoteTemplate),
@@ -468,7 +486,13 @@ export async function loadSettings(): Promise<AppSettings> {
 			: asUiEditorFontSize(rawEditorFontSize);
 	const translucentApp =
 		typeof rawTranslucentApp === "boolean" ? rawTranslucentApp : true;
+	const delightfulGlyph =
+		typeof rawDelightfulGlyph === "boolean" ? rawDelightfulGlyph : false;
 	const showToc = typeof rawShowToc === "boolean" ? rawShowToc : true;
+	const showFileTreeFolderCounts =
+		typeof rawShowFileTreeFolderCounts === "boolean"
+			? rawShowFileTreeFolderCounts
+			: DEFAULT_FILE_TREE_SETTINGS.showFolderFileCounts;
 	const dailyNotesFolder =
 		typeof dailyNotesFolderRaw === "string"
 			? normalizeRelPath(dailyNotesFolderRaw) || null
@@ -533,7 +557,9 @@ export async function loadSettings(): Promise<AppSettings> {
 			fontSize,
 			editorFontSize,
 			translucentApp,
+			delightfulGlyph,
 			showToc,
+			showFileTreeFolderCounts,
 			aiAssistantMode,
 		},
 		dailyNotes: {
@@ -712,11 +738,27 @@ export async function setUiTranslucentApp(enabled: boolean): Promise<void> {
 	void emitSettingsUpdated({ ui: { translucentApp: enabled } });
 }
 
+export async function setDelightfulGlyph(enabled: boolean): Promise<void> {
+	const store = await getStore();
+	await store.set(KEYS.delightfulGlyph, enabled);
+	await store.save();
+	void emitSettingsUpdated({ ui: { delightfulGlyph: enabled } });
+}
+
 export async function setShowToc(enabled: boolean): Promise<void> {
 	const store = await getStore();
 	await store.set(KEYS.showToc, enabled);
 	await store.save();
 	void emitSettingsUpdated({ ui: { showToc: enabled } });
+}
+
+export async function setShowFileTreeFolderCounts(
+	enabled: boolean,
+): Promise<void> {
+	const store = await getStore();
+	await store.set(KEYS.showFileTreeFolderCounts, enabled);
+	await store.save();
+	void emitSettingsUpdated({ ui: { showFileTreeFolderCounts: enabled } });
 }
 
 export async function setEditorShowCollapsibleHeadings(

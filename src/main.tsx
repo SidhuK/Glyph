@@ -7,6 +7,7 @@ import { LicenseGate } from "./components/licensing/LicenseGate";
 import { Toaster } from "./components/ui/shadcn/sonner";
 import {
 	applyUiAccent,
+	applyUiDelightfulGlyph,
 	applyUiSurfacePreferences,
 	applyUiThemeSelection,
 	applyUiTypography,
@@ -68,6 +69,9 @@ function ThemeAndTypographyBridge() {
 	const [translucentApp, setTranslucentApp] = React.useState<boolean | null>(
 		null,
 	);
+	const [delightfulGlyph, setDelightfulGlyph] = React.useState<boolean | null>(
+		null,
+	);
 
 	React.useEffect(() => {
 		let cancelled = false;
@@ -88,6 +92,7 @@ function ThemeAndTypographyBridge() {
 				setUiFontSize(settings.ui.fontSize);
 				setEditorFontSize(settings.ui.editorFontSize);
 				setTranslucentApp(settings.ui.translucentApp);
+				setDelightfulGlyph(settings.ui.delightfulGlyph);
 			} catch {
 				// best-effort hydration
 			}
@@ -162,6 +167,9 @@ function ThemeAndTypographyBridge() {
 		if (typeof payload.ui?.translucentApp === "boolean") {
 			setTranslucentApp(payload.ui.translucentApp);
 		}
+		if (typeof payload.ui?.delightfulGlyph === "boolean") {
+			setDelightfulGlyph(payload.ui.delightfulGlyph);
+		}
 	});
 
 	React.useEffect(() => {
@@ -190,6 +198,11 @@ function ThemeAndTypographyBridge() {
 		if (typeof translucentApp !== "boolean") return;
 		applyUiSurfacePreferences({ translucentApp });
 	}, [translucentApp]);
+
+	React.useEffect(() => {
+		if (typeof delightfulGlyph !== "boolean") return;
+		applyUiDelightfulGlyph(delightfulGlyph);
+	}, [delightfulGlyph]);
 
 	return null;
 }

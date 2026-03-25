@@ -44,6 +44,9 @@ export function CommandList({
 		return <div className="commandPaletteEmpty">No commands</div>;
 	}
 
+	const categoryToDataValue = (category: string) =>
+		category.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+
 	const showSectionLabels =
 		sections.length > 1 ||
 		(sections.length === 1 && sections[0]?.category !== "General");
@@ -61,6 +64,8 @@ export function CommandList({
 							type="button"
 							className="commandPaletteItem"
 							data-command-index={index}
+							data-command-id={command.id}
+							data-command-category={categoryToDataValue(section.category)}
 							data-selected={index === selectedIndex}
 							onMouseEnter={() => onSetSelectedIndex(index)}
 							onMouseDown={(e) => {

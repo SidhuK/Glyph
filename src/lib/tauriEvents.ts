@@ -72,7 +72,9 @@ type TauriEventMap = {
 			fontSize?: number;
 			editorFontSize?: number;
 			translucentApp?: boolean;
+			delightfulGlyph?: boolean;
 			showToc?: boolean;
+			showFileTreeFolderCounts?: boolean;
 			aiEnabled?: boolean;
 			aiAssistantMode?: "chat" | "create";
 			aiSidebarWidth?: number | null;

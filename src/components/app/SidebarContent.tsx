@@ -1,5 +1,6 @@
 import {
-	DashboardSquare02Icon,
+	Clock01Icon,
+	DashboardSquare01Icon,
 	NoteIcon,
 	Tag01Icon,
 } from "@hugeicons/core-free-icons";
@@ -11,9 +12,11 @@ import {
 	useSpace,
 	useUILayoutContext,
 } from "../../contexts";
+import { useRecentFiles } from "../../hooks/useRecentFiles";
 import { getShortcutTooltip } from "../../lib/shortcuts";
 import { FileTreePane } from "../FileTreePane";
 import { Database, Files } from "../Icons";
+import { RecentFilesPane } from "../RecentFilesPane";
 import { TagsPane } from "../TagsPane";
 import { directionVariants } from "../ui/animations";
 import { ScrollArea } from "../ui/shadcn/scroll-area";
@@ -63,6 +66,7 @@ export const SidebarContent = memo(function SidebarContent({
 		refreshTags,
 	} = useFileTreeContext();
 	const { sidebarViewMode, setSidebarViewMode } = useUILayoutContext();
+	const { recentFiles, refreshRecentFiles } = useRecentFiles(spacePath, 15);
 
 	if (!spacePath) {
 		return (
@@ -98,7 +102,7 @@ export const SidebarContent = memo(function SidebarContent({
 						onClick={onOpenCalendar}
 						title="Open Dashboard"
 					>
-						<HugeiconsIcon icon={DashboardSquare02Icon} size={14} />
+						<HugeiconsIcon icon={DashboardSquare01Icon} size={14} />
 						<span className="sidebarQuickActionLabel">Dashboard</span>
 					</button>
 					<button
@@ -116,18 +120,21 @@ export const SidebarContent = memo(function SidebarContent({
 					<Tabs
 						value={sidebarViewMode}
 						onValueChange={(value) =>
-							setSidebarViewMode(value as "files" | "tags")
+							setSidebarViewMode(value as "files" | "tags" | "recent")
 						}
 						className="sidebarSectionToggle"
 					>
-						<TabsList className="w-full rounded-full bg-transparent">
-							<TabsTrigger value="files" title="Files">
-								<Files size={14} />
-							</TabsTrigger>
-							<TabsTrigger value="tags" title="Tags">
-								<HugeiconsIcon icon={Tag01Icon} size={14} />
-							</TabsTrigger>
-						</TabsList>
+							<TabsList className="w-full rounded-full bg-transparent">
+								<TabsTrigger value="files" title="Files" data-kind="files">
+									<Files size={14} />
+								</TabsTrigger>
+								<TabsTrigger value="tags" title="Tags" data-kind="tags">
+									<HugeiconsIcon icon={Tag01Icon} size={14} />
+								</TabsTrigger>
+								<TabsTrigger value="recent" title="Recent" data-kind="recent">
+									<HugeiconsIcon icon={Clock01Icon} size={14} />
+								</TabsTrigger>
+							</TabsList>
 					</Tabs>
 				</div>
 				<AnimatePresence mode="wait">
@@ -171,6 +178,23 @@ export const SidebarContent = memo(function SidebarContent({
 									tags={tags}
 									onSelectTag={onSelectTag}
 									onRefresh={() => void refreshTags()}
+								/>
+							</ScrollArea>
+						</m.div>
+					)}
+					{sidebarViewMode === "recent" && (
+						<m.div
+							key="recent"
+							{...directionVariants.right}
+							transition={{ duration: 0.2 }}
+							className="sidebarSectionContent"
+						>
+							<ScrollArea className="h-full">
+								<RecentFilesPane
+									recentFiles={recentFiles}
+									activeFilePath={activeFilePath}
+									onOpenFile={onOpenFile}
+									onRefresh={() => void refreshRecentFiles()}
 								/>
 							</ScrollArea>
 						</m.div>

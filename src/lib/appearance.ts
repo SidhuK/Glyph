@@ -184,3 +184,8 @@ export function applyUiSurfacePreferences(options: {
 	root.dataset.translucentAppFrame = String(options.translucentApp);
 	root.dataset.translucentAiPanel = String(options.translucentApp);
 }
+
+export function applyUiDelightfulGlyph(enabled: boolean): void {
+	const root = document.documentElement;
+	root.dataset.delightfulGlyph = String(enabled);
+}

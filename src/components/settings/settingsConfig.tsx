@@ -1,5 +1,5 @@
 import {
-	AiBrain04Icon,
+	AiNetworkIcon,
 	Archive02Icon,
 	Settings01Icon,
 	Sun03Icon,
@@ -36,8 +36,8 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 	},
 	{
 		id: "ai",
-		label: "AI",
-		renderIcon: () => <HugeiconsIcon icon={AiBrain04Icon} size={14} />,
+		label: "Glyph AI",
+		renderIcon: () => <HugeiconsIcon icon={AiNetworkIcon} size={14} />,
 	},
 	{
 		id: "space",

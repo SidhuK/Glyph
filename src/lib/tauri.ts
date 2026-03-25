@@ -333,6 +333,14 @@ export interface TagCount {
 	is_explicit: boolean;
 }
 
+export interface DirChildSummary {
+	dir_rel_path: string;
+	name: string;
+	total_files_recursive: number;
+	total_markdown_recursive: number;
+	truncated: boolean;
+}
+
 export interface IndexRebuildResult {
 	indexed: number;
 }
@@ -631,6 +639,10 @@ interface TauriCommands {
 	space_dir_recent_entries: CommandDef<
 		{ dir?: string | null; limit?: number | null },
 		RecentEntry[]
+	>;
+	space_dir_children_summary: CommandDef<
+		{ dir?: string | null; preview_limit?: number | null },
+		DirChildSummary[]
 	>;
 	space_read_text: CommandDef<{ path: string }, TextFileDoc>;
 	space_read_texts_batch: CommandDef<{ paths: string[] }, TextFileDocBatch[]>;
