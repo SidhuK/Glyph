@@ -1,4 +1,4 @@
-import { AiBrain04Icon } from "@hugeicons/core-free-icons";
+import { AiNetworkIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { memo, useCallback, useState } from "react";
 import type { DragEvent, MouseEvent } from "react";
@@ -114,7 +114,7 @@ export function TabBar({
 							aria-label={aiPanelOpen ? "Close AI panel" : "Open AI panel"}
 							title={`${aiPanelOpen ? "Close" : "Open"} AI panel (${getShortcutTooltip({ meta: true, shift: true, key: "a" })})`}
 						>
-							<HugeiconsIcon icon={AiBrain04Icon} size={16} />
+							<HugeiconsIcon icon={AiNetworkIcon} size={16} />
 						</button>
 					) : null}
 				</div>

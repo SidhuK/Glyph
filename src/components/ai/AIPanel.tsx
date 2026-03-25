@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import {
-	AiBrain04Icon,
+	AiNetworkIcon,
 	ChatAdd01Icon,
 	Logout01Icon,
 } from "@hugeicons/core-free-icons";
@@ -273,7 +273,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 		>
 			<div className="aiPanelHeader">
 				<div className="aiPanelTitle">
-					<HugeiconsIcon icon={AiBrain04Icon} size={18} />
+					<HugeiconsIcon icon={AiNetworkIcon} size={18} />
 					<span>Glyph AI</span>
 				</div>
 				<div className="aiPanelHeaderRight">

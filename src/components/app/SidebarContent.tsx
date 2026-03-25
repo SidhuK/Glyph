@@ -1,6 +1,6 @@
 import {
 	Clock01Icon,
-	DashboardSquare02Icon,
+	DashboardSquare01Icon,
 	NoteIcon,
 	Tag01Icon,
 } from "@hugeicons/core-free-icons";
@@ -102,7 +102,7 @@ export const SidebarContent = memo(function SidebarContent({
 						onClick={onOpenCalendar}
 						title="Open Dashboard"
 					>
-						<HugeiconsIcon icon={DashboardSquare02Icon} size={14} />
+						<HugeiconsIcon icon={DashboardSquare01Icon} size={14} />
 						<span className="sidebarQuickActionLabel">Dashboard</span>
 					</button>
 					<button

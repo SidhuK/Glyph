@@ -1,10 +1,10 @@
 import { cn } from "@/lib/utils";
 import {
-	AiBrain04Icon,
+	AiNetworkIcon,
 	Calendar03Icon,
 	CalendarAdd01Icon,
 	ColorsIcon,
-	DashboardSquare02Icon,
+	DashboardSquare01Icon,
 	CursorInWindowIcon,
 	Folder01Icon,
 	FolderOpenIcon,
@@ -869,7 +869,7 @@ export function AppShell() {
 					{
 						id: "toggle-ai",
 						label: "Toggle AI",
-						icon: <HugeiconsIcon icon={AiBrain04Icon} size={16} />,
+						icon: <HugeiconsIcon icon={AiNetworkIcon} size={16} />,
 						category: "AI",
 						shortcut: { meta: true, shift: true, key: "a" },
 						enabled: Boolean(spacePath),
@@ -1075,7 +1075,7 @@ export function AppShell() {
 			{
 				id: "open-dashboard",
 				label: "Open dashboard",
-				icon: <HugeiconsIcon icon={DashboardSquare02Icon} size={16} />,
+				icon: <HugeiconsIcon icon={DashboardSquare01Icon} size={16} />,
 				category: "Navigation",
 				enabled: Boolean(spacePath),
 				action: openCalendarTab,
