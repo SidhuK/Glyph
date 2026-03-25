@@ -230,7 +230,7 @@ export function AboutSettingsPane() {
 								type="button"
 								size="icon-sm"
 								variant="outline"
-								onClick={() => void openUrl("https://github.com/SidhuK")}
+								onClick={() => void openUrl("https://github.com/SidhuK/Glyph/issues/new/choose")}
 								title="GitHub"
 							>
 								<HugeiconsIcon icon={GithubIcon} size={16} />
