@@ -4,6 +4,9 @@ settings:
   autoInstallPeers: true
   excludeLinksFromLockfile: false
 
+overrides:
+  smol-toml: '>=1.6.1'
+
 importers:
 
   .:
@@ -3383,8 +3386,8 @@ packages:
   sisteransi@1.0.5:
     resolution: {integrity: sha512-bLGGlR1QxBcynn2d5YmDX4MGjlZvy2MRBDRNHLJ8VI6l6+9FUiyTFNJ0IveOSP0bcXgVDPRcfGqA0pjaqUpfVg==}
 
-  smol-toml@1.6.0:
-    resolution: {integrity: sha512-4zemZi0HvTnYwLfrpk/CF9LOd9Lt87kAt50GnqhMpyF9U3poDAP2+iukq2bZsO/ufegbYehBkqINbsWxj4l4cw==}
+  smol-toml@1.6.1:
+    resolution: {integrity: sha512-dWUG8F5sIIARXih1DTaQAX4SsiTXhInKf1buxdY9DIg4ZYPZK5nGM1VRIYmEbDbsHt7USo99xSLFu5Q1IqTmsg==}
     engines: {node: '>= 18'}
 
   solid-js@1.9.11:
@@ -4864,7 +4867,7 @@ snapshots:
       ora: 8.2.0
       picocolors: 1.1.1
       prompts: 2.4.2
-      smol-toml: 1.6.0
+      smol-toml: 1.6.1
 
   '@react-grab/mcp@0.1.23(@types/react@19.2.10)(react@19.2.4)':
     dependencies:
@@ -6976,7 +6979,7 @@ snapshots:
 
   sisteransi@1.0.5: {}
 
-  smol-toml@1.6.0: {}
+  smol-toml@1.6.1: {}
 
   solid-js@1.9.11:
     dependencies:
