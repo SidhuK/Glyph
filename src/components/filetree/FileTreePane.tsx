@@ -2,6 +2,7 @@ import { m } from "motion/react";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useFileTreeContext, useSpace } from "../../contexts";
+import { FILE_TREE_START_RENAME_EVENT } from "../../lib/appEvents";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { loadSettings } from "../../lib/settings";
 import type {
@@ -213,6 +214,9 @@ export const FileTreePane = memo(function FileTreePane({
 	const { itemAppearance, setItemAppearance } = useFileTreeContext();
 	const { spacePath, setError } = useSpace();
 	const [renamingPath, setRenamingPath] = useState<string | null>(null);
+	const [pendingNewNotePath, setPendingNewNotePath] = useState<string | null>(
+		null,
+	);
 	const [showFolderFileCounts, setShowFolderFileCounts] = useState(false);
 	const [folderFileCounts, setFolderFileCounts] = useState<
 		Record<string, number>
@@ -228,6 +232,19 @@ export const FileTreePane = memo(function FileTreePane({
 		return () => {
 			cancelled = true;
 		};
+	}, []);
+
+	useEffect(() => {
+		const handleStartRename = (event: Event) => {
+			const customEvent = event as CustomEvent<{ path?: string }>;
+			const path = customEvent.detail?.path?.trim();
+			if (!path) return;
+			setRenamingPath(path);
+			setPendingNewNotePath(path);
+		};
+		window.addEventListener(FILE_TREE_START_RENAME_EVENT, handleStartRename);
+		return () =>
+			window.removeEventListener(FILE_TREE_START_RENAME_EVENT, handleStartRename);
 	}, []);
 
 	useTauriEvent("settings:updated", (payload) => {
@@ -339,9 +356,13 @@ export const FileTreePane = memo(function FileTreePane({
 			const renamed = await onRenameDir(path, nextName, "file");
 			if (renamed) {
 				setRenamingPath(null);
+				if (pendingNewNotePath === path) {
+					onOpenFile(renamed);
+					setPendingNewNotePath(null);
+				}
 			}
 		},
-		[onRenameDir],
+		[onOpenFile, onRenameDir, pendingNewNotePath],
 	);
 
 	const handleDeletePath = useCallback(

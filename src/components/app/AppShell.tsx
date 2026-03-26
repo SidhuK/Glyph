@@ -494,10 +494,15 @@ export function AppShell() {
 		await attachContextFiles(tabs);
 	}, [attachContextFiles, openMarkdownTabs, setError]);
 
+	const createNoteInSelectedFolder = useCallback(async () => {
+		if (!spacePath) return null;
+		return fileTree.onNewFileInDir(activeDirPath ?? "");
+	}, [activeDirPath, fileTree, spacePath]);
+
 	const handleNewNoteFromMenu = useCallback(() => {
 		if (!spacePath) return;
-		void fileTree.onNewFile();
-	}, [fileTree, spacePath]);
+		void createNoteInSelectedFolder();
+	}, [createNoteInSelectedFolder, spacePath]);
 
 	const handleCreateFromTemplateFromMenu = useCallback(() => {
 		if (!spacePath) return;
@@ -687,11 +692,11 @@ export function AppShell() {
 
 	const handleCreateNoteFromStarter = useCallback(async () => {
 		if (!spacePath) return;
-		const createdPath = await fileTree.onNewFile();
+		const createdPath = await createNoteInSelectedFolder();
 		if (createdPath) {
 			await fileTree.openFile(createdPath);
 		}
-	}, [fileTree, spacePath]);
+	}, [createNoteInSelectedFolder, fileTree, spacePath]);
 
 	const handleCopyOpenNoteAsMarkdown = useCallback(async () => {
 		if (!activeMarkdownTabPath) return;
@@ -956,7 +961,7 @@ export function AppShell() {
 				category: "File Operations",
 				shortcut: { meta: true, key: "n" },
 				enabled: Boolean(spacePath),
-				action: () => void fileTree.onNewFile(),
+				action: () => void createNoteInSelectedFolder(),
 			},
 			{
 				id: "create-from-template",
@@ -1196,12 +1201,12 @@ export function AppShell() {
 			<Sidebar
 				onSelectDir={setActiveDirPath}
 				onOpenFile={(p) => void fileTree.openFile(p)}
-				onNewNote={() => void fileTree.onNewFile()}
+				onNewNote={() => void createNoteInSelectedFolder()}
 				onNewFileInDir={(p) => void fileTree.onNewFileInDir(p)}
 				onCreateFromTemplateInDir={(p) => void openTemplatePicker(p)}
 				onNewDatabaseInDir={async () => createDatabaseAndOpen()}
 				onNewFolderInDir={(p) => fileTree.onNewFolderInDir(p)}
-				onRenameDir={(p, name) => fileTree.onRenameDir(p, name)}
+				onRenameDir={(p, name, kind) => fileTree.onRenameDir(p, name, kind)}
 				onDeletePath={(p, kind) => fileTree.onDeletePath(p, kind)}
 				onToggleDir={fileTree.toggleDir}
 				onSelectTag={(t) => openTagSearchPalette(t)}
