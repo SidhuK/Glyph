@@ -665,6 +665,29 @@
 	flex-direction: column;
 	gap: 8px;
 	min-width: 170px;
+	position: relative;
+	padding-left: 14px;
+}
+
+.aiPendingAssistant::before {
+	content: "";
+	position: absolute;
+	top: 4px;
+	bottom: 4px;
+	left: 0;
+	width: 2px;
+	border-radius: 1px;
+	background: linear-gradient(
+		180deg,
+		var(--ai-mode-accent, var(--interactive-accent)),
+		color-mix(
+			in srgb,
+			var(--ai-mode-accent, var(--interactive-accent)) 20%,
+			transparent
+		)
+	);
+	opacity: 0.5;
+	animation: ai-thinking-bar 1.8s ease-in-out infinite;
 }
 
 .aiPendingHeader {
@@ -709,29 +732,6 @@
 
 .aiPendingLine-2 {
 	width: min(170px, 75%);
-}
-
-.aiPendingDots {
-	display: inline-flex;
-	align-items: center;
-	gap: 5px;
-	padding-top: 2px;
-}
-
-.aiPendingDots span {
-	width: 5px;
-	height: 5px;
-	border-radius: var(--radius-full);
-	background: color-mix(in srgb, var(--text-tertiary) 90%, transparent);
-	animation: aiPendingDotWave 1s ease-in-out infinite;
-}
-
-.aiPendingDots span:nth-child(2) {
-	animation-delay: 0.12s;
-}
-
-.aiPendingDots span:nth-child(3) {
-	animation-delay: 0.24s;
 }
 
 .aiToolStatus {
@@ -1554,7 +1554,6 @@ button.aiComposerSend:disabled {
 @media (prefers-reduced-motion: reduce) {
 	.aiPendingDot,
 	.aiPendingLine,
-	.aiPendingDots span,
 	.aiToolStatusDot,
 	.aiChatEmptyTipsTrack,
 	.aiStreamingCaret {
@@ -1571,16 +1570,21 @@ button.aiComposerSend:disabled {
 .aiStreamingCaret {
 	display: inline;
 	color: var(--ai-mode-accent, var(--interactive-accent));
-	animation: aiCaretBlink 0.6s steps(2) infinite;
+	animation: ai-caret-blink 0.6s steps(2) infinite;
 	font-weight: 100;
 	font-size: var(--text-sm);
 	vertical-align: baseline;
 	margin-left: 1px;
 }
 
-@keyframes aiCaretBlink {
-	0%, 100% { opacity: 1; }
-	50% { opacity: 0; }
+@keyframes ai-caret-blink {
+	0%,
+	100% {
+		opacity: 1;
+	}
+	50% {
+		opacity: 0;
+	}
 }
 
 /* ── EMPTY STATE STARTERS ── */
@@ -1606,12 +1610,21 @@ button.aiComposerSend:disabled {
 	font-size: var(--text-xs);
 	text-align: left;
 	cursor: default;
-	transition: border-color var(--transition-fast), background var(--transition-fast);
+	transition: border-color var(--transition-fast), background
+		var(--transition-fast);
 }
 
 .aiStarterPill:hover {
-	border-color: color-mix(in srgb, var(--ai-mode-accent, var(--interactive-accent)) 30%, transparent);
-	background: color-mix(in srgb, var(--ai-mode-accent, var(--interactive-accent)) 6%, transparent);
+	border-color: color-mix(
+		in srgb,
+		var(--ai-mode-accent, var(--interactive-accent)) 30%,
+		transparent
+	);
+	background: color-mix(
+		in srgb,
+		var(--ai-mode-accent, var(--interactive-accent)) 6%,
+		transparent
+	);
 	color: var(--text-primary);
 }
 
@@ -1721,13 +1734,15 @@ button.aiComposerSend:disabled {
 	justify-content: center;
 	cursor: pointer;
 	box-shadow: 0 2px 8px color-mix(in srgb, var(--text-primary) 10%, transparent);
-	transition: border-color var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast);
+	transition: border-color var(--transition-fast), color var(--transition-fast),
+		box-shadow var(--transition-fast);
 }
 
 .aiScrollFab:hover {
 	border-color: var(--border-default);
 	color: var(--text-primary);
-	box-shadow: 0 4px 12px color-mix(in srgb, var(--text-primary) 14%, transparent);
+	box-shadow: 0 4px 12px
+		color-mix(in srgb, var(--text-primary) 14%, transparent);
 }
 
 /* ── CODE BLOCK ENHANCEMENTS ── */
@@ -1742,7 +1757,8 @@ button.aiComposerSend:disabled {
 	gap: 6px;
 	padding: 4px 8px;
 	margin: -8px -8px 8px -8px;
-	border-bottom: 1px solid color-mix(in srgb, var(--border-light) 40%, transparent);
+	border-bottom: 1px solid
+		color-mix(in srgb, var(--border-light) 40%, transparent);
 	border-radius: var(--radius-md) var(--radius-md) 0 0;
 	background: color-mix(in srgb, var(--bg-secondary) 50%, transparent);
 	font-size: 0;
@@ -1765,7 +1781,8 @@ button.aiComposerSend:disabled {
 	border-radius: var(--radius-sm);
 	padding: 2px 8px;
 	cursor: pointer;
-	transition: color var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast);
+	transition: color var(--transition-fast), border-color var(--transition-fast),
+		background var(--transition-fast);
 }
 
 .aiCodeBlockCopy:hover {
@@ -1776,35 +1793,14 @@ button.aiComposerSend:disabled {
 
 /* ── ENHANCED THINKING INDICATOR ── */
 
-.aiPendingAssistant {
-	position: relative;
-	padding-left: 14px;
-}
-
-.aiPendingAssistant::before {
-	content: "";
-	position: absolute;
-	top: 4px;
-	bottom: 4px;
-	left: 0;
-	width: 2px;
-	border-radius: 1px;
-	background: linear-gradient(
-		180deg,
-		var(--ai-mode-accent, var(--interactive-accent)),
-		color-mix(in srgb, var(--ai-mode-accent, var(--interactive-accent)) 20%, transparent)
-	);
-	opacity: 0.5;
-	animation: aiThinkingBar 1.8s ease-in-out infinite;
-}
-
-@keyframes aiThinkingBar {
-	0%, 100% { opacity: 0.3; }
-	50% { opacity: 0.7; }
-}
-
-.aiPendingDots {
-	display: none !important;
+@keyframes ai-thinking-bar {
+	0%,
+	100% {
+		opacity: 0.3;
+	}
+	50% {
+		opacity: 0.7;
+	}
 }
 
 .aiPendingSkeleton {

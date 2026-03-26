@@ -36,6 +36,11 @@ interface AIToolTimelineProps {
 	streaming: boolean;
 }
 
+const DURATION_FORMATTER = new Intl.NumberFormat(undefined, {
+	minimumFractionDigits: 1,
+	maximumFractionDigits: 1,
+});
+
 function summarizePayload(payload: unknown): string {
 	if (!payload || typeof payload !== "object") return "";
 	const value = payload as Record<string, unknown>;
@@ -160,7 +165,7 @@ function buildGroupedTimeline(
 function formatDuration(ms: number): string {
 	const seconds = ms / 1000;
 	if (seconds < 0.1) return "<0.1s";
-	return `${seconds.toFixed(1)}s`;
+	return `${DURATION_FORMATTER.format(seconds)}s`;
 }
 
 function statusLabel(status: "running" | "done" | "error"): string {
@@ -226,15 +231,10 @@ function GroupedStepCard({
 						{formatDuration(step.duration)}
 					</span>
 				) : (
-					<span className="aiToolTime">
-						{formatTime(step.callEvent.at)}
-					</span>
+					<span className="aiToolTime">{formatTime(step.callEvent.at)}</span>
 				)}
 				<span
-					className={cn(
-						"aiToolChevron",
-						expanded && "aiToolChevron-open",
-					)}
+					className={cn("aiToolChevron", expanded && "aiToolChevron-open")}
 					aria-hidden
 				>
 					<ChevronDown size={12} />

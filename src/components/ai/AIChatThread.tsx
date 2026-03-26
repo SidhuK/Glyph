@@ -6,7 +6,7 @@ import { dispatchMarkdownLinkClick } from "../editor/markdown/editorEvents";
 import { Button } from "../ui/shadcn/button";
 import { AIToolTimeline, type ToolTimelineEvent } from "./AIToolTimeline";
 import { messageText } from "./aiPanelConstants";
-import type { UIMessage } from "./hooks/useRigChat";
+import type { RigChatStatus, UIMessage } from "./hooks/useRigChat";
 
 const AIMessageMarkdown = lazy(async () => {
 	const module = await import("./AIMessageMarkdown");
@@ -17,7 +17,7 @@ interface AIChatThreadProps {
 	messages: UIMessage[];
 	isChatMode: boolean;
 	isAwaitingResponse: boolean;
-	chatStatus: string;
+	chatStatus: RigChatStatus;
 	phaseStatusText: string;
 	toolTimeline: ToolTimelineEvent[];
 	onCopy: (text: string) => void;
@@ -161,7 +161,6 @@ export function AIChatThread({
 					index === messages.length - 1;
 				const isFailedAssistant =
 					msg.role === "assistant" &&
-					!text &&
 					chatStatus === "error" &&
 					index === messages.length - 1;
 				if (!text && !isPendingAssistant && !isFailedAssistant) return null;
@@ -178,20 +177,7 @@ export function AIChatThread({
 								msg.role === "user" ? "aiChatMsg-user" : "aiChatMsg-assistant",
 							)}
 						>
-							{isFailedAssistant ? (
-								<div className="aiInlineError">
-									<span className="aiInlineErrorDot" />
-									<span className="aiInlineErrorText">Response failed</span>
-									<button
-										type="button"
-										className="aiInlineRetryBtn"
-										onClick={() => onRetry(index)}
-									>
-										<RefreshCw size={11} />
-										<span>Retry</span>
-									</button>
-								</div>
-							) : isPendingAssistant ? (
+							{isPendingAssistant ? (
 								<m.div
 									className="aiPendingAssistant"
 									initial={
@@ -213,11 +199,6 @@ export function AIChatThread({
 									<div className="aiPendingSkeleton">
 										<span className="aiPendingLine aiPendingLine-1" />
 										<span className="aiPendingLine aiPendingLine-2" />
-									</div>
-									<div className="aiPendingDots" aria-hidden="true">
-										<span />
-										<span />
-										<span />
 									</div>
 								</m.div>
 							) : msg.role === "assistant" ? (
@@ -242,6 +223,20 @@ export function AIChatThread({
 							) : (
 								<div className="aiChatContent">{text}</div>
 							)}
+							{isFailedAssistant ? (
+								<div className="aiInlineError">
+									<span className="aiInlineErrorDot" />
+									<span className="aiInlineErrorText">Response failed</span>
+									<button
+										type="button"
+										className="aiInlineRetryBtn"
+										onClick={() => onRetry(index)}
+									>
+										<RefreshCw size={11} />
+										<span>Retry</span>
+									</button>
+								</div>
+							) : null}
 							{msg.role === "assistant" && text ? (
 								<div className="aiAssistantActions">
 									<Button

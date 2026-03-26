@@ -333,7 +333,11 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 					setHistoryExpanded={setHistoryExpanded}
 					onLoadHistory={(jobId) => void handleLoadHistory(jobId)}
 				/>
-				<div className="aiChatThread" ref={threadRef} onScroll={handleThreadScroll}>
+				<div
+					className="aiChatThread"
+					ref={threadRef}
+					onScroll={handleThreadScroll}
+				>
 					<AIChatThread
 						messages={chat.messages}
 						isChatMode={isChatMode}
@@ -361,8 +365,10 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 					)}
 				</div>
 				{showScrollFab && (
-					<button
+					<Button
 						type="button"
+						variant="ghost"
+						size="icon-sm"
 						className="aiScrollFab"
 						onClick={() => {
 							const el = threadRef.current;
@@ -372,7 +378,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 						title="Scroll to latest"
 					>
 						<ChevronDown size={14} />
-					</button>
+					</Button>
 				)}
 				{chat.error ? (
 					<div className="aiPanelError">
