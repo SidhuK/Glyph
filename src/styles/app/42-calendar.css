@@ -138,34 +138,49 @@
 .calendarDayHasActivity .glyphCalendarDayButton::after {
 	content: "";
 	position: absolute;
-	bottom: 3px;
+	bottom: 4px;
 	left: 50%;
 	transform: translateX(-50%);
 	width: 4px;
 	height: 4px;
 	border-radius: 999px;
-	background: var(--interactive-accent);
-	opacity: 0.5;
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 70%,
+		var(--text-secondary)
+	);
+	opacity: 0.55;
+	transition: opacity 120ms ease;
+}
+
+.calendarDayHasActivity .glyphCalendarDayButton:hover::after {
+	opacity: 0.85;
 }
 
 .calendarDayHasActivity .glyphCalendarDayButton[data-selected="true"]::after {
 	opacity: 0;
 }
 
-/* ── Welcome / greeting ── */
+/* ── Welcome / greeting card ── */
 
 .calendarWelcome {
 	display: flex;
 	flex-direction: column;
-	gap: 4px;
-	padding: 12px 14px;
-	border-radius: 10px;
-	background: var(--bg-tertiary);
+	gap: 6px;
+	padding: 14px 16px;
+	border-radius: 12px;
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 5%,
+		var(--bg-tertiary)
+	);
+	border-left: 3px solid
+		color-mix(in srgb, var(--interactive-accent) 40%, transparent);
 }
 
 .calendarWelcomeGreeting {
-	font-size: 0.84rem;
-	font-weight: 600;
+	font-size: 0.88rem;
+	font-weight: 700;
 	letter-spacing: -0.01em;
 	color: var(--text-primary);
 	margin: 0;
@@ -175,9 +190,9 @@
 	display: flex;
 	flex-wrap: wrap;
 	align-items: center;
-	gap: 3px 8px;
+	gap: 4px 10px;
 	font-size: 0.76rem;
-	line-height: 1.5;
+	line-height: 1.6;
 	color: var(--text-secondary);
 	margin: 0;
 }
@@ -185,24 +200,35 @@
 .calendarWelcomeItem {
 	display: inline-flex;
 	align-items: center;
-	gap: 3px;
-	padding: 0;
+	gap: 4px;
+	padding: 2px 8px;
+	border-radius: 6px;
 	border: none;
-	border-radius: 0;
-	background: transparent;
+	background: color-mix(in srgb, var(--bg-primary) 80%, transparent);
 	color: var(--text-primary);
 	font: inherit;
 	font-size: inherit;
 	cursor: default;
+	transition: background 100ms ease;
 }
 
 .calendarWelcomeItem svg {
 	flex: 0 0 auto;
-	opacity: 0.5;
+	opacity: 0.6;
+	color: var(--interactive-accent);
 }
 
 .calendarWelcomeItem.is-overdue {
 	color: var(--status-danger-fg, #b91c1c);
+	background: color-mix(
+		in srgb,
+		var(--status-danger-fg, #dc2626) 8%,
+		transparent
+	);
+}
+
+.calendarWelcomeItem.is-overdue svg {
+	color: var(--status-danger-fg, #dc2626);
 }
 
 .calendarWelcomeItem strong {
@@ -210,14 +236,16 @@
 }
 
 .calendarWelcomeLink {
-	padding: 1px 4px;
-	border-radius: 4px;
 	cursor: pointer;
-	transition: background 100ms ease;
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 8%,
+		var(--bg-primary) 80%
+	);
 }
 
 .calendarWelcomeLink:hover {
-	background: color-mix(in srgb, var(--interactive-accent) 10%, transparent);
+	background: color-mix(in srgb, var(--interactive-accent) 14%, transparent);
 	color: var(--interactive-accent);
 }
 
@@ -274,11 +302,13 @@
 }
 
 .calendarWeekTodayDot {
-	width: 5px;
-	height: 5px;
+	width: 6px;
+	height: 6px;
 	border-radius: 999px;
 	background: var(--interactive-accent);
 	flex: 0 0 auto;
+	box-shadow: 0 0 0 2px
+		color-mix(in srgb, var(--interactive-accent) 20%, transparent);
 }
 
 .calendarWeekRowSub {
@@ -300,12 +330,12 @@
 .calendarDetailCol {
 	display: flex;
 	flex-direction: column;
-	gap: 14px;
+	gap: 16px;
 	min-height: 0;
 	min-width: 0;
 	padding-left: clamp(16px, 2vw, 28px);
 	border-left: 1px solid
-		color-mix(in srgb, var(--border-default) 40%, transparent);
+		color-mix(in srgb, var(--border-default) 30%, transparent);
 }
 
 .calendarDetailHeader {
@@ -318,20 +348,29 @@
 .calendarDetailHeading {
 	display: flex;
 	flex-direction: column;
-	gap: 1px;
+	gap: 2px;
 }
 
 .calendarDetailTitle {
-	font-size: clamp(18px, 1.8vw, 22px);
-	line-height: 1.15;
-	font-weight: 700;
-	letter-spacing: -0.02em;
+	font-size: clamp(22px, 2.2vw, 28px);
+	line-height: 1.1;
+	font-weight: 800;
+	letter-spacing: -0.03em;
 	color: var(--text-primary);
+	background: linear-gradient(
+		135deg,
+		var(--text-primary) 40%,
+		color-mix(in srgb, var(--interactive-accent) 60%, var(--text-primary))
+	);
+	-webkit-background-clip: text;
+	background-clip: text;
+	-webkit-text-fill-color: transparent;
 }
 
 .calendarDetailSubtext {
-	font-size: 0.78rem;
+	font-size: 0.8rem;
 	color: var(--text-secondary);
+	font-weight: 500;
 }
 
 /* ── Task composer ── */
@@ -368,7 +407,7 @@
 .calendarTasksArea {
 	display: flex;
 	flex-direction: column;
-	gap: 10px;
+	gap: 12px;
 	max-height: clamp(200px, 36vh, 400px);
 	overflow-y: auto;
 	padding-right: 4px;
@@ -390,9 +429,14 @@
 
 .calendarSectionTitle {
 	font-size: 0;
+	display: flex;
+	align-items: center;
 }
 
 .calendarSectionLabelPill {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
 	font-size: 0.68rem;
 	font-weight: 600;
 	letter-spacing: 0.06em;
@@ -400,16 +444,38 @@
 	color: var(--text-secondary);
 }
 
+/* Colored dot before section labels */
+.calendarSectionLabelPill::before {
+	content: "";
+	width: 6px;
+	height: 6px;
+	border-radius: 999px;
+	background: var(--text-secondary);
+	flex: 0 0 auto;
+}
+
 .calendarSectionLabelPill.is-danger {
 	color: var(--status-danger-fg, #dc2626);
+}
+
+.calendarSectionLabelPill.is-danger::before {
+	background: var(--status-danger-fg, #dc2626);
 }
 
 .calendarSectionLabelPill.is-info {
 	color: var(--interactive-accent);
 }
 
+.calendarSectionLabelPill.is-info::before {
+	background: var(--interactive-accent);
+}
+
 .calendarSectionLabelPill.is-warning {
 	color: var(--status-warning-fg, #ca8a04);
+}
+
+.calendarSectionLabelPill.is-warning::before {
+	background: var(--status-warning-fg, #ca8a04);
 }
 
 .calendarSectionCount {
@@ -427,7 +493,13 @@
 
 .calendarTaskList .tasksRow {
 	gap: 6px;
-	padding: 2px 6px;
+	padding: 3px 8px;
+	border-radius: 6px;
+	transition: background 80ms ease;
+}
+
+.calendarTaskList .tasksRow:hover {
+	background: var(--bg-hover);
 }
 
 .calendarTaskList .tasksRowMain {
@@ -436,7 +508,7 @@
 
 .calendarTaskList .tasksRowText {
 	font-size: 0.8rem;
-	line-height: 1;
+	line-height: 1.15;
 }
 
 .calendarTaskList .tasksCheckbox {
@@ -479,16 +551,16 @@
 .calendarNotesArea {
 	display: flex;
 	flex-direction: column;
-	gap: 6px;
+	gap: 8px;
 	border-top: 1px solid
 		color-mix(in srgb, var(--border-default) 30%, transparent);
-	padding-top: 12px;
+	padding-top: 14px;
 }
 
 .calendarNotesList {
 	display: flex;
 	flex-direction: column;
-	gap: 1px;
+	gap: 2px;
 }
 
 .calendarNoteRow {
@@ -496,17 +568,23 @@
 	align-items: center;
 	justify-content: space-between;
 	gap: 10px;
-	padding: 7px 8px;
-	border-radius: 6px;
+	padding: 8px 10px;
+	border-radius: 8px;
 	border: none;
+	border-left: 2px solid transparent;
 	background: transparent;
 	text-align: left;
 	cursor: pointer;
-	transition: background 100ms ease;
+	transition: background 100ms ease, border-color 100ms ease;
 }
 
 .calendarNoteRow:hover {
 	background: var(--bg-hover);
+	border-left-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 50%,
+		transparent
+	);
 }
 
 .calendarNoteRowMain {
@@ -540,6 +618,8 @@
 
 .calendarNoteTime {
 	font-size: 0.68rem;
+	font-weight: 500;
+	font-variant-numeric: tabular-nums;
 	color: var(--text-tertiary, var(--text-secondary));
 	white-space: nowrap;
 	flex: 0 0 auto;
@@ -550,7 +630,8 @@
 .calendarEmptyText {
 	font-size: 0.78rem;
 	color: var(--text-tertiary, var(--text-secondary));
-	padding: 4px 0;
+	padding: 8px 0;
+	font-style: italic;
 }
 
 .calendarError {
