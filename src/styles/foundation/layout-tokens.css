@@ -1,0 +1,17 @@
+:root {
+	--sidebar-width: 260px;
+	--sidebar-collapsed-width: 0px;
+	--header-height: 48px;
+	--toolbar-height: 44px;
+	--button-height: 32px;
+	--button-height-sm: 26px;
+	--input-height: 32px;
+	--list-item-height: 34px;
+	--editor-width: 380px;
+	--editor-min-width: 300px;
+	--readable-content-max-width: 720px;
+	--readable-content-gutter: clamp(24px, 6vw, 64px);
+	--readable-content-gutter-compact: clamp(14px, 3vw, 28px);
+	--float-gap: 12px;
+	--float-inset: 6px;
+}

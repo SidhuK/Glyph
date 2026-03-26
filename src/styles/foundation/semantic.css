@@ -1,0 +1,81 @@
+:root {
+	/* Default light theme fallback before mode-specific selectors are applied. */
+	--bg-primary: var(--color-white);
+	--bg-secondary: var(--color-gray-50);
+	--bg-tertiary: var(--color-gray-100);
+	--bg-hover: rgba(55, 53, 47, 0.08);
+	--bg-active: rgba(55, 53, 47, 0.16);
+	--bg-sidebar: var(--color-gray-50);
+	--bg-canvas: var(--color-gray-100);
+
+	--text-primary: var(--color-gray-800);
+	--text-secondary: rgba(55, 53, 47, 0.65);
+	--text-tertiary: rgba(55, 53, 47, 0.45);
+	--text-placeholder: rgba(55, 53, 47, 0.35);
+	--text-inverse: var(--color-white);
+	--text-accent: var(--color-gray-800);
+	--text-error: var(--color-red-600);
+
+	--border-light: rgba(55, 53, 47, 0.09);
+	--border-default: rgba(55, 53, 47, 0.16);
+	--border-strong: rgba(55, 53, 47, 0.24);
+	--border-focus: rgba(55, 53, 47, 0.32);
+
+	--interactive-hover: rgba(55, 53, 47, 0.08);
+	--interactive-active: rgba(55, 53, 47, 0.16);
+	--interactive-accent: var(--glyph-user-accent, var(--color-gray-800));
+	--interactive-accent-hover: var(
+		--glyph-user-accent-hover,
+		var(--color-gray-900)
+	);
+	--accent-color: var(--glyph-user-accent, var(--color-gray-800));
+
+	--link-color: var(--color-blue-600);
+	--link-color-hover: var(--color-blue-700);
+
+	--selection-bg: rgba(55, 53, 47, 0.09);
+	--selection-bg-muted: rgba(55, 53, 47, 0.08);
+
+	--feedback-error-bg: var(--color-red-100);
+	--feedback-success-bg: var(--color-green-100);
+	--status-info-fg: var(--color-blue-600);
+	--status-info-bg: color-mix(in srgb, var(--color-blue-500) 12%, transparent);
+	--status-info-border: color-mix(
+		in srgb,
+		var(--color-blue-500) 34%,
+		transparent
+	);
+	--status-success-fg: var(--color-green-500);
+	--status-success-bg: color-mix(
+		in srgb,
+		var(--color-green-500) 14%,
+		transparent
+	);
+	--status-success-border: color-mix(
+		in srgb,
+		var(--color-green-500) 34%,
+		transparent
+	);
+	--status-warning-fg: color-mix(
+		in srgb,
+		var(--color-yellow-500) 92%,
+		var(--text-primary)
+	);
+	--status-warning-bg: color-mix(
+		in srgb,
+		var(--color-yellow-500) 16%,
+		transparent
+	);
+	--status-warning-border: color-mix(
+		in srgb,
+		var(--color-yellow-500) 38%,
+		transparent
+	);
+	--status-danger-fg: var(--color-red-600);
+	--status-danger-bg: color-mix(in srgb, var(--color-red-500) 12%, transparent);
+	--status-danger-border: color-mix(
+		in srgb,
+		var(--color-red-500) 36%,
+		transparent
+	);
+}

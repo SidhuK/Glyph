@@ -1,0 +1,324 @@
+/* ─── Note Nodes: Header + Inline Editor ─── */
+.rfNodeNoteHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--space-2);
+}
+
+@media (prefers-color-scheme: dark) {
+	.rfNodeNote {
+		background: color-mix(in srgb, var(--bg-tertiary) 70%, transparent);
+		border-color: color-mix(in srgb, var(--border-default) 65%, transparent);
+	}
+}
+
+.rfNodeNote.rfNodeNoteEditing {
+	max-width: 640px;
+	max-height: 640px;
+	/* Give children a definite height so flex layout can fill the card. */
+	height: var(--base-height, 320px);
+}
+
+.rfNode.rfNodeNoteEditing:hover {
+	transform: none !important;
+	box-shadow: var(--shadow-lg);
+}
+
+.rfNodeNoteEditingInner {
+	display: flex;
+	flex-direction: column;
+	gap: var(--space-2);
+	flex: 1;
+	min-height: 0;
+}
+
+.rfNodeNoteEditorHeader {
+	display: grid;
+	grid-template-columns: 1fr auto auto;
+	align-items: center;
+	gap: var(--space-2);
+}
+
+.rfNodeNoteEditorTitle {
+	font-size: 14px;
+	font-weight: var(--font-bold);
+	color: var(--text-primary);
+	line-height: 1.3;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.rfNodeNoteEditorStatus {
+	font-size: 11px;
+	color: var(--text-secondary);
+	white-space: nowrap;
+}
+
+.rfNodeNoteEditorActions {
+	display: inline-flex;
+	gap: 6px;
+}
+
+.rfNodeNoteEditorError {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--space-2);
+	padding: 6px 8px;
+	border-radius: var(--radius-md);
+	background: var(--status-danger-bg);
+	border: 1px solid var(--status-danger-border);
+}
+
+.rfNodeNoteEditorErrorText {
+	font-size: 11px;
+	color: var(--status-danger-fg);
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.rfNodeNoteEditorErrorActions {
+	display: inline-flex;
+	gap: 6px;
+}
+
+.rfNodeNoteEditor {
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+	position: relative;
+	border-radius: var(--radius-md);
+	overflow: hidden;
+	border: 1px solid color-mix(in srgb, var(--border-light) 86%, transparent);
+	background: transparent;
+	transition: border-color 180ms ease, background-color 180ms ease, box-shadow
+		180ms ease;
+}
+
+.rfNodeNoteEditor:focus-within {
+	border-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 28%,
+		var(--border-default)
+	);
+	box-shadow: inset 0 0 0 1px
+		color-mix(in srgb, var(--interactive-accent) 10%, transparent);
+}
+
+.rfNodeNoteEditorRibbonAnchor {
+	position: absolute;
+	top: 0;
+	left: 0;
+	z-index: 20;
+	pointer-events: none;
+}
+
+.rfNodeNoteEditorRibbon {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	padding: 4px 12px;
+	background: var(--bg-primary);
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-xl);
+	flex-shrink: 0;
+	overflow-x: auto;
+	overflow-y: hidden;
+	white-space: nowrap;
+	scrollbar-width: thin;
+	width: fit-content;
+	max-width: calc(100% - 24px);
+	margin: 0;
+	will-change: transform, opacity;
+	pointer-events: auto;
+}
+
+.rfNodeNoteEditorRibbonFloating {
+	transform-origin: center bottom;
+	box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08), 0 8px 24px rgba(0, 0, 0, 0.06), 0
+		1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.rfNodeNoteEditorHeaderBar {
+	display: flex;
+	align-items: center;
+	gap: var(--space-2);
+	padding: 6px 8px;
+	background: var(--bg-secondary);
+	border-bottom: 1px solid var(--border-light);
+	flex-shrink: 0;
+}
+
+.rfNodeNoteEditorHeaderSpacer {
+	flex: 1;
+}
+
+.rfNodeNoteEditorRibbon .ribbonGroup {
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
+	padding: 1px 2px;
+	border: 1px solid transparent;
+	border-radius: var(--radius-xl);
+	background: transparent;
+	flex: 0 0 auto;
+}
+
+.rfNodeNoteEditorRibbon .ribbonGroupUnified {
+	gap: 2px;
+	padding: 0;
+}
+
+.rfNodeNoteEditorRibbon .ribbonDivider {
+	width: 1px;
+	height: 18px;
+	background: color-mix(in srgb, var(--border-light) 70%, transparent);
+	flex: 0 0 auto;
+}
+
+.rfNodeNoteEditorRibbon .ribbonBtn {
+	width: 25px;
+	height: 25px;
+	padding: 0;
+	border-radius: var(--radius-md);
+	color: var(--text-secondary);
+	flex: 0 0 auto;
+	transition: background-color var(--transition-base), color
+		var(--transition-base), box-shadow var(--transition-base);
+}
+
+.rfNodeNoteEditorRibbon .ribbonBtn:hover {
+	background: color-mix(in srgb, var(--bg-hover) 44%, transparent);
+	color: var(--text-primary);
+}
+
+.rfNodeNoteEditorRibbon .ribbonBtn.active {
+	background: color-mix(in srgb, var(--bg-secondary) 40%, transparent);
+	color: var(--text-primary);
+	box-shadow: none;
+}
+
+.rfNodeNoteEditorRibbon .ribbonBtn:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.rfNodeNoteEditorRibbon .ribbonText {
+	font-size: 11px;
+	font-weight: var(--font-bold);
+}
+
+.rfNodeNoteEditorBody {
+	flex: 1;
+	min-height: 0;
+	overflow: auto;
+	display: flex;
+	flex-direction: column;
+	overscroll-behavior: contain;
+	background: var(--bg-primary);
+}
+
+.rfNodeNoteEditorLoading {
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 12px;
+	color: var(--text-tertiary);
+	padding: 12px;
+	border-radius: var(--radius-md);
+	border: 1px dashed var(--border-light);
+	background: var(--bg-secondary);
+}
+
+.rfNodeNoteEditorRaw {
+	width: min(
+		100%,
+		calc(
+			var(--readable-content-max-width) +
+			(2 * var(--readable-content-gutter-compact))
+		)
+	);
+	flex: 1;
+	min-height: 0;
+	margin: 0 auto;
+	border: 0;
+	background: transparent;
+	resize: none;
+	box-sizing: border-box;
+	padding: 12px var(--readable-content-gutter-compact);
+	font-size: 12px;
+	line-height: 1.5;
+	color: var(--text-primary);
+	outline: none;
+	overscroll-behavior: contain;
+}
+
+.rfNodeNoteEditorRaw .cm-editor {
+	height: 100%;
+	background: transparent;
+}
+
+.rfNodeNoteEditorRaw .cm-scroller {
+	font-family: var(--font-mono);
+	font-size: var(--editor-raw-font-size);
+	line-height: 1.5;
+}
+
+.rfNodeNoteEditorRaw .cm-content {
+	padding: 0;
+}
+
+.tiptapContentInline {
+	min-height: 100%;
+	box-sizing: border-box;
+	width: 100%;
+	max-width: var(--readable-content-max-width);
+	margin: 0 auto;
+	padding: 12px var(--readable-content-gutter-compact);
+	font-size: var(--editor-inline-font-size);
+	line-height: 1.5;
+	color: var(--text-primary);
+}
+
+.tiptapHostInline {
+	min-height: 0;
+	overflow: visible;
+}
+
+.tiptapHostInline .tiptapContentInline {
+	min-height: 0;
+	outline: none;
+}
+
+.tiptapHostInline.is-preview .tiptapContentInline {
+	cursor: default;
+}
+
+.frontmatterPreview {
+	width: min(
+		100%,
+		calc(
+			var(--readable-content-max-width) +
+			(2 * var(--readable-content-gutter-compact))
+		)
+	);
+	margin: 0 auto var(--space-1);
+	border: none;
+	border-radius: 0;
+	padding: 0 14px;
+	background: transparent;
+	color: var(--text-secondary);
+	font-size: var(--font-size-xs);
+}
+
+.frontmatterPreview pre {
+	margin: 0;
+	white-space: pre-wrap;
+}

@@ -1,4 +1,4 @@
-import appCss from "../App.css?inline";
+import exportBaseCss from "../components/export/exportBase.css?inline";
 import exportCss from "../components/export/exportDocument.css?inline";
 
 function escapeHtml(text: string): string {
@@ -24,7 +24,7 @@ export function buildStandaloneExportHtml(
 		'<meta name="viewport" content="width=device-width, initial-scale=1" />',
 		`<title>${pageTitle}</title>`,
 		"<style>",
-		appCss,
+		exportBaseCss,
 		exportCss,
 		"</style>",
 		"</head>",

@@ -1,0 +1,605 @@
+/* ── Palette container ── */
+
+.commandPalette {
+	width: min(560px, calc(100vw - 48px));
+	max-height: min(82vh, 760px);
+	overflow: hidden;
+	border-radius: var(--radius-2xl);
+	border: 1px solid var(--border-light);
+	background: var(--bg-primary);
+	box-shadow: var(--shadow-float);
+	display: flex;
+	flex-direction: column;
+	min-height: 0;
+}
+
+.commandPaletteHeader {
+	position: sticky;
+	top: 0;
+	z-index: 3;
+	flex-shrink: 0;
+	background: var(--bg-primary);
+}
+
+.commandPaletteBody {
+	flex: 1;
+	min-height: 0;
+	overflow: hidden;
+}
+
+.commandPaletteWide {
+	width: min(1040px, calc(100vw - 48px));
+}
+
+.commandPaletteSearchMode {
+	height: min(72vh, 620px);
+}
+
+/* ── Tab row ── */
+
+.commandPaletteTabs {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 12px var(--space-4) 10px;
+}
+
+.commandPaletteTabGroup {
+	display: inline-flex;
+	align-items: center;
+	gap: 2px;
+	padding: 4px;
+	border-radius: var(--radius-full);
+	background: color-mix(in srgb, var(--bg-secondary) 92%, var(--bg-primary));
+}
+
+.commandPaletteTab {
+	position: relative;
+	height: 30px;
+	padding: 0 14px;
+	border: 0;
+	border-radius: var(--radius-full);
+	font-size: var(--font-size-xs);
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.01em;
+	line-height: 1;
+	cursor: pointer;
+	background: transparent;
+	color: color-mix(in srgb, var(--text-secondary) 86%, transparent);
+	transition: color var(--transition-fast), transform var(--transition-fast);
+	z-index: 0;
+}
+
+.commandPaletteTab[data-active="true"] {
+	color: var(--text-primary);
+}
+
+.commandPaletteTab[data-active="false"]:hover {
+	color: var(--text-primary);
+	transform: translateY(-0.5px);
+}
+
+.commandPaletteTab:disabled {
+	opacity: 0.38;
+	pointer-events: none;
+}
+
+.commandPaletteTabPill {
+	position: absolute;
+	inset: 0;
+	border-radius: var(--radius-full);
+	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 84%, var(--bg-tertiary));
+	box-shadow: 0 1px 2px color-mix(in srgb, black 10%, transparent);
+	z-index: -1;
+}
+
+.commandPaletteTabLabel {
+	position: relative;
+	z-index: 1;
+}
+
+.commandPaletteTab:focus-visible {
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 36%, transparent);
+	outline-offset: 2px;
+}
+
+/* ── Search input row ── */
+
+.commandPaletteInputWrapper {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	height: 36px;
+	padding: 0 var(--space-4);
+	border: 0;
+	background: transparent;
+	box-shadow: none;
+}
+
+.commandPaletteSearchIcon {
+	flex-shrink: 0;
+	display: flex;
+	align-items: center;
+	color: var(--text-tertiary);
+}
+
+.commandPaletteInput {
+	flex: 1;
+	height: 100%;
+	border: 0;
+	outline: 0;
+	appearance: none;
+	font: inherit;
+	font-size: var(--font-size-sm);
+	color: var(--text-primary);
+	background: transparent;
+	box-shadow: none;
+}
+
+.commandPaletteInput::placeholder {
+	color: var(--text-placeholder);
+}
+
+.commandSearchFilters {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	padding: var(--space-2) var(--space-4) 8px;
+}
+
+.commandSearchFilterBtn {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-lg);
+	background: var(--bg-secondary);
+	color: var(--text-secondary);
+	height: 26px;
+	padding: 0 10px;
+	font-size: var(--font-size-xs);
+}
+
+.commandSearchFilterBtn[data-active="true"] {
+	color: var(--text-primary);
+	border-color: var(--border-default);
+	background: color-mix(in srgb, var(--bg-tertiary) 80%, transparent);
+}
+
+/* ── Results list ── */
+
+.commandPaletteList {
+	flex: 1;
+	min-height: 0;
+	padding: 4px 6px 6px;
+	max-height: none;
+	overflow-x: hidden;
+	overflow-y: scroll;
+	scrollbar-width: thin;
+	scrollbar-color: color-mix(in srgb, var(--text-tertiary) 36%, transparent)
+		transparent;
+	scrollbar-gutter: stable;
+	scroll-padding: 4px;
+	position: relative;
+	padding-top: 28px;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+}
+
+.commandPaletteList::-webkit-scrollbar {
+	width: 10px;
+}
+
+.commandPaletteList::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.commandPaletteList::-webkit-scrollbar-thumb {
+	border: 2px solid transparent;
+	border-radius: var(--radius-full);
+	background: color-mix(in srgb, var(--text-tertiary) 28%, transparent);
+	background-clip: padding-box;
+}
+
+.commandPaletteList::-webkit-scrollbar-thumb:hover {
+	background: color-mix(in srgb, var(--text-secondary) 42%, transparent);
+	background-clip: padding-box;
+}
+
+.commandPaletteSplitBody {
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	overflow: hidden;
+}
+
+.commandPaletteScene {
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+}
+
+.commandPaletteResultsPane {
+	width: clamp(360px, 42%, 480px);
+	min-width: 360px;
+	max-width: 480px;
+	flex: 0 0 auto;
+	height: 100%;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+	overflow: hidden;
+	border-right: 1px solid var(--border-light);
+	background: color-mix(in srgb, var(--bg-primary) 90%, transparent);
+}
+
+.commandPaletteResultsPane .commandPaletteList {
+	flex: 1;
+	min-height: 0;
+	overflow-x: hidden;
+	overflow-y: auto;
+	scrollbar-width: thin;
+	scrollbar-gutter: stable;
+}
+
+.commandPalettePreviewPane {
+	flex: 1 1 0;
+	min-width: 0;
+	height: 100%;
+	min-height: 0;
+	display: flex;
+	flex-direction: column;
+	background: var(--bg-primary);
+}
+
+.commandPalettePreviewHeader {
+	padding: 12px 16px;
+	border-bottom: 1px solid var(--border-light);
+}
+
+.commandPalettePreviewLabel {
+	margin-bottom: 4px;
+	color: var(--text-tertiary);
+	font-size: var(--font-size-xs);
+	font-weight: var(--font-medium);
+	letter-spacing: 0.03em;
+	text-transform: uppercase;
+}
+
+.commandPalettePreviewTitle {
+	color: var(--text-primary);
+	font-size: var(--font-size-sm);
+	font-weight: var(--font-semibold);
+	line-height: var(--leading-snug);
+}
+
+.commandPalettePreviewPath {
+	margin-top: 2px;
+	color: var(--text-tertiary);
+	font-size: var(--font-size-xs);
+	line-height: var(--leading-snug);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.commandPalettePreviewBody {
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	overflow: hidden;
+}
+
+.commandPalettePreviewBody .rfNodeNoteEditor {
+	flex: 1;
+	min-height: 0;
+	width: 100%;
+	border: none;
+	border-radius: 0;
+	background: transparent;
+}
+
+.commandPalettePreviewBody .rfNodeNoteEditorBody {
+	flex: 1;
+	min-height: 0;
+	overflow-x: hidden;
+}
+
+.commandPalettePreviewBody .markdownEditorCenter {
+	flex: 1;
+	min-height: 0;
+	width: 100%;
+	max-width: 100%;
+	overflow: hidden;
+}
+
+.commandPalettePreviewBody .tiptapHostInline {
+	width: 100%;
+}
+
+.commandPalettePreviewBody .tiptapContentInline {
+	max-width: 100%;
+	padding-inline: clamp(14px, 2vw, 22px);
+	box-sizing: border-box;
+	overflow-wrap: anywhere;
+	word-break: normal;
+}
+
+.commandPalettePreviewBody .frontmatterPreview,
+.commandPalettePreviewBody .editorBacklinks {
+	width: 100%;
+	max-width: 100%;
+	box-sizing: border-box;
+}
+
+.commandPalettePreviewBody pre,
+.commandPalettePreviewBody code {
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+.commandPalettePreviewMeta {
+	padding: var(--space-6);
+	color: var(--text-secondary);
+}
+
+.commandPalettePreviewHint {
+	font-size: var(--font-size-sm);
+}
+
+.commandPalettePreviewEmpty {
+	flex: 1;
+	min-height: 0;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	padding: 24px;
+	color: var(--text-tertiary);
+	font-size: var(--font-size-sm);
+	text-align: center;
+}
+
+.commandPaletteResultCountPill {
+	position: sticky;
+	top: 4px;
+	z-index: 2;
+	margin: 0 auto 6px;
+	width: fit-content;
+	padding: 2px 10px;
+	border-radius: var(--radius-lg);
+	border: 1px solid var(--border-light);
+	background: color-mix(in srgb, var(--bg-secondary) 82%, transparent);
+	color: var(--text-tertiary);
+	font-size: 11px;
+	line-height: 1.4;
+	backdrop-filter: blur(4px);
+}
+
+/* ── Individual item ── */
+
+.commandPaletteItem {
+	position: relative;
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	min-height: 34px;
+	padding: 0 10px;
+	border: 0;
+	border-radius: var(--radius-md);
+	background: transparent;
+	color: var(--text-primary);
+	font-size: var(--font-size-sm);
+	text-align: left;
+	cursor: default;
+	user-select: none;
+	outline: none;
+	transition: background var(--transition-fast);
+}
+
+.commandPaletteItemMain {
+	min-width: 0;
+	display: inline-flex;
+	align-items: center;
+	gap: 10px;
+}
+
+.commandPaletteItemIcon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 16px;
+	height: 16px;
+	flex: 0 0 auto;
+	color: var(--text-secondary);
+}
+
+.commandPaletteItem[data-selected="true"] {
+	background: color-mix(in srgb, var(--interactive-accent) 12%, var(--bg-hover));
+}
+
+/* ── Search result layout ── */
+
+.commandPaletteResultItem {
+	flex-direction: column;
+	align-items: flex-start;
+	justify-content: center;
+	gap: 4px;
+	padding: 8px 12px;
+	min-height: 52px;
+	border-radius: var(--radius-lg);
+}
+
+.commandPaletteResultContent {
+	min-width: 0;
+	width: 100%;
+}
+
+.commandPaletteRecentItem {
+	justify-content: flex-start;
+	gap: 10px;
+	min-height: 40px;
+	padding: 6px 12px;
+	border-radius: var(--radius-lg);
+}
+
+.commandPaletteRecentIcon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	flex: 0 0 auto;
+	color: var(--text-secondary);
+}
+
+.commandPaletteRecentContent {
+	min-width: 0;
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex: 1 1 auto;
+	overflow: hidden;
+}
+
+.commandPaletteRecentSeparator {
+	flex: 0 0 auto;
+	color: var(--text-tertiary);
+	font-size: var(--font-size-xs);
+}
+
+.commandPaletteRecentPath {
+	min-width: 0;
+	flex: 1 1 auto;
+	font-size: var(--font-size-xs);
+	color: var(--text-tertiary);
+	line-height: var(--leading-snug);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.commandPaletteResultTitle {
+	font-size: var(--font-size-sm);
+	font-weight: var(--font-medium);
+	line-height: 1.35;
+	color: var(--text-primary);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.commandPaletteResultSnippet {
+	font-size: var(--font-size-xs);
+	color: var(--text-tertiary);
+	line-height: 1.4;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.commandPaletteResultSnippet mark {
+	background: color-mix(in srgb, var(--interactive-accent) 20%, transparent);
+	color: color-mix(in srgb, var(--interactive-accent) 75%, var(--text-primary));
+	border-radius: var(--radius-xs);
+	padding: 0 2px;
+	font-weight: var(--font-medium);
+	text-decoration: none;
+}
+
+/* ── Keyboard shortcut badges ── */
+
+.commandPaletteShortcut {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	margin-left: auto;
+}
+
+.commandPaletteShortcut kbd {
+	min-width: 20px;
+	height: 20px;
+	padding: 0 5px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 11px;
+	line-height: 1;
+	font-weight: var(--font-medium);
+	font-family: var(--font-mono);
+	color: var(--text-tertiary);
+	background: var(--bg-tertiary);
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-sm);
+}
+
+.commandPaletteTab:focus-visible,
+.commandSearchFilterBtn:focus-visible,
+.commandPaletteItem:focus-visible,
+.commandPaletteShortcut kbd:focus-visible {
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	outline-offset: 2px;
+}
+
+/* ── Group labels ── */
+
+.commandPaletteGroupLabel {
+	padding: 6px 10px 4px;
+	font-size: var(--font-size-xs);
+	font-weight: var(--font-medium);
+	color: var(--text-tertiary);
+	user-select: none;
+}
+
+.commandPaletteSectionLabel {
+	padding: 8px 10px 4px;
+	font-size: 10px;
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	font-weight: var(--font-medium);
+	color: color-mix(in srgb, var(--text-tertiary) 88%, transparent);
+	user-select: none;
+}
+
+/* ── Empty state ── */
+
+.commandPaletteEmpty {
+	padding: 20px 16px;
+	text-align: center;
+	font-size: var(--font-size-sm);
+	color: var(--text-tertiary);
+}
+
+@media (max-width: 920px) {
+	.commandPaletteWide {
+		width: min(560px, calc(100vw - 48px));
+	}
+
+	.commandPaletteSearchMode {
+		height: min(72vh, 620px);
+	}
+
+	.commandPaletteSplitBody {
+		display: block;
+	}
+
+	.commandPaletteResultsPane {
+		flex: none;
+		width: 100%;
+		min-width: 0;
+		max-width: none;
+		border-right: none;
+	}
+
+	.commandPalettePreviewPane {
+		display: none;
+	}
+}

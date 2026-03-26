@@ -1,0 +1,7 @@
+@import "../../styles/foundation/tailwind.css";
+@import "../../styles/foundation/motion.css";
+@import "../../styles/foundation/themes.css";
+@import "../../styles/foundation/globals.css";
+@import "../../styles/foundation/button-base.css";
+@import "../../styles/foundation/input-base.css";
+@import "../../styles/features/editor/index.css";

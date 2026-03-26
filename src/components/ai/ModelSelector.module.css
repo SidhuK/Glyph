@@ -102,7 +102,7 @@
 }
 
 .dropdownTitle {
-	font-size: var(--text-xs);
+	font-size: var(--font-size-xs);
 	font-weight: var(--font-semibold);
 	color: var(--text-tertiary);
 	text-transform: uppercase;
@@ -110,7 +110,7 @@
 }
 
 .dropdownCount {
-	font-size: var(--text-xs);
+	font-size: var(--font-size-xs);
 	color: var(--text-tertiary);
 }
 
@@ -172,7 +172,7 @@
 	border: 1px solid color-mix(in srgb, var(--border-light) 70%, transparent);
 	background: color-mix(in srgb, var(--bg-secondary) 80%, transparent);
 	color: var(--text-secondary);
-	font-size: var(--text-xs);
+	font-size: var(--font-size-xs);
 	cursor: pointer;
 	transition: all var(--transition-base);
 	flex-shrink: 0;
@@ -187,7 +187,7 @@
 	border: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
 	background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
 	color: var(--text-primary);
-	font-size: var(--text-xs);
+	font-size: var(--font-size-xs);
 	font-family: var(--font-sans);
 }
 
@@ -228,7 +228,7 @@
 .dropdownEmpty,
 .dropdownError {
 	padding: 16px 12px;
-	font-size: var(--text-xs);
+	font-size: var(--font-size-xs);
 	color: var(--text-tertiary);
 	text-align: center;
 }
@@ -239,7 +239,7 @@
 
 .retryBtn {
 	margin-top: 6px;
-	font-size: var(--text-xs);
+	font-size: var(--font-size-xs);
 	color: var(--text-secondary);
 	background: transparent;
 	border: 1px solid color-mix(in srgb, var(--border-light) 50%, transparent);
@@ -265,7 +265,7 @@
 	width: 100%;
 	padding: 6px 10px;
 	border-radius: var(--radius-md);
-	font-size: var(--text-xs);
+	font-size: var(--font-size-xs);
 	color: var(--text-primary);
 	background: transparent;
 	border: 1px solid transparent;
@@ -361,7 +361,7 @@
 }
 
 .detailName {
-	font-size: var(--text-sm);
+	font-size: var(--font-size-sm);
 	font-weight: var(--font-semibold);
 	color: var(--text-primary);
 	word-break: break-word;
@@ -397,13 +397,13 @@
 }
 
 .detailLabel {
-	font-size: var(--text-xs);
+	font-size: var(--font-size-xs);
 	color: var(--text-tertiary);
 	flex-shrink: 0;
 }
 
 .detailValue {
-	font-size: var(--text-xs);
+	font-size: var(--font-size-xs);
 	color: var(--text-secondary);
 	text-align: right;
 	word-break: break-all;
@@ -426,7 +426,7 @@
 }
 
 .detailLink {
-	font-size: var(--text-xs);
+	font-size: var(--font-size-xs);
 	color: var(--interactive-accent);
 	text-decoration: none;
 }
@@ -436,7 +436,7 @@
 }
 
 .detailDescription {
-	font-size: var(--text-xs);
+	font-size: var(--font-size-xs);
 	color: var(--text-secondary);
 	line-height: 1.5;
 	max-height: 80px;

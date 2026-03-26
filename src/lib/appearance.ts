@@ -96,21 +96,36 @@ export function applyUiTypography(
 		"--font-mono",
 		`"${safeMonoFamily}", ui-monospace, SFMono-Regular, Menlo, monospace`,
 	);
-	root.style.setProperty("--text-xs", scaledPx(BASE_TEXT_SIZES.xs, uiScale));
-	root.style.setProperty("--text-sm", scaledPx(BASE_TEXT_SIZES.sm, uiScale));
 	root.style.setProperty(
-		"--text-base",
+		"--font-size-xs",
+		scaledPx(BASE_TEXT_SIZES.xs, uiScale),
+	);
+	root.style.setProperty(
+		"--font-size-sm",
+		scaledPx(BASE_TEXT_SIZES.sm, uiScale),
+	);
+	root.style.setProperty(
+		"--font-size-base",
 		scaledPx(BASE_TEXT_SIZES.base, uiScale),
 	);
-	root.style.setProperty("--text-md", scaledPx(BASE_TEXT_SIZES.md, uiScale));
-	root.style.setProperty("--text-lg", scaledPx(BASE_TEXT_SIZES.lg, uiScale));
-	root.style.setProperty("--text-xl", scaledPx(BASE_TEXT_SIZES.xl, uiScale));
 	root.style.setProperty(
-		"--text-2xl",
+		"--font-size-md",
+		scaledPx(BASE_TEXT_SIZES.md, uiScale),
+	);
+	root.style.setProperty(
+		"--font-size-lg",
+		scaledPx(BASE_TEXT_SIZES.lg, uiScale),
+	);
+	root.style.setProperty(
+		"--font-size-xl",
+		scaledPx(BASE_TEXT_SIZES.xl, uiScale),
+	);
+	root.style.setProperty(
+		"--font-size-2xl",
 		scaledPx(BASE_TEXT_SIZES["2xl"], uiScale),
 	);
 	root.style.setProperty(
-		"--text-3xl",
+		"--font-size-3xl",
 		scaledPx(BASE_TEXT_SIZES["3xl"], uiScale),
 	);
 	root.style.setProperty(

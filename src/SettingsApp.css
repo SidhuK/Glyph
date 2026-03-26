@@ -1,23 +1,11 @@
-@import "./styles/shadcn-base.css";
-@import "./styles/shadcn-theme.css";
+@import "./styles/foundation/tailwind.css";
+@import "./styles/foundation/motion.css";
 @import "./design-tokens.css";
-@import "./styles/app/00-header-base.css";
-@import "./styles/app/01-controls.css";
-@import "./styles/app/02-surfaces.css";
-@import "./styles/app/06-delightful-glyph.css";
-@import "./styles/app/09-settings-shell.css";
-@import "./styles/app/10-settings-controls.css";
-@import "./styles/app/11-settings-misc.css";
-@import "./styles/app/33-model-combobox.css";
-@import "./styles/app/37-database-pickers.css";
-@import "./styles/app/38-licensing.css";
-
-.shadow,
-.shadow-xs,
-.shadow-sm,
-.shadow-md,
-.shadow-lg,
-.shadow-xl,
-.shadow-2xl {
-	box-shadow: none !important;
-}
+@import "./styles/foundation/globals.css";
+@import "./styles/foundation/button-base.css";
+@import "./styles/foundation/input-base.css";
+@import "./styles/layout/header.css";
+@import "./styles/layout/skin.css";
+@import "./styles/features/settings/index.css";
+@import "./styles/features/ai/model-combobox.css";
+@import "./styles/features/database/pickers.css";
