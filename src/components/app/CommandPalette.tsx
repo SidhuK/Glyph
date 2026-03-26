@@ -1,17 +1,16 @@
 import { AnimatePresence, m } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Search } from "../Icons";
+import { directionVariants } from "../ui/animations";
 import { Dialog, DialogContent, DialogTitle } from "../ui/shadcn/dialog";
 import { CommandList } from "./CommandList";
-import { CommandPaletteMarkdownPreview } from "./CommandPaletteMarkdownPreview";
+import { CommandPaletteFooter } from "./CommandPaletteFooter";
 import { CommandSearchFilters } from "./CommandSearchFilters";
 import { SearchResultsList } from "./CommandSearchResults";
 import {
 	type Command,
-	TABS,
 	type Tab,
 	parseSearchQuery,
-	springTransition,
 } from "./commandPaletteHelpers";
 import { useCommandSearch } from "./useCommandSearch";
 
@@ -40,17 +39,21 @@ export function CommandPalette({
 		activeTab: Tab;
 		query: string;
 		selectedIndex: number;
+		selectedId: string | null;
 	}>({
 		activeTab: "commands",
 		query: "",
 		selectedIndex: 0,
+		selectedId: null,
 	});
-	const { activeTab, query, selectedIndex } = state;
+	const [transitionDirection, setTransitionDirection] = useState<
+		"left" | "right"
+	>("left");
+	const { activeTab, query, selectedIndex, selectedId } = state;
+	const canSearch = spacePath !== null;
 	const inputRef = useRef<HTMLInputElement | null>(null);
 	const previousFocusRef = useRef<Element | null>(null);
 	const listRef = useRef<HTMLDivElement | null>(null);
-	const selectedSearchPathRef = useRef<string | null>(null);
-	const [previewPath, setPreviewPath] = useState<string | null>(null);
 
 	const { recentFiles, isSearching, titleMatches, contentMatches, reset } =
 		useCommandSearch(open, activeTab, query, spacePath);
@@ -82,48 +85,49 @@ export function CommandPalette({
 		() =>
 			query.trim()
 				? [...titleMatches, ...contentMatches].map((result) => ({
-						path: result.id,
+						id: result.id,
 						title: result.title,
 					}))
 				: recentFiles.map((file) => ({
-						path: file.path,
+						id: file.path,
 						title: null,
 					})),
 		[contentMatches, query, recentFiles, titleMatches],
 	);
-	const selectedSearchEntry =
-		activeTab === "search" ? (searchEntries[selectedIndex] ?? null) : null;
-	const selectedPreviewTitle = selectedSearchEntry?.title ?? null;
 
 	useEffect(() => {
 		if (!open) return;
+		const nextTab =
+			initialTab === "search" && !canSearch ? "commands" : initialTab;
 		previousFocusRef.current = document.activeElement;
 		setState({
-			activeTab: initialTab,
-			query: initialTab === "search" ? initialQuery : "",
+			activeTab: nextTab,
+			query: nextTab === "search" ? initialQuery : "",
 			selectedIndex: 0,
+			selectedId: null,
 		});
-		setPreviewPath(null);
 		reset();
 		window.requestAnimationFrame(() => inputRef.current?.focus());
 		return () => {
 			const prev = previousFocusRef.current;
 			if (prev instanceof HTMLElement) prev.focus();
 		};
-	}, [open, initialQuery, initialTab, reset]);
+	}, [open, initialQuery, initialTab, reset, canSearch]);
 
 	const switchTab = useCallback(
 		(tab: Tab) => {
+			if (tab === "search" && !canSearch) return;
+			setTransitionDirection(tab === "search" ? "right" : "left");
 			setState({
 				activeTab: tab,
 				query: tab === "search" ? initialQuery : "",
 				selectedIndex: 0,
+				selectedId: null,
 			});
-			setPreviewPath(null);
 			reset();
 			window.requestAnimationFrame(() => inputRef.current?.focus());
 		},
-		[initialQuery, reset],
+		[initialQuery, reset, canSearch],
 	);
 
 	useEffect(() => {
@@ -133,29 +137,27 @@ export function CommandPalette({
 					curr.selectedIndex,
 					Math.max(itemCount - 1, 0),
 				);
-				return nextIndex === curr.selectedIndex
-					? curr
-					: { ...curr, selectedIndex: nextIndex };
+				if (nextIndex === curr.selectedIndex && curr.selectedId === null) {
+					return curr;
+				}
+				return { ...curr, selectedIndex: nextIndex, selectedId: null };
 			}
 			if (searchEntries.length === 0) {
-				return curr.selectedIndex === 0 ? curr : { ...curr, selectedIndex: 0 };
+				if (curr.selectedIndex === 0 && curr.selectedId === null) return curr;
+				return { ...curr, selectedIndex: 0, selectedId: null };
 			}
-			const selectedPath = selectedSearchPathRef.current;
-			if (selectedPath) {
-				const preservedIndex = searchEntries.findIndex(
-					(entry) => entry.path === selectedPath,
-				);
-				if (preservedIndex >= 0 && preservedIndex !== curr.selectedIndex) {
-					return { ...curr, selectedIndex: preservedIndex };
-				}
-			}
-			const nextIndex = Math.min(
-				curr.selectedIndex,
-				Math.max(searchEntries.length - 1, 0),
-			);
-			return nextIndex === curr.selectedIndex
+			const preservedIndex =
+				curr.selectedId === null
+					? -1
+					: searchEntries.findIndex((entry) => entry.id === curr.selectedId);
+			const nextIndex =
+				preservedIndex >= 0
+					? preservedIndex
+					: Math.min(curr.selectedIndex, Math.max(searchEntries.length - 1, 0));
+			const nextId = searchEntries[nextIndex]?.id ?? null;
+			return nextIndex === curr.selectedIndex && nextId === curr.selectedId
 				? curr
-				: { ...curr, selectedIndex: nextIndex };
+				: { ...curr, selectedIndex: nextIndex, selectedId: nextId };
 		});
 	}, [activeTab, itemCount, searchEntries]);
 
@@ -167,21 +169,6 @@ export function CommandPalette({
 			) ?? listRef.current.querySelector<HTMLElement>('[data-selected="true"]');
 		selected?.scrollIntoView({ block: "nearest" });
 	}, [selectedIndex]);
-
-	useEffect(() => {
-		if (!open || activeTab !== "search") {
-			setPreviewPath(null);
-			selectedSearchPathRef.current = null;
-			return;
-		}
-		const nextPath = selectedSearchEntry?.path ?? null;
-		selectedSearchPathRef.current = nextPath;
-		if (!nextPath) {
-			setPreviewPath(null);
-			return;
-		}
-		setPreviewPath(nextPath);
-	}, [activeTab, open, selectedSearchEntry]);
 
 	const runCommand = useCallback(
 		(index: number) => {
@@ -220,7 +207,7 @@ export function CommandPalette({
 		[activeTab, runCommand, selectSearchResult],
 	);
 
-	const handleKeyDown = useCallback(
+	const handleInputKeyDown = useCallback(
 		(e: React.KeyboardEvent) => {
 			if (e.key === "ArrowDown") {
 				e.preventDefault();
@@ -229,6 +216,14 @@ export function CommandPalette({
 					selectedIndex: itemCount
 						? Math.min(curr.selectedIndex + 1, itemCount - 1)
 						: 0,
+					selectedId:
+						activeTab === "search"
+							? (searchEntries[
+									itemCount
+										? Math.min(curr.selectedIndex + 1, itemCount - 1)
+										: 0
+								]?.id ?? null)
+							: null,
 				}));
 				return;
 			}
@@ -237,6 +232,12 @@ export function CommandPalette({
 				setState((curr) => ({
 					...curr,
 					selectedIndex: curr.selectedIndex > 0 ? curr.selectedIndex - 1 : 0,
+					selectedId:
+						activeTab === "search"
+							? (searchEntries[
+									curr.selectedIndex > 0 ? curr.selectedIndex - 1 : 0
+								]?.id ?? null)
+							: null,
 				}));
 				return;
 			}
@@ -246,11 +247,20 @@ export function CommandPalette({
 				return;
 			}
 			if (e.key === "Tab") {
+				if (activeTab === "commands" && !canSearch) return;
 				e.preventDefault();
 				switchTab(activeTab === "commands" ? "search" : "commands");
 			}
 		},
-		[itemCount, selectedIndex, handleSelect, activeTab, switchTab],
+		[
+			itemCount,
+			selectedIndex,
+			handleSelect,
+			activeTab,
+			switchTab,
+			canSearch,
+			searchEntries,
+		],
 	);
 
 	return (
@@ -258,44 +268,13 @@ export function CommandPalette({
 			<DialogContent
 				className={[
 					"commandPalette top-[46%] gap-0 border-none bg-transparent p-0 shadow-none",
-					activeTab === "search"
-						? "commandPaletteWide commandPaletteSearchMode sm:max-w-[1040px]"
-						: "sm:max-w-[560px]",
+					"sm:max-w-[560px]",
 				].join(" ")}
 				showCloseButton={false}
-				onKeyDown={handleKeyDown}
 			>
 				<DialogTitle className="sr-only">Command Palette</DialogTitle>
 
 				<div className="commandPaletteHeader">
-					<div className="commandPaletteTabs">
-						<div className="commandPaletteTabGroup">
-							{TABS.map((tab) => {
-								const isActive = activeTab === tab.id;
-								const isDisabled = tab.id === "search" && !spacePath;
-								return (
-									<button
-										key={tab.id}
-										type="button"
-										className="commandPaletteTab"
-										data-active={isActive}
-										disabled={isDisabled}
-										onClick={() => switchTab(tab.id)}
-									>
-										{isActive && (
-											<m.span
-												className="commandPaletteTabPill"
-												layoutId="paletteTabPill"
-												transition={springTransition}
-											/>
-										)}
-										<span className="commandPaletteTabLabel">{tab.label}</span>
-									</button>
-								);
-							})}
-						</div>
-					</div>
-
 					<div className="commandPaletteInputWrapper">
 						<AnimatePresence mode="wait">
 							{activeTab === "search" && (
@@ -323,11 +302,13 @@ export function CommandPalette({
 									...curr,
 									query: e.target.value,
 									selectedIndex: 0,
+									selectedId: null,
 								}))
 							}
 							autoCorrect="off"
 							autoCapitalize="off"
 							spellCheck={false}
+							onKeyDown={handleInputKeyDown}
 						/>
 					</div>
 					{activeTab === "search" ? (
@@ -338,6 +319,7 @@ export function CommandPalette({
 									...curr,
 									query: nextQuery,
 									selectedIndex: 0,
+									selectedId: null,
 								}))
 							}
 						/>
@@ -347,68 +329,69 @@ export function CommandPalette({
 				<AnimatePresence mode="wait">
 					<m.div
 						key={activeTab}
-						className={
-							activeTab === "search"
-								? "commandPaletteBody commandPaletteSplitBody"
-								: "commandPaletteBody commandPaletteScene"
-						}
-						initial={{ opacity: 0, y: 4 }}
-						animate={{ opacity: 1, y: 0 }}
-						exit={{ opacity: 0, y: -4 }}
-						transition={{ duration: 0.12 }}
+						className="commandPaletteBody commandPaletteScene"
+						initial={{
+							...directionVariants[transitionDirection].initial,
+							opacity: 0,
+						}}
+						animate={{
+							...directionVariants[transitionDirection].animate,
+							opacity: 1,
+						}}
+						exit={{
+							...directionVariants[transitionDirection].exit,
+							opacity: 0,
+						}}
+						transition={{ duration: 0.2 }}
 					>
-						{activeTab === "commands" ? (
-							<div className="commandPaletteList" ref={listRef}>
+						<div className="commandPaletteList" ref={listRef}>
+							{activeTab === "commands" ? (
 								<CommandList
 									filtered={filtered}
 									selectedIndex={selectedIndex}
 									onSetSelectedIndex={(index) =>
-										setState((curr) => ({ ...curr, selectedIndex: index }))
+										setState((curr) => ({
+											...curr,
+											selectedIndex: index,
+											selectedId: null,
+										}))
 									}
 									onRunCommand={runCommand}
 								/>
-							</div>
-						) : null}
-
-						{activeTab === "search" ? (
-							<>
-								<div className="commandPaletteResultsPane">
-									<div className="commandPaletteList" ref={listRef}>
-										{query.trim() ? (
-											<div
-												className="commandPaletteResultCountPill"
-												aria-live="polite"
-											>
-												{isSearching
-													? "Searching..."
-													: `${(titleMatches.length + contentMatches.length).toLocaleString()} results`}
-											</div>
-										) : null}
-										<SearchResultsList
-											query={query}
-											isSearching={isSearching}
-											titleMatches={titleMatches}
-											contentMatches={contentMatches}
-											recentFiles={recentFiles}
-											selectedIndex={selectedIndex}
-											onSetSelectedIndex={(index) =>
-												setState((curr) => ({
-													...curr,
-													selectedIndex: index,
-												}))
-											}
-											onSelectResult={selectSearchResult}
-										/>
-									</div>
-								</div>
-								<CommandPaletteMarkdownPreview
-									relPath={previewPath}
-									fallbackTitle={selectedPreviewTitle}
-								/>
-							</>
-						) : null}
+							) : (
+								<>
+									{query.trim() ? (
+										<div
+											className="commandPaletteResultCountPill"
+											aria-live="polite"
+										>
+											{isSearching
+												? "Searching..."
+												: `${(titleMatches.length + contentMatches.length).toLocaleString()} results`}
+										</div>
+									) : null}
+									<SearchResultsList
+										query={query}
+										isSearching={isSearching}
+										titleMatches={titleMatches}
+										contentMatches={contentMatches}
+										recentFiles={recentFiles}
+										selectedIndex={selectedIndex}
+										onSetSelectedIndex={(index) =>
+											setState((curr) => ({
+												...curr,
+												selectedIndex: index,
+												selectedId: searchEntries[index]?.id ?? null,
+											}))
+										}
+										onSelectResult={selectSearchResult}
+									/>
+								</>
+							)}
+						</div>
 					</m.div>
 				</AnimatePresence>
+				<CommandPaletteFooter activeTab={activeTab} canSearch={canSearch} />
 			</DialogContent>
 		</Dialog>
 	);

@@ -684,10 +684,14 @@ export function AppShell() {
 		void updateOnboardingSettings({ usedCommandPalette: true });
 	}, [setPaletteOpen]);
 	const openSearchPalette = useCallback(() => {
+		if (!spacePath) {
+			openCommandPalette();
+			return;
+		}
 		setPaletteInitialTab("search");
 		setPaletteInitialQuery("");
 		setPaletteOpen(true);
-	}, [setPaletteOpen]);
+	}, [setPaletteOpen, spacePath, openCommandPalette]);
 	const openCalendarTab = useCallback(() => {
 		setOpenCalendarRequest((prev) => prev + 1);
 	}, []);

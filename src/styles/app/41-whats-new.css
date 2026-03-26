@@ -15,6 +15,15 @@
 	gap: 16px;
 }
 
+.whatsNewEyebrow {
+	margin-bottom: 4px;
+	color: var(--text-tertiary);
+	font-size: var(--text-xs);
+	font-weight: var(--font-medium);
+	letter-spacing: 0.03em;
+	text-transform: uppercase;
+}
+
 .whatsNewTitleRow {
 	display: flex;
 	align-items: center;
