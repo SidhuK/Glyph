@@ -8,7 +8,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAISidebarContext } from "../../contexts";
 import { openSettingsWindow } from "../../lib/windows";
-import { Settings as SettingsIcon, X } from "../Icons";
+import { ChevronDown, Settings as SettingsIcon, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { AIChatThread } from "./AIChatThread";
 import { AIComposer } from "./AIComposer";
@@ -49,6 +49,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 	const [addPanelOpen, setAddPanelOpen] = useState(false);
 	const [addPanelQuery, setAddPanelQuery] = useState("");
 	const [historyExpanded, setHistoryExpanded] = useState(false);
+	const [showScrollFab, setShowScrollFab] = useState(false);
 
 	const profiles = useAiProfiles();
 	const context = useAiContext();
@@ -248,11 +249,20 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 	}, [actions, chat, scheduleResize, toolEvents]);
 
 	const threadRef = useRef<HTMLDivElement>(null);
+	const handleThreadScroll = useCallback(() => {
+		const el = threadRef.current;
+		if (!el) return;
+		const distanceFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+		setShowScrollFab(distanceFromBottom > 120);
+	}, []);
 	const msgCount = chat.messages.length;
 	// biome-ignore lint/correctness/useExhaustiveDependencies: scroll on new messages
 	useEffect(() => {
 		const el = threadRef.current;
-		if (el) el.scrollTop = el.scrollHeight;
+		if (el) {
+			el.scrollTop = el.scrollHeight;
+			setShowScrollFab(false);
+		}
 	}, [msgCount]);
 	useEffect(() => {
 		if (!toolEvents.isAwaitingResponse || !chat.messages.length) return;
@@ -323,7 +333,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 					setHistoryExpanded={setHistoryExpanded}
 					onLoadHistory={(jobId) => void handleLoadHistory(jobId)}
 				/>
-				<div className="aiChatThread" ref={threadRef}>
+				<div className="aiChatThread" ref={threadRef} onScroll={handleThreadScroll}>
 					<AIChatThread
 						messages={chat.messages}
 						isChatMode={isChatMode}
@@ -350,6 +360,20 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 						</div>
 					)}
 				</div>
+				{showScrollFab && (
+					<button
+						type="button"
+						className="aiScrollFab"
+						onClick={() => {
+							const el = threadRef.current;
+							if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+						}}
+						aria-label="Scroll to bottom"
+						title="Scroll to latest"
+					>
+						<ChevronDown size={14} />
+					</button>
+				)}
 				{chat.error ? (
 					<div className="aiPanelError">
 						<span>{chat.error.message}</span>

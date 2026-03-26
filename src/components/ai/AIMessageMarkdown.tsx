@@ -14,6 +14,7 @@ const MARKDOWN_VIEW_EXTENSIONS = createEditorExtensions({
 
 export function AIMessageMarkdown({ markdown }: AIMessageMarkdownProps) {
 	const lastAppliedRef = useRef(markdown);
+	const containerRef = useRef<HTMLDivElement>(null);
 	const editor = useEditor({
 		editable: false,
 		extensions: MARKDOWN_VIEW_EXTENSIONS,
@@ -56,12 +57,58 @@ export function AIMessageMarkdown({ markdown }: AIMessageMarkdownProps) {
 		lastAppliedRef.current = markdown;
 	}, [editor, markdown]);
 
+	useEffect(() => {
+		const container = containerRef.current;
+		if (!container) return;
+
+		const codeBlocks = container.querySelectorAll("pre");
+		for (const pre of codeBlocks) {
+			if (pre.querySelector(".aiCodeBlockHeader")) continue;
+
+			const codeEl = pre.querySelector("code");
+			const langClass = codeEl?.className.match(/language-(\w+)/);
+			const lang = langClass?.[1] ?? "";
+
+			const header = document.createElement("div");
+			header.className = "aiCodeBlockHeader";
+
+			if (lang) {
+				const langLabel = document.createElement("span");
+				langLabel.className = "aiCodeBlockLang";
+				langLabel.textContent = lang;
+				header.appendChild(langLabel);
+			}
+
+			const spacer = document.createElement("span");
+			spacer.style.flex = "1";
+			header.appendChild(spacer);
+
+			const copyBtn = document.createElement("button");
+			copyBtn.type = "button";
+			copyBtn.className = "aiCodeBlockCopy";
+			copyBtn.textContent = "Copy";
+			copyBtn.addEventListener("click", () => {
+				const text = codeEl?.textContent ?? pre.textContent ?? "";
+				void navigator.clipboard.writeText(text).then(() => {
+					copyBtn.textContent = "Copied!";
+					setTimeout(() => {
+						copyBtn.textContent = "Copy";
+					}, 1500);
+				});
+			});
+			header.appendChild(copyBtn);
+
+			pre.style.position = "relative";
+			pre.insertBefore(header, pre.firstChild);
+		}
+	}, [editor, markdown]);
+
 	if (!editor) {
 		return <div className="aiChatContent">{markdown}</div>;
 	}
 
 	return (
-		<div className="aiMessageMarkdown">
+		<div className="aiMessageMarkdown" ref={containerRef}>
 			<EditorContent editor={editor} />
 		</div>
 	);

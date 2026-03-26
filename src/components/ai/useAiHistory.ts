@@ -68,6 +68,7 @@ export function useAiHistory(limit = 20) {
 		setListLoading(true);
 		setError("");
 		try {
+			aiHistorySummaryCache.delete(limit);
 			const list = await preloadAiHistorySummaries(limit);
 			setSummaries(list);
 			setSelectedJobId((prev) =>

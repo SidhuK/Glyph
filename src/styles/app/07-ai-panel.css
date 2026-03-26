@@ -150,6 +150,7 @@
 }
 
 .aiPanelBody {
+	position: relative;
 	flex: 1;
 	min-height: 0;
 	display: flex;
@@ -1555,7 +1556,307 @@ button.aiComposerSend:disabled {
 	.aiPendingLine,
 	.aiPendingDots span,
 	.aiToolStatusDot,
-	.aiChatEmptyTipsTrack {
+	.aiChatEmptyTipsTrack,
+	.aiStreamingCaret {
 		animation: none !important;
 	}
+}
+
+/* ── STREAMING CARET ── */
+
+.aiStreamingCaretWrap {
+	position: relative;
+}
+
+.aiStreamingCaret {
+	display: inline;
+	color: var(--ai-mode-accent, var(--interactive-accent));
+	animation: aiCaretBlink 0.6s steps(2) infinite;
+	font-weight: 100;
+	font-size: var(--text-sm);
+	vertical-align: baseline;
+	margin-left: 1px;
+}
+
+@keyframes aiCaretBlink {
+	0%, 100% { opacity: 1; }
+	50% { opacity: 0; }
+}
+
+/* ── EMPTY STATE STARTERS ── */
+
+.aiChatEmptyStarters {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	margin-top: 16px;
+	width: 100%;
+	max-width: 280px;
+}
+
+.aiStarterPill {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 14px;
+	border-radius: var(--radius-full);
+	border: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 50%, transparent);
+	color: var(--text-secondary);
+	font-size: var(--text-xs);
+	text-align: left;
+	cursor: default;
+	transition: border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.aiStarterPill:hover {
+	border-color: color-mix(in srgb, var(--ai-mode-accent, var(--interactive-accent)) 30%, transparent);
+	background: color-mix(in srgb, var(--ai-mode-accent, var(--interactive-accent)) 6%, transparent);
+	color: var(--text-primary);
+}
+
+/* ── MESSAGE ROLE LABELS ── */
+
+.aiChatMsgRole {
+	font-size: 10px;
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.02em;
+	margin-bottom: 2px;
+	opacity: 0.55;
+	user-select: none;
+}
+
+.aiChatMsgRole-user {
+	align-self: flex-end;
+	color: var(--text-tertiary);
+	padding-right: 4px;
+}
+
+.aiChatMsgRole-assistant {
+	align-self: flex-start;
+	color: var(--ai-mode-accent, var(--interactive-accent));
+	padding-left: 2px;
+}
+
+/* ── INLINE ERROR RETRY ── */
+
+.aiInlineError {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 10px 14px;
+	border-radius: var(--radius-md);
+	border: 1px solid var(--status-danger-border);
+	background: color-mix(in srgb, var(--status-danger-bg) 60%, transparent);
+}
+
+.aiInlineErrorDot {
+	width: 6px;
+	height: 6px;
+	border-radius: var(--radius-full);
+	background: var(--status-danger-fg);
+	flex-shrink: 0;
+}
+
+.aiInlineErrorText {
+	flex: 1;
+	font-size: 12px;
+	color: var(--status-danger-fg);
+	font-weight: var(--font-medium);
+}
+
+.aiInlineRetryBtn {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	padding: 4px 10px;
+	border-radius: var(--radius-full);
+	border: 1px solid var(--status-danger-border);
+	background: transparent;
+	color: var(--status-danger-fg);
+	font-size: 11px;
+	font-weight: var(--font-semibold);
+	cursor: pointer;
+	transition: background var(--transition-fast);
+}
+
+.aiInlineRetryBtn:hover {
+	background: color-mix(in srgb, var(--status-danger-bg) 80%, transparent);
+}
+
+/* ── TOKEN USAGE INDICATOR ── */
+
+.aiTokenIndicator {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	padding: 2px 8px;
+	border-radius: var(--radius-full);
+	font-size: 10px;
+	color: var(--text-tertiary);
+	background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
+	border: 1px solid color-mix(in srgb, var(--border-light) 40%, transparent);
+	white-space: nowrap;
+	font-variant-numeric: tabular-nums;
+}
+
+/* ── SCROLL TO BOTTOM FAB ── */
+
+.aiScrollFab {
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
+	bottom: 140px;
+	z-index: 10;
+	width: 32px;
+	height: 32px;
+	border-radius: var(--radius-full);
+	border: 1px solid color-mix(in srgb, var(--border-light) 70%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
+	backdrop-filter: blur(8px);
+	-webkit-backdrop-filter: blur(8px);
+	color: var(--text-secondary);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	cursor: pointer;
+	box-shadow: 0 2px 8px color-mix(in srgb, var(--text-primary) 10%, transparent);
+	transition: border-color var(--transition-fast), color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.aiScrollFab:hover {
+	border-color: var(--border-default);
+	color: var(--text-primary);
+	box-shadow: 0 4px 12px color-mix(in srgb, var(--text-primary) 14%, transparent);
+}
+
+/* ── CODE BLOCK ENHANCEMENTS ── */
+
+.aiMessageMarkdown pre {
+	position: relative;
+}
+
+.aiCodeBlockHeader {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	padding: 4px 8px;
+	margin: -8px -8px 8px -8px;
+	border-bottom: 1px solid color-mix(in srgb, var(--border-light) 40%, transparent);
+	border-radius: var(--radius-md) var(--radius-md) 0 0;
+	background: color-mix(in srgb, var(--bg-secondary) 50%, transparent);
+	font-size: 0;
+}
+
+.aiCodeBlockLang {
+	font-size: 10px;
+	font-weight: var(--font-semibold);
+	color: var(--text-tertiary);
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+}
+
+.aiCodeBlockCopy {
+	font-size: 10px;
+	font-weight: var(--font-medium);
+	color: var(--text-tertiary);
+	background: transparent;
+	border: 1px solid color-mix(in srgb, var(--border-light) 50%, transparent);
+	border-radius: var(--radius-sm);
+	padding: 2px 8px;
+	cursor: pointer;
+	transition: color var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.aiCodeBlockCopy:hover {
+	color: var(--text-primary);
+	border-color: var(--border-default);
+	background: color-mix(in srgb, var(--bg-hover) 60%, transparent);
+}
+
+/* ── ENHANCED THINKING INDICATOR ── */
+
+.aiPendingAssistant {
+	position: relative;
+	padding-left: 14px;
+}
+
+.aiPendingAssistant::before {
+	content: "";
+	position: absolute;
+	top: 4px;
+	bottom: 4px;
+	left: 0;
+	width: 2px;
+	border-radius: 1px;
+	background: linear-gradient(
+		180deg,
+		var(--ai-mode-accent, var(--interactive-accent)),
+		color-mix(in srgb, var(--ai-mode-accent, var(--interactive-accent)) 20%, transparent)
+	);
+	opacity: 0.5;
+	animation: aiThinkingBar 1.8s ease-in-out infinite;
+}
+
+@keyframes aiThinkingBar {
+	0%, 100% { opacity: 0.3; }
+	50% { opacity: 0.7; }
+}
+
+.aiPendingDots {
+	display: none !important;
+}
+
+.aiPendingSkeleton {
+	opacity: 0.4;
+}
+
+/* ── GROUPED TOOL STEP CARDS ── */
+
+.aiToolGroupCard {
+	align-self: flex-start;
+	max-width: 92%;
+	padding: 6px 10px;
+	border-radius: var(--radius-md);
+	border: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 68%, transparent);
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	transform-origin: center;
+}
+
+.aiToolGroupCard-done {
+	border-color: color-mix(in srgb, var(--status-success-fg) 18%, transparent);
+}
+
+.aiToolGroupCard-error {
+	border-color: var(--status-danger-border);
+}
+
+.aiToolGroupCard-running {
+	border-color: color-mix(in srgb, var(--interactive-accent) 33%, transparent);
+}
+
+.aiToolGroupTop {
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	width: 100%;
+	background: transparent;
+	border: 0;
+	padding: 0;
+	color: inherit;
+	text-align: left;
+	cursor: pointer;
+}
+
+.aiToolDuration {
+	font-size: 10px;
+	padding: 1px 6px;
+	border-radius: var(--radius-full);
+	background: color-mix(in srgb, var(--bg-secondary) 80%, transparent);
+	color: var(--text-tertiary);
+	font-variant-numeric: tabular-nums;
+	white-space: nowrap;
 }

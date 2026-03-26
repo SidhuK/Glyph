@@ -159,7 +159,17 @@ export function AIChatThread({
 					!text &&
 					isAwaitingResponse &&
 					index === messages.length - 1;
-				if (!text && !isPendingAssistant) return null;
+				const isFailedAssistant =
+					msg.role === "assistant" &&
+					!text &&
+					chatStatus === "error" &&
+					index === messages.length - 1;
+				if (!text && !isPendingAssistant && !isFailedAssistant) return null;
+				const isStreamingAssistant =
+					msg.role === "assistant" &&
+					chatStatus === "streaming" &&
+					index === lastAssistantMessageIndex &&
+					!!text;
 				return (
 					<Fragment key={msg.id}>
 						<div
@@ -168,7 +178,20 @@ export function AIChatThread({
 								msg.role === "user" ? "aiChatMsg-user" : "aiChatMsg-assistant",
 							)}
 						>
-							{isPendingAssistant ? (
+							{isFailedAssistant ? (
+								<div className="aiInlineError">
+									<span className="aiInlineErrorDot" />
+									<span className="aiInlineErrorText">Response failed</span>
+									<button
+										type="button"
+										className="aiInlineRetryBtn"
+										onClick={() => onRetry(index)}
+									>
+										<RefreshCw size={11} />
+										<span>Retry</span>
+									</button>
+								</div>
+							) : isPendingAssistant ? (
 								<m.div
 									className="aiPendingAssistant"
 									initial={
@@ -200,7 +223,16 @@ export function AIChatThread({
 							) : msg.role === "assistant" ? (
 								!isChatMode &&
 								index === lastAssistantMessageIndex &&
-								hasInterleavedTextTimeline ? null : (
+								hasInterleavedTextTimeline ? null : isStreamingAssistant ? (
+									<div className="aiStreamingCaretWrap">
+										<Suspense
+											fallback={<div className="aiChatContent">{text}</div>}
+										>
+											<AIMessageMarkdown markdown={text} />
+										</Suspense>
+										<span className="aiStreamingCaret">▍</span>
+									</div>
+								) : (
 									<Suspense
 										fallback={<div className="aiChatContent">{text}</div>}
 									>
