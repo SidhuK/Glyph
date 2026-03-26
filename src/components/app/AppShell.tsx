@@ -376,22 +376,61 @@ export function AppShell() {
 	const fsRefreshQueueRef = useRef<Set<string>>(new Set());
 	const fsRefreshTimerRef = useRef<number | null>(null);
 
+	const openOrCreateWikiLinkTarget = useCallback(
+		async (rawTarget: string) => {
+			const targetWithoutAnchor = rawTarget.split("#", 1)[0] ?? rawTarget;
+			const normalizedTarget = normalizeRelPath(targetWithoutAnchor);
+			if (!normalizedTarget) return;
+
+			const resolved = await invoke("space_resolve_wikilink", {
+				target: normalizedTarget,
+			});
+			if (resolved) {
+				await fileTree.openFile(resolved);
+				return;
+			}
+
+			const sourceDir = activeMarkdownTabPath ? parentDir(activeMarkdownTabPath) : "";
+			const hasExplicitPath = normalizedTarget.includes("/");
+			const nextRelPathBase =
+				hasExplicitPath || !sourceDir
+					? normalizedTarget
+					: `${sourceDir}/${normalizedTarget}`;
+			const nextRelPath = nextRelPathBase.toLowerCase().endsWith(".md")
+				? nextRelPathBase
+				: `${nextRelPathBase}.md`;
+			const fileName = nextRelPath.split("/").pop() ?? nextRelPath;
+			const fileTitle = fileName.replace(/\.md$/i, "") || "Untitled";
+			const createdPath = await fileTree.createMarkdownFileAtPath({
+				path: nextRelPath,
+				text: `# ${fileTitle}\n`,
+				openParentDir: parentDir(nextRelPath),
+			});
+			if (createdPath) {
+				await fileTree.openFile(createdPath);
+				return;
+			}
+
+			const fallbackResolved = await invoke("space_resolve_wikilink", {
+				target: normalizedTarget,
+			});
+			if (fallbackResolved) {
+				await fileTree.openFile(fallbackResolved);
+				return;
+			}
+
+			setError(`Could not resolve wikilink: ${rawTarget}`);
+		},
+		[activeMarkdownTabPath, fileTree, setError],
+	);
+
 	useEffect(() => {
 		const onWikiLinkClick = (event: Event) => {
 			const detail = (event as CustomEvent<WikiLinkClickDetail>).detail;
 			if (!detail?.target) return;
-			const targetWithoutAnchor =
-				detail.target.split("#", 1)[0] ?? detail.target;
 			void (async () => {
 				try {
-					const resolved = await invoke("space_resolve_wikilink", {
-						target: targetWithoutAnchor,
-					});
-					if (!resolved) {
-						setError(`Could not resolve wikilink: ${detail.target}`);
-						return;
-					}
-					await fileTree.openFile(resolved);
+					await openOrCreateWikiLinkTarget(detail.target);
 				} catch (e) {
 					setError(
 						`Failed to open wikilink: ${e instanceof Error ? e.message : String(e)}`,
@@ -447,7 +486,7 @@ export function AppShell() {
 			);
 			window.removeEventListener(TAG_CLICK_EVENT, onTagClick);
 		};
-	}, [fileTree, setError, setPaletteOpen]);
+	}, [fileTree, openOrCreateWikiLinkTarget, setError, setPaletteOpen]);
 
 	const openTagSearchPalette = useCallback(
 		(tag: string) => {
