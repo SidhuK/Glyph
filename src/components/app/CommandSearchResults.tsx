@@ -34,9 +34,9 @@ interface SearchResultItemProps {
 	onSelect: () => void;
 }
 
-function resultDisplayFolder(relPath: string): string {
+function resultDisplayFolder(relPath: string, fallbackId?: string): string {
 	const parts = relPath.split("/").filter(Boolean);
-	if (parts.length <= 1) return "";
+	if (parts.length <= 1) return fallbackId ?? "";
 	return `${parts.slice(0, -1).join("/")}/`;
 }
 
@@ -47,7 +47,7 @@ export function SearchResultItem({
 	onMouseEnter,
 	onSelect,
 }: SearchResultItemProps) {
-	const resultFolder = resultDisplayFolder(result.id);
+	const resultFolder = resultDisplayFolder(result.id, result.id);
 
 	return (
 		<button

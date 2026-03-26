@@ -129,10 +129,8 @@
 	border: 1px solid color-mix(in srgb, var(--border-default) 84%, transparent);
 	border-radius: var(--radius-lg);
 	background: var(--bg-primary);
-	box-shadow: inset 0 1px 0
-		color-mix(in srgb, var(--bg-primary) 68%, transparent);
-	transition: border-color var(--transition-fast), box-shadow var(--transition-fast),
-		background var(--transition-fast);
+	transition: border-color var(--transition-fast), box-shadow
+		var(--transition-fast), background var(--transition-fast);
 }
 
 .commandPaletteInputWrapper:hover {
@@ -141,8 +139,7 @@
 
 .commandPaletteInputWrapper:focus-within {
 	border-color: var(--border-focus);
-	box-shadow: 0 0 0 3px var(--selection-bg-muted), inset 0 1px 0
-		color-mix(in srgb, var(--bg-primary) 72%, transparent);
+	box-shadow: none;
 }
 
 .commandPaletteSearchIcon {
