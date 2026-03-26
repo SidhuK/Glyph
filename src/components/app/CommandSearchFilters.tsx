@@ -33,7 +33,7 @@ export function CommandSearchFilters({
 				}
 			>
 				<HugeiconsIcon icon={Document} size={14} />
-				Title only
+				Title
 			</button>
 			<button
 				type="button"

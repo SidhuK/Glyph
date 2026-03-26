@@ -52,7 +52,7 @@ export function WhatsNewDialog({
 				<div className="commandPaletteHeader whatsNewHeader">
 					<div className="whatsNewHeadingRow">
 						<div>
-							<div className="commandPalettePreviewLabel">What&apos;s New</div>
+							<div className="whatsNewEyebrow">What&apos;s New</div>
 							<div className="whatsNewTitleRow">
 								<h2 className="whatsNewTitle">Glyph v{releaseNotes.version}</h2>
 								<span className="settingsPill settingsPillInfo">

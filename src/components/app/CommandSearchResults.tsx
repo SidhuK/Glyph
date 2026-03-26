@@ -34,6 +34,12 @@ interface SearchResultItemProps {
 	onSelect: () => void;
 }
 
+function resultDisplayFolder(relPath: string): string {
+	const parts = relPath.split("/").filter(Boolean);
+	if (parts.length <= 1) return "";
+	return `${parts.slice(0, -1).join("/")}/`;
+}
+
 export function SearchResultItem({
 	result,
 	index,
@@ -41,6 +47,8 @@ export function SearchResultItem({
 	onMouseEnter,
 	onSelect,
 }: SearchResultItemProps) {
+	const resultFolder = resultDisplayFolder(result.id);
+
 	return (
 		<button
 			type="button"
@@ -54,10 +62,16 @@ export function SearchResultItem({
 			}}
 		>
 			<div className="commandPaletteResultContent">
-				<div className="commandPaletteResultTitle">
-					{result.title || "Untitled"}
+				<div className="commandPaletteResultHeader">
+					<div className="commandPaletteResultTitle">
+						{result.title || "Untitled"}
+					</div>
+					{resultFolder ? (
+						<div className="commandPaletteResultPath mono" title={resultFolder}>
+							{resultFolder}
+						</div>
+					) : null}
 				</div>
-				<div className="commandPaletteResultSnippet mono">{result.id}</div>
 				<div className="commandPaletteResultSnippet">
 					<HighlightedSnippet snippet={result.snippet} />
 				</div>
@@ -127,11 +141,10 @@ export function SearchResultsList({
 								<span className="commandPaletteResultTitle">
 									{recentDisplayName(file.path)}
 								</span>
-								<span className="commandPaletteRecentSeparator" aria-hidden>
-									-
-								</span>
-								<span className="commandPaletteRecentPath mono">
-									{recentDisplayFolder(file.path) || file.path}
+								<span className="commandPaletteRecentMeta">
+									<span className="commandPaletteRecentPath mono">
+										{recentDisplayFolder(file.path) || file.path}
+									</span>
 								</span>
 							</div>
 						</button>

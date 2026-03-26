@@ -18,7 +18,28 @@
 	top: 0;
 	z-index: 3;
 	flex-shrink: 0;
-	background: var(--bg-primary);
+	background: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-tertiary));
+	padding: 10px 14px 0;
+	backdrop-filter: blur(12px) saturate(1.01);
+	-webkit-backdrop-filter: blur(12px) saturate(1.01);
+}
+
+.commandPaletteHeader::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: -22px;
+	height: 22px;
+	pointer-events: none;
+	background: linear-gradient(
+		to bottom,
+		color-mix(in srgb, var(--bg-primary) 72%, transparent) 0%,
+		color-mix(in srgb, var(--bg-primary) 28%, transparent) 52%,
+		transparent 100%
+	);
+	backdrop-filter: blur(8px);
+	-webkit-backdrop-filter: blur(8px);
 }
 
 .commandPaletteBody {
@@ -27,82 +48,74 @@
 	overflow: hidden;
 }
 
-.commandPaletteWide {
-	width: min(1040px, calc(100vw - 48px));
-}
-
-.commandPaletteSearchMode {
-	height: min(72vh, 620px);
-}
-
-/* ── Tab row ── */
-
-.commandPaletteTabs {
+.commandPaletteFooter {
+	position: relative;
+	z-index: 2;
+	flex-shrink: 0;
 	display: flex;
 	align-items: center;
-	justify-content: center;
-	padding: 12px var(--space-4) 10px;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 8px 14px;
+	background: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-tertiary));
+	backdrop-filter: blur(12px) saturate(1.01);
+	-webkit-backdrop-filter: blur(12px) saturate(1.01);
 }
 
-.commandPaletteTabGroup {
+.commandPaletteFooter::before {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	top: -22px;
+	height: 22px;
+	pointer-events: none;
+	background: linear-gradient(
+		to top,
+		color-mix(in srgb, var(--bg-primary) 72%, transparent) 0%,
+		color-mix(in srgb, var(--bg-primary) 28%, transparent) 52%,
+		transparent 100%
+	);
+	backdrop-filter: blur(8px);
+	-webkit-backdrop-filter: blur(8px);
+}
+
+.commandPaletteFooterItem {
 	display: inline-flex;
 	align-items: center;
-	gap: 2px;
-	padding: 4px;
-	border-radius: var(--radius-full);
-	background: color-mix(in srgb, var(--bg-secondary) 92%, var(--bg-primary));
+	gap: 8px;
+	min-width: 0;
 }
 
-.commandPaletteTab {
-	position: relative;
-	height: 30px;
-	padding: 0 14px;
-	border: 0;
-	border-radius: var(--radius-full);
-	font-size: var(--text-xs);
-	font-weight: var(--font-semibold);
-	letter-spacing: 0.01em;
+.commandPaletteFooterKeys {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	flex: 0 0 auto;
+}
+
+.commandPaletteFooterLabel {
+	font-size: var(--text-sm);
+	color: var(--text-secondary);
+	white-space: nowrap;
+}
+
+.commandPaletteFooter kbd {
+	min-width: 22px;
+	height: 22px;
+	padding: 0 6px;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 11px;
 	line-height: 1;
-	cursor: pointer;
-	background: transparent;
-	color: color-mix(in srgb, var(--text-secondary) 86%, transparent);
-	transition: color var(--transition-fast), transform var(--transition-fast);
-	z-index: 0;
-}
-
-.commandPaletteTab[data-active="true"] {
-	color: var(--text-primary);
-}
-
-.commandPaletteTab[data-active="false"]:hover {
-	color: var(--text-primary);
-	transform: translateY(-0.5px);
-}
-
-.commandPaletteTab:disabled {
-	opacity: 0.38;
-	pointer-events: none;
-}
-
-.commandPaletteTabPill {
-	position: absolute;
-	inset: 0;
-	border-radius: var(--radius-full);
-	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
-	background: color-mix(in srgb, var(--bg-primary) 84%, var(--bg-tertiary));
-	box-shadow: 0 1px 2px color-mix(in srgb, black 10%, transparent);
-	z-index: -1;
-}
-
-.commandPaletteTabLabel {
-	position: relative;
-	z-index: 1;
-}
-
-.commandPaletteTab:focus-visible {
-	outline: 2px solid
-		color-mix(in srgb, var(--interactive-accent) 36%, transparent);
-	outline-offset: 2px;
+	font-weight: var(--font-medium);
+	font-family: var(--font-mono);
+	color: var(--text-tertiary);
+	background: var(--bg-tertiary);
+	border: 1px solid color-mix(in srgb, var(--border-light) 88%, transparent);
+	border-radius: var(--radius-sm);
+	box-shadow: var(--shadow-sm);
 }
 
 /* ── Search input row ── */
@@ -111,11 +124,25 @@
 	display: flex;
 	align-items: center;
 	gap: 8px;
-	height: 36px;
-	padding: 0 var(--space-4);
-	border: 0;
-	background: transparent;
-	box-shadow: none;
+	height: 40px;
+	padding: 0 12px;
+	border: 1px solid color-mix(in srgb, var(--border-default) 84%, transparent);
+	border-radius: var(--radius-lg);
+	background: var(--bg-primary);
+	box-shadow: inset 0 1px 0
+		color-mix(in srgb, var(--bg-primary) 68%, transparent);
+	transition: border-color var(--transition-fast), box-shadow var(--transition-fast),
+		background var(--transition-fast);
+}
+
+.commandPaletteInputWrapper:hover {
+	border-color: var(--border-strong);
+}
+
+.commandPaletteInputWrapper:focus-within {
+	border-color: var(--border-focus);
+	box-shadow: 0 0 0 3px var(--selection-bg-muted), inset 0 1px 0
+		color-mix(in srgb, var(--bg-primary) 72%, transparent);
 }
 
 .commandPaletteSearchIcon {
@@ -128,7 +155,9 @@
 .commandPaletteInput {
 	flex: 1;
 	height: 100%;
+	padding: 0;
 	border: 0;
+	border-radius: 0;
 	outline: 0;
 	appearance: none;
 	font: inherit;
@@ -142,12 +171,18 @@
 	color: var(--text-placeholder);
 }
 
+.commandPaletteInput:focus,
+.commandPaletteInput:focus-visible {
+	border-color: transparent;
+	box-shadow: none;
+}
+
 .commandSearchFilters {
 	display: flex;
 	align-items: center;
-	justify-content: center;
+	justify-content: flex-start;
 	gap: 8px;
-	padding: var(--space-2) var(--space-4) 8px;
+	padding: 6px 0 6px;
 }
 
 .commandSearchFilterBtn {
@@ -155,18 +190,19 @@
 	align-items: center;
 	gap: 6px;
 	border: 1px solid var(--border-light);
-	border-radius: var(--radius-lg);
-	background: var(--bg-secondary);
+	border-radius: var(--radius-md);
+	background: var(--bg-primary);
 	color: var(--text-secondary);
-	height: 26px;
-	padding: 0 10px;
+	height: 28px;
+	padding: 0 11px;
 	font-size: var(--text-xs);
+	box-shadow: var(--shadow-sm);
 }
 
 .commandSearchFilterBtn[data-active="true"] {
 	color: var(--text-primary);
 	border-color: var(--border-default);
-	background: color-mix(in srgb, var(--bg-tertiary) 80%, transparent);
+	background: var(--bg-primary);
 }
 
 /* ── Results list ── */
@@ -184,7 +220,7 @@
 	scrollbar-gutter: stable;
 	scroll-padding: 4px;
 	position: relative;
-	padding-top: 28px;
+	padding-top: 16px;
 	display: flex;
 	flex-direction: column;
 	gap: 2px;
@@ -210,159 +246,12 @@
 	background-clip: padding-box;
 }
 
-.commandPaletteSplitBody {
-	flex: 1;
-	min-height: 0;
-	display: flex;
-	overflow: hidden;
-}
-
 .commandPaletteScene {
 	flex: 1;
 	min-height: 0;
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
-}
-
-.commandPaletteResultsPane {
-	width: clamp(360px, 42%, 480px);
-	min-width: 360px;
-	max-width: 480px;
-	flex: 0 0 auto;
-	height: 100%;
-	min-height: 0;
-	display: flex;
-	flex-direction: column;
-	overflow: hidden;
-	border-right: 1px solid var(--border-light);
-	background: color-mix(in srgb, var(--bg-primary) 90%, transparent);
-}
-
-.commandPaletteResultsPane .commandPaletteList {
-	flex: 1;
-	min-height: 0;
-	overflow-x: hidden;
-	overflow-y: auto;
-	scrollbar-width: thin;
-	scrollbar-gutter: stable;
-}
-
-.commandPalettePreviewPane {
-	flex: 1 1 0;
-	min-width: 0;
-	height: 100%;
-	min-height: 0;
-	display: flex;
-	flex-direction: column;
-	background: var(--bg-primary);
-}
-
-.commandPalettePreviewHeader {
-	padding: 12px 16px;
-	border-bottom: 1px solid var(--border-light);
-}
-
-.commandPalettePreviewLabel {
-	margin-bottom: 4px;
-	color: var(--text-tertiary);
-	font-size: var(--text-xs);
-	font-weight: var(--font-medium);
-	letter-spacing: 0.03em;
-	text-transform: uppercase;
-}
-
-.commandPalettePreviewTitle {
-	color: var(--text-primary);
-	font-size: var(--text-sm);
-	font-weight: var(--font-semibold);
-	line-height: var(--leading-snug);
-}
-
-.commandPalettePreviewPath {
-	margin-top: 2px;
-	color: var(--text-tertiary);
-	font-size: var(--text-xs);
-	line-height: var(--leading-snug);
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-
-.commandPalettePreviewBody {
-	flex: 1;
-	min-height: 0;
-	display: flex;
-	overflow: hidden;
-}
-
-.commandPalettePreviewBody .rfNodeNoteEditor {
-	flex: 1;
-	min-height: 0;
-	width: 100%;
-	border: none;
-	border-radius: 0;
-	background: transparent;
-}
-
-.commandPalettePreviewBody .rfNodeNoteEditorBody {
-	flex: 1;
-	min-height: 0;
-	overflow-x: hidden;
-}
-
-.commandPalettePreviewBody .markdownEditorCenter {
-	flex: 1;
-	min-height: 0;
-	width: 100%;
-	max-width: 100%;
-	overflow: hidden;
-}
-
-.commandPalettePreviewBody .tiptapHostInline {
-	width: 100%;
-}
-
-.commandPalettePreviewBody .tiptapContentInline {
-	max-width: 100%;
-	padding-inline: clamp(14px, 2vw, 22px);
-	box-sizing: border-box;
-	overflow-wrap: anywhere;
-	word-break: normal;
-}
-
-.commandPalettePreviewBody .frontmatterPreview,
-.commandPalettePreviewBody .editorBacklinks {
-	width: 100%;
-	max-width: 100%;
-	box-sizing: border-box;
-}
-
-.commandPalettePreviewBody pre,
-.commandPalettePreviewBody code {
-	white-space: pre-wrap;
-	overflow-wrap: break-word;
-}
-
-.commandPalettePreviewMeta {
-	padding: var(--space-6);
-	color: var(--text-secondary);
-}
-
-.commandPalettePreviewHint {
-	font-size: var(--text-sm);
-}
-
-.commandPalettePreviewEmpty {
-	flex: 1;
-	min-height: 0;
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	padding: 24px;
-	color: var(--text-tertiary);
-	font-size: var(--text-sm);
-	text-align: center;
 }
 
 .commandPaletteResultCountPill {
@@ -431,14 +320,22 @@
 	flex-direction: column;
 	align-items: flex-start;
 	justify-content: center;
-	gap: 4px;
+	gap: 3px;
 	padding: 8px 12px;
-	min-height: 52px;
+	min-height: 48px;
 	border-radius: var(--radius-lg);
 }
 
 .commandPaletteResultContent {
 	min-width: 0;
+	width: 100%;
+}
+
+.commandPaletteResultHeader {
+	min-width: 0;
+	display: flex;
+	align-items: baseline;
+	gap: 10px;
 	width: 100%;
 }
 
@@ -469,15 +366,21 @@
 	overflow: hidden;
 }
 
-.commandPaletteRecentSeparator {
-	flex: 0 0 auto;
-	color: var(--text-tertiary);
-	font-size: var(--text-xs);
+.commandPaletteRecentMeta {
+	min-width: 0;
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	margin-left: auto;
+	padding-left: 12px;
+	flex: 0 1 auto;
+	overflow: hidden;
 }
 
 .commandPaletteRecentPath {
 	min-width: 0;
-	flex: 1 1 auto;
+	flex: 0 1 auto;
+	max-width: 100%;
 	font-size: var(--text-xs);
 	color: var(--text-tertiary);
 	line-height: var(--leading-snug);
@@ -487,6 +390,8 @@
 }
 
 .commandPaletteResultTitle {
+	min-width: 0;
+	flex: 1 1 auto;
 	font-size: var(--text-sm);
 	font-weight: var(--font-medium);
 	line-height: 1.35;
@@ -494,6 +399,19 @@
 	white-space: nowrap;
 	overflow: hidden;
 	text-overflow: ellipsis;
+}
+
+.commandPaletteResultPath {
+	min-width: 0;
+	flex: 0 1 46%;
+	margin-left: auto;
+	font-size: var(--text-xs);
+	color: var(--text-tertiary);
+	line-height: 1.35;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	text-align: right;
 }
 
 .commandPaletteResultSnippet {
@@ -526,21 +444,33 @@
 .commandPaletteShortcut kbd {
 	min-width: 20px;
 	height: 20px;
-	padding: 0 5px;
+	padding: 0 6px;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
 	font-size: 11px;
 	line-height: 1;
 	font-weight: var(--font-medium);
-	font-family: var(--font-mono);
+	font-family: var(--font-sans);
 	color: var(--text-tertiary);
 	background: var(--bg-tertiary);
 	border: 1px solid var(--border-light);
 	border-radius: var(--radius-sm);
 }
 
-.commandPaletteTab:focus-visible,
+.commandPaletteShortcutCombo {
+	display: inline-flex;
+	align-items: center;
+	gap: 1px;
+}
+
+.commandPaletteShortcutPart {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	letter-spacing: 0;
+}
+
 .commandSearchFilterBtn:focus-visible,
 .commandPaletteItem:focus-visible,
 .commandPaletteShortcut kbd:focus-visible {
@@ -552,7 +482,7 @@
 /* ── Group labels ── */
 
 .commandPaletteGroupLabel {
-	padding: 6px 10px 4px;
+	padding: 4px 10px 3px;
 	font-size: var(--text-xs);
 	font-weight: var(--font-medium);
 	color: var(--text-tertiary);
@@ -560,7 +490,7 @@
 }
 
 .commandPaletteSectionLabel {
-	padding: 8px 10px 4px;
+	padding: 6px 10px 3px;
 	font-size: 10px;
 	letter-spacing: 0.06em;
 	text-transform: uppercase;
@@ -579,27 +509,8 @@
 }
 
 @media (max-width: 920px) {
-	.commandPaletteWide {
-		width: min(560px, calc(100vw - 48px));
-	}
-
-	.commandPaletteSearchMode {
-		height: min(72vh, 620px);
-	}
-
-	.commandPaletteSplitBody {
-		display: block;
-	}
-
-	.commandPaletteResultsPane {
-		flex: none;
-		width: 100%;
-		min-width: 0;
-		max-width: none;
-		border-right: none;
-	}
-
-	.commandPalettePreviewPane {
-		display: none;
+	.commandPaletteFooter {
+		flex-wrap: wrap;
+		justify-content: flex-start;
 	}
 }
