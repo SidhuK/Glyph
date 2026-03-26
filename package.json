@@ -7,7 +7,8 @@
 	"pnpm": {
 		"onlyBuiltDependencies": ["@biomejs/biome", "esbuild"],
 		"overrides": {
-			"smol-toml": ">=1.6.1"
+			"smol-toml": ">=1.6.1",
+			"picomatch@4.0.3": "4.0.4"
 		}
 	},
 	"scripts": {
