@@ -38,6 +38,12 @@ function truncateLabel(text: string, max = 28): string {
 	return `${text.slice(0, max - 1)}…`;
 }
 
+function formatTokenCount(tokens: number): string {
+	if (!Number.isFinite(tokens) || tokens < 0) return "0";
+	if (tokens >= 1000) return `${(tokens / 1000).toFixed(1)}k`;
+	return String(tokens);
+}
+
 export function AIComposer({
 	input,
 	setInput,
@@ -57,6 +63,10 @@ export function AIComposer({
 	onAddContext,
 	onRemoveContext,
 }: AIComposerProps) {
+	const tokenIndicatorTitle = context.payloadManifest
+		? `~${context.payloadManifest.estTokens.toLocaleString()} estimated tokens`
+		: undefined;
+
 	const handleInsertMentionTrigger = () => {
 		if (isAwaitingResponse) return;
 		setInput((prev) => {
@@ -182,6 +192,18 @@ export function AIComposer({
 								>
 									<HugeiconsIcon icon={AtIcon} size={13} />
 								</Button>
+								{context.attachedFolders.length > 0 && (
+									<span
+										className="aiTokenIndicator"
+										title={tokenIndicatorTitle}
+									>
+										{context.attachedFolders.length}{" "}
+										{context.attachedFolders.length === 1 ? "item" : "items"}
+										{context.payloadManifest
+											? ` · ~${formatTokenCount(context.payloadManifest.estTokens)} tokens`
+											: ""}
+									</span>
+								)}
 							</div>
 							<div className="aiComposerRight">
 								<ModelSelector

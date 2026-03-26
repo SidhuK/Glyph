@@ -6,7 +6,7 @@ import { dispatchMarkdownLinkClick } from "../editor/markdown/editorEvents";
 import { Button } from "../ui/shadcn/button";
 import { AIToolTimeline, type ToolTimelineEvent } from "./AIToolTimeline";
 import { messageText } from "./aiPanelConstants";
-import type { UIMessage } from "./hooks/useRigChat";
+import type { RigChatStatus, UIMessage } from "./hooks/useRigChat";
 
 const AIMessageMarkdown = lazy(async () => {
 	const module = await import("./AIMessageMarkdown");
@@ -17,7 +17,7 @@ interface AIChatThreadProps {
 	messages: UIMessage[];
 	isChatMode: boolean;
 	isAwaitingResponse: boolean;
-	chatStatus: string;
+	chatStatus: RigChatStatus;
 	phaseStatusText: string;
 	toolTimeline: ToolTimelineEvent[];
 	onCopy: (text: string) => void;
@@ -159,7 +159,16 @@ export function AIChatThread({
 					!text &&
 					isAwaitingResponse &&
 					index === messages.length - 1;
-				if (!text && !isPendingAssistant) return null;
+				const isFailedAssistant =
+					msg.role === "assistant" &&
+					chatStatus === "error" &&
+					index === messages.length - 1;
+				if (!text && !isPendingAssistant && !isFailedAssistant) return null;
+				const isStreamingAssistant =
+					msg.role === "assistant" &&
+					chatStatus === "streaming" &&
+					index === lastAssistantMessageIndex &&
+					!!text;
 				return (
 					<Fragment key={msg.id}>
 						<div
@@ -191,16 +200,20 @@ export function AIChatThread({
 										<span className="aiPendingLine aiPendingLine-1" />
 										<span className="aiPendingLine aiPendingLine-2" />
 									</div>
-									<div className="aiPendingDots" aria-hidden="true">
-										<span />
-										<span />
-										<span />
-									</div>
 								</m.div>
 							) : msg.role === "assistant" ? (
 								!isChatMode &&
 								index === lastAssistantMessageIndex &&
-								hasInterleavedTextTimeline ? null : (
+								hasInterleavedTextTimeline ? null : isStreamingAssistant ? (
+									<div className="aiStreamingCaretWrap">
+										<Suspense
+											fallback={<div className="aiChatContent">{text}</div>}
+										>
+											<AIMessageMarkdown markdown={text} />
+										</Suspense>
+										<span className="aiStreamingCaret">▍</span>
+									</div>
+								) : (
 									<Suspense
 										fallback={<div className="aiChatContent">{text}</div>}
 									>
@@ -210,6 +223,20 @@ export function AIChatThread({
 							) : (
 								<div className="aiChatContent">{text}</div>
 							)}
+							{isFailedAssistant ? (
+								<div className="aiInlineError">
+									<span className="aiInlineErrorDot" />
+									<span className="aiInlineErrorText">Response failed</span>
+									<button
+										type="button"
+										className="aiInlineRetryBtn"
+										onClick={() => onRetry(index)}
+									>
+										<RefreshCw size={11} />
+										<span>Retry</span>
+									</button>
+								</div>
+							) : null}
 							{msg.role === "assistant" && text ? (
 								<div className="aiAssistantActions">
 									<Button

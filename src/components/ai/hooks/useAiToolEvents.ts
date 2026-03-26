@@ -9,10 +9,11 @@ import {
 	type ToolStatusEvent,
 	formatToolName,
 } from "../aiPanelConstants";
+import type { RigChatStatus } from "./useRigChat";
 
 interface UseAiToolEventsOptions {
 	isChatMode: boolean;
-	chatStatus: string;
+	chatStatus: RigChatStatus;
 }
 
 export function useAiToolEvents({

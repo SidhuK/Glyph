@@ -49,7 +49,7 @@ export function CommandPalette({
 	const [transitionDirection, setTransitionDirection] = useState<
 		"left" | "right"
 	>("left");
-	const { activeTab, query, selectedIndex, selectedId } = state;
+	const { activeTab, query, selectedIndex } = state;
 	const canSearch = spacePath !== null;
 	const inputRef = useRef<HTMLInputElement | null>(null);
 	const previousFocusRef = useRef<Element | null>(null);
