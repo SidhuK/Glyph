@@ -14,7 +14,11 @@ interface SidebarProps {
 	onCreateFromTemplateInDir: (dirPath: string) => void;
 	onNewDatabaseInDir: (dirPath: string) => Promise<string | null>;
 	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
-	onRenameDir: (dirPath: string, nextName: string) => Promise<string | null>;
+	onRenameDir: (
+		dirPath: string,
+		nextName: string,
+		kind?: "dir" | "file",
+	) => Promise<string | null>;
 	onDeletePath: (path: string, kind: "dir" | "file") => Promise<boolean>;
 	onSelectTag: (tag: string) => void;
 	sidebarCollapsed: boolean;

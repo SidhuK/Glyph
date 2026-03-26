@@ -7,7 +7,9 @@ import {
 } from "../../contexts";
 import {
 	PATH_REMOVED_EVENT,
+	PATH_RENAMED_EVENT,
 	type PathRemovedDetail,
+	type PathRenamedDetail,
 } from "../../lib/appEvents";
 import { CALENDAR_TAB_ID } from "../../lib/calendar";
 import { APP_TAGLINE } from "../../lib/copy";
@@ -318,6 +320,7 @@ export const MainContent = memo(function MainContent({
 		closeTab,
 		closeActiveTab,
 		closeTabsForPathRemoval,
+		renameTabsForPath,
 		reorderTabs,
 		openSpecialTab,
 	} = useTabManager(spacePath);
@@ -352,16 +355,23 @@ export const MainContent = memo(function MainContent({
 			if (!detail?.path) return;
 			closeTabsForPathRemoval(detail.path, detail.recursive);
 		};
+		const handlePathRenamed = (event: Event) => {
+			const detail = (event as CustomEvent<PathRenamedDetail>).detail;
+			if (!detail?.fromPath || !detail?.toPath) return;
+			renameTabsForPath(detail.fromPath, detail.toPath, detail.recursive);
+		};
 		window.addEventListener("glyph:close-active-tab", handleCloseActiveTab);
 		window.addEventListener(PATH_REMOVED_EVENT, handlePathRemoved);
+		window.addEventListener(PATH_RENAMED_EVENT, handlePathRenamed);
 		return () => {
 			window.removeEventListener(
 				"glyph:close-active-tab",
 				handleCloseActiveTab,
 			);
 			window.removeEventListener(PATH_REMOVED_EVENT, handlePathRemoved);
+			window.removeEventListener(PATH_RENAMED_EVENT, handlePathRenamed);
 		};
-	}, [closeActiveTab, closeTabsForPathRemoval]);
+	}, [closeActiveTab, closeTabsForPathRemoval, renameTabsForPath]);
 
 	const viewerPath = activeTabPath;
 	const commandShortcutParts = useMemo(

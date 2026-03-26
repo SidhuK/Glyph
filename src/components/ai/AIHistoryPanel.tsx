@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
+import { useIsDarkTheme } from "../../hooks/useIsDarkTheme";
 import { ChevronDown } from "../Icons";
-import { providerLogoMap } from "./aiPanelConstants";
+import { getProviderLogoSrc } from "./providerLogos";
 import type { useAiHistory } from "./useAiHistory";
 
 interface AIHistoryPanelProps {
@@ -18,6 +19,8 @@ export function AIHistoryPanel({
 	setHistoryExpanded,
 	onLoadHistory,
 }: AIHistoryPanelProps) {
+	const isDark = useIsDarkTheme();
+
 	return (
 		<div className="aiHistory">
 			<div className="aiHistoryHeader">
@@ -66,7 +69,7 @@ export function AIHistoryPanel({
 								{item.provider ? (
 									<img
 										className="aiHistoryProviderIcon"
-										src={providerLogoMap[item.provider]}
+										src={getProviderLogoSrc(item.provider, isDark)}
 										alt={item.provider}
 										draggable={false}
 									/>

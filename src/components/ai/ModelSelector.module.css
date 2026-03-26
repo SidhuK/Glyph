@@ -319,8 +319,8 @@
 	width: 22px;
 	height: 22px;
 	flex-shrink: 0;
-	border-radius: var(--radius-full);
-	color: var(--text-tertiary);
+	border-radius: var(--radius-md);
+	color: var(--text-secondary);
 	cursor: pointer;
 	transition: all var(--transition-base);
 	border: 1px solid transparent;
@@ -328,11 +328,18 @@
 	line-height: 0;
 }
 
+.infoInline:hover {
+	color: var(--text-primary);
+	border-color: color-mix(in srgb, var(--border-default) 75%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 85%, transparent);
+}
+
 .infoInline svg {
 	display: block;
 	width: 14px;
 	height: 14px;
-	color: currentColor;
+	color: currentcolor;
+	flex-shrink: 0;
 }
 
 .infoInlineActive {
