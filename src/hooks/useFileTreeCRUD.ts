@@ -480,6 +480,11 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 				if (activeFilePathRef.current === from) setActiveFilePath(nextPath);
 				if (activePreviewPathRef.current === from)
 					setActivePreviewPath(nextPath);
+				dispatchPathRenamed({
+					fromPath: from,
+					toPath: nextPath,
+					recursive: false,
+				});
 				try {
 					await renameItemAppearance(from, nextPath);
 				} catch (error) {

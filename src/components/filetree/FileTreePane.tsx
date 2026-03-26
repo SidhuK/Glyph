@@ -2,7 +2,6 @@ import { m } from "motion/react";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useFileTreeContext, useSpace } from "../../contexts";
-import { FILE_TREE_START_RENAME_EVENT } from "../../lib/appEvents";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { loadSettings } from "../../lib/settings";
 import type {
@@ -30,12 +29,12 @@ interface FileTreePaneProps {
 	onCreateFromTemplateInDir: (dirPath: string) => void;
 	onNewDatabaseInDir: (dirPath: string) => Promise<string | null>;
 	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
-	onRenameDir: (
-		path: string,
-		nextName: string,
-		kind?: "dir" | "file",
-	) => Promise<string | null>;
 	onDeletePath: (path: string, kind: "dir" | "file") => Promise<boolean>;
+	renamingPath: string | null;
+	onStartRename: (path: string) => void;
+	onCancelRename: () => void;
+	onCommitFileRename: (path: string, nextName: string) => Promise<void>;
+	onCommitDirRename: (dirPath: string, nextName: string) => Promise<void>;
 }
 
 const springTransition = springPresets.bouncy;
@@ -208,15 +207,15 @@ export const FileTreePane = memo(function FileTreePane({
 	onCreateFromTemplateInDir,
 	onNewDatabaseInDir,
 	onNewFolderInDir,
-	onRenameDir,
 	onDeletePath,
+	renamingPath,
+	onStartRename,
+	onCancelRename,
+	onCommitFileRename,
+	onCommitDirRename,
 }: FileTreePaneProps) {
 	const { itemAppearance, setItemAppearance } = useFileTreeContext();
 	const { spacePath, setError } = useSpace();
-	const [renamingPath, setRenamingPath] = useState<string | null>(null);
-	const [pendingNewNotePath, setPendingNewNotePath] = useState<string | null>(
-		null,
-	);
 	const [showFolderFileCounts, setShowFolderFileCounts] = useState(false);
 	const [folderFileCounts, setFolderFileCounts] = useState<
 		Record<string, number>
@@ -232,19 +231,6 @@ export const FileTreePane = memo(function FileTreePane({
 		return () => {
 			cancelled = true;
 		};
-	}, []);
-
-	useEffect(() => {
-		const handleStartRename = (event: Event) => {
-			const customEvent = event as CustomEvent<{ path?: string }>;
-			const path = customEvent.detail?.path?.trim();
-			if (!path) return;
-			setRenamingPath(path);
-			setPendingNewNotePath(path);
-		};
-		window.addEventListener(FILE_TREE_START_RENAME_EVENT, handleStartRename);
-		return () =>
-			window.removeEventListener(FILE_TREE_START_RENAME_EVENT, handleStartRename);
 	}, []);
 
 	useTauriEvent("settings:updated", (payload) => {
@@ -334,35 +320,11 @@ export const FileTreePane = memo(function FileTreePane({
 		async (dirPath: string) => {
 			const created = await onNewFolderInDir(dirPath);
 			if (created) {
-				setRenamingPath(created);
+				onStartRename(created);
 			}
 			return created;
 		},
-		[onNewFolderInDir],
-	);
-
-	const handleCommitDirRename = useCallback(
-		async (dirPath: string, nextName: string) => {
-			const renamed = await onRenameDir(dirPath, nextName, "dir");
-			if (renamed) {
-				setRenamingPath(null);
-			}
-		},
-		[onRenameDir],
-	);
-
-	const handleCommitFileRename = useCallback(
-		async (path: string, nextName: string) => {
-			const renamed = await onRenameDir(path, nextName, "file");
-			if (renamed) {
-				setRenamingPath(null);
-				if (pendingNewNotePath === path) {
-					onOpenFile(renamed);
-					setPendingNewNotePath(null);
-				}
-			}
-		},
-		[onOpenFile, onRenameDir, pendingNewNotePath],
+		[onNewFolderInDir, onStartRename],
 	);
 
 	const handleDeletePath = useCallback(
@@ -420,10 +382,10 @@ export const FileTreePane = memo(function FileTreePane({
 						onNewDatabaseInDir={onNewDatabaseInDir}
 						onNewFolderInDir={handleCreateFolder}
 						onDeletePath={handleDeletePath}
-						onStartRename={setRenamingPath}
-						onCommitDirRename={handleCommitDirRename}
-						onCommitFileRename={handleCommitFileRename}
-						onCancelRename={() => setRenamingPath(null)}
+						onStartRename={onStartRename}
+						onCommitDirRename={onCommitDirRename}
+						onCommitFileRename={onCommitFileRename}
+						onCancelRename={onCancelRename}
 						itemAppearance={itemAppearance}
 						folderFileCounts={folderFileCounts}
 						showFolderFileCounts={showFolderFileCounts}

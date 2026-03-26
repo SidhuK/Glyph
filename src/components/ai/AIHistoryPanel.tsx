@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { useTheme } from "next-themes";
+import { useIsDarkTheme } from "../../hooks/useIsDarkTheme";
 import { ChevronDown } from "../Icons";
 import { getProviderLogoSrc } from "./providerLogos";
 import type { useAiHistory } from "./useAiHistory";
@@ -19,8 +19,7 @@ export function AIHistoryPanel({
 	setHistoryExpanded,
 	onLoadHistory,
 }: AIHistoryPanelProps) {
-	const { resolvedTheme, theme } = useTheme();
-	const isDark = (resolvedTheme ?? theme) === "dark";
+	const isDark = useIsDarkTheme();
 
 	return (
 		<div className="aiHistory">

@@ -2,8 +2,8 @@ import anthropicLogoUrl from "../../assets/provider-logos/claude-ai.svg?url";
 import geminiLogoUrl from "../../assets/provider-logos/google-gemini.svg?url";
 import ollamaLogoUrl from "../../assets/provider-logos/ollama.svg?url";
 import openrouterLogoUrl from "../../assets/provider-logos/open-router.svg?url";
-import openaiDarkLogoUrl from "../../assets/provider-logos/openai-light.svg?url";
-import openaiLightLogoUrl from "../../assets/provider-logos/OpenAI_light.svg?url";
+import openaiDarkThemeLogoUrl from "../../assets/provider-logos/openai-light.svg?url";
+import openaiLightThemeLogoUrl from "../../assets/provider-logos/OpenAI_light.svg?url";
 import type { AiProviderKind } from "../../lib/tauri";
 
 export const providerLogoMeta: Record<
@@ -11,13 +11,13 @@ export const providerLogoMeta: Record<
 	{ src: string; darkSrc?: string; label: string }
 > = {
 	openai: {
-		src: openaiLightLogoUrl,
-		darkSrc: openaiDarkLogoUrl,
+		src: openaiLightThemeLogoUrl,
+		darkSrc: openaiDarkThemeLogoUrl,
 		label: "OpenAI",
 	},
 	openai_compat: {
-		src: openaiLightLogoUrl,
-		darkSrc: openaiDarkLogoUrl,
+		src: openaiLightThemeLogoUrl,
+		darkSrc: openaiDarkThemeLogoUrl,
 		label: "OpenAI (compat)",
 	},
 	openrouter: { src: openrouterLogoUrl, label: "OpenRouter" },
@@ -25,8 +25,8 @@ export const providerLogoMeta: Record<
 	gemini: { src: geminiLogoUrl, label: "Google Gemini" },
 	ollama: { src: ollamaLogoUrl, label: "Ollama" },
 	codex_chatgpt: {
-		src: openaiLightLogoUrl,
-		darkSrc: openaiDarkLogoUrl,
+		src: openaiLightThemeLogoUrl,
+		darkSrc: openaiDarkThemeLogoUrl,
 		label: "Codex (ChatGPT)",
 	},
 };

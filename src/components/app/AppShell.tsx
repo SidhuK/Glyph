@@ -411,6 +411,7 @@ export function AppShell() {
 				return;
 			}
 
+			setError("");
 			const fallbackResolved = await invoke("space_resolve_wikilink", {
 				target: normalizedTarget,
 			});
