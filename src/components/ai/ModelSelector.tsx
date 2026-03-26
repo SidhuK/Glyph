@@ -14,7 +14,7 @@ import type {
 	ProviderSupportEntry,
 } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
-import { ChevronDown, InformationCircle } from "../Icons";
+import { ChevronDown, Eye } from "../Icons";
 import { ModelDetail, hasDetailData } from "./ModelDetail";
 import styles from "./ModelSelector.module.css";
 import {
@@ -304,19 +304,19 @@ export function ModelSelector({
 													</span>
 												</button>
 												{detailAvailable && (
-													<button
-														type="button"
-														onMouseDown={handleInfoMouseDown}
-														onClick={handleInfoClick}
-														className={`${styles.infoInline} ${infoActive ? styles.infoInlineActive : ""}`}
-														title="Model info"
-														aria-label="Model info"
-													>
-														<InformationCircle size={14} strokeWidth={1.8} />
-													</button>
-												)}
-											</div>
-										);
+												<button
+													type="button"
+													onMouseDown={handleInfoMouseDown}
+													onClick={handleInfoClick}
+													className={`${styles.infoInline} ${infoActive ? styles.infoInlineActive : ""}`}
+													title="Show model details"
+													aria-label="Show model details"
+												>
+													<Eye size={14} strokeWidth={1.8} />
+												</button>
+											)}
+										</div>
+									);
 									})}
 							</div>
 							{detailModel && (

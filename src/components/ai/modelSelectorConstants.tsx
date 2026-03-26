@@ -1,5 +1,6 @@
 import type { AiProviderKind } from "../../lib/tauri";
-import { providerLogoMeta } from "./providerLogos";
+import { useTheme } from "next-themes";
+import { getProviderLogoSrc, providerLogoMeta } from "./providerLogos";
 
 export const providerLogoMap: Record<
 	AiProviderKind,
@@ -88,12 +89,14 @@ export function ProviderLogo({
 	provider: AiProviderKind | null;
 	className?: string;
 }) {
+	const { resolvedTheme, theme } = useTheme();
 	if (!provider) return null;
 	const config = providerLogoMap[provider];
 	if (!config) return null;
+	const isDark = (resolvedTheme ?? theme) === "dark";
 	return (
 		<img
-			src={config.src}
+			src={getProviderLogoSrc(provider, isDark)}
 			alt={`${config.label} logo`}
 			className={className}
 			draggable={false}
