@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { AnimatePresence, m } from "motion/react";
 import { Suspense, lazy, useState } from "react";
 import { ChevronDown } from "../Icons";
+import { UnstyledButton } from "../ui/UnstyledButton";
 import { formatToolName } from "./aiPanelConstants";
 
 const AIMessageMarkdown = lazy(async () => {
@@ -154,8 +155,7 @@ export function AIToolTimeline({ events, streaming }: AIToolTimelineProps) {
 								event.phase === "call" && "aiToolTimelineItem-running",
 							)}
 						>
-							<button
-								type="button"
+							<UnstyledButton
 								className="aiToolTimelineTop aiToolExpandBtn"
 								onClick={() =>
 									setExpanded((prev) => ({
@@ -181,7 +181,7 @@ export function AIToolTimeline({ events, streaming }: AIToolTimelineProps) {
 								>
 									<ChevronDown size={12} />
 								</span>
-							</button>
+							</UnstyledButton>
 							{summary ? <div className="aiToolSummary">{summary}</div> : null}
 							{error ? <div className="aiToolError">{error}</div> : null}
 							{isExpanded && detail ? (

@@ -4,16 +4,16 @@ import {
 	SlidersVerticalIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { m } from "motion/react";
 import type {
 	DatabaseColumn,
 	DatabaseConfig,
 	DatabasePropertyOption,
 } from "../../lib/database/types";
 import { Kanban, RefreshCw, Table } from "../Icons";
-import { springPresets } from "../ui/animations";
+import { SegmentedControl } from "../ui/SegmentedControl";
 import { Button } from "../ui/shadcn/button";
 import { DropdownMenu, DropdownMenuTrigger } from "../ui/shadcn/dropdown-menu";
+import { NativeSelect } from "../ui/shadcn/native-select";
 import { DatabaseColumnDropdown } from "./DatabaseColumnDialog";
 import { DatabaseSourceDropdown } from "./DatabaseSourceDialog";
 
@@ -51,59 +51,41 @@ export function DatabaseToolbar({
 	return (
 		<div className={["databaseToolbar", className].filter(Boolean).join(" ")}>
 			<div className="databaseToolbarPrimary">
-				<div
+				<SegmentedControl
+					value={databaseView}
+					onChange={onDatabaseViewChange}
+					ariaLabel="Database view"
 					className="databaseModeSwitch"
-					role="tablist"
-					aria-label="Database view"
-				>
-					<m.button
-						type="button"
-						layout
-						className="databaseModePill"
-						data-active={databaseView === "table"}
-						onClick={() => onDatabaseViewChange("table")}
-						title="Table view"
-						aria-label="Table view"
-						whileTap={{ scale: 0.94 }}
-						transition={springPresets.gentle}
-					>
-						{databaseView === "table" ? (
-							<m.span
-								className="databaseModePillBg"
-								layoutId="databaseModeActive"
-								transition={springPresets.gentle}
-							/>
-						) : null}
-						<Table size={14} className="databaseModePillIcon" />
-					</m.button>
-					<m.button
-						type="button"
-						layout
-						className="databaseModePill"
-						data-active={databaseView === "board"}
-						onClick={() => onDatabaseViewChange("board")}
-						title="Board view"
-						aria-label="Board view"
-						whileTap={{ scale: 0.94 }}
-						transition={springPresets.gentle}
-					>
-						{databaseView === "board" ? (
-							<m.span
-								className="databaseModePillBg"
-								layoutId="databaseModeActive"
-								transition={springPresets.gentle}
-							/>
-						) : null}
-						<Kanban size={14} className="databaseModePillIcon" />
-					</m.button>
-				</div>
+					buttonClassName="databaseModePill"
+					iconClassName="databaseModePillIcon"
+					options={[
+						{
+							value: "table",
+							label: null,
+							icon: <Table size={14} />,
+							title: "Table view",
+						},
+						{
+							value: "board",
+							label: null,
+							icon: <Kanban size={14} />,
+							title: "Board view",
+						},
+					]}
+				/>
 				<span className="databaseToolbarDivider" />
 			</div>
 			<div className="databaseToolbarActions">
 				{databaseView === "board" && groupColumns.length > 0 ? (
-					<label className="databaseToolbarGroupBy">
-						<span className="databaseToolbarGroupByLabel">Group by</span>
-						<select
+					<div className="databaseToolbarGroupBy">
+						<label
+							className="databaseToolbarGroupByLabel"
+							htmlFor="databaseToolbarGroupBy"
+						>
+							Group by
+						</label>
+						<NativeSelect
+							id="databaseToolbarGroupBy"
 							className="databaseToolbarGroupBySelect"
 							value={groupColumnId ?? ""}
 							onChange={(event) =>
@@ -115,8 +97,8 @@ export function DatabaseToolbar({
 									{column.label}
 								</option>
 							))}
-						</select>
-					</label>
+						</NativeSelect>
+					</div>
 				) : null}
 				<DropdownMenu>
 					<DropdownMenuTrigger asChild>

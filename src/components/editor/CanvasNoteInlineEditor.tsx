@@ -20,9 +20,11 @@ import { joinYamlFrontmatter } from "../../lib/notePreview";
 import { todayIsoDateLocal } from "../../lib/tasks";
 import { type BacklinkItem, invoke } from "../../lib/tauri";
 import { Save, Trash2, X } from "../Icons";
+import { UnstyledButton } from "../ui/UnstyledButton";
 import { Button } from "../ui/shadcn/button";
 import { Calendar as DateCalendar } from "../ui/shadcn/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
+import { Textarea } from "../ui/shadcn/textarea";
 import { EditorRibbon } from "./EditorRibbon";
 import { NotePropertiesPanel } from "./NotePropertiesPanel";
 import {
@@ -519,9 +521,8 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 				const parsed = parseWikiLink(token.raw);
 				nodes.push(
 					interactive && parsed ? (
-						<button
+						<UnstyledButton
 							key={`fm-${token.start}-${token.end}`}
-							type="button"
 							className="frontmatterInlineLink"
 							onClick={() => {
 								dispatchWikiLinkClick({
@@ -535,7 +536,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 							}}
 						>
 							{token.raw}
-						</button>
+						</UnstyledButton>
 					) : (
 						token.raw
 					),
@@ -543,16 +544,15 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 			} else {
 				nodes.push(
 					interactive ? (
-						<button
+						<UnstyledButton
 							key={`fm-${token.start}-${token.end}`}
-							type="button"
 							className="frontmatterInlineLink"
 							onClick={() => {
 								void openFrontmatterHref(token.href, relPath ?? "");
 							}}
 						>
 							{token.raw}
-						</button>
+						</UnstyledButton>
 					) : (
 						token.raw
 					),
@@ -945,7 +945,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		>
 			<div className="rfNodeNoteEditorBody nodrag nopan nowheel">
 				{mode === "plain" ? (
-					<textarea
+					<Textarea
 						className="rfNodeNoteEditorRaw mono"
 						value={markdown}
 						onChange={(event) => onChange(event.target.value)}
@@ -1008,8 +1008,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 									onOpenChange={setCodeBlockPickerOpen}
 								>
 									<PopoverTrigger asChild>
-										<button
-											type="button"
+										<UnstyledButton
 											className="codeBlockLanguageBtn"
 											onMouseDown={preventCodeBlockPickerMouseDown}
 											title="Set code block language"
@@ -1020,7 +1019,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 											<span className="codeBlockLanguageBtnLabel mono">
 												{selectedCodeBlockLanguageLabel}
 											</span>
-										</button>
+										</UnstyledButton>
 									</PopoverTrigger>
 									<PopoverContent
 										className="codeBlockLanguagePopover"
@@ -1051,8 +1050,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 									</PopoverContent>
 								</Popover>
 								{isSelectedMermaidCodeBlock ? (
-									<button
-										type="button"
+									<UnstyledButton
 										className="codeBlockPreviewBtn"
 										onMouseDown={preventCodeBlockPickerMouseDown}
 										onClick={toggleSelectedMermaidPreview}
@@ -1065,7 +1063,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 										<span className="codeBlockPreviewBtnLabel mono">
 											{isSelectedMermaidPreviewActive ? "Stop" : "Play"}
 										</span>
-									</button>
+									</UnstyledButton>
 								) : null}
 							</div>
 						) : null}
@@ -1088,8 +1086,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 								}}
 							>
 								<PopoverTrigger asChild>
-									<button
-										type="button"
+									<UnstyledButton
 										className="taskInlineDateBtn"
 										style={{
 											left: `${selectedTaskAnchor.left}px`,
@@ -1105,7 +1102,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 											size={13}
 											aria-hidden
 										/>
-									</button>
+									</UnstyledButton>
 								</PopoverTrigger>
 								<PopoverContent
 									className="tasksDatePopover taskInlineDatePopover"
@@ -1114,8 +1111,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 									onPointerDownOutside={(event) => event.preventDefault()}
 								>
 									<div className="tasksDatePickerFields">
-										<button
-											type="button"
+										<UnstyledButton
 											className="tasksDateFieldCard"
 											data-active={activeDateField === "scheduled"}
 											onClick={() => focusField("scheduled")}
@@ -1127,9 +1123,8 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 											>
 												{formatPickerValue(scheduledDate)}
 											</span>
-										</button>
-										<button
-											type="button"
+										</UnstyledButton>
+										<UnstyledButton
 											className="tasksDateFieldCard"
 											data-active={activeDateField === "due"}
 											onClick={() => focusField("due")}
@@ -1141,7 +1136,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 											>
 												{formatPickerValue(dueDate)}
 											</span>
-										</button>
+										</UnstyledButton>
 									</div>
 									<div className="tasksDatePickerShell">
 										<DateCalendar
@@ -1272,9 +1267,8 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 										Linked mentions ({backlinks.length})
 									</div>
 									{backlinks.map((item) => (
-										<button
+										<UnstyledButton
 											key={item.id}
-											type="button"
 											className="editorBacklinkInline"
 											onClick={() =>
 												dispatchWikiLinkClick({
@@ -1288,7 +1282,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 											}
 										>
 											{item.title || item.id}
-										</button>
+										</UnstyledButton>
 									))}
 								</div>
 							</div>

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { type FsEntry, invoke } from "../../lib/tauri";
 import { ChevronRight, FolderClosed, Search } from "../Icons";
+import { UnstyledButton } from "../ui/UnstyledButton";
 import { Button } from "../ui/shadcn/button";
 import { Input } from "../ui/shadcn/input";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
@@ -110,27 +111,25 @@ export function DatabaseFolderPicker({
 			</PopoverTrigger>
 			<PopoverContent className="folderPickerPopover" align="start">
 				<div className="folderPickerBreadcrumbs">
-					<button
-						type="button"
+					<UnstyledButton
 						className="folderPickerCrumb"
 						data-active={browserPath === "" ? "true" : undefined}
 						onClick={() => setBrowserPath("")}
 					>
 						Root
-					</button>
+					</UnstyledButton>
 					{browserParts.map((part, index) => {
 						const nextPath = browserParts.slice(0, index + 1).join("/");
 						return (
 							<span key={nextPath} className="folderPickerCrumbSegment">
 								<ChevronRight size={10} />
-								<button
-									type="button"
+								<UnstyledButton
 									className="folderPickerCrumb"
 									data-active={browserPath === nextPath ? "true" : undefined}
 									onClick={() => setBrowserPath(nextPath)}
 								>
 									{part}
-								</button>
+								</UnstyledButton>
 							</span>
 						);
 					})}
@@ -145,8 +144,7 @@ export function DatabaseFolderPicker({
 				</div>
 				<ScrollArea className="folderPickerResults">
 					<div className="folderPickerList">
-						<button
-							type="button"
+						<UnstyledButton
 							className="folderPickerSelect"
 							onClick={() => {
 								onChange(browserPath);
@@ -155,22 +153,21 @@ export function DatabaseFolderPicker({
 						>
 							<FolderClosed size={12} />
 							<span>{folderName(browserPath)}</span>
-						</button>
+						</UnstyledButton>
 						{loading ? (
 							<div className="folderPickerEmpty">Loading…</div>
 						) : error ? (
 							<div className="folderPickerEmpty">{error}</div>
 						) : filteredEntries.length > 0 ? (
 							filteredEntries.map((entry) => (
-								<button
+								<UnstyledButton
 									key={entry.rel_path}
-									type="button"
 									className="folderPickerRow"
 									onClick={() => setBrowserPath(entry.rel_path)}
 								>
 									<span className="folderPickerRowName">{entry.name}</span>
 									<ChevronRight size={12} />
-								</button>
+								</UnstyledButton>
 							))
 						) : (
 							<div className="folderPickerEmpty">No subfolders.</div>

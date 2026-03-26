@@ -1,7 +1,10 @@
 import type { NoteProperty, TagCount } from "../../../lib/tauri";
 import { X } from "../../Icons";
 import { Toggle } from "../../base/toggle/toggle";
+import { Chip } from "../../ui/Chip";
+import { UnstyledButton } from "../../ui/UnstyledButton";
 import { Input } from "../../ui/shadcn/input";
+import { Textarea } from "../../ui/shadcn/textarea";
 import {
 	buildTagSuggestions,
 	formatTagLabel,
@@ -89,7 +92,7 @@ export function NotePropertyValueField({
 					}}
 				>
 					{property.value_list.map((value, valueIndex) => (
-						<button
+						<Chip
 							key={`${property.key || rowId}-${valueIndex}-${value}`}
 							type="button"
 							className="notePropertyToken"
@@ -98,7 +101,7 @@ export function NotePropertyValueField({
 						>
 							<span>{formatTagLabel(value)}</span>
 							<X size={10} />
-						</button>
+						</Chip>
 					))}
 					<input
 						ref={(node) => onSetTagInputRef(rowId, node)}
@@ -130,9 +133,8 @@ export function NotePropertyValueField({
 						<div className="notePropertySuggestionsLabel">Suggested tags</div>
 						<div className="notePropertySuggestionList">
 							{suggestions.map(({ tag, count }) => (
-								<button
+								<UnstyledButton
 									key={tag}
-									type="button"
 									className="notePropertySuggestionChip"
 									onMouseDown={(event) => {
 										event.preventDefault();
@@ -141,7 +143,7 @@ export function NotePropertyValueField({
 								>
 									<span>{formatTagLabel(tag)}</span>
 									<span className="notePropertySuggestionCount">{count}</span>
-								</button>
+								</UnstyledButton>
 							))}
 						</div>
 					</div>
@@ -167,7 +169,7 @@ export function NotePropertyValueField({
 
 	if (property.kind === "yaml") {
 		return (
-			<textarea
+			<Textarea
 				className="notePropertyYamlInput"
 				value={property.value_text ?? ""}
 				onChange={(event) =>

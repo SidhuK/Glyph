@@ -1,6 +1,7 @@
 import { useState } from "react";
 import type { DatabaseConfig, DatabaseFilter } from "../../lib/database/types";
 import { extractErrorMessage } from "../../lib/errorUtils";
+import { IconButton } from "../ui/IconButton";
 import { Button } from "../ui/shadcn/button";
 import {
 	DropdownMenuContent,
@@ -8,6 +9,7 @@ import {
 	DropdownMenuSeparator,
 } from "../ui/shadcn/dropdown-menu";
 import { Input } from "../ui/shadcn/input";
+import { NativeSelect } from "../ui/shadcn/native-select";
 import { DatabaseFolderPicker } from "./DatabaseFolderPicker";
 import { DatabaseTagPicker } from "./DatabaseTagPicker";
 
@@ -171,7 +173,7 @@ export function DatabaseSourceDropdown({
 					>
 						Source
 					</label>
-					<select
+					<NativeSelect
 						id="databaseSourceKind"
 						className="databaseNativeSelect text-sm"
 						value={config.source.kind}
@@ -185,7 +187,7 @@ export function DatabaseSourceDropdown({
 						<option value="folder">Folder</option>
 						<option value="tag">Tag</option>
 						<option value="search">Search</option>
-					</select>
+					</NativeSelect>
 				</div>
 				{config.source.kind === "folder" ? (
 					<>
@@ -288,7 +290,7 @@ export function DatabaseSourceDropdown({
 								className="flex flex-col gap-1 rounded-md border border-border p-1.5"
 							>
 								<div className="flex items-center gap-1">
-									<select
+									<NativeSelect
 										className="databaseNativeSelect flex-1 min-w-0 text-xs"
 										value={filter.column_id}
 										aria-label={`Filter ${index + 1} field`}
@@ -307,8 +309,8 @@ export function DatabaseSourceDropdown({
 												{column.label}
 											</option>
 										))}
-									</select>
-									<select
+									</NativeSelect>
+									<NativeSelect
 										className="databaseNativeSelect flex-1 min-w-0 text-xs"
 										value={filter.operator}
 										aria-label={`Filter ${index + 1} operator`}
@@ -331,20 +333,21 @@ export function DatabaseSourceDropdown({
 												{option.label}
 											</option>
 										))}
-									</select>
-									<button
-										type="button"
+									</NativeSelect>
+									<IconButton
 										className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:text-destructive"
+										size="icon-xs"
+										variant="ghost"
 										onClick={() =>
 											void updateFilters((filters) =>
 												filters.filter((_, i) => i !== index),
 											)
 										}
 										title="Remove filter"
-										aria-label="Remove filter"
+										label="Remove filter"
 									>
 										<span className="text-xs">✕</span>
-									</button>
+									</IconButton>
 								</div>
 								{showsValue ? (
 									<div>

@@ -3,7 +3,11 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import type { Dispatch, RefObject, SetStateAction } from "react";
 import { APP_TAGLINE } from "../../lib/copy";
 import { X } from "../Icons";
+import { Chip } from "../ui/Chip";
+import { IconButton } from "../ui/IconButton";
+import { UnstyledButton } from "../ui/UnstyledButton";
 import { Button } from "../ui/shadcn/button";
+import { Textarea } from "../ui/shadcn/textarea";
 import { ModelSelector } from "./ModelSelector";
 import type { useAiContext } from "./useAiContext";
 import type { useAiProfiles } from "./useAiProfiles";
@@ -89,14 +93,13 @@ export function AIComposer({
 					<div className="aiAddPanelList">
 						{context.visibleSuggestions.length ? (
 							context.visibleSuggestions.map((item) => (
-								<button
+								<UnstyledButton
 									key={`${item.kind}:${item.path || "space"}`}
-									type="button"
 									className="aiAddPanelItem"
 									onClick={() => onAddContext(item.kind, item.path)}
 								>
 									<span>{item.label || "Space"}</span>
-								</button>
+								</UnstyledButton>
 							))
 						) : (
 							<div className="aiAddPanelEmpty">
@@ -106,13 +109,13 @@ export function AIComposer({
 							</div>
 						)}
 					</div>
-					<button
-						type="button"
+					<IconButton
+						label="Close add context"
 						className="aiAddPanelClose"
 						onClick={() => setAddPanelOpen(false)}
 					>
 						<X size={11} />
-					</button>
+					</IconButton>
 				</div>
 			) : null}
 			<div className="aiComposer">
@@ -124,9 +127,8 @@ export function AIComposer({
 								aria-label="Attached context"
 							>
 								{context.attachedFolders.map((item) => (
-									<button
+									<Chip
 										key={`${item.kind}:${item.path || "space"}`}
-										type="button"
 										className="aiContextChip"
 										onClick={() => onRemoveContext(item.kind, item.path)}
 										title={`Remove ${item.label}`}
@@ -139,12 +141,12 @@ export function AIComposer({
 												: item.label || "Space"}
 										</span>
 										<X size={10} />
-									</button>
+									</Chip>
 								))}
 							</div>
 						</div>
 					) : null}
-					<textarea
+					<Textarea
 						ref={composerInputRef}
 						className="aiComposerInput"
 						value={input}
@@ -194,28 +196,22 @@ export function AIComposer({
 							</div>
 						</div>
 						{isAwaitingResponse ? (
-							<button
-								type="button"
+							<IconButton
 								className="aiComposerStop"
+								label="Stop"
 								onClick={onStop}
-								aria-label="Stop"
-								title="Stop"
 							>
 								<HugeiconsIcon icon={StopIcon} size={14} />
-							</button>
+							</IconButton>
 						) : (
-							<Button
-								type="button"
-								variant="ghost"
-								size="icon-sm"
+							<IconButton
 								className="aiComposerSend"
 								disabled={!canSend}
 								onClick={onSend}
-								aria-label="Send"
-								title="Send"
+								label="Send"
 							>
 								<HugeiconsIcon icon={Navigation03Icon} size={14} />
-							</Button>
+							</IconButton>
 						)}
 					</div>
 				</div>

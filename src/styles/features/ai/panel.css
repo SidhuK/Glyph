@@ -191,7 +191,7 @@
 }
 
 .aiHistoryHeader button {
-	font-size: 11px;
+	font-size: var(--font-size-label-sm);
 	color: var(--text-tertiary);
 }
 
@@ -1524,16 +1524,16 @@
 	align-items: stretch;
 }
 
-button.aiComposerSend {
+.aiComposerSend {
 	color: var(--interactive-accent);
 }
 
-button.aiComposerSend:disabled {
+.aiComposerSend:disabled {
 	opacity: 0.3;
 }
 
 .aiComposerStop {
-	width: 26px;
+	width: var(--icon-button-size-sm);
 	height: 26px;
 	display: inline-flex;
 	align-items: center;

@@ -3,6 +3,7 @@ import type { AiModel, AiProfile, AiProviderKind } from "../../../lib/tauri";
 import { TriangleAlert } from "../../Icons";
 import { Button } from "../../ui/shadcn/button";
 import { Input } from "../../ui/shadcn/input";
+import { NativeSelect } from "../../ui/shadcn/native-select";
 import { SettingsRow, SettingsSection } from "../SettingsScaffold";
 import { AiModelCombobox } from "./AiModelCombobox";
 
@@ -43,7 +44,7 @@ export function AiProviderSection({
 				description="Switch between provider configurations."
 			>
 				<div className="settingsInline settingsInlineWide">
-					<select
+					<NativeSelect
 						id="aiProvider"
 						value={profileDraft.provider}
 						onChange={(event) =>
@@ -57,7 +58,7 @@ export function AiProviderSection({
 						<option value="gemini">Gemini</option>
 						<option value="ollama">Ollama</option>
 						<option value="openai_compat">OpenAI-compatible</option>
-					</select>
+					</NativeSelect>
 					{showRestartPrompt ? (
 						<output className="settingsRestartNotice" aria-live="polite">
 							<div className="settingsRestartNoticeCopy">
@@ -120,7 +121,7 @@ export function AiProviderSection({
 					description="Available for Codex when the current model exposes effort levels."
 				>
 					{(reasoningOptions?.length ?? 0) > 0 ? (
-						<select
+						<NativeSelect
 							id="aiReasoningEffort"
 							value={
 								profileDraft.reasoning_effort ??
@@ -142,7 +143,7 @@ export function AiProviderSection({
 										: option.effort}
 								</option>
 							))}
-						</select>
+						</NativeSelect>
 					) : (
 						<div>
 							<Input

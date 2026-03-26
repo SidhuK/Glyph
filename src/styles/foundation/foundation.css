@@ -81,6 +81,16 @@
 	--space-10: 40px;
 	--space-12: 48px;
 
+	--control-height-xs: 22px;
+	--control-height-sm: 28px;
+	--control-height-md: 32px;
+	--control-height-lg: 40px;
+	--icon-button-size-xs: var(--control-height-xs);
+	--icon-button-size-sm: var(--control-height-sm);
+	--icon-size-xs: 12px;
+	--icon-size-sm: 14px;
+	--pill-min-width-sm: 26px;
+
 	--radius-2: 2px;
 	--radius-3: 3px;
 	--radius-4: 4px;
@@ -105,6 +115,10 @@
 	--radius-2xl: var(--radius-18);
 	--radius-3xl: var(--radius-24);
 	--radius-full: var(--radius-round);
+	--radius-control: var(--radius-md);
+	--radius-pill: var(--radius-full);
+	--radius-card: var(--radius-xl);
+	--radius-segmented: var(--radius-lg);
 
 	--shadow-sm: none;
 	--shadow-md: none;
@@ -119,4 +133,9 @@
 
 	--glyph-user-accent: initial;
 	--glyph-user-accent-hover: initial;
+	--font-size-label-xs: 10px;
+	--font-size-label-sm: 11px;
+	--font-size-meta: 12px;
+	--font-size-heading-display-sm: 21px;
+	--icon-stroke-width: 1.5;
 }

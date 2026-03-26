@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { type AiModel, type AiProviderKind, invoke } from "../../../lib/tauri";
+import { UnstyledButton } from "../../ui/UnstyledButton";
+import { NativeSelect } from "../../ui/shadcn/native-select";
 
 interface AiModelComboboxProps {
 	profileId: string;
@@ -97,7 +99,7 @@ export function AiModelCombobox({
 	return (
 		<div className="modelCombobox">
 			<div className="modelComboboxInputWrap">
-				<select
+				<NativeSelect
 					id="aiModel"
 					value={value}
 					onChange={(e) => onChange(e.target.value)}
@@ -109,7 +111,7 @@ export function AiModelCombobox({
 							{m.name}
 						</option>
 					))}
-				</select>
+				</NativeSelect>
 				{statusLabel ? (
 					<span
 						className={`modelComboboxBadge ${loading ? "modelComboboxBadgeLoading" : ""}`}
@@ -126,13 +128,9 @@ export function AiModelCombobox({
 			{error ? (
 				<div className="modelComboboxStatus modelComboboxError">
 					<span>{error}</span>
-					<button
-						type="button"
-						className="modelComboboxRetry"
-						onClick={handleRetry}
-					>
+					<UnstyledButton className="modelComboboxRetry" onClick={handleRetry}>
 						Retry
-					</button>
+					</UnstyledButton>
 				</div>
 			) : null}
 			{!loading && !error && models?.length === 0 ? (

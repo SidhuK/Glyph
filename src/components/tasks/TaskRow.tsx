@@ -11,6 +11,7 @@ import {
 } from "../../lib/tasks";
 import type { TaskItem } from "../../lib/tauri";
 import { Calendar, Save, Trash2, X } from "../Icons";
+import { UnstyledButton } from "../ui/UnstyledButton";
 import { springPresets } from "../ui/animations";
 import { Badge } from "../ui/shadcn/badge";
 import { Button } from "../ui/shadcn/button";
@@ -195,14 +196,13 @@ export function TaskRow({
 						{displayText}
 					</div>
 					{showNoteContext ? (
-						<button
-							type="button"
+						<UnstyledButton
 							className="tasksMetaLink"
 							title={task.note_path}
 							onClick={() => void onOpenNote?.(task.note_path)}
 						>
 							{task.note_title || task.note_path}
-						</button>
+						</UnstyledButton>
 					) : null}
 					{showSectionTag && task.section ? (
 						<span className="tasksMetaTag tasksMetaTagInline">
@@ -291,8 +291,7 @@ export function TaskRow({
 							onPointerDownOutside={(e) => e.preventDefault()}
 						>
 							<div className="tasksDatePickerFields">
-								<button
-									type="button"
+								<UnstyledButton
 									className="tasksDateFieldCard"
 									data-active={activeDateField === "scheduled"}
 									onClick={() => focusField("scheduled")}
@@ -304,9 +303,8 @@ export function TaskRow({
 									>
 										{formatPickerValue(scheduledDate)}
 									</span>
-								</button>
-								<button
-									type="button"
+								</UnstyledButton>
+								<UnstyledButton
 									className="tasksDateFieldCard"
 									data-active={activeDateField === "due"}
 									onClick={() => focusField("due")}
@@ -315,7 +313,7 @@ export function TaskRow({
 									<span className="tasksDateFieldValue" data-empty={!dueDate}>
 										{formatPickerValue(dueDate)}
 									</span>
-								</button>
+								</UnstyledButton>
 							</div>
 							<div className="tasksDatePickerShell">
 								<DateCalendar

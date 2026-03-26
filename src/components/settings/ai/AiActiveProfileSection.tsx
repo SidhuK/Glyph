@@ -1,5 +1,6 @@
 import type { AiProfile } from "../../../lib/tauri";
 import { Button } from "../../ui/shadcn/button";
+import { NativeSelect } from "../../ui/shadcn/native-select";
 import { SettingsRow, SettingsSection } from "../SettingsScaffold";
 
 interface AiActiveProfileSectionProps {
@@ -26,7 +27,7 @@ export function AiActiveProfileSection({
 					htmlFor="aiProfileSel"
 					description="Switching profiles updates the provider, model, and auth settings below."
 				>
-					<select
+					<NativeSelect
 						id="aiProfileSel"
 						aria-label="Active profile"
 						value={activeProfileId ?? ""}
@@ -39,7 +40,7 @@ export function AiActiveProfileSection({
 								{profile.name}
 							</option>
 						))}
-					</select>
+					</NativeSelect>
 				</SettingsRow>
 			</SettingsSection>
 		);

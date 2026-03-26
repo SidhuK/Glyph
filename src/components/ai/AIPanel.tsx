@@ -9,6 +9,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAISidebarContext } from "../../contexts";
 import { openSettingsWindow } from "../../lib/windows";
 import { Settings as SettingsIcon, X } from "../Icons";
+import { IconButton } from "../ui/IconButton";
 import { Button } from "../ui/shadcn/button";
 import { AIChatThread } from "./AIChatThread";
 import { AIComposer } from "./AIComposer";
@@ -353,20 +354,23 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 				{chat.error ? (
 					<div className="aiPanelError">
 						<span>{chat.error.message}</span>
-						<button type="button" onClick={() => chat.clearError()}>
+						<IconButton
+							label="Dismiss AI error"
+							onClick={() => chat.clearError()}
+						>
 							<X size={11} />
-						</button>
+						</IconButton>
 					</div>
 				) : null}
 				{actions.assistantActionError ? (
 					<div className="aiPanelError">
 						<span>{actions.assistantActionError}</span>
-						<button
-							type="button"
+						<IconButton
+							label="Dismiss action error"
 							onClick={() => actions.setAssistantActionError("")}
 						>
 							<X size={11} />
-						</button>
+						</IconButton>
 					</div>
 				) : null}
 				{profiles.error ? (

@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
 import { ChevronDown } from "../Icons";
+import { UnstyledButton } from "../ui/UnstyledButton";
 import { providerLogoMap } from "./aiPanelConstants";
 import type { useAiHistory } from "./useAiHistory";
 
@@ -21,8 +22,7 @@ export function AIHistoryPanel({
 	return (
 		<div className="aiHistory">
 			<div className="aiHistoryHeader">
-				<button
-					type="button"
+				<UnstyledButton
 					className="aiHistoryToggle"
 					aria-expanded={historyExpanded}
 					onClick={() => setHistoryExpanded((prev: boolean) => !prev)}
@@ -35,24 +35,22 @@ export function AIHistoryPanel({
 							historyExpanded && "aiHistoryChevron-open",
 						)}
 					/>
-				</button>
+				</UnstyledButton>
 				{historyExpanded ? (
-					<button
-						type="button"
+					<UnstyledButton
 						onClick={() => void history.refresh()}
 						disabled={history.listLoading}
 					>
 						Refresh
-					</button>
+					</UnstyledButton>
 				) : null}
 			</div>
 			{historyExpanded ? (
 				<div className="aiHistoryList">
 					{history.summaries.length > 0 ? (
 						history.summaries.map((item) => (
-							<button
+							<UnstyledButton
 								key={item.job_id}
-								type="button"
 								className={cn(
 									"aiHistoryItem",
 									history.selectedJobId === item.job_id && "active",
@@ -71,7 +69,7 @@ export function AIHistoryPanel({
 										draggable={false}
 									/>
 								) : null}
-							</button>
+							</UnstyledButton>
 						))
 					) : (
 						<div className="aiHistoryEmpty">

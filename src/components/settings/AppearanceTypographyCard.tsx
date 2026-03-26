@@ -7,6 +7,7 @@ import {
 	type UiFontSize,
 } from "../../lib/settings";
 import { Input } from "../ui/shadcn/input";
+import { NativeSelect } from "../ui/shadcn/native-select";
 import { Slider } from "../ui/shadcn/slider";
 import { SettingsRow, SettingsSection } from "./SettingsScaffold";
 
@@ -116,7 +117,7 @@ export function AppearanceTypographyCard({
 				htmlFor="settingsFontFamily"
 				description="Used for navigation, settings, and most UI copy across Glyph."
 			>
-				<select
+				<NativeSelect
 					id="settingsFontFamily"
 					value={fontFamily}
 					onChange={(event) => void onFontFamilyChange(event.target.value)}
@@ -126,7 +127,7 @@ export function AppearanceTypographyCard({
 							{font}
 						</option>
 					))}
-				</select>
+				</NativeSelect>
 			</SettingsRow>
 
 			<SettingsRow
@@ -134,7 +135,7 @@ export function AppearanceTypographyCard({
 				htmlFor="settingsMonoFontFamily"
 				description="Used for markdown source, inline code, and developer-oriented surfaces."
 			>
-				<select
+				<NativeSelect
 					id="settingsMonoFontFamily"
 					value={monoFontFamily}
 					onChange={(event) => void onMonoFontFamilyChange(event.target.value)}
@@ -144,7 +145,7 @@ export function AppearanceTypographyCard({
 							{font}
 						</option>
 					))}
-				</select>
+				</NativeSelect>
 			</SettingsRow>
 
 			<FontSizeControl

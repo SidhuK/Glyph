@@ -1,23 +1,9 @@
 .uiToggle {
-	--ui-toggle-track-width: 36px;
-	--ui-toggle-track-height: 20px;
-	--ui-toggle-thumb-size: 16px;
-	--ui-toggle-thumb-offset: 2px;
-	--ui-toggle-thumb-translate: 16px;
-
 	display: inline-flex;
 	align-items: center;
-	gap: 0;
+	gap: 8px;
 	cursor: pointer;
 	user-select: none;
-}
-
-.uiToggle--md {
-	--ui-toggle-track-width: 44px;
-	--ui-toggle-track-height: 24px;
-	--ui-toggle-thumb-size: 20px;
-	--ui-toggle-thumb-offset: 2px;
-	--ui-toggle-thumb-translate: 20px;
 }
 
 .uiToggle--withCopy {
@@ -43,21 +29,8 @@
 }
 
 .uiToggleInput {
-	-webkit-appearance: none;
-	appearance: none;
-	position: absolute;
-	margin: 0;
-	padding: 0;
-	border: 0;
-	border-radius: 0;
-	background: transparent;
-	box-shadow: none;
-	opacity: 0;
-	width: 1px;
-	height: 1px;
-	pointer-events: none;
-	overflow: hidden;
-	clip-path: inset(50%);
+	margin: 2px 0 0;
+	flex: 0 0 auto;
 }
 
 .uiToggleCopy {
@@ -78,56 +51,4 @@
 	font-size: var(--font-size-xs);
 	line-height: 1.45;
 	color: var(--text-secondary);
-}
-
-.uiToggleControl {
-	position: relative;
-	flex: 0 0 auto;
-	width: var(--ui-toggle-track-width);
-	height: var(--ui-toggle-track-height);
-	border-radius: 999px;
-	background: color-mix(in srgb, var(--bg-tertiary) 78%, var(--bg-secondary));
-	transition: background-color var(--transition-base);
-}
-
-.uiToggle--withCopy .uiToggleControl {
-	margin-top: 1px;
-}
-
-.uiToggleThumb {
-	position: absolute;
-	top: var(--ui-toggle-thumb-offset);
-	left: var(--ui-toggle-thumb-offset);
-	width: var(--ui-toggle-thumb-size);
-	height: var(--ui-toggle-thumb-size);
-	border-radius: 999px;
-	background: var(--color-white);
-	transition: transform var(--transition-base), background-color
-		var(--transition-base);
-}
-
-.uiToggleInput:focus-visible ~ .uiToggleControl {
-	outline: 2px solid
-		color-mix(in srgb, var(--interactive-accent) 28%, transparent);
-	outline-offset: 2px;
-}
-
-.uiToggleInput:checked ~ .uiToggleControl {
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 72%,
-		var(--bg-tertiary)
-	);
-}
-
-.uiToggleInput:checked ~ .uiToggleControl .uiToggleThumb {
-	transform: translateX(var(--ui-toggle-thumb-translate));
-	background: var(--text-inverse);
-}
-
-@media (prefers-reduced-motion: reduce) {
-	.uiToggleControl,
-	.uiToggleThumb {
-		transition: none;
-	}
 }

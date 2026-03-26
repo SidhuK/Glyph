@@ -11,6 +11,7 @@ import { listTemplates } from "../../lib/templates";
 import { Trash2 } from "../Icons";
 import { FolderOpen } from "../Icons/NavigationIcons";
 import { Button } from "../ui/shadcn/button";
+import { NativeSelect } from "../ui/shadcn/native-select";
 import { SettingsRow, SettingsSection } from "./SettingsScaffold";
 
 interface TemplateOption {
@@ -287,7 +288,7 @@ export function TemplateSettingsSections() {
 				</SettingsRow>
 
 				<SettingsRow label="Default daily note template">
-					<select
+					<NativeSelect
 						value={dailyNoteTemplatePath ?? ""}
 						onChange={(event) =>
 							void handleDailyTemplateChange(event.target.value)
@@ -302,7 +303,7 @@ export function TemplateSettingsSections() {
 								{template.label}
 							</option>
 						))}
-					</select>
+					</NativeSelect>
 				</SettingsRow>
 			</SettingsSection>
 		</>

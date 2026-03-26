@@ -3,6 +3,7 @@ import { m, useReducedMotion } from "motion/react";
 import { Fragment, Suspense, lazy, useState } from "react";
 import { ChevronDown, Files, RefreshCw, Save } from "../Icons";
 import { dispatchMarkdownLinkClick } from "../editor/markdown/editorEvents";
+import { UnstyledButton } from "../ui/UnstyledButton";
 import { Button } from "../ui/shadcn/button";
 import { AIToolTimeline, type ToolTimelineEvent } from "./AIToolTimeline";
 import { messageText } from "./aiPanelConstants";
@@ -255,9 +256,8 @@ export function AIChatThread({
 							citations.length > 0 ? (
 								<div className="aiFootnoteRefs" aria-label="Footnote citations">
 									{citations.map((item, citationIndex) => (
-										<button
+										<UnstyledButton
 											key={item.path}
-											type="button"
 											className="aiFootnoteRef"
 											title={item.snippet || item.path}
 											onClick={() =>
@@ -268,7 +268,7 @@ export function AIChatThread({
 											}
 										>
 											[{citationIndex + 1}]
-										</button>
+										</UnstyledButton>
 									))}
 								</div>
 							) : null}
@@ -278,8 +278,7 @@ export function AIChatThread({
 							index === messages.length - 1 &&
 							citations.length > 0 ? (
 								<div className="aiCitations" aria-label="Citations">
-									<button
-										type="button"
+									<UnstyledButton
 										className="aiCitationsToggle"
 										onClick={() => setCitationsOpen((prev) => !prev)}
 										aria-expanded={citationsOpen}
@@ -294,13 +293,12 @@ export function AIChatThread({
 										>
 											<ChevronDown size={12} />
 										</span>
-									</button>
+									</UnstyledButton>
 									{citationsOpen ? (
 										<div className="aiCitationsList">
 											{citations.map((item, citationIndex) => (
-												<button
+												<UnstyledButton
 													key={item.path}
-													type="button"
 													className="aiCitationLink"
 													title={item.snippet || item.path}
 													onClick={() =>
@@ -311,7 +309,7 @@ export function AIChatThread({
 													}
 												>
 													[{citationIndex + 1}] {item.path}
-												</button>
+												</UnstyledButton>
 											))}
 										</div>
 									) : null}

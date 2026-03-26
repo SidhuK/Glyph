@@ -26,6 +26,7 @@ import {
 	type SettingsTab,
 	isSettingsTab,
 } from "./components/settings/settingsConfig";
+import { UnstyledButton } from "./components/ui/UnstyledButton";
 import { Button } from "./components/ui/shadcn/button";
 import { useLicenseStatus } from "./lib/license";
 import { useTauriEvent } from "./lib/tauriEvents";
@@ -138,9 +139,8 @@ export default function SettingsApp() {
 								<p className="settingsNavMeta">Preferences</p>
 							</header>
 							{SETTINGS_TABS.map((tab) => (
-								<button
+								<UnstyledButton
 									key={tab.id}
-									type="button"
 									data-tab={tab.id}
 									className={`settingsTabButton ${activeTab === tab.id ? "active" : ""}`}
 									onClick={() => switchTab(tab.id)}
@@ -151,7 +151,7 @@ export default function SettingsApp() {
 										{tab.renderIcon()}
 									</span>
 									<span className="settingsTabLabel">{tab.label}</span>
-								</button>
+								</UnstyledButton>
 							))}
 							{licenseStatus?.mode === "community_build" ? (
 								<div className="settingsFeedbackCard settingsFeedbackCardCommunity">

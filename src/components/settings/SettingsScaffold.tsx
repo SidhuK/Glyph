@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
 import { Toggle } from "../base/toggle/toggle";
+import { SegmentedControl } from "../ui/SegmentedControl";
 
 interface SettingsSectionProps {
 	title: string;
@@ -106,26 +107,16 @@ export function SettingsSegmented<T extends string>({
 	disabled,
 }: SettingsSegmentedProps<T>) {
 	return (
-		<fieldset className="settingsSegmented">
-			<legend className="sr-only">{ariaLabel}</legend>
-			{options.map((option) => (
-				<button
-					key={option.value}
-					type="button"
-					className={value === option.value ? "active" : ""}
-					aria-pressed={value === option.value}
-					disabled={disabled}
-					onClick={() => onChange(option.value)}
-				>
-					{option.icon ? (
-						<span className="settingsSegmentedIcon" aria-hidden="true">
-							{option.icon}
-						</span>
-					) : null}
-					{option.label}
-				</button>
-			))}
-		</fieldset>
+		<SegmentedControl
+			value={value}
+			options={options}
+			onChange={onChange}
+			ariaLabel={ariaLabel}
+			disabled={disabled}
+			className="settingsSegmented"
+			buttonClassName="settingsSegmentedButton"
+			iconClassName="settingsSegmentedIcon"
+		/>
 	);
 }
 

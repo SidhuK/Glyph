@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
-import type { FocusEventHandler, ReactNode } from "react";
+import { type FocusEventHandler, type ReactNode, useId } from "react";
+import { Switch } from "../../ui/shadcn/switch";
 import "./toggle.css";
 
 interface ToggleProps {
@@ -15,7 +16,7 @@ interface ToggleProps {
 	className?: string;
 	name?: string;
 	id?: string;
-	onFocus?: FocusEventHandler<HTMLInputElement>;
+	onFocus?: FocusEventHandler<HTMLButtonElement>;
 }
 
 function getAriaText(value: ReactNode): string | undefined {
@@ -38,13 +39,17 @@ export function Toggle({
 	ariaLabel,
 	disabled = false,
 	slim = false,
-	size = "md",
+	size: _size = "md",
 	className,
 	name,
 	id,
 	onFocus,
 }: ToggleProps) {
 	const hasCopy = Boolean(label || hint);
+	const generatedId = useId();
+	const switchId = id ?? generatedId;
+	const labelId = label ? `${switchId}-label` : undefined;
+	const hintId = hint ? `${switchId}-hint` : undefined;
 	const computedAriaLabel =
 		ariaLabel ?? getAriaText(label) ?? getAriaText(hint) ?? name ?? id;
 
@@ -55,39 +60,42 @@ export function Toggle({
 	}
 
 	return (
-		<label
+		<div
 			className={cn(
 				"uiToggle",
-				size === "md" && "uiToggle--md",
 				hasCopy && "uiToggle--withCopy",
 				slim && hasCopy && "uiToggle--slim",
 				className,
 			)}
 			aria-disabled={disabled || undefined}
 		>
-			<input
-				id={id}
-				name={name}
+			<Switch
+				id={switchId}
 				className="uiToggleInput"
-				type="checkbox"
-				role="switch"
+				name={name}
 				checked={checked}
 				defaultChecked={defaultChecked}
-				onChange={(event) => onCheckedChange?.(event.target.checked)}
+				onCheckedChange={onCheckedChange}
 				onFocus={onFocus}
-				aria-checked={checked ?? defaultChecked ?? false}
 				aria-label={computedAriaLabel}
+				aria-labelledby={computedAriaLabel ? undefined : labelId}
+				aria-describedby={hintId}
 				disabled={disabled}
 			/>
 			{hasCopy ? (
 				<span className="uiToggleCopy">
-					{label ? <span className="uiToggleLabel">{label}</span> : null}
-					{hint ? <span className="uiToggleHint">{hint}</span> : null}
+					{label ? (
+						<span id={labelId} className="uiToggleLabel">
+							{label}
+						</span>
+					) : null}
+					{hint ? (
+						<span id={hintId} className="uiToggleHint">
+							{hint}
+						</span>
+					) : null}
 				</span>
 			) : null}
-			<span className="uiToggleControl" aria-hidden="true">
-				<span className="uiToggleThumb" />
-			</span>
-		</label>
+		</div>
 	);
 }

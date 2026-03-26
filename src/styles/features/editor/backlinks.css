@@ -54,9 +54,14 @@
 	align-items: center;
 	justify-content: space-between;
 	gap: var(--space-2);
-	padding: 1px var(--space-2);
-	min-height: 26px;
+	padding: 0 var(--space-2);
+	min-height: 22px;
 	border-radius: var(--radius-md);
+	font-size: var(--font-size-sm);
+	font-weight: var(--font-medium);
+	line-height: 1.1;
+	color: var(--text-primary);
+	text-align: left;
 }
 
 .tagsButton[data-explicit="false"] {
@@ -80,11 +85,13 @@
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+	line-height: 1.1;
 }
 
 .tagsCount {
 	color: var(--text-tertiary);
 	font-size: var(--font-size-xs);
+	line-height: 1;
 	flex-shrink: 0;
 	white-space: nowrap;
 }

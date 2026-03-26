@@ -1,6 +1,5 @@
 import { ArrowLeft, ArrowRight } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { m } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSpace, useUILayoutContext } from "../../contexts";
 import { useDailyNote } from "../../hooks/useDailyNote";
@@ -41,7 +40,8 @@ import {
 	StickyNote,
 } from "../Icons";
 import { TaskRow } from "../tasks/TaskRow";
-import { springPresets } from "../ui/animations";
+import { SegmentedControl } from "../ui/SegmentedControl";
+import { UnstyledButton } from "../ui/UnstyledButton";
 import { Button } from "../ui/shadcn/button";
 import { Input } from "../ui/shadcn/input";
 
@@ -501,53 +501,17 @@ export function CalendarPane({
 					</div>
 				</div>
 				<div className="calendarToolbarActions">
-					<div
+					<SegmentedControl
+						value={viewMode}
+						onChange={changeViewMode}
+						ariaLabel="Calendar view"
 						className="databaseModeSwitch calendarModeSwitch"
-						aria-label="Calendar view"
-					>
-						<m.button
-							type="button"
-							layout
-							className="databaseModePill"
-							data-active={viewMode === "month"}
-							onClick={() => changeViewMode("month")}
-							title="Month view"
-							aria-label="Month view"
-							aria-pressed={viewMode === "month"}
-							whileTap={{ scale: 0.94 }}
-							transition={springPresets.gentle}
-						>
-							{viewMode === "month" ? (
-								<m.span
-									className="databaseModePillBg"
-									layoutId="calendarModeActive"
-									transition={springPresets.gentle}
-								/>
-							) : null}
-							<span>Month</span>
-						</m.button>
-						<m.button
-							type="button"
-							layout
-							className="databaseModePill"
-							data-active={viewMode === "week"}
-							onClick={() => changeViewMode("week")}
-							title="Week view"
-							aria-label="Week view"
-							aria-pressed={viewMode === "week"}
-							whileTap={{ scale: 0.94 }}
-							transition={springPresets.gentle}
-						>
-							{viewMode === "week" ? (
-								<m.span
-									className="databaseModePillBg"
-									layoutId="calendarModeActive"
-									transition={springPresets.gentle}
-								/>
-							) : null}
-							<span>Week</span>
-						</m.button>
-					</div>
+						buttonClassName="databaseModePill"
+						options={[
+							{ value: "month", label: "Month", title: "Month view" },
+							{ value: "week", label: "Week", title: "Week view" },
+						]}
+					/>
 					<div className="calendarToolbarNav">
 						<Button
 							type="button"
@@ -609,14 +573,13 @@ export function CalendarPane({
 									</span>
 								) : null}
 								{todayHasDailyNote ? (
-									<button
-										type="button"
+									<UnstyledButton
 										className="calendarWelcomeItem calendarWelcomeLink"
 										onClick={openTodayDailyNote}
 									>
 										<FileText size={14} />
 										<strong>daily note ready</strong>
-									</button>
+									</UnstyledButton>
 								) : null}
 								{!todayTaskCount &&
 								!todayNoteCount &&
@@ -641,9 +604,8 @@ export function CalendarPane({
 								const isToday = date === today;
 								const isSelected = date === selectedDate;
 								return (
-									<button
+									<UnstyledButton
 										key={date}
-										type="button"
 										aria-label={formatCalendarCellAriaLabel(
 											date,
 											isOutsideMonth,
@@ -661,7 +623,7 @@ export function CalendarPane({
 										<span className="calendarMonthCellDayNumber">
 											{formatMonthDay(date)}
 										</span>
-									</button>
+									</UnstyledButton>
 								);
 							})}
 						</div>
@@ -680,8 +642,7 @@ export function CalendarPane({
 											isDateToday && "is-today",
 										)}
 									>
-										<button
-											type="button"
+										<UnstyledButton
 											className="calendarWeekCardButton"
 											onClick={() => setSelectedDate(date)}
 										>
@@ -717,7 +678,7 @@ export function CalendarPane({
 													</span>
 												) : null}
 											</div>
-										</button>
+										</UnstyledButton>
 									</div>
 								);
 							})}
@@ -821,9 +782,8 @@ export function CalendarPane({
 						{data?.detail.note_activity.length ? (
 							<div className="calendarNotesList">
 								{data.detail.note_activity.map((item) => (
-									<button
+									<UnstyledButton
 										key={item.note_id}
-										type="button"
 										className="calendarNoteRow"
 										onClick={() => void onOpenFile(item.note_path)}
 									>
@@ -844,7 +804,7 @@ export function CalendarPane({
 												</span>
 											) : null}
 										</div>
-									</button>
+									</UnstyledButton>
 								))}
 							</div>
 						) : (

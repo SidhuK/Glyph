@@ -1,3 +1,5 @@
+import { Textarea } from "../../ui/shadcn/textarea";
+
 interface RawFrontmatterEditorProps {
 	value: string;
 	readOnly: boolean;
@@ -15,7 +17,7 @@ export function RawFrontmatterEditor({
 	onChange,
 }: RawFrontmatterEditorProps) {
 	return (
-		<textarea
+		<Textarea
 			className="frontmatterEditor"
 			value={value}
 			rows={Math.max(6, value.split("\n").length + 1)}
