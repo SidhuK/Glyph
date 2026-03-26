@@ -1,5 +1,5 @@
-import type { AiProviderKind } from "../../lib/tauri";
 import { useIsDarkTheme } from "../../hooks/useIsDarkTheme";
+import type { AiProviderKind } from "../../lib/tauri";
 import { getProviderLogoSrc, providerLogoMeta } from "./providerLogos";
 
 export const providerLogoMap: Record<

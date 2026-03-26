@@ -8,8 +8,8 @@ import {
 import {
 	PATH_REMOVED_EVENT,
 	PATH_RENAMED_EVENT,
-	type PathRenamedDetail,
 	type PathRemovedDetail,
+	type PathRenamedDetail,
 } from "../../lib/appEvents";
 import { CALENDAR_TAB_ID } from "../../lib/calendar";
 import { APP_TAGLINE } from "../../lib/copy";

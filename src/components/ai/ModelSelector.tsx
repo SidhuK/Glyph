@@ -304,19 +304,19 @@ export function ModelSelector({
 													</span>
 												</button>
 												{detailAvailable && (
-												<button
-													type="button"
-													onMouseDown={handleInfoMouseDown}
-													onClick={handleInfoClick}
-													className={`${styles.infoInline} ${infoActive ? styles.infoInlineActive : ""}`}
-													title="Show model details"
-													aria-label="Show model details"
-												>
-													<Eye size={14} strokeWidth={1.8} />
-												</button>
-											)}
-										</div>
-									);
+													<button
+														type="button"
+														onMouseDown={handleInfoMouseDown}
+														onClick={handleInfoClick}
+														className={`${styles.infoInline} ${infoActive ? styles.infoInlineActive : ""}`}
+														title="Show model details"
+														aria-label="Show model details"
+													>
+														<Eye size={14} strokeWidth={1.8} />
+													</button>
+												)}
+											</div>
+										);
 									})}
 							</div>
 							{detailModel && (

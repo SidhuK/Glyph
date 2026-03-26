@@ -1,8 +1,8 @@
 import { useCallback, useEffect, useRef } from "react";
 import {
 	dispatchFileTreeStartRename,
-	dispatchPathRenamed,
 	dispatchPathRemoved,
+	dispatchPathRenamed,
 } from "../lib/appEvents";
 import { extractErrorMessage } from "../lib/errorUtils";
 import { isMissingFileError } from "../lib/fsErrors";
@@ -348,6 +348,8 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			refreshAfterCreate,
 			updateChildrenByDir,
 			renameItemAppearance,
+			setActiveFilePath,
+			setActivePreviewPath,
 			setError,
 			updateExpandedDirs,
 			updateRootEntries,

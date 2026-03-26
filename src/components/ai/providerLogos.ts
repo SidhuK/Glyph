@@ -1,9 +1,9 @@
+import openaiLightThemeLogoUrl from "../../assets/provider-logos/OpenAI_light.svg?url";
 import anthropicLogoUrl from "../../assets/provider-logos/claude-ai.svg?url";
 import geminiLogoUrl from "../../assets/provider-logos/google-gemini.svg?url";
 import ollamaLogoUrl from "../../assets/provider-logos/ollama.svg?url";
 import openrouterLogoUrl from "../../assets/provider-logos/open-router.svg?url";
 import openaiDarkThemeLogoUrl from "../../assets/provider-logos/openai-light.svg?url";
-import openaiLightThemeLogoUrl from "../../assets/provider-logos/OpenAI_light.svg?url";
 import type { AiProviderKind } from "../../lib/tauri";
 
 export const providerLogoMeta: Record<
@@ -46,5 +46,5 @@ export function getProviderLogoSrc(
 	isDark: boolean,
 ): string {
 	const config = providerLogoMeta[provider];
-	return isDark ? config.darkSrc ?? config.src : config.src;
+	return isDark ? (config.darkSrc ?? config.src) : config.src;
 }

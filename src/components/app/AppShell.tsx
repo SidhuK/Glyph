@@ -390,7 +390,9 @@ export function AppShell() {
 				return;
 			}
 
-			const sourceDir = activeMarkdownTabPath ? parentDir(activeMarkdownTabPath) : "";
+			const sourceDir = activeMarkdownTabPath
+				? parentDir(activeMarkdownTabPath)
+				: "";
 			const hasExplicitPath = normalizedTarget.includes("/");
 			const nextRelPathBase =
 				hasExplicitPath || !sourceDir
@@ -1177,6 +1179,7 @@ export function AppShell() {
 		onOpenSpace,
 		openMarkdownTabs.length,
 		createDatabaseAndOpen,
+		createNoteInSelectedFolder,
 		requestOpenDailyNote,
 		saveCurrentEditor,
 		handleCreateFromTemplateFromMenu,
