@@ -120,7 +120,7 @@ function ProgressRing({
 				{complete && (
 					<m.div
 						className="starterProgressRingCheck"
-						initial={{ scale: 0, opacity: 0 }}
+						initial={{ scale: 0.95, opacity: 0 }}
 						animate={{ scale: 1, opacity: 1 }}
 						transition={reduced ? { duration: 0 } : springPresets.bouncy}
 					>

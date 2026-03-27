@@ -15,6 +15,18 @@ interface DatabaseFolderPickerProps {
 	placeholder?: string;
 }
 
+interface FolderBrowserState {
+	entries: FsEntry[];
+	loading: boolean;
+	error: string;
+}
+
+const EMPTY_BROWSER_STATE: FolderBrowserState = {
+	entries: [],
+	loading: false,
+	error: "",
+};
+
 function folderParts(path: string): string[] {
 	return path.split("/").filter(Boolean);
 }
@@ -38,10 +50,10 @@ export function DatabaseFolderPicker({
 }: DatabaseFolderPickerProps) {
 	const [open, setOpen] = useState(false);
 	const [query, setQuery] = useState("");
-	const [browserPath, setBrowserPath] = useState(value);
-	const [entries, setEntries] = useState<FsEntry[]>([]);
-	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState("");
+	const [browserPath, setBrowserPath] = useState("");
+	const [browserState, setBrowserState] =
+		useState<FolderBrowserState>(EMPTY_BROWSER_STATE);
+	const { entries, loading, error } = browserState;
 
 	useEffect(() => {
 		if (!open) return;
@@ -53,24 +65,32 @@ export function DatabaseFolderPicker({
 		if (!open) return;
 		let cancelled = false;
 		const loadEntries = async () => {
-			setLoading(true);
-			setError("");
+			setBrowserState((current) =>
+				current.loading && !current.error
+					? current
+					: { ...current, loading: true, error: "" },
+			);
 			try {
 				const nextEntries = await invoke("space_list_dir", {
 					dir: browserPath || null,
 				});
 				if (cancelled) return;
-				setEntries(nextEntries.filter((entry) => entry.kind === "dir"));
+				setBrowserState({
+					entries: nextEntries.filter((entry) => entry.kind === "dir"),
+					loading: false,
+					error: "",
+				});
 			} catch (error) {
 				if (cancelled) return;
 				if (browserPath) {
 					setBrowserPath("");
 					return;
 				}
-				setEntries([]);
-				setError(extractErrorMessage(error));
-			} finally {
-				if (!cancelled) setLoading(false);
+				setBrowserState({
+					entries: [],
+					loading: false,
+					error: extractErrorMessage(error),
+				});
 			}
 		};
 		void loadEntries();

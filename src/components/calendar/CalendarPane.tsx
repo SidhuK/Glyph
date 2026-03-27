@@ -887,5 +887,3 @@ export function CalendarPane({
 		</div>
 	);
 }
-
-export default CalendarPane;

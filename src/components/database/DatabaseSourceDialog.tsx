@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import type { DatabaseConfig, DatabaseFilter } from "../../lib/database/types";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { Button } from "../ui/shadcn/button";
@@ -112,6 +112,24 @@ export function DatabaseSourceDropdown({
 	onChangeConfig,
 }: DatabaseSourceDropdownProps) {
 	const [filterError, setFilterError] = useState("");
+	const filterKeyCounterRef = useRef(0);
+	const [filterUiKeys, setFilterUiKeys] = useState(() =>
+		config.filters.map(() => `filter-${filterKeyCounterRef.current++}`),
+	);
+
+	useEffect(() => {
+		setFilterUiKeys((current) => {
+			if (current.length === config.filters.length) return current;
+			if (current.length > config.filters.length) {
+				return current.slice(0, config.filters.length);
+			}
+			const next = [...current];
+			while (next.length < config.filters.length) {
+				next.push(`filter-${filterKeyCounterRef.current++}`);
+			}
+			return next;
+		});
+	}, [config.filters.length]);
 
 	const handleSave = async (patch: Partial<DatabaseConfig["source"]>) => {
 		await onChangeConfig({
@@ -135,13 +153,19 @@ export function DatabaseSourceDropdown({
 
 	const updateFilters = async (
 		updater: (filters: DatabaseFilter[]) => DatabaseFilter[],
+		keyUpdater?: (keys: string[]) => string[],
 	) => {
+		const nextFilters = updater(config.filters);
+		const nextKeys = keyUpdater ? keyUpdater(filterUiKeys) : filterUiKeys;
 		try {
 			setFilterError("");
 			await onChangeConfig({
 				...config,
-				filters: updater(config.filters),
+				filters: nextFilters,
 			});
+			if (nextKeys !== filterUiKeys) {
+				setFilterUiKeys(nextKeys);
+			}
 		} catch (cause) {
 			const message = extractErrorMessage(cause);
 			console.error("Failed to update database filters", cause);
@@ -161,6 +185,7 @@ export function DatabaseSourceDropdown({
 			<DropdownMenuSeparator />
 
 			<div
+				role="presentation"
 				className="flex flex-col gap-2 px-2 py-1.5"
 				onKeyDown={(e) => e.stopPropagation()}
 			>
@@ -253,10 +278,10 @@ export function DatabaseSourceDropdown({
 					variant="ghost"
 					size="xs"
 					onClick={() =>
-						void updateFilters((filters) => [
-							...filters,
-							emptyFilter(defaultColumn),
-						])
+						void updateFilters(
+							(filters) => [...filters, emptyFilter(defaultColumn)],
+							(keys) => [...keys, `filter-${filterKeyCounterRef.current++}`],
+						)
 					}
 				>
 					Add
@@ -267,6 +292,7 @@ export function DatabaseSourceDropdown({
 			) : null}
 			{config.filters.length > 0 ? (
 				<div
+					role="presentation"
 					className="flex flex-col gap-1.5 px-2 pb-1.5"
 					onKeyDown={(e) => e.stopPropagation()}
 				>
@@ -284,7 +310,9 @@ export function DatabaseSourceDropdown({
 
 						return (
 							<div
-								key={`${filter.column_id}:${index}`}
+								key={
+									filterUiKeys[index] ?? `filter-fallback-${filter.column_id}`
+								}
 								className="flex flex-col gap-1 rounded-md border border-border p-1.5"
 							>
 								<div className="flex items-center gap-1">
@@ -336,8 +364,9 @@ export function DatabaseSourceDropdown({
 										type="button"
 										className="inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-sm text-muted-foreground hover:text-destructive"
 										onClick={() =>
-											void updateFilters((filters) =>
-												filters.filter((_, i) => i !== index),
+											void updateFilters(
+												(filters) => filters.filter((_, i) => i !== index),
+												(keys) => keys.filter((_, i) => i !== index),
 											)
 										}
 										title="Remove filter"
@@ -399,6 +428,7 @@ export function DatabaseSourceDropdown({
 			<DropdownMenuSeparator />
 
 			<div
+				role="presentation"
 				className="flex flex-col gap-2 px-2 py-1.5"
 				onKeyDown={(e) => e.stopPropagation()}
 			>

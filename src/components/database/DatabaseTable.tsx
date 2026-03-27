@@ -44,6 +44,8 @@ interface DatabaseTableProps {
 	) => Promise<void>;
 }
 
+const EMPTY_LANE_COLORS: Record<string, string> = {};
+
 function SortIndicator({
 	activeSort,
 	columnId,
@@ -68,7 +70,7 @@ export function DatabaseTable({
 	onSelectRow,
 	onOpenRow,
 	onToggleSort,
-	laneColors = {},
+	laneColors = EMPTY_LANE_COLORS,
 	onSaveCell,
 }: DatabaseTableProps) {
 	const safeLaneColors = useMemo<Record<string, EditorTextColor>>(() => {

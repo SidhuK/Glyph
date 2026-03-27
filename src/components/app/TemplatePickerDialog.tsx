@@ -65,7 +65,6 @@ export function TemplatePickerDialog({
 						value={query}
 						onChange={(event) => setQuery(event.target.value)}
 						placeholder="Search templates"
-						autoFocus
 					/>
 				</div>
 				<ScrollArea className="templatePickerListWrap">

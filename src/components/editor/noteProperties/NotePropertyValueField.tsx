@@ -81,6 +81,7 @@ export function NotePropertyValueField({
 		return (
 			<>
 				<div
+					role="presentation"
 					className="notePropertyTagField"
 					onMouseDown={(event) => {
 						if (event.target !== event.currentTarget) return;
@@ -88,9 +89,9 @@ export function NotePropertyValueField({
 						tagInputRef?.focus();
 					}}
 				>
-					{property.value_list.map((value, valueIndex) => (
+					{property.value_list.map((value) => (
 						<button
-							key={`${property.key || rowId}-${valueIndex}-${value}`}
+							key={`${property.key || rowId}-${value}`}
 							type="button"
 							className="notePropertyToken"
 							onClick={() => onRemoveTag(index, value)}

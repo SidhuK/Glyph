@@ -5,7 +5,15 @@ import { CALENDAR_TAB_ID } from "../../lib/calendar";
 import { DATABASES_TAB_ID } from "../../lib/databases";
 import { isInAppPreviewable } from "../../utils/filePreview";
 
-export function useTabManager(spacePath: string | null) {
+interface UseTabManagerOptions {
+	onActivateTab?: (path: string) => void;
+}
+
+export function useTabManager(
+	spacePath: string | null,
+	options: UseTabManagerOptions = {},
+) {
+	const { onActivateTab } = options;
 	const { activeFilePath, setActiveFilePath } = useFileTreeContext();
 	const { recentFiles, addRecentFile } = useRecentFiles(spacePath, 7);
 	const {
@@ -36,6 +44,11 @@ export function useTabManager(spacePath: string | null) {
 		setOpenTabs((prev) => (prev.includes(opened) ? prev : [...prev, opened]));
 		setActiveTabPath(opened);
 	}, [activeFilePath, activePreviewPath, canOpenInMainPane]);
+
+	useEffect(() => {
+		if (!activeTabPath) return;
+		onActivateTab?.(activeTabPath);
+	}, [activeTabPath, onActivateTab]);
 
 	useEffect(() => {
 		if (!activeTabPath) {

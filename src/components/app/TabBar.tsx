@@ -122,8 +122,10 @@ export function TabBar({
 			{breadcrumbSegments.length > 0 && (
 				<div className={`mainTabsBreadcrumb ${hovered ? "is-visible" : ""}`}>
 					{breadcrumbSegments.map((segment, i, arr) => (
-						// biome-ignore lint/suspicious/noArrayIndexKey: breadcrumb segments are derived from a static path split and never reorder
-						<span key={`${segment}-${i}`} className="mainTabsBreadcrumbItem">
+						<span
+							key={breadcrumbSegments.slice(0, i + 1).join("/")}
+							className="mainTabsBreadcrumbItem"
+						>
 							{i > 0 && (
 								<span className="mainTabsBreadcrumbSep" aria-hidden>
 									/
