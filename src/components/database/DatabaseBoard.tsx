@@ -389,7 +389,7 @@ export function DatabaseBoard({
 						property like status, stage, or done.
 					</div>
 					<div className="databaseBoardEmptyActions">
-						{onCreateDefaultGroupField ? (
+						{!readOnly && onCreateDefaultGroupField ? (
 							<Button
 								type="button"
 								size="sm"

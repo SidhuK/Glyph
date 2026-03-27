@@ -111,23 +111,29 @@ export function useAiProfiles() {
 
 	useEffect(() => {
 		let cancelled = false;
-		let cleanup: (() => void) | null = null;
+		let unlistenPromise: Promise<() => void> | null = null;
+		let focusReloadTimeout: number | null = null;
 		try {
 			const win = getCurrentWindow();
-			void win
-				.onFocusChanged(({ payload: focused }) => {
-					if (!focused || cancelled) return;
+			unlistenPromise = win.onFocusChanged(({ payload: focused }) => {
+				if (!focused || cancelled) return;
+				if (focusReloadTimeout != null) {
+					window.clearTimeout(focusReloadTimeout);
+				}
+				focusReloadTimeout = window.setTimeout(() => {
+					if (cancelled) return;
 					void reloadProfiles();
-				})
-				.then((unlisten) => {
-					cleanup = unlisten;
-				});
+				}, 400);
+			});
 		} catch {
 			// not running inside tauri window context
 		}
 		return () => {
 			cancelled = true;
-			cleanup?.();
+			if (focusReloadTimeout != null) {
+				window.clearTimeout(focusReloadTimeout);
+			}
+			void unlistenPromise?.then((unlisten) => unlisten());
 		};
 	}, [reloadProfiles]);
 

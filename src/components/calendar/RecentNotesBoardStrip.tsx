@@ -21,10 +21,9 @@ function noteTitle(note: CalendarNoteActivityItem): string {
 	return title || fileTitleFromPath(note.note_path);
 }
 
-function notePreview(note: CalendarNoteActivityItem): string {
+function notePreview(note: CalendarNoteActivityItem): string | null {
 	const preview = (note.preview ?? "").replace(/\s+/g, " ").trim();
-	if (preview) return preview;
-	return "No preview available yet.";
+	return preview || null;
 }
 
 function noteFolderLabel(notePath: string): string {
