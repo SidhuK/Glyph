@@ -1,14 +1,17 @@
 /* ── Calendar / Dashboard pane ── */
 
+.calendarPaneOuter {
+	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
+}
+
 .calendarPane {
 	container-type: inline-size;
 	display: flex;
 	flex-direction: column;
-	flex: 1;
-	height: 100%;
-	min-height: 0;
+	min-height: 100%;
 	padding: clamp(20px, 2.8vw, 36px);
-	overflow: auto;
 	background: var(--bg-primary);
 	gap: clamp(14px, 1.8vw, 20px);
 }
@@ -135,10 +138,8 @@
 
 .calendarLayout {
 	display: grid;
-	flex: 1;
 	grid-template-columns: auto minmax(340px, 1fr);
 	gap: 0 clamp(24px, 3vw, 40px);
-	min-height: 0;
 	align-items: start;
 }
 
@@ -660,74 +661,25 @@
 	text-align: center;
 }
 
-/* ── Notes area ── */
+/* ── Recent notes mini-db ── */
 
-.calendarNotesArea {
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
+.calendarMiniDb {
+	border: 1px solid color-mix(in srgb, var(--border-default) 35%, transparent);
+	border-radius: 12px;
+	overflow: hidden;
 }
 
-.calendarNotesList {
-	display: flex;
-	flex-direction: column;
-	gap: 2px;
+.calendarMiniDbHeader {
+	padding: 14px 18px 12px;
+	border-bottom: none;
 }
 
-.calendarNoteRow {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 10px;
-	padding: 8px 10px;
-	border-radius: 8px;
-	border: none;
-	background: transparent;
-	text-align: left;
+.calendarMiniDb .databaseTableShell {
+	padding: 0;
+}
+
+.calendarMiniDb .databaseRow {
 	cursor: pointer;
-	transition: background 100ms ease;
-}
-
-.calendarNoteRow:hover {
-	background: var(--bg-hover);
-}
-
-.calendarNoteRowMain {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	min-width: 0;
-	flex: 1;
-	overflow: hidden;
-}
-
-.calendarNoteTitle {
-	font-size: 0.82rem;
-	font-weight: 600;
-	color: var(--text-primary);
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	flex: 0 1 auto;
-}
-
-.calendarNotePath {
-	font-size: 0.7rem;
-	color: var(--text-tertiary, var(--text-secondary));
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-	flex: 1 1 auto;
-	min-width: 0;
-}
-
-.calendarNoteTime {
-	font-size: 0.68rem;
-	font-weight: 500;
-	font-variant-numeric: tabular-nums;
-	color: var(--text-tertiary, var(--text-secondary));
-	white-space: nowrap;
-	flex: 0 0 auto;
 }
 
 /* ── Empty / error / loading ── */

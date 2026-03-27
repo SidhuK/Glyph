@@ -26,6 +26,7 @@ import {
 } from "../../lib/dailyNotes";
 import { isMissingFileError } from "../../lib/fsErrors";
 import { todayIsoDateLocal } from "../../lib/tasks";
+import type { DatabaseColumn, DatabaseRow } from "../../lib/database/types";
 import {
 	type CalendarRangeResponse,
 	type TaskItem,
@@ -41,6 +42,7 @@ import {
 	Settings,
 	StickyNote,
 } from "../Icons";
+import { DatabaseTable } from "../database/DatabaseTable";
 import { TaskRow } from "../tasks/TaskRow";
 import { springPresets } from "../ui/animations";
 import { Button } from "../ui/shadcn/button";
@@ -71,17 +73,6 @@ function writeStorage(key: string, value: string) {
 		window.localStorage.setItem(key, value);
 	} catch {
 		// Best-effort persistence.
-	}
-}
-
-function formatActivityTime(iso: string): string {
-	try {
-		return new Date(iso).toLocaleTimeString([], {
-			hour: "numeric",
-			minute: "2-digit",
-		});
-	} catch {
-		return "";
 	}
 }
 
@@ -506,7 +497,52 @@ export function CalendarPane({
 		ongoingTasks.length > 0;
 	const noteActivity = data?.detail.note_activity ?? [];
 
+	const recentNotesColumns = useMemo<DatabaseColumn[]>(
+		() => [
+			{
+				id: "title",
+				type: "title",
+				label: "Title",
+				visible: true,
+				width: 280,
+			},
+			{
+				id: "folder",
+				type: "folder",
+				label: "Location",
+				visible: true,
+				width: 200,
+			},
+			{
+				id: "updated",
+				type: "updated",
+				label: "Modified",
+				visible: true,
+				width: 180,
+			},
+		],
+		[],
+	);
+
+	const recentNotesRows = useMemo<DatabaseRow[]>(
+		() =>
+			noteActivity.map((item) => ({
+				note_path: item.note_path,
+				title: item.title,
+				folder: getNoteBreadcrumb(item.note_path) || undefined,
+				created: item.created,
+				updated: item.updated,
+				tags: [],
+				properties: {},
+			})),
+		[noteActivity],
+	);
+
+	const noopSaveCell = useCallback(async () => {}, []);
+	const noopToggleSort = useCallback(() => {}, []);
+
 	return (
+		<div className="calendarPaneOuter">
 		<section className="calendarPane">
 			<div className="calendarToolbar">
 				<div className="calendarTitleBlock">
@@ -847,56 +883,35 @@ export function CalendarPane({
 						</div>
 					</div>
 
-					{/* Notes */}
-					<div className="calendarNotesArea">
-						<div className="calendarCardSection">
-							<div className="calendarCardSectionHeader">
-								<h4 className="calendarCardSectionTitle">Notes</h4>
-								{noteActivity.length > 0 ? (
-									<span className="calendarCardSectionCount">
-										{noteActivity.length}
-									</span>
-								) : null}
-							</div>
-							{noteActivity.length > 0 ? (
-								<div className="calendarNotesList">
-									{noteActivity.map((item) => (
-										<button
-											key={item.note_id}
-											type="button"
-											className="calendarNoteRow"
-											onClick={() => void onOpenFile(item.note_path)}
-										>
-											<div className="calendarNoteRowMain">
-												<span className="calendarNoteTitle">
-													{item.title}
-												</span>
-												{getNoteBreadcrumb(item.note_path) ? (
-													<span className="calendarNotePath">
-														{getNoteBreadcrumb(item.note_path)}
-													</span>
-												) : null}
-											</div>
-											{item.edited_on_day ? (
-												<span className="calendarNoteTime">
-													{formatActivityTime(item.updated)}
-												</span>
-											) : null}
-										</button>
-									))}
-								</div>
-							) : (
-								<div className="calendarEmptyText">
-									No note activity for this day.
-								</div>
-							)}
-						</div>
-					</div>
+
 				</div>
 			</div>
 
+			{/* ── Recent notes mini-db ── */}
+			{recentNotesRows.length > 0 ? (
+				<div className="calendarMiniDb">
+					<div className="calendarCardSectionHeader calendarMiniDbHeader">
+						<h4 className="calendarCardSectionTitle">Recent Notes</h4>
+						<span className="calendarCardSectionCount">
+							{recentNotesRows.length}
+						</span>
+					</div>
+					<DatabaseTable
+						rows={recentNotesRows}
+						columns={recentNotesColumns}
+						selectedRowPath={null}
+						activeSort={null}
+						onSelectRow={(path) => void onOpenFile(path)}
+						onOpenRow={(path) => void onOpenFile(path)}
+						onToggleSort={noopToggleSort}
+						onSaveCell={noopSaveCell}
+					/>
+				</div>
+			) : null}
+
 			{loading ? <div className="calendarLoading">Refreshing…</div> : null}
 		</section>
+		</div>
 	);
 }
 
