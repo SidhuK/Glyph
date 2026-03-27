@@ -40,6 +40,7 @@ interface DatabaseBoardProps {
 	columns: DatabaseColumn[];
 	groupColumnId?: string | null;
 	showColumnColor?: boolean;
+	readOnly?: boolean;
 	selectedRowPath: string | null;
 	onSelectRow: (notePath: string) => void;
 	onOpenRow: (notePath: string) => void;
@@ -162,6 +163,7 @@ export function DatabaseBoard({
 	columns,
 	groupColumnId: persistedGroupColumnId,
 	showColumnColor = true,
+	readOnly = false,
 	selectedRowPath,
 	onSelectRow,
 	onOpenRow,
@@ -272,6 +274,10 @@ export function DatabaseBoard({
 	}, [dropLaneId]);
 
 	useEffect(() => {
+		if (readOnly) {
+			clearDragState();
+			return;
+		}
 		const handlePointerMove = (event: PointerEvent) => {
 			const dragStart = dragStartRef.current;
 			if (!dragStart) return;
@@ -350,7 +356,7 @@ export function DatabaseBoard({
 			window.removeEventListener("pointerup", handlePointerUp);
 			window.removeEventListener("pointercancel", handlePointerUp);
 		};
-	}, [clearDragState, handleLaneDrop]);
+	}, [clearDragState, handleLaneDrop, readOnly]);
 
 	return (
 		<div className="databaseBoardShell">
@@ -428,7 +434,7 @@ export function DatabaseBoard({
 								}
 							>
 								<div className="databaseBoardLaneHeader">
-									{onLaneColorChange ? (
+									{!readOnly && onLaneColorChange ? (
 										<DropdownMenu>
 											<DropdownMenuTrigger asChild>
 												<button
@@ -507,12 +513,14 @@ export function DatabaseBoard({
 												.slice(0, 1);
 											const folderLabel =
 												row.folder?.trim() || parentDir(row.note_path) || "/";
-											const otherLanes = lanes.filter(
-												(l) =>
-													l.id !== lane.id &&
-													groupColumn != null &&
-													!boardRowHasLane(row, groupColumn, l.id),
-											);
+											const otherLanes = readOnly
+												? []
+												: lanes.filter(
+														(l) =>
+															l.id !== lane.id &&
+															groupColumn != null &&
+															!boardRowHasLane(row, groupColumn, l.id),
+													);
 
 											return (
 												<ContextMenu key={row.note_path}>
@@ -530,22 +538,26 @@ export function DatabaseBoard({
 																	? "true"
 																	: undefined
 															}
-															onPointerDown={(event) => {
-																if (event.button !== 0) return;
-																dragActiveRef.current = false;
-																const rect =
-																	event.currentTarget.getBoundingClientRect();
-																dragStartRef.current = {
-																	notePath: row.note_path,
-																	sourceLaneId: lane.id,
-																	startX: event.clientX,
-																	startY: event.clientY,
-																	offsetX: event.clientX - rect.left,
-																	offsetY: event.clientY - rect.top,
-																	width: rect.width,
-																	title,
-																};
-															}}
+															onPointerDown={
+																readOnly
+																	? undefined
+																	: (event) => {
+																			if (event.button !== 0) return;
+																			dragActiveRef.current = false;
+																			const rect =
+																				event.currentTarget.getBoundingClientRect();
+																			dragStartRef.current = {
+																				notePath: row.note_path,
+																				sourceLaneId: lane.id,
+																				startX: event.clientX,
+																				startY: event.clientY,
+																				offsetX: event.clientX - rect.left,
+																				offsetY: event.clientY - rect.top,
+																				width: rect.width,
+																				title,
+																			};
+																		}
+															}
 															onClick={() => {
 																if (suppressClickRef.current) return;
 																onSelectRow(row.note_path);

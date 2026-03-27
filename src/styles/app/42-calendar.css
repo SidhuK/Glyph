@@ -480,20 +480,43 @@
 	display: flex;
 	flex-direction: column;
 	gap: 8px;
+	max-height: clamp(190px, 28vh, 250px);
+	overflow-y: auto;
+	padding-right: 4px;
+	overscroll-behavior: contain;
+	scrollbar-gutter: stable;
+}
+
+.calendarTasksArea::-webkit-scrollbar {
+	width: 8px;
+}
+
+.calendarTasksArea::-webkit-scrollbar-thumb {
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--border-default) 58%, transparent);
+}
+
+.calendarTasksArea::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.calendarTasksCard {
+	gap: 10px;
+	padding: 14px;
 }
 
 .calendarTaskGroup {
 	display: flex;
 	flex-direction: column;
-	gap: 4px;
-	padding-top: 4px;
+	gap: 3px;
+	padding-top: 2px;
 }
 
 .calendarTaskGroup + .calendarTaskGroup {
 	border-top: 1px solid
 		color-mix(in srgb, var(--border-default) 16%, transparent);
-	padding-top: 10px;
-	margin-top: 4px;
+	padding-top: 8px;
+	margin-top: 2px;
 }
 
 .calendarSectionHeader {
@@ -568,8 +591,8 @@
 }
 
 .calendarTaskList .tasksRow {
-	gap: 8px;
-	padding: 6px 8px;
+	gap: 6px;
+	padding: 4px 6px;
 	border-radius: 6px;
 	transition: background 80ms ease;
 }
@@ -579,22 +602,25 @@
 }
 
 .calendarTaskList .tasksRowMain {
-	gap: 6px;
+	gap: 4px;
 }
 
 .calendarTaskList .tasksRowText {
-	font-size: 0.82rem;
-	line-height: 1.25;
+	font-size: 0.78rem;
+	line-height: 1.2;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .calendarTaskList .tasksCheckbox {
-	transform: scale(0.82);
+	transform: scale(0.78);
 	transform-origin: center;
 }
 
 .calendarTaskList .tasksScheduleBtn {
-	height: 18px;
-	padding-inline: 6px;
+	height: 16px;
+	padding-inline: 5px;
 	font-size: 0.58rem;
 	border-radius: 999px;
 }
@@ -607,8 +633,8 @@
 }
 
 .calendarTaskList .tasksQuickActionBtn {
-	height: 15px;
-	padding-inline: 4px;
+	height: 14px;
+	padding-inline: 3px;
 }
 
 .calendarTaskList .tasksRowContent {
@@ -670,16 +696,62 @@
 }
 
 .calendarMiniDbHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	flex-wrap: wrap;
 	padding: 14px 18px 12px;
 	border-bottom: none;
 }
 
-.calendarMiniDb .databaseTableShell {
-	padding: 0;
+.calendarMiniDbHeaderInfo {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	min-width: 0;
 }
 
-.calendarMiniDb .databaseRow {
-	cursor: pointer;
+.calendarRecentStrip {
+	padding: 0 18px 18px;
+}
+
+.calendarRecentStripScroller {
+	display: flex;
+	gap: 14px;
+	overflow-x: auto;
+	overflow-y: hidden;
+	padding-bottom: 2px;
+	scrollbar-gutter: stable;
+}
+
+.calendarRecentStripScroller::-webkit-scrollbar {
+	height: 8px;
+}
+
+.calendarRecentStripScroller::-webkit-scrollbar-thumb {
+	border-radius: 999px;
+	background: color-mix(in srgb, var(--border-default) 58%, transparent);
+}
+
+.calendarRecentStripScroller::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.calendarRecentStripCard {
+	width: min(280px, calc(100vw - 88px));
+	flex: 0 0 auto;
+	min-height: 168px;
+	padding: 12px;
+	border-radius: 14px;
+}
+
+.calendarRecentStripCard .databaseBoardCardPreview {
+	-webkit-line-clamp: 3;
+}
+
+.calendarRecentStripTags {
+	overflow: hidden;
 }
 
 /* ── Empty / error / loading ── */
@@ -777,5 +849,21 @@
 
 	.calendarStats {
 		grid-template-columns: 1fr;
+	}
+
+	.calendarMiniDbHeader {
+		align-items: flex-start;
+	}
+
+	.calendarRecentStrip {
+		padding-inline: 14px;
+	}
+
+	.calendarRecentStripScroller {
+		gap: 12px;
+	}
+
+	.calendarRecentStripCard {
+		width: min(240px, calc(100vw - 64px));
 	}
 }

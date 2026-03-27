@@ -422,6 +422,8 @@ export interface CalendarNoteActivityItem {
 	note_id: string;
 	note_path: string;
 	title: string;
+	preview?: string | null;
+	tags: string[];
 	created: string;
 	updated: string;
 	created_on_day: boolean;
