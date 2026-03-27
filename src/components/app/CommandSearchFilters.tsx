@@ -26,6 +26,7 @@ export function CommandSearchFilters({
 				className="commandSearchFilterBtn"
 				data-kind="title-only"
 				data-active={request.title_only ? "true" : "false"}
+				aria-pressed={request.title_only}
 				onClick={() =>
 					onChangeQuery(
 						withUpdated(request, { title_only: !request.title_only }),
@@ -33,13 +34,14 @@ export function CommandSearchFilters({
 				}
 			>
 				<HugeiconsIcon icon={Document} size={14} />
-				Title only
+				Title
 			</button>
 			<button
 				type="button"
 				className="commandSearchFilterBtn"
 				data-kind="tag-only"
 				data-active={request.tag_only ? "true" : "false"}
+				aria-pressed={request.tag_only}
 				onClick={() =>
 					onChangeQuery(withUpdated(request, { tag_only: !request.tag_only }))
 				}

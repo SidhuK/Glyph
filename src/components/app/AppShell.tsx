@@ -44,6 +44,7 @@ import {
 import { useCommandShortcuts } from "../../hooks/useCommandShortcuts";
 import { useDailyNote } from "../../hooks/useDailyNote";
 import { useFileTree } from "../../hooks/useFileTree";
+import { useGitSync } from "../../hooks/useGitSync";
 import { useMenuListeners } from "../../hooks/useMenuListeners";
 import { useResizablePanel } from "../../hooks/useResizablePanel";
 import { useWhatsNew } from "../../hooks/useWhatsNew";
@@ -185,6 +186,10 @@ export function AppShell() {
 	);
 	const autoUpdater = useUpdaterContext();
 	const whatsNew = useWhatsNew(space.info?.version ?? null);
+	const gitSync = useGitSync({
+		spacePath,
+		saveCurrentEditor,
+	});
 
 	const sidebarResize = useResizablePanel({
 		min: SIDEBAR_MIN_WIDTH,
@@ -376,22 +381,64 @@ export function AppShell() {
 	const fsRefreshQueueRef = useRef<Set<string>>(new Set());
 	const fsRefreshTimerRef = useRef<number | null>(null);
 
+	const openOrCreateWikiLinkTarget = useCallback(
+		async (rawTarget: string) => {
+			const targetWithoutAnchor = rawTarget.split("#", 1)[0] ?? rawTarget;
+			const normalizedTarget = normalizeRelPath(targetWithoutAnchor);
+			if (!normalizedTarget) return;
+
+			const resolved = await invoke("space_resolve_wikilink", {
+				target: normalizedTarget,
+			});
+			if (resolved) {
+				await fileTree.openFile(resolved);
+				return;
+			}
+
+			const sourceDir = activeMarkdownTabPath
+				? parentDir(activeMarkdownTabPath)
+				: "";
+			const hasExplicitPath = normalizedTarget.includes("/");
+			const nextRelPathBase =
+				hasExplicitPath || !sourceDir
+					? normalizedTarget
+					: `${sourceDir}/${normalizedTarget}`;
+			const nextRelPath = nextRelPathBase.toLowerCase().endsWith(".md")
+				? nextRelPathBase
+				: `${nextRelPathBase}.md`;
+			const fileName = nextRelPath.split("/").pop() ?? nextRelPath;
+			const fileTitle = fileName.replace(/\.md$/i, "") || "Untitled";
+			const createdPath = await fileTree.createMarkdownFileAtPath({
+				path: nextRelPath,
+				text: `# ${fileTitle}\n`,
+				openParentDir: parentDir(nextRelPath),
+			});
+			if (createdPath) {
+				await fileTree.openFile(createdPath);
+				return;
+			}
+
+			setError("");
+			const fallbackResolved = await invoke("space_resolve_wikilink", {
+				target: normalizedTarget,
+			});
+			if (fallbackResolved) {
+				await fileTree.openFile(fallbackResolved);
+				return;
+			}
+
+			setError(`Could not resolve wikilink: ${rawTarget}`);
+		},
+		[activeMarkdownTabPath, fileTree, setError],
+	);
+
 	useEffect(() => {
 		const onWikiLinkClick = (event: Event) => {
 			const detail = (event as CustomEvent<WikiLinkClickDetail>).detail;
 			if (!detail?.target) return;
-			const targetWithoutAnchor =
-				detail.target.split("#", 1)[0] ?? detail.target;
 			void (async () => {
 				try {
-					const resolved = await invoke("space_resolve_wikilink", {
-						target: targetWithoutAnchor,
-					});
-					if (!resolved) {
-						setError(`Could not resolve wikilink: ${detail.target}`);
-						return;
-					}
-					await fileTree.openFile(resolved);
+					await openOrCreateWikiLinkTarget(detail.target);
 				} catch (e) {
 					setError(
 						`Failed to open wikilink: ${e instanceof Error ? e.message : String(e)}`,
@@ -447,7 +494,7 @@ export function AppShell() {
 			);
 			window.removeEventListener(TAG_CLICK_EVENT, onTagClick);
 		};
-	}, [fileTree, setError, setPaletteOpen]);
+	}, [fileTree, openOrCreateWikiLinkTarget, setError, setPaletteOpen]);
 
 	const openTagSearchPalette = useCallback(
 		(tag: string) => {
@@ -494,10 +541,15 @@ export function AppShell() {
 		await attachContextFiles(tabs);
 	}, [attachContextFiles, openMarkdownTabs, setError]);
 
+	const createNoteInSelectedFolder = useCallback(async () => {
+		if (!spacePath) return null;
+		return fileTree.onNewFileInDir(activeDirPath ?? "");
+	}, [activeDirPath, fileTree, spacePath]);
+
 	const handleNewNoteFromMenu = useCallback(() => {
 		if (!spacePath) return;
-		void fileTree.onNewFile();
-	}, [fileTree, spacePath]);
+		void createNoteInSelectedFolder();
+	}, [createNoteInSelectedFolder, spacePath]);
 
 	const handleCreateFromTemplateFromMenu = useCallback(() => {
 		if (!spacePath) return;
@@ -637,10 +689,14 @@ export function AppShell() {
 		void updateOnboardingSettings({ usedCommandPalette: true });
 	}, [setPaletteOpen]);
 	const openSearchPalette = useCallback(() => {
+		if (!spacePath) {
+			openCommandPalette();
+			return;
+		}
 		setPaletteInitialTab("search");
 		setPaletteInitialQuery("");
 		setPaletteOpen(true);
-	}, [setPaletteOpen]);
+	}, [setPaletteOpen, spacePath, openCommandPalette]);
 	const openCalendarTab = useCallback(() => {
 		setOpenCalendarRequest((prev) => prev + 1);
 	}, []);
@@ -687,11 +743,11 @@ export function AppShell() {
 
 	const handleCreateNoteFromStarter = useCallback(async () => {
 		if (!spacePath) return;
-		const createdPath = await fileTree.onNewFile();
+		const createdPath = await createNoteInSelectedFolder();
 		if (createdPath) {
 			await fileTree.openFile(createdPath);
 		}
-	}, [fileTree, spacePath]);
+	}, [createNoteInSelectedFolder, fileTree, spacePath]);
 
 	const handleCopyOpenNoteAsMarkdown = useCallback(async () => {
 		if (!activeMarkdownTabPath) return;
@@ -812,6 +868,18 @@ export function AppShell() {
 		setError,
 	]);
 
+	const handleGitSyncFailure = useCallback(
+		(cause: unknown) => {
+			const message =
+				cause instanceof Error ? cause.message : "Git Sync failed.";
+			setError(message);
+			toast.error("Git Sync failed", {
+				description: message,
+			});
+		},
+		[setError],
+	);
+
 	useMenuListeners({
 		onNewNote: handleNewNoteFromMenu,
 		onCreateFromTemplate: handleCreateFromTemplateFromMenu,
@@ -826,6 +894,12 @@ export function AppShell() {
 		closeSpace,
 		onRevealSpace: handleRevealSpaceFromMenu,
 		onOpenSpaceSettings: handleOpenSpaceSettings,
+		onGitSyncNow: () => {
+			void gitSync.syncNow().then(() => {
+				toast.success("Git Sync completed.");
+			}, handleGitSyncFailure);
+		},
+		onOpenGitSettings: gitSync.openGitSettings,
 		onToggleAiPane: handleToggleAiPaneFromMenu,
 		onCloseAiPane: handleCloseAiPaneFromMenu,
 		onAttachCurrentNoteToAi: handleAttachCurrentNoteFromMenu,
@@ -941,6 +1015,29 @@ export function AppShell() {
 				action: onOpenSpace,
 			},
 			{
+				id: "open-git-sync-settings",
+				label: "Git Sync settings",
+				icon: <HugeiconsIcon icon={Settings05Icon} size={16} />,
+				category: "Workspace",
+				enabled: Boolean(spacePath),
+				action: gitSync.openGitSettings,
+			},
+			{
+				id: "git-sync-now",
+				label: "Sync now",
+				icon: <HugeiconsIcon icon={Link01Icon} size={16} />,
+				category: "Workspace",
+				enabled: Boolean(spacePath),
+				action: async () => {
+					try {
+						await gitSync.syncNow();
+						toast.success("Git Sync completed.");
+					} catch (error) {
+						handleGitSyncFailure(error);
+					}
+				},
+			},
+			{
 				id: "toggle-sidebar",
 				label: "Toggle sidebar",
 				icon: <HugeiconsIcon icon={SidebarLeftIcon} size={16} />,
@@ -956,7 +1053,7 @@ export function AppShell() {
 				category: "File Operations",
 				shortcut: { meta: true, key: "n" },
 				enabled: Boolean(spacePath),
-				action: () => void fileTree.onNewFile(),
+				action: () => void createNoteInSelectedFolder(),
 			},
 			{
 				id: "create-from-template",
@@ -1132,6 +1229,7 @@ export function AppShell() {
 		onOpenSpace,
 		openMarkdownTabs.length,
 		createDatabaseAndOpen,
+		createNoteInSelectedFolder,
 		requestOpenDailyNote,
 		saveCurrentEditor,
 		handleCreateFromTemplateFromMenu,
@@ -1146,6 +1244,7 @@ export function AppShell() {
 		openDatabasesTab,
 		openGettingStarted,
 		openWhatsNew,
+		gitSync,
 		moveTargetDirs,
 		movePickerSourcePath,
 		setError,
@@ -1196,17 +1295,27 @@ export function AppShell() {
 			<Sidebar
 				onSelectDir={setActiveDirPath}
 				onOpenFile={(p) => void fileTree.openFile(p)}
-				onNewNote={() => void fileTree.onNewFile()}
+				onNewNote={() => void createNoteInSelectedFolder()}
 				onNewFileInDir={(p) => void fileTree.onNewFileInDir(p)}
 				onCreateFromTemplateInDir={(p) => void openTemplatePicker(p)}
 				onNewDatabaseInDir={async () => createDatabaseAndOpen()}
 				onNewFolderInDir={(p) => fileTree.onNewFolderInDir(p)}
-				onRenameDir={(p, name) => fileTree.onRenameDir(p, name)}
+				onRenameDir={(p, name, kind) => fileTree.onRenameDir(p, name, kind)}
 				onDeletePath={(p, kind) => fileTree.onDeletePath(p, kind)}
 				onToggleDir={fileTree.toggleDir}
 				onSelectTag={(t) => openTagSearchPalette(t)}
 				sidebarCollapsed={sidebarCollapsed}
 				onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+				gitSyncStatus={gitSync.status}
+				onGitSyncNow={() => {
+					void gitSync
+						.syncNow()
+						.then(() => {
+							toast.success("Git Sync completed.");
+						})
+						.catch(handleGitSyncFailure);
+				}}
+				onOpenGitSettings={gitSync.openGitSettings}
 				onOpenCalendar={openCalendarTab}
 				onOpenDatabases={(databaseId) => openDatabasesTab(databaseId)}
 				updateReady={autoUpdater.updateReady}

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { DatabaseConfig, DatabaseFilter } from "../../lib/database/types";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { IconButton } from "../ui/IconButton";
@@ -16,6 +16,11 @@ import { DatabaseTagPicker } from "./DatabaseTagPicker";
 interface DatabaseSourceDropdownProps {
 	config: DatabaseConfig;
 	onChangeConfig: (config: DatabaseConfig) => Promise<void>;
+}
+
+interface FilterKeyEntry {
+	key: string;
+	signature: string;
 }
 
 function isTagFilterColumn(
@@ -109,11 +114,67 @@ function operatorOptions(
 	];
 }
 
+function filterSignature(filter: DatabaseFilter): string {
+	return JSON.stringify({
+		columnId: filter.column_id,
+		operator: filter.operator,
+		valueText: filter.value_text ?? null,
+		valueBool: filter.value_bool ?? null,
+		valueList: filter.value_list,
+	});
+}
+
 export function DatabaseSourceDropdown({
 	config,
 	onChangeConfig,
 }: DatabaseSourceDropdownProps) {
 	const [filterError, setFilterError] = useState("");
+	const filterKeyCounterRef = useRef(0);
+	const previousFilterKeyEntriesRef = useRef<FilterKeyEntry[]>([]);
+	const [filterUiKeys, setFilterUiKeys] = useState<string[]>([]);
+
+	const syncFilterUiKeys = useCallback(
+		(filters: DatabaseFilter[], preferredKeys?: string[]) => {
+			const nextEntries = (() => {
+				if (preferredKeys && preferredKeys.length === filters.length) {
+					return filters.map((filter, index) => ({
+						key:
+							preferredKeys[index] ?? `filter-${filterKeyCounterRef.current++}`,
+						signature: filterSignature(filter),
+					}));
+				}
+
+				const availableKeysBySignature = new Map<string, string[]>();
+				for (const entry of previousFilterKeyEntriesRef.current) {
+					const bucket = availableKeysBySignature.get(entry.signature);
+					if (bucket) {
+						bucket.push(entry.key);
+						continue;
+					}
+					availableKeysBySignature.set(entry.signature, [entry.key]);
+				}
+
+				return filters.map((filter) => {
+					const signature = filterSignature(filter);
+					const bucket = availableKeysBySignature.get(signature);
+					return {
+						key: bucket?.shift() ?? `filter-${filterKeyCounterRef.current++}`,
+						signature,
+					};
+				});
+			})();
+
+			const nextKeys = nextEntries.map((entry) => entry.key);
+			previousFilterKeyEntriesRef.current = nextEntries;
+			setFilterUiKeys(nextKeys);
+			return nextKeys;
+		},
+		[],
+	);
+
+	useEffect(() => {
+		syncFilterUiKeys(config.filters);
+	}, [config.filters, syncFilterUiKeys]);
 
 	const handleSave = async (patch: Partial<DatabaseConfig["source"]>) => {
 		await onChangeConfig({
@@ -137,13 +198,17 @@ export function DatabaseSourceDropdown({
 
 	const updateFilters = async (
 		updater: (filters: DatabaseFilter[]) => DatabaseFilter[],
+		keyUpdater?: (keys: string[]) => string[],
 	) => {
+		const nextFilters = updater(config.filters);
+		const nextKeys = keyUpdater?.(filterUiKeys);
 		try {
 			setFilterError("");
 			await onChangeConfig({
 				...config,
-				filters: updater(config.filters),
+				filters: nextFilters,
 			});
+			syncFilterUiKeys(nextFilters, nextKeys);
 		} catch (cause) {
 			const message = extractErrorMessage(cause);
 			console.error("Failed to update database filters", cause);
@@ -163,6 +228,7 @@ export function DatabaseSourceDropdown({
 			<DropdownMenuSeparator />
 
 			<div
+				role="presentation"
 				className="flex flex-col gap-2 px-2 py-1.5"
 				onKeyDown={(e) => e.stopPropagation()}
 			>
@@ -197,8 +263,6 @@ export function DatabaseSourceDropdown({
 							</span>
 							<DatabaseFolderPicker
 								value={config.source.value}
-								label="Database Folder"
-								description="Choose a folder for this database."
 								placeholder="Choose a folder"
 								onChange={(value) => void handleSave({ value })}
 							/>
@@ -255,10 +319,10 @@ export function DatabaseSourceDropdown({
 					variant="ghost"
 					size="xs"
 					onClick={() =>
-						void updateFilters((filters) => [
-							...filters,
-							emptyFilter(defaultColumn),
-						])
+						void updateFilters(
+							(filters) => [...filters, emptyFilter(defaultColumn)],
+							(keys) => [...keys, `filter-${filterKeyCounterRef.current++}`],
+						)
 					}
 				>
 					Add
@@ -269,6 +333,7 @@ export function DatabaseSourceDropdown({
 			) : null}
 			{config.filters.length > 0 ? (
 				<div
+					role="presentation"
 					className="flex flex-col gap-1.5 px-2 pb-1.5"
 					onKeyDown={(e) => e.stopPropagation()}
 				>
@@ -286,7 +351,9 @@ export function DatabaseSourceDropdown({
 
 						return (
 							<div
-								key={`${filter.column_id}:${index}`}
+								key={
+									filterUiKeys[index] ?? `filter-fallback-${filter.column_id}`
+								}
 								className="flex flex-col gap-1 rounded-md border border-border p-1.5"
 							>
 								<div className="flex items-center gap-1">
@@ -339,8 +406,9 @@ export function DatabaseSourceDropdown({
 										size="icon-xs"
 										variant="ghost"
 										onClick={() =>
-											void updateFilters((filters) =>
-												filters.filter((_, i) => i !== index),
+											void updateFilters(
+												(filters) => filters.filter((_, i) => i !== index),
+												(keys) => keys.filter((_, i) => i !== index),
 											)
 										}
 										title="Remove filter"
@@ -402,6 +470,7 @@ export function DatabaseSourceDropdown({
 			<DropdownMenuSeparator />
 
 			<div
+				role="presentation"
 				className="flex flex-col gap-2 px-2 py-1.5"
 				onKeyDown={(e) => e.stopPropagation()}
 			>
@@ -411,8 +480,6 @@ export function DatabaseSourceDropdown({
 					</span>
 					<DatabaseFolderPicker
 						value={config.new_note.folder}
-						label="New Row Folder"
-						description="Choose where new notes should be stored."
 						placeholder="Choose a folder"
 						onChange={(value) => void handleNewNoteFolder(value)}
 					/>

@@ -72,7 +72,7 @@ export function MarkdownEditorPane({
 	const [mode, setMode] = useState<CanvasInlineEditorMode>("rich");
 	const [saving, setSaving] = useState(false);
 	const [autosaveBusy, setAutosaveBusy] = useState(false);
-	const [error, setError] = useState(initialError);
+	const [error, setError] = useState(() => initialError || "");
 	const [actionsOpen, setActionsOpen] = useState(false);
 	const [lastSavedMtimeMs, setLastSavedMtimeMs] = useState<number | null>(
 		initialDoc?.mtime_ms ?? null,

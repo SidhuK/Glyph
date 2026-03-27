@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import type { ReactNode } from "react";
-import { Toggle } from "../base/toggle/toggle";
 import { SegmentedControl } from "../ui/SegmentedControl";
+import { Switch } from "../ui/shadcn/switch";
 
 interface SettingsSectionProps {
 	title: string;
@@ -127,13 +127,33 @@ export function SettingsToggle({
 	disabled,
 }: SettingsToggleProps) {
 	return (
-		<Toggle
-			slim
-			size="sm"
+		<Switch
 			checked={checked}
 			onCheckedChange={onCheckedChange}
-			ariaLabel={ariaLabel}
+			aria-label={ariaLabel}
 			disabled={disabled}
+			className="shrink-0"
 		/>
+	);
+}
+
+interface SettingsValueCardProps {
+	icon: ReactNode;
+	value: string;
+	mono?: boolean;
+}
+
+export function SettingsValueCard({
+	icon,
+	value,
+	mono = false,
+}: SettingsValueCardProps) {
+	return (
+		<div className="settingsValueCard">
+			<div className="settingsValueIcon" aria-hidden="true">
+				{icon}
+			</div>
+			<div className={cn("settingsValueText", { mono })}>{value}</div>
+		</div>
 	);
 }

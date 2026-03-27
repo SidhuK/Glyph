@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import { memo } from "react";
 import { useUILayoutContext } from "../../contexts";
+import type { GitSyncStatus } from "../../lib/tauri";
 import { SidebarContent } from "./SidebarContent";
 import { SidebarHeader } from "./SidebarHeader";
 
@@ -14,11 +15,18 @@ interface SidebarProps {
 	onCreateFromTemplateInDir: (dirPath: string) => void;
 	onNewDatabaseInDir: (dirPath: string) => Promise<string | null>;
 	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
-	onRenameDir: (dirPath: string, nextName: string) => Promise<string | null>;
+	onRenameDir: (
+		dirPath: string,
+		nextName: string,
+		kind?: "dir" | "file",
+	) => Promise<string | null>;
 	onDeletePath: (path: string, kind: "dir" | "file") => Promise<boolean>;
 	onSelectTag: (tag: string) => void;
 	sidebarCollapsed: boolean;
 	onToggleSidebar: () => void;
+	gitSyncStatus: GitSyncStatus | null;
+	onGitSyncNow: () => void;
+	onOpenGitSettings: () => void;
 	onOpenCalendar: () => void;
 	onOpenDatabases: (databaseId?: string | null) => void;
 	updateReady: boolean;
@@ -40,6 +48,9 @@ export const Sidebar = memo(function Sidebar({
 	onSelectTag,
 	sidebarCollapsed,
 	onToggleSidebar,
+	gitSyncStatus,
+	onGitSyncNow,
+	onOpenGitSettings,
 	onOpenCalendar,
 	onOpenDatabases,
 	updateReady,
@@ -99,6 +110,9 @@ export const Sidebar = memo(function Sidebar({
 							onSelectTag={onSelectTag}
 							onOpenCalendar={onOpenCalendar}
 							onOpenDatabases={onOpenDatabases}
+							gitSyncStatus={gitSyncStatus}
+							onGitSyncNow={onGitSyncNow}
+							onOpenGitSettings={onOpenGitSettings}
 						/>
 					</m.div>
 				)}

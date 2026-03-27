@@ -219,6 +219,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 							</ContextMenuItem>
 							<ContextMenuSeparator className="fileTreeCreateMenuSeparator" />
 							<ContextMenuItem
+								variant="destructive"
 								className="fileTreeCreateMenuItem"
 								onSelect={() => onDeletePath(entry.rel_path, "file")}
 							>

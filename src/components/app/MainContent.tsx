@@ -1,5 +1,13 @@
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
-import { Suspense, lazy, memo, useEffect, useMemo, useState } from "react";
+import {
+	Suspense,
+	lazy,
+	memo,
+	useCallback,
+	useEffect,
+	useMemo,
+	useState,
+} from "react";
 import {
 	useAISidebarContext,
 	useSpace,
@@ -7,7 +15,9 @@ import {
 } from "../../contexts";
 import {
 	PATH_REMOVED_EVENT,
+	PATH_RENAMED_EVENT,
 	type PathRemovedDetail,
+	type PathRenamedDetail,
 } from "../../lib/appEvents";
 import { CALENDAR_TAB_ID } from "../../lib/calendar";
 import { APP_TAGLINE } from "../../lib/copy";
@@ -307,6 +317,9 @@ export const MainContent = memo(function MainContent({
 	const [starterOverrideVisible, setStarterOverrideVisible] = useState(false);
 	const [dailyNoteSetupToastVisible, setDailyNoteSetupToastVisible] =
 		useState(false);
+	const handleTabActivated = useCallback(() => {
+		setStarterOverrideVisible(false);
+	}, []);
 
 	const {
 		openTabs,
@@ -318,9 +331,10 @@ export const MainContent = memo(function MainContent({
 		closeTab,
 		closeActiveTab,
 		closeTabsForPathRemoval,
+		renameTabsForPath,
 		reorderTabs,
 		openSpecialTab,
-	} = useTabManager(spacePath);
+	} = useTabManager(spacePath, { onActivateTab: handleTabActivated });
 
 	useEffect(() => {
 		if (!spacePath || openCalendarRequest === 0) return;
@@ -352,16 +366,23 @@ export const MainContent = memo(function MainContent({
 			if (!detail?.path) return;
 			closeTabsForPathRemoval(detail.path, detail.recursive);
 		};
+		const handlePathRenamed = (event: Event) => {
+			const detail = (event as CustomEvent<PathRenamedDetail>).detail;
+			if (!detail?.fromPath || !detail?.toPath) return;
+			renameTabsForPath(detail.fromPath, detail.toPath, detail.recursive);
+		};
 		window.addEventListener("glyph:close-active-tab", handleCloseActiveTab);
 		window.addEventListener(PATH_REMOVED_EVENT, handlePathRemoved);
+		window.addEventListener(PATH_RENAMED_EVENT, handlePathRenamed);
 		return () => {
 			window.removeEventListener(
 				"glyph:close-active-tab",
 				handleCloseActiveTab,
 			);
 			window.removeEventListener(PATH_REMOVED_EVENT, handlePathRemoved);
+			window.removeEventListener(PATH_RENAMED_EVENT, handlePathRenamed);
 		};
-	}, [closeActiveTab, closeTabsForPathRemoval]);
+	}, [closeActiveTab, closeTabsForPathRemoval, renameTabsForPath]);
 
 	const viewerPath = activeTabPath;
 	const commandShortcutParts = useMemo(
@@ -403,12 +424,6 @@ export const MainContent = memo(function MainContent({
 		if (!payload.onboarding) return;
 		setOnboarding((prev) => ({ ...prev, ...payload.onboarding }));
 	});
-
-	useEffect(() => {
-		if (activeTabPath) {
-			setStarterOverrideVisible(false);
-		}
-	}, [activeTabPath]);
 
 	useEffect(() => {
 		if (!spacePath || dailyNoteSetupNoticeRequest === 0) return;

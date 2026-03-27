@@ -6,14 +6,16 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, m } from "motion/react";
-import { memo } from "react";
+import { memo, useCallback, useEffect, useState } from "react";
 import {
 	useFileTreeContext,
 	useSpace,
 	useUILayoutContext,
 } from "../../contexts";
 import { useRecentFiles } from "../../hooks/useRecentFiles";
+import { FILE_TREE_START_RENAME_EVENT } from "../../lib/appEvents";
 import { getShortcutTooltip } from "../../lib/shortcuts";
+import type { GitSyncStatus } from "../../lib/tauri";
 import { FileTreePane } from "../FileTreePane";
 import { Database, Files } from "../Icons";
 import { RecentFilesPane } from "../RecentFilesPane";
@@ -21,6 +23,7 @@ import { TagsPane } from "../TagsPane";
 import { directionVariants } from "../ui/animations";
 import { ScrollArea } from "../ui/shadcn/scroll-area";
 import { Tabs, TabsList, TabsTrigger } from "../ui/shadcn/tabs";
+import { WindowChromeGitSyncButton } from "./WindowChromeGitSyncButton";
 
 interface SidebarContentProps {
 	onToggleDir: (dirPath: string) => void;
@@ -31,11 +34,18 @@ interface SidebarContentProps {
 	onCreateFromTemplateInDir: (dirPath: string) => void;
 	onNewDatabaseInDir: (dirPath: string) => Promise<string | null>;
 	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
-	onRenameDir: (dirPath: string, nextName: string) => Promise<string | null>;
+	onRenameDir: (
+		dirPath: string,
+		nextName: string,
+		kind?: "dir" | "file",
+	) => Promise<string | null>;
 	onDeletePath: (path: string, kind: "dir" | "file") => Promise<boolean>;
 	onSelectTag: (tag: string) => void;
 	onOpenCalendar: () => void;
 	onOpenDatabases: (databaseId?: string | null) => void;
+	gitSyncStatus: GitSyncStatus | null;
+	onGitSyncNow: () => void;
+	onOpenGitSettings: () => void;
 }
 
 export const SidebarContent = memo(function SidebarContent({
@@ -52,6 +62,9 @@ export const SidebarContent = memo(function SidebarContent({
 	onSelectTag,
 	onOpenCalendar,
 	onOpenDatabases,
+	gitSyncStatus,
+	onGitSyncNow,
+	onOpenGitSettings,
 }: SidebarContentProps) {
 	// Contexts
 	const { spacePath } = useSpace();
@@ -67,6 +80,64 @@ export const SidebarContent = memo(function SidebarContent({
 	} = useFileTreeContext();
 	const { sidebarViewMode, setSidebarViewMode } = useUILayoutContext();
 	const { recentFiles, refreshRecentFiles } = useRecentFiles(spacePath, 15);
+	const [renamingPath, setRenamingPath] = useState<string | null>(null);
+	const [pendingNewNotePath, setPendingNewNotePath] = useState<string | null>(
+		null,
+	);
+	const showGitButton = Boolean(gitSyncStatus?.configured);
+
+	const handleStartRename = useCallback((path: string) => {
+		const nextPath = path.trim();
+		if (!nextPath) return;
+		setRenamingPath(nextPath);
+		setPendingNewNotePath(nextPath);
+	}, []);
+
+	useEffect(() => {
+		const handleStartRenameEvent = (event: Event) => {
+			const customEvent = event as CustomEvent<{ path?: string }>;
+			const path = customEvent.detail?.path;
+			if (!path) return;
+			handleStartRename(path);
+		};
+		window.addEventListener(
+			FILE_TREE_START_RENAME_EVENT,
+			handleStartRenameEvent,
+		);
+		return () =>
+			window.removeEventListener(
+				FILE_TREE_START_RENAME_EVENT,
+				handleStartRenameEvent,
+			);
+	}, [handleStartRename]);
+
+	const handleCancelRename = useCallback(() => {
+		setRenamingPath(null);
+		setPendingNewNotePath(null);
+	}, []);
+
+	const handleCommitDirRename = useCallback(
+		async (dirPath: string, nextName: string) => {
+			const renamed = await onRenameDir(dirPath, nextName, "dir");
+			if (renamed) {
+				setRenamingPath(null);
+			}
+		},
+		[onRenameDir],
+	);
+
+	const handleCommitFileRename = useCallback(
+		async (path: string, nextName: string) => {
+			const renamed = await onRenameDir(path, nextName, "file");
+			if (!renamed) return;
+			setRenamingPath(null);
+			if (pendingNewNotePath === path) {
+				onOpenFile(renamed);
+				setPendingNewNotePath(null);
+			}
+		},
+		[onOpenFile, onRenameDir, pendingNewNotePath],
+	);
 
 	if (!spacePath) {
 		return (
@@ -158,8 +229,12 @@ export const SidebarContent = memo(function SidebarContent({
 								onCreateFromTemplateInDir={onCreateFromTemplateInDir}
 								onNewDatabaseInDir={onNewDatabaseInDir}
 								onNewFolderInDir={onNewFolderInDir}
-								onRenameDir={onRenameDir}
 								onDeletePath={onDeletePath}
+								renamingPath={renamingPath}
+								onStartRename={handleStartRename}
+								onCancelRename={handleCancelRename}
+								onCommitFileRename={handleCommitFileRename}
+								onCommitDirRename={handleCommitDirRename}
 							/>
 						</m.div>
 					)}
@@ -201,6 +276,15 @@ export const SidebarContent = memo(function SidebarContent({
 					)}
 				</AnimatePresence>
 			</div>
+			{showGitButton ? (
+				<div className="sidebarFooter">
+					<WindowChromeGitSyncButton
+						status={gitSyncStatus}
+						onSyncNow={onGitSyncNow}
+						onOpenSettings={onOpenGitSettings}
+					/>
+				</div>
+			) : null}
 		</>
 	);
 });

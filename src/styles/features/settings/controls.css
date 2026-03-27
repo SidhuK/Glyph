@@ -278,28 +278,6 @@
 	width: 100%;
 }
 
-.settingsRestartNotice {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 10px;
-	width: 100%;
-	padding: 10px 12px;
-	border: 1px solid color-mix(in srgb, var(--color-yellow-500) 24%, transparent);
-	border-radius: var(--radius-md);
-	background: color-mix(in srgb, var(--color-yellow-500) 8%, var(--bg-primary));
-}
-
-.settingsRestartNoticeCopy {
-	display: inline-flex;
-	align-items: center;
-	gap: 8px;
-	min-width: 0;
-	font-size: 12px;
-	line-height: 1.4;
-	color: color-mix(in srgb, var(--color-yellow-500) 28%, var(--text-primary));
-}
-
 .settingsFieldControl > [data-slot="button"],
 .settingsActions > [data-slot="button"] {
 	min-height: 32px;
@@ -387,6 +365,34 @@
 	gap: 8px;
 	font-size: var(--font-size-xs);
 	color: var(--text-secondary);
+}
+
+.settingsFieldControl > [data-slot="switch"] {
+	width: 44px;
+	height: 24px;
+	border-radius: 999px;
+	border: 1px solid color-mix(in srgb, var(--border-strong) 72%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 88%, var(--bg-primary));
+	box-shadow: none;
+	flex: 0 0 auto;
+	padding: 1px;
+}
+
+.settingsFieldControl > [data-slot="switch"][data-state="checked"] {
+	background: color-mix(in srgb, var(--text-secondary) 26%, var(--bg-primary));
+	border-color: color-mix(in srgb, var(--text-secondary) 34%, transparent);
+}
+
+.settingsFieldControl > [data-slot="switch"] [data-slot="switch-thumb"] {
+	width: 20px;
+	height: 20px;
+	border-radius: 999px;
+	background: rgba(255, 255, 255, 0.92);
+	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.22);
+}
+
+:root.dark .settingsFieldControl > [data-slot="switch"] [data-slot="switch-thumb"] {
+	background: rgba(255, 255, 255, 0.96);
 }
 
 .settingsList {
@@ -932,12 +938,18 @@
 	align-items: center;
 	margin: 0;
 	min-inline-size: 0;
+	width: auto;
+	max-width: max-content;
 	padding: 0;
 	border-radius: var(--radius-md);
 	border: 1px solid var(--border-light);
 	background: var(--bg-primary);
 	gap: 0;
 	overflow: hidden;
+}
+
+.settingsFieldControl > .settingsSegmented {
+	margin-left: auto;
 }
 
 .settingsSegmentedButton {

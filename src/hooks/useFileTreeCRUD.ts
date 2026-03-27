@@ -1,6 +1,9 @@
-import { join } from "@tauri-apps/api/path";
 import { useCallback, useEffect, useRef } from "react";
-import { dispatchPathRemoved } from "../lib/appEvents";
+import {
+	dispatchFileTreeStartRename,
+	dispatchPathRemoved,
+	dispatchPathRenamed,
+} from "../lib/appEvents";
 import { extractErrorMessage } from "../lib/errorUtils";
 import { isMissingFileError } from "../lib/fsErrors";
 import { updateOnboardingSettings } from "../lib/settings";
@@ -157,33 +160,32 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			if (!spacePath) return null;
 			setError("");
 			try {
-				const { save } = await import("@tauri-apps/plugin-dialog");
-				const defaultPath = dirPath
-					? await join(spacePath, dirPath, "Untitled.md")
-					: await join(spacePath, "Untitled.md");
-				const selection = await save({
-					title: "Create new Markdown file",
-					defaultPath,
-					filters: [{ name: "Markdown", extensions: ["md"] }],
-				});
-				const absPath = Array.isArray(selection)
-					? (selection[0] ?? null)
-					: selection;
-				if (!absPath) return null;
-				const rel = await invoke("space_relativize_path", {
-					abs_path: absPath,
-				});
-				const markdownRel = isMarkdownPath(rel) ? rel : `${rel}.md`;
-				const fileTitle = fileTitleFromRelPath(markdownRel);
-				if (dirPath && !markdownRel.startsWith(`${dirPath}/`)) {
-					setError(`Choose a file path inside "${dirPath}"`);
-					return null;
+				const siblings = await invoke(
+					"space_list_dir",
+					dirPath ? { dir: dirPath } : {},
+				);
+				const siblingNames = new Set(
+					siblings.map((entry) => entry.name.toLowerCase()),
+				);
+				let fileName = "Untitled.md";
+				if (siblingNames.has(fileName.toLowerCase())) {
+					let suffix = 2;
+					while (siblingNames.has(`untitled ${suffix}.md`)) {
+						suffix += 1;
+					}
+					fileName = `Untitled ${suffix}.md`;
 				}
-				return createMarkdownFileAtPath({
+				const markdownRel = dirPath ? `${dirPath}/${fileName}` : fileName;
+				const fileTitle = fileTitleFromRelPath(markdownRel);
+				const createdPath = await createMarkdownFileAtPath({
 					path: markdownRel,
 					text: `# ${fileTitle}\n`,
 					openParentDir: dirPath,
 				});
+				if (createdPath) {
+					dispatchFileTreeStartRename({ path: createdPath });
+				}
+				return createdPath;
 			} catch (e) {
 				setError(extractErrorMessage(e));
 				return null;
@@ -319,6 +321,14 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 						return next;
 					});
 				}
+				if (activeFilePathRef.current === dirPath) setActiveFilePath(nextPath);
+				if (activePreviewPathRef.current === dirPath)
+					setActivePreviewPath(nextPath);
+				dispatchPathRenamed({
+					fromPath: dirPath,
+					toPath: nextPath,
+					recursive: kind === "dir",
+				});
 				await refreshAfterCreate(parent);
 				if (kind === "dir") await loadDir(nextPath, true);
 				try {
@@ -338,6 +348,8 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			refreshAfterCreate,
 			updateChildrenByDir,
 			renameItemAppearance,
+			setActiveFilePath,
+			setActivePreviewPath,
 			setError,
 			updateExpandedDirs,
 			updateRootEntries,
@@ -470,6 +482,11 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 				if (activeFilePathRef.current === from) setActiveFilePath(nextPath);
 				if (activePreviewPathRef.current === from)
 					setActivePreviewPath(nextPath);
+				dispatchPathRenamed({
+					fromPath: from,
+					toPath: nextPath,
+					recursive: false,
+				});
 				try {
 					await renameItemAppearance(from, nextPath);
 				} catch (error) {

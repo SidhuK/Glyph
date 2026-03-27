@@ -220,6 +220,189 @@
 	opacity: 1;
 }
 
+.settingsSectionMuted {
+	opacity: 0.56;
+}
+
+.gitBetaNotice {
+	display: flex;
+	align-items: flex-start;
+	gap: 12px;
+	padding: 14px 16px;
+	border-color: color-mix(in srgb, #eab308 34%, var(--border-default));
+	background: color-mix(in srgb, #eab308 10%, var(--settings-surface-muted));
+}
+
+.gitBetaNoticeIcon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 32px;
+	height: 32px;
+	border-radius: var(--radius-md);
+	background: color-mix(in srgb, #eab308 16%, transparent);
+	color: color-mix(in srgb, #ca8a04 88%, var(--text-primary));
+	flex: 0 0 auto;
+}
+
+.gitBetaNoticeBody {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	min-width: 0;
+}
+
+.gitBetaNoticeTitleRow {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+.gitBetaNoticeTitle {
+	font-size: 14px;
+	font-weight: var(--font-semibold);
+	color: var(--text-primary);
+}
+
+.gitBetaNoticeText {
+	font-size: 12px;
+	line-height: 1.5;
+	color: var(--text-secondary);
+}
+
+.gitBetaBadge {
+	--early-access-color: #d97706;
+}
+
+.settingsBetaBadge {
+	--early-access-color: #d97706;
+}
+
+.settingsPathCard {
+	width: 100%;
+	padding: 10px 12px;
+	border-radius: var(--radius-lg);
+	background: color-mix(in srgb, var(--settings-surface-soft) 78%, transparent);
+}
+
+.settingsPathValue {
+	font-size: 12px;
+	line-height: 1.55;
+	color: var(--text-primary);
+	word-break: normal;
+	overflow-wrap: break-word;
+}
+
+.settingsPathList {
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.settingsPathListItem {
+	display: flex;
+	align-items: flex-start;
+	justify-content: flex-end;
+	gap: 10px;
+	padding: 10px 12px;
+	border-radius: var(--radius-lg);
+	background: color-mix(in srgb, var(--settings-surface-soft) 66%, transparent);
+	font-size: 12px;
+	line-height: 1.5;
+	color: var(--text-secondary);
+}
+
+.settingsPathListItemIcon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	border-radius: var(--radius-md);
+	background: color-mix(in srgb, var(--bg-primary) 86%, transparent);
+	color: var(--text-secondary);
+	flex: 0 0 auto;
+}
+
+.settingsPathListItemText {
+	overflow-wrap: break-word;
+	text-align: right;
+}
+
+.settingsValueCard {
+	width: 100%;
+	display: flex;
+	align-items: flex-start;
+	justify-content: flex-end;
+	gap: 10px;
+	padding: 10px 12px;
+	border-radius: var(--radius-lg);
+	background: color-mix(in srgb, var(--settings-surface-soft) 74%, transparent);
+}
+
+.settingsValueIcon {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 28px;
+	height: 28px;
+	border-radius: var(--radius-md);
+	background: color-mix(in srgb, var(--bg-primary) 86%, transparent);
+	color: var(--text-secondary);
+	flex: 0 0 auto;
+}
+
+.settingsValueText {
+	padding-top: 4px;
+	font-size: 12px;
+	line-height: 1.5;
+	color: var(--text-primary);
+	overflow-wrap: break-word;
+	text-align: right;
+}
+
+.gitSettingMetaList {
+	width: 100%;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	padding-top: 2px;
+}
+
+.gitSettingMetaRow {
+	display: flex;
+	align-items: baseline;
+	justify-content: flex-end;
+	gap: 12px;
+	font-size: 12px;
+	line-height: 1.45;
+}
+
+.gitSettingMetaKey {
+	color: var(--text-tertiary);
+}
+
+.gitSettingMetaValue {
+	color: var(--text-primary);
+	text-align: right;
+}
+
+.gitSyncConnectionField {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	width: 100%;
+}
+
+.gitSyncRemoteInput {
+	width: 100%;
+}
+
 @media (max-width: 760px) {
 	.aboutIdentity {
 		align-items: flex-start;

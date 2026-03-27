@@ -5,7 +5,15 @@ import { CALENDAR_TAB_ID } from "../../lib/calendar";
 import { DATABASES_TAB_ID } from "../../lib/databases";
 import { isInAppPreviewable } from "../../utils/filePreview";
 
-export function useTabManager(spacePath: string | null) {
+interface UseTabManagerOptions {
+	onActivateTab?: (path: string) => void;
+}
+
+export function useTabManager(
+	spacePath: string | null,
+	options: UseTabManagerOptions = {},
+) {
+	const { onActivateTab } = options;
 	const { activeFilePath, setActiveFilePath } = useFileTreeContext();
 	const { recentFiles, addRecentFile } = useRecentFiles(spacePath, 7);
 	const {
@@ -36,6 +44,11 @@ export function useTabManager(spacePath: string | null) {
 		setOpenTabs((prev) => (prev.includes(opened) ? prev : [...prev, opened]));
 		setActiveTabPath(opened);
 	}, [activeFilePath, activePreviewPath, canOpenInMainPane]);
+
+	useEffect(() => {
+		if (!activeTabPath) return;
+		onActivateTab?.(activeTabPath);
+	}, [activeTabPath, onActivateTab]);
 
 	useEffect(() => {
 		if (!activeTabPath) {
@@ -149,6 +162,54 @@ export function useTabManager(spacePath: string | null) {
 		[isSpecialTab],
 	);
 
+	const renameTabsForPath = useCallback(
+		(fromPath: string, toPath: string, recursive = false) => {
+			setOpenTabs((prev) => {
+				let changed = false;
+				const next = prev.map((tabPath) => {
+					if (isSpecialTab(tabPath)) return tabPath;
+					if (tabPath === fromPath) {
+						changed = true;
+						return toPath;
+					}
+					if (recursive && tabPath.startsWith(`${fromPath}/`)) {
+						changed = true;
+						return `${toPath}${tabPath.slice(fromPath.length)}`;
+					}
+					return tabPath;
+				});
+				return changed ? next : prev;
+			});
+			setDirtyByPath((prev) => {
+				let changed = false;
+				const next: Record<string, boolean> = {};
+				for (const [tabPath, dirty] of Object.entries(prev)) {
+					if (tabPath === fromPath) {
+						next[toPath] = dirty;
+						changed = true;
+						continue;
+					}
+					if (recursive && tabPath.startsWith(`${fromPath}/`)) {
+						next[`${toPath}${tabPath.slice(fromPath.length)}`] = dirty;
+						changed = true;
+						continue;
+					}
+					next[tabPath] = dirty;
+				}
+				return changed ? next : prev;
+			});
+			setActiveTabPath((current) => {
+				if (!current) return current;
+				if (current === fromPath) return toPath;
+				if (recursive && current.startsWith(`${fromPath}/`)) {
+					return `${toPath}${current.slice(fromPath.length)}`;
+				}
+				return current;
+			});
+		},
+		[isSpecialTab],
+	);
+
 	const reorderTabs = useCallback((fromPath: string, toPath: string) => {
 		if (!fromPath || !toPath || fromPath === toPath) return;
 		setOpenTabs((prev) => {
@@ -217,6 +278,7 @@ export function useTabManager(spacePath: string | null) {
 		closeTab,
 		closeActiveTab,
 		closeTabsForPathRemoval,
+		renameTabsForPath,
 		reorderTabs,
 		openSpecialTab,
 		recentFiles,

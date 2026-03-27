@@ -30,7 +30,7 @@ type SendMessageOptions = {
 	};
 };
 
-type RigChatStatus = "ready" | "submitted" | "streaming" | "error";
+export type RigChatStatus = "ready" | "submitted" | "streaming" | "error";
 const DONE_SETTLE_MS = 140;
 
 function asAiMessages(messages: UIMessage[]): AiMessage[] {

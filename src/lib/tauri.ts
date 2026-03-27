@@ -422,6 +422,8 @@ export interface CalendarNoteActivityItem {
 	note_id: string;
 	note_path: string;
 	title: string;
+	preview?: string | null;
+	tags: string[];
 	created: string;
 	updated: string;
 	created_on_day: boolean;
@@ -457,6 +459,89 @@ export interface LinkPreview {
 	image_cache_rel_path: string | null;
 	fetched_at_ms: number;
 	ok: boolean;
+}
+
+export type GitSyncRepoMode = "managed_new_repo" | "adopted_existing_repo";
+export type GitSyncConflictPolicy = "local_wins" | "remote_wins";
+export type GitSyncPhase =
+	| "idle"
+	| "detecting"
+	| "setting_up"
+	| "fetching"
+	| "committing"
+	| "pulling"
+	| "pushing"
+	| "success"
+	| "error";
+export type GitSyncRunMode = "manual" | "auto";
+
+export interface GitSyncInclusionSettings {
+	include_templates: boolean;
+	include_attachments: boolean;
+	include_non_markdown_files: boolean;
+}
+
+export interface GitSyncConfig {
+	enabled: boolean;
+	remote_url: string;
+	branch: string;
+	repo_mode: GitSyncRepoMode;
+	conflict_policy: GitSyncConflictPolicy;
+	interval_minutes: number;
+	inclusions: GitSyncInclusionSettings;
+	last_success_at_ms: number | null;
+	last_attempted_at_ms: number | null;
+	last_error: string | null;
+	consecutive_auto_sync_failures: number;
+	paused: boolean;
+}
+
+export interface GitSyncStatus {
+	git_installed: boolean;
+	configured: boolean;
+	repo_detected: boolean;
+	repo_root_matches_space: boolean;
+	unsupported_parent_repo: boolean;
+	repo_mode: GitSyncRepoMode | null;
+	remote_url: string | null;
+	branch: string | null;
+	enabled: boolean;
+	paused: boolean;
+	phase: GitSyncPhase;
+	is_syncing: boolean;
+	interval_minutes: number;
+	conflict_policy: GitSyncConflictPolicy;
+	inclusions: GitSyncInclusionSettings;
+	last_success_at_ms: number | null;
+	last_attempted_at_ms: number | null;
+	last_error: string | null;
+	consecutive_auto_sync_failures: number;
+	detected_remote_url: string | null;
+	detected_branch: string | null;
+	local_change_count: number;
+	ahead_count: number;
+	behind_count: number;
+	preflight_issue: string | null;
+	conflict_risk: string | null;
+	message: string | null;
+}
+
+export interface GitSyncContext {
+	templates_folder?: string | null;
+	pasted_media_folder?: string | null;
+}
+
+export interface GitSyncRunRequest {
+	mode: GitSyncRunMode;
+	context: GitSyncContext;
+}
+
+export interface GitSyncConfigPatch {
+	enabled?: boolean;
+	conflict_policy?: GitSyncConflictPolicy;
+	interval_minutes?: number;
+	inclusions?: GitSyncInclusionSettings;
+	paused?: boolean;
 }
 
 export type LicenseMode =
@@ -813,6 +898,14 @@ interface TauriCommands {
 	>;
 	backlinks: CommandDef<{ note_id: string }, BacklinkItem[]>;
 	link_preview: CommandDef<{ url: string; force?: boolean }, LinkPreview>;
+	git_sync_status_read: CommandDef<void, GitSyncStatus>;
+	git_sync_config_read: CommandDef<void, GitSyncConfig | null>;
+	git_sync_config_update: CommandDef<
+		{ patch: GitSyncConfigPatch },
+		GitSyncConfig
+	>;
+	git_sync_run: CommandDef<{ request: GitSyncRunRequest }, GitSyncStatus>;
+	git_sync_disconnect: CommandDef<void, GitSyncStatus>;
 
 	ai_profiles_list: CommandDef<void, AiProfile[]>;
 	ai_active_profile_get: CommandDef<void, string | null>;

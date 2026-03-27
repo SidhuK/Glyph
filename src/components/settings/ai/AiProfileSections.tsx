@@ -48,6 +48,7 @@ export function AiProfileSections({
 	useEffect(() => {
 		setProfileDraft(activeProfile ? structuredClone(activeProfile) : null);
 		setAvailableModels(null);
+		setShowRestartPrompt(false);
 	}, [activeProfile]);
 
 	const updateDraft = useCallback((updater: (prev: AiProfile) => AiProfile) => {
