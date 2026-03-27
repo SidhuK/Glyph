@@ -279,6 +279,40 @@
 	--early-access-color: #d97706;
 }
 
+.settingsPathCard {
+	width: 100%;
+	padding: 10px 12px;
+	border-radius: var(--radius-lg);
+	background: color-mix(in srgb, var(--settings-surface-soft) 78%, transparent);
+}
+
+.settingsPathValue {
+	font-size: 12px;
+	line-height: 1.55;
+	color: var(--text-primary);
+	word-break: break-word;
+}
+
+.settingsPathList {
+	width: 100%;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+}
+
+.settingsPathListItem {
+	padding: 10px 12px;
+	border-radius: var(--radius-lg);
+	background: color-mix(in srgb, var(--settings-surface-soft) 66%, transparent);
+	font-size: 12px;
+	line-height: 1.5;
+	color: var(--text-secondary);
+	word-break: break-word;
+}
+
 .gitSyncConnectionField {
 	display: flex;
 	flex-direction: column;

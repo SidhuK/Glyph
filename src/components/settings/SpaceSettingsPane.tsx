@@ -65,8 +65,10 @@ export function SpaceSettingsPane() {
 						stacked
 						interactive={false}
 					>
-						<div className="settingsValue mono">
-							{currentSpacePath ?? "(none selected)"}
+						<div className="settingsPathCard">
+							<div className="settingsPathValue mono">
+								{currentSpacePath ?? "(none selected)"}
+							</div>
 						</div>
 					</SettingsRow>
 				</SettingsSection>
@@ -90,9 +92,9 @@ export function SpaceSettingsPane() {
 					}
 				>
 					{recentSpaces.length > 0 ? (
-						<ul className="settingsList">
+						<ul className="settingsPathList" aria-label="Recent spaces">
 							{recentSpaces.map((p) => (
-								<li key={p} className="mono">
+								<li key={p} className="settingsPathListItem mono">
 									{p}
 								</li>
 							))}
