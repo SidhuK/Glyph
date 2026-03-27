@@ -220,6 +220,21 @@
 	opacity: 1;
 }
 
+.settingsSectionMuted {
+	opacity: 0.56;
+}
+
+.gitSyncConnectionField {
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	width: 100%;
+}
+
+.gitSyncRemoteInput {
+	width: 100%;
+}
+
 @media (max-width: 760px) {
 	.aboutIdentity {
 		align-items: flex-start;

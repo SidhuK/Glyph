@@ -1,6 +1,7 @@
 import {
 	AiNetworkIcon,
 	Archive02Icon,
+	GitBranchIcon,
 	Settings01Icon,
 	Sun03Icon,
 	ToolsIcon,
@@ -14,6 +15,7 @@ export type SettingsTab =
 	| "appearance"
 	| "ai"
 	| "space"
+	| "git"
 	| "advanced"
 	| "about";
 
@@ -43,6 +45,11 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 		id: "space",
 		label: "Space",
 		renderIcon: () => <FolderOpen size={14} />,
+	},
+	{
+		id: "git",
+		label: "Git",
+		renderIcon: () => <HugeiconsIcon icon={GitBranchIcon} size={14} />,
 	},
 	{
 		id: "advanced",

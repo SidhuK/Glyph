@@ -1,0 +1,349 @@
+use std::path::{Component, Path};
+use std::process::{Command, Stdio};
+
+use super::types::{GitSyncContext, GitSyncInclusionSettings};
+
+const GLYPH_GITIGNORE_START: &str = "# >>> Glyph Git Sync >>>";
+const GLYPH_GITIGNORE_END: &str = "# <<< Glyph Git Sync <<<";
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum RepoInspection {
+    None,
+    AtRoot {
+        branch: Option<String>,
+        primary_remote: Option<String>,
+    },
+    Nested {
+        repo_root: String,
+    },
+}
+
+fn run_command(mut command: Command) -> Result<(bool, String, String), String> {
+    let output = command
+        .stdin(Stdio::null())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .output()
+        .map_err(|error| error.to_string())?;
+    Ok((
+        output.status.success(),
+        String::from_utf8_lossy(&output.stdout).trim().to_string(),
+        String::from_utf8_lossy(&output.stderr).trim().to_string(),
+    ))
+}
+
+pub fn git_is_installed() -> bool {
+    match run_command({
+        let mut command = Command::new("git");
+        command.arg("--version");
+        command
+    }) {
+        Ok((success, _, _)) => success,
+        Err(_) => false,
+    }
+}
+
+fn run_git(space_root: &Path, args: &[&str]) -> Result<String, String> {
+    let (success, stdout, stderr) = run_command({
+        let mut command = Command::new("git");
+        command.current_dir(space_root).args(args);
+        command
+    })?;
+    if success {
+        Ok(stdout)
+    } else if stderr.is_empty() {
+        Err(format!("git {} failed", args.join(" ")))
+    } else {
+        Err(stderr)
+    }
+}
+
+fn run_git_maybe(space_root: &Path, args: &[&str]) -> Result<Option<String>, String> {
+    let (success, stdout, _) = run_command({
+        let mut command = Command::new("git");
+        command.current_dir(space_root).args(args);
+        command
+    })?;
+    if success {
+        Ok(Some(stdout))
+    } else {
+        Ok(None)
+    }
+}
+
+fn canonical_string(path: &Path) -> Result<String, String> {
+    path.canonicalize()
+        .map_err(|error| error.to_string())
+        .map(|path| path.to_string_lossy().replace('\\', "/"))
+}
+
+pub fn inspect_repo(space_root: &Path) -> Result<RepoInspection, String> {
+    let top_level = run_git_maybe(space_root, &["rev-parse", "--show-toplevel"])?;
+    let Some(top_level) = top_level else {
+        return Ok(RepoInspection::None);
+    };
+
+    let normalized_space = canonical_string(space_root)?;
+    let normalized_repo = canonical_string(Path::new(&top_level))?;
+    if normalized_repo != normalized_space {
+        return Ok(RepoInspection::Nested {
+            repo_root: normalized_repo,
+        });
+    }
+
+    let branch = current_branch(space_root)?;
+    let primary_remote = primary_remote_url(space_root)?;
+    Ok(RepoInspection::AtRoot {
+        branch,
+        primary_remote,
+    })
+}
+
+pub fn current_branch(space_root: &Path) -> Result<Option<String>, String> {
+    let branch = run_git_maybe(space_root, &["rev-parse", "--abbrev-ref", "HEAD"])?;
+    Ok(branch.and_then(|value| {
+        let trimmed = value.trim();
+        if trimmed.is_empty() || trimmed == "HEAD" {
+            None
+        } else {
+            Some(trimmed.to_string())
+        }
+    }))
+}
+
+fn primary_remote_name(space_root: &Path) -> Result<Option<String>, String> {
+    let remotes = run_git_maybe(space_root, &["remote"])?;
+    Ok(remotes.and_then(|raw| {
+        raw.lines()
+            .map(str::trim)
+            .find(|line| !line.is_empty())
+            .map(ToOwned::to_owned)
+    }))
+}
+
+pub fn primary_remote_url(space_root: &Path) -> Result<Option<String>, String> {
+    let Some(remote_name) = primary_remote_name(space_root)? else {
+        return Ok(None);
+    };
+    let url = run_git_maybe(space_root, &["remote", "get-url", &remote_name])?;
+    Ok(url.and_then(|value| {
+        let trimmed = value.trim();
+        if trimmed.is_empty() {
+            None
+        } else {
+            Some(trimmed.to_string())
+        }
+    }))
+}
+
+pub fn has_head_commit(space_root: &Path) -> Result<bool, String> {
+    Ok(run_git_maybe(space_root, &["rev-parse", "--verify", "HEAD"])?.is_some())
+}
+
+pub fn working_tree_dirty(space_root: &Path) -> Result<bool, String> {
+    let status = run_git(space_root, &["status", "--porcelain"])?;
+    Ok(!status.trim().is_empty())
+}
+
+pub fn fetch_remote(space_root: &Path, remote_name: &str, branch: &str) -> Result<(), String> {
+    run_git(space_root, &["fetch", remote_name, branch])?;
+    Ok(())
+}
+
+pub fn remote_branch_exists(space_root: &Path, remote_name: &str, branch: &str) -> Result<bool, String> {
+    let ref_name = format!("refs/remotes/{remote_name}/{branch}");
+    Ok(run_git_maybe(space_root, &["rev-parse", "--verify", &ref_name])?.is_some())
+}
+
+pub fn merge_remote(space_root: &Path, remote_name: &str, branch: &str, favor_local: bool) -> Result<(), String> {
+    let ref_name = format!("refs/remotes/{remote_name}/{branch}");
+    let strategy = if favor_local { "ours" } else { "theirs" };
+    run_git(
+        space_root,
+        &["merge", "--no-edit", "-X", strategy, &ref_name],
+    )?;
+    Ok(())
+}
+
+pub fn push_remote(space_root: &Path, remote_name: &str, branch: &str, set_upstream: bool) -> Result<(), String> {
+    if set_upstream {
+        run_git(space_root, &["push", "-u", remote_name, branch])?;
+    } else {
+        run_git(space_root, &["push", remote_name, branch])?;
+    }
+    Ok(())
+}
+
+pub fn commit_all(space_root: &Path, message: &str) -> Result<(), String> {
+    run_git(space_root, &["commit", "-m", message])?;
+    Ok(())
+}
+
+fn normalize_path_for_gitignore(path: &str) -> Option<String> {
+    let normalized = Path::new(path)
+        .components()
+        .filter_map(|component| match component {
+            Component::Normal(part) => Some(part.to_string_lossy().to_string()),
+            _ => None,
+        })
+        .collect::<Vec<_>>()
+        .join("/");
+    if normalized.is_empty() {
+        None
+    } else {
+        Some(normalized)
+    }
+}
+
+fn push_unignore_patterns(lines: &mut Vec<String>, raw_path: &str) {
+    let Some(path) = normalize_path_for_gitignore(raw_path) else {
+        return;
+    };
+    let mut current = String::new();
+    for segment in path.split('/') {
+        if !current.is_empty() {
+            current.push('/');
+        }
+        current.push_str(segment);
+        lines.push(format!("!{current}/"));
+    }
+    lines.push(format!("!{path}/**"));
+}
+
+fn push_ignore_pattern(lines: &mut Vec<String>, raw_path: &str) {
+    if let Some(path) = normalize_path_for_gitignore(raw_path) {
+        lines.push(format!("{path}/"));
+    }
+}
+
+pub fn render_managed_gitignore(
+    inclusions: &GitSyncInclusionSettings,
+    context: &GitSyncContext,
+) -> String {
+    let mut lines = vec![
+        GLYPH_GITIGNORE_START.to_string(),
+        ".glyph/".to_string(),
+    ];
+
+    if !inclusions.include_non_markdown_files {
+        lines.extend([
+            "*".to_string(),
+            "!*/".to_string(),
+            "!*.md".to_string(),
+            "!.gitignore".to_string(),
+        ]);
+    }
+
+    match (inclusions.include_templates, context.templates_folder.as_deref()) {
+        (true, Some(path)) if !inclusions.include_non_markdown_files => {
+            push_unignore_patterns(&mut lines, path);
+        }
+        (false, Some(path)) => {
+            push_ignore_pattern(&mut lines, path);
+        }
+        _ => {}
+    }
+
+    match (
+        inclusions.include_attachments,
+        context.pasted_media_folder.as_deref(),
+    ) {
+        (true, Some(path)) if !inclusions.include_non_markdown_files => {
+            push_unignore_patterns(&mut lines, path);
+        }
+        (false, Some(path)) => {
+            push_ignore_pattern(&mut lines, path);
+        }
+        _ => {}
+    }
+
+    lines.push(GLYPH_GITIGNORE_END.to_string());
+    lines.join("\n")
+}
+
+pub fn upsert_managed_gitignore(
+    space_root: &Path,
+    inclusions: &GitSyncInclusionSettings,
+    context: &GitSyncContext,
+) -> Result<(), String> {
+    let path = space_root.join(".gitignore");
+    let block = render_managed_gitignore(inclusions, context);
+    let existing = std::fs::read_to_string(&path).unwrap_or_default();
+    let next = if let (Some(start), Some(end)) = (
+        existing.find(GLYPH_GITIGNORE_START),
+        existing.find(GLYPH_GITIGNORE_END),
+    ) {
+        let before = existing[..start].trim_end();
+        let after = existing[end + GLYPH_GITIGNORE_END.len()..].trim_start();
+        match (before.is_empty(), after.is_empty()) {
+            (true, true) => format!("{block}\n"),
+            (true, false) => format!("{block}\n\n{after}\n"),
+            (false, true) => format!("{before}\n\n{block}\n"),
+            (false, false) => format!("{before}\n\n{block}\n\n{after}\n"),
+        }
+    } else if existing.trim().is_empty() {
+        format!("{block}\n")
+    } else {
+        format!("{}\n\n{block}\n", existing.trim_end())
+    };
+    std::fs::write(path, next).map_err(|error| error.to_string())
+}
+
+pub fn stage_for_sync(space_root: &Path) -> Result<(), String> {
+    run_git(space_root, &["add", "-A", "."])?;
+    Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::git_sync::types::GitSyncInclusionSettings;
+
+    use super::{inspect_repo, render_managed_gitignore, RepoInspection};
+
+    #[test]
+    fn gitignore_for_markdown_only_excludes_other_files() {
+        let block = render_managed_gitignore(
+            &GitSyncInclusionSettings::default(),
+            &crate::git_sync::types::GitSyncContext {
+                templates_folder: Some("templates".to_string()),
+                pasted_media_folder: Some("assets/images".to_string()),
+            },
+        );
+        assert!(block.contains(".glyph/"));
+        assert!(block.contains("!*.md"));
+        assert!(block.contains("assets/images/"));
+    }
+
+    #[test]
+    fn gitignore_unignores_included_folders_when_markdown_only() {
+        let block = render_managed_gitignore(
+            &GitSyncInclusionSettings {
+                include_templates: true,
+                include_attachments: true,
+                include_non_markdown_files: false,
+            },
+            &crate::git_sync::types::GitSyncContext {
+                templates_folder: Some("config/templates".to_string()),
+                pasted_media_folder: Some("assets/images".to_string()),
+            },
+        );
+        assert!(block.contains("!config/"));
+        assert!(block.contains("!config/templates/**"));
+        assert!(block.contains("!assets/images/**"));
+    }
+
+    #[test]
+    fn inspect_repo_rejects_parent_repo() {
+        if !super::git_is_installed() {
+            return;
+        }
+        let root = std::env::temp_dir().join(format!("glyph-git-sync-inspect-{}", uuid::Uuid::new_v4()));
+        let child = root.join("child");
+        std::fs::create_dir_all(&child).expect("create child");
+        super::run_git(&root, &["init"]).expect("init repo");
+        super::run_git(&root, &["checkout", "-B", "main"]).expect("set branch");
+
+        let result = inspect_repo(&child).expect("inspect repo");
+        assert!(matches!(result, RepoInspection::Nested { .. }));
+    }
+}

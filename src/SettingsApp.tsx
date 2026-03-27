@@ -20,6 +20,7 @@ import { AdvancedSettingsPane } from "./components/settings/AdvancedSettingsPane
 import { AiSettingsPane } from "./components/settings/AiSettingsPane";
 import { AppearanceSettingsPane } from "./components/settings/AppearanceSettingsPane";
 import { GeneralSettingsPane } from "./components/settings/GeneralSettingsPane";
+import { GitSettingsPane } from "./components/settings/GitSettingsPane";
 import { SpaceSettingsPane } from "./components/settings/SpaceSettingsPane";
 import {
 	SETTINGS_TABS,
@@ -103,6 +104,7 @@ export default function SettingsApp() {
 		appearance: <AppearanceSettingsPane />,
 		ai: <AiSettingsPane />,
 		space: <SpaceSettingsPane />,
+		git: <GitSettingsPane />,
 		advanced: <AdvancedSettingsPane />,
 		about: <AboutSettingsPane />,
 	};
