@@ -52,6 +52,7 @@ export function AiCodexAccountSection({
 			<SettingsRow
 				label="Identity"
 				description="The connected account Glyph is currently using for Codex."
+				stacked={codexState.status === "connected"}
 				interactive={false}
 			>
 				<div className="settingsInline">
@@ -59,11 +60,12 @@ export function AiCodexAccountSection({
 						{codexState.displayName || codexState.email || "Not connected"}
 					</div>
 					{codexState.status === "connected" ? (
-						<>
+						<div className="settingsActions">
 							<Button
 								type="button"
 								size="sm"
 								variant="outline"
+								className="settingsActionDanger"
 								onClick={() => void onDisconnect()}
 								disabled={codexState.loading}
 							>
@@ -72,13 +74,13 @@ export function AiCodexAccountSection({
 							<Button
 								type="button"
 								size="sm"
-								variant="ghost"
+								variant="outline"
 								onClick={() => void onRefresh()}
 								disabled={codexState.loading}
 							>
 								Refresh Status
 							</Button>
-						</>
+						</div>
 					) : (
 						<Button
 							type="button"

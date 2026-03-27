@@ -280,12 +280,27 @@
 
 .settingsFieldControl > [data-slot="button"],
 .settingsActions > [data-slot="button"] {
-	min-height: 32px;
+	min-height: 36px;
 	border-radius: var(--radius-md);
 	border: 1px solid transparent;
 	box-shadow: none;
 	font-size: var(--font-size-label-sm);
 	font-weight: var(--font-medium);
+	line-height: 1.2;
+	padding-inline: 14px;
+	flex: 0 0 auto;
+}
+
+.settingsFieldControl > [data-slot="button"][data-size="sm"],
+.settingsActions > [data-slot="button"][data-size="sm"] {
+	min-height: 34px;
+	padding-inline: 14px;
+}
+
+.settingsFieldControl > [data-slot="button"][data-size="default"],
+.settingsActions > [data-slot="button"][data-size="default"] {
+	min-height: 38px;
+	padding-inline: 16px;
 }
 
 .settingsFieldControl > [data-slot="button"][data-variant="default"],
@@ -334,6 +349,22 @@
 	color: var(--text-primary);
 }
 
+.settingsFieldControl > [data-slot="button"].settingsActionDanger,
+.settingsActions > [data-slot="button"].settingsActionDanger {
+	background: var(--status-danger-bg);
+	border-color: var(--status-danger-border);
+	color: var(--status-danger-fg);
+}
+
+.settingsFieldControl
+	> [data-slot="button"].settingsActionDanger:hover:not(:disabled),
+.settingsActions
+	> [data-slot="button"].settingsActionDanger:hover:not(:disabled) {
+	background: color-mix(in srgb, var(--status-danger-bg) 84%, transparent);
+	border-color: color-mix(in srgb, var(--status-danger-border) 88%, transparent);
+	color: var(--status-danger-fg);
+}
+
 .settingsLabel {
 	font-size: var(--font-size-sm);
 	font-weight: var(--font-semibold);
@@ -365,34 +396,6 @@
 	gap: 8px;
 	font-size: var(--font-size-xs);
 	color: var(--text-secondary);
-}
-
-.settingsFieldControl > [data-slot="switch"] {
-	width: 44px;
-	height: 24px;
-	border-radius: 999px;
-	border: 1px solid color-mix(in srgb, var(--border-strong) 72%, transparent);
-	background: color-mix(in srgb, var(--bg-secondary) 88%, var(--bg-primary));
-	box-shadow: none;
-	flex: 0 0 auto;
-	padding: 1px;
-}
-
-.settingsFieldControl > [data-slot="switch"][data-state="checked"] {
-	background: color-mix(in srgb, var(--text-secondary) 26%, var(--bg-primary));
-	border-color: color-mix(in srgb, var(--text-secondary) 34%, transparent);
-}
-
-.settingsFieldControl > [data-slot="switch"] [data-slot="switch-thumb"] {
-	width: 20px;
-	height: 20px;
-	border-radius: 999px;
-	background: rgba(255, 255, 255, 0.92);
-	box-shadow: 0 1px 2px rgba(0, 0, 0, 0.22);
-}
-
-:root.dark .settingsFieldControl > [data-slot="switch"] [data-slot="switch-thumb"] {
-	background: rgba(255, 255, 255, 0.96);
 }
 
 .settingsList {

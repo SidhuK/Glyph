@@ -285,19 +285,22 @@ export function SpaceSettingsPane() {
 				<SettingsSection
 					title="Search Index"
 					description="Rebuild the index if search results are incomplete, stale, or missing."
-					aside={
+				>
+					<SettingsRow
+						label="Rebuild index"
+						description="Force Glyph to rescan the current space when search results look stale or incomplete."
+					>
 						<Button
 							type="button"
-							size="xs"
+							size="sm"
 							onClick={() => {
 								void onRebuildIndex();
 							}}
 							disabled={!currentSpacePath || isIndexing}
 						>
-							{isIndexing ? "Rebuilding..." : "Rebuild"}
+							{isIndexing ? "Rebuilding..." : "Rebuild Index"}
 						</Button>
-					}
-				>
+					</SettingsRow>
 					<SettingsRow
 						label="Status"
 						description="Use this when search results look outdated after large note or file changes."

@@ -136,6 +136,8 @@
 
 .settingsFeedbackButton {
 	width: 100%;
+	min-height: 40px;
+	padding-inline: 16px;
 	justify-content: center;
 	gap: 8px;
 	border-radius: calc(var(--radius-md) + 2px);
@@ -144,6 +146,7 @@
 	background: color-mix(in srgb, var(--color-yellow-500) 20%, var(--bg-primary));
 	color: color-mix(in srgb, var(--color-yellow-500) 55%, var(--text-primary));
 	font-weight: var(--font-semibold);
+	line-height: 1.2;
 }
 
 .settingsFeedbackButton:hover {
