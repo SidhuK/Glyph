@@ -81,6 +81,7 @@ export function NotePropertyValueField({
 		return (
 			<>
 				<div
+					role="presentation"
 					className="notePropertyTagField"
 					onMouseDown={(event) => {
 						if (event.target !== event.currentTarget) return;

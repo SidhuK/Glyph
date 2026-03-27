@@ -62,6 +62,8 @@ interface DatabaseBoardProps {
 	) => Promise<void>;
 }
 
+const EMPTY_LANE_COLORS: Record<string, string> = {};
+
 function getLaneColor(
 	laneColors: Record<string, string>,
 	laneId: string,
@@ -168,7 +170,7 @@ export function DatabaseBoard({
 	onOpenColumns,
 	onCreateDefaultGroupField,
 	onGroupColumnIdChange,
-	laneColors = {},
+	laneColors = EMPTY_LANE_COLORS,
 	onLaneColorChange,
 	onSaveCell,
 }: DatabaseBoardProps) {

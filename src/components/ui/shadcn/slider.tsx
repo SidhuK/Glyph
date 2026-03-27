@@ -1,5 +1,6 @@
 import { Slider as SliderPrimitive } from "radix-ui";
 import type * as React from "react";
+import { useMemo } from "react";
 
 import { cn } from "@/lib/utils";
 
@@ -13,6 +14,14 @@ function Slider({
 }: React.ComponentProps<typeof SliderPrimitive.Root>) {
 	const values = value ??
 		defaultValue ?? [min, max > min ? Math.min(min + 1, max) : min];
+	const thumbKeys = useMemo(() => {
+		const seen = new Map<number, number>();
+		return values.map((entry) => {
+			const occurrence = seen.get(entry) ?? 0;
+			seen.set(entry, occurrence + 1);
+			return `thumb-${entry}-${occurrence}`;
+		});
+	}, [values]);
 
 	return (
 		<SliderPrimitive.Root
@@ -36,9 +45,9 @@ function Slider({
 					className="bg-primary absolute h-full"
 				/>
 			</SliderPrimitive.Track>
-			{values.map((entry: number, index: number) => (
+			{values.map((_: number, index: number) => (
 				<SliderPrimitive.Thumb
-					key={`${index}-${entry}`}
+					key={thumbKeys[index]}
 					data-slot="slider-thumb"
 					className="border-primary bg-background ring-ring/50 block size-4 shrink-0 rounded-full border shadow-sm transition-[color,box-shadow] hover:ring-[3px] focus-visible:ring-[3px] focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50"
 				/>

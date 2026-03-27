@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
 	getDailyNoteTemplate,
 	getTemplatesFolder,
@@ -17,6 +17,32 @@ interface TemplateOption {
 	label: string;
 	value: string;
 }
+
+interface TemplatesSettingsState {
+	templatesFolder: string | null;
+	dailyNoteTemplatePath: string | null;
+	loading: boolean;
+	error: string | null;
+}
+
+interface TemplateLibraryState {
+	templates: TemplateOption[];
+	loading: boolean;
+	error: string | null;
+}
+
+const INITIAL_TEMPLATES_SETTINGS_STATE: TemplatesSettingsState = {
+	templatesFolder: null,
+	dailyNoteTemplatePath: null,
+	loading: true,
+	error: null,
+};
+
+const INITIAL_TEMPLATE_LIBRARY_STATE: TemplateLibraryState = {
+	templates: [],
+	loading: false,
+	error: null,
+};
 
 function toDisplayPath(value: string, folder: string | null): string {
 	if (!folder) return value;
@@ -37,17 +63,19 @@ async function ensureCurrentSpaceOpen(): Promise<string | null> {
 }
 
 export function TemplateSettingsSections() {
-	const [templatesFolder, setTemplatesFolderState] = useState<string | null>(
-		null,
+	const [settingsState, setSettingsState] = useState<TemplatesSettingsState>(
+		INITIAL_TEMPLATES_SETTINGS_STATE,
 	);
-	const [dailyNoteTemplatePath, setDailyNoteTemplatePathState] = useState<
-		string | null
-	>(null);
-	const [templates, setTemplates] = useState<TemplateOption[]>([]);
-	const [loading, setLoading] = useState(true);
-	const [templatesLoading, setTemplatesLoading] = useState(false);
-	const [error, setError] = useState<string | null>(null);
-	const [templatesError, setTemplatesError] = useState<string | null>(null);
+	const [templateLibraryState, setTemplateLibraryState] =
+		useState<TemplateLibraryState>(INITIAL_TEMPLATE_LIBRARY_STATE);
+	const { templatesFolder, dailyNoteTemplatePath, loading, error } =
+		settingsState;
+	const {
+		templates,
+		loading: templatesLoading,
+		error: templatesError,
+	} = templateLibraryState;
+	const latestClearOpIdRef = useRef(0);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -58,20 +86,22 @@ export function TemplateSettingsSections() {
 					getDailyNoteTemplate(),
 				]);
 				if (cancelled) return;
-				setTemplatesFolderState(folder);
-				setDailyNoteTemplatePathState(dailyTemplate);
+				setSettingsState({
+					templatesFolder: folder,
+					dailyNoteTemplatePath: dailyTemplate,
+					loading: false,
+					error: null,
+				});
 			} catch (cause) {
-				if (!cancelled) {
-					setError(
+				if (cancelled) return;
+				setSettingsState((current) => ({
+					...current,
+					loading: false,
+					error:
 						cause instanceof Error
 							? cause.message
 							: "Failed to load templates settings",
-					);
-				}
-			} finally {
-				if (!cancelled) {
-					setLoading(false);
-				}
+				}));
 			}
 		})();
 		return () => {
@@ -81,13 +111,15 @@ export function TemplateSettingsSections() {
 
 	useEffect(() => {
 		if (templatesFolder === null) {
-			setTemplates([]);
-			setTemplatesLoading(false);
-			setTemplatesError(null);
+			setTemplateLibraryState(INITIAL_TEMPLATE_LIBRARY_STATE);
 			return;
 		}
 		let cancelled = false;
-		setTemplatesLoading(true);
+		setTemplateLibraryState((current) => ({
+			...current,
+			loading: true,
+			error: null,
+		}));
 		void ensureCurrentSpaceOpen()
 			.then((spacePath) => {
 				if (!spacePath) {
@@ -97,25 +129,23 @@ export function TemplateSettingsSections() {
 			})
 			.then((entries) => {
 				if (cancelled) return;
-				setTemplates(
-					entries.map((entry) => ({
+				setTemplateLibraryState({
+					templates: entries.map((entry) => ({
 						value: entry.relPath,
 						label: toDisplayPath(entry.relPath, templatesFolder),
 					})),
-				);
-				setTemplatesError(null);
+					loading: false,
+					error: null,
+				});
 			})
 			.catch((cause) => {
 				if (cancelled) return;
-				setTemplates([]);
-				setTemplatesError(
-					cause instanceof Error ? cause.message : "Failed to load templates",
-				);
-			})
-			.finally(() => {
-				if (!cancelled) {
-					setTemplatesLoading(false);
-				}
+				setTemplateLibraryState({
+					templates: [],
+					loading: false,
+					error:
+						cause instanceof Error ? cause.message : "Failed to load templates",
+				});
 			});
 		return () => {
 			cancelled = true;
@@ -123,6 +153,7 @@ export function TemplateSettingsSections() {
 	}, [templatesFolder]);
 
 	useEffect(() => {
+		const opId = ++latestClearOpIdRef.current;
 		if (loading || templatesLoading || templatesError) return;
 		if (!dailyNoteTemplatePath) return;
 		if (
@@ -134,15 +165,20 @@ export function TemplateSettingsSections() {
 		void (async () => {
 			try {
 				await setDailyNoteTemplate(null);
-				if (cancelled) return;
-				setDailyNoteTemplatePathState(null);
+				if (cancelled || opId !== latestClearOpIdRef.current) return;
+				setSettingsState((current) => ({
+					...current,
+					dailyNoteTemplatePath: null,
+				}));
 			} catch (cause) {
-				if (cancelled) return;
-				setError(
-					cause instanceof Error
-						? cause.message
-						: "Failed to clear daily note template",
-				);
+				if (cancelled || opId !== latestClearOpIdRef.current) return;
+				setSettingsState((current) => ({
+					...current,
+					error:
+						cause instanceof Error
+							? cause.message
+							: "Failed to clear daily note template",
+				}));
 			}
 		})();
 		return () => {
@@ -157,7 +193,7 @@ export function TemplateSettingsSections() {
 	]);
 
 	const handleBrowseFolder = useCallback(async () => {
-		setError(null);
+		setSettingsState((current) => ({ ...current, error: null }));
 		try {
 			const { open } = await import("@tauri-apps/plugin-dialog");
 			const selected = await open({
@@ -167,14 +203,20 @@ export function TemplateSettingsSections() {
 			if (!selected || typeof selected !== "string") return;
 			const currentSpacePath = await ensureCurrentSpaceOpen();
 			if (!currentSpacePath) {
-				setError("No space is currently open.");
+				setSettingsState((current) => ({
+					...current,
+					error: "No space is currently open.",
+				}));
 				return;
 			}
 			const normSelected = selected.replace(/\\/g, "/");
 			const normSpace = currentSpacePath.replace(/\\/g, "/");
 			const spacePrefix = normSpace.endsWith("/") ? normSpace : `${normSpace}/`;
 			if (normSelected !== normSpace && !normSelected.startsWith(spacePrefix)) {
-				setError("Selected folder must be inside the current space.");
+				setSettingsState((current) => ({
+					...current,
+					error: "Selected folder must be inside the current space.",
+				}));
 				return;
 			}
 			const relativePath = normSelected
@@ -182,44 +224,59 @@ export function TemplateSettingsSections() {
 				.replace(/^\/+/, "");
 			await setTemplatesFolder(relativePath);
 			await setDailyNoteTemplate(null);
-			setTemplatesFolderState(relativePath);
-			setDailyNoteTemplatePathState(null);
+			setSettingsState((current) => ({
+				...current,
+				templatesFolder: relativePath,
+				dailyNoteTemplatePath: null,
+			}));
 		} catch (cause) {
-			setError(
-				cause instanceof Error
-					? cause.message
-					: "Failed to select template folder",
-			);
+			setSettingsState((current) => ({
+				...current,
+				error:
+					cause instanceof Error
+						? cause.message
+						: "Failed to select template folder",
+			}));
 		}
 	}, []);
 
 	const handleClearFolder = useCallback(async () => {
-		setError(null);
+		setSettingsState((current) => ({ ...current, error: null }));
 		try {
 			await setTemplatesFolder(null);
-			setTemplatesFolderState(null);
-			setDailyNoteTemplatePathState(null);
+			setSettingsState((current) => ({
+				...current,
+				templatesFolder: null,
+				dailyNoteTemplatePath: null,
+			}));
 		} catch (cause) {
-			setError(
-				cause instanceof Error
-					? cause.message
-					: "Failed to clear template folder",
-			);
+			setSettingsState((current) => ({
+				...current,
+				error:
+					cause instanceof Error
+						? cause.message
+						: "Failed to clear template folder",
+			}));
 		}
 	}, []);
 
 	const handleDailyTemplateChange = useCallback(async (value: string) => {
 		const next = value.trim() ? value : null;
-		setError(null);
+		setSettingsState((current) => ({ ...current, error: null }));
 		try {
 			await setDailyNoteTemplate(next);
-			setDailyNoteTemplatePathState(next);
+			setSettingsState((current) => ({
+				...current,
+				dailyNoteTemplatePath: next,
+			}));
 		} catch (cause) {
-			setError(
-				cause instanceof Error
-					? cause.message
-					: "Failed to update daily note template",
-			);
+			setSettingsState((current) => ({
+				...current,
+				error:
+					cause instanceof Error
+						? cause.message
+						: "Failed to update daily note template",
+			}));
 		}
 	}, []);
 

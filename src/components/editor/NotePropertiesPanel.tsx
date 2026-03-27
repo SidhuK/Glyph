@@ -19,6 +19,12 @@ interface NotePropertiesPanelProps {
 	onErrorChange?: (message: string) => void;
 }
 
+interface NotePropertiesEditorState {
+	properties: NoteProperty[];
+	propertyRowIds: string[];
+	rawDraft: string;
+}
+
 export function NotePropertiesPanel({
 	frontmatter,
 	readOnly = false,
@@ -26,9 +32,11 @@ export function NotePropertiesPanel({
 	onErrorChange,
 }: NotePropertiesPanelProps) {
 	const [mode, setMode] = useState<"properties" | "raw">("properties");
-	const [properties, setProperties] = useState<NoteProperty[]>([]);
-	const [propertyRowIds, setPropertyRowIds] = useState<string[]>([]);
-	const [rawDraft, setRawDraft] = useState(frontmatter ?? "");
+	const [editorState, setEditorState] = useState<NotePropertiesEditorState>({
+		properties: [],
+		propertyRowIds: [],
+		rawDraft: frontmatter ?? "",
+	});
 	const [availableTags, setAvailableTags] = useState<TagCount[]>([]);
 	const [tagDrafts, setTagDrafts] = useState<Record<string, string>>({});
 	const lastCommittedFrontmatterRef = useRef<string | null>(null);
@@ -36,6 +44,7 @@ export function NotePropertiesPanel({
 	const tagInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 	const parseRequestIdRef = useRef(0);
 	const renderRequestIdRef = useRef(0);
+	const { properties, propertyRowIds, rawDraft } = editorState;
 
 	const pruneRowScopedState = (nextRowIds: string[]) => {
 		setTagDrafts((current) =>
@@ -55,24 +64,42 @@ export function NotePropertiesPanel({
 	};
 
 	useEffect(() => {
+		const nextRawDraft = frontmatter ?? "";
 		if (mode === "raw") {
-			setRawDraft(frontmatter ?? "");
+			parseRequestIdRef.current += 1;
+			setEditorState((current) =>
+				current.rawDraft === nextRawDraft
+					? current
+					: { ...current, rawDraft: nextRawDraft },
+			);
 			return;
 		}
 		if ((frontmatter ?? null) === lastCommittedFrontmatterRef.current) {
-			setRawDraft(frontmatter ?? "");
+			parseRequestIdRef.current += 1;
+			setEditorState((current) =>
+				current.rawDraft === nextRawDraft
+					? current
+					: { ...current, rawDraft: nextRawDraft },
+			);
 			return;
 		}
 		const requestId = ++parseRequestIdRef.current;
-		setRawDraft(frontmatter ?? "");
+		setEditorState((current) =>
+			current.rawDraft === nextRawDraft
+				? current
+				: { ...current, rawDraft: nextRawDraft },
+		);
 		void invoke("note_frontmatter_parse_properties", { frontmatter })
 			.then((parsed) => {
 				if (requestId !== parseRequestIdRef.current) return;
-				setProperties(parsed);
 				const nextRowIds = parsed.map(
 					() => `property-row-${propertyRowIdCounterRef.current++}`,
 				);
-				setPropertyRowIds(nextRowIds);
+				setEditorState({
+					properties: parsed,
+					propertyRowIds: nextRowIds,
+					rawDraft: nextRawDraft,
+				});
 				setTagDrafts({});
 				tagInputRefs.current = {};
 				lastCommittedFrontmatterRef.current = frontmatter ?? null;
@@ -103,15 +130,21 @@ export function NotePropertiesPanel({
 		nextRowIds: string[] = propertyRowIds,
 	) => {
 		const requestId = ++renderRequestIdRef.current;
-		setProperties(nextProperties);
-		setPropertyRowIds(nextRowIds);
+		setEditorState((current) => ({
+			...current,
+			properties: nextProperties,
+			propertyRowIds: nextRowIds,
+		}));
 		pruneRowScopedState(nextRowIds);
 		void invoke("note_frontmatter_render_properties", {
 			properties: nextProperties,
 		})
 			.then((nextFrontmatter) => {
 				if (requestId !== renderRequestIdRef.current) return;
-				setRawDraft(nextFrontmatter ?? "");
+				setEditorState((current) => ({
+					...current,
+					rawDraft: nextFrontmatter ?? "",
+				}));
 				lastCommittedFrontmatterRef.current = nextFrontmatter ?? null;
 				onErrorChange?.("");
 				onChange(nextFrontmatter);
@@ -144,7 +177,10 @@ export function NotePropertiesPanel({
 					value={rawDraft}
 					readOnly={readOnly}
 					onChange={(nextValue, nextRawDraft) => {
-						setRawDraft(nextRawDraft);
+						setEditorState((current) => ({
+							...current,
+							rawDraft: nextRawDraft,
+						}));
 						onChange(nextValue);
 					}}
 				/>

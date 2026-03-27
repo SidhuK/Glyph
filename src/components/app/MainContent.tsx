@@ -1,5 +1,13 @@
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
-import { Suspense, lazy, memo, useEffect, useMemo, useState } from "react";
+import {
+	Suspense,
+	lazy,
+	memo,
+	useCallback,
+	useEffect,
+	useMemo,
+	useState,
+} from "react";
 import {
 	useAISidebarContext,
 	useSpace,
@@ -309,6 +317,9 @@ export const MainContent = memo(function MainContent({
 	const [starterOverrideVisible, setStarterOverrideVisible] = useState(false);
 	const [dailyNoteSetupToastVisible, setDailyNoteSetupToastVisible] =
 		useState(false);
+	const handleTabActivated = useCallback(() => {
+		setStarterOverrideVisible(false);
+	}, []);
 
 	const {
 		openTabs,
@@ -323,7 +334,7 @@ export const MainContent = memo(function MainContent({
 		renameTabsForPath,
 		reorderTabs,
 		openSpecialTab,
-	} = useTabManager(spacePath);
+	} = useTabManager(spacePath, { onActivateTab: handleTabActivated });
 
 	useEffect(() => {
 		if (!spacePath || openCalendarRequest === 0) return;
@@ -413,12 +424,6 @@ export const MainContent = memo(function MainContent({
 		if (!payload.onboarding) return;
 		setOnboarding((prev) => ({ ...prev, ...payload.onboarding }));
 	});
-
-	useEffect(() => {
-		if (activeTabPath) {
-			setStarterOverrideVisible(false);
-		}
-	}, [activeTabPath]);
 
 	useEffect(() => {
 		if (!spacePath || dailyNoteSetupNoticeRequest === 0) return;

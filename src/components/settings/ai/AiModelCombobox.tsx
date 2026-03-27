@@ -13,6 +13,20 @@ interface AiModelComboboxProps {
 const providerNeedsApiKey = (provider: AiProviderKind): boolean =>
 	provider !== "ollama" && provider !== "codex_chatgpt";
 
+interface ModelFetchState {
+	models: AiModel[] | null;
+	loading: boolean;
+	error: string;
+	hasAttemptedFetch: boolean;
+}
+
+const INITIAL_MODEL_FETCH_STATE: ModelFetchState = {
+	models: null,
+	loading: false,
+	error: "",
+	hasAttemptedFetch: false,
+};
+
 export function AiModelCombobox({
 	profileId,
 	provider,
@@ -21,36 +35,74 @@ export function AiModelCombobox({
 	onChange,
 	onModelsChange,
 }: AiModelComboboxProps) {
-	const [models, setModels] = useState<AiModel[] | null>(null);
-	const [loading, setLoading] = useState(false);
-	const [error, setError] = useState("");
-	const [hasAttemptedFetch, setHasAttemptedFetch] = useState(false);
+	const [modelFetchState, setModelFetchState] = useState<ModelFetchState>(
+		INITIAL_MODEL_FETCH_STATE,
+	);
+	const { models, loading, error, hasAttemptedFetch } = modelFetchState;
+	const modelFetchStateRef = useRef(modelFetchState);
 	const lastSecretConfiguredRef = useRef<boolean | null>(secretConfigured);
+	const onModelsChangeRef = useRef(onModelsChange);
 	const requiresApiKey = providerNeedsApiKey(provider);
 	const canFetchModels = !requiresApiKey || secretConfigured === true;
+	const fetchScope = `${profileId}:${provider}`;
+	const lastFetchScopeRef = useRef(fetchScope);
+
+	useEffect(() => {
+		onModelsChangeRef.current = onModelsChange;
+	}, [onModelsChange]);
+
+	useEffect(() => {
+		modelFetchStateRef.current = modelFetchState;
+	}, [modelFetchState]);
 
 	const fetchModels = useCallback(
 		async (force = false) => {
-			if (!force && (models || loading || hasAttemptedFetch)) return;
-			setLoading(true);
-			setHasAttemptedFetch(true);
-			setError("");
+			const current = modelFetchStateRef.current;
+			if (
+				!force &&
+				(current.models || current.loading || current.hasAttemptedFetch)
+			) {
+				return;
+			}
+			const nextState: ModelFetchState = {
+				models: force ? null : current.models,
+				loading: true,
+				error: "",
+				hasAttemptedFetch: true,
+			};
+			modelFetchStateRef.current = nextState;
+			setModelFetchState(nextState);
 			try {
 				const result = await invoke("ai_models_list", {
 					profile_id: profileId,
 					provider,
 				});
-				setModels(result);
-				onModelsChange?.(result);
+				setModelFetchState({
+					models: result,
+					loading: false,
+					error: "",
+					hasAttemptedFetch: true,
+				});
+				onModelsChangeRef.current?.(result);
 			} catch (e) {
-				setError(e instanceof Error ? e.message : String(e));
-				onModelsChange?.(null);
-			} finally {
-				setLoading(false);
+				setModelFetchState({
+					models: null,
+					loading: false,
+					error: e instanceof Error ? e.message : String(e),
+					hasAttemptedFetch: true,
+				});
+				onModelsChangeRef.current?.(null);
 			}
 		},
-		[models, loading, hasAttemptedFetch, profileId, provider, onModelsChange],
+		[profileId, provider],
 	);
+
+	useEffect(() => {
+		if (lastFetchScopeRef.current === fetchScope) return;
+		lastFetchScopeRef.current = fetchScope;
+		setModelFetchState(INITIAL_MODEL_FETCH_STATE);
+		onModelsChangeRef.current?.(null);
+	}, [fetchScope]);
 
 	useEffect(() => {
 		if (!canFetchModels || hasAttemptedFetch) return;
@@ -63,10 +115,6 @@ export function AiModelCombobox({
 			secretConfigured === true &&
 			lastSecretConfiguredRef.current !== true
 		) {
-			setModels(null);
-			setError("");
-			setLoading(false);
-			setHasAttemptedFetch(false);
 			void fetchModels(true);
 		}
 		lastSecretConfiguredRef.current = secretConfigured;
@@ -74,19 +122,15 @@ export function AiModelCombobox({
 
 	const handleRetry = useCallback(() => {
 		if (!canFetchModels) return;
-		setModels(null);
-		onModelsChange?.(null);
-		setError("");
-		setHasAttemptedFetch(false);
+		onModelsChangeRef.current?.(null);
 		void fetchModels(true);
-	}, [canFetchModels, fetchModels, onModelsChange]);
+	}, [canFetchModels, fetchModels]);
 
 	useEffect(() => {
-		if (!canFetchModels) {
-			setModels(null);
-			onModelsChange?.(null);
-		}
-	}, [canFetchModels, onModelsChange]);
+		if (canFetchModels || modelFetchState === INITIAL_MODEL_FETCH_STATE) return;
+		setModelFetchState(INITIAL_MODEL_FETCH_STATE);
+		onModelsChangeRef.current?.(null);
+	}, [canFetchModels, modelFetchState]);
 
 	const statusLabel = loading
 		? "Connecting..."

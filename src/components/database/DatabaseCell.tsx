@@ -31,6 +31,8 @@ interface DatabaseCellProps {
 	) => Promise<void>;
 }
 
+const EMPTY_LANE_COLORS: Record<string, EditorTextColor> = {};
+
 function listDraft(row: DatabaseRow, column: DatabaseColumn): string {
 	const value = databaseCellValueFromRow(row, column);
 	return value.value_list.join(", ");
@@ -39,7 +41,7 @@ function listDraft(row: DatabaseRow, column: DatabaseColumn): string {
 export function DatabaseCell({
 	row,
 	column,
-	laneColors = {},
+	laneColors = EMPTY_LANE_COLORS,
 	onOpenNote,
 	onSelectRow,
 	onSave,
@@ -162,6 +164,7 @@ export function DatabaseCell({
 	if (column.type === "property" && column.property_kind === "checkbox") {
 		return (
 			<div
+				role="presentation"
 				className="notePropertyToggle databaseCheckboxCell"
 				onClick={(event) => {
 					handleSelectRow();
@@ -303,6 +306,7 @@ export function DatabaseCell({
 			<div className="databaseTagEditor">
 				<div
 					ref={tagFieldRef}
+					role="presentation"
 					className="notePropertyTagField databaseTagField"
 					onMouseDown={(event) => {
 						handleSelectRow();

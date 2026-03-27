@@ -23,6 +23,15 @@ function formatPublishedDate(value: string | null): string | null {
 	}).format(date);
 }
 
+function getSectionItemKeys(items: string[]): string[] {
+	const seen = new Map<string, number>();
+	return items.map((item) => {
+		const occurrence = seen.get(item) ?? 0;
+		seen.set(item, occurrence + 1);
+		return `${item}:${occurrence}`;
+	});
+}
+
 export function WhatsNewDialog({
 	open,
 	releaseNotes,
@@ -80,24 +89,29 @@ export function WhatsNewDialog({
 								(section) =>
 									Array.isArray(section.items) && section.items.length > 0,
 							)
-							.map((section) => (
-								<div key={section.category} className="whatsNewSection">
-									<div className="commandPaletteSectionLabel">
-										{section.category}
-									</div>
-									{section.items.map((item, index) => (
-										<div
-											key={`${section.category}:${item}:${index}`}
-											className="commandPaletteItem commandPaletteResultItem whatsNewItem"
-											data-selected="false"
-										>
-											<div className="commandPaletteResultContent">
-												<div className="commandPaletteResultTitle">{item}</div>
-											</div>
+							.map((section) => {
+								const itemKeys = getSectionItemKeys(section.items);
+								return (
+									<div key={section.category} className="whatsNewSection">
+										<div className="commandPaletteSectionLabel">
+											{section.category}
 										</div>
-									))}
-								</div>
-							))}
+										{section.items.map((item, itemIndex) => (
+											<div
+												key={`${section.category}:${itemKeys[itemIndex]}`}
+												className="commandPaletteItem commandPaletteResultItem whatsNewItem"
+												data-selected="false"
+											>
+												<div className="commandPaletteResultContent">
+													<div className="commandPaletteResultTitle">
+														{item}
+													</div>
+												</div>
+											</div>
+										))}
+									</div>
+								);
+							})}
 					</div>
 				</div>
 

@@ -900,7 +900,10 @@ interface TauriCommands {
 	link_preview: CommandDef<{ url: string; force?: boolean }, LinkPreview>;
 	git_sync_status_read: CommandDef<void, GitSyncStatus>;
 	git_sync_config_read: CommandDef<void, GitSyncConfig | null>;
-	git_sync_config_update: CommandDef<{ patch: GitSyncConfigPatch }, GitSyncConfig>;
+	git_sync_config_update: CommandDef<
+		{ patch: GitSyncConfigPatch },
+		GitSyncConfig
+	>;
 	git_sync_run: CommandDef<{ request: GitSyncRunRequest }, GitSyncStatus>;
 	git_sync_disconnect: CommandDef<void, GitSyncStatus>;
 
