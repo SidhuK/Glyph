@@ -200,17 +200,25 @@ const footerTrimMarks = Array.from({ length: 30 });
 
 		<!-- ── FEATURES ── -->
 		<section class="features-section" data-reveal>
-			<div class="feature-card feature-card--sand">
-				<div class="feature-card-text">
-					<p class="feature-eyebrow">✏️ Editor</p>
-					<h3 class="feature-heading">Markdown-native. Write without friction.</h3>
-					<p class="feature-body">A distraction-free editor with a floating toolbar, slash commands, and live preview. Every note is a plain .md file you own forever.</p>
+			<div class="feature-card-row feature-card-row--thirds">
+				<div class="feature-card feature-card--compact feature-card--stacked bento-card-format">
+					<div class="bento-card-content">
+						<h3 class="feature-heading">Markdown-native. Write without friction.</h3>
+						<p class="feature-body">A distraction-free editor with a floating toolbar, slash commands, and live preview. Every note is a plain .md file you own forever.</p>
+					</div>
+					<div class="bento-visual-wrapper">
+						<svg class="svg-format" viewBox="0 0 100 100" aria-hidden="true">
+							<rect class="doc-back" x="30" y="20" width="50" height="65" rx="4" fill="#d8e8dc" stroke="#a7c4ae" stroke-width="2"/>
+							<rect class="doc-front" x="15" y="30" width="50" height="65" rx="4" fill="#f4f9f5" stroke="#a7c4ae" stroke-width="2"/>
+							<path class="line line-1" d="M 25 50 H 55" stroke="#a7c4ae" stroke-width="3" stroke-linecap="round"/>
+							<path class="line line-2" d="M 25 60 H 45" stroke="#a7c4ae" stroke-width="3" stroke-linecap="round"/>
+							<path class="line line-3" d="M 25 70 H 50" stroke="#a7c4ae" stroke-width="3" stroke-linecap="round"/>
+							<text class="md-mark" x="35" y="40" font-family="monospace" font-weight="bold" font-size="16" fill="#88a892">{}</text>
+						</svg>
+					</div>
 				</div>
-			</div>
-			<div class="feature-card-row">
-				<div class="feature-card feature-card--sage feature-card--has-img feature-card--stacked">
+				<div class="feature-card feature-card--has-img feature-card--stacked">
 					<div class="feature-card-text">
-						<p class="feature-eyebrow">🔗 Connections</p>
 						<h3 class="feature-heading">Wikilinks & backlinks. Ideas stay connected.</h3>
 						<p class="feature-body">Connect any idea to any other with [[wikilinks]]. See what links back. Your notes stay linked together — no folders, no silos.</p>
 					</div>
@@ -299,9 +307,8 @@ const footerTrimMarks = Array.from({ length: 30 });
 						</svg>
 					</div>
 				</div>
-				<div class="feature-card feature-card--peach feature-card--has-img feature-card--stacked">
+				<div class="feature-card feature-card--has-img feature-card--stacked">
 					<div class="feature-card-text">
-						<p class="feature-eyebrow">🧠 Intelligence</p>
 						<h3 class="feature-heading">AI that knows your notes.</h3>
 						<p class="feature-body">Ask questions about your own notes. Summarize, compare, or draft — powered by your existing ChatGPT subscription, Anthropic, or a local model.</p>
 					</div>
@@ -447,9 +454,9 @@ const footerTrimMarks = Array.from({ length: 30 });
 					</div>
 				</div>
 			</div>
-			<div class="feature-card feature-card--sky feature-card--wide feature-card--has-img">
+			<div class="feature-card-row feature-card-row--tasks">
+				<div class="feature-card feature-card--has-img">
 				<div class="feature-card-text">
-					<p class="feature-eyebrow">✅ Productivity</p>
 					<h3 class="feature-heading">Tasks, tables & boards. All in one place.</h3>
 					<p class="feature-body">Drop a checkbox in any note. Organize with tables and kanban boards. Glyph pulls tasks into Inbox, Today, and Upcoming — no separate app needed.</p>
 				</div>
@@ -492,7 +499,7 @@ const footerTrimMarks = Array.from({ length: 30 });
 							.icon-bounce { transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); }
 							.hover-card:hover .icon-bounce { transform: scale(1.1) rotate(-3deg); }
 						</style>
-						<rect width="100%" height="100%" fill="#e7eef5" />
+						<rect width="100%" height="100%" fill="#ffffff" />
 						<rect width="100%" height="100%" fill="url(#grid)" />
 						<g class="hover-card">
 							<rect class="bento-card-base" x="40" y="40" width="340" height="150" rx="24" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5" filter="url(#shadow)" />
@@ -545,11 +552,29 @@ const footerTrimMarks = Array.from({ length: 30 });
 						</g>
 					</svg>
 				</div>
+				</div>
+				<div class="feature-card feature-card--compact feature-card--stacked bento-card-perf">
+					<div class="bento-card-content">
+						<h3 class="feature-heading">Lean native app.</h3>
+						<p class="feature-body">Fast launch, light footprint, and battery-friendly.</p>
+						<ul class="feature-list">
+							<li>&lt;40 MB app size</li>
+							<li>Tauri + Rust</li>
+							<li>No Electron</li>
+						</ul>
+					</div>
+					<div class="bento-visual-wrapper">
+						<svg class="svg-perf" viewBox="0 0 100 100" aria-hidden="true">
+							<path d="M 20 75 A 35 35 0 1 1 80 75" fill="none" stroke="#d5e3f0" stroke-width="6" stroke-linecap="round"/>
+							<path class="gauge-fill" d="M 20 75 A 35 35 0 1 1 80 75" fill="none" stroke="#a6c4e0" stroke-width="6" stroke-linecap="round" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100"/>
+							<path class="bolt" d="M 54 38 L 44 54 H 56 L 46 72 L 62 50 H 50 Z" fill="#a6c4e0"/>
+						</svg>
+					</div>
+				</div>
 			</div>
-			<div class="feature-card-row">
-				<div class="feature-card feature-card--butter feature-card--stacked feature-card--has-img">
+			<div class="feature-card-row feature-card-row--thirds">
+				<div class="feature-card feature-card--stacked feature-card--has-img">
 					<div class="feature-card-text">
-						<p class="feature-eyebrow">🔍 Search</p>
 						<h3 class="feature-heading">Find anything, instantly.</h3>
 						<p class="feature-body">Hit ⌘P and find anything — by tag, folder, or full-text. Results appear before you finish typing.</p>
 					</div>
@@ -682,9 +707,8 @@ const footerTrimMarks = Array.from({ length: 30 });
 						</svg>
 					</div>
 				</div>
-				<div class="feature-card feature-card--rose feature-card--wide feature-card--stacked feature-card--has-img">
+				<div class="feature-card feature-card--wide feature-card--stacked feature-card--has-img">
 					<div class="feature-card-text">
-						<p class="feature-eyebrow">🎨 Customization</p>
 						<h3 class="feature-heading">Make it yours.</h3>
 						<p class="feature-body">Accent colors, custom fonts, daily notes, and shortcuts — bend Glyph to match how you think.</p>
 					</div>
@@ -829,11 +853,8 @@ const footerTrimMarks = Array.from({ length: 30 });
 						</svg>
 					</div>
 				</div>
-			</div>
-			<div class="bento-grid">
-				<div class="feature-card feature-card--sand feature-card--compact bento-card-privacy">
+				<div class="feature-card feature-card--compact bento-card-privacy">
 					<div class="bento-card-content">
-						<p class="feature-eyebrow">🔒 Privacy</p>
 						<h3 class="feature-heading">Private by default.</h3>
 						<p class="feature-body">Nothing gets uploaded behind your back.</p>
 						<ul class="feature-list">
@@ -848,71 +869,6 @@ const footerTrimMarks = Array.from({ length: 30 });
 							<path class="lock-shackle" d="M 40 48 V 40 C 40 34 60 34 60 40 V 48" fill="none" stroke="#a39882" stroke-width="4" stroke-linecap="round"/>
 							<rect x="34" y="48" width="32" height="22" rx="4" fill="#a39882"/>
 							<circle cx="50" cy="59" r="3.5" fill="#f0e9d8"/>
-						</svg>
-					</div>
-				</div>
-				<div class="feature-card feature-card--sage feature-card--compact bento-card-format">
-					<div class="bento-card-content">
-						<p class="feature-eyebrow">📄 Format</p>
-						<h3 class="feature-heading">Open markdown files.</h3>
-						<p class="feature-body">Your notes stay portable forever. Readable in Finder, Obsidian, VS Code, or plain text.</p>
-						<div class="feature-badge-row">
-							<span class="feature-badge">.md</span>
-							<span class="feature-badge">Standard</span>
-						</div>
-					</div>
-					<div class="bento-visual-wrapper">
-						<svg class="svg-format" viewBox="0 0 100 100" aria-hidden="true">
-							<rect class="doc-back" x="30" y="20" width="50" height="65" rx="4" fill="#d8e8dc" stroke="#a7c4ae" stroke-width="2"/>
-							<rect class="doc-front" x="15" y="30" width="50" height="65" rx="4" fill="#f4f9f5" stroke="#a7c4ae" stroke-width="2"/>
-							<path class="line line-1" d="M 25 50 H 55" stroke="#a7c4ae" stroke-width="3" stroke-linecap="round"/>
-							<path class="line line-2" d="M 25 60 H 45" stroke="#a7c4ae" stroke-width="3" stroke-linecap="round"/>
-							<path class="line line-3" d="M 25 70 H 50" stroke="#a7c4ae" stroke-width="3" stroke-linecap="round"/>
-							<text class="md-mark" x="35" y="40" font-family="monospace" font-weight="bold" font-size="16" fill="#88a892">{}</text>
-						</svg>
-					</div>
-				</div>
-				<div class="feature-card feature-card--sky feature-card--compact bento-card-perf">
-					<div class="bento-card-content">
-						<p class="feature-eyebrow">⚡ Performance</p>
-						<h3 class="feature-heading">Lean native app.</h3>
-						<p class="feature-body">Fast launch, light footprint, and battery-friendly.</p>
-						<ul class="feature-list">
-							<li>&lt;40 MB app size</li>
-							<li>Tauri + Rust</li>
-							<li>No Electron</li>
-						</ul>
-					</div>
-					<div class="bento-visual-wrapper">
-						<svg class="svg-perf" viewBox="0 0 100 100" aria-hidden="true">
-							<path d="M 20 75 A 35 35 0 1 1 80 75" fill="none" stroke="#d5e3f0" stroke-width="6" stroke-linecap="round"/>
-							<path class="gauge-fill" d="M 20 75 A 35 35 0 1 1 80 75" fill="none" stroke="#a6c4e0" stroke-width="6" stroke-linecap="round" pathLength="100" stroke-dasharray="100" stroke-dashoffset="100"/>
-							<path class="bolt" d="M 54 38 L 44 54 H 56 L 46 72 L 62 50 H 50 Z" fill="#a6c4e0"/>
-						</svg>
-					</div>
-				</div>
-				<div class="feature-card feature-card--rose feature-card--compact bento-card-ai">
-					<div class="bento-card-content">
-						<p class="feature-eyebrow">🤖 AI</p>
-						<h3 class="feature-heading">Bring your own AI.</h3>
-						<p class="feature-body">Use your own account, API key, or local model when you want help.</p>
-						<div class="feature-tag-cloud">
-							<span class="feature-tag">ChatGPT</span>
-							<span class="feature-tag">Claude</span>
-							<span class="feature-tag">Gemini</span>
-							<span class="feature-tag">Ollama</span>
-						</div>
-					</div>
-					<div class="bento-visual-wrapper">
-						<svg class="svg-ai" viewBox="0 0 100 100" aria-hidden="true">
-							<path class="connection" d="M 50 50 L 25 35 M 50 50 L 75 30 M 50 50 L 65 75 M 50 50 L 30 70" stroke="#e8d0d8" stroke-width="2" stroke-linecap="round"/>
-							<circle class="node" cx="25" cy="35" r="5" fill="#d1a7b6"/>
-							<circle class="node" cx="75" cy="30" r="4" fill="#d1a7b6"/>
-							<circle class="node" cx="65" cy="75" r="6" fill="#d1a7b6"/>
-							<circle class="node" cx="30" cy="70" r="4" fill="#d1a7b6"/>
-							<circle class="node center-node" cx="50" cy="50" r="8" fill="#c48f9f"/>
-							<path class="sparkle s1" d="M 85 55 C 85 55 87 61 93 62 C 87 63 85 69 85 69 C 85 69 83 63 77 62 C 83 61 85 55 85 55 Z" fill="#d1a7b6"/>
-							<path class="sparkle s2" d="M 20 60 C 20 60 21 64 25 65 C 21 66 20 70 20 70 C 20 70 19 66 15 65 C 19 64 20 60 20 60 Z" fill="#d1a7b6"/>
 						</svg>
 					</div>
 				</div>
@@ -1497,9 +1453,21 @@ const footerTrimMarks = Array.from({ length: 30 });
 		gap: 1rem;
 	}
 
+	.feature-card-row--thirds {
+		grid-template-columns: repeat(3, 1fr);
+	}
+
+	.feature-card-row--thirds .feature-card-img {
+		max-height: 180px;
+	}
+
+	.feature-card-row--tasks {
+		grid-template-columns: 2fr 1fr;
+	}
+
 	.feature-card {
-		--feature-card-bg: rgba(255, 255, 255, 0.76);
-		--feature-card-border: rgba(17, 17, 17, 0.07);
+		--feature-card-bg: #ffffff;
+		--feature-card-border: rgba(17, 17, 17, 0.1);
 		position: relative;
 		isolation: isolate;
 		background: var(--feature-card-bg);
@@ -1508,6 +1476,7 @@ const footerTrimMarks = Array.from({ length: 30 });
 		padding: 2.2rem 2.4rem;
 		text-align: left;
 		overflow: hidden;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 1px 3px rgba(0, 0, 0, 0.03);
 	}
 
 	.feature-card::before {
@@ -1701,14 +1670,9 @@ const footerTrimMarks = Array.from({ length: 30 });
 	/* ── Bento grid ── */
 	.bento-grid {
 		display: grid;
-		grid-template-columns: repeat(12, 1fr);
+		grid-template-columns: repeat(2, 1fr);
 		gap: 1rem;
 	}
-
-	.bento-card-privacy { grid-column: span 7; }
-	.bento-card-format { grid-column: span 5; }
-	.bento-card-perf { grid-column: span 5; }
-	.bento-card-ai { grid-column: span 7; }
 
 	.bento-card-content {
 		position: relative;
@@ -1718,8 +1682,7 @@ const footerTrimMarks = Array.from({ length: 30 });
 		height: 100%;
 	}
 
-	.bento-card-privacy .bento-card-content,
-	.bento-card-ai .bento-card-content {
+	.bento-card-privacy .bento-card-content {
 		max-width: 60%;
 	}
 
@@ -1746,6 +1709,23 @@ const footerTrimMarks = Array.from({ length: 30 });
 		bottom: -10px;
 		right: -10px;
 		opacity: 0.85;
+	}
+
+	.feature-card-row .bento-card-format .bento-visual-wrapper {
+		position: static;
+		width: 100%;
+		height: auto;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		opacity: 1;
+		margin-top: auto;
+		padding-top: 1rem;
+	}
+
+	.feature-card-row .bento-card-format .bento-visual-wrapper svg {
+		width: 140px;
+		height: 140px;
 	}
 
 	/* Privacy hover */
@@ -1808,35 +1788,6 @@ const footerTrimMarks = Array.from({ length: 30 });
 		fill: #5b8bc0;
 	}
 
-	/* AI hover */
-	.svg-ai .node {
-		transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), fill 0.3s ease;
-		transform-origin: center;
-	}
-	.svg-ai .connection {
-		transition: stroke-width 0.4s ease, stroke 0.4s ease;
-	}
-	.svg-ai .sparkle {
-		transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.6s ease;
-		transform-origin: center;
-		opacity: 0;
-		transform: scale(0) rotate(-45deg);
-	}
-	.bento-card-ai:hover .svg-ai .node {
-		transform: scale(1.25);
-		fill: #b3788b;
-	}
-	.bento-card-ai:hover .svg-ai .connection {
-		stroke-width: 3;
-		stroke: #d5aebd;
-	}
-	.bento-card-ai:hover .svg-ai .sparkle {
-		opacity: 1;
-		transform: scale(1) rotate(0deg);
-	}
-	.bento-card-ai:hover .svg-ai .s1 { transition-delay: 0s; transform-origin: 85px 55px; }
-	.bento-card-ai:hover .svg-ai .s2 { transition-delay: 0.1s; transform-origin: 20px 60px; }
-
 	/* Bento hover tag lift */
 	.feature-card--compact:hover .feature-tag {
 		background: rgba(255, 255, 255, 0.95);
@@ -1850,12 +1801,10 @@ const footerTrimMarks = Array.from({ length: 30 });
 	}
 
 	@media (max-width: 960px) {
-		.bento-card-privacy, .bento-card-format,
-		.bento-card-perf, .bento-card-ai {
-			grid-column: span 6;
+		.bento-grid {
+			grid-template-columns: 1fr;
 		}
-		.bento-card-privacy .bento-card-content,
-		.bento-card-ai .bento-card-content {
+		.bento-card-privacy .bento-card-content {
 			max-width: 100%;
 		}
 		.bento-visual-wrapper {
