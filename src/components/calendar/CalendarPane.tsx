@@ -591,6 +591,44 @@ export function CalendarPane({
 
 			{error ? <div className="calendarError">{error}</div> : null}
 
+			{/* ── Dashboard stat cards ── */}
+			{data ? (
+				<div className="calendarStats">
+					<div className="calendarStatCard">
+						<div className="calendarStatHeader">
+							<span className="calendarStatLabel">Today's Tasks</span>
+							<ListChecks size={16} className="calendarStatIcon" />
+						</div>
+						<div className="calendarStatValue">{todayTaskCount}</div>
+						<div className="calendarStatFooter">
+							{agendaTasks.length} scheduled for {formatDayTitle(selectedDate)}
+						</div>
+					</div>
+					<div className="calendarStatCard is-danger">
+						<div className="calendarStatHeader">
+							<span className="calendarStatLabel">Overdue</span>
+							<Calendar size={16} className="calendarStatIcon" />
+						</div>
+						<div className="calendarStatValue">{todayOverdueCount}</div>
+						<div className="calendarStatFooter">
+							{todayOverdueCount === 0
+								? "You're all caught up"
+								: "Tasks need attention"}
+						</div>
+					</div>
+					<div className="calendarStatCard is-info">
+						<div className="calendarStatHeader">
+							<span className="calendarStatLabel">Notes Today</span>
+							<StickyNote size={16} className="calendarStatIcon" />
+						</div>
+						<div className="calendarStatValue">{todayNoteCount}</div>
+						<div className="calendarStatFooter">
+							{todayHasDailyNote ? "Daily note active" : "No daily note yet"}
+						</div>
+					</div>
+				</div>
+			) : null}
+
 			<div className={cn("calendarLayout", viewMode === "week" && "is-week")}>
 				{/* ── Left column ── */}
 				<div className="calendarLeftCol">
@@ -789,56 +827,70 @@ export function CalendarPane({
 
 					{/* Task groups — only shown if they have items */}
 					<div className="calendarTasksArea">
-						{renderTaskGroup("For this day", agendaTasks)}
-						{renderTaskGroup("Overdue", overdueTasks)}
-						{renderTaskGroup("Ongoing", ongoingTasks)}
-						{!hasAnyTasks ? (
-							<div className="calendarEmptyText">No tasks for this day.</div>
-						) : null}
+						<div className="calendarCardSection">
+							<div className="calendarCardSectionHeader">
+								<h4 className="calendarCardSectionTitle">Tasks</h4>
+								<span className="calendarCardSectionCount">
+									{agendaTasks.length +
+										overdueTasks.length +
+										ongoingTasks.length}
+								</span>
+							</div>
+							{renderTaskGroup("For this day", agendaTasks)}
+							{renderTaskGroup("Overdue", overdueTasks)}
+							{renderTaskGroup("Ongoing", ongoingTasks)}
+							{!hasAnyTasks ? (
+								<div className="calendarEmptyText">
+									No tasks for this day.
+								</div>
+							) : null}
+						</div>
 					</div>
 
 					{/* Notes */}
 					<div className="calendarNotesArea">
-						<div className="calendarSectionHeader">
-							<h4 className="calendarSectionTitle">
-								<span className="calendarSectionLabelPill">Notes</span>
-							</h4>
+						<div className="calendarCardSection">
+							<div className="calendarCardSectionHeader">
+								<h4 className="calendarCardSectionTitle">Notes</h4>
+								{noteActivity.length > 0 ? (
+									<span className="calendarCardSectionCount">
+										{noteActivity.length}
+									</span>
+								) : null}
+							</div>
 							{noteActivity.length > 0 ? (
-								<span className="calendarSectionCount">
-									{noteActivity.length}
-								</span>
-							) : null}
-						</div>
-						{noteActivity.length > 0 ? (
-							<div className="calendarNotesList">
-								{noteActivity.map((item) => (
-									<button
-										key={item.note_id}
-										type="button"
-										className="calendarNoteRow"
-										onClick={() => void onOpenFile(item.note_path)}
-									>
-										<div className="calendarNoteRowMain">
-											<span className="calendarNoteTitle">{item.title}</span>
-											{getNoteBreadcrumb(item.note_path) ? (
-												<span className="calendarNotePath">
-													{getNoteBreadcrumb(item.note_path)}
+								<div className="calendarNotesList">
+									{noteActivity.map((item) => (
+										<button
+											key={item.note_id}
+											type="button"
+											className="calendarNoteRow"
+											onClick={() => void onOpenFile(item.note_path)}
+										>
+											<div className="calendarNoteRowMain">
+												<span className="calendarNoteTitle">
+													{item.title}
+												</span>
+												{getNoteBreadcrumb(item.note_path) ? (
+													<span className="calendarNotePath">
+														{getNoteBreadcrumb(item.note_path)}
+													</span>
+												) : null}
+											</div>
+											{item.edited_on_day ? (
+												<span className="calendarNoteTime">
+													{formatActivityTime(item.updated)}
 												</span>
 											) : null}
-										</div>
-										{item.edited_on_day ? (
-											<span className="calendarNoteTime">
-												{formatActivityTime(item.updated)}
-											</span>
-										) : null}
-									</button>
-								))}
-							</div>
-						) : (
-							<div className="calendarEmptyText">
-								No note activity for this day.
-							</div>
-						)}
+										</button>
+									))}
+								</div>
+							) : (
+								<div className="calendarEmptyText">
+									No note activity for this day.
+								</div>
+							)}
+						</div>
 					</div>
 				</div>
 			</div>
