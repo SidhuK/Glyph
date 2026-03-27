@@ -20,6 +20,7 @@ import { AdvancedSettingsPane } from "./components/settings/AdvancedSettingsPane
 import { AiSettingsPane } from "./components/settings/AiSettingsPane";
 import { AppearanceSettingsPane } from "./components/settings/AppearanceSettingsPane";
 import { GeneralSettingsPane } from "./components/settings/GeneralSettingsPane";
+import { GitSettingsPane } from "./components/settings/GitSettingsPane";
 import { SpaceSettingsPane } from "./components/settings/SpaceSettingsPane";
 import {
 	SETTINGS_TABS,
@@ -103,6 +104,7 @@ export default function SettingsApp() {
 		appearance: <AppearanceSettingsPane />,
 		ai: <AiSettingsPane />,
 		space: <SpaceSettingsPane />,
+		git: <GitSettingsPane />,
 		advanced: <AdvancedSettingsPane />,
 		about: <AboutSettingsPane />,
 	};
@@ -151,6 +153,14 @@ export default function SettingsApp() {
 										{tab.renderIcon()}
 									</span>
 									<span className="settingsTabLabel">{tab.label}</span>
+									{tab.badgeText ? (
+										<span
+											className={`settingsTabBadge earlyAccessBadge ${tab.id === "git" ? "settingsBetaBadge" : ""}`}
+										>
+											{tab.badgeIcon ? tab.badgeIcon() : null}
+											<span>{tab.badgeText}</span>
+										</span>
+									) : null}
 								</button>
 							))}
 							{licenseStatus?.mode === "community_build" ? (
@@ -199,7 +209,19 @@ export default function SettingsApp() {
 						</nav>
 						<div className="settingsTabPanel">
 							<header className="settingsPanelHeader">
-								<h2 className="settingsPanelTitle">{activeTabMeta.label}</h2>
+								<div className="settingsPanelTitleRow">
+									<h2 className="settingsPanelTitle">{activeTabMeta.label}</h2>
+									{activeTabMeta.badgeText ? (
+										<span
+											className={`settingsPanelBadge earlyAccessBadge ${activeTabMeta.id === "git" ? "settingsBetaBadge" : ""}`}
+										>
+											{activeTabMeta.badgeIcon
+												? activeTabMeta.badgeIcon()
+												: null}
+											<span>{activeTabMeta.badgeText}</span>
+										</span>
+									) : null}
+								</div>
 							</header>
 							{tabContent}
 						</div>

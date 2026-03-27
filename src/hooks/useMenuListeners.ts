@@ -14,6 +14,8 @@ export interface UseMenuListenersProps {
 	closeSpace: () => Promise<void>;
 	onRevealSpace: () => void;
 	onOpenSpaceSettings: () => void;
+	onGitSyncNow: () => void;
+	onOpenGitSettings: () => void;
 	onToggleAiPane: () => void;
 	onCloseAiPane: () => void;
 	onAttachCurrentNoteToAi: () => void;
@@ -33,6 +35,8 @@ export function useMenuListeners({
 	closeSpace,
 	onRevealSpace,
 	onOpenSpaceSettings,
+	onGitSyncNow,
+	onOpenGitSettings,
 	onToggleAiPane,
 	onCloseAiPane,
 	onAttachCurrentNoteToAi,
@@ -72,6 +76,12 @@ export function useMenuListeners({
 	const handleOpenSpaceSettings = useCallback(() => {
 		onOpenSpaceSettings();
 	}, [onOpenSpaceSettings]);
+	const handleGitSyncNow = useCallback(() => {
+		onGitSyncNow();
+	}, [onGitSyncNow]);
+	const handleOpenGitSettings = useCallback(() => {
+		onOpenGitSettings();
+	}, [onOpenGitSettings]);
 	const handleOpenAbout = useCallback(() => {
 		void openSettingsWindow("about");
 	}, []);
@@ -105,6 +115,8 @@ export function useMenuListeners({
 	useTauriEvent("menu:close_space", handleCloseSpace);
 	useTauriEvent("menu:reveal_space", handleRevealSpace);
 	useTauriEvent("menu:open_space_settings", handleOpenSpaceSettings);
+	useTauriEvent("menu:git_sync_now", handleGitSyncNow);
+	useTauriEvent("menu:open_git_settings", handleOpenGitSettings);
 	useTauriEvent("menu:open_about", handleOpenAbout);
 	useTauriEvent("menu:open_settings", handleOpenSettings);
 	useTauriEvent("menu:toggle_ai", handleToggleAi);

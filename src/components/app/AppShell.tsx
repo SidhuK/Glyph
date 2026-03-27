@@ -44,6 +44,7 @@ import {
 import { useCommandShortcuts } from "../../hooks/useCommandShortcuts";
 import { useDailyNote } from "../../hooks/useDailyNote";
 import { useFileTree } from "../../hooks/useFileTree";
+import { useGitSync } from "../../hooks/useGitSync";
 import { useMenuListeners } from "../../hooks/useMenuListeners";
 import { useResizablePanel } from "../../hooks/useResizablePanel";
 import { useWhatsNew } from "../../hooks/useWhatsNew";
@@ -185,6 +186,10 @@ export function AppShell() {
 	);
 	const autoUpdater = useUpdaterContext();
 	const whatsNew = useWhatsNew(space.info?.version ?? null);
+	const gitSync = useGitSync({
+		spacePath,
+		saveCurrentEditor,
+	});
 
 	const sidebarResize = useResizablePanel({
 		min: SIDEBAR_MIN_WIDTH,
@@ -863,6 +868,18 @@ export function AppShell() {
 		setError,
 	]);
 
+	const handleGitSyncFailure = useCallback(
+		(cause: unknown) => {
+			const message =
+				cause instanceof Error ? cause.message : "Git Sync failed.";
+			setError(message);
+			toast.error("Git Sync failed", {
+				description: message,
+			});
+		},
+		[setError],
+	);
+
 	useMenuListeners({
 		onNewNote: handleNewNoteFromMenu,
 		onCreateFromTemplate: handleCreateFromTemplateFromMenu,
@@ -877,6 +894,15 @@ export function AppShell() {
 		closeSpace,
 		onRevealSpace: handleRevealSpaceFromMenu,
 		onOpenSpaceSettings: handleOpenSpaceSettings,
+		onGitSyncNow: () => {
+			void gitSync.syncNow().then(
+				() => {
+					toast.success("Git Sync completed.");
+				},
+				handleGitSyncFailure,
+			);
+		},
+		onOpenGitSettings: gitSync.openGitSettings,
 		onToggleAiPane: handleToggleAiPaneFromMenu,
 		onCloseAiPane: handleCloseAiPaneFromMenu,
 		onAttachCurrentNoteToAi: handleAttachCurrentNoteFromMenu,
@@ -990,6 +1016,29 @@ export function AppShell() {
 				category: "Workspace",
 				shortcut: { meta: true, key: "o" },
 				action: onOpenSpace,
+			},
+			{
+				id: "open-git-sync-settings",
+				label: "Git Sync settings",
+				icon: <HugeiconsIcon icon={Settings05Icon} size={16} />,
+				category: "Workspace",
+				enabled: Boolean(spacePath),
+				action: gitSync.openGitSettings,
+			},
+			{
+				id: "git-sync-now",
+				label: "Sync now",
+				icon: <HugeiconsIcon icon={Link01Icon} size={16} />,
+				category: "Workspace",
+				enabled: Boolean(spacePath),
+				action: async () => {
+					try {
+						await gitSync.syncNow();
+						toast.success("Git Sync completed.");
+					} catch (error) {
+						handleGitSyncFailure(error);
+					}
+				},
 			},
 			{
 				id: "toggle-sidebar",
@@ -1198,6 +1247,7 @@ export function AppShell() {
 		openDatabasesTab,
 		openGettingStarted,
 		openWhatsNew,
+		gitSync,
 		moveTargetDirs,
 		movePickerSourcePath,
 		setError,
@@ -1259,6 +1309,16 @@ export function AppShell() {
 				onSelectTag={(t) => openTagSearchPalette(t)}
 				sidebarCollapsed={sidebarCollapsed}
 				onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+				gitSyncStatus={gitSync.status}
+				onGitSyncNow={() => {
+					void gitSync
+						.syncNow()
+						.then(() => {
+							toast.success("Git Sync completed.");
+						})
+						.catch(handleGitSyncFailure);
+				}}
+				onOpenGitSettings={gitSync.openGitSettings}
 				onOpenCalendar={openCalendarTab}
 				onOpenDatabases={(databaseId) => openDatabasesTab(databaseId)}
 				updateReady={autoUpdater.updateReady}

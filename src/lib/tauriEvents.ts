@@ -15,6 +15,8 @@ type TauriEventMap = {
 	"menu:close_space": undefined;
 	"menu:reveal_space": undefined;
 	"menu:open_space_settings": undefined;
+	"menu:git_sync_now": undefined;
+	"menu:open_git_settings": undefined;
 	"menu:open_about": undefined;
 	"menu:open_settings": undefined;
 	"menu:toggle_ai": undefined;
@@ -23,8 +25,16 @@ type TauriEventMap = {
 	"menu:ai_attach_all_open_notes": undefined;
 	"menu:open_ai_settings": undefined;
 	"settings:navigate": {
-		tab: "general" | "appearance" | "ai" | "space" | "advanced" | "about";
+		tab:
+			| "general"
+			| "appearance"
+			| "ai"
+			| "space"
+			| "git"
+			| "advanced"
+			| "about";
 	};
+	"git_sync:status": import("./tauri").GitSyncStatus;
 	"ai:chunk": { job_id: string; delta: string };
 	"ai:status": { job_id: string; status: string; detail?: string };
 	"ai:done": { job_id: string; cancelled: boolean };

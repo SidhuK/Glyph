@@ -2,6 +2,7 @@ mod ai_codex;
 mod ai_rig;
 mod databases;
 mod file_tree_appearance;
+mod git_sync;
 mod glyph_paths;
 mod index;
 mod io_atomic;
@@ -132,6 +133,15 @@ pub fn run() {
             )?;
             let open_space_settings =
                 MenuItem::with_id(app, "space.settings", "Space Settings…", true, None::<&str>)?;
+            let sync_now =
+                MenuItem::with_id(app, "space.git_sync_now", "Sync Now", true, None::<&str>)?;
+            let open_git_settings = MenuItem::with_id(
+                app,
+                "space.git_settings",
+                "Git Sync Settings…",
+                true,
+                None::<&str>,
+            )?;
             let new_note =
                 MenuItem::with_id(app, "file.new_note", "New Note", true, Some("CmdOrCtrl+N"))?;
             let create_from_template = MenuItem::with_id(
@@ -231,6 +241,8 @@ pub fn run() {
                     &reveal_space,
                     &PredefinedMenuItem::separator(app)?,
                     &open_space_settings,
+                    &sync_now,
+                    &open_git_settings,
                 ],
             )?;
 
@@ -322,6 +334,12 @@ pub fn run() {
             "space.settings" => {
                 let _ = app.emit("menu:open_space_settings", ());
             }
+            "space.git_sync_now" => {
+                let _ = app.emit("menu:git_sync_now", ());
+            }
+            "space.git_settings" => {
+                let _ = app.emit("menu:open_git_settings", ());
+            }
             "app.about" => {
                 let _ = app.emit("menu:open_about", ());
             }
@@ -395,6 +413,7 @@ pub fn run() {
         })
         .manage(ai_rig::AiState::default())
         .manage(ai_codex::state::CodexState::default())
+        .manage(git_sync::GitSyncState::default())
         .manage(space::SpaceState::default())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_notification::init())
@@ -497,6 +516,11 @@ pub fn run() {
             notes::properties::note_frontmatter_parse_properties,
             notes::properties::note_frontmatter_render_properties,
             notes::attachments::note_attach_file,
+            git_sync::commands::git_sync_status_read,
+            git_sync::commands::git_sync_config_read,
+            git_sync::commands::git_sync_config_update,
+            git_sync::commands::git_sync_run,
+            git_sync::commands::git_sync_disconnect,
             space::commands::space_create,
             space::commands::space_open,
             space::commands::space_get_current,

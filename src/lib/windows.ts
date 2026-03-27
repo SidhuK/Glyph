@@ -7,6 +7,7 @@ export type SettingsTab =
 	| "appearance"
 	| "ai"
 	| "space"
+	| "git"
 	| "advanced"
 	| "about";
 

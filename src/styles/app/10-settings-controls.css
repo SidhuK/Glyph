@@ -907,12 +907,18 @@
 	align-items: center;
 	margin: 0;
 	min-inline-size: 0;
+	width: auto;
+	max-width: max-content;
 	padding: 0;
 	border-radius: var(--radius-md);
 	border: 1px solid var(--border-light);
 	background: var(--bg-primary);
 	gap: 0;
 	overflow: hidden;
+}
+
+.settingsFieldControl > .settingsSegmented {
+	margin-left: auto;
 }
 
 .settingsSegmented button {
