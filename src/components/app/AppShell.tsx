@@ -1311,7 +1311,12 @@ export function AppShell() {
 				onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
 				gitSyncStatus={gitSync.status}
 				onGitSyncNow={() => {
-					void gitSync.syncNow().catch(handleGitSyncFailure);
+					void gitSync
+						.syncNow()
+						.then(() => {
+							toast.success("Git Sync completed.");
+						})
+						.catch(handleGitSyncFailure);
 				}}
 				onOpenGitSettings={gitSync.openGitSettings}
 				onOpenCalendar={openCalendarTab}

@@ -159,11 +159,11 @@ export function SettingsValueCard({
 	mono = false,
 }: SettingsValueCardProps) {
 	return (
-		<div className="gitSettingValueCard">
-			<div className="gitSettingValueIcon" aria-hidden="true">
+		<div className="settingsValueCard">
+			<div className="settingsValueIcon" aria-hidden="true">
 				{icon}
 			</div>
-			<div className={`gitSettingValueText ${mono ? "mono" : ""}`}>{value}</div>
+			<div className={cn("settingsValueText", { mono })}>{value}</div>
 		</div>
 	);
 }

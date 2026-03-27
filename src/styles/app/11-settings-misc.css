@@ -334,7 +334,7 @@
 	text-align: right;
 }
 
-.gitSettingValueCard {
+.settingsValueCard {
 	width: 100%;
 	display: flex;
 	align-items: flex-start;
@@ -345,7 +345,7 @@
 	background: color-mix(in srgb, var(--settings-surface-soft) 74%, transparent);
 }
 
-.gitSettingValueIcon {
+.settingsValueIcon {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -357,7 +357,7 @@
 	flex: 0 0 auto;
 }
 
-.gitSettingValueText {
+.settingsValueText {
 	padding-top: 4px;
 	font-size: 12px;
 	line-height: 1.5;

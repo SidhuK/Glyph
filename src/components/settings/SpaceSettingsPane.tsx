@@ -23,6 +23,37 @@ import {
 } from "./SettingsScaffold";
 import { TemplateSettingsSections } from "./TemplatesSettingsPane";
 
+async function selectFolderRelativeToSpace(): Promise<string | null> {
+	const { open } = await import("@tauri-apps/plugin-dialog");
+	const selected = await open({
+		directory: true,
+		multiple: false,
+	});
+	if (!selected || typeof selected !== "string") {
+		return null;
+	}
+
+	const currentSpace = await invoke("space_get_current");
+	if (!currentSpace) {
+		throw new Error("No space is currently open.");
+	}
+
+	const normSelected = selected.replace(/\\/g, "/");
+	const normSpace = currentSpace.replace(/\\/g, "/");
+	const spacePrefix = normSpace.endsWith("/") ? normSpace : `${normSpace}/`;
+	const selectedLower = normSelected.toLowerCase();
+	const spaceLower = normSpace.toLowerCase();
+
+	if (
+		selectedLower !== spaceLower &&
+		!selectedLower.startsWith(spacePrefix.toLowerCase())
+	) {
+		throw new Error("Selected folder must be inside the current space.");
+	}
+
+	return normSelected.slice(normSpace.length).replace(/^\/+/, "");
+}
+
 export function SpaceSettingsPane() {
 	const [currentSpacePath, setCurrentSpacePath] = useState<string | null>(null);
 	const [dailyNotesFolder, setDailyNotesFolderState] = useState<string | null>(
@@ -56,6 +87,8 @@ export function SpaceSettingsPane() {
 
 	const refresh = useCallback(async () => {
 		setError("");
+		setDailyNotesLoading(true);
+		setAttachmentsLoading(true);
 		try {
 			const [dailyFolder, settings] = await Promise.all([
 				getDailyNotesFolder(),
@@ -79,38 +112,10 @@ export function SpaceSettingsPane() {
 	const handleBrowseFolder = useCallback(async () => {
 		setDailyNotesError(null);
 		try {
-			const { open } = await import("@tauri-apps/plugin-dialog");
-			const selected = await open({
-				directory: true,
-				multiple: false,
-			});
-			if (selected && typeof selected === "string") {
-				const currentSpace = await invoke("space_get_current");
-				if (!currentSpace) {
-					setDailyNotesError("No space is currently open.");
-					return;
-				}
-				const normSelected = selected.replace(/\\/g, "/");
-				const normSpace = currentSpace.replace(/\\/g, "/");
-				const spacePrefix = normSpace.endsWith("/")
-					? normSpace
-					: `${normSpace}/`;
-				const selectedLower = normSelected.toLowerCase();
-				if (
-					selectedLower !== normSpace.toLowerCase() &&
-					!selectedLower.startsWith(spacePrefix.toLowerCase())
-				) {
-					setDailyNotesError(
-						"Selected folder must be inside the current space.",
-					);
-					return;
-				}
-				const relativePath = normSelected
-					.slice(normSpace.length)
-					.replace(/^\/+/, "");
-				await setDailyNotesFolder(relativePath || null);
-				setDailyNotesFolderState(relativePath || null);
-			}
+			const relativePath = await selectFolderRelativeToSpace();
+			if (relativePath === null) return;
+			await setDailyNotesFolder(relativePath || null);
+			setDailyNotesFolderState(relativePath || null);
 		} catch (cause) {
 			setDailyNotesError(
 				cause instanceof Error ? cause.message : "Failed to select folder",
@@ -120,45 +125,23 @@ export function SpaceSettingsPane() {
 
 	const handleClearFolder = useCallback(async () => {
 		setDailyNotesError(null);
-		await setDailyNotesFolder(null);
-		setDailyNotesFolderState(null);
+		try {
+			await setDailyNotesFolder(null);
+			setDailyNotesFolderState(null);
+		} catch (cause) {
+			setDailyNotesError(
+				cause instanceof Error ? cause.message : "Failed to clear folder",
+			);
+		}
 	}, []);
 
 	const handleBrowsePastedMediaFolder = useCallback(async () => {
 		setPastedMediaError(null);
 		try {
-			const { open } = await import("@tauri-apps/plugin-dialog");
-			const selected = await open({
-				directory: true,
-				multiple: false,
-			});
-			if (selected && typeof selected === "string") {
-				const currentSpace = await invoke("space_get_current");
-				if (!currentSpace) {
-					setPastedMediaError("No space is currently open.");
-					return;
-				}
-				const normSelected = selected.replace(/\\/g, "/");
-				const normSpace = currentSpace.replace(/\\/g, "/");
-				const spacePrefix = normSpace.endsWith("/")
-					? normSpace
-					: `${normSpace}/`;
-				const selectedLower = normSelected.toLowerCase();
-				if (
-					selectedLower !== normSpace.toLowerCase() &&
-					!selectedLower.startsWith(spacePrefix.toLowerCase())
-				) {
-					setPastedMediaError(
-						"Selected folder must be inside the current space.",
-					);
-					return;
-				}
-				const relativePath = normSelected
-					.slice(normSpace.length)
-					.replace(/^\/+/, "");
-				await setEditorPastedMediaFolder(relativePath);
-				setPastedMediaFolderState(relativePath);
-			}
+			const relativePath = await selectFolderRelativeToSpace();
+			if (relativePath === null) return;
+			await setEditorPastedMediaFolder(relativePath);
+			setPastedMediaFolderState(relativePath);
 		} catch (cause) {
 			setPastedMediaError(
 				cause instanceof Error ? cause.message : "Failed to select folder",
