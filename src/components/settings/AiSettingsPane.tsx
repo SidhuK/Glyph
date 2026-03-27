@@ -23,7 +23,7 @@ export function AiSettingsPane() {
 		try {
 			await emit("ai:profiles-updated");
 		} catch {
-			// best-effort cross-window sync
+			// Best-effort cross-window sync.
 		}
 	}, []);
 

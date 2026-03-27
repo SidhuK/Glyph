@@ -1,7 +1,4 @@
-import { relaunch } from "@tauri-apps/plugin-process";
 import type { AiModel, AiProfile, AiProviderKind } from "../../../lib/tauri";
-import { TriangleAlert } from "../../Icons";
-import { Button } from "../../ui/shadcn/button";
 import { Input } from "../../ui/shadcn/input";
 import { SettingsRow, SettingsSection } from "../SettingsScaffold";
 import { AiModelCombobox } from "./AiModelCombobox";
@@ -11,7 +8,6 @@ interface AiProviderSectionProps {
 	availableModels: AiModel[] | null;
 	secretConfigured: boolean | null;
 	onModelsChange: (models: AiModel[] | null) => void;
-	showRestartPrompt: boolean;
 	onProviderChange: (provider: AiProviderKind) => Promise<void>;
 	onUpdateDraft: (updater: (prev: AiProfile) => AiProfile) => void;
 	onPersistDraft: (draft: AiProfile) => Promise<void>;
@@ -22,7 +18,6 @@ export function AiProviderSection({
 	availableModels,
 	secretConfigured,
 	onModelsChange,
-	showRestartPrompt,
 	onProviderChange,
 	onUpdateDraft,
 	onPersistDraft,
@@ -58,24 +53,6 @@ export function AiProviderSection({
 						<option value="ollama">Ollama</option>
 						<option value="openai_compat">OpenAI-compatible</option>
 					</select>
-					{showRestartPrompt ? (
-						<output className="settingsRestartNotice" aria-live="polite">
-							<div className="settingsRestartNoticeCopy">
-								<TriangleAlert size={14} />
-								<span>Restart the app to fully apply the new provider.</span>
-							</div>
-							<div className="settingsActions">
-								<Button
-									type="button"
-									size="sm"
-									variant="outline"
-									onClick={() => void relaunch()}
-								>
-									Restart app
-								</Button>
-							</div>
-						</output>
-					) : null}
 				</div>
 			</SettingsRow>
 

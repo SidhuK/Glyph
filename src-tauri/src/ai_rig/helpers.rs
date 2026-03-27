@@ -13,7 +13,7 @@ pub fn default_base_url(provider: &AiProviderKind) -> &'static str {
         AiProviderKind::Openrouter => "https://openrouter.ai/api/v1",
         AiProviderKind::Anthropic => "https://api.anthropic.com",
         AiProviderKind::Gemini => "https://generativelanguage.googleapis.com",
-        AiProviderKind::Ollama => "http://localhost:11434/v1",
+        AiProviderKind::Ollama => "http://localhost:11434",
         AiProviderKind::CodexChatgpt => "https://developers.openai.com/codex/app-server/",
     }
 }
@@ -37,6 +37,28 @@ pub fn parse_base_url(profile: &AiProfile) -> Result<Url, String> {
     }
     net::validate_url_host(&url, profile.allow_private_hosts)?;
     Ok(url)
+}
+
+pub fn parse_ollama_base_url(profile: &AiProfile) -> Result<Url, String> {
+    let mut url = parse_base_url(profile)?;
+    let trimmed_path = url.path().trim_end_matches('/').to_string();
+    let normalized_path = match trimmed_path.strip_suffix("/v1") {
+        Some("") => "/".to_string(),
+        Some(prefix) => prefix.to_string(),
+        None if trimmed_path.is_empty() => "/".to_string(),
+        None => trimmed_path,
+    };
+    if url.path() != normalized_path {
+        url.set_path(&normalized_path);
+    }
+    Ok(url)
+}
+
+pub fn ollama_api_url(profile: &AiProfile, path: &str) -> Result<Url, String> {
+    let base = parse_ollama_base_url(profile)?;
+    let base = base.as_str().trim_end_matches('/');
+    Url::parse(&format!("{base}/{}", path.trim_start_matches('/')))
+        .map_err(|_| "invalid base_url".to_string())
 }
 
 pub fn apply_extra_headers(
@@ -133,4 +155,52 @@ pub fn derive_chat_title(messages: &[AiMessage]) -> String {
         words.truncate(5);
     }
     words.join(" ")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{default_base_url, ollama_api_url, parse_ollama_base_url};
+    use crate::ai_rig::types::{AiProfile, AiProviderKind};
+
+    fn ollama_profile(base_url: Option<&str>) -> AiProfile {
+        AiProfile {
+            id: "ollama".to_string(),
+            name: "Ollama".to_string(),
+            provider: AiProviderKind::Ollama,
+            model: "llama3.2".to_string(),
+            base_url: base_url.map(str::to_string),
+            headers: Vec::new(),
+            allow_private_hosts: true,
+            reasoning_effort: None,
+        }
+    }
+
+    #[test]
+    fn ollama_default_base_url_uses_native_api_root() {
+        assert_eq!(
+            default_base_url(&AiProviderKind::Ollama),
+            "http://localhost:11434"
+        );
+    }
+
+    #[test]
+    fn parse_ollama_base_url_strips_openai_suffix() {
+        let profile = ollama_profile(Some("http://localhost:11434/v1"));
+        let url = parse_ollama_base_url(&profile).expect("ollama url should parse");
+        assert_eq!(url.as_str(), "http://localhost:11434/");
+    }
+
+    #[test]
+    fn parse_ollama_base_url_preserves_proxy_prefix() {
+        let profile = ollama_profile(Some("http://localhost:11434/ollama/v1"));
+        let url = parse_ollama_base_url(&profile).expect("ollama url should parse");
+        assert_eq!(url.as_str(), "http://localhost:11434/ollama");
+    }
+
+    #[test]
+    fn ollama_api_url_preserves_proxy_prefix() {
+        let profile = ollama_profile(Some("http://localhost:11434/ollama/v1"));
+        let url = ollama_api_url(&profile, "api/tags").expect("ollama url should parse");
+        assert_eq!(url.as_str(), "http://localhost:11434/ollama/api/tags");
+    }
 }

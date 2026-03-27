@@ -34,6 +34,8 @@ pub struct CalendarNoteActivityItem {
     pub note_id: String,
     pub note_path: String,
     pub title: String,
+    pub preview: Option<String>,
+    pub tags: Vec<String>,
     pub created: String,
     pub updated: String,
     pub created_on_day: bool,
@@ -497,7 +499,15 @@ pub async fn calendar_query_range(
 
         let mut note_stmt = conn
             .prepare(
-                "SELECT id, title, path, created, updated
+                "SELECT id, title, path, preview, created, updated,
+                        COALESCE(
+                            (
+                                SELECT GROUP_CONCAT(tag, '\n')
+                                FROM tags
+                                WHERE note_id = notes.id AND is_explicit = 1
+                            ),
+                            ''
+                        ) AS tags
                  FROM notes
                  WHERE substr(created, 1, 10) BETWEEN ? AND ?
                     OR substr(updated, 1, 10) BETWEEN ? AND ?",
@@ -517,8 +527,16 @@ pub async fn calendar_query_range(
             let note_id: String = row.get(0).map_err(|e| e.to_string())?;
             let title: String = row.get(1).map_err(|e| e.to_string())?;
             let note_path: String = row.get(2).map_err(|e| e.to_string())?;
-            let created: String = row.get(3).map_err(|e| e.to_string())?;
-            let updated: String = row.get(4).map_err(|e| e.to_string())?;
+            let preview: Option<String> = row.get(3).map_err(|e| e.to_string())?;
+            let created: String = row.get(4).map_err(|e| e.to_string())?;
+            let updated: String = row.get(5).map_err(|e| e.to_string())?;
+            let tags_raw: String = row.get(6).map_err(|e| e.to_string())?;
+            let tags = tags_raw
+                .split('\n')
+                .map(str::trim)
+                .filter(|tag| !tag.is_empty())
+                .map(ToOwned::to_owned)
+                .collect::<Vec<_>>();
             let created_day = created.get(0..10).unwrap_or_default().to_string();
             let updated_day = updated.get(0..10).unwrap_or_default().to_string();
             let is_created_daily_note = daily_note_path_for(
@@ -556,6 +574,8 @@ pub async fn calendar_query_range(
                 note_id,
                 note_path,
                 title,
+                preview,
+                tags,
                 created,
                 updated,
                 created_on_day,
@@ -789,14 +809,22 @@ mod tests {
         for tag in expand_indexed_tags(&["work/today/further".to_string()]) {
             conn.execute(
                 "INSERT INTO tags(note_id, tag, is_explicit) VALUES(?, ?, ?)",
-                rusqlite::params!["notes/leaf.md", tag.tag, if tag.is_explicit { 1 } else { 0 }],
+                rusqlite::params![
+                    "notes/leaf.md",
+                    tag.tag,
+                    if tag.is_explicit { 1 } else { 0 }
+                ],
             )
             .unwrap();
         }
         for tag in expand_indexed_tags(&["work".to_string()]) {
             conn.execute(
                 "INSERT INTO tags(note_id, tag, is_explicit) VALUES(?, ?, ?)",
-                rusqlite::params!["notes/root.md", tag.tag, if tag.is_explicit { 1 } else { 0 }],
+                rusqlite::params![
+                    "notes/root.md",
+                    tag.tag,
+                    if tag.is_explicit { 1 } else { 0 }
+                ],
             )
             .unwrap();
         }

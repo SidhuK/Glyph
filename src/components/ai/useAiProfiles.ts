@@ -1,3 +1,4 @@
+import { getCurrentWindow } from "@tauri-apps/api/window";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { resolveActiveProfileId } from "../../lib/aiProfiles";
 import { extractErrorMessage } from "../../lib/errorUtils";
@@ -61,59 +62,100 @@ export function useAiProfiles() {
 	);
 	const [error, setError] = useState("");
 	const lastSetRequestIdRef = useRef(0);
+	const bootstrapRequestIdRef = useRef(0);
+	const secretStatusRequestIdRef = useRef(0);
+
+	const applyBootstrap = useCallback((data: AiProfilesBootstrap) => {
+		setProfiles(data.profiles);
+		setActiveProfileId(data.activeProfileId);
+		setSecretConfigured(data.secretConfigured);
+		aiProfilesBootstrapCache = data;
+	}, []);
 
 	const reloadProfiles = useCallback(async () => {
+		const requestId = ++bootstrapRequestIdRef.current;
 		setError("");
 		try {
 			const data = await fetchAiProfilesBootstrap();
-			setProfiles(data.profiles);
-			setActiveProfileId(data.activeProfileId);
-			setSecretConfigured(data.secretConfigured);
-			aiProfilesBootstrapCache = data;
+			if (requestId !== bootstrapRequestIdRef.current) return;
+			applyBootstrap(data);
 		} catch (e) {
+			if (requestId !== bootstrapRequestIdRef.current) return;
 			setError(extractErrorMessage(e));
 		}
-	}, []);
+	}, [applyBootstrap]);
 
 	useEffect(() => {
 		let cancelled = false;
 		(async () => {
+			const requestId = ++bootstrapRequestIdRef.current;
 			setError("");
 			try {
 				const data = await preloadAiProfilesData();
-				if (cancelled) return;
-				setProfiles(data.profiles);
-				setActiveProfileId(data.activeProfileId);
-				setSecretConfigured(data.secretConfigured);
+				if (cancelled || requestId !== bootstrapRequestIdRef.current) return;
+				applyBootstrap(data);
 			} catch (e) {
-				if (!cancelled) setError(extractErrorMessage(e));
+				if (!cancelled && requestId === bootstrapRequestIdRef.current) {
+					setError(extractErrorMessage(e));
+				}
 			}
 		})();
 		return () => {
 			cancelled = true;
 		};
-	}, []);
+	}, [applyBootstrap]);
 
 	useTauriEvent("ai:profiles-updated", () => {
 		void reloadProfiles();
 	});
 
 	useEffect(() => {
+		let cancelled = false;
+		let unlistenPromise: Promise<() => void> | null = null;
+		let focusReloadTimeout: number | null = null;
+		try {
+			const win = getCurrentWindow();
+			unlistenPromise = win.onFocusChanged(({ payload: focused }) => {
+				if (!focused || cancelled) return;
+				if (focusReloadTimeout != null) {
+					window.clearTimeout(focusReloadTimeout);
+				}
+				focusReloadTimeout = window.setTimeout(() => {
+					if (cancelled) return;
+					void reloadProfiles();
+				}, 400);
+			});
+		} catch {
+			// not running inside tauri window context
+		}
+		return () => {
+			cancelled = true;
+			if (focusReloadTimeout != null) {
+				window.clearTimeout(focusReloadTimeout);
+			}
+			void unlistenPromise?.then((unlisten) => unlisten());
+		};
+	}, [reloadProfiles]);
+
+	useEffect(() => {
 		if (!activeProfileId) {
+			secretStatusRequestIdRef.current += 1;
 			setSecretConfigured(null);
 			return;
 		}
 		if (aiProfilesBootstrapCache?.activeProfileId === activeProfileId) {
+			secretStatusRequestIdRef.current += 1;
 			setSecretConfigured(aiProfilesBootstrapCache.secretConfigured);
 			return;
 		}
 		let cancelled = false;
 		(async () => {
+			const requestId = ++secretStatusRequestIdRef.current;
 			try {
 				const configured = await invoke("ai_secret_status", {
 					profile_id: activeProfileId,
 				});
-				if (!cancelled) {
+				if (!cancelled && requestId === secretStatusRequestIdRef.current) {
 					setSecretConfigured(configured);
 					aiProfilesBootstrapCache = {
 						profiles,
@@ -122,7 +164,9 @@ export function useAiProfiles() {
 					};
 				}
 			} catch {
-				if (!cancelled) setSecretConfigured(null);
+				if (!cancelled && requestId === secretStatusRequestIdRef.current) {
+					setSecretConfigured(null);
+				}
 			}
 		})();
 		return () => {

@@ -130,6 +130,10 @@ fn normalized_store_for_space(
     Ok(store)
 }
 
+fn emit_profiles_updated(app: &AppHandle) {
+    let _ = app.emit("ai:profiles-updated", ());
+}
+
 #[tauri::command]
 pub async fn ai_profiles_list(app: AppHandle) -> Result<Vec<AiProfile>, String> {
     let store = normalized_store(&app)?;
@@ -154,7 +158,9 @@ pub async fn ai_active_profile_set(app: AppHandle, id: Option<String>) -> Result
             .iter()
             .any(|profile| profile.id == *candidate)
     });
-    write_store(&path, &store)
+    write_store(&path, &store)?;
+    emit_profiles_updated(&app);
+    Ok(())
 }
 
 #[tauri::command]
@@ -183,6 +189,7 @@ pub async fn ai_profile_upsert(app: AppHandle, profile: AiProfile) -> Result<AiP
         store.active_profile_id = Some(next.id.clone());
     }
     write_store(&path, &store)?;
+    emit_profiles_updated(&app);
     Ok(next)
 }
 
@@ -206,7 +213,9 @@ pub async fn ai_profile_delete(
             matches!(profile.provider, super::types::AiProviderKind::Ollama);
     }
     ensure_default_profiles(&mut store);
-    write_store(&path, &store)
+    write_store(&path, &store)?;
+    emit_profiles_updated(&app);
+    Ok(())
 }
 
 #[tauri::command(rename_all = "snake_case")]
