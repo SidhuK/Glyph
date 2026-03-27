@@ -89,9 +89,9 @@ export function NotePropertyValueField({
 						tagInputRef?.focus();
 					}}
 				>
-					{property.value_list.map((value) => (
+					{property.value_list.map((value, valueIndex) => (
 						<button
-							key={`${property.key || rowId}-${value}`}
+							key={`${property.key || rowId}-${valueIndex}-${value}`}
 							type="button"
 							className="notePropertyToken"
 							onClick={() => onRemoveTag(index, value)}

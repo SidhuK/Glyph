@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
 	getDailyNoteTemplate,
 	getTemplatesFolder,
@@ -75,6 +75,7 @@ export function TemplateSettingsSections() {
 		loading: templatesLoading,
 		error: templatesError,
 	} = templateLibraryState;
+	const latestClearOpIdRef = useRef(0);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -152,6 +153,7 @@ export function TemplateSettingsSections() {
 	}, [templatesFolder]);
 
 	useEffect(() => {
+		const opId = ++latestClearOpIdRef.current;
 		if (loading || templatesLoading || templatesError) return;
 		if (!dailyNoteTemplatePath) return;
 		if (
@@ -163,13 +165,13 @@ export function TemplateSettingsSections() {
 		void (async () => {
 			try {
 				await setDailyNoteTemplate(null);
-				if (cancelled) return;
+				if (cancelled || opId !== latestClearOpIdRef.current) return;
 				setSettingsState((current) => ({
 					...current,
 					dailyNoteTemplatePath: null,
 				}));
 			} catch (cause) {
-				if (cancelled) return;
+				if (cancelled || opId !== latestClearOpIdRef.current) return;
 				setSettingsState((current) => ({
 					...current,
 					error:

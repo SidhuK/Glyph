@@ -98,7 +98,8 @@ export function useGitSync({
 	const statusIntervalMinutes = status?.interval_minutes ?? 10;
 
 	useEffect(() => {
-		if (!spacePath || !statusConfigured || !statusEnabled || statusPaused) return;
+		if (!spacePath || !statusConfigured || !statusEnabled || statusPaused)
+			return;
 		if (initialAutoRunSpaceRef.current === spacePath) return;
 		initialAutoRunSpaceRef.current = spacePath;
 		void runSync("auto").catch((cause) => {

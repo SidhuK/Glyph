@@ -895,12 +895,9 @@ export function AppShell() {
 		onRevealSpace: handleRevealSpaceFromMenu,
 		onOpenSpaceSettings: handleOpenSpaceSettings,
 		onGitSyncNow: () => {
-			void gitSync.syncNow().then(
-				() => {
-					toast.success("Git Sync completed.");
-				},
-				handleGitSyncFailure,
-			);
+			void gitSync.syncNow().then(() => {
+				toast.success("Git Sync completed.");
+			}, handleGitSyncFailure);
 		},
 		onOpenGitSettings: gitSync.openGitSettings,
 		onToggleAiPane: handleToggleAiPaneFromMenu,

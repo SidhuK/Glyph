@@ -315,9 +315,9 @@ export function DatabaseCell({
 						tagInputRef.current?.focus();
 					}}
 				>
-					{cellValue.value_list.map((value) => (
+					{cellValue.value_list.map((value, valueIndex) => (
 						<button
-							key={`${column.id}:${value}`}
+							key={`${column.id}:${valueIndex}:${value}`}
 							type="button"
 							className="notePropertyToken"
 							style={toneStyleForValue(value)}

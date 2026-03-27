@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { DatabaseConfig, DatabaseFilter } from "../../lib/database/types";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { Button } from "../ui/shadcn/button";
@@ -14,6 +14,11 @@ import { DatabaseTagPicker } from "./DatabaseTagPicker";
 interface DatabaseSourceDropdownProps {
 	config: DatabaseConfig;
 	onChangeConfig: (config: DatabaseConfig) => Promise<void>;
+}
+
+interface FilterKeyEntry {
+	key: string;
+	signature: string;
 }
 
 function isTagFilterColumn(
@@ -107,29 +112,67 @@ function operatorOptions(
 	];
 }
 
+function filterSignature(filter: DatabaseFilter): string {
+	return JSON.stringify({
+		columnId: filter.column_id,
+		operator: filter.operator,
+		valueText: filter.value_text ?? null,
+		valueBool: filter.value_bool ?? null,
+		valueList: filter.value_list,
+	});
+}
+
 export function DatabaseSourceDropdown({
 	config,
 	onChangeConfig,
 }: DatabaseSourceDropdownProps) {
 	const [filterError, setFilterError] = useState("");
 	const filterKeyCounterRef = useRef(0);
-	const [filterUiKeys, setFilterUiKeys] = useState(() =>
-		config.filters.map(() => `filter-${filterKeyCounterRef.current++}`),
+	const previousFilterKeyEntriesRef = useRef<FilterKeyEntry[]>([]);
+	const [filterUiKeys, setFilterUiKeys] = useState<string[]>([]);
+
+	const syncFilterUiKeys = useCallback(
+		(filters: DatabaseFilter[], preferredKeys?: string[]) => {
+			const nextEntries = (() => {
+				if (preferredKeys && preferredKeys.length === filters.length) {
+					return filters.map((filter, index) => ({
+						key:
+							preferredKeys[index] ?? `filter-${filterKeyCounterRef.current++}`,
+						signature: filterSignature(filter),
+					}));
+				}
+
+				const availableKeysBySignature = new Map<string, string[]>();
+				for (const entry of previousFilterKeyEntriesRef.current) {
+					const bucket = availableKeysBySignature.get(entry.signature);
+					if (bucket) {
+						bucket.push(entry.key);
+						continue;
+					}
+					availableKeysBySignature.set(entry.signature, [entry.key]);
+				}
+
+				return filters.map((filter) => {
+					const signature = filterSignature(filter);
+					const bucket = availableKeysBySignature.get(signature);
+					return {
+						key: bucket?.shift() ?? `filter-${filterKeyCounterRef.current++}`,
+						signature,
+					};
+				});
+			})();
+
+			const nextKeys = nextEntries.map((entry) => entry.key);
+			previousFilterKeyEntriesRef.current = nextEntries;
+			setFilterUiKeys(nextKeys);
+			return nextKeys;
+		},
+		[],
 	);
 
 	useEffect(() => {
-		setFilterUiKeys((current) => {
-			if (current.length === config.filters.length) return current;
-			if (current.length > config.filters.length) {
-				return current.slice(0, config.filters.length);
-			}
-			const next = [...current];
-			while (next.length < config.filters.length) {
-				next.push(`filter-${filterKeyCounterRef.current++}`);
-			}
-			return next;
-		});
-	}, [config.filters.length]);
+		syncFilterUiKeys(config.filters);
+	}, [config.filters, syncFilterUiKeys]);
 
 	const handleSave = async (patch: Partial<DatabaseConfig["source"]>) => {
 		await onChangeConfig({
@@ -156,16 +199,14 @@ export function DatabaseSourceDropdown({
 		keyUpdater?: (keys: string[]) => string[],
 	) => {
 		const nextFilters = updater(config.filters);
-		const nextKeys = keyUpdater ? keyUpdater(filterUiKeys) : filterUiKeys;
+		const nextKeys = keyUpdater?.(filterUiKeys);
 		try {
 			setFilterError("");
 			await onChangeConfig({
 				...config,
 				filters: nextFilters,
 			});
-			if (nextKeys !== filterUiKeys) {
-				setFilterUiKeys(nextKeys);
-			}
+			syncFilterUiKeys(nextFilters, nextKeys);
 		} catch (cause) {
 			const message = extractErrorMessage(cause);
 			console.error("Failed to update database filters", cause);
@@ -220,8 +261,6 @@ export function DatabaseSourceDropdown({
 							</span>
 							<DatabaseFolderPicker
 								value={config.source.value}
-								label="Database Folder"
-								description="Choose a folder for this database."
 								placeholder="Choose a folder"
 								onChange={(value) => void handleSave({ value })}
 							/>
@@ -438,8 +477,6 @@ export function DatabaseSourceDropdown({
 					</span>
 					<DatabaseFolderPicker
 						value={config.new_note.folder}
-						label="New Row Folder"
-						description="Choose where new notes should be stored."
 						placeholder="Choose a folder"
 						onChange={(value) => void handleNewNoteFolder(value)}
 					/>

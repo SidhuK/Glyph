@@ -66,6 +66,7 @@ export function NotePropertiesPanel({
 	useEffect(() => {
 		const nextRawDraft = frontmatter ?? "";
 		if (mode === "raw") {
+			parseRequestIdRef.current += 1;
 			setEditorState((current) =>
 				current.rawDraft === nextRawDraft
 					? current
@@ -74,6 +75,7 @@ export function NotePropertiesPanel({
 			return;
 		}
 		if ((frontmatter ?? null) === lastCommittedFrontmatterRef.current) {
+			parseRequestIdRef.current += 1;
 			setEditorState((current) =>
 				current.rawDraft === nextRawDraft
 					? current

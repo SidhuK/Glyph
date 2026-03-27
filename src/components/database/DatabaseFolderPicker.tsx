@@ -10,8 +10,6 @@ import { ScrollArea } from "../ui/shadcn/scroll-area";
 interface DatabaseFolderPickerProps {
 	value: string;
 	onChange: (value: string) => void;
-	label: string;
-	description: string;
 	placeholder?: string;
 }
 
@@ -50,7 +48,8 @@ export function DatabaseFolderPicker({
 }: DatabaseFolderPickerProps) {
 	const [open, setOpen] = useState(false);
 	const [query, setQuery] = useState("");
-	const [browserPath, setBrowserPath] = useState("");
+	const [browserPath, setBrowserPath] = useState(value);
+	const [rootLoadFailed, setRootLoadFailed] = useState(false);
 	const [browserState, setBrowserState] =
 		useState<FolderBrowserState>(EMPTY_BROWSER_STATE);
 	const { entries, loading, error } = browserState;
@@ -59,10 +58,12 @@ export function DatabaseFolderPicker({
 		if (!open) return;
 		setBrowserPath(value);
 		setQuery("");
+		setRootLoadFailed(false);
 	}, [open, value]);
 
 	useEffect(() => {
 		if (!open) return;
+		if (!browserPath && rootLoadFailed) return;
 		let cancelled = false;
 		const loadEntries = async () => {
 			setBrowserState((current) =>
@@ -80,11 +81,13 @@ export function DatabaseFolderPicker({
 					loading: false,
 					error: "",
 				});
+				if (!browserPath) {
+					setRootLoadFailed(false);
+				}
 			} catch (error) {
 				if (cancelled) return;
-				if (browserPath) {
-					setBrowserPath("");
-					return;
+				if (!browserPath) {
+					setRootLoadFailed(true);
 				}
 				setBrowserState({
 					entries: [],
@@ -97,7 +100,7 @@ export function DatabaseFolderPicker({
 		return () => {
 			cancelled = true;
 		};
-	}, [browserPath, open]);
+	}, [browserPath, open, rootLoadFailed]);
 
 	const filteredEntries = useMemo(() => {
 		const normalized = query.trim().toLowerCase();

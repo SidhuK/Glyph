@@ -39,6 +39,7 @@ export function AiModelCombobox({
 		INITIAL_MODEL_FETCH_STATE,
 	);
 	const { models, loading, error, hasAttemptedFetch } = modelFetchState;
+	const modelFetchStateRef = useRef(modelFetchState);
 	const lastSecretConfiguredRef = useRef<boolean | null>(secretConfigured);
 	const onModelsChangeRef = useRef(onModelsChange);
 	const requiresApiKey = providerNeedsApiKey(provider);
@@ -50,25 +51,27 @@ export function AiModelCombobox({
 		onModelsChangeRef.current = onModelsChange;
 	}, [onModelsChange]);
 
+	useEffect(() => {
+		modelFetchStateRef.current = modelFetchState;
+	}, [modelFetchState]);
+
 	const fetchModels = useCallback(
 		async (force = false) => {
-			let shouldFetch = false;
-			setModelFetchState((current) => {
-				if (
-					!force &&
-					(current.models || current.loading || current.hasAttemptedFetch)
-				) {
-					return current;
-				}
-				shouldFetch = true;
-				return {
-					models: force ? null : current.models,
-					loading: true,
-					error: "",
-					hasAttemptedFetch: true,
-				};
-			});
-			if (!shouldFetch) return;
+			const current = modelFetchStateRef.current;
+			if (
+				!force &&
+				(current.models || current.loading || current.hasAttemptedFetch)
+			) {
+				return;
+			}
+			const nextState: ModelFetchState = {
+				models: force ? null : current.models,
+				loading: true,
+				error: "",
+				hasAttemptedFetch: true,
+			};
+			modelFetchStateRef.current = nextState;
+			setModelFetchState(nextState);
 			try {
 				const result = await invoke("ai_models_list", {
 					profile_id: profileId,
@@ -97,10 +100,9 @@ export function AiModelCombobox({
 	useEffect(() => {
 		if (lastFetchScopeRef.current === fetchScope) return;
 		lastFetchScopeRef.current = fetchScope;
-		lastSecretConfiguredRef.current = secretConfigured;
 		setModelFetchState(INITIAL_MODEL_FETCH_STATE);
 		onModelsChangeRef.current?.(null);
-	}, [fetchScope, secretConfigured]);
+	}, [fetchScope]);
 
 	useEffect(() => {
 		if (!canFetchModels || hasAttemptedFetch) return;
@@ -125,11 +127,10 @@ export function AiModelCombobox({
 	}, [canFetchModels, fetchModels]);
 
 	useEffect(() => {
-		if (!canFetchModels) {
-			setModelFetchState(INITIAL_MODEL_FETCH_STATE);
-			onModelsChangeRef.current?.(null);
-		}
-	}, [canFetchModels]);
+		if (canFetchModels || modelFetchState === INITIAL_MODEL_FETCH_STATE) return;
+		setModelFetchState(INITIAL_MODEL_FETCH_STATE);
+		onModelsChangeRef.current?.(null);
+	}, [canFetchModels, modelFetchState]);
 
 	const statusLabel = loading
 		? "Connecting..."
