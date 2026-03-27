@@ -143,6 +143,11 @@ pub struct GitSyncStatus {
     pub consecutive_auto_sync_failures: u32,
     pub detected_remote_url: Option<String>,
     pub detected_branch: Option<String>,
+    pub local_change_count: u32,
+    pub ahead_count: u32,
+    pub behind_count: u32,
+    pub preflight_issue: Option<String>,
+    pub conflict_risk: Option<String>,
     pub message: Option<String>,
 }
 
@@ -170,6 +175,11 @@ impl Default for GitSyncStatus {
             consecutive_auto_sync_failures: 0,
             detected_remote_url: None,
             detected_branch: None,
+            local_change_count: 0,
+            ahead_count: 0,
+            behind_count: 0,
+            preflight_issue: None,
+            conflict_risk: None,
             message: None,
         }
     }

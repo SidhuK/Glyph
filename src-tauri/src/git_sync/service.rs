@@ -7,9 +7,10 @@ use tauri::{AppHandle, Emitter, State};
 use crate::space::state::SpaceState;
 
 use super::git::{
-    commit_all, fetch_remote, git_is_installed, has_head_commit, inspect_repo, merge_remote,
-    primary_remote_url, push_remote, remote_branch_exists, stage_for_sync,
-    upsert_managed_gitignore, working_tree_dirty, RepoInspection,
+    ahead_behind_counts, commit_all, fetch_remote, git_is_installed, has_head_commit,
+    has_remote_named, inspect_repo, merge_remote, overlapping_change_risk, primary_remote_url,
+    push_remote, remote_branch_exists, stage_for_sync, upsert_managed_gitignore,
+    working_tree_change_count, working_tree_dirty, RepoInspection,
 };
 use super::store::{delete_store, load_store, save_store};
 use super::types::{
@@ -76,11 +77,70 @@ fn normalize_interval(interval: u32) -> u32 {
     interval.clamp(1, 24 * 60)
 }
 
+#[derive(Debug, Clone, Default)]
+struct RepoHealth {
+    local_change_count: u32,
+    ahead_count: u32,
+    behind_count: u32,
+    preflight_issue: Option<String>,
+    conflict_risk: Option<String>,
+}
+
+fn inspect_repo_health(space_root: &PathBuf, inspection: &RepoInspection, config: Option<&GitSyncConfig>) -> Result<RepoHealth, String> {
+    let mut health = RepoHealth::default();
+
+    let RepoInspection::AtRoot { branch, primary_remote } = inspection else {
+        return Ok(health);
+    };
+
+    health.local_change_count = working_tree_change_count(space_root)?;
+
+    let Some(config) = config else {
+        if primary_remote.is_none() {
+            health.preflight_issue = Some("This repo has no remote configured yet.".to_string());
+        }
+        return Ok(health);
+    };
+
+    if !has_head_commit(space_root)? {
+        health.preflight_issue = Some("This repo has no commits yet.".to_string());
+        return Ok(health);
+    }
+
+    match branch.as_deref() {
+        None => {
+            health.preflight_issue = Some("Git is in a detached HEAD state. Switch back to a branch before syncing.".to_string());
+            return Ok(health);
+        }
+        Some(current) if current != config.branch => {
+            health.preflight_issue = Some(format!(
+                "Glyph expects branch {}, but the repo is currently on {}.",
+                config.branch, current
+            ));
+            return Ok(health);
+        }
+        _ => {}
+    }
+
+    if !has_remote_named(space_root, "origin")? {
+        health.preflight_issue = Some("This repo has no origin remote configured.".to_string());
+        return Ok(health);
+    }
+
+    let (ahead, behind) = ahead_behind_counts(space_root, "origin", &config.branch)?;
+    health.ahead_count = ahead;
+    health.behind_count = behind;
+    health.conflict_risk = overlapping_change_risk(space_root, "origin", &config.branch)?;
+
+    Ok(health)
+}
+
 fn config_to_status(
     config: Option<GitSyncConfig>,
     inspection: RepoInspection,
     git_installed: bool,
     runtime: RuntimeStatus,
+    health: RepoHealth,
 ) -> GitSyncStatus {
     let mut status = GitSyncStatus::default();
     status.git_installed = git_installed;
@@ -122,6 +182,12 @@ fn config_to_status(
         status.last_error = config.last_error;
         status.consecutive_auto_sync_failures = config.consecutive_auto_sync_failures;
     }
+
+    status.local_change_count = health.local_change_count;
+    status.ahead_count = health.ahead_count;
+    status.behind_count = health.behind_count;
+    status.preflight_issue = health.preflight_issue;
+    status.conflict_risk = health.conflict_risk;
 
     status
 }
@@ -180,7 +246,12 @@ pub fn read_status_internal(
         .lock()
         .map_err(|_| "git sync state poisoned".to_string())?
         .clone();
-    let status = config_to_status(config, inspection, git_installed, runtime);
+    let health = if git_installed {
+        inspect_repo_health(&space_root, &inspection, config.as_ref())?
+    } else {
+        RepoHealth::default()
+    };
+    let status = config_to_status(config, inspection, git_installed, runtime, health);
     let _ = app;
     Ok(status)
 }
@@ -269,7 +340,8 @@ pub fn run_git_sync(
 
     let is_auto = request.mode == GitSyncRunMode::Auto;
     let run_result = (|| -> Result<(), String> {
-        match inspect_repo(&space_root)? {
+        let inspection = inspect_repo(&space_root)?;
+        match &inspection {
             RepoInspection::Nested { .. } => {
                 return Err("The active space is inside a larger Git repository. Glyph only supports repos rooted at the space path.".to_string());
             }
@@ -277,6 +349,16 @@ pub fn run_git_sync(
             RepoInspection::None => {
                 return Err("No Git repository exists at the active space root.".to_string());
             }
+        }
+
+        let health = inspect_repo_health(&space_root, &inspection, Some(&config))?;
+        if let Some(issue) = health.preflight_issue {
+            return Err(issue);
+        }
+        if let Some(conflict_risk) = health.conflict_risk {
+            return Err(format!(
+                "{conflict_risk}. Sync was paused to avoid overwriting changes. Resolve or sync manually in Git first."
+            ));
         }
 
         config.last_attempted_at_ms = Some(now_ms());

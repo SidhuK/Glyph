@@ -136,6 +136,10 @@ pub fn primary_remote_url(space_root: &Path) -> Result<Option<String>, String> {
     }))
 }
 
+pub fn has_remote_named(space_root: &Path, remote_name: &str) -> Result<bool, String> {
+    Ok(run_git_maybe(space_root, &["remote", "get-url", remote_name])?.is_some())
+}
+
 pub fn has_head_commit(space_root: &Path) -> Result<bool, String> {
     Ok(run_git_maybe(space_root, &["rev-parse", "--verify", "HEAD"])?.is_some())
 }
@@ -143,6 +147,11 @@ pub fn has_head_commit(space_root: &Path) -> Result<bool, String> {
 pub fn working_tree_dirty(space_root: &Path) -> Result<bool, String> {
     let status = run_git(space_root, &["status", "--porcelain"])?;
     Ok(!status.trim().is_empty())
+}
+
+pub fn working_tree_change_count(space_root: &Path) -> Result<u32, String> {
+    let status = run_git(space_root, &["status", "--porcelain"])?;
+    Ok(status.lines().filter(|line| !line.trim().is_empty()).count() as u32)
 }
 
 pub fn fetch_remote(space_root: &Path, remote_name: &str, branch: &str) -> Result<(), String> {
@@ -153,6 +162,70 @@ pub fn fetch_remote(space_root: &Path, remote_name: &str, branch: &str) -> Resul
 pub fn remote_branch_exists(space_root: &Path, remote_name: &str, branch: &str) -> Result<bool, String> {
     let ref_name = format!("refs/remotes/{remote_name}/{branch}");
     Ok(run_git_maybe(space_root, &["rev-parse", "--verify", &ref_name])?.is_some())
+}
+
+pub fn ahead_behind_counts(space_root: &Path, remote_name: &str, branch: &str) -> Result<(u32, u32), String> {
+    let ref_name = format!("{remote_name}/{branch}");
+    if !remote_branch_exists(space_root, remote_name, branch)? {
+        return Ok((0, 0));
+    }
+    let raw = run_git(space_root, &["rev-list", "--left-right", "--count", &format!("HEAD...{ref_name}")])?;
+    let mut parts = raw.split_whitespace();
+    let ahead = parts
+        .next()
+        .and_then(|value| value.parse::<u32>().ok())
+        .unwrap_or(0);
+    let behind = parts
+        .next()
+        .and_then(|value| value.parse::<u32>().ok())
+        .unwrap_or(0);
+    Ok((ahead, behind))
+}
+
+pub fn overlapping_change_risk(space_root: &Path, remote_name: &str, branch: &str) -> Result<Option<String>, String> {
+    let ref_name = format!("{remote_name}/{branch}");
+    if !remote_branch_exists(space_root, remote_name, branch)? {
+        return Ok(None);
+    }
+    let base = run_git(space_root, &["merge-base", "HEAD", &ref_name])?;
+    let base = base.trim();
+    if base.is_empty() {
+        return Ok(None);
+    }
+
+    let local = run_git(space_root, &["diff", "--name-only", base, "HEAD"])?;
+    let remote = run_git(space_root, &["diff", "--name-only", base, &ref_name])?;
+
+    let local_files = local
+        .lines()
+        .map(str::trim)
+        .filter(|line| !line.is_empty())
+        .collect::<std::collections::BTreeSet<_>>();
+    let remote_files = remote
+        .lines()
+        .map(str::trim)
+        .filter(|line| !line.is_empty())
+        .collect::<std::collections::BTreeSet<_>>();
+
+    let overlaps = local_files
+        .intersection(&remote_files)
+        .take(3)
+        .copied()
+        .collect::<Vec<_>>();
+
+    if overlaps.is_empty() {
+        return Ok(None);
+    }
+
+    let summary = if overlaps.len() == 1 {
+        format!("Both local and remote changed {}", overlaps[0])
+    } else {
+        format!(
+            "Both local and remote changed {}",
+            overlaps.join(", ")
+        )
+    };
+    Ok(Some(summary))
 }
 
 pub fn merge_remote(space_root: &Path, remote_name: &str, branch: &str, favor_local: bool) -> Result<(), String> {

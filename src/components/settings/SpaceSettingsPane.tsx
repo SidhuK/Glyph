@@ -1,9 +1,35 @@
+import {
+	type CheckmarkCircle02Icon,
+	Clock01Icon,
+	FolderOpenIcon,
+	SearchIcon,
+} from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useState } from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { clearRecentSpaces, loadSettings } from "../../lib/settings";
 import { invoke } from "../../lib/tauri";
 import { Button } from "../ui/shadcn/button";
 import { SettingsRow, SettingsSection } from "./SettingsScaffold";
+
+function SpaceSettingValue({
+	icon,
+	value,
+	mono = false,
+}: {
+	icon: typeof CheckmarkCircle02Icon;
+	value: string;
+	mono?: boolean;
+}) {
+	return (
+		<div className="gitSettingValueCard">
+			<div className="gitSettingValueIcon" aria-hidden="true">
+				<HugeiconsIcon icon={icon} size={14} />
+			</div>
+			<div className={`gitSettingValueText ${mono ? "mono" : ""}`}>{value}</div>
+		</div>
+	);
+}
 
 export function SpaceSettingsPane() {
 	const [currentSpacePath, setCurrentSpacePath] = useState<string | null>(null);
@@ -65,11 +91,11 @@ export function SpaceSettingsPane() {
 						stacked
 						interactive={false}
 					>
-						<div className="settingsPathCard">
-							<div className="settingsPathValue mono">
-								{currentSpacePath ?? "(none selected)"}
-							</div>
-						</div>
+						<SpaceSettingValue
+							icon={FolderOpenIcon}
+							value={currentSpacePath ?? "(none selected)"}
+							mono
+						/>
 					</SettingsRow>
 				</SettingsSection>
 
@@ -94,8 +120,11 @@ export function SpaceSettingsPane() {
 					{recentSpaces.length > 0 ? (
 						<ul className="settingsPathList" aria-label="Recent spaces">
 							{recentSpaces.map((p) => (
-								<li key={p} className="settingsPathListItem mono">
-									{p}
+								<li key={p} className="settingsPathListItem">
+									<div className="settingsPathListItemIcon" aria-hidden="true">
+										<HugeiconsIcon icon={Clock01Icon} size={13} />
+									</div>
+									<div className="settingsPathListItemText mono">{p}</div>
 								</li>
 							))}
 						</ul>
@@ -126,10 +155,13 @@ export function SpaceSettingsPane() {
 						stacked
 						interactive={false}
 					>
-						<div className="settingsEmpty">
-							{reindexStatus ||
-								(!currentSpacePath ? "No space selected." : "Index is ready.")}
-						</div>
+						<SpaceSettingValue
+							icon={SearchIcon}
+							value={
+								reindexStatus ||
+								(!currentSpacePath ? "No space selected." : "Index is ready.")
+							}
+						/>
 					</SettingsRow>
 				</SettingsSection>
 			</div>

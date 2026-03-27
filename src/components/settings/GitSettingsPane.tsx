@@ -1,4 +1,10 @@
-import { ConstructionIcon } from "@hugeicons/core-free-icons";
+import {
+	CheckmarkCircle02Icon,
+	ConstructionIcon,
+	GitBranchIcon,
+	InformationCircleIcon,
+	Link01Icon,
+} from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
@@ -24,6 +30,25 @@ const DEFAULT_INCLUSIONS: GitSyncInclusionSettings = {
 	include_attachments: false,
 	include_non_markdown_files: false,
 };
+
+function GitSettingValue({
+	icon,
+	value,
+	mono = false,
+}: {
+	icon: typeof CheckmarkCircle02Icon;
+	value: string;
+	mono?: boolean;
+}) {
+	return (
+		<div className="gitSettingValueCard">
+			<div className="gitSettingValueIcon" aria-hidden="true">
+				<HugeiconsIcon icon={icon} size={14} />
+			</div>
+			<div className={`gitSettingValueText ${mono ? "mono" : ""}`}>{value}</div>
+		</div>
+	);
+}
 
 function formatTimestamp(timestamp: number | null): string {
 	if (!timestamp) return "Never";
@@ -164,13 +189,16 @@ export function GitSettingsPane() {
 						stacked
 						interactive={false}
 					>
-						<div className="settingsValue">
-							{loading
-								? "Loading..."
-								: status?.git_installed
-									? "Installed"
-									: "Missing"}
-						</div>
+						<GitSettingValue
+							icon={CheckmarkCircle02Icon}
+							value={
+								loading
+									? "Loading..."
+									: status?.git_installed
+										? "Installed"
+										: "Missing"
+							}
+						/>
 					</SettingsRow>
 					<SettingsRow
 						label="Repository state"
@@ -178,7 +206,10 @@ export function GitSettingsPane() {
 						stacked
 						interactive={false}
 					>
-						<div className="settingsValue">{repoStateLabel}</div>
+						<GitSettingValue
+							icon={InformationCircleIcon}
+							value={repoStateLabel}
+						/>
 					</SettingsRow>
 					<SettingsRow
 						label="How it works"
@@ -186,10 +217,14 @@ export function GitSettingsPane() {
 						stacked
 						interactive={false}
 					>
-						<div className="settingsValue">
-							{config?.remote_url ??
-								"Open a folder that already has Git initialized."}
-						</div>
+						<GitSettingValue
+							icon={Link01Icon}
+							value={
+								config?.remote_url ??
+								"Open a folder that already has Git initialized."
+							}
+							mono={Boolean(config?.remote_url)}
+						/>
 					</SettingsRow>
 					{config ? (
 						<SettingsRow
@@ -198,7 +233,11 @@ export function GitSettingsPane() {
 							stacked
 							interactive={false}
 						>
-							<div className="settingsValue mono">{config.branch}</div>
+							<GitSettingValue
+								icon={GitBranchIcon}
+								value={config.branch}
+								mono
+							/>
 						</SettingsRow>
 					) : null}
 				</SettingsSection>
@@ -262,22 +301,59 @@ export function GitSettingsPane() {
 						stacked
 						interactive={false}
 					>
-						<div className="settingsValue">
-							{status?.message ??
+						<GitSettingValue
+							icon={InformationCircleIcon}
+							value={
+								status?.message ??
 								(status?.last_error
 									? status.last_error
 									: status?.configured
 										? "Ready"
-										: "Unavailable")}
+										: "Unavailable")
+							}
+						/>
+						<div className="gitSettingMetaList">
+							<div className="gitSettingMetaRow">
+								<span className="gitSettingMetaKey">Last success</span>
+								<span className="gitSettingMetaValue">
+									{formatTimestamp(status?.last_success_at_ms ?? null)}
+								</span>
+							</div>
+							<div className="gitSettingMetaRow">
+								<span className="gitSettingMetaKey">Last attempt</span>
+								<span className="gitSettingMetaValue">
+									{formatTimestamp(status?.last_attempted_at_ms ?? null)}
+								</span>
+							</div>
 						</div>
-						<div className="settingsHelp">
-							Last success:{" "}
-							{formatTimestamp(status?.last_success_at_ms ?? null)}
+						<div className="gitSettingMetaList">
+							<div className="gitSettingMetaRow">
+								<span className="gitSettingMetaKey">Local changes</span>
+								<span className="gitSettingMetaValue">
+									{status?.local_change_count ?? 0}
+								</span>
+							</div>
+							<div className="gitSettingMetaRow">
+								<span className="gitSettingMetaKey">Ahead of remote</span>
+								<span className="gitSettingMetaValue">
+									{status?.ahead_count ?? 0}
+								</span>
+							</div>
+							<div className="gitSettingMetaRow">
+								<span className="gitSettingMetaKey">Behind remote</span>
+								<span className="gitSettingMetaValue">
+									{status?.behind_count ?? 0}
+								</span>
+							</div>
 						</div>
-						<div className="settingsHelp">
-							Last attempt:{" "}
-							{formatTimestamp(status?.last_attempted_at_ms ?? null)}
-						</div>
+						{status?.preflight_issue ? (
+							<div className="settingsError">{status.preflight_issue}</div>
+						) : null}
+						{status?.conflict_risk ? (
+							<div className="settingsError">
+								Potential conflict risk detected: {status.conflict_risk}
+							</div>
+						) : null}
 						{status?.paused ? (
 							<div className="settingsError">
 								Auto sync is paused after repeated failures. Manual sync remains
@@ -366,14 +442,6 @@ export function GitSettingsPane() {
 								});
 							}}
 						/>
-					</SettingsRow>
-					<SettingsRow
-						label="Always excluded"
-						description="Glyph never syncs its internal workspace data directory."
-						stacked
-						interactive={false}
-					>
-						<div className="settingsValue mono">.glyph/</div>
 					</SettingsRow>
 				</SettingsSection>
 			</div>

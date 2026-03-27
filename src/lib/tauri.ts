@@ -518,6 +518,11 @@ export interface GitSyncStatus {
 	consecutive_auto_sync_failures: number;
 	detected_remote_url: string | null;
 	detected_branch: string | null;
+	local_change_count: number;
+	ahead_count: number;
+	behind_count: number;
+	preflight_issue: string | null;
+	conflict_risk: string | null;
 	message: string | null;
 }
 
