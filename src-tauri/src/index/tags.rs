@@ -197,7 +197,9 @@ pub fn parse_all_tags(markdown: &str) -> Vec<String> {
 
 #[cfg(test)]
 mod tests {
-    use super::{expand_indexed_tags, normalize_tag, parse_all_tags, tag_depth, tag_matches_hierarchy};
+    use super::{
+        expand_indexed_tags, normalize_tag, parse_all_tags, tag_depth, tag_matches_hierarchy,
+    };
 
     #[test]
     fn normalizes_nested_tags_and_rejects_empty_segments() {
@@ -234,8 +236,7 @@ mod tests {
 
     #[test]
     fn explicit_parent_wins_when_shared_with_child() {
-        let expanded =
-            expand_indexed_tags(&["work".to_string(), "work/today/further".to_string()]);
+        let expanded = expand_indexed_tags(&["work".to_string(), "work/today/further".to_string()]);
         assert_eq!(expanded[0].tag, "work");
         assert!(expanded[0].is_explicit);
     }
@@ -253,7 +254,10 @@ mod tests {
         let markdown = "#work/today/further\n\nBody #projects/roadmap";
         assert_eq!(
             parse_all_tags(markdown),
-            vec!["projects/roadmap".to_string(), "work/today/further".to_string()]
+            vec![
+                "projects/roadmap".to_string(),
+                "work/today/further".to_string()
+            ]
         );
     }
 }

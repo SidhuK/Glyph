@@ -789,14 +789,22 @@ mod tests {
         for tag in expand_indexed_tags(&["work/today/further".to_string()]) {
             conn.execute(
                 "INSERT INTO tags(note_id, tag, is_explicit) VALUES(?, ?, ?)",
-                rusqlite::params!["notes/leaf.md", tag.tag, if tag.is_explicit { 1 } else { 0 }],
+                rusqlite::params![
+                    "notes/leaf.md",
+                    tag.tag,
+                    if tag.is_explicit { 1 } else { 0 }
+                ],
             )
             .unwrap();
         }
         for tag in expand_indexed_tags(&["work".to_string()]) {
             conn.execute(
                 "INSERT INTO tags(note_id, tag, is_explicit) VALUES(?, ?, ?)",
-                rusqlite::params!["notes/root.md", tag.tag, if tag.is_explicit { 1 } else { 0 }],
+                rusqlite::params![
+                    "notes/root.md",
+                    tag.tag,
+                    if tag.is_explicit { 1 } else { 0 }
+                ],
             )
             .unwrap();
         }

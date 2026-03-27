@@ -16,7 +16,7 @@ use rig::{
 };
 
 use crate::ai_rig::{
-    helpers::{default_base_url, parse_base_url},
+    helpers::{default_base_url, parse_base_url, parse_ollama_base_url},
     types::{
         AiAssistantMode, AiChunkEvent, AiMessage, AiProfile, AiProviderKind, AiStoredToolEvent,
     },
@@ -35,6 +35,24 @@ fn is_not_chat_model_error(err: &str) -> bool {
     let lower = err.to_lowercase();
     lower.contains("not a chat model")
         || lower.contains("not supported in the v1/chat/completions endpoint")
+}
+
+fn is_ollama_tool_unsupported_error(err: &str) -> bool {
+    let lower = err.to_lowercase();
+    lower.contains("does not support tools")
+        || lower.contains("tool calling is not supported")
+        || lower.contains("tool calls are not supported")
+}
+
+fn create_mode_fallback_preamble(system: &str) -> String {
+    if system.trim().is_empty() {
+        "No tools are available in this run. Answer directly using the conversation and provided context only.".to_string()
+    } else {
+        format!(
+            "{}\n\nNo tools are available in this run. Answer directly using the conversation and provided context only.",
+            system.trim()
+        )
+    }
 }
 
 fn not_chat_model_message(model: &str) -> String {
@@ -79,6 +97,13 @@ pub async fn run_with_rig(
         .base_url
         .as_deref()
         .map(|_| parse_base_url(profile))
+        .transpose()
+        .map_err(|e| e.to_string())?
+        .map(|u| u.to_string());
+    let custom_ollama_base_url = profile
+        .base_url
+        .as_deref()
+        .map(|_| parse_ollama_base_url(profile))
         .transpose()
         .map_err(|e| e.to_string())?
         .map(|u| u.to_string());
@@ -228,7 +253,7 @@ pub async fn run_with_rig(
             run_stream(cancel, app, job_id, agent, transcript).await?
         }
         AiProviderKind::Ollama => {
-            let base = custom_base_url
+            let base = custom_ollama_base_url
                 .as_deref()
                 .unwrap_or(default_base_url(&AiProviderKind::Ollama));
             let client = ollama::Client::builder()
@@ -239,12 +264,34 @@ pub async fn run_with_rig(
             if let Some(v) = max_tokens {
                 agent = agent.max_tokens(v);
             }
-            let agent = if matches!(mode, AiAssistantMode::Create) {
+            let use_tools = matches!(mode, AiAssistantMode::Create);
+            let agent = if use_tools {
                 with_tools(agent.preamble(&effective_system), &tools).build()
             } else {
                 agent.preamble(&effective_system).build()
             };
-            run_stream(cancel, app, job_id, agent, transcript).await?
+            match run_stream(cancel, app, job_id, agent, transcript.clone()).await {
+                Ok(v) => v,
+                Err(e) if use_tools && is_ollama_tool_unsupported_error(&e) => {
+                    let _ = app.emit(
+                        "ai:status",
+                        AiStatusEvent {
+                            job_id: job_id.to_string(),
+                            status: "thinking".to_string(),
+                            detail: Some("Retrying without tools".to_string()),
+                        },
+                    );
+                    let fallback_system = create_mode_fallback_preamble(system);
+                    let fallback_transcript = build_transcript(&fallback_system, messages);
+                    let mut fallback_agent = client.agent(profile.model.trim());
+                    if let Some(v) = max_tokens {
+                        fallback_agent = fallback_agent.max_tokens(v);
+                    }
+                    let fallback_agent = fallback_agent.preamble(&fallback_system).build();
+                    run_stream(cancel, app, job_id, fallback_agent, fallback_transcript).await?
+                }
+                Err(e) => return Err(e),
+            }
         }
         AiProviderKind::CodexChatgpt => {
             return Err(
@@ -287,6 +334,13 @@ pub async fn generate_chat_title_with_rig(
         .base_url
         .as_deref()
         .map(|_| parse_base_url(profile))
+        .transpose()
+        .map_err(|e| e.to_string())?
+        .map(|u| u.to_string());
+    let custom_ollama_base_url = profile
+        .base_url
+        .as_deref()
+        .map(|_| parse_ollama_base_url(profile))
         .transpose()
         .map_err(|e| e.to_string())?
         .map(|u| u.to_string());
@@ -461,7 +515,7 @@ pub async fn generate_chat_title_with_rig(
                 .to_string()
         }
         AiProviderKind::Ollama => {
-            let base = custom_base_url
+            let base = custom_ollama_base_url
                 .as_deref()
                 .unwrap_or(default_base_url(&AiProviderKind::Ollama));
             let client = ollama::Client::builder()

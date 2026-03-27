@@ -1,6 +1,6 @@
 use tauri::{AppHandle, State};
 
-use super::helpers::{apply_extra_headers, http_client, parse_base_url};
+use super::helpers::{apply_extra_headers, http_client, ollama_api_url, parse_base_url};
 use super::local_secrets;
 use super::store::{ensure_default_profiles, read_store, store_path, write_store};
 use super::types::{AiModel, AiProviderKind, AiReasoningEffortOption};
@@ -47,6 +47,93 @@ async fn list_openai_like(
             id: m.id,
             context_length: None,
             description: None,
+            input_modalities: None,
+            output_modalities: None,
+            tokenizer: None,
+            prompt_pricing: None,
+            completion_pricing: None,
+            supported_parameters: None,
+            max_completion_tokens: None,
+            reasoning_effort: None,
+            default_reasoning_effort: None,
+        })
+        .collect();
+    models.sort_by(|a, b| a.id.cmp(&b.id));
+    Ok(models)
+}
+
+#[derive(serde::Deserialize)]
+struct OllamaTagsResp {
+    models: Vec<OllamaModelItem>,
+}
+
+#[derive(serde::Deserialize)]
+struct OllamaModelItem {
+    name: String,
+    #[serde(default)]
+    details: Option<OllamaModelDetails>,
+}
+
+#[derive(serde::Deserialize)]
+struct OllamaModelDetails {
+    #[serde(default)]
+    family: Option<String>,
+    #[serde(default)]
+    parameter_size: Option<String>,
+    #[serde(default)]
+    quantization_level: Option<String>,
+}
+
+fn ollama_description(details: Option<OllamaModelDetails>) -> Option<String> {
+    let details = details?;
+    let mut parts = Vec::new();
+    if let Some(family) = details.family {
+        if !family.trim().is_empty() {
+            parts.push(family);
+        }
+    }
+    if let Some(parameter_size) = details.parameter_size {
+        if !parameter_size.trim().is_empty() {
+            parts.push(parameter_size);
+        }
+    }
+    if let Some(quantization_level) = details.quantization_level {
+        if !quantization_level.trim().is_empty() {
+            parts.push(quantization_level);
+        }
+    }
+    if parts.is_empty() {
+        None
+    } else {
+        Some(parts.join(" - "))
+    }
+}
+
+async fn list_ollama(
+    client: &reqwest::Client,
+    profile: &super::types::AiProfile,
+) -> Result<Vec<AiModel>, String> {
+    let url = ollama_api_url(profile, "api/tags")?;
+
+    let mut req = client.get(url);
+    req = apply_extra_headers(req, profile);
+
+    let resp = req.send().await.map_err(|e| e.to_string())?;
+    if !resp.status().is_success() {
+        let status = resp.status();
+        let text = resp.text().await.unwrap_or_default();
+        return Err(format!("model list failed ({status}): {text}"));
+    }
+
+    let parsed: OllamaTagsResp = resp.json().await.map_err(|e| e.to_string())?;
+    let mut models: Vec<AiModel> = parsed
+        .models
+        .into_iter()
+        .map(|m| AiModel {
+            name: m.name.clone(),
+            id: m.name,
+            context_length: None,
+            description: ollama_description(m.details),
             input_modalities: None,
             output_modalities: None,
             tokenizer: None,
@@ -489,9 +576,10 @@ pub async fn ai_models_list(
     }
 
     match effective_provider {
-        AiProviderKind::Openai | AiProviderKind::OpenaiCompat | AiProviderKind::Ollama => {
+        AiProviderKind::Openai | AiProviderKind::OpenaiCompat => {
             list_openai_like(&client, &profile, &api_key).await
         }
+        AiProviderKind::Ollama => list_ollama(&client, &profile).await,
         AiProviderKind::Openrouter => list_openrouter(&client, &profile, &api_key).await,
         AiProviderKind::Anthropic => list_anthropic(&client, &profile, &api_key).await,
         AiProviderKind::Gemini => list_gemini(&client, &profile, &api_key).await,

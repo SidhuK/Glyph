@@ -290,8 +290,7 @@ fn row_matches_filters(
                         .as_ref()
                         .is_some_and(|tag| text_values.iter().any(|value| value == tag))
                 } else {
-                    !filter_text.is_empty()
-                        && text_values.iter().any(|value| value == &filter_text)
+                    !filter_text.is_empty() && text_values.iter().any(|value| value == &filter_text)
                 }
             }
             "not_equals" => {
@@ -300,8 +299,7 @@ fn row_matches_filters(
                         .as_ref()
                         .is_some_and(|tag| text_values.iter().all(|value| value != tag))
                 } else {
-                    filter_text.is_empty()
-                        || text_values.iter().all(|value| value != &filter_text)
+                    filter_text.is_empty() || text_values.iter().all(|value| value != &filter_text)
                 }
             }
             "contains" => {
@@ -342,13 +340,11 @@ fn row_matches_filters(
                             .any(|value| value.ends_with(&filter_text))
                 }
             }
-            "tags_contains" => {
-                normalized_filter_tag.as_ref().is_some_and(|filter_tag| {
-                    text_values
-                        .iter()
-                        .any(|tag| tag_matches_hierarchy(filter_tag, tag))
-                })
-            }
+            "tags_contains" => normalized_filter_tag.as_ref().is_some_and(|filter_tag| {
+                text_values
+                    .iter()
+                    .any(|tag| tag_matches_hierarchy(filter_tag, tag))
+            }),
             "is_empty" => text_values.is_empty() && cell.value_bool.is_none(),
             "is_not_empty" => !text_values.is_empty() || cell.value_bool.is_some(),
             "is_true" => cell.value_bool == Some(true),
@@ -387,7 +383,9 @@ fn row_matches_filters(
                 } else {
                     filter_values.iter().any(|value| {
                         let normalized = normalize_text(value);
-                        text_values.iter().any(|cell_value| cell_value == &normalized)
+                        text_values
+                            .iter()
+                            .any(|cell_value| cell_value == &normalized)
                     })
                 }
             }
@@ -422,7 +420,9 @@ fn row_matches_filters(
                 } else {
                     filter_values.iter().all(|value| {
                         let normalized = normalize_text(value);
-                        text_values.iter().all(|cell_value| cell_value != &normalized)
+                        text_values
+                            .iter()
+                            .all(|cell_value| cell_value != &normalized)
                     })
                 }
             }
@@ -826,8 +826,8 @@ mod tests {
 
     use crate::index::schema::ensure_schema;
 
-    use super::{row_matches_filters, tag_source_ids};
     use super::super::types::{DatabaseColumn, DatabaseFilter, DatabaseRow};
+    use super::{row_matches_filters, tag_source_ids};
 
     fn tags_column() -> DatabaseColumn {
         DatabaseColumn {

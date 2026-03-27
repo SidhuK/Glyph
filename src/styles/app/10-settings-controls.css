@@ -277,28 +277,6 @@
 	width: 100%;
 }
 
-.settingsRestartNotice {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 10px;
-	width: 100%;
-	padding: 10px 12px;
-	border: 1px solid color-mix(in srgb, var(--color-yellow-500) 24%, transparent);
-	border-radius: var(--radius-md);
-	background: color-mix(in srgb, var(--color-yellow-500) 8%, var(--bg-primary));
-}
-
-.settingsRestartNoticeCopy {
-	display: inline-flex;
-	align-items: center;
-	gap: 8px;
-	min-width: 0;
-	font-size: 12px;
-	line-height: 1.4;
-	color: color-mix(in srgb, var(--color-yellow-500) 28%, var(--text-primary));
-}
-
 .settingsFieldControl > [data-slot="button"],
 .settingsActions > [data-slot="button"] {
 	min-height: 32px;

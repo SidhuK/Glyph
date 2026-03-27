@@ -1,4 +1,4 @@
-import { emit } from "@tauri-apps/api/event";
+import { emit, emitTo } from "@tauri-apps/api/event";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { resolveActiveProfileId } from "../../lib/aiProfiles";
 import { loadSettings, setAiEnabled } from "../../lib/settings";
@@ -20,11 +20,11 @@ export function AiSettingsPane() {
 	const activeProfileChangeRequestIdRef = useRef(0);
 
 	const notifyAiProfilesUpdated = useCallback(async () => {
-		try {
-			await emit("ai:profiles-updated");
-		} catch {
-			// best-effort cross-window sync
-		}
+		await Promise.allSettled([
+			emit("ai:profiles-updated"),
+			emitTo("main", "ai:profiles-updated"),
+			emitTo("settings", "ai:profiles-updated"),
+		]);
 	}, []);
 
 	const activeProfile = useMemo(() => {
