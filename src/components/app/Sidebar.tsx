@@ -92,9 +92,6 @@ export const Sidebar = memo(function Sidebar({
 						<SidebarHeader
 							sidebarCollapsed={sidebarCollapsed}
 							onToggleSidebar={onToggleSidebar}
-							gitSyncStatus={gitSyncStatus}
-							onGitSyncNow={onGitSyncNow}
-							onOpenGitSettings={onOpenGitSettings}
 							updateReady={updateReady}
 							updateVersion={updateVersion}
 							onInstallUpdate={onInstallUpdate}
@@ -113,6 +110,9 @@ export const Sidebar = memo(function Sidebar({
 							onSelectTag={onSelectTag}
 							onOpenCalendar={onOpenCalendar}
 							onOpenDatabases={onOpenDatabases}
+							gitSyncStatus={gitSyncStatus}
+							onGitSyncNow={onGitSyncNow}
+							onOpenGitSettings={onOpenGitSettings}
 						/>
 					</m.div>
 				)}

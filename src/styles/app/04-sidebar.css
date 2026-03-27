@@ -449,6 +449,15 @@
 	);
 }
 
+.sidebarFooter {
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	padding: var(--space-2) var(--space-3) var(--space-3);
+	border-top: 1px solid color-mix(in srgb, var(--border-light) 55%, transparent);
+	flex-shrink: 0;
+}
+
 .sidebarSectionHeader {
 	display: flex;
 	align-items: center;

@@ -1,3 +1,5 @@
+import { ConstructionIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { loadSettings } from "../../lib/settings";
@@ -137,6 +139,21 @@ export function GitSettingsPane() {
 		<div className="settingsPane">
 			{error ? <div className="settingsError">{error}</div> : null}
 			<div className="settingsGrid">
+				<section className="settingsCard gitBetaNotice">
+					<div className="gitBetaNoticeIcon" aria-hidden="true">
+						<HugeiconsIcon icon={ConstructionIcon} size={16} />
+					</div>
+					<div className="gitBetaNoticeBody">
+						<div className="gitBetaNoticeTitleRow">
+							<div className="gitBetaNoticeTitle">Git Sync is in beta</div>
+							<span className="earlyAccessBadge gitBetaBadge">In Beta</span>
+						</div>
+						<div className="gitBetaNoticeText">
+							Things might break, especially around sync edge cases and unusual
+							repository states. Use it carefully and keep backups you trust.
+						</div>
+					</div>
+				</section>
 				<SettingsSection
 					title="Connection"
 					description="Glyph uses Git automatically when the opened space is already a repository."

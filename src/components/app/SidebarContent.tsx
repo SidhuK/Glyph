@@ -15,6 +15,7 @@ import {
 import { useRecentFiles } from "../../hooks/useRecentFiles";
 import { FILE_TREE_START_RENAME_EVENT } from "../../lib/appEvents";
 import { getShortcutTooltip } from "../../lib/shortcuts";
+import type { GitSyncStatus } from "../../lib/tauri";
 import { FileTreePane } from "../FileTreePane";
 import { Database, Files } from "../Icons";
 import { RecentFilesPane } from "../RecentFilesPane";
@@ -22,6 +23,7 @@ import { TagsPane } from "../TagsPane";
 import { directionVariants } from "../ui/animations";
 import { ScrollArea } from "../ui/shadcn/scroll-area";
 import { Tabs, TabsList, TabsTrigger } from "../ui/shadcn/tabs";
+import { WindowChromeGitSyncButton } from "./WindowChromeGitSyncButton";
 
 interface SidebarContentProps {
 	onToggleDir: (dirPath: string) => void;
@@ -41,6 +43,9 @@ interface SidebarContentProps {
 	onSelectTag: (tag: string) => void;
 	onOpenCalendar: () => void;
 	onOpenDatabases: (databaseId?: string | null) => void;
+	gitSyncStatus: GitSyncStatus | null;
+	onGitSyncNow: () => void;
+	onOpenGitSettings: () => void;
 }
 
 export const SidebarContent = memo(function SidebarContent({
@@ -57,6 +62,9 @@ export const SidebarContent = memo(function SidebarContent({
 	onSelectTag,
 	onOpenCalendar,
 	onOpenDatabases,
+	gitSyncStatus,
+	onGitSyncNow,
+	onOpenGitSettings,
 }: SidebarContentProps) {
 	// Contexts
 	const { spacePath } = useSpace();
@@ -76,6 +84,7 @@ export const SidebarContent = memo(function SidebarContent({
 	const [pendingNewNotePath, setPendingNewNotePath] = useState<string | null>(
 		null,
 	);
+	const showGitButton = Boolean(gitSyncStatus?.configured);
 
 	const handleStartRename = useCallback((path: string) => {
 		const nextPath = path.trim();
@@ -267,6 +276,15 @@ export const SidebarContent = memo(function SidebarContent({
 					)}
 				</AnimatePresence>
 			</div>
+			{showGitButton ? (
+				<div className="sidebarFooter">
+					<WindowChromeGitSyncButton
+						status={gitSyncStatus}
+						onSyncNow={onGitSyncNow}
+						onOpenSettings={onOpenGitSettings}
+					/>
+				</div>
+			) : null}
 		</>
 	);
 });

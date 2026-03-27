@@ -79,7 +79,6 @@ import {
 	type TemplatePickerItem,
 } from "./TemplatePickerDialog";
 import { WhatsNewDialog } from "./WhatsNewDialog";
-import { WindowChromeGitSyncButton } from "./WindowChromeGitSyncButton";
 import { WindowChromeIconButton } from "./WindowChromeIconButton";
 import { WindowChromeUpdateButton } from "./WindowChromeUpdateButton";
 import { normalizeRelPath, parentDir } from "./appShellHelpers";
@@ -1293,17 +1292,6 @@ export function AppShell() {
 						updateReady={autoUpdater.updateReady}
 						updateVersion={autoUpdater.updateVersion}
 						onInstallUpdate={autoUpdater.installAndRelaunch}
-					/>
-					<WindowChromeGitSyncButton
-						status={gitSync.status}
-						onSyncNow={() => {
-							void gitSync.syncNow().catch((cause) => {
-								const message =
-									cause instanceof Error ? cause.message : "Git Sync failed.";
-								setError(message);
-							});
-						}}
-						onOpenSettings={gitSync.openGitSettings}
 					/>
 				</div>
 			)}

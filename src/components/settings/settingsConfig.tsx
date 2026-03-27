@@ -1,6 +1,7 @@
 import {
 	AiNetworkIcon,
 	Archive02Icon,
+	ConstructionIcon,
 	GitBranchIcon,
 	Settings01Icon,
 	Sun03Icon,
@@ -23,6 +24,8 @@ export interface SettingsTabMeta {
 	id: SettingsTab;
 	label: string;
 	renderIcon: () => ReactElement;
+	badgeText?: string;
+	badgeIcon?: () => ReactElement;
 }
 
 export const SETTINGS_TABS: SettingsTabMeta[] = [
@@ -50,6 +53,8 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 		id: "git",
 		label: "Git",
 		renderIcon: () => <HugeiconsIcon icon={GitBranchIcon} size={14} />,
+		badgeText: "Beta",
+		badgeIcon: () => <HugeiconsIcon icon={ConstructionIcon} size={11} />,
 	},
 	{
 		id: "advanced",

@@ -231,6 +231,27 @@
 	text-align: left;
 }
 
+.settingsTabBadge {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	flex: 0 0 auto;
+	margin-left: auto;
+}
+
+.settingsPanelTitleRow {
+	display: flex;
+	align-items: center;
+	gap: 10px;
+	flex-wrap: wrap;
+}
+
+.settingsPanelBadge {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+}
+
 .settingsTabButton:hover {
 	color: var(--text-primary);
 	background: var(--bg-primary);
