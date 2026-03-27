@@ -116,6 +116,7 @@
 	--radius-3xl: var(--radius-24);
 	--radius-full: var(--radius-round);
 	--radius-control: var(--radius-md);
+	--radius-interactive: var(--radius-control);
 	--radius-pill: var(--radius-full);
 	--radius-card: var(--radius-xl);
 	--radius-segmented: var(--radius-lg);

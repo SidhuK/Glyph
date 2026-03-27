@@ -1,4 +1,4 @@
-button {
+button:not([data-slot]) {
 	appearance: none;
 	margin: 0;
 	padding: 0;
@@ -11,14 +11,14 @@ button {
 	text-decoration: none;
 	background: transparent;
 	border: none;
-	border-radius: 0;
+	border-radius: inherit;
 }
 
-button:disabled {
+button:not([data-slot]):disabled {
 	cursor: not-allowed;
 }
 
-button:focus-visible {
+button:not([data-slot]):focus-visible {
 	outline: 2px solid var(--border-focus);
 	outline-offset: 2px;
 }

@@ -434,6 +434,89 @@
 	margin-bottom: 2px;
 }
 
+.sidebarQuickActionBtn {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+	gap: 7px;
+	min-height: 30px;
+	padding: 3px var(--space-2);
+	font-size: 13px;
+	line-height: 1.3;
+	color: var(--text-secondary);
+	text-align: left;
+	background: transparent;
+	border: 1px solid transparent;
+	border-radius: var(--radius-md);
+	cursor: pointer;
+	transition: background var(--transition-fast), color var(--transition-fast),
+		border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.sidebarQuickActionBtn:hover {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+	border-color: color-mix(in srgb, var(--border-light) 30%, transparent);
+}
+
+.sidebarQuickActionBtn:disabled {
+	opacity: 0.5;
+	pointer-events: none;
+}
+
+.sidebarQuickActionBtn .sidebarQuickActionLabel {
+	font-weight: var(--font-medium);
+	font-size: 13px;
+}
+
+.sidebarQuickActionBtn > svg {
+	flex: 0 0 auto;
+}
+
+.sidebarQuickActionBtnAccent {
+	justify-content: center;
+	margin-bottom: 4px;
+	color: color-mix(in srgb, var(--interactive-accent) 72%, var(--text-primary));
+	background: color-mix(in srgb, var(--interactive-accent) 12%, var(--bg-primary));
+	border-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 24%,
+		var(--border-light)
+	);
+	box-shadow: inset 0 1px 0 color-mix(in srgb, white 14%, transparent);
+}
+
+.sidebarQuickActionBtnAccent:hover {
+	background: color-mix(in srgb, var(--interactive-accent) 16%, var(--bg-hover));
+	border-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 32%,
+		var(--border-default)
+	);
+	color: color-mix(in srgb, var(--interactive-accent) 82%, var(--text-primary));
+}
+
+.sidebarQuickActionBtn[data-kind="dashboard"] > svg {
+	color: oklch(0.66 0.11 245);
+}
+
+.sidebarQuickActionBtn[data-kind="databases"] > svg {
+	color: oklch(0.84 0.16 96);
+}
+
+.sidebarQuickActionBtn[data-kind="daily-notes"] > svg {
+	color: oklch(0.66 0.13 242);
+}
+
+.sidebarQuickActionBtn[data-kind="template"] > svg {
+	color: oklch(0.72 0.15 168);
+}
+
+.sidebarQuickActionBtn[data-kind="new-note"] > svg {
+	color: inherit;
+}
+
 .sidebarQuickActions::after {
 	content: "";
 	display: block;

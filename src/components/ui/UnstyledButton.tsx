@@ -12,7 +12,7 @@ function UnstyledButton({
 			type={type}
 			data-slot="unstyled-button"
 			className={cn(
-				"appearance-none border-0 bg-transparent p-0 text-inherit font-inherit leading-inherit outline-none disabled:pointer-events-none disabled:opacity-50 focus-visible:ring-ring/50 focus-visible:ring-[3px]",
+				"appearance-none rounded-[var(--radius-interactive)] border-0 bg-transparent p-0 text-inherit font-inherit leading-inherit outline-none disabled:pointer-events-none disabled:opacity-50 focus-visible:ring-ring/50 focus-visible:ring-[3px]",
 				className,
 			)}
 			{...props}

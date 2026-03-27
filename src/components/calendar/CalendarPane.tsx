@@ -572,7 +572,8 @@ export function CalendarPane({
 							<Button
 								type="button"
 								size="sm"
-								variant="outline"
+								variant="ghost"
+								className="calendarToolbarButton"
 								onClick={() => stepRange(-1)}
 							>
 								<HugeiconsIcon icon={ArrowLeft} size={14} />
@@ -580,7 +581,8 @@ export function CalendarPane({
 							<Button
 								type="button"
 								size="sm"
-								variant="outline"
+								variant="ghost"
+								className="calendarToolbarButton"
 								onClick={goToToday}
 							>
 								Today
@@ -588,7 +590,8 @@ export function CalendarPane({
 							<Button
 								type="button"
 								size="sm"
-								variant="outline"
+								variant="ghost"
+								className="calendarToolbarButton"
 								onClick={() => stepRange(1)}
 							>
 								<HugeiconsIcon icon={ArrowRight} size={14} />
@@ -783,8 +786,9 @@ export function CalendarPane({
 							</div>
 							<Button
 								type="button"
-								variant="outline"
+								variant="ghost"
 								size="sm"
+								className="calendarDetailAction"
 								onClick={openSelectedDailyNote}
 							>
 								<FileText size={14} />

@@ -268,7 +268,7 @@ export function CommandPalette({
 			<DialogContent
 				className={[
 					"commandPalette top-[46%] gap-0 border-none bg-transparent p-0 shadow-none",
-					"sm:max-w-[560px]",
+					"sm:max-w-[640px]",
 				].join(" ")}
 				showCloseButton={false}
 			>

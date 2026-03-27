@@ -1,4 +1,3 @@
-import { cn } from "@/lib/utils";
 import {
 	AiNetworkIcon,
 	ChatAdd01Icon,
@@ -350,20 +349,6 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 						onSave={(t) => void actions.handleSaveAssistantResponse(t)}
 						onRetry={(i) => void handleRetry(i)}
 					/>
-					{!isChatMode && chat.status === "streaming" && (
-						<div
-							className={cn(
-								"aiToolStatus",
-								toolEvents.lastToolEvent?.phase === "error" &&
-									"aiToolStatusError",
-							)}
-							aria-live="polite"
-							aria-label="Tool status"
-						>
-							<span className="aiToolStatusDot" />
-							<span>{toolEvents.toolStatusText}</span>
-						</div>
-					)}
 				</div>
 				{showScrollFab && (
 					<Button

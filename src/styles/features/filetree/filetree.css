@@ -115,8 +115,8 @@
 	align-items: center;
 	gap: var(--space-1);
 	min-width: 0;
-	min-height: 28px;
-	padding: 2px var(--space-2);
+	min-height: 30px;
+	padding: 3px var(--space-2);
 	text-align: left;
 	border-radius: var(--radius-md);
 	margin: 0;

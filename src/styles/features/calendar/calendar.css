@@ -64,6 +64,19 @@
 	gap: 6px;
 }
 
+.calendarToolbarButton {
+	border-color: transparent;
+	background: transparent;
+	box-shadow: none;
+	color: var(--text-secondary);
+}
+
+.calendarToolbarButton:hover,
+.calendarToolbarButton:focus-visible {
+	background: transparent;
+	color: var(--text-primary);
+}
+
 /* ── Stat cards ── */
 
 .calendarStats {
@@ -303,15 +316,12 @@
 
 .calendarWelcomeLink {
 	cursor: pointer;
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 8%,
-		var(--bg-primary) 80%
-	);
+	border-color: transparent;
+	background: transparent;
 }
 
 .calendarWelcomeLink:hover {
-	background: color-mix(in srgb, var(--interactive-accent) 14%, transparent);
+	background: transparent;
 	color: var(--interactive-accent);
 }
 
@@ -429,6 +439,19 @@
 	font-size: 0.8rem;
 	color: var(--text-secondary);
 	font-weight: 500;
+}
+
+.calendarDetailAction {
+	border-color: transparent;
+	background: transparent;
+	box-shadow: none;
+	color: var(--text-secondary);
+}
+
+.calendarDetailAction:hover,
+.calendarDetailAction:focus-visible {
+	background: transparent;
+	color: var(--text-primary);
 }
 
 /* ── Task composer ── */
@@ -713,7 +736,7 @@
 }
 
 .calendarRecentStrip {
-	padding: 0 18px 18px;
+	padding: 2px 18px 18px;
 }
 
 .calendarRecentStripScroller {
@@ -721,7 +744,8 @@
 	gap: 14px;
 	overflow-x: auto;
 	overflow-y: hidden;
-	padding-bottom: 2px;
+	padding: 2px;
+	padding-bottom: 6px;
 	scrollbar-gutter: stable;
 }
 
@@ -743,7 +767,19 @@
 	flex: 0 0 auto;
 	min-height: 168px;
 	padding: 12px;
-	border-radius: 14px;
+	border-radius: 16px;
+}
+
+.calendarRecentStripCard:hover,
+.calendarRecentStripCard[data-state="selected"] {
+	border-radius: 16px;
+}
+
+.calendarRecentStripCard:focus-visible {
+	outline: none;
+	box-shadow:
+		0 0 0 1px color-mix(in srgb, var(--border-default) 42%, transparent),
+		0 0 0 3px color-mix(in srgb, var(--interactive-accent) 16%, transparent);
 }
 
 .calendarRecentStripCard .databaseBoardCardPreview {

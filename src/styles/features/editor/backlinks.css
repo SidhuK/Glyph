@@ -82,6 +82,8 @@
 }
 
 .tagsName {
+	font-size: var(--font-size-sm);
+	font-weight: var(--font-normal);
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
@@ -90,8 +92,9 @@
 
 .tagsCount {
 	color: var(--text-tertiary);
-	font-size: var(--font-size-xs);
+	font-size: 11px;
 	line-height: 1.2;
+	font-weight: var(--font-normal);
 	flex-shrink: 0;
 	white-space: nowrap;
 }
@@ -100,4 +103,19 @@
 	padding: var(--space-2) var(--space-3) var(--space-3);
 	color: var(--text-tertiary);
 	font-size: var(--font-size-xs);
+}
+
+.tagsPane[data-sidebar-list="recent"] .tagsButton {
+	min-height: 28px;
+	font-size: var(--font-size-xs);
+	border-radius: var(--radius-xl);
+}
+
+.tagsPane[data-sidebar-list="recent"] .tagsName {
+	font-size: var(--font-size-xs);
+	line-height: 1.25;
+}
+
+.tagsPane[data-sidebar-list="recent"] .tagsCount {
+	font-size: 10px;
 }

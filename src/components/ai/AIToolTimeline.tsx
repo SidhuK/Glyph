@@ -1,8 +1,7 @@
-import { cn } from "@/lib/utils";
 import { AnimatePresence, m } from "motion/react";
-import { Suspense, lazy, useState } from "react";
-import { ChevronDown } from "../Icons";
-import { UnstyledButton } from "../ui/UnstyledButton";
+import { Suspense, lazy } from "react";
+import { Reasoning, ReasoningContent, ReasoningTrigger } from "../ai-elements/reasoning";
+import { Tool, ToolContent, ToolHeader, ToolInput, ToolOutput } from "../ai-elements/tool";
 import { formatToolName } from "./aiPanelConstants";
 
 const AIMessageMarkdown = lazy(async () => {
@@ -63,49 +62,12 @@ function summarizePayload(payload: unknown): string {
 	return "";
 }
 
-function formatPhaseLabel(phase: ToolPhase): string {
-	if (phase === "call") return "Started";
-	if (phase === "result") return "Done";
-	return "Failed";
-}
-
 function formatTime(timestamp: number): string {
 	return new Date(timestamp).toLocaleTimeString([], {
 		hour: "numeric",
 		minute: "2-digit",
 		second: "2-digit",
 	});
-}
-
-function stringifyDetail(value: unknown): string {
-	if (value == null) return "";
-	if (typeof value === "string") return value;
-	try {
-		return JSON.stringify(value, null, 2);
-	} catch {
-		return String(value);
-	}
-}
-
-function detailTextForEvent(event: ToolTimelineToolEvent): string {
-	const lines: string[] = [];
-	if (event.callId?.trim()) {
-		lines.push(`call_id: ${event.callId}`);
-	}
-	if (event.payload !== undefined) {
-		const payloadText = stringifyDetail(event.payload);
-		if (payloadText.trim()) {
-			lines.push("payload:");
-			lines.push(payloadText);
-		}
-	}
-	if (event.error?.trim()) {
-		lines.push("error:");
-		lines.push(event.error.trim());
-	}
-	const detail = lines.join("\n").trim();
-	if (detail.length <= 4000) return detail;
-	return `${detail.slice(0, 4000)}\n…(truncated)`;
 }
 
 type GroupedStep = {
@@ -169,36 +131,29 @@ function formatDuration(ms: number): string {
 	return `${DURATION_FORMATTER.format(seconds)}s`;
 }
 
-function statusLabel(status: "running" | "done" | "error"): string {
-	if (status === "running") return "Running";
-	if (status === "done") return "Done";
-	return "Failed";
+function summarizeReasoningText(text: string): string {
+	const normalized = text.replace(/\s+/g, " ").trim();
+	if (!normalized) return "Thought process";
+	if (normalized.length <= 88) return normalized;
+	return `${normalized.slice(0, 88).trimEnd()}…`;
 }
 
 function GroupedStepCard({
 	step,
-	expanded,
-	onToggle,
+	defaultOpen,
 }: {
 	step: GroupedStep;
-	expanded: boolean;
-	onToggle: () => void;
+	defaultOpen: boolean;
 }) {
 	const summaryEvent = step.resultEvent ?? step.callEvent;
 	const summary = summarizePayload(summaryEvent.payload);
-	const error =
-		step.resultEvent?.phase === "error" &&
-		typeof step.resultEvent.error === "string"
-			? step.resultEvent.error
-			: null;
-
-	const detailParts: string[] = [];
-	detailParts.push(detailTextForEvent(step.callEvent));
-	if (step.resultEvent) {
-		const resultDetail = detailTextForEvent(step.resultEvent);
-		if (resultDetail) detailParts.push(resultDetail);
-	}
-	const detail = detailParts.filter(Boolean).join("\n\n---\n\n");
+	const errorText =
+		step.resultEvent?.phase === "error" ? step.resultEvent.error : undefined;
+	const state = step.status === "error" ? "error" : step.status === "done" ? "done" : "running";
+	const meta =
+		step.duration != null
+			? formatDuration(step.duration)
+			: formatTime(step.callEvent.at);
 
 	return (
 		<m.div
@@ -208,59 +163,46 @@ function GroupedStepCard({
 			animate={{ opacity: 1, y: 0, scale: 1 }}
 			exit={{ opacity: 0, y: -6 }}
 			transition={{ type: "spring", stiffness: 340, damping: 27 }}
-			className={cn("aiToolGroupCard", `aiToolGroupCard-${step.status}`)}
+			className="w-full"
 		>
-			<button
-				type="button"
-				className="aiToolGroupTop"
-				onClick={onToggle}
-				aria-expanded={expanded}
-			>
-				<span
-					className={cn(
-						"aiToolPhase",
-						step.status === "done" && "aiToolPhase-result",
-						step.status === "error" && "aiToolPhase-error",
-						step.status === "running" && "aiToolPhase-call",
-					)}
-				>
-					{statusLabel(step.status)}
-				</span>
-				<span className="aiToolName">{formatToolName(step.tool)}</span>
-				{step.duration != null ? (
-					<span className="aiToolDuration">
-						{formatDuration(step.duration)}
-					</span>
-				) : (
-					<span className="aiToolTime">{formatTime(step.callEvent.at)}</span>
-				)}
-				<span
-					className={cn("aiToolChevron", expanded && "aiToolChevron-open")}
-					aria-hidden
-				>
-					<ChevronDown size={12} />
-				</span>
-			</button>
-			{summary ? <div className="aiToolSummary">{summary}</div> : null}
-			{error ? <div className="aiToolError">{error}</div> : null}
-			{expanded && detail ? (
-				<pre className="aiToolDetails">{detail}</pre>
-			) : null}
+			<Tool defaultOpen={defaultOpen}>
+				<ToolHeader
+					title={formatToolName(step.tool)}
+					state={state}
+					meta={meta}
+				/>
+				<ToolContent>
+					{summary ? (
+						<p className="text-sm leading-6 text-muted-foreground">{summary}</p>
+					) : null}
+					<ToolInput input={step.callEvent.payload} />
+					{step.resultEvent ? (
+						<ToolOutput
+							output={step.resultEvent.payload}
+							errorText={errorText}
+						/>
+					) : null}
+				</ToolContent>
+			</Tool>
 		</m.div>
 	);
 }
 
 export function AIToolTimeline({ events, streaming }: AIToolTimelineProps) {
-	const [expanded, setExpanded] = useState<Record<string, boolean>>({});
 	if (events.length === 0) return null;
 	const orderedEvents = [...events].sort((a, b) => a.at - b.at);
 	const timelineItems = buildGroupedTimeline(orderedEvents);
+	const lastTextItem = [...timelineItems]
+		.reverse()
+		.find((item): item is ToolTimelineTextEvent => item.kind === "text");
 
 	return (
-		<m.div className="aiToolTimelineInline" aria-live="polite">
+		<m.div className="flex flex-col gap-3" aria-live="polite">
 			<AnimatePresence initial={false}>
 				{timelineItems.map((item) => {
 					if (item.kind === "text") {
+						const isStreamingThought =
+							streaming && lastTextItem?.id === item.id;
 						return (
 							<m.div
 								key={item.id}
@@ -269,16 +211,32 @@ export function AIToolTimeline({ events, streaming }: AIToolTimelineProps) {
 								animate={{ opacity: 1, y: 0, scale: 1 }}
 								exit={{ opacity: 0, y: -6 }}
 								transition={{ type: "spring", stiffness: 340, damping: 27 }}
-								className="aiToolInlineText"
+								className="w-full"
 							>
-								<Suspense
-									fallback={
-										<div className="aiToolInlineTextContent">{item.text}</div>
-									}
+								<Reasoning
+									defaultOpen={isStreamingThought}
+									isStreaming={isStreamingThought}
 								>
-									<AIMessageMarkdown markdown={item.text} />
-								</Suspense>
-								<div className="aiToolTime">{formatTime(item.at)}</div>
+									<ReasoningTrigger
+										label={
+											isStreamingThought
+												? "Thinking..."
+												: summarizeReasoningText(item.text)
+										}
+										meta={formatTime(item.at)}
+									/>
+									<ReasoningContent>
+										<Suspense
+											fallback={
+												<div className="whitespace-pre-wrap text-sm leading-6 text-muted-foreground">
+													{item.text}
+												</div>
+											}
+										>
+											<AIMessageMarkdown markdown={item.text} />
+										</Suspense>
+									</ReasoningContent>
+								</Reasoning>
 							</m.div>
 						);
 					}
@@ -288,25 +246,19 @@ export function AIToolTimeline({ events, streaming }: AIToolTimelineProps) {
 							<GroupedStepCard
 								key={item.id}
 								step={item}
-								expanded={expanded[item.id] === true}
-								onToggle={() =>
-									setExpanded((prev) => ({
-										...prev,
-										[item.id]: !prev[item.id],
-									}))
-								}
+								defaultOpen={item.status !== "done"}
 							/>
 						);
 					}
 
 					const event = item;
 					const summary = summarizePayload(event.payload);
-					const error =
-						event.phase === "error" && typeof event.error === "string"
-							? event.error
-							: null;
-					const detail = detailTextForEvent(event);
-					const isExpanded = expanded[event.id] === true;
+					const state =
+						event.phase === "error"
+							? "error"
+							: event.phase === "result"
+								? "done"
+								: "running";
 					return (
 						<m.div
 							key={event.id}
@@ -315,51 +267,39 @@ export function AIToolTimeline({ events, streaming }: AIToolTimelineProps) {
 							animate={{ opacity: 1, y: 0, scale: 1 }}
 							exit={{ opacity: 0, y: -6 }}
 							transition={{ type: "spring", stiffness: 340, damping: 27 }}
-							className={cn(
-								"aiToolInlineItem",
-								event.phase === "error" && "aiToolTimelineItem-error",
-								event.phase === "call" && "aiToolTimelineItem-running",
-							)}
+							className="w-full"
 						>
-							<UnstyledButton
-								className="aiToolTimelineTop aiToolExpandBtn"
-								onClick={() =>
-									setExpanded((prev) => ({
-										...prev,
-										[event.id]: !prev[event.id],
-									}))
-								}
-								aria-expanded={isExpanded}
-							>
-								<span
-									className={cn("aiToolPhase", `aiToolPhase-${event.phase}`)}
-								>
-									{formatPhaseLabel(event.phase)}
-								</span>
-								<span className="aiToolName">{formatToolName(event.tool)}</span>
-								<span className="aiToolTime">{formatTime(event.at)}</span>
-								<span
-									className={cn(
-										"aiToolChevron",
-										isExpanded && "aiToolChevron-open",
-									)}
-									aria-hidden
-								>
-									<ChevronDown size={12} />
-								</span>
-							</UnstyledButton>
-							{summary ? <div className="aiToolSummary">{summary}</div> : null}
-							{error ? <div className="aiToolError">{error}</div> : null}
-							{isExpanded && detail ? (
-								<pre className="aiToolDetails">{detail}</pre>
-							) : null}
+							<Tool defaultOpen={event.phase !== "result"}>
+								<ToolHeader
+									title={formatToolName(event.tool)}
+									state={state}
+									meta={formatTime(event.at)}
+								/>
+								<ToolContent>
+									{summary ? (
+										<p className="text-sm leading-6 text-muted-foreground">
+											{summary}
+										</p>
+									) : null}
+									<ToolInput input={event.payload} />
+									{event.phase !== "call" ? (
+										<ToolOutput
+											output={event.payload}
+											errorText={event.error}
+										/>
+									) : null}
+								</ToolContent>
+							</Tool>
 						</m.div>
 					);
 				})}
 			</AnimatePresence>
 			{streaming ? (
-				<div className="aiToolInlineLive" aria-label="Tool call in progress">
-					<span className="aiToolLiveDot" />
+				<div
+					className="inline-flex items-center gap-2 self-start rounded-full border border-border/60 bg-background/70 px-2.5 py-1 text-xs text-muted-foreground"
+					aria-label="Tool call in progress"
+				>
+					<span className="size-1.5 rounded-full bg-[var(--interactive-accent)]" />
 					Working with tools...
 				</div>
 			) : null}
