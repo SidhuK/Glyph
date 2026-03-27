@@ -8,6 +8,7 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
+import { formatTimestamp } from "../../lib/formatTimestamp";
 import { loadSettings } from "../../lib/settings";
 import type {
 	GitSyncConfig,
@@ -23,6 +24,7 @@ import {
 	SettingsSection,
 	SettingsSegmented,
 	SettingsToggle,
+	SettingsValueCard,
 } from "./SettingsScaffold";
 
 const DEFAULT_INCLUSIONS: GitSyncInclusionSettings = {
@@ -30,34 +32,6 @@ const DEFAULT_INCLUSIONS: GitSyncInclusionSettings = {
 	include_attachments: false,
 	include_non_markdown_files: false,
 };
-
-function GitSettingValue({
-	icon,
-	value,
-	mono = false,
-}: {
-	icon: typeof CheckmarkCircle02Icon;
-	value: string;
-	mono?: boolean;
-}) {
-	return (
-		<div className="gitSettingValueCard">
-			<div className="gitSettingValueIcon" aria-hidden="true">
-				<HugeiconsIcon icon={icon} size={14} />
-			</div>
-			<div className={`gitSettingValueText ${mono ? "mono" : ""}`}>{value}</div>
-		</div>
-	);
-}
-
-function formatTimestamp(timestamp: number | null): string {
-	if (!timestamp) return "Never";
-	try {
-		return new Date(timestamp).toLocaleString();
-	} catch {
-		return "Unknown";
-	}
-}
 
 export function GitSettingsPane() {
 	const [status, setStatus] = useState<GitSyncStatus | null>(null);
@@ -189,8 +163,8 @@ export function GitSettingsPane() {
 						stacked
 						interactive={false}
 					>
-						<GitSettingValue
-							icon={CheckmarkCircle02Icon}
+						<SettingsValueCard
+							icon={<HugeiconsIcon icon={CheckmarkCircle02Icon} size={14} />}
 							value={
 								loading
 									? "Loading..."
@@ -206,8 +180,8 @@ export function GitSettingsPane() {
 						stacked
 						interactive={false}
 					>
-						<GitSettingValue
-							icon={InformationCircleIcon}
+						<SettingsValueCard
+							icon={<HugeiconsIcon icon={InformationCircleIcon} size={14} />}
 							value={repoStateLabel}
 						/>
 					</SettingsRow>
@@ -217,8 +191,8 @@ export function GitSettingsPane() {
 						stacked
 						interactive={false}
 					>
-						<GitSettingValue
-							icon={Link01Icon}
+						<SettingsValueCard
+							icon={<HugeiconsIcon icon={Link01Icon} size={14} />}
 							value={
 								config?.remote_url ??
 								"Open a folder that already has Git initialized."
@@ -229,12 +203,12 @@ export function GitSettingsPane() {
 					{config ? (
 						<SettingsRow
 							label="Branch"
-							description="Glyph syncs a single branch per space in v1."
+							description="Glyph syncs a single branch per space."
 							stacked
 							interactive={false}
 						>
-							<GitSettingValue
-								icon={GitBranchIcon}
+							<SettingsValueCard
+								icon={<HugeiconsIcon icon={GitBranchIcon} size={14} />}
 								value={config.branch}
 								mono
 							/>
@@ -301,8 +275,8 @@ export function GitSettingsPane() {
 						stacked
 						interactive={false}
 					>
-						<GitSettingValue
-							icon={InformationCircleIcon}
+						<SettingsValueCard
+							icon={<HugeiconsIcon icon={InformationCircleIcon} size={14} />}
 							value={
 								status?.message ??
 								(status?.last_error
@@ -370,7 +344,7 @@ export function GitSettingsPane() {
 				>
 					<SettingsRow
 						label="Policy"
-						description="Glyph resolves conflicts automatically in v1."
+						description="Glyph resolves conflicts automatically."
 						stacked
 					>
 						<SettingsSegmented

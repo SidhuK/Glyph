@@ -1,6 +1,7 @@
 import { GitBranchIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useMemo } from "react";
+import { formatTimestamp } from "../../lib/formatTimestamp";
 import type { GitSyncStatus } from "../../lib/tauri";
 import { Button } from "../ui/shadcn/button";
 import {
@@ -18,15 +19,6 @@ interface WindowChromeGitSyncButtonProps {
 	onOpenSettings: () => void;
 }
 
-function formatTimestamp(timestamp: number | null): string {
-	if (!timestamp) return "Never";
-	try {
-		return new Date(timestamp).toLocaleString();
-	} catch {
-		return "Unknown";
-	}
-}
-
 function statusLabel(status: GitSyncStatus | null): string {
 	if (status?.is_syncing) return "Syncing";
 	if (status?.last_error) return "Attention";
@@ -37,8 +29,8 @@ function statusLabel(status: GitSyncStatus | null): string {
 
 function modeLabel(status: GitSyncStatus | null): string {
 	if (!status?.configured) return "Not connected";
-	if (status.enabled) return "Auto sync on";
 	if (status.paused) return "Auto sync paused";
+	if (status.enabled) return "Auto sync on";
 	return "Manual only";
 }
 

@@ -290,7 +290,8 @@
 	font-size: 12px;
 	line-height: 1.55;
 	color: var(--text-primary);
-	word-break: break-word;
+	word-break: normal;
+	overflow-wrap: break-word;
 }
 
 .settingsPathList {
@@ -329,7 +330,7 @@
 }
 
 .settingsPathListItemText {
-	word-break: break-word;
+	overflow-wrap: break-word;
 	text-align: right;
 }
 
@@ -361,7 +362,7 @@
 	font-size: 12px;
 	line-height: 1.5;
 	color: var(--text-primary);
-	word-break: break-word;
+	overflow-wrap: break-word;
 	text-align: right;
 }
 

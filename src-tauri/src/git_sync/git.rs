@@ -1,10 +1,14 @@
 use std::path::{Component, Path};
 use std::process::{Command, Stdio};
+use std::thread;
+use std::time::{Duration, Instant};
 
 use super::types::{GitSyncContext, GitSyncInclusionSettings};
+use crate::io_atomic;
 
 const GLYPH_GITIGNORE_START: &str = "# >>> Glyph Git Sync >>>";
 const GLYPH_GITIGNORE_END: &str = "# <<< Glyph Git Sync <<<";
+const GIT_COMMAND_TIMEOUT: Duration = Duration::from_secs(30);
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum RepoInspection {
@@ -19,11 +23,32 @@ pub enum RepoInspection {
 }
 
 fn run_command(mut command: Command) -> Result<(bool, String, String), String> {
-    let output = command
+    let mut child = command
+        .env("GIT_TERMINAL_PROMPT", "0")
+        .env("GCM_INTERACTIVE", "never")
+        .env_remove("GIT_ASKPASS")
+        .env_remove("SSH_ASKPASS")
         .stdin(Stdio::null())
         .stdout(Stdio::piped())
         .stderr(Stdio::piped())
-        .output()
+        .spawn()
+        .map_err(|error| error.to_string())?;
+
+    let deadline = Instant::now() + GIT_COMMAND_TIMEOUT;
+    loop {
+        match child.try_wait().map_err(|error| error.to_string())? {
+            Some(_) => break,
+            None if Instant::now() >= deadline => {
+                let _ = child.kill();
+                let _ = child.wait();
+                return Err("git command timed out".to_string());
+            }
+            None => thread::sleep(Duration::from_millis(50)),
+        }
+    }
+
+    let output = child
+        .wait_with_output()
         .map_err(|error| error.to_string())?;
     Ok((
         output.status.success(),
@@ -341,7 +366,11 @@ pub fn upsert_managed_gitignore(
 ) -> Result<(), String> {
     let path = space_root.join(".gitignore");
     let block = render_managed_gitignore(inclusions, context);
-    let existing = std::fs::read_to_string(&path).unwrap_or_default();
+    let existing = match std::fs::read_to_string(&path) {
+        Ok(contents) => contents,
+        Err(error) if error.kind() == std::io::ErrorKind::NotFound => String::new(),
+        Err(error) => return Err(error.to_string()),
+    };
     let next = if let (Some(start), Some(end)) = (
         existing.find(GLYPH_GITIGNORE_START),
         existing.find(GLYPH_GITIGNORE_END),
@@ -359,7 +388,7 @@ pub fn upsert_managed_gitignore(
     } else {
         format!("{}\n\n{block}\n", existing.trim_end())
     };
-    std::fs::write(path, next).map_err(|error| error.to_string())
+    io_atomic::write_atomic(&path, next.as_bytes()).map_err(|error| error.to_string())
 }
 
 pub fn stage_for_sync(space_root: &Path) -> Result<(), String> {

@@ -868,6 +868,18 @@ export function AppShell() {
 		setError,
 	]);
 
+	const handleGitSyncFailure = useCallback(
+		(cause: unknown) => {
+			const message =
+				cause instanceof Error ? cause.message : "Git Sync failed.";
+			setError(message);
+			toast.error("Git Sync failed", {
+				description: message,
+			});
+		},
+		[setError],
+	);
+
 	useMenuListeners({
 		onNewNote: handleNewNoteFromMenu,
 		onCreateFromTemplate: handleCreateFromTemplateFromMenu,
@@ -887,14 +899,7 @@ export function AppShell() {
 				() => {
 					toast.success("Git Sync completed.");
 				},
-				(cause) => {
-					const message =
-						cause instanceof Error ? cause.message : "Git Sync failed.";
-					setError(message);
-					toast.error("Git Sync failed", {
-						description: message,
-					});
-				},
+				handleGitSyncFailure,
 			);
 		},
 		onOpenGitSettings: gitSync.openGitSettings,
@@ -1031,12 +1036,7 @@ export function AppShell() {
 						await gitSync.syncNow();
 						toast.success("Git Sync completed.");
 					} catch (error) {
-						const message =
-							error instanceof Error ? error.message : "Git Sync failed.";
-						setError(message);
-						toast.error("Git Sync failed", {
-							description: message,
-						});
+						handleGitSyncFailure(error);
 					}
 				},
 			},
@@ -1311,11 +1311,7 @@ export function AppShell() {
 				onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
 				gitSyncStatus={gitSync.status}
 				onGitSyncNow={() => {
-					void gitSync.syncNow().catch((cause) => {
-						const message =
-							cause instanceof Error ? cause.message : "Git Sync failed.";
-						setError(message);
-					});
+					void gitSync.syncNow().catch(handleGitSyncFailure);
 				}}
 				onOpenGitSettings={gitSync.openGitSettings}
 				onOpenCalendar={openCalendarTab}

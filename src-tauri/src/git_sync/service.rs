@@ -8,9 +8,9 @@ use crate::space::state::SpaceState;
 
 use super::git::{
     ahead_behind_counts, commit_all, fetch_remote, git_is_installed, has_head_commit,
-    has_remote_named, inspect_repo, merge_remote, overlapping_change_risk, primary_remote_url,
-    push_remote, remote_branch_exists, stage_for_sync, upsert_managed_gitignore,
-    working_tree_change_count, working_tree_dirty, RepoInspection,
+    has_remote_named, inspect_repo, merge_remote, overlapping_change_risk, push_remote,
+    remote_branch_exists, stage_for_sync, upsert_managed_gitignore, working_tree_change_count,
+    working_tree_dirty, RepoInspection,
 };
 use super::store::{delete_store, load_store, save_store};
 use super::types::{
@@ -38,6 +38,26 @@ impl Default for RuntimeStatus {
 #[derive(Default)]
 pub struct GitSyncState {
     runtime: Arc<Mutex<RuntimeStatus>>,
+}
+
+struct SyncResetGuard {
+    runtime: Arc<Mutex<RuntimeStatus>>,
+}
+
+impl SyncResetGuard {
+    fn new(runtime: Arc<Mutex<RuntimeStatus>>) -> Self {
+        Self { runtime }
+    }
+}
+
+impl Drop for SyncResetGuard {
+    fn drop(&mut self) {
+        if let Ok(mut runtime) = self.runtime.lock() {
+            if runtime.is_syncing {
+                *runtime = RuntimeStatus::default();
+            }
+        }
+    }
 }
 
 fn now_ms() -> i64 {
@@ -68,7 +88,7 @@ fn set_runtime(
         runtime.is_syncing = is_syncing;
         runtime.message = message;
     }
-    let status = read_status_internal(app, git_state, space_state)?;
+    let status = read_status_internal(git_state, space_state)?;
     emit_status(app, &status);
     Ok(())
 }
@@ -192,8 +212,11 @@ fn config_to_status(
     status
 }
 
-fn auto_adopt_if_needed(space_root: &PathBuf, inspection: &RepoInspection) -> Result<Option<GitSyncConfig>, String> {
-    let existing = load_store(space_root)?;
+fn auto_adopt_if_needed(
+    space_root: &PathBuf,
+    inspection: &RepoInspection,
+    existing: Option<GitSyncConfig>,
+) -> Result<Option<GitSyncConfig>, String> {
     if existing.is_some() {
         return Ok(existing);
     }
@@ -221,7 +244,6 @@ fn auto_adopt_if_needed(space_root: &PathBuf, inspection: &RepoInspection) -> Re
 }
 
 pub fn read_status_internal(
-    app: &AppHandle,
     git_state: &GitSyncState,
     space_state: &SpaceState,
 ) -> Result<GitSyncStatus, String> {
@@ -235,9 +257,16 @@ pub fn read_status_internal(
     } else {
         RepoInspection::None
     };
+    let mut status_load_error = None;
     let config = if git_installed {
-        auto_adopt_if_needed(&space_root, &inspection)?
-            .or(load_store(&space_root)?)
+        let existing = match load_store(&space_root) {
+            Ok(config) => config,
+            Err(error) => {
+                status_load_error = Some(error);
+                None
+            }
+        };
+        auto_adopt_if_needed(&space_root, &inspection, existing)?
     } else {
         None
     };
@@ -251,8 +280,10 @@ pub fn read_status_internal(
     } else {
         RepoHealth::default()
     };
-    let status = config_to_status(config, inspection, git_installed, runtime, health);
-    let _ = app;
+    let mut status = config_to_status(config, inspection, git_installed, runtime, health);
+    if status.last_error.is_none() {
+        status.last_error = status_load_error;
+    }
     Ok(status)
 }
 
@@ -284,7 +315,7 @@ pub fn update_git_sync_config(
         config.paused = paused;
     }
     save_store(&space_root, &config)?;
-    let status = read_status_internal(&app, git_state, space_state)?;
+    let status = read_status_internal(git_state, space_state)?;
     emit_status(&app, &status);
     Ok(config)
 }
@@ -303,7 +334,7 @@ pub fn disconnect_git_sync(
             .map_err(|_| "git sync state poisoned".to_string())?;
         *runtime = RuntimeStatus::default();
     }
-    let status = read_status_internal(&app, git_state, space_state)?;
+    let status = read_status_internal(git_state, space_state)?;
     emit_status(&app, &status);
     Ok(status)
 }
@@ -320,7 +351,7 @@ pub fn run_git_sync(
     }
     let mut config = load_config(&space_root)?;
     if request.mode == GitSyncRunMode::Auto && (!config.enabled || config.paused) {
-        return Ok(read_status_internal(&app, git_state, space_state)?);
+        return Ok(read_status_internal(git_state, space_state)?);
     }
 
     {
@@ -335,7 +366,8 @@ pub fn run_git_sync(
         runtime.phase = GitSyncPhase::Fetching;
         runtime.message = Some("Fetching remote changes".to_string());
     }
-    let initial = read_status_internal(&app, git_state, space_state)?;
+    let _sync_guard = SyncResetGuard::new(Arc::clone(&git_state.runtime));
+    let initial = read_status_internal(git_state, space_state)?;
     emit_status(&app, &initial);
 
     let is_auto = request.mode == GitSyncRunMode::Auto;
@@ -421,7 +453,7 @@ pub fn run_git_sync(
             true,
             Some("Pushing to remote".to_string()),
         )?;
-        let set_upstream = primary_remote_url(&space_root)?.is_none() || !has_head_commit(&space_root)?;
+        let set_upstream = !remote_branch_exists(&space_root, remote_name, &branch)?;
         push_remote(&space_root, remote_name, &branch, set_upstream)?;
         Ok(())
     })();
@@ -441,7 +473,7 @@ pub fn run_git_sync(
                 false,
                 Some("Sync complete".to_string()),
             );
-            let status = read_status_internal(&app, git_state, space_state)?;
+            let status = read_status_internal(git_state, space_state)?;
             emit_status(&app, &status);
             Ok(status)
         }
@@ -477,9 +509,8 @@ pub fn read_config(space_state: &SpaceState) -> Result<Option<GitSyncConfig>, St
 }
 
 pub fn read_status(
-    app: AppHandle,
     git_state: State<'_, GitSyncState>,
     space_state: State<'_, SpaceState>,
 ) -> Result<GitSyncStatus, String> {
-    read_status_internal(&app, &git_state, &space_state)
+    read_status_internal(&git_state, &space_state)
 }

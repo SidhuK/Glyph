@@ -10,11 +10,10 @@ use super::GitSyncState;
 
 #[tauri::command]
 pub fn git_sync_status_read(
-    app: AppHandle,
     git_state: State<'_, GitSyncState>,
     space_state: State<'_, SpaceState>,
 ) -> Result<GitSyncStatus, String> {
-    service::read_status(app, git_state, space_state)
+    service::read_status(git_state, space_state)
 }
 
 #[tauri::command]

@@ -146,3 +146,24 @@ export function SettingsToggle({
 		/>
 	);
 }
+
+interface SettingsValueCardProps {
+	icon: ReactNode;
+	value: string;
+	mono?: boolean;
+}
+
+export function SettingsValueCard({
+	icon,
+	value,
+	mono = false,
+}: SettingsValueCardProps) {
+	return (
+		<div className="gitSettingValueCard">
+			<div className="gitSettingValueIcon" aria-hidden="true">
+				{icon}
+			</div>
+			<div className={`gitSettingValueText ${mono ? "mono" : ""}`}>{value}</div>
+		</div>
+	);
+}

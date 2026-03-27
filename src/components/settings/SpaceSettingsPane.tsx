@@ -1,39 +1,38 @@
 import {
-	type CheckmarkCircle02Icon,
-	Clock01Icon,
-	FolderOpenIcon,
+	Calendar03Icon,
+	FileAttachmentIcon,
 	SearchIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useState } from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
-import { clearRecentSpaces, loadSettings } from "../../lib/settings";
+import {
+	getDailyNotesFolder,
+	loadSettings,
+	setDailyNotesFolder,
+	setEditorPastedMediaFolder,
+} from "../../lib/settings";
 import { invoke } from "../../lib/tauri";
+import { Trash2 } from "../Icons";
+import { FolderOpen } from "../Icons/NavigationIcons";
 import { Button } from "../ui/shadcn/button";
-import { SettingsRow, SettingsSection } from "./SettingsScaffold";
-
-function SpaceSettingValue({
-	icon,
-	value,
-	mono = false,
-}: {
-	icon: typeof CheckmarkCircle02Icon;
-	value: string;
-	mono?: boolean;
-}) {
-	return (
-		<div className="gitSettingValueCard">
-			<div className="gitSettingValueIcon" aria-hidden="true">
-				<HugeiconsIcon icon={icon} size={14} />
-			</div>
-			<div className={`gitSettingValueText ${mono ? "mono" : ""}`}>{value}</div>
-		</div>
-	);
-}
+import {
+	SettingsRow,
+	SettingsSection,
+	SettingsValueCard,
+} from "./SettingsScaffold";
+import { TemplateSettingsSections } from "./TemplatesSettingsPane";
 
 export function SpaceSettingsPane() {
 	const [currentSpacePath, setCurrentSpacePath] = useState<string | null>(null);
-	const [recentSpaces, setRecentSpaces] = useState<string[]>([]);
+	const [dailyNotesFolder, setDailyNotesFolderState] = useState<string | null>(
+		null,
+	);
+	const [dailyNotesLoading, setDailyNotesLoading] = useState(true);
+	const [dailyNotesError, setDailyNotesError] = useState<string | null>(null);
+	const [pastedMediaFolder, setPastedMediaFolderState] = useState("assets");
+	const [attachmentsLoading, setAttachmentsLoading] = useState(true);
+	const [pastedMediaError, setPastedMediaError] = useState<string | null>(null);
 	const [error, setError] = useState("");
 	const [reindexStatus, setReindexStatus] = useState("");
 	const [isIndexing, setIsIndexing] = useState(false);
@@ -58,80 +57,247 @@ export function SpaceSettingsPane() {
 	const refresh = useCallback(async () => {
 		setError("");
 		try {
-			const s = await loadSettings();
-			setCurrentSpacePath(s.currentSpacePath);
-			setRecentSpaces(s.recentSpaces);
+			const [dailyFolder, settings] = await Promise.all([
+				getDailyNotesFolder(),
+				loadSettings(),
+			]);
+			setCurrentSpacePath(settings.currentSpacePath);
+			setDailyNotesFolderState(dailyFolder);
+			setPastedMediaFolderState(settings.editor.pastedMediaFolder);
 		} catch (e) {
 			setError(extractErrorMessage(e));
+		} finally {
+			setDailyNotesLoading(false);
+			setAttachmentsLoading(false);
 		}
 	}, []);
 
 	useEffect(() => {
 		void refresh();
 	}, [refresh]);
+
+	const handleBrowseFolder = useCallback(async () => {
+		setDailyNotesError(null);
+		try {
+			const { open } = await import("@tauri-apps/plugin-dialog");
+			const selected = await open({
+				directory: true,
+				multiple: false,
+			});
+			if (selected && typeof selected === "string") {
+				const currentSpace = await invoke("space_get_current");
+				if (!currentSpace) {
+					setDailyNotesError("No space is currently open.");
+					return;
+				}
+				const normSelected = selected.replace(/\\/g, "/");
+				const normSpace = currentSpace.replace(/\\/g, "/");
+				const spacePrefix = normSpace.endsWith("/")
+					? normSpace
+					: `${normSpace}/`;
+				const selectedLower = normSelected.toLowerCase();
+				if (
+					selectedLower !== normSpace.toLowerCase() &&
+					!selectedLower.startsWith(spacePrefix.toLowerCase())
+				) {
+					setDailyNotesError(
+						"Selected folder must be inside the current space.",
+					);
+					return;
+				}
+				const relativePath = normSelected
+					.slice(normSpace.length)
+					.replace(/^\/+/, "");
+				await setDailyNotesFolder(relativePath || null);
+				setDailyNotesFolderState(relativePath || null);
+			}
+		} catch (cause) {
+			setDailyNotesError(
+				cause instanceof Error ? cause.message : "Failed to select folder",
+			);
+		}
+	}, []);
+
+	const handleClearFolder = useCallback(async () => {
+		setDailyNotesError(null);
+		await setDailyNotesFolder(null);
+		setDailyNotesFolderState(null);
+	}, []);
+
+	const handleBrowsePastedMediaFolder = useCallback(async () => {
+		setPastedMediaError(null);
+		try {
+			const { open } = await import("@tauri-apps/plugin-dialog");
+			const selected = await open({
+				directory: true,
+				multiple: false,
+			});
+			if (selected && typeof selected === "string") {
+				const currentSpace = await invoke("space_get_current");
+				if (!currentSpace) {
+					setPastedMediaError("No space is currently open.");
+					return;
+				}
+				const normSelected = selected.replace(/\\/g, "/");
+				const normSpace = currentSpace.replace(/\\/g, "/");
+				const spacePrefix = normSpace.endsWith("/")
+					? normSpace
+					: `${normSpace}/`;
+				const selectedLower = normSelected.toLowerCase();
+				if (
+					selectedLower !== normSpace.toLowerCase() &&
+					!selectedLower.startsWith(spacePrefix.toLowerCase())
+				) {
+					setPastedMediaError(
+						"Selected folder must be inside the current space.",
+					);
+					return;
+				}
+				const relativePath = normSelected
+					.slice(normSpace.length)
+					.replace(/^\/+/, "");
+				await setEditorPastedMediaFolder(relativePath);
+				setPastedMediaFolderState(relativePath);
+			}
+		} catch (cause) {
+			setPastedMediaError(
+				cause instanceof Error ? cause.message : "Failed to select folder",
+			);
+		}
+	}, []);
+
+	const handleResetPastedMediaFolder = useCallback(async () => {
+		setPastedMediaError(null);
+		try {
+			await setEditorPastedMediaFolder("assets");
+			setPastedMediaFolderState("assets");
+		} catch (cause) {
+			setPastedMediaError(
+				cause instanceof Error ? cause.message : "Failed to reset folder",
+			);
+		}
+	}, []);
+
 	return (
 		<div className="settingsPane">
 			{error ? <div className="settingsError">{error}</div> : null}
 
 			<div className="settingsGrid">
 				<SettingsSection
-					title="Current Space"
-					description="Review the active workspace path currently open in Glyph."
-					aside={
-						currentSpacePath ? (
-							<div className="settingsPill settingsPillOk">Active</div>
-						) : (
-							<div className="settingsPill settingsPillInfo">Inactive</div>
-						)
-					}
+					title="Daily Notes"
+					description="Choose where new daily notes should be created within the current space."
 				>
 					<SettingsRow
-						label="Path"
-						description="Glyph stores notes, indexes, and task configuration relative to this space."
+						label="Folder"
+						description="Glyph stores daily notes relative to the active space."
 						stacked
 						interactive={false}
 					>
-						<SpaceSettingValue
-							icon={FolderOpenIcon}
-							value={currentSpacePath ?? "(none selected)"}
-							mono
-						/>
+						<div className="dailyNotesFolderField">
+							<div className="dailyNotesFolderRow">
+								<SettingsValueCard
+									icon={<HugeiconsIcon icon={Calendar03Icon} size={14} />}
+									value={
+										dailyNotesLoading
+											? "Loading..."
+											: (dailyNotesFolder ?? "Not configured")
+									}
+									mono
+								/>
+								<div className="settingsActions dailyNotesActions">
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										className="min-w-24 rounded-md border-border bg-background justify-center shadow-none"
+										onClick={handleBrowseFolder}
+										disabled={dailyNotesLoading}
+									>
+										<FolderOpen size={14} />
+										Browse
+									</Button>
+									{dailyNotesFolder ? (
+										<Button
+											type="button"
+											variant="outline"
+											size="icon-sm"
+											className="rounded-md border-border bg-background justify-center shadow-none"
+											onClick={handleClearFolder}
+											disabled={dailyNotesLoading}
+											aria-label="Clear daily notes folder"
+											title="Clear daily notes folder"
+										>
+											<Trash2 size={14} />
+										</Button>
+									) : null}
+								</div>
+							</div>
+							{dailyNotesError ? (
+								<div className="settingsError dailyNotesError">
+									{dailyNotesError}
+								</div>
+							) : null}
+						</div>
 					</SettingsRow>
 				</SettingsSection>
 
 				<SettingsSection
-					title="Recent Spaces"
-					description="See where you’ve worked recently and clear that history when needed."
-					aside={
-						<Button
-							type="button"
-							variant="ghost"
-							size="xs"
-							aria-label="Clear recent spaces"
-							onClick={async () => {
-								await clearRecentSpaces();
-								await refresh();
-							}}
-						>
-							Clear
-						</Button>
-					}
+					title="Attachments"
+					description="Choose where note attachments are stored within the current space."
 				>
-					{recentSpaces.length > 0 ? (
-						<ul className="settingsPathList" aria-label="Recent spaces">
-							{recentSpaces.map((p) => (
-								<li key={p} className="settingsPathListItem">
-									<div className="settingsPathListItemIcon" aria-hidden="true">
-										<HugeiconsIcon icon={Clock01Icon} size={13} />
-									</div>
-									<div className="settingsPathListItemText mono">{p}</div>
-								</li>
-							))}
-						</ul>
-					) : (
-						<div className="settingsEmpty">No recent spaces.</div>
-					)}
+					<SettingsRow
+						label="Folder"
+						description="Glyph saves pasted images and other note attachments here, then inserts relative Markdown paths so they still render after reopening the app."
+						stacked
+						interactive={false}
+					>
+						<div className="dailyNotesFolderField">
+							<div className="dailyNotesFolderRow">
+								<SettingsValueCard
+									icon={<HugeiconsIcon icon={FileAttachmentIcon} size={14} />}
+									value={
+										attachmentsLoading
+											? "Loading..."
+											: pastedMediaFolder || "Space root"
+									}
+									mono
+								/>
+								<div className="settingsActions dailyNotesActions">
+									<Button
+										type="button"
+										variant="outline"
+										size="sm"
+										className="min-w-24 rounded-md border-border bg-background justify-center shadow-none"
+										onClick={handleBrowsePastedMediaFolder}
+										disabled={attachmentsLoading}
+									>
+										<FolderOpen size={14} />
+										Browse
+									</Button>
+									<Button
+										type="button"
+										variant="outline"
+										size="icon-sm"
+										className="rounded-md border-border bg-background justify-center shadow-none"
+										onClick={handleResetPastedMediaFolder}
+										disabled={attachmentsLoading}
+										aria-label="Reset attachments folder"
+										title="Reset attachments folder"
+									>
+										<Trash2 size={14} />
+									</Button>
+								</div>
+							</div>
+							{pastedMediaError ? (
+								<div className="settingsError dailyNotesError">
+									{pastedMediaError}
+								</div>
+							) : null}
+						</div>
+					</SettingsRow>
 				</SettingsSection>
+
+				<TemplateSettingsSections />
 
 				<SettingsSection
 					title="Search Index"
@@ -155,8 +321,8 @@ export function SpaceSettingsPane() {
 						stacked
 						interactive={false}
 					>
-						<SpaceSettingValue
-							icon={SearchIcon}
+						<SettingsValueCard
+							icon={<HugeiconsIcon icon={SearchIcon} size={14} />}
 							value={
 								reindexStatus ||
 								(!currentSpacePath ? "No space selected." : "Index is ready.")

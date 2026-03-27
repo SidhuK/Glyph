@@ -92,21 +92,25 @@ export function useGitSync({
 		setError("");
 	});
 
+	const statusConfigured = status?.configured ?? false;
+	const statusEnabled = status?.enabled ?? false;
+	const statusPaused = status?.paused ?? false;
+	const statusIntervalMinutes = status?.interval_minutes ?? 10;
+
 	useEffect(() => {
-		if (!spacePath || !status?.configured || !status.enabled || status.paused)
-			return;
+		if (!spacePath || !statusConfigured || !statusEnabled || statusPaused) return;
 		if (initialAutoRunSpaceRef.current === spacePath) return;
 		initialAutoRunSpaceRef.current = spacePath;
 		void runSync("auto").catch((cause) => {
 			setError(cause instanceof Error ? cause.message : "Git Sync failed");
 		});
-	}, [runSync, spacePath, status]);
+	}, [runSync, spacePath, statusConfigured, statusEnabled, statusPaused]);
 
 	useEffect(() => {
-		if (!spacePath || !status?.configured || !status.enabled || status.paused) {
+		if (!spacePath || !statusConfigured || !statusEnabled || statusPaused) {
 			return;
 		}
-		const intervalMinutes = Math.max(1, status.interval_minutes || 10);
+		const intervalMinutes = Math.max(1, statusIntervalMinutes || 10);
 		const timer = window.setInterval(
 			() => {
 				void runSync("auto").catch((cause) => {
@@ -116,7 +120,14 @@ export function useGitSync({
 			intervalMinutes * 60 * 1000,
 		);
 		return () => window.clearInterval(timer);
-	}, [runSync, spacePath, status]);
+	}, [
+		runSync,
+		spacePath,
+		statusConfigured,
+		statusEnabled,
+		statusPaused,
+		statusIntervalMinutes,
+	]);
 
 	return {
 		status,
