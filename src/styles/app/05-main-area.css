@@ -1099,7 +1099,6 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	gap: 6px;
 	padding: 0;
 	border: 0;
 	background: transparent;
@@ -1112,28 +1111,43 @@
 	background: transparent;
 }
 
-.mainEmptyShortcutInline kbd {
-	min-width: 26px;
-	height: 24px;
-	padding: 0 7px;
+.mainEmptyShortcutBadge {
+	min-width: 20px;
+	height: 20px;
+	padding: 0 6px;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	font-size: var(--text-xs);
-	font-weight: var(--font-semibold);
-	border-radius: var(--radius-md);
-	border: 1px solid var(--border-default);
-	background: transparent;
-	color: var(--text-secondary);
+	font-size: 11px;
+	line-height: 1;
+	font-weight: var(--font-medium);
+	font-family: var(--font-sans);
+	color: var(--text-tertiary);
+	background: var(--bg-tertiary);
+	border: 1px solid var(--border-light);
+	border-radius: var(--radius-sm);
 }
 
-.mainEmptyShortcutInline:hover kbd {
+.mainEmptyShortcutCombo {
+	display: inline-flex;
+	align-items: center;
+	gap: 1px;
+}
+
+.mainEmptyShortcutPart {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	letter-spacing: 0;
+}
+
+.mainEmptyShortcutInline:hover .mainEmptyShortcutBadge {
 	border-color: color-mix(
 		in srgb,
 		var(--accent-color) 38%,
-		var(--border-default)
+		var(--border-light)
 	);
-	color: var(--text-primary);
+	color: var(--text-secondary);
 }
 
 .mainEmptyShortcutInline:focus-visible {

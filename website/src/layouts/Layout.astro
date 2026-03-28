@@ -95,14 +95,14 @@ const socialImageType =
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 		<link
-			href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap"
+			href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap"
 			rel="stylesheet"
 			media="print"
 			onload="this.media='all'"
 		/>
 		<noscript>
 			<link
-				href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap"
+				href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=Geist+Mono:wght@400;500;600&family=Instrument+Serif:ital@0;1&display=swap"
 				rel="stylesheet"
 			/>
 		</noscript>
@@ -137,7 +137,8 @@ const socialImageType =
 		--dot: #d4d0c8;
 		--accent: #ff9f0a;
 		--serif: 'Instrument Serif', 'Times New Roman', serif;
-		--sans: 'DM Sans', 'Helvetica Neue', sans-serif;
+		--sans: 'Geist', 'Helvetica Neue', sans-serif;
+		--font-geist-mono: 'Geist Mono', ui-monospace, monospace;
 	}
 
 	* { box-sizing: border-box; margin: 0; padding: 0; }
@@ -153,6 +154,12 @@ const socialImageType =
 		background-color: var(--bg);
 		-webkit-font-smoothing: antialiased;
 		-moz-osx-font-smoothing: grayscale;
+	}
+
+	pre {
+		font-family: var(--font-geist-mono);
+		font-size: 0.95rem;
+		font-feature-settings: "liga" 0, "calt" 0, "tnum" 1, "zero" 1;
 	}
 
 	body.has-dot-grid {

@@ -137,9 +137,15 @@ function ContextualEmptyState({
 						onClick={onOpenCommandPalette}
 						title="Open command palette"
 					>
-						{commandShortcutParts.map((part) => (
-							<kbd key={part}>{part}</kbd>
-						))}
+						<kbd aria-hidden="true" className="mainEmptyShortcutBadge">
+							<span className="mainEmptyShortcutCombo">
+								{commandShortcutParts.map((part) => (
+									<span key={part} className="mainEmptyShortcutPart">
+										{part}
+									</span>
+								))}
+							</span>
+						</kbd>
 					</button>{" "}
 					to get started
 				</p>
