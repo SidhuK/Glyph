@@ -5,6 +5,7 @@ import {
 	CalendarAdd01Icon,
 	ColorsIcon,
 	CursorInWindowIcon,
+	File01Icon,
 	Folder01Icon,
 	FolderOpenIcon,
 	Home01Icon,
@@ -145,6 +146,7 @@ export function AppShell() {
 		"commands" | "search"
 	>("commands");
 	const [paletteInitialQuery, setPaletteInitialQuery] = useState("");
+	const [openAllDocsRequest, setOpenAllDocsRequest] = useState(0);
 	const [openCalendarRequest, setOpenCalendarRequest] = useState(0);
 	const [openDatabasesRequest, setOpenDatabasesRequest] = useState<{
 		nonce: number;
@@ -698,6 +700,9 @@ export function AppShell() {
 		setPaletteInitialQuery("");
 		setPaletteOpen(true);
 	}, [setPaletteOpen, spacePath, openCommandPalette]);
+	const openAllDocsTab = useCallback(() => {
+		setOpenAllDocsRequest((prev) => prev + 1);
+	}, []);
 	const openCalendarTab = useCallback(() => {
 		setOpenCalendarRequest((prev) => prev + 1);
 	}, []);
@@ -1163,6 +1168,14 @@ export function AppShell() {
 				action: openSearchPalette,
 			},
 			{
+				id: "open-all-docs",
+				label: "Open all docs",
+				icon: <HugeiconsIcon icon={File01Icon} size={16} />,
+				category: "Navigation",
+				enabled: Boolean(spacePath),
+				action: openAllDocsTab,
+			},
+			{
 				id: "open-calendar",
 				label: "Open calendar",
 				icon: <HugeiconsIcon icon={Calendar03Icon} size={16} />,
@@ -1241,6 +1254,7 @@ export function AppShell() {
 		setSidebarCollapsed,
 		sidebarCollapsed,
 		spacePath,
+		openAllDocsTab,
 		openSearchPalette,
 		openCalendarTab,
 		openDatabasesTab,
@@ -1319,6 +1333,7 @@ export function AppShell() {
 				}}
 				onOpenGitSettings={gitSync.openGitSettings}
 				onOpenSettings={() => void openSettingsWindow()}
+				onOpenAllDocs={openAllDocsTab}
 				onOpenCalendar={openCalendarTab}
 				onOpenDatabases={(databaseId) => openDatabasesTab(databaseId)}
 				updateReady={autoUpdater.updateReady}
@@ -1339,6 +1354,7 @@ export function AppShell() {
 				onOpenCommandPalette={openCommandPalette}
 				onCreateNote={handleCreateNoteFromStarter}
 				onOpenDailyNote={requestOpenDailyNote}
+				openAllDocsRequest={openAllDocsRequest}
 				openCalendarRequest={openCalendarRequest}
 				openDatabasesRequest={openDatabasesRequest}
 				openBlankTabRequest={openBlankTabRequest}

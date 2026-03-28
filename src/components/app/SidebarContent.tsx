@@ -1,5 +1,6 @@
 import {
 	Clock01Icon,
+	CollectionsBookmarkIcon,
 	Home01Icon,
 	LibraryIcon,
 	NoteIcon,
@@ -49,6 +50,7 @@ interface SidebarContentProps {
 	onGitSyncNow: () => void;
 	onOpenGitSettings: () => void;
 	onOpenSettings: () => void;
+	onOpenAllDocs: () => void;
 }
 
 export const SidebarContent = memo(function SidebarContent({
@@ -69,6 +71,7 @@ export const SidebarContent = memo(function SidebarContent({
 	onGitSyncNow,
 	onOpenGitSettings,
 	onOpenSettings,
+	onOpenAllDocs,
 }: SidebarContentProps) {
 	// Contexts
 	const { spacePath } = useSpace();
@@ -184,6 +187,16 @@ export const SidebarContent = memo(function SidebarContent({
 					>
 						<HugeiconsIcon icon={NoteIcon} size={14} />
 						<span className="sidebarQuickActionLabel">New Note</span>
+					</button>
+					<button
+						type="button"
+						className="sidebarQuickActionBtn"
+						data-kind="all-notes"
+						onClick={onOpenAllDocs}
+						title="Open All Notes"
+					>
+						<HugeiconsIcon icon={CollectionsBookmarkIcon} size={14} />
+						<span className="sidebarQuickActionLabel">All Notes</span>
 					</button>
 					<button
 						type="button"

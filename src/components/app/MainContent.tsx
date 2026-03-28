@@ -13,6 +13,7 @@ import {
 	useSpace,
 	useUILayoutContext,
 } from "../../contexts";
+import { ALL_DOCS_TAB_ID } from "../../lib/allDocs";
 import {
 	PATH_REMOVED_EVENT,
 	PATH_RENAMED_EVENT,
@@ -50,6 +51,12 @@ const DatabasesPane = lazy(() =>
 const CalendarPane = lazy(() =>
 	import("../calendar/CalendarPane").then((module) => ({
 		default: module.CalendarPane,
+	})),
+);
+
+const AllDocsPane = lazy(() =>
+	import("./AllDocsPane").then((module) => ({
+		default: module.AllDocsPane,
 	})),
 );
 
@@ -213,6 +220,7 @@ interface MainContentProps {
 	onOpenCommandPalette: () => void;
 	onCreateNote: () => void;
 	onOpenDailyNote: () => void;
+	openAllDocsRequest: number;
 	openCalendarRequest: number;
 	openDatabasesRequest: {
 		nonce: number;
@@ -296,6 +304,7 @@ export const MainContent = memo(function MainContent({
 	onOpenCommandPalette,
 	onCreateNote,
 	onOpenDailyNote,
+	openAllDocsRequest,
 	openCalendarRequest,
 	openDatabasesRequest,
 	openBlankTabRequest,
@@ -341,6 +350,11 @@ export const MainContent = memo(function MainContent({
 		reorderTabs,
 		openSpecialTab,
 	} = useTabManager(spacePath, { onActivateTab: handleTabActivated });
+
+	useEffect(() => {
+		if (!spacePath || openAllDocsRequest === 0) return;
+		openSpecialTab(ALL_DOCS_TAB_ID);
+	}, [openAllDocsRequest, openSpecialTab, spacePath]);
 
 	useEffect(() => {
 		if (!spacePath || openCalendarRequest === 0) return;
@@ -442,6 +456,15 @@ export const MainContent = memo(function MainContent({
 
 	const content = useMemo(() => {
 		if (!viewerPath) return null;
+		if (viewerPath === ALL_DOCS_TAB_ID) {
+			return (
+				<Suspense
+					fallback={<div className="databaseLoadingState">Loading all docs…</div>}
+				>
+					<AllDocsPane onOpenFile={(relPath) => fileTree.openFile(relPath)} />
+				</Suspense>
+			);
+		}
 		if (viewerPath === CALENDAR_TAB_ID) {
 			return (
 				<Suspense

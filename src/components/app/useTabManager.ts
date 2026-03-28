@@ -1,3 +1,4 @@
+import { ALL_DOCS_TAB_ID } from "../../lib/allDocs";
 import { useCallback, useEffect, useState } from "react";
 import { useFileTreeContext, useUILayoutContext } from "../../contexts";
 import { useRecentFiles } from "../../hooks/useRecentFiles";
@@ -28,7 +29,10 @@ export function useTabManager(
 	const [dragTabPath, setDragTabPath] = useState<string | null>(null);
 	const [dirtyByPath, setDirtyByPath] = useState<Record<string, boolean>>({});
 	const isSpecialTab = useCallback(
-		(path: string) => path === CALENDAR_TAB_ID || path === DATABASES_TAB_ID,
+		(path: string) =>
+			path === ALL_DOCS_TAB_ID ||
+			path === CALENDAR_TAB_ID ||
+			path === DATABASES_TAB_ID,
 		[],
 	);
 
