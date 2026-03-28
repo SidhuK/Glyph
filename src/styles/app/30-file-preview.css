@@ -352,6 +352,10 @@
 	background: transparent;
 }
 
+.markdownEditorPane .rfNodeNoteEditorBody {
+	padding-top: 9vh;
+}
+
 .markdownEditorPane .rfNodeNoteEditor.rfNodeNoteEditorFlatEdges {
 	border-radius: 0;
 }
@@ -362,7 +366,7 @@
 
 .markdownEditorPane .tiptapContentInline {
 	max-width: var(--readable-content-max-width);
-	padding: 18px var(--readable-content-gutter) 28px;
+	padding: 18px var(--readable-content-gutter) 50vh;
 }
 
 .markdownEditorPane .frontmatterPreview {

@@ -1,5 +1,3 @@
-import { AiNetworkIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { memo, useCallback, useState } from "react";
 import type { DragEvent, MouseEvent } from "react";
 import { ALL_DOCS_TAB_ID } from "../../lib/allDocs";
@@ -13,10 +11,7 @@ interface TabBarProps {
 	activeTabPath: string | null;
 	dragTabPath: string | null;
 	useWindowBackground?: boolean;
-	showAiToggle?: boolean;
-	aiPanelOpen?: boolean;
 	onOpenBlankTab: () => void;
-	onToggleAiPanel?: () => void;
 	onSelectTab: (path: string) => void;
 	onCloseTab: (path: string) => void;
 	onDragStart: (path: string) => void;
@@ -29,10 +24,7 @@ export function TabBar({
 	activeTabPath,
 	dragTabPath,
 	useWindowBackground = false,
-	showAiToggle = false,
-	aiPanelOpen = false,
 	onOpenBlankTab,
-	onToggleAiPanel,
 	onSelectTab,
 	onCloseTab,
 	onDragStart,
@@ -111,19 +103,7 @@ export function TabBar({
 						) : null}
 					</div>
 				</div>
-				<div className="mainTabsSide mainTabsSideEnd">
-					{showAiToggle && onToggleAiPanel ? (
-						<button
-							type="button"
-							className={`mainTabsAiToggle ${aiPanelOpen ? "is-active" : ""}`}
-							onClick={onToggleAiPanel}
-							aria-label={aiPanelOpen ? "Close AI panel" : "Open AI panel"}
-							title={`${aiPanelOpen ? "Close" : "Open"} AI panel (${getShortcutTooltip({ meta: true, shift: true, key: "a" })})`}
-						>
-							<HugeiconsIcon icon={AiNetworkIcon} size={16} />
-						</button>
-					) : null}
-				</div>
+				<div className="mainTabsSide mainTabsSideEnd" />
 			</div>
 			{breadcrumbSegments.length > 0 && (
 				<div className={`mainTabsBreadcrumb ${hovered ? "is-visible" : ""}`}>

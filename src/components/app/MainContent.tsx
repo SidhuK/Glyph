@@ -1,4 +1,5 @@
-import { DocumentCodeIcon } from "@hugeicons/core-free-icons";
+import { AiNetworkIcon, DocumentCodeIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import {
 	Suspense,
@@ -622,10 +623,7 @@ export const MainContent = memo(function MainContent({
 							activeTabPath={activeTabPath}
 							dragTabPath={dragTabPath}
 							useWindowBackground={!content}
-							showAiToggle={aiEnabled}
-							aiPanelOpen={aiPanelOpen}
 							onOpenBlankTab={() => setActiveTabPath(null)}
-							onToggleAiPanel={() => setAiPanelOpen((open) => !open)}
 							onSelectTab={setActiveTabPath}
 							onCloseTab={closeTab}
 							onDragStart={setDragTabPath}
@@ -659,6 +657,17 @@ export const MainContent = memo(function MainContent({
 							)}
 						</div>
 					)}
+				{aiEnabled && !aiPanelOpen ? (
+						<button
+							type="button"
+							className="mainAiFloatingToggle"
+							onClick={() => setAiPanelOpen((open) => !open)}
+							aria-label="Open AI panel"
+							title="Open AI panel"
+						>
+							<HugeiconsIcon icon={AiNetworkIcon} size={32} />
+						</button>
+					) : null}
 				</div>
 			</div>
 		</main>
