@@ -137,7 +137,7 @@ function ContextualEmptyState({
 						onClick={onOpenCommandPalette}
 						title="Open command palette"
 					>
-						<kbd aria-hidden="true" className="mainEmptyShortcutBadge">
+						<kbd className="mainEmptyShortcutBadge">
 							<span className="mainEmptyShortcutCombo">
 								{commandShortcutParts.map((part) => (
 									<span key={part} className="mainEmptyShortcutPart">
@@ -460,7 +460,7 @@ export const MainContent = memo(function MainContent({
 			return (
 				<Suspense
 					fallback={
-						<div className="databaseLoadingState">Loading databases…</div>
+						<div className="databaseLoadingState">Loading collections…</div>
 					}
 				>
 					<DatabasesPane

@@ -195,7 +195,7 @@ fn sort_calendar_tasks(tasks: &mut [IndexedTask]) {
             .as_deref()
             .unwrap_or(left.due_date.as_deref().unwrap_or("9999-12-31"))
             .cmp(
-                &right
+                right
                     .scheduled_date
                     .as_deref()
                     .unwrap_or(right.due_date.as_deref().unwrap_or("9999-12-31")),

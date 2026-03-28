@@ -99,18 +99,18 @@ pub fn set_notes_watcher(
                 continue;
             }
 
-            if utils::is_markdown_path(&path) {
-                if !has_recent_local_change(&recent_local_changes, &rel_s) {
-                    let _ = idx_tx.send((rel_s.clone(), is_remove));
+            if utils::is_markdown_path(&path)
+                && !has_recent_local_change(&recent_local_changes, &rel_s)
+            {
+                let _ = idx_tx.send((rel_s.clone(), is_remove));
 
-                    let _ = app2.emit(
-                        "notes:external_changed",
-                        ExternalChangeEvent {
-                            rel_path: rel_s.clone(),
-                            removed: is_remove,
-                        },
-                    );
-                }
+                let _ = app2.emit(
+                    "notes:external_changed",
+                    ExternalChangeEvent {
+                        rel_path: rel_s.clone(),
+                        removed: is_remove,
+                    },
+                );
             }
 
             let _ = app2.emit(

@@ -1,6 +1,7 @@
 import {
 	Clock01Icon,
-	DashboardSquare01Icon,
+	Home01Icon,
+	LibraryIcon,
 	NoteIcon,
 	Tag01Icon,
 } from "@hugeicons/core-free-icons";
@@ -17,7 +18,7 @@ import { FILE_TREE_START_RENAME_EVENT } from "../../lib/appEvents";
 import { getShortcutTooltip } from "../../lib/shortcuts";
 import type { GitSyncStatus } from "../../lib/tauri";
 import { FileTreePane } from "../FileTreePane";
-import { Database, Files } from "../Icons";
+import { Files } from "../Icons";
 import { RecentFilesPane } from "../RecentFilesPane";
 import { TagsPane } from "../TagsPane";
 import { directionVariants } from "../ui/animations";
@@ -158,7 +159,18 @@ export const SidebarContent = memo(function SidebarContent({
 				<div className="sidebarQuickActions">
 					<button
 						type="button"
-						className="sidebarQuickActionBtn sidebarQuickActionBtnAccent"
+						className="sidebarQuickActionBtn"
+						data-kind="dashboard"
+						onClick={onOpenCalendar}
+						title="Open Home"
+					>
+						<HugeiconsIcon icon={Home01Icon} size={14} />
+						<span className="sidebarQuickActionLabel">Home</span>
+					</button>
+					<div className="sidebarQuickActionsSpacer" aria-hidden="true" />
+					<button
+						type="button"
+						className="sidebarQuickActionBtn"
 						data-kind="new-note"
 						onClick={onNewNote}
 						title={`Create a new note (${getShortcutTooltip({ meta: true, key: "n" })})`}
@@ -169,22 +181,12 @@ export const SidebarContent = memo(function SidebarContent({
 					<button
 						type="button"
 						className="sidebarQuickActionBtn"
-						data-kind="dashboard"
-						onClick={onOpenCalendar}
-						title="Open Dashboard"
-					>
-						<HugeiconsIcon icon={DashboardSquare01Icon} size={14} />
-						<span className="sidebarQuickActionLabel">Dashboard</span>
-					</button>
-					<button
-						type="button"
-						className="sidebarQuickActionBtn"
 						data-kind="databases"
 						onClick={() => onOpenDatabases()}
-						title="Open Databases"
+						title="Open Collections"
 					>
-						<Database size={14} />
-						<span className="sidebarQuickActionLabel">Databases</span>
+						<HugeiconsIcon icon={LibraryIcon} size={14} />
+						<span className="sidebarQuickActionLabel">Collections</span>
 					</button>
 				</div>
 				<div className="sidebarSectionHeader">

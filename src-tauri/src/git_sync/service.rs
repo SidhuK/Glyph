@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::path::Path;
 use std::sync::{Arc, Mutex};
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -106,7 +106,11 @@ struct RepoHealth {
     conflict_risk: Option<String>,
 }
 
-fn inspect_repo_health(space_root: &PathBuf, inspection: &RepoInspection, config: Option<&GitSyncConfig>) -> Result<RepoHealth, String> {
+fn inspect_repo_health(
+    space_root: &Path,
+    inspection: &RepoInspection,
+    config: Option<&GitSyncConfig>,
+) -> Result<RepoHealth, String> {
     let mut health = RepoHealth::default();
 
     let RepoInspection::AtRoot { branch, primary_remote } = inspection else {
@@ -162,11 +166,13 @@ fn config_to_status(
     runtime: RuntimeStatus,
     health: RepoHealth,
 ) -> GitSyncStatus {
-    let mut status = GitSyncStatus::default();
-    status.git_installed = git_installed;
-    status.phase = runtime.phase;
-    status.is_syncing = runtime.is_syncing;
-    status.message = runtime.message;
+    let mut status = GitSyncStatus {
+        git_installed,
+        phase: runtime.phase,
+        is_syncing: runtime.is_syncing,
+        message: runtime.message,
+        ..GitSyncStatus::default()
+    };
 
     match inspection {
         RepoInspection::None => {
@@ -213,7 +219,7 @@ fn config_to_status(
 }
 
 fn auto_adopt_if_needed(
-    space_root: &PathBuf,
+    space_root: &Path,
     inspection: &RepoInspection,
     existing: Option<GitSyncConfig>,
 ) -> Result<Option<GitSyncConfig>, String> {
@@ -287,7 +293,7 @@ pub fn read_status_internal(
     Ok(status)
 }
 
-fn load_config(space_root: &PathBuf) -> Result<GitSyncConfig, String> {
+fn load_config(space_root: &Path) -> Result<GitSyncConfig, String> {
     load_store(space_root)?.ok_or_else(|| "Git Sync is not configured for this space.".to_string())
 }
 
@@ -351,7 +357,7 @@ pub fn run_git_sync(
     }
     let mut config = load_config(&space_root)?;
     if request.mode == GitSyncRunMode::Auto && (!config.enabled || config.paused) {
-        return Ok(read_status_internal(git_state, space_state)?);
+        return read_status_internal(git_state, space_state);
     }
 
     {

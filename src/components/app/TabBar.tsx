@@ -46,7 +46,7 @@ export function TabBar({
 	const fileName = useCallback(
 		(path: string) => {
 			if (path === CALENDAR_TAB_ID) return "Calendar";
-			if (path === DATABASES_TAB_ID) return "Databases";
+			if (path === DATABASES_TAB_ID) return "Collections";
 			const parts = path.split("/").filter(Boolean);
 			const rawName = parts[parts.length - 1] ?? path;
 			return stripFileExtension(rawName);

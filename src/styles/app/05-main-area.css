@@ -1155,11 +1155,7 @@
 }
 
 .mainEmptyShortcutInline:hover .mainEmptyShortcutBadge {
-	border-color: color-mix(
-		in srgb,
-		var(--accent-color) 38%,
-		var(--border-light)
-	);
+	border-color: color-mix(in srgb, var(--accent-color) 38%, var(--border-light));
 	color: var(--text-secondary);
 }
 

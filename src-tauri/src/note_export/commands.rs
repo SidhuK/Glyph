@@ -1,10 +1,10 @@
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 
 use tauri::{async_runtime::spawn_blocking, Manager, State};
 
 use crate::{io_atomic, space::SpaceState};
 
-fn resolved_export_path(path: &PathBuf) -> Result<PathBuf, String> {
+fn resolved_export_path(path: &Path) -> Result<PathBuf, String> {
     if path.exists() {
         return path.canonicalize().map_err(|e| e.to_string());
     }
@@ -18,7 +18,7 @@ fn resolved_export_path(path: &PathBuf) -> Result<PathBuf, String> {
     Ok(parent.join(file_name))
 }
 
-fn is_within_root(path: &PathBuf, root: &PathBuf) -> bool {
+fn is_within_root(path: &Path, root: &Path) -> bool {
     path.strip_prefix(root).is_ok()
 }
 

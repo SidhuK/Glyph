@@ -5,10 +5,11 @@ import {
 	CalendarAdd01Icon,
 	ColorsIcon,
 	CursorInWindowIcon,
-	DashboardSquare01Icon,
 	Folder01Icon,
 	FolderOpenIcon,
+	Home01Icon,
 	InformationCircleIcon,
+	LibraryIcon,
 	Link01Icon,
 	MoveIcon,
 	NoteIcon,
@@ -59,7 +60,7 @@ import { useTauriEvent } from "../../lib/tauriEvents";
 import { listTemplates, renderTemplate } from "../../lib/templates";
 import { openSettingsWindow } from "../../lib/windows";
 import { onWindowDragMouseDown } from "../../utils/window";
-import { Database, FileHtml, LayoutAlignLeft } from "../Icons";
+import { FileHtml, LayoutAlignLeft } from "../Icons";
 import { AIFloatingHost } from "../ai/AIFloatingHost";
 import { dispatchAiContextAttach } from "../ai/aiContextEvents";
 import {
@@ -1076,7 +1077,7 @@ export function AppShell() {
 			},
 			{
 				id: "new-database",
-				label: "New database",
+				label: "New collection",
 				icon: <HugeiconsIcon icon={TableIcon} size={16} />,
 				category: "File Operations",
 				enabled: Boolean(spacePath),
@@ -1171,16 +1172,16 @@ export function AppShell() {
 			},
 			{
 				id: "open-dashboard",
-				label: "Open dashboard",
-				icon: <HugeiconsIcon icon={DashboardSquare01Icon} size={16} />,
+				label: "Open home",
+				icon: <HugeiconsIcon icon={Home01Icon} size={16} />,
 				category: "Navigation",
 				enabled: Boolean(spacePath),
 				action: openCalendarTab,
 			},
 			{
 				id: "open-databases",
-				label: "Open databases",
-				icon: <Database size={16} />,
+				label: "Open collections",
+				icon: <HugeiconsIcon icon={LibraryIcon} size={16} />,
 				category: "Navigation",
 				enabled: Boolean(spacePath),
 				action: () => openDatabasesTab(),
@@ -1223,6 +1224,7 @@ export function AppShell() {
 		attachAllOpenNotesToAi,
 		attachCurrentNoteToAi,
 		activeDirPath,
+		handleGitSyncFailure,
 		handleCopyOpenNoteAsMarkdown,
 		handleExportHtml,
 		fileTree,

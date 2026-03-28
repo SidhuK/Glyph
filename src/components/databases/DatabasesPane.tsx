@@ -1,4 +1,8 @@
-import { ClipboardIcon, MoreVerticalIcon } from "@hugeicons/core-free-icons";
+import {
+	ClipboardIcon,
+	LibraryIcon,
+	MoreVerticalIcon,
+} from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { m } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -16,15 +20,7 @@ import {
 	invoke,
 } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
-import {
-	ChevronDown,
-	Database,
-	Edit,
-	Kanban,
-	Plus,
-	Table,
-	Trash2,
-} from "../Icons";
+import { ChevronDown, Edit, Kanban, Plus, Table, Trash2 } from "../Icons";
 import { DatabaseBoard } from "../database/DatabaseBoard";
 import { DatabaseTable } from "../database/DatabaseTable";
 import { DatabaseToolbar } from "../database/DatabaseToolbar";
@@ -671,7 +667,7 @@ export function DatabasesPane({
 	);
 
 	if (loading) {
-		return <div className="databaseLoadingState">Loading databases…</div>;
+		return <div className="databaseLoadingState">Loading collections…</div>;
 	}
 
 	return (
@@ -681,9 +677,9 @@ export function DatabasesPane({
 					<DropdownMenu>
 						<DropdownMenuTrigger asChild>
 							<button type="button" className="databasesDropdownTrigger">
-								<Database size={14} strokeWidth={1.8} />
+								<HugeiconsIcon icon={LibraryIcon} size={14} strokeWidth={1.8} />
 								<span className="databasesDropdownTriggerLabel">
-									{document?.database.name ?? "Select database"}
+									{document?.database.name ?? "Select collection"}
 								</span>
 								<ChevronDown size={12} />
 							</button>
@@ -698,7 +694,11 @@ export function DatabasesPane({
 									className={`databasesDropdownItem${summary.id === selectedDatabaseId ? " is-selected" : ""}`}
 									onSelect={() => setSelectedDatabaseId(summary.id)}
 								>
-									<Database size={13} strokeWidth={1.8} />
+									<HugeiconsIcon
+										icon={LibraryIcon}
+										size={13}
+										strokeWidth={1.8}
+									/>
 									<span>{summary.name}</span>
 								</DropdownMenuItem>
 							))}
@@ -708,7 +708,7 @@ export function DatabasesPane({
 								className="databasesDropdownItem"
 							>
 								<Plus size={13} />
-								<span>New database</span>
+								<span>New collection</span>
 							</DropdownMenuItem>
 						</DropdownMenuContent>
 					</DropdownMenu>
@@ -719,7 +719,7 @@ export function DatabasesPane({
 							<Input
 								value={nameDraft}
 								className="databasesInlineNameInput"
-								aria-label="Database name"
+								aria-label="Collection name"
 								style={{
 									width: `${Math.min(Math.max(nameDraft.trim().length + 2, 10), 24)}ch`,
 								}}
@@ -790,8 +790,8 @@ export function DatabasesPane({
 							size="icon-sm"
 							className="databasesTopActionButton"
 							onClick={() => void handleDuplicateDatabase()}
-							title="Duplicate database"
-							aria-label="Duplicate database"
+							title="Duplicate collection"
+							aria-label="Duplicate collection"
 						>
 							<HugeiconsIcon icon={ClipboardIcon} size={14} />
 						</Button>
@@ -803,7 +803,7 @@ export function DatabasesPane({
 							onClick={() => {
 								if (
 									!window.confirm(
-										`Delete database "${document.database.name}"? This cannot be undone.`,
+										`Delete collection "${document.database.name}"? This cannot be undone.`,
 									)
 								) {
 									return;
@@ -811,7 +811,7 @@ export function DatabasesPane({
 								void handleDeleteDatabase();
 							}}
 							disabled={document.database.is_system}
-							title="Delete database"
+							title="Delete collection"
 						>
 							<Trash2 size={14} />
 						</Button>
@@ -1003,16 +1003,16 @@ export function DatabasesPane({
 				</>
 			) : (
 				<div className="databasesEmptyState">
-					<Database size={32} strokeWidth={1.2} />
+					<HugeiconsIcon icon={LibraryIcon} size={32} strokeWidth={1.2} />
 					<div className="databasesEmptyTitle">
 						{summaries.length === 0
-							? "Create your first database"
-							: "Select a database"}
+							? "Create your first collection"
+							: "Select a collection"}
 					</div>
 					<div className="databasesEmptyText">
 						{summaries.length === 0
-							? "Databases let you organize notes with custom views, filters, and properties."
-							: "Choose a database from the dropdown to get started."}
+							? "Collections let you organize notes with custom views, filters, and properties."
+							: "Choose a collection from the dropdown to get started."}
 					</div>
 					{summaries.length === 0 ? (
 						<Button
@@ -1021,7 +1021,7 @@ export function DatabasesPane({
 							onClick={() => void handleCreateDatabase()}
 						>
 							<Plus size={13} />
-							Create Database
+							Create Collection
 						</Button>
 					) : null}
 				</div>
