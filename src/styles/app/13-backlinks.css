@@ -57,10 +57,11 @@
 	padding: 1px var(--space-2);
 	min-height: 26px;
 	border-radius: var(--radius-md);
+	color: var(--text-primary);
 }
 
 .tagsButton[data-explicit="false"] {
-	opacity: 0.82;
+	opacity: 1;
 }
 
 .tagsNameWrap {
@@ -74,6 +75,7 @@
 
 .tagsNameWrap > :first-child {
 	flex-shrink: 0;
+	color: currentColor;
 }
 
 .tagsName {
