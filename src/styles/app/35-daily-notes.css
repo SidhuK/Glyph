@@ -7,7 +7,7 @@
 	gap: var(--space-1);
 	min-height: 28px;
 	padding: 2px var(--space-2);
-	font-size: 13px;
+	font-size: var(--text-sm);
 	color: var(--text-primary);
 	background: none;
 	border: none;
@@ -30,7 +30,7 @@
 
 .sidebarQuickActionBtn .sidebarQuickActionLabel {
 	font-weight: var(--font-medium);
-	font-size: 13px;
+	font-size: inherit;
 }
 
 .sidebarQuickActionBtn > svg {
