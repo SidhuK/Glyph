@@ -475,6 +475,7 @@ pub fn run() {
             index::commands::search_advanced,
             index::commands::search_parse_and_run,
             index::commands::search_with_tags,
+            index::commands::all_docs_list,
             index::commands::recent_notes,
             index::commands::calendar_query_range,
             index::commands::tags_list,

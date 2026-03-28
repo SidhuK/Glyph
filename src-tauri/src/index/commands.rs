@@ -30,6 +30,16 @@ pub struct CalendarDaySummary {
 }
 
 #[derive(Serialize)]
+pub struct AllDocsItem {
+    pub note_path: String,
+    pub title: String,
+    pub preview: String,
+    pub updated: String,
+    pub created: String,
+    pub tags: Vec<String>,
+}
+
+#[derive(Serialize)]
 pub struct CalendarNoteActivityItem {
     pub note_id: String,
     pub note_path: String,
@@ -87,6 +97,13 @@ fn tokenize_search_query(raw: &str) -> Vec<String> {
         out.push(cur.trim().to_string());
     }
     out
+}
+
+fn escape_like(value: &str) -> String {
+    value
+        .replace('\\', "\\\\")
+        .replace('%', "\\%")
+        .replace('_', "\\_")
 }
 
 pub(crate) fn parse_raw_search_query(raw_query: &str, limit: Option<u32>) -> SearchAdvancedRequest {
@@ -389,6 +406,69 @@ pub async fn recent_notes(
                 title: row.get(1).map_err(|e| e.to_string())?,
                 snippet: row.get(2).map_err(|e| e.to_string())?,
                 score: row.get(3).map_err(|e| e.to_string())?,
+            });
+        }
+        Ok(out)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+pub async fn all_docs_list(
+    state: State<'_, SpaceState>,
+    limit: Option<u32>,
+    folder_prefix: Option<String>,
+) -> Result<Vec<AllDocsItem>, String> {
+    let root = state.current_root()?;
+    let limit = limit.unwrap_or(2_000).clamp(1, 5_000) as i64;
+    let folder_prefix = folder_prefix
+        .map(|value| value.trim().trim_matches('/').replace('\\', "/"))
+        .filter(|value| !value.is_empty());
+    tauri::async_runtime::spawn_blocking(move || -> Result<Vec<AllDocsItem>, String> {
+        let conn = open_db(&root)?;
+        let mut sql = String::from(
+                "SELECT n.path, n.title, n.preview, n.updated, n.created,
+                        COALESCE((
+                            SELECT GROUP_CONCAT(ordered_tags.tag, '\n')
+                            FROM (
+                                SELECT tag
+                                FROM tags
+                                WHERE note_id = n.id
+                                ORDER BY is_explicit DESC, tag COLLATE NOCASE ASC
+                            ) ordered_tags
+                        ), '')
+                 FROM notes n ",
+            );
+        let mut params: Vec<rusqlite::types::Value> = Vec::new();
+        if let Some(prefix) = folder_prefix.as_ref() {
+            sql.push_str("WHERE n.path LIKE ? ESCAPE '\\' ");
+            params.push(rusqlite::types::Value::from(format!(
+                "{}/%",
+                escape_like(prefix)
+            )));
+        }
+        sql.push_str("ORDER BY n.updated DESC LIMIT ?");
+        params.push(rusqlite::types::Value::from(limit));
+        let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;
+        let mut rows = stmt
+            .query(rusqlite::params_from_iter(params.iter()))
+            .map_err(|e| e.to_string())?;
+        let mut out = Vec::new();
+        while let Some(row) = rows.next().map_err(|e| e.to_string())? {
+            let tag_blob: String = row.get(5).map_err(|e| e.to_string())?;
+            out.push(AllDocsItem {
+                note_path: row.get(0).map_err(|e| e.to_string())?,
+                title: row.get(1).map_err(|e| e.to_string())?,
+                preview: row.get(2).map_err(|e| e.to_string())?,
+                updated: row.get(3).map_err(|e| e.to_string())?,
+                created: row.get(4).map_err(|e| e.to_string())?,
+                tags: tag_blob
+                    .split('\n')
+                    .map(str::trim)
+                    .filter(|tag| !tag.is_empty())
+                    .map(ToOwned::to_owned)
+                    .collect(),
             });
         }
         Ok(out)
