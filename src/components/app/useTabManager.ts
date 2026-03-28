@@ -4,6 +4,7 @@ import { useFileTreeContext, useUILayoutContext } from "../../contexts";
 import { useRecentFiles } from "../../hooks/useRecentFiles";
 import { CALENDAR_TAB_ID } from "../../lib/calendar";
 import { DATABASES_TAB_ID } from "../../lib/databases";
+import { TEMPLATES_TAB_ID } from "../../lib/templatesView";
 import { isInAppPreviewable } from "../../utils/filePreview";
 
 interface UseTabManagerOptions {
@@ -32,7 +33,8 @@ export function useTabManager(
 		(path: string) =>
 			path === ALL_DOCS_TAB_ID ||
 			path === CALENDAR_TAB_ID ||
-			path === DATABASES_TAB_ID,
+			path === DATABASES_TAB_ID ||
+			path === TEMPLATES_TAB_ID,
 		[],
 	);
 

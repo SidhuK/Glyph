@@ -1,5 +1,5 @@
 import { CollectionsBookmarkIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
+import { HugeiconsIcon, type IconType } from "@hugeicons/react";
 import {
 	formatDistanceToNow,
 	isSameDay,
@@ -16,6 +16,16 @@ import { invoke, type AllDocsItem } from "../../lib/tauri";
 
 interface AllDocsPaneProps {
 	onOpenFile: (relPath: string) => Promise<void>;
+	title?: string;
+	icon?: IconType;
+	folderPrefix?: string | null;
+	emptyMessage?: string;
+}
+
+function normalizeFolderPrefix(value: string | null): string | null {
+	if (typeof value !== "string") return null;
+	const normalized = value.trim().replace(/\\/g, "/").replace(/^\/+|\/+$/g, "");
+	return normalized || null;
 }
 
 function titleFromPath(notePath: string): string {
@@ -79,22 +89,49 @@ const SECTION_ORDER: Array<{ id: AllDocsSection["id"]; label: string }> = [
 
 export const AllDocsPane = memo(function AllDocsPane({
 	onOpenFile,
+	title = "All Notes",
+	icon = CollectionsBookmarkIcon,
+	folderPrefix = null,
+	emptyMessage = "No notes yet. Create one to get started.",
 }: AllDocsPaneProps) {
 	const shouldReduceMotion = useReducedMotion() ?? false;
 	const [notes, setNotes] = useState<AllDocsItem[]>([]);
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState("");
 	const [selectedNotePath, setSelectedNotePath] = useState<string | null>(null);
+	const normalizedFolderPrefix = useMemo(
+		() => normalizeFolderPrefix(folderPrefix),
+		[folderPrefix],
+	);
 
 	useEffect(() => {
 		let cancelled = false;
 		setLoading(true);
 		setError("");
-		void invoke("all_docs_list", { limit: 2000 })
+		void invoke("all_docs_list", {
+			limit: 2000,
+			folder_prefix: normalizedFolderPrefix,
+		})
 			.then((items) => {
 				if (cancelled) return;
-				setNotes(items);
-				setSelectedNotePath((current) => current ?? items[0]?.note_path ?? null);
+				const nextItems = normalizedFolderPrefix
+					? items.filter((item) => {
+							const normalizedPath = item.note_path
+								.trim()
+								.replace(/\\/g, "/")
+								.replace(/^\/+/, "");
+							return (
+								normalizedPath === normalizedFolderPrefix ||
+								normalizedPath.startsWith(`${normalizedFolderPrefix}/`)
+							);
+						})
+					: items;
+				setNotes(nextItems);
+				setSelectedNotePath((current) =>
+					nextItems.some((item) => item.note_path === current)
+						? current
+						: nextItems[0]?.note_path ?? null,
+				);
 			})
 			.catch((cause) => {
 				if (cancelled) return;
@@ -107,7 +144,7 @@ export const AllDocsPane = memo(function AllDocsPane({
 		return () => {
 			cancelled = true;
 		};
-	}, []);
+	}, [normalizedFolderPrefix]);
 
 	const countLabel = useMemo(() => {
 		const count = notes.length;
@@ -145,9 +182,7 @@ export const AllDocsPane = memo(function AllDocsPane({
 	}
 
 	if (notes.length === 0) {
-		return (
-			<div className="databaseLoadingState">No notes yet. Create one to get started.</div>
-		);
+		return <div className="databaseLoadingState">{emptyMessage}</div>;
 	}
 
 	return (
@@ -155,10 +190,10 @@ export const AllDocsPane = memo(function AllDocsPane({
 			<div className="allDocsHeader">
 				<div className="allDocsTitleGroup">
 					<div className="allDocsTitleIcon">
-						<HugeiconsIcon icon={CollectionsBookmarkIcon} size={16} />
+						<HugeiconsIcon icon={icon} size={16} />
 					</div>
 					<div>
-						<h1 className="allDocsTitle">All Notes</h1>
+						<h1 className="allDocsTitle">{title}</h1>
 					</div>
 				</div>
 				<p className="allDocsCountBadge">{countLabel}</p>

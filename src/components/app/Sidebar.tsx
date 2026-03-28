@@ -30,6 +30,7 @@ interface SidebarProps {
 	onOpenSettings: () => void;
 	onOpenAllDocs: () => void;
 	onOpenDailyNote: () => void;
+	onOpenTemplates: () => void;
 	onOpenCalendar: () => void;
 	onOpenDatabases: (databaseId?: string | null) => void;
 	updateReady: boolean;
@@ -57,6 +58,7 @@ export const Sidebar = memo(function Sidebar({
 	onOpenSettings,
 	onOpenAllDocs,
 	onOpenDailyNote,
+	onOpenTemplates,
 	onOpenCalendar,
 	onOpenDatabases,
 	updateReady,
@@ -122,6 +124,7 @@ export const Sidebar = memo(function Sidebar({
 							onOpenSettings={onOpenSettings}
 							onOpenAllDocs={onOpenAllDocs}
 							onOpenDailyNote={onOpenDailyNote}
+							onOpenTemplates={onOpenTemplates}
 						/>
 					</m.div>
 				)}
