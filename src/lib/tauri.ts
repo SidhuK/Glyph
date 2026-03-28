@@ -862,7 +862,10 @@ interface TauriCommands {
 		{ tags: string[]; query?: string | null; limit?: number | null },
 		SearchResult[]
 	>;
-	all_docs_list: CommandDef<{ limit?: number | null }, AllDocsItem[]>;
+	all_docs_list: CommandDef<
+		{ limit?: number | null; folder_prefix?: string | null },
+		AllDocsItem[]
+	>;
 	recent_notes: CommandDef<{ limit?: number | null }, SearchResult[]>;
 	calendar_query_range: CommandDef<
 		{

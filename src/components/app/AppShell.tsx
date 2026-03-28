@@ -5,6 +5,7 @@ import {
 	CalendarAdd01Icon,
 	ColorsIcon,
 	CursorInWindowIcon,
+	DocumentCodeIcon,
 	File01Icon,
 	Folder01Icon,
 	FolderOpenIcon,
@@ -147,6 +148,7 @@ export function AppShell() {
 	>("commands");
 	const [paletteInitialQuery, setPaletteInitialQuery] = useState("");
 	const [openAllDocsRequest, setOpenAllDocsRequest] = useState(0);
+	const [openTemplatesRequest, setOpenTemplatesRequest] = useState(0);
 	const [openCalendarRequest, setOpenCalendarRequest] = useState(0);
 	const [openDatabasesRequest, setOpenDatabasesRequest] = useState<{
 		nonce: number;
@@ -703,6 +705,9 @@ export function AppShell() {
 	const openAllDocsTab = useCallback(() => {
 		setOpenAllDocsRequest((prev) => prev + 1);
 	}, []);
+	const openTemplatesTab = useCallback(() => {
+		setOpenTemplatesRequest((prev) => prev + 1);
+	}, []);
 	const openCalendarTab = useCallback(() => {
 		setOpenCalendarRequest((prev) => prev + 1);
 	}, []);
@@ -1169,11 +1174,19 @@ export function AppShell() {
 			},
 			{
 				id: "open-all-docs",
-				label: "Open all docs",
+				label: "Open all notes",
 				icon: <HugeiconsIcon icon={File01Icon} size={16} />,
 				category: "Navigation",
 				enabled: Boolean(spacePath),
 				action: openAllDocsTab,
+			},
+			{
+				id: "open-templates",
+				label: "Open templates",
+				icon: <HugeiconsIcon icon={DocumentCodeIcon} size={16} />,
+				category: "Navigation",
+				enabled: Boolean(spacePath),
+				action: openTemplatesTab,
 			},
 			{
 				id: "open-calendar",
@@ -1255,6 +1268,7 @@ export function AppShell() {
 		sidebarCollapsed,
 		spacePath,
 		openAllDocsTab,
+		openTemplatesTab,
 		openSearchPalette,
 		openCalendarTab,
 		openDatabasesTab,
@@ -1335,6 +1349,7 @@ export function AppShell() {
 				onOpenSettings={() => void openSettingsWindow()}
 				onOpenAllDocs={openAllDocsTab}
 				onOpenDailyNote={requestOpenDailyNote}
+				onOpenTemplates={openTemplatesTab}
 				onOpenCalendar={openCalendarTab}
 				onOpenDatabases={(databaseId) => openDatabasesTab(databaseId)}
 				updateReady={autoUpdater.updateReady}
@@ -1356,6 +1371,7 @@ export function AppShell() {
 				onCreateNote={handleCreateNoteFromStarter}
 				onOpenDailyNote={requestOpenDailyNote}
 				openAllDocsRequest={openAllDocsRequest}
+				openTemplatesRequest={openTemplatesRequest}
 				openCalendarRequest={openCalendarRequest}
 				openDatabasesRequest={openDatabasesRequest}
 				openBlankTabRequest={openBlankTabRequest}

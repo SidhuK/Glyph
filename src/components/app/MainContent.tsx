@@ -31,8 +31,10 @@ import {
 } from "../../lib/settings";
 import { formatShortcutPartsForPlatform } from "../../lib/shortcuts/platform";
 import { useTauriEvent } from "../../lib/tauriEvents";
+import { TEMPLATES_TAB_ID } from "../../lib/templatesView";
 import { isInAppPreviewable } from "../../utils/filePreview";
 import { Calendar, FileText, Settings } from "../Icons";
+import { DocumentCodeIcon } from "@hugeicons/core-free-icons";
 import { FilePreviewPane } from "../preview/FilePreviewPane";
 import { NotePane } from "../preview/NotePane";
 import { springPresets } from "../ui/animations";
@@ -221,6 +223,7 @@ interface MainContentProps {
 	onCreateNote: () => void;
 	onOpenDailyNote: () => void;
 	openAllDocsRequest: number;
+	openTemplatesRequest: number;
 	openCalendarRequest: number;
 	openDatabasesRequest: {
 		nonce: number;
@@ -305,6 +308,7 @@ export const MainContent = memo(function MainContent({
 	onCreateNote,
 	onOpenDailyNote,
 	openAllDocsRequest,
+	openTemplatesRequest,
 	openCalendarRequest,
 	openDatabasesRequest,
 	openBlankTabRequest,
@@ -323,7 +327,7 @@ export const MainContent = memo(function MainContent({
 		onContinueLastSpace,
 		onCreateSpace,
 	} = useSpace();
-	const { dailyNotesFolder } = useUILayoutContext();
+	const { dailyNotesFolder, templateFolder } = useUILayoutContext();
 	const { aiEnabled, aiPanelOpen, setAiPanelOpen } = useAISidebarContext();
 	const [onboarding, setOnboarding] = useState<OnboardingSettings>(
 		DEFAULT_ONBOARDING_SETTINGS,
@@ -355,6 +359,11 @@ export const MainContent = memo(function MainContent({
 		if (!spacePath || openAllDocsRequest === 0) return;
 		openSpecialTab(ALL_DOCS_TAB_ID);
 	}, [openAllDocsRequest, openSpecialTab, spacePath]);
+
+	useEffect(() => {
+		if (!spacePath || openTemplatesRequest === 0) return;
+		openSpecialTab(TEMPLATES_TAB_ID);
+	}, [openSpecialTab, openTemplatesRequest, spacePath]);
 
 	useEffect(() => {
 		if (!spacePath || openCalendarRequest === 0) return;
@@ -465,6 +474,25 @@ export const MainContent = memo(function MainContent({
 				</Suspense>
 			);
 		}
+		if (viewerPath === TEMPLATES_TAB_ID) {
+			return (
+				<Suspense
+					fallback={<div className="databaseLoadingState">Loading templates…</div>}
+				>
+					<AllDocsPane
+						title="Templates"
+						icon={DocumentCodeIcon}
+						folderPrefix={templateFolder}
+						emptyMessage={
+							templateFolder
+								? "No notes found in the template folder yet."
+								: "Set a template folder in Settings to browse templates here."
+						}
+						onOpenFile={(relPath) => fileTree.openFile(relPath)}
+					/>
+				</Suspense>
+			);
+		}
 		if (viewerPath === CALENDAR_TAB_ID) {
 			return (
 				<Suspense
@@ -524,6 +552,7 @@ export const MainContent = memo(function MainContent({
 		onOpenDailyNotesSettings,
 		openDatabasesRequest.databaseId,
 		openDatabasesRequest.nonce,
+		templateFolder,
 		viewerPath,
 		setDirtyByPath,
 	]);
