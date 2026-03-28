@@ -1,4 +1,5 @@
 import {
+	CalendarAdd01Icon,
 	Clock01Icon,
 	CollectionsBookmarkIcon,
 	Home01Icon,
@@ -51,6 +52,7 @@ interface SidebarContentProps {
 	onOpenGitSettings: () => void;
 	onOpenSettings: () => void;
 	onOpenAllDocs: () => void;
+	onOpenDailyNote: () => void;
 }
 
 export const SidebarContent = memo(function SidebarContent({
@@ -72,6 +74,7 @@ export const SidebarContent = memo(function SidebarContent({
 	onOpenGitSettings,
 	onOpenSettings,
 	onOpenAllDocs,
+	onOpenDailyNote,
 }: SidebarContentProps) {
 	// Contexts
 	const { spacePath } = useSpace();
@@ -207,6 +210,17 @@ export const SidebarContent = memo(function SidebarContent({
 					>
 						<HugeiconsIcon icon={LibraryIcon} size={14} />
 						<span className="sidebarQuickActionLabel">Collections</span>
+					</button>
+					<div className="sidebarQuickActionsSpacer" aria-hidden="true" />
+					<button
+						type="button"
+						className="sidebarQuickActionBtn"
+						data-kind="daily-note"
+						onClick={onOpenDailyNote}
+						title="Open Daily Note"
+					>
+						<HugeiconsIcon icon={CalendarAdd01Icon} size={14} />
+						<span className="sidebarQuickActionLabel">Daily Note</span>
 					</button>
 				</div>
 				<div className="sidebarSectionHeader">
