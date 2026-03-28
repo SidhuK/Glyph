@@ -1334,6 +1334,7 @@ export function AppShell() {
 				onOpenGitSettings={gitSync.openGitSettings}
 				onOpenSettings={() => void openSettingsWindow()}
 				onOpenAllDocs={openAllDocsTab}
+				onOpenDailyNote={requestOpenDailyNote}
 				onOpenCalendar={openCalendarTab}
 				onOpenDatabases={(databaseId) => openDatabasesTab(databaseId)}
 				updateReady={autoUpdater.updateReady}
