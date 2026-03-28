@@ -15,7 +15,7 @@ import {
 	NoteIcon,
 	PencilEdit02Icon,
 	SearchIcon,
-	Settings05Icon,
+	Settings01Icon,
 	SidebarLeftIcon,
 	SquareLock02Icon,
 	TableIcon,
@@ -975,7 +975,7 @@ export function AppShell() {
 			{
 				id: "open-settings",
 				label: "Settings",
-				icon: <HugeiconsIcon icon={Settings05Icon} size={16} />,
+				icon: <HugeiconsIcon icon={Settings01Icon} size={16} />,
 				category: "Workspace",
 				shortcut: { meta: true, key: "," },
 				action: () => void openSettingsWindow(),
@@ -1018,7 +1018,7 @@ export function AppShell() {
 			{
 				id: "open-git-sync-settings",
 				label: "Git Sync settings",
-				icon: <HugeiconsIcon icon={Settings05Icon} size={16} />,
+				icon: <HugeiconsIcon icon={Settings01Icon} size={16} />,
 				category: "Workspace",
 				enabled: Boolean(spacePath),
 				action: gitSync.openGitSettings,

@@ -37,12 +37,8 @@
 	flex: 0 0 auto;
 }
 
-.sidebarQuickActionBtn[data-kind="dashboard"] > svg {
-	color: oklch(0.66 0.11 245);
-}
-
-.sidebarQuickActionBtn[data-kind="databases"] > svg {
-	color: oklch(0.84 0.16 96);
+.sidebarQuickActionHomeIcon {
+	filter: drop-shadow(0 0 0.25px rgba(0, 0, 0, 0.95));
 }
 
 .sidebarQuickActionBtn[data-kind="daily-notes"] > svg {
@@ -51,8 +47,4 @@
 
 .sidebarQuickActionBtn[data-kind="template"] > svg {
 	color: oklch(0.72 0.15 168);
-}
-
-.sidebarQuickActionBtn[data-kind="new-note"] > svg {
-	color: color-mix(in srgb, var(--interactive-accent) 70%, var(--text-primary));
 }
