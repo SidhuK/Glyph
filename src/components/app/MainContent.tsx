@@ -1,3 +1,4 @@
+import { DocumentCodeIcon } from "@hugeicons/core-free-icons";
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import {
 	Suspense,
@@ -34,7 +35,6 @@ import { useTauriEvent } from "../../lib/tauriEvents";
 import { TEMPLATES_TAB_ID } from "../../lib/templatesView";
 import { isInAppPreviewable } from "../../utils/filePreview";
 import { Calendar, FileText, Settings } from "../Icons";
-import { DocumentCodeIcon } from "@hugeicons/core-free-icons";
 import { FilePreviewPane } from "../preview/FilePreviewPane";
 import { NotePane } from "../preview/NotePane";
 import { springPresets } from "../ui/animations";
@@ -223,7 +223,9 @@ interface MainContentProps {
 	onCreateNote: () => void;
 	onOpenDailyNote: () => void;
 	openAllDocsRequest: number;
+	onConsumeOpenAllDocsRequest: () => void;
 	openTemplatesRequest: number;
+	onConsumeOpenTemplatesRequest: () => void;
 	openCalendarRequest: number;
 	openDatabasesRequest: {
 		nonce: number;
@@ -308,7 +310,9 @@ export const MainContent = memo(function MainContent({
 	onCreateNote,
 	onOpenDailyNote,
 	openAllDocsRequest,
+	onConsumeOpenAllDocsRequest,
 	openTemplatesRequest,
+	onConsumeOpenTemplatesRequest,
 	openCalendarRequest,
 	openDatabasesRequest,
 	openBlankTabRequest,
@@ -358,12 +362,24 @@ export const MainContent = memo(function MainContent({
 	useEffect(() => {
 		if (!spacePath || openAllDocsRequest === 0) return;
 		openSpecialTab(ALL_DOCS_TAB_ID);
-	}, [openAllDocsRequest, openSpecialTab, spacePath]);
+		onConsumeOpenAllDocsRequest();
+	}, [
+		onConsumeOpenAllDocsRequest,
+		openAllDocsRequest,
+		openSpecialTab,
+		spacePath,
+	]);
 
 	useEffect(() => {
 		if (!spacePath || openTemplatesRequest === 0) return;
 		openSpecialTab(TEMPLATES_TAB_ID);
-	}, [openSpecialTab, openTemplatesRequest, spacePath]);
+		onConsumeOpenTemplatesRequest();
+	}, [
+		onConsumeOpenTemplatesRequest,
+		openSpecialTab,
+		openTemplatesRequest,
+		spacePath,
+	]);
 
 	useEffect(() => {
 		if (!spacePath || openCalendarRequest === 0) return;
@@ -468,7 +484,9 @@ export const MainContent = memo(function MainContent({
 		if (viewerPath === ALL_DOCS_TAB_ID) {
 			return (
 				<Suspense
-					fallback={<div className="databaseLoadingState">Loading all docs…</div>}
+					fallback={
+						<div className="databaseLoadingState">Loading all docs…</div>
+					}
 				>
 					<AllDocsPane onOpenFile={(relPath) => fileTree.openFile(relPath)} />
 				</Suspense>
@@ -477,7 +495,9 @@ export const MainContent = memo(function MainContent({
 		if (viewerPath === TEMPLATES_TAB_ID) {
 			return (
 				<Suspense
-					fallback={<div className="databaseLoadingState">Loading templates…</div>}
+					fallback={
+						<div className="databaseLoadingState">Loading templates…</div>
+					}
 				>
 					<AllDocsPane
 						title="Templates"

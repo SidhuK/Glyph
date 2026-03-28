@@ -20,7 +20,8 @@ import {
 import { useRecentFiles } from "../../hooks/useRecentFiles";
 import { FILE_TREE_START_RENAME_EVENT } from "../../lib/appEvents";
 import { getShortcutTooltip } from "../../lib/shortcuts";
-import type { GitSyncStatus } from "../../lib/tauri";
+import { type GitSyncStatus, invoke } from "../../lib/tauri";
+import { useTauriEvent } from "../../lib/tauriEvents";
 import { FileTreePane } from "../FileTreePane";
 import { Files } from "../Icons";
 import { RecentFilesPane } from "../RecentFilesPane";
@@ -97,6 +98,7 @@ export const SidebarContent = memo(function SidebarContent({
 	const [pendingNewNotePath, setPendingNewNotePath] = useState<string | null>(
 		null,
 	);
+	const [allNotesCount, setAllNotesCount] = useState<number | null>(null);
 	const showGitButton = Boolean(gitSyncStatus?.configured);
 
 	const handleStartRename = useCallback((path: string) => {
@@ -152,6 +154,28 @@ export const SidebarContent = memo(function SidebarContent({
 		[onOpenFile, onRenameDir, pendingNewNotePath],
 	);
 
+	const refreshAllNotesCount = useCallback(() => {
+		if (!spacePath) {
+			setAllNotesCount(null);
+			return;
+		}
+		void invoke("all_docs_list", { limit: 5000 })
+			.then((items) => {
+				setAllNotesCount(items.length);
+			})
+			.catch(() => {
+				setAllNotesCount(null);
+			});
+	}, [spacePath]);
+
+	useEffect(() => {
+		refreshAllNotesCount();
+	}, [refreshAllNotesCount]);
+
+	useTauriEvent("notes:external_changed", () => {
+		refreshAllNotesCount();
+	});
+
 	if (!spacePath) {
 		return (
 			<>
@@ -203,6 +227,9 @@ export const SidebarContent = memo(function SidebarContent({
 					>
 						<HugeiconsIcon icon={CollectionsBookmarkIcon} size={14} />
 						<span className="sidebarQuickActionLabel">All Notes</span>
+						{allNotesCount !== null ? (
+							<span className="sidebarQuickActionCount">{allNotesCount}</span>
+						) : null}
 					</button>
 					<button
 						type="button"
@@ -325,17 +352,17 @@ export const SidebarContent = memo(function SidebarContent({
 					)}
 				</AnimatePresence>
 			</div>
-				<div className="sidebarFooter">
-					<button
-						type="button"
-						className="sidebarQuickActionBtn sidebarFooterSettingsButton"
-						onClick={onOpenSettings}
-						title="Open settings"
-						data-kind="settings"
-					>
-						<HugeiconsIcon icon={Settings01Icon} size={14} />
-						<span className="sidebarQuickActionLabel">Settings</span>
-					</button>
+			<div className="sidebarFooter">
+				<button
+					type="button"
+					className="sidebarQuickActionBtn sidebarFooterSettingsButton"
+					onClick={onOpenSettings}
+					title="Open settings"
+					data-kind="settings"
+				>
+					<HugeiconsIcon icon={Settings01Icon} size={14} />
+					<span className="sidebarQuickActionLabel">Settings</span>
+				</button>
 				{showGitButton ? (
 					<WindowChromeGitSyncButton
 						status={gitSyncStatus}

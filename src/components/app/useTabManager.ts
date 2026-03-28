@@ -1,7 +1,7 @@
-import { ALL_DOCS_TAB_ID } from "../../lib/allDocs";
 import { useCallback, useEffect, useState } from "react";
 import { useFileTreeContext, useUILayoutContext } from "../../contexts";
 import { useRecentFiles } from "../../hooks/useRecentFiles";
+import { ALL_DOCS_TAB_ID } from "../../lib/allDocs";
 import { CALENDAR_TAB_ID } from "../../lib/calendar";
 import { DATABASES_TAB_ID } from "../../lib/databases";
 import { TEMPLATES_TAB_ID } from "../../lib/templatesView";

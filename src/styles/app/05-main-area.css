@@ -174,12 +174,6 @@
 	color: var(--text-primary);
 }
 
-.allDocsSubtitle {
-	margin-top: 2px;
-	font-size: 0.86rem;
-	color: var(--text-secondary);
-}
-
 .allDocsCountBadge {
 	display: inline-flex;
 	align-items: center;
@@ -264,7 +258,13 @@
 }
 
 .allDocsCard .databaseBoardCardPreview {
+	display: -webkit-box;
+	-webkit-box-orient: vertical;
 	-webkit-line-clamp: 7;
+	line-height: 1.45;
+	max-height: calc(1.45em * 7);
+	overflow: hidden;
+	text-overflow: ellipsis;
 }
 
 .allDocsCard .databaseBoardCardTags {

@@ -1,5 +1,5 @@
 import { CollectionsBookmarkIcon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon, type IconType } from "@hugeicons/react";
+import { HugeiconsIcon } from "@hugeicons/react";
 import {
 	formatDistanceToNow,
 	isSameDay,
@@ -9,22 +9,41 @@ import {
 	subDays,
 } from "date-fns";
 import { m, useReducedMotion } from "motion/react";
-import { memo, useEffect, useMemo, useState, type CSSProperties } from "react";
+import {
+	type CSSProperties,
+	type ComponentProps,
+	type Dispatch,
+	type SetStateAction,
+	memo,
+	useCallback,
+	useEffect,
+	useMemo,
+	useState,
+} from "react";
+import { type AllDocsItem, invoke } from "../../lib/tauri";
+import { useTauriEvent } from "../../lib/tauriEvents";
 import { formatDatabaseTagLabel } from "../database/databaseTagLabel";
 import { springPresets } from "../ui/animations";
-import { invoke, type AllDocsItem } from "../../lib/tauri";
 
 interface AllDocsPaneProps {
 	onOpenFile: (relPath: string) => Promise<void>;
 	title?: string;
-	icon?: IconType;
+	icon?: ComponentProps<typeof HugeiconsIcon>["icon"];
 	folderPrefix?: string | null;
 	emptyMessage?: string;
 }
 
+const CARD_STYLE = {
+	minHeight: "264px",
+	borderRadius: "18px",
+} satisfies CSSProperties;
+
 function normalizeFolderPrefix(value: string | null): string | null {
 	if (typeof value !== "string") return null;
-	const normalized = value.trim().replace(/\\/g, "/").replace(/^\/+|\/+$/g, "");
+	const normalized = value
+		.trim()
+		.replace(/\\/g, "/")
+		.replace(/^\/+|\/+$/g, "");
 	return normalized || null;
 }
 
@@ -43,7 +62,10 @@ function previewText(preview: string, title: string): string {
 	const normalized = preview.replace(/\s+/g, " ").trim();
 	if (!normalized) return "";
 	if (normalized.toLowerCase().startsWith(title.toLowerCase())) {
-		return normalized.slice(title.length).replace(/^[-:.\s]+/, "").trim();
+		return normalized
+			.slice(title.length)
+			.replace(/^[-:.\s]+/, "")
+			.trim();
 	}
 	return normalized;
 }
@@ -61,6 +83,19 @@ type AllDocsSection = {
 	label: string;
 	notes: AllDocsItem[];
 };
+
+function applyNotesResult(
+	items: AllDocsItem[],
+	setNotes: Dispatch<SetStateAction<AllDocsItem[]>>,
+	setSelectedNotePath: Dispatch<SetStateAction<string | null>>,
+) {
+	setNotes(items);
+	setSelectedNotePath((current) =>
+		items.some((item) => item.note_path === current)
+			? current
+			: (items[0]?.note_path ?? null),
+	);
+}
 
 function sectionForDate(iso: string): AllDocsSection["id"] {
 	const today = startOfToday();
@@ -104,16 +139,18 @@ export const AllDocsPane = memo(function AllDocsPane({
 		[folderPrefix],
 	);
 
-	useEffect(() => {
-		let cancelled = false;
-		setLoading(true);
-		setError("");
-		void invoke("all_docs_list", {
-			limit: 2000,
-			folder_prefix: normalizedFolderPrefix,
-		})
-			.then((items) => {
-				if (cancelled) return;
+	const fetchNotes = useCallback(
+		async (cancelled?: { current: boolean }) => {
+			setLoading(true);
+			setError("");
+			try {
+				const items = await invoke("all_docs_list", {
+					limit: 2000,
+					folder_prefix: normalizedFolderPrefix,
+				});
+				if (cancelled?.current) return;
+				// Keep a client-side guard here so the Templates view stays scoped
+				// even if the running backend returns a broader result set.
 				const nextItems = normalizedFolderPrefix
 					? items.filter((item) => {
 							const normalizedPath = item.note_path
@@ -126,25 +163,29 @@ export const AllDocsPane = memo(function AllDocsPane({
 							);
 						})
 					: items;
-				setNotes(nextItems);
-				setSelectedNotePath((current) =>
-					nextItems.some((item) => item.note_path === current)
-						? current
-						: nextItems[0]?.note_path ?? null,
-				);
-			})
-			.catch((cause) => {
-				if (cancelled) return;
+				applyNotesResult(nextItems, setNotes, setSelectedNotePath);
+			} catch (cause) {
+				if (cancelled?.current) return;
 				setError(cause instanceof Error ? cause.message : String(cause));
 				setNotes([]);
-			})
-			.finally(() => {
-				if (!cancelled) setLoading(false);
-			});
+			} finally {
+				if (!cancelled?.current) setLoading(false);
+			}
+		},
+		[normalizedFolderPrefix],
+	);
+
+	useTauriEvent("notes:external_changed", () => {
+		void fetchNotes();
+	});
+
+	useEffect(() => {
+		const cancelled = { current: false };
+		void fetchNotes(cancelled);
 		return () => {
-			cancelled = true;
+			cancelled.current = true;
 		};
-	}, [normalizedFolderPrefix]);
+	}, [fetchNotes]);
 
 	const countLabel = useMemo(() => {
 		const count = notes.length;
@@ -164,21 +205,15 @@ export const AllDocsPane = memo(function AllDocsPane({
 			notes: buckets.get(section.id) ?? [],
 		})).filter((section) => section.notes.length > 0);
 	}, [notes]);
-	const cardStyle = useMemo(
-		() =>
-			({
-				minHeight: "264px",
-				borderRadius: "18px",
-			}) satisfies CSSProperties,
-		[],
-	);
 
 	if (loading) {
 		return <div className="databaseLoadingState">Loading all docs…</div>;
 	}
 
 	if (error) {
-		return <div className="databaseLoadingState">Could not load docs: {error}</div>;
+		return (
+			<div className="databaseLoadingState">Could not load docs: {error}</div>
+		);
 	}
 
 	if (notes.length === 0) {
@@ -203,12 +238,15 @@ export const AllDocsPane = memo(function AllDocsPane({
 					<section key={section.id} className="allDocsSection">
 						<div className="allDocsSectionHeader">
 							<h2 className="allDocsSectionTitle">{section.label}</h2>
-							<span className="allDocsSectionCount">{section.notes.length}</span>
+							<span className="allDocsSectionCount">
+								{section.notes.length}
+							</span>
 						</div>
 						<div className="allDocsGrid">
 							{section.notes.map((note, index) => {
-								const title = note.title.trim() || titleFromPath(note.note_path);
-								const preview = previewText(note.preview, title);
+								const noteTitle =
+									note.title.trim() || titleFromPath(note.note_path);
+								const preview = previewText(note.preview, noteTitle);
 								const visibleTags = note.tags.slice(0, 3);
 								const extraTagCount = Math.max(
 									note.tags.length - visibleTags.length,
@@ -222,9 +260,11 @@ export const AllDocsPane = memo(function AllDocsPane({
 										key={note.note_path}
 										type="button"
 										className="databaseBoardCard allDocsCard"
-										style={cardStyle}
+										style={CARD_STYLE}
 										data-state={
-											selectedNotePath === note.note_path ? "selected" : undefined
+											selectedNotePath === note.note_path
+												? "selected"
+												: undefined
 										}
 										onClick={() => setSelectedNotePath(note.note_path)}
 										onDoubleClick={() => void onOpenFile(note.note_path)}
@@ -253,7 +293,9 @@ export const AllDocsPane = memo(function AllDocsPane({
 									>
 										<div className="databaseBoardCardHead">
 											<div className="databaseBoardCardHeaderRow">
-												<span className="databaseBoardCardTitle">{title}</span>
+												<span className="databaseBoardCardTitle">
+													{noteTitle}
+												</span>
 												<span className="databaseBoardCardOpenHint">Open</span>
 											</div>
 											<div className="allDocsMetaRow">
@@ -268,7 +310,9 @@ export const AllDocsPane = memo(function AllDocsPane({
 												</span>
 											</div>
 											{preview ? (
-												<div className="databaseBoardCardPreview">{preview}</div>
+												<div className="databaseBoardCardPreview">
+													{preview}
+												</div>
 											) : (
 												<div className="databaseBoardCardPreview is-placeholder">
 													No preview yet

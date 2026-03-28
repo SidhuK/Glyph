@@ -75,7 +75,7 @@
 
 .tagsNameWrap > :first-child {
 	flex-shrink: 0;
-	color: currentColor;
+	color: currentcolor;
 }
 
 .tagsName {
