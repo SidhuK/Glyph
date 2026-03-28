@@ -164,7 +164,11 @@ export const SidebarContent = memo(function SidebarContent({
 						onClick={onOpenCalendar}
 						title="Open Home"
 					>
-						<HugeiconsIcon icon={Home01Icon} size={14} />
+						<HugeiconsIcon
+							icon={Home01Icon}
+							size={14}
+							className="sidebarQuickActionHomeIcon"
+						/>
 						<span className="sidebarQuickActionLabel">Home</span>
 					</button>
 					<div className="sidebarQuickActionsSpacer" aria-hidden="true" />
