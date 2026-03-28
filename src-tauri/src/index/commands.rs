@@ -99,6 +99,13 @@ fn tokenize_search_query(raw: &str) -> Vec<String> {
     out
 }
 
+fn escape_like(value: &str) -> String {
+    value
+        .replace('\\', "\\\\")
+        .replace('%', "\\%")
+        .replace('_', "\\_")
+}
+
 pub(crate) fn parse_raw_search_query(raw_query: &str, limit: Option<u32>) -> SearchAdvancedRequest {
     let mut req = SearchAdvancedRequest {
         limit: Some(limit.unwrap_or(1500).clamp(1, 2_000)),
@@ -435,8 +442,11 @@ pub async fn all_docs_list(
             );
         let mut params: Vec<rusqlite::types::Value> = Vec::new();
         if let Some(prefix) = folder_prefix.as_ref() {
-            sql.push_str("WHERE n.path LIKE ? ");
-            params.push(rusqlite::types::Value::from(format!("{prefix}/%")));
+            sql.push_str("WHERE n.path LIKE ? ESCAPE '\\' ");
+            params.push(rusqlite::types::Value::from(format!(
+                "{}/%",
+                escape_like(prefix)
+            )));
         }
         sql.push_str("ORDER BY n.updated DESC LIMIT ?");
         params.push(rusqlite::types::Value::from(limit));

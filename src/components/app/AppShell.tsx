@@ -548,8 +548,12 @@ export function AppShell() {
 
 	const createNoteInSelectedFolder = useCallback(async () => {
 		if (!spacePath) return null;
-		return fileTree.onNewFileInDir(activeDirPath ?? "");
-	}, [activeDirPath, fileTree, spacePath]);
+		const nextDir =
+			dailyNotesFolder && activeDirPath === dailyNotesFolder
+				? ""
+				: (activeDirPath ?? "");
+		return fileTree.onNewFileInDir(nextDir);
+	}, [activeDirPath, dailyNotesFolder, fileTree, spacePath]);
 
 	const handleNewNoteFromMenu = useCallback(() => {
 		if (!spacePath) return;
@@ -707,6 +711,12 @@ export function AppShell() {
 	}, []);
 	const openTemplatesTab = useCallback(() => {
 		setOpenTemplatesRequest((prev) => prev + 1);
+	}, []);
+	const consumeOpenAllDocsRequest = useCallback(() => {
+		setOpenAllDocsRequest(0);
+	}, []);
+	const consumeOpenTemplatesRequest = useCallback(() => {
+		setOpenTemplatesRequest(0);
 	}, []);
 	const openCalendarTab = useCallback(() => {
 		setOpenCalendarRequest((prev) => prev + 1);
@@ -1371,7 +1381,9 @@ export function AppShell() {
 				onCreateNote={handleCreateNoteFromStarter}
 				onOpenDailyNote={requestOpenDailyNote}
 				openAllDocsRequest={openAllDocsRequest}
+				onConsumeOpenAllDocsRequest={consumeOpenAllDocsRequest}
 				openTemplatesRequest={openTemplatesRequest}
+				onConsumeOpenTemplatesRequest={consumeOpenTemplatesRequest}
 				openCalendarRequest={openCalendarRequest}
 				openDatabasesRequest={openDatabasesRequest}
 				openBlankTabRequest={openBlankTabRequest}

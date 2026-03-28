@@ -33,18 +33,19 @@
 	font-size: inherit;
 }
 
+.sidebarQuickActionCount {
+	margin-left: auto;
+	flex-shrink: 0;
+	font-size: 11px;
+	color: var(--text-tertiary);
+	text-align: right;
+	white-space: nowrap;
+}
+
 .sidebarQuickActionBtn > svg {
 	flex: 0 0 auto;
 }
 
 .sidebarQuickActionHomeIcon {
 	filter: drop-shadow(0 0 0.25px rgba(0, 0, 0, 0.95));
-}
-
-.sidebarQuickActionBtn[data-kind="daily-notes"] > svg {
-	color: oklch(0.66 0.13 242);
-}
-
-.sidebarQuickActionBtn[data-kind="template"] > svg {
-	color: oklch(0.72 0.15 168);
 }

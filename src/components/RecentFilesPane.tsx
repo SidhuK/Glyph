@@ -84,10 +84,7 @@ export const RecentFilesPane = memo(function RecentFilesPane({
 									transition={springTransition}
 								>
 									<span className="tagsNameWrap">
-										<Icon
-											size={12}
-											className="sidebarRecentFileIcon"
-										/>
+										<Icon size={12} className="sidebarRecentFileIcon" />
 										<span className="tagsName">{name}</span>
 									</span>
 									<span className="tagsCount mono">
