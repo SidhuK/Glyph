@@ -5,6 +5,8 @@ import {
 	CalendarAdd01Icon,
 	ColorsIcon,
 	CursorInWindowIcon,
+	DocumentCodeIcon,
+	File01Icon,
 	Folder01Icon,
 	FolderOpenIcon,
 	Home01Icon,
@@ -15,7 +17,7 @@ import {
 	NoteIcon,
 	PencilEdit02Icon,
 	SearchIcon,
-	Settings05Icon,
+	Settings01Icon,
 	SidebarLeftIcon,
 	SquareLock02Icon,
 	TableIcon,
@@ -145,6 +147,8 @@ export function AppShell() {
 		"commands" | "search"
 	>("commands");
 	const [paletteInitialQuery, setPaletteInitialQuery] = useState("");
+	const [openAllDocsRequest, setOpenAllDocsRequest] = useState(0);
+	const [openTemplatesRequest, setOpenTemplatesRequest] = useState(0);
 	const [openCalendarRequest, setOpenCalendarRequest] = useState(0);
 	const [openDatabasesRequest, setOpenDatabasesRequest] = useState<{
 		nonce: number;
@@ -544,8 +548,12 @@ export function AppShell() {
 
 	const createNoteInSelectedFolder = useCallback(async () => {
 		if (!spacePath) return null;
-		return fileTree.onNewFileInDir(activeDirPath ?? "");
-	}, [activeDirPath, fileTree, spacePath]);
+		const nextDir =
+			dailyNotesFolder && activeDirPath === dailyNotesFolder
+				? ""
+				: (activeDirPath ?? "");
+		return fileTree.onNewFileInDir(nextDir);
+	}, [activeDirPath, dailyNotesFolder, fileTree, spacePath]);
 
 	const handleNewNoteFromMenu = useCallback(() => {
 		if (!spacePath) return;
@@ -698,6 +706,18 @@ export function AppShell() {
 		setPaletteInitialQuery("");
 		setPaletteOpen(true);
 	}, [setPaletteOpen, spacePath, openCommandPalette]);
+	const openAllDocsTab = useCallback(() => {
+		setOpenAllDocsRequest((prev) => prev + 1);
+	}, []);
+	const openTemplatesTab = useCallback(() => {
+		setOpenTemplatesRequest((prev) => prev + 1);
+	}, []);
+	const consumeOpenAllDocsRequest = useCallback(() => {
+		setOpenAllDocsRequest(0);
+	}, []);
+	const consumeOpenTemplatesRequest = useCallback(() => {
+		setOpenTemplatesRequest(0);
+	}, []);
 	const openCalendarTab = useCallback(() => {
 		setOpenCalendarRequest((prev) => prev + 1);
 	}, []);
@@ -975,7 +995,7 @@ export function AppShell() {
 			{
 				id: "open-settings",
 				label: "Settings",
-				icon: <HugeiconsIcon icon={Settings05Icon} size={16} />,
+				icon: <HugeiconsIcon icon={Settings01Icon} size={16} />,
 				category: "Workspace",
 				shortcut: { meta: true, key: "," },
 				action: () => void openSettingsWindow(),
@@ -1018,7 +1038,7 @@ export function AppShell() {
 			{
 				id: "open-git-sync-settings",
 				label: "Git Sync settings",
-				icon: <HugeiconsIcon icon={Settings05Icon} size={16} />,
+				icon: <HugeiconsIcon icon={Settings01Icon} size={16} />,
 				category: "Workspace",
 				enabled: Boolean(spacePath),
 				action: gitSync.openGitSettings,
@@ -1163,6 +1183,22 @@ export function AppShell() {
 				action: openSearchPalette,
 			},
 			{
+				id: "open-all-docs",
+				label: "Open all notes",
+				icon: <HugeiconsIcon icon={File01Icon} size={16} />,
+				category: "Navigation",
+				enabled: Boolean(spacePath),
+				action: openAllDocsTab,
+			},
+			{
+				id: "open-templates",
+				label: "Open templates",
+				icon: <HugeiconsIcon icon={DocumentCodeIcon} size={16} />,
+				category: "Navigation",
+				enabled: Boolean(spacePath),
+				action: openTemplatesTab,
+			},
+			{
 				id: "open-calendar",
 				label: "Open calendar",
 				icon: <HugeiconsIcon icon={Calendar03Icon} size={16} />,
@@ -1241,6 +1277,8 @@ export function AppShell() {
 		setSidebarCollapsed,
 		sidebarCollapsed,
 		spacePath,
+		openAllDocsTab,
+		openTemplatesTab,
 		openSearchPalette,
 		openCalendarTab,
 		openDatabasesTab,
@@ -1318,6 +1356,10 @@ export function AppShell() {
 						.catch(handleGitSyncFailure);
 				}}
 				onOpenGitSettings={gitSync.openGitSettings}
+				onOpenSettings={() => void openSettingsWindow()}
+				onOpenAllDocs={openAllDocsTab}
+				onOpenDailyNote={requestOpenDailyNote}
+				onOpenTemplates={openTemplatesTab}
 				onOpenCalendar={openCalendarTab}
 				onOpenDatabases={(databaseId) => openDatabasesTab(databaseId)}
 				updateReady={autoUpdater.updateReady}
@@ -1338,6 +1380,10 @@ export function AppShell() {
 				onOpenCommandPalette={openCommandPalette}
 				onCreateNote={handleCreateNoteFromStarter}
 				onOpenDailyNote={requestOpenDailyNote}
+				openAllDocsRequest={openAllDocsRequest}
+				onConsumeOpenAllDocsRequest={consumeOpenAllDocsRequest}
+				openTemplatesRequest={openTemplatesRequest}
+				onConsumeOpenTemplatesRequest={consumeOpenTemplatesRequest}
 				openCalendarRequest={openCalendarRequest}
 				openDatabasesRequest={openDatabasesRequest}
 				openBlankTabRequest={openBlankTabRequest}

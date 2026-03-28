@@ -311,6 +311,15 @@ export interface SearchResult {
 	score: number;
 }
 
+export interface AllDocsItem {
+	note_path: string;
+	title: string;
+	preview: string;
+	updated: string;
+	created: string;
+	tags: string[];
+}
+
 export interface SearchAdvancedRequest {
 	query?: string | null;
 	tags?: string[];
@@ -852,6 +861,10 @@ interface TauriCommands {
 	search_with_tags: CommandDef<
 		{ tags: string[]; query?: string | null; limit?: number | null },
 		SearchResult[]
+	>;
+	all_docs_list: CommandDef<
+		{ limit?: number | null; folder_prefix?: string | null },
+		AllDocsItem[]
 	>;
 	recent_notes: CommandDef<{ limit?: number | null }, SearchResult[]>;
 	calendar_query_range: CommandDef<

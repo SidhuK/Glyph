@@ -27,6 +27,10 @@ interface SidebarProps {
 	gitSyncStatus: GitSyncStatus | null;
 	onGitSyncNow: () => void;
 	onOpenGitSettings: () => void;
+	onOpenSettings: () => void;
+	onOpenAllDocs: () => void;
+	onOpenDailyNote: () => void;
+	onOpenTemplates: () => void;
 	onOpenCalendar: () => void;
 	onOpenDatabases: (databaseId?: string | null) => void;
 	updateReady: boolean;
@@ -51,6 +55,10 @@ export const Sidebar = memo(function Sidebar({
 	gitSyncStatus,
 	onGitSyncNow,
 	onOpenGitSettings,
+	onOpenSettings,
+	onOpenAllDocs,
+	onOpenDailyNote,
+	onOpenTemplates,
 	onOpenCalendar,
 	onOpenDatabases,
 	updateReady,
@@ -113,6 +121,10 @@ export const Sidebar = memo(function Sidebar({
 							gitSyncStatus={gitSyncStatus}
 							onGitSyncNow={onGitSyncNow}
 							onOpenGitSettings={onOpenGitSettings}
+							onOpenSettings={onOpenSettings}
+							onOpenAllDocs={onOpenAllDocs}
+							onOpenDailyNote={onOpenDailyNote}
+							onOpenTemplates={onOpenTemplates}
 						/>
 					</m.div>
 				)}

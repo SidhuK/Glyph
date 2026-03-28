@@ -1,3 +1,4 @@
+import { DocumentCodeIcon } from "@hugeicons/core-free-icons";
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import {
 	Suspense,
@@ -13,6 +14,7 @@ import {
 	useSpace,
 	useUILayoutContext,
 } from "../../contexts";
+import { ALL_DOCS_TAB_ID } from "../../lib/allDocs";
 import {
 	PATH_REMOVED_EVENT,
 	PATH_RENAMED_EVENT,
@@ -30,6 +32,7 @@ import {
 } from "../../lib/settings";
 import { formatShortcutPartsForPlatform } from "../../lib/shortcuts/platform";
 import { useTauriEvent } from "../../lib/tauriEvents";
+import { TEMPLATES_TAB_ID } from "../../lib/templatesView";
 import { isInAppPreviewable } from "../../utils/filePreview";
 import { Calendar, FileText, Settings } from "../Icons";
 import { FilePreviewPane } from "../preview/FilePreviewPane";
@@ -50,6 +53,12 @@ const DatabasesPane = lazy(() =>
 const CalendarPane = lazy(() =>
 	import("../calendar/CalendarPane").then((module) => ({
 		default: module.CalendarPane,
+	})),
+);
+
+const AllDocsPane = lazy(() =>
+	import("./AllDocsPane").then((module) => ({
+		default: module.AllDocsPane,
 	})),
 );
 
@@ -213,6 +222,10 @@ interface MainContentProps {
 	onOpenCommandPalette: () => void;
 	onCreateNote: () => void;
 	onOpenDailyNote: () => void;
+	openAllDocsRequest: number;
+	onConsumeOpenAllDocsRequest: () => void;
+	openTemplatesRequest: number;
+	onConsumeOpenTemplatesRequest: () => void;
 	openCalendarRequest: number;
 	openDatabasesRequest: {
 		nonce: number;
@@ -296,6 +309,10 @@ export const MainContent = memo(function MainContent({
 	onOpenCommandPalette,
 	onCreateNote,
 	onOpenDailyNote,
+	openAllDocsRequest,
+	onConsumeOpenAllDocsRequest,
+	openTemplatesRequest,
+	onConsumeOpenTemplatesRequest,
 	openCalendarRequest,
 	openDatabasesRequest,
 	openBlankTabRequest,
@@ -314,7 +331,7 @@ export const MainContent = memo(function MainContent({
 		onContinueLastSpace,
 		onCreateSpace,
 	} = useSpace();
-	const { dailyNotesFolder } = useUILayoutContext();
+	const { dailyNotesFolder, templateFolder } = useUILayoutContext();
 	const { aiEnabled, aiPanelOpen, setAiPanelOpen } = useAISidebarContext();
 	const [onboarding, setOnboarding] = useState<OnboardingSettings>(
 		DEFAULT_ONBOARDING_SETTINGS,
@@ -341,6 +358,28 @@ export const MainContent = memo(function MainContent({
 		reorderTabs,
 		openSpecialTab,
 	} = useTabManager(spacePath, { onActivateTab: handleTabActivated });
+
+	useEffect(() => {
+		if (!spacePath || openAllDocsRequest === 0) return;
+		openSpecialTab(ALL_DOCS_TAB_ID);
+		onConsumeOpenAllDocsRequest();
+	}, [
+		onConsumeOpenAllDocsRequest,
+		openAllDocsRequest,
+		openSpecialTab,
+		spacePath,
+	]);
+
+	useEffect(() => {
+		if (!spacePath || openTemplatesRequest === 0) return;
+		openSpecialTab(TEMPLATES_TAB_ID);
+		onConsumeOpenTemplatesRequest();
+	}, [
+		onConsumeOpenTemplatesRequest,
+		openSpecialTab,
+		openTemplatesRequest,
+		spacePath,
+	]);
 
 	useEffect(() => {
 		if (!spacePath || openCalendarRequest === 0) return;
@@ -442,6 +481,38 @@ export const MainContent = memo(function MainContent({
 
 	const content = useMemo(() => {
 		if (!viewerPath) return null;
+		if (viewerPath === ALL_DOCS_TAB_ID) {
+			return (
+				<Suspense
+					fallback={
+						<div className="databaseLoadingState">Loading all docs…</div>
+					}
+				>
+					<AllDocsPane onOpenFile={(relPath) => fileTree.openFile(relPath)} />
+				</Suspense>
+			);
+		}
+		if (viewerPath === TEMPLATES_TAB_ID) {
+			return (
+				<Suspense
+					fallback={
+						<div className="databaseLoadingState">Loading templates…</div>
+					}
+				>
+					<AllDocsPane
+						title="Templates"
+						icon={DocumentCodeIcon}
+						folderPrefix={templateFolder}
+						emptyMessage={
+							templateFolder
+								? "No notes found in the template folder yet."
+								: "Set a template folder in Settings to browse templates here."
+						}
+						onOpenFile={(relPath) => fileTree.openFile(relPath)}
+					/>
+				</Suspense>
+			);
+		}
 		if (viewerPath === CALENDAR_TAB_ID) {
 			return (
 				<Suspense
@@ -501,6 +572,7 @@ export const MainContent = memo(function MainContent({
 		onOpenDailyNotesSettings,
 		openDatabasesRequest.databaseId,
 		openDatabasesRequest.nonce,
+		templateFolder,
 		viewerPath,
 		setDirtyByPath,
 	]);

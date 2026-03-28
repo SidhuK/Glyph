@@ -1,8 +1,12 @@
 import {
+	CalendarAdd01Icon,
 	Clock01Icon,
+	CollectionsBookmarkIcon,
+	DocumentCodeIcon,
 	Home01Icon,
 	LibraryIcon,
 	NoteIcon,
+	Settings01Icon,
 	Tag01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -16,7 +20,8 @@ import {
 import { useRecentFiles } from "../../hooks/useRecentFiles";
 import { FILE_TREE_START_RENAME_EVENT } from "../../lib/appEvents";
 import { getShortcutTooltip } from "../../lib/shortcuts";
-import type { GitSyncStatus } from "../../lib/tauri";
+import { type GitSyncStatus, invoke } from "../../lib/tauri";
+import { useTauriEvent } from "../../lib/tauriEvents";
 import { FileTreePane } from "../FileTreePane";
 import { Files } from "../Icons";
 import { RecentFilesPane } from "../RecentFilesPane";
@@ -47,6 +52,10 @@ interface SidebarContentProps {
 	gitSyncStatus: GitSyncStatus | null;
 	onGitSyncNow: () => void;
 	onOpenGitSettings: () => void;
+	onOpenSettings: () => void;
+	onOpenAllDocs: () => void;
+	onOpenDailyNote: () => void;
+	onOpenTemplates: () => void;
 }
 
 export const SidebarContent = memo(function SidebarContent({
@@ -66,6 +75,10 @@ export const SidebarContent = memo(function SidebarContent({
 	gitSyncStatus,
 	onGitSyncNow,
 	onOpenGitSettings,
+	onOpenSettings,
+	onOpenAllDocs,
+	onOpenDailyNote,
+	onOpenTemplates,
 }: SidebarContentProps) {
 	// Contexts
 	const { spacePath } = useSpace();
@@ -85,6 +98,7 @@ export const SidebarContent = memo(function SidebarContent({
 	const [pendingNewNotePath, setPendingNewNotePath] = useState<string | null>(
 		null,
 	);
+	const [allNotesCount, setAllNotesCount] = useState<number | null>(null);
 	const showGitButton = Boolean(gitSyncStatus?.configured);
 
 	const handleStartRename = useCallback((path: string) => {
@@ -140,6 +154,28 @@ export const SidebarContent = memo(function SidebarContent({
 		[onOpenFile, onRenameDir, pendingNewNotePath],
 	);
 
+	const refreshAllNotesCount = useCallback(() => {
+		if (!spacePath) {
+			setAllNotesCount(null);
+			return;
+		}
+		void invoke("all_docs_list", { limit: 5000 })
+			.then((items) => {
+				setAllNotesCount(items.length);
+			})
+			.catch(() => {
+				setAllNotesCount(null);
+			});
+	}, [spacePath]);
+
+	useEffect(() => {
+		refreshAllNotesCount();
+	}, [refreshAllNotesCount]);
+
+	useTauriEvent("notes:external_changed", () => {
+		refreshAllNotesCount();
+	});
+
 	if (!spacePath) {
 		return (
 			<>
@@ -164,7 +200,11 @@ export const SidebarContent = memo(function SidebarContent({
 						onClick={onOpenCalendar}
 						title="Open Home"
 					>
-						<HugeiconsIcon icon={Home01Icon} size={14} />
+						<HugeiconsIcon
+							icon={Home01Icon}
+							size={14}
+							className="sidebarQuickActionHomeIcon"
+						/>
 						<span className="sidebarQuickActionLabel">Home</span>
 					</button>
 					<div className="sidebarQuickActionsSpacer" aria-hidden="true" />
@@ -181,12 +221,46 @@ export const SidebarContent = memo(function SidebarContent({
 					<button
 						type="button"
 						className="sidebarQuickActionBtn"
+						data-kind="all-notes"
+						onClick={onOpenAllDocs}
+						title="Open All Notes"
+					>
+						<HugeiconsIcon icon={CollectionsBookmarkIcon} size={14} />
+						<span className="sidebarQuickActionLabel">All Notes</span>
+						{allNotesCount !== null ? (
+							<span className="sidebarQuickActionCount">{allNotesCount}</span>
+						) : null}
+					</button>
+					<button
+						type="button"
+						className="sidebarQuickActionBtn"
 						data-kind="databases"
 						onClick={() => onOpenDatabases()}
 						title="Open Collections"
 					>
 						<HugeiconsIcon icon={LibraryIcon} size={14} />
 						<span className="sidebarQuickActionLabel">Collections</span>
+					</button>
+					<div className="sidebarQuickActionsSpacer" aria-hidden="true" />
+					<button
+						type="button"
+						className="sidebarQuickActionBtn"
+						data-kind="daily-note"
+						onClick={onOpenDailyNote}
+						title="Open Daily Note"
+					>
+						<HugeiconsIcon icon={CalendarAdd01Icon} size={14} />
+						<span className="sidebarQuickActionLabel">Daily Note</span>
+					</button>
+					<button
+						type="button"
+						className="sidebarQuickActionBtn"
+						data-kind="templates"
+						onClick={onOpenTemplates}
+						title="Open Templates"
+					>
+						<HugeiconsIcon icon={DocumentCodeIcon} size={14} />
+						<span className="sidebarQuickActionLabel">Templates</span>
 					</button>
 				</div>
 				<div className="sidebarSectionHeader">
@@ -278,15 +352,25 @@ export const SidebarContent = memo(function SidebarContent({
 					)}
 				</AnimatePresence>
 			</div>
-			{showGitButton ? (
-				<div className="sidebarFooter">
+			<div className="sidebarFooter">
+				<button
+					type="button"
+					className="sidebarQuickActionBtn sidebarFooterSettingsButton"
+					onClick={onOpenSettings}
+					title="Open settings"
+					data-kind="settings"
+				>
+					<HugeiconsIcon icon={Settings01Icon} size={14} />
+					<span className="sidebarQuickActionLabel">Settings</span>
+				</button>
+				{showGitButton ? (
 					<WindowChromeGitSyncButton
 						status={gitSyncStatus}
 						onSyncNow={onGitSyncNow}
 						onOpenSettings={onOpenGitSettings}
 					/>
-				</div>
-			) : null}
+				) : null}
+			</div>
 		</>
 	);
 });

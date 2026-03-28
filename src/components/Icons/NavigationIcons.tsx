@@ -17,7 +17,7 @@ import {
 	Moon02Icon,
 	PanelLeftOpenIcon,
 	Search as SearchIcon,
-	Settings05Icon,
+	Settings01Icon,
 	SidebarLeftIcon,
 	SidebarRightIcon,
 	Sun01Icon,
@@ -73,7 +73,7 @@ export const Globe = (props: IconProps) => (
 	<HugeiconsIcon icon={GlobeIcon} {...props} />
 );
 export const Settings = (props: IconProps) => (
-	<HugeiconsIcon icon={Settings05Icon} {...props} />
+	<HugeiconsIcon icon={Settings01Icon} {...props} />
 );
 export const Maximize2 = (props: IconProps) => (
 	<HugeiconsIcon icon={Maximize} {...props} />
