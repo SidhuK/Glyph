@@ -796,6 +796,7 @@
 }
 
 .mainEmptyState {
+	position: relative;
 	flex: 1;
 	min-height: 0;
 	display: flex;
@@ -1095,6 +1096,18 @@
 	text-align: center;
 }
 
+.mainEmptyBottomBlock {
+	position: absolute;
+	left: 50%;
+	bottom: var(--space-5);
+	transform: translateX(-50%);
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	gap: var(--space-3);
+	width: min(100% - (var(--space-5) * 2), 420px);
+}
+
 .mainEmptyShortcutInline {
 	display: inline-flex;
 	align-items: center;
@@ -1157,11 +1170,19 @@
 }
 
 .mainEmptyTagline {
-	margin-top: var(--space-3);
 	font-size: var(--text-sm);
 	color: var(--text-placeholder);
 	letter-spacing: 0.02em;
 	text-align: center;
+}
+
+.mainEmptyTaglineEdge {
+	position: absolute;
+	left: 50%;
+	bottom: var(--space-5);
+	transform: translateX(-50%);
+	width: min(100% - (var(--space-5) * 2), 420px);
+	pointer-events: none;
 }
 
 .mainEmptyContextual {

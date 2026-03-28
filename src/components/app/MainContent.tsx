@@ -128,7 +128,7 @@ function ContextualEmptyState({
 
 	if (tips.length === 0) {
 		return (
-			<>
+			<div className="mainEmptyBottomBlock">
 				<p className="mainEmptyPrompt">
 					Press{" "}
 					<button
@@ -150,7 +150,7 @@ function ContextualEmptyState({
 					to get started
 				</p>
 				<div className="mainEmptyTagline">{APP_TAGLINE}</div>
-			</>
+			</div>
 		);
 	}
 
@@ -190,7 +190,7 @@ function ContextualEmptyState({
 					</button>
 				</m.div>
 			</AnimatePresence>
-			<div className="mainEmptyTagline">{APP_TAGLINE}</div>
+			<div className="mainEmptyTagline mainEmptyTaglineEdge">{APP_TAGLINE}</div>
 			{tips.length > 1 && (
 				<div className="mainEmptyTipDots">
 					{tips.map((tip, i) => (
