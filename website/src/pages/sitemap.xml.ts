@@ -1,5 +1,3 @@
-import { getDocUrl, orderedDocSlugs } from "../lib/docs";
-
 export const prerender = true;
 
 type SitemapEntry = {
@@ -16,26 +14,14 @@ function toAbsoluteUrl(path: string, site?: URL): string {
 export function GET(context: { site?: URL }) {
 	const staticEntries: SitemapEntry[] = [
 		{ path: "/", changefreq: "weekly", priority: "1.0" },
-		{ path: "/docs", changefreq: "weekly", priority: "0.9" },
-		{ path: "/docs/introduction", changefreq: "weekly", priority: "0.9" },
 		{ path: "/legal", changefreq: "monthly", priority: "0.4" },
 		{ path: "/privacy", changefreq: "monthly", priority: "0.4" },
 		{ path: "/terms", changefreq: "monthly", priority: "0.4" },
 	];
 
-	const docEntries: SitemapEntry[] = orderedDocSlugs.map((slug) => ({
-		path: getDocUrl(slug),
-		changefreq: "weekly",
-		priority: "0.7",
-	}));
-
-	const allEntries = [...staticEntries, ...docEntries];
-	const deduped = Array.from(
-		new Map(allEntries.map((entry) => [entry.path, entry])).values(),
-	);
 	const lastmod = new Date().toISOString();
 
-	const urlset = deduped
+	const urlset = staticEntries
 		.map((entry) => {
 			return `<url><loc>${toAbsoluteUrl(entry.path, context.site)}</loc><lastmod>${lastmod}</lastmod><changefreq>${entry.changefreq}</changefreq><priority>${entry.priority}</priority></url>`;
 		})
