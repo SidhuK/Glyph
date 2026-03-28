@@ -1318,6 +1318,7 @@ export function AppShell() {
 						.catch(handleGitSyncFailure);
 				}}
 				onOpenGitSettings={gitSync.openGitSettings}
+				onOpenSettings={() => void openSettingsWindow()}
 				onOpenCalendar={openCalendarTab}
 				onOpenDatabases={(databaseId) => openDatabasesTab(databaseId)}
 				updateReady={autoUpdater.updateReady}
