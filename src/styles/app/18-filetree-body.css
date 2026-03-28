@@ -228,9 +228,9 @@
 	display: inline-flex;
 	width: 16px;
 	justify-content: center;
-	color: var(--text-tertiary);
+	color: var(--text-primary);
 	flex-shrink: 0;
-	opacity: 0.7;
+	opacity: 1;
 }
 
 .fileTreeRow[data-has-custom-color="true"] .fileTreeChevron,

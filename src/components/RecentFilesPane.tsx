@@ -64,7 +64,7 @@ export const RecentFilesPane = memo(function RecentFilesPane({
 						const fullName = basename(file.path);
 						const name = fullName.replace(/\.(md|mdx|markdown)$/i, "");
 						const isMd = isMarkdownPath(file.path);
-						const { Icon, color } = getFileTypeInfo(file.path, isMd);
+						const { Icon } = getFileTypeInfo(file.path, isMd);
 						const isActive = file.path === activeFilePath;
 
 						return (
@@ -86,7 +86,6 @@ export const RecentFilesPane = memo(function RecentFilesPane({
 									<span className="tagsNameWrap">
 										<Icon
 											size={12}
-											style={{ color }}
 											className="sidebarRecentFileIcon"
 										/>
 										<span className="tagsName">{name}</span>
