@@ -3,6 +3,7 @@ import {
 	Home01Icon,
 	LibraryIcon,
 	NoteIcon,
+	Settings01Icon,
 	Tag01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -47,6 +48,7 @@ interface SidebarContentProps {
 	gitSyncStatus: GitSyncStatus | null;
 	onGitSyncNow: () => void;
 	onOpenGitSettings: () => void;
+	onOpenSettings: () => void;
 }
 
 export const SidebarContent = memo(function SidebarContent({
@@ -66,6 +68,7 @@ export const SidebarContent = memo(function SidebarContent({
 	gitSyncStatus,
 	onGitSyncNow,
 	onOpenGitSettings,
+	onOpenSettings,
 }: SidebarContentProps) {
 	// Contexts
 	const { spacePath } = useSpace();
@@ -282,15 +285,25 @@ export const SidebarContent = memo(function SidebarContent({
 					)}
 				</AnimatePresence>
 			</div>
-			{showGitButton ? (
 				<div className="sidebarFooter">
+					<button
+						type="button"
+						className="sidebarQuickActionBtn sidebarFooterSettingsButton"
+						onClick={onOpenSettings}
+						title="Open settings"
+						data-kind="settings"
+					>
+						<HugeiconsIcon icon={Settings01Icon} size={14} />
+						<span className="sidebarQuickActionLabel">Settings</span>
+					</button>
+				{showGitButton ? (
 					<WindowChromeGitSyncButton
 						status={gitSyncStatus}
 						onSyncNow={onGitSyncNow}
 						onOpenSettings={onOpenGitSettings}
 					/>
-				</div>
-			) : null}
+				) : null}
+			</div>
 		</>
 	);
 });
