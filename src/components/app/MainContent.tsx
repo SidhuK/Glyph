@@ -657,7 +657,7 @@ export const MainContent = memo(function MainContent({
 							)}
 						</div>
 					)}
-				{aiEnabled && !aiPanelOpen ? (
+					{aiEnabled && !aiPanelOpen ? (
 						<button
 							type="button"
 							className="mainAiFloatingToggle"
