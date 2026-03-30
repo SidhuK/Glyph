@@ -159,6 +159,24 @@ describe("CanvasNoteInlineEditor table controls", () => {
 	let root: Root;
 
 	beforeEach(() => {
+		vi.useFakeTimers();
+		let nextAnimationFrameId = 0;
+		const rafTimeouts = new Map<number, number>();
+		vi.stubGlobal("requestAnimationFrame", (callback: FrameRequestCallback) => {
+			const id = ++nextAnimationFrameId;
+			const timeoutId = window.setTimeout(() => {
+				rafTimeouts.delete(id);
+				callback(performance.now());
+			}, 16);
+			rafTimeouts.set(id, timeoutId);
+			return id;
+		});
+		vi.stubGlobal("cancelAnimationFrame", (id: number) => {
+			const timeoutId = rafTimeouts.get(id);
+			if (timeoutId === undefined) return;
+			window.clearTimeout(timeoutId);
+			rafTimeouts.delete(id);
+		});
 		globalThis.ResizeObserver = class {
 			disconnect() {}
 			observe() {}
@@ -196,6 +214,9 @@ describe("CanvasNoteInlineEditor table controls", () => {
 		});
 		container.remove();
 		window.getSelection()?.removeAllRanges();
+		vi.clearAllTimers();
+		vi.useRealTimers();
+		vi.unstubAllGlobals();
 	});
 
 	function render(mode: "plain" | "rich" | "preview" = "rich") {
@@ -226,6 +247,12 @@ describe("CanvasNoteInlineEditor table controls", () => {
 		selection?.addRange(range);
 	}
 
+	async function flushRaf() {
+		await act(async () => {
+			await vi.advanceTimersByTimeAsync(16);
+		});
+	}
+
 	it("shows icon-only row and column controls when selection is inside a table", async () => {
 		render("rich");
 
@@ -234,6 +261,7 @@ describe("CanvasNoteInlineEditor table controls", () => {
 			document.dispatchEvent(new Event("selectionchange"));
 			emitEditorEvent("selectionUpdate");
 		});
+		await flushRaf();
 
 		expect(container.querySelector('[data-axis="row"]')).toBeInstanceOf(
 			HTMLButtonElement,
@@ -250,12 +278,14 @@ describe("CanvasNoteInlineEditor table controls", () => {
 			setSelectionInText("Ada");
 			document.dispatchEvent(new Event("selectionchange"));
 		});
+		await flushRaf();
 		expect(container.querySelector('[data-axis="row"]')).toBeTruthy();
 
 		await act(async () => {
 			setSelectionInText("Outside table");
 			document.dispatchEvent(new Event("selectionchange"));
 		});
+		await flushRaf();
 		expect(container.querySelector('[data-axis="row"]')).toBeNull();
 		expect(container.querySelector('[data-axis="column"]')).toBeNull();
 
@@ -264,6 +294,7 @@ describe("CanvasNoteInlineEditor table controls", () => {
 			setSelectionInText("Ada");
 			document.dispatchEvent(new Event("selectionchange"));
 		});
+		await flushRaf();
 		expect(container.querySelector('[data-axis="row"]')).toBeNull();
 		expect(container.querySelector('[data-axis="column"]')).toBeNull();
 	});
@@ -275,6 +306,7 @@ describe("CanvasNoteInlineEditor table controls", () => {
 			setSelectionInText("Ada");
 			document.dispatchEvent(new Event("selectionchange"));
 		});
+		await flushRaf();
 
 		const rowButton = container.querySelector(
 			'[data-axis="row"]',

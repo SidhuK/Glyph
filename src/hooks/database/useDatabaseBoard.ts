@@ -1,4 +1,10 @@
-import { startTransition, useEffect, useMemo, useState } from "react";
+import {
+	startTransition,
+	useCallback,
+	useEffect,
+	useMemo,
+	useState,
+} from "react";
 import {
 	createBoardLanes,
 	defaultBoardGroupColumnId,
@@ -18,6 +24,23 @@ interface UseDatabaseBoardParams {
 		groupColumnId: string,
 		laneOrder: string[],
 	) => void | Promise<void>;
+}
+
+function hasSameLaneOrderByGroup(
+	left: Record<string, string[]>,
+	right: Record<string, string[]>,
+) {
+	const leftKeys = Object.keys(left);
+	const rightKeys = Object.keys(right);
+	if (leftKeys.length !== rightKeys.length) return false;
+	return leftKeys.every((key) => {
+		const leftLaneOrder = left[key] ?? [];
+		const rightLaneOrder = right[key] ?? [];
+		return (
+			leftLaneOrder.length === rightLaneOrder.length &&
+			leftLaneOrder.every((laneId, index) => rightLaneOrder[index] === laneId)
+		);
+	});
 }
 
 export function useDatabaseBoard({
@@ -47,7 +70,11 @@ export function useDatabaseBoard({
 	}, [groupColumns, initialGroupColumnId]);
 
 	useEffect(() => {
-		setLaneOrderByGroup(initialLaneOrderByGroup);
+		setLaneOrderByGroup((current) =>
+			hasSameLaneOrderByGroup(current, initialLaneOrderByGroup)
+				? current
+				: initialLaneOrderByGroup,
+		);
 	}, [initialLaneOrderByGroup]);
 
 	useEffect(() => {
@@ -76,12 +103,8 @@ export function useDatabaseBoard({
 		return orderBoardLanes(rawLanes, previousLaneIds);
 	}, [groupColumn, laneOrderByGroup, rows]);
 
-	return {
-		groupColumns,
-		groupColumn,
-		groupColumnId,
-		lanes,
-		moveLaneToIndex: (sourceLaneId: string, targetIndex: number) => {
+	const moveLaneToIndex = useCallback(
+		(sourceLaneId: string, targetIndex: number) => {
 			if (!groupColumn) return;
 			const laneIds = lanes.map((lane) => lane.id);
 			const nextLaneOrder = moveBoardLaneToIndex(
@@ -104,6 +127,15 @@ export function useDatabaseBoard({
 			}));
 			void onLaneOrderChange?.(groupColumn.id, nextLaneOrder);
 		},
+		[groupColumn, laneOrderByGroup, lanes, onLaneOrderChange],
+	);
+
+	return {
+		groupColumns,
+		groupColumn,
+		groupColumnId,
+		lanes,
+		moveLaneToIndex,
 		setGroupColumnId: (nextColumnId: string | null) => {
 			startTransition(() => setGroupColumnId(nextColumnId));
 			onGroupColumnIdChange?.(nextColumnId);

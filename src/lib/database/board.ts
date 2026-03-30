@@ -240,13 +240,10 @@ export function moveBoardLaneIds(
 	const nextLaneIds = [...normalizedLaneIds];
 	const [movedLaneId] = nextLaneIds.splice(sourceIndex, 1);
 	if (!movedLaneId) return normalizedLaneIds;
-	const baseTargetIndex =
-		targetLaneId === DATABASE_BOARD_EMPTY_LANE_ID
-			? nextLaneIds.length
-			: nextLaneIds.indexOf(targetLaneId);
-	if (baseTargetIndex === -1) return normalizedLaneIds;
+	const adjustedTargetIndex =
+		sourceIndex < targetIndex ? targetIndex - 1 : targetIndex;
 	const insertionIndex =
-		position === "after" ? baseTargetIndex + 1 : baseTargetIndex;
+		position === "after" ? adjustedTargetIndex + 1 : adjustedTargetIndex;
 	nextLaneIds.splice(insertionIndex, 0, movedLaneId);
 	return nextLaneIds;
 }

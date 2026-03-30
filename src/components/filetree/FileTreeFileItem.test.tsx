@@ -100,7 +100,9 @@ describe("FileTreeFileItem", () => {
 		container.remove();
 	});
 
-	it("shows the star action when a file is not pinned", async () => {
+	const renderFileTreeFileItem = async (
+		overrides: Partial<React.ComponentProps<typeof FileTreeFileItem>> = {},
+	) => {
 		await act(async () => {
 			root.render(
 				<FileTreeFileItem
@@ -128,45 +130,21 @@ describe("FileTreeFileItem", () => {
 					onChangeAppearance={vi.fn()}
 					isPinned={false}
 					onTogglePinned={vi.fn()}
+					{...overrides}
 				/>,
 			);
 		});
+	};
+
+	it("shows the star action when a file is not pinned", async () => {
+		await renderFileTreeFileItem({ isPinned: false });
 
 		expect(container.textContent).toContain("Star file");
 		expect(container.textContent).not.toContain("Unstar file");
 	});
 
 	it("shows the unstar action when a file is pinned", async () => {
-		await act(async () => {
-			root.render(
-				<FileTreeFileItem
-					entry={{
-						name: "alpha.md",
-						rel_path: "notes/alpha.md",
-						kind: "file",
-						is_markdown: true,
-					}}
-					depth={0}
-					isActive={false}
-					isRenaming={false}
-					onOpenFile={vi.fn()}
-					onNewFileInDir={vi.fn()}
-					onCreateFromTemplateInDir={vi.fn()}
-					onNewDatabaseInDir={vi.fn()}
-					onNewFolderInDir={vi.fn()}
-					onDuplicateFile={vi.fn()}
-					onStartRename={vi.fn()}
-					onCommitRename={vi.fn()}
-					onCancelRename={vi.fn()}
-					parentDirPath="notes"
-					onDeletePath={vi.fn()}
-					appearance={null}
-					onChangeAppearance={vi.fn()}
-					isPinned
-					onTogglePinned={vi.fn()}
-				/>,
-			);
-		});
+		await renderFileTreeFileItem({ isPinned: true });
 
 		expect(container.textContent).toContain("Unstar file");
 		expect(container.textContent).not.toContain("Star file");

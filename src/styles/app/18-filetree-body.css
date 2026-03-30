@@ -108,6 +108,7 @@
 	letter-spacing: 0.08em;
 	background: transparent;
 	border: none;
+	cursor: pointer;
 }
 
 .fileTreePinnedHeaderLabel {

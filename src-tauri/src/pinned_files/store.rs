@@ -69,11 +69,24 @@ fn normalize_files(space_root: &Path, files: Vec<String>) -> Vec<String> {
     next
 }
 
+pub fn normalize_store(
+    space_root: &Path,
+    mut store: PinnedFilesStore,
+) -> (PinnedFilesStore, bool) {
+    let previous_version = store.version;
+    let previous_files = std::mem::take(&mut store.files);
+    let normalized_files = normalize_files(space_root, previous_files.clone());
+    let changed = previous_version != PINNED_FILES_STORE_VERSION || previous_files != normalized_files;
+    store.version = PINNED_FILES_STORE_VERSION;
+    store.files = normalized_files;
+    (store, changed)
+}
+
 pub fn load_store(space_root: &Path) -> Result<(PinnedFilesStore, bool), String> {
     let path = store_path(space_root)?;
     match std::fs::read(&path) {
         Ok(bytes) => {
-            let mut store: PinnedFilesStore =
+            let store: PinnedFilesStore =
                 serde_json::from_slice(&bytes).map_err(|error| error.to_string())?;
             if store.version > PINNED_FILES_STORE_VERSION {
                 return Err(format!(
@@ -81,15 +94,7 @@ pub fn load_store(space_root: &Path) -> Result<(PinnedFilesStore, bool), String>
                     store.version, PINNED_FILES_STORE_VERSION
                 ));
             }
-
-            let previous_version = store.version;
-            let previous_files = std::mem::take(&mut store.files);
-            let normalized_files = normalize_files(space_root, previous_files.clone());
-            let changed =
-                previous_version != PINNED_FILES_STORE_VERSION || previous_files != normalized_files;
-            store.version = PINNED_FILES_STORE_VERSION;
-            store.files = normalized_files;
-            Ok((store, changed))
+            Ok(normalize_store(space_root, store))
         }
         Err(error) if error.kind() == std::io::ErrorKind::NotFound => Ok((default_store(), false)),
         Err(error) => Err(error.to_string()),
