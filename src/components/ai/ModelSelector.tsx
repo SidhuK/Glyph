@@ -287,6 +287,9 @@ export function ModelSelector({
 											e.stopPropagation();
 											handleInfoToggle();
 										};
+										const infoLabel = infoActive
+											? "Hide model details"
+											: "Show model details";
 										return (
 											<div className={styles.modelItemRow} key={m.id}>
 												<button
@@ -311,8 +314,9 @@ export function ModelSelector({
 														onMouseDown={handleInfoMouseDown}
 														onClick={handleInfoClick}
 														className={`${styles.infoInline} ${infoActive ? styles.infoInlineActive : ""}`}
-														title="Show model details"
-														aria-label="Show model details"
+														title={infoLabel}
+														aria-label={infoLabel}
+														aria-pressed={infoActive}
 													>
 														<HugeiconsIcon
 															icon={BadgeInfoIcon}

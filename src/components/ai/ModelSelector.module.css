@@ -63,6 +63,7 @@
    DROPDOWN (portalled to body, fixed position)
    ───────────────────────────────────────────────────────────────────────────── */
 .dropdown {
+	--panel-width: 220px;
 	width: auto;
 	max-height: 420px;
 	border-radius: var(--radius-lg);
@@ -125,7 +126,7 @@
 }
 
 .dropdownList {
-	width: 220px;
+	width: var(--panel-width);
 	padding: 4px;
 	overflow-y: auto;
 	scrollbar-width: thin;
@@ -356,7 +357,7 @@
    MODEL DETAIL PANEL (side panel within dropdown)
    ───────────────────────────────────────────────────────────────────────────── */
 .detailPanel {
-	width: 220px;
+	width: var(--panel-width);
 	border-left: 1px solid
 		color-mix(in srgb, var(--border-light) 50%, transparent);
 	padding: 10px 12px;
