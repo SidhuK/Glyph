@@ -1,6 +1,7 @@
 import {
 	Copy01Icon,
 	DocumentCodeIcon,
+	FallingStarIcon,
 	FileViewIcon,
 	PencilEdit02Icon,
 	TableIcon,
@@ -47,6 +48,8 @@ interface FileTreeFileItemProps {
 	onDeletePath: (path: string, kind: "dir" | "file") => void;
 	appearance?: FileTreeAppearance | null;
 	onChangeAppearance: (appearance: FileTreeAppearance) => void;
+	isPinned: boolean;
+	onTogglePinned: (path: string) => Promise<void> | void;
 }
 
 export const FileTreeFileItem = memo(function FileTreeFileItem({
@@ -67,6 +70,8 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 	onDeletePath,
 	appearance,
 	onChangeAppearance,
+	isPinned,
+	onTogglePinned,
 }: FileTreeFileItemProps) {
 	const customColor =
 		appearance?.color && isEditorTextColor(appearance.color)
@@ -201,6 +206,13 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 							>
 								<HugeiconsIcon icon={Copy01Icon} size={14} />
 								Duplicate file
+							</ContextMenuItem>
+							<ContextMenuItem
+								className="fileTreeCreateMenuItem"
+								onSelect={() => void onTogglePinned(entry.rel_path)}
+							>
+								<HugeiconsIcon icon={FallingStarIcon} size={14} />
+								{isPinned ? "Unstar file" : "Star file"}
 							</ContextMenuItem>
 							<FileTreeAppearanceMenu
 								itemKind="file"

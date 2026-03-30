@@ -97,6 +97,8 @@ pub struct DatabaseViewDefinition {
     pub grouping: Option<DatabaseViewGrouping>,
     #[serde(default)]
     pub board_lane_colors: BTreeMap<String, String>,
+    #[serde(default)]
+    pub board_lane_order: BTreeMap<String, Vec<String>>,
     pub created_at: String,
     pub updated_at: String,
 }

@@ -9,6 +9,8 @@ import {
 	createBoardLanes,
 	defaultBoardGroupColumnId,
 	getBoardGroupColumns,
+	moveBoardLaneIds,
+	moveBoardLaneToIndex,
 	orderBoardLanes,
 } from "./board";
 import type { DatabaseColumn, DatabaseRow } from "./types";
@@ -71,7 +73,7 @@ const rows: DatabaseRow[] = [
 		note_path: "Projects/Two.md",
 		title: "Two",
 		created: "2024-01-01T00:00:00Z",
-		updated: "2024-01-02T00:00:00Z",
+		updated: "2024-01-03T00:00:00Z",
 		preview: "Doing note preview",
 		tags: ["#swift", "#ios"],
 		properties: {
@@ -145,6 +147,29 @@ describe("database board helpers", () => {
 		expect(lanes[2]?.id).toBe(DATABASE_BOARD_EMPTY_LANE_ID);
 	});
 
+	it("sorts cards in each lane by most recently updated first", () => {
+		const lanes = createBoardLanes(
+			[
+				{
+					...firstRow,
+					note_path: "Projects/One-Older.md",
+					updated: "2024-01-02T00:00:00Z",
+				},
+				{
+					...firstRow,
+					note_path: "Projects/One-Newer.md",
+					updated: "2024-01-04T00:00:00Z",
+				},
+			],
+			statusColumn,
+		);
+
+		expect(lanes[0]?.rows.map((row) => row.note_path)).toEqual([
+			"Projects/One-Newer.md",
+			"Projects/One-Older.md",
+		]);
+	});
+
 	it("creates multiple lanes from list and tag values", () => {
 		const priorityLanes = createBoardLanes(rows, priorityColumn);
 		expect(priorityLanes.map((lane) => lane.label)).toEqual([
@@ -191,6 +216,44 @@ describe("database board helpers", () => {
 		expect(
 			orderBoardLanes(unordered, ["backlog", "done"]).map((lane) => lane.id),
 		).toEqual(["backlog", "done", "review", DATABASE_BOARD_EMPTY_LANE_ID]);
+	});
+
+	it("moves lanes before or after the target while keeping no value pinned last", () => {
+		expect(
+			moveBoardLaneIds(
+				["backlog", "doing", "review", DATABASE_BOARD_EMPTY_LANE_ID],
+				"review",
+				"backlog",
+				"before",
+			),
+		).toEqual(["review", "backlog", "doing"]);
+
+		expect(
+			moveBoardLaneIds(
+				["backlog", "doing", "review", DATABASE_BOARD_EMPTY_LANE_ID],
+				"backlog",
+				"doing",
+				"after",
+			),
+		).toEqual(["doing", "backlog", "review"]);
+	});
+
+	it("moves lanes to an explicit position while keeping no value pinned last", () => {
+		expect(
+			moveBoardLaneToIndex(
+				["backlog", "doing", "review", DATABASE_BOARD_EMPTY_LANE_ID],
+				"review",
+				0,
+			),
+		).toEqual(["review", "backlog", "doing"]);
+
+		expect(
+			moveBoardLaneToIndex(
+				["backlog", "doing", "review", DATABASE_BOARD_EMPTY_LANE_ID],
+				"backlog",
+				2,
+			),
+		).toEqual(["doing", "review", "backlog"]);
 	});
 
 	it("creates update payloads for the target lane", () => {

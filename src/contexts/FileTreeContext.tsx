@@ -11,6 +11,7 @@ import {
 import { extractErrorMessage } from "../lib/errorUtils";
 import type { FileTreeAppearance, FsEntry, TagCount } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
+import { useTauriEvent } from "../lib/tauriEvents";
 import { useSpace } from "./SpaceContext";
 
 export interface FileTreeContextValue {
@@ -36,6 +37,11 @@ export interface FileTreeContextValue {
 	setActiveFilePath: (path: string | null) => void;
 	activeNoteId: string | null;
 	activeNoteTitle: string | null;
+	pinnedFiles: string[];
+	refreshPinnedFiles: () => Promise<void>;
+	togglePinnedFile: (path: string) => Promise<void>;
+	renamePinnedPath: (fromPath: string, toPath: string) => Promise<void>;
+	deletePinnedPath: (path: string) => Promise<void>;
 	itemAppearance: Record<string, FileTreeAppearance>;
 	setItemAppearance: (
 		path: string,
@@ -62,6 +68,7 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 	);
 	const [activeDirPath, setActiveDirPath] = useState<string | null>(null);
 	const [activeFilePath, setActiveFilePath] = useState<string | null>(null);
+	const [pinnedFiles, setPinnedFiles] = useState<string[]>([]);
 	const [itemAppearance, setItemAppearanceState] = useState<
 		Record<string, FileTreeAppearance>
 	>({});
@@ -89,6 +96,7 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 		setExpandedDirs(new Set());
 		setActiveDirPath(null);
 		setActiveFilePath(null);
+		setPinnedFiles([]);
 		setItemAppearanceState({});
 		setTags([]);
 		setTagsError("");
@@ -114,6 +122,14 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 			} catch {
 				/* ignore appearance load errors */
 			}
+			try {
+				const files = await invoke("pinned_files_list");
+				if (!cancelled) {
+					setPinnedFiles(files);
+				}
+			} catch {
+				/* ignore pinned file load errors */
+			}
 		})();
 		return () => {
 			cancelled = true;
@@ -124,12 +140,73 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 		if (!isIndexing && spacePath) void refreshTags();
 	}, [isIndexing, spacePath, refreshTags]);
 
+	const refreshPinnedFiles = useCallback(async () => {
+		if (!spacePath) {
+			setPinnedFiles([]);
+			return;
+		}
+		try {
+			const currentSpacePath = spacePath;
+			const files = await invoke("pinned_files_list");
+			if (currentSpacePathRef.current !== currentSpacePath) return;
+			setPinnedFiles(files);
+		} catch {
+			if (currentSpacePathRef.current === spacePath) {
+				setPinnedFiles([]);
+			}
+		}
+	}, [spacePath]);
+
+	useTauriEvent("space:fs_changed", () => {
+		if (!spacePath) return;
+		void refreshPinnedFiles();
+	});
+
 	const activeNoteId = activeFilePath?.toLowerCase().endsWith(".md")
 		? activeFilePath
 		: null;
 	const activeNoteTitle = activeNoteId
 		? activeNoteId.split("/").pop() || activeNoteId
 		: null;
+
+	const togglePinnedFile = useCallback<
+		FileTreeContextValue["togglePinnedFile"]
+	>(
+		async (path) => {
+			const currentSpacePath = spacePath;
+			const next = await invoke("pinned_files_toggle", { path });
+			if (currentSpacePathRef.current !== currentSpacePath) return;
+			setPinnedFiles(next);
+		},
+		[spacePath],
+	);
+
+	const renamePinnedPath = useCallback<
+		FileTreeContextValue["renamePinnedPath"]
+	>(
+		async (fromPath, toPath) => {
+			const currentSpacePath = spacePath;
+			const next = await invoke("pinned_files_rename_path", {
+				from_path: fromPath,
+				to_path: toPath,
+			});
+			if (currentSpacePathRef.current !== currentSpacePath) return;
+			setPinnedFiles(next);
+		},
+		[spacePath],
+	);
+
+	const deletePinnedPath = useCallback<
+		FileTreeContextValue["deletePinnedPath"]
+	>(
+		async (path) => {
+			const currentSpacePath = spacePath;
+			const next = await invoke("pinned_files_delete_path", { path });
+			if (currentSpacePathRef.current !== currentSpacePath) return;
+			setPinnedFiles(next);
+		},
+		[spacePath],
+	);
 
 	const setItemAppearance = useCallback<
 		FileTreeContextValue["setItemAppearance"]
@@ -250,6 +327,11 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 			setActiveFilePath,
 			activeNoteId,
 			activeNoteTitle,
+			pinnedFiles,
+			refreshPinnedFiles,
+			togglePinnedFile,
+			renamePinnedPath,
+			deletePinnedPath,
 			itemAppearance,
 			setItemAppearance,
 			renameItemAppearance,
@@ -269,6 +351,11 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 			activeFilePath,
 			activeNoteId,
 			activeNoteTitle,
+			pinnedFiles,
+			refreshPinnedFiles,
+			togglePinnedFile,
+			renamePinnedPath,
+			deletePinnedPath,
 			itemAppearance,
 			setItemAppearance,
 			renameItemAppearance,

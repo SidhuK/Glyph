@@ -12,6 +12,7 @@ mod net;
 mod note_export;
 mod notes;
 mod paths;
+mod pinned_files;
 mod space;
 mod space_fs;
 mod system_fonts;
@@ -470,6 +471,10 @@ pub fn run() {
             file_tree_appearance::commands::file_tree_appearance_set,
             file_tree_appearance::commands::file_tree_appearance_rename_path,
             file_tree_appearance::commands::file_tree_appearance_delete_path,
+            pinned_files::commands::pinned_files_list,
+            pinned_files::commands::pinned_files_toggle,
+            pinned_files::commands::pinned_files_rename_path,
+            pinned_files::commands::pinned_files_delete_path,
             index::commands::index_rebuild,
             index::commands::search,
             index::commands::search_advanced,

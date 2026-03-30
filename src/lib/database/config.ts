@@ -33,6 +33,7 @@ export function createDefaultDatabaseConfig(dirPath: string): DatabaseConfig {
 			layout: "table",
 			board_group_by: null,
 			board_lane_colors: {},
+			board_lane_order: {},
 		},
 		columns: [
 			{
@@ -174,6 +175,18 @@ export function createStarterDatabaseMarkdown(
 					...Object.entries(config.view.board_lane_colors).map(
 						([laneId, color]) =>
 							`        ${yamlString(laneId)}: ${yamlString(color)}`,
+					),
+				]
+			: []),
+		...(config.view.board_lane_order &&
+		Object.keys(config.view.board_lane_order).length > 0
+			? [
+					"      board_lane_order:",
+					...Object.entries(config.view.board_lane_order).flatMap(
+						([groupColumnId, laneIds]) => [
+							`        ${yamlString(groupColumnId)}:`,
+							...laneIds.map((laneId) => `          - ${yamlString(laneId)}`),
+						],
 					),
 				]
 			: []),

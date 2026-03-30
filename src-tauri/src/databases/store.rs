@@ -69,6 +69,7 @@ pub(crate) fn default_view(name: &str) -> DatabaseViewDefinition {
         filters: Vec::new(),
         grouping: None,
         board_lane_colors: Default::default(),
+        board_lane_order: Default::default(),
         created_at: now.clone(),
         updated_at: now,
     }

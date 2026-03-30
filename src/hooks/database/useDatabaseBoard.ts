@@ -1,8 +1,9 @@
-import { startTransition, useEffect, useMemo, useRef, useState } from "react";
+import { startTransition, useEffect, useMemo, useState } from "react";
 import {
 	createBoardLanes,
 	defaultBoardGroupColumnId,
 	getBoardGroupColumns,
+	moveBoardLaneToIndex,
 	orderBoardLanes,
 } from "../../lib/database/board";
 import type { DatabaseColumn, DatabaseRow } from "../../lib/database/types";
@@ -11,20 +12,29 @@ interface UseDatabaseBoardParams {
 	rows: DatabaseRow[];
 	columns: DatabaseColumn[];
 	initialGroupColumnId?: string | null;
+	initialLaneOrderByGroup?: Record<string, string[]>;
 	onGroupColumnIdChange?: (groupColumnId: string | null) => void;
+	onLaneOrderChange?: (
+		groupColumnId: string,
+		laneOrder: string[],
+	) => void | Promise<void>;
 }
 
 export function useDatabaseBoard({
 	rows,
 	columns,
 	initialGroupColumnId = null,
+	initialLaneOrderByGroup = {},
 	onGroupColumnIdChange,
+	onLaneOrderChange,
 }: UseDatabaseBoardParams) {
 	const groupColumns = useMemo(() => getBoardGroupColumns(columns), [columns]);
-	const laneOrderByGroupRef = useRef<Record<string, string[]>>({});
 	const [groupColumnId, setGroupColumnId] = useState<string | null>(
 		() => initialGroupColumnId ?? defaultBoardGroupColumnId(columns),
 	);
+	const [laneOrderByGroup, setLaneOrderByGroup] = useState<
+		Record<string, string[]>
+	>(() => initialLaneOrderByGroup);
 
 	useEffect(() => {
 		const nextColumnId =
@@ -35,6 +45,10 @@ export function useDatabaseBoard({
 			),
 		);
 	}, [groupColumns, initialGroupColumnId]);
+
+	useEffect(() => {
+		setLaneOrderByGroup(initialLaneOrderByGroup);
+	}, [initialLaneOrderByGroup]);
 
 	useEffect(() => {
 		if (
@@ -58,20 +72,38 @@ export function useDatabaseBoard({
 	const lanes = useMemo(() => {
 		const rawLanes = createBoardLanes(rows, groupColumn);
 		if (!groupColumn) return rawLanes;
-		const previousLaneIds = laneOrderByGroupRef.current[groupColumn.id] ?? [];
+		const previousLaneIds = laneOrderByGroup[groupColumn.id] ?? [];
 		return orderBoardLanes(rawLanes, previousLaneIds);
-	}, [rows, groupColumn]);
-
-	useEffect(() => {
-		if (!groupColumn) return;
-		laneOrderByGroupRef.current[groupColumn.id] = lanes.map((lane) => lane.id);
-	}, [groupColumn, lanes]);
+	}, [groupColumn, laneOrderByGroup, rows]);
 
 	return {
 		groupColumns,
 		groupColumn,
 		groupColumnId,
 		lanes,
+		moveLaneToIndex: (sourceLaneId: string, targetIndex: number) => {
+			if (!groupColumn) return;
+			const laneIds = lanes.map((lane) => lane.id);
+			const nextLaneOrder = moveBoardLaneToIndex(
+				laneIds,
+				sourceLaneId,
+				targetIndex,
+			);
+			const currentLaneOrder = laneOrderByGroup[groupColumn.id] ?? [];
+			if (
+				nextLaneOrder.length === currentLaneOrder.length &&
+				nextLaneOrder.every(
+					(laneId, index) => currentLaneOrder[index] === laneId,
+				)
+			) {
+				return;
+			}
+			setLaneOrderByGroup((current) => ({
+				...current,
+				[groupColumn.id]: nextLaneOrder,
+			}));
+			void onLaneOrderChange?.(groupColumn.id, nextLaneOrder);
+		},
 		setGroupColumnId: (nextColumnId: string | null) => {
 			startTransition(() => setGroupColumnId(nextColumnId));
 			onGroupColumnIdChange?.(nextColumnId);
