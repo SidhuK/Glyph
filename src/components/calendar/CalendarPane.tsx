@@ -532,8 +532,9 @@ export function CalendarPane({
 								size="sm"
 								variant="outline"
 								onClick={() => stepRange(-1)}
+								aria-label="Previous month"
 							>
-								<HugeiconsIcon icon={ArrowLeft} size={14} />
+								<HugeiconsIcon icon={ArrowLeft} size={14} aria-hidden="true" />
 							</Button>
 							<Button
 								type="button"
@@ -548,8 +549,9 @@ export function CalendarPane({
 								size="sm"
 								variant="outline"
 								onClick={() => stepRange(1)}
+								aria-label="Next month"
 							>
-								<HugeiconsIcon icon={ArrowRight} size={14} />
+								<HugeiconsIcon icon={ArrowRight} size={14} aria-hidden="true" />
 							</Button>
 						</div>
 					</div>
