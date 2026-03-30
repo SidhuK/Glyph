@@ -6,7 +6,7 @@ import {
 } from "../../lib/settings";
 import { invoke } from "../../lib/tauri";
 
-export const DEFAULT_FONT_FAMILY = "Inter";
+export const DEFAULT_FONT_FAMILY = "Cabinet Grotesk";
 export const UI_FONT_SIZE_OPTIONS = Array.from(
 	{ length: MAX_UI_FONT_SIZE - MIN_UI_FONT_SIZE + 1 },
 	(_, idx) => MIN_UI_FONT_SIZE + idx,
@@ -17,19 +17,22 @@ export const EDITOR_FONT_SIZE_OPTIONS = Array.from(
 );
 
 export async function loadAvailableFonts(): Promise<string[]> {
+	const curatedFonts = new Set<string>([DEFAULT_FONT_FAMILY]);
 	try {
 		const fonts = await invoke("system_fonts_list");
-		const uniq = new Set<string>();
+		const uniq = new Set<string>(curatedFonts);
 		for (const font of fonts) {
 			const trimmed = font.trim();
 			if (trimmed) uniq.add(trimmed);
 		}
-		const sorted = Array.from(uniq).sort((a, b) => a.localeCompare(b));
+		const sorted = Array.from(uniq).sort((a, b) =>
+			a.localeCompare(b, undefined, { sensitivity: "base" }),
+		);
 		if (sorted.length) return sorted;
 	} catch {
 		// no-op
 	}
-	return [DEFAULT_FONT_FAMILY];
+	return Array.from(curatedFonts);
 }
 
 export async function loadAvailableMonospaceFonts(): Promise<string[]> {

@@ -49,7 +49,7 @@ const UI_ACCENTS = new Set<UiAccent>([
 	"vibrant-coral",
 ]);
 const DEFAULT_UI_ACCENT: UiAccent = "neutral";
-const DEFAULT_UI_FONT_FAMILY = "Inter";
+const DEFAULT_UI_FONT_FAMILY = "Cabinet Grotesk";
 const DEFAULT_UI_MONO_FONT_FAMILY = "JetBrains Mono";
 export const DEFAULT_AUTO_UPDATE_CHECK_INTERVAL: AutoUpdateCheckInterval =
 	"launch";
