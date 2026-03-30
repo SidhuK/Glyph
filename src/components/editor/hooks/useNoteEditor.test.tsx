@@ -396,6 +396,29 @@ describe("useNoteEditor", () => {
 		expect(event.defaultPrevented).toBe(false);
 	});
 
+	it("intercepts markdown text when clipboard html mirrors the raw markdown", async () => {
+		const onChange = vi.fn();
+
+		await act(async () => {
+			root.render(
+				<Harness onChange={onChange} pasteMarkdownBehavior="smart-markdown" />,
+			);
+		});
+
+		const options = getEditorOptions() as EditorOptionsWithPaste;
+		const paste = options?.editorProps?.handleDOMEvents?.paste;
+		const text = "# Smart Markdown Paste\n\n- item";
+		const event = createClipboardEvent({
+			html: "<pre># Smart Markdown Paste\n\n- item</pre>",
+			text,
+		});
+
+		expect(paste?.({}, event)).toBe(true);
+		expect(parseMock).toHaveBeenCalledWith(text);
+		expect(chainCommands.insertContentAt).toHaveBeenCalled();
+		expect(event.defaultPrevented).toBe(true);
+	});
+
 	it("does not convert Markdown when the selection is inside a code block", async () => {
 		const onChange = vi.fn();
 		mockEditor.isActive.mockReturnValue(true);
