@@ -285,6 +285,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	interactive = true,
 	showBacklinks = true,
 	deferHeavyFeatures = false,
+	pasteMarkdownBehavior = "plain-text",
 	onRegisterCalloutInserter,
 	onEditorReady,
 	onChange,
@@ -302,6 +303,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		interactive,
 		enableHydrateInlineImages: !deferHeavyFeatures,
 		enableMarkdownLinkAutocomplete: !deferHeavyFeatures,
+		pasteMarkdownBehavior,
 		onChange,
 	});
 
