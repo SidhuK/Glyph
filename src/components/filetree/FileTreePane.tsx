@@ -29,6 +29,7 @@ interface FileTreePaneProps {
 	onCreateFromTemplateInDir: (dirPath: string) => void;
 	onNewDatabaseInDir: (dirPath: string) => Promise<string | null>;
 	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
+	onDuplicateFile: (path: string) => Promise<string | null>;
 	onDeletePath: (path: string, kind: "dir" | "file") => Promise<boolean>;
 	renamingPath: string | null;
 	onStartRename: (path: string) => void;
@@ -54,6 +55,7 @@ interface TreeEntriesProps {
 	onCreateFromTemplateInDir: (dirPath: string) => void;
 	onNewDatabaseInDir: (dirPath: string) => Promise<string | null>;
 	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
+	onDuplicateFile: (path: string) => Promise<string | null>;
 	onDeletePath: (path: string, kind: "dir" | "file") => Promise<void>;
 	onStartRename: (path: string) => void;
 	onCommitDirRename: (dirPath: string, nextName: string) => Promise<void>;
@@ -83,6 +85,7 @@ function TreeEntries({
 	onCreateFromTemplateInDir,
 	onNewDatabaseInDir,
 	onNewFolderInDir,
+	onDuplicateFile,
 	onDeletePath,
 	onStartRename,
 	onCommitDirRename,
@@ -151,6 +154,7 @@ function TreeEntries({
 									onCreateFromTemplateInDir={onCreateFromTemplateInDir}
 									onNewDatabaseInDir={onNewDatabaseInDir}
 									onNewFolderInDir={onNewFolderInDir}
+									onDuplicateFile={onDuplicateFile}
 									onDeletePath={onDeletePath}
 									onStartRename={onStartRename}
 									onCommitDirRename={onCommitDirRename}
@@ -177,6 +181,7 @@ function TreeEntries({
 						onCreateFromTemplateInDir={onCreateFromTemplateInDir}
 						onNewDatabaseInDir={onNewDatabaseInDir}
 						onNewFolderInDir={onNewFolderInDir}
+						onDuplicateFile={onDuplicateFile}
 						isRenaming={renamingPath === e.rel_path}
 						onStartRename={() => onStartRename(e.rel_path)}
 						onCommitRename={onCommitFileRename}
@@ -207,6 +212,7 @@ export const FileTreePane = memo(function FileTreePane({
 	onCreateFromTemplateInDir,
 	onNewDatabaseInDir,
 	onNewFolderInDir,
+	onDuplicateFile,
 	onDeletePath,
 	renamingPath,
 	onStartRename,
@@ -342,6 +348,17 @@ export const FileTreePane = memo(function FileTreePane({
 		[onDeletePath],
 	);
 
+	const handleDuplicateFile = useCallback(
+		async (path: string) => {
+			const duplicatedPath = await onDuplicateFile(path);
+			if (duplicatedPath) {
+				onStartRename(duplicatedPath);
+			}
+			return duplicatedPath;
+		},
+		[onDuplicateFile, onStartRename],
+	);
+
 	const handleChangeAppearance = useCallback(
 		async (entry: FsEntry, appearance: FileTreeAppearance) => {
 			try {
@@ -381,6 +398,7 @@ export const FileTreePane = memo(function FileTreePane({
 						onCreateFromTemplateInDir={onCreateFromTemplateInDir}
 						onNewDatabaseInDir={onNewDatabaseInDir}
 						onNewFolderInDir={handleCreateFolder}
+						onDuplicateFile={handleDuplicateFile}
 						onDeletePath={handleDeletePath}
 						onStartRename={onStartRename}
 						onCommitDirRename={onCommitDirRename}

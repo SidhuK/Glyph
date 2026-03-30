@@ -48,3 +48,24 @@ pub fn write_atomic(dest: &Path, bytes: &[u8]) -> io::Result<()> {
 
     Ok(())
 }
+
+pub fn copy_atomic(src: &Path, dest: &Path) -> io::Result<()> {
+    let parent = dest
+        .parent()
+        .ok_or_else(|| io::Error::new(io::ErrorKind::InvalidInput, "path has no parent"))?;
+    std::fs::create_dir_all(parent)?;
+
+    let tmp = unique_tmp_path(dest)?;
+
+    {
+        let mut source = File::open(src)?;
+        let mut target = File::create(&tmp)?;
+        io::copy(&mut source, &mut target)?;
+        target.sync_all()?;
+    }
+
+    std::fs::rename(&tmp, dest)?;
+    fsync_dir(parent)?;
+
+    Ok(())
+}

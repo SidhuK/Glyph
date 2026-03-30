@@ -1,3 +1,5 @@
+import { PaintBucketIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import type { CSSProperties } from "react";
 import { DATABASE_COLUMN_ICON_OPTIONS } from "../../lib/database/columnIcons";
 import type { FileTreeAppearance } from "../../lib/tauri";
@@ -39,6 +41,7 @@ export function FileTreeAppearanceMenu({
 		<>
 			<ContextMenuSub>
 				<ContextMenuSubTrigger className="fileTreeCreateMenuItem">
+					<HugeiconsIcon icon={PaintBucketIcon} size={14} />
 					Color
 				</ContextMenuSubTrigger>
 				<ContextMenuSubContent className="fileTreeCreateMenu fileTreeAppearanceMenuPanel">
@@ -85,6 +88,12 @@ export function FileTreeAppearanceMenu({
 
 			<ContextMenuSub>
 				<ContextMenuSubTrigger className="fileTreeCreateMenuItem">
+					<DatabaseColumnIcon
+						iconName={
+							selectedIcon ?? (itemKind === "dir" ? "folder" : "document")
+						}
+						size={14}
+					/>
 					Icon
 				</ContextMenuSubTrigger>
 				<ContextMenuSubContent className="fileTreeCreateMenu fileTreeAppearanceMenuPanel fileTreeAppearanceIconPanel">
