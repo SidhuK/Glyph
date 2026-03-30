@@ -5,7 +5,8 @@ import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MarkdownEditorPane } from "./MarkdownEditorPane";
 
-const { invokeMock } = vi.hoisted(() => ({
+const { canvasNoteInlineEditorMock, invokeMock } = vi.hoisted(() => ({
+	canvasNoteInlineEditorMock: vi.fn(),
 	invokeMock: vi.fn(),
 }));
 
@@ -53,10 +54,19 @@ vi.mock("motion/react", () => ({
 vi.mock("../editor/CanvasNoteInlineEditor", () => ({
 	CanvasNoteInlineEditor: ({
 		onChange,
+		pasteMarkdownBehavior,
 	}: {
 		onChange: (nextText: string) => void;
+		pasteMarkdownBehavior?: "plain-text" | "smart-markdown";
 	}) => (
-		<button type="button" onClick={() => onChange("latest typed text")}>
+		<button
+			type="button"
+			onClick={() => onChange("latest typed text")}
+			data-paste-markdown-behavior={pasteMarkdownBehavior}
+			ref={() => {
+				canvasNoteInlineEditorMock({ pasteMarkdownBehavior });
+			}}
+		>
 			Type latest text
 		</button>
 	),
@@ -131,6 +141,7 @@ describe("MarkdownEditorPane", () => {
 		} as typeof ResizeObserver;
 		invokeMock.mockReset();
 		invokeMock.mockImplementation(mockInvoke);
+		canvasNoteInlineEditorMock.mockReset();
 
 		container = document.createElement("div");
 		document.body.appendChild(container);
@@ -177,6 +188,21 @@ describe("MarkdownEditorPane", () => {
 			path: "notes/first.md",
 			text: "latest typed text",
 			base_mtime_ms: 1,
+		});
+	});
+
+	it("opts the main note editor into smart Markdown paste", async () => {
+		await act(async () => {
+			root.render(
+				<MarkdownEditorPane
+					relPath="notes/default.md"
+					initialDoc={makeDoc("notes/default.md", "seed text")}
+				/>,
+			);
+		});
+
+		expect(canvasNoteInlineEditorMock).toHaveBeenCalledWith({
+			pasteMarkdownBehavior: "smart-markdown",
 		});
 	});
 
