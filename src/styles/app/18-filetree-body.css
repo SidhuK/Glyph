@@ -70,6 +70,86 @@
 	-webkit-overflow-scrolling: touch;
 }
 
+.fileTreePinnedSection {
+	position: relative;
+	margin-bottom: var(--space-2);
+	padding-bottom: calc(var(--space-2) + 8px);
+}
+
+.fileTreePinnedSection::after {
+	content: "";
+	position: absolute;
+	left: 10px;
+	right: 10px;
+	bottom: 0;
+	height: 1px;
+	background: linear-gradient(
+		90deg,
+		transparent 0%,
+		color-mix(in srgb, var(--border-light) 45%, transparent) 12%,
+		color-mix(in srgb, var(--interactive-accent) 18%, var(--border-default)) 50%,
+		color-mix(in srgb, var(--border-light) 45%, transparent) 88%,
+		transparent 100%
+	);
+	opacity: 0.9;
+	pointer-events: none;
+}
+
+.fileTreePinnedHeader {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: var(--space-2);
+	padding: 0 var(--space-2) var(--space-1);
+	color: var(--text-tertiary);
+	font-size: 11px;
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.08em;
+	background: transparent;
+	border: none;
+	cursor: pointer;
+}
+
+.fileTreePinnedHeaderLabel {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+.fileTreePinnedChevron {
+	color: var(--text-tertiary);
+	transition: transform 140ms ease;
+}
+
+.fileTreePinnedChevron.is-open {
+	transform: rotate(0deg);
+}
+
+.fileTreePinnedHeader[aria-expanded="false"] .fileTreePinnedChevron {
+	transform: rotate(-90deg);
+}
+
+.fileTreePinnedList {
+	margin-bottom: 0;
+}
+
+.fileTreePinnedRow {
+	padding-left: var(--space-2);
+}
+
+.fileTreePinnedPath {
+	flex-shrink: 0;
+	margin-left: auto;
+	font-family: inherit;
+	font-size: 10px;
+	color: var(--text-tertiary);
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	max-width: 42%;
+}
+
 .fileTreeList {
 	list-style: none;
 	padding: 0;

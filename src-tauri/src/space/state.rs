@@ -56,6 +56,7 @@ pub struct SpaceState {
     recent_local_changes: RecentLocalChanges,
     db_store_mutex: Arc<Mutex<()>>,
     file_tree_appearance_mutex: Arc<Mutex<()>>,
+    pinned_files_mutex: Arc<Mutex<()>>,
 }
 
 impl Default for SpaceState {
@@ -66,6 +67,7 @@ impl Default for SpaceState {
             recent_local_changes: Arc::new(Mutex::new(HashMap::new())),
             db_store_mutex: Arc::new(Mutex::new(())),
             file_tree_appearance_mutex: Arc::new(Mutex::new(())),
+            pinned_files_mutex: Arc::new(Mutex::new(())),
         }
     }
 }
@@ -81,6 +83,10 @@ impl SpaceState {
 
     pub(crate) fn file_tree_appearance_mutex(&self) -> Arc<Mutex<()>> {
         Arc::clone(&self.file_tree_appearance_mutex)
+    }
+
+    pub(crate) fn pinned_files_mutex(&self) -> Arc<Mutex<()>> {
+        Arc::clone(&self.pinned_files_mutex)
     }
 
     pub fn current_root(&self) -> Result<PathBuf, String> {

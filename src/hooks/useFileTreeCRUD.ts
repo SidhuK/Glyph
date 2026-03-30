@@ -34,6 +34,8 @@ export interface UseFileTreeCRUDDeps {
 	updateRootEntries: (
 		next: FsEntry[] | ((prev: FsEntry[]) => FsEntry[]),
 	) => void;
+	renamePinnedPath: (fromPath: string, toPath: string) => Promise<void>;
+	deletePinnedPath: (path: string) => Promise<void>;
 	renameItemAppearance: (fromPath: string, toPath: string) => Promise<void>;
 	deleteItemAppearance: (path: string) => Promise<void>;
 	setActiveFilePath: (path: string | null) => void;
@@ -57,6 +59,8 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 		updateChildrenByDir,
 		updateExpandedDirs,
 		updateRootEntries,
+		renamePinnedPath,
+		deletePinnedPath,
 		renameItemAppearance,
 		deleteItemAppearance,
 		setActiveFilePath,
@@ -85,6 +89,17 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			if (parent !== targetDir) await loadDir(parent, true);
 		},
 		[loadDir],
+	);
+
+	const runPinnedSync = useCallback(
+		async (context: string, operation: () => Promise<void>) => {
+			try {
+				await operation();
+			} catch (error) {
+				console.error(`Failed to sync pinned files ${context}`, error);
+			}
+		},
+		[],
 	);
 
 	const ensureDirChainLoaded = useCallback(
@@ -378,6 +393,9 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 				});
 				await refreshAfterCreate(parent);
 				if (kind === "dir") await loadDir(nextPath, true);
+				await runPinnedSync("rename", () =>
+					renamePinnedPath(dirPath, nextPath),
+				);
 				try {
 					await renameItemAppearance(dirPath, nextPath);
 				} catch (error) {
@@ -393,7 +411,9 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			loadDir,
 			loadedDirsRef,
 			refreshAfterCreate,
+			runPinnedSync,
 			updateChildrenByDir,
+			renamePinnedPath,
 			renameItemAppearance,
 			setActiveFilePath,
 			setActivePreviewPath,
@@ -465,6 +485,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 					path: target,
 					recursive: kind === "dir",
 				});
+				await runPinnedSync("delete", () => deletePinnedPath(target));
 				try {
 					await deleteItemAppearance(target);
 				} catch (error) {
@@ -480,9 +501,11 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 		[
 			loadDir,
 			loadedDirsRef,
+			runPinnedSync,
 			setActiveFilePath,
 			setActivePreviewPath,
 			updateChildrenByDir,
+			deletePinnedPath,
 			deleteItemAppearance,
 			setError,
 			updateExpandedDirs,
@@ -534,6 +557,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 					toPath: nextPath,
 					recursive: false,
 				});
+				await runPinnedSync("move", () => renamePinnedPath(from, nextPath));
 				try {
 					await renameItemAppearance(from, nextPath);
 				} catch (error) {
@@ -548,7 +572,9 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 		},
 		[
 			loadDir,
+			renamePinnedPath,
 			renameItemAppearance,
+			runPinnedSync,
 			setActiveFilePath,
 			setActivePreviewPath,
 			updateChildrenByDir,
