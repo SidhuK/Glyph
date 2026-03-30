@@ -39,7 +39,8 @@
 	--color-red-dark-300: #ff6b6b;
 	--color-red-dark-400: #ff7a74;
 
-	--font-sans: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+	--font-sans: "Cabinet Grotesk", "Inter", -apple-system, BlinkMacSystemFont,
+		sans-serif;
 	--font-mono: "JetBrains Mono", ui-monospace, monospace;
 
 	--text-xs: 11px;

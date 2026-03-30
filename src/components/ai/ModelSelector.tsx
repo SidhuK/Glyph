@@ -1,3 +1,5 @@
+import { BadgeInfoIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import {
 	type MouseEvent as ReactMouseEvent,
 	useCallback,
@@ -14,7 +16,7 @@ import type {
 	ProviderSupportEntry,
 } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
-import { ChevronDown, Eye } from "../Icons";
+import { ChevronDown } from "../Icons";
 import { ModelDetail, hasDetailData } from "./ModelDetail";
 import styles from "./ModelSelector.module.css";
 import {
@@ -312,7 +314,11 @@ export function ModelSelector({
 														title="Show model details"
 														aria-label="Show model details"
 													>
-														<Eye size={14} strokeWidth={1.8} />
+														<HugeiconsIcon
+															icon={BadgeInfoIcon}
+															size={14}
+															strokeWidth={1.8}
+														/>
 													</button>
 												)}
 											</div>

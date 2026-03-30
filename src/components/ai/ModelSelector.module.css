@@ -6,7 +6,8 @@
 	display: inline-flex;
 	align-items: center;
 	gap: var(--space-1);
-	width: 100%;
+	width: 180px;
+	max-width: 100%;
 	height: 30px;
 	padding: 0 8px;
 	border-radius: var(--radius-md);
@@ -124,7 +125,7 @@
 }
 
 .dropdownList {
-	width: 300px;
+	width: 220px;
 	padding: 4px;
 	overflow-y: auto;
 	scrollbar-width: thin;
@@ -299,6 +300,7 @@
 
 .modelItemText {
 	flex: 1;
+	display: block;
 	min-width: 0;
 	background: none;
 	border: none;
@@ -309,7 +311,9 @@
 	padding: 0;
 	font-weight: var(--font-medium);
 	line-height: 1.4;
-	word-break: break-word;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 .infoInline {
@@ -352,7 +356,7 @@
    MODEL DETAIL PANEL (side panel within dropdown)
    ───────────────────────────────────────────────────────────────────────────── */
 .detailPanel {
-	width: 260px;
+	width: 220px;
 	border-left: 1px solid
 		color-mix(in srgb, var(--border-light) 50%, transparent);
 	padding: 10px 12px;
