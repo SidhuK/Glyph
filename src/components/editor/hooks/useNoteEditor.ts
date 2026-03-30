@@ -319,29 +319,51 @@ export function useNoteEditor({
 							from: editor.state.selection.from,
 							to: editor.state.selection.to,
 						};
-						event.preventDefault();
 						const placeholders = imageFiles.map((file, index) => ({
 							file,
 							uploadId: `paste-${Date.now()}-${index}-${crypto.randomUUID()}`,
 							objectUrl: URL.createObjectURL(file),
 						}));
-						editor
+						const placeholderNodes = placeholders.map((item) => ({
+							type: "image",
+							attrs: {
+								src: item.objectUrl,
+								alt: item.file.name || "",
+								title: "",
+								originSrc: "",
+								uploadId: item.uploadId,
+							},
+						}));
+						if (
+							!editor.can().insertContentAt(selectionRange, placeholderNodes)
+						) {
+							for (const item of placeholders) {
+								replacePlaceholderWithFallbackText(
+									editor,
+									item.uploadId,
+									item.file.name || "image",
+								);
+								URL.revokeObjectURL(item.objectUrl);
+							}
+							return false;
+						}
+						const inserted = editor
 							.chain()
 							.focus()
-							.insertContentAt(
-								selectionRange,
-								placeholders.map((item) => ({
-									type: "image",
-									attrs: {
-										src: item.objectUrl,
-										alt: item.file.name || "",
-										title: "",
-										originSrc: "",
-										uploadId: item.uploadId,
-									},
-								})),
-							)
+							.insertContentAt(selectionRange, placeholderNodes)
 							.run();
+						if (!inserted) {
+							for (const item of placeholders) {
+								replacePlaceholderWithFallbackText(
+									editor,
+									item.uploadId,
+									item.file.name || "image",
+								);
+								URL.revokeObjectURL(item.objectUrl);
+							}
+							return false;
+						}
+						event.preventDefault();
 						void (async () => {
 							for (const item of placeholders) {
 								const dataUrl = await readFileAsDataUrl(item.file);
