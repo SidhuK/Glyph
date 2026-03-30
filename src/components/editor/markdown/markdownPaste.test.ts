@@ -9,7 +9,9 @@ describe("looksLikeMarkdownPaste", () => {
 		expect(looksLikeMarkdownPaste("- [x] task")).toBe(true);
 		expect(looksLikeMarkdownPaste("> quote")).toBe(true);
 		expect(looksLikeMarkdownPaste("> [!NOTE]\n> Callout")).toBe(true);
+		expect(looksLikeMarkdownPaste("```\n```")).toBe(true);
 		expect(looksLikeMarkdownPaste("```ts\nconst answer = 42;\n```")).toBe(true);
+		expect(looksLikeMarkdownPaste("| Name |\n| --- |")).toBe(true);
 		expect(
 			looksLikeMarkdownPaste("| Name | Role |\n| --- | --- |\n| Ada | Eng |"),
 		).toBe(true);

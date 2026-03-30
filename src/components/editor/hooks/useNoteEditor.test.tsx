@@ -186,6 +186,14 @@ function createClipboardEvent({
 	return event;
 }
 
+type EditorOptionsWithPaste = {
+	editorProps?: {
+		handleDOMEvents?: {
+			paste?: (view: unknown, event: ClipboardEvent) => boolean;
+		};
+	};
+} | null;
+
 describe("useNoteEditor", () => {
 	let container: HTMLDivElement;
 	let root: Root;
@@ -310,13 +318,7 @@ describe("useNoteEditor", () => {
 			);
 		});
 
-		const options = getEditorOptions() as {
-			editorProps?: {
-				handleDOMEvents?: {
-					paste?: (view: unknown, event: ClipboardEvent) => boolean;
-				};
-			};
-		} | null;
+		const options = getEditorOptions() as EditorOptionsWithPaste;
 		const paste = options?.editorProps?.handleDOMEvents?.paste;
 		const event = createClipboardEvent({ text: "**bold**" });
 
@@ -352,13 +354,7 @@ describe("useNoteEditor", () => {
 			root.render(<Harness onChange={onChange} />);
 		});
 
-		const options = getEditorOptions() as {
-			editorProps?: {
-				handleDOMEvents?: {
-					paste?: (view: unknown, event: ClipboardEvent) => boolean;
-				};
-			};
-		} | null;
+		const options = getEditorOptions() as EditorOptionsWithPaste;
 		const paste = options?.editorProps?.handleDOMEvents?.paste;
 		const event = createClipboardEvent({ text: "**bold**" });
 
@@ -377,13 +373,7 @@ describe("useNoteEditor", () => {
 			);
 		});
 
-		const options = getEditorOptions() as {
-			editorProps?: {
-				handleDOMEvents?: {
-					paste?: (view: unknown, event: ClipboardEvent) => boolean;
-				};
-			};
-		} | null;
+		const options = getEditorOptions() as EditorOptionsWithPaste;
 		const paste = options?.editorProps?.handleDOMEvents?.paste;
 		const event = createClipboardEvent({
 			html: "<p><strong>bold</strong></p>",
@@ -405,13 +395,7 @@ describe("useNoteEditor", () => {
 			);
 		});
 
-		const options = getEditorOptions() as {
-			editorProps?: {
-				handleDOMEvents?: {
-					paste?: (view: unknown, event: ClipboardEvent) => boolean;
-				};
-			};
-		} | null;
+		const options = getEditorOptions() as EditorOptionsWithPaste;
 		const paste = options?.editorProps?.handleDOMEvents?.paste;
 		const event = createClipboardEvent({ text: "**bold**" });
 
@@ -430,13 +414,7 @@ describe("useNoteEditor", () => {
 			);
 		});
 
-		const options = getEditorOptions() as {
-			editorProps?: {
-				handleDOMEvents?: {
-					paste?: (view: unknown, event: ClipboardEvent) => boolean;
-				};
-			};
-		} | null;
+		const options = getEditorOptions() as EditorOptionsWithPaste;
 		const paste = options?.editorProps?.handleDOMEvents?.paste;
 		const event = createClipboardEvent({ text: "**bold**" });
 
@@ -455,13 +433,7 @@ describe("useNoteEditor", () => {
 			);
 		});
 
-		const options = getEditorOptions() as {
-			editorProps?: {
-				handleDOMEvents?: {
-					paste?: (view: unknown, event: ClipboardEvent) => boolean;
-				};
-			};
-		} | null;
+		const options = getEditorOptions() as EditorOptionsWithPaste;
 		const paste = options?.editorProps?.handleDOMEvents?.paste;
 		const file = new File(["image-bytes"], "paste.png", { type: "image/png" });
 		const event = createClipboardEvent({
@@ -491,5 +463,61 @@ describe("useNoteEditor", () => {
 				},
 			],
 		);
+	});
+
+	it("does not start image uploads when image placeholders cannot be inserted", async () => {
+		const onChange = vi.fn();
+		canCommands.insertContentAt.mockReturnValue(false);
+
+		await act(async () => {
+			root.render(
+				<Harness onChange={onChange} pasteMarkdownBehavior="smart-markdown" />,
+			);
+		});
+
+		const options = getEditorOptions() as EditorOptionsWithPaste;
+		const paste = options?.editorProps?.handleDOMEvents?.paste;
+		const file = new File(["image-bytes"], "paste.png", { type: "image/png" });
+		const event = createClipboardEvent({
+			items: [
+				{
+					type: "image/png",
+					getAsFile: () => file,
+				},
+			],
+		});
+
+		expect(paste?.({}, event)).toBe(false);
+		expect(chainCommands.insertContentAt).not.toHaveBeenCalled();
+		expect(invokeMock).not.toHaveBeenCalled();
+		expect(event.defaultPrevented).toBe(false);
+	});
+
+	it("does not start image uploads when placeholder insertion fails to run", async () => {
+		const onChange = vi.fn();
+		chainCommands.run.mockReturnValue(false);
+
+		await act(async () => {
+			root.render(
+				<Harness onChange={onChange} pasteMarkdownBehavior="smart-markdown" />,
+			);
+		});
+
+		const options = getEditorOptions() as EditorOptionsWithPaste;
+		const paste = options?.editorProps?.handleDOMEvents?.paste;
+		const file = new File(["image-bytes"], "paste.png", { type: "image/png" });
+		const event = createClipboardEvent({
+			items: [
+				{
+					type: "image/png",
+					getAsFile: () => file,
+				},
+			],
+		});
+
+		expect(paste?.({}, event)).toBe(false);
+		expect(chainCommands.insertContentAt).toHaveBeenCalled();
+		expect(invokeMock).not.toHaveBeenCalled();
+		expect(event.defaultPrevented).toBe(false);
 	});
 });

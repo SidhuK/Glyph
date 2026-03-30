@@ -45,7 +45,8 @@ describe("smart Markdown paste integration", () => {
 
 		expect(output).toContain("- [x] Ship smart paste");
 		expect(output).toContain("> [!NOTE]");
-		expect(output).toContain("Smart Markdown paste");
+		expect(output).toContain("| Surface     | Behavior             |");
+		expect(output).toContain("| Main editor | Smart Markdown paste |");
 		expect(output).toContain("```ts");
 		expect(output).toContain("[[Roadmap]]");
 		expect(output).toContain("[docs](https://example.com/docs)");
