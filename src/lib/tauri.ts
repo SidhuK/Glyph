@@ -23,6 +23,8 @@ export interface FileTreeAppearance {
 	icon?: string | null;
 }
 
+export type PinnedFiles = string[];
+
 export interface RecentEntry {
 	rel_path: string;
 	name: string;
@@ -128,6 +130,7 @@ export interface DatabaseViewState {
 	layout: "table" | "board";
 	board_group_by?: string | null;
 	board_lane_colors?: Record<string, string>;
+	board_lane_order?: Record<string, string[]>;
 }
 
 export interface DatabaseColumn {
@@ -220,6 +223,7 @@ export interface WorkspaceDatabaseView {
 	filters: DatabaseFilter[];
 	grouping?: WorkspaceDatabaseGrouping | null;
 	board_lane_colors?: Record<string, string>;
+	board_lane_order?: Record<string, string[]>;
 	created_at: string;
 	updated_at: string;
 }
@@ -722,6 +726,13 @@ interface TauriCommands {
 		void
 	>;
 	file_tree_appearance_delete_path: CommandDef<{ path: string }, void>;
+	pinned_files_list: CommandDef<void, PinnedFiles>;
+	pinned_files_toggle: CommandDef<{ path: string }, PinnedFiles>;
+	pinned_files_rename_path: CommandDef<
+		{ from_path: string; to_path: string },
+		PinnedFiles
+	>;
+	pinned_files_delete_path: CommandDef<{ path: string }, PinnedFiles>;
 	space_list_markdown_files: CommandDef<
 		{ dir?: string | null; recursive?: boolean | null; limit?: number | null },
 		FsEntry[]

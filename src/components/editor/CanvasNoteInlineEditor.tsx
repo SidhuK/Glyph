@@ -2,6 +2,7 @@ import {
 	ArrowLeft,
 	ArrowRight,
 	Calendar03Icon,
+	LocationAdd01Icon,
 	SourceCodeIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -61,6 +62,8 @@ const SELECTION_RIBBON_HEIGHT_PX = 40;
 const SELECTION_RIBBON_EDGE_PADDING_PX = 18;
 const SELECTION_RIBBON_ESTIMATED_HALF_WIDTH_PX = 176;
 const SELECTION_RIBBON_HIDE_DELAY_MS = 110;
+const TABLE_INLINE_CONTROL_OFFSET_PX = 20;
+const TABLE_INLINE_CONTROL_EDGE_PADDING_PX = 10;
 
 type SelectionRibbonPlacement = "above" | "below";
 
@@ -79,6 +82,13 @@ interface SelectedCodeBlockState {
 	pos: number;
 	language: string | null;
 	source: string;
+}
+
+interface SelectedTableState {
+	rowControlLeft: number;
+	rowControlTop: number;
+	columnControlLeft: number;
+	columnControlTop: number;
 }
 
 function markdownHrefFromToken(raw: string): string | null {
@@ -335,6 +345,10 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	const [selectionRibbon, setSelectionRibbon] =
 		useState<SelectionRibbonPosition | null>(null);
 	const selectionRibbonHideTimerRef = useRef<number | null>(null);
+	const selectedTableSyncRafRef = useRef<number | null>(null);
+	const [selectedTable, setSelectedTable] = useState<SelectedTableState | null>(
+		null,
+	);
 	const [codeBlockPickerOpen, setCodeBlockPickerOpen] = useState(false);
 	const [selectedCodeBlock, setSelectedCodeBlock] =
 		useState<SelectedCodeBlockState | null>(null);
@@ -591,6 +605,103 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		if (cursor < text.length) nodes.push(text.slice(cursor));
 		return nodes;
 	};
+
+	useEffect(() => {
+		if (!editor || mode !== "rich" || !canEdit) {
+			setSelectedTable(null);
+			return;
+		}
+		const host = tiptapHostRef.current;
+		const contentRoot = getMountedEditorContentRoot(host);
+		if (!host || !contentRoot) return;
+
+		const syncSelectedTable = () => {
+			const selection = window.getSelection();
+			const anchorElement =
+				selection?.anchorNode instanceof HTMLElement
+					? selection.anchorNode
+					: selection?.anchorNode?.parentElement;
+
+			if (!anchorElement || !contentRoot.contains(anchorElement)) {
+				setSelectedTable(null);
+				return;
+			}
+
+			const activeCell = anchorElement.closest("td, th") as HTMLElement | null;
+			if (!activeCell || !contentRoot.contains(activeCell)) {
+				setSelectedTable(null);
+				return;
+			}
+
+			const activeRow = activeCell.closest("tr") as HTMLElement | null;
+			const activeTable = activeCell.closest("table") as HTMLElement | null;
+			if (!activeRow || !activeTable || !contentRoot.contains(activeTable)) {
+				setSelectedTable(null);
+				return;
+			}
+
+			const rowOffset = getOffsetWithinAncestor(activeRow, host);
+			const cellOffset = getOffsetWithinAncestor(activeCell, host);
+			const tableOffset = getOffsetWithinAncestor(activeTable, host);
+			const nextState: SelectedTableState = {
+				rowControlLeft: Math.max(
+					TABLE_INLINE_CONTROL_EDGE_PADDING_PX,
+					tableOffset.left - TABLE_INLINE_CONTROL_OFFSET_PX,
+				),
+				rowControlTop: rowOffset.top + activeRow.offsetHeight / 2,
+				columnControlLeft: cellOffset.left + activeCell.offsetWidth / 2,
+				columnControlTop: Math.max(
+					TABLE_INLINE_CONTROL_EDGE_PADDING_PX,
+					tableOffset.top - TABLE_INLINE_CONTROL_OFFSET_PX,
+				),
+			};
+
+			setSelectedTable((current) => {
+				if (
+					current &&
+					current.rowControlLeft === nextState.rowControlLeft &&
+					current.rowControlTop === nextState.rowControlTop &&
+					current.columnControlLeft === nextState.columnControlLeft &&
+					current.columnControlTop === nextState.columnControlTop
+				) {
+					return current;
+				}
+				return nextState;
+			});
+		};
+
+		const scheduleSyncSelectedTable = () => {
+			if (selectedTableSyncRafRef.current !== null) return;
+			selectedTableSyncRafRef.current = window.requestAnimationFrame(() => {
+				selectedTableSyncRafRef.current = null;
+				syncSelectedTable();
+			});
+		};
+
+		scheduleSyncSelectedTable();
+		const scrollHost = host.closest(".rfNodeNoteEditorBody");
+		scrollHost?.addEventListener("scroll", scheduleSyncSelectedTable, {
+			passive: true,
+		});
+		window.addEventListener("resize", scheduleSyncSelectedTable);
+		document.addEventListener("selectionchange", scheduleSyncSelectedTable);
+		editor.on("selectionUpdate", scheduleSyncSelectedTable);
+		editor.on("transaction", scheduleSyncSelectedTable);
+		return () => {
+			if (selectedTableSyncRafRef.current !== null) {
+				window.cancelAnimationFrame(selectedTableSyncRafRef.current);
+				selectedTableSyncRafRef.current = null;
+			}
+			scrollHost?.removeEventListener("scroll", scheduleSyncSelectedTable);
+			window.removeEventListener("resize", scheduleSyncSelectedTable);
+			document.removeEventListener(
+				"selectionchange",
+				scheduleSyncSelectedTable,
+			);
+			editor.off("selectionUpdate", scheduleSyncSelectedTable);
+			editor.off("transaction", scheduleSyncSelectedTable);
+		};
+	}, [canEdit, editor, mode]);
 
 	useEffect(() => {
 		if (!editor || mode !== "rich" || deferHeavyFeatures) {
@@ -892,6 +1003,27 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	) => {
 		event.preventDefault();
 	};
+	const preventTableControlMouseDown = (
+		event: React.MouseEvent<HTMLButtonElement>,
+	) => {
+		event.preventDefault();
+	};
+	const addRowToSelectedTable = () => {
+		if (!editor) return;
+		editor
+			.chain()
+			.focus(undefined, { scrollIntoView: false })
+			.addRowAfter()
+			.run();
+	};
+	const addColumnToSelectedTable = () => {
+		if (!editor) return;
+		editor
+			.chain()
+			.focus(undefined, { scrollIntoView: false })
+			.addColumnAfter()
+			.run();
+	};
 	const handleEditorPointerDownCapture = (
 		event: React.PointerEvent<HTMLDivElement>,
 	) => {
@@ -1023,6 +1155,40 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 								/>
 							) : null}
 						</AnimatePresence>
+						{canEdit && selectedTable ? (
+							<>
+								<button
+									type="button"
+									className="tableInlineAddBtn is-row"
+									data-axis="row"
+									aria-label="Add row"
+									title="Add row"
+									style={{
+										left: `${selectedTable.rowControlLeft}px`,
+										top: `${selectedTable.rowControlTop}px`,
+									}}
+									onMouseDown={preventTableControlMouseDown}
+									onClick={addRowToSelectedTable}
+								>
+									<HugeiconsIcon icon={LocationAdd01Icon} size={14} />
+								</button>
+								<button
+									type="button"
+									className="tableInlineAddBtn is-column"
+									data-axis="column"
+									aria-label="Add column"
+									title="Add column"
+									style={{
+										left: `${selectedTable.columnControlLeft}px`,
+										top: `${selectedTable.columnControlTop}px`,
+									}}
+									onMouseDown={preventTableControlMouseDown}
+									onClick={addColumnToSelectedTable}
+								>
+									<HugeiconsIcon icon={LocationAdd01Icon} size={14} />
+								</button>
+							</>
+						) : null}
 						{canEdit && selectedCodeBlock ? (
 							<div
 								className="codeBlockInlineControls"

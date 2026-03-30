@@ -123,6 +123,7 @@ describe("database config helpers", () => {
 			layout: "table",
 			board_group_by: null,
 			board_lane_colors: {},
+			board_lane_order: {},
 		});
 	});
 

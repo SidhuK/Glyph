@@ -1,7 +1,11 @@
 import { m, useReducedMotion } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useDatabaseBoard } from "../../hooks/database/useDatabaseBoard";
-import { boardDropValue, boardRowHasLane } from "../../lib/database/board";
+import {
+	DATABASE_BOARD_EMPTY_LANE_ID,
+	boardDropValue,
+	boardRowHasLane,
+} from "../../lib/database/board";
 import {
 	databaseCellValueFromRow,
 	formatDatabaseDateTime,
@@ -46,6 +50,11 @@ interface DatabaseBoardProps {
 	onOpenColumns: () => void;
 	onCreateDefaultGroupField?: (() => void) | null;
 	onGroupColumnIdChange: (groupColumnId: string | null) => void;
+	laneOrderByGroup?: Record<string, string[]>;
+	onLaneOrderChange?: (
+		groupColumnId: string,
+		laneOrder: string[],
+	) => void | Promise<void>;
 	laneColors?: Record<string, string>;
 	onLaneColorChange?:
 		| ((laneId: string, color: EditorTextColor | null) => void)
@@ -170,17 +179,22 @@ export function DatabaseBoard({
 	onOpenColumns,
 	onCreateDefaultGroupField,
 	onGroupColumnIdChange,
+	laneOrderByGroup = {},
+	onLaneOrderChange,
 	laneColors = EMPTY_LANE_COLORS,
 	onLaneColorChange,
 	onSaveCell,
 }: DatabaseBoardProps) {
 	const shouldReduceMotion = useReducedMotion();
-	const { groupColumn, groupColumns, lanes } = useDatabaseBoard({
-		rows,
-		columns,
-		initialGroupColumnId: persistedGroupColumnId,
-		onGroupColumnIdChange,
-	});
+	const { groupColumn, groupColumns, lanes, moveLaneToIndex } =
+		useDatabaseBoard({
+			rows,
+			columns,
+			initialGroupColumnId: persistedGroupColumnId,
+			initialLaneOrderByGroup: laneOrderByGroup,
+			onGroupColumnIdChange,
+			onLaneOrderChange,
+		});
 	const [draggingRowPath, setDraggingRowPath] = useState<string | null>(null);
 	const [dropLaneId, setDropLaneId] = useState<string | null>(null);
 	const [moveError, setMoveError] = useState("");
@@ -219,6 +233,10 @@ export function DatabaseBoard({
 		() =>
 			cardCandidateColumns(columns, groupColumn?.id ?? persistedGroupColumnId),
 		[columns, groupColumn?.id, persistedGroupColumnId],
+	);
+	const reorderableLanes = useMemo(
+		() => lanes.filter((lane) => lane.id !== DATABASE_BOARD_EMPTY_LANE_ID),
+		[lanes],
 	);
 	const clearDragState = useCallback(() => {
 		dragStartRef.current = null;
@@ -488,6 +506,43 @@ export function DatabaseBoard({
 										<div className="databaseBoardLaneCount">
 											{lane.cardCount}
 										</div>
+										<ContextMenu>
+											<ContextMenuTrigger asChild>
+												<button
+													type="button"
+													className="databaseBoardLaneHandle"
+													disabled={lane.id === DATABASE_BOARD_EMPTY_LANE_ID}
+													aria-label={`Reorder ${lane.label} column`}
+													title={
+														lane.id === DATABASE_BOARD_EMPTY_LANE_ID
+															? "No value stays last"
+															: `Right-click to move ${lane.label}`
+													}
+												>
+													<span className="databaseBoardLaneHandleDots" />
+												</button>
+											</ContextMenuTrigger>
+											{lane.id !== DATABASE_BOARD_EMPTY_LANE_ID ? (
+												<ContextMenuContent className="fileTreeCreateMenu databaseBoardContextMenu">
+													<div className="databaseBoardMoveLabel">
+														Move column to
+													</div>
+													{reorderableLanes.map((targetLane, index) => {
+														const isCurrentLane = targetLane.id === lane.id;
+														return (
+															<ContextMenuItem
+																key={`${lane.id}:position:${targetLane.id}`}
+																className="fileTreeCreateMenuItem"
+																disabled={isCurrentLane}
+																onSelect={() => moveLaneToIndex(lane.id, index)}
+															>
+																Position {index + 1}: {targetLane.label}
+															</ContextMenuItem>
+														);
+													})}
+												</ContextMenuContent>
+											) : null}
+										</ContextMenu>
 									</div>
 								</div>
 								<div className="databaseBoardLaneBody">

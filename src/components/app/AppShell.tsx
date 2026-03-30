@@ -6,6 +6,7 @@ import {
 	ColorsIcon,
 	CursorInWindowIcon,
 	DocumentCodeIcon,
+	FallingStarIcon,
 	File01Icon,
 	Folder01Icon,
 	FolderOpenIcon,
@@ -116,6 +117,10 @@ export function AppShell() {
 		activeDirPath,
 		setActiveDirPath,
 		activeFilePath,
+		pinnedFiles,
+		togglePinnedFile,
+		renamePinnedPath,
+		deletePinnedPath,
 		renameItemAppearance,
 		deleteItemAppearance,
 		updateRootEntries,
@@ -251,6 +256,8 @@ export function AppShell() {
 		updateChildrenByDir,
 		updateExpandedDirs,
 		updateRootEntries,
+		renamePinnedPath,
+		deletePinnedPath,
 		renameItemAppearance,
 		deleteItemAppearance,
 		setActiveFilePath,
@@ -1181,6 +1188,21 @@ export function AppShell() {
 				action: requestOpenDailyNote,
 			},
 			{
+				id: "toggle-star-active-file",
+				label:
+					activeFilePath && pinnedFiles.includes(activeFilePath)
+						? "Unstar current file"
+						: "Star current file",
+				icon: <HugeiconsIcon icon={FallingStarIcon} size={16} />,
+				category: "File Operations",
+				enabled: Boolean(spacePath) && Boolean(activeFilePath),
+				allowInEditable: true,
+				action: () => {
+					if (!activeFilePath) return;
+					void togglePinnedFile(activeFilePath);
+				},
+			},
+			{
 				id: "save-note",
 				label: "Save",
 				icon: <HugeiconsIcon icon={NoteIcon} size={16} />,
@@ -1301,6 +1323,7 @@ export function AppShell() {
 	}, [
 		activeMarkdownTabPath,
 		activeFilePath,
+		pinnedFiles,
 		aiEnabled,
 		attachAllOpenNotesToAi,
 		attachCurrentNoteToAi,
@@ -1318,6 +1341,7 @@ export function AppShell() {
 		saveCurrentEditor,
 		handleCreateFromTemplateFromMenu,
 		setAiPanelOpen,
+		togglePinnedFile,
 		setPaletteOpen,
 		setActivePreviewPath,
 		setSidebarCollapsed,

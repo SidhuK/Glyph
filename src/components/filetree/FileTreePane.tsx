@@ -1,3 +1,5 @@
+import { StarIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { m } from "motion/react";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -11,10 +13,17 @@ import type {
 } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
-import { parentDir } from "../../utils/path";
+import {
+	isMarkdownPath,
+	parentDir,
+	basename as relBasename,
+} from "../../utils/path";
+import { ChevronDown } from "../Icons";
 import { springPresets } from "../ui/animations";
 import { FileTreeDirItem } from "./FileTreeDirItem";
 import { FileTreeFileItem } from "./FileTreeFileItem";
+import { rowVariants } from "./fileTreeItemHelpers";
+import { getFileTypeInfo } from "./fileTypeUtils";
 
 interface FileTreePaneProps {
 	rootEntries: FsEntry[];
@@ -36,6 +45,8 @@ interface FileTreePaneProps {
 	onCancelRename: () => void;
 	onCommitFileRename: (path: string, nextName: string) => Promise<void>;
 	onCommitDirRename: (dirPath: string, nextName: string) => Promise<void>;
+	pinnedFiles: string[];
+	onTogglePinnedFile: (path: string) => Promise<void>;
 }
 
 const springTransition = springPresets.bouncy;
@@ -68,6 +79,8 @@ interface TreeEntriesProps {
 		entry: FsEntry,
 		appearance: FileTreeAppearance,
 	) => Promise<void> | void;
+	pinnedFiles: string[];
+	onTogglePinnedFile: (path: string) => Promise<void>;
 }
 
 function TreeEntries({
@@ -95,6 +108,8 @@ function TreeEntries({
 	folderFileCounts,
 	showFolderFileCounts,
 	onChangeAppearance,
+	pinnedFiles,
+	onTogglePinnedFile,
 }: TreeEntriesProps) {
 	if (entries.length === 0) return null;
 
@@ -164,6 +179,8 @@ function TreeEntries({
 									folderFileCounts={folderFileCounts}
 									showFolderFileCounts={showFolderFileCounts}
 									onChangeAppearance={onChangeAppearance}
+									pinnedFiles={pinnedFiles}
+									onTogglePinnedFile={onTogglePinnedFile}
 								/>
 							)}
 						</FileTreeDirItem>
@@ -192,6 +209,8 @@ function TreeEntries({
 						onChangeAppearance={(appearance) =>
 							onChangeAppearance(e, appearance)
 						}
+						isPinned={pinnedFiles.includes(e.rel_path)}
+						onTogglePinned={onTogglePinnedFile}
 					/>
 				);
 			})}
@@ -219,13 +238,21 @@ export const FileTreePane = memo(function FileTreePane({
 	onCancelRename,
 	onCommitFileRename,
 	onCommitDirRename,
+	pinnedFiles,
+	onTogglePinnedFile,
 }: FileTreePaneProps) {
 	const { itemAppearance, setItemAppearance } = useFileTreeContext();
 	const { spacePath, setError } = useSpace();
 	const [showFolderFileCounts, setShowFolderFileCounts] = useState(false);
+	const [showPinnedFiles, setShowPinnedFiles] = useState(true);
 	const [folderFileCounts, setFolderFileCounts] = useState<
 		Record<string, number>
 	>({});
+
+	// biome-ignore lint/correctness/useExhaustiveDependencies: reset the section when the active space changes.
+	useEffect(() => {
+		setShowPinnedFiles(true);
+	}, [spacePath]);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -374,6 +401,22 @@ export const FileTreePane = memo(function FileTreePane({
 		[setError, setItemAppearance],
 	);
 
+	const pinnedFileItems = useMemo(
+		() =>
+			pinnedFiles.map((path) => {
+				const fileName = relBasename(path);
+				const displayName =
+					fileName.replace(/\.[^./]+$/, "") || fileName || path;
+				return {
+					path,
+					displayName,
+					parent: parentDir(path),
+					isMarkdown: isMarkdownPath(path),
+				};
+			}),
+		[pinnedFiles],
+	);
+
 	return (
 		<m.aside
 			className="fileTreePane"
@@ -381,34 +424,109 @@ export const FileTreePane = memo(function FileTreePane({
 			animate={{ y: 0 }}
 			transition={springTransition}
 		>
-			{rootEntries.length ? (
+			{rootEntries.length || pinnedFileItems.length ? (
 				<div className="fileTreeScroll">
-					<TreeEntries
-						entries={rootEntries}
-						parentDepth={-1}
-						childrenByDir={childrenByDir}
-						expandedDirs={expandedDirs}
-						activeFilePath={activeFilePath}
-						activeDirPath={activeDirPath}
-						renamingPath={renamingPath}
-						onToggleDir={onToggleDir}
-						onSelectDir={onSelectDir}
-						onOpenFile={onOpenFile}
-						onNewFileInDir={onNewFileInDir}
-						onCreateFromTemplateInDir={onCreateFromTemplateInDir}
-						onNewDatabaseInDir={onNewDatabaseInDir}
-						onNewFolderInDir={handleCreateFolder}
-						onDuplicateFile={handleDuplicateFile}
-						onDeletePath={handleDeletePath}
-						onStartRename={onStartRename}
-						onCommitDirRename={onCommitDirRename}
-						onCommitFileRename={onCommitFileRename}
-						onCancelRename={onCancelRename}
-						itemAppearance={itemAppearance}
-						folderFileCounts={folderFileCounts}
-						showFolderFileCounts={showFolderFileCounts}
-						onChangeAppearance={handleChangeAppearance}
-					/>
+					{pinnedFileItems.length > 0 ? (
+						<section className="fileTreePinnedSection">
+							<button
+								type="button"
+								className="fileTreePinnedHeader"
+								onClick={() => setShowPinnedFiles((prev) => !prev)}
+								aria-expanded={showPinnedFiles}
+							>
+								<span className="fileTreePinnedHeaderLabel">
+									<HugeiconsIcon icon={StarIcon} size={12} />
+									<span>Starred</span>
+								</span>
+								<ChevronDown
+									size={12}
+									className={
+										showPinnedFiles
+											? "fileTreePinnedChevron is-open"
+											: "fileTreePinnedChevron"
+									}
+								/>
+							</button>
+							{showPinnedFiles ? (
+								<ul className="fileTreeList fileTreePinnedList">
+									{pinnedFileItems.map((file) => {
+										const { Icon, color } = getFileTypeInfo(
+											file.path,
+											file.isMarkdown,
+										);
+										const isActive = file.path === activeFilePath;
+										return (
+											<li
+												key={file.path}
+												className={
+													isActive ? "fileTreeItem active" : "fileTreeItem"
+												}
+											>
+												<div className="fileTreeRowShell">
+													<m.button
+														type="button"
+														className="fileTreeRow fileTreePinnedRow"
+														onClick={() => onOpenFile(file.path)}
+														title={file.path}
+														variants={rowVariants}
+														whileHover="hover"
+														whileTap="tap"
+														animate={isActive ? "active" : "idle"}
+														transition={springTransition}
+													>
+														<Icon
+															size={14}
+															className="fileTreeIcon"
+															style={{ color }}
+															aria-hidden="true"
+														/>
+														<span className="fileTreeName">
+															{file.displayName}
+														</span>
+														{file.parent ? (
+															<span className="fileTreePinnedPath">
+																{file.parent}
+															</span>
+														) : null}
+													</m.button>
+												</div>
+											</li>
+										);
+									})}
+								</ul>
+							) : null}
+						</section>
+					) : null}
+					{rootEntries.length ? (
+						<TreeEntries
+							entries={rootEntries}
+							parentDepth={-1}
+							childrenByDir={childrenByDir}
+							expandedDirs={expandedDirs}
+							activeFilePath={activeFilePath}
+							activeDirPath={activeDirPath}
+							renamingPath={renamingPath}
+							onToggleDir={onToggleDir}
+							onSelectDir={onSelectDir}
+							onOpenFile={onOpenFile}
+							onNewFileInDir={onNewFileInDir}
+							onCreateFromTemplateInDir={onCreateFromTemplateInDir}
+							onNewDatabaseInDir={onNewDatabaseInDir}
+							onNewFolderInDir={handleCreateFolder}
+							onDuplicateFile={handleDuplicateFile}
+							onDeletePath={handleDeletePath}
+							onStartRename={onStartRename}
+							onCommitDirRename={onCommitDirRename}
+							onCommitFileRename={onCommitFileRename}
+							onCancelRename={onCancelRename}
+							itemAppearance={itemAppearance}
+							folderFileCounts={folderFileCounts}
+							showFolderFileCounts={showFolderFileCounts}
+							onChangeAppearance={handleChangeAppearance}
+							pinnedFiles={pinnedFiles}
+							onTogglePinnedFile={onTogglePinnedFile}
+						/>
+					) : null}
 				</div>
 			) : (
 				<m.div

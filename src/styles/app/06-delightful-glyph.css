@@ -135,8 +135,8 @@
 }
 
 :root[data-delightful-glyph="true"] .aiPanelTitle svg {
-	color: var(--delightful-glyph-violet);
-	filter: drop-shadow(0 1px 1px var(--delightful-glyph-shadow));
+	color: currentColor;
+	filter: none;
 }
 
 :root[data-delightful-glyph="true"]
@@ -154,7 +154,7 @@
 }
 
 :root[data-delightful-glyph="true"] .aiComposerMentionButton svg {
-	color: var(--delightful-glyph-rose);
+	color: currentColor;
 }
 
 :root[data-delightful-glyph="true"] .aiComposerStop svg {

@@ -90,6 +90,8 @@ export const SidebarContent = memo(function SidebarContent({
 		expandedDirs,
 		activeDirPath,
 		activeFilePath,
+		pinnedFiles,
+		togglePinnedFile,
 		tags,
 		tagsError,
 		refreshTags,
@@ -314,6 +316,8 @@ export const SidebarContent = memo(function SidebarContent({
 								onCancelRename={handleCancelRename}
 								onCommitFileRename={handleCommitFileRename}
 								onCommitDirRename={handleCommitDirRename}
+								pinnedFiles={pinnedFiles}
+								onTogglePinnedFile={togglePinnedFile}
 							/>
 						</m.div>
 					)}

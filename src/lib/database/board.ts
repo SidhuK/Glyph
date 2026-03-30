@@ -10,6 +10,8 @@ export interface DatabaseBoardLane {
 	rows: DatabaseRow[];
 }
 
+export type BoardLaneDropPosition = "before" | "after";
+
 function isMultiValueBoardColumn(column: DatabaseColumn): boolean {
 	return (
 		column.type === "tags" ||
@@ -37,6 +39,26 @@ export function defaultBoardGroupColumnId(
 function checkboxLaneLabel(value: boolean | null): string {
 	if (value == null) return "No value";
 	return value ? "Checked" : "Unchecked";
+}
+
+function compareBoardRows(left: DatabaseRow, right: DatabaseRow): number {
+	const leftUpdated = Date.parse(left.updated);
+	const rightUpdated = Date.parse(right.updated);
+	if (!Number.isNaN(leftUpdated) && !Number.isNaN(rightUpdated)) {
+		if (leftUpdated !== rightUpdated) return rightUpdated - leftUpdated;
+	} else if (!Number.isNaN(leftUpdated)) {
+		return -1;
+	} else if (!Number.isNaN(rightUpdated)) {
+		return 1;
+	}
+	return left.note_path.localeCompare(right.note_path, undefined, {
+		numeric: true,
+		sensitivity: "base",
+	});
+}
+
+function sortLaneRows(rows: DatabaseRow[]): DatabaseRow[] {
+	return [...rows].sort(compareBoardRows);
 }
 
 function uniqueLaneValues(values: string[]): string[] {
@@ -117,19 +139,19 @@ export function createBoardLanes(
 				id: "false",
 				label: checkboxLaneLabel(false),
 				cardCount: buckets.get("false")?.length ?? 0,
-				rows: buckets.get("false") ?? [],
+				rows: sortLaneRows(buckets.get("false") ?? []),
 			},
 			{
 				id: "true",
 				label: checkboxLaneLabel(true),
 				cardCount: buckets.get("true")?.length ?? 0,
-				rows: buckets.get("true") ?? [],
+				rows: sortLaneRows(buckets.get("true") ?? []),
 			},
 			{
 				id: DATABASE_BOARD_EMPTY_LANE_ID,
 				label: checkboxLaneLabel(null),
 				cardCount: buckets.get(DATABASE_BOARD_EMPTY_LANE_ID)?.length ?? 0,
-				rows: buckets.get(DATABASE_BOARD_EMPTY_LANE_ID) ?? [],
+				rows: sortLaneRows(buckets.get(DATABASE_BOARD_EMPTY_LANE_ID) ?? []),
 			},
 		];
 	}
@@ -163,7 +185,10 @@ export function createBoardLanes(
 		});
 	}
 
-	const orderedLanes = [...lanes.values()];
+	const orderedLanes = [...lanes.values()].map((lane) => ({
+		...lane,
+		rows: sortLaneRows(lane.rows),
+	}));
 	return [
 		...orderedLanes.filter((lane) => lane.id !== DATABASE_BOARD_EMPTY_LANE_ID),
 		...orderedLanes.filter((lane) => lane.id === DATABASE_BOARD_EMPTY_LANE_ID),
@@ -195,6 +220,54 @@ export function orderBoardLanes(
 	return nextLaneIds
 		.map((laneId) => laneMap.get(laneId))
 		.filter((lane): lane is DatabaseBoardLane => lane != null);
+}
+
+export function moveBoardLaneIds(
+	laneIds: string[],
+	sourceLaneId: string,
+	targetLaneId: string,
+	position: BoardLaneDropPosition,
+): string[] {
+	if (sourceLaneId === targetLaneId) return laneIds;
+	const normalizedLaneIds = laneIds.filter(
+		(laneId) => laneId !== DATABASE_BOARD_EMPTY_LANE_ID,
+	);
+	const sourceIndex = normalizedLaneIds.indexOf(sourceLaneId);
+	const targetIndex = normalizedLaneIds.indexOf(targetLaneId);
+	if (sourceIndex === -1 || targetIndex === -1) {
+		return normalizedLaneIds;
+	}
+	const nextLaneIds = [...normalizedLaneIds];
+	const [movedLaneId] = nextLaneIds.splice(sourceIndex, 1);
+	if (!movedLaneId) return normalizedLaneIds;
+	const adjustedTargetIndex =
+		sourceIndex < targetIndex ? targetIndex - 1 : targetIndex;
+	const insertionIndex =
+		position === "after" ? adjustedTargetIndex + 1 : adjustedTargetIndex;
+	nextLaneIds.splice(insertionIndex, 0, movedLaneId);
+	return nextLaneIds;
+}
+
+export function moveBoardLaneToIndex(
+	laneIds: string[],
+	sourceLaneId: string,
+	targetIndex: number,
+): string[] {
+	const normalizedLaneIds = laneIds.filter(
+		(laneId) => laneId !== DATABASE_BOARD_EMPTY_LANE_ID,
+	);
+	const sourceIndex = normalizedLaneIds.indexOf(sourceLaneId);
+	if (sourceIndex === -1) return normalizedLaneIds;
+	const boundedTargetIndex = Math.max(
+		0,
+		Math.min(targetIndex, normalizedLaneIds.length - 1),
+	);
+	if (sourceIndex === boundedTargetIndex) return normalizedLaneIds;
+	const nextLaneIds = [...normalizedLaneIds];
+	const [movedLaneId] = nextLaneIds.splice(sourceIndex, 1);
+	if (!movedLaneId) return normalizedLaneIds;
+	nextLaneIds.splice(boundedTargetIndex, 0, movedLaneId);
+	return nextLaneIds;
 }
 
 export function boardLaneValue(
