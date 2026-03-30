@@ -379,7 +379,7 @@
 	font-weight: var(--font-semibold);
 	letter-spacing: 0.12em;
 	text-transform: uppercase;
-	color: var(--ai-preset-accent, var(--ai-mode-accent));
+	color: var(--text-tertiary);
 }
 
 .aiChatEmptyTitle {
@@ -1254,21 +1254,13 @@
 	height: 26px;
 	border-radius: var(--radius-8);
 	flex: 0 0 auto;
-	color: color-mix(
-		in srgb,
-		var(--ai-preset-accent, var(--ai-mode-accent)) 70%,
-		var(--text-secondary)
-	);
+	color: var(--text-secondary);
 	background: color-mix(in srgb, var(--bg-secondary) 82%, transparent);
 }
 
 .aiComposerMentionButton:hover:not(:disabled) {
-	color: var(--ai-preset-accent, var(--ai-mode-accent));
-	background: color-mix(
-		in srgb,
-		var(--ai-preset-accent, var(--ai-mode-accent)) 12%,
-		var(--bg-secondary)
-	);
+	color: var(--text-primary);
+	background: color-mix(in srgb, var(--bg-tertiary) 72%, var(--bg-secondary));
 }
 
 .aiComposerMentionButton:disabled {
