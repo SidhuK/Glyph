@@ -351,6 +351,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	}, [editor, onEditorReady]);
 
 	useEffect(() => {
+		const host = tiptapHostRef.current;
 		const blurHostSelection = (host: HTMLDivElement | null) => {
 			if (!host) return;
 			const activeElement = document.activeElement;
@@ -366,11 +367,11 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 			}
 		};
 		if (previousRelPathRef.current !== relPath) {
-			blurHostSelection(tiptapHostRef.current);
+			blurHostSelection(host);
 			previousRelPathRef.current = relPath;
 		}
 		return () => {
-			blurHostSelection(tiptapHostRef.current);
+			blurHostSelection(host);
 		};
 	}, [relPath]);
 
