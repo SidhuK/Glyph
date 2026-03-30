@@ -249,8 +249,8 @@ export const FileTreePane = memo(function FileTreePane({
 		Record<string, number>
 	>({});
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: reset the section when the active space changes.
 	useEffect(() => {
-		void spacePath;
 		setShowPinnedFiles(true);
 	}, [spacePath]);
 

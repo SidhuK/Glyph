@@ -952,7 +952,9 @@ export function DatabasesPane({
 							rows={rows}
 							columns={activeConfig.columns}
 							groupColumnId={activeConfig.view.board_group_by ?? null}
-							laneOrderByGroup={activeConfig.view.board_lane_order ?? {}}
+							laneOrderByGroup={
+								activeConfig.view.board_lane_order ?? EMPTY_BOARD_LANE_ORDER
+							}
 							laneColors={activeConfig.view.board_lane_colors ?? {}}
 							showColumnColor={showDatabaseColumnColor}
 							selectedRowPath={selectedRowPath}

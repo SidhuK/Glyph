@@ -653,7 +653,7 @@
 	display: inline-block;
 	width: 10px;
 	height: 10px;
-	background-image: radial-gradient(currentColor 1.2px, transparent 1.2px);
+	background-image: radial-gradient(currentcolor 1.2px, transparent 1.2px);
 	background-size: 5px 5px;
 	background-position: 0 0;
 }

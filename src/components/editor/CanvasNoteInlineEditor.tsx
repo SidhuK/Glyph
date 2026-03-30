@@ -345,6 +345,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	const [selectionRibbon, setSelectionRibbon] =
 		useState<SelectionRibbonPosition | null>(null);
 	const selectionRibbonHideTimerRef = useRef<number | null>(null);
+	const selectedTableSyncRafRef = useRef<number | null>(null);
 	const [selectedTable, setSelectedTable] = useState<SelectedTableState | null>(
 		null,
 	);
@@ -669,21 +670,36 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 			});
 		};
 
-		syncSelectedTable();
+		const scheduleSyncSelectedTable = () => {
+			if (selectedTableSyncRafRef.current !== null) return;
+			selectedTableSyncRafRef.current = window.requestAnimationFrame(() => {
+				selectedTableSyncRafRef.current = null;
+				syncSelectedTable();
+			});
+		};
+
+		scheduleSyncSelectedTable();
 		const scrollHost = host.closest(".rfNodeNoteEditorBody");
-		scrollHost?.addEventListener("scroll", syncSelectedTable, {
+		scrollHost?.addEventListener("scroll", scheduleSyncSelectedTable, {
 			passive: true,
 		});
-		window.addEventListener("resize", syncSelectedTable);
-		document.addEventListener("selectionchange", syncSelectedTable);
-		editor.on("selectionUpdate", syncSelectedTable);
-		editor.on("transaction", syncSelectedTable);
+		window.addEventListener("resize", scheduleSyncSelectedTable);
+		document.addEventListener("selectionchange", scheduleSyncSelectedTable);
+		editor.on("selectionUpdate", scheduleSyncSelectedTable);
+		editor.on("transaction", scheduleSyncSelectedTable);
 		return () => {
-			scrollHost?.removeEventListener("scroll", syncSelectedTable);
-			window.removeEventListener("resize", syncSelectedTable);
-			document.removeEventListener("selectionchange", syncSelectedTable);
-			editor.off("selectionUpdate", syncSelectedTable);
-			editor.off("transaction", syncSelectedTable);
+			if (selectedTableSyncRafRef.current !== null) {
+				window.cancelAnimationFrame(selectedTableSyncRafRef.current);
+				selectedTableSyncRafRef.current = null;
+			}
+			scrollHost?.removeEventListener("scroll", scheduleSyncSelectedTable);
+			window.removeEventListener("resize", scheduleSyncSelectedTable);
+			document.removeEventListener(
+				"selectionchange",
+				scheduleSyncSelectedTable,
+			);
+			editor.off("selectionUpdate", scheduleSyncSelectedTable);
+			editor.off("transaction", scheduleSyncSelectedTable);
 		};
 	}, [canEdit, editor, mode]);
 

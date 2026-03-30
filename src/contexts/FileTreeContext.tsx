@@ -75,10 +75,21 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 	const [tags, setTags] = useState<TagCount[]>([]);
 	const [tagsError, setTagsError] = useState("");
 	const currentSpacePathRef = useRef<string | null>(spacePath);
+	const pinnedFilesRefreshTimerRef = useRef<number | null>(null);
 
 	useEffect(() => {
 		currentSpacePathRef.current = spacePath;
 	}, [spacePath]);
+
+	useEffect(
+		() => () => {
+			if (pinnedFilesRefreshTimerRef.current !== null) {
+				window.clearTimeout(pinnedFilesRefreshTimerRef.current);
+				pinnedFilesRefreshTimerRef.current = null;
+			}
+		},
+		[],
+	);
 
 	const refreshTags = useCallback(async () => {
 		try {
@@ -157,9 +168,16 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 		}
 	}, [spacePath]);
 
-	useTauriEvent("space:fs_changed", () => {
+	useTauriEvent("space:fs_changed", (payload) => {
 		if (!spacePath) return;
-		void refreshPinnedFiles();
+		if (!payload.removed) return;
+		if (pinnedFilesRefreshTimerRef.current !== null) {
+			window.clearTimeout(pinnedFilesRefreshTimerRef.current);
+		}
+		pinnedFilesRefreshTimerRef.current = window.setTimeout(() => {
+			pinnedFilesRefreshTimerRef.current = null;
+			void refreshPinnedFiles();
+		}, 150);
 	});
 
 	const activeNoteId = activeFilePath?.toLowerCase().endsWith(".md")

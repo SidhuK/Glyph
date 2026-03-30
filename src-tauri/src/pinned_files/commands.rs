@@ -6,7 +6,7 @@ use crate::space::SpaceState;
 use crate::space_fs::helpers::deny_hidden_rel_path;
 
 use super::store::{
-    load_store, rewrite_entry_path, save_store, should_remove_entry, toggle_file,
+    load_store, normalize_store, rewrite_entry_path, save_store, should_remove_entry, toggle_file,
 };
 
 #[tauri::command]
@@ -117,12 +117,7 @@ fn normalize_and_save(
     root: &Path,
     store: crate::pinned_files::types::PinnedFilesStore,
 ) -> Result<(crate::pinned_files::types::PinnedFilesStore, bool), String> {
-    let (normalized, changed) = {
-        save_store(root, &store)?;
-        load_store(root)?
-    };
-    if changed {
-        save_store(root, &normalized)?;
-    }
+    let (normalized, changed) = normalize_store(root, store);
+    save_store(root, &normalized)?;
     Ok((normalized, changed))
 }

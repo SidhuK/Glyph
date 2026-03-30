@@ -91,6 +91,17 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 		[loadDir],
 	);
 
+	const runPinnedSync = useCallback(
+		async (context: string, operation: () => Promise<void>) => {
+			try {
+				await operation();
+			} catch (error) {
+				console.error(`Failed to sync pinned files ${context}`, error);
+			}
+		},
+		[],
+	);
+
 	const ensureDirChainLoaded = useCallback(
 		async (dirPath: string) => {
 			const normalizedDirPath = normalizeRelPath(dirPath);
@@ -382,11 +393,9 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 				});
 				await refreshAfterCreate(parent);
 				if (kind === "dir") await loadDir(nextPath, true);
-				try {
-					await renamePinnedPath(dirPath, nextPath);
-				} catch (error) {
-					console.error("Failed to sync pinned files rename", error);
-				}
+				await runPinnedSync("rename", () =>
+					renamePinnedPath(dirPath, nextPath),
+				);
 				try {
 					await renameItemAppearance(dirPath, nextPath);
 				} catch (error) {
@@ -402,6 +411,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			loadDir,
 			loadedDirsRef,
 			refreshAfterCreate,
+			runPinnedSync,
 			updateChildrenByDir,
 			renamePinnedPath,
 			renameItemAppearance,
@@ -475,11 +485,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 					path: target,
 					recursive: kind === "dir",
 				});
-				try {
-					await deletePinnedPath(target);
-				} catch (error) {
-					console.error("Failed to sync pinned files delete", error);
-				}
+				await runPinnedSync("delete", () => deletePinnedPath(target));
 				try {
 					await deleteItemAppearance(target);
 				} catch (error) {
@@ -495,6 +501,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 		[
 			loadDir,
 			loadedDirsRef,
+			runPinnedSync,
 			setActiveFilePath,
 			setActivePreviewPath,
 			updateChildrenByDir,
@@ -550,11 +557,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 					toPath: nextPath,
 					recursive: false,
 				});
-				try {
-					await renamePinnedPath(from, nextPath);
-				} catch (error) {
-					console.error("Failed to sync pinned files move", error);
-				}
+				await runPinnedSync("move", () => renamePinnedPath(from, nextPath));
 				try {
 					await renameItemAppearance(from, nextPath);
 				} catch (error) {
@@ -571,6 +574,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			loadDir,
 			renamePinnedPath,
 			renameItemAppearance,
+			runPinnedSync,
 			setActiveFilePath,
 			setActivePreviewPath,
 			updateChildrenByDir,
