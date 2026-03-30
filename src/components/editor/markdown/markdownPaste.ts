@@ -17,7 +17,7 @@ function hasMarkdownTable(input: string): boolean {
 		const header = lines[index]?.trim() ?? "";
 		const divider = lines[index + 1]?.trim() ?? "";
 		if (!header.includes("|")) continue;
-		if (/^\|?(?:\s*:?-{3,}:?\s*\|)+\s*$/.test(divider)) {
+		if (/^\|?\s*:?-{3,}:?\s*(?:\|\s*:?-{3,}:?\s*)*\|?$/.test(divider)) {
 			return true;
 		}
 	}

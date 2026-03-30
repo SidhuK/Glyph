@@ -323,14 +323,16 @@ export function useNoteEditor({
 	);
 	const markdownManager = useMemo(
 		() =>
-			new MarkdownManager({
-				extensions,
-				markedOptions: {
-					gfm: true,
-					breaks: false,
-				},
-			}),
-		[extensions],
+			pasteMarkdownBehavior === "smart-markdown"
+				? new MarkdownManager({
+						extensions,
+						markedOptions: {
+							gfm: true,
+							breaks: false,
+						},
+					})
+				: null,
+		[extensions, pasteMarkdownBehavior],
 	);
 
 	useEffect(() => {
@@ -423,11 +425,6 @@ export function useNoteEditor({
 							!editor.can().insertContentAt(selectionRange, placeholderNodes)
 						) {
 							for (const item of placeholders) {
-								replacePlaceholderWithFallbackText(
-									editor,
-									item.uploadId,
-									item.file.name || "image",
-								);
 								URL.revokeObjectURL(item.objectUrl);
 							}
 							return false;
@@ -439,11 +436,6 @@ export function useNoteEditor({
 							.run();
 						if (!inserted) {
 							for (const item of placeholders) {
-								replacePlaceholderWithFallbackText(
-									editor,
-									item.uploadId,
-									item.file.name || "image",
-								);
 								URL.revokeObjectURL(item.objectUrl);
 							}
 							return false;
@@ -451,31 +443,31 @@ export function useNoteEditor({
 						event.preventDefault();
 						void (async () => {
 							for (const item of placeholders) {
-								const dataUrl = await readFileAsDataUrl(item.file);
-								const saved = await invoke("space_save_pasted_image", {
-									source_path: sourcePath,
-									target_dir: targetDir,
-									data_url: dataUrl,
-									alt: item.file.name || null,
-								});
-								replacePlaceholderWithImage(editor, item.uploadId, {
-									src: dataUrl,
-									alt: item.file.name || "",
-									title: "",
-									originSrc: saved.href,
-								});
-								URL.revokeObjectURL(item.objectUrl);
+								try {
+									const dataUrl = await readFileAsDataUrl(item.file);
+									const saved = await invoke("space_save_pasted_image", {
+										source_path: sourcePath,
+										target_dir: targetDir,
+										data_url: dataUrl,
+										alt: item.file.name || null,
+									});
+									replacePlaceholderWithImage(editor, item.uploadId, {
+										src: dataUrl,
+										alt: item.file.name || "",
+										title: "",
+										originSrc: saved.href,
+									});
+								} catch {
+									replacePlaceholderWithFallbackText(
+										editor,
+										item.uploadId,
+										item.file.name || "image",
+									);
+								} finally {
+									URL.revokeObjectURL(item.objectUrl);
+								}
 							}
-						})().catch(() => {
-							for (const item of placeholders) {
-								replacePlaceholderWithFallbackText(
-									editor,
-									item.uploadId,
-									item.file.name || "image",
-								);
-								URL.revokeObjectURL(item.objectUrl);
-							}
-						});
+						})();
 						return true;
 					}
 					if (pasteMarkdownBehavior !== "smart-markdown") return false;
@@ -491,6 +483,7 @@ export function useNoteEditor({
 						from: editor.state.selection.from,
 						to: editor.state.selection.to,
 					};
+					if (!markdownManager) return false;
 					const insertableContent = getInsertableMarkdownContent(
 						markdownManager,
 						clipboardText,
