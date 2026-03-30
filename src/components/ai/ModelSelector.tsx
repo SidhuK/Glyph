@@ -1,3 +1,5 @@
+import { BadgeInfoIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import {
 	type MouseEvent as ReactMouseEvent,
 	useCallback,
@@ -14,7 +16,7 @@ import type {
 	ProviderSupportEntry,
 } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
-import { ChevronDown, Eye } from "../Icons";
+import { ChevronDown } from "../Icons";
 import { ModelDetail, hasDetailData } from "./ModelDetail";
 import styles from "./ModelSelector.module.css";
 import {
@@ -285,6 +287,9 @@ export function ModelSelector({
 											e.stopPropagation();
 											handleInfoToggle();
 										};
+										const infoLabel = infoActive
+											? "Hide model details"
+											: "Show model details";
 										return (
 											<div className={styles.modelItemRow} key={m.id}>
 												<button
@@ -309,10 +314,15 @@ export function ModelSelector({
 														onMouseDown={handleInfoMouseDown}
 														onClick={handleInfoClick}
 														className={`${styles.infoInline} ${infoActive ? styles.infoInlineActive : ""}`}
-														title="Show model details"
-														aria-label="Show model details"
+														title={infoLabel}
+														aria-label={infoLabel}
+														aria-pressed={infoActive}
 													>
-														<Eye size={14} strokeWidth={1.8} />
+														<HugeiconsIcon
+															icon={BadgeInfoIcon}
+															size={14}
+															strokeWidth={1.8}
+														/>
 													</button>
 												)}
 											</div>

@@ -1,8 +1,9 @@
-import { emit } from "@tauri-apps/api/event";
+import { emitTo } from "@tauri-apps/api/event";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { resolveActiveProfileId } from "../../lib/aiProfiles";
 import { loadSettings, setAiEnabled } from "../../lib/settings";
 import { type AiProfile, invoke } from "../../lib/tauri";
+import { useTauriEvent } from "../../lib/tauriEvents";
 import {
 	SettingsRow,
 	SettingsSection,
@@ -18,13 +19,10 @@ export function AiSettingsPane() {
 	const [error, setError] = useState("");
 	const saveProfileRequestIdRef = useRef(0);
 	const activeProfileChangeRequestIdRef = useRef(0);
+	const reloadProfilesRequestIdRef = useRef(0);
 
 	const notifyAiProfilesUpdated = useCallback(async () => {
-		try {
-			await emit("ai:profiles-updated");
-		} catch {
-			// Best-effort cross-window sync.
-		}
+		await emitTo("main", "ai:profiles-updated");
 	}, []);
 
 	const activeProfile = useMemo(() => {
@@ -32,33 +30,37 @@ export function AiSettingsPane() {
 		return profiles.find((p) => p.id === activeProfileId) ?? null;
 	}, [activeProfileId, profiles]);
 
-	useEffect(() => {
-		let cancelled = false;
-		(async () => {
-			setError("");
-			try {
-				const settings = await loadSettings();
-				if (cancelled) return;
-				setAiEnabledState(settings.ui.aiEnabled);
-				const [list, active] = await Promise.all([
-					invoke("ai_profiles_list"),
-					invoke("ai_active_profile_get"),
-				]);
-				if (cancelled) return;
-				setProfiles(list);
-				const id = resolveActiveProfileId(list, active);
-				setActiveProfileId(id);
-				if (active !== id && id) {
-					await invoke("ai_active_profile_set", { id });
-				}
-			} catch (e) {
-				if (!cancelled) setError(errMessage(e));
+	const reloadProfiles = useCallback(async () => {
+		const requestId = ++reloadProfilesRequestIdRef.current;
+		setError("");
+		try {
+			const settings = await loadSettings();
+			if (requestId !== reloadProfilesRequestIdRef.current) return;
+			setAiEnabledState(settings.ui.aiEnabled);
+			const [list, active] = await Promise.all([
+				invoke("ai_profiles_list"),
+				invoke("ai_active_profile_get"),
+			]);
+			if (requestId !== reloadProfilesRequestIdRef.current) return;
+			setProfiles(list);
+			const id = resolveActiveProfileId(list, active);
+			setActiveProfileId(id);
+			if (active !== id && id) {
+				await invoke("ai_active_profile_set", { id });
 			}
-		})();
-		return () => {
-			cancelled = true;
-		};
+		} catch (e) {
+			if (requestId !== reloadProfilesRequestIdRef.current) return;
+			setError(errMessage(e));
+		}
 	}, []);
+
+	useEffect(() => {
+		void reloadProfiles();
+	}, [reloadProfiles]);
+
+	useTauriEvent("ai:profiles-updated", () => {
+		void reloadProfiles();
+	});
 
 	const updateAiEnabled = useCallback(async (enabled: boolean) => {
 		setError("");
