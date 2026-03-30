@@ -46,6 +46,37 @@ fn load_sibling_names(parent_abs: &Path) -> Result<HashSet<String>, String> {
     Ok(names)
 }
 
+fn duplicate_reservation_path(duplicate_abs: &Path) -> Result<PathBuf, String> {
+    let parent = duplicate_abs
+        .parent()
+        .ok_or_else(|| "invalid path: missing parent".to_string())?;
+    let file_name = duplicate_abs
+        .file_name()
+        .map(|value| value.to_string_lossy().to_string())
+        .ok_or_else(|| "invalid path: missing file name".to_string())?;
+    Ok(parent.join(format!(".{file_name}.duplicate.lock")))
+}
+
+struct DuplicateReservation {
+    lock_abs: PathBuf,
+}
+
+impl DuplicateReservation {
+    fn create(lock_abs: PathBuf) -> Result<Self, std::io::Error> {
+        std::fs::OpenOptions::new()
+            .write(true)
+            .create_new(true)
+            .open(&lock_abs)?;
+        Ok(Self { lock_abs })
+    }
+}
+
+impl Drop for DuplicateReservation {
+    fn drop(&mut self) {
+        let _ = std::fs::remove_file(&self.lock_abs);
+    }
+}
+
 fn build_file_entry(rel_path: &Path, is_markdown: bool) -> Result<FsEntry, String> {
     let name = rel_path
         .file_name()
@@ -84,26 +115,59 @@ fn duplicate_file_under_root(
         .ok_or_else(|| "invalid path: missing file name".to_string())?;
     let parent_rel = rel_path.parent().unwrap_or_else(|| Path::new(""));
     let parent_abs = paths::join_under(root, parent_rel)?;
-    let sibling_names = load_sibling_names(&parent_abs)?;
-    let duplicate_name = next_duplicate_file_name(&sibling_names, &file_name);
-    let duplicate_rel = if parent_rel.as_os_str().is_empty() {
-        PathBuf::from(&duplicate_name)
-    } else {
-        parent_rel.join(&duplicate_name)
-    };
-    let duplicate_abs = paths::join_under(root, &duplicate_rel)?;
-    let is_markdown = utils::is_markdown_path(&duplicate_rel);
-    crate::io_atomic::copy_atomic(&source_abs, &duplicate_abs).map_err(|e| e.to_string())?;
+    let mut unavailable_names = load_sibling_names(&parent_abs)?;
 
-    let duplicate_rel_string = utils::to_slash(&duplicate_rel);
-    if is_markdown {
-        let markdown =
-            std::fs::read_to_string(&duplicate_abs).map_err(|_| "file is not valid UTF-8".to_string())?;
-        mark_recent_local_change(recent_local_changes, &duplicate_rel_string);
-        let _ = index::index_note(root, &duplicate_rel_string, &markdown);
+    loop {
+        let duplicate_name = next_duplicate_file_name(&unavailable_names, &file_name);
+        let duplicate_rel = if parent_rel.as_os_str().is_empty() {
+            PathBuf::from(&duplicate_name)
+        } else {
+            parent_rel.join(&duplicate_name)
+        };
+        let duplicate_abs = paths::join_under(root, &duplicate_rel)?;
+        let reservation_abs = duplicate_reservation_path(&duplicate_abs)?;
+        let _reservation = match DuplicateReservation::create(reservation_abs) {
+            Ok(reservation) => reservation,
+            Err(error) if error.kind() == std::io::ErrorKind::AlreadyExists => {
+                unavailable_names.insert(duplicate_name.to_lowercase());
+                continue;
+            }
+            Err(error) => return Err(error.to_string()),
+        };
+
+        if duplicate_abs.exists() {
+            unavailable_names.insert(duplicate_name.to_lowercase());
+            continue;
+        }
+
+        let is_markdown = utils::is_markdown_path(&duplicate_rel);
+        crate::io_atomic::copy_atomic(&source_abs, &duplicate_abs).map_err(|e| e.to_string())?;
+
+        let duplicate_rel_string = utils::to_slash(&duplicate_rel);
+        if is_markdown {
+            mark_recent_local_change(recent_local_changes, &duplicate_rel_string);
+            match std::fs::read_to_string(&duplicate_abs) {
+                Ok(markdown) => {
+                    if let Err(error) = index::index_note(root, &duplicate_rel_string, &markdown) {
+                        tracing::warn!(
+                            note_id = %duplicate_rel_string,
+                            error = %error,
+                            "failed to index duplicated markdown note"
+                        );
+                    }
+                }
+                Err(error) => {
+                    tracing::warn!(
+                        note_id = %duplicate_rel_string,
+                        error = %error,
+                        "failed to read duplicated markdown note for indexing"
+                    );
+                }
+            }
+        }
+
+        return build_file_entry(&duplicate_rel, is_markdown);
     }
-
-    build_file_entry(&duplicate_rel, is_markdown)
 }
 
 fn remove_markdown_notes_from_index(
@@ -461,5 +525,31 @@ mod tests {
             )
             .expect("count query should succeed");
         assert_eq!(count, 1);
+    }
+
+    #[test]
+    fn duplicates_invalid_utf8_markdown_without_failing() {
+        let temp_space = TempSpace::new();
+        let root = temp_space.path();
+        let rel_path = Path::new("notes/Broken.md");
+        let abs_path = root.join(rel_path);
+        std::fs::create_dir_all(abs_path.parent().expect("file should have parent"))
+            .expect("parent dir should be created");
+        std::fs::write(&abs_path, [0xff_u8, 0xfe, b'\n']).expect("source markdown should be written");
+
+        let recent_local_changes = fresh_recent_local_changes();
+        let duplicated =
+            duplicate_file_under_root(root, rel_path, &recent_local_changes).expect("duplicate");
+
+        assert_eq!(duplicated.rel_path, "notes/Broken Copy.md");
+        assert!(duplicated.is_markdown);
+        assert!(has_recent_local_change(
+            &recent_local_changes,
+            &duplicated.rel_path
+        ));
+        assert_eq!(
+            std::fs::read(root.join(&duplicated.rel_path)).expect("duplicate file should exist"),
+            vec![0xff_u8, 0xfe, b'\n']
+        );
     }
 }
