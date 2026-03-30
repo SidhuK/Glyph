@@ -53,13 +53,8 @@
 /* ── Nav below calendar ── */
 
 .calendarNavRow {
-	display: grid;
-	grid-template-columns: 1fr auto;
-	gap: 0 clamp(20px, 2.4vw, 32px);
-}
-
-.calendarNavRow .calendarToolbarNav {
-	grid-column: 2;
+	display: flex;
+	justify-content: flex-end;
 }
 
 .calendarToolbarNav {
@@ -83,8 +78,13 @@
 }
 
 .calendarTaskComposer:focus-within {
-	border-color: color-mix(in srgb, var(--interactive-accent) 40%, var(--border-default));
-	box-shadow: 0 0 0 3px color-mix(in srgb, var(--interactive-accent) 8%, transparent);
+	border-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 40%,
+		var(--border-default)
+	);
+	box-shadow: 0 0 0 3px
+		color-mix(in srgb, var(--interactive-accent) 8%, transparent);
 }
 
 .calendarTaskComposer input {
@@ -129,10 +129,11 @@
 .calendarLeftCol {
 	background: var(--bg-primary);
 	border-radius: 16px;
-	border: 1.5px solid color-mix(in srgb, var(--interactive-accent) 22%, var(--border-default));
-	box-shadow:
-		0 1px 3px color-mix(in srgb, var(--interactive-accent) 6%, transparent),
-		0 8px 24px color-mix(in srgb, var(--interactive-accent) 4%, rgba(0, 0, 0, 0.04));
+	border: 1.5px solid
+		color-mix(in srgb, var(--interactive-accent) 22%, var(--border-default));
+	box-shadow: 0 1px 3px
+		color-mix(in srgb, var(--interactive-accent) 6%, transparent), 0 8px 24px
+		color-mix(in srgb, var(--interactive-accent) 4%, rgba(0, 0, 0, 0.04));
 	height: 360px;
 	display: flex;
 	flex-direction: column;
@@ -143,10 +144,14 @@
 
 .calendarDetailCol:hover,
 .calendarLeftCol:hover {
-	border-color: color-mix(in srgb, var(--interactive-accent) 38%, var(--border-default));
-	box-shadow:
-		0 1px 3px color-mix(in srgb, var(--interactive-accent) 8%, transparent),
-		0 12px 32px color-mix(in srgb, var(--interactive-accent) 6%, rgba(0, 0, 0, 0.06));
+	border-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 38%,
+		var(--border-default)
+	);
+	box-shadow: 0 1px 3px
+		color-mix(in srgb, var(--interactive-accent) 8%, transparent), 0 12px 32px
+		color-mix(in srgb, var(--interactive-accent) 6%, rgba(0, 0, 0, 0.06));
 }
 
 /* ── Right column: calendar picker ── */
@@ -160,6 +165,7 @@
 
 .calendarShadcnWrap {
 	--cell-size: 36px;
+
 	padding: 18px 20px;
 }
 
@@ -277,7 +283,8 @@
 	justify-content: space-between;
 	gap: 8px;
 	padding-bottom: 10px;
-	border-bottom: 1px solid color-mix(in srgb, var(--border-default) 50%, transparent);
+	border-bottom: 1px solid
+		color-mix(in srgb, var(--border-default) 50%, transparent);
 }
 
 .calendarCardSectionTitle {
@@ -290,8 +297,16 @@
 .calendarCardSectionCount {
 	font-size: 0.65rem;
 	font-weight: 600;
-	color: color-mix(in srgb, var(--interactive-accent) 80%, var(--text-secondary));
-	background: color-mix(in srgb, var(--interactive-accent) 10%, var(--bg-secondary));
+	color: color-mix(
+		in srgb,
+		var(--interactive-accent) 80%,
+		var(--text-secondary)
+	);
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 10%,
+		var(--bg-secondary)
+	);
 	padding: 2px 8px;
 	border-radius: 999px;
 	min-width: 22px;
@@ -450,14 +465,19 @@
 /* ── Recent notes mini-db ── */
 
 .calendarMiniDb {
-	border: 1.5px solid color-mix(in srgb, var(--interactive-accent) 14%, var(--border-default));
+	border: 1.5px solid
+		color-mix(in srgb, var(--interactive-accent) 14%, var(--border-default));
 	border-radius: 16px;
 	overflow: hidden;
 	transition: border-color 200ms ease;
 }
 
 .calendarMiniDb:hover {
-	border-color: color-mix(in srgb, var(--interactive-accent) 28%, var(--border-default));
+	border-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 28%,
+		var(--border-default)
+	);
 }
 
 .calendarMiniDbHeader {
@@ -564,11 +584,6 @@
 @container (max-width: 560px) {
 	.calendarPane {
 		padding: 14px;
-	}
-
-	.calendarDetailHeader {
-		flex-direction: column;
-		align-items: center;
 	}
 
 	.calendarInlineSetup {

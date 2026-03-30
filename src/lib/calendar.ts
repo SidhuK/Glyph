@@ -63,10 +63,6 @@ export function relativeDayLabel(date: string, today: string): string | null {
 	return null;
 }
 
-export function formatMonthTitle(anchorDate: string): string {
-	return format(parseCalendarDate(anchorDate), "MMMM yyyy");
-}
-
 export function formatDayTitle(date: string): string {
 	return format(parseCalendarDate(date), "MMM d");
 }
