@@ -274,22 +274,14 @@ describe("useNoteEditor", () => {
 		if (originalClipboardEvent) {
 			globalThis.ClipboardEvent = originalClipboardEvent;
 		} else {
-			(
-				globalThis as typeof globalThis & {
-					ClipboardEvent?: typeof ClipboardEvent;
-				}
-			).ClipboardEvent = undefined as unknown as typeof ClipboardEvent;
+			Reflect.deleteProperty(globalThis, "ClipboardEvent");
 		}
 		URL.createObjectURL = originalCreateObjectUrl;
 		URL.revokeObjectURL = originalRevokeObjectUrl;
 		if (originalFileReader) {
 			globalThis.FileReader = originalFileReader;
 		} else {
-			(
-				globalThis as typeof globalThis & {
-					FileReader?: typeof FileReader;
-				}
-			).FileReader = undefined as unknown as typeof FileReader;
+			Reflect.deleteProperty(globalThis, "FileReader");
 		}
 	});
 
@@ -572,5 +564,45 @@ describe("useNoteEditor", () => {
 		expect(chainCommands.insertContentAt).toHaveBeenCalled();
 		expect(invokeMock).not.toHaveBeenCalled();
 		expect(event.defaultPrevented).toBe(false);
+	});
+
+	it("continues processing later pasted images when one upload fails", async () => {
+		const onChange = vi.fn();
+		invokeMock
+			.mockRejectedValueOnce(new Error("first upload failed"))
+			.mockResolvedValueOnce({ href: "assets/image-2.png" });
+
+		await act(async () => {
+			root.render(
+				<Harness onChange={onChange} pasteMarkdownBehavior="smart-markdown" />,
+			);
+		});
+
+		const options = getEditorOptions() as EditorOptionsWithPaste;
+		const paste = options?.editorProps?.handleDOMEvents?.paste;
+		const first = new File(["first"], "first.png", { type: "image/png" });
+		const second = new File(["second"], "second.png", { type: "image/png" });
+		const event = createClipboardEvent({
+			items: [
+				{
+					type: "image/png",
+					getAsFile: () => first,
+				},
+				{
+					type: "image/png",
+					getAsFile: () => second,
+				},
+			],
+		});
+
+		await act(async () => {
+			expect(paste?.({}, event)).toBe(true);
+			await Promise.resolve();
+			await Promise.resolve();
+			await Promise.resolve();
+		});
+
+		expect(invokeMock).toHaveBeenCalledTimes(2);
+		expect(URL.revokeObjectURL).toHaveBeenCalledTimes(2);
 	});
 });
