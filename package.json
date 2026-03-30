@@ -69,17 +69,15 @@
 	},
 	"devDependencies": {
 		"@biomejs/biome": "^1.9.4",
-		"@react-grab/mcp": "^0.1.23",
-		"@tailwindcss/vite": "^4.1.18",
+		"@tailwindcss/vite": "^4.2.2",
 		"@tauri-apps/cli": "^2",
 		"@types/react": "^19.1.8",
 		"@types/react-dom": "^19.1.6",
-		"@vitejs/plugin-react": "^4.6.0",
+		"@vitejs/plugin-react": "^5.0.0",
 		"jsdom": "^29.0.0",
-		"react-grab": "^0.1.23",
-		"tailwindcss": "^4.1.18",
+		"tailwindcss": "^4.2.2",
 		"typescript": "~5.8.3",
-		"vite": "^7.0.4",
+		"vite": "^8.0.2",
 		"vitest": "^4.0.18"
 	}
 }
