@@ -894,18 +894,35 @@ export function AppShell() {
 		setError,
 	]);
 
+	const duplicateFileWithActiveEditorFlush = useCallback(
+		async (path: string) => {
+			if (activeMarkdownTabPath === path) {
+				await saveCurrentEditor();
+			}
+			return fileTree.onDuplicateFile(path);
+		},
+		[activeMarkdownTabPath, fileTree, saveCurrentEditor],
+	);
+
 	const handleDuplicateActiveMarkdown = useCallback(async () => {
-		if (!activeFilePath || !isMarkdownPath(activeFilePath)) {
+		if (!activeMarkdownTabPath || !isMarkdownPath(activeMarkdownTabPath)) {
 			return;
 		}
 		setSidebarCollapsed(false);
 		setSidebarViewMode("files");
-		const duplicatedPath = await fileTree.onDuplicateFile(activeFilePath);
+		const duplicatedPath = await duplicateFileWithActiveEditorFlush(
+			activeMarkdownTabPath,
+		);
 		if (!duplicatedPath) return;
 		window.requestAnimationFrame(() => {
 			dispatchFileTreeStartRename({ path: duplicatedPath });
 		});
-	}, [activeFilePath, fileTree, setSidebarCollapsed, setSidebarViewMode]);
+	}, [
+		activeMarkdownTabPath,
+		duplicateFileWithActiveEditorFlush,
+		setSidebarCollapsed,
+		setSidebarViewMode,
+	]);
 
 	const handleGitSyncFailure = useCallback(
 		(cause: unknown) => {
@@ -1149,7 +1166,9 @@ export function AppShell() {
 				label: "Duplicate current note",
 				icon: <HugeiconsIcon icon={NoteIcon} size={16} />,
 				category: "File Operations",
-				enabled: activeFilePath !== null && isMarkdownPath(activeFilePath),
+				enabled:
+					activeMarkdownTabPath !== null &&
+					isMarkdownPath(activeMarkdownTabPath),
 				action: () => void handleDuplicateActiveMarkdown(),
 			},
 			{
@@ -1367,7 +1386,7 @@ export function AppShell() {
 				onCreateFromTemplateInDir={(p) => void openTemplatePicker(p)}
 				onNewDatabaseInDir={async () => createDatabaseAndOpen()}
 				onNewFolderInDir={(p) => fileTree.onNewFolderInDir(p)}
-				onDuplicateFile={(p) => fileTree.onDuplicateFile(p)}
+				onDuplicateFile={(p) => duplicateFileWithActiveEditorFlush(p)}
 				onRenameDir={(p, name, kind) => fileTree.onRenameDir(p, name, kind)}
 				onDeletePath={(p, kind) => fileTree.onDeletePath(p, kind)}
 				onToggleDir={fileTree.toggleDir}

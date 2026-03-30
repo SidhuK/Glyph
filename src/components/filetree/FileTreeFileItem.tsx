@@ -1,6 +1,6 @@
 import {
-	ColorsIcon,
 	Copy01Icon,
+	DocumentCodeIcon,
 	FileViewIcon,
 	PencilEdit02Icon,
 	TableIcon,
@@ -219,7 +219,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 								className="fileTreeCreateMenuItem"
 								onSelect={() => void onCreateFromTemplateInDir(parentDirPath)}
 							>
-								<HugeiconsIcon icon={ColorsIcon} size={14} />
+								<HugeiconsIcon icon={DocumentCodeIcon} size={14} />
 								Create from template
 							</ContextMenuItem>
 							<ContextMenuItem

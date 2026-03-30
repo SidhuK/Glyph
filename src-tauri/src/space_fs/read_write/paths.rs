@@ -92,23 +92,15 @@ fn duplicate_file_under_root(
         parent_rel.join(&duplicate_name)
     };
     let duplicate_abs = paths::join_under(root, &duplicate_rel)?;
-    let bytes = std::fs::read(&source_abs).map_err(|e| e.to_string())?;
     let is_markdown = utils::is_markdown_path(&duplicate_rel);
-    let markdown = if is_markdown {
-        Some(String::from_utf8(bytes.clone()).map_err(|_| "file is not valid UTF-8".to_string())?)
-    } else {
-        None
-    };
-
-    if let Some(parent) = duplicate_abs.parent() {
-        std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
-    }
-    crate::io_atomic::write_atomic(&duplicate_abs, &bytes).map_err(|e| e.to_string())?;
+    crate::io_atomic::copy_atomic(&source_abs, &duplicate_abs).map_err(|e| e.to_string())?;
 
     let duplicate_rel_string = utils::to_slash(&duplicate_rel);
-    if let Some(markdown) = markdown.as_deref() {
+    if is_markdown {
+        let markdown =
+            std::fs::read_to_string(&duplicate_abs).map_err(|_| "file is not valid UTF-8".to_string())?;
         mark_recent_local_change(recent_local_changes, &duplicate_rel_string);
-        let _ = index::index_note(root, &duplicate_rel_string, markdown);
+        let _ = index::index_note(root, &duplicate_rel_string, &markdown);
     }
 
     build_file_entry(&duplicate_rel, is_markdown)
