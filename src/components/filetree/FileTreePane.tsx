@@ -484,7 +484,7 @@ export const FileTreePane = memo(function FileTreePane({
 															{file.displayName}
 														</span>
 														{file.parent ? (
-															<span className="fileTreePinnedPath mono">
+															<span className="fileTreePinnedPath">
 																{file.parent}
 															</span>
 														) : null}
