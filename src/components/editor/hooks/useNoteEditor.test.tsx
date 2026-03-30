@@ -217,7 +217,8 @@ describe("useNoteEditor", () => {
 		mockEditor.view.dispatch.mockReset();
 		chainCommands.focus.mockClear();
 		chainCommands.insertContentAt.mockClear();
-		chainCommands.run.mockClear();
+		chainCommands.run.mockReset();
+		chainCommands.run.mockReturnValue(true);
 		canCommands.insertContentAt.mockReset();
 		canCommands.insertContentAt.mockReturnValue(true);
 		openUrlMock.mockReset();
@@ -273,12 +274,22 @@ describe("useNoteEditor", () => {
 		if (originalClipboardEvent) {
 			globalThis.ClipboardEvent = originalClipboardEvent;
 		} else {
-			globalThis.ClipboardEvent = Event as unknown as typeof ClipboardEvent;
+			(
+				globalThis as typeof globalThis & {
+					ClipboardEvent?: typeof ClipboardEvent;
+				}
+			).ClipboardEvent = undefined as unknown as typeof ClipboardEvent;
 		}
 		URL.createObjectURL = originalCreateObjectUrl;
 		URL.revokeObjectURL = originalRevokeObjectUrl;
 		if (originalFileReader) {
 			globalThis.FileReader = originalFileReader;
+		} else {
+			(
+				globalThis as typeof globalThis & {
+					FileReader?: typeof FileReader;
+				}
+			).FileReader = undefined as unknown as typeof FileReader;
 		}
 	});
 
@@ -421,6 +432,25 @@ describe("useNoteEditor", () => {
 		expect(paste?.({}, event)).toBe(false);
 		expect(parseMock).toHaveBeenCalled();
 		expect(chainCommands.insertContentAt).not.toHaveBeenCalled();
+		expect(event.defaultPrevented).toBe(false);
+	});
+
+	it("lets the default paste behavior continue when smart Markdown insertion fails to run", async () => {
+		const onChange = vi.fn();
+		chainCommands.run.mockReturnValue(false);
+
+		await act(async () => {
+			root.render(
+				<Harness onChange={onChange} pasteMarkdownBehavior="smart-markdown" />,
+			);
+		});
+
+		const options = getEditorOptions() as EditorOptionsWithPaste;
+		const paste = options?.editorProps?.handleDOMEvents?.paste;
+		const event = createClipboardEvent({ text: "**bold**" });
+
+		expect(paste?.({}, event)).toBe(false);
+		expect(chainCommands.insertContentAt).toHaveBeenCalled();
 		expect(event.defaultPrevented).toBe(false);
 	});
 
