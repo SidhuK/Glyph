@@ -413,12 +413,13 @@ export function useNoteEditor({
 					) {
 						return false;
 					}
-					event.preventDefault();
-					editor
+					const inserted = editor
 						.chain()
 						.focus()
 						.insertContentAt(selectionRange, insertableContent)
 						.run();
+					if (!inserted) return false;
+					event.preventDefault();
 					return true;
 				},
 			},
