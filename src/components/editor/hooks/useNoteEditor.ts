@@ -39,6 +39,80 @@ function getClipboardPlainText(event: ClipboardEvent): string {
 	return event.clipboardData?.getData("text/plain") ?? "";
 }
 
+function normalizeClipboardMarkdownText(text: string): string {
+	return normalizeBody(text).replace(/\r\n?/g, "\n");
+}
+
+const HTML_BLOCK_TAGS = new Set([
+	"ADDRESS",
+	"ARTICLE",
+	"ASIDE",
+	"BLOCKQUOTE",
+	"DIV",
+	"DL",
+	"FIELDSET",
+	"FIGCAPTION",
+	"FIGURE",
+	"FOOTER",
+	"FORM",
+	"H1",
+	"H2",
+	"H3",
+	"H4",
+	"H5",
+	"H6",
+	"HEADER",
+	"HR",
+	"LI",
+	"MAIN",
+	"NAV",
+	"OL",
+	"P",
+	"PRE",
+	"SECTION",
+	"TABLE",
+	"TD",
+	"TH",
+	"TR",
+	"UL",
+]);
+
+function extractPlainTextFromClipboardHtml(html: string): string {
+	if (!html.trim() || typeof DOMParser === "undefined") return "";
+	const doc = new DOMParser().parseFromString(html, "text/html");
+	const body = doc.body;
+	if (!body) return "";
+
+	let out = "";
+	const appendNewline = () => {
+		if (!out.endsWith("\n")) out += "\n";
+	};
+
+	const visit = (node: Node) => {
+		if (node.nodeType === Node.TEXT_NODE) {
+			out += node.textContent ?? "";
+			return;
+		}
+		if (!(node instanceof Element)) return;
+		if (node.tagName === "BR") {
+			appendNewline();
+			return;
+		}
+		const isBlock = HTML_BLOCK_TAGS.has(node.tagName);
+		if (isBlock && out && !out.endsWith("\n")) appendNewline();
+		for (const child of Array.from(node.childNodes)) {
+			visit(child);
+		}
+		if (isBlock) appendNewline();
+	};
+
+	for (const child of Array.from(body.childNodes)) {
+		visit(child);
+	}
+
+	return normalizeClipboardMarkdownText(out).trim();
+}
+
 function getPastedImageFiles(event: ClipboardEvent): File[] {
 	const files: File[] = [];
 	for (const item of Array.from(event.clipboardData?.items ?? [])) {
@@ -127,6 +201,17 @@ function getInsertableMarkdownContent(
 		return content;
 	}
 	return Array.isArray(content[0].content) ? content[0].content : [];
+}
+
+function shouldHandleSmartMarkdownPaste(
+	clipboardText: string,
+	clipboardHtml: string,
+): boolean {
+	const normalizedText = normalizeClipboardMarkdownText(clipboardText).trim();
+	if (!looksLikeMarkdownPaste(normalizedText)) return false;
+	const normalizedHtml = extractPlainTextFromClipboardHtml(clipboardHtml);
+	if (!normalizedHtml) return true;
+	return normalizedHtml === normalizedText;
 }
 
 interface UseNoteEditorOptions {
@@ -395,10 +480,13 @@ export function useNoteEditor({
 					}
 					if (pasteMarkdownBehavior !== "smart-markdown") return false;
 					if (editor.isActive("codeBlock")) return false;
-					const clipboardHtml = getClipboardHtml(event).trim();
-					if (clipboardHtml) return false;
-					const clipboardText = getClipboardPlainText(event);
-					if (!looksLikeMarkdownPaste(clipboardText)) return false;
+					const clipboardHtml = getClipboardHtml(event);
+					const clipboardText = normalizeClipboardMarkdownText(
+						getClipboardPlainText(event),
+					);
+					if (!shouldHandleSmartMarkdownPaste(clipboardText, clipboardHtml)) {
+						return false;
+					}
 					const selectionRange = {
 						from: editor.state.selection.from,
 						to: editor.state.selection.to,
