@@ -452,10 +452,6 @@
 	flex-shrink: 0;
 }
 
-:root[data-translucent-sidebar="false"] .sidebarFooter {
-	background: transparent;
-}
-
 .sidebarFooter::before {
 	content: none;
 }
