@@ -1,10 +1,16 @@
-import { Folder01Icon, Folder03Icon } from "@hugeicons/core-free-icons";
+import {
+	ColorsIcon,
+	Folder01Icon,
+	Folder03Icon,
+	PencilEdit02Icon,
+	TableIcon,
+} from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, m } from "motion/react";
 import type { MouseEvent, ReactNode } from "react";
 import { memo, useEffect, useRef, useState } from "react";
 import type { FileTreeAppearance, FsEntry } from "../../lib/tauri";
-import { FolderPlus, Plus, Trash2 } from "../Icons";
+import { FolderPlus, Trash2 } from "../Icons";
 import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
 import { isEditorTextColor } from "../editor/textColors";
 import {
@@ -166,21 +172,21 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 								className="fileTreeCreateMenuItem"
 								onSelect={() => void onNewFileInDir(entry.rel_path)}
 							>
-								<Plus size={14} />
+								<HugeiconsIcon icon={PencilEdit02Icon} size={14} />
 								Add file
 							</ContextMenuItem>
 							<ContextMenuItem
 								className="fileTreeCreateMenuItem"
 								onSelect={() => void onCreateFromTemplateInDir(entry.rel_path)}
 							>
-								<Plus size={14} />
+								<HugeiconsIcon icon={ColorsIcon} size={14} />
 								Create from template
 							</ContextMenuItem>
 							<ContextMenuItem
 								className="fileTreeCreateMenuItem"
 								onSelect={() => void onNewDatabaseInDir(entry.rel_path)}
 							>
-								<Plus size={14} />
+								<HugeiconsIcon icon={TableIcon} size={14} />
 								Add database
 							</ContextMenuItem>
 							<ContextMenuItem
@@ -195,6 +201,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 								className="fileTreeCreateMenuItem"
 								onSelect={onStartRename}
 							>
+								<HugeiconsIcon icon={PencilEdit02Icon} size={14} />
 								Rename
 							</ContextMenuItem>
 							<FileTreeAppearanceMenu
