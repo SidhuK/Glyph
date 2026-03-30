@@ -51,7 +51,10 @@ import { useGitSync } from "../../hooks/useGitSync";
 import { useMenuListeners } from "../../hooks/useMenuListeners";
 import { useResizablePanel } from "../../hooks/useResizablePanel";
 import { useWhatsNew } from "../../hooks/useWhatsNew";
-import { dispatchPathRemoved } from "../../lib/appEvents";
+import {
+	dispatchFileTreeStartRename,
+	dispatchPathRemoved,
+} from "../../lib/appEvents";
 import { promptNoteExportPath } from "../../lib/export";
 import { getLicenseStatus } from "../../lib/license";
 import { updateOnboardingSettings } from "../../lib/settings";
@@ -61,6 +64,7 @@ import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { listTemplates, renderTemplate } from "../../lib/templates";
 import { openSettingsWindow } from "../../lib/windows";
+import { isMarkdownPath } from "../../utils/path";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { FileHtml, LayoutAlignLeft } from "../Icons";
 import { AIFloatingHost } from "../ai/AIFloatingHost";
@@ -122,6 +126,7 @@ export function AppShell() {
 	const {
 		sidebarCollapsed,
 		setSidebarCollapsed,
+		setSidebarViewMode,
 		paletteOpen,
 		setPaletteOpen,
 		activePreviewPath,
@@ -264,14 +269,14 @@ export function AppShell() {
 	});
 
 	const openTemplatesSettings = useCallback(() => {
-		void openSettingsWindow("general");
+		void openSettingsWindow("space");
 	}, []);
 
 	const openTemplatePicker = useCallback(
 		async (dirPath?: string) => {
 			if (!spacePath) return;
 			if (templateFolder === null) {
-				setError("Set a template folder in Settings -> General first.");
+				setError("Set a template folder in Settings -> Space first.");
 				openTemplatesSettings();
 				return;
 			}
@@ -889,6 +894,19 @@ export function AppShell() {
 		setError,
 	]);
 
+	const handleDuplicateActiveMarkdown = useCallback(async () => {
+		if (!activeFilePath || !isMarkdownPath(activeFilePath)) {
+			return;
+		}
+		setSidebarCollapsed(false);
+		setSidebarViewMode("files");
+		const duplicatedPath = await fileTree.onDuplicateFile(activeFilePath);
+		if (!duplicatedPath) return;
+		window.requestAnimationFrame(() => {
+			dispatchFileTreeStartRename({ path: duplicatedPath });
+		});
+	}, [activeFilePath, fileTree, setSidebarCollapsed, setSidebarViewMode]);
+
 	const handleGitSyncFailure = useCallback(
 		(cause: unknown) => {
 			const message =
@@ -1127,6 +1145,14 @@ export function AppShell() {
 				},
 			},
 			{
+				id: "duplicate-current-note",
+				label: "Duplicate current note",
+				icon: <HugeiconsIcon icon={NoteIcon} size={16} />,
+				category: "File Operations",
+				enabled: activeFilePath !== null && isMarkdownPath(activeFilePath),
+				action: () => void handleDuplicateActiveMarkdown(),
+			},
+			{
 				id: "open-daily-note",
 				label: "Open daily note (today)",
 				icon: <HugeiconsIcon icon={CalendarAdd01Icon} size={16} />,
@@ -1262,6 +1288,7 @@ export function AppShell() {
 		activeDirPath,
 		handleGitSyncFailure,
 		handleCopyOpenNoteAsMarkdown,
+		handleDuplicateActiveMarkdown,
 		handleExportHtml,
 		fileTree,
 		onOpenSpace,
@@ -1340,6 +1367,7 @@ export function AppShell() {
 				onCreateFromTemplateInDir={(p) => void openTemplatePicker(p)}
 				onNewDatabaseInDir={async () => createDatabaseAndOpen()}
 				onNewFolderInDir={(p) => fileTree.onNewFolderInDir(p)}
+				onDuplicateFile={(p) => fileTree.onDuplicateFile(p)}
 				onRenameDir={(p, name, kind) => fileTree.onRenameDir(p, name, kind)}
 				onDeletePath={(p, kind) => fileTree.onDeletePath(p, kind)}
 				onToggleDir={fileTree.toggleDir}

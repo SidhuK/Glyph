@@ -504,6 +504,7 @@ pub fn run() {
             space_fs::read_write::text::space_write_text,
             space_fs::read_write::text::space_open_or_create_text,
             space_fs::read_write::paths::space_create_dir,
+            space_fs::read_write::paths::space_duplicate_path,
             space_fs::read_write::paths::space_rename_path,
             space_fs::read_write::paths::space_delete_path,
             space_fs::read_write::paths::space_resolve_abs_path,
