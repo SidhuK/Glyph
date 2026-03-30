@@ -177,10 +177,6 @@
 	gap: 6px;
 	font-size: var(--text-xs);
 	color: var(--text-tertiary);
-	background: transparent;
-	border: 0;
-	padding: 0;
-	cursor: pointer;
 }
 
 .aiHistoryChevron {
@@ -198,6 +194,44 @@
 
 .aiHistoryHeader button:disabled {
 	opacity: 0.4;
+}
+
+.aiHistoryToggle,
+.aiToolExpandBtn,
+.aiToolGroupTop {
+	height: auto;
+	background: transparent;
+	border: 0;
+	padding: 0;
+	border-radius: 0;
+	cursor: pointer;
+}
+
+.aiToolExpandBtn,
+.aiToolGroupTop {
+	color: inherit;
+	text-align: left;
+}
+
+.aiHistoryToggle:hover,
+.aiHistoryToggle:active,
+.aiToolExpandBtn:hover,
+.aiToolExpandBtn:active,
+.aiToolGroupTop:hover,
+.aiToolGroupTop:active {
+	background: transparent;
+}
+
+.aiHistoryToggle:hover,
+.aiHistoryToggle:active {
+	color: var(--text-secondary);
+}
+
+.aiToolExpandBtn:hover,
+.aiToolExpandBtn:active,
+.aiToolGroupTop:hover,
+.aiToolGroupTop:active {
+	color: inherit;
 }
 
 .aiHistoryList {
@@ -843,12 +877,8 @@
 
 .aiToolExpandBtn {
 	width: 100%;
-	background: transparent;
-	border: 0;
-	padding: 0;
 	color: inherit;
 	text-align: left;
-	cursor: pointer;
 }
 
 .aiToolPhase {
@@ -1519,7 +1549,7 @@
 }
 
 .aiComposerRight {
-	flex: 1 1 auto;
+	flex: 0 1 auto;
 	min-width: 0;
 	display: flex;
 	align-items: stretch;
@@ -1839,12 +1869,8 @@ button.aiComposerSend:disabled {
 	align-items: center;
 	gap: 6px;
 	width: 100%;
-	background: transparent;
-	border: 0;
-	padding: 0;
 	color: inherit;
 	text-align: left;
-	cursor: pointer;
 }
 
 .aiToolDuration {

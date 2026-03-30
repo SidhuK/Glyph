@@ -74,7 +74,7 @@ export function applyUiTypography(
 	editorFontSize: UiFontSize,
 ): void {
 	const root = document.documentElement;
-	const safeFamily = fontFamily.trim() || "Inter";
+	const safeFamily = fontFamily.trim() || "Cabinet Grotesk";
 	const safeMonoFamily = monoFontFamily.trim() || "JetBrains Mono";
 	const uiScale = Math.max(0.5, Math.min(3, uiFontSize / 14));
 	const editorScale = Math.max(
@@ -90,7 +90,7 @@ export function applyUiTypography(
 	root.style.fontSize = `${Math.round(rootRemPx * 100) / 100}px`;
 	root.style.setProperty(
 		"--font-sans",
-		`"${safeFamily}", -apple-system, BlinkMacSystemFont, sans-serif`,
+		`"${safeFamily}", "Inter", -apple-system, BlinkMacSystemFont, sans-serif`,
 	);
 	root.style.setProperty(
 		"--font-mono",
