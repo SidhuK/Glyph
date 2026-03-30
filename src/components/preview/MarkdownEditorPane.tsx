@@ -801,6 +801,7 @@ export function MarkdownEditorPane({
 							markdown={text}
 							relPath={relPath}
 							mode={mode}
+							pasteMarkdownBehavior="smart-markdown"
 							onModeChange={setMode}
 							onChange={(nextText) => {
 								hasUserEditsRef.current = true;
