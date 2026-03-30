@@ -11,8 +11,6 @@ import {
 
 export const CALENDAR_TAB_ID = "__glyph_calendar__";
 
-export type CalendarViewMode = "month" | "week";
-
 export interface CalendarRange {
 	start: string;
 	end: string;
@@ -34,14 +32,6 @@ export function buildMonthRange(anchorDate: string): CalendarRange {
 	return buildRange(rangeStart, rangeEnd);
 }
 
-export function buildWeekRange(anchorDate: string): CalendarRange {
-	const anchor = parseCalendarDate(anchorDate);
-	return buildRange(
-		startOfWeek(anchor, { weekStartsOn: 0 }),
-		endOfWeek(anchor, { weekStartsOn: 0 }),
-	);
-}
-
 export function buildRange(start: Date, end: Date): CalendarRange {
 	const dates: string[] = [];
 	for (let cursor = start; cursor <= end; cursor = addDays(cursor, 1)) {
@@ -60,10 +50,6 @@ export function shiftMonth(anchorDate: string, delta: number): string {
 	return formatCalendarDate(next);
 }
 
-export function shiftWeek(anchorDate: string, delta: number): string {
-	return formatCalendarDate(addDays(parseCalendarDate(anchorDate), delta * 7));
-}
-
 export function isDateInMonth(date: string, monthAnchor: string): boolean {
 	return isSameMonth(parseCalendarDate(date), parseCalendarDate(monthAnchor));
 }
@@ -75,10 +61,6 @@ export function relativeDayLabel(date: string, today: string): string | null {
 	const yesterday = formatCalendarDate(addDays(parseCalendarDate(today), -1));
 	if (date === yesterday) return "Yesterday";
 	return null;
-}
-
-export function formatMonthTitle(anchorDate: string): string {
-	return format(parseCalendarDate(anchorDate), "MMMM yyyy");
 }
 
 export function formatDayTitle(date: string): string {
