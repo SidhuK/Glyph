@@ -87,6 +87,31 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 		[loadDir],
 	);
 
+	const ensureDirChainLoaded = useCallback(
+		async (dirPath: string) => {
+			const normalizedDirPath = normalizeRelPath(dirPath);
+			const loadChain: string[] = [];
+			let current = normalizedDirPath;
+			while (true) {
+				loadChain.unshift(current);
+				if (!current) break;
+				current = parentDir(current);
+			}
+			updateExpandedDirs((prev) => {
+				const next = new Set(prev);
+				let changed = false;
+				for (const dir of loadChain) {
+					if (!dir || next.has(dir)) continue;
+					next.add(dir);
+					changed = true;
+				}
+				return changed ? next : prev;
+			});
+			await Promise.all(loadChain.map((dir) => loadDir(dir, true)));
+		},
+		[loadDir, updateExpandedDirs],
+	);
+
 	const insertEntryOptimistic = useCallback(
 		(parentDirPath: string, entry: FsEntry) => {
 			const normalizedEntry = normalizeEntry(entry);
@@ -245,6 +270,28 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			updateExpandedDirs,
 			spacePath,
 		],
+	);
+
+	const onDuplicateFile = useCallback(
+		async (path: string) => {
+			const target = normalizeRelPath(path);
+			if (!target) return null;
+			setError("");
+			try {
+				const duplicated = await invoke("space_duplicate_path", {
+					path: target,
+				});
+				const duplicatedPath = normalizeRelPath(duplicated.rel_path);
+				if (!duplicatedPath) return null;
+				insertEntryOptimistic(parentDir(duplicatedPath), duplicated);
+				await ensureDirChainLoaded(parentDir(duplicatedPath));
+				return duplicatedPath;
+			} catch (error) {
+				setError(extractErrorMessage(error));
+				return null;
+			}
+		},
+		[ensureDirChainLoaded, insertEntryOptimistic, setError],
 	);
 
 	const onRenameDir = useCallback(
@@ -515,6 +562,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 		onNewFile,
 		onNewFileInDir,
 		onNewFolderInDir,
+		onDuplicateFile,
 		onRenameDir,
 		onDeletePath,
 		onMovePath,

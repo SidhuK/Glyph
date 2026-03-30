@@ -766,6 +766,7 @@ interface TauriCommands {
 		OpenOrCreateTextResult
 	>;
 	space_create_dir: CommandDef<{ path: string }, void>;
+	space_duplicate_path: CommandDef<{ path: string }, FsEntry>;
 	space_rename_path: CommandDef<{ from_path: string; to_path: string }, void>;
 	space_delete_path: CommandDef<
 		{ path: string; recursive?: boolean | null },

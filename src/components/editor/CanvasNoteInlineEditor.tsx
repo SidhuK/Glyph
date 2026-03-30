@@ -343,11 +343,37 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	>(null);
 	const [activeMermaidPreviewHeight, setActiveMermaidPreviewHeight] =
 		useState(0);
+	const previousRelPathRef = useRef(relPath);
 
 	useEffect(() => {
 		onEditorReady?.(editor ?? null);
 		return () => onEditorReady?.(null);
 	}, [editor, onEditorReady]);
+
+	useEffect(() => {
+		const host = tiptapHostRef.current;
+		const blurHostSelection = (host: HTMLDivElement | null) => {
+			if (!host) return;
+			const activeElement = document.activeElement;
+			if (
+				activeElement instanceof HTMLElement &&
+				host.contains(activeElement)
+			) {
+				activeElement.blur();
+			}
+			const selection = window.getSelection();
+			if (selection?.anchorNode && host.contains(selection.anchorNode)) {
+				selection.removeAllRanges();
+			}
+		};
+		if (previousRelPathRef.current !== relPath) {
+			blurHostSelection(host);
+			previousRelPathRef.current = relPath;
+		}
+		return () => {
+			blurHostSelection(host);
+		};
+	}, [relPath]);
 
 	useEffect(() => {
 		if (frontmatter === lastFrontmatterRef.current) return;

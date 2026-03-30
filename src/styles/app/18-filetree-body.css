@@ -183,7 +183,18 @@
 }
 
 .fileTreeCreateMenuSeparator {
-	margin: 4px 2px;
+	height: 1px;
+	margin: 7px 6px;
+	border: 0;
+	background: linear-gradient(
+		90deg,
+		transparent 0%,
+		color-mix(in srgb, var(--border-light) 45%, transparent) 12%,
+		color-mix(in srgb, var(--interactive-accent) 18%, var(--border-default)) 50%,
+		color-mix(in srgb, var(--border-light) 45%, transparent) 88%,
+		transparent 100%
+	);
+	opacity: 0.9;
 }
 
 /* hierarchy connector lines intentionally removed */
