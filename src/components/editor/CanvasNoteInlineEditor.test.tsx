@@ -159,6 +159,7 @@ describe("CanvasNoteInlineEditor table controls", () => {
 	let root: Root;
 
 	beforeEach(() => {
+		vi.resetAllMocks();
 		vi.useFakeTimers();
 		let nextAnimationFrameId = 0;
 		const rafTimeouts = new Map<number, number>();
@@ -183,16 +184,6 @@ describe("CanvasNoteInlineEditor table controls", () => {
 			unobserve() {}
 		} as typeof ResizeObserver;
 		mockEditor.isEditable = true;
-		mockEditor.chain.mockClear();
-		mockEditor.on.mockClear();
-		mockEditor.off.mockClear();
-		mockEditor.commands.refreshMermaidPreviews.mockReset();
-		mockEditor.commands.setActiveMermaidPreview.mockReset();
-		mockEditor.commands.setRichMermaidPreviewHeight.mockReset();
-		chainCommands.focus.mockClear();
-		chainCommands.addRowAfter.mockClear();
-		chainCommands.addColumnAfter.mockClear();
-		chainCommands.run.mockReset();
 		chainCommands.run.mockReturnValue(true);
 		useNoteEditorMock.mockReturnValue({
 			body: "",
@@ -253,15 +244,19 @@ describe("CanvasNoteInlineEditor table controls", () => {
 		});
 	}
 
-	it("shows icon-only row and column controls when selection is inside a table", async () => {
-		render("rich");
-
+	async function syncSelection(text: string) {
 		await act(async () => {
-			setSelectionInText("Ada");
+			setSelectionInText(text);
 			document.dispatchEvent(new Event("selectionchange"));
 			emitEditorEvent("selectionUpdate");
 		});
 		await flushRaf();
+	}
+
+	it("shows icon-only row and column controls when selection is inside a table", async () => {
+		render("rich");
+
+		await syncSelection("Ada");
 
 		expect(container.querySelector('[data-axis="row"]')).toBeInstanceOf(
 			HTMLButtonElement,
@@ -271,29 +266,19 @@ describe("CanvasNoteInlineEditor table controls", () => {
 		);
 	});
 
-	it("hides table controls when selection moves outside the table or rich mode is off", async () => {
+	it("hides table controls when selection moves outside the table", async () => {
 		render("rich");
 
-		await act(async () => {
-			setSelectionInText("Ada");
-			document.dispatchEvent(new Event("selectionchange"));
-		});
-		await flushRaf();
+		await syncSelection("Ada");
 		expect(container.querySelector('[data-axis="row"]')).toBeTruthy();
 
-		await act(async () => {
-			setSelectionInText("Outside table");
-			document.dispatchEvent(new Event("selectionchange"));
-		});
-		await flushRaf();
+		await syncSelection("Outside table");
 		expect(container.querySelector('[data-axis="row"]')).toBeNull();
 		expect(container.querySelector('[data-axis="column"]')).toBeNull();
+	});
 
+	it("hides table controls in preview mode", async () => {
 		render("preview");
-		await act(async () => {
-			setSelectionInText("Ada");
-			document.dispatchEvent(new Event("selectionchange"));
-		});
 		await flushRaf();
 		expect(container.querySelector('[data-axis="row"]')).toBeNull();
 		expect(container.querySelector('[data-axis="column"]')).toBeNull();
@@ -302,11 +287,7 @@ describe("CanvasNoteInlineEditor table controls", () => {
 	it("runs the correct TipTap commands when the inline icons are clicked", async () => {
 		render("rich");
 
-		await act(async () => {
-			setSelectionInText("Ada");
-			document.dispatchEvent(new Event("selectionchange"));
-		});
-		await flushRaf();
+		await syncSelection("Ada");
 
 		const rowButton = container.querySelector(
 			'[data-axis="row"]',

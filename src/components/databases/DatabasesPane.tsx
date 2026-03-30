@@ -220,6 +220,7 @@ export function DatabasesPane({
 	const viewNameInputRef = useRef<HTMLInputElement | null>(null);
 	const [columnsMenuOpen, setColumnsMenuOpen] = useState(false);
 	const rowRequestTokenRef = useRef(0);
+	const fsRowsRefreshTimerRef = useRef<number | null>(null);
 	const [showDatabaseColumnColor, setShowDatabaseColumnColor] = useState(true);
 	const [showDatabaseNoteCount, setShowDatabaseNoteCount] = useState(false);
 
@@ -443,9 +444,26 @@ export function DatabasesPane({
 		void loadRows();
 	}, [loadRows]);
 
+	// biome-ignore lint/correctness/useExhaustiveDependencies: clear pending background reloads when the row loader changes.
+	useEffect(
+		() => () => {
+			if (fsRowsRefreshTimerRef.current !== null) {
+				window.clearTimeout(fsRowsRefreshTimerRef.current);
+				fsRowsRefreshTimerRef.current = null;
+			}
+		},
+		[loadRows],
+	);
+
 	useTauriEvent("space:fs_changed", (payload) => {
 		if (!payload.rel_path.toLowerCase().endsWith(".md")) return;
-		void loadRows({ background: true });
+		if (fsRowsRefreshTimerRef.current !== null) {
+			window.clearTimeout(fsRowsRefreshTimerRef.current);
+		}
+		fsRowsRefreshTimerRef.current = window.setTimeout(() => {
+			fsRowsRefreshTimerRef.current = null;
+			void loadRows({ background: true });
+		}, 150);
 	});
 
 	const saveDatabase = useCallback(
