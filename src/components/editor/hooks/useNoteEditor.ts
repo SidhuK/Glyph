@@ -1,4 +1,6 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
+import type { JSONContent } from "@tiptap/core";
+import { MarkdownManager } from "@tiptap/markdown";
 import { useEditor } from "@tiptap/react";
 import { useEffect, useMemo, useRef } from "react";
 import { useState } from "react";
@@ -15,17 +17,26 @@ import {
 	dispatchTagClick,
 	dispatchWikiLinkClick,
 } from "../markdown/editorEvents";
+import { looksLikeMarkdownPaste } from "../markdown/markdownPaste";
 import {
 	postprocessMarkdownFromEditor,
 	preprocessMarkdownForEditor,
 } from "../markdown/wikiLinkMarkdownBridge";
-import type { CanvasInlineEditorMode } from "../types";
+import type { CanvasInlineEditorMode, PasteMarkdownBehavior } from "../types";
 import { useHydrateInlineImages } from "./useHydrateInlineImages";
 
 const PASTE_FAILURE_PREFIX = "Image paste failed";
 
 function normalizeBody(markdown: string): string {
 	return markdown.replace(/\u00a0/g, " ").replace(/&nbsp;/g, " ");
+}
+
+function getClipboardHtml(event: ClipboardEvent): string {
+	return event.clipboardData?.getData("text/html") ?? "";
+}
+
+function getClipboardPlainText(event: ClipboardEvent): string {
+	return event.clipboardData?.getData("text/plain") ?? "";
 }
 
 function getPastedImageFiles(event: ClipboardEvent): File[] {
@@ -106,6 +117,18 @@ function replacePlaceholderWithFallbackText(
 	return true;
 }
 
+function getInsertableMarkdownContent(
+	markdownManager: MarkdownManager,
+	text: string,
+): JSONContent[] {
+	const parsed = markdownManager.parse(preprocessMarkdownForEditor(text));
+	const content = Array.isArray(parsed.content) ? parsed.content : [];
+	if (content.length !== 1 || content[0]?.type !== "paragraph") {
+		return content;
+	}
+	return Array.isArray(content[0].content) ? content[0].content : [];
+}
+
 interface UseNoteEditorOptions {
 	markdown: string;
 	mode: CanvasInlineEditorMode;
@@ -113,6 +136,7 @@ interface UseNoteEditorOptions {
 	interactive?: boolean;
 	enableHydrateInlineImages?: boolean;
 	enableMarkdownLinkAutocomplete?: boolean;
+	pasteMarkdownBehavior?: PasteMarkdownBehavior;
 	onChange: (nextMarkdown: string) => void;
 }
 
@@ -189,6 +213,7 @@ export function useNoteEditor({
 	interactive = true,
 	enableHydrateInlineImages = true,
 	enableMarkdownLinkAutocomplete = true,
+	pasteMarkdownBehavior = "plain-text",
 	onChange,
 }: UseNoteEditorOptions) {
 	const { frontmatter, body } = splitYamlFrontmatter(markdown);
@@ -210,6 +235,17 @@ export function useNoteEditor({
 				enableMarkdownLinkAutocomplete,
 			}),
 		[enableMarkdownLinkAutocomplete],
+	);
+	const markdownManager = useMemo(
+		() =>
+			new MarkdownManager({
+				extensions,
+				markedOptions: {
+					gfm: true,
+					breaks: false,
+				},
+			}),
+		[extensions],
 	);
 
 	useEffect(() => {
@@ -271,66 +307,96 @@ export function useNoteEditor({
 				},
 				paste: (_view, event) => {
 					if (!(event instanceof ClipboardEvent)) return false;
-					if (mode !== "rich" || !relPathRef.current) return false;
-					const imageFiles = getPastedImageFiles(event);
-					if (!imageFiles.length) return false;
 					if (!editor) return false;
-					const sourcePath = relPathRef.current;
-					const targetDir = pastedMediaFolderRef.current;
+					if (mode !== "rich") return false;
+					if (!editor.isEditable) return false;
+					const imageFiles = getPastedImageFiles(event);
+					if (imageFiles.length) {
+						if (!relPathRef.current) return false;
+						const sourcePath = relPathRef.current;
+						const targetDir = pastedMediaFolderRef.current;
+						const selectionRange = {
+							from: editor.state.selection.from,
+							to: editor.state.selection.to,
+						};
+						event.preventDefault();
+						const placeholders = imageFiles.map((file, index) => ({
+							file,
+							uploadId: `paste-${Date.now()}-${index}-${crypto.randomUUID()}`,
+							objectUrl: URL.createObjectURL(file),
+						}));
+						editor
+							.chain()
+							.focus()
+							.insertContentAt(
+								selectionRange,
+								placeholders.map((item) => ({
+									type: "image",
+									attrs: {
+										src: item.objectUrl,
+										alt: item.file.name || "",
+										title: "",
+										originSrc: "",
+										uploadId: item.uploadId,
+									},
+								})),
+							)
+							.run();
+						void (async () => {
+							for (const item of placeholders) {
+								const dataUrl = await readFileAsDataUrl(item.file);
+								const saved = await invoke("space_save_pasted_image", {
+									source_path: sourcePath,
+									target_dir: targetDir,
+									data_url: dataUrl,
+									alt: item.file.name || null,
+								});
+								replacePlaceholderWithImage(editor, item.uploadId, {
+									src: dataUrl,
+									alt: item.file.name || "",
+									title: "",
+									originSrc: saved.href,
+								});
+								URL.revokeObjectURL(item.objectUrl);
+							}
+						})().catch(() => {
+							for (const item of placeholders) {
+								replacePlaceholderWithFallbackText(
+									editor,
+									item.uploadId,
+									item.file.name || "image",
+								);
+								URL.revokeObjectURL(item.objectUrl);
+							}
+						});
+						return true;
+					}
+					if (pasteMarkdownBehavior !== "smart-markdown") return false;
+					if (editor.isActive("codeBlock")) return false;
+					const clipboardHtml = getClipboardHtml(event).trim();
+					if (clipboardHtml) return false;
+					const clipboardText = getClipboardPlainText(event);
+					if (!looksLikeMarkdownPaste(clipboardText)) return false;
 					const selectionRange = {
 						from: editor.state.selection.from,
 						to: editor.state.selection.to,
 					};
+					const insertableContent = getInsertableMarkdownContent(
+						markdownManager,
+						clipboardText,
+					);
+					if (!insertableContent.length) return false;
+					if (
+						!editor.can().insertContentAt(selectionRange, insertableContent)
+					) {
+						return false;
+					}
 					event.preventDefault();
-					const placeholders = imageFiles.map((file, index) => ({
-						file,
-						uploadId: `paste-${Date.now()}-${index}-${crypto.randomUUID()}`,
-						objectUrl: URL.createObjectURL(file),
-					}));
 					editor
 						.chain()
 						.focus()
-						.insertContentAt(
-							selectionRange,
-							placeholders.map((item) => ({
-								type: "image",
-								attrs: {
-									src: item.objectUrl,
-									alt: item.file.name || "",
-									title: "",
-									originSrc: "",
-									uploadId: item.uploadId,
-								},
-							})),
-						)
+						.insertContentAt(selectionRange, insertableContent)
 						.run();
-					void (async () => {
-						for (const item of placeholders) {
-							const dataUrl = await readFileAsDataUrl(item.file);
-							const saved = await invoke("space_save_pasted_image", {
-								source_path: sourcePath,
-								target_dir: targetDir,
-								data_url: dataUrl,
-								alt: item.file.name || null,
-							});
-							replacePlaceholderWithImage(editor, item.uploadId, {
-								src: dataUrl,
-								alt: item.file.name || "",
-								title: "",
-								originSrc: saved.href,
-							});
-							URL.revokeObjectURL(item.objectUrl);
-						}
-					})().catch(() => {
-						for (const item of placeholders) {
-							replacePlaceholderWithFallbackText(
-								editor,
-								item.uploadId,
-								item.file.name || "image",
-							);
-							URL.revokeObjectURL(item.objectUrl);
-						}
-					});
 					return true;
 				},
 			},

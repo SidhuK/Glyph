@@ -1,6 +1,7 @@
 import type { Editor } from "@tiptap/core";
 
 export type CanvasInlineEditorMode = "plain" | "rich" | "preview";
+export type PasteMarkdownBehavior = "plain-text" | "smart-markdown";
 
 export interface CanvasNoteInlineEditorProps {
 	markdown: string;
@@ -11,6 +12,7 @@ export interface CanvasNoteInlineEditorProps {
 	interactive?: boolean;
 	showBacklinks?: boolean;
 	deferHeavyFeatures?: boolean;
+	pasteMarkdownBehavior?: PasteMarkdownBehavior;
 	onRegisterCalloutInserter?:
 		| ((inserter: ((type: string) => void) | null) => void)
 		| undefined;

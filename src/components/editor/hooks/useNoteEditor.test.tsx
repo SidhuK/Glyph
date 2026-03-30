@@ -5,28 +5,90 @@ import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { useNoteEditor } from "./useNoteEditor";
 
-const { mockEditor, setEditorOptions, getEditorOptions, openUrlMock } =
-	vi.hoisted(() => {
-		let editorOptions: Record<string, unknown> | null = null;
-		const mockEditor = {
-			isEditable: true,
-			setEditable: vi.fn(),
-			getMarkdown: vi.fn(),
-			commands: {
-				setContent: vi.fn(),
-				setHeadingCollapseEnabled: vi.fn(),
+const {
+	canCommands,
+	chainCommands,
+	getEditorOptions,
+	invokeMock,
+	mockEditor,
+	openUrlMock,
+	parseMock,
+	setEditorOptions,
+} = vi.hoisted(() => {
+	let editorOptions: Record<string, unknown> | null = null;
+	const chainCommands = {
+		focus: vi.fn(() => chainCommands),
+		insertContentAt: vi.fn(() => chainCommands),
+		run: vi.fn(() => true),
+	};
+	const canCommands = {
+		insertContentAt: vi.fn(() => true),
+	};
+	const mockEditor = {
+		isEditable: true,
+		isActive: vi.fn(() => false),
+		setEditable: vi.fn(),
+		getMarkdown: vi.fn(),
+		chain: vi.fn(() => chainCommands),
+		can: vi.fn(() => canCommands),
+		commands: {
+			setContent: vi.fn(),
+			setHeadingCollapseEnabled: vi.fn(),
+		},
+		state: {
+			selection: {
+				from: 2,
+				to: 4,
 			},
-		};
+			tr: {
+				delete: vi.fn(),
+				replaceWith: vi.fn(),
+				setNodeMarkup: vi.fn(),
+			},
+			doc: {
+				descendants: vi.fn(),
+			},
+			schema: {
+				nodes: {
+					paragraph: {
+						create: vi.fn(() => ({})),
+					},
+				},
+				text: vi.fn(() => ({})),
+			},
+		},
+		view: {
+			dispatch: vi.fn(),
+		},
+	};
+	const parseMock = vi.fn(() => ({
+		content: [
+			{
+				type: "paragraph",
+				content: [
+					{
+						type: "text",
+						text: "bold",
+						marks: [{ type: "bold" }],
+					},
+				],
+			},
+		],
+	}));
 
-		return {
-			mockEditor,
-			setEditorOptions: (options: Record<string, unknown>) => {
-				editorOptions = options;
-			},
-			getEditorOptions: () => editorOptions,
-			openUrlMock: vi.fn(),
-		};
-	});
+	return {
+		canCommands,
+		chainCommands,
+		getEditorOptions: () => editorOptions,
+		invokeMock: vi.fn(),
+		mockEditor,
+		openUrlMock: vi.fn(),
+		parseMock,
+		setEditorOptions: (options: Record<string, unknown>) => {
+			editorOptions = options;
+		},
+	};
+});
 
 // React 19 expects tests to opt into act-aware scheduling.
 (
@@ -37,6 +99,12 @@ const { mockEditor, setEditorOptions, getEditorOptions, openUrlMock } =
 
 vi.mock("@tauri-apps/plugin-opener", () => ({
 	openUrl: openUrlMock,
+}));
+
+vi.mock("@tiptap/markdown", () => ({
+	MarkdownManager: class {
+		parse = parseMock;
+	},
 }));
 
 vi.mock("@tiptap/react", () => ({
@@ -53,8 +121,15 @@ vi.mock("../extensions", () => ({
 vi.mock("../../../lib/settings", () => ({
 	loadSettings: () =>
 		Promise.resolve({
-			editor: { showCollapsibleHeadings: false },
+			editor: {
+				showCollapsibleHeadings: false,
+				pastedMediaFolder: "assets",
+			},
 		}),
+}));
+
+vi.mock("../../../lib/tauri", () => ({
+	invoke: invokeMock,
 }));
 
 vi.mock("../../../lib/tauriEvents", () => ({
@@ -65,26 +140,117 @@ vi.mock("./useHydrateInlineImages", () => ({
 	useHydrateInlineImages: () => {},
 }));
 
-function Harness({ onChange }: { onChange: (nextMarkdown: string) => void }) {
+function Harness({
+	onChange,
+	pasteMarkdownBehavior = "plain-text",
+}: {
+	onChange: (nextMarkdown: string) => void;
+	pasteMarkdownBehavior?: "plain-text" | "smart-markdown";
+}) {
 	useNoteEditor({
 		markdown: "keep this line\nremove this line",
 		mode: "rich",
+		relPath: "notes/test.md",
+		pasteMarkdownBehavior,
 		onChange,
 	});
 	return null;
 }
 
+function createClipboardEvent({
+	html = "",
+	items = [],
+	text = "",
+}: {
+	html?: string;
+	items?: Array<{
+		getAsFile: () => File | null;
+		type: string;
+	}>;
+	text?: string;
+}) {
+	const event = new Event("paste", {
+		bubbles: true,
+		cancelable: true,
+	}) as ClipboardEvent;
+	Object.defineProperty(event, "clipboardData", {
+		value: {
+			getData: (kind: string) => {
+				if (kind === "text/plain") return text;
+				if (kind === "text/html") return html;
+				return "";
+			},
+			items,
+		},
+	});
+	return event;
+}
+
 describe("useNoteEditor", () => {
 	let container: HTMLDivElement;
 	let root: Root;
+	let originalClipboardEvent: typeof ClipboardEvent | undefined;
+	let originalCreateObjectUrl: typeof URL.createObjectURL;
+	let originalRevokeObjectUrl: typeof URL.revokeObjectURL;
+	let originalFileReader: typeof FileReader | undefined;
 
 	beforeEach(() => {
 		mockEditor.isEditable = true;
+		mockEditor.isActive.mockReset();
+		mockEditor.isActive.mockReturnValue(false);
 		mockEditor.setEditable.mockReset();
 		mockEditor.getMarkdown.mockReset();
+		mockEditor.chain.mockClear();
+		mockEditor.can.mockClear();
 		mockEditor.commands.setContent.mockReset();
 		mockEditor.commands.setHeadingCollapseEnabled.mockReset();
+		mockEditor.state.doc.descendants.mockReset();
+		mockEditor.state.doc.descendants.mockImplementation(() => {});
+		mockEditor.view.dispatch.mockReset();
+		chainCommands.focus.mockClear();
+		chainCommands.insertContentAt.mockClear();
+		chainCommands.run.mockClear();
+		canCommands.insertContentAt.mockReset();
+		canCommands.insertContentAt.mockReturnValue(true);
 		openUrlMock.mockReset();
+		invokeMock.mockReset();
+		invokeMock.mockResolvedValue({ href: "assets/image.png" });
+		parseMock.mockReset();
+		parseMock.mockReturnValue({
+			content: [
+				{
+					type: "paragraph",
+					content: [
+						{
+							type: "text",
+							text: "bold",
+							marks: [{ type: "bold" }],
+						},
+					],
+				},
+			],
+		});
+
+		originalClipboardEvent = globalThis.ClipboardEvent;
+		globalThis.ClipboardEvent = Event as unknown as typeof ClipboardEvent;
+
+		originalCreateObjectUrl = URL.createObjectURL;
+		originalRevokeObjectUrl = URL.revokeObjectURL;
+		URL.createObjectURL = vi.fn(() => "blob:preview");
+		URL.revokeObjectURL = vi.fn();
+
+		originalFileReader = globalThis.FileReader;
+		globalThis.FileReader = class {
+			error: Error | null = null;
+			onerror: (() => void) | null = null;
+			onload: (() => void) | null = null;
+			result: string | ArrayBuffer | null = null;
+
+			readAsDataURL(_file: Blob) {
+				this.result = "data:image/png;base64,abc";
+				this.onload?.();
+			}
+		} as typeof FileReader;
 
 		container = document.createElement("div");
 		document.body.appendChild(container);
@@ -96,6 +262,16 @@ describe("useNoteEditor", () => {
 			root.unmount();
 		});
 		container.remove();
+		if (originalClipboardEvent) {
+			globalThis.ClipboardEvent = originalClipboardEvent;
+		} else {
+			globalThis.ClipboardEvent = Event as unknown as typeof ClipboardEvent;
+		}
+		URL.createObjectURL = originalCreateObjectUrl;
+		URL.revokeObjectURL = originalRevokeObjectUrl;
+		if (originalFileReader) {
+			globalThis.FileReader = originalFileReader;
+		}
 	});
 
 	it("emits the first doc change so single-step deletions are not dropped", async () => {
@@ -123,5 +299,197 @@ describe("useNoteEditor", () => {
 		});
 
 		expect(onChange).toHaveBeenCalledWith("keep this line");
+	});
+
+	it("intercepts Markdown text paste when smart paste is enabled", async () => {
+		const onChange = vi.fn();
+
+		await act(async () => {
+			root.render(
+				<Harness onChange={onChange} pasteMarkdownBehavior="smart-markdown" />,
+			);
+		});
+
+		const options = getEditorOptions() as {
+			editorProps?: {
+				handleDOMEvents?: {
+					paste?: (view: unknown, event: ClipboardEvent) => boolean;
+				};
+			};
+		} | null;
+		const paste = options?.editorProps?.handleDOMEvents?.paste;
+		const event = createClipboardEvent({ text: "**bold**" });
+
+		expect(paste?.({}, event)).toBe(true);
+		expect(parseMock).toHaveBeenCalledWith("**bold**");
+		expect(canCommands.insertContentAt).toHaveBeenCalledWith(
+			{ from: 2, to: 4 },
+			[
+				{
+					type: "text",
+					text: "bold",
+					marks: [{ type: "bold" }],
+				},
+			],
+		);
+		expect(chainCommands.insertContentAt).toHaveBeenCalledWith(
+			{ from: 2, to: 4 },
+			[
+				{
+					type: "text",
+					text: "bold",
+					marks: [{ type: "bold" }],
+				},
+			],
+		);
+		expect(event.defaultPrevented).toBe(true);
+	});
+
+	it("leaves Markdown text alone when smart paste is not enabled", async () => {
+		const onChange = vi.fn();
+
+		await act(async () => {
+			root.render(<Harness onChange={onChange} />);
+		});
+
+		const options = getEditorOptions() as {
+			editorProps?: {
+				handleDOMEvents?: {
+					paste?: (view: unknown, event: ClipboardEvent) => boolean;
+				};
+			};
+		} | null;
+		const paste = options?.editorProps?.handleDOMEvents?.paste;
+		const event = createClipboardEvent({ text: "**bold**" });
+
+		expect(paste?.({}, event)).toBe(false);
+		expect(parseMock).not.toHaveBeenCalled();
+		expect(chainCommands.insertContentAt).not.toHaveBeenCalled();
+		expect(event.defaultPrevented).toBe(false);
+	});
+
+	it("keeps HTML clipboard pastes on the default rich-text path", async () => {
+		const onChange = vi.fn();
+
+		await act(async () => {
+			root.render(
+				<Harness onChange={onChange} pasteMarkdownBehavior="smart-markdown" />,
+			);
+		});
+
+		const options = getEditorOptions() as {
+			editorProps?: {
+				handleDOMEvents?: {
+					paste?: (view: unknown, event: ClipboardEvent) => boolean;
+				};
+			};
+		} | null;
+		const paste = options?.editorProps?.handleDOMEvents?.paste;
+		const event = createClipboardEvent({
+			html: "<p><strong>bold</strong></p>",
+			text: "**bold**",
+		});
+
+		expect(paste?.({}, event)).toBe(false);
+		expect(parseMock).not.toHaveBeenCalled();
+		expect(event.defaultPrevented).toBe(false);
+	});
+
+	it("does not convert Markdown when the selection is inside a code block", async () => {
+		const onChange = vi.fn();
+		mockEditor.isActive.mockReturnValue(true);
+
+		await act(async () => {
+			root.render(
+				<Harness onChange={onChange} pasteMarkdownBehavior="smart-markdown" />,
+			);
+		});
+
+		const options = getEditorOptions() as {
+			editorProps?: {
+				handleDOMEvents?: {
+					paste?: (view: unknown, event: ClipboardEvent) => boolean;
+				};
+			};
+		} | null;
+		const paste = options?.editorProps?.handleDOMEvents?.paste;
+		const event = createClipboardEvent({ text: "**bold**" });
+
+		expect(paste?.({}, event)).toBe(false);
+		expect(parseMock).not.toHaveBeenCalled();
+		expect(event.defaultPrevented).toBe(false);
+	});
+
+	it("lets the default paste behavior continue when parsed Markdown cannot be inserted", async () => {
+		const onChange = vi.fn();
+		canCommands.insertContentAt.mockReturnValue(false);
+
+		await act(async () => {
+			root.render(
+				<Harness onChange={onChange} pasteMarkdownBehavior="smart-markdown" />,
+			);
+		});
+
+		const options = getEditorOptions() as {
+			editorProps?: {
+				handleDOMEvents?: {
+					paste?: (view: unknown, event: ClipboardEvent) => boolean;
+				};
+			};
+		} | null;
+		const paste = options?.editorProps?.handleDOMEvents?.paste;
+		const event = createClipboardEvent({ text: "**bold**" });
+
+		expect(paste?.({}, event)).toBe(false);
+		expect(parseMock).toHaveBeenCalled();
+		expect(chainCommands.insertContentAt).not.toHaveBeenCalled();
+		expect(event.defaultPrevented).toBe(false);
+	});
+
+	it("keeps image paste handling ahead of smart Markdown conversion", async () => {
+		const onChange = vi.fn();
+
+		await act(async () => {
+			root.render(
+				<Harness onChange={onChange} pasteMarkdownBehavior="smart-markdown" />,
+			);
+		});
+
+		const options = getEditorOptions() as {
+			editorProps?: {
+				handleDOMEvents?: {
+					paste?: (view: unknown, event: ClipboardEvent) => boolean;
+				};
+			};
+		} | null;
+		const paste = options?.editorProps?.handleDOMEvents?.paste;
+		const file = new File(["image-bytes"], "paste.png", { type: "image/png" });
+		const event = createClipboardEvent({
+			text: "**bold**",
+			items: [
+				{
+					type: "image/png",
+					getAsFile: () => file,
+				},
+			],
+		});
+
+		expect(paste?.({}, event)).toBe(true);
+		expect(parseMock).not.toHaveBeenCalled();
+		expect(chainCommands.insertContentAt).toHaveBeenCalledWith(
+			{ from: 2, to: 4 },
+			[
+				{
+					type: "image",
+					attrs: {
+						src: "blob:preview",
+						alt: "paste.png",
+						title: "",
+						originSrc: "",
+						uploadId: expect.stringContaining("paste-"),
+					},
+				},
+			],
+		);
 	});
 });
