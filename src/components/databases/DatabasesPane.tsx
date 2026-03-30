@@ -44,6 +44,8 @@ interface DatabasesPaneProps {
 const DATABASES_SELECTED_DATABASE_STORAGE_KEY =
 	"glyph.databases.selectedDatabaseId";
 const DATABASES_SELECTED_VIEWS_STORAGE_KEY = "glyph.databases.selectedViews";
+const EMPTY_BOARD_LANE_COLORS: Record<string, string> = {};
+const EMPTY_BOARD_LANE_ORDER: Record<string, string[]> = {};
 
 function readStoredSelectedDatabaseId(): string | null {
 	if (typeof window === "undefined") return null;
@@ -133,7 +135,8 @@ function currentConfig(
 		view: {
 			layout: view.layout,
 			board_group_by: view.grouping?.column_id ?? null,
-			board_lane_colors: view.board_lane_colors ?? {},
+			board_lane_colors: view.board_lane_colors ?? EMPTY_BOARD_LANE_COLORS,
+			board_lane_order: view.board_lane_order ?? EMPTY_BOARD_LANE_ORDER,
 		},
 		columns: view.columns,
 		sorts: view.sorts,
@@ -161,7 +164,10 @@ function replaceCurrentView(
 									ascending: true,
 								}
 							: null,
-						board_lane_colors: config.view.board_lane_colors ?? {},
+						board_lane_colors:
+							config.view.board_lane_colors ?? EMPTY_BOARD_LANE_COLORS,
+						board_lane_order:
+							config.view.board_lane_order ?? EMPTY_BOARD_LANE_ORDER,
 						columns: config.columns,
 						sorts: config.sorts,
 						filters: config.filters,
@@ -437,6 +443,11 @@ export function DatabasesPane({
 		void loadRows();
 	}, [loadRows]);
 
+	useTauriEvent("space:fs_changed", (payload) => {
+		if (!payload.rel_path.toLowerCase().endsWith(".md")) return;
+		void loadRows({ background: true });
+	});
+
 	const saveDatabase = useCallback(
 		async (nextDatabase: WorkspaceDatabaseDefinition) => {
 			try {
@@ -596,6 +607,8 @@ export function DatabasesPane({
 					sorts: [],
 					filters: [],
 					grouping: null,
+					board_lane_colors: {},
+					board_lane_order: {},
 					created_at: now,
 					updated_at: now,
 				},
@@ -939,6 +952,7 @@ export function DatabasesPane({
 							rows={rows}
 							columns={activeConfig.columns}
 							groupColumnId={activeConfig.view.board_group_by ?? null}
+							laneOrderByGroup={activeConfig.view.board_lane_order ?? {}}
 							laneColors={activeConfig.view.board_lane_colors ?? {}}
 							showColumnColor={showDatabaseColumnColor}
 							selectedRowPath={selectedRowPath}
@@ -952,6 +966,18 @@ export function DatabasesPane({
 									view: {
 										...activeConfig.view,
 										board_group_by: groupColumnId,
+									},
+								})
+							}
+							onLaneOrderChange={(groupColumnId, laneOrder) =>
+								void handleSaveConfig({
+									...activeConfig,
+									view: {
+										...activeConfig.view,
+										board_lane_order: {
+											...(activeConfig.view.board_lane_order ?? {}),
+											[groupColumnId]: laneOrder,
+										},
 									},
 								})
 							}
