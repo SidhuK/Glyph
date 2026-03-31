@@ -27,7 +27,7 @@ describe("ColoredText markdown integration", () => {
 	it("round-trips colored spans through markdown parse and serialize", () => {
 		const manager = createMarkdownManager();
 		const input =
-			'Hello <span data-glyph-color="blue" style="color: var(--glyph-inline-color-blue, #0c66e4)">world</span>';
+			'Hello <span data-glyph-color="blue" style="color: var(--glyph-inline-color-blue)">world</span>';
 
 		const json = manager.parse(preprocessMarkdownForEditor(input));
 		const paragraph = json.content?.[0];
@@ -45,7 +45,7 @@ describe("ColoredText markdown integration", () => {
 	it("preserves nested formatting inside colored text", () => {
 		const manager = createMarkdownManager();
 		const input =
-			'Before <span data-glyph-color="red" style="color: var(--glyph-inline-color-red, #c9372c)">**alert**</span> after';
+			'Before <span data-glyph-color="red" style="color: var(--glyph-inline-color-red)">**alert**</span> after';
 
 		const json = manager.parse(preprocessMarkdownForEditor(input));
 		const output = postprocessMarkdownFromEditor(manager.serialize(json));
@@ -80,7 +80,7 @@ describe("ColoredText markdown integration", () => {
 
 		editor.chain().focus().setTextColor("green").insertContent("done").run();
 		expect(postprocessMarkdownFromEditor(editor.getMarkdown())).toBe(
-			'<span data-glyph-color="green" style="color: var(--glyph-inline-color-green, #216e4e)">done</span>',
+			'<span data-glyph-color="green" style="color: var(--glyph-inline-color-green)">done</span>',
 		);
 
 		editor.commands.selectAll();

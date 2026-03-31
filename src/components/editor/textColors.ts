@@ -81,7 +81,7 @@ export function getEditorTextColorOption(color: EditorTextColor) {
 
 export function getEditorTextColorStyle(color: EditorTextColor) {
 	const option = getEditorTextColorOption(color);
-	return `color: var(${option.cssVar}, ${option.fallbackHex})`;
+	return `color: var(${option.cssVar})`;
 }
 
 export function getEditorTextColorMarkdownOpenTag(color: EditorTextColor) {

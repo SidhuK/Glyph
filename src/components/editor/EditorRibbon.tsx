@@ -3,6 +3,7 @@ import { m } from "motion/react";
 import { type CSSProperties, memo } from "react";
 import { springPresets } from "../ui/animations";
 import { RibbonColorPopover } from "./RibbonColorPopover";
+import { RibbonHighlightPopover } from "./RibbonHighlightPopover";
 import { RibbonLinkPopover } from "./RibbonLinkPopover";
 import {
 	type RibbonButtonConfig,
@@ -93,6 +94,13 @@ export const EditorRibbon = memo(function EditorRibbon({
 					/>
 					<span className="ribbonDivider" />
 					<RibbonColorPopover
+						editor={editor}
+						canEdit={canEdit}
+						runCommand={runCommand}
+						focusChain={focusChain}
+						preventMouseDown={preventMouseDown}
+					/>
+					<RibbonHighlightPopover
 						editor={editor}
 						canEdit={canEdit}
 						runCommand={runCommand}
