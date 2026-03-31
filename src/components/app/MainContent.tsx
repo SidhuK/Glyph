@@ -437,9 +437,12 @@ export const MainContent = memo(function MainContent({
 	]);
 
 	useEffect(() => {
+		if (openCalendarRequest === 0) {
+			handledOpenCalendarRequestRef.current = 0;
+			return;
+		}
 		if (
 			!spacePath ||
-			openCalendarRequest === 0 ||
 			openCalendarRequest === handledOpenCalendarRequestRef.current
 		) {
 			return;

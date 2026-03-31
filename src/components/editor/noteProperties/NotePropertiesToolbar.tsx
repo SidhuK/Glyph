@@ -25,6 +25,8 @@ export function NotePropertiesToolbar({
 					type="button"
 					layout
 					className="notePropertiesModePill"
+					role="tab"
+					aria-selected={mode === "properties"}
 					data-active={mode === "properties"}
 					onClick={() => onModeChange("properties")}
 					disabled={!canShowProperties}
@@ -46,6 +48,8 @@ export function NotePropertiesToolbar({
 					type="button"
 					layout
 					className="notePropertiesModePill"
+					role="tab"
+					aria-selected={mode === "raw"}
 					data-active={mode === "raw"}
 					onClick={() => onModeChange("raw")}
 					title="Raw view"
