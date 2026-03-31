@@ -483,16 +483,6 @@ export function CalendarPane({
 									<Settings size={14} />
 									Set daily notes folder
 								</Button>
-								<Button
-									type="button"
-									variant="outline"
-									size="sm"
-									className="calendarTaskBtn calendarOpenNoteBtn"
-									onClick={openSelectedDailyNote}
-								>
-									<HugeiconsIcon icon={CalendarAdd01Icon} size={14} />
-									Set up daily notes
-								</Button>
 							</div>
 						</div>
 					)}

@@ -426,7 +426,7 @@ export const FileTreePane = memo(function FileTreePane({
 	);
 
 	const handleArrowNavigate = useCallback(
-		(path: string, direction: -1 | 1, currentTarget: HTMLButtonElement) => {
+		(_path: string, direction: -1 | 1, currentTarget: HTMLButtonElement) => {
 			const pane = currentTarget.closest(".fileTreePane");
 			if (!pane) return;
 			const fileButtons = Array.from(
@@ -435,7 +435,7 @@ export const FileTreePane = memo(function FileTreePane({
 				),
 			);
 			const currentIndex = fileButtons.findIndex(
-				(button) => button.dataset.fileTreePath === path,
+				(button) => button === currentTarget,
 			);
 			if (currentIndex === -1) return;
 			const nextButton = fileButtons[currentIndex + direction];
