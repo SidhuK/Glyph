@@ -56,7 +56,11 @@ export function NotePropertyValueField({
 		if (property.kind === "checkbox") {
 			return property.value_bool ? "True" : "False";
 		}
-		return property.value_text ?? "";
+		return (
+			<span style={{ color: "var(--text-primary)" }}>
+				{property.value_text ?? ""}
+			</span>
+		);
 	}
 
 	if (property.kind === "checkbox") {
@@ -155,6 +159,7 @@ export function NotePropertyValueField({
 		return (
 			<Input
 				className="notePropertyFieldInput"
+				style={{ color: "var(--text-primary)" }}
 				value={listText(property)}
 				placeholder="item1, item2"
 				onChange={(event) =>
@@ -181,6 +186,7 @@ export function NotePropertyValueField({
 	return (
 		<Input
 			className="notePropertyFieldInput"
+			style={{ color: "var(--text-primary)" }}
 			type={
 				property.kind === "number"
 					? "number"

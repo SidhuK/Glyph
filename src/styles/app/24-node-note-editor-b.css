@@ -68,6 +68,7 @@
 	display: flex;
 	flex-direction: column;
 	gap: 4px;
+	font-family: var(--font-sans);
 }
 
 .notePropertiesToolbar {
@@ -76,20 +77,23 @@
 	justify-content: space-between;
 	gap: 10px;
 	padding-bottom: 2px;
+	font-family: var(--font-sans);
 }
 
 .notePropertiesToolbarLabel {
 	font-size: 11px;
 	font-weight: var(--font-semibold);
 	letter-spacing: 0.04em;
-	text-transform: uppercase;
+	text-transform: none;
 	color: var(--text-tertiary);
+	font-family: var(--font-sans);
 }
 
 .notePropertiesToolbarActions {
 	display: inline-flex;
 	align-items: center;
 	gap: 4px;
+	font-family: var(--font-sans);
 }
 
 .notePropertiesList {
@@ -123,7 +127,7 @@
 
 .notePropertyRow {
 	display: grid;
-	grid-template-columns: minmax(164px, 0.86fr) minmax(0, 1.45fr) auto;
+	grid-template-columns: minmax(100px, 0.4fr) minmax(0, 1.45fr) auto;
 	align-items: start;
 	gap: 8px;
 	padding: 6px 0;
@@ -155,13 +159,20 @@
 .notePropertyKeyInput {
 	flex: 1 1 auto;
 	font-weight: var(--font-semibold);
-	color: var(--text-primary);
+	color: var(--text-secondary);
 }
 
 .notePropertyFieldInput,
 .notePropertyValue input {
 	font-weight: var(--font-normal);
-	color: var(--text-secondary);
+	color: var(--text-primary);
+	background-color: transparent;
+}
+
+input.notePropertyFieldInput,
+input.notePropertyValue {
+	color: var(--text-primary) !important;
+	background-color: transparent !important;
 }
 
 .notePropertyKeyInput::placeholder,
@@ -189,7 +200,7 @@
 
 .notePropertyKeyStatic {
 	font-weight: var(--font-medium);
-	color: var(--text-primary);
+	color: var(--text-secondary);
 	min-width: 0;
 	white-space: nowrap;
 	overflow: hidden;
@@ -206,7 +217,7 @@
 }
 
 .notePropertyValueStatic {
-	color: var(--text-secondary);
+	color: var(--text-primary);
 	min-width: 0;
 	overflow-wrap: break-word;
 	font-size: 13px;
@@ -216,31 +227,35 @@
 .notePropertyKindBadge {
 	display: inline-flex;
 	align-items: center;
-	gap: 5px;
+	gap: 4px;
 	flex: 0 0 auto;
-	padding: 0 6px 0 2px;
-	height: 28px;
+	padding: 0 5px 0 2px;
+	height: 22px;
 	border-radius: calc(var(--radius-md) - 1px);
 	border: 1px solid transparent;
 	background: transparent;
 	color: var(--text-secondary);
-	font-size: 9px;
+	font-size: 11px;
 	font-weight: var(--font-semibold);
 	line-height: 1;
 	text-transform: uppercase;
-	letter-spacing: 0.08em;
+	letter-spacing: 0.05em;
 }
 
 .notePropertyKindBadge svg {
 	color: var(--interactive-accent);
+	width: 12px;
+	height: 12px;
 }
 
 .notePropertyKindTrigger {
-	min-height: 28px;
-	padding: 0 6px 0 2px;
+	min-height: 22px;
+	height: 22px;
+	padding: 0 5px 0 2px;
 	justify-content: flex-start;
 	background: transparent;
 	box-shadow: none;
+	font-size: 11px;
 }
 
 .notePropertyKindTrigger:hover,
@@ -262,20 +277,22 @@
 }
 
 .notePropertyKindMenu {
-	min-width: 176px;
-	padding: 6px;
-	border-radius: var(--radius-12);
+	min-width: 110px;
+	padding: 4px;
+	border-radius: var(--radius-8);
 	border-color: color-mix(in srgb, var(--border-default) 70%, transparent);
 	background: color-mix(in srgb, var(--bg-primary) 96%, transparent);
 	box-shadow: var(--shadow-float);
 }
 
 .notePropertyKindOption {
-	gap: 10px;
-	padding: 8px 10px 8px 28px;
+	gap: 4px;
+	padding: 3px 6px 3px 12px;
+	padding-right: 20px;
 	border-radius: var(--radius-md);
-	font-size: 12px;
+	font-size: 11px;
 	color: var(--text-secondary);
+	position: relative;
 }
 
 .notePropertyKindOption[data-state="checked"] {
@@ -283,12 +300,18 @@
 	color: var(--text-primary);
 }
 
+.notePropertyKindOption[data-slot="dropdown-menu-radio-item"] .absolute {
+	position: absolute;
+	right: 4px;
+	left: auto;
+}
+
 .notePropertyKindOptionIcon {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 22px;
-	height: 22px;
+	width: 14px;
+	height: 14px;
 	border-radius: var(--radius-full);
 	background: color-mix(in srgb, var(--interactive-accent) 8%, transparent);
 	color: var(--interactive-accent);
@@ -311,7 +334,7 @@
 	padding: 0;
 	border-radius: 0;
 	background: transparent;
-	color: var(--text-secondary);
+	color: var(--text-primary);
 	font-family: var(--font-sans);
 	font-size: var(--text-sm);
 	font-weight: var(--font-normal);
