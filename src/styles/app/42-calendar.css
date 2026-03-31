@@ -72,7 +72,7 @@
 .calendarTaskComposer {
 	display: flex;
 	align-items: center;
-	gap: 5px;
+	gap: 8px;
 	padding: 3px 3px 3px 0;
 	border-radius: 10px;
 	width: 85%;
@@ -80,11 +80,17 @@
 }
 
 .calendarTaskComposer input {
-	border: none !important;
-	box-shadow: none !important;
-	background: var(--bg-tertiary) !important;
+	border-color: transparent;
+	box-shadow: none;
+	background: var(--bg-tertiary);
 	color: var(--text-primary);
 	height: 28px;
+}
+
+.calendarTaskComposer input:focus-visible {
+	border-color: var(--ring);
+	box-shadow: 0 0 0 3px color-mix(in srgb, var(--ring) 26%, transparent);
+	outline: none;
 }
 
 .calendarTaskAddIcon {
@@ -121,6 +127,12 @@
 	border-radius: 8px;
 	font-size: 0.8rem;
 	color: var(--text-secondary);
+}
+
+.calendarInlineSetupActions {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px;
 }
 
 /* ── 2-column layout ── */
@@ -579,6 +591,10 @@
 	.calendarInlineSetup {
 		flex-direction: column;
 		align-items: flex-start;
+	}
+
+	.calendarInlineSetupActions {
+		width: 100%;
 	}
 
 	.calendarTaskComposer {

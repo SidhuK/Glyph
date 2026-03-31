@@ -1,4 +1,11 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+	useCallback,
+	useEffect,
+	useLayoutEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { useFileTreeContext, useUILayoutContext } from "../../contexts";
 import { useRecentFiles } from "../../hooks/useRecentFiles";
 import { isInAppPreviewable } from "../../utils/filePreview";
@@ -50,7 +57,7 @@ export function useTabManager(spacePath: string | null) {
 	const activeTabPath =
 		activeTab && activeTab.kind !== "blank" ? activeTab.target : null;
 
-	useEffect(() => {
+	useLayoutEffect(() => {
 		void spacePath;
 		setTabs([]);
 		setActiveTabId(null);
