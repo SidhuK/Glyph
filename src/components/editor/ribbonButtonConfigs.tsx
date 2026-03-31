@@ -20,6 +20,12 @@ import {
 	getEditorTextColorOption,
 	isEditorTextColor,
 } from "./textColors";
+import {
+	EDITOR_TEXT_HIGHLIGHTS,
+	type EditorTextHighlight,
+	getEditorTextHighlightOption,
+	isEditorTextHighlight,
+} from "./textHighlights";
 
 export interface RibbonButtonConfig {
 	title: string;
@@ -90,6 +96,37 @@ export function getTextColorButton(
 				runCommand(() => focusChain().setTextColor(option.id).run()),
 		})),
 		onClear: () => runCommand(() => focusChain().unsetTextColor().run()),
+	};
+}
+
+export function getTextHighlightButton(
+	editor: Editor,
+	runCommand: RunCommand,
+	focusChain: FocusChain,
+) {
+	const activeHighlight = editor.getAttributes("highlightedText").color as
+		| EditorTextHighlight
+		| undefined;
+	const activeOption =
+		activeHighlight && isEditorTextHighlight(activeHighlight)
+			? getEditorTextHighlightOption(activeHighlight)
+			: null;
+
+	return {
+		title: "Text highlight",
+		isActive: () => editor.isActive("highlightedText"),
+		activeHighlight: activeOption?.id ?? null,
+		options: EDITOR_TEXT_HIGHLIGHTS.map((option) => ({
+			id: option.id,
+			label: option.label,
+			backgroundCssVar: option.backgroundCssVar,
+			backgroundFallback: option.backgroundFallback,
+			swatchCssVar: option.swatchCssVar,
+			swatchFallback: option.swatchFallback,
+			onSelect: () =>
+				runCommand(() => focusChain().setTextHighlight(option.id).run()),
+		})),
+		onClear: () => runCommand(() => focusChain().unsetTextHighlight().run()),
 	};
 }
 

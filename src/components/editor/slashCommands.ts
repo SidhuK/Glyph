@@ -6,6 +6,7 @@ import Suggestion, {
 	type SuggestionProps,
 } from "@tiptap/suggestion";
 import { EDITOR_TEXT_COLORS } from "./textColors";
+import { EDITOR_TEXT_HIGHLIGHTS } from "./textHighlights";
 import type { SlashCommandItem } from "./types";
 
 export function clampSlashCommandIndex(index: number, itemCount: number) {
@@ -263,6 +264,32 @@ export const SLASH_COMMANDS: SlashCommandItem[] = [
 		keywords: ["color", "text", "clear", "reset"],
 		command: ({ editor, range }) =>
 			editor.chain().focus().deleteRange(range).unsetTextColor().run(),
+	},
+	...EDITOR_TEXT_HIGHLIGHTS.map<SlashCommandItem>((highlight) => ({
+		icon: "H",
+		title: `Highlight: ${highlight.label}`,
+		description: `Apply ${highlight.label.toLowerCase()} text highlight`,
+		keywords: [
+			"highlight",
+			"text",
+			highlight.id,
+			highlight.label.toLowerCase(),
+		],
+		command: ({ editor, range }) =>
+			editor
+				.chain()
+				.focus()
+				.deleteRange(range)
+				.setTextHighlight(highlight.id)
+				.run(),
+	})),
+	{
+		icon: "H",
+		title: "Highlight: Clear",
+		description: "Remove text highlight",
+		keywords: ["highlight", "text", "clear", "reset"],
+		command: ({ editor, range }) =>
+			editor.chain().focus().deleteRange(range).unsetTextHighlight().run(),
 	},
 ];
 
