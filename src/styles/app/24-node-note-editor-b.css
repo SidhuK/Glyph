@@ -89,6 +89,74 @@
 	font-family: var(--font-sans);
 }
 
+.notePropertiesModeSwitch {
+	display: flex;
+	align-items: center;
+	gap: 0;
+	padding: 1px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 58%, transparent);
+	border-radius: 10px;
+	background: color-mix(in srgb, var(--bg-secondary) 82%, var(--bg-primary));
+}
+
+.notePropertiesModePill {
+	position: relative;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 26px;
+	height: 26px;
+	padding: 0;
+	border: none;
+	border-radius: 7px;
+	background: transparent;
+	color: var(--text-secondary);
+	cursor: pointer;
+	transition: color 120ms ease, background-color 120ms ease;
+	flex: 0 0 auto;
+}
+
+.notePropertiesModePill:hover {
+	color: var(--text-primary);
+	background: color-mix(in srgb, var(--bg-hover) 86%, transparent);
+}
+
+.notePropertiesModePill:disabled {
+	opacity: 0.5;
+	cursor: not-allowed;
+}
+
+.notePropertiesModePill:disabled:hover {
+	background: transparent;
+}
+
+.notePropertiesModePill[data-active="true"] {
+	color: var(--text-primary);
+	background: color-mix(in srgb, var(--bg-primary) 94%, white 6%);
+	box-shadow: 0 0 0 1px
+		color-mix(in srgb, var(--border-default) 32%, transparent);
+}
+
+.notePropertiesModePillBg {
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	background: color-mix(in srgb, var(--bg-primary) 94%, white 6%);
+	box-shadow: 0 0 0 1px
+		color-mix(in srgb, var(--border-default) 32%, transparent);
+}
+
+.notePropertiesModePill > *:not(.notePropertiesModePillBg) {
+	position: relative;
+	z-index: 1;
+}
+
+.notePropertiesModePillIcon {
+	width: 13px;
+	height: 13px;
+	flex: 0 0 13px;
+}
+
 .notePropertiesToolbarActions {
 	display: inline-flex;
 	align-items: center;
@@ -243,7 +311,7 @@ input.notePropertyValue {
 }
 
 .notePropertyKindBadge svg {
-	color: var(--interactive-accent);
+	color: var(--text-tertiary);
 	width: 12px;
 	height: 12px;
 }
@@ -312,9 +380,7 @@ input.notePropertyValue {
 	justify-content: center;
 	width: 14px;
 	height: 14px;
-	border-radius: var(--radius-full);
-	background: color-mix(in srgb, var(--interactive-accent) 8%, transparent);
-	color: var(--interactive-accent);
+	color: var(--text-secondary);
 }
 
 .notePropertyKindOptionLabel {
