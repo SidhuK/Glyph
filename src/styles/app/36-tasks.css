@@ -1027,11 +1027,6 @@
 	background: color-mix(in srgb, var(--bg-hover) 82%, var(--bg-primary));
 }
 
-.glyphCalendarDayButton[data-today="true"] {
-	box-shadow: inset 0 0 0 1px
-		color-mix(in srgb, var(--interactive-accent) 26%, transparent);
-}
-
 .glyphCalendarDayButton[data-selected="true"] {
 	background: color-mix(
 		in srgb,
@@ -1039,9 +1034,6 @@
 		var(--bg-primary)
 	);
 	color: color-mix(in srgb, var(--interactive-accent) 78%, var(--text-primary));
-	box-shadow: inset 0 0 0 1px
-		color-mix(in srgb, var(--interactive-accent) 24%, transparent), 0 4px 8px
-		color-mix(in srgb, var(--interactive-accent) 7%, transparent);
 }
 
 .glyphCalendarOutside .glyphCalendarDayButton,

@@ -11,7 +11,7 @@
 	display: flex;
 	flex-direction: column;
 	min-height: 100%;
-	padding: clamp(20px, 2.8vw, 36px);
+	padding: clamp(10px, 1.4vw, 18px) clamp(20px, 2.8vw, 36px);
 	background: var(--bg-primary);
 	gap: clamp(14px, 1.8vw, 20px);
 }
@@ -53,11 +53,13 @@
 /* ── Nav below calendar ── */
 
 .calendarNavRow {
-	display: flex;
-	justify-content: flex-end;
+	display: grid;
+	grid-template-columns: 1fr auto;
+	gap: 0 clamp(20px, 2.4vw, 32px);
 }
 
 .calendarToolbarNav {
+	grid-column: 2;
 	display: flex;
 	align-items: center;
 	justify-content: center;
@@ -70,27 +72,19 @@
 .calendarTaskComposer {
 	display: flex;
 	align-items: center;
-	gap: 6px;
-	padding: 4px 4px 4px 0;
+	gap: 5px;
+	padding: 3px 3px 3px 0;
 	border-radius: 10px;
-	border: 1px solid color-mix(in srgb, var(--border-default) 30%, transparent);
-	transition: border-color 200ms ease, box-shadow 200ms ease;
-}
-
-.calendarTaskComposer:focus-within {
-	border-color: color-mix(
-		in srgb,
-		var(--interactive-accent) 40%,
-		var(--border-default)
-	);
-	box-shadow: 0 0 0 3px
-		color-mix(in srgb, var(--interactive-accent) 8%, transparent);
+	width: 85%;
+	margin: 0 auto;
 }
 
 .calendarTaskComposer input {
 	border: none !important;
 	box-shadow: none !important;
-	background: transparent !important;
+	background: var(--bg-tertiary) !important;
+	color: var(--text-primary);
+	height: 28px;
 }
 
 .calendarTaskAddIcon {
@@ -98,6 +92,21 @@
 	width: 28px;
 	height: 28px;
 	padding: 0;
+}
+
+.calendarTaskAddIcon.calendarTaskBtn {
+	border: 1px solid color-mix(in srgb, var(--border-default) 80%, transparent);
+}
+
+.calendarTaskBtn {
+	border: 1px solid color-mix(in srgb, var(--border-default) 80%, transparent);
+	border-radius: 6px;
+}
+
+.calendarOpenNoteBtn {
+	height: 28px;
+	padding-top: 0;
+	padding-bottom: 0;
 }
 
 /* ── Inline setup ── */
@@ -109,7 +118,6 @@
 	gap: 10px;
 	padding: 10px 12px;
 	border-radius: 8px;
-	border: 1px solid color-mix(in srgb, var(--border-default) 24%, transparent);
 	font-size: 0.8rem;
 	color: var(--text-secondary);
 }
@@ -127,31 +135,13 @@
 
 .calendarDetailCol,
 .calendarLeftCol {
-	background: var(--bg-primary);
+	background: var(--bg-tertiary);
 	border-radius: 16px;
-	border: 1.5px solid
-		color-mix(in srgb, var(--interactive-accent) 22%, var(--border-default));
-	box-shadow: 0 1px 3px
-		color-mix(in srgb, var(--interactive-accent) 6%, transparent), 0 8px 24px
-		color-mix(in srgb, var(--interactive-accent) 4%, rgba(0, 0, 0, 0.04));
 	height: 360px;
 	display: flex;
 	flex-direction: column;
 	min-width: 0;
 	overflow: hidden;
-	transition: border-color 200ms ease, box-shadow 200ms ease;
-}
-
-.calendarDetailCol:hover,
-.calendarLeftCol:hover {
-	border-color: color-mix(
-		in srgb,
-		var(--interactive-accent) 38%,
-		var(--border-default)
-	);
-	box-shadow: 0 1px 3px
-		color-mix(in srgb, var(--interactive-accent) 8%, transparent), 0 12px 32px
-		color-mix(in srgb, var(--interactive-accent) 6%, rgba(0, 0, 0, 0.06));
 }
 
 /* ── Right column: calendar picker ── */
@@ -465,19 +455,8 @@
 /* ── Recent notes mini-db ── */
 
 .calendarMiniDb {
-	border: 1.5px solid
-		color-mix(in srgb, var(--interactive-accent) 14%, var(--border-default));
 	border-radius: 16px;
 	overflow: hidden;
-	transition: border-color 200ms ease;
-}
-
-.calendarMiniDb:hover {
-	border-color: color-mix(
-		in srgb,
-		var(--interactive-accent) 28%,
-		var(--border-default)
-	);
 }
 
 .calendarMiniDbHeader {
@@ -578,6 +557,14 @@
 
 	.calendarLeftCol {
 		position: static;
+	}
+
+	.calendarNavRow {
+		grid-template-columns: 1fr;
+	}
+
+	.calendarToolbarNav {
+		grid-column: 1;
 	}
 }
 
