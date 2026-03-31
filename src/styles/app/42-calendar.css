@@ -96,11 +96,12 @@
 
 .calendarTaskAddIcon.calendarTaskBtn {
 	border: 1px solid color-mix(in srgb, var(--border-default) 80%, transparent);
+	border-radius: 10px;
 }
 
 .calendarTaskBtn {
 	border: 1px solid color-mix(in srgb, var(--border-default) 80%, transparent);
-	border-radius: 6px;
+	border-radius: 10px;
 }
 
 .calendarOpenNoteBtn {
@@ -136,7 +137,7 @@
 .calendarDetailCol,
 .calendarLeftCol {
 	background: var(--bg-tertiary);
-	border-radius: 16px;
+	border-radius: 10px;
 	height: 360px;
 	display: flex;
 	flex-direction: column;
@@ -155,12 +156,14 @@
 
 .calendarShadcnWrap {
 	--cell-size: 36px;
-
 	padding: 18px 20px;
+	display: flex;
+	justify-content: center;
 }
 
 .calendarDashboardPicker {
-	width: 100%;
+	width: auto;
+	max-width: 100%;
 }
 
 .calendarDashboardPicker .glyphCalendarNav {
@@ -174,7 +177,7 @@
 .calendarDashboardPicker .glyphCalendarRoot,
 .calendarDashboardPicker .glyphCalendarMonth,
 .calendarDashboardPicker .glyphCalendarTable {
-	width: 100%;
+	width: auto;
 	margin: 0;
 }
 
@@ -601,5 +604,9 @@
 
 	.calendarRecentStripCard {
 		width: min(240px, calc(100vw - 64px));
+	}
+
+	.calendarShadcnWrap {
+		--cell-size: 28px;
 	}
 }
