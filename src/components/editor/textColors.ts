@@ -81,6 +81,8 @@ export function getEditorTextColorOption(color: EditorTextColor) {
 
 export function getEditorTextColorStyle(color: EditorTextColor) {
 	const option = getEditorTextColorOption(color);
+	// Keep text-color markup free of literal fallback hex values so saved spans
+	// don't expose raw color codes in note content when rendered as plain text.
 	return `color: var(${option.cssVar})`;
 }
 

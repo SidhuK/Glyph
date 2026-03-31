@@ -119,8 +119,6 @@ export function getTextHighlightButton(
 		options: EDITOR_TEXT_HIGHLIGHTS.map((option) => ({
 			id: option.id,
 			label: option.label,
-			backgroundCssVar: option.backgroundCssVar,
-			backgroundFallback: option.backgroundFallback,
 			swatchCssVar: option.swatchCssVar,
 			swatchFallback: option.swatchFallback,
 			onSelect: () =>
