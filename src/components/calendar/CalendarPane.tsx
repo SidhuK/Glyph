@@ -1,4 +1,9 @@
-import { ArrowLeft, ArrowRight } from "@hugeicons/core-free-icons";
+import {
+	ArrowLeft,
+	ArrowRight,
+	CalendarAdd01Icon,
+	TaskAdd02Icon,
+} from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSpace, useUILayoutContext } from "../../contexts";
@@ -28,7 +33,7 @@ import {
 } from "../../lib/tauri";
 import { renderTemplate } from "../../lib/templates";
 import { cn } from "../../lib/utils";
-import { FileText, Plus, Settings } from "../Icons";
+import { Settings } from "../Icons";
 import { TaskRow } from "../tasks/TaskRow";
 import { Button } from "../ui/shadcn/button";
 import { Calendar as ShadcnCalendar } from "../ui/shadcn/calendar";
@@ -420,17 +425,6 @@ export function CalendarPane({
 						{relativeDayLabel(selectedDate, today) ??
 							formatWeekday(selectedDate)}
 					</span>
-					<Button
-						type="button"
-						variant="outline"
-						size="sm"
-						onClick={openSelectedDailyNote}
-					>
-						<FileText size={14} />
-						{data?.detail.has_daily_note
-							? "Open daily note"
-							: "Create daily note"}
-					</Button>
 				</div>
 
 				{/* ── Centered content area ── */}
@@ -453,12 +447,24 @@ export function CalendarPane({
 								type="button"
 								size="sm"
 								variant="ghost"
-								className="calendarTaskAddIcon"
+								className="calendarTaskAddIcon calendarTaskBtn"
 								onClick={() => void submitTask()}
 								disabled={isSubmittingTask || !taskDraft.trim()}
 								aria-label="Add task"
 							>
-								<Plus size={16} />
+								<HugeiconsIcon icon={TaskAdd02Icon} size={16} />
+							</Button>
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								className="ml-2 calendarTaskBtn calendarOpenNoteBtn"
+								onClick={openSelectedDailyNote}
+							>
+								<HugeiconsIcon icon={CalendarAdd01Icon} size={14} />
+								{data?.detail.has_daily_note
+									? "Open daily note"
+									: "Create daily note"}
 							</Button>
 						</div>
 					) : (
@@ -475,6 +481,18 @@ export function CalendarPane({
 							>
 								<Settings size={14} />
 								Set daily notes folder
+							</Button>
+							<Button
+								type="button"
+								variant="outline"
+								size="sm"
+								className="ml-2 calendarTaskBtn calendarOpenNoteBtn"
+								onClick={openSelectedDailyNote}
+							>
+								<HugeiconsIcon icon={CalendarAdd01Icon} size={14} />
+								{data?.detail.has_daily_note
+									? "Open daily note"
+									: "Create daily note"}
 							</Button>
 						</div>
 					)}
@@ -531,6 +549,7 @@ export function CalendarPane({
 								type="button"
 								size="sm"
 								variant="outline"
+								className="calendarTaskBtn calendarTaskAddIcon"
 								onClick={() => stepRange(-1)}
 								aria-label="Previous month"
 							>
@@ -540,6 +559,7 @@ export function CalendarPane({
 								type="button"
 								size="sm"
 								variant="outline"
+								className="calendarTaskBtn calendarOpenNoteBtn"
 								onClick={goToToday}
 							>
 								Today
@@ -548,6 +568,7 @@ export function CalendarPane({
 								type="button"
 								size="sm"
 								variant="outline"
+								className="calendarTaskBtn calendarTaskAddIcon"
 								onClick={() => stepRange(1)}
 								aria-label="Next month"
 							>
@@ -562,7 +583,9 @@ export function CalendarPane({
 					<div className="calendarMiniDb">
 						<div className="calendarCardSectionHeader calendarMiniDbHeader">
 							<div className="calendarMiniDbHeaderInfo">
-								<h4 className="calendarCardSectionTitle">Recent Notes</h4>
+								<h4 className="calendarCardSectionTitle">
+									Activity — {formatDayTitle(selectedDate)}
+								</h4>
 								<span className="calendarCardSectionCount">
 									{noteActivity.length}
 								</span>
