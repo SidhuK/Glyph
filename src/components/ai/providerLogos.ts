@@ -1,5 +1,7 @@
 import openaiLightThemeLogoUrl from "../../assets/provider-logos/OpenAI_light.svg?url";
 import anthropicLogoUrl from "../../assets/provider-logos/claude-ai.svg?url";
+import codexDarkThemeLogoUrl from "../../assets/provider-logos/codex-dark.svg?url";
+import codexLightThemeLogoUrl from "../../assets/provider-logos/codex-light.svg?url";
 import geminiLogoUrl from "../../assets/provider-logos/google-gemini.svg?url";
 import ollamaLogoUrl from "../../assets/provider-logos/ollama.svg?url";
 import openrouterLogoUrl from "../../assets/provider-logos/open-router.svg?url";
@@ -25,8 +27,8 @@ export const providerLogoMeta: Record<
 	gemini: { src: geminiLogoUrl, label: "Google Gemini" },
 	ollama: { src: ollamaLogoUrl, label: "Ollama" },
 	codex_chatgpt: {
-		src: openaiLightThemeLogoUrl,
-		darkSrc: openaiDarkThemeLogoUrl,
+		src: codexLightThemeLogoUrl,
+		darkSrc: codexDarkThemeLogoUrl,
 		label: "Codex (ChatGPT)",
 	},
 };
