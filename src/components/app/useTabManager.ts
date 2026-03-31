@@ -240,10 +240,26 @@ export function useTabManager(spacePath: string | null) {
 				);
 				const removedTab = removedIndex >= 0 ? currentTabs[removedIndex] : null;
 				if (removedTab && matchesRemovedPath(removedTab, path, recursive)) {
-					nextActiveTabId =
-						nextTabs[removedIndex]?.id ??
-						nextTabs[removedIndex - 1]?.id ??
-						null;
+					const survivingTabIds = new Set(nextTabs.map((tab) => tab.id));
+					nextActiveTabId = null;
+					for (
+						let index = removedIndex + 1;
+						index < currentTabs.length;
+						index++
+					) {
+						const candidate = currentTabs[index];
+						if (!survivingTabIds.has(candidate.id)) continue;
+						nextActiveTabId = candidate.id;
+						break;
+					}
+					if (!nextActiveTabId) {
+						for (let index = removedIndex - 1; index >= 0; index--) {
+							const candidate = currentTabs[index];
+							if (!survivingTabIds.has(candidate.id)) continue;
+							nextActiveTabId = candidate.id;
+							break;
+						}
+					}
 				}
 			}
 			tabsRef.current = nextTabs;

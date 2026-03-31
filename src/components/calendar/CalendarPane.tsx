@@ -462,9 +462,7 @@ export function CalendarPane({
 								onClick={openSelectedDailyNote}
 							>
 								<HugeiconsIcon icon={CalendarAdd01Icon} size={14} />
-								{data?.detail.has_daily_note
-									? "Open daily note"
-									: "Create daily note"}
+								Daily Note
 							</Button>
 						</div>
 					) : (
