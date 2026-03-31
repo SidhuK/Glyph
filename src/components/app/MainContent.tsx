@@ -384,15 +384,23 @@ export const MainContent = memo(function MainContent({
 	const handledOpenDatabasesRequestRef = useRef(0);
 	const handledOpenBlankTabRequestRef = useRef(0);
 	const handledShowGettingStartedRequestRef = useRef(0);
+	const activeTab = useMemo(
+		() => tabs.find((tab) => tab.id === activeTabId) ?? null,
+		[tabs, activeTabId],
+	);
 
 	useEffect(() => {
-		if (activeTabId) setStarterOverrideVisible(false);
-	}, [activeTabId]);
+		if (!activeTab || activeTab.kind === "blank") return;
+		setStarterOverrideVisible(false);
+	}, [activeTab]);
 
 	useEffect(() => {
+		if (openAllDocsRequest === 0) {
+			handledOpenAllDocsRequestRef.current = 0;
+			return;
+		}
 		if (
 			!spacePath ||
-			openAllDocsRequest === 0 ||
 			openAllDocsRequest === handledOpenAllDocsRequestRef.current
 		) {
 			return;
@@ -408,9 +416,12 @@ export const MainContent = memo(function MainContent({
 	]);
 
 	useEffect(() => {
+		if (openTemplatesRequest === 0) {
+			handledOpenTemplatesRequestRef.current = 0;
+			return;
+		}
 		if (
 			!spacePath ||
-			openTemplatesRequest === 0 ||
 			openTemplatesRequest === handledOpenTemplatesRequestRef.current
 		) {
 			return;

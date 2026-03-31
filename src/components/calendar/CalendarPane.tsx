@@ -458,7 +458,7 @@ export function CalendarPane({
 								type="button"
 								variant="outline"
 								size="sm"
-								className="ml-2 calendarTaskBtn calendarOpenNoteBtn"
+								className="calendarTaskBtn calendarOpenNoteBtn"
 								onClick={openSelectedDailyNote}
 							>
 								<HugeiconsIcon icon={CalendarAdd01Icon} size={14} />
@@ -473,27 +473,27 @@ export function CalendarPane({
 								Set a daily notes folder to create tasks directly from the
 								calendar.
 							</div>
-							<Button
-								type="button"
-								variant="outline"
-								size="sm"
-								onClick={onOpenDailyNotesSettings}
-							>
-								<Settings size={14} />
-								Set daily notes folder
-							</Button>
-							<Button
-								type="button"
-								variant="outline"
-								size="sm"
-								className="ml-2 calendarTaskBtn calendarOpenNoteBtn"
-								onClick={openSelectedDailyNote}
-							>
-								<HugeiconsIcon icon={CalendarAdd01Icon} size={14} />
-								{data?.detail.has_daily_note
-									? "Open daily note"
-									: "Create daily note"}
-							</Button>
+							<div className="calendarInlineSetupActions">
+								<Button
+									type="button"
+									variant="outline"
+									size="sm"
+									onClick={onOpenDailyNotesSettings}
+								>
+									<Settings size={14} />
+									Set daily notes folder
+								</Button>
+								<Button
+									type="button"
+									variant="outline"
+									size="sm"
+									className="calendarTaskBtn calendarOpenNoteBtn"
+									onClick={openSelectedDailyNote}
+								>
+									<HugeiconsIcon icon={CalendarAdd01Icon} size={14} />
+									Set up daily notes
+								</Button>
+							</div>
 						</div>
 					)}
 
