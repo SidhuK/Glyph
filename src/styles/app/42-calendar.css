@@ -432,10 +432,6 @@
 	color: var(--text-primary);
 }
 
-.calendarTaskList .tasksCheckbox {
-	transform: none;
-}
-
 .calendarTaskList .tasksScheduleBtn {
 	height: 20px;
 	padding-inline: 8px;
