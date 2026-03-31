@@ -53,7 +53,7 @@
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	gap: var(--space-2);
+	gap: var(--space-3);
 	padding: 1px var(--space-2);
 	min-height: 26px;
 	border-radius: var(--radius-md);
