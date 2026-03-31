@@ -2,12 +2,14 @@ import { AiNetworkIcon, DocumentCodeIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import {
+	type Dispatch,
+	type SetStateAction,
 	Suspense,
 	lazy,
 	memo,
-	useCallback,
 	useEffect,
 	useMemo,
+	useRef,
 	useState,
 } from "react";
 import {
@@ -43,7 +45,7 @@ import { Button } from "../ui/shadcn/button";
 import { GettingStartedPane } from "./GettingStartedPane";
 import { TabBar } from "./TabBar";
 import { WelcomeScreen } from "./WelcomeScreen";
-import { useTabManager } from "./useTabManager";
+import type { WorkspaceTab } from "./useTabManager";
 
 const DatabasesPane = lazy(() =>
 	import("../databases/DatabasesPane").then((module) => ({
@@ -217,12 +219,31 @@ function ContextualEmptyState({
 
 interface MainContentProps {
 	fileTree: {
-		openFile: (relPath: string) => Promise<void>;
 		openNonMarkdownExternally: (relPath: string) => Promise<void>;
 	};
+	onOpenFile: (relPath: string) => Promise<void>;
 	onOpenCommandPalette: () => void;
 	onCreateNote: () => void;
 	onOpenDailyNote: () => void;
+	tabs: WorkspaceTab[];
+	activeTabId: string | null;
+	activeTabPath: string | null;
+	dragTabId: string | null;
+	setActiveTabId: (tabId: string | null) => void;
+	setDragTabId: (tabId: string | null) => void;
+	setDirtyByPath: Dispatch<SetStateAction<Record<string, boolean>>>;
+	closeTab: (tabId: string) => void;
+	closeActiveTab: () => void;
+	closeTabsForPathRemoval: (path: string, recursive?: boolean) => void;
+	renameTabsForPath: (
+		fromPath: string,
+		toPath: string,
+		recursive?: boolean,
+	) => void;
+	reorderTabs: (fromTabId: string, toTabId: string) => void;
+	openBlankTab: () => void;
+	replaceActiveTabWithBlank: () => void;
+	openSpecialTab: (tabId: string) => void;
 	openAllDocsRequest: number;
 	onConsumeOpenAllDocsRequest: () => void;
 	openTemplatesRequest: number;
@@ -307,9 +328,25 @@ function DailyNotesSetupToast({
 
 export const MainContent = memo(function MainContent({
 	fileTree,
+	onOpenFile,
 	onOpenCommandPalette,
 	onCreateNote,
 	onOpenDailyNote,
+	tabs,
+	activeTabId,
+	activeTabPath,
+	dragTabId,
+	setActiveTabId,
+	setDragTabId,
+	setDirtyByPath,
+	closeTab,
+	closeActiveTab,
+	closeTabsForPathRemoval,
+	renameTabsForPath,
+	reorderTabs,
+	openBlankTab,
+	replaceActiveTabWithBlank,
+	openSpecialTab,
 	openAllDocsRequest,
 	onConsumeOpenAllDocsRequest,
 	openTemplatesRequest,
@@ -341,27 +378,34 @@ export const MainContent = memo(function MainContent({
 	const [starterOverrideVisible, setStarterOverrideVisible] = useState(false);
 	const [dailyNoteSetupToastVisible, setDailyNoteSetupToastVisible] =
 		useState(false);
-	const handleTabActivated = useCallback(() => {
-		setStarterOverrideVisible(false);
-	}, []);
-
-	const {
-		openTabs,
-		activeTabPath,
-		setActiveTabPath,
-		dragTabPath,
-		setDragTabPath,
-		setDirtyByPath,
-		closeTab,
-		closeActiveTab,
-		closeTabsForPathRemoval,
-		renameTabsForPath,
-		reorderTabs,
-		openSpecialTab,
-	} = useTabManager(spacePath, { onActivateTab: handleTabActivated });
+	const handledOpenAllDocsRequestRef = useRef(0);
+	const handledOpenTemplatesRequestRef = useRef(0);
+	const handledOpenCalendarRequestRef = useRef(0);
+	const handledOpenDatabasesRequestRef = useRef(0);
+	const handledOpenBlankTabRequestRef = useRef(0);
+	const handledShowGettingStartedRequestRef = useRef(0);
+	const activeTab = useMemo(
+		() => tabs.find((tab) => tab.id === activeTabId) ?? null,
+		[tabs, activeTabId],
+	);
 
 	useEffect(() => {
-		if (!spacePath || openAllDocsRequest === 0) return;
+		if (!activeTab || activeTab.kind === "blank") return;
+		setStarterOverrideVisible(false);
+	}, [activeTab]);
+
+	useEffect(() => {
+		if (openAllDocsRequest === 0) {
+			handledOpenAllDocsRequestRef.current = 0;
+			return;
+		}
+		if (
+			!spacePath ||
+			openAllDocsRequest === handledOpenAllDocsRequestRef.current
+		) {
+			return;
+		}
+		handledOpenAllDocsRequestRef.current = openAllDocsRequest;
 		openSpecialTab(ALL_DOCS_TAB_ID);
 		onConsumeOpenAllDocsRequest();
 	}, [
@@ -372,7 +416,17 @@ export const MainContent = memo(function MainContent({
 	]);
 
 	useEffect(() => {
-		if (!spacePath || openTemplatesRequest === 0) return;
+		if (openTemplatesRequest === 0) {
+			handledOpenTemplatesRequestRef.current = 0;
+			return;
+		}
+		if (
+			!spacePath ||
+			openTemplatesRequest === handledOpenTemplatesRequestRef.current
+		) {
+			return;
+		}
+		handledOpenTemplatesRequestRef.current = openTemplatesRequest;
 		openSpecialTab(TEMPLATES_TAB_ID);
 		onConsumeOpenTemplatesRequest();
 	}, [
@@ -383,25 +437,56 @@ export const MainContent = memo(function MainContent({
 	]);
 
 	useEffect(() => {
-		if (!spacePath || openCalendarRequest === 0) return;
+		if (openCalendarRequest === 0) {
+			handledOpenCalendarRequestRef.current = 0;
+			return;
+		}
+		if (
+			!spacePath ||
+			openCalendarRequest === handledOpenCalendarRequestRef.current
+		) {
+			return;
+		}
+		handledOpenCalendarRequestRef.current = openCalendarRequest;
 		openSpecialTab(CALENDAR_TAB_ID);
 	}, [openCalendarRequest, openSpecialTab, spacePath]);
 
 	useEffect(() => {
-		if (!spacePath || openDatabasesRequest.nonce === 0) return;
+		if (
+			!spacePath ||
+			openDatabasesRequest.nonce === 0 ||
+			openDatabasesRequest.nonce === handledOpenDatabasesRequestRef.current
+		) {
+			return;
+		}
+		handledOpenDatabasesRequestRef.current = openDatabasesRequest.nonce;
 		openSpecialTab(DATABASES_TAB_ID);
 	}, [openDatabasesRequest, openSpecialTab, spacePath]);
 
 	useEffect(() => {
-		if (!spacePath || openBlankTabRequest === 0) return;
-		setActiveTabPath(null);
-	}, [openBlankTabRequest, setActiveTabPath, spacePath]);
+		if (
+			!spacePath ||
+			openBlankTabRequest === 0 ||
+			openBlankTabRequest === handledOpenBlankTabRequestRef.current
+		) {
+			return;
+		}
+		handledOpenBlankTabRequestRef.current = openBlankTabRequest;
+		openBlankTab();
+	}, [openBlankTab, openBlankTabRequest, spacePath]);
 
 	useEffect(() => {
-		if (!spacePath || showGettingStartedRequest === 0) return;
+		if (
+			!spacePath ||
+			showGettingStartedRequest === 0 ||
+			showGettingStartedRequest === handledShowGettingStartedRequestRef.current
+		) {
+			return;
+		}
+		handledShowGettingStartedRequestRef.current = showGettingStartedRequest;
 		setStarterOverrideVisible(true);
-		setActiveTabPath(null);
-	}, [setActiveTabPath, showGettingStartedRequest, spacePath]);
+		replaceActiveTabWithBlank();
+	}, [replaceActiveTabWithBlank, showGettingStartedRequest, spacePath]);
 
 	useEffect(() => {
 		const handleCloseActiveTab = () => {
@@ -443,12 +528,12 @@ export const MainContent = memo(function MainContent({
 		onboardingLoaded &&
 		!onboarding.starterDismissed &&
 		!hasStarterCompletion &&
-		openTabs.length === 0 &&
+		tabs.length === 0 &&
 		!activeTabPath;
 	const showStarterPane =
 		Boolean(spacePath) &&
 		(showStarterByDefault || (starterOverrideVisible && !activeTabPath));
-	const showTabBar = openTabs.length > 0 || aiEnabled;
+	const showTabBar = tabs.length > 1;
 
 	useEffect(() => {
 		let cancelled = false;
@@ -489,7 +574,7 @@ export const MainContent = memo(function MainContent({
 						<div className="databaseLoadingState">Loading all docs…</div>
 					}
 				>
-					<AllDocsPane onOpenFile={(relPath) => fileTree.openFile(relPath)} />
+					<AllDocsPane onOpenFile={onOpenFile} />
 				</Suspense>
 			);
 		}
@@ -509,7 +594,7 @@ export const MainContent = memo(function MainContent({
 								? "No notes found in the template folder yet."
 								: "Set a template folder in Settings to browse templates here."
 						}
-						onOpenFile={(relPath) => fileTree.openFile(relPath)}
+						onOpenFile={onOpenFile}
 					/>
 				</Suspense>
 			);
@@ -522,7 +607,7 @@ export const MainContent = memo(function MainContent({
 					}
 				>
 					<CalendarPane
-						onOpenFile={(relPath) => fileTree.openFile(relPath)}
+						onOpenFile={onOpenFile}
 						onOpenDailyNotesSettings={onOpenDailyNotesSettings}
 					/>
 				</Suspense>
@@ -536,7 +621,7 @@ export const MainContent = memo(function MainContent({
 					}
 				>
 					<DatabasesPane
-						onOpenFile={(relPath) => fileTree.openFile(relPath)}
+						onOpenFile={onOpenFile}
 						initialDatabaseId={openDatabasesRequest.databaseId}
 						openRequestNonce={openDatabasesRequest.nonce}
 					/>
@@ -561,15 +646,19 @@ export const MainContent = memo(function MainContent({
 			return (
 				<FilePreviewPane
 					relPath={viewerPath}
-					onClose={() => closeTab(viewerPath)}
+					onClose={() => {
+						if (activeTabId) closeTab(activeTabId);
+					}}
 					onOpenExternally={(path) => fileTree.openNonMarkdownExternally(path)}
 				/>
 			);
 		}
 		return null;
 	}, [
+		activeTabId,
 		closeTab,
 		fileTree,
+		onOpenFile,
 		onOpenDailyNotesSettings,
 		openDatabasesRequest.databaseId,
 		openDatabasesRequest.nonce,
@@ -619,15 +708,16 @@ export const MainContent = memo(function MainContent({
 					/>
 					{showTabBar && (
 						<TabBar
-							openTabs={openTabs}
+							tabs={tabs}
+							activeTabId={activeTabId}
 							activeTabPath={activeTabPath}
-							dragTabPath={dragTabPath}
+							dragTabId={dragTabId}
 							useWindowBackground={!content}
-							onOpenBlankTab={() => setActiveTabPath(null)}
-							onSelectTab={setActiveTabPath}
+							onOpenBlankTab={openBlankTab}
+							onSelectTab={setActiveTabId}
 							onCloseTab={closeTab}
-							onDragStart={setDragTabPath}
-							onDragEnd={() => setDragTabPath(null)}
+							onDragStart={setDragTabId}
+							onDragEnd={() => setDragTabId(null)}
 							onReorder={reorderTabs}
 						/>
 					)}

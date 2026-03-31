@@ -65,6 +65,7 @@ import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { listTemplates, renderTemplate } from "../../lib/templates";
 import { openSettingsWindow } from "../../lib/windows";
+import { isInAppPreviewable } from "../../utils/filePreview";
 import { isMarkdownPath } from "../../utils/path";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { FileHtml, LayoutAlignLeft } from "../Icons";
@@ -90,6 +91,7 @@ import { WhatsNewDialog } from "./WhatsNewDialog";
 import { WindowChromeIconButton } from "./WindowChromeIconButton";
 import { WindowChromeUpdateButton } from "./WindowChromeUpdateButton";
 import { normalizeRelPath, parentDir } from "./appShellHelpers";
+import { useTabManager } from "./useTabManager";
 
 const loadCommandPalette = () =>
 	import("./CommandPalette").then((module) => ({
@@ -268,8 +270,40 @@ export function AppShell() {
 		setError,
 	});
 
+	const {
+		tabs,
+		activeTabId,
+		activeTabPath,
+		dragTabId,
+		setActiveTabId,
+		setDragTabId,
+		setDirtyByPath,
+		closeTab,
+		closeActiveTab,
+		closeTabsForPathRemoval,
+		renameTabsForPath,
+		reorderTabs,
+		openBlankTab,
+		replaceActiveTabWithBlank,
+		openFileTab,
+		openSpecialTab,
+	} = useTabManager(spacePath);
+
+	const openWorkspaceFile = useCallback(
+		async (path: string) => {
+			if (!path) return;
+			if (isMarkdownPath(path) || isInAppPreviewable(path)) {
+				setActiveDirPath(parentDir(path));
+				openFileTab(path);
+				return;
+			}
+			await fileTree.openFile(path);
+		},
+		[fileTree, openFileTab, setActiveDirPath],
+	);
+
 	const { openOrCreateDailyNote } = useDailyNote({
-		onOpenFile: (path) => fileTree.openFile(path),
+		onOpenFile: (path) => openWorkspaceFile(path),
 		setError,
 		spacePath,
 		templatePath: dailyNoteTemplatePath,
@@ -362,7 +396,7 @@ export function AppShell() {
 					openParentDir: templatePickerDirPath,
 				});
 				if (createdPath) {
-					await fileTree.openFile(createdPath);
+					await openWorkspaceFile(createdPath);
 				}
 			} catch (cause) {
 				setError(
@@ -372,7 +406,7 @@ export function AppShell() {
 				);
 			}
 		},
-		[fileTree, setError, spacePath, templatePickerDirPath],
+		[fileTree, openWorkspaceFile, setError, spacePath, templatePickerDirPath],
 	);
 
 	const handleOpenDailyNote = useCallback(async () => {
@@ -408,7 +442,7 @@ export function AppShell() {
 				target: normalizedTarget,
 			});
 			if (resolved) {
-				await fileTree.openFile(resolved);
+				await openWorkspaceFile(resolved);
 				return;
 			}
 
@@ -431,7 +465,7 @@ export function AppShell() {
 				openParentDir: parentDir(nextRelPath),
 			});
 			if (createdPath) {
-				await fileTree.openFile(createdPath);
+				await openWorkspaceFile(createdPath);
 				return;
 			}
 
@@ -440,13 +474,13 @@ export function AppShell() {
 				target: normalizedTarget,
 			});
 			if (fallbackResolved) {
-				await fileTree.openFile(fallbackResolved);
+				await openWorkspaceFile(fallbackResolved);
 				return;
 			}
 
 			setError(`Could not resolve wikilink: ${rawTarget}`);
 		},
-		[activeMarkdownTabPath, fileTree, setError],
+		[activeMarkdownTabPath, fileTree, openWorkspaceFile, setError],
 	);
 
 	useEffect(() => {
@@ -473,14 +507,14 @@ export function AppShell() {
 						sourcePath: detail.sourcePath,
 					});
 					if (resolved) {
-						await fileTree.openFile(resolved);
+						await openWorkspaceFile(resolved);
 						return;
 					}
 					const wikiFallback = await invoke("space_resolve_wikilink", {
 						target: detail.href,
 					});
 					if (wikiFallback) {
-						await fileTree.openFile(wikiFallback);
+						await openWorkspaceFile(wikiFallback);
 						return;
 					}
 					setError(`Could not resolve markdown link: ${detail.href}`);
@@ -511,7 +545,7 @@ export function AppShell() {
 			);
 			window.removeEventListener(TAG_CLICK_EVENT, onTagClick);
 		};
-	}, [fileTree, openOrCreateWikiLinkTarget, setError, setPaletteOpen]);
+	}, [openOrCreateWikiLinkTarget, openWorkspaceFile, setError, setPaletteOpen]);
 
 	const openTagSearchPalette = useCallback(
 		(tag: string) => {
@@ -778,9 +812,9 @@ export function AppShell() {
 		if (!spacePath) return;
 		const createdPath = await createNoteInSelectedFolder();
 		if (createdPath) {
-			await fileTree.openFile(createdPath);
+			await openWorkspaceFile(createdPath);
 		}
-	}, [createNoteInSelectedFolder, fileTree, spacePath]);
+	}, [createNoteInSelectedFolder, openWorkspaceFile, spacePath]);
 
 	const handleCopyOpenNoteAsMarkdown = useCallback(async () => {
 		if (!activeMarkdownTabPath) return;
@@ -982,7 +1016,7 @@ export function AppShell() {
 						const n = await fileTree.onMovePath(movePickerSourcePath, "");
 						if (n) {
 							setMovePickerSourcePath(null);
-							await fileTree.openFile(n);
+							await openWorkspaceFile(n);
 						}
 					},
 				},
@@ -995,7 +1029,7 @@ export function AppShell() {
 						const n = await fileTree.onMovePath(movePickerSourcePath, dir);
 						if (n) {
 							setMovePickerSourcePath(null);
-							await fileTree.openFile(n);
+							await openWorkspaceFile(n);
 						}
 					},
 				})),
@@ -1353,6 +1387,7 @@ export function AppShell() {
 		openCalendarTab,
 		openDatabasesTab,
 		openGettingStarted,
+		openWorkspaceFile,
 		openWhatsNew,
 		gitSync,
 		moveTargetDirs,
@@ -1404,7 +1439,7 @@ export function AppShell() {
 			)}
 			<Sidebar
 				onSelectDir={setActiveDirPath}
-				onOpenFile={(p) => void fileTree.openFile(p)}
+				onOpenFile={(p) => void openWorkspaceFile(p)}
 				onNewNote={() => void createNoteInSelectedFolder()}
 				onNewFileInDir={(p) => void fileTree.onNewFileInDir(p)}
 				onCreateFromTemplateInDir={(p) => void openTemplatePicker(p)}
@@ -1448,9 +1483,25 @@ export function AppShell() {
 			/>
 			<MainContent
 				fileTree={fileTree}
+				onOpenFile={openWorkspaceFile}
 				onOpenCommandPalette={openCommandPalette}
 				onCreateNote={handleCreateNoteFromStarter}
 				onOpenDailyNote={requestOpenDailyNote}
+				tabs={tabs}
+				activeTabId={activeTabId}
+				activeTabPath={activeTabPath}
+				dragTabId={dragTabId}
+				setActiveTabId={setActiveTabId}
+				setDragTabId={setDragTabId}
+				setDirtyByPath={setDirtyByPath}
+				closeTab={closeTab}
+				closeActiveTab={closeActiveTab}
+				closeTabsForPathRemoval={closeTabsForPathRemoval}
+				renameTabsForPath={renameTabsForPath}
+				reorderTabs={reorderTabs}
+				openBlankTab={openBlankTab}
+				replaceActiveTabWithBlank={replaceActiveTabWithBlank}
+				openSpecialTab={openSpecialTab}
 				openAllDocsRequest={openAllDocsRequest}
 				onConsumeOpenAllDocsRequest={consumeOpenAllDocsRequest}
 				openTemplatesRequest={openTemplatesRequest}
@@ -1492,7 +1543,7 @@ export function AppShell() {
 						commands={commands}
 						onClose={() => setPaletteOpen(false)}
 						spacePath={spacePath}
-						onSelectSearchResult={(id) => void fileTree.openFile(id)}
+						onSelectSearchResult={(id) => void openWorkspaceFile(id)}
 					/>
 				</Suspense>
 			) : null}

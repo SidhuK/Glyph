@@ -1,41 +1,160 @@
-import { useCallback, useEffect, useState } from "react";
+import {
+	useCallback,
+	useEffect,
+	useLayoutEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { useFileTreeContext, useUILayoutContext } from "../../contexts";
 import { useRecentFiles } from "../../hooks/useRecentFiles";
-import { ALL_DOCS_TAB_ID } from "../../lib/allDocs";
-import { CALENDAR_TAB_ID } from "../../lib/calendar";
-import { DATABASES_TAB_ID } from "../../lib/databases";
-import { TEMPLATES_TAB_ID } from "../../lib/templatesView";
 import { isInAppPreviewable } from "../../utils/filePreview";
 
-interface UseTabManagerOptions {
-	onActivateTab?: (path: string) => void;
+export interface WorkspaceTab {
+	id: string;
+	kind: "blank" | "file" | "special";
+	target: string | null;
 }
 
-export function useTabManager(
-	spacePath: string | null,
-	options: UseTabManagerOptions = {},
-) {
-	const { onActivateTab } = options;
-	const { activeFilePath, setActiveFilePath } = useFileTreeContext();
-	const { recentFiles, addRecentFile } = useRecentFiles(spacePath, 7);
+function matchesRemovedPath(
+	tab: WorkspaceTab,
+	path: string,
+	recursive: boolean,
+): boolean {
+	if (tab.kind !== "file" || !tab.target) return false;
+	if (tab.target === path) return true;
+	return recursive && tab.target.startsWith(`${path}/`);
+}
+
+export function useTabManager(spacePath: string | null) {
+	const { setActiveFilePath } = useFileTreeContext();
+	const { addRecentFile } = useRecentFiles(spacePath, 7);
 	const {
-		activePreviewPath,
 		setActivePreviewPath,
 		setOpenMarkdownTabs,
 		setActiveMarkdownTabPath,
 	} = useUILayoutContext();
 
-	const [openTabs, setOpenTabs] = useState<string[]>([]);
-	const [activeTabPath, setActiveTabPath] = useState<string | null>(null);
-	const [dragTabPath, setDragTabPath] = useState<string | null>(null);
+	const [tabs, setTabs] = useState<WorkspaceTab[]>([]);
+	const [activeTabId, setActiveTabId] = useState<string | null>(null);
+	const [dragTabId, setDragTabId] = useState<string | null>(null);
 	const [dirtyByPath, setDirtyByPath] = useState<Record<string, boolean>>({});
-	const isSpecialTab = useCallback(
-		(path: string) =>
-			path === ALL_DOCS_TAB_ID ||
-			path === CALENDAR_TAB_ID ||
-			path === DATABASES_TAB_ID ||
-			path === TEMPLATES_TAB_ID,
+	const tabIdCounterRef = useRef(0);
+	const tabsRef = useRef<WorkspaceTab[]>([]);
+	const activeTabIdRef = useRef<string | null>(null);
+
+	const createTab = useCallback(
+		(kind: WorkspaceTab["kind"], target: string | null): WorkspaceTab => ({
+			id: `workspace-tab-${++tabIdCounterRef.current}`,
+			kind,
+			target,
+		}),
 		[],
+	);
+
+	const activeTab = useMemo(
+		() => tabs.find((tab) => tab.id === activeTabId) ?? null,
+		[tabs, activeTabId],
+	);
+	const activeTabPath =
+		activeTab && activeTab.kind !== "blank" ? activeTab.target : null;
+
+	useLayoutEffect(() => {
+		void spacePath;
+		setTabs([]);
+		setActiveTabId(null);
+		setDragTabId(null);
+		setDirtyByPath({});
+		tabsRef.current = [];
+		activeTabIdRef.current = null;
+	}, [spacePath]);
+
+	useEffect(() => {
+		tabsRef.current = tabs;
+	}, [tabs]);
+
+	useEffect(() => {
+		activeTabIdRef.current = activeTabId;
+	}, [activeTabId]);
+
+	useEffect(() => {
+		if (!activeTab || activeTab.kind !== "file" || !activeTab.target) {
+			setActivePreviewPath(null);
+			setActiveFilePath(null);
+			return;
+		}
+		setActiveFilePath(activeTab.target);
+		if (activeTab.target.toLowerCase().endsWith(".md")) {
+			setActivePreviewPath(null);
+			return;
+		}
+		if (isInAppPreviewable(activeTab.target)) {
+			setActivePreviewPath(activeTab.target);
+			return;
+		}
+		setActivePreviewPath(null);
+	}, [activeTab, setActiveFilePath, setActivePreviewPath]);
+
+	useEffect(() => {
+		const markdownTabs = tabs
+			.filter(
+				(tab) =>
+					tab.kind === "file" && tab.target?.toLowerCase().endsWith(".md"),
+			)
+			.map((tab) => tab.target as string);
+		setOpenMarkdownTabs(markdownTabs);
+		const activeMarkdown =
+			activeTab?.kind === "file" &&
+			activeTab.target?.toLowerCase().endsWith(".md")
+				? activeTab.target
+				: null;
+		setActiveMarkdownTabPath(activeMarkdown);
+	}, [activeTab, setActiveMarkdownTabPath, setOpenMarkdownTabs, tabs]);
+
+	useEffect(() => {
+		if (activeTab?.kind === "file" && activeTab.target && spacePath) {
+			void addRecentFile(activeTab.target, spacePath);
+		}
+	}, [activeTab, addRecentFile, spacePath]);
+
+	const focusExistingTab = useCallback(
+		(target: string) => {
+			const existing = tabs.find((tab) => tab.target === target);
+			if (!existing) return false;
+			setActiveTabId(existing.id);
+			return true;
+		},
+		[tabs],
+	);
+
+	const clearDirtyForTarget = useCallback((target: string | null) => {
+		if (!target) return;
+		setDirtyByPath((prev) => {
+			if (!(target in prev)) return prev;
+			const next = { ...prev };
+			delete next[target];
+			return next;
+		});
+	}, []);
+
+	const replaceActiveTab = useCallback(
+		(kind: WorkspaceTab["kind"], target: string | null) => {
+			const nextTab = createTab(kind, target);
+			setTabs((prev) => {
+				if (!activeTabId) return [nextTab];
+				const activeIndex = prev.findIndex((tab) => tab.id === activeTabId);
+				if (activeIndex === -1) return [...prev, nextTab];
+				const current = prev[activeIndex];
+				if (current?.kind === "file") {
+					clearDirtyForTarget(current.target);
+				}
+				const next = [...prev];
+				next[activeIndex] = nextTab;
+				return next;
+			});
+			setActiveTabId(nextTab.id);
+		},
+		[activeTabId, clearDirtyForTarget, createTab],
 	);
 
 	const canOpenInMainPane = useCallback(
@@ -44,119 +163,117 @@ export function useTabManager(
 		[],
 	);
 
-	useEffect(() => {
-		const opened = activePreviewPath ?? activeFilePath;
-		if (!opened || !canOpenInMainPane(opened)) return;
-		setOpenTabs((prev) => (prev.includes(opened) ? prev : [...prev, opened]));
-		setActiveTabPath(opened);
-	}, [activeFilePath, activePreviewPath, canOpenInMainPane]);
+	const openFileTab = useCallback(
+		(path: string) => {
+			if (!canOpenInMainPane(path)) return false;
+			if (focusExistingTab(path)) return true;
+			replaceActiveTab("file", path);
+			return true;
+		},
+		[canOpenInMainPane, focusExistingTab, replaceActiveTab],
+	);
 
-	useEffect(() => {
-		if (!activeTabPath) return;
-		onActivateTab?.(activeTabPath);
-	}, [activeTabPath, onActivateTab]);
+	const openSpecialTab = useCallback(
+		(target: string) => {
+			if (focusExistingTab(target)) return;
+			replaceActiveTab("special", target);
+		},
+		[focusExistingTab, replaceActiveTab],
+	);
 
-	useEffect(() => {
-		if (!activeTabPath) {
-			setActivePreviewPath(null);
-			setActiveFilePath(null);
-			return;
-		}
-		if (isSpecialTab(activeTabPath)) {
-			setActivePreviewPath(null);
-			setActiveFilePath(null);
-			return;
-		}
-		setActiveFilePath(activeTabPath);
-		if (activeTabPath.toLowerCase().endsWith(".md")) {
-			setActivePreviewPath(null);
-			return;
-		}
-		if (isInAppPreviewable(activeTabPath)) {
-			setActivePreviewPath(activeTabPath);
-			return;
-		}
-		setActivePreviewPath(null);
-	}, [activeTabPath, isSpecialTab, setActiveFilePath, setActivePreviewPath]);
+	const openBlankTab = useCallback(() => {
+		const blankTab = createTab("blank", null);
+		setTabs((prev) => [...prev, blankTab]);
+		setActiveTabId(blankTab.id);
+	}, [createTab]);
 
-	useEffect(() => {
-		const markdownTabs = openTabs.filter((p) =>
-			p.toLowerCase().endsWith(".md"),
-		);
-		setOpenMarkdownTabs(markdownTabs);
-		const activeMarkdown = activeTabPath?.toLowerCase().endsWith(".md")
-			? activeTabPath
-			: null;
-		setActiveMarkdownTabPath(activeMarkdown);
-	}, [activeTabPath, openTabs, setActiveMarkdownTabPath, setOpenMarkdownTabs]);
+	const replaceActiveTabWithBlank = useCallback(() => {
+		if (activeTab?.kind === "blank") return;
+		replaceActiveTab("blank", null);
+	}, [activeTab?.kind, replaceActiveTab]);
 
-	useEffect(() => {
-		if (activeTabPath && spacePath) {
-			if (isSpecialTab(activeTabPath)) return;
-			void addRecentFile(activeTabPath, spacePath);
-		}
-	}, [activeTabPath, isSpecialTab, spacePath, addRecentFile]);
-
-	const closeTab = useCallback((path: string) => {
-		setOpenTabs((prev) => {
-			const idx = prev.indexOf(path);
-			if (idx === -1) return prev;
-			const next = prev.filter((p) => p !== path);
-			setActiveTabPath((current) => {
-				if (current !== path) return current;
-				return next[idx] ?? next[idx - 1] ?? null;
-			});
-			return next;
-		});
-		setDirtyByPath((prev) => {
-			if (!(path in prev)) return prev;
-			const next = { ...prev };
-			delete next[path];
-			return next;
-		});
-	}, []);
+	const closeTab = useCallback(
+		(tabId: string) => {
+			const currentTabs = tabsRef.current;
+			const index = currentTabs.findIndex((tab) => tab.id === tabId);
+			if (index === -1) return;
+			const removed = currentTabs[index];
+			const nextTabs = currentTabs.filter((tab) => tab.id !== tabId);
+			const nextActiveTabId =
+				activeTabIdRef.current !== tabId
+					? activeTabIdRef.current
+					: (nextTabs[index]?.id ?? nextTabs[index - 1]?.id ?? null);
+			if (removed?.kind === "file") {
+				clearDirtyForTarget(removed.target);
+			}
+			tabsRef.current = nextTabs;
+			activeTabIdRef.current = nextActiveTabId;
+			setTabs(nextTabs);
+			setActiveTabId(nextActiveTabId);
+		},
+		[clearDirtyForTarget],
+	);
 
 	const closeAllTabs = useCallback(() => {
-		setOpenTabs([]);
-		setActiveTabPath(null);
+		setTabs([]);
+		setActiveTabId(null);
 		setDirtyByPath({});
 	}, []);
 
 	const closeActiveTab = useCallback(() => {
-		if (!activeTabPath) return;
-		closeTab(activeTabPath);
-	}, [activeTabPath, closeTab]);
+		if (!activeTabId) return;
+		closeTab(activeTabId);
+	}, [activeTabId, closeTab]);
 
 	const closeTabsForPathRemoval = useCallback(
 		(path: string, recursive = false) => {
-			setOpenTabs((prev) => {
-				const next = prev.filter((tabPath) => {
-					if (isSpecialTab(tabPath)) return true;
-					if (tabPath === path) return false;
-					return !(recursive && tabPath.startsWith(`${path}/`));
-				});
-				if (next.length === prev.length) return prev;
-				setActiveTabPath((current) => {
-					if (!current) return current;
-					if (current === path) {
-						const removedIndex = prev.indexOf(current);
-						return next[removedIndex] ?? next[removedIndex - 1] ?? null;
+			const currentTabs = tabsRef.current;
+			const nextTabs = currentTabs.filter(
+				(tab) => !matchesRemovedPath(tab, path, recursive),
+			);
+			if (nextTabs.length === currentTabs.length) return;
+			const currentActiveTabId = activeTabIdRef.current;
+			let nextActiveTabId = currentActiveTabId;
+			if (currentActiveTabId) {
+				const removedIndex = currentTabs.findIndex(
+					(tab) => tab.id === currentActiveTabId,
+				);
+				const removedTab = removedIndex >= 0 ? currentTabs[removedIndex] : null;
+				if (removedTab && matchesRemovedPath(removedTab, path, recursive)) {
+					const survivingTabIds = new Set(nextTabs.map((tab) => tab.id));
+					nextActiveTabId = null;
+					for (
+						let index = removedIndex + 1;
+						index < currentTabs.length;
+						index++
+					) {
+						const candidate = currentTabs[index];
+						if (!survivingTabIds.has(candidate.id)) continue;
+						nextActiveTabId = candidate.id;
+						break;
 					}
-					if (recursive && current.startsWith(`${path}/`)) {
-						const removedIndex = prev.indexOf(current);
-						return next[removedIndex] ?? next[removedIndex - 1] ?? null;
+					if (!nextActiveTabId) {
+						for (let index = removedIndex - 1; index >= 0; index--) {
+							const candidate = currentTabs[index];
+							if (!survivingTabIds.has(candidate.id)) continue;
+							nextActiveTabId = candidate.id;
+							break;
+						}
 					}
-					return current;
-				});
-				return next;
-			});
+				}
+			}
+			tabsRef.current = nextTabs;
+			activeTabIdRef.current = nextActiveTabId;
+			setTabs(nextTabs);
+			setActiveTabId(nextActiveTabId);
 			setDirtyByPath((prev) => {
 				let changed = false;
 				const next: Record<string, boolean> = {};
 				for (const [tabPath, dirty] of Object.entries(prev)) {
-					const removed =
-						tabPath === path || (recursive && tabPath.startsWith(`${path}/`));
-					if (removed) {
+					if (
+						tabPath === path ||
+						(recursive && tabPath.startsWith(`${path}/`))
+					) {
 						changed = true;
 						continue;
 					}
@@ -165,24 +282,27 @@ export function useTabManager(
 				return changed ? next : prev;
 			});
 		},
-		[isSpecialTab],
+		[],
 	);
 
 	const renameTabsForPath = useCallback(
 		(fromPath: string, toPath: string, recursive = false) => {
-			setOpenTabs((prev) => {
+			setTabs((prev) => {
 				let changed = false;
-				const next = prev.map((tabPath) => {
-					if (isSpecialTab(tabPath)) return tabPath;
-					if (tabPath === fromPath) {
+				const next = prev.map((tab) => {
+					if (tab.kind !== "file" || !tab.target) return tab;
+					if (tab.target === fromPath) {
 						changed = true;
-						return toPath;
+						return { ...tab, target: toPath };
 					}
-					if (recursive && tabPath.startsWith(`${fromPath}/`)) {
+					if (recursive && tab.target.startsWith(`${fromPath}/`)) {
 						changed = true;
-						return `${toPath}${tabPath.slice(fromPath.length)}`;
+						return {
+							...tab,
+							target: `${toPath}${tab.target.slice(fromPath.length)}`,
+						};
 					}
-					return tabPath;
+					return tab;
 				});
 				return changed ? next : prev;
 			});
@@ -204,23 +324,15 @@ export function useTabManager(
 				}
 				return changed ? next : prev;
 			});
-			setActiveTabPath((current) => {
-				if (!current) return current;
-				if (current === fromPath) return toPath;
-				if (recursive && current.startsWith(`${fromPath}/`)) {
-					return `${toPath}${current.slice(fromPath.length)}`;
-				}
-				return current;
-			});
 		},
-		[isSpecialTab],
+		[],
 	);
 
-	const reorderTabs = useCallback((fromPath: string, toPath: string) => {
-		if (!fromPath || !toPath || fromPath === toPath) return;
-		setOpenTabs((prev) => {
-			const fromIndex = prev.indexOf(fromPath);
-			const toIndex = prev.indexOf(toPath);
+	const reorderTabs = useCallback((fromTabId: string, toTabId: string) => {
+		if (!fromTabId || !toTabId || fromTabId === toTabId) return;
+		setTabs((prev) => {
+			const fromIndex = prev.findIndex((tab) => tab.id === fromTabId);
+			const toIndex = prev.findIndex((tab) => tab.id === toTabId);
 			if (fromIndex === -1 || toIndex === -1) return prev;
 			const next = [...prev];
 			const [moved] = next.splice(fromIndex, 1);
@@ -229,26 +341,21 @@ export function useTabManager(
 		});
 	}, []);
 
-	const openSpecialTab = useCallback((tabId: string) => {
-		setOpenTabs((prev) => (prev.includes(tabId) ? prev : [...prev, tabId]));
-		setActiveTabPath(tabId);
-	}, []);
-
 	useEffect(() => {
 		const onKeyDown = (event: KeyboardEvent) => {
 			const mod = event.metaKey || event.ctrlKey;
 			if (!mod) return;
 			const key = event.key.toLowerCase();
 			if (key === "tab") {
-				if (!openTabs.length) return;
+				if (!tabs.length) return;
 				event.preventDefault();
-				const currentIndex = activeTabPath
-					? openTabs.indexOf(activeTabPath)
+				const currentIndex = activeTabId
+					? tabs.findIndex((tab) => tab.id === activeTabId)
 					: -1;
 				const step = event.shiftKey ? -1 : 1;
 				const base = currentIndex >= 0 ? currentIndex : event.shiftKey ? 0 : -1;
-				const nextIndex = (base + step + openTabs.length) % openTabs.length;
-				setActiveTabPath(openTabs[nextIndex] ?? null);
+				const nextIndex = (base + step + tabs.length) % tabs.length;
+				setActiveTabId(tabs[nextIndex]?.id ?? null);
 				return;
 			}
 			if (key === "w" && event.shiftKey) {
@@ -263,22 +370,24 @@ export function useTabManager(
 			}
 			if (!event.shiftKey && /^[1-9]$/.test(key)) {
 				const index = Number.parseInt(key, 10) - 1;
-				const path = openTabs[index];
-				if (!path) return;
+				const tab = tabs[index];
+				if (!tab) return;
 				event.preventDefault();
-				setActiveTabPath(path);
+				setActiveTabId(tab.id);
 			}
 		};
 		window.addEventListener("keydown", onKeyDown);
 		return () => window.removeEventListener("keydown", onKeyDown);
-	}, [activeTabPath, closeActiveTab, closeAllTabs, openTabs]);
+	}, [activeTabId, closeActiveTab, closeAllTabs, tabs]);
 
 	return {
-		openTabs,
+		tabs,
+		activeTab,
+		activeTabId,
 		activeTabPath,
-		setActiveTabPath,
-		dragTabPath,
-		setDragTabPath,
+		setActiveTabId,
+		dragTabId,
+		setDragTabId,
 		dirtyByPath,
 		setDirtyByPath,
 		closeTab,
@@ -286,7 +395,9 @@ export function useTabManager(
 		closeTabsForPathRemoval,
 		renameTabsForPath,
 		reorderTabs,
+		openBlankTab,
+		replaceActiveTabWithBlank,
+		openFileTab,
 		openSpecialTab,
-		recentFiles,
 	};
 }
