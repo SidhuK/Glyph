@@ -96,6 +96,26 @@
 	--glyph-inline-color-blue: #0c66e4;
 	--glyph-inline-color-purple: #7e5bef;
 	--glyph-inline-color-red: #c9372c;
+	--glyph-inline-highlight-yellow: color-mix(
+		in srgb,
+		var(--status-warning-fg) 24%,
+		transparent
+	);
+	--glyph-inline-highlight-blue: color-mix(
+		in srgb,
+		var(--status-info-fg) 20%,
+		transparent
+	);
+	--glyph-inline-highlight-green: color-mix(
+		in srgb,
+		var(--status-success-fg) 22%,
+		transparent
+	);
+	--glyph-inline-highlight-red: color-mix(
+		in srgb,
+		var(--status-danger-fg) 18%,
+		transparent
+	);
 
 	--scrollbar-track: transparent;
 	--scrollbar-thumb: rgba(55, 53, 47, 0.16);

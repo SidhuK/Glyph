@@ -1080,6 +1080,36 @@ input.notePropertyValue {
 	color: var(--glyph-inline-color-red, #c73838);
 }
 
+.tiptapContentInline mark[data-glyph-highlight] {
+	background: transparent;
+	padding: 0.02em 0.12em;
+	border-radius: 0.22em;
+	box-decoration-break: clone;
+	-webkit-box-decoration-break: clone;
+}
+
+.tiptapContentInline mark[data-glyph-highlight="yellow"] {
+	background-color: var(
+		--glyph-inline-highlight-yellow,
+		rgba(240, 180, 41, 0.26)
+	);
+}
+
+.tiptapContentInline mark[data-glyph-highlight="blue"] {
+	background-color: var(--glyph-inline-highlight-blue, rgba(59, 155, 220, 0.22));
+}
+
+.tiptapContentInline mark[data-glyph-highlight="green"] {
+	background-color: var(
+		--glyph-inline-highlight-green,
+		rgba(60, 207, 142, 0.24)
+	);
+}
+
+.tiptapContentInline mark[data-glyph-highlight="red"] {
+	background-color: var(--glyph-inline-highlight-red, rgba(249, 112, 102, 0.2));
+}
+
 .tiptapContentInline pre {
 	background: color-mix(in srgb, var(--bg-secondary) 82%, var(--bg-primary));
 	padding: calc(var(--space-3) + 22px) var(--space-3) var(--space-3);

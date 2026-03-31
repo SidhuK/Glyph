@@ -16,6 +16,7 @@ import { SlashCommand } from "../slashCommands";
 import { SyntaxHighlightedCodeBlock } from "./codeBlockHighlighting";
 import { ColoredText } from "./coloredText";
 import { HeadingCollapse } from "./headingCollapse";
+import { HighlightedText } from "./highlightedText";
 import { MarkdownImage } from "./markdownImage";
 import { MarkdownLinkAutocomplete } from "./markdownLinkAutocomplete";
 import { MermaidPreview } from "./mermaidPreview";
@@ -377,6 +378,7 @@ export function createEditorExtensions(
 			link: false,
 			underline: {},
 		}),
+		HighlightedText,
 		ColoredText,
 		SyntaxHighlightedCodeBlock,
 		EditorLink,
