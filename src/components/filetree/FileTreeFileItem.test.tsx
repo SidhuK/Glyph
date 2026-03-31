@@ -149,4 +149,30 @@ describe("FileTreeFileItem", () => {
 		expect(container.textContent).toContain("Unstar file");
 		expect(container.textContent).not.toContain("Star file");
 	});
+
+	it("calls arrow navigation when pressing the up or down keys", async () => {
+		const onArrowNavigate = vi.fn();
+		await renderFileTreeFileItem({ onArrowNavigate });
+
+		const button = container.querySelector(
+			".fileTreeRow",
+		) as HTMLButtonElement | null;
+		expect(button).not.toBeNull();
+
+		await act(async () => {
+			button?.dispatchEvent(
+				new KeyboardEvent("keydown", {
+					bubbles: true,
+					key: "ArrowDown",
+				}),
+			);
+		});
+
+		expect(onArrowNavigate).toHaveBeenCalledTimes(1);
+		expect(onArrowNavigate).toHaveBeenCalledWith(
+			"notes/alpha.md",
+			1,
+			expect.any(HTMLButtonElement),
+		);
+	});
 });

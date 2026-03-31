@@ -8,7 +8,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { m } from "motion/react";
-import type { MouseEvent } from "react";
+import type { KeyboardEvent, MouseEvent } from "react";
 import { memo, useEffect, useRef, useState } from "react";
 import type { FileTreeAppearance, FsEntry } from "../../lib/tauri";
 import { FolderPlus, Trash2 } from "../Icons";
@@ -50,6 +50,11 @@ interface FileTreeFileItemProps {
 	onChangeAppearance: (appearance: FileTreeAppearance) => void;
 	isPinned: boolean;
 	onTogglePinned: (path: string) => Promise<void> | void;
+	onArrowNavigate?: (
+		path: string,
+		direction: -1 | 1,
+		currentTarget: HTMLButtonElement,
+	) => void;
 }
 
 export const FileTreeFileItem = memo(function FileTreeFileItem({
@@ -72,6 +77,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 	onChangeAppearance,
 	isPinned,
 	onTogglePinned,
+	onArrowNavigate,
 }: FileTreeFileItemProps) {
 	const customColor =
 		appearance?.color && isEditorTextColor(appearance.color)
@@ -119,6 +125,18 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 		await onCommitRename(entry.rel_path, nextName);
 	};
 
+	const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
+		if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+		if (!onArrowNavigate) return;
+		event.preventDefault();
+		event.stopPropagation();
+		onArrowNavigate(
+			entry.rel_path,
+			event.key === "ArrowDown" ? 1 : -1,
+			event.currentTarget,
+		);
+	};
+
 	return (
 		<li className={isActive ? "fileTreeItem active" : "fileTreeItem"}>
 			<div className="fileTreeRowShell">
@@ -155,6 +173,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 								type="button"
 								className="fileTreeRow"
 								onClick={() => onOpenFile(entry.rel_path)}
+								onKeyDown={handleKeyDown}
 								style={rowStyle}
 								title={`${entry.rel_path} (${label})`}
 								variants={rowVariants}
@@ -163,6 +182,8 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 								animate={isActive ? "active" : "idle"}
 								transition={springTransition}
 								data-has-custom-color={customColor ? "true" : "false"}
+								data-file-tree-file="true"
+								data-file-tree-path={entry.rel_path}
 							>
 								{appearance?.icon ? (
 									<DatabaseColumnIcon

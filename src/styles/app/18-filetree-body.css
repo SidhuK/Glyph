@@ -134,10 +134,6 @@
 	margin-bottom: 0;
 }
 
-.fileTreePinnedRow {
-	padding-left: var(--space-2);
-}
-
 .fileTreePinnedPath {
 	flex-shrink: 0;
 	margin-left: auto;
@@ -162,38 +158,43 @@
 	transition: background var(--transition-fast);
 }
 
-.fileTreeItem:hover > .fileTreeRowShell > .fileTreeRow {
+.fileTreeItem:hover > .fileTreeRowShell > .fileTreeRow,
+.fileTreeItem:hover > .fileTreeRowShell > .fileTreePinnedRow {
 	background: var(--bg-hover);
 	border-radius: var(--radius-md);
 }
 
-.fileTreeItem.active > .fileTreeRowShell > .fileTreeRow {
+.fileTreeItem.active > .fileTreeRowShell > .fileTreeRow,
+.fileTreeItem.active > .fileTreeRowShell > .fileTreePinnedRow {
 	background: color-mix(in srgb, var(--interactive-accent) 14%, transparent);
 	color: var(--text-primary);
 	border-radius: var(--radius-md);
 }
 
-.fileTreeItem.active > .fileTreeRowShell > .fileTreeRow .fileTreeName {
+.fileTreeItem.active > .fileTreeRowShell > .fileTreeRow .fileTreeName,
+.fileTreeItem.active > .fileTreeRowShell > .fileTreePinnedRow .fileTreeName {
 	font-weight: var(--font-medium);
 	color: var(--text-primary);
 }
 
-.fileTreeItem.active > .fileTreeRowShell > .fileTreeRow .fileTreeIcon {
+.fileTreeItem.active > .fileTreeRowShell > .fileTreeRow .fileTreeIcon,
+.fileTreeItem.active > .fileTreeRowShell > .fileTreePinnedRow .fileTreeIcon {
 	color: var(--text-primary);
 }
 
 .fileTreeRowShell {
 	display: flex;
 	align-items: center;
-	gap: 6px;
+	gap: var(--space-2);
 	min-width: 0;
 }
 
-.fileTreeRow {
+.fileTreeRow,
+.fileTreePinnedRow {
 	flex: 1;
 	display: flex;
 	align-items: center;
-	gap: var(--space-1);
+	gap: var(--space-2);
 	min-width: 0;
 	min-height: 28px;
 	padding: 2px var(--space-2);
@@ -201,7 +202,6 @@
 	border-radius: var(--radius-md);
 	margin: 0;
 	border-left: none;
-	/* hover/tap/active transitions handled by motion variants */
 }
 
 .fileTreeRowActions {
