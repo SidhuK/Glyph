@@ -579,7 +579,7 @@
 	display: flex;
 	align-items: center;
 	gap: 10px;
-	padding: 8px 14px;
+	padding: 4px 14px;
 	border-radius: 0;
 	border: 0;
 	border-bottom: 1px solid
@@ -617,34 +617,50 @@
 }
 
 .tasksCheckbox {
-	border: none;
-	background: transparent;
-	padding: 0;
-	margin-top: 0;
-	cursor: pointer;
-	display: flex;
+	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	flex-shrink: 0;
-	align-self: center;
+	flex: 0 0 auto;
+	width: 14px;
+	height: 14px;
+	position: relative;
+	margin: 2px 0 0;
+	cursor: pointer;
 }
 
-.tasksCheckbox:hover .tasksCheckboxCircle {
-	stroke: var(--interactive-accent);
+.tasksCheckbox input[type="checkbox"] {
+	width: 14px;
+	height: 14px;
+	accent-color: var(--interactive-accent);
+	cursor: pointer;
+	transition: opacity 180ms ease, transform 180ms ease;
+	opacity: 1;
+	transform: scale(1);
 }
 
-.tasksCheckboxPulse {
-	stroke: color-mix(in srgb, var(--interactive-accent) 48%, transparent);
-	transform-origin: center;
+.tasksCheckbox input[type="checkbox"]:checked {
+	opacity: 0;
+	transform: scale(0.85);
 }
 
-.tasksCheckboxCircle {
-	stroke: var(--border-strong);
-	transition: stroke 140ms ease;
+.tasksCheckbox::after {
+	content: "";
+	position: absolute;
+	top: 1px;
+	left: 4px;
+	width: 4px;
+	height: 8px;
+	border-right: 2px solid var(--interactive-accent);
+	border-bottom: 2px solid var(--interactive-accent);
+	pointer-events: none;
+	opacity: 0;
+	transform: rotate(45deg) scale(0.75);
 }
 
-.tasksCheckboxCheck {
-	stroke: var(--bg-primary);
+.tasksCheckbox:has(input:checked)::after {
+	opacity: 1;
+	transform: rotate(45deg) scale(1);
+	animation: task-check-in 180ms ease;
 }
 
 .tasksRowContent {
@@ -1166,5 +1182,16 @@
 	.tasksMetaTagInline,
 	.tasksMetaLink {
 		display: none;
+	}
+}
+
+@keyframes task-check-in {
+	from {
+		opacity: 0;
+		transform: rotate(45deg) scale(0.75);
+	}
+	to {
+		opacity: 1;
+		transform: rotate(45deg) scale(1);
 	}
 }

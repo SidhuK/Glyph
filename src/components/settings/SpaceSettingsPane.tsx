@@ -185,7 +185,6 @@ export function SpaceSettingsPane() {
 											? "Loading..."
 											: (dailyNotesFolder ?? "Not configured")
 									}
-									mono
 								/>
 								<div className="settingsActions dailyNotesActions">
 									<Button
@@ -243,7 +242,6 @@ export function SpaceSettingsPane() {
 											? "Loading..."
 											: pastedMediaFolder || "Space root"
 									}
-									mono
 								/>
 								<div className="settingsActions dailyNotesActions">
 									<Button
