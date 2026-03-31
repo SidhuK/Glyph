@@ -81,6 +81,11 @@ interface TreeEntriesProps {
 	) => Promise<void> | void;
 	pinnedFiles: string[];
 	onTogglePinnedFile: (path: string) => Promise<void>;
+	onArrowNavigate: (
+		path: string,
+		direction: -1 | 1,
+		currentTarget: HTMLButtonElement,
+	) => void;
 }
 
 function TreeEntries({
@@ -110,6 +115,7 @@ function TreeEntries({
 	onChangeAppearance,
 	pinnedFiles,
 	onTogglePinnedFile,
+	onArrowNavigate,
 }: TreeEntriesProps) {
 	if (entries.length === 0) return null;
 
@@ -181,6 +187,7 @@ function TreeEntries({
 									onChangeAppearance={onChangeAppearance}
 									pinnedFiles={pinnedFiles}
 									onTogglePinnedFile={onTogglePinnedFile}
+									onArrowNavigate={onArrowNavigate}
 								/>
 							)}
 						</FileTreeDirItem>
@@ -211,6 +218,7 @@ function TreeEntries({
 						}
 						isPinned={pinnedFiles.includes(e.rel_path)}
 						onTogglePinned={onTogglePinnedFile}
+						onArrowNavigate={onArrowNavigate}
 					/>
 				);
 			})}
@@ -417,6 +425,27 @@ export const FileTreePane = memo(function FileTreePane({
 		[pinnedFiles],
 	);
 
+	const handleArrowNavigate = useCallback(
+		(path: string, direction: -1 | 1, currentTarget: HTMLButtonElement) => {
+			const pane = currentTarget.closest(".fileTreePane");
+			if (!pane) return;
+			const fileButtons = Array.from(
+				pane.querySelectorAll<HTMLButtonElement>(
+					"[data-file-tree-file='true']",
+				),
+			);
+			const currentIndex = fileButtons.findIndex(
+				(button) => button.dataset.fileTreePath === path,
+			);
+			if (currentIndex === -1) return;
+			const nextButton = fileButtons[currentIndex + direction];
+			if (!nextButton) return;
+			nextButton.focus();
+			nextButton.click();
+		},
+		[],
+	);
+
 	return (
 		<m.aside
 			className="fileTreePane"
@@ -467,12 +496,29 @@ export const FileTreePane = memo(function FileTreePane({
 														type="button"
 														className="fileTreeRow fileTreePinnedRow"
 														onClick={() => onOpenFile(file.path)}
+														onKeyDown={(event) => {
+															if (
+																event.key !== "ArrowDown" &&
+																event.key !== "ArrowUp"
+															) {
+																return;
+															}
+															event.preventDefault();
+															event.stopPropagation();
+															handleArrowNavigate(
+																file.path,
+																event.key === "ArrowDown" ? 1 : -1,
+																event.currentTarget,
+															);
+														}}
 														title={file.path}
 														variants={rowVariants}
 														whileHover="hover"
 														whileTap="tap"
 														animate={isActive ? "active" : "idle"}
 														transition={springTransition}
+														data-file-tree-file="true"
+														data-file-tree-path={file.path}
 													>
 														<Icon
 															size={14}
@@ -525,6 +571,7 @@ export const FileTreePane = memo(function FileTreePane({
 							onChangeAppearance={handleChangeAppearance}
 							pinnedFiles={pinnedFiles}
 							onTogglePinnedFile={onTogglePinnedFile}
+							onArrowNavigate={handleArrowNavigate}
 						/>
 					) : null}
 				</div>
