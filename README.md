@@ -4,48 +4,85 @@
   <img src="./website/assets/logo_g.PNG" alt="Glyph logo" width="140" />
 </p>
 
-<p align="center">
-  Glyph is an offline-first desktop notes app for writing, organizing, and exploring ideas in Markdown.
-  <br />
-  It combines a local-first workspace, fast search, and built-in AI tools in a Tauri desktop app powered by React, TypeScript, and Rust.
-</p>
+Offline-first desktop note-taking application. Tauri 2 shell with a React 19 / TypeScript / Vite 8 frontend and a Rust backend. Data lives entirely on-disk in a per-space `.glyph/` directory backed by SQLite and the local filesystem. No cloud sync, no server.
 
-![Glyph light mode](./website/assets/light.webp)
+![Glyph light mode](./assets/app.jpeg)
+
+## Prerequisites
+
+| Dependency | Version                                                   |
+| ---------- | --------------------------------------------------------- |
+| Node.js    | ≥ 20                                                      |
+| pnpm       | ≥ 10 (`corepack enable && corepack prepare pnpm@10.28.2`) |
+| Rust       | stable (latest)                                           |
+| Xcode CLT  | required for macOS native compilation                     |
+| macOS      | primary target — full Tauri app dev requires macOS        |
+
+## Build & Run
+
+```bash
+# Install frontend dependencies
+pnpm install
+
+# Development — frontend only (Vite on :1420)
+pnpm dev
+
+# Development — full Tauri app (compiles Rust backend + launches Vite)
+pnpm tauri dev
+
+# Production build (tsc + vite build; Tauri hooks run beforeBuildCommand)
+pnpm build
+
+# Lint & format (Biome)
+pnpm check          # check only
+pnpm format         # auto-fix
+
+# Tests (Vitest)
+pnpm test                              # all tests
+pnpm test -- src/lib/diff.test.ts      # single file
+pnpm test -- -t "test name"            # single test by name
+
+# Rust checks
+cd src-tauri && cargo check            # typecheck
+cd src-tauri && cargo clippy           # lint
+
+# Marketing site (Astro, separate workspace)
+cd website && pnpm dev
+cd website && pnpm build
+```
+
+### Pre-push checklist
+
+```bash
+pnpm check && pnpm build && cd src-tauri && cargo check
+```
+
+## Key dependencies
+
+**Frontend:** React 19, TipTap 3, Tailwind 4, Radix UI (via shadcn/ui), Motion 12, TanStack Table, cmdk, Zod 4, date-fns, Mermaid 11, highlight.js/lowlight, react-resizable-panels, Sonner, react-hook-form
+
+**Backend:** Tauri 2 (`macos-private-api`), rig-core 0.24, rusqlite 0.31 (bundled), notify 6, reqwest 0.12 (rustls), tokio, serde/serde_json/serde_yaml, chrono, uuid, sha2, window-vibrancy, core-text (macOS)
+
+**Tooling:** Vite 8, TypeScript 5.8, Biome, Vitest 4, Tauri CLI 2
+
+## Conventions
+
+- TypeScript strict mode. No `any` — use `unknown` + narrowing.
+- Functional React components only. State via Context, not prop drilling.
+- All Tauri IPC through `invoke()` from `src/lib/tauri.ts`.
+- Rust: atomic writes via `io_atomic`, safe paths via `paths::join_under()`, SSRF checks via `net.rs`.
+- Hard cutover migrations — no backward-compatibility shims.
+- Never log secrets, keys, or sensitive user data.
+- ~200 LOC per file guideline; refactor into submodules when exceeded.
 
 ## Licensing
 
-Glyph is open source, but official release binaries use a 7-day trial plus Gumroad license activation.
+Source is open. Official release binaries include a 7-day trial with Gumroad license activation.
 
-- Official releases: [GitHub Releases](https://github.com/SidhuK/Glyph/releases)
+- Releases: [GitHub Releases](https://github.com/SidhuK/Glyph/releases)
 - Purchase: [Gumroad](https://karatsidhu.gumroad.com/l/sqxfay)
-- Details: [docs/licensing.md](docs/licensing.md)
+- Details: [`docs/licensing.md`](docs/licensing.md)
 
-## Development
+## Platform support
 
-- `pnpm dev` - frontend dev server
-- `pnpm tauri dev` - full desktop app
-- `pnpm build` - typecheck + production build
-- `pnpm check` - lint/format checks
-- `pnpm test` - frontend tests
-- `cd src-tauri && cargo check` - Rust typecheck
-
-## AI Providers
-
-Glyph supports multiple AI providers in settings, including:
-- OpenAI
-- OpenAI-compatible
-- OpenRouter
-- Anthropic
-- Gemini
-- Ollama
-- Codex (ChatGPT OAuth via Codex App Server)
-
-## Codex App Server
-
-Codex integration runs as a managed local app-server process through stdio JSON-RPC from the Tauri backend.
-
-For implementation details and rollout checklist:
-- `docs/codex-app-server-integration-checklist.md`
-
-For troubleshooting:
-- `docs/codex-app-server-troubleshooting.md`
+macOS only. Windows and Linux are not actively supported. See [`CONTRIBUTING.md`](CONTRIBUTING.md).
