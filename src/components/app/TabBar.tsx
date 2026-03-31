@@ -5,24 +5,36 @@ import { CALENDAR_TAB_ID } from "../../lib/calendar";
 import { DATABASES_TAB_ID } from "../../lib/databases";
 import { getShortcutTooltip } from "../../lib/shortcuts";
 import { TEMPLATES_TAB_ID } from "../../lib/templatesView";
+import type { WorkspaceTab } from "./useTabManager";
 
 interface TabBarProps {
-	openTabs: string[];
+	tabs: WorkspaceTab[];
+	activeTabId: string | null;
 	activeTabPath: string | null;
-	dragTabPath: string | null;
+	dragTabId: string | null;
 	useWindowBackground?: boolean;
 	onOpenBlankTab: () => void;
-	onSelectTab: (path: string) => void;
-	onCloseTab: (path: string) => void;
-	onDragStart: (path: string) => void;
+	onSelectTab: (tabId: string) => void;
+	onCloseTab: (tabId: string) => void;
+	onDragStart: (tabId: string) => void;
 	onDragEnd: () => void;
-	onReorder: (fromPath: string, toPath: string) => void;
+	onReorder: (fromTabId: string, toTabId: string) => void;
+}
+
+function isPathSpecial(path: string): boolean {
+	return (
+		path === ALL_DOCS_TAB_ID ||
+		path === CALENDAR_TAB_ID ||
+		path === DATABASES_TAB_ID ||
+		path === TEMPLATES_TAB_ID
+	);
 }
 
 export function TabBar({
-	openTabs,
+	tabs,
+	activeTabId,
 	activeTabPath,
-	dragTabPath,
+	dragTabId,
 	useWindowBackground = false,
 	onOpenBlankTab,
 	onSelectTab,
@@ -37,27 +49,23 @@ export function TabBar({
 		return withoutExt || name;
 	}, []);
 
-	const fileName = useCallback(
-		(path: string) => {
-			if (path === ALL_DOCS_TAB_ID) return "All Notes";
-			if (path === CALENDAR_TAB_ID) return "Calendar";
-			if (path === DATABASES_TAB_ID) return "Collections";
-			if (path === TEMPLATES_TAB_ID) return "Templates";
-			const parts = path.split("/").filter(Boolean);
-			const rawName = parts[parts.length - 1] ?? path;
+	const tabLabel = useCallback(
+		(tab: WorkspaceTab) => {
+			if (tab.kind === "blank") return "New Tab";
+			if (tab.target === ALL_DOCS_TAB_ID) return "All Notes";
+			if (tab.target === CALENDAR_TAB_ID) return "Calendar";
+			if (tab.target === DATABASES_TAB_ID) return "Collections";
+			if (tab.target === TEMPLATES_TAB_ID) return "Templates";
+			const parts = (tab.target ?? "").split("/").filter(Boolean);
+			const rawName = parts[parts.length - 1] ?? tab.target ?? "Untitled";
 			return stripFileExtension(rawName);
 		},
 		[stripFileExtension],
 	);
 
 	const [hovered, setHovered] = useState(false);
-
 	const breadcrumbSegments =
-		activeTabPath &&
-		activeTabPath !== ALL_DOCS_TAB_ID &&
-		activeTabPath !== CALENDAR_TAB_ID &&
-		activeTabPath !== DATABASES_TAB_ID &&
-		activeTabPath !== TEMPLATES_TAB_ID
+		activeTabPath && !isPathSpecial(activeTabPath)
 			? activeTabPath.split("/").filter(Boolean)
 			: [];
 
@@ -74,33 +82,29 @@ export function TabBar({
 				<div className="mainTabsSide" />
 				<div className="mainTabsCenter">
 					<div className="mainTabsStrip">
-						{openTabs.map((path) => {
-							return (
-								<TabItem
-									key={path}
-									path={path}
-									fileName={fileName(path)}
-									isActive={path === activeTabPath}
-									dragTabPath={dragTabPath}
-									onSelectTab={onSelectTab}
-									onCloseTab={onCloseTab}
-									onDragStart={onDragStart}
-									onDragEnd={onDragEnd}
-									onReorder={onReorder}
-								/>
-							);
-						})}
-						{openTabs.length > 0 ? (
-							<button
-								type="button"
-								className="mainTabAdd"
-								onClick={onOpenBlankTab}
-								title={`Open blank tab (${getShortcutTooltip({ meta: true, key: "t" })})`}
-								aria-label="Open blank tab"
-							>
-								+
-							</button>
-						) : null}
+						{tabs.map((tab) => (
+							<TabItem
+								key={tab.id}
+								tab={tab}
+								label={tabLabel(tab)}
+								isActive={tab.id === activeTabId}
+								dragTabId={dragTabId}
+								onSelectTab={onSelectTab}
+								onCloseTab={onCloseTab}
+								onDragStart={onDragStart}
+								onDragEnd={onDragEnd}
+								onReorder={onReorder}
+							/>
+						))}
+						<button
+							type="button"
+							className="mainTabAdd"
+							onClick={onOpenBlankTab}
+							title={`Open blank tab (${getShortcutTooltip({ meta: true, key: "t" })})`}
+							aria-label="Open blank tab"
+						>
+							+
+						</button>
 					</div>
 				</div>
 				<div className="mainTabsSide mainTabsSideEnd" />
@@ -137,33 +141,33 @@ export function TabBar({
 }
 
 const TabItem = memo(function TabItem({
-	path,
-	fileName,
+	tab,
+	label,
 	isActive,
-	dragTabPath,
+	dragTabId,
 	onSelectTab,
 	onCloseTab,
 	onDragStart,
 	onDragEnd,
 	onReorder,
 }: {
-	path: string;
-	fileName: string;
+	tab: WorkspaceTab;
+	label: string;
 	isActive: boolean;
-	dragTabPath: string | null;
-	onSelectTab: (path: string) => void;
-	onCloseTab: (path: string) => void;
-	onDragStart: (path: string) => void;
+	dragTabId: string | null;
+	onSelectTab: (tabId: string) => void;
+	onCloseTab: (tabId: string) => void;
+	onDragStart: (tabId: string) => void;
 	onDragEnd: () => void;
-	onReorder: (fromPath: string, toPath: string) => void;
+	onReorder: (fromTabId: string, toTabId: string) => void;
 }) {
 	const handleSelect = useCallback(
-		() => onSelectTab(path),
-		[onSelectTab, path],
+		() => onSelectTab(tab.id),
+		[onSelectTab, tab.id],
 	);
 	const handleDragStart = useCallback(
-		() => onDragStart(path),
-		[onDragStart, path],
+		() => onDragStart(tab.id),
+		[onDragStart, tab.id],
 	);
 	const handleDragOver = useCallback((event: DragEvent<HTMLButtonElement>) => {
 		event.preventDefault();
@@ -171,18 +175,25 @@ const TabItem = memo(function TabItem({
 	const handleDrop = useCallback(
 		(event: DragEvent<HTMLButtonElement>) => {
 			event.preventDefault();
-			if (dragTabPath) onReorder(dragTabPath, path);
+			if (dragTabId) onReorder(dragTabId, tab.id);
 			onDragEnd();
 		},
-		[dragTabPath, onDragEnd, onReorder, path],
+		[dragTabId, onDragEnd, onReorder, tab.id],
 	);
 	const handleClose = useCallback(
 		(event: MouseEvent<HTMLButtonElement>) => {
 			event.stopPropagation();
-			onCloseTab(path);
+			onCloseTab(tab.id);
 		},
-		[onCloseTab, path],
+		[onCloseTab, tab.id],
 	);
+
+	const title =
+		tab.kind === "blank"
+			? label
+			: tab.target && isPathSpecial(tab.target)
+				? label
+				: (tab.target ?? label);
 
 	return (
 		<div className="mainTabWrap">
@@ -190,7 +201,7 @@ const TabItem = memo(function TabItem({
 				type="button"
 				className="mainTabClose"
 				onClick={handleClose}
-				aria-label={`Close ${fileName}`}
+				aria-label={`Close ${label}`}
 			>
 				<span className="mainTabCloseGlyph" aria-hidden>
 					×
@@ -200,14 +211,7 @@ const TabItem = memo(function TabItem({
 				type="button"
 				className={`mainTab ${isActive ? "is-active" : ""}`}
 				onClick={handleSelect}
-				title={
-					path === ALL_DOCS_TAB_ID ||
-					path === CALENDAR_TAB_ID ||
-					path === DATABASES_TAB_ID ||
-					path === TEMPLATES_TAB_ID
-						? fileName
-						: path
-				}
+				title={title}
 				draggable
 				onDragStart={handleDragStart}
 				onDragEnd={onDragEnd}
@@ -215,7 +219,7 @@ const TabItem = memo(function TabItem({
 				onDrop={handleDrop}
 			>
 				<span className="mainTabText">
-					<span className="mainTabLabel">{fileName}</span>
+					<span className="mainTabLabel">{label}</span>
 				</span>
 			</button>
 		</div>
