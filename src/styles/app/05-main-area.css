@@ -53,7 +53,9 @@
 	border-left-color: transparent;
 }
 
-:root[data-translucent-app-frame="false"] .appShell.appShellSidebarCollapsed .mainArea {
+:root[data-translucent-app-frame="false"]
+	.appShell.appShellSidebarCollapsed
+	.mainArea {
 	border-top-left-radius: var(--app-radius);
 	border-bottom-left-radius: var(--app-radius);
 	border-left-color: color-mix(in srgb, var(--border-light) 62%, transparent);
@@ -130,21 +132,84 @@
 	align-items: center;
 	justify-content: center;
 	padding: var(--space-6) var(--space-5);
-	overflow: auto;
+	overflow: hidden;
 	background: var(--bg-primary);
 }
 
 .welcomeSurface {
 	width: min(780px, 100%);
 	margin: 0 auto;
-	display: block;
+	display: flex;
+	justify-content: center;
+	padding: var(--space-8) var(--space-4);
+	transform: translateX(10%);
 }
 
 .welcomeLauncher {
-	display: grid;
-	grid-template-columns: minmax(0, 1.3fr) minmax(220px, 0.7fr);
+	display: flex;
+	flex-direction: column;
 	gap: var(--space-3);
-	align-items: start;
+	align-items: center;
+	max-width: 480px;
+	width: 100%;
+}
+
+.welcomeLayout {
+	display: flex;
+	gap: var(--space-6);
+	align-items: center;
+	width: 100%;
+	justify-content: center;
+}
+
+.welcomeSteps {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: var(--space-3);
+}
+
+.welcomeStepItem {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 6px 12px;
+}
+
+.welcomeStepNumber {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 20px;
+	height: 20px;
+	font-size: 10px;
+	font-weight: var(--font-semibold);
+	color: var(--text-tertiary);
+	background: var(--bg-hover);
+	border-radius: var(--radius-full);
+	flex-shrink: 0;
+}
+
+.welcomeStepText {
+	font-size: 12px;
+	color: var(--text-tertiary);
+	white-space: nowrap;
+}
+
+.welcomeStepDivider {
+	display: block;
+	font-size: 9px;
+	color: var(--text-tertiary);
+	opacity: 0.25;
+	padding: 1px 0;
+	text-align: center;
+}
+
+.welcomeStepHint {
+	font-size: 11px;
+	color: var(--text-tertiary);
+	opacity: 0.6;
+	font-style: italic;
 }
 
 .welcomePanel {
@@ -420,24 +485,27 @@
 
 .welcomeBrandRow {
 	display: flex;
+	flex-direction: column;
 	align-items: center;
-	gap: 8px;
+	gap: 12px;
+	margin-bottom: var(--space-2);
 }
 
 .welcomeBrandIcon {
-	width: 28px;
-	height: 28px;
-	border-radius: 6px;
-	box-shadow: 0 1px 2px color-mix(in srgb, var(--text-primary) 8%, transparent);
+	width: 64px;
+	height: 64px;
+	border-radius: 14px;
+	box-shadow: 0 4px 12px
+		color-mix(in srgb, var(--text-primary) 15%, transparent);
 	flex-shrink: 0;
 }
 
 .welcomeBrandName {
 	margin: 0;
-	font-size: var(--text-base, 16px);
-	font-weight: var(--font-semibold);
+	font-size: 28px;
+	font-weight: var(--font-bold);
 	color: var(--text-primary);
-	letter-spacing: -0.01em;
+	letter-spacing: -0.02em;
 }
 
 .welcomeSubtitle {
@@ -446,26 +514,72 @@
 	color: var(--text-secondary);
 	line-height: var(--leading-relaxed, 1.6);
 	max-width: 340px;
+	text-align: center;
 }
 
 .welcomeFeatureRow {
 	display: flex;
 	align-items: center;
-	gap: 6px;
+	justify-content: center;
+	gap: 12px;
 	flex-wrap: wrap;
-	padding-top: var(--space-2);
-	border-top: 1px solid var(--border-light);
+	margin-top: var(--space-4);
+}
+
+.welcomeFeatureWrapper {
+	position: relative;
 }
 
 .welcomeFeatureChip {
 	display: inline-flex;
 	align-items: center;
-	gap: 4px;
-	padding: 3px 8px;
-	font-size: 11px;
+	gap: 5px;
+	padding: 5px 10px;
+	font-size: 12px;
+	font-weight: var(--font-normal);
 	color: var(--text-tertiary);
 	border-radius: var(--radius-sm);
-	background: color-mix(in srgb, var(--bg-hover) 50%, transparent);
+	background: transparent;
+	border: 1px solid transparent;
+	cursor: pointer;
+	transition: all 0.15s ease;
+}
+
+.welcomeFeatureChip:hover {
+	color: var(--text-secondary);
+	background: var(--bg-hover);
+	border-color: var(--border);
+}
+
+.welcomeFeaturePopover {
+	position: absolute;
+	top: calc(100% + 8px);
+	left: 50%;
+	transform: translateX(-50%);
+	width: 240px;
+	padding: 10px 12px;
+	background: var(--bg-primary);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-md);
+	box-shadow: 0 2px 8px color-mix(in srgb, var(--text-primary) 8%, transparent);
+	z-index: 10;
+}
+
+.welcomeFeaturePopover::after {
+	content: "";
+	position: absolute;
+	bottom: 100%;
+	left: 50%;
+	transform: translateX(-50%);
+	border: 5px solid transparent;
+	border-bottom-color: var(--bg-primary);
+}
+
+.welcomeFeaturePopover p {
+	margin: 0;
+	font-size: 11px;
+	color: var(--text-tertiary);
+	line-height: 1.45;
 }
 
 .welcomeRecentList {

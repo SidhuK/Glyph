@@ -378,10 +378,6 @@ export function useNoteEditor({
 		interactiveRef.current = interactive;
 	}, [interactive]);
 
-	useEffect(() => {
-		zenModeActiveRef.current = zenModeActive && mode === "rich";
-	}, [mode, zenModeActive]);
-
 	const editor = useEditor({
 		extensions,
 		content: editorBody,
@@ -539,6 +535,7 @@ export function useNoteEditor({
 
 	useEffect(() => {
 		if (!editor) return;
+		zenModeActiveRef.current = zenModeActive && mode === "rich";
 		editor.commands.refreshZenFocus();
 	}, [editor, mode, zenModeActive]);
 

@@ -25,10 +25,12 @@
 
 	.welcomeSurface {
 		width: 100%;
+		padding: var(--space-4) var(--space-2);
+		transform: translateX(0);
 	}
 
 	.welcomeLauncher {
-		grid-template-columns: 1fr;
+		flex-direction: column;
 	}
 
 	.welcomeRecentPath {

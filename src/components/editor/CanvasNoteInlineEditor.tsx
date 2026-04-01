@@ -1114,7 +1114,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 			host.removeEventListener("focusin", handleFocusIn);
 			host.removeEventListener("focusout", handleFocusOut);
 		};
-	}, [mode, tiptapHostNode]);
+	}, [tiptapHostNode]);
 
 	const handleTiptapHostRef = useCallback((node: HTMLDivElement | null) => {
 		tiptapHostRef.current = node;
