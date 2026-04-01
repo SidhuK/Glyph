@@ -1309,7 +1309,6 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 										type="button"
 										className="taskInlineDateBtn"
 										style={{
-											left: `${selectedTaskAnchor.left}px`,
 											top: `${selectedTaskAnchor.top}px`,
 										}}
 										onClick={() => {
