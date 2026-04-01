@@ -59,9 +59,7 @@ export function WhatsNewDialog({
 						<div>
 							<div className="whatsNewEyebrow">What&apos;s New</div>
 							<div className="whatsNewTitleRow">
-								<h2 className="whatsNewTitle">
-									Glyph v{releaseNotes.version}
-								</h2>
+								<h2 className="whatsNewTitle">Glyph v{releaseNotes.version}</h2>
 							</div>
 						</div>
 						{publishedDate ? (
@@ -93,9 +91,7 @@ export function WhatsNewDialog({
 												className="commandPaletteItem whatsNewItem"
 												data-selected="false"
 											>
-												<div className="commandPaletteResultTitle">
-													{item}
-												</div>
+												<div className="commandPaletteResultTitle">{item}</div>
 											</div>
 										))}
 									</div>

@@ -777,7 +777,8 @@
 
 .databaseBoardCard[data-state="selected"] {
 	box-shadow: none;
-	outline: 1.5px solid color-mix(in srgb, var(--interactive-accent) 40%, transparent);
+	outline: 1.5px solid
+		color-mix(in srgb, var(--interactive-accent) 40%, transparent);
 	background: linear-gradient(
 		180deg,
 		color-mix(in srgb, var(--interactive-accent) 8%, var(--bg-primary)) 0%,

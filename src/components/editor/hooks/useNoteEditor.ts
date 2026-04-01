@@ -540,7 +540,7 @@ export function useNoteEditor({
 	useEffect(() => {
 		if (!editor) return;
 		editor.commands.refreshZenFocus();
-	}, [editor, mode, zenModeActive]);
+	}, [editor]);
 
 	useEffect(() => {
 		if (!editor) return;

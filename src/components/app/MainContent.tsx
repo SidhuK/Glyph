@@ -543,7 +543,7 @@ export const MainContent = memo(function MainContent({
 			return;
 		}
 		wrapper.removeAttribute("inert");
-	}, [showTabBar, zenModeActive]);
+	}, [zenModeActive]);
 
 	useEffect(() => {
 		let cancelled = false;
