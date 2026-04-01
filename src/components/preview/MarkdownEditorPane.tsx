@@ -6,13 +6,26 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { Editor } from "@tiptap/react";
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+	useCallback,
+	useEffect,
+	useLayoutEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import {
 	useAISidebarContext,
 	useEditorRegistration,
 	useSpace,
 	useUILayoutContext,
 } from "../../contexts";
+import {
+	FORCE_NOTE_EDIT_MODE_EVENT,
+	type ForceNoteEditModeDetail,
+	ZEN_MODE_WILL_TOGGLE_EVENT,
+	type ZenModeWillToggleDetail,
+} from "../../lib/appEvents";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { splitYamlFrontmatter } from "../../lib/notePreview";
 import { type TextFileDoc, invoke } from "../../lib/tauri";
@@ -92,11 +105,16 @@ export function MarkdownEditorPane({
 	const syncPulseTimerRef = useRef<number | null>(null);
 	const pendingExternalReloadRef = useRef(false);
 	const paneRef = useRef<HTMLElement | null>(null);
+	const contentScrollRef = useRef<HTMLDivElement | null>(null);
 	const statsDockRef = useRef<HTMLDivElement | null>(null);
 	const { spacePath } = useSpace();
 	const previousSpacePathRef = useRef<string | null>(spacePath);
+	const pendingZenViewportAnchorRef = useRef<{
+		topWithinViewport: number;
+		scrollTop: number;
+	} | null>(null);
 	const [tocEditor, setTocEditor] = useState<Editor | null>(null);
-	const { showToc } = useUILayoutContext();
+	const { showToc, zenModeActive } = useUILayoutContext();
 	const { aiEnabled, aiPanelOpen } = useAISidebarContext();
 	const shouldReduceMotion = useReducedMotion();
 
@@ -478,6 +496,98 @@ export function MarkdownEditorPane({
 	useTauriEvent("notes:external_changed", handleExternalNoteChanged);
 
 	useEffect(() => {
+		const handleForceEditMode = (event: Event) => {
+			const detail = (event as CustomEvent<ForceNoteEditModeDetail>).detail;
+			if (!detail?.path || detail.path !== relPath) return;
+			setMode("rich");
+		};
+		window.addEventListener(FORCE_NOTE_EDIT_MODE_EVENT, handleForceEditMode);
+		return () => {
+			window.removeEventListener(
+				FORCE_NOTE_EDIT_MODE_EVENT,
+				handleForceEditMode,
+			);
+		};
+	}, [relPath]);
+
+	const captureZenViewportAnchor = useCallback(() => {
+		const scrollEl = contentScrollRef.current;
+		const pane = paneRef.current;
+		if (!scrollEl || !pane) return;
+
+		const selection = window.getSelection();
+		if (!selection || selection.rangeCount === 0) return;
+		const range = selection.getRangeAt(0);
+		if (!pane.contains(range.commonAncestorContainer)) return;
+
+		const rect =
+			range.getClientRects()[0] ??
+			(range.startContainer instanceof Element
+				? range.startContainer.getBoundingClientRect()
+				: (range.startContainer.parentElement?.getBoundingClientRect() ??
+					null));
+		if (!rect) return;
+
+		const viewportTop = rect.top - scrollEl.getBoundingClientRect().top;
+		pendingZenViewportAnchorRef.current = {
+			topWithinViewport: viewportTop,
+			scrollTop: scrollEl.scrollTop,
+		};
+	}, []);
+
+	useEffect(() => {
+		const handleZenWillToggle = (event: Event) => {
+			const detail = (event as CustomEvent<ZenModeWillToggleDetail>).detail;
+			if (!detail?.path || detail.path !== relPath) return;
+			captureZenViewportAnchor();
+		};
+		window.addEventListener(ZEN_MODE_WILL_TOGGLE_EVENT, handleZenWillToggle);
+		return () => {
+			window.removeEventListener(
+				ZEN_MODE_WILL_TOGGLE_EVENT,
+				handleZenWillToggle,
+			);
+		};
+	}, [captureZenViewportAnchor, relPath]);
+
+	useLayoutEffect(() => {
+		const anchor = pendingZenViewportAnchorRef.current;
+		const scrollEl = contentScrollRef.current;
+		const pane = paneRef.current;
+		if (!anchor || !scrollEl || !pane) return;
+
+		const selection = window.getSelection();
+		if (!selection || selection.rangeCount === 0) {
+			pendingZenViewportAnchorRef.current = null;
+			return;
+		}
+		const range = selection.getRangeAt(0);
+		if (!pane.contains(range.commonAncestorContainer)) {
+			pendingZenViewportAnchorRef.current = null;
+			return;
+		}
+
+		const rect =
+			range.getClientRects()[0] ??
+			(range.startContainer instanceof Element
+				? range.startContainer.getBoundingClientRect()
+				: (range.startContainer.parentElement?.getBoundingClientRect() ??
+					null));
+		if (!rect) {
+			pendingZenViewportAnchorRef.current = null;
+			return;
+		}
+
+		const nextTopWithinViewport =
+			rect.top - scrollEl.getBoundingClientRect().top;
+		const delta = nextTopWithinViewport - anchor.topWithinViewport;
+		if (Math.abs(delta) > 0.5) {
+			scrollEl.scrollTop = anchor.scrollTop + delta;
+		}
+		pendingZenViewportAnchorRef.current = null;
+	});
+
+	useEffect(() => {
 		if (!pendingExternalReloadRef.current) return;
 		if (isDirty || saving) return;
 		pendingExternalReloadRef.current = false;
@@ -579,8 +689,23 @@ export function MarkdownEditorPane({
 	);
 
 	return (
-		<section className="filePreviewPane markdownEditorPane" ref={paneRef}>
-			<div className="markdownEditorFloatActions">
+		<section
+			className={
+				zenModeActive
+					? "filePreviewPane markdownEditorPane markdownEditorPaneZen"
+					: "filePreviewPane markdownEditorPane"
+			}
+			ref={paneRef}
+		>
+			<div
+				className={[
+					"markdownEditorFloatActions",
+					zenModeActive ? "is-zen-hidden" : "",
+				]
+					.filter(Boolean)
+					.join(" ")}
+				aria-hidden={zenModeActive}
+			>
 				<div className="markdownEditorActionsMenu">
 					<Button
 						type="button"
@@ -730,6 +855,7 @@ export function MarkdownEditorPane({
 					className={[
 						"markdownEditorStatsDock",
 						aiEnabled && !aiPanelOpen ? "withAiFab" : "",
+						zenModeActive ? "is-zen-hidden" : "",
 						statsLayout === "collapsed" ? "is-collapsed" : "",
 						statsLayout === "hidden" ? "is-hidden" : "",
 					]
@@ -795,12 +921,16 @@ export function MarkdownEditorPane({
 			) : null}
 
 			{!error ? (
-				<div className="filePreviewTextWrap markdownEditorContent">
+				<div
+					ref={contentScrollRef}
+					className="filePreviewTextWrap markdownEditorContent"
+				>
 					<div className="markdownEditorCenter">
 						<CanvasNoteInlineEditor
 							markdown={text}
 							relPath={relPath}
 							mode={mode}
+							zenModeActive={zenModeActive}
 							pasteMarkdownBehavior="smart-markdown"
 							onModeChange={setMode}
 							onChange={(nextText) => {
@@ -815,7 +945,7 @@ export function MarkdownEditorPane({
 				</div>
 			) : null}
 
-			{showToc && mode === "rich" && !error && tocEditor ? (
+			{showToc && !zenModeActive && mode === "rich" && !error && tocEditor ? (
 				<FloatingTOC editor={tocEditor} />
 			) : null}
 		</section>

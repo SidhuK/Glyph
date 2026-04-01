@@ -18,6 +18,8 @@ export interface UseWhatsNewResult {
 	closeDialog: () => void;
 }
 
+const SESSION_KEY = "glyph:whatsNewShownThisSession";
+
 export function useWhatsNew(appVersion: string | null): UseWhatsNewResult {
 	const [open, setOpen] = useState(false);
 	const [available, setAvailable] = useState(false);
@@ -63,7 +65,9 @@ export function useWhatsNew(appVersion: string | null): UseWhatsNewResult {
 					if (cancelled) return;
 				}
 
-				setOpen(resolution.shouldAutoOpen);
+				const shownThisSession =
+					sessionStorage.getItem(SESSION_KEY) === appVersion;
+				setOpen(resolution.shouldAutoOpen && !shownThisSession);
 			} catch (error) {
 				console.error("Failed to resolve What's New state", error);
 				if (!cancelled) {
@@ -90,6 +94,7 @@ export function useWhatsNew(appVersion: string | null): UseWhatsNewResult {
 		void (async () => {
 			try {
 				await setLastAcknowledgedChangelogVersion(appVersion);
+				sessionStorage.setItem(SESSION_KEY, appVersion);
 			} catch (error) {
 				console.error(
 					"Failed to persist acknowledged changelog version",

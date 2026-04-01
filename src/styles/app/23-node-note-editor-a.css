@@ -288,6 +288,7 @@
 }
 
 .tiptapHostInline {
+	position: relative;
 	min-height: 0;
 	overflow: visible;
 }

@@ -97,7 +97,6 @@ export function DatabaseToolbar({
 						<Kanban size={14} className="databaseModePillIcon" />
 					</m.button>
 				</div>
-				<span className="databaseToolbarDivider" />
 			</div>
 			<div className="databaseToolbarActions">
 				{databaseView === "board" && groupColumns.length > 0 ? (
