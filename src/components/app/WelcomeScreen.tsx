@@ -1,24 +1,14 @@
 import { m, useReducedMotion } from "motion/react";
-import { useMemo } from "react";
-import { onWindowDragMouseDown } from "../../utils/window";
-import {
-	Computer,
-	FileText,
-	FolderClosed,
-	FolderOpen,
-	FolderPlus,
-	Sparkles,
-} from "../Icons";
+import { useMemo, useState } from "react";
+import { Computer, FileText, FolderOpen, FolderPlus, Sparkles } from "../Icons";
 import { springPresets } from "../ui/animations";
 
 interface WelcomeScreenProps {
 	appName: string | null;
 	lastSpacePath: string | null;
-	recentSpaces: string[];
 	onOpenSpace: () => void;
 	onCreateSpace: () => void;
 	onContinueLastSpace: () => void;
-	onSelectRecentSpace: (path: string) => Promise<void>;
 }
 
 const STAGGER = 0.05;
@@ -38,17 +28,14 @@ function shortenPath(fullPath: string): string {
 export function WelcomeScreen({
 	appName,
 	lastSpacePath,
-	recentSpaces,
 	onOpenSpace,
 	onCreateSpace,
 	onContinueLastSpace,
-	onSelectRecentSpace,
 }: WelcomeScreenProps) {
 	const shouldReduceMotion = useReducedMotion();
 	const lastSpaceName = lastSpacePath?.length
 		? (normalizePathSeparators(lastSpacePath).split("/").pop() ?? lastSpacePath)
 		: null;
-	const otherRecents = recentSpaces.filter((path) => path !== lastSpacePath);
 
 	const skip = shouldReduceMotion ?? false;
 	const spring = skip
@@ -60,15 +47,25 @@ export function WelcomeScreen({
 
 	const features = useMemo(
 		() => [
-			{ icon: <Computer size={14} strokeWidth={1.8} />, label: "Local files" },
+			{
+				icon: <Computer size={14} strokeWidth={1.8} />,
+				label: "Local files",
+				desc: "Your notes live as plain files on your computer. No vendor lock-in, just folders you own.",
+			},
 			{
 				icon: <FileText size={14} strokeWidth={1.8} />,
-				label: "Markdown notes",
+				label: "Markdown-first",
+				desc: "A calm editor with slash commands, live preview, and helpful formatting tools. Every note is a plain .md file you keep and control.",
 			},
-			{ icon: <Sparkles size={14} strokeWidth={1.8} />, label: "Optional AI" },
+			{
+				icon: <Sparkles size={14} strokeWidth={1.8} />,
+				label: "Optional AI",
+				desc: "Summarize, draft, and ask questions using your notes as context. Works with your ChatGPT account, OpenAI, Anthropic, Openrouter or local models via Ollama.",
+			},
 		],
 		[],
 	);
+	const [hoveredFeature, setHoveredFeature] = useState<number | null>(null);
 
 	const actionCards = useMemo(() => {
 		const cards: Array<{
@@ -119,17 +116,6 @@ export function WelcomeScreen({
 
 	return (
 		<>
-			<div className="mainToolbar" data-tauri-drag-region>
-				<div
-					aria-hidden="true"
-					className="mainToolbarDragLayer"
-					data-tauri-drag-region
-					onMouseDown={onWindowDragMouseDown}
-				/>
-				<div className="mainToolbarLeft">
-					<span className="canvasTitle">{appName ?? "Glyph"}</span>
-				</div>
-			</div>
 			<m.div
 				className="welcomeScreen"
 				initial={{ opacity: 0 }}
@@ -137,13 +123,28 @@ export function WelcomeScreen({
 				transition={{ duration: skip ? 0 : 0.24 }}
 			>
 				<div className="welcomeSurface">
-					<div className="welcomeLauncher">
-						<m.section
-							className="welcomePanel"
-							initial={{ opacity: 0, y: 18 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{ ...spring, delay: skip ? 0 : BRAND_DELAY }}
-						>
+					<div className="welcomeLayout">
+						<div className="welcomeSteps">
+							<div className="welcomeStepItem">
+								<span className="welcomeStepNumber">1</span>
+								<span className="welcomeStepText">Open any folder with .md files</span>
+							</div>
+							<div className="welcomeStepItem">
+								<span className="welcomeStepNumber">2</span>
+								<span className="welcomeStepText">Create & edit notes</span>
+							</div>
+							<div className="welcomeStepItem">
+								<span className="welcomeStepNumber">3</span>
+								<span className="welcomeStepText">Chat with AI <span className="welcomeStepHint">(optional)</span></span>
+							</div>
+						</div>
+						<div className="welcomeCardColumn">
+							<m.section
+								className="welcomePanel"
+								initial={{ opacity: 0, y: 18 }}
+								animate={{ opacity: 1, y: 0 }}
+								transition={{ ...spring, delay: skip ? 0 : BRAND_DELAY }}
+							>
 							<div className="welcomeBrandRow">
 								<m.img
 									src="/glyph-app-icon.png"
@@ -196,8 +197,6 @@ export function WelcomeScreen({
 											initial={{ opacity: 0, y: 14, scale: 0.97 }}
 											animate={{ opacity: 1, y: 0, scale: 1 }}
 											transition={{ ...spring, delay: cardDelay }}
-											whileHover={skip ? undefined : { y: -2, scale: 1.01 }}
-											whileTap={skip ? undefined : { scale: 0.97 }}
 										>
 											<m.div
 												className="welcomeActionIcon"
@@ -220,109 +219,39 @@ export function WelcomeScreen({
 									);
 								})}
 							</div>
-
-							<m.div
-								className="welcomeFeatureRow"
-								initial={{ opacity: 0 }}
-								animate={{ opacity: 1 }}
-								transition={{
-									duration: skip ? 0 : 0.3,
-									delay: skip
-										? 0
-										: BRAND_DELAY + 0.3 + STAGGER * actionCards.length + 0.1,
-								}}
-							>
-								{features.map((f, i) => (
-									<m.span
-										key={f.label}
-										className="welcomeFeatureChip"
-										initial={{ opacity: 0, y: 6 }}
-										animate={{ opacity: 1, y: 0 }}
-										transition={{
-											...spring,
-											delay: skip
-												? 0
-												: BRAND_DELAY +
-													0.3 +
-													STAGGER * actionCards.length +
-													0.15 +
-													STAGGER * i,
-										}}
-									>
-										{f.icon}
-										{f.label}
-									</m.span>
-								))}
-							</m.div>
 						</m.section>
 
-						<m.section
-							className="welcomePanel"
-							initial={{ opacity: 0, y: 18 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={{
-								...spring,
-								delay: skip ? 0 : BRAND_DELAY + 0.2,
-							}}
-						>
-							<m.div
-								className="welcomeSectionTitle"
-								initial={{ opacity: 0 }}
-								animate={{ opacity: 1 }}
-								transition={{
-									duration: skip ? 0 : 0.3,
-									delay: skip ? 0 : BRAND_DELAY + 0.35,
-								}}
-							>
-								Recent spaces
-							</m.div>
-							{otherRecents.length > 0 ? (
-								<div className="welcomeRecentList">
-									{otherRecents.slice(0, 6).map((path, i) => (
-										<m.button
-											key={path}
-											type="button"
-											className="welcomeRecentItem"
-											onClick={() => void onSelectRecentSpace(path)}
-											initial={{ opacity: 0, x: 10 }}
-											animate={{ opacity: 1, x: 0 }}
-											transition={{
-												...spring,
-												delay: skip ? 0 : BRAND_DELAY + 0.4 + STAGGER * i,
-											}}
-											whileHover={skip ? undefined : { x: 3, scale: 1.01 }}
-											whileTap={skip ? undefined : { scale: 0.98 }}
-										>
-											<span className="welcomeRecentName">
-												{normalizePathSeparators(path).split("/").pop() ?? path}
-											</span>
-											<span className="welcomeRecentPath mono">
-												{shortenPath(path)}
-											</span>
-										</m.button>
-									))}
-								</div>
-							) : (
-								<m.div
-									className="welcomeEmptyState"
-									initial={{ opacity: 0 }}
-									animate={{ opacity: 1 }}
-									transition={{
-										duration: skip ? 0 : 0.24,
-										delay: skip ? 0 : BRAND_DELAY + 0.45,
-									}}
+						<m.div
+						className="welcomeFeatureRow"
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						transition={{
+							duration: skip ? 0 : 0.3,
+							delay: skip
+								? 0
+								: BRAND_DELAY + 0.3 + STAGGER * actionCards.length + 0.1,
+						}}
+					>
+						{features.map((f, i) => (
+							<div key={f.label} className="welcomeFeatureWrapper">
+								<button
+									type="button"
+									className="welcomeFeatureChip"
+									onMouseEnter={() => setHoveredFeature(i)}
+									onMouseLeave={() => setHoveredFeature(null)}
 								>
-									<FolderClosed
-										size={20}
-										strokeWidth={1.5}
-										className="welcomeEmptyIcon"
-									/>
-									<p className="welcomeEmptyText">
-										Spaces you open will appear here.
-									</p>
-								</m.div>
-							)}
-						</m.section>
+									{f.icon}
+									{f.label}
+								</button>
+								{hoveredFeature === i && (
+									<div className="welcomeFeaturePopover">
+										<p>{f.desc}</p>
+									</div>
+								)}
+							</div>
+						))}
+					</m.div>
+						</div>
 					</div>
 				</div>
 			</m.div>

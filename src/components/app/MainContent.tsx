@@ -362,10 +362,8 @@ export const MainContent = memo(function MainContent({
 		info,
 		spacePath,
 		lastSpacePath,
-		recentSpaces,
 		settingsLoaded,
 		onOpenSpace,
-		onOpenSpaceAtPath,
 		onContinueLastSpace,
 		onCreateSpace,
 	} = useSpace();
@@ -696,11 +694,9 @@ export const MainContent = memo(function MainContent({
 				<WelcomeScreen
 					appName={info?.name ?? null}
 					lastSpacePath={lastSpacePath}
-					recentSpaces={recentSpaces}
 					onOpenSpace={onOpenSpace}
 					onCreateSpace={onCreateSpace}
 					onContinueLastSpace={onContinueLastSpace}
-					onSelectRecentSpace={onOpenSpaceAtPath}
 				/>
 			</m.main>
 		);
