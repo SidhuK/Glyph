@@ -10,7 +10,7 @@ import { openUrl } from "@tauri-apps/plugin-opener";
 import { EditorContent } from "@tiptap/react";
 import { addMonths, format, isValid, parseISO } from "date-fns";
 import { AnimatePresence } from "motion/react";
-import { memo, useEffect, useMemo, useRef, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import {
 	MERMAID_CODE_BLOCK_LANGUAGE,
@@ -323,6 +323,9 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	const lastFrontmatterRef = useRef(frontmatter);
 	const [backlinks, setBacklinks] = useState<BacklinkItem[]>([]);
 	const tiptapHostRef = useRef<HTMLDivElement | null>(null);
+	const [tiptapHostNode, setTiptapHostNode] = useState<HTMLDivElement | null>(
+		null,
+	);
 	const [editorFocused, setEditorFocused] = useState(false);
 	const [taskAnchors, setTaskAnchors] = useState<
 		Array<{
@@ -1096,7 +1099,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	}, [editor, mode]);
 
 	useEffect(() => {
-		const host = tiptapHostRef.current;
+		const host = tiptapHostNode;
 		if (!host) return;
 		const handleFocusIn = () => setEditorFocused(true);
 		const handleFocusOut = () => {
@@ -1111,6 +1114,11 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 			host.removeEventListener("focusin", handleFocusIn);
 			host.removeEventListener("focusout", handleFocusOut);
 		};
+	}, [mode, tiptapHostNode]);
+
+	const handleTiptapHostRef = useCallback((node: HTMLDivElement | null) => {
+		tiptapHostRef.current = node;
+		setTiptapHostNode(node);
 	}, []);
 
 	return (
@@ -1147,7 +1155,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 				) : null}
 				{mode !== "plain" ? (
 					<div
-						ref={tiptapHostRef}
+						ref={handleTiptapHostRef}
 						className={[
 							"tiptapHostInline",
 							mode === "preview" ? "is-preview" : "",

@@ -85,12 +85,12 @@ export function TemplatePickerDialog({
 					</div>
 				</ScrollArea>
 				<div className="templatePickerFooter">
-					<Button type="button" variant="ghost" size="icon" onClick={onOpenSettings} title="Template settings">
-						<Settings size={15} />
-					</Button>
-					<Button type="button" variant="ghost" size="icon" onClick={handleClose} title="Cancel">
-						<X size={15} />
-					</Button>
+						<Button type="button" variant="ghost" size="icon" onClick={onOpenSettings} title="Template settings" aria-label="Template settings">
+							<Settings size={15} />
+						</Button>
+						<Button type="button" variant="ghost" size="icon" onClick={handleClose} title="Cancel" aria-label="Cancel">
+							<X size={15} />
+						</Button>
 				</div>
 			</DialogContent>
 		</Dialog>

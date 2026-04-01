@@ -91,10 +91,10 @@ export function useWhatsNew(appVersion: string | null): UseWhatsNewResult {
 		setOpen(false);
 		if (previewMode) return;
 		if (!appVersion || !available) return;
-		sessionStorage.setItem(SESSION_KEY, appVersion);
 		void (async () => {
 			try {
 				await setLastAcknowledgedChangelogVersion(appVersion);
+				sessionStorage.setItem(SESSION_KEY, appVersion);
 			} catch (error) {
 				console.error(
 					"Failed to persist acknowledged changelog version",

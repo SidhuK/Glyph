@@ -214,6 +214,9 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 		case "setAiPanelOpen":
 			if (!state.aiEnabled) return { ...state, aiPanelOpen: false };
 			if (state.zenModeActive) {
+				// During zen mode the AI panel is always suppressed; also clear
+				// the snapshot so it won't re-open when zen exits if the caller
+				// tried to open it while zen mode was active.
 				return {
 					...state,
 					aiPanelOpen: false,
