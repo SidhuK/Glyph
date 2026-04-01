@@ -6,9 +6,11 @@ import { springPresets } from "../ui/animations";
 interface WelcomeScreenProps {
 	appName: string | null;
 	lastSpacePath: string | null;
+	recentSpaces: string[];
 	onOpenSpace: () => void;
 	onCreateSpace: () => void;
 	onContinueLastSpace: () => void;
+	onSelectRecentSpace: (path: string) => void;
 }
 
 const STAGGER = 0.05;
@@ -28,9 +30,11 @@ function shortenPath(fullPath: string): string {
 export function WelcomeScreen({
 	appName,
 	lastSpacePath,
+	recentSpaces,
 	onOpenSpace,
 	onCreateSpace,
 	onContinueLastSpace,
+	onSelectRecentSpace,
 }: WelcomeScreenProps) {
 	const shouldReduceMotion = useReducedMotion();
 	const lastSpaceName = lastSpacePath?.length
@@ -66,6 +70,8 @@ export function WelcomeScreen({
 		[],
 	);
 	const [hoveredFeature, setHoveredFeature] = useState<number | null>(null);
+	const [focusedFeature, setFocusedFeature] = useState<number | null>(null);
+	const activeFeature = focusedFeature ?? hoveredFeature;
 
 	const actionCards = useMemo(() => {
 		const cards: Array<{
@@ -85,6 +91,19 @@ export function WelcomeScreen({
 				label: `Continue ${lastSpaceName}`,
 				hint: shortenPath(lastSpacePath),
 				onClick: () => void onContinueLastSpace(),
+			});
+		}
+
+		const nextRecent = recentSpaces.find((s) => s !== lastSpacePath);
+		if (nextRecent) {
+			const name =
+				normalizePathSeparators(nextRecent).split("/").pop() ?? nextRecent;
+			cards.push({
+				key: `recent-${nextRecent}`,
+				icon: <FolderOpen size={16} strokeWidth={1.8} />,
+				label: name,
+				hint: shortenPath(nextRecent),
+				onClick: () => onSelectRecentSpace(nextRecent),
 			});
 		}
 
@@ -109,9 +128,11 @@ export function WelcomeScreen({
 	}, [
 		lastSpacePath,
 		lastSpaceName,
+		recentSpaces,
 		onContinueLastSpace,
 		onOpenSpace,
 		onCreateSpace,
+		onSelectRecentSpace,
 	]);
 
 	return (
@@ -243,15 +264,19 @@ export function WelcomeScreen({
 										<button
 											type="button"
 											className="welcomeFeatureChip"
+											aria-describedby={`feature-desc-${i}`}
 											onMouseEnter={() => setHoveredFeature(i)}
 											onMouseLeave={() => setHoveredFeature(null)}
-											onFocus={() => setHoveredFeature(i)}
-											onBlur={() => setHoveredFeature(null)}
+											onFocus={() => setFocusedFeature(i)}
+											onBlur={() => setFocusedFeature(null)}
 										>
 											{f.icon}
 											{f.label}
 										</button>
-										{hoveredFeature === i && (
+										<span id={`feature-desc-${i}`} className="sr-only">
+											{f.desc}
+										</span>
+										{activeFeature === i && (
 											<div className="welcomeFeaturePopover">
 												<p>{f.desc}</p>
 											</div>
