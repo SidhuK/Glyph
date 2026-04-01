@@ -1406,10 +1406,6 @@ input.notePropertyValue {
 	min-width: 1px;
 }
 
-.tiptapHostInline {
-	position: relative;
-}
-
 .tiptapHostInline.is-zen-mode .tiptapContentInline > * {
 	transition: opacity 180ms ease, color 180ms ease, filter 180ms ease;
 }

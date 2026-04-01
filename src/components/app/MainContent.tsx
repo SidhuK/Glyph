@@ -372,6 +372,7 @@ export const MainContent = memo(function MainContent({
 	const { dailyNotesFolder, templateFolder, zenModeActive } =
 		useUILayoutContext();
 	const { aiEnabled, aiPanelOpen, setAiPanelOpen } = useAISidebarContext();
+	const tabBarWrapperRef = useRef<HTMLDivElement | null>(null);
 	const [onboarding, setOnboarding] = useState<OnboardingSettings>(
 		DEFAULT_ONBOARDING_SETTINGS,
 	);
@@ -535,6 +536,16 @@ export const MainContent = memo(function MainContent({
 		Boolean(spacePath) &&
 		(showStarterByDefault || (starterOverrideVisible && !activeTabPath));
 	const showTabBar = tabs.length > 1;
+
+	useEffect(() => {
+		const wrapper = tabBarWrapperRef.current;
+		if (!wrapper) return;
+		if (zenModeActive) {
+			wrapper.setAttribute("inert", "");
+			return;
+		}
+		wrapper.removeAttribute("inert");
+	}, [showTabBar, zenModeActive]);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -709,6 +720,7 @@ export const MainContent = memo(function MainContent({
 					/>
 					{showTabBar ? (
 						<div
+							ref={tabBarWrapperRef}
 							className={`mainTabBarTransition${zenModeActive ? " is-zen-hidden" : ""}`}
 							aria-hidden={zenModeActive}
 						>
