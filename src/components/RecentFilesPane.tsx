@@ -76,11 +76,8 @@ export const RecentFilesPane = memo(function RecentFilesPane({
 									onClick={() => onOpenFile(file.path)}
 									title={file.path}
 									whileHover={{
-										scale: 1.02,
-										y: -1,
 										backgroundColor: "var(--bg-hover)",
 									}}
-									whileTap={{ scale: 0.98 }}
 									transition={springTransition}
 								>
 									<span className="tagsNameWrap">

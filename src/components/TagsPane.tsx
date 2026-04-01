@@ -102,11 +102,8 @@ export const TagsPane = memo(function TagsPane({
 										tag.totalCount === 1 ? "" : "s"
 									}`}
 									whileHover={{
-										scale: 1.02,
-										y: -1,
 										backgroundColor: "var(--bg-hover)",
 									}}
-									whileTap={{ scale: 0.98 }}
 									transition={springTransition}
 								>
 									<span className="tagsNameWrap">
