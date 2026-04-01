@@ -595,6 +595,11 @@
 	margin-right: -2px;
 }
 
+:root[data-translucent-app-frame="false"] .sidebarResizeHandle {
+	margin-left: -4px;
+	margin-right: -4px;
+}
+
 .sidebarResizeHandle::before {
 	content: "";
 	position: absolute;

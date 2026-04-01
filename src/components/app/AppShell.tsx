@@ -17,6 +17,7 @@ import {
 	MoveIcon,
 	NoteIcon,
 	PencilEdit02Icon,
+	Plant01Icon,
 	SearchIcon,
 	Settings01Icon,
 	SidebarLeftIcon,
@@ -54,7 +55,9 @@ import { useResizablePanel } from "../../hooks/useResizablePanel";
 import { useWhatsNew } from "../../hooks/useWhatsNew";
 import {
 	dispatchFileTreeStartRename,
+	dispatchForceNoteEditMode,
 	dispatchPathRemoved,
+	dispatchZenModeWillToggle,
 } from "../../lib/appEvents";
 import { promptNoteExportPath } from "../../lib/export";
 import { getLicenseStatus } from "../../lib/license";
@@ -133,6 +136,8 @@ export function AppShell() {
 	const {
 		sidebarCollapsed,
 		setSidebarCollapsed,
+		zenModeActive,
+		setZenModeActive,
 		setSidebarViewMode,
 		paletteOpen,
 		setPaletteOpen,
@@ -240,6 +245,12 @@ export function AppShell() {
 			window.clearTimeout(idle);
 		};
 	}, []);
+
+	useEffect(() => {
+		if (!zenModeActive) return;
+		if (activeMarkdownTabPath) return;
+		setZenModeActive(false);
+	}, [activeMarkdownTabPath, setZenModeActive, zenModeActive]);
 
 	useEffect(() => {
 		if (!paletteOpen) return;
@@ -1142,6 +1153,33 @@ export function AppShell() {
 				shortcut: { meta: true, shift: true, key: "b" },
 				action: () => setSidebarCollapsed(!sidebarCollapsed),
 			},
+			{
+				id: "toggle-zen-mode",
+				label: zenModeActive ? "Exit zen mode" : "Toggle zen mode",
+				icon: <HugeiconsIcon icon={Plant01Icon} size={16} />,
+				category: "Workspace",
+				enabled: Boolean(activeMarkdownTabPath),
+				allowInEditable: true,
+				action: () => {
+					if (zenModeActive) {
+						if (activeMarkdownTabPath) {
+							dispatchZenModeWillToggle({
+								path: activeMarkdownTabPath,
+								nextActive: false,
+							});
+						}
+						setZenModeActive(false);
+						return;
+					}
+					if (!activeMarkdownTabPath) return;
+					dispatchZenModeWillToggle({
+						path: activeMarkdownTabPath,
+						nextActive: true,
+					});
+					dispatchForceNoteEditMode({ path: activeMarkdownTabPath });
+					setZenModeActive(true);
+				},
+			},
 			...aiCommands,
 			{
 				id: "new-note",
@@ -1379,8 +1417,10 @@ export function AppShell() {
 		setPaletteOpen,
 		setActivePreviewPath,
 		setSidebarCollapsed,
+		setZenModeActive,
 		sidebarCollapsed,
 		spacePath,
+		zenModeActive,
 		openAllDocsTab,
 		openTemplatesTab,
 		openSearchPalette,
@@ -1412,6 +1452,7 @@ export function AppShell() {
 				"appShell",
 				sidebarCollapsed && "appShellSidebarCollapsed",
 				aiEnabled && aiPanelOpen && "appShellAiOpen",
+				zenModeActive && "appShellZenMode",
 			)}
 		>
 			<div
@@ -1420,7 +1461,7 @@ export function AppShell() {
 				data-tauri-drag-region
 				onMouseDown={onWindowDragMouseDown}
 			/>
-			{sidebarCollapsed && (
+			{sidebarCollapsed && !zenModeActive && (
 				<div className="sidebarCollapsedToggle">
 					<WindowChromeIconButton
 						ariaLabel="Expand sidebar"
@@ -1472,15 +1513,17 @@ export function AppShell() {
 				updateVersion={autoUpdater.updateVersion}
 				onInstallUpdate={autoUpdater.installAndRelaunch}
 			/>
-			<div
-				ref={sidebarResize.resizeRef}
-				className="sidebarResizeHandle"
-				onPointerDown={sidebarResize.handlePointerDown}
-				onPointerMove={sidebarResize.handlePointerMove}
-				onPointerUp={sidebarResize.handlePointerUp}
-				data-window-drag-ignore
-				style={{ cursor: sidebarCollapsed ? "default" : "col-resize" }}
-			/>
+			{!zenModeActive ? (
+				<div
+					ref={sidebarResize.resizeRef}
+					className="sidebarResizeHandle"
+					onPointerDown={sidebarResize.handlePointerDown}
+					onPointerMove={sidebarResize.handlePointerMove}
+					onPointerUp={sidebarResize.handlePointerUp}
+					data-window-drag-ignore
+					style={{ cursor: sidebarCollapsed ? "default" : "col-resize" }}
+				/>
+			) : null}
 			<MainContent
 				fileTree={fileTree}
 				onOpenFile={openWorkspaceFile}
@@ -1513,7 +1556,7 @@ export function AppShell() {
 				dailyNoteSetupNoticeRequest={dailyNoteSetupNoticeRequest}
 				onOpenDailyNotesSettings={() => void openSettingsWindow("general")}
 			/>
-			{spacePath && aiEnabled && aiPanelOpen && (
+			{spacePath && aiEnabled && aiPanelOpen && !zenModeActive && (
 				<div
 					ref={aiResize.resizeRef}
 					className="sidebarResizeHandle"
@@ -1524,7 +1567,7 @@ export function AppShell() {
 					style={{ cursor: "col-resize" }}
 				/>
 			)}
-			{spacePath && aiEnabled && (
+			{spacePath && aiEnabled && !zenModeActive && (
 				<AIFloatingHost
 					isOpen={aiPanelOpen}
 					onToggle={() => setAiPanelOpen((v) => !v)}

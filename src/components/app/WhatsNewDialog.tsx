@@ -39,10 +39,6 @@ export function WhatsNewDialog({
 	onClose,
 }: WhatsNewDialogProps) {
 	const publishedDate = formatPublishedDate(releaseNotes.publishedAt);
-	const updateCount = releaseNotes.sections.reduce(
-		(total, section) => total + section.items.length,
-		0,
-	);
 
 	const handleOpenChangelog = () => {
 		void openUrl(publicChangelogUrl).catch((error) => {
@@ -53,7 +49,7 @@ export function WhatsNewDialog({
 	return (
 		<Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
 			<DialogContent
-				className="commandPalette whatsNewDialog top-[46%] gap-0 border-none bg-transparent p-0 shadow-none sm:max-w-[620px]"
+				className="commandPalette whatsNewDialog top-[46%] gap-0 border-none bg-transparent p-0 shadow-none sm:max-w-[520px]"
 				showCloseButton={false}
 			>
 				<DialogTitle className="sr-only">What&apos;s New</DialogTitle>
@@ -63,10 +59,9 @@ export function WhatsNewDialog({
 						<div>
 							<div className="whatsNewEyebrow">What&apos;s New</div>
 							<div className="whatsNewTitleRow">
-								<h2 className="whatsNewTitle">Glyph v{releaseNotes.version}</h2>
-								<span className="settingsPill settingsPillInfo">
-									{updateCount} update{updateCount === 1 ? "" : "s"}
-								</span>
+								<h2 className="whatsNewTitle">
+									Glyph v{releaseNotes.version}
+								</h2>
 							</div>
 						</div>
 						{publishedDate ? (
@@ -76,10 +71,6 @@ export function WhatsNewDialog({
 							</div>
 						) : null}
 					</div>
-					<p className="whatsNewSummary">
-						Recent improvements in this build, styled to match the rest of
-						Glyph.
-					</p>
 				</div>
 
 				<div className="commandPaletteBody whatsNewBody">
@@ -99,13 +90,11 @@ export function WhatsNewDialog({
 										{section.items.map((item, itemIndex) => (
 											<div
 												key={`${section.category}:${itemKeys[itemIndex]}`}
-												className="commandPaletteItem commandPaletteResultItem whatsNewItem"
+												className="commandPaletteItem whatsNewItem"
 												data-selected="false"
 											>
-												<div className="commandPaletteResultContent">
-													<div className="commandPaletteResultTitle">
-														{item}
-													</div>
+												<div className="commandPaletteResultTitle">
+													{item}
 												</div>
 											</div>
 										))}
@@ -116,11 +105,16 @@ export function WhatsNewDialog({
 				</div>
 
 				<div className="whatsNewFooter">
-					<Button type="button" variant="outline" onClick={handleOpenChangelog}>
-						See full changelog
+					<Button
+						type="button"
+						variant="ghost"
+						size="sm"
+						onClick={handleOpenChangelog}
+					>
+						Full changelog
 						<HugeiconsIcon icon={ArrowRight01Icon} size={14} />
 					</Button>
-					<Button type="button" onClick={onClose}>
+					<Button type="button" size="sm" onClick={onClose}>
 						Continue
 					</Button>
 				</div>

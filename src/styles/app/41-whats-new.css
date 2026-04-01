@@ -1,11 +1,12 @@
+/* ── What's New dialog ── */
+
 .whatsNewDialog {
-	width: min(620px, calc(100vw - 48px));
-	max-height: min(82vh, 760px);
+	width: min(520px, calc(100vw - 48px));
+	max-height: min(78vh, 680px);
 }
 
 .whatsNewHeader {
-	padding: 16px 16px 14px;
-	border-bottom: 1px solid var(--border-light);
+	padding: 16px 16px 12px;
 }
 
 .whatsNewHeadingRow {
@@ -16,7 +17,7 @@
 }
 
 .whatsNewEyebrow {
-	margin-bottom: 4px;
+	margin-bottom: 2px;
 	color: var(--text-tertiary);
 	font-size: var(--text-xs);
 	font-weight: var(--font-medium);
@@ -33,10 +34,10 @@
 
 .whatsNewTitle {
 	margin: 0;
-	font-size: 20px;
-	line-height: 1.1;
+	font-size: 17px;
+	line-height: 1.2;
 	font-weight: var(--font-semibold);
-	letter-spacing: -0.02em;
+	letter-spacing: -0.01em;
 	color: var(--text-primary);
 }
 
@@ -49,21 +50,38 @@
 	white-space: nowrap;
 }
 
-.whatsNewSummary {
-	margin: 10px 0 0;
-	color: var(--text-secondary);
-	font-size: var(--text-sm);
-	line-height: 1.45;
-}
-
 .whatsNewBody {
 	flex: 1;
 	min-height: 0;
+	overflow-y: auto;
+	scrollbar-width: thin;
+	scrollbar-color: color-mix(in srgb, var(--text-tertiary) 36%, transparent)
+		transparent;
+	scrollbar-gutter: stable;
+}
+
+.whatsNewBody::-webkit-scrollbar {
+	width: 10px;
+}
+
+.whatsNewBody::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+.whatsNewBody::-webkit-scrollbar-thumb {
+	border: 2px solid transparent;
+	border-radius: var(--radius-full);
+	background: color-mix(in srgb, var(--text-tertiary) 28%, transparent);
+	background-clip: padding-box;
+}
+
+.whatsNewBody::-webkit-scrollbar-thumb:hover {
+	background: color-mix(in srgb, var(--text-secondary) 42%, transparent);
+	background-clip: padding-box;
 }
 
 .whatsNewList {
-	padding-top: 8px;
-	padding-bottom: 10px;
+	padding: 6px 6px 8px;
 }
 
 .whatsNewSection + .whatsNewSection {
@@ -72,7 +90,9 @@
 
 .whatsNewItem {
 	cursor: default;
-	border-radius: var(--radius-lg);
+	border-radius: var(--radius-md);
+	min-height: 32px;
+	padding: 6px 10px;
 }
 
 .whatsNewItem:hover,
@@ -82,22 +102,22 @@
 
 .whatsNewItem .commandPaletteResultTitle {
 	white-space: normal;
-	line-height: 1.45;
+	line-height: 1.4;
+	font-size: var(--text-sm);
 }
 
 .whatsNewFooter {
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
-	gap: 12px;
-	padding: 14px 16px 16px;
-	border-top: 1px solid var(--border-light);
-	background: color-mix(in srgb, var(--bg-primary) 92%, var(--bg-secondary));
+	justify-content: flex-end;
+	gap: 8px;
+	padding: 8px 14px;
+	background: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-tertiary));
 }
 
 @media (max-width: 640px) {
 	.whatsNewDialog {
-		width: min(100vw - 24px, 620px);
+		width: min(100vw - 24px, 520px);
 	}
 
 	.whatsNewHeadingRow,
