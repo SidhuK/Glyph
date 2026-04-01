@@ -47,6 +47,18 @@
 	background: var(--bg-primary);
 }
 
+:root[data-translucent-app-frame="false"] .mainArea {
+	border-top-left-radius: 0;
+	border-bottom-left-radius: 0;
+	border-left-color: transparent;
+}
+
+:root[data-translucent-app-frame="false"] .appShell.appShellSidebarCollapsed .mainArea {
+	border-top-left-radius: var(--app-radius);
+	border-bottom-left-radius: var(--app-radius);
+	border-left-color: color-mix(in srgb, var(--border-light) 62%, transparent);
+}
+
 .mainArea.mainAreaZen {
 	border-color: color-mix(in srgb, var(--border-light) 22%, transparent);
 	box-shadow: 0 1px 4px color-mix(in srgb, var(--text-primary) 6%, transparent);

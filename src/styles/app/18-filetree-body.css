@@ -139,6 +139,7 @@
 	margin-left: auto;
 	font-family: inherit;
 	font-size: 10px;
+	line-height: 1.4;
 	color: var(--text-tertiary);
 	white-space: nowrap;
 	overflow: hidden;
