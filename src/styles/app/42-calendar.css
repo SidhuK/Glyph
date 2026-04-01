@@ -467,7 +467,6 @@
 
 .calendarMiniDb {
 	border-radius: 16px;
-	overflow: hidden;
 }
 
 .calendarMiniDbHeader {
@@ -495,8 +494,8 @@
 	display: flex;
 	gap: 14px;
 	overflow-x: auto;
-	overflow-y: hidden;
-	padding-bottom: 2px;
+	overflow-y: visible;
+	padding: 4px 0 6px;
 	scrollbar-gutter: stable;
 }
 

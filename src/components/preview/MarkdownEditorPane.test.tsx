@@ -3,12 +3,16 @@
 import { type ButtonHTMLAttributes, act } from "react";
 import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { FORCE_NOTE_EDIT_MODE_EVENT } from "../../lib/appEvents";
 import { MarkdownEditorPane } from "./MarkdownEditorPane";
 
-const { canvasNoteInlineEditorMock, invokeMock } = vi.hoisted(() => ({
-	canvasNoteInlineEditorMock: vi.fn(),
-	invokeMock: vi.fn(),
-}));
+const { canvasNoteInlineEditorMock, invokeMock, mockZenModeState } = vi.hoisted(
+	() => ({
+		canvasNoteInlineEditorMock: vi.fn(),
+		invokeMock: vi.fn(),
+		mockZenModeState: { active: false },
+	}),
+);
 
 // React 19 expects tests to opt into act-aware scheduling.
 (
@@ -21,7 +25,10 @@ vi.mock("../../contexts", () => ({
 	useAISidebarContext: () => ({ aiEnabled: false, aiPanelOpen: false }),
 	useEditorRegistration: () => {},
 	useSpace: () => ({ spacePath: "/spaces/test" }),
-	useUILayoutContext: () => ({ showToc: false }),
+	useUILayoutContext: () => ({
+		showToc: false,
+		zenModeActive: mockZenModeState.active,
+	}),
 }));
 
 vi.mock("../../lib/tauri", () => ({
@@ -54,17 +61,27 @@ vi.mock("motion/react", () => ({
 vi.mock("../editor/CanvasNoteInlineEditor", () => ({
 	CanvasNoteInlineEditor: ({
 		onChange,
+		mode,
 		pasteMarkdownBehavior,
+		zenModeActive,
 	}: {
 		onChange: (nextText: string) => void;
+		mode: "plain" | "rich" | "preview";
 		pasteMarkdownBehavior?: "plain-text" | "smart-markdown";
+		zenModeActive?: boolean;
 	}) => (
 		<button
 			type="button"
 			onClick={() => onChange("latest typed text")}
 			data-paste-markdown-behavior={pasteMarkdownBehavior}
+			data-mode={mode}
+			data-zen-mode={zenModeActive ? "true" : "false"}
 			ref={() => {
-				canvasNoteInlineEditorMock({ pasteMarkdownBehavior });
+				canvasNoteInlineEditorMock({
+					mode,
+					pasteMarkdownBehavior,
+					zenModeActive,
+				});
 			}}
 		>
 			Type latest text
@@ -134,6 +151,7 @@ describe("MarkdownEditorPane", () => {
 
 	beforeEach(() => {
 		vi.useFakeTimers();
+		mockZenModeState.active = false;
 		globalThis.ResizeObserver = class {
 			disconnect() {}
 			observe() {}
@@ -202,7 +220,9 @@ describe("MarkdownEditorPane", () => {
 		});
 
 		expect(canvasNoteInlineEditorMock).toHaveBeenCalledWith({
+			mode: "rich",
 			pasteMarkdownBehavior: "smart-markdown",
+			zenModeActive: false,
 		});
 	});
 
@@ -277,5 +297,79 @@ describe("MarkdownEditorPane", () => {
 		) as HTMLElement | null;
 		expect(saveState?.dataset.saveState).toBe("saved-fresh");
 		expect(saveState?.textContent?.trim()).toBe("");
+	});
+
+	it("hides note chrome while zen mode is active", async () => {
+		mockZenModeState.active = true;
+
+		await act(async () => {
+			root.render(
+				<MarkdownEditorPane
+					relPath="notes/zen.md"
+					initialDoc={makeDoc("notes/zen.md", "seed text")}
+				/>,
+			);
+		});
+
+		expect(
+			container
+				.querySelector(".markdownEditorFloatActions")
+				?.classList.contains("is-zen-hidden"),
+		).toBe(true);
+		expect(
+			container
+				.querySelector(".markdownEditorStatsDock")
+				?.classList.contains("is-zen-hidden"),
+		).toBe(true);
+		expect(container.querySelector(".markdownEditorPaneZen")).toBeTruthy();
+		expect(canvasNoteInlineEditorMock).toHaveBeenCalledWith({
+			mode: "rich",
+			pasteMarkdownBehavior: "smart-markdown",
+			zenModeActive: true,
+		});
+	});
+
+	it("switches the active note back to rich mode when zen mode requests edit mode", async () => {
+		await act(async () => {
+			root.render(
+				<MarkdownEditorPane
+					relPath="notes/raw.md"
+					initialDoc={makeDoc("notes/raw.md", "seed text")}
+				/>,
+			);
+		});
+
+		const actionsButton = Array.from(container.querySelectorAll("button")).find(
+			(button) => button.getAttribute("aria-label")?.includes("editor actions"),
+		);
+		expect(actionsButton).not.toBeNull();
+
+		await act(async () => {
+			actionsButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+		});
+
+		const rawModeButton = Array.from(container.querySelectorAll("button")).find(
+			(button) => button.textContent?.includes("Raw"),
+		);
+		expect(rawModeButton).not.toBeNull();
+
+		await act(async () => {
+			rawModeButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+		});
+
+		const editorButton = Array.from(container.querySelectorAll("button")).find(
+			(button) => button.textContent?.includes("Type latest text"),
+		);
+		expect(editorButton?.getAttribute("data-mode")).toBe("plain");
+
+		await act(async () => {
+			window.dispatchEvent(
+				new CustomEvent(FORCE_NOTE_EDIT_MODE_EVENT, {
+					detail: { path: "notes/raw.md" },
+				}),
+			);
+		});
+
+		expect(editorButton?.getAttribute("data-mode")).toBe("rich");
 	});
 });

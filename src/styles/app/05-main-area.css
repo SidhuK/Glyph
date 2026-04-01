@@ -25,6 +25,8 @@
 	border: 1px solid color-mix(in srgb, var(--border-light) 62%, transparent);
 	box-sizing: border-box;
 	box-shadow: 0 1px 4px color-mix(in srgb, var(--text-primary) 10%, transparent);
+	transition: margin 220ms ease, border-radius 220ms ease, border-color 220ms
+		ease, box-shadow 220ms ease;
 }
 
 .appShell.appShellAiOpen .mainArea {
@@ -43,6 +45,23 @@
 
 .mainAreaWelcome {
 	background: var(--bg-primary);
+}
+
+.mainArea.mainAreaZen {
+	border-color: color-mix(in srgb, var(--border-light) 22%, transparent);
+	box-shadow: 0 1px 4px color-mix(in srgb, var(--text-primary) 6%, transparent);
+}
+
+.mainTabBarTransition {
+	opacity: 1;
+	transform: translateY(0);
+	transition: opacity 180ms ease, transform 220ms ease;
+}
+
+.mainTabBarTransition.is-zen-hidden {
+	opacity: 0;
+	transform: translateY(-4px);
+	pointer-events: none;
 }
 
 .mainToolbar {

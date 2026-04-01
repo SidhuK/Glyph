@@ -217,6 +217,7 @@ function shouldHandleSmartMarkdownPaste(
 interface UseNoteEditorOptions {
 	markdown: string;
 	mode: CanvasInlineEditorMode;
+	zenModeActive?: boolean;
 	relPath?: string;
 	interactive?: boolean;
 	enableHydrateInlineImages?: boolean;
@@ -294,6 +295,7 @@ function handleEditorClick(
 export function useNoteEditor({
 	markdown,
 	mode,
+	zenModeActive = false,
 	relPath = "",
 	interactive = true,
 	enableHydrateInlineImages = true,
@@ -310,6 +312,7 @@ export function useNoteEditor({
 	const suppressUpdateRef = useRef(false);
 	const relPathRef = useRef(relPath);
 	const interactiveRef = useRef(interactive);
+	const zenModeActiveRef = useRef(zenModeActive);
 	const pastedMediaFolderRef = useRef("assets");
 	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
 	const extensions = useMemo(
@@ -318,6 +321,7 @@ export function useNoteEditor({
 				currentPath: "",
 				currentPathResolver: () => relPathRef.current,
 				enableMarkdownLinkAutocomplete,
+				getZenModeEnabled: () => zenModeActiveRef.current,
 			}),
 		[enableMarkdownLinkAutocomplete],
 	);
@@ -373,6 +377,10 @@ export function useNoteEditor({
 	useEffect(() => {
 		interactiveRef.current = interactive;
 	}, [interactive]);
+
+	useEffect(() => {
+		zenModeActiveRef.current = zenModeActive && mode === "rich";
+	}, [mode, zenModeActive]);
 
 	const editor = useEditor({
 		extensions,
@@ -528,6 +536,11 @@ export function useNoteEditor({
 		if (!editor) return;
 		editor.setEditable(mode === "rich");
 	}, [editor, mode]);
+
+	useEffect(() => {
+		if (!editor) return;
+		editor.commands.refreshZenFocus();
+	}, [editor, mode, zenModeActive]);
 
 	useEffect(() => {
 		if (!editor) return;

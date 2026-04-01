@@ -369,7 +369,8 @@ export const MainContent = memo(function MainContent({
 		onContinueLastSpace,
 		onCreateSpace,
 	} = useSpace();
-	const { dailyNotesFolder, templateFolder } = useUILayoutContext();
+	const { dailyNotesFolder, templateFolder, zenModeActive } =
+		useUILayoutContext();
 	const { aiEnabled, aiPanelOpen, setAiPanelOpen } = useAISidebarContext();
 	const [onboarding, setOnboarding] = useState<OnboardingSettings>(
 		DEFAULT_ONBOARDING_SETTINGS,
@@ -695,7 +696,7 @@ export const MainContent = memo(function MainContent({
 	}
 
 	return (
-		<main className="mainArea">
+		<main className={zenModeActive ? "mainArea mainAreaZen" : "mainArea"}>
 			<div className="canvasWrapper">
 				<div className="canvasPaneHost">
 					<DailyNotesSetupToast
@@ -706,21 +707,26 @@ export const MainContent = memo(function MainContent({
 							onOpenDailyNotesSettings();
 						}}
 					/>
-					{showTabBar && (
-						<TabBar
-							tabs={tabs}
-							activeTabId={activeTabId}
-							activeTabPath={activeTabPath}
-							dragTabId={dragTabId}
-							useWindowBackground={!content}
-							onOpenBlankTab={openBlankTab}
-							onSelectTab={setActiveTabId}
-							onCloseTab={closeTab}
-							onDragStart={setDragTabId}
-							onDragEnd={() => setDragTabId(null)}
-							onReorder={reorderTabs}
-						/>
-					)}
+					{showTabBar ? (
+						<div
+							className={`mainTabBarTransition${zenModeActive ? " is-zen-hidden" : ""}`}
+							aria-hidden={zenModeActive}
+						>
+							<TabBar
+								tabs={tabs}
+								activeTabId={activeTabId}
+								activeTabPath={activeTabPath}
+								dragTabId={dragTabId}
+								useWindowBackground={!content}
+								onOpenBlankTab={openBlankTab}
+								onSelectTab={setActiveTabId}
+								onCloseTab={closeTab}
+								onDragStart={setDragTabId}
+								onDragEnd={() => setDragTabId(null)}
+								onReorder={reorderTabs}
+							/>
+						</div>
+					) : null}
 					{content ?? (
 						<div className="mainEmptyState">
 							{showStarterPane ? (
@@ -747,7 +753,7 @@ export const MainContent = memo(function MainContent({
 							)}
 						</div>
 					)}
-					{aiEnabled && !aiPanelOpen ? (
+					{aiEnabled && !aiPanelOpen && !zenModeActive ? (
 						<button
 							type="button"
 							className="mainAiFloatingToggle"

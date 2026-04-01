@@ -292,6 +292,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	markdown,
 	relPath,
 	mode,
+	zenModeActive = false,
 	interactive = true,
 	showBacklinks = true,
 	deferHeavyFeatures = false,
@@ -309,6 +310,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	} = useNoteEditor({
 		markdown,
 		mode,
+		zenModeActive,
 		relPath,
 		interactive,
 		enableHydrateInlineImages: !deferHeavyFeatures,
@@ -321,6 +323,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	const lastFrontmatterRef = useRef(frontmatter);
 	const [backlinks, setBacklinks] = useState<BacklinkItem[]>([]);
 	const tiptapHostRef = useRef<HTMLDivElement | null>(null);
+	const [editorFocused, setEditorFocused] = useState(false);
 	const [taskAnchors, setTaskAnchors] = useState<
 		Array<{
 			left: number;
@@ -1092,6 +1095,24 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		return () => observer.disconnect();
 	}, [editor, mode]);
 
+	useEffect(() => {
+		const host = tiptapHostRef.current;
+		if (!host) return;
+		const handleFocusIn = () => setEditorFocused(true);
+		const handleFocusOut = () => {
+			window.setTimeout(() => {
+				setEditorFocused(host.contains(document.activeElement));
+			}, 0);
+		};
+		handleFocusOut();
+		host.addEventListener("focusin", handleFocusIn);
+		host.addEventListener("focusout", handleFocusOut);
+		return () => {
+			host.removeEventListener("focusin", handleFocusIn);
+			host.removeEventListener("focusout", handleFocusOut);
+		};
+	}, []);
+
 	return (
 		<div
 			className={[
@@ -1112,14 +1133,14 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 						spellCheck={false}
 					/>
 				) : null}
-				{mode === "rich" && frontmatterDraft ? (
+				{mode === "rich" && frontmatterDraft && !zenModeActive ? (
 					<div className="frontmatterPreview mono">
 						<NotePropertiesPanel
 							frontmatter={frontmatterDraft}
 							onChange={handleFrontmatterChange}
 						/>
 					</div>
-				) : frontmatter ? (
+				) : frontmatter && !zenModeActive ? (
 					<div className="frontmatterPreview mono">
 						<pre>{renderFrontmatterWithLinks(frontmatter.trimEnd())}</pre>
 					</div>
@@ -1130,6 +1151,8 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 						className={[
 							"tiptapHostInline",
 							mode === "preview" ? "is-preview" : "",
+							zenModeActive ? "is-zen-mode" : "",
+							zenModeActive && !editorFocused ? "is-zen-unfocused" : "",
 							"nodrag",
 							"nopan",
 							"nowheel",
