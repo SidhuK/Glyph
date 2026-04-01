@@ -79,7 +79,9 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 				const settings = await loadSettings();
 				if (cancelled) return;
 				setRecentSpaces(settings.recentSpaces);
-				setLastSpacePath(settings.currentSpacePath);
+				setLastSpacePath(
+					settings.currentSpacePath ?? settings.recentSpaces[0] ?? null,
+				);
 
 				if (settings.currentSpacePath) {
 					try {
