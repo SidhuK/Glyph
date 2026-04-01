@@ -22,6 +22,7 @@ import { MarkdownLinkAutocomplete } from "./markdownLinkAutocomplete";
 import { MermaidPreview } from "./mermaidPreview";
 import { TagDecorations } from "./tagDecorations";
 import { WikiLink } from "./wikiLink";
+import { ZenFocus } from "./zenFocus";
 
 function parseCalloutMarker(
 	text: string,
@@ -358,6 +359,7 @@ interface CreateEditorExtensionsOptions {
 	enableMarkdownLinkAutocomplete?: boolean;
 	currentPath?: string;
 	currentPathResolver?: (() => string) | null;
+	getZenModeEnabled?: (() => boolean) | null;
 }
 
 export function createEditorExtensions(
@@ -369,6 +371,7 @@ export function createEditorExtensions(
 		enableMarkdownLinkAutocomplete = true,
 		currentPath = "",
 		currentPathResolver = null,
+		getZenModeEnabled = null,
 	} = options ?? {};
 	return [
 		StarterKit.configure({
@@ -414,5 +417,8 @@ export function createEditorExtensions(
 		...(enableSlashCommand ? [SlashCommand] : []),
 		CalloutDecorations,
 		TagDecorations,
+		ZenFocus.configure({
+			getZenModeEnabled: getZenModeEnabled ?? (() => false),
+		}),
 	];
 }

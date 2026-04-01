@@ -1,6 +1,8 @@
 export const PATH_REMOVED_EVENT = "glyph:path-removed";
 export const FILE_TREE_START_RENAME_EVENT = "glyph:file-tree-start-rename";
 export const PATH_RENAMED_EVENT = "glyph:path-renamed";
+export const FORCE_NOTE_EDIT_MODE_EVENT = "glyph:force-note-edit-mode";
+export const ZEN_MODE_WILL_TOGGLE_EVENT = "glyph:zen-mode-will-toggle";
 
 export interface PathRemovedDetail {
 	path: string;
@@ -15,6 +17,15 @@ export interface PathRenamedDetail {
 	fromPath: string;
 	toPath: string;
 	recursive: boolean;
+}
+
+export interface ForceNoteEditModeDetail {
+	path: string;
+}
+
+export interface ZenModeWillToggleDetail {
+	path: string;
+	nextActive: boolean;
 }
 
 export function dispatchPathRemoved(detail: PathRemovedDetail) {
@@ -34,5 +45,21 @@ export function dispatchFileTreeStartRename(detail: FileTreeStartRenameDetail) {
 export function dispatchPathRenamed(detail: PathRenamedDetail) {
 	window.dispatchEvent(
 		new CustomEvent<PathRenamedDetail>(PATH_RENAMED_EVENT, { detail }),
+	);
+}
+
+export function dispatchForceNoteEditMode(detail: ForceNoteEditModeDetail) {
+	window.dispatchEvent(
+		new CustomEvent<ForceNoteEditModeDetail>(FORCE_NOTE_EDIT_MODE_EVENT, {
+			detail,
+		}),
+	);
+}
+
+export function dispatchZenModeWillToggle(detail: ZenModeWillToggleDetail) {
+	window.dispatchEvent(
+		new CustomEvent<ZenModeWillToggleDetail>(ZEN_MODE_WILL_TOGGLE_EVENT, {
+			detail,
+		}),
 	);
 }

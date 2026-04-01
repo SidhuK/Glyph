@@ -1,9 +1,9 @@
 import { useEffect, useMemo, useState } from "react";
+import { Settings, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import {
 	Dialog,
 	DialogContent,
-	DialogDescription,
 	DialogHeader,
 	DialogTitle,
 } from "../ui/shadcn/dialog";
@@ -52,19 +52,16 @@ export function TemplatePickerDialog({
 
 	return (
 		<Dialog open={open} onOpenChange={(nextOpen) => !nextOpen && handleClose()}>
-			<DialogContent className="templatePickerDialog sm:max-w-2xl">
+			<DialogContent className="templatePickerDialog" showCloseButton={false}>
 				<DialogHeader className="templatePickerHeader">
 					<DialogTitle>Create From Template</DialogTitle>
-					<DialogDescription>
-						Choose a markdown template from your template library.
-					</DialogDescription>
 				</DialogHeader>
 				<div className="templatePickerSearchWrap">
 					<Input
 						className="templatePickerSearchInput"
 						value={query}
 						onChange={(event) => setQuery(event.target.value)}
-						placeholder="Search templates"
+						placeholder="Search templates…"
 					/>
 				</div>
 				<ScrollArea className="templatePickerListWrap">
@@ -78,9 +75,8 @@ export function TemplatePickerDialog({
 									onClick={() => onPick(template)}
 								>
 									<span className="templatePickerItemLabel">
-										{template.label}
+										{template.label.replace(/\.md$/i, "")}
 									</span>
-									<span className="templatePickerItemMeta">Markdown</span>
 								</button>
 							))
 						) : (
@@ -89,11 +85,11 @@ export function TemplatePickerDialog({
 					</div>
 				</ScrollArea>
 				<div className="templatePickerFooter">
-					<Button type="button" variant="outline" onClick={onOpenSettings}>
-						Open Template Settings
+					<Button type="button" variant="ghost" size="icon" onClick={onOpenSettings} title="Template settings">
+						<Settings size={15} />
 					</Button>
-					<Button type="button" variant="ghost" onClick={handleClose}>
-						Cancel
+					<Button type="button" variant="ghost" size="icon" onClick={handleClose} title="Cancel">
+						<X size={15} />
 					</Button>
 				</div>
 			</DialogContent>

@@ -74,7 +74,7 @@ export function applyUiTypography(
 	editorFontSize: UiFontSize,
 ): void {
 	const root = document.documentElement;
-	const safeFamily = fontFamily.trim() || "Cabinet Grotesk";
+	const safeFamily = fontFamily.trim() || "Satoshi";
 	const safeMonoFamily = monoFontFamily.trim() || "JetBrains Mono";
 	const uiScale = Math.max(0.5, Math.min(3, uiFontSize / 14));
 	const editorScale = Math.max(

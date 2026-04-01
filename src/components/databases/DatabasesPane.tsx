@@ -746,7 +746,6 @@ export function DatabasesPane({
 
 					{document && activeConfig ? (
 						<>
-							<span className="databasesTopBarDivider" />
 							<Input
 								value={nameDraft}
 								className="databasesInlineNameInput"
