@@ -115,7 +115,6 @@ export function WelcomeScreen({
 	]);
 
 	return (
-		<>
 			<m.div
 				className="welcomeScreen"
 				initial={{ opacity: 0 }}
@@ -246,6 +245,8 @@ export function WelcomeScreen({
 											className="welcomeFeatureChip"
 											onMouseEnter={() => setHoveredFeature(i)}
 											onMouseLeave={() => setHoveredFeature(null)}
+											onFocus={() => setHoveredFeature(i)}
+											onBlur={() => setHoveredFeature(null)}
 										>
 											{f.icon}
 											{f.label}
@@ -262,6 +263,5 @@ export function WelcomeScreen({
 					</div>
 				</div>
 			</m.div>
-		</>
 	);
 }
