@@ -1,7 +1,8 @@
 import {
-	ArrowLeft,
-	ArrowRight,
+	ArrowLeftBigIcon,
+	ArrowRightBigIcon,
 	CalendarAdd01Icon,
+	Note03Icon,
 	TaskAdd02Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -13,7 +14,9 @@ import {
 	formatCalendarDate,
 	formatDayTitle,
 	formatMonthDay,
+	formatMonthName,
 	formatWeekday,
+	formatYear,
 	insertTaskIntoDailyNote,
 	parseCalendarDate,
 	relativeDayLabel,
@@ -490,12 +493,10 @@ export function CalendarPane({
 						<div className="calendarDetailCol">
 							<div className="calendarCardSection calendarTasksCard">
 								<div className="calendarCardSectionHeader">
-									<h4 className="calendarCardSectionTitle">Tasks</h4>
-									<span className="calendarCardSectionCount">
-										{agendaTasks.length +
-											overdueTasks.length +
-											ongoingTasks.length}
-									</span>
+									<h4 className="calendarCardSectionTitle">
+										<HugeiconsIcon icon={Note03Icon} size={16} />
+										Tasks
+									</h4>
 								</div>
 								<div className="calendarTasksScrollArea">
 									{renderTaskGroup("For this day", agendaTasks)}
@@ -511,6 +512,51 @@ export function CalendarPane({
 						</div>
 
 						<div className="calendarLeftCol">
+							<div className="calendarToolbarNav">
+								<span className="calendarMonthYearLabel">
+									<strong>{formatMonthName(anchorDateObj)}</strong>{" "}
+									{formatYear(anchorDateObj)}
+								</span>
+								<span className="calendarToolbarButtons">
+									<Button
+										type="button"
+										size="sm"
+										variant="outline"
+										className="calendarTaskBtn calendarTaskAddIcon"
+										onClick={() => stepRange(-1)}
+										aria-label="Previous month"
+									>
+										<HugeiconsIcon
+											icon={ArrowLeftBigIcon}
+											size={14}
+											aria-hidden="true"
+										/>
+									</Button>
+									<Button
+										type="button"
+										size="sm"
+										variant="outline"
+										className="calendarTaskBtn calendarOpenNoteBtn"
+										onClick={goToToday}
+									>
+										Today
+									</Button>
+									<Button
+										type="button"
+										size="sm"
+										variant="outline"
+										className="calendarTaskBtn calendarTaskAddIcon"
+										onClick={() => stepRange(1)}
+										aria-label="Next month"
+									>
+										<HugeiconsIcon
+											icon={ArrowRightBigIcon}
+											size={14}
+											aria-hidden="true"
+										/>
+									</Button>
+								</span>
+							</div>
 							<div className="calendarShadcnWrap">
 								<ShadcnCalendar
 									mode="single"
@@ -531,39 +577,6 @@ export function CalendarPane({
 							</div>
 						</div>
 					</div>
-					<div className="calendarNavRow">
-						<div className="calendarToolbarNav">
-							<Button
-								type="button"
-								size="sm"
-								variant="outline"
-								className="calendarTaskBtn calendarTaskAddIcon"
-								onClick={() => stepRange(-1)}
-								aria-label="Previous month"
-							>
-								<HugeiconsIcon icon={ArrowLeft} size={14} aria-hidden="true" />
-							</Button>
-							<Button
-								type="button"
-								size="sm"
-								variant="outline"
-								className="calendarTaskBtn calendarOpenNoteBtn"
-								onClick={goToToday}
-							>
-								Today
-							</Button>
-							<Button
-								type="button"
-								size="sm"
-								variant="outline"
-								className="calendarTaskBtn calendarTaskAddIcon"
-								onClick={() => stepRange(1)}
-								aria-label="Next month"
-							>
-								<HugeiconsIcon icon={ArrowRight} size={14} aria-hidden="true" />
-							</Button>
-						</div>
-					</div>
 				</div>
 
 				{/* ── Recent notes card strip ── */}
@@ -571,12 +584,7 @@ export function CalendarPane({
 					<div className="calendarMiniDb">
 						<div className="calendarCardSectionHeader calendarMiniDbHeader">
 							<div className="calendarMiniDbHeaderInfo">
-								<h4 className="calendarCardSectionTitle">
-									Activity — {formatDayTitle(selectedDate)}
-								</h4>
-								<span className="calendarCardSectionCount">
-									{noteActivity.length}
-								</span>
+								<h4 className="calendarCardSectionTitle">Activity</h4>
 							</div>
 						</div>
 						<RecentNotesBoardStrip
