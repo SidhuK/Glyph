@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import {
-	AiNetworkIcon,
+	AiChat02Icon,
 	Calendar03Icon,
 	CalendarAdd01Icon,
 	ColorsIcon,
@@ -59,6 +59,7 @@ import {
 	dispatchPathRemoved,
 	dispatchZenModeWillToggle,
 } from "../../lib/appEvents";
+import { AI_AGENT_TAB_ID } from "../../lib/aiAgent";
 import { promptNoteExportPath } from "../../lib/export";
 import { getLicenseStatus } from "../../lib/license";
 import { updateOnboardingSettings } from "../../lib/settings";
@@ -1051,7 +1052,7 @@ export function AppShell() {
 					{
 						id: "toggle-ai",
 						label: "Toggle AI",
-						icon: <HugeiconsIcon icon={AiNetworkIcon} size={16} />,
+						icon: <HugeiconsIcon icon={AiChat02Icon} size={16} />,
 						category: "AI",
 						shortcut: { meta: true, shift: true, key: "a" },
 						enabled: Boolean(spacePath),
@@ -1074,6 +1075,14 @@ export function AppShell() {
 						shortcut: { meta: true, alt: true, shift: true, key: "a" },
 						enabled: openMarkdownTabs.length > 0,
 						action: () => void attachAllOpenNotesToAi(),
+					},
+					{
+						id: "open-ai-agent",
+						label: "Open AI Agent",
+						icon: <HugeiconsIcon icon={AiChat02Icon} size={16} />,
+						category: "AI",
+						enabled: Boolean(spacePath),
+						action: () => openSpecialTab(AI_AGENT_TAB_ID),
 					},
 				]
 			: [];
