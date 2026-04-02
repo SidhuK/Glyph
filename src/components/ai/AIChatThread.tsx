@@ -144,11 +144,10 @@ export function AIChatThread({
 		<>
 			{messages.length === 0 ? (
 				<div className="aiChatEmpty">
-					<div className="aiChatEmptyEyebrow">Glyph AI</div>
-					<div className="aiChatEmptyTitle">Ask anything about your notes</div>
+					<div className="aiChatEmptyTitle">Talk to your notes</div>
 					<div className="aiChatEmptyMeta">
-						Chat naturally, or use <code>@</code> to attach files and folders
-						for extra context.
+						Ask naturally, or use <code>@</code> to add notes and folders to
+						the conversation
 					</div>
 				</div>
 			) : null}

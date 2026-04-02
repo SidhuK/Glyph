@@ -134,6 +134,13 @@
 	user-select: none;
 }
 
+.aiPanelHeaderLeft {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	min-width: 0;
+}
+
 .aiPanelTitle {
 	display: inline-flex;
 	align-items: center;
@@ -141,6 +148,28 @@
 	color: var(--text-primary);
 	font-weight: var(--font-semibold);
 	font-size: var(--text-sm);
+}
+
+.aiPanelHistoryButton {
+	height: 24px;
+	padding: 0 10px;
+	border: 1px solid transparent;
+	border-radius: var(--radius-full);
+	background: transparent;
+	color: var(--text-tertiary);
+	font-size: 11px;
+	font-weight: var(--font-medium);
+	line-height: 1;
+	cursor: pointer;
+	transition: background var(--transition-fast), border-color
+		var(--transition-fast), color var(--transition-fast);
+}
+
+.aiPanelHistoryButton:hover,
+.aiPanelHistoryButton-active {
+	color: var(--text-primary);
+	background: color-mix(in srgb, var(--bg-hover) 72%, transparent);
+	border-color: color-mix(in srgb, var(--border-light) 24%, transparent);
 }
 
 .aiPanelHeaderRight {
@@ -171,22 +200,6 @@
 	margin-bottom: 4px;
 }
 
-.aiHistoryToggle {
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
-	font-size: var(--text-xs);
-	color: var(--text-tertiary);
-}
-
-.aiHistoryChevron {
-	transition: transform var(--transition-fast);
-}
-
-.aiHistoryChevron-open {
-	transform: rotate(180deg);
-}
-
 .aiHistoryHeader button {
 	font-size: 11px;
 	color: var(--text-tertiary);
@@ -196,7 +209,6 @@
 	opacity: 0.4;
 }
 
-.aiHistoryToggle,
 .aiToolExpandBtn,
 .aiToolGroupTop {
 	height: auto;
@@ -212,19 +224,11 @@
 	color: inherit;
 	text-align: left;
 }
-
-.aiHistoryToggle:hover,
-.aiHistoryToggle:active,
 .aiToolExpandBtn:hover,
 .aiToolExpandBtn:active,
 .aiToolGroupTop:hover,
 .aiToolGroupTop:active {
 	background: transparent;
-}
-
-.aiHistoryToggle:hover,
-.aiHistoryToggle:active {
-	color: var(--text-secondary);
 }
 
 .aiToolExpandBtn:hover,
@@ -331,8 +335,9 @@
 	display: flex;
 	flex-direction: column;
 	align-items: center;
-	justify-content: center;
-	padding: 34px 12px 22px;
+	justify-content: flex-end;
+	flex: 1;
+	padding: 56px 12px 36px;
 	text-align: center;
 }
 
@@ -1032,19 +1037,27 @@
 .aiPanel .aiContextChip {
 	display: inline-flex;
 	align-items: center;
-	gap: 3px;
-	height: 20px;
-	padding: 0 6px;
+	gap: 5px;
+	height: 24px;
+	padding: 0 8px;
 	flex: 0 0 auto;
-	border-radius: var(--radius-xs);
-	font-size: 10px;
+	border-radius: var(--radius-md);
+	font-size: 11px;
+	font-weight: 450;
 	line-height: 1;
-	border: 1px solid color-mix(in srgb, var(--border-light) 45%, transparent);
-	background: transparent;
-	color: var(--text-tertiary);
+	border: none;
+	background: color-mix(in srgb, var(--bg-secondary) 50%, var(--bg-primary));
+	box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.06);
+	color: var(--text-secondary);
 	cursor: pointer;
 	transition: border-color var(--transition-fast), color var(--transition-fast),
 		background var(--transition-fast);
+}
+
+.aiPanel .aiContextChipIcon {
+	font-size: 11px;
+	line-height: 1;
+	flex-shrink: 0;
 }
 
 .aiPanel .aiContextChipLabel {
@@ -1054,9 +1067,22 @@
 	white-space: nowrap;
 }
 
+.aiPanel .aiContextChipClose {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	color: var(--text-tertiary);
+	flex-shrink: 0;
+	transition: color var(--transition-fast);
+}
+
 .aiPanel .aiContextChip:hover {
-	border-color: color-mix(in srgb, var(--border-default) 75%, transparent);
-	background: transparent;
+	border-color: color-mix(in srgb, var(--border-default) 80%, transparent);
+	background: color-mix(in srgb, var(--bg-tertiary) 60%, var(--bg-secondary));
+	color: var(--text-primary);
+}
+
+.aiPanel .aiContextChip:hover .aiContextChipClose {
 	color: var(--text-primary);
 }
 
@@ -1219,48 +1245,53 @@
 }
 
 .aiComposerInputShell {
-	position: relative;
 	border-radius: var(--radius-lg);
-	padding: 0;
-	border: 1px solid
-		color-mix(
-			in srgb,
-			var(--ai-preset-accent, var(--ai-mode-accent)) 16%,
-			transparent
-		);
-	background: var(--bg-primary);
-	box-shadow: 0 8px 24px
-		color-mix(
-			in srgb,
-			var(--ai-preset-accent, var(--ai-mode-accent)) 8%,
-			transparent
-		);
-	transition: border-color var(--transition-base), box-shadow
-		var(--transition-base);
+	overflow: hidden;
+	padding: 0 0 4px;
+	border: none;
+	background: var(--bg-tertiary);
+	box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.06);
+	transition: box-shadow var(--transition-base);
 }
 
-.aiComposerAttachmentRow {
-	display: flex;
-	align-items: center;
-	gap: 6px;
-	min-height: 34px;
-	padding: 8px 8px 0;
+.aiComposerInner {
+	position: relative;
+	border-radius: var(--radius-md);
+	overflow: hidden;
+	border: none;
+	margin: 0 8px 4px;
+	background: var(--bg-primary);
+	box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.08);
 }
+
+.aiComposerInputShell:not(:has(.aiComposerContextStrip)) {
+	padding: 0;
+}
+
+.aiComposerInputShell:not(:has(.aiComposerContextStrip)) .aiComposerInner {
+	border: none;
+	margin: 0;
+	box-shadow: none;
+}
+
+/* removed — chips now live outside the input shell */
 
 .aiComposerMentionButton {
 	position: relative;
 	z-index: 1;
 	width: 26px;
 	height: 26px;
-	border-radius: var(--radius-8);
+	border-radius: var(--radius-md);
 	flex: 0 0 auto;
 	color: var(--text-secondary);
-	background: color-mix(in srgb, var(--bg-secondary) 82%, transparent);
+	border: none;
+	background: color-mix(in srgb, var(--bg-secondary) 50%, var(--bg-primary));
+	box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 .aiComposerMentionButton:hover:not(:disabled) {
 	color: var(--text-primary);
-	background: color-mix(in srgb, var(--bg-tertiary) 72%, var(--bg-secondary));
+	background: color-mix(in srgb, var(--bg-tertiary) 60%, var(--bg-secondary));
 }
 
 .aiComposerMentionButton:disabled {
@@ -1270,12 +1301,10 @@
 .aiComposerContextStrip {
 	display: flex;
 	align-items: center;
-	gap: 4px;
-	flex: 1;
-	min-width: 0;
+	gap: 6px;
 	overflow-x: auto;
 	overflow-y: hidden;
-	padding-bottom: 2px;
+	padding: 8px 8px 4px;
 	scrollbar-width: none;
 }
 
@@ -1289,9 +1318,9 @@
 	min-height: 88px;
 	max-height: 180px;
 	border-radius: var(--radius-md);
-	padding: 8px 12px 68px;
+	padding: 8px 12px 44px;
 	font-size: var(--text-sm);
-	background: var(--bg-primary);
+	background: transparent;
 	border: none;
 	color: var(--text-primary);
 	line-height: var(--leading-relaxed);
@@ -1306,27 +1335,12 @@
 .aiComposerInput:focus {
 	outline: none;
 	border-color: transparent;
-	background: var(--bg-primary);
+	background: transparent;
 	box-shadow: none;
 }
 
 .aiComposerInputShell:focus-within {
-	border-color: color-mix(
-		in srgb,
-		var(--ai-preset-accent, var(--ai-mode-accent)) 30%,
-		transparent
-	);
-	box-shadow: 0 0 0 1px
-		color-mix(
-			in srgb,
-			var(--ai-preset-accent, var(--ai-mode-accent)) 18%,
-			transparent
-		), 0 14px 34px
-		color-mix(
-			in srgb,
-			var(--ai-preset-accent, var(--ai-mode-accent)) 16%,
-			transparent
-		);
+	box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 .aiComposerBar {
@@ -1365,7 +1379,7 @@
 	height: 30px;
 	padding: 0 8px 0 6px;
 	justify-self: end;
-	border-radius: var(--radius-md);
+	border-radius: var(--radius-lg);
 	border: 1px solid color-mix(in srgb, var(--border-light) 74%, transparent);
 	background: color-mix(in srgb, var(--bg-secondary) 78%, var(--bg-primary));
 	color: var(--text-primary);
@@ -1544,7 +1558,8 @@
 	flex: 0 1 auto;
 	min-width: 0;
 	display: flex;
-	align-items: stretch;
+	align-items: center;
+	gap: 6px;
 }
 
 button.aiComposerSend {
@@ -1725,12 +1740,11 @@ button.aiComposerSend:disabled {
 	display: inline-flex;
 	align-items: center;
 	gap: 4px;
-	padding: 2px 8px;
-	border-radius: var(--radius-full);
+	padding: 0;
 	font-size: 10px;
 	color: var(--text-tertiary);
-	background: color-mix(in srgb, var(--bg-secondary) 70%, transparent);
-	border: 1px solid color-mix(in srgb, var(--border-light) 40%, transparent);
+	background: none;
+	border: none;
 	white-space: nowrap;
 	font-variant-numeric: tabular-nums;
 }
@@ -1873,4 +1887,75 @@ button.aiComposerSend:disabled {
 	color: var(--text-tertiary);
 	font-variant-numeric: tabular-nums;
 	white-space: nowrap;
+}
+
+/* ── AI AGENT PANE (main content area) ── */
+
+.aiAgentPane {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+	width: 100%;
+	max-width: 780px;
+	margin: 0 auto;
+	padding: 0 24px;
+}
+
+.aiAgentHeader {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	padding: 12px 0;
+	flex-shrink: 0;
+}
+
+.aiAgentHeaderRight {
+	display: flex;
+	align-items: center;
+	gap: 4px;
+}
+
+/* ── Empty state: composer centered ── */
+
+.aiAgentEmpty {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+	justify-content: center;
+}
+
+.aiAgentEmpty .aiComposer {
+	padding: 0;
+}
+
+/* ── Active chat: thread + composer at bottom ── */
+
+.aiAgentBody {
+	display: flex;
+	flex-direction: column;
+	flex: 1;
+	min-height: 0;
+	position: relative;
+}
+
+.aiAgentThread {
+	flex: 1;
+	min-height: 0;
+	overflow-y: auto;
+	overflow-x: hidden;
+	padding: 0 0 16px;
+	display: flex;
+	flex-direction: column;
+	gap: 8px;
+	scrollbar-width: thin;
+}
+
+.aiAgentBody .aiComposer {
+	padding: 10px 0 16px;
+}
+
+.aiAgentPane .aiPanelError {
+	margin: 0 0 8px;
 }
