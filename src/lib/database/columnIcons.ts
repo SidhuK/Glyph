@@ -7,6 +7,7 @@ export interface DatabaseColumnIconOption {
 }
 
 export const DATABASE_COLUMN_ICON_OPTIONS = [
+	{ id: "text-font", label: "Text", iconKey: "TextFontIcon" },
 	{ id: "document", label: "Document", iconKey: "Document" },
 	{ id: "attachment", label: "Attachment", iconKey: "DocumentAttachmentIcon" },
 	{ id: "code", label: "Code", iconKey: "DocumentCodeIcon" },
@@ -72,7 +73,7 @@ const BUILT_IN_DATABASE_COLUMN_ICONS: Record<
 	Exclude<DatabaseColumn["type"], "property">,
 	string
 > = {
-	title: "document",
+	title: "text-font",
 	tags: "tag",
 	path: "route",
 	folder: "folder",
@@ -115,6 +116,8 @@ export function defaultDatabaseColumnIconName(
 export function resolveDatabaseColumnIconName(
 	column: Pick<DatabaseColumn, "type" | "property_kind" | "icon">,
 ): string {
+	// Force title columns to always use text-font icon
+	if (column.type === "title") return "text-font";
 	const customIcon = getDatabaseColumnIconOption(column.icon);
 	if (customIcon) return customIcon.id;
 	return defaultDatabaseColumnIconName(column);

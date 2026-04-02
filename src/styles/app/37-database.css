@@ -1007,7 +1007,7 @@
 }
 
 .databaseHeadCell:not(:last-child) {
-	border-right: 1px solid var(--border-light);
+	border-right: none;
 }
 
 .databaseHeaderButton,
@@ -1033,13 +1033,14 @@
 }
 
 .databaseHeaderButton {
-	font-weight: var(--font-medium);
+	font-weight: 700;
 	display: flex;
 	align-items: center;
 	justify-content: flex-start;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;
+	line-height: 1.4;
 	transition: color 140ms ease;
 }
 
@@ -1074,6 +1075,8 @@
 .databaseBodyCell {
 	vertical-align: middle;
 	text-align: left;
+	padding-top: 2px;
+	padding-bottom: 2px;
 	padding-right: 10px;
 	border-top: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
 }
@@ -1198,6 +1201,11 @@
 	flex: 0 1 auto;
 }
 
+.databaseCellPillMore {
+	--database-tone: var(--text-tertiary);
+	flex: 0 0 auto;
+}
+
 .databaseCellYaml {
 	margin: 0;
 	white-space: pre-wrap;
@@ -1209,6 +1217,7 @@
 	display: block;
 	min-width: 0;
 	min-height: 24px;
+	line-height: 1.4;
 	cursor: default;
 }
 
