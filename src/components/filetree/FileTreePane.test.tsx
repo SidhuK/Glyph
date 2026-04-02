@@ -150,7 +150,6 @@ describe("FileTreePane", () => {
 			);
 		});
 
-		expect(container.textContent).toContain("Pinned");
 		expect(container.textContent).toContain("alpha");
 		expect(container.textContent).toContain("beta");
 
@@ -158,29 +157,6 @@ describe("FileTreePane", () => {
 			".fileTreePinnedList .fileTreeItem.active",
 		);
 		expect(activeItem?.textContent).toContain("alpha");
-
-		const header = container.querySelector(
-			".fileTreePinnedHeader",
-		) as HTMLButtonElement | null;
-		expect(header?.getAttribute("aria-expanded")).toBe("true");
-
-		await act(async () => {
-			header?.click();
-		});
-		expect(container.textContent).not.toContain("beta");
-		expect(
-			container
-				.querySelector(".fileTreePinnedHeader")
-				?.getAttribute("aria-expanded"),
-		).toBe("false");
-
-		const reopenedHeader = container.querySelector(
-			".fileTreePinnedHeader",
-		) as HTMLButtonElement | null;
-		await act(async () => {
-			reopenedHeader?.click();
-		});
-		expect(container.textContent).toContain("beta");
 
 		const pinnedButton = Array.from(
 			container.querySelectorAll(".fileTreePinnedRow"),
@@ -191,7 +167,7 @@ describe("FileTreePane", () => {
 		expect(onOpenFile).toHaveBeenCalledWith("notes/alpha.md");
 	});
 
-	it("hides the pinned section when no files are pinned", async () => {
+	it("hides the pinned rows when no files are pinned", async () => {
 		await act(async () => {
 			root.render(
 				<FileTreePane
@@ -220,6 +196,6 @@ describe("FileTreePane", () => {
 			);
 		});
 
-		expect(container.textContent).not.toContain("Pinned");
+		expect(container.querySelector(".fileTreePinnedSection")).toBeNull();
 	});
 });
