@@ -167,7 +167,7 @@ export function CalendarPane({
 			setAnchorDate(nextAnchor);
 			const nextRange = buildMonthRange(nextAnchor);
 			if (!nextRange.dates.includes(selectedDate)) {
-				setSelectedDate(nextRange.dates[0] ?? nextAnchor);
+				setSelectedDate(nextAnchor);
 			}
 		},
 		[anchorDate, selectedDate],
@@ -522,7 +522,7 @@ export function CalendarPane({
 										type="button"
 										size="sm"
 										variant="outline"
-										className="calendarTaskBtn calendarTaskAddIcon"
+										className="calendarTaskBtn calendarToolbarIconBtn"
 										onClick={() => stepRange(-1)}
 										aria-label="Previous month"
 									>
@@ -545,7 +545,7 @@ export function CalendarPane({
 										type="button"
 										size="sm"
 										variant="outline"
-										className="calendarTaskBtn calendarTaskAddIcon"
+										className="calendarTaskBtn calendarToolbarIconBtn"
 										onClick={() => stepRange(1)}
 										aria-label="Next month"
 									>

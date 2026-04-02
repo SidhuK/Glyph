@@ -2763,13 +2763,13 @@ const footerTrimMarks = Array.from({ length: 30 });
 		gap: 0.5rem;
 	}
 
-	.footer-col a {
+	.footer-col a:not(.footer-logo) {
 		font-size: 0.82rem;
 		color: rgba(69, 58, 43, 0.82);
 		transition: color 0.15s;
 	}
 
-	.footer-col a:hover {
+	.footer-col a:not(.footer-logo):hover {
 		color: var(--ink);
 	}
 
@@ -3142,7 +3142,7 @@ const footerTrimMarks = Array.from({ length: 30 });
 			grid-template-columns: 1fr;
 		}
 
-		.footer-col a {
+		.footer-col a:not(.footer-logo) {
 			font-size: 0.72rem;
 		}
 
