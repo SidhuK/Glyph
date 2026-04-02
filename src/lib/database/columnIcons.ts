@@ -116,8 +116,6 @@ export function defaultDatabaseColumnIconName(
 export function resolveDatabaseColumnIconName(
 	column: Pick<DatabaseColumn, "type" | "property_kind" | "icon">,
 ): string {
-	// Force title columns to always use text-font icon
-	if (column.type === "title") return "text-font";
 	const customIcon = getDatabaseColumnIconOption(column.icon);
 	if (customIcon) return customIcon.id;
 	return defaultDatabaseColumnIconName(column);

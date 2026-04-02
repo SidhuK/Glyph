@@ -52,10 +52,6 @@
 
 /* ── Nav inside calendar box ── */
 
-.calendarNavRow {
-	display: none;
-}
-
 .calendarLeftCol .calendarToolbarNav {
 	display: flex;
 	align-items: center;
@@ -107,6 +103,13 @@
 }
 
 .calendarTaskAddIcon {
+	flex: 0 0 auto;
+	width: 28px;
+	height: 28px;
+	padding: 0;
+}
+
+.calendarToolbarIconBtn {
 	flex: 0 0 auto;
 	width: 28px;
 	height: 28px;
@@ -603,10 +606,6 @@
 		position: static;
 	}
 
-	.calendarNavRow {
-		grid-template-columns: 1fr;
-	}
-
 	.calendarToolbarNav {
 		grid-column: 1;
 	}
@@ -632,7 +631,7 @@
 		width: 100%;
 	}
 
-	.calendarTaskAddIcon {
+	.calendarTaskComposer .calendarTaskAddIcon {
 		width: 100%;
 	}
 

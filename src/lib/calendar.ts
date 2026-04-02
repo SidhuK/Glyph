@@ -72,7 +72,7 @@ export function formatWeekday(date: string): string {
 }
 
 export function formatMonthDay(date: string): string {
-	return format(parseCalendarDate(date), "MMM d");
+	return formatDayTitle(date);
 }
 
 export function formatMonthName(date: Date): string {
