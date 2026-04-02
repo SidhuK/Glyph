@@ -18,6 +18,8 @@ import type { EditorTextColor } from "../editor/textColors";
 import { Input } from "../ui/shadcn/input";
 import { formatDatabaseTagLabel } from "./databaseTagLabel";
 
+const MAX_VISIBLE_PILLS = 2;
+
 interface DatabaseCellProps {
 	row: DatabaseRow;
 	column: DatabaseColumn;
@@ -195,6 +197,8 @@ export function DatabaseCell({
 			const fullValue = cellValue.value_list
 				.map((value) => formatDatabaseTagLabel(value))
 				.join(", ");
+			const visibleValues = cellValue.value_list.slice(0, MAX_VISIBLE_PILLS);
+			const hiddenCount = cellValue.value_list.length - MAX_VISIBLE_PILLS;
 			return (
 				<button
 					type="button"
@@ -207,18 +211,21 @@ export function DatabaseCell({
 					title={fullValue || "Double-click to edit tags"}
 				>
 					<div className="databaseCellPills">
-						{cellValue.value_list.length > 0
-							? cellValue.value_list.map((value) => (
-									<span
-										key={`${column.id}:${value}`}
-										className="databaseCellPill"
-										style={toneStyleForValue(value)}
-										title={formatDatabaseTagLabel(value)}
-									>
-										{formatDatabaseTagLabel(value)}
-									</span>
-								))
-							: null}
+						{visibleValues.map((value) => (
+							<span
+								key={`${column.id}:${value}`}
+								className="databaseCellPill"
+								style={toneStyleForValue(value)}
+								title={formatDatabaseTagLabel(value)}
+							>
+								{formatDatabaseTagLabel(value)}
+							</span>
+						))}
+						{hiddenCount > 0 && (
+							<span className="databaseCellPill databaseCellPillMore">
+								+{hiddenCount}
+							</span>
+						)}
 					</div>
 				</button>
 			);
@@ -229,6 +236,8 @@ export function DatabaseCell({
 			cellValue.kind === "multi_select"
 		) {
 			const fullValue = cellValue.value_list.join(", ");
+			const visibleValues = cellValue.value_list.slice(0, MAX_VISIBLE_PILLS);
+			const hiddenCount = cellValue.value_list.length - MAX_VISIBLE_PILLS;
 			return (
 				<button
 					type="button"
@@ -243,18 +252,21 @@ export function DatabaseCell({
 					title={fullValue || "Double-click to edit"}
 				>
 					<div className="databaseCellPills">
-						{cellValue.value_list.length > 0
-							? cellValue.value_list.map((value) => (
-									<span
-										key={`${column.id}:${value}`}
-										className="databaseCellPill"
-										style={toneStyleForValue(value)}
-										title={value}
-									>
-										{value}
-									</span>
-								))
-							: null}
+						{visibleValues.map((value) => (
+							<span
+								key={`${column.id}:${value}`}
+								className="databaseCellPill"
+								style={toneStyleForValue(value)}
+								title={value}
+							>
+								{value}
+							</span>
+						))}
+						{hiddenCount > 0 && (
+							<span className="databaseCellPill databaseCellPillMore">
+								+{hiddenCount}
+							</span>
+						)}
 					</div>
 				</button>
 			);

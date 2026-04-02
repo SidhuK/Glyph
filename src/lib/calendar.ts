@@ -72,7 +72,15 @@ export function formatWeekday(date: string): string {
 }
 
 export function formatMonthDay(date: string): string {
-	return format(parseCalendarDate(date), "d");
+	return formatDayTitle(date);
+}
+
+export function formatMonthName(date: Date): string {
+	return format(date, "MMMM");
+}
+
+export function formatYear(date: Date): string {
+	return format(date, "yyyy");
 }
 
 export function insertTaskIntoDailyNote(
