@@ -1,5 +1,6 @@
 import { memo, useCallback, useState } from "react";
 import type { DragEvent, MouseEvent } from "react";
+import { AI_AGENT_TAB_ID } from "../../lib/aiAgent";
 import { ALL_DOCS_TAB_ID } from "../../lib/allDocs";
 import { CALENDAR_TAB_ID } from "../../lib/calendar";
 import { DATABASES_TAB_ID } from "../../lib/databases";
@@ -23,6 +24,7 @@ interface TabBarProps {
 
 function isPathSpecial(path: string): boolean {
 	return (
+		path === AI_AGENT_TAB_ID ||
 		path === ALL_DOCS_TAB_ID ||
 		path === CALENDAR_TAB_ID ||
 		path === DATABASES_TAB_ID ||
@@ -52,6 +54,7 @@ export function TabBar({
 	const tabLabel = useCallback(
 		(tab: WorkspaceTab) => {
 			if (tab.kind === "blank") return "New Tab";
+			if (tab.target === AI_AGENT_TAB_ID) return "AI Agent";
 			if (tab.target === ALL_DOCS_TAB_ID) return "All Notes";
 			if (tab.target === CALENDAR_TAB_ID) return "Calendar";
 			if (tab.target === DATABASES_TAB_ID) return "Collections";

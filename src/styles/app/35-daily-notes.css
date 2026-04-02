@@ -23,6 +23,27 @@
 	color: var(--text-primary);
 }
 
+.sidebarQuickActionBtn[data-kind="new-note"] {
+	min-height: 34px;
+	padding: 6px var(--space-2);
+	color: var(--text-inverse);
+	background: var(--interactive-accent);
+	border: 1px solid
+		color-mix(in srgb, var(--interactive-accent) 72%, var(--border-strong));
+	box-shadow: 0 1px 2px color-mix(in srgb, var(--text-primary) 12%, transparent);
+}
+
+.sidebarQuickActionBtn[data-kind="new-note"]:hover {
+	background: var(--interactive-accent-hover);
+	color: var(--text-inverse);
+}
+
+.sidebarQuickActionBtn[data-kind="new-note"]:focus-visible {
+	outline: none;
+	box-shadow: 0 0 0 2px color-mix(in srgb, var(--bg-sidebar) 88%, transparent),
+		0 0 0 4px color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+}
+
 .sidebarQuickActionBtn:disabled {
 	opacity: 0.5;
 	pointer-events: none;
@@ -44,6 +65,11 @@
 
 .sidebarQuickActionBtn > svg {
 	flex: 0 0 auto;
+}
+
+.sidebarQuickActionBtn[data-kind="new-note"] > svg,
+.sidebarQuickActionBtn[data-kind="new-note"] .sidebarQuickActionLabel {
+	color: inherit;
 }
 
 .sidebarQuickActionHomeIcon {

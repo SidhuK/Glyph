@@ -1,9 +1,10 @@
 import {
 	Copy01Icon,
 	DocumentCodeIcon,
-	FallingStarIcon,
 	FileViewIcon,
 	PencilEdit02Icon,
+	PinIcon,
+	PinOffIcon,
 	TableIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -232,8 +233,11 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 								className="fileTreeCreateMenuItem"
 								onSelect={() => void onTogglePinned(entry.rel_path)}
 							>
-								<HugeiconsIcon icon={FallingStarIcon} size={14} />
-								{isPinned ? "Unstar file" : "Star file"}
+								<HugeiconsIcon
+									icon={isPinned ? PinOffIcon : PinIcon}
+									size={14}
+								/>
+								{isPinned ? "Unpin file" : "Pin file"}
 							</ContextMenuItem>
 							<FileTreeAppearanceMenu
 								itemKind="file"

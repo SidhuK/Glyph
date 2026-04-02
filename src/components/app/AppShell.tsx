@@ -1,12 +1,11 @@
 import { cn } from "@/lib/utils";
 import {
-	AiNetworkIcon,
+	AiChat02Icon,
 	Calendar03Icon,
 	CalendarAdd01Icon,
 	ColorsIcon,
 	CursorInWindowIcon,
 	DocumentCodeIcon,
-	FallingStarIcon,
 	File01Icon,
 	Folder01Icon,
 	FolderOpenIcon,
@@ -17,6 +16,8 @@ import {
 	MoveIcon,
 	NoteIcon,
 	PencilEdit02Icon,
+	PinIcon,
+	PinOffIcon,
 	Plant01Icon,
 	SearchIcon,
 	Settings01Icon,
@@ -53,6 +54,7 @@ import { useGitSync } from "../../hooks/useGitSync";
 import { useMenuListeners } from "../../hooks/useMenuListeners";
 import { useResizablePanel } from "../../hooks/useResizablePanel";
 import { useWhatsNew } from "../../hooks/useWhatsNew";
+import { AI_AGENT_TAB_ID } from "../../lib/aiAgent";
 import {
 	dispatchFileTreeStartRename,
 	dispatchForceNoteEditMode,
@@ -1051,7 +1053,7 @@ export function AppShell() {
 					{
 						id: "toggle-ai",
 						label: "Toggle AI",
-						icon: <HugeiconsIcon icon={AiNetworkIcon} size={16} />,
+						icon: <HugeiconsIcon icon={AiChat02Icon} size={16} />,
 						category: "AI",
 						shortcut: { meta: true, shift: true, key: "a" },
 						enabled: Boolean(spacePath),
@@ -1074,6 +1076,14 @@ export function AppShell() {
 						shortcut: { meta: true, alt: true, shift: true, key: "a" },
 						enabled: openMarkdownTabs.length > 0,
 						action: () => void attachAllOpenNotesToAi(),
+					},
+					{
+						id: "open-ai-agent",
+						label: "Open AI Agent",
+						icon: <HugeiconsIcon icon={AiChat02Icon} size={16} />,
+						category: "AI",
+						enabled: Boolean(spacePath),
+						action: () => openSpecialTab(AI_AGENT_TAB_ID),
 					},
 				]
 			: [];
@@ -1260,12 +1270,21 @@ export function AppShell() {
 				action: requestOpenDailyNote,
 			},
 			{
-				id: "toggle-star-active-file",
+				id: "toggle-pin-active-file",
 				label:
 					activeFilePath && pinnedFiles.includes(activeFilePath)
-						? "Unstar current file"
-						: "Star current file",
-				icon: <HugeiconsIcon icon={FallingStarIcon} size={16} />,
+						? "Unpin current file"
+						: "Pin current file",
+				icon: (
+					<HugeiconsIcon
+						icon={
+							activeFilePath && pinnedFiles.includes(activeFilePath)
+								? PinOffIcon
+								: PinIcon
+						}
+						size={16}
+					/>
+				),
 				category: "File Operations",
 				enabled: Boolean(spacePath) && Boolean(activeFilePath),
 				allowInEditable: true,
@@ -1432,6 +1451,7 @@ export function AppShell() {
 		gitSync,
 		moveTargetDirs,
 		movePickerSourcePath,
+		openSpecialTab,
 		setError,
 		whatsNew.available,
 	]);

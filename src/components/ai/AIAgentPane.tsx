@@ -1,9 +1,5 @@
 import { cn } from "@/lib/utils";
-import {
-	AiChat02Icon,
-	ChatAdd01Icon,
-	Logout01Icon,
-} from "@hugeicons/core-free-icons";
+import { ChatAdd01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useAISidebarContext } from "../../contexts";
@@ -22,25 +18,11 @@ import { parseAddTrigger } from "./aiPanelConstants";
 import { useAiActions } from "./hooks/useAiActions";
 import { useAiToolEvents } from "./hooks/useAiToolEvents";
 import { useRigChat } from "./hooks/useRigChat";
-import { preloadAiContextIndex, useAiContext } from "./useAiContext";
-import { preloadAiHistorySummaries, useAiHistory } from "./useAiHistory";
-import { preloadAiProfilesData, useAiProfiles } from "./useAiProfiles";
+import { useAiContext } from "./useAiContext";
+import { useAiHistory } from "./useAiHistory";
+import { useAiProfiles } from "./useAiProfiles";
 
-interface AIPanelProps {
-	isOpen: boolean;
-	onClose: () => void;
-	width?: number;
-}
-
-export async function prefetchAIPanelData(): Promise<void> {
-	await Promise.all([
-		preloadAiProfilesData(),
-		preloadAiHistorySummaries(14),
-		preloadAiContextIndex(),
-	]);
-}
-
-export function AIPanel({ isOpen, onClose }: AIPanelProps) {
+export function AIAgentPane() {
 	const chat = useRigChat();
 	const { aiAssistantMode } = useAISidebarContext();
 	const isChatMode = aiAssistantMode === "chat";
@@ -97,6 +79,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 		Boolean(input.trim()) &&
 		Boolean(profiles.activeProfileId);
 	const activeProvider = profiles.activeProfile?.provider;
+
 	const sendWithCurrentContext = useCallback(
 		async (text: string) => {
 			const trimmed = text.trim();
@@ -138,9 +121,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 	const handleSend = useCallback(async () => {
 		if (!canSend) return;
 		const text = context.resolveMentionsFromInput(input);
-		if (!text) {
-			return;
-		}
+		if (!text) return;
 		toolEvents.clearFinalizingTimer();
 		toolEvents.setShowSlowStart(false);
 		toolEvents.setResponsePhase("submitted");
@@ -300,170 +281,177 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 		prevChatStatusRef.current = chat.status;
 	}, [chat.status, history.refresh]);
 
-	return (
-		<div
-			className="aiPanel"
-			data-open={isOpen}
-			data-ai-mode={aiAssistantMode}
-			data-window-drag-ignore
-		>
-			<div className="aiPanelHeader">
-				<div className="aiPanelHeaderLeft">
-					<div className="aiPanelTitle">
-						<HugeiconsIcon icon={AiChat02Icon} size={18} />
-					</div>
+	const hasMessages = chat.messages.length > 0;
+
+	const composer = (
+		<AIComposer
+			input={input}
+			setInput={setInput}
+			isAwaitingResponse={toolEvents.isAwaitingResponse}
+			canSend={canSend}
+			onSend={() => void handleSend()}
+			onStop={() => chat.stop()}
+			composerInputRef={composerInputRef}
+			scheduleComposerInputResize={scheduleResize}
+			profiles={profiles}
+			context={context}
+			showAddPanel={showAddPanel}
+			panelQuery={panelQuery}
+			addPanelOpen={addPanelOpen}
+			setAddPanelOpen={setAddPanelOpen}
+			setAddPanelQuery={setAddPanelQuery}
+			onAddContext={handleAddContext}
+			onRemoveContext={handleRemoveContext}
+		/>
+	);
+
+	const errors = (
+		<>
+			{chat.error ? (
+				<div className="aiPanelError">
+					<span>{chat.error.message}</span>
 					<button
 						type="button"
-						className={cn(
-							"aiPanelHistoryButton",
-							historyExpanded && "aiPanelHistoryButton-active",
-						)}
-						aria-pressed={historyExpanded}
-						onClick={() => setHistoryExpanded((prev) => !prev)}
-						title="Recent chats"
+						aria-label="Dismiss error"
+						onClick={() => chat.clearError()}
 					>
-						Recent Chats
+						<X size={11} />
 					</button>
 				</div>
-				<div className="aiPanelHeaderRight">
+			) : null}
+			{actions.assistantActionError ? (
+				<div className="aiPanelError">
+					<span>{actions.assistantActionError}</span>
+					<button
+						type="button"
+						aria-label="Dismiss assistant action error"
+						onClick={() => actions.setAssistantActionError("")}
+					>
+						<X size={11} />
+					</button>
+				</div>
+			) : null}
+			{profiles.error ? (
+				<div className="aiPanelError">{profiles.error}</div>
+			) : null}
+			{history.error ? (
+				<div className="aiPanelError">{history.error}</div>
+			) : null}
+		</>
+	);
+
+	const historyPanel = historyExpanded ? (
+		<AIHistoryPanel
+			history={history}
+			onLoadHistory={(jobId) => void handleLoadHistory(jobId)}
+		/>
+	) : null;
+
+	return (
+		<div
+			className="aiAgentPane aiPanel"
+			data-ai-mode={aiAssistantMode}
+			data-has-messages={hasMessages}
+		>
+			<div className="aiAgentHeader">
+				<button
+					type="button"
+					className={cn(
+						"aiPanelHistoryButton",
+						historyExpanded && "aiPanelHistoryButton-active",
+					)}
+					aria-pressed={historyExpanded}
+					onClick={() => setHistoryExpanded((prev) => !prev)}
+					title="Recent chats"
+				>
+					Recent Chats
+				</button>
+				<div className="aiAgentHeaderRight">
 					<Button
 						type="button"
 						variant="ghost"
 						size="icon-sm"
-						data-action="new-chat"
 						aria-label="New chat"
 						onClick={handleNewChat}
 						title="New chat"
 						disabled={chat.status === "streaming"}
-						onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
 					>
-						<HugeiconsIcon icon={ChatAdd01Icon} size={13} />
+						<HugeiconsIcon icon={ChatAdd01Icon} size={14} />
 					</Button>
 					<Button
 						type="button"
 						variant="ghost"
 						size="icon-sm"
-						data-action="settings"
 						aria-label="Settings"
 						onClick={() => void openSettingsWindow("ai")}
-						title="Settings"
-						onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
+						title="AI Settings"
 					>
-						<SettingsIcon size={13} />
-					</Button>
-					<Button
-						type="button"
-						variant="ghost"
-						size="icon-sm"
-						data-action="minimize"
-						aria-label="Minimize"
-						onClick={onClose}
-						title="Minimize"
-						onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
-					>
-						<HugeiconsIcon icon={Logout01Icon} size={13} />
+						<SettingsIcon size={14} />
 					</Button>
 				</div>
 			</div>
-			<div className="aiPanelBody">
-				{historyExpanded ? (
-					<AIHistoryPanel
-						history={history}
-						onLoadHistory={(jobId) => void handleLoadHistory(jobId)}
-					/>
-				) : null}
-				<div
-					className="aiChatThread"
-					ref={threadRef}
-					onScroll={handleThreadScroll}
-				>
-					<AIChatThread
-						messages={chat.messages}
-						isChatMode={isChatMode}
-						isAwaitingResponse={toolEvents.isAwaitingResponse}
-						chatStatus={chat.status}
-						phaseStatusText={toolEvents.phaseStatusText}
-						toolTimeline={toolEvents.toolTimeline}
-						onCopy={(t) => void actions.handleCopyAssistantResponse(t)}
-						onSave={(t) => void actions.handleSaveAssistantResponse(t)}
-						onRetry={(i) => void handleRetry(i)}
-					/>
-					{!isChatMode && chat.status === "streaming" && (
-						<div
-							className={cn(
-								"aiToolStatus",
-								toolEvents.lastToolEvent?.phase === "error" &&
-									"aiToolStatusError",
-							)}
-							aria-live="polite"
-							aria-label="Tool status"
-						>
-							<span className="aiToolStatusDot" />
-							<span>{toolEvents.toolStatusText}</span>
-						</div>
-					)}
-				</div>
-				{showScrollFab && (
-					<Button
-						type="button"
-						variant="ghost"
-						size="icon-sm"
-						className="aiScrollFab"
-						onClick={() => {
-							const el = threadRef.current;
-							if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
-						}}
-						aria-label="Scroll to bottom"
-						title="Scroll to latest"
+
+			{hasMessages ? (
+				<div className="aiAgentBody">
+					{historyPanel}
+					<div
+						className="aiAgentThread"
+						ref={threadRef}
+						onScroll={handleThreadScroll}
 					>
-						<ChevronDown size={14} />
-					</Button>
-				)}
-				{chat.error ? (
-					<div className="aiPanelError">
-						<span>{chat.error.message}</span>
-						<button type="button" onClick={() => chat.clearError()}>
-							<X size={11} />
-						</button>
+						<AIChatThread
+							messages={chat.messages}
+							isChatMode={isChatMode}
+							isAwaitingResponse={toolEvents.isAwaitingResponse}
+							chatStatus={chat.status}
+							phaseStatusText={toolEvents.phaseStatusText}
+							toolTimeline={toolEvents.toolTimeline}
+							onCopy={(t) => void actions.handleCopyAssistantResponse(t)}
+							onSave={(t) => void actions.handleSaveAssistantResponse(t)}
+							onRetry={(i) => void handleRetry(i)}
+						/>
+						{!isChatMode && chat.status === "streaming" && (
+							<div
+								className={cn(
+									"aiToolStatus",
+									toolEvents.lastToolEvent?.phase === "error" &&
+										"aiToolStatusError",
+								)}
+								aria-live="polite"
+								aria-label="Tool status"
+							>
+								<span className="aiToolStatusDot" />
+								<span>{toolEvents.toolStatusText}</span>
+							</div>
+						)}
 					</div>
-				) : null}
-				{actions.assistantActionError ? (
-					<div className="aiPanelError">
-						<span>{actions.assistantActionError}</span>
-						<button
+					{showScrollFab && (
+						<Button
 							type="button"
-							onClick={() => actions.setAssistantActionError("")}
+							variant="ghost"
+							size="icon-sm"
+							className="aiScrollFab"
+							onClick={() => {
+								const el = threadRef.current;
+								if (el)
+									el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+							}}
+							aria-label="Scroll to bottom"
+							title="Scroll to latest"
 						>
-							<X size={11} />
-						</button>
-					</div>
-				) : null}
-				{profiles.error ? (
-					<div className="aiPanelError">{profiles.error}</div>
-				) : null}
-				{history.error ? (
-					<div className="aiPanelError">{history.error}</div>
-				) : null}
-				<AIComposer
-					input={input}
-					setInput={setInput}
-					isAwaitingResponse={toolEvents.isAwaitingResponse}
-					canSend={canSend}
-					onSend={() => void handleSend()}
-					onStop={() => chat.stop()}
-					composerInputRef={composerInputRef}
-					scheduleComposerInputResize={scheduleResize}
-					profiles={profiles}
-					context={context}
-					showAddPanel={showAddPanel}
-					panelQuery={panelQuery}
-					addPanelOpen={addPanelOpen}
-					setAddPanelOpen={setAddPanelOpen}
-					setAddPanelQuery={setAddPanelQuery}
-					onAddContext={handleAddContext}
-					onRemoveContext={handleRemoveContext}
-				/>
-			</div>
+							<ChevronDown size={14} />
+						</Button>
+					)}
+					{errors}
+					{composer}
+				</div>
+			) : (
+				<div className="aiAgentEmpty">
+					{historyPanel}
+					{errors}
+					{composer}
+				</div>
+			)}
 		</div>
 	);
 }

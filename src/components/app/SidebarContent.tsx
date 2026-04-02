@@ -200,6 +200,17 @@ export const SidebarContent = memo(function SidebarContent({
 					<button
 						type="button"
 						className="sidebarQuickActionBtn"
+						data-kind="new-note"
+						onClick={onNewNote}
+						title={`Create a new note (${getShortcutTooltip({ meta: true, key: "n" })})`}
+					>
+						<HugeiconsIcon icon={NoteIcon} size={14} />
+						<span className="sidebarQuickActionLabel">New Note</span>
+					</button>
+					<div className="sidebarQuickActionsSpacer" aria-hidden="true" />
+					<button
+						type="button"
+						className="sidebarQuickActionBtn"
 						data-kind="dashboard"
 						onClick={onOpenCalendar}
 						title="Open Home"
@@ -210,17 +221,6 @@ export const SidebarContent = memo(function SidebarContent({
 							className="sidebarQuickActionHomeIcon"
 						/>
 						<span className="sidebarQuickActionLabel">Home</span>
-					</button>
-					<div className="sidebarQuickActionsSpacer" aria-hidden="true" />
-					<button
-						type="button"
-						className="sidebarQuickActionBtn"
-						data-kind="new-note"
-						onClick={onNewNote}
-						title={`Create a new note (${getShortcutTooltip({ meta: true, key: "n" })})`}
-					>
-						<HugeiconsIcon icon={NoteIcon} size={14} />
-						<span className="sidebarQuickActionLabel">New Note</span>
 					</button>
 					<button
 						type="button"
