@@ -54,13 +54,13 @@ import { useGitSync } from "../../hooks/useGitSync";
 import { useMenuListeners } from "../../hooks/useMenuListeners";
 import { useResizablePanel } from "../../hooks/useResizablePanel";
 import { useWhatsNew } from "../../hooks/useWhatsNew";
+import { AI_AGENT_TAB_ID } from "../../lib/aiAgent";
 import {
 	dispatchFileTreeStartRename,
 	dispatchForceNoteEditMode,
 	dispatchPathRemoved,
 	dispatchZenModeWillToggle,
 } from "../../lib/appEvents";
-import { AI_AGENT_TAB_ID } from "../../lib/aiAgent";
 import { promptNoteExportPath } from "../../lib/export";
 import { getLicenseStatus } from "../../lib/license";
 import { updateOnboardingSettings } from "../../lib/settings";

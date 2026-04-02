@@ -211,13 +211,13 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 			if (chat.status === "submitted" || chat.status === "streaming") {
 				chat.stop();
 			}
+			const loaded = await history.loadChatMessages(jobId);
+			if (!loaded) return;
 			toolEvents.clearSlowStartTimer();
 			toolEvents.clearFinalizingTimer();
 			toolEvents.resetToolState();
 			toolEvents.setShowSlowStart(false);
 			toolEvents.setResponsePhase("idle");
-			const loaded = await history.loadChatMessages(jobId);
-			if (!loaded) return;
 			const restoredTimeline = loaded.toolEvents.map((event, index) => ({
 				id: `${event.call_id?.trim() ? `${event.call_id}-${event.phase}` : `${event.tool}-${event.phase}-${index}`}-${event.at_ms ?? 0}`,
 				kind: "tool" as const,
@@ -252,7 +252,9 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 	);
 
 	const handleNewChat = useCallback(() => {
-		if (chat.status === "streaming") chat.stop();
+		if (chat.status === "streaming" || chat.status === "submitted") {
+			chat.stop();
+		}
 		toolEvents.clearSlowStartTimer();
 		toolEvents.clearFinalizingTimer();
 		toolEvents.resetToolState();

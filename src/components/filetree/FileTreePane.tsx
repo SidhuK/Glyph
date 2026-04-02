@@ -455,7 +455,9 @@ export const FileTreePane = memo(function FileTreePane({
 									return (
 										<li
 											key={file.path}
-											className={isActive ? "fileTreeItem active" : "fileTreeItem"}
+											className={
+												isActive ? "fileTreeItem active" : "fileTreeItem"
+											}
 										>
 											<div className="fileTreeRowShell">
 												<m.button

@@ -2,9 +2,9 @@ import {
 	Copy01Icon,
 	DocumentCodeIcon,
 	FileViewIcon,
+	PencilEdit02Icon,
 	PinIcon,
 	PinOffIcon,
-	PencilEdit02Icon,
 	TableIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
