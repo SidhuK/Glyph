@@ -192,13 +192,13 @@ export function AIAgentPane() {
 			if (chat.status === "submitted" || chat.status === "streaming") {
 				chat.stop();
 			}
+			const loaded = await history.loadChatMessages(jobId);
+			if (!loaded) return;
 			toolEvents.clearSlowStartTimer();
 			toolEvents.clearFinalizingTimer();
 			toolEvents.resetToolState();
 			toolEvents.setShowSlowStart(false);
 			toolEvents.setResponsePhase("idle");
-			const loaded = await history.loadChatMessages(jobId);
-			if (!loaded) return;
 			const restoredTimeline = loaded.toolEvents.map((event, index) => ({
 				id: `${event.call_id?.trim() ? `${event.call_id}-${event.phase}` : `${event.tool}-${event.phase}-${index}`}-${event.at_ms ?? 0}`,
 				kind: "tool" as const,
@@ -233,7 +233,9 @@ export function AIAgentPane() {
 	);
 
 	const handleNewChat = useCallback(() => {
-		if (chat.status === "streaming") chat.stop();
+		if (chat.status === "streaming" || chat.status === "submitted") {
+			chat.stop();
+		}
 		toolEvents.clearSlowStartTimer();
 		toolEvents.clearFinalizingTimer();
 		toolEvents.resetToolState();
@@ -308,7 +310,11 @@ export function AIAgentPane() {
 			{chat.error ? (
 				<div className="aiPanelError">
 					<span>{chat.error.message}</span>
-					<button type="button" onClick={() => chat.clearError()}>
+					<button
+						type="button"
+						aria-label="Dismiss error"
+						onClick={() => chat.clearError()}
+					>
 						<X size={11} />
 					</button>
 				</div>
@@ -318,6 +324,7 @@ export function AIAgentPane() {
 					<span>{actions.assistantActionError}</span>
 					<button
 						type="button"
+						aria-label="Dismiss assistant action error"
 						onClick={() => actions.setAssistantActionError("")}
 					>
 						<X size={11} />

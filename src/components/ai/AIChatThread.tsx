@@ -146,8 +146,8 @@ export function AIChatThread({
 				<div className="aiChatEmpty">
 					<div className="aiChatEmptyTitle">Talk to your notes</div>
 					<div className="aiChatEmptyMeta">
-						Ask naturally, or use <code>@</code> to add notes and folders to
-						the conversation
+						Ask naturally, or use <code>@</code> to add notes and folders to the
+						conversation
 					</div>
 				</div>
 			) : null}

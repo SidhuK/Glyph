@@ -127,33 +127,40 @@ export function AIComposer({
 							className="aiComposerContextStrip"
 							aria-label="Attached context"
 						>
-							{context.attachedFolders.map((item) => (
-								<button
-									key={`${item.kind}:${item.path || "space"}`}
-									type="button"
-									className="aiContextChip"
-									onClick={() => onRemoveContext(item.kind, item.path)}
-									title={`Remove ${item.label}`}
-								>
-									<span className="aiContextChipIcon">
-										{item.kind === "file" ? (
-											<File size={12} />
-										) : (
-											<HugeiconsIcon icon={Folder01Icon} size={12} />
-										)}
-									</span>
-									<span className="aiContextChipLabel">
-										{item.kind === "file"
-											? truncateLabel(
-													fileNameFromPath(item.path || item.label),
-												)
-											: item.label || "Space"}
-									</span>
-									<span className="aiContextChipClose">
-										<X size={10} />
-									</span>
-								</button>
-							))}
+							{context.attachedFolders.map((item) => {
+								const chipLabel =
+									item.kind === "file"
+										? fileNameFromPath(item.path || item.label)
+										: item.label || "Space";
+								return (
+									<button
+										key={`${item.kind}:${item.path || "space"}`}
+										type="button"
+										className="aiContextChip"
+										onClick={() => onRemoveContext(item.kind, item.path)}
+										aria-label={`Remove ${chipLabel}`}
+										title={`Remove ${item.label}`}
+									>
+										<span className="aiContextChipIcon">
+											{item.kind === "file" ? (
+												<File size={12} />
+											) : (
+												<HugeiconsIcon icon={Folder01Icon} size={12} />
+											)}
+										</span>
+										<span className="aiContextChipLabel">
+											{item.kind === "file"
+												? truncateLabel(
+														fileNameFromPath(item.path || item.label),
+													)
+												: item.label || "Space"}
+										</span>
+										<span className="aiContextChipClose">
+											<X size={10} />
+										</span>
+									</button>
+								);
+							})}
 						</div>
 					)}
 					<div className="aiComposerInner">

@@ -8,7 +8,10 @@ interface AIHistoryPanelProps {
 	onLoadHistory: (jobId: string) => void;
 }
 
-export function AIHistoryPanel({ history, onLoadHistory }: AIHistoryPanelProps) {
+export function AIHistoryPanel({
+	history,
+	onLoadHistory,
+}: AIHistoryPanelProps) {
 	const isDark = useIsDarkTheme();
 
 	return (

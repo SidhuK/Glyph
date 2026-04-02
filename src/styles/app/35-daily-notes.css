@@ -40,8 +40,7 @@
 
 .sidebarQuickActionBtn[data-kind="new-note"]:focus-visible {
 	outline: none;
-	box-shadow:
-		0 0 0 2px color-mix(in srgb, var(--bg-sidebar) 88%, transparent),
+	box-shadow: 0 0 0 2px color-mix(in srgb, var(--bg-sidebar) 88%, transparent),
 		0 0 0 4px color-mix(in srgb, var(--interactive-accent) 42%, transparent);
 }
 
