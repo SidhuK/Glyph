@@ -35,7 +35,7 @@ export function AIAgentPane() {
 
 	const profiles = useAiProfiles();
 	const context = useAiContext();
-	const history = useAiHistory(14);
+	const history = useAiHistory(14, { enabled: historyExpanded });
 	const toolEvents = useAiToolEvents({ isChatMode, chatStatus: chat.status });
 	const actions = useAiActions(chat);
 
@@ -44,6 +44,7 @@ export function AIAgentPane() {
 	const panelQuery = addPanelOpen ? addPanelQuery : (trigger?.query ?? "");
 
 	const composerInputRef = useRef<HTMLTextAreaElement | null>(null);
+	const prevChatStatusRef = useRef(chat.status);
 	const scheduleResize = useCallback(() => {
 		window.requestAnimationFrame(() => {
 			const el = composerInputRef.current;
@@ -188,6 +189,14 @@ export function AIAgentPane() {
 
 	const handleLoadHistory = useCallback(
 		async (jobId: string) => {
+			if (chat.status === "submitted" || chat.status === "streaming") {
+				chat.stop();
+			}
+			toolEvents.clearSlowStartTimer();
+			toolEvents.clearFinalizingTimer();
+			toolEvents.resetToolState();
+			toolEvents.setShowSlowStart(false);
+			toolEvents.setResponsePhase("idle");
 			const loaded = await history.loadChatMessages(jobId);
 			if (!loaded) return;
 			const restoredTimeline = loaded.toolEvents.map((event, index) => ({
@@ -211,7 +220,16 @@ export function AIAgentPane() {
 			chat.setMessages(loaded.messages);
 			chat.clearError();
 		},
-		[chat, history.loadChatMessages, toolEvents.setToolTimeline],
+		[
+			chat,
+			history.loadChatMessages,
+			toolEvents.clearFinalizingTimer,
+			toolEvents.clearSlowStartTimer,
+			toolEvents.resetToolState,
+			toolEvents.setResponsePhase,
+			toolEvents.setShowSlowStart,
+			toolEvents.setToolTimeline,
+		],
 	);
 
 	const handleNewChat = useCallback(() => {
@@ -252,7 +270,13 @@ export function AIAgentPane() {
 	}, [chat.messages, toolEvents.isAwaitingResponse]);
 
 	useEffect(() => {
-		if (chat.status !== "streaming") void history.refresh();
+		if (
+			prevChatStatusRef.current === "streaming" &&
+			chat.status !== "streaming"
+		) {
+			void history.refresh();
+		}
+		prevChatStatusRef.current = chat.status;
 	}, [chat.status, history.refresh]);
 
 	const hasMessages = chat.messages.length > 0;
@@ -309,6 +333,13 @@ export function AIAgentPane() {
 		</>
 	);
 
+	const historyPanel = historyExpanded ? (
+		<AIHistoryPanel
+			history={history}
+			onLoadHistory={(jobId) => void handleLoadHistory(jobId)}
+		/>
+	) : null;
+
 	return (
 		<div
 			className="aiAgentPane aiPanel"
@@ -355,12 +386,7 @@ export function AIAgentPane() {
 
 			{hasMessages ? (
 				<div className="aiAgentBody">
-					{historyExpanded ? (
-						<AIHistoryPanel
-							history={history}
-							onLoadHistory={(jobId) => void handleLoadHistory(jobId)}
-						/>
-					) : null}
+					{historyPanel}
 					<div
 						className="aiAgentThread"
 						ref={threadRef}
@@ -414,12 +440,7 @@ export function AIAgentPane() {
 				</div>
 			) : (
 				<div className="aiAgentEmpty">
-					{historyExpanded ? (
-						<AIHistoryPanel
-							history={history}
-							onLoadHistory={(jobId) => void handleLoadHistory(jobId)}
-						/>
-					) : null}
+					{historyPanel}
 					{errors}
 					{composer}
 				</div>

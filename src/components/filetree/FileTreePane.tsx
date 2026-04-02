@@ -1,4 +1,4 @@
-import { StarIcon } from "@hugeicons/core-free-icons";
+import { PinIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { m } from "motion/react";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
@@ -464,8 +464,8 @@ export const FileTreePane = memo(function FileTreePane({
 								aria-expanded={showPinnedFiles}
 							>
 								<span className="fileTreePinnedHeaderLabel">
-									<HugeiconsIcon icon={StarIcon} size={12} />
-									<span>Starred</span>
+									<HugeiconsIcon icon={PinIcon} size={12} />
+									<span>Pinned</span>
 								</span>
 								<ChevronDown
 									size={12}

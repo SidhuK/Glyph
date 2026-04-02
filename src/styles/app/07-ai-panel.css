@@ -1959,3 +1959,11 @@ button.aiComposerSend:disabled {
 .aiAgentPane .aiPanelError {
 	margin: 0 0 8px;
 }
+
+.aiAgentPane .aiComposerInputShell {
+	background: var(--bg-secondary);
+}
+
+.aiAgentPane .aiComposerInner {
+	background: var(--bg-secondary);
+}

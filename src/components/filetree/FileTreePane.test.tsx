@@ -150,7 +150,7 @@ describe("FileTreePane", () => {
 			);
 		});
 
-		expect(container.textContent).toContain("Starred");
+		expect(container.textContent).toContain("Pinned");
 		expect(container.textContent).toContain("alpha");
 		expect(container.textContent).toContain("beta");
 
@@ -191,7 +191,7 @@ describe("FileTreePane", () => {
 		expect(onOpenFile).toHaveBeenCalledWith("notes/alpha.md");
 	});
 
-	it("hides the starred section when no files are pinned", async () => {
+	it("hides the pinned section when no files are pinned", async () => {
 		await act(async () => {
 			root.render(
 				<FileTreePane
@@ -220,6 +220,6 @@ describe("FileTreePane", () => {
 			);
 		});
 
-		expect(container.textContent).not.toContain("Starred");
+		expect(container.textContent).not.toContain("Pinned");
 	});
 });
