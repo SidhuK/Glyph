@@ -111,7 +111,7 @@ describe("database config helpers", () => {
 	it("seeds built-in column icons in the starter config", () => {
 		const config = createDefaultDatabaseConfig("Projects");
 		expect(config.columns.map((column) => column.icon)).toEqual([
-			"document",
+			"text-font",
 			"tag",
 			"clock",
 		]);

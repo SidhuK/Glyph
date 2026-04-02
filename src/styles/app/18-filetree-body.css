@@ -95,41 +95,6 @@
 	pointer-events: none;
 }
 
-.fileTreePinnedHeader {
-	width: 100%;
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: var(--space-2);
-	padding: 0 var(--space-2) var(--space-1);
-	color: var(--text-tertiary);
-	font-size: 11px;
-	font-weight: var(--font-semibold);
-	letter-spacing: 0.08em;
-	background: transparent;
-	border: none;
-	cursor: pointer;
-}
-
-.fileTreePinnedHeaderLabel {
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
-}
-
-.fileTreePinnedChevron {
-	color: var(--text-tertiary);
-	transition: transform 140ms ease;
-}
-
-.fileTreePinnedChevron.is-open {
-	transform: rotate(0deg);
-}
-
-.fileTreePinnedHeader[aria-expanded="false"] .fileTreePinnedChevron {
-	transform: rotate(-90deg);
-}
-
 .fileTreePinnedList {
 	margin-bottom: 0;
 }

@@ -136,18 +136,18 @@ describe("FileTreeFileItem", () => {
 		});
 	};
 
-	it("shows the star action when a file is not pinned", async () => {
+	it("shows the pin action when a file is not pinned", async () => {
 		await renderFileTreeFileItem({ isPinned: false });
 
-		expect(container.textContent).toContain("Star file");
-		expect(container.textContent).not.toContain("Unstar file");
+		expect(container.textContent).toContain("Pin file");
+		expect(container.textContent).not.toContain("Unpin file");
 	});
 
-	it("shows the unstar action when a file is pinned", async () => {
+	it("shows the unpin action when a file is pinned", async () => {
 		await renderFileTreeFileItem({ isPinned: true });
 
-		expect(container.textContent).toContain("Unstar file");
-		expect(container.textContent).not.toContain("Star file");
+		expect(container.textContent).toContain("Unpin file");
+		expect(container.textContent).not.toContain("Pin file");
 	});
 
 	it("calls arrow navigation when pressing the up or down keys", async () => {

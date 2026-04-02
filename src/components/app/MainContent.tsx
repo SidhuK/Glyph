@@ -1,4 +1,4 @@
-import { AiNetworkIcon, DocumentCodeIcon } from "@hugeicons/core-free-icons";
+import { AiChat02Icon, DocumentCodeIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import {
@@ -17,6 +17,7 @@ import {
 	useSpace,
 	useUILayoutContext,
 } from "../../contexts";
+import { AI_AGENT_TAB_ID } from "../../lib/aiAgent";
 import { ALL_DOCS_TAB_ID } from "../../lib/allDocs";
 import {
 	PATH_REMOVED_EVENT,
@@ -46,6 +47,12 @@ import { GettingStartedPane } from "./GettingStartedPane";
 import { TabBar } from "./TabBar";
 import { WelcomeScreen } from "./WelcomeScreen";
 import type { WorkspaceTab } from "./useTabManager";
+
+const AIAgentPane = lazy(() =>
+	import("../ai/AIAgentPane").then((module) => ({
+		default: module.AIAgentPane,
+	})),
+);
 
 const DatabasesPane = lazy(() =>
 	import("../databases/DatabasesPane").then((module) => ({
@@ -579,6 +586,17 @@ export const MainContent = memo(function MainContent({
 
 	const content = useMemo(() => {
 		if (!viewerPath) return null;
+		if (viewerPath === AI_AGENT_TAB_ID) {
+			return (
+				<Suspense
+					fallback={
+						<div className="databaseLoadingState">Loading AI Agent…</div>
+					}
+				>
+					<AIAgentPane />
+				</Suspense>
+			);
+		}
 		if (viewerPath === ALL_DOCS_TAB_ID) {
 			return (
 				<Suspense
@@ -773,7 +791,7 @@ export const MainContent = memo(function MainContent({
 							aria-label="Open AI panel"
 							title="Open AI panel"
 						>
-							<HugeiconsIcon icon={AiNetworkIcon} size={32} />
+							<HugeiconsIcon icon={AiChat02Icon} size={32} />
 						</button>
 					) : null}
 				</div>
