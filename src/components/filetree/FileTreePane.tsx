@@ -18,12 +18,10 @@ import {
 	parentDir,
 	basename as relBasename,
 } from "../../utils/path";
-import { ChevronDown } from "../Icons";
 import { springPresets } from "../ui/animations";
 import { FileTreeDirItem } from "./FileTreeDirItem";
 import { FileTreeFileItem } from "./FileTreeFileItem";
 import { rowVariants } from "./fileTreeItemHelpers";
-import { getFileTypeInfo } from "./fileTypeUtils";
 
 interface FileTreePaneProps {
 	rootEntries: FsEntry[];
@@ -252,15 +250,9 @@ export const FileTreePane = memo(function FileTreePane({
 	const { itemAppearance, setItemAppearance } = useFileTreeContext();
 	const { spacePath, setError } = useSpace();
 	const [showFolderFileCounts, setShowFolderFileCounts] = useState(false);
-	const [showPinnedFiles, setShowPinnedFiles] = useState(true);
 	const [folderFileCounts, setFolderFileCounts] = useState<
 		Record<string, number>
 	>({});
-
-	// biome-ignore lint/correctness/useExhaustiveDependencies: reset the section when the active space changes.
-	useEffect(() => {
-		setShowPinnedFiles(true);
-	}, [spacePath]);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -457,90 +449,63 @@ export const FileTreePane = memo(function FileTreePane({
 				<div className="fileTreeScroll">
 					{pinnedFileItems.length > 0 ? (
 						<section className="fileTreePinnedSection">
-							<button
-								type="button"
-								className="fileTreePinnedHeader"
-								onClick={() => setShowPinnedFiles((prev) => !prev)}
-								aria-expanded={showPinnedFiles}
-							>
-								<span className="fileTreePinnedHeaderLabel">
-									<HugeiconsIcon icon={PinIcon} size={12} />
-									<span>Pinned</span>
-								</span>
-								<ChevronDown
-									size={12}
-									className={
-										showPinnedFiles
-											? "fileTreePinnedChevron is-open"
-											: "fileTreePinnedChevron"
-									}
-								/>
-							</button>
-							{showPinnedFiles ? (
-								<ul className="fileTreeList fileTreePinnedList">
-									{pinnedFileItems.map((file) => {
-										const { Icon, color } = getFileTypeInfo(
-											file.path,
-											file.isMarkdown,
-										);
-										const isActive = file.path === activeFilePath;
-										return (
-											<li
-												key={file.path}
-												className={
-													isActive ? "fileTreeItem active" : "fileTreeItem"
-												}
-											>
-												<div className="fileTreeRowShell">
-													<m.button
-														type="button"
-														className="fileTreeRow fileTreePinnedRow"
-														onClick={() => onOpenFile(file.path)}
-														onKeyDown={(event) => {
-															if (
-																event.key !== "ArrowDown" &&
-																event.key !== "ArrowUp"
-															) {
-																return;
-															}
-															event.preventDefault();
-															event.stopPropagation();
-															handleArrowNavigate(
-																file.path,
-																event.key === "ArrowDown" ? 1 : -1,
-																event.currentTarget,
-															);
-														}}
-														title={file.path}
-														variants={rowVariants}
-														whileHover="hover"
-														whileTap="tap"
-														animate={isActive ? "active" : "idle"}
-														transition={springTransition}
-														data-file-tree-file="true"
-														data-file-tree-path={file.path}
-													>
-														<Icon
-															size={14}
-															className="fileTreeIcon"
-															style={{ color }}
-															aria-hidden="true"
-														/>
-														<span className="fileTreeName">
-															{file.displayName}
+							<ul className="fileTreeList fileTreePinnedList">
+								{pinnedFileItems.map((file) => {
+									const isActive = file.path === activeFilePath;
+									return (
+										<li
+											key={file.path}
+											className={isActive ? "fileTreeItem active" : "fileTreeItem"}
+										>
+											<div className="fileTreeRowShell">
+												<m.button
+													type="button"
+													className="fileTreeRow fileTreePinnedRow"
+													onClick={() => onOpenFile(file.path)}
+													onKeyDown={(event) => {
+														if (
+															event.key !== "ArrowDown" &&
+															event.key !== "ArrowUp"
+														) {
+															return;
+														}
+														event.preventDefault();
+														event.stopPropagation();
+														handleArrowNavigate(
+															file.path,
+															event.key === "ArrowDown" ? 1 : -1,
+															event.currentTarget,
+														);
+													}}
+													title={file.path}
+													variants={rowVariants}
+													whileHover="hover"
+													whileTap="tap"
+													animate={isActive ? "active" : "idle"}
+													transition={springTransition}
+													data-file-tree-file="true"
+													data-file-tree-path={file.path}
+												>
+													<HugeiconsIcon
+														icon={PinIcon}
+														size={14}
+														className="fileTreeIcon"
+														aria-hidden="true"
+													/>
+													<span className="fileTreeName">
+														{file.displayName}
+													</span>
+													{file.parent ? (
+														<span className="fileTreePinnedPath">
+															{file.parent}
 														</span>
-														{file.parent ? (
-															<span className="fileTreePinnedPath">
-																{file.parent}
-															</span>
-														) : null}
-													</m.button>
-												</div>
-											</li>
-										);
-									})}
-								</ul>
-							) : null}
+													) : null}
+												</m.button>
+											</div>
+										</li>
+									);
+								})}
+							</ul>
 						</section>
 					) : null}
 					{rootEntries.length ? (
