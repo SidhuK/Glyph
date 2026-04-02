@@ -6,7 +6,6 @@ import {
 	ColorsIcon,
 	CursorInWindowIcon,
 	DocumentCodeIcon,
-	FallingStarIcon,
 	File01Icon,
 	Folder01Icon,
 	FolderOpenIcon,
@@ -17,6 +16,8 @@ import {
 	MoveIcon,
 	NoteIcon,
 	PencilEdit02Icon,
+	PinIcon,
+	PinOffIcon,
 	Plant01Icon,
 	SearchIcon,
 	Settings01Icon,
@@ -1269,12 +1270,21 @@ export function AppShell() {
 				action: requestOpenDailyNote,
 			},
 			{
-				id: "toggle-star-active-file",
+				id: "toggle-pin-active-file",
 				label:
 					activeFilePath && pinnedFiles.includes(activeFilePath)
-						? "Unstar current file"
-						: "Star current file",
-				icon: <HugeiconsIcon icon={FallingStarIcon} size={16} />,
+						? "Unpin current file"
+						: "Pin current file",
+				icon: (
+					<HugeiconsIcon
+						icon={
+							activeFilePath && pinnedFiles.includes(activeFilePath)
+								? PinOffIcon
+								: PinIcon
+						}
+						size={16}
+					/>
+				),
 				category: "File Operations",
 				enabled: Boolean(spacePath) && Boolean(activeFilePath),
 				allowInEditable: true,
@@ -1441,6 +1451,7 @@ export function AppShell() {
 		gitSync,
 		moveTargetDirs,
 		movePickerSourcePath,
+		openSpecialTab,
 		setError,
 		whatsNew.available,
 	]);

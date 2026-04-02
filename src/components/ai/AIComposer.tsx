@@ -174,6 +174,7 @@ export function AIComposer({
 									!e.metaKey &&
 									!e.ctrlKey
 								) {
+									if (e.nativeEvent.isComposing || !canSend) return;
 									e.preventDefault();
 									onSend();
 								}

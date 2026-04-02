@@ -53,7 +53,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 
 	const profiles = useAiProfiles();
 	const context = useAiContext();
-	const history = useAiHistory(14);
+	const history = useAiHistory(14, { enabled: historyExpanded });
 	const toolEvents = useAiToolEvents({ isChatMode, chatStatus: chat.status });
 	const actions = useAiActions(chat);
 
@@ -62,6 +62,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 	const panelQuery = addPanelOpen ? addPanelQuery : (trigger?.query ?? "");
 
 	const composerInputRef = useRef<HTMLTextAreaElement | null>(null);
+	const prevChatStatusRef = useRef(chat.status);
 	const scheduleResize = useCallback(() => {
 		window.requestAnimationFrame(() => {
 			const el = composerInputRef.current;
@@ -207,6 +208,14 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 
 	const handleLoadHistory = useCallback(
 		async (jobId: string) => {
+			if (chat.status === "submitted" || chat.status === "streaming") {
+				chat.stop();
+			}
+			toolEvents.clearSlowStartTimer();
+			toolEvents.clearFinalizingTimer();
+			toolEvents.resetToolState();
+			toolEvents.setShowSlowStart(false);
+			toolEvents.setResponsePhase("idle");
 			const loaded = await history.loadChatMessages(jobId);
 			if (!loaded) return;
 			const restoredTimeline = loaded.toolEvents.map((event, index) => ({
@@ -230,7 +239,16 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 			chat.setMessages(loaded.messages);
 			chat.clearError();
 		},
-		[chat, history.loadChatMessages, toolEvents.setToolTimeline],
+		[
+			chat,
+			history.loadChatMessages,
+			toolEvents.clearFinalizingTimer,
+			toolEvents.clearSlowStartTimer,
+			toolEvents.resetToolState,
+			toolEvents.setResponsePhase,
+			toolEvents.setShowSlowStart,
+			toolEvents.setToolTimeline,
+		],
 	);
 
 	const handleNewChat = useCallback(() => {
@@ -271,7 +289,13 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 	}, [chat.messages, toolEvents.isAwaitingResponse]);
 
 	useEffect(() => {
-		if (chat.status !== "streaming") void history.refresh();
+		if (
+			prevChatStatusRef.current === "streaming" &&
+			chat.status !== "streaming"
+		) {
+			void history.refresh();
+		}
+		prevChatStatusRef.current = chat.status;
 	}, [chat.status, history.refresh]);
 
 	return (

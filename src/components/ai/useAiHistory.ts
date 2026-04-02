@@ -55,7 +55,12 @@ export async function preloadAiHistorySummaries(
 	return request;
 }
 
-export function useAiHistory(limit = 20) {
+interface UseAiHistoryOptions {
+	enabled?: boolean;
+}
+
+export function useAiHistory(limit = 20, options?: UseAiHistoryOptions) {
+	const enabled = options?.enabled ?? true;
 	const [summaries, setSummaries] = useState<AiChatHistorySummary[]>(
 		() => aiHistorySummaryCache.get(limit) ?? [],
 	);
@@ -100,8 +105,9 @@ export function useAiHistory(limit = 20) {
 	}, []);
 
 	useEffect(() => {
+		if (!enabled) return;
 		void refresh();
-	}, [refresh]);
+	}, [enabled, refresh]);
 
 	return {
 		summaries,
