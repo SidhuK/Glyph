@@ -503,7 +503,20 @@
 /* ── Recent notes mini-db ── */
 
 .calendarMiniDb {
+	--calendar-activity-overflow-scale: 0;
 	border-radius: 16px;
+	width: min(
+		calc(
+			100% +
+				(calc(var(--calendar-activity-extra-width, 0px) * var(--calendar-activity-overflow-scale)))
+		),
+		1120px
+	);
+	align-self: stretch;
+	margin-inline: calc(
+		(calc(var(--calendar-activity-extra-width, 0px) * var(--calendar-activity-overflow-scale))) /
+			-2
+	);
 }
 
 .calendarMiniDbHeader {
@@ -532,8 +545,9 @@
 	gap: 14px;
 	overflow-x: auto;
 	overflow-y: visible;
-	padding: 4px 0 6px;
+	padding: 4px 3px 6px;
 	scrollbar-gutter: stable;
+	scroll-padding-inline: 3px;
 }
 
 .calendarRecentStripScroller::-webkit-scrollbar {
@@ -595,6 +609,24 @@
 }
 
 /* ── Responsive ── */
+
+@container (min-width: 1500px) {
+	.calendarMiniDb {
+		--calendar-activity-overflow-scale: 0.2;
+	}
+}
+
+@container (min-width: 1680px) {
+	.calendarMiniDb {
+		--calendar-activity-overflow-scale: 0.45;
+	}
+}
+
+@container (min-width: 1860px) {
+	.calendarMiniDb {
+		--calendar-activity-overflow-scale: 0.7;
+	}
+}
 
 @container (max-width: 860px) {
 	.calendarLayout {

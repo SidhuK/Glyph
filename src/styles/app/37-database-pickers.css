@@ -1,26 +1,37 @@
 .databasePickerTrigger {
 	width: min(100%, 320px);
 	max-width: 320px;
-	min-height: 44px;
+	min-height: 40px;
 	justify-content: flex-start;
-	padding: 8px 10px;
-	gap: 10px;
-	border-radius: var(--radius-lg);
-	border-color: color-mix(in srgb, var(--border-light) 78%, transparent);
-	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
+	padding: 7px 10px;
+	gap: 9px;
+	border-radius: var(--database-control-radius);
+	border-color: var(--database-control-border);
+	background: var(--database-control-background);
 	align-self: flex-start;
+	box-shadow: none;
+	transition: border-color 140ms ease, background-color 140ms ease, color 140ms
+		ease;
 }
 
 .databaseDialogCompact .databasePickerTrigger {
-	min-height: 38px;
+	min-height: 34px;
 	padding: 6px 10px;
-	border-color: color-mix(in srgb, var(--border-light) 60%, transparent);
-	background: color-mix(in srgb, var(--bg-primary) 96%, transparent);
+	border-color: color-mix(
+		in srgb,
+		var(--database-control-border) 88%,
+		transparent
+	);
+	background: color-mix(
+		in srgb,
+		var(--database-control-background) 94%,
+		var(--bg-primary)
+	);
 }
 
 .databasePickerTrigger:hover {
 	border-color: var(--border-default);
-	background: var(--bg-hover);
+	background: var(--database-dropdown-hover);
 }
 
 .databasePickerTriggerIcon {
@@ -72,20 +83,65 @@
 	display: none;
 }
 
+.databaseSourceInlinePicker {
+	flex: 1 1 auto;
+	width: 100%;
+	max-width: none;
+	min-height: 32px;
+	padding: 7px 10px;
+	gap: 6px;
+	border-radius: calc(var(--radius-sm) + 2px);
+	border-color: color-mix(in srgb, var(--border-light) 68%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 86%, var(--bg-secondary));
+	color: var(--interactive-accent);
+}
+
+.databaseSourceInlinePicker:hover {
+	background: color-mix(in srgb, var(--interactive-accent) 10%, var(--bg-hover));
+	border-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 24%,
+		var(--border-default)
+	);
+}
+
+.databaseSourceInlinePicker .databasePickerTriggerIcon {
+	width: 20px;
+	height: 20px;
+	border-radius: var(--radius-sm);
+	background: transparent;
+	color: currentColor;
+}
+
+.databaseSourceInlinePicker .databasePickerTriggerLabel {
+	font-size: 0.78rem;
+	font-weight: var(--font-medium);
+	color: currentColor;
+}
+
+.databaseSourceInlinePicker .databasePickerTriggerMeta {
+	display: none;
+}
+
 .databasePickerPopover {
 	width: min(420px, calc(100vw - 2rem));
-	border-radius: var(--radius-lg);
-	border-color: var(--border-light);
+	border-radius: var(--database-dropdown-radius);
+	border-color: var(--database-dropdown-border);
 	padding: 12px;
-	background: var(--bg-primary);
-	box-shadow: var(--shadow-md);
+	background: var(--database-dropdown-background);
+	box-shadow: var(--database-dropdown-shadow);
 	pointer-events: auto;
 }
 
 .databaseDialogCompact .databasePickerPopover,
 .databaseDialogCompact .folderPickerPopover {
-	border-color: color-mix(in srgb, var(--border-light) 60%, transparent);
-	box-shadow: var(--shadow-sm);
+	border-color: color-mix(
+		in srgb,
+		var(--database-dropdown-border) 84%,
+		transparent
+	);
+	box-shadow: 0 14px 30px color-mix(in srgb, black 14%, transparent), 0 4px 12px
+		color-mix(in srgb, black 8%, transparent);
 }
 
 .databaseColumnIconPopover {
@@ -242,10 +298,10 @@
 
 .folderPickerPopover {
 	width: min(300px, calc(100vw - 2rem));
-	border-radius: var(--radius-lg);
-	border-color: var(--border-light);
+	border-radius: var(--database-dropdown-radius);
+	border-color: var(--database-dropdown-border);
 	padding: 8px;
-	background: var(--bg-primary);
+	background: var(--database-dropdown-background);
 	box-shadow: var(--shadow-md);
 	pointer-events: auto;
 }
@@ -255,7 +311,10 @@
 	align-items: center;
 	flex-wrap: wrap;
 	gap: 2px;
-	padding: 2px 4px 6px;
+	padding: 2px 4px 8px;
+	margin-bottom: 6px;
+	border-bottom: 1px solid
+		color-mix(in srgb, var(--border-light) 56%, transparent);
 }
 
 .folderPickerCrumbSegment {
@@ -266,30 +325,35 @@
 }
 
 .folderPickerCrumb {
-	padding: 2px 5px;
-	border-radius: var(--radius-xs);
+	padding: 4px 7px;
+	border: 1px solid transparent;
+	border-radius: calc(var(--radius-sm) + 1px);
 	font-size: 0.72rem;
 	color: var(--text-tertiary);
 }
 
 .folderPickerCrumb:hover {
 	color: var(--text-secondary);
-	background: var(--bg-hover);
+	background: color-mix(in srgb, var(--bg-hover) 74%, transparent);
+	border-color: color-mix(in srgb, var(--border-light) 52%, transparent);
 }
 
 .folderPickerCrumb[data-active="true"] {
 	color: var(--text-primary);
 	font-weight: var(--font-medium);
+	background: color-mix(in srgb, var(--bg-secondary) 76%, transparent);
+	border-color: color-mix(in srgb, var(--border-default) 44%, transparent);
 }
 
 .folderPickerSearch {
 	display: flex;
 	align-items: center;
 	gap: 6px;
-	margin-bottom: 4px;
-	padding: 4px 8px;
-	border-radius: var(--radius-sm);
-	border: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
+	margin-bottom: 8px;
+	padding: 6px 9px;
+	border-radius: calc(var(--radius-sm) + 2px);
+	border: 1px solid color-mix(in srgb, var(--border-light) 66%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 86%, var(--bg-secondary));
 }
 
 .folderPickerSearch svg {
@@ -318,7 +382,7 @@
 .folderPickerList {
 	display: flex;
 	flex-direction: column;
-	gap: 1px;
+	gap: 4px;
 	padding: 2px;
 }
 
@@ -327,8 +391,10 @@
 	align-items: center;
 	gap: 6px;
 	width: 100%;
-	padding: 5px 8px;
-	border-radius: var(--radius-sm);
+	padding: 7px 10px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 68%, transparent);
+	border-radius: calc(var(--radius-sm) + 2px);
+	background: color-mix(in srgb, var(--bg-primary) 86%, var(--bg-secondary));
 	font-size: 0.78rem;
 	font-weight: var(--font-medium);
 	color: var(--interactive-accent);
@@ -336,7 +402,12 @@
 }
 
 .folderPickerSelect:hover {
-	background: color-mix(in srgb, var(--interactive-accent) 8%, transparent);
+	background: color-mix(in srgb, var(--interactive-accent) 10%, var(--bg-hover));
+	border-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 24%,
+		var(--border-default)
+	);
 }
 
 .folderPickerSelect svg {
@@ -349,13 +420,15 @@
 	align-items: center;
 	justify-content: space-between;
 	width: 100%;
-	padding: 5px 8px;
-	border-radius: var(--radius-sm);
+	padding: 6px 10px;
+	border: 1px solid transparent;
+	border-radius: calc(var(--radius-sm) + 1px);
 	text-align: left;
 }
 
 .folderPickerRow:hover {
-	background: var(--bg-hover);
+	background: color-mix(in srgb, var(--bg-hover) 78%, transparent);
+	border-color: color-mix(in srgb, var(--border-light) 48%, transparent);
 }
 
 .folderPickerRowName {
@@ -379,10 +452,10 @@
 
 /* Compact picker overrides inside database dropdown menus */
 [data-slot="dropdown-menu-content"].databasePickerMenu .databasePickerTrigger {
-	min-height: 28px;
+	min-height: 30px;
 	padding: 4px 8px;
 	gap: 6px;
-	border-radius: var(--radius-sm);
+	border-radius: var(--database-control-radius);
 	font-size: 0.8rem;
 }
 
@@ -405,12 +478,28 @@
 }
 
 [data-slot="dropdown-menu-content"].databasePickerMenu .databaseNativeSelect {
-	min-height: 28px;
-	padding: 0 26px 0 8px;
+	min-height: 30px;
+	padding: 0 28px 0 8px;
 	font-size: 0.8rem;
-	border-radius: var(--radius-sm);
-	background-position: calc(100% - 10px) 10px, calc(100% - 5px) 10px;
+	border-radius: var(--database-control-radius);
+	background-position: calc(100% - 11px) 11px, calc(100% - 6px) 11px;
 	background-size: 5px 5px, 5px 5px;
+}
+
+[data-slot="dropdown-menu-content"].databasePickerMenu [data-slot="input"] {
+	min-height: 30px;
+	border-radius: var(--database-control-radius);
+	border-color: var(--database-control-border);
+	background: var(--database-control-background);
+	padding-inline: 10px;
+	font-size: 0.8rem;
+	box-shadow: none;
+}
+
+[data-slot="dropdown-menu-content"].databasePickerMenu
+	[data-slot="input"]:hover {
+	border-color: var(--border-default);
+	background: var(--database-dropdown-hover);
 }
 
 /* Lighter icons inside dropdown menu items */
@@ -456,13 +545,13 @@
 
 /* Proper padding inside dropdown menus */
 [data-slot="dropdown-menu-content"].databasePickerMenu {
-	padding: 6px;
+	padding: var(--database-dropdown-padding);
 }
 
 [data-slot="dropdown-menu-content"].databasePickerMenu
 	[data-slot="dropdown-menu-item"] {
 	width: 100%;
-	padding-inline: 8px;
+	padding-inline: 10px;
 }
 
 [data-slot="dropdown-menu-content"].databasePickerMenu
@@ -470,37 +559,64 @@
 	margin-left: auto;
 }
 
-[data-slot="dropdown-menu-content"].databasePickerMenu
-	.databaseColumnDropdownShortcut {
-	display: inline-flex;
-	align-items: center;
+.databaseColumnDropdownList {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
 }
 
-[data-slot="dropdown-menu-content"].databasePickerMenu
-	.databaseColumnDropdownDelete {
-	display: inline-flex;
+.databaseColumnDropdownRow {
+	display: flex;
 	align-items: center;
-	justify-content: center;
-	width: 18px;
-	height: 18px;
+	gap: 10px;
+	width: 100%;
+	min-height: 36px;
+	border-radius: var(--database-control-radius);
+	padding: 2px 4px 2px 8px;
+}
+
+.databaseColumnDropdownButton {
+	display: flex;
+	align-items: center;
+	width: 100%;
+	min-width: 0;
+	min-height: 32px;
 	padding: 0;
 	border: 0;
-	border-radius: var(--radius-xs);
+	border-radius: inherit;
 	background: transparent;
-	color: var(--text-tertiary);
-	cursor: pointer;
-	opacity: 0;
-	transition: opacity 140ms ease, color 140ms ease, background-color 140ms ease;
+	color: var(--text-secondary);
+	text-align: left;
+	cursor: default;
+	pointer-events: none;
 }
 
-[data-slot="dropdown-menu-content"].databasePickerMenu
-	.databaseColumnDropdownItem:is(:hover, [data-highlighted])
-	.databaseColumnDropdownDelete {
-	opacity: 1;
+.databaseColumnDropdownMain {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	min-width: 0;
+	flex: 1 1 auto;
 }
 
-[data-slot="dropdown-menu-content"].databasePickerMenu
-	.databaseColumnDropdownDelete:hover {
-	background: color-mix(in srgb, var(--bg-secondary) 86%, transparent);
-	color: var(--text-primary);
+.databaseColumnDropdownLabel {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+.databaseColumnDropdownToggle {
+	display: inline-flex;
+	align-items: center;
+	justify-content: flex-end;
+	flex: 0 0 auto;
+}
+
+.databaseColumnDropdownToggle .uiToggle {
+	pointer-events: auto;
+}
+
+.databaseColumnDropdownToggle .uiToggleControl {
+	background: color-mix(in srgb, var(--bg-tertiary) 84%, var(--bg-secondary));
 }

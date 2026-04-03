@@ -242,6 +242,7 @@ export function GitSettingsPane() {
 						<SettingsSegmented
 							value={String(config?.interval_minutes ?? 10)}
 							ariaLabel="Git sync interval"
+							className="appearanceThemeModeSegmented gitSettingsIntervalSegmented"
 							disabled={!gitEnabledForSpace || busy}
 							options={[
 								{ label: "5 min", value: "5" },

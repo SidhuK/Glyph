@@ -1,3 +1,5 @@
+import { SlidersHorizontalIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { cn } from "@/lib/utils";
 import type { CSSProperties } from "react";
 import { useMemo, useState } from "react";
@@ -8,7 +10,7 @@ import type {
 	UiLightThemeId,
 } from "../../lib/settings";
 import type { UiThemeOption, UiThemePreview } from "../../lib/uiThemes";
-import { ChevronDown, Computer, Moon, Sun } from "../Icons";
+import { ChevronDown, Moon, Sun } from "../Icons";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 import {
 	SettingsRow,
@@ -262,11 +264,16 @@ export function AppearanceThemeCard({
 			title="Theme"
 			description="Mix and match light and dark theme families with quick visual previews."
 		>
-			<SettingsRow label="Color mode">
+			<SettingsRow
+				label="Select Theme"
+				className="appearanceThemeModeRow"
+				interactive={false}
+			>
 				<SettingsSegmented<ThemeMode>
 					ariaLabel="Theme mode"
 					value={themeMode}
 					onChange={(value) => void onThemeModeChange(value)}
+					className="appearanceThemeModeSegmented"
 					options={[
 						{
 							label: "Light",
@@ -281,7 +288,9 @@ export function AppearanceThemeCard({
 						{
 							label: "System",
 							value: "system",
-							icon: <Computer size={16} strokeWidth={1.7} />,
+							icon: (
+								<HugeiconsIcon icon={SlidersHorizontalIcon} size={16} />
+							),
 						},
 					]}
 				/>
