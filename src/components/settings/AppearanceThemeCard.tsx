@@ -1,6 +1,6 @@
+import { cn } from "@/lib/utils";
 import { SlidersHorizontalIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { cn } from "@/lib/utils";
 import type { CSSProperties } from "react";
 import { useMemo, useState } from "react";
 import type {
@@ -288,9 +288,7 @@ export function AppearanceThemeCard({
 						{
 							label: "System",
 							value: "system",
-							icon: (
-								<HugeiconsIcon icon={SlidersHorizontalIcon} size={16} />
-							),
+							icon: <HugeiconsIcon icon={SlidersHorizontalIcon} size={16} />,
 						},
 					]}
 				/>

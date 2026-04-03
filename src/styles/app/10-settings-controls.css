@@ -1002,7 +1002,8 @@
 	border: 1px solid color-mix(in srgb, var(--border-light) 42%, transparent);
 	border-radius: calc(var(--radius-md) + 1px);
 	background: color-mix(in srgb, var(--bg-tertiary) 82%, var(--bg-primary));
-	box-shadow: 0 1px 2px color-mix(in srgb, var(--shadow-color, #000) 4%, transparent);
+	box-shadow: 0 1px 2px
+		color-mix(in srgb, var(--shadow-color, #000) 4%, transparent);
 	gap: 2px;
 	overflow: visible;
 }
@@ -1045,8 +1046,9 @@
 .appearanceThemeModeSegmented button.active {
 	background: color-mix(in srgb, var(--bg-primary) 98%, white 2%);
 	color: color-mix(in srgb, var(--text-primary) 96%, black 4%);
-	box-shadow: 0 2px 6px color-mix(in srgb, var(--shadow-color, #000) 7%, transparent),
-		0 1px 2px color-mix(in srgb, var(--shadow-color, #000) 5%, transparent);
+	box-shadow: 0 2px 6px
+		color-mix(in srgb, var(--shadow-color, #000) 7%, transparent), 0 1px 2px
+		color-mix(in srgb, var(--shadow-color, #000) 5%, transparent);
 }
 
 .appearanceThemeModeSegmented button.active .settingsSegmentedIcon {

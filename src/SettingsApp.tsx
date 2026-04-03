@@ -31,8 +31,8 @@ import {
 import { Button } from "./components/ui/shadcn/button";
 import { useLicenseStatus } from "./lib/license";
 import { useTauriEvent } from "./lib/tauriEvents";
-import { onWindowDragMouseDown } from "./utils/window";
 import { cn } from "./lib/utils";
+import { onWindowDragMouseDown } from "./utils/window";
 
 function parseTabFromHash(hash: string): SettingsTab {
 	const query = hash.split("?")[1] ?? "";

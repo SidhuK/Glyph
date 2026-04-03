@@ -7,8 +7,8 @@ import {
 	LibraryIcon,
 	NoteIcon,
 	Settings01Icon,
-	TaskAdd02Icon,
 	Tag01Icon,
+	TaskAdd02Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, m } from "motion/react";
@@ -252,7 +252,11 @@ export const SidebarContent = memo(function SidebarContent({
 							>
 								<ChevronDown
 									size={12}
-									className={newMenuOpen ? "sidebarQuickActionChevronIcon is-open" : "sidebarQuickActionChevronIcon"}
+									className={
+										newMenuOpen
+											? "sidebarQuickActionChevronIcon is-open"
+											: "sidebarQuickActionChevronIcon"
+									}
 								/>
 							</button>
 						</div>

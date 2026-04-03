@@ -89,26 +89,36 @@ jobs:
             tag_version="0.0.0"
           fi
 
-          base_version="$(node -e '
+          version_order="$(node -e '
             const [a, b] = process.argv.slice(1);
             const parse = (v) => v.split(".").map((x) => Number.parseInt(x, 10));
             const av = parse(a);
             const bv = parse(b);
-            const pickA =
-              av[0] > bv[0] ||
-              (av[0] === bv[0] && av[1] > bv[1]) ||
-              (av[0] === bv[0] && av[1] === bv[1] && av[2] >= bv[2]);
-            process.stdout.write(pickA ? a : b);
+            const cmp =
+              av[0] - bv[0] ||
+              av[1] - bv[1] ||
+              av[2] - bv[2];
+            process.stdout.write(String(Math.sign(cmp)));
           ' "${file_version}" "${tag_version}")"
 
-          IFS='.' read -r major minor patch <<< "${base_version}"
-          if ! [[ "${major}" =~ ^[0-9]+$ && "${minor}" =~ ^[0-9]+$ && "${patch}" =~ ^[0-9]+$ ]]; then
-            echo "Invalid base version: ${base_version}"
+          if ! [[ "${version_order}" =~ ^(-1|0|1)$ ]]; then
+            echo "Invalid version ordering result: ${version_order}"
             exit 1
           fi
 
-          next_patch=$((patch + 1))
-          next_version="${major}.${minor}.${next_patch}"
+          if [ "${version_order}" = "1" ]; then
+            next_version="${file_version}"
+          else
+            IFS='.' read -r major minor patch <<< "${tag_version}"
+            if ! [[ "${major}" =~ ^[0-9]+$ && "${minor}" =~ ^[0-9]+$ && "${patch}" =~ ^[0-9]+$ ]]; then
+              echo "Invalid tag version: ${tag_version}"
+              exit 1
+            fi
+
+            next_patch=$((patch + 1))
+            next_version="${major}.${minor}.${next_patch}"
+          fi
+
           next_tag="v${next_version}"
 
           echo "latest_tag=${latest_tag}" >> "$GITHUB_OUTPUT"

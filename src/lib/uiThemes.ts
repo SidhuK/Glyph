@@ -258,7 +258,8 @@ export const LIGHT_THEME_OPTIONS = [
 	{
 		id: "modus-operandi",
 		label: "Modus Operandi",
-		description: "High-contrast accessible light theme with crisp classic colors.",
+		description:
+			"High-contrast accessible light theme with crisp classic colors.",
 		preview: {
 			badgeBackground: "#ffffff",
 			badgeBorder: "#9f9f9f",
@@ -527,7 +528,8 @@ export const DARK_THEME_OPTIONS = [
 	{
 		id: "monokai",
 		label: "Monokai",
-		description: "Classic olive-charcoal editor palette with vivid syntax warmth.",
+		description:
+			"Classic olive-charcoal editor palette with vivid syntax warmth.",
 		preview: {
 			badgeBackground: "#1e1f1c",
 			badgeBorder: "#414339",
@@ -541,7 +543,8 @@ export const DARK_THEME_OPTIONS = [
 	{
 		id: "ayu-mirage",
 		label: "Ayu Mirage",
-		description: "Dusky slate theme with warm gold highlights and soft contrast.",
+		description:
+			"Dusky slate theme with warm gold highlights and soft contrast.",
 		preview: {
 			badgeBackground: "#282e3b",
 			badgeBorder: "#171b24",
@@ -583,7 +586,8 @@ export const DARK_THEME_OPTIONS = [
 	{
 		id: "kanagawa-wave",
 		label: "Kanagawa Wave",
-		description: "Ink-dark Japanese palette with balanced indigo and amber notes.",
+		description:
+			"Ink-dark Japanese palette with balanced indigo and amber notes.",
 		preview: {
 			badgeBackground: "#16161d",
 			badgeBorder: "#2a2a37",
