@@ -926,7 +926,8 @@ export function DatabasesPane({
 																onValueChange={(layout) => {
 																	if (
 																		!activeConfig ||
-																		(layout !== "table" && layout !== "board") ||
+																		(layout !== "table" &&
+																			layout !== "board") ||
 																		view.layout === layout
 																	) {
 																		return;

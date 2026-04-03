@@ -508,14 +508,24 @@
 	width: min(
 		calc(
 			100% +
-				(calc(var(--calendar-activity-extra-width, 0px) * var(--calendar-activity-overflow-scale)))
+			(
+				calc(
+					var(--calendar-activity-extra-width, 0px) *
+					var(--calendar-activity-overflow-scale)
+				)
+			)
 		),
 		1120px
 	);
 	align-self: stretch;
 	margin-inline: calc(
-		(calc(var(--calendar-activity-extra-width, 0px) * var(--calendar-activity-overflow-scale))) /
-			-2
+		(
+			calc(
+				var(--calendar-activity-extra-width, 0px) *
+				var(--calendar-activity-overflow-scale)
+			)
+		) /
+		-2
 	);
 }
 
