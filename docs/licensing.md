@@ -69,9 +69,9 @@ This is an honest-user licensing model for official binaries, not DRM.
 
 ## Support
 
-Licensing support currently routes to GitHub Issues:
+Licensing support currently routes to the Glyph feedback board:
 
-- [GitHub Issues](https://github.com/SidhuK/Glyph/issues)
+- [Glyph Feedback](https://glyph.userjot.com/?cursor=1&order=top&limit=10)
 
 ## Purchase
 

@@ -523,7 +523,7 @@ export function DatabaseBoard({
 												</button>
 											</ContextMenuTrigger>
 											{lane.id !== DATABASE_BOARD_EMPTY_LANE_ID ? (
-												<ContextMenuContent className="fileTreeCreateMenu databaseBoardContextMenu">
+												<ContextMenuContent className="databaseBoardContextMenu">
 													<div className="databaseBoardMoveLabel">
 														Move column to
 													</div>
@@ -532,7 +532,7 @@ export function DatabaseBoard({
 														return (
 															<ContextMenuItem
 																key={`${lane.id}:position:${targetLane.id}`}
-																className="fileTreeCreateMenuItem"
+																className="databaseBoardContextMenuItem"
 																disabled={isCurrentLane}
 																onSelect={() => moveLaneToIndex(lane.id, index)}
 															>
@@ -701,22 +701,22 @@ export function DatabaseBoard({
 															</div>
 														</button>
 													</ContextMenuTrigger>
-													<ContextMenuContent className="fileTreeCreateMenu databaseBoardContextMenu">
+													<ContextMenuContent className="databaseBoardContextMenu">
 														<ContextMenuItem
-															className="fileTreeCreateMenuItem"
+															className="databaseBoardContextMenuItem"
 															onSelect={() => onOpenRow(row.note_path)}
 														>
 															Open note
 														</ContextMenuItem>
 														{otherLanes.length > 0 ? (
 															<>
-																<ContextMenuSeparator className="fileTreeCreateMenuSeparator" />
+																<ContextMenuSeparator className="databaseBoardContextMenuSeparator" />
 																<div className="databaseBoardMoveLabel">
 																	Move to
 																</div>
 																{otherLanes.map((targetLane) => (
 																	<ContextMenuItem
-																		className="fileTreeCreateMenuItem"
+																		className="databaseBoardContextMenuItem"
 																		key={targetLane.id}
 																		onSelect={() =>
 																			void handleLaneDrop(

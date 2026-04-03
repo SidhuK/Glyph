@@ -7,11 +7,12 @@ import {
 	LibraryIcon,
 	NoteIcon,
 	Settings01Icon,
+	TaskAdd02Icon,
 	Tag01Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, m } from "motion/react";
-import { memo, useCallback, useEffect, useState } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import {
 	useFileTreeContext,
 	useSpace,
@@ -23,7 +24,7 @@ import { getShortcutTooltip } from "../../lib/shortcuts";
 import { type GitSyncStatus, invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { FileTreePane } from "../FileTreePane";
-import { Files } from "../Icons";
+import { ChevronDown, Files, FolderPlus } from "../Icons";
 import { RecentFilesPane } from "../RecentFilesPane";
 import { TagsPane } from "../TagsPane";
 import { directionVariants } from "../ui/animations";
@@ -103,6 +104,8 @@ export const SidebarContent = memo(function SidebarContent({
 		null,
 	);
 	const [allNotesCount, setAllNotesCount] = useState<number | null>(null);
+	const [newMenuOpen, setNewMenuOpen] = useState(false);
+	const newMenuRef = useRef<HTMLDivElement | null>(null);
 	const showGitButton = Boolean(gitSyncStatus?.configured);
 
 	const handleStartRename = useCallback((path: string) => {
@@ -180,6 +183,31 @@ export const SidebarContent = memo(function SidebarContent({
 		refreshAllNotesCount();
 	});
 
+	useEffect(() => {
+		if (!newMenuOpen) return;
+		const handlePointerDown = (event: PointerEvent) => {
+			if (!(event.target instanceof Node)) return;
+			if (newMenuRef.current?.contains(event.target)) return;
+			setNewMenuOpen(false);
+		};
+		const handleKeyDown = (event: KeyboardEvent) => {
+			if (event.key === "Escape") {
+				setNewMenuOpen(false);
+			}
+		};
+		window.addEventListener("pointerdown", handlePointerDown);
+		window.addEventListener("keydown", handleKeyDown);
+		return () => {
+			window.removeEventListener("pointerdown", handlePointerDown);
+			window.removeEventListener("keydown", handleKeyDown);
+		};
+	}, [newMenuOpen]);
+
+	const runNewMenuAction = useCallback((action: () => void) => {
+		setNewMenuOpen(false);
+		action();
+	}, []);
+
 	if (!spacePath) {
 		return (
 			<>
@@ -197,16 +225,92 @@ export const SidebarContent = memo(function SidebarContent({
 		<>
 			<div className="sidebarSection sidebarSectionGrow">
 				<div className="sidebarQuickActions">
-					<button
-						type="button"
-						className="sidebarQuickActionBtn"
-						data-kind="new-note"
-						onClick={onNewNote}
-						title={`Create a new note (${getShortcutTooltip({ meta: true, key: "n" })})`}
+					<div
+						ref={newMenuRef}
+						className="sidebarNewActionGroup"
+						data-open={newMenuOpen ? "true" : "false"}
 					>
-						<HugeiconsIcon icon={NoteIcon} size={14} />
-						<span className="sidebarQuickActionLabel">New Note</span>
-					</button>
+						<div className="sidebarQuickActionSplit" data-kind="new-note">
+							<button
+								type="button"
+								className="sidebarQuickActionBtn sidebarQuickActionPrimary"
+								data-kind="new-note"
+								onClick={onNewNote}
+								title={`Create a new note (${getShortcutTooltip({ meta: true, key: "n" })})`}
+							>
+								<HugeiconsIcon icon={NoteIcon} size={14} />
+								<span className="sidebarQuickActionLabel">New Note</span>
+							</button>
+							<button
+								type="button"
+								className="sidebarQuickActionBtn sidebarQuickActionChevron"
+								data-kind="new-note"
+								aria-label="Open new note menu"
+								aria-expanded={newMenuOpen}
+								title="More create options"
+								onClick={() => setNewMenuOpen((value) => !value)}
+							>
+								<ChevronDown
+									size={12}
+									className={newMenuOpen ? "sidebarQuickActionChevronIcon is-open" : "sidebarQuickActionChevronIcon"}
+								/>
+							</button>
+						</div>
+						<AnimatePresence>
+							{newMenuOpen ? (
+								<m.div
+									className="sidebarQuickActionMenu"
+									initial={{ opacity: 0, y: -6, scale: 0.98 }}
+									animate={{ opacity: 1, y: 0, scale: 1 }}
+									exit={{ opacity: 0, y: -4, scale: 0.985 }}
+									transition={{ duration: 0.14, ease: "easeOut" }}
+								>
+									<button
+										type="button"
+										className="sidebarQuickActionMenuItem"
+										onClick={() =>
+											runNewMenuAction(() => onCreateFromTemplateInDir(""))
+										}
+									>
+										<HugeiconsIcon icon={DocumentCodeIcon} size={15} />
+										<span>Template</span>
+									</button>
+									<button
+										type="button"
+										className="sidebarQuickActionMenuItem"
+										onClick={() =>
+											runNewMenuAction(() => {
+												void onNewDatabaseInDir("");
+											})
+										}
+									>
+										<HugeiconsIcon icon={LibraryIcon} size={15} />
+										<span>Collection</span>
+									</button>
+									<button
+										type="button"
+										className="sidebarQuickActionMenuItem"
+										onClick={() => runNewMenuAction(onOpenCalendar)}
+									>
+										<HugeiconsIcon icon={TaskAdd02Icon} size={15} />
+										<span>Task</span>
+									</button>
+									<button
+										type="button"
+										className="sidebarQuickActionMenuItem"
+										onClick={() =>
+											runNewMenuAction(() => {
+												void onNewFolderInDir("");
+											})
+										}
+									>
+										<FolderPlus size={15} />
+										<span>Folder</span>
+									</button>
+								</m.div>
+							) : null}
+						</AnimatePresence>
+					</div>
 					<div className="sidebarQuickActionsSpacer" aria-hidden="true" />
 					<button
 						type="button"

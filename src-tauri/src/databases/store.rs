@@ -109,7 +109,6 @@ fn system_database(id: &str, name: &str, recent: bool) -> DatabaseDefinition {
         },
         new_note: DatabaseNewNoteConfig {
             folder: String::new(),
-            title_prefix: "Untitled".to_string(),
         },
         schema: vec![
             DatabaseSchemaField {

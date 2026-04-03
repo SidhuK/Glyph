@@ -222,24 +222,21 @@ export function DatabaseSourceDropdown({
 			align="end"
 			onCloseAutoFocus={(e) => e.preventDefault()}
 		>
-			<DropdownMenuLabel>Source & filters</DropdownMenuLabel>
-			<DropdownMenuSeparator />
-
 			<div
 				role="presentation"
 				className="flex flex-col gap-2 px-2 py-1.5"
 				onKeyDown={(e) => e.stopPropagation()}
 			>
-				<div className="flex flex-col gap-1">
+				<div className="flex items-center gap-3">
 					<label
-						className="text-xs font-medium text-muted-foreground"
+						className="w-12 shrink-0 text-xs font-medium text-muted-foreground"
 						htmlFor="databaseSourceKind"
 					>
 						Source
 					</label>
 					<select
 						id="databaseSourceKind"
-						className="databaseNativeSelect text-sm"
+						className="databaseNativeSelect min-w-0 flex-1 text-sm"
 						value={config.source.kind}
 						onChange={(event) =>
 							void handleSave({
@@ -255,13 +252,14 @@ export function DatabaseSourceDropdown({
 				</div>
 				{config.source.kind === "folder" ? (
 					<>
-						<div className="flex flex-col gap-1">
-							<span className="text-xs font-medium text-muted-foreground">
+						<div className="flex items-center gap-3">
+							<span className="w-12 shrink-0 text-xs font-medium text-muted-foreground">
 								Folder
 							</span>
 							<DatabaseFolderPicker
 								value={config.source.value}
 								placeholder="Choose a folder"
+								triggerClassName="databaseSourceInlinePicker"
 								onChange={(value) => void handleSave({ value })}
 							/>
 						</div>
@@ -471,37 +469,15 @@ export function DatabaseSourceDropdown({
 				className="flex flex-col gap-2 px-2 py-1.5"
 				onKeyDown={(e) => e.stopPropagation()}
 			>
-				<div className="flex flex-col gap-1">
-					<span className="text-xs font-medium text-muted-foreground">
+				<div className="flex items-center gap-3">
+					<span className="w-20 shrink-0 text-xs font-medium text-muted-foreground">
 						Save new files in
 					</span>
 					<DatabaseFolderPicker
 						value={config.new_note.folder}
 						placeholder="Choose a folder"
+						triggerClassName="databaseSourceInlinePicker"
 						onChange={(value) => void handleNewNoteFolder(value)}
-					/>
-				</div>
-				<div className="flex flex-col gap-1">
-					<label
-						className="text-xs font-medium text-muted-foreground"
-						htmlFor="databaseTitlePrefix"
-					>
-						Title prefix
-					</label>
-					<Input
-						id="databaseTitlePrefix"
-						className="h-7 text-sm"
-						value={config.new_note.title_prefix}
-						placeholder="Untitled"
-						onChange={(event) =>
-							void onChangeConfig({
-								...config,
-								new_note: {
-									...config.new_note,
-									title_prefix: event.target.value,
-								},
-							})
-						}
 					/>
 				</div>
 			</div>

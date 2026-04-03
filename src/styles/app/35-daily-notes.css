@@ -18,6 +18,39 @@
 	transition: background var(--transition-fast), color var(--transition-fast);
 }
 
+.sidebarNewActionGroup {
+	position: relative;
+	width: 100%;
+}
+
+.sidebarQuickActionSplit {
+	width: 100%;
+	display: flex;
+	align-items: stretch;
+	gap: 0;
+}
+
+.sidebarQuickActionPrimary {
+	min-width: 0;
+}
+
+.sidebarQuickActionChevron {
+	flex: 0 0 32px;
+	width: 32px;
+	justify-content: center;
+	padding-inline: 0;
+	border-left: 1px solid
+		color-mix(in srgb, var(--text-inverse) 22%, transparent);
+}
+
+.sidebarQuickActionChevronIcon {
+	transition: transform var(--transition-fast);
+}
+
+.sidebarQuickActionChevronIcon.is-open {
+	transform: rotate(180deg);
+}
+
 .sidebarQuickActionBtn:hover {
 	background: var(--bg-hover);
 	color: var(--text-primary);
@@ -26,6 +59,7 @@
 .sidebarQuickActionBtn[data-kind="new-note"] {
 	min-height: 34px;
 	padding: 6px var(--space-2);
+	font-size: 13px;
 	color: var(--text-inverse);
 	background: var(--interactive-accent);
 	border: 1px solid
@@ -33,7 +67,23 @@
 	box-shadow: 0 1px 2px color-mix(in srgb, var(--text-primary) 12%, transparent);
 }
 
+.sidebarQuickActionSplit[data-kind="new-note"] {
+	border-radius: var(--radius-md);
+	overflow: hidden;
+	box-shadow: 0 1px 2px color-mix(in srgb, var(--text-primary) 12%, transparent);
+}
+
+.sidebarQuickActionSplit[data-kind="new-note"] .sidebarQuickActionBtn {
+	border-radius: 0;
+	box-shadow: none;
+}
+
 .sidebarQuickActionBtn[data-kind="new-note"]:hover {
+	background: var(--interactive-accent-hover);
+	color: var(--text-inverse);
+}
+
+.sidebarQuickActionSplit[data-kind="new-note"]:hover .sidebarQuickActionBtn {
 	background: var(--interactive-accent-hover);
 	color: var(--text-inverse);
 }
@@ -42,6 +92,16 @@
 	outline: none;
 	box-shadow: 0 0 0 2px color-mix(in srgb, var(--bg-sidebar) 88%, transparent),
 		0 0 0 4px color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+}
+
+.sidebarQuickActionSplit[data-kind="new-note"]:focus-within {
+	box-shadow: 0 0 0 2px color-mix(in srgb, var(--bg-sidebar) 88%, transparent),
+		0 0 0 4px color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+}
+
+.sidebarQuickActionSplit[data-kind="new-note"]
+	.sidebarQuickActionBtn[data-kind="new-note"]:focus-visible {
+	box-shadow: none;
 }
 
 .sidebarQuickActionBtn:disabled {
@@ -70,6 +130,78 @@
 .sidebarQuickActionBtn[data-kind="new-note"] > svg,
 .sidebarQuickActionBtn[data-kind="new-note"] .sidebarQuickActionLabel {
 	color: inherit;
+}
+
+.sidebarQuickActionMenu {
+	position: absolute;
+	top: calc(100% + 8px);
+	right: 0;
+	left: auto;
+	width: max-content;
+	min-width: 0;
+	max-width: min(280px, calc(100vw - 48px));
+	z-index: 20;
+	display: flex;
+	flex-direction: column;
+	gap: 0;
+	padding: 3px;
+	background: var(--interactive-accent);
+	border: 1px solid
+		color-mix(in srgb, var(--interactive-accent) 72%, var(--border-strong));
+	border-radius: var(--radius-md);
+	box-shadow:
+		0 10px 22px color-mix(in srgb, black 16%, transparent),
+		0 2px 6px color-mix(in srgb, black 9%, transparent);
+}
+
+.sidebarQuickActionMenuItem {
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+	gap: 6px;
+	width: auto;
+	height: 24px;
+	padding: 0 5px;
+	white-space: nowrap;
+	background: transparent;
+	border: none;
+	border-radius: calc(var(--radius-md) - 4px);
+	color: var(--text-inverse);
+	font-size: 13px;
+	line-height: 1.1;
+	font-weight: var(--font-medium);
+	font-family: inherit;
+	letter-spacing: 0;
+	text-align: left;
+	cursor: pointer;
+	transition:
+		background var(--transition-fast),
+		color var(--transition-fast);
+}
+
+.sidebarQuickActionMenuItem:hover,
+.sidebarQuickActionMenuItem:focus-visible {
+	outline: none;
+	background: color-mix(in srgb, black 12%, transparent);
+	color: var(--text-inverse);
+}
+
+.sidebarQuickActionMenuItem svg {
+	flex: 0 0 auto;
+	width: 14px;
+	height: 14px;
+	color: inherit;
+}
+
+.sidebarQuickActionMenuItem span {
+	display: block;
+	line-height: 1;
+}
+
+.sidebarQuickActionMenuDivider {
+	height: 1px;
+	margin: 1px 3px;
+	background: color-mix(in srgb, var(--text-inverse) 16%, transparent);
 }
 
 .sidebarQuickActionHomeIcon {
