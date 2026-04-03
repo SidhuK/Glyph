@@ -88,7 +88,6 @@
 
 .settingsSidebar {
 	width: 236px;
-	min-width: 236px;
 	background: transparent;
 }
 
@@ -390,6 +389,11 @@
 @media (max-width: 900px) {
 	.settingsFrame {
 		grid-template-columns: 214px minmax(0, 1fr);
+	}
+
+	.settingsSidebar {
+		width: 214px;
+		min-width: 214px;
 	}
 
 	.settingsTabPanel {

@@ -25,8 +25,6 @@ pub struct DatabaseSource {
 pub struct DatabaseNewNoteConfig {
     #[serde(default)]
     pub folder: String,
-    #[serde(default)]
-    pub title_prefix: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

@@ -71,6 +71,7 @@
 		var(--bg-primary) 92%,
 		var(--bg-secondary)
 	);
+
 	border-radius: var(--database-dropdown-radius);
 	border: 1px solid var(--database-dropdown-border);
 	background: var(--database-dropdown-background);
@@ -2024,6 +2025,7 @@
 		color-mix(in srgb, black 10%, transparent), 0 1px 0
 		color-mix(in srgb, white 8%, transparent);
 	--database-control-radius: calc(var(--radius-md) + 1px);
+
 	min-width: 172px;
 	width: max-content;
 	max-width: min(220px, calc(100vw - 24px));
@@ -2036,12 +2038,16 @@
 }
 
 .databaseBoardContextMenuItem {
+	display: block;
+	max-width: 100%;
 	min-height: 32px;
 	gap: 8px;
 	padding: 0 10px;
+	overflow: hidden;
 	border-radius: var(--database-control-radius);
 	font-size: 0.82rem;
 	color: var(--text-secondary);
+	text-overflow: ellipsis;
 	white-space: nowrap;
 }
 
