@@ -28,6 +28,12 @@ export interface SettingsTabMeta {
 	badgeIcon?: () => ReactElement;
 }
 
+export interface SettingsTabGroup {
+	id: string;
+	label: string;
+	tabs: SettingsTabMeta[];
+}
+
 export const SETTINGS_TABS: SettingsTabMeta[] = [
 	{
 		id: "general",
@@ -71,6 +77,41 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 export const SETTINGS_TAB_IDS = new Set<SettingsTab>(
 	SETTINGS_TABS.map((tab) => tab.id),
 );
+
+export const SETTINGS_TAB_GROUPS: SettingsTabGroup[] = [
+	{
+		id: "workspace",
+		label: "Workspace",
+		tabs: SETTINGS_TABS.filter(
+			(tab) =>
+				tab.id === "general" || tab.id === "appearance" || tab.id === "space",
+		),
+	},
+	{
+		id: "services",
+		label: "Features",
+		tabs: SETTINGS_TABS.filter((tab) => tab.id === "ai" || tab.id === "git"),
+	},
+	{
+		id: "system",
+		label: "System",
+		tabs: SETTINGS_TABS.filter(
+			(tab) => tab.id === "advanced" || tab.id === "about",
+		),
+	},
+];
+
+const coveredSettingsTabIds = new Set(
+	SETTINGS_TAB_GROUPS.flatMap((group) => group.tabs.map((tab) => tab.id)),
+);
+
+if (import.meta.env.DEV) {
+	for (const id of SETTINGS_TAB_IDS) {
+		if (!coveredSettingsTabIds.has(id)) {
+			console.warn(`Settings tab "${id}" not assigned to any group`);
+		}
+	}
+}
 
 export function isSettingsTab(tab: string): tab is SettingsTab {
 	return SETTINGS_TAB_IDS.has(tab as SettingsTab);

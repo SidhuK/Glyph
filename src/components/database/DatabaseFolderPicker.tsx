@@ -1,7 +1,10 @@
+import { Folder03Icon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { useEffect, useMemo, useState } from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { type FsEntry, invoke } from "../../lib/tauri";
-import { ChevronRight, FolderClosed, Search } from "../Icons";
+import { cn } from "../../lib/utils";
+import { ChevronRight, Search } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { Input } from "../ui/shadcn/input";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
@@ -11,6 +14,7 @@ interface DatabaseFolderPickerProps {
 	value: string;
 	onChange: (value: string) => void;
 	placeholder?: string;
+	triggerClassName?: string;
 }
 
 interface FolderBrowserState {
@@ -45,6 +49,7 @@ export function DatabaseFolderPicker({
 	value,
 	onChange,
 	placeholder = "Choose a folder",
+	triggerClassName,
 }: DatabaseFolderPickerProps) {
 	const [open, setOpen] = useState(false);
 	const [query, setQuery] = useState("");
@@ -120,10 +125,10 @@ export function DatabaseFolderPicker({
 				<Button
 					type="button"
 					variant="outline"
-					className="databasePickerTrigger"
+					className={cn("databasePickerTrigger", triggerClassName)}
 				>
 					<span className="databasePickerTriggerIcon">
-						<FolderClosed size={13} />
+						<HugeiconsIcon icon={Folder03Icon} size={14} strokeWidth={1.7} />
 					</span>
 					<span className="databasePickerTriggerText">
 						<span className="databasePickerTriggerLabel">{selectedLabel}</span>
@@ -176,7 +181,7 @@ export function DatabaseFolderPicker({
 								setOpen(false);
 							}}
 						>
-							<FolderClosed size={12} />
+							<HugeiconsIcon icon={Folder03Icon} size={13} strokeWidth={1.7} />
 							<span>{folderName(browserPath)}</span>
 						</button>
 						{loading ? (

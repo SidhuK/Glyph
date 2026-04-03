@@ -2,11 +2,19 @@ import {
 	ArrowLeftBigIcon,
 	ArrowRightBigIcon,
 	CalendarAdd01Icon,
+	Clock02Icon,
 	Note03Icon,
 	TaskAdd02Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+	type CSSProperties,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { useSpace, useUILayoutContext } from "../../contexts";
 import { useDailyNote } from "../../hooks/useDailyNote";
 import {
@@ -393,6 +401,12 @@ export function CalendarPane({
 		overdueTasks.length > 0 ||
 		ongoingTasks.length > 0;
 	const noteActivity = data?.detail.note_activity ?? [];
+	const activityExtraWidth = useMemo(() => {
+		if (noteActivity.length >= 4) return 240;
+		if (noteActivity.length === 3) return 160;
+		if (noteActivity.length === 2) return 80;
+		return 0;
+	}, [noteActivity.length]);
 
 	useEffect(() => {
 		if (!selectedRecentNotePath) return;
@@ -432,6 +446,33 @@ export function CalendarPane({
 
 				{/* ── Centered content area ── */}
 				<div className="calendarCenterWrap">
+					{/* ── Recent notes card strip ── */}
+					{noteActivity.length > 0 ? (
+						<div
+							className="calendarMiniDb"
+							style={
+								{
+									"--calendar-activity-extra-width": `${activityExtraWidth}px`,
+								} as CSSProperties
+							}
+						>
+							<div className="calendarCardSectionHeader calendarMiniDbHeader">
+								<div className="calendarMiniDbHeaderInfo">
+									<h4 className="calendarCardSectionTitle">
+										<HugeiconsIcon icon={Clock02Icon} size={14} />
+										<span>Activity</span>
+									</h4>
+								</div>
+							</div>
+							<RecentNotesBoardStrip
+								notes={noteActivity}
+								selectedNotePath={selectedRecentNotePath}
+								onSelectNote={handleSelectRecentNote}
+								onOpenNote={handleOpenRecentNote}
+							/>
+						</div>
+					) : null}
+
 					{/* ── Task composer ── */}
 					{dailyNotesFolder ? (
 						<div className="calendarTaskComposer">
@@ -578,23 +619,6 @@ export function CalendarPane({
 						</div>
 					</div>
 				</div>
-
-				{/* ── Recent notes card strip ── */}
-				{noteActivity.length > 0 ? (
-					<div className="calendarMiniDb">
-						<div className="calendarCardSectionHeader calendarMiniDbHeader">
-							<div className="calendarMiniDbHeaderInfo">
-								<h4 className="calendarCardSectionTitle">Activity</h4>
-							</div>
-						</div>
-						<RecentNotesBoardStrip
-							notes={noteActivity}
-							selectedNotePath={selectedRecentNotePath}
-							onSelectNote={handleSelectRecentNote}
-							onOpenNote={handleOpenRecentNote}
-						/>
-					</div>
-				) : null}
 
 				{loading ? <div className="calendarLoading">Refreshing…</div> : null}
 			</section>

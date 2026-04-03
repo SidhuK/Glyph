@@ -123,7 +123,6 @@ export interface DatabaseSource {
 
 export interface DatabaseNewNoteConfig {
 	folder: string;
-	title_prefix: string;
 }
 
 export interface DatabaseViewState {

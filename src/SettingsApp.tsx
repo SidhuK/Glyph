@@ -24,6 +24,7 @@ import { GitSettingsPane } from "./components/settings/GitSettingsPane";
 import { SpaceSettingsPane } from "./components/settings/SpaceSettingsPane";
 import {
 	SETTINGS_TABS,
+	SETTINGS_TAB_GROUPS,
 	type SettingsTab,
 	isSettingsTab,
 } from "./components/settings/settingsConfig";
@@ -31,6 +32,7 @@ import { Button } from "./components/ui/shadcn/button";
 import { useLicenseStatus } from "./lib/license";
 import { useTauriEvent } from "./lib/tauriEvents";
 import { onWindowDragMouseDown } from "./utils/window";
+import { cn } from "./lib/utils";
 
 function parseTabFromHash(hash: string): SettingsTab {
 	const query = hash.split("?")[1] ?? "";
@@ -122,90 +124,139 @@ export default function SettingsApp() {
 				/>
 				<Button
 					type="button"
-					className="settingsWindowClose"
+					className="settingsWindowClose windowChromeSidebarToggle"
 					variant="ghost"
 					size="icon-sm"
 					aria-label="Close settings"
 					title="Close settings (Esc)"
+					data-window-drag-ignore
 					onClick={closeWindow}
 				>
 					<X size={14} />
 				</Button>
-
 				<main className="settingsMain">
 					<div className="settingsFrame">
-						<nav className="settingsTabs" aria-label="Settings sections">
-							<header className="settingsNavHeader">
-								<h1 className="settingsNavTitle">Glyph</h1>
-								<p className="settingsNavMeta">Preferences</p>
-							</header>
-							{SETTINGS_TABS.map((tab) => (
-								<button
-									key={tab.id}
-									type="button"
-									data-tab={tab.id}
-									className={`settingsTabButton ${activeTab === tab.id ? "active" : ""}`}
-									onClick={() => switchTab(tab.id)}
-									aria-pressed={activeTab === tab.id}
-									aria-current={activeTab === tab.id ? "page" : undefined}
-								>
-									<span className="settingsTabIcon" aria-hidden="true">
-										{tab.renderIcon()}
-									</span>
-									<span className="settingsTabLabel">{tab.label}</span>
-									{tab.badgeText ? (
-										<span
-											className={`settingsTabBadge earlyAccessBadge ${tab.id === "git" ? "settingsBetaBadge" : ""}`}
-										>
-											{tab.badgeIcon ? tab.badgeIcon() : null}
-											<span>{tab.badgeText}</span>
-										</span>
-									) : null}
-								</button>
-							))}
-							{licenseStatus?.mode === "community_build" ? (
-								<div className="settingsFeedbackCard settingsFeedbackCardCommunity">
-									<div className="settingsFeedbackEyebrow">Community Build</div>
-									<div className="settingsFeedbackTitle">
-										Thanks for downloading and building Glyph yourself.
+						<nav
+							className="sidebar settingsSidebar"
+							aria-label="Settings sections"
+						>
+							<div className="sidebarContentRoot settingsSidebarContentRoot">
+								<div className="sidebarDragLayer" aria-hidden="true" />
+								<div
+									className="sidebarHeader settingsSidebarHeader"
+									onMouseDown={onWindowDragMouseDown}
+								/>
+
+								<div className="sidebarSection sidebarSectionGrow settingsSidebarNavSection">
+									<div className="settingsSidebarGroups">
+										{SETTINGS_TAB_GROUPS.map((group) => (
+											<section
+												key={group.id}
+												className="settingsSidebarGroup"
+												aria-label={group.label}
+											>
+												<header className="settingsSidebarGroupHeader">
+													<div className="settingsSidebarGroupTitle">
+														{group.label}
+													</div>
+												</header>
+												<div className="sidebarQuickActions settingsSidebarTabs">
+													{group.tabs.map((tab) => (
+														<button
+															key={tab.id}
+															type="button"
+															data-tab={tab.id}
+															className={cn(
+																"sidebarQuickActionBtn settingsTabButton",
+																activeTab === tab.id &&
+																	"settingsTabButtonActive",
+															)}
+															onClick={() => switchTab(tab.id)}
+															aria-pressed={activeTab === tab.id}
+															aria-current={
+																activeTab === tab.id ? "page" : undefined
+															}
+														>
+															<span
+																className="settingsTabIcon"
+																aria-hidden="true"
+															>
+																{tab.renderIcon()}
+															</span>
+															<span className="sidebarQuickActionLabel settingsTabLabel">
+																{tab.label}
+															</span>
+															{tab.badgeText ? (
+																<span
+																	className={`settingsTabBadge earlyAccessBadge ${tab.id === "git" ? "settingsBetaBadge" : ""}`}
+																>
+																	{tab.badgeIcon ? tab.badgeIcon() : null}
+																	<span>{tab.badgeText}</span>
+																</span>
+															) : null}
+														</button>
+													))}
+												</div>
+											</section>
+										))}
 									</div>
-									<p className="settingsFeedbackBody">
-										Support the project with the official license to get
-										automatic updates and the official build.
-									</p>
-									<Button
-										type="button"
-										className="settingsFeedbackButton settingsFeedbackButtonCommunity"
-										onClick={() => void openUrl(licenseStatus.purchase_url)}
-									>
-										Buy Official License
-										<HugeiconsIcon icon={ArrowUpRight01Icon} size={14} />
-									</Button>
 								</div>
-							) : (
-								<div className="settingsFeedbackCard">
-									<div className="settingsFeedbackEyebrow">
-										Still in Early Access
-									</div>
-									<div className="settingsFeedbackTitle">Help shape Glyph</div>
-									<p className="settingsFeedbackBody">
-										Glyph is actively evolving and changing, so you may run into
-										rough edges here and there. If something feels off, I’d
-										really love to hear about it.
-									</p>
-									<Button
-										type="button"
-										className="settingsFeedbackButton"
-										onClick={() =>
-											void openUrl("https://github.com/Sidhuk/Glyph/issues")
-										}
-									>
-										<HugeiconsIcon icon={BubbleChatQuestionIcon} size={15} />
-										Send Feedback
-										<HugeiconsIcon icon={ArrowUpRight01Icon} size={14} />
-									</Button>
+
+								<div className="sidebarFooter settingsSidebarFooter">
+									{licenseStatus?.mode === "community_build" ? (
+										<div className="settingsFeedbackCard settingsFeedbackCardCommunity">
+											<div className="settingsFeedbackEyebrow">
+												Community Build
+											</div>
+											<div className="settingsFeedbackTitle">
+												Thanks for downloading and building Glyph yourself.
+											</div>
+											<p className="settingsFeedbackBody">
+												Support the project with the official license to get
+												automatic updates and the official build.
+											</p>
+											<Button
+												type="button"
+												className="settingsFeedbackButton settingsFeedbackButtonCommunity"
+												onClick={() => void openUrl(licenseStatus.purchase_url)}
+											>
+												Buy Official License
+												<HugeiconsIcon icon={ArrowUpRight01Icon} size={14} />
+											</Button>
+										</div>
+									) : (
+										<div className="settingsFeedbackCard">
+											<div className="settingsFeedbackEyebrow">
+												Still in Early Access
+											</div>
+											<div className="settingsFeedbackTitle">
+												Help shape Glyph
+											</div>
+											<p className="settingsFeedbackBody">
+												Glyph is actively evolving and changing, so you may run
+												into rough edges here and there. If something feels off,
+												I’d really love to hear about it.
+											</p>
+											<Button
+												type="button"
+												className="settingsFeedbackButton"
+												onClick={() =>
+													void openUrl(
+														"https://glyph.userjot.com/?cursor=1&order=top&limit=10",
+													)
+												}
+											>
+												<HugeiconsIcon
+													icon={BubbleChatQuestionIcon}
+													size={15}
+												/>
+												Send Feedback
+												<HugeiconsIcon icon={ArrowUpRight01Icon} size={14} />
+											</Button>
+										</div>
+									)}
 								</div>
-							)}
+							</div>
 						</nav>
 						<div className="settingsTabPanel">
 							<header className="settingsPanelHeader">

@@ -1,6 +1,6 @@
 import {
+	BubbleChatQuestionIcon,
 	CodesandboxIcon,
-	GithubIcon,
 	NewTwitterIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -233,13 +233,13 @@ export function AboutSettingsPane() {
 								variant="outline"
 								onClick={() =>
 									void openUrl(
-										"https://github.com/SidhuK/Glyph/issues/new/choose",
+										"https://glyph.userjot.com/?cursor=1&order=top&limit=10",
 									)
 								}
-								aria-label="GitHub"
-								title="GitHub"
+								aria-label="Feedback"
+								title="Feedback"
 							>
-								<HugeiconsIcon icon={GithubIcon} size={16} />
+								<HugeiconsIcon icon={BubbleChatQuestionIcon} size={16} />
 							</Button>
 						</div>
 					</SettingsRow>

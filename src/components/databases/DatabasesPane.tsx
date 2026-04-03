@@ -30,6 +30,9 @@ import {
 	DropdownMenu,
 	DropdownMenuContent,
 	DropdownMenuItem,
+	DropdownMenuLabel,
+	DropdownMenuRadioGroup,
+	DropdownMenuRadioItem,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "../ui/shadcn/dropdown-menu";
@@ -717,12 +720,12 @@ export function DatabasesPane({
 						</DropdownMenuTrigger>
 						<DropdownMenuContent
 							align="start"
-							className="databasesDropdownContent databasePickerMenu"
+							className="databasesDropdownContent databasesCollectionMenu"
 						>
 							{summaries.map((summary) => (
 								<DropdownMenuItem
 									key={summary.id}
-									className={`databasesDropdownItem${summary.id === selectedDatabaseId ? " is-selected" : ""}`}
+									className={`databasesDropdownItem databasesCollectionMenuItem${summary.id === selectedDatabaseId ? " is-selected" : ""}`}
 									onSelect={() => setSelectedDatabaseId(summary.id)}
 								>
 									<HugeiconsIcon
@@ -736,7 +739,7 @@ export function DatabasesPane({
 							{summaries.length > 0 ? <DropdownMenuSeparator /> : null}
 							<DropdownMenuItem
 								onSelect={() => void handleCreateDatabase()}
-								className="databasesDropdownItem"
+								className="databasesDropdownItem databasesCollectionMenuItem"
 							>
 								<Plus size={13} />
 								<span>New collection</span>
@@ -777,16 +780,6 @@ export function DatabasesPane({
 										view: {
 											...activeConfig.view,
 											board_group_by: groupColumnId,
-										},
-									});
-								}}
-								onDatabaseViewChange={(view) => {
-									if (!activeConfig) return;
-									void handleSaveConfig({
-										...activeConfig,
-										view: {
-											...activeConfig.view,
-											layout: view,
 										},
 									});
 								}}
@@ -923,20 +916,58 @@ export function DatabasesPane({
 														</DropdownMenuTrigger>
 														<DropdownMenuContent
 															align="start"
-															className="databasesDropdownContent databasePickerMenu"
+															className="databasesDropdownContent databasesViewTabMenuContent"
 														>
+															<DropdownMenuLabel className="databasesViewTabMenuLabel">
+																View type
+															</DropdownMenuLabel>
+															<DropdownMenuRadioGroup
+																value={view.layout}
+																onValueChange={(layout) => {
+																	if (
+																		!activeConfig ||
+																		(layout !== "table" && layout !== "board") ||
+																		view.layout === layout
+																	) {
+																		return;
+																	}
+																	void handleSaveConfig({
+																		...activeConfig,
+																		view: {
+																			...activeConfig.view,
+																			layout,
+																		},
+																	});
+																}}
+															>
+																<DropdownMenuRadioItem
+																	value="table"
+																	className="databasesDropdownItem databasesViewTabMenuItem"
+																>
+																	<Table size={13} />
+																	<span>Table</span>
+																</DropdownMenuRadioItem>
+																<DropdownMenuRadioItem
+																	value="board"
+																	className="databasesDropdownItem databasesViewTabMenuItem"
+																>
+																	<Kanban size={13} />
+																	<span>Board</span>
+																</DropdownMenuRadioItem>
+															</DropdownMenuRadioGroup>
+															<DropdownMenuSeparator className="databasesViewTabMenuSeparator" />
 															<DropdownMenuItem
 																onSelect={() => startViewRename(view.id)}
-																className="databasesDropdownItem"
+																className="databasesDropdownItem databasesViewTabMenuItem"
 															>
 																<Edit size={13} />
 																<span>Rename</span>
 															</DropdownMenuItem>
-															<DropdownMenuSeparator />
+															<DropdownMenuSeparator className="databasesViewTabMenuSeparator" />
 															<DropdownMenuItem
 																disabled={document.database.views.length <= 1}
 																onSelect={() => void handleDeleteView(view.id)}
-																className="databasesDropdownItem databasesDropdownItemDanger"
+																className="databasesDropdownItem databasesDropdownItemDanger databasesViewTabMenuItem"
 															>
 																<Trash2 size={13} />
 																<span>Delete view</span>
