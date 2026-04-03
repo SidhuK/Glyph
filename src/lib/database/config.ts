@@ -27,7 +27,6 @@ export function createDefaultDatabaseConfig(dirPath: string): DatabaseConfig {
 		},
 		new_note: {
 			folder: normalized,
-			title_prefix: "Untitled",
 		},
 		view: {
 			layout: "table",
@@ -162,7 +161,6 @@ export function createStarterDatabaseMarkdown(
 		`      recursive: ${config.source.recursive ? "true" : "false"}`,
 		"    new_note:",
 		`      folder: ${yamlString(config.new_note.folder)}`,
-		`      title_prefix: ${yamlString(config.new_note.title_prefix)}`,
 		"    view:",
 		`      layout: ${config.view.layout}`,
 		...(config.view.board_group_by

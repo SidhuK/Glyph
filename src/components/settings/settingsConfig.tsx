@@ -101,6 +101,18 @@ export const SETTINGS_TAB_GROUPS: SettingsTabGroup[] = [
 	},
 ];
 
+const coveredSettingsTabIds = new Set(
+	SETTINGS_TAB_GROUPS.flatMap((group) => group.tabs.map((tab) => tab.id)),
+);
+
+if (import.meta.env.DEV) {
+	for (const id of SETTINGS_TAB_IDS) {
+		if (!coveredSettingsTabIds.has(id)) {
+			console.warn(`Settings tab "${id}" not assigned to any group`);
+		}
+	}
+}
+
 export function isSettingsTab(tab: string): tab is SettingsTab {
 	return SETTINGS_TAB_IDS.has(tab as SettingsTab);
 }

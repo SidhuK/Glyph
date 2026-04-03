@@ -354,7 +354,6 @@ pub async fn databases_create(
             },
             new_note: super::types::DatabaseNewNoteConfig {
                 folder: String::new(),
-                title_prefix: "Untitled".to_string(),
             },
             schema: Vec::new(),
             views: vec![default_view("Table")],
@@ -551,14 +550,7 @@ pub async fn databases_create_row(
         let title = title
             .map(|value| value.trim().to_string())
             .filter(|value| !value.is_empty())
-            .unwrap_or_else(|| {
-                let prefix = database.new_note.title_prefix.trim();
-                if prefix.is_empty() {
-                    "Untitled".to_string()
-                } else {
-                    prefix.to_string()
-                }
-            });
+            .unwrap_or_else(|| "Untitled".to_string());
         let slug = slugify_title(&title);
         let mut candidate = if folder.is_empty() {
             format!("{slug}.md")

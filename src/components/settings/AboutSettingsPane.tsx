@@ -1,6 +1,6 @@
 import {
+	BubbleChatQuestionIcon,
 	CodesandboxIcon,
-	GithubIcon,
 	NewTwitterIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -239,7 +239,7 @@ export function AboutSettingsPane() {
 								aria-label="Feedback"
 								title="Feedback"
 							>
-								<HugeiconsIcon icon={GithubIcon} size={16} />
+								<HugeiconsIcon icon={BubbleChatQuestionIcon} size={16} />
 							</Button>
 						</div>
 					</SettingsRow>

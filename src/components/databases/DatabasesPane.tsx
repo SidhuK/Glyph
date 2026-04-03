@@ -31,6 +31,8 @@ import {
 	DropdownMenuContent,
 	DropdownMenuItem,
 	DropdownMenuLabel,
+	DropdownMenuRadioGroup,
+	DropdownMenuRadioItem,
 	DropdownMenuSeparator,
 	DropdownMenuTrigger,
 } from "../ui/shadcn/dropdown-menu";
@@ -919,38 +921,40 @@ export function DatabasesPane({
 															<DropdownMenuLabel className="databasesViewTabMenuLabel">
 																View type
 															</DropdownMenuLabel>
-															<DropdownMenuItem
-																onSelect={() => {
-																	if (!activeConfig || view.layout === "table") return;
+															<DropdownMenuRadioGroup
+																value={view.layout}
+																onValueChange={(layout) => {
+																	if (
+																		!activeConfig ||
+																		(layout !== "table" && layout !== "board") ||
+																		view.layout === layout
+																	) {
+																		return;
+																	}
 																	void handleSaveConfig({
 																		...activeConfig,
 																		view: {
 																			...activeConfig.view,
-																			layout: "table",
+																			layout,
 																		},
 																	});
 																}}
-																className={`databasesDropdownItem databasesViewTabMenuItem${view.layout === "table" ? " is-selected" : ""}`}
 															>
-																<Table size={13} />
-																<span>Table</span>
-															</DropdownMenuItem>
-															<DropdownMenuItem
-																onSelect={() => {
-																	if (!activeConfig || view.layout === "board") return;
-																	void handleSaveConfig({
-																		...activeConfig,
-																		view: {
-																			...activeConfig.view,
-																			layout: "board",
-																		},
-																	});
-																}}
-																className={`databasesDropdownItem databasesViewTabMenuItem${view.layout === "board" ? " is-selected" : ""}`}
-															>
-																<Kanban size={13} />
-																<span>Board</span>
-															</DropdownMenuItem>
+																<DropdownMenuRadioItem
+																	value="table"
+																	className="databasesDropdownItem databasesViewTabMenuItem"
+																>
+																	<Table size={13} />
+																	<span>Table</span>
+																</DropdownMenuRadioItem>
+																<DropdownMenuRadioItem
+																	value="board"
+																	className="databasesDropdownItem databasesViewTabMenuItem"
+																>
+																	<Kanban size={13} />
+																	<span>Board</span>
+																</DropdownMenuRadioItem>
+															</DropdownMenuRadioGroup>
 															<DropdownMenuSeparator className="databasesViewTabMenuSeparator" />
 															<DropdownMenuItem
 																onSelect={() => startViewRename(view.id)}
