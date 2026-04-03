@@ -87,7 +87,9 @@
 	height: var(--ui-toggle-track-height);
 	border-radius: 999px;
 	background: color-mix(in srgb, var(--bg-tertiary) 78%, var(--bg-secondary));
-	transition: background-color var(--transition-base);
+	transition:
+		background-color 220ms cubic-bezier(0.22, 1, 0.36, 1),
+		box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .uiToggle--withCopy .uiToggleControl {
@@ -102,27 +104,42 @@
 	height: var(--ui-toggle-thumb-size);
 	border-radius: 999px;
 	background: var(--color-white);
-	transition: transform var(--transition-base), background-color
-		var(--transition-base);
+	box-shadow:
+		0 1px 2px color-mix(in srgb, var(--color-black) 18%, transparent),
+		0 3px 8px color-mix(in srgb, var(--color-black) 10%, transparent);
+	transform: translateX(0) scale(1);
+	transform-origin: center;
+	transition:
+		transform 380ms cubic-bezier(0.22, 1.7, 0.36, 1),
+		background-color 180ms ease,
+		box-shadow 220ms cubic-bezier(0.22, 1, 0.36, 1);
+	will-change: transform;
 }
 
 .uiToggleInput:focus-visible ~ .uiToggleControl {
 	outline: 2px solid
-		color-mix(in srgb, var(--interactive-accent) 28%, transparent);
+		color-mix(in srgb, var(--accent-color) 28%, transparent);
 	outline-offset: 2px;
 }
 
 .uiToggleInput:checked ~ .uiToggleControl {
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent) 72%,
-		var(--bg-tertiary)
-	);
+	background: var(--accent-color);
 }
 
 .uiToggleInput:checked ~ .uiToggleControl .uiToggleThumb {
-	transform: translateX(var(--ui-toggle-thumb-translate));
+	transform: translateX(var(--ui-toggle-thumb-translate)) scale(1.07, 0.95);
 	background: var(--text-inverse);
+	box-shadow:
+		0 1px 2px color-mix(in srgb, var(--color-black) 20%, transparent),
+		0 4px 10px color-mix(in srgb, var(--color-black) 14%, transparent);
+}
+
+.uiToggle:active .uiToggleThumb {
+	transform: translateX(0) scale(0.89, 1.12);
+}
+
+.uiToggle:has(.uiToggleInput:checked):active .uiToggleThumb {
+	transform: translateX(var(--ui-toggle-thumb-translate)) scale(1.14, 0.9);
 }
 
 @media (prefers-reduced-motion: reduce) {

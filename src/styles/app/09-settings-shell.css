@@ -86,6 +86,62 @@
 	border-right: 1px solid var(--border-light);
 }
 
+.settingsSidebar {
+	width: 236px;
+	min-width: 236px;
+	background: transparent;
+}
+
+.settingsSidebarContentRoot {
+	border-right-color: var(--border-light);
+	background: var(--settings-surface);
+}
+
+.settingsSidebarHeader {
+	height: 36px;
+	min-height: 36px;
+	padding: 0;
+	-webkit-app-region: drag;
+}
+
+.settingsSidebarActions {
+	right: 14px;
+}
+
+.settingsSidebarNavSection {
+	padding-top: 0;
+}
+
+.settingsSidebarGroups {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+	padding: 4px 0 0;
+}
+
+.settingsSidebarGroup {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.settingsSidebarGroupHeader {
+	display: flex;
+	flex-direction: column;
+	padding: 0 14px;
+}
+
+.settingsSidebarGroupTitle {
+	font-size: 11px;
+	font-weight: var(--font-semibold);
+	color: var(--text-tertiary);
+}
+
+.settingsSidebarTabs {
+	gap: 2px;
+	padding: 4px 10px 12px;
+}
+
 .settingsFeedbackCard {
 	margin-top: auto;
 	display: flex;
@@ -197,26 +253,21 @@
 
 .settingsTabButton {
 	position: relative;
-	display: inline-flex;
-	align-items: center;
-	justify-content: flex-start;
-	gap: 10px;
-	min-height: 36px;
-	padding: 0 10px;
-	border-radius: var(--radius-md);
-	border: 1px solid transparent;
+	min-height: 30px;
+	padding-inline: var(--space-2);
 	color: var(--text-secondary);
 	background: transparent;
 	font-size: 12px;
 	font-weight: var(--font-medium);
 	line-height: 1;
-	transition: background var(--transition-base), border-color
-		var(--transition-base), color var(--transition-base);
+	border: 1px solid transparent;
+	transition: background var(--transition-base), border-color var(--transition-base),
+		color var(--transition-base);
 }
 
 .settingsTabIcon {
-	height: 18px;
-	width: 18px;
+	height: 16px;
+	width: 16px;
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
@@ -254,18 +305,26 @@
 
 .settingsTabButton:hover {
 	color: var(--text-primary);
-	background: var(--bg-primary);
-	border-color: var(--border-light);
+	background: var(--bg-hover);
 }
 
-.settingsTabButton.active {
+.settingsTabButtonActive {
 	color: var(--text-primary);
-	background: var(--bg-primary);
-	border-color: var(--border-default);
+	background: color-mix(in srgb, var(--bg-primary) 96%, white 4%);
+	border-color: color-mix(in srgb, var(--border-light) 35%, transparent);
+	box-shadow: var(--shadow-sm);
 }
 
-.settingsTabButton.active .settingsTabIcon {
+.settingsTabButtonActive .settingsTabIcon {
 	color: var(--text-primary);
+}
+
+.settingsSidebarFooter {
+	padding: 0 14px 14px;
+}
+
+.settingsSidebarFooter .settingsFeedbackCard {
+	margin-top: 0;
 }
 
 .settingsTabPanel {

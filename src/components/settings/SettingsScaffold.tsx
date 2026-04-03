@@ -33,6 +33,7 @@ interface SettingsSegmentedProps<T extends string> {
 	onChange: (value: T) => void;
 	ariaLabel: string;
 	disabled?: boolean;
+	className?: string;
 }
 
 interface SettingsToggleProps {
@@ -104,9 +105,10 @@ export function SettingsSegmented<T extends string>({
 	onChange,
 	ariaLabel,
 	disabled,
+	className,
 }: SettingsSegmentedProps<T>) {
 	return (
-		<fieldset className="settingsSegmented">
+		<fieldset className={cn("settingsSegmented", className)}>
 			<legend className="sr-only">{ariaLabel}</legend>
 			{options.map((option) => (
 				<button
