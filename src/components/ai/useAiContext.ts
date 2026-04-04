@@ -40,7 +40,7 @@ const MAX_VISIBLE_FOLDERS = 120;
 const MENTION_RE = /(^|\s)@([^\s@]+)/g;
 
 let aiContextIndexCache: AiContextIndexData | null = null;
-let aiContextIndexPromise: Promise<AiContextIndexData> | null = null;
+let aiContextIndexPromise: Promise<AiContextIndexData | null> | null = null;
 let aiContextEpoch = 0;
 
 export function clearAiContextCache() {
@@ -61,19 +61,20 @@ function contextKey(kind: ContextEntryKind, path: string): string {
 	return `${kind}:${path}`;
 }
 
-export async function preloadAiContextIndex(): Promise<AiContextIndexData> {
+export async function preloadAiContextIndex(): Promise<AiContextIndexData | null> {
 	if (aiContextIndexCache) return aiContextIndexCache;
 	if (!aiContextIndexPromise) {
 		const epoch = aiContextEpoch;
 		aiContextIndexPromise = invoke("ai_context_index")
 			.then((index) => {
+				if (epoch !== aiContextEpoch) {
+					return null;
+				}
 				const data = {
 					folders: index.folders,
 					files: index.files,
 				};
-				if (epoch === aiContextEpoch) {
-					aiContextIndexCache = data;
-				}
+				aiContextIndexCache = data;
 				return data;
 			})
 			.finally(() => {
@@ -140,7 +141,7 @@ export function useAiContext() {
 		void (async () => {
 			try {
 				const index = await preloadAiContextIndex();
-				if (cancelled) return;
+				if (cancelled || !index) return;
 				setFolderIndex(index.folders);
 				setFileIndex(index.files);
 			} catch (e) {
