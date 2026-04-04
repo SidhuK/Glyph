@@ -84,19 +84,25 @@ export function useAiHistory(limit = 20, options?: UseAiHistoryOptions) {
 	const [error, setError] = useState("");
 
 	const refresh = useCallback(async () => {
+		const generation = aiHistoryGeneration;
 		setListLoading(true);
 		setError("");
 		try {
 			aiHistorySummaryCache.delete(limit);
 			const list = await preloadAiHistorySummaries(limit);
+			if (generation !== aiHistoryGeneration) return;
 			setSummaries(list);
 			setSelectedJobId((prev) =>
 				prev && !list.some((item) => item.job_id === prev) ? null : prev,
 			);
 		} catch (err) {
-			setError(extractErrorMessage(err));
+			if (generation === aiHistoryGeneration) {
+				setError(extractErrorMessage(err));
+			}
 		} finally {
-			setListLoading(false);
+			if (generation === aiHistoryGeneration) {
+				setListLoading(false);
+			}
 		}
 	}, [limit]);
 

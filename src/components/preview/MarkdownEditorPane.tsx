@@ -41,6 +41,7 @@ import { Button } from "../ui/shadcn/button";
 import {
 	clearMarkdownDocCache,
 	getCachedMarkdownDoc,
+	peekCachedMarkdownDoc,
 	setCachedMarkdownDoc,
 } from "./markdownCache";
 
@@ -79,7 +80,7 @@ export function MarkdownEditorPane({
 	initialDoc = null,
 	initialError = "",
 }: MarkdownEditorPaneProps) {
-	const initialText = initialDoc?.text ?? getCachedMarkdownDoc(relPath) ?? "";
+	const initialText = initialDoc?.text ?? peekCachedMarkdownDoc(relPath) ?? "";
 	const [text, setText] = useState(initialText);
 	const [savedText, setSavedText] = useState(initialText);
 	const [mode, setMode] = useState<CanvasInlineEditorMode>("rich");
@@ -284,11 +285,10 @@ export function MarkdownEditorPane({
 		setSaving(false);
 		setAutosaveBusy(false);
 		setSyncPulse(null);
+		clearMarkdownDocCache();
 		if (spacePath === null) {
-			clearMarkdownDocCache();
 			return;
 		}
-		clearMarkdownDocCache();
 	}, [spacePath]);
 
 	const loadDoc = useCallback(

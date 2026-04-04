@@ -82,22 +82,35 @@ export function useAiProfiles() {
 	const bootstrapRequestIdRef = useRef(0);
 	const secretStatusRequestIdRef = useRef(0);
 
-	const applyBootstrap = useCallback((data: AiProfilesBootstrap) => {
-		setProfiles(data.profiles);
-		setActiveProfileId(data.activeProfileId);
-		setSecretConfigured(data.secretConfigured);
-		aiProfilesBootstrapCache = data;
-	}, []);
+	const applyBootstrap = useCallback(
+		(data: AiProfilesBootstrap, generation = aiProfilesGeneration) => {
+			if (generation !== aiProfilesGeneration) return;
+			setProfiles(data.profiles);
+			setActiveProfileId(data.activeProfileId);
+			setSecretConfigured(data.secretConfigured);
+			aiProfilesBootstrapCache = data;
+		},
+		[],
+	);
 
 	const reloadProfiles = useCallback(async () => {
+		const generation = aiProfilesGeneration;
 		const requestId = ++bootstrapRequestIdRef.current;
 		setError("");
 		try {
 			const data = await fetchAiProfilesBootstrap();
-			if (requestId !== bootstrapRequestIdRef.current) return;
-			applyBootstrap(data);
+			if (
+				requestId !== bootstrapRequestIdRef.current ||
+				generation !== aiProfilesGeneration
+			)
+				return;
+			applyBootstrap(data, generation);
 		} catch (e) {
-			if (requestId !== bootstrapRequestIdRef.current) return;
+			if (
+				requestId !== bootstrapRequestIdRef.current ||
+				generation !== aiProfilesGeneration
+			)
+				return;
 			setError(extractErrorMessage(e));
 		}
 	}, [applyBootstrap]);
@@ -105,14 +118,24 @@ export function useAiProfiles() {
 	useEffect(() => {
 		let cancelled = false;
 		(async () => {
+			const generation = aiProfilesGeneration;
 			const requestId = ++bootstrapRequestIdRef.current;
 			setError("");
 			try {
 				const data = await preloadAiProfilesData();
-				if (cancelled || requestId !== bootstrapRequestIdRef.current) return;
-				applyBootstrap(data);
+				if (
+					cancelled ||
+					requestId !== bootstrapRequestIdRef.current ||
+					generation !== aiProfilesGeneration
+				)
+					return;
+				applyBootstrap(data, generation);
 			} catch (e) {
-				if (!cancelled && requestId === bootstrapRequestIdRef.current) {
+				if (
+					!cancelled &&
+					requestId === bootstrapRequestIdRef.current &&
+					generation === aiProfilesGeneration
+				) {
 					setError(extractErrorMessage(e));
 				}
 			}
@@ -167,12 +190,17 @@ export function useAiProfiles() {
 		}
 		let cancelled = false;
 		(async () => {
+			const generation = aiProfilesGeneration;
 			const requestId = ++secretStatusRequestIdRef.current;
 			try {
 				const configured = await invoke("ai_secret_status", {
 					profile_id: activeProfileId,
 				});
-				if (!cancelled && requestId === secretStatusRequestIdRef.current) {
+				if (
+					!cancelled &&
+					requestId === secretStatusRequestIdRef.current &&
+					generation === aiProfilesGeneration
+				) {
 					setSecretConfigured(configured);
 					aiProfilesBootstrapCache = {
 						profiles,
@@ -181,7 +209,11 @@ export function useAiProfiles() {
 					};
 				}
 			} catch {
-				if (!cancelled && requestId === secretStatusRequestIdRef.current) {
+				if (
+					!cancelled &&
+					requestId === secretStatusRequestIdRef.current &&
+					generation === aiProfilesGeneration
+				) {
 					setSecretConfigured(null);
 				}
 			}
@@ -198,12 +230,18 @@ export function useAiProfiles() {
 
 	const setActive = useCallback(
 		async (id: string | null) => {
+			const generation = aiProfilesGeneration;
 			const previous = activeProfileId;
 			const requestId = ++lastSetRequestIdRef.current;
 			setActiveProfileId(id);
 			setError("");
 			try {
 				await invoke("ai_active_profile_set", { id });
+				if (
+					requestId !== lastSetRequestIdRef.current ||
+					generation !== aiProfilesGeneration
+				)
+					return;
 				aiProfilesBootstrapCache = {
 					profiles,
 					activeProfileId: id,
@@ -213,7 +251,11 @@ export function useAiProfiles() {
 							: null,
 				};
 			} catch (e) {
-				if (requestId !== lastSetRequestIdRef.current) return;
+				if (
+					requestId !== lastSetRequestIdRef.current ||
+					generation !== aiProfilesGeneration
+				)
+					return;
 				setActiveProfileId(previous);
 				setError(extractErrorMessage(e));
 			}
@@ -225,13 +267,16 @@ export function useAiProfiles() {
 		async (modelId: string) => {
 			const profile = profiles.find((p) => p.id === activeProfileId);
 			if (!profile) return;
+			const generation = aiProfilesGeneration;
 			const updated = { ...profile, model: modelId };
 			setError("");
 			try {
 				const saved = await invoke("ai_profile_upsert", {
 					profile: updated,
 				});
+				if (generation !== aiProfilesGeneration) return;
 				setProfiles((prev) => {
+					if (generation !== aiProfilesGeneration) return prev;
 					const next = prev.map((p) => (p.id === saved.id ? saved : p));
 					aiProfilesBootstrapCache = {
 						profiles: next,
@@ -241,7 +286,9 @@ export function useAiProfiles() {
 					return next;
 				});
 			} catch (e) {
-				setError(extractErrorMessage(e));
+				if (generation === aiProfilesGeneration) {
+					setError(extractErrorMessage(e));
+				}
 			}
 		},
 		[activeProfileId, profiles, secretConfigured],

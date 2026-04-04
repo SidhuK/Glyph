@@ -10,10 +10,16 @@ const dataUrlCache = new Map<string, string>();
 const missCache = new Set<string>();
 const inFlightCache = new Map<string, Promise<string | null>>();
 const sourceGeneration = new Map<string, number>();
+const sourceConsumers = new Map<string, number>();
 let globalGeneration = 0;
+let nextSourceGeneration = 1;
 
 function getSourceGeneration(sourcePath: string): number {
-	return sourceGeneration.get(sourcePath) ?? 0;
+	const existing = sourceGeneration.get(sourcePath);
+	if (existing !== undefined) return existing;
+	const next = nextSourceGeneration++;
+	sourceGeneration.set(sourcePath, next);
+	return next;
 }
 
 function matchesGeneration(
@@ -56,9 +62,21 @@ function trimOldestCacheEntries() {
 export function clearInlineImageHydrationCache() {
 	globalGeneration += 1;
 	sourceGeneration.clear();
+	sourceConsumers.clear();
 	dataUrlCache.clear();
 	missCache.clear();
 	inFlightCache.clear();
+}
+
+function maybeDeleteSourceGeneration(sourcePath: string) {
+	const prefix = `${sourcePath}::`;
+	const hasEntries =
+		[...dataUrlCache.keys()].some((key) => key.startsWith(prefix)) ||
+		[...missCache].some((key) => key.startsWith(prefix)) ||
+		[...inFlightCache.keys()].some((key) => key.startsWith(prefix));
+	if (!hasEntries && (sourceConsumers.get(sourcePath) ?? 0) === 0) {
+		sourceGeneration.delete(sourcePath);
+	}
 }
 
 export function clearInlineImageHydrationCacheForSource(sourcePath: string) {
@@ -73,6 +91,22 @@ export function clearInlineImageHydrationCacheForSource(sourcePath: string) {
 	for (const key of [...inFlightCache.keys()]) {
 		if (key.startsWith(prefix)) inFlightCache.delete(key);
 	}
+	maybeDeleteSourceGeneration(sourcePath);
+}
+
+function incrementInlineImageHydrationConsumers(sourcePath: string) {
+	sourceConsumers.set(sourcePath, (sourceConsumers.get(sourcePath) ?? 0) + 1);
+	getSourceGeneration(sourcePath);
+}
+
+function decrementInlineImageHydrationConsumers(sourcePath: string) {
+	const next = (sourceConsumers.get(sourcePath) ?? 0) - 1;
+	if (next > 0) {
+		sourceConsumers.set(sourcePath, next);
+		return;
+	}
+	sourceConsumers.delete(sourcePath);
+	clearInlineImageHydrationCacheForSource(sourcePath);
 }
 
 function isDirectImageUrl(src: string): boolean {
@@ -227,6 +261,7 @@ export function useHydrateInlineImages(
 		let rafId: number | null = null;
 		let root: HTMLElement | null = null;
 		let observer: MutationObserver | null = null;
+		let registeredConsumer = false;
 
 		const hydrateImages = () => {
 			if (!root) return;
@@ -291,13 +326,23 @@ export function useHydrateInlineImages(
 
 		const handleMount = () => {
 			if (cancelled) return;
+			if (!registeredConsumer) {
+				incrementInlineImageHydrationConsumers(sourcePath);
+				registeredConsumer = true;
+			}
 			connectObserver();
 		};
 
 		const handleUnmount = () => {
 			disconnectObserver();
+			if (registeredConsumer) {
+				decrementInlineImageHydrationConsumers(sourcePath);
+				registeredConsumer = false;
+			}
 		};
 
+		incrementInlineImageHydrationConsumers(sourcePath);
+		registeredConsumer = true;
 		connectObserver();
 		editor.on("mount", handleMount);
 		editor.on("unmount", handleUnmount);
@@ -307,7 +352,10 @@ export function useHydrateInlineImages(
 			editor.off("mount", handleMount);
 			editor.off("unmount", handleUnmount);
 			disconnectObserver();
-			clearInlineImageHydrationCacheForSource(sourcePath);
+			if (registeredConsumer) {
+				decrementInlineImageHydrationConsumers(sourcePath);
+				registeredConsumer = false;
+			}
 		};
 	}, [editor, sourcePath]);
 }
