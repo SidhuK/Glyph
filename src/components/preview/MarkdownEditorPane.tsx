@@ -49,7 +49,44 @@ interface MarkdownEditorPaneProps {
 type StatsLayout = "full" | "collapsed" | "hidden";
 type SyncPulse = "saved" | "reloaded" | null;
 
+const MARKDOWN_DOC_CACHE_MAX_ENTRIES = 12;
+const MARKDOWN_DOC_CACHE_MAX_CHARS = 2_000_000;
+
 const markdownDocCache = new Map<string, string>();
+
+function trimMarkdownDocCache() {
+	while (markdownDocCache.size > MARKDOWN_DOC_CACHE_MAX_ENTRIES) {
+		const oldestKey = markdownDocCache.keys().next().value;
+		if (!oldestKey) break;
+		markdownDocCache.delete(oldestKey);
+	}
+
+	let totalChars = 0;
+	for (const value of markdownDocCache.values()) {
+		totalChars += value.length;
+	}
+	while (totalChars > MARKDOWN_DOC_CACHE_MAX_CHARS) {
+		const oldestKey = markdownDocCache.keys().next().value;
+		if (!oldestKey) break;
+		const removed = markdownDocCache.get(oldestKey);
+		markdownDocCache.delete(oldestKey);
+		totalChars -= removed?.length ?? 0;
+	}
+}
+
+function getCachedMarkdownDoc(relPath: string): string | undefined {
+	const cached = markdownDocCache.get(relPath);
+	if (typeof cached !== "string") return undefined;
+	markdownDocCache.delete(relPath);
+	markdownDocCache.set(relPath, cached);
+	return cached;
+}
+
+function setCachedMarkdownDoc(relPath: string, text: string) {
+	markdownDocCache.delete(relPath);
+	markdownDocCache.set(relPath, text);
+	trimMarkdownDocCache();
+}
 
 function isVisibleElement(element: HTMLElement | null): boolean {
 	if (!element) return false;
@@ -77,10 +114,10 @@ export function MarkdownEditorPane({
 	initialError = "",
 }: MarkdownEditorPaneProps) {
 	const [text, setText] = useState(
-		() => initialDoc?.text ?? markdownDocCache.get(relPath) ?? "",
+		() => initialDoc?.text ?? getCachedMarkdownDoc(relPath) ?? "",
 	);
 	const [savedText, setSavedText] = useState(
-		() => initialDoc?.text ?? markdownDocCache.get(relPath) ?? "",
+		() => initialDoc?.text ?? getCachedMarkdownDoc(relPath) ?? "",
 	);
 	const [mode, setMode] = useState<CanvasInlineEditorMode>("rich");
 	const [saving, setSaving] = useState(false);
@@ -237,7 +274,7 @@ export function MarkdownEditorPane({
 		const sessionId = documentSessionRef.current + 1;
 		documentSessionRef.current = sessionId;
 		saveRequestTokenRef.current += 1;
-		const cached = initialDoc?.text ?? markdownDocCache.get(relPath) ?? "";
+		const cached = initialDoc?.text ?? getCachedMarkdownDoc(relPath) ?? "";
 		textRef.current = cached;
 		savedTextRef.current = cached;
 		mtimeRef.current = initialDoc?.mtime_ms ?? null;
@@ -258,7 +295,7 @@ export function MarkdownEditorPane({
 		setError(initialError);
 		setActionsOpen(false);
 		if (initialDoc) {
-			markdownDocCache.set(relPath, initialDoc.text);
+			setCachedMarkdownDoc(relPath, initialDoc.text);
 		}
 	}, [initialDoc, initialError, relPath]);
 
@@ -299,7 +336,7 @@ export function MarkdownEditorPane({
 				const doc = await invoke("space_read_text", { path: relPath });
 				if (!isCurrentSession(sessionId)) return;
 				const shouldReplaceText = textRef.current === savedTextRef.current;
-				markdownDocCache.set(relPath, doc.text);
+				setCachedMarkdownDoc(relPath, doc.text);
 				if (shouldReplaceText) {
 					textRef.current = doc.text;
 					setText(doc.text);
@@ -331,7 +368,7 @@ export function MarkdownEditorPane({
 				doc.text === savedTextRef.current
 			)
 				return;
-			markdownDocCache.set(relPath, doc.text);
+			setCachedMarkdownDoc(relPath, doc.text);
 			textRef.current = doc.text;
 			savedTextRef.current = doc.text;
 			mtimeRef.current = doc.mtime_ms;
@@ -358,7 +395,7 @@ export function MarkdownEditorPane({
 		): Promise<boolean> => {
 			const applySaveState = (saved: string, mtimeMs: number) => {
 				if (path !== relPath || !isCurrentSession(sessionId)) return;
-				markdownDocCache.set(path, saved);
+				setCachedMarkdownDoc(path, saved);
 				savedTextRef.current = saved;
 				mtimeRef.current = mtimeMs;
 				setSavedText(saved);

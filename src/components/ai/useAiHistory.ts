@@ -14,6 +14,11 @@ const aiHistorySummaryPromiseCache = new Map<
 	Promise<AiChatHistorySummary[]>
 >();
 
+export function clearAiHistoryCache() {
+	aiHistorySummaryCache.clear();
+	aiHistorySummaryPromiseCache.clear();
+}
+
 function toUIMessages(
 	jobId: string,
 	messages: AiChatHistoryDetail["messages"],

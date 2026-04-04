@@ -42,6 +42,11 @@ const MENTION_RE = /(^|\s)@([^\s@]+)/g;
 let aiContextIndexCache: AiContextIndexData | null = null;
 let aiContextIndexPromise: Promise<AiContextIndexData> | null = null;
 
+export function clearAiContextCache() {
+	aiContextIndexCache = null;
+	aiContextIndexPromise = null;
+}
+
 function folderLabel(path: string): string {
 	return path || "Space";
 }
@@ -83,7 +88,6 @@ export function useAiContext() {
 		() => aiContextIndexCache?.files ?? [],
 	);
 	const [folderIndexError, setFolderIndexError] = useState("");
-	const [payloadPreview, setPayloadPreview] = useState("");
 	const [payloadManifest, setPayloadManifest] =
 		useState<ContextManifest | null>(null);
 	const [payloadError, setPayloadError] = useState("");
@@ -205,7 +209,6 @@ export function useAiContext() {
 				totalChars: built.manifest.total_chars,
 				estTokens: built.manifest.est_tokens,
 			};
-			setPayloadPreview(built.payload);
 			setPayloadManifest(manifest);
 			return { payload: built.payload, manifest };
 		} catch (e) {
@@ -235,7 +238,6 @@ export function useAiContext() {
 		setContextSearch,
 		folderIndexError,
 		visibleSuggestions,
-		payloadPreview,
 		payloadManifest,
 		payloadError,
 		payloadBuilding,
