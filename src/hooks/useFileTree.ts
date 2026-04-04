@@ -33,6 +33,7 @@ export interface UseFileTreeResult {
 
 export interface UseFileTreeDeps {
 	spacePath: string | null;
+	expandedDirs: Set<string>;
 	updateChildrenByDir: (
 		next:
 			| Record<string, FsEntry[] | undefined>
@@ -61,6 +62,7 @@ export interface UseFileTreeDeps {
 export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 	const {
 		spacePath,
+		expandedDirs,
 		updateChildrenByDir,
 		updateExpandedDirs,
 		updateRootEntries,
@@ -79,6 +81,63 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 	const loadedDirsRef = useRef(new Set<string>());
 	const loadRequestVersionRef = useRef(new Map<string, number>());
 	const previousSpacePathRef = useRef<string | null>(spacePath);
+	const expandedDirsRef = useRef(expandedDirs);
+
+	useEffect(() => {
+		expandedDirsRef.current = expandedDirs;
+	}, [expandedDirs]);
+
+	const updateExpandedDirsAndRef = useCallback(
+		(
+			next:
+				| Set<string>
+				| ((prev: Set<string>) => Set<string>),
+		) => {
+			updateExpandedDirs((prev) => {
+				const resolved = typeof next === "function" ? next(prev) : next;
+				expandedDirsRef.current = resolved;
+				return resolved;
+			});
+		},
+		[updateExpandedDirs],
+	);
+
+	const hasCollapsedAncestor = useCallback((dirPath: string) => {
+		if (!dirPath) return false;
+		const expanded = expandedDirsRef.current;
+		let current = parentDir(dirPath);
+		while (current) {
+			if (!expanded.has(current)) return true;
+			current = parentDir(current);
+		}
+		return false;
+	}, []);
+
+	const evictCollapsedDirState = useCallback(
+		(dirPath: string) => {
+			updateChildrenByDir((prev) => {
+				let changed = false;
+				const next: Record<string, FsEntry[] | undefined> = {};
+				for (const [key, value] of Object.entries(prev)) {
+					if (key.startsWith(`${dirPath}/`)) {
+						changed = true;
+						continue;
+					}
+					next[key] = value;
+				}
+				return changed ? next : prev;
+			});
+			loadedDirsRef.current = new Set(
+				[...loadedDirsRef.current].filter((key) => !key.startsWith(`${dirPath}/`)),
+			);
+			for (const key of [...loadRequestVersionRef.current.keys()]) {
+				if (key.startsWith(`${dirPath}/`)) {
+					loadRequestVersionRef.current.delete(key);
+				}
+			}
+		},
+		[updateChildrenByDir],
+	);
 
 	useEffect(() => {
 		if (previousSpacePathRef.current === spacePath) return;
@@ -89,6 +148,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 
 	const loadDir = useCallback(
 		async (dirPath: string, force = false) => {
+			if (force && hasCollapsedAncestor(dirPath)) return;
 			if (!force && loadedDirsRef.current.has(dirPath)) return;
 			const nextVersion = (loadRequestVersionRef.current.get(dirPath) ?? 0) + 1;
 			loadRequestVersionRef.current.set(dirPath, nextVersion);
@@ -111,22 +171,38 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 			}
 			loadedDirsRef.current.add(dirPath);
 		},
-		[updateChildrenByDir, updateRootEntries],
+		[hasCollapsedAncestor, updateChildrenByDir, updateRootEntries],
 	);
 
 	const toggleDir = useCallback(
 		(dirPath: string) => {
-			updateExpandedDirs((prev) => {
+			let shouldLoad = false;
+			let shouldEvict = false;
+			updateExpandedDirsAndRef((prev) => {
 				const next = new Set(prev);
-				if (next.has(dirPath)) next.delete(dirPath);
-				else {
-					next.add(dirPath);
-					void loadDir(dirPath);
+				if (next.has(dirPath)) {
+					next.delete(dirPath);
+					for (const expanded of prev) {
+						if (expanded.startsWith(`${dirPath}/`)) {
+							next.delete(expanded);
+						}
+					}
+					shouldEvict = true;
+					return next;
 				}
+				next.add(dirPath);
+				shouldLoad = true;
 				return next;
 			});
+			if (shouldEvict) {
+				evictCollapsedDirState(dirPath);
+				return;
+			}
+			if (shouldLoad) {
+				void loadDir(dirPath);
+			}
 		},
-		[loadDir, updateExpandedDirs],
+		[evictCollapsedDirState, loadDir, updateExpandedDirsAndRef],
 	);
 
 	const openMarkdownFile = useCallback(
@@ -182,7 +258,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 	const crud = useFileTreeCRUD({
 		spacePath,
 		updateChildrenByDir,
-		updateExpandedDirs,
+		updateExpandedDirs: updateExpandedDirsAndRef,
 		updateRootEntries,
 		renamePinnedPath,
 		deletePinnedPath,

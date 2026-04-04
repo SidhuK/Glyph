@@ -2,15 +2,52 @@ import type { Editor } from "@tiptap/core";
 import { useEffect } from "react";
 import { invoke } from "../../../lib/tauri";
 
-const INLINE_IMAGE_MAX_BYTES = 20 * 1024 * 1024;
-const INLINE_IMAGE_CACHE_MAX = 256;
+const INLINE_IMAGE_MAX_BYTES = 5 * 1024 * 1024;
+const INLINE_IMAGE_CACHE_MAX = 64;
+const INLINE_IMAGE_CACHE_MAX_BYTES = 24 * 1024 * 1024;
 
 const dataUrlCache = new Map<string, string>();
 const missCache = new Set<string>();
 const inFlightCache = new Map<string, Promise<string | null>>();
+const sourceGeneration = new Map<string, number>();
+const sourceConsumers = new Map<string, number>();
+let globalGeneration = 0;
+let nextSourceGeneration = 1;
+
+function getSourceGeneration(sourcePath: string): number {
+	const existing = sourceGeneration.get(sourcePath);
+	if (existing !== undefined) return existing;
+	const next = nextSourceGeneration++;
+	sourceGeneration.set(sourcePath, next);
+	return next;
+}
+
+function matchesGeneration(
+	sourcePath: string,
+	expectedGlobalGeneration: number,
+	expectedSourceGeneration: number,
+): boolean {
+	return (
+		expectedGlobalGeneration === globalGeneration &&
+		expectedSourceGeneration === getSourceGeneration(sourcePath)
+	);
+}
+
+function getCacheBytes(): number {
+	let total = 0;
+	for (const value of dataUrlCache.values()) {
+		total += value.length;
+	}
+	return total;
+}
 
 function trimOldestCacheEntries() {
 	while (dataUrlCache.size > INLINE_IMAGE_CACHE_MAX) {
+		const oldestKey = dataUrlCache.keys().next().value;
+		if (!oldestKey) break;
+		dataUrlCache.delete(oldestKey);
+	}
+	while (getCacheBytes() > INLINE_IMAGE_CACHE_MAX_BYTES) {
 		const oldestKey = dataUrlCache.keys().next().value;
 		if (!oldestKey) break;
 		dataUrlCache.delete(oldestKey);
@@ -23,9 +60,53 @@ function trimOldestCacheEntries() {
 }
 
 export function clearInlineImageHydrationCache() {
+	globalGeneration += 1;
+	sourceGeneration.clear();
+	sourceConsumers.clear();
 	dataUrlCache.clear();
 	missCache.clear();
 	inFlightCache.clear();
+}
+
+function maybeDeleteSourceGeneration(sourcePath: string) {
+	const prefix = `${sourcePath}::`;
+	const hasEntries =
+		[...dataUrlCache.keys()].some((key) => key.startsWith(prefix)) ||
+		[...missCache].some((key) => key.startsWith(prefix)) ||
+		[...inFlightCache.keys()].some((key) => key.startsWith(prefix));
+	if (!hasEntries && (sourceConsumers.get(sourcePath) ?? 0) === 0) {
+		sourceGeneration.delete(sourcePath);
+	}
+}
+
+export function clearInlineImageHydrationCacheForSource(sourcePath: string) {
+	sourceGeneration.set(sourcePath, getSourceGeneration(sourcePath) + 1);
+	const prefix = `${sourcePath}::`;
+	for (const key of [...dataUrlCache.keys()]) {
+		if (key.startsWith(prefix)) dataUrlCache.delete(key);
+	}
+	for (const key of [...missCache]) {
+		if (key.startsWith(prefix)) missCache.delete(key);
+	}
+	for (const key of [...inFlightCache.keys()]) {
+		if (key.startsWith(prefix)) inFlightCache.delete(key);
+	}
+	maybeDeleteSourceGeneration(sourcePath);
+}
+
+function incrementInlineImageHydrationConsumers(sourcePath: string) {
+	sourceConsumers.set(sourcePath, (sourceConsumers.get(sourcePath) ?? 0) + 1);
+	getSourceGeneration(sourcePath);
+}
+
+function decrementInlineImageHydrationConsumers(sourcePath: string) {
+	const next = (sourceConsumers.get(sourcePath) ?? 0) - 1;
+	if (next > 0) {
+		sourceConsumers.set(sourcePath, next);
+		return;
+	}
+	sourceConsumers.delete(sourcePath);
+	clearInlineImageHydrationCacheForSource(sourcePath);
 }
 
 function isDirectImageUrl(src: string): boolean {
@@ -67,10 +148,22 @@ async function resolveInlineImageDataUrl(
 	if (dataUrlCache.has(key)) return dataUrlCache.get(key) ?? null;
 	if (missCache.has(key)) return null;
 	if (inFlightCache.has(key)) return inFlightCache.get(key) ?? null;
+	const expectedGlobalGeneration = globalGeneration;
+	const expectedSourceGeneration = getSourceGeneration(sourcePath);
+	let activePromise: Promise<string | null> | null = null;
 
 	const promise = (async () => {
 		try {
 			const relPath = await resolveSpaceImagePath(sourcePath, rawSrc);
+			if (
+				!matchesGeneration(
+					sourcePath,
+					expectedGlobalGeneration,
+					expectedSourceGeneration,
+				)
+			) {
+				return null;
+			}
 			if (!relPath) {
 				missCache.add(key);
 				trimOldestCacheEntries();
@@ -80,6 +173,15 @@ async function resolveInlineImageDataUrl(
 				path: relPath,
 				max_bytes: INLINE_IMAGE_MAX_BYTES,
 			});
+			if (
+				!matchesGeneration(
+					sourcePath,
+					expectedGlobalGeneration,
+					expectedSourceGeneration,
+				)
+			) {
+				return null;
+			}
 			if (preview.truncated) {
 				missCache.add(key);
 				trimOldestCacheEntries();
@@ -89,13 +191,24 @@ async function resolveInlineImageDataUrl(
 			trimOldestCacheEntries();
 			return preview.data_url;
 		} catch {
-			missCache.add(key);
-			trimOldestCacheEntries();
+			if (
+				matchesGeneration(
+					sourcePath,
+					expectedGlobalGeneration,
+					expectedSourceGeneration,
+				)
+			) {
+				missCache.add(key);
+				trimOldestCacheEntries();
+			}
 			return null;
 		} finally {
-			inFlightCache.delete(key);
+			if (inFlightCache.get(key) === activePromise) {
+				inFlightCache.delete(key);
+			}
 		}
 	})();
+	activePromise = promise;
 
 	inFlightCache.set(key, promise);
 	return promise;
@@ -148,6 +261,7 @@ export function useHydrateInlineImages(
 		let rafId: number | null = null;
 		let root: HTMLElement | null = null;
 		let observer: MutationObserver | null = null;
+		let registeredConsumer = false;
 
 		const hydrateImages = () => {
 			if (!root) return;
@@ -212,13 +326,23 @@ export function useHydrateInlineImages(
 
 		const handleMount = () => {
 			if (cancelled) return;
+			if (!registeredConsumer) {
+				incrementInlineImageHydrationConsumers(sourcePath);
+				registeredConsumer = true;
+			}
 			connectObserver();
 		};
 
 		const handleUnmount = () => {
 			disconnectObserver();
+			if (registeredConsumer) {
+				decrementInlineImageHydrationConsumers(sourcePath);
+				registeredConsumer = false;
+			}
 		};
 
+		incrementInlineImageHydrationConsumers(sourcePath);
+		registeredConsumer = true;
 		connectObserver();
 		editor.on("mount", handleMount);
 		editor.on("unmount", handleUnmount);
@@ -228,6 +352,10 @@ export function useHydrateInlineImages(
 			editor.off("mount", handleMount);
 			editor.off("unmount", handleUnmount);
 			disconnectObserver();
+			if (registeredConsumer) {
+				decrementInlineImageHydrationConsumers(sourcePath);
+				registeredConsumer = false;
+			}
 		};
 	}, [editor, sourcePath]);
 }

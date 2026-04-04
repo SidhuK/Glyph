@@ -38,6 +38,12 @@ import { FloatingTOC } from "../editor/FloatingTOC";
 import { CALLOUT_TYPES } from "../editor/ribbonButtonConfigs";
 import type { CanvasInlineEditorMode } from "../editor/types";
 import { Button } from "../ui/shadcn/button";
+import {
+	clearMarkdownDocCache,
+	getCachedMarkdownDoc,
+	peekCachedMarkdownDoc,
+	setCachedMarkdownDoc,
+} from "./markdownCache";
 
 interface MarkdownEditorPaneProps {
 	relPath: string;
@@ -48,8 +54,6 @@ interface MarkdownEditorPaneProps {
 
 type StatsLayout = "full" | "collapsed" | "hidden";
 type SyncPulse = "saved" | "reloaded" | null;
-
-const markdownDocCache = new Map<string, string>();
 
 function isVisibleElement(element: HTMLElement | null): boolean {
 	if (!element) return false;
@@ -76,12 +80,9 @@ export function MarkdownEditorPane({
 	initialDoc = null,
 	initialError = "",
 }: MarkdownEditorPaneProps) {
-	const [text, setText] = useState(
-		() => initialDoc?.text ?? markdownDocCache.get(relPath) ?? "",
-	);
-	const [savedText, setSavedText] = useState(
-		() => initialDoc?.text ?? markdownDocCache.get(relPath) ?? "",
-	);
+	const initialText = initialDoc?.text ?? peekCachedMarkdownDoc(relPath) ?? "";
+	const [text, setText] = useState(initialText);
+	const [savedText, setSavedText] = useState(initialText);
 	const [mode, setMode] = useState<CanvasInlineEditorMode>("rich");
 	const [saving, setSaving] = useState(false);
 	const [autosaveBusy, setAutosaveBusy] = useState(false);
@@ -237,7 +238,7 @@ export function MarkdownEditorPane({
 		const sessionId = documentSessionRef.current + 1;
 		documentSessionRef.current = sessionId;
 		saveRequestTokenRef.current += 1;
-		const cached = initialDoc?.text ?? markdownDocCache.get(relPath) ?? "";
+		const cached = initialDoc?.text ?? getCachedMarkdownDoc(relPath) ?? "";
 		textRef.current = cached;
 		savedTextRef.current = cached;
 		mtimeRef.current = initialDoc?.mtime_ms ?? null;
@@ -258,7 +259,7 @@ export function MarkdownEditorPane({
 		setError(initialError);
 		setActionsOpen(false);
 		if (initialDoc) {
-			markdownDocCache.set(relPath, initialDoc.text);
+			setCachedMarkdownDoc(relPath, initialDoc.text);
 		}
 	}, [initialDoc, initialError, relPath]);
 
@@ -284,11 +285,10 @@ export function MarkdownEditorPane({
 		setSaving(false);
 		setAutosaveBusy(false);
 		setSyncPulse(null);
+		clearMarkdownDocCache();
 		if (spacePath === null) {
-			markdownDocCache.clear();
 			return;
 		}
-		markdownDocCache.clear();
 	}, [spacePath]);
 
 	const loadDoc = useCallback(
@@ -299,7 +299,7 @@ export function MarkdownEditorPane({
 				const doc = await invoke("space_read_text", { path: relPath });
 				if (!isCurrentSession(sessionId)) return;
 				const shouldReplaceText = textRef.current === savedTextRef.current;
-				markdownDocCache.set(relPath, doc.text);
+				setCachedMarkdownDoc(relPath, doc.text);
 				if (shouldReplaceText) {
 					textRef.current = doc.text;
 					setText(doc.text);
@@ -331,7 +331,7 @@ export function MarkdownEditorPane({
 				doc.text === savedTextRef.current
 			)
 				return;
-			markdownDocCache.set(relPath, doc.text);
+			setCachedMarkdownDoc(relPath, doc.text);
 			textRef.current = doc.text;
 			savedTextRef.current = doc.text;
 			mtimeRef.current = doc.mtime_ms;
@@ -358,7 +358,7 @@ export function MarkdownEditorPane({
 		): Promise<boolean> => {
 			const applySaveState = (saved: string, mtimeMs: number) => {
 				if (path !== relPath || !isCurrentSession(sessionId)) return;
-				markdownDocCache.set(path, saved);
+				setCachedMarkdownDoc(path, saved);
 				savedTextRef.current = saved;
 				mtimeRef.current = mtimeMs;
 				setSavedText(saved);
