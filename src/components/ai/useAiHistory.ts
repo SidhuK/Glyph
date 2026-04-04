@@ -13,8 +13,10 @@ const aiHistorySummaryPromiseCache = new Map<
 	number,
 	Promise<AiChatHistorySummary[]>
 >();
+let aiHistoryGeneration = 0;
 
 export function clearAiHistoryCache() {
+	aiHistoryGeneration += 1;
 	aiHistorySummaryCache.clear();
 	aiHistorySummaryPromiseCache.clear();
 }
@@ -48,15 +50,22 @@ export async function preloadAiHistorySummaries(
 	if (cached) return cached;
 	const inFlight = aiHistorySummaryPromiseCache.get(limit);
 	if (inFlight) return inFlight;
+	const generation = aiHistoryGeneration;
 	const request = invoke("ai_chat_history_list", { limit })
 		.then((list) => {
-			aiHistorySummaryCache.set(limit, list);
+			if (generation === aiHistoryGeneration) {
+				aiHistorySummaryCache.set(limit, list);
+			}
 			return list;
 		})
 		.finally(() => {
-			aiHistorySummaryPromiseCache.delete(limit);
+			if (generation === aiHistoryGeneration) {
+				aiHistorySummaryPromiseCache.delete(limit);
+			}
 		});
-	aiHistorySummaryPromiseCache.set(limit, request);
+	if (generation === aiHistoryGeneration) {
+		aiHistorySummaryPromiseCache.set(limit, request);
+	}
 	return request;
 }
 

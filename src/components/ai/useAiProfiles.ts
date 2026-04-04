@@ -13,19 +13,26 @@ type AiProfilesBootstrap = {
 
 let aiProfilesBootstrapCache: AiProfilesBootstrap | null = null;
 let aiProfilesBootstrapPromise: Promise<AiProfilesBootstrap> | null = null;
+let aiProfilesGeneration = 0;
 
 export function clearAiProfilesCache() {
+	aiProfilesGeneration += 1;
 	aiProfilesBootstrapCache = null;
 	aiProfilesBootstrapPromise = null;
 }
 
 async function fetchAiProfilesBootstrap(): Promise<AiProfilesBootstrap> {
+	const generation = aiProfilesGeneration;
 	const [list, active] = await Promise.all([
 		invoke("ai_profiles_list"),
 		invoke("ai_active_profile_get"),
 	]);
 	const nextActive = resolveActiveProfileId(list, active);
-	if (active !== nextActive && nextActive) {
+	if (
+		generation === aiProfilesGeneration &&
+		active !== nextActive &&
+		nextActive
+	) {
 		await invoke("ai_active_profile_set", { id: nextActive });
 	}
 	const secretConfigured = nextActive
@@ -43,13 +50,18 @@ async function fetchAiProfilesBootstrap(): Promise<AiProfilesBootstrap> {
 export async function preloadAiProfilesData(): Promise<AiProfilesBootstrap> {
 	if (aiProfilesBootstrapCache) return aiProfilesBootstrapCache;
 	if (!aiProfilesBootstrapPromise) {
+		const generation = aiProfilesGeneration;
 		aiProfilesBootstrapPromise = fetchAiProfilesBootstrap()
 			.then((data) => {
-				aiProfilesBootstrapCache = data;
+				if (generation === aiProfilesGeneration) {
+					aiProfilesBootstrapCache = data;
+				}
 				return data;
 			})
 			.finally(() => {
-				aiProfilesBootstrapPromise = null;
+				if (generation === aiProfilesGeneration) {
+					aiProfilesBootstrapPromise = null;
+				}
 			});
 	}
 	return aiProfilesBootstrapPromise;

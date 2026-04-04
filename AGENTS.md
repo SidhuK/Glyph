@@ -68,6 +68,7 @@ Repo extras: the public Astro marketing site is stored in `website/`. Internal p
 
 - TypeScript strict mode, no `any` (use `unknown` + narrowing). Biome handles formatting/imports.
 - Functional React components, hooks, lazy-load heavy components. State via Context (no prop drilling).
+- Avoid `useEffect` unless it is truly needed; prefer React patterns from https://react.dev/learn/you-might-not-need-an-effect.
 - Rust: serde for serialization, tracing for logs, atomic writes via `io_atomic::write_atomic()`.
 - Aim for roughly 200 LOC per file; treat this as a guideline, not a hard rule. Don't obsess over landing exactly at 200, but do refactor into subfolders when a file is getting out of hand.
 - Use `paths::join_under()` for space paths (prevent traversal). Never log secrets.
