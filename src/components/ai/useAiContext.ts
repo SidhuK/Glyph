@@ -41,8 +41,10 @@ const MENTION_RE = /(^|\s)@([^\s@]+)/g;
 
 let aiContextIndexCache: AiContextIndexData | null = null;
 let aiContextIndexPromise: Promise<AiContextIndexData> | null = null;
+let aiContextEpoch = 0;
 
 export function clearAiContextCache() {
+	aiContextEpoch += 1;
 	aiContextIndexCache = null;
 	aiContextIndexPromise = null;
 }
@@ -62,17 +64,22 @@ function contextKey(kind: ContextEntryKind, path: string): string {
 export async function preloadAiContextIndex(): Promise<AiContextIndexData> {
 	if (aiContextIndexCache) return aiContextIndexCache;
 	if (!aiContextIndexPromise) {
+		const epoch = aiContextEpoch;
 		aiContextIndexPromise = invoke("ai_context_index")
 			.then((index) => {
 				const data = {
 					folders: index.folders,
 					files: index.files,
 				};
-				aiContextIndexCache = data;
+				if (epoch === aiContextEpoch) {
+					aiContextIndexCache = data;
+				}
 				return data;
 			})
 			.finally(() => {
-				aiContextIndexPromise = null;
+				if (epoch === aiContextEpoch) {
+					aiContextIndexPromise = null;
+				}
 			});
 	}
 	return aiContextIndexPromise;

@@ -23,9 +23,18 @@ export function AIFloatingHost({ isOpen, onToggle }: AIFloatingHostProps) {
 
 	useEffect(() => {
 		if (!isOpen) return;
-		void importAIPanel().then((module) => {
-			void module.prefetchAIPanelData();
-		});
+		let cancelled = false;
+		void importAIPanel()
+			.then((module) => {
+				if (cancelled) return;
+				void module.prefetchAIPanelData();
+			})
+			.catch((error) => {
+				console.error("Failed to preload AI panel data", error);
+			});
+		return () => {
+			cancelled = true;
+		};
 	}, [isOpen]);
 
 	return (

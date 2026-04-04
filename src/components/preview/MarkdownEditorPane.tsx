@@ -38,6 +38,11 @@ import { FloatingTOC } from "../editor/FloatingTOC";
 import { CALLOUT_TYPES } from "../editor/ribbonButtonConfigs";
 import type { CanvasInlineEditorMode } from "../editor/types";
 import { Button } from "../ui/shadcn/button";
+import {
+	clearMarkdownDocCache,
+	getCachedMarkdownDoc,
+	setCachedMarkdownDoc,
+} from "./markdownCache";
 
 interface MarkdownEditorPaneProps {
 	relPath: string;
@@ -48,45 +53,6 @@ interface MarkdownEditorPaneProps {
 
 type StatsLayout = "full" | "collapsed" | "hidden";
 type SyncPulse = "saved" | "reloaded" | null;
-
-const MARKDOWN_DOC_CACHE_MAX_ENTRIES = 12;
-const MARKDOWN_DOC_CACHE_MAX_CHARS = 2_000_000;
-
-const markdownDocCache = new Map<string, string>();
-
-function trimMarkdownDocCache() {
-	while (markdownDocCache.size > MARKDOWN_DOC_CACHE_MAX_ENTRIES) {
-		const oldestKey = markdownDocCache.keys().next().value;
-		if (!oldestKey) break;
-		markdownDocCache.delete(oldestKey);
-	}
-
-	let totalChars = 0;
-	for (const value of markdownDocCache.values()) {
-		totalChars += value.length;
-	}
-	while (totalChars > MARKDOWN_DOC_CACHE_MAX_CHARS) {
-		const oldestKey = markdownDocCache.keys().next().value;
-		if (!oldestKey) break;
-		const removed = markdownDocCache.get(oldestKey);
-		markdownDocCache.delete(oldestKey);
-		totalChars -= removed?.length ?? 0;
-	}
-}
-
-function getCachedMarkdownDoc(relPath: string): string | undefined {
-	const cached = markdownDocCache.get(relPath);
-	if (typeof cached !== "string") return undefined;
-	markdownDocCache.delete(relPath);
-	markdownDocCache.set(relPath, cached);
-	return cached;
-}
-
-function setCachedMarkdownDoc(relPath: string, text: string) {
-	markdownDocCache.delete(relPath);
-	markdownDocCache.set(relPath, text);
-	trimMarkdownDocCache();
-}
 
 function isVisibleElement(element: HTMLElement | null): boolean {
 	if (!element) return false;
@@ -113,12 +79,9 @@ export function MarkdownEditorPane({
 	initialDoc = null,
 	initialError = "",
 }: MarkdownEditorPaneProps) {
-	const [text, setText] = useState(
-		() => initialDoc?.text ?? getCachedMarkdownDoc(relPath) ?? "",
-	);
-	const [savedText, setSavedText] = useState(
-		() => initialDoc?.text ?? getCachedMarkdownDoc(relPath) ?? "",
-	);
+	const initialText = initialDoc?.text ?? getCachedMarkdownDoc(relPath) ?? "";
+	const [text, setText] = useState(initialText);
+	const [savedText, setSavedText] = useState(initialText);
 	const [mode, setMode] = useState<CanvasInlineEditorMode>("rich");
 	const [saving, setSaving] = useState(false);
 	const [autosaveBusy, setAutosaveBusy] = useState(false);
@@ -322,10 +285,10 @@ export function MarkdownEditorPane({
 		setAutosaveBusy(false);
 		setSyncPulse(null);
 		if (spacePath === null) {
-			markdownDocCache.clear();
+			clearMarkdownDocCache();
 			return;
 		}
-		markdownDocCache.clear();
+		clearMarkdownDocCache();
 	}, [spacePath]);
 
 	const loadDoc = useCallback(

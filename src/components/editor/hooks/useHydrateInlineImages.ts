@@ -9,6 +9,23 @@ const INLINE_IMAGE_CACHE_MAX_BYTES = 24 * 1024 * 1024;
 const dataUrlCache = new Map<string, string>();
 const missCache = new Set<string>();
 const inFlightCache = new Map<string, Promise<string | null>>();
+const sourceGeneration = new Map<string, number>();
+let globalGeneration = 0;
+
+function getSourceGeneration(sourcePath: string): number {
+	return sourceGeneration.get(sourcePath) ?? 0;
+}
+
+function matchesGeneration(
+	sourcePath: string,
+	expectedGlobalGeneration: number,
+	expectedSourceGeneration: number,
+): boolean {
+	return (
+		expectedGlobalGeneration === globalGeneration &&
+		expectedSourceGeneration === getSourceGeneration(sourcePath)
+	);
+}
 
 function getCacheBytes(): number {
 	let total = 0;
@@ -37,12 +54,15 @@ function trimOldestCacheEntries() {
 }
 
 export function clearInlineImageHydrationCache() {
+	globalGeneration += 1;
+	sourceGeneration.clear();
 	dataUrlCache.clear();
 	missCache.clear();
 	inFlightCache.clear();
 }
 
 export function clearInlineImageHydrationCacheForSource(sourcePath: string) {
+	sourceGeneration.set(sourcePath, getSourceGeneration(sourcePath) + 1);
 	const prefix = `${sourcePath}::`;
 	for (const key of [...dataUrlCache.keys()]) {
 		if (key.startsWith(prefix)) dataUrlCache.delete(key);
@@ -94,10 +114,22 @@ async function resolveInlineImageDataUrl(
 	if (dataUrlCache.has(key)) return dataUrlCache.get(key) ?? null;
 	if (missCache.has(key)) return null;
 	if (inFlightCache.has(key)) return inFlightCache.get(key) ?? null;
+	const expectedGlobalGeneration = globalGeneration;
+	const expectedSourceGeneration = getSourceGeneration(sourcePath);
+	let activePromise: Promise<string | null> | null = null;
 
 	const promise = (async () => {
 		try {
 			const relPath = await resolveSpaceImagePath(sourcePath, rawSrc);
+			if (
+				!matchesGeneration(
+					sourcePath,
+					expectedGlobalGeneration,
+					expectedSourceGeneration,
+				)
+			) {
+				return null;
+			}
 			if (!relPath) {
 				missCache.add(key);
 				trimOldestCacheEntries();
@@ -107,6 +139,15 @@ async function resolveInlineImageDataUrl(
 				path: relPath,
 				max_bytes: INLINE_IMAGE_MAX_BYTES,
 			});
+			if (
+				!matchesGeneration(
+					sourcePath,
+					expectedGlobalGeneration,
+					expectedSourceGeneration,
+				)
+			) {
+				return null;
+			}
 			if (preview.truncated) {
 				missCache.add(key);
 				trimOldestCacheEntries();
@@ -116,13 +157,24 @@ async function resolveInlineImageDataUrl(
 			trimOldestCacheEntries();
 			return preview.data_url;
 		} catch {
-			missCache.add(key);
-			trimOldestCacheEntries();
+			if (
+				matchesGeneration(
+					sourcePath,
+					expectedGlobalGeneration,
+					expectedSourceGeneration,
+				)
+			) {
+				missCache.add(key);
+				trimOldestCacheEntries();
+			}
 			return null;
 		} finally {
-			inFlightCache.delete(key);
+			if (inFlightCache.get(key) === activePromise) {
+				inFlightCache.delete(key);
+			}
 		}
 	})();
+	activePromise = promise;
 
 	inFlightCache.set(key, promise);
 	return promise;
