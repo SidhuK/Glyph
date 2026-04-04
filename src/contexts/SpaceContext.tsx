@@ -8,6 +8,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { clearAiPanelCaches } from "../components/ai/cache";
 import { clearInlineImageHydrationCache } from "../components/editor/hooks/useHydrateInlineImages";
 import {
 	clearCurrentSpacePath,
@@ -124,11 +125,12 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 			isOpeningSpaceRef.current = true;
 			setError("");
 			try {
-				if (spacePath) {
-					await invoke("space_close");
-					await clearCurrentSpacePath();
-					clearInlineImageHydrationCache();
-					setSpacePath(null);
+					if (spacePath) {
+						await invoke("space_close");
+						await clearCurrentSpacePath();
+						clearAiPanelCaches();
+						clearInlineImageHydrationCache();
+						setSpacePath(null);
 					setSpaceSchemaVersion(null);
 				}
 				const spaceInfo =
@@ -160,6 +162,7 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 		try {
 			await invoke("space_close");
 			await clearCurrentSpacePath();
+			clearAiPanelCaches();
 			clearInlineImageHydrationCache();
 			setSpacePath(null);
 			setSpaceSchemaVersion(null);

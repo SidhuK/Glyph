@@ -14,6 +14,11 @@ type AiProfilesBootstrap = {
 let aiProfilesBootstrapCache: AiProfilesBootstrap | null = null;
 let aiProfilesBootstrapPromise: Promise<AiProfilesBootstrap> | null = null;
 
+export function clearAiProfilesCache() {
+	aiProfilesBootstrapCache = null;
+	aiProfilesBootstrapPromise = null;
+}
+
 async function fetchAiProfilesBootstrap(): Promise<AiProfilesBootstrap> {
 	const [list, active] = await Promise.all([
 		invoke("ai_profiles_list"),

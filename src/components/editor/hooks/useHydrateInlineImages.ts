@@ -2,15 +2,29 @@ import type { Editor } from "@tiptap/core";
 import { useEffect } from "react";
 import { invoke } from "../../../lib/tauri";
 
-const INLINE_IMAGE_MAX_BYTES = 20 * 1024 * 1024;
-const INLINE_IMAGE_CACHE_MAX = 256;
+const INLINE_IMAGE_MAX_BYTES = 5 * 1024 * 1024;
+const INLINE_IMAGE_CACHE_MAX = 64;
+const INLINE_IMAGE_CACHE_MAX_BYTES = 24 * 1024 * 1024;
 
 const dataUrlCache = new Map<string, string>();
 const missCache = new Set<string>();
 const inFlightCache = new Map<string, Promise<string | null>>();
 
+function getCacheBytes(): number {
+	let total = 0;
+	for (const value of dataUrlCache.values()) {
+		total += value.length;
+	}
+	return total;
+}
+
 function trimOldestCacheEntries() {
 	while (dataUrlCache.size > INLINE_IMAGE_CACHE_MAX) {
+		const oldestKey = dataUrlCache.keys().next().value;
+		if (!oldestKey) break;
+		dataUrlCache.delete(oldestKey);
+	}
+	while (getCacheBytes() > INLINE_IMAGE_CACHE_MAX_BYTES) {
 		const oldestKey = dataUrlCache.keys().next().value;
 		if (!oldestKey) break;
 		dataUrlCache.delete(oldestKey);
@@ -26,6 +40,19 @@ export function clearInlineImageHydrationCache() {
 	dataUrlCache.clear();
 	missCache.clear();
 	inFlightCache.clear();
+}
+
+export function clearInlineImageHydrationCacheForSource(sourcePath: string) {
+	const prefix = `${sourcePath}::`;
+	for (const key of [...dataUrlCache.keys()]) {
+		if (key.startsWith(prefix)) dataUrlCache.delete(key);
+	}
+	for (const key of [...missCache]) {
+		if (key.startsWith(prefix)) missCache.delete(key);
+	}
+	for (const key of [...inFlightCache.keys()]) {
+		if (key.startsWith(prefix)) inFlightCache.delete(key);
+	}
 }
 
 function isDirectImageUrl(src: string): boolean {
@@ -228,6 +255,7 @@ export function useHydrateInlineImages(
 			editor.off("mount", handleMount);
 			editor.off("unmount", handleUnmount);
 			disconnectObserver();
+			clearInlineImageHydrationCacheForSource(sourcePath);
 		};
 	}, [editor, sourcePath]);
 }
