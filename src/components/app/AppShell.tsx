@@ -268,6 +268,7 @@ export function AppShell() {
 
 	const fileTree = useFileTree({
 		spacePath,
+		expandedDirs,
 		updateChildrenByDir,
 		updateExpandedDirs,
 		updateRootEntries,

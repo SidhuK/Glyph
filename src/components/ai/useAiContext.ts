@@ -40,7 +40,14 @@ const MAX_VISIBLE_FOLDERS = 120;
 const MENTION_RE = /(^|\s)@([^\s@]+)/g;
 
 let aiContextIndexCache: AiContextIndexData | null = null;
-let aiContextIndexPromise: Promise<AiContextIndexData> | null = null;
+let aiContextIndexPromise: Promise<AiContextIndexData | null> | null = null;
+let aiContextEpoch = 0;
+
+export function clearAiContextCache() {
+	aiContextEpoch += 1;
+	aiContextIndexCache = null;
+	aiContextIndexPromise = null;
+}
 
 function folderLabel(path: string): string {
 	return path || "Space";
@@ -54,11 +61,15 @@ function contextKey(kind: ContextEntryKind, path: string): string {
 	return `${kind}:${path}`;
 }
 
-export async function preloadAiContextIndex(): Promise<AiContextIndexData> {
+export async function preloadAiContextIndex(): Promise<AiContextIndexData | null> {
 	if (aiContextIndexCache) return aiContextIndexCache;
 	if (!aiContextIndexPromise) {
+		const epoch = aiContextEpoch;
 		aiContextIndexPromise = invoke("ai_context_index")
 			.then((index) => {
+				if (epoch !== aiContextEpoch) {
+					return null;
+				}
 				const data = {
 					folders: index.folders,
 					files: index.files,
@@ -67,7 +78,9 @@ export async function preloadAiContextIndex(): Promise<AiContextIndexData> {
 				return data;
 			})
 			.finally(() => {
-				aiContextIndexPromise = null;
+				if (epoch === aiContextEpoch) {
+					aiContextIndexPromise = null;
+				}
 			});
 	}
 	return aiContextIndexPromise;
@@ -83,7 +96,6 @@ export function useAiContext() {
 		() => aiContextIndexCache?.files ?? [],
 	);
 	const [folderIndexError, setFolderIndexError] = useState("");
-	const [payloadPreview, setPayloadPreview] = useState("");
 	const [payloadManifest, setPayloadManifest] =
 		useState<ContextManifest | null>(null);
 	const [payloadError, setPayloadError] = useState("");
@@ -129,7 +141,7 @@ export function useAiContext() {
 		void (async () => {
 			try {
 				const index = await preloadAiContextIndex();
-				if (cancelled) return;
+				if (cancelled || !index) return;
 				setFolderIndex(index.folders);
 				setFileIndex(index.files);
 			} catch (e) {
@@ -205,7 +217,6 @@ export function useAiContext() {
 				totalChars: built.manifest.total_chars,
 				estTokens: built.manifest.est_tokens,
 			};
-			setPayloadPreview(built.payload);
 			setPayloadManifest(manifest);
 			return { payload: built.payload, manifest };
 		} catch (e) {
@@ -235,7 +246,6 @@ export function useAiContext() {
 		setContextSearch,
 		folderIndexError,
 		visibleSuggestions,
-		payloadPreview,
 		payloadManifest,
 		payloadError,
 		payloadBuilding,

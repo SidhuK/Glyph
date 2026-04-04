@@ -2,11 +2,12 @@ import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import { Suspense, lazy, useEffect } from "react";
 import { useAISidebarContext } from "../../contexts";
 
+const importAIPanel = () => import("./AIPanel");
+
 const loadAIPanel = () =>
-	import("./AIPanel").then((module) => {
-		module.prefetchAIPanelData();
-		return { default: module.AIPanel };
-	});
+	importAIPanel().then((module) => ({
+		default: module.AIPanel,
+	}));
 
 const LazyAIPanel = lazy(loadAIPanel);
 
@@ -22,15 +23,18 @@ export function AIFloatingHost({ isOpen, onToggle }: AIFloatingHostProps) {
 
 	useEffect(() => {
 		if (!isOpen) return;
-		void loadAIPanel();
-	}, [isOpen]);
-
-	useEffect(() => {
-		if (isOpen) return;
-		const timer = window.setTimeout(() => {
-			void loadAIPanel();
-		}, 800);
-		return () => window.clearTimeout(timer);
+		let cancelled = false;
+		void importAIPanel()
+			.then((module) => {
+				if (cancelled) return;
+				void module.prefetchAIPanelData();
+			})
+			.catch((error) => {
+				console.error("Failed to preload AI panel data", error);
+			});
+		return () => {
+			cancelled = true;
+		};
 	}, [isOpen]);
 
 	return (

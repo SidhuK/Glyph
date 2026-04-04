@@ -13,6 +13,13 @@ const aiHistorySummaryPromiseCache = new Map<
 	number,
 	Promise<AiChatHistorySummary[]>
 >();
+let aiHistoryGeneration = 0;
+
+export function clearAiHistoryCache() {
+	aiHistoryGeneration += 1;
+	aiHistorySummaryCache.clear();
+	aiHistorySummaryPromiseCache.clear();
+}
 
 function toUIMessages(
 	jobId: string,
@@ -43,15 +50,22 @@ export async function preloadAiHistorySummaries(
 	if (cached) return cached;
 	const inFlight = aiHistorySummaryPromiseCache.get(limit);
 	if (inFlight) return inFlight;
+	const generation = aiHistoryGeneration;
 	const request = invoke("ai_chat_history_list", { limit })
 		.then((list) => {
-			aiHistorySummaryCache.set(limit, list);
+			if (generation === aiHistoryGeneration) {
+				aiHistorySummaryCache.set(limit, list);
+			}
 			return list;
 		})
 		.finally(() => {
-			aiHistorySummaryPromiseCache.delete(limit);
+			if (generation === aiHistoryGeneration) {
+				aiHistorySummaryPromiseCache.delete(limit);
+			}
 		});
-	aiHistorySummaryPromiseCache.set(limit, request);
+	if (generation === aiHistoryGeneration) {
+		aiHistorySummaryPromiseCache.set(limit, request);
+	}
 	return request;
 }
 
@@ -70,19 +84,25 @@ export function useAiHistory(limit = 20, options?: UseAiHistoryOptions) {
 	const [error, setError] = useState("");
 
 	const refresh = useCallback(async () => {
+		const generation = aiHistoryGeneration;
 		setListLoading(true);
 		setError("");
 		try {
 			aiHistorySummaryCache.delete(limit);
 			const list = await preloadAiHistorySummaries(limit);
+			if (generation !== aiHistoryGeneration) return;
 			setSummaries(list);
 			setSelectedJobId((prev) =>
 				prev && !list.some((item) => item.job_id === prev) ? null : prev,
 			);
 		} catch (err) {
-			setError(extractErrorMessage(err));
+			if (generation === aiHistoryGeneration) {
+				setError(extractErrorMessage(err));
+			}
 		} finally {
-			setListLoading(false);
+			if (generation === aiHistoryGeneration) {
+				setListLoading(false);
+			}
 		}
 	}, [limit]);
 
