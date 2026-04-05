@@ -1,9 +1,9 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useUILayoutContext } from "../contexts";
 import { loadSettings } from "../lib/settings";
 import type { GitSyncRunMode, GitSyncStatus } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
 import { useTauriEvent } from "../lib/tauriEvents";
-import { openSettingsWindow } from "../lib/windows";
 
 interface UseGitSyncOptions {
 	spacePath: string | null;
@@ -31,6 +31,7 @@ export function useGitSync({
 	spacePath,
 	saveCurrentEditor,
 }: UseGitSyncOptions): GitSyncController {
+	const { openSettings } = useUILayoutContext();
 	const [status, setStatus] = useState<GitSyncStatus | null>(null);
 	const [loading, setLoading] = useState(false);
 	const [error, setError] = useState("");
@@ -74,8 +75,8 @@ export function useGitSync({
 	const syncNow = useCallback(async () => runSync("manual"), [runSync]);
 
 	const openGitSettings = useCallback(() => {
-		void openSettingsWindow("git");
-	}, []);
+		openSettings("git");
+	}, [openSettings]);
 
 	useEffect(() => {
 		if (!spacePath) {

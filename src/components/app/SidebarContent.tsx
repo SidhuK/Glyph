@@ -51,6 +51,11 @@ interface SidebarContentProps {
 	onSelectTag: (tag: string) => void;
 	onOpenCalendar: () => void;
 	onOpenDatabases: (databaseId?: string | null) => void;
+	onPrefetchCalendar: () => void;
+	onPrefetchDatabases: (databaseId?: string | null) => void;
+	onPrefetchAllDocs: () => void;
+	onPrefetchTemplates: () => void;
+	onPrefetchFile: (relPath: string) => void;
 	gitSyncStatus: GitSyncStatus | null;
 	onGitSyncNow: () => void;
 	onOpenGitSettings: () => void;
@@ -75,6 +80,11 @@ export const SidebarContent = memo(function SidebarContent({
 	onSelectTag,
 	onOpenCalendar,
 	onOpenDatabases,
+	onPrefetchCalendar,
+	onPrefetchDatabases,
+	onPrefetchAllDocs,
+	onPrefetchTemplates,
+	onPrefetchFile,
 	gitSyncStatus,
 	onGitSyncNow,
 	onOpenGitSettings,
@@ -238,7 +248,7 @@ export const SidebarContent = memo(function SidebarContent({
 								onClick={onNewNote}
 								title={`Create a new note (${getShortcutTooltip({ meta: true, key: "n" })})`}
 							>
-								<HugeiconsIcon icon={NoteIcon} size={14} />
+								<HugeiconsIcon icon={NoteIcon} size={14} strokeWidth={0.9} />
 								<span className="sidebarQuickActionLabel">New Note</span>
 							</button>
 							<button
@@ -276,7 +286,11 @@ export const SidebarContent = memo(function SidebarContent({
 											runNewMenuAction(() => onCreateFromTemplateInDir(""))
 										}
 									>
-										<HugeiconsIcon icon={DocumentCodeIcon} size={15} />
+										<HugeiconsIcon
+											icon={DocumentCodeIcon}
+											size={15}
+											strokeWidth={0.9}
+										/>
 										<span>Template</span>
 									</button>
 									<button
@@ -288,7 +302,11 @@ export const SidebarContent = memo(function SidebarContent({
 											})
 										}
 									>
-										<HugeiconsIcon icon={LibraryIcon} size={15} />
+										<HugeiconsIcon
+											icon={LibraryIcon}
+											size={15}
+											strokeWidth={0.9}
+										/>
 										<span>Collection</span>
 									</button>
 									<button
@@ -296,7 +314,11 @@ export const SidebarContent = memo(function SidebarContent({
 										className="sidebarQuickActionMenuItem"
 										onClick={() => runNewMenuAction(onOpenCalendar)}
 									>
-										<HugeiconsIcon icon={TaskAdd02Icon} size={15} />
+										<HugeiconsIcon
+											icon={TaskAdd02Icon}
+											size={15}
+											strokeWidth={0.9}
+										/>
 										<span>Task</span>
 									</button>
 									<button
@@ -321,11 +343,14 @@ export const SidebarContent = memo(function SidebarContent({
 						className="sidebarQuickActionBtn"
 						data-kind="dashboard"
 						onClick={onOpenCalendar}
+						onMouseEnter={onPrefetchCalendar}
+						onFocus={onPrefetchCalendar}
 						title="Open Home"
 					>
 						<HugeiconsIcon
 							icon={Home01Icon}
 							size={14}
+							strokeWidth={0.9}
 							className="sidebarQuickActionHomeIcon"
 						/>
 						<span className="sidebarQuickActionLabel">Home</span>
@@ -335,9 +360,15 @@ export const SidebarContent = memo(function SidebarContent({
 						className="sidebarQuickActionBtn"
 						data-kind="all-notes"
 						onClick={onOpenAllDocs}
+						onMouseEnter={onPrefetchAllDocs}
+						onFocus={onPrefetchAllDocs}
 						title="Open All Notes"
 					>
-						<HugeiconsIcon icon={CollectionsBookmarkIcon} size={14} />
+						<HugeiconsIcon
+							icon={CollectionsBookmarkIcon}
+							size={14}
+							strokeWidth={0.9}
+						/>
 						<span className="sidebarQuickActionLabel">All Notes</span>
 						{allNotesCount !== null ? (
 							<span className="sidebarQuickActionCount">{allNotesCount}</span>
@@ -348,12 +379,13 @@ export const SidebarContent = memo(function SidebarContent({
 						className="sidebarQuickActionBtn"
 						data-kind="databases"
 						onClick={() => onOpenDatabases()}
+						onMouseEnter={() => onPrefetchDatabases()}
+						onFocus={() => onPrefetchDatabases()}
 						title="Open Collections"
 					>
-						<HugeiconsIcon icon={LibraryIcon} size={14} />
+						<HugeiconsIcon icon={LibraryIcon} size={14} strokeWidth={0.9} />
 						<span className="sidebarQuickActionLabel">Collections</span>
 					</button>
-					<div className="sidebarQuickActionsSpacer" aria-hidden="true" />
 					<button
 						type="button"
 						className="sidebarQuickActionBtn"
@@ -361,7 +393,11 @@ export const SidebarContent = memo(function SidebarContent({
 						onClick={onOpenDailyNote}
 						title="Open Daily Note"
 					>
-						<HugeiconsIcon icon={CalendarAdd01Icon} size={14} />
+						<HugeiconsIcon
+							icon={CalendarAdd01Icon}
+							size={14}
+							strokeWidth={0.9}
+						/>
 						<span className="sidebarQuickActionLabel">Daily Note</span>
 					</button>
 					<button
@@ -369,9 +405,15 @@ export const SidebarContent = memo(function SidebarContent({
 						className="sidebarQuickActionBtn"
 						data-kind="templates"
 						onClick={onOpenTemplates}
+						onMouseEnter={onPrefetchTemplates}
+						onFocus={onPrefetchTemplates}
 						title="Open Templates"
 					>
-						<HugeiconsIcon icon={DocumentCodeIcon} size={14} />
+						<HugeiconsIcon
+							icon={DocumentCodeIcon}
+							size={14}
+							strokeWidth={0.9}
+						/>
 						<span className="sidebarQuickActionLabel">Templates</span>
 					</button>
 				</div>
@@ -388,10 +430,10 @@ export const SidebarContent = memo(function SidebarContent({
 								<Files size={14} />
 							</TabsTrigger>
 							<TabsTrigger value="tags" title="Tags" data-kind="tags">
-								<HugeiconsIcon icon={Tag01Icon} size={14} />
+								<HugeiconsIcon icon={Tag01Icon} size={14} strokeWidth={0.9} />
 							</TabsTrigger>
 							<TabsTrigger value="recent" title="Recent" data-kind="recent">
-								<HugeiconsIcon icon={Clock01Icon} size={14} />
+								<HugeiconsIcon icon={Clock01Icon} size={14} strokeWidth={0.9} />
 							</TabsTrigger>
 						</TabsList>
 					</Tabs>
@@ -413,6 +455,7 @@ export const SidebarContent = memo(function SidebarContent({
 								onToggleDir={onToggleDir}
 								onSelectDir={onSelectDir}
 								onOpenFile={onOpenFile}
+								onPrefetchFile={onPrefetchFile}
 								onNewFileInDir={onNewFileInDir}
 								onCreateFromTemplateInDir={onCreateFromTemplateInDir}
 								onNewDatabaseInDir={onNewDatabaseInDir}
@@ -460,6 +503,7 @@ export const SidebarContent = memo(function SidebarContent({
 									recentFiles={recentFiles}
 									activeFilePath={activeFilePath}
 									onOpenFile={onOpenFile}
+									onPrefetchFile={onPrefetchFile}
 									onRefresh={() => void refreshRecentFiles()}
 								/>
 							</ScrollArea>
@@ -475,7 +519,7 @@ export const SidebarContent = memo(function SidebarContent({
 					title="Open settings"
 					data-kind="settings"
 				>
-					<HugeiconsIcon icon={Settings01Icon} size={14} />
+					<HugeiconsIcon icon={Settings01Icon} size={14} strokeWidth={0.9} />
 					<span className="sidebarQuickActionLabel">Settings</span>
 				</button>
 				{showGitButton ? (

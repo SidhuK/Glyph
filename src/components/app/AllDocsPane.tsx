@@ -20,8 +20,14 @@ import {
 	useMemo,
 	useState,
 } from "react";
-import { type AllDocsItem, invoke } from "../../lib/tauri";
+import type { AllDocsItem } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
+import {
+	getPrefetchedAllDocs,
+	invalidateAllDocsPrefetch,
+	prefetchAllDocs,
+	prefetchNote,
+} from "../../lib/navigationPrefetch";
 import { formatDatabaseTagLabel } from "../database/databaseTagLabel";
 import { springPresets } from "../ui/animations";
 
@@ -31,6 +37,7 @@ interface AllDocsPaneProps {
 	icon?: ComponentProps<typeof HugeiconsIcon>["icon"];
 	folderPrefix?: string | null;
 	emptyMessage?: string;
+	initialNotes?: AllDocsItem[] | null;
 }
 
 const CARD_STYLE = {
@@ -128,10 +135,15 @@ export const AllDocsPane = memo(function AllDocsPane({
 	icon = CollectionsBookmarkIcon,
 	folderPrefix = null,
 	emptyMessage = "No notes yet. Create one to get started.",
+	initialNotes = null,
 }: AllDocsPaneProps) {
 	const shouldReduceMotion = useReducedMotion() ?? false;
-	const [notes, setNotes] = useState<AllDocsItem[]>([]);
-	const [loading, setLoading] = useState(true);
+	const [notes, setNotes] = useState<AllDocsItem[]>(
+		() => initialNotes ?? getPrefetchedAllDocs(folderPrefix) ?? [],
+	);
+	const [loading, setLoading] = useState(
+		() => (initialNotes ?? getPrefetchedAllDocs(folderPrefix)) === null,
+	);
 	const [error, setError] = useState("");
 	const [selectedNotePath, setSelectedNotePath] = useState<string | null>(null);
 	const normalizedFolderPrefix = useMemo(
@@ -144,26 +156,9 @@ export const AllDocsPane = memo(function AllDocsPane({
 			setLoading(true);
 			setError("");
 			try {
-				const items = await invoke("all_docs_list", {
-					limit: 2000,
-					folder_prefix: normalizedFolderPrefix,
-				});
+				const items = await prefetchAllDocs(normalizedFolderPrefix);
 				if (cancelled?.current) return;
-				// Keep a client-side guard here so the Templates view stays scoped
-				// even if the running backend returns a broader result set.
-				const nextItems = normalizedFolderPrefix
-					? items.filter((item) => {
-							const normalizedPath = item.note_path
-								.trim()
-								.replace(/\\/g, "/")
-								.replace(/^\/+/, "");
-							return (
-								normalizedPath === normalizedFolderPrefix ||
-								normalizedPath.startsWith(`${normalizedFolderPrefix}/`)
-							);
-						})
-					: items;
-				applyNotesResult(nextItems, setNotes, setSelectedNotePath);
+				applyNotesResult(items, setNotes, setSelectedNotePath);
 			} catch (cause) {
 				if (cancelled?.current) return;
 				setError(cause instanceof Error ? cause.message : String(cause));
@@ -176,16 +171,23 @@ export const AllDocsPane = memo(function AllDocsPane({
 	);
 
 	useTauriEvent("notes:external_changed", () => {
+		invalidateAllDocsPrefetch(normalizedFolderPrefix);
 		void fetchNotes();
 	});
 
 	useEffect(() => {
 		const cancelled = { current: false };
+		if (notes.length > 0) {
+			void fetchNotes(cancelled);
+			return () => {
+				cancelled.current = true;
+			};
+		}
 		void fetchNotes(cancelled);
 		return () => {
 			cancelled.current = true;
 		};
-	}, [fetchNotes]);
+	}, [fetchNotes, notes.length]);
 
 	const countLabel = useMemo(() => {
 		const count = notes.length;
@@ -225,7 +227,7 @@ export const AllDocsPane = memo(function AllDocsPane({
 			<div className="allDocsHeader">
 				<div className="allDocsTitleGroup">
 					<div className="allDocsTitleIcon">
-						<HugeiconsIcon icon={icon} size={16} />
+						<HugeiconsIcon icon={icon} size={16} strokeWidth={0.9} />
 					</div>
 					<div>
 						<h1 className="allDocsTitle">{title}</h1>
@@ -267,6 +269,8 @@ export const AllDocsPane = memo(function AllDocsPane({
 												: undefined
 										}
 										onClick={() => setSelectedNotePath(note.note_path)}
+										onMouseEnter={() => prefetchNote(note.note_path)}
+										onFocus={() => prefetchNote(note.note_path)}
 										onDoubleClick={() => void onOpenFile(note.note_path)}
 										onKeyDown={(event) => {
 											if (event.key === "Enter") {

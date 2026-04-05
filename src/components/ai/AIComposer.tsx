@@ -145,7 +145,11 @@ export function AIComposer({
 											{item.kind === "file" ? (
 												<File size={12} />
 											) : (
-												<HugeiconsIcon icon={Folder01Icon} size={12} />
+												<HugeiconsIcon
+													icon={Folder01Icon}
+													size={12}
+													strokeWidth={0.9}
+												/>
 											)}
 										</span>
 										<span className="aiContextChipLabel">
@@ -201,7 +205,7 @@ export function AIComposer({
 										onClick={handleInsertMentionTrigger}
 										disabled={isAwaitingResponse}
 									>
-										<HugeiconsIcon icon={AtIcon} size={13} />
+										<HugeiconsIcon icon={AtIcon} size={13} strokeWidth={0.9} />
 									</Button>
 								</div>
 								<div className="aiComposerRight">
@@ -222,7 +226,7 @@ export function AIComposer({
 									aria-label="Stop"
 									title="Stop"
 								>
-									<HugeiconsIcon icon={StopIcon} size={14} />
+									<HugeiconsIcon icon={StopIcon} size={14} strokeWidth={0.9} />
 								</button>
 							) : (
 								<Button
@@ -235,7 +239,11 @@ export function AIComposer({
 									aria-label="Send"
 									title="Send"
 								>
-									<HugeiconsIcon icon={Navigation03Icon} size={14} />
+									<HugeiconsIcon
+										icon={Navigation03Icon}
+										size={14}
+										strokeWidth={0.9}
+									/>
 								</Button>
 							)}
 						</div>

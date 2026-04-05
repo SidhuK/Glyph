@@ -52,17 +52,17 @@ export function WelcomeScreen({
 	const features = useMemo(
 		() => [
 			{
-				icon: <Computer size={14} strokeWidth={1.8} />,
+				icon: <Computer size={14} />,
 				label: "Local files",
 				desc: "Your notes live as plain files on your computer. No vendor lock-in, just folders you own.",
 			},
 			{
-				icon: <FileText size={14} strokeWidth={1.8} />,
+				icon: <FileText size={14} />,
 				label: "Markdown-first",
 				desc: "A calm editor with slash commands, live preview, and helpful formatting tools. Every note is a plain .md file you keep and control.",
 			},
 			{
-				icon: <Sparkles size={14} strokeWidth={1.8} />,
+				icon: <Sparkles size={14} />,
 				label: "Optional AI",
 				desc: "Summarize, draft, and ask questions using your notes as context. Works with your ChatGPT account, OpenAI, Anthropic, Openrouter or local models via Ollama.",
 			},
@@ -87,7 +87,7 @@ export function WelcomeScreen({
 			cards.push({
 				key: "continue",
 				primary: true,
-				icon: <FolderOpen size={16} strokeWidth={1.8} />,
+				icon: <FolderOpen size={16} />,
 				label: `Continue ${lastSpaceName}`,
 				hint: shortenPath(lastSpacePath),
 				onClick: () => void onContinueLastSpace(),
@@ -100,7 +100,7 @@ export function WelcomeScreen({
 				normalizePathSeparators(nextRecent).split("/").pop() ?? nextRecent;
 			cards.push({
 				key: `recent-${nextRecent}`,
-				icon: <FolderOpen size={16} strokeWidth={1.8} />,
+				icon: <FolderOpen size={16} />,
 				label: name,
 				hint: shortenPath(nextRecent),
 				onClick: () => onSelectRecentSpace(nextRecent),
@@ -110,14 +110,14 @@ export function WelcomeScreen({
 		cards.push(
 			{
 				key: "open",
-				icon: <FolderOpen size={16} strokeWidth={1.8} />,
+				icon: <FolderOpen size={16} />,
 				label: "Open folder",
 				hint: "Best for existing folders with Markdown notes.",
 				onClick: onOpenSpace,
 			},
 			{
 				key: "create",
-				icon: <FolderPlus size={16} strokeWidth={1.8} />,
+				icon: <FolderPlus size={16} />,
 				label: "Create space",
 				hint: "Start fresh if you do not already have notes.",
 				onClick: onCreateSpace,

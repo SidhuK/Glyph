@@ -140,7 +140,11 @@ export function GitSettingsPane() {
 			<div className="settingsGrid">
 				<section className="settingsCard gitBetaNotice">
 					<div className="gitBetaNoticeIcon" aria-hidden="true">
-						<HugeiconsIcon icon={ConstructionIcon} size={16} />
+						<HugeiconsIcon
+							icon={ConstructionIcon}
+							size={16}
+							strokeWidth={0.9}
+						/>
 					</div>
 					<div className="gitBetaNoticeBody">
 						<div className="gitBetaNoticeTitleRow">
@@ -164,7 +168,13 @@ export function GitSettingsPane() {
 						interactive={false}
 					>
 						<SettingsValueCard
-							icon={<HugeiconsIcon icon={CheckmarkCircle02Icon} size={14} />}
+							icon={
+								<HugeiconsIcon
+									icon={CheckmarkCircle02Icon}
+									size={14}
+									strokeWidth={0.9}
+								/>
+							}
 							value={
 								loading
 									? "Loading..."
@@ -181,7 +191,13 @@ export function GitSettingsPane() {
 						interactive={false}
 					>
 						<SettingsValueCard
-							icon={<HugeiconsIcon icon={InformationCircleIcon} size={14} />}
+							icon={
+								<HugeiconsIcon
+									icon={InformationCircleIcon}
+									size={14}
+									strokeWidth={0.9}
+								/>
+							}
 							value={repoStateLabel}
 						/>
 					</SettingsRow>
@@ -192,7 +208,9 @@ export function GitSettingsPane() {
 						interactive={false}
 					>
 						<SettingsValueCard
-							icon={<HugeiconsIcon icon={Link01Icon} size={14} />}
+							icon={
+								<HugeiconsIcon icon={Link01Icon} size={14} strokeWidth={0.9} />
+							}
 							value={
 								config?.remote_url ??
 								"Open a folder that already has Git initialized."
@@ -208,7 +226,13 @@ export function GitSettingsPane() {
 							interactive={false}
 						>
 							<SettingsValueCard
-								icon={<HugeiconsIcon icon={GitBranchIcon} size={14} />}
+								icon={
+									<HugeiconsIcon
+										icon={GitBranchIcon}
+										size={14}
+										strokeWidth={0.9}
+									/>
+								}
 								value={config.branch}
 								mono
 							/>
@@ -277,7 +301,13 @@ export function GitSettingsPane() {
 						interactive={false}
 					>
 						<SettingsValueCard
-							icon={<HugeiconsIcon icon={InformationCircleIcon} size={14} />}
+							icon={
+								<HugeiconsIcon
+									icon={InformationCircleIcon}
+									size={14}
+									strokeWidth={0.9}
+								/>
+							}
 							value={
 								status?.message ??
 								(status?.last_error

@@ -316,7 +316,7 @@ export function ModelSelector({
 														<HugeiconsIcon
 															icon={BadgeInfoIcon}
 															size={14}
-															strokeWidth={1.8}
+															strokeWidth={0.9}
 														/>
 													</button>
 												)}

@@ -6,8 +6,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useAISidebarContext } from "../../contexts";
-import { openSettingsWindow } from "../../lib/windows";
+import { useAISidebarContext, useUILayoutContext } from "../../contexts";
 import { ChevronDown, Settings as SettingsIcon, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { AIChatThread } from "./AIChatThread";
@@ -43,6 +42,7 @@ export async function prefetchAIPanelData(): Promise<void> {
 export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 	const chat = useRigChat();
 	const { aiAssistantMode } = useAISidebarContext();
+	const { openSettings } = useUILayoutContext();
 	const isChatMode = aiAssistantMode === "chat";
 
 	const [input, setInput] = useState("");
@@ -310,7 +310,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 			<div className="aiPanelHeader">
 				<div className="aiPanelHeaderLeft">
 					<div className="aiPanelTitle">
-						<HugeiconsIcon icon={AiChat02Icon} size={18} />
+						<HugeiconsIcon icon={AiChat02Icon} size={18} strokeWidth={0.9} />
 					</div>
 					<button
 						type="button"
@@ -337,7 +337,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 						disabled={chat.status === "streaming"}
 						onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
 					>
-						<HugeiconsIcon icon={ChatAdd01Icon} size={13} />
+						<HugeiconsIcon icon={ChatAdd01Icon} size={13} strokeWidth={0.9} />
 					</Button>
 					<Button
 						type="button"
@@ -345,7 +345,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 						size="icon-sm"
 						data-action="settings"
 						aria-label="Settings"
-						onClick={() => void openSettingsWindow("ai")}
+						onClick={() => openSettings("ai")}
 						title="Settings"
 						onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
 					>
@@ -361,7 +361,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 						title="Minimize"
 						onPointerDown={(e: React.PointerEvent) => e.stopPropagation()}
 					>
-						<HugeiconsIcon icon={Logout01Icon} size={13} />
+						<HugeiconsIcon icon={Logout01Icon} size={13} strokeWidth={0.9} />
 					</Button>
 				</div>
 			</div>

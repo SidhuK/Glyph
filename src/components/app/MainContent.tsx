@@ -3,10 +3,12 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import {
 	type Dispatch,
+	type ReactNode,
 	type SetStateAction,
 	Suspense,
 	lazy,
 	memo,
+	useCallback,
 	useEffect,
 	useMemo,
 	useRef,
@@ -29,48 +31,82 @@ import { CALENDAR_TAB_ID } from "../../lib/calendar";
 import { APP_TAGLINE } from "../../lib/copy";
 import { DATABASES_TAB_ID } from "../../lib/databases";
 import {
+	getPrefetchedAllDocs,
+	getPrefetchedCalendarData,
+	getPrefetchedDatabaseDocument,
+	getPrefetchedDatabaseRows,
+	getPrefetchedNote,
+	prefetchAllDocs,
+	prefetchCalendarData,
+	prefetchDatabasesLanding,
+	prefetchNote,
+} from "../../lib/navigationPrefetch";
+import {
 	DEFAULT_ONBOARDING_SETTINGS,
 	type OnboardingSettings,
 	loadSettings,
 	updateOnboardingSettings,
 } from "../../lib/settings";
 import { formatShortcutPartsForPlatform } from "../../lib/shortcuts/platform";
+import { todayIsoDateLocal } from "../../lib/tasks";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { TEMPLATES_TAB_ID } from "../../lib/templatesView";
 import { isInAppPreviewable } from "../../utils/filePreview";
 import { Calendar, FileText, Settings } from "../Icons";
 import { FilePreviewPane } from "../preview/FilePreviewPane";
 import { NotePane } from "../preview/NotePane";
+import { AboutSettingsPane } from "../settings/AboutSettingsPane";
+import { AdvancedSettingsPane } from "../settings/AdvancedSettingsPane";
+import { AiSettingsPane } from "../settings/AiSettingsPane";
+import { AppearanceSettingsPane } from "../settings/AppearanceSettingsPane";
+import { GeneralSettingsPane } from "../settings/GeneralSettingsPane";
+import { GitSettingsPane } from "../settings/GitSettingsPane";
+import { SpaceSettingsPane } from "../settings/SpaceSettingsPane";
+import { SETTINGS_TABS, type SettingsTab } from "../settings/settingsConfig";
 import { springPresets } from "../ui/animations";
 import { Button } from "../ui/shadcn/button";
 import { GettingStartedPane } from "./GettingStartedPane";
 import { TabBar } from "./TabBar";
 import { WelcomeScreen } from "./WelcomeScreen";
+import {
+	loadAIAgentPane,
+	loadAllDocsPane,
+	loadCalendarPane,
+	loadDatabasesPane,
+} from "./prefetchablePanes";
 import type { WorkspaceTab } from "./useTabManager";
 
-const AIAgentPane = lazy(() =>
-	import("../ai/AIAgentPane").then((module) => ({
-		default: module.AIAgentPane,
-	})),
-);
+const AIAgentPane = lazy(loadAIAgentPane);
+const DatabasesPane = lazy(loadDatabasesPane);
+const CalendarPane = lazy(loadCalendarPane);
+const AllDocsPane = lazy(loadAllDocsPane);
 
-const DatabasesPane = lazy(() =>
-	import("../databases/DatabasesPane").then((module) => ({
-		default: module.DatabasesPane,
-	})),
-);
+function readStorage(key: string): string | null {
+	if (typeof window === "undefined") return null;
+	try {
+		return window.localStorage.getItem(key);
+	} catch {
+		return null;
+	}
+}
 
-const CalendarPane = lazy(() =>
-	import("../calendar/CalendarPane").then((module) => ({
-		default: module.CalendarPane,
-	})),
-);
-
-const AllDocsPane = lazy(() =>
-	import("./AllDocsPane").then((module) => ({
-		default: module.AllDocsPane,
-	})),
-);
+function preferredDatabaseViewId(
+	databaseId: string,
+	viewIds: string[],
+): string | null {
+	const raw = readStorage("glyph.databases.selectedViews");
+	if (!raw) return null;
+	try {
+		const parsed = JSON.parse(raw);
+		const candidate =
+			parsed && typeof parsed === "object" ? parsed[databaseId] : null;
+		return typeof candidate === "string" && viewIds.includes(candidate)
+			? candidate
+			: null;
+	} catch {
+		return null;
+	}
+}
 
 interface EmptyTip {
 	key: string;
@@ -102,7 +138,7 @@ function ContextualEmptyState({
 		if (!onboarding.createdFirstNote) {
 			t.push({
 				key: "note",
-				icon: <FileText size={16} strokeWidth={1.7} />,
+				icon: <FileText size={16} />,
 				text: "Create your first note",
 				action: "New note",
 				onClick: onCreateNote,
@@ -111,7 +147,7 @@ function ContextualEmptyState({
 		if (!onboarding.openedDailyNote && showDailyNoteAction) {
 			t.push({
 				key: "daily",
-				icon: <Calendar size={16} strokeWidth={1.7} />,
+				icon: <Calendar size={16} />,
 				text: "Try a daily note — saved to your daily notes folder",
 				action: "Open daily note",
 				onClick: onOpenDailyNote,
@@ -294,7 +330,7 @@ function DailyNotesSetupToast({
 					<output className="dailyNotesSetupToast" aria-live="polite">
 						<div className="dailyNotesSetupToastHeader">
 							<div className="dailyNotesSetupToastIcon">
-								<Calendar size={16} strokeWidth={1.8} />
+								<Calendar size={16} />
 							</div>
 							<div className="dailyNotesSetupToastTitleBlock">
 								<div className="dailyNotesSetupToastEyebrow">Daily notes</div>
@@ -322,7 +358,7 @@ function DailyNotesSetupToast({
 								className="dailyNotesSetupToastPrimary"
 								onClick={onOpenSettings}
 							>
-								<Settings size={14} strokeWidth={1.8} />
+								<Settings size={14} />
 								<span>Open settings</span>
 							</Button>
 						</div>
@@ -376,8 +412,13 @@ export const MainContent = memo(function MainContent({
 		onContinueLastSpace,
 		onCreateSpace,
 	} = useSpace();
-	const { dailyNotesFolder, templateFolder, zenModeActive } =
-		useUILayoutContext();
+	const {
+		dailyNotesFolder,
+		templateFolder,
+		zenModeActive,
+		settingsMode,
+		settingsTab,
+	} = useUILayoutContext();
 	const { aiEnabled, aiPanelOpen, setAiPanelOpen } = useAISidebarContext();
 	const tabBarWrapperRef = useRef<HTMLDivElement | null>(null);
 	const [onboarding, setOnboarding] = useState<OnboardingSettings>(
@@ -584,6 +625,46 @@ export const MainContent = memo(function MainContent({
 		return () => window.clearTimeout(timeout);
 	}, [dailyNoteSetupNoticeRequest, spacePath]);
 
+	useEffect(() => {
+		if (!spacePath) return;
+		let cancelled = false;
+		const run = () => {
+			if (cancelled) return;
+			void loadCalendarPane();
+			void loadDatabasesPane();
+			void loadAllDocsPane();
+			void prefetchAllDocs(null);
+			if (templateFolder) {
+				void prefetchAllDocs(templateFolder);
+			}
+			void prefetchCalendarData({
+				anchorDate:
+					readStorage("glyph.calendar.anchorDate") ?? todayIsoDateLocal(),
+				selectedDate:
+					readStorage("glyph.calendar.selectedDate") ?? todayIsoDateLocal(),
+				dailyNotesFolder,
+			});
+			void prefetchDatabasesLanding(openDatabasesRequest.databaseId);
+		};
+		if (typeof window.requestIdleCallback === "function") {
+			const idleId = window.requestIdleCallback(run, { timeout: 900 });
+			return () => {
+				cancelled = true;
+				window.cancelIdleCallback(idleId);
+			};
+		}
+		const timeout = window.setTimeout(run, 180);
+		return () => {
+			cancelled = true;
+			window.clearTimeout(timeout);
+		};
+	}, [
+		dailyNotesFolder,
+		openDatabasesRequest.databaseId,
+		spacePath,
+		templateFolder,
+	]);
+
 	const content = useMemo(() => {
 		if (!viewerPath) return null;
 		if (viewerPath === AI_AGENT_TAB_ID) {
@@ -598,17 +679,19 @@ export const MainContent = memo(function MainContent({
 			);
 		}
 		if (viewerPath === ALL_DOCS_TAB_ID) {
+			const initialNotes = getPrefetchedAllDocs(null);
 			return (
 				<Suspense
 					fallback={
 						<div className="databaseLoadingState">Loading all docs…</div>
 					}
 				>
-					<AllDocsPane onOpenFile={onOpenFile} />
+					<AllDocsPane onOpenFile={onOpenFile} initialNotes={initialNotes} />
 				</Suspense>
 			);
 		}
 		if (viewerPath === TEMPLATES_TAB_ID) {
+			const initialNotes = getPrefetchedAllDocs(templateFolder);
 			return (
 				<Suspense
 					fallback={
@@ -624,12 +707,20 @@ export const MainContent = memo(function MainContent({
 								? "No notes found in the template folder yet."
 								: "Set a template folder in Settings to browse templates here."
 						}
+						initialNotes={initialNotes}
 						onOpenFile={onOpenFile}
 					/>
 				</Suspense>
 			);
 		}
 		if (viewerPath === CALENDAR_TAB_ID) {
+			const initialCalendarData = getPrefetchedCalendarData({
+				anchorDate:
+					readStorage("glyph.calendar.anchorDate") ?? todayIsoDateLocal(),
+				selectedDate:
+					readStorage("glyph.calendar.selectedDate") ?? todayIsoDateLocal(),
+				dailyNotesFolder,
+			});
 			return (
 				<Suspense
 					fallback={
@@ -637,6 +728,7 @@ export const MainContent = memo(function MainContent({
 					}
 				>
 					<CalendarPane
+						initialData={initialCalendarData}
 						onOpenFile={onOpenFile}
 						onOpenDailyNotesSettings={onOpenDailyNotesSettings}
 					/>
@@ -644,6 +736,23 @@ export const MainContent = memo(function MainContent({
 			);
 		}
 		if (viewerPath === DATABASES_TAB_ID) {
+			const initialDatabaseId = openDatabasesRequest.databaseId ?? null;
+			const initialDocument = initialDatabaseId
+				? getPrefetchedDatabaseDocument(initialDatabaseId)
+				: null;
+			const initialViewId =
+				initialDatabaseId && initialDocument
+					? (preferredDatabaseViewId(
+							initialDatabaseId,
+							initialDocument.database.views.map((view) => view.id),
+						) ??
+						initialDocument.database.views[0]?.id ??
+						null)
+					: null;
+			const initialRows =
+				initialViewId && initialDatabaseId
+					? getPrefetchedDatabaseRows(initialDatabaseId, initialViewId)
+					: null;
 			return (
 				<Suspense
 					fallback={
@@ -652,16 +761,20 @@ export const MainContent = memo(function MainContent({
 				>
 					<DatabasesPane
 						onOpenFile={onOpenFile}
-						initialDatabaseId={openDatabasesRequest.databaseId}
+						initialDatabaseId={initialDatabaseId}
+						initialDocument={initialDocument}
+						initialRows={initialRows}
 						openRequestNonce={openDatabasesRequest.nonce}
 					/>
 				</Suspense>
 			);
 		}
 		if (viewerPath.toLowerCase().endsWith(".md")) {
+			const initialDoc = getPrefetchedNote(viewerPath);
 			return (
 				<NotePane
 					relPath={viewerPath}
+					initialDoc={initialDoc}
 					onDirtyChange={(dirty) =>
 						setDirtyByPath((prev) =>
 							prev[viewerPath] === dirty
@@ -692,10 +805,90 @@ export const MainContent = memo(function MainContent({
 		onOpenDailyNotesSettings,
 		openDatabasesRequest.databaseId,
 		openDatabasesRequest.nonce,
+		dailyNotesFolder,
 		templateFolder,
 		viewerPath,
 		setDirtyByPath,
 	]);
+
+	const handlePrefetchTab = useCallback(
+		(target: string | null) => {
+			if (!target) return;
+			if (target.toLowerCase().endsWith(".md")) {
+				prefetchNote(target);
+				return;
+			}
+			if (target === ALL_DOCS_TAB_ID) {
+				void loadAllDocsPane();
+				void prefetchAllDocs(null);
+				return;
+			}
+			if (target === TEMPLATES_TAB_ID) {
+				void loadAllDocsPane();
+				void prefetchAllDocs(templateFolder);
+				return;
+			}
+			if (target === CALENDAR_TAB_ID) {
+				void loadCalendarPane();
+				void prefetchCalendarData({
+					anchorDate:
+						readStorage("glyph.calendar.anchorDate") ?? todayIsoDateLocal(),
+					selectedDate:
+						readStorage("glyph.calendar.selectedDate") ?? todayIsoDateLocal(),
+					dailyNotesFolder,
+				});
+				return;
+			}
+			if (target === DATABASES_TAB_ID) {
+				void loadDatabasesPane();
+				void prefetchDatabasesLanding(openDatabasesRequest.databaseId);
+			}
+		},
+		[dailyNotesFolder, openDatabasesRequest.databaseId, templateFolder],
+	);
+
+	const settingsTabContentByTab: Record<SettingsTab, ReactNode> = {
+		general: <GeneralSettingsPane />,
+		appearance: <AppearanceSettingsPane />,
+		ai: <AiSettingsPane />,
+		space: <SpaceSettingsPane />,
+		git: <GitSettingsPane />,
+		advanced: <AdvancedSettingsPane />,
+		about: <AboutSettingsPane />,
+	};
+
+	const activeSettingsTabMeta = useMemo(
+		() =>
+			SETTINGS_TABS.find((tab) => tab.id === settingsTab) ?? SETTINGS_TABS[0],
+		[settingsTab],
+	);
+
+	if (settingsMode) {
+		return (
+			<main className="mainArea">
+				<div className="settingsTabPanel">
+					<header className="settingsPanelHeader">
+						<div className="settingsPanelTitleRow">
+							<h2 className="settingsPanelTitle">
+								{activeSettingsTabMeta.label}
+							</h2>
+							{activeSettingsTabMeta.badgeText ? (
+								<span
+									className={`settingsPanelBadge earlyAccessBadge ${activeSettingsTabMeta.id === "git" ? "settingsBetaBadge" : ""}`}
+								>
+									{activeSettingsTabMeta.badgeIcon
+										? activeSettingsTabMeta.badgeIcon()
+										: null}
+									<span>{activeSettingsTabMeta.badgeText}</span>
+								</span>
+							) : null}
+						</div>
+					</header>
+					{settingsTabContentByTab[settingsTab]}
+				</div>
+			</main>
+		);
+	}
 
 	if (!spacePath) {
 		if (!settingsLoaded) return <main className="mainArea" />;
@@ -749,6 +942,7 @@ export const MainContent = memo(function MainContent({
 								dragTabId={dragTabId}
 								useWindowBackground={!content}
 								onOpenBlankTab={openBlankTab}
+								onPrefetchTab={handlePrefetchTab}
 								onSelectTab={setActiveTabId}
 								onCloseTab={closeTab}
 								onDragStart={setDragTabId}
@@ -791,7 +985,7 @@ export const MainContent = memo(function MainContent({
 							aria-label="Open AI panel"
 							title="Open AI panel"
 						>
-							<HugeiconsIcon icon={AiChat02Icon} size={32} />
+							<HugeiconsIcon icon={AiChat02Icon} size={32} strokeWidth={0.9} />
 						</button>
 					) : null}
 				</div>

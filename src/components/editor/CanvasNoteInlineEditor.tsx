@@ -1201,7 +1201,11 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 									onMouseDown={preventTableControlMouseDown}
 									onClick={addRowToSelectedTable}
 								>
-									<HugeiconsIcon icon={LocationAdd01Icon} size={14} />
+									<HugeiconsIcon
+										icon={LocationAdd01Icon}
+										size={14}
+										strokeWidth={0.9}
+									/>
 								</button>
 								<button
 									type="button"
@@ -1216,7 +1220,11 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 									onMouseDown={preventTableControlMouseDown}
 									onClick={addColumnToSelectedTable}
 								>
-									<HugeiconsIcon icon={LocationAdd01Icon} size={14} />
+									<HugeiconsIcon
+										icon={LocationAdd01Icon}
+										size={14}
+										strokeWidth={0.9}
+									/>
 								</button>
 							</>
 						) : null}
@@ -1240,7 +1248,11 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 											title="Set code block language"
 										>
 											<span className="codeBlockLanguageBtnIcon" aria-hidden>
-												<HugeiconsIcon icon={SourceCodeIcon} size={12} />
+												<HugeiconsIcon
+													icon={SourceCodeIcon}
+													size={12}
+													strokeWidth={0.9}
+												/>
 											</span>
 											<span className="codeBlockLanguageBtnLabel mono">
 												{selectedCodeBlockLanguageLabel}
@@ -1327,6 +1339,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 										<HugeiconsIcon
 											icon={Calendar03Icon}
 											size={13}
+											strokeWidth={0.9}
 											aria-hidden
 										/>
 									</button>
@@ -1461,7 +1474,11 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 												setPickerMonth((current) => addMonths(current, -1))
 											}
 										>
-											<HugeiconsIcon icon={ArrowLeft} size={13} />
+											<HugeiconsIcon
+												icon={ArrowLeft}
+												size={13}
+												strokeWidth={0.9}
+											/>
 										</Button>
 										<Button
 											type="button"
@@ -1473,7 +1490,11 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 												setPickerMonth((current) => addMonths(current, 1))
 											}
 										>
-											<HugeiconsIcon icon={ArrowRight} size={13} />
+											<HugeiconsIcon
+												icon={ArrowRight}
+												size={13}
+												strokeWidth={0.9}
+											/>
 										</Button>
 										<Button
 											type="button"

@@ -123,7 +123,6 @@ export function NotePropertiesPanel({
 		() => properties.length > 0 || !rawDraft.trim(),
 		[properties.length, rawDraft],
 	);
-	const hasExistingProperties = properties.length > 0;
 
 	const commitProperties = (
 		nextProperties: NoteProperty[],
@@ -259,14 +258,7 @@ export function NotePropertiesPanel({
 						);
 					})}
 					{!readOnly ? (
-						<div
-							className={[
-								"notePropertyAddWrap",
-								hasExistingProperties ? "hasDivider" : "",
-							]
-								.filter(Boolean)
-								.join(" ")}
-						>
+						<div className="notePropertyAddWrap">
 							<Button
 								type="button"
 								variant="ghost"

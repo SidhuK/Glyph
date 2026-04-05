@@ -31,6 +31,7 @@ import { splitYamlFrontmatter } from "../../lib/notePreview";
 import { type TextFileDoc, invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { countWords, formatReadingTime } from "../../lib/textStats";
+import { setPrefetchedNote } from "../../lib/navigationPrefetch";
 import { normalizeRelPath } from "../../utils/path";
 import { Edit, Eye, FileText, RefreshCw, Save, Type } from "../Icons";
 import { CanvasNoteInlineEditor } from "../editor/CanvasNoteInlineEditor";
@@ -42,7 +43,6 @@ import {
 	clearMarkdownDocCache,
 	getCachedMarkdownDoc,
 	peekCachedMarkdownDoc,
-	setCachedMarkdownDoc,
 } from "./markdownCache";
 
 interface MarkdownEditorPaneProps {
@@ -259,7 +259,7 @@ export function MarkdownEditorPane({
 		setError(initialError);
 		setActionsOpen(false);
 		if (initialDoc) {
-			setCachedMarkdownDoc(relPath, initialDoc.text);
+			setPrefetchedNote(relPath, initialDoc);
 		}
 	}, [initialDoc, initialError, relPath]);
 
@@ -299,7 +299,7 @@ export function MarkdownEditorPane({
 				const doc = await invoke("space_read_text", { path: relPath });
 				if (!isCurrentSession(sessionId)) return;
 				const shouldReplaceText = textRef.current === savedTextRef.current;
-				setCachedMarkdownDoc(relPath, doc.text);
+				setPrefetchedNote(relPath, doc);
 				if (shouldReplaceText) {
 					textRef.current = doc.text;
 					setText(doc.text);
@@ -309,6 +309,7 @@ export function MarkdownEditorPane({
 				setSavedText(doc.text);
 				setLastSavedMtimeMs(doc.mtime_ms);
 				hasUserEditsRef.current = false;
+				setPrefetchedNote(relPath, doc);
 				if (showRefreshFeedback) {
 					flashSyncPulse("reloaded");
 				}
@@ -331,7 +332,7 @@ export function MarkdownEditorPane({
 				doc.text === savedTextRef.current
 			)
 				return;
-			setCachedMarkdownDoc(relPath, doc.text);
+			setPrefetchedNote(relPath, doc);
 			textRef.current = doc.text;
 			savedTextRef.current = doc.text;
 			mtimeRef.current = doc.mtime_ms;
@@ -358,7 +359,12 @@ export function MarkdownEditorPane({
 		): Promise<boolean> => {
 			const applySaveState = (saved: string, mtimeMs: number) => {
 				if (path !== relPath || !isCurrentSession(sessionId)) return;
-				setCachedMarkdownDoc(path, saved);
+				setPrefetchedNote(path, {
+					rel_path: path,
+					text: saved,
+					etag: "",
+					mtime_ms: mtimeMs,
+				});
 				savedTextRef.current = saved;
 				mtimeRef.current = mtimeMs;
 				setSavedText(saved);
@@ -720,7 +726,7 @@ export function MarkdownEditorPane({
 						title={actionsOpen ? "Close editor actions" : "Open editor actions"}
 						aria-expanded={actionsOpen}
 					>
-						<HugeiconsIcon icon={MenuCircleIcon} size={14} />
+						<HugeiconsIcon icon={MenuCircleIcon} size={14} strokeWidth={0.9} />
 					</Button>
 					<AnimatePresence initial={false}>
 						{actionsOpen ? (
@@ -786,7 +792,11 @@ export function MarkdownEditorPane({
 										setActionsOpen(false);
 									}}
 								>
-									<HugeiconsIcon icon={SourceCodeIcon} size={12} />
+									<HugeiconsIcon
+										icon={SourceCodeIcon}
+										size={12}
+										strokeWidth={0.9}
+									/>
 									Raw
 								</Button>
 								{canInsertCallouts ? (
@@ -898,7 +908,12 @@ export function MarkdownEditorPane({
 							title={`Reading time: ${stats.readingTime}`}
 							aria-label={`Reading time: ${stats.readingTime}`}
 						>
-							<HugeiconsIcon icon={TimeQuarter02Icon} size={13} aria-hidden />
+							<HugeiconsIcon
+								icon={TimeQuarter02Icon}
+								size={13}
+								strokeWidth={0.9}
+								aria-hidden
+							/>
 							<span>{stats.readingTime}</span>
 						</div>
 						<div
