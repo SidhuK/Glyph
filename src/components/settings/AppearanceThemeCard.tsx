@@ -278,17 +278,23 @@ export function AppearanceThemeCard({
 						{
 							label: "Light",
 							value: "light",
-							icon: <Sun size={16} strokeWidth={1.7} />,
+							icon: <Sun size={16} />,
 						},
 						{
 							label: "Dark",
 							value: "dark",
-							icon: <Moon size={16} strokeWidth={1.7} />,
+							icon: <Moon size={16} />,
 						},
 						{
 							label: "System",
 							value: "system",
-							icon: <HugeiconsIcon icon={SlidersHorizontalIcon} size={16} />,
+							icon: (
+								<HugeiconsIcon
+									icon={SlidersHorizontalIcon}
+									size={16}
+									strokeWidth={0.9}
+								/>
+							),
 						},
 					]}
 				/>

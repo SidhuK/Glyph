@@ -1,4 +1,4 @@
-import { PinIcon } from "@hugeicons/core-free-icons";
+import { PinIcon, PinOffIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { m } from "motion/react";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
@@ -32,6 +32,7 @@ interface FileTreePaneProps {
 	onToggleDir: (dirPath: string) => void;
 	onSelectDir: (dirPath: string) => void;
 	onOpenFile: (filePath: string) => void;
+	onPrefetchFile?: (filePath: string) => void;
 	onNewFileInDir: (dirPath: string) => void;
 	onCreateFromTemplateInDir: (dirPath: string) => void;
 	onNewDatabaseInDir: (dirPath: string) => Promise<string | null>;
@@ -60,6 +61,7 @@ interface TreeEntriesProps {
 	onToggleDir: (dirPath: string) => void;
 	onSelectDir: (dirPath: string) => void;
 	onOpenFile: (filePath: string) => void;
+	onPrefetchFile?: (filePath: string) => void;
 	onNewFileInDir: (dirPath: string) => void;
 	onCreateFromTemplateInDir: (dirPath: string) => void;
 	onNewDatabaseInDir: (dirPath: string) => Promise<string | null>;
@@ -97,6 +99,7 @@ function TreeEntries({
 	onToggleDir,
 	onSelectDir,
 	onOpenFile,
+	onPrefetchFile,
 	onNewFileInDir,
 	onCreateFromTemplateInDir,
 	onNewDatabaseInDir,
@@ -169,6 +172,7 @@ function TreeEntries({
 									onToggleDir={onToggleDir}
 									onSelectDir={onSelectDir}
 									onOpenFile={onOpenFile}
+									onPrefetchFile={onPrefetchFile}
 									onNewFileInDir={onNewFileInDir}
 									onCreateFromTemplateInDir={onCreateFromTemplateInDir}
 									onNewDatabaseInDir={onNewDatabaseInDir}
@@ -199,6 +203,7 @@ function TreeEntries({
 						depth={depth}
 						isActive={e.rel_path === activeFilePath}
 						onOpenFile={onOpenFile}
+						onPrefetchFile={onPrefetchFile}
 						onNewFileInDir={onNewFileInDir}
 						onCreateFromTemplateInDir={onCreateFromTemplateInDir}
 						onNewDatabaseInDir={onNewDatabaseInDir}
@@ -233,6 +238,7 @@ export const FileTreePane = memo(function FileTreePane({
 	onToggleDir,
 	onSelectDir,
 	onOpenFile,
+	onPrefetchFile,
 	onNewFileInDir,
 	onCreateFromTemplateInDir,
 	onNewDatabaseInDir,
@@ -488,12 +494,37 @@ export const FileTreePane = memo(function FileTreePane({
 													data-file-tree-file="true"
 													data-file-tree-path={file.path}
 												>
-													<HugeiconsIcon
-														icon={PinIcon}
-														size={14}
-														className="fileTreeIcon"
-														aria-hidden="true"
-													/>
+													<span
+														role="button"
+														tabIndex={-1}
+														title="Unpin"
+														onClick={(e) => {
+															e.stopPropagation();
+															onTogglePinnedFile(file.path);
+														}}
+														onKeyDown={(e) => {
+															if (e.key === "Enter" || e.key === " ") {
+																e.stopPropagation();
+																onTogglePinnedFile(file.path);
+															}
+														}}
+														className="fileTreePinToggle fileTreeIcon"
+													>
+														<HugeiconsIcon
+															icon={PinIcon}
+															size={14}
+															strokeWidth={0.9}
+															className="fileTreePinIcon"
+															aria-hidden="true"
+														/>
+														<HugeiconsIcon
+															icon={PinOffIcon}
+															size={14}
+															strokeWidth={0.9}
+															className="fileTreePinOffIcon"
+															aria-hidden="true"
+														/>
+													</span>
 													<span className="fileTreeName">
 														{file.displayName}
 													</span>
@@ -522,6 +553,7 @@ export const FileTreePane = memo(function FileTreePane({
 							onToggleDir={onToggleDir}
 							onSelectDir={onSelectDir}
 							onOpenFile={onOpenFile}
+							onPrefetchFile={onPrefetchFile}
 							onNewFileInDir={onNewFileInDir}
 							onCreateFromTemplateInDir={onCreateFromTemplateInDir}
 							onNewDatabaseInDir={onNewDatabaseInDir}

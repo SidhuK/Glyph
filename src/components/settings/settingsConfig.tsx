@@ -38,17 +38,23 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 	{
 		id: "general",
 		label: "General",
-		renderIcon: () => <HugeiconsIcon icon={Settings01Icon} size={14} />,
+		renderIcon: () => (
+			<HugeiconsIcon icon={Settings01Icon} size={14} strokeWidth={0.9} />
+		),
 	},
 	{
 		id: "appearance",
 		label: "Appearance",
-		renderIcon: () => <HugeiconsIcon icon={Sun03Icon} size={14} />,
+		renderIcon: () => (
+			<HugeiconsIcon icon={Sun03Icon} size={14} strokeWidth={0.9} />
+		),
 	},
 	{
 		id: "ai",
 		label: "Glyph AI",
-		renderIcon: () => <HugeiconsIcon icon={AiChat02Icon} size={14} />,
+		renderIcon: () => (
+			<HugeiconsIcon icon={AiChat02Icon} size={14} strokeWidth={0.9} />
+		),
 	},
 	{
 		id: "space",
@@ -58,19 +64,27 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 	{
 		id: "git",
 		label: "Git",
-		renderIcon: () => <HugeiconsIcon icon={GitBranchIcon} size={14} />,
+		renderIcon: () => (
+			<HugeiconsIcon icon={GitBranchIcon} size={14} strokeWidth={0.9} />
+		),
 		badgeText: "Beta",
-		badgeIcon: () => <HugeiconsIcon icon={ConstructionIcon} size={11} />,
+		badgeIcon: () => (
+			<HugeiconsIcon icon={ConstructionIcon} size={11} strokeWidth={0.9} />
+		),
 	},
 	{
 		id: "advanced",
 		label: "Advanced",
-		renderIcon: () => <HugeiconsIcon icon={ToolsIcon} size={14} />,
+		renderIcon: () => (
+			<HugeiconsIcon icon={ToolsIcon} size={14} strokeWidth={0.9} />
+		),
 	},
 	{
 		id: "about",
 		label: "About",
-		renderIcon: () => <HugeiconsIcon icon={Archive02Icon} size={14} />,
+		renderIcon: () => (
+			<HugeiconsIcon icon={Archive02Icon} size={14} strokeWidth={0.9} />
+		),
 	},
 ];
 

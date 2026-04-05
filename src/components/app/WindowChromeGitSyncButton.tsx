@@ -69,7 +69,7 @@ export function WindowChromeGitSyncButton({
 						className={`windowChromeGitSyncIndicator windowChromeGitSyncIndicator-${buttonState.tone}`}
 						aria-hidden="true"
 					/>
-					<HugeiconsIcon icon={GitBranchIcon} size={12} />
+					<HugeiconsIcon icon={GitBranchIcon} size={12} strokeWidth={0.9} />
 					<span className="windowChromeGitSyncButtonLabel">
 						{buttonState.label}
 					</span>

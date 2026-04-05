@@ -25,16 +25,6 @@
 				},
 				"hiddenTitle": true,
 				"transparent": true
-			},
-			{
-				"label": "settings",
-				"title": "Settings",
-				"width": 980,
-				"height": 760,
-				"decorations": false,
-				"transparent": true,
-				"visible": false,
-				"url": "#/settings?tab=general"
 			}
 		],
 		"security": {

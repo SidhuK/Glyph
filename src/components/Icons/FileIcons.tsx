@@ -31,101 +31,101 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import type { IconProps } from "./NavigationIcons";
 
 export const FileText = (props: IconProps) => (
-	<HugeiconsIcon icon={Document} {...props} />
+	<HugeiconsIcon icon={Document} strokeWidth={0.9} {...props} />
 );
 export const File = (props: IconProps) => (
-	<HugeiconsIcon icon={FileIcon} {...props} />
+	<HugeiconsIcon icon={FileIcon} strokeWidth={0.9} {...props} />
 );
 export const FileCode = (props: IconProps) => (
-	<HugeiconsIcon icon={FileCodeIcon} {...props} />
+	<HugeiconsIcon icon={FileCodeIcon} strokeWidth={0.9} {...props} />
 );
 export const FileImage = (props: IconProps) => (
-	<HugeiconsIcon icon={FileImageIcon} {...props} />
+	<HugeiconsIcon icon={FileImageIcon} strokeWidth={0.9} {...props} />
 );
 export const FileJson = (props: IconProps) => (
-	<HugeiconsIcon icon={DocumentCodeIcon} {...props} />
+	<HugeiconsIcon icon={DocumentCodeIcon} strokeWidth={0.9} {...props} />
 );
 export const FileVideo = (props: IconProps) => (
-	<HugeiconsIcon icon={FileIcon} {...props} />
+	<HugeiconsIcon icon={FileIcon} strokeWidth={0.9} {...props} />
 );
 export const FileAudio = (props: IconProps) => (
-	<HugeiconsIcon icon={FileIcon} {...props} />
+	<HugeiconsIcon icon={FileIcon} strokeWidth={0.9} {...props} />
 );
 export const FileArchive = (props: IconProps) => (
-	<HugeiconsIcon icon={ArchiveIcon} {...props} />
+	<HugeiconsIcon icon={ArchiveIcon} strokeWidth={0.9} {...props} />
 );
 export const FileSpreadsheet = (props: IconProps) => (
-	<HugeiconsIcon icon={Xls01Icon} {...props} />
+	<HugeiconsIcon icon={Xls01Icon} strokeWidth={0.9} {...props} />
 );
 export const FileCsv = (props: IconProps) => (
-	<HugeiconsIcon icon={Csv01Icon} {...props} />
+	<HugeiconsIcon icon={Csv01Icon} strokeWidth={0.9} {...props} />
 );
 export const FileBox = (props: IconProps) => (
-	<HugeiconsIcon icon={FileXIcon} {...props} />
+	<HugeiconsIcon icon={FileXIcon} strokeWidth={0.9} {...props} />
 );
 export const FilePdf = (props: IconProps) => (
-	<HugeiconsIcon icon={Pdf01Icon} {...props} />
+	<HugeiconsIcon icon={Pdf01Icon} strokeWidth={0.9} {...props} />
 );
 export const FileDoc = (props: IconProps) => (
-	<HugeiconsIcon icon={Doc01Icon} {...props} />
+	<HugeiconsIcon icon={Doc01Icon} strokeWidth={0.9} {...props} />
 );
 export const FileTxt = (props: IconProps) => (
-	<HugeiconsIcon icon={Txt01Icon} {...props} />
+	<HugeiconsIcon icon={Txt01Icon} strokeWidth={0.9} {...props} />
 );
 export const FileHtml = (props: IconProps) => (
-	<HugeiconsIcon icon={HtmlFile01Icon} {...props} />
+	<HugeiconsIcon icon={HtmlFile01Icon} strokeWidth={0.9} {...props} />
 );
 export const FileCss = (props: IconProps) => (
-	<HugeiconsIcon icon={CssFile01Icon} {...props} />
+	<HugeiconsIcon icon={CssFile01Icon} strokeWidth={0.9} {...props} />
 );
 export const FileXml = (props: IconProps) => (
-	<HugeiconsIcon icon={Xml01Icon} {...props} />
+	<HugeiconsIcon icon={Xml01Icon} strokeWidth={0.9} {...props} />
 );
 export const FilePpt = (props: IconProps) => (
-	<HugeiconsIcon icon={Ppt01Icon} {...props} />
+	<HugeiconsIcon icon={Ppt01Icon} strokeWidth={0.9} {...props} />
 );
 export const FileSymlink = (props: IconProps) => (
-	<HugeiconsIcon icon={Link2} {...props} />
+	<HugeiconsIcon icon={Link2} strokeWidth={0.9} {...props} />
 );
 export const FileX = (props: IconProps) => (
-	<HugeiconsIcon icon={FileXIcon} {...props} />
+	<HugeiconsIcon icon={FileXIcon} strokeWidth={0.9} {...props} />
 );
 export const FileCheck = (props: IconProps) => (
-	<HugeiconsIcon icon={FileCheckIcon} {...props} />
+	<HugeiconsIcon icon={FileCheckIcon} strokeWidth={0.9} {...props} />
 );
 export const Image = (props: IconProps) => (
-	<HugeiconsIcon icon={ImageIcon} {...props} />
+	<HugeiconsIcon icon={ImageIcon} strokeWidth={0.9} {...props} />
 );
 export const Film = (props: IconProps) => (
-	<HugeiconsIcon icon={FilmIcon} {...props} />
+	<HugeiconsIcon icon={FilmIcon} strokeWidth={0.9} {...props} />
 );
 export const Music = (props: IconProps) => (
-	<HugeiconsIcon icon={MusicIcon} {...props} />
+	<HugeiconsIcon icon={MusicIcon} strokeWidth={0.9} {...props} />
 );
 export const Archive = (props: IconProps) => (
-	<HugeiconsIcon icon={ArchiveIcon} {...props} />
+	<HugeiconsIcon icon={ArchiveIcon} strokeWidth={0.9} {...props} />
 );
 export const Database = (props: IconProps) => (
-	<HugeiconsIcon icon={DatabaseIcon} {...props} />
+	<HugeiconsIcon icon={DatabaseIcon} strokeWidth={0.9} {...props} />
 );
 export const Table = (props: IconProps) => (
-	<HugeiconsIcon icon={TableIcon} {...props} />
+	<HugeiconsIcon icon={TableIcon} strokeWidth={0.9} {...props} />
 );
 export const Kanban = (props: IconProps) => (
-	<HugeiconsIcon icon={KanbanIcon} {...props} />
+	<HugeiconsIcon icon={KanbanIcon} strokeWidth={0.9} {...props} />
 );
 export const Cpu = (props: IconProps) => (
-	<HugeiconsIcon icon={CpuIcon} {...props} />
+	<HugeiconsIcon icon={CpuIcon} strokeWidth={0.9} {...props} />
 );
 export const Palette = (props: IconProps) => (
-	<HugeiconsIcon icon={PaletteIcon} {...props} />
+	<HugeiconsIcon icon={PaletteIcon} strokeWidth={0.9} {...props} />
 );
 export const Hash = (props: IconProps) => (
-	<HugeiconsIcon icon={HashIcon} {...props} />
+	<HugeiconsIcon icon={HashIcon} strokeWidth={0.9} {...props} />
 );
 export const Files = (props: IconProps) => (
-	<HugeiconsIcon icon={Document} {...props} />
+	<HugeiconsIcon icon={Document} strokeWidth={0.9} {...props} />
 );
 export const Tags = (props: IconProps) => (
-	<HugeiconsIcon icon={HashIcon} {...props} />
+	<HugeiconsIcon icon={HashIcon} strokeWidth={0.9} {...props} />
 );

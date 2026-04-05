@@ -99,7 +99,11 @@ function DropdownMenuCheckboxItem({
 		>
 			<span className="pointer-events-none absolute left-2 flex size-3.5 items-center justify-center">
 				<DropdownMenuPrimitive.ItemIndicator>
-					<HugeiconsIcon icon={Tick01Icon} className="size-4" />
+					<HugeiconsIcon
+						icon={Tick01Icon}
+						className="size-4"
+						strokeWidth={0.9}
+					/>
 				</DropdownMenuPrimitive.ItemIndicator>
 			</span>
 			{children}
@@ -134,7 +138,11 @@ function DropdownMenuRadioItem({
 		>
 			<span className="pointer-events-none absolute left-2 flex size-3.5 items-center justify-center">
 				<DropdownMenuPrimitive.ItemIndicator>
-					<HugeiconsIcon icon={Circle} className="size-2 fill-current" />
+					<HugeiconsIcon
+						icon={Circle}
+						className="size-2 fill-current"
+						strokeWidth={0.9}
+					/>
 				</DropdownMenuPrimitive.ItemIndicator>
 			</span>
 			{children}
@@ -216,7 +224,11 @@ function DropdownMenuSubTrigger({
 			{...props}
 		>
 			{children}
-			<HugeiconsIcon icon={ArrowRight} className="ml-auto size-4" />
+			<HugeiconsIcon
+				icon={ArrowRight}
+				className="ml-auto size-4"
+				strokeWidth={0.9}
+			/>
 		</DropdownMenuPrimitive.SubTrigger>
 	);
 }

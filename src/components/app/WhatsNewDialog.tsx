@@ -64,7 +64,11 @@ export function WhatsNewDialog({
 						</div>
 						{publishedDate ? (
 							<div className="whatsNewMeta">
-								<HugeiconsIcon icon={Calendar03Icon} size={14} />
+								<HugeiconsIcon
+									icon={Calendar03Icon}
+									size={14}
+									strokeWidth={0.9}
+								/>
 								<span>{publishedDate}</span>
 							</div>
 						) : null}
@@ -108,7 +112,11 @@ export function WhatsNewDialog({
 						onClick={handleOpenChangelog}
 					>
 						Full changelog
-						<HugeiconsIcon icon={ArrowRight01Icon} size={14} />
+						<HugeiconsIcon
+							icon={ArrowRight01Icon}
+							size={14}
+							strokeWidth={0.9}
+						/>
 					</Button>
 					<Button type="button" size="sm" onClick={onClose}>
 						Continue

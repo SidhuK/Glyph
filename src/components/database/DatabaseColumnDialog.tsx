@@ -178,7 +178,7 @@ export function DatabaseColumnDropdown({
 							}
 						>
 							<span className="databaseColumnDropdownMain">
-								<DatabaseColumnIcon column={entry.column} strokeWidth={1.5} />
+								<DatabaseColumnIcon column={entry.column} />
 								<span className="databaseColumnDropdownLabel">
 									{entry.column.label}
 								</span>

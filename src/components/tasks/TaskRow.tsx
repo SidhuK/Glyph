@@ -406,7 +406,7 @@ export function TaskRow({
 										setPickerMonth((current) => addMonths(current, -1))
 									}
 								>
-									<HugeiconsIcon icon={ArrowLeft} size={13} />
+									<HugeiconsIcon icon={ArrowLeft} size={13} strokeWidth={0.9} />
 								</Button>
 								<Button
 									type="button"
@@ -418,7 +418,11 @@ export function TaskRow({
 										setPickerMonth((current) => addMonths(current, 1))
 									}
 								>
-									<HugeiconsIcon icon={ArrowRight} size={13} />
+									<HugeiconsIcon
+										icon={ArrowRight}
+										size={13}
+										strokeWidth={0.9}
+									/>
 								</Button>
 								<Button
 									type="button"

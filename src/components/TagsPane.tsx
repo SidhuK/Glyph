@@ -107,7 +107,11 @@ export const TagsPane = memo(function TagsPane({
 									transition={springTransition}
 								>
 									<span className="tagsNameWrap">
-										<HugeiconsIcon icon={Tag01Icon} size={12} />
+										<HugeiconsIcon
+											icon={Tag01Icon}
+											size={12}
+											strokeWidth={0.9}
+										/>
 										<span className="tagsName">{tag.label}</span>
 									</span>
 									<span className="tagsCount mono">{tag.totalCount}</span>

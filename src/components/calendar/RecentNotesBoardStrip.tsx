@@ -9,6 +9,7 @@ interface RecentNotesBoardStripProps {
 	selectedNotePath: string | null;
 	onSelectNote: (notePath: string) => void;
 	onOpenNote: (notePath: string) => void;
+	onPrefetchNote?: (notePath: string) => void;
 }
 
 function fileTitleFromPath(notePath: string): string {
@@ -37,6 +38,7 @@ export function RecentNotesBoardStrip({
 	selectedNotePath,
 	onSelectNote,
 	onOpenNote,
+	onPrefetchNote,
 }: RecentNotesBoardStripProps) {
 	const shouldReduceMotion = useReducedMotion() ?? false;
 
@@ -62,6 +64,8 @@ export function RecentNotesBoardStrip({
 								selectedNotePath === note.note_path ? "selected" : undefined
 							}
 							onClick={() => onSelectNote(note.note_path)}
+							onMouseEnter={() => onPrefetchNote?.(note.note_path)}
+							onFocus={() => onPrefetchNote?.(note.note_path)}
 							onDoubleClick={() => onOpenNote(note.note_path)}
 							onKeyDown={(event) => {
 								if (event.key === "Enter") {

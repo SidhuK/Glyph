@@ -10,6 +10,7 @@ import {
 	useMemo,
 	useReducer,
 } from "react";
+import type { SettingsTab } from "../components/settings/settingsConfig";
 import { useSearch } from "../hooks/useSearch";
 import {
 	type AiAssistantMode,
@@ -45,6 +46,11 @@ export interface UILayoutContextValue {
 	dailyNoteTemplatePath: string | null;
 	showToc: boolean;
 	setShowToc: (show: boolean) => void;
+	settingsMode: boolean;
+	settingsTab: SettingsTab;
+	openSettings: (tab?: SettingsTab) => void;
+	closeSettings: () => void;
+	setSettingsTab: (tab: SettingsTab) => void;
 }
 
 export interface AISidebarContextValue {
@@ -88,6 +94,8 @@ type UIState = {
 	templateFolder: string | null;
 	dailyNoteTemplatePath: string | null;
 	showToc: boolean;
+	settingsMode: boolean;
+	settingsTab: SettingsTab;
 	aiEnabled: boolean;
 	aiPanelOpen: boolean;
 	aiPanelWidth: number;
@@ -115,6 +123,9 @@ type UIAction =
 	| { type: "setAiPanelOpen"; value: SetStateAction<boolean> }
 	| { type: "setAiPanelWidth"; value: number }
 	| { type: "setAiAssistantMode"; value: AiAssistantMode }
+	| { type: "openSettings"; tab?: SettingsTab }
+	| { type: "closeSettings" }
+	| { type: "setSettingsTab"; value: SettingsTab }
 	| { type: "onSpacePathChanged"; hasSpace: boolean }
 	| {
 			type: "hydrateSettings";
@@ -140,6 +151,8 @@ const initialUIState: UIState = {
 	templateFolder: null,
 	dailyNoteTemplatePath: null,
 	showToc: true,
+	settingsMode: false,
+	settingsTab: "general" as SettingsTab,
 	aiEnabled: true,
 	aiPanelOpen: false,
 	aiPanelWidth: 380,
@@ -236,6 +249,17 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 			return { ...state, aiPanelWidth: action.value };
 		case "setAiAssistantMode":
 			return { ...state, aiAssistantMode: action.value };
+		case "openSettings":
+			return {
+				...state,
+				settingsMode: true,
+				settingsTab: action.tab ?? state.settingsTab,
+				sidebarCollapsed: false,
+			};
+		case "closeSettings":
+			return { ...state, settingsMode: false };
+		case "setSettingsTab":
+			return { ...state, settingsTab: action.value };
 		case "onSpacePathChanged":
 			return action.hasSpace
 				? {
@@ -284,6 +308,8 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		templateFolder,
 		dailyNoteTemplatePath,
 		showToc,
+		settingsMode,
+		settingsTab,
 		aiEnabled,
 		aiPanelOpen,
 		aiPanelWidth,
@@ -465,6 +491,19 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		[],
 	);
 
+	const openSettings = useCallback(
+		(tab?: SettingsTab) => dispatch({ type: "openSettings", tab }),
+		[],
+	);
+	const closeSettings = useCallback(
+		() => dispatch({ type: "closeSettings" }),
+		[],
+	);
+	const setSettingsTab = useCallback(
+		(tab: SettingsTab) => dispatch({ type: "setSettingsTab", value: tab }),
+		[],
+	);
+
 	const {
 		searchQuery,
 		setSearchQuery,
@@ -506,6 +545,11 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			dailyNoteTemplatePath,
 			showToc,
 			setShowToc,
+			settingsMode,
+			settingsTab,
+			openSettings,
+			closeSettings,
+			setSettingsTab,
 		}),
 		[
 			sidebarCollapsed,
@@ -529,6 +573,11 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			dailyNoteTemplatePath,
 			showToc,
 			setShowToc,
+			settingsMode,
+			settingsTab,
+			openSettings,
+			closeSettings,
+			setSettingsTab,
 		],
 	);
 

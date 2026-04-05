@@ -17,31 +17,13 @@ import { loadSettings, reloadFromDisk } from "./lib/settings";
 import { useTauriEvent } from "./lib/tauriEvents";
 import { isUiDarkThemeId, isUiLightThemeId } from "./lib/uiThemes";
 
-function isSettingsRoute(hash: string): boolean {
-	return hash.startsWith("#/settings");
-}
-
 const App = React.lazy(() => import("./App"));
-const SettingsApp = React.lazy(() => import("./SettingsApp"));
-
-function RouteLoadingFallback() {
-	return <main style={{ height: "100%" }} aria-busy="true" />;
-}
 
 function Root() {
-	const [hash, setHash] = React.useState(() => window.location.hash);
-	React.useEffect(() => {
-		const onHashChange = () => setHash(window.location.hash);
-		window.addEventListener("hashchange", onHashChange);
-		return () => window.removeEventListener("hashchange", onHashChange);
-	}, []);
-
-	return isSettingsRoute(hash) ? (
-		<React.Suspense fallback={<RouteLoadingFallback />}>
-			<SettingsApp />
-		</React.Suspense>
-	) : (
-		<React.Suspense fallback={<RouteLoadingFallback />}>
+	return (
+		<React.Suspense
+			fallback={<main style={{ height: "100%" }} aria-busy="true" />}
+		>
 			<LicenseGate>
 				<App />
 			</LicenseGate>

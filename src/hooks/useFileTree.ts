@@ -88,11 +88,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 	}, [expandedDirs]);
 
 	const updateExpandedDirsAndRef = useCallback(
-		(
-			next:
-				| Set<string>
-				| ((prev: Set<string>) => Set<string>),
-		) => {
+		(next: Set<string> | ((prev: Set<string>) => Set<string>)) => {
 			updateExpandedDirs((prev) => {
 				const resolved = typeof next === "function" ? next(prev) : next;
 				expandedDirsRef.current = resolved;
@@ -128,7 +124,9 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 				return changed ? next : prev;
 			});
 			loadedDirsRef.current = new Set(
-				[...loadedDirsRef.current].filter((key) => !key.startsWith(`${dirPath}/`)),
+				[...loadedDirsRef.current].filter(
+					(key) => !key.startsWith(`${dirPath}/`),
+				),
 			);
 			for (const key of [...loadRequestVersionRef.current.keys()]) {
 				if (key.startsWith(`${dirPath}/`)) {
@@ -176,8 +174,7 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 
 	const toggleDir = useCallback(
 		(dirPath: string) => {
-			let shouldLoad = false;
-			let shouldEvict = false;
+			const wasExpanded = expandedDirsRef.current.has(dirPath);
 			updateExpandedDirsAndRef((prev) => {
 				const next = new Set(prev);
 				if (next.has(dirPath)) {
@@ -187,18 +184,14 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 							next.delete(expanded);
 						}
 					}
-					shouldEvict = true;
-					return next;
+				} else {
+					next.add(dirPath);
 				}
-				next.add(dirPath);
-				shouldLoad = true;
 				return next;
 			});
-			if (shouldEvict) {
+			if (wasExpanded) {
 				evictCollapsedDirState(dirPath);
-				return;
-			}
-			if (shouldLoad) {
+			} else {
 				void loadDir(dirPath);
 			}
 		},

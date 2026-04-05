@@ -510,7 +510,7 @@
 	[data-slot="dropdown-menu-label"]
 	svg {
 	opacity: 0.45;
-	stroke-width: 1.5;
+	stroke-width: 0.9;
 }
 
 [data-slot="dropdown-menu-content"].databasePickerMenu

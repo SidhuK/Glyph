@@ -3,8 +3,10 @@ import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import { memo } from "react";
 import { useUILayoutContext } from "../../contexts";
 import type { GitSyncStatus } from "../../lib/tauri";
+import { onWindowDragMouseDown } from "../../utils/window";
 import { SidebarContent } from "./SidebarContent";
 import { SidebarHeader } from "./SidebarHeader";
+import { SidebarSettingsContent } from "./SidebarSettingsContent";
 
 interface SidebarProps {
 	onToggleDir: (dirPath: string) => void;
@@ -34,6 +36,11 @@ interface SidebarProps {
 	onOpenTemplates: () => void;
 	onOpenCalendar: () => void;
 	onOpenDatabases: (databaseId?: string | null) => void;
+	onPrefetchCalendar: () => void;
+	onPrefetchDatabases: (databaseId?: string | null) => void;
+	onPrefetchAllDocs: () => void;
+	onPrefetchTemplates: () => void;
+	onPrefetchFile: (relPath: string) => void;
 	updateReady: boolean;
 	updateVersion: string | null;
 	onInstallUpdate: () => void;
@@ -63,11 +70,16 @@ export const Sidebar = memo(function Sidebar({
 	onOpenTemplates,
 	onOpenCalendar,
 	onOpenDatabases,
+	onPrefetchCalendar,
+	onPrefetchDatabases,
+	onPrefetchAllDocs,
+	onPrefetchTemplates,
+	onPrefetchFile,
 	updateReady,
 	updateVersion,
 	onInstallUpdate,
 }: SidebarProps) {
-	const { sidebarWidth } = useUILayoutContext();
+	const { sidebarWidth, settingsMode } = useUILayoutContext();
 	const shouldReduceMotion = useReducedMotion();
 	const sidebarState = sidebarCollapsed ? "collapsed" : "expanded";
 
@@ -99,36 +111,60 @@ export const Sidebar = memo(function Sidebar({
 							shouldReduceMotion ? { duration: 0 } : { duration: 0.15 }
 						}
 					>
-						<SidebarHeader
-							sidebarCollapsed={sidebarCollapsed}
-							onToggleSidebar={onToggleSidebar}
-							updateReady={updateReady}
-							updateVersion={updateVersion}
-							onInstallUpdate={onInstallUpdate}
-						/>
-						<SidebarContent
-							onToggleDir={onToggleDir}
-							onSelectDir={onSelectDir}
-							onOpenFile={onOpenFile}
-							onNewNote={onNewNote}
-							onNewFileInDir={onNewFileInDir}
-							onCreateFromTemplateInDir={onCreateFromTemplateInDir}
-							onNewDatabaseInDir={onNewDatabaseInDir}
-							onNewFolderInDir={onNewFolderInDir}
-							onDuplicateFile={onDuplicateFile}
-							onRenameDir={onRenameDir}
-							onDeletePath={onDeletePath}
-							onSelectTag={onSelectTag}
-							onOpenCalendar={onOpenCalendar}
-							onOpenDatabases={onOpenDatabases}
-							gitSyncStatus={gitSyncStatus}
-							onGitSyncNow={onGitSyncNow}
-							onOpenGitSettings={onOpenGitSettings}
-							onOpenSettings={onOpenSettings}
-							onOpenAllDocs={onOpenAllDocs}
-							onOpenDailyNote={onOpenDailyNote}
-							onOpenTemplates={onOpenTemplates}
-						/>
+						{settingsMode ? (
+							<>
+								<div
+									aria-hidden="true"
+									className="sidebarDragLayer"
+									data-tauri-drag-region
+									onMouseDown={onWindowDragMouseDown}
+								/>
+								<div
+									className="sidebarHeader"
+									data-tauri-drag-region
+									onMouseDown={onWindowDragMouseDown}
+								/>
+								<SidebarSettingsContent />
+							</>
+						) : (
+							<>
+								<SidebarHeader
+									sidebarCollapsed={sidebarCollapsed}
+									onToggleSidebar={onToggleSidebar}
+									updateReady={updateReady}
+									updateVersion={updateVersion}
+									onInstallUpdate={onInstallUpdate}
+								/>
+								<SidebarContent
+									onToggleDir={onToggleDir}
+									onSelectDir={onSelectDir}
+									onOpenFile={onOpenFile}
+									onNewNote={onNewNote}
+									onNewFileInDir={onNewFileInDir}
+									onCreateFromTemplateInDir={onCreateFromTemplateInDir}
+									onNewDatabaseInDir={onNewDatabaseInDir}
+									onNewFolderInDir={onNewFolderInDir}
+									onDuplicateFile={onDuplicateFile}
+									onRenameDir={onRenameDir}
+									onDeletePath={onDeletePath}
+									onSelectTag={onSelectTag}
+									onOpenCalendar={onOpenCalendar}
+									onOpenDatabases={onOpenDatabases}
+									onPrefetchCalendar={onPrefetchCalendar}
+									onPrefetchDatabases={onPrefetchDatabases}
+									onPrefetchAllDocs={onPrefetchAllDocs}
+									onPrefetchTemplates={onPrefetchTemplates}
+									onPrefetchFile={onPrefetchFile}
+									gitSyncStatus={gitSyncStatus}
+									onGitSyncNow={onGitSyncNow}
+									onOpenGitSettings={onOpenGitSettings}
+									onOpenSettings={onOpenSettings}
+									onOpenAllDocs={onOpenAllDocs}
+									onOpenDailyNote={onOpenDailyNote}
+									onOpenTemplates={onOpenTemplates}
+								/>
+							</>
+						)}
 					</m.div>
 				)}
 			</AnimatePresence>

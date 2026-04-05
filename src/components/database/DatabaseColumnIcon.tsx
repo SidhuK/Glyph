@@ -146,7 +146,7 @@ export function DatabaseColumnIcon({
 		<HugeiconsIcon
 			icon={iconDefinition(resolvedIconName)}
 			size={size}
-			{...(strokeWidth != null ? { strokeWidth } : {})}
+			strokeWidth={strokeWidth ?? 0.9}
 			className={className}
 		/>
 	);

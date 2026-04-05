@@ -33,7 +33,7 @@ export function WindowChromeUpdateButton({
 					<HugeiconsIcon
 						icon={DownloadSquare02Icon}
 						size={12}
-						strokeWidth={1.9}
+						strokeWidth={0.9}
 					/>
 					<span>UPDATE</span>
 				</m.button>

@@ -124,15 +124,15 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 			if (isOpeningSpaceRef.current) return;
 			isOpeningSpaceRef.current = true;
 			setError("");
-				try {
-					if (spacePath) {
-						await invoke("space_close");
-						await clearCurrentSpacePath();
-						clearAiPanelCaches();
-						clearInlineImageHydrationCache();
-						setSpacePath(null);
-						setSpaceSchemaVersion(null);
-					}
+			try {
+				if (spacePath) {
+					await invoke("space_close");
+					await clearCurrentSpacePath();
+					clearAiPanelCaches();
+					clearInlineImageHydrationCache();
+					setSpacePath(null);
+					setSpaceSchemaVersion(null);
+				}
 				const spaceInfo =
 					mode === "create"
 						? await invoke("space_create", { path })

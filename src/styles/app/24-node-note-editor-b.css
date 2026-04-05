@@ -176,23 +176,6 @@
 	padding-top: 6px;
 }
 
-.notePropertyAddWrap.hasDivider {
-	position: relative;
-	margin-top: 8px;
-	padding-top: 0;
-}
-
-.notePropertyAddWrap.hasDivider::before {
-	content: "";
-	position: absolute;
-	left: 0;
-	right: 0;
-	top: 50%;
-	height: 1px;
-	background: color-mix(in srgb, var(--border-light) 76%, transparent);
-	transform: translateY(-50%);
-}
-
 .notePropertyRow {
 	display: grid;
 	grid-template-columns: minmax(100px, 0.4fr) minmax(0, 1.45fr) auto;

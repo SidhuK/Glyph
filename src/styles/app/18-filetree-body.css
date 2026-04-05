@@ -73,30 +73,27 @@
 .fileTreePinnedSection {
 	position: relative;
 	margin-bottom: var(--space-2);
-	padding-bottom: calc(var(--space-2) + 8px);
-}
-
-.fileTreePinnedSection::after {
-	content: "";
-	position: absolute;
-	left: 10px;
-	right: 10px;
-	bottom: 0;
-	height: 1px;
-	background: linear-gradient(
-		90deg,
-		transparent 0%,
-		color-mix(in srgb, var(--border-light) 45%, transparent) 12%,
-		color-mix(in srgb, var(--interactive-accent) 18%, var(--border-default)) 50%,
-		color-mix(in srgb, var(--border-light) 45%, transparent) 88%,
-		transparent 100%
-	);
-	opacity: 0.9;
-	pointer-events: none;
 }
 
 .fileTreePinnedList {
 	margin-bottom: 0;
+}
+
+.fileTreePinToggle {
+	cursor: pointer;
+	display: inline-flex;
+}
+
+.fileTreePinToggle .fileTreePinOffIcon {
+	display: none;
+}
+
+.fileTreePinToggle:hover .fileTreePinIcon {
+	display: none;
+}
+
+.fileTreePinToggle:hover .fileTreePinOffIcon {
+	display: block;
 }
 
 .fileTreePinnedPath {
@@ -283,7 +280,7 @@
 
 .fileTreeIcon {
 	display: inline-flex;
-	width: 16px;
+	width: 14px;
 	justify-content: center;
 	color: var(--text-primary);
 	flex-shrink: 0;

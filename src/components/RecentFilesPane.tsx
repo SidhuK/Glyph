@@ -9,6 +9,7 @@ interface RecentFilesPaneProps {
 	recentFiles: RecentFile[];
 	activeFilePath: string | null;
 	onOpenFile: (relPath: string) => void;
+	onPrefetchFile: (relPath: string) => void;
 	onRefresh: () => void;
 }
 
@@ -33,6 +34,7 @@ export const RecentFilesPane = memo(function RecentFilesPane({
 	recentFiles,
 	activeFilePath,
 	onOpenFile,
+	onPrefetchFile,
 	onRefresh,
 }: RecentFilesPaneProps) {
 	return (
@@ -74,6 +76,8 @@ export const RecentFilesPane = memo(function RecentFilesPane({
 									className="tagsButton"
 									data-explicit={isActive ? "true" : "false"}
 									onClick={() => onOpenFile(file.path)}
+									onMouseEnter={() => onPrefetchFile(file.path)}
+									onFocus={() => onPrefetchFile(file.path)}
 									title={file.path}
 									whileHover={{
 										backgroundColor: "var(--bg-hover)",
