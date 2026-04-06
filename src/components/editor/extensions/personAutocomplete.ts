@@ -33,9 +33,15 @@ export const PersonAutocomplete = Extension.create({
 	addProseMirrorPlugins() {
 		const getItems = async (query: string): Promise<PersonSuggestionItem[]> => {
 			const normalized = normalizeHandle(query);
-			const people = await invoke("people_list", {
-				limit: this.options.suggestionLimit * 5,
-			});
+			let people: PersonCount[] = [];
+			try {
+				people = (await invoke("people_list", {
+					limit: this.options.suggestionLimit * 5,
+				})) as PersonCount[];
+			} catch (error) {
+				console.warn("Failed to load people suggestions", error);
+				return [];
+			}
 			const matches: PersonSuggestionItem[] = (people as PersonCount[])
 				.filter((person) =>
 					normalized.length === 0 ? true : person.handle.includes(normalized),
