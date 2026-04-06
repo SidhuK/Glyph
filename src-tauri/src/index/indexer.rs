@@ -266,6 +266,7 @@ pub fn remove_note(space_root: &Path, note_id: &str) -> Result<(), String> {
 pub fn rebuild(space_root: &Path) -> Result<IndexRebuildResult, String> {
     let mut conn = open_db(space_root)?;
     let tx = conn.transaction().map_err(|e| e.to_string())?;
+    let people_tags_enabled = people_mentions_as_tags_enabled();
 
     tx.execute("DELETE FROM notes", [])
         .map_err(|e| e.to_string())?;
@@ -320,7 +321,7 @@ pub fn rebuild(space_root: &Path) -> Result<IndexRebuildResult, String> {
         )
         .map_err(|e| e.to_string())?;
 
-        let people_tags = if people_mentions_as_tags_enabled() {
+        let people_tags = if people_tags_enabled {
             expand_indexed_people(&parse_inline_people(&markdown))
         } else {
             Vec::new()

@@ -103,7 +103,13 @@ export const PersonAutocomplete = Extension.create({
 							const meta = item.isNew
 								? "Create mention"
 								: `${item.count ?? 0} note${item.count === 1 ? "" : "s"}`;
-							button.innerHTML = `<span class="wikiLinkSuggestionTitle">@${item.handle}</span><span class="wikiLinkSuggestionPath">${meta}</span>`;
+							const title = document.createElement("span");
+							title.className = "wikiLinkSuggestionTitle";
+							title.textContent = `@${item.handle}`;
+							const path = document.createElement("span");
+							path.className = "wikiLinkSuggestionPath";
+							path.textContent = String(meta);
+							button.append(title, path);
 							button.addEventListener("mousedown", (event) => {
 								event.preventDefault();
 								props.command(item);
@@ -129,6 +135,7 @@ export const PersonAutocomplete = Extension.create({
 						},
 						onUpdate: (props: SuggestionProps<PersonSuggestionItem>) => {
 							activeProps = props;
+							selectedIndex = 0;
 							updateMenu(props);
 						},
 						onKeyDown: ({ event }) => {

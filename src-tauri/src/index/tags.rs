@@ -260,7 +260,8 @@ pub fn parse_inline_people(markdown: &str) -> Vec<String> {
                 let prev_ok = !(prev as char).is_ascii_alphanumeric()
                     && prev != b'_'
                     && prev != b'-'
-                    && prev != b'.';
+                    && prev != b'.'
+                    && prev != b'/';
                 if !prev_ok {
                     i += 1;
                     continue;
@@ -400,6 +401,7 @@ Ignore `@inline_code`.
 const value = "@fenced";
 ```
 Ignore foo@bar too.
+Ignore /@pathlike too.
 "#;
         assert_eq!(
             parse_inline_people(markdown),

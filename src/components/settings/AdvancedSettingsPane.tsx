@@ -148,19 +148,22 @@ export function AdvancedSettingsPane() {
 							onCheckedChange={(checked) => {
 								const previous = enablePeopleMentionsAsTags;
 								setError("");
-								setEnablePeopleMentionsAsTags(checked);
 								setIsSavingEnablePeopleMentionsAsTags(true);
 								void (async () => {
-									await setEditorEnablePeopleMentionsAsTags(checked);
 									await invoke("index_set_people_mentions_as_tags_enabled", {
 										enabled: checked,
 									});
 									if (spacePath) {
 										await startIndexRebuild();
 									}
+									await setEditorEnablePeopleMentionsAsTags(checked);
+									setEnablePeopleMentionsAsTags(checked);
 								})()
 									.catch((cause) => {
 										setEnablePeopleMentionsAsTags(previous);
+										void invoke("index_set_people_mentions_as_tags_enabled", {
+											enabled: previous,
+										}).catch(() => undefined);
 										setError(extractErrorMessage(cause));
 									})
 									.finally(() => {

@@ -152,8 +152,12 @@ fn normalize_tags(tags: Vec<String>) -> Result<Vec<String>, String> {
 fn normalize_people(people: Vec<String>) -> Result<Vec<String>, String> {
     let mut out = Vec::<String>::new();
     for raw in people {
-        let handle = normalize_person_handle(&raw).ok_or_else(|| "invalid person".to_string())?;
-        let person_tag = person_handle_to_tag(&handle).ok_or_else(|| "invalid person".to_string())?;
+        let Some(handle) = normalize_person_handle(&raw) else {
+            continue;
+        };
+        let Some(person_tag) = person_handle_to_tag(&handle) else {
+            continue;
+        };
         if !out.contains(&person_tag) {
             out.push(person_tag);
         }
@@ -165,10 +169,30 @@ fn normalize_people(people: Vec<String>) -> Result<Vec<String>, String> {
 mod tests {
     use rusqlite::Connection;
 
-    use crate::index::set_people_mentions_as_tags_enabled;
+    use crate::index::{
+        people_mentions_as_tags_enabled, set_people_mentions_as_tags_enabled,
+    };
     use crate::index::schema::ensure_schema;
 
     use super::{run_search_advanced, SearchAdvancedRequest};
+
+    struct PeopleMentionsFlagGuard {
+        previous: bool,
+    }
+
+    impl PeopleMentionsFlagGuard {
+        fn set(enabled: bool) -> Self {
+            let previous = people_mentions_as_tags_enabled();
+            set_people_mentions_as_tags_enabled(enabled);
+            Self { previous }
+        }
+    }
+
+    impl Drop for PeopleMentionsFlagGuard {
+        fn drop(&mut self) {
+            set_people_mentions_as_tags_enabled(self.previous);
+        }
+    }
 
     fn seed_note(conn: &Connection, id: &str, title: &str, updated: &str) {
         conn.execute(
@@ -236,7 +260,7 @@ mod tests {
 
     #[test]
     fn people_search_accepts_at_handles() {
-        set_people_mentions_as_tags_enabled(true);
+        let _guard = PeopleMentionsFlagGuard::set(true);
         let conn = Connection::open_in_memory().unwrap();
         ensure_schema(&conn).unwrap();
 
@@ -268,6 +292,24 @@ mod tests {
             results.iter().map(|result| result.id.as_str()).collect::<Vec<_>>(),
             vec!["notes/alice.md"]
         );
-        set_people_mentions_as_tags_enabled(false);
+    }
+
+    #[test]
+    fn bare_at_token_does_not_error() {
+        let _guard = PeopleMentionsFlagGuard::set(true);
+        let conn = Connection::open_in_memory().unwrap();
+        ensure_schema(&conn).unwrap();
+
+        let results = run_search_advanced(
+            &conn,
+            SearchAdvancedRequest {
+                people: vec!["@".to_string()],
+                limit: Some(10),
+                ..SearchAdvancedRequest::default()
+            },
+        )
+        .unwrap();
+
+        assert!(results.is_empty());
     }
 }
