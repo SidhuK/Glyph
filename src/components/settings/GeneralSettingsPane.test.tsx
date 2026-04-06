@@ -97,7 +97,10 @@ describe("GeneralSettingsPane", () => {
 		vi.clearAllMocks();
 		loadSettingsMock.mockResolvedValue({
 			ui: { autoUpdateCheckInterval: "launch" },
-			editor: { pastedMediaFolder: "assets" },
+			editor: {
+				pastedMediaFolder: "assets",
+				enablePeopleMentionsAsTags: false,
+			},
 		});
 		getDailyNotesFolderMock.mockResolvedValue(null);
 

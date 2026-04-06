@@ -32,14 +32,11 @@ interface SidebarProps {
 	onOpenGitSettings: () => void;
 	onOpenSettings: () => void;
 	onOpenAllDocs: () => void;
-	onOpenDailyNote: () => void;
-	onOpenTemplates: () => void;
 	onOpenCalendar: () => void;
 	onOpenDatabases: (databaseId?: string | null) => void;
 	onPrefetchCalendar: () => void;
 	onPrefetchDatabases: (databaseId?: string | null) => void;
 	onPrefetchAllDocs: () => void;
-	onPrefetchTemplates: () => void;
 	onPrefetchFile: (relPath: string) => void;
 	updateReady: boolean;
 	updateVersion: string | null;
@@ -66,14 +63,11 @@ export const Sidebar = memo(function Sidebar({
 	onOpenGitSettings,
 	onOpenSettings,
 	onOpenAllDocs,
-	onOpenDailyNote,
-	onOpenTemplates,
 	onOpenCalendar,
 	onOpenDatabases,
 	onPrefetchCalendar,
 	onPrefetchDatabases,
 	onPrefetchAllDocs,
-	onPrefetchTemplates,
 	onPrefetchFile,
 	updateReady,
 	updateVersion,
@@ -153,15 +147,12 @@ export const Sidebar = memo(function Sidebar({
 									onPrefetchCalendar={onPrefetchCalendar}
 									onPrefetchDatabases={onPrefetchDatabases}
 									onPrefetchAllDocs={onPrefetchAllDocs}
-									onPrefetchTemplates={onPrefetchTemplates}
 									onPrefetchFile={onPrefetchFile}
 									gitSyncStatus={gitSyncStatus}
 									onGitSyncNow={onGitSyncNow}
 									onOpenGitSettings={onOpenGitSettings}
 									onOpenSettings={onOpenSettings}
 									onOpenAllDocs={onOpenAllDocs}
-									onOpenDailyNote={onOpenDailyNote}
-									onOpenTemplates={onOpenTemplates}
 								/>
 							</>
 						)}

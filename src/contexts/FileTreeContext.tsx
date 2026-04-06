@@ -9,7 +9,13 @@ import {
 	useState,
 } from "react";
 import { extractErrorMessage } from "../lib/errorUtils";
-import type { FileTreeAppearance, FsEntry, TagCount } from "../lib/tauri";
+import { loadSettings } from "../lib/settings";
+import type {
+	FileTreeAppearance,
+	FsEntry,
+	PersonCount,
+	TagCount,
+} from "../lib/tauri";
 import { invoke } from "../lib/tauri";
 import { useTauriEvent } from "../lib/tauriEvents";
 import { useSpace } from "./SpaceContext";
@@ -50,6 +56,7 @@ export interface FileTreeContextValue {
 	renameItemAppearance: (fromPath: string, toPath: string) => Promise<void>;
 	deleteItemAppearance: (path: string) => Promise<void>;
 	tags: TagCount[];
+	people: PersonCount[];
 	tagsError: string;
 	refreshTags: () => Promise<void>;
 }
@@ -73,7 +80,9 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 		Record<string, FileTreeAppearance>
 	>({});
 	const [tags, setTags] = useState<TagCount[]>([]);
+	const [people, setPeople] = useState<PersonCount[]>([]);
 	const [tagsError, setTagsError] = useState("");
+	const peopleMentionsEnabledRef = useRef(false);
 	const currentSpacePathRef = useRef<string | null>(spacePath);
 	const pinnedFilesRefreshTimerRef = useRef<number | null>(null);
 
@@ -95,12 +104,49 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 	const refreshTags = useCallback(async () => {
 		try {
 			setTagsError("");
-			setTags(await invoke("tags_list", { limit: 250 }));
+			const peopleEnabled = peopleMentionsEnabledRef.current;
+			const [nextTags, nextPeople] = await Promise.all([
+				invoke("tags_list", { limit: 250 }),
+				peopleEnabled
+					? invoke("people_list", { limit: 250 })
+					: Promise.resolve([] as PersonCount[]),
+			]);
+			setTags(nextTags);
+			setPeople(nextPeople);
 		} catch (e) {
 			setTags([]);
+			setPeople([]);
 			setTagsError(extractErrorMessage(e));
 		}
 	}, []);
+
+	useEffect(() => {
+		let cancelled = false;
+		void loadSettings()
+			.then((settings) => {
+				if (cancelled) return;
+				peopleMentionsEnabledRef.current =
+					settings.editor.enablePeopleMentionsAsTags;
+			})
+			.catch(() => {
+				if (cancelled) return;
+				peopleMentionsEnabledRef.current = false;
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, []);
+
+	useTauriEvent("settings:updated", (payload) => {
+		if (typeof payload.editor?.enablePeopleMentionsAsTags === "boolean") {
+			peopleMentionsEnabledRef.current =
+				payload.editor.enablePeopleMentionsAsTags;
+			if (!payload.editor.enablePeopleMentionsAsTags) {
+				setPeople([]);
+			}
+			void refreshTags();
+		}
+	});
 
 	useEffect(() => {
 		setRootEntries([]);
@@ -111,6 +157,7 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 		setPinnedFiles([]);
 		setItemAppearanceState({});
 		setTags([]);
+		setPeople([]);
 		setTagsError("");
 		if (!spacePath) return;
 
@@ -356,6 +403,7 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 			renameItemAppearance,
 			deleteItemAppearance,
 			tags,
+			people,
 			tagsError,
 			refreshTags,
 		}),
@@ -380,6 +428,7 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 			renameItemAppearance,
 			deleteItemAppearance,
 			tags,
+			people,
 			tagsError,
 			refreshTags,
 		],

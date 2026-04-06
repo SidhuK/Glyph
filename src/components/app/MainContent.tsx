@@ -1,4 +1,4 @@
-import { AiChat02Icon, DocumentCodeIcon } from "@hugeicons/core-free-icons";
+import { AiChat02Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import {
@@ -686,7 +686,13 @@ export const MainContent = memo(function MainContent({
 						<div className="databaseLoadingState">Loading all docs…</div>
 					}
 				>
-					<AllDocsPane onOpenFile={onOpenFile} initialNotes={initialNotes} />
+					<AllDocsPane
+						templateFolder={templateFolder}
+						showNotesScopeToggle
+						dailyNotesFolder={dailyNotesFolder}
+						onOpenFile={onOpenFile}
+						initialNotes={initialNotes}
+					/>
 				</Suspense>
 			);
 		}
@@ -700,7 +706,6 @@ export const MainContent = memo(function MainContent({
 				>
 					<AllDocsPane
 						title="Templates"
-						icon={DocumentCodeIcon}
 						folderPrefix={templateFolder}
 						emptyMessage={
 							templateFolder

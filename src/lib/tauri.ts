@@ -326,6 +326,7 @@ export interface AllDocsItem {
 export interface SearchAdvancedRequest {
 	query?: string | null;
 	tags?: string[];
+	people?: string[];
 	title_only?: boolean;
 	tag_only?: boolean;
 	limit?: number | null;
@@ -345,6 +346,11 @@ export interface TagCount {
 	is_explicit: boolean;
 }
 
+export interface PersonCount {
+	handle: string;
+	count: number;
+}
+
 export interface DirChildSummary {
 	dir_rel_path: string;
 	name: string;
@@ -360,6 +366,16 @@ export interface IndexRebuildResult {
 export interface TaskDateInfo {
 	scheduled_date: string;
 	due_date: string;
+}
+
+export interface NoteTaskSummary {
+	total_count: number;
+	completed_count: number;
+	open_count: number;
+}
+
+export interface NoteTaskSummaryItem extends NoteTaskSummary {
+	note_path: string;
 }
 
 export interface LinkSuggestionItem {
@@ -869,6 +885,10 @@ interface TauriCommands {
 		{ raw_query: string; limit?: number | null },
 		SearchResult[]
 	>;
+	index_set_people_mentions_as_tags_enabled: CommandDef<
+		{ enabled: boolean },
+		void
+	>;
 	search_with_tags: CommandDef<
 		{ tags: string[]; query?: string | null; limit?: number | null },
 		SearchResult[]
@@ -888,6 +908,7 @@ interface TauriCommands {
 		CalendarRangeResponse
 	>;
 	tags_list: CommandDef<{ limit?: number | null }, TagCount[]>;
+	people_list: CommandDef<{ limit?: number | null }, PersonCount[]>;
 	tag_notes: CommandDef<{ tag: string; limit?: number | null }, SearchResult[]>;
 	tasks_query: CommandDef<
 		{
@@ -919,6 +940,11 @@ interface TauriCommands {
 			due_date: string;
 		},
 		string | null
+	>;
+	task_summary: CommandDef<{ markdown: string }, NoteTaskSummary>;
+	task_summaries_for_paths: CommandDef<
+		{ note_paths: string[] },
+		NoteTaskSummaryItem[]
 	>;
 	backlinks: CommandDef<{ note_id: string }, BacklinkItem[]>;
 	link_preview: CommandDef<{ url: string; force?: boolean }, LinkPreview>;

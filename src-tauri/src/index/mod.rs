@@ -13,4 +13,6 @@ mod tasks;
 mod types;
 
 pub use db::open_db;
-pub use indexer::{index_note, remove_note};
+pub use indexer::{
+    index_note, people_mentions_as_tags_enabled, remove_note, set_people_mentions_as_tags_enabled,
+};

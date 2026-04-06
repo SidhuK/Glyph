@@ -14,6 +14,7 @@ import { useTauriEvent } from "../../../lib/tauriEvents";
 import { createEditorExtensions } from "../extensions";
 import {
 	dispatchMarkdownLinkClick,
+	dispatchPersonClick,
 	dispatchTagClick,
 	dispatchWikiLinkClick,
 } from "../markdown/editorEvents";
@@ -247,6 +248,21 @@ function handleEditorClick(
 		return true;
 	}
 
+	const personToken = target?.closest(".personToken") as HTMLElement | null;
+	if (personToken) {
+		if (!interactive) {
+			event.preventDefault();
+			return true;
+		}
+		event.preventDefault();
+		const rawHandle =
+			personToken.getAttribute("data-handle") ?? personToken.textContent ?? "";
+		const normalized = rawHandle.trim().replace(/^@+/, "");
+		if (!normalized) return true;
+		dispatchPersonClick({ handle: `@${normalized}` });
+		return true;
+	}
+
 	const wikiLink = target?.closest(
 		'[data-wikilink="true"]',
 	) as HTMLElement | null;
@@ -315,15 +331,17 @@ export function useNoteEditor({
 	const zenModeActiveRef = useRef(zenModeActive);
 	const pastedMediaFolderRef = useRef("assets");
 	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
+	const [peopleMentionsEnabled, setPeopleMentionsEnabled] = useState(false);
 	const extensions = useMemo(
 		() =>
 			createEditorExtensions({
 				currentPath: "",
 				currentPathResolver: () => relPathRef.current,
 				enableMarkdownLinkAutocomplete,
+				enablePeopleMentions: peopleMentionsEnabled,
 				getZenModeEnabled: () => zenModeActiveRef.current,
 			}),
-		[enableMarkdownLinkAutocomplete],
+		[enableMarkdownLinkAutocomplete, peopleMentionsEnabled],
 	);
 	const markdownManager = useMemo(
 		() =>
@@ -345,11 +363,13 @@ export function useNoteEditor({
 			.then((settings) => {
 				if (cancelled) return;
 				setShowCollapsibleHeadings(settings.editor.showCollapsibleHeadings);
+				setPeopleMentionsEnabled(settings.editor.enablePeopleMentionsAsTags);
 				pastedMediaFolderRef.current = settings.editor.pastedMediaFolder;
 			})
 			.catch(() => {
 				if (cancelled) return;
 				setShowCollapsibleHeadings(false);
+				setPeopleMentionsEnabled(false);
 				pastedMediaFolderRef.current = "assets";
 			});
 		return () => {
@@ -360,6 +380,9 @@ export function useNoteEditor({
 	useTauriEvent("settings:updated", (payload) => {
 		if (typeof payload.editor?.showCollapsibleHeadings === "boolean") {
 			setShowCollapsibleHeadings(payload.editor.showCollapsibleHeadings);
+		}
+		if (typeof payload.editor?.enablePeopleMentionsAsTags === "boolean") {
+			setPeopleMentionsEnabled(payload.editor.enablePeopleMentionsAsTags);
 		}
 		if (typeof payload.editor?.pastedMediaFolder === "string") {
 			pastedMediaFolderRef.current = payload.editor.pastedMediaFolder;
@@ -378,155 +401,158 @@ export function useNoteEditor({
 		interactiveRef.current = interactive;
 	}, [interactive]);
 
-	const editor = useEditor({
-		extensions,
-		content: editorBody,
-		contentType: "markdown",
-		editorProps: {
-			attributes: {
-				class: "tiptapContentInline",
-				spellcheck: "true",
-			},
-			handleDOMEvents: {
-				click: (_view, event) => {
-					if (!(event instanceof MouseEvent)) return false;
-					return handleEditorClick(
-						event,
-						relPathRef.current,
-						interactiveRef.current,
-					);
+	const editor = useEditor(
+		{
+			extensions,
+			content: editorBody,
+			contentType: "markdown",
+			editorProps: {
+				attributes: {
+					class: "tiptapContentInline",
+					spellcheck: "true",
 				},
-				paste: (_view, event) => {
-					if (!(event instanceof ClipboardEvent)) return false;
-					if (!editor) return false;
-					if (mode !== "rich") return false;
-					if (!editor.isEditable) return false;
-					const imageFiles = getPastedImageFiles(event);
-					if (imageFiles.length) {
-						if (!relPathRef.current) return false;
-						const sourcePath = relPathRef.current;
-						const targetDir = pastedMediaFolderRef.current;
+				handleDOMEvents: {
+					click: (_view, event) => {
+						if (!(event instanceof MouseEvent)) return false;
+						return handleEditorClick(
+							event,
+							relPathRef.current,
+							interactiveRef.current,
+						);
+					},
+					paste: (_view, event) => {
+						if (!(event instanceof ClipboardEvent)) return false;
+						if (!editor) return false;
+						if (mode !== "rich") return false;
+						if (!editor.isEditable) return false;
+						const imageFiles = getPastedImageFiles(event);
+						if (imageFiles.length) {
+							if (!relPathRef.current) return false;
+							const sourcePath = relPathRef.current;
+							const targetDir = pastedMediaFolderRef.current;
+							const selectionRange = {
+								from: editor.state.selection.from,
+								to: editor.state.selection.to,
+							};
+							const placeholders = imageFiles.map((file, index) => ({
+								file,
+								uploadId: `paste-${Date.now()}-${index}-${crypto.randomUUID()}`,
+								objectUrl: URL.createObjectURL(file),
+							}));
+							const placeholderNodes = placeholders.map((item) => ({
+								type: "image",
+								attrs: {
+									src: item.objectUrl,
+									alt: item.file.name || "",
+									title: "",
+									originSrc: "",
+									uploadId: item.uploadId,
+								},
+							}));
+							if (
+								!editor.can().insertContentAt(selectionRange, placeholderNodes)
+							) {
+								for (const item of placeholders) {
+									URL.revokeObjectURL(item.objectUrl);
+								}
+								return false;
+							}
+							const inserted = editor
+								.chain()
+								.focus()
+								.insertContentAt(selectionRange, placeholderNodes)
+								.run();
+							if (!inserted) {
+								for (const item of placeholders) {
+									URL.revokeObjectURL(item.objectUrl);
+								}
+								return false;
+							}
+							event.preventDefault();
+							void (async () => {
+								for (const item of placeholders) {
+									try {
+										const dataUrl = await readFileAsDataUrl(item.file);
+										const saved = await invoke("space_save_pasted_image", {
+											source_path: sourcePath,
+											target_dir: targetDir,
+											data_url: dataUrl,
+											alt: item.file.name || null,
+										});
+										replacePlaceholderWithImage(editor, item.uploadId, {
+											src: dataUrl,
+											alt: item.file.name || "",
+											title: "",
+											originSrc: saved.href,
+										});
+									} catch {
+										replacePlaceholderWithFallbackText(
+											editor,
+											item.uploadId,
+											item.file.name || "image",
+										);
+									} finally {
+										URL.revokeObjectURL(item.objectUrl);
+									}
+								}
+							})();
+							return true;
+						}
+						if (pasteMarkdownBehavior !== "smart-markdown") return false;
+						if (editor.isActive("codeBlock")) return false;
+						const clipboardHtml = getClipboardHtml(event);
+						const clipboardText = normalizeClipboardMarkdownText(
+							getClipboardPlainText(event),
+						);
+						if (!shouldHandleSmartMarkdownPaste(clipboardText, clipboardHtml)) {
+							return false;
+						}
 						const selectionRange = {
 							from: editor.state.selection.from,
 							to: editor.state.selection.to,
 						};
-						const placeholders = imageFiles.map((file, index) => ({
-							file,
-							uploadId: `paste-${Date.now()}-${index}-${crypto.randomUUID()}`,
-							objectUrl: URL.createObjectURL(file),
-						}));
-						const placeholderNodes = placeholders.map((item) => ({
-							type: "image",
-							attrs: {
-								src: item.objectUrl,
-								alt: item.file.name || "",
-								title: "",
-								originSrc: "",
-								uploadId: item.uploadId,
-							},
-						}));
+						if (!markdownManager) return false;
+						const insertableContent = getInsertableMarkdownContent(
+							markdownManager,
+							clipboardText,
+						);
+						if (!insertableContent.length) return false;
 						if (
-							!editor.can().insertContentAt(selectionRange, placeholderNodes)
+							!editor.can().insertContentAt(selectionRange, insertableContent)
 						) {
-							for (const item of placeholders) {
-								URL.revokeObjectURL(item.objectUrl);
-							}
 							return false;
 						}
 						const inserted = editor
 							.chain()
 							.focus()
-							.insertContentAt(selectionRange, placeholderNodes)
+							.insertContentAt(selectionRange, insertableContent)
 							.run();
-						if (!inserted) {
-							for (const item of placeholders) {
-								URL.revokeObjectURL(item.objectUrl);
-							}
-							return false;
-						}
+						if (!inserted) return false;
 						event.preventDefault();
-						void (async () => {
-							for (const item of placeholders) {
-								try {
-									const dataUrl = await readFileAsDataUrl(item.file);
-									const saved = await invoke("space_save_pasted_image", {
-										source_path: sourcePath,
-										target_dir: targetDir,
-										data_url: dataUrl,
-										alt: item.file.name || null,
-									});
-									replacePlaceholderWithImage(editor, item.uploadId, {
-										src: dataUrl,
-										alt: item.file.name || "",
-										title: "",
-										originSrc: saved.href,
-									});
-								} catch {
-									replacePlaceholderWithFallbackText(
-										editor,
-										item.uploadId,
-										item.file.name || "image",
-									);
-								} finally {
-									URL.revokeObjectURL(item.objectUrl);
-								}
-							}
-						})();
 						return true;
-					}
-					if (pasteMarkdownBehavior !== "smart-markdown") return false;
-					if (editor.isActive("codeBlock")) return false;
-					const clipboardHtml = getClipboardHtml(event);
-					const clipboardText = normalizeClipboardMarkdownText(
-						getClipboardPlainText(event),
-					);
-					if (!shouldHandleSmartMarkdownPaste(clipboardText, clipboardHtml)) {
-						return false;
-					}
-					const selectionRange = {
-						from: editor.state.selection.from,
-						to: editor.state.selection.to,
-					};
-					if (!markdownManager) return false;
-					const insertableContent = getInsertableMarkdownContent(
-						markdownManager,
-						clipboardText,
-					);
-					if (!insertableContent.length) return false;
-					if (
-						!editor.can().insertContentAt(selectionRange, insertableContent)
-					) {
-						return false;
-					}
-					const inserted = editor
-						.chain()
-						.focus()
-						.insertContentAt(selectionRange, insertableContent)
-						.run();
-					if (!inserted) return false;
-					event.preventDefault();
-					return true;
+					},
 				},
 			},
+			onTransaction: ({ editor: instance, transaction }) => {
+				if (!transaction.docChanged) return;
+				if (suppressUpdateRef.current) {
+					suppressUpdateRef.current = false;
+					return;
+				}
+				if (mode !== "rich" || !instance.isEditable) return;
+				const nextBody = postprocessMarkdownFromEditor(instance.getMarkdown());
+				lastAppliedBodyRef.current = preprocessMarkdownForEditor(nextBody);
+				const nextMarkdown = joinYamlFrontmatter(
+					frontmatterRef.current,
+					normalizeBody(nextBody),
+				);
+				if (nextMarkdown === lastEmittedMarkdownRef.current) return;
+				lastEmittedMarkdownRef.current = nextMarkdown;
+				onChange(nextMarkdown);
+			},
 		},
-		onTransaction: ({ editor: instance, transaction }) => {
-			if (!transaction.docChanged) return;
-			if (suppressUpdateRef.current) {
-				suppressUpdateRef.current = false;
-				return;
-			}
-			if (mode !== "rich" || !instance.isEditable) return;
-			const nextBody = postprocessMarkdownFromEditor(instance.getMarkdown());
-			lastAppliedBodyRef.current = preprocessMarkdownForEditor(nextBody);
-			const nextMarkdown = joinYamlFrontmatter(
-				frontmatterRef.current,
-				normalizeBody(nextBody),
-			);
-			if (nextMarkdown === lastEmittedMarkdownRef.current) return;
-			lastEmittedMarkdownRef.current = nextMarkdown;
-			onChange(nextMarkdown);
-		},
-	});
+		[peopleMentionsEnabled, enableMarkdownLinkAutocomplete],
+	);
 
 	useEffect(() => {
 		if (!editor) return;

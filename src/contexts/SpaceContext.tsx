@@ -83,6 +83,9 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 				setLastSpacePath(
 					settings.currentSpacePath ?? settings.recentSpaces[0] ?? null,
 				);
+				await invoke("index_set_people_mentions_as_tags_enabled", {
+					enabled: settings.editor.enablePeopleMentionsAsTags,
+				});
 
 				if (settings.currentSpacePath) {
 					try {

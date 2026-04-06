@@ -67,24 +67,6 @@
 }
 
 :root[data-delightful-glyph="true"]
-	.sidebarQuickActionBtn[data-kind="daily-note"]
-	> svg,
-:root[data-delightful-glyph="true"]
-	.sidebarQuickActionBtn[data-kind="daily-note"]
-	.sidebarQuickActionLabel {
-	color: var(--delightful-glyph-violet);
-}
-
-:root[data-delightful-glyph="true"]
-	.sidebarQuickActionBtn[data-kind="templates"]
-	> svg,
-:root[data-delightful-glyph="true"]
-	.sidebarQuickActionBtn[data-kind="templates"]
-	.sidebarQuickActionLabel {
-	color: var(--delightful-glyph-rose);
-}
-
-:root[data-delightful-glyph="true"]
 	.sidebarSectionToggle
 	[data-slot="tabs-trigger"][data-kind="files"] {
 	color: var(--delightful-glyph-blue);

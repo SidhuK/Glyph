@@ -41,9 +41,17 @@ function unquote(value: string): string {
 }
 
 export function parseSearchQuery(raw: string): ParsedSearchQuery {
+	return parseSearchQueryWithPeople(raw, true);
+}
+
+export function parseSearchQueryWithPeople(
+	raw: string,
+	enablePeople: boolean,
+): ParsedSearchQuery {
 	const tokens = tokenize(raw.trim());
 	const request: SearchAdvancedRequest = {
 		tags: [],
+		people: [],
 		title_only: false,
 		tag_only: false,
 	};
@@ -63,9 +71,18 @@ export function parseSearchQuery(raw: string): ParsedSearchQuery {
 			request.tags?.push(token);
 			continue;
 		}
+		if (enablePeople && token.startsWith("@")) {
+			request.people?.push(token);
+			continue;
+		}
 		if (lower.startsWith("tag:")) {
 			const rest = unquote(token.slice(4));
 			if (rest) request.tags?.push(rest.startsWith("#") ? rest : `#${rest}`);
+			continue;
+		}
+		if (enablePeople && lower.startsWith("person:")) {
+			const rest = unquote(token.slice(7));
+			if (rest) request.people?.push(rest.startsWith("@") ? rest : `@${rest}`);
 			continue;
 		}
 		textParts.push(unquote(token));
@@ -84,6 +101,8 @@ export function buildSearchQuery(request: SearchAdvancedRequest): string {
 	const parts: string[] = [];
 	for (const tag of request.tags ?? [])
 		parts.push(tag.startsWith("#") ? tag : `#${tag}`);
+	for (const person of request.people ?? [])
+		parts.push(person.startsWith("@") ? person : `@${person}`);
 	if (request.tag_only) parts.push("tag:only");
 	if (request.title_only) parts.push("title:only");
 	if (request.query?.trim()) parts.push(quoteIfNeeded(request.query.trim()));

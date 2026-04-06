@@ -4,7 +4,7 @@ use crate::{io_atomic, paths};
 
 use super::{
     parse::{apply_task_metadata, is_valid_date, parse_tasks},
-    types::{IndexedTask, ParsedTask, TaskBucket},
+    types::{IndexedTask, NoteTaskSummaryItem, ParsedTask, TaskBucket},
 };
 
 fn task_id_for(note_id: &str, list_path: &str, line_start: i64, text_norm: &str) -> String {
@@ -179,6 +179,44 @@ pub fn query_tasks(
             note_updated: row.get(12).map_err(|e| e.to_string())?,
         });
     }
+    Ok(out)
+}
+
+pub fn query_note_task_summaries(
+    conn: &rusqlite::Connection,
+    note_paths: &[String],
+) -> Result<Vec<NoteTaskSummaryItem>, String> {
+    if note_paths.is_empty() {
+        return Ok(Vec::new());
+    }
+
+    let placeholders = std::iter::repeat_n("?", note_paths.len())
+        .collect::<Vec<_>>()
+        .join(", ");
+    let sql = format!(
+        "SELECT note_path, COUNT(*) AS total_count, SUM(CASE WHEN checked = 1 THEN 1 ELSE 0 END) AS completed_count
+         FROM tasks
+         WHERE note_path IN ({placeholders})
+         GROUP BY note_path"
+    );
+
+    let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;
+    let mut rows = stmt
+        .query(rusqlite::params_from_iter(note_paths.iter()))
+        .map_err(|e| e.to_string())?;
+
+    let mut out = Vec::new();
+    while let Some(row) = rows.next().map_err(|e| e.to_string())? {
+        let total_count = row.get::<_, i64>(1).map_err(|e| e.to_string())? as u32;
+        let completed_count = row.get::<_, i64>(2).map_err(|e| e.to_string())? as u32;
+        out.push(NoteTaskSummaryItem {
+            note_path: row.get(0).map_err(|e| e.to_string())?,
+            total_count,
+            completed_count,
+            open_count: total_count.saturating_sub(completed_count),
+        });
+    }
+
     Ok(out)
 }
 

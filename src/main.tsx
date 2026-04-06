@@ -14,6 +14,7 @@ import {
 } from "./lib/appearance";
 import type { UiAccent, UiDarkThemeId, UiLightThemeId } from "./lib/settings";
 import { loadSettings, reloadFromDisk } from "./lib/settings";
+import { invoke } from "./lib/tauri";
 import { useTauriEvent } from "./lib/tauriEvents";
 import { isUiDarkThemeId, isUiLightThemeId } from "./lib/uiThemes";
 
@@ -75,6 +76,9 @@ function ThemeAndTypographyBridge() {
 				setEditorFontSize(settings.ui.editorFontSize);
 				setTranslucentApp(settings.ui.translucentApp);
 				setDelightfulGlyph(settings.ui.delightfulGlyph);
+				void invoke("index_set_people_mentions_as_tags_enabled", {
+					enabled: settings.editor.enablePeopleMentionsAsTags,
+				}).catch(() => {});
 			} catch {
 				// best-effort hydration
 			}
@@ -151,6 +155,11 @@ function ThemeAndTypographyBridge() {
 		}
 		if (typeof payload.ui?.delightfulGlyph === "boolean") {
 			setDelightfulGlyph(payload.ui.delightfulGlyph);
+		}
+		if (typeof payload.editor?.enablePeopleMentionsAsTags === "boolean") {
+			void invoke("index_set_people_mentions_as_tags_enabled", {
+				enabled: payload.editor.enablePeopleMentionsAsTags,
+			}).catch(() => {});
 		}
 	});
 
