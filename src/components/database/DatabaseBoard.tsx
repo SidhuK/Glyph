@@ -16,12 +16,14 @@ import {
 } from "../../lib/database/palette";
 import type { DatabaseColumn, DatabaseRow } from "../../lib/database/types";
 import { extractErrorMessage } from "../../lib/errorUtils";
+import { invoke, type NoteTaskSummary } from "../../lib/tauri";
 import { parentDir } from "../../utils/path";
 import {
 	EDITOR_TEXT_COLORS,
 	type EditorTextColor,
 	isEditorTextColor,
 } from "../editor/textColors";
+import { TaskProgressIndicator } from "../tasks/TaskProgressIndicator";
 import { springPresets } from "../ui/animations";
 import { Button } from "../ui/shadcn/button";
 import {
@@ -72,6 +74,11 @@ interface DatabaseBoardProps {
 }
 
 const EMPTY_LANE_COLORS: Record<string, string> = {};
+const EMPTY_TASK_SUMMARY: NoteTaskSummary = {
+	total_count: 0,
+	completed_count: 0,
+	open_count: 0,
+};
 
 function getLaneColor(
 	laneColors: Record<string, string>,
@@ -229,6 +236,9 @@ export function DatabaseBoard({
 		y: number;
 		width: number;
 	} | null>(null);
+	const [taskSummariesByPath, setTaskSummariesByPath] = useState<
+		Record<string, NoteTaskSummary>
+	>({});
 	const boardCardColumns = useMemo(
 		() =>
 			cardCandidateColumns(columns, groupColumn?.id ?? persistedGroupColumnId),
@@ -249,6 +259,39 @@ export function DatabaseBoard({
 		setDropLaneId(null);
 		setDragPreview(null);
 	}, []);
+
+	useEffect(() => {
+		const notePaths = Array.from(
+			new Set(rows.map((row) => row.note_path).filter(Boolean)),
+		);
+		if (notePaths.length === 0) {
+			setTaskSummariesByPath({});
+			return;
+		}
+
+		let cancelled = false;
+		void invoke("task_summaries_for_paths", { note_paths: notePaths })
+			.then((items) => {
+				if (cancelled) return;
+				const next: Record<string, NoteTaskSummary> = {};
+				for (const item of items) {
+					next[item.note_path] = {
+						total_count: item.total_count,
+						completed_count: item.completed_count,
+						open_count: item.open_count,
+					};
+				}
+				setTaskSummariesByPath(next);
+			})
+			.catch(() => {
+				if (cancelled) return;
+				setTaskSummariesByPath({});
+			});
+
+		return () => {
+			cancelled = true;
+		};
+	}, [rows]);
 
 	const handleLaneDrop = useCallback(
 		async (
@@ -564,6 +607,8 @@ export function DatabaseBoard({
 												.slice(0, 1);
 											const folderLabel =
 												row.folder?.trim() || parentDir(row.note_path) || "/";
+											const taskSummary =
+												taskSummariesByPath[row.note_path] ?? EMPTY_TASK_SUMMARY;
 											const otherLanes = lanes.filter(
 												(l) =>
 													l.id !== lane.id &&
@@ -624,9 +669,12 @@ export function DatabaseBoard({
 																	<span className="databaseBoardCardTitle">
 																		{title}
 																	</span>
-																	<span className="databaseBoardCardOpenHint">
-																		Open
-																	</span>
+																	{taskSummary.total_count > 0 ? (
+																		<TaskProgressIndicator
+																			summary={taskSummary}
+																			className="databaseBoardCardTaskProgress"
+																		/>
+																	) : null}
 																</div>
 																{preview ? (
 																	<div className="databaseBoardCardPreview">

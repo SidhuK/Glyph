@@ -14,11 +14,17 @@ use super::indexer::index_note;
 use super::indexer::rebuild;
 use super::search_advanced::{run_search_advanced, SearchAdvancedRequest};
 use super::search_hybrid::hybrid_search;
-use super::tags::{normalize_tag, tag_depth};
-use super::tasks::{
-    mutate_task_line, note_abs_path, query_tasks, write_note, IndexedTask, TaskBucket,
+use super::tags::{
+    normalize_tag, people_tag_to_handle, tag_depth, PEOPLE_TAG_NAMESPACE,
 };
-use super::types::{BacklinkItem, IndexRebuildResult, SearchResult, TagCount, TaskDateInfo};
+use super::tasks::{
+    mutate_task_line, note_abs_path, query_note_task_summaries, query_tasks, summarize_tasks,
+    write_note, IndexedTask, NoteTaskSummary, NoteTaskSummaryItem, TaskBucket,
+};
+use super::types::{
+    BacklinkItem, IndexRebuildResult, PersonCount, SearchResult, TagCount, TaskDateInfo,
+};
+use crate::index::{people_mentions_as_tags_enabled, set_people_mentions_as_tags_enabled};
 
 #[derive(Serialize)]
 pub struct CalendarDaySummary {
@@ -112,6 +118,7 @@ pub(crate) fn parse_raw_search_query(raw_query: &str, limit: Option<u32>) -> Sea
         ..SearchAdvancedRequest::default()
     };
     let mut tags: Vec<String> = Vec::new();
+    let mut people: Vec<String> = Vec::new();
     let mut text_parts: Vec<String> = Vec::new();
 
     for token in tokenize_search_query(raw_query.trim()) {
@@ -128,6 +135,10 @@ pub(crate) fn parse_raw_search_query(raw_query: &str, limit: Option<u32>) -> Sea
             tags.push(token);
             continue;
         }
+        if people_mentions_as_tags_enabled() && token.starts_with('@') {
+            people.push(token);
+            continue;
+        }
         if lower.starts_with("tag:") {
             let rest = token[4..].trim();
             if !rest.is_empty() {
@@ -139,10 +150,22 @@ pub(crate) fn parse_raw_search_query(raw_query: &str, limit: Option<u32>) -> Sea
             }
             continue;
         }
+        if people_mentions_as_tags_enabled() && lower.starts_with("person:") {
+            let rest = token[7..].trim();
+            if !rest.is_empty() {
+                people.push(if rest.starts_with('@') {
+                    rest.to_string()
+                } else {
+                    format!("@{rest}")
+                });
+            }
+            continue;
+        }
         text_parts.push(token);
     }
 
     req.tags = tags;
+    req.people = people;
     let text = text_parts.join(" ").trim().to_string();
     req.query = if text.is_empty() { None } else { Some(text) };
     req
@@ -317,6 +340,12 @@ pub async fn search_parse_and_run(
 }
 
 #[tauri::command]
+pub fn index_set_people_mentions_as_tags_enabled(enabled: bool) -> Result<(), String> {
+    set_people_mentions_as_tags_enabled(enabled);
+    Ok(())
+}
+
+#[tauri::command]
 pub async fn search_with_tags(
     state: State<'_, SpaceState>,
     tags: Vec<String>,
@@ -435,6 +464,7 @@ pub async fn all_docs_list(
                                 SELECT tag
                                 FROM tags
                                 WHERE note_id = n.id
+                                  AND tag NOT LIKE 'people/%'
                                 ORDER BY is_explicit DESC, tag COLLATE NOCASE ASC
                             ) ordered_tags
                         ), '')
@@ -584,7 +614,9 @@ pub async fn calendar_query_range(
                             (
                                 SELECT GROUP_CONCAT(tag, '\n')
                                 FROM tags
-                                WHERE note_id = notes.id AND is_explicit = 1
+                                WHERE note_id = notes.id
+                                  AND is_explicit = 1
+                                  AND tag NOT LIKE 'people/%'
                             ),
                             ''
                         ) AS tags
@@ -788,6 +820,7 @@ fn list_tags(conn: &rusqlite::Connection, limit: i64) -> Result<Vec<TagCount>, S
                     COUNT(*) AS total_count,
                     MAX(is_explicit) AS is_explicit
              FROM tags
+             WHERE tag NOT LIKE 'people/%'
              GROUP BY tag
              ORDER BY tag ASC
              LIMIT ?",
@@ -803,6 +836,52 @@ fn list_tags(conn: &rusqlite::Connection, limit: i64) -> Result<Vec<TagCount>, S
             total_count: row.get::<_, i64>(2).map_err(|e| e.to_string())? as u32,
             is_explicit: row.get::<_, i64>(3).map_err(|e| e.to_string())? > 0,
             tag,
+        });
+    }
+    Ok(out)
+}
+
+#[tauri::command]
+pub async fn people_list(
+    state: State<'_, SpaceState>,
+    limit: Option<u32>,
+) -> Result<Vec<PersonCount>, String> {
+    let root = state.current_root()?;
+    let limit = limit.unwrap_or(200).min(2000) as i64;
+    tauri::async_runtime::spawn_blocking(move || -> Result<Vec<PersonCount>, String> {
+        let conn = open_db(&root)?;
+        list_people(&conn, limit)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+fn list_people(conn: &rusqlite::Connection, limit: i64) -> Result<Vec<PersonCount>, String> {
+    if !people_mentions_as_tags_enabled() {
+        return Ok(Vec::new());
+    }
+    let mut stmt = conn
+        .prepare(
+            "SELECT tag, COUNT(*) AS total_count
+             FROM tags
+             WHERE tag LIKE ? AND is_explicit = 1
+             GROUP BY tag
+             ORDER BY tag ASC
+             LIMIT ?",
+        )
+        .map_err(|e| e.to_string())?;
+    let mut rows = stmt
+        .query(rusqlite::params![format!("{PEOPLE_TAG_NAMESPACE}%"), limit])
+        .map_err(|e| e.to_string())?;
+    let mut out = Vec::new();
+    while let Some(row) = rows.next().map_err(|e| e.to_string())? {
+        let tag = row.get::<_, String>(0).map_err(|e| e.to_string())?;
+        let Some(handle) = people_tag_to_handle(&tag) else {
+            continue;
+        };
+        out.push(PersonCount {
+            handle,
+            count: row.get::<_, i64>(1).map_err(|e| e.to_string())? as u32,
         });
     }
     Ok(out)
@@ -876,10 +955,11 @@ pub async fn tag_notes(
 mod tests {
     use rusqlite::Connection;
 
+    use crate::index::set_people_mentions_as_tags_enabled;
     use crate::index::schema::ensure_schema;
-    use crate::index::tags::expand_indexed_tags;
+    use crate::index::tags::{expand_indexed_people, expand_indexed_tags};
 
-    use super::list_tags;
+    use super::{list_people, list_tags};
 
     #[test]
     fn list_tags_reports_direct_and_total_counts_for_virtual_parents() {
@@ -923,6 +1003,41 @@ mod tests {
         assert_eq!(intermediate.total_count, 1);
         assert!(!intermediate.is_explicit);
         assert_eq!(intermediate.depth, 1);
+    }
+
+    #[test]
+    fn list_tags_excludes_people_namespace_and_people_list_strips_prefix() {
+        set_people_mentions_as_tags_enabled(true);
+        let conn = Connection::open_in_memory().unwrap();
+        ensure_schema(&conn).unwrap();
+
+        for tag in expand_indexed_tags(&["work".to_string()]) {
+            conn.execute(
+                "INSERT INTO tags(note_id, tag, is_explicit) VALUES(?, ?, ?)",
+                rusqlite::params!["notes/work.md", tag.tag, if tag.is_explicit { 1 } else { 0 }],
+            )
+            .unwrap();
+        }
+        for tag in expand_indexed_people(&["alice".to_string()]) {
+            conn.execute(
+                "INSERT INTO tags(note_id, tag, is_explicit) VALUES(?, ?, ?)",
+                rusqlite::params![
+                    "notes/person.md",
+                    tag.tag,
+                    if tag.is_explicit { 1 } else { 0 }
+                ],
+            )
+            .unwrap();
+        }
+
+        let tags = list_tags(&conn, 50).unwrap();
+        assert_eq!(tags.iter().map(|tag| tag.tag.as_str()).collect::<Vec<_>>(), vec!["work"]);
+
+        let people = list_people(&conn, 50).unwrap();
+        assert_eq!(people.len(), 1);
+        assert_eq!(people[0].handle, "alice");
+        assert_eq!(people[0].count, 1);
+        set_people_mentions_as_tags_enabled(false);
     }
 }
 
@@ -1072,6 +1187,30 @@ pub fn task_update_by_ordinal(
         return Some(next);
     }
     None
+}
+
+#[tauri::command(rename_all = "snake_case")]
+pub fn task_summary(markdown: String) -> NoteTaskSummary {
+    summarize_tasks(&markdown)
+}
+
+#[tauri::command(rename_all = "snake_case")]
+pub async fn task_summaries_for_paths(
+    state: State<'_, SpaceState>,
+    note_paths: Vec<String>,
+) -> Result<Vec<NoteTaskSummaryItem>, String> {
+    let root = state.current_root()?;
+    tauri::async_runtime::spawn_blocking(move || -> Result<Vec<NoteTaskSummaryItem>, String> {
+        let paths = note_paths
+            .into_iter()
+            .map(|path| path.trim().replace('\\', "/"))
+            .filter(|path| !path.is_empty())
+            .collect::<Vec<_>>();
+        let conn = open_db(&root)?;
+        query_note_task_summaries(&conn, &paths)
+    })
+    .await
+    .map_err(|e| e.to_string())?
 }
 
 #[tauri::command(rename_all = "snake_case")]

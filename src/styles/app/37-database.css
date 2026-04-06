@@ -1040,21 +1040,18 @@
 		color-mix(in srgb, var(--border-light) 60%, transparent);
 }
 
-.databaseBoardCardOpenHint {
+.databaseBoardCardTaskProgress {
 	flex: 0 0 auto;
-	padding-top: 1px;
-	font-size: 0.68rem;
-	font-weight: var(--font-semibold);
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-	color: var(--text-tertiary);
-	opacity: 0;
-	transition: opacity 120ms ease;
+	width: 24px;
+	height: 12px;
+	opacity: 0.9;
+	transition: opacity 120ms ease, transform 120ms ease;
 }
 
-.databaseBoardCard:hover .databaseBoardCardOpenHint,
-.databaseBoardCard[data-state="selected"] .databaseBoardCardOpenHint {
+.databaseBoardCard:hover .databaseBoardCardTaskProgress,
+.databaseBoardCard[data-state="selected"] .databaseBoardCardTaskProgress {
 	opacity: 1;
+	transform: translateY(-0.5px);
 }
 
 .databaseBoardCardPreview {

@@ -28,7 +28,7 @@ import {
 } from "../../lib/appEvents";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { splitYamlFrontmatter } from "../../lib/notePreview";
-import { type TextFileDoc, invoke } from "../../lib/tauri";
+import { type NoteTaskSummary, type TextFileDoc, invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { countWords, formatReadingTime } from "../../lib/textStats";
 import { setPrefetchedNote } from "../../lib/navigationPrefetch";
@@ -37,6 +37,7 @@ import { Edit, Eye, FileText, RefreshCw, Save, Type } from "../Icons";
 import { CanvasNoteInlineEditor } from "../editor/CanvasNoteInlineEditor";
 import { FloatingTOC } from "../editor/FloatingTOC";
 import { CALLOUT_TYPES } from "../editor/ribbonButtonConfigs";
+import { TaskProgressIndicator } from "../tasks/TaskProgressIndicator";
 import type { CanvasInlineEditorMode } from "../editor/types";
 import { Button } from "../ui/shadcn/button";
 import {
@@ -54,6 +55,32 @@ interface MarkdownEditorPaneProps {
 
 type StatsLayout = "full" | "collapsed" | "hidden";
 type SyncPulse = "saved" | "reloaded" | null;
+
+const EMPTY_TASK_SUMMARY: NoteTaskSummary = {
+	total_count: 0,
+	completed_count: 0,
+	open_count: 0,
+};
+
+function summarizeTasksFromMarkdown(markdown: string): NoteTaskSummary {
+	let total_count = 0;
+	let completed_count = 0;
+
+	for (const line of markdown.split(/\r?\n/)) {
+		const match = line.match(/^\s*[-*+] \[([ xX])\] /);
+		if (!match) continue;
+		total_count += 1;
+		if (match[1].toLowerCase() === "x") {
+			completed_count += 1;
+		}
+	}
+
+	return {
+		total_count,
+		completed_count,
+		open_count: total_count - completed_count,
+	};
+}
 
 function isVisibleElement(element: HTMLElement | null): boolean {
 	if (!element) return false;
@@ -92,6 +119,8 @@ export function MarkdownEditorPane({
 		initialDoc?.mtime_ms ?? null,
 	);
 	const [syncPulse, setSyncPulse] = useState<SyncPulse>(null);
+	const [taskSummary, setTaskSummary] =
+		useState<NoteTaskSummary>(EMPTY_TASK_SUMMARY);
 	const calloutInserterRef = useRef<((type: string) => void) | null>(null);
 	const savedTextRef = useRef(savedText);
 	const textRef = useRef(text);
@@ -104,6 +133,8 @@ export function MarkdownEditorPane({
 	const hasUserEditsRef = useRef(false);
 	const externalSyncTimerRef = useRef<number | null>(null);
 	const syncPulseTimerRef = useRef<number | null>(null);
+	const taskSummaryTimerRef = useRef<number | null>(null);
+	const taskSummaryRequestTokenRef = useRef(0);
 	const pendingExternalReloadRef = useRef(false);
 	const paneRef = useRef<HTMLElement | null>(null);
 	const contentScrollRef = useRef<HTMLDivElement | null>(null);
@@ -131,6 +162,14 @@ export function MarkdownEditorPane({
 			readingTime: formatReadingTime(words),
 		};
 	}, [text]);
+	const fallbackTaskSummary = useMemo(
+		() => summarizeTasksFromMarkdown(text),
+		[text],
+	);
+	const visibleTaskSummary =
+		taskSummary.total_count > 0 || fallbackTaskSummary.total_count === 0
+			? taskSummary
+			: fallbackTaskSummary;
 
 	const flashSyncPulse = useCallback((next: Exclude<SyncPulse, null>) => {
 		if (syncPulseTimerRef.current !== null) {
@@ -227,6 +266,10 @@ export function MarkdownEditorPane({
 		return () => {
 			mountedRef.current = false;
 			documentSessionRef.current += 1;
+			if (taskSummaryTimerRef.current !== null) {
+				window.clearTimeout(taskSummaryTimerRef.current);
+				taskSummaryTimerRef.current = null;
+			}
 		};
 	}, []);
 
@@ -255,6 +298,7 @@ export function MarkdownEditorPane({
 		setSaving(false);
 		setAutosaveBusy(false);
 		setSyncPulse(null);
+		setTaskSummary(EMPTY_TASK_SUMMARY);
 		hasUserEditsRef.current = false;
 		setError(initialError);
 		setActionsOpen(false);
@@ -285,6 +329,7 @@ export function MarkdownEditorPane({
 		setSaving(false);
 		setAutosaveBusy(false);
 		setSyncPulse(null);
+		setTaskSummary(EMPTY_TASK_SUMMARY);
 		clearMarkdownDocCache();
 		if (spacePath === null) {
 			return;
@@ -608,6 +653,9 @@ export function MarkdownEditorPane({
 			if (syncPulseTimerRef.current !== null) {
 				window.clearTimeout(syncPulseTimerRef.current);
 			}
+			if (taskSummaryTimerRef.current !== null) {
+				window.clearTimeout(taskSummaryTimerRef.current);
+			}
 		},
 		[],
 	);
@@ -627,6 +675,51 @@ export function MarkdownEditorPane({
 	useEffect(() => {
 		onDirtyChange?.(isDirty);
 	}, [onDirtyChange, isDirty]);
+
+	useEffect(() => {
+		if (taskSummaryTimerRef.current !== null) {
+			window.clearTimeout(taskSummaryTimerRef.current);
+			taskSummaryTimerRef.current = null;
+		}
+
+		const requestToken = taskSummaryRequestTokenRef.current + 1;
+		taskSummaryRequestTokenRef.current = requestToken;
+
+		taskSummaryTimerRef.current = window.setTimeout(() => {
+			taskSummaryTimerRef.current = null;
+			void invoke("task_summary", { markdown: textRef.current })
+				.then((summary) => {
+					if (
+						!mountedRef.current ||
+						taskSummaryRequestTokenRef.current !== requestToken
+					) {
+						return;
+					}
+					const fallback = summarizeTasksFromMarkdown(textRef.current);
+					setTaskSummary(
+						summary.total_count > 0 || fallback.total_count === 0
+							? summary
+							: fallback,
+					);
+				})
+				.catch(() => {
+					if (
+						!mountedRef.current ||
+						taskSummaryRequestTokenRef.current !== requestToken
+					) {
+						return;
+					}
+					setTaskSummary(summarizeTasksFromMarkdown(textRef.current));
+				});
+		}, 90);
+
+		return () => {
+			if (taskSummaryTimerRef.current !== null) {
+				window.clearTimeout(taskSummaryTimerRef.current);
+				taskSummaryTimerRef.current = null;
+			}
+		};
+	}, [text]);
 
 	useEffect(() => {
 		if (mode === "preview") return;
@@ -916,6 +1009,14 @@ export function MarkdownEditorPane({
 							/>
 							<span>{stats.readingTime}</span>
 						</div>
+						{visibleTaskSummary.total_count > 0 ? (
+							<div
+								className="markdownEditorStatsItem markdownEditorTaskProgressItem"
+								data-metric="task-progress"
+							>
+								<TaskProgressIndicator summary={visibleTaskSummary} />
+							</div>
+						) : null}
 						<div
 							className="markdownEditorStatsItem markdownEditorSaveState"
 							data-metric="save-state"

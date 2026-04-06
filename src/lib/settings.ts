@@ -101,6 +101,7 @@ export interface DatabaseSettings {
 export interface EditorSettings {
 	showCollapsibleHeadings: boolean;
 	pastedMediaFolder: string;
+	enablePeopleMentionsAsTags: boolean;
 }
 
 export interface FileTreeSettings {
@@ -115,6 +116,7 @@ export const DEFAULT_DATABASE_SETTINGS: DatabaseSettings = {
 export const DEFAULT_EDITOR_SETTINGS: EditorSettings = {
 	showCollapsibleHeadings: false,
 	pastedMediaFolder: "assets",
+	enablePeopleMentionsAsTags: false,
 };
 
 export const DEFAULT_FILE_TREE_SETTINGS: FileTreeSettings = {
@@ -220,6 +222,7 @@ async function emitSettingsUpdated(payload: {
 	editor?: {
 		showCollapsibleHeadings?: boolean;
 		pastedMediaFolder?: string;
+		enablePeopleMentionsAsTags?: boolean;
 	};
 	changelog?: {
 		lastAcknowledgedVersion?: string | null;
@@ -299,6 +302,7 @@ const KEYS = {
 	showFileTreeFolderCounts: "ui.fileTree.showFolderFileCounts",
 	editorShowCollapsibleHeadings: "editor.showCollapsibleHeadings",
 	editorPastedMediaFolder: "editor.pastedMediaFolder",
+	editorEnablePeopleMentionsAsTags: "editor.enablePeopleMentionsAsTags",
 	autoUpdateLastCheckedAt: "updates.lastCheckedAt",
 	dailyNotesFolder: "dailyNotes.folder",
 	templatesFolder: "templates.folder",
@@ -418,6 +422,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		taskSourceRaw,
 		rawEditorShowCollapsibleHeadings,
 		rawEditorPastedMediaFolder,
+		rawEditorEnablePeopleMentionsAsTags,
 		rawDatabaseShowColumnColor,
 		rawDatabaseShowNoteCount,
 		rawChangelogLastAcknowledgedVersion,
@@ -452,6 +457,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<unknown>(KEYS.taskSource),
 		store.get<boolean | null>(KEYS.editorShowCollapsibleHeadings),
 		store.get<string | null>(KEYS.editorPastedMediaFolder),
+		store.get<boolean | null>(KEYS.editorEnablePeopleMentionsAsTags),
 		store.get<boolean | null>(KEYS.databaseShowColumnColor),
 		store.get<boolean | null>(KEYS.databaseShowNoteCount),
 		store.get<string | null>(KEYS.changelogLastAcknowledgedVersion),
@@ -517,6 +523,10 @@ export async function loadSettings(): Promise<AppSettings> {
 			typeof rawEditorPastedMediaFolder === "string"
 				? normalizeRelPath(rawEditorPastedMediaFolder)
 				: DEFAULT_EDITOR_SETTINGS.pastedMediaFolder,
+		enablePeopleMentionsAsTags:
+			typeof rawEditorEnablePeopleMentionsAsTags === "boolean"
+				? rawEditorEnablePeopleMentionsAsTags
+				: DEFAULT_EDITOR_SETTINGS.enablePeopleMentionsAsTags,
 	};
 	const database: DatabaseSettings = {
 		showColumnColor:
@@ -784,6 +794,17 @@ export async function setEditorPastedMediaFolder(
 	await store.save();
 	void emitSettingsUpdated({
 		editor: { pastedMediaFolder: nextFolder },
+	});
+}
+
+export async function setEditorEnablePeopleMentionsAsTags(
+	enabled: boolean,
+): Promise<void> {
+	const store = await getStore();
+	await store.set(KEYS.editorEnablePeopleMentionsAsTags, enabled);
+	await store.save();
+	void emitSettingsUpdated({
+		editor: { enablePeopleMentionsAsTags: enabled },
 	});
 }
 

@@ -1,4 +1,4 @@
-use super::types::ParsedTask;
+use super::types::{NoteTaskSummary, ParsedTask};
 
 struct TaskLineMatch {
     leading_ws: usize,
@@ -220,4 +220,53 @@ pub fn parse_tasks(markdown: &str) -> Vec<ParsedTask> {
     }
 
     out
+}
+
+pub fn summarize_tasks(markdown: &str) -> NoteTaskSummary {
+    let mut total_count = 0u32;
+    let mut completed_count = 0u32;
+
+    for task in parse_tasks(markdown) {
+        total_count += 1;
+        if task.checked {
+            completed_count += 1;
+        }
+    }
+
+    NoteTaskSummary {
+        total_count,
+        completed_count,
+        open_count: total_count.saturating_sub(completed_count),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::summarize_tasks;
+
+    #[test]
+    fn summarize_tasks_counts_nested_and_checked_items() {
+        let markdown = r#"# Tasks
+
+- [ ] Parent task
+  - [x] Child done
+  - [ ] Child open
+- [X] Finished top level
+
+Not a task line
+"#;
+
+        let summary = summarize_tasks(markdown);
+        assert_eq!(summary.total_count, 4);
+        assert_eq!(summary.completed_count, 2);
+        assert_eq!(summary.open_count, 2);
+    }
+
+    #[test]
+    fn summarize_tasks_returns_zeroes_when_no_tasks_exist() {
+        let summary = summarize_tasks("# Note\n\nJust text.\n");
+        assert_eq!(summary.total_count, 0);
+        assert_eq!(summary.completed_count, 0);
+        assert_eq!(summary.open_count, 0);
+    }
 }

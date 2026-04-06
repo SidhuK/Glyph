@@ -88,6 +88,8 @@ import { dispatchAiContextAttach } from "../ai/aiContextEvents";
 import {
 	MARKDOWN_LINK_CLICK_EVENT,
 	type MarkdownLinkClickDetail,
+	PERSON_CLICK_EVENT,
+	type PersonClickDetail,
 	TAG_CLICK_EVENT,
 	type TagClickDetail,
 	WIKI_LINK_CLICK_EVENT,
@@ -563,9 +565,19 @@ export function AppShell() {
 			);
 			setPaletteOpen(true);
 		};
+		const onPersonClick = (event: Event) => {
+			const detail = (event as CustomEvent<PersonClickDetail>).detail;
+			if (!detail?.handle) return;
+			setPaletteInitialTab("search");
+			setPaletteInitialQuery(
+				detail.handle.startsWith("@") ? detail.handle : `@${detail.handle}`,
+			);
+			setPaletteOpen(true);
+		};
 		window.addEventListener(WIKI_LINK_CLICK_EVENT, onWikiLinkClick);
 		window.addEventListener(MARKDOWN_LINK_CLICK_EVENT, onMarkdownLinkClick);
 		window.addEventListener(TAG_CLICK_EVENT, onTagClick);
+		window.addEventListener(PERSON_CLICK_EVENT, onPersonClick);
 		return () => {
 			window.removeEventListener(WIKI_LINK_CLICK_EVENT, onWikiLinkClick);
 			window.removeEventListener(
@@ -573,13 +585,16 @@ export function AppShell() {
 				onMarkdownLinkClick,
 			);
 			window.removeEventListener(TAG_CLICK_EVENT, onTagClick);
+			window.removeEventListener(PERSON_CLICK_EVENT, onPersonClick);
 		};
 	}, [openOrCreateWikiLinkTarget, openWorkspaceFile, setError, setPaletteOpen]);
 
 	const openTagSearchPalette = useCallback(
 		(tag: string) => {
 			setPaletteInitialTab("search");
-			setPaletteInitialQuery(tag.startsWith("#") ? tag : `#${tag}`);
+			setPaletteInitialQuery(
+				tag.startsWith("#") || tag.startsWith("@") ? tag : `#${tag}`,
+			);
 			setPaletteOpen(true);
 		},
 		[setPaletteOpen],
@@ -863,10 +878,6 @@ export function AppShell() {
 		void loadAllDocsPane();
 		void prefetchAllDocs(null);
 	}, []);
-	const prefetchTemplatesTab = useCallback(() => {
-		void loadAllDocsPane();
-		void prefetchAllDocs(templateFolder);
-	}, [templateFolder]);
 	const openGettingStarted = useCallback(() => {
 		setShowGettingStartedRequest((prev) => prev + 1);
 	}, []);
@@ -1636,14 +1647,11 @@ export function AppShell() {
 				onOpenGitSettings={gitSync.openGitSettings}
 				onOpenSettings={() => openSettings()}
 				onOpenAllDocs={openAllDocsTab}
-				onOpenDailyNote={requestOpenDailyNote}
-				onOpenTemplates={openTemplatesTab}
 				onOpenCalendar={openCalendarTab}
 				onOpenDatabases={(databaseId) => openDatabasesTab(databaseId)}
 				onPrefetchCalendar={prefetchCalendarTab}
 				onPrefetchDatabases={prefetchDatabasesTab}
 				onPrefetchAllDocs={prefetchAllDocsTab}
-				onPrefetchTemplates={prefetchTemplatesTab}
 				onPrefetchFile={prefetchWorkspaceFile}
 				updateReady={autoUpdater.updateReady}
 				updateVersion={autoUpdater.updateVersion}

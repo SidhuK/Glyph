@@ -96,6 +96,7 @@ type TauriEventMap = {
 		editor?: {
 			showCollapsibleHeadings?: boolean;
 			pastedMediaFolder?: string;
+			enablePeopleMentionsAsTags?: boolean;
 		};
 		changelog?: {
 			lastAcknowledgedVersion?: string | null;

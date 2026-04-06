@@ -1,5 +1,4 @@
 import {
-	CalendarAdd01Icon,
 	Clock01Icon,
 	CollectionsBookmarkIcon,
 	DocumentCodeIcon,
@@ -54,15 +53,12 @@ interface SidebarContentProps {
 	onPrefetchCalendar: () => void;
 	onPrefetchDatabases: (databaseId?: string | null) => void;
 	onPrefetchAllDocs: () => void;
-	onPrefetchTemplates: () => void;
 	onPrefetchFile: (relPath: string) => void;
 	gitSyncStatus: GitSyncStatus | null;
 	onGitSyncNow: () => void;
 	onOpenGitSettings: () => void;
 	onOpenSettings: () => void;
 	onOpenAllDocs: () => void;
-	onOpenDailyNote: () => void;
-	onOpenTemplates: () => void;
 }
 
 export const SidebarContent = memo(function SidebarContent({
@@ -83,15 +79,12 @@ export const SidebarContent = memo(function SidebarContent({
 	onPrefetchCalendar,
 	onPrefetchDatabases,
 	onPrefetchAllDocs,
-	onPrefetchTemplates,
 	onPrefetchFile,
 	gitSyncStatus,
 	onGitSyncNow,
 	onOpenGitSettings,
 	onOpenSettings,
 	onOpenAllDocs,
-	onOpenDailyNote,
-	onOpenTemplates,
 }: SidebarContentProps) {
 	// Contexts
 	const { spacePath } = useSpace();
@@ -104,6 +97,7 @@ export const SidebarContent = memo(function SidebarContent({
 		pinnedFiles,
 		togglePinnedFile,
 		tags,
+		people,
 		tagsError,
 		refreshTags,
 	} = useFileTreeContext();
@@ -386,36 +380,6 @@ export const SidebarContent = memo(function SidebarContent({
 						<HugeiconsIcon icon={LibraryIcon} size={14} strokeWidth={0.9} />
 						<span className="sidebarQuickActionLabel">Collections</span>
 					</button>
-					<button
-						type="button"
-						className="sidebarQuickActionBtn"
-						data-kind="daily-note"
-						onClick={onOpenDailyNote}
-						title="Open Daily Note"
-					>
-						<HugeiconsIcon
-							icon={CalendarAdd01Icon}
-							size={14}
-							strokeWidth={0.9}
-						/>
-						<span className="sidebarQuickActionLabel">Daily Note</span>
-					</button>
-					<button
-						type="button"
-						className="sidebarQuickActionBtn"
-						data-kind="templates"
-						onClick={onOpenTemplates}
-						onMouseEnter={onPrefetchTemplates}
-						onFocus={onPrefetchTemplates}
-						title="Open Templates"
-					>
-						<HugeiconsIcon
-							icon={DocumentCodeIcon}
-							size={14}
-							strokeWidth={0.9}
-						/>
-						<span className="sidebarQuickActionLabel">Templates</span>
-					</button>
 				</div>
 				<div className="sidebarSectionHeader">
 					<Tabs
@@ -485,7 +449,9 @@ export const SidebarContent = memo(function SidebarContent({
 								) : null}
 								<TagsPane
 									tags={tags}
+									people={people}
 									onSelectTag={onSelectTag}
+									onSelectPerson={onSelectTag}
 									onRefresh={() => void refreshTags()}
 								/>
 							</ScrollArea>

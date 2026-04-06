@@ -735,6 +735,21 @@ input.notePropertyValue {
 	border-color: color-mix(in srgb, var(--interactive-accent) 40%, transparent);
 }
 
+.tiptapContentInline .personToken {
+	display: inline-block;
+	color: color-mix(in srgb, var(--interactive-accent) 88%, var(--text-primary));
+	background: color-mix(in srgb, var(--interactive-accent) 8%, transparent);
+	border-radius: var(--radius-sm);
+	padding: 0 2px;
+	font-weight: var(--font-medium);
+	cursor: pointer;
+	transition: background 120ms ease;
+}
+
+.tiptapContentInline .personToken:hover {
+	background: color-mix(in srgb, var(--interactive-accent) 16%, transparent);
+}
+
 .tiptapContentInline p {
 	margin: 0 0 var(--space-4);
 }

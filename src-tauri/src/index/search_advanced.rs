@@ -2,8 +2,10 @@ use serde::Deserialize;
 
 use rusqlite::Connection;
 
+use crate::index::people_mentions_as_tags_enabled;
+
 use super::search_hybrid::hybrid_search;
-use super::tags::normalize_tag;
+use super::tags::{normalize_person_handle, normalize_tag, person_handle_to_tag};
 use super::types::SearchResult;
 
 #[derive(Deserialize, Clone, Default)]
@@ -12,6 +14,8 @@ pub struct SearchAdvancedRequest {
     pub query: Option<String>,
     #[serde(default)]
     pub tags: Vec<String>,
+    #[serde(default)]
+    pub people: Vec<String>,
     #[serde(default)]
     pub title_only: bool,
     #[serde(default)]
@@ -27,12 +31,30 @@ pub fn run_search_advanced(
     let limit = req.limit.unwrap_or(200).clamp(1, 2_000) as usize;
     let text = req.query.unwrap_or_default().trim().to_string();
     let mut tags = normalize_tags(req.tags)?;
+    if people_mentions_as_tags_enabled() {
+        for person in normalize_people(req.people)? {
+            if !tags.contains(&person) {
+                tags.push(person);
+            }
+        }
+    }
     if req.tag_only {
         for token in text.split_whitespace() {
             let normalized = normalize_tag(token).or_else(|| normalize_tag(&format!("#{token}")));
             if let Some(tag) = normalized {
                 if !tags.contains(&tag) {
                     tags.push(tag);
+                }
+                continue;
+            }
+            if people_mentions_as_tags_enabled() {
+                let normalized_person = normalize_person_handle(token)
+                    .or_else(|| normalize_person_handle(&format!("@{token}")))
+                    .and_then(|handle| person_handle_to_tag(&handle));
+                if let Some(person) = normalized_person {
+                    if !tags.contains(&person) {
+                        tags.push(person);
+                    }
                 }
             }
         }
@@ -127,10 +149,23 @@ fn normalize_tags(tags: Vec<String>) -> Result<Vec<String>, String> {
     Ok(out)
 }
 
+fn normalize_people(people: Vec<String>) -> Result<Vec<String>, String> {
+    let mut out = Vec::<String>::new();
+    for raw in people {
+        let handle = normalize_person_handle(&raw).ok_or_else(|| "invalid person".to_string())?;
+        let person_tag = person_handle_to_tag(&handle).ok_or_else(|| "invalid person".to_string())?;
+        if !out.contains(&person_tag) {
+            out.push(person_tag);
+        }
+    }
+    Ok(out)
+}
+
 #[cfg(test)]
 mod tests {
     use rusqlite::Connection;
 
+    use crate::index::set_people_mentions_as_tags_enabled;
     use crate::index::schema::ensure_schema;
 
     use super::{run_search_advanced, SearchAdvancedRequest};
@@ -197,5 +232,42 @@ mod tests {
                 .collect::<Vec<_>>(),
             vec!["notes/child.md"]
         );
+    }
+
+    #[test]
+    fn people_search_accepts_at_handles() {
+        set_people_mentions_as_tags_enabled(true);
+        let conn = Connection::open_in_memory().unwrap();
+        ensure_schema(&conn).unwrap();
+
+        seed_note(&conn, "notes/alice.md", "Alice note", "2026-03-24T10:00:00Z");
+        seed_note(&conn, "notes/bob.md", "Bob note", "2026-03-24T11:00:00Z");
+
+        conn.execute(
+            "INSERT INTO tags(note_id, tag, is_explicit) VALUES(?, ?, 1)",
+            rusqlite::params!["notes/alice.md", "people/alice"],
+        )
+        .unwrap();
+        conn.execute(
+            "INSERT INTO tags(note_id, tag, is_explicit) VALUES(?, ?, 1)",
+            rusqlite::params!["notes/bob.md", "people/bob"],
+        )
+        .unwrap();
+
+        let results = run_search_advanced(
+            &conn,
+            SearchAdvancedRequest {
+                people: vec!["@alice".to_string()],
+                limit: Some(10),
+                ..SearchAdvancedRequest::default()
+            },
+        )
+        .unwrap();
+
+        assert_eq!(
+            results.iter().map(|result| result.id.as_str()).collect::<Vec<_>>(),
+            vec!["notes/alice.md"]
+        );
+        set_people_mentions_as_tags_enabled(false);
     }
 }

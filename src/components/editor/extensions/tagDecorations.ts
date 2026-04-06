@@ -5,8 +5,27 @@ import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 
 const TAG_PATTERN = /(^|[^\w/])#([A-Za-z0-9_][\w/-]*)/g;
+const PERSON_PATTERN = /(^|[^A-Za-z0-9_.-])@([A-Za-z0-9_][A-Za-z0-9_-]*)/g;
 
 const pluginKey = new PluginKey("tag-decorations");
+
+export function findDecoratedTokens(text: string): Array<{
+	kind: "tag" | "person";
+	value: string;
+}> {
+	const out: Array<{ kind: "tag" | "person"; value: string }> = [];
+	TAG_PATTERN.lastIndex = 0;
+	for (const match of text.matchAll(TAG_PATTERN)) {
+		const tag = match[2] ?? "";
+		if (tag) out.push({ kind: "tag", value: tag });
+	}
+	PERSON_PATTERN.lastIndex = 0;
+	for (const match of text.matchAll(PERSON_PATTERN)) {
+		const handle = match[2] ?? "";
+		if (handle) out.push({ kind: "person", value: handle });
+	}
+	return out;
+}
 
 function buildDecorations(doc: Node): DecorationSet {
 	const decorations: Decoration[] = [];
@@ -30,23 +49,77 @@ function buildDecorations(doc: Node): DecorationSet {
 				}),
 			);
 		}
+
+		PERSON_PATTERN.lastIndex = 0;
+		for (const match of node.text.matchAll(PERSON_PATTERN)) {
+			const leading = match[1] ?? "";
+			const handle = match[2] ?? "";
+			if (!handle) continue;
+			const start = (match.index ?? 0) + leading.length;
+			const from = pos + start;
+			const to = from + 1 + handle.length;
+			decorations.push(
+				Decoration.inline(from, to, {
+					class: "personToken",
+					"data-handle": handle,
+				}),
+			);
+		}
 	});
 	return DecorationSet.create(doc, decorations);
 }
 
+function buildDecorationsWithPeople(
+	doc: Node,
+	enablePeopleMentions: boolean,
+): DecorationSet {
+	if (!enablePeopleMentions) {
+		const decorations: Decoration[] = [];
+		doc.descendants((node, pos, parent) => {
+			if (!node.isText || !node.text) return;
+			if (parent?.type.name === "codeBlock") return;
+			if (node.marks.some((mark) => mark.type.name === "code")) return;
+
+			TAG_PATTERN.lastIndex = 0;
+			for (const match of node.text.matchAll(TAG_PATTERN)) {
+				const leading = match[1] ?? "";
+				const tag = match[2] ?? "";
+				if (!tag) continue;
+				const start = (match.index ?? 0) + leading.length;
+				const from = pos + start;
+				const to = from + 1 + tag.length;
+				decorations.push(
+					Decoration.inline(from, to, {
+						class: "tagToken",
+						"data-tag": tag,
+					}),
+				);
+			}
+		});
+		return DecorationSet.create(doc, decorations);
+	}
+	return buildDecorations(doc);
+}
+
 export const TagDecorations = Extension.create({
 	name: "tag-decorations",
+	addOptions() {
+		return {
+			enablePeopleMentions: false,
+		};
+	},
 	addProseMirrorPlugins() {
+		const enablePeopleMentions = Boolean(this.options.enablePeopleMentions);
 		return [
 			new Plugin({
 				key: pluginKey,
 				state: {
 					init(_: unknown, state: EditorState) {
-						return buildDecorations(state.doc);
+						return buildDecorationsWithPeople(state.doc, enablePeopleMentions);
 					},
 					apply(tr: Transaction, old: DecorationSet) {
 						if (!tr.docChanged) return old.map(tr.mapping, tr.doc);
-						return buildDecorations(tr.doc);
+						return buildDecorationsWithPeople(tr.doc, enablePeopleMentions);
 					},
 				},
 				props: {
