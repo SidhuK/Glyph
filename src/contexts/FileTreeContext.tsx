@@ -83,6 +83,7 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 	const [people, setPeople] = useState<PersonCount[]>([]);
 	const [tagsError, setTagsError] = useState("");
 	const peopleMentionsEnabledRef = useRef(false);
+	const tagsRequestIdRef = useRef(0);
 	const currentSpacePathRef = useRef<string | null>(spacePath);
 	const pinnedFilesRefreshTimerRef = useRef<number | null>(null);
 
@@ -102,18 +103,28 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 	);
 
 	const refreshTags = useCallback(async () => {
+		const requestId = tagsRequestIdRef.current + 1;
+		tagsRequestIdRef.current = requestId;
+		const peopleEnabled = peopleMentionsEnabledRef.current;
 		try {
-			setTagsError("");
-			const peopleEnabled = peopleMentionsEnabledRef.current;
+			if (requestId === tagsRequestIdRef.current) {
+				setTagsError("");
+			}
 			const [nextTags, nextPeople] = await Promise.all([
 				invoke("tags_list", { limit: 250 }),
 				peopleEnabled
 					? invoke("people_list", { limit: 250 })
 					: Promise.resolve([] as PersonCount[]),
 			]);
+			if (requestId !== tagsRequestIdRef.current) {
+				return;
+			}
 			setTags(nextTags);
 			setPeople(nextPeople);
 		} catch (e) {
+			if (requestId !== tagsRequestIdRef.current) {
+				return;
+			}
 			setTags([]);
 			setPeople([]);
 			setTagsError(extractErrorMessage(e));
@@ -127,15 +138,21 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 				if (cancelled) return;
 				peopleMentionsEnabledRef.current =
 					settings.editor.enablePeopleMentionsAsTags;
+				if (currentSpacePathRef.current) {
+					void refreshTags();
+				}
 			})
 			.catch(() => {
 				if (cancelled) return;
 				peopleMentionsEnabledRef.current = false;
+				if (currentSpacePathRef.current) {
+					void refreshTags();
+				}
 			});
 		return () => {
 			cancelled = true;
 		};
-	}, []);
+	}, [refreshTags]);
 
 	useTauriEvent("settings:updated", (payload) => {
 		if (typeof payload.editor?.enablePeopleMentionsAsTags === "boolean") {
@@ -144,7 +161,9 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 			if (!payload.editor.enablePeopleMentionsAsTags) {
 				setPeople([]);
 			}
-			void refreshTags();
+			if (currentSpacePathRef.current) {
+				void refreshTags();
+			}
 		}
 	});
 

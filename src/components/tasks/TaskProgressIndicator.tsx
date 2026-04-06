@@ -11,8 +11,15 @@ export function TaskProgressIndicator({
 }: TaskProgressIndicatorProps) {
 	const { completed_count, total_count } = summary;
 	const ratio = total_count > 0 ? completed_count / total_count : 0;
+	const clampedRatio = Math.max(0, Math.min(1, ratio));
 	const tone =
-		ratio >= 1 ? "green" : ratio >= 0.66 ? "blue" : ratio >= 0.25 ? "yellow" : "red";
+		clampedRatio >= 1
+			? "green"
+			: clampedRatio >= 0.66
+				? "blue"
+				: clampedRatio >= 0.25
+					? "yellow"
+					: "red";
 
 	return (
 		<div
@@ -23,7 +30,7 @@ export function TaskProgressIndicator({
 			<div className={`markdownEditorTaskProgressBar is-${tone}`} aria-hidden="true">
 				<div
 					className="markdownEditorTaskProgressFill"
-					style={{ transform: `scaleX(${ratio})` }}
+					style={{ transform: `scaleX(${clampedRatio})` }}
 				/>
 			</div>
 		</div>

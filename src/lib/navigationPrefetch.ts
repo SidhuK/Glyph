@@ -154,10 +154,13 @@ async function loadAllDatabaseRows(
 	databaseId: string,
 	viewId: string,
 ): Promise<WorkspaceDatabaseQueryResult> {
+	const maxIterations = 100;
 	let offset = 0;
 	let totalCount = 0;
 	let truncated = false;
+	let iterations = 0;
 	const rows: DatabaseRow[] = [];
+	let availableProperties = [] as WorkspaceDatabaseQueryResult["available_properties"];
 
 	while (true) {
 		const next = await invoke("databases_query_rows", {
@@ -169,13 +172,26 @@ async function loadAllDatabaseRows(
 		rows.push(...next.rows);
 		totalCount = next.total_count;
 		truncated = next.truncated;
+		if (next.available_properties.length > 0) {
+			availableProperties = next.available_properties;
+		}
+		iterations += 1;
 		if (next.next_offset == null) {
 			return {
 				rows,
-				available_properties: [],
+				available_properties: availableProperties,
 				total_count: totalCount,
 				truncated,
 				next_offset: null,
+			};
+		}
+		if (iterations >= maxIterations) {
+			return {
+				rows,
+				available_properties: availableProperties,
+				total_count: totalCount,
+				truncated: true,
+				next_offset: next.next_offset,
 			};
 		}
 		offset = next.next_offset;

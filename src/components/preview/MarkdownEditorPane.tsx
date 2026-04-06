@@ -681,6 +681,7 @@ export function MarkdownEditorPane({
 			window.clearTimeout(taskSummaryTimerRef.current);
 			taskSummaryTimerRef.current = null;
 		}
+		setTaskSummary(EMPTY_TASK_SUMMARY);
 
 		const requestToken = taskSummaryRequestTokenRef.current + 1;
 		taskSummaryRequestTokenRef.current = requestToken;
