@@ -2,8 +2,7 @@ import { cn } from "@/lib/utils";
 import { ChatAdd01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useAISidebarContext } from "../../contexts";
-import { openSettingsWindow } from "../../lib/windows";
+import { useAISidebarContext, useUILayoutContext } from "../../contexts";
 import { ChevronDown, Settings as SettingsIcon, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { AIChatThread } from "./AIChatThread";
@@ -25,6 +24,7 @@ import { useAiProfiles } from "./useAiProfiles";
 export function AIAgentPane() {
 	const chat = useRigChat();
 	const { aiAssistantMode } = useAISidebarContext();
+	const { openSettings } = useUILayoutContext();
 	const isChatMode = aiAssistantMode === "chat";
 
 	const [input, setInput] = useState("");
@@ -376,14 +376,14 @@ export function AIAgentPane() {
 						title="New chat"
 						disabled={chat.status === "streaming"}
 					>
-						<HugeiconsIcon icon={ChatAdd01Icon} size={14} />
+						<HugeiconsIcon icon={ChatAdd01Icon} size={14} strokeWidth={0.9} />
 					</Button>
 					<Button
 						type="button"
 						variant="ghost"
 						size="icon-sm"
 						aria-label="Settings"
-						onClick={() => void openSettingsWindow("ai")}
+						onClick={() => openSettings("ai")}
 						title="AI Settings"
 					>
 						<SettingsIcon size={14} />

@@ -37,6 +37,7 @@ interface FileTreeFileItemProps {
 	isActive: boolean;
 	isRenaming: boolean;
 	onOpenFile: (filePath: string) => void;
+	onPrefetchFile?: (filePath: string) => void;
 	onNewFileInDir: (dirPath: string) => unknown;
 	onCreateFromTemplateInDir: (dirPath: string) => unknown;
 	onNewDatabaseInDir: (dirPath: string) => unknown;
@@ -64,6 +65,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 	isActive,
 	isRenaming,
 	onOpenFile,
+	onPrefetchFile,
 	onNewFileInDir,
 	onCreateFromTemplateInDir,
 	onNewDatabaseInDir,
@@ -174,6 +176,8 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 								type="button"
 								className="fileTreeRow"
 								onClick={() => onOpenFile(entry.rel_path)}
+								onMouseEnter={() => onPrefetchFile?.(entry.rel_path)}
+								onFocus={() => onPrefetchFile?.(entry.rel_path)}
 								onKeyDown={handleKeyDown}
 								style={rowStyle}
 								title={`${entry.rel_path} (${label})`}
@@ -211,7 +215,11 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 								className="fileTreeCreateMenuItem"
 								onSelect={() => void onOpenFile(entry.rel_path)}
 							>
-								<HugeiconsIcon icon={FileViewIcon} size={14} />
+								<HugeiconsIcon
+									icon={FileViewIcon}
+									size={14}
+									strokeWidth={0.9}
+								/>
 								Open
 							</ContextMenuItem>
 							<ContextMenuSeparator className="fileTreeCreateMenuSeparator" />
@@ -219,14 +227,18 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 								className="fileTreeCreateMenuItem"
 								onSelect={onStartRename}
 							>
-								<HugeiconsIcon icon={PencilEdit02Icon} size={14} />
+								<HugeiconsIcon
+									icon={PencilEdit02Icon}
+									size={14}
+									strokeWidth={0.9}
+								/>
 								Rename
 							</ContextMenuItem>
 							<ContextMenuItem
 								className="fileTreeCreateMenuItem"
 								onSelect={() => void onDuplicateFile(entry.rel_path)}
 							>
-								<HugeiconsIcon icon={Copy01Icon} size={14} />
+								<HugeiconsIcon icon={Copy01Icon} size={14} strokeWidth={0.9} />
 								Duplicate file
 							</ContextMenuItem>
 							<ContextMenuItem
@@ -236,6 +248,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 								<HugeiconsIcon
 									icon={isPinned ? PinOffIcon : PinIcon}
 									size={14}
+									strokeWidth={0.9}
 								/>
 								{isPinned ? "Unpin file" : "Pin file"}
 							</ContextMenuItem>
@@ -249,21 +262,29 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 								className="fileTreeCreateMenuItem"
 								onSelect={() => void onNewFileInDir(parentDirPath)}
 							>
-								<HugeiconsIcon icon={PencilEdit02Icon} size={14} />
+								<HugeiconsIcon
+									icon={PencilEdit02Icon}
+									size={14}
+									strokeWidth={0.9}
+								/>
 								Add file
 							</ContextMenuItem>
 							<ContextMenuItem
 								className="fileTreeCreateMenuItem"
 								onSelect={() => void onCreateFromTemplateInDir(parentDirPath)}
 							>
-								<HugeiconsIcon icon={DocumentCodeIcon} size={14} />
+								<HugeiconsIcon
+									icon={DocumentCodeIcon}
+									size={14}
+									strokeWidth={0.9}
+								/>
 								Create from template
 							</ContextMenuItem>
 							<ContextMenuItem
 								className="fileTreeCreateMenuItem"
 								onSelect={() => void onNewDatabaseInDir(parentDirPath)}
 							>
-								<HugeiconsIcon icon={TableIcon} size={14} />
+								<HugeiconsIcon icon={TableIcon} size={14} strokeWidth={0.9} />
 								Add database
 							</ContextMenuItem>
 							<ContextMenuItem

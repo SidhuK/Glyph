@@ -1,6 +1,5 @@
 import {
 	FilterMailIcon,
-	PencilEdit02Icon,
 	SlidersVerticalIcon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
@@ -22,7 +21,6 @@ interface DatabaseToolbarProps {
 	config: DatabaseConfig;
 	availableProperties: DatabasePropertyOption[];
 	onGroupColumnIdChange: (groupColumnId: string | null) => void;
-	onAddRow: () => void;
 	onReload: () => void;
 	onChangeConfig: (config: DatabaseConfig) => Promise<void>;
 	columnsMenuOpen?: boolean;
@@ -37,7 +35,6 @@ export function DatabaseToolbar({
 	config,
 	availableProperties,
 	onGroupColumnIdChange,
-	onAddRow,
 	onReload,
 	onChangeConfig,
 	columnsMenuOpen,
@@ -75,7 +72,11 @@ export function DatabaseToolbar({
 							title="Source & Filters"
 							aria-label="Source & Filters"
 						>
-							<HugeiconsIcon icon={FilterMailIcon} size={13} />
+							<HugeiconsIcon
+								icon={FilterMailIcon}
+								size={13}
+								strokeWidth={0.9}
+							/>
 						</Button>
 					</DropdownMenuTrigger>
 					<DatabaseSourceDropdown
@@ -96,7 +97,11 @@ export function DatabaseToolbar({
 							title="Columns"
 							aria-label="Columns"
 						>
-							<HugeiconsIcon icon={SlidersVerticalIcon} size={13} />
+							<HugeiconsIcon
+								icon={SlidersVerticalIcon}
+								size={13}
+								strokeWidth={0.9}
+							/>
 						</Button>
 					</DropdownMenuTrigger>
 					<DatabaseColumnDropdown
@@ -115,17 +120,6 @@ export function DatabaseToolbar({
 					aria-label="Reload"
 				>
 					<RefreshCw size={14} />
-				</Button>
-				<Button
-					type="button"
-					variant="ghost"
-					size="icon-sm"
-					className="databaseToolbarChip is-accent"
-					onClick={onAddRow}
-					title="New note"
-					aria-label="New note"
-				>
-					<HugeiconsIcon icon={PencilEdit02Icon} size={14} />
 				</Button>
 			</div>
 		</div>

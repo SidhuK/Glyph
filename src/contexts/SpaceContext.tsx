@@ -83,6 +83,16 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 				setLastSpacePath(
 					settings.currentSpacePath ?? settings.recentSpaces[0] ?? null,
 				);
+				try {
+					await invoke("index_set_people_mentions_as_tags_enabled", {
+						enabled: settings.editor.enablePeopleMentionsAsTags,
+					});
+				} catch (error) {
+					console.warn(
+						"Failed to sync people mentions setting with index runtime",
+						error,
+					);
+				}
 
 				if (settings.currentSpacePath) {
 					try {
@@ -124,15 +134,15 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 			if (isOpeningSpaceRef.current) return;
 			isOpeningSpaceRef.current = true;
 			setError("");
-				try {
-					if (spacePath) {
-						await invoke("space_close");
-						await clearCurrentSpacePath();
-						clearAiPanelCaches();
-						clearInlineImageHydrationCache();
-						setSpacePath(null);
-						setSpaceSchemaVersion(null);
-					}
+			try {
+				if (spacePath) {
+					await invoke("space_close");
+					await clearCurrentSpacePath();
+					clearAiPanelCaches();
+					clearInlineImageHydrationCache();
+					setSpacePath(null);
+					setSpaceSchemaVersion(null);
+				}
 				const spaceInfo =
 					mode === "create"
 						? await invoke("space_create", { path })

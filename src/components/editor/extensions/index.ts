@@ -20,6 +20,7 @@ import { HighlightedText } from "./highlightedText";
 import { MarkdownImage } from "./markdownImage";
 import { MarkdownLinkAutocomplete } from "./markdownLinkAutocomplete";
 import { MermaidPreview } from "./mermaidPreview";
+import { PersonAutocomplete } from "./personAutocomplete";
 import { TagDecorations } from "./tagDecorations";
 import { WikiLink } from "./wikiLink";
 import { ZenFocus } from "./zenFocus";
@@ -357,6 +358,7 @@ interface CreateEditorExtensionsOptions {
 	enableSlashCommand?: boolean;
 	enableWikiLinks?: boolean;
 	enableMarkdownLinkAutocomplete?: boolean;
+	enablePeopleMentions?: boolean;
 	currentPath?: string;
 	currentPathResolver?: (() => string) | null;
 	getZenModeEnabled?: (() => boolean) | null;
@@ -369,6 +371,7 @@ export function createEditorExtensions(
 		enableSlashCommand = true,
 		enableWikiLinks = true,
 		enableMarkdownLinkAutocomplete = true,
+		enablePeopleMentions = false,
 		currentPath = "",
 		currentPathResolver = null,
 		getZenModeEnabled = null,
@@ -414,9 +417,10 @@ export function createEditorExtensions(
 					}),
 				]
 			: []),
+		...(enablePeopleMentions ? [PersonAutocomplete] : []),
 		...(enableSlashCommand ? [SlashCommand] : []),
 		CalloutDecorations,
-		TagDecorations,
+		TagDecorations.configure({ enablePeopleMentions }),
 		ZenFocus.configure({
 			getZenModeEnabled: getZenModeEnabled ?? (() => false),
 		}),

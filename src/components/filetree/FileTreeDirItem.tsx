@@ -158,6 +158,7 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 									<HugeiconsIcon
 										icon={isExpanded ? Folder03Icon : Folder01Icon}
 										size={12}
+										strokeWidth={0.9}
 										className="fileTreeChevron fileTreeFolderIcon"
 									/>
 								)}
@@ -172,21 +173,29 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 								className="fileTreeCreateMenuItem"
 								onSelect={() => void onNewFileInDir(entry.rel_path)}
 							>
-								<HugeiconsIcon icon={PencilEdit02Icon} size={14} />
+								<HugeiconsIcon
+									icon={PencilEdit02Icon}
+									size={14}
+									strokeWidth={0.9}
+								/>
 								Add file
 							</ContextMenuItem>
 							<ContextMenuItem
 								className="fileTreeCreateMenuItem"
 								onSelect={() => void onCreateFromTemplateInDir(entry.rel_path)}
 							>
-								<HugeiconsIcon icon={DocumentCodeIcon} size={14} />
+								<HugeiconsIcon
+									icon={DocumentCodeIcon}
+									size={14}
+									strokeWidth={0.9}
+								/>
 								Create from template
 							</ContextMenuItem>
 							<ContextMenuItem
 								className="fileTreeCreateMenuItem"
 								onSelect={() => void onNewDatabaseInDir(entry.rel_path)}
 							>
-								<HugeiconsIcon icon={TableIcon} size={14} />
+								<HugeiconsIcon icon={TableIcon} size={14} strokeWidth={0.9} />
 								Add database
 							</ContextMenuItem>
 							<ContextMenuItem
@@ -201,7 +210,11 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 								className="fileTreeCreateMenuItem"
 								onSelect={onStartRename}
 							>
-								<HugeiconsIcon icon={PencilEdit02Icon} size={14} />
+								<HugeiconsIcon
+									icon={PencilEdit02Icon}
+									size={14}
+									strokeWidth={0.9}
+								/>
 								Rename
 							</ContextMenuItem>
 							<FileTreeAppearanceMenu

@@ -23,6 +23,15 @@ vi.mock("../lib/tauriEvents", () => ({
 	useTauriEvent: useTauriEventMock,
 }));
 
+vi.mock("../lib/settings", () => ({
+	loadSettings: () =>
+		Promise.resolve({
+			editor: {
+				enablePeopleMentionsAsTags: false,
+			},
+		}),
+}));
+
 (
 	globalThis as typeof globalThis & {
 		IS_REACT_ACT_ENVIRONMENT?: boolean;
@@ -68,6 +77,7 @@ describe("FileTreeProvider pinned files", () => {
 			if (command === "space_list_dir") return Promise.resolve([]);
 			if (command === "file_tree_appearance_list") return Promise.resolve({});
 			if (command === "tags_list") return Promise.resolve([]);
+			if (command === "people_list") return Promise.resolve([]);
 			if (command === "pinned_files_toggle") {
 				return Promise.resolve(["notes/toggled.md"]);
 			}

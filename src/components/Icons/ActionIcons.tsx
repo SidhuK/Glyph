@@ -19,47 +19,51 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import type { IconProps } from "./NavigationIcons";
 
 export const Plus = (props: IconProps) => (
-	<HugeiconsIcon icon={Add} {...props} />
+	<HugeiconsIcon icon={Add} strokeWidth={0.9} {...props} />
 );
 export const Minus = (props: IconProps) => (
-	<HugeiconsIcon icon={MinusIcon} {...props} />
+	<HugeiconsIcon icon={MinusIcon} strokeWidth={0.9} {...props} />
 );
 export const Trash2 = (props: IconProps) => (
-	<HugeiconsIcon icon={Delete} {...props} />
+	<HugeiconsIcon icon={Delete} strokeWidth={0.9} {...props} />
 );
 export const RefreshCw = (props: IconProps) => (
-	<HugeiconsIcon icon={ArrowReloadHorizontalIcon} {...props} />
+	<HugeiconsIcon
+		icon={ArrowReloadHorizontalIcon}
+		strokeWidth={0.9}
+		{...props}
+	/>
 );
 export const Save = (props: IconProps) => (
-	<HugeiconsIcon icon={SaveIcon} {...props} />
+	<HugeiconsIcon icon={SaveIcon} strokeWidth={0.9} {...props} />
 );
 export const Paperclip = (props: IconProps) => (
-	<HugeiconsIcon icon={PaperclipIcon} {...props} />
+	<HugeiconsIcon icon={PaperclipIcon} strokeWidth={0.9} {...props} />
 );
 export const X = (props: IconProps) => (
-	<HugeiconsIcon icon={Close} {...props} />
+	<HugeiconsIcon icon={Close} strokeWidth={0.9} {...props} />
 );
 export const Zap = (props: IconProps) => (
-	<HugeiconsIcon icon={ZapIcon} {...props} />
+	<HugeiconsIcon icon={ZapIcon} strokeWidth={0.9} {...props} />
 );
 export const Sparkles = (props: IconProps) => (
-	<HugeiconsIcon icon={SparklesIcon} {...props} />
+	<HugeiconsIcon icon={SparklesIcon} strokeWidth={0.9} {...props} />
 );
 export const Bot = (props: IconProps) => (
-	<HugeiconsIcon icon={BotIcon} {...props} />
+	<HugeiconsIcon icon={BotIcon} strokeWidth={0.9} {...props} />
 );
 export const Send = (props: IconProps) => (
-	<HugeiconsIcon icon={SendIcon} {...props} />
+	<HugeiconsIcon icon={SendIcon} strokeWidth={0.9} {...props} />
 );
 export const MessageSquare = (props: IconProps) => (
-	<HugeiconsIcon icon={MessageSquareIcon} {...props} />
+	<HugeiconsIcon icon={MessageSquareIcon} strokeWidth={0.9} {...props} />
 );
 export const TriangleAlert = (props: IconProps) => (
-	<HugeiconsIcon icon={Warning} {...props} />
+	<HugeiconsIcon icon={Warning} strokeWidth={0.9} {...props} />
 );
 export const CircleHelp = (props: IconProps) => (
-	<HugeiconsIcon icon={Help} {...props} />
+	<HugeiconsIcon icon={Help} strokeWidth={0.9} {...props} />
 );
 export const MoreHorizontal = (props: IconProps) => (
-	<HugeiconsIcon icon={MoreHorizontalIcon} {...props} />
+	<HugeiconsIcon icon={MoreHorizontalIcon} strokeWidth={0.9} {...props} />
 );

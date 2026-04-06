@@ -171,7 +171,7 @@
 	display: inline-flex;
 	align-items: center;
 	gap: 6px;
-	padding: 0 11px;
+	padding: 0 8px;
 	min-height: 25px;
 	font-size: 10.5px;
 	line-height: 1;
@@ -193,9 +193,65 @@
 	color: var(--text-primary);
 }
 
+.markdownEditorTaskProgressItem {
+	padding: 0 5px 0 6px;
+	cursor: default;
+}
+
+.markdownEditorTaskProgressItem:hover {
+	color: var(--text-secondary);
+}
+
+.markdownEditorTaskProgress {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 12px;
+}
+
+.markdownEditorTaskProgressBar {
+	position: relative;
+	display: flex;
+	align-items: stretch;
+	justify-content: flex-start;
+	width: 18px;
+	height: 9px;
+	border: 1px solid color-mix(in srgb, var(--border-default) 68%, transparent);
+	border-radius: 2px;
+	background: color-mix(in srgb, var(--bg-secondary) 92%, var(--bg-primary));
+	box-shadow: inset 0 0 0 1px
+		color-mix(in srgb, var(--border-light) 28%, transparent);
+	overflow: hidden;
+}
+
+.markdownEditorTaskProgressFill {
+	width: 100%;
+	height: 100%;
+	border-radius: 0;
+	transform-origin: left center;
+	transition: transform 180ms ease;
+}
+
+.markdownEditorTaskProgressBar.is-red .markdownEditorTaskProgressFill {
+	background: var(--glyph-inline-highlight-red, rgba(249, 112, 102, 0.2));
+}
+
+.markdownEditorTaskProgressBar.is-yellow .markdownEditorTaskProgressFill {
+	background: var(--glyph-inline-highlight-yellow, rgba(240, 180, 41, 0.26));
+}
+
+.markdownEditorTaskProgressBar.is-blue .markdownEditorTaskProgressFill {
+	background: var(--glyph-inline-highlight-blue, rgba(59, 155, 220, 0.22));
+}
+
+.markdownEditorTaskProgressBar.is-green .markdownEditorTaskProgressFill {
+	background: var(--glyph-inline-highlight-green, rgba(60, 207, 142, 0.24));
+}
+
 .markdownEditorSaveState {
 	justify-content: center;
-	padding: 0 8px;
+	padding: 0 6px;
 	min-width: 31px;
 	color: var(--text-secondary);
 }
@@ -229,13 +285,22 @@
 }
 
 .markdownEditorStatsDock.is-collapsed .markdownEditorStatsItem {
-	padding: 0 7px;
+	padding: 0 5px;
 	gap: 4px;
 	font-size: 10px;
 }
 
+.markdownEditorStatsDock.is-collapsed .markdownEditorTaskProgressItem {
+	padding: 0 4px 0 5px;
+}
+
+.markdownEditorStatsDock.is-collapsed .markdownEditorTaskProgress {
+	width: 24px;
+	height: 12px;
+}
+
 .markdownEditorStatsDock.is-collapsed .markdownEditorSaveState {
-	padding: 0 7px;
+	padding: 0 5px;
 	min-width: 28px;
 }
 

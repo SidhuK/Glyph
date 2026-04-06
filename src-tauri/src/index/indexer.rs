@@ -1,6 +1,7 @@
 use std::{
     collections::HashSet,
     path::{Path, PathBuf},
+    sync::atomic::{AtomicBool, Ordering},
 };
 
 use crate::utils::{self, file_timestamp_strings_if_exists};
@@ -12,9 +13,19 @@ use super::frontmatter::{
 use super::helpers::{path_to_slash_string, sha256_hex, should_skip_entry};
 use super::links::parse_outgoing_links;
 use super::properties::{delete_note_properties, reindex_note_properties};
-use super::tags::{expand_indexed_tags, parse_all_tags};
+use super::tags::{expand_indexed_people, expand_indexed_tags, parse_all_tags, parse_inline_people};
 use super::tasks::{delete_note_tasks, reindex_note_tasks};
 use super::types::IndexRebuildResult;
+
+static PEOPLE_MENTIONS_AS_TAGS_ENABLED: AtomicBool = AtomicBool::new(false);
+
+pub fn set_people_mentions_as_tags_enabled(enabled: bool) {
+    PEOPLE_MENTIONS_AS_TAGS_ENABLED.store(enabled, Ordering::Relaxed);
+}
+
+pub fn people_mentions_as_tags_enabled() -> bool {
+    PEOPLE_MENTIONS_AS_TAGS_ENABLED.load(Ordering::Relaxed)
+}
 
 fn fts_body_with_frontmatter(markdown: &str) -> String {
     let (yaml, body) = split_frontmatter(markdown);
@@ -140,7 +151,15 @@ fn index_note_with_conn(
     tx.execute("DELETE FROM tags WHERE note_id = ?", [note_id])
         .map_err(|e| e.to_string())?;
 
-    for tag in expand_indexed_tags(&parse_all_tags(markdown)) {
+    let people_tags = if people_mentions_as_tags_enabled() {
+        expand_indexed_people(&parse_inline_people(markdown))
+    } else {
+        Vec::new()
+    };
+    for tag in expand_indexed_tags(&parse_all_tags(markdown))
+        .into_iter()
+        .chain(people_tags.into_iter())
+    {
         tx.execute(
             "INSERT OR IGNORE INTO tags(note_id, tag, is_explicit) VALUES(?, ?, ?)",
             rusqlite::params![note_id, tag.tag, if tag.is_explicit { 1 } else { 0 }],
@@ -247,6 +266,7 @@ pub fn remove_note(space_root: &Path, note_id: &str) -> Result<(), String> {
 pub fn rebuild(space_root: &Path) -> Result<IndexRebuildResult, String> {
     let mut conn = open_db(space_root)?;
     let tx = conn.transaction().map_err(|e| e.to_string())?;
+    let people_tags_enabled = people_mentions_as_tags_enabled();
 
     tx.execute("DELETE FROM notes", [])
         .map_err(|e| e.to_string())?;
@@ -301,7 +321,15 @@ pub fn rebuild(space_root: &Path) -> Result<IndexRebuildResult, String> {
         )
         .map_err(|e| e.to_string())?;
 
-        for tag in expand_indexed_tags(&parse_all_tags(&markdown)) {
+        let people_tags = if people_tags_enabled {
+            expand_indexed_people(&parse_inline_people(&markdown))
+        } else {
+            Vec::new()
+        };
+        for tag in expand_indexed_tags(&parse_all_tags(&markdown))
+            .into_iter()
+            .chain(people_tags.into_iter())
+        {
             tx.execute(
                 "INSERT OR IGNORE INTO tags(note_id, tag, is_explicit) VALUES(?, ?, ?)",
                 rusqlite::params![rel, tag.tag, if tag.is_explicit { 1 } else { 0 }],

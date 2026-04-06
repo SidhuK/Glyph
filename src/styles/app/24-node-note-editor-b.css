@@ -176,23 +176,6 @@
 	padding-top: 6px;
 }
 
-.notePropertyAddWrap.hasDivider {
-	position: relative;
-	margin-top: 8px;
-	padding-top: 0;
-}
-
-.notePropertyAddWrap.hasDivider::before {
-	content: "";
-	position: absolute;
-	left: 0;
-	right: 0;
-	top: 50%;
-	height: 1px;
-	background: color-mix(in srgb, var(--border-light) 76%, transparent);
-	transform: translateY(-50%);
-}
-
 .notePropertyRow {
 	display: grid;
 	grid-template-columns: minmax(100px, 0.4fr) minmax(0, 1.45fr) auto;
@@ -750,6 +733,21 @@ input.notePropertyValue {
 .tiptapContentInline .tagToken:hover {
 	background: color-mix(in srgb, var(--interactive-accent) 20%, transparent);
 	border-color: color-mix(in srgb, var(--interactive-accent) 40%, transparent);
+}
+
+.tiptapContentInline .personToken {
+	display: inline-block;
+	color: color-mix(in srgb, var(--interactive-accent) 88%, var(--text-primary));
+	background: color-mix(in srgb, var(--interactive-accent) 8%, transparent);
+	border-radius: var(--radius-sm);
+	padding: 0 2px;
+	font-weight: var(--font-medium);
+	cursor: pointer;
+	transition: background 120ms ease;
+}
+
+.tiptapContentInline .personToken:hover {
+	background: color-mix(in srgb, var(--interactive-accent) 16%, transparent);
 }
 
 .tiptapContentInline p {

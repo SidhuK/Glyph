@@ -1,6 +1,6 @@
 import { useCallback } from "react";
+import { useUILayoutContext } from "../contexts";
 import { useTauriEvent } from "../lib/tauriEvents";
-import { openSettingsWindow } from "../lib/windows";
 
 export interface UseMenuListenersProps {
 	onNewNote: () => void;
@@ -43,6 +43,7 @@ export function useMenuListeners({
 	onAttachAllOpenNotesToAi,
 	onOpenAiSettings,
 }: UseMenuListenersProps): void {
+	const { openSettings } = useUILayoutContext();
 	const handleNewNote = useCallback(() => {
 		onNewNote();
 	}, [onNewNote]);
@@ -83,11 +84,11 @@ export function useMenuListeners({
 		onOpenGitSettings();
 	}, [onOpenGitSettings]);
 	const handleOpenAbout = useCallback(() => {
-		void openSettingsWindow("about");
-	}, []);
+		openSettings("about");
+	}, [openSettings]);
 	const handleOpenSettings = useCallback(() => {
-		void openSettingsWindow();
-	}, []);
+		openSettings();
+	}, [openSettings]);
 	const handleToggleAi = useCallback(() => {
 		onToggleAiPane();
 	}, [onToggleAiPane]);

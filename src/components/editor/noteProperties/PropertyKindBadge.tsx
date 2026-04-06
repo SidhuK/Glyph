@@ -41,7 +41,7 @@ export function PropertyKindBadge({
 						className="notePropertyKindBadge notePropertyKindTrigger"
 						title={`Property type: ${label}`}
 					>
-						<HugeiconsIcon icon={icon} size={12} />
+						<HugeiconsIcon icon={icon} size={12} strokeWidth={0.9} />
 					</Button>
 				</DropdownMenuTrigger>
 				<DropdownMenuContent
@@ -63,6 +63,7 @@ export function PropertyKindBadge({
 									<HugeiconsIcon
 										icon={PROPERTY_KIND_ICONS[menuKind]}
 										size={12}
+										strokeWidth={0.9}
 									/>
 								</span>
 								<span className="notePropertyKindOptionLabel">
@@ -78,7 +79,7 @@ export function PropertyKindBadge({
 
 	return (
 		<div className="notePropertyKindBadge">
-			<HugeiconsIcon icon={icon} size={12} />
+			<HugeiconsIcon icon={icon} size={12} strokeWidth={0.9} />
 		</div>
 	);
 }

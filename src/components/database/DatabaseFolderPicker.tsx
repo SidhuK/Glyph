@@ -128,7 +128,7 @@ export function DatabaseFolderPicker({
 					className={cn("databasePickerTrigger", triggerClassName)}
 				>
 					<span className="databasePickerTriggerIcon">
-						<HugeiconsIcon icon={Folder03Icon} size={14} strokeWidth={1.7} />
+						<HugeiconsIcon icon={Folder03Icon} size={14} strokeWidth={0.9} />
 					</span>
 					<span className="databasePickerTriggerText">
 						<span className="databasePickerTriggerLabel">{selectedLabel}</span>
@@ -181,7 +181,7 @@ export function DatabaseFolderPicker({
 								setOpen(false);
 							}}
 						>
-							<HugeiconsIcon icon={Folder03Icon} size={13} strokeWidth={1.7} />
+							<HugeiconsIcon icon={Folder03Icon} size={13} strokeWidth={0.9} />
 							<span>{folderName(browserPath)}</span>
 						</button>
 						{loading ? (

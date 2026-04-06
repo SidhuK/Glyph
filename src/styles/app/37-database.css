@@ -359,6 +359,9 @@
 }
 
 .databasesViewBar {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
 	padding: 0 18px;
 }
 
@@ -407,9 +410,19 @@
 }
 
 .databasesViewTab[data-active="true"] {
-	color: var(--text-primary);
-	border-color: transparent;
-	background: transparent;
+	color: var(--text-inverse);
+	border-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 72%,
+		var(--border-strong)
+	);
+	background: var(--interactive-accent);
+	box-shadow: 0 1px 2px color-mix(in srgb, var(--text-primary) 12%, transparent);
+}
+
+.databasesViewTab[data-active="true"]:hover {
+	background: var(--interactive-accent-hover);
+	color: var(--text-inverse);
 }
 
 .databasesViewTabBg {
@@ -418,6 +431,11 @@
 	border-radius: inherit;
 	background: color-mix(in srgb, var(--bg-primary) 72%, transparent);
 	border: 1px solid color-mix(in srgb, var(--border-light) 56%, transparent);
+}
+
+.databasesViewTab[data-active="true"] .databasesViewTabBg {
+	background: transparent;
+	border-color: transparent;
 }
 
 .databasesViewTab > *:not(.databasesViewTabBg) {
@@ -443,9 +461,13 @@
 }
 
 .databasesViewTabWrapper.is-active .databasesViewTabMenu {
-	color: var(--text-primary);
-	background: color-mix(in srgb, var(--bg-primary) 58%, transparent);
-	border-color: color-mix(in srgb, var(--border-light) 46%, transparent);
+	color: var(--text-inverse);
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent-hover) 58%,
+		transparent
+	);
+	border-color: transparent;
 }
 
 .databasesViewTabMenu:hover {
@@ -645,9 +667,19 @@
 }
 
 .databaseToolbarChip.is-accent {
-	border-color: var(--border-default);
-	background: var(--bg-secondary);
-	color: var(--text-primary);
+	border-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 72%,
+		var(--border-strong)
+	);
+	background: var(--interactive-accent);
+	color: var(--text-inverse);
+	box-shadow: 0 1px 2px color-mix(in srgb, var(--text-primary) 12%, transparent);
+}
+
+.databaseToolbarChip.is-accent:hover {
+	background: var(--interactive-accent-hover);
+	color: var(--text-inverse);
 }
 
 .databaseToolbarGroupBy {
@@ -1008,21 +1040,18 @@
 		color-mix(in srgb, var(--border-light) 60%, transparent);
 }
 
-.databaseBoardCardOpenHint {
+.databaseBoardCardTaskProgress {
 	flex: 0 0 auto;
-	padding-top: 1px;
-	font-size: 0.68rem;
-	font-weight: var(--font-semibold);
-	letter-spacing: 0.08em;
-	text-transform: uppercase;
-	color: var(--text-tertiary);
-	opacity: 0;
-	transition: opacity 120ms ease;
+	width: 24px;
+	height: 12px;
+	opacity: 0.9;
+	transition: opacity 120ms ease, transform 120ms ease;
 }
 
-.databaseBoardCard:hover .databaseBoardCardOpenHint,
-.databaseBoardCard[data-state="selected"] .databaseBoardCardOpenHint {
+.databaseBoardCard:hover .databaseBoardCardTaskProgress,
+.databaseBoardCard[data-state="selected"] .databaseBoardCardTaskProgress {
 	opacity: 1;
+	transform: translateY(-0.5px);
 }
 
 .databaseBoardCardPreview {
@@ -2038,7 +2067,8 @@
 }
 
 .databaseBoardContextMenuItem {
-	display: block;
+	display: flex;
+	align-items: center;
 	max-width: 100%;
 	min-height: 32px;
 	gap: 8px;

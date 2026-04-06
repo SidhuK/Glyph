@@ -179,7 +179,13 @@ export function SpaceSettingsPane() {
 						<div className="dailyNotesFolderField">
 							<div className="dailyNotesFolderRow">
 								<SettingsValueCard
-									icon={<HugeiconsIcon icon={Calendar03Icon} size={14} />}
+									icon={
+										<HugeiconsIcon
+											icon={Calendar03Icon}
+											size={14}
+											strokeWidth={0.9}
+										/>
+									}
 									value={
 										dailyNotesLoading
 											? "Loading..."
@@ -236,7 +242,13 @@ export function SpaceSettingsPane() {
 						<div className="dailyNotesFolderField">
 							<div className="dailyNotesFolderRow">
 								<SettingsValueCard
-									icon={<HugeiconsIcon icon={FileAttachmentIcon} size={14} />}
+									icon={
+										<HugeiconsIcon
+											icon={FileAttachmentIcon}
+											size={14}
+											strokeWidth={0.9}
+										/>
+									}
 									value={
 										attachmentsLoading
 											? "Loading..."
@@ -303,7 +315,9 @@ export function SpaceSettingsPane() {
 						interactive={false}
 					>
 						<SettingsValueCard
-							icon={<HugeiconsIcon icon={SearchIcon} size={14} />}
+							icon={
+								<HugeiconsIcon icon={SearchIcon} size={14} strokeWidth={0.9} />
+							}
 							value={
 								reindexStatus ||
 								(!currentSpacePath ? "No space selected." : "Index is ready.")

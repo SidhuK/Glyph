@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import { useSpace } from "../../contexts";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import {
 	type AiAssistantMode,
@@ -7,10 +8,12 @@ import {
 	setDatabaseShowColumnColor,
 	setDatabaseShowNoteCount,
 	setDelightfulGlyph,
+	setEditorEnablePeopleMentionsAsTags,
 	setEditorShowCollapsibleHeadings,
 	setShowFileTreeFolderCounts,
 	setShowToc,
 } from "../../lib/settings";
+import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import {
 	SettingsRow,
@@ -20,6 +23,8 @@ import {
 
 export function AdvancedSettingsPane() {
 	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
+	const [enablePeopleMentionsAsTags, setEnablePeopleMentionsAsTags] =
+		useState(false);
 	const [showToc, setShowTocState] = useState(true);
 	const [aiAssistantMode, setAiAssistantModeState] =
 		useState<AiAssistantMode>("create");
@@ -32,6 +37,10 @@ export function AdvancedSettingsPane() {
 	const [isSavingShowToc, setIsSavingShowToc] = useState(false);
 	const [isSavingShowCollapsibleHeadings, setIsSavingShowCollapsibleHeadings] =
 		useState(false);
+	const [
+		isSavingEnablePeopleMentionsAsTags,
+		setIsSavingEnablePeopleMentionsAsTags,
+	] = useState(false);
 	const [isSavingAiAssistantMode, setIsSavingAiAssistantMode] = useState(false);
 	const [isSavingDelightfulGlyph, setIsSavingDelightfulGlyph] = useState(false);
 	const [
@@ -42,12 +51,14 @@ export function AdvancedSettingsPane() {
 		useState(false);
 	const [isSavingDatabaseNoteCount, setIsSavingDatabaseNoteCount] =
 		useState(false);
+	const { spacePath, startIndexRebuild } = useSpace();
 
 	const refresh = useCallback(async () => {
 		setError("");
 		try {
 			const settings = await loadSettings();
 			setShowCollapsibleHeadings(settings.editor.showCollapsibleHeadings);
+			setEnablePeopleMentionsAsTags(settings.editor.enablePeopleMentionsAsTags);
 			setShowTocState(settings.ui.showToc);
 			setAiAssistantModeState(settings.ui.aiAssistantMode);
 			setDelightfulGlyphState(settings.ui.delightfulGlyph);
@@ -66,6 +77,9 @@ export function AdvancedSettingsPane() {
 	useTauriEvent("settings:updated", (payload) => {
 		if (typeof payload.editor?.showCollapsibleHeadings === "boolean") {
 			setShowCollapsibleHeadings(payload.editor.showCollapsibleHeadings);
+		}
+		if (typeof payload.editor?.enablePeopleMentionsAsTags === "boolean") {
+			setEnablePeopleMentionsAsTags(payload.editor.enablePeopleMentionsAsTags);
 		}
 		if (typeof payload.ui?.showToc === "boolean") {
 			setShowTocState(payload.ui.showToc);
@@ -119,6 +133,41 @@ export function AdvancedSettingsPane() {
 									})
 									.finally(() => {
 										setIsSavingShowToc(false);
+									});
+							}}
+						/>
+					</SettingsRow>
+					<SettingsRow
+						label="People mentions as tags"
+						description="When enabled, standalone @mentions are indexed and shown as people in the sidebar and search."
+					>
+						<SettingsToggle
+							checked={enablePeopleMentionsAsTags}
+							disabled={isSavingEnablePeopleMentionsAsTags}
+							ariaLabel="People mentions as tags"
+							onCheckedChange={(checked) => {
+								const previous = enablePeopleMentionsAsTags;
+								setError("");
+								setIsSavingEnablePeopleMentionsAsTags(true);
+								void (async () => {
+									await invoke("index_set_people_mentions_as_tags_enabled", {
+										enabled: checked,
+									});
+									if (spacePath) {
+										await startIndexRebuild();
+									}
+									await setEditorEnablePeopleMentionsAsTags(checked);
+									setEnablePeopleMentionsAsTags(checked);
+								})()
+									.catch((cause) => {
+										setEnablePeopleMentionsAsTags(previous);
+										void invoke("index_set_people_mentions_as_tags_enabled", {
+											enabled: previous,
+										}).catch(() => undefined);
+										setError(extractErrorMessage(cause));
+									})
+									.finally(() => {
+										setIsSavingEnablePeopleMentionsAsTags(false);
 									});
 							}}
 						/>

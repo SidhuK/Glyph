@@ -1,9 +1,9 @@
 import { Close } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { openUrl } from "@tauri-apps/plugin-opener";
+import { useUILayoutContext } from "../../contexts";
 import { formatTrialRemaining } from "../../lib/license";
 import type { LicenseStatus } from "../../lib/tauri";
-import { openSettingsWindow } from "../../lib/windows";
 import { Button } from "../ui/shadcn/button";
 
 interface TrialBannerProps {
@@ -12,6 +12,7 @@ interface TrialBannerProps {
 }
 
 export function TrialBanner({ status, onDismiss }: TrialBannerProps) {
+	const { openSettings } = useUILayoutContext();
 	return (
 		<output className="licenseTrialBanner" aria-live="polite">
 			<div className="licenseTrialBannerCopy">
@@ -34,13 +35,13 @@ export function TrialBanner({ status, onDismiss }: TrialBannerProps) {
 					aria-label="Dismiss trial banner"
 					title="Dismiss"
 				>
-					<HugeiconsIcon icon={Close} size={14} />
+					<HugeiconsIcon icon={Close} size={14} strokeWidth={0.9} />
 				</button>
 				<Button
 					type="button"
 					variant="outline"
 					size="sm"
-					onClick={() => void openSettingsWindow("general")}
+					onClick={() => openSettings("general")}
 				>
 					Enter License Key
 				</Button>

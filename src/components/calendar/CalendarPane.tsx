@@ -20,14 +20,11 @@ import { useDailyNote } from "../../hooks/useDailyNote";
 import {
 	buildMonthRange,
 	formatCalendarDate,
-	formatDayTitle,
 	formatMonthDay,
 	formatMonthName,
-	formatWeekday,
 	formatYear,
 	insertTaskIntoDailyNote,
 	parseCalendarDate,
-	relativeDayLabel,
 	shiftMonth,
 } from "../../lib/calendar";
 import {
@@ -42,8 +39,15 @@ import {
 	type TaskItem,
 	invoke,
 } from "../../lib/tauri";
+import { useTauriEvent } from "../../lib/tauriEvents";
 import { renderTemplate } from "../../lib/templates";
 import { cn } from "../../lib/utils";
+import {
+	getPrefetchedCalendarData,
+	invalidateCalendarPrefetch,
+	prefetchNote,
+	prefetchCalendarData,
+} from "../../lib/navigationPrefetch";
 import { Settings } from "../Icons";
 import { TaskRow } from "../tasks/TaskRow";
 import { Button } from "../ui/shadcn/button";
@@ -55,6 +59,7 @@ const ANCHOR_STORAGE_KEY = "glyph.calendar.anchorDate";
 const SELECTED_STORAGE_KEY = "glyph.calendar.selectedDate";
 
 interface CalendarPaneProps {
+	initialData?: CalendarRangeResponse | null;
 	onOpenFile: (relPath: string) => Promise<void>;
 	onOpenDailyNotesSettings: () => void;
 }
@@ -94,6 +99,7 @@ function getTaskGroupMeta(label: string): {
 }
 
 export function CalendarPane({
+	initialData = null,
 	onOpenFile,
 	onOpenDailyNotesSettings,
 }: CalendarPaneProps) {
@@ -102,8 +108,8 @@ export function CalendarPane({
 	const initialSelected = readStorage(SELECTED_STORAGE_KEY) ?? today;
 	const [anchorDate, setAnchorDate] = useState(initialAnchor);
 	const [selectedDate, setSelectedDate] = useState(initialSelected);
-	const [data, setData] = useState<CalendarRangeResponse | null>(null);
-	const [loading, setLoading] = useState(false);
+	const [data, setData] = useState<CalendarRangeResponse | null>(initialData);
+	const [loading, setLoading] = useState(() => initialData === null);
 	const [error, setError] = useState("");
 	const [taskDraft, setTaskDraft] = useState("");
 	const [isSubmittingTask, setIsSubmittingTask] = useState(false);
@@ -120,39 +126,57 @@ export function CalendarPane({
 		templatePath: dailyNoteTemplatePath,
 	});
 
-	const range = useMemo(() => buildMonthRange(anchorDate), [anchorDate]);
-
-	const loadCalendar = useCallback(async () => {
-		const requestId = ++loadRequestIdRef.current;
-		setLoading(true);
-		setError("");
-		try {
-			const next = await invoke("calendar_query_range", {
-				start_date: range.start,
-				end_date: range.end,
-				selected_date: selectedDate,
-				daily_notes_folder: dailyNotesFolder,
-			});
-			if (loadRequestIdRef.current !== requestId) {
-				return;
+	const loadCalendar = useCallback(
+		async (options?: { background?: boolean }) => {
+			const requestId = ++loadRequestIdRef.current;
+			if (!options?.background) {
+				setLoading(true);
 			}
-			setData(next);
-		} catch (cause) {
-			if (loadRequestIdRef.current !== requestId) {
-				return;
+			setError("");
+			try {
+				const next = await prefetchCalendarData({
+					anchorDate,
+					selectedDate,
+					dailyNotesFolder,
+				});
+				if (loadRequestIdRef.current !== requestId) {
+					return;
+				}
+				setData(next);
+			} catch (cause) {
+				if (loadRequestIdRef.current !== requestId) {
+					return;
+				}
+				setError(cause instanceof Error ? cause.message : String(cause));
+				setData(null);
+			} finally {
+				if (!options?.background && loadRequestIdRef.current === requestId) {
+					setLoading(false);
+				}
 			}
-			setError(cause instanceof Error ? cause.message : String(cause));
-			setData(null);
-		} finally {
-			if (loadRequestIdRef.current === requestId) {
-				setLoading(false);
-			}
-		}
-	}, [dailyNotesFolder, range.end, range.start, selectedDate]);
+		},
+		[anchorDate, dailyNotesFolder, selectedDate],
+	);
 
 	useEffect(() => {
+		const cached = getPrefetchedCalendarData({
+			anchorDate,
+			selectedDate,
+			dailyNotesFolder,
+		});
+		if (cached) {
+			setData(cached);
+			setLoading(false);
+			void loadCalendar({ background: true });
+			return;
+		}
 		void loadCalendar();
 	}, [loadCalendar]);
+
+	useTauriEvent("notes:external_changed", () => {
+		invalidateCalendarPrefetch();
+		void loadCalendar({ background: true });
+	});
 
 	useEffect(() => {
 		writeStorage(ANCHOR_STORAGE_KEY, anchorDate);
@@ -245,6 +269,7 @@ export function CalendarPane({
 				base_mtime_ms: noteDoc.mtime_ms,
 			});
 			setTaskDraft("");
+			invalidateCalendarPrefetch();
 			await loadCalendar();
 		} catch (cause) {
 			setError(
@@ -272,6 +297,7 @@ export function CalendarPane({
 					task_id: task.task_id,
 					checked,
 				});
+				invalidateCalendarPrefetch();
 				await loadCalendar();
 			} catch (cause) {
 				setError(cause instanceof Error ? cause.message : String(cause));
@@ -293,6 +319,7 @@ export function CalendarPane({
 					scheduled_date: scheduled,
 					due_date: due,
 				});
+				invalidateCalendarPrefetch();
 				await loadCalendar();
 				return true;
 			} catch (cause) {
@@ -433,16 +460,8 @@ export function CalendarPane({
 			<section className="calendarPane">
 				{error ? <div className="calendarError">{error}</div> : null}
 
-				{/* ── Date header (centered) ── */}
-				<div className="calendarDetailHeader">
-					<h3 className="calendarDetailTitle">
-						{formatDayTitle(selectedDate)}
-					</h3>
-					<span className="calendarDetailSubtext">
-						{relativeDayLabel(selectedDate, today) ??
-							formatWeekday(selectedDate)}
-					</span>
-				</div>
+				{/* ── Date header spacer ── */}
+				<div className="calendarDetailHeader" />
 
 				{/* ── Centered content area ── */}
 				<div className="calendarCenterWrap">
@@ -459,7 +478,11 @@ export function CalendarPane({
 							<div className="calendarCardSectionHeader calendarMiniDbHeader">
 								<div className="calendarMiniDbHeaderInfo">
 									<h4 className="calendarCardSectionTitle">
-										<HugeiconsIcon icon={Clock02Icon} size={14} />
+										<HugeiconsIcon
+											icon={Clock02Icon}
+											size={14}
+											strokeWidth={0.9}
+										/>
 										<span>Activity</span>
 									</h4>
 								</div>
@@ -469,6 +492,7 @@ export function CalendarPane({
 								selectedNotePath={selectedRecentNotePath}
 								onSelectNote={handleSelectRecentNote}
 								onOpenNote={handleOpenRecentNote}
+								onPrefetchNote={prefetchNote}
 							/>
 						</div>
 					) : null}
@@ -490,13 +514,17 @@ export function CalendarPane({
 							<Button
 								type="button"
 								size="sm"
-								variant="ghost"
+								variant="outline"
 								className="calendarTaskAddIcon calendarTaskBtn"
 								onClick={() => void submitTask()}
 								disabled={isSubmittingTask || !taskDraft.trim()}
 								aria-label="Add task"
 							>
-								<HugeiconsIcon icon={TaskAdd02Icon} size={16} />
+								<HugeiconsIcon
+									icon={TaskAdd02Icon}
+									size={16}
+									strokeWidth={0.9}
+								/>
 							</Button>
 							<Button
 								type="button"
@@ -505,7 +533,11 @@ export function CalendarPane({
 								className="calendarTaskBtn calendarOpenNoteBtn"
 								onClick={openSelectedDailyNote}
 							>
-								<HugeiconsIcon icon={CalendarAdd01Icon} size={14} />
+								<HugeiconsIcon
+									icon={CalendarAdd01Icon}
+									size={14}
+									strokeWidth={0.9}
+								/>
 								Daily Note
 							</Button>
 						</div>
@@ -535,7 +567,11 @@ export function CalendarPane({
 							<div className="calendarCardSection calendarTasksCard">
 								<div className="calendarCardSectionHeader">
 									<h4 className="calendarCardSectionTitle">
-										<HugeiconsIcon icon={Note03Icon} size={16} />
+										<HugeiconsIcon
+											icon={Note03Icon}
+											size={16}
+											strokeWidth={0.9}
+										/>
 										Tasks
 									</h4>
 								</div>
@@ -570,6 +606,7 @@ export function CalendarPane({
 										<HugeiconsIcon
 											icon={ArrowLeftBigIcon}
 											size={14}
+											strokeWidth={0.9}
 											aria-hidden="true"
 										/>
 									</Button>
@@ -593,6 +630,7 @@ export function CalendarPane({
 										<HugeiconsIcon
 											icon={ArrowRightBigIcon}
 											size={14}
+											strokeWidth={0.9}
 											aria-hidden="true"
 										/>
 									</Button>

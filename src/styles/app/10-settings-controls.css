@@ -65,16 +65,14 @@
 }
 
 .settingsCard {
-	background: var(--settings-surface-muted);
+	background: transparent;
 	border: 1px solid color-mix(in srgb, var(--border-default) 84%, transparent);
 	border-radius: calc(var(--radius-lg) + 2px);
 	padding: 0;
 	display: flex;
 	flex-direction: column;
 	overflow: hidden;
-	box-shadow: inset 0 1px 0
-		color-mix(in srgb, var(--border-light) 44%, transparent), 0 0 0 1px
-		color-mix(in srgb, var(--bg-primary) 18%, transparent);
+	box-shadow: none;
 }
 
 .settingsCardActions {

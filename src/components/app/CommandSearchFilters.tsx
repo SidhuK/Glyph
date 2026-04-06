@@ -33,7 +33,7 @@ export function CommandSearchFilters({
 					)
 				}
 			>
-				<HugeiconsIcon icon={Document} size={14} />
+				<HugeiconsIcon icon={Document} size={14} strokeWidth={0.9} />
 				Title
 			</button>
 			<button
@@ -46,7 +46,7 @@ export function CommandSearchFilters({
 					onChangeQuery(withUpdated(request, { tag_only: !request.tag_only }))
 				}
 			>
-				<HugeiconsIcon icon={Tag01Icon} size={14} />
+				<HugeiconsIcon icon={Tag01Icon} size={14} strokeWidth={0.9} />
 				Tag
 			</button>
 		</div>

@@ -78,6 +78,7 @@ function Calendar({
 						<HugeiconsIcon
 							icon={icon}
 							size={14}
+							strokeWidth={0.9}
 							className={cn("glyphCalendarChevron", iconClassName)}
 							{...iconProps}
 						/>

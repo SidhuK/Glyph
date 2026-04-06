@@ -41,7 +41,7 @@ export function FileTreeAppearanceMenu({
 		<>
 			<ContextMenuSub>
 				<ContextMenuSubTrigger className="fileTreeCreateMenuItem">
-					<HugeiconsIcon icon={PaintBucketIcon} size={14} />
+					<HugeiconsIcon icon={PaintBucketIcon} size={14} strokeWidth={0.9} />
 					Color
 				</ContextMenuSubTrigger>
 				<ContextMenuSubContent className="fileTreeCreateMenu fileTreeAppearanceMenuPanel">

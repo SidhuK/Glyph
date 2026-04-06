@@ -2,13 +2,15 @@ import { Tag01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { m } from "motion/react";
 import { type CSSProperties, memo, useCallback } from "react";
-import type { TagCount } from "../lib/tauri";
+import type { PersonCount, TagCount } from "../lib/tauri";
 import { springPresets } from "./ui/animations";
 import { Button } from "./ui/shadcn/button";
 
 interface TagsPaneProps {
 	tags: TagCount[];
+	people: PersonCount[];
 	onSelectTag: (tag: string) => void;
+	onSelectPerson: (handle: string) => void;
 	onRefresh: () => void;
 }
 
@@ -20,6 +22,11 @@ export interface TagTreeRow {
 	totalCount: number;
 	depth: number;
 	isExplicit: boolean;
+}
+
+export interface PeopleRow {
+	handle: string;
+	count: number;
 }
 
 export function buildTagTreeRows(tags: TagCount[]): TagTreeRow[] {
@@ -34,16 +41,30 @@ export function buildTagTreeRows(tags: TagCount[]): TagTreeRow[] {
 		}));
 }
 
+export function buildPeopleRows(people: PersonCount[]): PeopleRow[] {
+	return [...people].sort((left, right) =>
+		left.handle.localeCompare(right.handle),
+	);
+}
+
 export const TagsPane = memo(function TagsPane({
 	tags,
+	people,
 	onSelectTag,
+	onSelectPerson,
 	onRefresh,
 }: TagsPaneProps) {
 	const onClick = useCallback(
 		(tag: string) => onSelectTag(tag.startsWith("#") ? tag : `#${tag}`),
 		[onSelectTag],
 	);
+	const onPersonClick = useCallback(
+		(handle: string) =>
+			onSelectPerson(handle.startsWith("@") ? handle : `@${handle}`),
+		[onSelectPerson],
+	);
 	const rows = buildTagTreeRows(tags);
+	const peopleRows = buildPeopleRows(people);
 
 	return (
 		<m.section
@@ -68,54 +89,113 @@ export const TagsPane = memo(function TagsPane({
 				</Button>
 			</div>
 			{rows.length ? (
-				<m.ul
-					className="tagsList"
-					initial="hidden"
-					animate="visible"
-					variants={{
-						visible: { transition: { staggerChildren: 0.02 } },
-						hidden: {},
-					}}
-				>
-					{rows.map((tag, index) => {
-						return (
-							<m.li
-								key={tag.tag}
-								className="tagsItem"
-								variants={{
-									hidden: { scale: 0.9 },
-									visible: { scale: 1 },
-								}}
-								transition={{ ...springTransition, delay: index * 0.015 }}
-							>
-								<m.button
+				<>
+					<m.ul
+						className="tagsList"
+						initial="hidden"
+						animate="visible"
+						variants={{
+							visible: { transition: { staggerChildren: 0.02 } },
+							hidden: {},
+						}}
+					>
+						{rows.map((tag, index) => {
+							return (
+								<m.li
+									key={tag.tag}
+									className="tagsItem"
+									variants={{
+										hidden: { scale: 0.9 },
+										visible: { scale: 1 },
+									}}
+									transition={{ ...springTransition, delay: index * 0.015 }}
+								>
+									<m.button
+										type="button"
+										className="tagsButton"
+										data-explicit={tag.isExplicit ? "true" : "false"}
+										onClick={() => onClick(tag.tag)}
+										style={
+											{
+												paddingInlineStart: `${8 + tag.depth * 16}px`,
+											} as CSSProperties
+										}
+										title={`#${tag.tag} · ${tag.totalCount} note${
+											tag.totalCount === 1 ? "" : "s"
+										}`}
+										whileHover={{
+											backgroundColor: "var(--bg-hover)",
+										}}
+										transition={springTransition}
+									>
+										<span className="tagsNameWrap">
+											<HugeiconsIcon
+												icon={Tag01Icon}
+												size={12}
+												strokeWidth={0.9}
+											/>
+											<span className="tagsName">{tag.label}</span>
+										</span>
+										<span className="tagsCount mono">{tag.totalCount}</span>
+									</m.button>
+								</m.li>
+							);
+						})}
+					</m.ul>
+					{peopleRows.length ? (
+						<>
+							<div className="tagsHeader tagsSubheader">
+								<div className="tagsHeaderTitle">PEOPLE</div>
+							</div>
+							<ul className="tagsList">
+								{peopleRows.map((person) => (
+									<li key={person.handle} className="tagsItem">
+										<button
+											type="button"
+											className="tagsButton"
+											data-explicit="true"
+											onClick={() => onPersonClick(person.handle)}
+											title={`@${person.handle} · ${person.count} note${
+												person.count === 1 ? "" : "s"
+											}`}
+										>
+											<span className="tagsNameWrap">
+												<span className="tagsName">@{person.handle}</span>
+											</span>
+											<span className="tagsCount mono">{person.count}</span>
+										</button>
+									</li>
+								))}
+							</ul>
+						</>
+					) : null}
+				</>
+			) : peopleRows.length ? (
+				<>
+					<div className="tagsHeader tagsSubheader">
+						<div className="tagsHeaderTitle">PEOPLE</div>
+					</div>
+					<ul className="tagsList">
+						{peopleRows.map((person) => (
+							<li key={person.handle} className="tagsItem">
+								<button
 									type="button"
 									className="tagsButton"
-									data-explicit={tag.isExplicit ? "true" : "false"}
-									onClick={() => onClick(tag.tag)}
-									style={
-										{
-											paddingInlineStart: `${8 + tag.depth * 16}px`,
-										} as CSSProperties
-									}
-									title={`#${tag.tag} · ${tag.totalCount} note${
-										tag.totalCount === 1 ? "" : "s"
+									data-explicit="true"
+									onClick={() => onPersonClick(person.handle)}
+									title={`@${person.handle} · ${person.count} note${
+										person.count === 1 ? "" : "s"
 									}`}
-									whileHover={{
-										backgroundColor: "var(--bg-hover)",
-									}}
-									transition={springTransition}
 								>
 									<span className="tagsNameWrap">
-										<HugeiconsIcon icon={Tag01Icon} size={12} />
-										<span className="tagsName">{tag.label}</span>
+										<span className="tagsName">@{person.handle}</span>
 									</span>
-									<span className="tagsCount mono">{tag.totalCount}</span>
-								</m.button>
-							</m.li>
-						);
-					})}
-				</m.ul>
+									<span className="tagsCount mono">{person.count}</span>
+								</button>
+							</li>
+						))}
+					</ul>
+				</>
 			) : (
 				<div className="tagsEmpty">No tags found.</div>
 			)}

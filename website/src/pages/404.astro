@@ -1,0 +1,59 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="404 — Page Not Found" description="This page doesn't exist." noIndex>
+	<main class="container">
+		<span class="code">404</span>
+		<h1>Page not found</h1>
+		<p>The page you're looking for doesn't exist or has been moved.</p>
+		<a href="/" class="back-link">← Back to home</a>
+	</main>
+</Layout>
+
+<style>
+	.container {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		min-height: 100dvh;
+		text-align: center;
+		padding: 2rem;
+		gap: 1rem;
+	}
+
+	.code {
+		font-family: var(--serif);
+		font-size: clamp(6rem, 15vw, 10rem);
+		line-height: 1;
+		color: var(--faint);
+		font-style: italic;
+	}
+
+	h1 {
+		font-family: var(--sans);
+		font-size: 1.25rem;
+		font-weight: 500;
+		color: var(--ink);
+	}
+
+	p {
+		font-size: 0.95rem;
+		color: var(--muted);
+		max-width: 32ch;
+	}
+
+	.back-link {
+		display: inline-block;
+		margin-top: 1rem;
+		font-size: 0.85rem;
+		font-weight: 500;
+		color: var(--muted);
+		transition: color 0.2s ease;
+	}
+
+	.back-link:hover {
+		color: var(--ink);
+	}
+</style>

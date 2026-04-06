@@ -15,6 +15,7 @@ interface TabBarProps {
 	dragTabId: string | null;
 	useWindowBackground?: boolean;
 	onOpenBlankTab: () => void;
+	onPrefetchTab: (target: string | null) => void;
 	onSelectTab: (tabId: string) => void;
 	onCloseTab: (tabId: string) => void;
 	onDragStart: (tabId: string) => void;
@@ -39,6 +40,7 @@ export function TabBar({
 	dragTabId,
 	useWindowBackground = false,
 	onOpenBlankTab,
+	onPrefetchTab,
 	onSelectTab,
 	onCloseTab,
 	onDragStart,
@@ -92,6 +94,7 @@ export function TabBar({
 								label={tabLabel(tab)}
 								isActive={tab.id === activeTabId}
 								dragTabId={dragTabId}
+								onPrefetchTab={onPrefetchTab}
 								onSelectTab={onSelectTab}
 								onCloseTab={onCloseTab}
 								onDragStart={onDragStart}
@@ -149,6 +152,7 @@ const TabItem = memo(function TabItem({
 	isActive,
 	dragTabId,
 	onSelectTab,
+	onPrefetchTab,
 	onCloseTab,
 	onDragStart,
 	onDragEnd,
@@ -159,6 +163,7 @@ const TabItem = memo(function TabItem({
 	isActive: boolean;
 	dragTabId: string | null;
 	onSelectTab: (tabId: string) => void;
+	onPrefetchTab: (target: string | null) => void;
 	onCloseTab: (tabId: string) => void;
 	onDragStart: (tabId: string) => void;
 	onDragEnd: () => void;
@@ -214,6 +219,8 @@ const TabItem = memo(function TabItem({
 				type="button"
 				className={`mainTab ${isActive ? "is-active" : ""}`}
 				onClick={handleSelect}
+				onMouseEnter={() => onPrefetchTab(tab.target)}
+				onFocus={() => onPrefetchTab(tab.target)}
 				title={title}
 				draggable
 				onDragStart={handleDragStart}

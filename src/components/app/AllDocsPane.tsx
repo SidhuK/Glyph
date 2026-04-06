@@ -1,4 +1,8 @@
-import { CollectionsBookmarkIcon } from "@hugeicons/core-free-icons";
+import {
+	CalendarAdd01Icon,
+	CollectionsBookmarkIcon,
+	DocumentCodeIcon,
+} from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import {
 	formatDistanceToNow,
@@ -11,8 +15,8 @@ import {
 import { m, useReducedMotion } from "motion/react";
 import {
 	type CSSProperties,
-	type ComponentProps,
 	type Dispatch,
+	type ReactNode,
 	type SetStateAction,
 	memo,
 	useCallback,
@@ -20,17 +24,27 @@ import {
 	useMemo,
 	useState,
 } from "react";
-import { type AllDocsItem, invoke } from "../../lib/tauri";
+import {
+	getPrefetchedAllDocs,
+	invalidateAllDocsPrefetch,
+	prefetchAllDocs,
+	prefetchNote,
+} from "../../lib/navigationPrefetch";
+import type { AllDocsItem } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { formatDatabaseTagLabel } from "../database/databaseTagLabel";
+import { SettingsSegmented } from "../settings/SettingsScaffold";
 import { springPresets } from "../ui/animations";
 
 interface AllDocsPaneProps {
 	onOpenFile: (relPath: string) => Promise<void>;
 	title?: string;
-	icon?: ComponentProps<typeof HugeiconsIcon>["icon"];
 	folderPrefix?: string | null;
 	emptyMessage?: string;
+	initialNotes?: AllDocsItem[] | null;
+	templateFolder?: string | null;
+	showNotesScopeToggle?: boolean;
+	dailyNotesFolder?: string | null;
 }
 
 const CARD_STYLE = {
@@ -50,6 +64,13 @@ function normalizeFolderPrefix(value: string | null): string | null {
 function titleFromPath(notePath: string): string {
 	const fileName = notePath.split("/").pop() ?? notePath;
 	return fileName.replace(/\.md$/i, "");
+}
+
+function normalizePath(value: string): string {
+	return value
+		.trim()
+		.replace(/\\/g, "/")
+		.replace(/^\/+|\/+$/g, "");
 }
 
 function folderLabel(notePath: string): string {
@@ -83,6 +104,8 @@ type AllDocsSection = {
 	label: string;
 	notes: AllDocsItem[];
 };
+
+type NotesScope = "all" | "templates" | "daily";
 
 function applyNotesResult(
 	items: AllDocsItem[],
@@ -125,45 +148,44 @@ const SECTION_ORDER: Array<{ id: AllDocsSection["id"]; label: string }> = [
 export const AllDocsPane = memo(function AllDocsPane({
 	onOpenFile,
 	title = "All Notes",
-	icon = CollectionsBookmarkIcon,
 	folderPrefix = null,
 	emptyMessage = "No notes yet. Create one to get started.",
+	initialNotes = null,
+	templateFolder = null,
+	showNotesScopeToggle = false,
+	dailyNotesFolder = null,
 }: AllDocsPaneProps) {
 	const shouldReduceMotion = useReducedMotion() ?? false;
-	const [notes, setNotes] = useState<AllDocsItem[]>([]);
-	const [loading, setLoading] = useState(true);
+	const [notes, setNotes] = useState<AllDocsItem[]>(
+		() => initialNotes ?? getPrefetchedAllDocs(folderPrefix) ?? [],
+	);
+	const [loading, setLoading] = useState(
+		() => (initialNotes ?? getPrefetchedAllDocs(folderPrefix)) === null,
+	);
 	const [error, setError] = useState("");
 	const [selectedNotePath, setSelectedNotePath] = useState<string | null>(null);
 	const normalizedFolderPrefix = useMemo(
 		() => normalizeFolderPrefix(folderPrefix),
 		[folderPrefix],
 	);
+	const normalizedTemplateFolder = useMemo(
+		() => normalizeFolderPrefix(templateFolder),
+		[templateFolder],
+	);
+	const normalizedDailyNotesFolder = useMemo(
+		() => normalizeFolderPrefix(dailyNotesFolder),
+		[dailyNotesFolder],
+	);
+	const [notesScope, setNotesScope] = useState<NotesScope>("all");
 
 	const fetchNotes = useCallback(
 		async (cancelled?: { current: boolean }) => {
 			setLoading(true);
 			setError("");
 			try {
-				const items = await invoke("all_docs_list", {
-					limit: 2000,
-					folder_prefix: normalizedFolderPrefix,
-				});
+				const items = await prefetchAllDocs(normalizedFolderPrefix);
 				if (cancelled?.current) return;
-				// Keep a client-side guard here so the Templates view stays scoped
-				// even if the running backend returns a broader result set.
-				const nextItems = normalizedFolderPrefix
-					? items.filter((item) => {
-							const normalizedPath = item.note_path
-								.trim()
-								.replace(/\\/g, "/")
-								.replace(/^\/+/, "");
-							return (
-								normalizedPath === normalizedFolderPrefix ||
-								normalizedPath.startsWith(`${normalizedFolderPrefix}/`)
-							);
-						})
-					: items;
-				applyNotesResult(nextItems, setNotes, setSelectedNotePath);
+				applyNotesResult(items, setNotes, setSelectedNotePath);
 			} catch (cause) {
 				if (cancelled?.current) return;
 				setError(cause instanceof Error ? cause.message : String(cause));
@@ -176,24 +198,56 @@ export const AllDocsPane = memo(function AllDocsPane({
 	);
 
 	useTauriEvent("notes:external_changed", () => {
+		invalidateAllDocsPrefetch(normalizedFolderPrefix);
 		void fetchNotes();
 	});
 
 	useEffect(() => {
 		const cancelled = { current: false };
+		if (notes.length > 0) {
+			void fetchNotes(cancelled);
+			return () => {
+				cancelled.current = true;
+			};
+		}
 		void fetchNotes(cancelled);
 		return () => {
 			cancelled.current = true;
 		};
-	}, [fetchNotes]);
+	}, [fetchNotes, notes.length]);
 
+	const visibleNotes = useMemo(() => {
+		if (!showNotesScopeToggle || notesScope === "all") {
+			return notes;
+		}
+
+		const targetFolder =
+			notesScope === "templates"
+				? normalizedTemplateFolder
+				: normalizedDailyNotesFolder;
+		if (!targetFolder) return [];
+
+		return notes.filter((note) => {
+			const normalizedPath = normalizePath(note.note_path);
+			return (
+				normalizedPath === targetFolder ||
+				normalizedPath.startsWith(`${targetFolder}/`)
+			);
+		});
+	}, [
+		normalizedDailyNotesFolder,
+		normalizedTemplateFolder,
+		notes,
+		notesScope,
+		showNotesScopeToggle,
+	]);
 	const countLabel = useMemo(() => {
-		const count = notes.length;
+		const count = visibleNotes.length;
 		return `${count} ${count === 1 ? "note" : "notes"}`;
-	}, [notes.length]);
+	}, [visibleNotes.length]);
 	const sections = useMemo<AllDocsSection[]>(() => {
 		const buckets = new Map<string, AllDocsItem[]>();
-		for (const note of notes) {
+		for (const note of visibleNotes) {
 			const id = sectionForDate(note.updated);
 			const existing = buckets.get(id);
 			if (existing) existing.push(note);
@@ -204,7 +258,73 @@ export const AllDocsPane = memo(function AllDocsPane({
 			label: section.label,
 			notes: buckets.get(section.id) ?? [],
 		})).filter((section) => section.notes.length > 0);
-	}, [notes]);
+	}, [visibleNotes]);
+	const emptyStateMessage = useMemo(() => {
+		if (notes.length === 0) {
+			return emptyMessage;
+		}
+		if (showNotesScopeToggle && notesScope === "templates") {
+			return normalizedTemplateFolder
+				? "No template notes found."
+				: "Set a template folder in Settings to browse template notes here.";
+		}
+		if (showNotesScopeToggle && notesScope === "daily") {
+			return normalizedDailyNotesFolder
+				? "No daily notes found."
+				: "Set a daily notes folder in Settings to browse daily notes here.";
+		}
+		return "No notes found.";
+	}, [
+		emptyMessage,
+		normalizedDailyNotesFolder,
+		normalizedTemplateFolder,
+		notes.length,
+		notesScope,
+		showNotesScopeToggle,
+	]);
+	const notesScopeOptions = useMemo(
+		() =>
+			[
+				{
+					label: "",
+					value: "all",
+					icon: (
+						<HugeiconsIcon
+							icon={CollectionsBookmarkIcon}
+							size={20}
+							strokeWidth={0.9}
+						/>
+					),
+				},
+				{
+					label: "",
+					value: "daily",
+					icon: (
+						<HugeiconsIcon
+							icon={CalendarAdd01Icon}
+							size={20}
+							strokeWidth={0.9}
+						/>
+					),
+				},
+				{
+					label: "",
+					value: "templates",
+					icon: (
+						<HugeiconsIcon
+							icon={DocumentCodeIcon}
+							size={20}
+							strokeWidth={0.9}
+						/>
+					),
+				},
+			] as const satisfies ReadonlyArray<{
+				label: string;
+				value: NotesScope;
+				icon: ReactNode;
+			}>,
+		[],
+	);
 
 	if (loading) {
 		return <div className="databaseLoadingState">Loading all docs…</div>;
@@ -216,24 +336,31 @@ export const AllDocsPane = memo(function AllDocsPane({
 		);
 	}
 
-	if (notes.length === 0) {
-		return <div className="databaseLoadingState">{emptyMessage}</div>;
-	}
-
 	return (
 		<section className="allDocsPane">
 			<div className="allDocsHeader">
 				<div className="allDocsTitleGroup">
-					<div className="allDocsTitleIcon">
-						<HugeiconsIcon icon={icon} size={16} />
-					</div>
 					<div>
 						<h1 className="allDocsTitle">{title}</h1>
 					</div>
 				</div>
-				<p className="allDocsCountBadge">{countLabel}</p>
+				<div className="allDocsHeaderControls">
+					{showNotesScopeToggle ? (
+						<SettingsSegmented
+							value={notesScope}
+							options={[...notesScopeOptions]}
+							onChange={setNotesScope}
+							ariaLabel="Filter all notes by note type"
+							className="appearanceThemeModeSegmented allDocsScopeToggle"
+						/>
+					) : null}
+					<p className="allDocsCountBadge">{countLabel}</p>
+				</div>
 			</div>
 			<div className="allDocsSections">
+				{visibleNotes.length === 0 ? (
+					<div className="databaseLoadingState">{emptyStateMessage}</div>
+				) : null}
 				{sections.map((section, sectionIndex) => (
 					<section key={section.id} className="allDocsSection">
 						<div className="allDocsSectionHeader">
@@ -267,6 +394,8 @@ export const AllDocsPane = memo(function AllDocsPane({
 												: undefined
 										}
 										onClick={() => setSelectedNotePath(note.note_path)}
+										onMouseEnter={() => prefetchNote(note.note_path)}
+										onFocus={() => prefetchNote(note.note_path)}
 										onDoubleClick={() => void onOpenFile(note.note_path)}
 										onKeyDown={(event) => {
 											if (event.key === "Enter") {

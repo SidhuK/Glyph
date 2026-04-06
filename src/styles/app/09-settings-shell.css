@@ -1,8 +1,8 @@
 /* ─────────────────────────────────────────────────────────────────────────────
-   SETTINGS WINDOW
+   SETTINGS (INLINE)
    ───────────────────────────────────────────────────────────────────────────── */
-.settingsShell {
-	--app-radius: var(--radius-15);
+
+.settingsTabPanel {
 	--settings-surface: var(--bg-tertiary);
 	--settings-surface-muted: color-mix(
 		in srgb,
@@ -24,66 +24,6 @@
 		var(--bg-primary) 94%,
 		var(--bg-tertiary)
 	);
-	position: relative;
-	height: 100%;
-	width: 100%;
-	display: flex;
-	flex-direction: column;
-	background: var(--bg-primary);
-	border-radius: var(--app-radius);
-	overflow: hidden;
-}
-
-.settingsBackdrop {
-	display: none;
-	pointer-events: none;
-}
-
-.settingsDragStrip {
-	position: absolute;
-	top: 0;
-	left: 0;
-	right: 0;
-	height: 42px;
-	z-index: 10;
-	-webkit-app-region: drag;
-}
-
-.settingsWindowClose {
-	position: absolute;
-	top: 8px;
-	right: 10px;
-	z-index: 20;
-	-webkit-app-region: no-drag;
-}
-
-.settingsMain {
-	flex: 1;
-	min-height: 0;
-	overflow: hidden;
-	display: flex;
-	align-items: stretch;
-	justify-content: flex-start;
-	position: relative;
-	z-index: 1;
-}
-
-.settingsFrame {
-	width: 100%;
-	height: 100%;
-	display: grid;
-	grid-template-columns: 236px minmax(0, 1fr);
-	background: var(--bg-primary);
-	overflow: hidden;
-}
-
-.settingsTabs {
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
-	padding: 44px 14px 14px;
-	background: var(--settings-surface);
-	border-right: 1px solid var(--border-light);
 }
 
 .settingsSidebar {
@@ -91,24 +31,25 @@
 	background: transparent;
 }
 
-.settingsSidebarContentRoot {
-	border-right-color: var(--border-light);
-	background: var(--settings-surface);
-}
 
-.settingsSidebarHeader {
-	height: 36px;
-	min-height: 36px;
-	padding: 0;
-	-webkit-app-region: drag;
-}
-
-.settingsSidebarActions {
-	right: 14px;
-}
 
 .settingsSidebarNavSection {
 	padding-top: 0;
+}
+
+.settingsSidebarBackRow {
+	padding: 0 10px 6px;
+}
+
+.settingsBackButton {
+	gap: 6px;
+	color: var(--text-secondary);
+	font-size: 12px;
+	font-weight: var(--font-medium);
+}
+
+.settingsBackButton:hover {
+	color: var(--text-primary);
 }
 
 .settingsSidebarGroups {
@@ -386,44 +327,7 @@
 	gap: 34px;
 }
 
-@media (max-width: 900px) {
-	.settingsFrame {
-		grid-template-columns: 214px minmax(0, 1fr);
-	}
-
-	.settingsSidebar {
-		width: 214px;
-		min-width: 214px;
-	}
-
-	.settingsTabPanel {
-		padding: 44px 18px 18px;
-	}
-}
-
-@media (max-width: 720px) {
-	.settingsFrame {
-		grid-template-columns: 1fr;
-		grid-template-rows: auto 1fr;
-	}
-
-	.settingsTabs {
-		padding: 44px 10px 10px;
-		border-right: 0;
-		border-bottom: 1px solid var(--border-light);
-	}
-
-	.settingsTabPanel {
-		padding: 12px;
-	}
-
-	.settingsPanelHeader {
-		position: relative;
-	}
-}
-
 @media (prefers-reduced-motion: reduce) {
-	.settingsWindowClose,
 	.settingsTabButton,
 	.settingsTabIcon {
 		transition: none;

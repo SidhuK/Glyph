@@ -14,34 +14,17 @@ import {
 } from "./lib/appearance";
 import type { UiAccent, UiDarkThemeId, UiLightThemeId } from "./lib/settings";
 import { loadSettings, reloadFromDisk } from "./lib/settings";
+import { invoke } from "./lib/tauri";
 import { useTauriEvent } from "./lib/tauriEvents";
 import { isUiDarkThemeId, isUiLightThemeId } from "./lib/uiThemes";
 
-function isSettingsRoute(hash: string): boolean {
-	return hash.startsWith("#/settings");
-}
-
 const App = React.lazy(() => import("./App"));
-const SettingsApp = React.lazy(() => import("./SettingsApp"));
-
-function RouteLoadingFallback() {
-	return <main style={{ height: "100%" }} aria-busy="true" />;
-}
 
 function Root() {
-	const [hash, setHash] = React.useState(() => window.location.hash);
-	React.useEffect(() => {
-		const onHashChange = () => setHash(window.location.hash);
-		window.addEventListener("hashchange", onHashChange);
-		return () => window.removeEventListener("hashchange", onHashChange);
-	}, []);
-
-	return isSettingsRoute(hash) ? (
-		<React.Suspense fallback={<RouteLoadingFallback />}>
-			<SettingsApp />
-		</React.Suspense>
-	) : (
-		<React.Suspense fallback={<RouteLoadingFallback />}>
+	return (
+		<React.Suspense
+			fallback={<main style={{ height: "100%" }} aria-busy="true" />}
+		>
 			<LicenseGate>
 				<App />
 			</LicenseGate>
@@ -93,6 +76,9 @@ function ThemeAndTypographyBridge() {
 				setEditorFontSize(settings.ui.editorFontSize);
 				setTranslucentApp(settings.ui.translucentApp);
 				setDelightfulGlyph(settings.ui.delightfulGlyph);
+				void invoke("index_set_people_mentions_as_tags_enabled", {
+					enabled: settings.editor.enablePeopleMentionsAsTags,
+				}).catch(() => {});
 			} catch {
 				// best-effort hydration
 			}
@@ -169,6 +155,11 @@ function ThemeAndTypographyBridge() {
 		}
 		if (typeof payload.ui?.delightfulGlyph === "boolean") {
 			setDelightfulGlyph(payload.ui.delightfulGlyph);
+		}
+		if (typeof payload.editor?.enablePeopleMentionsAsTags === "boolean") {
+			void invoke("index_set_people_mentions_as_tags_enabled", {
+				enabled: payload.editor.enablePeopleMentionsAsTags,
+			}).catch(() => {});
 		}
 	});
 

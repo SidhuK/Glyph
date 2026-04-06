@@ -125,6 +125,7 @@ vi.mock("../../../lib/settings", () => ({
 			editor: {
 				showCollapsibleHeadings: false,
 				pastedMediaFolder: "assets",
+				enablePeopleMentionsAsTags: false,
 			},
 		}),
 }));

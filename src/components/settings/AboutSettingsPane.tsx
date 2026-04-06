@@ -135,7 +135,11 @@ export function AboutSettingsPane() {
 									className="aboutOpenSourceMark"
 									title="Open Source project"
 								>
-									<HugeiconsIcon icon={CodesandboxIcon} size={12} />
+									<HugeiconsIcon
+										icon={CodesandboxIcon}
+										size={12}
+										strokeWidth={0.9}
+									/>
 									<span>Open Source</span>
 								</span>
 							</div>
@@ -225,7 +229,11 @@ export function AboutSettingsPane() {
 								aria-label="X (Twitter)"
 								title="X (Twitter)"
 							>
-								<HugeiconsIcon icon={NewTwitterIcon} size={16} />
+								<HugeiconsIcon
+									icon={NewTwitterIcon}
+									size={16}
+									strokeWidth={0.9}
+								/>
 							</Button>
 							<Button
 								type="button"
@@ -239,7 +247,11 @@ export function AboutSettingsPane() {
 								aria-label="Feedback"
 								title="Feedback"
 							>
-								<HugeiconsIcon icon={BubbleChatQuestionIcon} size={16} />
+								<HugeiconsIcon
+									icon={BubbleChatQuestionIcon}
+									size={16}
+									strokeWidth={0.9}
+								/>
 							</Button>
 						</div>
 					</SettingsRow>
