@@ -16,7 +16,7 @@ import {
 } from "../../lib/database/palette";
 import type { DatabaseColumn, DatabaseRow } from "../../lib/database/types";
 import { extractErrorMessage } from "../../lib/errorUtils";
-import { invoke, type NoteTaskSummary } from "../../lib/tauri";
+import { type NoteTaskSummary, invoke } from "../../lib/tauri";
 import { parentDir } from "../../utils/path";
 import {
 	EDITOR_TEXT_COLORS,
@@ -608,7 +608,8 @@ export function DatabaseBoard({
 											const folderLabel =
 												row.folder?.trim() || parentDir(row.note_path) || "/";
 											const taskSummary =
-												taskSummariesByPath[row.note_path] ?? EMPTY_TASK_SUMMARY;
+												taskSummariesByPath[row.note_path] ??
+												EMPTY_TASK_SUMMARY;
 											const otherLanes = lanes.filter(
 												(l) =>
 													l.id !== lane.id &&

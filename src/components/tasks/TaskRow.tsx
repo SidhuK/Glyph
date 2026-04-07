@@ -47,7 +47,7 @@ export function TaskRow({
 	);
 	const [scheduledDate, setScheduledDate] = useState(task.scheduled_date ?? "");
 	const [dueDate, setDueDate] = useState(task.due_date ?? "");
-	const [pickerMonth, setPickerMonth] = useState<Date>(new Date());
+	const [pickerMonth, setPickerMonth] = useState<Date>(() => new Date());
 	const shouldReduceMotion = useReducedMotion();
 	const displayText = useMemo(
 		() => stripTaskScheduleTokens(task.raw_text),

@@ -27,18 +27,22 @@ import {
 	type ZenModeWillToggleDetail,
 } from "../../lib/appEvents";
 import { extractErrorMessage } from "../../lib/errorUtils";
+import { setPrefetchedNote } from "../../lib/navigationPrefetch";
 import { splitYamlFrontmatter } from "../../lib/notePreview";
-import { type NoteTaskSummary, type TextFileDoc, invoke } from "../../lib/tauri";
+import {
+	type NoteTaskSummary,
+	type TextFileDoc,
+	invoke,
+} from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { countWords, formatReadingTime } from "../../lib/textStats";
-import { setPrefetchedNote } from "../../lib/navigationPrefetch";
 import { normalizeRelPath } from "../../utils/path";
 import { Edit, Eye, FileText, RefreshCw, Save, Type } from "../Icons";
 import { CanvasNoteInlineEditor } from "../editor/CanvasNoteInlineEditor";
 import { FloatingTOC } from "../editor/FloatingTOC";
 import { CALLOUT_TYPES } from "../editor/ribbonButtonConfigs";
-import { TaskProgressIndicator } from "../tasks/TaskProgressIndicator";
 import type { CanvasInlineEditorMode } from "../editor/types";
+import { TaskProgressIndicator } from "../tasks/TaskProgressIndicator";
 import { Button } from "../ui/shadcn/button";
 import {
 	clearMarkdownDocCache,
@@ -108,8 +112,8 @@ export function MarkdownEditorPane({
 	initialError = "",
 }: MarkdownEditorPaneProps) {
 	const initialText = initialDoc?.text ?? peekCachedMarkdownDoc(relPath) ?? "";
-	const [text, setText] = useState(initialText);
-	const [savedText, setSavedText] = useState(initialText);
+	const [text, setText] = useState(() => initialText);
+	const [savedText, setSavedText] = useState(() => initialText);
 	const [mode, setMode] = useState<CanvasInlineEditorMode>("rich");
 	const [saving, setSaving] = useState(false);
 	const [autosaveBusy, setAutosaveBusy] = useState(false);
@@ -688,7 +692,7 @@ export function MarkdownEditorPane({
 
 		taskSummaryTimerRef.current = window.setTimeout(() => {
 			taskSummaryTimerRef.current = null;
-			void invoke("task_summary", { markdown: textRef.current })
+			void invoke("task_summary", { markdown: text })
 				.then((summary) => {
 					if (
 						!mountedRef.current ||
@@ -696,7 +700,7 @@ export function MarkdownEditorPane({
 					) {
 						return;
 					}
-					const fallback = summarizeTasksFromMarkdown(textRef.current);
+					const fallback = summarizeTasksFromMarkdown(text);
 					setTaskSummary(
 						summary.total_count > 0 || fallback.total_count === 0
 							? summary
@@ -710,7 +714,7 @@ export function MarkdownEditorPane({
 					) {
 						return;
 					}
-					setTaskSummary(summarizeTasksFromMarkdown(textRef.current));
+					setTaskSummary(summarizeTasksFromMarkdown(text));
 				});
 		}, 90);
 

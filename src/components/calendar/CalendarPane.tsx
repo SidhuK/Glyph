@@ -33,6 +33,12 @@ import {
 	parseIsoDate,
 } from "../../lib/dailyNotes";
 import { isMissingFileError } from "../../lib/fsErrors";
+import {
+	getPrefetchedCalendarData,
+	invalidateCalendarPrefetch,
+	prefetchCalendarData,
+	prefetchNote,
+} from "../../lib/navigationPrefetch";
 import { todayIsoDateLocal } from "../../lib/tasks";
 import {
 	type CalendarRangeResponse,
@@ -42,12 +48,6 @@ import {
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { renderTemplate } from "../../lib/templates";
 import { cn } from "../../lib/utils";
-import {
-	getPrefetchedCalendarData,
-	invalidateCalendarPrefetch,
-	prefetchNote,
-	prefetchCalendarData,
-} from "../../lib/navigationPrefetch";
 import { Settings } from "../Icons";
 import { TaskRow } from "../tasks/TaskRow";
 import { Button } from "../ui/shadcn/button";
@@ -104,10 +104,12 @@ export function CalendarPane({
 	onOpenDailyNotesSettings,
 }: CalendarPaneProps) {
 	const today = useMemo(() => todayIsoDateLocal(), []);
-	const initialAnchor = readStorage(ANCHOR_STORAGE_KEY) ?? today;
-	const initialSelected = readStorage(SELECTED_STORAGE_KEY) ?? today;
-	const [anchorDate, setAnchorDate] = useState(initialAnchor);
-	const [selectedDate, setSelectedDate] = useState(initialSelected);
+	const [anchorDate, setAnchorDate] = useState(
+		() => readStorage(ANCHOR_STORAGE_KEY) ?? todayIsoDateLocal(),
+	);
+	const [selectedDate, setSelectedDate] = useState(
+		() => readStorage(SELECTED_STORAGE_KEY) ?? todayIsoDateLocal(),
+	);
 	const [data, setData] = useState<CalendarRangeResponse | null>(initialData);
 	const [loading, setLoading] = useState(() => initialData === null);
 	const [error, setError] = useState("");
@@ -171,7 +173,7 @@ export function CalendarPane({
 			return;
 		}
 		void loadCalendar();
-	}, [loadCalendar]);
+	}, [anchorDate, dailyNotesFolder, loadCalendar, selectedDate]);
 
 	useTauriEvent("notes:external_changed", () => {
 		invalidateCalendarPrefetch();

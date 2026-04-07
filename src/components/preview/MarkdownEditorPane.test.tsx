@@ -128,6 +128,7 @@ describe("MarkdownEditorPane", () => {
 		...args:
 			| [command: "space_read_text", params: ReadTextArgs]
 			| [command: "space_write_text", params: WriteTextArgs]
+			| [command: "task_summary", params: { markdown: string }]
 	) {
 		const [command, params] = args;
 		if (command === "space_write_text") {
@@ -138,6 +139,13 @@ describe("MarkdownEditorPane", () => {
 		}
 		if (command === "space_read_text") {
 			return Promise.resolve(makeDoc(params.path, "", 1));
+		}
+		if (command === "task_summary") {
+			return Promise.resolve({
+				total_count: 0,
+				completed_count: 0,
+				open_count: 0,
+			});
 		}
 		throw new Error(`Unexpected command: ${command satisfies never}`);
 	}
@@ -239,6 +247,13 @@ describe("MarkdownEditorPane", () => {
 			}
 			if (command === "space_read_text") {
 				return Promise.resolve(makeDoc(params.path, "", 1));
+			}
+			if (command === "task_summary") {
+				return Promise.resolve({
+					total_count: 0,
+					completed_count: 0,
+					open_count: 0,
+				});
 			}
 			throw new Error(`Unexpected command: ${command}`);
 		});

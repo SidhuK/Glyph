@@ -494,9 +494,8 @@ export const FileTreePane = memo(function FileTreePane({
 													data-file-tree-file="true"
 													data-file-tree-path={file.path}
 												>
-													<span
-														role="button"
-														tabIndex={-1}
+													<button
+														type="button"
 														title="Unpin"
 														onClick={(e) => {
 															e.stopPropagation();
@@ -524,7 +523,7 @@ export const FileTreePane = memo(function FileTreePane({
 															className="fileTreePinOffIcon"
 															aria-hidden="true"
 														/>
-													</span>
+													</button>
 													<span className="fileTreeName">
 														{file.displayName}
 													</span>

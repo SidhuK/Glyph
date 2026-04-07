@@ -1,6 +1,8 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
 import type { JSONContent } from "@tiptap/core";
 import { MarkdownManager } from "@tiptap/markdown";
+import { TextSelection } from "@tiptap/pm/state";
+import type { EditorView } from "@tiptap/pm/view";
 import { useEditor } from "@tiptap/react";
 import { useEffect, useMemo, useRef } from "react";
 import { useState } from "react";
@@ -227,10 +229,59 @@ interface UseNoteEditorOptions {
 	onChange: (nextMarkdown: string) => void;
 }
 
+function expandMarkdownLinkForEditing(
+	view: EditorView,
+	link: HTMLAnchorElement,
+): boolean {
+	const href = link.getAttribute("href")?.trim() ?? "";
+	if (!href) return false;
+	if (href.startsWith("#")) return false;
+
+	const linkText = (link.textContent ?? "").trim() || href;
+	const markdown = `[${linkText}](${href})`;
+
+	try {
+		const from = view.posAtDOM(link, 0);
+		const to = view.posAtDOM(link, link.childNodes.length);
+		if (from >= to) return false;
+
+		const hrefStart = from + markdown.lastIndexOf(href);
+		const hrefEnd = hrefStart + href.length;
+		let tr = view.state.tr.insertText(markdown, from, to);
+		if (href.startsWith("http://") || href.startsWith("https://")) {
+			const linkMark = view.state.schema.marks.link;
+			if (linkMark) {
+				tr.addMark(hrefStart, hrefEnd, linkMark.create({ href }));
+			}
+		}
+		try {
+			tr = tr.setSelection(TextSelection.create(tr.doc, hrefStart, hrefEnd));
+		} catch {
+			// Fallback for malformed/mocked docs; the inserted markdown still edits correctly.
+		}
+		view.dispatch(tr.scrollIntoView());
+		view.focus();
+		return true;
+	} catch {
+		return false;
+	}
+}
+
+function isExpandedMarkdownUrlLink(link: HTMLAnchorElement): boolean {
+	const href = link.getAttribute("href")?.trim() ?? "";
+	const text = link.textContent?.trim() ?? "";
+	if (!href || text !== href) return false;
+	const previousText = link.previousSibling?.textContent ?? "";
+	const nextText = link.nextSibling?.textContent ?? "";
+	return previousText.endsWith("](") && nextText.startsWith(")");
+}
+
 function handleEditorClick(
 	event: MouseEvent,
+	view: EditorView,
 	relPath: string,
 	interactive: boolean,
+	editable: boolean,
 ): boolean {
 	const target = event.target instanceof Element ? event.target : null;
 	const tagToken = target?.closest(".tagToken") as HTMLElement | null;
@@ -288,19 +339,30 @@ function handleEditorClick(
 	}
 
 	const link = target?.closest("a") as HTMLAnchorElement | null;
+	if (!link) return false;
 	const href = link?.getAttribute("href") ?? "";
 	if (!href) return false;
 	if (!interactive) {
 		event.preventDefault();
 		return true;
 	}
-	if (href.startsWith("http://") || href.startsWith("https://")) {
-		event.preventDefault();
+	if (href.startsWith("#")) return false;
+	event.preventDefault();
+	if (
+		editable &&
+		isExpandedMarkdownUrlLink(link) &&
+		(href.startsWith("http://") || href.startsWith("https://"))
+	) {
 		void openUrl(href);
 		return true;
 	}
-	if (href.startsWith("#")) return false;
-	event.preventDefault();
+	if (editable && expandMarkdownLinkForEditing(view, link)) {
+		return true;
+	}
+	if (href.startsWith("http://") || href.startsWith("https://")) {
+		void openUrl(href);
+		return true;
+	}
 	dispatchMarkdownLinkClick({
 		href,
 		sourcePath: relPath,
@@ -330,6 +392,7 @@ export function useNoteEditor({
 	const interactiveRef = useRef(interactive);
 	const zenModeActiveRef = useRef(zenModeActive);
 	const pastedMediaFolderRef = useRef("assets");
+	const editorRef = useRef<ReturnType<typeof useEditor>>(null);
 	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
 	const [peopleMentionsEnabled, setPeopleMentionsEnabled] = useState(false);
 	const extensions = useMemo(
@@ -389,17 +452,9 @@ export function useNoteEditor({
 		}
 	});
 
-	useEffect(() => {
-		frontmatterRef.current = frontmatter;
-	}, [frontmatter]);
-
-	useEffect(() => {
-		relPathRef.current = relPath;
-	}, [relPath]);
-
-	useEffect(() => {
-		interactiveRef.current = interactive;
-	}, [interactive]);
+	frontmatterRef.current = frontmatter;
+	relPathRef.current = relPath;
+	interactiveRef.current = interactive;
 
 	const editor = useEditor(
 		{
@@ -412,27 +467,30 @@ export function useNoteEditor({
 					spellcheck: "true",
 				},
 				handleDOMEvents: {
-					click: (_view, event) => {
+					click: (view, event): boolean => {
 						if (!(event instanceof MouseEvent)) return false;
 						return handleEditorClick(
 							event,
+							view,
 							relPathRef.current,
 							interactiveRef.current,
+							mode === "rich",
 						);
 					},
 					paste: (_view, event) => {
 						if (!(event instanceof ClipboardEvent)) return false;
-						if (!editor) return false;
+						const editorInstance = editorRef.current;
+						if (!editorInstance) return false;
 						if (mode !== "rich") return false;
-						if (!editor.isEditable) return false;
+						if (!editorInstance.isEditable) return false;
 						const imageFiles = getPastedImageFiles(event);
 						if (imageFiles.length) {
 							if (!relPathRef.current) return false;
 							const sourcePath = relPathRef.current;
 							const targetDir = pastedMediaFolderRef.current;
 							const selectionRange = {
-								from: editor.state.selection.from,
-								to: editor.state.selection.to,
+								from: editorInstance.state.selection.from,
+								to: editorInstance.state.selection.to,
 							};
 							const placeholders = imageFiles.map((file, index) => ({
 								file,
@@ -450,14 +508,16 @@ export function useNoteEditor({
 								},
 							}));
 							if (
-								!editor.can().insertContentAt(selectionRange, placeholderNodes)
+								!editorInstance
+									.can()
+									.insertContentAt(selectionRange, placeholderNodes)
 							) {
 								for (const item of placeholders) {
 									URL.revokeObjectURL(item.objectUrl);
 								}
 								return false;
 							}
-							const inserted = editor
+							const inserted = editorInstance
 								.chain()
 								.focus()
 								.insertContentAt(selectionRange, placeholderNodes)
@@ -479,7 +539,7 @@ export function useNoteEditor({
 											data_url: dataUrl,
 											alt: item.file.name || null,
 										});
-										replacePlaceholderWithImage(editor, item.uploadId, {
+										replacePlaceholderWithImage(editorInstance, item.uploadId, {
 											src: dataUrl,
 											alt: item.file.name || "",
 											title: "",
@@ -487,7 +547,7 @@ export function useNoteEditor({
 										});
 									} catch {
 										replacePlaceholderWithFallbackText(
-											editor,
+											editorInstance,
 											item.uploadId,
 											item.file.name || "image",
 										);
@@ -499,7 +559,7 @@ export function useNoteEditor({
 							return true;
 						}
 						if (pasteMarkdownBehavior !== "smart-markdown") return false;
-						if (editor.isActive("codeBlock")) return false;
+						if (editorInstance.isActive("codeBlock")) return false;
 						const clipboardHtml = getClipboardHtml(event);
 						const clipboardText = normalizeClipboardMarkdownText(
 							getClipboardPlainText(event),
@@ -508,8 +568,8 @@ export function useNoteEditor({
 							return false;
 						}
 						const selectionRange = {
-							from: editor.state.selection.from,
-							to: editor.state.selection.to,
+							from: editorInstance.state.selection.from,
+							to: editorInstance.state.selection.to,
 						};
 						if (!markdownManager) return false;
 						const insertableContent = getInsertableMarkdownContent(
@@ -518,11 +578,13 @@ export function useNoteEditor({
 						);
 						if (!insertableContent.length) return false;
 						if (
-							!editor.can().insertContentAt(selectionRange, insertableContent)
+							!editorInstance
+								.can()
+								.insertContentAt(selectionRange, insertableContent)
 						) {
 							return false;
 						}
-						const inserted = editor
+						const inserted = editorInstance
 							.chain()
 							.focus()
 							.insertContentAt(selectionRange, insertableContent)
@@ -553,6 +615,7 @@ export function useNoteEditor({
 		},
 		[peopleMentionsEnabled, enableMarkdownLinkAutocomplete],
 	);
+	editorRef.current = editor;
 
 	useEffect(() => {
 		if (!editor) return;

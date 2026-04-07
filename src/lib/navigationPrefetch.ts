@@ -1,3 +1,4 @@
+import { setCachedMarkdownDoc } from "../components/preview/markdownCache";
 import { buildMonthRange } from "./calendar";
 import type {
 	AllDocsItem,
@@ -9,7 +10,6 @@ import type {
 	WorkspaceDatabaseSummary,
 } from "./tauri";
 import { invoke } from "./tauri";
-import { setCachedMarkdownDoc } from "../components/preview/markdownCache";
 
 const NOTE_PREFETCH_DEBOUNCE_MS = 24;
 const NOTE_PREFETCH_MAX_PATHS = 12;
@@ -160,7 +160,8 @@ async function loadAllDatabaseRows(
 	let truncated = false;
 	let iterations = 0;
 	const rows: DatabaseRow[] = [];
-	let availableProperties = [] as WorkspaceDatabaseQueryResult["available_properties"];
+	let availableProperties =
+		[] as WorkspaceDatabaseQueryResult["available_properties"];
 
 	while (true) {
 		const next = await invoke("databases_query_rows", {

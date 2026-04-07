@@ -345,7 +345,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	const [activeDateField, setActiveDateField] = useState<"scheduled" | "due">(
 		"scheduled",
 	);
-	const [pickerMonth, setPickerMonth] = useState<Date>(new Date());
+	const [pickerMonth, setPickerMonth] = useState<Date>(() => new Date());
 	const [scheduledDate, setScheduledDate] = useState("");
 	const [dueDate, setDueDate] = useState("");
 	const [selectionRibbon, setSelectionRibbon] =

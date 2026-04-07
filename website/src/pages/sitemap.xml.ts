@@ -14,6 +14,7 @@ function toAbsoluteUrl(path: string, site?: URL): string {
 export function GET(context: { site?: URL }) {
 	const staticEntries: SitemapEntry[] = [
 		{ path: "/", changefreq: "weekly", priority: "1.0" },
+		{ path: "/changelog", changefreq: "weekly", priority: "0.7" },
 		{ path: "/legal", changefreq: "monthly", priority: "0.4" },
 		{ path: "/privacy", changefreq: "monthly", priority: "0.4" },
 		{ path: "/terms", changefreq: "monthly", priority: "0.4" },

@@ -59,7 +59,7 @@ export function DatabaseCell({
 	const tagFieldRef = useRef<HTMLDivElement | null>(null);
 	const [editing, setEditing] = useState(false);
 	const [draft, setDraft] = useState(
-		cellValue.value_text ?? listDraft(row, column),
+		() => cellValue.value_text ?? listDraft(row, column),
 	);
 	const [tagDraft, setTagDraft] = useState("");
 	const [saveError, setSaveError] = useState("");
