@@ -248,12 +248,6 @@ function expandMarkdownLinkForEditing(
 		const hrefStart = from + markdown.lastIndexOf(href);
 		const hrefEnd = hrefStart + href.length;
 		let tr = view.state.tr.insertText(markdown, from, to);
-		if (href.startsWith("http://") || href.startsWith("https://")) {
-			const linkMark = view.state.schema.marks.link;
-			if (linkMark) {
-				tr.addMark(hrefStart, hrefEnd, linkMark.create({ href }));
-			}
-		}
 		try {
 			tr = tr.setSelection(TextSelection.create(tr.doc, hrefStart, hrefEnd));
 		} catch {
@@ -390,6 +384,7 @@ export function useNoteEditor({
 	const suppressUpdateRef = useRef(false);
 	const relPathRef = useRef(relPath);
 	const interactiveRef = useRef(interactive);
+	const modeRef = useRef(mode);
 	const zenModeActiveRef = useRef(zenModeActive);
 	const pastedMediaFolderRef = useRef("assets");
 	const editorRef = useRef<ReturnType<typeof useEditor>>(null);
@@ -455,6 +450,7 @@ export function useNoteEditor({
 	frontmatterRef.current = frontmatter;
 	relPathRef.current = relPath;
 	interactiveRef.current = interactive;
+	modeRef.current = mode;
 
 	const editor = useEditor(
 		{
@@ -474,14 +470,14 @@ export function useNoteEditor({
 							view,
 							relPathRef.current,
 							interactiveRef.current,
-							mode === "rich",
+							modeRef.current === "rich",
 						);
 					},
 					paste: (_view, event) => {
 						if (!(event instanceof ClipboardEvent)) return false;
 						const editorInstance = editorRef.current;
 						if (!editorInstance) return false;
-						if (mode !== "rich") return false;
+						if (modeRef.current !== "rich") return false;
 						if (!editorInstance.isEditable) return false;
 						const imageFiles = getPastedImageFiles(event);
 						if (imageFiles.length) {

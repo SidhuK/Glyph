@@ -42,9 +42,6 @@ const {
 				to: 4,
 			},
 			tr: {
-				addMark: vi.fn(function addMark() {
-					return mockEditor.state.tr;
-				}),
 				delete: vi.fn(),
 				insertText: vi.fn(function insertText() {
 					return mockEditor.state.tr;
@@ -66,11 +63,6 @@ const {
 				nodes: {
 					paragraph: {
 						create: vi.fn(() => ({})),
-					},
-				},
-				marks: {
-					link: {
-						create: vi.fn((attrs: Record<string, unknown>) => attrs),
 					},
 				},
 				text: vi.fn(() => ({})),
@@ -241,10 +233,6 @@ describe("useNoteEditor", () => {
 		mockEditor.state.doc.descendants.mockImplementation(() => {});
 		mockEditor.state.doc.resolve.mockReset();
 		mockEditor.state.doc.resolve.mockImplementation((pos: number) => ({ pos }));
-		mockEditor.state.tr.addMark.mockReset();
-		mockEditor.state.tr.addMark.mockImplementation(function addMark() {
-			return mockEditor.state.tr;
-		});
 		mockEditor.state.tr.insertText.mockReset();
 		mockEditor.state.tr.insertText.mockImplementation(function insertText() {
 			return mockEditor.state.tr;
@@ -459,40 +447,7 @@ describe("useNoteEditor", () => {
 			5,
 			14,
 		);
-		expect(transaction.addMark).toHaveBeenCalledWith(
-			27,
-			46,
-			expect.objectContaining({ href: "https://example.com" }),
-		);
 		expect(openUrlMock).not.toHaveBeenCalled();
-	});
-
-	it("opens the expanded markdown url segment when clicked", async () => {
-		const onChange = vi.fn();
-
-		await act(async () => {
-			root.render(<Harness onChange={onChange} />);
-		});
-
-		const options = getEditorOptions() as EditorOptionsWithPaste;
-		const click = options?.editorProps?.handleDOMEvents?.click;
-		const wrapper = document.createElement("span");
-		wrapper.append("[Emil Kowalski](");
-		const link = document.createElement("a");
-		link.setAttribute("href", "https://x.com/emilkowalski_");
-		link.textContent = "https://x.com/emilkowalski_";
-		wrapper.append(link);
-		wrapper.append(")");
-		const event = new MouseEvent("click", { bubbles: true, cancelable: true });
-		Object.defineProperty(event, "target", {
-			value: link,
-			configurable: true,
-		});
-
-		expect(click?.(mockEditor.view, event)).toBe(true);
-		expect(event.defaultPrevented).toBe(true);
-		expect(openUrlMock).toHaveBeenCalledWith("https://x.com/emilkowalski_");
-		expect(mockEditor.view.dispatch).not.toHaveBeenCalled();
 	});
 
 	it("leaves Markdown text alone when smart paste is not enabled", async () => {

@@ -216,6 +216,31 @@ function selectionTouchesRange(
 	return selectionFrom < rangeTo && selectionTo > rangeFrom;
 }
 
+function rangeTouchesCodeMark(
+	node: ProseMirrorNode,
+	startOffset: number,
+	endOffset: number,
+): boolean {
+	let textCursor = 0;
+	for (let index = 0; index < node.childCount; index += 1) {
+		const child = node.child(index);
+		if (!child.isText) {
+			textCursor += child.textContent.length;
+			continue;
+		}
+		const length = child.text?.length ?? 0;
+		const childStart = textCursor;
+		const childEnd = childStart + length;
+		const overlaps = startOffset < childEnd && endOffset > childStart;
+		if (overlaps && child.marks.some((mark) => mark.type.name === "code")) {
+			return true;
+		}
+		textCursor = childEnd;
+	}
+
+	return false;
+}
+
 const MarkdownLinkSyntaxCollapse = Extension.create({
 	name: "markdown-link-syntax-collapse",
 	addProseMirrorPlugins() {
@@ -236,10 +261,19 @@ const MarkdownLinkSyntaxCollapse = Extension.create({
 					const { from: selectionFrom, to: selectionTo } = newState.selection;
 
 					newState.doc.descendants((node, pos) => {
+						if (
+							node.type.name === "codeBlock" ||
+							node.type.name === "code_block"
+						) {
+							return false;
+						}
 						if (!node.isTextblock) return;
 						const text = node.textContent ?? "";
 						if (!text.includes("](")) return;
 						for (const match of findMarkdownLinkTextMatches(text)) {
+							if (rangeTouchesCodeMark(node, match.start, match.end)) {
+								continue;
+							}
 							const from = mapTextOffsetToDocPos(
 								node,
 								pos,

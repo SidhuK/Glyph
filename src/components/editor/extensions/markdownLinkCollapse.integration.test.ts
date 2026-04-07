@@ -57,4 +57,38 @@ describe("Markdown link collapse integration", () => {
 			harness.destroy();
 		}
 	});
+
+	it("does not collapse markdown link text inside inline code or code blocks", () => {
+		const harness = createHarness();
+		const inlineInput = "Before `[Emil](https://x.com/emilkowalski_)` after";
+		const blockInput = "```md\n[Emil](https://x.com/emilkowalski_)\n```";
+
+		try {
+			harness.editor.commands.setContent(inlineInput, {
+				contentType: "markdown",
+			});
+			harness.editor.commands.setTextSelection(
+				harness.editor.state.doc.content.size,
+			);
+
+			expect(harness.editor.getMarkdown()).toContain(
+				"`[Emil](https://x.com/emilkowalski_)`",
+			);
+			expect(harness.element.querySelector("code a")).toBeNull();
+
+			harness.editor.commands.setContent(blockInput, {
+				contentType: "markdown",
+			});
+			harness.editor.commands.setTextSelection(
+				harness.editor.state.doc.content.size,
+			);
+
+			expect(harness.editor.getMarkdown()).toContain(
+				"[Emil](https://x.com/emilkowalski_)",
+			);
+			expect(harness.element.querySelector("pre a")).toBeNull();
+		} finally {
+			harness.destroy();
+		}
+	});
 });
