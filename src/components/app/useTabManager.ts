@@ -77,39 +77,54 @@ export function useTabManager(spacePath: string | null) {
 		activeTabIdRef.current = activeTabId;
 	}, [activeTabId]);
 
-	useEffect(() => {
-		if (!activeTab || activeTab.kind !== "file" || !activeTab.target) {
-			setActivePreviewPath(null);
-			setActiveFilePath(null);
-			return;
-		}
-		setActiveFilePath(activeTab.target);
-		if (activeTab.target.toLowerCase().endsWith(".md")) {
-			setActivePreviewPath(null);
-			return;
-		}
-		if (isInAppPreviewable(activeTab.target)) {
-			setActivePreviewPath(activeTab.target);
-			return;
-		}
-		setActivePreviewPath(null);
-	}, [activeTab, setActiveFilePath, setActivePreviewPath]);
+	const derivedFilePath = useMemo(() => {
+		if (!activeTab || activeTab.kind !== "file" || !activeTab.target)
+			return null;
+		return activeTab.target;
+	}, [activeTab]);
 
-	useEffect(() => {
-		const markdownTabs = tabs
-			.filter(
-				(tab) =>
-					tab.kind === "file" && tab.target?.toLowerCase().endsWith(".md"),
-			)
-			.map((tab) => tab.target as string);
-		setOpenMarkdownTabs(markdownTabs);
-		const activeMarkdown =
+	const derivedPreviewPath = useMemo(() => {
+		if (!derivedFilePath) return null;
+		if (derivedFilePath.toLowerCase().endsWith(".md")) return null;
+		if (isInAppPreviewable(derivedFilePath)) return derivedFilePath;
+		return null;
+	}, [derivedFilePath]);
+
+	const derivedMarkdownTabs = useMemo(
+		() =>
+			tabs
+				.filter(
+					(tab) =>
+						tab.kind === "file" && tab.target?.toLowerCase().endsWith(".md"),
+				)
+				.map((tab) => tab.target as string),
+		[tabs],
+	);
+
+	const derivedActiveMarkdownPath = useMemo(() => {
+		if (
 			activeTab?.kind === "file" &&
 			activeTab.target?.toLowerCase().endsWith(".md")
-				? activeTab.target
-				: null;
-		setActiveMarkdownTabPath(activeMarkdown);
-	}, [activeTab, setActiveMarkdownTabPath, setOpenMarkdownTabs, tabs]);
+		)
+			return activeTab.target;
+		return null;
+	}, [activeTab]);
+
+	useEffect(() => {
+		setActiveFilePath(derivedFilePath);
+		setActivePreviewPath(derivedPreviewPath);
+		setOpenMarkdownTabs(derivedMarkdownTabs);
+		setActiveMarkdownTabPath(derivedActiveMarkdownPath);
+	}, [
+		derivedFilePath,
+		derivedPreviewPath,
+		derivedMarkdownTabs,
+		derivedActiveMarkdownPath,
+		setActiveFilePath,
+		setActivePreviewPath,
+		setOpenMarkdownTabs,
+		setActiveMarkdownTabPath,
+	]);
 
 	useEffect(() => {
 		if (activeTab?.kind === "file" && activeTab.target && spacePath) {

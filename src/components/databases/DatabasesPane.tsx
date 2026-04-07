@@ -8,7 +8,6 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { defaultDatabaseColumnIconName } from "../../lib/database/columnIcons";
 import { extractErrorMessage } from "../../lib/errorUtils";
-import { loadSettings } from "../../lib/settings";
 import {
 	getPrefetchedDatabaseRows,
 	getPrefetchedDatabaseSummaries,
@@ -20,14 +19,15 @@ import {
 	setPrefetchedDatabaseDocument,
 	setPrefetchedDatabaseRows,
 } from "../../lib/navigationPrefetch";
+import { loadSettings } from "../../lib/settings";
 import {
 	type DatabaseColumn,
 	type DatabaseConfig,
 	type DatabaseRow,
 	type DatabaseSort,
-	type WorkspaceDatabaseQueryResult,
 	type WorkspaceDatabaseDefinition,
 	type WorkspaceDatabaseDocument,
+	type WorkspaceDatabaseQueryResult,
 	type WorkspaceDatabaseSummary,
 	invoke,
 } from "../../lib/tauri";
@@ -624,7 +624,7 @@ export function DatabasesPane({
 				throw cause;
 			}
 		},
-		[loadRows],
+		[document, loadRows, selectedViewId],
 	);
 
 	const handleCreateRow = useCallback(async () => {

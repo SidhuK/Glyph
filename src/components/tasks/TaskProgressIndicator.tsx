@@ -23,11 +23,16 @@ export function TaskProgressIndicator({
 
 	return (
 		<div
-			className={["markdownEditorTaskProgress", className].filter(Boolean).join(" ")}
+			className={["markdownEditorTaskProgress", className]
+				.filter(Boolean)
+				.join(" ")}
 			title={`${completed_count}/${total_count} tasks completed`}
 			aria-label={`${completed_count} of ${total_count} tasks completed`}
 		>
-			<div className={`markdownEditorTaskProgressBar is-${tone}`} aria-hidden="true">
+			<div
+				className={`markdownEditorTaskProgressBar is-${tone}`}
+				aria-hidden="true"
+			>
 				<div
 					className="markdownEditorTaskProgressFill"
 					style={{ transform: `scaleX(${clampedRatio})` }}

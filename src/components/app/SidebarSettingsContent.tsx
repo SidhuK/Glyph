@@ -9,10 +9,7 @@ import { memo } from "react";
 import { useUILayoutContext } from "../../contexts";
 import { useLicenseStatus } from "../../lib/license";
 import { cn } from "../../lib/utils";
-import {
-	SETTINGS_TABS,
-	type SettingsTab,
-} from "../settings/settingsConfig";
+import { SETTINGS_TABS, type SettingsTab } from "../settings/settingsConfig";
 import { Button } from "../ui/shadcn/button";
 
 export const SidebarSettingsContent = memo(function SidebarSettingsContent() {

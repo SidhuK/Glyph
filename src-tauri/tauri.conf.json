@@ -35,7 +35,12 @@
 		"active": true,
 		"createUpdaterArtifacts": true,
 		"targets": "all",
-		"icon": ["icons/icon.icns"]
+		"icon": ["icons/icon.icns"],
+		"macOS": {
+			"files": {
+				"Resources/Assets.car": "./icons/Assets.car"
+			}
+		}
 	},
 	"plugins": {
 		"updater": {

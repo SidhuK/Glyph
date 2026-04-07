@@ -43,11 +43,21 @@ const {
 			},
 			tr: {
 				delete: vi.fn(),
+				insertText: vi.fn(function insertText() {
+					return mockEditor.state.tr;
+				}),
 				replaceWith: vi.fn(),
+				scrollIntoView: vi.fn(function scrollIntoView() {
+					return mockEditor.state.tr;
+				}),
+				setSelection: vi.fn(function setSelection() {
+					return mockEditor.state.tr;
+				}),
 				setNodeMarkup: vi.fn(),
 			},
 			doc: {
 				descendants: vi.fn(),
+				resolve: vi.fn((pos: number) => ({ pos })),
 			},
 			schema: {
 				nodes: {
@@ -60,8 +70,12 @@ const {
 		},
 		view: {
 			dispatch: vi.fn(),
+			focus: vi.fn(),
+			posAtDOM: vi.fn(),
+			state: undefined as unknown,
 		},
 	};
+	mockEditor.view.state = mockEditor.state;
 	const parseMock = vi.fn(() => ({
 		content: [
 			{
@@ -191,6 +205,7 @@ function createClipboardEvent({
 type EditorOptionsWithPaste = {
 	editorProps?: {
 		handleDOMEvents?: {
+			click?: (view: typeof mockEditor.view, event: MouseEvent) => boolean;
 			paste?: (view: unknown, event: ClipboardEvent) => boolean;
 		};
 	};
@@ -216,7 +231,30 @@ describe("useNoteEditor", () => {
 		mockEditor.commands.setHeadingCollapseEnabled.mockReset();
 		mockEditor.state.doc.descendants.mockReset();
 		mockEditor.state.doc.descendants.mockImplementation(() => {});
+		mockEditor.state.doc.resolve.mockReset();
+		mockEditor.state.doc.resolve.mockImplementation((pos: number) => ({ pos }));
+		mockEditor.state.tr.insertText.mockReset();
+		mockEditor.state.tr.insertText.mockImplementation(function insertText() {
+			return mockEditor.state.tr;
+		});
+		mockEditor.state.tr.scrollIntoView.mockReset();
+		mockEditor.state.tr.scrollIntoView.mockImplementation(
+			function scrollIntoView() {
+				return mockEditor.state.tr;
+			},
+		);
+		mockEditor.state.tr.setSelection.mockReset();
+		mockEditor.state.tr.setSelection.mockImplementation(
+			function setSelection() {
+				return mockEditor.state.tr;
+			},
+		);
 		mockEditor.view.dispatch.mockReset();
+		mockEditor.view.focus.mockReset();
+		mockEditor.view.posAtDOM.mockReset();
+		mockEditor.view.posAtDOM.mockImplementation(
+			(_node: Node, offset: number) => (offset === 0 ? 5 : 14),
+		);
 		chainCommands.focus.mockClear();
 		chainCommands.insertContentAt.mockClear();
 		chainCommands.run.mockReset();
@@ -350,6 +388,66 @@ describe("useNoteEditor", () => {
 			],
 		);
 		expect(event.defaultPrevented).toBe(true);
+	});
+
+	it("expands internal markdown links into editable markdown text on click", async () => {
+		const onChange = vi.fn();
+
+		await act(async () => {
+			root.render(<Harness onChange={onChange} />);
+		});
+
+		const options = getEditorOptions() as EditorOptionsWithPaste;
+		const click = options?.editorProps?.handleDOMEvents?.click;
+		const link = document.createElement("a");
+		link.setAttribute("href", "notes/next.md");
+		link.textContent = "Next note";
+		const event = new MouseEvent("click", { bubbles: true, cancelable: true });
+		Object.defineProperty(event, "target", {
+			value: link,
+			configurable: true,
+		});
+
+		expect(click?.(mockEditor.view, event)).toBe(true);
+		expect(event.defaultPrevented).toBe(true);
+		expect(mockEditor.view.dispatch).toHaveBeenCalledTimes(1);
+		const transaction = mockEditor.view.dispatch.mock.calls[0]?.[0];
+		expect(transaction.insertText).toHaveBeenCalledWith(
+			"[Next note](notes/next.md)",
+			5,
+			14,
+		);
+		expect(mockEditor.view.focus).toHaveBeenCalledTimes(1);
+	});
+
+	it("expands external urls into editable markdown text on click", async () => {
+		const onChange = vi.fn();
+
+		await act(async () => {
+			root.render(<Harness onChange={onChange} />);
+		});
+
+		const options = getEditorOptions() as EditorOptionsWithPaste;
+		const click = options?.editorProps?.handleDOMEvents?.click;
+		const link = document.createElement("a");
+		link.setAttribute("href", "https://example.com");
+		link.textContent = "https://example.com";
+		const event = new MouseEvent("click", { bubbles: true, cancelable: true });
+		Object.defineProperty(event, "target", {
+			value: link,
+			configurable: true,
+		});
+
+		expect(click?.(mockEditor.view, event)).toBe(true);
+		expect(event.defaultPrevented).toBe(true);
+		expect(mockEditor.view.dispatch).toHaveBeenCalledTimes(1);
+		const transaction = mockEditor.view.dispatch.mock.calls[0]?.[0];
+		expect(transaction.insertText).toHaveBeenCalledWith(
+			"[https://example.com](https://example.com)",
+			5,
+			14,
+		);
+		expect(openUrlMock).not.toHaveBeenCalled();
 	});
 
 	it("leaves Markdown text alone when smart paste is not enabled", async () => {

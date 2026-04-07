@@ -9,6 +9,7 @@ import {
 import TaskItem from "@tiptap/extension-task-item";
 import TaskList from "@tiptap/extension-task-list";
 import { Markdown } from "@tiptap/markdown";
+import type { Node as ProseMirrorNode } from "@tiptap/pm/model";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Decoration, DecorationSet } from "@tiptap/pm/view";
 import StarterKit from "@tiptap/starter-kit";
@@ -137,6 +138,177 @@ const CalloutDecorations = Extension.create({
 						});
 						return DecorationSet.create(state.doc, decorations);
 					},
+				},
+			}),
+		];
+	},
+});
+
+const MARKDOWN_LINK_TEXT_RE = /(?<!!)\[([^\]\n]+)\]\(([^)\n]+)\)/g;
+
+function findMarkdownLinkTextMatches(text: string) {
+	const matches: Array<{
+		end: number;
+		href: string;
+		label: string;
+		start: number;
+	}> = [];
+	for (const match of text.matchAll(MARKDOWN_LINK_TEXT_RE)) {
+		if (match.index === undefined) continue;
+		const label = (match[1] ?? "").trim();
+		const href = (match[2] ?? "").trim();
+		if (!label || !href) continue;
+		const raw = match[0];
+		matches.push({
+			start: match.index,
+			end: match.index + raw.length,
+			label,
+			href,
+		});
+	}
+	return matches;
+}
+
+function mapTextOffsetToDocPos(
+	node: ProseMirrorNode,
+	pos: number,
+	targetOffset: number,
+	bias: "start" | "end",
+): number | null {
+	let textCursor = 0;
+	let resolved: number | null = null;
+
+	node.forEach((child, offset) => {
+		if (resolved !== null || !child.isText) {
+			textCursor += child.textContent.length;
+			return;
+		}
+		const length = child.text?.length ?? 0;
+		const start = textCursor;
+		const end = start + length;
+		const matchesOffset =
+			bias === "start"
+				? targetOffset >= start && targetOffset < end
+				: targetOffset > start && targetOffset <= end;
+		if (matchesOffset) {
+			resolved = pos + 1 + offset + (targetOffset - start);
+			return;
+		}
+		textCursor = end;
+	});
+
+	if (resolved !== null) return resolved;
+	if (targetOffset === 0) return pos + 1;
+	if (bias === "end" && targetOffset === textCursor)
+		return pos + node.nodeSize - 1;
+	return null;
+}
+
+function selectionTouchesRange(
+	selectionFrom: number,
+	selectionTo: number,
+	rangeFrom: number,
+	rangeTo: number,
+): boolean {
+	if (selectionFrom === selectionTo) {
+		return selectionFrom > rangeFrom && selectionFrom < rangeTo;
+	}
+	return selectionFrom < rangeTo && selectionTo > rangeFrom;
+}
+
+function rangeTouchesCodeMark(
+	node: ProseMirrorNode,
+	startOffset: number,
+	endOffset: number,
+): boolean {
+	let textCursor = 0;
+	for (let index = 0; index < node.childCount; index += 1) {
+		const child = node.child(index);
+		if (!child.isText) {
+			textCursor += child.textContent.length;
+			continue;
+		}
+		const length = child.text?.length ?? 0;
+		const childStart = textCursor;
+		const childEnd = childStart + length;
+		const overlaps = startOffset < childEnd && endOffset > childStart;
+		if (overlaps && child.marks.some((mark) => mark.type.name === "code")) {
+			return true;
+		}
+		textCursor = childEnd;
+	}
+
+	return false;
+}
+
+const MarkdownLinkSyntaxCollapse = Extension.create({
+	name: "markdown-link-syntax-collapse",
+	addProseMirrorPlugins() {
+		const key = new PluginKey("markdown-link-syntax-collapse");
+		return [
+			new Plugin({
+				key,
+				appendTransaction(_transactions, _oldState, newState) {
+					const linkMark = newState.schema.marks.link;
+					if (!linkMark) return null;
+
+					const replacements: Array<{
+						from: number;
+						href: string;
+						label: string;
+						to: number;
+					}> = [];
+					const { from: selectionFrom, to: selectionTo } = newState.selection;
+
+					newState.doc.descendants((node, pos) => {
+						if (
+							node.type.name === "codeBlock" ||
+							node.type.name === "code_block"
+						) {
+							return false;
+						}
+						if (!node.isTextblock) return;
+						const text = node.textContent ?? "";
+						if (!text.includes("](")) return;
+						for (const match of findMarkdownLinkTextMatches(text)) {
+							if (rangeTouchesCodeMark(node, match.start, match.end)) {
+								continue;
+							}
+							const from = mapTextOffsetToDocPos(
+								node,
+								pos,
+								match.start,
+								"start",
+							);
+							const to = mapTextOffsetToDocPos(node, pos, match.end, "end");
+							if (from === null || to === null || from >= to) continue;
+							if (selectionTouchesRange(selectionFrom, selectionTo, from, to)) {
+								continue;
+							}
+							replacements.push({
+								from,
+								to,
+								label: match.label,
+								href: match.href,
+							});
+						}
+					});
+
+					if (!replacements.length) return null;
+
+					let tr = newState.tr;
+					for (let index = replacements.length - 1; index >= 0; index -= 1) {
+						const replacement = replacements[index];
+						tr = tr.replaceWith(
+							replacement.from,
+							replacement.to,
+							newState.schema.text(replacement.label, [
+								linkMark.create({ href: replacement.href }),
+							]),
+						);
+					}
+
+					return tr.docChanged ? tr : null;
 				},
 			}),
 		];
@@ -391,6 +563,7 @@ export function createEditorExtensions(
 		TaskList,
 		TaskItem.configure({ nested: true }),
 		TaskListMarkdownShortcut,
+		MarkdownLinkSyntaxCollapse,
 		MarkdownImageShortcut,
 		TableEnterNavigation,
 		Table.configure({ resizable: true }),
