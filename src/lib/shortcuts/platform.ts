@@ -42,28 +42,6 @@ export function isMacOS(): boolean {
 }
 
 /**
- * Check if we're running on Windows
- */
-export function isWindows(): boolean {
-	return getPlatform() === "windows";
-}
-
-/**
- * Check if we're running on Linux
- */
-export function isLinux(): boolean {
-	return getPlatform() === "linux";
-}
-
-/**
- * Get the primary modifier key name for the current platform
- * Returns "meta" on macOS, "ctrl" on Windows/Linux
- */
-export function getPlatformModifier(): "meta" | "ctrl" {
-	return isMacOS() ? "meta" : "ctrl";
-}
-
-/**
  * Symbol mappings for modifier keys by platform
  */
 const MODIFIER_SYMBOLS: Record<
@@ -128,13 +106,4 @@ export function formatShortcutPartsForPlatform(shortcut: Shortcut): string[] {
 	parts.push(key);
 
 	return parts;
-}
-
-/**
- * Get a display-friendly string for the primary modifier
- * Returns "⌘" on macOS, "Ctrl" on Windows/Linux
- */
-export function getModifierDisplay(): string {
-	const p = getPlatform();
-	return MODIFIER_SYMBOLS[p].meta;
 }

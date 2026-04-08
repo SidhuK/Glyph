@@ -210,24 +210,6 @@ export function getShortcutById(id: string): ShortcutDefinition | undefined {
 }
 
 /**
- * Get all shortcuts for a given context
- */
-export function getShortcutsByContext(
-	context: ShortcutContext,
-): ShortcutDefinition[] {
-	return SHORTCUTS.filter((s) => s.context === context);
-}
-
-/**
- * Get all shortcuts for a given category
- */
-export function getShortcutsByCategory(
-	category: ShortcutCategory,
-): ShortcutDefinition[] {
-	return SHORTCUTS.filter((s) => s.category === category);
-}
-
-/**
  * Shortcut IDs as a type for type-safe references
  */
 export type ShortcutId = (typeof SHORTCUTS)[number]["id"];

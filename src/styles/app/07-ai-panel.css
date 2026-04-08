@@ -29,32 +29,6 @@
 	border-left-color: var(--border-light);
 }
 
-.aiFab {
-	position: absolute;
-	right: 16px;
-	bottom: 16px;
-	z-index: 20;
-	width: 56px;
-	height: 56px;
-	border-radius: var(--radius-full);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	border: none;
-	background: transparent;
-	backdrop-filter: none;
-	-webkit-backdrop-filter: none;
-	box-shadow: none;
-	color: var(--text-secondary);
-	cursor: pointer;
-}
-
-.aiFab:hover {
-	color: var(--interactive-accent);
-	background: transparent;
-	box-shadow: none;
-}
-
 .aiSidebarPanel .aiPanel {
 	display: flex;
 	flex-direction: column;
@@ -341,52 +315,6 @@
 	text-align: center;
 }
 
-.aiChatEmptyArt {
-	position: relative;
-	width: 104px;
-	height: 104px;
-	margin-bottom: 10px;
-	display: grid;
-	place-items: center;
-}
-
-.aiChatEmptyArt::before,
-.aiChatEmptyArt::after {
-	content: "";
-	position: absolute;
-	inset: 0;
-	border-radius: 30px;
-}
-
-.aiChatEmptyArt::before {
-	display: none;
-}
-
-.aiChatEmptyArt::after {
-	display: none;
-}
-
-.aiChatEmptyArtIcon {
-	position: relative;
-	z-index: 1;
-	width: 66px;
-	height: 66px;
-	border-radius: 22px;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	color: var(--ai-preset-accent, var(--ai-mode-accent));
-	background: transparent;
-}
-
-.aiChatEmptyEyebrow {
-	font-size: 10px;
-	font-weight: var(--font-semibold);
-	letter-spacing: 0.12em;
-	text-transform: uppercase;
-	color: var(--text-tertiary);
-}
-
 .aiChatEmptyTitle {
 	margin-top: 8px;
 	font-size: var(--text-sm);
@@ -403,145 +331,13 @@
 	line-height: 1.45;
 }
 
-.aiChatEmptyMeta-secondary {
-	margin-top: 10px;
-}
+/* ── CHAT MESSAGES ── */
 
-.aiPresetGrid {
-	width: 100%;
-	display: grid;
-	grid-template-columns: repeat(2, minmax(0, 1fr));
-	gap: 8px;
-	margin-top: 16px;
-	padding: 0;
-	list-style: none;
-}
-
-.aiPresetCard {
-	display: flex;
-	align-items: center;
-	gap: 10px;
-	padding: 10px;
-	border-radius: 18px;
-	border: 1px solid transparent;
-	background: transparent;
-	text-align: left;
-	transition: border-color var(--transition-fast), background
-		var(--transition-fast), transform var(--transition-fast);
-}
-
-.aiPresetCard:hover {
-	transform: translateY(-1px);
-	border-color: transparent;
-	background: transparent;
-}
-
-.aiPresetCard.active {
-	border-color: transparent;
-	background: transparent;
-}
-
-.aiPresetCardIcon {
-	width: 30px;
-	height: 30px;
-	border-radius: 10px;
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	color: var(--ai-preset-accent, var(--ai-mode-accent));
-	background: transparent;
-	flex-shrink: 0;
-}
-
-.aiPresetCardBody {
+.aiChatMsg {
 	display: flex;
 	flex-direction: column;
-	gap: 2px;
 	min-width: 0;
-}
-
-.aiPresetCardLabel {
-	font-size: 11px;
-	font-weight: var(--font-semibold);
-	color: var(--text-primary);
-}
-
-.aiPresetCardHint {
-	font-size: 10px;
-	line-height: 1.3;
-	color: var(--text-secondary);
-}
-
-.aiChatEmptyTips {
-	width: 100%;
-	margin-top: 14px;
-	position: relative;
-}
-
-.aiChatEmptyTipsViewport {
-	--ai-starter-step: 48px;
-	position: relative;
-	overflow: hidden;
-	height: var(--ai-starter-step);
-	mask-image: linear-gradient(
-		to top,
-		transparent,
-		black 14%,
-		black 86%,
-		transparent
-	);
-	-webkit-mask-image: linear-gradient(
-		to top,
-		transparent,
-		black 14%,
-		black 86%,
-		transparent
-	);
-}
-
-.aiChatEmptyTipsTrack {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	gap: 8px;
-	width: 100%;
-	animation: ai-starter-carousel-vertical 12s cubic-bezier(0.2, 0.8, 0.2, 1)
-		infinite;
-}
-
-.aiChatEmptyTip {
-	flex: 0 0 auto;
-	width: min(100%, 420px);
-	min-height: 40px;
-	padding: 6px 10px;
-	border-radius: var(--radius-full);
-	border: 1px solid transparent;
-	background: transparent;
-	color: var(--text-secondary);
-	font-size: 10px;
-	line-height: 1.3;
-}
-
-.aiChatEmptyTip:hover {
-	color: var(--text-primary);
-}
-
-@keyframes ai-starter-carousel-vertical {
-	0%,
-	24% {
-		transform: translateY(0);
-	}
-	33%,
-	57% {
-		transform: translateY(calc(-1 * var(--ai-starter-step)));
-	}
-	66%,
-	90% {
-		transform: translateY(calc(-2 * var(--ai-starter-step)));
-	}
-	100% {
-		transform: translateY(calc(-3 * var(--ai-starter-step)));
-	}
+	gap: 4px;
 }
 
 .aiChatMsg {
@@ -1014,18 +810,6 @@
 	}
 }
 
-@keyframes aiPendingDotWave {
-	0%,
-	100% {
-		opacity: 0.35;
-		transform: translateY(0);
-	}
-	50% {
-		opacity: 1;
-		transform: translateY(-2px);
-	}
-}
-
 .aiPanel .aiContextChips {
 	display: flex;
 	flex-wrap: wrap;
@@ -1423,49 +1207,6 @@
 	opacity: 0.5;
 }
 
-.aiModeDropdownTriggerMain {
-	display: inline-flex;
-	align-items: center;
-	gap: 6px;
-	min-width: 0;
-}
-
-.aiModeDropdownTriggerIcon {
-	width: 16px;
-	height: 16px;
-	border-radius: var(--radius-sm);
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	flex-shrink: 0;
-	background: transparent;
-	color: var(--ai-mode-current);
-}
-
-.aiModeDropdownTriggerText {
-	display: inline-flex;
-	align-items: center;
-	min-width: 0;
-}
-
-.aiModeDropdownTriggerLabel {
-	font-size: 11px;
-	font-weight: var(--font-semibold);
-	color: var(--ai-mode-current);
-	white-space: nowrap;
-}
-
-.aiModeDropdownTriggerChevron {
-	flex-shrink: 0;
-	color: var(--text-tertiary);
-	transition: transform var(--transition-fast), color var(--transition-fast);
-}
-
-.aiModeDropdownTrigger[data-state="open"] .aiModeDropdownTriggerChevron {
-	transform: translateY(1px);
-	color: var(--ai-mode-current);
-}
-
 .aiModeDropdownMenu {
 	width: max-content;
 	min-width: 214px;
@@ -1516,42 +1257,6 @@
 
 .aiPresetDropdownItemIcon {
 	color: var(--ai-preset-accent, var(--ai-mode-accent));
-}
-
-.aiModeDropdownItemBody {
-	display: grid;
-	grid-template-columns: auto minmax(0, 1fr);
-	align-items: baseline;
-	gap: 6px;
-	min-width: 0;
-	flex: 1;
-}
-
-.aiModeDropdownItemLabel {
-	font-size: 11px;
-	font-weight: var(--font-semibold);
-	color: var(--text-primary);
-	white-space: nowrap;
-}
-
-.aiModeDropdownItemHint {
-	font-size: 10px;
-	line-height: 1.2;
-	color: var(--text-secondary);
-	min-width: 0;
-	white-space: nowrap;
-	overflow: hidden;
-	text-overflow: ellipsis;
-}
-
-.aiModeDropdownItemStatus {
-	flex-shrink: 0;
-	align-self: center;
-	font-size: 9px;
-	font-weight: var(--font-semibold);
-	letter-spacing: 0.04em;
-	text-transform: uppercase;
-	color: var(--text-tertiary);
 }
 
 .aiComposerRight {
@@ -1624,47 +1329,6 @@ button.aiComposerSend:disabled {
 	}
 }
 
-/* ── EMPTY STATE STARTERS ── */
-
-.aiChatEmptyStarters {
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-	margin-top: 16px;
-	width: 100%;
-	max-width: 280px;
-}
-
-.aiStarterPill {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	padding: 8px 14px;
-	border-radius: var(--radius-full);
-	border: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
-	background: color-mix(in srgb, var(--bg-secondary) 50%, transparent);
-	color: var(--text-secondary);
-	font-size: var(--text-xs);
-	text-align: left;
-	cursor: default;
-	transition: border-color var(--transition-fast), background
-		var(--transition-fast);
-}
-
-.aiStarterPill:hover {
-	border-color: color-mix(
-		in srgb,
-		var(--ai-mode-accent, var(--interactive-accent)) 30%,
-		transparent
-	);
-	background: color-mix(
-		in srgb,
-		var(--ai-mode-accent, var(--interactive-accent)) 6%,
-		transparent
-	);
-	color: var(--text-primary);
-}
-
 /* ── MESSAGE ROLE LABELS ── */
 
 .aiChatMsgRole {
@@ -1732,21 +1396,6 @@ button.aiComposerSend:disabled {
 
 .aiInlineRetryBtn:hover {
 	background: color-mix(in srgb, var(--status-danger-bg) 80%, transparent);
-}
-
-/* ── TOKEN USAGE INDICATOR ── */
-
-.aiTokenIndicator {
-	display: inline-flex;
-	align-items: center;
-	gap: 4px;
-	padding: 0;
-	font-size: 10px;
-	color: var(--text-tertiary);
-	background: none;
-	border: none;
-	white-space: nowrap;
-	font-variant-numeric: tabular-nums;
 }
 
 /* ── SCROLL TO BOTTOM FAB ── */

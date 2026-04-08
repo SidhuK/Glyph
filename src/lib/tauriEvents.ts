@@ -98,9 +98,6 @@ type TauriEventMap = {
 			pastedMediaFolder?: string;
 			enablePeopleMentionsAsTags?: boolean;
 		};
-		changelog?: {
-			lastAcknowledgedVersion?: string | null;
-		};
 		onboarding?: {
 			launcherSeen?: boolean;
 			starterDismissed?: boolean;

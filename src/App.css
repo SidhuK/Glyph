@@ -15,9 +15,9 @@
 @import "./styles/app/10-settings-controls.css";
 @import "./styles/app/11-settings-misc.css";
 @import "./styles/app/12-editor-shell.css";
-@import "./styles/app/13-backlinks.css";
-@import "./styles/app/14-ai-pane.css";
-@import "./styles/app/15-chat-actions.css";
+@import "./styles/app/13-tags.css";
+@import "./styles/app/14-backlinks.css";
+
 @import "./styles/app/17-filetree-head.css";
 @import "./styles/app/18-filetree-body.css";
 @import "./styles/app/19-code-highlighting.css";
@@ -35,10 +35,15 @@
 @import "./styles/app/38-licensing.css";
 @import "./styles/app/39-floating-toc.css";
 @import "./styles/app/40-template-picker.css";
-@import "./styles/app/41-whats-new.css";
 @import "./styles/app/42-calendar.css";
+@import "./styles/app/43-web-clip.css";
+@import "./styles/app/44-settings-changelog.css";
 
-/* Flatten elevation utilities globally; keep focus rings intact via ring classes. */
+/* Shadow reset: Intentionally disables Tailwind's default shadows.
+   The app uses custom shadow variables (--shadow-sm, --shadow-md, etc.)
+   defined in primitives.css for consistent theming across light/dark modes.
+   This prevents Tailwind's default shadow values from conflicting with
+   the design system's shadow tokens. Focus rings remain intact via ring classes. */
 .shadow,
 .shadow-xs,
 .shadow-sm,

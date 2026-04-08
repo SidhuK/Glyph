@@ -9,7 +9,8 @@
 		"overrides": {
 			"smol-toml": ">=1.6.1",
 			"picomatch@4.0.3": "4.0.4",
-			"lodash-es": ">=4.18.0"
+			"lodash-es": ">=4.18.0",
+			"vite": ">=8.0.5"
 		}
 	},
 	"scripts": {

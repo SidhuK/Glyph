@@ -8,7 +8,6 @@ export interface CanvasNoteInlineEditorProps {
 	relPath?: string;
 	mode: CanvasInlineEditorMode;
 	zenModeActive?: boolean;
-	onModeChange: (mode: CanvasInlineEditorMode) => void;
 	onChange: (nextMarkdown: string) => void;
 	interactive?: boolean;
 	showBacklinks?: boolean;

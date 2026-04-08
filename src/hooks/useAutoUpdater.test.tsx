@@ -19,17 +19,9 @@ vi.mock("@tauri-apps/plugin-updater", () => ({
 	check: checkMock,
 }));
 
-const loadSettingsMock = vi.fn();
-const getAutoUpdateLastCheckedAtMock = vi.fn();
 const setAutoUpdateLastCheckedAtMock = vi.fn();
 vi.mock("../lib/settings", () => ({
-	loadSettings: loadSettingsMock,
-	getAutoUpdateLastCheckedAt: getAutoUpdateLastCheckedAtMock,
 	setAutoUpdateLastCheckedAt: setAutoUpdateLastCheckedAtMock,
-}));
-
-vi.mock("../lib/tauriEvents", () => ({
-	useTauriEvent: vi.fn(),
 }));
 
 (
@@ -65,10 +57,6 @@ describe("useAutoUpdater", () => {
 		vi.clearAllMocks();
 		vi.stubEnv("DEV", false);
 
-		loadSettingsMock.mockResolvedValue({
-			ui: { autoUpdateCheckInterval: "launch" },
-		});
-		getAutoUpdateLastCheckedAtMock.mockResolvedValue(null);
 		setAutoUpdateLastCheckedAtMock.mockResolvedValue(undefined);
 		checkMock.mockResolvedValue(null);
 
@@ -96,7 +84,6 @@ describe("useAutoUpdater", () => {
 			await Promise.resolve();
 		});
 
-		expect(loadSettingsMock).not.toHaveBeenCalled();
 		expect(checkMock).not.toHaveBeenCalled();
 	});
 
@@ -119,7 +106,6 @@ describe("useAutoUpdater", () => {
 			await new Promise((resolve) => window.setTimeout(resolve, 0));
 		});
 
-		expect(loadSettingsMock).toHaveBeenCalledTimes(1);
 		expect(checkMock).toHaveBeenCalledTimes(1);
 		expect(states).toContain(false);
 	});

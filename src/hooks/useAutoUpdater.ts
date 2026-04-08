@@ -1,18 +1,13 @@
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { relaunch } from "@tauri-apps/plugin-process";
 import { type Update, check } from "@tauri-apps/plugin-updater";
-import { useCallback, useEffect, useRef, useState } from "react";
-import {
-	type AutoUpdateCheckInterval,
-	getAutoUpdateLastCheckedAt,
-	loadSettings,
-	setAutoUpdateLastCheckedAt,
-} from "../lib/settings";
-import { useTauriEvent } from "../lib/tauriEvents";
+import { useCallback, useEffect, useState } from "react";
+import { setAutoUpdateLastCheckedAt } from "../lib/settings";
 
-const TWELVE_HOURS_MS = 12 * 60 * 60 * 1000;
+const THREE_HOURS_MS = 3 * 60 * 60 * 1000;
 let cachedUpdate: Update | null = null;
 let inFlightUpdateCheck: Promise<Update | null> | null = null;
+let launchCheckStarted = false;
 
 async function isMainWindow(): Promise<boolean> {
 	let windowLabel = "";
@@ -52,105 +47,57 @@ async function downloadUpdate(): Promise<Update | null> {
 export interface AutoUpdaterState {
 	updateReady: boolean;
 	updateVersion: string | null;
+	isChecking: boolean;
+	checkForUpdates: () => Promise<Update | null>;
 	installAndRelaunch: () => void;
 }
 
 export function useAutoUpdater(enabled = true): AutoUpdaterState {
 	const [update, setUpdate] = useState<Update | null>(cachedUpdate);
-	const [checkInterval, setCheckInterval] =
-		useState<AutoUpdateCheckInterval | null>(null);
-	const launchAttemptedRef = useRef(false);
+	const [isChecking, setIsChecking] = useState(false);
 
-	useEffect(() => {
-		if (!enabled) {
-			setCheckInterval(null);
-			return;
+	const checkForUpdates = useCallback(async () => {
+		if (!enabled) return null;
+		setIsChecking(true);
+		try {
+			const nextUpdate = await downloadUpdate();
+			setUpdate(nextUpdate);
+			return nextUpdate;
+		} finally {
+			setIsChecking(false);
 		}
-		let cancelled = false;
-		void loadSettings().then((settings) => {
-			if (!cancelled) {
-				setCheckInterval(settings.ui.autoUpdateCheckInterval);
-			}
-		});
-		return () => {
-			cancelled = true;
-		};
 	}, [enabled]);
-
-	useTauriEvent("settings:updated", (payload) => {
-		if (!enabled) return;
-		const nextInterval = payload.ui?.autoUpdateCheckInterval;
-		if (!nextInterval) return;
-		setCheckInterval(nextInterval);
-	});
 
 	useEffect(() => {
 		if (!enabled) {
 			setUpdate(null);
 			return;
 		}
-		if (checkInterval === null) return;
 		if (cachedUpdate) {
 			setUpdate(cachedUpdate);
-			return;
 		}
 
 		let cancelled = false;
-		let timerId: ReturnType<typeof window.setTimeout> | null = null;
-
-		const scheduleNext = (delayMs: number) => {
-			if (cancelled || cachedUpdate) return;
-			timerId = window.setTimeout(
-				() => {
-					void runCheckAndReschedule();
-				},
-				Math.max(0, delayMs),
-			);
+		const runCheck = async () => {
+			const nextUpdate = await checkForUpdates();
+			if (cancelled) return;
+			setUpdate(nextUpdate);
 		};
 
-		const runCheckAndReschedule = async () => {
-			const nextUpdate = await downloadUpdate();
-			if (cancelled) return;
-			if (nextUpdate) {
-				setUpdate(nextUpdate);
-				return;
-			}
-			if (checkInterval === "12h") {
-				scheduleNext(TWELVE_HOURS_MS);
-			}
-		};
+		if (!launchCheckStarted) {
+			launchCheckStarted = true;
+			void runCheck();
+		}
 
-		void (async () => {
-			if (checkInterval === "launch") {
-				if (launchAttemptedRef.current) return;
-				launchAttemptedRef.current = true;
-				await runCheckAndReschedule();
-				return;
-			}
-
-			const lastCheckedAt = await getAutoUpdateLastCheckedAt();
-			if (cancelled) return;
-			if (!lastCheckedAt) {
-				await runCheckAndReschedule();
-				return;
-			}
-
-			const elapsed = Date.now() - lastCheckedAt;
-			if (elapsed >= TWELVE_HOURS_MS) {
-				await runCheckAndReschedule();
-				return;
-			}
-
-			scheduleNext(TWELVE_HOURS_MS - elapsed);
-		})();
+		const intervalId = window.setInterval(() => {
+			void runCheck();
+		}, THREE_HOURS_MS);
 
 		return () => {
 			cancelled = true;
-			if (timerId !== null) {
-				window.clearTimeout(timerId);
-			}
+			window.clearInterval(intervalId);
 		};
-	}, [checkInterval, enabled]);
+	}, [checkForUpdates, enabled]);
 
 	const installAndRelaunch = useCallback(() => {
 		if (!update) return;
@@ -167,6 +114,8 @@ export function useAutoUpdater(enabled = true): AutoUpdaterState {
 	return {
 		updateReady: update !== null,
 		updateVersion: update?.version ?? null,
+		isChecking,
+		checkForUpdates,
 		installAndRelaunch,
 	};
 }

@@ -58,7 +58,8 @@ pub fn ensure_default_profiles(store: &mut AiStore) {
     store.profiles = defaults
         .into_iter()
         .map(|(provider, model, base_url, allow_private_hosts)| {
-            let mut profile = by_provider.remove(provider.key()).unwrap_or(AiProfile {
+            let existing = by_provider.remove(provider.key());
+            let mut profile = existing.unwrap_or(AiProfile {
                 id: provider.key().to_string(),
                 name: provider.display_name().to_string(),
                 provider: provider.clone(),
@@ -77,7 +78,6 @@ pub fn ensure_default_profiles(store: &mut AiStore) {
             if profile.base_url.is_none() {
                 profile.base_url = base_url.map(str::to_string);
             }
-            profile.allow_private_hosts = allow_private_hosts;
             profile
         })
         .collect();

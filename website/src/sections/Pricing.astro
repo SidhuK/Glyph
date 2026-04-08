@@ -1,0 +1,66 @@
+---
+import logoG from "../../assets/logo_g.PNG";
+import { downloadUrl } from "../lib/site";
+---
+
+<section class="section cta" data-reveal id="pricing">
+	<p class="label">YOUR NEXT STEP</p>
+	<h2>Start writing with<br />Glyph today</h2>
+	<div class="cta-receipt">
+		<div class="cta-receipt__perforation cta-receipt__perforation--top" aria-hidden="true"></div>
+		<div class="cta-receipt__body">
+			<div class="cta-receipt__brand">
+				<div class="cta-receipt__brand-lockup">
+					<span class="cta-receipt__brand-icon">
+						<img src={logoG.src} alt="" loading="lazy" decoding="async" />
+					</span>
+					<div class="cta-receipt__brand-copy">
+						<p class="cta-receipt__brand-name">Glyph</p>
+						<p class="cta-receipt__brand-meta">Personal license for macOS</p>
+					</div>
+				</div>
+				<span class="cta-receipt__badge">EARLY ACCESS</span>
+			</div>
+			<div class="cta-receipt__rows">
+				<div class="cta-receipt__row">
+					<span>License</span>
+					<span>Personal</span>
+				</div>
+				<div class="cta-receipt__row">
+					<span>Payment</span>
+					<span>One-time</span>
+				</div>
+				<div class="cta-receipt__row">
+					<span>Subscription</span>
+					<span>None</span>
+				</div>
+				<div class="cta-receipt__row">
+					<span>Trial</span>
+					<span>7 days free</span>
+				</div>
+			</div>
+			<div class="cta-receipt__pricing">
+				<div class="cta-receipt__pricing-copy">
+					<p class="cta-receipt__pricing-label">Total today</p>
+					<p class="cta-receipt__pricing-save">You save $5</p>
+					<p class="cta-receipt__pricing-note">Lifetime access, no recurring fees, no credit card required for the trial.</p>
+				</div>
+				<div class="cta-receipt__pricing-amount">
+					<span class="cta-receipt__special">Early Access Pricing</span>
+					<p class="cta-receipt__price-line">
+						<span class="cta-receipt__price-old">$15</span>
+						<span class="cta-receipt__price-new">$9.99</span>
+					</p>
+					<p class="cta-receipt__code">Use code <span>EARLYACCESS</span> at checkout</p>
+				</div>
+			</div>
+			<a href={downloadUrl} class="cta-receipt__button" target="_blank" rel="noopener">Get Glyph</a>
+			<div class="cta-receipt__footer">
+				<p>Free 7-day trial</p>
+				<p>No credit card required</p>
+				<p>Plain markdown files</p>
+			</div>
+		</div>
+		<div class="cta-receipt__perforation cta-receipt__perforation--bottom" aria-hidden="true"></div>
+	</div>
+</section>

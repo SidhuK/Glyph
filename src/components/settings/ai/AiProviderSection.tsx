@@ -1,6 +1,10 @@
 import type { AiModel, AiProfile, AiProviderKind } from "../../../lib/tauri";
 import { Input } from "../../ui/shadcn/input";
-import { SettingsRow, SettingsSection } from "../SettingsScaffold";
+import {
+	SettingsRow,
+	SettingsSection,
+	SettingsToggle,
+} from "../SettingsScaffold";
 import { AiModelCombobox } from "./AiModelCombobox";
 
 interface AiProviderSectionProps {
@@ -169,6 +173,24 @@ export function AiProviderSection({
 								...prev,
 								base_url: event.target.value || null,
 							}))
+						}
+					/>
+				</SettingsRow>
+			) : null}
+
+			{profileDraft.provider === "openai_compat" ? (
+				<SettingsRow
+					label="Allow local network"
+					description="Enable to use http:// endpoints on localhost or private networks (e.g. LM Studio, vLLM)."
+				>
+					<SettingsToggle
+						ariaLabel="Allow local network"
+						checked={profileDraft.allow_private_hosts}
+						onCheckedChange={(checked) =>
+							void onPersistDraft({
+								...profileDraft,
+								allow_private_hosts: checked,
+							})
 						}
 					/>
 				</SettingsRow>

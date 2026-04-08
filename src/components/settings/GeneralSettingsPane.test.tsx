@@ -6,10 +6,8 @@ import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GeneralSettingsPane } from "./GeneralSettingsPane";
 
-const { loadSettingsMock, getDailyNotesFolderMock, useLicenseStatusMock } =
+const { useLicenseStatusMock } =
 	vi.hoisted(() => ({
-		loadSettingsMock: vi.fn(),
-		getDailyNotesFolderMock: vi.fn(),
 		useLicenseStatusMock: vi.fn(),
 	}));
 
@@ -20,11 +18,6 @@ vi.mock("../../lib/settings", async () => {
 		);
 	return {
 		...actual,
-		loadSettings: loadSettingsMock,
-		getDailyNotesFolder: getDailyNotesFolderMock,
-		setAutoUpdateCheckInterval: vi.fn(),
-		setDailyNotesFolder: vi.fn(),
-		setEditorPastedMediaFolder: vi.fn(),
 	};
 });
 
@@ -64,9 +57,9 @@ vi.mock("./SettingsScaffold", () => ({
 		</section>
 	),
 	SettingsRow: ({
-		children,
 		label,
 		description,
+		children,
 	}: {
 		children: React.ReactNode;
 		label?: string;
@@ -77,9 +70,6 @@ vi.mock("./SettingsScaffold", () => ({
 			{description ? <div>{description}</div> : null}
 			{children}
 		</div>
-	),
-	SettingsToggle: ({ ariaLabel }: { ariaLabel: string }) => (
-		<div>{ariaLabel}</div>
 	),
 }));
 
@@ -95,14 +85,6 @@ describe("GeneralSettingsPane", () => {
 
 	beforeEach(() => {
 		vi.clearAllMocks();
-		loadSettingsMock.mockResolvedValue({
-			ui: { autoUpdateCheckInterval: "launch" },
-			editor: {
-				pastedMediaFolder: "assets",
-				enablePeopleMentionsAsTags: false,
-			},
-		});
-		getDailyNotesFolderMock.mockResolvedValue(null);
 
 		container = document.createElement("div");
 		document.body.appendChild(container);
@@ -145,6 +127,9 @@ describe("GeneralSettingsPane", () => {
 		});
 
 		expect(container.textContent).toContain("Automatic update checks");
+		expect(container.textContent).toContain(
+			"Glyph checks for updates when the app opens and again every 3 hours while it stays open.",
+		);
 	});
 
 	it("keeps the updates section visible while license status is loading", async () => {

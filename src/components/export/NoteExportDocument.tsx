@@ -21,7 +21,6 @@ export const NoteExportDocument = memo(function NoteExportDocument({
 						markdown={body}
 						relPath={relPath}
 						mode="preview"
-						onModeChange={() => {}}
 						onChange={() => {}}
 						interactive={false}
 						showBacklinks={false}

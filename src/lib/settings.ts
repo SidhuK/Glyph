@@ -28,11 +28,8 @@ async function getStore(): Promise<LazyStore> {
 
 export type ThemeMode = "system" | "light" | "dark";
 const THEME_MODES = new Set<ThemeMode>(["system", "light", "dark"]);
-export type AutoUpdateCheckInterval = "launch" | "12h";
-const AUTO_UPDATE_CHECK_INTERVALS = new Set<AutoUpdateCheckInterval>([
-	"launch",
-	"12h",
-]);
+export type AutoUpdateCheckInterval = "3h";
+const AUTO_UPDATE_CHECK_INTERVALS = new Set<AutoUpdateCheckInterval>(["3h"]);
 export type UiAccent =
 	| "neutral"
 	| "cerulean"
@@ -52,7 +49,7 @@ const DEFAULT_UI_ACCENT: UiAccent = "neutral";
 const DEFAULT_UI_FONT_FAMILY = "Satoshi";
 const DEFAULT_UI_MONO_FONT_FAMILY = "JetBrains Mono";
 export const DEFAULT_AUTO_UPDATE_CHECK_INTERVAL: AutoUpdateCheckInterval =
-	"launch";
+	"3h";
 export const MIN_UI_FONT_SIZE = 7;
 export const MAX_UI_FONT_SIZE = 40;
 export const DEFAULT_UI_FONT_SIZE = 14;
@@ -72,20 +69,12 @@ export interface OnboardingSettings {
 	openedDailyNote: boolean;
 }
 
-export interface ChangelogSettings {
-	lastAcknowledgedVersion: string | null;
-}
-
 export const DEFAULT_ONBOARDING_SETTINGS: OnboardingSettings = {
 	launcherSeen: false,
 	starterDismissed: false,
 	createdFirstNote: false,
 	usedCommandPalette: false,
 	openedDailyNote: false,
-};
-
-export const DEFAULT_CHANGELOG_SETTINGS: ChangelogSettings = {
-	lastAcknowledgedVersion: null,
 };
 
 export interface TaskSourceSetting {
@@ -130,6 +119,9 @@ function asThemeMode(value: unknown): ThemeMode {
 }
 
 function asAutoUpdateCheckInterval(value: unknown): AutoUpdateCheckInterval {
+	if (value === "launch" || value === "12h") {
+		return "3h";
+	}
 	return typeof value === "string" &&
 		AUTO_UPDATE_CHECK_INTERVALS.has(value as AutoUpdateCheckInterval)
 		? (value as AutoUpdateCheckInterval)
@@ -208,6 +200,9 @@ async function emitSettingsUpdated(payload: {
 	dailyNotes?: {
 		folder?: string | null;
 	};
+	webClippings?: {
+		folder?: string | null;
+	};
 	templates?: {
 		folder?: string | null;
 		dailyNoteTemplate?: string | null;
@@ -223,9 +218,6 @@ async function emitSettingsUpdated(payload: {
 		showCollapsibleHeadings?: boolean;
 		pastedMediaFolder?: string;
 		enablePeopleMentionsAsTags?: boolean;
-	};
-	changelog?: {
-		lastAcknowledgedVersion?: string | null;
 	};
 	onboarding?: Partial<OnboardingSettings>;
 }): Promise<void> {
@@ -246,7 +238,6 @@ interface AppSettings {
 	currentSpacePath: string | null;
 	recentSpaces: string[];
 	recentFiles: RecentFile[];
-	changelog: ChangelogSettings;
 	onboarding: OnboardingSettings;
 	ui: {
 		aiEnabled: boolean;
@@ -267,6 +258,9 @@ interface AppSettings {
 		aiAssistantMode: AiAssistantMode;
 	};
 	dailyNotes: {
+		folder: string | null;
+	};
+	webClippings: {
 		folder: string | null;
 	};
 	templates: {
@@ -305,12 +299,12 @@ const KEYS = {
 	editorEnablePeopleMentionsAsTags: "editor.enablePeopleMentionsAsTags",
 	autoUpdateLastCheckedAt: "updates.lastCheckedAt",
 	dailyNotesFolder: "dailyNotes.folder",
+	webClippingsFolder: "webClippings.folder",
 	templatesFolder: "templates.folder",
 	templatesDailyNoteTemplate: "templates.dailyNoteTemplate",
 	taskSource: "tasks.source",
 	databaseShowColumnColor: "database.showColumnColor",
 	databaseShowNoteCount: "database.showNoteCount",
-	changelogLastAcknowledgedVersion: "changelog.lastAcknowledgedVersion",
 	onboardingLauncherSeen: "onboarding.launcherSeen",
 	onboardingStarterDismissed: "onboarding.starterDismissed",
 	onboardingCreatedFirstNote: "onboarding.createdFirstNote",
@@ -417,6 +411,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		rawShowToc,
 		rawShowFileTreeFolderCounts,
 		dailyNotesFolderRaw,
+		rawWebClippingsFolder,
 		templatesFolderRaw,
 		templatesDailyNoteTemplateRaw,
 		taskSourceRaw,
@@ -425,7 +420,6 @@ export async function loadSettings(): Promise<AppSettings> {
 		rawEditorEnablePeopleMentionsAsTags,
 		rawDatabaseShowColumnColor,
 		rawDatabaseShowNoteCount,
-		rawChangelogLastAcknowledgedVersion,
 	] = await Promise.all([
 		store.get<string | null>(KEYS.currentSpacePath),
 		store.get<string[] | null>(KEYS.recentSpaces),
@@ -452,6 +446,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<boolean | null>(KEYS.showToc),
 		store.get<boolean | null>(KEYS.showFileTreeFolderCounts),
 		store.get<string | null>(KEYS.dailyNotesFolder),
+		store.get<string | null>(KEYS.webClippingsFolder),
 		store.get<string | null>(KEYS.templatesFolder),
 		store.get<string | null>(KEYS.templatesDailyNoteTemplate),
 		store.get<unknown>(KEYS.taskSource),
@@ -460,7 +455,6 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<boolean | null>(KEYS.editorEnablePeopleMentionsAsTags),
 		store.get<boolean | null>(KEYS.databaseShowColumnColor),
 		store.get<boolean | null>(KEYS.databaseShowNoteCount),
-		store.get<string | null>(KEYS.changelogLastAcknowledgedVersion),
 	]);
 	const currentSpacePath = currentSpacePathRaw ?? null;
 	const recentSpaces = recentSpacesRaw ?? [];
@@ -503,6 +497,10 @@ export async function loadSettings(): Promise<AppSettings> {
 		typeof dailyNotesFolderRaw === "string"
 			? normalizeRelPath(dailyNotesFolderRaw) || null
 			: null;
+	const webClippingsFolder =
+		typeof rawWebClippingsFolder === "string"
+			? normalizeRelPath(rawWebClippingsFolder) || null
+			: null;
 	const templatesFolder =
 		typeof templatesFolderRaw === "string"
 			? normalizeRelPath(templatesFolderRaw)
@@ -538,18 +536,10 @@ export async function loadSettings(): Promise<AppSettings> {
 				? rawDatabaseShowNoteCount
 				: DEFAULT_DATABASE_SETTINGS.showNoteCount,
 	};
-	const changelog: ChangelogSettings = {
-		lastAcknowledgedVersion:
-			typeof rawChangelogLastAcknowledgedVersion === "string" &&
-			rawChangelogLastAcknowledgedVersion.trim()
-				? rawChangelogLastAcknowledgedVersion.trim()
-				: null,
-	};
 	return {
 		currentSpacePath,
 		recentSpaces: Array.isArray(recentSpaces) ? recentSpaces : [],
 		recentFiles,
-		changelog,
 		onboarding,
 		ui: {
 			aiEnabled,
@@ -574,6 +564,9 @@ export async function loadSettings(): Promise<AppSettings> {
 		},
 		dailyNotes: {
 			folder: dailyNotesFolder,
+		},
+		webClippings: {
+			folder: webClippingsFolder,
 		},
 		templates: {
 			folder: templatesFolder,
@@ -623,19 +616,6 @@ export async function updateOnboardingSettings(
 	await store.save();
 	void emitSettingsUpdated({
 		onboarding: Object.fromEntries(entries) as Partial<OnboardingSettings>,
-	});
-}
-
-export async function setLastAcknowledgedChangelogVersion(
-	version: string | null,
-): Promise<void> {
-	const store = await getStore();
-	const next =
-		typeof version === "string" && version.trim() ? version.trim() : null;
-	await store.set(KEYS.changelogLastAcknowledgedVersion, next);
-	await store.save();
-	void emitSettingsUpdated({
-		changelog: { lastAcknowledgedVersion: next },
 	});
 }
 
@@ -826,6 +806,26 @@ export async function setDailyNotesFolder(
 	}
 	await store.save();
 	void emitSettingsUpdated({ dailyNotes: { folder: nextFolder } });
+}
+
+export async function getWebClippingsFolder(): Promise<string | null> {
+	const store = await getStore();
+	return (await store.get<string | null>(KEYS.webClippingsFolder)) ?? null;
+}
+
+export async function setWebClippingsFolder(
+	folder: string | null,
+): Promise<void> {
+	const store = await getStore();
+	const nextFolder =
+		typeof folder === "string" ? normalizeRelPath(folder) || null : null;
+	if (nextFolder === null) {
+		await store.delete(KEYS.webClippingsFolder);
+	} else {
+		await store.set(KEYS.webClippingsFolder, nextFolder);
+	}
+	await store.save();
+	void emitSettingsUpdated({ webClippings: { folder: nextFolder } });
 }
 
 export async function getTemplatesFolder(): Promise<string | null> {

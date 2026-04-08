@@ -53,7 +53,6 @@ import { useFileTree } from "../../hooks/useFileTree";
 import { useGitSync } from "../../hooks/useGitSync";
 import { useMenuListeners } from "../../hooks/useMenuListeners";
 import { useResizablePanel } from "../../hooks/useResizablePanel";
-import { useWhatsNew } from "../../hooks/useWhatsNew";
 import { AI_AGENT_TAB_ID } from "../../lib/aiAgent";
 import {
 	dispatchFileTreeStartRename,
@@ -96,6 +95,7 @@ import {
 	type WikiLinkClickDetail,
 } from "../editor/markdown/editorEvents";
 import { NoteExportHtmlHost } from "../export/NoteExportHtmlHost";
+import { Dialog, DialogContent, DialogTitle } from "../ui/shadcn/dialog";
 import type { Command } from "./CommandPalette";
 import { MainContent } from "./MainContent";
 import { Sidebar } from "./Sidebar";
@@ -103,7 +103,6 @@ import {
 	TemplatePickerDialog,
 	type TemplatePickerItem,
 } from "./TemplatePickerDialog";
-import { WhatsNewDialog } from "./WhatsNewDialog";
 import { WindowChromeIconButton } from "./WindowChromeIconButton";
 import { WindowChromeUpdateButton } from "./WindowChromeUpdateButton";
 import { normalizeRelPath, parentDir } from "./appShellHelpers";
@@ -201,6 +200,9 @@ export function AppShell() {
 		string | null
 	>(null);
 	const [moveTargetDirs, setMoveTargetDirs] = useState<string[]>([]);
+	const [webClipDialogOpen, setWebClipDialogOpen] = useState(false);
+	const [webClipUrl, setWebClipUrl] = useState("");
+	const [webClipLoading, setWebClipLoading] = useState(false);
 	const [shortcutsHelpOpen, setShortcutsHelpOpen] = useState(false);
 	const [commandPaletteMounted, setCommandPaletteMounted] = useState(false);
 	const [shortcutsHelpMounted, setShortcutsHelpMounted] = useState(false);
@@ -226,7 +228,6 @@ export function AppShell() {
 		>(),
 	);
 	const autoUpdater = useUpdaterContext();
-	const whatsNew = useWhatsNew(space.info?.version ?? null);
 	const gitSync = useGitSync({
 		spacePath,
 		saveCurrentEditor,
@@ -881,9 +882,6 @@ export function AppShell() {
 	const openGettingStarted = useCallback(() => {
 		setShowGettingStartedRequest((prev) => prev + 1);
 	}, []);
-	const openWhatsNew = useCallback(() => {
-		whatsNew.openDialog();
-	}, [whatsNew]);
 
 	const handleCreateNoteFromStarter = useCallback(async () => {
 		if (!spacePath) return;
@@ -1053,6 +1051,25 @@ export function AppShell() {
 		},
 		[setError],
 	);
+
+	const handleWebClipSave = useCallback(async () => {
+		const url = webClipUrl.trim();
+		if (!url) return;
+		setWebClipLoading(true);
+		setWebClipDialogOpen(false);
+		try {
+			const { getWebClippingsFolder } = await import("../../lib/settings");
+			const folder = (await getWebClippingsFolder()) ?? undefined;
+			const result = await invoke("web_clip_save", { url, folder });
+			toast.success(`Saved "${result.title}"`);
+			await openWorkspaceFile(result.rel_path);
+		} catch (error) {
+			const message = error instanceof Error ? error.message : String(error);
+			toast.error("Failed to save web page", { description: message });
+		} finally {
+			setWebClipLoading(false);
+		}
+	}, [webClipUrl, openWorkspaceFile]);
 
 	useMenuListeners({
 		onNewNote: handleNewNoteFromMenu,
@@ -1291,6 +1308,17 @@ export function AppShell() {
 				action: () => void createNoteInSelectedFolder(),
 			},
 			{
+				id: "save-web-page",
+				label: "Save web page",
+				icon: <HugeiconsIcon icon={Link01Icon} size={16} strokeWidth={0.9} />,
+				category: "File Operations",
+				enabled: Boolean(spacePath),
+				action: () => {
+					setWebClipUrl("");
+					setWebClipDialogOpen(true);
+				},
+			},
+			{
 				id: "create-from-template",
 				label: "Create from template",
 				icon: <HugeiconsIcon icon={ColorsIcon} size={16} strokeWidth={0.9} />,
@@ -1504,20 +1532,6 @@ export function AppShell() {
 				action: openGettingStarted,
 			},
 			{
-				id: "show-whats-new",
-				label: "What's New",
-				icon: (
-					<HugeiconsIcon
-						icon={InformationCircleIcon}
-						size={16}
-						strokeWidth={0.9}
-					/>
-				),
-				category: "Help",
-				enabled: whatsNew.available,
-				action: openWhatsNew,
-			},
-			{
 				id: "move-active-file",
 				label: "Move to…",
 				icon: <HugeiconsIcon icon={MoveIcon} size={16} strokeWidth={0.9} />,
@@ -1568,13 +1582,11 @@ export function AppShell() {
 		openDatabasesTab,
 		openGettingStarted,
 		openWorkspaceFile,
-		openWhatsNew,
 		gitSync,
 		moveTargetDirs,
 		movePickerSourcePath,
 		openSpecialTab,
 		setError,
-		whatsNew.available,
 		openSettings,
 	]);
 
@@ -1749,12 +1761,6 @@ export function AppShell() {
 				onPick={(template) => void handlePickTemplate(template)}
 				onOpenSettings={openTemplatesSettings}
 			/>
-			<WhatsNewDialog
-				open={whatsNew.open}
-				releaseNotes={whatsNew.releaseNotes}
-				publicChangelogUrl={whatsNew.publicChangelogUrl}
-				onClose={whatsNew.closeDialog}
-			/>
 			<NoteExportHtmlHost
 				key={htmlExportRequest?.id ?? "idle"}
 				request={htmlExportRequest}
@@ -1763,6 +1769,46 @@ export function AppShell() {
 				}}
 				onError={handleHtmlExportError}
 			/>
+			<Dialog
+				open={webClipDialogOpen}
+				onOpenChange={(open) => {
+					if (!open) setWebClipDialogOpen(false);
+				}}
+			>
+				<DialogContent
+					className="webClipDialog"
+					showCloseButton={false}
+					onOpenAutoFocus={(e) => {
+						e.preventDefault();
+						const target = e.currentTarget as HTMLElement | null;
+						target
+							?.querySelector<HTMLInputElement>(".webClipDialogInput")
+							?.focus();
+					}}
+				>
+					<DialogTitle className="webClipDialogTitle">
+						Save web page
+					</DialogTitle>
+					<form
+						className="webClipDialogForm"
+						onSubmit={(e) => {
+							e.preventDefault();
+							void handleWebClipSave();
+						}}
+					>
+						<input
+							className="webClipDialogInput"
+							placeholder="https://example.com/article"
+							value={webClipUrl}
+							onChange={(e) => setWebClipUrl(e.target.value)}
+							disabled={webClipLoading}
+						/>
+					</form>
+					<p className="webClipDialogHint">
+						Press Enter to fetch and save as Markdown
+					</p>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 }

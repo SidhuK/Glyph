@@ -50,7 +50,6 @@ interface DatabaseBoardProps {
 	onSelectRow: (notePath: string) => void;
 	onOpenRow: (notePath: string) => void;
 	onOpenColumns: () => void;
-	onCreateDefaultGroupField?: (() => void) | null;
 	onGroupColumnIdChange: (groupColumnId: string | null) => void;
 	laneOrderByGroup?: Record<string, string[]>;
 	onLaneOrderChange?: (
@@ -184,7 +183,6 @@ export function DatabaseBoard({
 	onSelectRow,
 	onOpenRow,
 	onOpenColumns,
-	onCreateDefaultGroupField,
 	onGroupColumnIdChange,
 	laneOrderByGroup = {},
 	onLaneOrderChange,
@@ -446,15 +444,6 @@ export function DatabaseBoard({
 						property like status, stage, or done.
 					</div>
 					<div className="databaseBoardEmptyActions">
-						{onCreateDefaultGroupField ? (
-							<Button
-								type="button"
-								size="sm"
-								onClick={onCreateDefaultGroupField}
-							>
-								Add status field
-							</Button>
-						) : null}
 						<Button
 							type="button"
 							variant="ghost"
