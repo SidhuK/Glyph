@@ -1,0 +1,37 @@
+{
+	"versions": [
+		{
+			"version": "0.2.2",
+			"publishedAt": "2026-04-08",
+			"sections": [
+				{
+					"category": "Added",
+					"items": [
+						"Task progress indicator in editor ribbon showing completed/total tasks",
+						"Web link saving with automatic metadata extraction",
+						"People as tags option for contacts and mentions",
+						"Native macOS 26+ dynamic light/dark/clear app icons"
+					]
+				},
+				{
+					"category": "Improved",
+					"items": [
+						"Major codebase cleanup — eliminated 1,000+ lines of unused CSS and dead code for faster, leaner performance",
+						"Streamlined the updating flow to make it more user-friendly",
+						"File open performance — 30-40% faster on average",
+						"Today view design cleanup and polish",
+						"Settings panel now opens inline within the main window",
+						"Collections and databases UI refinements",
+						"Consolidated sidebar navigation — All Notes, Daily Notes, and Templates now live under a single item"
+					]
+				},
+				{
+					"category": "Fixed",
+					"items": [
+						"LM Studio and local OpenAI-compatible endpoints now connect reliably"
+					]
+				}
+			]
+		}
+	]
+}

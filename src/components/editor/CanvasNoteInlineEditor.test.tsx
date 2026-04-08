@@ -217,7 +217,6 @@ describe("CanvasNoteInlineEditor table controls", () => {
 					markdown=""
 					mode={mode}
 					onChange={() => {}}
-					onModeChange={() => {}}
 					relPath=""
 					showBacklinks={false}
 				/>,

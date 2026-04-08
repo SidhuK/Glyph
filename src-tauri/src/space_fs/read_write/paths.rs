@@ -452,10 +452,7 @@ mod tests {
 
     #[test]
     fn duplicate_name_increments_with_case_insensitive_collisions() {
-        let existing = HashSet::from([
-            "note copy.md".to_string(),
-            "note copy 2.md".to_string(),
-        ]);
+        let existing = HashSet::from(["note copy.md".to_string(), "note copy 2.md".to_string()]);
         assert_eq!(
             next_duplicate_file_name(&existing, "Note.md"),
             "Note Copy 3.md"
@@ -535,7 +532,8 @@ mod tests {
         let abs_path = root.join(rel_path);
         std::fs::create_dir_all(abs_path.parent().expect("file should have parent"))
             .expect("parent dir should be created");
-        std::fs::write(&abs_path, [0xff_u8, 0xfe, b'\n']).expect("source markdown should be written");
+        std::fs::write(&abs_path, [0xff_u8, 0xfe, b'\n'])
+            .expect("source markdown should be written");
 
         let recent_local_changes = fresh_recent_local_changes();
         let duplicated =

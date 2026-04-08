@@ -86,17 +86,6 @@ export function stripTaskScheduleTokens(rawText: string): string {
 	return kept.join(" ");
 }
 
-export function folderBreadcrumbFromNotePath(notePath: string): string {
-	const normalized = notePath
-		.replace(/\\/g, "/")
-		.replace(/^\/+/, "")
-		.replace(/\/+$/, "");
-	if (!normalized) return "/";
-	const lastSlash = normalized.lastIndexOf("/");
-	if (lastSlash === -1) return "/";
-	return normalized.slice(0, lastSlash + 1);
-}
-
 export type TaskDateTone =
 	| "default"
 	| "today"

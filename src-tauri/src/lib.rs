@@ -17,6 +17,7 @@ mod space;
 mod space_fs;
 mod system_fonts;
 pub(crate) mod utils;
+mod web_clip;
 
 use serde::Serialize;
 use tauri::menu::{
@@ -535,7 +536,8 @@ pub fn run() {
             space::commands::space_create,
             space::commands::space_open,
             space::commands::space_get_current,
-            space::commands::space_close
+            space::commands::space_close,
+            web_clip::web_clip_save
         ])
         .build(tauri::generate_context!())
         .expect("error while building tauri application")

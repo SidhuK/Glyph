@@ -948,6 +948,10 @@ interface TauriCommands {
 	>;
 	backlinks: CommandDef<{ note_id: string }, BacklinkItem[]>;
 	link_preview: CommandDef<{ url: string; force?: boolean }, LinkPreview>;
+	web_clip_save: CommandDef<
+		{ url: string; folder?: string },
+		{ rel_path: string; title: string }
+	>;
 	git_sync_status_read: CommandDef<void, GitSyncStatus>;
 	git_sync_config_read: CommandDef<void, GitSyncConfig | null>;
 	git_sync_config_update: CommandDef<

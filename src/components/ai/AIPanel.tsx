@@ -28,7 +28,6 @@ import { preloadAiProfilesData, useAiProfiles } from "./useAiProfiles";
 interface AIPanelProps {
 	isOpen: boolean;
 	onClose: () => void;
-	width?: number;
 }
 
 export async function prefetchAIPanelData(): Promise<void> {

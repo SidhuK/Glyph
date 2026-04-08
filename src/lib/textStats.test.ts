@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { countLines, countWords, formatReadingTime } from "./textStats";
+import { countWords, formatReadingTime } from "./textStats";
 
 describe("textStats", () => {
 	it("counts words with collapsed whitespace", () => {
@@ -8,15 +8,6 @@ describe("textStats", () => {
 
 	it("returns zero words for empty content", () => {
 		expect(countWords("   ")).toBe(0);
-	});
-
-	it("counts lines for LF and CRLF content", () => {
-		expect(countLines("a\nb\nc")).toBe(3);
-		expect(countLines("a\r\nb\r\nc")).toBe(3);
-	});
-
-	it("returns zero lines for empty content", () => {
-		expect(countLines("")).toBe(0);
 	});
 
 	it("formats reading time in seconds and minutes", () => {

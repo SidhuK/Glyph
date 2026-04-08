@@ -1053,7 +1053,6 @@ export function MarkdownEditorPane({
 							mode={mode}
 							zenModeActive={zenModeActive}
 							pasteMarkdownBehavior="smart-markdown"
-							onModeChange={setMode}
 							onChange={(nextText) => {
 								hasUserEditsRef.current = true;
 								textRef.current = nextText;

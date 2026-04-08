@@ -169,10 +169,8 @@ fn normalize_people(people: Vec<String>) -> Result<Vec<String>, String> {
 mod tests {
     use rusqlite::Connection;
 
-    use crate::index::{
-        people_mentions_as_tags_enabled, set_people_mentions_as_tags_enabled,
-    };
     use crate::index::schema::ensure_schema;
+    use crate::index::{people_mentions_as_tags_enabled, set_people_mentions_as_tags_enabled};
 
     use super::{run_search_advanced, SearchAdvancedRequest};
 
@@ -264,7 +262,12 @@ mod tests {
         let conn = Connection::open_in_memory().unwrap();
         ensure_schema(&conn).unwrap();
 
-        seed_note(&conn, "notes/alice.md", "Alice note", "2026-03-24T10:00:00Z");
+        seed_note(
+            &conn,
+            "notes/alice.md",
+            "Alice note",
+            "2026-03-24T10:00:00Z",
+        );
         seed_note(&conn, "notes/bob.md", "Bob note", "2026-03-24T11:00:00Z");
 
         conn.execute(
@@ -289,7 +292,10 @@ mod tests {
         .unwrap();
 
         assert_eq!(
-            results.iter().map(|result| result.id.as_str()).collect::<Vec<_>>(),
+            results
+                .iter()
+                .map(|result| result.id.as_str())
+                .collect::<Vec<_>>(),
             vec!["notes/alice.md"]
         );
     }

@@ -5,19 +5,20 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { openUrl } from "@tauri-apps/plugin-opener";
-import { relaunch } from "@tauri-apps/plugin-process";
-import { check } from "@tauri-apps/plugin-updater";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { useUpdaterContext } from "../../contexts";
+import { CHANGELOG_DATA } from "../../data/releaseNotes";
 import { useLicenseStatus } from "../../lib/license";
-import { setAutoUpdateLastCheckedAt } from "../../lib/settings";
 import type { AppInfo } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 import { Button } from "../ui/shadcn/button";
+import { ChangelogSection } from "./ChangelogSection";
 import { SettingsRow, SettingsSection } from "./SettingsScaffold";
 
 export function AboutSettingsPane() {
 	const { status: licenseStatus, loading: licenseLoading } =
 		useLicenseStatus(false);
+	const autoUpdater = useUpdaterContext();
 	const [appInfo, setAppInfo] = useState<AppInfo | null>(null);
 	const [error, setError] = useState("");
 	const [copyLabel, setCopyLabel] = useState("Copy Diagnostics");
@@ -25,8 +26,6 @@ export function AboutSettingsPane() {
 		ReturnType<typeof window.setTimeout> | undefined
 	>(undefined);
 	const [updateStatus, setUpdateStatus] = useState("");
-	const [checkingUpdates, setCheckingUpdates] = useState(false);
-
 	useEffect(() => {
 		let cancelled = false;
 		void (async () => {
@@ -83,28 +82,21 @@ export function AboutSettingsPane() {
 
 	const handleCheckForUpdates = async () => {
 		if (!licenseStatus?.can_auto_update) return;
-		if (checkingUpdates) return;
-		setCheckingUpdates(true);
+		if (autoUpdater.isChecking) return;
 		setUpdateStatus("");
 		try {
-			const update = await check();
-			await setAutoUpdateLastCheckedAt(Date.now());
+			const update = await autoUpdater.checkForUpdates();
 			if (!update) {
 				setUpdateStatus("You're already on the latest version.");
 				return;
 			}
-			setUpdateStatus(`Downloading v${update.version}...`);
-			await update.download();
-			setUpdateStatus(`Installing v${update.version}...`);
-			await update.install();
-			setUpdateStatus("Restarting Glyph...");
-			await relaunch();
+			setUpdateStatus(
+				`v${update.version} is downloaded and ready. Click the update button to install it.`,
+			);
 		} catch (e) {
 			setUpdateStatus(
 				e instanceof Error ? e.message : "Failed to check for updates",
 			);
-		} finally {
-			setCheckingUpdates(false);
 		}
 	};
 	return (
@@ -171,16 +163,30 @@ export function AboutSettingsPane() {
 					) : licenseStatus.can_auto_update ? (
 						<SettingsRow
 							label="App updates"
-							description="Download and install the latest published version."
+							description="Checks immediately and downloads the latest published version in the background. Installation only happens when you choose it."
 						>
-							<Button
-								type="button"
-								size="sm"
-								disabled={checkingUpdates}
-								onClick={() => void handleCheckForUpdates()}
-							>
-								{checkingUpdates ? "Checking…" : "Check for Updates"}
-							</Button>
+							<div className="settingsActions">
+								<Button
+									type="button"
+									size="sm"
+									disabled={autoUpdater.isChecking}
+									onClick={() => void handleCheckForUpdates()}
+								>
+									{autoUpdater.isChecking ? "Checking…" : "Check for Updates"}
+								</Button>
+								{autoUpdater.updateReady ? (
+									<Button
+										type="button"
+										size="sm"
+										variant="outline"
+										onClick={autoUpdater.installAndRelaunch}
+									>
+										{autoUpdater.updateVersion
+											? `Install ${autoUpdater.updateVersion}`
+											: "Install Update"}
+									</Button>
+								) : null}
+							</div>
 						</SettingsRow>
 					) : (
 						<SettingsRow
@@ -210,6 +216,13 @@ export function AboutSettingsPane() {
 							<p className="settingsHint">{updateStatus}</p>
 						</SettingsRow>
 					) : null}
+				</SettingsSection>
+
+				<SettingsSection
+					title="What’s New"
+					description="See what’s new in recent versions of Glyph."
+				>
+					<ChangelogSection versions={CHANGELOG_DATA.versions} />
 				</SettingsSection>
 
 				<SettingsSection

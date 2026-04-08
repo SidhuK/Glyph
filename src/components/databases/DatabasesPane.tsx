@@ -1062,7 +1062,6 @@ export function DatabasesPane({
 							onSelectRow={setSelectedRowPath}
 							onOpenRow={(notePath) => void onOpenFile(notePath)}
 							onOpenColumns={() => setColumnsMenuOpen(true)}
-							onCreateDefaultGroupField={null}
 							onGroupColumnIdChange={(groupColumnId) =>
 								void handleSaveConfig({
 									...activeConfig,

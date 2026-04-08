@@ -1,5 +1,5 @@
 mod cache;
 pub mod commands;
-mod fetch;
-mod helpers;
+pub(crate) mod fetch;
+pub(crate) mod helpers;
 mod types;

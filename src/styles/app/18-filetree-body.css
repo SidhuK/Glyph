@@ -82,6 +82,19 @@
 .fileTreePinToggle {
 	cursor: pointer;
 	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	background: none;
+	border: none;
+	padding: 0;
+	outline: none;
+}
+
+.fileTreePinToggle:hover,
+.fileTreePinToggle:focus-visible {
+	background: none;
+	outline: none;
+	box-shadow: none;
 }
 
 .fileTreePinToggle .fileTreePinOffIcon {
@@ -442,13 +455,4 @@
 	height: 18px;
 	align-items: center;
 	justify-content: center;
-}
-
-.notesListItem:hover .notesListDelete {
-	opacity: 1;
-}
-
-.notesListDelete:hover {
-	color: var(--text-error);
-	background: var(--feedback-error-bg);
 }

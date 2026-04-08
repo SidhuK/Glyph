@@ -4,6 +4,8 @@ import type { AutoUpdaterState } from "../hooks/useAutoUpdater";
 const DEFAULT_UPDATER_STATE: AutoUpdaterState = {
 	updateReady: false,
 	updateVersion: null,
+	isChecking: false,
+	checkForUpdates: async () => null,
 	installAndRelaunch: () => {},
 };
 

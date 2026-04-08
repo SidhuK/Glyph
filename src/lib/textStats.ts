@@ -6,11 +6,6 @@ export function countWords(text: string): number {
 	return cleaned.split(/\s+/u).length;
 }
 
-export function countLines(text: string): number {
-	if (!text.length) return 0;
-	return text.split(/\r\n|\r|\n/).length;
-}
-
 export function formatReadingTime(words: number): string {
 	if (words <= 0) return "0s";
 	const totalSeconds = Math.ceil((words / WORDS_PER_MINUTE) * 60);

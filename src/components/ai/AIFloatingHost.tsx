@@ -63,11 +63,7 @@ export function AIFloatingHost({ isOpen, onToggle }: AIFloatingHostProps) {
 							}
 						>
 							<Suspense fallback={<div className="aiSidebarPanelInner" />}>
-								<LazyAIPanel
-									isOpen={isOpen}
-									onClose={onToggle}
-									width={panelWidth}
-								/>
+								<LazyAIPanel isOpen={isOpen} onClose={onToggle} />
 							</Suspense>
 						</m.div>
 					)}

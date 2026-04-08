@@ -3,7 +3,7 @@ use std::path::{Path, PathBuf};
 use crate::glyph_paths::ensure_glyph_dir;
 use crate::io_atomic;
 
-use super::types::{GIT_SYNC_STORE_VERSION, GitSyncConfig, GitSyncStore};
+use super::types::{GitSyncConfig, GitSyncStore, GIT_SYNC_STORE_VERSION};
 
 const GIT_SYNC_STORE_FILE: &str = "git_sync.json";
 
@@ -61,7 +61,8 @@ mod tests {
     use super::{delete_store, load_store, save_store};
 
     fn temp_root() -> PathBuf {
-        let root = std::env::temp_dir().join(format!("glyph-git-sync-store-{}", uuid::Uuid::new_v4()));
+        let root =
+            std::env::temp_dir().join(format!("glyph-git-sync-store-{}", uuid::Uuid::new_v4()));
         std::fs::create_dir_all(&root).expect("create temp dir");
         root
     }

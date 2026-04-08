@@ -1,0 +1,35 @@
+---
+import logoG from "../../assets/logo_g.PNG";
+import { downloadUrl } from "../lib/site";
+---
+
+<header class="header">
+	<a href="/" class="logo" aria-label="Glyph home">
+		<img src={logoG.src} alt="" class="logo-icon" />
+		<span>GLYPH</span>
+		<span class="logo-version">EARLY ACCESS</span>
+	</a>
+	<nav class="nav">
+		<a href="#features">Features</a>
+		<a href="#pricing">Pricing</a>
+		<a href="#faq">FAQs</a>
+		<a href="https://docs.glyphformac.com" target="_blank" rel="noopener">Docs</a>
+		<a href="https://github.com/SidhuK/Glyph" target="_blank" rel="noopener">GitHub</a>
+	</nav>
+	<a href={downloadUrl} class="header-cta header-cta--desktop" target="_blank" rel="noopener">Download</a>
+	<button class="header-hamburger" type="button" aria-label="Toggle menu" data-hamburger>
+		<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+			<line class="hamburger-line hamburger-line--top" x1="4" y1="7" x2="20" y2="7"/>
+			<line class="hamburger-line hamburger-line--mid" x1="4" y1="12" x2="20" y2="12"/>
+			<line class="hamburger-line hamburger-line--bot" x1="4" y1="17" x2="20" y2="17"/>
+		</svg>
+	</button>
+</header>
+<div class="mobile-nav" data-mobile-nav>
+	<a href="#features">Features</a>
+	<a href="#pricing">Pricing</a>
+	<a href="#faq">FAQs</a>
+	<a href="https://docs.glyphformac.com" target="_blank" rel="noopener">Docs</a>
+	<a href="https://github.com/SidhuK/Glyph" target="_blank" rel="noopener">GitHub</a>
+	<a href={downloadUrl} class="header-cta" target="_blank" rel="noopener">Download</a>
+</div>

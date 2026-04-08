@@ -176,7 +176,10 @@ pub fn working_tree_dirty(space_root: &Path) -> Result<bool, String> {
 
 pub fn working_tree_change_count(space_root: &Path) -> Result<u32, String> {
     let status = run_git(space_root, &["status", "--porcelain"])?;
-    Ok(status.lines().filter(|line| !line.trim().is_empty()).count() as u32)
+    Ok(status
+        .lines()
+        .filter(|line| !line.trim().is_empty())
+        .count() as u32)
 }
 
 pub fn fetch_remote(space_root: &Path, remote_name: &str, branch: &str) -> Result<(), String> {
@@ -184,17 +187,33 @@ pub fn fetch_remote(space_root: &Path, remote_name: &str, branch: &str) -> Resul
     Ok(())
 }
 
-pub fn remote_branch_exists(space_root: &Path, remote_name: &str, branch: &str) -> Result<bool, String> {
+pub fn remote_branch_exists(
+    space_root: &Path,
+    remote_name: &str,
+    branch: &str,
+) -> Result<bool, String> {
     let ref_name = format!("refs/remotes/{remote_name}/{branch}");
     Ok(run_git_maybe(space_root, &["rev-parse", "--verify", &ref_name])?.is_some())
 }
 
-pub fn ahead_behind_counts(space_root: &Path, remote_name: &str, branch: &str) -> Result<(u32, u32), String> {
+pub fn ahead_behind_counts(
+    space_root: &Path,
+    remote_name: &str,
+    branch: &str,
+) -> Result<(u32, u32), String> {
     let ref_name = format!("{remote_name}/{branch}");
     if !remote_branch_exists(space_root, remote_name, branch)? {
         return Ok((0, 0));
     }
-    let raw = run_git(space_root, &["rev-list", "--left-right", "--count", &format!("HEAD...{ref_name}")])?;
+    let raw = run_git(
+        space_root,
+        &[
+            "rev-list",
+            "--left-right",
+            "--count",
+            &format!("HEAD...{ref_name}"),
+        ],
+    )?;
     let mut parts = raw.split_whitespace();
     let ahead = parts
         .next()
@@ -207,7 +226,11 @@ pub fn ahead_behind_counts(space_root: &Path, remote_name: &str, branch: &str) -
     Ok((ahead, behind))
 }
 
-pub fn overlapping_change_risk(space_root: &Path, remote_name: &str, branch: &str) -> Result<Option<String>, String> {
+pub fn overlapping_change_risk(
+    space_root: &Path,
+    remote_name: &str,
+    branch: &str,
+) -> Result<Option<String>, String> {
     let ref_name = format!("{remote_name}/{branch}");
     if !remote_branch_exists(space_root, remote_name, branch)? {
         return Ok(None);
@@ -245,15 +268,17 @@ pub fn overlapping_change_risk(space_root: &Path, remote_name: &str, branch: &st
     let summary = if overlaps.len() == 1 {
         format!("Both local and remote changed {}", overlaps[0])
     } else {
-        format!(
-            "Both local and remote changed {}",
-            overlaps.join(", ")
-        )
+        format!("Both local and remote changed {}", overlaps.join(", "))
     };
     Ok(Some(summary))
 }
 
-pub fn merge_remote(space_root: &Path, remote_name: &str, branch: &str, favor_local: bool) -> Result<(), String> {
+pub fn merge_remote(
+    space_root: &Path,
+    remote_name: &str,
+    branch: &str,
+    favor_local: bool,
+) -> Result<(), String> {
     let ref_name = format!("refs/remotes/{remote_name}/{branch}");
     let strategy = if favor_local { "ours" } else { "theirs" };
     run_git(
@@ -263,7 +288,12 @@ pub fn merge_remote(space_root: &Path, remote_name: &str, branch: &str, favor_lo
     Ok(())
 }
 
-pub fn push_remote(space_root: &Path, remote_name: &str, branch: &str, set_upstream: bool) -> Result<(), String> {
+pub fn push_remote(
+    space_root: &Path,
+    remote_name: &str,
+    branch: &str,
+    set_upstream: bool,
+) -> Result<(), String> {
     if set_upstream {
         run_git(space_root, &["push", "-u", remote_name, branch])?;
     } else {
@@ -318,10 +348,7 @@ pub fn render_managed_gitignore(
     inclusions: &GitSyncInclusionSettings,
     context: &GitSyncContext,
 ) -> String {
-    let mut lines = vec![
-        GLYPH_GITIGNORE_START.to_string(),
-        ".glyph/".to_string(),
-    ];
+    let mut lines = vec![GLYPH_GITIGNORE_START.to_string(), ".glyph/".to_string()];
 
     if !inclusions.include_non_markdown_files {
         lines.extend([
@@ -332,7 +359,10 @@ pub fn render_managed_gitignore(
         ]);
     }
 
-    match (inclusions.include_templates, context.templates_folder.as_deref()) {
+    match (
+        inclusions.include_templates,
+        context.templates_folder.as_deref(),
+    ) {
         (true, Some(path)) if !inclusions.include_non_markdown_files => {
             push_unignore_patterns(&mut lines, path);
         }
@@ -439,7 +469,8 @@ mod tests {
         if !super::git_is_installed() {
             return;
         }
-        let root = std::env::temp_dir().join(format!("glyph-git-sync-inspect-{}", uuid::Uuid::new_v4()));
+        let root =
+            std::env::temp_dir().join(format!("glyph-git-sync-inspect-{}", uuid::Uuid::new_v4()));
         let child = root.join("child");
         std::fs::create_dir_all(&child).expect("create child");
         super::run_git(&root, &["init"]).expect("init repo");

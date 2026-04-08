@@ -197,14 +197,6 @@ export function createStarterDatabaseMarkdown(
 	].join("\n");
 }
 
-export function createDatabaseNotePath(
-	dirPath: string,
-	baseTitle = "New Database",
-): string {
-	const normalizedDir = normalizeDir(dirPath);
-	return normalizedDir ? `${normalizedDir}/${baseTitle}.md` : `${baseTitle}.md`;
-}
-
 export function createPropertyColumn(
 	property: DatabasePropertyOption,
 ): DatabaseColumn {

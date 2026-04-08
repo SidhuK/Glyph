@@ -3,9 +3,7 @@ use tauri::{AppHandle, State};
 use crate::space::state::SpaceState;
 
 use super::service;
-use super::types::{
-    GitSyncConfig, GitSyncConfigPatch, GitSyncRunRequest, GitSyncStatus,
-};
+use super::types::{GitSyncConfig, GitSyncConfigPatch, GitSyncRunRequest, GitSyncStatus};
 use super::GitSyncState;
 
 #[tauri::command]
@@ -17,7 +15,9 @@ pub fn git_sync_status_read(
 }
 
 #[tauri::command]
-pub fn git_sync_config_read(space_state: State<'_, SpaceState>) -> Result<Option<GitSyncConfig>, String> {
+pub fn git_sync_config_read(
+    space_state: State<'_, SpaceState>,
+) -> Result<Option<GitSyncConfig>, String> {
     service::read_config(&space_state)
 }
 

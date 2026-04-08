@@ -309,8 +309,8 @@ pub fn parse_all_tags(markdown: &str) -> Vec<String> {
 mod tests {
     use super::{
         expand_indexed_people, expand_indexed_tags, normalize_person_handle, normalize_tag,
-        parse_all_tags, parse_inline_people, people_tag_to_handle, person_handle_to_tag,
-        tag_depth, tag_matches_hierarchy,
+        parse_all_tags, parse_inline_people, people_tag_to_handle, person_handle_to_tag, tag_depth,
+        tag_matches_hierarchy,
     };
 
     #[test]
@@ -375,8 +375,14 @@ mod tests {
 
     #[test]
     fn normalizes_person_handles() {
-        assert_eq!(normalize_person_handle("@Alice-Jones"), Some("alice-jones".to_string()));
-        assert_eq!(normalize_person_handle("@alice_smith"), Some("alice_smith".to_string()));
+        assert_eq!(
+            normalize_person_handle("@Alice-Jones"),
+            Some("alice-jones".to_string())
+        );
+        assert_eq!(
+            normalize_person_handle("@alice_smith"),
+            Some("alice_smith".to_string())
+        );
         assert_eq!(normalize_person_handle("@alice jones"), None);
     }
 
@@ -415,8 +421,14 @@ Ignore /@pathlike too.
 
     #[test]
     fn round_trips_people_tags() {
-        assert_eq!(person_handle_to_tag("@alice"), Some("people/alice".to_string()));
-        assert_eq!(people_tag_to_handle("people/alice"), Some("alice".to_string()));
+        assert_eq!(
+            person_handle_to_tag("@alice"),
+            Some("people/alice".to_string())
+        );
+        assert_eq!(
+            people_tag_to_handle("people/alice"),
+            Some("alice".to_string())
+        );
         assert_eq!(people_tag_to_handle("work/alice"), None);
     }
 }
