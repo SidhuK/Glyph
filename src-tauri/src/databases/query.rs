@@ -818,6 +818,20 @@ pub fn query_database_rows(
     })
 }
 
+pub fn row_by_path(root: &Path, note_path: &str) -> Result<DatabaseRow, String> {
+    let conn = open_db(root)?;
+    let mut rows = hydrate_rows_by_paths(&conn, &[note_path.to_string()])?;
+    rows.pop()
+        .ok_or_else(|| "note row not found after update".to_string())
+}
+
+pub fn read_note_markdown(root: &Path, path: &str) -> Result<String, String> {
+    let rel = PathBuf::from(path);
+    deny_hidden_rel_path(&rel)?;
+    let abs = paths::join_under(root, &rel)?;
+    std::fs::read_to_string(abs).map_err(|e| e.to_string())
+}
+
 #[cfg(test)]
 mod tests {
     use std::collections::BTreeMap;
@@ -948,18 +962,4 @@ mod tests {
             vec!["notes/child.md".to_string()]
         );
     }
-}
-
-pub fn row_by_path(root: &Path, note_path: &str) -> Result<DatabaseRow, String> {
-    let conn = open_db(root)?;
-    let mut rows = hydrate_rows_by_paths(&conn, &[note_path.to_string()])?;
-    rows.pop()
-        .ok_or_else(|| "note row not found after update".to_string())
-}
-
-pub fn read_note_markdown(root: &Path, path: &str) -> Result<String, String> {
-    let rel = PathBuf::from(path);
-    deny_hidden_rel_path(&rel)?;
-    let abs = paths::join_under(root, &rel)?;
-    std::fs::read_to_string(abs).map_err(|e| e.to_string())
 }

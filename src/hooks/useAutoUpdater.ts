@@ -77,11 +77,8 @@ export function useAutoUpdater(enabled = true): AutoUpdaterState {
 			setUpdate(cachedUpdate);
 		}
 
-		let cancelled = false;
 		const runCheck = async () => {
-			const nextUpdate = await checkForUpdates();
-			if (cancelled) return;
-			setUpdate(nextUpdate);
+			await checkForUpdates();
 		};
 
 		if (!launchCheckStarted) {
@@ -94,7 +91,6 @@ export function useAutoUpdater(enabled = true): AutoUpdaterState {
 		}, THREE_HOURS_MS);
 
 		return () => {
-			cancelled = true;
 			window.clearInterval(intervalId);
 		};
 	}, [checkForUpdates, enabled]);

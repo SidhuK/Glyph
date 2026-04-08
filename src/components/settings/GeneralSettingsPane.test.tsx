@@ -6,10 +6,9 @@ import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { GeneralSettingsPane } from "./GeneralSettingsPane";
 
-const { useLicenseStatusMock } =
-	vi.hoisted(() => ({
-		useLicenseStatusMock: vi.fn(),
-	}));
+const { useLicenseStatusMock } = vi.hoisted(() => ({
+	useLicenseStatusMock: vi.fn(),
+}));
 
 vi.mock("../../lib/settings", async () => {
 	const actual =

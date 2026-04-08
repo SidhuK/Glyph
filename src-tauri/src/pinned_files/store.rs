@@ -69,14 +69,12 @@ fn normalize_files(space_root: &Path, files: Vec<String>) -> Vec<String> {
     next
 }
 
-pub fn normalize_store(
-    space_root: &Path,
-    mut store: PinnedFilesStore,
-) -> (PinnedFilesStore, bool) {
+pub fn normalize_store(space_root: &Path, mut store: PinnedFilesStore) -> (PinnedFilesStore, bool) {
     let previous_version = store.version;
     let previous_files = std::mem::take(&mut store.files);
     let normalized_files = normalize_files(space_root, previous_files.clone());
-    let changed = previous_version != PINNED_FILES_STORE_VERSION || previous_files != normalized_files;
+    let changed =
+        previous_version != PINNED_FILES_STORE_VERSION || previous_files != normalized_files;
     store.version = PINNED_FILES_STORE_VERSION;
     store.files = normalized_files;
     (store, changed)
@@ -108,8 +106,7 @@ pub fn save_store(space_root: &Path, store: &PinnedFilesStore) -> Result<(), Str
 }
 
 pub fn toggle_file(store: &mut PinnedFilesStore, path: &str) -> Result<(), String> {
-    let normalized =
-        normalize_rel_path(path).ok_or_else(|| "path is required".to_string())?;
+    let normalized = normalize_rel_path(path).ok_or_else(|| "path is required".to_string())?;
     if let Some(index) = store.files.iter().position(|file| file == &normalized) {
         store.files.remove(index);
         return Ok(());
@@ -137,9 +134,7 @@ mod tests {
     use std::path::Path;
     use std::time::{SystemTime, UNIX_EPOCH};
 
-    use super::{
-        load_store, rewrite_entry_path, save_store, should_remove_entry, toggle_file,
-    };
+    use super::{load_store, rewrite_entry_path, save_store, should_remove_entry, toggle_file};
     use crate::glyph_paths::ensure_glyph_dir;
     use crate::paths;
     use crate::pinned_files::types::PinnedFilesStore;
@@ -226,14 +221,13 @@ mod tests {
             Some("archive/a.md".to_string())
         );
         assert_eq!(
-            rewrite_entry_path(
-                "notes/folder/a.md",
-                "notes/folder",
-                "archive/folder"
-            ),
+            rewrite_entry_path("notes/folder/a.md", "notes/folder", "archive/folder"),
             Some("archive/folder/a.md".to_string())
         );
-        assert_eq!(rewrite_entry_path("notes/a.md", "notes/b.md", "archive/b.md"), None);
+        assert_eq!(
+            rewrite_entry_path("notes/a.md", "notes/b.md", "archive/b.md"),
+            None
+        );
     }
 
     #[test]

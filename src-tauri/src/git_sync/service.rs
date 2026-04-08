@@ -14,8 +14,8 @@ use super::git::{
 };
 use super::store::{delete_store, load_store, save_store};
 use super::types::{
-    DEFAULT_GIT_SYNC_BRANCH, GitSyncConfig, GitSyncConfigPatch, GitSyncPhase, GitSyncRepoMode,
-    GitSyncRunMode, GitSyncRunRequest, GitSyncStatus,
+    GitSyncConfig, GitSyncConfigPatch, GitSyncPhase, GitSyncRepoMode, GitSyncRunMode,
+    GitSyncRunRequest, GitSyncStatus, DEFAULT_GIT_SYNC_BRANCH,
 };
 
 #[derive(Debug, Clone)]
@@ -113,7 +113,11 @@ fn inspect_repo_health(
 ) -> Result<RepoHealth, String> {
     let mut health = RepoHealth::default();
 
-    let RepoInspection::AtRoot { branch, primary_remote } = inspection else {
+    let RepoInspection::AtRoot {
+        branch,
+        primary_remote,
+    } = inspection
+    else {
         return Ok(health);
     };
 
@@ -133,7 +137,10 @@ fn inspect_repo_health(
 
     match branch.as_deref() {
         None => {
-            health.preflight_issue = Some("Git is in a detached HEAD state. Switch back to a branch before syncing.".to_string());
+            health.preflight_issue = Some(
+                "Git is in a detached HEAD state. Switch back to a branch before syncing."
+                    .to_string(),
+            );
             return Ok(health);
         }
         Some(current) if current != config.branch => {

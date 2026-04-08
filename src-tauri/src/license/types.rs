@@ -248,7 +248,7 @@ mod tests {
         assert_eq!(status.trial_expires_at_ms, Some(1_000 + TRIAL_DURATION_MS));
         assert_eq!(
             status.trial_remaining_seconds,
-            Some((TRIAL_DURATION_MS - 1_000 + 999) / 1000)
+            Some((TRIAL_DURATION_MS - 1_000).div_ceil(1000))
         );
     }
 

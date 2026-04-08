@@ -1796,7 +1796,11 @@ export function AppShell() {
 							void handleWebClipSave();
 						}}
 					>
+						<label className="sr-only" htmlFor="web-clip-url-input">
+							URL to fetch and save as Markdown
+						</label>
 						<input
+							id="web-clip-url-input"
 							className="webClipDialogInput"
 							placeholder="https://example.com/article"
 							value={webClipUrl}

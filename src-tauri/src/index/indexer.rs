@@ -13,7 +13,9 @@ use super::frontmatter::{
 use super::helpers::{path_to_slash_string, sha256_hex, should_skip_entry};
 use super::links::parse_outgoing_links;
 use super::properties::{delete_note_properties, reindex_note_properties};
-use super::tags::{expand_indexed_people, expand_indexed_tags, parse_all_tags, parse_inline_people};
+use super::tags::{
+    expand_indexed_people, expand_indexed_tags, parse_all_tags, parse_inline_people,
+};
 use super::tasks::{delete_note_tasks, reindex_note_tasks};
 use super::types::IndexRebuildResult;
 

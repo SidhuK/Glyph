@@ -14,9 +14,7 @@ use super::indexer::index_note;
 use super::indexer::rebuild;
 use super::search_advanced::{run_search_advanced, SearchAdvancedRequest};
 use super::search_hybrid::hybrid_search;
-use super::tags::{
-    normalize_tag, people_tag_to_handle, tag_depth, PEOPLE_TAG_NAMESPACE,
-};
+use super::tags::{normalize_tag, people_tag_to_handle, tag_depth, PEOPLE_TAG_NAMESPACE};
 use super::tasks::{
     mutate_task_line, note_abs_path, query_note_task_summaries, query_tasks, summarize_tasks,
     write_note, IndexedTask, NoteTaskSummary, NoteTaskSummaryItem, TaskBucket,
@@ -457,7 +455,7 @@ pub async fn all_docs_list(
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<AllDocsItem>, String> {
         let conn = open_db(&root)?;
         let mut sql = String::from(
-                "SELECT n.path, n.title, n.preview, n.updated, n.created,
+            "SELECT n.path, n.title, n.preview, n.updated, n.created,
                         COALESCE((
                             SELECT GROUP_CONCAT(ordered_tags.tag, '\n')
                             FROM (
@@ -469,7 +467,7 @@ pub async fn all_docs_list(
                             ) ordered_tags
                         ), '')
                  FROM notes n ",
-            );
+        );
         let mut params: Vec<rusqlite::types::Value> = Vec::new();
         if let Some(prefix) = folder_prefix.as_ref() {
             sql.push_str("WHERE n.path LIKE ? ESCAPE '\\' ");
@@ -955,8 +953,8 @@ pub async fn tag_notes(
 mod tests {
     use rusqlite::Connection;
 
-    use crate::index::set_people_mentions_as_tags_enabled;
     use crate::index::schema::ensure_schema;
+    use crate::index::set_people_mentions_as_tags_enabled;
     use crate::index::tags::{expand_indexed_people, expand_indexed_tags};
 
     use super::{list_people, list_tags};
@@ -1014,7 +1012,11 @@ mod tests {
         for tag in expand_indexed_tags(&["work".to_string()]) {
             conn.execute(
                 "INSERT INTO tags(note_id, tag, is_explicit) VALUES(?, ?, ?)",
-                rusqlite::params!["notes/work.md", tag.tag, if tag.is_explicit { 1 } else { 0 }],
+                rusqlite::params![
+                    "notes/work.md",
+                    tag.tag,
+                    if tag.is_explicit { 1 } else { 0 }
+                ],
             )
             .unwrap();
         }
@@ -1031,7 +1033,10 @@ mod tests {
         }
 
         let tags = list_tags(&conn, 50).unwrap();
-        assert_eq!(tags.iter().map(|tag| tag.tag.as_str()).collect::<Vec<_>>(), vec!["work"]);
+        assert_eq!(
+            tags.iter().map(|tag| tag.tag.as_str()).collect::<Vec<_>>(),
+            vec!["work"]
+        );
 
         let people = list_people(&conn, 50).unwrap();
         assert_eq!(people.len(), 1);

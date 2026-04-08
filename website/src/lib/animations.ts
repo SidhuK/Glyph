@@ -3,7 +3,8 @@ const COPIED_COPY_LABEL = "Copied";
 const FAILED_COPY_LABEL = "Copy failed";
 
 export function initHamburger(): void {
-	const hamburger = document.querySelector<HTMLButtonElement>("[data-hamburger]");
+	const hamburger =
+		document.querySelector<HTMLButtonElement>("[data-hamburger]");
 	const mobileNav = document.querySelector<HTMLDivElement>("[data-mobile-nav]");
 
 	if (!hamburger || !mobileNav) return;
@@ -13,37 +14,41 @@ export function initHamburger(): void {
 		hamburger.setAttribute("aria-expanded", String(isOpen));
 	});
 
-	mobileNav.querySelectorAll("a").forEach((link) => {
+	for (const link of mobileNav.querySelectorAll("a")) {
 		link.addEventListener("click", () => {
 			mobileNav.classList.remove("is-open");
 			hamburger.setAttribute("aria-expanded", "false");
 		});
-	});
+	}
 }
 
 export function initRevealAnimation(): void {
 	const revealItems = Array.from(document.querySelectorAll("[data-reveal]"));
-	const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+	const prefersReducedMotion = window.matchMedia(
+		"(prefers-reduced-motion: reduce)",
+	).matches;
 
 	if (prefersReducedMotion || !("IntersectionObserver" in window)) {
-		revealItems.forEach((el) => el.classList.add("revealed"));
+		for (const el of revealItems) {
+			el.classList.add("revealed");
+		}
 		return;
 	}
 
 	const observer = new IntersectionObserver(
 		(entries) => {
-			entries.forEach((entry) => {
+			for (const entry of entries) {
 				if (entry.isIntersecting) {
 					entry.target.classList.remove("reveal-pending");
 					entry.target.classList.add("revealed");
 					observer.unobserve(entry.target);
 				}
-			});
+			}
 		},
 		{ threshold: 0.1 },
 	);
 
-	revealItems.forEach((el) => {
+	for (const el of revealItems) {
 		const rect = el.getBoundingClientRect();
 		if (rect.top <= window.innerHeight * 0.92) {
 			el.classList.add("revealed");
@@ -52,13 +57,15 @@ export function initRevealAnimation(): void {
 
 		el.classList.add("reveal-pending");
 		observer.observe(el);
-	});
+	}
 }
 
 export function initModeToggle(): void {
-	const toggle = document.querySelector<HTMLButtonElement>("[data-mode-toggle]");
+	const toggle =
+		document.querySelector<HTMLButtonElement>("[data-mode-toggle]");
 	const showcase = toggle?.closest<HTMLDivElement>(".showcase");
-	const showcaseImage = showcase?.querySelector<HTMLImageElement>(".showcase-img");
+	const showcaseImage =
+		showcase?.querySelector<HTMLImageElement>(".showcase-img");
 
 	if (!toggle || !showcase || !showcaseImage) return;
 
@@ -87,9 +94,15 @@ export function initModeToggle(): void {
 }
 
 export function initClipboard(): void {
-	const copyButton = document.querySelector<HTMLButtonElement>("[data-copy-install]");
-	const installStrip = document.querySelector<HTMLDivElement>("[data-install-strip]");
-	const installCommand = document.querySelector("[data-install-command]")?.textContent?.trim();
+	const copyButton = document.querySelector<HTMLButtonElement>(
+		"[data-copy-install]",
+	);
+	const installStrip = document.querySelector<HTMLDivElement>(
+		"[data-install-strip]",
+	);
+	const installCommand = document
+		.querySelector("[data-install-command]")
+		?.textContent?.trim();
 
 	if (!copyButton || !installStrip) return;
 

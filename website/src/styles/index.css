@@ -95,9 +95,8 @@
 	border-radius: 100px;
 	border: none;
 	cursor: pointer;
-	transition:
-		transform 0.2s cubic-bezier(0.22, 1, 0.36, 1),
-		background 0.2s ease;
+	transition: transform 0.2s cubic-bezier(0.22, 1, 0.36, 1), background 0.2s
+		ease;
 }
 
 .header-cta:hover {
@@ -295,7 +294,9 @@ h1 {
 	transition: border-color 0.15s;
 }
 
-.mode-toggle:hover { border-color: var(--faint); }
+.mode-toggle:hover {
+	border-color: var(--faint);
+}
 
 .mode-icon {
 	display: block;
@@ -303,9 +304,15 @@ h1 {
 	transition: color 0.2s;
 }
 
-.icon-sun { color: var(--ink); }
-.showcase.is-dark .icon-sun { color: var(--faint); }
-.showcase.is-dark .icon-moon { color: var(--ink); }
+.icon-sun {
+	color: var(--ink);
+}
+.showcase.is-dark .icon-sun {
+	color: var(--faint);
+}
+.showcase.is-dark .icon-moon {
+	color: var(--ink);
+}
 
 /* ── Sections ── */
 .section {
@@ -357,10 +364,8 @@ h2 {
 	line-height: 1.45;
 	min-width: 0;
 	overflow-wrap: anywhere;
-	transition:
-		transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
-		letter-spacing 0.28s ease,
-		opacity 0.28s ease;
+	transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), letter-spacing
+		0.28s ease, opacity 0.28s ease;
 }
 
 .install-strip.is-typing .install-strip-code {
@@ -497,10 +502,19 @@ h2 {
 		gap: 0;
 	}
 
-	.nav a { padding: 0.3rem 0.42rem; font-size: 0.64rem; }
-	.header-cta { min-height: 1.9rem; padding: 0.35rem 0.62rem; font-size: 0.64rem; }
+	.nav a {
+		padding: 0.3rem 0.42rem;
+		font-size: 0.64rem;
+	}
+	.header-cta {
+		min-height: 1.9rem;
+		padding: 0.35rem 0.62rem;
+		font-size: 0.64rem;
+	}
 
-	h1 { font-size: clamp(1.8rem, 8vw, 2.4rem); }
+	h1 {
+		font-size: clamp(1.8rem, 8vw, 2.4rem);
+	}
 
 	.hero-cta-stack,
 	.hero-actions {

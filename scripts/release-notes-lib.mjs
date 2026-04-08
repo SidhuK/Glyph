@@ -72,14 +72,19 @@ export function generateReleaseNotesArtifacts({
 	nextTag,
 	publishedAt = new Date().toISOString(),
 }) {
+	const version = String(nextTag ?? "")
+		.replace(/^v/i, "")
+		.trim();
+	if (!version) {
+		throw new Error("nextTag is required to generate release artifacts");
+	}
+
 	const range = latestTag ? `${latestTag}..HEAD` : "HEAD";
 	const logOutput = runGitLog(range, repoRoot);
 	const commits = logOutput
 		.split("\n")
 		.map((line) => line.trim())
 		.filter((line) => line && !line.startsWith("Merge "));
-
-	const version = String(nextTag ?? "").replace(/^v/i, "") || "0.0.0";
 
 	const lines = [`## Changes in v${version}`, ""];
 

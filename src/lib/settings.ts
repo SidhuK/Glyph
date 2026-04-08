@@ -48,8 +48,7 @@ const UI_ACCENTS = new Set<UiAccent>([
 const DEFAULT_UI_ACCENT: UiAccent = "neutral";
 const DEFAULT_UI_FONT_FAMILY = "Satoshi";
 const DEFAULT_UI_MONO_FONT_FAMILY = "JetBrains Mono";
-export const DEFAULT_AUTO_UPDATE_CHECK_INTERVAL: AutoUpdateCheckInterval =
-	"3h";
+export const DEFAULT_AUTO_UPDATE_CHECK_INTERVAL: AutoUpdateCheckInterval = "3h";
 export const MIN_UI_FONT_SIZE = 7;
 export const MAX_UI_FONT_SIZE = 40;
 export const DEFAULT_UI_FONT_SIZE = 14;
