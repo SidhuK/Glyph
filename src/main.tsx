@@ -4,7 +4,6 @@ import { useTheme } from "next-themes";
 import React from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
-import { LicenseGate } from "./components/licensing/LicenseGate";
 import { Toaster } from "./components/ui/shadcn/sonner";
 import {
 	applyUiAccent,
@@ -20,11 +19,7 @@ import { useTauriEvent } from "./lib/tauriEvents";
 import { isUiDarkThemeId, isUiLightThemeId } from "./lib/uiThemes";
 
 function Root() {
-	return (
-		<LicenseGate>
-			<App />
-		</LicenseGate>
-	);
+	return <App />;
 }
 
 function ThemeAndTypographyBridge() {

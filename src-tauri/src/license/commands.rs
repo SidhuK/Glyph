@@ -1,12 +1,12 @@
 use tauri::AppHandle;
 use tracing::error;
 
-use super::is_official_build;
+use super::{is_dev_force_licensed, is_official_build};
 use super::service::verify_license_key;
 use super::store::{license_path, read_record, write_record};
 use super::types::{
-    build_status, ensure_trial_window, ensure_trial_window_from_activation, hash_license_key,
-    mask_license_key, normalize_license_key, LicenseActivateResult,
+    build_status, build_status_for, ensure_trial_window, ensure_trial_window_from_activation,
+    hash_license_key, mask_license_key, normalize_license_key, LicenseActivateResult,
 };
 
 fn now_ms() -> u64 {
@@ -20,8 +20,9 @@ fn now_ms() -> u64 {
 #[tauri::command(rename_all = "snake_case")]
 pub fn license_bootstrap_status(app: AppHandle) -> Result<super::types::LicenseStatus, String> {
     let current_ms = now_ms();
+    let dev_force_licensed = is_dev_force_licensed();
 
-    if !is_official_build() {
+    if !is_official_build() && !dev_force_licensed {
         return Ok(build_status(&Default::default(), current_ms));
     }
 
@@ -40,7 +41,28 @@ pub fn license_bootstrap_status(app: AppHandle) -> Result<super::types::LicenseS
         changed = true;
     }
 
-    if !record.licensed {
+    if dev_force_licensed {
+        if !record.licensed {
+            record.licensed = true;
+            changed = true;
+        }
+        if record.activated_at_ms.is_none() {
+            record.activated_at_ms = Some(current_ms);
+            changed = true;
+        }
+        if record.last_verified_at_ms != Some(current_ms) {
+            record.last_verified_at_ms = Some(current_ms);
+            changed = true;
+        }
+        if record.license_key_masked.is_none() {
+            record.license_key_masked = Some("DEV-****-MODE".to_string());
+            changed = true;
+        }
+        if record.last_error_code.take().is_some() {
+            changed = true;
+        }
+        ensure_trial_window_from_activation(&mut record, current_ms);
+    } else if !record.licensed {
         changed |= ensure_trial_window(&mut record, current_ms);
     }
 
@@ -48,7 +70,7 @@ pub fn license_bootstrap_status(app: AppHandle) -> Result<super::types::LicenseS
         write_record(&path, &record)?;
     }
 
-    Ok(build_status(&record, current_ms))
+    Ok(build_status_for(&record, current_ms, true))
 }
 
 #[tauri::command(rename_all = "snake_case")]
@@ -57,10 +79,17 @@ pub async fn license_activate(
     license_key: String,
 ) -> Result<LicenseActivateResult, String> {
     let current_ms = now_ms();
+    let dev_force_licensed = is_dev_force_licensed();
 
-    if !is_official_build() {
+    if !is_official_build() && !dev_force_licensed {
         return Ok(LicenseActivateResult {
             status: build_status(&Default::default(), current_ms),
+        });
+    }
+
+    if dev_force_licensed {
+        return Ok(LicenseActivateResult {
+            status: license_bootstrap_status(app)?,
         });
     }
 
@@ -109,10 +138,17 @@ pub async fn license_activate(
 #[tauri::command(rename_all = "snake_case")]
 pub fn license_clear_local(app: AppHandle) -> Result<LicenseActivateResult, String> {
     let current_ms = now_ms();
+    let dev_force_licensed = is_dev_force_licensed();
 
-    if !is_official_build() {
+    if !is_official_build() && !dev_force_licensed {
         return Ok(LicenseActivateResult {
             status: build_status(&Default::default(), current_ms),
+        });
+    }
+
+    if dev_force_licensed {
+        return Ok(LicenseActivateResult {
+            status: license_bootstrap_status(app)?,
         });
     }
 

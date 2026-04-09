@@ -8,11 +8,19 @@ pub const DEFAULT_GUMROAD_PRODUCT_URL: &str = "https://karatsidhu.gumroad.com/l/
 pub const DEFAULT_SUPPORT_URL: &str = "https://github.com/SidhuK/Glyph/issues";
 pub const TRIAL_DURATION_MS: u64 = 7 * 24 * 60 * 60 * 1000;
 
-pub fn is_official_build() -> bool {
+fn env_flag_enabled(value: Option<&str>) -> bool {
     matches!(
-        option_env!("GLYPH_OFFICIAL_BUILD"),
+        value.map(str::trim),
         Some("1") | Some("true") | Some("TRUE") | Some("yes") | Some("YES")
     )
+}
+
+pub fn is_official_build() -> bool {
+    env_flag_enabled(option_env!("GLYPH_OFFICIAL_BUILD"))
+}
+
+pub fn is_dev_force_licensed() -> bool {
+    cfg!(debug_assertions) && env_flag_enabled(option_env!("GLYPH_DEV_FORCE_LICENSED"))
 }
 
 pub fn gumroad_product_id() -> &'static str {

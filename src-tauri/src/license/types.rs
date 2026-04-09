@@ -114,7 +114,11 @@ pub fn ensure_trial_window_from_activation(
     ensure_trial_window(record, base)
 }
 
-fn build_status_for(record: &LicenseRecord, now_ms: u64, official_build: bool) -> LicenseStatus {
+pub(crate) fn build_status_for(
+    record: &LicenseRecord,
+    now_ms: u64,
+    official_build: bool,
+) -> LicenseStatus {
     if !official_build {
         return LicenseStatus {
             mode: LicenseMode::CommunityBuild,
