@@ -31,6 +31,16 @@ export function NoteExportHtmlHost({
 }: NoteExportHtmlHostProps) {
 	const exportRootRef = useRef<HTMLElement | null>(null);
 	const startedRef = useRef<string | null>(null);
+	const completeRef = useRef(onComplete);
+	const errorRef = useRef(onError);
+
+	useEffect(() => {
+		completeRef.current = onComplete;
+	}, [onComplete]);
+
+	useEffect(() => {
+		errorRef.current = onError;
+	}, [onError]);
 
 	useEffect(() => {
 		if (!request) return;
@@ -76,7 +86,7 @@ export function NoteExportHtmlHost({
 			clearTimer();
 			if (cancelled) return;
 			if (Date.now() - startedAt > HARD_TIMEOUT_MS) {
-				onError({
+				errorRef.current({
 					id: request.id,
 					message: "Export timed out waiting for the note to render.",
 				});
@@ -91,7 +101,7 @@ export function NoteExportHtmlHost({
 						throw new Error("Export view did not finish rendering.");
 					}
 					const { title } = parseNotePreview(request.relPath, request.markdown);
-					onComplete({
+					completeRef.current({
 						id: request.id,
 						html: buildStandaloneExportHtml(
 							title,
@@ -100,7 +110,7 @@ export function NoteExportHtmlHost({
 						),
 					});
 				} catch (error) {
-					onError({
+					errorRef.current({
 						id: request.id,
 						message:
 							error instanceof Error
@@ -133,7 +143,7 @@ export function NoteExportHtmlHost({
 			clearTimer();
 			observer.disconnect();
 		};
-	}, [onComplete, onError, request]);
+	}, [request]);
 
 	if (!request) return null;
 

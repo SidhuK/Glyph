@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
 	getDailyNoteTemplate,
 	getTemplatesFolder,
@@ -68,6 +68,7 @@ export function TemplateSettingsSections() {
 	);
 	const [templateLibraryState, setTemplateLibraryState] =
 		useState<TemplateLibraryState>(INITIAL_TEMPLATE_LIBRARY_STATE);
+	const latestDailyTemplateWriteIdRef = useRef(0);
 	const { templatesFolder, dailyNoteTemplatePath, loading, error } =
 		settingsState;
 	const {
@@ -75,6 +76,12 @@ export function TemplateSettingsSections() {
 		loading: templatesLoading,
 		error: templatesError,
 	} = templateLibraryState;
+
+	const beginDailyTemplateWrite = useCallback(() => {
+		latestDailyTemplateWriteIdRef.current += 1;
+		return latestDailyTemplateWriteIdRef.current;
+	}, []);
+
 	useEffect(() => {
 		let cancelled = false;
 		void (async () => {
@@ -110,11 +117,23 @@ export function TemplateSettingsSections() {
 	useEffect(() => {
 		if (templatesFolder === null) {
 			setTemplateLibraryState(INITIAL_TEMPLATE_LIBRARY_STATE);
-			setSettingsState((current) =>
-				current.dailyNoteTemplatePath === null
-					? current
-					: { ...current, dailyNoteTemplatePath: null },
-			);
+			if (dailyNoteTemplatePath !== null) {
+				const writeId = beginDailyTemplateWrite();
+				setSettingsState((current) => ({
+					...current,
+					dailyNoteTemplatePath: null,
+				}));
+				void setDailyNoteTemplate(null).catch((cause) => {
+					if (writeId !== latestDailyTemplateWriteIdRef.current) return;
+					setSettingsState((current) => ({
+						...current,
+						error:
+							cause instanceof Error
+								? cause.message
+								: "Failed to clear daily note template",
+					}));
+				});
+			}
 			return;
 		}
 		let cancelled = false;
@@ -147,16 +166,27 @@ export function TemplateSettingsSections() {
 						(template) => template.value === dailyNoteTemplatePath,
 					)
 				) {
+					const writeId = beginDailyTemplateWrite();
 					void setDailyNoteTemplate(null)
 						.then(() => {
-							if (cancelled) return;
+							if (
+								cancelled ||
+								writeId !== latestDailyTemplateWriteIdRef.current
+							) {
+								return;
+							}
 							setSettingsState((current) => ({
 								...current,
 								dailyNoteTemplatePath: null,
 							}));
 						})
 						.catch((cause) => {
-							if (cancelled) return;
+							if (
+								cancelled ||
+								writeId !== latestDailyTemplateWriteIdRef.current
+							) {
+								return;
+							}
 							setSettingsState((current) => ({
 								...current,
 								error:
@@ -179,9 +209,10 @@ export function TemplateSettingsSections() {
 		return () => {
 			cancelled = true;
 		};
-	}, [dailyNoteTemplatePath, templatesFolder]);
+	}, [beginDailyTemplateWrite, dailyNoteTemplatePath, templatesFolder]);
 
 	const handleBrowseFolder = useCallback(async () => {
+		let writeId: number | null = null;
 		setSettingsState((current) => ({ ...current, error: null }));
 		try {
 			const { open } = await import("@tauri-apps/plugin-dialog");
@@ -212,13 +243,21 @@ export function TemplateSettingsSections() {
 				.slice(normSpace.length)
 				.replace(/^\/+/, "");
 			await setTemplatesFolder(relativePath);
+			writeId = beginDailyTemplateWrite();
 			await setDailyNoteTemplate(null);
+			if (writeId !== latestDailyTemplateWriteIdRef.current) return;
 			setSettingsState((current) => ({
 				...current,
 				templatesFolder: relativePath,
 				dailyNoteTemplatePath: null,
 			}));
 		} catch (cause) {
+			if (
+				writeId !== null &&
+				writeId !== latestDailyTemplateWriteIdRef.current
+			) {
+				return;
+			}
 			setSettingsState((current) => ({
 				...current,
 				error:
@@ -227,7 +266,7 @@ export function TemplateSettingsSections() {
 						: "Failed to select template folder",
 			}));
 		}
-	}, []);
+	}, [beginDailyTemplateWrite]);
 
 	const handleClearFolder = useCallback(async () => {
 		setSettingsState((current) => ({ ...current, error: null }));
@@ -249,25 +288,31 @@ export function TemplateSettingsSections() {
 		}
 	}, []);
 
-	const handleDailyTemplateChange = useCallback(async (value: string) => {
-		const next = value.trim() ? value : null;
-		setSettingsState((current) => ({ ...current, error: null }));
-		try {
-			await setDailyNoteTemplate(next);
-			setSettingsState((current) => ({
-				...current,
-				dailyNoteTemplatePath: next,
-			}));
-		} catch (cause) {
-			setSettingsState((current) => ({
-				...current,
-				error:
-					cause instanceof Error
-						? cause.message
-						: "Failed to update daily note template",
-			}));
-		}
-	}, []);
+	const handleDailyTemplateChange = useCallback(
+		async (value: string) => {
+			const next = value.trim() ? value : null;
+			const writeId = beginDailyTemplateWrite();
+			setSettingsState((current) => ({ ...current, error: null }));
+			try {
+				await setDailyNoteTemplate(next);
+				if (writeId !== latestDailyTemplateWriteIdRef.current) return;
+				setSettingsState((current) => ({
+					...current,
+					dailyNoteTemplatePath: next,
+				}));
+			} catch (cause) {
+				if (writeId !== latestDailyTemplateWriteIdRef.current) return;
+				setSettingsState((current) => ({
+					...current,
+					error:
+						cause instanceof Error
+							? cause.message
+							: "Failed to update daily note template",
+				}));
+			}
+		},
+		[beginDailyTemplateWrite],
+	);
 
 	const summary = useMemo(() => {
 		if (templatesFolder === null) return "Not configured";

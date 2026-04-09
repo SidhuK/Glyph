@@ -89,6 +89,7 @@ export function useGitSync({
 						...current,
 						paused: false,
 						enabled: nextConfig.enabled,
+						last_error: null,
 					}
 				: current,
 		);

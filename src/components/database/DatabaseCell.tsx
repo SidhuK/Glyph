@@ -89,6 +89,10 @@ function DatabaseCellEditor({
 		onSelectRow?.(row.note_path);
 	};
 
+	const handleTagSaveError = (error: unknown) => {
+		setSaveError(extractErrorMessage(error));
+	};
+
 	const saveTagList = async (values: string[]) => {
 		setSaveError("");
 		await onSave(row.note_path, column, {
@@ -180,7 +184,9 @@ function DatabaseCellEditor({
 							className="notePropertyToken"
 							style={toneStyleForValue(value)}
 							onMouseDown={(event) => event.preventDefault()}
-							onClick={() => void removeTag(value)}
+							onClick={() => {
+								void removeTag(value).catch(handleTagSaveError);
+							}}
 							title={`Remove ${formatDatabaseTagLabel(value)}`}
 						>
 							<span>{formatDatabaseTagLabel(value)}</span>
@@ -225,7 +231,7 @@ function DatabaseCellEditor({
 						onKeyDown={(event) => {
 							if (event.key === "Enter" || event.key === ",") {
 								event.preventDefault();
-								void addTag(tagDraft);
+								void addTag(tagDraft).catch(handleTagSaveError);
 								return;
 							}
 							if (event.key === "Escape") {
@@ -240,7 +246,7 @@ function DatabaseCellEditor({
 								cellValue.value_list[cellValue.value_list.length - 1];
 							if (!lastTag) return;
 							event.preventDefault();
-							void removeTag(lastTag);
+							void removeTag(lastTag).catch(handleTagSaveError);
 						}}
 					/>
 				</div>

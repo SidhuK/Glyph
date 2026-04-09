@@ -1,5 +1,5 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
-import { useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
 	activateLicenseKey,
 	clearLocalLicense,
@@ -48,11 +48,11 @@ export function LicenseSettingsCard() {
 	const [isSubmitting, setIsSubmitting] = useState(false);
 	const successMessageTimerRef = useRef<number | null>(null);
 
-	const clearSuccessMessageTimer = () => {
+	const clearSuccessMessageTimer = useCallback(() => {
 		if (successMessageTimerRef.current === null) return;
 		window.clearTimeout(successMessageTimerRef.current);
 		successMessageTimerRef.current = null;
-	};
+	}, []);
 
 	const scheduleSuccessMessageReset = () => {
 		clearSuccessMessageTimer();
@@ -61,6 +61,8 @@ export function LicenseSettingsCard() {
 			setSuccessMessage("");
 		}, 2200);
 	};
+
+	useEffect(() => () => clearSuccessMessageTimer(), [clearSuccessMessageTimer]);
 
 	const handleActivate = async () => {
 		if (isSubmitting) return;
@@ -79,9 +81,9 @@ export function LicenseSettingsCard() {
 		try {
 			await activateLicenseKey(normalizedLicenseKey);
 			setLicenseKey("");
+			await reload();
 			setSuccessMessage("License activated.");
 			scheduleSuccessMessageReset();
-			await reload();
 		} catch (cause) {
 			setActionError(
 				cause instanceof Error ? cause.message : "Failed to activate license",

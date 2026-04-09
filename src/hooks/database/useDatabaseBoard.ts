@@ -29,18 +29,20 @@ export function useDatabaseBoard({
 	onLaneOrderChange,
 }: UseDatabaseBoardParams) {
 	const groupColumns = useMemo(() => getBoardGroupColumns(columns), [columns]);
-	const [groupColumnId, setGroupColumnId] = useState<string | null>(() => null);
+	const [rawGroupColumnId, setRawGroupColumnId] = useState<string | null>(
+		() => null,
+	);
 	const [laneOrderByGroup, setLaneOrderByGroup] = useState<
 		Record<string, string[]>
 	>(() => initialLaneOrderByGroup);
 
 	const effectiveGroupColumnId = useMemo(() => {
-		const candidate = groupColumnId ?? initialGroupColumnId;
+		const candidate = rawGroupColumnId ?? initialGroupColumnId;
 		if (candidate && groupColumns.some((column) => column.id === candidate)) {
 			return candidate;
 		}
 		return defaultBoardGroupColumnId(groupColumns);
-	}, [groupColumnId, groupColumns, initialGroupColumnId]);
+	}, [groupColumns, initialGroupColumnId, rawGroupColumnId]);
 
 	const groupColumn = useMemo(
 		() =>
@@ -87,11 +89,11 @@ export function useDatabaseBoard({
 	return {
 		groupColumns,
 		groupColumn,
-		groupColumnId,
+		groupColumnId: effectiveGroupColumnId,
 		lanes,
 		moveLaneToIndex,
 		setGroupColumnId: (nextColumnId: string | null) => {
-			startTransition(() => setGroupColumnId(nextColumnId));
+			startTransition(() => setRawGroupColumnId(nextColumnId));
 			onGroupColumnIdChange?.(nextColumnId);
 		},
 	};

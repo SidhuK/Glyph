@@ -313,9 +313,8 @@
 .feature-showcase__card:hover .feature-ai-pill {
 	transform: translateY(-1px);
 	border-color: rgba(164, 130, 222, 0.45);
-	box-shadow:
-		0 4px 12px rgba(109, 57, 179, 0.08),
-		inset 0 0 0 1px rgba(109, 57, 179, 0.05);
+	box-shadow: 0 4px 12px rgba(109, 57, 179, 0.08), inset 0 0 0 1px
+		rgba(109, 57, 179, 0.05);
 }
 
 .feature-showcase__card:hover .feature-ai-pill i {

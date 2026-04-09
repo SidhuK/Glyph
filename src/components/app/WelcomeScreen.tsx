@@ -1,22 +1,45 @@
 import { Folder03Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import { useCallback, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 interface WelcomeScreenProps {
-	onOpenSpace: () => void;
+	onOpenSpace: () => Promise<void> | void;
 }
 
 export function WelcomeScreen({ onOpenSpace }: WelcomeScreenProps) {
 	const [isOpening, setIsOpening] = useState(false);
+	const timeoutRef = useRef<number | null>(null);
+	const isOpeningRef = useRef(false);
+	const isMountedRef = useRef(true);
+
+	useEffect(
+		() => () => {
+			isMountedRef.current = false;
+			isOpeningRef.current = false;
+			if (timeoutRef.current === null) return;
+			window.clearTimeout(timeoutRef.current);
+			timeoutRef.current = null;
+		},
+		[],
+	);
 
 	const handleOpen = useCallback(() => {
-		if (isOpening) return;
+		if (isOpeningRef.current) return;
+		isOpeningRef.current = true;
 		setIsOpening(true);
-		setTimeout(() => {
-			onOpenSpace();
-			setIsOpening(false);
+		if (timeoutRef.current !== null) {
+			window.clearTimeout(timeoutRef.current);
+		}
+		timeoutRef.current = window.setTimeout(() => {
+			timeoutRef.current = null;
+			void Promise.resolve(onOpenSpace()).finally(() => {
+				isOpeningRef.current = false;
+				if (isMountedRef.current) {
+					setIsOpening(false);
+				}
+			});
 		}, 400);
-	}, [isOpening, onOpenSpace]);
+	}, [onOpenSpace]);
 
 	return (
 		<div className={`welcomeEmptyState${isOpening ? " is-opening" : ""}`}>

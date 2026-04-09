@@ -280,9 +280,6 @@ export function AppShell() {
 				const message =
 					status.last_error ?? status.message ?? "Git Sync failed.";
 				setError(message);
-				toast.error("Git Sync failed", {
-					description: message,
-				});
 			}
 		}
 

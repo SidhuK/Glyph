@@ -12,53 +12,52 @@ const {
 	mockEditor,
 	setColorfulHeadings,
 	useNoteEditorMock,
-} =
-	vi.hoisted(() => {
-		const listeners = new Map<string, Set<() => void>>();
-		let colorfulHeadings = false;
-		const chainCommands = {
-			addColumnAfter: vi.fn(() => chainCommands),
-			addRowAfter: vi.fn(() => chainCommands),
-			focus: vi.fn(() => chainCommands),
-			run: vi.fn(() => true),
-			updateAttributes: vi.fn(() => chainCommands),
-		};
-		const mockEditor = {
-			isEditable: true,
-			chain: vi.fn(() => chainCommands),
-			commands: {
-				refreshMermaidPreviews: vi.fn(),
-				setActiveMermaidPreview: vi.fn(),
-				setRichMermaidPreviewHeight: vi.fn(),
-			},
-			off: vi.fn((event: string, callback: () => void) => {
-				listeners.get(event)?.delete(callback);
-			}),
-			on: vi.fn((event: string, callback: () => void) => {
-				if (!listeners.has(event)) {
-					listeners.set(event, new Set());
-				}
-				listeners.get(event)?.add(callback);
-			}),
-		};
+} = vi.hoisted(() => {
+	const listeners = new Map<string, Set<() => void>>();
+	let colorfulHeadings = false;
+	const chainCommands = {
+		addColumnAfter: vi.fn(() => chainCommands),
+		addRowAfter: vi.fn(() => chainCommands),
+		focus: vi.fn(() => chainCommands),
+		run: vi.fn(() => true),
+		updateAttributes: vi.fn(() => chainCommands),
+	};
+	const mockEditor = {
+		isEditable: true,
+		chain: vi.fn(() => chainCommands),
+		commands: {
+			refreshMermaidPreviews: vi.fn(),
+			setActiveMermaidPreview: vi.fn(),
+			setRichMermaidPreviewHeight: vi.fn(),
+		},
+		off: vi.fn((event: string, callback: () => void) => {
+			listeners.get(event)?.delete(callback);
+		}),
+		on: vi.fn((event: string, callback: () => void) => {
+			if (!listeners.has(event)) {
+				listeners.set(event, new Set());
+			}
+			listeners.get(event)?.add(callback);
+		}),
+	};
 
-		return {
-			chainCommands,
-			emitEditorEvent(event: string) {
-				for (const callback of listeners.get(event) ?? []) {
-					callback();
-				}
-			},
-			mockEditor,
-			setColorfulHeadings(value: boolean) {
-				colorfulHeadings = value;
-			},
-			useNoteEditorMock: vi.fn(),
-			getColorfulHeadings() {
-				return colorfulHeadings;
-			},
-		};
-	});
+	return {
+		chainCommands,
+		emitEditorEvent(event: string) {
+			for (const callback of listeners.get(event) ?? []) {
+				callback();
+			}
+		},
+		mockEditor,
+		setColorfulHeadings(value: boolean) {
+			colorfulHeadings = value;
+		},
+		useNoteEditorMock: vi.fn(),
+		getColorfulHeadings() {
+			return colorfulHeadings;
+		},
+	};
+});
 
 // React 19 expects tests to opt into act-aware scheduling.
 (

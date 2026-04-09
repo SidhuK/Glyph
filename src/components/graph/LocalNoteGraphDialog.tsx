@@ -217,6 +217,7 @@ export function LocalNoteGraphDialog({
 
 	const activeNodeId =
 		hoveredNodeId ?? focusedNodeId ?? graph?.center.id ?? null;
+	const viewportReady = viewport.width > 0 && viewport.height > 0;
 
 	const isNodeHighlighted = useCallback(
 		(nodeId: string) => {
@@ -230,13 +231,15 @@ export function LocalNoteGraphDialog({
 	);
 
 	useEffect(() => {
-		if (!open || !graph || viewport.width <= 0 || viewport.height <= 0) return;
+		if (!open || !graph || !viewportReady) return;
+		const rect = viewportRef.current?.getBoundingClientRect();
+		if (!rect) return;
 		setTransform({
-			x: viewport.width / 2,
-			y: viewport.height / 2,
+			x: rect.width / 2,
+			y: rect.height / 2,
 			k: 1,
 		});
-	}, [graph, open, viewport.height, viewport.width]);
+	}, [graph, open, viewportReady]);
 
 	useEffect(() => {
 		if (!graph || !open) return;
@@ -543,7 +546,6 @@ export function LocalNoteGraphDialog({
 		() => new Map(displayNodes.map((node) => [node.id, node])),
 		[displayNodes],
 	);
-	const viewportReady = viewport.width > 0 && viewport.height > 0;
 	const dialogSessionKey = `${noteId}:${graphRefreshKey}`;
 
 	const edgePaths = useMemo(() => {

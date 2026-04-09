@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { AiModel, AiProfile, AiProviderKind } from "../../../lib/tauri";
 import { AiApiKeySection } from "./AiApiKeySection";
 import { AiCodexAccountSection } from "./AiCodexAccountSection";
@@ -21,9 +21,7 @@ export function AiProfileSections({
 	onActiveProfileChange,
 	onSaveProfile,
 }: AiProfileSectionsProps) {
-	const profileKey = activeProfile
-		? `${activeProfile.id}:${activeProfile.provider}:${activeProfile.model}:${activeProfile.base_url ?? ""}:${activeProfile.allow_private_hosts ? "1" : "0"}:${activeProfile.reasoning_effort ?? ""}`
-		: "none";
+	const profileKey = activeProfile?.id ?? "none";
 
 	return (
 		<AiProfileSectionsBody
@@ -51,6 +49,16 @@ function AiProfileSectionsBody({
 		null,
 	);
 	const lastSavePromiseRef = useRef<Promise<void>>(Promise.resolve());
+	const previousActiveProfileIdRef = useRef(activeProfile?.id ?? null);
+
+	useEffect(() => {
+		const nextProfileId = activeProfile?.id ?? null;
+		if (previousActiveProfileIdRef.current === nextProfileId) return;
+		previousActiveProfileIdRef.current = nextProfileId;
+		setProfileDraft(activeProfile ? structuredClone(activeProfile) : null);
+		setAvailableModels(null);
+		lastSavePromiseRef.current = Promise.resolve();
+	}, [activeProfile]);
 
 	const { apiState, setApiKeyDraft, handleSetApiKey, handleClearApiKey } =
 		useApiKeySettings(activeProfileId);

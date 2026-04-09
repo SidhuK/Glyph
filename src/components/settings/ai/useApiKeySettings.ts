@@ -18,7 +18,10 @@ export function useApiKeySettings(activeProfileId: string | null) {
 	});
 	const keySavedTimeoutRef = useRef<number | null>(null);
 	const activeProfileIdRef = useRef(activeProfileId);
-	activeProfileIdRef.current = activeProfileId;
+
+	useEffect(() => {
+		activeProfileIdRef.current = activeProfileId;
+	}, [activeProfileId]);
 
 	useEffect(
 		() => () => {

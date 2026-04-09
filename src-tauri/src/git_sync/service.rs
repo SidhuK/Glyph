@@ -394,7 +394,9 @@ pub fn run_git_sync(
 
     let git_state = git_state.clone();
     tauri::async_runtime::spawn_blocking(move || {
-        let _ = run_git_sync_background(app, git_state, space_root, request);
+        if let Err(error) = run_git_sync_background(app, git_state, space_root, request) {
+            tracing::error!("git sync background task failed: {error}");
+        }
     });
 
     Ok(initial)
@@ -406,9 +408,9 @@ fn run_git_sync_background(
     space_root: PathBuf,
     request: GitSyncRunRequest,
 ) -> Result<(), String> {
+    let _sync_guard = SyncResetGuard::new(Arc::clone(&git_state.runtime));
     let mut config = load_config(&space_root)?;
     let is_auto = request.mode == GitSyncRunMode::Auto;
-    let _sync_guard = SyncResetGuard::new(Arc::clone(&git_state.runtime));
 
     let run_result = (|| -> Result<(), String> {
         let inspection = inspect_repo(&space_root)?;
