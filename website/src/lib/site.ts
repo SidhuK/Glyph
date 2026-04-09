@@ -1,2 +1,2 @@
 export const downloadUrl =
-	"https://github.com/SidhuK/Glyph/releases/download/v0.2.3/Glyph_0.2.3_aarch64.dmg";
+	"https://github.com/SidhuK/Glyph/releases/download/v0.2.4/Glyph_0.2.4_aarch64.dmg";
