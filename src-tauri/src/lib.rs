@@ -496,6 +496,7 @@ pub fn run() {
             index::commands::task_summary,
             index::commands::task_summaries_for_paths,
             index::commands::backlinks,
+            index::commands::note_local_graph,
             links::commands::link_preview,
             space_fs::list::space_list_dirs,
             space_fs::list::space_list_dir,

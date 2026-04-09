@@ -1,4 +1,5 @@
 import {
+	FlowConnectionIcon,
 	MenuCircleIcon,
 	SourceCodeIcon,
 	TimeQuarter02Icon,
@@ -23,6 +24,8 @@ import {
 import {
 	FORCE_NOTE_EDIT_MODE_EVENT,
 	type ForceNoteEditModeDetail,
+	OPEN_LOCAL_GRAPH_EVENT,
+	type OpenLocalGraphDetail,
 	ZEN_MODE_WILL_TOGGLE_EVENT,
 	type ZenModeWillToggleDetail,
 } from "../../lib/appEvents";
@@ -42,6 +45,7 @@ import { CanvasNoteInlineEditor } from "../editor/CanvasNoteInlineEditor";
 import { FloatingTOC } from "../editor/FloatingTOC";
 import { CALLOUT_TYPES } from "../editor/ribbonButtonConfigs";
 import type { CanvasInlineEditorMode } from "../editor/types";
+import { LocalNoteGraphDialog } from "../graph/LocalNoteGraphDialog";
 import { TaskProgressIndicator } from "../tasks/TaskProgressIndicator";
 import { Button } from "../ui/shadcn/button";
 import {
@@ -119,6 +123,7 @@ export function MarkdownEditorPane({
 	const [autosaveBusy, setAutosaveBusy] = useState(false);
 	const [error, setError] = useState(() => initialError || "");
 	const [actionsOpen, setActionsOpen] = useState(false);
+	const [localGraphOpen, setLocalGraphOpen] = useState(false);
 	const [lastSavedMtimeMs, setLastSavedMtimeMs] = useState<number | null>(
 		initialDoc?.mtime_ms ?? null,
 	);
@@ -254,18 +259,6 @@ export function MarkdownEditorPane({
 	}, [mode]);
 
 	useEffect(() => {
-		savedTextRef.current = savedText;
-	}, [savedText]);
-
-	useEffect(() => {
-		textRef.current = text;
-	}, [text]);
-
-	useEffect(() => {
-		mtimeRef.current = lastSavedMtimeMs;
-	}, [lastSavedMtimeMs]);
-
-	useEffect(() => {
 		mountedRef.current = true;
 		return () => {
 			mountedRef.current = false;
@@ -306,6 +299,7 @@ export function MarkdownEditorPane({
 		hasUserEditsRef.current = false;
 		setError(initialError);
 		setActionsOpen(false);
+		setLocalGraphOpen(false);
 		if (initialDoc) {
 			setPrefetchedNote(relPath, initialDoc);
 		}
@@ -556,12 +550,19 @@ export function MarkdownEditorPane({
 			if (!detail?.path || detail.path !== relPath) return;
 			setMode("rich");
 		};
+		const handleOpenLocalGraph = (event: Event) => {
+			const detail = (event as CustomEvent<OpenLocalGraphDetail>).detail;
+			if (!detail?.path || detail.path !== relPath) return;
+			setLocalGraphOpen(true);
+		};
 		window.addEventListener(FORCE_NOTE_EDIT_MODE_EVENT, handleForceEditMode);
+		window.addEventListener(OPEN_LOCAL_GRAPH_EVENT, handleOpenLocalGraph);
 		return () => {
 			window.removeEventListener(
 				FORCE_NOTE_EDIT_MODE_EVENT,
 				handleForceEditMode,
 			);
+			window.removeEventListener(OPEN_LOCAL_GRAPH_EVENT, handleOpenLocalGraph);
 		};
 	}, [relPath]);
 
@@ -856,6 +857,23 @@ export function MarkdownEditorPane({
 									variant="ghost"
 									size="xs"
 									className="markdownEditorActionItem"
+									onClick={() => {
+										setLocalGraphOpen(true);
+										setActionsOpen(false);
+									}}
+								>
+									<HugeiconsIcon
+										icon={FlowConnectionIcon}
+										size={12}
+										strokeWidth={0.9}
+									/>
+									Local graph
+								</Button>
+								<Button
+									type="button"
+									variant="ghost"
+									size="xs"
+									className="markdownEditorActionItem"
 									data-active={mode === "rich"}
 									onClick={() => {
 										setMode("rich");
@@ -1068,6 +1086,13 @@ export function MarkdownEditorPane({
 			{showToc && !zenModeActive && mode === "rich" && !error && tocEditor ? (
 				<FloatingTOC editor={tocEditor} />
 			) : null}
+
+			<LocalNoteGraphDialog
+				open={localGraphOpen}
+				onOpenChange={setLocalGraphOpen}
+				noteId={relPath}
+				graphRefreshKey={lastSavedMtimeMs ?? 0}
+			/>
 		</section>
 	);
 }

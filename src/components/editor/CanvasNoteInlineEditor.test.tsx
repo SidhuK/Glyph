@@ -5,9 +5,17 @@ import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { CanvasNoteInlineEditor } from "./CanvasNoteInlineEditor";
 
-const { chainCommands, emitEditorEvent, mockEditor, useNoteEditorMock } =
+const {
+	chainCommands,
+	emitEditorEvent,
+	getColorfulHeadings,
+	mockEditor,
+	setColorfulHeadings,
+	useNoteEditorMock,
+} =
 	vi.hoisted(() => {
 		const listeners = new Map<string, Set<() => void>>();
+		let colorfulHeadings = false;
 		const chainCommands = {
 			addColumnAfter: vi.fn(() => chainCommands),
 			addRowAfter: vi.fn(() => chainCommands),
@@ -42,7 +50,13 @@ const { chainCommands, emitEditorEvent, mockEditor, useNoteEditorMock } =
 				}
 			},
 			mockEditor,
+			setColorfulHeadings(value: boolean) {
+				colorfulHeadings = value;
+			},
 			useNoteEditorMock: vi.fn(),
+			getColorfulHeadings() {
+				return colorfulHeadings;
+			},
 		};
 	});
 
@@ -183,16 +197,18 @@ describe("CanvasNoteInlineEditor table controls", () => {
 			observe() {}
 			unobserve() {}
 		} as typeof ResizeObserver;
+		setColorfulHeadings(false);
 		mockEditor.isEditable = true;
 		chainCommands.run.mockReturnValue(true);
-		useNoteEditorMock.mockReturnValue({
+		useNoteEditorMock.mockImplementation(() => ({
 			body: "",
+			colorfulHeadings: getColorfulHeadings(),
 			editor: mockEditor,
 			frontmatter: null,
 			frontmatterRef: { current: null },
 			lastAppliedBodyRef: { current: "" },
 			lastEmittedMarkdownRef: { current: "" },
-		});
+		}));
 
 		container = document.createElement("div");
 		document.body.appendChild(container);
@@ -281,6 +297,24 @@ describe("CanvasNoteInlineEditor table controls", () => {
 		await flushRaf();
 		expect(container.querySelector('[data-axis="row"]')).toBeNull();
 		expect(container.querySelector('[data-axis="column"]')).toBeNull();
+	});
+
+	it("adds the colorful heading attribute in rich mode when enabled", () => {
+		setColorfulHeadings(true);
+
+		render("rich");
+
+		const host = container.querySelector(".tiptapHostInline");
+		expect(host?.getAttribute("data-colorful-headings")).toBe("true");
+	});
+
+	it("keeps the colorful heading attribute off in preview mode", () => {
+		setColorfulHeadings(true);
+
+		render("preview");
+
+		const host = container.querySelector(".tiptapHostInline");
+		expect(host?.getAttribute("data-colorful-headings")).toBeNull();
 	});
 
 	it("runs the correct TipTap commands when the inline icons are clicked", async () => {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import type { AiModel, AiProfile, AiProviderKind } from "../../../lib/tauri";
 import { AiApiKeySection } from "./AiApiKeySection";
 import { AiCodexAccountSection } from "./AiCodexAccountSection";
@@ -15,6 +15,29 @@ interface AiProfileSectionsProps {
 }
 
 export function AiProfileSections({
+	profiles,
+	activeProfileId,
+	activeProfile,
+	onActiveProfileChange,
+	onSaveProfile,
+}: AiProfileSectionsProps) {
+	const profileKey = activeProfile
+		? `${activeProfile.id}:${activeProfile.provider}:${activeProfile.model}:${activeProfile.base_url ?? ""}:${activeProfile.allow_private_hosts ? "1" : "0"}:${activeProfile.reasoning_effort ?? ""}`
+		: "none";
+
+	return (
+		<AiProfileSectionsBody
+			key={profileKey}
+			profiles={profiles}
+			activeProfileId={activeProfileId}
+			activeProfile={activeProfile}
+			onActiveProfileChange={onActiveProfileChange}
+			onSaveProfile={onSaveProfile}
+		/>
+	);
+}
+
+function AiProfileSectionsBody({
 	profiles,
 	activeProfileId,
 	activeProfile,
@@ -43,11 +66,6 @@ export function AiProfileSections({
 		() => profileDraft?.provider !== "codex_chatgpt",
 		[profileDraft?.provider],
 	);
-
-	useEffect(() => {
-		setProfileDraft(activeProfile ? structuredClone(activeProfile) : null);
-		setAvailableModels(null);
-	}, [activeProfile]);
 
 	const updateDraft = useCallback((updater: (prev: AiProfile) => AiProfile) => {
 		setProfileDraft((prev) => (prev ? updater(prev) : prev));

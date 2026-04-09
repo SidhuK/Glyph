@@ -9,7 +9,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { m } from "motion/react";
-import type { KeyboardEvent, MouseEvent } from "react";
+import type { KeyboardEvent } from "react";
 import { memo, useEffect, useRef, useState } from "react";
 import type { FileTreeAppearance, FsEntry } from "../../lib/tauri";
 import { FolderPlus, Trash2 } from "../Icons";
@@ -30,6 +30,70 @@ import {
 	springTransition,
 } from "./fileTreeItemHelpers";
 import { basename, getFileTypeInfo } from "./fileTypeUtils";
+
+function FileRenameInput({
+	initialName,
+	relPath,
+	fileStem,
+	fileExt,
+	onCommitRename,
+	onCancelRename,
+}: {
+	initialName: string;
+	relPath: string;
+	fileStem: string;
+	fileExt: string;
+	onCommitRename: (path: string, nextName: string) => Promise<void> | void;
+	onCancelRename: () => void;
+}) {
+	const [draftName, setDraftName] = useState(initialName);
+	const renameSubmittedRef = useRef(false);
+	const inputRef = useRef<HTMLInputElement | null>(null);
+
+	useEffect(() => {
+		inputRef.current?.focus();
+		inputRef.current?.select();
+	}, []);
+
+	const commitRename = async () => {
+		if (renameSubmittedRef.current) return;
+		renameSubmittedRef.current = true;
+		const nextStem = draftName.trim() || fileStem || initialName.trim();
+		const nextName = `${nextStem}${fileExt}`;
+		await onCommitRename(relPath, nextName);
+	};
+
+	return (
+		<input
+			ref={inputRef}
+			className="fileTreeRenameInput"
+			value={draftName}
+			placeholder="Untitled"
+			onChange={(event) => setDraftName(event.target.value)}
+			onMouseDown={(event) => {
+				event.preventDefault();
+				event.stopPropagation();
+			}}
+			onClick={(event) => {
+				event.preventDefault();
+				event.stopPropagation();
+			}}
+			onBlur={() => void commitRename()}
+			onKeyDown={(event) => {
+				if (event.key === "Enter") {
+					event.preventDefault();
+					void commitRename();
+					return;
+				}
+				if (event.key === "Escape") {
+					event.preventDefault();
+					renameSubmittedRef.current = true;
+					onCancelRename();
+				}
+			}}
+		/>
+	);
+}
 
 interface FileTreeFileItemProps {
 	entry: FsEntry;
@@ -100,33 +164,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 			.trim() ||
 		"Untitled";
 	const extBadge = !isMd && fileExt ? fileExt.slice(1) : "";
-	const inputRef = useRef<HTMLInputElement | null>(null);
-	const renameSubmittedRef = useRef(false);
-	const [draftName, setDraftName] = useState(fileStem || entry.name);
 	const iconColor = customColor ? "var(--file-tree-row-icon-color)" : color;
-
-	useEffect(() => {
-		if (!isRenaming) return;
-		setDraftName(fileStem || entry.name.trim() || "Untitled");
-		renameSubmittedRef.current = false;
-		window.requestAnimationFrame(() => {
-			inputRef.current?.focus();
-			inputRef.current?.select();
-		});
-	}, [entry.name, fileStem, isRenaming]);
-
-	const stopInputEvent = (event: MouseEvent<HTMLElement>) => {
-		event.preventDefault();
-		event.stopPropagation();
-	};
-
-	const commitRename = async () => {
-		if (renameSubmittedRef.current) return;
-		renameSubmittedRef.current = true;
-		const nextStem = draftName.trim() || fileStem || entry.name.trim();
-		const nextName = `${nextStem}${fileExt}`;
-		await onCommitRename(entry.rel_path, nextName);
-	};
 
 	const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
 		if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
@@ -146,27 +184,14 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 				{isRenaming ? (
 					<div className="fileTreeRow fileTreeRowEditing" style={rowStyle}>
 						<span className="fileTreeLeadingSpacer" aria-hidden="true" />
-						<input
-							ref={inputRef}
-							className="fileTreeRenameInput"
-							value={draftName}
-							placeholder="Untitled"
-							onChange={(event) => setDraftName(event.target.value)}
-							onMouseDown={stopInputEvent}
-							onClick={stopInputEvent}
-							onBlur={() => void commitRename()}
-							onKeyDown={(event) => {
-								if (event.key === "Enter") {
-									event.preventDefault();
-									void commitRename();
-									return;
-								}
-								if (event.key === "Escape") {
-									event.preventDefault();
-									renameSubmittedRef.current = true;
-									onCancelRename();
-								}
-							}}
+						<FileRenameInput
+							key={`${entry.rel_path}:${entry.name}`}
+							initialName={fileStem || entry.name.trim() || "Untitled"}
+							relPath={entry.rel_path}
+							fileStem={fileStem}
+							fileExt={fileExt}
+							onCommitRename={onCommitRename}
+							onCancelRename={onCancelRename}
 						/>
 					</div>
 				) : (

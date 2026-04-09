@@ -107,6 +107,11 @@ export interface SavedPastedImage {
 	markdown: string;
 }
 
+export type AttachmentStorageMode =
+	| "space-root"
+	| "specific-folder"
+	| "note-folder";
+
 export interface NoteProperty {
 	key: string;
 	kind: string;
@@ -338,6 +343,23 @@ export interface BacklinkItem {
 	updated: string;
 }
 
+export interface LocalGraphNode {
+	id: string;
+	title: string;
+	is_center: boolean;
+}
+
+export interface LocalGraphEdge {
+	source: string;
+	target: string;
+}
+
+export interface LocalNoteGraph {
+	center: LocalGraphNode;
+	nodes: LocalGraphNode[];
+	edges: LocalGraphEdge[];
+}
+
 export interface TagCount {
 	tag: string;
 	direct_count: number;
@@ -556,7 +578,8 @@ export interface GitSyncStatus {
 
 export interface GitSyncContext {
 	templates_folder?: string | null;
-	pasted_media_folder?: string | null;
+	attachment_storage_mode?: AttachmentStorageMode | null;
+	attachment_folder?: string | null;
 }
 
 export interface GitSyncRunRequest {
@@ -947,6 +970,7 @@ interface TauriCommands {
 		NoteTaskSummaryItem[]
 	>;
 	backlinks: CommandDef<{ note_id: string }, BacklinkItem[]>;
+	note_local_graph: CommandDef<{ note_id: string }, LocalNoteGraph>;
 	link_preview: CommandDef<{ url: string; force?: boolean }, LinkPreview>;
 	web_clip_save: CommandDef<
 		{ url: string; folder?: string },

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import type { DatabaseConfig, DatabaseFilter } from "../../lib/database/types";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { Button } from "../ui/shadcn/button";
@@ -129,50 +129,47 @@ export function DatabaseSourceDropdown({
 	const [filterError, setFilterError] = useState("");
 	const filterKeyCounterRef = useRef(0);
 	const previousFilterKeyEntriesRef = useRef<FilterKeyEntry[]>([]);
-	const [filterUiKeys, setFilterUiKeys] = useState<string[]>([]);
-
-	const syncFilterUiKeys = useCallback(
-		(filters: DatabaseFilter[], preferredKeys?: string[]) => {
-			const nextEntries = (() => {
-				if (preferredKeys && preferredKeys.length === filters.length) {
-					return filters.map((filter, index) => ({
-						key:
-							preferredKeys[index] ?? `filter-${filterKeyCounterRef.current++}`,
-						signature: filterSignature(filter),
-					}));
-				}
-
-				const availableKeysBySignature = new Map<string, string[]>();
-				for (const entry of previousFilterKeyEntriesRef.current) {
-					const bucket = availableKeysBySignature.get(entry.signature);
-					if (bucket) {
-						bucket.push(entry.key);
-						continue;
-					}
-					availableKeysBySignature.set(entry.signature, [entry.key]);
-				}
-
-				return filters.map((filter) => {
-					const signature = filterSignature(filter);
-					const bucket = availableKeysBySignature.get(signature);
-					return {
-						key: bucket?.shift() ?? `filter-${filterKeyCounterRef.current++}`,
-						signature,
-					};
-				});
-			})();
-
-			const nextKeys = nextEntries.map((entry) => entry.key);
-			previousFilterKeyEntriesRef.current = nextEntries;
-			setFilterUiKeys(nextKeys);
-			return nextKeys;
-		},
-		[],
+	const [filterUiKeys, setFilterUiKeys] = useState<string[]>(() =>
+		deriveFilterUiKeys(config.filters),
 	);
 
-	useEffect(() => {
-		syncFilterUiKeys(config.filters);
-	}, [config.filters, syncFilterUiKeys]);
+	function deriveFilterUiKeys(
+		filters: DatabaseFilter[],
+		preferredKeys?: string[],
+	) {
+		const nextEntries = (() => {
+			if (preferredKeys && preferredKeys.length === filters.length) {
+				return filters.map((filter, index) => ({
+					key:
+						preferredKeys[index] ?? `filter-${filterKeyCounterRef.current++}`,
+					signature: filterSignature(filter),
+				}));
+			}
+
+			const availableKeysBySignature = new Map<string, string[]>();
+			for (const entry of previousFilterKeyEntriesRef.current) {
+				const bucket = availableKeysBySignature.get(entry.signature);
+				if (bucket) {
+					bucket.push(entry.key);
+					continue;
+				}
+				availableKeysBySignature.set(entry.signature, [entry.key]);
+			}
+
+			return filters.map((filter) => {
+				const signature = filterSignature(filter);
+				const bucket = availableKeysBySignature.get(signature);
+				return {
+					key: bucket?.shift() ?? `filter-${filterKeyCounterRef.current++}`,
+					signature,
+				};
+			});
+		})();
+
+		const nextKeys = nextEntries.map((entry) => entry.key);
+		previousFilterKeyEntriesRef.current = nextEntries;
+		return nextKeys;
+	}
 
 	const handleSave = async (patch: Partial<DatabaseConfig["source"]>) => {
 		await onChangeConfig({
@@ -206,7 +203,7 @@ export function DatabaseSourceDropdown({
 				...config,
 				filters: nextFilters,
 			});
-			syncFilterUiKeys(nextFilters, nextKeys);
+			setFilterUiKeys(deriveFilterUiKeys(nextFilters, nextKeys));
 		} catch (cause) {
 			const message = extractErrorMessage(cause);
 			console.error("Failed to update database filters", cause);

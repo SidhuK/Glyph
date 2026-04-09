@@ -10,9 +10,13 @@ import {
 	joinYamlFrontmatter,
 	splitYamlFrontmatter,
 } from "../../../lib/notePreview";
-import { loadSettings } from "../../../lib/settings";
+import {
+	type AttachmentStorageMode,
+	loadSettings,
+} from "../../../lib/settings";
 import { invoke } from "../../../lib/tauri";
 import { useTauriEvent } from "../../../lib/tauriEvents";
+import { parentDir } from "../../../utils/path";
 import { createEditorExtensions } from "../extensions";
 import {
 	dispatchMarkdownLinkClick,
@@ -29,6 +33,7 @@ import type { CanvasInlineEditorMode, PasteMarkdownBehavior } from "../types";
 import { useHydrateInlineImages } from "./useHydrateInlineImages";
 
 const PASTE_FAILURE_PREFIX = "Image paste failed";
+const DEFAULT_ATTACHMENT_FOLDER = "assets";
 
 function normalizeBody(markdown: string): string {
 	return markdown.replace(/\u00a0/g, " ").replace(/&nbsp;/g, " ");
@@ -40,6 +45,23 @@ function getClipboardHtml(event: ClipboardEvent): string {
 
 function getClipboardPlainText(event: ClipboardEvent): string {
 	return event.clipboardData?.getData("text/plain") ?? "";
+}
+
+function resolveAttachmentTargetDir(
+	mode: AttachmentStorageMode,
+	attachmentFolder: string | null,
+	notePath: string,
+): string {
+	switch (mode) {
+		case "space-root":
+			return "";
+		case "specific-folder":
+			return attachmentFolder?.trim() || DEFAULT_ATTACHMENT_FOLDER;
+		case "note-folder":
+			return parentDir(notePath);
+		default:
+			return parentDir(notePath);
+	}
 }
 
 function normalizeClipboardMarkdownText(text: string): string {
@@ -386,9 +408,11 @@ export function useNoteEditor({
 	const interactiveRef = useRef(interactive);
 	const modeRef = useRef(mode);
 	const zenModeActiveRef = useRef(zenModeActive);
-	const pastedMediaFolderRef = useRef("assets");
+	const attachmentStorageModeRef = useRef<AttachmentStorageMode>("note-folder");
+	const attachmentFolderRef = useRef<string | null>(DEFAULT_ATTACHMENT_FOLDER);
 	const editorRef = useRef<ReturnType<typeof useEditor>>(null);
 	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
+	const [colorfulHeadings, setColorfulHeadings] = useState(false);
 	const [peopleMentionsEnabled, setPeopleMentionsEnabled] = useState(false);
 	const extensions = useMemo(
 		() =>
@@ -421,14 +445,19 @@ export function useNoteEditor({
 			.then((settings) => {
 				if (cancelled) return;
 				setShowCollapsibleHeadings(settings.editor.showCollapsibleHeadings);
+				setColorfulHeadings(settings.editor.colorfulHeadings);
 				setPeopleMentionsEnabled(settings.editor.enablePeopleMentionsAsTags);
-				pastedMediaFolderRef.current = settings.editor.pastedMediaFolder;
+				attachmentStorageModeRef.current =
+					settings.editor.attachmentStorageMode;
+				attachmentFolderRef.current = settings.editor.attachmentFolder;
 			})
 			.catch(() => {
 				if (cancelled) return;
 				setShowCollapsibleHeadings(false);
+				setColorfulHeadings(false);
 				setPeopleMentionsEnabled(false);
-				pastedMediaFolderRef.current = "assets";
+				attachmentStorageModeRef.current = "note-folder";
+				attachmentFolderRef.current = DEFAULT_ATTACHMENT_FOLDER;
 			});
 		return () => {
 			cancelled = true;
@@ -439,11 +468,17 @@ export function useNoteEditor({
 		if (typeof payload.editor?.showCollapsibleHeadings === "boolean") {
 			setShowCollapsibleHeadings(payload.editor.showCollapsibleHeadings);
 		}
+		if (typeof payload.editor?.colorfulHeadings === "boolean") {
+			setColorfulHeadings(payload.editor.colorfulHeadings);
+		}
 		if (typeof payload.editor?.enablePeopleMentionsAsTags === "boolean") {
 			setPeopleMentionsEnabled(payload.editor.enablePeopleMentionsAsTags);
 		}
-		if (typeof payload.editor?.pastedMediaFolder === "string") {
-			pastedMediaFolderRef.current = payload.editor.pastedMediaFolder;
+		if (payload.editor?.attachmentStorageMode) {
+			attachmentStorageModeRef.current = payload.editor.attachmentStorageMode;
+		}
+		if ("attachmentFolder" in (payload.editor ?? {})) {
+			attachmentFolderRef.current = payload.editor?.attachmentFolder ?? null;
 		}
 	});
 
@@ -483,7 +518,11 @@ export function useNoteEditor({
 						if (imageFiles.length) {
 							if (!relPathRef.current) return false;
 							const sourcePath = relPathRef.current;
-							const targetDir = pastedMediaFolderRef.current;
+							const targetDir = resolveAttachmentTargetDir(
+								attachmentStorageModeRef.current,
+								attachmentFolderRef.current,
+								sourcePath,
+							);
 							const selectionRange = {
 								from: editorInstance.state.selection.from,
 								to: editorInstance.state.selection.to,
@@ -645,6 +684,7 @@ export function useNoteEditor({
 		editor,
 		frontmatter,
 		body,
+		colorfulHeadings,
 		frontmatterRef,
 		lastAppliedBodyRef,
 		lastEmittedMarkdownRef,

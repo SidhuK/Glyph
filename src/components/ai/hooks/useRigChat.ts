@@ -30,6 +30,10 @@ type SendMessageOptions = {
 	};
 };
 
+interface UseRigChatOptions {
+	onComplete?: () => void;
+}
+
 export type RigChatStatus = "ready" | "submitted" | "streaming" | "error";
 const DONE_SETTLE_MS = 140;
 
@@ -47,7 +51,7 @@ function asAiMessages(messages: UIMessage[]): AiMessage[] {
 	return out;
 }
 
-export function useRigChat() {
+export function useRigChat(options: UseRigChatOptions = {}) {
 	const [messages, setMessages] = useState<UIMessage[]>([]);
 	const [status, setStatus] = useState<RigChatStatus>("ready");
 	const [error, setError] = useState<Error | null>(null);
@@ -57,10 +61,18 @@ export function useRigChat() {
 	const activeThreadIdRef = useRef<string | null>(null);
 	const stopListenersRef = useRef<Array<() => void>>([]);
 	const doneTimerRef = useRef<number | null>(null);
+	const onComplete = options.onComplete;
 
-	useEffect(() => {
-		messagesRef.current = messages;
-	}, [messages]);
+	const updateMessages = useCallback(
+		(next: UIMessage[] | ((prev: UIMessage[]) => UIMessage[])) => {
+			setMessages((prev) => {
+				const resolved = typeof next === "function" ? next(prev) : next;
+				messagesRef.current = resolved;
+				return resolved;
+			});
+		},
+		[],
+	);
 
 	const cleanupListeners = useCallback(() => {
 		for (const stop of stopListenersRef.current) {
@@ -80,7 +92,8 @@ export function useRigChat() {
 		activeJobIdRef.current = null;
 		cleanupListeners();
 		setStatus("ready");
-	}, [cleanupListeners, clearDoneTimer]);
+		onComplete?.();
+	}, [cleanupListeners, clearDoneTimer, onComplete]);
 
 	const clearError = useCallback(() => {
 		setError(null);
@@ -129,7 +142,7 @@ export function useRigChat() {
 				userMessage,
 				assistantMessage,
 			];
-			setMessages(nextMessages);
+			updateMessages(nextMessages);
 			setStatus("submitted");
 
 			try {
@@ -167,7 +180,7 @@ export function useRigChat() {
 					if (payload.job_id !== activeJobIdRef.current) return;
 					clearDoneTimer();
 					setStatus("streaming");
-					setMessages((prev) =>
+					updateMessages((prev) =>
 						prev.map((m) => {
 							if (m.id !== assistantId) return m;
 							const first = m.parts[0];
@@ -211,7 +224,7 @@ export function useRigChat() {
 				setStatus("error");
 			}
 		},
-		[cleanupListeners, clearDoneTimer, completeActiveJob, stop],
+		[cleanupListeners, clearDoneTimer, completeActiveJob, stop, updateMessages],
 	);
 
 	useEffect(
@@ -229,7 +242,7 @@ export function useRigChat() {
 		sendMessage,
 		setMessages: (next: UIMessage[]) => {
 			if (next.length === 0) activeThreadIdRef.current = null;
-			setMessages(next);
+			updateMessages(next);
 		},
 		setThreadId: (threadId: string | null) => {
 			activeThreadIdRef.current = threadId?.trim() || null;

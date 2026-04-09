@@ -1,11 +1,4 @@
-import {
-	useCallback,
-	useEffect,
-	useLayoutEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useFileTreeContext, useUILayoutContext } from "../../contexts";
 import { useRecentFiles } from "../../hooks/useRecentFiles";
 import { isInAppPreviewable } from "../../utils/filePreview";
@@ -33,15 +26,20 @@ export function useTabManager(spacePath: string | null) {
 		setActivePreviewPath,
 		setOpenMarkdownTabs,
 		setActiveMarkdownTabPath,
+		zenModeActive,
+		setZenModeActive,
 	} = useUILayoutContext();
 
 	const [tabs, setTabs] = useState<WorkspaceTab[]>([]);
-	const [activeTabId, setActiveTabId] = useState<string | null>(null);
+	const [activeTabId, setActiveTabIdState] = useState<string | null>(null);
 	const [dragTabId, setDragTabId] = useState<string | null>(null);
 	const [dirtyByPath, setDirtyByPath] = useState<Record<string, boolean>>({});
 	const tabIdCounterRef = useRef(0);
 	const tabsRef = useRef<WorkspaceTab[]>([]);
 	const activeTabIdRef = useRef<string | null>(null);
+
+	tabsRef.current = tabs;
+	activeTabIdRef.current = activeTabId;
 
 	const createTab = useCallback(
 		(kind: WorkspaceTab["kind"], target: string | null): WorkspaceTab => ({
@@ -59,78 +57,98 @@ export function useTabManager(spacePath: string | null) {
 	const activeTabPath =
 		activeTab && activeTab.kind !== "blank" ? activeTab.target : null;
 
-	useLayoutEffect(() => {
-		void spacePath;
-		setTabs([]);
-		setActiveTabId(null);
-		setDragTabId(null);
-		setDirtyByPath({});
-		tabsRef.current = [];
-		activeTabIdRef.current = null;
-	}, [spacePath]);
-
-	useEffect(() => {
-		tabsRef.current = tabs;
-	}, [tabs]);
-
-	useEffect(() => {
-		activeTabIdRef.current = activeTabId;
-	}, [activeTabId]);
-
-	const derivedFilePath = useMemo(() => {
-		if (!activeTab || activeTab.kind !== "file" || !activeTab.target)
-			return null;
-		return activeTab.target;
-	}, [activeTab]);
-
-	const derivedPreviewPath = useMemo(() => {
-		if (!derivedFilePath) return null;
-		if (derivedFilePath.toLowerCase().endsWith(".md")) return null;
-		if (isInAppPreviewable(derivedFilePath)) return derivedFilePath;
-		return null;
-	}, [derivedFilePath]);
-
-	const derivedMarkdownTabs = useMemo(
-		() =>
-			tabs
+	const syncWorkspaceState = useCallback(
+		(
+			nextTabs: WorkspaceTab[],
+			nextActiveTabId: string | null,
+			previousActiveTabId: string | null,
+		) => {
+			const nextActiveTab =
+				nextTabs.find((tab) => tab.id === nextActiveTabId) ?? null;
+			const nextFilePath =
+				nextActiveTab?.kind === "file" && nextActiveTab.target
+					? nextActiveTab.target
+					: null;
+			const nextPreviewPath =
+				nextFilePath &&
+				!nextFilePath.toLowerCase().endsWith(".md") &&
+				isInAppPreviewable(nextFilePath)
+					? nextFilePath
+					: null;
+			const nextMarkdownTabs = nextTabs
 				.filter(
 					(tab) =>
 						tab.kind === "file" && tab.target?.toLowerCase().endsWith(".md"),
 				)
-				.map((tab) => tab.target as string),
-		[tabs],
+				.map((tab) => tab.target as string);
+			const nextActiveMarkdownPath =
+				nextActiveTab?.kind === "file" &&
+				nextActiveTab.target?.toLowerCase().endsWith(".md")
+					? nextActiveTab.target
+					: null;
+
+			setActiveFilePath(nextFilePath);
+			setActivePreviewPath(nextPreviewPath);
+			setOpenMarkdownTabs(nextMarkdownTabs);
+			setActiveMarkdownTabPath(nextActiveMarkdownPath);
+
+			if (
+				zenModeActive &&
+				!nextActiveMarkdownPath &&
+				previousActiveTabId !== nextActiveTabId
+			) {
+				setZenModeActive(false);
+			}
+
+			if (
+				nextActiveTab?.kind === "file" &&
+				nextActiveTab.target &&
+				spacePath &&
+				previousActiveTabId !== nextActiveTabId
+			) {
+				void addRecentFile(nextActiveTab.target, spacePath);
+			}
+		},
+		[
+			addRecentFile,
+			setActiveFilePath,
+			setActiveMarkdownTabPath,
+			setActivePreviewPath,
+			setOpenMarkdownTabs,
+			setZenModeActive,
+			spacePath,
+			zenModeActive,
+		],
 	);
 
-	const derivedActiveMarkdownPath = useMemo(() => {
-		if (
-			activeTab?.kind === "file" &&
-			activeTab.target?.toLowerCase().endsWith(".md")
-		)
-			return activeTab.target;
-		return null;
-	}, [activeTab]);
+	const commitTabsChange = useCallback(
+		(nextTabs: WorkspaceTab[], nextActiveTabId: string | null) => {
+			const previousActiveTabId = activeTabIdRef.current;
+			tabsRef.current = nextTabs;
+			activeTabIdRef.current = nextActiveTabId;
+			setTabs(nextTabs);
+			setActiveTabIdState(nextActiveTabId);
+			syncWorkspaceState(nextTabs, nextActiveTabId, previousActiveTabId);
+		},
+		[syncWorkspaceState],
+	);
+
+	const setActiveTabId = useCallback(
+		(nextActiveTabId: string | null) => {
+			commitTabsChange(tabsRef.current, nextActiveTabId);
+		},
+		[commitTabsChange],
+	);
 
 	useEffect(() => {
-		setActiveFilePath(derivedFilePath);
-		setActivePreviewPath(derivedPreviewPath);
-		setOpenMarkdownTabs(derivedMarkdownTabs);
-		setActiveMarkdownTabPath(derivedActiveMarkdownPath);
-	}, [
-		derivedFilePath,
-		derivedPreviewPath,
-		derivedMarkdownTabs,
-		derivedActiveMarkdownPath,
-		setActiveFilePath,
-		setActivePreviewPath,
-		setOpenMarkdownTabs,
-		setActiveMarkdownTabPath,
-	]);
-
-	useEffect(() => {
-		if (activeTab?.kind === "file" && activeTab.target && spacePath) {
-			void addRecentFile(activeTab.target, spacePath);
-		}
-	}, [activeTab, addRecentFile, spacePath]);
+		void spacePath;
+		tabsRef.current = [];
+		activeTabIdRef.current = null;
+		setTabs([]);
+		setActiveTabIdState(null);
+		setDragTabId(null);
+		setDirtyByPath({});
+	}, [spacePath]);
 
 	const focusExistingTab = useCallback(
 		(target: string) => {
@@ -139,7 +157,7 @@ export function useTabManager(spacePath: string | null) {
 			setActiveTabId(existing.id);
 			return true;
 		},
-		[tabs],
+		[setActiveTabId, tabs],
 	);
 
 	const clearDirtyForTarget = useCallback((target: string | null) => {
@@ -155,21 +173,29 @@ export function useTabManager(spacePath: string | null) {
 	const replaceActiveTab = useCallback(
 		(kind: WorkspaceTab["kind"], target: string | null) => {
 			const nextTab = createTab(kind, target);
-			setTabs((prev) => {
-				if (!activeTabId) return [nextTab];
-				const activeIndex = prev.findIndex((tab) => tab.id === activeTabId);
-				if (activeIndex === -1) return [...prev, nextTab];
-				const current = prev[activeIndex];
-				if (current?.kind === "file") {
-					clearDirtyForTarget(current.target);
+			const previousActiveTabId = activeTabIdRef.current;
+			const currentTabs = tabsRef.current;
+			let nextTabs = currentTabs;
+			if (!previousActiveTabId) {
+				nextTabs = [nextTab];
+			} else {
+				const activeIndex = currentTabs.findIndex(
+					(tab) => tab.id === previousActiveTabId,
+				);
+				if (activeIndex === -1) {
+					nextTabs = [...currentTabs, nextTab];
+				} else {
+					const current = currentTabs[activeIndex];
+					if (current?.kind === "file") {
+						clearDirtyForTarget(current.target);
+					}
+					nextTabs = [...currentTabs];
+					nextTabs[activeIndex] = nextTab;
 				}
-				const next = [...prev];
-				next[activeIndex] = nextTab;
-				return next;
-			});
-			setActiveTabId(nextTab.id);
+			}
+			commitTabsChange(nextTabs, nextTab.id);
 		},
-		[activeTabId, clearDirtyForTarget, createTab],
+		[clearDirtyForTarget, commitTabsChange, createTab],
 	);
 
 	const canOpenInMainPane = useCallback(
@@ -198,9 +224,8 @@ export function useTabManager(spacePath: string | null) {
 
 	const openBlankTab = useCallback(() => {
 		const blankTab = createTab("blank", null);
-		setTabs((prev) => [...prev, blankTab]);
-		setActiveTabId(blankTab.id);
-	}, [createTab]);
+		commitTabsChange([...tabsRef.current, blankTab], blankTab.id);
+	}, [commitTabsChange, createTab]);
 
 	const replaceActiveTabWithBlank = useCallback(() => {
 		if (activeTab?.kind === "blank") return;
@@ -213,27 +238,45 @@ export function useTabManager(spacePath: string | null) {
 			const index = currentTabs.findIndex((tab) => tab.id === tabId);
 			if (index === -1) return;
 			const removed = currentTabs[index];
+			const removedTarget = removed?.kind === "file" ? removed.target : null;
 			const nextTabs = currentTabs.filter((tab) => tab.id !== tabId);
 			const nextActiveTabId =
 				activeTabIdRef.current !== tabId
 					? activeTabIdRef.current
 					: (nextTabs[index]?.id ?? nextTabs[index - 1]?.id ?? null);
-			if (removed?.kind === "file") {
-				clearDirtyForTarget(removed.target);
+			if (removedTarget) {
+				setDirtyByPath((prev) => {
+					if (!(removedTarget in prev)) return prev;
+					const next = { ...prev };
+					delete next[removedTarget];
+					return next;
+				});
 			}
-			tabsRef.current = nextTabs;
-			activeTabIdRef.current = nextActiveTabId;
-			setTabs(nextTabs);
-			setActiveTabId(nextActiveTabId);
+			commitTabsChange(nextTabs, nextActiveTabId);
+			setDirtyByPath((prev) => {
+				let changed = false;
+				const next: Record<string, boolean> = {};
+				for (const [tabPath, dirty] of Object.entries(prev)) {
+					if (
+						removedTarget &&
+						(tabPath === removedTarget ||
+							tabPath.startsWith(`${removedTarget}/`))
+					) {
+						changed = true;
+						continue;
+					}
+					next[tabPath] = dirty;
+				}
+				return changed ? next : prev;
+			});
 		},
-		[clearDirtyForTarget],
+		[commitTabsChange],
 	);
 
 	const closeAllTabs = useCallback(() => {
-		setTabs([]);
-		setActiveTabId(null);
+		commitTabsChange([], null);
 		setDirtyByPath({});
-	}, []);
+	}, [commitTabsChange]);
 
 	const closeActiveTab = useCallback(() => {
 		if (!activeTabId) return;
@@ -277,10 +320,7 @@ export function useTabManager(spacePath: string | null) {
 					}
 				}
 			}
-			tabsRef.current = nextTabs;
-			activeTabIdRef.current = nextActiveTabId;
-			setTabs(nextTabs);
-			setActiveTabId(nextActiveTabId);
+			commitTabsChange(nextTabs, nextActiveTabId);
 			setDirtyByPath((prev) => {
 				let changed = false;
 				const next: Record<string, boolean> = {};
@@ -297,64 +337,67 @@ export function useTabManager(spacePath: string | null) {
 				return changed ? next : prev;
 			});
 		},
-		[],
+		[commitTabsChange],
 	);
 
 	const renameTabsForPath = useCallback(
 		(fromPath: string, toPath: string, recursive = false) => {
-			setTabs((prev) => {
-				let changed = false;
-				const next = prev.map((tab) => {
-					if (tab.kind !== "file" || !tab.target) return tab;
-					if (tab.target === fromPath) {
-						changed = true;
-						return { ...tab, target: toPath };
-					}
-					if (recursive && tab.target.startsWith(`${fromPath}/`)) {
-						changed = true;
-						return {
-							...tab,
-							target: `${toPath}${tab.target.slice(fromPath.length)}`,
-						};
-					}
-					return tab;
-				});
-				return changed ? next : prev;
+			const currentTabs = tabsRef.current;
+			let changed = false;
+			const next = currentTabs.map((tab) => {
+				if (tab.kind !== "file" || !tab.target) return tab;
+				if (tab.target === fromPath) {
+					changed = true;
+					return { ...tab, target: toPath };
+				}
+				if (recursive && tab.target.startsWith(`${fromPath}/`)) {
+					changed = true;
+					return {
+						...tab,
+						target: `${toPath}${tab.target.slice(fromPath.length)}`,
+					};
+				}
+				return tab;
 			});
+			if (changed) {
+				commitTabsChange(next, activeTabIdRef.current);
+			}
 			setDirtyByPath((prev) => {
-				let changed = false;
-				const next: Record<string, boolean> = {};
+				let dirtyChanged = false;
+				const nextDirty: Record<string, boolean> = {};
 				for (const [tabPath, dirty] of Object.entries(prev)) {
 					if (tabPath === fromPath) {
-						next[toPath] = dirty;
-						changed = true;
+						nextDirty[toPath] = dirty;
+						dirtyChanged = true;
 						continue;
 					}
 					if (recursive && tabPath.startsWith(`${fromPath}/`)) {
-						next[`${toPath}${tabPath.slice(fromPath.length)}`] = dirty;
-						changed = true;
+						nextDirty[`${toPath}${tabPath.slice(fromPath.length)}`] = dirty;
+						dirtyChanged = true;
 						continue;
 					}
-					next[tabPath] = dirty;
+					nextDirty[tabPath] = dirty;
 				}
-				return changed ? next : prev;
+				return dirtyChanged ? nextDirty : prev;
 			});
 		},
-		[],
+		[commitTabsChange],
 	);
 
-	const reorderTabs = useCallback((fromTabId: string, toTabId: string) => {
-		if (!fromTabId || !toTabId || fromTabId === toTabId) return;
-		setTabs((prev) => {
-			const fromIndex = prev.findIndex((tab) => tab.id === fromTabId);
-			const toIndex = prev.findIndex((tab) => tab.id === toTabId);
-			if (fromIndex === -1 || toIndex === -1) return prev;
-			const next = [...prev];
+	const reorderTabs = useCallback(
+		(fromTabId: string, toTabId: string) => {
+			if (!fromTabId || !toTabId || fromTabId === toTabId) return;
+			const currentTabs = tabsRef.current;
+			const fromIndex = currentTabs.findIndex((tab) => tab.id === fromTabId);
+			const toIndex = currentTabs.findIndex((tab) => tab.id === toTabId);
+			if (fromIndex === -1 || toIndex === -1) return;
+			const next = [...currentTabs];
 			const [moved] = next.splice(fromIndex, 1);
 			next.splice(toIndex, 0, moved);
-			return next;
-		});
-	}, []);
+			commitTabsChange(next, activeTabIdRef.current);
+		},
+		[commitTabsChange],
+	);
 
 	useEffect(() => {
 		const onKeyDown = (event: KeyboardEvent) => {
@@ -393,7 +436,7 @@ export function useTabManager(spacePath: string | null) {
 		};
 		window.addEventListener("keydown", onKeyDown);
 		return () => window.removeEventListener("keydown", onKeyDown);
-	}, [activeTabId, closeActiveTab, closeAllTabs, tabs]);
+	}, [activeTabId, closeActiveTab, closeAllTabs, setActiveTabId, tabs]);
 
 	return {
 		tabs,

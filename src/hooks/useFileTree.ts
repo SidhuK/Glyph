@@ -1,6 +1,6 @@
 import { join } from "@tauri-apps/api/path";
 import { openPath, openUrl } from "@tauri-apps/plugin-opener";
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useRef } from "react";
 import type { FsEntry } from "../lib/tauri";
 import { invoke } from "../lib/tauri";
 import { isInAppPreviewable } from "../utils/filePreview";
@@ -82,10 +82,13 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 	const loadRequestVersionRef = useRef(new Map<string, number>());
 	const previousSpacePathRef = useRef<string | null>(spacePath);
 	const expandedDirsRef = useRef(expandedDirs);
+	expandedDirsRef.current = expandedDirs;
 
-	useEffect(() => {
-		expandedDirsRef.current = expandedDirs;
-	}, [expandedDirs]);
+	if (previousSpacePathRef.current !== spacePath) {
+		previousSpacePathRef.current = spacePath;
+		loadedDirsRef.current.clear();
+		loadRequestVersionRef.current.clear();
+	}
 
 	const updateExpandedDirsAndRef = useCallback(
 		(next: Set<string> | ((prev: Set<string>) => Set<string>)) => {
@@ -136,13 +139,6 @@ export function useFileTree(deps: UseFileTreeDeps): UseFileTreeResult {
 		},
 		[updateChildrenByDir],
 	);
-
-	useEffect(() => {
-		if (previousSpacePathRef.current === spacePath) return;
-		previousSpacePathRef.current = spacePath;
-		loadedDirsRef.current.clear();
-		loadRequestVersionRef.current.clear();
-	}, [spacePath]);
 
 	const loadDir = useCallback(
 		async (dirPath: string, force = false) => {

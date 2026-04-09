@@ -286,18 +286,8 @@ interface MainContentProps {
 	reorderTabs: (fromTabId: string, toTabId: string) => void;
 	openBlankTab: () => void;
 	replaceActiveTabWithBlank: () => void;
-	openSpecialTab: (tabId: string) => void;
-	openAllDocsRequest: number;
-	onConsumeOpenAllDocsRequest: () => void;
-	openTemplatesRequest: number;
-	onConsumeOpenTemplatesRequest: () => void;
-	openCalendarRequest: number;
-	openDatabasesRequest: {
-		nonce: number;
-		databaseId: string | null;
-	};
-	openBlankTabRequest: number;
 	showGettingStartedRequest: number;
+	openDatabasesId: string | null;
 	dailyNoteSetupNoticeRequest: number;
 	onOpenDailyNotesSettings: () => void;
 }
@@ -389,29 +379,12 @@ export const MainContent = memo(function MainContent({
 	reorderTabs,
 	openBlankTab,
 	replaceActiveTabWithBlank,
-	openSpecialTab,
-	openAllDocsRequest,
-	onConsumeOpenAllDocsRequest,
-	openTemplatesRequest,
-	onConsumeOpenTemplatesRequest,
-	openCalendarRequest,
-	openDatabasesRequest,
-	openBlankTabRequest,
 	showGettingStartedRequest,
+	openDatabasesId,
 	dailyNoteSetupNoticeRequest,
 	onOpenDailyNotesSettings,
 }: MainContentProps) {
-	const {
-		info,
-		spacePath,
-		lastSpacePath,
-		recentSpaces,
-		settingsLoaded,
-		onOpenSpace,
-		onOpenSpaceAtPath,
-		onContinueLastSpace,
-		onCreateSpace,
-	} = useSpace();
+	const { spacePath, settingsLoaded, onOpenSpace } = useSpace();
 	const {
 		dailyNotesFolder,
 		templateFolder,
@@ -420,7 +393,6 @@ export const MainContent = memo(function MainContent({
 		settingsTab,
 	} = useUILayoutContext();
 	const { aiEnabled, aiPanelOpen, setAiPanelOpen } = useAISidebarContext();
-	const tabBarWrapperRef = useRef<HTMLDivElement | null>(null);
 	const [onboarding, setOnboarding] = useState<OnboardingSettings>(
 		DEFAULT_ONBOARDING_SETTINGS,
 	);
@@ -428,11 +400,6 @@ export const MainContent = memo(function MainContent({
 	const [starterOverrideVisible, setStarterOverrideVisible] = useState(false);
 	const [dailyNoteSetupToastVisible, setDailyNoteSetupToastVisible] =
 		useState(false);
-	const handledOpenAllDocsRequestRef = useRef(0);
-	const handledOpenTemplatesRequestRef = useRef(0);
-	const handledOpenCalendarRequestRef = useRef(0);
-	const handledOpenDatabasesRequestRef = useRef(0);
-	const handledOpenBlankTabRequestRef = useRef(0);
 	const handledShowGettingStartedRequestRef = useRef(0);
 	const activeTab = useMemo(
 		() => tabs.find((tab) => tab.id === activeTabId) ?? null,
@@ -443,87 +410,6 @@ export const MainContent = memo(function MainContent({
 		if (!activeTab || activeTab.kind === "blank") return;
 		setStarterOverrideVisible(false);
 	}, [activeTab]);
-
-	useEffect(() => {
-		if (openAllDocsRequest === 0) {
-			handledOpenAllDocsRequestRef.current = 0;
-			return;
-		}
-		if (
-			!spacePath ||
-			openAllDocsRequest === handledOpenAllDocsRequestRef.current
-		) {
-			return;
-		}
-		handledOpenAllDocsRequestRef.current = openAllDocsRequest;
-		openSpecialTab(ALL_DOCS_TAB_ID);
-		onConsumeOpenAllDocsRequest();
-	}, [
-		onConsumeOpenAllDocsRequest,
-		openAllDocsRequest,
-		openSpecialTab,
-		spacePath,
-	]);
-
-	useEffect(() => {
-		if (openTemplatesRequest === 0) {
-			handledOpenTemplatesRequestRef.current = 0;
-			return;
-		}
-		if (
-			!spacePath ||
-			openTemplatesRequest === handledOpenTemplatesRequestRef.current
-		) {
-			return;
-		}
-		handledOpenTemplatesRequestRef.current = openTemplatesRequest;
-		openSpecialTab(TEMPLATES_TAB_ID);
-		onConsumeOpenTemplatesRequest();
-	}, [
-		onConsumeOpenTemplatesRequest,
-		openSpecialTab,
-		openTemplatesRequest,
-		spacePath,
-	]);
-
-	useEffect(() => {
-		if (openCalendarRequest === 0) {
-			handledOpenCalendarRequestRef.current = 0;
-			return;
-		}
-		if (
-			!spacePath ||
-			openCalendarRequest === handledOpenCalendarRequestRef.current
-		) {
-			return;
-		}
-		handledOpenCalendarRequestRef.current = openCalendarRequest;
-		openSpecialTab(CALENDAR_TAB_ID);
-	}, [openCalendarRequest, openSpecialTab, spacePath]);
-
-	useEffect(() => {
-		if (
-			!spacePath ||
-			openDatabasesRequest.nonce === 0 ||
-			openDatabasesRequest.nonce === handledOpenDatabasesRequestRef.current
-		) {
-			return;
-		}
-		handledOpenDatabasesRequestRef.current = openDatabasesRequest.nonce;
-		openSpecialTab(DATABASES_TAB_ID);
-	}, [openDatabasesRequest, openSpecialTab, spacePath]);
-
-	useEffect(() => {
-		if (
-			!spacePath ||
-			openBlankTabRequest === 0 ||
-			openBlankTabRequest === handledOpenBlankTabRequestRef.current
-		) {
-			return;
-		}
-		handledOpenBlankTabRequestRef.current = openBlankTabRequest;
-		openBlankTab();
-	}, [openBlankTab, openBlankTabRequest, spacePath]);
 
 	useEffect(() => {
 		if (
@@ -586,16 +472,6 @@ export const MainContent = memo(function MainContent({
 	const showTabBar = tabs.length > 1;
 
 	useEffect(() => {
-		const wrapper = tabBarWrapperRef.current;
-		if (!wrapper) return;
-		if (zenModeActive) {
-			wrapper.setAttribute("inert", "");
-			return;
-		}
-		wrapper.removeAttribute("inert");
-	}, [zenModeActive]);
-
-	useEffect(() => {
 		let cancelled = false;
 		void (async () => {
 			try {
@@ -644,7 +520,7 @@ export const MainContent = memo(function MainContent({
 					readStorage("glyph.calendar.selectedDate") ?? todayIsoDateLocal(),
 				dailyNotesFolder,
 			});
-			void prefetchDatabasesLanding(openDatabasesRequest.databaseId);
+			void prefetchDatabasesLanding(openDatabasesId);
 		};
 		if (typeof window.requestIdleCallback === "function") {
 			const idleId = window.requestIdleCallback(run, { timeout: 900 });
@@ -658,12 +534,7 @@ export const MainContent = memo(function MainContent({
 			cancelled = true;
 			window.clearTimeout(timeout);
 		};
-	}, [
-		dailyNotesFolder,
-		openDatabasesRequest.databaseId,
-		spacePath,
-		templateFolder,
-	]);
+	}, [dailyNotesFolder, openDatabasesId, spacePath, templateFolder]);
 
 	const content = useMemo(() => {
 		if (!viewerPath) return null;
@@ -741,7 +612,7 @@ export const MainContent = memo(function MainContent({
 			);
 		}
 		if (viewerPath === DATABASES_TAB_ID) {
-			const initialDatabaseId = openDatabasesRequest.databaseId ?? null;
+			const initialDatabaseId = openDatabasesId ?? null;
 			const initialDocument = initialDatabaseId
 				? getPrefetchedDatabaseDocument(initialDatabaseId)
 				: null;
@@ -769,7 +640,6 @@ export const MainContent = memo(function MainContent({
 						initialDatabaseId={initialDatabaseId}
 						initialDocument={initialDocument}
 						initialRows={initialRows}
-						openRequestNonce={openDatabasesRequest.nonce}
 					/>
 				</Suspense>
 			);
@@ -808,8 +678,7 @@ export const MainContent = memo(function MainContent({
 		fileTree,
 		onOpenFile,
 		onOpenDailyNotesSettings,
-		openDatabasesRequest.databaseId,
-		openDatabasesRequest.nonce,
+		openDatabasesId,
 		dailyNotesFolder,
 		templateFolder,
 		viewerPath,
@@ -846,10 +715,10 @@ export const MainContent = memo(function MainContent({
 			}
 			if (target === DATABASES_TAB_ID) {
 				void loadDatabasesPane();
-				void prefetchDatabasesLanding(openDatabasesRequest.databaseId);
+				void prefetchDatabasesLanding(openDatabasesId);
 			}
 		},
-		[dailyNotesFolder, openDatabasesRequest.databaseId, templateFolder],
+		[dailyNotesFolder, openDatabasesId, templateFolder],
 	);
 
 	const settingsTabContentByTab: Record<SettingsTab, ReactNode> = {
@@ -909,15 +778,7 @@ export const MainContent = memo(function MainContent({
 					duration: 0.4,
 				}}
 			>
-				<WelcomeScreen
-					appName={info?.name ?? null}
-					lastSpacePath={lastSpacePath}
-					recentSpaces={recentSpaces}
-					onOpenSpace={onOpenSpace}
-					onCreateSpace={onCreateSpace}
-					onContinueLastSpace={onContinueLastSpace}
-					onSelectRecentSpace={onOpenSpaceAtPath}
-				/>
+				<WelcomeScreen onOpenSpace={onOpenSpace} />
 			</m.main>
 		);
 	}
@@ -936,9 +797,9 @@ export const MainContent = memo(function MainContent({
 					/>
 					{showTabBar ? (
 						<div
-							ref={tabBarWrapperRef}
 							className={`mainTabBarTransition${zenModeActive ? " is-zen-hidden" : ""}`}
 							aria-hidden={zenModeActive}
+							inert={zenModeActive ? true : undefined}
 						>
 							<TabBar
 								tabs={tabs}

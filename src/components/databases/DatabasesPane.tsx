@@ -208,12 +208,11 @@ function ViewLayoutIcon({ layout }: { layout: string }) {
 	return <Table size={13} />;
 }
 
-export function DatabasesPane({
+function DatabasesPaneContent({
 	onOpenFile,
 	initialDatabaseId = null,
 	initialDocument = null,
 	initialRows = null,
-	openRequestNonce = 0,
 }: DatabasesPaneProps) {
 	const [summaries, setSummaries] = useState<WorkspaceDatabaseSummary[]>(
 		() => getPrefetchedDatabaseSummaries() ?? [],
@@ -306,13 +305,6 @@ export function DatabasesPane({
 			setShowDatabaseNoteCount(payload.database.showNoteCount);
 		}
 	});
-
-	useEffect(() => {
-		if (openRequestNonce === 0) return;
-		if (initialDatabaseId) {
-			setSelectedDatabaseId(initialDatabaseId);
-		}
-	}, [initialDatabaseId, openRequestNonce]);
 
 	useEffect(() => {
 		writeStoredSelectedDatabaseId(selectedDatabaseId);
@@ -1155,5 +1147,14 @@ export function DatabasesPane({
 				</div>
 			)}
 		</div>
+	);
+}
+
+export function DatabasesPane(props: DatabasesPaneProps) {
+	return (
+		<DatabasesPaneContent
+			key={`${props.openRequestNonce ?? 0}:${props.initialDatabaseId ?? ""}`}
+			{...props}
+		/>
 	);
 }

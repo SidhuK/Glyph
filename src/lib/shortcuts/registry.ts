@@ -125,6 +125,14 @@ export const SHORTCUTS = [
 		context: "editor",
 	},
 	{
+		id: "open-local-graph",
+		shortcut: { meta: true, shift: true, key: "g" },
+		label: "Open Local Graph",
+		description: "Open the connected notes graph for the current note",
+		category: "file",
+		context: "editor",
+	},
+	{
 		id: "copy-note-markdown",
 		shortcut: { meta: true, shift: true, key: "c" },
 		label: "Copy Note as Markdown",

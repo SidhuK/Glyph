@@ -6,13 +6,17 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FORCE_NOTE_EDIT_MODE_EVENT } from "../../lib/appEvents";
 import { MarkdownEditorPane } from "./MarkdownEditorPane";
 
-const { canvasNoteInlineEditorMock, invokeMock, mockZenModeState } = vi.hoisted(
-	() => ({
-		canvasNoteInlineEditorMock: vi.fn(),
-		invokeMock: vi.fn(),
-		mockZenModeState: { active: false },
-	}),
-);
+const {
+	canvasNoteInlineEditorMock,
+	localNoteGraphDialogMock,
+	invokeMock,
+	mockZenModeState,
+} = vi.hoisted(() => ({
+	canvasNoteInlineEditorMock: vi.fn(),
+	localNoteGraphDialogMock: vi.fn(),
+	invokeMock: vi.fn(),
+	mockZenModeState: { active: false },
+}));
 
 // React 19 expects tests to opt into act-aware scheduling.
 (
@@ -93,6 +97,22 @@ vi.mock("../editor/FloatingTOC", () => ({
 	FloatingTOC: () => null,
 }));
 
+vi.mock("../graph/LocalNoteGraphDialog", () => ({
+	LocalNoteGraphDialog: ({
+		open,
+		noteId,
+		graphRefreshKey,
+	}: {
+		open: boolean;
+		onOpenChange: (open: boolean) => void;
+		noteId: string;
+		graphRefreshKey?: number;
+	}) => {
+		localNoteGraphDialogMock({ open, noteId, graphRefreshKey });
+		return open ? <div data-testid="local-note-graph">Local graph</div> : null;
+	},
+}));
+
 vi.mock("../ui/shadcn/button", () => ({
 	Button: ({
 		children,
@@ -168,6 +188,7 @@ describe("MarkdownEditorPane", () => {
 		invokeMock.mockReset();
 		invokeMock.mockImplementation(mockInvoke);
 		canvasNoteInlineEditorMock.mockReset();
+		localNoteGraphDialogMock.mockReset();
 
 		container = document.createElement("div");
 		document.body.appendChild(container);
@@ -386,5 +407,45 @@ describe("MarkdownEditorPane", () => {
 		});
 
 		expect(editorButton?.getAttribute("data-mode")).toBe("rich");
+	});
+
+	it("opens the local graph from the actions menu", async () => {
+		await act(async () => {
+			root.render(
+				<MarkdownEditorPane
+					relPath="notes/graph.md"
+					initialDoc={makeDoc("notes/graph.md", "seed text", 7)}
+				/>,
+			);
+		});
+
+		const actionsButton = Array.from(container.querySelectorAll("button")).find(
+			(button) => button.getAttribute("aria-label")?.includes("editor actions"),
+		);
+		expect(actionsButton).not.toBeNull();
+
+		await act(async () => {
+			actionsButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+		});
+
+		const graphButton = Array.from(container.querySelectorAll("button")).find(
+			(button) => button.textContent?.includes("Local graph"),
+		);
+		expect(graphButton).not.toBeNull();
+
+		await act(async () => {
+			graphButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+		});
+
+		expect(
+			container.querySelector('[data-testid="local-note-graph"]'),
+		).toBeTruthy();
+		expect(localNoteGraphDialogMock).toHaveBeenLastCalledWith(
+			expect.objectContaining({
+				open: true,
+				noteId: "notes/graph.md",
+				graphRefreshKey: 7,
+			}),
+		);
 	});
 });

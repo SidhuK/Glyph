@@ -325,14 +325,6 @@ export function DatabaseBoard({
 	);
 
 	useEffect(() => {
-		dragPreviewRef.current = dragPreview;
-	}, [dragPreview]);
-
-	useEffect(() => {
-		dropLaneIdRef.current = dropLaneId;
-	}, [dropLaneId]);
-
-	useEffect(() => {
 		const handlePointerMove = (event: PointerEvent) => {
 			const dragStart = dragStartRef.current;
 			if (!dragStart) return;
@@ -379,6 +371,7 @@ export function DatabaseBoard({
 			dragStartRef.current = null;
 			if (!dragStart) return;
 			if (!dragActiveRef.current) {
+				dropLaneIdRef.current = null;
 				setDropLaneId(null);
 				return;
 			}

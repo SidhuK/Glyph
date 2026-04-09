@@ -86,10 +86,7 @@ export function FileTreeProvider({ children }: { children: ReactNode }) {
 	const tagsRequestIdRef = useRef(0);
 	const currentSpacePathRef = useRef<string | null>(spacePath);
 	const pinnedFilesRefreshTimerRef = useRef<number | null>(null);
-
-	useEffect(() => {
-		currentSpacePathRef.current = spacePath;
-	}, [spacePath]);
+	currentSpacePathRef.current = spacePath;
 
 	// biome-ignore lint/correctness/useExhaustiveDependencies: clear pending refreshes when the active space changes.
 	useEffect(

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import {
 	databaseCellValueFromRow,
 	rowMatchesFilters,
@@ -128,16 +128,17 @@ export function useDatabaseTable({ rows, config }: UseDatabaseTableParams) {
 		return next;
 	}, [config.columns, config.sorts, filteredRows]);
 
-	useEffect(() => {
-		if (!selectedRowPath) return;
-		if (sortedRows.some((row) => row.note_path === selectedRowPath)) return;
-		setSelectedRowPath(null);
+	const effectiveSelectedRowPath = useMemo(() => {
+		if (!selectedRowPath) return null;
+		return sortedRows.some((row) => row.note_path === selectedRowPath)
+			? selectedRowPath
+			: null;
 	}, [selectedRowPath, sortedRows]);
 
 	return {
 		visibleColumns,
 		rows: sortedRows,
-		selectedRowPath,
+		selectedRowPath: effectiveSelectedRowPath,
 		setSelectedRowPath,
 	};
 }

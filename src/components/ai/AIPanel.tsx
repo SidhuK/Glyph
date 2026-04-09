@@ -39,7 +39,6 @@ export async function prefetchAIPanelData(): Promise<void> {
 }
 
 export function AIPanel({ isOpen, onClose }: AIPanelProps) {
-	const chat = useRigChat();
 	const { aiAssistantMode } = useAISidebarContext();
 	const { openSettings } = useUILayoutContext();
 	const isChatMode = aiAssistantMode === "chat";
@@ -50,18 +49,19 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 	const [historyExpanded, setHistoryExpanded] = useState(false);
 	const [showScrollFab, setShowScrollFab] = useState(false);
 
-	const profiles = useAiProfiles();
-	const context = useAiContext();
 	const history = useAiHistory(14, { enabled: historyExpanded });
-	const toolEvents = useAiToolEvents({ isChatMode, chatStatus: chat.status });
-	const actions = useAiActions(chat);
-
+	const chat = useRigChat({
+		onComplete: () => void history.refresh(),
+	});
+	const profiles = useAiProfiles();
 	const trigger = parseAddTrigger(input);
 	const showAddPanel = addPanelOpen || Boolean(trigger);
 	const panelQuery = addPanelOpen ? addPanelQuery : (trigger?.query ?? "");
+	const context = useAiContext(panelQuery);
+	const toolEvents = useAiToolEvents({ isChatMode, chatStatus: chat.status });
+	const actions = useAiActions(chat);
 
 	const composerInputRef = useRef<HTMLTextAreaElement | null>(null);
-	const prevChatStatusRef = useRef(chat.status);
 	const scheduleResize = useCallback(() => {
 		window.requestAnimationFrame(() => {
 			const el = composerInputRef.current;
@@ -72,10 +72,6 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 			el.style.overflowY = el.scrollHeight > 180 ? "auto" : "hidden";
 		});
 	}, []);
-
-	useEffect(() => {
-		context.setContextSearch(panelQuery);
-	}, [panelQuery, context.setContextSearch]);
 
 	useEffect(() => {
 		const onAttach = (event: Event) => {
@@ -288,16 +284,6 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 		const el = threadRef.current;
 		if (el) el.scrollTop = el.scrollHeight;
 	}, [chat.messages, toolEvents.isAwaitingResponse]);
-
-	useEffect(() => {
-		if (
-			prevChatStatusRef.current === "streaming" &&
-			chat.status !== "streaming"
-		) {
-			void history.refresh();
-		}
-		prevChatStatusRef.current = chat.status;
-	}, [chat.status, history.refresh]);
 
 	return (
 		<div

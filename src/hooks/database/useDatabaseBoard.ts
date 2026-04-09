@@ -1,10 +1,4 @@
-import {
-	startTransition,
-	useCallback,
-	useEffect,
-	useMemo,
-	useState,
-} from "react";
+import { startTransition, useCallback, useMemo, useState } from "react";
 import {
 	createBoardLanes,
 	defaultBoardGroupColumnId,
@@ -26,23 +20,6 @@ interface UseDatabaseBoardParams {
 	) => void | Promise<void>;
 }
 
-function hasSameLaneOrderByGroup(
-	left: Record<string, string[]>,
-	right: Record<string, string[]>,
-) {
-	const leftKeys = Object.keys(left);
-	const rightKeys = Object.keys(right);
-	if (leftKeys.length !== rightKeys.length) return false;
-	return leftKeys.every((key) => {
-		const leftLaneOrder = left[key] ?? [];
-		const rightLaneOrder = right[key] ?? [];
-		return (
-			leftLaneOrder.length === rightLaneOrder.length &&
-			leftLaneOrder.every((laneId, index) => rightLaneOrder[index] === laneId)
-		);
-	});
-}
-
 export function useDatabaseBoard({
 	rows,
 	columns,
@@ -52,48 +29,25 @@ export function useDatabaseBoard({
 	onLaneOrderChange,
 }: UseDatabaseBoardParams) {
 	const groupColumns = useMemo(() => getBoardGroupColumns(columns), [columns]);
-	const [groupColumnId, setGroupColumnId] = useState<string | null>(
-		() => initialGroupColumnId ?? defaultBoardGroupColumnId(columns),
-	);
+	const [groupColumnId, setGroupColumnId] = useState<string | null>(() => null);
 	const [laneOrderByGroup, setLaneOrderByGroup] = useState<
 		Record<string, string[]>
 	>(() => initialLaneOrderByGroup);
 
-	useEffect(() => {
-		const nextColumnId =
-			initialGroupColumnId ?? defaultBoardGroupColumnId(groupColumns);
-		startTransition(() =>
-			setGroupColumnId((current) =>
-				current === nextColumnId ? current : nextColumnId,
-			),
-		);
-	}, [groupColumns, initialGroupColumnId]);
-
-	useEffect(() => {
-		setLaneOrderByGroup((current) =>
-			hasSameLaneOrderByGroup(current, initialLaneOrderByGroup)
-				? current
-				: initialLaneOrderByGroup,
-		);
-	}, [initialLaneOrderByGroup]);
-
-	useEffect(() => {
-		if (
-			groupColumnId &&
-			groupColumns.some((column) => column.id === groupColumnId)
-		) {
-			return;
+	const effectiveGroupColumnId = useMemo(() => {
+		const candidate = groupColumnId ?? initialGroupColumnId;
+		if (candidate && groupColumns.some((column) => column.id === candidate)) {
+			return candidate;
 		}
-		const nextColumnId = defaultBoardGroupColumnId(groupColumns);
-		startTransition(() => setGroupColumnId(nextColumnId));
-	}, [groupColumnId, groupColumns]);
+		return defaultBoardGroupColumnId(groupColumns);
+	}, [groupColumnId, groupColumns, initialGroupColumnId]);
 
 	const groupColumn = useMemo(
 		() =>
-			groupColumns.find((column) => column.id === groupColumnId) ??
+			groupColumns.find((column) => column.id === effectiveGroupColumnId) ??
 			groupColumns[0] ??
 			null,
-		[groupColumnId, groupColumns],
+		[effectiveGroupColumnId, groupColumns],
 	);
 
 	const lanes = useMemo(() => {

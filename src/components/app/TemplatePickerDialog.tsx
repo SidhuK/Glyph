@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Settings, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import {
@@ -32,13 +32,8 @@ export function TemplatePickerDialog({
 }: TemplatePickerDialogProps) {
 	const [query, setQuery] = useState("");
 
-	useEffect(() => {
-		if (!open) {
-			setQuery("");
-		}
-	}, [open]);
-
 	const handleClose = () => {
+		setQuery("");
 		onClose();
 	};
 

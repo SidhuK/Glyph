@@ -204,17 +204,11 @@ export const AllDocsPane = memo(function AllDocsPane({
 
 	useEffect(() => {
 		const cancelled = { current: false };
-		if (notes.length > 0) {
-			void fetchNotes(cancelled);
-			return () => {
-				cancelled.current = true;
-			};
-		}
 		void fetchNotes(cancelled);
 		return () => {
 			cancelled.current = true;
 		};
-	}, [fetchNotes, notes.length]);
+	}, [fetchNotes]);
 
 	const visibleNotes = useMemo(() => {
 		if (!showNotesScopeToggle || notesScope === "all") {

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useRef } from "react";
 import {
 	dispatchFileTreeStartRename,
 	dispatchPathRemoved,
@@ -73,14 +73,8 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 	} = deps;
 	const activeFilePathRef = useRef(activeFilePath);
 	const activePreviewPathRef = useRef(activePreviewPath);
-
-	useEffect(() => {
-		activeFilePathRef.current = activeFilePath;
-	}, [activeFilePath]);
-
-	useEffect(() => {
-		activePreviewPathRef.current = activePreviewPath;
-	}, [activePreviewPath]);
+	activeFilePathRef.current = activeFilePath;
+	activePreviewPathRef.current = activePreviewPath;
 
 	const refreshAfterCreate = useCallback(
 		async (targetDir: string) => {

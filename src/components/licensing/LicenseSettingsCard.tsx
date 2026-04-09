@@ -1,5 +1,5 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
-import { useEffect, useState } from "react";
+import { useRef, useState } from "react";
 import {
 	activateLicenseKey,
 	clearLocalLicense,
@@ -46,12 +46,21 @@ export function LicenseSettingsCard() {
 	const [actionError, setActionError] = useState("");
 	const [successMessage, setSuccessMessage] = useState("");
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const successMessageTimerRef = useRef<number | null>(null);
 
-	useEffect(() => {
-		if (!successMessage) return;
-		const timer = window.setTimeout(() => setSuccessMessage(""), 2200);
-		return () => window.clearTimeout(timer);
-	}, [successMessage]);
+	const clearSuccessMessageTimer = () => {
+		if (successMessageTimerRef.current === null) return;
+		window.clearTimeout(successMessageTimerRef.current);
+		successMessageTimerRef.current = null;
+	};
+
+	const scheduleSuccessMessageReset = () => {
+		clearSuccessMessageTimer();
+		successMessageTimerRef.current = window.setTimeout(() => {
+			successMessageTimerRef.current = null;
+			setSuccessMessage("");
+		}, 2200);
+	};
 
 	const handleActivate = async () => {
 		if (isSubmitting) return;
@@ -65,11 +74,13 @@ export function LicenseSettingsCard() {
 
 		setActionError("");
 		setSuccessMessage("");
+		clearSuccessMessageTimer();
 		setIsSubmitting(true);
 		try {
 			await activateLicenseKey(normalizedLicenseKey);
 			setLicenseKey("");
 			setSuccessMessage("License activated.");
+			scheduleSuccessMessageReset();
 			await reload();
 		} catch (cause) {
 			setActionError(
@@ -83,10 +94,12 @@ export function LicenseSettingsCard() {
 	const handleClear = async () => {
 		setActionError("");
 		setSuccessMessage("");
+		clearSuccessMessageTimer();
 		setIsSubmitting(true);
 		try {
 			await clearLocalLicense();
 			setSuccessMessage("Local activation removed.");
+			scheduleSuccessMessageReset();
 			await reload();
 		} catch (cause) {
 			setActionError(

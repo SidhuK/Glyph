@@ -1,21 +1,36 @@
 // @vitest-environment jsdom
 
-import { act } from "react";
+import { act, useEffect } from "react";
 import { type Root, createRoot } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type { AttachmentStorageMode } from "../../../lib/settings";
 import { useNoteEditor } from "./useNoteEditor";
 
 const {
 	canCommands,
 	chainCommands,
+	emitSettingsUpdated,
 	getEditorOptions,
 	invokeMock,
+	loadSettingsMock,
 	mockEditor,
 	openUrlMock,
 	parseMock,
 	setEditorOptions,
+	setSettingsUpdatedHandler,
 } = vi.hoisted(() => {
 	let editorOptions: Record<string, unknown> | null = null;
+	let settingsUpdatedHandler:
+		| ((payload: {
+				editor?: {
+					attachmentFolder?: string | null;
+					attachmentStorageMode?: AttachmentStorageMode;
+					colorfulHeadings?: boolean;
+					enablePeopleMentionsAsTags?: boolean;
+					showCollapsibleHeadings?: boolean;
+				};
+		  }) => void)
+		| null = null;
 	const chainCommands = {
 		focus: vi.fn(() => chainCommands),
 		insertContentAt: vi.fn(() => chainCommands),
@@ -94,13 +109,36 @@ const {
 	return {
 		canCommands,
 		chainCommands,
+		emitSettingsUpdated: (payload: {
+			editor?: {
+				attachmentFolder?: string | null;
+				attachmentStorageMode?: AttachmentStorageMode;
+				colorfulHeadings?: boolean;
+				enablePeopleMentionsAsTags?: boolean;
+				showCollapsibleHeadings?: boolean;
+			};
+		}) => settingsUpdatedHandler?.(payload),
 		getEditorOptions: () => editorOptions,
 		invokeMock: vi.fn(),
+		loadSettingsMock: vi.fn(() =>
+			Promise.resolve({
+				editor: {
+					attachmentFolder: "assets",
+					attachmentStorageMode: "specific-folder",
+					colorfulHeadings: false,
+					showCollapsibleHeadings: false,
+					enablePeopleMentionsAsTags: false,
+				},
+			}),
+		),
 		mockEditor,
 		openUrlMock: vi.fn(),
 		parseMock,
 		setEditorOptions: (options: Record<string, unknown>) => {
 			editorOptions = options;
+		},
+		setSettingsUpdatedHandler: (handler: typeof settingsUpdatedHandler) => {
+			settingsUpdatedHandler = handler;
 		},
 	};
 });
@@ -134,14 +172,7 @@ vi.mock("../extensions", () => ({
 }));
 
 vi.mock("../../../lib/settings", () => ({
-	loadSettings: () =>
-		Promise.resolve({
-			editor: {
-				showCollapsibleHeadings: false,
-				pastedMediaFolder: "assets",
-				enablePeopleMentionsAsTags: false,
-			},
-		}),
+	loadSettings: loadSettingsMock,
 }));
 
 vi.mock("../../../lib/tauri", () => ({
@@ -149,7 +180,22 @@ vi.mock("../../../lib/tauri", () => ({
 }));
 
 vi.mock("../../../lib/tauriEvents", () => ({
-	useTauriEvent: () => {},
+	useTauriEvent: (
+		event: string,
+		handler: (payload: {
+			editor?: {
+				attachmentFolder?: string | null;
+				attachmentStorageMode?: AttachmentStorageMode;
+				colorfulHeadings?: boolean;
+				enablePeopleMentionsAsTags?: boolean;
+				showCollapsibleHeadings?: boolean;
+			};
+		}) => void,
+	) => {
+		if (event === "settings:updated") {
+			setSettingsUpdatedHandler(handler);
+		}
+	},
 }));
 
 vi.mock("./useHydrateInlineImages", () => ({
@@ -158,18 +204,23 @@ vi.mock("./useHydrateInlineImages", () => ({
 
 function Harness({
 	onChange,
+	onState,
 	pasteMarkdownBehavior = "plain-text",
 }: {
 	onChange: (nextMarkdown: string) => void;
+	onState?: (state: { colorfulHeadings: boolean }) => void;
 	pasteMarkdownBehavior?: "plain-text" | "smart-markdown";
 }) {
-	useNoteEditor({
+	const state = useNoteEditor({
 		markdown: "keep this line\nremove this line",
 		mode: "rich",
 		relPath: "notes/test.md",
 		pasteMarkdownBehavior,
 		onChange,
 	});
+	useEffect(() => {
+		onState?.({ colorfulHeadings: state.colorfulHeadings });
+	}, [onState, state.colorfulHeadings]);
 	return null;
 }
 
@@ -202,6 +253,12 @@ function createClipboardEvent({
 	return event;
 }
 
+async function flushImageUploadWork() {
+	await Promise.resolve();
+	await Promise.resolve();
+	await Promise.resolve();
+}
+
 type EditorOptionsWithPaste = {
 	editorProps?: {
 		handleDOMEvents?: {
@@ -220,6 +277,7 @@ describe("useNoteEditor", () => {
 	let originalFileReader: typeof FileReader | undefined;
 
 	beforeEach(() => {
+		setSettingsUpdatedHandler(null);
 		mockEditor.isEditable = true;
 		mockEditor.isActive.mockReset();
 		mockEditor.isActive.mockReturnValue(false);
@@ -264,6 +322,16 @@ describe("useNoteEditor", () => {
 		openUrlMock.mockReset();
 		invokeMock.mockReset();
 		invokeMock.mockResolvedValue({ href: "assets/image.png" });
+		loadSettingsMock.mockReset();
+		loadSettingsMock.mockResolvedValue({
+			editor: {
+				attachmentFolder: "assets",
+				attachmentStorageMode: "specific-folder",
+				colorfulHeadings: false,
+				showCollapsibleHeadings: false,
+				enablePeopleMentionsAsTags: false,
+			},
+		});
 		parseMock.mockReset();
 		parseMock.mockReturnValue({
 			content: [
@@ -350,6 +418,25 @@ describe("useNoteEditor", () => {
 		});
 
 		expect(onChange).toHaveBeenCalledWith("keep this line");
+	});
+
+	it("tracks colorful headings from settings and live updates", async () => {
+		const onChange = vi.fn();
+		const onState = vi.fn();
+
+		await act(async () => {
+			root.render(<Harness onChange={onChange} onState={onState} />);
+		});
+
+		expect(onState).toHaveBeenLastCalledWith({ colorfulHeadings: false });
+
+		await act(async () => {
+			emitSettingsUpdated({
+				editor: { colorfulHeadings: true },
+			});
+		});
+
+		expect(onState).toHaveBeenLastCalledWith({ colorfulHeadings: true });
 	});
 
 	it("intercepts Markdown text paste when smart paste is enabled", async () => {
@@ -608,6 +695,120 @@ describe("useNoteEditor", () => {
 				},
 			],
 		);
+	});
+
+	it("saves pasted images to the configured specific folder", async () => {
+		const onChange = vi.fn();
+		loadSettingsMock.mockResolvedValue({
+			editor: {
+				attachmentFolder: "assets/uploads",
+				attachmentStorageMode: "specific-folder",
+				colorfulHeadings: false,
+				showCollapsibleHeadings: false,
+				enablePeopleMentionsAsTags: false,
+			},
+		});
+
+		await act(async () => {
+			root.render(
+				<Harness onChange={onChange} pasteMarkdownBehavior="smart-markdown" />,
+			);
+		});
+
+		const options = getEditorOptions() as EditorOptionsWithPaste;
+		const paste = options?.editorProps?.handleDOMEvents?.paste;
+		const file = new File(["image-bytes"], "paste.png", { type: "image/png" });
+		const event = createClipboardEvent({
+			items: [{ type: "image/png", getAsFile: () => file }],
+		});
+
+		await act(async () => {
+			expect(paste?.({}, event)).toBe(true);
+			await flushImageUploadWork();
+		});
+
+		expect(invokeMock).toHaveBeenCalledWith("space_save_pasted_image", {
+			source_path: "notes/test.md",
+			target_dir: "assets/uploads",
+			data_url: "data:image/png;base64,abc",
+			alt: "paste.png",
+		});
+	});
+
+	it("saves pasted images to the space root when that mode is selected", async () => {
+		const onChange = vi.fn();
+		loadSettingsMock.mockResolvedValue({
+			editor: {
+				attachmentFolder: "assets",
+				attachmentStorageMode: "space-root",
+				colorfulHeadings: false,
+				showCollapsibleHeadings: false,
+				enablePeopleMentionsAsTags: false,
+			},
+		});
+
+		await act(async () => {
+			root.render(
+				<Harness onChange={onChange} pasteMarkdownBehavior="smart-markdown" />,
+			);
+		});
+
+		const options = getEditorOptions() as EditorOptionsWithPaste;
+		const paste = options?.editorProps?.handleDOMEvents?.paste;
+		const file = new File(["image-bytes"], "paste.png", { type: "image/png" });
+		const event = createClipboardEvent({
+			items: [{ type: "image/png", getAsFile: () => file }],
+		});
+
+		await act(async () => {
+			expect(paste?.({}, event)).toBe(true);
+			await flushImageUploadWork();
+		});
+
+		expect(invokeMock).toHaveBeenCalledWith("space_save_pasted_image", {
+			source_path: "notes/test.md",
+			target_dir: "",
+			data_url: "data:image/png;base64,abc",
+			alt: "paste.png",
+		});
+	});
+
+	it("saves pasted images beside the current note in note-folder mode", async () => {
+		const onChange = vi.fn();
+		loadSettingsMock.mockResolvedValue({
+			editor: {
+				attachmentFolder: "assets",
+				attachmentStorageMode: "note-folder",
+				colorfulHeadings: false,
+				showCollapsibleHeadings: false,
+				enablePeopleMentionsAsTags: false,
+			},
+		});
+
+		await act(async () => {
+			root.render(
+				<Harness onChange={onChange} pasteMarkdownBehavior="smart-markdown" />,
+			);
+		});
+
+		const options = getEditorOptions() as EditorOptionsWithPaste;
+		const paste = options?.editorProps?.handleDOMEvents?.paste;
+		const file = new File(["image-bytes"], "paste.png", { type: "image/png" });
+		const event = createClipboardEvent({
+			items: [{ type: "image/png", getAsFile: () => file }],
+		});
+
+		await act(async () => {
+			expect(paste?.({}, event)).toBe(true);
+			await flushImageUploadWork();
+		});
+
+		expect(invokeMock).toHaveBeenCalledWith("space_save_pasted_image", {
+			source_path: "notes/test.md",
+			target_dir: "notes",
+			data_url: "data:image/png;base64,abc",
+			alt: "paste.png",
+		});
 	});
 
 	it("does not start image uploads when image placeholders cannot be inserted", async () => {

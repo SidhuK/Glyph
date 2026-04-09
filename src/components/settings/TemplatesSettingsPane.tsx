@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
 	getDailyNoteTemplate,
 	getTemplatesFolder,
@@ -75,8 +75,6 @@ export function TemplateSettingsSections() {
 		loading: templatesLoading,
 		error: templatesError,
 	} = templateLibraryState;
-	const latestClearOpIdRef = useRef(0);
-
 	useEffect(() => {
 		let cancelled = false;
 		void (async () => {
@@ -112,6 +110,11 @@ export function TemplateSettingsSections() {
 	useEffect(() => {
 		if (templatesFolder === null) {
 			setTemplateLibraryState(INITIAL_TEMPLATE_LIBRARY_STATE);
+			setSettingsState((current) =>
+				current.dailyNoteTemplatePath === null
+					? current
+					: { ...current, dailyNoteTemplatePath: null },
+			);
 			return;
 		}
 		let cancelled = false;
@@ -129,14 +132,40 @@ export function TemplateSettingsSections() {
 			})
 			.then((entries) => {
 				if (cancelled) return;
+				const nextTemplates = entries.map((entry) => ({
+					value: entry.relPath,
+					label: toDisplayPath(entry.relPath, templatesFolder),
+				}));
 				setTemplateLibraryState({
-					templates: entries.map((entry) => ({
-						value: entry.relPath,
-						label: toDisplayPath(entry.relPath, templatesFolder),
-					})),
+					templates: nextTemplates,
 					loading: false,
 					error: null,
 				});
+				if (
+					dailyNoteTemplatePath &&
+					!nextTemplates.some(
+						(template) => template.value === dailyNoteTemplatePath,
+					)
+				) {
+					void setDailyNoteTemplate(null)
+						.then(() => {
+							if (cancelled) return;
+							setSettingsState((current) => ({
+								...current,
+								dailyNoteTemplatePath: null,
+							}));
+						})
+						.catch((cause) => {
+							if (cancelled) return;
+							setSettingsState((current) => ({
+								...current,
+								error:
+									cause instanceof Error
+										? cause.message
+										: "Failed to clear daily note template",
+							}));
+						});
+				}
 			})
 			.catch((cause) => {
 				if (cancelled) return;
@@ -150,47 +179,7 @@ export function TemplateSettingsSections() {
 		return () => {
 			cancelled = true;
 		};
-	}, [templatesFolder]);
-
-	useEffect(() => {
-		const opId = ++latestClearOpIdRef.current;
-		if (loading || templatesLoading || templatesError) return;
-		if (!dailyNoteTemplatePath) return;
-		if (
-			templates.some((template) => template.value === dailyNoteTemplatePath)
-		) {
-			return;
-		}
-		let cancelled = false;
-		void (async () => {
-			try {
-				await setDailyNoteTemplate(null);
-				if (cancelled || opId !== latestClearOpIdRef.current) return;
-				setSettingsState((current) => ({
-					...current,
-					dailyNoteTemplatePath: null,
-				}));
-			} catch (cause) {
-				if (cancelled || opId !== latestClearOpIdRef.current) return;
-				setSettingsState((current) => ({
-					...current,
-					error:
-						cause instanceof Error
-							? cause.message
-							: "Failed to clear daily note template",
-				}));
-			}
-		})();
-		return () => {
-			cancelled = true;
-		};
-	}, [
-		dailyNoteTemplatePath,
-		loading,
-		templates,
-		templatesError,
-		templatesLoading,
-	]);
+	}, [dailyNoteTemplatePath, templatesFolder]);
 
 	const handleBrowseFolder = useCallback(async () => {
 		setSettingsState((current) => ({ ...current, error: null }));
