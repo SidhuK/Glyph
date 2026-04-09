@@ -20,8 +20,13 @@ export function LicenseGate({ children }: LicenseGateProps) {
 				className="licenseLoadingScreen"
 				aria-busy="true"
 				aria-label="Loading Glyph"
-				role="status"
-			/>
+				aria-live="polite"
+			>
+				<div className="licenseLoadingPanel">
+					<h1>Loading Glyph</h1>
+					<p>Checking your local setup so the app can open safely.</p>
+				</div>
+			</div>
 		);
 	}
 

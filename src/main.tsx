@@ -3,6 +3,7 @@ import { ThemeProvider } from "next-themes";
 import { useTheme } from "next-themes";
 import React from "react";
 import ReactDOM from "react-dom/client";
+import App from "./App";
 import { LicenseGate } from "./components/licensing/LicenseGate";
 import { Toaster } from "./components/ui/shadcn/sonner";
 import {
@@ -18,17 +19,11 @@ import { invoke } from "./lib/tauri";
 import { useTauriEvent } from "./lib/tauriEvents";
 import { isUiDarkThemeId, isUiLightThemeId } from "./lib/uiThemes";
 
-const App = React.lazy(() => import("./App"));
-
 function Root() {
 	return (
-		<React.Suspense
-			fallback={<main style={{ height: "100%" }} aria-busy="true" />}
-		>
-			<LicenseGate>
-				<App />
-			</LicenseGate>
-		</React.Suspense>
+		<LicenseGate>
+			<App />
+		</LicenseGate>
 	);
 }
 
