@@ -8,7 +8,6 @@ import { isMarkdownPath } from "../../utils/path";
 import { type Tab, parseSearchQueryWithPeople } from "./commandPaletteHelpers";
 
 export function useCommandSearch(
-	open: boolean,
 	activeTab: Tab,
 	query: string,
 	spacePath: string | null,
@@ -18,7 +17,7 @@ export function useCommandSearch(
 	const [peopleMentionsEnabled, setPeopleMentionsEnabled] = useState(false);
 	const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 	const requestIdRef = useRef(0);
-	const { recentFiles, refreshRecentFiles } = useRecentFiles(spacePath, 8);
+	const { recentFiles } = useRecentFiles(spacePath, 8);
 	const recentMarkdownFiles = useMemo(
 		() => recentFiles.filter((file) => isMarkdownPath(file.path)),
 		[recentFiles],
@@ -45,11 +44,6 @@ export function useCommandSearch(
 			setPeopleMentionsEnabled(payload.editor.enablePeopleMentionsAsTags);
 		}
 	});
-
-	useEffect(() => {
-		if (!open || !spacePath) return;
-		void refreshRecentFiles();
-	}, [open, spacePath, refreshRecentFiles]);
 
 	useEffect(() => {
 		if (activeTab !== "search") return;

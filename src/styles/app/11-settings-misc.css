@@ -399,6 +399,18 @@
 	width: 100%;
 }
 
+.gitSettingsActionRow {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex-wrap: wrap;
+}
+
+.gitSettingsInlineStatus {
+	flex: 0 1 auto;
+	min-width: 0;
+}
+
 .gitSyncRemoteInput {
 	width: 100%;
 }

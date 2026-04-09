@@ -1,5 +1,5 @@
 import { openUrl } from "@tauri-apps/plugin-opener";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import {
 	activateLicenseKey,
 	clearLocalLicense,
@@ -46,12 +46,23 @@ export function LicenseSettingsCard() {
 	const [actionError, setActionError] = useState("");
 	const [successMessage, setSuccessMessage] = useState("");
 	const [isSubmitting, setIsSubmitting] = useState(false);
+	const successMessageTimerRef = useRef<number | null>(null);
 
-	useEffect(() => {
-		if (!successMessage) return;
-		const timer = window.setTimeout(() => setSuccessMessage(""), 2200);
-		return () => window.clearTimeout(timer);
-	}, [successMessage]);
+	const clearSuccessMessageTimer = useCallback(() => {
+		if (successMessageTimerRef.current === null) return;
+		window.clearTimeout(successMessageTimerRef.current);
+		successMessageTimerRef.current = null;
+	}, []);
+
+	const scheduleSuccessMessageReset = () => {
+		clearSuccessMessageTimer();
+		successMessageTimerRef.current = window.setTimeout(() => {
+			successMessageTimerRef.current = null;
+			setSuccessMessage("");
+		}, 2200);
+	};
+
+	useEffect(() => () => clearSuccessMessageTimer(), [clearSuccessMessageTimer]);
 
 	const handleActivate = async () => {
 		if (isSubmitting) return;
@@ -65,12 +76,14 @@ export function LicenseSettingsCard() {
 
 		setActionError("");
 		setSuccessMessage("");
+		clearSuccessMessageTimer();
 		setIsSubmitting(true);
 		try {
 			await activateLicenseKey(normalizedLicenseKey);
 			setLicenseKey("");
-			setSuccessMessage("License activated.");
 			await reload();
+			setSuccessMessage("License activated.");
+			scheduleSuccessMessageReset();
 		} catch (cause) {
 			setActionError(
 				cause instanceof Error ? cause.message : "Failed to activate license",
@@ -83,10 +96,12 @@ export function LicenseSettingsCard() {
 	const handleClear = async () => {
 		setActionError("");
 		setSuccessMessage("");
+		clearSuccessMessageTimer();
 		setIsSubmitting(true);
 		try {
 			await clearLocalLicense();
 			setSuccessMessage("Local activation removed.");
+			scheduleSuccessMessageReset();
 			await reload();
 		} catch (cause) {
 			setActionError(

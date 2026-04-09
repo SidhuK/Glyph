@@ -22,6 +22,7 @@ import {
 	useCallback,
 	useEffect,
 	useMemo,
+	useRef,
 	useState,
 } from "react";
 import {
@@ -177,10 +178,19 @@ export const AllDocsPane = memo(function AllDocsPane({
 		[dailyNotesFolder],
 	);
 	const [notesScope, setNotesScope] = useState<NotesScope>("all");
+	const hasSeededNotesRef = useRef(notes.length > 0);
 
 	const fetchNotes = useCallback(
-		async (cancelled?: { current: boolean }) => {
-			setLoading(true);
+		async ({
+			cancelled,
+			blocking = true,
+		}: {
+			cancelled?: { current: boolean };
+			blocking?: boolean;
+		} = {}) => {
+			if (blocking) {
+				setLoading(true);
+			}
 			setError("");
 			try {
 				const items = await prefetchAllDocs(normalizedFolderPrefix);
@@ -191,7 +201,7 @@ export const AllDocsPane = memo(function AllDocsPane({
 				setError(cause instanceof Error ? cause.message : String(cause));
 				setNotes([]);
 			} finally {
-				if (!cancelled?.current) setLoading(false);
+				if (blocking && !cancelled?.current) setLoading(false);
 			}
 		},
 		[normalizedFolderPrefix],
@@ -199,22 +209,16 @@ export const AllDocsPane = memo(function AllDocsPane({
 
 	useTauriEvent("notes:external_changed", () => {
 		invalidateAllDocsPrefetch(normalizedFolderPrefix);
-		void fetchNotes();
+		void fetchNotes({ blocking: false });
 	});
 
 	useEffect(() => {
 		const cancelled = { current: false };
-		if (notes.length > 0) {
-			void fetchNotes(cancelled);
-			return () => {
-				cancelled.current = true;
-			};
-		}
-		void fetchNotes(cancelled);
+		void fetchNotes({ cancelled, blocking: !hasSeededNotesRef.current });
 		return () => {
 			cancelled.current = true;
 		};
-	}, [fetchNotes, notes.length]);
+	}, [fetchNotes]);
 
 	const visibleNotes = useMemo(() => {
 		if (!showNotesScopeToggle || notesScope === "all") {

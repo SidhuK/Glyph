@@ -39,6 +39,7 @@ export function TemplatePickerDialog({
 	}, [open]);
 
 	const handleClose = () => {
+		setQuery("");
 		onClose();
 	};
 

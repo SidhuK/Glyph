@@ -39,6 +39,14 @@ pub enum GitSyncRunMode {
     Auto,
 }
 
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "kebab-case")]
+pub enum AttachmentStorageMode {
+    SpaceRoot,
+    SpecificFolder,
+    NoteFolder,
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct GitSyncInclusionSettings {
     pub include_templates: bool,
@@ -101,7 +109,8 @@ pub struct GitSyncStore {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq, Default)]
 pub struct GitSyncContext {
     pub templates_folder: Option<String>,
-    pub pasted_media_folder: Option<String>,
+    pub attachment_storage_mode: Option<AttachmentStorageMode>,
+    pub attachment_folder: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]

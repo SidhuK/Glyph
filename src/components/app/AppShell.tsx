@@ -7,6 +7,7 @@ import {
 	CursorInWindowIcon,
 	DocumentCodeIcon,
 	File01Icon,
+	FlowConnectionIcon,
 	Folder01Icon,
 	FolderOpenIcon,
 	Home01Icon,
@@ -54,12 +55,16 @@ import { useGitSync } from "../../hooks/useGitSync";
 import { useMenuListeners } from "../../hooks/useMenuListeners";
 import { useResizablePanel } from "../../hooks/useResizablePanel";
 import { AI_AGENT_TAB_ID } from "../../lib/aiAgent";
+import { ALL_DOCS_TAB_ID } from "../../lib/allDocs";
 import {
 	dispatchFileTreeStartRename,
 	dispatchForceNoteEditMode,
+	dispatchOpenLocalGraph,
 	dispatchPathRemoved,
 	dispatchZenModeWillToggle,
 } from "../../lib/appEvents";
+import { CALENDAR_TAB_ID } from "../../lib/calendar";
+import { DATABASES_TAB_ID } from "../../lib/databases";
 import { promptNoteExportPath } from "../../lib/export";
 import { getLicenseStatus } from "../../lib/license";
 import {
@@ -78,6 +83,7 @@ import { todayIsoDateLocal } from "../../lib/tasks";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { listTemplates, renderTemplate } from "../../lib/templates";
+import { TEMPLATES_TAB_ID } from "../../lib/templatesView";
 import { isInAppPreviewable } from "../../utils/filePreview";
 import { isMarkdownPath } from "../../utils/path";
 import { onWindowDragMouseDown } from "../../utils/window";
@@ -182,20 +188,10 @@ export function AppShell() {
 		"commands" | "search"
 	>("commands");
 	const [paletteInitialQuery, setPaletteInitialQuery] = useState("");
-	const [openAllDocsRequest, setOpenAllDocsRequest] = useState(0);
-	const [openTemplatesRequest, setOpenTemplatesRequest] = useState(0);
-	const [openCalendarRequest, setOpenCalendarRequest] = useState(0);
-	const [openDatabasesRequest, setOpenDatabasesRequest] = useState<{
-		nonce: number;
-		databaseId: string | null;
-	}>({
-		nonce: 0,
-		databaseId: null,
-	});
+	const [openDatabasesId, setOpenDatabasesId] = useState<string | null>(null);
 	const [showGettingStartedRequest, setShowGettingStartedRequest] = useState(0);
 	const [dailyNoteSetupNoticeRequest, setDailyNoteSetupNoticeRequest] =
 		useState(0);
-	const [openBlankTabRequest, setOpenBlankTabRequest] = useState(0);
 	const [movePickerSourcePath, setMovePickerSourcePath] = useState<
 		string | null
 	>(null);
@@ -211,6 +207,7 @@ export function AppShell() {
 	const [templatePickerItems, setTemplatePickerItems] = useState<
 		TemplatePickerItem[]
 	>([]);
+	const [commandPaletteSessionId, setCommandPaletteSessionId] = useState(0);
 	const [htmlExportRequest, setHtmlExportRequest] = useState<{
 		id: string;
 		relPath: string;
@@ -232,6 +229,12 @@ export function AppShell() {
 		spacePath,
 		saveCurrentEditor,
 	});
+	const lastGitSyncStatusRef = useRef<{
+		isSyncing: boolean;
+		phase: string;
+		lastError: string | null;
+		message: string | null;
+	} | null>(null);
 
 	const sidebarResize = useResizablePanel({
 		min: SIDEBAR_MIN_WIDTH,
@@ -267,22 +270,28 @@ export function AppShell() {
 	}, []);
 
 	useEffect(() => {
-		if (!zenModeActive) return;
-		if (activeMarkdownTabPath) return;
-		setZenModeActive(false);
-	}, [activeMarkdownTabPath, setZenModeActive, zenModeActive]);
+		const status = gitSync.status;
+		const previous = lastGitSyncStatusRef.current;
 
-	useEffect(() => {
-		if (!paletteOpen) return;
-		setCommandPaletteMounted(true);
-		void loadCommandPalette();
-	}, [paletteOpen]);
+		if (previous?.isSyncing && status && !status.is_syncing) {
+			if (status.phase === "success") {
+				toast.success("Git Sync completed.");
+			} else if (status.phase === "error" || status.last_error) {
+				const message =
+					status.last_error ?? status.message ?? "Git Sync failed.";
+				setError(message);
+			}
+		}
 
-	useEffect(() => {
-		if (!shortcutsHelpOpen) return;
-		setShortcutsHelpMounted(true);
-		void loadKeyboardShortcutsHelp();
-	}, [shortcutsHelpOpen]);
+		lastGitSyncStatusRef.current = status
+			? {
+					isSyncing: status.is_syncing,
+					phase: status.phase,
+					lastError: status.last_error,
+					message: status.message,
+				}
+			: null;
+	}, [gitSync.status, setError]);
 
 	const fileTree = useFileTree({
 		spacePath,
@@ -463,6 +472,52 @@ export function AppShell() {
 
 	const fsRefreshQueueRef = useRef<Set<string>>(new Set());
 	const fsRefreshTimerRef = useRef<number | null>(null);
+	const moveTargetDirsRequestIdRef = useRef(0);
+
+	const openPalette = useCallback(
+		(tab: "commands" | "search", query = "") => {
+			setPaletteInitialTab(tab);
+			setPaletteInitialQuery(query);
+			setCommandPaletteSessionId((value) => value + 1);
+			setCommandPaletteMounted(true);
+			setPaletteOpen(true);
+		},
+		[setPaletteOpen],
+	);
+	const closePalette = useCallback(() => {
+		moveTargetDirsRequestIdRef.current += 1;
+		setPaletteOpen(false);
+		setMovePickerSourcePath(null);
+		setMoveTargetDirs([]);
+	}, [setPaletteOpen]);
+	const refreshMoveTargetDirs = useCallback(async (sourcePath: string) => {
+		const requestId = ++moveTargetDirsRequestIdRef.current;
+		setMoveTargetDirs([]);
+		try {
+			const out: string[] = [];
+			const seen = new Set<string>([""]);
+			const queue: string[] = [""];
+			while (queue.length > 0 && out.length < 5000) {
+				const dir = queue.shift() ?? "";
+				const entries = await invoke("space_list_dir", dir ? { dir } : {});
+				for (const entry of entries) {
+					if (entry.kind !== "dir" || seen.has(entry.rel_path)) continue;
+					seen.add(entry.rel_path);
+					out.push(entry.rel_path);
+					queue.push(entry.rel_path);
+				}
+			}
+			if (moveTargetDirsRequestIdRef.current !== requestId) return;
+			const fromDir = parentDir(sourcePath);
+			setMoveTargetDirs(
+				out.filter((d) => d !== fromDir).sort((a, b) => a.localeCompare(b)),
+			);
+		} catch {
+			if (moveTargetDirsRequestIdRef.current === requestId) {
+				setMoveTargetDirs([]);
+			}
+		}
+	}, []);
 
 	const openOrCreateWikiLinkTarget = useCallback(
 		async (rawTarget: string) => {
@@ -560,20 +615,18 @@ export function AppShell() {
 		const onTagClick = (event: Event) => {
 			const detail = (event as CustomEvent<TagClickDetail>).detail;
 			if (!detail?.tag) return;
-			setPaletteInitialTab("search");
-			setPaletteInitialQuery(
+			openPalette(
+				"search",
 				detail.tag.startsWith("#") ? detail.tag : `#${detail.tag}`,
 			);
-			setPaletteOpen(true);
 		};
 		const onPersonClick = (event: Event) => {
 			const detail = (event as CustomEvent<PersonClickDetail>).detail;
 			if (!detail?.handle) return;
-			setPaletteInitialTab("search");
-			setPaletteInitialQuery(
+			openPalette(
+				"search",
 				detail.handle.startsWith("@") ? detail.handle : `@${detail.handle}`,
 			);
-			setPaletteOpen(true);
 		};
 		window.addEventListener(WIKI_LINK_CLICK_EVENT, onWikiLinkClick);
 		window.addEventListener(MARKDOWN_LINK_CLICK_EVENT, onMarkdownLinkClick);
@@ -588,17 +641,15 @@ export function AppShell() {
 			window.removeEventListener(TAG_CLICK_EVENT, onTagClick);
 			window.removeEventListener(PERSON_CLICK_EVENT, onPersonClick);
 		};
-	}, [openOrCreateWikiLinkTarget, openWorkspaceFile, setError, setPaletteOpen]);
+	}, [openOrCreateWikiLinkTarget, openPalette, openWorkspaceFile, setError]);
 
 	const openTagSearchPalette = useCallback(
 		(tag: string) => {
-			setPaletteInitialTab("search");
-			setPaletteInitialQuery(
-				tag.startsWith("#") || tag.startsWith("@") ? tag : `#${tag}`,
-			);
-			setPaletteOpen(true);
+			const query =
+				tag.startsWith("#") || tag.startsWith("@") ? tag : `#${tag}`;
+			openPalette("search", query);
 		},
-		[setPaletteOpen],
+		[openPalette],
 	);
 
 	const attachContextFiles = useCallback(
@@ -740,45 +791,6 @@ export function AppShell() {
 		[],
 	);
 
-	useEffect(() => {
-		const sourcePath = movePickerSourcePath ?? activeFilePath;
-		if (!spacePath || !paletteOpen || !sourcePath) {
-			setMoveTargetDirs([]);
-			return;
-		}
-		let cancelled = false;
-		void (async () => {
-			const out: string[] = [];
-			const seen = new Set<string>([""]);
-			const queue: string[] = [""];
-			while (queue.length > 0 && out.length < 5000) {
-				const dir = queue.shift() ?? "";
-				const entries = await invoke("space_list_dir", dir ? { dir } : {});
-				for (const entry of entries) {
-					if (entry.kind !== "dir" || seen.has(entry.rel_path)) continue;
-					seen.add(entry.rel_path);
-					out.push(entry.rel_path);
-					queue.push(entry.rel_path);
-				}
-			}
-			if (!cancelled) {
-				const fromDir = parentDir(sourcePath);
-				setMoveTargetDirs(
-					out.filter((d) => d !== fromDir).sort((a, b) => a.localeCompare(b)),
-				);
-			}
-		})().catch(() => {
-			if (!cancelled) setMoveTargetDirs([]);
-		});
-		return () => {
-			cancelled = true;
-		};
-	}, [activeFilePath, movePickerSourcePath, paletteOpen, spacePath]);
-
-	useEffect(() => {
-		if (!paletteOpen) setMovePickerSourcePath(null);
-	}, [paletteOpen]);
-
 	const openPaletteShortcuts = useMemo<Shortcut[]>(
 		() => [
 			{ meta: true, key: "k" },
@@ -791,41 +803,32 @@ export function AppShell() {
 		[],
 	);
 	const openCommandPalette = useCallback(() => {
-		setPaletteInitialTab("commands");
-		setPaletteInitialQuery("");
-		setPaletteOpen(true);
+		openPalette("commands");
 		void updateOnboardingSettings({ usedCommandPalette: true });
-	}, [setPaletteOpen]);
+	}, [openPalette]);
 	const openSearchPalette = useCallback(() => {
 		if (!spacePath) {
 			openCommandPalette();
 			return;
 		}
-		setPaletteInitialTab("search");
-		setPaletteInitialQuery("");
-		setPaletteOpen(true);
-	}, [setPaletteOpen, spacePath, openCommandPalette]);
+		openPalette("search");
+	}, [openCommandPalette, openPalette, spacePath]);
 	const openAllDocsTab = useCallback(() => {
-		setOpenAllDocsRequest((prev) => prev + 1);
-	}, []);
+		openSpecialTab(ALL_DOCS_TAB_ID);
+	}, [openSpecialTab]);
 	const openTemplatesTab = useCallback(() => {
-		setOpenTemplatesRequest((prev) => prev + 1);
-	}, []);
-	const consumeOpenAllDocsRequest = useCallback(() => {
-		setOpenAllDocsRequest(0);
-	}, []);
-	const consumeOpenTemplatesRequest = useCallback(() => {
-		setOpenTemplatesRequest(0);
-	}, []);
+		openSpecialTab(TEMPLATES_TAB_ID);
+	}, [openSpecialTab]);
 	const openCalendarTab = useCallback(() => {
-		setOpenCalendarRequest((prev) => prev + 1);
-	}, []);
-	const openDatabasesTab = useCallback((databaseId?: string | null) => {
-		setOpenDatabasesRequest((prev) => ({
-			nonce: prev.nonce + 1,
-			databaseId: databaseId ?? null,
-		}));
-	}, []);
+		openSpecialTab(CALENDAR_TAB_ID);
+	}, [openSpecialTab]);
+	const openDatabasesTab = useCallback(
+		(databaseId?: string | null) => {
+			setOpenDatabasesId(databaseId ?? null);
+			openSpecialTab(DATABASES_TAB_ID);
+		},
+		[openSpecialTab],
+	);
 	const createDatabaseAndOpen = useCallback(async () => {
 		try {
 			const summaries = await invoke("databases_list");
@@ -1086,9 +1089,7 @@ export function AppShell() {
 		onRevealSpace: handleRevealSpaceFromMenu,
 		onOpenSpaceSettings: handleOpenSpaceSettings,
 		onGitSyncNow: () => {
-			void gitSync.syncNow().then(() => {
-				toast.success("Git Sync completed.");
-			}, handleGitSyncFailure);
+			void gitSync.syncNow().catch(handleGitSyncFailure);
 		},
 		onOpenGitSettings: gitSync.openGitSettings,
 		onToggleAiPane: handleToggleAiPaneFromMenu,
@@ -1110,10 +1111,7 @@ export function AppShell() {
 					category: "Move Destination",
 					action: async () => {
 						const n = await fileTree.onMovePath(movePickerSourcePath, "");
-						if (n) {
-							setMovePickerSourcePath(null);
-							await openWorkspaceFile(n);
-						}
+						if (n) await openWorkspaceFile(n);
 					},
 				},
 				...moveTargetDirs.map((dir) => ({
@@ -1125,10 +1123,7 @@ export function AppShell() {
 					category: "Move Destination",
 					action: async () => {
 						const n = await fileTree.onMovePath(movePickerSourcePath, dir);
-						if (n) {
-							setMovePickerSourcePath(null);
-							await openWorkspaceFile(n);
-						}
+						if (n) await openWorkspaceFile(n);
 					},
 				})),
 			];
@@ -1252,7 +1247,6 @@ export function AppShell() {
 				action: async () => {
 					try {
 						await gitSync.syncNow();
-						toast.success("Git Sync completed.");
 					} catch (error) {
 						handleGitSyncFailure(error);
 					}
@@ -1341,7 +1335,7 @@ export function AppShell() {
 				shortcut: { meta: true, key: "t" },
 				enabled: Boolean(spacePath),
 				allowInEditable: true,
-				action: () => setOpenBlankTabRequest((prev) => prev + 1),
+				action: openBlankTab,
 			},
 			{
 				id: "new-database",
@@ -1429,6 +1423,25 @@ export function AppShell() {
 				enabled: Boolean(spacePath),
 				allowInEditable: true,
 				action: () => void saveCurrentEditor(),
+			},
+			{
+				id: "open-local-graph",
+				label: "Open local graph",
+				icon: (
+					<HugeiconsIcon
+						icon={FlowConnectionIcon}
+						size={16}
+						strokeWidth={0.9}
+					/>
+				),
+				category: "File Operations",
+				shortcut: { meta: true, shift: true, key: "g" },
+				enabled: Boolean(activeMarkdownTabPath),
+				allowInEditable: true,
+				action: () => {
+					if (!activeMarkdownTabPath) return;
+					dispatchOpenLocalGraph({ path: activeMarkdownTabPath });
+				},
 			},
 			{
 				id: "copy-note-markdown",
@@ -1540,9 +1553,8 @@ export function AppShell() {
 				action: () => {
 					if (!activeFilePath) return;
 					setMovePickerSourcePath(activeFilePath);
-					setPaletteInitialTab("commands");
-					setPaletteInitialQuery("");
-					setPaletteOpen(true);
+					void refreshMoveTargetDirs(activeFilePath);
+					openPalette("commands");
 				},
 			},
 		];
@@ -1568,7 +1580,6 @@ export function AppShell() {
 		handleCreateFromTemplateFromMenu,
 		setAiPanelOpen,
 		togglePinnedFile,
-		setPaletteOpen,
 		setActivePreviewPath,
 		setSidebarCollapsed,
 		setZenModeActive,
@@ -1581,6 +1592,7 @@ export function AppShell() {
 		openCalendarTab,
 		openDatabasesTab,
 		openGettingStarted,
+		openBlankTab,
 		openWorkspaceFile,
 		gitSync,
 		moveTargetDirs,
@@ -1588,6 +1600,8 @@ export function AppShell() {
 		openSpecialTab,
 		setError,
 		openSettings,
+		refreshMoveTargetDirs,
+		openPalette,
 	]);
 
 	useCommandShortcuts({
@@ -1595,7 +1609,7 @@ export function AppShell() {
 		paletteOpen,
 		onOpenPalette: openCommandPalette,
 		onOpenPaletteSearch: openSearchPalette,
-		onClosePalette: () => setPaletteOpen(false),
+		onClosePalette: closePalette,
 		openPaletteShortcuts,
 		openSearchShortcuts,
 	});
@@ -1648,15 +1662,6 @@ export function AppShell() {
 				sidebarCollapsed={sidebarCollapsed}
 				onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
 				gitSyncStatus={gitSync.status}
-				onGitSyncNow={() => {
-					void gitSync
-						.syncNow()
-						.then(() => {
-							toast.success("Git Sync completed.");
-						})
-						.catch(handleGitSyncFailure);
-				}}
-				onOpenGitSettings={gitSync.openGitSettings}
 				onOpenSettings={() => openSettings()}
 				onOpenAllDocs={openAllDocsTab}
 				onOpenCalendar={openCalendarTab}
@@ -1700,15 +1705,8 @@ export function AppShell() {
 				reorderTabs={reorderTabs}
 				openBlankTab={openBlankTab}
 				replaceActiveTabWithBlank={replaceActiveTabWithBlank}
-				openSpecialTab={openSpecialTab}
-				openAllDocsRequest={openAllDocsRequest}
-				onConsumeOpenAllDocsRequest={consumeOpenAllDocsRequest}
-				openTemplatesRequest={openTemplatesRequest}
-				onConsumeOpenTemplatesRequest={consumeOpenTemplatesRequest}
-				openCalendarRequest={openCalendarRequest}
-				openDatabasesRequest={openDatabasesRequest}
-				openBlankTabRequest={openBlankTabRequest}
 				showGettingStartedRequest={showGettingStartedRequest}
+				openDatabasesId={openDatabasesId}
 				dailyNoteSetupNoticeRequest={dailyNoteSetupNoticeRequest}
 				onOpenDailyNotesSettings={() => openSettings("general")}
 			/>
@@ -1735,12 +1733,12 @@ export function AppShell() {
 			{commandPaletteMounted ? (
 				<Suspense fallback={null}>
 					<LazyCommandPalette
-						key={`${paletteInitialTab}:${paletteInitialQuery}`}
+						key={`${commandPaletteSessionId}:${paletteInitialTab}:${paletteInitialQuery}`}
 						open={paletteOpen}
 						initialTab={paletteInitialTab}
 						initialQuery={paletteInitialQuery}
 						commands={commands}
-						onClose={() => setPaletteOpen(false)}
+						onClose={closePalette}
 						spacePath={spacePath}
 						onSelectSearchResult={(id) => void openWorkspaceFile(id)}
 					/>

@@ -20,7 +20,8 @@ use super::tasks::{
     write_note, IndexedTask, NoteTaskSummary, NoteTaskSummaryItem, TaskBucket,
 };
 use super::types::{
-    BacklinkItem, IndexRebuildResult, PersonCount, SearchResult, TagCount, TaskDateInfo,
+    BacklinkItem, IndexRebuildResult, LocalGraphEdge, LocalGraphNode, LocalNoteGraph, PersonCount,
+    SearchResult, TagCount, TaskDateInfo,
 };
 use crate::index::{people_mentions_as_tags_enabled, set_people_mentions_as_tags_enabled};
 
@@ -1256,4 +1257,202 @@ pub async fn backlinks(
     })
     .await
     .map_err(|e| e.to_string())?
+}
+
+fn local_note_graph_for_conn(
+    conn: &rusqlite::Connection,
+    note_id: &str,
+) -> Result<LocalNoteGraph, String> {
+    let center = conn
+        .query_row(
+            "SELECT id, title FROM notes WHERE id = ? LIMIT 1",
+            [note_id],
+            |row| {
+                Ok(LocalGraphNode {
+                    id: row.get(0)?,
+                    title: row.get(1)?,
+                    is_center: true,
+                })
+            },
+        )
+        .map_err(|e| e.to_string())?;
+
+    let mut nodes_by_id = HashMap::new();
+    nodes_by_id.insert(center.id.clone(), LocalGraphNode { ..center.clone() });
+
+    let mut neighbor_stmt = conn
+        .prepare(
+            "SELECT DISTINCT n.id, n.title
+             FROM notes n
+             JOIN (
+                SELECT l.to_id AS note_id
+                FROM links l
+                WHERE l.from_id = ? AND l.to_id IS NOT NULL
+                UNION
+                SELECT l.from_id AS note_id
+                FROM links l
+                WHERE l.to_id = ?
+             ) related ON related.note_id = n.id
+             WHERE n.id <> ?",
+        )
+        .map_err(|e| e.to_string())?;
+    let mut neighbor_rows = neighbor_stmt
+        .query(rusqlite::params![note_id, note_id, note_id])
+        .map_err(|e| e.to_string())?;
+    while let Some(row) = neighbor_rows.next().map_err(|e| e.to_string())? {
+        let id: String = row.get(0).map_err(|e| e.to_string())?;
+        let title: String = row.get(1).map_err(|e| e.to_string())?;
+        nodes_by_id.insert(
+            id.clone(),
+            LocalGraphNode {
+                id,
+                title,
+                is_center: false,
+            },
+        );
+    }
+
+    let node_ids = nodes_by_id.keys().cloned().collect::<Vec<_>>();
+    let placeholders = std::iter::repeat("?")
+        .take(node_ids.len())
+        .collect::<Vec<_>>()
+        .join(", ");
+    let edge_query = format!(
+        "SELECT DISTINCT from_id, to_id
+         FROM links
+         WHERE to_id IS NOT NULL
+           AND from_id IN ({placeholders})
+           AND to_id IN ({placeholders})
+           AND from_id <> to_id"
+    );
+    let mut edge_stmt = conn.prepare(&edge_query).map_err(|e| e.to_string())?;
+    let params = rusqlite::params_from_iter(node_ids.iter().chain(node_ids.iter()));
+    let mut edge_rows = edge_stmt.query(params).map_err(|e| e.to_string())?;
+    let mut edges = Vec::new();
+    while let Some(row) = edge_rows.next().map_err(|e| e.to_string())? {
+        edges.push(LocalGraphEdge {
+            source: row.get(0).map_err(|e| e.to_string())?,
+            target: row.get(1).map_err(|e| e.to_string())?,
+        });
+    }
+
+    let mut nodes = nodes_by_id.into_values().collect::<Vec<_>>();
+    nodes.sort_by(|left, right| {
+        right
+            .is_center
+            .cmp(&left.is_center)
+            .then_with(|| left.title.to_lowercase().cmp(&right.title.to_lowercase()))
+            .then_with(|| left.id.cmp(&right.id))
+    });
+
+    Ok(LocalNoteGraph { center, nodes, edges })
+}
+
+#[tauri::command(rename_all = "snake_case")]
+pub async fn note_local_graph(
+    state: State<'_, SpaceState>,
+    note_id: String,
+) -> Result<LocalNoteGraph, String> {
+    let root = state.current_root()?;
+    tauri::async_runtime::spawn_blocking(move || -> Result<LocalNoteGraph, String> {
+        let conn = open_db(&root)?;
+        local_note_graph_for_conn(&conn, &note_id)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[cfg(test)]
+mod local_graph_tests {
+    use rusqlite::Connection;
+
+    use crate::index::schema::ensure_schema;
+
+    use super::local_note_graph_for_conn;
+
+    #[test]
+    fn local_note_graph_returns_center_neighbors_and_internal_edges() {
+        let conn = Connection::open_in_memory().unwrap();
+        ensure_schema(&conn).unwrap();
+
+        for (id, title) in [
+            ("notes/center.md", "Center"),
+            ("notes/outgoing.md", "Outgoing"),
+            ("notes/incoming.md", "Incoming"),
+            ("notes/mutual.md", "Mutual"),
+            ("notes/neighbor-link.md", "Neighbor Link"),
+        ] {
+            conn.execute(
+                "INSERT INTO notes(id, title, created, updated, path, etag, preview)
+                 VALUES(?, ?, '2026-01-01', '2026-01-01', ?, ?, '')",
+                rusqlite::params![id, title, id, format!("{id}-etag")],
+            )
+            .unwrap();
+        }
+
+        for (from_id, to_id) in [
+            ("notes/center.md", "notes/outgoing.md"),
+            ("notes/incoming.md", "notes/center.md"),
+            ("notes/center.md", "notes/mutual.md"),
+            ("notes/mutual.md", "notes/center.md"),
+            ("notes/outgoing.md", "notes/neighbor-link.md"),
+        ] {
+            conn.execute(
+                "INSERT INTO links(from_id, to_id, to_title, kind) VALUES(?, ?, NULL, 'note')",
+                rusqlite::params![from_id, to_id],
+            )
+            .unwrap();
+        }
+
+        conn.execute(
+            "INSERT INTO links(from_id, to_id, to_title, kind) VALUES(?, NULL, ?, 'wikilink')",
+            rusqlite::params!["notes/center.md", "Missing Note"],
+        )
+        .unwrap();
+
+        let graph = local_note_graph_for_conn(&conn, "notes/center.md").unwrap();
+        assert_eq!(graph.center.id, "notes/center.md");
+        assert_eq!(graph.nodes.len(), 4);
+
+        let node_ids = graph
+            .nodes
+            .iter()
+            .map(|node| node.id.as_str())
+            .collect::<Vec<_>>();
+        assert!(node_ids.contains(&"notes/center.md"));
+        assert!(node_ids.contains(&"notes/outgoing.md"));
+        assert!(node_ids.contains(&"notes/incoming.md"));
+        assert!(node_ids.contains(&"notes/mutual.md"));
+        assert!(!node_ids.contains(&"notes/neighbor-link.md"));
+
+        let edges = graph
+            .edges
+            .iter()
+            .map(|edge| (edge.source.as_str(), edge.target.as_str()))
+            .collect::<Vec<_>>();
+        assert!(edges.contains(&("notes/center.md", "notes/outgoing.md")));
+        assert!(edges.contains(&("notes/incoming.md", "notes/center.md")));
+        assert!(edges.contains(&("notes/center.md", "notes/mutual.md")));
+        assert!(edges.contains(&("notes/mutual.md", "notes/center.md")));
+        assert!(!edges.contains(&("notes/outgoing.md", "notes/neighbor-link.md")));
+    }
+
+    #[test]
+    fn local_note_graph_handles_single_isolated_note() {
+        let conn = Connection::open_in_memory().unwrap();
+        ensure_schema(&conn).unwrap();
+
+        conn.execute(
+            "INSERT INTO notes(id, title, created, updated, path, etag, preview)
+             VALUES('notes/solo.md', 'Solo', '2026-01-01', '2026-01-01', 'notes/solo.md', 'solo-etag', '')",
+            [],
+        )
+        .unwrap();
+
+        let graph = local_note_graph_for_conn(&conn, "notes/solo.md").unwrap();
+        assert_eq!(graph.center.id, "notes/solo.md");
+        assert_eq!(graph.nodes.len(), 1);
+        assert!(graph.nodes[0].is_center);
+        assert!(graph.edges.is_empty());
+    }
 }

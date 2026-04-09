@@ -30,6 +30,15 @@ export type ThemeMode = "system" | "light" | "dark";
 const THEME_MODES = new Set<ThemeMode>(["system", "light", "dark"]);
 export type AutoUpdateCheckInterval = "3h";
 const AUTO_UPDATE_CHECK_INTERVALS = new Set<AutoUpdateCheckInterval>(["3h"]);
+export type AttachmentStorageMode =
+	| "space-root"
+	| "specific-folder"
+	| "note-folder";
+const ATTACHMENT_STORAGE_MODES = new Set<AttachmentStorageMode>([
+	"space-root",
+	"specific-folder",
+	"note-folder",
+]);
 export type UiAccent =
 	| "neutral"
 	| "cerulean"
@@ -58,6 +67,7 @@ export const DEFAULT_EDITOR_FONT_SIZE = 16;
 const DEFAULT_AI_ENABLED = true;
 export type UiFontFamily = string;
 export type UiFontSize = number;
+const DEFAULT_ATTACHMENT_FOLDER = "assets";
 const AI_ASSISTANT_MODES = new Set<AiAssistantMode>(["chat", "create"]);
 export type TaskSourceMode = "space" | "folders";
 export interface OnboardingSettings {
@@ -88,7 +98,9 @@ export interface DatabaseSettings {
 
 export interface EditorSettings {
 	showCollapsibleHeadings: boolean;
-	pastedMediaFolder: string;
+	colorfulHeadings: boolean;
+	attachmentStorageMode: AttachmentStorageMode;
+	attachmentFolder: string | null;
 	enablePeopleMentionsAsTags: boolean;
 }
 
@@ -103,7 +115,9 @@ export const DEFAULT_DATABASE_SETTINGS: DatabaseSettings = {
 
 export const DEFAULT_EDITOR_SETTINGS: EditorSettings = {
 	showCollapsibleHeadings: false,
-	pastedMediaFolder: "assets",
+	colorfulHeadings: false,
+	attachmentStorageMode: "note-folder",
+	attachmentFolder: DEFAULT_ATTACHMENT_FOLDER,
 	enablePeopleMentionsAsTags: false,
 };
 
@@ -132,6 +146,13 @@ function asAiAssistantMode(value: unknown): AiAssistantMode {
 		AI_ASSISTANT_MODES.has(value as AiAssistantMode)
 		? (value as AiAssistantMode)
 		: "create";
+}
+
+function asAttachmentStorageMode(value: unknown): AttachmentStorageMode {
+	return typeof value === "string" &&
+		ATTACHMENT_STORAGE_MODES.has(value as AttachmentStorageMode)
+		? (value as AttachmentStorageMode)
+		: DEFAULT_EDITOR_SETTINGS.attachmentStorageMode;
 }
 
 function asUiAccent(value: unknown): UiAccent {
@@ -215,7 +236,9 @@ async function emitSettingsUpdated(payload: {
 	};
 	editor?: {
 		showCollapsibleHeadings?: boolean;
-		pastedMediaFolder?: string;
+		colorfulHeadings?: boolean;
+		attachmentStorageMode?: AttachmentStorageMode;
+		attachmentFolder?: string | null;
 		enablePeopleMentionsAsTags?: boolean;
 	};
 	onboarding?: Partial<OnboardingSettings>;
@@ -294,6 +317,9 @@ const KEYS = {
 	showToc: "ui.showToc",
 	showFileTreeFolderCounts: "ui.fileTree.showFolderFileCounts",
 	editorShowCollapsibleHeadings: "editor.showCollapsibleHeadings",
+	editorColorfulHeadings: "editor.colorfulHeadings",
+	editorAttachmentStorageMode: "editor.attachmentStorageMode",
+	editorAttachmentFolder: "editor.attachmentFolder",
 	editorPastedMediaFolder: "editor.pastedMediaFolder",
 	editorEnablePeopleMentionsAsTags: "editor.enablePeopleMentionsAsTags",
 	autoUpdateLastCheckedAt: "updates.lastCheckedAt",
@@ -415,6 +441,9 @@ export async function loadSettings(): Promise<AppSettings> {
 		templatesDailyNoteTemplateRaw,
 		taskSourceRaw,
 		rawEditorShowCollapsibleHeadings,
+		rawEditorColorfulHeadings,
+		rawEditorAttachmentStorageMode,
+		rawEditorAttachmentFolder,
 		rawEditorPastedMediaFolder,
 		rawEditorEnablePeopleMentionsAsTags,
 		rawDatabaseShowColumnColor,
@@ -450,6 +479,9 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<string | null>(KEYS.templatesDailyNoteTemplate),
 		store.get<unknown>(KEYS.taskSource),
 		store.get<boolean | null>(KEYS.editorShowCollapsibleHeadings),
+		store.get<boolean | null>(KEYS.editorColorfulHeadings),
+		store.get<unknown>(KEYS.editorAttachmentStorageMode),
+		store.get<string | null>(KEYS.editorAttachmentFolder),
 		store.get<string | null>(KEYS.editorPastedMediaFolder),
 		store.get<boolean | null>(KEYS.editorEnablePeopleMentionsAsTags),
 		store.get<boolean | null>(KEYS.databaseShowColumnColor),
@@ -511,15 +543,61 @@ export async function loadSettings(): Promise<AppSettings> {
 	const taskSource =
 		normalizeLegacyTaskSourceSetting(taskSourceRaw) ??
 		normalizeTaskSourceSetting(taskSourceRaw);
+	const legacyAttachmentFolder =
+		typeof rawEditorPastedMediaFolder === "string"
+			? normalizeRelPath(rawEditorPastedMediaFolder) ||
+				DEFAULT_ATTACHMENT_FOLDER
+			: null;
+	let attachmentStorageMode: AttachmentStorageMode;
+	let attachmentFolder: string | null;
+	let shouldPersistAttachmentMigration = false;
+	let shouldDeleteLegacyAttachmentFolder = false;
+
+	if (
+		rawEditorAttachmentStorageMode !== null &&
+		rawEditorAttachmentStorageMode !== undefined
+	) {
+		attachmentStorageMode = asAttachmentStorageMode(
+			rawEditorAttachmentStorageMode,
+		);
+		attachmentFolder =
+			typeof rawEditorAttachmentFolder === "string"
+				? normalizeRelPath(rawEditorAttachmentFolder) ||
+					DEFAULT_ATTACHMENT_FOLDER
+				: DEFAULT_EDITOR_SETTINGS.attachmentFolder;
+		shouldDeleteLegacyAttachmentFolder = legacyAttachmentFolder !== null;
+	} else if (legacyAttachmentFolder) {
+		attachmentStorageMode = "specific-folder";
+		attachmentFolder = legacyAttachmentFolder;
+		shouldPersistAttachmentMigration = true;
+		shouldDeleteLegacyAttachmentFolder = true;
+	} else {
+		attachmentStorageMode = DEFAULT_EDITOR_SETTINGS.attachmentStorageMode;
+		attachmentFolder = DEFAULT_EDITOR_SETTINGS.attachmentFolder;
+		shouldPersistAttachmentMigration = true;
+	}
+
+	if (shouldPersistAttachmentMigration) {
+		await store.set(KEYS.editorAttachmentStorageMode, attachmentStorageMode);
+		await store.set(KEYS.editorAttachmentFolder, attachmentFolder);
+	}
+	if (shouldDeleteLegacyAttachmentFolder) {
+		await store.delete(KEYS.editorPastedMediaFolder);
+	}
+	if (shouldPersistAttachmentMigration || shouldDeleteLegacyAttachmentFolder) {
+		await store.save();
+	}
 	const editor: EditorSettings = {
 		showCollapsibleHeadings:
 			typeof rawEditorShowCollapsibleHeadings === "boolean"
 				? rawEditorShowCollapsibleHeadings
 				: DEFAULT_EDITOR_SETTINGS.showCollapsibleHeadings,
-		pastedMediaFolder:
-			typeof rawEditorPastedMediaFolder === "string"
-				? normalizeRelPath(rawEditorPastedMediaFolder)
-				: DEFAULT_EDITOR_SETTINGS.pastedMediaFolder,
+		colorfulHeadings:
+			typeof rawEditorColorfulHeadings === "boolean"
+				? rawEditorColorfulHeadings
+				: DEFAULT_EDITOR_SETTINGS.colorfulHeadings,
+		attachmentStorageMode,
+		attachmentFolder,
 		enablePeopleMentionsAsTags:
 			typeof rawEditorEnablePeopleMentionsAsTags === "boolean"
 				? rawEditorEnablePeopleMentionsAsTags
@@ -761,18 +839,43 @@ export async function setEditorShowCollapsibleHeadings(
 	});
 }
 
-export async function setEditorPastedMediaFolder(
+export async function setEditorColorfulHeadings(
+	enabled: boolean,
+): Promise<void> {
+	const store = await getStore();
+	await store.set(KEYS.editorColorfulHeadings, enabled);
+	await store.save();
+	void emitSettingsUpdated({
+		editor: { colorfulHeadings: enabled },
+	});
+}
+
+export async function setEditorAttachmentStorageMode(
+	mode: AttachmentStorageMode,
+): Promise<void> {
+	const store = await getStore();
+	const nextMode = asAttachmentStorageMode(mode);
+	await store.set(KEYS.editorAttachmentStorageMode, nextMode);
+	await store.delete(KEYS.editorPastedMediaFolder);
+	await store.save();
+	void emitSettingsUpdated({
+		editor: { attachmentStorageMode: nextMode },
+	});
+}
+
+export async function setEditorAttachmentFolder(
 	folder: string | null,
 ): Promise<void> {
 	const store = await getStore();
 	const nextFolder =
 		typeof folder === "string"
-			? normalizeRelPath(folder)
-			: DEFAULT_EDITOR_SETTINGS.pastedMediaFolder;
-	await store.set(KEYS.editorPastedMediaFolder, nextFolder);
+			? normalizeRelPath(folder) || DEFAULT_ATTACHMENT_FOLDER
+			: DEFAULT_ATTACHMENT_FOLDER;
+	await store.set(KEYS.editorAttachmentFolder, nextFolder);
+	await store.delete(KEYS.editorPastedMediaFolder);
 	await store.save();
 	void emitSettingsUpdated({
-		editor: { pastedMediaFolder: nextFolder },
+		editor: { attachmentFolder: nextFolder },
 	});
 }
 

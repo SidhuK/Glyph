@@ -1,6 +1,6 @@
 import "./exportDocument.css";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { buildStandaloneExportHtml } from "../../lib/exportHtml";
 import { parseNotePreview } from "../../lib/notePreview";
 import { NoteExportDocument } from "./NoteExportDocument";
@@ -30,13 +30,21 @@ export function NoteExportHtmlHost({
 	onError,
 }: NoteExportHtmlHostProps) {
 	const exportRootRef = useRef<HTMLElement | null>(null);
-	const [ready, setReady] = useState(false);
 	const startedRef = useRef<string | null>(null);
+	const completeRef = useRef(onComplete);
+	const errorRef = useRef(onError);
+
+	useEffect(() => {
+		completeRef.current = onComplete;
+	}, [onComplete]);
+
+	useEffect(() => {
+		errorRef.current = onError;
+	}, [onError]);
 
 	useEffect(() => {
 		if (!request) return;
 
-		setReady(false);
 		startedRef.current = null;
 
 		const startedAt = Date.now();
@@ -78,14 +86,38 @@ export function NoteExportHtmlHost({
 			clearTimer();
 			if (cancelled) return;
 			if (Date.now() - startedAt > HARD_TIMEOUT_MS) {
-				onError({
+				errorRef.current({
 					id: request.id,
 					message: "Export timed out waiting for the note to render.",
 				});
 				return;
 			}
 			if (isSettled()) {
-				setReady(true);
+				if (startedRef.current === request.id) return;
+				startedRef.current = request.id;
+				try {
+					const exportRoot = exportRootRef.current;
+					if (!exportRoot) {
+						throw new Error("Export view did not finish rendering.");
+					}
+					const { title } = parseNotePreview(request.relPath, request.markdown);
+					completeRef.current({
+						id: request.id,
+						html: buildStandaloneExportHtml(
+							title,
+							exportRoot.outerHTML,
+							"html",
+						),
+					});
+				} catch (error) {
+					errorRef.current({
+						id: request.id,
+						message:
+							error instanceof Error
+								? error.message
+								: "Failed to render HTML export.",
+					});
+				}
 				return;
 			}
 			scheduleCheck();
@@ -111,33 +143,7 @@ export function NoteExportHtmlHost({
 			clearTimer();
 			observer.disconnect();
 		};
-	}, [onError, request]);
-
-	useEffect(() => {
-		if (!request || !ready) return;
-		if (startedRef.current === request.id) return;
-		startedRef.current = request.id;
-
-		try {
-			const exportRoot = exportRootRef.current;
-			if (!exportRoot) {
-				throw new Error("Export view did not finish rendering.");
-			}
-			const { title } = parseNotePreview(request.relPath, request.markdown);
-			onComplete({
-				id: request.id,
-				html: buildStandaloneExportHtml(title, exportRoot.outerHTML, "html"),
-			});
-		} catch (error) {
-			onError({
-				id: request.id,
-				message:
-					error instanceof Error
-						? error.message
-						: "Failed to render HTML export.",
-			});
-		}
-	}, [onComplete, onError, ready, request]);
+	}, [request]);
 
 	if (!request) return null;
 

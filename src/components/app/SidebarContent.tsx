@@ -19,6 +19,7 @@ import {
 } from "../../contexts";
 import { useRecentFiles } from "../../hooks/useRecentFiles";
 import { FILE_TREE_START_RENAME_EVENT } from "../../lib/appEvents";
+import { shouldShowGitSync } from "../../lib/gitSyncUi";
 import { getShortcutTooltip } from "../../lib/shortcuts";
 import { type GitSyncStatus, invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
@@ -29,7 +30,7 @@ import { TagsPane } from "../TagsPane";
 import { directionVariants } from "../ui/animations";
 import { ScrollArea } from "../ui/shadcn/scroll-area";
 import { Tabs, TabsList, TabsTrigger } from "../ui/shadcn/tabs";
-import { WindowChromeGitSyncButton } from "./WindowChromeGitSyncButton";
+import { GitSyncFooterCard } from "./GitSyncFooterCard";
 
 interface SidebarContentProps {
 	onToggleDir: (dirPath: string) => void;
@@ -55,8 +56,6 @@ interface SidebarContentProps {
 	onPrefetchAllDocs: () => void;
 	onPrefetchFile: (relPath: string) => void;
 	gitSyncStatus: GitSyncStatus | null;
-	onGitSyncNow: () => void;
-	onOpenGitSettings: () => void;
 	onOpenSettings: () => void;
 	onOpenAllDocs: () => void;
 }
@@ -81,8 +80,6 @@ export const SidebarContent = memo(function SidebarContent({
 	onPrefetchAllDocs,
 	onPrefetchFile,
 	gitSyncStatus,
-	onGitSyncNow,
-	onOpenGitSettings,
 	onOpenSettings,
 	onOpenAllDocs,
 }: SidebarContentProps) {
@@ -109,8 +106,10 @@ export const SidebarContent = memo(function SidebarContent({
 	);
 	const [allNotesCount, setAllNotesCount] = useState<number | null>(null);
 	const [newMenuOpen, setNewMenuOpen] = useState(false);
+	const [gitExpanded, setGitExpanded] = useState(false);
 	const newMenuRef = useRef<HTMLDivElement | null>(null);
-	const showGitButton = Boolean(gitSyncStatus?.configured);
+	const showGitButton = shouldShowGitSync(gitSyncStatus);
+	const effectiveGitExpanded = showGitButton && gitExpanded;
 
 	const handleStartRename = useCallback((path: string) => {
 		const nextPath = path.trim();
@@ -480,7 +479,7 @@ export const SidebarContent = memo(function SidebarContent({
 			<div className="sidebarFooter">
 				<button
 					type="button"
-					className="sidebarQuickActionBtn sidebarFooterSettingsButton"
+					className={`sidebarQuickActionBtn sidebarFooterSettingsButton ${!showGitButton ? "sidebarFooterSettingsButtonSolo" : ""}`}
 					onClick={onOpenSettings}
 					title="Open settings"
 					data-kind="settings"
@@ -489,10 +488,13 @@ export const SidebarContent = memo(function SidebarContent({
 					<span className="sidebarQuickActionLabel">Settings</span>
 				</button>
 				{showGitButton ? (
-					<WindowChromeGitSyncButton
+					<div className="sidebarFooterSpacer" aria-hidden="true" />
+				) : null}
+				{showGitButton ? (
+					<GitSyncFooterCard
 						status={gitSyncStatus}
-						onSyncNow={onGitSyncNow}
-						onOpenSettings={onOpenGitSettings}
+						expanded={effectiveGitExpanded}
+						onToggleExpanded={() => setGitExpanded((value) => !value)}
 					/>
 				) : null}
 			</div>

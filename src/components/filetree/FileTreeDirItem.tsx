@@ -7,7 +7,7 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, m } from "motion/react";
-import type { MouseEvent, ReactNode } from "react";
+import type { ReactNode } from "react";
 import { memo, useEffect, useRef, useState } from "react";
 import type { FileTreeAppearance, FsEntry } from "../../lib/tauri";
 import { FolderPlus, Trash2 } from "../Icons";
@@ -26,6 +26,64 @@ import {
 	rowVariants,
 	springTransition,
 } from "./fileTreeItemHelpers";
+
+function DirectoryRenameInput({
+	initialName,
+	relPath,
+	onCommitRename,
+	onCancelRename,
+}: {
+	initialName: string;
+	relPath: string;
+	onCommitRename: (dirPath: string, nextName: string) => Promise<void> | void;
+	onCancelRename: () => void;
+}) {
+	const [draftName, setDraftName] = useState(initialName);
+	const renameSubmittedRef = useRef(false);
+	const inputRef = useRef<HTMLInputElement | null>(null);
+
+	useEffect(() => {
+		inputRef.current?.focus();
+		inputRef.current?.select();
+	}, []);
+
+	const commitRename = async () => {
+		if (renameSubmittedRef.current) return;
+		renameSubmittedRef.current = true;
+		await onCommitRename(relPath, draftName);
+	};
+
+	return (
+		<input
+			ref={inputRef}
+			className="fileTreeRenameInput"
+			value={draftName}
+			placeholder="New Folder"
+			onChange={(event) => setDraftName(event.target.value)}
+			onMouseDown={(event) => {
+				event.preventDefault();
+				event.stopPropagation();
+			}}
+			onClick={(event) => {
+				event.preventDefault();
+				event.stopPropagation();
+			}}
+			onBlur={() => void commitRename()}
+			onKeyDown={(event) => {
+				if (event.key === "Enter") {
+					event.preventDefault();
+					void commitRename();
+					return;
+				}
+				if (event.key === "Escape") {
+					event.preventDefault();
+					renameSubmittedRef.current = true;
+					onCancelRename();
+				}
+			}}
+		/>
+	);
+}
 
 interface FileTreeDirItemProps {
 	entry: FsEntry;
@@ -75,58 +133,19 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 			? appearance.color
 			: null;
 	const rowStyle = buildRowStyle(depth, entry.rel_path, customColor);
-	const inputRef = useRef<HTMLInputElement | null>(null);
-	const renameSubmittedRef = useRef(false);
-	const [draftName, setDraftName] = useState(entry.name);
 	const displayDirName = entry.name.trim() || "New Folder";
-
-	useEffect(() => {
-		if (!isRenaming) return;
-		setDraftName(entry.name.trim() || "New Folder");
-		renameSubmittedRef.current = false;
-		window.requestAnimationFrame(() => {
-			inputRef.current?.focus();
-			inputRef.current?.select();
-		});
-	}, [entry.name, isRenaming]);
-
-	const stopInputEvent = (event: MouseEvent<HTMLElement>) => {
-		event.preventDefault();
-		event.stopPropagation();
-	};
-
-	const commitRename = async () => {
-		if (renameSubmittedRef.current) return;
-		renameSubmittedRef.current = true;
-		await onCommitRename(entry.rel_path, draftName);
-	};
 
 	return (
 		<li className="fileTreeItem">
 			<div className="fileTreeRowShell">
 				{isRenaming ? (
 					<div className="fileTreeRow fileTreeRowEditing" style={rowStyle}>
-						<input
-							ref={inputRef}
-							className="fileTreeRenameInput"
-							value={draftName}
-							placeholder="New Folder"
-							onChange={(event) => setDraftName(event.target.value)}
-							onMouseDown={stopInputEvent}
-							onClick={stopInputEvent}
-							onBlur={() => void commitRename()}
-							onKeyDown={(event) => {
-								if (event.key === "Enter") {
-									event.preventDefault();
-									void commitRename();
-									return;
-								}
-								if (event.key === "Escape") {
-									event.preventDefault();
-									renameSubmittedRef.current = true;
-									onCancelRename();
-								}
-							}}
+						<DirectoryRenameInput
+							key={`${entry.rel_path}:${entry.name}`}
+							initialName={entry.name.trim() || "New Folder"}
+							relPath={entry.rel_path}
+							onCommitRename={onCommitRename}
+							onCancelRename={onCancelRename}
 						/>
 					</div>
 				) : (

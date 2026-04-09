@@ -8,11 +8,13 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useState } from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import {
+	type AttachmentStorageMode,
 	getDailyNotesFolder,
 	getWebClippingsFolder,
 	loadSettings,
 	setDailyNotesFolder,
-	setEditorPastedMediaFolder,
+	setEditorAttachmentFolder,
+	setEditorAttachmentStorageMode,
 	setWebClippingsFolder,
 } from "../../lib/settings";
 import { invoke } from "../../lib/tauri";
@@ -25,6 +27,16 @@ import {
 	SettingsValueCard,
 } from "./SettingsScaffold";
 import { TemplateSettingsSections } from "./TemplatesSettingsPane";
+
+const DEFAULT_ATTACHMENT_FOLDER = "assets";
+const ATTACHMENT_LOCATION_OPTIONS: Array<{
+	label: string;
+	value: AttachmentStorageMode;
+}> = [
+	{ label: "Main space folder", value: "space-root" },
+	{ label: "Specific folder", value: "specific-folder" },
+	{ label: "Same folder as note", value: "note-folder" },
+];
 
 async function selectFolderRelativeToSpace(): Promise<string | null> {
 	const { open } = await import("@tauri-apps/plugin-dialog");
@@ -64,9 +76,13 @@ export function SpaceSettingsPane() {
 	);
 	const [dailyNotesLoading, setDailyNotesLoading] = useState(true);
 	const [dailyNotesError, setDailyNotesError] = useState<string | null>(null);
-	const [pastedMediaFolder, setPastedMediaFolderState] = useState("assets");
+	const [attachmentStorageMode, setAttachmentStorageModeState] =
+		useState<AttachmentStorageMode>("note-folder");
+	const [attachmentFolder, setAttachmentFolderState] = useState(
+		DEFAULT_ATTACHMENT_FOLDER,
+	);
 	const [attachmentsLoading, setAttachmentsLoading] = useState(true);
-	const [pastedMediaError, setPastedMediaError] = useState<string | null>(null);
+	const [attachmentError, setAttachmentError] = useState<string | null>(null);
 	const [webClippingsFolder, setWebClippingsFolderState] = useState<
 		string | null
 	>(null);
@@ -109,7 +125,10 @@ export function SpaceSettingsPane() {
 			setCurrentSpacePath(settings.currentSpacePath);
 			setDailyNotesFolderState(dailyFolder);
 			setWebClippingsFolderState(webClipFolder);
-			setPastedMediaFolderState(settings.editor.pastedMediaFolder);
+			setAttachmentStorageModeState(settings.editor.attachmentStorageMode);
+			setAttachmentFolderState(
+				settings.editor.attachmentFolder ?? DEFAULT_ATTACHMENT_FOLDER,
+			);
 		} catch (e) {
 			setError(extractErrorMessage(e));
 		} finally {
@@ -149,27 +168,46 @@ export function SpaceSettingsPane() {
 		}
 	}, []);
 
-	const handleBrowsePastedMediaFolder = useCallback(async () => {
-		setPastedMediaError(null);
+	const handleAttachmentModeChange = useCallback(
+		async (nextMode: AttachmentStorageMode) => {
+			setAttachmentError(null);
+			try {
+				await setEditorAttachmentStorageMode(nextMode);
+				setAttachmentStorageModeState(nextMode);
+				if (nextMode === "specific-folder" && !attachmentFolder) {
+					await setEditorAttachmentFolder(DEFAULT_ATTACHMENT_FOLDER);
+					setAttachmentFolderState(DEFAULT_ATTACHMENT_FOLDER);
+				}
+			} catch (cause) {
+				setAttachmentError(
+					cause instanceof Error ? cause.message : "Failed to update setting",
+				);
+			}
+		},
+		[attachmentFolder],
+	);
+
+	const handleBrowseAttachmentFolder = useCallback(async () => {
+		setAttachmentError(null);
 		try {
 			const relativePath = await selectFolderRelativeToSpace();
 			if (relativePath === null) return;
-			await setEditorPastedMediaFolder(relativePath);
-			setPastedMediaFolderState(relativePath);
+			await setEditorAttachmentFolder(relativePath);
+			setAttachmentFolderState(relativePath || DEFAULT_ATTACHMENT_FOLDER);
 		} catch (cause) {
-			setPastedMediaError(
+			setAttachmentError(
 				cause instanceof Error ? cause.message : "Failed to select folder",
 			);
 		}
 	}, []);
 
-	const handleResetPastedMediaFolder = useCallback(async () => {
-		setPastedMediaError(null);
+	const handleResetAttachmentFolder = useCallback(async () => {
+		setAttachmentError(null);
 		try {
-			await setEditorPastedMediaFolder("assets");
-			setPastedMediaFolderState("assets");
+			await setEditorAttachmentFolder(DEFAULT_ATTACHMENT_FOLDER);
+			setAttachmentFolderState(DEFAULT_ATTACHMENT_FOLDER);
 		} catch (cause) {
-			setPastedMediaError(
+			setAttachmentError(
 				cause instanceof Error ? cause.message : "Failed to reset folder",
 			);
 		}
@@ -274,56 +312,82 @@ export function SpaceSettingsPane() {
 					description="Choose where note attachments are stored within the current space."
 				>
 					<SettingsRow
-						label="Folder"
+						label="Location"
 						description="Glyph saves pasted images and other note attachments here, then inserts relative Markdown paths so they still render after reopening the app."
 						stacked
 						interactive={false}
 					>
 						<div className="dailyNotesFolderField">
-							<div className="dailyNotesFolderRow">
-								<SettingsValueCard
-									icon={
-										<HugeiconsIcon
-											icon={FileAttachmentIcon}
-											size={14}
-											strokeWidth={0.9}
-										/>
-									}
-									value={
-										attachmentsLoading
-											? "Loading..."
-											: pastedMediaFolder || "Space root"
-									}
-								/>
-								<div className="settingsActions dailyNotesActions">
-									<Button
-										type="button"
-										variant="outline"
-										size="sm"
-										className="min-w-24 rounded-md border-border bg-background justify-center shadow-none"
-										onClick={handleBrowsePastedMediaFolder}
-										disabled={attachmentsLoading}
-									>
-										<FolderOpen size={14} />
-										Browse
-									</Button>
-									<Button
-										type="button"
-										variant="outline"
-										size="icon-sm"
-										className="rounded-md border-border bg-background justify-center shadow-none"
-										onClick={handleResetPastedMediaFolder}
-										disabled={attachmentsLoading}
-										aria-label="Reset attachments folder"
-										title="Reset attachments folder"
-									>
-										<Trash2 size={14} />
-									</Button>
-								</div>
+							<select
+								aria-label="Attachment location"
+								className="h-9 rounded-md border border-border bg-background px-3 text-sm shadow-none outline-none"
+								value={attachmentStorageMode}
+								onChange={(event) => {
+									void handleAttachmentModeChange(
+										event.target.value as AttachmentStorageMode,
+									);
+								}}
+								disabled={attachmentsLoading}
+							>
+								{ATTACHMENT_LOCATION_OPTIONS.map((option) => (
+									<option key={option.value} value={option.value}>
+										{option.label}
+									</option>
+								))}
+							</select>
+							<div className="settingsHelp">
+								{attachmentStorageMode === "space-root"
+									? "Attachments are saved directly in the top level of the current space."
+									: attachmentStorageMode === "note-folder"
+										? "Attachments are saved beside the note that receives them."
+										: "Choose a folder inside the current space for all note attachments."}
 							</div>
-							{pastedMediaError ? (
+							{attachmentStorageMode === "specific-folder" ? (
+								<div className="dailyNotesFolderRow">
+									<SettingsValueCard
+										icon={
+											<HugeiconsIcon
+												icon={FileAttachmentIcon}
+												size={14}
+												strokeWidth={0.9}
+											/>
+										}
+										value={
+											attachmentsLoading
+												? "Loading..."
+												: attachmentFolder || DEFAULT_ATTACHMENT_FOLDER
+										}
+									/>
+									<div className="settingsActions dailyNotesActions">
+										<Button
+											type="button"
+											variant="outline"
+											size="sm"
+											className="min-w-24 rounded-md border-border bg-background justify-center shadow-none"
+											onClick={handleBrowseAttachmentFolder}
+											disabled={attachmentsLoading}
+										>
+											<FolderOpen size={14} />
+											Browse
+										</Button>
+										<Button
+											type="button"
+											variant="outline"
+											size="icon-sm"
+											className="rounded-md border-border bg-background justify-center shadow-none"
+											onClick={handleResetAttachmentFolder}
+											disabled={attachmentsLoading}
+											aria-label="Reset attachments folder"
+											title="Reset attachments folder"
+										>
+											<Trash2 size={14} />
+										</Button>
+									</div>
+								</div>
+							) : null}
+							{attachmentError ? (
 								<div className="settingsError dailyNotesError">
-									{pastedMediaError}
+									{attachmentError}
 								</div>
 							) : null}
 						</div>

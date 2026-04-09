@@ -59,12 +59,15 @@ export function DatabaseFolderPicker({
 		useState<FolderBrowserState>(EMPTY_BROWSER_STATE);
 	const { entries, loading, error } = browserState;
 
-	useEffect(() => {
-		if (!open) return;
-		setBrowserPath(value);
-		setQuery("");
-		setRootLoadFailed(false);
-	}, [open, value]);
+	const handleOpenChange = (nextOpen: boolean) => {
+		if (nextOpen) {
+			setBrowserPath(value);
+			setQuery("");
+			setRootLoadFailed(false);
+			setBrowserState(EMPTY_BROWSER_STATE);
+		}
+		setOpen(nextOpen);
+	};
 
 	useEffect(() => {
 		if (!open) return;
@@ -120,7 +123,7 @@ export function DatabaseFolderPicker({
 	const selectedMeta = folderBreadcrumb(value);
 
 	return (
-		<Popover open={open} onOpenChange={setOpen} modal={false}>
+		<Popover open={open} onOpenChange={handleOpenChange} modal={false}>
 			<PopoverTrigger asChild>
 				<Button
 					type="button"

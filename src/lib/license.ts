@@ -77,11 +77,8 @@ export function useLicenseStatus(reloadOnWindowFocus = true): {
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState("");
 	const focusUnlistenRef = useRef<(() => void) | null>(null);
-	const statusRef = useRef<LicenseStatus | null>(null);
-
-	useEffect(() => {
-		statusRef.current = status;
-	}, [status]);
+	const statusRef = useRef<LicenseStatus | null>(status);
+	statusRef.current = status;
 
 	const reload = useCallback(async () => {
 		setError("");

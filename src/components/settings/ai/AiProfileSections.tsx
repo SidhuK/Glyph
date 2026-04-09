@@ -21,6 +21,27 @@ export function AiProfileSections({
 	onActiveProfileChange,
 	onSaveProfile,
 }: AiProfileSectionsProps) {
+	const profileKey = activeProfile?.id ?? "none";
+
+	return (
+		<AiProfileSectionsBody
+			key={profileKey}
+			profiles={profiles}
+			activeProfileId={activeProfileId}
+			activeProfile={activeProfile}
+			onActiveProfileChange={onActiveProfileChange}
+			onSaveProfile={onSaveProfile}
+		/>
+	);
+}
+
+function AiProfileSectionsBody({
+	profiles,
+	activeProfileId,
+	activeProfile,
+	onActiveProfileChange,
+	onSaveProfile,
+}: AiProfileSectionsProps) {
 	const [profileDraft, setProfileDraft] = useState<AiProfile | null>(
 		activeProfile ? structuredClone(activeProfile) : null,
 	);
@@ -28,6 +49,16 @@ export function AiProfileSections({
 		null,
 	);
 	const lastSavePromiseRef = useRef<Promise<void>>(Promise.resolve());
+	const previousActiveProfileIdRef = useRef(activeProfile?.id ?? null);
+
+	useEffect(() => {
+		const nextProfileId = activeProfile?.id ?? null;
+		if (previousActiveProfileIdRef.current === nextProfileId) return;
+		previousActiveProfileIdRef.current = nextProfileId;
+		setProfileDraft(activeProfile ? structuredClone(activeProfile) : null);
+		setAvailableModels(null);
+		lastSavePromiseRef.current = Promise.resolve();
+	}, [activeProfile]);
 
 	const { apiState, setApiKeyDraft, handleSetApiKey, handleClearApiKey } =
 		useApiKeySettings(activeProfileId);
@@ -43,11 +74,6 @@ export function AiProfileSections({
 		() => profileDraft?.provider !== "codex_chatgpt",
 		[profileDraft?.provider],
 	);
-
-	useEffect(() => {
-		setProfileDraft(activeProfile ? structuredClone(activeProfile) : null);
-		setAvailableModels(null);
-	}, [activeProfile]);
 
 	const updateDraft = useCallback((updater: (prev: AiProfile) => AiProfile) => {
 		setProfileDraft((prev) => (prev ? updater(prev) : prev));

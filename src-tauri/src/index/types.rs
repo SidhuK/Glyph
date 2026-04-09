@@ -20,6 +20,26 @@ pub struct BacklinkItem {
     pub updated: String,
 }
 
+#[derive(Clone, Serialize)]
+pub struct LocalGraphNode {
+    pub id: String,
+    pub title: String,
+    pub is_center: bool,
+}
+
+#[derive(Serialize)]
+pub struct LocalGraphEdge {
+    pub source: String,
+    pub target: String,
+}
+
+#[derive(Serialize)]
+pub struct LocalNoteGraph {
+    pub center: LocalGraphNode,
+    pub nodes: Vec<LocalGraphNode>,
+    pub edges: Vec<LocalGraphEdge>,
+}
+
 #[derive(Serialize)]
 pub struct TagCount {
     pub tag: String,

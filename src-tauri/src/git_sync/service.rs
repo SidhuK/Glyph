@@ -1,4 +1,4 @@
-use std::path::Path;
+use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use std::time::{SystemTime, UNIX_EPOCH};
 
@@ -35,7 +35,7 @@ impl Default for RuntimeStatus {
     }
 }
 
-#[derive(Default)]
+#[derive(Clone, Default)]
 pub struct GitSyncState {
     runtime: Arc<Mutex<RuntimeStatus>>,
 }
@@ -74,7 +74,7 @@ fn emit_status(app: &AppHandle, status: &GitSyncStatus) {
 fn set_runtime(
     app: &AppHandle,
     git_state: &GitSyncState,
-    space_state: &SpaceState,
+    space_root: &Path,
     phase: GitSyncPhase,
     is_syncing: bool,
     message: Option<String>,
@@ -88,7 +88,7 @@ fn set_runtime(
         runtime.is_syncing = is_syncing;
         runtime.message = message;
     }
-    let status = read_status_internal(git_state, space_state)?;
+    let status = read_status_for_root(git_state, Some(space_root))?;
     emit_status(app, &status);
     Ok(())
 }
@@ -256,30 +256,29 @@ fn auto_adopt_if_needed(
     }
 }
 
-pub fn read_status_internal(
+fn read_status_for_root(
     git_state: &GitSyncState,
-    space_state: &SpaceState,
+    space_root: Option<&Path>,
 ) -> Result<GitSyncStatus, String> {
-    let space_root = match space_state.current_root() {
-        Ok(root) => root,
-        Err(_) => return Ok(GitSyncStatus::default()),
+    let Some(space_root) = space_root else {
+        return Ok(GitSyncStatus::default());
     };
     let git_installed = git_is_installed();
     let inspection = if git_installed {
-        inspect_repo(&space_root)?
+        inspect_repo(space_root)?
     } else {
         RepoInspection::None
     };
     let mut status_load_error = None;
     let config = if git_installed {
-        let existing = match load_store(&space_root) {
+        let existing = match load_store(space_root) {
             Ok(config) => config,
             Err(error) => {
                 status_load_error = Some(error);
                 None
             }
         };
-        auto_adopt_if_needed(&space_root, &inspection, existing)?
+        auto_adopt_if_needed(space_root, &inspection, existing)?
     } else {
         None
     };
@@ -289,7 +288,7 @@ pub fn read_status_internal(
         .map_err(|_| "git sync state poisoned".to_string())?
         .clone();
     let health = if git_installed {
-        inspect_repo_health(&space_root, &inspection, config.as_ref())?
+        inspect_repo_health(space_root, &inspection, config.as_ref())?
     } else {
         RepoHealth::default()
     };
@@ -298,6 +297,17 @@ pub fn read_status_internal(
         status.last_error = status_load_error;
     }
     Ok(status)
+}
+
+pub fn read_status_internal(
+    git_state: &GitSyncState,
+    space_state: &SpaceState,
+) -> Result<GitSyncStatus, String> {
+    let space_root = match space_state.current_root() {
+        Ok(root) => root,
+        Err(_) => return Ok(GitSyncStatus::default()),
+    };
+    read_status_for_root(git_state, Some(&space_root))
 }
 
 fn load_config(space_root: &Path) -> Result<GitSyncConfig, String> {
@@ -362,7 +372,7 @@ pub fn run_git_sync(
     if !git_is_installed() {
         return Err("Git is not installed on this system.".to_string());
     }
-    let mut config = load_config(&space_root)?;
+    let config = load_config(&space_root)?;
     if request.mode == GitSyncRunMode::Auto && (!config.enabled || config.paused) {
         return read_status_internal(git_state, space_state);
     }
@@ -373,17 +383,35 @@ pub fn run_git_sync(
             .lock()
             .map_err(|_| "git sync state poisoned".to_string())?;
         if runtime.is_syncing {
-            return Err("A Git Sync is already in progress.".to_string());
+            return read_status_for_root(git_state, Some(&space_root));
         }
         runtime.is_syncing = true;
         runtime.phase = GitSyncPhase::Fetching;
         runtime.message = Some("Fetching remote changes".to_string());
     }
-    let _sync_guard = SyncResetGuard::new(Arc::clone(&git_state.runtime));
-    let initial = read_status_internal(git_state, space_state)?;
+    let initial = read_status_for_root(git_state, Some(&space_root))?;
     emit_status(&app, &initial);
 
+    let git_state = git_state.clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        if let Err(error) = run_git_sync_background(app, git_state, space_root, request) {
+            tracing::error!("git sync background task failed: {error}");
+        }
+    });
+
+    Ok(initial)
+}
+
+fn run_git_sync_background(
+    app: AppHandle,
+    git_state: GitSyncState,
+    space_root: PathBuf,
+    request: GitSyncRunRequest,
+) -> Result<(), String> {
+    let _sync_guard = SyncResetGuard::new(Arc::clone(&git_state.runtime));
+    let mut config = load_config(&space_root)?;
     let is_auto = request.mode == GitSyncRunMode::Auto;
+
     let run_result = (|| -> Result<(), String> {
         let inspection = inspect_repo(&space_root)?;
         match &inspection {
@@ -417,8 +445,8 @@ pub fn run_git_sync(
 
         set_runtime(
             &app,
-            git_state,
-            space_state,
+            &git_state,
+            &space_root,
             GitSyncPhase::Fetching,
             true,
             Some("Fetching remote changes".to_string()),
@@ -427,8 +455,8 @@ pub fn run_git_sync(
 
         set_runtime(
             &app,
-            git_state,
-            space_state,
+            &git_state,
+            &space_root,
             GitSyncPhase::Committing,
             true,
             Some("Preparing local snapshot".to_string()),
@@ -441,8 +469,8 @@ pub fn run_git_sync(
         if remote_branch_exists(&space_root, remote_name, &branch)? {
             set_runtime(
                 &app,
-                git_state,
-                space_state,
+                &git_state,
+                &space_root,
                 GitSyncPhase::Pulling,
                 true,
                 Some("Merging remote changes".to_string()),
@@ -460,8 +488,8 @@ pub fn run_git_sync(
 
         set_runtime(
             &app,
-            git_state,
-            space_state,
+            &git_state,
+            &space_root,
             GitSyncPhase::Pushing,
             true,
             Some("Pushing to remote".to_string()),
@@ -480,15 +508,15 @@ pub fn run_git_sync(
             save_store(&space_root, &config)?;
             let _ = set_runtime(
                 &app,
-                git_state,
-                space_state,
+                &git_state,
+                &space_root,
                 GitSyncPhase::Success,
                 false,
                 Some("Sync complete".to_string()),
             );
-            let status = read_status_internal(git_state, space_state)?;
+            let status = read_status_for_root(&git_state, Some(&space_root))?;
             emit_status(&app, &status);
-            Ok(status)
+            Ok(())
         }
         Err(error) => {
             config.last_error = Some(error.clone());
@@ -502,8 +530,8 @@ pub fn run_git_sync(
             save_store(&space_root, &config)?;
             let _ = set_runtime(
                 &app,
-                git_state,
-                space_state,
+                &git_state,
+                &space_root,
                 GitSyncPhase::Error,
                 false,
                 Some(error.clone()),

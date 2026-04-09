@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { DatabaseConfig, DatabaseFilter } from "../../lib/database/types";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { Button } from "../ui/shadcn/button";
@@ -129,9 +129,11 @@ export function DatabaseSourceDropdown({
 	const [filterError, setFilterError] = useState("");
 	const filterKeyCounterRef = useRef(0);
 	const previousFilterKeyEntriesRef = useRef<FilterKeyEntry[]>([]);
-	const [filterUiKeys, setFilterUiKeys] = useState<string[]>([]);
+	const filterSyncSignature = config.filters
+		.map(filterSignature)
+		.join("\u0001");
 
-	const syncFilterUiKeys = useCallback(
+	const deriveFilterUiKeys = useCallback(
 		(filters: DatabaseFilter[], preferredKeys?: string[]) => {
 			const nextEntries = (() => {
 				if (preferredKeys && preferredKeys.length === filters.length) {
@@ -164,15 +166,22 @@ export function DatabaseSourceDropdown({
 
 			const nextKeys = nextEntries.map((entry) => entry.key);
 			previousFilterKeyEntriesRef.current = nextEntries;
-			setFilterUiKeys(nextKeys);
 			return nextKeys;
 		},
 		[],
 	);
+	const [filterUiKeys, setFilterUiKeys] = useState<string[]>(() =>
+		deriveFilterUiKeys(config.filters),
+	);
+	const filterUiKeySource = useMemo(
+		() => ({ filters: config.filters, signature: filterSyncSignature }),
+		[config.filters, filterSyncSignature],
+	);
 
 	useEffect(() => {
-		syncFilterUiKeys(config.filters);
-	}, [config.filters, syncFilterUiKeys]);
+		void filterUiKeySource.signature;
+		setFilterUiKeys(deriveFilterUiKeys(filterUiKeySource.filters));
+	}, [deriveFilterUiKeys, filterUiKeySource]);
 
 	const handleSave = async (patch: Partial<DatabaseConfig["source"]>) => {
 		await onChangeConfig({
@@ -206,7 +215,7 @@ export function DatabaseSourceDropdown({
 				...config,
 				filters: nextFilters,
 			});
-			syncFilterUiKeys(nextFilters, nextKeys);
+			setFilterUiKeys(deriveFilterUiKeys(nextFilters, nextKeys));
 		} catch (cause) {
 			const message = extractErrorMessage(cause);
 			console.error("Failed to update database filters", cause);

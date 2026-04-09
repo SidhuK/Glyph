@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 import { useFileTreeContext } from "../../contexts";
 import {
 	databaseCellValueFromRow,
@@ -40,29 +40,42 @@ function listDraft(row: DatabaseRow, column: DatabaseColumn): string {
 	return value.value_list.join(", ");
 }
 
-export function DatabaseCell({
+interface DatabaseCellEditorProps extends DatabaseCellProps {
+	onClose: () => void;
+}
+
+function DatabaseCellEditor({
 	row,
 	column,
 	laneColors = EMPTY_LANE_COLORS,
-	onOpenNote,
 	onSelectRow,
 	onSave,
-}: DatabaseCellProps) {
+	onClose,
+}: DatabaseCellEditorProps) {
 	const { tags: availableTags } = useFileTreeContext();
-	const editable = isColumnEditable(column);
 	const cellValue = useMemo(
 		() => databaseCellValueFromRow(row, column),
 		[column, row],
 	);
-	const inputRef = useRef<HTMLInputElement | null>(null);
-	const tagInputRef = useRef<HTMLInputElement | null>(null);
-	const tagFieldRef = useRef<HTMLDivElement | null>(null);
-	const [editing, setEditing] = useState(false);
 	const [draft, setDraft] = useState(
 		() => cellValue.value_text ?? listDraft(row, column),
 	);
 	const [tagDraft, setTagDraft] = useState("");
 	const [saveError, setSaveError] = useState("");
+	const tagFieldRef = useRef<HTMLDivElement | null>(null);
+	const tagInputRef = useRef<HTMLInputElement | null>(null);
+	const focusTagInput = useCallback((element: HTMLInputElement | null) => {
+		tagInputRef.current = element;
+		if (element) {
+			element.focus();
+		}
+	}, []);
+	const focusTextInput = useCallback((element: HTMLInputElement | null) => {
+		if (element) {
+			element.focus();
+			element.select();
+		}
+	}, []);
 	const isTagsColumn =
 		column.type === "tags" || column.property_kind === "tags";
 	const toneStyleForValue = (value: string) =>
@@ -72,65 +85,13 @@ export function DatabaseCell({
 		[availableTags, cellValue.value_list, tagDraft],
 	);
 
-	useEffect(() => {
-		setDraft(cellValue.value_text ?? listDraft(row, column));
-		setTagDraft("");
-	}, [cellValue, column, row]);
-
-	useEffect(() => {
-		if (!editing) return;
-		window.requestAnimationFrame(() => {
-			if (isTagsColumn) {
-				tagInputRef.current?.focus();
-				return;
-			}
-			inputRef.current?.focus();
-			inputRef.current?.select();
-		});
-	}, [editing, isTagsColumn]);
-
-	const commit = async () => {
-		if (!editable) return;
-		setEditing(false);
-		if (column.type === "tags" || column.property_kind === "tags") {
-			await onSave(row.note_path, column, {
-				kind: column.property_kind ?? "tags",
-				value_list: draft
-					.split(",")
-					.map((value) => value.trim())
-					.filter(Boolean),
-			});
-			return;
-		}
-		if (
-			column.property_kind === "list" ||
-			column.property_kind === "relation" ||
-			column.property_kind === "multi_select"
-		) {
-			await onSave(row.note_path, column, {
-				kind: column.property_kind,
-				value_list: draft
-					.split(",")
-					.map((value) => value.trim())
-					.filter(Boolean),
-			});
-			return;
-		}
-		await onSave(row.note_path, column, {
-			kind: cellValue.kind,
-			value_text: draft,
-			value_bool: cellValue.value_bool ?? null,
-			value_list: cellValue.value_list,
-		});
-	};
-
 	const handleSelectRow = () => {
 		onSelectRow?.(row.note_path);
 	};
-	const displayText =
-		cellValue.kind === "datetime"
-			? formatDatabaseDateTime(cellValue.value_text)
-			: (cellValue.value_text ?? "");
+
+	const handleTagSaveError = (error: unknown) => {
+		setSaveError(extractErrorMessage(error));
+	};
 
 	const saveTagList = async (values: string[]) => {
 		setSaveError("");
@@ -161,6 +122,233 @@ export function DatabaseCell({
 				(value) => (normalizeTagToken(value) ?? value) !== normalizedTag,
 			),
 		);
+	};
+
+	const commitText = async () => {
+		try {
+			if (column.type === "tags" || column.property_kind === "tags") {
+				await onSave(row.note_path, column, {
+					kind: column.property_kind ?? "tags",
+					value_list: draft
+						.split(",")
+						.map((value) => value.trim())
+						.filter(Boolean),
+				});
+				return;
+			}
+			if (
+				column.property_kind === "list" ||
+				column.property_kind === "relation" ||
+				column.property_kind === "multi_select"
+			) {
+				await onSave(row.note_path, column, {
+					kind: column.property_kind,
+					value_list: draft
+						.split(",")
+						.map((value) => value.trim())
+						.filter(Boolean),
+				});
+				return;
+			}
+			await onSave(row.note_path, column, {
+				kind: cellValue.kind,
+				value_text: draft,
+				value_bool: cellValue.value_bool ?? null,
+				value_list: cellValue.value_list,
+			});
+		} catch (error) {
+			setSaveError(extractErrorMessage(error));
+		} finally {
+			onClose();
+		}
+	};
+
+	if (isTagsColumn) {
+		return (
+			<div className="databaseTagEditor">
+				<div
+					ref={tagFieldRef}
+					role="presentation"
+					className="notePropertyTagField databaseTagField"
+					onMouseDown={(event) => {
+						handleSelectRow();
+						if (event.target !== event.currentTarget) return;
+						event.preventDefault();
+						tagInputRef.current?.focus();
+					}}
+				>
+					{cellValue.value_list.map((value, valueIndex) => (
+						<button
+							key={`${column.id}:${valueIndex}:${value}`}
+							type="button"
+							className="notePropertyToken"
+							style={toneStyleForValue(value)}
+							onMouseDown={(event) => event.preventDefault()}
+							onClick={() => {
+								void removeTag(value).catch(handleTagSaveError);
+							}}
+							title={`Remove ${formatDatabaseTagLabel(value)}`}
+						>
+							<span>{formatDatabaseTagLabel(value)}</span>
+							<X size={10} />
+						</button>
+					))}
+					<input
+						ref={focusTagInput}
+						type="text"
+						className="notePropertyTagInput"
+						value={tagDraft}
+						placeholder={
+							cellValue.value_list.length > 0 ? "" : "Add or choose a tag"
+						}
+						onFocus={handleSelectRow}
+						onChange={(event) => setTagDraft(event.target.value)}
+						onBlur={(event) => {
+							const relatedTarget = event.relatedTarget as Node | null;
+							if (
+								relatedTarget &&
+								tagFieldRef.current?.contains(relatedTarget)
+							) {
+								return;
+							}
+							void (async () => {
+								try {
+									if (tagDraft.trim()) {
+										await addTag(tagDraft);
+									}
+								} catch (error) {
+									console.error("Failed to save database tags on blur", error);
+									setSaveError(extractErrorMessage(error));
+								} finally {
+									onClose();
+								}
+							})();
+						}}
+						onClick={(event) => {
+							handleSelectRow();
+							event.stopPropagation();
+						}}
+						onKeyDown={(event) => {
+							if (event.key === "Enter" || event.key === ",") {
+								event.preventDefault();
+								void addTag(tagDraft).catch(handleTagSaveError);
+								return;
+							}
+							if (event.key === "Escape") {
+								event.preventDefault();
+								onClose();
+								return;
+							}
+							if (event.key !== "Backspace" || tagDraft.length > 0) {
+								return;
+							}
+							const lastTag =
+								cellValue.value_list[cellValue.value_list.length - 1];
+							if (!lastTag) return;
+							event.preventDefault();
+							void removeTag(lastTag).catch(handleTagSaveError);
+						}}
+					/>
+				</div>
+				{tagSuggestions.length > 0 ? (
+					<div className="notePropertySuggestions databaseTagSuggestions">
+						<div className="notePropertySuggestionsLabel">Suggested tags</div>
+						<div className="notePropertySuggestionList">
+							{tagSuggestions.map(({ tag, count }) => (
+								<button
+									key={tag}
+									type="button"
+									className="notePropertySuggestionChip"
+									onMouseDown={async (event) => {
+										event.preventDefault();
+										try {
+											await addTag(tag);
+										} catch (error) {
+											console.error(
+												"Failed to add suggested database tag",
+												error,
+											);
+											setSaveError(extractErrorMessage(error));
+										}
+									}}
+								>
+									<span>{formatDatabaseTagLabel(tag)}</span>
+									<span className="notePropertySuggestionCount mono">
+										{count}
+									</span>
+								</button>
+							))}
+						</div>
+					</div>
+				) : null}
+				{saveError ? (
+					<div className="databaseCellError">{saveError}</div>
+				) : null}
+			</div>
+		);
+	}
+
+	return (
+		<Input
+			ref={focusTextInput}
+			className="databaseCellInput"
+			type={
+				column.property_kind === "number"
+					? "number"
+					: column.property_kind === "url"
+						? "url"
+						: "text"
+			}
+			value={draft}
+			onChange={(event) => setDraft(event.target.value)}
+			onBlur={() => void commitText()}
+			onFocus={(event) => {
+				handleSelectRow();
+				event.currentTarget.select();
+			}}
+			onClick={(event) => {
+				handleSelectRow();
+				event.stopPropagation();
+			}}
+			onDoubleClick={(event) => event.stopPropagation()}
+			onKeyDown={(event) => {
+				if (event.key === "Enter") {
+					event.preventDefault();
+					void commitText();
+				}
+				if (event.key === "Escape") {
+					event.preventDefault();
+					onClose();
+				}
+			}}
+		/>
+	);
+}
+
+export function DatabaseCell({
+	row,
+	column,
+	laneColors = EMPTY_LANE_COLORS,
+	onOpenNote,
+	onSelectRow,
+	onSave,
+}: DatabaseCellProps) {
+	const editable = isColumnEditable(column);
+	const cellValue = useMemo(
+		() => databaseCellValueFromRow(row, column),
+		[column, row],
+	);
+	const [editing, setEditing] = useState(false);
+	const toneStyleForValue = (value: string) =>
+		databaseValueToneStyleForColor(value, laneColors[value] ?? null);
+	const displayText =
+		cellValue.kind === "datetime"
+			? formatDatabaseDateTime(cellValue.value_text)
+			: (cellValue.value_text ?? "");
+	const editorKey = `${row.note_path}:${column.id}:${cellValue.kind}:${cellValue.value_text ?? ""}:${cellValue.value_bool ?? ""}:${cellValue.value_list.join("\u0001")}`;
+
+	const handleSelectRow = () => {
+		onSelectRow?.(row.note_path);
 	};
 
 	if (column.type === "property" && column.property_kind === "checkbox") {
@@ -313,161 +501,16 @@ export function DatabaseCell({
 		);
 	}
 
-	if (isTagsColumn) {
-		return (
-			<div className="databaseTagEditor">
-				<div
-					ref={tagFieldRef}
-					role="presentation"
-					className="notePropertyTagField databaseTagField"
-					onMouseDown={(event) => {
-						handleSelectRow();
-						if (event.target !== event.currentTarget) return;
-						event.preventDefault();
-						tagInputRef.current?.focus();
-					}}
-				>
-					{cellValue.value_list.map((value, valueIndex) => (
-						<button
-							key={`${column.id}:${valueIndex}:${value}`}
-							type="button"
-							className="notePropertyToken"
-							style={toneStyleForValue(value)}
-							onMouseDown={(event) => event.preventDefault()}
-							onClick={() => void removeTag(value)}
-							title={`Remove ${formatDatabaseTagLabel(value)}`}
-						>
-							<span>{formatDatabaseTagLabel(value)}</span>
-							<X size={10} />
-						</button>
-					))}
-					<input
-						ref={tagInputRef}
-						type="text"
-						className="notePropertyTagInput"
-						value={tagDraft}
-						placeholder={
-							cellValue.value_list.length > 0 ? "" : "Add or choose a tag"
-						}
-						onFocus={handleSelectRow}
-						onChange={(event) => setTagDraft(event.target.value)}
-						onBlur={(event) => {
-							const relatedTarget = event.relatedTarget as Node | null;
-							if (
-								relatedTarget &&
-								tagFieldRef.current?.contains(relatedTarget)
-							) {
-								return;
-							}
-							void (async () => {
-								try {
-									if (tagDraft.trim()) {
-										await addTag(tagDraft);
-									}
-								} catch (error) {
-									console.error("Failed to save database tags on blur", error);
-									setSaveError(extractErrorMessage(error));
-								} finally {
-									setEditing(false);
-								}
-							})();
-						}}
-						onClick={(event) => {
-							handleSelectRow();
-							event.stopPropagation();
-						}}
-						onKeyDown={(event) => {
-							if (event.key === "Enter" || event.key === ",") {
-								event.preventDefault();
-								void addTag(tagDraft);
-								return;
-							}
-							if (event.key === "Escape") {
-								event.preventDefault();
-								setTagDraft("");
-								setEditing(false);
-								return;
-							}
-							if (event.key !== "Backspace" || tagDraft.length > 0) {
-								return;
-							}
-							const lastTag =
-								cellValue.value_list[cellValue.value_list.length - 1];
-							if (!lastTag) return;
-							event.preventDefault();
-							void removeTag(lastTag);
-						}}
-					/>
-				</div>
-				{tagSuggestions.length > 0 ? (
-					<div className="notePropertySuggestions databaseTagSuggestions">
-						<div className="notePropertySuggestionsLabel">Suggested tags</div>
-						<div className="notePropertySuggestionList">
-							{tagSuggestions.map(({ tag, count }) => (
-								<button
-									key={tag}
-									type="button"
-									className="notePropertySuggestionChip"
-									onMouseDown={async (event) => {
-										event.preventDefault();
-										try {
-											await addTag(tag);
-										} catch (error) {
-											console.error(
-												"Failed to add suggested database tag",
-												error,
-											);
-											setSaveError(extractErrorMessage(error));
-										}
-									}}
-								>
-									<span>{formatDatabaseTagLabel(tag)}</span>
-									<span className="notePropertySuggestionCount mono">
-										{count}
-									</span>
-								</button>
-							))}
-						</div>
-					</div>
-				) : null}
-				{saveError ? (
-					<div className="databaseCellError">{saveError}</div>
-				) : null}
-			</div>
-		);
-	}
-
 	return (
-		<Input
-			ref={inputRef}
-			className="databaseCellInput"
-			type={
-				column.property_kind === "number"
-					? "number"
-					: column.property_kind === "url"
-						? "url"
-						: "text"
-			}
-			value={draft}
-			onChange={(event) => setDraft(event.target.value)}
-			onBlur={() => void commit()}
-			onFocus={handleSelectRow}
-			onClick={(event) => {
-				handleSelectRow();
-				event.stopPropagation();
-			}}
-			onDoubleClick={(event) => event.stopPropagation()}
-			onKeyDown={(event) => {
-				if (event.key === "Enter") {
-					event.preventDefault();
-					void commit();
-				}
-				if (event.key === "Escape") {
-					event.preventDefault();
-					setDraft(cellValue.value_text ?? listDraft(row, column));
-					setEditing(false);
-				}
-			}}
+		<DatabaseCellEditor
+			key={editorKey}
+			row={row}
+			column={column}
+			laneColors={laneColors}
+			onOpenNote={onOpenNote}
+			onSelectRow={onSelectRow}
+			onSave={onSave}
+			onClose={() => setEditing(false)}
 		/>
 	);
 }

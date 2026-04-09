@@ -160,6 +160,16 @@ export function CalendarPane({
 		[anchorDate, dailyNotesFolder, selectedDate],
 	);
 
+	const setAnchorDateAndPersist = useCallback((nextDate: string) => {
+		writeStorage(ANCHOR_STORAGE_KEY, nextDate);
+		setAnchorDate(nextDate);
+	}, []);
+
+	const setSelectedDateAndPersist = useCallback((nextDate: string) => {
+		writeStorage(SELECTED_STORAGE_KEY, nextDate);
+		setSelectedDate(nextDate);
+	}, []);
+
 	useEffect(() => {
 		const cached = getPrefetchedCalendarData({
 			anchorDate,
@@ -180,31 +190,28 @@ export function CalendarPane({
 		void loadCalendar({ background: true });
 	});
 
-	useEffect(() => {
-		writeStorage(ANCHOR_STORAGE_KEY, anchorDate);
-	}, [anchorDate]);
-
-	useEffect(() => {
-		writeStorage(SELECTED_STORAGE_KEY, selectedDate);
-	}, [selectedDate]);
-
 	const selectedTasks = data?.tasks;
 
 	const goToToday = useCallback(() => {
-		setAnchorDate(today);
-		setSelectedDate(today);
-	}, [today]);
+		setAnchorDateAndPersist(today);
+		setSelectedDateAndPersist(today);
+	}, [setAnchorDateAndPersist, setSelectedDateAndPersist, today]);
 
 	const stepRange = useCallback(
 		(direction: -1 | 1) => {
 			const nextAnchor = shiftMonth(anchorDate, direction);
-			setAnchorDate(nextAnchor);
+			setAnchorDateAndPersist(nextAnchor);
 			const nextRange = buildMonthRange(nextAnchor);
 			if (!nextRange.dates.includes(selectedDate)) {
-				setSelectedDate(nextAnchor);
+				setSelectedDateAndPersist(nextAnchor);
 			}
 		},
-		[anchorDate, selectedDate],
+		[
+			anchorDate,
+			selectedDate,
+			setAnchorDateAndPersist,
+			setSelectedDateAndPersist,
+		],
 	);
 
 	const ensureDailyNoteExistsForTask = useCallback(
@@ -397,15 +404,21 @@ export function CalendarPane({
 	);
 	const todayDateObj = useMemo(() => parseCalendarDate(today), [today]);
 
-	const handleDaySelect = useCallback((date: Date | undefined) => {
-		if (date) {
-			setSelectedDate(formatCalendarDate(date));
-		}
-	}, []);
+	const handleDaySelect = useCallback(
+		(date: Date | undefined) => {
+			if (date) {
+				setSelectedDateAndPersist(formatCalendarDate(date));
+			}
+		},
+		[setSelectedDateAndPersist],
+	);
 
-	const handleMonthChange = useCallback((month: Date) => {
-		setAnchorDate(formatCalendarDate(month));
-	}, []);
+	const handleMonthChange = useCallback(
+		(month: Date) => {
+			setAnchorDateAndPersist(formatCalendarDate(month));
+		},
+		[setAnchorDateAndPersist],
+	);
 
 	/* Dates that have activity (tasks or notes) for dot indicators */
 	const datesWithActivity = useMemo(() => {
@@ -437,15 +450,15 @@ export function CalendarPane({
 		return 0;
 	}, [noteActivity.length]);
 
-	useEffect(() => {
-		if (!selectedRecentNotePath) return;
-		if (
-			noteActivity.some((item) => item.note_path === selectedRecentNotePath)
-		) {
-			return;
-		}
-		setSelectedRecentNotePath(null);
+	const effectiveSelectedRecentNotePath = useMemo(() => {
+		if (!selectedRecentNotePath) return null;
+		return noteActivity.some(
+			(item) => item.note_path === selectedRecentNotePath,
+		)
+			? selectedRecentNotePath
+			: null;
 	}, [noteActivity, selectedRecentNotePath]);
+
 	const handleSelectRecentNote = useCallback((notePath: string) => {
 		setSelectedRecentNotePath(notePath);
 	}, []);
@@ -491,7 +504,7 @@ export function CalendarPane({
 							</div>
 							<RecentNotesBoardStrip
 								notes={noteActivity}
-								selectedNotePath={selectedRecentNotePath}
+								selectedNotePath={effectiveSelectedRecentNotePath}
 								onSelectNote={handleSelectRecentNote}
 								onOpenNote={handleOpenRecentNote}
 								onPrefetchNote={prefetchNote}

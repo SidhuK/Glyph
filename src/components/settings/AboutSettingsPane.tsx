@@ -49,15 +49,6 @@ export function AboutSettingsPane() {
 		return `v${appInfo.version}`;
 	}, [appInfo?.version]);
 
-	useEffect(() => {
-		return () => {
-			if (copyResetTimerRef.current !== undefined) {
-				window.clearTimeout(copyResetTimerRef.current);
-				copyResetTimerRef.current = undefined;
-			}
-		};
-	}, []);
-
 	const scheduleCopyLabelReset = () => {
 		if (copyResetTimerRef.current !== undefined) {
 			window.clearTimeout(copyResetTimerRef.current);

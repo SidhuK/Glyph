@@ -16,8 +16,8 @@ export function useApiKeySettings(activeProfileId: string | null) {
 		keySaved: false,
 		error: "",
 	});
-	const activeProfileIdRef = useRef(activeProfileId);
 	const keySavedTimeoutRef = useRef<number | null>(null);
+	const activeProfileIdRef = useRef(activeProfileId);
 
 	useEffect(() => {
 		activeProfileIdRef.current = activeProfileId;

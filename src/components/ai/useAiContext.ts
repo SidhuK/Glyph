@@ -86,9 +86,8 @@ export async function preloadAiContextIndex(): Promise<AiContextIndexData | null
 	return aiContextIndexPromise;
 }
 
-export function useAiContext() {
+export function useAiContext(contextSearch = "") {
 	const [attachedContext, setAttachedContext] = useState<ContextEntry[]>([]);
-	const [contextSearch, setContextSearch] = useState("");
 	const [folderIndex, setFolderIndex] = useState<FolderEntry[]>(
 		() => aiContextIndexCache?.folders ?? [],
 	);
@@ -242,8 +241,6 @@ export function useAiContext() {
 		addContext,
 		removeContext,
 		resolveMentionsFromInput,
-		contextSearch,
-		setContextSearch,
 		folderIndexError,
 		visibleSuggestions,
 		payloadManifest,

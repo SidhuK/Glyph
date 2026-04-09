@@ -8,8 +8,12 @@ import {
 import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
-import { formatTimestamp } from "../../lib/formatTimestamp";
-import { loadSettings } from "../../lib/settings";
+import {
+	getGitSyncConnectionHelp,
+	getGitSyncPresentation,
+	getGitSyncRepoStateLabel,
+} from "../../lib/gitSyncUi";
+import { type AttachmentStorageMode, loadSettings } from "../../lib/settings";
 import type {
 	GitSyncConfig,
 	GitSyncConflictPolicy,
@@ -36,6 +40,8 @@ const DEFAULT_INCLUSIONS: GitSyncInclusionSettings = {
 export function GitSettingsPane() {
 	const [status, setStatus] = useState<GitSyncStatus | null>(null);
 	const [config, setConfig] = useState<GitSyncConfig | null>(null);
+	const [attachmentStorageMode, setAttachmentStorageMode] =
+		useState<AttachmentStorageMode>("note-folder");
 	const [loading, setLoading] = useState(true);
 	const [error, setError] = useState("");
 	const [busy, setBusy] = useState(false);
@@ -44,10 +50,14 @@ export function GitSettingsPane() {
 		setLoading(true);
 		setError("");
 		try {
-			const nextStatus = await invoke("git_sync_status_read");
-			const nextConfig = await invoke("git_sync_config_read");
+			const [nextStatus, nextConfig, settings] = await Promise.all([
+				invoke("git_sync_status_read"),
+				invoke("git_sync_config_read"),
+				loadSettings(),
+			]);
 			setStatus(nextStatus);
 			setConfig(nextConfig);
+			setAttachmentStorageMode(settings.editor.attachmentStorageMode);
 		} catch (cause) {
 			setError(extractErrorMessage(cause));
 		} finally {
@@ -61,6 +71,11 @@ export function GitSettingsPane() {
 
 	useTauriEvent("git_sync:status", (payload) => {
 		setStatus(payload);
+	});
+	useTauriEvent("settings:updated", (payload) => {
+		if (payload.editor?.attachmentStorageMode) {
+			setAttachmentStorageMode(payload.editor.attachmentStorageMode);
+		}
 	});
 
 	const updatePatch = useCallback(
@@ -97,7 +112,11 @@ export function GitSettingsPane() {
 					mode: "manual",
 					context: {
 						templates_folder: settings.templates.folder,
-						pasted_media_folder: settings.editor.pastedMediaFolder,
+						attachment_storage_mode: settings.editor.attachmentStorageMode,
+						attachment_folder:
+							settings.editor.attachmentStorageMode === "specific-folder"
+								? settings.editor.attachmentFolder
+								: null,
 					},
 				},
 			});
@@ -114,25 +133,19 @@ export function GitSettingsPane() {
 		Boolean(config) &&
 		!status?.unsupported_parent_repo &&
 		status?.repo_detected;
-	const repoStateLabel = useMemo(() => {
-		if (!status?.git_installed) return "Git not installed";
-		if (status.unsupported_parent_repo) return "Nested repo unsupported";
-		if (status.configured) return "Git repo detected";
-		if (status.repo_detected) return "Git repo detected";
-		return "No repo at space root";
-	}, [status]);
-	const connectionHelp = useMemo(() => {
-		if (!status?.git_installed) {
-			return "Install Git to use Git Sync in repo-backed spaces.";
-		}
-		if (status?.unsupported_parent_repo) {
-			return "This space is inside a larger Git repository. Glyph only supports repos rooted exactly at the opened space.";
-		}
-		if (config) {
-			return "Glyph automatically uses the Git repository found at this space root.";
-		}
-		return "Git Sync becomes available automatically when the opened space already contains a .git repository at its root.";
-	}, [config, status]);
+	const repoStateLabel = useMemo(
+		() => getGitSyncRepoStateLabel(status),
+		[status],
+	);
+	const connectionHelp = useMemo(
+		() => getGitSyncConnectionHelp(status, Boolean(config)),
+		[config, status],
+	);
+	const presentation = useMemo(() => getGitSyncPresentation(status), [status]);
+	const attachmentFilteringHelp =
+		attachmentStorageMode === "specific-folder"
+			? "Sync files from the configured attachments folder."
+			: "Attachment-only filtering works only when attachments use Specific folder. In other modes, attachment files follow the broader non-markdown files setting.";
 
 	return (
 		<div className="settingsPane">
@@ -280,90 +293,41 @@ export function GitSettingsPane() {
 						/>
 					</SettingsRow>
 					<SettingsRow
-						label="Manual sync"
-						description="Use this any time you want to force a sync immediately."
-					>
-						<Button
-							type="button"
-							size="sm"
-							onClick={() => void handleSyncNow()}
-							disabled={
-								!gitEnabledForSpace || busy || Boolean(status?.is_syncing)
-							}
-						>
-							Sync Now
-						</Button>
-					</SettingsRow>
-					<SettingsRow
-						label="Status"
-						description="Recent runtime state for this space."
+						label="Actions"
+						description="Use the footer card for live progress and recent sync activity."
 						stacked
-						interactive={false}
 					>
-						<SettingsValueCard
-							icon={
-								<HugeiconsIcon
-									icon={InformationCircleIcon}
-									size={14}
-									strokeWidth={0.9}
-								/>
-							}
-							value={
-								status?.message ??
-								(status?.last_error
-									? status.last_error
-									: status?.configured
-										? "Ready"
-										: "Unavailable")
-							}
-						/>
-						<div className="gitSettingMetaList">
-							<div className="gitSettingMetaRow">
-								<span className="gitSettingMetaKey">Last success</span>
-								<span className="gitSettingMetaValue">
-									{formatTimestamp(status?.last_success_at_ms ?? null)}
-								</span>
+						<div className="gitSettingsActionRow">
+							<Button
+								type="button"
+								size="sm"
+								variant="default"
+								onClick={() => void handleSyncNow()}
+								disabled={
+									!gitEnabledForSpace || busy || !presentation.canSyncNow
+								}
+							>
+								Sync Now
+							</Button>
+							<div className="settingsHelp gitSettingsInlineStatus">
+								{presentation.headline}
 							</div>
-							<div className="gitSettingMetaRow">
-								<span className="gitSettingMetaKey">Last attempt</span>
-								<span className="gitSettingMetaValue">
-									{formatTimestamp(status?.last_attempted_at_ms ?? null)}
-								</span>
-							</div>
+							{presentation.showResume ? (
+								<Button
+									type="button"
+									size="sm"
+									variant="outline"
+									onClick={() => {
+										void updatePatch({ paused: false, enabled: true });
+									}}
+									disabled={busy}
+								>
+									Resume Auto Sync
+								</Button>
+							) : null}
 						</div>
-						<div className="gitSettingMetaList">
-							<div className="gitSettingMetaRow">
-								<span className="gitSettingMetaKey">Local changes</span>
-								<span className="gitSettingMetaValue">
-									{status?.local_change_count ?? 0}
-								</span>
-							</div>
-							<div className="gitSettingMetaRow">
-								<span className="gitSettingMetaKey">Ahead of remote</span>
-								<span className="gitSettingMetaValue">
-									{status?.ahead_count ?? 0}
-								</span>
-							</div>
-							<div className="gitSettingMetaRow">
-								<span className="gitSettingMetaKey">Behind remote</span>
-								<span className="gitSettingMetaValue">
-									{status?.behind_count ?? 0}
-								</span>
-							</div>
-						</div>
-						{status?.preflight_issue ? (
-							<div className="settingsError">{status.preflight_issue}</div>
-						) : null}
-						{status?.conflict_risk ? (
-							<div className="settingsError">
-								Potential conflict risk detected: {status.conflict_risk}
-							</div>
-						) : null}
-						{status?.paused ? (
-							<div className="settingsError">
-								Auto sync is paused after repeated failures. Manual sync remains
-								available.
-							</div>
+						{presentation.issueText ? (
+							<div className="settingsError">{presentation.issueText}</div>
 						) : null}
 					</SettingsRow>
 				</SettingsSection>
@@ -417,7 +381,7 @@ export function GitSettingsPane() {
 					</SettingsRow>
 					<SettingsRow
 						label="Include attachments"
-						description="Sync files from the pasted media folder used for note assets."
+						description={attachmentFilteringHelp}
 					>
 						<SettingsToggle
 							ariaLabel="Include attachments"

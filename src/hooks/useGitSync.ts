@@ -16,6 +16,7 @@ export interface GitSyncController {
 	error: string;
 	refreshStatus: () => Promise<void>;
 	syncNow: () => Promise<GitSyncStatus>;
+	resumeAutoSync: () => Promise<void>;
 	openGitSettings: () => void;
 }
 
@@ -23,7 +24,11 @@ async function buildRunContext() {
 	const settings = await loadSettings();
 	return {
 		templates_folder: settings.templates.folder,
-		pasted_media_folder: settings.editor.pastedMediaFolder,
+		attachment_storage_mode: settings.editor.attachmentStorageMode,
+		attachment_folder:
+			settings.editor.attachmentStorageMode === "specific-folder"
+				? settings.editor.attachmentFolder
+				: null,
 	};
 }
 
@@ -73,6 +78,22 @@ export function useGitSync({
 	);
 
 	const syncNow = useCallback(async () => runSync("manual"), [runSync]);
+
+	const resumeAutoSync = useCallback(async () => {
+		const nextConfig = await invoke("git_sync_config_update", {
+			patch: { paused: false, enabled: true },
+		});
+		setStatus((current) =>
+			current
+				? {
+						...current,
+						paused: false,
+						enabled: nextConfig.enabled,
+						last_error: null,
+					}
+				: current,
+		);
+	}, []);
 
 	const openGitSettings = useCallback(() => {
 		openSettings("git");
@@ -137,6 +158,7 @@ export function useGitSync({
 		error,
 		refreshStatus,
 		syncNow,
+		resumeAutoSync,
 		openGitSettings,
 	};
 }

@@ -35,28 +35,31 @@ export function CommandPalette({
 	spacePath,
 	onSelectSearchResult,
 }: CommandPaletteProps) {
+	const canSearch = spacePath !== null;
 	const [state, setState] = useState<{
 		activeTab: Tab;
 		query: string;
 		selectedIndex: number;
 		selectedId: string | null;
-	}>({
-		activeTab: "commands",
-		query: "",
-		selectedIndex: 0,
-		selectedId: null,
+	}>(() => {
+		const nextTab =
+			initialTab === "search" && !canSearch ? "commands" : initialTab;
+		return {
+			activeTab: nextTab,
+			query: nextTab === "search" ? initialQuery : "",
+			selectedIndex: 0,
+			selectedId: null,
+		};
 	});
 	const [transitionDirection, setTransitionDirection] = useState<
 		"left" | "right"
 	>("left");
 	const { activeTab, query, selectedIndex } = state;
-	const canSearch = spacePath !== null;
 	const inputRef = useRef<HTMLInputElement | null>(null);
-	const previousFocusRef = useRef<Element | null>(null);
 	const listRef = useRef<HTMLDivElement | null>(null);
 
 	const { recentFiles, isSearching, titleMatches, contentMatches, reset } =
-		useCommandSearch(open, activeTab, query, spacePath);
+		useCommandSearch(activeTab, query, spacePath);
 
 	const filtered = useMemo(() => {
 		if (activeTab !== "commands") return [];
@@ -95,25 +98,6 @@ export function CommandPalette({
 		[contentMatches, query, recentFiles, titleMatches],
 	);
 
-	useEffect(() => {
-		if (!open) return;
-		const nextTab =
-			initialTab === "search" && !canSearch ? "commands" : initialTab;
-		previousFocusRef.current = document.activeElement;
-		setState({
-			activeTab: nextTab,
-			query: nextTab === "search" ? initialQuery : "",
-			selectedIndex: 0,
-			selectedId: null,
-		});
-		reset();
-		window.requestAnimationFrame(() => inputRef.current?.focus());
-		return () => {
-			const prev = previousFocusRef.current;
-			if (prev instanceof HTMLElement) prev.focus();
-		};
-	}, [open, initialQuery, initialTab, reset, canSearch]);
-
 	const switchTab = useCallback(
 		(tab: Tab) => {
 			if (tab === "search" && !canSearch) return;
@@ -130,45 +114,28 @@ export function CommandPalette({
 		[initialQuery, reset, canSearch],
 	);
 
-	useEffect(() => {
-		setState((curr) => {
-			if (activeTab !== "search") {
-				const nextIndex = Math.min(
-					curr.selectedIndex,
-					Math.max(itemCount - 1, 0),
-				);
-				if (nextIndex === curr.selectedIndex && curr.selectedId === null) {
-					return curr;
-				}
-				return { ...curr, selectedIndex: nextIndex, selectedId: null };
-			}
-			if (searchEntries.length === 0) {
-				if (curr.selectedIndex === 0 && curr.selectedId === null) return curr;
-				return { ...curr, selectedIndex: 0, selectedId: null };
-			}
-			const preservedIndex =
-				curr.selectedId === null
-					? -1
-					: searchEntries.findIndex((entry) => entry.id === curr.selectedId);
-			const nextIndex =
-				preservedIndex >= 0
-					? preservedIndex
-					: Math.min(curr.selectedIndex, Math.max(searchEntries.length - 1, 0));
-			const nextId = searchEntries[nextIndex]?.id ?? null;
-			return nextIndex === curr.selectedIndex && nextId === curr.selectedId
-				? curr
-				: { ...curr, selectedIndex: nextIndex, selectedId: nextId };
-		});
-	}, [activeTab, itemCount, searchEntries]);
+	const resolvedSelectedIndex = useMemo(() => {
+		if (activeTab !== "search") {
+			return Math.min(selectedIndex, Math.max(itemCount - 1, 0));
+		}
+		if (searchEntries.length === 0) return 0;
+		const preservedIndex =
+			state.selectedId === null
+				? -1
+				: searchEntries.findIndex((entry) => entry.id === state.selectedId);
+		return preservedIndex >= 0
+			? preservedIndex
+			: Math.min(selectedIndex, searchEntries.length - 1);
+	}, [activeTab, itemCount, searchEntries, selectedIndex, state.selectedId]);
 
 	useEffect(() => {
 		if (!listRef.current) return;
 		const selected =
 			listRef.current.querySelector<HTMLElement>(
-				`[data-command-index="${selectedIndex}"], [data-search-index="${selectedIndex}"]`,
+				`[data-command-index="${resolvedSelectedIndex}"], [data-search-index="${resolvedSelectedIndex}"]`,
 			) ?? listRef.current.querySelector<HTMLElement>('[data-selected="true"]');
 		selected?.scrollIntoView({ block: "nearest" });
-	}, [selectedIndex]);
+	}, [resolvedSelectedIndex]);
 
 	const runCommand = useCallback(
 		(index: number) => {
@@ -243,7 +210,7 @@ export function CommandPalette({
 			}
 			if (e.key === "Enter") {
 				e.preventDefault();
-				handleSelect(selectedIndex);
+				handleSelect(resolvedSelectedIndex);
 				return;
 			}
 			if (e.key === "Tab") {
@@ -254,7 +221,7 @@ export function CommandPalette({
 		},
 		[
 			itemCount,
-			selectedIndex,
+			resolvedSelectedIndex,
 			handleSelect,
 			activeTab,
 			switchTab,
@@ -348,7 +315,7 @@ export function CommandPalette({
 							{activeTab === "commands" ? (
 								<CommandList
 									filtered={filtered}
-									selectedIndex={selectedIndex}
+									selectedIndex={resolvedSelectedIndex}
 									onSetSelectedIndex={(index) =>
 										setState((curr) => ({
 											...curr,
@@ -376,7 +343,7 @@ export function CommandPalette({
 										titleMatches={titleMatches}
 										contentMatches={contentMatches}
 										recentFiles={recentFiles}
-										selectedIndex={selectedIndex}
+										selectedIndex={resolvedSelectedIndex}
 										onSetSelectedIndex={(index) =>
 											setState((curr) => ({
 												...curr,

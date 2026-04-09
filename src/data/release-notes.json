@@ -1,6 +1,35 @@
 {
 	"versions": [
 		{
+			"version": "0.2.3",
+			"publishedAt": "2026-04-12",
+			"sections": [
+				{
+					"category": "Added",
+					"items": [
+						"Local graph view for exploring directly connected notes from the current note",
+						"Optional colorful heading colors in Advanced settings for rich note editing"
+					]
+				},
+				{
+					"category": "Improved",
+					"items": [
+						"Improved and Simplified Onboarding",
+						"You can now choose exactly where note attachments live: in the space root, in one dedicated folder, or right beside each note",
+						"Glyph also keeps Git Sync smarter here, only treating attachments as a special tracked folder when you have chosen a dedicated attachment folder",
+						"Git Sync now runs in the background, so Glyph stays responsive while your changes are fetched, merged, and pushed",
+						"Refreshed Git Sync with a cleaner footer control that feels more at home in the app",
+						"Live Git Sync status now updates in real time, so it is easier to see progress and spot issues right away",
+						"Improved app stability and responsiveness by reducing UI state glitches across tabs, command palette, AI, databases, calendar, and file management"
+					]
+				},
+				{
+					"category": "Fixed",
+					"items": ["Smoother, more delightful animations throughout the app"]
+				}
+			]
+		},
+		{
 			"version": "0.2.2",
 			"publishedAt": "2026-04-08",
 			"sections": [

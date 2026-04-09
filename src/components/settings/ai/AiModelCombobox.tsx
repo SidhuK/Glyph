@@ -38,22 +38,15 @@ export function AiModelCombobox({
 	const [modelFetchState, setModelFetchState] = useState<ModelFetchState>(
 		INITIAL_MODEL_FETCH_STATE,
 	);
-	const { models, loading, error, hasAttemptedFetch } = modelFetchState;
-	const modelFetchStateRef = useRef(modelFetchState);
-	const lastSecretConfiguredRef = useRef<boolean | null>(secretConfigured);
-	const onModelsChangeRef = useRef(onModelsChange);
 	const requiresApiKey = providerNeedsApiKey(provider);
 	const canFetchModels = !requiresApiKey || secretConfigured === true;
-	const fetchScope = `${profileId}:${provider}`;
-	const lastFetchScopeRef = useRef(fetchScope);
-
-	useEffect(() => {
-		onModelsChangeRef.current = onModelsChange;
-	}, [onModelsChange]);
-
-	useEffect(() => {
-		modelFetchStateRef.current = modelFetchState;
-	}, [modelFetchState]);
+	const visibleFetchState = canFetchModels
+		? modelFetchState
+		: INITIAL_MODEL_FETCH_STATE;
+	const { models, loading, error } = visibleFetchState;
+	const { hasAttemptedFetch } = modelFetchState;
+	const modelFetchStateRef = useRef(modelFetchState);
+	modelFetchStateRef.current = modelFetchState;
 
 	const fetchModels = useCallback(
 		async (force = false) => {
@@ -70,7 +63,6 @@ export function AiModelCombobox({
 				error: "",
 				hasAttemptedFetch: true,
 			};
-			modelFetchStateRef.current = nextState;
 			setModelFetchState(nextState);
 			try {
 				const result = await invoke("ai_models_list", {
@@ -83,7 +75,7 @@ export function AiModelCombobox({
 					error: "",
 					hasAttemptedFetch: true,
 				});
-				onModelsChangeRef.current?.(result);
+				onModelsChange?.(result);
 			} catch (e) {
 				setModelFetchState({
 					models: null,
@@ -91,18 +83,11 @@ export function AiModelCombobox({
 					error: e instanceof Error ? e.message : String(e),
 					hasAttemptedFetch: true,
 				});
-				onModelsChangeRef.current?.(null);
+				onModelsChange?.(null);
 			}
 		},
-		[profileId, provider],
+		[onModelsChange, profileId, provider],
 	);
-
-	useEffect(() => {
-		if (lastFetchScopeRef.current === fetchScope) return;
-		lastFetchScopeRef.current = fetchScope;
-		setModelFetchState(INITIAL_MODEL_FETCH_STATE);
-		onModelsChangeRef.current?.(null);
-	}, [fetchScope]);
 
 	useEffect(() => {
 		if (!canFetchModels || hasAttemptedFetch) return;
@@ -110,27 +95,16 @@ export function AiModelCombobox({
 	}, [canFetchModels, hasAttemptedFetch, fetchModels]);
 
 	useEffect(() => {
-		if (
-			canFetchModels &&
-			secretConfigured === true &&
-			lastSecretConfiguredRef.current !== true
-		) {
-			void fetchModels(true);
-		}
-		lastSecretConfiguredRef.current = secretConfigured;
-	}, [canFetchModels, secretConfigured, fetchModels]);
+		if (canFetchModels || modelFetchState === INITIAL_MODEL_FETCH_STATE) return;
+		setModelFetchState(INITIAL_MODEL_FETCH_STATE);
+		onModelsChange?.(null);
+	}, [canFetchModels, modelFetchState, onModelsChange]);
 
 	const handleRetry = useCallback(() => {
 		if (!canFetchModels) return;
-		onModelsChangeRef.current?.(null);
+		onModelsChange?.(null);
 		void fetchModels(true);
-	}, [canFetchModels, fetchModels]);
-
-	useEffect(() => {
-		if (canFetchModels || modelFetchState === INITIAL_MODEL_FETCH_STATE) return;
-		setModelFetchState(INITIAL_MODEL_FETCH_STATE);
-		onModelsChangeRef.current?.(null);
-	}, [canFetchModels, modelFetchState]);
+	}, [canFetchModels, fetchModels, onModelsChange]);
 
 	const statusLabel = loading
 		? "Connecting..."

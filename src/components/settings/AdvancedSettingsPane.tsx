@@ -8,6 +8,7 @@ import {
 	setDatabaseShowColumnColor,
 	setDatabaseShowNoteCount,
 	setDelightfulGlyph,
+	setEditorColorfulHeadings,
 	setEditorEnablePeopleMentionsAsTags,
 	setEditorShowCollapsibleHeadings,
 	setShowFileTreeFolderCounts,
@@ -23,6 +24,7 @@ import {
 
 export function AdvancedSettingsPane() {
 	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
+	const [colorfulHeadings, setColorfulHeadings] = useState(false);
 	const [enablePeopleMentionsAsTags, setEnablePeopleMentionsAsTags] =
 		useState(false);
 	const [showToc, setShowTocState] = useState(true);
@@ -36,6 +38,8 @@ export function AdvancedSettingsPane() {
 	const [error, setError] = useState("");
 	const [isSavingShowToc, setIsSavingShowToc] = useState(false);
 	const [isSavingShowCollapsibleHeadings, setIsSavingShowCollapsibleHeadings] =
+		useState(false);
+	const [isSavingColorfulHeadings, setIsSavingColorfulHeadings] =
 		useState(false);
 	const [
 		isSavingEnablePeopleMentionsAsTags,
@@ -58,6 +62,7 @@ export function AdvancedSettingsPane() {
 		try {
 			const settings = await loadSettings();
 			setShowCollapsibleHeadings(settings.editor.showCollapsibleHeadings);
+			setColorfulHeadings(settings.editor.colorfulHeadings);
 			setEnablePeopleMentionsAsTags(settings.editor.enablePeopleMentionsAsTags);
 			setShowTocState(settings.ui.showToc);
 			setAiAssistantModeState(settings.ui.aiAssistantMode);
@@ -77,6 +82,9 @@ export function AdvancedSettingsPane() {
 	useTauriEvent("settings:updated", (payload) => {
 		if (typeof payload.editor?.showCollapsibleHeadings === "boolean") {
 			setShowCollapsibleHeadings(payload.editor.showCollapsibleHeadings);
+		}
+		if (typeof payload.editor?.colorfulHeadings === "boolean") {
+			setColorfulHeadings(payload.editor.colorfulHeadings);
 		}
 		if (typeof payload.editor?.enablePeopleMentionsAsTags === "boolean") {
 			setEnablePeopleMentionsAsTags(payload.editor.enablePeopleMentionsAsTags);
@@ -168,6 +176,30 @@ export function AdvancedSettingsPane() {
 									})
 									.finally(() => {
 										setIsSavingEnablePeopleMentionsAsTags(false);
+									});
+							}}
+						/>
+					</SettingsRow>
+					<SettingsRow
+						label="Colorful headings"
+						description="Use distinct built-in colors for H1-H6 while editing notes."
+					>
+						<SettingsToggle
+							checked={colorfulHeadings}
+							disabled={isSavingColorfulHeadings}
+							ariaLabel="Colorful headings"
+							onCheckedChange={(checked) => {
+								const previous = colorfulHeadings;
+								setError("");
+								setColorfulHeadings(checked);
+								setIsSavingColorfulHeadings(true);
+								void setEditorColorfulHeadings(checked)
+									.catch((cause) => {
+										setColorfulHeadings(previous);
+										setError(extractErrorMessage(cause));
+									})
+									.finally(() => {
+										setIsSavingColorfulHeadings(false);
 									});
 							}}
 						/>

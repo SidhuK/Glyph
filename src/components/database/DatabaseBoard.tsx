@@ -191,7 +191,7 @@ export function DatabaseBoard({
 	onSaveCell,
 }: DatabaseBoardProps) {
 	const shouldReduceMotion = useReducedMotion();
-	const { groupColumn, groupColumns, lanes, moveLaneToIndex } =
+	const { groupColumn, groupColumnId, groupColumns, lanes, moveLaneToIndex } =
 		useDatabaseBoard({
 			rows,
 			columns,
@@ -238,9 +238,8 @@ export function DatabaseBoard({
 		Record<string, NoteTaskSummary>
 	>({});
 	const boardCardColumns = useMemo(
-		() =>
-			cardCandidateColumns(columns, groupColumn?.id ?? persistedGroupColumnId),
-		[columns, groupColumn?.id, persistedGroupColumnId],
+		() => cardCandidateColumns(columns, groupColumnId),
+		[columns, groupColumnId],
 	);
 	const reorderableLanes = useMemo(
 		() => lanes.filter((lane) => lane.id !== DATABASE_BOARD_EMPTY_LANE_ID),
@@ -325,14 +324,6 @@ export function DatabaseBoard({
 	);
 
 	useEffect(() => {
-		dragPreviewRef.current = dragPreview;
-	}, [dragPreview]);
-
-	useEffect(() => {
-		dropLaneIdRef.current = dropLaneId;
-	}, [dropLaneId]);
-
-	useEffect(() => {
 		const handlePointerMove = (event: PointerEvent) => {
 			const dragStart = dragStartRef.current;
 			if (!dragStart) return;
@@ -379,6 +370,7 @@ export function DatabaseBoard({
 			dragStartRef.current = null;
 			if (!dragStart) return;
 			if (!dragActiveRef.current) {
+				dropLaneIdRef.current = null;
 				setDropLaneId(null);
 				return;
 			}

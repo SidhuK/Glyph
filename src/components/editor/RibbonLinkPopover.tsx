@@ -1,6 +1,6 @@
 import type { Editor } from "@tiptap/core";
 import { m } from "motion/react";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link2, X } from "../Icons";
 import { springPresets } from "../ui/animations";
 import { Button } from "../ui/shadcn/button";
@@ -42,15 +42,16 @@ export function RibbonLinkPopover({
 	const [linkHref, setLinkHref] = useState("");
 	const [linkTarget, setLinkTarget] = useState<"_self" | "_blank">("_self");
 
-	useEffect(() => {
-		if (!linkOpen) return;
+	const handleOpenChange = (nextOpen: boolean) => {
+		setLinkOpen(nextOpen);
+		if (!nextOpen) return;
 		const linkAttrs = editor.getAttributes("link") as {
 			href?: string;
 			target?: string;
 		};
 		setLinkHref(linkAttrs.href ?? "");
 		setLinkTarget(linkAttrs.target === "_blank" ? "_blank" : "_self");
-	}, [editor, linkOpen]);
+	};
 
 	const applyLink = () => {
 		const href = normalizeHref(linkHref);
@@ -78,7 +79,7 @@ export function RibbonLinkPopover({
 	};
 
 	return (
-		<Popover open={linkOpen} onOpenChange={setLinkOpen}>
+		<Popover open={linkOpen} onOpenChange={handleOpenChange}>
 			<PopoverTrigger asChild>
 				<m.button
 					type="button"

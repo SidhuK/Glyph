@@ -824,6 +824,51 @@ input.notePropertyValue {
 	color: var(--text-secondary);
 }
 
+.tiptapHostInline[data-colorful-headings="true"]:not(.is-preview) {
+	--editor-heading-h1-color: #c84d6f;
+	--editor-heading-h2-color: #b86f18;
+	--editor-heading-h3-color: #2d8f58;
+	--editor-heading-h4-color: #2a74c9;
+	--editor-heading-h5-color: #7a57d1;
+	--editor-heading-h6-color: #9b5b2f;
+}
+
+.tiptapHostInline[data-colorful-headings="true"]:not(.is-preview)
+	.tiptapContentInline
+	h1 {
+	color: var(--editor-heading-h1-color);
+}
+
+.tiptapHostInline[data-colorful-headings="true"]:not(.is-preview)
+	.tiptapContentInline
+	h2 {
+	color: var(--editor-heading-h2-color);
+}
+
+.tiptapHostInline[data-colorful-headings="true"]:not(.is-preview)
+	.tiptapContentInline
+	h3 {
+	color: var(--editor-heading-h3-color);
+}
+
+.tiptapHostInline[data-colorful-headings="true"]:not(.is-preview)
+	.tiptapContentInline
+	h4 {
+	color: var(--editor-heading-h4-color);
+}
+
+.tiptapHostInline[data-colorful-headings="true"]:not(.is-preview)
+	.tiptapContentInline
+	h5 {
+	color: var(--editor-heading-h5-color);
+}
+
+.tiptapHostInline[data-colorful-headings="true"]:not(.is-preview)
+	.tiptapContentInline
+	h6 {
+	color: var(--editor-heading-h6-color);
+}
+
 /* Edit-mode heading rail (H1/H2/...) */
 .tiptapHostInline:not(.is-preview),
 .tiptapHostInline:not(.is-preview) .tiptapContentInline {
@@ -897,6 +942,42 @@ input.notePropertyValue {
 
 .tiptapHostInline:not(.is-preview) .tiptapContentInline h6::before {
 	content: "H6";
+}
+
+.tiptapHostInline[data-colorful-headings="true"]:not(.is-preview)
+	.tiptapContentInline
+	h1::before {
+	color: var(--editor-heading-h1-color);
+}
+
+.tiptapHostInline[data-colorful-headings="true"]:not(.is-preview)
+	.tiptapContentInline
+	h2::before {
+	color: var(--editor-heading-h2-color);
+}
+
+.tiptapHostInline[data-colorful-headings="true"]:not(.is-preview)
+	.tiptapContentInline
+	h3::before {
+	color: var(--editor-heading-h3-color);
+}
+
+.tiptapHostInline[data-colorful-headings="true"]:not(.is-preview)
+	.tiptapContentInline
+	h4::before {
+	color: var(--editor-heading-h4-color);
+}
+
+.tiptapHostInline[data-colorful-headings="true"]:not(.is-preview)
+	.tiptapContentInline
+	h5::before {
+	color: var(--editor-heading-h5-color);
+}
+
+.tiptapHostInline[data-colorful-headings="true"]:not(.is-preview)
+	.tiptapContentInline
+	h6::before {
+	color: var(--editor-heading-h6-color);
 }
 
 .tiptapContentInline .headingCollapseHeading {

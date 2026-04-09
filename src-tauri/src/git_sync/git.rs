@@ -3,7 +3,7 @@ use std::process::{Command, Stdio};
 use std::thread;
 use std::time::{Duration, Instant};
 
-use super::types::{GitSyncContext, GitSyncInclusionSettings};
+use super::types::{AttachmentStorageMode, GitSyncContext, GitSyncInclusionSettings};
 use crate::io_atomic;
 
 const GLYPH_GITIGNORE_START: &str = "# >>> Glyph Git Sync >>>";
@@ -372,17 +372,22 @@ pub fn render_managed_gitignore(
         _ => {}
     }
 
-    match (
-        inclusions.include_attachments,
-        context.pasted_media_folder.as_deref(),
+    if matches!(
+        context.attachment_storage_mode,
+        Some(AttachmentStorageMode::SpecificFolder)
     ) {
-        (true, Some(path)) if !inclusions.include_non_markdown_files => {
-            push_unignore_patterns(&mut lines, path);
+        match (
+            inclusions.include_attachments,
+            context.attachment_folder.as_deref(),
+        ) {
+            (true, Some(path)) if !inclusions.include_non_markdown_files => {
+                push_unignore_patterns(&mut lines, path);
+            }
+            (false, Some(path)) => {
+                push_ignore_pattern(&mut lines, path);
+            }
+            _ => {}
         }
-        (false, Some(path)) => {
-            push_ignore_pattern(&mut lines, path);
-        }
-        _ => {}
     }
 
     lines.push(GLYPH_GITIGNORE_END.to_string());
@@ -428,7 +433,7 @@ pub fn stage_for_sync(space_root: &Path) -> Result<(), String> {
 
 #[cfg(test)]
 mod tests {
-    use crate::git_sync::types::GitSyncInclusionSettings;
+    use crate::git_sync::types::{AttachmentStorageMode, GitSyncInclusionSettings};
 
     use super::{inspect_repo, render_managed_gitignore, RepoInspection};
 
@@ -438,7 +443,8 @@ mod tests {
             &GitSyncInclusionSettings::default(),
             &crate::git_sync::types::GitSyncContext {
                 templates_folder: Some("templates".to_string()),
-                pasted_media_folder: Some("assets/images".to_string()),
+                attachment_storage_mode: Some(AttachmentStorageMode::SpecificFolder),
+                attachment_folder: Some("assets/images".to_string()),
             },
         );
         assert!(block.contains(".glyph/"));
@@ -456,12 +462,32 @@ mod tests {
             },
             &crate::git_sync::types::GitSyncContext {
                 templates_folder: Some("config/templates".to_string()),
-                pasted_media_folder: Some("assets/images".to_string()),
+                attachment_storage_mode: Some(AttachmentStorageMode::SpecificFolder),
+                attachment_folder: Some("assets/images".to_string()),
             },
         );
         assert!(block.contains("!config/"));
         assert!(block.contains("!config/templates/**"));
         assert!(block.contains("!assets/images/**"));
+    }
+
+    #[test]
+    fn gitignore_skips_attachment_specific_rules_outside_specific_folder_mode() {
+        let block = render_managed_gitignore(
+            &GitSyncInclusionSettings {
+                include_templates: true,
+                include_attachments: true,
+                include_non_markdown_files: false,
+            },
+            &crate::git_sync::types::GitSyncContext {
+                templates_folder: Some("config/templates".to_string()),
+                attachment_storage_mode: Some(AttachmentStorageMode::NoteFolder),
+                attachment_folder: Some("assets/images".to_string()),
+            },
+        );
+        assert!(block.contains("!config/templates/**"));
+        assert!(!block.contains("!assets/images/**"));
+        assert!(!block.contains("assets/images/"));
     }
 
     #[test]

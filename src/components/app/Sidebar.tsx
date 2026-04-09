@@ -28,8 +28,6 @@ interface SidebarProps {
 	sidebarCollapsed: boolean;
 	onToggleSidebar: () => void;
 	gitSyncStatus: GitSyncStatus | null;
-	onGitSyncNow: () => void;
-	onOpenGitSettings: () => void;
 	onOpenSettings: () => void;
 	onOpenAllDocs: () => void;
 	onOpenCalendar: () => void;
@@ -59,8 +57,6 @@ export const Sidebar = memo(function Sidebar({
 	sidebarCollapsed,
 	onToggleSidebar,
 	gitSyncStatus,
-	onGitSyncNow,
-	onOpenGitSettings,
 	onOpenSettings,
 	onOpenAllDocs,
 	onOpenCalendar,
@@ -149,8 +145,6 @@ export const Sidebar = memo(function Sidebar({
 									onPrefetchAllDocs={onPrefetchAllDocs}
 									onPrefetchFile={onPrefetchFile}
 									gitSyncStatus={gitSyncStatus}
-									onGitSyncNow={onGitSyncNow}
-									onOpenGitSettings={onOpenGitSettings}
 									onOpenSettings={onOpenSettings}
 									onOpenAllDocs={onOpenAllDocs}
 								/>

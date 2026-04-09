@@ -307,6 +307,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		frontmatterRef,
 		lastAppliedBodyRef,
 		lastEmittedMarkdownRef,
+		colorfulHeadings,
 	} = useNoteEditor({
 		markdown,
 		mode,
@@ -1055,13 +1056,6 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	};
 
 	useEffect(() => {
-		if (!selectedCodeBlock || !isSelectedMermaidCodeBlock) {
-			setActiveMermaidPreviewPos(null);
-			setActiveMermaidPreviewHeight(0);
-		}
-	}, [isSelectedMermaidCodeBlock, selectedCodeBlock]);
-
-	useEffect(() => {
 		if (!editor) return;
 		editor.commands.setActiveMermaidPreview(
 			isSelectedMermaidPreviewActive ? activeMermaidPreviewPos : null,
@@ -1167,6 +1161,9 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 						]
 							.filter(Boolean)
 							.join(" ")}
+						data-colorful-headings={
+							mode === "rich" && colorfulHeadings ? "true" : undefined
+						}
 						onPointerDownCapture={handleEditorPointerDownCapture}
 					>
 						<EditorContent editor={editor} />

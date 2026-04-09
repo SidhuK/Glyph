@@ -32,7 +32,7 @@ pub fn git_sync_config_update(
 }
 
 #[tauri::command]
-pub fn git_sync_run(
+pub async fn git_sync_run(
     app: AppHandle,
     git_state: State<'_, GitSyncState>,
     space_state: State<'_, SpaceState>,

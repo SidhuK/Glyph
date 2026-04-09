@@ -1,6 +1,9 @@
 import { listen } from "@tauri-apps/api/event";
 import { useEffect, useRef } from "react";
-import type { AutoUpdateCheckInterval } from "./settings";
+import type {
+	AttachmentStorageMode,
+	AutoUpdateCheckInterval,
+} from "./settings";
 import type { UiDarkThemeId, UiLightThemeId } from "./uiThemes";
 
 type TauriEventMap = {
@@ -95,7 +98,9 @@ type TauriEventMap = {
 		};
 		editor?: {
 			showCollapsibleHeadings?: boolean;
-			pastedMediaFolder?: string;
+			colorfulHeadings?: boolean;
+			attachmentStorageMode?: AttachmentStorageMode;
+			attachmentFolder?: string | null;
 			enablePeopleMentionsAsTags?: boolean;
 		};
 		onboarding?: {

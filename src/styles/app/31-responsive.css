@@ -19,27 +19,8 @@
 }
 
 @media (max-width: 900px) {
-	.welcomeScreen {
+	.welcomeEmptyState {
 		padding: var(--space-4);
-	}
-
-	.welcomeSurface {
-		width: 100%;
-		padding: var(--space-4) var(--space-2);
-		transform: translateX(0);
-	}
-
-	.welcomeLauncher {
-		flex-direction: column;
-	}
-
-	.welcomeRecentPath {
-		word-break: break-all;
-	}
-
-	.welcomeActionList button,
-	.welcomeRecentItem {
-		width: 100%;
 	}
 
 	.starterPane {
