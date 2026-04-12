@@ -5,9 +5,27 @@ use std::{
     time::{SystemTime, UNIX_EPOCH},
 };
 
+fn is_unsupported_sync_error(error: &io::Error) -> bool {
+    match error.raw_os_error() {
+        // macOS ENOTSUP/EOPNOTSUPP
+        Some(45) | Some(102) => true,
+        // Linux ENOTSUP/EOPNOTSUPP
+        Some(95) => true,
+        _ => matches!(error.kind(), io::ErrorKind::Unsupported),
+    }
+}
+
+fn sync_all_best_effort(file: &File) -> io::Result<()> {
+    match file.sync_all() {
+        Ok(()) => Ok(()),
+        Err(error) if is_unsupported_sync_error(&error) => Ok(()),
+        Err(error) => Err(error),
+    }
+}
+
 fn fsync_dir(path: &Path) -> io::Result<()> {
     let dir = File::open(path)?;
-    dir.sync_all()
+    sync_all_best_effort(&dir)
 }
 
 fn unique_tmp_path(dest: &Path) -> io::Result<PathBuf> {
@@ -40,7 +58,7 @@ pub fn write_atomic(dest: &Path, bytes: &[u8]) -> io::Result<()> {
     {
         let mut f = File::create(&tmp)?;
         f.write_all(bytes)?;
-        f.sync_all()?;
+        sync_all_best_effort(&f)?;
     }
 
     std::fs::rename(&tmp, dest)?;
@@ -61,7 +79,7 @@ pub fn copy_atomic(src: &Path, dest: &Path) -> io::Result<()> {
         let mut source = File::open(src)?;
         let mut target = File::create(&tmp)?;
         io::copy(&mut source, &mut target)?;
-        target.sync_all()?;
+        sync_all_best_effort(&target)?;
     }
 
     std::fs::rename(&tmp, dest)?;

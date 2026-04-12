@@ -1,8 +1,5 @@
-import { m, useReducedMotion } from "motion/react";
-import { formatDatabaseDateTime } from "../../lib/database/config";
 import type { CalendarNoteActivityItem } from "../../lib/tauri";
-import { formatDatabaseTagLabel } from "../database/databaseTagLabel";
-import { springPresets } from "../ui/animations";
+import { FileText } from "../Icons";
 
 interface RecentNotesBoardStripProps {
 	notes: CalendarNoteActivityItem[];
@@ -22,15 +19,10 @@ function noteTitle(note: CalendarNoteActivityItem): string {
 	return title || fileTitleFromPath(note.note_path);
 }
 
-function notePreview(note: CalendarNoteActivityItem): string | null {
-	const preview = (note.preview ?? "").replace(/\s+/g, " ").trim();
-	return preview || null;
-}
-
 function noteFolderLabel(notePath: string): string {
 	const parts = notePath.split("/").filter(Boolean);
-	if (parts.length <= 1) return "Workspace root";
-	return parts.slice(0, -1).join(" / ");
+	if (parts.length <= 1) return "";
+	return `${parts.slice(0, -1).join("/")}/`;
 }
 
 export function RecentNotesBoardStrip({
@@ -40,26 +32,23 @@ export function RecentNotesBoardStrip({
 	onOpenNote,
 	onPrefetchNote,
 }: RecentNotesBoardStripProps) {
-	const shouldReduceMotion = useReducedMotion() ?? false;
-
 	return (
-		<div className="calendarRecentStrip">
-			<div className="calendarRecentStripScroller">
-				{notes.map((note, index) => {
-					const title = noteTitle(note);
-					const preview = notePreview(note);
-					const folderLabel = noteFolderLabel(note.note_path);
-					const visibleTags = note.tags.slice(0, 3);
-					const extraTagCount = Math.max(
-						note.tags.length - visibleTags.length,
-						0,
-					);
+		<ul className="calendarRecentList">
+			{notes.length === 0 ? (
+				<li className="calendarRecentListEmpty">
+					No activity notes for this day.
+				</li>
+			) : null}
+			{notes.map((note) => {
+				const title = noteTitle(note);
+				const folderLabel = noteFolderLabel(note.note_path);
+				const metaPath = folderLabel || note.note_path;
 
-					return (
-						<m.button
-							key={note.note_path}
+				return (
+					<li key={note.note_path} className="calendarRecentListRow">
+						<button
 							type="button"
-							className="databaseBoardCard calendarRecentStripCard"
+							className="commandPaletteItem commandPaletteRecentItem calendarRecentListItem"
 							data-state={
 								selectedNotePath === note.note_path ? "selected" : undefined
 							}
@@ -78,57 +67,23 @@ export function RecentNotesBoardStrip({
 									onSelectNote(note.note_path);
 								}
 							}}
-							initial={shouldReduceMotion ? false : { opacity: 0, y: 10 }}
-							animate={{ opacity: 1, y: 0 }}
-							transition={
-								shouldReduceMotion
-									? { duration: 0 }
-									: {
-											...springPresets.gentle,
-											delay: Math.min(index * 0.03, 0.15),
-										}
-							}
 							title="Double-click to open note"
 						>
-							<div className="databaseBoardCardHead">
-								<div className="databaseBoardCardHeaderRow">
-									<span className="databaseBoardCardTitle">{title}</span>
-									<span className="databaseBoardCardOpenHint">Open</span>
-								</div>
-								{preview ? (
-									<div className="databaseBoardCardPreview">{preview}</div>
-								) : null}
+							<div className="commandPaletteRecentIcon">
+								<FileText size={14} />
 							</div>
-							{visibleTags.length > 0 ? (
-								<div className="databaseBoardCardTags calendarRecentStripTags">
-									{visibleTags.map((tag) => (
-										<span
-											key={`${note.note_path}:${tag}`}
-											className="databaseBoardTag"
-											title={formatDatabaseTagLabel(tag)}
-										>
-											{formatDatabaseTagLabel(tag)}
-										</span>
-									))}
-									{extraTagCount > 0 ? (
-										<span className="databaseBoardTag is-muted">
-											+{extraTagCount}
-										</span>
-									) : null}
+							<div className="commandPaletteRecentContent">
+								<span className="commandPaletteResultTitle">{title}</span>
+								<div className="commandPaletteRecentMeta">
+									<span className="commandPaletteRecentPath" title={metaPath}>
+										{metaPath}
+									</span>
 								</div>
-							) : null}
-							<div className="databaseBoardCardFooter">
-								<span className="databaseBoardCardPath" title={folderLabel}>
-									{folderLabel}
-								</span>
-								<span className="databaseBoardCardTimestamp">
-									{formatDatabaseDateTime(note.updated)}
-								</span>
 							</div>
-						</m.button>
-					);
-				})}
-			</div>
-		</div>
+						</button>
+					</li>
+				);
+			})}
+		</ul>
 	);
 }

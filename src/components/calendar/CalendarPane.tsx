@@ -4,17 +4,11 @@ import {
 	CalendarAdd01Icon,
 	Clock02Icon,
 	Note03Icon,
+	NoteIcon,
 	TaskAdd02Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
-import {
-	type CSSProperties,
-	useCallback,
-	useEffect,
-	useMemo,
-	useRef,
-	useState,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useSpace, useUILayoutContext } from "../../contexts";
 import { useDailyNote } from "../../hooks/useDailyNote";
 import {
@@ -62,6 +56,7 @@ interface CalendarPaneProps {
 	initialData?: CalendarRangeResponse | null;
 	onOpenFile: (relPath: string) => Promise<void>;
 	onOpenDailyNotesSettings: () => void;
+	onNewNote?: () => void;
 }
 
 function readStorage(key: string): string | null {
@@ -102,6 +97,7 @@ export function CalendarPane({
 	initialData = null,
 	onOpenFile,
 	onOpenDailyNotesSettings,
+	onNewNote,
 }: CalendarPaneProps) {
 	const today = useMemo(() => todayIsoDateLocal(), []);
 	const [anchorDate, setAnchorDate] = useState(
@@ -443,12 +439,6 @@ export function CalendarPane({
 		overdueTasks.length > 0 ||
 		ongoingTasks.length > 0;
 	const noteActivity = data?.detail.note_activity ?? [];
-	const activityExtraWidth = useMemo(() => {
-		if (noteActivity.length >= 4) return 240;
-		if (noteActivity.length === 3) return 160;
-		if (noteActivity.length === 2) return 80;
-		return 0;
-	}, [noteActivity.length]);
 
 	const effectiveSelectedRecentNotePath = useMemo(() => {
 		if (!selectedRecentNotePath) return null;
@@ -475,42 +465,39 @@ export function CalendarPane({
 			<section className="calendarPane">
 				{error ? <div className="calendarError">{error}</div> : null}
 
-				{/* ── Date header spacer ── */}
-				<div className="calendarDetailHeader" />
-
 				{/* ── Centered content area ── */}
 				<div className="calendarCenterWrap">
-					{/* ── Recent notes card strip ── */}
-					{noteActivity.length > 0 ? (
-						<div
-							className="calendarMiniDb"
-							style={
-								{
-									"--calendar-activity-extra-width": `${activityExtraWidth}px`,
-								} as CSSProperties
-							}
-						>
-							<div className="calendarCardSectionHeader calendarMiniDbHeader">
-								<div className="calendarMiniDbHeaderInfo">
-									<h4 className="calendarCardSectionTitle">
-										<HugeiconsIcon
-											icon={Clock02Icon}
-											size={14}
-											strokeWidth={0.9}
-										/>
-										<span>Activity</span>
-									</h4>
-								</div>
+					{/* ── Recent notes list ── */}
+					<div className="calendarMiniDb">
+						<div className="calendarCardSectionHeader calendarMiniDbHeader">
+							<div className="calendarMiniDbHeaderInfo">
+								<h4 className="calendarCardSectionTitle">
+									<HugeiconsIcon
+										icon={Clock02Icon}
+										size={14}
+										strokeWidth={0.9}
+									/>
+									<span>Activity</span>
+								</h4>
 							</div>
-							<RecentNotesBoardStrip
-								notes={noteActivity}
-								selectedNotePath={effectiveSelectedRecentNotePath}
-								onSelectNote={handleSelectRecentNote}
-								onOpenNote={handleOpenRecentNote}
-								onPrefetchNote={prefetchNote}
-							/>
+							<button
+								type="button"
+								className="calendarNewNoteBtn"
+								onClick={onNewNote}
+								title="Create a new note"
+							>
+								<HugeiconsIcon icon={NoteIcon} size={14} strokeWidth={0.9} />
+								<span>New Note</span>
+							</button>
 						</div>
-					) : null}
+						<RecentNotesBoardStrip
+							notes={noteActivity}
+							selectedNotePath={effectiveSelectedRecentNotePath}
+							onSelectNote={handleSelectRecentNote}
+							onOpenNote={handleOpenRecentNote}
+							onPrefetchNote={prefetchNote}
+						/>
+					</div>
 
 					{/* ── Task composer ── */}
 					{dailyNotesFolder ? (

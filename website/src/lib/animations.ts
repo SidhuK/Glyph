@@ -93,6 +93,87 @@ export function initModeToggle(): void {
 	});
 }
 
+function buildFlaps(container: HTMLSpanElement, word: string): void {
+	container.innerHTML = "";
+	for (const char of word) {
+		const flap = document.createElement("span");
+		flap.className = "flap-char";
+		flap.textContent = char === " " ? "\u00A0" : char;
+		container.appendChild(flap);
+	}
+}
+
+function flipTo(
+	container: HTMLSpanElement,
+	newWord: string,
+	oldWord: string,
+): void {
+	const maxLen = Math.max(newWord.length, oldWord.length);
+	const paddedOld = oldWord.padEnd(maxLen);
+	const paddedNew = newWord.padEnd(maxLen);
+
+	container.innerHTML = "";
+
+	for (let i = 0; i < maxLen; i++) {
+		const flap = document.createElement("span");
+		flap.className = "flap-char";
+
+		const oldChar = paddedOld[i] === " " ? "\u00A0" : paddedOld[i];
+		const newChar = paddedNew[i] === " " ? "\u00A0" : paddedNew[i];
+
+		if (oldChar === newChar && i < newWord.length) {
+			flap.textContent = newChar;
+			container.appendChild(flap);
+			continue;
+		}
+
+		flap.textContent = oldChar;
+		flap.style.setProperty("--flip-delay", `${i * 60}ms`);
+		container.appendChild(flap);
+
+		setTimeout(
+			() => {
+				flap.classList.add("flap-flip");
+				setTimeout(() => {
+					flap.textContent = i < newWord.length ? newChar : "";
+					flap.classList.remove("flap-flip");
+					flap.classList.add("flap-flip-in");
+					if (i >= newWord.length) {
+						flap.style.width = "0";
+						flap.style.overflow = "hidden";
+					}
+					setTimeout(() => {
+						flap.classList.remove("flap-flip-in");
+					}, 200);
+				}, 200);
+			},
+			i * 60 + 100,
+		);
+	}
+}
+
+export function initRotateWords(): void {
+	const el = document.querySelector<HTMLSpanElement>("[data-rotate-words]");
+	if (!el) return;
+
+	const words = (el.dataset.rotateWords ?? "").split(",");
+	if (words.length < 2) return;
+
+	const prefersReducedMotion = window.matchMedia(
+		"(prefers-reduced-motion: reduce)",
+	).matches;
+	if (prefersReducedMotion) return;
+
+	let index = 0;
+	buildFlaps(el, words[0]);
+
+	setInterval(() => {
+		const oldWord = words[index];
+		index = (index + 1) % words.length;
+		flipTo(el, words[index], oldWord);
+	}, 5000);
+}
+
 export function initClipboard(): void {
 	const copyButton = document.querySelector<HTMLButtonElement>(
 		"[data-copy-install]",

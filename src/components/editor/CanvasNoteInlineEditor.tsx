@@ -13,6 +13,10 @@ import { AnimatePresence } from "motion/react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import {
+	EDITOR_MENU_ACTION_EVENT,
+	type EditorMenuActionDetail,
+} from "../../lib/appEvents";
+import {
 	MERMAID_CODE_BLOCK_LANGUAGE,
 	extractMermaidErrorMessage,
 	renderMermaidDiagram,
@@ -39,6 +43,8 @@ import {
 	dispatchWikiLinkClick,
 } from "./markdown/editorEvents";
 import { parseWikiLink } from "./markdown/wikiLinkCodec";
+import { isEditorTextColor } from "./textColors";
+import { isEditorTextHighlight } from "./textHighlights";
 import type { CanvasNoteInlineEditorProps } from "./types";
 
 function safeParseISO(value?: string): Date | undefined {
@@ -134,6 +140,16 @@ function getOffsetWithinAncestor(
 		left: elementRect.left - ancestorRect.left,
 		top: elementRect.top - ancestorRect.top,
 	};
+}
+
+function isVisibleEditorHost(host: HTMLDivElement): boolean {
+	const style = window.getComputedStyle(host);
+	return (
+		host.isConnected &&
+		host.offsetParent !== null &&
+		style.display !== "none" &&
+		style.visibility !== "hidden"
+	);
 }
 
 async function openFrontmatterHref(
@@ -502,6 +518,202 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 			document.removeEventListener("selectionchange", syncSelectionRibbon);
 			editor.off("selectionUpdate", syncSelectionRibbon);
 			window.removeEventListener("resize", syncSelectionRibbon);
+		};
+	}, [canEdit, editor, mode]);
+
+	useEffect(() => {
+		if (!editor || mode !== "rich" || !canEdit) return;
+
+		const runEditorAction = (action: string) => {
+			const host = tiptapHostRef.current;
+			if (!host || !isVisibleEditorHost(host)) return;
+			const activeElement = document.activeElement;
+			if (
+				activeElement instanceof HTMLElement &&
+				activeElement !== document.body &&
+				activeElement !== document.documentElement &&
+				!host.contains(activeElement)
+			) {
+				return;
+			}
+			const scrollHost = host.closest(
+				".rfNodeNoteEditorBody",
+			) as HTMLElement | null;
+			const scrollTop = scrollHost?.scrollTop ?? 0;
+			const chain = editor
+				.chain()
+				.focus(undefined, { scrollIntoView: false })
+				.extendMarkRange("link");
+			const handled = (() => {
+				switch (action) {
+					case "bold":
+						return chain.toggleBold().run();
+					case "italic":
+						return chain.toggleItalic().run();
+					case "underline":
+						return chain.toggleUnderline().run();
+					case "strikethrough":
+						return chain.toggleStrike().run();
+					case "heading_1":
+						return chain.toggleHeading({ level: 1 }).run();
+					case "heading_2":
+						return chain.toggleHeading({ level: 2 }).run();
+					case "heading_3":
+						return chain.toggleHeading({ level: 3 }).run();
+					case "bullet_list":
+						return chain.toggleBulletList().run();
+					case "numbered_list":
+						return chain.toggleOrderedList().run();
+					case "todo_list":
+						return chain.toggleTaskList().run();
+					case "quote":
+						return chain.toggleBlockquote().run();
+					case "code_block":
+						return chain.toggleCodeBlock().run();
+					case "mermaid_chart":
+						return chain
+							.insertContent({
+								type: "codeBlock",
+								attrs: { language: "mermaid" },
+								content: [
+									{
+										type: "text",
+										text: "flowchart TD\n  A[Start] --> B[End]",
+									},
+								],
+							})
+							.run();
+					case "table":
+						return chain
+							.insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+							.run();
+					case "divider":
+						return chain.setHorizontalRule().run();
+					case "callout_info":
+						return chain
+							.insertContent({
+								type: "blockquote",
+								content: [
+									{
+										type: "paragraph",
+										content: [{ type: "text", text: "[!info]" }],
+									},
+									{ type: "paragraph" },
+								],
+							})
+							.run();
+					case "callout_warning":
+						return chain
+							.insertContent({
+								type: "blockquote",
+								content: [
+									{
+										type: "paragraph",
+										content: [{ type: "text", text: "[!warning]" }],
+									},
+									{ type: "paragraph" },
+								],
+							})
+							.run();
+					case "callout_error":
+						return chain
+							.insertContent({
+								type: "blockquote",
+								content: [
+									{
+										type: "paragraph",
+										content: [{ type: "text", text: "[!error]" }],
+									},
+									{ type: "paragraph" },
+								],
+							})
+							.run();
+					case "callout_success":
+						return chain
+							.insertContent({
+								type: "blockquote",
+								content: [
+									{
+										type: "paragraph",
+										content: [{ type: "text", text: "[!success]" }],
+									},
+									{ type: "paragraph" },
+								],
+							})
+							.run();
+					case "callout_tip":
+						return chain
+							.insertContent({
+								type: "blockquote",
+								content: [
+									{
+										type: "paragraph",
+										content: [{ type: "text", text: "[!tip]" }],
+									},
+									{ type: "paragraph" },
+								],
+							})
+							.run();
+					case "link_set": {
+						const previousHref = editor.getAttributes("link").href as
+							| string
+							| undefined;
+						const nextHref = window.prompt(
+							"Enter link URL",
+							previousHref ?? "https://",
+						);
+						if (nextHref === null) return false;
+						const normalized = nextHref.trim();
+						if (!normalized) {
+							return chain.unsetLink().run();
+						}
+						return chain.setLink({ href: normalized }).run();
+					}
+					case "link_clear":
+						return chain.unsetLink().run();
+					case "color_clear":
+						return chain.unsetTextColor().run();
+					case "highlight_clear":
+						return chain.unsetTextHighlight().run();
+					default: {
+						if (action.startsWith("color_")) {
+							const color = action.slice("color_".length);
+							if (isEditorTextColor(color)) {
+								return chain.setTextColor(color).run();
+							}
+							return false;
+						}
+						if (action.startsWith("highlight_")) {
+							const highlight = action.slice("highlight_".length);
+							if (isEditorTextHighlight(highlight)) {
+								return chain.setTextHighlight(highlight).run();
+							}
+							return false;
+						}
+						return false;
+					}
+				}
+			})();
+			if (!handled) return;
+			if (scrollHost) {
+				requestAnimationFrame(() => {
+					scrollHost.scrollTop = scrollTop;
+				});
+			}
+		};
+
+		const onEditorMenuAction = (event: Event) => {
+			const detail =
+				event instanceof CustomEvent
+					? (event.detail as EditorMenuActionDetail | null)
+					: null;
+			if (!detail?.action) return;
+			runEditorAction(detail.action);
+		};
+
+		window.addEventListener(EDITOR_MENU_ACTION_EVENT, onEditorMenuAction);
+		return () => {
+			window.removeEventListener(EDITOR_MENU_ACTION_EVENT, onEditorMenuAction);
 		};
 	}, [canEdit, editor, mode]);
 

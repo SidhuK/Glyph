@@ -48,6 +48,416 @@ struct AppInfo {
     identifier: String,
 }
 
+#[derive(Clone, Serialize)]
+struct EditorMenuActionPayload {
+    action: String,
+}
+
+fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
+    app: &M,
+    show_markdown_menu: bool,
+) -> tauri::Result<Menu<R>> {
+    #[cfg(target_os = "macos")]
+    let app_about = MenuItem::with_id(
+        app,
+        "app.about",
+        format!("About {}", app.package_info().name),
+        true,
+        None::<&str>,
+    )?;
+    #[cfg(target_os = "macos")]
+    let app_settings = MenuItem::with_id(app, "app.settings", "Settings…", true, Some("CmdOrCtrl+,"))?;
+
+    #[cfg(target_os = "macos")]
+    let app_menu = Submenu::with_items(
+        app,
+        app.package_info().name.clone(),
+        true,
+        &[
+            &app_about,
+            &app_settings,
+            &PredefinedMenuItem::separator(app)?,
+            &PredefinedMenuItem::services(app, None)?,
+            &PredefinedMenuItem::separator(app)?,
+            &PredefinedMenuItem::hide(app, None)?,
+            &PredefinedMenuItem::hide_others(app, None)?,
+            &PredefinedMenuItem::separator(app)?,
+            &PredefinedMenuItem::quit(app, None)?,
+        ],
+    )?;
+
+    let open_space = MenuItem::with_id(app, "space.open", "Open Space…", true, Some("CmdOrCtrl+O"))?;
+    let create_space = MenuItem::with_id(
+        app,
+        "space.create",
+        "New Space…",
+        true,
+        Some("CmdOrCtrl+Shift+N"),
+    )?;
+    let close_space = MenuItem::with_id(app, "space.close", "Close Space", true, None::<&str>)?;
+    let reveal_space = MenuItem::with_id(
+        app,
+        "space.reveal",
+        "Show Space in Finder",
+        true,
+        None::<&str>,
+    )?;
+    let open_space_settings =
+        MenuItem::with_id(app, "space.settings", "Space Settings…", true, None::<&str>)?;
+    let sync_now = MenuItem::with_id(app, "space.git_sync_now", "Sync Now", true, None::<&str>)?;
+    let open_git_settings = MenuItem::with_id(
+        app,
+        "space.git_settings",
+        "Git Sync Settings…",
+        true,
+        None::<&str>,
+    )?;
+    let new_note = MenuItem::with_id(app, "file.new_note", "New Note", true, Some("CmdOrCtrl+N"))?;
+    let create_from_template = MenuItem::with_id(
+        app,
+        "file.create_from_template",
+        "Create From Template",
+        true,
+        Some("CmdOrCtrl+Shift+M"),
+    )?;
+    let open_daily_note = MenuItem::with_id(
+        app,
+        "file.open_daily_note",
+        "Open Daily Note",
+        true,
+        Some("CmdOrCtrl+Shift+D"),
+    )?;
+    let save_note = MenuItem::with_id(app, "file.save_note", "Save", true, Some("CmdOrCtrl+S"))?;
+    let export_html = MenuItem::with_id(
+        app,
+        "file.export_html",
+        "Export as HTML…",
+        true,
+        None::<&str>,
+    )?;
+    let close_tab = MenuItem::with_id(
+        app,
+        "file.close_tab",
+        "Close Tab",
+        true,
+        Some("CmdOrCtrl+W"),
+    )?;
+    let toggle_ai = MenuItem::with_id(
+        app,
+        "ai.toggle",
+        "Toggle AI Pane",
+        true,
+        Some("CmdOrCtrl+Shift+A"),
+    )?;
+    let editor_bold = MenuItem::with_id(app, "editor.bold", "Bold", true, None::<&str>)?;
+    let editor_italic = MenuItem::with_id(app, "editor.italic", "Italic", true, None::<&str>)?;
+    let editor_underline =
+        MenuItem::with_id(app, "editor.underline", "Underline", true, None::<&str>)?;
+    let editor_strikethrough = MenuItem::with_id(
+        app,
+        "editor.strikethrough",
+        "Strikethrough",
+        true,
+        None::<&str>,
+    )?;
+    let editor_link_set = MenuItem::with_id(
+        app,
+        "editor.link_set",
+        "Insert/Edit Link…",
+        true,
+        None::<&str>,
+    )?;
+    let editor_link_clear = MenuItem::with_id(
+        app,
+        "editor.link_clear",
+        "Remove Link",
+        true,
+        None::<&str>,
+    )?;
+    let editor_heading_1 = MenuItem::with_id(app, "editor.heading_1", "Heading 1", true, None::<&str>)?;
+    let editor_heading_2 = MenuItem::with_id(app, "editor.heading_2", "Heading 2", true, None::<&str>)?;
+    let editor_heading_3 = MenuItem::with_id(app, "editor.heading_3", "Heading 3", true, None::<&str>)?;
+    let editor_bullet_list = MenuItem::with_id(
+        app,
+        "editor.bullet_list",
+        "Bullet List",
+        true,
+        None::<&str>,
+    )?;
+    let editor_numbered_list = MenuItem::with_id(
+        app,
+        "editor.numbered_list",
+        "Numbered List",
+        true,
+        None::<&str>,
+    )?;
+    let editor_todo_list = MenuItem::with_id(app, "editor.todo_list", "To-do List", true, None::<&str>)?;
+    let editor_quote = MenuItem::with_id(app, "editor.quote", "Quote", true, None::<&str>)?;
+    let editor_code_block = MenuItem::with_id(
+        app,
+        "editor.code_block",
+        "Code Block",
+        true,
+        None::<&str>,
+    )?;
+    let editor_mermaid_chart = MenuItem::with_id(
+        app,
+        "editor.mermaid_chart",
+        "Mermaid Chart",
+        true,
+        None::<&str>,
+    )?;
+    let editor_table = MenuItem::with_id(app, "editor.table", "Table", true, None::<&str>)?;
+    let editor_divider = MenuItem::with_id(app, "editor.divider", "Divider", true, None::<&str>)?;
+    let editor_callout_info = MenuItem::with_id(app, "editor.callout_info", "Info Callout", true, None::<&str>)?;
+    let editor_callout_warning = MenuItem::with_id(
+        app,
+        "editor.callout_warning",
+        "Warning Callout",
+        true,
+        None::<&str>,
+    )?;
+    let editor_callout_error = MenuItem::with_id(
+        app,
+        "editor.callout_error",
+        "Error Callout",
+        true,
+        None::<&str>,
+    )?;
+    let editor_callout_success = MenuItem::with_id(
+        app,
+        "editor.callout_success",
+        "Success Callout",
+        true,
+        None::<&str>,
+    )?;
+    let editor_callout_tip = MenuItem::with_id(app, "editor.callout_tip", "Tip Callout", true, None::<&str>)?;
+    let editor_color_gray = MenuItem::with_id(app, "editor.color_gray", "Gray", true, None::<&str>)?;
+    let editor_color_brown = MenuItem::with_id(app, "editor.color_brown", "Brown", true, None::<&str>)?;
+    let editor_color_orange = MenuItem::with_id(app, "editor.color_orange", "Orange", true, None::<&str>)?;
+    let editor_color_yellow = MenuItem::with_id(app, "editor.color_yellow", "Yellow", true, None::<&str>)?;
+    let editor_color_green = MenuItem::with_id(app, "editor.color_green", "Green", true, None::<&str>)?;
+    let editor_color_blue = MenuItem::with_id(app, "editor.color_blue", "Blue", true, None::<&str>)?;
+    let editor_color_purple = MenuItem::with_id(app, "editor.color_purple", "Purple", true, None::<&str>)?;
+    let editor_color_red = MenuItem::with_id(app, "editor.color_red", "Red", true, None::<&str>)?;
+    let editor_color_clear =
+        MenuItem::with_id(app, "editor.color_clear", "Clear Color", true, None::<&str>)?;
+    let editor_highlight_yellow =
+        MenuItem::with_id(app, "editor.highlight_yellow", "Yellow", true, None::<&str>)?;
+    let editor_highlight_blue = MenuItem::with_id(app, "editor.highlight_blue", "Blue", true, None::<&str>)?;
+    let editor_highlight_green =
+        MenuItem::with_id(app, "editor.highlight_green", "Green", true, None::<&str>)?;
+    let editor_highlight_red = MenuItem::with_id(app, "editor.highlight_red", "Red", true, None::<&str>)?;
+    let editor_highlight_clear = MenuItem::with_id(
+        app,
+        "editor.highlight_clear",
+        "Clear Highlight",
+        true,
+        None::<&str>,
+    )?;
+    let close_ai = MenuItem::with_id(app, "ai.close", "Close AI Pane", true, None::<&str>)?;
+    let attach_current_note = MenuItem::with_id(
+        app,
+        "ai.attach_current_note",
+        "Send Current Note to AI",
+        true,
+        Some("CmdOrCtrl+Alt+A"),
+    )?;
+    let attach_all_open_notes = MenuItem::with_id(
+        app,
+        "ai.attach_all_open_notes",
+        "Send All Open Notes to AI",
+        true,
+        Some("CmdOrCtrl+Alt+Shift+A"),
+    )?;
+    let open_ai_settings = MenuItem::with_id(app, "ai.settings", "AI Settings…", true, None::<&str>)?;
+
+    let file_menu = Submenu::with_items(
+        app,
+        "File",
+        true,
+        &[
+            &new_note,
+            &create_from_template,
+            &open_daily_note,
+            &PredefinedMenuItem::separator(app)?,
+            &save_note,
+            &export_html,
+            &close_tab,
+        ],
+    )?;
+
+    let ai_menu = Submenu::with_items(
+        app,
+        "AI",
+        true,
+        &[
+            &toggle_ai,
+            &close_ai,
+            &PredefinedMenuItem::separator(app)?,
+            &attach_current_note,
+            &attach_all_open_notes,
+            &PredefinedMenuItem::separator(app)?,
+            &open_ai_settings,
+        ],
+    )?;
+    let markdown_text_color_menu = Submenu::with_items(
+        app,
+        "Text Color",
+        true,
+        &[
+            &editor_color_gray,
+            &editor_color_brown,
+            &editor_color_orange,
+            &editor_color_yellow,
+            &editor_color_green,
+            &editor_color_blue,
+            &editor_color_purple,
+            &editor_color_red,
+            &PredefinedMenuItem::separator(app)?,
+            &editor_color_clear,
+        ],
+    )?;
+    let markdown_text_highlight_menu = Submenu::with_items(
+        app,
+        "Text Highlight",
+        true,
+        &[
+            &editor_highlight_yellow,
+            &editor_highlight_blue,
+            &editor_highlight_green,
+            &editor_highlight_red,
+            &PredefinedMenuItem::separator(app)?,
+            &editor_highlight_clear,
+        ],
+    )?;
+    let markdown_menu = Submenu::with_items(
+        app,
+        "Markdown",
+        true,
+        &[
+            &editor_bold,
+            &editor_italic,
+            &editor_underline,
+            &editor_strikethrough,
+            &PredefinedMenuItem::separator(app)?,
+            &editor_link_set,
+            &editor_link_clear,
+            &PredefinedMenuItem::separator(app)?,
+            &editor_heading_1,
+            &editor_heading_2,
+            &editor_heading_3,
+            &PredefinedMenuItem::separator(app)?,
+            &editor_bullet_list,
+            &editor_numbered_list,
+            &editor_todo_list,
+            &PredefinedMenuItem::separator(app)?,
+            &editor_quote,
+            &editor_code_block,
+            &editor_mermaid_chart,
+            &editor_table,
+            &editor_divider,
+            &PredefinedMenuItem::separator(app)?,
+            &editor_callout_info,
+            &editor_callout_warning,
+            &editor_callout_error,
+            &editor_callout_success,
+            &editor_callout_tip,
+            &PredefinedMenuItem::separator(app)?,
+            &markdown_text_color_menu,
+            &markdown_text_highlight_menu,
+        ],
+    )?;
+
+    let space_menu = Submenu::with_items(
+        app,
+        "Space",
+        true,
+        &[
+            &create_space,
+            &open_space,
+            &PredefinedMenuItem::separator(app)?,
+            &close_space,
+            &reveal_space,
+            &PredefinedMenuItem::separator(app)?,
+            &open_space_settings,
+            &sync_now,
+            &open_git_settings,
+        ],
+    )?;
+
+    let edit_menu = Submenu::with_items(
+        app,
+        "Edit",
+        true,
+        &[
+            &PredefinedMenuItem::undo(app, None)?,
+            &PredefinedMenuItem::redo(app, None)?,
+            &PredefinedMenuItem::separator(app)?,
+            &PredefinedMenuItem::cut(app, None)?,
+            &PredefinedMenuItem::copy(app, None)?,
+            &PredefinedMenuItem::paste(app, None)?,
+            &PredefinedMenuItem::select_all(app, None)?,
+        ],
+    )?;
+
+    let window_menu = Submenu::with_id_and_items(
+        app,
+        WINDOW_SUBMENU_ID,
+        "Window",
+        true,
+        &[
+            &PredefinedMenuItem::minimize(app, None)?,
+            &PredefinedMenuItem::maximize(app, None)?,
+            #[cfg(target_os = "macos")]
+            &PredefinedMenuItem::separator(app)?,
+            &PredefinedMenuItem::close_window(app, None)?,
+        ],
+    )?;
+
+    let help_menu = Submenu::with_id_and_items(
+        app,
+        HELP_SUBMENU_ID,
+        "Help",
+        true,
+        &[
+            #[cfg(not(target_os = "macos"))]
+            &PredefinedMenuItem::about(app, None, None)?,
+        ],
+    )?;
+
+    if show_markdown_menu {
+        Menu::with_items(
+            app,
+            &[
+                #[cfg(target_os = "macos")]
+                &app_menu,
+                &file_menu,
+                &edit_menu,
+                &markdown_menu,
+                &ai_menu,
+                &space_menu,
+                &window_menu,
+                &help_menu,
+            ],
+        )
+    } else {
+        Menu::with_items(
+            app,
+            &[
+                #[cfg(target_os = "macos")]
+                &app_menu,
+                &file_menu,
+                &edit_menu,
+                &ai_menu,
+                &space_menu,
+                &window_menu,
+                &help_menu,
+            ],
+        )
+    }
+}
+
 #[tauri::command]
 fn greet(name: &str) -> String {
     format!("Hello, {}! You've been greeted from Rust!", name)
@@ -79,229 +489,19 @@ fn system_monospace_fonts_list() -> Result<Vec<String>, String> {
     system_fonts::list_monospace_font_families()
 }
 
+#[tauri::command]
+fn set_markdown_menu_visible(app: tauri::AppHandle, visible: bool) -> Result<(), String> {
+    let menu = build_main_menu(&app, visible).map_err(|error| error.to_string())?;
+    app.set_menu(menu).map_err(|error| error.to_string())?;
+    Ok(())
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     init_tracing();
 
     tauri::Builder::default()
-        .menu(|app| {
-            #[cfg(target_os = "macos")]
-            let app_about = MenuItem::with_id(
-                app,
-                "app.about",
-                format!("About {}", app.package_info().name),
-                true,
-                None::<&str>,
-            )?;
-            #[cfg(target_os = "macos")]
-            let app_settings =
-                MenuItem::with_id(app, "app.settings", "Settings…", true, Some("CmdOrCtrl+,"))?;
-
-            #[cfg(target_os = "macos")]
-            let app_menu = Submenu::with_items(
-                app,
-                app.package_info().name.clone(),
-                true,
-                &[
-                    &app_about,
-                    &app_settings,
-                    &PredefinedMenuItem::separator(app)?,
-                    &PredefinedMenuItem::services(app, None)?,
-                    &PredefinedMenuItem::separator(app)?,
-                    &PredefinedMenuItem::hide(app, None)?,
-                    &PredefinedMenuItem::hide_others(app, None)?,
-                    &PredefinedMenuItem::separator(app)?,
-                    &PredefinedMenuItem::quit(app, None)?,
-                ],
-            )?;
-
-            let open_space =
-                MenuItem::with_id(app, "space.open", "Open Space…", true, Some("CmdOrCtrl+O"))?;
-            let create_space = MenuItem::with_id(
-                app,
-                "space.create",
-                "New Space…",
-                true,
-                Some("CmdOrCtrl+Shift+N"),
-            )?;
-            let close_space =
-                MenuItem::with_id(app, "space.close", "Close Space", true, None::<&str>)?;
-            let reveal_space = MenuItem::with_id(
-                app,
-                "space.reveal",
-                "Show Space in Finder",
-                true,
-                None::<&str>,
-            )?;
-            let open_space_settings =
-                MenuItem::with_id(app, "space.settings", "Space Settings…", true, None::<&str>)?;
-            let sync_now =
-                MenuItem::with_id(app, "space.git_sync_now", "Sync Now", true, None::<&str>)?;
-            let open_git_settings = MenuItem::with_id(
-                app,
-                "space.git_settings",
-                "Git Sync Settings…",
-                true,
-                None::<&str>,
-            )?;
-            let new_note =
-                MenuItem::with_id(app, "file.new_note", "New Note", true, Some("CmdOrCtrl+N"))?;
-            let create_from_template = MenuItem::with_id(
-                app,
-                "file.create_from_template",
-                "Create From Template",
-                true,
-                Some("CmdOrCtrl+Shift+M"),
-            )?;
-            let open_daily_note = MenuItem::with_id(
-                app,
-                "file.open_daily_note",
-                "Open Daily Note",
-                true,
-                Some("CmdOrCtrl+Shift+D"),
-            )?;
-            let save_note =
-                MenuItem::with_id(app, "file.save_note", "Save", true, Some("CmdOrCtrl+S"))?;
-            let export_html = MenuItem::with_id(
-                app,
-                "file.export_html",
-                "Export as HTML…",
-                true,
-                None::<&str>,
-            )?;
-            let close_tab = MenuItem::with_id(
-                app,
-                "file.close_tab",
-                "Close Tab",
-                true,
-                Some("CmdOrCtrl+W"),
-            )?;
-            let toggle_ai = MenuItem::with_id(
-                app,
-                "ai.toggle",
-                "Toggle AI Pane",
-                true,
-                Some("CmdOrCtrl+Shift+A"),
-            )?;
-            let close_ai = MenuItem::with_id(app, "ai.close", "Close AI Pane", true, None::<&str>)?;
-            let attach_current_note = MenuItem::with_id(
-                app,
-                "ai.attach_current_note",
-                "Send Current Note to AI",
-                true,
-                Some("CmdOrCtrl+Alt+A"),
-            )?;
-            let attach_all_open_notes = MenuItem::with_id(
-                app,
-                "ai.attach_all_open_notes",
-                "Send All Open Notes to AI",
-                true,
-                Some("CmdOrCtrl+Alt+Shift+A"),
-            )?;
-            let open_ai_settings =
-                MenuItem::with_id(app, "ai.settings", "AI Settings…", true, None::<&str>)?;
-
-            let file_menu = Submenu::with_items(
-                app,
-                "File",
-                true,
-                &[
-                    &new_note,
-                    &create_from_template,
-                    &open_daily_note,
-                    &PredefinedMenuItem::separator(app)?,
-                    &save_note,
-                    &export_html,
-                    &close_tab,
-                ],
-            )?;
-
-            let ai_menu = Submenu::with_items(
-                app,
-                "AI",
-                true,
-                &[
-                    &toggle_ai,
-                    &close_ai,
-                    &PredefinedMenuItem::separator(app)?,
-                    &attach_current_note,
-                    &attach_all_open_notes,
-                    &PredefinedMenuItem::separator(app)?,
-                    &open_ai_settings,
-                ],
-            )?;
-
-            let space_menu = Submenu::with_items(
-                app,
-                "Space",
-                true,
-                &[
-                    &create_space,
-                    &open_space,
-                    &PredefinedMenuItem::separator(app)?,
-                    &close_space,
-                    &reveal_space,
-                    &PredefinedMenuItem::separator(app)?,
-                    &open_space_settings,
-                    &sync_now,
-                    &open_git_settings,
-                ],
-            )?;
-
-            let edit_menu = Submenu::with_items(
-                app,
-                "Edit",
-                true,
-                &[
-                    &PredefinedMenuItem::undo(app, None)?,
-                    &PredefinedMenuItem::redo(app, None)?,
-                    &PredefinedMenuItem::separator(app)?,
-                    &PredefinedMenuItem::cut(app, None)?,
-                    &PredefinedMenuItem::copy(app, None)?,
-                    &PredefinedMenuItem::paste(app, None)?,
-                    &PredefinedMenuItem::select_all(app, None)?,
-                ],
-            )?;
-
-            let window_menu = Submenu::with_id_and_items(
-                app,
-                WINDOW_SUBMENU_ID,
-                "Window",
-                true,
-                &[
-                    &PredefinedMenuItem::minimize(app, None)?,
-                    &PredefinedMenuItem::maximize(app, None)?,
-                    #[cfg(target_os = "macos")]
-                    &PredefinedMenuItem::separator(app)?,
-                    &PredefinedMenuItem::close_window(app, None)?,
-                ],
-            )?;
-
-            let help_menu = Submenu::with_id_and_items(
-                app,
-                HELP_SUBMENU_ID,
-                "Help",
-                true,
-                &[
-                    #[cfg(not(target_os = "macos"))]
-                    &PredefinedMenuItem::about(app, None, None)?,
-                ],
-            )?;
-
-            Menu::with_items(
-                app,
-                &[
-                    #[cfg(target_os = "macos")]
-                    &app_menu,
-                    &file_menu,
-                    &edit_menu,
-                    &ai_menu,
-                    &space_menu,
-                    &window_menu,
-                    &help_menu,
-                ],
-            )
-        })
+        .menu(|app| build_main_menu(app, false))
         .on_menu_event(|app, event| match event.id().as_ref() {
             "file.new_note" => {
                 let _ = app.emit("menu:new_note", ());
@@ -362,6 +562,10 @@ pub fn run() {
             }
             "ai.settings" => {
                 let _ = app.emit("menu:open_ai_settings", ());
+            }
+            id if id.starts_with("editor.") => {
+                let action = id.trim_start_matches("editor.").to_string();
+                let _ = app.emit("menu:editor_action", EditorMenuActionPayload { action });
             }
             _ => {}
         })
@@ -429,6 +633,7 @@ pub fn run() {
             app_info,
             system_fonts_list,
             system_monospace_fonts_list,
+            set_markdown_menu_visible,
             license::commands::license_bootstrap_status,
             license::commands::license_activate,
             license::commands::license_clear_local,

@@ -1069,13 +1069,13 @@
 	flex: 0 0 auto;
 	color: var(--text-secondary);
 	border: none;
-	background: color-mix(in srgb, var(--bg-secondary) 50%, var(--bg-primary));
-	box-shadow: 0 0 0 0.5px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(0, 0, 0, 0.06);
+	background: transparent;
+	box-shadow: none;
 }
 
 .aiComposerMentionButton:hover:not(:disabled) {
 	color: var(--text-primary);
-	background: color-mix(in srgb, var(--bg-tertiary) 60%, var(--bg-secondary));
+	background: var(--bg-hover);
 }
 
 .aiComposerMentionButton:disabled {

@@ -196,6 +196,43 @@ h1 {
 	margin-bottom: 2rem;
 }
 
+.hero-rotate {
+	display: inline;
+	color: var(--accent);
+	text-decoration: underline;
+	text-decoration-color: var(--accent);
+	text-underline-offset: 0.1em;
+	text-decoration-thickness: 2px;
+	perspective: 800px;
+}
+
+.flap-char {
+	display: inline-block;
+	transform-style: preserve-3d;
+	transition: transform 0.15s ease-in, opacity 0.15s ease-in;
+	transform-origin: center bottom;
+}
+
+.flap-char.flap-flip {
+	transform: rotateX(90deg);
+	opacity: 0;
+}
+
+.flap-char.flap-flip-in {
+	animation: flapIn 0.15s ease-out forwards;
+}
+
+@keyframes flapIn {
+	from {
+		transform: rotateX(-90deg);
+		opacity: 0;
+	}
+	to {
+		transform: rotateX(0deg);
+		opacity: 1;
+	}
+}
+
 .hero-accent {
 	color: #bbb;
 }
