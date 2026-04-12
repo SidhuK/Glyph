@@ -21,7 +21,7 @@ mod web_clip;
 
 use serde::Serialize;
 use tauri::menu::{
-    Menu, MenuItem, PredefinedMenuItem, Submenu, HELP_SUBMENU_ID, WINDOW_SUBMENU_ID,
+    Menu, MenuItem, MenuItemKind, PredefinedMenuItem, Submenu, HELP_SUBMENU_ID, WINDOW_SUBMENU_ID,
 };
 use tauri::{Emitter, Manager, RunEvent, WindowEvent};
 use tracing::warn;
@@ -41,6 +41,57 @@ fn init_tracing() {
         .try_init();
 }
 
+fn space_is_open(state: &space::SpaceState) -> bool {
+    state
+        .current
+        .lock()
+        .map(|guard| guard.is_some())
+        .unwrap_or(false)
+}
+
+fn set_menu_item_enabled<R: tauri::Runtime>(
+    item: &MenuItemKind<R>,
+    id: &str,
+    enabled: bool,
+) -> tauri::Result<bool> {
+    if item.id().as_ref() == id {
+        if let Some(menu_item) = item.as_menuitem() {
+            menu_item.set_enabled(enabled)?;
+            return Ok(true);
+        }
+        return Ok(false);
+    }
+
+    if let Some(submenu) = item.as_submenu() {
+        for child in submenu.items()? {
+            if set_menu_item_enabled(&child, id, enabled)? {
+                return Ok(true);
+            }
+        }
+    }
+
+    Ok(false)
+}
+
+pub(crate) fn set_space_close_menu_enabled<R: tauri::Runtime>(
+    app: &tauri::AppHandle<R>,
+    enabled: bool,
+) -> Result<(), String> {
+    let Some(menu) = app.menu() else {
+        return Ok(());
+    };
+
+    for item in menu.items().map_err(|error| error.to_string())? {
+        if set_menu_item_enabled(&item, "space.close", enabled)
+            .map_err(|error| error.to_string())?
+        {
+            break;
+        }
+    }
+
+    Ok(())
+}
+
 #[derive(Serialize)]
 struct AppInfo {
     name: String,
@@ -56,6 +107,7 @@ struct EditorMenuActionPayload {
 fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     app: &M,
     show_markdown_menu: bool,
+    space_open: bool,
 ) -> tauri::Result<Menu<R>> {
     #[cfg(target_os = "macos")]
     let app_about = MenuItem::with_id(
@@ -94,7 +146,8 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
         true,
         Some("CmdOrCtrl+Shift+N"),
     )?;
-    let close_space = MenuItem::with_id(app, "space.close", "Close Space", true, None::<&str>)?;
+    let close_space =
+        MenuItem::with_id(app, "space.close", "Close Space", space_open, None::<&str>)?;
     let reveal_space = MenuItem::with_id(
         app,
         "space.reveal",
@@ -491,7 +544,11 @@ fn system_monospace_fonts_list() -> Result<Vec<String>, String> {
 
 #[tauri::command]
 fn set_markdown_menu_visible(app: tauri::AppHandle, visible: bool) -> Result<(), String> {
-    let menu = build_main_menu(&app, visible).map_err(|error| error.to_string())?;
+    let space_open = app
+        .try_state::<space::SpaceState>()
+        .map(|state| space_is_open(&state))
+        .unwrap_or(false);
+    let menu = build_main_menu(&app, visible, space_open).map_err(|error| error.to_string())?;
     app.set_menu(menu).map_err(|error| error.to_string())?;
     Ok(())
 }
@@ -501,7 +558,7 @@ pub fn run() {
     init_tracing();
 
     tauri::Builder::default()
-        .menu(|app| build_main_menu(app, false))
+        .menu(|app| build_main_menu(app, false, false))
         .on_menu_event(|app, event| match event.id().as_ref() {
             "file.new_note" => {
                 let _ = app.emit("menu:new_note", ());

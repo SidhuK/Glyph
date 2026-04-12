@@ -29,7 +29,8 @@ pub async fn space_create(
         .map_err(|_| "space state poisoned".to_string())?;
     *guard = Some(PathBuf::from(&info.root));
     drop(guard);
-    let _ = set_notes_watcher(&state, app, PathBuf::from(&info.root));
+    let _ = set_notes_watcher(&state, app.clone(), PathBuf::from(&info.root));
+    let _ = crate::set_space_close_menu_enabled(&app, true);
     Ok(info)
 }
 
@@ -54,7 +55,8 @@ pub async fn space_open(
         .map_err(|_| "space state poisoned".to_string())?;
     *guard = Some(PathBuf::from(&info.root));
     drop(guard);
-    let _ = set_notes_watcher(&state, app, PathBuf::from(&info.root));
+    let _ = set_notes_watcher(&state, app.clone(), PathBuf::from(&info.root));
+    let _ = crate::set_space_close_menu_enabled(&app, true);
     Ok(info)
 }
 
@@ -65,7 +67,7 @@ pub fn space_get_current(state: State<'_, SpaceState>) -> Option<String> {
 }
 
 #[tauri::command]
-pub fn space_close(state: State<'_, SpaceState>) -> Result<(), String> {
+pub fn space_close(app: tauri::AppHandle, state: State<'_, SpaceState>) -> Result<(), String> {
     {
         let mut guard = state
             .current
@@ -79,5 +81,6 @@ pub fn space_close(state: State<'_, SpaceState>) -> Result<(), String> {
         .map_err(|_| "space watcher state poisoned".to_string())?;
     *watcher_guard = None;
     reset_schema_cache();
+    let _ = crate::set_space_close_menu_enabled(&app, false);
     Ok(())
 }

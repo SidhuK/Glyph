@@ -157,6 +157,31 @@ vi.mock("../ui/shadcn/calendar", () => ({
 	Calendar: () => null,
 }));
 
+vi.mock("../ui/shadcn/dialog", () => ({
+	Dialog: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+	DialogContent: ({ children }: { children: React.ReactNode }) => (
+		<div>{children}</div>
+	),
+	DialogDescription: ({ children }: { children: React.ReactNode }) => (
+		<p>{children}</p>
+	),
+	DialogFooter: ({ children }: { children: React.ReactNode }) => (
+		<div>{children}</div>
+	),
+	DialogHeader: ({ children }: { children: React.ReactNode }) => (
+		<div>{children}</div>
+	),
+	DialogTitle: ({ children }: { children: React.ReactNode }) => (
+		<h2>{children}</h2>
+	),
+}));
+
+vi.mock("../ui/shadcn/input", () => ({
+	Input: (props: React.InputHTMLAttributes<HTMLInputElement>) => (
+		<input {...props} />
+	),
+}));
+
 vi.mock("../ui/shadcn/popover", () => ({
 	Popover: ({ children }: { children: React.ReactNode }) => <>{children}</>,
 	PopoverContent: ({ children }: { children: React.ReactNode }) => (

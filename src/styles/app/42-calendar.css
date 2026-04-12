@@ -247,11 +247,6 @@
 		color-mix(in srgb, var(--border-default) 30%, transparent);
 	padding-left: clamp(12px, 1.8vw, 20px);
 	margin-left: clamp(12px, 1.8vw, 20px);
-}
-
-/* ── Right column: calendar picker ── */
-
-.calendarLeftCol {
 	position: sticky;
 	top: 0;
 }

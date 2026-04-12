@@ -191,7 +191,9 @@ export function ModelSelector({
 					</span>
 				)}
 				<span className={styles.triggerLabel}>{displayLabel}</span>
-				<span className={`${styles.triggerIcon} ${open ? styles.triggerIconOpen : ""}`}>
+				<span
+					className={`${styles.triggerIcon} ${open ? styles.triggerIconOpen : ""}`}
+				>
 					<ChevronDown size={12} />
 				</span>
 			</button>

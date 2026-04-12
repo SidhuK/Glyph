@@ -27,6 +27,15 @@ import { type BacklinkItem, invoke } from "../../lib/tauri";
 import { Save, Trash2, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { Calendar as DateCalendar } from "../ui/shadcn/calendar";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "../ui/shadcn/dialog";
+import { Input } from "../ui/shadcn/input";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 import { EditorRibbon } from "./EditorRibbon";
 import { NotePropertiesPanel } from "./NotePropertiesPanel";
@@ -71,7 +80,14 @@ const SELECTION_RIBBON_HIDE_DELAY_MS = 110;
 const TABLE_INLINE_CONTROL_OFFSET_PX = 20;
 const TABLE_INLINE_CONTROL_EDGE_PADDING_PX = 10;
 
+let lastFocusedCanvasEditorHost: HTMLDivElement | null = null;
+
 type SelectionRibbonPlacement = "above" | "below";
+
+interface LinkDialogState {
+	href: string;
+	target: "_self" | "_blank";
+}
 
 interface SelectionRibbonPosition {
 	top: number;
@@ -150,6 +166,22 @@ function isVisibleEditorHost(host: HTMLDivElement): boolean {
 		style.display !== "none" &&
 		style.visibility !== "hidden"
 	);
+}
+
+function normalizeEditorHref(value: string): string {
+	const trimmed = value.trim();
+	if (!trimmed) return "";
+	if (
+		trimmed.startsWith("http://") ||
+		trimmed.startsWith("https://") ||
+		trimmed.startsWith("mailto:") ||
+		trimmed.startsWith("tel:") ||
+		trimmed.startsWith("#") ||
+		trimmed.startsWith("/")
+	) {
+		return trimmed;
+	}
+	return `https://${trimmed}`;
 }
 
 async function openFrontmatterHref(
@@ -380,6 +412,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	>(null);
 	const [activeMermaidPreviewHeight, setActiveMermaidPreviewHeight] =
 		useState(0);
+	const [linkDialog, setLinkDialog] = useState<LinkDialogState | null>(null);
 	const previousRelPathRef = useRef(relPath);
 
 	useEffect(() => {
@@ -528,12 +561,19 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 			const host = tiptapHostRef.current;
 			if (!host || !isVisibleEditorHost(host)) return;
 			const activeElement = document.activeElement;
-			if (
-				activeElement instanceof HTMLElement &&
-				activeElement !== document.body &&
-				activeElement !== document.documentElement &&
-				!host.contains(activeElement)
-			) {
+			if (activeElement instanceof HTMLElement) {
+				const isDocumentFocusFallback =
+					activeElement === document.body ||
+					activeElement === document.documentElement;
+				if (host.contains(activeElement)) {
+					lastFocusedCanvasEditorHost = host;
+				} else if (
+					!isDocumentFocusFallback ||
+					lastFocusedCanvasEditorHost !== host
+				) {
+					return;
+				}
+			} else if (lastFocusedCanvasEditorHost !== host) {
 				return;
 			}
 			const scrollHost = host.closest(
@@ -655,19 +695,15 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 							})
 							.run();
 					case "link_set": {
-						const previousHref = editor.getAttributes("link").href as
-							| string
-							| undefined;
-						const nextHref = window.prompt(
-							"Enter link URL",
-							previousHref ?? "https://",
-						);
-						if (nextHref === null) return false;
-						const normalized = nextHref.trim();
-						if (!normalized) {
-							return chain.unsetLink().run();
-						}
-						return chain.setLink({ href: normalized }).run();
+						const linkAttrs = editor.getAttributes("link") as {
+							href?: string;
+							target?: string;
+						};
+						setLinkDialog({
+							href: linkAttrs.href ?? "",
+							target: linkAttrs.target === "_blank" ? "_blank" : "_self",
+						});
+						return true;
 					}
 					case "link_clear":
 						return chain.unsetLink().run();
@@ -1307,7 +1343,10 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	useEffect(() => {
 		const host = tiptapHostNode;
 		if (!host) return;
-		const handleFocusIn = () => setEditorFocused(true);
+		const handleFocusIn = () => {
+			lastFocusedCanvasEditorHost = host;
+			setEditorFocused(true);
+		};
 		const handleFocusOut = () => {
 			window.setTimeout(() => {
 				setEditorFocused(host.contains(document.activeElement));
@@ -1319,6 +1358,9 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		return () => {
 			host.removeEventListener("focusin", handleFocusIn);
 			host.removeEventListener("focusout", handleFocusOut);
+			if (lastFocusedCanvasEditorHost === host) {
+				lastFocusedCanvasEditorHost = null;
+			}
 		};
 	}, [tiptapHostNode]);
 
@@ -1326,6 +1368,43 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		tiptapHostRef.current = node;
 		setTiptapHostNode(node);
 	}, []);
+
+	const closeLinkDialog = useCallback(() => {
+		setLinkDialog(null);
+	}, []);
+
+	const applyLinkDialog = useCallback(() => {
+		if (!editor || !canEdit || !linkDialog) return;
+		const href = normalizeEditorHref(linkDialog.href);
+		const chain = editor
+			.chain()
+			.focus(undefined, { scrollIntoView: false })
+			.extendMarkRange("link");
+		if (!href) {
+			chain.unsetLink().run();
+			setLinkDialog(null);
+			return;
+		}
+		chain
+			.setLink({
+				href,
+				target: linkDialog.target,
+				rel: linkDialog.target === "_blank" ? "noopener noreferrer" : undefined,
+			})
+			.run();
+		setLinkDialog(null);
+	}, [canEdit, editor, linkDialog]);
+
+	const removeLinkFromDialog = useCallback(() => {
+		if (!editor || !canEdit) return;
+		editor
+			.chain()
+			.focus(undefined, { scrollIntoView: false })
+			.extendMarkRange("link")
+			.unsetLink()
+			.run();
+		setLinkDialog(null);
+	}, [canEdit, editor]);
 
 	return (
 		<div
@@ -1750,6 +1829,79 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 					</div>
 				) : null}
 			</div>
+			<Dialog
+				open={linkDialog !== null}
+				onOpenChange={(open) => {
+					if (!open) closeLinkDialog();
+				}}
+			>
+				<DialogContent
+					className="editorLinkDialog"
+					onOpenAutoFocus={(event) => {
+						const input = document.querySelector<HTMLInputElement>(
+							".editorLinkDialogInput",
+						);
+						if (!input) return;
+						event.preventDefault();
+						input.focus();
+						input.select();
+					}}
+				>
+					<DialogHeader>
+						<DialogTitle>Link</DialogTitle>
+						<DialogDescription>
+							Paste a URL, or leave it blank to remove the link.
+						</DialogDescription>
+					</DialogHeader>
+					<form
+						className="editorLinkDialogForm"
+						onSubmit={(event) => {
+							event.preventDefault();
+							applyLinkDialog();
+						}}
+					>
+						<Input
+							className="editorLinkDialogInput"
+							value={linkDialog?.href ?? ""}
+							onChange={(event) =>
+								setLinkDialog((current) =>
+									current ? { ...current, href: event.target.value } : current,
+								)
+							}
+							placeholder="https://example.com"
+							aria-label="Link URL"
+						/>
+						<label className="editorLinkDialogCheckbox">
+							<input
+								type="checkbox"
+								checked={linkDialog?.target === "_blank"}
+								onChange={(event) =>
+									setLinkDialog((current) =>
+										current
+											? {
+													...current,
+													target: event.target.checked ? "_blank" : "_self",
+												}
+											: current,
+									)
+								}
+							/>
+							<span>Open in new tab</span>
+						</label>
+						<DialogFooter className="editorLinkDialogActions">
+							<Button
+								type="button"
+								variant="ghost"
+								onClick={removeLinkFromDialog}
+							>
+								<X size={14} />
+								Remove
+							</Button>
+							<Button type="submit">Apply</Button>
+						</DialogFooter>
+					</form>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 });
