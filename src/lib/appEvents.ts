@@ -4,6 +4,7 @@ export const PATH_RENAMED_EVENT = "glyph:path-renamed";
 export const FORCE_NOTE_EDIT_MODE_EVENT = "glyph:force-note-edit-mode";
 export const ZEN_MODE_WILL_TOGGLE_EVENT = "glyph:zen-mode-will-toggle";
 export const OPEN_LOCAL_GRAPH_EVENT = "glyph:open-local-graph";
+export const EDITOR_MENU_ACTION_EVENT = "glyph:editor-menu-action";
 
 export interface PathRemovedDetail {
 	path: string;
@@ -31,6 +32,10 @@ export interface ZenModeWillToggleDetail {
 
 export interface OpenLocalGraphDetail {
 	path: string;
+}
+
+export interface EditorMenuActionDetail {
+	action: string;
 }
 
 export function dispatchPathRemoved(detail: PathRemovedDetail) {
@@ -72,5 +77,13 @@ export function dispatchZenModeWillToggle(detail: ZenModeWillToggleDetail) {
 export function dispatchOpenLocalGraph(detail: OpenLocalGraphDetail) {
 	window.dispatchEvent(
 		new CustomEvent<OpenLocalGraphDetail>(OPEN_LOCAL_GRAPH_EVENT, { detail }),
+	);
+}
+
+export function dispatchEditorMenuAction(detail: EditorMenuActionDetail) {
+	window.dispatchEvent(
+		new CustomEvent<EditorMenuActionDetail>(EDITOR_MENU_ACTION_EVENT, {
+			detail,
+		}),
 	);
 }

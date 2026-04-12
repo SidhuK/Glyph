@@ -13,6 +13,10 @@ import { AnimatePresence } from "motion/react";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import {
+	EDITOR_MENU_ACTION_EVENT,
+	type EditorMenuActionDetail,
+} from "../../lib/appEvents";
+import {
 	MERMAID_CODE_BLOCK_LANGUAGE,
 	extractMermaidErrorMessage,
 	renderMermaidDiagram,
@@ -23,6 +27,15 @@ import { type BacklinkItem, invoke } from "../../lib/tauri";
 import { Save, Trash2, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { Calendar as DateCalendar } from "../ui/shadcn/calendar";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogFooter,
+	DialogHeader,
+	DialogTitle,
+} from "../ui/shadcn/dialog";
+import { Input } from "../ui/shadcn/input";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 import { EditorRibbon } from "./EditorRibbon";
 import { NotePropertiesPanel } from "./NotePropertiesPanel";
@@ -39,6 +52,8 @@ import {
 	dispatchWikiLinkClick,
 } from "./markdown/editorEvents";
 import { parseWikiLink } from "./markdown/wikiLinkCodec";
+import { isEditorTextColor } from "./textColors";
+import { isEditorTextHighlight } from "./textHighlights";
 import type { CanvasNoteInlineEditorProps } from "./types";
 
 function safeParseISO(value?: string): Date | undefined {
@@ -65,7 +80,14 @@ const SELECTION_RIBBON_HIDE_DELAY_MS = 110;
 const TABLE_INLINE_CONTROL_OFFSET_PX = 20;
 const TABLE_INLINE_CONTROL_EDGE_PADDING_PX = 10;
 
+let lastFocusedCanvasEditorHost: HTMLDivElement | null = null;
+
 type SelectionRibbonPlacement = "above" | "below";
+
+interface LinkDialogState {
+	href: string;
+	target: "_self" | "_blank";
+}
 
 interface SelectionRibbonPosition {
 	top: number;
@@ -134,6 +156,32 @@ function getOffsetWithinAncestor(
 		left: elementRect.left - ancestorRect.left,
 		top: elementRect.top - ancestorRect.top,
 	};
+}
+
+function isVisibleEditorHost(host: HTMLDivElement): boolean {
+	const style = window.getComputedStyle(host);
+	return (
+		host.isConnected &&
+		host.offsetParent !== null &&
+		style.display !== "none" &&
+		style.visibility !== "hidden"
+	);
+}
+
+function normalizeEditorHref(value: string): string {
+	const trimmed = value.trim();
+	if (!trimmed) return "";
+	if (
+		trimmed.startsWith("http://") ||
+		trimmed.startsWith("https://") ||
+		trimmed.startsWith("mailto:") ||
+		trimmed.startsWith("tel:") ||
+		trimmed.startsWith("#") ||
+		trimmed.startsWith("/")
+	) {
+		return trimmed;
+	}
+	return `https://${trimmed}`;
 }
 
 async function openFrontmatterHref(
@@ -364,6 +412,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	>(null);
 	const [activeMermaidPreviewHeight, setActiveMermaidPreviewHeight] =
 		useState(0);
+	const [linkDialog, setLinkDialog] = useState<LinkDialogState | null>(null);
 	const previousRelPathRef = useRef(relPath);
 
 	useEffect(() => {
@@ -502,6 +551,205 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 			document.removeEventListener("selectionchange", syncSelectionRibbon);
 			editor.off("selectionUpdate", syncSelectionRibbon);
 			window.removeEventListener("resize", syncSelectionRibbon);
+		};
+	}, [canEdit, editor, mode]);
+
+	useEffect(() => {
+		if (!editor || mode !== "rich" || !canEdit) return;
+
+		const runEditorAction = (action: string) => {
+			const host = tiptapHostRef.current;
+			if (!host || !isVisibleEditorHost(host)) return;
+			const activeElement = document.activeElement;
+			if (activeElement instanceof HTMLElement) {
+				const isDocumentFocusFallback =
+					activeElement === document.body ||
+					activeElement === document.documentElement;
+				if (host.contains(activeElement)) {
+					lastFocusedCanvasEditorHost = host;
+				} else if (
+					!isDocumentFocusFallback ||
+					lastFocusedCanvasEditorHost !== host
+				) {
+					return;
+				}
+			} else if (lastFocusedCanvasEditorHost !== host) {
+				return;
+			}
+			const scrollHost = host.closest(
+				".rfNodeNoteEditorBody",
+			) as HTMLElement | null;
+			const scrollTop = scrollHost?.scrollTop ?? 0;
+			const chain = editor
+				.chain()
+				.focus(undefined, { scrollIntoView: false })
+				.extendMarkRange("link");
+			const handled = (() => {
+				switch (action) {
+					case "bold":
+						return chain.toggleBold().run();
+					case "italic":
+						return chain.toggleItalic().run();
+					case "underline":
+						return chain.toggleUnderline().run();
+					case "strikethrough":
+						return chain.toggleStrike().run();
+					case "heading_1":
+						return chain.toggleHeading({ level: 1 }).run();
+					case "heading_2":
+						return chain.toggleHeading({ level: 2 }).run();
+					case "heading_3":
+						return chain.toggleHeading({ level: 3 }).run();
+					case "bullet_list":
+						return chain.toggleBulletList().run();
+					case "numbered_list":
+						return chain.toggleOrderedList().run();
+					case "todo_list":
+						return chain.toggleTaskList().run();
+					case "quote":
+						return chain.toggleBlockquote().run();
+					case "code_block":
+						return chain.toggleCodeBlock().run();
+					case "mermaid_chart":
+						return chain
+							.insertContent({
+								type: "codeBlock",
+								attrs: { language: "mermaid" },
+								content: [
+									{
+										type: "text",
+										text: "flowchart TD\n  A[Start] --> B[End]",
+									},
+								],
+							})
+							.run();
+					case "table":
+						return chain
+							.insertTable({ rows: 3, cols: 3, withHeaderRow: true })
+							.run();
+					case "divider":
+						return chain.setHorizontalRule().run();
+					case "callout_info":
+						return chain
+							.insertContent({
+								type: "blockquote",
+								content: [
+									{
+										type: "paragraph",
+										content: [{ type: "text", text: "[!info]" }],
+									},
+									{ type: "paragraph" },
+								],
+							})
+							.run();
+					case "callout_warning":
+						return chain
+							.insertContent({
+								type: "blockquote",
+								content: [
+									{
+										type: "paragraph",
+										content: [{ type: "text", text: "[!warning]" }],
+									},
+									{ type: "paragraph" },
+								],
+							})
+							.run();
+					case "callout_error":
+						return chain
+							.insertContent({
+								type: "blockquote",
+								content: [
+									{
+										type: "paragraph",
+										content: [{ type: "text", text: "[!error]" }],
+									},
+									{ type: "paragraph" },
+								],
+							})
+							.run();
+					case "callout_success":
+						return chain
+							.insertContent({
+								type: "blockquote",
+								content: [
+									{
+										type: "paragraph",
+										content: [{ type: "text", text: "[!success]" }],
+									},
+									{ type: "paragraph" },
+								],
+							})
+							.run();
+					case "callout_tip":
+						return chain
+							.insertContent({
+								type: "blockquote",
+								content: [
+									{
+										type: "paragraph",
+										content: [{ type: "text", text: "[!tip]" }],
+									},
+									{ type: "paragraph" },
+								],
+							})
+							.run();
+					case "link_set": {
+						const linkAttrs = editor.getAttributes("link") as {
+							href?: string;
+							target?: string;
+						};
+						setLinkDialog({
+							href: linkAttrs.href ?? "",
+							target: linkAttrs.target === "_blank" ? "_blank" : "_self",
+						});
+						return true;
+					}
+					case "link_clear":
+						return chain.unsetLink().run();
+					case "color_clear":
+						return chain.unsetTextColor().run();
+					case "highlight_clear":
+						return chain.unsetTextHighlight().run();
+					default: {
+						if (action.startsWith("color_")) {
+							const color = action.slice("color_".length);
+							if (isEditorTextColor(color)) {
+								return chain.setTextColor(color).run();
+							}
+							return false;
+						}
+						if (action.startsWith("highlight_")) {
+							const highlight = action.slice("highlight_".length);
+							if (isEditorTextHighlight(highlight)) {
+								return chain.setTextHighlight(highlight).run();
+							}
+							return false;
+						}
+						return false;
+					}
+				}
+			})();
+			if (!handled) return;
+			if (scrollHost) {
+				requestAnimationFrame(() => {
+					scrollHost.scrollTop = scrollTop;
+				});
+			}
+		};
+
+		const onEditorMenuAction = (event: Event) => {
+			const detail =
+				event instanceof CustomEvent
+					? (event.detail as EditorMenuActionDetail | null)
+					: null;
+			if (!detail?.action) return;
+			runEditorAction(detail.action);
+		};
+
+		window.addEventListener(EDITOR_MENU_ACTION_EVENT, onEditorMenuAction);
+		return () => {
+			window.removeEventListener(EDITOR_MENU_ACTION_EVENT, onEditorMenuAction);
 		};
 	}, [canEdit, editor, mode]);
 
@@ -1095,7 +1343,10 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	useEffect(() => {
 		const host = tiptapHostNode;
 		if (!host) return;
-		const handleFocusIn = () => setEditorFocused(true);
+		const handleFocusIn = () => {
+			lastFocusedCanvasEditorHost = host;
+			setEditorFocused(true);
+		};
 		const handleFocusOut = () => {
 			window.setTimeout(() => {
 				setEditorFocused(host.contains(document.activeElement));
@@ -1107,6 +1358,9 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		return () => {
 			host.removeEventListener("focusin", handleFocusIn);
 			host.removeEventListener("focusout", handleFocusOut);
+			if (lastFocusedCanvasEditorHost === host) {
+				lastFocusedCanvasEditorHost = null;
+			}
 		};
 	}, [tiptapHostNode]);
 
@@ -1114,6 +1368,43 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		tiptapHostRef.current = node;
 		setTiptapHostNode(node);
 	}, []);
+
+	const closeLinkDialog = useCallback(() => {
+		setLinkDialog(null);
+	}, []);
+
+	const applyLinkDialog = useCallback(() => {
+		if (!editor || !canEdit || !linkDialog) return;
+		const href = normalizeEditorHref(linkDialog.href);
+		const chain = editor
+			.chain()
+			.focus(undefined, { scrollIntoView: false })
+			.extendMarkRange("link");
+		if (!href) {
+			chain.unsetLink().run();
+			setLinkDialog(null);
+			return;
+		}
+		chain
+			.setLink({
+				href,
+				target: linkDialog.target,
+				rel: linkDialog.target === "_blank" ? "noopener noreferrer" : undefined,
+			})
+			.run();
+		setLinkDialog(null);
+	}, [canEdit, editor, linkDialog]);
+
+	const removeLinkFromDialog = useCallback(() => {
+		if (!editor || !canEdit) return;
+		editor
+			.chain()
+			.focus(undefined, { scrollIntoView: false })
+			.extendMarkRange("link")
+			.unsetLink()
+			.run();
+		setLinkDialog(null);
+	}, [canEdit, editor]);
 
 	return (
 		<div
@@ -1538,6 +1829,79 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 					</div>
 				) : null}
 			</div>
+			<Dialog
+				open={linkDialog !== null}
+				onOpenChange={(open) => {
+					if (!open) closeLinkDialog();
+				}}
+			>
+				<DialogContent
+					className="editorLinkDialog"
+					onOpenAutoFocus={(event) => {
+						const input = document.querySelector<HTMLInputElement>(
+							".editorLinkDialogInput",
+						);
+						if (!input) return;
+						event.preventDefault();
+						input.focus();
+						input.select();
+					}}
+				>
+					<DialogHeader>
+						<DialogTitle>Link</DialogTitle>
+						<DialogDescription>
+							Paste a URL, or leave it blank to remove the link.
+						</DialogDescription>
+					</DialogHeader>
+					<form
+						className="editorLinkDialogForm"
+						onSubmit={(event) => {
+							event.preventDefault();
+							applyLinkDialog();
+						}}
+					>
+						<Input
+							className="editorLinkDialogInput"
+							value={linkDialog?.href ?? ""}
+							onChange={(event) =>
+								setLinkDialog((current) =>
+									current ? { ...current, href: event.target.value } : current,
+								)
+							}
+							placeholder="https://example.com"
+							aria-label="Link URL"
+						/>
+						<label className="editorLinkDialogCheckbox">
+							<input
+								type="checkbox"
+								checked={linkDialog?.target === "_blank"}
+								onChange={(event) =>
+									setLinkDialog((current) =>
+										current
+											? {
+													...current,
+													target: event.target.checked ? "_blank" : "_self",
+												}
+											: current,
+									)
+								}
+							/>
+							<span>Open in new tab</span>
+						</label>
+						<DialogFooter className="editorLinkDialogActions">
+							<Button
+								type="button"
+								variant="ghost"
+								onClick={removeLinkFromDialog}
+							>
+								<X size={14} />
+								Remove
+							</Button>
+							<Button type="submit">Apply</Button>
+						</DialogFooter>
+					</form>
+				</DialogContent>
+			</Dialog>
 		</div>
 	);
 });

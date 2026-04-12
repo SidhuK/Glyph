@@ -1,6 +1,26 @@
 {
 	"versions": [
 		{
+			"version": "0.2.7",
+			"publishedAt": "2026-04-10",
+			"sections": [
+				{
+					"category": "Added",
+					"items": [
+						"Introduced a context-aware Markdown menu that surfaces the full rich-formatting toolkit only when editing Markdown, delivering a cleaner, distraction-free menubar everywhere else.",
+						"Refined Calendar Activity into a clean, command-palette-style note list with title-plus-folder scanning for faster daily context"
+					]
+				},
+				{
+					"category": "Improved",
+					"items": [
+						"Improved Dark Mode accessibility with refined contrast and readability so every screen feels more comfortable and polished after hours",
+						"Glyph now keeps saving normally on SMB and NAS shares, and only skips the unsupported sync call when the filesystem reports that it cannot handle it"
+					]
+				}
+			]
+		},
+		{
 			"version": "0.2.6",
 			"publishedAt": "2026-04-09",
 			"sections": [

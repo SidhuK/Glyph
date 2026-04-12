@@ -10,6 +10,7 @@ import {
 	FlowConnectionIcon,
 	Folder01Icon,
 	FolderOpenIcon,
+	FolderRemoveIcon,
 	Home01Icon,
 	InformationCircleIcon,
 	LibraryIcon,
@@ -57,6 +58,7 @@ import { useResizablePanel } from "../../hooks/useResizablePanel";
 import { AI_AGENT_TAB_ID } from "../../lib/aiAgent";
 import { ALL_DOCS_TAB_ID } from "../../lib/allDocs";
 import {
+	dispatchEditorMenuAction,
 	dispatchFileTreeStartRename,
 	dispatchForceNoteEditMode,
 	dispatchOpenLocalGraph,
@@ -329,6 +331,12 @@ export function AppShell() {
 		openFileTab,
 		openSpecialTab,
 	} = useTabManager(spacePath);
+
+	useEffect(() => {
+		const visible =
+			activeMarkdownTabPath !== null && isMarkdownPath(activeMarkdownTabPath);
+		void invoke("set_markdown_menu_visible", { visible }).catch(() => {});
+	}, [activeMarkdownTabPath]);
 
 	const openWorkspaceFile = useCallback(
 		async (path: string) => {
@@ -1097,6 +1105,9 @@ export function AppShell() {
 		onAttachCurrentNoteToAi: handleAttachCurrentNoteFromMenu,
 		onAttachAllOpenNotesToAi: handleAttachAllOpenNotesFromMenu,
 		onOpenAiSettings: handleOpenAiSettings,
+		onEditorAction: (action) => {
+			dispatchEditorMenuAction({ action });
+		},
 	});
 
 	const commands = useMemo<Command[]>(() => {
@@ -1220,13 +1231,23 @@ export function AppShell() {
 			},
 			{
 				id: "open-space",
-				label: "Open space",
+				label: spacePath ? "Open another space" : "Open space",
 				icon: (
 					<HugeiconsIcon icon={FolderOpenIcon} size={16} strokeWidth={0.9} />
 				),
 				category: "Workspace",
 				shortcut: { meta: true, key: "o" },
 				action: onOpenSpace,
+			},
+			{
+				id: "close-space",
+				label: "Close current space",
+				icon: (
+					<HugeiconsIcon icon={FolderRemoveIcon} size={16} strokeWidth={0.9} />
+				),
+				category: "Workspace",
+				enabled: Boolean(spacePath),
+				action: closeSpace,
 			},
 			{
 				id: "open-git-sync-settings",
@@ -1571,6 +1592,7 @@ export function AppShell() {
 		handleDuplicateActiveMarkdown,
 		handleExportHtml,
 		fileTree,
+		closeSpace,
 		onOpenSpace,
 		openMarkdownTabs.length,
 		createDatabaseAndOpen,

@@ -738,6 +738,7 @@ interface TauriCommands {
 	app_info: CommandDef<void, AppInfo>;
 	system_fonts_list: CommandDef<void, string[]>;
 	system_monospace_fonts_list: CommandDef<void, string[]>;
+	set_markdown_menu_visible: CommandDef<{ visible: boolean }, void>;
 	license_bootstrap_status: CommandDef<void, LicenseStatus>;
 	license_activate: CommandDef<{ license_key: string }, LicenseActivateResult>;
 	license_clear_local: CommandDef<void, LicenseActivateResult>;

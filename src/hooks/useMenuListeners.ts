@@ -21,6 +21,7 @@ export interface UseMenuListenersProps {
 	onAttachCurrentNoteToAi: () => void;
 	onAttachAllOpenNotesToAi: () => void;
 	onOpenAiSettings: () => void;
+	onEditorAction: (action: string) => void;
 }
 
 export function useMenuListeners({
@@ -42,6 +43,7 @@ export function useMenuListeners({
 	onAttachCurrentNoteToAi,
 	onAttachAllOpenNotesToAi,
 	onOpenAiSettings,
+	onEditorAction,
 }: UseMenuListenersProps): void {
 	const { openSettings } = useUILayoutContext();
 	const handleNewNote = useCallback(() => {
@@ -104,6 +106,12 @@ export function useMenuListeners({
 	const handleOpenAiSettings = useCallback(() => {
 		onOpenAiSettings();
 	}, [onOpenAiSettings]);
+	const handleEditorAction = useCallback(
+		(payload: { action: string }) => {
+			onEditorAction(payload.action);
+		},
+		[onEditorAction],
+	);
 
 	useTauriEvent("menu:new_note", handleNewNote);
 	useTauriEvent("menu:create_from_template", handleCreateFromTemplate);
@@ -125,4 +133,5 @@ export function useMenuListeners({
 	useTauriEvent("menu:ai_attach_current_note", handleAttachCurrentNote);
 	useTauriEvent("menu:ai_attach_all_open_notes", handleAttachAllOpenNotes);
 	useTauriEvent("menu:open_ai_settings", handleOpenAiSettings);
+	useTauriEvent("menu:editor_action", handleEditorAction);
 }

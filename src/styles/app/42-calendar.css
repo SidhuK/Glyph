@@ -46,7 +46,7 @@
 	flex-direction: column;
 	gap: clamp(14px, 1.8vw, 20px);
 	max-width: 900px;
-	margin: 0 auto;
+	margin: auto;
 	width: 100%;
 }
 
@@ -63,6 +63,43 @@
 	display: flex;
 	align-items: center;
 	gap: 2px;
+}
+
+/* ── New Note button (Activity header) ── */
+
+.calendarNewNoteBtn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	gap: 6px;
+	height: 28px;
+	padding: 0 10px;
+	font-size: 13px;
+	font-weight: var(--font-medium);
+	color: var(--text-inverse);
+	background: var(--interactive-accent);
+	border: 1px solid
+		color-mix(in srgb, var(--interactive-accent) 72%, var(--border-strong));
+	border-radius: var(--radius-md);
+	box-shadow: 0 1px 2px color-mix(in srgb, var(--text-primary) 12%, transparent);
+	cursor: pointer;
+	transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.calendarNewNoteBtn:hover {
+	background: var(--interactive-accent-hover);
+	color: var(--text-inverse);
+}
+
+.calendarNewNoteBtn:focus-visible {
+	outline: none;
+	box-shadow: 0 0 0 2px color-mix(in srgb, var(--bg-primary) 88%, transparent),
+		0 0 0 4px color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+}
+
+.calendarNewNoteBtn > svg,
+.calendarNewNoteBtn > span {
+	color: inherit;
 }
 
 .calendarMonthYearLabel {
@@ -82,10 +119,12 @@
 	display: flex;
 	align-items: center;
 	gap: 8px;
-	padding: 3px 3px 3px 0;
-	border-radius: 10px;
-	width: 85%;
-	margin: 0 auto;
+	padding: 10px 12px;
+	border-radius: 12px;
+	width: 100%;
+	margin: 0;
+	background: var(--bg-secondary);
+	border: 1px solid color-mix(in srgb, var(--border-default) 50%, transparent);
 }
 
 .calendarTaskComposer input {
@@ -138,11 +177,15 @@
 }
 
 .calendarTaskAddIcon.calendarTaskBtn:disabled {
-	background: color-mix(in srgb, var(--interactive-accent) 40%, transparent);
-	border-color: color-mix(in srgb, var(--interactive-accent) 30%, transparent);
-	color: color-mix(in srgb, var(--text-inverse) 50%, transparent);
+	background: var(--interactive-accent);
+	border-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 72%,
+		var(--border-strong)
+	);
+	color: var(--text-inverse);
 	opacity: 1;
-	box-shadow: none;
+	box-shadow: 0 1px 2px color-mix(in srgb, var(--text-primary) 12%, transparent);
 }
 
 .calendarOpenNoteBtn {
@@ -159,7 +202,9 @@
 	justify-content: space-between;
 	gap: 10px;
 	padding: 10px 12px;
-	border-radius: 8px;
+	border-radius: 12px;
+	background: var(--bg-secondary);
+	border: 1px solid color-mix(in srgb, var(--border-default) 50%, transparent);
 	font-size: 0.8rem;
 	color: var(--text-secondary);
 }
@@ -175,17 +220,21 @@
 .calendarLayout {
 	display: grid;
 	grid-template-columns: 1fr auto;
-	gap: 0 clamp(20px, 2.4vw, 32px);
+	gap: 0;
 	align-items: start;
+	background: var(--bg-secondary);
+	border: 1px solid color-mix(in srgb, var(--border-default) 50%, transparent);
+	border-radius: 12px;
+	padding: clamp(8px, 1vw, 12px);
 }
 
 /* ── Card wrapper (shared by tasks & calendar columns) ── */
 
 .calendarDetailCol,
 .calendarLeftCol {
-	background: var(--bg-primary);
-	border: 1px solid color-mix(in srgb, var(--border-default) 40%, transparent);
-	border-radius: 10px;
+	background: transparent;
+	border: none;
+	border-radius: 0;
 	height: 360px;
 	display: flex;
 	flex-direction: column;
@@ -193,9 +242,11 @@
 	overflow: hidden;
 }
 
-/* ── Right column: calendar picker ── */
-
 .calendarLeftCol {
+	border-left: 1px solid
+		color-mix(in srgb, var(--border-default) 30%, transparent);
+	padding-left: clamp(12px, 1.8vw, 20px);
+	margin-left: clamp(12px, 1.8vw, 20px);
 	position: sticky;
 	top: 0;
 }
@@ -522,30 +573,12 @@
 /* ── Recent notes mini-db ── */
 
 .calendarMiniDb {
-	--calendar-activity-overflow-scale: 0;
-	border-radius: 16px;
-	width: min(
-		calc(
-			100% +
-			(
-				calc(
-					var(--calendar-activity-extra-width, 0px) *
-					var(--calendar-activity-overflow-scale)
-				)
-			)
-		),
-		1120px
-	);
+	width: 100%;
 	align-self: stretch;
-	margin-inline: calc(
-		(
-			calc(
-				var(--calendar-activity-extra-width, 0px) *
-				var(--calendar-activity-overflow-scale)
-			)
-		) /
-		-2
-	);
+	background: var(--bg-secondary);
+	border: 1px solid color-mix(in srgb, var(--border-default) 50%, transparent);
+	border-radius: 12px;
+	overflow: hidden;
 }
 
 .calendarMiniDbHeader {
@@ -565,47 +598,50 @@
 	min-width: 0;
 }
 
-.calendarRecentStrip {
-	padding: 0 24px 20px;
-}
-
-.calendarRecentStripScroller {
+.calendarRecentList {
 	display: flex;
-	gap: 14px;
-	overflow-x: auto;
-	overflow-y: visible;
-	padding: 4px 3px 6px;
-	scrollbar-gutter: stable;
-	scroll-padding-inline: 3px;
+	flex-direction: column;
+	gap: 2px;
+	height: 230px;
+	overflow-y: auto;
+	padding: 0 24px 12px;
+	margin: 0;
+	list-style: none;
 }
 
-.calendarRecentStripScroller::-webkit-scrollbar {
-	height: 8px;
+.calendarRecentListRow {
+	margin: 0;
+	padding: 0;
 }
 
-.calendarRecentStripScroller::-webkit-scrollbar-thumb {
+.calendarRecentList::-webkit-scrollbar {
+	width: 5px;
+}
+
+.calendarRecentList::-webkit-scrollbar-thumb {
 	border-radius: 999px;
-	background: color-mix(in srgb, var(--border-default) 58%, transparent);
+	background: color-mix(in srgb, var(--border-default) 50%, transparent);
 }
 
-.calendarRecentStripScroller::-webkit-scrollbar-track {
+.calendarRecentList::-webkit-scrollbar-track {
 	background: transparent;
 }
 
-.calendarRecentStripCard {
-	width: min(280px, calc(100vw - 88px));
-	flex: 0 0 auto;
-	min-height: 168px;
-	padding: 12px;
-	border-radius: 14px;
+.calendarRecentListItem {
+	width: 100%;
+	min-height: 34px;
 }
 
-.calendarRecentStripCard .databaseBoardCardPreview {
-	-webkit-line-clamp: 3;
+.calendarRecentListItem[data-state="selected"] {
+	background: color-mix(in srgb, var(--interactive-accent) 12%, var(--bg-hover));
 }
 
-.calendarRecentStripTags {
-	overflow: hidden;
+.calendarRecentListEmpty {
+	margin: 0;
+	padding: 8px 12px;
+	font-size: 0.8rem;
+	color: var(--text-tertiary, var(--text-secondary));
+	font-style: italic;
 }
 
 /* ── Empty / error / loading ── */
@@ -639,24 +675,6 @@
 
 /* ── Responsive ── */
 
-@container (min-width: 1500px) {
-	.calendarMiniDb {
-		--calendar-activity-overflow-scale: 0.2;
-	}
-}
-
-@container (min-width: 1680px) {
-	.calendarMiniDb {
-		--calendar-activity-overflow-scale: 0.45;
-	}
-}
-
-@container (min-width: 1860px) {
-	.calendarMiniDb {
-		--calendar-activity-overflow-scale: 0.7;
-	}
-}
-
 @container (max-width: 860px) {
 	.calendarLayout {
 		grid-template-columns: minmax(0, 1fr);
@@ -665,6 +683,12 @@
 
 	.calendarLeftCol {
 		position: static;
+		border-left: none;
+		padding-left: 0;
+		margin-left: 0;
+		border-top: 1px solid
+			color-mix(in srgb, var(--border-default) 30%, transparent);
+		padding-top: clamp(10px, 1.8vw, 14px);
 	}
 
 	.calendarToolbarNav {
@@ -700,16 +724,8 @@
 		align-items: flex-start;
 	}
 
-	.calendarRecentStrip {
+	.calendarRecentList {
 		padding-inline: 14px;
-	}
-
-	.calendarRecentStripScroller {
-		gap: 12px;
-	}
-
-	.calendarRecentStripCard {
-		width: min(240px, calc(100vw - 64px));
 	}
 
 	.calendarShadcnWrap {
