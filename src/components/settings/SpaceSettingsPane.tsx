@@ -443,7 +443,7 @@ export function SpaceSettingsPane() {
 						stacked
 						interactive={false}
 					>
-						<div className="dailyNotesFolderPath" data-compact>
+						<div className="settingsCompactStatus">
 							{reindexStatus ||
 								(!currentSpacePath ? "No space selected." : "Index is ready.")}
 						</div>

@@ -118,7 +118,8 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
         None::<&str>,
     )?;
     #[cfg(target_os = "macos")]
-    let app_settings = MenuItem::with_id(app, "app.settings", "Settings…", true, Some("CmdOrCtrl+,"))?;
+    let app_settings =
+        MenuItem::with_id(app, "app.settings", "Settings…", true, Some("CmdOrCtrl+,"))?;
 
     #[cfg(target_os = "macos")]
     let app_menu = Submenu::with_items(
@@ -138,7 +139,8 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
         ],
     )?;
 
-    let open_space = MenuItem::with_id(app, "space.open", "Open Space…", true, Some("CmdOrCtrl+O"))?;
+    let open_space =
+        MenuItem::with_id(app, "space.open", "Open Space…", true, Some("CmdOrCtrl+O"))?;
     let create_space = MenuItem::with_id(
         app,
         "space.create",
@@ -220,23 +222,16 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
         true,
         None::<&str>,
     )?;
-    let editor_link_clear = MenuItem::with_id(
-        app,
-        "editor.link_clear",
-        "Remove Link",
-        true,
-        None::<&str>,
-    )?;
-    let editor_heading_1 = MenuItem::with_id(app, "editor.heading_1", "Heading 1", true, None::<&str>)?;
-    let editor_heading_2 = MenuItem::with_id(app, "editor.heading_2", "Heading 2", true, None::<&str>)?;
-    let editor_heading_3 = MenuItem::with_id(app, "editor.heading_3", "Heading 3", true, None::<&str>)?;
-    let editor_bullet_list = MenuItem::with_id(
-        app,
-        "editor.bullet_list",
-        "Bullet List",
-        true,
-        None::<&str>,
-    )?;
+    let editor_link_clear =
+        MenuItem::with_id(app, "editor.link_clear", "Remove Link", true, None::<&str>)?;
+    let editor_heading_1 =
+        MenuItem::with_id(app, "editor.heading_1", "Heading 1", true, None::<&str>)?;
+    let editor_heading_2 =
+        MenuItem::with_id(app, "editor.heading_2", "Heading 2", true, None::<&str>)?;
+    let editor_heading_3 =
+        MenuItem::with_id(app, "editor.heading_3", "Heading 3", true, None::<&str>)?;
+    let editor_bullet_list =
+        MenuItem::with_id(app, "editor.bullet_list", "Bullet List", true, None::<&str>)?;
     let editor_numbered_list = MenuItem::with_id(
         app,
         "editor.numbered_list",
@@ -244,15 +239,11 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
         true,
         None::<&str>,
     )?;
-    let editor_todo_list = MenuItem::with_id(app, "editor.todo_list", "To-do List", true, None::<&str>)?;
+    let editor_todo_list =
+        MenuItem::with_id(app, "editor.todo_list", "To-do List", true, None::<&str>)?;
     let editor_quote = MenuItem::with_id(app, "editor.quote", "Quote", true, None::<&str>)?;
-    let editor_code_block = MenuItem::with_id(
-        app,
-        "editor.code_block",
-        "Code Block",
-        true,
-        None::<&str>,
-    )?;
+    let editor_code_block =
+        MenuItem::with_id(app, "editor.code_block", "Code Block", true, None::<&str>)?;
     let editor_mermaid_chart = MenuItem::with_id(
         app,
         "editor.mermaid_chart",
@@ -262,7 +253,13 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     )?;
     let editor_table = MenuItem::with_id(app, "editor.table", "Table", true, None::<&str>)?;
     let editor_divider = MenuItem::with_id(app, "editor.divider", "Divider", true, None::<&str>)?;
-    let editor_callout_info = MenuItem::with_id(app, "editor.callout_info", "Info Callout", true, None::<&str>)?;
+    let editor_callout_info = MenuItem::with_id(
+        app,
+        "editor.callout_info",
+        "Info Callout",
+        true,
+        None::<&str>,
+    )?;
     let editor_callout_warning = MenuItem::with_id(
         app,
         "editor.callout_warning",
@@ -284,23 +281,33 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
         true,
         None::<&str>,
     )?;
-    let editor_callout_tip = MenuItem::with_id(app, "editor.callout_tip", "Tip Callout", true, None::<&str>)?;
-    let editor_color_gray = MenuItem::with_id(app, "editor.color_gray", "Gray", true, None::<&str>)?;
-    let editor_color_brown = MenuItem::with_id(app, "editor.color_brown", "Brown", true, None::<&str>)?;
-    let editor_color_orange = MenuItem::with_id(app, "editor.color_orange", "Orange", true, None::<&str>)?;
-    let editor_color_yellow = MenuItem::with_id(app, "editor.color_yellow", "Yellow", true, None::<&str>)?;
-    let editor_color_green = MenuItem::with_id(app, "editor.color_green", "Green", true, None::<&str>)?;
-    let editor_color_blue = MenuItem::with_id(app, "editor.color_blue", "Blue", true, None::<&str>)?;
-    let editor_color_purple = MenuItem::with_id(app, "editor.color_purple", "Purple", true, None::<&str>)?;
+    let editor_callout_tip =
+        MenuItem::with_id(app, "editor.callout_tip", "Tip Callout", true, None::<&str>)?;
+    let editor_color_gray =
+        MenuItem::with_id(app, "editor.color_gray", "Gray", true, None::<&str>)?;
+    let editor_color_brown =
+        MenuItem::with_id(app, "editor.color_brown", "Brown", true, None::<&str>)?;
+    let editor_color_orange =
+        MenuItem::with_id(app, "editor.color_orange", "Orange", true, None::<&str>)?;
+    let editor_color_yellow =
+        MenuItem::with_id(app, "editor.color_yellow", "Yellow", true, None::<&str>)?;
+    let editor_color_green =
+        MenuItem::with_id(app, "editor.color_green", "Green", true, None::<&str>)?;
+    let editor_color_blue =
+        MenuItem::with_id(app, "editor.color_blue", "Blue", true, None::<&str>)?;
+    let editor_color_purple =
+        MenuItem::with_id(app, "editor.color_purple", "Purple", true, None::<&str>)?;
     let editor_color_red = MenuItem::with_id(app, "editor.color_red", "Red", true, None::<&str>)?;
     let editor_color_clear =
         MenuItem::with_id(app, "editor.color_clear", "Clear Color", true, None::<&str>)?;
     let editor_highlight_yellow =
         MenuItem::with_id(app, "editor.highlight_yellow", "Yellow", true, None::<&str>)?;
-    let editor_highlight_blue = MenuItem::with_id(app, "editor.highlight_blue", "Blue", true, None::<&str>)?;
+    let editor_highlight_blue =
+        MenuItem::with_id(app, "editor.highlight_blue", "Blue", true, None::<&str>)?;
     let editor_highlight_green =
         MenuItem::with_id(app, "editor.highlight_green", "Green", true, None::<&str>)?;
-    let editor_highlight_red = MenuItem::with_id(app, "editor.highlight_red", "Red", true, None::<&str>)?;
+    let editor_highlight_red =
+        MenuItem::with_id(app, "editor.highlight_red", "Red", true, None::<&str>)?;
     let editor_highlight_clear = MenuItem::with_id(
         app,
         "editor.highlight_clear",
@@ -323,7 +330,8 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
         true,
         Some("CmdOrCtrl+Alt+Shift+A"),
     )?;
-    let open_ai_settings = MenuItem::with_id(app, "ai.settings", "AI Settings…", true, None::<&str>)?;
+    let open_ai_settings =
+        MenuItem::with_id(app, "ai.settings", "AI Settings…", true, None::<&str>)?;
 
     let file_menu = Submenu::with_items(
         app,

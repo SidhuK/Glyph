@@ -434,10 +434,6 @@ export function CalendarPane({
 	const agendaTasks = selectedTasks?.for_day ?? [];
 	const overdueTasks = selectedTasks?.overdue ?? [];
 	const ongoingTasks = selectedTasks?.ongoing ?? [];
-	const hasAnyTasks =
-		agendaTasks.length > 0 ||
-		overdueTasks.length > 0 ||
-		ongoingTasks.length > 0;
 	const noteActivity = data?.detail.note_activity ?? [];
 
 	const effectiveSelectedRecentNotePath = useMemo(() => {
