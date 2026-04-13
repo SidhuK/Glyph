@@ -128,6 +128,15 @@ function areSelectedCodeBlocksEqual(
 	);
 }
 
+function areSelectedCodeBlocksSameBlock(
+	a: SelectedCodeBlockState | null,
+	b: SelectedCodeBlockState | null,
+): boolean {
+	if (a === b) return true;
+	if (!a || !b) return false;
+	return a.pos === b.pos && a.language === b.language && a.source === b.source;
+}
+
 interface SelectedTableState {
 	rowControlLeft: number;
 	rowControlTop: number;
@@ -1155,7 +1164,10 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 				source: nextSource,
 			} satisfies SelectedCodeBlockState;
 			if (
-				!areSelectedCodeBlocksEqual(selectedCodeBlockRef.current, nextCodeBlock)
+				!areSelectedCodeBlocksSameBlock(
+					selectedCodeBlockRef.current,
+					nextCodeBlock,
+				)
 			) {
 				selectedCodeBlockRef.current = nextCodeBlock;
 				if (codeBlockCopyResetTimerRef.current !== null) {
