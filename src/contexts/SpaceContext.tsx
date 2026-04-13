@@ -10,6 +10,7 @@ import {
 } from "react";
 import { clearAiPanelCaches } from "../components/ai/cache";
 import { clearInlineImageHydrationCache } from "../components/editor/hooks/useHydrateInlineImages";
+import { invalidateNavigationPrefetch } from "../lib/navigationPrefetch";
 import {
 	clearCurrentSpacePath,
 	loadSettings,
@@ -140,6 +141,7 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 					await clearCurrentSpacePath();
 					clearAiPanelCaches();
 					clearInlineImageHydrationCache();
+					invalidateNavigationPrefetch();
 					setSpacePath(null);
 					setSpaceSchemaVersion(null);
 				}
@@ -174,6 +176,7 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 			await clearCurrentSpacePath();
 			clearAiPanelCaches();
 			clearInlineImageHydrationCache();
+			invalidateNavigationPrefetch();
 			setSpacePath(null);
 			setSpaceSchemaVersion(null);
 		} catch (err) {

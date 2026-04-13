@@ -1313,8 +1313,7 @@ fn local_note_graph_for_conn(
     }
 
     let node_ids = nodes_by_id.keys().cloned().collect::<Vec<_>>();
-    let placeholders = std::iter::repeat("?")
-        .take(node_ids.len())
+    let placeholders = std::iter::repeat_n("?", node_ids.len())
         .collect::<Vec<_>>()
         .join(", ");
     let edge_query = format!(
@@ -1345,7 +1344,11 @@ fn local_note_graph_for_conn(
             .then_with(|| left.id.cmp(&right.id))
     });
 
-    Ok(LocalNoteGraph { center, nodes, edges })
+    Ok(LocalNoteGraph {
+        center,
+        nodes,
+        edges,
+    })
 }
 
 #[tauri::command(rename_all = "snake_case")]

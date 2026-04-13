@@ -2,8 +2,10 @@ import {
 	ArrowLeft,
 	ArrowRight,
 	Calendar03Icon,
+	Copy01Icon,
 	LocationAdd01Icon,
 	SourceCodeIcon,
+	Tick02Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { openUrl } from "@tauri-apps/plugin-opener";
@@ -98,12 +100,41 @@ interface SelectionRibbonPosition {
 interface SelectedCodeBlockState {
 	top: number;
 	controlsLeft: number;
+	controlsRight: number;
 	previewLeft: number;
 	width: number;
 	previewTop: number;
 	pos: number;
 	language: string | null;
 	source: string;
+}
+
+function areSelectedCodeBlocksEqual(
+	a: SelectedCodeBlockState | null,
+	b: SelectedCodeBlockState | null,
+): boolean {
+	if (a === b) return true;
+	if (!a || !b) return false;
+	return (
+		a.top === b.top &&
+		a.controlsLeft === b.controlsLeft &&
+		a.controlsRight === b.controlsRight &&
+		a.previewLeft === b.previewLeft &&
+		a.width === b.width &&
+		a.previewTop === b.previewTop &&
+		a.pos === b.pos &&
+		a.language === b.language &&
+		a.source === b.source
+	);
+}
+
+function areSelectedCodeBlocksSameBlock(
+	a: SelectedCodeBlockState | null,
+	b: SelectedCodeBlockState | null,
+): boolean {
+	if (a === b) return true;
+	if (!a || !b) return false;
+	return a.pos === b.pos && a.language === b.language && a.source === b.source;
 }
 
 interface SelectedTableState {
@@ -407,6 +438,9 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	const [codeBlockPickerOpen, setCodeBlockPickerOpen] = useState(false);
 	const [selectedCodeBlock, setSelectedCodeBlock] =
 		useState<SelectedCodeBlockState | null>(null);
+	const selectedCodeBlockRef = useRef<SelectedCodeBlockState | null>(null);
+	const codeBlockCopyResetTimerRef = useRef<number | null>(null);
+	const [codeBlockCopied, setCodeBlockCopied] = useState(false);
 	const [activeMermaidPreviewPos, setActiveMermaidPreviewPos] = useState<
 		number | null
 	>(null);
@@ -1052,19 +1086,35 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 
 	useEffect(() => {
 		if (!editor || mode !== "rich") {
+			selectedCodeBlockRef.current = null;
+			if (codeBlockCopyResetTimerRef.current !== null) {
+				window.clearTimeout(codeBlockCopyResetTimerRef.current);
+				codeBlockCopyResetTimerRef.current = null;
+			}
 			setSelectedCodeBlock(null);
 			setCodeBlockPickerOpen(false);
+			setCodeBlockCopied(false);
 			return;
 		}
 		const host = tiptapHostRef.current;
 		const contentRoot = getMountedEditorContentRoot(host);
 		if (!host || !contentRoot) return;
 
+		const clearSelectedCodeBlock = () => {
+			selectedCodeBlockRef.current = null;
+			if (codeBlockCopyResetTimerRef.current !== null) {
+				window.clearTimeout(codeBlockCopyResetTimerRef.current);
+				codeBlockCopyResetTimerRef.current = null;
+			}
+			setSelectedCodeBlock(null);
+			setCodeBlockPickerOpen(false);
+			setCodeBlockCopied(false);
+		};
+
 		const syncSelectedCodeBlock = () => {
 			const selection = window.getSelection();
 			if (!selection?.anchorNode) {
-				setSelectedCodeBlock(null);
-				setCodeBlockPickerOpen(false);
+				clearSelectedCodeBlock();
 				return;
 			}
 			const anchorElement =
@@ -1072,28 +1122,26 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 					? selection.anchorNode
 					: selection.anchorNode.parentElement;
 			if (!anchorElement || !host.contains(anchorElement)) {
-				setSelectedCodeBlock(null);
-				setCodeBlockPickerOpen(false);
+				clearSelectedCodeBlock();
 				return;
 			}
 
 			const codeElement = anchorElement.closest("pre") as HTMLElement | null;
 			if (!codeElement || !host.contains(codeElement)) {
-				setSelectedCodeBlock(null);
-				setCodeBlockPickerOpen(false);
+				clearSelectedCodeBlock();
 				return;
 			}
 
 			const parentNode = editor.state.selection.$from.parent;
 			if (parentNode.type.name !== "codeBlock") {
-				setSelectedCodeBlock(null);
-				setCodeBlockPickerOpen(false);
+				clearSelectedCodeBlock();
 				return;
 			}
 
 			const codeOffset = getOffsetWithinAncestor(codeElement, host);
 			const nextTop = codeOffset.top + 8;
 			const nextControlsLeft = codeOffset.left + 10;
+			const nextControlsRight = codeOffset.left + codeElement.offsetWidth - 10;
 			const nextPreviewLeft = codeOffset.left;
 			const nextWidth = Math.max(220, codeElement.offsetWidth);
 			const nextPreviewTop = codeOffset.top + codeElement.offsetHeight + 12;
@@ -1104,30 +1152,33 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 			const nextPos = editor.state.selection.$from.before();
 			const nextSource = parentNode.textContent ?? "";
 
-			setSelectedCodeBlock((prev) => {
-				if (
-					prev &&
-					prev.top === nextTop &&
-					prev.controlsLeft === nextControlsLeft &&
-					prev.previewLeft === nextPreviewLeft &&
-					prev.width === nextWidth &&
-					prev.previewTop === nextPreviewTop &&
-					prev.pos === nextPos &&
-					prev.language === nextLanguage &&
-					prev.source === nextSource
-				) {
-					return prev;
+			const nextCodeBlock = {
+				top: nextTop,
+				controlsLeft: nextControlsLeft,
+				controlsRight: nextControlsRight,
+				previewLeft: nextPreviewLeft,
+				width: nextWidth,
+				previewTop: nextPreviewTop,
+				pos: nextPos,
+				language: nextLanguage,
+				source: nextSource,
+			} satisfies SelectedCodeBlockState;
+			if (
+				!areSelectedCodeBlocksSameBlock(
+					selectedCodeBlockRef.current,
+					nextCodeBlock,
+				)
+			) {
+				selectedCodeBlockRef.current = nextCodeBlock;
+				if (codeBlockCopyResetTimerRef.current !== null) {
+					window.clearTimeout(codeBlockCopyResetTimerRef.current);
+					codeBlockCopyResetTimerRef.current = null;
 				}
-				return {
-					top: nextTop,
-					controlsLeft: nextControlsLeft,
-					previewLeft: nextPreviewLeft,
-					width: nextWidth,
-					previewTop: nextPreviewTop,
-					pos: nextPos,
-					language: nextLanguage,
-					source: nextSource,
-				};
+				setCodeBlockCopied(false);
+			}
+			setSelectedCodeBlock((prev) => {
+				if (areSelectedCodeBlocksEqual(prev, nextCodeBlock)) return prev;
+				return nextCodeBlock;
 			});
 		};
 
@@ -1141,6 +1192,10 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		editor.on("selectionUpdate", syncSelectedCodeBlock);
 		editor.on("transaction", syncSelectedCodeBlock);
 		return () => {
+			if (codeBlockCopyResetTimerRef.current !== null) {
+				window.clearTimeout(codeBlockCopyResetTimerRef.current);
+				codeBlockCopyResetTimerRef.current = null;
+			}
 			scrollHost?.removeEventListener("scroll", syncSelectedCodeBlock);
 			window.removeEventListener("resize", syncSelectedCodeBlock);
 			document.removeEventListener("selectionchange", syncSelectedCodeBlock);
@@ -1286,6 +1341,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		const target = event.target instanceof HTMLElement ? event.target : null;
 		if (
 			target?.closest(".codeBlockPreviewBtn") ||
+			target?.closest(".codeBlockCopyBtn") ||
 			target?.closest(".codeBlockLanguageBtn") ||
 			target?.closest(".codeBlockLanguagePopover")
 		) {
@@ -1593,6 +1649,56 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 									</button>
 								) : null}
 							</div>
+						) : null}
+						{canEdit && selectedCodeBlock ? (
+							<button
+								type="button"
+								className="codeBlockCopyBtn"
+								data-copied={codeBlockCopied || undefined}
+								style={{
+									top: `${selectedCodeBlock.top}px`,
+									left: `${selectedCodeBlock.controlsRight}px`,
+								}}
+								onMouseDown={preventCodeBlockPickerMouseDown}
+								onClick={() => {
+									if (!selectedCodeBlock) return;
+									const clipboard = navigator.clipboard;
+									if (!clipboard?.writeText) {
+										console.error("Clipboard API unavailable");
+										setCodeBlockCopied(false);
+										return;
+									}
+									void clipboard
+										.writeText(selectedCodeBlock.source)
+										.then(() => {
+											if (codeBlockCopyResetTimerRef.current !== null) {
+												window.clearTimeout(codeBlockCopyResetTimerRef.current);
+											}
+											setCodeBlockCopied(true);
+											codeBlockCopyResetTimerRef.current = window.setTimeout(
+												() => {
+													codeBlockCopyResetTimerRef.current = null;
+													setCodeBlockCopied(false);
+												},
+												1500,
+											);
+										})
+										.catch((error: unknown) => {
+											console.error(
+												"Failed to copy code block contents.",
+												error,
+											);
+											setCodeBlockCopied(false);
+										});
+								}}
+								title={codeBlockCopied ? "Copied!" : "Copy code to clipboard"}
+							>
+								<HugeiconsIcon
+									icon={codeBlockCopied ? Tick02Icon : Copy01Icon}
+									size={12}
+									strokeWidth={0.9}
+								/>
+							</button>
 						) : null}
 						{canEdit && selectedCodeBlock && isSelectedMermaidPreviewActive ? (
 							<MermaidPreviewPanel

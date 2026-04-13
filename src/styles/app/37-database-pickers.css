@@ -575,6 +575,10 @@
 	padding: 2px 4px 2px 8px;
 }
 
+.databaseColumnDropdownRow:hover {
+	background: transparent;
+}
+
 .databaseColumnDropdownButton {
 	display: flex;
 	align-items: center;
@@ -588,6 +592,11 @@
 	color: var(--text-secondary);
 	text-align: left;
 	cursor: pointer;
+}
+
+.databaseColumnDropdownButton:hover {
+	background: transparent;
+	color: var(--text-secondary);
 }
 
 .databaseColumnDropdownMain {

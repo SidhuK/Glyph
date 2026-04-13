@@ -170,6 +170,24 @@
 	border-radius: var(--radius-lg);
 }
 
+.dailyNotesFolderPath[data-compact] {
+	flex: 0 0 auto;
+	align-self: flex-end;
+}
+
+.settingsCompactStatus {
+	align-self: flex-end;
+	padding: 8px 10px;
+	font-size: var(--text-xs);
+	line-height: 1.45;
+	color: var(--text-secondary);
+	word-break: normal;
+	overflow-wrap: normal;
+	border: 1px solid color-mix(in srgb, var(--border-light) 70%, transparent);
+	background: var(--settings-surface-soft);
+	border-radius: var(--radius-lg);
+}
+
 .dailyNotesError {
 	margin-top: 0;
 }

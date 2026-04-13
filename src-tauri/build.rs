@@ -13,7 +13,13 @@ fn read_dotenv_value(path: &Path, key: &str) -> Option<String> {
         if entry_key.trim() != key {
             continue;
         }
-        return Some(raw_value.trim().trim_matches('"').trim_matches('\'').to_string());
+        return Some(
+            raw_value
+                .trim()
+                .trim_matches('"')
+                .trim_matches('\'')
+                .to_string(),
+        );
     }
     None
 }

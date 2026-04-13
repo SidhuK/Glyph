@@ -310,11 +310,11 @@
 			(2 * var(--readable-content-gutter-compact))
 		)
 	);
-	margin: 0 auto var(--space-1);
+	margin: 0 auto var(--space-2);
 	border: none;
-	border-radius: 0;
-	padding: 0 14px;
-	background: transparent;
+	border-radius: 10px;
+	padding: 10px 14px;
+	background: var(--bg-secondary);
 	color: var(--text-secondary);
 	font-size: var(--text-xs);
 }
