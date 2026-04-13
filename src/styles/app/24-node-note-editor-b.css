@@ -1613,6 +1613,36 @@ input.notePropertyValue {
 	white-space: nowrap;
 }
 
+.codeBlockCopyBtn {
+	position: absolute;
+	z-index: 15;
+	width: 22px;
+	height: 18px;
+	padding: 0;
+	border: none;
+	border-radius: var(--radius-sm);
+	background: color-mix(in srgb, var(--bg-primary) 72%, transparent);
+	color: color-mix(in srgb, var(--text-tertiary) 88%, transparent);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 10px;
+	font-weight: var(--font-medium);
+	backdrop-filter: blur(4px);
+	cursor: pointer;
+	transition: color 150ms ease, background-color 150ms ease;
+	transform: translateX(-100%);
+}
+
+.codeBlockCopyBtn:hover {
+	background: color-mix(in srgb, var(--bg-primary) 88%, var(--bg-hover));
+	color: var(--text-primary);
+}
+
+.codeBlockCopyBtn[data-copied] {
+	color: var(--success);
+}
+
 .codeBlockLanguagePopover {
 	width: 176px;
 	padding: 8px;

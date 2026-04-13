@@ -1,4 +1,7 @@
-import { setCachedMarkdownDoc } from "../components/preview/markdownCache";
+import {
+	clearMarkdownDocCache,
+	setCachedMarkdownDoc,
+} from "../components/preview/markdownCache";
 import { buildMonthRange } from "./calendar";
 import type {
 	AllDocsItem,
@@ -43,6 +46,7 @@ const databaseRowsPromiseCache = new Map<
 
 const allDocsCache = new Map<string, AllDocsItem[]>();
 const allDocsPromiseCache = new Map<string, Promise<AllDocsItem[]>>();
+let cacheGeneration = 0;
 
 function trimCache<T>(
 	cache: Map<string, T>,
@@ -72,6 +76,7 @@ async function flushQueuedNotePrefetch() {
 	);
 	if (!missingPaths.length) return;
 
+	const generation = cacheGeneration;
 	const batchPromise = invoke("space_read_texts_batch", {
 		paths: missingPaths,
 	});
@@ -81,6 +86,9 @@ async function flushQueuedNotePrefetch() {
 			path,
 			batchPromise
 				.then((docs) => {
+					if (generation !== cacheGeneration) {
+						return null;
+					}
 					const match = docs.find((entry) => entry.rel_path === path);
 					if (
 						!match ||
@@ -241,6 +249,7 @@ export function prefetchCalendarData(args: {
 	if (existingPromise) return existingPromise;
 
 	const range = buildMonthRange(args.anchorDate);
+	const generation = cacheGeneration;
 	const promise = invoke("calendar_query_range", {
 		start_date: range.start,
 		end_date: range.end,
@@ -248,8 +257,10 @@ export function prefetchCalendarData(args: {
 		daily_notes_folder: args.dailyNotesFolder,
 	})
 		.then((result) => {
-			calendarDataCache.set(key, result);
-			trimCache(calendarDataCache);
+			if (generation === cacheGeneration) {
+				calendarDataCache.set(key, result);
+				trimCache(calendarDataCache);
+			}
 			return result;
 		})
 		.finally(() => {
@@ -280,9 +291,12 @@ export function prefetchDatabaseSummaries() {
 	if (databaseSummariesCache.promise) {
 		return databaseSummariesCache.promise;
 	}
+	const generation = cacheGeneration;
 	const promise = invoke("databases_list")
 		.then((result) => {
-			databaseSummariesCache.data = result;
+			if (generation === cacheGeneration) {
+				databaseSummariesCache.data = result;
+			}
 			return result;
 		})
 		.finally(() => {
@@ -310,10 +324,13 @@ export function prefetchDatabaseDocument(databaseId: string) {
 	if (cached) return Promise.resolve(cached);
 	const existingPromise = databaseDocumentPromiseCache.get(normalized);
 	if (existingPromise) return existingPromise;
+	const generation = cacheGeneration;
 	const promise = invoke("databases_get", { database_id: normalized })
 		.then((result) => {
-			databaseDocumentCache.set(normalized, result);
-			trimCache(databaseDocumentCache);
+			if (generation === cacheGeneration) {
+				databaseDocumentCache.set(normalized, result);
+				trimCache(databaseDocumentCache);
+			}
 			return result;
 		})
 		.finally(() => {
@@ -342,10 +359,13 @@ export function prefetchDatabaseRows(databaseId: string, viewId: string) {
 	if (cached) return Promise.resolve(cached);
 	const existingPromise = databaseRowsPromiseCache.get(key);
 	if (existingPromise) return existingPromise;
+	const generation = cacheGeneration;
 	const promise = loadAllDatabaseRows(databaseId, viewId)
 		.then((result) => {
-			databaseRowsCache.set(key, result);
-			trimCache(databaseRowsCache);
+			if (generation === cacheGeneration) {
+				databaseRowsCache.set(key, result);
+				trimCache(databaseRowsCache);
+			}
 			return result;
 		})
 		.finally(() => {
@@ -418,6 +438,7 @@ export function prefetchAllDocs(folderPrefix?: string | null) {
 	if (cached) return Promise.resolve(cached);
 	const existingPromise = allDocsPromiseCache.get(key);
 	if (existingPromise) return existingPromise;
+	const generation = cacheGeneration;
 	const promise = invoke("all_docs_list", {
 		limit: 2000,
 		folder_prefix: folderPrefix?.trim() ? folderPrefix : null,
@@ -437,8 +458,10 @@ export function prefetchAllDocs(folderPrefix?: string | null) {
 								normalizedPath.startsWith(`${normalized}/`)
 							);
 						});
-			allDocsCache.set(key, nextItems);
-			trimCache(allDocsCache);
+			if (generation === cacheGeneration) {
+				allDocsCache.set(key, nextItems);
+				trimCache(allDocsCache);
+			}
 			return nextItems;
 		})
 		.finally(() => {
@@ -461,4 +484,14 @@ export function invalidateAllDocsPrefetch(folderPrefix?: string | null) {
 	}
 	allDocsCache.clear();
 	allDocsPromiseCache.clear();
+}
+
+export function invalidateNavigationPrefetch() {
+	cacheGeneration += 1;
+	invalidatePrefetchedNote();
+	clearMarkdownDocCache();
+	invalidateCalendarPrefetch();
+	invalidateDatabaseSummariesPrefetch();
+	invalidateDatabasePrefetch();
+	invalidateAllDocsPrefetch();
 }

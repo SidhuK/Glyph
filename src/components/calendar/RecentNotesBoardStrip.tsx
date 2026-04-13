@@ -35,9 +35,7 @@ export function RecentNotesBoardStrip({
 	return (
 		<ul className="calendarRecentList">
 			{notes.length === 0 ? (
-				<li className="calendarRecentListEmpty">
-					No activity notes for this day.
-				</li>
+				<li className="calendarRecentListEmpty">No notes for this day</li>
 			) : null}
 			{notes.map((note) => {
 				const title = noteTitle(note);

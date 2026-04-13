@@ -517,7 +517,7 @@ export function CalendarPane({
 								type="button"
 								size="sm"
 								variant="outline"
-								className="calendarTaskAddIcon calendarTaskBtn"
+								className="calendarTaskBtn"
 								onClick={() => void submitTask()}
 								disabled={isSubmittingTask || !taskDraft.trim()}
 								aria-label="Add task"
@@ -532,7 +532,8 @@ export function CalendarPane({
 								type="button"
 								variant="outline"
 								size="sm"
-								className="calendarTaskBtn calendarOpenNoteBtn"
+								className="calendarTaskBtn"
+								data-size="sm"
 								onClick={openSelectedDailyNote}
 							>
 								<HugeiconsIcon
@@ -581,11 +582,6 @@ export function CalendarPane({
 									{renderTaskGroup("For this day", agendaTasks)}
 									{renderTaskGroup("Overdue", overdueTasks)}
 									{renderTaskGroup("Ongoing", ongoingTasks)}
-									{!hasAnyTasks ? (
-										<div className="calendarEmptyText">
-											No tasks for this day.
-										</div>
-									) : null}
 								</div>
 							</div>
 						</div>
@@ -601,7 +597,8 @@ export function CalendarPane({
 										type="button"
 										size="sm"
 										variant="outline"
-										className="calendarTaskBtn calendarToolbarIconBtn"
+										className="calendarTaskBtn"
+										data-size="icon"
 										onClick={() => stepRange(-1)}
 										aria-label="Previous month"
 									>
@@ -616,7 +613,8 @@ export function CalendarPane({
 										type="button"
 										size="sm"
 										variant="outline"
-										className="calendarTaskBtn calendarOpenNoteBtn"
+										className="calendarTaskBtn"
+										data-size="sm"
 										onClick={goToToday}
 									>
 										Today
@@ -625,7 +623,8 @@ export function CalendarPane({
 										type="button"
 										size="sm"
 										variant="outline"
-										className="calendarTaskBtn calendarToolbarIconBtn"
+										className="calendarTaskBtn"
+										data-size="icon"
 										onClick={() => stepRange(1)}
 										aria-label="Next month"
 									>

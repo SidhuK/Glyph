@@ -2,8 +2,10 @@ import {
 	ArrowLeft,
 	ArrowRight,
 	Calendar03Icon,
+	Copy01Icon,
 	LocationAdd01Icon,
 	SourceCodeIcon,
+	Tick02Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { openUrl } from "@tauri-apps/plugin-opener";
@@ -98,6 +100,7 @@ interface SelectionRibbonPosition {
 interface SelectedCodeBlockState {
 	top: number;
 	controlsLeft: number;
+	controlsRight: number;
 	previewLeft: number;
 	width: number;
 	previewTop: number;
@@ -407,6 +410,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	const [codeBlockPickerOpen, setCodeBlockPickerOpen] = useState(false);
 	const [selectedCodeBlock, setSelectedCodeBlock] =
 		useState<SelectedCodeBlockState | null>(null);
+	const [codeBlockCopied, setCodeBlockCopied] = useState(false);
 	const [activeMermaidPreviewPos, setActiveMermaidPreviewPos] = useState<
 		number | null
 	>(null);
@@ -1054,6 +1058,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		if (!editor || mode !== "rich") {
 			setSelectedCodeBlock(null);
 			setCodeBlockPickerOpen(false);
+			setCodeBlockCopied(false);
 			return;
 		}
 		const host = tiptapHostRef.current;
@@ -1065,6 +1070,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 			if (!selection?.anchorNode) {
 				setSelectedCodeBlock(null);
 				setCodeBlockPickerOpen(false);
+				setCodeBlockCopied(false);
 				return;
 			}
 			const anchorElement =
@@ -1074,6 +1080,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 			if (!anchorElement || !host.contains(anchorElement)) {
 				setSelectedCodeBlock(null);
 				setCodeBlockPickerOpen(false);
+				setCodeBlockCopied(false);
 				return;
 			}
 
@@ -1081,6 +1088,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 			if (!codeElement || !host.contains(codeElement)) {
 				setSelectedCodeBlock(null);
 				setCodeBlockPickerOpen(false);
+				setCodeBlockCopied(false);
 				return;
 			}
 
@@ -1088,12 +1096,14 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 			if (parentNode.type.name !== "codeBlock") {
 				setSelectedCodeBlock(null);
 				setCodeBlockPickerOpen(false);
+				setCodeBlockCopied(false);
 				return;
 			}
 
 			const codeOffset = getOffsetWithinAncestor(codeElement, host);
 			const nextTop = codeOffset.top + 8;
 			const nextControlsLeft = codeOffset.left + 10;
+			const nextControlsRight = codeOffset.left + codeElement.offsetWidth - 10;
 			const nextPreviewLeft = codeOffset.left;
 			const nextWidth = Math.max(220, codeElement.offsetWidth);
 			const nextPreviewTop = codeOffset.top + codeElement.offsetHeight + 12;
@@ -1109,6 +1119,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 					prev &&
 					prev.top === nextTop &&
 					prev.controlsLeft === nextControlsLeft &&
+					prev.controlsRight === nextControlsRight &&
 					prev.previewLeft === nextPreviewLeft &&
 					prev.width === nextWidth &&
 					prev.previewTop === nextPreviewTop &&
@@ -1118,9 +1129,11 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 				) {
 					return prev;
 				}
+				setCodeBlockCopied(false);
 				return {
 					top: nextTop,
 					controlsLeft: nextControlsLeft,
+					controlsRight: nextControlsRight,
 					previewLeft: nextPreviewLeft,
 					width: nextWidth,
 					previewTop: nextPreviewTop,
@@ -1593,6 +1606,39 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 									</button>
 								) : null}
 							</div>
+						) : null}
+						{canEdit && selectedCodeBlock ? (
+							<button
+								type="button"
+								className="codeBlockCopyBtn"
+								data-copied={codeBlockCopied || undefined}
+								style={{
+									top: `${selectedCodeBlock.top}px`,
+									left: `${selectedCodeBlock.controlsRight}px`,
+								}}
+								onMouseDown={preventCodeBlockPickerMouseDown}
+								onClick={() => {
+									if (!selectedCodeBlock) return;
+									const clipboard = navigator.clipboard;
+									if (!clipboard?.writeText) {
+										console.error("Clipboard API unavailable");
+										return;
+									}
+									void clipboard
+										.writeText(selectedCodeBlock.source)
+										.then(() => {
+											setCodeBlockCopied(true);
+											window.setTimeout(() => setCodeBlockCopied(false), 1500);
+										});
+								}}
+								title={codeBlockCopied ? "Copied!" : "Copy code to clipboard"}
+							>
+								<HugeiconsIcon
+									icon={codeBlockCopied ? Tick02Icon : Copy01Icon}
+									size={12}
+									strokeWidth={0.9}
+								/>
+							</button>
 						) : null}
 						{canEdit && selectedCodeBlock && isSelectedMermaidPreviewActive ? (
 							<MermaidPreviewPanel

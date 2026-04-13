@@ -1,10 +1,3 @@
-import {
-	Calendar03Icon,
-	FileAttachmentIcon,
-	Globe02Icon,
-	SearchIcon,
-} from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useState } from "react";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import {
@@ -21,11 +14,7 @@ import { invoke } from "../../lib/tauri";
 import { Trash2 } from "../Icons";
 import { FolderOpen } from "../Icons/NavigationIcons";
 import { Button } from "../ui/shadcn/button";
-import {
-	SettingsRow,
-	SettingsSection,
-	SettingsValueCard,
-} from "./SettingsScaffold";
+import { SettingsRow, SettingsSection } from "./SettingsScaffold";
 import { TemplateSettingsSections } from "./TemplatesSettingsPane";
 
 const DEFAULT_ATTACHMENT_FOLDER = "assets";
@@ -256,20 +245,11 @@ export function SpaceSettingsPane() {
 					>
 						<div className="dailyNotesFolderField">
 							<div className="dailyNotesFolderRow">
-								<SettingsValueCard
-									icon={
-										<HugeiconsIcon
-											icon={Calendar03Icon}
-											size={14}
-											strokeWidth={0.9}
-										/>
-									}
-									value={
-										dailyNotesLoading
-											? "Loading..."
-											: (dailyNotesFolder ?? "Not configured")
-									}
-								/>
+								<div className="dailyNotesFolderPath">
+									{dailyNotesLoading
+										? "Loading..."
+										: (dailyNotesFolder ?? "Not configured")}
+								</div>
 								<div className="settingsActions dailyNotesActions">
 									<Button
 										type="button"
@@ -313,7 +293,7 @@ export function SpaceSettingsPane() {
 				>
 					<SettingsRow
 						label="Location"
-						description="Glyph saves pasted images and other note attachments here, then inserts relative Markdown paths so they still render after reopening the app."
+						description="Where to save images and files you paste into notes."
 						stacked
 						interactive={false}
 					>
@@ -337,27 +317,18 @@ export function SpaceSettingsPane() {
 							</select>
 							<div className="settingsHelp">
 								{attachmentStorageMode === "space-root"
-									? "Attachments are saved directly in the top level of the current space."
+									? "Saved at the top level of your space."
 									: attachmentStorageMode === "note-folder"
-										? "Attachments are saved beside the note that receives them."
-										: "Choose a folder inside the current space for all note attachments."}
+										? "Saved next to the note they are attached to."
+										: "All attachments go in one folder."}
 							</div>
 							{attachmentStorageMode === "specific-folder" ? (
 								<div className="dailyNotesFolderRow">
-									<SettingsValueCard
-										icon={
-											<HugeiconsIcon
-												icon={FileAttachmentIcon}
-												size={14}
-												strokeWidth={0.9}
-											/>
-										}
-										value={
-											attachmentsLoading
-												? "Loading..."
-												: attachmentFolder || DEFAULT_ATTACHMENT_FOLDER
-										}
-									/>
+									<div className="dailyNotesFolderPath">
+										{attachmentsLoading
+											? "Loading..."
+											: attachmentFolder || DEFAULT_ATTACHMENT_FOLDER}
+									</div>
 									<div className="settingsActions dailyNotesActions">
 										<Button
 											type="button"
@@ -400,26 +371,17 @@ export function SpaceSettingsPane() {
 				>
 					<SettingsRow
 						label="Folder"
-						description="Web pages saved from the command palette will be stored here as Markdown files."
+						description="Where saved web pages are stored as Markdown."
 						stacked
 						interactive={false}
 					>
 						<div className="dailyNotesFolderField">
 							<div className="dailyNotesFolderRow">
-								<SettingsValueCard
-									icon={
-										<HugeiconsIcon
-											icon={Globe02Icon}
-											size={14}
-											strokeWidth={0.9}
-										/>
-									}
-									value={
-										webClippingsLoading
-											? "Loading..."
-											: (webClippingsFolder ?? "Space root")
-									}
-								/>
+								<div className="dailyNotesFolderPath">
+									{webClippingsLoading
+										? "Loading..."
+										: (webClippingsFolder ?? "Space root")}
+								</div>
 								<div className="settingsActions dailyNotesActions">
 									<Button
 										type="button"
@@ -481,15 +443,10 @@ export function SpaceSettingsPane() {
 						stacked
 						interactive={false}
 					>
-						<SettingsValueCard
-							icon={
-								<HugeiconsIcon icon={SearchIcon} size={14} strokeWidth={0.9} />
-							}
-							value={
-								reindexStatus ||
-								(!currentSpacePath ? "No space selected." : "Index is ready.")
-							}
-						/>
+						<div className="dailyNotesFolderPath" data-compact>
+							{reindexStatus ||
+								(!currentSpacePath ? "No space selected." : "Index is ready.")}
+						</div>
 					</SettingsRow>
 				</SettingsSection>
 			</div>

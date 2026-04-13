@@ -1,0 +1,233 @@
+---
+import logoG from "../../assets/logo_g.PNG";
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="Manifesto - Glyph" description="Why I built Glyph. A quiet place for your thoughts in a noisy world." bodyClass="has-dot-grid">
+	<div class="manifesto-page">
+		<header class="manifesto-header">
+			<a href="/" class="manifesto-logo">
+				<img src={logoG.src} alt="" class="manifesto-logo-icon" />
+				<span>GLYPH</span>
+			</a>
+			<a href="/" class="manifesto-home">Back home</a>
+		</header>
+
+		<main class="manifesto-main">
+			<p class="manifesto-label">MANIFESTO</p>
+			<h1>Reclaiming your thoughts from the noise</h1>
+
+			<div class="manifesto-body">
+				<section class="manifesto-section">
+					<p class="section-numeral">I</p>
+					<p>Where do your ideas go?</p>
+					<p>
+						Into apps that sync to someone else's server. Into feeds that
+						rearrange your words for engagement. Into tools that lock your
+						thinking behind a subscription, an API call, a terms-of-service
+						update you never read.
+					</p>
+					<p>
+						You opened a blank page to think. Somewhere along the way, thinking
+						became a product, and you became the input.
+					</p>
+				</section>
+
+				<section class="manifesto-section">
+					<p class="section-numeral">II</p>
+					<p>Ideas need a home that belongs to you.</p>
+					<p>
+						Not a platform. Not a cloud. Not a workspace with seventeen
+						integrations and a Kanban board. A place as simple and direct as pen
+						on paper, except your paper can link to other paper, search itself,
+						and never run out of room.
+					</p>
+					<p>
+						Your notes should live on your machine, in files you can open with
+						anything, files that will outlast every app that ever claimed to
+						organize your life.
+					</p>
+				</section>
+
+				<section class="manifesto-section">
+					<p class="section-numeral">III</p>
+					<p>Good tools get out of the way.</p>
+					<p>
+						A good notebook does not ping you. It does not suggest you upgrade,
+						collaborate, or share. It does not harvest your half-formed thoughts
+						to train a model. It sits quietly until you need it, and when you do,
+						it opens fast and stays steady.
+					</p>
+					<p>
+						AI can sharpen thinking, when you control it. When you choose the
+						model, own the context, and can pull the plug without losing a word.
+						Intelligence should serve the writer, never surveil them.
+					</p>
+				</section>
+
+				<section class="manifesto-section">
+					<p class="section-numeral">IV</p>
+					<p>Complexity is a slow poison.</p>
+					<p>
+						Every feature you do not need is friction you carry. Every toggle,
+						panel, and permission system is a small tax on your attention. The
+						tools that endure are the ones that do less, and do it so well you
+						forget they are there.
+					</p>
+					<p>
+						I would rather ship fewer things that feel right than many things
+						that feel busy.
+					</p>
+				</section>
+
+				<section class="manifesto-section">
+					<p class="section-numeral">V</p>
+					<p>Your freedom is already here.</p>
+					<p>
+						Markdown files on your disk. A local database only your machine
+						touches. No account required, no internet required, no permission
+						required. If Glyph disappeared tomorrow, your notes would still be
+						yours. Readable, portable, complete.
+					</p>
+					<p>
+						That is not a feature. That is the point.
+					</p>
+				</section>
+
+				<div class="manifesto-coda">
+					<p>Open the page.</p>
+					<p>Write the thought.</p>
+					<p>Own the words.</p>
+				</div>
+			</div>
+		</main>
+	</div>
+</Layout>
+
+<style>
+	.manifesto-page {
+		width: min(680px, 90vw);
+		margin: 0 auto;
+		padding: 2.5rem 0 5rem;
+	}
+
+	.manifesto-header {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 1rem;
+		margin-bottom: 3rem;
+	}
+
+	.manifesto-logo {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.45rem;
+		font-size: 0.75rem;
+		font-weight: 600;
+		letter-spacing: 0.14em;
+	}
+
+	.manifesto-logo-icon {
+		width: 1.25rem;
+		height: 1.25rem;
+		border-radius: 4px;
+	}
+
+	.manifesto-home {
+		font-size: 0.72rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		color: var(--muted);
+		border-bottom: 1px solid transparent;
+		transition: color 0.15s ease, border-color 0.15s ease;
+	}
+
+	.manifesto-home:hover {
+		color: var(--ink);
+		border-color: rgba(17, 17, 17, 0.2);
+	}
+
+	.manifesto-label {
+		font-size: 0.68rem;
+		font-weight: 500;
+		letter-spacing: 0.18em;
+		color: var(--faint);
+		margin-bottom: 0.85rem;
+	}
+
+	h1 {
+		font-family: var(--serif);
+		font-size: clamp(2.2rem, 5vw, 3.2rem);
+		font-style: italic;
+		font-weight: 400;
+		letter-spacing: -0.02em;
+		line-height: 1.12;
+		margin-bottom: 2.5rem;
+	}
+
+	.manifesto-body {
+		display: grid;
+		gap: 2.5rem;
+	}
+
+	.manifesto-section {
+		display: grid;
+		gap: 0.9rem;
+	}
+
+	.section-numeral {
+		font-family: var(--serif);
+		font-size: 1.15rem;
+		font-style: italic;
+		color: var(--faint);
+		margin-bottom: 0.15rem;
+	}
+
+	.manifesto-section p:not(.section-numeral) {
+		font-size: 0.95rem;
+		line-height: 1.85;
+		color: var(--muted);
+	}
+
+	.manifesto-section p:not(.section-numeral):first-of-type + p,
+	.manifesto-section p:nth-of-type(2) {
+		color: var(--muted);
+	}
+
+	.manifesto-section > p:nth-child(2) {
+		font-family: var(--sans);
+		font-size: 1.05rem;
+		font-weight: 500;
+		color: var(--ink);
+		line-height: 1.6;
+	}
+
+	.manifesto-coda {
+		margin-top: 1.5rem;
+		padding-top: 2rem;
+		border-top: 1px solid var(--border);
+		display: grid;
+		gap: 0.35rem;
+	}
+
+	.manifesto-coda p {
+		font-family: var(--serif);
+		font-size: 1.3rem;
+		font-style: italic;
+		color: var(--ink);
+		line-height: 1.5;
+	}
+
+	@media (max-width: 640px) {
+		.manifesto-page {
+			padding-top: 1.75rem;
+		}
+
+		.manifesto-header {
+			flex-direction: column;
+			align-items: flex-start;
+			margin-bottom: 2.25rem;
+		}
+	}
+</style>

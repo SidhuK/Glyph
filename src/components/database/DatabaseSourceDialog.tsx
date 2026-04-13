@@ -480,11 +480,11 @@ export function DatabaseSourceDropdown({
 			>
 				<div className="flex items-center gap-3">
 					<span className="w-20 shrink-0 text-xs font-medium text-muted-foreground">
-						Save new files in
+						Save Files In
 					</span>
 					<DatabaseFolderPicker
 						value={config.new_note.folder}
-						placeholder="Choose a folder"
+						placeholder="Folder"
 						triggerClassName="databaseSourceInlinePicker"
 						onChange={(value) => void handleNewNoteFolder(value)}
 					/>

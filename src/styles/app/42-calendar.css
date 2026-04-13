@@ -148,17 +148,10 @@
 	padding: 0;
 }
 
-.calendarToolbarIconBtn {
-	flex: 0 0 auto;
-	width: 28px;
-	height: 28px;
-	padding: 0;
-}
-
 .calendarTaskBtn {
 	border: 1px solid
 		color-mix(in srgb, var(--interactive-accent) 72%, var(--border-strong));
-	border-radius: 10px;
+	border-radius: var(--radius-md);
 	background: var(--interactive-accent);
 	color: var(--text-inverse);
 	box-shadow: 0 1px 2px color-mix(in srgb, var(--text-primary) 12%, transparent);
@@ -169,26 +162,14 @@
 	color: var(--text-inverse);
 }
 
-.calendarTaskAddIcon.calendarTaskBtn {
-	border: 1px solid
-		color-mix(in srgb, var(--interactive-accent) 72%, var(--border-strong));
-	border-radius: 10px;
-	background: var(--interactive-accent);
+.calendarTaskBtn[data-size="icon"] {
+	flex: 0 0 auto;
+	width: 28px;
+	height: 28px;
+	padding: 0;
 }
 
-.calendarTaskAddIcon.calendarTaskBtn:disabled {
-	background: var(--interactive-accent);
-	border-color: color-mix(
-		in srgb,
-		var(--interactive-accent) 72%,
-		var(--border-strong)
-	);
-	color: var(--text-inverse);
-	opacity: 1;
-	box-shadow: 0 1px 2px color-mix(in srgb, var(--text-primary) 12%, transparent);
-}
-
-.calendarOpenNoteBtn {
+.calendarTaskBtn[data-size="sm"] {
 	height: 28px;
 	padding-top: 0;
 	padding-bottom: 0;
@@ -641,7 +622,6 @@
 	padding: 8px 12px;
 	font-size: 0.8rem;
 	color: var(--text-tertiary, var(--text-secondary));
-	font-style: italic;
 }
 
 /* ── Empty / error / loading ── */
