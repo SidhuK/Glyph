@@ -102,6 +102,7 @@ export interface EditorSettings {
 	attachmentStorageMode: AttachmentStorageMode;
 	attachmentFolder: string | null;
 	enablePeopleMentionsAsTags: boolean;
+	vimKeybindings: boolean;
 }
 
 export interface FileTreeSettings {
@@ -119,6 +120,7 @@ export const DEFAULT_EDITOR_SETTINGS: EditorSettings = {
 	attachmentStorageMode: "note-folder",
 	attachmentFolder: DEFAULT_ATTACHMENT_FOLDER,
 	enablePeopleMentionsAsTags: false,
+	vimKeybindings: false,
 };
 
 export const DEFAULT_FILE_TREE_SETTINGS: FileTreeSettings = {
@@ -240,6 +242,7 @@ async function emitSettingsUpdated(payload: {
 		attachmentStorageMode?: AttachmentStorageMode;
 		attachmentFolder?: string | null;
 		enablePeopleMentionsAsTags?: boolean;
+		vimKeybindings?: boolean;
 	};
 	onboarding?: Partial<OnboardingSettings>;
 }): Promise<void> {
@@ -322,6 +325,7 @@ const KEYS = {
 	editorAttachmentFolder: "editor.attachmentFolder",
 	editorPastedMediaFolder: "editor.pastedMediaFolder",
 	editorEnablePeopleMentionsAsTags: "editor.enablePeopleMentionsAsTags",
+	editorVimKeybindings: "editor.vimKeybindings",
 	autoUpdateLastCheckedAt: "updates.lastCheckedAt",
 	dailyNotesFolder: "dailyNotes.folder",
 	webClippingsFolder: "webClippings.folder",
@@ -446,6 +450,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		rawEditorAttachmentFolder,
 		rawEditorPastedMediaFolder,
 		rawEditorEnablePeopleMentionsAsTags,
+		rawEditorVimKeybindings,
 		rawDatabaseShowColumnColor,
 		rawDatabaseShowNoteCount,
 	] = await Promise.all([
@@ -484,6 +489,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<string | null>(KEYS.editorAttachmentFolder),
 		store.get<string | null>(KEYS.editorPastedMediaFolder),
 		store.get<boolean | null>(KEYS.editorEnablePeopleMentionsAsTags),
+		store.get<boolean | null>(KEYS.editorVimKeybindings),
 		store.get<boolean | null>(KEYS.databaseShowColumnColor),
 		store.get<boolean | null>(KEYS.databaseShowNoteCount),
 	]);
@@ -602,6 +608,10 @@ export async function loadSettings(): Promise<AppSettings> {
 			typeof rawEditorEnablePeopleMentionsAsTags === "boolean"
 				? rawEditorEnablePeopleMentionsAsTags
 				: DEFAULT_EDITOR_SETTINGS.enablePeopleMentionsAsTags,
+		vimKeybindings:
+			typeof rawEditorVimKeybindings === "boolean"
+				? rawEditorVimKeybindings
+				: DEFAULT_EDITOR_SETTINGS.vimKeybindings,
 	};
 	const database: DatabaseSettings = {
 		showColumnColor:
@@ -887,6 +897,15 @@ export async function setEditorEnablePeopleMentionsAsTags(
 	await store.save();
 	void emitSettingsUpdated({
 		editor: { enablePeopleMentionsAsTags: enabled },
+	});
+}
+
+export async function setEditorVimKeybindings(enabled: boolean): Promise<void> {
+	const store = await getStore();
+	await store.set(KEYS.editorVimKeybindings, enabled);
+	await store.save();
+	void emitSettingsUpdated({
+		editor: { vimKeybindings: enabled },
 	});
 }
 

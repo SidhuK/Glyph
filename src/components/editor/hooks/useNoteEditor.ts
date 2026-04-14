@@ -414,6 +414,7 @@ export function useNoteEditor({
 	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
 	const [colorfulHeadings, setColorfulHeadings] = useState(false);
 	const [peopleMentionsEnabled, setPeopleMentionsEnabled] = useState(false);
+	const [vimKeybindingsEnabled, setVimKeybindingsEnabled] = useState(false);
 	const extensions = useMemo(
 		() =>
 			createEditorExtensions({
@@ -421,9 +422,14 @@ export function useNoteEditor({
 				currentPathResolver: () => relPathRef.current,
 				enableMarkdownLinkAutocomplete,
 				enablePeopleMentions: peopleMentionsEnabled,
+				enableVimKeybindings: vimKeybindingsEnabled,
 				getZenModeEnabled: () => zenModeActiveRef.current,
 			}),
-		[enableMarkdownLinkAutocomplete, peopleMentionsEnabled],
+		[
+			enableMarkdownLinkAutocomplete,
+			peopleMentionsEnabled,
+			vimKeybindingsEnabled,
+		],
 	);
 	const markdownManager = useMemo(
 		() =>
@@ -447,6 +453,7 @@ export function useNoteEditor({
 				setShowCollapsibleHeadings(settings.editor.showCollapsibleHeadings);
 				setColorfulHeadings(settings.editor.colorfulHeadings);
 				setPeopleMentionsEnabled(settings.editor.enablePeopleMentionsAsTags);
+				setVimKeybindingsEnabled(settings.editor.vimKeybindings === true);
 				attachmentStorageModeRef.current =
 					settings.editor.attachmentStorageMode;
 				attachmentFolderRef.current = settings.editor.attachmentFolder;
@@ -456,6 +463,7 @@ export function useNoteEditor({
 				setShowCollapsibleHeadings(false);
 				setColorfulHeadings(false);
 				setPeopleMentionsEnabled(false);
+				setVimKeybindingsEnabled(false);
 				attachmentStorageModeRef.current = "note-folder";
 				attachmentFolderRef.current = DEFAULT_ATTACHMENT_FOLDER;
 			});
@@ -473,6 +481,9 @@ export function useNoteEditor({
 		}
 		if (typeof payload.editor?.enablePeopleMentionsAsTags === "boolean") {
 			setPeopleMentionsEnabled(payload.editor.enablePeopleMentionsAsTags);
+		}
+		if (typeof payload.editor?.vimKeybindings === "boolean") {
+			setVimKeybindingsEnabled(payload.editor.vimKeybindings);
 		}
 		if (payload.editor?.attachmentStorageMode) {
 			attachmentStorageModeRef.current = payload.editor.attachmentStorageMode;
@@ -648,7 +659,11 @@ export function useNoteEditor({
 				onChange(nextMarkdown);
 			},
 		},
-		[peopleMentionsEnabled, enableMarkdownLinkAutocomplete],
+		[
+			peopleMentionsEnabled,
+			enableMarkdownLinkAutocomplete,
+			vimKeybindingsEnabled,
+		],
 	);
 	editorRef.current = editor;
 

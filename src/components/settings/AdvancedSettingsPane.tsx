@@ -1,3 +1,5 @@
+import { BadgeInfoIcon } from "@hugeicons/core-free-icons";
+import { HugeiconsIcon } from "@hugeicons/react";
 import { useCallback, useEffect, useState } from "react";
 import { useSpace } from "../../contexts";
 import { extractErrorMessage } from "../../lib/errorUtils";
@@ -11,22 +13,89 @@ import {
 	setEditorColorfulHeadings,
 	setEditorEnablePeopleMentionsAsTags,
 	setEditorShowCollapsibleHeadings,
+	setEditorVimKeybindings,
 	setShowFileTreeFolderCounts,
 	setShowToc,
 } from "../../lib/settings";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
+import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 import {
 	SettingsRow,
 	SettingsSection,
 	SettingsToggle,
 } from "./SettingsScaffold";
 
+const VIM_KEYBINDING_HELP = [
+	{ key: "Esc", action: "Enter Vim command mode." },
+	{ key: "i", action: "Type at the cursor." },
+	{ key: "a", action: "Type after the cursor." },
+	{ key: "I", action: "Go to the start of the line and type." },
+	{ key: "A", action: "Go to the end of the line and type." },
+	{ key: "o", action: "Open a new line below and type." },
+	{ key: "O", action: "Open a new line above and type." },
+	{ key: "h / j / k / l", action: "Move left, down, up, and right." },
+	{ key: "w", action: "Jump to the next word." },
+	{ key: "b", action: "Jump back to the previous word." },
+	{ key: "e", action: "Jump to the end of the word." },
+	{ key: "0", action: "Jump to the start of the line." },
+	{ key: "$", action: "Jump to the end of the line." },
+	{ key: "gg", action: "Jump to the start of the note." },
+	{ key: "G", action: "Jump to the end of the note." },
+	{ key: "x", action: "Delete the character under or near the cursor." },
+	{ key: "dd", action: "Delete the current line's contents." },
+	{ key: "u", action: "Undo." },
+	{ key: "Control-r", action: "Redo." },
+] as const;
+
+function VimKeybindingsHelp() {
+	return (
+		<Popover>
+			<PopoverTrigger asChild>
+				<button
+					type="button"
+					className="vimKeybindingsInfoButton"
+					aria-label="Vim keybindings help"
+				>
+					<HugeiconsIcon icon={BadgeInfoIcon} size={14} strokeWidth={0.9} />
+				</button>
+			</PopoverTrigger>
+			<PopoverContent
+				align="start"
+				side="right"
+				sideOffset={8}
+				className="vimKeybindingsPopover"
+			>
+				<div className="vimKeybindingsPopoverTitle">Vim keybindings</div>
+				<div className="vimKeybindingsModes">
+					<div>
+						<strong>insert</strong> means normal typing mode. You type and text
+						appears, like the editor already does.
+					</div>
+					<div>
+						<strong>normal</strong> means command mode. Your keys move around or
+						edit text instead of typing letters.
+					</div>
+				</div>
+				<div className="vimKeybindingsList">
+					{VIM_KEYBINDING_HELP.map((item) => (
+						<div className="vimKeybindingsItem" key={item.key}>
+							<kbd>{item.key}</kbd>
+							<span>{item.action}</span>
+						</div>
+					))}
+				</div>
+			</PopoverContent>
+		</Popover>
+	);
+}
+
 export function AdvancedSettingsPane() {
 	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
 	const [colorfulHeadings, setColorfulHeadings] = useState(false);
 	const [enablePeopleMentionsAsTags, setEnablePeopleMentionsAsTags] =
 		useState(false);
+	const [vimKeybindings, setVimKeybindings] = useState(false);
 	const [showToc, setShowTocState] = useState(true);
 	const [aiAssistantMode, setAiAssistantModeState] =
 		useState<AiAssistantMode>("create");
@@ -45,6 +114,7 @@ export function AdvancedSettingsPane() {
 		isSavingEnablePeopleMentionsAsTags,
 		setIsSavingEnablePeopleMentionsAsTags,
 	] = useState(false);
+	const [isSavingVimKeybindings, setIsSavingVimKeybindings] = useState(false);
 	const [isSavingAiAssistantMode, setIsSavingAiAssistantMode] = useState(false);
 	const [isSavingDelightfulGlyph, setIsSavingDelightfulGlyph] = useState(false);
 	const [
@@ -64,6 +134,7 @@ export function AdvancedSettingsPane() {
 			setShowCollapsibleHeadings(settings.editor.showCollapsibleHeadings);
 			setColorfulHeadings(settings.editor.colorfulHeadings);
 			setEnablePeopleMentionsAsTags(settings.editor.enablePeopleMentionsAsTags);
+			setVimKeybindings(settings.editor.vimKeybindings === true);
 			setShowTocState(settings.ui.showToc);
 			setAiAssistantModeState(settings.ui.aiAssistantMode);
 			setDelightfulGlyphState(settings.ui.delightfulGlyph);
@@ -88,6 +159,9 @@ export function AdvancedSettingsPane() {
 		}
 		if (typeof payload.editor?.enablePeopleMentionsAsTags === "boolean") {
 			setEnablePeopleMentionsAsTags(payload.editor.enablePeopleMentionsAsTags);
+		}
+		if (typeof payload.editor?.vimKeybindings === "boolean") {
+			setVimKeybindings(payload.editor.vimKeybindings);
 		}
 		if (typeof payload.ui?.showToc === "boolean") {
 			setShowTocState(payload.ui.showToc);
@@ -224,6 +298,35 @@ export function AdvancedSettingsPane() {
 									})
 									.finally(() => {
 										setIsSavingShowCollapsibleHeadings(false);
+									});
+							}}
+						/>
+					</SettingsRow>
+					<SettingsRow
+						label={
+							<span className="settingsLabelWithHelp">
+								Vim Mode
+								<VimKeybindingsHelp />
+							</span>
+						}
+						description="Do NOT Turn this ON if you don't know what it means."
+					>
+						<SettingsToggle
+							checked={vimKeybindings}
+							disabled={isSavingVimKeybindings}
+							ariaLabel="Vim Mode"
+							onCheckedChange={(checked) => {
+								const previous = vimKeybindings;
+								setError("");
+								setVimKeybindings(checked);
+								setIsSavingVimKeybindings(true);
+								void setEditorVimKeybindings(checked)
+									.catch((cause) => {
+										setVimKeybindings(previous);
+										setError(extractErrorMessage(cause));
+									})
+									.finally(() => {
+										setIsSavingVimKeybindings(false);
 									});
 							}}
 						/>

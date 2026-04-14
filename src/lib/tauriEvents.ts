@@ -103,6 +103,7 @@ type TauriEventMap = {
 			attachmentStorageMode?: AttachmentStorageMode;
 			attachmentFolder?: string | null;
 			enablePeopleMentionsAsTags?: boolean;
+			vimKeybindings?: boolean;
 		};
 		onboarding?: {
 			launcherSeen?: boolean;
