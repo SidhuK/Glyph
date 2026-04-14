@@ -107,8 +107,8 @@
 	display: none;
 	align-items: center;
 	justify-content: center;
-	width: 2.4rem;
-	height: 2.4rem;
+	width: 2.75rem;
+	height: 2.75rem;
 	background: transparent;
 	border: none;
 	color: #fff;
@@ -534,15 +534,6 @@ h2 {
 		height: 1.85rem;
 	}
 
-	.nav {
-		width: auto;
-		gap: 0;
-	}
-
-	.nav a {
-		padding: 0.3rem 0.42rem;
-		font-size: 0.64rem;
-	}
 	.header-cta {
 		min-height: 1.9rem;
 		padding: 0.35rem 0.62rem;
