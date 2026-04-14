@@ -15,6 +15,7 @@ const {
 	setEditorColorfulHeadingsMock,
 	setEditorEnablePeopleMentionsAsTagsMock,
 	setEditorShowCollapsibleHeadingsMock,
+	setEditorVimKeybindingsMock,
 	setShowFileTreeFolderCountsMock,
 	setShowTocMock,
 } = vi.hoisted(() => ({
@@ -26,6 +27,7 @@ const {
 	setEditorColorfulHeadingsMock: vi.fn(() => Promise.resolve()),
 	setEditorEnablePeopleMentionsAsTagsMock: vi.fn(() => Promise.resolve()),
 	setEditorShowCollapsibleHeadingsMock: vi.fn(() => Promise.resolve()),
+	setEditorVimKeybindingsMock: vi.fn(() => Promise.resolve()),
 	setShowFileTreeFolderCountsMock: vi.fn(() => Promise.resolve()),
 	setShowTocMock: vi.fn(() => Promise.resolve()),
 }));
@@ -46,6 +48,7 @@ vi.mock("../../lib/settings", () => ({
 	setEditorColorfulHeadings: setEditorColorfulHeadingsMock,
 	setEditorEnablePeopleMentionsAsTags: setEditorEnablePeopleMentionsAsTagsMock,
 	setEditorShowCollapsibleHeadings: setEditorShowCollapsibleHeadingsMock,
+	setEditorVimKeybindings: setEditorVimKeybindingsMock,
 	setShowFileTreeFolderCounts: setShowFileTreeFolderCountsMock,
 	setShowToc: setShowTocMock,
 }));
@@ -113,12 +116,13 @@ vi.mock("./SettingsScaffold", () => ({
 	}
 ).IS_REACT_ACT_ENVIRONMENT = true;
 
-function makeSettings(colorfulHeadings: boolean) {
+function makeSettings(colorfulHeadings: boolean, vimKeybindings = false) {
 	return {
 		editor: {
 			colorfulHeadings,
 			enablePeopleMentionsAsTags: false,
 			showCollapsibleHeadings: false,
+			vimKeybindings,
 		},
 		ui: {
 			aiAssistantMode: "create" as const,
@@ -194,5 +198,49 @@ describe("AdvancedSettingsPane", () => {
 		});
 
 		expect(setEditorColorfulHeadingsMock).toHaveBeenCalledWith(true);
+	});
+
+	it("shows Vim Mode off by default", async () => {
+		await act(async () => {
+			root.render(<AdvancedSettingsPane />);
+		});
+
+		const toggle = container.querySelector(
+			'input[aria-label="Vim Mode"]',
+		) as HTMLInputElement | null;
+
+		expect(container.textContent).toContain("Vim Mode");
+		expect(toggle?.checked).toBe(false);
+	});
+
+	it("reflects stored Vim keybinding state", async () => {
+		loadSettingsMock.mockResolvedValue(makeSettings(false, true));
+
+		await act(async () => {
+			root.render(<AdvancedSettingsPane />);
+		});
+
+		const toggle = container.querySelector(
+			'input[aria-label="Vim Mode"]',
+		) as HTMLInputElement | null;
+
+		expect(toggle?.checked).toBe(true);
+	});
+
+	it("saves Vim keybinding changes", async () => {
+		await act(async () => {
+			root.render(<AdvancedSettingsPane />);
+		});
+
+		const toggle = container.querySelector(
+			'input[aria-label="Vim Mode"]',
+		) as HTMLInputElement | null;
+		expect(toggle).toBeTruthy();
+
+		await act(async () => {
+			toggle?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+		});
+
+		expect(setEditorVimKeybindingsMock).toHaveBeenCalledWith(true);
 	});
 });

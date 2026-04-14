@@ -1,6 +1,18 @@
 {
 	"versions": [
 		{
+			"version": "0.2.8",
+			"publishedAt": "2026-04-14",
+			"sections": [
+				{
+					"category": "Added",
+					"items": [
+						"Optional Vim keybindings — power users can now move through notes, edit faster, and stay in flow with familiar Vim-style controls"
+					]
+				}
+			]
+		},
+		{
 			"version": "0.2.7",
 			"publishedAt": "2026-04-13",
 			"sections": [

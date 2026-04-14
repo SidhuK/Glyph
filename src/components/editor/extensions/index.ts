@@ -23,6 +23,7 @@ import { MarkdownLinkAutocomplete } from "./markdownLinkAutocomplete";
 import { MermaidPreview } from "./mermaidPreview";
 import { PersonAutocomplete } from "./personAutocomplete";
 import { TagDecorations } from "./tagDecorations";
+import { VimMode } from "./vimMode";
 import { WikiLink } from "./wikiLink";
 import { ZenFocus } from "./zenFocus";
 
@@ -531,6 +532,7 @@ interface CreateEditorExtensionsOptions {
 	enableWikiLinks?: boolean;
 	enableMarkdownLinkAutocomplete?: boolean;
 	enablePeopleMentions?: boolean;
+	enableVimKeybindings?: boolean;
 	currentPath?: string;
 	currentPathResolver?: (() => string) | null;
 	getZenModeEnabled?: (() => boolean) | null;
@@ -544,6 +546,7 @@ export function createEditorExtensions(
 		enableWikiLinks = true,
 		enableMarkdownLinkAutocomplete = true,
 		enablePeopleMentions = false,
+		enableVimKeybindings = false,
 		currentPath = "",
 		currentPathResolver = null,
 		getZenModeEnabled = null,
@@ -597,5 +600,6 @@ export function createEditorExtensions(
 		ZenFocus.configure({
 			getZenModeEnabled: getZenModeEnabled ?? (() => false),
 		}),
+		...(enableVimKeybindings ? [VimMode] : []),
 	];
 }

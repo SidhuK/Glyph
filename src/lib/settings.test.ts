@@ -77,6 +77,42 @@ describe("settings colorful headings", () => {
 	});
 });
 
+describe("settings Vim keybindings", () => {
+	beforeEach(() => {
+		vi.resetModules();
+		emitMock.mockClear();
+		storeState.clear();
+	});
+
+	it("defaults Vim keybindings to false", async () => {
+		const { loadSettings } = await import("./settings");
+
+		const settings = await loadSettings();
+
+		expect(settings.editor.vimKeybindings).toBe(false);
+	});
+
+	it("loads Vim keybindings from the store", async () => {
+		storeState.set("editor.vimKeybindings", true);
+		const { loadSettings } = await import("./settings");
+
+		const settings = await loadSettings();
+
+		expect(settings.editor.vimKeybindings).toBe(true);
+	});
+
+	it("persists and emits Vim keybinding changes", async () => {
+		const { setEditorVimKeybindings } = await import("./settings");
+
+		await setEditorVimKeybindings(true);
+
+		expect(storeState.get("editor.vimKeybindings")).toBe(true);
+		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
+			editor: { vimKeybindings: true },
+		});
+	});
+});
+
 describe("attachment storage settings", () => {
 	beforeEach(() => {
 		vi.resetModules();
