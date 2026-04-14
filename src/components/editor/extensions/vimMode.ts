@@ -15,10 +15,12 @@ interface TextBlockContext {
 	end: number;
 	node: EditorState["doc"];
 	offset: number;
+	parentChildCount: number;
 	start: number;
 }
 
 const PENDING_KEY_TIMEOUT_MS = 800;
+const VIM_MODE_DATA_ATTRIBUTE = "data-vim-mode";
 const SWALLOWED_NORMAL_KEYS = ["Backspace", "Delete", "Enter", "Space", "Tab"];
 const PRINTABLE_NORMAL_KEYS = Array.from(
 	"abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789`-=[]\\;',./~!@#%^&*()_+{}|:\"<>?",
@@ -39,6 +41,28 @@ function hasOpenSuggestionMenu() {
 	);
 }
 
+function syncVimModeAttribute(editor: Editor, mode: VimInputMode | null) {
+	if (!mode || !editor.isEditable) {
+		editor.view.dom.removeAttribute(VIM_MODE_DATA_ATTRIBUTE);
+		return;
+	}
+	editor.view.dom.setAttribute(VIM_MODE_DATA_ATTRIBUTE, mode);
+}
+
+function clearPendingOperator(storage: VimModeStorage) {
+	storage.pendingKey = null;
+	storage.pendingExpiresAt = 0;
+}
+
+function armPendingOperator(
+	storage: VimModeStorage,
+	key: string,
+	timestamp: number,
+) {
+	storage.pendingKey = key;
+	storage.pendingExpiresAt = timestamp + PENDING_KEY_TIMEOUT_MS;
+}
+
 function getTextBlockContext(state: EditorState): TextBlockContext | null {
 	const { $head } = state.selection;
 
@@ -52,6 +76,7 @@ function getTextBlockContext(state: EditorState): TextBlockContext | null {
 			end,
 			node,
 			offset: Math.max(0, Math.min($head.pos - start, node.textContent.length)),
+			parentChildCount: $head.node(depth - 1).childCount,
 			start,
 		};
 	}
@@ -104,6 +129,13 @@ function moveToTextBlockStart(editor: Editor) {
 function moveToTextBlockEnd(editor: Editor) {
 	const context = getTextBlockContext(editor.state);
 	if (!context) return true;
+	setSelection(editor, Math.max(context.start, context.end - 1));
+	return true;
+}
+
+function moveToTextBlockAppend(editor: Editor) {
+	const context = getTextBlockContext(editor.state);
+	if (!context) return true;
 	setSelection(editor, context.end);
 	return true;
 }
@@ -152,8 +184,16 @@ function moveToWordEnd(editor: Editor) {
 function openLine(editor: Editor, placement: "above" | "below") {
 	const context = getTextBlockContext(editor.state);
 	if (!context) return true;
-	const pos = placement === "above" ? context.start : context.end;
-	editor.chain().focus().setTextSelection(pos).splitBlock().run();
+	if (placement === "below") {
+		editor.chain().focus().setTextSelection(context.end).splitBlock().run();
+	} else {
+		editor
+			.chain()
+			.focus()
+			.insertContentAt(context.start - 1, { type: "paragraph" })
+			.setTextSelection(context.start)
+			.run();
+	}
 	editor.commands.enterVimInsertMode();
 	return true;
 }
@@ -177,13 +217,19 @@ function deleteCharacter(editor: Editor) {
 }
 
 function deleteTextBlockContents(editor: Editor) {
-	const context = getTextBlockContext(editor.state);
+	const { state } = editor;
+	const context = getTextBlockContext(state);
 	if (!context) return true;
-	editor
-		.chain()
-		.focus()
-		.deleteRange({ from: context.start, to: context.end })
-		.run();
+	const nodeFrom = context.start - 1;
+	const nodeTo = context.end + 1;
+	const canDeleteNode =
+		context.parentChildCount > 1 &&
+		nodeFrom >= 0 &&
+		nodeTo <= state.doc.content.size;
+	const range = canDeleteNode
+		? { from: nodeFrom, to: nodeTo }
+		: { from: context.start, to: context.end };
+	editor.chain().focus().deleteRange(range).run();
 	return true;
 }
 
@@ -193,13 +239,13 @@ function runNormalModeCommand(
 	command: () => boolean,
 ) {
 	if (!editor.isEditable || storage.mode !== "normal") return false;
-	storage.pendingKey = null;
+	clearPendingOperator(storage);
 	return command();
 }
 
 function swallowNormalModeKey(storage: VimModeStorage, editor: Editor) {
 	if (!editor.isEditable || storage.mode !== "normal") return false;
-	storage.pendingKey = null;
+	clearPendingOperator(storage);
 	return true;
 }
 
@@ -215,23 +261,35 @@ export const VimMode = Extension.create<object, VimModeStorage>({
 		};
 	},
 
+	onCreate() {
+		syncVimModeAttribute(this.editor, this.storage.mode);
+	},
+
+	onDestroy() {
+		syncVimModeAttribute(this.editor, null);
+	},
+
 	addCommands() {
 		return {
 			enterVimInsertMode: () => (): boolean => {
 				this.storage.mode = "insert";
-				this.storage.pendingKey = null;
+				clearPendingOperator(this.storage);
+				syncVimModeAttribute(this.editor, this.storage.mode);
 				return true;
 			},
 			enterVimNormalMode:
 				() =>
 				({ state, tr, dispatch }): boolean => {
 					this.storage.mode = "normal";
-					this.storage.pendingKey = null;
+					clearPendingOperator(this.storage);
+					syncVimModeAttribute(this.editor, this.storage.mode);
 					if (!dispatch) return true;
 
 					const context = getTextBlockContext(state);
 					const minPos = context?.start ?? 0;
-					const maxPos = context?.end ?? state.doc.content.size;
+					const maxPos = context
+						? Math.max(context.start, context.end - 1)
+						: state.doc.content.size;
 					const head = state.selection.head;
 					const nextPos = Math.max(minPos, Math.min(head - 1, maxPos));
 					const selection = Selection.near(state.doc.resolve(nextPos));
@@ -254,7 +312,7 @@ export const VimMode = Extension.create<object, VimModeStorage>({
 			$: normal(() => moveToTextBlockEnd(this.editor)),
 			0: normal(() => moveToTextBlockStart(this.editor)),
 			A: normal(() => {
-				moveToTextBlockEnd(this.editor);
+				moveToTextBlockAppend(this.editor);
 				return this.editor.commands.enterVimInsertMode();
 			}),
 			G: normal(() => {
@@ -279,11 +337,11 @@ export const VimMode = Extension.create<object, VimModeStorage>({
 					this.storage.pendingKey === "d" &&
 					this.storage.pendingExpiresAt > now
 				) {
-					this.storage.pendingKey = null;
+					clearPendingOperator(this.storage);
 					return deleteTextBlockContents(this.editor);
 				}
-				this.storage.pendingKey = "d";
-				this.storage.pendingExpiresAt = now + PENDING_KEY_TIMEOUT_MS;
+				clearPendingOperator(this.storage);
+				armPendingOperator(this.storage, "d", now);
 				return true;
 			},
 			e: normal(() => moveToWordEnd(this.editor)),
@@ -295,12 +353,12 @@ export const VimMode = Extension.create<object, VimModeStorage>({
 					this.storage.pendingKey === "g" &&
 					this.storage.pendingExpiresAt > now
 				) {
-					this.storage.pendingKey = null;
+					clearPendingOperator(this.storage);
 					setSelection(this.editor, 0);
 					return true;
 				}
-				this.storage.pendingKey = "g";
-				this.storage.pendingExpiresAt = now + PENDING_KEY_TIMEOUT_MS;
+				clearPendingOperator(this.storage);
+				armPendingOperator(this.storage, "g", now);
 				return true;
 			},
 			h: normal(() => moveBy(this.editor, -1)),
@@ -328,8 +386,43 @@ export const VimMode = Extension.create<object, VimModeStorage>({
 		return [
 			new Plugin({
 				props: {
+					handleDOMEvents: {
+						blur: () => {
+							clearPendingOperator(this.storage);
+							return false;
+						},
+						mouseup: () => {
+							clearPendingOperator(this.storage);
+							return false;
+						},
+					},
+					handleKeyDown: (_view, event) => {
+						if (
+							this.storage.mode === "normal" &&
+							this.storage.pendingKey &&
+							event.key !== this.storage.pendingKey
+						) {
+							clearPendingOperator(this.storage);
+						}
+						return false;
+					},
 					handleTextInput: () =>
 						this.editor.isEditable && this.storage.mode === "normal",
+				},
+				view: () => {
+					syncVimModeAttribute(this.editor, this.storage.mode);
+					return {
+						update: (view, previousState) => {
+							syncVimModeAttribute(this.editor, this.storage.mode);
+							if (!previousState.selection.eq(view.state.selection)) {
+								clearPendingOperator(this.storage);
+							}
+						},
+						destroy: () => {
+							clearPendingOperator(this.storage);
+							syncVimModeAttribute(this.editor, null);
+						},
+					};
 				},
 			}),
 		];
