@@ -25,30 +25,6 @@ export function isShortcutMatch(
 }
 
 /**
- * Format a shortcut for display (macOS style with symbols)
- * @deprecated Use formatShortcutForPlatform from shortcuts/platform for cross-platform support
- */
-export function formatShortcut(shortcut: Shortcut): string {
-	return formatShortcutParts(shortcut).join("");
-}
-
-/**
- * Format a shortcut as an array of parts for rendering with <kbd> elements
- * @deprecated Use formatShortcutPartsForPlatform from shortcuts/platform for cross-platform support
- */
-export function formatShortcutParts(shortcut: Shortcut): string[] {
-	const parts: string[] = [];
-	if (shortcut.meta) parts.push("⌘");
-	if (shortcut.shift) parts.push("⇧");
-	if (shortcut.alt) parts.push("⌥");
-	if (shortcut.ctrl) parts.push("⌃");
-	parts.push(
-		shortcut.key.length === 1 ? shortcut.key.toUpperCase() : shortcut.key,
-	);
-	return parts;
-}
-
-/**
  * Normalize a key string for comparison
  */
 function normalizeKey(key: string): string {

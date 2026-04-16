@@ -27,6 +27,10 @@ interface SidebarProps {
 	onSelectTag: (tag: string) => void;
 	sidebarCollapsed: boolean;
 	onToggleSidebar: () => void;
+	spacePath: string | null;
+	recentSpaces: string[];
+	onOpenSpace: () => Promise<void>;
+	onOpenRecentSpaceAtPath: (path: string) => Promise<void>;
 	gitSyncStatus: GitSyncStatus | null;
 	onOpenSettings: () => void;
 	onOpenAllDocs: () => void;
@@ -56,6 +60,10 @@ export const Sidebar = memo(function Sidebar({
 	onSelectTag,
 	sidebarCollapsed,
 	onToggleSidebar,
+	spacePath,
+	recentSpaces,
+	onOpenSpace,
+	onOpenRecentSpaceAtPath,
 	gitSyncStatus,
 	onOpenSettings,
 	onOpenAllDocs,
@@ -121,6 +129,10 @@ export const Sidebar = memo(function Sidebar({
 								<SidebarHeader
 									sidebarCollapsed={sidebarCollapsed}
 									onToggleSidebar={onToggleSidebar}
+									spacePath={spacePath}
+									recentSpaces={recentSpaces}
+									onOpenSpace={onOpenSpace}
+									onOpenRecentSpaceAtPath={onOpenRecentSpaceAtPath}
 									updateReady={updateReady}
 									updateVersion={updateVersion}
 									onInstallUpdate={onInstallUpdate}

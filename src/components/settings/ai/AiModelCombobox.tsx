@@ -11,7 +11,9 @@ interface AiModelComboboxProps {
 }
 
 const providerNeedsApiKey = (provider: AiProviderKind): boolean =>
-	provider !== "ollama" && provider !== "codex_chatgpt";
+	provider !== "ollama" &&
+	provider !== "llama_cpp" &&
+	provider !== "codex_chatgpt";
 
 interface ModelFetchState {
 	models: AiModel[] | null;

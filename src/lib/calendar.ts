@@ -3,7 +3,6 @@ import {
 	endOfMonth,
 	endOfWeek,
 	format,
-	isSameMonth,
 	parseISO,
 	startOfMonth,
 	startOfWeek,
@@ -32,7 +31,7 @@ export function buildMonthRange(anchorDate: string): CalendarRange {
 	return buildRange(rangeStart, rangeEnd);
 }
 
-export function buildRange(start: Date, end: Date): CalendarRange {
+function buildRange(start: Date, end: Date): CalendarRange {
 	const dates: string[] = [];
 	for (let cursor = start; cursor <= end; cursor = addDays(cursor, 1)) {
 		dates.push(formatCalendarDate(cursor));
@@ -50,25 +49,8 @@ export function shiftMonth(anchorDate: string, delta: number): string {
 	return formatCalendarDate(next);
 }
 
-export function isDateInMonth(date: string, monthAnchor: string): boolean {
-	return isSameMonth(parseCalendarDate(date), parseCalendarDate(monthAnchor));
-}
-
-export function relativeDayLabel(date: string, today: string): string | null {
-	if (date === today) return "Today";
-	const tomorrow = formatCalendarDate(addDays(parseCalendarDate(today), 1));
-	if (date === tomorrow) return "Tomorrow";
-	const yesterday = formatCalendarDate(addDays(parseCalendarDate(today), -1));
-	if (date === yesterday) return "Yesterday";
-	return null;
-}
-
-export function formatDayTitle(date: string): string {
+function formatDayTitle(date: string): string {
 	return format(parseCalendarDate(date), "MMM d");
-}
-
-export function formatWeekday(date: string): string {
-	return format(parseCalendarDate(date), "EEEE");
 }
 
 export function formatMonthDay(date: string): string {

@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import type { Shortcut } from "../../lib/shortcuts";
 import type { SearchAdvancedRequest } from "../../lib/tauri";
-import { springPresets } from "../ui/animations";
 
 export interface Command {
 	id: string;
@@ -15,13 +14,6 @@ export interface Command {
 }
 
 export type Tab = "commands" | "search";
-
-export const TABS: { id: Tab; label: string }[] = [
-	{ id: "commands", label: "Commands" },
-	{ id: "search", label: "Search" },
-];
-
-export const springTransition = springPresets.snappy;
 
 export interface ParsedSearchQuery {
 	request: SearchAdvancedRequest;

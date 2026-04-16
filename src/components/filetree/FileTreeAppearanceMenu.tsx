@@ -10,6 +10,7 @@ import {
 	isEditorTextColor,
 } from "../editor/textColors";
 import {
+	ContextMenuSeparator,
 	ContextMenuSub,
 	ContextMenuSubContent,
 	ContextMenuSubTrigger,
@@ -38,109 +39,94 @@ export function FileTreeAppearanceMenu({
 	const selectedIcon = appearance?.icon ?? null;
 
 	return (
-		<>
-			<ContextMenuSub>
-				<ContextMenuSubTrigger className="fileTreeCreateMenuItem">
-					<HugeiconsIcon icon={PaintBucketIcon} size={14} strokeWidth={0.9} />
-					Color
-				</ContextMenuSubTrigger>
-				<ContextMenuSubContent className="fileTreeCreateMenu fileTreeAppearanceMenuPanel">
-					<div className="databaseBoardColorRibbon fileTreeAppearanceColorRibbon">
-						{EDITOR_TEXT_COLORS.map((color) => (
-							<button
-								key={color.id}
-								type="button"
-								className="databaseBoardColorRibbonSwatch"
-								data-active={selectedColor === color.id ? "true" : "false"}
-								style={
-									{
-										"--database-tone": `var(${color.cssVar}, ${color.fallbackHex})`,
-									} as CSSProperties
-								}
-								onClick={() =>
-									onChangeAppearance({
-										color: color.id,
-										icon: selectedIcon,
-									})
-								}
-								title={color.label}
-								aria-label={`Set color to ${color.label}`}
-							/>
-						))}
+		<ContextMenuSub>
+			<ContextMenuSubTrigger className="fileTreeCreateMenuItem">
+				<HugeiconsIcon icon={PaintBucketIcon} size={14} strokeWidth={0.9} />
+				Icon & Color
+			</ContextMenuSubTrigger>
+			<ContextMenuSubContent className="fileTreeCreateMenu fileTreeAppearanceMenuPanel fileTreeAppearanceIconPanel">
+				<div className="databaseBoardColorRibbon fileTreeAppearanceColorRibbon">
+					{EDITOR_TEXT_COLORS.map((color) => (
 						<button
+							key={color.id}
 							type="button"
-							className="databaseBoardColorRibbonClear"
-							data-active={selectedColor === null ? "true" : "false"}
+							className="databaseBoardColorRibbonSwatch"
+							data-active={selectedColor === color.id ? "true" : "false"}
+							style={
+								{
+									"--database-tone": `var(${color.cssVar}, ${color.fallbackHex})`,
+								} as CSSProperties
+							}
 							onClick={() =>
 								onChangeAppearance({
-									color: null,
+									color: color.id,
 									icon: selectedIcon,
 								})
 							}
-							title="Use default color"
-							aria-label="Use default color"
-						>
-							<span />
-						</button>
-					</div>
-				</ContextMenuSubContent>
-			</ContextMenuSub>
-
-			<ContextMenuSub>
-				<ContextMenuSubTrigger className="fileTreeCreateMenuItem">
-					<DatabaseColumnIcon
-						iconName={
-							selectedIcon ?? (itemKind === "dir" ? "folder" : "document")
+							title={color.label}
+							aria-label={`Set color to ${color.label}`}
+						/>
+					))}
+					<button
+						type="button"
+						className="databaseBoardColorRibbonClear"
+						data-active={selectedColor === null ? "true" : "false"}
+						onClick={() =>
+							onChangeAppearance({
+								color: null,
+								icon: selectedIcon,
+							})
 						}
-						size={14}
-					/>
-					Icon
-				</ContextMenuSubTrigger>
-				<ContextMenuSubContent className="fileTreeCreateMenu fileTreeAppearanceMenuPanel fileTreeAppearanceIconPanel">
-					<div className="fileTreeAppearanceIconGrid">
+						title="Use default color"
+						aria-label="Use default color"
+					>
+						<span />
+					</button>
+				</div>
+				<ContextMenuSeparator className="fileTreeCreateMenuSeparator" />
+				<div className="fileTreeAppearanceIconGrid">
+					<button
+						className="fileTreeAppearanceIconOption"
+						type="button"
+						data-active={selectedIcon === null ? "true" : "false"}
+						onClick={() =>
+							onChangeAppearance({
+								color: selectedColor,
+								icon: null,
+							})
+						}
+						title="Default icon"
+						aria-label="Default icon"
+					>
+						<span className="fileTreeAppearanceIconGlyph">
+							<DatabaseColumnIcon
+								iconName={itemKind === "dir" ? "folder" : "document"}
+								size={16}
+							/>
+						</span>
+					</button>
+					{DATABASE_COLUMN_ICON_OPTIONS.map((option) => (
 						<button
-							className="fileTreeAppearanceIconOption"
+							key={option.id}
 							type="button"
-							data-active={selectedIcon === null ? "true" : "false"}
+							className="fileTreeAppearanceIconOption"
+							data-active={selectedIcon === option.id ? "true" : "false"}
 							onClick={() =>
 								onChangeAppearance({
 									color: selectedColor,
-									icon: null,
+									icon: option.id,
 								})
 							}
-							title="Default icon"
-							aria-label="Default icon"
+							title={option.label}
+							aria-label={option.label}
 						>
 							<span className="fileTreeAppearanceIconGlyph">
-								<DatabaseColumnIcon
-									iconName={itemKind === "dir" ? "folder" : "document"}
-									size={16}
-								/>
+								<DatabaseColumnIcon iconName={option.id} size={16} />
 							</span>
 						</button>
-						{DATABASE_COLUMN_ICON_OPTIONS.map((option) => (
-							<button
-								key={option.id}
-								type="button"
-								className="fileTreeAppearanceIconOption"
-								data-active={selectedIcon === option.id ? "true" : "false"}
-								onClick={() =>
-									onChangeAppearance({
-										color: selectedColor,
-										icon: option.id,
-									})
-								}
-								title={option.label}
-								aria-label={option.label}
-							>
-								<span className="fileTreeAppearanceIconGlyph">
-									<DatabaseColumnIcon iconName={option.id} size={16} />
-								</span>
-							</button>
-						))}
-					</div>
-				</ContextMenuSubContent>
-			</ContextMenuSub>
-		</>
+					))}
+				</div>
+			</ContextMenuSubContent>
+		</ContextMenuSub>
 	);
 }

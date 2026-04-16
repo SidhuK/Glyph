@@ -9,10 +9,6 @@ import type {
 	DatabaseRow,
 } from "./types";
 
-function yamlString(value: string): string {
-	return JSON.stringify(value ?? "");
-}
-
 function normalizeDir(dirPath: string): string {
 	return dirPath.replace(/\\/g, "/").replace(/^\/+|\/+$/g, "");
 }
@@ -72,129 +68,6 @@ export function createDefaultDatabaseConfig(dirPath: string): DatabaseConfig {
 		sorts: [],
 		filters: [],
 	};
-}
-
-export function createStarterDatabaseMarkdown(
-	title: string,
-	config: DatabaseConfig,
-): string {
-	// This starter note YAML is assembled manually on purpose because the inputs
-	// here are the app-controlled DatabaseConfig shape (config.columns,
-	// config.sorts, config.filters, and config.view), not arbitrary user-authored
-	// YAML. If this ever starts accepting more dynamic/untrusted values or more
-	// complex scalar types, switch this helper over to a dedicated YAML emitter.
-	const columnsYaml = config.columns
-		.map((column) => {
-			const width =
-				typeof column.width === "number"
-					? `\n        width: ${column.width}`
-					: "";
-			const propertyKey = column.property_key
-				? `\n        property_key: ${yamlString(column.property_key)}`
-				: "";
-			const propertyKind = column.property_kind
-				? `\n        property_kind: ${yamlString(column.property_kind)}`
-				: "";
-			const icon = column.icon
-				? `\n        icon: ${yamlString(column.icon)}`
-				: "";
-			return [
-				"      -",
-				`        id: ${yamlString(column.id)}`,
-				`        type: ${column.type}`,
-				`        label: ${yamlString(column.label)}`,
-				`        visible: ${column.visible ? "true" : "false"}`,
-				width,
-				icon,
-				propertyKey,
-				propertyKind,
-			]
-				.filter(Boolean)
-				.join("\n");
-		})
-		.join("\n");
-	const sortsYaml = config.sorts.length
-		? config.sorts
-				.map(
-					(sort) =>
-						`      -\n        column_id: ${yamlString(sort.column_id)}\n        direction: ${sort.direction}`,
-				)
-				.join("\n")
-		: " []";
-	const filtersYaml = config.filters.length
-		? config.filters
-				.map((filter) => {
-					const parts = [
-						"      -",
-						`        column_id: ${yamlString(filter.column_id)}`,
-						`        operator: ${filter.operator}`,
-					];
-					if (filter.value_text) {
-						parts.push(`        value_text: ${yamlString(filter.value_text)}`);
-					}
-					if (typeof filter.value_bool === "boolean") {
-						parts.push(
-							`        value_bool: ${filter.value_bool ? "true" : "false"}`,
-						);
-					}
-					if (filter.value_list.length > 0) {
-						parts.push("        value_list:");
-						for (const value of filter.value_list) {
-							parts.push(`          - ${yamlString(value)}`);
-						}
-					}
-					return parts.join("\n");
-				})
-				.join("\n")
-		: " []";
-
-	return [
-		"---",
-		`title: ${yamlString(title)}`,
-		"glyph:",
-		"  kind: database",
-		"  version: 1",
-		"  database:",
-		"    source:",
-		`      kind: ${config.source.kind}`,
-		`      value: ${yamlString(config.source.value)}`,
-		`      recursive: ${config.source.recursive ? "true" : "false"}`,
-		"    new_note:",
-		`      folder: ${yamlString(config.new_note.folder)}`,
-		"    view:",
-		`      layout: ${config.view.layout}`,
-		...(config.view.board_group_by
-			? [`      board_group_by: ${yamlString(config.view.board_group_by)}`]
-			: []),
-		...(config.view.board_lane_colors &&
-		Object.keys(config.view.board_lane_colors).length > 0
-			? [
-					"      board_lane_colors:",
-					...Object.entries(config.view.board_lane_colors).map(
-						([laneId, color]) =>
-							`        ${yamlString(laneId)}: ${yamlString(color)}`,
-					),
-				]
-			: []),
-		...(config.view.board_lane_order &&
-		Object.keys(config.view.board_lane_order).length > 0
-			? [
-					"      board_lane_order:",
-					...Object.entries(config.view.board_lane_order).flatMap(
-						([groupColumnId, laneIds]) => [
-							`        ${yamlString(groupColumnId)}:`,
-							...laneIds.map((laneId) => `          - ${yamlString(laneId)}`),
-						],
-					),
-				]
-			: []),
-		"    columns:",
-		columnsYaml,
-		`    sorts:${sortsYaml}`,
-		`    filters:${filtersYaml}`,
-		"---",
-		"",
-	].join("\n");
 }
 
 export function createPropertyColumn(
@@ -389,19 +262,4 @@ export function rowMatchesFilters(
 				return true;
 		}
 	});
-}
-
-export function sourceSummary(config: DatabaseConfig): string {
-	switch (config.source.kind) {
-		case "all_notes":
-			return "All notes";
-		case "folder":
-			return config.source.value
-				? `Folder: ${config.source.value}${config.source.recursive ? " (with subfolders)" : ""}`
-				: `Folder: Space root${config.source.recursive ? " (with subfolders)" : ""}`;
-		case "tag":
-			return `Tag: ${config.source.value}`;
-		case "search":
-			return `Search: ${config.source.value}`;
-	}
 }

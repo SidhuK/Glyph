@@ -9,7 +9,7 @@ let cachedPlatform: "macos" | "windows" | "linux" | null = null;
  * Get the current platform, with caching
  * Uses navigator.userAgent as fallback for non-Tauri environments
  */
-export function getPlatform(): "macos" | "windows" | "linux" {
+function getPlatform(): "macos" | "windows" | "linux" {
 	if (cachedPlatform) return cachedPlatform;
 
 	// Fallback for all environments using navigator
@@ -100,7 +100,6 @@ export function formatShortcutPartsForPlatform(shortcut: Shortcut): string[] {
 		parts.push(symbols.shift);
 	}
 
-	// Format the key
 	const key =
 		shortcut.key.length === 1 ? shortcut.key.toUpperCase() : shortcut.key;
 	parts.push(key);

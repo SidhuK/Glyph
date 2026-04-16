@@ -16,7 +16,7 @@ use rig::{
 };
 
 use crate::ai_rig::{
-    helpers::{default_base_url, parse_base_url, parse_ollama_base_url},
+    helpers::{alternate_openai_base_url, default_base_url, parse_base_url, parse_ollama_base_url},
     types::{
         AiAssistantMode, AiChunkEvent, AiMessage, AiProfile, AiProviderKind, AiStoredToolEvent,
     },
@@ -142,7 +142,17 @@ pub async fn run_with_rig(
             } else {
                 agent.preamble(&effective_system).build()
             };
-            match run_stream(cancel, app, job_id, agent, transcript.clone()).await {
+            let mut emitted_events = false;
+            match run_stream(
+                cancel,
+                app,
+                job_id,
+                agent,
+                transcript.clone(),
+                &mut emitted_events,
+            )
+            .await
+            {
                 Ok(v) => v,
                 Err(e) if is_not_chat_model_error(&e) => {
                     return Err(not_chat_model_message(profile.model.trim()));
@@ -150,33 +160,69 @@ pub async fn run_with_rig(
                 Err(e) => return Err(e),
             }
         }
-        AiProviderKind::OpenaiCompat => {
+        AiProviderKind::OpenaiCompat | AiProviderKind::LlamaCpp => {
             let key = api_key.unwrap_or("").trim();
-            let base = custom_base_url
+            let primary_base = custom_base_url
                 .as_deref()
-                .unwrap_or(default_base_url(&AiProviderKind::OpenaiCompat));
-            let client = openai::Client::builder(key)
-                .with_client(http_client.clone())
-                .base_url(base)
-                .build();
-            let model = client
-                .completion_model(profile.model.trim())
-                .completions_api();
-            let mut agent = AgentBuilder::new(model);
-            if let Some(v) = max_tokens {
-                agent = agent.max_tokens(v);
-            }
-            let agent = if matches!(mode, AiAssistantMode::Create) {
-                with_tools(agent.preamble(&effective_system), &tools).build()
-            } else {
-                agent.preamble(&effective_system).build()
-            };
-            match run_stream(cancel, app, job_id, agent, transcript.clone()).await {
-                Ok(v) => v,
-                Err(e) if is_not_chat_model_error(&e) => {
-                    return Err(not_chat_model_message(profile.model.trim()));
+                .unwrap_or(default_base_url(&profile.provider));
+            let mut candidate_bases = vec![primary_base.to_string()];
+            if matches!(profile.provider, AiProviderKind::LlamaCpp) {
+                if let Some(alt) = alternate_openai_base_url(primary_base) {
+                    if !candidate_bases.iter().any(|candidate| candidate == &alt) {
+                        candidate_bases.push(alt);
+                    }
                 }
-                Err(e) => return Err(e),
+            }
+            let mut last_error: Option<String> = None;
+            let mut success: Option<(String, Vec<AiStoredToolEvent>, bool)> = None;
+            for base in candidate_bases {
+                let client = openai::Client::builder(key)
+                    .with_client(http_client.clone())
+                    .base_url(&base)
+                    .build();
+                let model = client
+                    .completion_model(profile.model.trim())
+                    .completions_api();
+                let mut agent = AgentBuilder::new(model);
+                if let Some(v) = max_tokens {
+                    agent = agent.max_tokens(v);
+                }
+                let agent = if matches!(mode, AiAssistantMode::Create) {
+                    with_tools(agent.preamble(&effective_system), &tools).build()
+                } else {
+                    agent.preamble(&effective_system).build()
+                };
+                let attempt_transcript = build_transcript(&effective_system, messages);
+                let mut emitted_events = false;
+                match run_stream(
+                    cancel,
+                    app,
+                    job_id,
+                    agent,
+                    attempt_transcript,
+                    &mut emitted_events,
+                )
+                .await
+                {
+                    Ok(v) => {
+                        success = Some(v);
+                        break;
+                    }
+                    Err(e) if is_not_chat_model_error(&e) => {
+                        return Err(not_chat_model_message(profile.model.trim()));
+                    }
+                    Err(e) => {
+                        if emitted_events {
+                            return Err(e);
+                        }
+                        last_error = Some(e);
+                    }
+                }
+            }
+            if let Some(v) = success {
+                v
+            } else {
+                return Err(last_error.unwrap_or_else(|| "request failed".to_string()));
             }
         }
         AiProviderKind::Openrouter => {
@@ -200,7 +246,8 @@ pub async fn run_with_rig(
             } else {
                 agent.preamble(&effective_system).build()
             };
-            run_stream(cancel, app, job_id, agent, transcript).await?
+            let mut emitted_events = false;
+            run_stream(cancel, app, job_id, agent, transcript, &mut emitted_events).await?
         }
         AiProviderKind::Anthropic => {
             let key = require_key(api_key)?;
@@ -225,7 +272,8 @@ pub async fn run_with_rig(
             } else {
                 agent.preamble(&effective_system).build()
             };
-            run_stream(cancel, app, job_id, agent, transcript).await?
+            let mut emitted_events = false;
+            run_stream(cancel, app, job_id, agent, transcript, &mut emitted_events).await?
         }
         AiProviderKind::Gemini => {
             let key = require_key(api_key)?;
@@ -250,7 +298,8 @@ pub async fn run_with_rig(
             } else {
                 agent.preamble(&effective_system).build()
             };
-            run_stream(cancel, app, job_id, agent, transcript).await?
+            let mut emitted_events = false;
+            run_stream(cancel, app, job_id, agent, transcript, &mut emitted_events).await?
         }
         AiProviderKind::Ollama => {
             let base = custom_ollama_base_url
@@ -270,7 +319,17 @@ pub async fn run_with_rig(
             } else {
                 agent.preamble(&effective_system).build()
             };
-            match run_stream(cancel, app, job_id, agent, transcript.clone()).await {
+            let mut emitted_events = false;
+            match run_stream(
+                cancel,
+                app,
+                job_id,
+                agent,
+                transcript.clone(),
+                &mut emitted_events,
+            )
+            .await
+            {
                 Ok(v) => v,
                 Err(e) if use_tools && is_ollama_tool_unsupported_error(&e) => {
                     let _ = app.emit(
@@ -288,7 +347,15 @@ pub async fn run_with_rig(
                         fallback_agent = fallback_agent.max_tokens(v);
                     }
                     let fallback_agent = fallback_agent.preamble(&fallback_system).build();
-                    run_stream(cancel, app, job_id, fallback_agent, fallback_transcript).await?
+                    run_stream(
+                        cancel,
+                        app,
+                        job_id,
+                        fallback_agent,
+                        fallback_transcript,
+                        &mut emitted_events,
+                    )
+                    .await?
                 }
                 Err(e) => return Err(e),
             }
@@ -402,37 +469,57 @@ pub async fn generate_chat_title_with_rig(
                 }
             }
         }
-        AiProviderKind::OpenaiCompat => {
+        AiProviderKind::OpenaiCompat | AiProviderKind::LlamaCpp => {
             let key = api_key.unwrap_or("").trim();
-            let base = custom_base_url
+            let primary_base = custom_base_url
                 .as_deref()
-                .unwrap_or(default_base_url(&AiProviderKind::OpenaiCompat));
-            let client = openai::Client::builder(key)
-                .with_client(http_client.clone())
-                .base_url(base)
-                .build();
-            let model = client
-                .completion_model(profile.model.trim())
-                .completions_api();
-            let mut agent = AgentBuilder::new(model);
-            if let Some(v) = max_tokens {
-                agent = agent.max_tokens(v);
-            }
-            match agent
-                .preamble(TITLE_PREAMBLE)
-                .build()
-                .prompt(&prompt)
-                .multi_turn(1)
-                .await
-            {
-                Ok(v) => v.to_string(),
-                Err(e) => {
-                    let msg = e.to_string();
-                    if is_not_chat_model_error(&msg) {
-                        return Err(not_chat_model_message(profile.model.trim()));
+                .unwrap_or(default_base_url(&profile.provider));
+            let mut candidate_bases = vec![primary_base.to_string()];
+            if matches!(profile.provider, AiProviderKind::LlamaCpp) {
+                if let Some(alt) = alternate_openai_base_url(primary_base) {
+                    if !candidate_bases.iter().any(|candidate| candidate == &alt) {
+                        candidate_bases.push(alt);
                     }
-                    return Err(msg);
                 }
+            }
+            let mut last_error: Option<String> = None;
+            let mut success: Option<String> = None;
+            for base in candidate_bases {
+                let client = openai::Client::builder(key)
+                    .with_client(http_client.clone())
+                    .base_url(&base)
+                    .build();
+                let model = client
+                    .completion_model(profile.model.trim())
+                    .completions_api();
+                let mut agent = AgentBuilder::new(model);
+                if let Some(v) = max_tokens {
+                    agent = agent.max_tokens(v);
+                }
+                match agent
+                    .preamble(TITLE_PREAMBLE)
+                    .build()
+                    .prompt(&prompt)
+                    .multi_turn(1)
+                    .await
+                {
+                    Ok(v) => {
+                        success = Some(v.to_string());
+                        break;
+                    }
+                    Err(e) => {
+                        let msg = e.to_string();
+                        if is_not_chat_model_error(&msg) {
+                            return Err(not_chat_model_message(profile.model.trim()));
+                        }
+                        last_error = Some(msg);
+                    }
+                }
+            }
+            if let Some(value) = success {
+                value
+            } else {
+                return Err(last_error.unwrap_or_else(|| "request failed".to_string()));
             }
         }
         AiProviderKind::Openrouter => {
@@ -603,6 +690,7 @@ async fn run_stream<M>(
     job_id: &str,
     agent: Agent<M>,
     prompt: String,
+    emitted_events: &mut bool,
 ) -> Result<(String, Vec<AiStoredToolEvent>, bool), String>
 where
     M: rig::completion::CompletionModel + 'static,
@@ -621,6 +709,7 @@ where
         match item {
             MultiTurnStreamItem::StreamAssistantItem(StreamedAssistantContent::Text(text)) => {
                 full.push_str(&text.text);
+                *emitted_events = true;
                 let _ = app.emit(
                     "ai:chunk",
                     AiChunkEvent {
@@ -630,6 +719,7 @@ where
                 );
             }
             MultiTurnStreamItem::StreamAssistantItem(StreamedAssistantContent::ToolCall(call)) => {
+                *emitted_events = true;
                 let _ = app.emit(
                     "ai:status",
                     AiStatusEvent {
@@ -649,6 +739,7 @@ where
                         "arguments": call.function.arguments
                     })),
                     None,
+                    emitted_events,
                 ));
                 if tool_events.len() >= MAX_TOOL_EVENTS {
                     return Err(
@@ -667,6 +758,7 @@ where
                 } else {
                     "result"
                 };
+                *emitted_events = true;
                 let _ = app.emit(
                     "ai:status",
                     AiStatusEvent {
@@ -693,6 +785,7 @@ where
                     } else {
                         None
                     },
+                    emitted_events,
                 ));
                 if tool_events.len() >= MAX_TOOL_EVENTS {
                     return Err(
@@ -706,6 +799,7 @@ where
                 let delta = reasoning.reasoning.join("");
                 if !delta.is_empty() {
                     full.push_str(&delta);
+                    *emitted_events = true;
                     let _ = app.emit(
                         "ai:chunk",
                         AiChunkEvent {
@@ -725,6 +819,7 @@ where
                         .to_string();
                     if !tail.trim().is_empty() {
                         full.push_str(&tail);
+                        *emitted_events = true;
                         let _ = app.emit(
                             "ai:chunk",
                             AiChunkEvent {
@@ -774,8 +869,10 @@ fn emit_tool(
     call_id: Option<String>,
     payload: Option<serde_json::Value>,
     error: Option<String>,
+    emitted_events: &mut bool,
 ) -> AiStoredToolEvent {
     let at_ms = crate::ai_rig::helpers::now_ms();
+    *emitted_events = true;
     let _ = app.emit(
         "ai:tool",
         crate::ai_rig::types::AiToolEvent {

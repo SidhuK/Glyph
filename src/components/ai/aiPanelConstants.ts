@@ -1,6 +1,4 @@
-import { normalizeRelPath } from "../../utils/path";
 import type { UIMessage } from "./hooks/useRigChat";
-import { providerLogoMap } from "./providerLogos";
 
 export type AddTrigger = { start: number; query: string };
 export type ToolPhase = "call" | "result" | "error";
@@ -46,10 +44,5 @@ export function formatToolName(tool: string): string {
 		.join(" ");
 }
 
-export { providerLogoMap };
-
 export const SLOW_START_MS = 3000;
 export const FINALIZING_MS = 280;
-
-export const normalizePath = (path: string | null | undefined): string =>
-	normalizeRelPath(path ?? "");

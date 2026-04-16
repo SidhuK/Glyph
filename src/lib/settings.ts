@@ -57,18 +57,24 @@ const UI_ACCENTS = new Set<UiAccent>([
 const DEFAULT_UI_ACCENT: UiAccent = "neutral";
 const DEFAULT_UI_FONT_FAMILY = "Satoshi";
 const DEFAULT_UI_MONO_FONT_FAMILY = "JetBrains Mono";
-export const DEFAULT_AUTO_UPDATE_CHECK_INTERVAL: AutoUpdateCheckInterval = "3h";
+const DEFAULT_AUTO_UPDATE_CHECK_INTERVAL: AutoUpdateCheckInterval = "3h";
 export const MIN_UI_FONT_SIZE = 7;
 export const MAX_UI_FONT_SIZE = 40;
-export const DEFAULT_UI_FONT_SIZE = 14;
+const DEFAULT_UI_FONT_SIZE = 14;
 export const MIN_EDITOR_FONT_SIZE = 10;
 export const MAX_EDITOR_FONT_SIZE = 40;
-export const DEFAULT_EDITOR_FONT_SIZE = 16;
+const DEFAULT_EDITOR_FONT_SIZE = 16;
 const DEFAULT_AI_ENABLED = true;
 export type UiFontFamily = string;
 export type UiFontSize = number;
 const DEFAULT_ATTACHMENT_FOLDER = "assets";
 const AI_ASSISTANT_MODES = new Set<AiAssistantMode>(["chat", "create"]);
+export type EditorWidthMode = "compact" | "comfortable" | "wide";
+const EDITOR_WIDTH_MODES = new Set<EditorWidthMode>([
+	"compact",
+	"comfortable",
+	"wide",
+]);
 export type TaskSourceMode = "space" | "folders";
 export interface OnboardingSettings {
 	launcherSeen: boolean;
@@ -99,6 +105,7 @@ export interface DatabaseSettings {
 export interface EditorSettings {
 	showCollapsibleHeadings: boolean;
 	colorfulHeadings: boolean;
+	editorWidthMode: EditorWidthMode;
 	attachmentStorageMode: AttachmentStorageMode;
 	attachmentFolder: string | null;
 	enablePeopleMentionsAsTags: boolean;
@@ -109,21 +116,22 @@ export interface FileTreeSettings {
 	showFolderFileCounts: boolean;
 }
 
-export const DEFAULT_DATABASE_SETTINGS: DatabaseSettings = {
+const DEFAULT_DATABASE_SETTINGS: DatabaseSettings = {
 	showColumnColor: true,
 	showNoteCount: false,
 };
 
-export const DEFAULT_EDITOR_SETTINGS: EditorSettings = {
+const DEFAULT_EDITOR_SETTINGS: EditorSettings = {
 	showCollapsibleHeadings: false,
 	colorfulHeadings: false,
+	editorWidthMode: "compact",
 	attachmentStorageMode: "note-folder",
 	attachmentFolder: DEFAULT_ATTACHMENT_FOLDER,
 	enablePeopleMentionsAsTags: false,
 	vimKeybindings: false,
 };
 
-export const DEFAULT_FILE_TREE_SETTINGS: FileTreeSettings = {
+const DEFAULT_FILE_TREE_SETTINGS: FileTreeSettings = {
 	showFolderFileCounts: false,
 };
 
@@ -155,6 +163,13 @@ function asAttachmentStorageMode(value: unknown): AttachmentStorageMode {
 		ATTACHMENT_STORAGE_MODES.has(value as AttachmentStorageMode)
 		? (value as AttachmentStorageMode)
 		: DEFAULT_EDITOR_SETTINGS.attachmentStorageMode;
+}
+
+function asEditorWidthMode(value: unknown): EditorWidthMode {
+	return typeof value === "string" &&
+		EDITOR_WIDTH_MODES.has(value as EditorWidthMode)
+		? (value as EditorWidthMode)
+		: DEFAULT_EDITOR_SETTINGS.editorWidthMode;
 }
 
 function asUiAccent(value: unknown): UiAccent {
@@ -239,6 +254,7 @@ async function emitSettingsUpdated(payload: {
 	editor?: {
 		showCollapsibleHeadings?: boolean;
 		colorfulHeadings?: boolean;
+		editorWidthMode?: EditorWidthMode;
 		attachmentStorageMode?: AttachmentStorageMode;
 		attachmentFolder?: string | null;
 		enablePeopleMentionsAsTags?: boolean;
@@ -321,9 +337,9 @@ const KEYS = {
 	showFileTreeFolderCounts: "ui.fileTree.showFolderFileCounts",
 	editorShowCollapsibleHeadings: "editor.showCollapsibleHeadings",
 	editorColorfulHeadings: "editor.colorfulHeadings",
+	editorEditorWidthMode: "editor.editorWidthMode",
 	editorAttachmentStorageMode: "editor.attachmentStorageMode",
 	editorAttachmentFolder: "editor.attachmentFolder",
-	editorPastedMediaFolder: "editor.pastedMediaFolder",
 	editorEnablePeopleMentionsAsTags: "editor.enablePeopleMentionsAsTags",
 	editorVimKeybindings: "editor.vimKeybindings",
 	autoUpdateLastCheckedAt: "updates.lastCheckedAt",
@@ -373,21 +389,6 @@ function normalizeTaskSourceSetting(value: unknown): TaskSourceSetting {
 		mode,
 		folders,
 	};
-}
-
-function normalizeLegacyTaskSourceSetting(
-	value: unknown,
-): TaskSourceSetting | null {
-	if (typeof value !== "object" || value === null) return null;
-	for (const bucket of ["inbox", "today", "upcoming"]) {
-		const bucketValue = (value as Record<string, unknown>)[bucket];
-		if (!bucketValue) continue;
-		const normalized = normalizeTaskSourceSetting(bucketValue);
-		if (normalized.mode === "folders" || normalized.folders.length > 0) {
-			return normalized;
-		}
-	}
-	return null;
 }
 
 export async function reloadFromDisk(): Promise<void> {
@@ -446,9 +447,9 @@ export async function loadSettings(): Promise<AppSettings> {
 		taskSourceRaw,
 		rawEditorShowCollapsibleHeadings,
 		rawEditorColorfulHeadings,
+		rawEditorWidthMode,
 		rawEditorAttachmentStorageMode,
 		rawEditorAttachmentFolder,
-		rawEditorPastedMediaFolder,
 		rawEditorEnablePeopleMentionsAsTags,
 		rawEditorVimKeybindings,
 		rawDatabaseShowColumnColor,
@@ -485,9 +486,9 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<unknown>(KEYS.taskSource),
 		store.get<boolean | null>(KEYS.editorShowCollapsibleHeadings),
 		store.get<boolean | null>(KEYS.editorColorfulHeadings),
+		store.get<unknown>(KEYS.editorEditorWidthMode),
 		store.get<unknown>(KEYS.editorAttachmentStorageMode),
 		store.get<string | null>(KEYS.editorAttachmentFolder),
-		store.get<string | null>(KEYS.editorPastedMediaFolder),
 		store.get<boolean | null>(KEYS.editorEnablePeopleMentionsAsTags),
 		store.get<boolean | null>(KEYS.editorVimKeybindings),
 		store.get<boolean | null>(KEYS.databaseShowColumnColor),
@@ -546,53 +547,14 @@ export async function loadSettings(): Promise<AppSettings> {
 		typeof templatesDailyNoteTemplateRaw === "string"
 			? normalizeRelPath(templatesDailyNoteTemplateRaw) || null
 			: null;
-	const taskSource =
-		normalizeLegacyTaskSourceSetting(taskSourceRaw) ??
-		normalizeTaskSourceSetting(taskSourceRaw);
-	const legacyAttachmentFolder =
-		typeof rawEditorPastedMediaFolder === "string"
-			? normalizeRelPath(rawEditorPastedMediaFolder) ||
-				DEFAULT_ATTACHMENT_FOLDER
-			: null;
-	let attachmentStorageMode: AttachmentStorageMode;
-	let attachmentFolder: string | null;
-	let shouldPersistAttachmentMigration = false;
-	let shouldDeleteLegacyAttachmentFolder = false;
-
-	if (
-		rawEditorAttachmentStorageMode !== null &&
-		rawEditorAttachmentStorageMode !== undefined
-	) {
-		attachmentStorageMode = asAttachmentStorageMode(
-			rawEditorAttachmentStorageMode,
-		);
-		attachmentFolder =
-			typeof rawEditorAttachmentFolder === "string"
-				? normalizeRelPath(rawEditorAttachmentFolder) ||
-					DEFAULT_ATTACHMENT_FOLDER
-				: DEFAULT_EDITOR_SETTINGS.attachmentFolder;
-		shouldDeleteLegacyAttachmentFolder = legacyAttachmentFolder !== null;
-	} else if (legacyAttachmentFolder) {
-		attachmentStorageMode = "specific-folder";
-		attachmentFolder = legacyAttachmentFolder;
-		shouldPersistAttachmentMigration = true;
-		shouldDeleteLegacyAttachmentFolder = true;
-	} else {
-		attachmentStorageMode = DEFAULT_EDITOR_SETTINGS.attachmentStorageMode;
-		attachmentFolder = DEFAULT_EDITOR_SETTINGS.attachmentFolder;
-		shouldPersistAttachmentMigration = true;
-	}
-
-	if (shouldPersistAttachmentMigration) {
-		await store.set(KEYS.editorAttachmentStorageMode, attachmentStorageMode);
-		await store.set(KEYS.editorAttachmentFolder, attachmentFolder);
-	}
-	if (shouldDeleteLegacyAttachmentFolder) {
-		await store.delete(KEYS.editorPastedMediaFolder);
-	}
-	if (shouldPersistAttachmentMigration || shouldDeleteLegacyAttachmentFolder) {
-		await store.save();
-	}
+	const taskSource = normalizeTaskSourceSetting(taskSourceRaw);
+	const attachmentStorageMode = asAttachmentStorageMode(
+		rawEditorAttachmentStorageMode,
+	);
+	const attachmentFolder =
+		typeof rawEditorAttachmentFolder === "string"
+			? normalizeRelPath(rawEditorAttachmentFolder) || DEFAULT_ATTACHMENT_FOLDER
+			: DEFAULT_EDITOR_SETTINGS.attachmentFolder;
 	const editor: EditorSettings = {
 		showCollapsibleHeadings:
 			typeof rawEditorShowCollapsibleHeadings === "boolean"
@@ -602,6 +564,7 @@ export async function loadSettings(): Promise<AppSettings> {
 			typeof rawEditorColorfulHeadings === "boolean"
 				? rawEditorColorfulHeadings
 				: DEFAULT_EDITOR_SETTINGS.colorfulHeadings,
+		editorWidthMode: asEditorWidthMode(rawEditorWidthMode),
 		attachmentStorageMode,
 		attachmentFolder,
 		enablePeopleMentionsAsTags:
@@ -682,12 +645,6 @@ export async function clearCurrentSpacePath(): Promise<void> {
 	await store.save();
 }
 
-export async function clearRecentSpaces(): Promise<void> {
-	const store = await getStore();
-	await store.set(KEYS.recentSpaces, []);
-	await store.save();
-}
-
 export async function updateOnboardingSettings(
 	patch: Partial<OnboardingSettings>,
 ): Promise<void> {
@@ -734,16 +691,6 @@ export async function setThemeMode(theme: ThemeMode): Promise<void> {
 	await store.set(KEYS.theme, theme);
 	await store.save();
 	void emitSettingsUpdated({ ui: { theme } });
-}
-
-export async function setAutoUpdateCheckInterval(
-	interval: AutoUpdateCheckInterval,
-): Promise<void> {
-	const store = await getStore();
-	const next = asAutoUpdateCheckInterval(interval);
-	await store.set(KEYS.autoUpdateCheckInterval, next);
-	await store.save();
-	void emitSettingsUpdated({ ui: { autoUpdateCheckInterval: next } });
 }
 
 export async function setUiLightThemeId(
@@ -860,13 +807,22 @@ export async function setEditorColorfulHeadings(
 	});
 }
 
+export async function setEditorWidthMode(mode: EditorWidthMode): Promise<void> {
+	const store = await getStore();
+	const next = asEditorWidthMode(mode);
+	await store.set(KEYS.editorEditorWidthMode, next);
+	await store.save();
+	void emitSettingsUpdated({
+		editor: { editorWidthMode: next },
+	});
+}
+
 export async function setEditorAttachmentStorageMode(
 	mode: AttachmentStorageMode,
 ): Promise<void> {
 	const store = await getStore();
 	const nextMode = asAttachmentStorageMode(mode);
 	await store.set(KEYS.editorAttachmentStorageMode, nextMode);
-	await store.delete(KEYS.editorPastedMediaFolder);
 	await store.save();
 	void emitSettingsUpdated({
 		editor: { attachmentStorageMode: nextMode },
@@ -882,7 +838,6 @@ export async function setEditorAttachmentFolder(
 			? normalizeRelPath(folder) || DEFAULT_ATTACHMENT_FOLDER
 			: DEFAULT_ATTACHMENT_FOLDER;
 	await store.set(KEYS.editorAttachmentFolder, nextFolder);
-	await store.delete(KEYS.editorPastedMediaFolder);
 	await store.save();
 	void emitSettingsUpdated({
 		editor: { attachmentFolder: nextFolder },
@@ -999,14 +954,6 @@ export async function setDailyNoteTemplate(
 	});
 }
 
-export async function setTaskSource(source: TaskSourceSetting): Promise<void> {
-	const store = await getStore();
-	const next = normalizeTaskSourceSetting(source);
-	await store.set(KEYS.taskSource, next);
-	await store.save();
-	void emitSettingsUpdated({ tasks: { source: next } });
-}
-
 export async function setDatabaseShowColumnColor(
 	enabled: boolean,
 ): Promise<void> {
@@ -1023,14 +970,6 @@ export async function setDatabaseShowNoteCount(
 	await store.set(KEYS.databaseShowNoteCount, enabled);
 	await store.save();
 	void emitSettingsUpdated({ database: { showNoteCount: enabled } });
-}
-
-export async function getAutoUpdateLastCheckedAt(): Promise<number | null> {
-	const store = await getStore();
-	const raw = await store.get<unknown>(KEYS.autoUpdateLastCheckedAt);
-	return typeof raw === "number" && Number.isFinite(raw) && raw > 0
-		? raw
-		: null;
 }
 
 export async function setAutoUpdateLastCheckedAt(

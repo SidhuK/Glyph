@@ -14,7 +14,29 @@ pub fn default_base_url(provider: &AiProviderKind) -> &'static str {
         AiProviderKind::Anthropic => "https://api.anthropic.com",
         AiProviderKind::Gemini => "https://generativelanguage.googleapis.com",
         AiProviderKind::Ollama => "http://localhost:11434",
+        AiProviderKind::LlamaCpp => "http://localhost:8080/v1",
         AiProviderKind::CodexChatgpt => "https://developers.openai.com/codex/app-server/",
+    }
+}
+
+pub fn alternate_openai_base_url(base: &str) -> Option<String> {
+    let trimmed = base.trim_end_matches('/');
+    if trimmed.is_empty() {
+        return None;
+    }
+    if let Some(prefix) = trimmed.strip_suffix("/v1") {
+        let alt = if prefix.is_empty() {
+            "/".to_string()
+        } else {
+            prefix.to_string()
+        };
+        if alt.trim_end_matches('/') == trimmed {
+            None
+        } else {
+            Some(alt)
+        }
+    } else {
+        Some(format!("{trimmed}/v1"))
     }
 }
 
@@ -159,7 +181,9 @@ pub fn derive_chat_title(messages: &[AiMessage]) -> String {
 
 #[cfg(test)]
 mod tests {
-    use super::{default_base_url, ollama_api_url, parse_ollama_base_url};
+    use super::{
+        alternate_openai_base_url, default_base_url, ollama_api_url, parse_ollama_base_url,
+    };
     use crate::ai_rig::types::{AiProfile, AiProviderKind};
 
     fn ollama_profile(base_url: Option<&str>) -> AiProfile {
@@ -180,6 +204,30 @@ mod tests {
         assert_eq!(
             default_base_url(&AiProviderKind::Ollama),
             "http://localhost:11434"
+        );
+    }
+
+    #[test]
+    fn alternate_openai_base_url_adds_v1_suffix() {
+        assert_eq!(
+            alternate_openai_base_url("http://localhost:8080"),
+            Some("http://localhost:8080/v1".to_string())
+        );
+    }
+
+    #[test]
+    fn alternate_openai_base_url_strips_v1_suffix() {
+        assert_eq!(
+            alternate_openai_base_url("http://localhost:8080/v1"),
+            Some("http://localhost:8080".to_string())
+        );
+    }
+
+    #[test]
+    fn alternate_openai_base_url_handles_trailing_slash() {
+        assert_eq!(
+            alternate_openai_base_url("http://localhost:8080/v1/"),
+            Some("http://localhost:8080".to_string())
         );
     }
 

@@ -15,6 +15,7 @@ const {
 	setEditorColorfulHeadingsMock,
 	setEditorEnablePeopleMentionsAsTagsMock,
 	setEditorShowCollapsibleHeadingsMock,
+	setEditorWidthModeMock,
 	setEditorVimKeybindingsMock,
 	setShowFileTreeFolderCountsMock,
 	setShowTocMock,
@@ -27,6 +28,7 @@ const {
 	setEditorColorfulHeadingsMock: vi.fn(() => Promise.resolve()),
 	setEditorEnablePeopleMentionsAsTagsMock: vi.fn(() => Promise.resolve()),
 	setEditorShowCollapsibleHeadingsMock: vi.fn(() => Promise.resolve()),
+	setEditorWidthModeMock: vi.fn(() => Promise.resolve()),
 	setEditorVimKeybindingsMock: vi.fn(() => Promise.resolve()),
 	setShowFileTreeFolderCountsMock: vi.fn(() => Promise.resolve()),
 	setShowTocMock: vi.fn(() => Promise.resolve()),
@@ -48,6 +50,7 @@ vi.mock("../../lib/settings", () => ({
 	setEditorColorfulHeadings: setEditorColorfulHeadingsMock,
 	setEditorEnablePeopleMentionsAsTags: setEditorEnablePeopleMentionsAsTagsMock,
 	setEditorShowCollapsibleHeadings: setEditorShowCollapsibleHeadingsMock,
+	setEditorWidthMode: setEditorWidthModeMock,
 	setEditorVimKeybindings: setEditorVimKeybindingsMock,
 	setShowFileTreeFolderCounts: setShowFileTreeFolderCountsMock,
 	setShowToc: setShowTocMock,
@@ -108,6 +111,32 @@ vi.mock("./SettingsScaffold", () => ({
 			onChange={(event) => onCheckedChange(event.currentTarget.checked)}
 		/>
 	),
+	SettingsSegmented: ({
+		value,
+		options,
+		onChange,
+		ariaLabel,
+		disabled,
+	}: {
+		ariaLabel: string;
+		disabled?: boolean;
+		onChange: (value: string) => void;
+		options: Array<{ label: string; value: string }>;
+		value: string;
+	}) => (
+		<select
+			aria-label={ariaLabel}
+			value={value}
+			disabled={disabled}
+			onChange={(event) => onChange(event.currentTarget.value)}
+		>
+			{options.map((option) => (
+				<option key={option.value} value={option.value}>
+					{option.label}
+				</option>
+			))}
+		</select>
+	),
 }));
 
 (
@@ -120,6 +149,7 @@ function makeSettings(colorfulHeadings: boolean, vimKeybindings = false) {
 	return {
 		editor: {
 			colorfulHeadings,
+			editorWidthMode: "compact" as const,
 			enablePeopleMentionsAsTags: false,
 			showCollapsibleHeadings: false,
 			vimKeybindings,
@@ -198,6 +228,25 @@ describe("AdvancedSettingsPane", () => {
 		});
 
 		expect(setEditorColorfulHeadingsMock).toHaveBeenCalledWith(true);
+	});
+
+	it("saves editor width mode changes", async () => {
+		await act(async () => {
+			root.render(<AdvancedSettingsPane />);
+		});
+
+		const segmented = container.querySelector(
+			'select[aria-label="Editor width"]',
+		) as HTMLSelectElement | null;
+		expect(segmented).toBeTruthy();
+		if (!segmented) return;
+
+		await act(async () => {
+			segmented.value = "wide";
+			segmented.dispatchEvent(new Event("change", { bubbles: true }));
+		});
+
+		expect(setEditorWidthModeMock).toHaveBeenCalledWith("wide");
 	});
 
 	it("shows Vim Mode off by default", async () => {

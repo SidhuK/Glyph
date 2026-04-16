@@ -9,6 +9,7 @@ pub enum AiProviderKind {
     Anthropic,
     Gemini,
     Ollama,
+    LlamaCpp,
     CodexChatgpt,
 }
 
@@ -21,6 +22,7 @@ impl AiProviderKind {
             Self::Anthropic => "anthropic",
             Self::Gemini => "gemini",
             Self::Ollama => "ollama",
+            Self::LlamaCpp => "llama_cpp",
             Self::CodexChatgpt => "codex_chatgpt",
         }
     }
@@ -33,6 +35,7 @@ impl AiProviderKind {
             Self::Anthropic => "Anthropic",
             Self::Gemini => "Gemini",
             Self::Ollama => "Ollama",
+            Self::LlamaCpp => "llama.cpp",
             Self::CodexChatgpt => "Codex (ChatGPT)",
         }
     }

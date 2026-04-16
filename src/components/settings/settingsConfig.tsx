@@ -88,11 +88,11 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 	},
 ];
 
-export const SETTINGS_TAB_IDS = new Set<SettingsTab>(
+const SETTINGS_TAB_IDS = new Set<SettingsTab>(
 	SETTINGS_TABS.map((tab) => tab.id),
 );
 
-export const SETTINGS_TAB_GROUPS: SettingsTabGroup[] = [
+const SETTINGS_TAB_GROUPS: SettingsTabGroup[] = [
 	{
 		id: "workspace",
 		label: "Workspace",
@@ -125,8 +125,4 @@ if (import.meta.env.DEV) {
 			console.warn(`Settings tab "${id}" not assigned to any group`);
 		}
 	}
-}
-
-export function isSettingsTab(tab: string): tab is SettingsTab {
-	return SETTINGS_TAB_IDS.has(tab as SettingsTab);
 }

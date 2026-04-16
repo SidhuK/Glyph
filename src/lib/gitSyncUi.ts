@@ -37,7 +37,7 @@ function remoteHost(remote: string | null | undefined): string | null {
 	}
 }
 
-export function gitSyncPhaseLabel(status: GitSyncStatus | null): string {
+function gitSyncPhaseLabel(status: GitSyncStatus | null): string {
 	switch (status?.phase) {
 		case "detecting":
 			return "Checking";

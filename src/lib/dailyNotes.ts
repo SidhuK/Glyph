@@ -3,7 +3,7 @@ export function getTodayDateString(): string {
 	return formatDate(now);
 }
 
-export function formatDate(date: Date): string {
+function formatDate(date: Date): string {
 	const year = date.getFullYear();
 	const month = String(date.getMonth() + 1).padStart(2, "0");
 	const day = String(date.getDate()).padStart(2, "0");
@@ -32,7 +32,7 @@ export function parseIsoDate(iso: string): Date | null {
 	return value;
 }
 
-export function getDailyNoteFilename(date?: string): string {
+function getDailyNoteFilename(date?: string): string {
 	const d = date ?? getTodayDateString();
 	return `${d}.md`;
 }

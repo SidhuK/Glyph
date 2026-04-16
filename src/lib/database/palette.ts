@@ -33,7 +33,7 @@ function normalizeToneSeed(seed: string): string {
 	return seed.trim().toLowerCase().replace(/^#+/, "");
 }
 
-export function databaseToneStyle(seed: string): CSSProperties {
+function databaseToneStyle(seed: string): CSSProperties {
 	const tone =
 		DATABASE_TONES[hashSeed(normalizeToneSeed(seed)) % DATABASE_TONES.length];
 	return {
@@ -41,7 +41,7 @@ export function databaseToneStyle(seed: string): CSSProperties {
 	} as CSSProperties;
 }
 
-export function databaseToneStyleForColor(
+function databaseToneStyleForColor(
 	color: EditorTextColor | null | undefined,
 	seed: string,
 ): CSSProperties {

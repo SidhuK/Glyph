@@ -54,25 +54,3 @@ pub fn secret_ids(space_root: &Path) -> Result<Vec<String>, String> {
     let map = read_map(&path);
     Ok(map.keys().cloned().collect())
 }
-
-pub fn migrate_ids(space_root: &Path, aliases: &[(String, String)]) -> Result<(), String> {
-    if aliases.is_empty() {
-        return Ok(());
-    }
-    let path = secrets_path(space_root)?;
-    let mut map = read_map(&path);
-    let mut changed = false;
-    for (legacy_id, canonical_id) in aliases {
-        if legacy_id == canonical_id || map.contains_key(canonical_id) {
-            continue;
-        }
-        if let Some(secret) = map.remove(legacy_id) {
-            map.insert(canonical_id.clone(), secret);
-            changed = true;
-        }
-    }
-    if changed {
-        write_map(&path, &map)?;
-    }
-    Ok(())
-}

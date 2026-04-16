@@ -56,16 +56,6 @@ export function formatTagLabel(tag: string): string {
 	return tag.startsWith("#") ? tag : `#${tag}`;
 }
 
-export function displayValue(property: NoteProperty): string {
-	if (property.kind === "checkbox") {
-		return property.value_bool ? "True" : "False";
-	}
-	if (property.kind === "tags" || property.kind === "list") {
-		return property.value_list.join(", ");
-	}
-	return property.value_text ?? "";
-}
-
 export function normalizeForKind(property: NoteProperty): NoteProperty {
 	switch (property.kind) {
 		case "checkbox":

@@ -6,6 +6,7 @@ import ReactDOM from "react-dom/client";
 import App from "./App";
 import { Toaster } from "./components/ui/shadcn/sonner";
 import {
+	applyEditorWidthMode,
 	applyUiAccent,
 	applyUiDelightfulGlyph,
 	applyUiSurfacePreferences,
@@ -66,6 +67,7 @@ function ThemeAndTypographyBridge() {
 				setEditorFontSize(settings.ui.editorFontSize);
 				setTranslucentApp(settings.ui.translucentApp);
 				setDelightfulGlyph(settings.ui.delightfulGlyph);
+				applyEditorWidthMode(settings.editor.editorWidthMode);
 				void invoke("index_set_people_mentions_as_tags_enabled", {
 					enabled: settings.editor.enablePeopleMentionsAsTags,
 				}).catch(() => {});
@@ -145,6 +147,13 @@ function ThemeAndTypographyBridge() {
 		}
 		if (typeof payload.ui?.delightfulGlyph === "boolean") {
 			setDelightfulGlyph(payload.ui.delightfulGlyph);
+		}
+		if (
+			payload.editor?.editorWidthMode === "compact" ||
+			payload.editor?.editorWidthMode === "comfortable" ||
+			payload.editor?.editorWidthMode === "wide"
+		) {
+			applyEditorWidthMode(payload.editor.editorWidthMode);
 		}
 		if (typeof payload.editor?.enablePeopleMentionsAsTags === "boolean") {
 			void invoke("index_set_people_mentions_as_tags_enabled", {

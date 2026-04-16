@@ -1,4 +1,4 @@
-import type { TaskBucket, TaskItem } from "./tauri";
+import type { TaskItem } from "./tauri";
 
 const SHORT_DATE_FORMATTER = new Intl.DateTimeFormat(undefined, {
 	month: "short",
@@ -49,16 +49,6 @@ export function todayIsoDateLocal(now = new Date()): string {
 	return `${year}-${month}-${day}`;
 }
 
-export function compareIsoDates(
-	left: string | null,
-	right: string | null,
-): number {
-	if (left === right) return 0;
-	if (!left) return 1;
-	if (!right) return -1;
-	return left.localeCompare(right);
-}
-
 export function formatTaskCalendarDate(
 	date: string | null | undefined,
 ): string | null {
@@ -107,12 +97,6 @@ export interface TaskTimingSummary {
 	hasDueDate: boolean;
 	hasScheduledDate: boolean;
 	nextDate: string | null;
-}
-
-export interface TaskGroupDescriptor {
-	key: string;
-	label: string;
-	order: number;
 }
 
 export function getTaskTimingSummary(
@@ -226,44 +210,4 @@ export function getTaskTimingSummary(
 				)
 				.sort()[0] ?? null,
 	};
-}
-
-export function getTaskTimeGroup(
-	task: Pick<TaskItem, "due_date" | "scheduled_date">,
-	bucket: TaskBucket,
-	today: string,
-): TaskGroupDescriptor {
-	const dueDiff = task.due_date
-		? differenceInCalendarDays(task.due_date, today)
-		: null;
-	const scheduledDiff = task.scheduled_date
-		? differenceInCalendarDays(task.scheduled_date, today)
-		: null;
-
-	if (bucket === "today") {
-		if (
-			(dueDiff !== null && dueDiff < 0) ||
-			(scheduledDiff !== null && scheduledDiff < 0)
-		) {
-			return { key: "overdue", label: "Overdue", order: 0 };
-		}
-		return { key: "today", label: "Today", order: 1 };
-	}
-
-	const futureDiffs = [dueDiff, scheduledDiff]
-		.filter((value): value is number => value !== null && value > 0)
-		.sort((left, right) => left - right);
-	const nextDiff = futureDiffs[0] ?? null;
-
-	if (nextDiff === null) {
-		return { key: "later", label: "Later", order: 2 };
-	}
-
-	if (nextDiff === 1) {
-		return { key: "tomorrow", label: "Tomorrow", order: 0 };
-	}
-	if (nextDiff <= 7) {
-		return { key: "next-7", label: "Next 7 days", order: 1 };
-	}
-	return { key: "later", label: "Later", order: 2 };
 }
