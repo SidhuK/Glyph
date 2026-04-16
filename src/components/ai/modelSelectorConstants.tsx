@@ -15,7 +15,7 @@ const openRouterProviderHints: Array<{
 	{ kind: "anthropic", keywords: ["anthropic", "claude"] },
 	{ kind: "gemini", keywords: ["gemini", "google"] },
 	{ kind: "ollama", keywords: ["ollama"] },
-	{ kind: "llama_cpp", keywords: ["llama.cpp", "llama_cpp", "llama"] },
+	{ kind: "llama_cpp", keywords: ["llama.cpp", "llama_cpp"] },
 ];
 
 export function guessOpenRouterProvider(

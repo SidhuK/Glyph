@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
-import type { DatabaseColumn, DatabaseRow } from "../../lib/database/types";
-import { compareDatabaseRowValues } from "./useDatabaseTable";
+import { compareDatabaseRowValues } from "./databaseRowComparison";
+import type { DatabaseColumn, DatabaseRow } from "./types";
 
 const numberColumn: DatabaseColumn = {
 	id: "property:estimate",

@@ -1,9 +1,5 @@
-import { databaseCellValueFromRow } from "../../lib/database/config";
-import type {
-	DatabaseCellValue,
-	DatabaseColumn,
-	DatabaseRow,
-} from "../../lib/database/types";
+import { databaseCellValueFromRow } from "./config";
+import type { DatabaseCellValue, DatabaseColumn, DatabaseRow } from "./types";
 
 function compareNullable<T>(
 	left: T | null,

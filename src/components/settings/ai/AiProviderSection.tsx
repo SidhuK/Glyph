@@ -30,6 +30,10 @@ export function AiProviderSection({
 		availableModels?.find((model) => model.id === profileDraft.model) ?? null;
 	const reasoningOptions = selectedModel?.reasoning_effort ?? null;
 	const shouldShowReasoningSelect = profileDraft.provider === "codex_chatgpt";
+	const baseUrlPlaceholder =
+		profileDraft.provider === "llama_cpp"
+			? "http://localhost:8080/v1"
+			: "https://api.example.com/v1";
 
 	return (
 		<SettingsSection
@@ -166,7 +170,7 @@ export function AiProviderSection({
 				>
 					<Input
 						id="aiBaseUrl"
-						placeholder="https://api.example.com/v1"
+						placeholder={baseUrlPlaceholder}
 						value={profileDraft.base_url ?? ""}
 						onBlur={(event) =>
 							void onPersistDraft({

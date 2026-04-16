@@ -90,8 +90,7 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 	const syncRecentSpacesMenu = useCallback((spaces: string[]) => {
 		void invoke("set_recent_spaces_menu", {
 			recent_spaces: spaces,
-			recentSpaces: spaces,
-		} as unknown as { recent_spaces: string[] }).catch((error) => {
+		}).catch((error) => {
 			console.warn("Failed to sync native recent spaces menu", error);
 		});
 	}, []);

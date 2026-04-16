@@ -238,11 +238,12 @@
 }
 
 .rfNodeNoteEditorRaw {
+	/* biome-ignore format: stylelint rejects a line break immediately after the + operator. */
 	width: min(
 		100%,
 		calc(
-			var(--editor-readable-content-max-width) +
-			(2 * var(--editor-readable-content-gutter-compact))
+			var(--editor-readable-content-max-width)
+			+ (2 * var(--editor-readable-content-gutter-compact))
 		)
 	);
 	flex: 1;
@@ -303,11 +304,12 @@
 }
 
 .frontmatterPreview {
+	/* biome-ignore format: stylelint rejects a line break immediately after the + operator. */
 	width: min(
 		100%,
 		calc(
-			var(--editor-readable-content-max-width) +
-			(2 * var(--editor-readable-content-gutter-compact))
+			var(--editor-readable-content-max-width)
+			+ (2 * var(--editor-readable-content-gutter-compact))
 		)
 	);
 	margin: 0 auto var(--space-2);

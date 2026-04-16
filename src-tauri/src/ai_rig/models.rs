@@ -1,6 +1,8 @@
 use tauri::{AppHandle, State};
 
-use super::helpers::{apply_extra_headers, http_client, ollama_api_url, parse_base_url};
+use super::helpers::{
+    alternate_openai_base_url, apply_extra_headers, http_client, ollama_api_url, parse_base_url,
+};
 use super::local_secrets;
 use super::store::{ensure_default_profiles, read_store, store_path, write_store};
 use super::types::{AiModel, AiProviderKind, AiReasoningEffortOption};
@@ -15,27 +17,6 @@ struct OpenAIModelsResp {
 #[derive(serde::Deserialize)]
 struct OpenAIModelItem {
     id: String,
-}
-
-fn alternate_openai_base_url(base: &str) -> Option<String> {
-    let trimmed = base.trim_end_matches('/');
-    if trimmed.is_empty() {
-        return None;
-    }
-    if let Some(prefix) = trimmed.strip_suffix("/v1") {
-        let alt = if prefix.is_empty() {
-            "/".to_string()
-        } else {
-            prefix.to_string()
-        };
-        if alt.trim_end_matches('/') == trimmed {
-            None
-        } else {
-            Some(alt)
-        }
-    } else {
-        Some(format!("{trimmed}/v1"))
-    }
 }
 
 async fn list_openai_like(
@@ -66,7 +47,13 @@ async fn list_openai_like(
             req = req.bearer_auth(api_key);
         }
 
-        let resp = req.send().await.map_err(|e| e.to_string())?;
+        let resp = match req.send().await {
+            Ok(resp) => resp,
+            Err(error) => {
+                last_error = Some(error.to_string());
+                continue;
+            }
+        };
         if !resp.status().is_success() {
             let status = resp.status();
             let text = resp.text().await.unwrap_or_default();
@@ -74,7 +61,13 @@ async fn list_openai_like(
             continue;
         }
 
-        let parsed: OpenAIModelsResp = resp.json().await.map_err(|e| e.to_string())?;
+        let parsed: OpenAIModelsResp = match resp.json().await {
+            Ok(parsed) => parsed,
+            Err(error) => {
+                last_error = Some(error.to_string());
+                continue;
+            }
+        };
         let mut models: Vec<AiModel> = parsed
             .data
             .into_iter()

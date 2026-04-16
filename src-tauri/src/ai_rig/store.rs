@@ -52,7 +52,12 @@ pub fn ensure_default_profiles(store: &mut AiStore) {
         (AiProviderKind::Anthropic, "", None, false),
         (AiProviderKind::Gemini, "", None, false),
         (AiProviderKind::Ollama, "", None, true),
-        (AiProviderKind::LlamaCpp, "", Some("http://localhost:8080/v1"), true),
+        (
+            AiProviderKind::LlamaCpp,
+            "",
+            Some("http://localhost:8080/v1"),
+            true,
+        ),
         (AiProviderKind::CodexChatgpt, "codex", None, false),
     ];
 

@@ -20,7 +20,10 @@ pub(crate) mod utils;
 mod web_clip;
 
 use serde::Serialize;
-use std::sync::Mutex;
+use std::sync::{
+    atomic::{AtomicU64, Ordering},
+    Mutex,
+};
 use tauri::menu::{
     Menu, MenuItem, MenuItemKind, PredefinedMenuItem, Submenu, SubmenuBuilder, HELP_SUBMENU_ID,
     WINDOW_SUBMENU_ID,
@@ -32,6 +35,8 @@ use tracing::warn;
 use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
 
 use tauri::{PhysicalPosition, PhysicalSize, Position, Size};
+
+static RECENT_SPACES_MENU_REVISION: AtomicU64 = AtomicU64::new(0);
 
 fn init_tracing() {
     let filter = tracing_subscriber::EnvFilter::try_from_default_env()
@@ -131,15 +136,60 @@ fn format_recent_space_label(path: &str) -> String {
     }
 }
 
+fn next_recent_spaces_menu_revision() -> u64 {
+    RECENT_SPACES_MENU_REVISION.fetch_add(1, Ordering::Relaxed) + 1
+}
+
+fn recent_space_item_id(revision: u64, index: usize) -> String {
+    format!("space.recent.{revision}.{index}")
+}
+
+fn recent_space_none_item_id(revision: u64) -> String {
+    format!("space.recent.{revision}.none")
+}
+
+fn parse_recent_space_index(id: &str) -> Option<usize> {
+    let suffix = id.strip_prefix("space.recent.")?;
+    if let Ok(index) = suffix.parse::<usize>() {
+        return Some(index);
+    }
+    suffix
+        .rsplit_once('.')
+        .and_then(|(_, index)| index.parse::<usize>().ok())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::parse_recent_space_index;
+
+    #[test]
+    fn parse_recent_space_index_supports_legacy_ids() {
+        assert_eq!(parse_recent_space_index("space.recent.3"), Some(3));
+    }
+
+    #[test]
+    fn parse_recent_space_index_supports_revisioned_ids() {
+        assert_eq!(parse_recent_space_index("space.recent.42.3"), Some(3));
+    }
+
+    #[test]
+    fn parse_recent_space_index_ignores_non_space_items() {
+        assert_eq!(parse_recent_space_index("space.recent.42.none"), None);
+        assert_eq!(parse_recent_space_index("space.recent.menu"), None);
+        assert_eq!(parse_recent_space_index("space.open"), None);
+    }
+}
+
 fn build_recent_spaces_submenu<R: tauri::Runtime, M: Manager<R>>(
     app: &M,
     recent_spaces: &[String],
 ) -> tauri::Result<Submenu<R>> {
+    let revision = next_recent_spaces_menu_revision();
     let mut builder = SubmenuBuilder::with_id(app, "space.recent.menu", "Recent Spaces");
     if recent_spaces.is_empty() {
         let none = MenuItem::with_id(
             app,
-            "space.recent.none",
+            recent_space_none_item_id(revision),
             "No Recent Spaces",
             false,
             None::<&str>,
@@ -150,7 +200,7 @@ fn build_recent_spaces_submenu<R: tauri::Runtime, M: Manager<R>>(
 
     for (index, path) in recent_spaces.iter().enumerate() {
         builder = builder.text(
-            format!("space.recent.{index}"),
+            recent_space_item_id(revision, index),
             format_recent_space_label(path),
         );
     }
@@ -190,6 +240,7 @@ fn try_update_recent_spaces_submenu<R: tauri::Runtime>(
     let Some(submenu) = target else {
         return Ok(false);
     };
+    let revision = next_recent_spaces_menu_revision();
 
     while submenu
         .remove_at(0)
@@ -200,7 +251,7 @@ fn try_update_recent_spaces_submenu<R: tauri::Runtime>(
     if recent_spaces.is_empty() {
         let none = MenuItem::with_id(
             app,
-            "space.recent.none",
+            recent_space_none_item_id(revision),
             "No Recent Spaces",
             false,
             None::<&str>,
@@ -213,7 +264,7 @@ fn try_update_recent_spaces_submenu<R: tauri::Runtime>(
     for (index, path) in recent_spaces.iter().enumerate() {
         let item = MenuItem::with_id(
             app,
-            format!("space.recent.{index}"),
+            recent_space_item_id(revision, index),
             format_recent_space_label(path),
             true,
             None::<&str>,
@@ -703,24 +754,20 @@ fn set_markdown_menu_visible(app: tauri::AppHandle, visible: bool) -> Result<(),
     Ok(())
 }
 
-#[tauri::command]
+#[tauri::command(rename_all = "snake_case")]
 fn set_recent_spaces_menu(
     app: tauri::AppHandle,
     menu_state: State<'_, MenuState>,
-    recent_spaces: Option<Vec<String>>,
-    #[allow(non_snake_case)] recentSpaces: Option<Vec<String>>,
+    recent_spaces: Vec<String>,
 ) -> Result<(), String> {
-    let incoming = recent_spaces.or(recentSpaces).unwrap_or_default();
-    let current_space_path = app
-        .try_state::<space::SpaceState>()
-        .and_then(|state| {
-            state
-                .current
-                .lock()
-                .ok()
-                .and_then(|guard| guard.as_ref().map(|path| path.to_string_lossy().to_string()))
-        });
-    let filtered: Vec<String> = incoming
+    let current_space_path = app.try_state::<space::SpaceState>().and_then(|state| {
+        state.current.lock().ok().and_then(|guard| {
+            guard
+                .as_ref()
+                .map(|path| path.to_string_lossy().to_string())
+        })
+    });
+    let filtered: Vec<String> = recent_spaces
         .into_iter()
         .map(|path| path.trim().to_string())
         .filter(|path| !path.is_empty())
@@ -784,10 +831,7 @@ pub fn run() {
                 let _ = app.emit("menu:open_space", ());
             }
             id if id.starts_with("space.recent.") => {
-                let Some(index_raw) = id.strip_prefix("space.recent.") else {
-                    return;
-                };
-                let Ok(index) = index_raw.parse::<usize>() else {
+                let Some(index) = parse_recent_space_index(id) else {
                     return;
                 };
                 let Some(menu_state) = app.try_state::<MenuState>() else {
@@ -802,11 +846,11 @@ pub fn run() {
                 let Some(space_state) = app.try_state::<space::SpaceState>() else {
                     return;
                 };
-                let current_path = space_state
-                    .current
-                    .lock()
-                    .ok()
-                    .and_then(|guard| guard.as_ref().map(|path| path.to_string_lossy().to_string()));
+                let current_path = space_state.current.lock().ok().and_then(|guard| {
+                    guard
+                        .as_ref()
+                        .map(|path| path.to_string_lossy().to_string())
+                });
                 if current_path.as_deref() == Some(path.as_str()) {
                     return;
                 }

@@ -46,9 +46,7 @@ export function SidebarHeader({
 			recentSpaces.filter((path) => path && path !== spacePath).slice(0, 10),
 		[recentSpaces, spacePath],
 	);
-	const menuWidth = useMemo(() => {
-		return 300;
-	}, []);
+	const menuWidth = 300;
 
 	useEffect(() => {
 		if (!menuOpen) return;

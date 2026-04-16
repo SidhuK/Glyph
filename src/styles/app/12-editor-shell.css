@@ -313,11 +313,12 @@ button.ribbonBtn.active {
 }
 
 .mdRawEditor {
+	/* biome-ignore format: stylelint rejects a line break immediately after the + operator. */
 	width: min(
 		100%,
 		calc(
-			var(--editor-readable-content-max-width) +
-			(2 * var(--editor-readable-content-gutter))
+			var(--editor-readable-content-max-width)
+			+ (2 * var(--editor-readable-content-gutter))
 		)
 	);
 	height: 100%;
@@ -365,11 +366,12 @@ button.ribbonBtn.active {
 }
 
 .editorBody .cm-scroller {
+	/* biome-ignore format: stylelint rejects a line break immediately after the + operator. */
 	width: min(
 		100%,
 		calc(
-			var(--editor-readable-content-max-width) +
-			(2 * var(--editor-readable-content-gutter))
+			var(--editor-readable-content-max-width)
+			+ (2 * var(--editor-readable-content-gutter))
 		)
 	);
 	margin: 0 auto;
