@@ -142,7 +142,17 @@ pub async fn run_with_rig(
             } else {
                 agent.preamble(&effective_system).build()
             };
-            match run_stream(cancel, app, job_id, agent, transcript.clone(), true).await {
+            let mut emitted_events = false;
+            match run_stream(
+                cancel,
+                app,
+                job_id,
+                agent,
+                transcript.clone(),
+                &mut emitted_events,
+            )
+            .await
+            {
                 Ok(v) => v,
                 Err(e) if is_not_chat_model_error(&e) => {
                     return Err(not_chat_model_message(profile.model.trim()));
@@ -164,10 +174,8 @@ pub async fn run_with_rig(
                 }
             }
             let mut last_error: Option<String> = None;
-            let candidate_count = candidate_bases.len();
             let mut success: Option<(String, Vec<AiStoredToolEvent>, bool)> = None;
-            for (attempt_index, base) in candidate_bases.into_iter().enumerate() {
-                let emit_attempt_events = attempt_index + 1 == candidate_count;
+            for base in candidate_bases {
                 let client = openai::Client::builder(key)
                     .with_client(http_client.clone())
                     .base_url(&base)
@@ -185,20 +193,18 @@ pub async fn run_with_rig(
                     agent.preamble(&effective_system).build()
                 };
                 let attempt_transcript = build_transcript(&effective_system, messages);
+                let mut emitted_events = false;
                 match run_stream(
                     cancel,
                     app,
                     job_id,
                     agent,
                     attempt_transcript,
-                    emit_attempt_events,
+                    &mut emitted_events,
                 )
                 .await
                 {
                     Ok(v) => {
-                        if !emit_attempt_events {
-                            replay_stream_result(app, job_id, &v);
-                        }
                         success = Some(v);
                         break;
                     }
@@ -206,6 +212,9 @@ pub async fn run_with_rig(
                         return Err(not_chat_model_message(profile.model.trim()));
                     }
                     Err(e) => {
+                        if emitted_events {
+                            return Err(e);
+                        }
                         last_error = Some(e);
                     }
                 }
@@ -237,7 +246,8 @@ pub async fn run_with_rig(
             } else {
                 agent.preamble(&effective_system).build()
             };
-            run_stream(cancel, app, job_id, agent, transcript, true).await?
+            let mut emitted_events = false;
+            run_stream(cancel, app, job_id, agent, transcript, &mut emitted_events).await?
         }
         AiProviderKind::Anthropic => {
             let key = require_key(api_key)?;
@@ -262,7 +272,8 @@ pub async fn run_with_rig(
             } else {
                 agent.preamble(&effective_system).build()
             };
-            run_stream(cancel, app, job_id, agent, transcript, true).await?
+            let mut emitted_events = false;
+            run_stream(cancel, app, job_id, agent, transcript, &mut emitted_events).await?
         }
         AiProviderKind::Gemini => {
             let key = require_key(api_key)?;
@@ -287,7 +298,8 @@ pub async fn run_with_rig(
             } else {
                 agent.preamble(&effective_system).build()
             };
-            run_stream(cancel, app, job_id, agent, transcript, true).await?
+            let mut emitted_events = false;
+            run_stream(cancel, app, job_id, agent, transcript, &mut emitted_events).await?
         }
         AiProviderKind::Ollama => {
             let base = custom_ollama_base_url
@@ -307,7 +319,17 @@ pub async fn run_with_rig(
             } else {
                 agent.preamble(&effective_system).build()
             };
-            match run_stream(cancel, app, job_id, agent, transcript.clone(), true).await {
+            let mut emitted_events = false;
+            match run_stream(
+                cancel,
+                app,
+                job_id,
+                agent,
+                transcript.clone(),
+                &mut emitted_events,
+            )
+            .await
+            {
                 Ok(v) => v,
                 Err(e) if use_tools && is_ollama_tool_unsupported_error(&e) => {
                     let _ = app.emit(
@@ -331,7 +353,7 @@ pub async fn run_with_rig(
                         job_id,
                         fallback_agent,
                         fallback_transcript,
-                        true,
+                        &mut emitted_events,
                     )
                     .await?
                 }
@@ -662,44 +684,13 @@ where
         .tool(tools.delete.clone())
 }
 
-fn replay_stream_result(
-    app: &AppHandle,
-    job_id: &str,
-    result: &(String, Vec<AiStoredToolEvent>, bool),
-) {
-    let (full, tool_events, _) = result;
-    for event in tool_events {
-        let _ = app.emit(
-            "ai:tool",
-            crate::ai_rig::types::AiToolEvent {
-                job_id: job_id.to_string(),
-                tool: event.tool.clone(),
-                phase: event.phase.clone(),
-                at_ms: event.at_ms,
-                call_id: event.call_id.clone(),
-                payload: event.payload.clone(),
-                error: event.error.clone(),
-            },
-        );
-    }
-    if !full.is_empty() {
-        let _ = app.emit(
-            "ai:chunk",
-            AiChunkEvent {
-                job_id: job_id.to_string(),
-                delta: full.clone(),
-            },
-        );
-    }
-}
-
 async fn run_stream<M>(
     cancel: &CancellationToken,
     app: &AppHandle,
     job_id: &str,
     agent: Agent<M>,
     prompt: String,
-    emit_events: bool,
+    emitted_events: &mut bool,
 ) -> Result<(String, Vec<AiStoredToolEvent>, bool), String>
 where
     M: rig::completion::CompletionModel + 'static,
@@ -718,27 +709,25 @@ where
         match item {
             MultiTurnStreamItem::StreamAssistantItem(StreamedAssistantContent::Text(text)) => {
                 full.push_str(&text.text);
-                if emit_events {
-                    let _ = app.emit(
-                        "ai:chunk",
-                        AiChunkEvent {
-                            job_id: job_id.to_string(),
-                            delta: text.text,
-                        },
-                    );
-                }
+                *emitted_events = true;
+                let _ = app.emit(
+                    "ai:chunk",
+                    AiChunkEvent {
+                        job_id: job_id.to_string(),
+                        delta: text.text,
+                    },
+                );
             }
             MultiTurnStreamItem::StreamAssistantItem(StreamedAssistantContent::ToolCall(call)) => {
-                if emit_events {
-                    let _ = app.emit(
-                        "ai:status",
-                        AiStatusEvent {
-                            job_id: job_id.to_string(),
-                            status: "tool_call".to_string(),
-                            detail: Some(call.function.name.clone()),
-                        },
-                    );
-                }
+                *emitted_events = true;
+                let _ = app.emit(
+                    "ai:status",
+                    AiStatusEvent {
+                        job_id: job_id.to_string(),
+                        status: "tool_call".to_string(),
+                        detail: Some(call.function.name.clone()),
+                    },
+                );
                 tool_events.push(emit_tool(
                     app,
                     job_id,
@@ -750,7 +739,7 @@ where
                         "arguments": call.function.arguments
                     })),
                     None,
-                    emit_events,
+                    emitted_events,
                 ));
                 if tool_events.len() >= MAX_TOOL_EVENTS {
                     return Err(
@@ -769,16 +758,15 @@ where
                 } else {
                     "result"
                 };
-                if emit_events {
-                    let _ = app.emit(
-                        "ai:status",
-                        AiStatusEvent {
-                            job_id: job_id.to_string(),
-                            status: "tool_result".to_string(),
-                            detail: Some(result.id.clone()),
-                        },
-                    );
-                }
+                *emitted_events = true;
+                let _ = app.emit(
+                    "ai:status",
+                    AiStatusEvent {
+                        job_id: job_id.to_string(),
+                        status: "tool_result".to_string(),
+                        detail: Some(result.id.clone()),
+                    },
+                );
                 tool_events.push(emit_tool(
                     app,
                     job_id,
@@ -797,7 +785,7 @@ where
                     } else {
                         None
                     },
-                    emit_events,
+                    emitted_events,
                 ));
                 if tool_events.len() >= MAX_TOOL_EVENTS {
                     return Err(
@@ -811,15 +799,14 @@ where
                 let delta = reasoning.reasoning.join("");
                 if !delta.is_empty() {
                     full.push_str(&delta);
-                    if emit_events {
-                        let _ = app.emit(
-                            "ai:chunk",
-                            AiChunkEvent {
-                                job_id: job_id.to_string(),
-                                delta,
-                            },
-                        );
-                    }
+                    *emitted_events = true;
+                    let _ = app.emit(
+                        "ai:chunk",
+                        AiChunkEvent {
+                            job_id: job_id.to_string(),
+                            delta,
+                        },
+                    );
                 }
             }
             MultiTurnStreamItem::FinalResponse(final_response) => {
@@ -832,15 +819,14 @@ where
                         .to_string();
                     if !tail.trim().is_empty() {
                         full.push_str(&tail);
-                        if emit_events {
-                            let _ = app.emit(
-                                "ai:chunk",
-                                AiChunkEvent {
-                                    job_id: job_id.to_string(),
-                                    delta: tail,
-                                },
-                            );
-                        }
+                        *emitted_events = true;
+                        let _ = app.emit(
+                            "ai:chunk",
+                            AiChunkEvent {
+                                job_id: job_id.to_string(),
+                                delta: tail,
+                            },
+                        );
                     }
                 }
             }
@@ -883,23 +869,22 @@ fn emit_tool(
     call_id: Option<String>,
     payload: Option<serde_json::Value>,
     error: Option<String>,
-    emit_events: bool,
+    emitted_events: &mut bool,
 ) -> AiStoredToolEvent {
     let at_ms = crate::ai_rig::helpers::now_ms();
-    if emit_events {
-        let _ = app.emit(
-            "ai:tool",
-            crate::ai_rig::types::AiToolEvent {
-                job_id: job_id.to_string(),
-                tool: tool.to_string(),
-                phase: phase.to_string(),
-                at_ms,
-                call_id: call_id.clone(),
-                payload: payload.clone(),
-                error: error.clone(),
-            },
-        );
-    }
+    *emitted_events = true;
+    let _ = app.emit(
+        "ai:tool",
+        crate::ai_rig::types::AiToolEvent {
+            job_id: job_id.to_string(),
+            tool: tool.to_string(),
+            phase: phase.to_string(),
+            at_ms,
+            call_id: call_id.clone(),
+            payload: payload.clone(),
+            error: error.clone(),
+        },
+    );
     AiStoredToolEvent {
         tool: tool.to_string(),
         phase: phase.to_string(),
