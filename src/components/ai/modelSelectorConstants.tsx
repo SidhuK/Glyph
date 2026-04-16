@@ -15,6 +15,7 @@ const openRouterProviderHints: Array<{
 	{ kind: "anthropic", keywords: ["anthropic", "claude"] },
 	{ kind: "gemini", keywords: ["gemini", "google"] },
 	{ kind: "ollama", keywords: ["ollama"] },
+	{ kind: "llama_cpp", keywords: ["llama.cpp", "llama_cpp", "llama"] },
 ];
 
 export function guessOpenRouterProvider(
@@ -42,6 +43,7 @@ export const providerSupportKeyMap: Record<AiProviderKind, string> = {
 	anthropic: "anthropic",
 	gemini: "gemini",
 	ollama: "ollama",
+	llama_cpp: "llama_cpp",
 	codex_chatgpt: "openai",
 };
 

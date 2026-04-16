@@ -1,4 +1,4 @@
-export const WORDS_PER_MINUTE = 200;
+const WORDS_PER_MINUTE = 200;
 
 export function countWords(text: string): number {
 	const cleaned = text.trim();

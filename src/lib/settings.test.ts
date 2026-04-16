@@ -113,26 +113,47 @@ describe("settings Vim keybindings", () => {
 	});
 });
 
-describe("attachment storage settings", () => {
+describe("settings editor width mode", () => {
 	beforeEach(() => {
 		vi.resetModules();
 		emitMock.mockClear();
 		storeState.clear();
 	});
 
-	it("migrates the legacy pasted media folder to specific-folder mode", async () => {
-		storeState.set("editor.pastedMediaFolder", "assets/images");
+	it("defaults editor width mode to compact", async () => {
 		const { loadSettings } = await import("./settings");
 
 		const settings = await loadSettings();
 
-		expect(settings.editor.attachmentStorageMode).toBe("specific-folder");
-		expect(settings.editor.attachmentFolder).toBe("assets/images");
-		expect(storeState.get("editor.attachmentStorageMode")).toBe(
-			"specific-folder",
-		);
-		expect(storeState.get("editor.attachmentFolder")).toBe("assets/images");
-		expect(storeState.has("editor.pastedMediaFolder")).toBe(false);
+		expect(settings.editor.editorWidthMode).toBe("compact");
+	});
+
+	it("loads editor width mode from the store", async () => {
+		storeState.set("editor.editorWidthMode", "wide");
+		const { loadSettings } = await import("./settings");
+
+		const settings = await loadSettings();
+
+		expect(settings.editor.editorWidthMode).toBe("wide");
+	});
+
+	it("persists and emits editor width mode changes", async () => {
+		const { setEditorWidthMode } = await import("./settings");
+
+		await setEditorWidthMode("comfortable");
+
+		expect(storeState.get("editor.editorWidthMode")).toBe("comfortable");
+		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
+			editor: { editorWidthMode: "comfortable" },
+		});
+	});
+});
+
+describe("attachment storage settings", () => {
+	beforeEach(() => {
+		vi.resetModules();
+		emitMock.mockClear();
+		storeState.clear();
 	});
 
 	it("defaults attachments to note-folder mode for fresh settings", async () => {

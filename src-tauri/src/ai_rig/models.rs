@@ -17,49 +17,88 @@ struct OpenAIModelItem {
     id: String,
 }
 
+fn alternate_openai_base_url(base: &str) -> Option<String> {
+    let trimmed = base.trim_end_matches('/');
+    if trimmed.is_empty() {
+        return None;
+    }
+    if let Some(prefix) = trimmed.strip_suffix("/v1") {
+        let alt = if prefix.is_empty() {
+            "/".to_string()
+        } else {
+            prefix.to_string()
+        };
+        if alt.trim_end_matches('/') == trimmed {
+            None
+        } else {
+            Some(alt)
+        }
+    } else {
+        Some(format!("{trimmed}/v1"))
+    }
+}
+
 async fn list_openai_like(
     client: &reqwest::Client,
     profile: &super::types::AiProfile,
     api_key: &str,
 ) -> Result<Vec<AiModel>, String> {
-    let base = parse_base_url(profile)?;
-    let url = base.join("models").map_err(|e| e.to_string())?;
-
-    let mut req = client.get(url);
-    req = apply_extra_headers(req, profile);
-    if !api_key.is_empty() {
-        req = req.bearer_auth(api_key);
+    let base = parse_base_url(profile)?.to_string();
+    let mut candidate_bases = vec![base.clone()];
+    if matches!(profile.provider, AiProviderKind::LlamaCpp) {
+        if let Some(alt) = alternate_openai_base_url(&base) {
+            if !candidate_bases.iter().any(|candidate| candidate == &alt) {
+                candidate_bases.push(alt);
+            }
+        }
     }
 
-    let resp = req.send().await.map_err(|e| e.to_string())?;
-    if !resp.status().is_success() {
-        let status = resp.status();
-        let text = resp.text().await.unwrap_or_default();
-        return Err(format!("model list failed ({status}): {text}"));
+    let mut last_error: Option<String> = None;
+    for base in candidate_bases {
+        let url = reqwest::Url::parse(&base)
+            .map_err(|_| "invalid base_url".to_string())?
+            .join("models")
+            .map_err(|e| e.to_string())?;
+
+        let mut req = client.get(url);
+        req = apply_extra_headers(req, profile);
+        if !api_key.is_empty() {
+            req = req.bearer_auth(api_key);
+        }
+
+        let resp = req.send().await.map_err(|e| e.to_string())?;
+        if !resp.status().is_success() {
+            let status = resp.status();
+            let text = resp.text().await.unwrap_or_default();
+            last_error = Some(format!("model list failed ({status}): {text}"));
+            continue;
+        }
+
+        let parsed: OpenAIModelsResp = resp.json().await.map_err(|e| e.to_string())?;
+        let mut models: Vec<AiModel> = parsed
+            .data
+            .into_iter()
+            .map(|m| AiModel {
+                name: m.id.clone(),
+                id: m.id,
+                context_length: None,
+                description: None,
+                input_modalities: None,
+                output_modalities: None,
+                tokenizer: None,
+                prompt_pricing: None,
+                completion_pricing: None,
+                supported_parameters: None,
+                max_completion_tokens: None,
+                reasoning_effort: None,
+                default_reasoning_effort: None,
+            })
+            .collect();
+        models.sort_by(|a, b| a.id.cmp(&b.id));
+        return Ok(models);
     }
 
-    let parsed: OpenAIModelsResp = resp.json().await.map_err(|e| e.to_string())?;
-    let mut models: Vec<AiModel> = parsed
-        .data
-        .into_iter()
-        .map(|m| AiModel {
-            name: m.id.clone(),
-            id: m.id,
-            context_length: None,
-            description: None,
-            input_modalities: None,
-            output_modalities: None,
-            tokenizer: None,
-            prompt_pricing: None,
-            completion_pricing: None,
-            supported_parameters: None,
-            max_completion_tokens: None,
-            reasoning_effort: None,
-            default_reasoning_effort: None,
-        })
-        .collect();
-    models.sort_by(|a, b| a.id.cmp(&b.id));
-    Ok(models)
+    Err(last_error.unwrap_or_else(|| "model list failed".to_string()))
 }
 
 #[derive(serde::Deserialize)]
@@ -576,7 +615,7 @@ pub async fn ai_models_list(
     }
 
     match effective_provider {
-        AiProviderKind::Openai | AiProviderKind::OpenaiCompat => {
+        AiProviderKind::Openai | AiProviderKind::OpenaiCompat | AiProviderKind::LlamaCpp => {
             list_openai_like(&client, &profile, &api_key).await
         }
         AiProviderKind::Ollama => list_ollama(&client, &profile).await,

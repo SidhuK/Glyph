@@ -46,6 +46,34 @@ const extractError = (err: unknown): string =>
 			? err.message
 			: String(err);
 
+function normalizeRecentSpaces(
+	recent: string[],
+	currentSpacePath: string | null,
+): string[] {
+	const out: string[] = [];
+	const seen = new Set<string>();
+	const pushUnique = (value: string | null) => {
+		if (!value) return;
+		const trimmed = value.trim();
+		if (!trimmed || seen.has(trimmed)) return;
+		seen.add(trimmed);
+		out.push(trimmed);
+	};
+	pushUnique(currentSpacePath);
+	for (const value of recent) pushUnique(value);
+	return out.slice(0, 20);
+}
+
+function recentSpacesForMenu(
+	recentSpaces: string[],
+	currentSpacePath: string | null,
+): string[] {
+	return recentSpaces
+		.map((path) => path.trim())
+		.filter((path) => path && path !== currentSpacePath)
+		.slice(0, 20);
+}
+
 export function SpaceProvider({ children }: { children: ReactNode }) {
 	const [info, setInfo] = useState<AppInfo | null>(null);
 	const [error, setError] = useState("");
@@ -58,6 +86,15 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 	const [isIndexing, setIsIndexing] = useState(false);
 	const [settingsLoaded, setSettingsLoaded] = useState(false);
 	const isOpeningSpaceRef = useRef(false);
+
+	const syncRecentSpacesMenu = useCallback((spaces: string[]) => {
+		void invoke("set_recent_spaces_menu", {
+			recent_spaces: spaces,
+			recentSpaces: spaces,
+		} as unknown as { recent_spaces: string[] }).catch((error) => {
+			console.warn("Failed to sync native recent spaces menu", error);
+		});
+	}, []);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -75,12 +112,21 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 	}, []);
 
 	useEffect(() => {
+		syncRecentSpacesMenu(recentSpacesForMenu(recentSpaces, spacePath));
+	}, [recentSpaces, spacePath, syncRecentSpacesMenu]);
+
+	useEffect(() => {
 		let cancelled = false;
 		(async () => {
 			try {
 				const settings = await loadSettings();
 				if (cancelled) return;
-				setRecentSpaces(settings.recentSpaces);
+				setRecentSpaces(
+					normalizeRecentSpaces(
+						settings.recentSpaces,
+						settings.currentSpacePath ?? null,
+					),
+				);
 				setLastSpacePath(
 					settings.currentSpacePath ?? settings.recentSpaces[0] ?? null,
 				);
@@ -151,9 +197,9 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 						: await invoke("space_open", { path });
 				await setCurrentSpacePath(spaceInfo.root);
 				setRecentSpaces((prev) =>
-					[spaceInfo.root, ...prev.filter((p) => p !== spaceInfo.root)].slice(
-						0,
-						20,
+					normalizeRecentSpaces(
+						[spaceInfo.root, ...prev.filter((p) => p !== spaceInfo.root)],
+						spaceInfo.root,
 					),
 				);
 				void updateOnboardingSettings({ launcherSeen: true });

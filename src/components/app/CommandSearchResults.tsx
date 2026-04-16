@@ -40,7 +40,7 @@ function resultDisplayFolder(relPath: string, fallbackId?: string): string {
 	return `${parts.slice(0, -1).join("/")}/`;
 }
 
-export function SearchResultItem({
+function SearchResultItem({
 	result,
 	index,
 	isSelected,

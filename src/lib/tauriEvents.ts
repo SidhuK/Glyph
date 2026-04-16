@@ -3,6 +3,7 @@ import { useEffect, useRef } from "react";
 import type {
 	AttachmentStorageMode,
 	AutoUpdateCheckInterval,
+	EditorWidthMode,
 } from "./settings";
 import type { UiDarkThemeId, UiLightThemeId } from "./uiThemes";
 
@@ -14,6 +15,7 @@ type TauriEventMap = {
 	"menu:export_html": undefined;
 	"menu:close_tab": undefined;
 	"menu:open_space": undefined;
+	"menu:open_recent_space": { path: string };
 	"menu:create_space": undefined;
 	"menu:close_space": undefined;
 	"menu:reveal_space": undefined;
@@ -100,6 +102,7 @@ type TauriEventMap = {
 		editor?: {
 			showCollapsibleHeadings?: boolean;
 			colorfulHeadings?: boolean;
+			editorWidthMode?: EditorWidthMode;
 			attachmentStorageMode?: AttachmentStorageMode;
 			attachmentFolder?: string | null;
 			enablePeopleMentionsAsTags?: boolean;

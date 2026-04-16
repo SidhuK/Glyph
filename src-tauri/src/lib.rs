@@ -20,10 +20,12 @@ pub(crate) mod utils;
 mod web_clip;
 
 use serde::Serialize;
+use std::sync::Mutex;
 use tauri::menu::{
-    Menu, MenuItem, MenuItemKind, PredefinedMenuItem, Submenu, HELP_SUBMENU_ID, WINDOW_SUBMENU_ID,
+    Menu, MenuItem, MenuItemKind, PredefinedMenuItem, Submenu, SubmenuBuilder, HELP_SUBMENU_ID,
+    WINDOW_SUBMENU_ID,
 };
-use tauri::{Emitter, Manager, RunEvent, WindowEvent};
+use tauri::{Emitter, Manager, RunEvent, State, WindowEvent};
 use tracing::warn;
 
 #[cfg(target_os = "macos")]
@@ -104,10 +106,130 @@ struct EditorMenuActionPayload {
     action: String,
 }
 
+#[derive(Default)]
+struct MenuState {
+    recent_spaces: Mutex<Vec<String>>,
+    show_markdown_menu: Mutex<bool>,
+}
+
+#[derive(Clone, Serialize)]
+struct OpenRecentSpacePayload {
+    path: String,
+}
+
+fn format_recent_space_label(path: &str) -> String {
+    let normalized = path.replace('\\', "/").trim_end_matches('/').to_string();
+    let name = normalized
+        .rsplit('/')
+        .next()
+        .filter(|segment| !segment.is_empty())
+        .unwrap_or(path);
+    if name == path {
+        name.to_string()
+    } else {
+        format!("{name} — {path}")
+    }
+}
+
+fn build_recent_spaces_submenu<R: tauri::Runtime, M: Manager<R>>(
+    app: &M,
+    recent_spaces: &[String],
+) -> tauri::Result<Submenu<R>> {
+    let mut builder = SubmenuBuilder::with_id(app, "space.recent.menu", "Recent Spaces");
+    if recent_spaces.is_empty() {
+        let none = MenuItem::with_id(
+            app,
+            "space.recent.none",
+            "No Recent Spaces",
+            false,
+            None::<&str>,
+        )?;
+        builder = builder.item(&none);
+        return builder.build();
+    }
+
+    for (index, path) in recent_spaces.iter().enumerate() {
+        builder = builder.text(
+            format!("space.recent.{index}"),
+            format_recent_space_label(path),
+        );
+    }
+    builder.build()
+}
+
+fn find_submenu_by_id<R: tauri::Runtime>(item: &MenuItemKind<R>, id: &str) -> Option<Submenu<R>> {
+    if item.id().as_ref() == id {
+        return item.as_submenu().cloned();
+    }
+
+    let submenu = item.as_submenu()?;
+    for child in submenu.items().ok()? {
+        if let Some(found) = find_submenu_by_id(&child, id) {
+            return Some(found);
+        }
+    }
+    None
+}
+
+fn try_update_recent_spaces_submenu<R: tauri::Runtime>(
+    app: &tauri::AppHandle<R>,
+    recent_spaces: &[String],
+) -> Result<bool, String> {
+    let Some(menu) = app.menu() else {
+        return Ok(false);
+    };
+
+    let mut target: Option<Submenu<R>> = None;
+    for item in menu.items().map_err(|error| error.to_string())? {
+        if let Some(found) = find_submenu_by_id(&item, "space.recent.menu") {
+            target = Some(found);
+            break;
+        }
+    }
+
+    let Some(submenu) = target else {
+        return Ok(false);
+    };
+
+    while submenu
+        .remove_at(0)
+        .map_err(|error| error.to_string())?
+        .is_some()
+    {}
+
+    if recent_spaces.is_empty() {
+        let none = MenuItem::with_id(
+            app,
+            "space.recent.none",
+            "No Recent Spaces",
+            false,
+            None::<&str>,
+        )
+        .map_err(|error| error.to_string())?;
+        submenu.append(&none).map_err(|error| error.to_string())?;
+        return Ok(true);
+    }
+
+    for (index, path) in recent_spaces.iter().enumerate() {
+        let item = MenuItem::with_id(
+            app,
+            format!("space.recent.{index}"),
+            format_recent_space_label(path),
+            true,
+            None::<&str>,
+        )
+        .map_err(|error| error.to_string())?;
+        submenu.append(&item).map_err(|error| error.to_string())?;
+    }
+
+    Ok(true)
+}
+
 fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     app: &M,
     show_markdown_menu: bool,
     space_open: bool,
+    recent_spaces: &[String],
 ) -> tauri::Result<Menu<R>> {
     #[cfg(target_os = "macos")]
     let app_about = MenuItem::with_id(
@@ -332,6 +454,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     )?;
     let open_ai_settings =
         MenuItem::with_id(app, "ai.settings", "AI Settings…", true, None::<&str>)?;
+    let recent_spaces_menu = build_recent_spaces_submenu(app, recent_spaces)?;
 
     let file_menu = Submenu::with_items(
         app,
@@ -437,6 +560,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
         &[
             &create_space,
             &open_space,
+            &recent_spaces_menu,
             &PredefinedMenuItem::separator(app)?,
             &close_space,
             &reveal_space,
@@ -551,12 +675,82 @@ fn system_monospace_fonts_list() -> Result<Vec<String>, String> {
 }
 
 #[tauri::command]
+fn print_current_window(window: tauri::WebviewWindow) -> Result<(), String> {
+    window.print().map_err(|error| error.to_string())
+}
+
+#[tauri::command]
 fn set_markdown_menu_visible(app: tauri::AppHandle, visible: bool) -> Result<(), String> {
+    let menu_state = app
+        .try_state::<MenuState>()
+        .ok_or_else(|| "menu state unavailable".to_string())?;
+    let recent_spaces = menu_state
+        .recent_spaces
+        .lock()
+        .map_err(|_| "failed to lock recent spaces state".to_string())?
+        .clone();
+    *menu_state
+        .show_markdown_menu
+        .lock()
+        .map_err(|_| "failed to lock markdown menu state".to_string())? = visible;
     let space_open = app
         .try_state::<space::SpaceState>()
         .map(|state| space_is_open(&state))
         .unwrap_or(false);
-    let menu = build_main_menu(&app, visible, space_open).map_err(|error| error.to_string())?;
+    let menu = build_main_menu(&app, visible, space_open, &recent_spaces)
+        .map_err(|error| error.to_string())?;
+    app.set_menu(menu).map_err(|error| error.to_string())?;
+    Ok(())
+}
+
+#[tauri::command]
+fn set_recent_spaces_menu(
+    app: tauri::AppHandle,
+    menu_state: State<'_, MenuState>,
+    recent_spaces: Option<Vec<String>>,
+    #[allow(non_snake_case)] recentSpaces: Option<Vec<String>>,
+) -> Result<(), String> {
+    let incoming = recent_spaces.or(recentSpaces).unwrap_or_default();
+    let current_space_path = app
+        .try_state::<space::SpaceState>()
+        .and_then(|state| {
+            state
+                .current
+                .lock()
+                .ok()
+                .and_then(|guard| guard.as_ref().map(|path| path.to_string_lossy().to_string()))
+        });
+    let filtered: Vec<String> = incoming
+        .into_iter()
+        .map(|path| path.trim().to_string())
+        .filter(|path| !path.is_empty())
+        .filter(|path| current_space_path.as_deref() != Some(path.as_str()))
+        .take(20)
+        .collect();
+
+    *menu_state
+        .recent_spaces
+        .lock()
+        .map_err(|_| "failed to lock recent spaces state".to_string())? = filtered.clone();
+
+    match try_update_recent_spaces_submenu(&app, &filtered) {
+        Ok(true) => return Ok(()),
+        Ok(false) => {}
+        Err(error) => {
+            warn!("Failed in-place recent spaces menu update, rebuilding menu instead: {error}");
+        }
+    }
+
+    let show_markdown_menu = *menu_state
+        .show_markdown_menu
+        .lock()
+        .map_err(|_| "failed to lock markdown menu state".to_string())?;
+    let space_open = app
+        .try_state::<space::SpaceState>()
+        .map(|state| space_is_open(&state))
+        .unwrap_or(false);
+    let menu = build_main_menu(&app, show_markdown_menu, space_open, &filtered)
+        .map_err(|error| error.to_string())?;
     app.set_menu(menu).map_err(|error| error.to_string())?;
     Ok(())
 }
@@ -566,7 +760,7 @@ pub fn run() {
     init_tracing();
 
     tauri::Builder::default()
-        .menu(|app| build_main_menu(app, false, false))
+        .menu(|app| build_main_menu(app, false, false, &[]))
         .on_menu_event(|app, event| match event.id().as_ref() {
             "file.new_note" => {
                 let _ = app.emit("menu:new_note", ());
@@ -588,6 +782,35 @@ pub fn run() {
             }
             "space.open" => {
                 let _ = app.emit("menu:open_space", ());
+            }
+            id if id.starts_with("space.recent.") => {
+                let Some(index_raw) = id.strip_prefix("space.recent.") else {
+                    return;
+                };
+                let Ok(index) = index_raw.parse::<usize>() else {
+                    return;
+                };
+                let Some(menu_state) = app.try_state::<MenuState>() else {
+                    return;
+                };
+                let Ok(recent_spaces) = menu_state.recent_spaces.lock() else {
+                    return;
+                };
+                let Some(path) = recent_spaces.get(index).cloned() else {
+                    return;
+                };
+                let Some(space_state) = app.try_state::<space::SpaceState>() else {
+                    return;
+                };
+                let current_path = space_state
+                    .current
+                    .lock()
+                    .ok()
+                    .and_then(|guard| guard.as_ref().map(|path| path.to_string_lossy().to_string()));
+                if current_path.as_deref() == Some(path.as_str()) {
+                    return;
+                }
+                let _ = app.emit("menu:open_recent_space", OpenRecentSpacePayload { path });
             }
             "space.create" => {
                 let _ = app.emit("menu:create_space", ());
@@ -686,6 +909,7 @@ pub fn run() {
         .manage(ai_codex::state::CodexState::default())
         .manage(git_sync::GitSyncState::default())
         .manage(space::SpaceState::default())
+        .manage(MenuState::default())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_opener::init())
@@ -698,7 +922,9 @@ pub fn run() {
             app_info,
             system_fonts_list,
             system_monospace_fonts_list,
+            print_current_window,
             set_markdown_menu_visible,
+            set_recent_spaces_menu,
             license::commands::license_bootstrap_status,
             license::commands::license_activate,
             license::commands::license_clear_local,

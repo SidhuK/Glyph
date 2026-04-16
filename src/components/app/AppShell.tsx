@@ -21,6 +21,7 @@ import {
 	PinIcon,
 	PinOffIcon,
 	Plant01Icon,
+	PrinterIcon,
 	SearchIcon,
 	Settings01Icon,
 	SidebarLeftIcon,
@@ -136,11 +137,21 @@ const LazyKeyboardShortcutsHelp = lazy(loadKeyboardShortcutsHelp);
 
 const SIDEBAR_MIN_WIDTH = 220;
 const SIDEBAR_MAX_WIDTH = 600;
+const PRINT_EDITOR_BODY_CLASS = "glyphPrintEditorMode";
+const PRINT_EDITOR_TARGET_CLASS = "glyphPrintEditorTarget";
 
 export function AppShell() {
 	const space = useSpace();
-	const { spacePath, error, setError, onOpenSpace, onCreateSpace, closeSpace } =
-		space;
+	const {
+		spacePath,
+		error,
+		setError,
+		onOpenSpace,
+		onOpenSpaceAtPath,
+		onCreateSpace,
+		closeSpace,
+		recentSpaces,
+	} = space;
 	const fileTreeCtx = useFileTreeContext();
 	const {
 		expandedDirs,
@@ -1021,6 +1032,58 @@ export function AppShell() {
 		setError,
 	]);
 
+	const handlePrintEditorPane = useCallback(() => {
+		if (!activeMarkdownTabPath || !isMarkdownPath(activeMarkdownTabPath)) {
+			toast.error("Open a markdown note before printing.");
+			return;
+		}
+		const target = document.querySelector(
+			".markdownEditorPane",
+		) as HTMLElement | null;
+		if (!target) {
+			toast.error("Could not find an active editor to print.");
+			return;
+		}
+
+		const body = document.body;
+		const mediaQuery = window.matchMedia("print");
+		let cleanedUp = false;
+		let cleanupTimer: number | null = null;
+		const cleanup = () => {
+			if (cleanedUp) return;
+			cleanedUp = true;
+			if (cleanupTimer !== null) {
+				window.clearTimeout(cleanupTimer);
+				cleanupTimer = null;
+			}
+			body.classList.remove(PRINT_EDITOR_BODY_CLASS);
+			target.classList.remove(PRINT_EDITOR_TARGET_CLASS);
+			window.removeEventListener("afterprint", cleanup);
+			mediaQuery.removeEventListener("change", onMediaQueryChange);
+		};
+		const onMediaQueryChange = (event: MediaQueryListEvent) => {
+			if (!event.matches) cleanup();
+		};
+
+		body.classList.add(PRINT_EDITOR_BODY_CLASS);
+		target.classList.add(PRINT_EDITOR_TARGET_CLASS);
+		window.addEventListener("afterprint", cleanup, { once: true });
+		mediaQuery.addEventListener("change", onMediaQueryChange);
+		cleanupTimer = window.setTimeout(cleanup, 15_000);
+		// Let the command palette/dialog close commit before snapshotting for print.
+		window.requestAnimationFrame(() => {
+			window.requestAnimationFrame(() => {
+				void invoke("print_current_window").catch((error) => {
+					cleanup();
+					toast.error("Could not open print dialog", {
+						description:
+							error instanceof Error ? error.message : "Try again in a moment.",
+					});
+				});
+			});
+		});
+	}, [activeMarkdownTabPath]);
+
 	const duplicateFileWithActiveEditorFlush = useCallback(
 		async (path: string) => {
 			if (activeMarkdownTabPath === path) {
@@ -1092,6 +1155,7 @@ export function AppShell() {
 			window.dispatchEvent(new Event("glyph:close-active-tab"));
 		},
 		onOpenSpace,
+		onOpenRecentSpaceAtPath: onOpenSpaceAtPath,
 		onCreateSpace,
 		closeSpace,
 		onRevealSpace: handleRevealSpaceFromMenu,
@@ -1188,129 +1252,6 @@ export function AppShell() {
 			: [];
 
 		return [
-			{
-				id: "open-settings",
-				label: "Settings",
-				icon: (
-					<HugeiconsIcon icon={Settings01Icon} size={16} strokeWidth={0.9} />
-				),
-				category: "Workspace",
-				shortcut: { meta: true, key: "," },
-				action: () => openSettings(),
-			},
-			{
-				id: "open-license-settings",
-				label: "Manage license",
-				icon: (
-					<HugeiconsIcon icon={SquareLock02Icon} size={16} strokeWidth={0.9} />
-				),
-				category: "Workspace",
-				action: () => openSettings("general"),
-			},
-			{
-				id: "buy-glyph-license",
-				label: "Buy Glyph license",
-				icon: (
-					<HugeiconsIcon icon={SquareLock02Icon} size={16} strokeWidth={0.9} />
-				),
-				category: "Workspace",
-				action: async () => {
-					try {
-						const status = await getLicenseStatus();
-						await openUrl(status.purchase_url);
-					} catch (error) {
-						console.error("Failed to open Gumroad purchase page", error);
-						toast.error("Could not open the license page", {
-							description:
-								error instanceof Error
-									? error.message
-									: "Try again in a moment.",
-						});
-					}
-				},
-			},
-			{
-				id: "open-space",
-				label: spacePath ? "Open another space" : "Open space",
-				icon: (
-					<HugeiconsIcon icon={FolderOpenIcon} size={16} strokeWidth={0.9} />
-				),
-				category: "Workspace",
-				shortcut: { meta: true, key: "o" },
-				action: onOpenSpace,
-			},
-			{
-				id: "close-space",
-				label: "Close current space",
-				icon: (
-					<HugeiconsIcon icon={FolderRemoveIcon} size={16} strokeWidth={0.9} />
-				),
-				category: "Workspace",
-				enabled: Boolean(spacePath),
-				action: closeSpace,
-			},
-			{
-				id: "open-git-sync-settings",
-				label: "Git Sync settings",
-				icon: (
-					<HugeiconsIcon icon={Settings01Icon} size={16} strokeWidth={0.9} />
-				),
-				category: "Workspace",
-				enabled: Boolean(spacePath),
-				action: gitSync.openGitSettings,
-			},
-			{
-				id: "git-sync-now",
-				label: "Sync now",
-				icon: <HugeiconsIcon icon={Link01Icon} size={16} strokeWidth={0.9} />,
-				category: "Workspace",
-				enabled: Boolean(spacePath),
-				action: async () => {
-					try {
-						await gitSync.syncNow();
-					} catch (error) {
-						handleGitSyncFailure(error);
-					}
-				},
-			},
-			{
-				id: "toggle-sidebar",
-				label: "Toggle sidebar",
-				icon: (
-					<HugeiconsIcon icon={SidebarLeftIcon} size={16} strokeWidth={0.9} />
-				),
-				category: "Workspace",
-				shortcut: { meta: true, shift: true, key: "b" },
-				action: () => setSidebarCollapsed(!sidebarCollapsed),
-			},
-			{
-				id: "toggle-zen-mode",
-				label: zenModeActive ? "Exit zen mode" : "Toggle zen mode",
-				icon: <HugeiconsIcon icon={Plant01Icon} size={16} strokeWidth={0.9} />,
-				category: "Workspace",
-				enabled: Boolean(activeMarkdownTabPath),
-				allowInEditable: true,
-				action: () => {
-					if (zenModeActive) {
-						if (activeMarkdownTabPath) {
-							dispatchZenModeWillToggle({
-								path: activeMarkdownTabPath,
-								nextActive: false,
-							});
-						}
-						setZenModeActive(false);
-						return;
-					}
-					if (!activeMarkdownTabPath) return;
-					dispatchZenModeWillToggle({
-						path: activeMarkdownTabPath,
-						nextActive: true,
-					});
-					dispatchForceNoteEditMode({ path: activeMarkdownTabPath });
-					setZenModeActive(true);
-				},
-			},
-			...aiCommands,
 			{
 				id: "new-note",
 				label: "New note",
@@ -1483,6 +1424,29 @@ export function AppShell() {
 				action: handleExportHtml,
 			},
 			{
+				id: "print-editor-pane",
+				label: "Print Note",
+				icon: <HugeiconsIcon icon={PrinterIcon} size={16} strokeWidth={0.9} />,
+				category: "File Operations",
+				enabled:
+					activeMarkdownTabPath !== null &&
+					isMarkdownPath(activeMarkdownTabPath),
+				action: handlePrintEditorPane,
+			},
+			{
+				id: "move-active-file",
+				label: "Move to…",
+				icon: <HugeiconsIcon icon={MoveIcon} size={16} strokeWidth={0.9} />,
+				category: "File Operations",
+				enabled: Boolean(spacePath) && Boolean(activeFilePath),
+				action: () => {
+					if (!activeFilePath) return;
+					setMovePickerSourcePath(activeFilePath);
+					void refreshMoveTargetDirs(activeFilePath);
+					openPalette("commands");
+				},
+			},
+			{
 				id: "close-preview",
 				label: "Close preview",
 				icon: (
@@ -1551,6 +1515,129 @@ export function AppShell() {
 				enabled: Boolean(spacePath),
 				action: () => openDatabasesTab(),
 			},
+			...aiCommands,
+			{
+				id: "open-space",
+				label: spacePath ? "Open another space" : "Open space",
+				icon: (
+					<HugeiconsIcon icon={FolderOpenIcon} size={16} strokeWidth={0.9} />
+				),
+				category: "Workspace",
+				shortcut: { meta: true, key: "o" },
+				action: onOpenSpace,
+			},
+			{
+				id: "close-space",
+				label: "Close current space",
+				icon: (
+					<HugeiconsIcon icon={FolderRemoveIcon} size={16} strokeWidth={0.9} />
+				),
+				category: "Workspace",
+				enabled: Boolean(spacePath),
+				action: closeSpace,
+			},
+			{
+				id: "git-sync-now",
+				label: "Sync now",
+				icon: <HugeiconsIcon icon={Link01Icon} size={16} strokeWidth={0.9} />,
+				category: "Workspace",
+				enabled: Boolean(spacePath),
+				action: async () => {
+					try {
+						await gitSync.syncNow();
+					} catch (error) {
+						handleGitSyncFailure(error);
+					}
+				},
+			},
+			{
+				id: "toggle-sidebar",
+				label: "Toggle sidebar",
+				icon: (
+					<HugeiconsIcon icon={SidebarLeftIcon} size={16} strokeWidth={0.9} />
+				),
+				category: "Workspace",
+				shortcut: { meta: true, shift: true, key: "b" },
+				action: () => setSidebarCollapsed(!sidebarCollapsed),
+			},
+			{
+				id: "toggle-zen-mode",
+				label: zenModeActive ? "Exit zen mode" : "Toggle zen mode",
+				icon: <HugeiconsIcon icon={Plant01Icon} size={16} strokeWidth={0.9} />,
+				category: "Workspace",
+				enabled: Boolean(activeMarkdownTabPath),
+				allowInEditable: true,
+				action: () => {
+					if (zenModeActive) {
+						if (activeMarkdownTabPath) {
+							dispatchZenModeWillToggle({
+								path: activeMarkdownTabPath,
+								nextActive: false,
+							});
+						}
+						setZenModeActive(false);
+						return;
+					}
+					if (!activeMarkdownTabPath) return;
+					dispatchZenModeWillToggle({
+						path: activeMarkdownTabPath,
+						nextActive: true,
+					});
+					dispatchForceNoteEditMode({ path: activeMarkdownTabPath });
+					setZenModeActive(true);
+				},
+			},
+			{
+				id: "buy-glyph-license",
+				label: "Buy Glyph license",
+				icon: (
+					<HugeiconsIcon icon={SquareLock02Icon} size={16} strokeWidth={0.9} />
+				),
+				category: "Workspace",
+				action: async () => {
+					try {
+						const status = await getLicenseStatus();
+						await openUrl(status.purchase_url);
+					} catch (error) {
+						console.error("Failed to open Gumroad purchase page", error);
+						toast.error("Could not open the license page", {
+							description:
+								error instanceof Error
+									? error.message
+									: "Try again in a moment.",
+						});
+					}
+				},
+			},
+			{
+				id: "open-settings",
+				label: "Settings",
+				icon: (
+					<HugeiconsIcon icon={Settings01Icon} size={16} strokeWidth={0.9} />
+				),
+				category: "Workspace",
+				shortcut: { meta: true, key: "," },
+				action: () => openSettings(),
+			},
+			{
+				id: "open-license-settings",
+				label: "Manage license",
+				icon: (
+					<HugeiconsIcon icon={SquareLock02Icon} size={16} strokeWidth={0.9} />
+				),
+				category: "Workspace",
+				action: () => openSettings("general"),
+			},
+			{
+				id: "open-git-sync-settings",
+				label: "Git Sync settings",
+				icon: (
+					<HugeiconsIcon icon={Settings01Icon} size={16} strokeWidth={0.9} />
+				),
+				category: "Workspace",
+				enabled: Boolean(spacePath),
+				action: gitSync.openGitSettings,
+			},
 			{
 				id: "show-getting-started",
 				label: "Show getting started",
@@ -1565,19 +1652,6 @@ export function AppShell() {
 				enabled: Boolean(spacePath),
 				action: openGettingStarted,
 			},
-			{
-				id: "move-active-file",
-				label: "Move to…",
-				icon: <HugeiconsIcon icon={MoveIcon} size={16} strokeWidth={0.9} />,
-				category: "File Operations",
-				enabled: Boolean(spacePath) && Boolean(activeFilePath),
-				action: () => {
-					if (!activeFilePath) return;
-					setMovePickerSourcePath(activeFilePath);
-					void refreshMoveTargetDirs(activeFilePath);
-					openPalette("commands");
-				},
-			},
 		];
 	}, [
 		activeMarkdownTabPath,
@@ -1591,6 +1665,7 @@ export function AppShell() {
 		handleCopyOpenNoteAsMarkdown,
 		handleDuplicateActiveMarkdown,
 		handleExportHtml,
+		handlePrintEditorPane,
 		fileTree,
 		closeSpace,
 		onOpenSpace,
@@ -1683,6 +1758,10 @@ export function AppShell() {
 				onSelectTag={(t) => openTagSearchPalette(t)}
 				sidebarCollapsed={sidebarCollapsed}
 				onToggleSidebar={() => setSidebarCollapsed(!sidebarCollapsed)}
+				spacePath={spacePath}
+				recentSpaces={recentSpaces}
+				onOpenSpace={onOpenSpace}
+				onOpenRecentSpaceAtPath={onOpenSpaceAtPath}
 				gitSyncStatus={gitSync.status}
 				onOpenSettings={() => openSettings()}
 				onOpenAllDocs={openAllDocsTab}

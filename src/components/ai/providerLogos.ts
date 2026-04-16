@@ -3,6 +3,7 @@ import anthropicLogoUrl from "../../assets/provider-logos/claude-ai.svg?url";
 import codexDarkThemeLogoUrl from "../../assets/provider-logos/codex-dark.svg?url";
 import codexLightThemeLogoUrl from "../../assets/provider-logos/codex-light.svg?url";
 import geminiLogoUrl from "../../assets/provider-logos/google-gemini.svg?url";
+import llamacppLogoUrl from "../../assets/provider-logos/llamacpp.svg?url";
 import ollamaLogoUrl from "../../assets/provider-logos/ollama.svg?url";
 import openrouterLogoUrl from "../../assets/provider-logos/open-router.svg?url";
 import openaiDarkThemeLogoUrl from "../../assets/provider-logos/openai-light.svg?url";
@@ -26,6 +27,7 @@ export const providerLogoMeta: Record<
 	anthropic: { src: anthropicLogoUrl, label: "Anthropic" },
 	gemini: { src: geminiLogoUrl, label: "Google Gemini" },
 	ollama: { src: ollamaLogoUrl, label: "Ollama" },
+	llama_cpp: { src: llamacppLogoUrl, label: "llama.cpp" },
 	codex_chatgpt: {
 		src: codexLightThemeLogoUrl,
 		darkSrc: codexDarkThemeLogoUrl,
@@ -40,6 +42,7 @@ export const providerLogoMap: Record<AiProviderKind, string> = {
 	anthropic: providerLogoMeta.anthropic.src,
 	gemini: providerLogoMeta.gemini.src,
 	ollama: providerLogoMeta.ollama.src,
+	llama_cpp: providerLogoMeta.llama_cpp.src,
 	codex_chatgpt: providerLogoMeta.codex_chatgpt.src,
 };
 

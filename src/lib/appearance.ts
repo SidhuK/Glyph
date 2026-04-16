@@ -1,4 +1,5 @@
 import {
+	type EditorWidthMode,
 	MAX_EDITOR_FONT_SIZE,
 	MIN_EDITOR_FONT_SIZE,
 	type UiAccent,
@@ -188,4 +189,32 @@ export function applyUiSurfacePreferences(options: {
 export function applyUiDelightfulGlyph(enabled: boolean): void {
 	const root = document.documentElement;
 	root.dataset.delightfulGlyph = String(enabled);
+}
+
+export function applyEditorWidthMode(mode: EditorWidthMode): void {
+	const root = document.documentElement;
+
+	if (mode === "wide") {
+		root.style.setProperty("--editor-readable-content-max-width", "100%");
+		root.style.setProperty("--editor-readable-content-gutter", "0px");
+		root.style.setProperty("--editor-readable-content-gutter-compact", "0px");
+		return;
+	}
+
+	if (mode === "comfortable") {
+		root.style.setProperty("--editor-readable-content-max-width", "860px");
+		root.style.setProperty(
+			"--editor-readable-content-gutter",
+			"clamp(14px, 3vw, 36px)",
+		);
+		root.style.setProperty(
+			"--editor-readable-content-gutter-compact",
+			"clamp(10px, 2.4vw, 22px)",
+		);
+		return;
+	}
+
+	root.style.removeProperty("--editor-readable-content-max-width");
+	root.style.removeProperty("--editor-readable-content-gutter");
+	root.style.removeProperty("--editor-readable-content-gutter-compact");
 }

@@ -16,7 +16,7 @@ export function clampSlashCommandIndex(index: number, itemCount: number) {
 	return index;
 }
 
-export const SLASH_COMMANDS: SlashCommandItem[] = [
+const SLASH_COMMANDS: SlashCommandItem[] = [
 	{
 		icon: "H1",
 		title: "Heading 1",

@@ -630,12 +630,13 @@ input.notePropertyValue {
 	width: min(
 		100%,
 		calc(
-			var(--readable-content-max-width) +
-			(2 * var(--readable-content-gutter-compact))
+			var(--editor-readable-content-max-width) +
+			(2 * var(--editor-readable-content-gutter-compact))
 		)
 	);
 	margin: 0 auto var(--space-2);
-	padding: var(--space-3) var(--readable-content-gutter-compact) var(--space-5);
+	padding: var(--space-3) var(--editor-readable-content-gutter-compact)
+		var(--space-5);
 	font-size: 11px;
 	color: var(--text-tertiary);
 	box-sizing: border-box;
@@ -880,7 +881,7 @@ input.notePropertyValue {
 .tiptapHostInline:not(.is-preview) .tiptapContentInline {
 	position: relative;
 	padding-left: calc(
-		var(--readable-content-gutter-compact) +
+		var(--editor-readable-content-gutter-compact) +
 		var(--heading-toggle-rail-width) +
 		var(--heading-level-rail-width) +
 		(var(--heading-rail-gap) * 2)
@@ -1441,7 +1442,7 @@ input.notePropertyValue {
 
 @media (max-width: 760px) {
 	.tiptapHostInline:not(.is-preview) .tiptapContentInline {
-		padding-left: var(--readable-content-gutter-compact);
+		padding-left: var(--editor-readable-content-gutter-compact);
 	}
 
 	.tiptapHostInline:not(.is-preview) .tiptapContentInline::before,
@@ -1801,7 +1802,7 @@ input.notePropertyValue {
 .taskInlineDateBtn {
 	position: absolute;
 	left: calc(
-		var(--readable-content-gutter-compact) +
+		var(--editor-readable-content-gutter-compact) +
 		var(--heading-toggle-rail-width) +
 		var(--heading-rail-gap) -
 		1px

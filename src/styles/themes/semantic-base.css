@@ -143,6 +143,11 @@
 	--readable-content-max-width: 720px;
 	--readable-content-gutter: clamp(24px, 6vw, 64px);
 	--readable-content-gutter-compact: clamp(14px, 3vw, 28px);
+	--editor-readable-content-max-width: var(--readable-content-max-width);
+	--editor-readable-content-gutter: var(--readable-content-gutter);
+	--editor-readable-content-gutter-compact: var(
+		--readable-content-gutter-compact
+	);
 	--float-gap: 12px;
 	--float-inset: 6px;
 }

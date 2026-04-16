@@ -206,17 +206,6 @@ export const SHORTCUTS = [
 	},
 ] as const satisfies ShortcutDefinition[];
 
-const SHORTCUTS_BY_ID = new Map<string, ShortcutDefinition>(
-	SHORTCUTS.map((shortcut) => [shortcut.id, shortcut]),
-);
-
-/**
- * Get a shortcut definition by its ID
- */
-export function getShortcutById(id: string): ShortcutDefinition | undefined {
-	return SHORTCUTS_BY_ID.get(id);
-}
-
 /**
  * Shortcut IDs as a type for type-safe references
  */

@@ -1,4 +1,4 @@
-import { databaseCellValueFromRow, formatDatabaseDateTime } from "./config";
+import { databaseCellValueFromRow } from "./config";
 import type { DatabaseCellValue, DatabaseColumn, DatabaseRow } from "./types";
 
 export const DATABASE_BOARD_EMPTY_LANE_ID = "__empty__";
@@ -20,7 +20,7 @@ function isMultiValueBoardColumn(column: DatabaseColumn): boolean {
 	);
 }
 
-export function isBoardGroupColumn(column: DatabaseColumn): boolean {
+function isBoardGroupColumn(column: DatabaseColumn): boolean {
 	return column.type === "tags" || column.type === "property";
 }
 
@@ -325,21 +325,4 @@ export function boardDropValue(
 	}
 
 	return boardLaneValue(column, laneId);
-}
-
-export function formatBoardCellValue(cell: DatabaseCellValue): string {
-	if (cell.kind === "checkbox") {
-		if (typeof cell.value_bool !== "boolean") return "";
-		return cell.value_bool ? "Checked" : "Unchecked";
-	}
-	if (cell.kind === "datetime") {
-		return formatDatabaseDateTime(cell.value_text);
-	}
-	if (cell.kind === "date") {
-		return cell.value_text ?? "";
-	}
-	if (cell.value_list.length > 0) {
-		return cell.value_list.join(", ");
-	}
-	return cell.value_text ?? "";
 }

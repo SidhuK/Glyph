@@ -399,13 +399,3 @@ export function TemplateSettingsSections() {
 		</>
 	);
 }
-
-export function TemplatesSettingsPane() {
-	return (
-		<div className="settingsPane">
-			<div className="settingsGrid">
-				<TemplateSettingsSections />
-			</div>
-		</div>
-	);
-}

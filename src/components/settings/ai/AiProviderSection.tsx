@@ -55,6 +55,7 @@ export function AiProviderSection({
 						<option value="anthropic">Anthropic</option>
 						<option value="gemini">Gemini</option>
 						<option value="ollama">Ollama</option>
+						<option value="llama_cpp">llama.cpp</option>
 						<option value="openai_compat">OpenAI-compatible</option>
 					</select>
 				</div>
@@ -152,11 +153,16 @@ export function AiProviderSection({
 				</SettingsRow>
 			) : null}
 
-			{profileDraft.provider === "openai_compat" ? (
+			{profileDraft.provider === "openai_compat" ||
+			profileDraft.provider === "llama_cpp" ? (
 				<SettingsRow
 					label="Base URL"
 					htmlFor="aiBaseUrl"
-					description="Only needed for custom OpenAI-compatible providers."
+					description={
+						profileDraft.provider === "llama_cpp"
+							? "Default is http://localhost:8080/v1 for a local llama.cpp server."
+							: "Only needed for custom OpenAI-compatible providers."
+					}
 				>
 					<Input
 						id="aiBaseUrl"
@@ -178,10 +184,15 @@ export function AiProviderSection({
 				</SettingsRow>
 			) : null}
 
-			{profileDraft.provider === "openai_compat" ? (
+			{profileDraft.provider === "openai_compat" ||
+			profileDraft.provider === "llama_cpp" ? (
 				<SettingsRow
 					label="Allow local network"
-					description="Enable to use http:// endpoints on localhost or private networks (e.g. LM Studio, vLLM)."
+					description={
+						profileDraft.provider === "llama_cpp"
+							? "Enable to use localhost or private-network llama.cpp endpoints."
+							: "Enable to use http:// endpoints on localhost or private networks (e.g. LM Studio, vLLM)."
+					}
 				>
 					<SettingsToggle
 						ariaLabel="Allow local network"

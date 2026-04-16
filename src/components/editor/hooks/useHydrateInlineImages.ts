@@ -79,7 +79,7 @@ function maybeDeleteSourceGeneration(sourcePath: string) {
 	}
 }
 
-export function clearInlineImageHydrationCacheForSource(sourcePath: string) {
+function clearInlineImageHydrationCacheForSource(sourcePath: string) {
 	sourceGeneration.set(sourcePath, getSourceGeneration(sourcePath) + 1);
 	const prefix = `${sourcePath}::`;
 	for (const key of [...dataUrlCache.keys()]) {

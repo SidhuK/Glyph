@@ -11,10 +11,11 @@
 	background: transparent;
 	backdrop-filter: none;
 	-webkit-backdrop-filter: none;
-	overflow: hidden;
+	overflow: visible;
 	flex-shrink: 0;
 	/* width/min-width animated by motion layout */
 	position: relative;
+	z-index: 6;
 }
 
 .sidebarDragLayer {
@@ -41,7 +42,7 @@
 	flex: 1;
 	flex-direction: column;
 	min-height: 0;
-	overflow: hidden;
+	overflow: visible;
 	position: relative;
 	background: transparent;
 	backdrop-filter: none;
@@ -94,6 +95,123 @@
 	top: 50%;
 	left: var(--window-control-toggle-offset, 90px);
 	transform: translateY(-50%);
+}
+
+.sidebarHeaderSpaceMenu {
+	position: relative;
+	-webkit-app-region: no-drag;
+}
+
+.sidebarHeaderSpaceMenuPanel {
+	position: absolute;
+	top: calc(100% + 8px);
+	left: 0;
+	z-index: 40;
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+	max-width: min(420px, calc(100vw - 24px));
+	max-height: min(360px, calc(100vh - 96px));
+	padding: 10px;
+	border-radius: 12px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 68%, transparent);
+	background: color-mix(in srgb, var(--bg-primary) 94%, transparent);
+	backdrop-filter: blur(14px) saturate(1.2);
+	-webkit-backdrop-filter: blur(14px) saturate(1.2);
+	box-shadow: 0 12px 26px
+		color-mix(in srgb, var(--shadow-color, #000) 16%, transparent), 0 2px 12px
+		color-mix(in srgb, var(--shadow-color, #000) 10%, transparent);
+	overflow: auto;
+}
+
+.sidebarHeaderSpaceMenuTitle {
+	padding: 2px 2px 4px;
+	font-size: 11px;
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--text-tertiary);
+}
+
+.sidebarHeaderSpaceMenuItem {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 2px;
+	width: 100%;
+	padding: 8px 10px;
+	border: 1px solid transparent;
+	border-radius: 9px;
+	background: color-mix(in srgb, var(--bg-secondary) 58%, transparent);
+	color: var(--text-primary);
+	text-align: left;
+	cursor: pointer;
+	transition: background-color 120ms ease, border-color 120ms ease;
+	overflow: hidden;
+}
+
+.sidebarHeaderSpaceMenuItem:hover,
+.sidebarHeaderSpaceMenuItem:focus-visible {
+	background: color-mix(in srgb, var(--bg-hover) 82%, var(--bg-primary));
+	border-color: color-mix(in srgb, var(--interactive-accent) 22%, transparent);
+	outline: none;
+}
+
+.sidebarHeaderSpaceMenuItemName {
+	display: block;
+	font-size: 13px;
+	font-weight: var(--font-medium);
+	flex-shrink: 0;
+	min-width: 0;
+	width: 100%;
+	max-width: 180px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.sidebarHeaderSpaceMenuItemPath {
+	display: block;
+	font-size: 11px;
+	line-height: 1.25;
+	color: var(--text-tertiary);
+	flex-shrink: 0;
+	min-width: 0;
+	width: 100%;
+	max-width: 260px;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.sidebarHeaderSpaceMenuEmpty {
+	padding: 12px 10px;
+	border: 1px dashed color-mix(in srgb, var(--border-light) 62%, transparent);
+	border-radius: 9px;
+	font-size: 12px;
+	color: var(--text-tertiary);
+}
+
+.sidebarHeaderSpaceMenuAction {
+	width: 100%;
+	margin-top: 2px;
+	padding: 8px 10px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
+	border-radius: 9px;
+	background: color-mix(in srgb, var(--bg-tertiary) 62%, transparent);
+	color: var(--text-secondary);
+	font-size: 12px;
+	font-weight: var(--font-medium);
+	text-align: center;
+	cursor: pointer;
+	transition: background-color 120ms ease, color 120ms ease;
+}
+
+.sidebarHeaderSpaceMenuAction:hover,
+.sidebarHeaderSpaceMenuAction:focus-visible {
+	background: color-mix(in srgb, var(--bg-hover) 84%, var(--bg-primary));
+	color: var(--text-primary);
+	outline: none;
 }
 
 .windowChromeSidebarToggle {

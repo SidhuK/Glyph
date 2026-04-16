@@ -627,6 +627,7 @@ export type AiProviderKind =
 	| "anthropic"
 	| "gemini"
 	| "ollama"
+	| "llama_cpp"
 	| "codex_chatgpt";
 
 export type AiAssistantMode = "chat" | "create";
@@ -738,7 +739,9 @@ interface TauriCommands {
 	app_info: CommandDef<void, AppInfo>;
 	system_fonts_list: CommandDef<void, string[]>;
 	system_monospace_fonts_list: CommandDef<void, string[]>;
+	print_current_window: CommandDef<void, void>;
 	set_markdown_menu_visible: CommandDef<{ visible: boolean }, void>;
+	set_recent_spaces_menu: CommandDef<{ recent_spaces: string[] }, void>;
 	license_bootstrap_status: CommandDef<void, LicenseStatus>;
 	license_activate: CommandDef<{ license_key: string }, LicenseActivateResult>;
 	license_clear_local: CommandDef<void, LicenseActivateResult>;

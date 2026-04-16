@@ -1,19 +1,9 @@
-import { useMemo, useState } from "react";
-import {
-	databaseCellValueFromRow,
-	rowMatchesFilters,
-} from "../../lib/database/config";
+import { databaseCellValueFromRow } from "../../lib/database/config";
 import type {
 	DatabaseCellValue,
 	DatabaseColumn,
-	DatabaseConfig,
 	DatabaseRow,
 } from "../../lib/database/types";
-
-interface UseDatabaseTableParams {
-	rows: DatabaseRow[];
-	config: DatabaseConfig;
-}
 
 function compareNullable<T>(
 	left: T | null,
@@ -97,48 +87,4 @@ export function compareDatabaseRowValues(
 					a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" }),
 			);
 	}
-}
-
-export function useDatabaseTable({ rows, config }: UseDatabaseTableParams) {
-	const [selectedRowPath, setSelectedRowPath] = useState<string | null>(null);
-
-	const visibleColumns = useMemo(
-		() => config.columns.filter((column) => column.visible),
-		[config.columns],
-	);
-
-	const filteredRows = useMemo(
-		() =>
-			rows.filter((row) =>
-				rowMatchesFilters(row, config.columns, config.filters),
-			),
-		[config.columns, config.filters, rows],
-	);
-
-	const sortedRows = useMemo(() => {
-		const [sort] = config.sorts;
-		if (!sort) return filteredRows;
-		const column = config.columns.find((entry) => entry.id === sort.column_id);
-		if (!column) return filteredRows;
-		const next = [...filteredRows];
-		next.sort((left, right) => {
-			const result = compareDatabaseRowValues(left, right, column);
-			return sort.direction === "desc" ? result * -1 : result;
-		});
-		return next;
-	}, [config.columns, config.sorts, filteredRows]);
-
-	const effectiveSelectedRowPath = useMemo(() => {
-		if (!selectedRowPath) return null;
-		return sortedRows.some((row) => row.note_path === selectedRowPath)
-			? selectedRowPath
-			: null;
-	}, [selectedRowPath, sortedRows]);
-
-	return {
-		visibleColumns,
-		rows: sortedRows,
-		selectedRowPath: effectiveSelectedRowPath,
-		setSelectedRowPath,
-	};
 }

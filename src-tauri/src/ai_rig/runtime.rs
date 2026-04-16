@@ -62,6 +62,27 @@ fn not_chat_model_message(model: &str) -> String {
     )
 }
 
+fn alternate_openai_base_url(base: &str) -> Option<String> {
+    let trimmed = base.trim_end_matches('/');
+    if trimmed.is_empty() {
+        return None;
+    }
+    if let Some(prefix) = trimmed.strip_suffix("/v1") {
+        let alt = if prefix.is_empty() {
+            "/".to_string()
+        } else {
+            prefix.to_string()
+        };
+        if alt.trim_end_matches('/') == trimmed {
+            None
+        } else {
+            Some(alt)
+        }
+    } else {
+        Some(format!("{trimmed}/v1"))
+    }
+}
+
 #[allow(clippy::too_many_arguments)]
 pub async fn run_with_rig(
     cancel: &CancellationToken,
@@ -150,33 +171,55 @@ pub async fn run_with_rig(
                 Err(e) => return Err(e),
             }
         }
-        AiProviderKind::OpenaiCompat => {
+        AiProviderKind::OpenaiCompat | AiProviderKind::LlamaCpp => {
             let key = api_key.unwrap_or("").trim();
-            let base = custom_base_url
+            let primary_base = custom_base_url
                 .as_deref()
-                .unwrap_or(default_base_url(&AiProviderKind::OpenaiCompat));
-            let client = openai::Client::builder(key)
-                .with_client(http_client.clone())
-                .base_url(base)
-                .build();
-            let model = client
-                .completion_model(profile.model.trim())
-                .completions_api();
-            let mut agent = AgentBuilder::new(model);
-            if let Some(v) = max_tokens {
-                agent = agent.max_tokens(v);
-            }
-            let agent = if matches!(mode, AiAssistantMode::Create) {
-                with_tools(agent.preamble(&effective_system), &tools).build()
-            } else {
-                agent.preamble(&effective_system).build()
-            };
-            match run_stream(cancel, app, job_id, agent, transcript.clone()).await {
-                Ok(v) => v,
-                Err(e) if is_not_chat_model_error(&e) => {
-                    return Err(not_chat_model_message(profile.model.trim()));
+                .unwrap_or(default_base_url(&profile.provider));
+            let mut candidate_bases = vec![primary_base.to_string()];
+            if matches!(profile.provider, AiProviderKind::LlamaCpp) {
+                if let Some(alt) = alternate_openai_base_url(primary_base) {
+                    if !candidate_bases.iter().any(|candidate| candidate == &alt) {
+                        candidate_bases.push(alt);
+                    }
                 }
-                Err(e) => return Err(e),
+            }
+            let mut last_error: Option<String> = None;
+            let mut success: Option<(String, Vec<AiStoredToolEvent>, bool)> = None;
+            for base in candidate_bases {
+                let client = openai::Client::builder(key)
+                    .with_client(http_client.clone())
+                    .base_url(&base)
+                    .build();
+                let model = client
+                    .completion_model(profile.model.trim())
+                    .completions_api();
+                let mut agent = AgentBuilder::new(model);
+                if let Some(v) = max_tokens {
+                    agent = agent.max_tokens(v);
+                }
+                let agent = if matches!(mode, AiAssistantMode::Create) {
+                    with_tools(agent.preamble(&effective_system), &tools).build()
+                } else {
+                    agent.preamble(&effective_system).build()
+                };
+                match run_stream(cancel, app, job_id, agent, transcript.clone()).await {
+                    Ok(v) => {
+                        success = Some(v);
+                        break;
+                    }
+                    Err(e) if is_not_chat_model_error(&e) => {
+                        return Err(not_chat_model_message(profile.model.trim()));
+                    }
+                    Err(e) => {
+                        last_error = Some(e);
+                    }
+                }
+            }
+            if let Some(v) = success {
+                v
+            } else {
+                return Err(last_error.unwrap_or_else(|| "request failed".to_string()));
             }
         }
         AiProviderKind::Openrouter => {
@@ -402,37 +445,57 @@ pub async fn generate_chat_title_with_rig(
                 }
             }
         }
-        AiProviderKind::OpenaiCompat => {
+        AiProviderKind::OpenaiCompat | AiProviderKind::LlamaCpp => {
             let key = api_key.unwrap_or("").trim();
-            let base = custom_base_url
+            let primary_base = custom_base_url
                 .as_deref()
-                .unwrap_or(default_base_url(&AiProviderKind::OpenaiCompat));
-            let client = openai::Client::builder(key)
-                .with_client(http_client.clone())
-                .base_url(base)
-                .build();
-            let model = client
-                .completion_model(profile.model.trim())
-                .completions_api();
-            let mut agent = AgentBuilder::new(model);
-            if let Some(v) = max_tokens {
-                agent = agent.max_tokens(v);
-            }
-            match agent
-                .preamble(TITLE_PREAMBLE)
-                .build()
-                .prompt(&prompt)
-                .multi_turn(1)
-                .await
-            {
-                Ok(v) => v.to_string(),
-                Err(e) => {
-                    let msg = e.to_string();
-                    if is_not_chat_model_error(&msg) {
-                        return Err(not_chat_model_message(profile.model.trim()));
+                .unwrap_or(default_base_url(&profile.provider));
+            let mut candidate_bases = vec![primary_base.to_string()];
+            if matches!(profile.provider, AiProviderKind::LlamaCpp) {
+                if let Some(alt) = alternate_openai_base_url(primary_base) {
+                    if !candidate_bases.iter().any(|candidate| candidate == &alt) {
+                        candidate_bases.push(alt);
                     }
-                    return Err(msg);
                 }
+            }
+            let mut last_error: Option<String> = None;
+            let mut success: Option<String> = None;
+            for base in candidate_bases {
+                let client = openai::Client::builder(key)
+                    .with_client(http_client.clone())
+                    .base_url(&base)
+                    .build();
+                let model = client
+                    .completion_model(profile.model.trim())
+                    .completions_api();
+                let mut agent = AgentBuilder::new(model);
+                if let Some(v) = max_tokens {
+                    agent = agent.max_tokens(v);
+                }
+                match agent
+                    .preamble(TITLE_PREAMBLE)
+                    .build()
+                    .prompt(&prompt)
+                    .multi_turn(1)
+                    .await
+                {
+                    Ok(v) => {
+                        success = Some(v.to_string());
+                        break;
+                    }
+                    Err(e) => {
+                        let msg = e.to_string();
+                        if is_not_chat_model_error(&msg) {
+                            return Err(not_chat_model_message(profile.model.trim()));
+                        }
+                        last_error = Some(msg);
+                    }
+                }
+            }
+            if let Some(value) = success {
+                value
+            } else {
+                return Err(last_error.unwrap_or_else(|| "request failed".to_string()));
             }
         }
         AiProviderKind::Openrouter => {

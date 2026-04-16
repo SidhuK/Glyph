@@ -126,10 +126,9 @@ function VersionAccordion({
 }
 
 export function ChangelogSection({ versions }: ChangelogSectionProps) {
-	const [openVersion, setOpenVersion] = useState<string | null>(() => {
-		// Open the latest version by default
-		return versions[0]?.version ?? null;
-	});
+	const [openVersion, setOpenVersion] = useState<string | null>(
+		() => versions[0]?.version ?? null,
+	);
 
 	const toggleVersion = (version: string) => {
 		setOpenVersion((prev) => (prev === version ? null : version));

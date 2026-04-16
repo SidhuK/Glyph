@@ -5,6 +5,7 @@ import { useSpace } from "../../contexts";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import {
 	type AiAssistantMode,
+	type EditorWidthMode,
 	loadSettings,
 	setAiAssistantMode,
 	setDatabaseShowColumnColor,
@@ -14,6 +15,7 @@ import {
 	setEditorEnablePeopleMentionsAsTags,
 	setEditorShowCollapsibleHeadings,
 	setEditorVimKeybindings,
+	setEditorWidthMode,
 	setShowFileTreeFolderCounts,
 	setShowToc,
 } from "../../lib/settings";
@@ -23,6 +25,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
 import {
 	SettingsRow,
 	SettingsSection,
+	SettingsSegmented,
 	SettingsToggle,
 } from "./SettingsScaffold";
 
@@ -47,6 +50,12 @@ const VIM_KEYBINDING_HELP = [
 	{ key: "u", action: "Undo." },
 	{ key: "Control-r", action: "Redo." },
 ] as const;
+
+const EDITOR_WIDTH_OPTIONS: Array<{ label: string; value: EditorWidthMode }> = [
+	{ label: "Compact", value: "compact" },
+	{ label: "Comfortable", value: "comfortable" },
+	{ label: "Wide", value: "wide" },
+];
 
 function VimKeybindingsHelp() {
 	return (
@@ -93,6 +102,8 @@ function VimKeybindingsHelp() {
 export function AdvancedSettingsPane() {
 	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
 	const [colorfulHeadings, setColorfulHeadings] = useState(false);
+	const [editorWidthMode, setEditorWidthModeState] =
+		useState<EditorWidthMode>("compact");
 	const [enablePeopleMentionsAsTags, setEnablePeopleMentionsAsTags] =
 		useState(false);
 	const [vimKeybindings, setVimKeybindings] = useState(false);
@@ -110,6 +121,7 @@ export function AdvancedSettingsPane() {
 		useState(false);
 	const [isSavingColorfulHeadings, setIsSavingColorfulHeadings] =
 		useState(false);
+	const [isSavingEditorWidthMode, setIsSavingEditorWidthMode] = useState(false);
 	const [
 		isSavingEnablePeopleMentionsAsTags,
 		setIsSavingEnablePeopleMentionsAsTags,
@@ -133,6 +145,7 @@ export function AdvancedSettingsPane() {
 			const settings = await loadSettings();
 			setShowCollapsibleHeadings(settings.editor.showCollapsibleHeadings);
 			setColorfulHeadings(settings.editor.colorfulHeadings);
+			setEditorWidthModeState(settings.editor.editorWidthMode);
 			setEnablePeopleMentionsAsTags(settings.editor.enablePeopleMentionsAsTags);
 			setVimKeybindings(settings.editor.vimKeybindings === true);
 			setShowTocState(settings.ui.showToc);
@@ -156,6 +169,13 @@ export function AdvancedSettingsPane() {
 		}
 		if (typeof payload.editor?.colorfulHeadings === "boolean") {
 			setColorfulHeadings(payload.editor.colorfulHeadings);
+		}
+		if (
+			payload.editor?.editorWidthMode === "compact" ||
+			payload.editor?.editorWidthMode === "comfortable" ||
+			payload.editor?.editorWidthMode === "wide"
+		) {
+			setEditorWidthModeState(payload.editor.editorWidthMode);
 		}
 		if (typeof payload.editor?.enablePeopleMentionsAsTags === "boolean") {
 			setEnablePeopleMentionsAsTags(payload.editor.enablePeopleMentionsAsTags);
@@ -276,6 +296,34 @@ export function AdvancedSettingsPane() {
 										setIsSavingColorfulHeadings(false);
 									});
 							}}
+						/>
+					</SettingsRow>
+					<SettingsRow
+						label="Editor width"
+						description="Compact keeps lines shorter, Comfortable gives a little bit more room, and Wide uses the full editor width."
+						interactive={false}
+						className="appearanceThemeModeRow"
+					>
+						<SettingsSegmented<EditorWidthMode>
+							ariaLabel="Editor width"
+							value={editorWidthMode}
+							disabled={isSavingEditorWidthMode}
+							className="appearanceThemeModeSegmented"
+							onChange={(nextMode) => {
+								const previous = editorWidthMode;
+								setError("");
+								setEditorWidthModeState(nextMode);
+								setIsSavingEditorWidthMode(true);
+								void setEditorWidthMode(nextMode)
+									.catch((cause) => {
+										setEditorWidthModeState(previous);
+										setError(extractErrorMessage(cause));
+									})
+									.finally(() => {
+										setIsSavingEditorWidthMode(false);
+									});
+							}}
+							options={EDITOR_WIDTH_OPTIONS}
 						/>
 					</SettingsRow>
 					<SettingsRow

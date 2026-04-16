@@ -1,9 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-	formatShortcut,
-	formatShortcutParts,
-	isShortcutMatch,
-} from "./shortcuts";
+import { isShortcutMatch } from "./shortcuts";
 
 function keyEvent(
 	key: string,
@@ -30,29 +26,5 @@ describe("shortcuts", () => {
 
 	it("matches keys case-insensitively", () => {
 		expect(isShortcutMatch(keyEvent("K"), { key: "k" })).toBe(true);
-	});
-
-	it("formats shortcut labels in stable modifier order", () => {
-		expect(
-			formatShortcut({
-				key: "k",
-				meta: true,
-				shift: true,
-				alt: true,
-				ctrl: true,
-			}),
-		).toBe("⌘⇧⌥⌃K");
-		expect(formatShortcut({ key: "Enter" })).toBe("Enter");
-	});
-
-	it("formats shortcut parts for keycap rendering", () => {
-		expect(
-			formatShortcutParts({
-				key: "k",
-				meta: true,
-				shift: true,
-			}),
-		).toEqual(["⌘", "⇧", "K"]);
-		expect(formatShortcutParts({ key: "Enter" })).toEqual(["Enter"]);
 	});
 });

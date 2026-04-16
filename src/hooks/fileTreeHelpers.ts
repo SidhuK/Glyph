@@ -14,7 +14,7 @@ export function normalizeRelPath(relPath: string): string {
 	return normalized.replace(/^\/+/, "").replace(/\/+$/, "");
 }
 
-export function entryNameFromRelPath(relPath: string): string {
+function entryNameFromRelPath(relPath: string): string {
 	const parts = relPath.split("/").filter(Boolean);
 	return parts[parts.length - 1] ?? "";
 }

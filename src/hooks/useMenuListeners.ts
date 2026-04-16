@@ -10,6 +10,7 @@ export interface UseMenuListenersProps {
 	onExportHtml: () => void;
 	onCloseTab: () => void;
 	onOpenSpace: () => void;
+	onOpenRecentSpaceAtPath: (path: string) => void | Promise<void>;
 	onCreateSpace: () => void;
 	closeSpace: () => Promise<void>;
 	onRevealSpace: () => void;
@@ -32,6 +33,7 @@ export function useMenuListeners({
 	onExportHtml,
 	onCloseTab,
 	onOpenSpace,
+	onOpenRecentSpaceAtPath,
 	onCreateSpace,
 	closeSpace,
 	onRevealSpace,
@@ -67,6 +69,12 @@ export function useMenuListeners({
 	const handleOpenSpace = useCallback(() => {
 		void onOpenSpace();
 	}, [onOpenSpace]);
+	const handleOpenRecentSpace = useCallback(
+		(payload: { path: string }) => {
+			void onOpenRecentSpaceAtPath(payload.path);
+		},
+		[onOpenRecentSpaceAtPath],
+	);
 	const handleCreateSpace = useCallback(() => {
 		void onCreateSpace();
 	}, [onCreateSpace]);
@@ -120,6 +128,7 @@ export function useMenuListeners({
 	useTauriEvent("menu:export_html", handleExportHtml);
 	useTauriEvent("menu:close_tab", handleCloseTab);
 	useTauriEvent("menu:open_space", handleOpenSpace);
+	useTauriEvent("menu:open_recent_space", handleOpenRecentSpace);
 	useTauriEvent("menu:create_space", handleCreateSpace);
 	useTauriEvent("menu:close_space", handleCloseSpace);
 	useTauriEvent("menu:reveal_space", handleRevealSpace);

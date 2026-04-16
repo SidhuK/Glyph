@@ -137,9 +137,9 @@ button.ribbonBtn.active {
 
 .editorBody .tiptapContent {
 	min-height: 100%;
-	max-width: var(--readable-content-max-width);
+	max-width: var(--editor-readable-content-max-width);
 	margin: 0 auto;
-	padding: var(--space-2) var(--readable-content-gutter) var(--space-7);
+	padding: var(--space-2) var(--editor-readable-content-gutter) var(--space-7);
 	font-size: var(--editor-font-size);
 	letter-spacing: 0;
 	line-height: 1.68;
@@ -151,9 +151,9 @@ button.ribbonBtn.active {
 /* Back-compat if the host ends up being the ProseMirror element */
 .editorBody .tiptap {
 	min-height: 100%;
-	max-width: var(--readable-content-max-width);
+	max-width: var(--editor-readable-content-max-width);
 	margin: 0 auto;
-	padding: var(--space-7) var(--readable-content-gutter);
+	padding: var(--space-7) var(--editor-readable-content-gutter);
 	overflow: visible;
 	letter-spacing: 0;
 	line-height: 1.68;
@@ -316,8 +316,8 @@ button.ribbonBtn.active {
 	width: min(
 		100%,
 		calc(
-			var(--readable-content-max-width) +
-			(2 * var(--readable-content-gutter))
+			var(--editor-readable-content-max-width) +
+			(2 * var(--editor-readable-content-gutter))
 		)
 	);
 	height: 100%;
@@ -328,7 +328,7 @@ button.ribbonBtn.active {
 	box-sizing: border-box;
 	border: none;
 	border-radius: 0;
-	padding: var(--space-6) var(--readable-content-gutter);
+	padding: var(--space-6) var(--editor-readable-content-gutter);
 	background: transparent;
 	color: var(--text-primary);
 	font-family: var(--font-mono);
@@ -368,12 +368,12 @@ button.ribbonBtn.active {
 	width: min(
 		100%,
 		calc(
-			var(--readable-content-max-width) +
-			(2 * var(--readable-content-gutter))
+			var(--editor-readable-content-max-width) +
+			(2 * var(--editor-readable-content-gutter))
 		)
 	);
 	margin: 0 auto;
-	padding: var(--space-6) var(--readable-content-gutter);
+	padding: var(--space-6) var(--editor-readable-content-gutter);
 	line-height: var(--leading-relaxed);
 	overflow: auto;
 }

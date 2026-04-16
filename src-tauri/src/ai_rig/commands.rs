@@ -93,21 +93,6 @@ pub fn refresh_provider_support_on_startup(app: AppHandle) {
     });
 }
 
-fn legacy_secret_aliases(store: &AiStore) -> Vec<(String, String)> {
-    store
-        .profiles
-        .iter()
-        .filter_map(|profile| {
-            let canonical = profile.provider.key().to_string();
-            if profile.id == canonical {
-                None
-            } else {
-                Some((profile.id.clone(), canonical))
-            }
-        })
-        .collect()
-}
-
 fn normalized_store(app: &AppHandle) -> Result<AiStore, String> {
     let path = store_path(app)?;
     let mut store = read_store(&path);
@@ -118,13 +103,10 @@ fn normalized_store(app: &AppHandle) -> Result<AiStore, String> {
 
 fn normalized_store_for_space(
     app: &AppHandle,
-    space_root: Option<&std::path::Path>,
+    _space_root: Option<&std::path::Path>,
 ) -> Result<AiStore, String> {
     let path = store_path(app)?;
     let mut store = read_store(&path);
-    if let Some(root) = space_root {
-        let _ = local_secrets::migrate_ids(root, &legacy_secret_aliases(&store));
-    }
     ensure_default_profiles(&mut store);
     let _ = write_store(&path, &store);
     Ok(store)
@@ -209,8 +191,10 @@ pub async fn ai_profile_delete(
         profile.base_url = None;
         profile.headers.clear();
         profile.reasoning_effort = None;
-        profile.allow_private_hosts =
-            matches!(profile.provider, super::types::AiProviderKind::Ollama);
+        profile.allow_private_hosts = matches!(
+            profile.provider,
+            super::types::AiProviderKind::Ollama | super::types::AiProviderKind::LlamaCpp
+        );
     }
     ensure_default_profiles(&mut store);
     write_store(&path, &store)?;
