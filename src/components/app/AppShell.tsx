@@ -91,7 +91,6 @@ import { isInAppPreviewable } from "../../utils/filePreview";
 import { isMarkdownPath } from "../../utils/path";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { FileHtml, LayoutAlignLeft } from "../Icons";
-import { AIFloatingHost } from "../ai/AIFloatingHost";
 import { dispatchAiContextAttach } from "../ai/aiContextEvents";
 import {
 	MARKDOWN_LINK_CLICK_EVENT,
@@ -188,13 +187,7 @@ export function AppShell() {
 		setSidebarWidth,
 		openSettings,
 	} = useUILayoutContext();
-	const {
-		aiEnabled,
-		aiPanelOpen,
-		setAiPanelOpen,
-		aiPanelWidth,
-		setAiPanelWidth,
-	} = useAISidebarContext();
+	const { aiEnabled, setAiPanelOpen } = useAISidebarContext();
 	const { getCurrentMarkdown, saveCurrentEditor } = useEditorContext();
 
 	const [paletteInitialTab, setPaletteInitialTab] = useState<
@@ -257,15 +250,6 @@ export function AppShell() {
 		onResize: setSidebarWidth,
 		currentWidth: sidebarWidth,
 	});
-	const aiResize = useResizablePanel({
-		min: 280,
-		max: 700,
-		disabled: !aiPanelOpen,
-		direction: "left",
-		onResize: setAiPanelWidth,
-		currentWidth: aiPanelWidth,
-	});
-
 	useEffect(() => {
 		let cancelled = false;
 		const idle = window.setTimeout(() => {
@@ -1716,7 +1700,6 @@ export function AppShell() {
 			className={cn(
 				"appShell",
 				sidebarCollapsed && "appShellSidebarCollapsed",
-				aiEnabled && aiPanelOpen && "appShellAiOpen",
 				zenModeActive && "appShellZenMode",
 			)}
 		>
@@ -1811,23 +1794,6 @@ export function AppShell() {
 				dailyNoteSetupNoticeRequest={dailyNoteSetupNoticeRequest}
 				onOpenDailyNotesSettings={() => openSettings("general")}
 			/>
-			{spacePath && aiEnabled && aiPanelOpen && !zenModeActive && (
-				<div
-					ref={aiResize.resizeRef}
-					className="sidebarResizeHandle"
-					onPointerDown={aiResize.handlePointerDown}
-					onPointerMove={aiResize.handlePointerMove}
-					onPointerUp={aiResize.handlePointerUp}
-					data-window-drag-ignore
-					style={{ cursor: "col-resize" }}
-				/>
-			)}
-			{spacePath && aiEnabled && !zenModeActive && (
-				<AIFloatingHost
-					isOpen={aiPanelOpen}
-					onToggle={() => setAiPanelOpen((v) => !v)}
-				/>
-			)}
 			<AnimatePresence>
 				{error && <div className="appError">{error}</div>}
 			</AnimatePresence>

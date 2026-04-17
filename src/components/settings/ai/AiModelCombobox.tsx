@@ -40,6 +40,7 @@ export function AiModelCombobox({
 	const [modelFetchState, setModelFetchState] = useState<ModelFetchState>(
 		INITIAL_MODEL_FETCH_STATE,
 	);
+	const requestTokenRef = useRef(`${profileId}:${provider}`);
 	const requiresApiKey = providerNeedsApiKey(provider);
 	const canFetchModels = !requiresApiKey || secretConfigured === true;
 	const visibleFetchState = canFetchModels
@@ -50,8 +51,15 @@ export function AiModelCombobox({
 	const modelFetchStateRef = useRef(modelFetchState);
 	modelFetchStateRef.current = modelFetchState;
 
+	useEffect(() => {
+		requestTokenRef.current = `${profileId}:${provider}`;
+		setModelFetchState(INITIAL_MODEL_FETCH_STATE);
+		onModelsChange?.(null);
+	}, [onModelsChange, profileId, provider]);
+
 	const fetchModels = useCallback(
 		async (force = false) => {
+			const requestToken = `${profileId}:${provider}`;
 			const current = modelFetchStateRef.current;
 			if (
 				!force &&
@@ -71,6 +79,7 @@ export function AiModelCombobox({
 					profile_id: profileId,
 					provider,
 				});
+				if (requestToken !== requestTokenRef.current) return;
 				setModelFetchState({
 					models: result,
 					loading: false,
@@ -79,6 +88,7 @@ export function AiModelCombobox({
 				});
 				onModelsChange?.(result);
 			} catch (e) {
+				if (requestToken !== requestTokenRef.current) return;
 				setModelFetchState({
 					models: null,
 					loading: false,

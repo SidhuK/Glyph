@@ -31,25 +31,43 @@ body {
 	overflow: hidden;
 }
 
-/* Scrollbars - rounded and subtle */
-::-webkit-scrollbar {
+/* Scrollbars - hidden until hover/focus for a cleaner surface */
+* {
+	scrollbar-width: thin;
+	scrollbar-color: color-mix(in srgb, var(--scrollbar-thumb) 32%, transparent)
+		transparent;
+}
+
+*:hover,
+*:focus-within {
+	scrollbar-color: var(--scrollbar-thumb) transparent;
+}
+
+*::-webkit-scrollbar {
 	width: 10px;
 	height: 10px;
 }
 
-::-webkit-scrollbar-track {
+*::-webkit-scrollbar-track {
 	background: transparent;
 	border-radius: var(--radius-full);
 }
 
-::-webkit-scrollbar-thumb {
-	background: var(--scrollbar-thumb);
+*::-webkit-scrollbar-thumb {
+	background: color-mix(in srgb, var(--scrollbar-thumb) 32%, transparent);
 	border-radius: var(--radius-full);
 	border: 2px solid transparent;
 	background-clip: padding-box;
+	transition: background-color var(--transition-fast);
 }
 
-::-webkit-scrollbar-thumb:hover {
+*:hover::-webkit-scrollbar-thumb,
+*:focus-within::-webkit-scrollbar-thumb {
+	background: var(--scrollbar-thumb);
+}
+
+*:hover::-webkit-scrollbar-thumb:hover,
+*:focus-within::-webkit-scrollbar-thumb:hover {
 	background: var(--scrollbar-thumb-hover);
 	border: 2px solid transparent;
 	background-clip: padding-box;

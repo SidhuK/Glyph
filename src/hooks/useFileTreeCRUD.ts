@@ -304,7 +304,7 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 	);
 
 	const onRenameDir = useCallback(
-		async (dirPath: string, nextName: string, kind: "dir" | "file" = "dir") => {
+		async (dirPath: string, nextName: string, kind: "dir" | "file") => {
 			const name = nextName.trim();
 			if (!name) return dirPath;
 			if (name === "." || name === "..") return null;

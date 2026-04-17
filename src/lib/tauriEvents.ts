@@ -4,6 +4,7 @@ import type {
 	AttachmentStorageMode,
 	AutoUpdateCheckInterval,
 	EditorWidthMode,
+	UiAccent,
 } from "./settings";
 import type { UiDarkThemeId, UiLightThemeId } from "./uiThemes";
 
@@ -66,13 +67,7 @@ type TauriEventMap = {
 			autoUpdateCheckInterval?: AutoUpdateCheckInterval;
 			lightThemeId?: UiLightThemeId;
 			darkThemeId?: UiDarkThemeId;
-			accent?:
-				| "neutral"
-				| "cerulean"
-				| "tropical-teal"
-				| "light-yellow"
-				| "soft-apricot"
-				| "vibrant-coral";
+			accent?: UiAccent;
 			fontFamily?: string;
 			monoFontFamily?: string;
 			fontSize?: number;
@@ -83,7 +78,6 @@ type TauriEventMap = {
 			showFileTreeFolderCounts?: boolean;
 			aiEnabled?: boolean;
 			aiAssistantMode?: "chat" | "create";
-			aiSidebarWidth?: number | null;
 		};
 		dailyNotes?: {
 			folder?: string | null;

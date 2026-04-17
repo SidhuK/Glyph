@@ -12,14 +12,62 @@ import {
 import { AiProfileSections } from "./ai/AiProfileSections";
 import { errMessage } from "./ai/utils";
 
+const MISSING_FILE_RETRY_DELAY_MS = 80;
+const IS_DEV = import.meta.env.DEV;
+
+const isMissingFileError = (error: unknown): boolean => {
+	// Upstream Tauri/Rust I/O surfaces missing profile files as "os error 2".
+	const message = errMessage(error).toLowerCase();
+	return (
+		message.includes("no such file or directory") ||
+		message.includes("os error 2")
+	);
+};
+
+async function setActiveProfileWithRetry(id: string | null) {
+	try {
+		await invoke("ai_active_profile_set", { id });
+	} catch (error) {
+		if (!isMissingFileError(error)) throw error;
+		if (IS_DEV) {
+			console.debug(
+				"[AiSettingsPane] ai_active_profile_set failed with missing-file error; retrying.",
+				error,
+			);
+		}
+		await new Promise((resolve) =>
+			window.setTimeout(resolve, MISSING_FILE_RETRY_DELAY_MS),
+		);
+		try {
+			await invoke("ai_active_profile_set", { id });
+		} catch (retryError) {
+			if (!isMissingFileError(retryError)) throw retryError;
+			if (IS_DEV) {
+				console.warn(
+					"[AiSettingsPane] ai_active_profile_set retry also failed with missing-file error.",
+					retryError,
+				);
+			}
+			throw retryError;
+		}
+	}
+}
+
 export function AiSettingsPane() {
 	const [aiEnabled, setAiEnabledState] = useState(true);
 	const [profiles, setProfiles] = useState<AiProfile[]>([]);
 	const [activeProfileId, setActiveProfileId] = useState<string | null>(null);
 	const [error, setError] = useState("");
+	const activeProfileIdRef = useRef<string | null>(null);
+	const pendingActiveProfileIdRef = useRef<string | null>(null);
 	const saveProfileRequestIdRef = useRef(0);
 	const activeProfileChangeRequestIdRef = useRef(0);
 	const reloadProfilesRequestIdRef = useRef(0);
+
+	const setActiveProfileIdTracked = useCallback((id: string | null) => {
+		activeProfileIdRef.current = id;
+		setActiveProfileId(id);
+	}, []);
 
 	const notifyAiProfilesUpdated = useCallback(async () => {
 		await emitTo("main", "ai:profiles-updated");
@@ -43,8 +91,15 @@ export function AiSettingsPane() {
 			]);
 			if (requestId !== reloadProfilesRequestIdRef.current) return;
 			setProfiles(list);
+			const pendingId = pendingActiveProfileIdRef.current;
+			const pendingStillValid =
+				pendingId != null && list.some((profile) => profile.id === pendingId);
+			if (pendingStillValid) {
+				// A provider switch is in flight — keep the pending selection.
+				return;
+			}
 			const id = resolveActiveProfileId(list, active);
-			setActiveProfileId(id);
+			setActiveProfileIdTracked(id);
 			if (active !== id && id) {
 				await invoke("ai_active_profile_set", { id });
 			}
@@ -52,7 +107,7 @@ export function AiSettingsPane() {
 			if (requestId !== reloadProfilesRequestIdRef.current) return;
 			setError(errMessage(e));
 		}
-	}, []);
+	}, [setActiveProfileIdTracked]);
 
 	useEffect(() => {
 		void reloadProfiles();
@@ -81,35 +136,44 @@ export function AiSettingsPane() {
 					profile: draft,
 				});
 				if (requestId !== saveProfileRequestIdRef.current) return;
-				await invoke("ai_active_profile_set", { id: saved.id });
-				if (requestId !== saveProfileRequestIdRef.current) return;
 				setProfiles((prev) => prev.map((p) => (p.id === saved.id ? saved : p)));
-				setActiveProfileId(saved.id);
+				if (activeProfileIdRef.current === saved.id) {
+					await setActiveProfileWithRetry(saved.id);
+					if (requestId !== saveProfileRequestIdRef.current) return;
+					setActiveProfileIdTracked(saved.id);
+				}
 				await notifyAiProfilesUpdated();
 			} catch (e) {
 				if (requestId !== saveProfileRequestIdRef.current) return;
 				setError(errMessage(e));
 			}
 		},
-		[notifyAiProfilesUpdated],
+		[notifyAiProfilesUpdated, setActiveProfileIdTracked],
 	);
 
 	const onActiveProfileChange = useCallback(
 		async (id: string | null) => {
-			const previous = activeProfileId;
+			const previous = activeProfileIdRef.current;
 			const requestId = ++activeProfileChangeRequestIdRef.current;
-			setActiveProfileId(id);
+			pendingActiveProfileIdRef.current = id;
+			setActiveProfileIdTracked(id);
 			setError("");
 			try {
-				await invoke("ai_active_profile_set", { id });
+				await setActiveProfileWithRetry(id);
+				if (requestId !== activeProfileChangeRequestIdRef.current) return;
 				await notifyAiProfilesUpdated();
+				if (requestId !== activeProfileChangeRequestIdRef.current) return;
+				if (pendingActiveProfileIdRef.current === id) {
+					pendingActiveProfileIdRef.current = null;
+				}
 			} catch (e) {
 				if (requestId !== activeProfileChangeRequestIdRef.current) return;
-				setActiveProfileId(previous);
+				pendingActiveProfileIdRef.current = null;
+				setActiveProfileIdTracked(previous);
 				setError(errMessage(e));
 			}
 		},
-		[activeProfileId, notifyAiProfilesUpdated],
+		[notifyAiProfilesUpdated, setActiveProfileIdTracked],
 	);
 
 	return (

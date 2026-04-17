@@ -14,7 +14,7 @@ import {
 	applyUiTypography,
 } from "./lib/appearance";
 import type { UiAccent, UiDarkThemeId, UiLightThemeId } from "./lib/settings";
-import { loadSettings, reloadFromDisk } from "./lib/settings";
+import { isUiAccent, loadSettings, reloadFromDisk } from "./lib/settings";
 import { invoke } from "./lib/tauri";
 import { useTauriEvent } from "./lib/tauriEvents";
 import { isUiDarkThemeId, isUiLightThemeId } from "./lib/uiThemes";
@@ -114,14 +114,7 @@ function ThemeAndTypographyBridge() {
 		if (isUiDarkThemeId(payload.ui?.darkThemeId)) {
 			setDarkThemeId(payload.ui.darkThemeId);
 		}
-		if (
-			payload.ui?.accent === "neutral" ||
-			payload.ui?.accent === "cerulean" ||
-			payload.ui?.accent === "tropical-teal" ||
-			payload.ui?.accent === "light-yellow" ||
-			payload.ui?.accent === "soft-apricot" ||
-			payload.ui?.accent === "vibrant-coral"
-		) {
+		if (isUiAccent(payload.ui?.accent)) {
 			setAccent(payload.ui.accent);
 		}
 		if (typeof payload.ui?.fontFamily === "string") {

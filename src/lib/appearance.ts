@@ -38,6 +38,7 @@ const BASE_EDITOR_TEXT_SIZES = {
 
 const UI_ACCENT_COLORS: Record<UiAccent, string> = {
 	neutral: "#2f2f2f",
+	"glyph-orange": "#ff9f0a",
 	cerulean: "#0081a7",
 	"tropical-teal": "#00afb9",
 	"light-yellow": "#fdfcdc",

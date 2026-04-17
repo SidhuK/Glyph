@@ -31,7 +31,6 @@ vi.mock("../lib/settings", () => ({
 	loadSettings: vi.fn(async () => ({
 		ui: {
 			aiEnabled: true,
-			aiSidebarWidth: 380,
 			aiAssistantMode: "create",
 			showToc: true,
 		},
@@ -40,7 +39,6 @@ vi.mock("../lib/settings", () => ({
 	})),
 	reloadFromDisk: vi.fn(async () => {}),
 	setAiAssistantMode: vi.fn(),
-	setAiSidebarWidth: vi.fn(),
 	setShowToc: vi.fn(),
 }));
 

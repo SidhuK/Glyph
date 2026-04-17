@@ -25,7 +25,7 @@ export interface UseFileTreeResult {
 	onRenameDir: (
 		path: string,
 		nextName: string,
-		kind?: "dir" | "file",
+		kind: "dir" | "file",
 	) => Promise<string | null>;
 	onDeletePath: (path: string, kind: "dir" | "file") => Promise<boolean>;
 	onMovePath: (fromPath: string, toDirPath: string) => Promise<string | null>;
