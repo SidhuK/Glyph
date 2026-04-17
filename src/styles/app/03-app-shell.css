@@ -36,9 +36,10 @@
 }
 
 :root[data-translucent-app-frame="false"] .appShell {
-	background: var(--bg-primary);
 	--app-frame-inline: 0px;
 	--app-frame-block: 0px;
+
+	background: var(--bg-primary);
 	border-width: 0;
 	border-color: transparent;
 	box-shadow: none;

@@ -267,7 +267,7 @@ interface MainContentProps {
 		onRenameDir: (
 			path: string,
 			nextName: string,
-			kind?: "dir" | "file",
+			kind: "dir" | "file",
 		) => Promise<string | null>;
 	};
 	onOpenFile: (relPath: string) => Promise<void>;

@@ -21,7 +21,7 @@ interface SidebarProps {
 	onRenameDir: (
 		dirPath: string,
 		nextName: string,
-		kind?: "dir" | "file",
+		kind: "dir" | "file",
 	) => Promise<string | null>;
 	onDeletePath: (path: string, kind: "dir" | "file") => Promise<boolean>;
 	onSelectTag: (tag: string) => void;

@@ -52,6 +52,7 @@ export function AIFloatingHost({ isOpen, onToggle }: AIFloatingHostProps) {
 		startWidth: number;
 		startHeight: number;
 	} | null>(null);
+	const stopResizeRef = useRef<() => void>(() => {});
 
 	const clampSize = useCallback((width: number, height: number) => {
 		const maxWidth = Math.max(
@@ -95,11 +96,16 @@ export function AIFloatingHost({ isOpen, onToggle }: AIFloatingHostProps) {
 		[clampSize],
 	);
 
+	const handlePointerUp = useCallback(() => {
+		stopResizeRef.current();
+	}, []);
+
 	const stopResize = useCallback(() => {
 		resizeStateRef.current = null;
 		window.removeEventListener("pointermove", handlePointerMove);
-		window.removeEventListener("pointerup", stopResize);
-	}, [handlePointerMove]);
+		window.removeEventListener("pointerup", handlePointerUp);
+	}, [handlePointerMove, handlePointerUp]);
+	stopResizeRef.current = stopResize;
 
 	const startResize = useCallback(
 		(direction: ResizeDirection, event: ReactPointerEvent<HTMLDivElement>) => {
@@ -113,9 +119,9 @@ export function AIFloatingHost({ isOpen, onToggle }: AIFloatingHostProps) {
 				startHeight: panelSize.height,
 			};
 			window.addEventListener("pointermove", handlePointerMove);
-			window.addEventListener("pointerup", stopResize);
+			window.addEventListener("pointerup", handlePointerUp);
 		},
-		[handlePointerMove, panelSize.height, panelSize.width, stopResize],
+		[handlePointerMove, handlePointerUp, panelSize.height, panelSize.width],
 	);
 
 	useEffect(() => {
@@ -141,9 +147,9 @@ export function AIFloatingHost({ isOpen, onToggle }: AIFloatingHostProps) {
 		window.addEventListener("resize", onWindowResize);
 		return () => {
 			window.removeEventListener("resize", onWindowResize);
-			stopResize();
+			stopResizeRef.current();
 		};
-	}, [clampSize, stopResize]);
+	}, [clampSize]);
 
 	return (
 		<div className="aiFloatingWindowHost" data-window-drag-ignore>

@@ -56,6 +56,10 @@ const UI_ACCENTS = new Set<UiAccent>([
 	"soft-apricot",
 	"vibrant-coral",
 ]);
+
+export function isUiAccent(value: unknown): value is UiAccent {
+	return typeof value === "string" && UI_ACCENTS.has(value as UiAccent);
+}
 const DEFAULT_UI_ACCENT: UiAccent = "cerulean";
 const DEFAULT_UI_FONT_FAMILY = "Satoshi";
 const DEFAULT_UI_MONO_FONT_FAMILY = "JetBrains Mono";
@@ -175,9 +179,7 @@ function asEditorWidthMode(value: unknown): EditorWidthMode {
 }
 
 function asUiAccent(value: unknown): UiAccent {
-	return typeof value === "string" && UI_ACCENTS.has(value as UiAccent)
-		? (value as UiAccent)
-		: DEFAULT_UI_ACCENT;
+	return isUiAccent(value) ? value : DEFAULT_UI_ACCENT;
 }
 
 function asUiFontFamily(value: unknown): UiFontFamily {

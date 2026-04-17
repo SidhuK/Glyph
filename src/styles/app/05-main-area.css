@@ -532,7 +532,6 @@
 	overflow: hidden;
 	transition: background-color 120ms ease, outline-color 120ms ease, transform
 		120ms ease;
-	align-content: flex-start;
 }
 
 .allDocsCard:hover .allDocsCardSurface {
@@ -566,8 +565,8 @@
 	gap: 2px;
 	flex: 1 1 auto;
 	min-height: 0;
-	font-size: 0.64rem;
-	line-height: 1.34;
+	font-size: 0.76rem;
+	line-height: 1.4;
 	color: var(--text-secondary);
 	overflow: hidden;
 	overflow-wrap: anywhere;

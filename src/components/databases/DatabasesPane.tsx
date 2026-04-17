@@ -664,29 +664,38 @@ function DatabasesPaneContent({
 				(column) => column.type === "title",
 			);
 			if (!titleColumn) return false;
+			const originalName = notePath.split("/").pop()?.trim() || "Untitled.md";
+			let renamedPath: string | null = null;
 			try {
 				let targetPath = notePath;
 				if (onRenameNotePath) {
 					const nextName = fileNameFromTitle(notePath, title);
-					const renamedPath = await onRenameNotePath(notePath, nextName);
+					renamedPath = await onRenameNotePath(notePath, nextName);
 					if (!renamedPath) return false;
 					targetPath = renamedPath;
-					if (renamedPath !== notePath) {
-						setRows((current) =>
-							current.filter((row) => row.note_path !== notePath),
-						);
-					}
-					setSelectedRowPath((current) =>
-						current === notePath ? renamedPath : current,
-					);
 				}
 				await handleUpdateCell(targetPath, titleColumn, {
 					kind: "text",
 					value_text: title,
 					value_list: [],
 				});
+				if (renamedPath && renamedPath !== notePath) {
+					setRows((current) =>
+						current.filter((row) => row.note_path !== notePath),
+					);
+					setSelectedRowPath((current) =>
+						current === notePath ? renamedPath : current,
+					);
+				}
 				return true;
 			} catch (cause) {
+				if (onRenameNotePath && renamedPath && renamedPath !== notePath) {
+					try {
+						await onRenameNotePath(renamedPath, originalName);
+					} catch {
+						// Keep the original error path; rollback is best effort.
+					}
+				}
 				setError(extractErrorMessage(cause));
 				return false;
 			}

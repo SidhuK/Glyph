@@ -24,6 +24,7 @@ import {
 	useRef,
 	useState,
 } from "react";
+import { normalizeInlineMarkdown } from "../../lib/markdownUtils";
 import {
 	getPrefetchedAllDocs,
 	invalidateAllDocsPrefetch,
@@ -74,28 +75,6 @@ function folderLabel(notePath: string): string {
 	return parts.slice(0, -1).join(" / ");
 }
 
-function normalizeInlineMarkdown(text: string): string {
-	const withoutImages = text.replace(
-		/!\[([^\]]*)\]\((?:[^()\\]|\\.)*\)/g,
-		"$1",
-	);
-	const withoutLinks = withoutImages.replace(
-		/\[([^\]]+)\]\((?:[^()\\]|\\.)*\)/g,
-		"$1",
-	);
-	const withoutWikiLinks = withoutLinks.replace(
-		/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g,
-		(_, target: string, label?: string) => (label ?? target).trim(),
-	);
-	const withoutInlineCode = withoutWikiLinks.replace(/`([^`]+)`/g, "$1");
-	return withoutInlineCode
-		.replace(/(\*\*|__)(.*?)\1/g, "$2")
-		.replace(/(\*|_)(.*?)\1/g, "$2")
-		.replace(/~~(.*?)~~/g, "$1")
-		.replace(/\s+/g, " ")
-		.trim();
-}
-
 type PreviewLineKind = "heading" | "quote" | "list" | "code" | "body";
 
 type PreviewLine = {
@@ -136,16 +115,18 @@ function previewLines(preview: string, title: string): PreviewLine[] {
 			continue;
 		}
 
-		const listMatch = line.match(/^(?:[-*+]|\d+\.)\s+(.*)$/);
-		if (listMatch?.[1]) {
-			const text = normalizeInlineMarkdown(listMatch[1]);
+		const taskMatch = line.match(
+			/^(?:(?:[-*+]|\d+\.)\s+)?\[(?: |x|X)\]\s+(.*)$/,
+		);
+		if (taskMatch?.[1]) {
+			const text = normalizeInlineMarkdown(taskMatch[1]);
 			if (text) parsed.push({ kind: "list", text });
 			continue;
 		}
 
-		const taskMatch = line.match(/^\[(?: |x|X)\]\s+(.*)$/);
-		if (taskMatch?.[1]) {
-			const text = normalizeInlineMarkdown(taskMatch[1]);
+		const listMatch = line.match(/^(?:[-*+]|\d+\.)\s+(.*)$/);
+		if (listMatch?.[1]) {
+			const text = normalizeInlineMarkdown(listMatch[1]);
 			if (text) parsed.push({ kind: "list", text });
 			continue;
 		}

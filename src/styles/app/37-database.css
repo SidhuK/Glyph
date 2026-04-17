@@ -1497,7 +1497,8 @@
 .databaseTagEditor .databaseTagSuggestions {
 	position: absolute;
 	top: calc(100% + 4px);
-	left: 0;
+	left: auto;
+	right: 0;
 	z-index: 30;
 	display: flex;
 	flex-direction: column;
@@ -1554,6 +1555,7 @@
 
 .databaseCellPillMore {
 	--database-tone: var(--text-tertiary);
+
 	flex: 0 0 auto;
 }
 

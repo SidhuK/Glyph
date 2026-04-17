@@ -4,6 +4,7 @@ import type {
 	AttachmentStorageMode,
 	AutoUpdateCheckInterval,
 	EditorWidthMode,
+	UiAccent,
 } from "./settings";
 import type { UiDarkThemeId, UiLightThemeId } from "./uiThemes";
 
@@ -66,14 +67,7 @@ type TauriEventMap = {
 			autoUpdateCheckInterval?: AutoUpdateCheckInterval;
 			lightThemeId?: UiLightThemeId;
 			darkThemeId?: UiDarkThemeId;
-			accent?:
-				| "neutral"
-				| "glyph-orange"
-				| "cerulean"
-				| "tropical-teal"
-				| "light-yellow"
-				| "soft-apricot"
-				| "vibrant-coral";
+			accent?: UiAccent;
 			fontFamily?: string;
 			monoFontFamily?: string;
 			fontSize?: number;

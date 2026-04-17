@@ -12,7 +12,11 @@ import {
 import { AiProfileSections } from "./ai/AiProfileSections";
 import { errMessage } from "./ai/utils";
 
+const MISSING_FILE_RETRY_DELAY_MS = 80;
+const IS_DEV = import.meta.env.DEV;
+
 const isMissingFileError = (error: unknown): boolean => {
+	// Upstream Tauri/Rust I/O surfaces missing profile files as "os error 2".
 	const message = errMessage(error).toLowerCase();
 	return (
 		message.includes("no such file or directory") ||
@@ -25,8 +29,27 @@ async function setActiveProfileWithRetry(id: string | null) {
 		await invoke("ai_active_profile_set", { id });
 	} catch (error) {
 		if (!isMissingFileError(error)) throw error;
-		await new Promise((resolve) => window.setTimeout(resolve, 80));
-		await invoke("ai_active_profile_set", { id });
+		if (IS_DEV) {
+			console.debug(
+				"[AiSettingsPane] ai_active_profile_set failed with missing-file error; retrying.",
+				error,
+			);
+		}
+		await new Promise((resolve) =>
+			window.setTimeout(resolve, MISSING_FILE_RETRY_DELAY_MS),
+		);
+		try {
+			await invoke("ai_active_profile_set", { id });
+		} catch (retryError) {
+			if (!isMissingFileError(retryError)) throw retryError;
+			if (IS_DEV) {
+				console.warn(
+					"[AiSettingsPane] ai_active_profile_set retry also failed with missing-file error.",
+					retryError,
+				);
+			}
+			throw retryError;
+		}
 	}
 }
 

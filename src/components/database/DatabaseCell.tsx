@@ -361,8 +361,8 @@ function DatabaseCellEditor({
 		try {
 			if (column.type === "title" && onRenameTitle) {
 				const renamed = await onRenameTitle(row.note_path, draft.trim());
-				if (!renamed) return;
 				onClose();
+				if (!renamed) return;
 				return;
 			}
 			if (column.type === "tags" || column.property_kind === "tags") {
@@ -574,13 +574,14 @@ function DatabaseCellEditor({
 							}
 							void (async () => {
 								try {
-									if (valueDraft.trim()) {
-										await addListValue(valueDraft);
+									if (!valueDraft.trim()) {
+										onClose();
+										return;
 									}
+									await addListValue(valueDraft);
+									onClose();
 								} catch (error) {
 									setSaveError(extractErrorMessage(error));
-								} finally {
-									onClose();
 								}
 							})();
 						}}

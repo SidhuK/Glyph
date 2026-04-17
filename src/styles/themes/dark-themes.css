@@ -7,7 +7,11 @@
 	--glyph-inline-color-blue: #85b8ff;
 	--glyph-inline-color-purple: #b8acf6;
 	--glyph-inline-color-red: #ff9c8f;
-	--pill-contrast-fg: #ffffff;
+	--pill-contrast-fg: color-mix(
+		in srgb,
+		var(--text-primary, #f3f5f8) 94%,
+		#ffffff
+	);
 
 	--shadow-sm: inset 0 1px 0 rgba(255, 255, 255, 0.02), 0 0px 0
 		rgba(0, 0, 0, 0.25);
