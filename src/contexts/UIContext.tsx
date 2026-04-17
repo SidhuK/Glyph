@@ -17,7 +17,6 @@ import {
 	loadSettings,
 	reloadFromDisk,
 	setAiAssistantMode as saveAiAssistantMode,
-	setAiSidebarWidth as saveAiSidebarWidth,
 	setShowToc as saveShowToc,
 } from "../lib/settings";
 import type { SearchResult } from "../lib/tauri";
@@ -57,8 +56,6 @@ export interface AISidebarContextValue {
 	aiEnabled: boolean;
 	aiPanelOpen: boolean;
 	setAiPanelOpen: Dispatch<SetStateAction<boolean>>;
-	aiPanelWidth: number;
-	setAiPanelWidth: (width: number) => void;
 	aiAssistantMode: AiAssistantMode;
 	setAiAssistantMode: (mode: AiAssistantMode) => void;
 }
@@ -98,7 +95,6 @@ type UIState = {
 	settingsTab: SettingsTab;
 	aiEnabled: boolean;
 	aiPanelOpen: boolean;
-	aiPanelWidth: number;
 	aiAssistantMode: AiAssistantMode;
 	zenStateSnapshot: {
 		sidebarCollapsed: boolean;
@@ -121,7 +117,6 @@ type UIAction =
 	| { type: "setShowToc"; value: boolean }
 	| { type: "setAiEnabled"; value: boolean }
 	| { type: "setAiPanelOpen"; value: SetStateAction<boolean> }
-	| { type: "setAiPanelWidth"; value: number }
 	| { type: "setAiAssistantMode"; value: AiAssistantMode }
 	| { type: "openSettings"; tab?: SettingsTab }
 	| { type: "closeSettings" }
@@ -130,7 +125,6 @@ type UIAction =
 	| {
 			type: "hydrateSettings";
 			aiEnabled: boolean;
-			aiPanelWidth?: number;
 			aiAssistantMode: AiAssistantMode;
 			dailyNotesFolder: string | null;
 			templateFolder: string | null;
@@ -155,7 +149,6 @@ const initialUIState: UIState = {
 	settingsTab: "general" as SettingsTab,
 	aiEnabled: true,
 	aiPanelOpen: false,
-	aiPanelWidth: 380,
 	aiAssistantMode: "create",
 	zenStateSnapshot: null,
 };
@@ -245,8 +238,6 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 						? action.value(state.aiPanelOpen)
 						: action.value,
 			};
-		case "setAiPanelWidth":
-			return { ...state, aiPanelWidth: action.value };
 		case "setAiAssistantMode":
 			return { ...state, aiAssistantMode: action.value };
 		case "openSettings":
@@ -280,7 +271,6 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 				...state,
 				aiEnabled: action.aiEnabled,
 				aiPanelOpen: action.aiEnabled ? state.aiPanelOpen : false,
-				aiPanelWidth: action.aiPanelWidth ?? state.aiPanelWidth,
 				aiAssistantMode: action.aiAssistantMode,
 				dailyNotesFolder: action.dailyNotesFolder,
 				templateFolder: action.templateFolder,
@@ -312,7 +302,6 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		settingsTab,
 		aiEnabled,
 		aiPanelOpen,
-		aiPanelWidth,
 		aiAssistantMode,
 	} = state;
 
@@ -328,10 +317,6 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		const nextMode = payload.ui?.aiAssistantMode;
 		if (nextMode === "chat" || nextMode === "create") {
 			dispatch({ type: "setAiAssistantMode", value: nextMode });
-		}
-		const nextWidth = payload.ui?.aiSidebarWidth;
-		if (typeof nextWidth === "number" && Number.isFinite(nextWidth)) {
-			dispatch({ type: "setAiPanelWidth", value: nextWidth });
 		}
 		const nextShowToc = payload.ui?.showToc;
 		if (typeof nextShowToc === "boolean") {
@@ -366,10 +351,6 @@ export function UIProvider({ children }: { children: ReactNode }) {
 				dispatch({
 					type: "hydrateSettings",
 					aiEnabled: s.ui.aiEnabled,
-					aiPanelWidth:
-						typeof s.ui.aiSidebarWidth === "number"
-							? s.ui.aiSidebarWidth
-							: undefined,
 					aiAssistantMode: s.ui.aiAssistantMode,
 					dailyNotesFolder: s.dailyNotes?.folder ?? null,
 					templateFolder: s.templates?.folder ?? null,
@@ -431,11 +412,6 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			cancelled = true;
 		};
 	}, [spacePath]);
-
-	const setAiPanelWidth = useCallback((width: number) => {
-		dispatch({ type: "setAiPanelWidth", value: width });
-		void saveAiSidebarWidth(width);
-	}, []);
 
 	const setAiAssistantMode = useCallback((mode: AiAssistantMode) => {
 		dispatch({ type: "setAiAssistantMode", value: mode });
@@ -586,8 +562,6 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			aiEnabled,
 			aiPanelOpen,
 			setAiPanelOpen,
-			aiPanelWidth,
-			setAiPanelWidth,
 			aiAssistantMode,
 			setAiAssistantMode,
 		}),
@@ -595,8 +569,6 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			aiEnabled,
 			aiPanelOpen,
 			setAiPanelOpen,
-			aiPanelWidth,
-			setAiPanelWidth,
 			aiAssistantMode,
 			setAiAssistantMode,
 		],

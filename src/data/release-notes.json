@@ -4,25 +4,34 @@
 			"version": "0.2.8",
 			"publishedAt": "2026-04-19",
 			"sections": [
-				{
-					"category": "Added",
-					"items": [
-						"Print notes to PDF. Save any note as a PDF for sharing, archiving, or offline reading",
-					"Optional Vim keybindings. Power users can now move through notes, edit faster, and stay in flow with familiar Vim-style controls",
-						"Switch spaces instantly from the menubar or sidebar for faster navigation between your workspaces",
-						"Native llama.cpp support. Run blazing-fast local LLMs with zero configuration, perfect for privacy-first users who want AI on their own terms",
-						"Adjustable editor width. Choose Narrow for focused reading, Comfortable for balanced composition, or Wide to harness your full screen while writing"
-					]
-				},
-				{
-					"category": "Improved",
-					"items": [
-						"Command palette got a cleaner layout with smarter organization so you can find what you need faster",
-						"Appearance settings now live in one tidy Icon & Color submenu with colors up top and icons below",
-						"Pruned a bunch of old unused code so the app stays lean and runs smoother"
-					]
-				}
-			]
+        {
+          "category": "Added",
+          "items": [
+            "Print notes to PDF. Save any note as a PDF for sharing, archiving, or offline reading",
+            "Optional Vim keybindings. Power users can now move through notes, edit faster, and stay in flow with familiar Vim-style controls",
+            "Switch spaces instantly from the menubar or sidebar for faster navigation between your workspaces",
+            "Native llama.cpp support. Run blazing-fast local LLMs with zero configuration, perfect for privacy-first users who want AI on their own terms",
+            "Adjustable editor width. Choose Narrow for focused reading, Comfortable for balanced composition, or Wide to harness your full screen while writing"
+          ]
+        },
+        {
+          "category": "Improved",
+          "items": [
+            "Command palette got a cleaner layout with smarter organization so you can find what you need faster",
+            "Appearance settings now live in one tidy Icon & Color submenu with colors up top and icons below",
+            "Pruned a bunch of old unused code so the app stays lean and runs smoother",
+            "Cleaned All Notes UI for better readability and easier scanning of your note list",
+            "Notes Cards inside All Notes UI now show preview with formatting and not just raw markdown",
+            "Notes Cards inside Kanban boards also now show preview with formatting and not just raw markdown",
+			"AI moved from a sidebar to a floating panel inside the editor, so you can chat and write in one focused workspace",
+			"Improved Readability for Tags and Pills with better contrast and clearer styling"
+		]
+        },
+        {
+          "category": "Fixed",
+          "items": ["Bug that wouldn't let some users switch AI providers in the settings is now fixed."]
+        }
+      ]
 		},
 		{
 			"version": "0.2.7",

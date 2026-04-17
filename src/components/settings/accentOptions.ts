@@ -1,6 +1,7 @@
 import type { UiAccent } from "../../lib/settings";
 
 const ACCENT_COLOR_MAP: Record<Exclude<UiAccent, "neutral">, string> = {
+	"glyph-orange": "#ff9f0a",
 	cerulean: "#0081a7",
 	"tropical-teal": "#00afb9",
 	"light-yellow": "#fdfcdc",
@@ -14,6 +15,11 @@ export const ACCENT_OPTIONS: Array<{
 	color: string;
 }> = [
 	{ id: "neutral", label: "Neutral", color: "var(--text-primary)" },
+	{
+		id: "glyph-orange",
+		label: "Orange",
+		color: ACCENT_COLOR_MAP["glyph-orange"],
+	},
 	{ id: "cerulean", label: "Cerulean", color: ACCENT_COLOR_MAP.cerulean },
 	{
 		id: "tropical-teal",

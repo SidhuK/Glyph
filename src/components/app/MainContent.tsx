@@ -53,6 +53,7 @@ import { useTauriEvent } from "../../lib/tauriEvents";
 import { TEMPLATES_TAB_ID } from "../../lib/templatesView";
 import { isInAppPreviewable } from "../../utils/filePreview";
 import { Calendar, FileText, Settings } from "../Icons";
+import { AIFloatingHost } from "../ai/AIFloatingHost";
 import { FilePreviewPane } from "../preview/FilePreviewPane";
 import { NotePane } from "../preview/NotePane";
 import { AboutSettingsPane } from "../settings/AboutSettingsPane";
@@ -263,6 +264,11 @@ function ContextualEmptyState({
 interface MainContentProps {
 	fileTree: {
 		openNonMarkdownExternally: (relPath: string) => Promise<void>;
+		onRenameDir: (
+			path: string,
+			nextName: string,
+			kind?: "dir" | "file",
+		) => Promise<string | null>;
 	};
 	onOpenFile: (relPath: string) => Promise<void>;
 	onOpenCommandPalette: () => void;
@@ -638,6 +644,9 @@ export const MainContent = memo(function MainContent({
 				>
 					<DatabasesPane
 						onOpenFile={onOpenFile}
+						onRenameNotePath={(notePath, nextName) =>
+							fileTree.onRenameDir(notePath, nextName, "file")
+						}
 						initialDatabaseId={initialDatabaseId}
 						initialDocument={initialDocument}
 						initialRows={initialRows}
@@ -845,6 +854,12 @@ export const MainContent = memo(function MainContent({
 							)}
 						</div>
 					)}
+					{aiEnabled && !zenModeActive ? (
+						<AIFloatingHost
+							isOpen={aiPanelOpen}
+							onToggle={() => setAiPanelOpen((open) => !open)}
+						/>
+					) : null}
 					{aiEnabled && !aiPanelOpen && !zenModeActive ? (
 						<button
 							type="button"

@@ -41,6 +41,7 @@ const ATTACHMENT_STORAGE_MODES = new Set<AttachmentStorageMode>([
 ]);
 export type UiAccent =
 	| "neutral"
+	| "glyph-orange"
 	| "cerulean"
 	| "tropical-teal"
 	| "light-yellow"
@@ -48,13 +49,14 @@ export type UiAccent =
 	| "vibrant-coral";
 const UI_ACCENTS = new Set<UiAccent>([
 	"neutral",
+	"glyph-orange",
 	"cerulean",
 	"tropical-teal",
 	"light-yellow",
 	"soft-apricot",
 	"vibrant-coral",
 ]);
-const DEFAULT_UI_ACCENT: UiAccent = "neutral";
+const DEFAULT_UI_ACCENT: UiAccent = "cerulean";
 const DEFAULT_UI_FONT_FAMILY = "Satoshi";
 const DEFAULT_UI_MONO_FONT_FAMILY = "JetBrains Mono";
 const DEFAULT_AUTO_UPDATE_CHECK_INTERVAL: AutoUpdateCheckInterval = "3h";
@@ -232,7 +234,6 @@ async function emitSettingsUpdated(payload: {
 		showFileTreeFolderCounts?: boolean;
 		aiAssistantMode?: AiAssistantMode;
 		aiEnabled?: boolean;
-		aiSidebarWidth?: number | null;
 	};
 	dailyNotes?: {
 		folder?: string | null;
@@ -282,7 +283,6 @@ interface AppSettings {
 	onboarding: OnboardingSettings;
 	ui: {
 		aiEnabled: boolean;
-		aiSidebarWidth: number | null;
 		theme: ThemeMode;
 		autoUpdateCheckInterval: AutoUpdateCheckInterval;
 		lightThemeId: UiLightThemeId;
@@ -320,7 +320,6 @@ const KEYS = {
 	recentSpaces: "space.recent",
 	recentFiles: "files.recent",
 	aiEnabled: "ui.aiEnabled",
-	aiSidebarWidth: "ui.aiSidebarWidth",
 	aiAssistantMode: "ui.aiAssistantMode",
 	theme: "ui.theme",
 	autoUpdateCheckInterval: "ui.autoUpdateCheckInterval",
@@ -425,7 +424,6 @@ export async function loadSettings(): Promise<AppSettings> {
 		rawOnboardingUsedCommandPalette,
 		rawOnboardingOpenedDailyNote,
 		rawAiEnabled,
-		aiSidebarWidthRaw,
 		rawAiAssistantMode,
 		rawTheme,
 		rawAutoUpdateCheckInterval,
@@ -464,7 +462,6 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<boolean | null>(KEYS.onboardingUsedCommandPalette),
 		store.get<boolean | null>(KEYS.onboardingOpenedDailyNote),
 		store.get<boolean | null>(KEYS.aiEnabled),
-		store.get<number | null>(KEYS.aiSidebarWidth),
 		store.get<unknown>(KEYS.aiAssistantMode),
 		store.get<unknown>(KEYS.theme),
 		store.get<unknown>(KEYS.autoUpdateCheckInterval),
@@ -506,7 +503,6 @@ export async function loadSettings(): Promise<AppSettings> {
 	};
 	const aiEnabled =
 		typeof rawAiEnabled === "boolean" ? rawAiEnabled : DEFAULT_AI_ENABLED;
-	const aiSidebarWidth = aiSidebarWidthRaw ?? null;
 	const aiAssistantMode = asAiAssistantMode(rawAiAssistantMode);
 	const theme = asThemeMode(rawTheme);
 	const autoUpdateCheckInterval = asAutoUpdateCheckInterval(
@@ -593,10 +589,6 @@ export async function loadSettings(): Promise<AppSettings> {
 		onboarding,
 		ui: {
 			aiEnabled,
-			aiSidebarWidth:
-				typeof aiSidebarWidth === "number" && Number.isFinite(aiSidebarWidth)
-					? aiSidebarWidth
-					: null,
 			theme,
 			autoUpdateCheckInterval,
 			lightThemeId,
@@ -661,15 +653,6 @@ export async function updateOnboardingSettings(
 	void emitSettingsUpdated({
 		onboarding: Object.fromEntries(entries) as Partial<OnboardingSettings>,
 	});
-}
-
-export async function setAiSidebarWidth(width: number): Promise<void> {
-	const store = await getStore();
-	if (!Number.isFinite(width)) return;
-	const next = Math.floor(width);
-	await store.set(KEYS.aiSidebarWidth, next);
-	await store.save();
-	void emitSettingsUpdated({ ui: { aiSidebarWidth: next } });
 }
 
 export async function setAiAssistantMode(mode: AiAssistantMode): Promise<void> {

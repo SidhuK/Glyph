@@ -14,7 +14,6 @@ import {
 } from "date-fns";
 import { m, useReducedMotion } from "motion/react";
 import {
-	type CSSProperties,
 	type Dispatch,
 	type ReactNode,
 	type SetStateAction,
@@ -48,11 +47,6 @@ interface AllDocsPaneProps {
 	dailyNotesFolder?: string | null;
 }
 
-const CARD_STYLE = {
-	minHeight: "264px",
-	borderRadius: "18px",
-} satisfies CSSProperties;
-
 function normalizeFolderPrefix(value: string | null): string | null {
 	if (typeof value !== "string") return null;
 	const normalized = value
@@ -80,23 +74,103 @@ function folderLabel(notePath: string): string {
 	return parts.slice(0, -1).join(" / ");
 }
 
-function previewText(preview: string, title: string): string {
-	const normalized = preview.replace(/\s+/g, " ").trim();
-	if (!normalized) return "";
-	if (normalized.toLowerCase().startsWith(title.toLowerCase())) {
-		return normalized
-			.slice(title.length)
-			.replace(/^[-:.\s]+/, "")
-			.trim();
-	}
-	return normalized;
+function normalizeInlineMarkdown(text: string): string {
+	const withoutImages = text.replace(
+		/!\[([^\]]*)\]\((?:[^()\\]|\\.)*\)/g,
+		"$1",
+	);
+	const withoutLinks = withoutImages.replace(
+		/\[([^\]]+)\]\((?:[^()\\]|\\.)*\)/g,
+		"$1",
+	);
+	const withoutWikiLinks = withoutLinks.replace(
+		/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g,
+		(_, target: string, label?: string) => (label ?? target).trim(),
+	);
+	const withoutInlineCode = withoutWikiLinks.replace(/`([^`]+)`/g, "$1");
+	return withoutInlineCode
+		.replace(/(\*\*|__)(.*?)\1/g, "$2")
+		.replace(/(\*|_)(.*?)\1/g, "$2")
+		.replace(/~~(.*?)~~/g, "$1")
+		.replace(/\s+/g, " ")
+		.trim();
 }
 
-function updatedLabel(iso: string): string {
+type PreviewLineKind = "heading" | "quote" | "list" | "code" | "body";
+
+type PreviewLine = {
+	kind: PreviewLineKind;
+	text: string;
+};
+
+function previewLines(preview: string, title: string): PreviewLine[] {
+	const lines = preview.replace(/\r\n?/g, "\n").split("\n");
+	const parsed: PreviewLine[] = [];
+	let inFence = false;
+
+	for (const raw of lines) {
+		const line = raw.trim();
+		if (!line) continue;
+		if (/^```/.test(line)) {
+			inFence = !inFence;
+			continue;
+		}
+
+		if (inFence) {
+			const text = normalizeInlineMarkdown(line);
+			if (text) parsed.push({ kind: "code", text });
+			continue;
+		}
+
+		const headingMatch = line.match(/^#{1,6}\s+(.*)$/);
+		if (headingMatch?.[1]) {
+			const text = normalizeInlineMarkdown(headingMatch[1]);
+			if (text) parsed.push({ kind: "heading", text });
+			continue;
+		}
+
+		const quoteMatch = line.match(/^>\s?(.*)$/);
+		if (quoteMatch?.[1]) {
+			const text = normalizeInlineMarkdown(quoteMatch[1]);
+			if (text) parsed.push({ kind: "quote", text });
+			continue;
+		}
+
+		const listMatch = line.match(/^(?:[-*+]|\d+\.)\s+(.*)$/);
+		if (listMatch?.[1]) {
+			const text = normalizeInlineMarkdown(listMatch[1]);
+			if (text) parsed.push({ kind: "list", text });
+			continue;
+		}
+
+		const taskMatch = line.match(/^\[(?: |x|X)\]\s+(.*)$/);
+		if (taskMatch?.[1]) {
+			const text = normalizeInlineMarkdown(taskMatch[1]);
+			if (text) parsed.push({ kind: "list", text });
+			continue;
+		}
+
+		const text = normalizeInlineMarkdown(line);
+		if (text) parsed.push({ kind: "body", text });
+	}
+
+	const filtered = parsed.filter((line) => {
+		const lower = line.text.toLowerCase();
+		const lowerTitle = title.trim().toLowerCase();
+		return !(lowerTitle && lower.startsWith(lowerTitle));
+	});
+
+	return filtered;
+}
+
+function updatedTimeframe(iso: string): string {
 	try {
-		return `Updated ${formatDistanceToNow(new Date(iso), { addSuffix: true })}`;
+		return formatDistanceToNow(new Date(iso), { addSuffix: true })
+			.replace(/^about\s+/i, "")
+			.replace(/\s+ago$/i, "")
+			.replace(/^in\s+/i, "");
 	} catch {
-		return "Recently updated";
+		return "recently";
 	}
 }
 
@@ -377,26 +451,26 @@ export const AllDocsPane = memo(function AllDocsPane({
 							{section.notes.map((note, index) => {
 								const noteTitle =
 									note.title.trim() || titleFromPath(note.note_path);
-								const preview = previewText(note.preview, noteTitle);
-								const visibleTags = note.tags.slice(0, 3);
+								const preview = previewLines(note.preview, noteTitle);
+								const visibleTags = note.tags.slice(0, 1);
 								const extraTagCount = Math.max(
 									note.tags.length - visibleTags.length,
 									0,
 								);
-								const folder = folderLabel(note.note_path);
+								const notePath = folderLabel(note.note_path);
 								const animationIndex = sectionIndex * 12 + index;
 
 								return (
 									<m.button
 										key={note.note_path}
 										type="button"
-										className="databaseBoardCard allDocsCard"
-										style={CARD_STYLE}
+										className="allDocsCard"
 										data-state={
 											selectedNotePath === note.note_path
 												? "selected"
 												: undefined
 										}
+										aria-label={`Open ${noteTitle}`}
 										onClick={() => setSelectedNotePath(note.note_path)}
 										onMouseEnter={() => prefetchNote(note.note_path)}
 										onFocus={() => prefetchNote(note.note_path)}
@@ -424,51 +498,57 @@ export const AllDocsPane = memo(function AllDocsPane({
 										}
 										title="Double-click to open note"
 									>
-										<div className="databaseBoardCardHead">
-											<div className="databaseBoardCardHeaderRow">
-												<span className="databaseBoardCardTitle">
-													{noteTitle}
-												</span>
-												<span className="databaseBoardCardOpenHint">Open</span>
-											</div>
-											<div className="allDocsMetaRow">
-												<span className="databaseBoardCardPath" title={folder}>
-													{folder}
-												</span>
-												<span className="allDocsMetaDot" aria-hidden="true">
-													•
-												</span>
-												<span className="databaseBoardCardTimestamp">
-													{updatedLabel(note.updated)}
-												</span>
-											</div>
-											{preview ? (
-												<div className="databaseBoardCardPreview">
-													{preview}
+										<div className="allDocsCardSurface">
+											{preview.length > 0 ? (
+												<div className="allDocsCardPreview">
+													{preview.map((line, lineIndex) => (
+														<div
+															key={`${note.note_path}:preview:${lineIndex}`}
+															className={`allDocsCardPreviewLine is-${line.kind}`}
+														>
+															{line.text}
+														</div>
+													))}
 												</div>
 											) : (
-												<div className="databaseBoardCardPreview is-placeholder">
+												<div className="allDocsCardPreview is-placeholder">
 													No preview yet
 												</div>
 											)}
+											{visibleTags.length > 0 ? (
+												<div className="allDocsCardTags">
+													{visibleTags.map((tag) => (
+														<span
+															key={`${note.note_path}:${tag}`}
+															className="databaseBoardTag"
+														>
+															{formatDatabaseTagLabel(tag)}
+														</span>
+													))}
+													{extraTagCount > 0 ? (
+														<span className="databaseBoardTag is-muted">
+															+{extraTagCount}
+														</span>
+													) : null}
+												</div>
+											) : null}
 										</div>
-										{visibleTags.length > 0 ? (
-											<div className="databaseBoardCardTags">
-												{visibleTags.map((tag) => (
-													<span
-														key={`${note.note_path}:${tag}`}
-														className="databaseBoardTag"
-													>
-														{formatDatabaseTagLabel(tag)}
-													</span>
-												))}
-												{extraTagCount > 0 ? (
-													<span className="databaseBoardTag is-muted">
-														+{extraTagCount}
-													</span>
-												) : null}
+										<div className="allDocsCardCaption">
+											<span className="allDocsCardTitle" title={noteTitle}>
+												{noteTitle}
+											</span>
+											<div className="allDocsCardMetaRow">
+												<span
+													className="allDocsCardPath"
+													title={note.note_path}
+												>
+													{notePath}
+												</span>
+												<span className="allDocsCardTime">
+													{updatedTimeframe(note.updated)}
+												</span>
 											</div>
-										) : null}
+										</div>
 									</m.button>
 								);
 							})}

@@ -253,10 +253,6 @@
 	box-shadow: var(--shadow-sm);
 }
 
-.settingsTabButtonActive .settingsTabIcon {
-	color: var(--text-primary);
-}
-
 .settingsSidebarFooter {
 	padding: 0 14px 14px;
 }

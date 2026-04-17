@@ -13,6 +13,7 @@
 	--text-tertiary: rgba(55, 53, 47, 0.45);
 	--text-placeholder: rgba(55, 53, 47, 0.35);
 	--text-inverse: var(--color-white);
+	--pill-contrast-fg: #111111;
 	--text-accent: var(--color-gray-800);
 	--text-error: var(--color-red-600);
 

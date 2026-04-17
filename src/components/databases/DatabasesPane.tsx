@@ -49,6 +49,10 @@ import { Input } from "../ui/shadcn/input";
 
 interface DatabasesPaneProps {
 	onOpenFile: (relPath: string) => Promise<void>;
+	onRenameNotePath?: (
+		notePath: string,
+		nextName: string,
+	) => Promise<string | null>;
 	initialDatabaseId?: string | null;
 	initialDocument?: WorkspaceDatabaseDocument | null;
 	initialRows?: WorkspaceDatabaseQueryResult | null;
@@ -60,6 +64,19 @@ const DATABASES_SELECTED_DATABASE_STORAGE_KEY =
 const DATABASES_SELECTED_VIEWS_STORAGE_KEY = "glyph.databases.selectedViews";
 const EMPTY_BOARD_LANE_COLORS: Record<string, string> = {};
 const EMPTY_BOARD_LANE_ORDER: Record<string, string[]> = {};
+
+function fileNameFromTitle(notePath: string, nextTitle: string): string {
+	const currentName = notePath.split("/").pop()?.trim() || "Untitled.md";
+	const trimmedTitle = nextTitle.trim();
+	const fallbackDotIndex = currentName.lastIndexOf(".");
+	if (fallbackDotIndex <= 0 || fallbackDotIndex === currentName.length - 1) {
+		return trimmedTitle || currentName;
+	}
+	const ext = currentName.slice(fallbackDotIndex);
+	const fallbackStem = currentName.slice(0, fallbackDotIndex).trim();
+	const stem = trimmedTitle || fallbackStem || "Untitled";
+	return `${stem}${ext}`;
+}
 
 function readStoredSelectedDatabaseId(): string | null {
 	if (typeof window === "undefined") return null;
@@ -210,6 +227,7 @@ function ViewLayoutIcon({ layout }: { layout: string }) {
 
 function DatabasesPaneContent({
 	onOpenFile,
+	onRenameNotePath,
 	initialDatabaseId = null,
 	initialDocument = null,
 	initialRows = null,
@@ -525,6 +543,25 @@ function DatabasesPaneContent({
 		[document, saveDatabase, selectedViewId],
 	);
 
+	const handleResizeColumn = useCallback(
+		(columnId: string, width: number) => {
+			if (!activeConfig) return;
+			const nextWidth = Math.max(120, Math.round(width));
+			const currentWidth =
+				activeConfig.columns.find((column) => column.id === columnId)?.width ??
+				null;
+			if (currentWidth != null && Math.round(currentWidth) === nextWidth)
+				return;
+			void handleSaveConfig({
+				...activeConfig,
+				columns: activeConfig.columns.map((column) =>
+					column.id === columnId ? { ...column, width: nextWidth } : column,
+				),
+			});
+		},
+		[activeConfig, handleSaveConfig],
+	);
+
 	const handleCreateDatabase = useCallback(async () => {
 		try {
 			const created = await invoke("databases_create", {
@@ -617,6 +654,44 @@ function DatabasesPaneContent({
 			}
 		},
 		[document, loadRows, selectedViewId],
+	);
+
+	const handleRenameRowTitle = useCallback(
+		async (notePath: string, nextTitle: string): Promise<boolean> => {
+			const title = nextTitle.trim();
+			if (!title) return false;
+			const titleColumn = activeConfig?.columns.find(
+				(column) => column.type === "title",
+			);
+			if (!titleColumn) return false;
+			try {
+				let targetPath = notePath;
+				if (onRenameNotePath) {
+					const nextName = fileNameFromTitle(notePath, title);
+					const renamedPath = await onRenameNotePath(notePath, nextName);
+					if (!renamedPath) return false;
+					targetPath = renamedPath;
+					if (renamedPath !== notePath) {
+						setRows((current) =>
+							current.filter((row) => row.note_path !== notePath),
+						);
+					}
+					setSelectedRowPath((current) =>
+						current === notePath ? renamedPath : current,
+					);
+				}
+				await handleUpdateCell(targetPath, titleColumn, {
+					kind: "text",
+					value_text: title,
+					value_list: [],
+				});
+				return true;
+			} catch (cause) {
+				setError(extractErrorMessage(cause));
+				return false;
+			}
+		},
+		[activeConfig?.columns, handleUpdateCell, onRenameNotePath],
 	);
 
 	const handleCreateRow = useCallback(async () => {
@@ -1118,6 +1193,8 @@ function DatabasesPaneContent({
 								})
 							}
 							onSaveCell={handleUpdateCell}
+							onRenameTitle={handleRenameRowTitle}
+							onResizeColumn={handleResizeColumn}
 						/>
 					)}
 				</>

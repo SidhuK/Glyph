@@ -68,6 +68,7 @@ type TauriEventMap = {
 			darkThemeId?: UiDarkThemeId;
 			accent?:
 				| "neutral"
+				| "glyph-orange"
 				| "cerulean"
 				| "tropical-teal"
 				| "light-yellow"
@@ -83,7 +84,6 @@ type TauriEventMap = {
 			showFileTreeFolderCounts?: boolean;
 			aiEnabled?: boolean;
 			aiAssistantMode?: "chat" | "create";
-			aiSidebarWidth?: number | null;
 		};
 		dailyNotes?: {
 			folder?: string | null;

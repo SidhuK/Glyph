@@ -383,6 +383,22 @@
 	transition: background-color 140ms ease;
 }
 
+.databasesViewTabWrapper::after {
+	content: "";
+	position: absolute;
+	left: 8px;
+	right: 8px;
+	bottom: -1px;
+	height: 2px;
+	border-radius: 999px;
+	background: transparent;
+	transition: background-color 140ms ease;
+}
+
+.databasesViewTabWrapper.is-active::after {
+	background: var(--interactive-accent);
+}
+
 .databasesViewTab {
 	position: relative;
 	display: flex;
@@ -410,19 +426,15 @@
 }
 
 .databasesViewTab[data-active="true"] {
-	color: var(--text-inverse);
-	border-color: color-mix(
-		in srgb,
-		var(--interactive-accent) 72%,
-		var(--border-strong)
-	);
-	background: var(--interactive-accent);
-	box-shadow: 0 1px 2px color-mix(in srgb, var(--text-primary) 12%, transparent);
+	color: var(--text-primary);
+	border-color: transparent;
+	background: transparent;
+	box-shadow: none;
 }
 
 .databasesViewTab[data-active="true"]:hover {
-	background: var(--interactive-accent-hover);
-	color: var(--text-inverse);
+	background: color-mix(in srgb, var(--bg-hover) 86%, transparent);
+	color: var(--text-primary);
 }
 
 .databasesViewTabBg {
@@ -461,13 +473,9 @@
 }
 
 .databasesViewTabWrapper.is-active .databasesViewTabMenu {
-	color: var(--text-inverse);
-	background: color-mix(
-		in srgb,
-		var(--interactive-accent-hover) 58%,
-		transparent
-	);
-	border-color: transparent;
+	color: var(--text-secondary);
+	background: color-mix(in srgb, var(--bg-hover) 76%, transparent);
+	border-color: color-mix(in srgb, var(--border-light) 62%, transparent);
 }
 
 .databasesViewTabMenu:hover {
@@ -734,8 +742,13 @@
 .databaseTableShell {
 	flex: 1;
 	min-height: 0;
+	position: relative;
 	overflow: auto;
 	padding: 10px 18px 18px;
+}
+
+.databaseTableShell [data-slot="table-container"] {
+	overflow: visible;
 }
 
 .databaseBoardShell {
@@ -1055,15 +1068,42 @@
 }
 
 .databaseBoardCardPreview {
-	display: -webkit-box;
-	-webkit-line-clamp: 2;
-	-webkit-box-orient: vertical;
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
 	overflow: hidden;
 	font-size: 0.76rem;
 	line-height: 1.42;
 	color: var(--text-secondary);
 	white-space: normal;
 	overflow-wrap: anywhere;
+	max-height: calc(1.42em * 7);
+}
+
+.databaseBoardCardPreviewLine {
+	display: block;
+	line-height: inherit;
+}
+
+.databaseBoardCardPreviewLine.is-heading {
+	font-weight: var(--font-semibold);
+	color: var(--text-primary);
+}
+
+.databaseBoardCardPreviewLine.is-quote {
+	padding-left: 6px;
+	border-left: 2px solid
+		color-mix(in srgb, var(--border-light) 88%, transparent);
+	color: var(--text-tertiary);
+}
+
+.databaseBoardCardPreviewLine.is-list {
+	color: var(--text-secondary);
+}
+
+.databaseBoardCardPreviewLine.is-code {
+	font-family: var(--font-mono, ui-monospace, monospace);
+	color: color-mix(in srgb, var(--text-secondary) 88%, var(--text-tertiary));
 }
 
 .databaseBoardCardPreview.is-placeholder {
@@ -1092,7 +1132,7 @@
 	background: color-mix(in srgb, var(--database-tone) 12%, var(--bg-secondary));
 	font-size: 0.7rem;
 	line-height: 1.2;
-	color: color-mix(in srgb, var(--database-tone) 54%, var(--text-primary));
+	color: var(--pill-contrast-fg);
 	white-space: nowrap;
 }
 
@@ -1204,6 +1244,12 @@
 	background: var(--bg-primary);
 }
 
+.databaseTable [data-slot="table-header"] {
+	position: sticky;
+	top: 0;
+	z-index: 4;
+}
+
 .databaseHeadCell {
 	position: sticky;
 	top: 0;
@@ -1230,6 +1276,42 @@
 
 .databaseHeadCell:not(:last-child) {
 	border-right: none;
+}
+
+.databaseColumnResizeHandle {
+	position: absolute;
+	top: 0;
+	right: -4px;
+	width: 8px;
+	height: 100%;
+	cursor: col-resize;
+	touch-action: none;
+	user-select: none;
+	z-index: 2;
+}
+
+.databaseColumnResizeHandle::after {
+	content: "";
+	position: absolute;
+	top: 6px;
+	bottom: 6px;
+	left: 50%;
+	width: 1px;
+	transform: translateX(-50%);
+	background: transparent;
+	transition: background-color 120ms ease;
+}
+
+.databaseHeadCell:hover .databaseColumnResizeHandle::after,
+.databaseColumnResizeHandle.is-resizing::after,
+.databaseTableShell.is-resizing .databaseColumnResizeHandle::after {
+	background: color-mix(in srgb, var(--interactive-accent) 40%, transparent);
+}
+
+.databaseTableShell.is-resizing,
+.databaseTableShell.is-resizing * {
+	cursor: col-resize !important;
+	user-select: none;
 }
 
 .databaseHeaderButton,
@@ -1297,10 +1379,15 @@
 .databaseBodyCell {
 	vertical-align: middle;
 	text-align: left;
-	padding-top: 2px;
-	padding-bottom: 2px;
+	padding-top: 0;
+	padding-bottom: 0;
 	padding-right: 10px;
 	border-top: 1px solid color-mix(in srgb, var(--border-light) 60%, transparent);
+}
+
+.databaseTable [data-slot="table-cell"].databaseBodyCell {
+	padding-top: 0;
+	padding-bottom: 0;
 }
 
 .databaseBodyCell:first-child {
@@ -1379,9 +1466,11 @@
 }
 
 .databaseTagEditor {
+	position: relative;
 	display: flex;
 	flex-direction: column;
 	gap: 6px;
+	overflow: visible;
 }
 
 .databaseTagField {
@@ -1393,7 +1482,7 @@
 	--database-tone: var(--color-blue-500);
 	border-color: transparent;
 	background: color-mix(in srgb, var(--database-tone) 10%, transparent);
-	color: color-mix(in srgb, var(--database-tone) 56%, var(--text-primary));
+	color: var(--pill-contrast-fg);
 }
 
 .databaseTagField .notePropertyToken:hover,
@@ -1402,33 +1491,81 @@
 }
 
 .databaseTagField .notePropertyToken svg {
-	color: color-mix(in srgb, var(--database-tone) 60%, var(--text-secondary));
+	color: var(--pill-contrast-fg);
 }
 
-.databaseTagSuggestions {
-	padding-top: 2px;
+.databaseTagEditor .databaseTagSuggestions {
+	position: absolute;
+	top: calc(100% + 4px);
+	left: 0;
+	z-index: 30;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	min-width: max(180px, 100%);
+	max-width: min(320px, calc(100vw - 40px));
+	max-height: 220px;
+	padding: 7px;
+	border-radius: var(--database-dropdown-radius);
+	border: 1px solid var(--database-dropdown-border);
+	background: var(--database-dropdown-background);
+	box-shadow: var(--database-dropdown-shadow);
+}
+
+.databaseTagEditor .databaseTagSuggestions .notePropertySuggestionsLabel {
+	padding: 0 4px 2px;
+	font-size: 0.64rem;
+	letter-spacing: 0.08em;
+}
+
+.databaseTagEditor .databaseTagSuggestions .notePropertySuggestionList {
+	display: flex;
+	flex-direction: column;
+	flex-wrap: nowrap;
+	gap: 2px;
+	max-height: 172px;
+	overflow: auto;
+	padding-right: 1px;
+}
+
+.databaseTagEditor .databaseTagSuggestions .notePropertySuggestionChip {
+	justify-content: space-between;
+	width: 100%;
+	min-height: 26px;
+	padding: 0 8px;
+	border-radius: var(--database-control-radius);
+	background: transparent;
+	border-color: transparent;
 }
 
 .databaseCellPill {
 	--database-tone: var(--color-blue-500);
 
 	display: inline-block;
-	max-width: 100%;
-	padding: 2px 7px;
+	padding: 1px 7px;
 	border-radius: var(--database-radius-sm);
 	border: none;
 	background: color-mix(in srgb, var(--database-tone) 10%, var(--bg-secondary));
 	font-size: 0.76rem;
-	color: color-mix(in srgb, var(--database-tone) 52%, var(--text-primary));
-	overflow: hidden;
-	text-overflow: ellipsis;
+	color: var(--pill-contrast-fg);
 	white-space: nowrap;
-	flex: 0 1 auto;
+	flex: 0 0 auto;
 }
 
 .databaseCellPillMore {
 	--database-tone: var(--text-tertiary);
 	flex: 0 0 auto;
+}
+
+.databaseCellPillsMeasure {
+	position: fixed;
+	top: -9999px;
+	left: -9999px;
+	display: flex;
+	gap: 6px;
+	visibility: hidden;
+	pointer-events: none;
+	white-space: nowrap;
 }
 
 .databaseCellYaml {
@@ -1441,8 +1578,8 @@
 .databaseCellButton {
 	display: block;
 	min-width: 0;
-	min-height: 24px;
-	line-height: 1.4;
+	min-height: 18px;
+	line-height: 1.25;
 	cursor: default;
 }
 
@@ -1453,6 +1590,44 @@
 
 .databaseCellButton.is-title {
 	font-weight: var(--font-semibold);
+}
+
+.databaseTitleCell {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	min-width: 0;
+}
+
+.databaseTitleCellMain {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.databaseCellOpenButton {
+	flex: 0 0 auto;
+	height: 20px;
+	padding: 0 7px;
+	border-radius: var(--database-radius-sm);
+	border: 1px solid color-mix(in srgb, var(--border-light) 88%, transparent);
+	background: color-mix(in srgb, var(--bg-secondary) 64%, transparent);
+	color: var(--text-secondary);
+	font-size: 0.68rem;
+	line-height: 1;
+	font-weight: var(--font-semibold);
+	transition: border-color 120ms ease, color 120ms ease, background-color 120ms
+		ease;
+}
+
+.databaseCellOpenButton:hover,
+.databaseCellOpenButton:focus-visible {
+	border-color: color-mix(in srgb, var(--interactive-accent) 32%, transparent);
+	color: var(--text-primary);
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 9%,
+		var(--bg-secondary)
+	);
 }
 
 .databaseCellText,

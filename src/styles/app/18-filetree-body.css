@@ -348,7 +348,7 @@
 
 .fileTreeRow[data-has-custom-color="true"] .fileTreeExtBadge {
 	background: color-mix(in srgb, var(--database-tone) 10%, var(--bg-hover));
-	color: color-mix(in srgb, var(--database-tone) 58%, var(--text-primary));
+	color: var(--pill-contrast-fg);
 }
 
 .fileTreeRenameInput {

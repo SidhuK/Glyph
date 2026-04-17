@@ -106,37 +106,94 @@ function boardCardTitle(row: DatabaseRow, activeLaneLabel: string): string {
 	return indexedTitle;
 }
 
-function normalizePreview(preview?: string): string {
-	return (preview ?? "").replace(/\s+/g, " ").trim();
-}
-
-function normalizeComparableText(value: string): string {
-	return value
-		.toLowerCase()
-		.replace(/^#+\s*/g, "")
-		.replace(/[*_`~[\]()]/g, "")
+function normalizeInlineMarkdown(text: string): string {
+	const withoutImages = text.replace(
+		/!\[([^\]]*)\]\((?:[^()\\]|\\.)*\)/g,
+		"$1",
+	);
+	const withoutLinks = withoutImages.replace(
+		/\[([^\]]+)\]\((?:[^()\\]|\\.)*\)/g,
+		"$1",
+	);
+	const withoutWikiLinks = withoutLinks.replace(
+		/\[\[([^\]|]+)(?:\|([^\]]+))?\]\]/g,
+		(_, target: string, label?: string) => (label ?? target).trim(),
+	);
+	const withoutInlineCode = withoutWikiLinks.replace(/`([^`]+)`/g, "$1");
+	return withoutInlineCode
+		.replace(/(\*\*|__)(.*?)\1/g, "$2")
+		.replace(/(\*|_)(.*?)\1/g, "$2")
+		.replace(/~~(.*?)~~/g, "$1")
 		.replace(/\s+/g, " ")
 		.trim();
 }
 
-function cardPreviewText(row: DatabaseRow, title: string): string {
-	const preview = normalizePreview(row.preview);
-	if (!preview) return "";
-	const normalizedTitle = normalizeComparableText(title);
-	const normalizedPreview = normalizeComparableText(preview);
-	if (!normalizedTitle || !normalizedPreview.startsWith(normalizedTitle)) {
-		return preview;
+type PreviewLineKind = "heading" | "quote" | "list" | "code" | "body";
+
+type PreviewLine = {
+	kind: PreviewLineKind;
+	text: string;
+};
+
+function cardPreviewLines(row: DatabaseRow, title: string): PreviewLine[] {
+	const preview = (row.preview ?? "").replace(/\r\n?/g, "\n");
+	if (!preview.trim()) return [];
+
+	const lines = preview.split("\n");
+	const parsed: PreviewLine[] = [];
+	let inFence = false;
+
+	for (const raw of lines) {
+		const line = raw.trim();
+		if (!line) continue;
+		if (/^```/.test(line)) {
+			inFence = !inFence;
+			continue;
+		}
+
+		if (inFence) {
+			const text = normalizeInlineMarkdown(line);
+			if (text) parsed.push({ kind: "code", text });
+			continue;
+		}
+
+		const headingMatch = line.match(/^#{1,6}\s+(.*)$/);
+		if (headingMatch?.[1]) {
+			const text = normalizeInlineMarkdown(headingMatch[1]);
+			if (text) parsed.push({ kind: "heading", text });
+			continue;
+		}
+
+		const quoteMatch = line.match(/^>\s?(.*)$/);
+		if (quoteMatch?.[1]) {
+			const text = normalizeInlineMarkdown(quoteMatch[1]);
+			if (text) parsed.push({ kind: "quote", text });
+			continue;
+		}
+
+		const listMatch = line.match(/^(?:[-*+]|\d+\.)\s+(.*)$/);
+		if (listMatch?.[1]) {
+			const text = normalizeInlineMarkdown(listMatch[1]);
+			if (text) parsed.push({ kind: "list", text });
+			continue;
+		}
+
+		const taskMatch = line.match(/^\[(?: |x|X)\]\s+(.*)$/);
+		if (taskMatch?.[1]) {
+			const text = normalizeInlineMarkdown(taskMatch[1]);
+			if (text) parsed.push({ kind: "list", text });
+			continue;
+		}
+
+		const text = normalizeInlineMarkdown(line);
+		if (text) parsed.push({ kind: "body", text });
 	}
-	const withoutMarkdownHeading = preview.replace(/^#+\s*/, "").trim();
-	const titleIndex = withoutMarkdownHeading
-		.toLowerCase()
-		.indexOf(title.toLowerCase());
-	if (titleIndex !== 0) return preview;
-	const remainder = withoutMarkdownHeading
-		.slice(title.length)
-		.replace(/^[-:.\s]+/, "")
-		.trim();
-	return remainder;
+
+	const lowerTitle = title.trim().toLowerCase();
+	return parsed.filter((line) => {
+		if (!lowerTitle) return true;
+		return !line.text.toLowerCase().startsWith(lowerTitle);
+	});
 }
 
 function cardCandidateColumns(
@@ -573,7 +630,7 @@ export function DatabaseBoard({
 									{lane.rows.length > 0 ? (
 										lane.rows.map((row) => {
 											const title = boardCardTitle(row, lane.label);
-											const preview = cardPreviewText(row, title);
+											const preview = cardPreviewLines(row, title);
 											const maxVisibleTags = 2;
 											const visibleTags = row.tags.slice(0, maxVisibleTags);
 											const extraTagCount = Math.max(
@@ -658,9 +715,16 @@ export function DatabaseBoard({
 																		/>
 																	) : null}
 																</div>
-																{preview ? (
+																{preview.length > 0 ? (
 																	<div className="databaseBoardCardPreview">
-																		{preview}
+																		{preview.map((line, lineIndex) => (
+																			<div
+																				key={`${row.note_path}:preview:${lineIndex}`}
+																				className={`databaseBoardCardPreviewLine is-${line.kind}`}
+																			>
+																				{line.text}
+																			</div>
+																		))}
 																	</div>
 																) : null}
 															</div>

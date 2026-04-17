@@ -116,6 +116,7 @@ function ThemeAndTypographyBridge() {
 		}
 		if (
 			payload.ui?.accent === "neutral" ||
+			payload.ui?.accent === "glyph-orange" ||
 			payload.ui?.accent === "cerulean" ||
 			payload.ui?.accent === "tropical-teal" ||
 			payload.ui?.accent === "light-yellow" ||

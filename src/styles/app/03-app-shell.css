@@ -3,7 +3,7 @@
    ───────────────────────────────────────────────────────────────────────────── */
 .appShell {
 	--app-frame-inline: var(--space-1);
-	--app-frame-block: 0px;
+	--app-frame-block: var(--space-1);
 	--app-radius: var(--radius-15);
 	--window-control-toggle-offset: 90px;
 	isolation: isolate;
@@ -12,10 +12,13 @@
 	height: 100%;
 	width: 100%;
 	background: transparent;
+	padding: var(--app-frame-block) var(--app-frame-inline);
 	border-style: solid;
 	border-color: var(--chrome-border);
-	border-width: 0 1px;
+	border-width: 1px;
 	border-radius: var(--app-radius);
+	box-shadow: inset 0 0 0 1px
+		color-mix(in srgb, var(--text-inverse) 22%, transparent);
 	overflow: hidden;
 }
 
@@ -34,7 +37,11 @@
 
 :root[data-translucent-app-frame="false"] .appShell {
 	background: var(--bg-primary);
-	border-color: var(--border-light);
+	--app-frame-inline: 0px;
+	--app-frame-block: 0px;
+	border-width: 0;
+	border-color: transparent;
+	box-shadow: none;
 }
 
 :root[data-translucent-app-frame="false"] .appShell::before {

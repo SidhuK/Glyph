@@ -4,7 +4,8 @@ import {
 	getCoreRowModel,
 	useReactTable,
 } from "@tanstack/react-table";
-import { useMemo } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import { databaseCellValueFromRow } from "../../lib/database/config";
 import type {
 	DatabaseColumn,
 	DatabaseRow,
@@ -42,9 +43,25 @@ interface DatabaseTableProps {
 			value_list: string[];
 		},
 	) => Promise<void>;
+	onRenameTitle: (notePath: string, nextTitle: string) => Promise<boolean>;
+	onResizeColumn: (columnId: string, width: number) => void;
 }
 
 const EMPTY_LANE_COLORS: Record<string, string> = {};
+
+function uniqueOptionValues(values: string[]): string[] {
+	const seen = new Set<string>();
+	const out: string[] = [];
+	for (const raw of values) {
+		const trimmed = raw.trim();
+		if (!trimmed) continue;
+		const key = trimmed.toLowerCase();
+		if (seen.has(key)) continue;
+		seen.add(key);
+		out.push(trimmed);
+	}
+	return out;
+}
 
 function SortIndicator({
 	activeSort,
@@ -72,7 +89,10 @@ export function DatabaseTable({
 	onToggleSort,
 	laneColors = EMPTY_LANE_COLORS,
 	onSaveCell,
+	onRenameTitle,
+	onResizeColumn,
 }: DatabaseTableProps) {
+	const [resizingColumnId, setResizingColumnId] = useState<string | null>(null);
 	const safeLaneColors = useMemo<Record<string, EditorTextColor>>(() => {
 		const next: Record<string, EditorTextColor> = {};
 		for (const [laneId, color] of Object.entries(laneColors)) {
@@ -82,6 +102,22 @@ export function DatabaseTable({
 		}
 		return next;
 	}, [laneColors]);
+
+	const columnValueOptions = useMemo<Record<string, string[]>>(() => {
+		const next: Record<string, string[]> = {};
+		for (const column of columns) {
+			const values: string[] = [];
+			for (const row of rows) {
+				const cell = databaseCellValueFromRow(row, column);
+				values.push(...cell.value_list);
+				if (cell.value_text?.trim()) {
+					values.push(cell.value_text);
+				}
+			}
+			next[column.id] = uniqueOptionValues(values);
+		}
+		return next;
+	}, [columns, rows]);
 
 	const tableColumns = useMemo<ColumnDef<DatabaseRow>[]>(
 		() =>
@@ -108,21 +144,27 @@ export function DatabaseTable({
 					<DatabaseCell
 						row={row.original}
 						column={column}
+						isRowSelected={row.original.note_path === selectedRowPath}
 						laneColors={safeLaneColors}
 						onOpenNote={onOpenRow}
 						onSelectRow={onSelectRow}
 						onSave={onSaveCell}
+						onRenameTitle={onRenameTitle}
+						valueOptions={columnValueOptions[column.id] ?? []}
 					/>
 				),
 				size: column.width ?? 180,
 			})),
 		[
 			activeSort,
+			columnValueOptions,
 			columns,
 			onOpenRow,
+			onRenameTitle,
 			onSaveCell,
 			onSelectRow,
 			onToggleSort,
+			selectedRowPath,
 			safeLaneColors,
 		],
 	);
@@ -131,10 +173,37 @@ export function DatabaseTable({
 		data: rows,
 		columns: tableColumns,
 		getCoreRowModel: getCoreRowModel(),
+		enableColumnResizing: true,
+		columnResizeMode: "onChange",
+		defaultColumn: {
+			minSize: 120,
+			maxSize: 900,
+		},
 	});
 
+	const commitColumnResize = useCallback(
+		(columnId: string) => {
+			const width = table.getColumn(columnId)?.getSize();
+			if (typeof width !== "number" || Number.isNaN(width)) return;
+			onResizeColumn(columnId, width);
+		},
+		[onResizeColumn, table],
+	);
+
+	const resizingInfo = table.getState().columnSizingInfo;
+	const activeResizingColumnId = resizingInfo.isResizingColumn;
+
+	useEffect(() => {
+		if (!resizingColumnId) return;
+		if (activeResizingColumnId) return;
+		commitColumnResize(resizingColumnId);
+		setResizingColumnId(null);
+	}, [activeResizingColumnId, commitColumnResize, resizingColumnId]);
+
 	return (
-		<div className="databaseTableShell">
+		<div
+			className={`databaseTableShell${activeResizingColumnId ? " is-resizing" : ""}`}
+		>
 			<Table className="databaseTable">
 				<TableHeader>
 					{table.getHeaderGroups().map((headerGroup) => (
@@ -161,6 +230,21 @@ export function DatabaseTable({
 												header.column.columnDef.header,
 												header.getContext(),
 											)}
+									<div
+										className={`databaseColumnResizeHandle${header.column.getIsResizing() ? " is-resizing" : ""}`}
+										onMouseDown={(event) => {
+											event.preventDefault();
+											event.stopPropagation();
+											setResizingColumnId(header.column.id);
+											header.getResizeHandler()(event);
+										}}
+										onTouchStart={(event) => {
+											event.preventDefault();
+											event.stopPropagation();
+											setResizingColumnId(header.column.id);
+											header.getResizeHandler()(event);
+										}}
+									/>
 								</TableHead>
 							))}
 						</TableRow>
