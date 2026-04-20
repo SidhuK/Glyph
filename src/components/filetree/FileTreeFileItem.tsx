@@ -126,7 +126,7 @@ interface FileTreeFileItemProps {
 		direction: -1 | 1,
 		currentTarget: HTMLButtonElement,
 	) => void;
-	taskSummary: NoteTaskSummary | null;
+	taskSummary?: NoteTaskSummary | null;
 }
 
 export const FileTreeFileItem = memo(function FileTreeFileItem({
@@ -151,7 +151,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 	isPinned,
 	onTogglePinned,
 	onArrowNavigate,
-	taskSummary,
+	taskSummary = null,
 }: FileTreeFileItemProps) {
 	const customColor =
 		appearance?.color && isEditorTextColor(appearance.color)
@@ -241,7 +241,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 									/>
 								)}
 								<span className="fileTreeName">{displayStem}</span>
-								{(taskSummary?.total_count ?? 0) > 0 ? (
+								{taskSummary && taskSummary.total_count > 0 ? (
 									<TaskProgressIndicator
 										summary={taskSummary}
 										className="fileTreeTaskProgress"
