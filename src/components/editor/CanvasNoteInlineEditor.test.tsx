@@ -11,10 +11,16 @@ const {
 	getColorfulHeadings,
 	mockEditor,
 	setColorfulHeadings,
+	setShowFrontmatterInEditor,
+	getShowFrontmatterInEditor,
+	setFrontmatter,
+	getFrontmatter,
 	useNoteEditorMock,
 } = vi.hoisted(() => {
 	const listeners = new Map<string, Set<() => void>>();
 	let colorfulHeadings = false;
+	let showFrontmatterInEditor = false;
+	let frontmatter: string | null = null;
 	const chainCommands = {
 		addColumnAfter: vi.fn(() => chainCommands),
 		addRowAfter: vi.fn(() => chainCommands),
@@ -52,9 +58,21 @@ const {
 		setColorfulHeadings(value: boolean) {
 			colorfulHeadings = value;
 		},
+		setShowFrontmatterInEditor(value: boolean) {
+			showFrontmatterInEditor = value;
+		},
+		getShowFrontmatterInEditor() {
+			return showFrontmatterInEditor;
+		},
+		setFrontmatter(value: string | null) {
+			frontmatter = value;
+		},
 		useNoteEditorMock: vi.fn(),
 		getColorfulHeadings() {
 			return colorfulHeadings;
+		},
+		getFrontmatter() {
+			return frontmatter;
 		},
 	};
 });
@@ -222,14 +240,17 @@ describe("CanvasNoteInlineEditor table controls", () => {
 			unobserve() {}
 		} as typeof ResizeObserver;
 		setColorfulHeadings(false);
+		setShowFrontmatterInEditor(false);
+		setFrontmatter(null);
 		mockEditor.isEditable = true;
 		chainCommands.run.mockReturnValue(true);
 		useNoteEditorMock.mockImplementation(() => ({
 			body: "",
 			colorfulHeadings: getColorfulHeadings(),
 			editor: mockEditor,
-			frontmatter: null,
-			frontmatterRef: { current: null },
+			frontmatter: getFrontmatter(),
+			showFrontmatterInEditor: getShowFrontmatterInEditor(),
+			frontmatterRef: { current: getFrontmatter() },
 			lastAppliedBodyRef: { current: "" },
 			lastEmittedMarkdownRef: { current: "" },
 		}));
@@ -379,5 +400,48 @@ describe("CanvasNoteInlineEditor table controls", () => {
 		});
 		expect(chainCommands.addColumnAfter).toHaveBeenCalled();
 		expect(chainCommands.run).toHaveBeenCalled();
+	});
+
+	it("keeps frontmatter hidden by default for new notes", () => {
+		setShowFrontmatterInEditor(false);
+		setFrontmatter(null);
+
+		render("rich");
+
+		expect(container.querySelector(".frontmatterPreview")).toBeNull();
+	});
+
+	it("shows and hides existing frontmatter based on the toggle without reload", () => {
+		setFrontmatter("---\ntitle: Existing\n---\n");
+		setShowFrontmatterInEditor(false);
+
+		render("rich");
+		expect(container.querySelector(".frontmatterPreview")).toBeNull();
+
+		setShowFrontmatterInEditor(true);
+		render("rich");
+		expect(container.querySelector(".frontmatterPreview")).toBeInstanceOf(
+			HTMLDivElement,
+		);
+	});
+
+	it("applies persisted frontmatter visibility after restart remount", () => {
+		setFrontmatter("---\ntitle: Persisted\n---\n");
+		setShowFrontmatterInEditor(true);
+
+		render("rich");
+		expect(container.querySelector(".frontmatterPreview")).toBeInstanceOf(
+			HTMLDivElement,
+		);
+
+		act(() => {
+			root.unmount();
+		});
+		root = createRoot(container);
+
+		render("rich");
+		expect(container.querySelector(".frontmatterPreview")).toBeInstanceOf(
+			HTMLDivElement,
+		);
 	});
 });

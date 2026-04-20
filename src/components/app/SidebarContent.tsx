@@ -136,6 +136,49 @@ export const SidebarContent = memo(function SidebarContent({
 			);
 	}, [handleStartRename]);
 
+	useEffect(() => {
+		if (!renamingPath) return;
+		let cancelled = false;
+		let retryTimer: number | null = null;
+		let firstFrame: number | null = null;
+		let secondFrame: number | null = null;
+		let attempts = 0;
+
+		const tryCenterRenameTarget = () => {
+			if (cancelled) return;
+			attempts += 1;
+			const nodes = document.querySelectorAll<HTMLElement>(
+				"[data-file-tree-path]",
+			);
+			const target = Array.from(nodes).find(
+				(node) => node.dataset.fileTreePath === renamingPath,
+			);
+			if (target) {
+				target.scrollIntoView({
+					block: "center",
+					inline: "nearest",
+					behavior: "smooth",
+				});
+				return;
+			}
+			if (attempts >= 10) return;
+			retryTimer = window.setTimeout(tryCenterRenameTarget, 45);
+		};
+
+		firstFrame = window.requestAnimationFrame(() => {
+			secondFrame = window.requestAnimationFrame(() => {
+				tryCenterRenameTarget();
+			});
+		});
+
+		return () => {
+			cancelled = true;
+			if (firstFrame !== null) window.cancelAnimationFrame(firstFrame);
+			if (secondFrame !== null) window.cancelAnimationFrame(secondFrame);
+			if (retryTimer !== null) window.clearTimeout(retryTimer);
+		};
+	}, [renamingPath]);
+
 	const handleCancelRename = useCallback(() => {
 		setRenamingPath(null);
 		setPendingNewNotePath(null);

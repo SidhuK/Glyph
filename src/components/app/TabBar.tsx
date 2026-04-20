@@ -18,6 +18,7 @@ interface TabBarProps {
 	onPrefetchTab: (target: string | null) => void;
 	onSelectTab: (tabId: string) => void;
 	onCloseTab: (tabId: string) => void;
+	onStartRenamePath: (path: string) => void;
 	onDragStart: (tabId: string) => void;
 	onDragEnd: () => void;
 	onReorder: (fromTabId: string, toTabId: string) => void;
@@ -43,6 +44,7 @@ export function TabBar({
 	onPrefetchTab,
 	onSelectTab,
 	onCloseTab,
+	onStartRenamePath,
 	onDragStart,
 	onDragEnd,
 	onReorder,
@@ -53,19 +55,25 @@ export function TabBar({
 		return withoutExt || name;
 	}, []);
 
+	const compactLabel = useCallback((value: string) => {
+		const text = value.trim();
+		if (text.length <= 20) return text;
+		return `${text.slice(0, 17)}...`;
+	}, []);
+
 	const tabLabel = useCallback(
 		(tab: WorkspaceTab) => {
 			if (tab.kind === "blank") return "New Tab";
-			if (tab.target === AI_AGENT_TAB_ID) return "AI Agent";
-			if (tab.target === ALL_DOCS_TAB_ID) return "All Notes";
-			if (tab.target === CALENDAR_TAB_ID) return "Calendar";
-			if (tab.target === DATABASES_TAB_ID) return "Collections";
-			if (tab.target === TEMPLATES_TAB_ID) return "Templates";
+			if (tab.target === AI_AGENT_TAB_ID) return compactLabel("AI Agent");
+			if (tab.target === ALL_DOCS_TAB_ID) return compactLabel("All Notes");
+			if (tab.target === CALENDAR_TAB_ID) return compactLabel("Calendar");
+			if (tab.target === DATABASES_TAB_ID) return compactLabel("Collections");
+			if (tab.target === TEMPLATES_TAB_ID) return compactLabel("Templates");
 			const parts = (tab.target ?? "").split("/").filter(Boolean);
 			const rawName = parts[parts.length - 1] ?? tab.target ?? "Untitled";
-			return stripFileExtension(rawName);
+			return compactLabel(stripFileExtension(rawName));
 		},
-		[stripFileExtension],
+		[compactLabel, stripFileExtension],
 	);
 
 	const [hovered, setHovered] = useState(false);
@@ -84,36 +92,33 @@ export function TabBar({
 				className="mainTabsBar"
 				data-empty-state={useWindowBackground ? "true" : "false"}
 			>
-				<div className="mainTabsSide" />
-				<div className="mainTabsCenter">
-					<div className="mainTabsStrip">
-						{tabs.map((tab) => (
-							<TabItem
-								key={tab.id}
-								tab={tab}
-								label={tabLabel(tab)}
-								isActive={tab.id === activeTabId}
-								dragTabId={dragTabId}
-								onPrefetchTab={onPrefetchTab}
-								onSelectTab={onSelectTab}
-								onCloseTab={onCloseTab}
-								onDragStart={onDragStart}
-								onDragEnd={onDragEnd}
-								onReorder={onReorder}
-							/>
-						))}
-						<button
-							type="button"
-							className="mainTabAdd"
-							onClick={onOpenBlankTab}
-							title={`Open blank tab (${getShortcutTooltip({ meta: true, key: "t" })})`}
-							aria-label="Open blank tab"
-						>
-							+
-						</button>
-					</div>
+				<div className="mainTabsStrip">
+					{tabs.map((tab) => (
+						<TabItem
+							key={tab.id}
+							tab={tab}
+							label={tabLabel(tab)}
+							isActive={tab.id === activeTabId}
+							dragTabId={dragTabId}
+							onPrefetchTab={onPrefetchTab}
+							onSelectTab={onSelectTab}
+							onCloseTab={onCloseTab}
+							onStartRenamePath={onStartRenamePath}
+							onDragStart={onDragStart}
+							onDragEnd={onDragEnd}
+							onReorder={onReorder}
+						/>
+					))}
 				</div>
-				<div className="mainTabsSide mainTabsSideEnd" />
+				<button
+					type="button"
+					className="mainTabAdd"
+					onClick={onOpenBlankTab}
+					title={`Open blank tab (${getShortcutTooltip({ meta: true, key: "t" })})`}
+					aria-label="Open blank tab"
+				>
+					+
+				</button>
 			</div>
 			{breadcrumbSegments.length > 0 && (
 				<div className={`mainTabsBreadcrumb ${hovered ? "is-visible" : ""}`}>
@@ -154,6 +159,7 @@ const TabItem = memo(function TabItem({
 	onSelectTab,
 	onPrefetchTab,
 	onCloseTab,
+	onStartRenamePath,
 	onDragStart,
 	onDragEnd,
 	onReorder,
@@ -165,6 +171,7 @@ const TabItem = memo(function TabItem({
 	onSelectTab: (tabId: string) => void;
 	onPrefetchTab: (target: string | null) => void;
 	onCloseTab: (tabId: string) => void;
+	onStartRenamePath: (path: string) => void;
 	onDragStart: (tabId: string) => void;
 	onDragEnd: () => void;
 	onReorder: (fromTabId: string, toTabId: string) => void;
@@ -195,6 +202,11 @@ const TabItem = memo(function TabItem({
 		},
 		[onCloseTab, tab.id],
 	);
+	const handleDoubleClick = useCallback(() => {
+		if (!tab.target || tab.kind === "blank" || isPathSpecial(tab.target))
+			return;
+		onStartRenamePath(tab.target);
+	}, [onStartRenamePath, tab.kind, tab.target]);
 
 	const title =
 		tab.kind === "blank"
@@ -227,6 +239,7 @@ const TabItem = memo(function TabItem({
 				onDragEnd={onDragEnd}
 				onDragOver={handleDragOver}
 				onDrop={handleDrop}
+				onDoubleClick={handleDoubleClick}
 			>
 				<span className="mainTabText">
 					<span className="mainTabLabel">{label}</span>

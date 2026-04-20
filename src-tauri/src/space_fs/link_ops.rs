@@ -45,6 +45,14 @@ fn basename(path: &str) -> String {
     path.rsplit('/').next().unwrap_or(path).to_string()
 }
 
+fn basename_without_extension(path: &str) -> String {
+    let name = basename(path);
+    match name.rsplit_once('.') {
+        Some((stem, _)) => stem.to_string(),
+        None => name,
+    }
+}
+
 fn title_from_rel(path: &str) -> String {
     basename(path)
         .trim_end_matches(".md")
@@ -138,6 +146,105 @@ fn list_files(root: &Path, markdown_only: bool, limit: usize) -> Result<Vec<File
     Ok(out)
 }
 
+fn is_image_rel_path(path: &str) -> bool {
+    let lower = path.to_ascii_lowercase();
+    lower.ends_with(".png")
+        || lower.ends_with(".jpg")
+        || lower.ends_with(".jpeg")
+        || lower.ends_with(".webp")
+        || lower.ends_with(".gif")
+        || lower.ends_with(".svg")
+        || lower.ends_with(".bmp")
+        || lower.ends_with(".avif")
+        || lower.ends_with(".tif")
+        || lower.ends_with(".tiff")
+}
+
+fn choose_ambiguous_image_match(matches: Vec<String>) -> Option<String> {
+    if matches.is_empty() {
+        return None;
+    }
+    if matches.len() == 1 {
+        return matches.into_iter().next();
+    }
+    let mut root_only = matches
+        .iter()
+        .filter(|path| !path.contains('/'))
+        .cloned()
+        .collect::<Vec<_>>();
+    if root_only.len() == 1 {
+        return root_only.pop();
+    }
+    let mut sorted = matches;
+    sorted.sort_by_cached_key(|path| path.to_lowercase());
+    sorted.into_iter().next()
+}
+
+fn resolve_image_wikilink_target(entries: &[FileEntry], target: &str) -> Option<String> {
+    let raw = target
+        .split('#')
+        .next()
+        .unwrap_or("")
+        .split('|')
+        .next()
+        .unwrap_or("")
+        .trim()
+        .replace('\\', "/");
+    if raw.is_empty() {
+        return None;
+    }
+
+    let normalized = normalize_segments(raw.trim_start_matches("./"));
+    if normalized.is_empty() {
+        return None;
+    }
+
+    let image_entries = entries
+        .iter()
+        .filter(|entry| is_image_rel_path(&entry.rel_path))
+        .collect::<Vec<_>>();
+
+    let explicit_path_query = if raw.starts_with('/') || normalized.contains('/') {
+        Some(normalized.trim_start_matches('/').to_string())
+    } else {
+        None
+    };
+
+    if let Some(path_query) = explicit_path_query {
+        if let Some(hit) = image_entries
+            .iter()
+            .find(|entry| normalize_path(&entry.rel_path).eq_ignore_ascii_case(&path_query))
+        {
+            return Some(hit.rel_path.clone());
+        }
+        return None;
+    }
+
+    let file_name_query = normalized.trim_start_matches('/');
+    let exact_name_matches = image_entries
+        .iter()
+        .filter(|entry| basename(&entry.rel_path).eq_ignore_ascii_case(file_name_query))
+        .map(|entry| entry.rel_path.clone())
+        .collect::<Vec<_>>();
+    if !exact_name_matches.is_empty() {
+        return choose_ambiguous_image_match(exact_name_matches);
+    }
+
+    let has_explicit_extension = file_name_query.rsplit_once('.').is_some();
+    if has_explicit_extension {
+        return None;
+    }
+
+    let stem_matches = image_entries
+        .iter()
+        .filter(|entry| {
+            basename_without_extension(&entry.rel_path).eq_ignore_ascii_case(file_name_query)
+        })
+        .map(|entry| entry.rel_path.clone())
+        .collect::<Vec<_>>();
+    choose_ambiguous_image_match(stem_matches)
+}
+
 #[tauri::command]
 pub async fn space_resolve_wikilink(
     state: State<'_, SpaceState>,
@@ -169,6 +276,20 @@ pub async fn space_resolve_wikilink(
             return Ok(Some(hit.rel_path.clone()));
         }
         Ok(None)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+pub async fn space_resolve_image_wikilink(
+    state: State<'_, SpaceState>,
+    target: String,
+) -> Result<Option<String>, String> {
+    let root = state.current_root()?;
+    tauri::async_runtime::spawn_blocking(move || {
+        let entries = list_files(&root, false, 80_000)?;
+        Ok(resolve_image_wikilink_target(&entries, &target))
     })
     .await
     .map_err(|e| e.to_string())?
@@ -221,6 +342,91 @@ pub async fn space_resolve_markdown_link(
     })
     .await
     .map_err(|e| e.to_string())?
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{resolve_image_wikilink_target, FileEntry};
+
+    fn entry(path: &str) -> FileEntry {
+        FileEntry {
+            rel_path: path.to_string(),
+            is_markdown: path.to_ascii_lowercase().ends_with(".md"),
+        }
+    }
+
+    #[test]
+    fn image_wikilink_resolves_root_relative_path() {
+        let entries = vec![entry("images/cover.png"), entry("docs/note.md")];
+        let resolved = resolve_image_wikilink_target(&entries, "/images/cover.png");
+        assert_eq!(resolved, Some("images/cover.png".to_string()));
+    }
+
+    #[test]
+    fn image_wikilink_resolves_nested_path_from_space_root() {
+        let entries = vec![
+            entry("assets/logo.png"),
+            entry("docs/assets/logo.png"),
+            entry("docs/note.md"),
+        ];
+        let resolved = resolve_image_wikilink_target(&entries, "assets/logo.png");
+        assert_eq!(resolved, Some("assets/logo.png".to_string()));
+    }
+
+    #[test]
+    fn image_wikilink_resolves_unique_filename() {
+        let entries = vec![entry("images/hero.webp"), entry("docs/note.md")];
+        let resolved = resolve_image_wikilink_target(&entries, "hero.webp");
+        assert_eq!(resolved, Some("images/hero.webp".to_string()));
+    }
+
+    #[test]
+    fn image_wikilink_resolves_extensionless_unique_stem() {
+        let entries = vec![
+            entry("images/diagram.png"),
+            entry("images/other.jpg"),
+            entry("docs/note.md"),
+        ];
+        let resolved = resolve_image_wikilink_target(&entries, "diagram");
+        assert_eq!(resolved, Some("images/diagram.png".to_string()));
+    }
+
+    #[test]
+    fn image_wikilink_ambiguous_filename_prefers_single_root_file() {
+        let entries = vec![
+            entry("photo.png"),
+            entry("assets/photo.png"),
+            entry("z/photo.png"),
+            entry("docs/note.md"),
+        ];
+        let resolved = resolve_image_wikilink_target(&entries, "photo.png");
+        assert_eq!(resolved, Some("photo.png".to_string()));
+    }
+
+    #[test]
+    fn image_wikilink_ambiguous_filename_falls_back_to_lexicographic() {
+        let entries = vec![
+            entry("zeta/photo.png"),
+            entry("alpha/photo.png"),
+            entry("docs/note.md"),
+        ];
+        let resolved = resolve_image_wikilink_target(&entries, "photo.png");
+        assert_eq!(resolved, Some("alpha/photo.png".to_string()));
+    }
+
+    #[test]
+    fn image_wikilink_does_not_fallback_for_missing_explicit_nested_path() {
+        let entries = vec![entry("images/photo.png"), entry("photo.png")];
+        let resolved = resolve_image_wikilink_target(&entries, "assets/photo.png");
+        assert_eq!(resolved, None);
+    }
+
+    #[test]
+    fn image_wikilink_ignores_non_images() {
+        let entries = vec![entry("image.md"), entry("docs/note.md")];
+        let resolved = resolve_image_wikilink_target(&entries, "image");
+        assert_eq!(resolved, None);
+    }
 }
 
 #[tauri::command]

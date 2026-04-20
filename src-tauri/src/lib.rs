@@ -1043,6 +1043,7 @@ pub fn run() {
             space_fs::list::space_list_markdown_files,
             space_fs::list::space_list_files,
             space_fs::link_ops::space_resolve_wikilink,
+            space_fs::link_ops::space_resolve_image_wikilink,
             space_fs::link_ops::space_resolve_markdown_link,
             space_fs::link_ops::space_suggest_links,
             space_fs::summary::space_dir_children_summary,

@@ -138,6 +138,34 @@ const SIDEBAR_MIN_WIDTH = 220;
 const SIDEBAR_MAX_WIDTH = 600;
 const PRINT_EDITOR_BODY_CLASS = "glyphPrintEditorMode";
 const PRINT_EDITOR_TARGET_CLASS = "glyphPrintEditorTarget";
+const IMAGE_EXTENSIONS = new Set([
+	"png",
+	"jpg",
+	"jpeg",
+	"webp",
+	"gif",
+	"svg",
+	"bmp",
+	"avif",
+	"tif",
+	"tiff",
+]);
+
+function fileExtension(path: string): string {
+	const name = path.split("/").pop() ?? path;
+	const dot = name.lastIndexOf(".");
+	if (dot <= 0 || dot === name.length - 1) return "";
+	return name.slice(dot + 1).toLowerCase();
+}
+
+function isImageWikiTarget(target: string): boolean {
+	return IMAGE_EXTENSIONS.has(fileExtension(target));
+}
+
+function isMarkdownWikiTarget(target: string): boolean {
+	const ext = fileExtension(target);
+	return !ext || ext === "md";
+}
 
 export function AppShell() {
 	const space = useSpace();
@@ -527,6 +555,10 @@ export function AppShell() {
 			const targetWithoutAnchor = rawTarget.split("#", 1)[0] ?? rawTarget;
 			const normalizedTarget = normalizeRelPath(targetWithoutAnchor);
 			if (!normalizedTarget) return;
+			if (!isMarkdownWikiTarget(normalizedTarget)) {
+				setError(`Only markdown notes are creatable via [[...]]: ${rawTarget}`);
+				return;
+			}
 
 			const resolved = await invoke("space_resolve_wikilink", {
 				target: normalizedTarget,
@@ -579,6 +611,29 @@ export function AppShell() {
 			if (!detail?.target) return;
 			void (async () => {
 				try {
+					const targetWithoutAnchor =
+						detail.target.split("#", 1)[0] ?? detail.target;
+					const normalizedTarget = normalizeRelPath(targetWithoutAnchor);
+					if (!normalizedTarget) return;
+
+					if (detail.embed || isImageWikiTarget(normalizedTarget)) {
+						const resolvedImage = await invoke("space_resolve_image_wikilink", {
+							target: normalizedTarget,
+						});
+						if (resolvedImage) {
+							await openWorkspaceFile(resolvedImage);
+							return;
+						}
+						setError(`Could not resolve image wikilink: ${detail.target}`);
+						return;
+					}
+
+					if (!isMarkdownWikiTarget(normalizedTarget)) {
+						setError(
+							`Unsupported non-markdown wikilink target: ${detail.target}`,
+						);
+						return;
+					}
 					await openOrCreateWikiLinkTarget(detail.target);
 				} catch (e) {
 					setError(
@@ -1097,6 +1152,42 @@ export function AppShell() {
 		setSidebarCollapsed,
 		setSidebarViewMode,
 	]);
+
+	const handleStartRenameFromTab = useCallback(
+		async (path: string) => {
+			const nextPath = path.trim();
+			if (!nextPath || !isMarkdownPath(nextPath)) return;
+			setSidebarCollapsed(false);
+			setSidebarViewMode("files");
+			const parentPath = parentDir(nextPath);
+			const ancestorDirs: string[] = [];
+			let current = parentPath;
+			while (current) {
+				ancestorDirs.unshift(current);
+				current = parentDir(current);
+			}
+			updateExpandedDirs((prev) => {
+				const next = new Set(prev);
+				for (const dir of ancestorDirs) next.add(dir);
+				return next;
+			});
+			for (const dir of ancestorDirs) {
+				await fileTree.loadDir(dir);
+			}
+			await fileTree.loadDir(parentPath || "");
+			window.requestAnimationFrame(() => {
+				window.requestAnimationFrame(() => {
+					dispatchFileTreeStartRename({ path: nextPath });
+				});
+			});
+		},
+		[
+			fileTree.loadDir,
+			setSidebarCollapsed,
+			setSidebarViewMode,
+			updateExpandedDirs,
+		],
+	);
 
 	const handleGitSyncFailure = useCallback(
 		(cause: unknown) => {
@@ -1788,6 +1879,7 @@ export function AppShell() {
 				renameTabsForPath={renameTabsForPath}
 				reorderTabs={reorderTabs}
 				openBlankTab={openBlankTab}
+				onStartRenamePath={handleStartRenameFromTab}
 				replaceActiveTabWithBlank={replaceActiveTabWithBlank}
 				showGettingStartedRequest={showGettingStartedRequest}
 				openDatabasesId={openDatabasesId}

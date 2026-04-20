@@ -76,6 +76,7 @@ type TauriEventMap = {
 			delightfulGlyph?: boolean;
 			showToc?: boolean;
 			showFileTreeFolderCounts?: boolean;
+			showTaskProgressIndicator?: boolean;
 			aiEnabled?: boolean;
 			aiAssistantMode?: "chat" | "create";
 		};
@@ -95,6 +96,7 @@ type TauriEventMap = {
 		};
 		editor?: {
 			showCollapsibleHeadings?: boolean;
+			showFrontmatterInEditor?: boolean;
 			colorfulHeadings?: boolean;
 			editorWidthMode?: EditorWidthMode;
 			attachmentStorageMode?: AttachmentStorageMode;

@@ -7,11 +7,13 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { FileTreePane } from "./FileTreePane";
 
 const {
+	invokeMock,
 	loadSettingsMock,
 	useFileTreeContextMock,
 	useSpaceMock,
 	useTauriEventMock,
 } = vi.hoisted(() => ({
+	invokeMock: vi.fn(() => Promise.resolve([])),
 	loadSettingsMock: vi.fn(),
 	useFileTreeContextMock: vi.fn(),
 	useSpaceMock: vi.fn(),
@@ -79,7 +81,7 @@ vi.mock("../../lib/tauriEvents", () => ({
 }));
 
 vi.mock("../../lib/tauri", () => ({
-	invoke: vi.fn(),
+	invoke: invokeMock,
 }));
 
 (
@@ -95,7 +97,10 @@ describe("FileTreePane", () => {
 	beforeEach(() => {
 		vi.clearAllMocks();
 		loadSettingsMock.mockResolvedValue({
-			ui: { showFileTreeFolderCounts: false },
+			ui: {
+				showFileTreeFolderCounts: false,
+				showTaskProgressIndicator: true,
+			},
 		});
 		useFileTreeContextMock.mockReturnValue({
 			itemAppearance: {},

@@ -12,14 +12,8 @@ export function TaskProgressIndicator({
 	const { completed_count, total_count } = summary;
 	const ratio = total_count > 0 ? completed_count / total_count : 0;
 	const clampedRatio = Math.max(0, Math.min(1, ratio));
-	const tone =
-		clampedRatio >= 1
-			? "green"
-			: clampedRatio >= 0.66
-				? "blue"
-				: clampedRatio >= 0.25
-					? "yellow"
-					: "red";
+	const RING_RADIUS = 4;
+	const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 
 	return (
 		<div
@@ -29,15 +23,26 @@ export function TaskProgressIndicator({
 			title={`${completed_count}/${total_count} tasks completed`}
 			aria-label={`${completed_count} of ${total_count} tasks completed`}
 		>
-			<div
-				className={`markdownEditorTaskProgressBar is-${tone}`}
+			<svg
+				className="markdownEditorTaskProgressRing"
+				viewBox="0 0 12 12"
 				aria-hidden="true"
 			>
-				<div
-					className="markdownEditorTaskProgressFill"
-					style={{ transform: `scaleX(${clampedRatio})` }}
+				<circle
+					className="markdownEditorTaskProgressTrack"
+					cx="6"
+					cy="6"
+					r={RING_RADIUS}
 				/>
-			</div>
+				<circle
+					className="markdownEditorTaskProgressStroke"
+					cx="6"
+					cy="6"
+					r={RING_RADIUS}
+					strokeDasharray={RING_CIRCUMFERENCE}
+					strokeDashoffset={RING_CIRCUMFERENCE * (1 - clampedRatio)}
+				/>
+			</svg>
 		</div>
 	);
 }

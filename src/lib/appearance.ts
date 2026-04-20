@@ -24,6 +24,23 @@ const BASE_TEXT_SIZES = {
 	"3xl": 30,
 } as const;
 
+const BASE_SPACE_SIZES = {
+	1: 4,
+	2: 8,
+	3: 12,
+	4: 16,
+	5: 20,
+	6: 24,
+	8: 32,
+} as const;
+
+const BASE_LAYOUT_SIZES = {
+	headerHeight: 48,
+	buttonHeight: 32,
+	buttonHeightSm: 26,
+	inputHeight: 32,
+} as const;
+
 const BASE_EDITOR_TEXT_SIZES = {
 	body: 16,
 	inline: 13,
@@ -38,7 +55,7 @@ const BASE_EDITOR_TEXT_SIZES = {
 
 const UI_ACCENT_COLORS: Record<UiAccent, string> = {
 	neutral: "#2f2f2f",
-	"glyph-orange": "#ff9f0a",
+	"glyph-orange": "#de7356",
 	cerulean: "#0081a7",
 	"tropical-teal": "#00afb9",
 	"light-yellow": "#fdfcdc",
@@ -69,6 +86,15 @@ function scaledEditorPx(px: number, scale: number): string {
 	return `${Math.round(px * scale * 100) / 100}px`;
 }
 
+function getCompactDisplayBoost(): number {
+	if (typeof window === "undefined" || !window.screen) return 1;
+	const availableWidth = Number(window.screen.availWidth);
+	if (!Number.isFinite(availableWidth) || availableWidth <= 0) return 1;
+	if (availableWidth <= 1366) return 1.12;
+	if (availableWidth <= 1512) return 1.08;
+	return 1;
+}
+
 export function applyUiTypography(
 	fontFamily: UiFontFamily,
 	monoFontFamily: UiFontFamily,
@@ -79,6 +105,11 @@ export function applyUiTypography(
 	const safeFamily = fontFamily.trim() || "Satoshi";
 	const safeMonoFamily = monoFontFamily.trim() || "JetBrains Mono";
 	const uiScale = Math.max(0.5, Math.min(3, uiFontSize / 14));
+	const compactDisplayBoost = getCompactDisplayBoost();
+	const effectiveUiScale = Math.max(
+		0.5,
+		Math.min(3, uiScale * compactDisplayBoost),
+	);
 	const editorScale = Math.max(
 		MIN_EDITOR_FONT_SIZE / BASE_EDITOR_TEXT_SIZES.body,
 		Math.min(
@@ -86,7 +117,7 @@ export function applyUiTypography(
 			editorFontSize / 16,
 		),
 	);
-	const rootRemPx = 16 * uiScale;
+	const rootRemPx = 16 * effectiveUiScale;
 
 	// Scale rem-based typography globally so Tailwind/shadcn text sizes follow too.
 	root.style.fontSize = `${Math.round(rootRemPx * 100) / 100}px`;
@@ -98,22 +129,81 @@ export function applyUiTypography(
 		"--font-mono",
 		`"${safeMonoFamily}", ui-monospace, SFMono-Regular, Menlo, monospace`,
 	);
-	root.style.setProperty("--text-xs", scaledPx(BASE_TEXT_SIZES.xs, uiScale));
-	root.style.setProperty("--text-sm", scaledPx(BASE_TEXT_SIZES.sm, uiScale));
+	root.style.setProperty(
+		"--text-xs",
+		scaledPx(BASE_TEXT_SIZES.xs, effectiveUiScale),
+	);
+	root.style.setProperty(
+		"--text-sm",
+		scaledPx(BASE_TEXT_SIZES.sm, effectiveUiScale),
+	);
 	root.style.setProperty(
 		"--text-base",
-		scaledPx(BASE_TEXT_SIZES.base, uiScale),
+		scaledPx(BASE_TEXT_SIZES.base, effectiveUiScale),
 	);
-	root.style.setProperty("--text-md", scaledPx(BASE_TEXT_SIZES.md, uiScale));
-	root.style.setProperty("--text-lg", scaledPx(BASE_TEXT_SIZES.lg, uiScale));
-	root.style.setProperty("--text-xl", scaledPx(BASE_TEXT_SIZES.xl, uiScale));
+	root.style.setProperty(
+		"--text-md",
+		scaledPx(BASE_TEXT_SIZES.md, effectiveUiScale),
+	);
+	root.style.setProperty(
+		"--text-lg",
+		scaledPx(BASE_TEXT_SIZES.lg, effectiveUiScale),
+	);
+	root.style.setProperty(
+		"--text-xl",
+		scaledPx(BASE_TEXT_SIZES.xl, effectiveUiScale),
+	);
 	root.style.setProperty(
 		"--text-2xl",
-		scaledPx(BASE_TEXT_SIZES["2xl"], uiScale),
+		scaledPx(BASE_TEXT_SIZES["2xl"], effectiveUiScale),
 	);
 	root.style.setProperty(
 		"--text-3xl",
-		scaledPx(BASE_TEXT_SIZES["3xl"], uiScale),
+		scaledPx(BASE_TEXT_SIZES["3xl"], effectiveUiScale),
+	);
+	root.style.setProperty(
+		"--space-1",
+		scaledPx(BASE_SPACE_SIZES[1], effectiveUiScale),
+	);
+	root.style.setProperty(
+		"--space-2",
+		scaledPx(BASE_SPACE_SIZES[2], effectiveUiScale),
+	);
+	root.style.setProperty(
+		"--space-3",
+		scaledPx(BASE_SPACE_SIZES[3], effectiveUiScale),
+	);
+	root.style.setProperty(
+		"--space-4",
+		scaledPx(BASE_SPACE_SIZES[4], effectiveUiScale),
+	);
+	root.style.setProperty(
+		"--space-5",
+		scaledPx(BASE_SPACE_SIZES[5], effectiveUiScale),
+	);
+	root.style.setProperty(
+		"--space-6",
+		scaledPx(BASE_SPACE_SIZES[6], effectiveUiScale),
+	);
+	root.style.setProperty(
+		"--space-8",
+		scaledPx(BASE_SPACE_SIZES[8], effectiveUiScale),
+	);
+	root.style.setProperty(
+		"--header-height",
+		scaledPx(BASE_LAYOUT_SIZES.headerHeight, effectiveUiScale),
+	);
+	root.style.setProperty(
+		"--button-height",
+		scaledPx(BASE_LAYOUT_SIZES.buttonHeight, effectiveUiScale),
+	);
+	root.style.setProperty(
+		"--button-height-sm",
+		scaledPx(BASE_LAYOUT_SIZES.buttonHeightSm, effectiveUiScale),
+	);
+	root.style.setProperty(
+		"--input-height",
+		scaledPx(BASE_LAYOUT_SIZES.inputHeight, effectiveUiScale),
 	);
 	root.style.setProperty(
 		"--editor-font-size",

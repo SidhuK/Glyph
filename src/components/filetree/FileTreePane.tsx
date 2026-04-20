@@ -10,6 +10,7 @@ import type {
 	DirChildSummary,
 	FileTreeAppearance,
 	FsEntry,
+	NoteTaskSummary,
 } from "../../lib/tauri";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
@@ -18,6 +19,7 @@ import {
 	parentDir,
 	basename as relBasename,
 } from "../../utils/path";
+import { TaskProgressIndicator } from "../tasks/TaskProgressIndicator";
 import { springPresets } from "../ui/animations";
 import { FileTreeDirItem } from "./FileTreeDirItem";
 import { FileTreeFileItem } from "./FileTreeFileItem";
@@ -86,6 +88,8 @@ interface TreeEntriesProps {
 		direction: -1 | 1,
 		currentTarget: HTMLButtonElement,
 	) => void;
+	showTaskProgressIndicator: boolean;
+	taskSummariesByPath: Record<string, NoteTaskSummary>;
 }
 
 function TreeEntries({
@@ -117,6 +121,8 @@ function TreeEntries({
 	pinnedFiles,
 	onTogglePinnedFile,
 	onArrowNavigate,
+	showTaskProgressIndicator,
+	taskSummariesByPath,
 }: TreeEntriesProps) {
 	if (entries.length === 0) return null;
 
@@ -190,6 +196,8 @@ function TreeEntries({
 									pinnedFiles={pinnedFiles}
 									onTogglePinnedFile={onTogglePinnedFile}
 									onArrowNavigate={onArrowNavigate}
+									showTaskProgressIndicator={showTaskProgressIndicator}
+									taskSummariesByPath={taskSummariesByPath}
 								/>
 							)}
 						</FileTreeDirItem>
@@ -222,6 +230,11 @@ function TreeEntries({
 						isPinned={pinnedFiles.includes(e.rel_path)}
 						onTogglePinned={onTogglePinnedFile}
 						onArrowNavigate={onArrowNavigate}
+						taskSummary={
+							showTaskProgressIndicator
+								? (taskSummariesByPath[e.rel_path] ?? null)
+								: null
+						}
 					/>
 				);
 			})}
@@ -256,8 +269,13 @@ export const FileTreePane = memo(function FileTreePane({
 	const { itemAppearance, setItemAppearance } = useFileTreeContext();
 	const { spacePath, setError } = useSpace();
 	const [showFolderFileCounts, setShowFolderFileCounts] = useState(false);
+	const [showTaskProgressIndicator, setShowTaskProgressIndicator] =
+		useState(true);
 	const [folderFileCounts, setFolderFileCounts] = useState<
 		Record<string, number>
+	>({});
+	const [taskSummariesByPath, setTaskSummariesByPath] = useState<
+		Record<string, NoteTaskSummary>
 	>({});
 
 	useEffect(() => {
@@ -265,6 +283,7 @@ export const FileTreePane = memo(function FileTreePane({
 		void loadSettings().then((settings) => {
 			if (!cancelled) {
 				setShowFolderFileCounts(settings.ui.showFileTreeFolderCounts);
+				setShowTaskProgressIndicator(settings.ui.showTaskProgressIndicator);
 			}
 		});
 		return () => {
@@ -275,6 +294,9 @@ export const FileTreePane = memo(function FileTreePane({
 	useTauriEvent("settings:updated", (payload) => {
 		if (typeof payload.ui?.showFileTreeFolderCounts === "boolean") {
 			setShowFolderFileCounts(payload.ui.showFileTreeFolderCounts);
+		}
+		if (typeof payload.ui?.showTaskProgressIndicator === "boolean") {
+			setShowTaskProgressIndicator(payload.ui.showTaskProgressIndicator);
 		}
 	});
 
@@ -354,6 +376,63 @@ export const FileTreePane = memo(function FileTreePane({
 		summaryParentDirs,
 		folderCountTreeRevision,
 	]);
+
+	const taskSummaryPaths = useMemo(() => {
+		const paths = new Set<string>();
+		const collectEntries = (entries: FsEntry[] | undefined) => {
+			for (const entry of entries ?? []) {
+				if (entry.kind === "file" && entry.is_markdown) {
+					paths.add(entry.rel_path);
+				}
+			}
+		};
+
+		collectEntries(rootEntries);
+		for (const dirPath of Object.keys(childrenByDir)) {
+			collectEntries(childrenByDir[dirPath]);
+		}
+		for (const pinnedPath of pinnedFiles) {
+			if (isMarkdownPath(pinnedPath)) {
+				paths.add(pinnedPath);
+			}
+		}
+
+		return [...paths].sort();
+	}, [childrenByDir, pinnedFiles, rootEntries]);
+
+	useEffect(() => {
+		if (
+			!spacePath ||
+			!showTaskProgressIndicator ||
+			taskSummaryPaths.length === 0
+		) {
+			setTaskSummariesByPath({});
+			return;
+		}
+
+		let cancelled = false;
+		void invoke("task_summaries_for_paths", { note_paths: taskSummaryPaths })
+			.then((items) => {
+				if (cancelled) return;
+				const next: Record<string, NoteTaskSummary> = {};
+				for (const item of items) {
+					next[item.note_path] = {
+						total_count: item.total_count,
+						completed_count: item.completed_count,
+						open_count: item.open_count,
+					};
+				}
+				setTaskSummariesByPath(next);
+			})
+			.catch(() => {
+				if (cancelled) return;
+				setTaskSummariesByPath({});
+			});
+
+		return () => {
+			cancelled = true;
+		};
+	}, [showTaskProgressIndicator, spacePath, taskSummaryPaths]);
 
 	const handleCreateFolder = useCallback(
 		async (dirPath: string) => {
@@ -527,6 +606,14 @@ export const FileTreePane = memo(function FileTreePane({
 													<span className="fileTreeName">
 														{file.displayName}
 													</span>
+													{showTaskProgressIndicator &&
+													(taskSummariesByPath[file.path]?.total_count ?? 0) >
+														0 ? (
+														<TaskProgressIndicator
+															summary={taskSummariesByPath[file.path]}
+															className="fileTreeTaskProgress"
+														/>
+													) : null}
 													{file.parent ? (
 														<span className="fileTreePinnedPath">
 															{file.parent}
@@ -570,6 +657,8 @@ export const FileTreePane = memo(function FileTreePane({
 							pinnedFiles={pinnedFiles}
 							onTogglePinnedFile={onTogglePinnedFile}
 							onArrowNavigate={handleArrowNavigate}
+							showTaskProgressIndicator={showTaskProgressIndicator}
+							taskSummariesByPath={taskSummariesByPath}
 						/>
 					) : null}
 				</div>

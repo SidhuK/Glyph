@@ -291,6 +291,7 @@ interface MainContentProps {
 	) => void;
 	reorderTabs: (fromTabId: string, toTabId: string) => void;
 	openBlankTab: () => void;
+	onStartRenamePath: (path: string) => void;
 	replaceActiveTabWithBlank: () => void;
 	showGettingStartedRequest: number;
 	openDatabasesId: string | null;
@@ -384,6 +385,7 @@ export const MainContent = memo(function MainContent({
 	renameTabsForPath,
 	reorderTabs,
 	openBlankTab,
+	onStartRenamePath,
 	replaceActiveTabWithBlank,
 	showGettingStartedRequest,
 	openDatabasesId,
@@ -822,6 +824,7 @@ export const MainContent = memo(function MainContent({
 								onPrefetchTab={handlePrefetchTab}
 								onSelectTab={setActiveTabId}
 								onCloseTab={closeTab}
+								onStartRenamePath={onStartRenamePath}
 								onDragStart={setDragTabId}
 								onDragEnd={() => setDragTabId(null)}
 								onReorder={reorderTabs}

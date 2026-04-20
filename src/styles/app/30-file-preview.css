@@ -236,47 +236,31 @@
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 24px;
+	width: 16px;
 	height: 12px;
 }
 
-.markdownEditorTaskProgressBar {
-	position: relative;
-	display: flex;
-	align-items: stretch;
-	justify-content: flex-start;
-	width: 18px;
-	height: 9px;
-	border: 1px solid color-mix(in srgb, var(--border-default) 68%, transparent);
-	border-radius: 2px;
-	background: color-mix(in srgb, var(--bg-secondary) 92%, var(--bg-primary));
-	box-shadow: inset 0 0 0 1px
-		color-mix(in srgb, var(--border-light) 28%, transparent);
-	overflow: hidden;
+.markdownEditorTaskProgressRing {
+	width: 12px;
+	height: 12px;
+	display: block;
+	transform: rotate(-90deg);
 }
 
-.markdownEditorTaskProgressFill {
-	width: 100%;
-	height: 100%;
-	border-radius: 0;
-	transform-origin: left center;
-	transition: transform 180ms ease;
+.markdownEditorTaskProgressTrack,
+.markdownEditorTaskProgressStroke {
+	fill: none;
+	stroke-width: 2;
 }
 
-.markdownEditorTaskProgressBar.is-red .markdownEditorTaskProgressFill {
-	background: var(--glyph-inline-highlight-red, rgba(249, 112, 102, 0.2));
+.markdownEditorTaskProgressTrack {
+	stroke: color-mix(in srgb, var(--interactive-accent) 28%, transparent);
 }
 
-.markdownEditorTaskProgressBar.is-yellow .markdownEditorTaskProgressFill {
-	background: var(--glyph-inline-highlight-yellow, rgba(240, 180, 41, 0.26));
-}
-
-.markdownEditorTaskProgressBar.is-blue .markdownEditorTaskProgressFill {
-	background: var(--glyph-inline-highlight-blue, rgba(59, 155, 220, 0.22));
-}
-
-.markdownEditorTaskProgressBar.is-green .markdownEditorTaskProgressFill {
-	background: var(--glyph-inline-highlight-green, rgba(60, 207, 142, 0.24));
+.markdownEditorTaskProgressStroke {
+	stroke: var(--interactive-accent);
+	stroke-linecap: round;
+	transition: stroke-dashoffset 180ms ease;
 }
 
 .markdownEditorSaveState {
@@ -325,7 +309,7 @@
 }
 
 .markdownEditorStatsDock.is-collapsed .markdownEditorTaskProgress {
-	width: 24px;
+	width: 16px;
 	height: 12px;
 }
 

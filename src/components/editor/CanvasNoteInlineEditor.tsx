@@ -387,6 +387,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		lastAppliedBodyRef,
 		lastEmittedMarkdownRef,
 		colorfulHeadings,
+		showFrontmatterInEditor,
 	} = useNoteEditor({
 		markdown,
 		mode,
@@ -862,6 +863,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 									anchorKind: parsed.anchorKind,
 									anchor: parsed.anchor,
 									unresolved: parsed.unresolved,
+									embed: parsed.embed,
 								});
 							}}
 						>
@@ -1482,14 +1484,17 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 						spellCheck={false}
 					/>
 				) : null}
-				{mode === "rich" && frontmatterDraft && !zenModeActive ? (
+				{mode === "rich" &&
+				showFrontmatterInEditor &&
+				frontmatterDraft &&
+				!zenModeActive ? (
 					<div className="frontmatterPreview mono">
 						<NotePropertiesPanel
 							frontmatter={frontmatterDraft}
 							onChange={handleFrontmatterChange}
 						/>
 					</div>
-				) : frontmatter && !zenModeActive ? (
+				) : showFrontmatterInEditor && frontmatter && !zenModeActive ? (
 					<div className="frontmatterPreview mono">
 						<pre>{renderFrontmatterWithLinks(frontmatter.trimEnd())}</pre>
 					</div>

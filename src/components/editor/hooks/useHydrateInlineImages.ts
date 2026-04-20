@@ -126,10 +126,28 @@ function dedupeCandidates(href: string): string[] {
 	return Array.from(new Set(out));
 }
 
+type InlineImageResolverKind = "markdown-link" | "wiki-image-link";
+
+function getResolverKindForImage(image: Element): InlineImageResolverKind {
+	return image.getAttribute("data-wikilink-embed") === "true"
+		? "wiki-image-link"
+		: "markdown-link";
+}
+
 async function resolveSpaceImagePath(
 	sourcePath: string,
 	href: string,
+	kind: InlineImageResolverKind,
 ): Promise<string | null> {
+	if (kind === "wiki-image-link") {
+		for (const candidate of dedupeCandidates(href)) {
+			const resolved = await invoke("space_resolve_image_wikilink", {
+				target: candidate,
+			});
+			if (resolved) return resolved;
+		}
+		return null;
+	}
 	for (const candidate of dedupeCandidates(href)) {
 		const resolved = await invoke("space_resolve_markdown_link", {
 			href: candidate,
@@ -143,8 +161,9 @@ async function resolveSpaceImagePath(
 async function resolveInlineImageDataUrl(
 	sourcePath: string,
 	rawSrc: string,
+	kind: InlineImageResolverKind,
 ): Promise<string | null> {
-	const key = `${sourcePath}::${rawSrc}`;
+	const key = `${sourcePath}::${kind}::${rawSrc}`;
 	if (dataUrlCache.has(key)) return dataUrlCache.get(key) ?? null;
 	if (missCache.has(key)) return null;
 	if (inFlightCache.has(key)) return inFlightCache.get(key) ?? null;
@@ -154,7 +173,7 @@ async function resolveInlineImageDataUrl(
 
 	const promise = (async () => {
 		try {
-			const relPath = await resolveSpaceImagePath(sourcePath, rawSrc);
+			const relPath = await resolveSpaceImagePath(sourcePath, rawSrc, kind);
 			if (
 				!matchesGeneration(
 					sourcePath,
@@ -275,9 +294,10 @@ export function useHydrateInlineImages(
 				if (image.getAttribute("data-glyph-origin-src") !== originalSrc) {
 					image.setAttribute("data-glyph-origin-src", originalSrc);
 				}
-				const key = `${sourcePath}::${originalSrc}`;
+				const resolverKind = getResolverKindForImage(image);
+				const key = `${sourcePath}::${resolverKind}::${originalSrc}`;
 				if (image.getAttribute("data-glyph-hydrated-key") === key) continue;
-				void resolveInlineImageDataUrl(sourcePath, originalSrc).then(
+				void resolveInlineImageDataUrl(sourcePath, originalSrc, resolverKind).then(
 					(dataUrl) => {
 						if (cancelled || !dataUrl || !image.isConnected) return;
 						hydrateImageNodesInDocument(editor, originalSrc, dataUrl);

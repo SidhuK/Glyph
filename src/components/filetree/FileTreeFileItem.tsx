@@ -11,10 +11,15 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import { m } from "motion/react";
 import type { KeyboardEvent } from "react";
 import { memo, useEffect, useRef, useState } from "react";
-import type { FileTreeAppearance, FsEntry } from "../../lib/tauri";
+import type {
+	FileTreeAppearance,
+	FsEntry,
+	NoteTaskSummary,
+} from "../../lib/tauri";
 import { FolderPlus, Trash2 } from "../Icons";
 import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
 import { isEditorTextColor } from "../editor/textColors";
+import { TaskProgressIndicator } from "../tasks/TaskProgressIndicator";
 import {
 	ContextMenu,
 	ContextMenuContent,
@@ -121,6 +126,7 @@ interface FileTreeFileItemProps {
 		direction: -1 | 1,
 		currentTarget: HTMLButtonElement,
 	) => void;
+	taskSummary: NoteTaskSummary | null;
 }
 
 export const FileTreeFileItem = memo(function FileTreeFileItem({
@@ -145,6 +151,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 	isPinned,
 	onTogglePinned,
 	onArrowNavigate,
+	taskSummary,
 }: FileTreeFileItemProps) {
 	const customColor =
 		appearance?.color && isEditorTextColor(appearance.color)
@@ -182,7 +189,11 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 		<li className={isActive ? "fileTreeItem active" : "fileTreeItem"}>
 			<div className="fileTreeRowShell">
 				{isRenaming ? (
-					<div className="fileTreeRow fileTreeRowEditing" style={rowStyle}>
+					<div
+						className="fileTreeRow fileTreeRowEditing"
+						style={rowStyle}
+						data-file-tree-path={entry.rel_path}
+					>
 						<span className="fileTreeLeadingSpacer" aria-hidden="true" />
 						<FileRenameInput
 							key={`${entry.rel_path}:${entry.name}`}
@@ -230,6 +241,12 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 									/>
 								)}
 								<span className="fileTreeName">{displayStem}</span>
+								{(taskSummary?.total_count ?? 0) > 0 ? (
+									<TaskProgressIndicator
+										summary={taskSummary}
+										className="fileTreeTaskProgress"
+									/>
+								) : null}
 								{extBadge && (
 									<span className="fileTreeExtBadge">{extBadge}</span>
 								)}

@@ -64,6 +64,7 @@ const DEFAULT_UI_ACCENT: UiAccent = "cerulean";
 const DEFAULT_UI_FONT_FAMILY = "Satoshi";
 const DEFAULT_UI_MONO_FONT_FAMILY = "JetBrains Mono";
 const DEFAULT_AUTO_UPDATE_CHECK_INTERVAL: AutoUpdateCheckInterval = "3h";
+const DEFAULT_SHOW_TASK_PROGRESS_INDICATOR = true;
 export const MIN_UI_FONT_SIZE = 7;
 export const MAX_UI_FONT_SIZE = 40;
 const DEFAULT_UI_FONT_SIZE = 14;
@@ -110,6 +111,7 @@ export interface DatabaseSettings {
 
 export interface EditorSettings {
 	showCollapsibleHeadings: boolean;
+	showFrontmatterInEditor: boolean;
 	colorfulHeadings: boolean;
 	editorWidthMode: EditorWidthMode;
 	attachmentStorageMode: AttachmentStorageMode;
@@ -129,6 +131,7 @@ const DEFAULT_DATABASE_SETTINGS: DatabaseSettings = {
 
 const DEFAULT_EDITOR_SETTINGS: EditorSettings = {
 	showCollapsibleHeadings: false,
+	showFrontmatterInEditor: false,
 	colorfulHeadings: false,
 	editorWidthMode: "compact",
 	attachmentStorageMode: "note-folder",
@@ -234,6 +237,7 @@ async function emitSettingsUpdated(payload: {
 		delightfulGlyph?: boolean;
 		showToc?: boolean;
 		showFileTreeFolderCounts?: boolean;
+		showTaskProgressIndicator?: boolean;
 		aiAssistantMode?: AiAssistantMode;
 		aiEnabled?: boolean;
 	};
@@ -256,6 +260,7 @@ async function emitSettingsUpdated(payload: {
 	};
 	editor?: {
 		showCollapsibleHeadings?: boolean;
+		showFrontmatterInEditor?: boolean;
 		colorfulHeadings?: boolean;
 		editorWidthMode?: EditorWidthMode;
 		attachmentStorageMode?: AttachmentStorageMode;
@@ -298,6 +303,7 @@ interface AppSettings {
 		delightfulGlyph: boolean;
 		showToc: boolean;
 		showFileTreeFolderCounts: boolean;
+		showTaskProgressIndicator: boolean;
 		aiAssistantMode: AiAssistantMode;
 	};
 	dailyNotes: {
@@ -336,7 +342,9 @@ const KEYS = {
 	delightfulGlyph: "ui.delightfulGlyph",
 	showToc: "ui.showToc",
 	showFileTreeFolderCounts: "ui.fileTree.showFolderFileCounts",
+	showTaskProgressIndicator: "ui.taskProgressIndicator.enabled",
 	editorShowCollapsibleHeadings: "editor.showCollapsibleHeadings",
+	editorShowFrontmatterInEditor: "editor.showFrontmatterInEditor",
 	editorColorfulHeadings: "editor.colorfulHeadings",
 	editorEditorWidthMode: "editor.editorWidthMode",
 	editorAttachmentStorageMode: "editor.attachmentStorageMode",
@@ -440,12 +448,14 @@ export async function loadSettings(): Promise<AppSettings> {
 		rawDelightfulGlyph,
 		rawShowToc,
 		rawShowFileTreeFolderCounts,
+		rawShowTaskProgressIndicator,
 		dailyNotesFolderRaw,
 		rawWebClippingsFolder,
 		templatesFolderRaw,
 		templatesDailyNoteTemplateRaw,
 		taskSourceRaw,
 		rawEditorShowCollapsibleHeadings,
+		rawEditorShowFrontmatterInEditor,
 		rawEditorColorfulHeadings,
 		rawEditorWidthMode,
 		rawEditorAttachmentStorageMode,
@@ -478,12 +488,14 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<boolean | null>(KEYS.delightfulGlyph),
 		store.get<boolean | null>(KEYS.showToc),
 		store.get<boolean | null>(KEYS.showFileTreeFolderCounts),
+		store.get<boolean | null>(KEYS.showTaskProgressIndicator),
 		store.get<string | null>(KEYS.dailyNotesFolder),
 		store.get<string | null>(KEYS.webClippingsFolder),
 		store.get<string | null>(KEYS.templatesFolder),
 		store.get<string | null>(KEYS.templatesDailyNoteTemplate),
 		store.get<unknown>(KEYS.taskSource),
 		store.get<boolean | null>(KEYS.editorShowCollapsibleHeadings),
+		store.get<boolean | null>(KEYS.editorShowFrontmatterInEditor),
 		store.get<boolean | null>(KEYS.editorColorfulHeadings),
 		store.get<unknown>(KEYS.editorEditorWidthMode),
 		store.get<unknown>(KEYS.editorAttachmentStorageMode),
@@ -529,6 +541,10 @@ export async function loadSettings(): Promise<AppSettings> {
 		typeof rawShowFileTreeFolderCounts === "boolean"
 			? rawShowFileTreeFolderCounts
 			: DEFAULT_FILE_TREE_SETTINGS.showFolderFileCounts;
+	const showTaskProgressIndicator =
+		typeof rawShowTaskProgressIndicator === "boolean"
+			? rawShowTaskProgressIndicator
+			: DEFAULT_SHOW_TASK_PROGRESS_INDICATOR;
 	const dailyNotesFolder =
 		typeof dailyNotesFolderRaw === "string"
 			? normalizeRelPath(dailyNotesFolderRaw) || null
@@ -558,6 +574,10 @@ export async function loadSettings(): Promise<AppSettings> {
 			typeof rawEditorShowCollapsibleHeadings === "boolean"
 				? rawEditorShowCollapsibleHeadings
 				: DEFAULT_EDITOR_SETTINGS.showCollapsibleHeadings,
+		showFrontmatterInEditor:
+			typeof rawEditorShowFrontmatterInEditor === "boolean"
+				? rawEditorShowFrontmatterInEditor
+				: DEFAULT_EDITOR_SETTINGS.showFrontmatterInEditor,
 		colorfulHeadings:
 			typeof rawEditorColorfulHeadings === "boolean"
 				? rawEditorColorfulHeadings
@@ -604,6 +624,7 @@ export async function loadSettings(): Promise<AppSettings> {
 			delightfulGlyph,
 			showToc,
 			showFileTreeFolderCounts,
+			showTaskProgressIndicator,
 			aiAssistantMode,
 		},
 		dailyNotes: {
@@ -770,6 +791,15 @@ export async function setShowFileTreeFolderCounts(
 	void emitSettingsUpdated({ ui: { showFileTreeFolderCounts: enabled } });
 }
 
+export async function setShowTaskProgressIndicator(
+	enabled: boolean,
+): Promise<void> {
+	const store = await getStore();
+	await store.set(KEYS.showTaskProgressIndicator, enabled);
+	await store.save();
+	void emitSettingsUpdated({ ui: { showTaskProgressIndicator: enabled } });
+}
+
 export async function setEditorShowCollapsibleHeadings(
 	enabled: boolean,
 ): Promise<void> {
@@ -789,6 +819,17 @@ export async function setEditorColorfulHeadings(
 	await store.save();
 	void emitSettingsUpdated({
 		editor: { colorfulHeadings: enabled },
+	});
+}
+
+export async function setEditorShowFrontmatterInEditor(
+	enabled: boolean,
+): Promise<void> {
+	const store = await getStore();
+	await store.set(KEYS.editorShowFrontmatterInEditor, enabled);
+	await store.save();
+	void emitSettingsUpdated({
+		editor: { showFrontmatterInEditor: enabled },
 	});
 }
 

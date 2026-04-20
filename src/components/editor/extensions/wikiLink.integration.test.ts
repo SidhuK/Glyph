@@ -21,4 +21,13 @@ describe("WikiLink markdown manager integration", () => {
 		const out = manager.serialize(json);
 		expect(out).toContain("[[#Heading]]");
 	});
+
+	it("round-trips embedded image wikilinks", () => {
+		const manager = new MarkdownManager({
+			extensions: [StarterKit, WikiLink],
+		});
+		const json = manager.parse("Hero ![[assets/cover.png]]");
+		const out = manager.serialize(json);
+		expect(out).toContain("![[assets/cover.png]]");
+	});
 });
