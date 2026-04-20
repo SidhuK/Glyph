@@ -64,11 +64,11 @@ export function TabBar({
 	const tabLabel = useCallback(
 		(tab: WorkspaceTab) => {
 			if (tab.kind === "blank") return "New Tab";
-			if (tab.target === AI_AGENT_TAB_ID) return compactLabel("AI Agent");
-			if (tab.target === ALL_DOCS_TAB_ID) return compactLabel("All Notes");
-			if (tab.target === CALENDAR_TAB_ID) return compactLabel("Calendar");
-			if (tab.target === DATABASES_TAB_ID) return compactLabel("Collections");
-			if (tab.target === TEMPLATES_TAB_ID) return compactLabel("Templates");
+			if (tab.target === AI_AGENT_TAB_ID) return "AI Agent";
+			if (tab.target === ALL_DOCS_TAB_ID) return "All Notes";
+			if (tab.target === CALENDAR_TAB_ID) return "Calendar";
+			if (tab.target === DATABASES_TAB_ID) return "Collections";
+			if (tab.target === TEMPLATES_TAB_ID) return "Templates";
 			const parts = (tab.target ?? "").split("/").filter(Boolean);
 			const rawName = parts[parts.length - 1] ?? tab.target ?? "Untitled";
 			return compactLabel(stripFileExtension(rawName));

@@ -1171,10 +1171,8 @@ export function AppShell() {
 				for (const dir of ancestorDirs) next.add(dir);
 				return next;
 			});
-			for (const dir of ancestorDirs) {
-				await fileTree.loadDir(dir);
-			}
-			await fileTree.loadDir(parentPath || "");
+			const dirsToLoad = parentPath ? ancestorDirs : [""];
+			await Promise.all(dirsToLoad.map((dir) => fileTree.loadDir(dir)));
 			window.requestAnimationFrame(() => {
 				window.requestAnimationFrame(() => {
 					dispatchFileTreeStartRename({ path: nextPath });

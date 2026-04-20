@@ -5,6 +5,9 @@ interface TaskProgressIndicatorProps {
 	className?: string;
 }
 
+const RING_RADIUS = 4;
+const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
+
 export function TaskProgressIndicator({
 	summary,
 	className = "",
@@ -12,8 +15,6 @@ export function TaskProgressIndicator({
 	const { completed_count, total_count } = summary;
 	const ratio = total_count > 0 ? completed_count / total_count : 0;
 	const clampedRatio = Math.max(0, Math.min(1, ratio));
-	const RING_RADIUS = 4;
-	const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS;
 
 	return (
 		<div

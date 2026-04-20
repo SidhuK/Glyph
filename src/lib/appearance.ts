@@ -90,6 +90,8 @@ function getCompactDisplayBoost(): number {
 	if (typeof window === "undefined" || !window.screen) return 1;
 	const availableWidth = Number(window.screen.availWidth);
 	if (!Number.isFinite(availableWidth) || availableWidth <= 0) return 1;
+	// 1366 and 1512 are practical breakpoints for common laptop and compact
+	// desktop display widths where slightly larger UI text improves readability.
 	if (availableWidth <= 1366) return 1.12;
 	if (availableWidth <= 1512) return 1.08;
 	return 1;

@@ -127,6 +127,13 @@ describe("settings task progress indicator", () => {
 	});
 
 	it("loads task progress indicator visibility from the store", async () => {
+		storeState.set("ui.showTaskProgressIndicator", false);
+		const { loadSettings } = await import("./settings");
+		const settings = await loadSettings();
+		expect(settings.ui.showTaskProgressIndicator).toBe(false);
+	});
+
+	it("loads task progress indicator visibility from the legacy store key", async () => {
 		storeState.set("ui.taskProgressIndicator.enabled", false);
 		const { loadSettings } = await import("./settings");
 		const settings = await loadSettings();
@@ -136,7 +143,7 @@ describe("settings task progress indicator", () => {
 	it("persists and emits task progress indicator visibility changes", async () => {
 		const { setShowTaskProgressIndicator } = await import("./settings");
 		await setShowTaskProgressIndicator(false);
-		expect(storeState.get("ui.taskProgressIndicator.enabled")).toBe(false);
+		expect(storeState.get("ui.showTaskProgressIndicator")).toBe(false);
 		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
 			ui: { showTaskProgressIndicator: false },
 		});

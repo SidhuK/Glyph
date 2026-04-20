@@ -342,7 +342,7 @@ const KEYS = {
 	delightfulGlyph: "ui.delightfulGlyph",
 	showToc: "ui.showToc",
 	showFileTreeFolderCounts: "ui.fileTree.showFolderFileCounts",
-	showTaskProgressIndicator: "ui.taskProgressIndicator.enabled",
+	showTaskProgressIndicator: "ui.showTaskProgressIndicator",
 	editorShowCollapsibleHeadings: "editor.showCollapsibleHeadings",
 	editorShowFrontmatterInEditor: "editor.showFrontmatterInEditor",
 	editorColorfulHeadings: "editor.colorfulHeadings",
@@ -365,6 +365,10 @@ const KEYS = {
 	onboardingUsedCommandPalette: "onboarding.usedCommandPalette",
 	onboardingOpenedDailyNote: "onboarding.openedDailyNote",
 } as const;
+
+// Legacy key from older builds; kept as a read-only fallback during migration.
+const LEGACY_SHOW_TASK_PROGRESS_INDICATOR_KEY =
+	"ui.taskProgressIndicator.enabled";
 
 const ONBOARDING_KEYS = {
 	launcherSeen: KEYS.onboardingLauncherSeen,
@@ -449,6 +453,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		rawShowToc,
 		rawShowFileTreeFolderCounts,
 		rawShowTaskProgressIndicator,
+		rawShowTaskProgressIndicatorLegacy,
 		dailyNotesFolderRaw,
 		rawWebClippingsFolder,
 		templatesFolderRaw,
@@ -489,6 +494,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<boolean | null>(KEYS.showToc),
 		store.get<boolean | null>(KEYS.showFileTreeFolderCounts),
 		store.get<boolean | null>(KEYS.showTaskProgressIndicator),
+		store.get<boolean | null>(LEGACY_SHOW_TASK_PROGRESS_INDICATOR_KEY),
 		store.get<string | null>(KEYS.dailyNotesFolder),
 		store.get<string | null>(KEYS.webClippingsFolder),
 		store.get<string | null>(KEYS.templatesFolder),
@@ -544,7 +550,9 @@ export async function loadSettings(): Promise<AppSettings> {
 	const showTaskProgressIndicator =
 		typeof rawShowTaskProgressIndicator === "boolean"
 			? rawShowTaskProgressIndicator
-			: DEFAULT_SHOW_TASK_PROGRESS_INDICATOR;
+			: typeof rawShowTaskProgressIndicatorLegacy === "boolean"
+				? rawShowTaskProgressIndicatorLegacy
+				: DEFAULT_SHOW_TASK_PROGRESS_INDICATOR;
 	const dailyNotesFolder =
 		typeof dailyNotesFolderRaw === "string"
 			? normalizeRelPath(dailyNotesFolderRaw) || null

@@ -82,6 +82,8 @@ function maybeDeleteSourceGeneration(sourcePath: string) {
 function clearInlineImageHydrationCacheForSource(sourcePath: string) {
 	sourceGeneration.set(sourcePath, getSourceGeneration(sourcePath) + 1);
 	const prefix = `${sourcePath}::`;
+	// Wiki image-link keys are global (`wiki-image-link::...`) and intentionally
+	// survive per-source invalidation because they do not depend on sourcePath.
 	for (const key of [...dataUrlCache.keys()]) {
 		if (key.startsWith(prefix)) dataUrlCache.delete(key);
 	}
@@ -128,6 +130,17 @@ function dedupeCandidates(href: string): string[] {
 
 type InlineImageResolverKind = "markdown-link" | "wiki-image-link";
 
+function getInlineImageCacheKey(
+	sourcePath: string,
+	rawSrc: string,
+	kind: InlineImageResolverKind,
+): string {
+	if (kind === "wiki-image-link") {
+		return `${kind}::${rawSrc}`;
+	}
+	return `${sourcePath}::${kind}::${rawSrc}`;
+}
+
 function getResolverKindForImage(image: Element): InlineImageResolverKind {
 	return image.getAttribute("data-wikilink-embed") === "true"
 		? "wiki-image-link"
@@ -163,7 +176,7 @@ async function resolveInlineImageDataUrl(
 	rawSrc: string,
 	kind: InlineImageResolverKind,
 ): Promise<string | null> {
-	const key = `${sourcePath}::${kind}::${rawSrc}`;
+	const key = getInlineImageCacheKey(sourcePath, rawSrc, kind);
 	if (dataUrlCache.has(key)) return dataUrlCache.get(key) ?? null;
 	if (missCache.has(key)) return null;
 	if (inFlightCache.has(key)) return inFlightCache.get(key) ?? null;
@@ -295,16 +308,22 @@ export function useHydrateInlineImages(
 					image.setAttribute("data-glyph-origin-src", originalSrc);
 				}
 				const resolverKind = getResolverKindForImage(image);
-				const key = `${sourcePath}::${resolverKind}::${originalSrc}`;
-				if (image.getAttribute("data-glyph-hydrated-key") === key) continue;
-				void resolveInlineImageDataUrl(sourcePath, originalSrc, resolverKind).then(
-					(dataUrl) => {
-						if (cancelled || !dataUrl || !image.isConnected) return;
-						hydrateImageNodesInDocument(editor, originalSrc, dataUrl);
-						image.setAttribute("data-glyph-hydrated-key", key);
-						image.setAttribute("src", dataUrl);
-					},
+				const key = getInlineImageCacheKey(
+					sourcePath,
+					originalSrc,
+					resolverKind,
 				);
+				if (image.getAttribute("data-glyph-hydrated-key") === key) continue;
+				void resolveInlineImageDataUrl(
+					sourcePath,
+					originalSrc,
+					resolverKind,
+				).then((dataUrl) => {
+					if (cancelled || !dataUrl || !image.isConnected) return;
+					hydrateImageNodesInDocument(editor, originalSrc, dataUrl);
+					image.setAttribute("data-glyph-hydrated-key", key);
+					image.setAttribute("src", dataUrl);
+				});
 			}
 		};
 

@@ -1494,7 +1494,10 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 							onChange={handleFrontmatterChange}
 						/>
 					</div>
-				) : showFrontmatterInEditor && frontmatter && !zenModeActive ? (
+				) : mode === "rich" &&
+					showFrontmatterInEditor &&
+					frontmatter &&
+					!zenModeActive ? (
 					<div className="frontmatterPreview mono">
 						<pre>{renderFrontmatterWithLinks(frontmatter.trimEnd())}</pre>
 					</div>

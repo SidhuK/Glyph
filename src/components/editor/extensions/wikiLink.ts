@@ -56,13 +56,21 @@ function isEmbedSuggestionContext(
 ): boolean {
 	if (rangeFrom <= 1) return false;
 	try {
-		const previous = editor.state.doc.textBetween(
+		const previousChar = editor.state.doc.textBetween(
 			rangeFrom - 1,
 			rangeFrom,
 			"",
 			"",
 		);
-		return previous === "!";
+		if (previousChar !== "!") return false;
+		if (rangeFrom <= 2) return true;
+		const beforePreviousChar = editor.state.doc.textBetween(
+			rangeFrom - 2,
+			rangeFrom - 1,
+			"",
+			"",
+		);
+		return beforePreviousChar !== "!";
 	} catch {
 		return false;
 	}
@@ -265,19 +273,22 @@ export const WikiLink = Node.create({
 			query: string,
 			includeImagesOnly: boolean,
 		): Promise<WikiLinkSuggestionItem[]> => {
+			const requestLimit = includeImagesOnly
+				? Math.min(this.options.suggestionLimit * 4, 200)
+				: this.options.suggestionLimit;
 			const results = await invoke("space_suggest_links", {
 				request: {
 					query,
 					markdown_only: !includeImagesOnly,
 					strip_markdown_ext: !includeImagesOnly,
 					relative_to_source: false,
-					limit: this.options.suggestionLimit,
+					limit: requestLimit,
 				},
 			});
 			const filtered = includeImagesOnly
 				? results.filter((item) => isImageTarget(item.path))
 				: results;
-			return filtered.map((item) => ({
+			return filtered.slice(0, this.options.suggestionLimit).map((item) => ({
 				path: item.path,
 				title: item.title || titleFromRelPath(item.path),
 				insertText: item.insert_text,

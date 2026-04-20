@@ -194,7 +194,9 @@ fn resolve_image_wikilink_target(entries: &[FileEntry], target: &str) -> Option<
         return None;
     }
 
-    let normalized = normalize_segments(raw.trim_start_matches("./"));
+    let pre_normalized = raw.trim_start_matches("./");
+    let is_explicit_path = pre_normalized.starts_with('/') || pre_normalized.contains('/');
+    let normalized = normalize_segments(pre_normalized);
     if normalized.is_empty() {
         return None;
     }
@@ -204,7 +206,7 @@ fn resolve_image_wikilink_target(entries: &[FileEntry], target: &str) -> Option<
         .filter(|entry| is_image_rel_path(&entry.rel_path))
         .collect::<Vec<_>>();
 
-    let explicit_path_query = if raw.starts_with('/') || normalized.contains('/') {
+    let explicit_path_query = if is_explicit_path {
         Some(normalized.trim_start_matches('/').to_string())
     } else {
         None
@@ -418,6 +420,13 @@ mod tests {
     fn image_wikilink_does_not_fallback_for_missing_explicit_nested_path() {
         let entries = vec![entry("images/photo.png"), entry("photo.png")];
         let resolved = resolve_image_wikilink_target(&entries, "assets/photo.png");
+        assert_eq!(resolved, None);
+    }
+
+    #[test]
+    fn image_wikilink_does_not_fallback_for_normalized_explicit_path() {
+        let entries = vec![entry("images/photo.png"), entry("docs/note.md")];
+        let resolved = resolve_image_wikilink_target(&entries, "assets/../photo.png");
         assert_eq!(resolved, None);
     }
 

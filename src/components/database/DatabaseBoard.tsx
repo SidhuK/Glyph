@@ -277,8 +277,10 @@ export function DatabaseBoard({
 	const [taskSummariesByPath, setTaskSummariesByPath] = useState<
 		Record<string, NoteTaskSummary>
 	>({});
-	const [showTaskProgressIndicator, setShowTaskProgressIndicator] =
-		useState(true);
+	const [showTaskProgressIndicator, setShowTaskProgressIndicator] = useState<
+		boolean | null
+	>(null);
+	const taskProgressSettingVersionRef = useRef(0);
 	const boardCardColumns = useMemo(
 		() => cardCandidateColumns(columns, groupColumnId),
 		[columns, groupColumnId],
@@ -300,7 +302,7 @@ export function DatabaseBoard({
 	}, []);
 
 	useEffect(() => {
-		if (!showTaskProgressIndicator) {
+		if (showTaskProgressIndicator !== true) {
 			setTaskSummariesByPath({});
 			return;
 		}
@@ -338,9 +340,12 @@ export function DatabaseBoard({
 
 	useEffect(() => {
 		let cancelled = false;
+		const requestedAtVersion = taskProgressSettingVersionRef.current;
 		void loadSettings()
 			.then((settings) => {
 				if (cancelled) return;
+				if (taskProgressSettingVersionRef.current !== requestedAtVersion)
+					return;
 				setShowTaskProgressIndicator(settings.ui.showTaskProgressIndicator);
 			})
 			.catch(() => undefined);
@@ -351,6 +356,7 @@ export function DatabaseBoard({
 
 	useTauriEvent("settings:updated", (payload) => {
 		if (typeof payload.ui?.showTaskProgressIndicator === "boolean") {
+			taskProgressSettingVersionRef.current += 1;
 			setShowTaskProgressIndicator(payload.ui.showTaskProgressIndicator);
 		}
 	});

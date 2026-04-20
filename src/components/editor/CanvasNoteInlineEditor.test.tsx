@@ -411,7 +411,7 @@ describe("CanvasNoteInlineEditor table controls", () => {
 		expect(container.querySelector(".frontmatterPreview")).toBeNull();
 	});
 
-	it("shows and hides existing frontmatter based on the toggle without reload", () => {
+	it("shows and hides existing frontmatter based on the toggle across rerender", () => {
 		setFrontmatter("---\ntitle: Existing\n---\n");
 		setShowFrontmatterInEditor(false);
 

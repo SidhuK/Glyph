@@ -147,17 +147,18 @@ export const SidebarContent = memo(function SidebarContent({
 		const tryCenterRenameTarget = () => {
 			if (cancelled) return;
 			attempts += 1;
-			const nodes = document.querySelectorAll<HTMLElement>(
-				"[data-file-tree-path]",
-			);
-			const target = Array.from(nodes).find(
-				(node) => node.dataset.fileTreePath === renamingPath,
+			const escapedPath =
+				typeof CSS !== "undefined" && typeof CSS.escape === "function"
+					? CSS.escape(renamingPath)
+					: renamingPath;
+			const target = document.querySelector<HTMLElement>(
+				`[data-file-tree-path="${escapedPath}"]`,
 			);
 			if (target) {
 				target.scrollIntoView({
 					block: "center",
 					inline: "nearest",
-					behavior: "smooth",
+					behavior: "auto",
 				});
 				return;
 			}
