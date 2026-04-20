@@ -14,10 +14,12 @@ const {
 	setDelightfulGlyphMock,
 	setEditorColorfulHeadingsMock,
 	setEditorEnablePeopleMentionsAsTagsMock,
+	setEditorShowFrontmatterInEditorMock,
 	setEditorShowCollapsibleHeadingsMock,
 	setEditorWidthModeMock,
 	setEditorVimKeybindingsMock,
 	setShowFileTreeFolderCountsMock,
+	setShowTaskProgressIndicatorMock,
 	setShowTocMock,
 } = vi.hoisted(() => ({
 	loadSettingsMock: vi.fn(),
@@ -27,10 +29,12 @@ const {
 	setDelightfulGlyphMock: vi.fn(() => Promise.resolve()),
 	setEditorColorfulHeadingsMock: vi.fn(() => Promise.resolve()),
 	setEditorEnablePeopleMentionsAsTagsMock: vi.fn(() => Promise.resolve()),
+	setEditorShowFrontmatterInEditorMock: vi.fn(() => Promise.resolve()),
 	setEditorShowCollapsibleHeadingsMock: vi.fn(() => Promise.resolve()),
 	setEditorWidthModeMock: vi.fn(() => Promise.resolve()),
 	setEditorVimKeybindingsMock: vi.fn(() => Promise.resolve()),
 	setShowFileTreeFolderCountsMock: vi.fn(() => Promise.resolve()),
+	setShowTaskProgressIndicatorMock: vi.fn(() => Promise.resolve()),
 	setShowTocMock: vi.fn(() => Promise.resolve()),
 }));
 
@@ -49,10 +53,12 @@ vi.mock("../../lib/settings", () => ({
 	setDelightfulGlyph: setDelightfulGlyphMock,
 	setEditorColorfulHeadings: setEditorColorfulHeadingsMock,
 	setEditorEnablePeopleMentionsAsTags: setEditorEnablePeopleMentionsAsTagsMock,
+	setEditorShowFrontmatterInEditor: setEditorShowFrontmatterInEditorMock,
 	setEditorShowCollapsibleHeadings: setEditorShowCollapsibleHeadingsMock,
 	setEditorWidthMode: setEditorWidthModeMock,
 	setEditorVimKeybindings: setEditorVimKeybindingsMock,
 	setShowFileTreeFolderCounts: setShowFileTreeFolderCountsMock,
+	setShowTaskProgressIndicator: setShowTaskProgressIndicatorMock,
 	setShowToc: setShowTocMock,
 }));
 
@@ -152,12 +158,14 @@ function makeSettings(colorfulHeadings: boolean, vimKeybindings = false) {
 			editorWidthMode: "compact" as const,
 			enablePeopleMentionsAsTags: false,
 			showCollapsibleHeadings: false,
+			showFrontmatterInEditor: false,
 			vimKeybindings,
 		},
 		ui: {
 			aiAssistantMode: "create" as const,
 			delightfulGlyph: false,
 			showFileTreeFolderCounts: false,
+			showTaskProgressIndicator: true,
 			showToc: true,
 		},
 		database: {
@@ -230,6 +238,23 @@ describe("AdvancedSettingsPane", () => {
 		expect(setEditorColorfulHeadingsMock).toHaveBeenCalledWith(true);
 	});
 
+	it("saves show frontmatter in editor changes", async () => {
+		await act(async () => {
+			root.render(<AdvancedSettingsPane />);
+		});
+
+		const toggle = container.querySelector(
+			'input[aria-label="Show frontmatter in editor"]',
+		) as HTMLInputElement | null;
+		expect(toggle).toBeTruthy();
+
+		await act(async () => {
+			toggle?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+		});
+
+		expect(setEditorShowFrontmatterInEditorMock).toHaveBeenCalledWith(true);
+	});
+
 	it("saves editor width mode changes", async () => {
 		await act(async () => {
 			root.render(<AdvancedSettingsPane />);
@@ -291,5 +316,22 @@ describe("AdvancedSettingsPane", () => {
 		});
 
 		expect(setEditorVimKeybindingsMock).toHaveBeenCalledWith(true);
+	});
+
+	it("saves task progress indicator visibility changes", async () => {
+		await act(async () => {
+			root.render(<AdvancedSettingsPane />);
+		});
+
+		const toggle = container.querySelector(
+			'input[aria-label="Show task progress indicators"]',
+		) as HTMLInputElement | null;
+		expect(toggle).toBeTruthy();
+
+		await act(async () => {
+			toggle?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+		});
+
+		expect(setShowTaskProgressIndicatorMock).toHaveBeenCalledWith(false);
 	});
 });

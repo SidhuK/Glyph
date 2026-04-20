@@ -1,6 +1,38 @@
 {
 	"versions": [
 		{
+			"version": "0.2.9",
+			"publishedAt": "2026-04-20",
+			"sections": [
+				{
+					"category": "Added",
+					"items": [
+						"Option to show or hide YAML frontmatter in notes",
+						"Toggle setting for task indicators across the app (enabled by default)",
+						"Rename files directly from the tab bar by double-clicking a tab"
+					]
+				},
+				{
+					"category": "Improved",
+					"items": [
+						"Refined heading styling so H1 and H2 are more in line with editor heading visuals",
+						"Updated orange accent to a more pleasant hex tone for better visual comfort",
+						"Improved image handling for wiki-style images and image linking",
+						"Switched task progress from bars to rings for clearer progress at a glance",
+						"Added task progress rings in the sidebar",
+						"Compact tab bar layout for a cleaner, denser UI"
+					]
+				},
+				{
+					"category": "Fixed",
+					"items": [
+						"Fixed and cleaned up issues with smaller font sizes",
+						"Tightened sidebar spacing and recent spaces button UI alignment"
+					]
+				}
+			]
+		},
+		{
 			"version": "0.2.8",
 			"publishedAt": "2026-04-17",
 			"sections": [

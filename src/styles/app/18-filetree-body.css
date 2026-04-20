@@ -346,6 +346,17 @@
 	white-space: nowrap;
 }
 
+.fileTreeTaskProgress {
+	flex-shrink: 0;
+	width: 12px;
+	height: 12px;
+}
+
+.fileTreeTaskProgress .markdownEditorTaskProgressRing {
+	width: 12px;
+	height: 12px;
+}
+
 .fileTreeRow[data-has-custom-color="true"] .fileTreeExtBadge {
 	background: color-mix(in srgb, var(--database-tone) 10%, var(--bg-hover));
 	color: var(--pill-contrast-fg);

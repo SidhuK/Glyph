@@ -14,9 +14,11 @@ import {
 	setEditorColorfulHeadings,
 	setEditorEnablePeopleMentionsAsTags,
 	setEditorShowCollapsibleHeadings,
+	setEditorShowFrontmatterInEditor,
 	setEditorVimKeybindings,
 	setEditorWidthMode,
 	setShowFileTreeFolderCounts,
+	setShowTaskProgressIndicator,
 	setShowToc,
 } from "../../lib/settings";
 import { invoke } from "../../lib/tauri";
@@ -101,6 +103,7 @@ function VimKeybindingsHelp() {
 
 export function AdvancedSettingsPane() {
 	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
+	const [showFrontmatterInEditor, setShowFrontmatterInEditor] = useState(false);
 	const [colorfulHeadings, setColorfulHeadings] = useState(false);
 	const [editorWidthMode, setEditorWidthModeState] =
 		useState<EditorWidthMode>("compact");
@@ -113,11 +116,15 @@ export function AdvancedSettingsPane() {
 	const [delightfulGlyph, setDelightfulGlyphState] = useState(false);
 	const [showFileTreeFolderCounts, setShowFileTreeFolderCountsState] =
 		useState(false);
+	const [showTaskProgressIndicator, setShowTaskProgressIndicatorState] =
+		useState(true);
 	const [showDatabaseColumnColor, setShowDatabaseColumnColor] = useState(true);
 	const [showDatabaseNoteCount, setShowDatabaseNoteCount] = useState(false);
 	const [error, setError] = useState("");
 	const [isSavingShowToc, setIsSavingShowToc] = useState(false);
 	const [isSavingShowCollapsibleHeadings, setIsSavingShowCollapsibleHeadings] =
+		useState(false);
+	const [isSavingShowFrontmatterInEditor, setIsSavingShowFrontmatterInEditor] =
 		useState(false);
 	const [isSavingColorfulHeadings, setIsSavingColorfulHeadings] =
 		useState(false);
@@ -133,6 +140,10 @@ export function AdvancedSettingsPane() {
 		isSavingShowFileTreeFolderCounts,
 		setIsSavingShowFileTreeFolderCounts,
 	] = useState(false);
+	const [
+		isSavingShowTaskProgressIndicator,
+		setIsSavingShowTaskProgressIndicator,
+	] = useState(false);
 	const [isSavingDatabaseColumnColor, setIsSavingDatabaseColumnColor] =
 		useState(false);
 	const [isSavingDatabaseNoteCount, setIsSavingDatabaseNoteCount] =
@@ -144,6 +155,7 @@ export function AdvancedSettingsPane() {
 		try {
 			const settings = await loadSettings();
 			setShowCollapsibleHeadings(settings.editor.showCollapsibleHeadings);
+			setShowFrontmatterInEditor(settings.editor.showFrontmatterInEditor);
 			setColorfulHeadings(settings.editor.colorfulHeadings);
 			setEditorWidthModeState(settings.editor.editorWidthMode);
 			setEnablePeopleMentionsAsTags(settings.editor.enablePeopleMentionsAsTags);
@@ -152,6 +164,7 @@ export function AdvancedSettingsPane() {
 			setAiAssistantModeState(settings.ui.aiAssistantMode);
 			setDelightfulGlyphState(settings.ui.delightfulGlyph);
 			setShowFileTreeFolderCountsState(settings.ui.showFileTreeFolderCounts);
+			setShowTaskProgressIndicatorState(settings.ui.showTaskProgressIndicator);
 			setShowDatabaseColumnColor(settings.database.showColumnColor);
 			setShowDatabaseNoteCount(settings.database.showNoteCount);
 		} catch (cause) {
@@ -166,6 +179,9 @@ export function AdvancedSettingsPane() {
 	useTauriEvent("settings:updated", (payload) => {
 		if (typeof payload.editor?.showCollapsibleHeadings === "boolean") {
 			setShowCollapsibleHeadings(payload.editor.showCollapsibleHeadings);
+		}
+		if (typeof payload.editor?.showFrontmatterInEditor === "boolean") {
+			setShowFrontmatterInEditor(payload.editor.showFrontmatterInEditor);
 		}
 		if (typeof payload.editor?.colorfulHeadings === "boolean") {
 			setColorfulHeadings(payload.editor.colorfulHeadings);
@@ -197,6 +213,9 @@ export function AdvancedSettingsPane() {
 		}
 		if (typeof payload.ui?.showFileTreeFolderCounts === "boolean") {
 			setShowFileTreeFolderCountsState(payload.ui.showFileTreeFolderCounts);
+		}
+		if (typeof payload.ui?.showTaskProgressIndicator === "boolean") {
+			setShowTaskProgressIndicatorState(payload.ui.showTaskProgressIndicator);
 		}
 		if (typeof payload.database?.showColumnColor === "boolean") {
 			setShowDatabaseColumnColor(payload.database.showColumnColor);
@@ -270,6 +289,30 @@ export function AdvancedSettingsPane() {
 									})
 									.finally(() => {
 										setIsSavingEnablePeopleMentionsAsTags(false);
+									});
+							}}
+						/>
+					</SettingsRow>
+					<SettingsRow
+						label="Show frontmatter in editor"
+						description="Display YAML frontmatter at the top of notes while editing. Turning this off keeps frontmatter available to indexing and databases."
+					>
+						<SettingsToggle
+							checked={showFrontmatterInEditor}
+							disabled={isSavingShowFrontmatterInEditor}
+							ariaLabel="Show frontmatter in editor"
+							onCheckedChange={(checked) => {
+								const previous = showFrontmatterInEditor;
+								setError("");
+								setShowFrontmatterInEditor(checked);
+								setIsSavingShowFrontmatterInEditor(true);
+								void setEditorShowFrontmatterInEditor(checked)
+									.catch((cause) => {
+										setShowFrontmatterInEditor(previous);
+										setError(extractErrorMessage(cause));
+									})
+									.finally(() => {
+										setIsSavingShowFrontmatterInEditor(false);
 									});
 							}}
 						/>
@@ -434,6 +477,30 @@ export function AdvancedSettingsPane() {
 									})
 									.finally(() => {
 										setIsSavingDelightfulGlyph(false);
+									});
+							}}
+						/>
+					</SettingsRow>
+					<SettingsRow
+						label="Show task progress indicators"
+						description="Show task completion rings across the app, including the editor ribbon, sidebar file tree, and database cards."
+					>
+						<SettingsToggle
+							checked={showTaskProgressIndicator}
+							disabled={isSavingShowTaskProgressIndicator}
+							ariaLabel="Show task progress indicators"
+							onCheckedChange={(checked) => {
+								const previous = showTaskProgressIndicator;
+								setError("");
+								setShowTaskProgressIndicatorState(checked);
+								setIsSavingShowTaskProgressIndicator(true);
+								void setShowTaskProgressIndicator(checked)
+									.catch((cause) => {
+										setShowTaskProgressIndicatorState(previous);
+										setError(extractErrorMessage(cause));
+									})
+									.finally(() => {
+										setIsSavingShowTaskProgressIndicator(false);
 									});
 							}}
 						/>

@@ -32,6 +32,7 @@ import {
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { setPrefetchedNote } from "../../lib/navigationPrefetch";
 import { splitYamlFrontmatter } from "../../lib/notePreview";
+import { loadSettings } from "../../lib/settings";
 import {
 	type NoteTaskSummary,
 	type TextFileDoc,
@@ -130,6 +131,8 @@ export function MarkdownEditorPane({
 	const [syncPulse, setSyncPulse] = useState<SyncPulse>(null);
 	const [taskSummary, setTaskSummary] =
 		useState<NoteTaskSummary>(EMPTY_TASK_SUMMARY);
+	const [showTaskProgressIndicator, setShowTaskProgressIndicator] =
+		useState(true);
 	const calloutInserterRef = useRef<((type: string) => void) | null>(null);
 	const savedTextRef = useRef(savedText);
 	const textRef = useRef(text);
@@ -543,6 +546,24 @@ export function MarkdownEditorPane({
 	);
 
 	useTauriEvent("notes:external_changed", handleExternalNoteChanged);
+	useTauriEvent("settings:updated", (payload) => {
+		if (typeof payload.ui?.showTaskProgressIndicator === "boolean") {
+			setShowTaskProgressIndicator(payload.ui.showTaskProgressIndicator);
+		}
+	});
+
+	useEffect(() => {
+		let cancelled = false;
+		void loadSettings()
+			.then((settings) => {
+				if (cancelled) return;
+				setShowTaskProgressIndicator(settings.ui.showTaskProgressIndicator);
+			})
+			.catch(() => undefined);
+		return () => {
+			cancelled = true;
+		};
+	}, []);
 
 	useEffect(() => {
 		const handleForceEditMode = (event: Event) => {
@@ -687,6 +708,9 @@ export function MarkdownEditorPane({
 			taskSummaryTimerRef.current = null;
 		}
 		setTaskSummary(EMPTY_TASK_SUMMARY);
+		if (!showTaskProgressIndicator) {
+			return;
+		}
 
 		const requestToken = taskSummaryRequestTokenRef.current + 1;
 		taskSummaryRequestTokenRef.current = requestToken;
@@ -725,7 +749,7 @@ export function MarkdownEditorPane({
 				taskSummaryTimerRef.current = null;
 			}
 		};
-	}, [text]);
+	}, [showTaskProgressIndicator, text]);
 
 	useEffect(() => {
 		if (mode === "preview") return;
@@ -1032,7 +1056,7 @@ export function MarkdownEditorPane({
 							/>
 							<span>{stats.readingTime}</span>
 						</div>
-						{visibleTaskSummary.total_count > 0 ? (
+						{showTaskProgressIndicator && visibleTaskSummary.total_count > 0 ? (
 							<div
 								className="markdownEditorStatsItem markdownEditorTaskProgressItem"
 								data-metric="task-progress"

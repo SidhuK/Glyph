@@ -340,7 +340,7 @@ function handleEditorClick(
 		}
 		event.preventDefault();
 		dispatchWikiLinkClick({
-			raw: wikiLink.textContent ?? "",
+			raw: wikiLink.getAttribute("data-raw") ?? wikiLink.textContent ?? "",
 			target: wikiLink.getAttribute("data-target") ?? "",
 			alias: wikiLink.getAttribute("data-alias") || null,
 			anchorKind:
@@ -350,6 +350,7 @@ function handleEditorClick(
 					| "block") ?? "none",
 			anchor: wikiLink.getAttribute("data-anchor") || null,
 			unresolved: wikiLink.getAttribute("data-unresolved") === "true",
+			embed: wikiLink.getAttribute("data-wikilink-embed") === "true",
 		});
 		return true;
 	}
@@ -412,6 +413,7 @@ export function useNoteEditor({
 	const attachmentFolderRef = useRef<string | null>(DEFAULT_ATTACHMENT_FOLDER);
 	const editorRef = useRef<ReturnType<typeof useEditor>>(null);
 	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
+	const [showFrontmatterInEditor, setShowFrontmatterInEditor] = useState(false);
 	const [colorfulHeadings, setColorfulHeadings] = useState(false);
 	const [peopleMentionsEnabled, setPeopleMentionsEnabled] = useState(false);
 	const [vimKeybindingsEnabled, setVimKeybindingsEnabled] = useState(false);
@@ -451,6 +453,9 @@ export function useNoteEditor({
 			.then((settings) => {
 				if (cancelled) return;
 				setShowCollapsibleHeadings(settings.editor.showCollapsibleHeadings);
+				setShowFrontmatterInEditor(
+					settings.editor.showFrontmatterInEditor === true,
+				);
 				setColorfulHeadings(settings.editor.colorfulHeadings);
 				setPeopleMentionsEnabled(settings.editor.enablePeopleMentionsAsTags);
 				setVimKeybindingsEnabled(settings.editor.vimKeybindings === true);
@@ -461,6 +466,7 @@ export function useNoteEditor({
 			.catch(() => {
 				if (cancelled) return;
 				setShowCollapsibleHeadings(false);
+				setShowFrontmatterInEditor(false);
 				setColorfulHeadings(false);
 				setPeopleMentionsEnabled(false);
 				setVimKeybindingsEnabled(false);
@@ -475,6 +481,9 @@ export function useNoteEditor({
 	useTauriEvent("settings:updated", (payload) => {
 		if (typeof payload.editor?.showCollapsibleHeadings === "boolean") {
 			setShowCollapsibleHeadings(payload.editor.showCollapsibleHeadings);
+		}
+		if (typeof payload.editor?.showFrontmatterInEditor === "boolean") {
+			setShowFrontmatterInEditor(payload.editor.showFrontmatterInEditor);
 		}
 		if (typeof payload.editor?.colorfulHeadings === "boolean") {
 			setColorfulHeadings(payload.editor.colorfulHeadings);
@@ -700,6 +709,7 @@ export function useNoteEditor({
 		frontmatter,
 		body,
 		colorfulHeadings,
+		showFrontmatterInEditor,
 		frontmatterRef,
 		lastAppliedBodyRef,
 		lastEmittedMarkdownRef,

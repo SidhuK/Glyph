@@ -11,6 +11,19 @@ describe("wikiLinkCodec", () => {
 		expect(parseWikiLink("[[Daily Note|Today]]")?.alias).toBe("Today");
 	});
 
+	it("parses embed image wikilinks", () => {
+		expect(parseWikiLink("![[image.png]]")).toMatchObject({
+			target: "image.png",
+			embed: true,
+			alias: null,
+		});
+		expect(parseWikiLink("![[assets/cover.webp|Cover]]")).toMatchObject({
+			target: "assets/cover.webp",
+			embed: true,
+			alias: "Cover",
+		});
+	});
+
 	it("parses heading and block anchors", () => {
 		expect(parseWikiLink("[[Note#Section]]")).toMatchObject({
 			target: "Note",
@@ -47,6 +60,14 @@ describe("wikiLinkCodec", () => {
 				anchor: "x1",
 			}),
 		).toBe("[[Note#^x1]]");
+		expect(
+			wikiLinkAttrsToMarkdown({
+				target: "image.png",
+				embed: true,
+				anchorKind: "none",
+				anchor: null,
+			}),
+		).toBe("![[image.png]]");
 	});
 
 	it("falls back to raw when attrs are incomplete", () => {

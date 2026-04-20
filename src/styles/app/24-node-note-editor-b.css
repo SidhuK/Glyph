@@ -783,10 +783,10 @@ input.notePropertyValue {
 .tiptapContentInline h4,
 .tiptapContentInline h5,
 .tiptapContentInline h6 {
-	margin: calc(var(--space-5) + 2px) 0 var(--space-3);
-	font-weight: var(--font-semibold);
-	line-height: 1.22;
-	letter-spacing: -0.018em;
+	margin: calc(var(--space-4) + 2px) 0 calc(var(--space-2) + 2px);
+	font-weight: var(--font-medium);
+	line-height: 1.32;
+	letter-spacing: -0.014em;
 	text-wrap: balance;
 }
 
@@ -797,19 +797,24 @@ input.notePropertyValue {
 .tiptapContentInline
 	:is(p, ul, ol, blockquote, pre, table)
 	+ :is(h1, h2, h3, h4, h5, h6) {
-	margin-top: calc(var(--space-6) + 2px);
+	margin-top: calc(var(--space-5) + 2px);
 }
 
 .tiptapContentInline h1 {
 	font-size: var(--editor-h1-font-size);
+	font-weight: var(--font-semibold);
+	line-height: 1.26;
 }
 
 .tiptapContentInline h2 {
 	font-size: var(--editor-h2-font-size);
+	font-weight: var(--font-semibold);
+	line-height: 1.3;
 }
 
 .tiptapContentInline h3 {
 	font-size: var(--editor-h3-font-size);
+	line-height: 1.36;
 }
 
 .tiptapContentInline h4 {
@@ -908,6 +913,7 @@ input.notePropertyValue {
 .tiptapHostInline:not(.is-preview) .tiptapContentInline h5::before,
 .tiptapHostInline:not(.is-preview) .tiptapContentInline h6::before {
 	position: absolute;
+	top: auto;
 	bottom: 0;
 	left: calc(
 		-1 *
@@ -915,6 +921,7 @@ input.notePropertyValue {
 		2px
 	);
 	font-size: 11px;
+	line-height: 1;
 	font-weight: var(--font-medium);
 	letter-spacing: 0.025em;
 	color: color-mix(in srgb, var(--text-tertiary) 86%, transparent);
@@ -923,14 +930,17 @@ input.notePropertyValue {
 
 .tiptapHostInline:not(.is-preview) .tiptapContentInline h1::before {
 	content: "H1";
+	bottom: 6px;
 }
 
 .tiptapHostInline:not(.is-preview) .tiptapContentInline h2::before {
 	content: "H2";
+	bottom: 5px;
 }
 
 .tiptapHostInline:not(.is-preview) .tiptapContentInline h3::before {
 	content: "H3";
+	bottom: 4px;
 }
 
 .tiptapHostInline:not(.is-preview) .tiptapContentInline h4::before {
@@ -1441,6 +1451,32 @@ input.notePropertyValue {
 }
 
 @media (max-width: 760px) {
+	.tiptapContentInline h1,
+	.tiptapContentInline h2,
+	.tiptapContentInline h3,
+	.tiptapContentInline h4,
+	.tiptapContentInline h5,
+	.tiptapContentInline h6 {
+		margin-top: var(--space-4);
+		margin-bottom: var(--space-2);
+		letter-spacing: -0.012em;
+	}
+
+	.tiptapContentInline h1 {
+		font-size: 23px;
+		line-height: 1.28;
+	}
+
+	.tiptapContentInline h2 {
+		font-size: 19px;
+		line-height: 1.32;
+	}
+
+	.tiptapContentInline h3 {
+		font-size: 16.5px;
+		line-height: 1.38;
+	}
+
 	.tiptapHostInline:not(.is-preview) .tiptapContentInline {
 		padding-left: var(--editor-readable-content-gutter-compact);
 	}

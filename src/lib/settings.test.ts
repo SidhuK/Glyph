@@ -113,6 +113,43 @@ describe("settings Vim keybindings", () => {
 	});
 });
 
+describe("settings task progress indicator", () => {
+	beforeEach(() => {
+		vi.resetModules();
+		emitMock.mockClear();
+		storeState.clear();
+	});
+
+	it("defaults task progress indicator visibility to on", async () => {
+		const { loadSettings } = await import("./settings");
+		const settings = await loadSettings();
+		expect(settings.ui.showTaskProgressIndicator).toBe(true);
+	});
+
+	it("loads task progress indicator visibility from the store", async () => {
+		storeState.set("ui.showTaskProgressIndicator", false);
+		const { loadSettings } = await import("./settings");
+		const settings = await loadSettings();
+		expect(settings.ui.showTaskProgressIndicator).toBe(false);
+	});
+
+	it("loads task progress indicator visibility from the legacy store key", async () => {
+		storeState.set("ui.taskProgressIndicator.enabled", false);
+		const { loadSettings } = await import("./settings");
+		const settings = await loadSettings();
+		expect(settings.ui.showTaskProgressIndicator).toBe(false);
+	});
+
+	it("persists and emits task progress indicator visibility changes", async () => {
+		const { setShowTaskProgressIndicator } = await import("./settings");
+		await setShowTaskProgressIndicator(false);
+		expect(storeState.get("ui.showTaskProgressIndicator")).toBe(false);
+		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
+			ui: { showTaskProgressIndicator: false },
+		});
+	});
+});
+
 describe("settings editor width mode", () => {
 	beforeEach(() => {
 		vi.resetModules();
@@ -145,6 +182,42 @@ describe("settings editor width mode", () => {
 		expect(storeState.get("editor.editorWidthMode")).toBe("comfortable");
 		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
 			editor: { editorWidthMode: "comfortable" },
+		});
+	});
+});
+
+describe("settings show frontmatter in editor", () => {
+	beforeEach(() => {
+		vi.resetModules();
+		emitMock.mockClear();
+		storeState.clear();
+	});
+
+	it("defaults frontmatter visibility to off", async () => {
+		const { loadSettings } = await import("./settings");
+
+		const settings = await loadSettings();
+
+		expect(settings.editor.showFrontmatterInEditor).toBe(false);
+	});
+
+	it("loads frontmatter visibility from the store", async () => {
+		storeState.set("editor.showFrontmatterInEditor", true);
+		const { loadSettings } = await import("./settings");
+
+		const settings = await loadSettings();
+
+		expect(settings.editor.showFrontmatterInEditor).toBe(true);
+	});
+
+	it("persists and emits frontmatter visibility changes", async () => {
+		const { setEditorShowFrontmatterInEditor } = await import("./settings");
+
+		await setEditorShowFrontmatterInEditor(true);
+
+		expect(storeState.get("editor.showFrontmatterInEditor")).toBe(true);
+		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
+			editor: { showFrontmatterInEditor: true },
 		});
 	});
 });

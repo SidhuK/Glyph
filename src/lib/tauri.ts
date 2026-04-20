@@ -828,6 +828,7 @@ interface TauriCommands {
 	space_resolve_abs_path: CommandDef<{ path: string }, string>;
 	space_relativize_path: CommandDef<{ abs_path: string }, string>;
 	space_resolve_wikilink: CommandDef<{ target: string }, string | null>;
+	space_resolve_image_wikilink: CommandDef<{ target: string }, string | null>;
 	space_resolve_markdown_link: CommandDef<
 		{ href: string; sourcePath: string },
 		string | null

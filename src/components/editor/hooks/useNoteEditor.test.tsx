@@ -27,6 +27,7 @@ const {
 					attachmentStorageMode?: AttachmentStorageMode;
 					colorfulHeadings?: boolean;
 					enablePeopleMentionsAsTags?: boolean;
+					showFrontmatterInEditor?: boolean;
 					showCollapsibleHeadings?: boolean;
 				};
 		  }) => void)
@@ -115,6 +116,7 @@ const {
 				attachmentStorageMode?: AttachmentStorageMode;
 				colorfulHeadings?: boolean;
 				enablePeopleMentionsAsTags?: boolean;
+				showFrontmatterInEditor?: boolean;
 				showCollapsibleHeadings?: boolean;
 			};
 		}) => settingsUpdatedHandler?.(payload),
@@ -127,6 +129,7 @@ const {
 					attachmentStorageMode: "specific-folder",
 					colorfulHeadings: false,
 					showCollapsibleHeadings: false,
+					showFrontmatterInEditor: false,
 					enablePeopleMentionsAsTags: false,
 				},
 			}),
@@ -188,6 +191,7 @@ vi.mock("../../../lib/tauriEvents", () => ({
 				attachmentStorageMode?: AttachmentStorageMode;
 				colorfulHeadings?: boolean;
 				enablePeopleMentionsAsTags?: boolean;
+				showFrontmatterInEditor?: boolean;
 				showCollapsibleHeadings?: boolean;
 			};
 		}) => void,
@@ -208,7 +212,10 @@ function Harness({
 	pasteMarkdownBehavior = "plain-text",
 }: {
 	onChange: (nextMarkdown: string) => void;
-	onState?: (state: { colorfulHeadings: boolean }) => void;
+	onState?: (state: {
+		colorfulHeadings: boolean;
+		showFrontmatterInEditor: boolean;
+	}) => void;
 	pasteMarkdownBehavior?: "plain-text" | "smart-markdown";
 }) {
 	const state = useNoteEditor({
@@ -219,8 +226,11 @@ function Harness({
 		onChange,
 	});
 	useEffect(() => {
-		onState?.({ colorfulHeadings: state.colorfulHeadings });
-	}, [onState, state.colorfulHeadings]);
+		onState?.({
+			colorfulHeadings: state.colorfulHeadings,
+			showFrontmatterInEditor: state.showFrontmatterInEditor,
+		});
+	}, [onState, state.colorfulHeadings, state.showFrontmatterInEditor]);
 	return null;
 }
 
@@ -329,6 +339,7 @@ describe("useNoteEditor", () => {
 				attachmentStorageMode: "specific-folder",
 				colorfulHeadings: false,
 				showCollapsibleHeadings: false,
+				showFrontmatterInEditor: false,
 				enablePeopleMentionsAsTags: false,
 			},
 		});
@@ -428,7 +439,10 @@ describe("useNoteEditor", () => {
 			root.render(<Harness onChange={onChange} onState={onState} />);
 		});
 
-		expect(onState).toHaveBeenLastCalledWith({ colorfulHeadings: false });
+		expect(onState).toHaveBeenLastCalledWith({
+			colorfulHeadings: false,
+			showFrontmatterInEditor: false,
+		});
 
 		await act(async () => {
 			emitSettingsUpdated({
@@ -436,7 +450,59 @@ describe("useNoteEditor", () => {
 			});
 		});
 
-		expect(onState).toHaveBeenLastCalledWith({ colorfulHeadings: true });
+		expect(onState).toHaveBeenLastCalledWith({
+			colorfulHeadings: true,
+			showFrontmatterInEditor: false,
+		});
+	});
+
+	it("tracks frontmatter visibility from settings and live updates", async () => {
+		const onChange = vi.fn();
+		const onState = vi.fn();
+
+		await act(async () => {
+			root.render(<Harness onChange={onChange} onState={onState} />);
+		});
+
+		expect(onState).toHaveBeenLastCalledWith({
+			colorfulHeadings: false,
+			showFrontmatterInEditor: false,
+		});
+
+		await act(async () => {
+			emitSettingsUpdated({
+				editor: { showFrontmatterInEditor: true },
+			});
+		});
+
+		expect(onState).toHaveBeenLastCalledWith({
+			colorfulHeadings: false,
+			showFrontmatterInEditor: true,
+		});
+	});
+
+	it("hydrates frontmatter visibility from persisted settings on mount", async () => {
+		const onChange = vi.fn();
+		const onState = vi.fn();
+		loadSettingsMock.mockResolvedValue({
+			editor: {
+				attachmentFolder: "assets",
+				attachmentStorageMode: "specific-folder",
+				colorfulHeadings: false,
+				showCollapsibleHeadings: false,
+				showFrontmatterInEditor: true,
+				enablePeopleMentionsAsTags: false,
+			},
+		});
+
+		await act(async () => {
+			root.render(<Harness onChange={onChange} onState={onState} />);
+		});
+
+		expect(onState).toHaveBeenLastCalledWith({
+			colorfulHeadings: false,
+			showFrontmatterInEditor: true,
+		});
 	});
 
 	it("intercepts Markdown text paste when smart paste is enabled", async () => {
@@ -705,6 +771,7 @@ describe("useNoteEditor", () => {
 				attachmentStorageMode: "specific-folder",
 				colorfulHeadings: false,
 				showCollapsibleHeadings: false,
+				showFrontmatterInEditor: false,
 				enablePeopleMentionsAsTags: false,
 			},
 		});
@@ -743,6 +810,7 @@ describe("useNoteEditor", () => {
 				attachmentStorageMode: "space-root",
 				colorfulHeadings: false,
 				showCollapsibleHeadings: false,
+				showFrontmatterInEditor: false,
 				enablePeopleMentionsAsTags: false,
 			},
 		});
@@ -781,6 +849,7 @@ describe("useNoteEditor", () => {
 				attachmentStorageMode: "note-folder",
 				colorfulHeadings: false,
 				showCollapsibleHeadings: false,
+				showFrontmatterInEditor: false,
 				enablePeopleMentionsAsTags: false,
 			},
 		});

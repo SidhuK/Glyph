@@ -17,7 +17,9 @@ import {
 import type { DatabaseColumn, DatabaseRow } from "../../lib/database/types";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { normalizeInlineMarkdown } from "../../lib/markdownUtils";
+import { loadSettings } from "../../lib/settings";
 import { type NoteTaskSummary, invoke } from "../../lib/tauri";
+import { useTauriEvent } from "../../lib/tauriEvents";
 import { parentDir } from "../../utils/path";
 import {
 	EDITOR_TEXT_COLORS,
@@ -275,6 +277,10 @@ export function DatabaseBoard({
 	const [taskSummariesByPath, setTaskSummariesByPath] = useState<
 		Record<string, NoteTaskSummary>
 	>({});
+	const [showTaskProgressIndicator, setShowTaskProgressIndicator] = useState<
+		boolean | null
+	>(null);
+	const taskProgressSettingVersionRef = useRef(0);
 	const boardCardColumns = useMemo(
 		() => cardCandidateColumns(columns, groupColumnId),
 		[columns, groupColumnId],
@@ -296,6 +302,10 @@ export function DatabaseBoard({
 	}, []);
 
 	useEffect(() => {
+		if (showTaskProgressIndicator !== true) {
+			setTaskSummariesByPath({});
+			return;
+		}
 		const notePaths = Array.from(
 			new Set(rows.map((row) => row.note_path).filter(Boolean)),
 		);
@@ -326,7 +336,30 @@ export function DatabaseBoard({
 		return () => {
 			cancelled = true;
 		};
-	}, [rows]);
+	}, [rows, showTaskProgressIndicator]);
+
+	useEffect(() => {
+		let cancelled = false;
+		const requestedAtVersion = taskProgressSettingVersionRef.current;
+		void loadSettings()
+			.then((settings) => {
+				if (cancelled) return;
+				if (taskProgressSettingVersionRef.current !== requestedAtVersion)
+					return;
+				setShowTaskProgressIndicator(settings.ui.showTaskProgressIndicator);
+			})
+			.catch(() => undefined);
+		return () => {
+			cancelled = true;
+		};
+	}, []);
+
+	useTauriEvent("settings:updated", (payload) => {
+		if (typeof payload.ui?.showTaskProgressIndicator === "boolean") {
+			taskProgressSettingVersionRef.current += 1;
+			setShowTaskProgressIndicator(payload.ui.showTaskProgressIndicator);
+		}
+	});
 
 	const handleLaneDrop = useCallback(
 		async (
@@ -689,7 +722,8 @@ export function DatabaseBoard({
 																	<span className="databaseBoardCardTitle">
 																		{title}
 																	</span>
-																	{taskSummary.total_count > 0 ? (
+																	{showTaskProgressIndicator &&
+																	taskSummary.total_count > 0 ? (
 																		<TaskProgressIndicator
 																			summary={taskSummary}
 																			className="databaseBoardCardTaskProgress"

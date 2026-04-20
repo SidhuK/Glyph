@@ -50,6 +50,49 @@ function isImageTarget(target: string): boolean {
 	);
 }
 
+function isEmbedSuggestionContext(
+	editor: SuggestionProps<WikiLinkSuggestionItem>["editor"],
+	rangeFrom: number,
+): boolean {
+	if (rangeFrom <= 1) return false;
+	try {
+		const previousChar = editor.state.doc.textBetween(
+			rangeFrom - 1,
+			rangeFrom,
+			"",
+			"",
+		);
+		if (previousChar !== "!") return false;
+		if (rangeFrom <= 2) return true;
+		const beforePreviousChar = editor.state.doc.textBetween(
+			rangeFrom - 2,
+			rangeFrom - 1,
+			"",
+			"",
+		);
+		return beforePreviousChar !== "!";
+	} catch {
+		return false;
+	}
+}
+
+function getEmbedReplacementFrom(
+	editor: SuggestionProps<WikiLinkSuggestionItem>["editor"],
+	rangeFrom: number,
+): number {
+	if (!isEmbedSuggestionContext(editor, rangeFrom)) return rangeFrom;
+	return Math.max(0, rangeFrom - 1);
+}
+
+function isEmbedSuggestionContextFromQuery(
+	editor: SuggestionProps<WikiLinkSuggestionItem>["editor"],
+	query: string,
+): boolean {
+	const cursor = editor.state.selection.from;
+	const startOfOpenBrackets = cursor - query.length - 2;
+	return isEmbedSuggestionContext(editor, startOfOpenBrackets);
+}
+
 declare module "@tiptap/core" {
 	interface Commands<ReturnType> {
 		wikiLink: {
@@ -228,17 +271,24 @@ export const WikiLink = Node.create({
 	addProseMirrorPlugins() {
 		const getSuggestions = async (
 			query: string,
+			includeImagesOnly: boolean,
 		): Promise<WikiLinkSuggestionItem[]> => {
+			const requestLimit = includeImagesOnly
+				? Math.min(this.options.suggestionLimit * 4, 200)
+				: this.options.suggestionLimit;
 			const results = await invoke("space_suggest_links", {
 				request: {
 					query,
-					markdown_only: true,
-					strip_markdown_ext: true,
+					markdown_only: !includeImagesOnly,
+					strip_markdown_ext: !includeImagesOnly,
 					relative_to_source: false,
-					limit: this.options.suggestionLimit,
+					limit: requestLimit,
 				},
 			});
-			return results.map((item) => ({
+			const filtered = includeImagesOnly
+				? results.filter((item) => isImageTarget(item.path))
+				: results;
+			return filtered.slice(0, this.options.suggestionLimit).map((item) => ({
 				path: item.path,
 				title: item.title || titleFromRelPath(item.path),
 				insertText: item.insert_text,
@@ -252,15 +302,27 @@ export const WikiLink = Node.create({
 				char: "[[",
 				allowedPrefixes: null,
 				startOfLine: false,
-				items: async ({ query }) => getSuggestions(query),
+				items: async ({ editor, query }) => {
+					const asEmbed = isEmbedSuggestionContextFromQuery(editor, query);
+					return getSuggestions(query, asEmbed);
+				},
 				command: ({ editor, range, props }) => {
-					const raw = `[[${props.insertText}]]`;
+					const asEmbed = isEmbedSuggestionContext(editor, range.from);
+					const replaceFrom = asEmbed
+						? getEmbedReplacementFrom(editor, range.from)
+						: range.from;
+					const raw = asEmbed
+						? `![[${props.insertText}]]`
+						: `[[${props.insertText}]]`;
 					const parsed = parseWikiLink(raw);
 					if (!parsed) return;
 					editor
 						.chain()
 						.focus()
-						.deleteRange(range)
+						.deleteRange({
+							from: replaceFrom,
+							to: range.to,
+						})
 						.insertContent({
 							type: "wikiLink",
 							attrs: parsed,

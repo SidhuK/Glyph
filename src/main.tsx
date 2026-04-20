@@ -164,7 +164,14 @@ function ThemeAndTypographyBridge() {
 		) {
 			return;
 		}
-		applyUiTypography(fontFamily, monoFontFamily, uiFontSize, editorFontSize);
+		const applyTypography = () => {
+			applyUiTypography(fontFamily, monoFontFamily, uiFontSize, editorFontSize);
+		};
+		applyTypography();
+		window.addEventListener("resize", applyTypography);
+		return () => {
+			window.removeEventListener("resize", applyTypography);
+		};
 	}, [editorFontSize, fontFamily, monoFontFamily, uiFontSize]);
 
 	React.useEffect(() => {

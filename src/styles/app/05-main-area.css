@@ -730,10 +730,11 @@
 }
 
 .mainTabsBar {
-	height: 44px;
+	height: 40px;
 	display: flex;
 	align-items: center;
-	gap: var(--space-2);
+	justify-content: flex-start;
+	gap: 8px;
 	padding: 0 var(--space-3);
 	border-bottom: 0;
 	background: var(--bg-primary);
@@ -788,41 +789,31 @@
 	font-weight: var(--font-medium);
 }
 
-.mainTabsSide {
-	flex: 1;
-	min-width: 0;
-}
-
-.mainTabsSideEnd {
-	display: flex;
-	align-items: center;
-	justify-content: flex-end;
-}
-
-.mainTabsCenter {
-	flex: 0 1 1120px;
-	min-width: 0;
-	display: flex;
-	align-items: center;
-}
-
 .mainTabsStrip {
-	flex: 1;
+	flex: 0 1 auto;
+	width: fit-content;
+	max-width: calc(100% - 40px);
 	min-width: 0;
 	display: flex;
 	align-items: center;
-	gap: 6px;
-	padding: 3px 0;
-	border-radius: var(--radius-3xl);
-	border: 0;
-	background: transparent;
-	overflow: hidden;
+	gap: 5px;
+	padding: 2px 6px;
+	border-radius: 999px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 24%, transparent);
+	background: color-mix(in srgb, var(--bg-tertiary) 66%, transparent);
+	overflow-x: auto;
+	scrollbar-width: none;
+}
+
+.mainTabsStrip::-webkit-scrollbar {
+	display: none;
 }
 
 .mainTabWrap {
 	position: relative;
-	min-width: 78px;
-	flex: 1 1 0%;
+	flex: 0 0 auto;
+	width: clamp(96px, 12vw, 178px);
+	min-width: 0;
 }
 
 .mainTab {
@@ -836,7 +827,7 @@
 	gap: 7px;
 	padding: 0 10px 0 26px;
 	border-radius: var(--radius-2xl);
-	border: 1px solid color-mix(in srgb, var(--border-light) 28%, transparent);
+	border: 1px solid transparent;
 	background: transparent;
 	color: var(--text-tertiary);
 	cursor: pointer;
@@ -870,7 +861,7 @@
 }
 
 .mainTabLabel {
-	font-size: 11px;
+	font-size: 12px;
 	line-height: 1.2;
 	font-weight: var(--font-medium);
 }

@@ -10,6 +10,7 @@ export interface WikiLinkClickDetail {
 	anchorKind: "none" | "heading" | "block";
 	anchor: string | null;
 	unresolved: boolean;
+	embed?: boolean;
 }
 
 export interface TagClickDetail {
