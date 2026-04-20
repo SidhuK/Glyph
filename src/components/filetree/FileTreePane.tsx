@@ -388,7 +388,7 @@ export const FileTreePane = memo(function FileTreePane({
 		};
 
 		collectEntries(rootEntries);
-		for (const dirPath of Object.keys(childrenByDir)) {
+		for (const dirPath of expandedDirs) {
 			collectEntries(childrenByDir[dirPath]);
 		}
 		for (const pinnedPath of pinnedFiles) {
@@ -398,7 +398,7 @@ export const FileTreePane = memo(function FileTreePane({
 		}
 
 		return [...paths].sort();
-	}, [childrenByDir, pinnedFiles, rootEntries]);
+	}, [childrenByDir, expandedDirs, pinnedFiles, rootEntries]);
 
 	useEffect(() => {
 		if (

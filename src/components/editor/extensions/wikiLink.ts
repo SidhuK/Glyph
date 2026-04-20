@@ -50,10 +50,6 @@ function isImageTarget(target: string): boolean {
 	);
 }
 
-function isImagePath(path: string): boolean {
-	return isImageTarget(path);
-}
-
 function isEmbedSuggestionContext(
 	editor: SuggestionProps<WikiLinkSuggestionItem>["editor"],
 	rangeFrom: number,
@@ -272,14 +268,14 @@ export const WikiLink = Node.create({
 			const results = await invoke("space_suggest_links", {
 				request: {
 					query,
-					markdown_only: includeImagesOnly ? false : true,
-					strip_markdown_ext: includeImagesOnly ? false : true,
+					markdown_only: !includeImagesOnly,
+					strip_markdown_ext: !includeImagesOnly,
 					relative_to_source: false,
 					limit: this.options.suggestionLimit,
 				},
 			});
 			const filtered = includeImagesOnly
-				? results.filter((item) => isImagePath(item.path))
+				? results.filter((item) => isImageTarget(item.path))
 				: results;
 			return filtered.map((item) => ({
 				path: item.path,
