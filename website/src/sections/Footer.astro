@@ -1,55 +1,31 @@
 ---
 import logoG from "../../assets/logo_g.PNG";
 import { downloadUrl } from "../lib/site";
-
-const footerTrimMarks = Array.from({ length: 30 });
 ---
 
 <footer class="footer">
-	<div class="footer-shell">
-		<div class="footer-columns">
-			<div class="footer-col footer-brand-col">
-				<a href="/" class="footer-logo" aria-label="Glyph home">
-					<img src={logoG.src} alt="" class="logo-icon" />
-					<span>GLYPH</span>
-				</a>
-				<p class="footer-tagline">Local-first notes for macOS. Private, calm, and built around your own files.</p>
-			</div>
-			<div class="footer-col">
-				<p class="footer-heading">PRODUCT</p>
-				<a href="https://docs.glyphformac.com" target="_blank" rel="noopener">Docs</a>
+	<div class="footer-centered">
+		<a href="/" class="footer-logo-icon" aria-label="Glyph home">
+			<img src={logoG.src} alt="" class="logo-icon" />
+		</a>
+
+		<nav class="footer-links" aria-label="Footer navigation">
+			<div class="footer-link-row">
+				<a href={downloadUrl} target="_blank" rel="noopener">Download</a>
 				<a href="/changelog">Changelog</a>
+			</div>
+			<div class="footer-link-row">
+				<a href="https://docs.glyphformac.com" target="_blank" rel="noopener">Docs</a>
 				<a href="https://glyph.userjot.com/?cursor=1&order=top&limit=10" target="_blank" rel="noopener">Feedback</a>
 				<a href="https://github.com/SidhuK/Glyph" target="_blank" rel="noopener">GitHub</a>
 			</div>
-			<div class="footer-col">
-				<p class="footer-heading">DOWNLOAD</p>
-				<a href={downloadUrl} target="_blank" rel="noopener">Get Glyph</a>
-			</div>
-			<div class="footer-col">
-				<p class="footer-heading">LEGAL</p>
+			<div class="footer-link-row">
 				<a href="/terms">Terms</a>
 				<a href="/privacy">Privacy</a>
 				<a href="/legal">Legal</a>
 			</div>
-		</div>
-		<div class="footer-meta">
-			<p class="footer-copy">© 2026 Glyph</p>
-			<p class="footer-credit">Made for quiet work and notes you keep forever.</p>
-		</div>
-		<div class="footer-showpiece">
-			<div class="footer-trim" aria-hidden="true">
-				{footerTrimMarks.map((_, index) => (
-					<span
-						class:list={[
-							"footer-trim__mark",
-							index % 3 === 1 && "is-warm",
-							index % 3 === 2 && "is-soft",
-						]}
-					/>
-				))}
-			</div>
-			<p class="footer-wordmark" aria-hidden="true">Glyph</p>
-		</div>
+		</nav>
+
+		<p class="footer-copy">© 2026 Glyph</p>
 	</div>
 </footer>

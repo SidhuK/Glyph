@@ -709,6 +709,54 @@
 	transform: rotate(90deg);
 }
 
+/* ── Feature: And More List ── */
+.feature-more-list {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 0.1rem 0.6rem;
+}
+
+.feature-more-item {
+	position: relative;
+	font-size: 0.77rem;
+	color: var(--muted);
+	cursor: default;
+	text-decoration-line: underline;
+	text-decoration-style: dotted;
+	text-decoration-color: rgba(86, 69, 48, 0.2);
+	text-underline-offset: 3px;
+	transition: color 0.15s ease;
+}
+
+.feature-more-item:hover {
+	color: var(--ink);
+}
+
+.feature-more-tip {
+	position: absolute;
+	bottom: calc(100% + 0.5rem);
+	left: 50%;
+	transform: translateX(-50%) translateY(4px);
+	width: 13rem;
+	padding: 0.55rem 0.7rem;
+	border-radius: 0.6rem;
+	background: rgba(32, 26, 18, 0.94);
+	color: rgba(255, 255, 255, 0.88);
+	font-size: 0.72rem;
+	font-weight: 400;
+	line-height: 1.5;
+	text-align: center;
+	pointer-events: none;
+	opacity: 0;
+	transition: opacity 0.2s ease, transform 0.2s ease;
+	z-index: 10;
+}
+
+.feature-more-item:hover .feature-more-tip {
+	opacity: 1;
+	transform: translateX(-50%) translateY(0);
+}
+
 /* ── Feature Footer ── */
 .feature-showcase__footer {
 	display: flex;
