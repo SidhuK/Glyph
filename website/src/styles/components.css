@@ -448,8 +448,6 @@
 		flex-direction: column;
 		align-items: flex-start;
 	}
-
-
 }
 
 @media (max-width: 720px) {
@@ -457,8 +455,6 @@
 	.faq-summary {
 		align-items: flex-start;
 	}
-
-
 }
 
 @media (max-width: 640px) {
@@ -507,6 +503,4 @@
 		gap: 0.5rem;
 		letter-spacing: 0.08em;
 	}
-
-
 }

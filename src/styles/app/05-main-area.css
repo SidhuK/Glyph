@@ -744,6 +744,47 @@
 	background: var(--bg-primary);
 }
 
+.mainTabNavControls {
+	display: flex;
+	align-items: center;
+	gap: 2px;
+	flex-shrink: 0;
+}
+
+.mainTabNavBtn {
+	height: 28px;
+	width: 28px;
+	flex: 0 0 auto;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	border-radius: var(--radius-md);
+	border: 1px solid transparent;
+	background: transparent;
+	color: var(--text-secondary);
+	font-size: 13px;
+	font-weight: var(--font-medium);
+	line-height: 1;
+	cursor: pointer;
+	transition: background var(--transition-fast), color var(--transition-fast),
+		opacity var(--transition-fast);
+}
+
+.mainTabNavBtn:hover:not(:disabled) {
+	color: var(--text-primary);
+	background: color-mix(in srgb, var(--bg-hover) 82%, transparent);
+}
+
+.mainTabNavBtn:disabled {
+	opacity: 0.35;
+	cursor: not-allowed;
+	color: var(--text-tertiary);
+}
+
+.mainTabNavBtn:active:not(:disabled) {
+	opacity: 0.85;
+}
+
 .mainTabsBreadcrumb {
 	display: flex;
 	align-items: center;
@@ -1007,6 +1048,7 @@
 .mainTab:focus-visible,
 .mainTabClose:focus-visible,
 .mainTabAdd:focus-visible,
+.mainTabNavBtn:focus-visible,
 .mainTabsAiToggle:focus-visible,
 .mainAiFloatingToggle:focus-visible {
 	outline: 2px solid

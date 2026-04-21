@@ -14,6 +14,10 @@ interface TabBarProps {
 	activeTabPath: string | null;
 	dragTabId: string | null;
 	useWindowBackground?: boolean;
+	canGoBack: boolean;
+	canGoForward: boolean;
+	onGoBack: () => void;
+	onGoForward: () => void;
 	onOpenBlankTab: () => void;
 	onPrefetchTab: (target: string | null) => void;
 	onSelectTab: (tabId: string) => void;
@@ -40,6 +44,10 @@ export function TabBar({
 	activeTabPath,
 	dragTabId,
 	useWindowBackground = false,
+	canGoBack,
+	canGoForward,
+	onGoBack,
+	onGoForward,
 	onOpenBlankTab,
 	onPrefetchTab,
 	onSelectTab,
@@ -92,6 +100,28 @@ export function TabBar({
 				className="mainTabsBar"
 				data-empty-state={useWindowBackground ? "true" : "false"}
 			>
+				<div className="mainTabNavControls">
+					<button
+						type="button"
+						className="mainTabNavBtn"
+						onClick={onGoBack}
+						disabled={!canGoBack}
+						title="Go back"
+						aria-label="Go back"
+					>
+						←
+					</button>
+					<button
+						type="button"
+						className="mainTabNavBtn"
+						onClick={onGoForward}
+						disabled={!canGoForward}
+						title="Go forward"
+						aria-label="Go forward"
+					>
+						→
+					</button>
+				</div>
 				<div className="mainTabsStrip">
 					{tabs.map((tab) => (
 						<TabItem

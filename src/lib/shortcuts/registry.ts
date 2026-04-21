@@ -148,6 +148,22 @@ export const SHORTCUTS = [
 		category: "file",
 		context: "space",
 	},
+	{
+		id: "go-back-note",
+		shortcut: { meta: true, key: "[" },
+		label: "Go Back",
+		description: "Go back to the previous note in the current tab",
+		category: "navigation",
+		context: "space",
+	},
+	{
+		id: "go-forward-note",
+		shortcut: { meta: true, key: "]" },
+		label: "Go Forward",
+		description: "Go forward to the next note in the current tab",
+		category: "navigation",
+		context: "space",
+	},
 
 	// ─────────────────────────────────────────────────────────────────────────
 	// Search & Command Palette

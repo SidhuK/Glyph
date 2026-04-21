@@ -160,4 +160,265 @@ describe("useTabManager", () => {
 		expect(latestValue.tabs[2]).toMatchObject({ kind: "blank", target: null });
 		expect(latestValue.activeTabPath).toBe("notes/first.md");
 	});
+
+	it("pushes note history when opening markdown notes in the same tab", () => {
+		act(() => {
+			latestValue.openFileTab("notes/a.md");
+		});
+		act(() => {
+			latestValue.openFileTab("notes/b.md");
+		});
+
+		expect(latestValue.canGoBack).toBe(true);
+		expect(latestValue.canGoForward).toBe(false);
+
+		act(() => {
+			latestValue.goBack();
+		});
+
+		expect(latestValue.activeTabPath).toBe("notes/a.md");
+		expect(latestValue.canGoBack).toBe(false);
+		expect(latestValue.canGoForward).toBe(true);
+	});
+
+	it("supports repeated back presses before React re-renders", () => {
+		act(() => {
+			latestValue.openFileTab("notes/a.md");
+		});
+		act(() => {
+			latestValue.openFileTab("notes/b.md");
+		});
+		act(() => {
+			latestValue.openFileTab("notes/c.md");
+		});
+
+		act(() => {
+			latestValue.goBack();
+			latestValue.goBack();
+		});
+
+		expect(latestValue.activeTabPath).toBe("notes/a.md");
+		expect(latestValue.canGoBack).toBe(false);
+		expect(latestValue.canGoForward).toBe(true);
+	});
+
+	it("does not push consecutive duplicate entries", () => {
+		act(() => {
+			latestValue.openFileTab("notes/a.md");
+		});
+		act(() => {
+			latestValue.openFileTab("notes/b.md");
+		});
+		act(() => {
+			latestValue.openFileTab("notes/b.md");
+		});
+
+		expect(latestValue.canGoBack).toBe(true);
+		expect(latestValue.canGoForward).toBe(false);
+
+		act(() => {
+			latestValue.goBack();
+		});
+
+		expect(latestValue.activeTabPath).toBe("notes/a.md");
+	});
+
+	it("truncates forward history after a new note is opened from a back state", () => {
+		act(() => {
+			latestValue.openFileTab("notes/a.md");
+		});
+		act(() => {
+			latestValue.openFileTab("notes/b.md");
+		});
+		act(() => {
+			latestValue.openFileTab("notes/c.md");
+		});
+		act(() => {
+			latestValue.goBack();
+		});
+		act(() => {
+			latestValue.goBack();
+		});
+
+		expect(latestValue.activeTabPath).toBe("notes/a.md");
+		expect(latestValue.canGoForward).toBe(true);
+
+		act(() => {
+			latestValue.openFileTab("notes/d.md");
+		});
+
+		expect(latestValue.activeTabPath).toBe("notes/d.md");
+		expect(latestValue.canGoForward).toBe(false);
+
+		act(() => {
+			latestValue.goBack();
+		});
+
+		expect(latestValue.activeTabPath).toBe("notes/a.md");
+	});
+
+	it("keeps history isolated per tab", () => {
+		act(() => {
+			latestValue.openFileTab("notes/a.md");
+		});
+		act(() => {
+			latestValue.openBlankTab();
+		});
+		act(() => {
+			latestValue.openFileTab("notes/b.md");
+		});
+
+		// Switch to first tab
+		act(() => {
+			latestValue.setActiveTabId(latestValue.tabs[0]?.id ?? null);
+		});
+
+		expect(latestValue.activeTabPath).toBe("notes/a.md");
+		expect(latestValue.canGoBack).toBe(false);
+		expect(latestValue.canGoForward).toBe(false);
+
+		// Switch back to second tab
+		act(() => {
+			latestValue.setActiveTabId(latestValue.tabs[1]?.id ?? null);
+		});
+
+		expect(latestValue.activeTabPath).toBe("notes/b.md");
+		expect(latestValue.canGoBack).toBe(false);
+	});
+
+	it("preserves current behavior when target note is already open in another tab", () => {
+		act(() => {
+			latestValue.openFileTab("notes/a.md");
+		});
+		act(() => {
+			latestValue.openBlankTab();
+		});
+		act(() => {
+			latestValue.openFileTab("notes/b.md");
+		});
+
+		const secondTabId = latestValue.activeTabId;
+
+		// Jump to existing tab a.md
+		act(() => {
+			latestValue.openFileTab("notes/a.md");
+		});
+
+		expect(latestValue.activeTabPath).toBe("notes/a.md");
+
+		// Switch back to second tab — it should still have its own history
+		act(() => {
+			latestValue.setActiveTabId(secondTabId);
+		});
+
+		expect(latestValue.activeTabPath).toBe("notes/b.md");
+		expect(latestValue.canGoBack).toBe(false);
+	});
+
+	it("ignores preview/special-tab opens for history creation", () => {
+		act(() => {
+			latestValue.openFileTab("notes/a.md");
+		});
+		act(() => {
+			latestValue.openFileTab("notes/b.md");
+		});
+		act(() => {
+			latestValue.openSpecialTab("all-docs");
+		});
+
+		expect(latestValue.activeTabPath).toBe("all-docs");
+		expect(latestValue.canGoBack).toBe(true);
+
+		act(() => {
+			latestValue.goBack();
+		});
+
+		expect(latestValue.activeTabPath).toBe("notes/a.md");
+	});
+
+	it("removes tab history on close", () => {
+		act(() => {
+			latestValue.openFileTab("notes/a.md");
+		});
+		act(() => {
+			latestValue.openFileTab("notes/b.md");
+		});
+
+		const tabId = latestValue.activeTabId;
+
+		act(() => {
+			latestValue.closeTab(tabId ?? "");
+		});
+
+		expect(latestValue.canGoBack).toBe(false);
+		expect(latestValue.canGoForward).toBe(false);
+	});
+
+	it("rewrites history entries on rename", () => {
+		act(() => {
+			latestValue.openFileTab("notes/a.md");
+		});
+		act(() => {
+			latestValue.openFileTab("notes/b.md");
+		});
+
+		act(() => {
+			latestValue.goBack();
+		});
+
+		act(() => {
+			latestValue.renameTabsForPath("notes/a.md", "notes/renamed.md");
+		});
+
+		act(() => {
+			latestValue.goForward();
+		});
+
+		expect(latestValue.activeTabPath).toBe("notes/b.md");
+
+		act(() => {
+			latestValue.goBack();
+		});
+
+		expect(latestValue.activeTabPath).toBe("notes/renamed.md");
+	});
+
+	it("prunes history entries on delete / recursive delete", () => {
+		act(() => {
+			latestValue.openFileTab("notes/a.md");
+		});
+		act(() => {
+			latestValue.openFileTab("notes/b.md");
+		});
+		act(() => {
+			latestValue.openFileTab("notes/c.md");
+		});
+
+		act(() => {
+			latestValue.closeTabsForPathRemoval("notes/b.md");
+		});
+
+		expect(latestValue.canGoForward).toBe(false);
+
+		act(() => {
+			latestValue.goBack();
+		});
+
+		expect(latestValue.activeTabPath).toBe("notes/a.md");
+	});
+
+	it("clears history when replacing a blank tab", () => {
+		act(() => {
+			latestValue.openFileTab("notes/a.md");
+		});
+		act(() => {
+			latestValue.openBlankTab();
+		});
+		act(() => {
+			latestValue.openFileTab("notes/b.md");
+		});
+
+		expect(latestValue.canGoBack).toBe(false);
+		expect(latestValue.canGoForward).toBe(false);
+	});
 });
