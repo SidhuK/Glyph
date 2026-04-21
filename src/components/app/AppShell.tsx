@@ -1,6 +1,8 @@
 import { cn } from "@/lib/utils";
 import {
 	AiChat02Icon,
+	ArrowLeft,
+	ArrowRight,
 	Calendar03Icon,
 	CalendarAdd01Icon,
 	ColorsIcon,
@@ -1541,7 +1543,7 @@ export function AppShell() {
 			{
 				id: "go-back-note",
 				label: "Go back",
-				icon: <HugeiconsIcon icon={MoveIcon} size={16} strokeWidth={0.9} />,
+				icon: <HugeiconsIcon icon={ArrowLeft} size={16} strokeWidth={0.9} />,
 				category: "Navigation",
 				shortcut: { meta: true, key: "[" },
 				enabled: canGoBack,
@@ -1551,7 +1553,7 @@ export function AppShell() {
 			{
 				id: "go-forward-note",
 				label: "Go forward",
-				icon: <HugeiconsIcon icon={MoveIcon} size={16} strokeWidth={0.9} />,
+				icon: <HugeiconsIcon icon={ArrowRight} size={16} strokeWidth={0.9} />,
 				category: "Navigation",
 				shortcut: { meta: true, key: "]" },
 				enabled: canGoForward,
