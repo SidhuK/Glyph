@@ -85,6 +85,7 @@ export function TabBar({
 	);
 
 	const [hovered, setHovered] = useState(false);
+	const showTabs = tabs.length > 1;
 	const breadcrumbSegments =
 		activeTabPath && !isPathSpecial(activeTabPath)
 			? activeTabPath.split("/").filter(Boolean)
@@ -122,33 +123,37 @@ export function TabBar({
 						→
 					</button>
 				</div>
-				<div className="mainTabsStrip">
-					{tabs.map((tab) => (
-						<TabItem
-							key={tab.id}
-							tab={tab}
-							label={tabLabel(tab)}
-							isActive={tab.id === activeTabId}
-							dragTabId={dragTabId}
-							onPrefetchTab={onPrefetchTab}
-							onSelectTab={onSelectTab}
-							onCloseTab={onCloseTab}
-							onStartRenamePath={onStartRenamePath}
-							onDragStart={onDragStart}
-							onDragEnd={onDragEnd}
-							onReorder={onReorder}
-						/>
-					))}
-				</div>
-				<button
-					type="button"
-					className="mainTabAdd"
-					onClick={onOpenBlankTab}
-					title={`Open blank tab (${getShortcutTooltip({ meta: true, key: "t" })})`}
-					aria-label="Open blank tab"
-				>
-					+
-				</button>
+				{showTabs ? (
+					<>
+						<div className="mainTabsStrip">
+							{tabs.map((tab) => (
+								<TabItem
+									key={tab.id}
+									tab={tab}
+									label={tabLabel(tab)}
+									isActive={tab.id === activeTabId}
+									dragTabId={dragTabId}
+									onPrefetchTab={onPrefetchTab}
+									onSelectTab={onSelectTab}
+									onCloseTab={onCloseTab}
+									onStartRenamePath={onStartRenamePath}
+									onDragStart={onDragStart}
+									onDragEnd={onDragEnd}
+									onReorder={onReorder}
+								/>
+							))}
+						</div>
+						<button
+							type="button"
+							className="mainTabAdd"
+							onClick={onOpenBlankTab}
+							title={`Open blank tab (${getShortcutTooltip({ meta: true, key: "t" })})`}
+							aria-label="Open blank tab"
+						>
+							+
+						</button>
+					</>
+				) : null}
 			</div>
 			{breadcrumbSegments.length > 0 && (
 				<div className={`mainTabsBreadcrumb ${hovered ? "is-visible" : ""}`}>
