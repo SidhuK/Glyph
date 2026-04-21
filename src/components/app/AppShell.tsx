@@ -1,6 +1,8 @@
 import { cn } from "@/lib/utils";
 import {
 	AiChat02Icon,
+	ArrowLeft,
+	ArrowRight,
 	Calendar03Icon,
 	CalendarAdd01Icon,
 	ColorsIcon,
@@ -353,6 +355,10 @@ export function AppShell() {
 		replaceActiveTabWithBlank,
 		openFileTab,
 		openSpecialTab,
+		canGoBack,
+		canGoForward,
+		goBack,
+		goForward,
 	} = useTabManager(spacePath);
 
 	useEffect(() => {
@@ -1535,6 +1541,26 @@ export function AppShell() {
 				action: () => setActivePreviewPath(null),
 			},
 			{
+				id: "go-back-note",
+				label: "Go back",
+				icon: <HugeiconsIcon icon={ArrowLeft} size={16} strokeWidth={0.9} />,
+				category: "Navigation",
+				shortcut: { meta: true, key: "[" },
+				enabled: canGoBack,
+				allowInEditable: true,
+				action: goBack,
+			},
+			{
+				id: "go-forward-note",
+				label: "Go forward",
+				icon: <HugeiconsIcon icon={ArrowRight} size={16} strokeWidth={0.9} />,
+				category: "Navigation",
+				shortcut: { meta: true, key: "]" },
+				enabled: canGoForward,
+				allowInEditable: true,
+				action: goForward,
+			},
+			{
 				id: "quick-open",
 				label: "Quick open",
 				icon: <HugeiconsIcon icon={SearchIcon} size={16} strokeWidth={0.9} />,
@@ -1772,6 +1798,10 @@ export function AppShell() {
 		openSettings,
 		refreshMoveTargetDirs,
 		openPalette,
+		canGoBack,
+		canGoForward,
+		goBack,
+		goForward,
 	]);
 
 	useCommandShortcuts({
@@ -1879,6 +1909,10 @@ export function AppShell() {
 				openBlankTab={openBlankTab}
 				onStartRenamePath={handleStartRenameFromTab}
 				replaceActiveTabWithBlank={replaceActiveTabWithBlank}
+				canGoBack={canGoBack}
+				canGoForward={canGoForward}
+				onGoBack={goBack}
+				onGoForward={goForward}
 				showGettingStartedRequest={showGettingStartedRequest}
 				openDatabasesId={openDatabasesId}
 				dailyNoteSetupNoticeRequest={dailyNoteSetupNoticeRequest}

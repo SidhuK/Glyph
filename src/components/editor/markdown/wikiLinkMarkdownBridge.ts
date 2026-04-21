@@ -121,7 +121,8 @@ function postprocessHighlightedText(input: string): string {
 function encodeWhitespaceLine(line: string): string {
 	let encoded = WHITESPACE_LINE_SENTINEL;
 	for (const char of line) {
-		encoded += char === " " ? WHITESPACE_SPACE_SENTINEL : WHITESPACE_TAB_SENTINEL;
+		encoded +=
+			char === " " ? WHITESPACE_SPACE_SENTINEL : WHITESPACE_TAB_SENTINEL;
 	}
 	return encoded;
 }

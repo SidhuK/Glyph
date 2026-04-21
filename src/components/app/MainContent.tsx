@@ -293,6 +293,10 @@ interface MainContentProps {
 	openBlankTab: () => void;
 	onStartRenamePath: (path: string) => void;
 	replaceActiveTabWithBlank: () => void;
+	canGoBack: boolean;
+	canGoForward: boolean;
+	onGoBack: () => void;
+	onGoForward: () => void;
 	showGettingStartedRequest: number;
 	openDatabasesId: string | null;
 	dailyNoteSetupNoticeRequest: number;
@@ -387,6 +391,10 @@ export const MainContent = memo(function MainContent({
 	openBlankTab,
 	onStartRenamePath,
 	replaceActiveTabWithBlank,
+	canGoBack,
+	canGoForward,
+	onGoBack,
+	onGoForward,
 	showGettingStartedRequest,
 	openDatabasesId,
 	dailyNoteSetupNoticeRequest,
@@ -477,7 +485,7 @@ export const MainContent = memo(function MainContent({
 	const showStarterPane =
 		Boolean(spacePath) &&
 		(showStarterByDefault || (starterOverrideVisible && !activeTabPath));
-	const showTabBar = tabs.length > 1;
+	const showTabBar = tabs.length > 0;
 
 	useEffect(() => {
 		let cancelled = false;
@@ -820,6 +828,10 @@ export const MainContent = memo(function MainContent({
 								activeTabPath={activeTabPath}
 								dragTabId={dragTabId}
 								useWindowBackground={!content}
+								canGoBack={canGoBack}
+								canGoForward={canGoForward}
+								onGoBack={onGoBack}
+								onGoForward={onGoForward}
 								onOpenBlankTab={openBlankTab}
 								onPrefetchTab={handlePrefetchTab}
 								onSelectTab={setActiveTabId}
