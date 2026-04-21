@@ -24,7 +24,7 @@ function Root() {
 }
 
 function ThemeAndTypographyBridge() {
-	const { setTheme } = useTheme();
+	const { setTheme, resolvedTheme, theme } = useTheme();
 	const [accent, setAccent] = React.useState<UiAccent | null>(null);
 	const [lightThemeId, setLightThemeId] = React.useState<UiLightThemeId | null>(
 		null,
@@ -188,6 +188,26 @@ function ThemeAndTypographyBridge() {
 		if (typeof translucentApp !== "boolean") return;
 		applyUiSurfacePreferences({ translucentApp });
 	}, [translucentApp]);
+
+	React.useEffect(() => {
+		if (typeof translucentApp !== "boolean") return;
+		if (!translucentApp) {
+			void invoke("set_window_vibrancy_theme", { theme: "none" }).catch(
+				() => {},
+			);
+			return;
+		}
+		if (resolvedTheme !== "dark" && resolvedTheme !== "light") return;
+		const vibrancyTheme =
+			theme === "system"
+				? resolvedTheme === "dark"
+					? "system-dark"
+					: "system-light"
+				: resolvedTheme;
+		void invoke("set_window_vibrancy_theme", { theme: vibrancyTheme }).catch(
+			() => {},
+		);
+	}, [resolvedTheme, theme, translucentApp]);
 
 	React.useEffect(() => {
 		if (typeof delightfulGlyph !== "boolean") return;

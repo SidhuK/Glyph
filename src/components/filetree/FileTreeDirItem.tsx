@@ -187,7 +187,10 @@ export const FileTreeDirItem = memo(function FileTreeDirItem({
 								) : null}
 							</m.button>
 						</ContextMenuTrigger>
-						<ContextMenuContent className="fileTreeCreateMenu">
+						<ContextMenuContent
+							className="fileTreeCreateMenu"
+							onCloseAutoFocus={(event) => event.preventDefault()}
+						>
 							<ContextMenuItem
 								className="fileTreeCreateMenuItem"
 								onSelect={() => void onNewFileInDir(entry.rel_path)}

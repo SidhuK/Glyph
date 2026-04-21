@@ -42,4 +42,24 @@ describe("wikiLinkMarkdownBridge", () => {
 		const md = "Bad [[#Heading]] input";
 		expect(postprocessMarkdownFromEditor(md)).toBe(md);
 	});
+
+	it("preserves extra blank lines through editor bridge round-trip", () => {
+		const md = "alpha\n\n\nbeta";
+		const preprocessed = preprocessMarkdownForEditor(md);
+		expect(preprocessed).toBe(`alpha\n\n\u200b\nbeta`);
+		expect(postprocessMarkdownFromEditor(preprocessed)).toBe(md);
+	});
+
+	it("preserves whitespace-only separator lines through editor bridge round-trip", () => {
+		const md = "alpha\n \n\t\nbeta";
+		const preprocessed = preprocessMarkdownForEditor(md);
+		expect(preprocessed).toBe(`alpha\n\u2060\u2061\n\u2060\u2062\nbeta`);
+		expect(postprocessMarkdownFromEditor(preprocessed)).toBe(md);
+	});
+
+	it("preserves mixed whitespace-only lines through editor bridge round-trip", () => {
+		const md = "alpha\n  \t \n\t\t\nbeta";
+		const preprocessed = preprocessMarkdownForEditor(md);
+		expect(postprocessMarkdownFromEditor(preprocessed)).toBe(md);
+	});
 });

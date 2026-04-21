@@ -312,6 +312,20 @@ export const LIGHT_THEME_OPTIONS = [
 			text: "#545464",
 		},
 	},
+	{
+		id: "flexoki-light",
+		label: "Flexoki Light",
+		description: "Ink-on-paper Flexoki palette with balanced warm accents.",
+		preview: {
+			badgeBackground: "#F2F0E5",
+			badgeBorder: "#CECDC3",
+			badgeText: "#205EA6",
+			accent: "#205EA6",
+			surface: "#FFFCF0",
+			surfaceAlt: "#F2F0E5",
+			text: "#100F0F",
+		},
+	},
 ] as const satisfies readonly UiThemeOption<string>[];
 
 export const DARK_THEME_OPTIONS = [
@@ -567,6 +581,34 @@ export const DARK_THEME_OPTIONS = [
 			surface: "#10141c",
 			surfaceAlt: "#0d1017",
 			text: "#bfbdb6",
+		},
+	},
+	{
+		id: "vesper",
+		label: "Vesper",
+		description: "Pitch-black Vesper tones with warm orange and mint accents.",
+		preview: {
+			badgeBackground: "#101010",
+			badgeBorder: "#505050",
+			badgeText: "#FFC799",
+			accent: "#FFC799",
+			surface: "#101010",
+			surfaceAlt: "#161616",
+			text: "#FFFFFF",
+		},
+	},
+	{
+		id: "flexoki-dark",
+		label: "Flexoki Dark",
+		description: "Warm charcoal Flexoki palette with muted editorial color.",
+		preview: {
+			badgeBackground: "#282726",
+			badgeBorder: "#403E3C",
+			badgeText: "#4385BE",
+			accent: "#4385BE",
+			surface: "#1C1B1A",
+			surfaceAlt: "#282726",
+			text: "#CECDC3",
 		},
 	},
 	{

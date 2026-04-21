@@ -28,11 +28,11 @@ use tauri::menu::{
     Menu, MenuItem, MenuItemKind, PredefinedMenuItem, Submenu, SubmenuBuilder, HELP_SUBMENU_ID,
     WINDOW_SUBMENU_ID,
 };
-use tauri::{Emitter, Manager, RunEvent, State, WindowEvent};
+use tauri::{Emitter, Manager, RunEvent, State, Theme, WindowEvent};
 use tracing::warn;
 
 #[cfg(target_os = "macos")]
-use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
+use window_vibrancy::{apply_vibrancy, clear_vibrancy, NSVisualEffectMaterial};
 
 use tauri::{PhysicalPosition, PhysicalSize, Position, Size};
 
@@ -802,6 +802,71 @@ fn set_recent_spaces_menu(
     Ok(())
 }
 
+#[cfg(target_os = "macos")]
+fn apply_main_window_vibrancy(
+    window: &tauri::WebviewWindow,
+    theme: Option<&str>,
+) -> Result<(), String> {
+    let material = match theme {
+        Some("dark") => NSVisualEffectMaterial::HudWindow,
+        _ => NSVisualEffectMaterial::Sidebar,
+    };
+    clear_main_window_vibrancy(window)?;
+    apply_vibrancy(window, material, None, Some(6.0)).map_err(|error| error.to_string())
+}
+
+#[cfg(not(target_os = "macos"))]
+fn apply_main_window_vibrancy(
+    _window: &tauri::WebviewWindow,
+    _theme: Option<&str>,
+) -> Result<(), String> {
+    Ok(())
+}
+
+#[cfg(target_os = "macos")]
+fn clear_main_window_vibrancy(window: &tauri::WebviewWindow) -> Result<(), String> {
+    clear_vibrancy(window)
+        .map(|_| ())
+        .map_err(|error| error.to_string())
+}
+
+#[cfg(not(target_os = "macos"))]
+fn clear_main_window_vibrancy(_window: &tauri::WebviewWindow) -> Result<(), String> {
+    Ok(())
+}
+
+#[tauri::command(rename_all = "snake_case")]
+fn set_window_vibrancy_theme(window: tauri::WebviewWindow, theme: String) -> Result<(), String> {
+    let normalized = theme.trim().to_ascii_lowercase();
+    match normalized.as_str() {
+        "dark" => {
+            window
+                .set_theme(Some(Theme::Dark))
+                .map_err(|error| error.to_string())?;
+            apply_main_window_vibrancy(&window, Some("dark"))
+        }
+        "light" => {
+            window
+                .set_theme(Some(Theme::Light))
+                .map_err(|error| error.to_string())?;
+            apply_main_window_vibrancy(&window, Some("light"))
+        }
+        "system-dark" => {
+            window.set_theme(None).map_err(|error| error.to_string())?;
+            apply_main_window_vibrancy(&window, Some("dark"))
+        }
+        "system-light" => {
+            window.set_theme(None).map_err(|error| error.to_string())?;
+            apply_main_window_vibrancy(&window, Some("light"))
+        }
+        "none" | "" => {
+            window.set_theme(None).map_err(|error| error.to_string())?;
+            clear_main_window_vibrancy(&window)
+        }
+        _ => Err(format!("unknown vibrancy theme: {normalized}")),
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     init_tracing();
@@ -920,9 +985,7 @@ pub fn run() {
             #[cfg(target_os = "macos")]
             {
                 if let Some(window) = app.get_webview_window("main") {
-                    if let Err(e) =
-                        apply_vibrancy(&window, NSVisualEffectMaterial::Sidebar, None, Some(6.0))
-                    {
+                    if let Err(e) = apply_main_window_vibrancy(&window, None) {
                         warn!("Failed to apply vibrancy to main window: {e}");
                     }
                 } else {
@@ -969,6 +1032,7 @@ pub fn run() {
             print_current_window,
             set_markdown_menu_visible,
             set_recent_spaces_menu,
+            set_window_vibrancy_theme,
             license::commands::license_bootstrap_status,
             license::commands::license_activate,
             license::commands::license_clear_local,
