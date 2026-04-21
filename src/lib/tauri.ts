@@ -742,6 +742,7 @@ interface TauriCommands {
 	print_current_window: CommandDef<void, void>;
 	set_markdown_menu_visible: CommandDef<{ visible: boolean }, void>;
 	set_recent_spaces_menu: CommandDef<{ recent_spaces: string[] }, void>;
+	set_window_vibrancy_theme: CommandDef<{ theme: string }, void>;
 	license_bootstrap_status: CommandDef<void, LicenseStatus>;
 	license_activate: CommandDef<{ license_key: string }, LicenseActivateResult>;
 	license_clear_local: CommandDef<void, LicenseActivateResult>;
