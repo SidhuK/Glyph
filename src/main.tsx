@@ -190,7 +190,13 @@ function ThemeAndTypographyBridge() {
 	}, [translucentApp]);
 
 	React.useEffect(() => {
-		if (!translucentApp) return;
+		if (typeof translucentApp !== "boolean") return;
+		if (!translucentApp) {
+			void invoke("set_window_vibrancy_theme", { theme: "none" }).catch(
+				() => {},
+			);
+			return;
+		}
 		if (resolvedTheme !== "dark" && resolvedTheme !== "light") return;
 		const vibrancyTheme =
 			theme === "system"

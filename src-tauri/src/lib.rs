@@ -32,7 +32,7 @@ use tauri::{Emitter, Manager, RunEvent, State, Theme, WindowEvent};
 use tracing::warn;
 
 #[cfg(target_os = "macos")]
-use window_vibrancy::{apply_vibrancy, NSVisualEffectMaterial};
+use window_vibrancy::{apply_vibrancy, clear_vibrancy, NSVisualEffectMaterial};
 
 use tauri::{PhysicalPosition, PhysicalSize, Position, Size};
 
@@ -811,6 +811,7 @@ fn apply_main_window_vibrancy(
         Some("dark") => NSVisualEffectMaterial::HudWindow,
         _ => NSVisualEffectMaterial::Sidebar,
     };
+    clear_main_window_vibrancy(window)?;
     apply_vibrancy(window, material, None, Some(6.0)).map_err(|error| error.to_string())
 }
 
@@ -819,6 +820,18 @@ fn apply_main_window_vibrancy(
     _window: &tauri::WebviewWindow,
     _theme: Option<&str>,
 ) -> Result<(), String> {
+    Ok(())
+}
+
+#[cfg(target_os = "macos")]
+fn clear_main_window_vibrancy(window: &tauri::WebviewWindow) -> Result<(), String> {
+    clear_vibrancy(window)
+        .map(|_| ())
+        .map_err(|error| error.to_string())
+}
+
+#[cfg(not(target_os = "macos"))]
+fn clear_main_window_vibrancy(_window: &tauri::WebviewWindow) -> Result<(), String> {
     Ok(())
 }
 
@@ -846,10 +859,11 @@ fn set_window_vibrancy_theme(window: tauri::WebviewWindow, theme: String) -> Res
             window.set_theme(None).map_err(|error| error.to_string())?;
             apply_main_window_vibrancy(&window, Some("light"))
         }
-        _ => {
+        "none" | "" => {
             window.set_theme(None).map_err(|error| error.to_string())?;
-            apply_main_window_vibrancy(&window, None)
+            clear_main_window_vibrancy(&window)
         }
+        _ => Err(format!("unknown vibrancy theme: {normalized}")),
     }
 }
 
