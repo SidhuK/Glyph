@@ -61,7 +61,7 @@ export function isUiAccent(value: unknown): value is UiAccent {
 	return typeof value === "string" && UI_ACCENTS.has(value as UiAccent);
 }
 const DEFAULT_UI_ACCENT: UiAccent = "cerulean";
-const DEFAULT_UI_FONT_FAMILY = "Satoshi";
+const DEFAULT_UI_FONT_FAMILY = "Geist";
 const DEFAULT_UI_MONO_FONT_FAMILY = "JetBrains Mono";
 const DEFAULT_AUTO_UPDATE_CHECK_INTERVAL: AutoUpdateCheckInterval = "3h";
 const DEFAULT_SHOW_TASK_PROGRESS_INDICATOR = true;

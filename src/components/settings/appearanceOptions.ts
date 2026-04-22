@@ -6,7 +6,7 @@ import {
 } from "../../lib/settings";
 import { invoke } from "../../lib/tauri";
 
-export const DEFAULT_FONT_FAMILY = "Satoshi";
+export const DEFAULT_FONT_FAMILY = "Geist";
 export const UI_FONT_SIZE_OPTIONS = Array.from(
 	{ length: MAX_UI_FONT_SIZE - MIN_UI_FONT_SIZE + 1 },
 	(_, idx) => MIN_UI_FONT_SIZE + idx,
