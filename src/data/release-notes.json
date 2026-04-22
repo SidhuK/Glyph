@@ -1,6 +1,30 @@
 {
 	"versions": [
 		{
+			"version": "0.2.10",
+			"publishedAt": "2026-04-22",
+			"sections": [
+				{
+					"category": "Added",
+					"items": [
+						"New Flexoki and Vesper themes",
+						"Back and Forward navigation for markdown notes within each workspace tab"
+					]
+				},
+				{
+					"category": "Improved",
+					"items": ["Easier file and folder renaming from the right-click menu"]
+				},
+				{
+					"category": "Fixed",
+					"items": [
+						"Fixed sidebar theme switching between light and dark",
+						"Fixed whitespace handling in the editor"
+					]
+				}
+			]
+		},
+		{
 			"version": "0.2.9",
 			"publishedAt": "2026-04-20",
 			"sections": [
