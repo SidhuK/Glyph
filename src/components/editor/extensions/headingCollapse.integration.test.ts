@@ -187,4 +187,53 @@ describe("Heading collapse integration", () => {
 			harness.destroy();
 		}
 	});
+
+	it("collapses and expands all headings via commands", () => {
+		const harness = createEditor(
+			[
+				"# Alpha",
+				"",
+				"Alpha body",
+				"",
+				"## Beta",
+				"",
+				"Beta body",
+				"",
+				"# Gamma",
+				"",
+				"Gamma body",
+			].join("\n"),
+		);
+
+		try {
+			harness.editor.commands.collapseAllHeadings();
+			const collapsedState = headingCollapsePluginKey.getState(
+				harness.editor.state,
+			);
+			expect(collapsedState?.collapsedPositions.size).toBe(3);
+			expect(
+				findBlockByText(harness.element, "Alpha body")?.className,
+			).toContain("headingCollapseHidden");
+			expect(
+				findBlockByText(harness.element, "Beta body")?.className,
+			).toContain("headingCollapseHidden");
+			expect(
+				findBlockByText(harness.element, "Gamma body")?.className,
+			).toContain("headingCollapseHidden");
+
+			harness.editor.commands.expandAllHeadings();
+			const expandedState = headingCollapsePluginKey.getState(
+				harness.editor.state,
+			);
+			expect(expandedState?.collapsedPositions.size).toBe(0);
+			expect(
+				findBlockByText(harness.element, "Alpha body")?.className,
+			).not.toContain("headingCollapseHidden");
+			expect(
+				findBlockByText(harness.element, "Beta body")?.className,
+			).not.toContain("headingCollapseHidden");
+		} finally {
+			harness.destroy();
+		}
+	});
 });

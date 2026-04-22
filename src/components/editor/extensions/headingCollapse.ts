@@ -20,7 +20,8 @@ interface HeadingCollapseState {
 type HeadingCollapseMeta =
 	| { type: "toggle"; pos: number }
 	| { type: "expand-ancestors"; pos: number }
-	| { type: "set-enabled"; enabled: boolean };
+	| { type: "set-enabled"; enabled: boolean }
+	| { type: "set-all-collapsed"; collapsed: boolean };
 
 export const headingCollapsePluginKey = new PluginKey<HeadingCollapseState>(
 	"heading-collapse",
@@ -214,6 +215,8 @@ declare module "@tiptap/core" {
 			toggleHeadingCollapse: (pos: number) => ReturnType;
 			expandHeadingAncestors: (pos: number) => ReturnType;
 			setHeadingCollapseEnabled: (enabled: boolean) => ReturnType;
+			collapseAllHeadings: () => ReturnType;
+			expandAllHeadings: () => ReturnType;
 		};
 	}
 }
@@ -251,6 +254,28 @@ export const HeadingCollapse = Extension.create({
 						state.tr.setMeta(headingCollapsePluginKey, {
 							type: "set-enabled",
 							enabled,
+						} satisfies HeadingCollapseMeta),
+					);
+					return true;
+				},
+			collapseAllHeadings:
+				() =>
+				({ state, dispatch }) => {
+					dispatch?.(
+						state.tr.setMeta(headingCollapsePluginKey, {
+							type: "set-all-collapsed",
+							collapsed: true,
+						} satisfies HeadingCollapseMeta),
+					);
+					return true;
+				},
+			expandAllHeadings:
+				() =>
+				({ state, dispatch }) => {
+					dispatch?.(
+						state.tr.setMeta(headingCollapsePluginKey, {
+							type: "set-all-collapsed",
+							collapsed: false,
 						} satisfies HeadingCollapseMeta),
 					);
 					return true;
@@ -314,6 +339,11 @@ export const HeadingCollapse = Extension.create({
 						}
 						if (meta?.type === "set-enabled") {
 							enabled = meta.enabled;
+						}
+						if (meta?.type === "set-all-collapsed") {
+							collapsedPositions = meta.collapsed
+								? new Set(headings.map((heading) => heading.pos))
+								: new Set<number>();
 						}
 
 						return {

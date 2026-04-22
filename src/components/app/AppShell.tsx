@@ -81,7 +81,7 @@ import {
 	prefetchDatabasesLanding,
 	prefetchNote,
 } from "../../lib/navigationPrefetch";
-import { updateOnboardingSettings } from "../../lib/settings";
+import { loadSettings, updateOnboardingSettings } from "../../lib/settings";
 import type { Shortcut } from "../../lib/shortcuts";
 import { getShortcutTooltip } from "../../lib/shortcuts";
 import { todayIsoDateLocal } from "../../lib/tasks";
@@ -92,7 +92,7 @@ import { TEMPLATES_TAB_ID } from "../../lib/templatesView";
 import { isInAppPreviewable } from "../../utils/filePreview";
 import { isMarkdownPath } from "../../utils/path";
 import { onWindowDragMouseDown } from "../../utils/window";
-import { FileHtml, LayoutAlignLeft } from "../Icons";
+import { ChevronDown, ChevronUp, FileHtml, LayoutAlignLeft } from "../Icons";
 import { dispatchAiContextAttach } from "../ai/aiContextEvents";
 import {
 	MARKDOWN_LINK_CLICK_EVENT,
@@ -243,6 +243,7 @@ export function AppShell() {
 	const [templatePickerItems, setTemplatePickerItems] = useState<
 		TemplatePickerItem[]
 	>([]);
+	const [showCollapsibleHeadings, setShowCollapsibleHeadings] = useState(false);
 	const [commandPaletteSessionId, setCommandPaletteSessionId] = useState(0);
 	const [htmlExportRequest, setHtmlExportRequest] = useState<{
 		id: string;
@@ -295,6 +296,33 @@ export function AppShell() {
 			window.clearTimeout(idle);
 		};
 	}, []);
+
+	useEffect(() => {
+		let cancelled = false;
+		void loadSettings()
+			.then((settings) => {
+				if (cancelled) return;
+				setShowCollapsibleHeadings(settings.editor.showCollapsibleHeadings);
+			})
+			.catch((error) => {
+				console.error("Failed to load collapsible heading setting", error);
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, []);
+
+	useTauriEvent(
+		"settings:updated",
+		useCallback(
+			(payload: { editor?: { showCollapsibleHeadings?: boolean } }) => {
+				if (typeof payload.editor?.showCollapsibleHeadings === "boolean") {
+					setShowCollapsibleHeadings(payload.editor.showCollapsibleHeadings);
+				}
+			},
+			[],
+		),
+	);
 
 	useEffect(() => {
 		const status = gitSync.status;
@@ -1466,6 +1494,26 @@ export function AppShell() {
 				action: () => void saveCurrentEditor(),
 			},
 			{
+				id: "collapse-all-headings",
+				label: "Collapse all headings",
+				icon: <ChevronUp size={16} />,
+				category: "Editor",
+				enabled: Boolean(activeMarkdownTabPath) && showCollapsibleHeadings,
+				allowInEditable: true,
+				action: () =>
+					dispatchEditorMenuAction({ action: "collapse_all_headings" }),
+			},
+			{
+				id: "expand-all-headings",
+				label: "Expand all headings",
+				icon: <ChevronDown size={16} />,
+				category: "Editor",
+				enabled: Boolean(activeMarkdownTabPath) && showCollapsibleHeadings,
+				allowInEditable: true,
+				action: () =>
+					dispatchEditorMenuAction({ action: "expand_all_headings" }),
+			},
+			{
 				id: "open-local-graph",
 				label: "Open local graph",
 				icon: (
@@ -1780,6 +1828,7 @@ export function AppShell() {
 		setSidebarCollapsed,
 		setZenModeActive,
 		sidebarCollapsed,
+		showCollapsibleHeadings,
 		spacePath,
 		zenModeActive,
 		openAllDocsTab,

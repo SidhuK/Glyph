@@ -1,34 +1,26 @@
-import {
-	ArrowLeft,
-	ArrowRight,
-	Calendar03Icon,
-	Copy01Icon,
-	LocationAdd01Icon,
-	SourceCodeIcon,
-	Tick02Icon,
-} from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { openUrl } from "@tauri-apps/plugin-opener";
-import { EditorContent } from "@tiptap/react";
-import { addMonths, format, isValid, parseISO } from "date-fns";
-import { AnimatePresence } from "motion/react";
-import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { format, isValid, parseISO } from "date-fns";
+import {
+	type MouseEvent as ReactMouseEvent,
+	type ReactNode,
+	memo,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { flushSync } from "react-dom";
 import {
 	EDITOR_MENU_ACTION_EVENT,
 	type EditorMenuActionDetail,
 } from "../../lib/appEvents";
-import {
-	MERMAID_CODE_BLOCK_LANGUAGE,
-	extractMermaidErrorMessage,
-	renderMermaidDiagram,
-} from "../../lib/mermaid";
+import { MERMAID_CODE_BLOCK_LANGUAGE } from "../../lib/mermaid";
 import { joinYamlFrontmatter } from "../../lib/notePreview";
 import { todayIsoDateLocal } from "../../lib/tasks";
 import { type BacklinkItem, invoke } from "../../lib/tauri";
-import { Save, Trash2, X } from "../Icons";
+import { X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
-import { Calendar as DateCalendar } from "../ui/shadcn/calendar";
 import {
 	Dialog,
 	DialogContent,
@@ -38,11 +30,9 @@ import {
 	DialogTitle,
 } from "../ui/shadcn/dialog";
 import { Input } from "../ui/shadcn/input";
-import { Popover, PopoverContent, PopoverTrigger } from "../ui/shadcn/popover";
-import { EditorRibbon } from "./EditorRibbon";
+import { CanvasNoteEditorSurface } from "./CanvasNoteEditorSurface";
 import { NotePropertiesPanel } from "./NotePropertiesPanel";
 import {
-	CODE_BLOCK_LANGUAGE_OPTIONS,
 	type SupportedCodeBlockLanguage,
 	getCodeBlockLanguageLabel,
 	normalizeCodeBlockLanguage,
@@ -91,13 +81,13 @@ interface LinkDialogState {
 	target: "_self" | "_blank";
 }
 
-interface SelectionRibbonPosition {
+export interface SelectionRibbonPosition {
 	top: number;
 	left: number;
 	placement: SelectionRibbonPlacement;
 }
 
-interface SelectedCodeBlockState {
+export interface SelectedCodeBlockState {
 	top: number;
 	controlsLeft: number;
 	controlsRight: number;
@@ -137,7 +127,7 @@ function areSelectedCodeBlocksSameBlock(
 	return a.pos === b.pos && a.language === b.language && a.source === b.source;
 }
 
-interface SelectedTableState {
+export interface SelectedTableState {
 	rowControlLeft: number;
 	rowControlTop: number;
 	columnControlLeft: number;
@@ -273,98 +263,6 @@ function getSelectionRibbonPosition(
 		left: Math.min(Math.max(left, minLeft), maxLeft),
 		placement,
 	};
-}
-
-function MermaidPreviewPanel({
-	source,
-	style,
-	onHeightChange,
-}: {
-	source: string;
-	style: React.CSSProperties;
-	onHeightChange: (height: number) => void;
-}) {
-	const [svg, setSvg] = useState("");
-	const [error, setError] = useState("");
-	const panelRef = useRef<HTMLDivElement | null>(null);
-	const svgHostRef = useRef<HTMLDivElement | null>(null);
-
-	useEffect(() => {
-		const panel = panelRef.current;
-		if (!panel) return;
-
-		let raf = 0;
-		const reportHeight = () => {
-			raf = 0;
-			const nextHeight = Math.ceil(
-				Math.max(panel.offsetHeight, panel.scrollHeight),
-			);
-			onHeightChange(nextHeight);
-		};
-
-		reportHeight();
-		const observer = new ResizeObserver(() => {
-			if (raf) window.cancelAnimationFrame(raf);
-			raf = window.requestAnimationFrame(reportHeight);
-		});
-		observer.observe(panel);
-		return () => {
-			if (raf) window.cancelAnimationFrame(raf);
-			observer.disconnect();
-		};
-	}, [onHeightChange]);
-
-	useEffect(() => {
-		let cancelled = false;
-		setError("");
-		const timeout = window.setTimeout(() => {
-			void (async () => {
-				try {
-					const nextSvg = await renderMermaidDiagram(source);
-					if (cancelled) return;
-					setSvg(nextSvg);
-				} catch (nextError) {
-					if (cancelled) return;
-					setSvg("");
-					setError(extractMermaidErrorMessage(nextError));
-				}
-			})();
-		}, 320);
-		return () => {
-			cancelled = true;
-			window.clearTimeout(timeout);
-		};
-	}, [source]);
-
-	useEffect(() => {
-		const host = svgHostRef.current;
-		if (!host) return;
-		host.replaceChildren();
-		if (!svg) return;
-
-		const doc = new DOMParser().parseFromString(svg, "image/svg+xml");
-		const svgElement = doc.documentElement;
-		if (svgElement.tagName.toLowerCase() !== "svg") {
-			setError("Unable to render Mermaid diagram.");
-			setSvg("");
-			return;
-		}
-		host.append(document.importNode(svgElement, true));
-	}, [svg]);
-
-	return (
-		<div className="mermaidPreviewPanel" style={style} ref={panelRef}>
-			<div className="mermaidPreviewCanvas">
-				{error ? <div className="mermaidPreviewError">{error}</div> : null}
-				{svg ? <div className="mermaidPreviewSvg" ref={svgHostRef} /> : null}
-				{svg || error ? null : (
-					<div className="mermaidPreviewLoading">
-						Rendering Mermaid preview…
-					</div>
-				)}
-			</div>
-		</div>
-	);
 }
 
 export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
@@ -597,15 +495,9 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 			if (!host || !isVisibleEditorHost(host)) return;
 			const activeElement = document.activeElement;
 			if (activeElement instanceof HTMLElement) {
-				const isDocumentFocusFallback =
-					activeElement === document.body ||
-					activeElement === document.documentElement;
 				if (host.contains(activeElement)) {
 					lastFocusedCanvasEditorHost = host;
-				} else if (
-					!isDocumentFocusFallback ||
-					lastFocusedCanvasEditorHost !== host
-				) {
+				} else if (lastFocusedCanvasEditorHost !== host) {
 					return;
 				}
 			} else if (lastFocusedCanvasEditorHost !== host) {
@@ -617,7 +509,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 			const scrollTop = scrollHost?.scrollTop ?? 0;
 			const chain = editor
 				.chain()
-				.focus(undefined, { scrollIntoView: false })
+				.focus(null, { scrollIntoView: false })
 				.extendMarkRange("link");
 			const handled = (() => {
 				switch (action) {
@@ -635,6 +527,10 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 						return chain.toggleHeading({ level: 2 }).run();
 					case "heading_3":
 						return chain.toggleHeading({ level: 3 }).run();
+					case "collapse_all_headings":
+						return chain.collapseAllHeadings().run();
+					case "expand_all_headings":
+						return chain.expandAllHeadings().run();
 					case "bullet_list":
 						return chain.toggleBulletList().run();
 					case "numbered_list":
@@ -803,7 +699,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 			const scrollTop = host?.scrollTop ?? 0;
 			editor
 				.chain()
-				.focus(undefined, { scrollIntoView: false })
+				.focus(null, { scrollIntoView: false })
 				.insertContent({
 					type: "blockquote",
 					content: [
@@ -843,7 +739,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	const renderFrontmatterWithLinks = (text: string) => {
 		const tokens = extractFrontmatterLinkTokens(text);
 		if (!tokens.length) return text;
-		const nodes: React.ReactNode[] = [];
+		const nodes: ReactNode[] = [];
 		let cursor = 0;
 		for (const token of tokens) {
 			if (cursor < token.start) nodes.push(text.slice(cursor, token.start));
@@ -1277,16 +1173,6 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		return parsed ? format(parsed, "MMM d, yyyy") : value;
 	};
 
-	const focusField = (field: "scheduled" | "due") => {
-		setActiveDateField(field);
-		const nextValue = field === "scheduled" ? scheduledDate : dueDate;
-		if (!nextValue) {
-			setPickerMonth(new Date());
-			return;
-		}
-		setPickerMonth(safeParseISO(nextValue) ?? new Date());
-	};
-
 	const updateActiveDate = (date?: Date) => {
 		const next = date ? todayIsoDateLocal(date) : "";
 		if (activeDateField === "scheduled") {
@@ -1300,7 +1186,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		if (!editor) return;
 		editor
 			.chain()
-			.focus(undefined, { scrollIntoView: false })
+			.focus(null, { scrollIntoView: false })
 			.updateAttributes("codeBlock", {
 				language: language === "plaintext" ? null : language,
 			})
@@ -1311,28 +1197,24 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		setCodeBlockPickerOpen(false);
 	};
 	const preventCodeBlockPickerMouseDown = (
-		event: React.MouseEvent<HTMLElement>,
+		event: ReactMouseEvent<HTMLElement>,
 	) => {
 		event.preventDefault();
 	};
 	const preventTableControlMouseDown = (
-		event: React.MouseEvent<HTMLButtonElement>,
+		event: ReactMouseEvent<HTMLButtonElement>,
 	) => {
 		event.preventDefault();
 	};
 	const addRowToSelectedTable = () => {
 		if (!editor) return;
-		editor
-			.chain()
-			.focus(undefined, { scrollIntoView: false })
-			.addRowAfter()
-			.run();
+		editor.chain().focus(null, { scrollIntoView: false }).addRowAfter().run();
 	};
 	const addColumnToSelectedTable = () => {
 		if (!editor) return;
 		editor
 			.chain()
-			.focus(undefined, { scrollIntoView: false })
+			.focus(null, { scrollIntoView: false })
 			.addColumnAfter()
 			.run();
 	};
@@ -1436,7 +1318,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		const href = normalizeEditorHref(linkDialog.href);
 		const chain = editor
 			.chain()
-			.focus(undefined, { scrollIntoView: false })
+			.focus(null, { scrollIntoView: false })
 			.extendMarkRange("link");
 		if (!href) {
 			chain.unsetLink().run();
@@ -1457,7 +1339,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		if (!editor || !canEdit) return;
 		editor
 			.chain()
-			.focus(undefined, { scrollIntoView: false })
+			.focus(null, { scrollIntoView: false })
 			.extendMarkRange("link")
 			.unsetLink()
 			.run();
@@ -1503,444 +1385,93 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 					</div>
 				) : null}
 				{mode !== "plain" ? (
-					<div
-						ref={handleTiptapHostRef}
-						className={[
-							"tiptapHostInline",
-							mode === "preview" ? "is-preview" : "",
-							zenModeActive ? "is-zen-mode" : "",
-							zenModeActive && !editorFocused ? "is-zen-unfocused" : "",
-							"nodrag",
-							"nopan",
-							"nowheel",
-						]
-							.filter(Boolean)
-							.join(" ")}
-						data-colorful-headings={
-							mode === "rich" && colorfulHeadings ? "true" : undefined
-						}
+					<CanvasNoteEditorSurface
+						editor={editor}
+						mode={mode}
+						zenModeActive={zenModeActive}
+						editorFocused={editorFocused}
+						colorfulHeadings={colorfulHeadings}
+						canEdit={canEdit}
+						hostRef={handleTiptapHostRef}
 						onPointerDownCapture={handleEditorPointerDownCapture}
-					>
-						<EditorContent editor={editor} />
-						<AnimatePresence initial={false}>
-							{canEdit && selectionRibbon ? (
-								<EditorRibbon
-									editor={editor}
-									canEdit={canEdit}
-									style={{
-										top: `${selectionRibbon.top}px`,
-										left: `${selectionRibbon.left}px`,
-										transform:
-											selectionRibbon.placement === "above"
-												? "translate(-50%, -100%)"
-												: "translate(-50%, 0)",
-									}}
-								/>
-							) : null}
-						</AnimatePresence>
-						{canEdit && selectedTable ? (
-							<>
-								<button
-									type="button"
-									className="tableInlineAddBtn is-row"
-									data-axis="row"
-									aria-label="Add row"
-									title="Add row"
-									style={{
-										left: `${selectedTable.rowControlLeft}px`,
-										top: `${selectedTable.rowControlTop}px`,
-									}}
-									onMouseDown={preventTableControlMouseDown}
-									onClick={addRowToSelectedTable}
-								>
-									<HugeiconsIcon
-										icon={LocationAdd01Icon}
-										size={14}
-										strokeWidth={0.9}
-									/>
-								</button>
-								<button
-									type="button"
-									className="tableInlineAddBtn is-column"
-									data-axis="column"
-									aria-label="Add column"
-									title="Add column"
-									style={{
-										left: `${selectedTable.columnControlLeft}px`,
-										top: `${selectedTable.columnControlTop}px`,
-									}}
-									onMouseDown={preventTableControlMouseDown}
-									onClick={addColumnToSelectedTable}
-								>
-									<HugeiconsIcon
-										icon={LocationAdd01Icon}
-										size={14}
-										strokeWidth={0.9}
-									/>
-								</button>
-							</>
-						) : null}
-						{canEdit && selectedCodeBlock ? (
-							<div
-								className="codeBlockInlineControls"
-								style={{
-									top: `${selectedCodeBlock.top}px`,
-									left: `${selectedCodeBlock.controlsLeft}px`,
-								}}
-							>
-								<Popover
-									open={codeBlockPickerOpen}
-									onOpenChange={setCodeBlockPickerOpen}
-								>
-									<PopoverTrigger asChild>
-										<button
-											type="button"
-											className="codeBlockLanguageBtn"
-											onMouseDown={preventCodeBlockPickerMouseDown}
-											title="Set code block language"
-										>
-											<span className="codeBlockLanguageBtnIcon" aria-hidden>
-												<HugeiconsIcon
-													icon={SourceCodeIcon}
-													size={12}
-													strokeWidth={0.9}
-												/>
-											</span>
-											<span className="codeBlockLanguageBtnLabel mono">
-												{selectedCodeBlockLanguageLabel}
-											</span>
-										</button>
-									</PopoverTrigger>
-									<PopoverContent
-										className="codeBlockLanguagePopover"
-										align="start"
-									>
-										<div className="codeBlockLanguagePopoverHeader">
-											Code block language
-										</div>
-										<div className="codeBlockLanguageOptions">
-											{CODE_BLOCK_LANGUAGE_OPTIONS.map((option) => (
-												<Button
-													key={option.value}
-													type="button"
-													size="xs"
-													variant={
-														option.value === selectedCodeBlockLanguage
-															? "secondary"
-															: "ghost"
-													}
-													className="codeBlockLanguageOption"
-													onMouseDown={preventCodeBlockPickerMouseDown}
-													onClick={() => applyCodeBlockLanguage(option.value)}
-												>
-													{option.label}
-												</Button>
-											))}
-										</div>
-									</PopoverContent>
-								</Popover>
-								{isSelectedMermaidCodeBlock ? (
-									<button
-										type="button"
-										className="codeBlockPreviewBtn"
-										onMouseDown={preventCodeBlockPickerMouseDown}
-										onClick={toggleSelectedMermaidPreview}
-										title={
-											isSelectedMermaidPreviewActive
-												? "Stop Mermaid preview"
-												: "Play Mermaid preview"
+						selectionRibbon={selectionRibbon}
+						table={{
+							selected: selectedTable,
+							onControlMouseDown: preventTableControlMouseDown,
+							onAddRow: addRowToSelectedTable,
+							onAddColumn: addColumnToSelectedTable,
+						}}
+						codeBlock={{
+							selected: selectedCodeBlock,
+							pickerOpen: codeBlockPickerOpen,
+							onPickerOpenChange: setCodeBlockPickerOpen,
+							language: selectedCodeBlockLanguage,
+							languageLabel: selectedCodeBlockLanguageLabel,
+							isMermaid: isSelectedMermaidCodeBlock,
+							isMermaidPreviewActive: isSelectedMermaidPreviewActive,
+							copied: codeBlockCopied,
+							onPickerMouseDown: preventCodeBlockPickerMouseDown,
+							onApplyLanguage: applyCodeBlockLanguage,
+							onToggleMermaidPreview: toggleSelectedMermaidPreview,
+							onCopy: () => {
+								if (!selectedCodeBlock) return;
+								const clipboard = navigator.clipboard;
+								if (!clipboard?.writeText) {
+									console.error("Clipboard API unavailable");
+									setCodeBlockCopied(false);
+									return;
+								}
+								void clipboard
+									.writeText(selectedCodeBlock.source)
+									.then(() => {
+										if (codeBlockCopyResetTimerRef.current !== null) {
+											window.clearTimeout(codeBlockCopyResetTimerRef.current);
 										}
-									>
-										<span className="codeBlockPreviewBtnLabel mono">
-											{isSelectedMermaidPreviewActive ? "Stop" : "Play"}
-										</span>
-									</button>
-								) : null}
-							</div>
-						) : null}
-						{canEdit && selectedCodeBlock ? (
-							<button
-								type="button"
-								className="codeBlockCopyBtn"
-								data-copied={codeBlockCopied || undefined}
-								style={{
-									top: `${selectedCodeBlock.top}px`,
-									left: `${selectedCodeBlock.controlsRight}px`,
-								}}
-								onMouseDown={preventCodeBlockPickerMouseDown}
-								onClick={() => {
-									if (!selectedCodeBlock) return;
-									const clipboard = navigator.clipboard;
-									if (!clipboard?.writeText) {
-										console.error("Clipboard API unavailable");
+										setCodeBlockCopied(true);
+										codeBlockCopyResetTimerRef.current = window.setTimeout(
+											() => {
+												codeBlockCopyResetTimerRef.current = null;
+												setCodeBlockCopied(false);
+											},
+											1500,
+										);
+									})
+									.catch((error: unknown) => {
+										console.error("Failed to copy code block contents.", error);
 										setCodeBlockCopied(false);
-										return;
-									}
-									void clipboard
-										.writeText(selectedCodeBlock.source)
-										.then(() => {
-											if (codeBlockCopyResetTimerRef.current !== null) {
-												window.clearTimeout(codeBlockCopyResetTimerRef.current);
-											}
-											setCodeBlockCopied(true);
-											codeBlockCopyResetTimerRef.current = window.setTimeout(
-												() => {
-													codeBlockCopyResetTimerRef.current = null;
-													setCodeBlockCopied(false);
-												},
-												1500,
-											);
-										})
-										.catch((error: unknown) => {
-											console.error(
-												"Failed to copy code block contents.",
-												error,
-											);
-											setCodeBlockCopied(false);
-										});
-								}}
-								title={codeBlockCopied ? "Copied!" : "Copy code to clipboard"}
-							>
-								<HugeiconsIcon
-									icon={codeBlockCopied ? Tick02Icon : Copy01Icon}
-									size={12}
-									strokeWidth={0.9}
-								/>
-							</button>
-						) : null}
-						{canEdit && selectedCodeBlock && isSelectedMermaidPreviewActive ? (
-							<MermaidPreviewPanel
-								source={selectedCodeBlock.source}
-								style={{
-									top: `${selectedCodeBlock.previewTop}px`,
-									left: `${selectedCodeBlock.previewLeft}px`,
-									width: `${selectedCodeBlock.width}px`,
-								}}
-								onHeightChange={setActiveMermaidPreviewHeight}
-							/>
-						) : null}
-						{canEdit && selectedTaskAnchor ? (
-							<Popover
-								open={scheduleAnchor?.ordinal === selectedTaskAnchor.ordinal}
-								onOpenChange={(open) => {
-									if (!open) setScheduleAnchor(null);
-								}}
-							>
-								<PopoverTrigger asChild>
-									<button
-										type="button"
-										className="taskInlineDateBtn"
-										style={{
-											top: `${selectedTaskAnchor.top}px`,
-										}}
-										onClick={() => {
-											void openTaskPopover(selectedTaskAnchor);
-										}}
-										title="Schedule selected task"
-									>
-										<HugeiconsIcon
-											icon={Calendar03Icon}
-											size={13}
-											strokeWidth={0.9}
-											aria-hidden
-										/>
-									</button>
-								</PopoverTrigger>
-								<PopoverContent
-									className="tasksDatePopover taskInlineDatePopover"
-									align="start"
-									onInteractOutside={(event) => event.preventDefault()}
-									onPointerDownOutside={(event) => event.preventDefault()}
-								>
-									<div className="tasksDatePickerFields">
-										<button
-											type="button"
-											className="tasksDateFieldCard"
-											data-active={activeDateField === "scheduled"}
-											onClick={() => focusField("scheduled")}
-										>
-											<span className="tasksDateFieldLabel">Scheduled</span>
-											<span
-												className="tasksDateFieldValue"
-												data-empty={!scheduledDate}
-											>
-												{formatPickerValue(scheduledDate)}
-											</span>
-										</button>
-										<button
-											type="button"
-											className="tasksDateFieldCard"
-											data-active={activeDateField === "due"}
-											onClick={() => focusField("due")}
-										>
-											<span className="tasksDateFieldLabel">Due</span>
-											<span
-												className="tasksDateFieldValue"
-												data-empty={!dueDate}
-											>
-												{formatPickerValue(dueDate)}
-											</span>
-										</button>
-									</div>
-									<div className="tasksDatePickerShell">
-										<DateCalendar
-											mode="single"
-											selected={activeDate}
-											onSelect={updateActiveDate}
-											month={pickerMonth}
-											onMonthChange={setPickerMonth}
-											className="tasksDateCalendar"
-										/>
-									</div>
-									<div className="tasksQuickDates">
-										<Button
-											type="button"
-											variant="outline"
-											size="xs"
-											onClick={() => {
-												const d = new Date();
-												d.setDate(d.getDate() + 0);
-												setScheduledDate(todayIsoDateLocal(d));
-												setActiveDateField("scheduled");
-											}}
-										>
-											Today
-										</Button>
-										<Button
-											type="button"
-											variant="outline"
-											size="xs"
-											onClick={() => {
-												const d = new Date();
-												d.setDate(d.getDate() + 1);
-												setScheduledDate(todayIsoDateLocal(d));
-												setActiveDateField("scheduled");
-											}}
-										>
-											Tomorrow
-										</Button>
-										<Button
-											type="button"
-											variant="outline"
-											size="xs"
-											onClick={() => {
-												const d = new Date();
-												d.setDate(d.getDate() + 7);
-												setScheduledDate(todayIsoDateLocal(d));
-												setActiveDateField("scheduled");
-											}}
-										>
-											Next week
-										</Button>
-										<Button
-											type="button"
-											size="xs"
-											variant="ghost"
-											onClick={() => updateActiveDate(undefined)}
-										>
-											Clear selected
-										</Button>
-									</div>
-									<div className="tasksDateActions taskInlineDateActions">
-										<Button
-											type="button"
-											variant="outline"
-											size="icon-xs"
-											title="Clear dates"
-											aria-label="Clear dates"
-											onClick={() => {
-												setScheduledDate("");
-												setDueDate("");
-											}}
-										>
-											<Trash2 size={13} />
-										</Button>
-										<Button
-											type="button"
-											size="icon-xs"
-											title="Apply dates"
-											aria-label="Apply dates"
-											onClick={() => {
-												void applyTaskDates();
-											}}
-										>
-											<Save size={13} />
-										</Button>
-										<Button
-											type="button"
-											variant="outline"
-											size="icon-xs"
-											title="Previous month"
-											aria-label="Previous month"
-											onClick={() =>
-												setPickerMonth((current) => addMonths(current, -1))
-											}
-										>
-											<HugeiconsIcon
-												icon={ArrowLeft}
-												size={13}
-												strokeWidth={0.9}
-											/>
-										</Button>
-										<Button
-											type="button"
-											variant="outline"
-											size="icon-xs"
-											title="Next month"
-											aria-label="Next month"
-											onClick={() =>
-												setPickerMonth((current) => addMonths(current, 1))
-											}
-										>
-											<HugeiconsIcon
-												icon={ArrowRight}
-												size={13}
-												strokeWidth={0.9}
-											/>
-										</Button>
-										<Button
-											type="button"
-											variant="ghost"
-											size="icon-xs"
-											title="Close"
-											aria-label="Close"
-											onClick={() => setScheduleAnchor(null)}
-										>
-											<X size={13} />
-										</Button>
-									</div>
-								</PopoverContent>
-							</Popover>
-						) : null}
-						{showBacklinks && backlinks.length > 0 ? (
-							<div className="editorBacklinks" aria-label="Backlinks">
-								<div className="editorBacklinksRow">
-									<div className="editorBacklinksLabel">
-										Linked mentions ({backlinks.length})
-									</div>
-									{backlinks.map((item) => (
-										<button
-											key={item.id}
-											type="button"
-											className="editorBacklinkInline"
-											onClick={() =>
-												dispatchWikiLinkClick({
-													raw: `[[${item.id}]]`,
-													target: item.id,
-													alias: null,
-													anchorKind: "none",
-													anchor: null,
-													unresolved: false,
-												})
-											}
-										>
-											{item.title || item.id}
-										</button>
-									))}
-								</div>
-							</div>
-						) : null}
-					</div>
+									});
+							},
+							mermaidPreviewHeight: activeMermaidPreviewHeight,
+							onMermaidHeightChange: setActiveMermaidPreviewHeight,
+						}}
+						task={{
+							selectedAnchor: selectedTaskAnchor,
+							scheduleAnchor,
+							onScheduleAnchorChange: setScheduleAnchor,
+							onOpenPopover: openTaskPopover,
+							activeDateField,
+							onActiveDateFieldChange: setActiveDateField,
+							pickerMonth,
+							onPickerMonthChange: setPickerMonth,
+							scheduledDate,
+							dueDate,
+							onScheduledDateChange: setScheduledDate,
+							onDueDateChange: setDueDate,
+							onApplyDates: applyTaskDates,
+							onClearDates: () => {
+								setScheduledDate("");
+								setDueDate("");
+							},
+							activeDate,
+							onActiveDateChange: updateActiveDate,
+							formatPickerValue,
+						}}
+						backlinks={{
+							show: showBacklinks,
+							items: backlinks,
+							interactive,
+						}}
+					/>
 				) : null}
 			</div>
 			<Dialog
