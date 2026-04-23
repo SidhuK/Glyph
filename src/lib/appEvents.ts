@@ -5,6 +5,7 @@ export const FORCE_NOTE_EDIT_MODE_EVENT = "glyph:force-note-edit-mode";
 export const ZEN_MODE_WILL_TOGGLE_EVENT = "glyph:zen-mode-will-toggle";
 export const OPEN_LOCAL_GRAPH_EVENT = "glyph:open-local-graph";
 export const EDITOR_MENU_ACTION_EVENT = "glyph:editor-menu-action";
+export const TOGGLE_NOTE_INFO_SIDEBAR_EVENT = "glyph:toggle-note-info-sidebar";
 
 export interface PathRemovedDetail {
 	path: string;
@@ -36,6 +37,10 @@ export interface OpenLocalGraphDetail {
 
 export interface EditorMenuActionDetail {
 	action: string;
+}
+
+export interface ToggleNoteInfoSidebarDetail {
+	path: string;
 }
 
 export function dispatchPathRemoved(detail: PathRemovedDetail) {
@@ -85,5 +90,18 @@ export function dispatchEditorMenuAction(detail: EditorMenuActionDetail) {
 		new CustomEvent<EditorMenuActionDetail>(EDITOR_MENU_ACTION_EVENT, {
 			detail,
 		}),
+	);
+}
+
+export function dispatchToggleNoteInfoSidebar(
+	detail: ToggleNoteInfoSidebarDetail,
+) {
+	window.dispatchEvent(
+		new CustomEvent<ToggleNoteInfoSidebarDetail>(
+			TOGGLE_NOTE_INFO_SIDEBAR_EVENT,
+			{
+				detail,
+			},
+		),
 	);
 }

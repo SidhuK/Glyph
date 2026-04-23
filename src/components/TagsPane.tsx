@@ -31,7 +31,7 @@ export interface PeopleRow {
 
 export function buildTagTreeRows(tags: TagCount[]): TagTreeRow[] {
 	return [...tags]
-		.sort((left, right) => left.tag.localeCompare(right.tag))
+		.sort((left, right) => right.total_count - left.total_count)
 		.map((tag) => ({
 			tag: tag.tag,
 			label: tag.tag.split("/").pop() ?? tag.tag,

@@ -103,6 +103,7 @@
 
 .markdownEditorPane {
 	position: relative;
+	--markdown-info-sidebar-width: 340px;
 }
 
 .markdownEditorPaneZen {
@@ -111,11 +112,18 @@
 
 .markdownEditorFloatActions {
 	position: absolute;
-	top: 10px;
+	top: -34px;
 	right: 14px;
-	z-index: 6;
-	display: inline-block;
+	z-index: 24;
+	display: inline-flex;
+	align-items: center;
 	transition: opacity 180ms ease, transform 220ms ease;
+}
+
+.markdownEditorTopActions {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
 }
 
 .markdownEditorFloatActions.is-zen-hidden {
@@ -329,22 +337,36 @@
 
 .markdownEditorMenuTrigger {
 	position: relative;
-	border-color: color-mix(in srgb, var(--border-light) 84%, transparent);
-	background: color-mix(in srgb, var(--bg-primary) 90%, var(--bg-secondary));
-	backdrop-filter: blur(14px);
-	-webkit-backdrop-filter: blur(14px);
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 20px;
+	height: 20px;
+	padding: 0;
+	border: none;
+	background: transparent;
 	color: var(--text-secondary);
-	transition: transform 180ms ease, border-color 180ms ease, background-color
-		180ms ease, color 180ms ease;
+	box-shadow: none;
+	outline: none;
+	appearance: none;
+	-webkit-appearance: none;
+	cursor: pointer;
+	transition: none;
 }
 
 .markdownEditorMenuTrigger:hover,
 .markdownEditorMenuTrigger:focus-visible,
 .markdownEditorMenuTrigger[data-open="true"] {
+	border: none;
+	background: transparent;
+	box-shadow: none;
+	outline: none;
+	color: var(--text-secondary);
+	transform: none;
+}
+
+.markdownEditorAiTrigger svg {
 	transform: translateY(-1px);
-	border-color: color-mix(in srgb, var(--border-default) 74%, transparent);
-	background: color-mix(in srgb, var(--bg-primary) 94%, var(--bg-hover));
-	color: var(--text-primary);
 }
 
 .markdownEditorActionsPanel {
@@ -389,50 +411,6 @@
 	color: var(--text-primary);
 }
 
-.markdownEditorActionDivider {
-	height: 1px;
-	margin: 3px 2px;
-	background: color-mix(in srgb, var(--border-light) 80%, transparent);
-}
-
-.markdownEditorCalloutSection {
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
-	padding: 2px 2px 4px;
-}
-
-.markdownEditorCalloutLabel {
-	font-size: 10px;
-	font-weight: var(--font-semibold);
-	color: var(--text-tertiary);
-	padding: 0 4px;
-}
-
-.markdownEditorCalloutRow {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 3px;
-}
-
-.markdownEditorCalloutChip {
-	height: 22px;
-	min-width: 0;
-	padding: 0 7px;
-	font-size: 10px;
-	line-height: 1;
-	border-radius: var(--radius-full);
-	color: var(--text-secondary);
-	transition: transform var(--transition-base), background-color
-		var(--transition-base), color var(--transition-base);
-}
-
-.markdownEditorCalloutChip:hover:not(:disabled) {
-	transform: translateY(-1px);
-	color: var(--text-primary);
-	background: var(--bg-hover);
-}
-
 .markdownEditorCenter {
 	width: 100%;
 	max-width: 100%;
@@ -441,6 +419,217 @@
 	min-height: 0;
 	height: 100%;
 	display: flex;
+}
+
+.notesInfoSidebarPanel {
+	width: 100%;
+	height: 100%;
+	display: flex;
+	flex-direction: column;
+	background: transparent;
+}
+
+.markdownEditorInfoHeader {
+	position: sticky;
+	top: 0;
+	z-index: 2;
+	height: calc(var(--header-height) - 6px);
+	padding: 0 12px;
+	display: flex;
+	align-items: center;
+	justify-content: flex-end;
+	border-bottom: none;
+	background: transparent;
+}
+
+.markdownEditorInfoClose {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 24px;
+	height: 24px;
+	border: none;
+	background: transparent;
+	color: var(--text-secondary);
+	border-radius: 0;
+	cursor: pointer;
+	transition: none;
+}
+
+.markdownEditorInfoClose:hover {
+	color: var(--text-secondary);
+}
+
+.markdownEditorInfoClose:focus-visible {
+	outline: none;
+	box-shadow: none;
+}
+
+.markdownEditorInfoClose > span {
+	font-size: 16px;
+	line-height: 1;
+	font-weight: 500;
+}
+
+.markdownEditorInfoBody {
+	flex: 1;
+	min-height: 0;
+	overflow: auto;
+	padding: 0 12px 16px;
+	background: transparent;
+}
+
+.markdownEditorInfoSection {
+	position: relative;
+	padding: 13px 0 15px;
+}
+
+.markdownEditorInfoSection:not(:last-child)::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	right: 0;
+	bottom: -1px;
+	height: 1px;
+	pointer-events: none;
+	background: linear-gradient(
+		90deg,
+		transparent 0%,
+		color-mix(in srgb, var(--border-light) 86%, transparent) 14%,
+		color-mix(in srgb, var(--border-light) 96%, transparent) 50%,
+		color-mix(in srgb, var(--border-light) 86%, transparent) 86%,
+		transparent 100%
+	);
+}
+
+.markdownEditorInfoSectionLabel {
+	margin: 0 0 10px;
+	font-size: 11px;
+	letter-spacing: 0.05em;
+	text-transform: uppercase;
+	color: var(--text-tertiary);
+}
+
+.markdownEditorInfoRows {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.markdownEditorInfoRow {
+	display: flex;
+	align-items: baseline;
+	justify-content: space-between;
+	gap: 10px;
+	font-size: 12px;
+	color: var(--text-secondary);
+}
+
+.markdownEditorInfoRow strong {
+	font-weight: var(--font-medium);
+	color: var(--text-primary);
+}
+
+.markdownEditorInfoRow code {
+	font-family: var(--font-mono);
+	font-size: 11px;
+	max-width: 180px;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}
+
+.markdownEditorInfoPathValue {
+	max-width: 180px;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	font-size: 12px;
+	color: var(--text-primary);
+}
+
+.markdownEditorInfoTaskSummary {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	font-size: 12px;
+	color: var(--text-secondary);
+}
+
+.markdownEditorInfoOutline {
+	display: flex;
+	flex-direction: column;
+	gap: 1px;
+	align-items: stretch;
+}
+
+.markdownEditorInfoOutlineItem {
+	display: block;
+	border: none;
+	background: transparent;
+	width: 100%;
+	margin: 0;
+	font: inherit;
+	text-align: left;
+	padding: 5px 8px;
+	border-radius: 4px;
+	border-left: 2px solid transparent;
+	font-size: 12px;
+	color: var(--text-secondary);
+	cursor: pointer;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	line-height: 1.35;
+}
+
+.markdownEditorInfoOutlineItem[data-level="2"] {
+	padding-left: 14px;
+}
+
+.markdownEditorInfoOutlineItem[data-level="3"] {
+	padding-left: 20px;
+}
+
+.markdownEditorInfoOutlineItem[data-level="4"],
+.markdownEditorInfoOutlineItem[data-level="5"],
+.markdownEditorInfoOutlineItem[data-level="6"] {
+	padding-left: 24px;
+}
+
+.markdownEditorInfoOutlineItem:hover {
+	background: color-mix(in srgb, var(--bg-hover) 72%, transparent);
+	color: var(--text-primary);
+}
+
+.markdownEditorInfoOutlineItem[data-active="true"] {
+	background: color-mix(in srgb, var(--interactive-accent) 8%, transparent);
+	border-left-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 62%,
+		transparent
+	);
+	color: var(--text-primary);
+}
+
+.markdownEditorInfoEmpty {
+	font-size: 12px;
+	color: var(--text-tertiary);
+}
+
+.markdownEditorInfoLinkList {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 6px 8px;
+}
+
+.markdownEditorInfoLinkItem {
+	max-width: 100%;
+	overflow: hidden;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+	font-size: 11px;
 }
 
 .markdownEditorPane .rfNodeNoteEditor {
@@ -558,6 +747,11 @@
 }
 
 @media (max-width: 760px) {
+	.notesInfoSidebarHost:not(:empty) {
+		width: min(92vw, 340px);
+		flex-basis: min(92vw, 340px);
+	}
+
 	.markdownEditorStatsDock {
 		right: 8px;
 		bottom: 8px;

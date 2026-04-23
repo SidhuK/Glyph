@@ -88,7 +88,6 @@ export function GitSyncFooterCard({
 				onClick={onToggleExpanded}
 			>
 				<HugeiconsIcon icon={GitBranchIcon} size={14} strokeWidth={0.9} />
-				<span className="sidebarQuickActionLabel">Git</span>
 			</button>
 		</div>
 	);

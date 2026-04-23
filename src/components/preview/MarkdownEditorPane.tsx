@@ -1,8 +1,9 @@
 import {
+	AiEditingIcon,
+	BadgeInfoIcon,
 	FlowConnectionIcon,
-	MenuCircleIcon,
+	SlidersHorizontalIcon,
 	SourceCodeIcon,
-	TimeQuarter02Icon,
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import type { Editor } from "@tiptap/react";
@@ -26,29 +27,37 @@ import {
 	type ForceNoteEditModeDetail,
 	OPEN_LOCAL_GRAPH_EVENT,
 	type OpenLocalGraphDetail,
+	TOGGLE_NOTE_INFO_SIDEBAR_EVENT,
+	type ToggleNoteInfoSidebarDetail,
 	ZEN_MODE_WILL_TOGGLE_EVENT,
 	type ZenModeWillToggleDetail,
 } from "../../lib/appEvents";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { setPrefetchedNote } from "../../lib/navigationPrefetch";
-import { splitYamlFrontmatter } from "../../lib/notePreview";
+import {
+	joinYamlFrontmatter,
+	splitYamlFrontmatter,
+} from "../../lib/notePreview";
 import { loadSettings } from "../../lib/settings";
 import {
+	type BacklinkItem,
 	type NoteTaskSummary,
 	type TextFileDoc,
+	type WorkspaceDatabasePreviewContext,
 	invoke,
 } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { countWords, formatReadingTime } from "../../lib/textStats";
 import { normalizeRelPath } from "../../utils/path";
-import { Edit, Eye, FileText, RefreshCw, Save, Type } from "../Icons";
+import { Edit, Eye, RefreshCw, Save } from "../Icons";
 import { CanvasNoteInlineEditor } from "../editor/CanvasNoteInlineEditor";
 import { FloatingTOC } from "../editor/FloatingTOC";
-import { CALLOUT_TYPES } from "../editor/ribbonButtonConfigs";
+import { useTableOfContents } from "../editor/hooks/useTableOfContents";
+import { parseWikiLink } from "../editor/markdown/wikiLinkCodec";
 import type { CanvasInlineEditorMode } from "../editor/types";
 import { LocalNoteGraphDialog } from "../graph/LocalNoteGraphDialog";
-import { TaskProgressIndicator } from "../tasks/TaskProgressIndicator";
 import { Button } from "../ui/shadcn/button";
+import { NotesInfoSidebar } from "./NotesInfoSidebar";
 import {
 	clearMarkdownDocCache,
 	getCachedMarkdownDoc,
@@ -62,8 +71,19 @@ interface MarkdownEditorPaneProps {
 	initialError?: string;
 }
 
-type StatsLayout = "full" | "collapsed" | "hidden";
 type SyncPulse = "saved" | "reloaded" | null;
+type LinkedNoteKind = "wiki" | "markdown";
+
+interface LinkedNoteItem {
+	id: string;
+	label: string;
+	kind: LinkedNoteKind;
+}
+
+interface SidebarBacklinkItem {
+	id: string;
+	label: string;
+}
 
 const EMPTY_TASK_SUMMARY: NoteTaskSummary = {
 	total_count: 0,
@@ -91,23 +111,62 @@ function summarizeTasksFromMarkdown(markdown: string): NoteTaskSummary {
 	};
 }
 
-function isVisibleElement(element: HTMLElement | null): boolean {
-	if (!element) return false;
-	const style = window.getComputedStyle(element);
-	return (
-		style.display !== "none" &&
-		style.visibility !== "hidden" &&
-		Number.parseFloat(style.opacity || "1") > 0.02
-	);
+function noteLabelFromPath(path: string): string {
+	const segments = path.split("/").filter(Boolean);
+	const tail = segments[segments.length - 1] ?? path;
+	return tail.endsWith(".md") ? tail.slice(0, -3) : tail;
 }
 
-function rectsOverlap(a: DOMRect, b: DOMRect, padding = 0): boolean {
-	return !(
-		a.right - padding <= b.left ||
-		a.left + padding >= b.right ||
-		a.bottom - padding <= b.top ||
-		a.top + padding >= b.bottom
-	);
+function extractLinkedNotes(markdown: string): LinkedNoteItem[] {
+	const out = new Map<string, LinkedNoteItem>();
+
+	for (const match of markdown.matchAll(/!?\[\[[^\]\n]+\]\]/g)) {
+		const raw = match[0];
+		const parsed = parseWikiLink(raw);
+		if (!parsed?.target) continue;
+		const target = parsed.target.trim();
+		if (!target) continue;
+		const existing = out.get(target);
+		const nextLabel = parsed.alias?.trim() || parsed.target;
+		if (!existing || existing.label === existing.id) {
+			out.set(target, {
+				id: target,
+				label: nextLabel,
+				kind: "wiki",
+			});
+		}
+	}
+
+	for (const match of markdown.matchAll(/\[[^\]\n]+\]\((?:\\.|[^)\n])+\)/g)) {
+		const raw = match[0];
+		const linkMatch = raw.match(/^\[([^\]\n]+)\]\(([^)\s]+)(?:\s+"[^"]*")?\)$/);
+		const linkText = linkMatch?.[1]?.trim() ?? "";
+		const hrefMatch = raw.match(/^\[[^\]\n]+\]\(([^)\s]+)(?:\s+"[^"]*")?\)$/);
+		const href = hrefMatch?.[1]?.trim() ?? "";
+		if (!href) continue;
+		if (
+			href.startsWith("#") ||
+			href.startsWith("http://") ||
+			href.startsWith("https://") ||
+			href.startsWith("mailto:") ||
+			href.startsWith("tel:")
+		) {
+			continue;
+		}
+		const withoutFragment = href.split("#")[0]?.split("?")[0]?.trim() ?? "";
+		if (!withoutFragment) continue;
+		const existing = out.get(withoutFragment);
+		const nextLabel = linkText || noteLabelFromPath(withoutFragment);
+		if (!existing || existing.label === existing.id) {
+			out.set(withoutFragment, {
+				id: withoutFragment,
+				label: nextLabel,
+				kind: "markdown",
+			});
+		}
+	}
+
+	return Array.from(out.values());
 }
 
 export function MarkdownEditorPane({
@@ -124,6 +183,7 @@ export function MarkdownEditorPane({
 	const [autosaveBusy, setAutosaveBusy] = useState(false);
 	const [error, setError] = useState(() => initialError || "");
 	const [actionsOpen, setActionsOpen] = useState(false);
+	const [infoPanelOpen, setInfoPanelOpen] = useState(false);
 	const [localGraphOpen, setLocalGraphOpen] = useState(false);
 	const [lastSavedMtimeMs, setLastSavedMtimeMs] = useState<number | null>(
 		initialDoc?.mtime_ms ?? null,
@@ -131,9 +191,9 @@ export function MarkdownEditorPane({
 	const [syncPulse, setSyncPulse] = useState<SyncPulse>(null);
 	const [taskSummary, setTaskSummary] =
 		useState<NoteTaskSummary>(EMPTY_TASK_SUMMARY);
+	const [linkedMentions, setLinkedMentions] = useState<BacklinkItem[]>([]);
 	const [showTaskProgressIndicator, setShowTaskProgressIndicator] =
 		useState(true);
-	const calloutInserterRef = useRef<((type: string) => void) | null>(null);
 	const savedTextRef = useRef(savedText);
 	const textRef = useRef(text);
 	const mtimeRef = useRef<number | null>(lastSavedMtimeMs);
@@ -150,7 +210,6 @@ export function MarkdownEditorPane({
 	const pendingExternalReloadRef = useRef(false);
 	const paneRef = useRef<HTMLElement | null>(null);
 	const contentScrollRef = useRef<HTMLDivElement | null>(null);
-	const statsDockRef = useRef<HTMLDivElement | null>(null);
 	const { spacePath } = useSpace();
 	const previousSpacePathRef = useRef<string | null>(spacePath);
 	const pendingZenViewportAnchorRef = useRef<{
@@ -158,22 +217,31 @@ export function MarkdownEditorPane({
 		scrollTop: number;
 	} | null>(null);
 	const [tocEditor, setTocEditor] = useState<Editor | null>(null);
-	const { showToc, zenModeActive } = useUILayoutContext();
-	const { aiEnabled, aiPanelOpen } = useAISidebarContext();
+	const {
+		headings: tocHeadings,
+		activeId: tocActiveId,
+		scrollToHeading,
+	} = useTableOfContents(tocEditor);
+	const [previewContext, setPreviewContext] =
+		useState<WorkspaceDatabasePreviewContext | null>(null);
+	const { zenModeActive, openSettings, showToc } = useUILayoutContext();
+	const { aiEnabled, aiPanelOpen, setAiPanelOpen } = useAISidebarContext();
 	const shouldReduceMotion = useReducedMotion();
 
 	const isDirty = text !== savedText;
-	const [statsLayout, setStatsLayout] = useState<StatsLayout>("full");
+	const { frontmatter: currentFrontmatter, body: currentBody } = useMemo(
+		() => splitYamlFrontmatter(text),
+		[text],
+	);
 	const stats = useMemo(() => {
-		const { body } = splitYamlFrontmatter(text);
-		const words = countWords(body);
-		const characters = body.length;
+		const words = countWords(currentBody);
+		const characters = currentBody.length;
 		return {
 			words,
 			characters,
 			readingTime: formatReadingTime(words),
 		};
-	}, [text]);
+	}, [currentBody]);
 	const fallbackTaskSummary = useMemo(
 		() => summarizeTasksFromMarkdown(text),
 		[text],
@@ -182,6 +250,45 @@ export function MarkdownEditorPane({
 		taskSummary.total_count > 0 || fallbackTaskSummary.total_count === 0
 			? taskSummary
 			: fallbackTaskSummary;
+	const utf8SizeBytes = useMemo(
+		() => new TextEncoder().encode(text).length,
+		[text],
+	);
+	const lineCount = useMemo(
+		() => (text.length > 0 ? text.split(/\r?\n/).length : 0),
+		[text],
+	);
+	const linkedNotes = useMemo(() => {
+		const current = normalizeRelPath(relPath);
+		return extractLinkedNotes(text).filter((item) => {
+			const normalized = normalizeRelPath(item.id);
+			if (!normalized) return false;
+			return normalized !== current;
+		});
+	}, [relPath, text]);
+	const sidebarBacklinks = useMemo(() => {
+		const merged = new Map<string, SidebarBacklinkItem>();
+
+		for (const item of linkedMentions) {
+			const id = item.id.trim();
+			if (!id) continue;
+			merged.set(id, {
+				id,
+				label: item.title?.trim() || noteLabelFromPath(id),
+			});
+		}
+
+		for (const path of previewContext?.backlinks ?? []) {
+			const id = path.trim();
+			if (!id || merged.has(id)) continue;
+			merged.set(id, {
+				id,
+				label: noteLabelFromPath(id),
+			});
+		}
+
+		return Array.from(merged.values());
+	}, [linkedMentions, previewContext?.backlinks]);
 
 	const flashSyncPulse = useCallback((next: Exclude<SyncPulse, null>) => {
 		if (syncPulseTimerRef.current !== null) {
@@ -230,37 +337,6 @@ export function MarkdownEditorPane({
 		} as const;
 	}, [autosaveBusy, isDirty, lastSavedMtimeMs, saving, syncPulse]);
 
-	const syncStatsLayout = useCallback(() => {
-		if (mode === "preview") {
-			setStatsLayout("full");
-			return;
-		}
-		const pane = paneRef.current;
-		const dock = statsDockRef.current;
-		if (!pane || !dock) return;
-
-		const width = pane.clientWidth;
-		const ribbon = pane.querySelector(
-			".rfNodeNoteEditorRibbonFloating",
-		) as HTMLElement | null;
-		const ribbonVisible = isVisibleElement(ribbon);
-
-		let next: StatsLayout = "full";
-		if (width < 1160) next = "collapsed";
-		if (width < 860) next = "hidden";
-
-		if (ribbonVisible && ribbon) {
-			const dockRect = dock.getBoundingClientRect();
-			const ribbonRect = ribbon.getBoundingClientRect();
-			if (rectsOverlap(dockRect, ribbonRect, 6)) {
-				next = "collapsed";
-				if (width < 1040) next = "hidden";
-			}
-		}
-
-		setStatsLayout((prev) => (prev === next ? prev : next));
-	}, [mode]);
-
 	useEffect(() => {
 		mountedRef.current = true;
 		return () => {
@@ -302,7 +378,10 @@ export function MarkdownEditorPane({
 		hasUserEditsRef.current = false;
 		setError(initialError);
 		setActionsOpen(false);
+		setInfoPanelOpen(false);
 		setLocalGraphOpen(false);
+		setPreviewContext(null);
+		setLinkedMentions([]);
 		if (initialDoc) {
 			setPrefetchedNote(relPath, initialDoc);
 		}
@@ -576,14 +655,27 @@ export function MarkdownEditorPane({
 			if (!detail?.path || detail.path !== relPath) return;
 			setLocalGraphOpen(true);
 		};
+		const handleToggleInfoSidebar = (event: Event) => {
+			const detail = (event as CustomEvent<ToggleNoteInfoSidebarDetail>).detail;
+			if (!detail?.path || detail.path !== relPath) return;
+			setInfoPanelOpen((open) => !open);
+		};
 		window.addEventListener(FORCE_NOTE_EDIT_MODE_EVENT, handleForceEditMode);
 		window.addEventListener(OPEN_LOCAL_GRAPH_EVENT, handleOpenLocalGraph);
+		window.addEventListener(
+			TOGGLE_NOTE_INFO_SIDEBAR_EVENT,
+			handleToggleInfoSidebar,
+		);
 		return () => {
 			window.removeEventListener(
 				FORCE_NOTE_EDIT_MODE_EVENT,
 				handleForceEditMode,
 			);
 			window.removeEventListener(OPEN_LOCAL_GRAPH_EVENT, handleOpenLocalGraph);
+			window.removeEventListener(
+				TOGGLE_NOTE_INFO_SIDEBAR_EVENT,
+				handleToggleInfoSidebar,
+			);
 		};
 	}, [relPath]);
 
@@ -703,6 +795,58 @@ export function MarkdownEditorPane({
 	}, [onDirtyChange, isDirty]);
 
 	useEffect(() => {
+		let cancelled = false;
+		void (async () => {
+			try {
+				const context = await invoke("databases_preview_context", {
+					note_path: relPath,
+				});
+				if (cancelled) return;
+				setPreviewContext(context);
+			} catch {
+				if (cancelled) return;
+				setPreviewContext(null);
+			}
+		})();
+		return () => {
+			cancelled = true;
+		};
+	}, [relPath]);
+
+	useEffect(() => {
+		let cancelled = false;
+		void invoke("backlinks", { note_id: relPath })
+			.then((items) => {
+				if (cancelled) return;
+				setLinkedMentions(items);
+			})
+			.catch(() => {
+				if (cancelled) return;
+				setLinkedMentions([]);
+			});
+		return () => {
+			cancelled = true;
+		};
+	}, [relPath]);
+
+	const handleInfoFrontmatterChange = useCallback(
+		(nextFrontmatter: string | null) => {
+			const normalizedFrontmatter = nextFrontmatter?.trim().length
+				? nextFrontmatter
+				: null;
+			const nextMarkdown = joinYamlFrontmatter(
+				normalizedFrontmatter,
+				currentBody,
+			);
+			if (nextMarkdown === textRef.current) return;
+			hasUserEditsRef.current = true;
+			textRef.current = nextMarkdown;
+			setText(nextMarkdown);
+		},
+		[currentBody],
+	);
+
+	useEffect(() => {
 		if (taskSummaryTimerRef.current !== null) {
 			window.clearTimeout(taskSummaryTimerRef.current);
 			taskSummaryTimerRef.current = null;
@@ -751,79 +895,15 @@ export function MarkdownEditorPane({
 		};
 	}, [showTaskProgressIndicator, text]);
 
-	useEffect(() => {
-		if (mode === "preview") return;
-		const pane = paneRef.current;
-		if (!pane) return;
-
-		let raf = 0;
-		const schedule = () => {
-			if (raf) window.cancelAnimationFrame(raf);
-			raf = window.requestAnimationFrame(syncStatsLayout);
-		};
-
-		const resizeObserver = new ResizeObserver(schedule);
-		const observedTargets = new Set<Element>();
-		const observeIfPresent = (element: Element | null) => {
-			if (!element || observedTargets.has(element)) return;
-			resizeObserver.observe(element);
-			observedTargets.add(element);
-		};
-		resizeObserver.observe(pane);
-		observedTargets.add(pane);
-		const editorRoot = pane.querySelector(
-			".rfNodeNoteEditor",
-		) as HTMLElement | null;
-		const floatingRibbon = pane.querySelector(
-			".rfNodeNoteEditorRibbonFloating",
-		) as HTMLElement | null;
-		observeIfPresent(editorRoot);
-		observeIfPresent(floatingRibbon);
-
-		const mutationObserver = new MutationObserver(() => {
-			observeIfPresent(
-				pane.querySelector(".rfNodeNoteEditor") as HTMLElement | null,
-			);
-			observeIfPresent(
-				pane.querySelector(
-					".rfNodeNoteEditorRibbonFloating",
-				) as HTMLElement | null,
-			);
-			schedule();
-		});
-		mutationObserver.observe(pane, {
-			attributes: true,
-			childList: true,
-			subtree: true,
-			attributeFilter: ["class", "style"],
-		});
-
-		window.addEventListener("resize", schedule);
-		schedule();
-
-		return () => {
-			if (raf) window.cancelAnimationFrame(raf);
-			window.removeEventListener("resize", schedule);
-			resizeObserver.disconnect();
-			mutationObserver.disconnect();
-		};
-	}, [mode, syncStatsLayout]);
-
-	const canInsertCallouts = mode === "rich";
-	const registerCalloutInserter = useCallback(
-		(inserter: ((type: string) => void) | null) => {
-			calloutInserterRef.current = inserter;
-		},
-		[],
-	);
-
 	return (
 		<section
-			className={
-				zenModeActive
-					? "filePreviewPane markdownEditorPane markdownEditorPaneZen"
-					: "filePreviewPane markdownEditorPane"
-			}
+			className={[
+				"filePreviewPane",
+				"markdownEditorPane",
+				zenModeActive ? "markdownEditorPaneZen" : "",
+			]
+				.filter(Boolean)
+				.join(" ")}
 			ref={paneRef}
 		>
 			<div
@@ -835,248 +915,195 @@ export function MarkdownEditorPane({
 					.join(" ")}
 				aria-hidden={zenModeActive}
 			>
-				<div className="markdownEditorActionsMenu">
-					<Button
+				<div className="markdownEditorTopActions">
+					<button
 						type="button"
-						variant="outline"
-						size="icon-sm"
-						className="markdownEditorMenuTrigger"
-						data-open={actionsOpen ? "true" : "false"}
-						onClick={() => setActionsOpen((prev) => !prev)}
+						className="markdownEditorMenuTrigger markdownEditorAiTrigger"
+						onClick={() => {
+							if (!aiEnabled) {
+								openSettings("ai");
+								return;
+							}
+							setAiPanelOpen((open) => !open);
+						}}
 						aria-label={
-							actionsOpen ? "Close editor actions" : "Open editor actions"
+							aiEnabled
+								? aiPanelOpen
+									? "Close AI panel"
+									: "Open AI panel"
+								: "Open AI settings"
 						}
-						title={actionsOpen ? "Close editor actions" : "Open editor actions"}
-						aria-expanded={actionsOpen}
+						title={
+							aiEnabled
+								? aiPanelOpen
+									? "Close AI panel"
+									: "Open AI panel"
+								: "Open AI settings"
+						}
+						aria-pressed={aiEnabled ? aiPanelOpen : undefined}
 					>
-						<HugeiconsIcon icon={MenuCircleIcon} size={14} strokeWidth={0.9} />
-					</Button>
-					<AnimatePresence initial={false}>
-						{actionsOpen ? (
-							<m.div
-								className="markdownEditorActionsPanel"
-								initial={
-									shouldReduceMotion
-										? false
-										: { opacity: 0, y: -6, scale: 0.98 }
-								}
-								animate={{ opacity: 1, y: 0, scale: 1 }}
-								exit={
-									shouldReduceMotion
-										? { opacity: 0 }
-										: { opacity: 0, y: -4, scale: 0.985 }
-								}
-								transition={
-									shouldReduceMotion
-										? { duration: 0 }
-										: {
-												type: "spring",
-												stiffness: 420,
-												damping: 34,
-											}
-								}
-							>
-								<Button
-									type="button"
-									variant="ghost"
-									size="xs"
-									className="markdownEditorActionItem"
-									onClick={() => {
-										setLocalGraphOpen(true);
-										setActionsOpen(false);
-									}}
-								>
-									<HugeiconsIcon
-										icon={FlowConnectionIcon}
-										size={12}
-										strokeWidth={0.9}
-									/>
-									Local graph
-								</Button>
-								<Button
-									type="button"
-									variant="ghost"
-									size="xs"
-									className="markdownEditorActionItem"
-									data-active={mode === "rich"}
-									onClick={() => {
-										setMode("rich");
-										setActionsOpen(false);
-									}}
-								>
-									<Edit size={12} />
-									Edit
-								</Button>
-								<Button
-									type="button"
-									variant="ghost"
-									size="xs"
-									className="markdownEditorActionItem"
-									data-active={mode === "preview"}
-									onClick={() => {
-										setMode("preview");
-										setActionsOpen(false);
-									}}
-								>
-									<Eye size={12} />
-									Preview
-								</Button>
-								<Button
-									type="button"
-									variant="ghost"
-									size="xs"
-									className="markdownEditorActionItem"
-									data-active={mode === "plain"}
-									onClick={() => {
-										setMode("plain");
-										setActionsOpen(false);
-									}}
-								>
-									<HugeiconsIcon
-										icon={SourceCodeIcon}
-										size={12}
-										strokeWidth={0.9}
-									/>
-									Raw
-								</Button>
-								{canInsertCallouts ? (
-									<>
-										<div className="markdownEditorActionDivider" />
-										<div className="markdownEditorCalloutSection">
-											<div className="markdownEditorCalloutLabel">Callouts</div>
-											<div className="markdownEditorCalloutRow">
-												{CALLOUT_TYPES.map((type) => (
-													<Button
-														key={type}
-														type="button"
-														variant="ghost"
-														size="xs"
-														className="markdownEditorCalloutChip"
-														onClick={() => {
-															calloutInserterRef.current?.(type);
-															setActionsOpen(false);
-														}}
-														title={`Insert ${type === "Warn" ? "Warning" : type} callout`}
-													>
-														{type}
-													</Button>
-												))}
-											</div>
-										</div>
-										<div className="markdownEditorActionDivider" />
-									</>
-								) : null}
-								<Button
-									type="button"
-									variant="ghost"
-									size="xs"
-									className="markdownEditorActionItem"
-									onClick={() => {
-										void loadDoc(true);
-										setActionsOpen(false);
-									}}
-									disabled={saving}
-								>
-									<RefreshCw size={12} />
-									Reload
-								</Button>
-								<Button
-									type="button"
-									variant="ghost"
-									size="xs"
-									className="markdownEditorActionItem"
-									onClick={() => {
-										void onSave();
-										setActionsOpen(false);
-									}}
-									disabled={saving}
-								>
-									<Save size={12} />
-									{saving ? "Saving" : "Save"}
-								</Button>
-							</m.div>
-						) : null}
-					</AnimatePresence>
-				</div>
-			</div>
-			{mode !== "preview" ? (
-				<m.div
-					ref={statsDockRef}
-					className={[
-						"markdownEditorStatsDock",
-						aiEnabled && !aiPanelOpen ? "withAiFab" : "",
-						zenModeActive ? "is-zen-hidden" : "",
-						statsLayout === "collapsed" ? "is-collapsed" : "",
-						statsLayout === "hidden" ? "is-hidden" : "",
-					]
-						.filter(Boolean)
-						.join(" ")}
-					initial={shouldReduceMotion ? false : { opacity: 0, y: 8 }}
-					animate={{ opacity: 1, y: 0 }}
-					transition={
-						shouldReduceMotion
-							? { duration: 0 }
-							: { type: "spring", stiffness: 380, damping: 32 }
-					}
-					aria-label="Editor statistics"
-				>
-					<div
-						className="markdownEditorStatsPill"
-						data-save-state={saveSignal.state}
-					>
-						<div
-							className="markdownEditorStatsItem"
-							data-metric="words"
-							title={`Words: ${stats.words.toLocaleString()}`}
-							aria-label={`Words: ${stats.words.toLocaleString()}`}
-						>
-							<FileText size={13} aria-hidden />
-							<span>{stats.words.toLocaleString()}</span>
-						</div>
-						<div
-							className="markdownEditorStatsItem"
-							data-metric="characters"
-							title={`Characters: ${stats.characters.toLocaleString()}`}
-							aria-label={`Characters: ${stats.characters.toLocaleString()}`}
-						>
-							<Type size={13} aria-hidden />
-							<span>{stats.characters.toLocaleString()}</span>
-						</div>
-						<div
-							className="markdownEditorStatsItem"
-							data-metric="reading-time"
-							title={`Reading time: ${stats.readingTime}`}
-							aria-label={`Reading time: ${stats.readingTime}`}
+						<HugeiconsIcon icon={AiEditingIcon} size={15} strokeWidth={0.9} />
+					</button>
+					<div className="markdownEditorActionsMenu">
+						<button
+							type="button"
+							className="markdownEditorMenuTrigger"
+							data-open={actionsOpen ? "true" : "false"}
+							onClick={() => setActionsOpen((prev) => !prev)}
+							aria-label={
+								actionsOpen ? "Close editor actions" : "Open editor actions"
+							}
+							title={
+								actionsOpen ? "Close editor actions" : "Open editor actions"
+							}
+							aria-expanded={actionsOpen}
 						>
 							<HugeiconsIcon
-								icon={TimeQuarter02Icon}
-								size={13}
+								icon={SlidersHorizontalIcon}
+								size={15}
 								strokeWidth={0.9}
-								aria-hidden
 							/>
-							<span>{stats.readingTime}</span>
-						</div>
-						{showTaskProgressIndicator && visibleTaskSummary.total_count > 0 ? (
-							<div
-								className="markdownEditorStatsItem markdownEditorTaskProgressItem"
-								data-metric="task-progress"
-							>
-								<TaskProgressIndicator summary={visibleTaskSummary} />
-							</div>
-						) : null}
-						<div
-							className="markdownEditorStatsItem markdownEditorSaveState"
-							data-metric="save-state"
-							data-save-state={saveSignal.state}
-							title={saveSignal.description}
-							aria-label={`Save status: ${saveSignal.label}`}
-						>
-							<Save size={13} aria-hidden />
-						</div>
+						</button>
+						<AnimatePresence initial={false}>
+							{actionsOpen ? (
+								<m.div
+									className="markdownEditorActionsPanel"
+									initial={
+										shouldReduceMotion
+											? false
+											: { opacity: 0, y: -6, scale: 0.98 }
+									}
+									animate={{ opacity: 1, y: 0, scale: 1 }}
+									exit={
+										shouldReduceMotion
+											? { opacity: 0 }
+											: { opacity: 0, y: -4, scale: 0.985 }
+									}
+									transition={
+										shouldReduceMotion
+											? { duration: 0 }
+											: {
+													type: "spring",
+													stiffness: 420,
+													damping: 34,
+												}
+									}
+								>
+									<Button
+										type="button"
+										variant="ghost"
+										size="xs"
+										className="markdownEditorActionItem"
+										data-active={infoPanelOpen}
+										onClick={() => {
+											setInfoPanelOpen((open) => !open);
+											setActionsOpen(false);
+										}}
+									>
+										<HugeiconsIcon
+											icon={BadgeInfoIcon}
+											size={12}
+											strokeWidth={0.9}
+										/>
+										Info
+									</Button>
+									<Button
+										type="button"
+										variant="ghost"
+										size="xs"
+										className="markdownEditorActionItem"
+										onClick={() => {
+											setLocalGraphOpen(true);
+											setActionsOpen(false);
+										}}
+									>
+										<HugeiconsIcon
+											icon={FlowConnectionIcon}
+											size={12}
+											strokeWidth={0.9}
+										/>
+										Local graph
+									</Button>
+									<Button
+										type="button"
+										variant="ghost"
+										size="xs"
+										className="markdownEditorActionItem"
+										data-active={mode === "rich"}
+										onClick={() => {
+											setMode("rich");
+											setActionsOpen(false);
+										}}
+									>
+										<Edit size={12} />
+										Edit
+									</Button>
+									<Button
+										type="button"
+										variant="ghost"
+										size="xs"
+										className="markdownEditorActionItem"
+										data-active={mode === "preview"}
+										onClick={() => {
+											setMode("preview");
+											setActionsOpen(false);
+										}}
+									>
+										<Eye size={12} />
+										Preview
+									</Button>
+									<Button
+										type="button"
+										variant="ghost"
+										size="xs"
+										className="markdownEditorActionItem"
+										data-active={mode === "plain"}
+										onClick={() => {
+											setMode("plain");
+											setActionsOpen(false);
+										}}
+									>
+										<HugeiconsIcon
+											icon={SourceCodeIcon}
+											size={12}
+											strokeWidth={0.9}
+										/>
+										Raw
+									</Button>
+									<Button
+										type="button"
+										variant="ghost"
+										size="xs"
+										className="markdownEditorActionItem"
+										onClick={() => {
+											void loadDoc(true);
+											setActionsOpen(false);
+										}}
+										disabled={saving}
+									>
+										<RefreshCw size={12} />
+										Reload
+									</Button>
+									<Button
+										type="button"
+										variant="ghost"
+										size="xs"
+										className="markdownEditorActionItem"
+										onClick={() => {
+											void onSave();
+											setActionsOpen(false);
+										}}
+										disabled={saving}
+									>
+										<Save size={12} />
+										{saving ? "Saving" : "Save"}
+									</Button>
+								</m.div>
+							) : null}
+						</AnimatePresence>
 					</div>
-				</m.div>
-			) : null}
-
+				</div>
+			</div>
 			{error ? (
 				<div className="filePreviewMeta">
 					<div className="filePreviewHint">{error}</div>
@@ -1100,16 +1127,37 @@ export function MarkdownEditorPane({
 								textRef.current = nextText;
 								setText(nextText);
 							}}
-							onRegisterCalloutInserter={registerCalloutInserter}
 							onEditorReady={setTocEditor}
 						/>
 					</div>
 				</div>
 			) : null}
-
-			{showToc && !zenModeActive && mode === "rich" && !error && tocEditor ? (
+			{showToc && !infoPanelOpen && !error && mode !== "plain" ? (
 				<FloatingTOC editor={tocEditor} />
 			) : null}
+
+			<NotesInfoSidebar
+				open={infoPanelOpen}
+				mode={mode}
+				zenModeActive={zenModeActive}
+				hasError={Boolean(error)}
+				relPath={relPath}
+				frontmatter={currentFrontmatter}
+				onFrontmatterChange={handleInfoFrontmatterChange}
+				stats={stats}
+				taskSummary={visibleTaskSummary}
+				tocHeadings={tocHeadings}
+				tocActiveId={tocActiveId}
+				onSelectHeading={scrollToHeading}
+				backlinks={sidebarBacklinks}
+				linkedNotes={linkedNotes}
+				previewContext={previewContext}
+				lastSavedMtimeMs={lastSavedMtimeMs}
+				lineCount={lineCount}
+				utf8SizeBytes={utf8SizeBytes}
+				saveLabel={saveSignal.label}
+				onClose={() => setInfoPanelOpen(false)}
+			/>
 
 			<LocalNoteGraphDialog
 				open={localGraphOpen}

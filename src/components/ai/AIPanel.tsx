@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import {
-	AiChat02Icon,
+	AiEditingIcon,
 	ChatAdd01Icon,
 	Logout01Icon,
 } from "@hugeicons/core-free-icons";
@@ -295,7 +295,7 @@ export function AIPanel({ isOpen, onClose }: AIPanelProps) {
 			<div className="aiPanelHeader">
 				<div className="aiPanelHeaderLeft">
 					<div className="aiPanelTitle">
-						<HugeiconsIcon icon={AiChat02Icon} size={18} strokeWidth={0.9} />
+						<HugeiconsIcon icon={AiEditingIcon} size={18} strokeWidth={0.9} />
 					</div>
 					<button
 						type="button"

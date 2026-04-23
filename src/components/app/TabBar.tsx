@@ -92,11 +92,7 @@ export function TabBar({
 			: [];
 
 	return (
-		<div
-			className="mainTabsBarWrap"
-			onPointerEnter={() => setHovered(true)}
-			onPointerLeave={() => setHovered(false)}
-		>
+		<div className="mainTabsBarWrap">
 			<div
 				className="mainTabsBar"
 				data-empty-state={useWindowBackground ? "true" : "false"}
@@ -125,7 +121,11 @@ export function TabBar({
 				</div>
 				{showTabs ? (
 					<>
-						<div className="mainTabsStrip">
+						<div
+							className="mainTabsStrip"
+							onPointerEnter={() => setHovered(true)}
+							onPointerLeave={() => setHovered(false)}
+						>
 							{tabs.map((tab) => (
 								<TabItem
 									key={tab.id}

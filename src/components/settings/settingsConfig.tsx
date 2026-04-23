@@ -1,5 +1,5 @@
 import {
-	AiChat02Icon,
+	AiEditingIcon,
 	Archive02Icon,
 	ConstructionIcon,
 	GitBranchIcon,
@@ -53,7 +53,7 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 		id: "ai",
 		label: "Glyph AI",
 		renderIcon: () => (
-			<HugeiconsIcon icon={AiChat02Icon} size={14} strokeWidth={0.9} />
+			<HugeiconsIcon icon={AiEditingIcon} size={14} strokeWidth={0.9} />
 		),
 	},
 	{
