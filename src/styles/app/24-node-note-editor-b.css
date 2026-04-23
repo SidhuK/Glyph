@@ -337,7 +337,7 @@ input.notePropertyValue {
 	min-height: 32px;
 	gap: 8px;
 	padding: 0 10px 0 12px;
-	border-radius: var(--database-control-radius);
+	border-radius: var(--database-control-radius, var(--radius-md));
 	font-size: 0.82rem;
 	color: var(--text-secondary);
 	position: relative;
@@ -346,7 +346,7 @@ input.notePropertyValue {
 
 .notePropertyKindOption[data-highlighted],
 .notePropertyKindOption:focus-visible {
-	background: var(--database-dropdown-hover);
+	background: var(--database-dropdown-hover, var(--bg-hover));
 	color: var(--text-primary);
 	outline: none;
 }

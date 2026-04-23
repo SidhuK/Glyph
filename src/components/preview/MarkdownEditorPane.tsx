@@ -90,6 +90,18 @@ const EMPTY_TASK_SUMMARY: NoteTaskSummary = {
 	completed_count: 0,
 	open_count: 0,
 };
+const UTF8_ENCODER = new TextEncoder();
+
+function countLines(markdown: string): number {
+	if (markdown.length === 0) return 0;
+	let lines = 1;
+	for (let i = 0; i < markdown.length; i += 1) {
+		if (markdown.charCodeAt(i) === 10) {
+			lines += 1;
+		}
+	}
+	return lines;
+}
 
 function summarizeTasksFromMarkdown(markdown: string): NoteTaskSummary {
 	let total_count = 0;
@@ -139,9 +151,13 @@ function extractLinkedNotes(markdown: string): LinkedNoteItem[] {
 
 	for (const match of markdown.matchAll(/\[[^\]\n]+\]\((?:\\.|[^)\n])+\)/g)) {
 		const raw = match[0];
-		const linkMatch = raw.match(/^\[([^\]\n]+)\]\(([^)\s]+)(?:\s+"[^"]*")?\)$/);
+		const linkMatch = raw.match(
+			/^\[([^\]\n]+)\]\(([^)\n]*?)(?:\s+"[^"\n]*")?\)$/,
+		);
 		const linkText = linkMatch?.[1]?.trim() ?? "";
-		const hrefMatch = raw.match(/^\[[^\]\n]+\]\(([^)\s]+)(?:\s+"[^"]*")?\)$/);
+		const hrefMatch = raw.match(
+			/^\[[^\]\n]+\]\(([^)\n]*?)(?:\s+"[^"\n]*")?\)$/,
+		);
 		const href = hrefMatch?.[1]?.trim() ?? "";
 		if (!href) continue;
 		if (
@@ -250,14 +266,14 @@ export function MarkdownEditorPane({
 		taskSummary.total_count > 0 || fallbackTaskSummary.total_count === 0
 			? taskSummary
 			: fallbackTaskSummary;
-	const utf8SizeBytes = useMemo(
-		() => new TextEncoder().encode(text).length,
-		[text],
-	);
-	const lineCount = useMemo(
-		() => (text.length > 0 ? text.split(/\r?\n/).length : 0),
-		[text],
-	);
+	const utf8SizeBytes = useMemo(() => {
+		if (!infoPanelOpen) return 0;
+		return UTF8_ENCODER.encode(text).length;
+	}, [infoPanelOpen, text]);
+	const lineCount = useMemo(() => {
+		if (!infoPanelOpen) return 0;
+		return countLines(text);
+	}, [infoPanelOpen, text]);
 	const linkedNotes = useMemo(() => {
 		const current = normalizeRelPath(relPath);
 		return extractLinkedNotes(text).filter((item) => {
@@ -795,11 +811,13 @@ export function MarkdownEditorPane({
 	}, [onDirtyChange, isDirty]);
 
 	useEffect(() => {
+		if (!infoPanelOpen) return;
 		let cancelled = false;
 		void (async () => {
 			try {
 				const context = await invoke("databases_preview_context", {
 					note_path: relPath,
+					space_path: spacePath,
 				});
 				if (cancelled) return;
 				setPreviewContext(context);
@@ -811,11 +829,12 @@ export function MarkdownEditorPane({
 		return () => {
 			cancelled = true;
 		};
-	}, [relPath]);
+	}, [infoPanelOpen, relPath, spacePath]);
 
 	useEffect(() => {
+		if (!infoPanelOpen) return;
 		let cancelled = false;
-		void invoke("backlinks", { note_id: relPath })
+		void invoke("backlinks", { note_id: relPath, space_path: spacePath })
 			.then((items) => {
 				if (cancelled) return;
 				setLinkedMentions(items);
@@ -827,7 +846,7 @@ export function MarkdownEditorPane({
 		return () => {
 			cancelled = true;
 		};
-	}, [relPath]);
+	}, [infoPanelOpen, relPath, spacePath]);
 
 	const handleInfoFrontmatterChange = useCallback(
 		(nextFrontmatter: string | null) => {

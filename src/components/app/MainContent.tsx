@@ -418,7 +418,7 @@ export const MainContent = memo(function MainContent({
 		useState(false);
 	const [infoSidebarWidth, setInfoSidebarWidth] = useState(340);
 	const handledShowGettingStartedRequestRef = useRef(0);
-	const notesInfoSidebarHostRef = useRef<HTMLElement | null>(null);
+	const notesInfoSidebarHostRef = useRef<HTMLDivElement | null>(null);
 	const activeTab = useMemo(
 		() => tabs.find((tab) => tab.id === activeTabId) ?? null,
 		[tabs, activeTabId],
@@ -911,7 +911,7 @@ export const MainContent = memo(function MainContent({
 					data-window-drag-ignore
 					style={{ cursor: zenModeActive ? "default" : "col-resize" }}
 				/>
-				<aside
+				<div
 					id="notes-info-sidebar-root"
 					ref={notesInfoSidebarHostRef}
 					className="notesInfoSidebarHost"

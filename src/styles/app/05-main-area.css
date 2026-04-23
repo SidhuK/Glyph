@@ -737,7 +737,7 @@
 	backdrop-filter: none;
 	-webkit-backdrop-filter: none;
 	border-left: 0 solid transparent;
-	transition: width 180ms ease, border-color 180ms ease;
+	transition: width 180ms ease, flex-basis 180ms ease, border-color 180ms ease;
 }
 
 .notesInfoSidebarResizeHandle {
@@ -794,6 +794,7 @@
 
 .mainTabsBar {
 	--main-tabs-right-reserve: 78px;
+
 	height: 40px;
 	display: flex;
 	align-items: center;

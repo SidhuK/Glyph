@@ -128,15 +128,7 @@
 	flex: 0 0 auto;
 }
 
-.sidebarFooter .sidebarQuickActionBtn.sidebarFooterSettingsButton {
-	flex: 0 0 28px;
-	width: 28px;
-	min-width: 28px;
-	min-height: 28px;
-	padding: 0;
-	justify-content: center;
-}
-
+.sidebarFooter .sidebarQuickActionBtn.sidebarFooterSettingsButton,
 .sidebarFooter .sidebarQuickActionBtn.sidebarFooterGitButton {
 	flex: 0 0 28px;
 	width: 28px;

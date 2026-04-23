@@ -589,6 +589,7 @@ pub async fn databases_create_row(
 pub async fn databases_preview_context(
     state: State<'_, SpaceState>,
     note_path: String,
+    _space_path: Option<String>,
 ) -> Result<DatabasePreviewContext, String> {
     let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || {

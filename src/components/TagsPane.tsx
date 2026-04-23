@@ -30,8 +30,24 @@ export interface PeopleRow {
 }
 
 export function buildTagTreeRows(tags: TagCount[]): TagTreeRow[] {
+	const isAncestorTag = (ancestor: string, descendant: string): boolean =>
+		descendant.startsWith(`${ancestor}/`);
+
 	return [...tags]
-		.sort((left, right) => right.total_count - left.total_count)
+		.sort((left, right) => {
+			if (isAncestorTag(left.tag, right.tag)) {
+				return -1;
+			}
+			if (isAncestorTag(right.tag, left.tag)) {
+				return 1;
+			}
+
+			if (right.total_count !== left.total_count) {
+				return right.total_count - left.total_count;
+			}
+
+			return left.tag.localeCompare(right.tag);
+		})
 		.map((tag) => ({
 			tag: tag.tag,
 			label: tag.tag.split("/").pop() ?? tag.tag,

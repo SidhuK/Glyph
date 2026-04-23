@@ -64,6 +64,22 @@ function formatMetadataDate(value: string | null | undefined): string {
 	});
 }
 
+function formatFileSize(bytes: number): string {
+	if (!Number.isFinite(bytes) || bytes < 0) return "—";
+	const units = ["B", "KB", "MB", "GB", "TB"];
+	let size = bytes;
+	let unitIndex = 0;
+	while (size >= 1024 && unitIndex < units.length - 1) {
+		size /= 1024;
+		unitIndex += 1;
+	}
+	const fractionDigits =
+		unitIndex === 0 ? 0 : size >= 100 ? 0 : size >= 10 ? 1 : 2;
+	return `${size.toLocaleString(undefined, {
+		maximumFractionDigits: fractionDigits,
+	})} ${units[unitIndex]}`;
+}
+
 export function NotesInfoSidebar({
 	open,
 	mode,
@@ -246,10 +262,9 @@ export function NotesInfoSidebar({
 							<span>Modified</span>
 							<strong>
 								{formatMetadataDate(
-									previewContext?.updated ??
-										(lastSavedMtimeMs
-											? new Date(lastSavedMtimeMs).toISOString()
-											: null),
+									lastSavedMtimeMs
+										? new Date(lastSavedMtimeMs).toISOString()
+										: (previewContext?.updated ?? null),
 								)}
 							</strong>
 						</div>
@@ -265,7 +280,7 @@ export function NotesInfoSidebar({
 						</div>
 						<div className="markdownEditorInfoRow">
 							<span>Size</span>
-							<strong>{utf8SizeBytes.toLocaleString()} B</strong>
+							<strong>{formatFileSize(utf8SizeBytes)}</strong>
 						</div>
 						<div className="markdownEditorInfoRow">
 							<span>Save status</span>

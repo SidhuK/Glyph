@@ -398,6 +398,9 @@ export const SidebarContent = memo(function SidebarContent({
 							className="sidebarQuickActionBtn sidebarNavBtn"
 							data-kind="dashboard"
 							data-expanded={activeTopSection === "home" ? "true" : "false"}
+							aria-label="Home"
+							aria-pressed={activeTopSection === "home"}
+							aria-current={activeTopSection === "home" ? "page" : undefined}
 							onClick={onOpenCalendar}
 							onMouseEnter={onPrefetchCalendar}
 							onFocus={onPrefetchCalendar}
@@ -417,7 +420,18 @@ export const SidebarContent = memo(function SidebarContent({
 							type="button"
 							className="sidebarQuickActionBtn sidebarNavBtn"
 							data-kind="all-notes"
-							data-expanded={activeTopSection === "all-notes" ? "true" : "false"}
+							data-expanded={
+								activeTopSection === "all-notes" ? "true" : "false"
+							}
+							aria-label={
+								allNotesCount !== null
+									? `All Notes (${allNotesCount})`
+									: "All Notes"
+							}
+							aria-pressed={activeTopSection === "all-notes"}
+							aria-current={
+								activeTopSection === "all-notes" ? "page" : undefined
+							}
 							onClick={onOpenAllDocs}
 							onMouseEnter={onPrefetchAllDocs}
 							onFocus={onPrefetchAllDocs}
@@ -439,7 +453,14 @@ export const SidebarContent = memo(function SidebarContent({
 							type="button"
 							className="sidebarQuickActionBtn sidebarNavBtn"
 							data-kind="databases"
-							data-expanded={activeTopSection === "databases" ? "true" : "false"}
+							data-expanded={
+								activeTopSection === "databases" ? "true" : "false"
+							}
+							aria-label="Collections"
+							aria-pressed={activeTopSection === "databases"}
+							aria-current={
+								activeTopSection === "databases" ? "page" : undefined
+							}
 							onClick={() => {
 								onOpenDatabases();
 							}}
@@ -476,11 +497,7 @@ export const SidebarContent = memo(function SidebarContent({
 								title="Recent Files"
 								data-kind="recent"
 							>
-								<HugeiconsIcon
-									icon={Clock01Icon}
-									size={14}
-									strokeWidth={0.9}
-								/>
+								<HugeiconsIcon icon={Clock01Icon} size={14} strokeWidth={0.9} />
 								{sidebarViewMode === "recent" ? (
 									<span>Recent Files</span>
 								) : null}

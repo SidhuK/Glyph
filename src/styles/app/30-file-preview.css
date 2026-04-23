@@ -355,7 +355,6 @@
 }
 
 .markdownEditorMenuTrigger:hover,
-.markdownEditorMenuTrigger:focus-visible,
 .markdownEditorMenuTrigger[data-open="true"] {
 	border: none;
 	background: transparent;
@@ -363,6 +362,11 @@
 	outline: none;
 	color: var(--text-secondary);
 	transform: none;
+}
+
+.markdownEditorMenuTrigger:focus-visible {
+	outline: 2px solid var(--focus);
+	outline-offset: 2px;
 }
 
 .markdownEditorAiTrigger svg {
@@ -461,8 +465,8 @@
 }
 
 .markdownEditorInfoClose:focus-visible {
-	outline: none;
-	box-shadow: none;
+	outline: 2px solid var(--focus);
+	outline-offset: 2px;
 }
 
 .markdownEditorInfoClose > span {
@@ -727,6 +731,20 @@
 	body.glyphPrintEditorMode .glyphPrintEditorTarget .markdownEditorStatsDock,
 	body.glyphPrintEditorMode .glyphPrintEditorTarget .floatingToc {
 		display: none !important;
+	}
+
+	body.glyphPrintEditorMode .glyphPrintEditorTarget .notesInfoSidebarPanel {
+		display: none !important;
+	}
+
+	body.glyphPrintEditorMode .glyphPrintEditorTarget .notesInfoSidebarHost,
+	body.glyphPrintEditorMode
+		.glyphPrintEditorTarget
+		.notesInfoSidebarResizeHandle {
+		display: none !important;
+		width: 0 !important;
+		flex: 0 0 0 !important;
+		border: 0 !important;
 	}
 
 	body.glyphPrintEditorMode .glyphPrintEditorTarget .markdownEditorContent,

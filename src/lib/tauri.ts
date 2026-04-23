@@ -901,7 +901,7 @@ interface TauriCommands {
 		DatabaseCreateRowResult
 	>;
 	databases_preview_context: CommandDef<
-		{ note_path: string },
+		{ note_path: string; space_path?: string | null },
 		WorkspaceDatabasePreviewContext
 	>;
 	index_rebuild: CommandDef<void, IndexRebuildResult>;
@@ -975,7 +975,10 @@ interface TauriCommands {
 		{ note_paths: string[] },
 		NoteTaskSummaryItem[]
 	>;
-	backlinks: CommandDef<{ note_id: string }, BacklinkItem[]>;
+	backlinks: CommandDef<
+		{ note_id: string; space_path?: string | null },
+		BacklinkItem[]
+	>;
 	note_local_graph: CommandDef<{ note_id: string }, LocalNoteGraph>;
 	link_preview: CommandDef<{ url: string; force?: boolean }, LinkPreview>;
 	web_clip_save: CommandDef<

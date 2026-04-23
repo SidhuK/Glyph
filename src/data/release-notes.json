@@ -1,6 +1,41 @@
 {
 	"versions": [
 		{
+			"version": "0.2.11",
+			"publishedAt": "2026-04-23",
+			"sections": [
+				{
+					"category": "Added",
+					"items": [
+						"Collapse or expand every heading from the command palette for instant document control",
+						"New resizable Notes Info Sidebar with metadata, properties, word and character count, reading time, task progress, outline, backlinks, linked notes, and file details in one place",
+						"Search Notes button added directly in the sidebar so jumping between notes is always one click away",
+						"New keyboard shortcut (Meta+Shift+I) to instantly toggle the Notes Info Sidebar"
+					]
+				},
+				{
+					"category": "Improved",
+					"items": [
+						"Default app typeface is now Geist for a cleaner and more modern reading experience",
+						"Tab bar UI has been cleaned up with smoother hover behavior and a tidier visual rhythm",
+						"Sidebar navigation is now restructured with clearer active states for faster orientation",
+						"Updated the \"Recent\" section label for better clarity",
+						"Simplified the Git Sync footer action into a compact icon-only control",
+						"Refined Notes Info Sidebar layout with cleaner sections for Backlinks, Linked Notes, Tasks Overview, Stats, and Properties",
+						"Refreshed AI icons across the interface for better visual consistency",
+						"Updated core dependencies with security patches and maintenance fixes"
+					]
+				},
+				{
+					"category": "Fixed",
+					"items": [
+						"Tags now sort by frequency instead of alphabetical order, so the most relevant tags surface first",
+						"Test coverage now validates save status behavior through the Notes Info Sidebar"
+					]
+				}
+			]
+		},
+		{
 			"version": "0.2.10",
 			"publishedAt": "2026-04-22",
 			"sections": [

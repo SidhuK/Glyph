@@ -1223,6 +1223,7 @@ pub async fn task_summaries_for_paths(
 pub async fn backlinks(
     state: State<'_, SpaceState>,
     note_id: String,
+    _space_path: Option<String>,
 ) -> Result<Vec<BacklinkItem>, String> {
     let root = state.current_root()?;
     tauri::async_runtime::spawn_blocking(move || -> Result<Vec<BacklinkItem>, String> {
