@@ -194,6 +194,36 @@ vi.mock("../ui/shadcn/dialog", () => ({
 	),
 }));
 
+vi.mock("../ui/shadcn/context-menu", () => ({
+	ContextMenu: ({ children }: { children: React.ReactNode }) => <>{children}</>,
+	ContextMenuTrigger: ({ children }: { children: React.ReactNode }) => (
+		<>{children}</>
+	),
+	ContextMenuContent: ({ children }: { children: React.ReactNode }) => (
+		<div>{children}</div>
+	),
+	ContextMenuItem: ({
+		children,
+		onSelect,
+	}: {
+		children: React.ReactNode;
+		onSelect?: () => void;
+	}) => (
+		<button type="button" onClick={onSelect}>
+			{children}
+		</button>
+	),
+	ContextMenuSub: ({ children }: { children: React.ReactNode }) => (
+		<div>{children}</div>
+	),
+	ContextMenuSubContent: ({ children }: { children: React.ReactNode }) => (
+		<div>{children}</div>
+	),
+	ContextMenuSubTrigger: ({ children }: { children: React.ReactNode }) => (
+		<div>{children}</div>
+	),
+}));
+
 vi.mock("../ui/shadcn/input", () => ({
 	Input: (props: React.InputHTMLAttributes<HTMLInputElement>) => (
 		<input {...props} />
@@ -380,7 +410,7 @@ describe("CanvasNoteInlineEditor table controls", () => {
 			rowButton?.dispatchEvent(new MouseEvent("mousedown", { bubbles: true }));
 			rowButton?.click();
 		});
-		expect(chainCommands.focus).toHaveBeenCalledWith(undefined, {
+		expect(chainCommands.focus).toHaveBeenCalledWith(null, {
 			scrollIntoView: false,
 		});
 		expect(chainCommands.addRowAfter).toHaveBeenCalled();
@@ -395,7 +425,7 @@ describe("CanvasNoteInlineEditor table controls", () => {
 			);
 			columnButton?.click();
 		});
-		expect(chainCommands.focus).toHaveBeenCalledWith(undefined, {
+		expect(chainCommands.focus).toHaveBeenCalledWith(null, {
 			scrollIntoView: false,
 		});
 		expect(chainCommands.addColumnAfter).toHaveBeenCalled();

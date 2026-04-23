@@ -61,7 +61,7 @@ export function isUiAccent(value: unknown): value is UiAccent {
 	return typeof value === "string" && UI_ACCENTS.has(value as UiAccent);
 }
 const DEFAULT_UI_ACCENT: UiAccent = "cerulean";
-const DEFAULT_UI_FONT_FAMILY = "Satoshi";
+const DEFAULT_UI_FONT_FAMILY = "Geist";
 const DEFAULT_UI_MONO_FONT_FAMILY = "JetBrains Mono";
 const DEFAULT_AUTO_UPDATE_CHECK_INTERVAL: AutoUpdateCheckInterval = "3h";
 const DEFAULT_SHOW_TASK_PROGRESS_INDICATOR = true;
@@ -189,6 +189,7 @@ function asUiFontFamily(value: unknown): UiFontFamily {
 	if (typeof value !== "string") return DEFAULT_UI_FONT_FAMILY;
 	const trimmed = value.trim();
 	if (!trimmed) return DEFAULT_UI_FONT_FAMILY;
+	if (trimmed === "Satoshi") return DEFAULT_UI_FONT_FAMILY;
 	return trimmed.slice(0, 80);
 }
 
@@ -532,6 +533,13 @@ export async function loadSettings(): Promise<AppSettings> {
 	const darkThemeId = asUiDarkThemeId(rawDarkThemeId);
 	const accent = asUiAccent(rawAccent);
 	const fontFamily = asUiFontFamily(rawFontFamily);
+	if (
+		typeof rawFontFamily === "string" &&
+		rawFontFamily.trim() === "Satoshi" &&
+		fontFamily === DEFAULT_UI_FONT_FAMILY
+	) {
+		await store.set(KEYS.fontFamily, DEFAULT_UI_FONT_FAMILY);
+	}
 	const monoFontFamily = asUiMonoFontFamily(rawMonoFontFamily);
 	const fontSize = asUiFontSize(rawFontSize);
 	const editorFontSize =
