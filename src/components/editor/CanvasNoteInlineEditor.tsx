@@ -488,7 +488,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	}, [canEdit, editor, mode]);
 
 	useEffect(() => {
-		if (!editor || mode !== "rich" || !canEdit) return;
+		if (!editor || mode !== "rich") return;
 
 		const runEditorAction = (action: string) => {
 			const host = tiptapHostRef.current;
@@ -507,6 +507,9 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 				".rfNodeNoteEditorBody",
 			) as HTMLElement | null;
 			const scrollTop = scrollHost?.scrollTop ?? 0;
+			const isReadOnlySafeAction =
+				action === "collapse_all_headings" || action === "expand_all_headings";
+			if (!canEdit && !isReadOnlySafeAction) return;
 			const chain = editor
 				.chain()
 				.focus(null, { scrollIntoView: false })
@@ -1181,6 +1184,14 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		}
 		setDueDate(next);
 	};
+	const focusTaskDateField = useCallback(
+		(field: "scheduled" | "due") => {
+			setActiveDateField(field);
+			const nextValue = field === "scheduled" ? scheduledDate : dueDate;
+			setPickerMonth(safeParseISO(nextValue) ?? new Date());
+		},
+		[dueDate, scheduledDate],
+	);
 
 	const applyCodeBlockLanguage = (language: SupportedCodeBlockLanguage) => {
 		if (!editor) return;
@@ -1451,6 +1462,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 							onOpenPopover: openTaskPopover,
 							activeDateField,
 							onActiveDateFieldChange: setActiveDateField,
+							onFocusDateField: focusTaskDateField,
 							pickerMonth,
 							onPickerMonthChange: setPickerMonth,
 							scheduledDate,

@@ -11,6 +11,7 @@ import { HugeiconsIcon } from "@hugeicons/react";
 import type { Editor } from "@tiptap/core";
 import { EditorContent } from "@tiptap/react";
 import { addMonths } from "date-fns";
+import DOMPurify from "dompurify";
 import { AnimatePresence } from "motion/react";
 import { memo, useEffect, useRef, useState } from "react";
 import {
@@ -102,7 +103,16 @@ function MermaidPreviewPanel({
 		host.replaceChildren();
 		if (!svg) return;
 
-		const doc = new DOMParser().parseFromString(svg, "image/svg+xml");
+		const sanitizedSvg = DOMPurify.sanitize(svg, {
+			USE_PROFILES: { svg: true, svgFilters: true },
+			FORBID_TAGS: ["foreignObject", "script"],
+		});
+		if (typeof sanitizedSvg !== "string" || !sanitizedSvg.trim()) {
+			setError("Unable to render Mermaid diagram.");
+			setSvg("");
+			return;
+		}
+		const doc = new DOMParser().parseFromString(sanitizedSvg, "image/svg+xml");
 		const svgElement = doc.documentElement;
 		if (svgElement.tagName.toLowerCase() !== "svg") {
 			setError("Unable to render Mermaid diagram.");
@@ -176,6 +186,7 @@ export interface CanvasNoteEditorSurfaceProps {
 		}) => void;
 		activeDateField: "scheduled" | "due";
 		onActiveDateFieldChange: (field: "scheduled" | "due") => void;
+		onFocusDateField: (field: "scheduled" | "due") => void;
 		pickerMonth: Date;
 		onPickerMonthChange: (date: Date | ((prev: Date) => Date)) => void;
 		scheduledDate: string;
@@ -408,6 +419,7 @@ export const CanvasNoteEditorSurface = memo(function CanvasNoteEditorSurface({
 							className="taskInlineDateBtn"
 							style={{
 								top: `${task.selectedAnchor.top}px`,
+								left: `${task.selectedAnchor.left}px`,
 							}}
 							onClick={() => {
 								if (!task.selectedAnchor) return;
@@ -434,7 +446,7 @@ export const CanvasNoteEditorSurface = memo(function CanvasNoteEditorSurface({
 								type="button"
 								className="tasksDateFieldCard"
 								data-active={task.activeDateField === "scheduled"}
-								onClick={() => task.onActiveDateFieldChange("scheduled")}
+								onClick={() => task.onFocusDateField("scheduled")}
 							>
 								<span className="tasksDateFieldLabel">Scheduled</span>
 								<span
@@ -448,7 +460,7 @@ export const CanvasNoteEditorSurface = memo(function CanvasNoteEditorSurface({
 								type="button"
 								className="tasksDateFieldCard"
 								data-active={task.activeDateField === "due"}
-								onClick={() => task.onActiveDateFieldChange("due")}
+								onClick={() => task.onFocusDateField("due")}
 							>
 								<span className="tasksDateFieldLabel">Due</span>
 								<span
@@ -584,25 +596,35 @@ export const CanvasNoteEditorSurface = memo(function CanvasNoteEditorSurface({
 						<div className="editorBacklinksLabel">
 							Linked mentions ({backlinks.items.length})
 						</div>
-						{backlinks.items.map((item) => (
-							<button
-								key={item.id}
-								type="button"
-								className="editorBacklinkInline"
-								onClick={() =>
-									dispatchWikiLinkClick({
-										raw: `[[${item.id}]]`,
-										target: item.id,
-										alias: null,
-										anchorKind: "none",
-										anchor: null,
-										unresolved: false,
-									})
-								}
-							>
-								{item.title || item.id}
-							</button>
-						))}
+						{backlinks.items.map((item) =>
+							backlinks.interactive ? (
+								<button
+									key={item.id}
+									type="button"
+									className="editorBacklinkInline"
+									onClick={() =>
+										dispatchWikiLinkClick({
+											raw: `[[${item.id}]]`,
+											target: item.id,
+											alias: null,
+											anchorKind: "none",
+											anchor: null,
+											unresolved: false,
+										})
+									}
+								>
+									{item.title || item.id}
+								</button>
+							) : (
+								<span
+									key={item.id}
+									className="editorBacklinkInline"
+									aria-disabled
+								>
+									{item.title || item.id}
+								</span>
+							),
+						)}
 					</div>
 				</div>
 			) : null}

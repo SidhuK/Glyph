@@ -189,6 +189,7 @@ function asUiFontFamily(value: unknown): UiFontFamily {
 	if (typeof value !== "string") return DEFAULT_UI_FONT_FAMILY;
 	const trimmed = value.trim();
 	if (!trimmed) return DEFAULT_UI_FONT_FAMILY;
+	if (trimmed === "Satoshi") return DEFAULT_UI_FONT_FAMILY;
 	return trimmed.slice(0, 80);
 }
 
@@ -532,6 +533,13 @@ export async function loadSettings(): Promise<AppSettings> {
 	const darkThemeId = asUiDarkThemeId(rawDarkThemeId);
 	const accent = asUiAccent(rawAccent);
 	const fontFamily = asUiFontFamily(rawFontFamily);
+	if (
+		typeof rawFontFamily === "string" &&
+		rawFontFamily.trim() === "Satoshi" &&
+		fontFamily === DEFAULT_UI_FONT_FAMILY
+	) {
+		await store.set(KEYS.fontFamily, DEFAULT_UI_FONT_FAMILY);
+	}
 	const monoFontFamily = asUiMonoFontFamily(rawMonoFontFamily);
 	const fontSize = asUiFontSize(rawFontSize);
 	const editorFontSize =
