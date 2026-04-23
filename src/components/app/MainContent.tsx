@@ -1,7 +1,6 @@
-import { AiChat02Icon } from "@hugeicons/core-free-icons";
-import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import {
+	type CSSProperties,
 	type Dispatch,
 	type ReactNode,
 	type SetStateAction,
@@ -19,6 +18,7 @@ import {
 	useSpace,
 	useUILayoutContext,
 } from "../../contexts";
+import { useResizablePanel } from "../../hooks/useResizablePanel";
 import { AI_AGENT_TAB_ID } from "../../lib/aiAgent";
 import { ALL_DOCS_TAB_ID } from "../../lib/allDocs";
 import {
@@ -416,7 +416,9 @@ export const MainContent = memo(function MainContent({
 	const [starterOverrideVisible, setStarterOverrideVisible] = useState(false);
 	const [dailyNoteSetupToastVisible, setDailyNoteSetupToastVisible] =
 		useState(false);
+	const [infoSidebarWidth, setInfoSidebarWidth] = useState(340);
 	const handledShowGettingStartedRequestRef = useRef(0);
+	const notesInfoSidebarHostRef = useRef<HTMLDivElement | null>(null);
 	const activeTab = useMemo(
 		() => tabs.find((tab) => tab.id === activeTabId) ?? null,
 		[tabs, activeTabId],
@@ -486,6 +488,21 @@ export const MainContent = memo(function MainContent({
 		Boolean(spacePath) &&
 		(showStarterByDefault || (starterOverrideVisible && !activeTabPath));
 	const showTabBar = tabs.length > 0;
+	const infoSidebarResize = useResizablePanel({
+		min: 260,
+		max: 620,
+		disabled: zenModeActive,
+		direction: "left",
+		onResize: setInfoSidebarWidth,
+		currentWidth: infoSidebarWidth,
+	});
+	const notesInfoSidebarHostStyle = useMemo<CSSProperties>(
+		() =>
+			({
+				"--markdown-info-sidebar-width": `${infoSidebarWidth}px`,
+			}) as CSSProperties,
+		[infoSidebarWidth],
+	);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -551,6 +568,15 @@ export const MainContent = memo(function MainContent({
 			window.clearTimeout(timeout);
 		};
 	}, [dailyNotesFolder, openDatabasesId, spacePath, templateFolder]);
+
+	const handleInfoSidebarResizePointerDown = useCallback(
+		(event: React.PointerEvent<HTMLDivElement>) => {
+			const host = notesInfoSidebarHostRef.current;
+			if (!host || host.childElementCount === 0 || zenModeActive) return;
+			infoSidebarResize.handlePointerDown(event);
+		},
+		[infoSidebarResize, zenModeActive],
+	);
 
 	const content = useMemo(() => {
 		if (!viewerPath) return null;
@@ -875,18 +901,23 @@ export const MainContent = memo(function MainContent({
 							onToggle={() => setAiPanelOpen((open) => !open)}
 						/>
 					) : null}
-					{aiEnabled && !aiPanelOpen && !zenModeActive ? (
-						<button
-							type="button"
-							className="mainAiFloatingToggle"
-							onClick={() => setAiPanelOpen((open) => !open)}
-							aria-label="Open AI panel"
-							title="Open AI panel"
-						>
-							<HugeiconsIcon icon={AiChat02Icon} size={32} strokeWidth={0.9} />
-						</button>
-					) : null}
 				</div>
+				<div
+					ref={infoSidebarResize.resizeRef}
+					className="notesInfoSidebarResizeHandle"
+					onPointerDown={handleInfoSidebarResizePointerDown}
+					onPointerMove={infoSidebarResize.handlePointerMove}
+					onPointerUp={infoSidebarResize.handlePointerUp}
+					data-window-drag-ignore
+					style={{ cursor: zenModeActive ? "default" : "col-resize" }}
+				/>
+				<div
+					id="notes-info-sidebar-root"
+					ref={notesInfoSidebarHostRef}
+					className="notesInfoSidebarHost"
+					aria-live="polite"
+					style={notesInfoSidebarHostStyle}
+				/>
 			</div>
 		</main>
 	);

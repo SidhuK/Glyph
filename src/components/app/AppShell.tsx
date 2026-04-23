@@ -1,6 +1,6 @@
 import { cn } from "@/lib/utils";
 import {
-	AiChat02Icon,
+	AiEditingIcon,
 	ArrowLeft,
 	ArrowRight,
 	Calendar03Icon,
@@ -66,6 +66,7 @@ import {
 	dispatchForceNoteEditMode,
 	dispatchOpenLocalGraph,
 	dispatchPathRemoved,
+	dispatchToggleNoteInfoSidebar,
 	dispatchZenModeWillToggle,
 } from "../../lib/appEvents";
 import { CALENDAR_TAB_ID } from "../../lib/calendar";
@@ -890,6 +891,14 @@ export function AppShell() {
 		],
 		[],
 	);
+	const activeTopSection = useMemo<
+		"home" | "all-notes" | "databases" | null
+	>(() => {
+		if (activeTabId === CALENDAR_TAB_ID) return "home";
+		if (activeTabId === ALL_DOCS_TAB_ID) return "all-notes";
+		if (activeTabId === DATABASES_TAB_ID) return "databases";
+		return null;
+	}, [activeTabId]);
 	const openSearchShortcuts = useMemo<Shortcut[]>(
 		() => [{ meta: true, key: "f" }],
 		[],
@@ -1316,7 +1325,7 @@ export function AppShell() {
 						id: "toggle-ai",
 						label: "Toggle AI",
 						icon: (
-							<HugeiconsIcon icon={AiChat02Icon} size={16} strokeWidth={0.9} />
+							<HugeiconsIcon icon={AiEditingIcon} size={16} strokeWidth={0.9} />
 						),
 						category: "AI",
 						shortcut: { meta: true, shift: true, key: "a" },
@@ -1349,7 +1358,7 @@ export function AppShell() {
 						id: "open-ai-agent",
 						label: "Open AI Agent",
 						icon: (
-							<HugeiconsIcon icon={AiChat02Icon} size={16} strokeWidth={0.9} />
+							<HugeiconsIcon icon={AiEditingIcon} size={16} strokeWidth={0.9} />
 						),
 						category: "AI",
 						enabled: Boolean(spacePath),
@@ -1530,6 +1539,25 @@ export function AppShell() {
 				action: () => {
 					if (!activeMarkdownTabPath) return;
 					dispatchOpenLocalGraph({ path: activeMarkdownTabPath });
+				},
+			},
+			{
+				id: "toggle-note-info-sidebar",
+				label: "Toggle note info sidebar",
+				icon: (
+					<HugeiconsIcon
+						icon={InformationCircleIcon}
+						size={16}
+						strokeWidth={0.9}
+					/>
+				),
+				category: "File Operations",
+				shortcut: { meta: true, shift: true, key: "i" },
+				enabled: Boolean(activeMarkdownTabPath),
+				allowInEditable: true,
+				action: () => {
+					if (!activeMarkdownTabPath) return;
+					dispatchToggleNoteInfoSidebar({ path: activeMarkdownTabPath });
 				},
 			},
 			{
@@ -1918,10 +1946,12 @@ export function AppShell() {
 				onOpenAllDocs={openAllDocsTab}
 				onOpenCalendar={openCalendarTab}
 				onOpenDatabases={(databaseId) => openDatabasesTab(databaseId)}
+				activeTopSection={activeTopSection}
 				onPrefetchCalendar={prefetchCalendarTab}
 				onPrefetchDatabases={prefetchDatabasesTab}
 				onPrefetchAllDocs={prefetchAllDocsTab}
 				onPrefetchFile={prefetchWorkspaceFile}
+				onOpenSearchPalette={openSearchPalette}
 				updateReady={autoUpdater.updateReady}
 				updateVersion={autoUpdater.updateVersion}
 				onInstallUpdate={autoUpdater.installAndRelaunch}

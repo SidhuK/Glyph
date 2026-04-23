@@ -46,7 +46,9 @@ export const RecentFilesPane = memo(function RecentFilesPane({
 			transition={springTransition}
 		>
 			<div className="tagsHeader">
-				<div className="tagsHeaderTitle">RECENT</div>
+				<div className="tagsHeaderTitle recentNotesHeaderTitle">
+					Recent Notes
+				</div>
 				<Button
 					type="button"
 					variant="ghost"

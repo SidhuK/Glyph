@@ -47,7 +47,7 @@ export function PropertyKindBadge({
 				<DropdownMenuContent
 					align="start"
 					sideOffset={6}
-					className="notePropertyKindMenu"
+					className="databasePickerMenu notePropertyKindMenu"
 				>
 					<DropdownMenuRadioGroup
 						value={resolvedKind}

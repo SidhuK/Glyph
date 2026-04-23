@@ -22,9 +22,11 @@
 		var(--app-frame-inline) +
 		2px
 	);
-	border: 1px solid color-mix(in srgb, var(--border-light) 62%, transparent);
+	border-style: solid;
+	border-color: color-mix(in srgb, var(--border-light) 62%, transparent);
+	border-width: 0 0 0 1px;
 	box-sizing: border-box;
-	box-shadow: 0 1px 4px color-mix(in srgb, var(--text-primary) 10%, transparent);
+	box-shadow: none;
 	transition: margin 220ms ease, border-radius 220ms ease, border-color 220ms
 		ease, box-shadow 220ms ease;
 }
@@ -50,7 +52,7 @@
 
 .mainArea.mainAreaZen {
 	border-color: color-mix(in srgb, var(--border-light) 22%, transparent);
-	box-shadow: 0 1px 4px color-mix(in srgb, var(--text-primary) 6%, transparent);
+	box-shadow: none;
 }
 
 .mainTabBarTransition {
@@ -725,17 +727,81 @@
 	position: relative;
 }
 
+.notesInfoSidebarHost {
+	flex: 0 0 0;
+	width: 0;
+	min-width: 0;
+	min-height: 0;
+	overflow: hidden;
+	background: transparent;
+	backdrop-filter: none;
+	-webkit-backdrop-filter: none;
+	border-left: 0 solid transparent;
+	transition: width 180ms ease, flex-basis 180ms ease, border-color 180ms ease;
+}
+
+.notesInfoSidebarResizeHandle {
+	position: relative;
+	flex: 0 0 auto;
+	width: 8px;
+	cursor: col-resize;
+	user-select: none;
+	-webkit-user-select: none;
+	background: transparent;
+	transition: none;
+	margin-left: -2px;
+	margin-right: -2px;
+}
+
+:root[data-translucent-app-frame="false"] .notesInfoSidebarResizeHandle {
+	margin-left: -4px;
+	margin-right: -4px;
+}
+
+.notesInfoSidebarResizeHandle::before {
+	content: "";
+	position: absolute;
+	top: 0;
+	bottom: 0;
+	left: 50%;
+	width: 1px;
+	transform: translateX(-50%);
+	background: transparent;
+}
+
+.notesInfoSidebarResizeHandle.is-hidden {
+	width: 0;
+	margin-left: 0;
+	margin-right: 0;
+	pointer-events: none;
+}
+
+.notesInfoSidebarHost:not(:empty) {
+	flex-basis: var(--markdown-info-sidebar-width, 340px);
+	width: var(--markdown-info-sidebar-width, 340px);
+	border-left-width: 1px;
+	border-left-color: color-mix(in srgb, var(--border-light) 82%, transparent);
+}
+
+:root[data-translucent-sidebar="false"] .notesInfoSidebarHost:not(:empty) {
+	background: var(--bg-sidebar);
+	border-left-color: var(--border-light);
+}
+
 .mainTabsBarWrap {
 	flex-shrink: 0;
 }
 
 .mainTabsBar {
+	--main-tabs-right-reserve: 78px;
+
 	height: 40px;
 	display: flex;
 	align-items: center;
 	justify-content: flex-start;
 	gap: 8px;
-	padding: 0 var(--space-3);
+	padding: 0 calc(var(--space-3) + var(--main-tabs-right-reserve)) 0
+		var(--space-3);
 	border-bottom: 0;
 	background: var(--bg-primary);
 }
@@ -833,7 +899,7 @@
 .mainTabsStrip {
 	flex: 0 1 auto;
 	width: fit-content;
-	max-width: calc(100% - 40px);
+	max-width: calc(100% - 40px - var(--main-tabs-right-reserve));
 	min-width: 0;
 	display: flex;
 	align-items: center;
@@ -1022,35 +1088,11 @@
 	box-shadow: none;
 }
 
-.mainAiFloatingToggle {
-	position: absolute;
-	right: 20px;
-	bottom: 20px;
-	z-index: 20;
-	width: 48px;
-	height: 48px;
-	border-radius: var(--radius-full);
-	display: flex;
-	align-items: center;
-	justify-content: center;
-	border: none;
-	background: transparent;
-	color: var(--text-secondary);
-	cursor: pointer;
-	transition: color var(--transition-fast), background var(--transition-fast);
-}
-
-.mainAiFloatingToggle:hover {
-	color: var(--interactive-accent);
-	background: var(--bg-hover);
-}
-
 .mainTab:focus-visible,
 .mainTabClose:focus-visible,
 .mainTabAdd:focus-visible,
 .mainTabNavBtn:focus-visible,
-.mainTabsAiToggle:focus-visible,
-.mainAiFloatingToggle:focus-visible {
+.mainTabsAiToggle:focus-visible {
 	outline: 2px solid
 		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
 	outline-offset: 1px;

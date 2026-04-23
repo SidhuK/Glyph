@@ -113,6 +113,19 @@ vi.mock("../graph/LocalNoteGraphDialog", () => ({
 	},
 }));
 
+vi.mock("./NotesInfoSidebar", () => ({
+	NotesInfoSidebar: ({
+		open,
+		saveLabel,
+	}: {
+		open: boolean;
+		saveLabel: string;
+	}) =>
+		open ? (
+			<div data-testid="notes-info-sidebar">Save status {saveLabel}</div>
+		) : null,
+}));
+
 vi.mock("../ui/shadcn/button", () => ({
 	Button: ({
 		children,
@@ -148,6 +161,12 @@ describe("MarkdownEditorPane", () => {
 		...args:
 			| [command: "space_read_text", params: ReadTextArgs]
 			| [command: "space_write_text", params: WriteTextArgs]
+			| [command: "backlinks", params: { note_id: string }]
+			| [
+					command: "note_frontmatter_parse_properties",
+					params: { frontmatter?: string | null },
+			  ]
+			| [command: "databases_preview_context", params: { note_path: string }]
 			| [command: "task_summary", params: { markdown: string }]
 	) {
 		const [command, params] = args;
@@ -166,6 +185,26 @@ describe("MarkdownEditorPane", () => {
 				completed_count: 0,
 				open_count: 0,
 			});
+		}
+		if (command === "databases_preview_context") {
+			return Promise.resolve({
+				note_path: params.note_path,
+				title: "Note",
+				markdown: "",
+				created: "2026-04-23T10:00:00.000Z",
+				updated: "2026-04-23T10:00:00.000Z",
+				word_count: 0,
+				character_count: 0,
+				line_count: 1,
+				reading_time_minutes: 1,
+				backlinks: [],
+			});
+		}
+		if (command === "backlinks") {
+			return Promise.resolve([]);
+		}
+		if (command === "note_frontmatter_parse_properties") {
+			return Promise.resolve([]);
 		}
 		throw new Error(`Unexpected command: ${command satisfies never}`);
 	}
@@ -255,7 +294,7 @@ describe("MarkdownEditorPane", () => {
 		});
 	});
 
-	it("renders the bottom save indicator through dirty, saving, and saved states", async () => {
+	it("renders save status in info sidebar through dirty, saving, and saved states", async () => {
 		let resolveWrite:
 			| ((value: { etag: string; mtime_ms: number }) => void)
 			| null = null;
@@ -276,6 +315,26 @@ describe("MarkdownEditorPane", () => {
 					open_count: 0,
 				});
 			}
+			if (command === "databases_preview_context") {
+				return Promise.resolve({
+					note_path: params.note_path,
+					title: "Note",
+					markdown: "",
+					created: "2026-04-23T10:00:00.000Z",
+					updated: "2026-04-23T10:00:00.000Z",
+					word_count: 0,
+					character_count: 0,
+					line_count: 1,
+					reading_time_minutes: 1,
+					backlinks: [],
+				});
+			}
+			if (command === "backlinks") {
+				return Promise.resolve([]);
+			}
+			if (command === "note_frontmatter_parse_properties") {
+				return Promise.resolve([]);
+			}
 			throw new Error(`Unexpected command: ${command}`);
 		});
 
@@ -288,15 +347,24 @@ describe("MarkdownEditorPane", () => {
 			);
 		});
 
-		let saveState = container.querySelector(
-			'[data-metric="save-state"]',
-		) as HTMLElement | null;
-		expect(saveState).not.toBeNull();
-		expect(saveState?.dataset.saveState).toBe("saved");
-		expect(saveState?.textContent?.trim()).toBe("");
-		expect(
-			saveState?.parentElement?.lastElementChild?.getAttribute("data-metric"),
-		).toBe("save-state");
+		const actionsButton = Array.from(container.querySelectorAll("button")).find(
+			(button) => button.getAttribute("aria-label")?.includes("editor actions"),
+		);
+		expect(actionsButton).not.toBeNull();
+		await act(async () => {
+			actionsButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+		});
+
+		const infoButton = Array.from(container.querySelectorAll("button")).find(
+			(button) => button.textContent?.trim() === "Info",
+		);
+		expect(infoButton).not.toBeNull();
+		await act(async () => {
+			infoButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+		});
+
+		expect(container.textContent).toContain("Save status");
+		expect(container.textContent).toContain("Saved");
 
 		const changeButton = Array.from(container.querySelectorAll("button")).find(
 			(button) => button.textContent?.includes("Type latest text"),
@@ -307,32 +375,20 @@ describe("MarkdownEditorPane", () => {
 			changeButton?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
 		});
 
-		saveState = container.querySelector(
-			'[data-metric="save-state"]',
-		) as HTMLElement | null;
-		expect(saveState?.dataset.saveState).toBe("dirty");
-		expect(saveState?.textContent?.trim()).toBe("");
+		expect(container.textContent).toContain("Edited");
 
 		await act(async () => {
 			vi.advanceTimersByTime(900);
 		});
 
-		saveState = container.querySelector(
-			'[data-metric="save-state"]',
-		) as HTMLElement | null;
-		expect(saveState?.dataset.saveState).toBe("saving");
-		expect(saveState?.textContent?.trim()).toBe("");
+		expect(container.textContent).toContain("Saving");
 
 		await act(async () => {
 			resolveWrite?.({ etag: "notes/status.md-saved", mtime_ms: 2 });
 			await Promise.resolve();
 		});
 
-		saveState = container.querySelector(
-			'[data-metric="save-state"]',
-		) as HTMLElement | null;
-		expect(saveState?.dataset.saveState).toBe("saved-fresh");
-		expect(saveState?.textContent?.trim()).toBe("");
+		expect(container.textContent).toContain("Saved");
 	});
 
 	it("hides note chrome while zen mode is active", async () => {
@@ -350,11 +406,6 @@ describe("MarkdownEditorPane", () => {
 		expect(
 			container
 				.querySelector(".markdownEditorFloatActions")
-				?.classList.contains("is-zen-hidden"),
-		).toBe(true);
-		expect(
-			container
-				.querySelector(".markdownEditorStatsDock")
 				?.classList.contains("is-zen-hidden"),
 		).toBe(true);
 		expect(container.querySelector(".markdownEditorPaneZen")).toBeTruthy();

@@ -580,17 +580,13 @@
 }
 
 .sidebarFooterSettingsButton {
-	flex: 0 0 auto;
-	width: auto;
-	min-width: 0;
-	padding-right: var(--space-3);
+	flex: 0 0 28px;
+	width: 28px;
+	min-width: 28px;
+	min-height: 28px;
+	padding: 0;
+	justify-content: center;
 	-webkit-app-region: no-drag;
-}
-
-.sidebarFooterSettingsButtonSolo {
-	flex: 1 1 auto;
-	width: 100%;
-	padding-right: var(--space-2);
 }
 
 .sidebarFooterSettingsButton svg {
@@ -605,6 +601,7 @@
 	position: relative;
 	flex: 0 0 auto;
 	min-width: 0;
+	z-index: 30;
 }
 
 .sidebarFooterGitButton {
@@ -617,8 +614,10 @@
 
 .gitSyncFooterPanel {
 	position: absolute;
-	right: 0;
+	left: 0;
+	right: auto;
 	bottom: calc(100% + 10px);
+	z-index: 31;
 	width: 248px;
 	display: flex;
 	flex-direction: column;
@@ -774,6 +773,41 @@
 	outline: 2px solid
 		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
 	outline-offset: 2px;
+}
+
+.sidebarStack {
+	flex: 1;
+	min-height: 0;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+	gap: 0;
+	container-type: size;
+	container-name: sidebar-stack;
+}
+
+.sidebarStackItem {
+	flex: 0 0 180px;
+	min-height: 0;
+	overflow: hidden;
+	display: flex;
+	flex-direction: column;
+}
+
+.sidebarStackItemGrow {
+	flex: 1 1 0;
+}
+
+@container sidebar-stack (max-height: 460px) {
+	.sidebarStackItem[data-section="tags"] {
+		display: none;
+	}
+}
+
+@container sidebar-stack (max-height: 300px) {
+	.sidebarStackItem[data-section="recent"] {
+		display: none;
+	}
 }
 
 .spaceInfo {

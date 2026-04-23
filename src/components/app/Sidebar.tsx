@@ -36,10 +36,12 @@ interface SidebarProps {
 	onOpenAllDocs: () => void;
 	onOpenCalendar: () => void;
 	onOpenDatabases: (databaseId?: string | null) => void;
+	activeTopSection: "home" | "all-notes" | "databases" | null;
 	onPrefetchCalendar: () => void;
 	onPrefetchDatabases: (databaseId?: string | null) => void;
 	onPrefetchAllDocs: () => void;
 	onPrefetchFile: (relPath: string) => void;
+	onOpenSearchPalette: () => void;
 	updateReady: boolean;
 	updateVersion: string | null;
 	onInstallUpdate: () => void;
@@ -69,10 +71,12 @@ export const Sidebar = memo(function Sidebar({
 	onOpenAllDocs,
 	onOpenCalendar,
 	onOpenDatabases,
+	activeTopSection,
 	onPrefetchCalendar,
 	onPrefetchDatabases,
 	onPrefetchAllDocs,
 	onPrefetchFile,
+	onOpenSearchPalette,
 	updateReady,
 	updateVersion,
 	onInstallUpdate,
@@ -159,6 +163,8 @@ export const Sidebar = memo(function Sidebar({
 									gitSyncStatus={gitSyncStatus}
 									onOpenSettings={onOpenSettings}
 									onOpenAllDocs={onOpenAllDocs}
+									onOpenSearchPalette={onOpenSearchPalette}
+									activeTopSection={activeTopSection}
 								/>
 							</>
 						)}

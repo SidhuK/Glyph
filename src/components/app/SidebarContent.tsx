@@ -5,6 +5,7 @@ import {
 	Home01Icon,
 	LibraryIcon,
 	NoteIcon,
+	SearchIcon,
 	Settings01Icon,
 	Tag01Icon,
 	TaskAdd02Icon,
@@ -58,6 +59,8 @@ interface SidebarContentProps {
 	gitSyncStatus: GitSyncStatus | null;
 	onOpenSettings: () => void;
 	onOpenAllDocs: () => void;
+	onOpenSearchPalette: () => void;
+	activeTopSection: "home" | "all-notes" | "databases" | null;
 }
 
 export const SidebarContent = memo(function SidebarContent({
@@ -82,6 +85,8 @@ export const SidebarContent = memo(function SidebarContent({
 	gitSyncStatus,
 	onOpenSettings,
 	onOpenAllDocs,
+	onOpenSearchPalette,
+	activeTopSection,
 }: SidebarContentProps) {
 	// Contexts
 	const { spacePath } = useSpace();
@@ -374,55 +379,101 @@ export const SidebarContent = memo(function SidebarContent({
 							) : null}
 						</AnimatePresence>
 					</div>
+					<button
+						type="button"
+						className="sidebarQuickActionBtn sidebarSearchBtn"
+						onClick={onOpenSearchPalette}
+						title={`Search notes (${getShortcutTooltip({ meta: true, key: "p" })})`}
+					>
+						<HugeiconsIcon icon={SearchIcon} size={14} strokeWidth={0.9} />
+						<span className="sidebarQuickActionLabel">Search Notes</span>
+						<span className="sidebarSearchShortcut">
+							{getShortcutTooltip({ meta: true, key: "p" })}
+						</span>
+					</button>
 					<div className="sidebarQuickActionsSpacer" aria-hidden="true" />
-					<button
-						type="button"
-						className="sidebarQuickActionBtn"
-						data-kind="dashboard"
-						onClick={onOpenCalendar}
-						onMouseEnter={onPrefetchCalendar}
-						onFocus={onPrefetchCalendar}
-						title="Open Home"
-					>
-						<HugeiconsIcon
-							icon={Home01Icon}
-							size={14}
-							strokeWidth={0.9}
-							className="sidebarQuickActionHomeIcon"
-						/>
-						<span className="sidebarQuickActionLabel">Home</span>
-					</button>
-					<button
-						type="button"
-						className="sidebarQuickActionBtn"
-						data-kind="all-notes"
-						onClick={onOpenAllDocs}
-						onMouseEnter={onPrefetchAllDocs}
-						onFocus={onPrefetchAllDocs}
-						title="Open All Notes"
-					>
-						<HugeiconsIcon
-							icon={CollectionsBookmarkIcon}
-							size={14}
-							strokeWidth={0.9}
-						/>
-						<span className="sidebarQuickActionLabel">All Notes</span>
-						{allNotesCount !== null ? (
-							<span className="sidebarQuickActionCount">{allNotesCount}</span>
-						) : null}
-					</button>
-					<button
-						type="button"
-						className="sidebarQuickActionBtn"
-						data-kind="databases"
-						onClick={() => onOpenDatabases()}
-						onMouseEnter={() => onPrefetchDatabases()}
-						onFocus={() => onPrefetchDatabases()}
-						title="Open Collections"
-					>
-						<HugeiconsIcon icon={LibraryIcon} size={14} strokeWidth={0.9} />
-						<span className="sidebarQuickActionLabel">Collections</span>
-					</button>
+					<div className="sidebarNavRow">
+						<button
+							type="button"
+							className="sidebarQuickActionBtn sidebarNavBtn"
+							data-kind="dashboard"
+							data-expanded={activeTopSection === "home" ? "true" : "false"}
+							aria-label="Home"
+							aria-pressed={activeTopSection === "home"}
+							aria-current={activeTopSection === "home" ? "page" : undefined}
+							onClick={onOpenCalendar}
+							onMouseEnter={onPrefetchCalendar}
+							onFocus={onPrefetchCalendar}
+							title="Open Home"
+						>
+							<HugeiconsIcon
+								icon={Home01Icon}
+								size={14}
+								strokeWidth={0.9}
+								className="sidebarQuickActionHomeIcon"
+							/>
+							{activeTopSection === "home" ? (
+								<span className="sidebarQuickActionLabel">Home</span>
+							) : null}
+						</button>
+						<button
+							type="button"
+							className="sidebarQuickActionBtn sidebarNavBtn"
+							data-kind="all-notes"
+							data-expanded={
+								activeTopSection === "all-notes" ? "true" : "false"
+							}
+							aria-label={
+								allNotesCount !== null
+									? `All Notes (${allNotesCount})`
+									: "All Notes"
+							}
+							aria-pressed={activeTopSection === "all-notes"}
+							aria-current={
+								activeTopSection === "all-notes" ? "page" : undefined
+							}
+							onClick={onOpenAllDocs}
+							onMouseEnter={onPrefetchAllDocs}
+							onFocus={onPrefetchAllDocs}
+							title="Open All Notes"
+						>
+							<HugeiconsIcon
+								icon={CollectionsBookmarkIcon}
+								size={14}
+								strokeWidth={0.9}
+							/>
+							{activeTopSection === "all-notes" ? (
+								<span className="sidebarQuickActionLabel">All Notes</span>
+							) : null}
+							{activeTopSection === "all-notes" && allNotesCount !== null ? (
+								<span className="sidebarQuickActionCount">{allNotesCount}</span>
+							) : null}
+						</button>
+						<button
+							type="button"
+							className="sidebarQuickActionBtn sidebarNavBtn"
+							data-kind="databases"
+							data-expanded={
+								activeTopSection === "databases" ? "true" : "false"
+							}
+							aria-label="Collections"
+							aria-pressed={activeTopSection === "databases"}
+							aria-current={
+								activeTopSection === "databases" ? "page" : undefined
+							}
+							onClick={() => {
+								onOpenDatabases();
+							}}
+							onMouseEnter={() => onPrefetchDatabases()}
+							onFocus={() => onPrefetchDatabases()}
+							title="Open Collections"
+						>
+							<HugeiconsIcon icon={LibraryIcon} size={14} strokeWidth={0.9} />
+							{activeTopSection === "databases" ? (
+								<span className="sidebarQuickActionLabel">Collections</span>
+							) : null}
+						</button>
+					</div>
 				</div>
 				<div className="sidebarSectionHeader">
 					<Tabs
@@ -435,22 +486,31 @@ export const SidebarContent = memo(function SidebarContent({
 						<TabsList className="w-full rounded-full bg-transparent">
 							<TabsTrigger value="files" title="Files" data-kind="files">
 								<Files size={14} />
+								{sidebarViewMode === "files" ? <span>Files</span> : null}
 							</TabsTrigger>
 							<TabsTrigger value="tags" title="Tags" data-kind="tags">
 								<HugeiconsIcon icon={Tag01Icon} size={14} strokeWidth={0.9} />
+								{sidebarViewMode === "tags" ? <span>Tags</span> : null}
 							</TabsTrigger>
-							<TabsTrigger value="recent" title="Recent" data-kind="recent">
+							<TabsTrigger
+								value="recent"
+								title="Recent Files"
+								data-kind="recent"
+							>
 								<HugeiconsIcon icon={Clock01Icon} size={14} strokeWidth={0.9} />
+								{sidebarViewMode === "recent" ? (
+									<span>Recent Files</span>
+								) : null}
 							</TabsTrigger>
 						</TabsList>
 					</Tabs>
 				</div>
 				<AnimatePresence mode="wait">
-					{sidebarViewMode === "files" && (
+					{sidebarViewMode === "files" ? (
 						<m.div
 							key="files"
 							{...directionVariants.left}
-							transition={{ duration: 0.2 }}
+							transition={{ duration: 0.18 }}
 							className="sidebarSectionContent"
 						>
 							<FileTreePane
@@ -478,12 +538,30 @@ export const SidebarContent = memo(function SidebarContent({
 								onTogglePinnedFile={togglePinnedFile}
 							/>
 						</m.div>
-					)}
-					{sidebarViewMode === "tags" && (
+					) : null}
+					{sidebarViewMode === "recent" ? (
+						<m.div
+							key="recent"
+							{...directionVariants.right}
+							transition={{ duration: 0.18 }}
+							className="sidebarSectionContent"
+						>
+							<ScrollArea className="h-full">
+								<RecentFilesPane
+									recentFiles={recentFiles}
+									activeFilePath={activeFilePath}
+									onOpenFile={onOpenFile}
+									onPrefetchFile={onPrefetchFile}
+									onRefresh={() => void refreshRecentFiles()}
+								/>
+							</ScrollArea>
+						</m.div>
+					) : null}
+					{sidebarViewMode === "tags" ? (
 						<m.div
 							key="tags"
 							{...directionVariants.right}
-							transition={{ duration: 0.2 }}
+							transition={{ duration: 0.18 }}
 							className="sidebarSectionContent"
 						>
 							<ScrollArea className="h-full">
@@ -499,41 +577,20 @@ export const SidebarContent = memo(function SidebarContent({
 								/>
 							</ScrollArea>
 						</m.div>
-					)}
-					{sidebarViewMode === "recent" && (
-						<m.div
-							key="recent"
-							{...directionVariants.right}
-							transition={{ duration: 0.2 }}
-							className="sidebarSectionContent"
-						>
-							<ScrollArea className="h-full">
-								<RecentFilesPane
-									recentFiles={recentFiles}
-									activeFilePath={activeFilePath}
-									onOpenFile={onOpenFile}
-									onPrefetchFile={onPrefetchFile}
-									onRefresh={() => void refreshRecentFiles()}
-								/>
-							</ScrollArea>
-						</m.div>
-					)}
+					) : null}
 				</AnimatePresence>
 			</div>
 			<div className="sidebarFooter">
 				<button
 					type="button"
-					className={`sidebarQuickActionBtn sidebarFooterSettingsButton ${!showGitButton ? "sidebarFooterSettingsButtonSolo" : ""}`}
+					className="sidebarQuickActionBtn sidebarFooterSettingsButton"
 					onClick={onOpenSettings}
 					title="Open settings"
+					aria-label="Open settings"
 					data-kind="settings"
 				>
 					<HugeiconsIcon icon={Settings01Icon} size={14} strokeWidth={0.9} />
-					<span className="sidebarQuickActionLabel">Settings</span>
 				</button>
-				{showGitButton ? (
-					<div className="sidebarFooterSpacer" aria-hidden="true" />
-				) : null}
 				{showGitButton ? (
 					<GitSyncFooterCard
 						status={gitSyncStatus}

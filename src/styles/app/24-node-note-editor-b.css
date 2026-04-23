@@ -328,46 +328,51 @@ input.notePropertyValue {
 }
 
 .notePropertyKindMenu {
-	min-width: 110px;
-	padding: 4px;
-	border-radius: var(--radius-8);
-	border-color: color-mix(in srgb, var(--border-default) 70%, transparent);
-	background: color-mix(in srgb, var(--bg-primary) 96%, transparent);
-	box-shadow: var(--shadow-float);
+	min-width: 156px;
+	max-height: min(320px, calc(100vh - 24px));
+	overflow-y: auto;
 }
 
 .notePropertyKindOption {
-	gap: 4px;
-	padding: 3px 6px 3px 12px;
-	padding-right: 20px;
-	border-radius: var(--radius-md);
-	font-size: 11px;
+	min-height: 32px;
+	gap: 8px;
+	padding: 0 10px 0 12px;
+	border-radius: var(--database-control-radius, var(--radius-md));
+	font-size: 0.82rem;
 	color: var(--text-secondary);
 	position: relative;
+	transition: background-color 140ms ease, color 140ms ease;
+}
+
+.notePropertyKindOption[data-highlighted],
+.notePropertyKindOption:focus-visible {
+	background: var(--database-dropdown-hover, var(--bg-hover));
+	color: var(--text-primary);
+	outline: none;
 }
 
 .notePropertyKindOption[data-state="checked"] {
-	background: color-mix(in srgb, var(--interactive-accent) 10%, transparent);
+	background: color-mix(in srgb, var(--interactive-accent) 9%, transparent);
 	color: var(--text-primary);
 }
 
-.notePropertyKindOption[data-slot="dropdown-menu-radio-item"] .absolute {
-	position: absolute;
-	right: 4px;
-	left: auto;
+.notePropertyKindOption[data-slot="dropdown-menu-radio-item"] > .absolute {
+	display: none;
 }
 
 .notePropertyKindOptionIcon {
 	display: inline-flex;
 	align-items: center;
 	justify-content: center;
-	width: 14px;
-	height: 14px;
-	color: var(--text-secondary);
+	width: 15px;
+	height: 15px;
+	color: var(--text-tertiary);
+	flex: 0 0 15px;
 }
 
 .notePropertyKindOptionLabel {
 	font-weight: var(--font-medium);
+	letter-spacing: 0;
 }
 
 .notePropertyPills {
