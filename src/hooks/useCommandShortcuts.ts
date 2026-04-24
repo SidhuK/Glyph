@@ -1,104 +1,79 @@
 import { useEffect, useRef } from "react";
-import type { Command } from "../components/app/CommandPalette";
 import { type Shortcut, isShortcutMatch } from "../lib/shortcuts";
 
+export interface ShortcutHandler {
+	id: string;
+	shortcut: Shortcut | null | undefined;
+	action: () => void | Promise<void>;
+	enabled?: boolean;
+	allowInEditable?: boolean;
+}
+
 interface UseCommandShortcutsProps {
-	commands: Command[];
+	handlers: ShortcutHandler[];
 	paletteOpen: boolean;
-	onOpenPalette: () => void;
-	onOpenPaletteSearch: () => void;
 	onClosePalette: () => void;
-	openPaletteShortcuts: Shortcut[];
-	openSearchShortcuts: Shortcut[];
 }
 
 export function useCommandShortcuts({
-	commands,
+	handlers,
 	paletteOpen,
-	onOpenPalette,
-	onOpenPaletteSearch,
 	onClosePalette,
-	openPaletteShortcuts,
-	openSearchShortcuts,
 }: UseCommandShortcutsProps) {
-	const commandsRef = useRef(commands);
-	commandsRef.current = commands;
+	const handlersRef = useRef(handlers);
+	handlersRef.current = handlers;
 
 	const paletteOpenRef = useRef(paletteOpen);
 	paletteOpenRef.current = paletteOpen;
 
-	const openPaletteRef = useRef(onOpenPalette);
-	openPaletteRef.current = onOpenPalette;
-
-	const openSearchRef = useRef(onOpenPaletteSearch);
-	openSearchRef.current = onOpenPaletteSearch;
-
 	const closePaletteRef = useRef(onClosePalette);
 	closePaletteRef.current = onClosePalette;
 
-	const openPaletteShortcutsRef = useRef(openPaletteShortcuts);
-	openPaletteShortcutsRef.current = openPaletteShortcuts;
-
-	const openSearchShortcutsRef = useRef(openSearchShortcuts);
-	openSearchShortcutsRef.current = openSearchShortcuts;
-
 	useEffect(() => {
-		const handler = (e: KeyboardEvent) => {
-			if (openSearchShortcutsRef.current.some((s) => isShortcutMatch(e, s))) {
-				e.preventDefault();
-				openSearchRef.current();
-				return;
-			}
-
-			if (openPaletteShortcutsRef.current.some((s) => isShortcutMatch(e, s))) {
-				e.preventDefault();
-				openPaletteRef.current();
-				return;
-			}
-
-			const t = e.target;
-			const inEditableField =
-				t instanceof HTMLElement &&
-				(t.tagName === "INPUT" ||
-					t.tagName === "TEXTAREA" ||
-					t.isContentEditable);
-			if (inEditableField) {
-				if (!paletteOpenRef.current) {
-					for (const command of commandsRef.current) {
-						if (
-							command.allowInEditable !== true ||
-							command.enabled === false ||
-							!command.shortcut
-						) {
-							continue;
-						}
-						if (!isShortcutMatch(e, command.shortcut)) continue;
-						e.preventDefault();
-						void command.action();
-						return;
-					}
+		const handleMatchedShortcut = (
+			event: KeyboardEvent,
+			editableOnly: boolean,
+		) => {
+			for (const handler of handlersRef.current) {
+				if (!handler.shortcut || handler.enabled === false) continue;
+				if (editableOnly && handler.allowInEditable !== true) continue;
+				if (!editableOnly && handler.allowInEditable === true) {
+					// still allow editor-safe shortcuts in non-editable contexts
 				}
-				return;
+				if (!isShortcutMatch(event, handler.shortcut)) continue;
+				event.preventDefault();
+				void handler.action();
+				return true;
 			}
+			return false;
+		};
 
-			if (paletteOpenRef.current && e.key === "Escape") {
-				e.preventDefault();
+		const handler = (event: KeyboardEvent) => {
+			const target = event.target;
+			const inEditableField =
+				target instanceof HTMLElement &&
+				(target.tagName === "INPUT" ||
+					target.tagName === "TEXTAREA" ||
+					target.isContentEditable);
+
+			if (paletteOpenRef.current && event.key === "Escape") {
+				event.preventDefault();
 				closePaletteRef.current();
 				return;
 			}
 			if (paletteOpenRef.current) return;
 
-			for (const command of commandsRef.current) {
-				if (command.enabled === false || !command.shortcut) continue;
-				if (!isShortcutMatch(e, command.shortcut)) continue;
-				e.preventDefault();
-				void command.action();
+			if (inEditableField) {
+				handleMatchedShortcut(event, true);
 				return;
 			}
+
+			handleMatchedShortcut(event, false);
 		};
 
 		window.addEventListener("keydown", handler, { capture: true });
-		return () =>
+		return () => {
 			window.removeEventListener("keydown", handler, { capture: true });
+		};
 	}, []);
 }

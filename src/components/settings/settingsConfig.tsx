@@ -1,6 +1,7 @@
 import {
 	AiEditingIcon,
 	Archive02Icon,
+	CommandIcon,
 	ConstructionIcon,
 	GitBranchIcon,
 	Settings01Icon,
@@ -14,6 +15,7 @@ import { FolderOpen } from "../Icons/NavigationIcons";
 export type SettingsTab =
 	| "general"
 	| "appearance"
+	| "shortcuts"
 	| "ai"
 	| "space"
 	| "git"
@@ -47,6 +49,13 @@ export const SETTINGS_TABS: SettingsTabMeta[] = [
 		label: "Appearance",
 		renderIcon: () => (
 			<HugeiconsIcon icon={Sun03Icon} size={14} strokeWidth={0.9} />
+		),
+	},
+	{
+		id: "shortcuts",
+		label: "Shortcuts",
+		renderIcon: () => (
+			<HugeiconsIcon icon={CommandIcon} size={14} strokeWidth={0.9} />
 		),
 	},
 	{
@@ -98,7 +107,10 @@ const SETTINGS_TAB_GROUPS: SettingsTabGroup[] = [
 		label: "Workspace",
 		tabs: SETTINGS_TABS.filter(
 			(tab) =>
-				tab.id === "general" || tab.id === "appearance" || tab.id === "space",
+				tab.id === "general" ||
+				tab.id === "appearance" ||
+				tab.id === "shortcuts" ||
+				tab.id === "space",
 		),
 	},
 	{

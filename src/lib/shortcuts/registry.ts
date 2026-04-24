@@ -1,228 +1,627 @@
+import { EDITOR_ACTIONS } from "../../components/editor/editorActions";
 import type { Shortcut } from "./types";
 
-/**
- * Categories for organizing shortcuts in the UI
- */
+export type ShortcutActionId = string;
 export type ShortcutCategory =
+	| "workspace"
 	| "navigation"
-	| "file"
 	| "search"
+	| "file"
+	| "tabs"
+	| "ai"
 	| "editor"
-	| "canvas"
-	| "window";
+	| "settings";
 
-/**
- * Context where a shortcut is active
- */
-export type ShortcutContext =
-	| "global" // Always active
-	| "space" // Active when a space is open
-	| "editor" // Active when editor is focused
-	| "canvas"; // Active when canvas is focused
+export type ShortcutContext = "global" | "space" | "editor";
 
-/**
- * A complete shortcut definition with metadata
- */
-export interface ShortcutDefinition {
-	/** Unique identifier for the shortcut */
-	id: string;
-	/** The keyboard combination */
-	shortcut: Shortcut;
-	/** Human-readable label */
+export interface ShortcutActionDefinition {
+	id: ShortcutActionId;
 	label: string;
-	/** Longer description for help UI */
 	description: string;
-	/** Category for grouping in UI */
 	category: ShortcutCategory;
-	/** Context where this shortcut is active */
 	context: ShortcutContext;
-	/** Optional function to determine if shortcut should be enabled */
-	enabled?: () => boolean;
+	defaultBinding: Shortcut | null;
+	allowInEditable: boolean;
+	commandPalette: boolean;
+	menuId?: string;
 }
 
-/**
- * All keyboard shortcuts in the application.
- * This is the single source of truth for shortcut definitions.
- */
-export const SHORTCUTS = [
-	// ─────────────────────────────────────────────────────────────────────────
-	// Navigation
-	// ─────────────────────────────────────────────────────────────────────────
+const APP_SHORTCUT_ACTIONS: ShortcutActionDefinition[] = [
+	{
+		id: "open-command-palette",
+		label: "Open Command Palette",
+		description: "Open the command palette.",
+		category: "search",
+		context: "global",
+		defaultBinding: { meta: true, key: "k" },
+		allowInEditable: false,
+		commandPalette: false,
+	},
+	{
+		id: "open-search-palette",
+		label: "Open Search Palette",
+		description: "Open search in the command palette.",
+		category: "search",
+		context: "global",
+		defaultBinding: { meta: true, key: "f" },
+		allowInEditable: false,
+		commandPalette: false,
+	},
 	{
 		id: "toggle-sidebar",
-		shortcut: { meta: true, shift: true, key: "b" },
 		label: "Toggle Sidebar",
-		description: "Show or hide the file tree sidebar",
+		description: "Show or hide the file tree sidebar.",
 		category: "navigation",
 		context: "global",
+		defaultBinding: { meta: true, shift: true, key: "b" },
+		allowInEditable: false,
+		commandPalette: true,
 	},
 	{
-		id: "toggle-sidebar-alt",
-		shortcut: { meta: true, shift: true, key: "s" },
-		label: "Toggle Sidebar",
-		description: "Show or hide the file tree sidebar (alternative)",
-		category: "navigation",
-		context: "global",
-	},
-	{
-		id: "toggle-sidebar-backslash",
-		shortcut: { meta: true, key: "\\" },
-		label: "Toggle Sidebar",
-		description: "Show or hide the file tree sidebar (alternative)",
-		category: "navigation",
-		context: "global",
-	},
-	{
-		id: "toggle-ai-panel",
-		shortcut: { meta: true, shift: true, key: "a" },
+		id: "toggle-ai",
 		label: "Toggle AI Panel",
-		description: "Show or hide the AI assistant panel",
-		category: "navigation",
+		description: "Show or hide the AI assistant panel.",
+		category: "ai",
 		context: "space",
+		defaultBinding: { meta: true, shift: true, key: "a" },
+		allowInEditable: false,
+		commandPalette: true,
+		menuId: "ai.toggle",
 	},
-
-	// ─────────────────────────────────────────────────────────────────────────
-	// File Operations
-	// ─────────────────────────────────────────────────────────────────────────
+	{
+		id: "open-ai-agent",
+		label: "Open AI Agent",
+		description: "Open the AI agent workspace.",
+		category: "ai",
+		context: "space",
+		defaultBinding: null,
+		allowInEditable: false,
+		commandPalette: true,
+	},
 	{
 		id: "new-note",
-		shortcut: { meta: true, key: "n" },
 		label: "New Note",
-		description: "Create a new note in the current folder",
+		description: "Create a new note in the current folder.",
 		category: "file",
 		context: "space",
+		defaultBinding: { meta: true, key: "n" },
+		allowInEditable: false,
+		commandPalette: true,
+		menuId: "file.new_note",
+	},
+	{
+		id: "save-web-page",
+		label: "Save Web Page",
+		description: "Capture and save a web page into the current space.",
+		category: "file",
+		context: "space",
+		defaultBinding: null,
+		allowInEditable: false,
+		commandPalette: true,
 	},
 	{
 		id: "create-from-template",
-		shortcut: { meta: true, shift: true, key: "m" },
 		label: "Create From Template",
-		description: "Create a new note from a template",
+		description: "Create a new note from a template.",
 		category: "file",
 		context: "space",
+		defaultBinding: { meta: true, shift: true, key: "m" },
+		allowInEditable: false,
+		commandPalette: true,
+		menuId: "file.create_from_template",
 	},
 	{
-		id: "new-tab",
-		shortcut: { meta: true, key: "t" },
-		label: "New Tab",
-		description: "Open a blank tab so you can switch to another note there",
-		category: "navigation",
+		id: "new-database",
+		label: "New Collection",
+		description: "Create a new collection.",
+		category: "file",
 		context: "space",
+		defaultBinding: null,
+		allowInEditable: false,
+		commandPalette: true,
+	},
+	{
+		id: "new-folder",
+		label: "New Folder",
+		description: "Create a new folder.",
+		category: "file",
+		context: "space",
+		defaultBinding: null,
+		allowInEditable: false,
+		commandPalette: true,
+	},
+	{
+		id: "duplicate-current-note",
+		label: "Duplicate Current Note",
+		description: "Duplicate the current note.",
+		category: "file",
+		context: "space",
+		defaultBinding: null,
+		allowInEditable: false,
+		commandPalette: true,
 	},
 	{
 		id: "open-daily-note",
-		shortcut: { meta: true, shift: true, key: "d" },
 		label: "Open Daily Note",
-		description: "Open or create today's daily note",
+		description: "Open or create today's daily note.",
 		category: "file",
 		context: "space",
+		defaultBinding: { meta: true, shift: true, key: "d" },
+		allowInEditable: false,
+		commandPalette: true,
+		menuId: "file.open_daily_note",
+	},
+	{
+		id: "toggle-pin-active-file",
+		label: "Pin or Unpin Current File",
+		description: "Pin or unpin the active file.",
+		category: "file",
+		context: "space",
+		defaultBinding: null,
+		allowInEditable: true,
+		commandPalette: true,
 	},
 	{
 		id: "save-note",
-		shortcut: { meta: true, key: "s" },
 		label: "Save Note",
-		description: "Save the current note if modified",
+		description: "Save the current note if modified.",
 		category: "file",
 		context: "editor",
+		defaultBinding: { meta: true, key: "s" },
+		allowInEditable: true,
+		commandPalette: true,
+		menuId: "file.save_note",
 	},
 	{
 		id: "open-local-graph",
-		shortcut: { meta: true, shift: true, key: "g" },
 		label: "Open Local Graph",
-		description: "Open the connected notes graph for the current note",
+		description: "Open the local graph for the current note.",
 		category: "file",
 		context: "editor",
+		defaultBinding: { meta: true, shift: true, key: "g" },
+		allowInEditable: true,
+		commandPalette: true,
+	},
+	{
+		id: "toggle-note-info-sidebar",
+		label: "Toggle Note Info Sidebar",
+		description: "Show or hide the note info sidebar.",
+		category: "file",
+		context: "editor",
+		defaultBinding: { meta: true, shift: true, key: "i" },
+		allowInEditable: true,
+		commandPalette: true,
 	},
 	{
 		id: "copy-note-markdown",
-		shortcut: { meta: true, shift: true, key: "c" },
 		label: "Copy Note as Markdown",
-		description: "Copy the entire open note as markdown",
+		description: "Copy the current note as markdown.",
 		category: "file",
 		context: "editor",
+		defaultBinding: { meta: true, shift: true, key: "c" },
+		allowInEditable: true,
+		commandPalette: true,
+	},
+	{
+		id: "export-note-html",
+		label: "Export Note as HTML",
+		description: "Export the current note as HTML.",
+		category: "file",
+		context: "space",
+		defaultBinding: null,
+		allowInEditable: false,
+		commandPalette: true,
+		menuId: "file.export_html",
+	},
+	{
+		id: "print-editor-pane",
+		label: "Print Note",
+		description: "Print the current note.",
+		category: "file",
+		context: "space",
+		defaultBinding: null,
+		allowInEditable: false,
+		commandPalette: true,
+	},
+	{
+		id: "move-active-file",
+		label: "Move Active File",
+		description: "Move the current file to a different folder.",
+		category: "file",
+		context: "space",
+		defaultBinding: null,
+		allowInEditable: false,
+		commandPalette: true,
 	},
 	{
 		id: "close-preview",
-		shortcut: { meta: true, key: "w" },
 		label: "Close Preview",
-		description: "Close the current preview or note",
+		description: "Close the active preview pane.",
 		category: "file",
 		context: "space",
+		defaultBinding: null,
+		allowInEditable: false,
+		commandPalette: true,
 	},
 	{
 		id: "go-back-note",
-		shortcut: { meta: true, key: "[" },
 		label: "Go Back",
-		description: "Go back to the previous note in the current tab",
+		description: "Go back in the current tab's note history.",
 		category: "navigation",
 		context: "space",
+		defaultBinding: { meta: true, key: "[" },
+		allowInEditable: true,
+		commandPalette: true,
 	},
 	{
 		id: "go-forward-note",
-		shortcut: { meta: true, key: "]" },
 		label: "Go Forward",
-		description: "Go forward to the next note in the current tab",
+		description: "Go forward in the current tab's note history.",
 		category: "navigation",
 		context: "space",
-	},
-
-	// ─────────────────────────────────────────────────────────────────────────
-	// Search & Command Palette
-	// ─────────────────────────────────────────────────────────────────────────
-	{
-		id: "command-palette",
-		shortcut: { meta: true, key: "k" },
-		label: "Command Palette",
-		description: "Open the command palette",
-		category: "search",
-		context: "global",
-	},
-	{
-		id: "command-palette-alt",
-		shortcut: { meta: true, shift: true, key: "p" },
-		label: "Command Palette",
-		description: "Open the command palette (alternative)",
-		category: "search",
-		context: "global",
-	},
-	{
-		id: "search",
-		shortcut: { meta: true, key: "f" },
-		label: "Search",
-		description: "Open search in command palette",
-		category: "search",
-		context: "global",
+		defaultBinding: { meta: true, key: "]" },
+		allowInEditable: true,
+		commandPalette: true,
 	},
 	{
 		id: "quick-open",
-		shortcut: { meta: true, key: "p" },
 		label: "Quick Open",
-		description: "Quick file open (command palette in file mode)",
+		description: "Open the command palette directly in file mode.",
 		category: "search",
 		context: "space",
+		defaultBinding: { meta: true, key: "p" },
+		allowInEditable: true,
+		commandPalette: true,
 	},
-
-	// ─────────────────────────────────────────────────────────────────────────
-	// Window & App
-	// ─────────────────────────────────────────────────────────────────────────
 	{
-		id: "open-settings",
-		shortcut: { meta: true, key: "," },
-		label: "Settings",
-		description: "Open the settings window",
-		category: "window",
+		id: "open-all-docs",
+		label: "Open All Notes",
+		description: "Open the all notes view.",
+		category: "navigation",
+		context: "space",
+		defaultBinding: null,
+		allowInEditable: false,
+		commandPalette: true,
+	},
+	{
+		id: "open-templates",
+		label: "Open Templates",
+		description: "Open the templates view.",
+		category: "navigation",
+		context: "space",
+		defaultBinding: null,
+		allowInEditable: false,
+		commandPalette: true,
+	},
+	{
+		id: "open-calendar",
+		label: "Open Calendar",
+		description: "Open the home calendar view.",
+		category: "navigation",
+		context: "space",
+		defaultBinding: null,
+		allowInEditable: false,
+		commandPalette: true,
+	},
+	{
+		id: "open-dashboard",
+		label: "Open Home",
+		description: "Open the home dashboard.",
+		category: "navigation",
+		context: "space",
+		defaultBinding: null,
+		allowInEditable: false,
+		commandPalette: true,
+	},
+	{
+		id: "open-databases",
+		label: "Open Collections",
+		description: "Open the collections view.",
+		category: "navigation",
+		context: "space",
+		defaultBinding: null,
+		allowInEditable: false,
+		commandPalette: true,
+	},
+	{
+		id: "create-space",
+		label: "Create Space",
+		description: "Create a new space.",
+		category: "workspace",
 		context: "global",
+		defaultBinding: { meta: true, shift: true, key: "n" },
+		allowInEditable: false,
+		commandPalette: true,
+		menuId: "space.create",
 	},
 	{
 		id: "open-space",
-		shortcut: { meta: true, key: "o" },
 		label: "Open Space",
-		description: "Open an existing space",
-		category: "window",
+		description: "Open an existing space.",
+		category: "workspace",
 		context: "global",
+		defaultBinding: { meta: true, key: "o" },
+		allowInEditable: false,
+		commandPalette: true,
+		menuId: "space.open",
 	},
-] as const satisfies ShortcutDefinition[];
+	{
+		id: "reveal-space",
+		label: "Reveal Space",
+		description: "Show the current space in the system file browser.",
+		category: "workspace",
+		context: "space",
+		defaultBinding: null,
+		allowInEditable: false,
+		commandPalette: true,
+		menuId: "space.reveal",
+	},
+	{
+		id: "close-space",
+		label: "Close Current Space",
+		description: "Close the currently open space.",
+		category: "workspace",
+		context: "space",
+		defaultBinding: null,
+		allowInEditable: false,
+		commandPalette: true,
+		menuId: "space.close",
+	},
+	{
+		id: "git-sync-now",
+		label: "Sync Now",
+		description: "Run Git Sync now.",
+		category: "workspace",
+		context: "space",
+		defaultBinding: null,
+		allowInEditable: false,
+		commandPalette: true,
+		menuId: "space.git_sync_now",
+	},
+	{
+		id: "toggle-zen-mode",
+		label: "Toggle Zen Mode",
+		description: "Enter or exit zen mode.",
+		category: "navigation",
+		context: "editor",
+		defaultBinding: null,
+		allowInEditable: true,
+		commandPalette: true,
+	},
+	{
+		id: "buy-glyph-license",
+		label: "Buy Glyph License",
+		description: "Open the purchase page for Glyph.",
+		category: "settings",
+		context: "global",
+		defaultBinding: null,
+		allowInEditable: false,
+		commandPalette: true,
+	},
+	{
+		id: "open-settings",
+		label: "Open Settings",
+		description: "Open the settings view.",
+		category: "settings",
+		context: "global",
+		defaultBinding: { meta: true, key: "," },
+		allowInEditable: false,
+		commandPalette: true,
+		menuId: "app.settings",
+	},
+	{
+		id: "open-license-settings",
+		label: "Open License Settings",
+		description: "Open the license section in settings.",
+		category: "settings",
+		context: "global",
+		defaultBinding: null,
+		allowInEditable: false,
+		commandPalette: true,
+	},
+	{
+		id: "open-space-settings",
+		label: "Open Space Settings",
+		description: "Open settings for the current space.",
+		category: "settings",
+		context: "space",
+		defaultBinding: null,
+		allowInEditable: false,
+		commandPalette: true,
+		menuId: "space.settings",
+	},
+	{
+		id: "open-git-sync-settings",
+		label: "Open Git Sync Settings",
+		description: "Open the Git Sync section in settings.",
+		category: "settings",
+		context: "space",
+		defaultBinding: null,
+		allowInEditable: false,
+		commandPalette: true,
+		menuId: "space.git_settings",
+	},
+	{
+		id: "show-getting-started",
+		label: "Show Getting Started",
+		description: "Open the getting started flow.",
+		category: "settings",
+		context: "space",
+		defaultBinding: null,
+		allowInEditable: false,
+		commandPalette: true,
+	},
+	{
+		id: "close-ai-pane",
+		label: "Close AI Panel",
+		description: "Close the AI assistant panel.",
+		category: "ai",
+		context: "space",
+		defaultBinding: null,
+		allowInEditable: false,
+		commandPalette: true,
+		menuId: "ai.close",
+	},
+	{
+		id: "ai-attach-current-note",
+		label: "AI: Attach Current Note",
+		description: "Attach the current note to AI.",
+		category: "ai",
+		context: "space",
+		defaultBinding: { meta: true, alt: true, key: "a" },
+		allowInEditable: false,
+		commandPalette: true,
+		menuId: "ai.attach_current_note",
+	},
+	{
+		id: "ai-attach-all-open-notes",
+		label: "AI: Attach All Open Notes",
+		description: "Attach all open notes to AI.",
+		category: "ai",
+		context: "space",
+		defaultBinding: { meta: true, alt: true, shift: true, key: "a" },
+		allowInEditable: false,
+		commandPalette: true,
+		menuId: "ai.attach_all_open_notes",
+	},
+	{
+		id: "open-ai-settings",
+		label: "Open AI Settings",
+		description: "Open AI settings.",
+		category: "settings",
+		context: "global",
+		defaultBinding: null,
+		allowInEditable: false,
+		commandPalette: true,
+		menuId: "ai.settings",
+	},
+	{
+		id: "new-tab",
+		label: "New Tab",
+		description: "Open a blank tab.",
+		category: "tabs",
+		context: "space",
+		defaultBinding: { meta: true, key: "t" },
+		allowInEditable: true,
+		commandPalette: true,
+	},
+	{
+		id: "close-active-tab",
+		label: "Close Active Tab",
+		description: "Close the current tab.",
+		category: "tabs",
+		context: "space",
+		defaultBinding: { meta: true, key: "w" },
+		allowInEditable: false,
+		commandPalette: true,
+		menuId: "file.close_tab",
+	},
+	{
+		id: "close-all-tabs",
+		label: "Close All Tabs",
+		description: "Close every open tab.",
+		category: "tabs",
+		context: "space",
+		defaultBinding: { meta: true, shift: true, key: "w" },
+		allowInEditable: false,
+		commandPalette: true,
+	},
+	{
+		id: "next-tab",
+		label: "Next Tab",
+		description: "Move to the next tab.",
+		category: "tabs",
+		context: "space",
+		defaultBinding: { meta: true, alt: true, key: "]" },
+		allowInEditable: false,
+		commandPalette: true,
+	},
+	{
+		id: "previous-tab",
+		label: "Previous Tab",
+		description: "Move to the previous tab.",
+		category: "tabs",
+		context: "space",
+		defaultBinding: { meta: true, alt: true, key: "[" },
+		allowInEditable: false,
+		commandPalette: true,
+	},
+	...Array.from(
+		{ length: 9 },
+		(_, index): ShortcutActionDefinition => ({
+			id: `activate-tab-${index + 1}`,
+			label: `Activate Tab ${index + 1}`,
+			description: `Switch to tab ${index + 1}.`,
+			category: "tabs",
+			context: "space",
+			defaultBinding: { meta: true, alt: true, key: String(index + 1) },
+			allowInEditable: false,
+			commandPalette: false,
+		}),
+	),
+];
 
-/**
- * Shortcut IDs as a type for type-safe references
- */
-export type ShortcutId = (typeof SHORTCUTS)[number]["id"];
+const EDITOR_SHORTCUT_ACTIONS: ShortcutActionDefinition[] = EDITOR_ACTIONS.map(
+	(action) => ({
+		id: action.id,
+		label: action.label,
+		description: action.description,
+		category: "editor",
+		context: "editor",
+		defaultBinding: null,
+		allowInEditable: true,
+		commandPalette: true,
+		menuId: action.menuId,
+	}),
+);
+
+export const SHORTCUT_ACTIONS: ShortcutActionDefinition[] = [
+	...APP_SHORTCUT_ACTIONS,
+	...EDITOR_SHORTCUT_ACTIONS,
+];
+
+if (import.meta.env.DEV) {
+	const seen = new Set<string>();
+	for (const action of SHORTCUT_ACTIONS) {
+		if (seen.has(action.id)) {
+			throw new Error(`Duplicate shortcut action id: ${action.id}`);
+		}
+		seen.add(action.id);
+	}
+}
+
+const SHORTCUT_ACTION_RECORD: Record<string, ShortcutActionDefinition> =
+	Object.fromEntries(SHORTCUT_ACTIONS.map((action) => [action.id, action]));
+
+export const SHORTCUT_ACTION_IDS = SHORTCUT_ACTIONS.map((action) => action.id);
+
+export const SHORTCUT_CATEGORY_LABELS: Record<ShortcutCategory, string> = {
+	workspace: "Workspace",
+	navigation: "Navigation",
+	search: "Search",
+	file: "File Operations",
+	tabs: "Tabs",
+	ai: "AI",
+	editor: "Editor",
+	settings: "Settings",
+};
+
+export function isShortcutActionId(value: string): value is ShortcutActionId {
+	return value in SHORTCUT_ACTION_RECORD;
+}
+
+export function getShortcutActionDefinition(actionId: ShortcutActionId) {
+	return SHORTCUT_ACTION_RECORD[actionId];
+}
+
+export function getShortcutActionDefinitions() {
+	return SHORTCUT_ACTIONS;
+}
+
+export function getShortcutActionsForCommandPalette() {
+	return SHORTCUT_ACTIONS.filter((action) => action.commandPalette);
+}
+
+export function getShortcutActionsForMenu() {
+	return SHORTCUT_ACTIONS.filter((action) => Boolean(action.menuId));
+}

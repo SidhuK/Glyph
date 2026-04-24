@@ -1,6 +1,18 @@
 import { emit } from "@tauri-apps/api/event";
 import { LazyStore } from "@tauri-apps/plugin-store";
 import { normalizeRelPath } from "../utils/path";
+import {
+	type Shortcut,
+	areShortcutsEqual,
+	getShortcutSignature,
+	normalizeShortcut,
+	validateConfigurableShortcut,
+} from "./shortcuts";
+import {
+	SHORTCUT_ACTIONS,
+	type ShortcutActionId,
+	isShortcutActionId,
+} from "./shortcuts/registry";
 import type { AiAssistantMode } from "./tauri";
 import {
 	type UiDarkThemeId,
@@ -123,6 +135,22 @@ export interface EditorSettings {
 export interface FileTreeSettings {
 	showFolderFileCounts: boolean;
 }
+
+export interface ShortcutSettings {
+	version: 1;
+	bindings: Partial<Record<ShortcutActionId, Shortcut | null>>;
+}
+
+export type ShortcutBindings = ShortcutSettings["bindings"];
+export type EffectiveShortcutBindings = Record<
+	ShortcutActionId,
+	Shortcut | null
+>;
+
+const DEFAULT_SHORTCUT_SETTINGS: ShortcutSettings = {
+	version: 1,
+	bindings: {},
+};
 
 const DEFAULT_DATABASE_SETTINGS: DatabaseSettings = {
 	showColumnColor: true,
@@ -269,6 +297,9 @@ async function emitSettingsUpdated(payload: {
 		enablePeopleMentionsAsTags?: boolean;
 		vimKeybindings?: boolean;
 	};
+	shortcuts?: {
+		bindings?: ShortcutBindings;
+	};
 	onboarding?: Partial<OnboardingSettings>;
 }): Promise<void> {
 	try {
@@ -320,6 +351,7 @@ interface AppSettings {
 	tasks: {
 		source: TaskSourceSetting;
 	};
+	shortcuts: ShortcutSettings;
 	editor: EditorSettings;
 	database: DatabaseSettings;
 }
@@ -358,6 +390,8 @@ const KEYS = {
 	templatesFolder: "templates.folder",
 	templatesDailyNoteTemplate: "templates.dailyNoteTemplate",
 	taskSource: "tasks.source",
+	shortcutsVersion: "shortcuts.version",
+	shortcutsBindings: "shortcuts.bindings",
 	databaseShowColumnColor: "database.showColumnColor",
 	databaseShowNoteCount: "database.showNoteCount",
 	onboardingLauncherSeen: "onboarding.launcherSeen",
@@ -378,6 +412,121 @@ const ONBOARDING_KEYS = {
 	usedCommandPalette: KEYS.onboardingUsedCommandPalette,
 	openedDailyNote: KEYS.onboardingOpenedDailyNote,
 } as const satisfies Record<keyof OnboardingSettings, string>;
+
+function isShortcutBindingRecord(
+	value: unknown,
+): value is Record<string, Shortcut | null> {
+	return typeof value === "object" && value !== null && !Array.isArray(value);
+}
+
+function sanitizeShortcutBindingsInput(value: unknown): ShortcutBindings {
+	if (!isShortcutBindingRecord(value)) return {};
+	const next: ShortcutBindings = {};
+	for (const [actionId, shortcutValue] of Object.entries(value)) {
+		if (!isShortcutActionId(actionId)) continue;
+		if (shortcutValue === null) {
+			next[actionId] = null;
+			continue;
+		}
+		if (typeof shortcutValue !== "object" || shortcutValue === null) continue;
+		const raw = shortcutValue as Partial<Shortcut>;
+		if (typeof raw.key !== "string") continue;
+		const normalized = normalizeShortcut(raw as Shortcut);
+		if (!validateConfigurableShortcut(normalized).valid) continue;
+		next[actionId] = normalized;
+	}
+	return next;
+}
+
+function getDefaultShortcutBindings(): EffectiveShortcutBindings {
+	return Object.fromEntries(
+		SHORTCUT_ACTIONS.map((action) => [
+			action.id,
+			action.defaultBinding ? normalizeShortcut(action.defaultBinding) : null,
+		]),
+	) as EffectiveShortcutBindings;
+}
+
+export function getEffectiveShortcutBindings(
+	bindings: ShortcutBindings = {},
+): EffectiveShortcutBindings {
+	const sanitized = sanitizeShortcutBindingsInput(bindings);
+	const effective = getDefaultShortcutBindings();
+	const claimed = new Map<string, ShortcutActionId>();
+
+	for (const action of SHORTCUT_ACTIONS) {
+		const binding = effective[action.id];
+		if (!binding) continue;
+		claimed.set(getShortcutSignature(binding), action.id);
+	}
+
+	for (const action of SHORTCUT_ACTIONS) {
+		if (!Object.prototype.hasOwnProperty.call(sanitized, action.id)) continue;
+		const override = sanitized[action.id];
+		const defaultBinding = effective[action.id];
+		if (defaultBinding) claimed.delete(getShortcutSignature(defaultBinding));
+		if (override === null) {
+			effective[action.id] = null;
+			continue;
+		}
+		if (!override) {
+			if (defaultBinding)
+				claimed.set(getShortcutSignature(defaultBinding), action.id);
+			continue;
+		}
+		const signature = getShortcutSignature(override);
+		if (claimed.has(signature)) {
+			if (defaultBinding)
+				claimed.set(getShortcutSignature(defaultBinding), action.id);
+			continue;
+		}
+		effective[action.id] = override;
+		claimed.set(signature, action.id);
+	}
+
+	return effective;
+}
+
+function sanitizeShortcutBindings(bindings: unknown): ShortcutBindings {
+	const sanitized = sanitizeShortcutBindingsInput(bindings);
+	const effective = getEffectiveShortcutBindings(sanitized);
+	const next: ShortcutBindings = {};
+	for (const action of SHORTCUT_ACTIONS) {
+		if (!Object.prototype.hasOwnProperty.call(sanitized, action.id)) continue;
+		const override = sanitized[action.id];
+		const effectiveBinding = effective[action.id];
+		if (override === null) {
+			if (action.defaultBinding !== null) next[action.id] = null;
+			continue;
+		}
+		if (!override || !effectiveBinding) continue;
+		const defaultBinding = action.defaultBinding
+			? normalizeShortcut(action.defaultBinding)
+			: null;
+		if (defaultBinding && areShortcutsEqual(defaultBinding, effectiveBinding)) {
+			continue;
+		}
+		next[action.id] = effectiveBinding;
+	}
+	return next;
+}
+
+export function findShortcutConflict(
+	binding: Shortcut,
+	bindings: ShortcutBindings = {},
+	excludingActionId?: ShortcutActionId,
+): ShortcutActionId | null {
+	const normalized = normalizeShortcut(binding);
+	const signature = getShortcutSignature(normalized);
+	const effective = getEffectiveShortcutBindings(bindings);
+	for (const action of SHORTCUT_ACTIONS) {
+		if (action.id === excludingActionId) continue;
+		const existing = effective[action.id];
+		if (!existing) continue;
+		if (getShortcutSignature(existing) === signature) return action.id;
+	}
+	return null;
+}
 
 function normalizeTaskSourceSetting(value: unknown): TaskSourceSetting {
 	const rawMode =
@@ -470,6 +619,8 @@ export async function loadSettings(): Promise<AppSettings> {
 		rawEditorVimKeybindings,
 		rawDatabaseShowColumnColor,
 		rawDatabaseShowNoteCount,
+		rawShortcutSettingsVersion,
+		rawShortcutBindings,
 	] = await Promise.all([
 		store.get<string | null>(KEYS.currentSpacePath),
 		store.get<string[] | null>(KEYS.recentSpaces),
@@ -511,6 +662,8 @@ export async function loadSettings(): Promise<AppSettings> {
 		store.get<boolean | null>(KEYS.editorVimKeybindings),
 		store.get<boolean | null>(KEYS.databaseShowColumnColor),
 		store.get<boolean | null>(KEYS.databaseShowNoteCount),
+		store.get<number | null>(KEYS.shortcutsVersion),
+		store.get<unknown>(KEYS.shortcutsBindings),
 	]);
 	const currentSpacePath = currentSpacePathRaw ?? null;
 	const recentSpaces = recentSpacesRaw ?? [];
@@ -578,6 +731,12 @@ export async function loadSettings(): Promise<AppSettings> {
 			? normalizeRelPath(templatesDailyNoteTemplateRaw) || null
 			: null;
 	const taskSource = normalizeTaskSourceSetting(taskSourceRaw);
+	const shortcutBindings = sanitizeShortcutBindings(rawShortcutBindings);
+	const shortcuts: ShortcutSettings = {
+		version:
+			rawShortcutSettingsVersion === 1 ? 1 : DEFAULT_SHORTCUT_SETTINGS.version,
+		bindings: shortcutBindings,
+	};
 	const attachmentStorageMode = asAttachmentStorageMode(
 		rawEditorAttachmentStorageMode,
 	);
@@ -656,6 +815,7 @@ export async function loadSettings(): Promise<AppSettings> {
 		tasks: {
 			source: taskSource,
 		},
+		shortcuts,
 		editor,
 		database,
 	};
@@ -691,6 +851,92 @@ export async function updateOnboardingSettings(
 	await store.save();
 	void emitSettingsUpdated({
 		onboarding: Object.fromEntries(entries) as Partial<OnboardingSettings>,
+	});
+}
+
+async function saveShortcutBindingsToStore(bindings: ShortcutBindings) {
+	const store = await getStore();
+	const sanitized = sanitizeShortcutBindings(bindings);
+	await store.set(KEYS.shortcutsVersion, DEFAULT_SHORTCUT_SETTINGS.version);
+	await store.set(KEYS.shortcutsBindings, sanitized);
+	await store.save();
+	void emitSettingsUpdated({ shortcuts: { bindings: sanitized } });
+	return sanitized;
+}
+
+let shortcutBindingsWriteQueue: Promise<unknown> = Promise.resolve();
+
+function withShortcutBindingsWriteLock<T>(
+	operation: () => Promise<T>,
+): Promise<T> {
+	const run = shortcutBindingsWriteQueue.then(operation, operation);
+	shortcutBindingsWriteQueue = run.catch(() => {});
+	return run;
+}
+
+export async function loadShortcutSettings(): Promise<ShortcutSettings> {
+	const settings = await loadSettings();
+	return settings.shortcuts;
+}
+
+export async function setShortcutBinding(
+	actionId: ShortcutActionId,
+	binding: Shortcut | null,
+): Promise<ShortcutBindings> {
+	return withShortcutBindingsWriteLock(async () => {
+		const current = await loadShortcutSettings();
+		const next = { ...current.bindings };
+		if (binding === null) {
+			next[actionId] = null;
+			return saveShortcutBindingsToStore(next);
+		}
+		const normalized = normalizeShortcut(binding);
+		const validation = validateConfigurableShortcut(normalized);
+		if (!validation.valid) {
+			throw new Error(validation.reason ?? "Invalid shortcut");
+		}
+		const conflict = findShortcutConflict(
+			normalized,
+			getEffectiveShortcutBindings(current.bindings),
+			actionId,
+		);
+		if (conflict) {
+			throw new Error(`Shortcut already used by ${conflict}`);
+		}
+		const definition = SHORTCUT_ACTIONS.find(
+			(action) => action.id === actionId,
+		);
+		if (!definition) throw new Error(`Unknown shortcut action: ${actionId}`);
+		const defaultBinding = definition.defaultBinding
+			? normalizeShortcut(definition.defaultBinding)
+			: null;
+		if (defaultBinding && areShortcutsEqual(defaultBinding, normalized)) {
+			delete next[actionId];
+		} else {
+			next[actionId] = normalized;
+		}
+		return saveShortcutBindingsToStore(next);
+	});
+}
+
+export async function resetShortcutBinding(
+	actionId: ShortcutActionId,
+): Promise<ShortcutBindings> {
+	return withShortcutBindingsWriteLock(async () => {
+		const current = await loadShortcutSettings();
+		const next = { ...current.bindings };
+		delete next[actionId];
+		return saveShortcutBindingsToStore(next);
+	});
+}
+
+export async function resetAllShortcutBindings(): Promise<void> {
+	return withShortcutBindingsWriteLock(async () => {
+		const store = await getStore();
+		await store.delete(KEYS.shortcutsVersion);
+		await store.delete(KEYS.shortcutsBindings);
+		await store.save();
+		void emitSettingsUpdated({ shortcuts: { bindings: {} } });
 	});
 }
 

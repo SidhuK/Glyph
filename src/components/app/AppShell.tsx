@@ -58,6 +58,7 @@ import { useFileTree } from "../../hooks/useFileTree";
 import { useGitSync } from "../../hooks/useGitSync";
 import { useMenuListeners } from "../../hooks/useMenuListeners";
 import { useResizablePanel } from "../../hooks/useResizablePanel";
+import { useShortcutBindings } from "../../hooks/useShortcutBindings";
 import { AI_AGENT_TAB_ID } from "../../lib/aiAgent";
 import { ALL_DOCS_TAB_ID } from "../../lib/allDocs";
 import {
@@ -83,8 +84,8 @@ import {
 	prefetchNote,
 } from "../../lib/navigationPrefetch";
 import { loadSettings, updateOnboardingSettings } from "../../lib/settings";
-import type { Shortcut } from "../../lib/shortcuts";
-import { getShortcutTooltip } from "../../lib/shortcuts";
+import { getShortcutTooltip, toTauriAccelerator } from "../../lib/shortcuts";
+import { isShortcutActionId } from "../../lib/shortcuts/registry";
 import { todayIsoDateLocal } from "../../lib/tasks";
 import { invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
@@ -95,6 +96,7 @@ import { isMarkdownPath } from "../../utils/path";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { ChevronDown, ChevronUp, FileHtml, LayoutAlignLeft } from "../Icons";
 import { dispatchAiContextAttach } from "../ai/aiContextEvents";
+import { EDITOR_ACTIONS } from "../editor/editorActions";
 import {
 	MARKDOWN_LINK_CLICK_EVENT,
 	type MarkdownLinkClickDetail,
@@ -376,6 +378,7 @@ export function AppShell() {
 		setDragTabId,
 		setDirtyByPath,
 		closeTab,
+		closeAllTabs,
 		closeActiveTab,
 		closeTabsForPathRemoval,
 		renameTabsForPath,
@@ -388,7 +391,11 @@ export function AppShell() {
 		canGoForward,
 		goBack,
 		goForward,
+		activateNextTab,
+		activatePreviousTab,
+		activateTabByIndex,
 	} = useTabManager(spacePath);
+	const { getBinding, actionsWithBindings } = useShortcutBindings();
 
 	useEffect(() => {
 		const visible =
@@ -884,13 +891,6 @@ export function AppShell() {
 		[],
 	);
 
-	const openPaletteShortcuts = useMemo<Shortcut[]>(
-		() => [
-			{ meta: true, key: "k" },
-			{ meta: true, shift: true, key: "p" },
-		],
-		[],
-	);
 	const activeTopSection = useMemo<
 		"home" | "all-notes" | "databases" | null
 	>(() => {
@@ -899,10 +899,6 @@ export function AppShell() {
 		if (activeTabId === DATABASES_TAB_ID) return "databases";
 		return null;
 	}, [activeTabId]);
-	const openSearchShortcuts = useMemo<Shortcut[]>(
-		() => [{ meta: true, key: "f" }],
-		[],
-	);
 	const openCommandPalette = useCallback(() => {
 		openPalette("commands");
 		void updateOnboardingSettings({ usedCommandPalette: true });
@@ -1333,6 +1329,16 @@ export function AppShell() {
 						action: () => setAiPanelOpen((v) => !v),
 					},
 					{
+						id: "close-ai-pane",
+						label: "Close AI",
+						icon: (
+							<HugeiconsIcon icon={AiEditingIcon} size={16} strokeWidth={0.9} />
+						),
+						category: "AI",
+						enabled: Boolean(spacePath),
+						action: handleCloseAiPaneFromMenu,
+					},
+					{
 						id: "ai-attach-current-note",
 						label: "AI: Attach current note",
 						icon: (
@@ -1366,8 +1372,22 @@ export function AppShell() {
 					},
 				]
 			: [];
+		const editorCommands: Command[] = EDITOR_ACTIONS.filter(
+			(action) =>
+				action.id !== "collapse_all_headings" &&
+				action.id !== "expand_all_headings",
+		).map((action) => ({
+			id: action.id,
+			label: action.label,
+			category: "Editor",
+			enabled: Boolean(activeMarkdownTabPath),
+			allowInEditable: true,
+			action: () => {
+				dispatchEditorMenuAction({ action: action.id });
+			},
+		}));
 
-		return [
+		const baseCommands: Command[] = [
 			{
 				id: "new-note",
 				label: "New note",
@@ -1414,6 +1434,34 @@ export function AppShell() {
 				enabled: Boolean(spacePath),
 				allowInEditable: true,
 				action: openBlankTab,
+			},
+			{
+				id: "close-active-tab",
+				label: "Close current tab",
+				category: "Tabs",
+				enabled: tabs.length > 0,
+				action: closeActiveTab,
+			},
+			{
+				id: "close-all-tabs",
+				label: "Close all tabs",
+				category: "Tabs",
+				enabled: tabs.length > 0,
+				action: closeAllTabs,
+			},
+			{
+				id: "next-tab",
+				label: "Next tab",
+				category: "Tabs",
+				enabled: tabs.length > 1,
+				action: activateNextTab,
+			},
+			{
+				id: "previous-tab",
+				label: "Previous tab",
+				category: "Tabs",
+				enabled: tabs.length > 1,
+				action: activatePreviousTab,
 			},
 			{
 				id: "new-database",
@@ -1503,7 +1551,7 @@ export function AppShell() {
 				action: () => void saveCurrentEditor(),
 			},
 			{
-				id: "collapse-all-headings",
+				id: "collapse_all_headings",
 				label: "Collapse all headings",
 				icon: <ChevronUp size={16} />,
 				category: "Editor",
@@ -1513,7 +1561,7 @@ export function AppShell() {
 					dispatchEditorMenuAction({ action: "collapse_all_headings" }),
 			},
 			{
-				id: "expand-all-headings",
+				id: "expand_all_headings",
 				label: "Expand all headings",
 				icon: <ChevronDown size={16} />,
 				category: "Editor",
@@ -1690,7 +1738,14 @@ export function AppShell() {
 				enabled: Boolean(spacePath),
 				action: () => openDatabasesTab(),
 			},
-			...aiCommands,
+			{
+				id: "create-space",
+				label: "Create space",
+				icon: <HugeiconsIcon icon={Folder01Icon} size={16} strokeWidth={0.9} />,
+				category: "Workspace",
+				shortcut: { meta: true, shift: true, key: "n" },
+				action: onCreateSpace,
+			},
 			{
 				id: "open-space",
 				label: spacePath ? "Open another space" : "Open space",
@@ -1700,6 +1755,16 @@ export function AppShell() {
 				category: "Workspace",
 				shortcut: { meta: true, key: "o" },
 				action: onOpenSpace,
+			},
+			{
+				id: "reveal-space",
+				label: "Reveal space",
+				icon: (
+					<HugeiconsIcon icon={FolderOpenIcon} size={16} strokeWidth={0.9} />
+				),
+				category: "Workspace",
+				enabled: Boolean(spacePath),
+				action: handleRevealSpaceFromMenu,
 			},
 			{
 				id: "close-space",
@@ -1795,6 +1860,16 @@ export function AppShell() {
 				action: () => openSettings(),
 			},
 			{
+				id: "open-space-settings",
+				label: "Space settings",
+				icon: (
+					<HugeiconsIcon icon={Settings01Icon} size={16} strokeWidth={0.9} />
+				),
+				category: "Workspace",
+				enabled: Boolean(spacePath),
+				action: handleOpenSpaceSettings,
+			},
+			{
 				id: "open-license-settings",
 				label: "Manage license",
 				icon: (
@@ -1814,6 +1889,15 @@ export function AppShell() {
 				action: gitSync.openGitSettings,
 			},
 			{
+				id: "open-ai-settings",
+				label: "AI settings",
+				icon: (
+					<HugeiconsIcon icon={Settings01Icon} size={16} strokeWidth={0.9} />
+				),
+				category: "Workspace",
+				action: handleOpenAiSettings,
+			},
+			{
 				id: "show-getting-started",
 				label: "Show getting started",
 				icon: (
@@ -1828,21 +1912,38 @@ export function AppShell() {
 				action: openGettingStarted,
 			},
 		];
+		return [...baseCommands, ...aiCommands, ...editorCommands].map((command) =>
+			isShortcutActionId(command.id)
+				? {
+						...command,
+						shortcut: getBinding(command.id) ?? undefined,
+					}
+				: command,
+		);
 	}, [
 		activeMarkdownTabPath,
 		activeFilePath,
+		activateNextTab,
+		activatePreviousTab,
 		pinnedFiles,
 		aiEnabled,
 		attachAllOpenNotesToAi,
 		attachCurrentNoteToAi,
 		activeDirPath,
+		closeActiveTab,
+		closeAllTabs,
 		handleGitSyncFailure,
 		handleCopyOpenNoteAsMarkdown,
 		handleDuplicateActiveMarkdown,
+		handleCloseAiPaneFromMenu,
+		handleOpenAiSettings,
+		handleOpenSpaceSettings,
 		handleExportHtml,
 		handlePrintEditorPane,
+		handleRevealSpaceFromMenu,
 		fileTree,
 		closeSpace,
+		onCreateSpace,
 		onOpenSpace,
 		openMarkdownTabs.length,
 		createDatabaseAndOpen,
@@ -1868,6 +1969,7 @@ export function AppShell() {
 		openBlankTab,
 		openWorkspaceFile,
 		gitSync,
+		getBinding,
 		moveTargetDirs,
 		movePickerSourcePath,
 		openSpecialTab,
@@ -1875,21 +1977,71 @@ export function AppShell() {
 		openSettings,
 		refreshMoveTargetDirs,
 		openPalette,
+		tabs.length,
 		canGoBack,
 		canGoForward,
 		goBack,
 		goForward,
 	]);
 
+	const shortcutHandlers = useMemo(
+		() => [
+			{
+				id: "open-command-palette",
+				shortcut: getBinding("open-command-palette"),
+				action: openCommandPalette,
+				allowInEditable: true,
+			},
+			{
+				id: "open-search-palette",
+				shortcut: getBinding("open-search-palette"),
+				action: openSearchPalette,
+				allowInEditable: true,
+			},
+			...Array.from({ length: 9 }, (_, index) => ({
+				id: `activate-tab-${index + 1}`,
+				shortcut: getBinding(`activate-tab-${index + 1}`),
+				enabled: Boolean(tabs[index]),
+				action: () => {
+					activateTabByIndex(index);
+				},
+			})),
+			...commands.map((command) => ({
+				id: command.id,
+				shortcut: command.shortcut,
+				enabled: command.enabled,
+				allowInEditable: command.allowInEditable,
+				action: command.action,
+			})),
+		],
+		[
+			activateTabByIndex,
+			commands,
+			getBinding,
+			openCommandPalette,
+			openSearchPalette,
+			tabs,
+		],
+	);
+
 	useCommandShortcuts({
-		commands,
+		handlers: shortcutHandlers,
 		paletteOpen,
-		onOpenPalette: openCommandPalette,
-		onOpenPaletteSearch: openSearchPalette,
 		onClosePalette: closePalette,
-		openPaletteShortcuts,
-		openSearchShortcuts,
 	});
+	const toggleSidebarShortcut = getBinding("toggle-sidebar");
+
+	useEffect(() => {
+		const accelerators = Object.fromEntries(
+			actionsWithBindings
+				.filter((action) => action.menuId)
+				.map((action) => [
+					action.menuId as string,
+					toTauriAccelerator(action.binding),
+				]),
+		);
+		void invoke("set_menu_shortcuts", { accelerators }).catch(() => {});
+	}, [actionsWithBindings]);
 
 	return (
 		<div
@@ -1911,7 +2063,11 @@ export function AppShell() {
 						ariaLabel="Expand sidebar"
 						ariaPressed={false}
 						onClick={() => setSidebarCollapsed(false)}
-						title={`Expand sidebar (${getShortcutTooltip({ meta: true, shift: true, key: "b" })})`}
+						title={`Expand sidebar${
+							toggleSidebarShortcut
+								? ` (${getShortcutTooltip(toggleSidebarShortcut)})`
+								: ""
+						}`}
 					>
 						<LayoutAlignLeft size={14} />
 					</WindowChromeIconButton>
@@ -2017,6 +2173,7 @@ export function AppShell() {
 			{shortcutsHelpMounted ? (
 				<Suspense fallback={null}>
 					<LazyKeyboardShortcutsHelp
+						actions={actionsWithBindings}
 						open={shortcutsHelpOpen}
 						onClose={() => setShortcutsHelpOpen(false)}
 					/>

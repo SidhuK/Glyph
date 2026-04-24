@@ -260,3 +260,136 @@ describe("attachment storage settings", () => {
 		});
 	});
 });
+
+describe("shortcut settings", () => {
+	beforeEach(() => {
+		vi.resetModules();
+		emitMock.mockClear();
+		storeState.clear();
+	});
+
+	it("loads effective defaults when no overrides are stored", async () => {
+		const { loadShortcutSettings, getEffectiveShortcutBindings } = await import(
+			"./settings"
+		);
+
+		const shortcutSettings = await loadShortcutSettings();
+
+		expect(shortcutSettings.bindings).toEqual({});
+		expect(
+			getEffectiveShortcutBindings(shortcutSettings.bindings),
+		).toMatchObject({
+			"open-command-palette": {
+				meta: true,
+				key: "k",
+				ctrl: false,
+				alt: false,
+				shift: false,
+			},
+			"open-settings": {
+				meta: true,
+				key: ",",
+				ctrl: false,
+				alt: false,
+				shift: false,
+			},
+		});
+	});
+
+	it("persists custom shortcut overrides and emits updates", async () => {
+		const { setShortcutBinding } = await import("./settings");
+
+		await setShortcutBinding("open-command-palette", {
+			meta: true,
+			shift: true,
+			key: "k",
+		});
+
+		expect(storeState.get("shortcuts.version")).toBe(1);
+		expect(storeState.get("shortcuts.bindings")).toEqual({
+			"open-command-palette": {
+				meta: true,
+				ctrl: false,
+				alt: false,
+				shift: true,
+				key: "k",
+			},
+		});
+		expect(emitMock).toHaveBeenCalledWith("settings:updated", {
+			shortcuts: {
+				bindings: {
+					"open-command-palette": {
+						meta: true,
+						ctrl: false,
+						alt: false,
+						shift: true,
+						key: "k",
+					},
+				},
+			},
+		});
+	});
+
+	it("rejects conflicting shortcut assignments", async () => {
+		const { setShortcutBinding } = await import("./settings");
+
+		await expect(
+			setShortcutBinding("open-search-palette", {
+				meta: true,
+				key: "k",
+			}),
+		).rejects.toThrow("Shortcut already used by open-command-palette");
+	});
+
+	it("drops malformed and conflicting stored bindings on load", async () => {
+		storeState.set("shortcuts.version", 1);
+		storeState.set("shortcuts.bindings", {
+			"open-command-palette": { key: "k" },
+			"open-search-palette": { meta: true, key: "k" },
+			"new-note": { meta: true, key: "n" },
+			"not-a-real-action": { meta: true, key: "y" },
+		});
+
+		const { loadShortcutSettings, getEffectiveShortcutBindings } = await import(
+			"./settings"
+		);
+
+		const shortcutSettings = await loadShortcutSettings();
+		const effective = getEffectiveShortcutBindings(shortcutSettings.bindings);
+
+		expect(shortcutSettings.bindings).toEqual({});
+		expect(effective["open-command-palette"]).toEqual({
+			meta: true,
+			ctrl: false,
+			alt: false,
+			shift: false,
+			key: "k",
+		});
+		expect(effective["open-search-palette"]).toEqual({
+			meta: true,
+			ctrl: false,
+			alt: false,
+			shift: false,
+			key: "f",
+		});
+	});
+
+	it("resets all shortcut overrides back to defaults", async () => {
+		const { resetAllShortcutBindings, setShortcutBinding } = await import(
+			"./settings"
+		);
+
+		await setShortcutBinding("open-command-palette", {
+			meta: true,
+			shift: true,
+			key: "k",
+		});
+		await resetAllShortcutBindings();
+
+		expect(storeState.has("shortcuts.version")).toBe(false);
+		expect(storeState.has("shortcuts.bindings")).toBe(false);
+		expect(emitMock).toHaveBeenLastCalledWith("settings:updated", {
+			shortcuts: { bindings: {} },
+		});
+	});
+});

@@ -104,6 +104,20 @@ type TauriEventMap = {
 			enablePeopleMentionsAsTags?: boolean;
 			vimKeybindings?: boolean;
 		};
+		shortcuts?: {
+			bindings?: Partial<
+				Record<
+					string,
+					{
+						key: string;
+						meta?: boolean;
+						ctrl?: boolean;
+						alt?: boolean;
+						shift?: boolean;
+					} | null
+				>
+			>;
+		};
 		onboarding?: {
 			launcherSeen?: boolean;
 			starterDismissed?: boolean;

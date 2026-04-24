@@ -19,9 +19,10 @@ import {
 	useUILayoutContext,
 } from "../../contexts";
 import { useRecentFiles } from "../../hooks/useRecentFiles";
+import { useShortcutBindings } from "../../hooks/useShortcutBindings";
 import { FILE_TREE_START_RENAME_EVENT } from "../../lib/appEvents";
 import { shouldShowGitSync } from "../../lib/gitSyncUi";
-import { getShortcutTooltip } from "../../lib/shortcuts";
+import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
 import { type GitSyncStatus, invoke } from "../../lib/tauri";
 import { useTauriEvent } from "../../lib/tauriEvents";
 import { FileTreePane } from "../FileTreePane";
@@ -90,6 +91,7 @@ export const SidebarContent = memo(function SidebarContent({
 }: SidebarContentProps) {
 	// Contexts
 	const { spacePath } = useSpace();
+	const { getBinding } = useShortcutBindings();
 	const {
 		rootEntries,
 		childrenByDir,
@@ -113,6 +115,8 @@ export const SidebarContent = memo(function SidebarContent({
 	const [newMenuOpen, setNewMenuOpen] = useState(false);
 	const [gitExpanded, setGitExpanded] = useState(false);
 	const newMenuRef = useRef<HTMLDivElement | null>(null);
+	const newNoteShortcut = getBinding("new-note");
+	const quickOpenShortcut = getBinding("quick-open");
 	const showGitButton = shouldShowGitSync(gitSyncStatus);
 	const effectiveGitExpanded = showGitButton && gitExpanded;
 
@@ -288,7 +292,11 @@ export const SidebarContent = memo(function SidebarContent({
 								className="sidebarQuickActionBtn sidebarQuickActionPrimary"
 								data-kind="new-note"
 								onClick={onNewNote}
-								title={`Create a new note (${getShortcutTooltip({ meta: true, key: "n" })})`}
+								title={`Create a new note${
+									newNoteShortcut
+										? ` (${formatShortcutForPlatform(newNoteShortcut)})`
+										: ""
+								}`}
 							>
 								<HugeiconsIcon icon={NoteIcon} size={14} strokeWidth={0.9} />
 								<span className="sidebarQuickActionLabel">New Note</span>
@@ -383,12 +391,18 @@ export const SidebarContent = memo(function SidebarContent({
 						type="button"
 						className="sidebarQuickActionBtn sidebarSearchBtn"
 						onClick={onOpenSearchPalette}
-						title={`Search notes (${getShortcutTooltip({ meta: true, key: "p" })})`}
+						title={`Search notes${
+							quickOpenShortcut
+								? ` (${formatShortcutForPlatform(quickOpenShortcut)})`
+								: ""
+						}`}
 					>
 						<HugeiconsIcon icon={SearchIcon} size={14} strokeWidth={0.9} />
 						<span className="sidebarQuickActionLabel">Search Notes</span>
 						<span className="sidebarSearchShortcut">
-							{getShortcutTooltip({ meta: true, key: "p" })}
+							{quickOpenShortcut
+								? formatShortcutForPlatform(quickOpenShortcut)
+								: ""}
 						</span>
 					</button>
 					<div className="sidebarQuickActionsSpacer" aria-hidden="true" />
@@ -412,9 +426,7 @@ export const SidebarContent = memo(function SidebarContent({
 								strokeWidth={0.9}
 								className="sidebarQuickActionHomeIcon"
 							/>
-							{activeTopSection === "home" ? (
-								<span className="sidebarQuickActionLabel">Home</span>
-							) : null}
+							<span className="sidebarQuickActionLabel">Home</span>
 						</button>
 						<button
 							type="button"
@@ -442,9 +454,7 @@ export const SidebarContent = memo(function SidebarContent({
 								size={14}
 								strokeWidth={0.9}
 							/>
-							{activeTopSection === "all-notes" ? (
-								<span className="sidebarQuickActionLabel">All Notes</span>
-							) : null}
+							<span className="sidebarQuickActionLabel">All Notes</span>
 							{activeTopSection === "all-notes" && allNotesCount !== null ? (
 								<span className="sidebarQuickActionCount">{allNotesCount}</span>
 							) : null}
@@ -469,9 +479,7 @@ export const SidebarContent = memo(function SidebarContent({
 							title="Open Collections"
 						>
 							<HugeiconsIcon icon={LibraryIcon} size={14} strokeWidth={0.9} />
-							{activeTopSection === "databases" ? (
-								<span className="sidebarQuickActionLabel">Collections</span>
-							) : null}
+							<span className="sidebarQuickActionLabel">Collections</span>
 						</button>
 					</div>
 				</div>

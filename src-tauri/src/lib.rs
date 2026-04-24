@@ -20,6 +20,7 @@ pub(crate) mod utils;
 mod web_clip;
 
 use serde::Serialize;
+use std::collections::HashMap;
 use std::sync::{
     atomic::{AtomicU64, Ordering},
     Mutex,
@@ -29,7 +30,7 @@ use tauri::menu::{
     WINDOW_SUBMENU_ID,
 };
 use tauri::{Emitter, Manager, RunEvent, State, Theme, WindowEvent};
-use tracing::warn;
+use tracing::{error, warn};
 
 #[cfg(target_os = "macos")]
 use window_vibrancy::{apply_vibrancy, clear_vibrancy, NSVisualEffectMaterial};
@@ -115,6 +116,22 @@ struct EditorMenuActionPayload {
 struct MenuState {
     recent_spaces: Mutex<Vec<String>>,
     show_markdown_menu: Mutex<bool>,
+    menu_shortcuts: Mutex<HashMap<String, Option<String>>>,
+}
+
+fn menu_item_with_shortcut<R: tauri::Runtime, M: Manager<R>>(
+    app: &M,
+    menu_shortcuts: &HashMap<String, Option<String>>,
+    id: &str,
+    label: &str,
+    enabled: bool,
+    default_accelerator: Option<&str>,
+) -> tauri::Result<MenuItem<R>> {
+    let accelerator = match menu_shortcuts.get(id) {
+        Some(override_val) => override_val.clone(),
+        None => default_accelerator.map(str::to_string),
+    };
+    MenuItem::with_id(app, id, label, enabled, accelerator.as_deref())
 }
 
 #[derive(Clone, Serialize)]
@@ -281,6 +298,7 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
     show_markdown_menu: bool,
     space_open: bool,
     recent_spaces: &[String],
+    menu_shortcuts: &HashMap<String, Option<String>>,
 ) -> tauri::Result<Menu<R>> {
     #[cfg(target_os = "macos")]
     let app_about = MenuItem::with_id(
@@ -291,8 +309,14 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
         None::<&str>,
     )?;
     #[cfg(target_os = "macos")]
-    let app_settings =
-        MenuItem::with_id(app, "app.settings", "Settings…", true, Some("CmdOrCtrl+,"))?;
+    let app_settings = menu_item_with_shortcut(
+        app,
+        menu_shortcuts,
+        "app.settings",
+        "Settings…",
+        true,
+        Some("CmdOrCtrl+,"),
+    )?;
 
     #[cfg(target_os = "macos")]
     let app_menu = Submenu::with_items(
@@ -312,199 +336,400 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
         ],
     )?;
 
-    let open_space =
-        MenuItem::with_id(app, "space.open", "Open Space…", true, Some("CmdOrCtrl+O"))?;
-    let create_space = MenuItem::with_id(
+    let open_space = menu_item_with_shortcut(
         app,
+        menu_shortcuts,
+        "space.open",
+        "Open Space…",
+        true,
+        Some("CmdOrCtrl+O"),
+    )?;
+    let create_space = menu_item_with_shortcut(
+        app,
+        menu_shortcuts,
         "space.create",
         "New Space…",
         true,
         Some("CmdOrCtrl+Shift+N"),
     )?;
-    let close_space =
-        MenuItem::with_id(app, "space.close", "Close Space", space_open, None::<&str>)?;
-    let reveal_space = MenuItem::with_id(
+    let close_space = menu_item_with_shortcut(
         app,
+        menu_shortcuts,
+        "space.close",
+        "Close Space",
+        space_open,
+        None,
+    )?;
+    let reveal_space = menu_item_with_shortcut(
+        app,
+        menu_shortcuts,
         "space.reveal",
         "Show Space in Finder",
         true,
-        None::<&str>,
+        None,
     )?;
-    let open_space_settings =
-        MenuItem::with_id(app, "space.settings", "Space Settings…", true, None::<&str>)?;
-    let sync_now = MenuItem::with_id(app, "space.git_sync_now", "Sync Now", true, None::<&str>)?;
-    let open_git_settings = MenuItem::with_id(
+    let open_space_settings = menu_item_with_shortcut(
         app,
+        menu_shortcuts,
+        "space.settings",
+        "Space Settings…",
+        true,
+        None,
+    )?;
+    let sync_now = menu_item_with_shortcut(
+        app,
+        menu_shortcuts,
+        "space.git_sync_now",
+        "Sync Now",
+        true,
+        None,
+    )?;
+    let open_git_settings = menu_item_with_shortcut(
+        app,
+        menu_shortcuts,
         "space.git_settings",
         "Git Sync Settings…",
         true,
-        None::<&str>,
+        None,
     )?;
-    let new_note = MenuItem::with_id(app, "file.new_note", "New Note", true, Some("CmdOrCtrl+N"))?;
-    let create_from_template = MenuItem::with_id(
+    let new_note = menu_item_with_shortcut(
         app,
+        menu_shortcuts,
+        "file.new_note",
+        "New Note",
+        true,
+        Some("CmdOrCtrl+N"),
+    )?;
+    let create_from_template = menu_item_with_shortcut(
+        app,
+        menu_shortcuts,
         "file.create_from_template",
         "Create From Template",
         true,
         Some("CmdOrCtrl+Shift+M"),
     )?;
-    let open_daily_note = MenuItem::with_id(
+    let open_daily_note = menu_item_with_shortcut(
         app,
+        menu_shortcuts,
         "file.open_daily_note",
         "Open Daily Note",
         true,
         Some("CmdOrCtrl+Shift+D"),
     )?;
-    let save_note = MenuItem::with_id(app, "file.save_note", "Save", true, Some("CmdOrCtrl+S"))?;
-    let export_html = MenuItem::with_id(
+    let save_note = menu_item_with_shortcut(
         app,
+        menu_shortcuts,
+        "file.save_note",
+        "Save",
+        true,
+        Some("CmdOrCtrl+S"),
+    )?;
+    let export_html = menu_item_with_shortcut(
+        app,
+        menu_shortcuts,
         "file.export_html",
         "Export as HTML…",
         true,
-        None::<&str>,
+        None,
     )?;
-    let close_tab = MenuItem::with_id(
+    let close_tab = menu_item_with_shortcut(
         app,
+        menu_shortcuts,
         "file.close_tab",
         "Close Tab",
         true,
         Some("CmdOrCtrl+W"),
     )?;
-    let toggle_ai = MenuItem::with_id(
+    let toggle_ai = menu_item_with_shortcut(
         app,
+        menu_shortcuts,
         "ai.toggle",
         "Toggle AI Pane",
         true,
         Some("CmdOrCtrl+Shift+A"),
     )?;
-    let editor_bold = MenuItem::with_id(app, "editor.bold", "Bold", true, None::<&str>)?;
-    let editor_italic = MenuItem::with_id(app, "editor.italic", "Italic", true, None::<&str>)?;
-    let editor_underline =
-        MenuItem::with_id(app, "editor.underline", "Underline", true, None::<&str>)?;
-    let editor_strikethrough = MenuItem::with_id(
+    let editor_bold =
+        menu_item_with_shortcut(app, menu_shortcuts, "editor.bold", "Bold", true, None)?;
+    let editor_italic =
+        menu_item_with_shortcut(app, menu_shortcuts, "editor.italic", "Italic", true, None)?;
+    let editor_underline = menu_item_with_shortcut(
         app,
+        menu_shortcuts,
+        "editor.underline",
+        "Underline",
+        true,
+        None,
+    )?;
+    let editor_strikethrough = menu_item_with_shortcut(
+        app,
+        menu_shortcuts,
         "editor.strikethrough",
         "Strikethrough",
         true,
-        None::<&str>,
+        None,
     )?;
-    let editor_link_set = MenuItem::with_id(
+    let editor_link_set = menu_item_with_shortcut(
         app,
+        menu_shortcuts,
         "editor.link_set",
         "Insert/Edit Link…",
         true,
-        None::<&str>,
+        None,
     )?;
-    let editor_link_clear =
-        MenuItem::with_id(app, "editor.link_clear", "Remove Link", true, None::<&str>)?;
-    let editor_heading_1 =
-        MenuItem::with_id(app, "editor.heading_1", "Heading 1", true, None::<&str>)?;
-    let editor_heading_2 =
-        MenuItem::with_id(app, "editor.heading_2", "Heading 2", true, None::<&str>)?;
-    let editor_heading_3 =
-        MenuItem::with_id(app, "editor.heading_3", "Heading 3", true, None::<&str>)?;
-    let editor_bullet_list =
-        MenuItem::with_id(app, "editor.bullet_list", "Bullet List", true, None::<&str>)?;
-    let editor_numbered_list = MenuItem::with_id(
+    let editor_link_clear = menu_item_with_shortcut(
         app,
+        menu_shortcuts,
+        "editor.link_clear",
+        "Remove Link",
+        true,
+        None,
+    )?;
+    let editor_heading_1 = menu_item_with_shortcut(
+        app,
+        menu_shortcuts,
+        "editor.heading_1",
+        "Heading 1",
+        true,
+        None,
+    )?;
+    let editor_heading_2 = menu_item_with_shortcut(
+        app,
+        menu_shortcuts,
+        "editor.heading_2",
+        "Heading 2",
+        true,
+        None,
+    )?;
+    let editor_heading_3 = menu_item_with_shortcut(
+        app,
+        menu_shortcuts,
+        "editor.heading_3",
+        "Heading 3",
+        true,
+        None,
+    )?;
+    let editor_collapse_all_headings = menu_item_with_shortcut(
+        app,
+        menu_shortcuts,
+        "editor.collapse_all_headings",
+        "Collapse All Headings",
+        true,
+        None,
+    )?;
+    let editor_expand_all_headings = menu_item_with_shortcut(
+        app,
+        menu_shortcuts,
+        "editor.expand_all_headings",
+        "Expand All Headings",
+        true,
+        None,
+    )?;
+    let editor_bullet_list = menu_item_with_shortcut(
+        app,
+        menu_shortcuts,
+        "editor.bullet_list",
+        "Bullet List",
+        true,
+        None,
+    )?;
+    let editor_numbered_list = menu_item_with_shortcut(
+        app,
+        menu_shortcuts,
         "editor.numbered_list",
         "Numbered List",
         true,
-        None::<&str>,
+        None,
     )?;
-    let editor_todo_list =
-        MenuItem::with_id(app, "editor.todo_list", "To-do List", true, None::<&str>)?;
-    let editor_quote = MenuItem::with_id(app, "editor.quote", "Quote", true, None::<&str>)?;
-    let editor_code_block =
-        MenuItem::with_id(app, "editor.code_block", "Code Block", true, None::<&str>)?;
-    let editor_mermaid_chart = MenuItem::with_id(
+    let editor_todo_list = menu_item_with_shortcut(
         app,
+        menu_shortcuts,
+        "editor.todo_list",
+        "To-do List",
+        true,
+        None,
+    )?;
+    let editor_quote =
+        menu_item_with_shortcut(app, menu_shortcuts, "editor.quote", "Quote", true, None)?;
+    let editor_code_block = menu_item_with_shortcut(
+        app,
+        menu_shortcuts,
+        "editor.code_block",
+        "Code Block",
+        true,
+        None,
+    )?;
+    let editor_mermaid_chart = menu_item_with_shortcut(
+        app,
+        menu_shortcuts,
         "editor.mermaid_chart",
         "Mermaid Chart",
         true,
-        None::<&str>,
+        None,
     )?;
-    let editor_table = MenuItem::with_id(app, "editor.table", "Table", true, None::<&str>)?;
-    let editor_divider = MenuItem::with_id(app, "editor.divider", "Divider", true, None::<&str>)?;
-    let editor_callout_info = MenuItem::with_id(
+    let editor_table =
+        menu_item_with_shortcut(app, menu_shortcuts, "editor.table", "Table", true, None)?;
+    let editor_divider =
+        menu_item_with_shortcut(app, menu_shortcuts, "editor.divider", "Divider", true, None)?;
+    let editor_callout_info = menu_item_with_shortcut(
         app,
+        menu_shortcuts,
         "editor.callout_info",
         "Info Callout",
         true,
-        None::<&str>,
+        None,
     )?;
-    let editor_callout_warning = MenuItem::with_id(
+    let editor_callout_warning = menu_item_with_shortcut(
         app,
+        menu_shortcuts,
         "editor.callout_warning",
         "Warning Callout",
         true,
-        None::<&str>,
+        None,
     )?;
-    let editor_callout_error = MenuItem::with_id(
+    let editor_callout_error = menu_item_with_shortcut(
         app,
+        menu_shortcuts,
         "editor.callout_error",
         "Error Callout",
         true,
-        None::<&str>,
+        None,
     )?;
-    let editor_callout_success = MenuItem::with_id(
+    let editor_callout_success = menu_item_with_shortcut(
         app,
+        menu_shortcuts,
         "editor.callout_success",
         "Success Callout",
         true,
-        None::<&str>,
+        None,
     )?;
-    let editor_callout_tip =
-        MenuItem::with_id(app, "editor.callout_tip", "Tip Callout", true, None::<&str>)?;
-    let editor_color_gray =
-        MenuItem::with_id(app, "editor.color_gray", "Gray", true, None::<&str>)?;
-    let editor_color_brown =
-        MenuItem::with_id(app, "editor.color_brown", "Brown", true, None::<&str>)?;
-    let editor_color_orange =
-        MenuItem::with_id(app, "editor.color_orange", "Orange", true, None::<&str>)?;
-    let editor_color_yellow =
-        MenuItem::with_id(app, "editor.color_yellow", "Yellow", true, None::<&str>)?;
-    let editor_color_green =
-        MenuItem::with_id(app, "editor.color_green", "Green", true, None::<&str>)?;
-    let editor_color_blue =
-        MenuItem::with_id(app, "editor.color_blue", "Blue", true, None::<&str>)?;
-    let editor_color_purple =
-        MenuItem::with_id(app, "editor.color_purple", "Purple", true, None::<&str>)?;
-    let editor_color_red = MenuItem::with_id(app, "editor.color_red", "Red", true, None::<&str>)?;
-    let editor_color_clear =
-        MenuItem::with_id(app, "editor.color_clear", "Clear Color", true, None::<&str>)?;
-    let editor_highlight_yellow =
-        MenuItem::with_id(app, "editor.highlight_yellow", "Yellow", true, None::<&str>)?;
-    let editor_highlight_blue =
-        MenuItem::with_id(app, "editor.highlight_blue", "Blue", true, None::<&str>)?;
-    let editor_highlight_green =
-        MenuItem::with_id(app, "editor.highlight_green", "Green", true, None::<&str>)?;
-    let editor_highlight_red =
-        MenuItem::with_id(app, "editor.highlight_red", "Red", true, None::<&str>)?;
-    let editor_highlight_clear = MenuItem::with_id(
+    let editor_callout_tip = menu_item_with_shortcut(
         app,
+        menu_shortcuts,
+        "editor.callout_tip",
+        "Tip Callout",
+        true,
+        None,
+    )?;
+    let editor_color_gray =
+        menu_item_with_shortcut(app, menu_shortcuts, "editor.color_gray", "Gray", true, None)?;
+    let editor_color_brown = menu_item_with_shortcut(
+        app,
+        menu_shortcuts,
+        "editor.color_brown",
+        "Brown",
+        true,
+        None,
+    )?;
+    let editor_color_orange = menu_item_with_shortcut(
+        app,
+        menu_shortcuts,
+        "editor.color_orange",
+        "Orange",
+        true,
+        None,
+    )?;
+    let editor_color_yellow = menu_item_with_shortcut(
+        app,
+        menu_shortcuts,
+        "editor.color_yellow",
+        "Yellow",
+        true,
+        None,
+    )?;
+    let editor_color_green = menu_item_with_shortcut(
+        app,
+        menu_shortcuts,
+        "editor.color_green",
+        "Green",
+        true,
+        None,
+    )?;
+    let editor_color_blue =
+        menu_item_with_shortcut(app, menu_shortcuts, "editor.color_blue", "Blue", true, None)?;
+    let editor_color_purple = menu_item_with_shortcut(
+        app,
+        menu_shortcuts,
+        "editor.color_purple",
+        "Purple",
+        true,
+        None,
+    )?;
+    let editor_color_red =
+        menu_item_with_shortcut(app, menu_shortcuts, "editor.color_red", "Red", true, None)?;
+    let editor_color_clear = menu_item_with_shortcut(
+        app,
+        menu_shortcuts,
+        "editor.color_clear",
+        "Clear Color",
+        true,
+        None,
+    )?;
+    let editor_highlight_yellow = menu_item_with_shortcut(
+        app,
+        menu_shortcuts,
+        "editor.highlight_yellow",
+        "Yellow",
+        true,
+        None,
+    )?;
+    let editor_highlight_blue = menu_item_with_shortcut(
+        app,
+        menu_shortcuts,
+        "editor.highlight_blue",
+        "Blue",
+        true,
+        None,
+    )?;
+    let editor_highlight_green = menu_item_with_shortcut(
+        app,
+        menu_shortcuts,
+        "editor.highlight_green",
+        "Green",
+        true,
+        None,
+    )?;
+    let editor_highlight_red = menu_item_with_shortcut(
+        app,
+        menu_shortcuts,
+        "editor.highlight_red",
+        "Red",
+        true,
+        None,
+    )?;
+    let editor_highlight_clear = menu_item_with_shortcut(
+        app,
+        menu_shortcuts,
         "editor.highlight_clear",
         "Clear Highlight",
         true,
-        None::<&str>,
+        None,
     )?;
-    let close_ai = MenuItem::with_id(app, "ai.close", "Close AI Pane", true, None::<&str>)?;
-    let attach_current_note = MenuItem::with_id(
+    let close_ai =
+        menu_item_with_shortcut(app, menu_shortcuts, "ai.close", "Close AI Pane", true, None)?;
+    let attach_current_note = menu_item_with_shortcut(
         app,
+        menu_shortcuts,
         "ai.attach_current_note",
         "Send Current Note to AI",
         true,
         Some("CmdOrCtrl+Alt+A"),
     )?;
-    let attach_all_open_notes = MenuItem::with_id(
+    let attach_all_open_notes = menu_item_with_shortcut(
         app,
+        menu_shortcuts,
         "ai.attach_all_open_notes",
         "Send All Open Notes to AI",
         true,
         Some("CmdOrCtrl+Alt+Shift+A"),
     )?;
-    let open_ai_settings =
-        MenuItem::with_id(app, "ai.settings", "AI Settings…", true, None::<&str>)?;
+    let open_ai_settings = menu_item_with_shortcut(
+        app,
+        menu_shortcuts,
+        "ai.settings",
+        "AI Settings…",
+        true,
+        None,
+    )?;
     let recent_spaces_menu = build_recent_spaces_submenu(app, recent_spaces)?;
 
     let file_menu = Submenu::with_items(
@@ -582,6 +807,8 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
             &editor_heading_1,
             &editor_heading_2,
             &editor_heading_3,
+            &editor_collapse_all_headings,
+            &editor_expand_all_headings,
             &PredefinedMenuItem::separator(app)?,
             &editor_bullet_list,
             &editor_numbered_list,
@@ -744,11 +971,16 @@ fn set_markdown_menu_visible(app: tauri::AppHandle, visible: bool) -> Result<(),
         .show_markdown_menu
         .lock()
         .map_err(|_| "failed to lock markdown menu state".to_string())? = visible;
+    let menu_shortcuts = menu_state
+        .menu_shortcuts
+        .lock()
+        .map_err(|_| "failed to lock menu shortcuts state".to_string())?
+        .clone();
     let space_open = app
         .try_state::<space::SpaceState>()
         .map(|state| space_is_open(&state))
         .unwrap_or(false);
-    let menu = build_main_menu(&app, visible, space_open, &recent_spaces)
+    let menu = build_main_menu(&app, visible, space_open, &recent_spaces, &menu_shortcuts)
         .map_err(|error| error.to_string())?;
     app.set_menu(menu).map_err(|error| error.to_string())?;
     Ok(())
@@ -792,13 +1024,65 @@ fn set_recent_spaces_menu(
         .show_markdown_menu
         .lock()
         .map_err(|_| "failed to lock markdown menu state".to_string())?;
+    let menu_shortcuts = menu_state
+        .menu_shortcuts
+        .lock()
+        .map_err(|_| "failed to lock menu shortcuts state".to_string())?
+        .clone();
     let space_open = app
         .try_state::<space::SpaceState>()
         .map(|state| space_is_open(&state))
         .unwrap_or(false);
-    let menu = build_main_menu(&app, show_markdown_menu, space_open, &filtered)
-        .map_err(|error| error.to_string())?;
+    let menu = build_main_menu(
+        &app,
+        show_markdown_menu,
+        space_open,
+        &filtered,
+        &menu_shortcuts,
+    )
+    .map_err(|error| error.to_string())?;
     app.set_menu(menu).map_err(|error| error.to_string())?;
+    Ok(())
+}
+
+#[tauri::command(rename_all = "snake_case")]
+fn set_menu_shortcuts(
+    app: tauri::AppHandle,
+    menu_state: State<'_, MenuState>,
+    accelerators: HashMap<String, Option<String>>,
+) -> Result<(), String> {
+    let recent_spaces = menu_state
+        .recent_spaces
+        .lock()
+        .map_err(|_| "failed to lock recent spaces state".to_string())?
+        .clone();
+    let show_markdown_menu = *menu_state
+        .show_markdown_menu
+        .lock()
+        .map_err(|_| "failed to lock markdown menu state".to_string())?;
+    let space_open = app
+        .try_state::<space::SpaceState>()
+        .map(|state| space_is_open(&state))
+        .unwrap_or(false);
+    let menu = build_main_menu(
+        &app,
+        show_markdown_menu,
+        space_open,
+        &recent_spaces,
+        &accelerators,
+    )
+    .map_err(|error| {
+        error!("failed to build menu with shortcut accelerators: {error}");
+        error.to_string()
+    })?;
+    app.set_menu(menu).map_err(|error| {
+        error!("failed to install menu with shortcut accelerators: {error}");
+        error.to_string()
+    })?;
+    *menu_state
+        .menu_shortcuts
+        .lock()
+        .map_err(|_| "failed to lock menu shortcuts state".to_string())? = accelerators;
     Ok(())
 }
 
@@ -872,7 +1156,7 @@ pub fn run() {
     init_tracing();
 
     tauri::Builder::default()
-        .menu(|app| build_main_menu(app, false, false, &[]))
+        .menu(|app| build_main_menu(app, false, false, &[], &HashMap::new()))
         .on_menu_event(|app, event| match event.id().as_ref() {
             "file.new_note" => {
                 let _ = app.emit("menu:new_note", ());
@@ -1032,6 +1316,7 @@ pub fn run() {
             print_current_window,
             set_markdown_menu_visible,
             set_recent_spaces_menu,
+            set_menu_shortcuts,
             set_window_vibrancy_theme,
             license::commands::license_bootstrap_status,
             license::commands::license_activate,

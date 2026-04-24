@@ -1,10 +1,11 @@
 import { memo, useCallback, useState } from "react";
 import type { DragEvent, MouseEvent } from "react";
+import { useShortcutBindings } from "../../hooks/useShortcutBindings";
 import { AI_AGENT_TAB_ID } from "../../lib/aiAgent";
 import { ALL_DOCS_TAB_ID } from "../../lib/allDocs";
 import { CALENDAR_TAB_ID } from "../../lib/calendar";
 import { DATABASES_TAB_ID } from "../../lib/databases";
-import { getShortcutTooltip } from "../../lib/shortcuts";
+import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
 import { TEMPLATES_TAB_ID } from "../../lib/templatesView";
 import type { WorkspaceTab } from "./useTabManager";
 
@@ -57,6 +58,7 @@ export function TabBar({
 	onDragEnd,
 	onReorder,
 }: TabBarProps) {
+	const { getBinding } = useShortcutBindings();
 	const stripFileExtension = useCallback((name: string) => {
 		if (!name || name.startsWith(".")) return name;
 		const withoutExt = name.replace(/\.[^./]+$/, "");
@@ -86,6 +88,7 @@ export function TabBar({
 
 	const [hovered, setHovered] = useState(false);
 	const showTabs = tabs.length > 1;
+	const newTabShortcut = getBinding("new-tab");
 	const breadcrumbSegments =
 		activeTabPath && !isPathSpecial(activeTabPath)
 			? activeTabPath.split("/").filter(Boolean)
@@ -147,7 +150,11 @@ export function TabBar({
 							type="button"
 							className="mainTabAdd"
 							onClick={onOpenBlankTab}
-							title={`Open blank tab (${getShortcutTooltip({ meta: true, key: "t" })})`}
+							title={`Open blank tab${
+								newTabShortcut
+									? ` (${formatShortcutForPlatform(newTabShortcut)})`
+									: ""
+							}`}
 							aria-label="Open blank tab"
 						>
 							+

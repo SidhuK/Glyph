@@ -442,3 +442,151 @@
 		flex-wrap: wrap;
 	}
 }
+
+.shortcutsPane {
+	padding-bottom: 24px;
+}
+
+.shortcutsToolbar {
+	display: flex;
+	flex-direction: column;
+	gap: 14px;
+	padding: 16px 18px 18px;
+}
+
+.shortcutsSearchInput {
+	width: 100%;
+	height: 40px;
+	padding: 0 14px;
+	border-radius: var(--radius-md);
+	border: 1px solid color-mix(in srgb, var(--border-light) 82%, transparent);
+	background: var(--settings-control-surface);
+	color: var(--text-primary);
+	font-size: var(--text-sm);
+}
+
+.shortcutsSearchInput::placeholder {
+	color: var(--text-tertiary);
+}
+
+.shortcutsHelpPanel {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	flex-wrap: wrap;
+	padding: 12px 14px;
+	border-radius: var(--radius-md);
+	background: color-mix(in srgb, var(--interactive-accent) 7%, transparent);
+	border: 1px solid
+		color-mix(in srgb, var(--interactive-accent) 16%, transparent);
+}
+
+.shortcutsHelpText {
+	margin: 0;
+	flex: 1 1 320px;
+	color: var(--text-secondary);
+	font-size: var(--text-xs);
+	line-height: 1.45;
+}
+
+.shortcutsHelpChips {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	flex-wrap: wrap;
+}
+
+.shortcutsHelpChips span {
+	display: inline-flex;
+	align-items: center;
+	min-height: 22px;
+	padding: 0 8px;
+	border-radius: var(--radius-sm);
+	border: 1px solid color-mix(in srgb, var(--border-light) 70%, transparent);
+	background: var(--settings-control-surface);
+	color: var(--text-secondary);
+	font-size: 11px;
+	font-weight: var(--font-medium);
+}
+
+.shortcutResetAllButton,
+.shortcutActionButton {
+	border: 1px solid color-mix(in srgb, var(--border-default) 92%, transparent);
+	background: var(--settings-control-surface-strong);
+	color: var(--text-primary);
+	box-shadow: inset 0 1px 0 color-mix(in srgb, white 52%, transparent);
+}
+
+.shortcutResetAllButton:hover,
+.shortcutActionButton:hover {
+	border-color: color-mix(
+		in srgb,
+		var(--interactive-accent) 28%,
+		var(--border-default)
+	);
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 8%,
+		var(--settings-control-surface-strong)
+	);
+	color: var(--text-primary);
+}
+
+.shortcutResetAllButton {
+	min-width: 92px;
+}
+
+.shortcutActionButton {
+	min-width: 76px;
+}
+
+.shortcutError {
+	padding: 10px 12px;
+	border-radius: var(--radius-md);
+	border: 1px solid color-mix(in srgb, var(--status-danger-fg) 38%, transparent);
+	background: color-mix(in srgb, var(--status-danger-fg) 10%, var(--bg-primary));
+	color: var(--text-primary);
+	font-size: var(--text-xs);
+	line-height: 1.45;
+}
+
+.shortcutBindingRow {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	flex-wrap: wrap;
+	width: 100%;
+}
+
+.shortcutRecordButton {
+	min-width: 180px;
+	height: 38px;
+	padding: 0 12px;
+	border-radius: var(--radius-md);
+	border: 1px solid color-mix(in srgb, var(--border-light) 82%, transparent);
+	background: var(--settings-control-surface);
+	color: var(--text-primary);
+	font-size: var(--text-sm);
+	font-weight: var(--font-medium);
+	text-align: left;
+}
+
+.shortcutRecordButton.is-recording {
+	border-color: color-mix(in srgb, var(--interactive-accent) 60%, transparent);
+	box-shadow: 0 0 0 3px
+		color-mix(in srgb, var(--interactive-accent) 14%, transparent);
+	background: color-mix(
+		in srgb,
+		var(--interactive-accent) 8%,
+		var(--settings-control-surface)
+	);
+}
+
+.shortcutBindingActions {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	flex-wrap: wrap;
+}
