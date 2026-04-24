@@ -2,7 +2,8 @@ import { ArchiveArrowDownIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, m } from "motion/react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { getShortcutTooltip } from "../../lib/shortcuts";
+import { useShortcutBindings } from "../../hooks/useShortcutBindings";
+import { formatShortcutForPlatform } from "../../lib/shortcuts/platform";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { LayoutAlignLeft } from "../Icons";
 import { WindowChromeIconButton } from "./WindowChromeIconButton";
@@ -38,8 +39,10 @@ export function SidebarHeader({
 	updateVersion,
 	onInstallUpdate,
 }: SidebarHeaderProps) {
+	const { getBinding } = useShortcutBindings();
 	const [menuOpen, setMenuOpen] = useState(false);
 	const menuRef = useRef<HTMLDivElement | null>(null);
+	const toggleSidebarShortcut = getBinding("toggle-sidebar");
 
 	const displayRecentSpaces = useMemo(
 		() =>
@@ -93,7 +96,11 @@ export function SidebarHeader({
 						ariaLabel={sidebarCollapsed ? "Expand sidebar" : "Collapse sidebar"}
 						ariaPressed={!sidebarCollapsed}
 						onClick={onToggleSidebar}
-						title={`${sidebarCollapsed ? "Expand" : "Collapse"} sidebar (${getShortcutTooltip({ meta: true, shift: true, key: "b" })})`}
+						title={`${sidebarCollapsed ? "Expand" : "Collapse"} sidebar${
+							toggleSidebarShortcut
+								? ` (${formatShortcutForPlatform(toggleSidebarShortcut)})`
+								: ""
+						}`}
 					>
 						<LayoutAlignLeft size={14} />
 					</WindowChromeIconButton>

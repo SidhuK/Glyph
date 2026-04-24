@@ -258,6 +258,7 @@
 
 .sidebarNavRow {
 	display: flex;
+	flex-direction: column;
 	align-items: center;
 	gap: 2px;
 	width: 100%;
@@ -268,25 +269,39 @@
 }
 
 .sidebarNavBtn {
-	flex: 1 1 0;
-	justify-content: center;
+	flex: 0 0 auto;
+	width: 100%;
+	justify-content: flex-start;
+	min-width: 0;
 	min-height: 28px;
-	padding: 4px;
+	padding: 4px 8px;
 	background: transparent;
 	border-radius: var(--radius-md);
 	font-size: 12px;
-	gap: 5px;
+	gap: 7px;
+	color: var(--text-primary);
+	border: 1px solid transparent;
+	transition: background var(--transition-fast), border-color
+		var(--transition-fast), color var(--transition-fast);
 }
 
 .sidebarNavBtn[data-expanded="true"] {
-	padding: 4px 8px;
-	background: var(--bg-hover);
+	background: color-mix(in srgb, var(--bg-hover) 82%, transparent);
+	border-color: color-mix(in srgb, var(--border-light) 42%, transparent);
+	color: var(--text-primary);
 }
 
 .sidebarNavBtn:hover {
 	background: var(--bg-hover);
+	color: var(--text-primary);
 }
 
 .sidebarNavBtn .sidebarQuickActionLabel {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 	font-size: 12px;
+	font-weight: var(--font-medium);
+	line-height: 1;
 }

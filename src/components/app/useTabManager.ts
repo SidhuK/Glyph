@@ -638,44 +638,34 @@ export function useTabManager(spacePath: string | null) {
 		[commitTabsChange],
 	);
 
-	useEffect(() => {
-		const onKeyDown = (event: KeyboardEvent) => {
-			const mod = event.metaKey || event.ctrlKey;
-			if (!mod) return;
-			const key = event.key.toLowerCase();
-			if (key === "tab") {
-				if (!tabs.length) return;
-				event.preventDefault();
-				const currentIndex = activeTabId
-					? tabs.findIndex((tab) => tab.id === activeTabId)
-					: -1;
-				const step = event.shiftKey ? -1 : 1;
-				const base = currentIndex >= 0 ? currentIndex : event.shiftKey ? 0 : -1;
-				const nextIndex = (base + step + tabs.length) % tabs.length;
-				setActiveTabId(tabs[nextIndex]?.id ?? null);
-				return;
-			}
-			if (key === "w" && event.shiftKey) {
-				event.preventDefault();
-				closeAllTabs();
-				return;
-			}
-			if (key === "w") {
-				event.preventDefault();
-				closeActiveTab();
-				return;
-			}
-			if (!event.shiftKey && /^[1-9]$/.test(key)) {
-				const index = Number.parseInt(key, 10) - 1;
-				const tab = tabs[index];
-				if (!tab) return;
-				event.preventDefault();
-				setActiveTabId(tab.id);
-			}
-		};
-		window.addEventListener("keydown", onKeyDown);
-		return () => window.removeEventListener("keydown", onKeyDown);
-	}, [activeTabId, closeActiveTab, closeAllTabs, setActiveTabId, tabs]);
+	const activateNextTab = useCallback(() => {
+		if (!tabsRef.current.length) return;
+		const currentIndex = activeTabIdRef.current
+			? tabsRef.current.findIndex((tab) => tab.id === activeTabIdRef.current)
+			: -1;
+		const nextIndex = (Math.max(currentIndex, -1) + 1) % tabsRef.current.length;
+		setActiveTabId(tabsRef.current[nextIndex]?.id ?? null);
+	}, [setActiveTabId]);
+
+	const activatePreviousTab = useCallback(() => {
+		if (!tabsRef.current.length) return;
+		const currentIndex = activeTabIdRef.current
+			? tabsRef.current.findIndex((tab) => tab.id === activeTabIdRef.current)
+			: 0;
+		const nextIndex =
+			(currentIndex - 1 + tabsRef.current.length) % tabsRef.current.length;
+		setActiveTabId(tabsRef.current[nextIndex]?.id ?? null);
+	}, [setActiveTabId]);
+
+	const activateTabByIndex = useCallback(
+		(index: number) => {
+			const tab = tabsRef.current[index];
+			if (!tab) return false;
+			setActiveTabId(tab.id);
+			return true;
+		},
+		[setActiveTabId],
+	);
 
 	return {
 		tabs,
@@ -688,6 +678,7 @@ export function useTabManager(spacePath: string | null) {
 		dirtyByPath,
 		setDirtyByPath,
 		closeTab,
+		closeAllTabs,
 		closeActiveTab,
 		closeTabsForPathRemoval,
 		renameTabsForPath,
@@ -700,5 +691,8 @@ export function useTabManager(spacePath: string | null) {
 		canGoForward,
 		goBack,
 		goForward,
+		activateNextTab,
+		activatePreviousTab,
+		activateTabByIndex,
 	};
 }

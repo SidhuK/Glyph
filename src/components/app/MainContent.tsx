@@ -19,6 +19,7 @@ import {
 	useUILayoutContext,
 } from "../../contexts";
 import { useResizablePanel } from "../../hooks/useResizablePanel";
+import { useShortcutBindings } from "../../hooks/useShortcutBindings";
 import { AI_AGENT_TAB_ID } from "../../lib/aiAgent";
 import { ALL_DOCS_TAB_ID } from "../../lib/allDocs";
 import {
@@ -81,6 +82,11 @@ const AIAgentPane = lazy(loadAIAgentPane);
 const DatabasesPane = lazy(loadDatabasesPane);
 const CalendarPane = lazy(loadCalendarPane);
 const AllDocsPane = lazy(loadAllDocsPane);
+const ShortcutsSettingsPane = lazy(() =>
+	import("../settings/ShortcutsSettingsPane").then((module) => ({
+		default: module.ShortcutsSettingsPane,
+	})),
+);
 
 function readStorage(key: string): string | null {
 	if (typeof window === "undefined") return null;
@@ -401,6 +407,7 @@ export const MainContent = memo(function MainContent({
 	onOpenDailyNotesSettings,
 }: MainContentProps) {
 	const { spacePath, settingsLoaded, onOpenSpace } = useSpace();
+	const { getBinding } = useShortcutBindings();
 	const {
 		dailyNotesFolder,
 		templateFolder,
@@ -470,9 +477,13 @@ export const MainContent = memo(function MainContent({
 	}, [closeActiveTab, closeTabsForPathRemoval, renameTabsForPath]);
 
 	const viewerPath = activeTabPath;
+	const openCommandPaletteShortcut = getBinding("open-command-palette");
 	const commandShortcutParts = useMemo(
-		() => formatShortcutPartsForPlatform({ meta: true, key: "k" }),
-		[],
+		() =>
+			openCommandPaletteShortcut
+				? formatShortcutPartsForPlatform(openCommandPaletteShortcut)
+				: [],
+		[openCommandPaletteShortcut],
 	);
 	const hasStarterCompletion =
 		onboarding.createdFirstNote ||
@@ -771,6 +782,15 @@ export const MainContent = memo(function MainContent({
 	const settingsTabContentByTab: Record<SettingsTab, ReactNode> = {
 		general: <GeneralSettingsPane />,
 		appearance: <AppearanceSettingsPane />,
+		shortcuts: (
+			<Suspense
+				fallback={
+					<div className="databaseLoadingState">Loading shortcuts…</div>
+				}
+			>
+				<ShortcutsSettingsPane />
+			</Suspense>
+		),
 		ai: <AiSettingsPane />,
 		space: <SpaceSettingsPane />,
 		git: <GitSettingsPane />,
