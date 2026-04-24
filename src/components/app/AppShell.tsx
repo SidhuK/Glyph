@@ -72,6 +72,7 @@ import {
 } from "../../lib/appEvents";
 import { CALENDAR_TAB_ID } from "../../lib/calendar";
 import { DATABASES_TAB_ID } from "../../lib/databases";
+import type { GlyphDeepLink } from "../../lib/deeplinks";
 import { promptNoteExportPath } from "../../lib/export";
 import { getLicenseStatus } from "../../lib/license";
 import {
@@ -124,6 +125,7 @@ import {
 	loadCalendarPane,
 	loadDatabasesPane,
 } from "./prefetchablePanes";
+import { useDeepLinks } from "./useDeepLinks";
 import { useTabManager } from "./useTabManager";
 
 const loadCommandPalette = () =>
@@ -183,6 +185,7 @@ export function AppShell() {
 		onCreateSpace,
 		closeSpace,
 		recentSpaces,
+		settingsLoaded,
 	} = space;
 	const fileTreeCtx = useFileTreeContext();
 	const {
@@ -228,6 +231,7 @@ export function AppShell() {
 	>("commands");
 	const [paletteInitialQuery, setPaletteInitialQuery] = useState("");
 	const [openDatabasesId, setOpenDatabasesId] = useState<string | null>(null);
+	const [openDatabasesRequestNonce, setOpenDatabasesRequestNonce] = useState(0);
 	const [showGettingStartedRequest, setShowGettingStartedRequest] = useState(0);
 	const [dailyNoteSetupNoticeRequest, setDailyNoteSetupNoticeRequest] =
 		useState(0);
@@ -922,6 +926,7 @@ export function AppShell() {
 	const openDatabasesTab = useCallback(
 		(databaseId?: string | null) => {
 			setOpenDatabasesId(databaseId ?? null);
+			setOpenDatabasesRequestNonce((value) => value + 1);
 			openSpecialTab(DATABASES_TAB_ID);
 		},
 		[openSpecialTab],
@@ -982,6 +987,83 @@ export function AppShell() {
 	const openGettingStarted = useCallback(() => {
 		setShowGettingStartedRequest((prev) => prev + 1);
 	}, []);
+
+	const revealFileTreePath = useCallback(
+		async (path: string) => {
+			setSidebarCollapsed(false);
+			setSidebarViewMode("files");
+			const parentPath = parentDir(path);
+			const ancestorDirs: string[] = [];
+			let current = parentPath;
+			while (current) {
+				ancestorDirs.unshift(current);
+				current = parentDir(current);
+			}
+			updateExpandedDirs((prev) => {
+				const next = new Set(prev);
+				for (const dir of ancestorDirs) next.add(dir);
+				return next;
+			});
+			await Promise.all(ancestorDirs.map((dir) => fileTree.loadDir(dir)));
+		},
+		[
+			fileTree.loadDir,
+			setSidebarCollapsed,
+			setSidebarViewMode,
+			updateExpandedDirs,
+		],
+	);
+
+	const openDeepLinkedWorkspaceFile = useCallback(
+		async (path: string) => {
+			await revealFileTreePath(path);
+			await openWorkspaceFile(path);
+		},
+		[openWorkspaceFile, revealFileTreePath],
+	);
+
+	const handleOpenDeepLink = useCallback(
+		async (link: GlyphDeepLink) => {
+			setError("");
+			switch (link.kind) {
+				case "note":
+				case "file":
+					await openDeepLinkedWorkspaceFile(link.path);
+					return;
+				case "daily-note":
+					requestOpenDailyNote();
+					return;
+				case "all-docs":
+					openAllDocsTab();
+					return;
+				case "calendar":
+					openCalendarTab();
+					return;
+				case "databases":
+					openDatabasesTab(link.databaseId);
+					return;
+				case "settings":
+					openSettings(link.tab);
+					return;
+			}
+		},
+		[
+			openAllDocsTab,
+			openCalendarTab,
+			openDatabasesTab,
+			openDeepLinkedWorkspaceFile,
+			openSettings,
+			requestOpenDailyNote,
+			setError,
+		],
+	);
+
+	useDeepLinks({
+		settingsLoaded,
+		spacePath,
+		onOpenDeepLink: handleOpenDeepLink,
+		onError: setError,
+	});
 
 	const handleCreateNoteFromStarter = useCallback(async () => {
 		if (!spacePath) return;
@@ -2150,6 +2232,7 @@ export function AppShell() {
 				onGoForward={goForward}
 				showGettingStartedRequest={showGettingStartedRequest}
 				openDatabasesId={openDatabasesId}
+				openDatabasesRequestNonce={openDatabasesRequestNonce}
 				dailyNoteSetupNoticeRequest={dailyNoteSetupNoticeRequest}
 				onOpenDailyNotesSettings={() => openSettings("general")}
 			/>

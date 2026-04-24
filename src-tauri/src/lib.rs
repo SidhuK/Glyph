@@ -1151,6 +1151,14 @@ fn set_window_vibrancy_theme(window: tauri::WebviewWindow, theme: String) -> Res
     }
 }
 
+fn focus_main_window<R: tauri::Runtime>(app: &tauri::AppHandle<R>) {
+    if let Some(window) = app.get_webview_window("main") {
+        let _ = window.show();
+        let _ = window.unminimize();
+        let _ = window.set_focus();
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     init_tracing();
@@ -1253,6 +1261,12 @@ pub fn run() {
         .setup(|app| {
             ai_rig::commands::refresh_provider_support_on_startup(app.handle().clone());
 
+            #[cfg(any(target_os = "linux", all(debug_assertions, windows)))]
+            {
+                use tauri_plugin_deep_link::DeepLinkExt;
+                app.deep_link().register_all()?;
+            }
+
             if let Some(window) = app.get_webview_window("main") {
                 if let Ok(Some(monitor)) = window.current_monitor() {
                     let monitor_size = monitor.size();
@@ -1301,6 +1315,10 @@ pub fn run() {
         .manage(git_sync::GitSyncState::default())
         .manage(space::SpaceState::default())
         .manage(MenuState::default())
+        .plugin(tauri_plugin_single_instance::init(|app, _argv, _cwd| {
+            focus_main_window(app);
+        }))
+        .plugin(tauri_plugin_deep_link::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_notification::init())
         .plugin(tauri_plugin_opener::init())
@@ -1435,11 +1453,7 @@ pub fn run() {
         .run(|app_handle, event| {
             #[cfg(target_os = "macos")]
             if let RunEvent::Reopen { .. } = event {
-                if let Some(window) = app_handle.get_webview_window("main") {
-                    let _ = window.show();
-                    let _ = window.unminimize();
-                    let _ = window.set_focus();
-                }
+                focus_main_window(app_handle);
             }
         });
 }

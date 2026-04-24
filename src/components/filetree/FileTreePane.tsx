@@ -4,6 +4,7 @@ import { m } from "motion/react";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import { useFileTreeContext, useSpace } from "../../contexts";
+import { glyphDeepLinkForFile } from "../../lib/deeplinks";
 import { extractErrorMessage } from "../../lib/errorUtils";
 import { loadSettings } from "../../lib/settings";
 import type {
@@ -69,6 +70,7 @@ interface TreeEntriesProps {
 	onNewDatabaseInDir: (dirPath: string) => Promise<string | null>;
 	onNewFolderInDir: (dirPath: string) => Promise<string | null>;
 	onDuplicateFile: (path: string) => Promise<string | null>;
+	onCopyDeeplink: (path: string) => Promise<void>;
 	onDeletePath: (path: string, kind: "dir" | "file") => Promise<void>;
 	onStartRename: (path: string) => void;
 	onCommitDirRename: (dirPath: string, nextName: string) => Promise<void>;
@@ -109,6 +111,7 @@ function TreeEntries({
 	onNewDatabaseInDir,
 	onNewFolderInDir,
 	onDuplicateFile,
+	onCopyDeeplink,
 	onDeletePath,
 	onStartRename,
 	onCommitDirRename,
@@ -184,6 +187,7 @@ function TreeEntries({
 									onNewDatabaseInDir={onNewDatabaseInDir}
 									onNewFolderInDir={onNewFolderInDir}
 									onDuplicateFile={onDuplicateFile}
+									onCopyDeeplink={onCopyDeeplink}
 									onDeletePath={onDeletePath}
 									onStartRename={onStartRename}
 									onCommitDirRename={onCommitDirRename}
@@ -217,6 +221,7 @@ function TreeEntries({
 						onNewDatabaseInDir={onNewDatabaseInDir}
 						onNewFolderInDir={onNewFolderInDir}
 						onDuplicateFile={onDuplicateFile}
+						onCopyDeeplink={onCopyDeeplink}
 						isRenaming={renamingPath === e.rel_path}
 						onStartRename={() => onStartRename(e.rel_path)}
 						onCommitRename={onCommitFileRename}
@@ -471,6 +476,24 @@ export const FileTreePane = memo(function FileTreePane({
 		[onDuplicateFile, onStartRename],
 	);
 
+	const handleCopyDeeplink = useCallback(
+		async (path: string) => {
+			const deeplink = glyphDeepLinkForFile(path);
+			if (!deeplink) return;
+			try {
+				await navigator.clipboard.writeText(deeplink);
+				toast.success("Copied deeplink.");
+			} catch (error) {
+				const message = extractErrorMessage(error);
+				setError(message);
+				toast.error("Could not copy deeplink", {
+					description: message,
+				});
+			}
+		},
+		[setError],
+	);
+
 	const handleChangeAppearance = useCallback(
 		async (entry: FsEntry, appearance: FileTreeAppearance) => {
 			try {
@@ -645,6 +668,7 @@ export const FileTreePane = memo(function FileTreePane({
 							onNewDatabaseInDir={onNewDatabaseInDir}
 							onNewFolderInDir={handleCreateFolder}
 							onDuplicateFile={handleDuplicateFile}
+							onCopyDeeplink={handleCopyDeeplink}
 							onDeletePath={handleDeletePath}
 							onStartRename={onStartRename}
 							onCommitDirRename={onCommitDirRename}

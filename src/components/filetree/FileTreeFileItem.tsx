@@ -112,6 +112,7 @@ interface FileTreeFileItemProps {
 	onNewDatabaseInDir: (dirPath: string) => unknown;
 	onNewFolderInDir: (dirPath: string) => unknown;
 	onDuplicateFile: (path: string) => unknown;
+	onCopyDeeplink: (path: string) => unknown;
 	onStartRename: () => void;
 	onCommitRename: (path: string, nextName: string) => Promise<void> | void;
 	onCancelRename: () => void;
@@ -141,6 +142,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 	onNewDatabaseInDir,
 	onNewFolderInDir,
 	onDuplicateFile,
+	onCopyDeeplink,
 	onStartRename,
 	onCommitRename,
 	onCancelRename,
@@ -285,6 +287,13 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 							>
 								<HugeiconsIcon icon={Copy01Icon} size={14} strokeWidth={0.9} />
 								Duplicate file
+							</ContextMenuItem>
+							<ContextMenuItem
+								className="fileTreeCreateMenuItem"
+								onSelect={() => void onCopyDeeplink(entry.rel_path)}
+							>
+								<HugeiconsIcon icon={Copy01Icon} size={14} strokeWidth={0.9} />
+								Copy deeplink
 							</ContextMenuItem>
 							<ContextMenuItem
 								className="fileTreeCreateMenuItem"

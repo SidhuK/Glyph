@@ -305,6 +305,7 @@ interface MainContentProps {
 	onGoForward: () => void;
 	showGettingStartedRequest: number;
 	openDatabasesId: string | null;
+	openDatabasesRequestNonce: number;
 	dailyNoteSetupNoticeRequest: number;
 	onOpenDailyNotesSettings: () => void;
 }
@@ -403,6 +404,7 @@ export const MainContent = memo(function MainContent({
 	onGoForward,
 	showGettingStartedRequest,
 	openDatabasesId,
+	openDatabasesRequestNonce,
 	dailyNoteSetupNoticeRequest,
 	onOpenDailyNotesSettings,
 }: MainContentProps) {
@@ -697,6 +699,7 @@ export const MainContent = memo(function MainContent({
 						initialDatabaseId={initialDatabaseId}
 						initialDocument={initialDocument}
 						initialRows={initialRows}
+						openRequestNonce={openDatabasesRequestNonce}
 					/>
 				</Suspense>
 			);
@@ -737,6 +740,7 @@ export const MainContent = memo(function MainContent({
 		onOpenDailyNotesSettings,
 		onCreateNote,
 		openDatabasesId,
+		openDatabasesRequestNonce,
 		dailyNotesFolder,
 		templateFolder,
 		viewerPath,

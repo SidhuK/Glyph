@@ -121,6 +121,7 @@ describe("FileTreeFileItem", () => {
 					onNewDatabaseInDir={vi.fn()}
 					onNewFolderInDir={vi.fn()}
 					onDuplicateFile={vi.fn()}
+					onCopyDeeplink={vi.fn()}
 					onStartRename={vi.fn()}
 					onCommitRename={vi.fn()}
 					onCancelRename={vi.fn()}
@@ -148,6 +149,22 @@ describe("FileTreeFileItem", () => {
 
 		expect(container.textContent).toContain("Unpin file");
 		expect(container.textContent).not.toContain("Pin file");
+	});
+
+	it("calls copy deeplink from the context menu", async () => {
+		const onCopyDeeplink = vi.fn();
+		await renderFileTreeFileItem({ onCopyDeeplink });
+
+		const copyButton = Array.from(container.querySelectorAll("button")).find(
+			(button) => button.textContent?.includes("Copy deeplink"),
+		);
+		expect(copyButton).toBeDefined();
+
+		await act(async () => {
+			copyButton?.click();
+		});
+
+		expect(onCopyDeeplink).toHaveBeenCalledWith("notes/alpha.md");
 	});
 
 	it("calls arrow navigation when pressing the up or down keys", async () => {
