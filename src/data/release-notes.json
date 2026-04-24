@@ -1,6 +1,32 @@
 {
 	"versions": [
 		{
+			"version": "0.2.13",
+			"publishedAt": "2026-04-24",
+			"sections": [
+				{
+					"category": "Added",
+					"items": [
+						"Customizable keyboard shortcuts are here, with a dedicated Shortcuts settings tab for managing bindings and spotting conflicts before they get in your way",
+						"New editor commands let you collapse or expand every heading at once, making long notes much easier to navigate"
+					]
+				},
+				{
+					"category": "Improved",
+					"items": [
+						"Menu keyboard accelerators now update dynamically to match your custom shortcuts across the app",
+						"Shortcut tooltips throughout Glyph now show the shortcuts you actually have bound, so the interface stays in sync with the way you work"
+					]
+				},
+				{
+					"category": "Fixed",
+					"items": [
+						"Home and Collections are back where they belong in the sidebar, restoring the familiar navigation flow"
+					]
+				}
+			]
+		},
+		{
 			"version": "0.2.11",
 			"publishedAt": "2026-04-23",
 			"sections": [
