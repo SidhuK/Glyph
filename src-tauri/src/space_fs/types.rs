@@ -45,14 +45,6 @@ pub struct DirChildSummary {
     pub truncated: bool,
 }
 
-#[derive(Serialize, Clone)]
-pub struct RecentEntry {
-    pub rel_path: String,
-    pub name: String,
-    pub is_markdown: bool,
-    pub mtime_ms: u64,
-}
-
 #[derive(Serialize)]
 pub struct TextFileDocBatch {
     pub rel_path: String,

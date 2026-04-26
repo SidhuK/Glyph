@@ -1,14 +1,13 @@
-.noteExportStandalone,
-.noteExportWindow {
+.noteExportStandalone {
 	background: radial-gradient(
 			circle at top,
-			color-mix(in srgb, var(--accent-solid) 16%, transparent),
+			color-mix(in srgb, var(--interactive-accent) 16%, transparent),
 			transparent 34%
 		),
 		linear-gradient(
 			180deg,
-			color-mix(in srgb, var(--surface-elevated) 90%, white 10%),
-			var(--surface-canvas)
+			color-mix(in srgb, var(--bg-secondary) 90%, white 10%),
+			var(--bg-primary)
 		);
 	color: var(--text-primary);
 }
@@ -25,10 +24,6 @@ html:has(body.noteExportStandalone) {
 	min-height: 100vh;
 	overflow-x: hidden !important;
 	overflow-y: auto !important;
-}
-
-.noteExportWindow {
-	min-height: 100vh;
 }
 
 .noteExportMeasureHost {
@@ -51,7 +46,7 @@ html:has(body.noteExportStandalone) {
 	border: 1px solid color-mix(in srgb, var(--border-light) 82%, transparent);
 	border-radius: 28px;
 	padding: 40px 48px 48px;
-	background: color-mix(in srgb, var(--surface-panel) 94%, white 6%);
+	background: color-mix(in srgb, var(--bg-secondary) 94%, white 6%);
 	box-shadow: 0 24px 80px rgba(0, 0, 0, 0.08), 0 2px 0 rgba(255, 255, 255, 0.48)
 		inset;
 }
@@ -98,41 +93,7 @@ html:has(body.noteExportStandalone) {
 	height: auto;
 }
 
-.noteExportPrintBar {
-	position: sticky;
-	top: 0;
-	z-index: 20;
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 16px;
-	padding: 14px 18px;
-	background: color-mix(in srgb, var(--surface-panel) 90%, white 10%);
-	border-bottom: 1px solid
-		color-mix(in srgb, var(--border-light) 82%, transparent);
-	backdrop-filter: blur(18px);
-}
-
-.noteExportPrintBarText {
-	font-size: 13px;
-	color: var(--text-secondary);
-}
-
-.noteExportPrintBarActions {
-	display: inline-flex;
-	align-items: center;
-	gap: 10px;
-}
-
 @media print {
-	.noteExportPrintBar {
-		display: none !important;
-	}
-
-	.noteExportWindow {
-		background: white;
-	}
-
 	.noteExportPage {
 		padding: 0;
 	}

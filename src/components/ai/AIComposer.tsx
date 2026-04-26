@@ -10,6 +10,7 @@ import { APP_TAGLINE } from "../../lib/copy";
 import { File, X } from "../Icons";
 import { Button } from "../ui/shadcn/button";
 import { ModelSelector } from "./ModelSelector";
+import { truncateLabel } from "./modelSelectorConstants";
 import type { useAiContext } from "./useAiContext";
 import type { useAiProfiles } from "./useAiProfiles";
 
@@ -36,11 +37,6 @@ interface AIComposerProps {
 function fileNameFromPath(path: string): string {
 	const parts = path.split(/[\\/]/).filter(Boolean);
 	return parts.length ? parts[parts.length - 1] : path;
-}
-
-function truncateLabel(text: string, max = 28): string {
-	if (text.length <= max) return text;
-	return `${text.slice(0, max - 1)}…`;
 }
 
 export function AIComposer({
@@ -156,6 +152,7 @@ export function AIComposer({
 											{item.kind === "file"
 												? truncateLabel(
 														fileNameFromPath(item.path || item.label),
+														28,
 													)
 												: item.label || "Space"}
 										</span>

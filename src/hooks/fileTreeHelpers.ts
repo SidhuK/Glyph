@@ -1,17 +1,12 @@
 import type { FsEntry } from "../lib/tauri";
+import { normalizeRelPath } from "../utils/path";
+
+export { normalizeRelPath };
 
 export function compareEntries(a: FsEntry, b: FsEntry): number {
 	if (a.kind === "dir" && b.kind === "file") return -1;
 	if (a.kind === "file" && b.kind === "dir") return 1;
 	return a.name.toLowerCase().localeCompare(b.name.toLowerCase());
-}
-
-export function normalizeRelPath(relPath: string): string {
-	const normalized = relPath
-		.replace(/\u200b/g, "")
-		.replace(/\\/g, "/")
-		.trim();
-	return normalized.replace(/^\/+/, "").replace(/\/+$/, "");
 }
 
 function entryNameFromRelPath(relPath: string): string {

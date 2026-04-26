@@ -26,17 +26,8 @@
 	);
 }
 
-.settingsSidebar {
-	width: 236px;
-	background: transparent;
-}
-
-.settingsSidebarNavSection {
-	padding-top: 0;
-}
-
 .settingsSidebarBackRow {
-	padding: 0 10px 6px;
+	padding: 0 8px 6px;
 }
 
 .settingsBackButton {
@@ -50,34 +41,9 @@
 	color: var(--text-primary);
 }
 
-.settingsSidebarGroups {
-	display: flex;
-	flex-direction: column;
-	gap: 14px;
-	padding: 4px 0 0;
-}
-
-.settingsSidebarGroup {
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-}
-
-.settingsSidebarGroupHeader {
-	display: flex;
-	flex-direction: column;
-	padding: 0 14px;
-}
-
-.settingsSidebarGroupTitle {
-	font-size: 11px;
-	font-weight: var(--font-semibold);
-	color: var(--text-tertiary);
-}
-
 .settingsSidebarTabs {
 	gap: 2px;
-	padding: 4px 10px 12px;
+	padding: 4px 8px 12px;
 }
 
 .settingsFeedbackCard {
@@ -168,39 +134,19 @@
 	color: color-mix(in srgb, var(--interactive-accent) 64%, var(--text-primary));
 }
 
-.settingsNavHeader {
-	display: flex;
-	flex-direction: column;
-	gap: 8px;
-	padding: 0 4px 6px;
-}
-
-.settingsNavTitle {
-	font-size: 18px;
-	font-weight: var(--font-semibold);
-	letter-spacing: -0.018em;
-	color: var(--text-primary);
-	line-height: 1.1;
-}
-
-.settingsNavMeta {
-	font-size: 12px;
-	line-height: 1.35;
-	color: var(--text-secondary);
-}
-
 .settingsTabButton {
 	position: relative;
-	min-height: 30px;
-	padding-inline: var(--space-2);
+	min-height: 28px;
+	padding-inline: 8px;
 	color: var(--text-secondary);
 	background: transparent;
-	font-size: 12px;
+	font-size: var(--text-sm);
 	font-weight: var(--font-medium);
 	line-height: 1;
 	border: 1px solid transparent;
-	transition: background var(--transition-base), border-color
-		var(--transition-base), color var(--transition-base);
+	border-radius: 8px;
+	transition: background var(--transition-fast), border-color
+		var(--transition-fast), color var(--transition-fast);
 }
 
 .settingsTabIcon {
@@ -248,13 +194,11 @@
 
 .settingsTabButtonActive {
 	color: var(--text-primary);
-	background: color-mix(in srgb, var(--bg-primary) 96%, white 4%);
-	border-color: color-mix(in srgb, var(--border-light) 35%, transparent);
-	box-shadow: var(--shadow-sm);
+	background: var(--bg-active);
 }
 
 .settingsSidebarFooter {
-	padding: 0 14px 14px;
+	padding: 0 8px 12px;
 }
 
 .settingsSidebarFooter .settingsFeedbackCard {
@@ -299,14 +243,6 @@
 	letter-spacing: -0.02em;
 	color: var(--text-primary);
 	line-height: 1.2;
-}
-
-.settingsPanelSubtitle {
-	margin: 0;
-	max-width: 62ch;
-	font-size: 12px;
-	line-height: 1.45;
-	color: var(--text-secondary);
 }
 
 .settingsPane {

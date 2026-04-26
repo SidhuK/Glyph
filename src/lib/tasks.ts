@@ -1,3 +1,4 @@
+import { getTodayDateString, parseIsoDate } from "./dailyNotes";
 import type { TaskItem } from "./tauri";
 
 const SHORT_DATE_FORMATTER = new Intl.DateTimeFormat(undefined, {
@@ -5,35 +6,16 @@ const SHORT_DATE_FORMATTER = new Intl.DateTimeFormat(undefined, {
 	day: "numeric",
 });
 
-function getDaysInMonth(year: number, month: number): number {
-	return new Date(year, month, 0).getDate();
-}
-
-function parseIsoDateLocal(date: string | null | undefined): Date | null {
-	if (!date || !/^\d{4}-\d{2}-\d{2}$/.test(date)) return null;
-	const [year, month, day] = date.split("-").map(Number);
-	if (
-		!Number.isInteger(year) ||
-		!Number.isInteger(month) ||
-		!Number.isInteger(day) ||
-		month < 1 ||
-		month > 12
-	) {
-		return null;
-	}
-	const maxDay = getDaysInMonth(year, month);
-	if (day < 1 || day > maxDay) {
-		return null;
-	}
-	return new Date(year, month - 1, day);
+function parseTaskDate(date: string | null | undefined): Date | null {
+	return date ? parseIsoDate(date) : null;
 }
 
 function differenceInCalendarDays(
 	left: string | null | undefined,
 	right: string | null | undefined,
 ): number | null {
-	const leftDate = parseIsoDateLocal(left);
-	const rightDate = parseIsoDateLocal(right);
+	const leftDate = parseTaskDate(left);
+	const rightDate = parseTaskDate(right);
 	if (!leftDate || !rightDate) return null;
 	leftDate.setHours(0, 0, 0, 0);
 	rightDate.setHours(0, 0, 0, 0);
@@ -43,16 +25,13 @@ function differenceInCalendarDays(
 }
 
 export function todayIsoDateLocal(now = new Date()): string {
-	const year = now.getFullYear();
-	const month = String(now.getMonth() + 1).padStart(2, "0");
-	const day = String(now.getDate()).padStart(2, "0");
-	return `${year}-${month}-${day}`;
+	return getTodayDateString(now);
 }
 
 export function formatTaskCalendarDate(
 	date: string | null | undefined,
 ): string | null {
-	const parsed = parseIsoDateLocal(date);
+	const parsed = parseTaskDate(date);
 	if (!parsed) return null;
 	return SHORT_DATE_FORMATTER.format(parsed);
 }
@@ -206,7 +185,7 @@ export function getTaskTimingSummary(
 		nextDate:
 			[dueDate, scheduledDate]
 				.filter((value): value is string =>
-					Boolean(value && parseIsoDateLocal(value)),
+					Boolean(value && parseTaskDate(value)),
 				)
 				.sort()[0] ?? null,
 	};

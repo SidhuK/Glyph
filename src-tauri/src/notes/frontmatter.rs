@@ -1,15 +1,4 @@
-use serde::{Deserialize, Serialize};
 use serde_yaml::{Mapping, Value};
-
-#[derive(Default, Deserialize, Serialize)]
-pub struct Frontmatter {
-    pub id: Option<String>,
-    pub title: Option<String>,
-    pub tags: Option<Vec<String>>,
-
-    #[serde(flatten)]
-    pub extra: std::collections::BTreeMap<String, serde_yaml::Value>,
-}
 
 pub fn split_frontmatter(markdown: &str) -> (Option<&str>, &str) {
     if let Some(rest) = markdown.strip_prefix("---\n") {
@@ -101,14 +90,4 @@ pub fn normalize_frontmatter_mapping(
     }
 
     mapping
-}
-
-pub fn parse_frontmatter(yaml: Option<&str>) -> Result<Frontmatter, String> {
-    match yaml {
-        None => Ok(Frontmatter::default()),
-        Some(s) => {
-            let v: Frontmatter = serde_yaml::from_str(s).map_err(|e| e.to_string())?;
-            Ok(v)
-        }
-    }
 }

@@ -2,16 +2,14 @@ import { cn } from "@/lib/utils";
 import { AnimatePresence, m } from "motion/react";
 import { Suspense, lazy, useState } from "react";
 import { ChevronDown } from "../Icons";
-import { formatToolName } from "./aiPanelConstants";
+import { type ToolPhase, formatToolName } from "./aiPanelConstants";
 
 const AIMessageMarkdown = lazy(async () => {
 	const module = await import("./AIMessageMarkdown");
 	return { default: module.AIMessageMarkdown };
 });
 
-type ToolPhase = "call" | "result" | "error";
-
-export interface ToolTimelineToolEvent {
+interface ToolTimelineToolEvent {
 	id: string;
 	kind?: "tool";
 	tool: string;
@@ -22,7 +20,7 @@ export interface ToolTimelineToolEvent {
 	error?: string;
 }
 
-export interface ToolTimelineTextEvent {
+interface ToolTimelineTextEvent {
 	id: string;
 	kind: "text";
 	text: string;

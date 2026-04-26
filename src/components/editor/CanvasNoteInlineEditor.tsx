@@ -277,6 +277,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 	onRegisterCalloutInserter,
 	onEditorReady,
 	onChange,
+	onFrontmatterCommit,
 }: CanvasNoteInlineEditorProps) {
 	const {
 		editor,
@@ -737,6 +738,7 @@ export const CanvasNoteInlineEditor = memo(function CanvasNoteInlineEditor({
 		if (nextMarkdown === lastEmittedMarkdownRef.current) return;
 		lastEmittedMarkdownRef.current = nextMarkdown;
 		onChange(nextMarkdown);
+		onFrontmatterCommit?.();
 	};
 
 	const renderFrontmatterWithLinks = (text: string) => {

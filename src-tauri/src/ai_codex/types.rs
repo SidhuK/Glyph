@@ -1,4 +1,4 @@
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 
 #[derive(Serialize, Clone)]
 #[serde(rename_all = "snake_case")]
@@ -52,20 +52,4 @@ pub struct CodexLoginStartResult {
 #[serde(rename_all = "snake_case")]
 pub struct CodexLoginCompleteResult {
     pub connected: bool,
-}
-
-#[derive(Serialize, Clone)]
-#[serde(rename_all = "snake_case")]
-pub struct CodexChatStartResult {
-    pub job_id: String,
-}
-
-#[derive(Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct CodexChatStartRequest {
-    pub profile_id: String,
-    pub thread_id: Option<String>,
-    pub messages: Vec<crate::ai_rig::types::AiMessage>,
-    pub context: Option<String>,
-    pub mode: Option<crate::ai_rig::types::AiAssistantMode>,
 }

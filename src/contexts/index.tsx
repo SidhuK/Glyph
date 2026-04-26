@@ -7,23 +7,8 @@ export { useUpdaterContext } from "./UpdaterContext";
 
 export { useSpace } from "./SpaceContext";
 export { useFileTreeContext } from "./FileTreeContext";
-export { useUIContext } from "./UIContext";
-export {
-	useAISidebarContext,
-	useSearchUIContext,
-	useUILayoutContext,
-} from "./UIContext";
+export { useAISidebarContext, useUILayoutContext } from "./UIContext";
 export { useEditorContext, useEditorRegistration } from "./EditorContext";
-
-export type { SpaceContextValue } from "./SpaceContext";
-export type { FileTreeContextValue } from "./FileTreeContext";
-export type { UIContextValue } from "./UIContext";
-export type {
-	AISidebarContextValue,
-	SearchUIContextValue,
-	UILayoutContextValue,
-} from "./UIContext";
-export type { EditorSaveState } from "./EditorContext";
 
 interface ProvidersErrorBoundaryState {
 	hasError: boolean;

@@ -1,3 +1,4 @@
+import { useDraggable } from "@dnd-kit/react";
 import {
 	Copy01Icon,
 	DocumentCodeIcon,
@@ -9,13 +10,14 @@ import {
 } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { m } from "motion/react";
-import type { KeyboardEvent } from "react";
-import { memo, useEffect, useRef, useState } from "react";
+import type { KeyboardEvent, MutableRefObject } from "react";
+import { memo, useCallback, useEffect, useRef, useState } from "react";
 import type {
 	FileTreeAppearance,
 	FsEntry,
 	NoteTaskSummary,
 } from "../../lib/tauri";
+import { basename } from "../../utils/path";
 import { FolderPlus, Trash2 } from "../Icons";
 import { DatabaseColumnIcon } from "../database/DatabaseColumnIcon";
 import { isEditorTextColor } from "../editor/textColors";
@@ -29,12 +31,21 @@ import {
 } from "../ui/shadcn/context-menu";
 import { FileTreeAppearanceMenu } from "./FileTreeAppearanceMenu";
 import {
+	FILE_TREE_ENTRY_SENSORS,
+	FILE_TREE_ENTRY_TYPE,
+	fileTreeEntryDragId,
+} from "./fileTreeDnd";
+import {
 	buildRowStyle,
 	rowVariants,
 	splitEditableFileName,
 	springTransition,
 } from "./fileTreeItemHelpers";
-import { basename, getFileTypeInfo } from "./fileTypeUtils";
+import { getFileTypeInfo } from "./fileTypeUtils";
+
+const DEFAULT_MOVE_CLICK_SUPPRESS_REF: MutableRefObject<boolean> = {
+	current: false,
+};
 
 function FileRenameInput({
 	initialName,
@@ -121,6 +132,7 @@ interface FileTreeFileItemProps {
 	onChangeAppearance: (appearance: FileTreeAppearance) => void;
 	isPinned: boolean;
 	onTogglePinned: (path: string) => Promise<void> | void;
+	onMoveClickSuppressRef?: MutableRefObject<boolean>;
 	onArrowNavigate?: (
 		path: string,
 		direction: -1 | 1,
@@ -150,6 +162,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 	onChangeAppearance,
 	isPinned,
 	onTogglePinned,
+	onMoveClickSuppressRef = DEFAULT_MOVE_CLICK_SUPPRESS_REF,
 	onArrowNavigate,
 	taskSummary = null,
 }: FileTreeFileItemProps) {
@@ -172,6 +185,26 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 		"Untitled";
 	const extBadge = !isMd && fileExt ? fileExt.slice(1) : "";
 	const iconColor = customColor ? "var(--file-tree-row-icon-color)" : color;
+	const {
+		ref: draggableRef,
+		handleRef,
+		isDragging,
+	} = useDraggable({
+		id: fileTreeEntryDragId("file", entry.rel_path),
+		type: FILE_TREE_ENTRY_TYPE,
+		sensors: FILE_TREE_ENTRY_SENSORS,
+		data: {
+			path: entry.rel_path,
+			kind: "file",
+		},
+	});
+	const setRowRef = useCallback(
+		(element: HTMLButtonElement | null) => {
+			draggableRef(element);
+			handleRef(element);
+		},
+		[draggableRef, handleRef],
+	);
 
 	const handleKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
 		if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
@@ -190,7 +223,7 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 			<div className="fileTreeRowShell">
 				{isRenaming ? (
 					<div
-						className="fileTreeRow fileTreeRowEditing"
+						className="fileTreeRow"
 						style={rowStyle}
 						data-file-tree-path={entry.rel_path}
 					>
@@ -209,9 +242,13 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 					<ContextMenu>
 						<ContextMenuTrigger asChild>
 							<m.button
+								ref={setRowRef}
 								type="button"
 								className="fileTreeRow"
-								onClick={() => onOpenFile(entry.rel_path)}
+								onClick={() => {
+									if (onMoveClickSuppressRef.current) return;
+									onOpenFile(entry.rel_path);
+								}}
 								onMouseEnter={() => onPrefetchFile?.(entry.rel_path)}
 								onFocus={() => onPrefetchFile?.(entry.rel_path)}
 								onKeyDown={handleKeyDown}
@@ -222,6 +259,8 @@ export const FileTreeFileItem = memo(function FileTreeFileItem({
 								whileTap="tap"
 								animate={isActive ? "active" : "idle"}
 								transition={springTransition}
+								data-draggable="true"
+								data-dragging={isDragging ? "true" : undefined}
 								data-has-custom-color={customColor ? "true" : "false"}
 								data-file-tree-file="true"
 								data-file-tree-path={entry.rel_path}

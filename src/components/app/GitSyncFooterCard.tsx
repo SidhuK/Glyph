@@ -2,17 +2,13 @@ import { GitBranchIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { AnimatePresence, m } from "motion/react";
 import { useEffect, useRef } from "react";
-import { type GitSyncTone, getGitSyncPresentation } from "../../lib/gitSyncUi";
+import { getGitSyncPresentation } from "../../lib/gitSyncUi";
 import type { GitSyncStatus } from "../../lib/tauri";
 
 interface GitSyncFooterCardProps {
 	status: GitSyncStatus | null;
 	expanded: boolean;
 	onToggleExpanded: () => void;
-}
-
-function toneClassName(tone: GitSyncTone): string {
-	return `gitSyncFooter-${tone}`;
 }
 
 export function GitSyncFooterCard({
@@ -42,7 +38,7 @@ export function GitSyncFooterCard({
 				{expanded ? (
 					<m.div
 						key="git-sync-panel"
-						className={`gitSyncFooterPanel ${toneClassName(presentation.tone)}`}
+						className="gitSyncFooterPanel"
 						initial={{ opacity: 0, y: 10, scale: 0.985 }}
 						animate={{ opacity: 1, y: 0, scale: 1 }}
 						exit={{ opacity: 0, y: 8, scale: 0.99 }}

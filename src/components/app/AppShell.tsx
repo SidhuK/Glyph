@@ -92,7 +92,7 @@ import { useTauriEvent } from "../../lib/tauriEvents";
 import { listTemplates, renderTemplate } from "../../lib/templates";
 import { TEMPLATES_TAB_ID } from "../../lib/templatesView";
 import { isInAppPreviewable } from "../../utils/filePreview";
-import { isMarkdownPath } from "../../utils/path";
+import { isMarkdownPath, normalizeRelPath, parentDir } from "../../utils/path";
 import { onWindowDragMouseDown } from "../../utils/window";
 import { ChevronDown, ChevronUp, FileHtml, LayoutAlignLeft } from "../Icons";
 import { dispatchAiContextAttach } from "../ai/aiContextEvents";
@@ -118,7 +118,6 @@ import {
 } from "./TemplatePickerDialog";
 import { WindowChromeIconButton } from "./WindowChromeIconButton";
 import { WindowChromeUpdateButton } from "./WindowChromeUpdateButton";
-import { normalizeRelPath, parentDir } from "./appShellHelpers";
 import {
 	loadAllDocsPane,
 	loadCalendarPane,
@@ -206,7 +205,6 @@ export function AppShell() {
 		setSidebarCollapsed,
 		zenModeActive,
 		setZenModeActive,
-		setSidebarViewMode,
 		paletteOpen,
 		setPaletteOpen,
 		activePreviewPath,
@@ -1177,7 +1175,6 @@ export function AppShell() {
 			return;
 		}
 		setSidebarCollapsed(false);
-		setSidebarViewMode("files");
 		const duplicatedPath = await duplicateFileWithActiveEditorFlush(
 			activeMarkdownTabPath,
 		);
@@ -1189,7 +1186,6 @@ export function AppShell() {
 		activeMarkdownTabPath,
 		duplicateFileWithActiveEditorFlush,
 		setSidebarCollapsed,
-		setSidebarViewMode,
 	]);
 
 	const handleStartRenameFromTab = useCallback(
@@ -1197,7 +1193,6 @@ export function AppShell() {
 			const nextPath = path.trim();
 			if (!nextPath || !isMarkdownPath(nextPath)) return;
 			setSidebarCollapsed(false);
-			setSidebarViewMode("files");
 			const parentPath = parentDir(nextPath);
 			const ancestorDirs: string[] = [];
 			let current = parentPath;
@@ -1218,12 +1213,7 @@ export function AppShell() {
 				});
 			});
 		},
-		[
-			fileTree.loadDir,
-			setSidebarCollapsed,
-			setSidebarViewMode,
-			updateExpandedDirs,
-		],
+		[fileTree.loadDir, setSidebarCollapsed, updateExpandedDirs],
 	);
 
 	const handleGitSyncFailure = useCallback(
@@ -2089,6 +2079,9 @@ export function AppShell() {
 				onDuplicateFile={(p) => duplicateFileWithActiveEditorFlush(p)}
 				onRenameDir={(p, name, kind) => fileTree.onRenameDir(p, name, kind)}
 				onDeletePath={(p, kind) => fileTree.onDeletePath(p, kind)}
+				onMovePath={(fromPath, toDirPath, kind) =>
+					fileTree.onMovePath(fromPath, toDirPath, kind)
+				}
 				onToggleDir={fileTree.toggleDir}
 				onSelectTag={(t) => openTagSearchPalette(t)}
 				sidebarCollapsed={sidebarCollapsed}
@@ -2108,9 +2101,6 @@ export function AppShell() {
 				onPrefetchAllDocs={prefetchAllDocsTab}
 				onPrefetchFile={prefetchWorkspaceFile}
 				onOpenSearchPalette={openSearchPalette}
-				updateReady={autoUpdater.updateReady}
-				updateVersion={autoUpdater.updateVersion}
-				onInstallUpdate={autoUpdater.installAndRelaunch}
 			/>
 			{!zenModeActive ? (
 				<div

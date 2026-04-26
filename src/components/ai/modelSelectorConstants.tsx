@@ -79,9 +79,10 @@ export function formatEndpointLabel(endpoint: string): string {
 	return endpointLabelMap[endpoint] ?? endpoint.replace(/_/g, " ");
 }
 
-export function truncateLabel(name: string): string {
-	if (name.length <= 30) return name;
-	return `${name.slice(0, 27)}…`;
+export function truncateLabel(name: string, max = 30): string {
+	if (name.length <= max) return name;
+	const visibleChars = max === 30 ? 27 : max - 1;
+	return `${name.slice(0, visibleChars)}…`;
 }
 
 export function ProviderLogo({

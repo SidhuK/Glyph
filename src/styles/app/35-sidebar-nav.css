@@ -1,0 +1,315 @@
+.sidebarQuickActionBtn {
+	width: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: flex-start;
+	gap: 8px;
+	min-height: 28px;
+	padding: 3px 8px;
+	font-size: var(--text-sm);
+	color: var(--text-primary);
+	background: none;
+	border: 1px solid transparent;
+	border-radius: 8px;
+	margin: 0;
+	text-align: left;
+	cursor: pointer;
+	transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.sidebarQuickActionBtn:hover {
+	background: var(--bg-hover);
+}
+
+.sidebarQuickActionBtn:focus-visible {
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	outline-offset: 2px;
+}
+
+.sidebarQuickActionBtn:disabled {
+	opacity: 0.5;
+	pointer-events: none;
+}
+
+.sidebarQuickActionBtn > svg {
+	flex: 0 0 auto;
+	color: var(--text-primary);
+}
+
+.sidebarQuickActionBtn:hover > svg {
+	color: var(--text-primary);
+}
+
+.sidebarQuickActionCount {
+	margin-left: auto;
+	flex-shrink: 0;
+	font-size: 11px;
+	color: var(--text-tertiary);
+	text-align: right;
+	white-space: nowrap;
+}
+
+.sidebarTopRow {
+	position: relative;
+	display: flex;
+	align-items: center;
+	gap: 6px;
+	width: 100%;
+}
+
+.sidebarSpaceMenuAnchor {
+	position: relative;
+	display: flex;
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.sidebarSpaceSwitcher {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	flex: 1 1 auto;
+	min-width: 0;
+	height: 28px;
+	padding: 0 8px 0 6px;
+	border: 0;
+	border-radius: 8px;
+	background: transparent;
+	color: var(--text-primary);
+	cursor: pointer;
+	text-align: left;
+	transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.sidebarSpaceSwitcher:hover {
+	background: var(--bg-hover);
+}
+
+.sidebarSpaceSwitcher:focus-visible {
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	outline-offset: 2px;
+}
+
+.sidebarSpaceBadge {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 20px;
+	width: 20px;
+	height: 20px;
+	border-radius: 5px;
+	background: var(--interactive-accent);
+	color: var(--text-inverse);
+	font-size: 10px;
+	font-weight: var(--font-semibold);
+	line-height: 1;
+}
+
+.sidebarSpaceName {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: var(--text-sm);
+	font-weight: var(--font-semibold);
+}
+
+.sidebarSpaceChevron {
+	flex: 0 0 auto;
+	color: var(--text-tertiary);
+	transition: transform var(--transition-fast), color var(--transition-fast);
+}
+
+.sidebarSpaceChevron.is-open {
+	transform: rotate(180deg);
+	color: var(--text-secondary);
+}
+
+.sidebarTopIconButton {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 28px;
+	width: 28px;
+	height: 28px;
+	padding: 0;
+	border: 0;
+	border-radius: 8px;
+	background: transparent;
+	color: var(--text-secondary);
+	cursor: pointer;
+	transition: background var(--transition-fast), color var(--transition-fast);
+}
+
+.sidebarTopIconButton:hover {
+	background: var(--bg-hover);
+	color: var(--text-primary);
+}
+
+.sidebarTopIconButton:focus-visible {
+	outline: 2px solid
+		color-mix(in srgb, var(--interactive-accent) 42%, transparent);
+	outline-offset: 2px;
+}
+
+.sidebarSpaceMenuPanel {
+	position: absolute;
+	top: calc(100% + 6px);
+	left: 0;
+	z-index: 80;
+	display: flex;
+	flex-direction: column;
+	gap: 4px;
+	width: 100%;
+	min-width: 0;
+	max-height: min(360px, calc(100vh - 132px));
+	padding: 8px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 68%, transparent);
+	border-radius: 10px;
+	background: color-mix(in srgb, var(--bg-primary) 94%, transparent);
+	backdrop-filter: blur(14px) saturate(1.2);
+	-webkit-backdrop-filter: blur(14px) saturate(1.2);
+	box-shadow: 0 12px 26px
+		color-mix(in srgb, var(--shadow-color, #000) 16%, transparent), 0 2px 12px
+		color-mix(in srgb, var(--shadow-color, #000) 10%, transparent);
+	overflow: auto;
+}
+
+.sidebarSpaceMenuTitle {
+	padding: 2px 4px 4px;
+	font-size: 11px;
+	font-weight: var(--font-semibold);
+	letter-spacing: 0.06em;
+	text-transform: uppercase;
+	color: var(--text-tertiary);
+}
+
+.sidebarSpaceMenuItem {
+	display: flex;
+	flex-direction: column;
+	align-items: flex-start;
+	gap: 2px;
+	width: 100%;
+	min-height: 48px;
+	padding: 8px 10px;
+	border: 1px solid transparent;
+	border-radius: 8px;
+	background: color-mix(in srgb, var(--bg-secondary) 58%, transparent);
+	color: var(--text-primary);
+	text-align: left;
+	cursor: pointer;
+	transition: background-color 120ms ease, border-color 120ms ease;
+	overflow: hidden;
+}
+
+.sidebarSpaceMenuItem:hover,
+.sidebarSpaceMenuItem:focus-visible {
+	background: color-mix(in srgb, var(--bg-hover) 82%, var(--bg-primary));
+	border-color: color-mix(in srgb, var(--interactive-accent) 22%, transparent);
+	outline: none;
+}
+
+.sidebarSpaceMenuItemName {
+	display: block;
+	width: 100%;
+	min-width: 0;
+	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: 13px;
+	font-weight: var(--font-medium);
+	line-height: 1.35;
+}
+
+.sidebarSpaceMenuItemPath {
+	display: block;
+	width: 100%;
+	min-width: 0;
+	max-width: 100%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	font-size: 11px;
+	line-height: 1.35;
+	color: var(--text-tertiary);
+}
+
+.sidebarSpaceMenuEmpty {
+	padding: 10px 8px;
+	border: 1px dashed color-mix(in srgb, var(--border-light) 62%, transparent);
+	border-radius: 8px;
+	font-size: 12px;
+	color: var(--text-tertiary);
+}
+
+.sidebarSpaceMenuAction {
+	width: 100%;
+	margin-top: 2px;
+	min-height: 36px;
+	padding: 8px 10px;
+	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
+	border-radius: 8px;
+	background: color-mix(in srgb, var(--bg-tertiary) 62%, transparent);
+	color: var(--text-secondary);
+	font-size: 12px;
+	font-weight: var(--font-medium);
+	line-height: 1.35;
+	text-align: center;
+	cursor: pointer;
+	transition: background-color 120ms ease, color 120ms ease;
+}
+
+.sidebarSpaceMenuAction:hover,
+.sidebarSpaceMenuAction:focus-visible {
+	background: color-mix(in srgb, var(--bg-hover) 84%, var(--bg-primary));
+	color: var(--text-primary);
+	outline: none;
+}
+
+.sidebarFooter .sidebarQuickActionBtn.sidebarFooterGitButton {
+	flex: 0 0 26px;
+	width: 26px;
+	min-width: 26px;
+	min-height: 26px;
+	padding: 0;
+	justify-content: center;
+}
+
+.sidebarNavRow {
+	display: flex;
+	flex-direction: column;
+	gap: 2px;
+	width: 100%;
+	padding: 0 8px;
+}
+
+.sidebarNavBtn {
+	color: var(--text-primary);
+}
+
+.sidebarNavBtn > svg {
+	color: var(--text-primary);
+}
+
+.sidebarNavBtn:hover > svg {
+	color: var(--text-primary);
+}
+
+.sidebarNavBtn[data-active="true"] {
+	background: var(--bg-active);
+}
+
+.sidebarNavBtn[data-active="true"] > svg {
+	color: var(--text-primary);
+}
+
+.sidebarNavBtn .sidebarQuickActionLabel {
+	min-width: 0;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	line-height: 1;
+}

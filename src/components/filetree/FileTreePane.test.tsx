@@ -149,6 +149,7 @@ describe("FileTreePane", () => {
 					onCancelRename={vi.fn()}
 					onCommitFileRename={vi.fn()}
 					onCommitDirRename={vi.fn()}
+					onMovePath={vi.fn()}
 					pinnedFiles={["notes/alpha.md", "docs/beta.md"]}
 					onTogglePinnedFile={vi.fn()}
 				/>,
@@ -195,6 +196,7 @@ describe("FileTreePane", () => {
 					onCancelRename={vi.fn()}
 					onCommitFileRename={vi.fn()}
 					onCommitDirRename={vi.fn()}
+					onMovePath={vi.fn()}
 					pinnedFiles={[]}
 					onTogglePinnedFile={vi.fn()}
 				/>,

@@ -15,18 +15,6 @@ vi.mock("@tauri-apps/api/window", () => ({
 	}),
 }));
 
-vi.mock("../hooks/useSearch", () => ({
-	useSearch: () => ({
-		searchQuery: "",
-		setSearchQuery: () => {},
-		searchResults: [],
-		isSearching: false,
-		searchError: "",
-		showSearch: false,
-		setShowSearch: () => {},
-	}),
-}));
-
 vi.mock("../lib/settings", () => ({
 	loadSettings: vi.fn(async () => ({
 		ui: {

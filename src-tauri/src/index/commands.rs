@@ -14,10 +14,10 @@ use super::indexer::index_note;
 use super::indexer::rebuild;
 use super::search_advanced::{run_search_advanced, SearchAdvancedRequest};
 use super::search_hybrid::hybrid_search;
-use super::tags::{normalize_tag, people_tag_to_handle, tag_depth, PEOPLE_TAG_NAMESPACE};
+use super::tags::{people_tag_to_handle, tag_depth, PEOPLE_TAG_NAMESPACE};
 use super::tasks::{
-    mutate_task_line, note_abs_path, query_note_task_summaries, query_tasks, summarize_tasks,
-    write_note, IndexedTask, NoteTaskSummary, NoteTaskSummaryItem, TaskBucket,
+    mutate_task_line, note_abs_path, query_note_task_summaries, summarize_tasks, write_note,
+    IndexedTask, NoteTaskSummary, NoteTaskSummaryItem,
 };
 use super::types::{
     BacklinkItem, IndexRebuildResult, LocalGraphEdge, LocalGraphNode, LocalNoteGraph, PersonCount,
@@ -342,104 +342,6 @@ pub async fn search_parse_and_run(
 pub fn index_set_people_mentions_as_tags_enabled(enabled: bool) -> Result<(), String> {
     set_people_mentions_as_tags_enabled(enabled);
     Ok(())
-}
-
-#[tauri::command]
-pub async fn search_with_tags(
-    state: State<'_, SpaceState>,
-    tags: Vec<String>,
-    query: Option<String>,
-    limit: Option<u32>,
-) -> Result<Vec<SearchResult>, String> {
-    let root = state.current_root()?;
-    let lim = limit.unwrap_or(2000).min(20_000) as i64;
-    tauri::async_runtime::spawn_blocking(move || -> Result<Vec<SearchResult>, String> {
-        let mut norm_tags = Vec::new();
-        for raw in tags {
-            let t = normalize_tag(&raw).ok_or_else(|| "invalid tag".to_string())?;
-            if !norm_tags.contains(&t) {
-                norm_tags.push(t);
-            }
-        }
-        if norm_tags.is_empty() {
-            return Ok(Vec::new());
-        }
-
-        let q = query.unwrap_or_default().trim().to_string();
-
-        let conn = open_db(&root)?;
-        let mut out = Vec::new();
-
-        if q.is_empty() {
-            let mut sql = String::from(
-                "SELECT n.id, n.title, n.preview AS snippet, 0.0 AS score
-                 FROM notes n ",
-            );
-            for i in 0..norm_tags.len() {
-                sql.push_str(&format!(
-                    "JOIN tags t{idx} ON t{idx}.note_id = n.id AND t{idx}.tag = ? ",
-                    idx = i
-                ));
-            }
-            sql.push_str("ORDER BY n.updated DESC LIMIT ?");
-
-            let mut stmt = conn.prepare(&sql).map_err(|e| e.to_string())?;
-            let mut params: Vec<rusqlite::types::Value> = norm_tags
-                .iter()
-                .map(|t| rusqlite::types::Value::from(t.clone()))
-                .collect();
-            params.push(rusqlite::types::Value::from(lim));
-
-            let mut rows = stmt
-                .query(rusqlite::params_from_iter(params.iter()))
-                .map_err(|e| e.to_string())?;
-            while let Some(row) = rows.next().map_err(|e| e.to_string())? {
-                out.push(SearchResult {
-                    id: row.get(0).map_err(|e| e.to_string())?,
-                    title: row.get(1).map_err(|e| e.to_string())?,
-                    snippet: row.get(2).map_err(|e| e.to_string())?,
-                    score: row.get(3).map_err(|e| e.to_string())?,
-                });
-            }
-            return Ok(out);
-        }
-        hybrid_search(&conn, &q, &norm_tags, lim)
-    })
-    .await
-    .map_err(|e| e.to_string())?
-}
-
-#[tauri::command]
-pub async fn recent_notes(
-    state: State<'_, SpaceState>,
-    limit: Option<u32>,
-) -> Result<Vec<SearchResult>, String> {
-    let root = state.current_root()?;
-    let limit = limit.unwrap_or(8).min(50) as i64;
-    tauri::async_runtime::spawn_blocking(move || -> Result<Vec<SearchResult>, String> {
-        let conn = open_db(&root)?;
-        let mut stmt = conn
-            .prepare(
-                "SELECT id, title, preview AS snippet, 0.0 AS score
-                 FROM notes
-                 ORDER BY updated DESC
-                 LIMIT ?",
-            )
-            .map_err(|e| e.to_string())?;
-        let mut rows = stmt.query([limit]).map_err(|e| e.to_string())?;
-        let mut out = Vec::new();
-        while let Some(row) = rows.next().map_err(|e| e.to_string())? {
-            out.push(SearchResult {
-                id: row.get(0).map_err(|e| e.to_string())?,
-                title: row.get(1).map_err(|e| e.to_string())?,
-                snippet: row.get(2).map_err(|e| e.to_string())?,
-                score: row.get(3).map_err(|e| e.to_string())?,
-            });
-        }
-        Ok(out)
-    })
-    .await
-    .map_err(|e| e.to_string())?
 }
 
 #[tauri::command]
@@ -886,70 +788,6 @@ fn list_people(conn: &rusqlite::Connection, limit: i64) -> Result<Vec<PersonCoun
     Ok(out)
 }
 
-#[tauri::command]
-pub async fn tag_notes(
-    state: State<'_, SpaceState>,
-    tag: String,
-    limit: Option<u32>,
-) -> Result<Vec<SearchResult>, String> {
-    let root = state.current_root()?;
-    tauri::async_runtime::spawn_blocking(move || -> Result<Vec<SearchResult>, String> {
-        let t = normalize_tag(&tag).ok_or_else(|| "invalid tag".to_string())?;
-        let conn = open_db(&root)?;
-        if let Some(raw_limit) = limit {
-            let limit = raw_limit.min(100_000) as i64;
-            let mut stmt = conn
-                .prepare(
-                    "SELECT n.id, n.title, '' AS snippet, 0.0 AS score
-                     FROM tags t
-                     JOIN notes n ON n.id = t.note_id
-                     WHERE t.tag = ?
-                     ORDER BY n.updated DESC
-                     LIMIT ?",
-                )
-                .map_err(|e| e.to_string())?;
-            let mut rows = stmt
-                .query(rusqlite::params![t, limit])
-                .map_err(|e| e.to_string())?;
-            let mut out = Vec::new();
-            while let Some(row) = rows.next().map_err(|e| e.to_string())? {
-                out.push(SearchResult {
-                    id: row.get(0).map_err(|e| e.to_string())?,
-                    title: row.get(1).map_err(|e| e.to_string())?,
-                    snippet: row.get(2).map_err(|e| e.to_string())?,
-                    score: row.get(3).map_err(|e| e.to_string())?,
-                });
-            }
-            Ok(out)
-        } else {
-            let mut stmt = conn
-                .prepare(
-                    "SELECT n.id, n.title, '' AS snippet, 0.0 AS score
-                     FROM tags t
-                     JOIN notes n ON n.id = t.note_id
-                     WHERE t.tag = ?
-                     ORDER BY n.updated DESC",
-                )
-                .map_err(|e| e.to_string())?;
-            let mut rows = stmt
-                .query(rusqlite::params![t])
-                .map_err(|e| e.to_string())?;
-            let mut out = Vec::new();
-            while let Some(row) = rows.next().map_err(|e| e.to_string())? {
-                out.push(SearchResult {
-                    id: row.get(0).map_err(|e| e.to_string())?,
-                    title: row.get(1).map_err(|e| e.to_string())?,
-                    snippet: row.get(2).map_err(|e| e.to_string())?,
-                    score: row.get(3).map_err(|e| e.to_string())?,
-                });
-            }
-            Ok(out)
-        }
-    })
-    .await
-    .map_err(|e| e.to_string())?
-}
-
 #[cfg(test)]
 mod tests {
     use rusqlite::Connection;
@@ -1045,35 +883,6 @@ mod tests {
         assert_eq!(people[0].count, 1);
         set_people_mentions_as_tags_enabled(false);
     }
-}
-
-#[tauri::command]
-pub async fn tasks_query(
-    state: State<'_, SpaceState>,
-    bucket: String,
-    today: String,
-    limit: Option<u32>,
-    folders: Option<Vec<String>>,
-) -> Result<Vec<IndexedTask>, String> {
-    let root = state.current_root()?;
-    let bucket = TaskBucket::parse(&bucket)?;
-    let limit = limit.unwrap_or(500).min(5_000) as i64;
-    let folders = folders.map(|folders| {
-        folders
-            .into_iter()
-            .map(|folder| folder.trim().trim_matches('/').replace('\\', "/"))
-            .filter(|folder| !folder.is_empty())
-            .collect::<Vec<_>>()
-    });
-    tauri::async_runtime::spawn_blocking(move || -> Result<Vec<IndexedTask>, String> {
-        if folders.as_ref().is_some_and(|folders| folders.is_empty()) {
-            return Ok(Vec::new());
-        }
-        let conn = open_db(&root)?;
-        query_tasks(&conn, bucket, &today, limit, folders.as_deref())
-    })
-    .await
-    .map_err(|e| e.to_string())?
 }
 
 #[tauri::command(rename_all = "snake_case")]

@@ -3,7 +3,6 @@ import { AnimatePresence, m, useReducedMotion } from "motion/react";
 import { memo } from "react";
 import { useUILayoutContext } from "../../contexts";
 import type { GitSyncStatus } from "../../lib/tauri";
-import { onWindowDragMouseDown } from "../../utils/window";
 import { SidebarContent } from "./SidebarContent";
 import { SidebarHeader } from "./SidebarHeader";
 import { SidebarSettingsContent } from "./SidebarSettingsContent";
@@ -24,6 +23,11 @@ interface SidebarProps {
 		kind: "dir" | "file",
 	) => Promise<string | null>;
 	onDeletePath: (path: string, kind: "dir" | "file") => Promise<boolean>;
+	onMovePath: (
+		fromPath: string,
+		toDirPath: string,
+		kind?: "dir" | "file",
+	) => Promise<string | null>;
 	onSelectTag: (tag: string) => void;
 	sidebarCollapsed: boolean;
 	onToggleSidebar: () => void;
@@ -42,9 +46,6 @@ interface SidebarProps {
 	onPrefetchAllDocs: () => void;
 	onPrefetchFile: (relPath: string) => void;
 	onOpenSearchPalette: () => void;
-	updateReady: boolean;
-	updateVersion: string | null;
-	onInstallUpdate: () => void;
 }
 
 export const Sidebar = memo(function Sidebar({
@@ -59,6 +60,7 @@ export const Sidebar = memo(function Sidebar({
 	onDuplicateFile,
 	onRenameDir,
 	onDeletePath,
+	onMovePath,
 	onSelectTag,
 	sidebarCollapsed,
 	onToggleSidebar,
@@ -77,9 +79,6 @@ export const Sidebar = memo(function Sidebar({
 	onPrefetchAllDocs,
 	onPrefetchFile,
 	onOpenSearchPalette,
-	updateReady,
-	updateVersion,
-	onInstallUpdate,
 }: SidebarProps) {
 	const { sidebarWidth, settingsMode } = useUILayoutContext();
 	const shouldReduceMotion = useReducedMotion();
@@ -119,13 +118,8 @@ export const Sidebar = memo(function Sidebar({
 									aria-hidden="true"
 									className="sidebarDragLayer"
 									data-tauri-drag-region
-									onMouseDown={onWindowDragMouseDown}
 								/>
-								<div
-									className="sidebarHeader"
-									data-tauri-drag-region
-									onMouseDown={onWindowDragMouseDown}
-								/>
+								<div className="sidebarHeader" data-tauri-drag-region />
 								<SidebarSettingsContent />
 							</>
 						) : (
@@ -133,13 +127,6 @@ export const Sidebar = memo(function Sidebar({
 								<SidebarHeader
 									sidebarCollapsed={sidebarCollapsed}
 									onToggleSidebar={onToggleSidebar}
-									spacePath={spacePath}
-									recentSpaces={recentSpaces}
-									onOpenSpace={onOpenSpace}
-									onOpenRecentSpaceAtPath={onOpenRecentSpaceAtPath}
-									updateReady={updateReady}
-									updateVersion={updateVersion}
-									onInstallUpdate={onInstallUpdate}
 								/>
 								<SidebarContent
 									onToggleDir={onToggleDir}
@@ -153,6 +140,7 @@ export const Sidebar = memo(function Sidebar({
 									onDuplicateFile={onDuplicateFile}
 									onRenameDir={onRenameDir}
 									onDeletePath={onDeletePath}
+									onMovePath={onMovePath}
 									onSelectTag={onSelectTag}
 									onOpenCalendar={onOpenCalendar}
 									onOpenDatabases={onOpenDatabases}
@@ -164,6 +152,10 @@ export const Sidebar = memo(function Sidebar({
 									onOpenSettings={onOpenSettings}
 									onOpenAllDocs={onOpenAllDocs}
 									onOpenSearchPalette={onOpenSearchPalette}
+									spacePath={spacePath}
+									recentSpaces={recentSpaces}
+									onOpenSpace={onOpenSpace}
+									onOpenRecentSpaceAtPath={onOpenRecentSpaceAtPath}
 									activeTopSection={activeTopSection}
 								/>
 							</>

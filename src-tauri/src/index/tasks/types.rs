@@ -1,23 +1,5 @@
 use serde::Serialize;
 
-#[derive(Clone, Copy)]
-pub enum TaskBucket {
-    Inbox,
-    Today,
-    Upcoming,
-}
-
-impl TaskBucket {
-    pub fn parse(raw: &str) -> Result<Self, String> {
-        match raw.trim().to_lowercase().as_str() {
-            "inbox" => Ok(Self::Inbox),
-            "today" => Ok(Self::Today),
-            "upcoming" => Ok(Self::Upcoming),
-            _ => Err("invalid task bucket".to_string()),
-        }
-    }
-}
-
 #[derive(Clone)]
 pub struct ParsedTask {
     pub line_start: i64,

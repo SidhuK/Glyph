@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { m, useReducedMotion } from "motion/react";
 import { Fragment, Suspense, lazy, useState } from "react";
+import { isMarkdownPath } from "../../utils/path";
 import { ChevronDown, Files, RefreshCw, Save } from "../Icons";
 import { dispatchMarkdownLinkClick } from "../editor/markdown/editorEvents";
 import { Button } from "../ui/shadcn/button";
@@ -29,11 +30,6 @@ type CitationItem = {
 	path: string;
 	snippet?: string;
 };
-
-function isMarkdownPath(path: string): boolean {
-	const lower = path.toLowerCase();
-	return lower.endsWith(".md") || lower.endsWith(".markdown");
-}
 
 function parseJsonLoose(value: unknown): unknown {
 	if (typeof value !== "string") return value;

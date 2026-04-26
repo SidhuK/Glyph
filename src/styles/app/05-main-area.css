@@ -346,19 +346,6 @@
 	min-width: 0;
 }
 
-.allDocsTitleIcon {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 34px;
-	height: 34px;
-	border-radius: 12px;
-	border: 1px solid color-mix(in srgb, var(--border-light) 72%, transparent);
-	background: color-mix(in srgb, var(--bg-secondary) 78%, var(--bg-primary));
-	color: var(--text-primary);
-	box-shadow: var(--shadow-sm);
-}
-
 .allDocsTitle {
 	font-size: clamp(24px, 2.2vw, 30px);
 	line-height: 1.08;

@@ -9,7 +9,7 @@ import { EDITOR_TEXT_COLORS } from "./textColors";
 import { EDITOR_TEXT_HIGHLIGHTS } from "./textHighlights";
 import type { SlashCommandItem } from "./types";
 
-export function clampSlashCommandIndex(index: number, itemCount: number) {
+function clampSlashCommandIndex(index: number, itemCount: number) {
 	if (itemCount <= 0) return 0;
 	if (index < 0) return itemCount - 1;
 	if (index >= itemCount) return 0;

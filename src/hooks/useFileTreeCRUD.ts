@@ -19,7 +19,7 @@ import {
 	withInsertedEntry,
 } from "./fileTreeHelpers";
 
-export interface UseFileTreeCRUDDeps {
+interface UseFileTreeCRUDDeps {
 	spacePath: string | null;
 	updateChildrenByDir: (
 		next:
@@ -508,7 +508,11 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 	);
 
 	const onMovePath = useCallback(
-		async (fromPath: string, toDirPath: string) => {
+		async (
+			fromPath: string,
+			toDirPath: string,
+			kind: "dir" | "file" = "file",
+		) => {
 			const from = normalizeRelPath(fromPath);
 			const toDir = normalizeRelPath(toDirPath);
 			if (!from) return null;
@@ -516,6 +520,11 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 			if (!fileName) return null;
 			const nextPath = toDir ? `${toDir}/${fileName}` : fileName;
 			if (nextPath === from) return nextPath;
+			if (toDir === parentDir(from)) return from;
+			if (kind === "dir" && (toDir === from || toDir.startsWith(`${from}/`))) {
+				setError("Cannot move a folder into itself");
+				return null;
+			}
 			setError("");
 			try {
 				await invoke("space_rename_path", {
@@ -525,31 +534,81 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 				const fromParent = parentDir(from);
 				const toParent = parentDir(nextPath);
 				const nextName = nextPath.split("/").pop() ?? fileName;
-				updateChildrenByDir((prev) => {
-					const next: Record<string, FsEntry[] | undefined> = {};
-					for (const [k, v] of Object.entries(prev)) {
-						next[k] = v?.map((e) =>
-							e.rel_path === from
-								? { ...e, name: nextName, rel_path: nextPath }
-								: e,
-						);
-					}
+				const movedEntry: FsEntry = {
+					name: nextName,
+					rel_path: nextPath,
+					kind,
+					is_markdown: kind === "file" && isMarkdownPath(nextPath),
+				};
+				updateExpandedDirs((prev) => {
+					if (kind !== "dir") return prev;
+					const next = new Set<string>();
+					for (const expanded of prev)
+						next.add(rewritePrefix(expanded, from, nextPath));
+					if (toDir) next.add(toDir);
 					return next;
 				});
-				updateRootEntries((prev) =>
-					prev.map((e) =>
-						e.rel_path === from
-							? { ...e, name: nextName, rel_path: nextPath }
-							: e,
-					),
-				);
-				if (activeFilePathRef.current === from) setActiveFilePath(nextPath);
-				if (activePreviewPathRef.current === from)
-					setActivePreviewPath(nextPath);
+				if (kind === "dir") {
+					updateChildrenByDir((prev) => {
+						const next: Record<string, FsEntry[] | undefined> = {};
+						for (const [k, v] of Object.entries(prev)) {
+							const key = rewritePrefix(k, from, nextPath);
+							const entries = v
+								?.map((e) => ({
+									...e,
+									name: e.rel_path === from ? nextName : e.name,
+									rel_path: rewritePrefix(e.rel_path, from, nextPath),
+								}))
+								.filter((e) => !(k === fromParent && e.rel_path === nextPath));
+							next[key] = entries;
+						}
+						if (toParent && next[toParent]) {
+							next[toParent] = withInsertedEntry(next[toParent], movedEntry);
+						}
+						return next;
+					});
+					loadedDirsRef.current = new Set(
+						[...loadedDirsRef.current].map((dir) =>
+							rewritePrefix(dir, from, nextPath),
+						),
+					);
+				} else {
+					updateChildrenByDir((prev) => {
+						const next: Record<string, FsEntry[] | undefined> = {};
+						for (const [k, v] of Object.entries(prev)) {
+							next[k] = v?.filter((e) => e.rel_path !== from);
+						}
+						if (toParent && next[toParent]) {
+							next[toParent] = withInsertedEntry(next[toParent], movedEntry);
+						}
+						return next;
+					});
+				}
+				updateRootEntries((prev) => {
+					const withoutMoved = prev.filter((e) => e.rel_path !== from);
+					if (toParent) return withoutMoved;
+					return withInsertedEntry(withoutMoved, movedEntry);
+				});
+				const activeFile = activeFilePathRef.current;
+				if (
+					activeFile &&
+					(activeFile === from ||
+						(kind === "dir" && activeFile.startsWith(`${from}/`)))
+				) {
+					setActiveFilePath(rewritePrefix(activeFile, from, nextPath));
+				}
+				const activePreview = activePreviewPathRef.current;
+				if (
+					activePreview &&
+					(activePreview === from ||
+						(kind === "dir" && activePreview.startsWith(`${from}/`)))
+				) {
+					setActivePreviewPath(rewritePrefix(activePreview, from, nextPath));
+				}
 				dispatchPathRenamed({
 					fromPath: from,
 					toPath: nextPath,
-					recursive: false,
+					recursive: kind === "dir",
 				});
 				await runPinnedSync("move", () => renamePinnedPath(from, nextPath));
 				try {
@@ -557,7 +616,11 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 				} catch (error) {
 					console.error("Failed to sync file tree appearance move", error);
 				}
-				await Promise.all([loadDir(fromParent, true), loadDir(toParent, true)]);
+				await Promise.all([
+					loadDir(fromParent, true),
+					loadDir(toParent, true),
+					kind === "dir" ? loadDir(nextPath, true) : Promise.resolve(),
+				]);
 				return nextPath;
 			} catch (e) {
 				setError(extractErrorMessage(e));
@@ -566,11 +629,13 @@ export function useFileTreeCRUD(deps: UseFileTreeCRUDDeps) {
 		},
 		[
 			loadDir,
+			loadedDirsRef,
 			renamePinnedPath,
 			renameItemAppearance,
 			runPinnedSync,
 			setActiveFilePath,
 			setActivePreviewPath,
+			updateExpandedDirs,
 			updateChildrenByDir,
 			setError,
 			updateRootEntries,

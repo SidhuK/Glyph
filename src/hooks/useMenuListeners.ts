@@ -2,7 +2,7 @@ import { useCallback } from "react";
 import { useUILayoutContext } from "../contexts";
 import { useTauriEvent } from "../lib/tauriEvents";
 
-export interface UseMenuListenersProps {
+interface UseMenuListenersProps {
 	onNewNote: () => void;
 	onCreateFromTemplate: () => void;
 	onOpenDailyNote: () => void;

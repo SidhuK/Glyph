@@ -922,16 +922,6 @@ fn build_main_menu<R: tauri::Runtime, M: Manager<R>>(
 }
 
 #[tauri::command]
-fn greet(name: &str) -> String {
-    format!("Hello, {}! You've been greeted from Rust!", name)
-}
-
-#[tauri::command]
-fn ping() -> &'static str {
-    "pong"
-}
-
-#[tauri::command]
 fn app_info(app: tauri::AppHandle) -> AppInfo {
     let package = app.package_info();
     let config = app.config();
@@ -1308,8 +1298,6 @@ pub fn run() {
         .plugin(tauri_plugin_store::Builder::default().build())
         .plugin(tauri_plugin_updater::Builder::new().build())
         .invoke_handler(tauri::generate_handler![
-            greet,
-            ping,
             app_info,
             system_fonts_list,
             system_monospace_fonts_list,
@@ -1331,7 +1319,6 @@ pub fn run() {
             ai_rig::commands::ai_secret_status,
             ai_rig::commands::ai_secret_list,
             ai_rig::commands::ai_provider_support,
-            ai_rig::commands::ai_audit_mark,
             ai_rig::commands::ai_chat_start,
             ai_rig::commands::ai_chat_cancel,
             ai_rig::commands::ai_chat_history_list,
@@ -1341,8 +1328,6 @@ pub fn run() {
             ai_codex::commands::codex_login_complete,
             ai_codex::commands::codex_logout,
             ai_codex::commands::codex_rate_limits_read,
-            ai_codex::commands::codex_chat_start,
-            ai_codex::commands::codex_chat_cancel,
             ai_rig::context::ai_context_index,
             ai_rig::context::ai_context_build,
             ai_rig::context::ai_context_resolve_paths,
@@ -1370,14 +1355,10 @@ pub fn run() {
             index::commands::search_advanced,
             index::commands::search_parse_and_run,
             index::commands::index_set_people_mentions_as_tags_enabled,
-            index::commands::search_with_tags,
             index::commands::all_docs_list,
-            index::commands::recent_notes,
             index::commands::calendar_query_range,
             index::commands::tags_list,
             index::commands::people_list,
-            index::commands::tag_notes,
-            index::commands::tasks_query,
             index::commands::task_set_checked,
             index::commands::task_set_dates,
             index::commands::task_dates_by_ordinal,
@@ -1386,17 +1367,13 @@ pub fn run() {
             index::commands::task_summaries_for_paths,
             index::commands::backlinks,
             index::commands::note_local_graph,
-            links::commands::link_preview,
-            space_fs::list::space_list_dirs,
             space_fs::list::space_list_dir,
             space_fs::list::space_list_markdown_files,
-            space_fs::list::space_list_files,
             space_fs::link_ops::space_resolve_wikilink,
             space_fs::link_ops::space_resolve_image_wikilink,
             space_fs::link_ops::space_resolve_markdown_link,
             space_fs::link_ops::space_suggest_links,
             space_fs::summary::space_dir_children_summary,
-            space_fs::summary::space_dir_recent_entries,
             space_fs::read_write::text::space_read_text,
             space_fs::read_write::text::space_read_texts_batch,
             space_fs::read_write::preview::space_read_text_preview,
@@ -1410,15 +1387,9 @@ pub fn run() {
             space_fs::read_write::paths::space_delete_path,
             space_fs::read_write::paths::space_resolve_abs_path,
             space_fs::read_write::paths::space_relativize_path,
-            notes::commands::notes_list,
-            notes::commands::note_create,
-            notes::commands::note_read,
-            notes::commands::note_write,
-            notes::commands::note_delete,
             note_export::commands::export_write_text,
             notes::properties::note_frontmatter_parse_properties,
             notes::properties::note_frontmatter_render_properties,
-            notes::attachments::note_attach_file,
             git_sync::commands::git_sync_status_read,
             git_sync::commands::git_sync_config_read,
             git_sync::commands::git_sync_config_update,

@@ -1,7 +1,21 @@
+import {
+	DragDropProvider,
+	type DragEndEvent,
+	useDroppable,
+} from "@dnd-kit/react";
 import { PinIcon, PinOffIcon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { m } from "motion/react";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import {
+	type MutableRefObject,
+	type ReactNode,
+	memo,
+	useCallback,
+	useEffect,
+	useMemo,
+	useRef,
+	useState,
+} from "react";
 import { toast } from "sonner";
 import { useFileTreeContext, useSpace } from "../../contexts";
 import { extractErrorMessage } from "../../lib/errorUtils";
@@ -23,6 +37,7 @@ import { TaskProgressIndicator } from "../tasks/TaskProgressIndicator";
 import { springPresets } from "../ui/animations";
 import { FileTreeDirItem } from "./FileTreeDirItem";
 import { FileTreeFileItem } from "./FileTreeFileItem";
+import { FILE_TREE_ENTRY_TYPE } from "./fileTreeDnd";
 import { rowVariants } from "./fileTreeItemHelpers";
 
 interface FileTreePaneProps {
@@ -46,11 +61,39 @@ interface FileTreePaneProps {
 	onCancelRename: () => void;
 	onCommitFileRename: (path: string, nextName: string) => Promise<void>;
 	onCommitDirRename: (dirPath: string, nextName: string) => Promise<void>;
+	onMovePath: (
+		fromPath: string,
+		toDirPath: string,
+		kind?: "dir" | "file",
+	) => Promise<string | null>;
 	pinnedFiles: string[];
 	onTogglePinnedFile: (path: string) => Promise<void>;
+	children?: ReactNode;
 }
 
 const springTransition = springPresets.bouncy;
+
+interface FileTreeRootDropProps {
+	children: ReactNode;
+}
+
+function FileTreeRootDrop({ children }: FileTreeRootDropProps) {
+	const { ref, isDropTarget } = useDroppable({
+		id: "file-tree-root",
+		data: { targetDirPath: "" },
+		accept: FILE_TREE_ENTRY_TYPE,
+	});
+
+	return (
+		<div
+			ref={ref}
+			className="fileTreeScroll"
+			data-drop-target={isDropTarget ? "true" : undefined}
+		>
+			{children}
+		</div>
+	);
+}
 
 interface TreeEntriesProps {
 	entries: FsEntry[];
@@ -83,6 +126,7 @@ interface TreeEntriesProps {
 	) => Promise<void> | void;
 	pinnedFiles: string[];
 	onTogglePinnedFile: (path: string) => Promise<void>;
+	onMoveClickSuppressRef: MutableRefObject<boolean>;
 	onArrowNavigate: (
 		path: string,
 		direction: -1 | 1,
@@ -120,6 +164,7 @@ function TreeEntries({
 	onChangeAppearance,
 	pinnedFiles,
 	onTogglePinnedFile,
+	onMoveClickSuppressRef,
 	onArrowNavigate,
 	showTaskProgressIndicator,
 	taskSummariesByPath,
@@ -165,6 +210,7 @@ function TreeEntries({
 							onStartRename={() => onStartRename(e.rel_path)}
 							onCommitRename={onCommitDirRename}
 							onCancelRename={onCancelRename}
+							onMoveClickSuppressRef={onMoveClickSuppressRef}
 						>
 							{children && (
 								<TreeEntries
@@ -195,6 +241,7 @@ function TreeEntries({
 									onChangeAppearance={onChangeAppearance}
 									pinnedFiles={pinnedFiles}
 									onTogglePinnedFile={onTogglePinnedFile}
+									onMoveClickSuppressRef={onMoveClickSuppressRef}
 									onArrowNavigate={onArrowNavigate}
 									showTaskProgressIndicator={showTaskProgressIndicator}
 									taskSummariesByPath={taskSummariesByPath}
@@ -229,6 +276,7 @@ function TreeEntries({
 						}
 						isPinned={pinnedFiles.includes(e.rel_path)}
 						onTogglePinned={onTogglePinnedFile}
+						onMoveClickSuppressRef={onMoveClickSuppressRef}
 						onArrowNavigate={onArrowNavigate}
 						taskSummary={
 							showTaskProgressIndicator
@@ -263,8 +311,10 @@ export const FileTreePane = memo(function FileTreePane({
 	onCancelRename,
 	onCommitFileRename,
 	onCommitDirRename,
+	onMovePath,
 	pinnedFiles,
 	onTogglePinnedFile,
+	children,
 }: FileTreePaneProps) {
 	const { itemAppearance, setItemAppearance } = useFileTreeContext();
 	const { spacePath, setError } = useSpace();
@@ -277,6 +327,7 @@ export const FileTreePane = memo(function FileTreePane({
 	const [taskSummariesByPath, setTaskSummariesByPath] = useState<
 		Record<string, NoteTaskSummary>
 	>({});
+	const moveClickSuppressRef = useRef(false);
 
 	useEffect(() => {
 		let cancelled = false;
@@ -523,155 +574,185 @@ export const FileTreePane = memo(function FileTreePane({
 		[],
 	);
 
+	const handleDragEnd = useCallback(
+		(event: DragEndEvent) => {
+			moveClickSuppressRef.current = true;
+			window.setTimeout(() => {
+				moveClickSuppressRef.current = false;
+			}, 0);
+			if (event.canceled) return;
+
+			const { source, target } = event.operation;
+			const sourcePath =
+				typeof source?.data.path === "string" ? source.data.path : null;
+			const sourceKind =
+				source?.data.kind === "dir" || source?.data.kind === "file"
+					? source.data.kind
+					: null;
+			const targetDirPath =
+				typeof target?.data.targetDirPath === "string"
+					? target.data.targetDirPath
+					: null;
+			if (!sourcePath || !sourceKind || targetDirPath == null) return;
+
+			void onMovePath(sourcePath, targetDirPath, sourceKind);
+		},
+		[onMovePath],
+	);
+
 	return (
-		<m.aside
-			className="fileTreePane"
-			initial={{ y: 10 }}
-			animate={{ y: 0 }}
-			transition={springTransition}
-		>
-			{rootEntries.length || pinnedFileItems.length ? (
-				<div className="fileTreeScroll">
-					{pinnedFileItems.length > 0 ? (
-						<section className="fileTreePinnedSection">
-							<ul className="fileTreeList fileTreePinnedList">
-								{pinnedFileItems.map((file) => {
-									const isActive = file.path === activeFilePath;
-									return (
-										<li
-											key={file.path}
-											className={
-												isActive ? "fileTreeItem active" : "fileTreeItem"
-											}
-										>
-											<div className="fileTreeRowShell">
-												<m.button
-													type="button"
-													className="fileTreeRow fileTreePinnedRow"
-													onClick={() => onOpenFile(file.path)}
-													onKeyDown={(event) => {
-														if (
-															event.key !== "ArrowDown" &&
-															event.key !== "ArrowUp"
-														) {
-															return;
-														}
-														event.preventDefault();
-														event.stopPropagation();
-														handleArrowNavigate(
-															file.path,
-															event.key === "ArrowDown" ? 1 : -1,
-															event.currentTarget,
-														);
-													}}
-													title={file.path}
-													variants={rowVariants}
-													whileHover="hover"
-													whileTap="tap"
-													animate={isActive ? "active" : "idle"}
-													transition={springTransition}
-													data-file-tree-file="true"
-													data-file-tree-path={file.path}
-												>
-													<button
+		<DragDropProvider onDragEnd={handleDragEnd}>
+			<m.aside
+				className="fileTreePane"
+				initial={{ y: 10 }}
+				animate={{ y: 0 }}
+				transition={springTransition}
+			>
+				{rootEntries.length || pinnedFileItems.length ? (
+					<FileTreeRootDrop>
+						{pinnedFileItems.length > 0 ? (
+							<section className="fileTreePinnedSection">
+								<ul className="fileTreeList fileTreePinnedList">
+									{pinnedFileItems.map((file) => {
+										const isActive = file.path === activeFilePath;
+										return (
+											<li
+												key={file.path}
+												className={
+													isActive ? "fileTreeItem active" : "fileTreeItem"
+												}
+											>
+												<div className="fileTreeRowShell">
+													<m.button
 														type="button"
-														title="Unpin"
-														onClick={(e) => {
-															e.stopPropagation();
-															onTogglePinnedFile(file.path);
+														className="fileTreeRow fileTreePinnedRow"
+														onClick={() => onOpenFile(file.path)}
+														onKeyDown={(event) => {
+															if (
+																event.key !== "ArrowDown" &&
+																event.key !== "ArrowUp"
+															) {
+																return;
+															}
+															event.preventDefault();
+															event.stopPropagation();
+															handleArrowNavigate(
+																file.path,
+																event.key === "ArrowDown" ? 1 : -1,
+																event.currentTarget,
+															);
 														}}
-														onKeyDown={(e) => {
-															if (e.key === "Enter" || e.key === " ") {
+														title={file.path}
+														variants={rowVariants}
+														whileHover="hover"
+														whileTap="tap"
+														animate={isActive ? "active" : "idle"}
+														transition={springTransition}
+														data-file-tree-file="true"
+														data-file-tree-path={file.path}
+													>
+														<button
+															type="button"
+															title="Unpin"
+															onClick={(e) => {
 																e.stopPropagation();
 																onTogglePinnedFile(file.path);
-															}
-														}}
-														className="fileTreePinToggle fileTreeIcon"
-													>
-														<HugeiconsIcon
-															icon={PinIcon}
-															size={14}
-															strokeWidth={0.9}
-															className="fileTreePinIcon"
-															aria-hidden="true"
-														/>
-														<HugeiconsIcon
-															icon={PinOffIcon}
-															size={14}
-															strokeWidth={0.9}
-															className="fileTreePinOffIcon"
-															aria-hidden="true"
-														/>
-													</button>
-													<span className="fileTreeName">
-														{file.displayName}
-													</span>
-													{showTaskProgressIndicator &&
-													(taskSummariesByPath[file.path]?.total_count ?? 0) >
-														0 ? (
-														<TaskProgressIndicator
-															summary={taskSummariesByPath[file.path]}
-															className="fileTreeTaskProgress"
-														/>
-													) : null}
-													{file.parent ? (
-														<span className="fileTreePinnedPath">
-															{file.parent}
+															}}
+															onKeyDown={(e) => {
+																if (e.key === "Enter" || e.key === " ") {
+																	e.stopPropagation();
+																	onTogglePinnedFile(file.path);
+																}
+															}}
+															className="fileTreePinToggle fileTreeIcon"
+														>
+															<HugeiconsIcon
+																icon={PinIcon}
+																size={14}
+																strokeWidth={0.9}
+																className="fileTreePinIcon"
+																aria-hidden="true"
+															/>
+															<HugeiconsIcon
+																icon={PinOffIcon}
+																size={14}
+																strokeWidth={0.9}
+																className="fileTreePinOffIcon"
+																aria-hidden="true"
+															/>
+														</button>
+														<span className="fileTreeName">
+															{file.displayName}
 														</span>
-													) : null}
-												</m.button>
-											</div>
-										</li>
-									);
-								})}
-							</ul>
-						</section>
-					) : null}
-					{rootEntries.length ? (
-						<TreeEntries
-							entries={rootEntries}
-							parentDepth={-1}
-							childrenByDir={childrenByDir}
-							expandedDirs={expandedDirs}
-							activeFilePath={activeFilePath}
-							activeDirPath={activeDirPath}
-							renamingPath={renamingPath}
-							onToggleDir={onToggleDir}
-							onSelectDir={onSelectDir}
-							onOpenFile={onOpenFile}
-							onPrefetchFile={onPrefetchFile}
-							onNewFileInDir={onNewFileInDir}
-							onCreateFromTemplateInDir={onCreateFromTemplateInDir}
-							onNewDatabaseInDir={onNewDatabaseInDir}
-							onNewFolderInDir={handleCreateFolder}
-							onDuplicateFile={handleDuplicateFile}
-							onDeletePath={handleDeletePath}
-							onStartRename={onStartRename}
-							onCommitDirRename={onCommitDirRename}
-							onCommitFileRename={onCommitFileRename}
-							onCancelRename={onCancelRename}
-							itemAppearance={itemAppearance}
-							folderFileCounts={folderFileCounts}
-							showFolderFileCounts={showFolderFileCounts}
-							onChangeAppearance={handleChangeAppearance}
-							pinnedFiles={pinnedFiles}
-							onTogglePinnedFile={onTogglePinnedFile}
-							onArrowNavigate={handleArrowNavigate}
-							showTaskProgressIndicator={showTaskProgressIndicator}
-							taskSummariesByPath={taskSummariesByPath}
-						/>
-					) : null}
-				</div>
-			) : (
-				<m.div
-					className="fileTreeEmpty"
-					initial={{ opacity: 0 }}
-					animate={{ opacity: 1 }}
-					transition={{ delay: 0.2 }}
-				>
-					No files found.
-				</m.div>
-			)}
-		</m.aside>
+														{showTaskProgressIndicator &&
+														(taskSummariesByPath[file.path]?.total_count ?? 0) >
+															0 ? (
+															<TaskProgressIndicator
+																summary={taskSummariesByPath[file.path]}
+																className="fileTreeTaskProgress"
+															/>
+														) : null}
+														{file.parent ? (
+															<span className="fileTreePinnedPath">
+																{file.parent}
+															</span>
+														) : null}
+													</m.button>
+												</div>
+											</li>
+										);
+									})}
+								</ul>
+							</section>
+						) : null}
+						{rootEntries.length ? (
+							<TreeEntries
+								entries={rootEntries}
+								parentDepth={-1}
+								childrenByDir={childrenByDir}
+								expandedDirs={expandedDirs}
+								activeFilePath={activeFilePath}
+								activeDirPath={activeDirPath}
+								renamingPath={renamingPath}
+								onToggleDir={onToggleDir}
+								onSelectDir={onSelectDir}
+								onOpenFile={onOpenFile}
+								onPrefetchFile={onPrefetchFile}
+								onNewFileInDir={onNewFileInDir}
+								onCreateFromTemplateInDir={onCreateFromTemplateInDir}
+								onNewDatabaseInDir={onNewDatabaseInDir}
+								onNewFolderInDir={handleCreateFolder}
+								onDuplicateFile={handleDuplicateFile}
+								onDeletePath={handleDeletePath}
+								onStartRename={onStartRename}
+								onCommitDirRename={onCommitDirRename}
+								onCommitFileRename={onCommitFileRename}
+								onCancelRename={onCancelRename}
+								itemAppearance={itemAppearance}
+								folderFileCounts={folderFileCounts}
+								showFolderFileCounts={showFolderFileCounts}
+								onChangeAppearance={handleChangeAppearance}
+								pinnedFiles={pinnedFiles}
+								onTogglePinnedFile={onTogglePinnedFile}
+								onMoveClickSuppressRef={moveClickSuppressRef}
+								onArrowNavigate={handleArrowNavigate}
+								showTaskProgressIndicator={showTaskProgressIndicator}
+								taskSummariesByPath={taskSummariesByPath}
+							/>
+						) : null}
+					</FileTreeRootDrop>
+				) : (
+					<m.div
+						className="fileTreeEmpty"
+						initial={{ opacity: 0 }}
+						animate={{ opacity: 1 }}
+						transition={{ delay: 0.2 }}
+					>
+						No files found.
+					</m.div>
+				)}
+				{children}
+			</m.aside>
+		</DragDropProvider>
 	);
 });

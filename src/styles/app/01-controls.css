@@ -47,24 +47,3 @@ button:focus-visible {
 	outline: 2px solid var(--border-focus);
 	outline-offset: 2px;
 }
-
-/* Primary button variant */
-button.primary {
-	background: var(--interactive-accent);
-	color: var(--text-inverse);
-	border-radius: var(--radius-full);
-}
-
-button.primary:hover {
-	background: var(--interactive-accent-hover);
-	color: var(--text-inverse);
-}
-
-/* Ghost button variant */
-button.ghost {
-	background: transparent;
-}
-
-button.ghost:hover {
-	background: var(--bg-hover);
-}

@@ -5,8 +5,8 @@ use tauri::State;
 use super::state::CodexState;
 use super::transport::{latest_seq, rpc_call, wait_notification_after};
 use super::types::{
-    CodexAccountInfo, CodexChatStartRequest, CodexChatStartResult, CodexLoginCompleteResult,
-    CodexLoginStartResult, CodexRateLimitBucket, CodexRateLimitWindow, CodexRateLimits,
+    CodexAccountInfo, CodexLoginCompleteResult, CodexLoginStartResult, CodexRateLimitBucket,
+    CodexRateLimitWindow, CodexRateLimits,
 };
 
 #[tauri::command]
@@ -178,80 +178,4 @@ pub async fn codex_rate_limits_read(
     }
 
     Ok(CodexRateLimits { buckets })
-}
-
-#[tauri::command(rename_all = "snake_case")]
-pub async fn codex_chat_start(
-    state: State<'_, CodexState>,
-    request: CodexChatStartRequest,
-) -> Result<CodexChatStartResult, String> {
-    let model = if request.profile_id.trim().is_empty() {
-        "gpt-5.1-codex".to_string()
-    } else {
-        request.profile_id
-    };
-    let root_cwd = std::env::current_dir()
-        .ok()
-        .and_then(|p| p.to_str().map(|s| s.to_string()))
-        .unwrap_or_default();
-    let thread_id = if let Some(existing) = request.thread_id {
-        if existing.starts_with("thr_") {
-            existing
-        } else {
-            let started = rpc_call(
-                &state,
-                "thread/start",
-                json!({ "model": model, "cwd": root_cwd }),
-                Duration::from_secs(20),
-            )?;
-            started
-                .get("threadId")
-                .and_then(|v| v.as_str())
-                .unwrap_or_default()
-                .to_string()
-        }
-    } else {
-        let started = rpc_call(
-            &state,
-            "thread/start",
-            json!({ "model": model, "cwd": root_cwd }),
-            Duration::from_secs(20),
-        )?;
-        started
-            .get("threadId")
-            .and_then(|v| v.as_str())
-            .unwrap_or_default()
-            .to_string()
-    };
-    let transcript = crate::ai_rig::providers::build_transcript(
-        request.context.as_deref().unwrap_or_default(),
-        &request.messages,
-    );
-    let _ = rpc_call(
-        &state,
-        "turn/start",
-        json!({
-            "threadId": thread_id,
-            "input": [{"type":"text","text": transcript}],
-            "mode": request.mode,
-        }),
-        Duration::from_secs(20),
-    )?;
-    let job_id = if thread_id.trim().is_empty() {
-        uuid::Uuid::new_v4().to_string()
-    } else {
-        thread_id
-    };
-    Ok(CodexChatStartResult { job_id })
-}
-
-#[tauri::command(rename_all = "snake_case")]
-pub async fn codex_chat_cancel(state: State<'_, CodexState>, job_id: String) -> Result<(), String> {
-    let _ = rpc_call(
-        &state,
-        "turn/interrupt",
-        json!({ "threadId": job_id }),
-        Duration::from_secs(10),
-    );
-    Ok(())
 }

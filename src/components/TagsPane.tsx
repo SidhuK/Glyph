@@ -1,8 +1,9 @@
 import { Tag01Icon } from "@hugeicons/core-free-icons";
 import { HugeiconsIcon } from "@hugeicons/react";
 import { m } from "motion/react";
-import { type CSSProperties, memo, useCallback } from "react";
+import { type CSSProperties, memo, useCallback, useState } from "react";
 import type { PersonCount, TagCount } from "../lib/tauri";
+import { ChevronDown, ChevronRight } from "./Icons";
 import { springPresets } from "./ui/animations";
 import { Button } from "./ui/shadcn/button";
 
@@ -79,8 +80,14 @@ export const TagsPane = memo(function TagsPane({
 			onSelectPerson(handle.startsWith("@") ? handle : `@${handle}`),
 		[onSelectPerson],
 	);
+	const [tagsExpanded, setTagsExpanded] = useState(false);
+	const [sectionExpanded, setSectionExpanded] = useState(true);
 	const rows = buildTagTreeRows(tags);
 	const peopleRows = buildPeopleRows(people);
+
+	const TAG_LIMIT = 5;
+	const hasMoreTags = rows.length > TAG_LIMIT;
+	const visibleRows = tagsExpanded ? rows : rows.slice(0, TAG_LIMIT);
 
 	return (
 		<m.section
@@ -91,7 +98,20 @@ export const TagsPane = memo(function TagsPane({
 			transition={springTransition}
 		>
 			<div className="tagsHeader">
-				<div className="tagsHeaderTitle">TAGS</div>
+				<button
+					type="button"
+					className="tagsHeaderTitle tagsHeaderToggle"
+					onClick={() => setSectionExpanded((v) => !v)}
+					aria-expanded={sectionExpanded}
+					aria-label={sectionExpanded ? "Collapse Tags" : "Expand Tags"}
+				>
+					<span>Tags</span>
+					{sectionExpanded ? (
+						<ChevronDown size={10} className="tagsHeaderChevron" />
+					) : (
+						<ChevronRight size={10} className="tagsHeaderChevron" />
+					)}
+				</button>
 				<Button
 					type="button"
 					variant="ghost"
@@ -104,7 +124,7 @@ export const TagsPane = memo(function TagsPane({
 					</m.span>
 				</Button>
 			</div>
-			{rows.length ? (
+			{!sectionExpanded ? null : rows.length ? (
 				<>
 					<m.ul
 						className="tagsList"
@@ -115,7 +135,7 @@ export const TagsPane = memo(function TagsPane({
 							hidden: {},
 						}}
 					>
-						{rows.map((tag, index) => {
+						{visibleRows.map((tag, index) => {
 							return (
 								<m.li
 									key={tag.tag}
@@ -152,16 +172,27 @@ export const TagsPane = memo(function TagsPane({
 											/>
 											<span className="tagsName">{tag.label}</span>
 										</span>
-										<span className="tagsCount mono">{tag.totalCount}</span>
+										<span className="tagsCount">{tag.totalCount}</span>
 									</m.button>
 								</m.li>
 							);
 						})}
 					</m.ul>
+					{hasMoreTags ? (
+						<button
+							type="button"
+							className="tagsToggle"
+							onClick={() => setTagsExpanded((v) => !v)}
+						>
+							{tagsExpanded
+								? "Show less"
+								: `Show ${rows.length - TAG_LIMIT} more`}
+						</button>
+					) : null}
 					{peopleRows.length ? (
 						<>
 							<div className="tagsHeader tagsSubheader">
-								<div className="tagsHeaderTitle">PEOPLE</div>
+								<div className="tagsHeaderTitle">People</div>
 							</div>
 							<ul className="tagsList">
 								{peopleRows.map((person) => (
@@ -178,7 +209,7 @@ export const TagsPane = memo(function TagsPane({
 											<span className="tagsNameWrap">
 												<span className="tagsName">@{person.handle}</span>
 											</span>
-											<span className="tagsCount mono">{person.count}</span>
+											<span className="tagsCount">{person.count}</span>
 										</button>
 									</li>
 								))}
@@ -189,7 +220,7 @@ export const TagsPane = memo(function TagsPane({
 			) : peopleRows.length ? (
 				<>
 					<div className="tagsHeader tagsSubheader">
-						<div className="tagsHeaderTitle">PEOPLE</div>
+						<div className="tagsHeaderTitle">People</div>
 					</div>
 					<ul className="tagsList">
 						{peopleRows.map((person) => (
@@ -206,7 +237,7 @@ export const TagsPane = memo(function TagsPane({
 									<span className="tagsNameWrap">
 										<span className="tagsName">@{person.handle}</span>
 									</span>
-									<span className="tagsCount mono">{person.count}</span>
+									<span className="tagsCount">{person.count}</span>
 								</button>
 							</li>
 						))}

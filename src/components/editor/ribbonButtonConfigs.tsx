@@ -205,5 +205,3 @@ export function getBlockButtons(
 		},
 	];
 }
-
-export const CALLOUT_TYPES = ["Note", "Info", "Tip", "Warn", "Error"];

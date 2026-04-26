@@ -224,6 +224,7 @@ export function MarkdownEditorPane({
 	const taskSummaryTimerRef = useRef<number | null>(null);
 	const taskSummaryRequestTokenRef = useRef(0);
 	const pendingExternalReloadRef = useRef(false);
+	const activeRelPathRef = useRef(relPath);
 	const paneRef = useRef<HTMLElement | null>(null);
 	const contentScrollRef = useRef<HTMLDivElement | null>(null);
 	const { spacePath } = useSpace();
@@ -394,7 +395,10 @@ export function MarkdownEditorPane({
 		hasUserEditsRef.current = false;
 		setError(initialError);
 		setActionsOpen(false);
-		setInfoPanelOpen(false);
+		if (activeRelPathRef.current !== relPath) {
+			setInfoPanelOpen(false);
+		}
+		activeRelPathRef.current = relPath;
 		setLocalGraphOpen(false);
 		setPreviewContext(null);
 		setLinkedMentions([]);
@@ -861,8 +865,11 @@ export function MarkdownEditorPane({
 			hasUserEditsRef.current = true;
 			textRef.current = nextMarkdown;
 			setText(nextMarkdown);
+			// Property edits are discrete commits — save immediately so the
+			// indexer picks up the change and databases/backlinks update.
+			void runAutosave();
 		},
-		[currentBody],
+		[currentBody, runAutosave],
 	);
 
 	useEffect(() => {
@@ -1146,6 +1153,7 @@ export function MarkdownEditorPane({
 								textRef.current = nextText;
 								setText(nextText);
 							}}
+							onFrontmatterCommit={runAutosave}
 							onEditorReady={setTocEditor}
 						/>
 					</div>

@@ -10,14 +10,14 @@ import { updateOnboardingSettings } from "../lib/settings";
 import { invoke } from "../lib/tauri";
 import { renderTemplate } from "../lib/templates";
 
-export interface UseDailyNoteOptions {
+interface UseDailyNoteOptions {
 	onOpenFile: (path: string) => Promise<void>;
 	setError: (error: string) => void;
 	spacePath: string | null;
 	templatePath?: string | null;
 }
 
-export interface UseDailyNoteReturn {
+interface UseDailyNoteReturn {
 	openOrCreateDailyNote: (folder: string) => Promise<string | null>;
 	openOrCreateDailyNoteAtDate: (
 		folder: string,

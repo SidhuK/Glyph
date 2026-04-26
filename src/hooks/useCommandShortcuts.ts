@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { type Shortcut, isShortcutMatch } from "../lib/shortcuts";
 
-export interface ShortcutHandler {
+interface ShortcutHandler {
 	id: string;
 	shortcut: Shortcut | null | undefined;
 	action: () => void | Promise<void>;

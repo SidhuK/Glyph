@@ -35,17 +35,6 @@ export const providerLogoMeta: Record<
 	},
 };
 
-export const providerLogoMap: Record<AiProviderKind, string> = {
-	openai: providerLogoMeta.openai.src,
-	openai_compat: providerLogoMeta.openai_compat.src,
-	openrouter: providerLogoMeta.openrouter.src,
-	anthropic: providerLogoMeta.anthropic.src,
-	gemini: providerLogoMeta.gemini.src,
-	ollama: providerLogoMeta.ollama.src,
-	llama_cpp: providerLogoMeta.llama_cpp.src,
-	codex_chatgpt: providerLogoMeta.codex_chatgpt.src,
-};
-
 export function getProviderLogoSrc(
 	provider: AiProviderKind,
 	isDark: boolean,

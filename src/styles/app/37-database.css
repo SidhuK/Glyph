@@ -778,19 +778,13 @@
 }
 
 .databaseBoardError,
-.databaseCellError,
-.databaseDialogInlineError {
+.databaseCellError {
 	color: var(--text-error);
 }
 
-.databaseCellError,
-.databaseDialogInlineError {
+.databaseCellError {
 	font-size: 0.76rem;
 	line-height: 1.35;
-}
-
-.databaseDialogInlineError {
-	padding: 0 2px 6px;
 }
 
 .databaseBoardScroller {
@@ -990,10 +984,10 @@
 	overflow: hidden;
 	user-select: none;
 	-webkit-user-select: none;
-	-webkit-user-drag: element;
+	-webkit-user-drag: none;
 }
 
-.databaseBoardCard[draggable="true"] {
+.databaseBoardCard[data-draggable="true"] {
 	cursor: grab;
 }
 
@@ -1697,362 +1691,6 @@
 	text-align: center;
 }
 
-.databaseDialog {
-	max-width: min(900px, calc(100vw - 2rem));
-	padding: 0.6rem;
-	gap: 0.3rem;
-	border-radius: var(--radius-lg);
-	border-color: var(--border-light);
-	background: var(--bg-primary);
-	box-shadow: var(--shadow-md);
-}
-
-.databaseDialogCompact {
-	width: min(720px, calc(100vw - 2rem));
-	max-width: min(720px, calc(100vw - 2rem));
-	height: auto;
-	max-height: min(72vh, 680px);
-	padding: 0.5rem 0.6rem 0.5rem;
-	gap: 0.2rem;
-	overflow: hidden;
-}
-
-.databaseDialog [data-slot="dialog-header"] {
-	padding-inline: 0.05rem;
-}
-
-.databaseDialogHeaderCompact {
-	padding-bottom: 0;
-}
-
-.databaseDialogBody {
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-	flex: 1;
-	min-height: 0;
-	overflow: hidden;
-	padding: 0;
-}
-
-.databaseDialogBodyTight {
-	gap: 4px;
-	flex: 0 1 auto;
-	overflow: auto;
-}
-
-.databaseDialogBodyColumns {
-	display: grid;
-	grid-template-columns: minmax(0, 1.5fr) minmax(220px, 0.85fr);
-	gap: 8px;
-	align-items: stretch;
-	min-height: 0;
-}
-
-.databaseDialogSidebar {
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-	min-height: 0;
-	overflow: auto;
-	padding-right: 2px;
-}
-
-.databaseDialogSection {
-	display: flex;
-	flex-direction: column;
-	gap: 4px;
-	min-height: 0;
-	padding: 0 0 0.1rem;
-	border-bottom: 1px solid
-		color-mix(in srgb, var(--border-light) 40%, transparent);
-}
-
-.databaseDialogSection:last-child {
-	padding-bottom: 0;
-	border-bottom: none;
-}
-
-.databaseDialogSectionHeader {
-	display: flex;
-	flex-direction: column;
-	gap: 2px;
-}
-
-.databaseDialogSectionTitleRow {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	gap: 8px;
-}
-
-.databaseDialogSectionHeaderRow {
-	flex-direction: row;
-	align-items: center;
-	justify-content: space-between;
-	gap: 6px;
-}
-
-.databaseDialogSectionTitle {
-	font-size: 0.78rem;
-	font-weight: var(--font-semibold);
-	color: var(--text-primary);
-	letter-spacing: 0.01em;
-}
-
-.databaseDialogSectionCount {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	min-width: 22px;
-	height: 18px;
-	padding: 0 5px;
-	border-radius: 999px;
-	background: color-mix(in srgb, var(--bg-secondary) 72%, transparent);
-	font-size: 0.66rem;
-	font-weight: var(--font-semibold);
-	color: var(--text-secondary);
-}
-
-.databaseDialogList {
-	display: flex;
-	flex-direction: column;
-	gap: 1px;
-	min-height: 0;
-	overflow: auto;
-	padding-right: 2px;
-}
-
-.databaseDialogSectionPrimary {
-	min-height: 0;
-}
-
-.databaseDialogListColumns {
-	flex: 1;
-}
-
-.databaseDialogRow,
-.databaseFilterRow,
-.databaseFilterCard {
-	display: grid;
-	gap: 6px;
-	padding: 4px 6px;
-	border-radius: var(--radius-sm);
-	border: none;
-	background: transparent;
-}
-
-.databaseDialogRow {
-	grid-template-columns: minmax(0, 1fr) auto auto;
-	align-items: center;
-}
-
-.databaseSourceGrid {
-	grid-template-columns: minmax(0, 1fr) minmax(0, 1.4fr) auto;
-}
-
-.databaseFilterRow {
-	grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) minmax(0, 1fr) auto;
-}
-
-.databaseFilterCard {
-	display: flex;
-	flex-direction: column;
-	gap: 6px;
-}
-
-.databaseFilterCardHeader {
-	display: flex;
-	align-items: flex-start;
-	justify-content: space-between;
-	gap: 10px;
-	padding-bottom: 2px;
-}
-
-.databaseFilterCardCompact {
-	padding: 4px 6px;
-}
-
-.databaseFilterCardFields {
-	display: grid;
-	grid-template-columns: minmax(120px, 1fr) minmax(110px, 0.75fr) minmax(
-			0,
-			1.2fr
-		) auto;
-	gap: 4px;
-	align-items: center;
-}
-
-.databaseDialogRowMeta {
-	min-width: 0;
-}
-
-.databaseDialogRowLead {
-	display: flex;
-	align-items: center;
-	gap: 8px;
-	min-width: 0;
-}
-
-.databaseDialogRowTitle {
-	font-weight: var(--font-medium);
-	line-height: 1.2;
-	font-size: 0.82rem;
-}
-
-.databaseDialogRowSubtitle {
-	font-size: 0.7rem;
-	color: var(--text-secondary);
-	line-height: 1.35;
-	overflow-wrap: anywhere;
-}
-
-.databaseDialogRowActions,
-.databaseDialogChipList,
-.databaseManualProperty,
-.databaseDialogActions {
-	display: flex;
-	flex-wrap: wrap;
-	gap: 4px;
-	align-items: center;
-}
-
-.databaseDialogRowActions {
-	flex-wrap: nowrap;
-	gap: 2px;
-	justify-content: flex-end;
-}
-
-.databaseColumnWidthControl {
-	display: inline-flex;
-	align-items: center;
-	gap: 4px;
-	height: 26px;
-	padding: 0 3px;
-	border-radius: 999px;
-	background: color-mix(in srgb, var(--bg-secondary) 68%, transparent);
-}
-
-.databaseColumnWidthValue {
-	min-width: 50px;
-	font-size: 0.68rem;
-	line-height: 1;
-	color: var(--text-secondary);
-	text-align: center;
-}
-
-.databaseColumnIconButton {
-	border-radius: var(--database-radius-md);
-	border: 1px solid color-mix(in srgb, var(--border-light) 54%, transparent);
-	background: color-mix(in srgb, var(--bg-primary) 92%, transparent);
-	color: var(--text-secondary);
-}
-
-.databaseColumnIconButton:hover {
-	border-color: var(--border-default);
-	background: var(--bg-hover);
-	color: var(--text-primary);
-}
-
-.databaseDialogActions {
-	padding: 0.3rem 0.35rem 0;
-}
-
-.databaseDialogCompact .databaseDialogSection {
-	gap: 3px;
-	padding-bottom: 0.15rem;
-	border-bottom-color: color-mix(in srgb, var(--border-light) 30%, transparent);
-}
-
-.databaseDialogCompact .databaseDialogSectionHeader {
-	gap: 2px;
-}
-
-.databaseDialogCompact .databaseDialogSectionTitle {
-	font-size: 0.74rem;
-}
-
-.databaseDialogCompact .databaseDialogRow,
-.databaseDialogCompact .databaseFilterCard {
-	border: none;
-	background: transparent;
-	box-shadow: none;
-}
-
-.databaseDialogCompact .databaseDialogRow:hover,
-.databaseDialogCompact .databaseFilterCard:hover {
-	background: color-mix(in srgb, var(--bg-secondary) 46%, transparent);
-}
-
-.databaseDialogCompact .databaseDialogChipList {
-	flex-direction: column;
-	align-items: stretch;
-	gap: 1px;
-}
-
-.databaseDialogCompact .databaseDialogChipList > button {
-	justify-content: flex-start;
-	width: 100%;
-	min-height: 30px;
-	padding-inline: 8px;
-	border-radius: var(--radius-sm);
-	border: none;
-	background: transparent;
-	font-size: 0.8rem;
-}
-
-.databaseDialogCompact .databaseDialogChipList > button:hover {
-	background: color-mix(in srgb, var(--bg-secondary) 60%, transparent);
-}
-
-.databaseDialogCompact .databaseDialogActions {
-	padding-top: 0;
-}
-
-.databaseDialogField,
-.databaseDialogFieldSlim {
-	display: grid;
-	grid-template-columns: minmax(80px, 100px) minmax(0, 1fr);
-	gap: 6px;
-	align-items: center;
-}
-
-.databaseDialogFieldStack {
-	grid-template-columns: 1fr;
-	align-items: stretch;
-}
-
-.databaseDialogFieldSlim {
-	grid-template-columns: 1fr;
-	gap: 4px;
-	align-items: stretch;
-}
-
-.databaseDialogFieldSlimGrow {
-	min-width: 0;
-}
-
-.databaseManualProperty {
-	width: 100%;
-	margin-left: 0;
-	padding-top: 2px;
-}
-
-.databaseManualProperty > * {
-	flex: 1 1 132px;
-}
-
-.databaseManualProperty > button {
-	flex: 0 0 auto;
-}
-
-.databaseDialogToggle {
-	display: flex;
-	align-items: center;
-	width: 100%;
-	justify-content: flex-end;
-}
-
 .databaseToggleBlock {
 	width: 100%;
 }
@@ -2064,12 +1702,6 @@
 .databaseEmptyCell {
 	padding: 30px 14px;
 	text-align: center;
-	color: var(--text-secondary);
-}
-
-.databaseDialogEmptyState {
-	padding: 6px 2px;
-	font-size: 0.72rem;
 	color: var(--text-secondary);
 }
 
@@ -2092,101 +1724,13 @@
 	min-width: 0;
 }
 
-.databaseColumnIconGrid {
-	display: grid;
-	grid-template-columns: repeat(4, minmax(0, 1fr));
-	gap: 8px;
-	max-height: min(280px, 42vh);
-	overflow: auto;
-	padding: 2px 2px 4px;
-}
-
-.databaseColumnIconOption {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
-	justify-content: center;
-	gap: 6px;
-	min-height: 74px;
-	padding: 10px 8px;
-	border-radius: var(--database-radius-md);
-	border: 1px solid color-mix(in srgb, var(--border-light) 76%, transparent);
-	background: color-mix(in srgb, var(--bg-primary) 88%, transparent);
-	text-align: center;
-	transition: border-color var(--transition-base), background-color
-		var(--transition-base);
-}
-
-.databaseColumnIconOption:hover,
-.databaseColumnIconOption:focus-visible,
-.databaseColumnIconOption[data-active="true"] {
-	border-color: var(--border-default);
-	background: var(--bg-hover);
-}
-
-.databaseColumnIconOption:focus-visible {
-	outline: 2px solid
-		color-mix(in srgb, var(--interactive-accent) 18%, transparent);
-	outline-offset: 2px;
-}
-
-.databaseColumnIconOptionGlyph {
-	display: inline-flex;
-	align-items: center;
-	justify-content: center;
-	width: 28px;
-	height: 28px;
-	border-radius: var(--database-radius-sm);
-	background: color-mix(in srgb, var(--bg-secondary) 72%, transparent);
-	color: var(--text-primary);
-}
-
-.databaseColumnIconOptionLabel {
-	font-size: 0.72rem;
-	line-height: 1.2;
-	color: var(--text-secondary);
-}
-
 @media (max-width: 960px) {
-	.databaseDialogBodyColumns {
-		grid-template-columns: 1fr;
-		overflow: auto;
-	}
-
 	.databaseToolbar,
 	.databaseToolbarPrimary,
 	.databaseToolbarActions,
-	.databaseFooter,
-	.databaseFilterRow,
-	.databaseDialogRow {
+	.databaseFooter {
 		flex-wrap: wrap;
 		grid-template-columns: 1fr;
-	}
-
-	.databaseDialogField,
-	.databaseFilterCardFields,
-	.databaseDialogSectionHeaderRow {
-		grid-template-columns: 1fr;
-	}
-
-	.databaseDialogSectionHeaderRow {
-		display: flex;
-		flex-direction: column;
-		align-items: stretch;
-	}
-
-	.databaseDialogCompact {
-		height: min(82vh, 760px);
-	}
-
-	.databaseDialogSidebar {
-		overflow: visible;
-		padding-right: 0;
-	}
-
-	.databaseDialogListColumns,
-	.databaseDialogList {
-		overflow: visible;
 	}
 
 	.databaseTableShell {
@@ -2195,11 +1739,6 @@
 
 	.databaseBoardShell {
 		padding: 12px;
-	}
-
-	.databaseManualProperty {
-		width: 100%;
-		margin-left: 0;
 	}
 }
 
@@ -2333,29 +1872,6 @@
 	background: color-mix(in srgb, var(--text-secondary) 90%, transparent);
 	transform: rotate(-45deg);
 	border-radius: 999px;
-}
-
-.databaseBoardDragGhost {
-	position: fixed;
-	top: 0;
-	left: 0;
-	z-index: 80;
-	display: flex;
-	align-items: center;
-	min-height: 52px;
-	padding: 12px 14px;
-	border: 1px solid
-		color-mix(in srgb, var(--interactive-accent) 34%, var(--border-default));
-	border-radius: var(--database-radius-md);
-	background: color-mix(in srgb, var(--bg-primary) 94%, transparent);
-	box-shadow: 0 16px 34px color-mix(in srgb, black 20%, transparent);
-	color: var(--text-primary);
-	font-size: 0.82rem;
-	font-weight: var(--font-semibold);
-	pointer-events: none;
-	opacity: 0.96;
-	backdrop-filter: blur(10px);
-	-webkit-backdrop-filter: blur(10px);
 }
 
 .databaseToolbarDivider {

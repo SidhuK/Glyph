@@ -10,6 +10,7 @@ import {
 } from "react";
 import { clearAiPanelCaches } from "../components/ai/cache";
 import { clearInlineImageHydrationCache } from "../components/editor/hooks/useHydrateInlineImages";
+import { extractErrorMessage } from "../lib/errorUtils";
 import { invalidateNavigationPrefetch } from "../lib/navigationPrefetch";
 import {
 	clearCurrentSpacePath,
@@ -17,7 +18,7 @@ import {
 	setCurrentSpacePath,
 	updateOnboardingSettings,
 } from "../lib/settings";
-import { type AppInfo, TauriInvokeError, invoke } from "../lib/tauri";
+import { type AppInfo, invoke } from "../lib/tauri";
 
 export interface SpaceContextValue {
 	info: AppInfo | null;
@@ -38,13 +39,6 @@ export interface SpaceContextValue {
 }
 
 const SpaceContext = createContext<SpaceContextValue | null>(null);
-
-const extractError = (err: unknown): string =>
-	err instanceof TauriInvokeError
-		? err.message
-		: err instanceof Error
-			? err.message
-			: String(err);
 
 function normalizeRecentSpaces(
 	recent: string[],
@@ -102,7 +96,7 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 				const appInfo = await invoke("app_info");
 				if (!cancelled) setInfo(appInfo);
 			} catch (err) {
-				if (!cancelled) setError(extractError(err));
+				if (!cancelled) setError(extractErrorMessage(err));
 			}
 		})();
 		return () => {
@@ -153,7 +147,7 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 				}
 			} catch (err) {
 				if (!cancelled) {
-					setError(extractError(err));
+					setError(extractErrorMessage(err));
 				}
 			} finally {
 				if (!cancelled) setSettingsLoaded(true);
@@ -206,7 +200,7 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 				setSpacePath(spaceInfo.root);
 				setSpaceSchemaVersion(spaceInfo.schema_version);
 			} catch (err) {
-				setError(extractError(err));
+				setError(extractErrorMessage(err));
 			} finally {
 				isOpeningSpaceRef.current = false;
 			}
@@ -225,7 +219,7 @@ export function SpaceProvider({ children }: { children: ReactNode }) {
 			setSpacePath(null);
 			setSpaceSchemaVersion(null);
 		} catch (err) {
-			setError(extractError(err));
+			setError(extractErrorMessage(err));
 		}
 	}, []);
 

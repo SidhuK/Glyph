@@ -15,9 +15,7 @@
 @import "./styles/app/11-settings-misc.css";
 @import "./styles/app/12-editor-shell.css";
 @import "./styles/app/13-tags.css";
-@import "./styles/app/14-backlinks.css";
 
-@import "./styles/app/17-filetree-head.css";
 @import "./styles/app/18-filetree-body.css";
 @import "./styles/app/19-code-highlighting.css";
 @import "./styles/app/23-node-note-editor-a.css";
@@ -27,7 +25,7 @@
 @import "./styles/app/32-command-palette.css";
 @import "./styles/app/33-model-combobox.css";
 @import "./styles/app/34-keyboard-shortcuts.css";
-@import "./styles/app/35-daily-notes.css";
+@import "./styles/app/35-sidebar-nav.css";
 @import "./styles/app/36-tasks.css";
 @import "./styles/app/37-database-pickers.css";
 @import "./styles/app/37-database.css";

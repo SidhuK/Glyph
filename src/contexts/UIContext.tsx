@@ -11,7 +11,6 @@ import {
 	useReducer,
 } from "react";
 import type { SettingsTab } from "../components/settings/settingsConfig";
-import { useSearch } from "../hooks/useSearch";
 import {
 	type AiAssistantMode,
 	loadSettings,
@@ -19,7 +18,6 @@ import {
 	setAiAssistantMode as saveAiAssistantMode,
 	setShowToc as saveShowToc,
 } from "../lib/settings";
-import type { SearchResult } from "../lib/tauri";
 import { useTauriEvent } from "../lib/tauriEvents";
 import { useSpace } from "./SpaceContext";
 
@@ -28,8 +26,6 @@ export interface UILayoutContextValue {
 	setSidebarCollapsed: (collapsed: boolean) => void;
 	zenModeActive: boolean;
 	setZenModeActive: (active: boolean) => void;
-	sidebarViewMode: "files" | "tags" | "recent";
-	setSidebarViewMode: (mode: "files" | "tags" | "recent") => void;
 	sidebarWidth: number;
 	setSidebarWidth: (width: number) => void;
 	paletteOpen: boolean;
@@ -60,28 +56,12 @@ export interface AISidebarContextValue {
 	setAiAssistantMode: (mode: AiAssistantMode) => void;
 }
 
-export interface SearchUIContextValue {
-	searchQuery: string;
-	setSearchQuery: (query: string) => void;
-	searchResults: SearchResult[];
-	isSearching: boolean;
-	searchError: string;
-	showSearch: boolean;
-	setShowSearch: (show: boolean) => void;
-}
-
-export type UIContextValue = UILayoutContextValue &
-	AISidebarContextValue &
-	SearchUIContextValue;
-
 const UILayoutContext = createContext<UILayoutContextValue | null>(null);
 const AISidebarContext = createContext<AISidebarContextValue | null>(null);
-const SearchUIContext = createContext<SearchUIContextValue | null>(null);
 
 type UIState = {
 	sidebarCollapsed: boolean;
 	zenModeActive: boolean;
-	sidebarViewMode: "files" | "tags" | "recent";
 	sidebarWidth: number;
 	paletteOpen: boolean;
 	activePreviewPath: string | null;
@@ -105,7 +85,6 @@ type UIState = {
 type UIAction =
 	| { type: "setSidebarCollapsed"; value: boolean }
 	| { type: "setZenModeActive"; value: boolean }
-	| { type: "setSidebarViewMode"; value: "files" | "tags" | "recent" }
 	| { type: "setSidebarWidth"; value: number }
 	| { type: "setPaletteOpen"; value: boolean }
 	| { type: "setActivePreviewPath"; value: string | null }
@@ -135,7 +114,6 @@ type UIAction =
 const initialUIState: UIState = {
 	sidebarCollapsed: true,
 	zenModeActive: false,
-	sidebarViewMode: "files",
 	sidebarWidth: 260,
 	paletteOpen: false,
 	activePreviewPath: null,
@@ -181,8 +159,6 @@ function uiReducer(state: UIState, action: UIAction): UIState {
 					: false,
 				zenStateSnapshot: null,
 			};
-		case "setSidebarViewMode":
-			return { ...state, sidebarViewMode: action.value };
 		case "setSidebarWidth":
 			return { ...state, sidebarWidth: action.value };
 		case "setPaletteOpen":
@@ -288,7 +264,6 @@ export function UIProvider({ children }: { children: ReactNode }) {
 	const {
 		sidebarCollapsed,
 		zenModeActive,
-		sidebarViewMode,
 		sidebarWidth,
 		paletteOpen,
 		activePreviewPath,
@@ -432,11 +407,6 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		(active: boolean) => dispatch({ type: "setZenModeActive", value: active }),
 		[],
 	);
-	const setSidebarViewMode = useCallback(
-		(mode: "files" | "tags" | "recent") =>
-			dispatch({ type: "setSidebarViewMode", value: mode }),
-		[],
-	);
 	const setSidebarWidth = useCallback(
 		(width: number) => dispatch({ type: "setSidebarWidth", value: width }),
 		[],
@@ -480,16 +450,6 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		[],
 	);
 
-	const {
-		searchQuery,
-		setSearchQuery,
-		searchResults,
-		isSearching,
-		searchError,
-		showSearch,
-		setShowSearch,
-	} = useSearch(spacePath);
-
 	const setActivePreviewPath = useCallback(
 		(path: string | null) => {
 			if (!spacePath && path) return;
@@ -504,8 +464,6 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			setSidebarCollapsed,
 			zenModeActive,
 			setZenModeActive,
-			sidebarViewMode,
-			setSidebarViewMode,
 			sidebarWidth,
 			setSidebarWidth,
 			paletteOpen,
@@ -532,8 +490,6 @@ export function UIProvider({ children }: { children: ReactNode }) {
 			setSidebarCollapsed,
 			zenModeActive,
 			setZenModeActive,
-			sidebarViewMode,
-			setSidebarViewMode,
 			sidebarWidth,
 			setSidebarWidth,
 			paletteOpen,
@@ -574,33 +530,10 @@ export function UIProvider({ children }: { children: ReactNode }) {
 		],
 	);
 
-	const searchValue = useMemo<SearchUIContextValue>(
-		() => ({
-			searchQuery,
-			setSearchQuery,
-			searchResults,
-			isSearching,
-			searchError,
-			showSearch,
-			setShowSearch,
-		}),
-		[
-			searchQuery,
-			setSearchQuery,
-			searchResults,
-			isSearching,
-			searchError,
-			showSearch,
-			setShowSearch,
-		],
-	);
-
 	return (
 		<UILayoutContext.Provider value={layoutValue}>
 			<AISidebarContext.Provider value={aiSidebarValue}>
-				<SearchUIContext.Provider value={searchValue}>
-					{children}
-				</SearchUIContext.Provider>
+				{children}
 			</AISidebarContext.Provider>
 		</UILayoutContext.Provider>
 	);
@@ -618,19 +551,4 @@ export function useAISidebarContext(): AISidebarContextValue {
 	if (!ctx)
 		throw new Error("useAISidebarContext must be used within UIProvider");
 	return ctx;
-}
-
-export function useSearchUIContext(): SearchUIContextValue {
-	const ctx = useContext(SearchUIContext);
-	if (!ctx)
-		throw new Error("useSearchUIContext must be used within UIProvider");
-	return ctx;
-}
-
-export function useUIContext(): UIContextValue {
-	return {
-		...useUILayoutContext(),
-		...useAISidebarContext(),
-		...useSearchUIContext(),
-	};
 }

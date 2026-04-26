@@ -391,6 +391,19 @@ export function setPrefetchedDatabaseRows(
 	databaseRowsPromiseCache.delete(databaseRowsCacheKey(databaseId, viewId));
 }
 
+export function invalidateDatabaseRowsPrefetch(databaseId: string) {
+	for (const key of [...databaseRowsCache.keys()]) {
+		if (key.startsWith(`${databaseId}::`)) {
+			databaseRowsCache.delete(key);
+		}
+	}
+	for (const key of [...databaseRowsPromiseCache.keys()]) {
+		if (key.startsWith(`${databaseId}::`)) {
+			databaseRowsPromiseCache.delete(key);
+		}
+	}
+}
+
 export function invalidateDatabasePrefetch(databaseId?: string | null) {
 	if (!databaseId) {
 		databaseDocumentCache.clear();
